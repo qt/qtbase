@@ -49,16 +49,16 @@ class ContentHandler;
 
 class Parser : public QXmlSimpleReader
 {
-    public:
-	Parser();
-	~Parser();
+public:
+    Parser();
+    ~Parser();
 
-	bool parseFile(QFile *file);
-	QString result() const;
-        QString errorMsg() const;
+    bool parseFile(QFile *file);
+    QString result() const;
+    QString errorMsg() const;
 
-    private:
-	ContentHandler *handler;
+private:
+    ContentHandler *handler;
 };
 
 #endif

@@ -100,7 +100,7 @@ static inline int qt_socket_bind(int s, struct sockaddr *addr, QT_SOCKLEN_T addr
 #endif
 
 // Only Solaris 7 and better support 64-bit
-#define QT_SNPRINTF		::snprintf
-#define QT_VSNPRINTF		::vsnprintf
+#define QT_SNPRINTF             ::snprintf
+#define QT_VSNPRINTF            ::vsnprintf
 
 #endif // QPLATFORMDEFS_H

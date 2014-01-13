@@ -145,37 +145,37 @@ typedef GLboolean (APIENTRY *_glUnmapBuffer) (GLenum);
 
 struct GLExtensionFunctions
 {
-	bool resolve(const QGLContext *context);
+    bool resolve(const QGLContext *context);
 
     bool fboSupported();
     bool openGL15Supported(); // the rest: multi-texture, 3D-texture, vertex buffer objects
 
-	_glGenFramebuffersEXT GenFramebuffersEXT;
-	_glGenRenderbuffersEXT GenRenderbuffersEXT;
-	_glBindRenderbufferEXT BindRenderbufferEXT;
-	_glRenderbufferStorageEXT RenderbufferStorageEXT;
-	_glDeleteFramebuffersEXT DeleteFramebuffersEXT;
-	_glDeleteRenderbuffersEXT DeleteRenderbuffersEXT;
-	_glBindFramebufferEXT BindFramebufferEXT;
-	_glFramebufferTexture2DEXT FramebufferTexture2DEXT;
-	_glFramebufferRenderbufferEXT FramebufferRenderbufferEXT;
-	_glCheckFramebufferStatusEXT CheckFramebufferStatusEXT;
+    _glGenFramebuffersEXT GenFramebuffersEXT;
+    _glGenRenderbuffersEXT GenRenderbuffersEXT;
+    _glBindRenderbufferEXT BindRenderbufferEXT;
+    _glRenderbufferStorageEXT RenderbufferStorageEXT;
+    _glDeleteFramebuffersEXT DeleteFramebuffersEXT;
+    _glDeleteRenderbuffersEXT DeleteRenderbuffersEXT;
+    _glBindFramebufferEXT BindFramebufferEXT;
+    _glFramebufferTexture2DEXT FramebufferTexture2DEXT;
+    _glFramebufferRenderbufferEXT FramebufferRenderbufferEXT;
+    _glCheckFramebufferStatusEXT CheckFramebufferStatusEXT;
 
-	_glActiveTexture ActiveTexture;
-	_glTexImage3D TexImage3D;
+    _glActiveTexture ActiveTexture;
+    _glTexImage3D TexImage3D;
 
-	_glGenBuffers GenBuffers;
-	_glBindBuffer BindBuffer;
-	_glBufferData BufferData;
-	_glDeleteBuffers DeleteBuffers;
-	_glMapBuffer MapBuffer;
-	_glUnmapBuffer UnmapBuffer;
+    _glGenBuffers GenBuffers;
+    _glBindBuffer BindBuffer;
+    _glBufferData BufferData;
+    _glDeleteBuffers DeleteBuffers;
+    _glMapBuffer MapBuffer;
+    _glUnmapBuffer UnmapBuffer;
 };
 
 inline GLExtensionFunctions &getGLExtensionFunctions()
 {
-	static GLExtensionFunctions funcs;
-	return funcs;
+    static GLExtensionFunctions funcs;
+    return funcs;
 }
 
 #define glGenFramebuffersEXT getGLExtensionFunctions().GenFramebuffersEXT

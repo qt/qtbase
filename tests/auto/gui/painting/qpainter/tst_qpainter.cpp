@@ -511,7 +511,7 @@ void tst_QPainter::drawPixmap_comp()
     bool different = false;
     for (int y=0; y<result.height(); ++y)
         for (int x=0; x<result.width(); ++x) {
-	    bool diff;
+            bool diff;
             if (qAlpha(expected) == 0) {
                 diff = qAlpha(result.pixel(x, y)) != 0;
             } else {
@@ -523,12 +523,12 @@ void tst_QPainter::drawPixmap_comp()
                              || (qAbs(qBlue(pix) - qBlue(expected)) > off)
                              || (qAbs(qAlpha(pix) - qAlpha(expected)) > off);
             }
-	    if (diff && !different)
-		qDebug( "Different at %d,%d pixel [%d,%d,%d,%d] expected [%d,%d,%d,%d]", x, y,
+            if (diff && !different)
+                qDebug( "Different at %d,%d pixel [%d,%d,%d,%d] expected [%d,%d,%d,%d]", x, y,
                         qRed(result.pixel(x, y)), qGreen(result.pixel(x, y)),
                         qBlue(result.pixel(x, y)), qAlpha(result.pixel(x, y)),
                         qRed(expected), qGreen(expected), qBlue(expected), qAlpha(expected));
-	    different |= diff;
+            different |= diff;
         }
 
     QVERIFY(!different);
@@ -560,24 +560,24 @@ void tst_QPainter::saveAndRestore_data()
     QRect viewport = p.viewport();
 
     QTest::newRow("Original") << font << pen << brush << backgroundColor << int(backgroundMode)
-	    << brushOrigin << clipRegion << window << viewport;
+            << brushOrigin << clipRegion << window << viewport;
 
     QFont font2 = font;
     font2.setPointSize( 24 );
     QTest::newRow("Modified font.pointSize, brush, backgroundColor, backgroundMode")
             << font2 << pen << QBrush(Qt::red) << QColor(Qt::blue) << int(Qt::TransparentMode)
-	    << brushOrigin << clipRegion << window << viewport;
+            << brushOrigin << clipRegion << window << viewport;
 
     font2 = font;
     font2.setPixelSize( 20 );
     QTest::newRow("Modified font.pixelSize, brushOrigin, pos")
             << font2 << pen << brush << backgroundColor << int(backgroundMode)
-	    << QPoint( 50, 32 ) << clipRegion << window << viewport;
+            << QPoint( 50, 32 ) << clipRegion << window << viewport;
 
     QTest::newRow("Modified clipRegion, window, viewport")
             << font << pen << brush << backgroundColor << int(backgroundMode)
-	    << brushOrigin << clipRegion.subtracted(QRect(10,10,50,30))
-	    << QRect(-500, -500, 500, 500 ) << QRect( 0, 0, 50, 50 );
+            << brushOrigin << clipRegion.subtracted(QRect(10,10,50,30))
+            << QRect(-500, -500, 500, 500 ) << QRect( 0, 0, 50, 50 );
 }
 
 void tst_QPainter::saveAndRestore()
@@ -662,13 +662,13 @@ QBitmap tst_QPainter::getBitmap( const QString &dir, const QString &filename, bo
         return QBitmap();
     }
     if ( mask ) {
-	QBitmap mask;
-	QString maskFilename = dir + QString( "/%1-mask.xbm" ).arg( filename );
-	if ( !mask.load( maskFilename ) ) {
-        QWARN(QString("Could not load mask '%1'").arg(maskFilename).toLatin1());
-        return QBitmap();
-	}
-	bm.setMask( mask );
+        QBitmap mask;
+        QString maskFilename = dir + QString( "/%1-mask.xbm" ).arg( filename );
+        if (!mask.load(maskFilename)) {
+            QWARN(QString("Could not load mask '%1'").arg(maskFilename).toLatin1());
+            return QBitmap();
+        }
+        bm.setMask( mask );
     }
     return bm;
 }
@@ -698,17 +698,17 @@ static QRect getPaintedSize(const QImage &image, const QColor &background)
     uint color = background.rgba();
 
     for ( int y = 0; y < image.height(); ++y ) {
-	for ( int x = 0; x < image.width(); ++x ) {
+        for (int x = 0; x < image.width(); ++x) {
             QRgb pixel = image.pixel( x, y );
-	    if ( pixel != color && x < xmin )
-		xmin = x;
-	    if ( pixel != color && x > xmax )
-		xmax = x;
-	    if ( pixel != color && y < ymin )
-		ymin = y;
-	    if ( pixel != color && y > ymax )
-		ymax = y;
-	}
+            if (pixel != color && x < xmin)
+                xmin = x;
+            if (pixel != color && x > xmax)
+                xmax = x;
+            if (pixel != color && y < ymin)
+                ymin = y;
+            if (pixel != color && y > ymax)
+                ymax = y;
+        }
     }
 
     return QRect(xmin, ymin, xmax - xmin + 1, ymax - ymin + 1);

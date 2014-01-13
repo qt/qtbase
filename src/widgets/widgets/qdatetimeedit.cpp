@@ -2310,7 +2310,7 @@ void QDateTimeEdit::paintEvent(QPaintEvent *event)
 
     optCombo.init(this);
     optCombo.editable = true;
-	optCombo.frame = opt.frame;
+    optCombo.frame = opt.frame;
     optCombo.subControls = opt.subControls;
     optCombo.activeSubControls = opt.activeSubControls;
     optCombo.state = opt.state;

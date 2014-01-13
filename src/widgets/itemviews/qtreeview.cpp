@@ -1353,8 +1353,8 @@ bool QTreeViewPrivate::expandOrCollapseItemAtPos(const QPoint &pos)
     Q_Q(QTreeView);
     // we want to handle mousePress in EditingState (persistent editors)
     if ((state != QAbstractItemView::NoState
-		&& state != QAbstractItemView::EditingState)
-		|| !viewport->rect().contains(pos))
+                && state != QAbstractItemView::EditingState)
+                || !viewport->rect().contains(pos))
         return true;
 
     int i = itemDecorationAt(pos);
@@ -1771,14 +1771,14 @@ void QTreeView::drawRow(QPainter *painter, const QStyleOptionViewItem &option,
         int x = 0;
         if (!option.showDecorationSelected)
             x = header->sectionPosition(0) + d->indentationForItem(d->current);
-	QRect focusRect(x - header->offset(), y, header->length() - x, height);
+        QRect focusRect(x - header->offset(), y, header->length() - x, height);
         o.rect = style()->visualRect(layoutDirection(), d->viewport->rect(), focusRect);
         style()->drawPrimitive(QStyle::PE_FrameFocusRect, &o, painter);
         // if we show focus on all columns and the first section is moved,
         // we have to split the focus rect into two rects
         if (allColumnsShowFocus && !option.showDecorationSelected
             && header->sectionsMoved() && (header->visualIndex(0) != 0)) {
-	    QRect sectionRect(0, y, header->sectionPosition(0), height);
+            QRect sectionRect(0, y, header->sectionPosition(0), height);
             o.rect = style()->visualRect(layoutDirection(), d->viewport->rect(), sectionRect);
             style()->drawPrimitive(QStyle::PE_FrameFocusRect, &o, painter);
         }
@@ -1891,11 +1891,11 @@ void QTreeView::drawBranches(QPainter *painter, const QRect &rect,
 */
 void QTreeView::mousePressEvent(QMouseEvent *event)
 {
-	Q_D(QTreeView);
+    Q_D(QTreeView);
     bool handled = false;
     if (style()->styleHint(QStyle::SH_ListViewExpand_SelectMouseType, 0, this) == QEvent::MouseButtonPress)
         handled = d->expandOrCollapseItemAtPos(event->pos());
-	if (!handled && d->itemDecorationAt(event->pos()) == -1)
+    if (!handled && d->itemDecorationAt(event->pos()) == -1)
         QAbstractItemView::mousePressEvent(event);
 }
 
@@ -2598,7 +2598,7 @@ void QTreeView::columnCountChanged(int oldCount, int newCount)
 
     if (isVisible())
         updateGeometries();
-	viewport()->update();
+    viewport()->update();
 }
 
 /*!

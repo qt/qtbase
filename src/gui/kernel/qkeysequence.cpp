@@ -1567,7 +1567,7 @@ QDataStream &operator<<(QDataStream &s, const QKeySequence &keysequence)
 */
 QDataStream &operator>>(QDataStream &s, QKeySequence &keysequence)
 {
-	qAtomicDetach(keysequence.d);
+    qAtomicDetach(keysequence.d);
     QList<quint32> list;
     s >> list;
     for (int i = 0; i < 4; ++i)

@@ -252,9 +252,9 @@ void tst_QToolBox::change()
     QVERIFY( lastItem );
 
     for ( int c = 0; c < testWidget->count(); ++c ) {
-	QString label = "Item " + QString::number(c);
-	testWidget->setItemText(c, label);
-	QCOMPARE( testWidget->itemText(c), label );
+        QString label = "Item " + QString::number(c);
+        testWidget->setItemText(c, label);
+        QCOMPARE( testWidget->itemText(c), label );
     }
 
     testWidget->setCurrentIndex( 0 );

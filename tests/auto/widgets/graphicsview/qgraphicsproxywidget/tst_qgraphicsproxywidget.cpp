@@ -1230,17 +1230,17 @@ void tst_QGraphicsProxyWidget::mousePressReleaseEvent()
     view.resize(100, 100);
     if (hasWidget) {
         proxy->setWidget(widget);
-	proxy->show();
+        proxy->show();
     }
     proxy->setPos(50, 0);
     scene.addItem(proxy);
     proxy->setFocus();
 
     QTest::mousePress(view.viewport(), Qt::LeftButton, 0,
-		      view.mapFromScene(proxy->mapToScene(proxy->boundingRect().center())));
+                      view.mapFromScene(proxy->mapToScene(proxy->boundingRect().center())));
     QTRY_COMPARE(spy.count(), 0);
     QTest::mouseRelease(view.viewport(), Qt::LeftButton, 0,
-		      view.mapFromScene(proxy->mapToScene(proxy->boundingRect().center())));
+                        view.mapFromScene(proxy->mapToScene(proxy->boundingRect().center())));
     QTRY_COMPARE(spy.count(), (hasWidget) ? 1 : 0);
 
     if (!hasWidget)
@@ -1439,16 +1439,16 @@ class View : public QGraphicsView
 {
 public:
     View(QGraphicsScene *scene, QWidget *parent = 0)
-	: QGraphicsView(scene, parent), npaints(0)
+        : QGraphicsView(scene, parent), npaints(0)
     { }
     QRegion paintEventRegion;
     int npaints;
 protected:
     void paintEvent(QPaintEvent *event)
     {
-	++npaints;
-	paintEventRegion += event->region();
-	QGraphicsView::paintEvent(event);
+        ++npaints;
+        paintEventRegion += event->region();
+        QGraphicsView::paintEvent(event);
     }
 };
 
@@ -1458,7 +1458,7 @@ class ScrollWidget : public QWidget
 public:
     ScrollWidget() : npaints(0)
     {
-	resize(200, 200);
+        resize(200, 200);
     }
     QRegion paintEventRegion;
     int npaints;
@@ -1466,17 +1466,17 @@ public:
 public slots:
     void updateScroll()
     {
-	update(0, 0, 200, 10);
-	scroll(0, 10, QRect(0, 0, 100, 20));
+        update(0, 0, 200, 10);
+        scroll(0, 10, QRect(0, 0, 100, 20));
     }
 
 protected:
     void paintEvent(QPaintEvent *event)
     {
-	++npaints;
-	paintEventRegion += event->region();
-	QPainter painter(this);
-	painter.fillRect(event->rect(), Qt::blue);
+        ++npaints;
+        paintEventRegion += event->region();
+        QPainter painter(this);
+        painter.fillRect(event->rect(), Qt::blue);
     }
 };
 
@@ -1502,7 +1502,7 @@ void tst_QGraphicsProxyWidget::scrollUpdate()
     // QRect(0, 12, 102, 10) is the scroll update, expanded (-2, -2, 2, 2),
     // intersected with the above update.
     QCOMPARE(view.paintEventRegion.rects(),
-	     QVector<QRect>() << QRect(0, 0, 200, 12) << QRect(0, 12, 102, 10));
+             QVector<QRect>() << QRect(0, 0, 200, 12) << QRect(0, 12, 102, 10));
     QCOMPARE(widget->npaints, 2);
     QCOMPARE(widget->paintEventRegion.rects(),
              QVector<QRect>() << QRect(0, 0, 200, 12) << QRect(0, 12, 102, 10));
@@ -2458,7 +2458,7 @@ void tst_QGraphicsProxyWidget::popup_basic()
     QComboBox *box = new QComboBox;
     box->setGeometry(0, 0, 320, 40);
     box->addItems(QStringList() << "monday" << "tuesday" << "wednesday"
-		  << "thursday" << "saturday" << "sunday");
+                  << "thursday" << "saturday" << "sunday");
     QCOMPARE(proxy->childItems().count(), 0);
     proxy->setWidget(box);
     proxy->show();
@@ -2472,7 +2472,7 @@ void tst_QGraphicsProxyWidget::popup_basic()
     QApplication::processEvents();
 
     QTest::mousePress(view.viewport(), Qt::LeftButton, 0,
-		      view.mapFromScene(proxy->mapToScene(proxy->boundingRect().center())));
+                      view.mapFromScene(proxy->mapToScene(proxy->boundingRect().center())));
 
     QTRY_COMPARE(box->pos(), QPoint());
 
@@ -2511,7 +2511,7 @@ void tst_QGraphicsProxyWidget::popup_subwidget()
 
     QComboBox *box = new QComboBox;
     box->addItems(QStringList() << "monday" << "tuesday" << "wednesday"
-		  << "thursday" << "saturday" << "sunday");
+                  << "thursday" << "saturday" << "sunday");
 
     QVBoxLayout *layout = new QVBoxLayout;
     layout->addWidget(new QLineEdit("QLineEdit"));

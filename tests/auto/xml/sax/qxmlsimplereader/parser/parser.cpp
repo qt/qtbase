@@ -47,70 +47,70 @@
 
 class ContentHandler : public QXmlDefaultHandler
 {
-    public:
-	ContentHandler();
+public:
+    ContentHandler();
 
-	// QXmlContentHandler methods
-	bool startDocument();
-	bool endDocument();
-	bool startElement(const QString &namespaceURI,
-			    const QString &localName,
-			    const QString &qName,
-			    const QXmlAttributes & atts);
-	bool endElement(const QString &namespaceURI,
-			    const QString &localName,
-			    const QString &qName);
-	bool characters(const QString &ch);
-	void setDocumentLocator(QXmlLocator *locator);
-	bool startPrefixMapping (const QString &prefix, const QString & uri);
-	bool endPrefixMapping(const QString &prefix);
-	bool ignorableWhitespace (const QString & ch);
-	bool processingInstruction(const QString &target, const QString &data);
-	bool skippedEntity (const QString & name);
+    // QXmlContentHandler methods
+    bool startDocument();
+    bool endDocument();
+    bool startElement(const QString &namespaceURI,
+                      const QString &localName,
+                      const QString &qName,
+                      const QXmlAttributes &atts);
+    bool endElement(const QString &namespaceURI,
+                    const QString &localName,
+                    const QString &qName);
+    bool characters(const QString &ch);
+    void setDocumentLocator(QXmlLocator *locator);
+    bool startPrefixMapping(const QString &prefix, const QString &uri);
+    bool endPrefixMapping(const QString &prefix);
+    bool ignorableWhitespace(const QString &ch);
+    bool processingInstruction(const QString &target, const QString &data);
+    bool skippedEntity(const QString &name);
 
-	// QXmlErrorHandler methods
-	bool warning (const QXmlParseException & exception);
-	bool error (const QXmlParseException & exception);
-	bool fatalError (const QXmlParseException & exception);
+    // QXmlErrorHandler methods
+    bool warning(const QXmlParseException &exception);
+    bool error(const QXmlParseException &exception);
+    bool fatalError(const QXmlParseException &exception);
 
-	// QXmlDTDHandler methods
-	bool notationDecl ( const QString & name, const QString & publicId,
-				const QString & systemId );
-	bool unparsedEntityDecl ( const QString & name,
-				    const QString & publicId,
-				    const QString & systemId,
-				    const QString & notationName );
+    // QXmlDTDHandler methods
+    bool notationDecl(const QString &name, const QString &publicId,
+                      const QString &systemId);
+    bool unparsedEntityDecl(const QString &name,
+                            const QString &publicId,
+                            const QString &systemId,
+                            const QString &notationName);
 
-	// QXmlEntityResolver methods
-	bool resolveEntity ( const QString & publicId,
-				const QString & systemId,
-				QXmlInputSource *&);
+    // QXmlEntityResolver methods
+    bool resolveEntity(const QString &publicId,
+                       const QString &systemId,
+                       QXmlInputSource *&);
 
-	// QXmlLexicalHandler methods
-	bool startDTD ( const QString & name, const QString & publicId, const QString & systemId );
-	bool endDTD ();
-	bool startEntity ( const QString & name );
-	bool endEntity ( const QString & name );
-	bool startCDATA ();
-	bool endCDATA ();
-	bool comment ( const QString & ch );
+    // QXmlLexicalHandler methods
+    bool startDTD (const QString &name, const QString &publicId, const QString &systemId);
+    bool endDTD();
+    bool startEntity(const QString &name);
+    bool endEntity(const QString &name);
+    bool startCDATA();
+    bool endCDATA();
+    bool comment(const QString &ch);
 
-	// QXmlDeclHandler methods
-	bool attributeDecl ( const QString & eName, const QString & aName, const QString & type, const QString & valueDefault, const QString & value );
-	bool internalEntityDecl ( const QString & name, const QString & value );
-	bool externalEntityDecl ( const QString & name, const QString & publicId, const QString & systemId );
+    // QXmlDeclHandler methods
+    bool attributeDecl(const QString &eName, const QString &aName, const QString &type, const QString &valueDefault, const QString &value);
+    bool internalEntityDecl(const QString &name, const QString &value);
+    bool externalEntityDecl(const QString &name, const QString &publicId, const QString &systemId);
 
 
-	const QString &result() const { return m_result; }
-        const QString &errorMsg() const { return m_error_msg; }
+    const QString &result() const { return m_result; }
+    const QString &errorMsg() const { return m_error_msg; }
 
-    private:
-        QString nestPrefix() const { return QString().fill(' ', 3*m_nest); }
-	QString formatAttributes(const QXmlAttributes & atts);
-	QString escapeStr(const QString &s);
+private:
+    QString nestPrefix() const { return QString().fill(' ', 3*m_nest); }
+    QString formatAttributes(const QXmlAttributes & atts);
+    QString escapeStr(const QString &s);
 
-	unsigned m_nest;
-	QString m_result, m_error_msg;
+    unsigned m_nest;
+    QString m_result, m_error_msg;
 };
 
 ContentHandler::ContentHandler()
@@ -136,15 +136,15 @@ bool ContentHandler::endDocument()
 }
 
 bool ContentHandler::startElement(const QString &namespaceURI,
-				    const QString &localName,
-				    const QString &qName,
-				    const QXmlAttributes & atts)
+                                  const QString &localName,
+                                  const QString &qName,
+                                  const QXmlAttributes &atts)
 {
     m_result += nestPrefix();
     m_result += "startElement(namespaceURI=\"" + escapeStr(namespaceURI)
-		+ "\", localName=\"" + escapeStr(localName)
-		+ "\", qName=\"" + escapeStr(qName)
-		+ "\", atts=[" + formatAttributes(atts) + "])\n";
+                + "\", localName=\"" + escapeStr(localName)
+                + "\", qName=\"" + escapeStr(qName)
+                + "\", atts=[" + formatAttributes(atts) + "])\n";
     ++m_nest;
     return true;
 }
@@ -164,25 +164,25 @@ QString ContentHandler::formatAttributes(const QXmlAttributes &atts)
 {
     QString result;
     for (int i = 0, cnt = atts.count(); i < cnt; ++i) {
-	if (i != 0) result += ", ";
-	result += "{localName=\"" + escapeStr(atts.localName(i))
-		    + "\", qName=\"" + escapeStr(atts.qName(i))
-		    + "\", uri=\"" + escapeStr(atts.uri(i))
-		    + "\", type=\"" + escapeStr(atts.type(i))
-		    + "\", value=\"" + escapeStr(atts.value(i)) + "\"}";
+        if (i != 0) result += ", ";
+        result += "{localName=\"" + escapeStr(atts.localName(i))
+                    + "\", qName=\"" + escapeStr(atts.qName(i))
+                    + "\", uri=\"" + escapeStr(atts.uri(i))
+                    + "\", type=\"" + escapeStr(atts.type(i))
+                    + "\", value=\"" + escapeStr(atts.value(i)) + "\"}";
     }
     return result;
 }
 
 bool ContentHandler::endElement(const QString &namespaceURI,
-				const QString &localName,
-				const QString &qName)
+                                const QString &localName,
+                                const QString &qName)
 {
     --m_nest;
     m_result += nestPrefix();
     m_result += "endElement(namespaceURI=\"" + escapeStr(namespaceURI)
-		+ "\", localName=\"" + escapeStr(localName)
-		+ "\", qName=\"" + escapeStr(qName) + "\")\n";
+                + "\", localName=\"" + escapeStr(localName)
+                + "\", qName=\"" + escapeStr(qName) + "\")\n";
     return true;
 }
 
@@ -197,16 +197,16 @@ void ContentHandler::setDocumentLocator(QXmlLocator *locator)
 {
     m_result += nestPrefix();
     m_result += "setDocumentLocator(locator={columnNumber="
-		+ QString::number(locator->columnNumber())
-		+ ", lineNumber=" + QString::number(locator->lineNumber())
-		+ "})\n";
+                + QString::number(locator->columnNumber())
+                + ", lineNumber=" + QString::number(locator->lineNumber())
+                + "})\n";
 }
 
 bool ContentHandler::startPrefixMapping (const QString &prefix, const QString & uri)
 {
     m_result += nestPrefix();
     m_result += "startPrefixMapping(prefix=\"" + escapeStr(prefix)
-		    + "\", uri=\"" + escapeStr(uri) + "\")\n";
+                    + "\", uri=\"" + escapeStr(uri) + "\")\n";
     ++m_nest;
     return true;
 }
@@ -230,7 +230,7 @@ bool ContentHandler::processingInstruction(const QString &target, const QString 
 {
     m_result += nestPrefix();
     m_result += "processingInstruction(target=\"" + escapeStr(target)
-		+ "\", data=\"" + escapeStr(data) + "\")\n";
+                + "\", data=\"" + escapeStr(data) + "\")\n";
     return true;
 }
 
@@ -249,13 +249,13 @@ bool ContentHandler::warning(const QXmlParseException & exception)
                     .arg(exception.message());
     m_result += nestPrefix();
     m_result += "warning(exception={columnNumber="
-		    + QString::number(exception.columnNumber())
-		    + ", lineNumber="
-		    + QString::number(exception.lineNumber())
-		    + ", publicId=\"" + escapeStr(exception.publicId())
-		    + "\", systemId=\"" + escapeStr(exception.systemId())
-		    + "\", message=\"" + escapeStr(exception.message())
-		    + "\"})\n";
+                    + QString::number(exception.columnNumber())
+                    + ", lineNumber="
+                    + QString::number(exception.lineNumber())
+                    + ", publicId=\"" + escapeStr(exception.publicId())
+                    + "\", systemId=\"" + escapeStr(exception.systemId())
+                    + "\", message=\"" + escapeStr(exception.message())
+                    + "\"})\n";
     return true;
 }
 
@@ -267,13 +267,13 @@ bool ContentHandler::error(const QXmlParseException & exception)
                     .arg(exception.message());
     m_result += nestPrefix();
     m_result += "error(exception={columnNumber="
-		    + QString::number(exception.columnNumber())
-		    + ", lineNumber="
-		    + QString::number(exception.lineNumber())
-		    + ", publicId=\"" + escapeStr(exception.publicId())
-		    + "\", systemId=\"" + escapeStr(exception.systemId())
-		    + "\", message=\"" + escapeStr(exception.message())
-		    + "\"})\n";
+                    + QString::number(exception.columnNumber())
+                    + ", lineNumber="
+                    + QString::number(exception.lineNumber())
+                    + ", publicId=\"" + escapeStr(exception.publicId())
+                    + "\", systemId=\"" + escapeStr(exception.systemId())
+                    + "\", message=\"" + escapeStr(exception.message())
+                    + "\"})\n";
     return true;
 }
 
@@ -285,49 +285,49 @@ bool ContentHandler::fatalError(const QXmlParseException & exception)
                     .arg(exception.message());
     m_result += nestPrefix();
     m_result += "fatalError(exception={columnNumber="
-		    + QString::number(exception.columnNumber())
-		    + ", lineNumber="
-		    + QString::number(exception.lineNumber())
-		    + ", publicId=\"" + escapeStr(exception.publicId())
-		    + "\", systemId=\"" + escapeStr(exception.systemId())
-		    + "\", message=\"" + escapeStr(exception.message())
-		    + "\"})\n";
+                    + QString::number(exception.columnNumber())
+                    + ", lineNumber="
+                    + QString::number(exception.lineNumber())
+                    + ", publicId=\"" + escapeStr(exception.publicId())
+                    + "\", systemId=\"" + escapeStr(exception.systemId())
+                    + "\", message=\"" + escapeStr(exception.message())
+                    + "\"})\n";
     return true;
 }
 
-bool ContentHandler::notationDecl ( const QString & name,
-				    const QString & publicId,
-				    const QString & systemId )
+bool ContentHandler::notationDecl(const QString &name,
+                                  const QString &publicId,
+                                  const QString &systemId )
 {
     m_result += nestPrefix();
     m_result += "notationDecl(name=\"" + escapeStr(name) + "\", publicId=\""
-		    + escapeStr(publicId) + "\", systemId=\""
-		    + escapeStr(systemId) + "\")\n";
+                    + escapeStr(publicId) + "\", systemId=\""
+                    + escapeStr(systemId) + "\")\n";
     return true;
 }
 
-bool ContentHandler::unparsedEntityDecl ( const QString & name,
-					    const QString & publicId,
-					    const QString & systemId,
-					    const QString & notationName )
+bool ContentHandler::unparsedEntityDecl(const QString &name,
+                                        const QString &publicId,
+                                        const QString &systemId,
+                                        const QString &notationName )
 {
     m_result += nestPrefix();
     m_result += "unparsedEntityDecl(name=\"" + escapeStr(name)
-		    + "\", publicId=\"" + escapeStr(publicId)
-		    + "\", systemId=\"" + escapeStr(systemId)
-		    + "\", notationName=\"" + escapeStr(notationName)
-		    + "\")\n";
+                    + "\", publicId=\"" + escapeStr(publicId)
+                    + "\", systemId=\"" + escapeStr(systemId)
+                    + "\", notationName=\"" + escapeStr(notationName)
+                    + "\")\n";
     return true;
 }
 
-bool ContentHandler::resolveEntity(const QString & publicId,
-				    const QString & systemId,
-				    QXmlInputSource *&)
+bool ContentHandler::resolveEntity(const QString &publicId,
+                                   const QString &systemId,
+                                   QXmlInputSource *&)
 {
     m_result += nestPrefix();
     m_result += "resolveEntity(publicId=\"" + escapeStr(publicId)
-		    + "\", systemId=\"" + escapeStr(systemId)
-		    + "\", ret={})\n";
+                    + "\", systemId=\"" + escapeStr(systemId)
+                    + "\", ret={})\n";
     return true;
 }
 
@@ -335,8 +335,8 @@ bool ContentHandler::startDTD ( const QString & name, const QString & publicId, 
 {
     m_result += nestPrefix();
     m_result += "startDTD(name=\"" + escapeStr(name)
-		    + "\", publicId=\"" + escapeStr(publicId)
-		    + "\", systemId=\"" + escapeStr(systemId) + "\")\n";
+                    + "\", publicId=\"" + escapeStr(publicId)
+                    + "\", systemId=\"" + escapeStr(systemId) + "\")\n";
     ++m_nest;
     return true;
 }
@@ -388,37 +388,37 @@ bool ContentHandler::comment ( const QString & ch )
     return true;
 }
 
-bool ContentHandler::attributeDecl ( const QString & eName,
-					const QString & aName,
-					const QString & type,
-					const QString & valueDefault,
-					const QString & value )
+bool ContentHandler::attributeDecl(const QString &eName,
+                                   const QString &aName,
+                                   const QString &type,
+                                   const QString &valueDefault,
+                                   const QString &value)
 {
     m_result += nestPrefix();
     m_result += "attributeDecl(eName=\"" + escapeStr(eName) + "\", aName=\""
-		+ escapeStr(aName) + "\", type=\"" + escapeStr(type)
-		+ "\", valueDefault=\"" + escapeStr(valueDefault)
-		+ "\", value=\"" + escapeStr(value) + "\")\n";
+                + escapeStr(aName) + "\", type=\"" + escapeStr(type)
+                + "\", valueDefault=\"" + escapeStr(valueDefault)
+                + "\", value=\"" + escapeStr(value) + "\")\n";
     return true;
 }
 
-bool ContentHandler::internalEntityDecl ( const QString & name,
-					    const QString & value )
+bool ContentHandler::internalEntityDecl(const QString &name,
+                                        const QString &value)
 {
     m_result += nestPrefix();
     m_result += "internatlEntityDecl(name=\"" + escapeStr(name)
-		    + "\", value=\"" + escapeStr(value) + "\")\n";
+                    + "\", value=\"" + escapeStr(value) + "\")\n";
     return true;
 }
 
-bool ContentHandler::externalEntityDecl ( const QString & name,
-					    const QString & publicId,
-					    const QString & systemId )
+bool ContentHandler::externalEntityDecl(const QString &name,
+                                        const QString &publicId,
+                                        const QString &systemId)
 {
     m_result += nestPrefix();
     m_result += "externalEntityDecl(name=\"" + escapeStr(name)
-		    + "\", publicId=\"" + escapeStr(publicId)
-		    + "\", systemId=\"" + escapeStr(systemId) + "\")\n";
+                    + "\", publicId=\"" + escapeStr(publicId)
+                    + "\", systemId=\"" + escapeStr(systemId) + "\")\n";
     return true;
 }
 

@@ -668,7 +668,7 @@ void tst_QSqlDatabase::testRecord(const FieldDef fieldDefs[], const QSqlRecord& 
         }
         QVERIFY(!inf.field(i+1).isAutoValue());
 
-//	qDebug(QString(" field: %1 type: %2 variant type: %3").arg(fieldDefs[ i ].fieldName()).arg(QVariant::typeToName(inf.field(i+1)->type())).arg(QVariant::typeToName(inf.field(i+1)->value().type())));
+//      qDebug(QString(" field: %1 type: %2 variant type: %3").arg(fieldDefs[ i ].fieldName()).arg(QVariant::typeToName(inf.field(i+1)->type())).arg(QVariant::typeToName(inf.field(i+1)->value().type())));
     }
 }
 
@@ -692,28 +692,28 @@ void tst_QSqlDatabase::recordTDS()
     CHECK_DATABASE(db);
 
     static const FieldDef fieldDefs[] = {
-    FieldDef("tinyint", QVariant::Int,		255),
-    FieldDef("smallint", QVariant::Int,		32767),
-    FieldDef("int", QVariant::Int,			2147483647),
-    FieldDef("numeric(10,9)", QVariant::Double,	1.23456789),
-    FieldDef("decimal(10,9)", QVariant::Double,	1.23456789),
-    FieldDef("float(4)", QVariant::Double,		1.23456789),
-    FieldDef("double precision", QVariant::Double,	1.23456789),
-    FieldDef("real", QVariant::Double,		1.23456789),
-    FieldDef("smallmoney", QVariant::Double,	100.42),
-    FieldDef("money", QVariant::Double,		200.42),
-    // accuracy is that of a minute
-    FieldDef("smalldatetime", QVariant::DateTime,	QDateTime(QDate::currentDate(), QTime(1, 2, 0, 0))),
-    // accuracy is that of a second
-    FieldDef("datetime", QVariant::DateTime,	QDateTime(QDate::currentDate(), QTime(1, 2, 3, 0))),
-    FieldDef("char(20)", QVariant::String,		"blah1"),
-    FieldDef("varchar(20)", QVariant::String,	"blah2"),
-    FieldDef("nchar(20)", QVariant::String,	"blah3"),
-    FieldDef("nvarchar(20)", QVariant::String,	"blah4"),
-    FieldDef("text", QVariant::String,		"blah5"),
-    FieldDef("bit", QVariant::Int,			1, false),
+        FieldDef("tinyint", QVariant::Int,              255),
+        FieldDef("smallint", QVariant::Int,             32767),
+        FieldDef("int", QVariant::Int,                  2147483647),
+        FieldDef("numeric(10,9)", QVariant::Double,     1.23456789),
+        FieldDef("decimal(10,9)", QVariant::Double,     1.23456789),
+        FieldDef("float(4)", QVariant::Double,          1.23456789),
+        FieldDef("double precision", QVariant::Double,  1.23456789),
+        FieldDef("real", QVariant::Double,              1.23456789),
+        FieldDef("smallmoney", QVariant::Double,        100.42),
+        FieldDef("money", QVariant::Double,             200.42),
+        // accuracy is that of a minute
+        FieldDef("smalldatetime", QVariant::DateTime,   QDateTime(QDate::currentDate(), QTime(1, 2, 0, 0))),
+        // accuracy is that of a second
+        FieldDef("datetime", QVariant::DateTime,        QDateTime(QDate::currentDate(), QTime(1, 2, 3, 0))),
+        FieldDef("char(20)", QVariant::String,          "blah1"),
+        FieldDef("varchar(20)", QVariant::String,       "blah2"),
+        FieldDef("nchar(20)", QVariant::String,         "blah3"),
+        FieldDef("nvarchar(20)", QVariant::String,      "blah4"),
+        FieldDef("text", QVariant::String,              "blah5"),
+        FieldDef("bit", QVariant::Int,                  1, false),
 
-    FieldDef()
+        FieldDef()
     };
 
     const int fieldCount = createFieldTable(fieldDefs, db);
@@ -800,40 +800,40 @@ void tst_QSqlDatabase::recordPSQL()
     if (db.driver()->hasFeature(QSqlDriver::BLOB))
         byteadef = FieldDef("bytea", QVariant::ByteArray, QByteArray("bl\\ah"));
     static FieldDef fieldDefs[] = {
-    FieldDef("bigint", QVariant::LongLong,	Q_INT64_C(9223372036854775807)),
-    FieldDef("bigserial", QVariant::LongLong, 100, false),
-    FieldDef("bit", QVariant::String,	"1"), // a bit in postgres is a bit-string
-    FieldDef("box", QVariant::String,	"(5,6),(1,2)"),
-    FieldDef("char(20)", QVariant::String, "blah5678901234567890"),
-    FieldDef("varchar(20)", QVariant::String, "blah5678901234567890"),
-    FieldDef("cidr", QVariant::String,	"12.123.0.0/24"),
-    FieldDef("circle", QVariant::String,	"<(1,2),3>"),
-    FieldDef("date", QVariant::Date,	QDate::currentDate()),
-    FieldDef("float8", QVariant::Double,	1.12345678912),
-    FieldDef("inet", QVariant::String,	"12.123.12.23"),
-    FieldDef("integer", QVariant::Int,	2147483647),
-    FieldDef("interval", QVariant::String, "1 day 12:59:10"),
-//	LOL... you can create a "line" datatype in PostgreSQL <= 7.2.x but
-//	as soon as you want to insert data you get a "not implemented yet" error
-//	FieldDef("line", QVariant::Polygon, QPolygon(QRect(1, 2, 3, 4))),
-    FieldDef("lseg", QVariant::String,     "[(1,1),(2,2)]"),
-    FieldDef("macaddr", QVariant::String, "08:00:2b:01:02:03"),
-    FieldDef("money", QVariant::String,	"$12.23"),
-    FieldDef("numeric", QVariant::Double,  1.2345678912),
-    FieldDef("path", QVariant::String,	"((1,2),(3,2),(3,5),(1,5))"),
-    FieldDef("point", QVariant::String,	"(1,2)"),
-    FieldDef("polygon", QVariant::String,	"((1,2),(3,2),(3,5),(1,5))"),
-    FieldDef("real", QVariant::Double,	1.1234),
-    FieldDef("smallint", QVariant::Int,	32767),
-    FieldDef("serial", QVariant::Int,	100, false),
-    FieldDef("text", QVariant::String,	"blah"),
-    FieldDef("time(6)", QVariant::Time,	QTime(1, 2, 3)),
-    FieldDef("timetz", QVariant::Time,	QTime(1, 2, 3)),
-    FieldDef("timestamp(6)", QVariant::DateTime, QDateTime::currentDateTime()),
-    FieldDef("timestamptz", QVariant::DateTime, QDateTime::currentDateTime()),
-    byteadef,
+        FieldDef("bigint", QVariant::LongLong,       Q_INT64_C(9223372036854775807)),
+        FieldDef("bigserial", QVariant::LongLong,    100, false),
+        FieldDef("bit", QVariant::String,            "1"), // a bit in postgres is a bit-string
+        FieldDef("box", QVariant::String,            "(5,6),(1,2)"),
+        FieldDef("char(20)", QVariant::String,       "blah5678901234567890"),
+        FieldDef("varchar(20)", QVariant::String,    "blah5678901234567890"),
+        FieldDef("cidr", QVariant::String,           "12.123.0.0/24"),
+        FieldDef("circle", QVariant::String,         "<(1,2),3>"),
+        FieldDef("date", QVariant::Date,             QDate::currentDate()),
+        FieldDef("float8", QVariant::Double,         1.12345678912),
+        FieldDef("inet", QVariant::String,           "12.123.12.23"),
+        FieldDef("integer", QVariant::Int,           2147483647),
+        FieldDef("interval", QVariant::String,       "1 day 12:59:10"),
+//      LOL... you can create a "line" datatype in PostgreSQL <= 7.2.x but
+//      as soon as you want to insert data you get a "not implemented yet" error
+//      FieldDef("line", QVariant::Polygon, QPolygon(QRect(1, 2, 3, 4))),
+        FieldDef("lseg", QVariant::String,           "[(1,1),(2,2)]"),
+        FieldDef("macaddr", QVariant::String,        "08:00:2b:01:02:03"),
+        FieldDef("money", QVariant::String,          "$12.23"),
+        FieldDef("numeric", QVariant::Double,        1.2345678912),
+        FieldDef("path", QVariant::String,           "((1,2),(3,2),(3,5),(1,5))"),
+        FieldDef("point", QVariant::String,          "(1,2)"),
+        FieldDef("polygon", QVariant::String,        "((1,2),(3,2),(3,5),(1,5))"),
+        FieldDef("real", QVariant::Double,           1.1234),
+        FieldDef("smallint", QVariant::Int,          32767),
+        FieldDef("serial", QVariant::Int,            100, false),
+        FieldDef("text", QVariant::String,           "blah"),
+        FieldDef("time(6)", QVariant::Time,          QTime(1, 2, 3)),
+        FieldDef("timetz", QVariant::Time,           QTime(1, 2, 3)),
+        FieldDef("timestamp(6)", QVariant::DateTime, QDateTime::currentDateTime()),
+        FieldDef("timestamptz", QVariant::DateTime,  QDateTime::currentDateTime()),
+        byteadef,
 
-    FieldDef()
+        FieldDef()
     };
 
     QSqlQuery q(db);
@@ -853,16 +853,16 @@ void tst_QSqlDatabase::recordPSQL()
 
     commonFieldTest(fieldDefs, db, fieldCount);
     for (int i = 0; i < ITERATION_COUNT; ++i) {
-    // increase serial values
-    for (int i2 = 0; !fieldDefs[ i2 ].typeName.isNull(); ++i2) {
-        if (fieldDefs[ i2 ].typeName == "serial" ||
-         fieldDefs[ i2 ].typeName == "bigserial") {
+        // increase serial values
+        for (int i2 = 0; !fieldDefs[ i2 ].typeName.isNull(); ++i2) {
+            if (fieldDefs[ i2 ].typeName == "serial" ||
+                fieldDefs[ i2 ].typeName == "bigserial") {
 
-        FieldDef def = fieldDefs[ i2 ];
-        def.val = def.val.toInt() + 1;
-        fieldDefs[ i2 ] = def;
+                FieldDef def = fieldDefs[ i2 ];
+                def.val = def.val.toInt() + 1;
+                fieldDefs[ i2 ] = def;
+            }
         }
-    }
     }
 }
 
@@ -890,34 +890,34 @@ void tst_QSqlDatabase::recordMySQL()
 
     static QDateTime dt(QDate::currentDate(), QTime(1, 2, 3, 0));
     static const FieldDef fieldDefs[] = {
-    FieldDef("tinyint", QVariant::Int,	    127),
-    FieldDef("tinyint unsigned", QVariant::UInt, 255),
-    FieldDef("smallint", QVariant::Int,	    32767),
-    FieldDef("smallint unsigned", QVariant::UInt, 65535),
-    FieldDef("mediumint", QVariant::Int,	    8388607),
-    FieldDef("mediumint unsigned", QVariant::UInt, 16777215),
-    FieldDef("integer", QVariant::Int,	    2147483647),
-    FieldDef("integer unsigned", QVariant::UInt, 4294967295u),
-    FieldDef("bigint", QVariant::LongLong,	    Q_INT64_C(9223372036854775807)),
-    FieldDef("bigint unsigned", QVariant::ULongLong, Q_UINT64_C(18446744073709551615)),
-    FieldDef("float", QVariant::Double,	    1.12345),
-    FieldDef("double", QVariant::Double,	    1.123456789),
-    FieldDef("decimal(10, 9)", QVariant::Double,1.123456789),
-    FieldDef("numeric(5, 2)", QVariant::Double, 123.67),
-    FieldDef("date", QVariant::Date,	    QDate::currentDate()),
-    FieldDef("datetime", QVariant::DateTime,   dt),
-    FieldDef("timestamp", QVariant::DateTime,  dt, false),
-    FieldDef("time", QVariant::Time,	    dt.time()),
-    FieldDef("year", QVariant::Int,	    2003),
-    FieldDef("char(20)", QVariant::String,	    "Blah"),
-    FieldDef("varchar(20)", QVariant::String,  "BlahBlah"),
-    FieldDef("tinytext", QVariant::String,    QString("blah5")),
-    FieldDef("text", QVariant::String,	    QString("blah6")),
-    FieldDef("mediumtext", QVariant::String,  QString("blah7")),
-    FieldDef("longtext", QVariant::String,    QString("blah8")),
-    // SET OF?
+        FieldDef("tinyint", QVariant::Int,               127),
+        FieldDef("tinyint unsigned", QVariant::UInt,     255),
+        FieldDef("smallint", QVariant::Int,              32767),
+        FieldDef("smallint unsigned", QVariant::UInt,    65535),
+        FieldDef("mediumint", QVariant::Int,             8388607),
+        FieldDef("mediumint unsigned", QVariant::UInt,   16777215),
+        FieldDef("integer", QVariant::Int,               2147483647),
+        FieldDef("integer unsigned", QVariant::UInt,     4294967295u),
+        FieldDef("bigint", QVariant::LongLong,           Q_INT64_C(9223372036854775807)),
+        FieldDef("bigint unsigned", QVariant::ULongLong, Q_UINT64_C(18446744073709551615)),
+        FieldDef("float", QVariant::Double,              1.12345),
+        FieldDef("double", QVariant::Double,             1.123456789),
+        FieldDef("decimal(10, 9)", QVariant::Double,     1.123456789),
+        FieldDef("numeric(5, 2)", QVariant::Double,      123.67),
+        FieldDef("date", QVariant::Date,                 QDate::currentDate()),
+        FieldDef("datetime", QVariant::DateTime,         dt),
+        FieldDef("timestamp", QVariant::DateTime,        dt, false),
+        FieldDef("time", QVariant::Time,                 dt.time()),
+        FieldDef("year", QVariant::Int,                  2003),
+        FieldDef("char(20)", QVariant::String,           "Blah"),
+        FieldDef("varchar(20)", QVariant::String,        "BlahBlah"),
+        FieldDef("tinytext", QVariant::String,           QString("blah5")),
+        FieldDef("text", QVariant::String,               QString("blah6")),
+        FieldDef("mediumtext", QVariant::String,         QString("blah7")),
+        FieldDef("longtext", QVariant::String,           QString("blah8")),
+        // SET OF?
 
-    FieldDef()
+        FieldDef()
     };
 
     const int fieldCount = createFieldTable(fieldDefs, db);
@@ -938,27 +938,27 @@ void tst_QSqlDatabase::recordDB2()
     CHECK_DATABASE(db);
 
     static const FieldDef fieldDefs[] = {
-    FieldDef("char(20)", QVariant::String,		QString("Blah1")),
-    FieldDef("varchar(20)", QVariant::String,	QString("Blah2")),
-    FieldDef("long varchar", QVariant::String,	QString("Blah3")),
-    // using BOOLEAN results in "SQL0486N  The BOOLEAN data type is currently only supported internally."
-//X	FieldDef("boolean" , QVariant::Bool,		QVariant(true, 1)),
-    FieldDef("smallint", QVariant::Int,		32767),
-    FieldDef("integer", QVariant::Int,		2147483647),
-    FieldDef("bigint", QVariant::LongLong,		Q_INT64_C(9223372036854775807)),
-    FieldDef("real", QVariant::Double,		1.12345),
-    FieldDef("double", QVariant::Double,		1.23456789),
-    FieldDef("float", QVariant::Double,		1.23456789),
-    FieldDef("decimal(10,9)", QVariant::Double,    1.234567891),
-    FieldDef("numeric(10,9)", QVariant::Double,    1.234567891),
-    FieldDef("date", QVariant::Date,		QDate::currentDate()),
-    FieldDef("time", QVariant::Time,		QTime(1, 2, 3)),
-    FieldDef("timestamp", QVariant::DateTime,	QDateTime::currentDateTime()),
-//     FieldDef("graphic(20)", QVariant::String,	QString("Blah4")),
-//     FieldDef("vargraphic(20)", QVariant::String,	QString("Blah5")),
-//     FieldDef("long vargraphic", QVariant::String,	QString("Blah6")),
-    //X	FieldDef("datalink", QVariant::String,		QString("DLVALUE('Blah10')")),
-    FieldDef()
+        FieldDef("char(20)", QVariant::String,         QString("Blah1")),
+        FieldDef("varchar(20)", QVariant::String,      QString("Blah2")),
+        FieldDef("long varchar", QVariant::String,     QString("Blah3")),
+        // using BOOLEAN results in "SQL0486N  The BOOLEAN data type is currently only supported internally."
+//X     FieldDef("boolean" , QVariant::Bool,           QVariant(true, 1)),
+        FieldDef("smallint", QVariant::Int,            32767),
+        FieldDef("integer", QVariant::Int,             2147483647),
+        FieldDef("bigint", QVariant::LongLong,         Q_INT64_C(9223372036854775807)),
+        FieldDef("real", QVariant::Double,             1.12345),
+        FieldDef("double", QVariant::Double,           1.23456789),
+        FieldDef("float", QVariant::Double,            1.23456789),
+        FieldDef("decimal(10,9)", QVariant::Double,    1.234567891),
+        FieldDef("numeric(10,9)", QVariant::Double,    1.234567891),
+        FieldDef("date", QVariant::Date,               QDate::currentDate()),
+        FieldDef("time", QVariant::Time,               QTime(1, 2, 3)),
+        FieldDef("timestamp", QVariant::DateTime,      QDateTime::currentDateTime()),
+//         FieldDef("graphic(20)", QVariant::String,       QString("Blah4")),
+//         FieldDef("vargraphic(20)", QVariant::String,    QString("Blah5")),
+//         FieldDef("long vargraphic", QVariant::String,   QString("Blah6")),
+        //X FieldDef("datalink", QVariant::String,          QString("DLVALUE('Blah10')")),
+        FieldDef()
     };
 
     const int fieldCount = createFieldTable(fieldDefs, db);

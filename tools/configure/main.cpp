@@ -59,7 +59,7 @@ int runConfigure( int argc, char** argv )
     if (!app.isOk())
         return 3;
     if( app.displayHelp() )
-	return 1;
+        return 1;
 
     // Read license now, and exit if it doesn't pass.
     // This lets the user see the command-line options of configure
@@ -103,19 +103,19 @@ int runConfigure( int argc, char** argv )
     app.generateOutputVars();
 
     if( !app.isDone() )
-	app.generateCachefile();
+        app.generateCachefile();
     if( !app.isDone() )
-	app.generateConfigfiles();
+        app.generateConfigfiles();
     if (!app.isDone())
         app.generateQConfigPri();
     if (!app.isDone())
         app.displayConfig();
     if( !app.isDone() )
-	app.generateMakefiles();
+        app.generateMakefiles();
     if( !app.isDone() )
-	app.showSummary();
+        app.showSummary();
     if( !app.isOk() )
-	return 2;
+        return 2;
 
     return 0;
 }

@@ -75,7 +75,7 @@ private:
 //! [2]
 int CardLayout::count() const
 {
-	// QList::size() returns the number of QLayoutItems in the list
+    // QList::size() returns the number of QLayoutItems in the list
     return list.size();
 }
 //! [2]

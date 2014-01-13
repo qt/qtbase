@@ -925,7 +925,7 @@ bool QOpenGLFramebufferObject::isValid() const
 bool QOpenGLFramebufferObject::bind()
 {
     if (!isValid())
-	return false;
+        return false;
     Q_D(QOpenGLFramebufferObject);
     QOpenGLContext *current = QOpenGLContext::currentContext();
     if (!current)
@@ -956,7 +956,7 @@ bool QOpenGLFramebufferObject::bind()
 bool QOpenGLFramebufferObject::release()
 {
     if (!isValid())
-	return false;
+        return false;
 
     QOpenGLContext *current = QOpenGLContext::currentContext();
     if (!current)

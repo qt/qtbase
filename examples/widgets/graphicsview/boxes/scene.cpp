@@ -186,10 +186,10 @@ TwoSidedGraphicsWidget::TwoSidedGraphicsWidget(QGraphicsScene *scene)
 void TwoSidedGraphicsWidget::setWidget(int index, QWidget *widget)
 {
     if (index < 0 || index >= 2)
-	{
-		qWarning("TwoSidedGraphicsWidget::setWidget: Index out of bounds, index == %d", index);
-		return;
-	}
+    {
+        qWarning("TwoSidedGraphicsWidget::setWidget: Index out of bounds, index == %d", index);
+        return;
+    }
 
     GraphicsWidget *proxy = new GraphicsWidget;
     proxy->setWidget(widget);
@@ -210,10 +210,10 @@ void TwoSidedGraphicsWidget::setWidget(int index, QWidget *widget)
 QWidget *TwoSidedGraphicsWidget::widget(int index)
 {
     if (index < 0 || index >= 2)
-	{
-		qWarning("TwoSidedGraphicsWidget::widget: Index out of bounds, index == %d", index);
-		return 0;
-	}
+    {
+        qWarning("TwoSidedGraphicsWidget::widget: Index out of bounds, index == %d", index);
+        return 0;
+    }
     return m_proxyWidgets[index]->widget();
 }
 

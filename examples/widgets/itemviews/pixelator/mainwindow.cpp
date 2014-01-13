@@ -156,11 +156,11 @@ void MainWindow::printImage()
 {
 #if !defined(QT_NO_PRINTER) && !defined(QT_NO_PRINTDIALOG)
     if (model->rowCount(QModelIndex())*model->columnCount(QModelIndex()) > 90000) {
-	    QMessageBox::StandardButton answer;
-	    answer = QMessageBox::question(this, tr("Large Image Size"),
-            tr("The printed image may be very large. Are you sure that "
-               "you want to print it?"),
-            QMessageBox::Yes | QMessageBox::No);
+        QMessageBox::StandardButton answer;
+        answer = QMessageBox::question(this, tr("Large Image Size"),
+                tr("The printed image may be very large. Are you sure that "
+                   "you want to print it?"),
+        QMessageBox::Yes | QMessageBox::No);
         if (answer == QMessageBox::No)
             return;
     }

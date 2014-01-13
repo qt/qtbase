@@ -85,7 +85,7 @@
 #undef QT_SOCKLEN_T
 #define QT_SOCKLEN_T            int
 
-#define QT_SNPRINTF		::snprintf
-#define QT_VSNPRINTF		::vsnprintf
+#define QT_SNPRINTF             ::snprintf
+#define QT_VSNPRINTF            ::vsnprintf
 
 #endif // QPLATFORMDEFS_H

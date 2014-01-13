@@ -228,7 +228,7 @@ static QNetworkInterfacePrivate *findInterface(int socket, QList<QNetworkInterfa
             memcpy(req.ifr_name, oldName, qMin<int>(oldName.length() + 1, sizeof(req.ifr_name) - 1));
         } else
 #endif
-	{
+        {
             // use this name anyways
             iface->name = QString::fromLatin1(req.ifr_name);
         }

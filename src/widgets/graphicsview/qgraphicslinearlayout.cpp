@@ -63,9 +63,9 @@
     layout. The layout takes ownership of the items. In some cases when the layout
     item also inherits from QGraphicsItem (such as QGraphicsWidget) there will be a
     ambiguity in ownership because the layout item belongs to two ownership hierarchies.
-	See the documentation of QGraphicsLayoutItem::setOwnedByLayout() how to handle
-	this.
-	You can access each item in the layout by calling count() and itemAt(). Calling
+    See the documentation of QGraphicsLayoutItem::setOwnedByLayout() how to handle
+    this.
+    You can access each item in the layout by calling count() and itemAt(). Calling
     removeAt() or removeItem() will remove an item from the layout, without
     destroying it.
 

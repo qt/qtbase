@@ -282,12 +282,12 @@ void MainWindow::writeSettings()
 bool MainWindow::maybeSave()
 {
     if (textEdit->document()->isModified()) {
-	QMessageBox::StandardButton ret;
+        QMessageBox::StandardButton ret;
         ret = QMessageBox::warning(this, tr("SDI"),
                      tr("The document has been modified.\n"
                         "Do you want to save your changes?"),
                      QMessageBox::Save | QMessageBox::Discard
-		     | QMessageBox::Cancel);
+                     | QMessageBox::Cancel);
         if (ret == QMessageBox::Save)
             return save();
         else if (ret == QMessageBox::Cancel)

@@ -126,20 +126,20 @@ void tst_QSqlQueryModel::initTestCase()
 {
     dbs.open();
     for (QStringList::ConstIterator it = dbs.dbNames.begin(); it != dbs.dbNames.end(); ++it) {
-	QSqlDatabase db = QSqlDatabase::database((*it));
-	CHECK_DATABASE(db);
-	dropTestTables(db); //in case of leftovers
-	createTestTables(db);
-	populateTestTables(db);
+        QSqlDatabase db = QSqlDatabase::database((*it));
+        CHECK_DATABASE(db);
+        dropTestTables(db); //in case of leftovers
+        createTestTables(db);
+        populateTestTables(db);
     }
 }
 
 void tst_QSqlQueryModel::cleanupTestCase()
 {
     for (QStringList::ConstIterator it = dbs.dbNames.begin(); it != dbs.dbNames.end(); ++it) {
-	QSqlDatabase db = QSqlDatabase::database((*it));
-	CHECK_DATABASE(db);
-	dropTestTables(db);
+        QSqlDatabase db = QSqlDatabase::database((*it));
+        CHECK_DATABASE(db);
+        dropTestTables(db);
     }
     dbs.close();
 }

@@ -49,7 +49,7 @@
 StyleWidget::StyleWidget(QWidget *parent)
  : QFrame(parent)
 {
-	m_ui.setupUi(this);
+    m_ui.setupUi(this);
 }
 
 

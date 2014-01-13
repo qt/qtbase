@@ -154,7 +154,7 @@ static inline QStringList qCmdLineArgs(int argc, char *argv[])
 static inline QStringList qCmdLineArgs(int argc, char *argv[])
 {
     QStringList args;
-	for (int i = 0; i != argc; ++i)
+    for (int i = 0; i != argc; ++i)
         args += QString::fromLocal8Bit(argv[i]);
     return args;
 }

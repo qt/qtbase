@@ -310,10 +310,10 @@ void tst_QFileDialog2::unc()
 void tst_QFileDialog2::emptyUncPath()
 {
     QNonNativeFileDialog fd;
-	fd.show();
+    fd.show();
     QLineEdit *lineEdit = fd.findChild<QLineEdit*>("fileNameEdit");
     QVERIFY(lineEdit);
-	 // press 'keys' for the input
+    // press 'keys' for the input
     for (int i = 0; i < 3 ; ++i)
         QTest::keyPress(lineEdit, Qt::Key_Backslash);
     QFileSystemModel *model = fd.findChild<QFileSystemModel*>("qt_filesystem_model");

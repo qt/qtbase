@@ -144,7 +144,7 @@ public:
     static bool tryModalHelper(QWidget *widget, QWidget **rettop = 0);
 #ifdef Q_WS_MAC
     static QWidget *tryModalHelper_sys(QWidget *top);
-	bool canQuit();
+    bool canQuit();
 #endif
 
     bool notify_helper(QObject *receiver, QEvent * e);

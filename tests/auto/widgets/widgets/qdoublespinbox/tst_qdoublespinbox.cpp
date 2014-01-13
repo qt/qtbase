@@ -640,7 +640,7 @@ void tst_QDoubleSpinBox::setDecimals()
         QTest::keyClick(&spin, Qt::Key_1);
         QTest::keyClick(&spin, Qt::Key_1);
         QTest::keyClick(&spin, Qt::Key_1);
-	if (sizeof(qreal) == sizeof(float))
+        if (sizeof(qreal) == sizeof(float))
             QCOMPARE(spin.text().left(17), expected.left(17));
         else
             QCOMPARE(spin.text(), expected);

@@ -216,10 +216,10 @@ private slots:
     void persistentEditorFocus();
     void setItemDelegate();
     void setItemDelegate_data();
-	// The dragAndDrop() test doesn't work, and is thus disabled on Mac and Windows
-	// for the following reasons:
-	//   Mac: use of GetCurrentEventButtonState() in QDragManager::drag()
-	//   Win: unknown reason
+    // The dragAndDrop() test doesn't work, and is thus disabled on Mac and Windows
+    // for the following reasons:
+    //   Mac: use of GetCurrentEventButtonState() in QDragManager::drag()
+    //   Win: unknown reason
 #if !defined(Q_OS_MAC) && !defined(Q_OS_WIN)
 #if 0
     void dragAndDrop();

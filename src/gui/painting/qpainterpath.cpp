@@ -1738,8 +1738,8 @@ QList<QPolygonF> QPainterPath::toFillPolygons(const QMatrix &matrix) const
 
 //same as qt_polygon_isect_line in qpolygon.cpp
 static void qt_painterpath_isect_line(const QPointF &p1,
-				      const QPointF &p2,
-				      const QPointF &pos,
+                                      const QPointF &p2,
+                                      const QPointF &pos,
                                       int *winding)
 {
     qreal x1 = p1.x();

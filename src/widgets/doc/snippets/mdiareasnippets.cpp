@@ -66,7 +66,7 @@ void addingSubWindowsExample()
     mdiArea.addSubWindow(subWindow1);
 
     QMdiSubWindow *subWindow2 =
-	mdiArea.addSubWindow(internalWidget2);
+        mdiArea.addSubWindow(internalWidget2);
 
 //! [1]
     subWindow1->show();

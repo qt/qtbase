@@ -84,8 +84,8 @@
 // NetBSD 1.0 - 1.3.3           int
 // NetBSD 1.4 - 1.5             socklen_t
 
-#define QT_SNPRINTF		::snprintf
-#define QT_VSNPRINTF		::vsnprintf
+#define QT_SNPRINTF             ::snprintf
+#define QT_VSNPRINTF            ::vsnprintf
 
 // Older NetBSD versions may still use the a.out format instead of ELF.
 #ifndef __ELF__

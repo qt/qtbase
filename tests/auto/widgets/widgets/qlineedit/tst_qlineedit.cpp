@@ -1468,7 +1468,7 @@ void tst_QLineEdit::undo_keypressevents()
 void tst_QLineEdit::QTBUG5786_undoPaste()
 {
     if (!PlatformClipboard::isAvailable())
-	   QSKIP("this machine doesn't support the clipboard");
+        QSKIP("this machine doesn't support the clipboard");
     QString initial("initial");
     QString string("test");
     QString additional("add");

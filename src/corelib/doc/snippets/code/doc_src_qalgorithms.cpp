@@ -274,9 +274,9 @@ list.insert(i, 12);
 QVector<int> vect;
 vect << 3 << 3 << 6 << 6 << 6 << 8;
 QVector<int>::iterator begin6 =
-	qLowerBound(vect.begin(), vect.end(), 6);
+        qLowerBound(vect.begin(), vect.end(), 6);
 QVector<int>::iterator end6 =
-	qUpperBound(begin6, vect.end(), 6);
+        qUpperBound(begin6, vect.end(), 6);
 
 QVector<int>::iterator i = begin6;
 while (i != end6) {
@@ -305,9 +305,9 @@ list.insert(i, 12);
 QVector<int> vect;
 vect << 3 << 3 << 6 << 6 << 6 << 8;
 QVector<int>::iterator begin6 =
-	qLowerBound(vect.begin(), vect.end(), 6);
+        qLowerBound(vect.begin(), vect.end(), 6);
 QVector<int>::iterator end6 =
-	qUpperBound(vect.begin(), vect.end(), 6);
+        qUpperBound(vect.begin(), vect.end(), 6);
 
 QVector<int>::iterator i = begin6;
 while (i != end6) {
@@ -323,7 +323,7 @@ QVector<int> vect;
 vect << 3 << 3 << 6 << 6 << 6 << 8;
 
 QVector<int>::iterator i =
-	qBinaryFind(vect.begin(), vect.end(), 6);
+        qBinaryFind(vect.begin(), vect.end(), 6);
 // i == vect.begin() + 2 (or 3 or 4)
 //! [22]
 

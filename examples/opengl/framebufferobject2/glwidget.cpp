@@ -112,20 +112,20 @@ void GLWidget::initializeGL()
     {
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
-	// draw cube background
+        // draw cube background
         glPushMatrix();
         glLoadIdentity();
         glTranslatef(0.5f, 0.5f, -2.0f);
-	glDisable(GL_TEXTURE_2D);
-	glEnableClientState(GL_COLOR_ARRAY);
-	glVertexPointer(2, GL_INT, 0, faceArray);
-	glDrawArrays(GL_QUADS, 0, 4);
-	glVertexPointer(3, GL_INT, 0, cubeArray);
-	glDisableClientState(GL_COLOR_ARRAY);
-	glEnable(GL_TEXTURE_2D);
+        glDisable(GL_TEXTURE_2D);
+        glEnableClientState(GL_COLOR_ARRAY);
+        glVertexPointer(2, GL_INT, 0, faceArray);
+        glDrawArrays(GL_QUADS, 0, 4);
+        glVertexPointer(3, GL_INT, 0, cubeArray);
+        glDisableClientState(GL_COLOR_ARRAY);
+        glEnable(GL_TEXTURE_2D);
         glPopMatrix();
 
-	// draw cube
+        // draw cube
         glTranslatef(0.5f, 0.5f, 0.5f);
         glRotatef(3.0f, 1.0f, 1.0f, 1.0f);
         glTranslatef(-0.5f, -0.5f, -0.5f);
@@ -205,12 +205,12 @@ void GLWidget::paintGL()
     glTranslatef(-1.2f, -0.8f, 0.0f);
     glScalef(0.2f, 0.2f, 0.2f);
     for (int y = 0; y < 5; ++y) {
-	for (int x = 0; x < 5; ++x) {
-	    glTranslatef(2.0f, 0, 0);
-	    glColor4f(0.8f, 0.8f, 0.8f, 1.0f);
-	    glDrawArrays(GL_QUADS, 0, 4);
-	}
- 	glTranslatef(-10.0f, 2.0f, 0);
+        for (int x = 0; x < 5; ++x) {
+            glTranslatef(2.0f, 0, 0);
+            glColor4f(0.8f, 0.8f, 0.8f, 1.0f);
+            glDrawArrays(GL_QUADS, 0, 4);
+        }
+        glTranslatef(-10.0f, 2.0f, 0);
     }
     glVertexPointer(3, GL_INT, 0, cubeArray);
 

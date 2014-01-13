@@ -669,7 +669,7 @@ void tst_QWidget::cleanup()
 // Helper class...
 
 BezierViewer::BezierViewer( QWidget* parent)
-	: QWidget( parent )
+    : QWidget(parent)
 {
     setObjectName(QLatin1String("TestWidget"));
     setWindowTitle(objectName());
@@ -689,9 +689,9 @@ void BezierViewer::paintEvent( QPaintEvent* )
 {
     if ( points.size() != 4 ) {
 #if defined(QT_CHECK_RANGE)
-	qWarning( "QPolygon::bezier: The array must have 4 control points" );
+        qWarning( "QPolygon::bezier: The array must have 4 control points" );
 #endif
-	return;
+        return;
     }
 
     /* Calculate Bezier curve */
@@ -707,18 +707,18 @@ void BezierViewer::paintEvent( QPaintEvent* )
 
     /* Scale Bezier curve vertices */
     for ( QPolygonF::Iterator it = bezier.begin(); it != bezier.end(); ++it ) {
-	it->setX( (it->x()-br.x()) * scl + border );
-	it->setY( (it->y()-br.y()) * scl + border );
+        it->setX( (it->x()-br.x()) * scl + border );
+        it->setY( (it->y()-br.y()) * scl + border );
     }
 
     /* Draw grid */
     painter.setPen( Qt::lightGray );
-	int i;
-	for ( i = border; i <= pr.width(); i += scl ) {
-		painter.drawLine( i, 0, i, pr.height() );
+    int i;
+    for ( i = border; i <= pr.width(); i += scl ) {
+        painter.drawLine( i, 0, i, pr.height() );
     }
     for ( int j = border; j <= pr.height(); j += scl ) {
-	painter.drawLine( 0, j, pr.width(), j );
+        painter.drawLine( 0, j, pr.width(), j );
     }
 
     /* Write number of vertices */
@@ -736,17 +736,17 @@ void BezierViewer::paintEvent( QPaintEvent* )
     /* Scale and draw control points */
     painter.setPen( Qt::darkGreen );
     for ( QPolygonF::Iterator p1 = points.begin(); p1 != points.end(); ++p1 ) {
-	int x = (p1->x()-br.x()) * scl + border;
-	int y = (p1->y()-br.y()) * scl + border;
-	painter.drawLine( x-4, y-4, x+4, y+4 );
-	painter.drawLine( x+4, y-4, x-4, y+4 );
+        int x = (p1->x()-br.x()) * scl + border;
+        int y = (p1->y()-br.y()) * scl + border;
+        painter.drawLine( x-4, y-4, x+4, y+4 );
+        painter.drawLine( x+4, y-4, x-4, y+4 );
     }
 
     /* Draw vertices */
     painter.setPen( Qt::red );
     painter.setBrush( Qt::red );
     for ( QPolygonF::Iterator p2 = bezier.begin(); p2 != bezier.end(); ++p2 )
-	painter.drawEllipse( p2->x()-1, p2->y()-1, 3, 3 );
+        painter.drawEllipse( p2->x()-1, p2->y()-1, 3, 3 );
 }
 
 void tst_QWidget::fontPropagation()
@@ -1677,17 +1677,17 @@ public:
     Container()
     {
         box = new QVBoxLayout(this);
-	//(new QVBoxLayout(this))->setAutoAdd(true);
+        //(new QVBoxLayout(this))->setAutoAdd(true);
     }
 
     void tab()
     {
-	focusNextPrevChild(true);
+        focusNextPrevChild(true);
     }
 
     void backTab()
     {
-	focusNextPrevChild(false);
+        focusNextPrevChild(false);
     }
 };
 
@@ -1712,7 +1712,7 @@ public:
         setFocusProxy( lineEdit );
         setFocusPolicy( Qt::StrongFocus );
 
-	setTabOrder(lineEdit, button);
+        setTabOrder(lineEdit, button);
     }
 
 private:
@@ -1761,9 +1761,9 @@ void tst_QWidget::setTabOrder()
     QTRY_VERIFY(lastEdit->hasFocus());
     container.tab();
     do {
-	QVERIFY(comp[current]->focusProxy()->hasFocus());
-	container.tab();
-	current--;
+        QVERIFY(comp[current]->focusProxy()->hasFocus());
+        container.tab();
+        current--;
     } while (current >= 0);
 
     QVERIFY(firstEdit->hasFocus());

@@ -685,7 +685,7 @@ public:
         SH_Menu_FadeOutOnHide,
         SH_SpinBox_ClickAutoRepeatThreshold,
         SH_ItemView_PaintAlternatingRowColorsForEmptyArea,
-	    SH_FormLayoutWrapPolicy,
+        SH_FormLayoutWrapPolicy,
         SH_TabWidget_DefaultTabPosition,
         SH_ToolBar_Movable,
         SH_FormLayoutFieldGrowthPolicy,

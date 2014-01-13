@@ -194,9 +194,9 @@ void tst_QImage::create()
 #if !defined(Q_OS_WINCE)
     QT_TRY {
 #endif
-	//QImage image(7000000, 7000000, 8, 256, QImage::IgnoreEndian);
-    QImage image(7000000, 7000000, QImage::Format_Indexed8);
-    image.setColorCount(256);
+        //QImage image(7000000, 7000000, 8, 256, QImage::IgnoreEndian);
+        QImage image(7000000, 7000000, QImage::Format_Indexed8);
+        image.setColorCount(256);
         cr = !image.isNull();
 #if !defined(Q_OS_WINCE)
     } QT_CATCH (...) {
@@ -309,16 +309,16 @@ void tst_QImage::formatHandlersInput()
     bool formatSupported = false;
     for (QList<QByteArray>::Iterator it = formats.begin(); it != formats.end(); ++it) {
         if (*it == testFormat.toLower()) {
-	    formatSupported = true;
-	    break;
-	}
+            formatSupported = true;
+            break;
+        }
     }
     if (formatSupported) {
 //     qDebug(QImage::imageFormat(testFile));
-	QCOMPARE(testFormat.toLatin1().toLower(), QImageReader::imageFormat(testFile));
+        QCOMPARE(testFormat.toLatin1().toLower(), QImageReader::imageFormat(testFile));
     } else {
-	QString msg = "Format not supported : ";
-	QSKIP(QString(msg + testFormat).toLatin1());
+        QString msg = "Format not supported : ";
+        QSKIP(QString(msg + testFormat).toLatin1());
     }
 }
 

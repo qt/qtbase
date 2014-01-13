@@ -774,7 +774,7 @@ void tst_QGraphicsLinearLayout::orientation()
 
     layout.setOrientation(orientation);
     QCOMPARE(layout.orientation(), orientation);
-	// important to resize to preferredsize when orientation is switched
+    // important to resize to preferredsize when orientation is switched
     widget->resize(widget->effectiveSizeHint(Qt::PreferredSize));
     qApp->processEvents();
     for (i = 0; i < positions.count(); ++i) {
@@ -1561,7 +1561,7 @@ void tst_QGraphicsLinearLayout::removeLayout()
 void tst_QGraphicsLinearLayout::avoidRecursionInInsertItem()
 {
     QGraphicsWidget window(0, Qt::Window);
-	QGraphicsLinearLayout *layout = new QGraphicsLinearLayout(&window);
+    QGraphicsLinearLayout *layout = new QGraphicsLinearLayout(&window);
     QCOMPARE(layout->count(), 0);
     QTest::ignoreMessage(QtWarningMsg, "QGraphicsLinearLayout::insertItem: cannot insert itself");
     layout->insertItem(0, layout);

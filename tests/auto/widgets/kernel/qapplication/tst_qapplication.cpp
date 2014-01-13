@@ -288,7 +288,7 @@ public:
     TestApplication( int &argc, char **argv )
     : QApplication( argc, argv)
     {
-	startTimer( 150 );
+        startTimer( 150 );
     }
 
     void timerEvent( QTimerEvent * )
@@ -338,24 +338,24 @@ void tst_QApplication::multiple()
 
     int i = 0;
     int argc = 0;
-    while ( i++ < 5 ) {
-	TestApplication app( argc, 0 );
+    while (i++ < 5) {
+        TestApplication app(argc, 0);
 
-	if ( features.contains( "QFont" ) ) {
-	    // create font and force loading
-	    QFont font( "Arial", 12 );
-	    QFontInfo finfo( font );
-	    finfo.exactMatch();
-	}
-	if ( features.contains( "QPixmap" ) ) {
-	    QPixmap pix( 100, 100 );
-	    pix.fill( Qt::black );
-	}
-	if ( features.contains( "QWidget" ) ) {
-	    QWidget widget;
-	}
+        if (features.contains("QFont")) {
+            // create font and force loading
+            QFont font("Arial", 12);
+            QFontInfo finfo(font);
+            finfo.exactMatch();
+        }
+        if (features.contains("QPixmap")) {
+            QPixmap pix(100, 100);
+            pix.fill(Qt::black);
+        }
+        if (features.contains("QWidget")) {
+            QWidget widget;
+        }
 
-	QVERIFY(!app.exec());
+        QVERIFY(!app.exec());
     }
 }
 
@@ -384,29 +384,29 @@ void tst_QApplication::setFont_data()
     QFontDatabase fdb;
     QStringList families = fdb.families();
     for (QStringList::const_iterator itr = families.begin();
-	 itr != families.end();
-	 ++itr) {
-	if (cnt < 3) {
-	    QString family = *itr;
-	    QStringList styles = fdb.styles(family);
-	    if (styles.size() > 0) {
-		QString style = styles.first();
-		QList<int> sizes = fdb.pointSizes(family, style);
-		if (!sizes.size())
-		    sizes = fdb.standardSizes();
-		if (sizes.size() > 0) {
-		    QTest::newRow(QString("data%1a").arg(cnt).toLatin1().constData())
-			<< family
-			<< sizes.first()
+         itr != families.end();
+         ++itr) {
+        if (cnt < 3) {
+            QString family = *itr;
+            QStringList styles = fdb.styles(family);
+            if (styles.size() > 0) {
+                QString style = styles.first();
+                QList<int> sizes = fdb.pointSizes(family, style);
+                if (!sizes.size())
+                    sizes = fdb.standardSizes();
+                if (sizes.size() > 0) {
+                    QTest::newRow(QString("data%1a").arg(cnt).toLatin1().constData())
+                        << family
+                        << sizes.first()
                         << false;
-		    QTest::newRow(QString("data%1b").arg(cnt).toLatin1().constData())
-			<< family
-			<< sizes.first()
+                    QTest::newRow(QString("data%1b").arg(cnt).toLatin1().constData())
+                        << family
+                        << sizes.first()
                         << true;
                 }
-	    }
-	}
-	++cnt;
+            }
+        }
+        ++cnt;
     }
 
     QTest::newRow("nonexistingfont after") << "nosuchfont_probably_quiteunlikely"
@@ -452,7 +452,7 @@ void tst_QApplication::args_data()
     QTest::newRow( "No arguments" ) << 0 << QString() << 0 << QString();
     QTest::newRow( "App name, style" ) << 3 << "/usr/bin/appname -style windows" << 1 << "/usr/bin/appname";
     QTest::newRow( "App name, style, arbitrary, reverse" ) << 5 << "/usr/bin/appname -style windows -arbitrary -reverse"
-							<< 2 << "/usr/bin/appname -arbitrary";
+                                                           << 2 << "/usr/bin/appname -arbitrary";
 }
 
 void tst_QApplication::task109149()
@@ -491,14 +491,14 @@ static QString cstrings2QString( char **args )
 {
     QString string;
     if ( !args )
-	return string;
+        return string;
 
     int i = 0;
     while ( args[i] ) {
-	string += args[i];
-	if ( args[i+1] )
-	    string += " ";
-	++i;
+        string += args[i];
+        if ( args[i+1] )
+            string += " ";
+        ++i;
     }
     return string;
 }

@@ -99,9 +99,9 @@ void Dialog::start()
         QMessageBox::StandardButton ret = QMessageBox::critical(this,
                                         tr("Loopback"),
                                         tr("Unable to start the test: %1.")
-					.arg(tcpServer.errorString()),
+                                        .arg(tcpServer.errorString()),
                                         QMessageBox::Retry
-					| QMessageBox::Cancel);
+                                        | QMessageBox::Cancel);
         if (ret == QMessageBox::Cancel)
             return;
     }

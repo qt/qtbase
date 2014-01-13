@@ -69,7 +69,7 @@ Calculator::Calculator(QWidget *parent)
 
 //! [4]
     for (int i = 0; i < NumDigitButtons; ++i) {
-	digitButtons[i] = createButton(QString::number(i), SLOT(digitClicked()));
+        digitButtons[i] = createButton(QString::number(i), SLOT(digitClicked()));
     }
 
     Button *pointButton = createButton(tr("."), SLOT(pointClicked()));
@@ -144,7 +144,7 @@ void Calculator::digitClicked()
 
     if (waitingForOperand) {
         display->clear();
-	waitingForOperand = false;
+        waitingForOperand = false;
     }
     display->setText(display->text() + QString::number(digitValue));
 }
@@ -169,8 +169,8 @@ void Calculator::unaryOperatorClicked()
         result = pow(operand, 2.0);
     } else if (clickedOperator == tr("1/x")) {
         if (operand == 0.0) {
-	    abortOperation();
-	    return;
+            abortOperation();
+            return;
         }
         result = 1.0 / operand;
     }
@@ -192,7 +192,7 @@ void Calculator::additiveOperatorClicked()
 //! [12] //! [13]
         if (!calculate(operand, pendingMultiplicativeOperator)) {
             abortOperation();
-	    return;
+            return;
         }
         display->setText(QString::number(factorSoFar));
         operand = factorSoFar;
@@ -205,7 +205,7 @@ void Calculator::additiveOperatorClicked()
 //! [14] //! [15]
         if (!calculate(operand, pendingAdditiveOperator)) {
             abortOperation();
-	    return;
+            return;
         }
         display->setText(QString::number(sumSoFar));
     } else {
@@ -229,7 +229,7 @@ void Calculator::multiplicativeOperatorClicked()
     if (!pendingMultiplicativeOperator.isEmpty()) {
         if (!calculate(operand, pendingMultiplicativeOperator)) {
             abortOperation();
-	    return;
+            return;
         }
         display->setText(QString::number(factorSoFar));
     } else {
@@ -249,7 +249,7 @@ void Calculator::equalClicked()
     if (!pendingMultiplicativeOperator.isEmpty()) {
         if (!calculate(operand, pendingMultiplicativeOperator)) {
             abortOperation();
-	    return;
+            return;
         }
         operand = factorSoFar;
         factorSoFar = 0.0;
@@ -258,7 +258,7 @@ void Calculator::equalClicked()
     if (!pendingAdditiveOperator.isEmpty()) {
         if (!calculate(operand, pendingAdditiveOperator)) {
             abortOperation();
-	    return;
+            return;
         }
         pendingAdditiveOperator.clear();
     } else {
@@ -387,9 +387,9 @@ bool Calculator::calculate(double rightOperand, const QString &pendingOperator)
     } else if (pendingOperator == tr("\303\227")) {
         factorSoFar *= rightOperand;
     } else if (pendingOperator == tr("\303\267")) {
-	if (rightOperand == 0.0)
-	    return false;
-	factorSoFar /= rightOperand;
+        if (rightOperand == 0.0)
+            return false;
+        factorSoFar /= rightOperand;
     }
     return true;
 }

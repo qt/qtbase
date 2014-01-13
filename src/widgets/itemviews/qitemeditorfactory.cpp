@@ -428,8 +428,8 @@ QItemEditorCreatorBase::~QItemEditorCreatorBase()
 /*!
     \class QItemEditorCreator
     \brief The QItemEditorCreator class makes it possible to create
-	   item editor creator bases without subclassing
-	   QItemEditorCreatorBase.
+           item editor creator bases without subclassing
+           QItemEditorCreatorBase.
 
     \since 4.2
     \ingroup model-view
@@ -450,7 +450,7 @@ QItemEditorCreatorBase::~QItemEditorCreatorBase()
     property, you should use QStandardItemEditorCreator instead.
 
     \sa QItemEditorCreatorBase, QStandardItemEditorCreator,
-	QItemEditorFactory, {Color Editor Factory Example}
+        QItemEditorFactory, {Color Editor Factory Example}
 */
 
 /*!
@@ -506,7 +506,7 @@ QItemEditorCreatorBase::~QItemEditorCreatorBase()
     \snippet code/src_gui_itemviews_qitemeditorfactory.cpp 3
 
     \sa QItemEditorCreatorBase, QItemEditorCreator,
-	QItemEditorFactory, QItemDelegate, {Color Editor Factory Example}
+        QItemEditorFactory, QItemDelegate, {Color Editor Factory Example}
 */
 
 /*!

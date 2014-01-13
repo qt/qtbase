@@ -164,12 +164,12 @@ void tst_QFileSystemModel::cleanup()
         for (int i = 0; i < list.count(); ++i) {
             QFileInfo fi(dir.path() + '/' + list.at(i));
             if (fi.exists() && fi.isFile()) {
-		        QFile p(fi.absoluteFilePath());
+                QFile p(fi.absoluteFilePath());
                 p.setPermissions(QFile::ReadUser | QFile::ReadOwner | QFile::ExeOwner | QFile::ExeUser | QFile::WriteUser | QFile::WriteOwner | QFile::WriteOther);
-		        QFile dead(dir.path() + '/' + list.at(i));
-		        dead.remove();
-	        }
-	        if (fi.exists() && fi.isDir())
+                QFile dead(dir.path() + '/' + list.at(i));
+                dead.remove();
+            }
+            if (fi.exists() && fi.isDir())
                 QVERIFY(dir.rmdir(list.at(i)));
         }
         list = dir.entryList(QDir::AllEntries | QDir::System | QDir::Hidden | QDir::NoDotAndDotDot);

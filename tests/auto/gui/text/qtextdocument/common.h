@@ -79,11 +79,11 @@ public:
     int l;
 
     void expect(int from, int oldLength, int length) {
-	f = from;
-	o = oldLength;
-	l = length;
-	error = false;
-	called = false;
+        f = from;
+        o = oldLength;
+        l = length;
+        error = false;
+        called = false;
     }
     bool error;
     bool called;

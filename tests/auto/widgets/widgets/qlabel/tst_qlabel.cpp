@@ -189,9 +189,9 @@ void tst_QLabel::init()
 void tst_QLabel::cleanup()
 {
     if (QTest::currentTestFunction() == QLatin1String("setBuddy")) {
-	testWidget->show();
+        testWidget->show();
 
-	delete test_box; // this should delete tst_labl and test_edit as well.
+        delete test_box; // this should delete tst_labl and test_edit as well.
     }
 }
 

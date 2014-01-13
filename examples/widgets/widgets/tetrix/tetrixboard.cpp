@@ -109,9 +109,9 @@ void TetrixBoard::pause()
 
     isPaused = !isPaused;
     if (isPaused) {
-	timer.stop();
+        timer.stop();
     } else {
-	timer.start(timeoutTime(), this);
+        timer.start(timeoutTime(), this);
     }
     update();
 //! [5] //! [6]
@@ -128,7 +128,7 @@ void TetrixBoard::paintEvent(QPaintEvent *event)
 //! [7]
 
     if (isPaused) {
-	painter.drawText(rect, Qt::AlignCenter, tr("Pause"));
+        painter.drawText(rect, Qt::AlignCenter, tr("Pause"));
         return;
     }
 
@@ -138,7 +138,7 @@ void TetrixBoard::paintEvent(QPaintEvent *event)
     for (int i = 0; i < BoardHeight; ++i) {
         for (int j = 0; j < BoardWidth; ++j) {
             TetrixShape shape = shapeAt(j, BoardHeight - i - 1);
-	    if (shape != NoShape)
+            if (shape != NoShape)
                 drawSquare(painter, rect.left() + j * squareWidth(),
                            boardTop + i * squareHeight(), shape);
         }
@@ -165,7 +165,7 @@ void TetrixBoard::paintEvent(QPaintEvent *event)
 void TetrixBoard::keyPressEvent(QKeyEvent *event)
 {
     if (!isStarted || isPaused || curPiece.shape() == NoShape) {
-	QFrame::keyPressEvent(event);
+        QFrame::keyPressEvent(event);
         return;
     }
 //! [13]
@@ -174,24 +174,24 @@ void TetrixBoard::keyPressEvent(QKeyEvent *event)
     switch (event->key()) {
     case Qt::Key_Left:
         tryMove(curPiece, curX - 1, curY);
-	break;
+        break;
     case Qt::Key_Right:
         tryMove(curPiece, curX + 1, curY);
-	break;
+        break;
     case Qt::Key_Down:
         tryMove(curPiece.rotatedRight(), curX, curY);
-	break;
+        break;
     case Qt::Key_Up:
         tryMove(curPiece.rotatedLeft(), curX, curY);
-	break;
+        break;
     case Qt::Key_Space:
-	dropDown();
-	break;
+        dropDown();
+        break;
     case Qt::Key_D:
-	oneLineDown();
-	break;
+        oneLineDown();
+        break;
     default:
-	QFrame::keyPressEvent(event);
+        QFrame::keyPressEvent(event);
     }
 //! [14]
 }
@@ -201,9 +201,9 @@ void TetrixBoard::timerEvent(QTimerEvent *event)
 {
     if (event->timerId() == timer.timerId()) {
         if (isWaitingAfterLine) {
-	    isWaitingAfterLine = false;
-	    newPiece();
-	    timer.start(timeoutTime(), this);
+            isWaitingAfterLine = false;
+            newPiece();
+            timer.start(timeoutTime(), this);
         } else {
             oneLineDown();
         }
@@ -243,7 +243,7 @@ void TetrixBoard::dropDown()
 void TetrixBoard::oneLineDown()
 {
     if (!tryMove(curPiece, curX, curY - 1))
-	pieceDropped(0);
+        pieceDropped(0);
 }
 //! [21]
 
@@ -290,24 +290,24 @@ void TetrixBoard::removeFullLines()
 
         if (lineIsFull) {
 //! [24] //! [25]
-	    ++numFullLines;
-	    for (int k = i; k < BoardHeight - 1; ++k) {
+            ++numFullLines;
+            for (int k = i; k < BoardHeight - 1; ++k) {
                 for (int j = 0; j < BoardWidth; ++j)
                     shapeAt(j, k) = shapeAt(j, k + 1);
-	    }
+            }
 //! [25] //! [26]
-	    for (int j = 0; j < BoardWidth; ++j)
+            for (int j = 0; j < BoardWidth; ++j)
                 shapeAt(j, BoardHeight - 1) = NoShape;
-	}
+        }
 //! [26] //! [27]
     }
 //! [27]
 
 //! [28]
     if (numFullLines > 0) {
-	numLinesRemoved += numFullLines;
-	score += 10 * numFullLines;
-	emit linesRemovedChanged(numLinesRemoved);
+        numLinesRemoved += numFullLines;
+        score += 10 * numFullLines;
+        emit linesRemovedChanged(numLinesRemoved);
         emit scoreChanged(score);
 
         timer.start(500, this);
@@ -329,7 +329,7 @@ void TetrixBoard::newPiece()
     curY = BoardHeight - 1 + curPiece.minY();
 
     if (!tryMove(curPiece, curX, curY)) {
-	curPiece.setShape(NoShape);
+        curPiece.setShape(NoShape);
         timer.stop();
         isStarted = false;
     }

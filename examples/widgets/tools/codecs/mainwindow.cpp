@@ -162,7 +162,7 @@ void MainWindow::createActions()
         QString text = tr("%1...").arg(QString(codec->name()));
 
         QAction *action = new QAction(text, this);
-	action->setData(codec->name());
+        action->setData(codec->name());
         connect(action, SIGNAL(triggered()), this, SLOT(save()));
         saveAsActs.append(action);
     }

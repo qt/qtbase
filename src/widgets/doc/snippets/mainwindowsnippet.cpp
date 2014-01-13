@@ -85,7 +85,7 @@ void MainWindow::createDockWidgets()
 //! [0]
     QDockWidget *dockWidget = new QDockWidget(tr("Dock Widget"), this);
     dockWidget->setAllowedAreas(Qt::LeftDockWidgetArea |
-				Qt::RightDockWidgetArea);
+                                Qt::RightDockWidgetArea);
     dockWidget->setWidget(dockWidgetContents);
     addDockWidget(Qt::LeftDockWidgetArea, dockWidget);
 //! [0]

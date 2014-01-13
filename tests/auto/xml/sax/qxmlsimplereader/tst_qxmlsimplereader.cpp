@@ -137,17 +137,17 @@ class tst_QXmlSimpleReader : public QObject
     Q_OBJECT
 
     public:
-	tst_QXmlSimpleReader();
-	~tst_QXmlSimpleReader();
+        tst_QXmlSimpleReader();
+        ~tst_QXmlSimpleReader();
 
     private slots:
         void initTestCase();
-	void testGoodXmlFile();
-	void testGoodXmlFile_data();
-	void testBadXmlFile();
-	void testBadXmlFile_data();
-	void testIncrementalParsing();
-	void testIncrementalParsing_data();
+        void testGoodXmlFile();
+        void testGoodXmlFile_data();
+        void testBadXmlFile();
+        void testBadXmlFile_data();
+        void testIncrementalParsing();
+        void testIncrementalParsing_data();
         void setDataQString();
         void inputFromQIODevice();
         void inputFromString();
@@ -278,8 +278,8 @@ static QStringList findXmlFiles(QString dir_name)
 
     QFileInfoList::const_iterator it = file_list.begin();
     for (; it != file_list.end(); ++it) {
-	const QFileInfo &file_info = *it;
-	result.append(file_info.filePath());
+        const QFileInfo &file_info = *it;
+        result.append(file_info.filePath());
     }
 
     return result;
@@ -289,21 +289,21 @@ static QStringList findXmlFiles(QString dir_name)
 void tst_QXmlSimpleReader::testGoodXmlFile_data()
 {
     const char * const good_data_dirs[] = {
-	"xmldocs/valid/sa",
-	"xmldocs/valid/not-sa",
-	"xmldocs/valid/ext-sa",
-	0
+        "xmldocs/valid/sa",
+        "xmldocs/valid/not-sa",
+        "xmldocs/valid/ext-sa",
+        0
     };
     const char * const *d = good_data_dirs;
 
     QStringList good_file_list;
     for (; *d != 0; ++d)
-	good_file_list += findXmlFiles(*d);
+        good_file_list += findXmlFiles(*d);
 
     QTest::addColumn<QString>("file_name");
     QStringList::const_iterator it = good_file_list.begin();
     for (; it != good_file_list.end(); ++it)
-	QTest::newRow((*it).toLatin1()) << *it;
+        QTest::newRow((*it).toLatin1()) << *it;
 }
 
 void tst_QXmlSimpleReader::testGoodXmlFile()
@@ -331,19 +331,19 @@ void tst_QXmlSimpleReader::testGoodXmlFile()
 void tst_QXmlSimpleReader::testBadXmlFile_data()
 {
     const char * const bad_data_dirs[] = {
-	"xmldocs/not-wf/sa",
-	0
+        "xmldocs/not-wf/sa",
+        0
     };
     const char * const *d = bad_data_dirs;
 
     QStringList bad_file_list;
     for (; *d != 0; ++d)
-	bad_file_list += findXmlFiles(*d);
+        bad_file_list += findXmlFiles(*d);
 
     QTest::addColumn<QString>("file_name");
     QStringList::const_iterator it = bad_file_list.begin();
     for (; it != bad_file_list.end(); ++it)
-	QTest::newRow((*it).toLatin1()) << *it;
+        QTest::newRow((*it).toLatin1()) << *it;
 }
 
 void tst_QXmlSimpleReader::testBadXmlFile()
@@ -413,31 +413,31 @@ void tst_QXmlSimpleReader::testIncrementalParsing_data()
     QTest::addColumn<int>("chunkSize");
 
     const char * const good_data_dirs[] = {
-	"xmldocs/valid/sa",
-	"xmldocs/valid/not-sa",
-	"xmldocs/valid/ext-sa",
-	0
+        "xmldocs/valid/sa",
+        "xmldocs/valid/not-sa",
+        "xmldocs/valid/ext-sa",
+        0
     };
     const char * const *d = good_data_dirs;
 
     QStringList good_file_list;
     for (; *d != 0; ++d)
-	good_file_list += findXmlFiles(*d);
+        good_file_list += findXmlFiles(*d);
 
     for (int i=1; i<10; ++i) {
-	QStringList::const_iterator it = good_file_list.begin();
-	for (; it != good_file_list.end(); ++it) {
-	    if ( *it == "xmldocs/valid/sa/089.xml" )
-		continue;// TODO: fails at the moment -- don't bother
-	    if ( i==1 && (
-			*it == "xmldocs/valid/sa/049.xml" ||
-			*it == "xmldocs/valid/sa/050.xml" ||
-			*it == "xmldocs/valid/sa/051.xml" ||
-			*it == "xmldocs/valid/sa/052.xml" ) ) {
-		continue; // TODO: fails at the moment -- don't bother
-	    }
-	    QTest::newRow(QString("%1 %2").arg(*it).arg(i).toLatin1()) << *it << i;
-	}
+        QStringList::const_iterator it = good_file_list.begin();
+        for (; it != good_file_list.end(); ++it) {
+            if ( *it == "xmldocs/valid/sa/089.xml" )
+                continue;// TODO: fails at the moment -- don't bother
+            if ( i==1 && (
+                        *it == "xmldocs/valid/sa/049.xml" ||
+                        *it == "xmldocs/valid/sa/050.xml" ||
+                        *it == "xmldocs/valid/sa/051.xml" ||
+                        *it == "xmldocs/valid/sa/052.xml" ) ) {
+                continue; // TODO: fails at the moment -- don't bother
+            }
+            QTest::newRow(QString("%1 %2").arg(*it).arg(i).toLatin1()) << *it << i;
+        }
     }
 }
 
@@ -459,7 +459,7 @@ void tst_QXmlSimpleReader::testIncrementalParsing()
             first = false;
         } else {
             QVERIFY(parser.parseContinue());
-	}
+        }
     }
     // detect end of document
     QVERIFY(parser.parseContinue());
@@ -573,8 +573,8 @@ void tst_QXmlSimpleReader::inputFromSocket()
 
     const bool connectionSuccess = sock.waitForConnected();
     if(!connectionSuccess) {
-	 QTextStream out(stderr);
-	 out << "QTcpSocket::errorString()" << sock.errorString();
+        QTextStream out(stderr);
+        out << "QTcpSocket::errorString()" << sock.errorString();
     }
 
     QVERIFY(connectionSuccess);

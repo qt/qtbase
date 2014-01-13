@@ -315,7 +315,7 @@ void QFileInfoGatherer::getFileInfos(const QString &path, const QStringList &fil
         dirIt.next();
         fileInfo = dirIt.fileInfo();
         allFiles.append(fileInfo.fileName());
-	fetch(fileInfo, base, firstTime, updatedFiles, path);
+        fetch(fileInfo, base, firstTime, updatedFiles, path);
     }
     if (!allFiles.isEmpty())
         emit newListOfFiles(path, allFiles);

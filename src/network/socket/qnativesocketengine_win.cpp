@@ -186,7 +186,7 @@ static inline void qt_socket_getPortAndAddress(SOCKET socketDescriptor, const qt
             *address = a;
         }
         if (port)
-	    WSANtohs(socketDescriptor, sa6->sin6_port, port);
+            WSANtohs(socketDescriptor, sa6->sin6_port, port);
     } else
 
     if (sa->a.sa_family == AF_INET) {
@@ -194,11 +194,11 @@ static inline void qt_socket_getPortAndAddress(SOCKET socketDescriptor, const qt
         unsigned long addr;
         WSANtohl(socketDescriptor, sa4->sin_addr.s_addr, &addr);
         QHostAddress a;
-	a.setAddress(addr);
-	if (address)
-	    *address = a;
+        a.setAddress(addr);
+        if (address)
+            *address = a;
         if (port)
-	    WSANtohs(socketDescriptor, sa4->sin_port, port);
+            WSANtohs(socketDescriptor, sa4->sin_port, port);
     }
 }
 
@@ -276,7 +276,7 @@ QWindowsSockInit::QWindowsSockInit()
 
     // IPv6 requires Winsock v2.0 or better.
     if (WSAStartup(MAKEWORD(2,0), &wsadata) != 0) {
-	qWarning("QTcpSocketAPI: WinSock v2.0 initialization failed.");
+        qWarning("QTcpSocketAPI: WinSock v2.0 initialization failed.");
     } else {
         version = 0x20;
     }
@@ -940,14 +940,14 @@ int QNativeSocketEnginePrivate::nativeAccept()
             break;
         }
     } else if (acceptedDescriptor != -1 && QAbstractEventDispatcher::instance()) {
-		// Because of WSAAsyncSelect() WSAAccept returns a non blocking socket
-		// with the same attributes as the listening socket including the current
-		// WSAAsyncSelect(). To be able to change the socket to blocking mode the
-		// WSAAsyncSelect() call must be cancled.
-		QSocketNotifier n(acceptedDescriptor, QSocketNotifier::Read);
-		n.setEnabled(true);
-		n.setEnabled(false);
-	}
+        // Because of WSAAsyncSelect() WSAAccept returns a non blocking socket
+        // with the same attributes as the listening socket including the current
+        // WSAAsyncSelect(). To be able to change the socket to blocking mode the
+        // WSAAsyncSelect() call must be cancled.
+        QSocketNotifier n(acceptedDescriptor, QSocketNotifier::Read);
+        n.setEnabled(true);
+        n.setEnabled(false);
+    }
 #if defined (QNATIVESOCKETENGINE_DEBUG)
     qDebug("QNativeSocketEnginePrivate::nativeAccept() == %i", acceptedDescriptor);
 #endif

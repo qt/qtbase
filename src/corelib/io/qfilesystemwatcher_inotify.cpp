@@ -129,9 +129,9 @@
 # define __NR_inotify_rm_watch  271
 # define __NR_inotify_init1     314
 #elif defined (__avr32__)
-# define __NR_inotify_init	240
-# define __NR_inotify_add_watch	241
-# define __NR_inotify_rm_watch	242
+# define __NR_inotify_init      240
+# define __NR_inotify_add_watch 241
+# define __NR_inotify_rm_watch  242
 // no inotify_init1 for AVR32
 #elif defined (__mc68000__)
 # define __NR_inotify_init      284

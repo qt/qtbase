@@ -490,8 +490,8 @@ void tst_QPushButton::defaultAndAutoDefault()
     // Adding buttons to QDialog through a layout
     QDialog dialog;
 
-	QPushButton button3;
-	button3.setAutoDefault(false);
+    QPushButton button3;
+    button3.setAutoDefault(false);
 
     QPushButton button1;
     QVERIFY(!button1.autoDefault());
@@ -512,7 +512,7 @@ void tst_QPushButton::defaultAndAutoDefault()
     layout.addWidget(&button2, 0, 2);
     layout.addWidget(&button1, 0, 1);
     dialog.setLayout(&layout);
-	button3.setFocus();
+    button3.setFocus();
     QVERIFY(button1.autoDefault());
     QVERIFY(button1.isDefault());
     QVERIFY(button2.autoDefault());

@@ -302,7 +302,7 @@ Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetAcquire(T *expectedValu
     x = &_q_value;
     T *expectedValueCopy = expectedValue;
     return (_InterlockedCompareExchange64_acq(p, quintptr(newValue), quintptr(expectedValueCopy))
-	    == quintptr(expectedValue));
+            == quintptr(expectedValue));
 }
 
 template <typename T>
@@ -315,7 +315,7 @@ Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetRelease(T *expectedValu
     x = &_q_value;
     T *expectedValueCopy = expectedValue;
     return (_InterlockedCompareExchange64_rel(p, quintptr(newValue), quintptr(expectedValueCopy))
-	    == quintptr(expectedValue));
+            == quintptr(expectedValue));
 }
 
 template <typename T>

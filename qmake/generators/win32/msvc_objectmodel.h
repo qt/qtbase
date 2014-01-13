@@ -955,7 +955,7 @@ public:
     VCConfiguration*        Config;
     QList<VCFilterFile>     Files;
 
-    customBuildCheck	    CustomBuild;
+    customBuildCheck        CustomBuild;
 
     bool                    useCustomBuildTool;
     VCCustomBuildTool       CustomBuildTool;

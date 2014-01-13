@@ -94,11 +94,11 @@ using namespace ABI::Windows::Storage;
 #endif
 
 #ifndef CSIDL_COMMON_APPDATA
-#define CSIDL_COMMON_APPDATA	0x0023  // All Users\Application Data
+#define CSIDL_COMMON_APPDATA    0x0023  // All Users\Application Data
 #endif
 
 #ifndef CSIDL_APPDATA
-#define CSIDL_APPDATA		0x001a	// <username>\Application Data
+#define CSIDL_APPDATA           0x001a  // <username>\Application Data
 #endif
 
 #ifdef Q_AUTOTEST_EXPORT

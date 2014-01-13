@@ -79,7 +79,7 @@
 #undef QT_OPEN_LARGEFILE
 #define QT_OPEN_LARGEFILE       0
 
-#define QT_SNPRINTF		::snprintf
-#define QT_VSNPRINTF		::vsnprintf
+#define QT_SNPRINTF             ::snprintf
+#define QT_VSNPRINTF            ::vsnprintf
 
 #endif // QPLATFORMDEFS_H

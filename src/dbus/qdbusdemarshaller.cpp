@@ -244,9 +244,9 @@ QVariant QDBusDemarshaller::toVariantInternal()
     case DBUS_TYPE_BYTE:
         return QVariant::fromValue(toByte());
     case DBUS_TYPE_INT16:
-	return QVariant::fromValue(toShort());
+        return QVariant::fromValue(toShort());
     case DBUS_TYPE_UINT16:
-	return QVariant::fromValue(toUShort());
+        return QVariant::fromValue(toUShort());
     case DBUS_TYPE_INT32:
         return toInt();
     case DBUS_TYPE_UINT32:

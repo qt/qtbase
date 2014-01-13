@@ -150,7 +150,7 @@ public:
     virtual bool waitForRead(int msecs = 30000, bool *timedOut = 0) = 0;
     virtual bool waitForWrite(int msecs = 30000, bool *timedOut = 0) = 0;
     virtual bool waitForReadOrWrite(bool *readyToRead, bool *readyToWrite,
-			    bool checkRead, bool checkWrite,
+                            bool checkRead, bool checkWrite,
                             int msecs = 30000, bool *timedOut = 0) = 0;
 
     QAbstractSocket::SocketError error() const;

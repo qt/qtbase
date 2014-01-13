@@ -61,21 +61,21 @@ public:
 protected:
     void mousePressEvent(QMouseEvent *e)
     {
-    QWindow::mousePressEvent(e);
-	mousePressButton = e->button();
-	mousePressButtons = e->buttons();
-	mousePressModifiers = e->modifiers();
-	mousePressEventRecieved = true;
-	e->accept();
+        QWindow::mousePressEvent(e);
+        mousePressButton = e->button();
+        mousePressButtons = e->buttons();
+        mousePressModifiers = e->modifiers();
+        mousePressEventRecieved = true;
+        e->accept();
     }
     void mouseReleaseEvent(QMouseEvent *e)
     {
-    QWindow::mouseReleaseEvent(e);
-	mouseReleaseButton = e->button();
-	mouseReleaseButtons = e->buttons();
-	mouseReleaseModifiers = e->modifiers();
-	mouseReleaseEventRecieved = true;
-	e->accept();
+        QWindow::mouseReleaseEvent(e);
+        mouseReleaseButton = e->button();
+        mouseReleaseButtons = e->buttons();
+        mouseReleaseModifiers = e->modifiers();
+        mouseReleaseEventRecieved = true;
+        e->accept();
     }
 };
 

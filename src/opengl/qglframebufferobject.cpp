@@ -979,7 +979,7 @@ bool QGLFramebufferObject::isValid() const
 bool QGLFramebufferObject::bind()
 {
     if (!isValid())
-	return false;
+        return false;
     Q_D(QGLFramebufferObject);
     QGL_FUNC_CONTEXT;
     if (!ctx)
@@ -1011,7 +1011,7 @@ bool QGLFramebufferObject::bind()
 bool QGLFramebufferObject::release()
 {
     if (!isValid())
-	return false;
+        return false;
     Q_D(QGLFramebufferObject);
     QGL_FUNC_CONTEXT;
     if (!ctx)

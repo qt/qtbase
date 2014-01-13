@@ -63,7 +63,7 @@ public:
     QSlider::TickPosition tickPosition;
     int clickOffset;
     void init();
-	void resetLayoutItemMargins();
+    void resetLayoutItemMargins();
     int pixelPosToRangeValue(int pos) const;
     inline int pick(const QPoint &pt) const;
 
@@ -86,7 +86,7 @@ void QSliderPrivate::init()
         sp.transpose();
     q->setSizePolicy(sp);
     q->setAttribute(Qt::WA_WState_OwnSizePolicy, false);
-	resetLayoutItemMargins();
+    resetLayoutItemMargins();
 }
 
 void QSliderPrivate::resetLayoutItemMargins()

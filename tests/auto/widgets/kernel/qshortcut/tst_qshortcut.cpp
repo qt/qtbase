@@ -160,7 +160,7 @@ class TestEdit : public QTextEdit
     Q_OBJECT
 public:
     TestEdit(QWidget *parent, const char *name)
-	: QTextEdit(parent)
+        : QTextEdit(parent)
     {
         setObjectName(name);
     }
@@ -231,13 +231,13 @@ Qt::KeyboardModifiers tst_QShortcut::toButtons( int key )
 {
     Qt::KeyboardModifiers result = Qt::NoModifier;
     if ( key & Qt::SHIFT )
-	result |= Qt::ShiftModifier;
+        result |= Qt::ShiftModifier;
     if ( key & Qt::CTRL )
-	result |= Qt::ControlModifier;
-   if ( key & Qt::META )
-	result |= Qt::MetaModifier;
-   if ( key & Qt::ALT )
-	result |= Qt::AltModifier;
+        result |= Qt::ControlModifier;
+    if ( key & Qt::META )
+        result |= Qt::MetaModifier;
+    if ( key & Qt::ALT )
+        result |= Qt::AltModifier;
     return result;
 }
 
@@ -291,15 +291,15 @@ void tst_QShortcut::number_data()
        Shift + Qt::Key_Plus on  Qt::Key_Pluss
                Qt::Key_Plus on  Qt::Key_Pluss
     */
-    QTest::newRow("N001 - slot1")		    << SetupAccel << TriggerSlot1 << QString("")    << int(Qt::Key_M) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
+    QTest::newRow("N001 - slot1")                   << SetupAccel << TriggerSlot1 << QString("")    << int(Qt::Key_M) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
     //commented out because the behaviour changed, those tests should be updated
-    //QTest::newRow("N001:Shift + M - [M]")	    << TestAccel << NoWidget << QString("")	    << int(Qt::SHIFT + Qt::Key_M) << int('M') << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
-    QTest::newRow("N001:M - [M]")		    << TestAccel << NoWidget << QString("")	    << int(Qt::Key_M) << int('m') << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
-    QTest::newRow("N001 - slot2")		    << SetupAccel << TriggerSlot2 << QString("")    << int(Qt::Key_Plus) << int('+') << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
+    //QTest::newRow("N001:Shift + M - [M]")         << TestAccel << NoWidget << QString("")         << int(Qt::SHIFT + Qt::Key_M) << int('M') << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
+    QTest::newRow("N001:M - [M]")                   << TestAccel << NoWidget << QString("")         << int(Qt::Key_M) << int('m') << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
+    QTest::newRow("N001 - slot2")                   << SetupAccel << TriggerSlot2 << QString("")    << int(Qt::Key_Plus) << int('+') << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
     //commented out because the behaviour changed, those tests should be updated
-    //QTest::newRow("N001:Shift++ [+]")	    << TestAccel << NoWidget << QString("")	    << int(Qt::SHIFT + Qt::Key_Plus) << int('+') << 0 << 0 << 0 << 0 << 0 << 0 << Slot2Triggered;
-    QTest::newRow("N001:+ [+]")		    << TestAccel << NoWidget << QString("")	    << int(Qt::Key_Plus) << int('+') << 0 << 0 << 0 << 0 << 0 << 0 << Slot2Triggered;
-    QTest::newRow("N001 - clear")		    << ClearAll << NoWidget << QString("")		    << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult; // Clear all
+    //QTest::newRow("N001:Shift++ [+]")             << TestAccel << NoWidget << QString("")         << int(Qt::SHIFT + Qt::Key_Plus) << int('+') << 0 << 0 << 0 << 0 << 0 << 0 << Slot2Triggered;
+    QTest::newRow("N001:+ [+]")                     << TestAccel << NoWidget << QString("")         << int(Qt::Key_Plus) << int('+') << 0 << 0 << 0 << 0 << 0 << 0 << Slot2Triggered;
+    QTest::newRow("N001 - clear")                   << ClearAll << NoWidget << QString("")          << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult; // Clear all
 
     /* Testing Single Sequences
        Shift + Qt::Key_M    on  Shift + Qt::Key_M
@@ -307,32 +307,32 @@ void tst_QShortcut::number_data()
        Shift + Qt::Key_Plus on  Shift + Qt::Key_Pluss
                Qt::Key_Plus on  Shift + Qt::Key_Pluss
     */
-    QTest::newRow("N002 - slot1")		    << SetupAccel << TriggerSlot1 << QString("")    << int(Qt::SHIFT + Qt::Key_M) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
-    QTest::newRow("N002:Shift+M - [Shift+M]")  << TestAccel << NoWidget << QString("")	    << int(Qt::SHIFT + Qt::Key_M) << int('M') << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
-    QTest::newRow("N002:M - [Shift+M]")	    << TestAccel << NoWidget << QString("")	    << int(Qt::Key_M) << int('m') << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
-    QTest::newRow("N002 - slot2")		    << SetupAccel << TriggerSlot2 << QString("")    << int(Qt::SHIFT + Qt::Key_Plus) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
-    QTest::newRow("N002:Shift++ [Shift++]")    << TestAccel << NoWidget << QString("")	    << int(Qt::SHIFT + Qt::Key_Plus) << int('+') << 0 << 0 << 0 << 0 << 0 << 0 << Slot2Triggered;
-    QTest::newRow("N002:+ [Shift++]")	    << TestAccel << NoWidget << QString("")	    << int(Qt::Key_Plus) << int('+') << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
-    QTest::newRow("N002 - clear")		    << ClearAll << NoWidget << QString("")		    << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult; // Clear all
+    QTest::newRow("N002 - slot1")                   << SetupAccel << TriggerSlot1 << QString("")    << int(Qt::SHIFT + Qt::Key_M) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
+    QTest::newRow("N002:Shift+M - [Shift+M]")       << TestAccel << NoWidget << QString("")         << int(Qt::SHIFT + Qt::Key_M) << int('M') << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
+    QTest::newRow("N002:M - [Shift+M]")             << TestAccel << NoWidget << QString("")         << int(Qt::Key_M) << int('m') << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
+    QTest::newRow("N002 - slot2")                   << SetupAccel << TriggerSlot2 << QString("")    << int(Qt::SHIFT + Qt::Key_Plus) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
+    QTest::newRow("N002:Shift++ [Shift++]")         << TestAccel << NoWidget << QString("")         << int(Qt::SHIFT + Qt::Key_Plus) << int('+') << 0 << 0 << 0 << 0 << 0 << 0 << Slot2Triggered;
+    QTest::newRow("N002:+ [Shift++]")               << TestAccel << NoWidget << QString("")         << int(Qt::Key_Plus) << int('+') << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
+    QTest::newRow("N002 - clear")                   << ClearAll << NoWidget << QString("")          << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult; // Clear all
 
     /* Testing Single Sequences
        Shift + Qt::Key_F1   on  Qt::Key_F1
                Qt::Key_F1   on  Qt::Key_F1
     */
-    QTest::newRow("N003 - slot1")		    << SetupAccel << TriggerSlot1 << QString("")    << int(Qt::Key_F1) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
+    QTest::newRow("N003 - slot1")                   << SetupAccel << TriggerSlot1 << QString("")    << int(Qt::Key_F1) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
     //commented out because the behaviour changed, those tests should be updated
-    //QTest::newRow("N003:Shift+F1 - [F1]")	    << TestAccel << NoWidget << QString("")	    << int(Qt::SHIFT + Qt::Key_F1) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
-    QTest::newRow("N003:F1 - [F1]")	    << TestAccel << NoWidget << QString("")	    << int(Qt::Key_F1) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
-    QTest::newRow("N003 - clear")		    << ClearAll << NoWidget << QString("")		    << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult; // Clear all
+    //QTest::newRow("N003:Shift+F1 - [F1]")           << TestAccel << NoWidget << QString("")         << int(Qt::SHIFT + Qt::Key_F1) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
+    QTest::newRow("N003:F1 - [F1]")                 << TestAccel << NoWidget << QString("")         << int(Qt::Key_F1) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
+    QTest::newRow("N003 - clear")                   << ClearAll << NoWidget << QString("")          << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult; // Clear all
     /* Testing Single Sequences
        Shift + Qt::Key_F1   on  Shift + Qt::Key_F1
                Qt::Key_F1   on  Shift + Qt::Key_F1
     */
 
-    QTest::newRow("N004 - slot1")		    << SetupAccel << TriggerSlot1 << QString("")    << int(Qt::SHIFT + Qt::Key_F1) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
-    QTest::newRow("N004:Shift+F1 - [Shift+F1]")<< TestAccel << NoWidget << QString("")	    << int(Qt::SHIFT + Qt::Key_F1) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
-    QTest::newRow("N004:F1 - [Shift+F1]")	    << TestAccel << NoWidget << QString("")	    << int(Qt::Key_F1) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
-    QTest::newRow("N004 - clear")		    << ClearAll << NoWidget << QString("")		    << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult; // Clear all
+    QTest::newRow("N004 - slot1")                   << SetupAccel << TriggerSlot1 << QString("")    << int(Qt::SHIFT + Qt::Key_F1) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
+    QTest::newRow("N004:Shift+F1 - [Shift+F1]")     << TestAccel << NoWidget << QString("")         << int(Qt::SHIFT + Qt::Key_F1) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
+    QTest::newRow("N004:F1 - [Shift+F1]")           << TestAccel << NoWidget << QString("")         << int(Qt::Key_F1) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
+    QTest::newRow("N004 - clear")                   << ClearAll << NoWidget << QString("")          << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult; // Clear all
 
     /* Testing Single Sequences
                Qt::Key_Tab      on  Qt::Key_Tab
@@ -340,14 +340,14 @@ void tst_QShortcut::number_data()
                Qt::Key_Backtab  on  Qt::Key_Tab
        Shift + Qt::Key_Backtab  on  Qt::Key_Tab
     */
-    QTest::newRow("N005a - slot1")		           << SetupAccel << TriggerSlot1 << QString("")<< int(Qt::Key_Tab) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
-    QTest::newRow("N005a:Tab - [Tab]")	           << TestAccel << NoWidget << QString("")     << int(Qt::Key_Tab) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
+    QTest::newRow("N005a - slot1")                  << SetupAccel << TriggerSlot1 << QString("")    << int(Qt::Key_Tab) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
+    QTest::newRow("N005a:Tab - [Tab]")              << TestAccel << NoWidget << QString("")         << int(Qt::Key_Tab) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
     //commented out because the behaviour changed, those tests should be updated
-    //QTest::newRow("N005a:Shift+Tab - [Tab]")          << TestAccel << NoWidget << QString("")     << int(Qt::SHIFT + Qt::Key_Tab) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
+    //QTest::newRow("N005a:Shift+Tab - [Tab]")        << TestAccel << NoWidget << QString("")         << int(Qt::SHIFT + Qt::Key_Tab) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
     // (Shift+)BackTab != Tab, but Shift+BackTab == Shift+Tab
-    QTest::newRow("N005a:Backtab - [Tab]")	           << TestAccel << NoWidget << QString("")     << int(Qt::Key_Backtab) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
-    QTest::newRow("N005a:Shift+Backtab - [Tab]")      << TestAccel << NoWidget << QString("")     << int(Qt::SHIFT + Qt::Key_Backtab) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
-    QTest::newRow("N005a - clear")		           << ClearAll << NoWidget << QString("")	       << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult; // Clear all
+    QTest::newRow("N005a:Backtab - [Tab]")          << TestAccel << NoWidget << QString("")         << int(Qt::Key_Backtab) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
+    QTest::newRow("N005a:Shift+Backtab - [Tab]")    << TestAccel << NoWidget << QString("")         << int(Qt::SHIFT + Qt::Key_Backtab) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
+    QTest::newRow("N005a - clear")                  << ClearAll << NoWidget << QString("")          << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult; // Clear all
 
     /* Testing Single Sequences
                Qt::Key_Tab      on  Shift + Qt::Key_Tab
@@ -355,12 +355,12 @@ void tst_QShortcut::number_data()
                Qt::Key_Backtab  on  Shift + Qt::Key_Tab
        Shift + Qt::Key_Backtab  on  Shift + Qt::Key_Tab
     */
-    QTest::newRow("N005b - slot1")		           << SetupAccel << TriggerSlot1 << QString("")<< int(Qt::SHIFT + Qt::Key_Tab) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
-    QTest::newRow("N005b:Tab - [Shift+Tab]")          << TestAccel << NoWidget << QString("")     << int(Qt::Key_Tab) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
-    QTest::newRow("N005b:Shift+Tab - [Shift+Tab]")    << TestAccel << NoWidget << QString("")     << int(Qt::SHIFT + Qt::Key_Tab) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
-    QTest::newRow("N005b:BackTab - [Shift+Tab]")      << TestAccel << NoWidget << QString("")     << int(Qt::Key_Backtab) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
-    QTest::newRow("N005b:Shift+BackTab - [Shift+Tab]")<< TestAccel << NoWidget << QString("")     << int(Qt::SHIFT + Qt::Key_Backtab) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
-    QTest::newRow("N005b - clear")		           << ClearAll << NoWidget << QString("")	       << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult; // Clear all
+    QTest::newRow("N005b - slot1")                     << SetupAccel << TriggerSlot1 << QString("") << int(Qt::SHIFT + Qt::Key_Tab) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
+    QTest::newRow("N005b:Tab - [Shift+Tab]")           << TestAccel << NoWidget << QString("")      << int(Qt::Key_Tab) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
+    QTest::newRow("N005b:Shift+Tab - [Shift+Tab]")     << TestAccel << NoWidget << QString("")      << int(Qt::SHIFT + Qt::Key_Tab) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
+    QTest::newRow("N005b:BackTab - [Shift+Tab]")       << TestAccel << NoWidget << QString("")      << int(Qt::Key_Backtab) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
+    QTest::newRow("N005b:Shift+BackTab - [Shift+Tab]") << TestAccel << NoWidget << QString("")      << int(Qt::SHIFT + Qt::Key_Backtab) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
+    QTest::newRow("N005b - clear")                     << ClearAll << NoWidget << QString("")       << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult; // Clear all
 
     /* Testing Single Sequences
                Qt::Key_Tab      on  Qt::Key_Backtab
@@ -368,15 +368,15 @@ void tst_QShortcut::number_data()
                Qt::Key_Backtab  on  Qt::Key_Backtab
        Shift + Qt::Key_Backtab  on  Qt::Key_Backtab
     */
-    QTest::newRow("N006a - slot1")		           << SetupAccel << TriggerSlot1 << QString("")<< int(Qt::Key_Backtab) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
-    QTest::newRow("N006a:Tab - [BackTab]")	           << TestAccel << NoWidget << QString("")     << int(Qt::Key_Tab) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
+    QTest::newRow("N006a - slot1")                  << SetupAccel << TriggerSlot1 << QString("")    << int(Qt::Key_Backtab) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
+    QTest::newRow("N006a:Tab - [BackTab]")          << TestAccel << NoWidget << QString("")         << int(Qt::Key_Tab) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
     // This should work, since platform dependent code will transform the
     // Shift+Tab into a Shift+BackTab, which should trigger the shortcut
-    QTest::newRow("N006a:Shift+Tab - [BackTab]")      << TestAccel << NoWidget << QString("")     << int(Qt::SHIFT + Qt::Key_Tab) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered; //XFAIL
-    QTest::newRow("N006a:BackTab - [BackTab]")        << TestAccel << NoWidget << QString("")     << int(Qt::Key_Backtab) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
+    QTest::newRow("N006a:Shift+Tab - [BackTab]")    << TestAccel << NoWidget << QString("")         << int(Qt::SHIFT + Qt::Key_Tab) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered; //XFAIL
+    QTest::newRow("N006a:BackTab - [BackTab]")      << TestAccel << NoWidget << QString("")         << int(Qt::Key_Backtab) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
     //commented out because the behaviour changed, those tests should be updated
-    //QTest::newRow("N006a:Shift+BackTab - [BackTab]")  << TestAccel << NoWidget << QString("")     << int(Qt::SHIFT + Qt::Key_Backtab) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
-    QTest::newRow("N006a - clear")		           << ClearAll << NoWidget<< QString("")	       << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult; // Clear all
+    //QTest::newRow("N006a:Shift+BackTab - [BackTab]")  << TestAccel << NoWidget << QString("")       << int(Qt::SHIFT + Qt::Key_Backtab) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
+    QTest::newRow("N006a - clear")                  << ClearAll << NoWidget<< QString("")           << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult; // Clear all
 
     /* Testing Single Sequences
                Qt::Key_Tab      on  Shift + Qt::Key_Backtab
@@ -384,12 +384,12 @@ void tst_QShortcut::number_data()
                Qt::Key_Backtab  on  Shift + Qt::Key_Backtab
        Shift + Qt::Key_Backtab  on  Shift + Qt::Key_Backtab
     */
-    QTest::newRow("N006b - slot1")		           << SetupAccel << TriggerSlot1 << QString("")<< int(Qt::SHIFT + Qt::Key_Backtab) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
-    QTest::newRow("N006b:Tab - [Shift+BackTab]")      << TestAccel << NoWidget << QString("")     << int(Qt::Key_Tab) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
-    QTest::newRow("N006b:Shift+Tab - [Shift+BackTab]")<< TestAccel << NoWidget << QString("")     << int(Qt::SHIFT + Qt::Key_Tab) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
-    QTest::newRow("N006b:BackTab - [Shift+BackTab]")  << TestAccel << NoWidget << QString("")     << int(Qt::Key_Backtab) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
-    QTest::newRow("N006b:Shift+BackTab - [Shift+BackTab]")<< TestAccel << NoWidget << QString("") << int(Qt::SHIFT + Qt::Key_Backtab) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered; //XFAIL
-    QTest::newRow("N006b - clear")		           << ClearAll << NoWidget << QString("")	       << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult; // Clear all
+    QTest::newRow("N006b - slot1")                         << SetupAccel << TriggerSlot1 << QString("")  << int(Qt::SHIFT + Qt::Key_Backtab) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
+    QTest::newRow("N006b:Tab - [Shift+BackTab]")           << TestAccel << NoWidget << QString("")       << int(Qt::Key_Tab) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
+    QTest::newRow("N006b:Shift+Tab - [Shift+BackTab]")     << TestAccel << NoWidget << QString("")       << int(Qt::SHIFT + Qt::Key_Tab) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
+    QTest::newRow("N006b:BackTab - [Shift+BackTab]")       << TestAccel << NoWidget << QString("")       << int(Qt::Key_Backtab) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
+    QTest::newRow("N006b:Shift+BackTab - [Shift+BackTab]") << TestAccel << NoWidget << QString("")       << int(Qt::SHIFT + Qt::Key_Backtab) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered; //XFAIL
+    QTest::newRow("N006b - clear")                         << ClearAll << NoWidget << QString("")        << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult; // Clear all
 
     //===========================================
     // [Shift + key] and [key] on shortcuts with
@@ -400,11 +400,11 @@ void tst_QShortcut::number_data()
        Qt::Key_F1
        Shift + Qt::Key_F1
     */
-    QTest::newRow("N007 - slot1")		    << SetupAccel << TriggerSlot1 << QString("")    << int(Qt::Key_F1) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
-    QTest::newRow("N007 - slot2")		    << SetupAccel << TriggerSlot2 << QString("")    << int(Qt::SHIFT + Qt::Key_F1) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
-    QTest::newRow("N007:F1")		    << TestAccel << NoWidget << QString("")	    << int(Qt::Key_F1) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
-    QTest::newRow("N007:Shift + F1")	    << TestAccel << NoWidget << QString("")	    << int(Qt::SHIFT + Qt::Key_F1) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot2Triggered;
-    QTest::newRow("N007 - clear")		    << ClearAll << NoWidget << QString("")		    << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult; // Clear all
+    QTest::newRow("N007 - slot1")                   << SetupAccel << TriggerSlot1 << QString("")    << int(Qt::Key_F1) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
+    QTest::newRow("N007 - slot2")                   << SetupAccel << TriggerSlot2 << QString("")    << int(Qt::SHIFT + Qt::Key_F1) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
+    QTest::newRow("N007:F1")                        << TestAccel << NoWidget << QString("")         << int(Qt::Key_F1) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
+    QTest::newRow("N007:Shift + F1")                << TestAccel << NoWidget << QString("")         << int(Qt::SHIFT + Qt::Key_F1) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot2Triggered;
+    QTest::newRow("N007 - clear")                   << ClearAll << NoWidget << QString("")          << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult; // Clear all
 
     /* Testing Single Sequences
        Qt::Key_M
@@ -412,51 +412,51 @@ void tst_QShortcut::number_data()
        Ctrl  + Qt::Key_M
        Alt   + Qt::Key_M
     */
-    QTest::newRow("N01 - slot1")		    << SetupAccel << TriggerSlot1 << QString("")    << int(Qt::Key_M) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
-    QTest::newRow("N02 - slot2")		    << SetupAccel << TriggerSlot2 << QString("")    << int(Qt::SHIFT + Qt::Key_M) << int('M') << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
-    QTest::newRow("N03 - slot1")		    << SetupAccel << TriggerSlot1 << QString("")    << int(Qt::CTRL + Qt::Key_M) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
-    QTest::newRow("N04 - slot2")		    << SetupAccel << TriggerSlot2 << QString("")    << int(Qt::ALT + Qt::Key_M) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
-    QTest::newRow("N:Qt::Key_M")		    << TestAccel << NoWidget << QString("")	    << int(Qt::Key_M) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
-    QTest::newRow("N:Shift+Qt::Key_M")		    << TestAccel << NoWidget << QString("")	    << int(Qt::SHIFT + Qt::Key_M) << int('M') << 0 << 0 << 0 << 0 << 0 << 0 << Slot2Triggered;
-    QTest::newRow("N:Ctrl+Qt::Key_M")		    << TestAccel << NoWidget << QString("")	    << int(Qt::CTRL + Qt::Key_M) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
-    QTest::newRow("N:Alt+Qt::Key_M")		    << TestAccel << NoWidget << QString("")	    << int(Qt::ALT + Qt::Key_M) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot2Triggered;
+    QTest::newRow("N01 - slot1")                    << SetupAccel << TriggerSlot1 << QString("")    << int(Qt::Key_M) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
+    QTest::newRow("N02 - slot2")                    << SetupAccel << TriggerSlot2 << QString("")    << int(Qt::SHIFT + Qt::Key_M) << int('M') << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
+    QTest::newRow("N03 - slot1")                    << SetupAccel << TriggerSlot1 << QString("")    << int(Qt::CTRL + Qt::Key_M) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
+    QTest::newRow("N04 - slot2")                    << SetupAccel << TriggerSlot2 << QString("")    << int(Qt::ALT + Qt::Key_M) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
+    QTest::newRow("N:Qt::Key_M")                    << TestAccel << NoWidget << QString("")         << int(Qt::Key_M) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
+    QTest::newRow("N:Shift+Qt::Key_M")              << TestAccel << NoWidget << QString("")         << int(Qt::SHIFT + Qt::Key_M) << int('M') << 0 << 0 << 0 << 0 << 0 << 0 << Slot2Triggered;
+    QTest::newRow("N:Ctrl+Qt::Key_M")               << TestAccel << NoWidget << QString("")         << int(Qt::CTRL + Qt::Key_M) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
+    QTest::newRow("N:Alt+Qt::Key_M")                << TestAccel << NoWidget << QString("")         << int(Qt::ALT + Qt::Key_M) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot2Triggered;
 
     /* Testing Single Sequence Ambiguity
        Qt::Key_M on shortcut2
     */
-    QTest::newRow("N05 - slot2")		    << SetupAccel << TriggerSlot2 << QString("")    << int(Qt::Key_M) << int('m') << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
-    QTest::newRow("N:Qt::Key_M on slot")	    << TestAccel << NoWidget << QString("") << int(Qt::Key_M) << int('m') << 0 << 0 << 0 << 0 << 0 << 0 << Ambiguous;
-    QTest::newRow("N05 - clear")		    << ClearAll << NoWidget << QString("")		    << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult; // Clear all
+    QTest::newRow("N05 - slot2")                    << SetupAccel << TriggerSlot2 << QString("")    << int(Qt::Key_M) << int('m') << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
+    QTest::newRow("N:Qt::Key_M on slot")            << TestAccel << NoWidget << QString("")         << int(Qt::Key_M) << int('m') << 0 << 0 << 0 << 0 << 0 << 0 << Ambiguous;
+    QTest::newRow("N05 - clear")                    << ClearAll << NoWidget << QString("")          << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult; // Clear all
 
     /* Testing Single Specialkeys
        Qt::Key_aring
        Qt::Key_Aring
        Qt::UNICODE_ACCEL + Qt::Key_K
     */
-    QTest::newRow("N06 - slot1")		    << SetupAccel << TriggerSlot1 << QString("")    << int(Qt::Key_Aring) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
-    QTest::newRow("N07 - slot2")		    << SetupAccel << TriggerSlot2 << QString("")    << int(Qt::SHIFT+Qt::Key_Aring) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
-    QTest::newRow("N08 - slot2")		    << SetupAccel << TriggerSlot1 << QString("")    << int(Qt::UNICODE_ACCEL + Qt::Key_K) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
+    QTest::newRow("N06 - slot1")                    << SetupAccel << TriggerSlot1 << QString("")    << int(Qt::Key_Aring) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
+    QTest::newRow("N07 - slot2")                    << SetupAccel << TriggerSlot2 << QString("")    << int(Qt::SHIFT+Qt::Key_Aring) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
+    QTest::newRow("N08 - slot2")                    << SetupAccel << TriggerSlot1 << QString("")    << int(Qt::UNICODE_ACCEL + Qt::Key_K) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
 
-    QTest::newRow("N:Qt::Key_aring")		    << TestAccel << NoWidget << QString("")	    << int(Qt::Key_Aring) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
-    QTest::newRow("N:Qt::Key_Aring")		    << TestAccel << NoWidget << QString("")	    << int(Qt::SHIFT+Qt::Key_Aring) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot2Triggered;
-    QTest::newRow("N:Qt::Key_aring - Text Form")   << TestAccel << NoWidget << QString("")	    << 0 << 0xC5 << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
-    QTest::newRow("N:Qt::Key_Aring - Text Form")   << TestAccel << NoWidget << QString("")	    << int(Qt::SHIFT+0) << 0xC5 << 0 << 0 << 0 << 0 << 0 << 0 << Slot2Triggered;
-    QTest::newRow("N:Qt::UNICODE_ACCEL + Qt::Key_K")   << TestAccel << NoWidget << QString("")	    << int(Qt::UNICODE_ACCEL + Qt::Key_K) << int('k') << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
-    QTest::newRow("N09 - clear")		    << ClearAll << NoWidget << QString("")		    << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult; // Clear all
+    QTest::newRow("N:Qt::Key_aring")                << TestAccel << NoWidget << QString("")         << int(Qt::Key_Aring) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
+    QTest::newRow("N:Qt::Key_Aring")                << TestAccel << NoWidget << QString("")         << int(Qt::SHIFT+Qt::Key_Aring) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot2Triggered;
+    QTest::newRow("N:Qt::Key_aring - Text Form")    << TestAccel << NoWidget << QString("")         << 0 << 0xC5 << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
+    QTest::newRow("N:Qt::Key_Aring - Text Form")    << TestAccel << NoWidget << QString("")         << int(Qt::SHIFT+0) << 0xC5 << 0 << 0 << 0 << 0 << 0 << 0 << Slot2Triggered;
+    QTest::newRow("N:Qt::UNICODE_ACCEL + Qt::Key_K")<< TestAccel << NoWidget << QString("")         << int(Qt::UNICODE_ACCEL + Qt::Key_K) << int('k') << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
+    QTest::newRow("N09 - clear")                    << ClearAll << NoWidget << QString("")          << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult; // Clear all
 
     /* Testing Multiple Sequences
        Qt::Key_M
        Qt::Key_I, Qt::Key_M
        Shift+Qt::Key_I, Qt::Key_M
     */
-    QTest::newRow("N10 - slot1")		    << SetupAccel << TriggerSlot1 << QString("")    << int(Qt::Key_M) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
-    QTest::newRow("N11 - slot2")		    << SetupAccel << TriggerSlot2 << QString("")    << int(Qt::Key_I) << 0 << int(Qt::Key_M) << 0 << 0 << 0 << 0 << 0 << NoResult;
-    QTest::newRow("N12 - slot1")		    << SetupAccel << TriggerSlot1 << QString("")    << int(Qt::SHIFT + Qt::Key_I) << 0 << int(Qt::Key_M) << 0 << 0 << 0 << 0 << 0 << NoResult;
+    QTest::newRow("N10 - slot1")                    << SetupAccel << TriggerSlot1 << QString("")    << int(Qt::Key_M) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
+    QTest::newRow("N11 - slot2")                    << SetupAccel << TriggerSlot2 << QString("")    << int(Qt::Key_I) << 0 << int(Qt::Key_M) << 0 << 0 << 0 << 0 << 0 << NoResult;
+    QTest::newRow("N12 - slot1")                    << SetupAccel << TriggerSlot1 << QString("")    << int(Qt::SHIFT + Qt::Key_I) << 0 << int(Qt::Key_M) << 0 << 0 << 0 << 0 << 0 << NoResult;
 
-    QTest::newRow("N:Qt::Key_M (2)")		    << TestAccel << NoWidget << QString("")	    << int(Qt::Key_M) << int('m') << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
-    QTest::newRow("N:Qt::Key_I, Qt::Key_M")	    << TestAccel << NoWidget << QString("")	    << int(Qt::Key_I) << int('i') << int(Qt::Key_M) << int('m') << 0 << 0 << 0 << 0 << Slot2Triggered;
-    QTest::newRow("N:Shift+Qt::Key_I, Qt::Key_M")	    << TestAccel << NoWidget << QString("")	    << int(Qt::SHIFT + Qt::Key_I) << int('I') << int(Qt::Key_M) << int('m') << 0 << 0 << 0 << 0 << Slot1Triggered;
-    QTest::newRow("N13 - clear")		    << ClearAll << NoWidget << QString("")		    << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult; // Clear all
+    QTest::newRow("N:Qt::Key_M (2)")                << TestAccel << NoWidget << QString("")         << int(Qt::Key_M) << int('m') << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
+    QTest::newRow("N:Qt::Key_I, Qt::Key_M")         << TestAccel << NoWidget << QString("")         << int(Qt::Key_I) << int('i') << int(Qt::Key_M) << int('m') << 0 << 0 << 0 << 0 << Slot2Triggered;
+    QTest::newRow("N:Shift+Qt::Key_I, Qt::Key_M")   << TestAccel << NoWidget << QString("")         << int(Qt::SHIFT + Qt::Key_I) << int('I') << int(Qt::Key_M) << int('m') << 0 << 0 << 0 << 0 << Slot1Triggered;
+    QTest::newRow("N13 - clear")                    << ClearAll << NoWidget << QString("")          << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult; // Clear all
 }
 
 // ------------------------------------------------------------------
@@ -478,15 +478,15 @@ void tst_QShortcut::text_data()
        Shift + Qt::Key_Plus on  Qt::Key_Pluss
                Qt::Key_Plus on  Qt::Key_Pluss
     */
-    QTest::newRow("T001 - slot1")		    << SetupAccel << TriggerSlot1 << QString("M")   << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
+    QTest::newRow("T001 - slot1")                   << SetupAccel << TriggerSlot1 << QString("M")   << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
     //commented out because the behaviour changed, those tests should be updated
-    //QTest::newRow("T001:Shift+M - [M]")	    << TestAccel << NoWidget << QString("")	    << int(Qt::SHIFT + Qt::Key_M) << int('M') << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
-    QTest::newRow("T001:M - [M]")		    << TestAccel << NoWidget << QString("")	    << int(Qt::Key_M) << int('m') << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
-    QTest::newRow("T001 - slot2")		    << SetupAccel << TriggerSlot2 << QString("+")   << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
+    //QTest::newRow("T001:Shift+M - [M]")           << TestAccel << NoWidget << QString("")         << int(Qt::SHIFT + Qt::Key_M) << int('M') << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
+    QTest::newRow("T001:M - [M]")                   << TestAccel << NoWidget << QString("")         << int(Qt::Key_M) << int('m') << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
+    QTest::newRow("T001 - slot2")                   << SetupAccel << TriggerSlot2 << QString("+")   << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
     //commented out because the behaviour changed, those tests should be updated
-    //QTest::newRow("T001:Shift++ [+]")	    << TestAccel << NoWidget << QString("")	    << int(Qt::SHIFT + Qt::Key_Plus) << int('+') << 0 << 0 << 0 << 0 << 0 << 0 << Slot2Triggered;
-    QTest::newRow("T001:+ [+]")		    << TestAccel << NoWidget << QString("")	    << int(Qt::Key_Plus) << int('+') << 0 << 0 << 0 << 0 << 0 << 0 << Slot2Triggered;
-    QTest::newRow("T001 - clear")		    << ClearAll << NoWidget << QString("")		    << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult; // Clear all
+    //QTest::newRow("T001:Shift++ [+]")             << TestAccel << NoWidget << QString("")         << int(Qt::SHIFT + Qt::Key_Plus) << int('+') << 0 << 0 << 0 << 0 << 0 << 0 << Slot2Triggered;
+    QTest::newRow("T001:+ [+]")                     << TestAccel << NoWidget << QString("")         << int(Qt::Key_Plus) << int('+') << 0 << 0 << 0 << 0 << 0 << 0 << Slot2Triggered;
+    QTest::newRow("T001 - clear")                   << ClearAll << NoWidget << QString("")          << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult; // Clear all
 
     /* Testing Single Sequences
        Shift + Qt::Key_M    on  Shift + Qt::Key_M
@@ -496,44 +496,44 @@ void tst_QShortcut::text_data()
        Shift + Ctrl + Qt::Key_Plus on  Ctrl + Qt::Key_Pluss
                Ctrl + Qt::Key_Plus on  Ctrl + Qt::Key_Pluss
     */
-    QTest::newRow("T002 - slot1")		    << SetupAccel << TriggerSlot1 << QString("Shift+M")   << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
-    QTest::newRow("T002:Shift+M - [Shift+M]")  << TestAccel << NoWidget << QString("")	    << int(Qt::SHIFT + Qt::Key_M) << int('M') << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
-    QTest::newRow("T002:M - [Shift+M]")	    << TestAccel << NoWidget << QString("")	    << int(Qt::Key_M) << int('m') << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
-    QTest::newRow("T002 - slot2")		    << SetupAccel << TriggerSlot2 << QString("Shift++")   << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
-    QTest::newRow("T002:Shift++ [Shift++]")    << TestAccel << NoWidget << QString("")	    << int(Qt::SHIFT + Qt::Key_Plus) << int('+') << 0 << 0 << 0 << 0 << 0 << 0 << Slot2Triggered;
-    QTest::newRow("T002:+ [Shift++]")	    << TestAccel << NoWidget << QString("")	    << int(Qt::Key_Plus) << int('+') << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
-    QTest::newRow("T002 - clear")		    << ClearAll << NoWidget << QString("")		    << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult; // Clear all
+    QTest::newRow("T002 - slot1")                   << SetupAccel << TriggerSlot1 << QString("Shift+M")   << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
+    QTest::newRow("T002:Shift+M - [Shift+M]")       << TestAccel << NoWidget << QString("")               << int(Qt::SHIFT + Qt::Key_M) << int('M') << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
+    QTest::newRow("T002:M - [Shift+M]")             << TestAccel << NoWidget << QString("")               << int(Qt::Key_M) << int('m') << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
+    QTest::newRow("T002 - slot2")                   << SetupAccel << TriggerSlot2 << QString("Shift++")   << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
+    QTest::newRow("T002:Shift++ [Shift++]")         << TestAccel << NoWidget << QString("")               << int(Qt::SHIFT + Qt::Key_Plus) << int('+') << 0 << 0 << 0 << 0 << 0 << 0 << Slot2Triggered;
+    QTest::newRow("T002:+ [Shift++]")               << TestAccel << NoWidget << QString("")               << int(Qt::Key_Plus) << int('+') << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
+    QTest::newRow("T002 - clear")                   << ClearAll << NoWidget << QString("")                << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult; // Clear all
 
     /* Testing Single Sequences
        Shift + Ctrl + Qt::Key_Plus on  Ctrl + Qt::Key_Plus
                Ctrl + Qt::Key_Plus on  Ctrl + Qt::Key_Plus
-	              Qt::Key_Plus on  Ctrl + Qt::Key_Plus
+                      Qt::Key_Plus on  Ctrl + Qt::Key_Plus
     */
-    QTest::newRow("T002b - slot1")		    << SetupAccel << TriggerSlot1 << QString("Ctrl++")    << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
+    QTest::newRow("T002b - slot1")                  << SetupAccel << TriggerSlot1 << QString("Ctrl++")    << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
     //commented out because the behaviour changed, those tests should be updated
-    //QTest::newRow("T002b:Shift+Ctrl++ [Ctrl++]")<< TestAccel << NoWidget << QString("")	    << int(Qt::SHIFT + Qt::CTRL + Qt::Key_Plus) << int('+') << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
-    QTest::newRow("T002b:Ctrl++ [Ctrl++]")	    << TestAccel << NoWidget << QString("")	    << int(Qt::CTRL + Qt::Key_Plus) << int('+') << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
-    QTest::newRow("T002b:+ [Ctrl++]")	    << TestAccel << NoWidget << QString("")	    << int(Qt::Key_Plus) << int('+') << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
-    QTest::newRow("T002b - clear")		    << ClearAll << NoWidget << QString("")		    << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult; // Clear all
+    //QTest::newRow("T002b:Shift+Ctrl++ [Ctrl++]")<< TestAccel << NoWidget << QString("")                   << int(Qt::SHIFT + Qt::CTRL + Qt::Key_Plus) << int('+') << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
+    QTest::newRow("T002b:Ctrl++ [Ctrl++]")          << TestAccel << NoWidget << QString("")               << int(Qt::CTRL + Qt::Key_Plus) << int('+') << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
+    QTest::newRow("T002b:+ [Ctrl++]")               << TestAccel << NoWidget << QString("")               << int(Qt::Key_Plus) << int('+') << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
+    QTest::newRow("T002b - clear")                  << ClearAll << NoWidget << QString("")                << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult; // Clear all
 
     /* Testing Single Sequences
        Shift + Qt::Key_F1   on  Qt::Key_F1
                Qt::Key_F1   on  Qt::Key_F1
     */
-    QTest::newRow("T003 - slot1")		    << SetupAccel << TriggerSlot1 << QString("F1")  << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
+    QTest::newRow("T003 - slot1")                   << SetupAccel << TriggerSlot1 << QString("F1")        << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
     //commented out because the behaviour changed, those tests should be updated
-    //QTest::newRow("T003:Shift+F1 - [F1]")	    << TestAccel << NoWidget << QString("")	    << int(Qt::SHIFT + Qt::Key_F1) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
-    QTest::newRow("T003:F1 - [F1]")	    << TestAccel << NoWidget << QString("")	    << int(Qt::Key_F1) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
-    QTest::newRow("T003 - clear")		    << ClearAll << NoWidget << QString("")		    << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult; // Clear all
+    //QTest::newRow("T003:Shift+F1 - [F1]")           << TestAccel << NoWidget << QString("")               << int(Qt::SHIFT + Qt::Key_F1) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
+    QTest::newRow("T003:F1 - [F1]")                 << TestAccel << NoWidget << QString("")               << int(Qt::Key_F1) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
+    QTest::newRow("T003 - clear")                   << ClearAll << NoWidget << QString("")                << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult; // Clear all
 
     /* Testing Single Sequences
        Shift + Qt::Key_F1   on  Shift + Qt::Key_F1
                Qt::Key_F1   on  Shift + Qt::Key_F1
     */
-    QTest::newRow("T004 - slot1")		    << SetupAccel << TriggerSlot1 << QString("Shift+F1")  << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
-    QTest::newRow("T004:Shift+F1 - [Shift+F1]")<< TestAccel << NoWidget << QString("")	    << int(Qt::SHIFT + Qt::Key_F1) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
-    QTest::newRow("T004:F1 - [Shift+F1]")	    << TestAccel << NoWidget << QString("")	    << int(Qt::Key_F1) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
-    QTest::newRow("T004 - clear")		    << ClearAll << NoWidget << QString("")		    << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult; // Clear all
+    QTest::newRow("T004 - slot1")                   << SetupAccel << TriggerSlot1 << QString("Shift+F1")  << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
+    QTest::newRow("T004:Shift+F1 - [Shift+F1]")     << TestAccel << NoWidget << QString("")               << int(Qt::SHIFT + Qt::Key_F1) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
+    QTest::newRow("T004:F1 - [Shift+F1]")           << TestAccel << NoWidget << QString("")               << int(Qt::Key_F1) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
+    QTest::newRow("T004 - clear")                   << ClearAll << NoWidget << QString("")                << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult; // Clear all
 
     //===========================================
     // [Shift + key] and [key] on shortcuts with
@@ -544,11 +544,11 @@ void tst_QShortcut::text_data()
        Qt::Key_F1
        Shift + Qt::Key_F1
     */
-    QTest::newRow("T007 - slot1")		    << SetupAccel << TriggerSlot1 << QString("F1")  << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
-    QTest::newRow("T007 - slot2")		    << SetupAccel << TriggerSlot2 << QString("Shift+F1")  << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
-    QTest::newRow("T007:F1")		    << TestAccel << NoWidget << QString("")	    << int(Qt::Key_F1) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
-    QTest::newRow("T007:Shift + F1")	    << TestAccel << NoWidget << QString("")	    << int(Qt::SHIFT + Qt::Key_F1) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot2Triggered;
-    QTest::newRow("T007 - clear")		    << ClearAll << NoWidget << QString("")		    << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult; // Clear all
+    QTest::newRow("T007 - slot1")                   << SetupAccel << TriggerSlot1 << QString("F1")        << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
+    QTest::newRow("T007 - slot2")                   << SetupAccel << TriggerSlot2 << QString("Shift+F1")  << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
+    QTest::newRow("T007:F1")                        << TestAccel << NoWidget << QString("")               << int(Qt::Key_F1) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
+    QTest::newRow("T007:Shift + F1")                << TestAccel << NoWidget << QString("")               << int(Qt::SHIFT + Qt::Key_F1) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot2Triggered;
+    QTest::newRow("T007 - clear")                   << ClearAll << NoWidget << QString("")                << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult; // Clear all
 
     /* Testing Single Sequences
        Qt::Key_M
@@ -556,22 +556,22 @@ void tst_QShortcut::text_data()
        Ctrl  + Qt::Key_M
        Alt   + Qt::Key_M
     */
-    QTest::newRow("T01 - slot1")		    << SetupAccel << TriggerSlot1 << QString("M")	  << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
-    QTest::newRow("T02 - slot2")		    << SetupAccel << TriggerSlot2 << QString("Shift+M")   << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
-    QTest::newRow("T03 - slot1")		    << SetupAccel << TriggerSlot1 << QString("Ctrl+M")    << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
-    QTest::newRow("T04 - slot2")		    << SetupAccel << TriggerSlot2 << QString("Alt+M")	  << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
+    QTest::newRow("T01 - slot1")                    << SetupAccel << TriggerSlot1 << QString("M")         << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
+    QTest::newRow("T02 - slot2")                    << SetupAccel << TriggerSlot2 << QString("Shift+M")   << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
+    QTest::newRow("T03 - slot1")                    << SetupAccel << TriggerSlot1 << QString("Ctrl+M")    << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
+    QTest::newRow("T04 - slot2")                    << SetupAccel << TriggerSlot2 << QString("Alt+M")     << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
 
-    QTest::newRow("T:Qt::Key_M")		    << TestAccel << NoWidget << QString("")	    << int(Qt::Key_M) << int('m') << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
-    QTest::newRow("T:Shift + Qt::Key_M")	    << TestAccel << NoWidget << QString("")	    << int(Qt::SHIFT + Qt::Key_M) << int('M') << 0 << 0 << 0 << 0 << 0 << 0 << Slot2Triggered;
-    QTest::newRow("T:Ctrl + Qt::Key_M")	    << TestAccel << NoWidget << QString("")	    << int(Qt::CTRL + Qt::Key_M) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
-    QTest::newRow("T:Alt + Qt::Key_M")		    << TestAccel << NoWidget << QString("")	    << int(Qt::ALT + Qt::Key_M) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot2Triggered;
+    QTest::newRow("T:Qt::Key_M")                    << TestAccel << NoWidget << QString("")               << int(Qt::Key_M) << int('m') << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
+    QTest::newRow("T:Shift + Qt::Key_M")            << TestAccel << NoWidget << QString("")               << int(Qt::SHIFT + Qt::Key_M) << int('M') << 0 << 0 << 0 << 0 << 0 << 0 << Slot2Triggered;
+    QTest::newRow("T:Ctrl + Qt::Key_M")             << TestAccel << NoWidget << QString("")               << int(Qt::CTRL + Qt::Key_M) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
+    QTest::newRow("T:Alt + Qt::Key_M")              << TestAccel << NoWidget << QString("")               << int(Qt::ALT + Qt::Key_M) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot2Triggered;
 
     /* Testing Single Sequence Ambiguity
        Qt::Key_M on shortcut2
     */
-    QTest::newRow("T05 - slot2")		    << SetupAccel << TriggerSlot2 << QString("M")   << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
-    QTest::newRow("T:Qt::Key_M on TriggerSlot2")	    << TestAccel << NoWidget << QString("") << int(Qt::Key_M) << int('m') << 0 << 0 << 0 << 0 << 0 << 0 << Ambiguous;
-    QTest::newRow("T06 - clear")		    << ClearAll << NoWidget << QString("")		    << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult; // Clear all
+    QTest::newRow("T05 - slot2")                    << SetupAccel << TriggerSlot2 << QString("M")         << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
+    QTest::newRow("T:Qt::Key_M on TriggerSlot2")    << TestAccel << NoWidget << QString("")               << int(Qt::Key_M) << int('m') << 0 << 0 << 0 << 0 << 0 << 0 << Ambiguous;
+    QTest::newRow("T06 - clear")                    << ClearAll << NoWidget << QString("")                << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult; // Clear all
 
     /* Testing Single Specialkeys
        Qt::Key_aring
@@ -581,26 +581,26 @@ void tst_QShortcut::text_data()
     /* see comments above on the #ifdef'ery */
     QTest::newRow("T06 - slot1")                    << SetupAccel << TriggerSlot1 << QString::fromLatin1("\x0C5")<< 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
     QTest::newRow("T07 - slot2")                    << SetupAccel << TriggerSlot2 << QString::fromLatin1("Shift+\x0C5")<< 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
-    QTest::newRow("T08 - slot2")		    << SetupAccel << TriggerSlot1 << QString("K")   << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
-    QTest::newRow("T:Qt::Key_aring")		    << TestAccel << NoWidget << QString("")	    << int(Qt::Key_Aring) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
-    QTest::newRow("T:Qt::Key_Aring")		    << TestAccel << NoWidget << QString("")	    << int(Qt::SHIFT+Qt::Key_Aring) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot2Triggered;
-    QTest::newRow("T:Qt::Key_aring - Text Form")   << TestAccel << NoWidget << QString("")	    << 0 << 0xC5 << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
-    QTest::newRow("T:Qt::Key_Aring - Text Form")   << TestAccel << NoWidget << QString("")	    << int(Qt::SHIFT+0) << 0xC5 << 0 << 0 << 0 << 0 << 0 << 0 << Slot2Triggered;
-    QTest::newRow("T:Qt::UNICODE_ACCEL + Qt::Key_K")   << TestAccel << NoWidget << QString("")	    << int(Qt::UNICODE_ACCEL + Qt::Key_K) << int('k') << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
-    QTest::newRow("T09 - clear")		    << ClearAll << NoWidget << QString("")		    << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult; // Clear all
+    QTest::newRow("T08 - slot2")                    << SetupAccel << TriggerSlot1 << QString("K")         << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
+    QTest::newRow("T:Qt::Key_aring")                << TestAccel << NoWidget << QString("")               << int(Qt::Key_Aring) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
+    QTest::newRow("T:Qt::Key_Aring")                << TestAccel << NoWidget << QString("")               << int(Qt::SHIFT+Qt::Key_Aring) << 0 << 0 << 0 << 0 << 0 << 0 << 0 << Slot2Triggered;
+    QTest::newRow("T:Qt::Key_aring - Text Form")    << TestAccel << NoWidget << QString("")               << 0 << 0xC5 << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
+    QTest::newRow("T:Qt::Key_Aring - Text Form")    << TestAccel << NoWidget << QString("")               << int(Qt::SHIFT+0) << 0xC5 << 0 << 0 << 0 << 0 << 0 << 0 << Slot2Triggered;
+    QTest::newRow("T:Qt::UNICODE_ACCEL + Qt::Key_K")<< TestAccel << NoWidget << QString("")               << int(Qt::UNICODE_ACCEL + Qt::Key_K) << int('k') << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
+    QTest::newRow("T09 - clear")                    << ClearAll << NoWidget << QString("")                << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult; // Clear all
 
     /* Testing Multiple Sequences
        Qt::Key_M
        Qt::Key_I, Qt::Key_M
        Shift+Qt::Key_I, Qt::Key_M
     */
-    QTest::newRow("T10 - slot1")		    << SetupAccel << TriggerSlot1 << QString("M")   << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
-    QTest::newRow("T11 - slot2")		    << SetupAccel << TriggerSlot2 << QString("I, M")<< 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
-    QTest::newRow("T12 - slot1")		    << SetupAccel << TriggerSlot1 << QString("Shift+I, M")<< 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
-    QTest::newRow("T:Qt::Key_M (2)")		    << TestAccel << NoWidget << QString("")	    << int(Qt::Key_M) << int('m') << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
-    QTest::newRow("T:Qt::Key_I, Qt::Key_M")	    << TestAccel << NoWidget << QString("")	    << int(Qt::Key_I) << int('i') << int(Qt::Key_M) << int('m') << 0 << 0 << 0 << 0 << Slot2Triggered;
-    QTest::newRow("T:Shift+Qt::Key_I, Qt::Key_M")	    << TestAccel << NoWidget << QString("")	    << int(Qt::SHIFT + Qt::Key_I) << int('I') << int(Qt::Key_M) << int('m') << 0 << 0 << 0 << 0 << Slot1Triggered;
-    QTest::newRow("T13 - clear")		    << ClearAll << NoWidget << QString("")		    << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult; // Clear all
+    QTest::newRow("T10 - slot1")                    << SetupAccel << TriggerSlot1 << QString("M")         << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
+    QTest::newRow("T11 - slot2")                    << SetupAccel << TriggerSlot2 << QString("I, M")<< 0  << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
+    QTest::newRow("T12 - slot1")                    << SetupAccel << TriggerSlot1 << QString("Shift+I, M")<< 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult;
+    QTest::newRow("T:Qt::Key_M (2)")                << TestAccel << NoWidget << QString("")               << int(Qt::Key_M) << int('m') << 0 << 0 << 0 << 0 << 0 << 0 << Slot1Triggered;
+    QTest::newRow("T:Qt::Key_I, Qt::Key_M")         << TestAccel << NoWidget << QString("")               << int(Qt::Key_I) << int('i') << int(Qt::Key_M) << int('m') << 0 << 0 << 0 << 0 << Slot2Triggered;
+    QTest::newRow("T:Shift+Qt::Key_I, Qt::Key_M")   << TestAccel << NoWidget << QString("")               << int(Qt::SHIFT + Qt::Key_I) << int('I') << int(Qt::Key_M) << int('m') << 0 << 0 << 0 << 0 << Slot1Triggered;
+    QTest::newRow("T13 - clear")                    << ClearAll << NoWidget << QString("")                << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << NoResult; // Clear all
 }
 
 // ------------------------------------------------------------------
@@ -624,7 +624,7 @@ void tst_QShortcut::disabledItems()
     QPushButton pb2(mainW);
     pb1.setObjectName("pushbutton-1");
     pb2.setObjectName("pushbutton-2");
-    pb1.show();	// Must be show for QShortcutMap::correctSubWindow to trigger
+    pb1.show(); // Must be show for QShortcutMap::correctSubWindow to trigger
     pb2.show();
 
     QShortcut *cut1 = setupShortcut(&pb1, "shortcut1-pb1", TriggerSlot1, "M");
@@ -700,21 +700,21 @@ void tst_QShortcut::disabledItems()
     sendKeyEvents( Qt::CTRL+Qt::Key_Q, 0 );
     QCOMPARE( currentResult, NoResult );
     if (over_330)
-    	QCOMPARE( sbText, QString("Ctrl+K, Ctrl+Q not defined") );
+        QCOMPARE( sbText, QString("Ctrl+K, Ctrl+Q not defined") );
 
     currentResult = NoResult;
     sendKeyEvents( Qt::CTRL+Qt::Key_K, 0 );
     sendKeyEvents( Qt::CTRL+Qt::Key_M, 0 );
     QCOMPARE( currentResult, NoResult );
     if (over_330)
-    	QCOMPARE( sbText, QString::null );
+        QCOMPARE( sbText, QString::null );
 
     currentResult = NoResult;
     sendKeyEvents( Qt::CTRL+Qt::Key_K, 0 );
     sendKeyEvents( Qt::CTRL+Qt::Key_L, 0 );
     QCOMPARE( currentResult, Slot1Triggered );
     if (over_330)
-    	QCOMPARE( sbText, QString::null );
+        QCOMPARE( sbText, QString::null );
 #endif
     clearAllShortcuts();
     cut1 = 0;
@@ -876,7 +876,7 @@ void tst_QShortcut::ambiguousItems()
     QPushButton pb2(mainW);
     pb1.setObjectName("pushbutton-1");
     pb2.setObjectName("pushbutton-2");
-    pb1.show();	// Must be show for QShortcutMap::correctSubWindow to trigger
+    pb1.show(); // Must be show for QShortcutMap::correctSubWindow to trigger
     pb2.show();
 
     setupShortcut(&pb1, "shortcut1-pb1", TriggerSlot1, "M");
@@ -915,7 +915,7 @@ void tst_QShortcut::unicodeCompare()
     QPushButton pb2(mainW);
     pb1.setObjectName("pushbutton-1");
     pb2.setObjectName("pushbutton-2");
-    pb1.show();	// Must be show for QShortcutMap::correctSubWindow to trigger
+    pb1.show(); // Must be show for QShortcutMap::correctSubWindow to trigger
     pb2.show();
 
     QKeySequence ks1("Ctrl+M");     // Unicode
@@ -1190,25 +1190,25 @@ void tst_QShortcut::sendKeyEvents(QWidget *w, int k1, QChar c1, int k2, QChar c2
     if (k1 || c1.toLatin1()) {
         QString c(c1.unicode() == QChar::Null ? QString() : QString(c1));
         QTest::sendKeyEvent(QTest::Press, w, static_cast<Qt::Key>(k1), c, b1);
-	QTest::sendKeyEvent(QTest::Release, w, static_cast<Qt::Key>(k1), c, b1);
+        QTest::sendKeyEvent(QTest::Release, w, static_cast<Qt::Key>(k1), c, b1);
     }
 
     if (k2 || c2.toLatin1()) {
         QString c(c2.unicode() == QChar::Null ? QString() : QString(c2));
-	QTest::sendKeyEvent(QTest::Press, w, static_cast<Qt::Key>(k2), c, b2);
-	QTest::sendKeyEvent(QTest::Release, w, static_cast<Qt::Key>(k2), c, b2);
+        QTest::sendKeyEvent(QTest::Press, w, static_cast<Qt::Key>(k2), c, b2);
+        QTest::sendKeyEvent(QTest::Release, w, static_cast<Qt::Key>(k2), c, b2);
     }
 
     if (k3 || c3.toLatin1()) {
         QString c(c3.unicode() == QChar::Null ? QString() : QString(c3));
-	QTest::sendKeyEvent(QTest::Press, w, static_cast<Qt::Key>(k3), c, b3);
-	QTest::sendKeyEvent(QTest::Release, w, static_cast<Qt::Key>(k3), c, b3);
+        QTest::sendKeyEvent(QTest::Press, w, static_cast<Qt::Key>(k3), c, b3);
+        QTest::sendKeyEvent(QTest::Release, w, static_cast<Qt::Key>(k3), c, b3);
     }
 
     if (k4 || c4.toLatin1()) {
         QString c(c4.unicode() == QChar::Null ? QString() : QString(c4));
-	QTest::sendKeyEvent(QTest::Press, w, static_cast<Qt::Key>(k4), c, b4);
-	QTest::sendKeyEvent(QTest::Release, w, static_cast<Qt::Key>(k4), c, b4);
+        QTest::sendKeyEvent(QTest::Press, w, static_cast<Qt::Key>(k4), c, b4);
+        QTest::sendKeyEvent(QTest::Release, w, static_cast<Qt::Key>(k4), c, b4);
     }
 }
 
@@ -1229,9 +1229,9 @@ void tst_QShortcut::testElement()
     QFETCH(tst_QShortcut::Result, result);
 
     if (action == ClearAll) {
-	clearAllShortcuts();
+        clearAllShortcuts();
     } else if (action == SetupAccel) {
-	setupShortcut(testWidget, txt, k1, k2, k3, k4);
+        setupShortcut(testWidget, txt, k1, k2, k3, k4);
     } else {
         sendKeyEvents(k1, c1, k2, c2, k3, c3, k4, c4);
         QCOMPARE(currentResult, result);

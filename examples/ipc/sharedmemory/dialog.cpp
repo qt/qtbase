@@ -73,8 +73,8 @@ Dialog::Dialog(QWidget *parent)
     ui.setupUi(this);
     connect(ui.loadFromFileButton, SIGNAL(clicked()), SLOT(loadFromFile()));
     connect(ui.loadFromSharedMemoryButton,
-	    SIGNAL(clicked()),
-	    SLOT(loadFromMemory()));
+            SIGNAL(clicked()),
+            SLOT(loadFromMemory()));
     setWindowTitle(tr("SharedMemory Example"));
 }
 //! [0]
@@ -155,7 +155,7 @@ void Dialog::loadFromMemory()
 {
     if (!sharedMemory.attach()) {
         ui.label->setText(tr("Unable to attach to shared memory segment.\n" \
-			     "Load an image first."));
+                             "Load an image first."));
         return;
     }
 

@@ -63,48 +63,48 @@
 #include <windows.h>
 
 #ifdef QT_LARGEFILE_SUPPORT
-#define QT_STATBUF		struct _stati64		// non-ANSI defs
-#define QT_STATBUF4TSTAT	struct _stati64		// non-ANSI defs
-#define QT_STAT			::_stati64
-#define QT_FSTAT		::_fstati64
+#define QT_STATBUF              struct _stati64         // non-ANSI defs
+#define QT_STATBUF4TSTAT        struct _stati64         // non-ANSI defs
+#define QT_STAT                 ::_stati64
+#define QT_FSTAT                ::_fstati64
 #else
-#define QT_STATBUF		struct stat		// non-ANSI defs
-#define QT_STATBUF4TSTAT	struct stat		// non-ANSI defs
-#define QT_STAT			::qt_wince_stat
-#define QT_FSTAT		::qt_wince__fstat
+#define QT_STATBUF              struct stat             // non-ANSI defs
+#define QT_STATBUF4TSTAT        struct stat             // non-ANSI defs
+#define QT_STAT                 ::qt_wince_stat
+#define QT_FSTAT                ::qt_wince__fstat
 #endif
-#define QT_STAT_REG		_S_IFREG
-#define QT_STAT_DIR		_S_IFDIR
-#define QT_STAT_MASK		_S_IFMT
+#define QT_STAT_REG             _S_IFREG
+#define QT_STAT_DIR             _S_IFDIR
+#define QT_STAT_MASK            _S_IFMT
 #if defined(_S_IFLNK)
-#  define QT_STAT_LNK		_S_IFLNK
+#  define QT_STAT_LNK           _S_IFLNK
 #endif
-#define QT_FILENO		::qt_wince___fileno
-#define QT_OPEN			::qt_wince_open
-#define QT_CLOSE		::qt_wince__close
+#define QT_FILENO               ::qt_wince___fileno
+#define QT_OPEN                 ::qt_wince_open
+#define QT_CLOSE                ::qt_wince__close
 #ifdef QT_LARGEFILE_SUPPORT
-#define QT_LSEEK		::_lseeki64
-#define QT_TSTAT		::_tstati64
+#define QT_LSEEK                ::_lseeki64
+#define QT_TSTAT                ::_tstati64
 #else
-#define QT_LSEEK		::qt_wince__lseek
-#define QT_TSTAT		::_tstat
+#define QT_LSEEK                ::qt_wince__lseek
+#define QT_TSTAT                ::_tstat
 #endif
-#define QT_READ			::qt_wince__read
-#define QT_WRITE		::qt_wince__write
-#define QT_ACCESS		::qt_wince__access
-#define QT_GETCWD		::_getcwd
-#define QT_CHDIR		::_chdir
-#define QT_MKDIR		::qt_wince__mkdir
-#define QT_RMDIR		::qt_wince__rmdir
-#define QT_OPEN_LARGEFILE	0
-#define QT_OPEN_RDONLY		_O_RDONLY
-#define QT_OPEN_WRONLY		_O_WRONLY
-#define QT_OPEN_RDWR		_O_RDWR
-#define QT_OPEN_CREAT		_O_CREAT
-#define QT_OPEN_TRUNC		_O_TRUNC
-#define QT_OPEN_APPEND		_O_APPEND
-# define QT_OPEN_TEXT		_O_TEXT
-# define QT_OPEN_BINARY		_O_BINARY
+#define QT_READ                 ::qt_wince__read
+#define QT_WRITE                ::qt_wince__write
+#define QT_ACCESS               ::qt_wince__access
+#define QT_GETCWD               ::_getcwd
+#define QT_CHDIR                ::_chdir
+#define QT_MKDIR                ::qt_wince__mkdir
+#define QT_RMDIR                ::qt_wince__rmdir
+#define QT_OPEN_LARGEFILE       0
+#define QT_OPEN_RDONLY          _O_RDONLY
+#define QT_OPEN_WRONLY          _O_WRONLY
+#define QT_OPEN_RDWR            _O_RDWR
+#define QT_OPEN_CREAT           _O_CREAT
+#define QT_OPEN_TRUNC           _O_TRUNC
+#define QT_OPEN_APPEND          _O_APPEND
+# define QT_OPEN_TEXT           _O_TEXT
+# define QT_OPEN_BINARY         _O_BINARY
 
 #define QT_FOPEN                ::fopen
 #define QT_FSEEK                ::fseek
@@ -115,17 +115,17 @@
 #define QT_FPOS_T               fpos_t
 #define QT_OFF_T                long
 
-#define QT_SIGNAL_ARGS		int
+#define QT_SIGNAL_ARGS          int
 
 #define QT_VSNPRINTF(buffer, count, format, arg) \
     _vsnprintf(buffer, count, format, arg)
 
-#define QT_SNPRINTF		::_snprintf
+#define QT_SNPRINTF             ::_snprintf
 
-# define F_OK	0
-# define X_OK	1
-# define W_OK	2
-# define R_OK	4
+# define F_OK   0
+# define X_OK   1
+# define W_OK   2
+# define R_OK   4
 
 typedef int mode_t;
 

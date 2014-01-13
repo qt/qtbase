@@ -3170,7 +3170,7 @@ QXmlStreamPrivateTagStack::NamespaceDeclaration &QXmlStreamWriterPrivate::findNa
                 --j;
             if (j < 0)
                 break;
-	}
+        }
         namespaceDeclaration.prefix = addToStringStorage(s);
     }
     namespaceDeclaration.namespaceUri = addToStringStorage(namespaceUri);

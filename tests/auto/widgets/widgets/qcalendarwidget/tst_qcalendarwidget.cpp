@@ -185,7 +185,7 @@ void tst_QCalendarWidget::buttonClickCheck()
     int month = object.monthShown();
     QToolButton *button = object.findChild<QToolButton *>("qt_calendar_prevmonth");
     QTest::mouseClick(button, Qt::LeftButton);
-	QCOMPARE(month > 1 ? month-1 : 12, object.monthShown());
+    QCOMPARE(month > 1 ? month-1 : 12, object.monthShown());
     button = object.findChild<QToolButton *>("qt_calendar_nextmonth");
     QTest::mouseClick(button, Qt::LeftButton);
     QCOMPARE(month, object.monthShown());

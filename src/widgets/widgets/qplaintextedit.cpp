@@ -347,7 +347,7 @@ void QPlainTextDocumentLayout::documentChanged(int from, int /*charsRemoved*/, i
     }
 
     if (!d->blockUpdate)
-	emit update(QRectF(0., -doc->documentMargin(), 1000000000., 1000000000.)); // optimization potential
+        emit update(QRectF(0., -doc->documentMargin(), 1000000000., 1000000000.)); // optimization potential
 }
 
 

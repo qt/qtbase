@@ -986,9 +986,9 @@ void QDBusConnectionPrivate::deliverCall(QObject *object, int /*flags*/, const Q
         fail = object->qt_metacall(QMetaObject::InvokeMetaMethod,
                                    slotIdx, params.data()) >= 0;
         QDBusConnectionPrivate::setSender(0);
-	// the object might be deleted in the slot
-	if (!ptr.isNull())
-	    QDBusContextPrivate::set(object, old);
+        // the object might be deleted in the slot
+        if (!ptr.isNull())
+            QDBusContextPrivate::set(object, old);
     }
 
     // do we create a reply? Only if the caller is waiting for a reply and one hasn't been sent

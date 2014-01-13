@@ -84,9 +84,9 @@ public:
 
     bool wait(QMutex *mutex, unsigned long time = ULONG_MAX)
     {
-	Q_UNUSED(mutex);
-	Q_UNUSED(time);
-	return true;
+        Q_UNUSED(mutex);
+        Q_UNUSED(time);
+        return true;
     }
 
     void wakeOne() {}

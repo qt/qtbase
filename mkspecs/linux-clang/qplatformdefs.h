@@ -87,14 +87,14 @@
 #undef QT_SOCKLEN_T
 
 #if defined(__GLIBC__) && (__GLIBC__ >= 2)
-#define QT_SOCKLEN_T		socklen_t
+#define QT_SOCKLEN_T            socklen_t
 #else
-#define QT_SOCKLEN_T		int
+#define QT_SOCKLEN_T            int
 #endif
 
 #if defined(_XOPEN_SOURCE) && (_XOPEN_SOURCE >= 500)
-#define QT_SNPRINTF		::snprintf
-#define QT_VSNPRINTF		::vsnprintf
+#define QT_SNPRINTF             ::snprintf
+#define QT_VSNPRINTF            ::vsnprintf
 #endif
 
 #endif // QPLATFORMDEFS_H

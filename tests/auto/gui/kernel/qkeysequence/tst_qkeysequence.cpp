@@ -528,7 +528,7 @@ void tst_QKeySequence::toStringFromKeycode()
 
 void tst_QKeySequence::streamOperators_data()
 {
-	operatorQString_data();
+    operatorQString_data();
 }
 
 void tst_QKeySequence::streamOperators()
@@ -536,21 +536,21 @@ void tst_QKeySequence::streamOperators()
     QFETCH( int, modifiers );
     QFETCH( int, keycode );
 
-	QByteArray data;
-	QKeySequence refK( modifiers | keycode );
-	QKeySequence orgK( "Ctrl+A" );
-	QKeySequence copyOrgK = orgK;
-	QVERIFY( copyOrgK == orgK );
+    QByteArray data;
+    QKeySequence refK( modifiers | keycode );
+    QKeySequence orgK( "Ctrl+A" );
+    QKeySequence copyOrgK = orgK;
+    QVERIFY( copyOrgK == orgK );
 
-	QDataStream in(&data, QIODevice::WriteOnly);
-	in << refK;
-        QDataStream out(&data, QIODevice::ReadOnly);
-        out >> orgK;
+    QDataStream in(&data, QIODevice::WriteOnly);
+    in << refK;
+    QDataStream out(&data, QIODevice::ReadOnly);
+    out >> orgK;
 
-	QVERIFY( orgK == refK );
+    QVERIFY( orgK == refK );
 
-	// check if detached
-	QVERIFY( orgK != copyOrgK );
+    // check if detached
+    QVERIFY( orgK != copyOrgK );
 }
 
 

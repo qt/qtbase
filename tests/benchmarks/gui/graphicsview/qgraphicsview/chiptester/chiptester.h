@@ -57,9 +57,9 @@ class ChipTester : public QGraphicsView
     Q_OBJECT
 public:
     enum Operation {
-	Rotate360,
-	ZoomInOut,
-	Translate
+        Rotate360,
+        ZoomInOut,
+        Translate
     };
     ChipTester(QWidget *parent = 0);
 

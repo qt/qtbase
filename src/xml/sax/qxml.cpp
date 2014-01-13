@@ -865,11 +865,11 @@ void QXmlNamespaceSupport::processName(const QString& qname,
     nsuri.clear();
     // attributes don't take default namespace
     if (!isAttribute && !d->ns.isEmpty()) {
-	/*
-	    We want to access d->ns.value(""), but as an optimization
-	    we use the fact that "" compares less than any other
-	    string, so it's either first in the map or not there.
-	*/
+        /*
+            We want to access d->ns.value(""), but as an optimization
+            we use the fact that "" compares less than any other
+            string, so it's either first in the map or not there.
+        */
         NamespaceMap::const_iterator first = d->ns.constBegin();
         if (first.key().isEmpty())
             nsuri = first.value(); // get default namespace

@@ -1104,8 +1104,8 @@ void QDockWidgetPrivate::setWindowState(bool floating, bool unplug, const QRect 
     \enum QDockWidget::DockWidgetFeature
 
     \value DockWidgetClosable   The dock widget can be closed. On some systems the dock
-	                            widget always has a close button when it's floating
-								(for example on MacOS 10.5).
+                                widget always has a close button when it's floating
+                                (for example on MacOS 10.5).
     \value DockWidgetMovable    The dock widget can be moved between docks
                                 by the user.
     \value DockWidgetFloatable  The dock widget can be detached from the

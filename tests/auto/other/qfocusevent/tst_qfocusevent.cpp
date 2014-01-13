@@ -72,14 +72,14 @@ protected:
     {
         QLineEdit::focusInEvent( e );
         focusInEventReason = e->reason();
-	    focusInEventGotFocus = e->gotFocus();
+        focusInEventGotFocus = e->gotFocus();
         focusInEventRecieved = true;
     }
     void focusOutEvent( QFocusEvent* e )
     {
         QLineEdit::focusOutEvent( e );
         focusOutEventReason = e->reason();
-	    focusOutEventLostFocus = !e->gotFocus();
+        focusOutEventLostFocus = !e->gotFocus();
         focusOutEventRecieved = true;
     }
 };

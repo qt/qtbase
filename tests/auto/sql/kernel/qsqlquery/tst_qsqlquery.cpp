@@ -2857,7 +2857,7 @@ void tst_QSqlQuery::task_250026()
     QVERIFY_SQL( q, next() );
     QCOMPARE( q.value( 0 ).toString().length(), data258.length() );
     QVERIFY_SQL( q, next() );
-	QCOMPARE( q.value( 0 ).toString().length(), data1026.length() );
+    QCOMPARE( q.value( 0 ).toString().length(), data1026.length() );
 }
 
 void tst_QSqlQuery::task_205701()

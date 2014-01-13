@@ -114,8 +114,8 @@ void tst_QSqlRecord::cleanup()
 {
     delete rec;
     for ( int i = 0; i < NUM_FIELDS; ++i ) {
-	delete fields[ i ];
-	fields[ i ] = 0;
+        delete fields[ i ];
+        fields[ i ] = 0;
     }
     rec = 0;
 }
@@ -129,7 +129,7 @@ void tst_QSqlRecord::createTestRecord()
     fields[ 2 ] = new QSqlField( "double", QVariant::Double );
     fields[ 3 ] = new QSqlField( "bool", QVariant::Bool );
     for ( int i = 0; i < NUM_FIELDS; ++i )
-	rec->append( *(fields[ i ] ) );
+        rec->append( *(fields[ i ] ) );
 }
 
 
@@ -237,7 +237,7 @@ void tst_QSqlRecord::contains()
 {
     createTestRecord();
     for ( int i = 0; i < NUM_FIELDS; ++i )
-	QVERIFY( rec->contains( fields[ i ]->name() ) );
+        QVERIFY( rec->contains( fields[ i ]->name() ) );
     QVERIFY( !rec->contains( "__Harry__" ) );
 }
 
@@ -258,10 +258,10 @@ void tst_QSqlRecord::field()
 
     int i;
     for ( i = 0; i < NUM_FIELDS; ++i )
-	QVERIFY( rec->field( i ) == *fields[ i ] );
+        QVERIFY( rec->field( i ) == *fields[ i ] );
 
     for ( i = 0; i < NUM_FIELDS; ++i )
-	QVERIFY( rec->field( (fields[ i ] )->name() ) == *( fields[ i ] ) );
+        QVERIFY( rec->field( (fields[ i ] )->name() ) == *( fields[ i ] ) );
     QVERIFY( rec->indexOf( "_This should give a warning!_" ) == -1 );
 }
 
@@ -270,7 +270,7 @@ void tst_QSqlRecord::fieldName()
     createTestRecord();
 
     for ( int i = 0; i < NUM_FIELDS; ++i )
-	QVERIFY( rec->field( (fields[ i ] )->name() ) == *( fields[ i ] ) );
+        QVERIFY( rec->field( (fields[ i ] )->name() ) == *( fields[ i ] ) );
     QVERIFY( rec->fieldName( NUM_FIELDS ).isNull() );
 }
 
@@ -279,10 +279,10 @@ void tst_QSqlRecord::insert()
     QSqlRecord iRec;
     int i;
     for ( i = 0; i <= 100; ++i ) {
-	iRec.insert( i, QSqlField( QString::number( i ), QVariant::Int ) );
+        iRec.insert( i, QSqlField( QString::number( i ), QVariant::Int ) );
     }
     for ( i = 0; i <= 100; ++i ) {
-	QCOMPARE( iRec.fieldName( i ), QString::number( i ) );
+        QCOMPARE( iRec.fieldName( i ), QString::number( i ) );
     }
 //    iRec.insert( 505, QSqlField( "Harry", QVariant::Double ) );
 //    QCOMPARE( iRec.fieldName( 505 ), (QString)"Harry" );
@@ -313,30 +313,30 @@ void tst_QSqlRecord::isGenerated()
 
     int i;
     for ( i = 0; i < NUM_FIELDS; ++i )
-	QVERIFY( rec->isGenerated( i ) );
+        QVERIFY( rec->isGenerated( i ) );
 
     for ( i = 0; i < NUM_FIELDS; ++i )
-	QVERIFY( rec->isGenerated( fields[ i ]->name() ) );
+        QVERIFY( rec->isGenerated( fields[ i ]->name() ) );
 
     for ( i = 0; i < NUM_FIELDS; ++i ) {
-	if ( i % 2 )
-	    rec->setGenerated( i, false );
+        if ( i % 2 )
+            rec->setGenerated( i, false );
     }
     rec->setGenerated( NUM_FIELDS * 2, false ); // nothing should happen here
 
     for ( i = 0; i < NUM_FIELDS; ++i ) {
-	if ( i % 2 ) {
-	    QVERIFY( !rec->isGenerated( i ) );
-	} else {
-	    QVERIFY( rec->isGenerated( i ) );
+        if ( i % 2 ) {
+            QVERIFY( !rec->isGenerated( i ) );
+        } else {
+            QVERIFY( rec->isGenerated( i ) );
         }
     }
 
     for ( i = 0; i < NUM_FIELDS; ++i )
-	if ( i % 2 ) {
-	    QVERIFY( !rec->isGenerated( fields[ i ]->name() ) );
-	} else {
-	    QVERIFY( rec->isGenerated( fields[ i ]->name() ) );
+        if ( i % 2 ) {
+            QVERIFY( !rec->isGenerated( fields[ i ]->name() ) );
+        } else {
+            QVERIFY( rec->isGenerated( fields[ i ]->name() ) );
         }
 
     rec->setGenerated( "_This should give a warning!_",  false ); // nothing should happen here
@@ -348,31 +348,31 @@ void tst_QSqlRecord::isNull()
 
     int i;
     for ( i = 0; i < NUM_FIELDS; ++i ) {
-	QVERIFY( rec->isNull( i ) );
-	QVERIFY( rec->isNull( fields[ i ]->name() ) );
+        QVERIFY( rec->isNull( i ) );
+        QVERIFY( rec->isNull( fields[ i ]->name() ) );
     }
 
     for ( i = 0; i < NUM_FIELDS; ++i ) {
-	if ( i % 2 )
-	    rec->setNull( i );
+        if ( i % 2 )
+            rec->setNull( i );
     }
     rec->setNull( NUM_FIELDS ); // nothing should happen here
 
     for ( i = 0; i < NUM_FIELDS; ++i ) {
-	if ( i % 2 ) {
-	    QVERIFY( rec->isNull( i ) );
-	    QVERIFY( rec->isNull( fields[ i ]->name() ) );
+        if ( i % 2 ) {
+            QVERIFY( rec->isNull( i ) );
+            QVERIFY( rec->isNull( fields[ i ]->name() ) );
         }
     }
 
     for ( i = 0; i < NUM_FIELDS; ++i ) {
-	rec->setNull( fields[ i ]->name() );
+        rec->setNull( fields[ i ]->name() );
     }
     rec->setNull( "_This should give a warning!_" ); // nothing should happen here
 
     for ( i = 0; i < NUM_FIELDS; ++i ) {
-	QVERIFY( rec->isNull( i ) );
-	QVERIFY( rec->isNull( fields[ i ]->name() ) );
+        QVERIFY( rec->isNull( i ) );
+        QVERIFY( rec->isNull( fields[ i ]->name() ) );
     }
 }
 
@@ -385,19 +385,19 @@ void tst_QSqlRecord::operator_Assign()
     buf3 = *rec;
     buf4 = *rec;
     for ( i = 0; i < NUM_FIELDS; ++i ) {
-	QVERIFY( buf2.field( i ) == *fields[ i ] );
-	QVERIFY( buf3.field( i ) == *( fields[ i ] ) );
-	QVERIFY( buf4.field( i ) == *( fields[ i ] ) );
+        QVERIFY( buf2.field( i ) == *fields[ i ] );
+        QVERIFY( buf3.field( i ) == *( fields[ i ] ) );
+        QVERIFY( buf4.field( i ) == *( fields[ i ] ) );
     }
     for ( i = 0; i < NUM_FIELDS; ++i )
-	buf3.setNull( i );
+        buf3.setNull( i );
     buf3.remove( NUM_FIELDS - 1 );
     QSqlRecord buf5 = buf3;
     for ( i = 0; i < NUM_FIELDS - 1; ++i ) {
-	QSqlField fi ( fields[ i ]->name(), fields[ i ]->type() );
-	fi.clear();
-	QVERIFY( buf5.field( i ) == fi );
-	QVERIFY( buf5.isGenerated( i ) );
+        QSqlField fi ( fields[ i ]->name(), fields[ i ]->type() );
+        fi.clear();
+        QVERIFY( buf5.field( i ) == fi );
+        QVERIFY( buf5.isGenerated( i ) );
     }
 }
 
@@ -406,7 +406,7 @@ void tst_QSqlRecord::position()
     createTestRecord();
     int i;
     for ( i = 0; i < NUM_FIELDS; ++i ) {
-	QCOMPARE( rec->indexOf( fields[ i ]->name() ), i );
+        QCOMPARE( rec->indexOf( fields[ i ]->name() ), i );
     }
 }
 
@@ -415,15 +415,15 @@ void tst_QSqlRecord::remove()
     createTestRecord();
     int i;
     for ( i = 0; i < NUM_FIELDS; ++i ) {
-	rec->setGenerated( i, false );
-	QCOMPARE( (int)rec->count(), NUM_FIELDS - i );
-	rec->remove( 0 );
-	QCOMPARE( (int)rec->count(), NUM_FIELDS - i - 1 );
+        rec->setGenerated( i, false );
+        QCOMPARE( (int)rec->count(), NUM_FIELDS - i );
+        rec->remove( 0 );
+        QCOMPARE( (int)rec->count(), NUM_FIELDS - i - 1 );
     }
     rec->remove( NUM_FIELDS * 2 ); // nothing should happen
     for ( i = 0; i < NUM_FIELDS; ++i ) {
-	rec->insert( i, QSqlField( fields[ i ]->name(), fields[ i ]->type() ) );
-	QVERIFY( rec->isGenerated( i ) );
+        rec->insert( i, QSqlField( fields[ i ]->name(), fields[ i ]->type() ) );
+        QVERIFY( rec->isGenerated( i ) );
     }
 }
 
@@ -472,7 +472,7 @@ void tst_QSqlRecord::setValue()
     QFETCH( int, bval );
 
     for ( i = 0; i < 4; ++i )
-	rec->setNull( i );
+        rec->setNull( i );
 
     rec->setValue( 0, sval );
     rec->setValue( 1, ival );
@@ -483,7 +483,7 @@ void tst_QSqlRecord::setValue()
     QVERIFY( rec->value( 2 ) == dval );
     QVERIFY( rec->value( 3 ) == QVariant(bval) );
     for ( i = 0; i < 4; ++i )
-	QVERIFY( !rec->isNull( i ) );
+        QVERIFY( !rec->isNull( i ) );
 
     QSqlRecord rec2 = *rec;
     QVERIFY( rec2.value( 0 ) == sval );
@@ -495,7 +495,7 @@ void tst_QSqlRecord::setValue()
     QVERIFY( rec2.value( 0 ) == "__Harry__" );
 
     for ( i = 0; i < 4; ++i )
-	QVERIFY( !rec2.isNull( i ) );
+        QVERIFY( !rec2.isNull( i ) );
 
     QCOMPARE( rec->value( 0 ).toString(), sval );
     QCOMPARE( rec->value( 1 ).toInt(), ival );

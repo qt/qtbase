@@ -200,7 +200,7 @@ void tst_QDialog::showExtension()
     // show
     ((DummyDialog*)testWidget)->showExtension( true );
 //     while ( testWidget->size() == dlgSize )
-// 	qApp->processEvents();
+//         qApp->processEvents();
 
     QTEST( testWidget->size(), "result"  );
 

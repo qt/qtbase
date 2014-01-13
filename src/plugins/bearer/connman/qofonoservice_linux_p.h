@@ -68,7 +68,7 @@
 #ifndef QT_NO_BEARERMANAGEMENT
 #ifndef QT_NO_DBUS
 
-#define OFONO_SERVICE	                         "org.ofono"
+#define OFONO_SERVICE                            "org.ofono"
 #define OFONO_MANAGER_INTERFACE                  "org.ofono.Manager"
 #define OFONO_MANAGER_PATH                       "/"
 #define OFONO_MODEM_INTERFACE                    "org.ofono.Modem"

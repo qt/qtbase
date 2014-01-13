@@ -55,13 +55,13 @@ int main(int argv, char **args)
     char buffer[50];
 
     forever {
-	numRead  = socket.read(buffer, 50);
+        numRead  = socket.read(buffer, 50);
 
-	// do whatever with array
+        // do whatever with array
 
-	numReadTotal += numRead;
+        numReadTotal += numRead;
         if (numRead == 0 && !socket.waitForReadyRead())
-	    break;
+            break;
     }
 //! [0]
 

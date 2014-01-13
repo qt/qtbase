@@ -194,12 +194,12 @@ void Window::setFormatString(const QString &formatString)
         meetingEdit->setDateRange(QDate(2004, 11, 1), QDate(2005, 11, 30));
         meetingLabel->setText(tr("Meeting date (between %0 and %1):")
             .arg(meetingEdit->minimumDate().toString(Qt::ISODate))
-	    .arg(meetingEdit->maximumDate().toString(Qt::ISODate)));
+            .arg(meetingEdit->maximumDate().toString(Qt::ISODate)));
     } else {
         meetingEdit->setTimeRange(QTime(0, 7, 20, 0), QTime(21, 0, 0, 0));
         meetingLabel->setText(tr("Meeting time (between %0 and %1):")
             .arg(meetingEdit->minimumTime().toString(Qt::ISODate))
-	    .arg(meetingEdit->maximumTime().toString(Qt::ISODate)));
+            .arg(meetingEdit->maximumTime().toString(Qt::ISODate)));
     }
 }
 //! [13]

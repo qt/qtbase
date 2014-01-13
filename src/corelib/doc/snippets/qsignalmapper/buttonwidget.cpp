@@ -50,11 +50,11 @@ ButtonWidget::ButtonWidget(QStringList texts, QWidget *parent)
 
     QGridLayout *gridLayout = new QGridLayout;
     for (int i = 0; i < texts.size(); ++i) {
-	QPushButton *button = new QPushButton(texts[i]);
-	connect(button, SIGNAL(clicked()), signalMapper, SLOT(map()));
+        QPushButton *button = new QPushButton(texts[i]);
+        connect(button, SIGNAL(clicked()), signalMapper, SLOT(map()));
 //! [0] //! [1]
-	signalMapper->setMapping(button, texts[i]);
-	gridLayout->addWidget(button, i / 3, i % 3);
+        signalMapper->setMapping(button, texts[i]);
+        gridLayout->addWidget(button, i / 3, i % 3);
     }
 
     connect(signalMapper, SIGNAL(mapped(QString)),

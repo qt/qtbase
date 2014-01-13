@@ -160,23 +160,23 @@ QSettings *QLibraryInfoPrivate::findConfiguration()
 #else
     if (!QFile::exists(qtconfig) && QCoreApplication::instance()) {
 #ifdef Q_OS_MAC
-	CFBundleRef bundleRef = CFBundleGetMainBundle();
+        CFBundleRef bundleRef = CFBundleGetMainBundle();
         if (bundleRef) {
-	    QCFType<CFURLRef> urlRef = CFBundleCopyResourceURL(bundleRef,
-							       QCFString(QLatin1String("qt.conf")),
-							       0,
-							       0);
-	    if (urlRef) {
-	        QCFString path = CFURLCopyFileSystemPath(urlRef, kCFURLPOSIXPathStyle);
-		qtconfig = QDir::cleanPath(path);
-	    }
-	}
-	if (qtconfig.isEmpty())
+            QCFType<CFURLRef> urlRef = CFBundleCopyResourceURL(bundleRef,
+                                                               QCFString(QLatin1String("qt.conf")),
+                                                               0,
+                                                               0);
+            if (urlRef) {
+                QCFString path = CFURLCopyFileSystemPath(urlRef, kCFURLPOSIXPathStyle);
+                qtconfig = QDir::cleanPath(path);
+            }
+        }
+        if (qtconfig.isEmpty())
 #endif
             {
                 QDir pwd(QCoreApplication::applicationDirPath());
                 qtconfig = pwd.filePath(QLatin1String("qt.conf"));
-	    }
+            }
     }
 #endif
     if (QFile::exists(qtconfig))

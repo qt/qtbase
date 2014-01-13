@@ -68,7 +68,7 @@ public:
 
     QRegExp();
     explicit QRegExp(const QString &pattern, Qt::CaseSensitivity cs = Qt::CaseSensitive,
-		     PatternSyntax syntax = RegExp);
+                     PatternSyntax syntax = RegExp);
     QRegExp(const QRegExp &rx);
     ~QRegExp();
     QRegExp &operator=(const QRegExp &rx);

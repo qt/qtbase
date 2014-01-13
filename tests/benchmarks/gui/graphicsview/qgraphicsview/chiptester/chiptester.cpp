@@ -94,25 +94,25 @@ void ChipTester::paintEvent(QPaintEvent *event)
 {
     QGraphicsView::paintEvent(event);
     if (++npaints == 50)
-	eventLoop.quit();
+        eventLoop.quit();
 }
 
 void ChipTester::timerEvent(QTimerEvent *)
 {
     switch (operation) {
     case Rotate360:
-	rotate(1);
-	break;
+        rotate(1);
+        break;
     case ZoomInOut: {
-	qreal s = 0.05 + (npaints / 20.0);
-	setTransform(QTransform().scale(s, s));
-	break;
+        qreal s = 0.05 + (npaints / 20.0);
+        setTransform(QTransform().scale(s, s));
+        break;
     }
     case Translate: {
-	int offset = horizontalScrollBar()->minimum()
-	    + (npaints % (horizontalScrollBar()->maximum() - horizontalScrollBar()->minimum()));
-	horizontalScrollBar()->setValue(offset);
-	break;
+        int offset = horizontalScrollBar()->minimum()
+            + (npaints % (horizontalScrollBar()->maximum() - horizontalScrollBar()->minimum()));
+        horizontalScrollBar()->setValue(offset);
+        break;
     }
     }
 }

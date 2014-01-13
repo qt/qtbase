@@ -87,7 +87,7 @@
 
 #define QT_SIGNAL_IGNORE        (void (*)(int))1
 
-#define QT_SNPRINTF		::snprintf
-#define QT_VSNPRINTF		::vsnprintf
+#define QT_SNPRINTF             ::snprintf
+#define QT_VSNPRINTF            ::vsnprintf
 
 #endif // QPLATFORMDEFS_H

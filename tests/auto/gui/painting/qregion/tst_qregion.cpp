@@ -109,19 +109,19 @@ tst_QRegion::tst_QRegion()
 void tst_QRegion::boundingRect()
 {
     {
-	QRect rect;
-	QRegion region( rect );
-	QCOMPARE( region.boundingRect(), rect );
+        QRect rect;
+        QRegion region(rect);
+        QCOMPARE(region.boundingRect(), rect);
     }
     {
-	QRect rect( 10, -20, 30, 40 );
-	QRegion region( rect );
-	QCOMPARE( region.boundingRect(), rect );
+        QRect rect(10, -20, 30, 40);
+        QRegion region(rect);
+        QCOMPARE(region.boundingRect(), rect);
     }
     {
-	QRect rect(15,25,10,10);
-	QRegion region( rect );
-	QCOMPARE( region.boundingRect(), rect );
+        QRect rect(15,25,10,10);
+        QRegion region(rect);
+        QCOMPARE(region.boundingRect(), rect);
     }
 
 }
@@ -129,75 +129,75 @@ void tst_QRegion::boundingRect()
 void tst_QRegion::rects()
 {
     {
-	QRect rect;
-	QRegion region( rect );
-	QVERIFY( region.isEmpty() );
-	QVERIFY( region.rects().isEmpty() );
+        QRect rect;
+        QRegion region(rect);
+        QVERIFY(region.isEmpty());
+        QVERIFY(region.rects().isEmpty());
     }
     {
-	QRect rect( 10, -20, 30, 40 );
-	QRegion region( rect );
-	QCOMPARE( region.rects().count(), 1 );
-	QCOMPARE( region.rects()[0], rect );
+        QRect rect(10, -20, 30, 40);
+        QRegion region(rect);
+        QCOMPARE(region.rects().count(), 1);
+        QCOMPARE(region.rects()[0], rect);
     }
     {
-	QRect r( QPoint(10, 10), QPoint(40, 40) );
-	QRegion region( r );
-	QVERIFY( region.contains( QPoint(10,10) ) );
-	QVERIFY( region.contains( QPoint(20,40) ) );
-	QVERIFY( region.contains( QPoint(40,20) ) );
-	QVERIFY( !region.contains( QPoint(20,41) ) );
-	QVERIFY( !region.contains( QPoint(41,20) ) );
+        QRect r(QPoint(10, 10), QPoint(40, 40));
+        QRegion region(r);
+        QVERIFY(region.contains(QPoint(10,10)));
+        QVERIFY(region.contains(QPoint(20,40)));
+        QVERIFY(region.contains(QPoint(40,20)));
+        QVERIFY(!region.contains(QPoint(20,41)));
+        QVERIFY(!region.contains(QPoint(41,20)));
     }
     {
-	QRect r( 10, 10, 30, 30 );
-	QRegion region( r );
-	QVERIFY( region.contains( QPoint(10,10) ) );
-	QVERIFY( region.contains( QPoint(20,39) ) );
-	QVERIFY( region.contains( QPoint(39,20) ) );
-	QVERIFY( !region.contains( QPoint(20,40) ) );
-	QVERIFY( !region.contains( QPoint(40,20) ) );
+        QRect r(10, 10, 30, 30);
+        QRegion region(r);
+        QVERIFY(region.contains(QPoint(10,10)));
+        QVERIFY(region.contains(QPoint(20,39)));
+        QVERIFY(region.contains(QPoint(39,20)));
+        QVERIFY(!region.contains(QPoint(20,40)));
+        QVERIFY(!region.contains(QPoint(40,20)));
     }
 }
 
 void tst_QRegion::swap()
 {
-    QRegion r1(QRect( 0, 0,10,10));
+    QRegion r1(QRect(0, 0,10,10));
     QRegion r2(QRect(10,10,10,10));
     r1.swap(r2);
     QCOMPARE(r1.rects().front(), QRect(10,10,10,10));
-    QCOMPARE(r2.rects().front(), QRect( 0, 0,10,10));
+    QCOMPARE(r2.rects().front(), QRect(0, 0,10,10));
 }
 
 void tst_QRegion::setRects()
 {
     {
-	QRegion region;
-	region.setRects( 0, 0 );
-	QVERIFY( region.rects().isEmpty() );
+        QRegion region;
+        region.setRects(0, 0);
+        QVERIFY(region.rects().isEmpty());
     }
     {
-	QRegion region;
-	QRect rect;
-	region.setRects( &rect, 0 );
+        QRegion region;
+        QRect rect;
+        region.setRects(&rect, 0);
         QVERIFY(region.isEmpty());
         QVERIFY(region == QRegion());
-	QVERIFY(!region.boundingRect().isValid());
-	QVERIFY(region.rects().isEmpty());
+        QVERIFY(!region.boundingRect().isValid());
+        QVERIFY(region.rects().isEmpty());
     }
     {
-	QRegion region;
-	QRect rect;
-	region.setRects( &rect, 1 );
-	QVERIFY( !region.boundingRect().isValid() );
-	QVERIFY( region.rects().isEmpty() );
+        QRegion region;
+        QRect rect;
+        region.setRects(&rect, 1);
+        QVERIFY(!region.boundingRect().isValid());
+        QVERIFY(region.rects().isEmpty());
     }
     {
-	QRegion region;
-	QRect rect( 10, -20, 30, 40 );
-	region.setRects( &rect, 1 );
-	QCOMPARE( region.rects().count(), 1 );
-	QCOMPARE( region.rects()[0], rect );
+        QRegion region;
+        QRect rect(10, -20, 30, 40);
+        region.setRects(&rect, 1);
+        QCOMPARE(region.rects().count(), 1);
+        QCOMPARE(region.rects()[0], rect);
     }
 }
 
@@ -242,30 +242,30 @@ void tst_QRegion::polygonRegion()
 {
     QPolygon pa;
     {
-	QRegion region ( pa );
-	QVERIFY( region.isEmpty() );
+        QRegion region (pa);
+        QVERIFY(region.isEmpty());
     }
     {
-	pa.setPoints( 8, 10, 10, //  a____________b
-			 40, 10, //  |            |
-			 40, 20, //  |___      ___|
-			 30, 20, //      |    |
-			 30, 40, //      |    |
-			 20, 40, //      |    |
-			 20, 20, //      |____c
-			 10, 20 );
+        pa.setPoints(8, 10, 10, //  a____________b
+                        40, 10, //  |            |
+                        40, 20, //  |___      ___|
+                        30, 20, //      |    |
+                        30, 40, //      |    |
+                        20, 40, //      |    |
+                        20, 20, //      |____c
+                        10, 20);
 
-	QRegion region ( pa );
-	QVERIFY( !region.isEmpty() );
+        QRegion region (pa);
+        QVERIFY(!region.isEmpty());
 
-	// These should not be inside the circle
-	QVERIFY( !region.contains( QPoint(  9,  9 ) ) );
-	QVERIFY( !region.contains( QPoint( 30, 41 ) ) );
-	QVERIFY( !region.contains( QPoint( 41, 10 ) ) );
-	QVERIFY( !region.contains( QPoint( 31, 21 ) ) );
+        // These should not be inside the circle
+        QVERIFY(!region.contains(QPoint( 9,  9)));
+        QVERIFY(!region.contains(QPoint(30, 41)));
+        QVERIFY(!region.contains(QPoint(41, 10)));
+        QVERIFY(!region.contains(QPoint(31, 21)));
 
-	// These should be inside
-	QVERIFY( region.contains( QPoint( 10, 10 ) ) ); // Upper-left  (a)
+        // These should be inside
+        QVERIFY(region.contains(QPoint(10, 10))); // Upper-left  (a)
 
     }
 }
@@ -317,8 +317,8 @@ void tst_QRegion::emptyPolygonRegion()
 
 static const char *circle_xpm[] = {
     "20 20 2 1",
-    "	c #FFFFFF",
-    ".	c #000000",
+    "  c #FFFFFF",
+    ". c #000000",
     "       ......       ",
     "     ..........     ",
     "   ..............   ",
@@ -345,29 +345,29 @@ void tst_QRegion::bitmapRegion()
 {
     QBitmap circle;
     {
-	QRegion region( circle );
-	QVERIFY( region.isEmpty() );
+        QRegion region(circle);
+        QVERIFY(region.isEmpty());
     }
     {
-	circle = QPixmap( circle_xpm );
-	QRegion region( circle );
+        circle = QPixmap(circle_xpm);
+        QRegion region(circle);
 
-	//// These should not be inside the circe
-	QVERIFY( !region.contains( QPoint( 2,   2 ) ) );
-	QVERIFY( !region.contains( QPoint( 2,  17 ) ) );
-	QVERIFY( !region.contains( QPoint( 17,  2 ) ) );
-	QVERIFY( !region.contains( QPoint( 17, 17 ) ) );
+        //// These should not be inside the circe
+        QVERIFY(!region.contains(QPoint(2,   2)));
+        QVERIFY(!region.contains(QPoint(2,  17)));
+        QVERIFY(!region.contains(QPoint(17,  2)));
+        QVERIFY(!region.contains(QPoint(17, 17)));
 
-	//// These should be inside
-	QVERIFY( region.contains( QPoint( 3,   3 ) ) );
-	QVERIFY( region.contains( QPoint( 3,  16 ) ) );
-	QVERIFY( region.contains( QPoint( 16,  3 ) ) );
-	QVERIFY( region.contains( QPoint( 16, 16 ) ) );
+        //// These should be inside
+        QVERIFY(region.contains(QPoint(3,   3)));
+        QVERIFY(region.contains(QPoint(3,  16)));
+        QVERIFY(region.contains(QPoint(16,  3)));
+        QVERIFY(region.contains(QPoint(16, 16)));
 
-	QVERIFY( region.contains( QPoint( 0, 10 ) ) );  // Mid-left
-	QVERIFY( region.contains( QPoint( 10, 0 ) ) );  // Mid-top
-	QVERIFY( region.contains( QPoint( 19, 10 ) ) ); // Mid-right
-	QVERIFY( region.contains( QPoint( 10, 19 ) ) ); // Mid-bottom
+        QVERIFY(region.contains(QPoint(0, 10)));  // Mid-left
+        QVERIFY(region.contains(QPoint(10, 0)));  // Mid-top
+        QVERIFY(region.contains(QPoint(19, 10))); // Mid-right
+        QVERIFY(region.contains(QPoint(10, 19))); // Mid-bottom
     }
 }
 

@@ -505,10 +505,10 @@ QBalloonTip::QBalloonTip(QSystemTrayIcon::MessageIcon icon, const QString& title
         si = style()->standardIcon(QStyle::SP_MessageBoxWarning);
         break;
     case QSystemTrayIcon::Critical:
-	si = style()->standardIcon(QStyle::SP_MessageBoxCritical);
+        si = style()->standardIcon(QStyle::SP_MessageBoxCritical);
         break;
     case QSystemTrayIcon::Information:
-	si = style()->standardIcon(QStyle::SP_MessageBoxInformation);
+        si = style()->standardIcon(QStyle::SP_MessageBoxInformation);
         break;
     case QSystemTrayIcon::NoIcon:
     default:

@@ -124,11 +124,11 @@ void tst_QFontDatabase::styles()
     QStringList styles = fdb.styles( font );
     QStringList::Iterator it = styles.begin();
     while ( it != styles.end() ) {
-	QString style = *it;
-	QString trimmed = style.trimmed();
-	++it;
+        QString style = *it;
+        QString trimmed = style.trimmed();
+        ++it;
 
-	QCOMPARE( style, trimmed );
+        QCOMPARE(style, trimmed);
     }
 }
 
@@ -160,7 +160,7 @@ void tst_QFontDatabase::fixedPitch()
 
     QFontDatabase fdb;
     if (!fdb.families().contains(font))
-	QSKIP( "Font not installed");
+        QSKIP("Font not installed");
 
     QCOMPARE(fdb.isFixedPitch(font), fixedPitch);
 

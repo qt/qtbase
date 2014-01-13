@@ -623,7 +623,7 @@ static BOOL QT_WIN_CALLBACK qt_terminateApp(HWND hwnd, LPARAM procId)
     DWORD currentProcId = 0;
     GetWindowThreadProcessId(hwnd, &currentProcId);
     if (currentProcId == (DWORD)procId)
-	    PostMessage(hwnd, WM_CLOSE, 0, 0);
+        PostMessage(hwnd, WM_CLOSE, 0, 0);
 
     return TRUE;
 }

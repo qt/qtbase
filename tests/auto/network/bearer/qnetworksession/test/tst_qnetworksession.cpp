@@ -749,7 +749,7 @@ void tst_QNetworkSession::sessionOpenCloseStop()
                     } else if (state == QNetworkSession::Disconnected) {
                         QTRY_VERIFY_WITH_TIMEOUT(!errorSpy.isEmpty(), TestTimeOut);
                         QTRY_VERIFY_WITH_TIMEOUT(session2.state() == QNetworkSession::Disconnected, TestTimeOut);
-                  	} else if (state == QNetworkSession::Connected) {
+                    } else if (state == QNetworkSession::Connected) {
                         QTRY_VERIFY_WITH_TIMEOUT(errorSpy.isEmpty(),TestTimeOut);
 
                         if (stateChangedSpy.count() > 1) {
@@ -1121,13 +1121,13 @@ bool openSession(QNetworkSession *session) {
     }
     if (session->configuration().state() != QNetworkConfiguration::Active) {
         qDebug("tst_QNetworkSession::openSession() failure: session's configuration is not in 'Active' -state.");
-	qDebug() << "tst_QNetworkSession::openSession() state is:  " << session->configuration().state();
+        qDebug() << "tst_QNetworkSession::openSession() state is:  " << session->configuration().state();
         result =  false;
     }
     if (result == false) {
-	    qDebug() << "tst_QNetworkSession::openSession() opening session failed.";
+        qDebug() << "tst_QNetworkSession::openSession() opening session failed.";
     } else {
-	    qDebug() << "tst_QNetworkSession::openSession() opening session succeeded.";
+        qDebug() << "tst_QNetworkSession::openSession() opening session succeeded.";
     }
     qDebug() << "tst_QNetworkSession::openSession() name of the configuration is:  " << session->configuration().name();
     qDebug() << "tst_QNetworkSession::openSession() configuration state is:  " << session->configuration().state();
@@ -1196,9 +1196,9 @@ bool closeSession(QNetworkSession *session, bool lastSessionOnConfiguration) {
          result = false;
     }
     if (result == false) {
-	    qDebug() << "tst_QNetworkSession::closeSession() closing session failed.";
+        qDebug() << "tst_QNetworkSession::closeSession() closing session failed.";
     } else {
-	    qDebug() << "tst_QNetworkSession::closeSession() closing session succeeded.";
+        qDebug() << "tst_QNetworkSession::closeSession() closing session succeeded.";
     }
     qDebug() << "tst_QNetworkSession::closeSession() name of the configuration is:  " << session->configuration().name();
     qDebug() << "tst_QNetworkSession::closeSession() configuration state is:  " << session->configuration().state();

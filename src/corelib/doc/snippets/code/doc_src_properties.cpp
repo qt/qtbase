@@ -48,7 +48,7 @@ Q_PROPERTY(type name
            [DESIGNABLE bool]
            [SCRIPTABLE bool]
            [STORED bool]
-	   [USER bool]
+           [USER bool]
            [CONSTANT]
            [FINAL])
 //! [0]

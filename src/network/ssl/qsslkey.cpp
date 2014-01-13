@@ -256,7 +256,7 @@ QSslKey::QSslKey(const QByteArray &encoded, QSsl::KeyAlgorithm algorithm,
     a valid key.
 */
 QSslKey::QSslKey(QIODevice *device, QSsl::KeyAlgorithm algorithm, QSsl::EncodingFormat encoding,
-		 QSsl::KeyType type, const QByteArray &passPhrase)
+                 QSsl::KeyType type, const QByteArray &passPhrase)
     : d(new QSslKeyPrivate)
 {
     QByteArray encoded;

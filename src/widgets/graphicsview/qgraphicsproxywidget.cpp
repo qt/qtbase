@@ -348,7 +348,7 @@ QWidget *QGraphicsProxyWidgetPrivate::findFocusChild(QWidget *child, bool next) 
 
     // Run around the focus chain until we find a widget that can take tab focus.
     if (!child) {
-	child = next ? (QWidget *)widget : widget->d_func()->focus_prev;
+        child = next ? (QWidget *)widget : widget->d_func()->focus_prev;
     } else {
         child = next ? child->d_func()->focus_next : child->d_func()->focus_prev;
         if ((next && child == widget) || (!next && child == widget->d_func()->focus_prev)) {
@@ -363,7 +363,7 @@ QWidget *QGraphicsProxyWidgetPrivate::findFocusChild(QWidget *child, bool next) 
     uint focus_flag = qt_tab_all_widgets() ? Qt::TabFocus : Qt::StrongFocus;
     do {
         if (child->isEnabled()
-	    && child->isVisibleTo(widget)
+            && child->isVisibleTo(widget)
             && ((child->focusPolicy() & focus_flag) == focus_flag)
             && !(child->d_func()->extra && child->d_func()->extra->focus_proxy)) {
             return child;
@@ -1324,17 +1324,17 @@ void QGraphicsProxyWidget::focusInEvent(QFocusEvent *event)
 
     switch (event->reason()) {
     case Qt::TabFocusReason: {
-	if (QWidget *focusChild = d->findFocusChild(0, true))
+        if (QWidget *focusChild = d->findFocusChild(0, true))
             focusChild->setFocus(event->reason());
         break;
     }
     case Qt::BacktabFocusReason:
-	if (QWidget *focusChild = d->findFocusChild(0, false))
+        if (QWidget *focusChild = d->findFocusChild(0, false))
             focusChild->setFocus(event->reason());
         break;
     default:
-	if (d->widget && d->widget->focusWidget()) {
-	    d->widget->focusWidget()->setFocus(event->reason());
+        if (d->widget && d->widget->focusWidget()) {
+            d->widget->focusWidget()->setFocus(event->reason());
         }
         break;
     }
@@ -1371,8 +1371,8 @@ bool QGraphicsProxyWidget::focusNextPrevChild(bool next)
     Qt::FocusReason reason = next ? Qt::TabFocusReason : Qt::BacktabFocusReason;
     QWidget *lastFocusChild = d->widget->focusWidget();
     if (QWidget *newFocusChild = d->findFocusChild(lastFocusChild, next)) {
-	newFocusChild->setFocus(reason);
-	return true;
+        newFocusChild->setFocus(reason);
+        return true;
     }
 
     return QGraphicsWidget::focusNextPrevChild(next);

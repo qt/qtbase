@@ -593,9 +593,9 @@ static Window findXdndAwareParent(Window window)
         unsigned char *data = 0;
         if (XGetWindowProperty(X11->display, window, ATOM(XdndAware), 0, 0, False,
                                AnyPropertyType, &type, &f,&n,&a,&data) == Success) {
-	    if (data)
+            if (data)
                 XFree(data);
-	    if (type) {
+            if (type) {
                 target = window;
                 break;
             }

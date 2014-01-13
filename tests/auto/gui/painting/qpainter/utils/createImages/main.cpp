@@ -61,15 +61,15 @@ static QPixmap createDestPixmap()
     QPainter painter;
     painter.begin( &pm );
     for ( int i=0; i<colorbands; i++ ) {
-	for ( int j=0; j<intensities; j++ ) {
-	    int intensity = 255 * (j+1) / intensities; // 25%, 50%, 75% and 100%
-	    for ( int k=0; k<8; k++ ) {
-		QColor col = baseColor( k, intensity );
-		painter.setPen( QPen( col, 1 ) );
-		painter.setBrush( col );
-		painter.drawRect( k*4, j*4 + i*intensities*4, 4, 4 );
-	    }
-	}
+        for (int j = 0; j < intensities; j++) {
+            int intensity = 255 * (j+1) / intensities; // 25%, 50%, 75% and 100%
+            for (int k = 0; k < 8; k++) {
+                QColor col = baseColor(k, intensity);
+                painter.setPen(QPen(col, 1));
+                painter.setBrush(col);
+                painter.drawRect(k*4, j*4 + i*intensities*4, 4, 4);
+            }
+        }
     }
     painter.end();
     return pm;
@@ -127,14 +127,14 @@ static QBitmap createSrcBitmap( int size, int border )
     painter.drawRect( border, border, size, size2 );
     painter.end();
     if ( border > 0 ) {
-	QBitmap mask( totalSize, totalSize, true );
-	QPainter painter;
-	painter.begin( &mask );
-	painter.setPen( QPen( Qt::color1, 1 ) );
-	painter.setBrush( Qt::color1 );
-	painter.drawRect( border, border, size, size );
-	painter.end();
-	bm.setMask( mask );
+        QBitmap mask(totalSize, totalSize, true);
+        QPainter painter;
+        painter.begin(&mask);
+        painter.setPen(QPen(Qt::color1, 1));
+        painter.setBrush(Qt::color1);
+        painter.drawRect(border, border, size, size);
+        painter.end();
+        bm.setMask(mask);
     }
     return bm;
 }
@@ -146,49 +146,49 @@ int main( int argc, char **argv )
 
     // input for tst_QPainter::drawLine_rop_bitmap()
     {
-	QBitmap dst = createDestBitmap();
-	dst.save( "../../drawLine_rop_bitmap/dst.xbm", "XBM" );
+        QBitmap dst = createDestBitmap();
+        dst.save("../../drawLine_rop_bitmap/dst.xbm", "XBM");
     }
 
     // input for tst_QPainter::drawPixmap_rop_bitmap()
     {
-	QBitmap dst = createDestBitmap();
-	QBitmap src1 = createSrcBitmap( 4, 2 );
-	QBitmap src2 = createSrcBitmap( 4, 0 );
-	dst.save( "../../drawPixmap_rop_bitmap/dst.xbm", "XBM" );
-	src1.save( "../../drawPixmap_rop_bitmap/src1.xbm", "XBM" );
-	src1.mask()->save( "../../drawPixmap_rop_bitmap/src1-mask.xbm", "XBM" );
-	src2.save( "../../drawPixmap_rop_bitmap/src2.xbm", "XBM" );
+        QBitmap dst = createDestBitmap();
+        QBitmap src1 = createSrcBitmap(4, 2);
+        QBitmap src2 = createSrcBitmap(4, 0);
+        dst.save("../../drawPixmap_rop_bitmap/dst.xbm", "XBM");
+        src1.save("../../drawPixmap_rop_bitmap/src1.xbm", "XBM");
+        src1.mask()->save("../../drawPixmap_rop_bitmap/src1-mask.xbm", "XBM");
+        src2.save("../../drawPixmap_rop_bitmap/src2.xbm", "XBM");
     }
 
     // input for tst_QPainter::drawPixmap_rop()
     {
-	QPixmap dst1 = createDestPixmap();
-	QPixmap dst2 = createDestPixmap();
-	dst2.resize( 32, 32 );
-	QBitmap src1 = createSrcBitmap( 32, 0 );
+        QPixmap dst1 = createDestPixmap();
+        QPixmap dst2 = createDestPixmap();
+        dst2.resize(32, 32);
+        QBitmap src1 = createSrcBitmap(32, 0);
 
-	QBitmap src_tmp = createSrcBitmap( 32, 0 ).xForm( QWMatrix( 1, 0, 0, -1, 0, 0 ) );
-	src_tmp.resize( 32, 48 );
-	QBitmap src2 = src_tmp.xForm( QWMatrix( 1, 0, 0, -1, 0, 0 ) );
-	QBitmap mask( 32, 48, true );
-	{
-	    QPainter painter;
-	    painter.begin( &mask );
-	    painter.setPen( QPen( Qt::color1, 1 ) );
-	    painter.setBrush( Qt::color1 );
-	    painter.drawRect( 0, 16, 32, 32 );
-	    painter.end();
-	}
-	src2.setMask( mask );
+        QBitmap src_tmp = createSrcBitmap(32, 0).xForm(QWMatrix(1, 0, 0, -1, 0, 0));
+        src_tmp.resize(32, 48);
+        QBitmap src2 = src_tmp.xForm(QWMatrix(1, 0, 0, -1, 0, 0));
+        QBitmap mask(32, 48, true);
+        {
+            QPainter painter;
+            painter.begin(&mask);
+            painter.setPen(QPen(Qt::color1, 1));
+            painter.setBrush(Qt::color1);
+            painter.drawRect(0, 16, 32, 32);
+            painter.end();
+        }
+        src2.setMask(mask);
 
-	QBitmap src3 = createSrcBitmap( 32, 0 ).xForm( QWMatrix( 1, 0, 0, -1, 0, 0 ) );
+        QBitmap src3 = createSrcBitmap(32, 0).xForm(QWMatrix(1, 0, 0, -1, 0, 0));
 
-	dst1.save( "../../drawPixmap_rop/dst1.png", "PNG" );
-	dst2.save( "../../drawPixmap_rop/dst2.png", "PNG" );
-	src1.save( "../../drawPixmap_rop/src1.xbm", "XBM" );
-	src2.save( "../../drawPixmap_rop/src2.xbm", "XBM" );
-	src2.mask()->save( "../../drawPixmap_rop/src2-mask.xbm", "XBM" );
-	src3.save( "../../drawPixmap_rop/src3.xbm", "XBM" );
+        dst1.save("../../drawPixmap_rop/dst1.png", "PNG");
+        dst2.save("../../drawPixmap_rop/dst2.png", "PNG");
+        src1.save("../../drawPixmap_rop/src1.xbm", "XBM");
+        src2.save("../../drawPixmap_rop/src2.xbm", "XBM");
+        src2.mask()->save("../../drawPixmap_rop/src2-mask.xbm", "XBM");
+        src3.save("../../drawPixmap_rop/src3.xbm", "XBM");
     }
 }
