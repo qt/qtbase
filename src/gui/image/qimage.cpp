@@ -1862,6 +1862,8 @@ QImage::Format QImage::format() const
 }
 
 /*!
+    \fn QImage QImage::convertToFormat(Format format, Qt::ImageConversionFlags flags) const
+
     Returns a copy of the image in the given \a format.
 
     The specified image conversion \a flags control how the image data
@@ -1869,7 +1871,11 @@ QImage::Format QImage::format() const
 
     \sa {Image Formats}
 */
-QImage QImage::convertToFormat(Format format, Qt::ImageConversionFlags flags) const
+
+/*!
+    \internal
+*/
+QImage QImage::convertToFormat_helper(Format format, Qt::ImageConversionFlags flags) const
 {
     if (!d || d->format == format)
         return *this;
@@ -1900,6 +1906,14 @@ QImage QImage::convertToFormat(Format format, Qt::ImageConversionFlags flags) co
     Q_ASSERT(d->format != QImage::Format_ARGB32);
 
     return convertToFormat(Format_ARGB32, flags).convertToFormat(format, flags);
+}
+
+/*!
+    \internal
+*/
+bool QImage::convertToFormat_inplace(Format format, Qt::ImageConversionFlags flags)
+{
+    return d && d->convertInPlace(format, flags);
 }
 
 static inline int pixel_distance(QRgb p1, QRgb p2) {

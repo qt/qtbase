@@ -158,7 +158,10 @@ private slots:
     void inplaceMirrored_data();
     void inplaceMirrored();
 
-    void inplaceDoubleConversion();
+    void inplaceRgbMirrored();
+
+    void inplaceConversion_data();
+    void inplaceConversion();
 
     void deepCopyWhenPaintingActive();
     void scaled_QTBUG19157();
@@ -2342,7 +2345,7 @@ void tst_QImage::inplaceMirrored()
 #endif
 }
 
-void tst_QImage::inplaceDoubleConversion()
+void tst_QImage::inplaceRgbMirrored()
 {
 #if defined(Q_COMPILER_REF_QUALIFIERS)
     QImage image1(32, 32, QImage::Format_ARGB32);
@@ -2354,6 +2357,47 @@ void tst_QImage::inplaceDoubleConversion()
 
     QCOMPARE(std::move(image1).rgbSwapped().mirrored().constScanLine(0), originalPtr1);
     QCOMPARE(std::move(image2).mirrored().rgbSwapped().constScanLine(0), originalPtr2);
+#endif
+}
+
+void tst_QImage::inplaceConversion_data()
+{
+    QTest::addColumn<QImage::Format>("format");
+    QTest::addColumn<QImage::Format>("dest_format");
+
+    QTest::newRow("Format_ARGB32 -> Format_RGBA8888") << QImage::Format_ARGB32 << QImage::Format_RGBA8888;
+    QTest::newRow("Format_RGB888 -> Format_ARGB6666_Premultiplied") << QImage::Format_RGB888 << QImage::Format_ARGB6666_Premultiplied;
+    QTest::newRow("Format_RGB16 -> Format_RGB555") << QImage::Format_RGB16 << QImage::Format_RGB555;
+    QTest::newRow("Format_RGB666 -> Format_RGB888") << QImage::Format_RGB666 << QImage::Format_RGB888;
+    QTest::newRow("Format_ARGB8565_Premultiplied, Format_ARGB8555_Premultiplied") << QImage::Format_ARGB8565_Premultiplied << QImage::Format_ARGB8555_Premultiplied;
+    QTest::newRow("Format_ARGB4444_Premultiplied, Format_RGB444") << QImage::Format_ARGB4444_Premultiplied << QImage::Format_RGB444;
+}
+
+void tst_QImage::inplaceConversion()
+{
+    // Test that conversions between RGB formats of the same bitwidth can be done inplace.
+#if defined(Q_COMPILER_REF_QUALIFIERS)
+    QFETCH(QImage::Format, format);
+    QFETCH(QImage::Format, dest_format);
+
+    QImage image(16, 16, format);
+
+    for (int i = 0; i < image.height(); ++i)
+        for (int j = 0; j < image.width(); ++j)
+            image.setPixel(j, i, qRgb(j*16, i*16, 0));
+
+    const uchar* originalPtr = image.constScanLine(0);
+
+    QImage imageConverted = std::move(image).convertToFormat(dest_format);
+    for (int i = 0; i < imageConverted.height(); ++i) {
+        for (int j = 0; j < imageConverted.width(); ++j) {
+            QRgb convertedColor = imageConverted.pixel(j,i);
+            QCOMPARE(qRed(convertedColor) & 0xF0, j * 16);
+            QCOMPARE(qGreen(convertedColor) & 0xF0, i * 16);
+        }
+    }
+
+    QCOMPARE(imageConverted.constScanLine(0), originalPtr);
 #endif
 }
 
