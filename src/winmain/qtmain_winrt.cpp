@@ -159,7 +159,7 @@ private:
 };
 
 // Main entry point for Appx containers
-int WinMain()
+int __stdcall WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
     int argc = 0;
     char **argv, **env;
