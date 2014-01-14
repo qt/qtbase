@@ -267,6 +267,10 @@ void *QFontEngine::harfbuzzFont() const
         return hb_qt_font_get_for_engine(const_cast<QFontEngine *>(this));
 #endif
     if (!font_) {
+        HB_Face hbFace = (HB_Face)harfbuzzFace();
+        if (hbFace->font_for_init != 0)
+            q_check_ptr(qHBLoadFace(hbFace));
+
         HB_FontRec *hbFont = (HB_FontRec *) malloc(sizeof(HB_FontRec));
         Q_CHECK_PTR(hbFont);
         hbFont->klass = &hb_fontClass;
@@ -297,8 +301,6 @@ void *QFontEngine::harfbuzzFace() const
     if (!face_) {
         HB_Face hbFace = qHBNewFace(const_cast<QFontEngine *>(this), hb_getSFntTable);
         Q_CHECK_PTR(hbFace);
-        if (hbFace->font_for_init != 0)
-            hbFace = qHBLoadFace(hbFace);
         hbFace->isSymbolFont = symbol;
 
         face_ = (void *)hbFace;
@@ -338,6 +340,8 @@ bool QFontEngine::supportsScript(QChar::Script script) const
     }
 #endif
     HB_Face hbFace = (HB_Face)harfbuzzFace();
+    if (hbFace->font_for_init != 0)
+        q_check_ptr(qHBLoadFace(hbFace));
     return hbFace->supported_scripts[script_to_hbscript(script)];
 }
 
