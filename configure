@@ -3508,7 +3508,7 @@ function normalize(dir)
 {
     do {
         odir = dir
-        gsub(/\/[^\/]+\/\.\./, "", dir)
+        sub(/\/[^\/]+\/\.\./, "", dir)
     } while (dir != odir);
     do {
         odir = dir
