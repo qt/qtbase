@@ -85,6 +85,7 @@ enum HB_Compat_Error {
 };
 
 typedef void (*qt_destroy_func_t) (void *user_data);
+typedef bool (*qt_get_font_table_func_t) (void *user_data, uint tag, uchar *buffer, uint *length);
 
 class Q_GUI_EXPORT QFontEngine
 {
@@ -280,6 +281,10 @@ public:
     mutable qt_destroy_func_t font_destroy_func;
     mutable void *face_;
     mutable qt_destroy_func_t face_destroy_func;
+    struct FaceData {
+        void *user_data;
+        qt_get_font_table_func_t get_font_table;
+    } faceData;
 
     uint cache_cost; // amount of mem used in kb by the font
     uint fsType : 16;
