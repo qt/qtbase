@@ -4759,6 +4759,9 @@ class LotsOfSignalsAndSlots: public QObject
         #endif*/
         static void static_slot_vPFvvE(fptr) {}
 
+        void slot_vcRQObject(const QObject &) {}
+        void slot_vRQObject(QObject &) {}
+
     signals:
         void signal_v();
         void signal_vi(int);
@@ -4775,6 +4778,9 @@ class LotsOfSignalsAndSlots: public QObject
 
         void const_signal_v() const;
         void const_signal_vi(int) const;
+
+        void signal_vcRQObject(const QObject &);
+        void signal_vRQObject(QObject &);
 
         void signal(short&, short, long long, short);
         void otherSignal(const char *);
@@ -4893,6 +4899,14 @@ void tst_QObject::connectCxx0xTypeMatching()
     QVERIFY(QObject::connect(&obj, &Foo::const_signal_vi, &obj, &Foo::slot_vi));
     QVERIFY(QObject::connect(&obj, &Foo::signal_vi, &obj, &Foo::const_slot_vi));
     QVERIFY(QObject::connect(&obj, &Foo::signal_vi, &obj, &Foo::const_slot_v));
+
+    QVERIFY(QObject::connect(&obj, &Foo::signal_vcRQObject, &obj, &Foo::slot_vcRQObject));
+    QVERIFY(QObject::connect(&obj, &Foo::signal_vRQObject, &obj, &Foo::slot_vRQObject));
+    QVERIFY(QObject::connect(&obj, &Foo::signal_vRQObject, &obj, &Foo::slot_vcRQObject));
+    // QVERIFY(QObject::connect(&obj, &Foo::signal_vcRQObject, &obj, &Foo::slot_vRQObject)); // Should be an error  (const& -> &)
+
+    QVERIFY(QObject::connect(&obj, &Foo::signal_vRi, &obj, &Foo::slot_vs));
+
 }
 
 class StringVariant : public QObject
