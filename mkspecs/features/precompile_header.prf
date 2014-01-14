@@ -12,7 +12,7 @@
 #
 # Set up extra compiler for PCH disabled sources
 #
-no_pch_compiler.commands = ${QMAKE_VAR_QMAKE_CXX} -c $(CXXFLAGS) $(INCPATH) ${QMAKE_FILE_IN}
+no_pch_compiler.commands = $$QMAKE_CXX -c $(CXXFLAGS) $(INCPATH) ${QMAKE_FILE_IN}
 msvc: no_pch_compiler.commands += -Fo${QMAKE_FILE_OUT}
 else: no_pch_compiler.commands += -o ${QMAKE_FILE_OUT}
 no_pch_compiler.dependency_type = TYPE_C
