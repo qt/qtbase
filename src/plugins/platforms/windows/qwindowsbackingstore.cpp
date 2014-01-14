@@ -117,8 +117,11 @@ void QWindowsBackingStore::flush(QWindow *window, const QRegion &region,
         }
 
         if (!BitBlt(dc, br.x(), br.y(), br.width(), br.height(),
-                    m_image->hdc(), br.x() + offset.x(), br.y() + offset.y(), SRCCOPY))
-            qErrnoWarning("%s: BitBlt failed", __FUNCTION__);
+                    m_image->hdc(), br.x() + offset.x(), br.y() + offset.y(), SRCCOPY)) {
+            const DWORD lastError = GetLastError(); // QTBUG-35926, QTBUG-29716: may fail after lock screen.
+            if (lastError != ERROR_SUCCESS && lastError != ERROR_INVALID_HANDLE)
+                qErrnoWarning(lastError, "%s: BitBlt failed", __FUNCTION__);
+        }
         rw->releaseDC();
 #ifndef Q_OS_WINCE
     }
