@@ -640,7 +640,7 @@ void tst_QGuiVariant::writeToReadFromOldDataStream()
         dataFileStream.setVersion(QDataStream::Qt_4_9);
         QVariant readVariant;
         dataFileStream >> readVariant;
-        QVERIFY(readVariant.type() == QMetaType::QPolygonF);
+        QVERIFY(readVariant.userType() == QMetaType::QPolygonF);
         QCOMPARE(testVariant, readVariant);
         file.close();
     }
