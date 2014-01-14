@@ -1099,6 +1099,17 @@ QOpenGLTexture *QOpenGLTexturePrivate::createTextureView(QOpenGLTexture::Target 
 */
 
 /*!
+    \enum QOpenGLTexture::Filter
+    This enum defines the filtering parameters for a QOpenGLTexture object.
+    \value Nearest Equivalent to GL_NEAREST
+    \value Linear Equivalent to GL_LINEAR
+    \value NearestMipMapNearest Equivalent to GL_NEAREST_MIPMAP_NEAREST
+    \value NearestMipMapLinear Equivalent to GL_NEAREST_MIPMAP_LINEAR
+    \value LinearMipMapNearest Equivalent to GL_LINEAR_MIPMAP_NEAREST
+    \value LinearMipMapLinear Equivalent to GL_LINEAR_MIPMAP_LINEAR
+*/
+
+/*!
     \enum QOpenGLTexture::Target
     This enum defines the texture target of a QOpenGLTexture object.
 
@@ -1152,7 +1163,7 @@ QOpenGLTexture *QOpenGLTexturePrivate::createTextureView(QOpenGLTexture::Target 
 */
 
 /*!
-    \enum TextureUnitReset
+    \enum QOpenGLTexture::TextureUnitReset
     This enum defines options ot control texture unit activation.
 
     \value ResetTextureUnit The previous active texture unit will be reset
@@ -1308,7 +1319,7 @@ QOpenGLTexture *QOpenGLTexturePrivate::createTextureView(QOpenGLTexture::Target 
 */
 
 /*!
-    \enum PixelType
+    \enum QOpenGLTexture::PixelType
     This enum defines the possible pixel data types for a pixel transfer operation
 
     \value NoPixelType Equivalent to GL_NONE
@@ -1381,7 +1392,7 @@ QOpenGLTexture *QOpenGLTexturePrivate::createTextureView(QOpenGLTexture::Target 
 */
 
 /*!
-    \enum WrapMode
+    \enum QOpenGLTexture::WrapMode
     This enum defines the possible texture coordinate wrapping modes.
 
     \value Repeat Texture coordinate is repeated. Equivalent to GL_REPEAT
@@ -1392,7 +1403,7 @@ QOpenGLTexture *QOpenGLTexturePrivate::createTextureView(QOpenGLTexture::Target 
 */
 
 /*!
-    \enum CoordinateDirection
+    \enum QOpenGLTexture::CoordinateDirection
     This enum defines the possible texture coordinate directions
 
     \value DirectionS The horizontal direction. Equivalent to GL_TEXTURE_WRAP_S
