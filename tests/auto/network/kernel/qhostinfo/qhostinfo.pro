@@ -3,6 +3,7 @@ TARGET = tst_qhostinfo
 
 SOURCES  += tst_qhostinfo.cpp
 
+requires(contains(QT_CONFIG,private_tests))
 QT = core-private network-private testlib
 
 wince*: {
