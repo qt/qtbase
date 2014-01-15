@@ -425,12 +425,12 @@ private:
     void setItemAt(int row, int column, QGridLayoutItem *item);
     void insertOrRemoveRows(int row, int delta, Qt::Orientation orientation = Qt::Vertical);
     void fillRowData(QGridLayoutRowData *rowData,
-                     qreal *colPositions, qreal *colSizes,
+                     const qreal *colPositions, const qreal *colSizes,
                      Qt::Orientation orientation,
                      const QAbstractLayoutStyleInfo *styleInfo) const;
     void ensureEffectiveFirstAndLastRows() const;
     void ensureColumnAndRowData(QGridLayoutRowData *rowData, QGridLayoutBox *totalBox,
-                                            qreal *colPositions, qreal *colSizes,
+                                            const qreal *colPositions, const qreal *colSizes,
                                             Qt::Orientation orientation,
                                             const QAbstractLayoutStyleInfo *styleInfo) const;
 

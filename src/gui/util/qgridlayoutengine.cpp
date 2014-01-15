@@ -1291,7 +1291,7 @@ void QGridLayoutEngine::insertOrRemoveRows(int row, int delta, Qt::Orientation o
 }
 
 void QGridLayoutEngine::fillRowData(QGridLayoutRowData *rowData,
-                                    qreal *colPositions, qreal *colSizes,
+                                    const qreal *colPositions, const qreal *colSizes,
                                     Qt::Orientation orientation,
                                     const QAbstractLayoutStyleInfo *styleInfo) const
 {
@@ -1545,7 +1545,7 @@ void QGridLayoutEngine::ensureEffectiveFirstAndLastRows() const
 }
 
 void QGridLayoutEngine::ensureColumnAndRowData(QGridLayoutRowData *rowData, QGridLayoutBox *totalBox,
-                                               qreal *colPositions, qreal *colSizes,
+                                               const qreal *colPositions, const qreal *colSizes,
                                                Qt::Orientation orientation,
                                                const QAbstractLayoutStyleInfo *styleInfo) const
 {
