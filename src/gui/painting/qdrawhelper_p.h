@@ -1034,6 +1034,7 @@ struct QPixelLayout
     BPP bpp;
     ConvertFunc convertToARGB32PM;
     ConvertFunc convertFromARGB32PM;
+    ConvertFunc convertFromRGB32;
 };
 
 typedef const uint *(QT_FASTCALL *FetchPixelsFunc)(uint *buffer, const uchar *src, int index, int count);
