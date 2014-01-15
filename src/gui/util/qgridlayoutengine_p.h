@@ -458,6 +458,7 @@ private:
     // Output
     mutable QSizeF q_cachedSize;
     mutable bool q_totalBoxesValid;
+    mutable bool q_sizeHintValid[NOrientations];
     mutable QVector<qreal> q_xx;
     mutable QVector<qreal> q_yy;
     mutable QVector<qreal> q_widths;

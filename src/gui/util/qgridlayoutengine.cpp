@@ -985,6 +985,8 @@ void QGridLayoutEngine::invalidate()
     q_cachedEffectiveLastRows[Hor] = -1;
     q_cachedEffectiveLastRows[Ver] = -1;
     q_totalBoxesValid = false;
+    q_sizeHintValid[Hor] = false;
+    q_sizeHintValid[Ver] = false;
     q_cachedSize = QSizeF();
     q_cachedConstraintOrientation = UnknownConstraint;
 }
@@ -1528,12 +1530,22 @@ void QGridLayoutEngine::ensureColumnAndRowData(QGridLayoutRowData *rowData, QGri
                                                Qt::Orientation orientation,
                                                const QAbstractLayoutStyleInfo *styleInfo) const
 {
+    const int o = (orientation == Qt::Vertical ? Ver : Hor);
+    if (q_sizeHintValid[o] && !colPositions && !colSizes) {
+        if (totalBox != &q_totalBoxes[o])
+            *totalBox = q_totalBoxes[o];
+         return;
+    }
     rowData->reset(rowCount(orientation));
     fillRowData(rowData, colPositions, colSizes, orientation, styleInfo);
     const QGridLayoutRowInfo &rowInfo = q_infos[orientation == Qt::Vertical];
     rowData->distributeMultiCells(rowInfo);
     *totalBox = rowData->totalBox(0, rowCount(orientation));
-        //We have items whose width depends on their height
+
+    if (!colPositions && !colSizes) {
+        q_totalBoxes[o] = *totalBox;
+        q_sizeHintValid[o] = true;
+    }
 }
 
 /**
