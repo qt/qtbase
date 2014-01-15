@@ -706,6 +706,15 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextFormat &fmt)
 */
 
 /*!
+    \fn bool QTextFormat::isEmpty() const
+    \since 5.3
+
+    Returns true if the format does not store any properties; false otherwise.
+
+    \sa propertyCount(), properties()
+*/
+
+/*!
     \fn bool QTextFormat::isCharFormat() const
 
     Returns \c true if this text format is a \c CharFormat; otherwise

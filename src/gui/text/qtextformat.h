@@ -295,6 +295,7 @@ public:
     void merge(const QTextFormat &other);
 
     inline bool isValid() const { return type() != InvalidFormat; }
+    inline bool isEmpty() const { return propertyCount() == 0; }
 
     int type() const;
 
