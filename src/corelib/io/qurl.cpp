@@ -414,10 +414,16 @@ static inline QString fileScheme()
     return QStringLiteral("file");
 }
 
+#ifdef Q_COMPILER_CLASS_ENUM
+#  define colon_uchar   : uchar
+#else
+#  define colon_uchar
+#endif
+
 class QUrlPrivate
 {
 public:
-    enum Section {
+    enum Section colon_uchar {
         Scheme = 0x01,
         UserName = 0x02,
         Password = 0x04,
@@ -430,6 +436,10 @@ public:
         Query = 0x40,
         Fragment = 0x80,
         FullUrl = 0xff
+    };
+
+    enum Flags colon_uchar {
+        IsLocalFile = 0x01
     };
 
     enum ErrorCode {
@@ -519,6 +529,8 @@ public:
     inline bool hasQuery() const { return sectionIsPresent & Query; }
     inline bool hasFragment() const { return sectionIsPresent & Fragment; }
 
+    inline bool isLocalFile() const { return flags & IsLocalFile; }
+
     QString mergePaths(const QString &relativePath) const;
 
     QAtomicInt ref;
@@ -539,12 +551,18 @@ public:
     //  - Path (there's no path delimiter, so we optimize its use out of existence)
     // Schemes are never supposed to be empty, but we keep the flag anyway
     uchar sectionIsPresent;
+    uchar flags;
+
+    // 32-bit: 2 bytes tail padding available
+    // 64-bit: 6 bytes tail padding available
 };
+#undef colon_uchar
 
 inline QUrlPrivate::QUrlPrivate()
     : ref(1), port(-1),
       error(0),
-      sectionIsPresent(0)
+      sectionIsPresent(0),
+      flags(0)
 {
 }
 
@@ -558,7 +576,8 @@ inline QUrlPrivate::QUrlPrivate(const QUrlPrivate &copy)
       query(copy.query),
       fragment(copy.fragment),
       error(copy.cloneError()),
-      sectionIsPresent(copy.sectionIsPresent)
+      sectionIsPresent(copy.sectionIsPresent),
+      flags(copy.flags)
 {
 }
 
@@ -956,6 +975,12 @@ inline bool QUrlPrivate::setScheme(const QString &value, int len, bool doSetErro
                 schemeData[i] = c + 0x20;
         }
     }
+
+    // did we set to the file protocol?
+    if (scheme == fileScheme())
+        flags |= IsLocalFile;
+    else
+        flags &= ~IsLocalFile;
     return true;
 }
 
@@ -1312,6 +1337,7 @@ inline void QUrlPrivate::parse(const QString &url, QUrl::ParsingMode parsingMode
     //                 /  other path types here
 
     sectionIsPresent = 0;
+    flags = 0;
     clearError();
 
     // find the important delimiters
@@ -1867,6 +1893,7 @@ void QUrl::setScheme(const QString &scheme)
     if (scheme.isEmpty()) {
         // schemes are not allowed to be empty
         d->sectionIsPresent &= ~QUrlPrivate::Scheme;
+        d->flags &= ~QUrlPrivate::IsLocalFile;
         d->scheme.clear();
     } else {
         d->setScheme(scheme, scheme.length(), /* do set error */ true);
@@ -3104,6 +3131,7 @@ QUrl QUrl::resolved(const QUrl &relative) const
             t.d->sectionIsPresent |= QUrlPrivate::Scheme;
         else
             t.d->sectionIsPresent &= ~QUrlPrivate::Scheme;
+        t.d->flags |= d->flags & QUrlPrivate::IsLocalFile;
     }
     t.d->fragment = relative.d->fragment;
     if (relative.d->hasFragment())
@@ -3177,7 +3205,6 @@ QString QUrl::toString(FormattingOptions options) const
     //  - there's no query or fragment to return
     //    that is, either they aren't present, or we're removing them
     //  - it's a local file
-    //    (test done last since it's the most expensive)
     if (options.testFlag(QUrl::PreferLocalFile) && !options.testFlag(QUrl::RemovePath)
             && (!d->hasQuery() || options.testFlag(QUrl::RemoveQuery))
             && (!d->hasFragment() || options.testFlag(QUrl::RemoveFragment))
@@ -3201,6 +3228,7 @@ QString QUrl::toString(FormattingOptions options) const
         url += QLatin1String("//");
         d->appendAuthority(url, options, QUrlPrivate::FullUrl);
     } else if (isLocalFile() && pathIsAbsolute) {
+        // Comply with the XDG file URI spec, which requires triple slashes.
         url += QLatin1String("//");
     }
 
@@ -3755,11 +3783,7 @@ QString QUrl::toLocalFile() const
 */
 bool QUrl::isLocalFile() const
 {
-    if (!d) return false;
-
-    if (d->scheme != fileScheme())
-        return false;   // not file
-    return true;
+    return d && d->isLocalFile();
 }
 
 /*!
