@@ -50,6 +50,7 @@
 #include <QtCore/qtextstream.h>
 #include <QtCore/qpair.h>
 
+#include <algorithm>
 #include <functional>
 
 class Rule;
@@ -319,7 +320,7 @@ typename Node<_Tp>::iterator Node<_Tp>::get (_Tp data)
 template <typename _Tp>
 QPair<typename QLinkedList<typename Node<_Tp>::iterator>::iterator, bool> Node<_Tp>::insertEdge (typename Node<_Tp>::iterator other) const
 {
-  edge_iterator it = qFind (outs.begin (), outs.end (), other);
+  edge_iterator it = std::find (outs.begin (), outs.end (), other);
 
   if (it != outs.end ())
     return qMakePair (it, false);

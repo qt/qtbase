@@ -174,7 +174,7 @@ void Compress::operator () (int *table, int row_count, int column_count)
       sortedTable [i].assign (i, begin, end);
     }
 
-  qSort (sortedTable.begin (), sortedTable.end (), _SortUncompressedRow ());
+  std::sort (sortedTable.begin (), sortedTable.end (), _SortUncompressedRow ());
 
 #ifndef QLALR_NO_CHECK_SORTED_TABLE
   int previous_zeros = INT_MAX;

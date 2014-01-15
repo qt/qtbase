@@ -166,7 +166,7 @@ State::State (Grammar *g):
 
 QPair<ItemPointer, bool> State::insert (const Item &item)
 {
-  ItemPointer it = qFind (kernel.begin (), kernel.end (), item);
+  ItemPointer it = std::find (kernel.begin (), kernel.end (), item);
 
   if (it != kernel.end ())
     return qMakePair (it, false);
@@ -176,7 +176,7 @@ QPair<ItemPointer, bool> State::insert (const Item &item)
 
 QPair<ItemPointer, bool> State::insertClosure (const Item &item)
 {
-  ItemPointer it = qFind (closure.begin (), closure.end (), item);
+  ItemPointer it = std::find (closure.begin (), closure.end (), item);
 
   if (it != closure.end ())
     return qMakePair (it, false);
@@ -207,7 +207,7 @@ Grammar::Grammar ():
 
 Name Grammar::intern (const QString &id)
 {
-  Name name = qFind (names.begin (), names.end (), id);
+  Name name = std::find (names.begin (), names.end (), id);
 
   if (name == names.end ())
     name = names.insert (names.end (), id);
@@ -322,7 +322,7 @@ void Automaton::buildNullables ()
 
 QPair<StatePointer, bool> Automaton::internState (const State &state)
 {
-  StatePointer it = qFind (states.begin (), states.end (), state);
+  StatePointer it = std::find (states.begin (), states.end (), state);
 
   if (it != states.end ())
     return qMakePair (it, false);
