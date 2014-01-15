@@ -39,6 +39,94 @@
 **
 ****************************************************************************/
 
+#include <QtGui/qtextformat.h>
+
+class StaticVariables
+{
+public:
+    QInputMethodQueryEvent inputMethodQueryEvent;
+    QTextCharFormat markedTextFormat;
+
+    StaticVariables() : inputMethodQueryEvent(Qt::ImQueryInput)
+    {
+        // There seems to be no way to query how the preedit text
+        // should be drawn. So we need to hard-code the color.
+        QSysInfo::MacVersion iosVersion = QSysInfo::MacintoshVersion;
+        if (iosVersion < QSysInfo::MV_IOS_7_0)
+            markedTextFormat.setBackground(QColor(235, 239, 247));
+        else
+            markedTextFormat.setBackground(QColor(206, 221, 238));
+    }
+};
+
+Q_GLOBAL_STATIC(StaticVariables, staticVariables);
+
+// -------------------------------------------------------------------------
+
+@interface QUITextPosition : UITextPosition
+{
+}
+
+@property (nonatomic) NSUInteger index;
++ (QUITextPosition *)positionWithIndex:(NSUInteger)index;
+
+@end
+
+@implementation QUITextPosition
+
++ (QUITextPosition *)positionWithIndex:(NSUInteger)index
+{
+    QUITextPosition *pos = [[QUITextPosition alloc] init];
+    pos.index = index;
+    return [pos autorelease];
+}
+
+@end
+
+// -------------------------------------------------------------------------
+
+@interface QUITextRange : UITextRange
+{
+}
+
+@property (nonatomic) NSRange range;
++ (QUITextRange *)rangeWithNSRange:(NSRange)range;
+
+@end
+
+@implementation QUITextRange
+
++ (QUITextRange *)rangeWithNSRange:(NSRange)nsrange
+{
+    QUITextRange *range = [[QUITextRange alloc] init];
+    range.range = nsrange;
+    return [range autorelease];
+}
+
+- (UITextPosition *)start
+{
+    return [QUITextPosition positionWithIndex:self.range.location];
+}
+
+- (UITextPosition *)end
+{
+    return [QUITextPosition positionWithIndex:(self.range.location + self.range.length)];
+}
+
+- (NSRange) range
+{
+    return _range;
+}
+
+-(BOOL)isEmpty
+{
+    return (self.range.length == 0);
+}
+
+@end
+
+// -------------------------------------------------------------------------
+
 @implementation QUIView (TextInput)
 
 - (BOOL)canBecomeFirstResponder
@@ -62,6 +150,300 @@
     if (m_qioswindow)
         static_cast<QWindowPrivate *>(QObjectPrivate::get(m_qioswindow->window()))->clearFocusObject();
     return [super resignFirstResponder];
+}
+
+- (void)updateInputMethodWithQuery:(Qt::InputMethodQueries)query
+{
+    // TODO: check what changed, and perhaps update delegate if the text was
+    // changed from somewhere other than this plugin....
+
+    // Note: This function is called both when as a result of the application changing the
+    // input, but also (and most commonly) as a response to us sending QInputMethodQueryEvents.
+    // Because of the latter, we cannot call textWill/DidChange here, as that will confuse
+    // iOS IM handling, and e.g stop spellchecking from working.
+    Q_UNUSED(query);
+
+    QObject *focusObject = QGuiApplication::focusObject();
+    if (!focusObject)
+        return;
+
+    if (!m_inSendEventToFocusObject)
+        [self.inputDelegate textWillChange:id<UITextInput>(self)];
+
+    staticVariables()->inputMethodQueryEvent = QInputMethodQueryEvent(Qt::ImQueryInput);
+    QCoreApplication::sendEvent(focusObject, &staticVariables()->inputMethodQueryEvent);
+
+    if (!m_inSendEventToFocusObject)
+        [self.inputDelegate textDidChange:id<UITextInput>(self)];
+}
+
+- (void)sendEventToFocusObject:(QEvent &)e
+{
+    QObject *focusObject = QGuiApplication::focusObject();
+    if (!focusObject)
+        return;
+
+    // While sending the event, we will receive back updateInputMethodWithQuery calls.
+    // To not confuse iOS, we cannot not call textWillChange/textDidChange at that
+    // point since it will cause spell checking etc to fail. So we use a guard.
+    m_inSendEventToFocusObject = YES;
+    QCoreApplication::sendEvent(focusObject, &e);
+    m_inSendEventToFocusObject = NO;
+}
+
+- (void)reset
+{
+    [self.inputDelegate textWillChange:id<UITextInput>(self)];
+    [self setMarkedText:@"" selectedRange:NSMakeRange(0, 0)];
+    [self updateInputMethodWithQuery:Qt::ImQueryInput];
+
+    if ([self isFirstResponder]) {
+        // There seem to be no way to inform that the keyboard needs to update (since
+        // text input traits might have changed). As a work-around, we quickly resign
+        // first responder status just to reassign it again:
+        [super resignFirstResponder];
+        [self updateTextInputTraits];
+        [super becomeFirstResponder];
+    }
+    [self.inputDelegate textDidChange:id<UITextInput>(self)];
+}
+
+- (void)commit
+{
+    [self.inputDelegate textWillChange:id<UITextInput>(self)];
+    [self unmarkText];
+    [self.inputDelegate textDidChange:id<UITextInput>(self)];
+}
+
+- (QVariant)imValue:(Qt::InputMethodQuery)query
+{
+    return staticVariables()->inputMethodQueryEvent.value(query);
+}
+
+-(id<UITextInputTokenizer>)tokenizer
+{
+    return [[[UITextInputStringTokenizer alloc] initWithTextInput:id<UITextInput>(self)] autorelease];
+}
+
+-(UITextPosition *)beginningOfDocument
+{
+    return [QUITextPosition positionWithIndex:0];
+}
+
+-(UITextPosition *)endOfDocument
+{
+    int endPosition = [self imValue:Qt::ImSurroundingText].toString().length();
+    return [QUITextPosition positionWithIndex:endPosition];
+}
+
+- (void)setSelectedTextRange:(UITextRange *)range
+{
+    QUITextRange *r = static_cast<QUITextRange *>(range);
+    QList<QInputMethodEvent::Attribute> attrs;
+    attrs << QInputMethodEvent::Attribute(QInputMethodEvent::Selection, r.range.location, r.range.length, 0);
+    QInputMethodEvent e(m_markedText, attrs);
+    [self sendEventToFocusObject:e];
+}
+
+- (UITextRange *)selectedTextRange {
+    int cursorPos = [self imValue:Qt::ImCursorPosition].toInt();
+    int anchorPos = [self imValue:Qt::ImAnchorPosition].toInt();
+    return [QUITextRange rangeWithNSRange:NSMakeRange(cursorPos, (anchorPos - cursorPos))];
+}
+
+- (NSString *)textInRange:(UITextRange *)range
+{
+    int s = static_cast<QUITextPosition *>([range start]).index;
+    int e = static_cast<QUITextPosition *>([range end]).index;
+    return [self imValue:Qt::ImSurroundingText].toString().mid(s, e - s).toNSString();
+}
+
+- (void)setMarkedText:(NSString *)markedText selectedRange:(NSRange)selectedRange
+{
+    Q_UNUSED(selectedRange);
+
+    m_markedText = markedText ? QString::fromNSString(markedText) : QString();
+
+    QList<QInputMethodEvent::Attribute> attrs;
+    attrs << QInputMethodEvent::Attribute(QInputMethodEvent::TextFormat, 0, markedText.length, staticVariables()->markedTextFormat);
+    QInputMethodEvent e(m_markedText, attrs);
+    [self sendEventToFocusObject:e];
+}
+
+- (void)unmarkText
+{
+    if (m_markedText.isEmpty())
+        return;
+
+    QInputMethodEvent e;
+    e.setCommitString(m_markedText);
+    [self sendEventToFocusObject:e];
+
+    m_markedText.clear();
+}
+
+- (NSComparisonResult)comparePosition:(UITextPosition *)position toPosition:(UITextPosition *)other
+{
+    int p = static_cast<QUITextPosition *>(position).index;
+    int o = static_cast<QUITextPosition *>(other).index;
+    if (p > o)
+        return NSOrderedAscending;
+    else if (p < o)
+        return NSOrderedDescending;
+    return NSOrderedSame;
+}
+
+- (UITextRange *)markedTextRange {
+    return m_markedText.isEmpty() ? nil : [QUITextRange rangeWithNSRange:NSMakeRange(0, m_markedText.length())];
+}
+
+- (UITextRange *)textRangeFromPosition:(UITextPosition *)fromPosition toPosition:(UITextPosition *)toPosition
+{
+    int f = static_cast<QUITextPosition *>(fromPosition).index;
+    int t = static_cast<QUITextPosition *>(toPosition).index;
+    return [QUITextRange rangeWithNSRange:NSMakeRange(f, t - f)];
+}
+
+- (UITextPosition *)positionFromPosition:(UITextPosition *)position offset:(NSInteger)offset
+{
+    int p = static_cast<QUITextPosition *>(position).index;
+    return [QUITextPosition positionWithIndex:p + offset];
+}
+
+- (UITextPosition *)positionFromPosition:(UITextPosition *)position inDirection:(UITextLayoutDirection)direction offset:(NSInteger)offset
+{
+    int p = static_cast<QUITextPosition *>(position).index;
+    return [QUITextPosition positionWithIndex:(direction == UITextLayoutDirectionRight ? p + offset : p - offset)];
+}
+
+- (UITextPosition *)positionWithinRange:(UITextRange *)range farthestInDirection:(UITextLayoutDirection)direction
+{
+    NSRange r = static_cast<QUITextRange *>(range).range;
+    if (direction == UITextLayoutDirectionRight)
+        return [QUITextPosition positionWithIndex:r.location + r.length];
+    return [QUITextPosition positionWithIndex:r.location];
+}
+
+- (NSInteger)offsetFromPosition:(UITextPosition *)fromPosition toPosition:(UITextPosition *)toPosition
+{
+    int f = static_cast<QUITextPosition *>(fromPosition).index;
+    int t = static_cast<QUITextPosition *>(toPosition).index;
+    return t - f;
+}
+
+- (CGRect)firstRectForRange:(UITextRange *)range
+{
+    QObject *focusObject = QGuiApplication::focusObject();
+    if (!focusObject)
+        return CGRectZero;
+
+    // Using a work-around to get the current rect until
+    // a better API is in place:
+    if (!m_markedText.isEmpty())
+        return CGRectZero;
+
+    int cursorPos = [self imValue:Qt::ImCursorPosition].toInt();
+    int anchorPos = [self imValue:Qt::ImAnchorPosition].toInt();
+
+    NSRange r = static_cast<QUITextRange*>(range).range;
+    QList<QInputMethodEvent::Attribute> attrs;
+    attrs << QInputMethodEvent::Attribute(QInputMethodEvent::Selection, r.location, 0, 0);
+    QInputMethodEvent e(m_markedText, attrs);
+    [self sendEventToFocusObject:e];
+    QRectF startRect = qApp->inputMethod()->cursorRectangle();
+
+    attrs = QList<QInputMethodEvent::Attribute>();
+    attrs << QInputMethodEvent::Attribute(QInputMethodEvent::Selection, r.location + r.length, 0, 0);
+    e = QInputMethodEvent(m_markedText, attrs);
+    [self sendEventToFocusObject:e];
+    QRectF endRect = qApp->inputMethod()->cursorRectangle();
+
+    if (cursorPos != int(r.location + r.length) || cursorPos != anchorPos) {
+        attrs = QList<QInputMethodEvent::Attribute>();
+        attrs << QInputMethodEvent::Attribute(QInputMethodEvent::Selection, cursorPos, (cursorPos - anchorPos), 0);
+        e = QInputMethodEvent(m_markedText, attrs);
+        [self sendEventToFocusObject:e];
+    }
+
+    return toCGRect(startRect.united(endRect));
+}
+
+- (CGRect)caretRectForPosition:(UITextPosition *)position
+{
+    Q_UNUSED(position);
+    // Assume for now that position is always the same as
+    // cursor index until a better API is in place:
+    QRectF cursorRect = qApp->inputMethod()->cursorRectangle();
+    return toCGRect(cursorRect);
+}
+
+- (void)replaceRange:(UITextRange *)range withText:(NSString *)text
+{
+    [self setSelectedTextRange:range];
+
+    QInputMethodEvent e;
+    e.setCommitString(QString::fromNSString(text));
+    [self sendEventToFocusObject:e];
+}
+
+- (void)setBaseWritingDirection:(UITextWritingDirection)writingDirection forRange:(UITextRange *)range
+{
+    Q_UNUSED(writingDirection);
+    Q_UNUSED(range);
+    // Writing direction is handled by QLocale
+}
+
+- (UITextWritingDirection)baseWritingDirectionForPosition:(UITextPosition *)position inDirection:(UITextStorageDirection)direction
+{
+    Q_UNUSED(position);
+    Q_UNUSED(direction);
+    if (QLocale::system().textDirection() == Qt::RightToLeft)
+        return UITextWritingDirectionRightToLeft;
+    return UITextWritingDirectionLeftToRight;
+}
+
+- (UITextRange *)characterRangeByExtendingPosition:(UITextPosition *)position inDirection:(UITextLayoutDirection)direction
+{
+    int p = static_cast<QUITextPosition *>(position).index;
+    if (direction == UITextLayoutDirectionLeft)
+        return [QUITextRange rangeWithNSRange:NSMakeRange(0, p)];
+    int l = [self imValue:Qt::ImSurroundingText].toString().length();
+    return [QUITextRange rangeWithNSRange:NSMakeRange(p, l - p)];
+}
+
+- (UITextPosition *)closestPositionToPoint:(CGPoint)point
+{
+    // No API in Qt for determining this. Use sensible default instead:
+    Q_UNUSED(point);
+    return [QUITextPosition positionWithIndex:[self imValue:Qt::ImCursorPosition].toInt()];
+}
+
+- (UITextPosition *)closestPositionToPoint:(CGPoint)point withinRange:(UITextRange *)range
+{
+    // No API in Qt for determining this. Use sensible default instead:
+    Q_UNUSED(point);
+    Q_UNUSED(range);
+    return [QUITextPosition positionWithIndex:[self imValue:Qt::ImCursorPosition].toInt()];
+}
+
+- (UITextRange *)characterRangeAtPoint:(CGPoint)point
+{
+    // No API in Qt for determining this. Use sensible default instead:
+    Q_UNUSED(point);
+    return [QUITextRange rangeWithNSRange:NSMakeRange([self imValue:Qt::ImCursorPosition].toInt(), 0)];
+}
+
+- (void)setMarkedTextStyle:(NSDictionary *)style
+{
+    Q_UNUSED(style);
+    // No-one is going to change our style. If UIKit itself did that
+    // it would be very welcome, since then we knew how to style marked
+    // text instead of just guessing...
+}
+
+-(NSDictionary *)markedTextStyle
+{
+    return [NSDictionary dictionary];
 }
 
 - (BOOL)hasText

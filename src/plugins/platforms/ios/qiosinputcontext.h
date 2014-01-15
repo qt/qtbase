@@ -50,6 +50,7 @@
 QT_BEGIN_NAMESPACE
 
 @class QIOSKeyboardListener;
+@class QUIView;
 
 class QIOSInputContext : public QPlatformInputContext
 {
@@ -67,9 +68,14 @@ public:
     void cursorRectangleChanged();
     void scrollToCursor();
     void scroll(int y);
+
+    void update(Qt::InputMethodQueries);
+    void reset();
+    void commit();
+
 private:
     QIOSKeyboardListener *m_keyboardListener;
-    UIView<UIKeyInput> *m_focusView;
+    QUIView *m_focusView;
     bool m_hasPendingHideRequest;
     QObject *m_focusObject;
 };

@@ -99,6 +99,7 @@
             self.hidden = YES;
 
         self.multipleTouchEnabled = YES;
+        m_inSendEventToFocusObject = NO;
     }
 
     return self;

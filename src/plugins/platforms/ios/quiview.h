@@ -55,8 +55,11 @@
     QIOSWindow *m_qioswindow;
     QHash<UITouch *, QWindowSystemInterface::TouchPoint> m_activeTouches;
     int m_nextTouchId;
+    QString m_markedText;
+    BOOL m_inSendEventToFocusObject;
 }
 
+@property(nonatomic, assign) id<UITextInputDelegate> inputDelegate;
 @property(nonatomic) UITextAutocapitalizationType autocapitalizationType;
 @property(nonatomic) UITextAutocorrectionType autocorrectionType;
 @property(nonatomic) BOOL enablesReturnKeyAutomatically;
@@ -67,5 +70,8 @@
 
 @end
 
-@interface QUIView (TextInput) <UIKeyInput>
+@interface QUIView (TextInput) <UITextInput>
+- (void)updateInputMethodWithQuery:(Qt::InputMethodQueries)query;
+- (void)reset;
+- (void)commit;
 @end

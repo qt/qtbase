@@ -42,6 +42,7 @@
 #include "qiosglobal.h"
 #include "qiosinputcontext.h"
 #include "qioswindow.h"
+#include "quiview.h"
 #include <QGuiApplication>
 
 @interface QIOSKeyboardListener : NSObject {
@@ -228,23 +229,12 @@ void QIOSInputContext::setFocusObject(QObject *focusObject)
 {
     m_focusObject = focusObject;
 
-    if (!m_focusView || !m_focusView.isFirstResponder) {
+    if (!focusObject || !m_focusView || !m_focusView.isFirstResponder) {
         scroll(0);
         return;
     }
 
-    // Since m_focusView is the first responder, it means that the keyboard is open and we
-    // should update keyboard layout. But there seem to be no way to tell it to reread the
-    // UITextInputTraits from m_focusView. To work around that, we quickly resign first
-    // responder status just to reassign it again. To not remove the focusObject in the same
-    // go, we need to call the super implementation of resignFirstResponder. Since the call
-    // will cause a 'keyboardWillHide' notification to be sendt, we also block scrollRootView
-    // to avoid artifacts:
-    m_keyboardListener->m_ignoreKeyboardChanges = true;
-    SEL sel = @selector(resignFirstResponder);
-    [[m_focusView superclass] instanceMethodForSelector:sel](m_focusView, sel);
-    [m_focusView becomeFirstResponder];
-    m_keyboardListener->m_ignoreKeyboardChanges = false;
+    reset();
 
     if (m_keyboardListener->m_keyboardVisibleAndDocked)
         scrollToCursor();
@@ -252,8 +242,7 @@ void QIOSInputContext::setFocusObject(QObject *focusObject)
 
 void QIOSInputContext::focusWindowChanged(QWindow *focusWindow)
 {
-    UIView<UIKeyInput> *view = focusWindow ?
-                reinterpret_cast<UIView<UIKeyInput> *>(focusWindow->handle()->winId()) : 0;
+    QUIView *view = focusWindow ? reinterpret_cast<QUIView *>(focusWindow->handle()->winId()) : 0;
     if ([m_focusView isFirstResponder])
         [view becomeFirstResponder];
     [m_focusView release];
@@ -313,5 +302,24 @@ void QIOSInputContext::scroll(int y)
         options:m_keyboardListener->m_curve
         animations:^{ view.bounds = newBounds; }
         completion:0];
+}
+
+void QIOSInputContext::update(Qt::InputMethodQueries query)
+{
+    [m_focusView updateInputMethodWithQuery:query];
+}
+
+void QIOSInputContext::reset()
+{
+    // Since the call to reset will cause a 'keyboardWillHide'
+    // notification to be sendt, we block keyboard nofifications to avoid artifacts:
+    m_keyboardListener->m_ignoreKeyboardChanges = true;
+    [m_focusView reset];
+    m_keyboardListener->m_ignoreKeyboardChanges = false;
+}
+
+void QIOSInputContext::commit()
+{
+    [m_focusView commit];
 }
 
