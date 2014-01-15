@@ -125,9 +125,8 @@ protected:
 
 private:
     void createWindowGroup();
-    QRect setGeometryHelper(const QRect &rect);
+    void setGeometryHelper(const QRect &rect);
     void removeFromParent();
-    void setOffset(const QPoint &setOffset);
     void updateVisibility(bool parentVisible);
     void updateZorder(int &topZorder);
     void updateZorder(screen_window_t window, int &zOrder);

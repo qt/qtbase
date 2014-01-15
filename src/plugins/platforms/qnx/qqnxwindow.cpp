@@ -130,7 +130,7 @@ void QQnxWindow::setGeometry(const QRect &rect)
     if (screen()->rootWindow() == this) //If this is the root window, it has to be shown fullscreen
         newGeometry = screen()->geometry();
 
-    const QRect oldGeometry = setGeometryHelper(newGeometry);
+    setGeometryHelper(newGeometry);
 
     // Send a geometry change event to Qt (triggers resizeEvent() in QWindow/QWidget).
 
@@ -140,23 +140,15 @@ void QQnxWindow::setGeometry(const QRect &rect)
     QWindowSystemInterface::handleGeometryChange(window(), newGeometry);
     QWindowSystemInterface::handleExposeEvent(window(), newGeometry);
     QWindowSystemInterface::setSynchronousWindowsSystemEvents(false);
-
-    // Now move all children.
-    if (!oldGeometry.isEmpty()) {
-        const QPoint offset = newGeometry.topLeft() - oldGeometry.topLeft();
-        Q_FOREACH (QQnxWindow *childWindow, m_childWindows)
-            childWindow->setOffset(offset);
-    }
 }
 
-QRect QQnxWindow::setGeometryHelper(const QRect &rect)
+void QQnxWindow::setGeometryHelper(const QRect &rect)
 {
     qWindowDebug() << Q_FUNC_INFO << "window =" << window()
                    << ", (" << rect.x() << "," << rect.y()
                    << "," << rect.width() << "," << rect.height() << ")";
 
     // Call base class method
-    QRect oldGeometry = QPlatformWindow::geometry();
     QPlatformWindow::setGeometry(rect);
 
     // Set window geometry equal to widget geometry
@@ -181,30 +173,7 @@ QRect QQnxWindow::setGeometryHelper(const QRect &rect)
     if (result != 0)
         qFatal("QQnxWindow: failed to set window source size, errno=%d", errno);
 
-    return oldGeometry;
-}
-
-void QQnxWindow::setOffset(const QPoint &offset)
-{
-    qWindowDebug() << Q_FUNC_INFO << "window =" << window();
-    // Move self and then children.
-    QRect newGeometry = geometry();
-    newGeometry.translate(offset);
-
-    // Call the base class
-    QPlatformWindow::setGeometry(newGeometry);
-
-    int val[2];
-
-    errno = 0;
-    val[0] = newGeometry.x();
-    val[1] = newGeometry.y();
-    int result = screen_set_window_property_iv(m_window, SCREEN_PROPERTY_POSITION, val);
-    if (result != 0)
-        qFatal("QQnxWindow: failed to set window position, errno=%d", errno);
-
-    Q_FOREACH (QQnxWindow *childWindow, m_childWindows)
-        childWindow->setOffset(offset);
+    screen_flush_context(m_screenContext, 0);
 }
 
 void QQnxWindow::setVisible(bool visible)
