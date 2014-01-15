@@ -3385,19 +3385,6 @@ bool QTextFormatCollection::hasFormatCached(const QTextFormat &format) const
     return false;
 }
 
-QTextFormat QTextFormatCollection::objectFormat(int objectIndex) const
-{
-    if (objectIndex == -1)
-        return QTextFormat();
-    return format(objFormats.at(objectIndex));
-}
-
-void QTextFormatCollection::setObjectFormat(int objectIndex, const QTextFormat &f)
-{
-    const int formatIndex = indexForFormat(f);
-    objFormats[objectIndex] = formatIndex;
-}
-
 int QTextFormatCollection::objectFormatIndex(int objectIndex) const
 {
     if (objectIndex == -1)

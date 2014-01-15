@@ -68,8 +68,10 @@ public:
     QTextFormatCollection(const QTextFormatCollection &rhs);
     QTextFormatCollection &operator=(const QTextFormatCollection &rhs);
 
-    QTextFormat objectFormat(int objectIndex) const;
-    void setObjectFormat(int objectIndex, const QTextFormat &format);
+    inline QTextFormat objectFormat(int objectIndex) const
+    { return format(objectFormatIndex(objectIndex)); }
+    inline void setObjectFormat(int objectIndex, const QTextFormat &format)
+    { setObjectFormatIndex(objectIndex, indexForFormat(format)); }
 
     int objectFormatIndex(int objectIndex) const;
     void setObjectFormatIndex(int objectIndex, int formatIndex);
