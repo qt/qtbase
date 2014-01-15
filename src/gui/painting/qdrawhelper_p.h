@@ -691,12 +691,16 @@ static Q_ALWAYS_INLINE uint BYTE_MUL_RGB16_32(uint x, uint a) {
     return t;
 }
 
-#define INV_PREMUL(p)                                   \
-    (qAlpha(p) == 0 ? 0 :                               \
-    ((qAlpha(p) << 24)                                  \
-     | (((255*qRed(p))/ qAlpha(p)) << 16)               \
-     | (((255*qGreen(p)) / qAlpha(p))  << 8)            \
-     | ((255*qBlue(p)) / qAlpha(p))))
+static Q_ALWAYS_INLINE uint INV_PREMUL(uint p) {
+    const uint alpha = qAlpha(p);
+    if (alpha == 255)
+        return p;
+    if (alpha == 0)
+        return 0;
+    // (p*(0x00ff00ff/alpha)) >> 16 == (p*255)/alpha for all p and alpha <= 256.
+    const uint invAlpha = 0x00ff00ffU / alpha;
+    return qRgba((qRed(p)*invAlpha)>>16, (qGreen(p)*invAlpha)>>16, (qBlue(p)*invAlpha)>>16, alpha);
+}
 
 struct quint24 {
     quint24(uint value);

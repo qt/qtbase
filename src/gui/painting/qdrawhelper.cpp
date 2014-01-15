@@ -274,7 +274,7 @@ static const uint *QT_FASTCALL convertFromARGB32PM(uint *buffer, const uint *src
 
     if (!layout->premultiplied) {
         for (int i = 0; i < count; ++i)
-            buffer[i] = qAlpha(src[i]) == 255 ? src[i] : INV_PREMUL(src[i]);
+            buffer[i] = INV_PREMUL(src[i]);
         src = buffer;
     }
     for (int i = 0; i < count; ++i) {
