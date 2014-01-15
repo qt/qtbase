@@ -40,13 +40,14 @@
 **
 ****************************************************************************/
 
-#include <QtCore/QtDebug>
-#include <QtCore/QString>
-#include <QtCore/QFile>
-#include <QtCore/QTextStream>
-
 #include "grammar_p.h"
+
 #include "lalr.h"
+
+#include <QtCore/qdebug.h>
+#include <QtCore/qstring.h>
+#include <QtCore/qfile.h>
+#include <QtCore/qtextstream.h>
 
 #include <cstdlib>
 

@@ -42,6 +42,8 @@
 #ifndef PARSETABLE_H
 #define PARSETABLE_H
 
+#include <QtCore/qglobal.h>
+
 QT_FORWARD_DECLARE_CLASS(QTextStream);
 class Automaton;
 

@@ -42,15 +42,15 @@
 #ifndef LALR_H
 #define LALR_H
 
-#include <functional>
+#include <QtCore/qset.h>
+#include <QtCore/qstack.h>
+#include <QtCore/qmap.h>
+#include <QtCore/qlinkedlist.h>
+#include <QtCore/qstring.h>
+#include <QtCore/qtextstream.h>
+#include <QtCore/qpair.h>
 
-#include <QtCore/QSet>
-#include <QtCore/QStack>
-#include <QtCore/QMap>
-#include <QtCore/QLinkedList>
-#include <QtCore/QString>
-#include <QtCore/QTextStream>
-#include <QtCore/QPair>
+#include <functional>
 
 class Rule;
 class State;

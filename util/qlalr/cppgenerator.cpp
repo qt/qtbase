@@ -39,15 +39,16 @@
 **
 ****************************************************************************/
 
+#include "cppgenerator.h"
+
+#include "lalr.h"
+#include "recognizer.h"
 
 #include <QtCore/qbitarray.h>
 #include <QtCore/qtextstream.h>
 #include <QtCore/qfile.h>
 #include <QtCore/qmap.h>
 
-#include "cppgenerator.h"
-#include "lalr.h"
-#include "recognizer.h"
 
 QString CppGenerator::copyrightHeader() const
 {

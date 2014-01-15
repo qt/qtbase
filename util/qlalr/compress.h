@@ -42,7 +42,7 @@
 #ifndef COMPRESS_H
 #define COMPRESS_H
 
-#include <QtCore/QVector>
+#include <QtCore/qvector.h>
 
 class Compress
 {

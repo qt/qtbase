@@ -41,6 +41,7 @@
 ****************************************************************************/
 
 #include "recognizer.h"
+
 #include <cstdlib>
 #include <cstring>
 #include <cctype>

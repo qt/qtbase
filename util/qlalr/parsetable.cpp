@@ -39,10 +39,11 @@
 **
 ****************************************************************************/
 
-
-#include <QtCore/QTextStream>
-#include "lalr.h"
 #include "parsetable.h"
+
+#include "lalr.h"
+
+#include <QtCore/qtextstream.h>
 
 ParseTable::ParseTable (QTextStream &o):
   out (o)

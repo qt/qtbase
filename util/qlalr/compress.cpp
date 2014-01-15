@@ -39,14 +39,14 @@
 **
 ****************************************************************************/
 
+#include "compress.h"
 
-#include <QtCore/QtDebug>
-#include <QtCore/QList>
+#include <QtCore/qdebug.h>
+#include <QtCore/qlist.h>
 
 #include <algorithm>
 #include <iterator>
 #include <iostream>
-#include "compress.h"
 
 #define QLALR_NO_CHECK_SORTED_TABLE
 

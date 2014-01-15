@@ -39,11 +39,11 @@
 **
 ****************************************************************************/
 
-
-#include <QtCore/QTextStream>
+#include "dotgraph.h"
 
 #include "lalr.h"
-#include "dotgraph.h"
+
+#include <QtCore/qtextstream.h>
 
 DotGraph::DotGraph(QTextStream &o):
   out (o)

@@ -39,18 +39,18 @@
 **
 ****************************************************************************/
 
-#include <QtCore/QCoreApplication>
-#include <QtCore/QFile>
-#include <QtCore/QStringList>
-#include <QtCore/QtDebug>
-
-#include <cstdlib>
-
 #include "lalr.h"
 #include "dotgraph.h"
 #include "parsetable.h"
 #include "cppgenerator.h"
 #include "recognizer.h"
+
+#include <QtCore/qcoreapplication.h>
+#include <QtCore/qfile.h>
+#include <QtCore/qstringlist.h>
+#include <QtCore/qdebug.h>
+
+#include <cstdlib>
 
 #define QLALR_NO_DEBUG_TABLE
 #define QLALR_NO_DEBUG_DOT

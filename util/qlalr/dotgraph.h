@@ -42,6 +42,8 @@
 #ifndef DOTGRAPH_H
 #define DOTGRAPH_H
 
+#include <QtCore/qglobal.h>
+
 QT_FORWARD_DECLARE_CLASS(QTextStream);
 class Automaton;
 
