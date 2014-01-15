@@ -97,8 +97,8 @@ void QQnxEglWindow::createEGLSurface()
                                           , platformOpenGLContext()->getEglConfig(),
                                           (EGLNativeWindowType) nativeHandle(), eglSurfaceAttrs);
     if (m_eglSurface == EGL_NO_SURFACE) {
-        QQnxGLContext::checkEGLError("eglCreateWindowSurface");
-        qFatal("QQNX: failed to create EGL surface, err=%d", eglGetError());
+        const EGLenum error = QQnxGLContext::checkEGLError("eglCreateWindowSurface");
+        qFatal("QQNX: failed to create EGL surface, err=%d", error);
     }
 }
 

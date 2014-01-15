@@ -586,13 +586,18 @@ void QQnxWindow::initWindow()
             qFatal("QQnxWindow: failed to set window sensitivity, errno=%d", errno);
     }
 
-    setScreen(static_cast<QQnxScreen *>(window()->screen()->handle()));
+    QQnxScreen *platformScreen = static_cast<QQnxScreen *>(window()->screen()->handle());
+    setScreen(platformScreen);
 
     if (window()->type() == Qt::CoverWindow) {
 #if defined(Q_OS_BLACKBERRY) && !defined(Q_OS_BLACKBERRY_TABLET)
-        screen_set_window_property_pv(m_screen->rootWindow()->nativeHandle(),
-                                      SCREEN_PROPERTY_ALTERNATE_WINDOW, (void**)&m_window);
-        m_cover.reset(new QQnxNavigatorCover);
+        if (platformScreen->rootWindow()) {
+            screen_set_window_property_pv(m_screen->rootWindow()->nativeHandle(),
+                                          SCREEN_PROPERTY_ALTERNATE_WINDOW, (void**)&m_window);
+            m_cover.reset(new QQnxNavigatorCover);
+        } else {
+            qWarning("No root window for cover window");
+        }
 #endif
         m_exposed = false;
     }
