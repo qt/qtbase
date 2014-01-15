@@ -449,7 +449,6 @@ public:
 
     typedef QList<ItemDecoration> ItemDecorationList;
 
-    QTextEngine(LayoutData *data);
     QTextEngine();
     QTextEngine(const QString &str, const QFont &f);
     ~QTextEngine();
