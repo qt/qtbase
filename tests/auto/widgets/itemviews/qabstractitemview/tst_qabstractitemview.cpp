@@ -1286,6 +1286,7 @@ void tst_QAbstractItemView::task200665_itemEntered()
     QVERIFY(QTest::qWaitForWindowExposed(&view));
     QRect rect = view.visualRect(model.index(0,0));
     QCursor::setPos( view.viewport()->mapToGlobal(rect.center()) );
+    QCoreApplication::processEvents();
     QSignalSpy spy(&view, SIGNAL(entered(QModelIndex)));
     view.verticalScrollBar()->setValue(view.verticalScrollBar()->maximum());
 
