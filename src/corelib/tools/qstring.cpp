@@ -307,6 +307,21 @@ static int ucstrncmp(const QChar *a, const QChar *b, int l)
     return 0;
 }
 
+static int ucstrncmp(const QChar *a, const uchar *c, int l)
+{
+    const ushort *uc = reinterpret_cast<const ushort *>(a);
+    const ushort *e = uc + l;
+
+    while (uc < e) {
+        int diff = *uc - *c;
+        if (diff)
+            return diff;
+        uc++, c++;
+    }
+
+    return 0;
+}
+
 // Unicode case-sensitive comparison
 static int ucstrcmp(const QChar *a, int alen, const QChar *b, int blen)
 {
@@ -329,6 +344,13 @@ static bool qMemEquals(const quint16 *a, const quint16 *b, int length)
         return true;
 
     return ucstrncmp(reinterpret_cast<const QChar *>(a), reinterpret_cast<const QChar *>(b), length) == 0;
+}
+
+static int ucstrcmp(const QChar *a, int alen, const uchar *b, int blen)
+{
+    int l = qMin(alen, blen);
+    int cmp = ucstrncmp(a, b, l);
+    return cmp ? cmp : (alen-blen);
 }
 
 /*!
@@ -2226,17 +2248,7 @@ bool QString::operator==(QLatin1String other) const
     if (!other.size())
         return isEmpty();
 
-    const ushort *uc = d->data();
-    const ushort *e = uc + d->size;
-    const uchar *c = (uchar *)other.latin1();
-
-    while (uc < e) {
-        if (*uc != *c)
-            return false;
-        ++uc;
-        ++c;
-    }
-    return true;
+    return compare_helper(data(), size(), other, Qt::CaseSensitive) == 0;
 }
 
 /*! \fn bool QString::operator==(const QByteArray &other) const
@@ -2290,16 +2302,7 @@ bool QString::operator<(QLatin1String other) const
     if (!c || *c == 0)
         return false;
 
-    const ushort *uc = d->data();
-    const ushort *e = uc + qMin(d->size, other.size());
-
-    while (uc < e) {
-        if (*uc != *c)
-            break;
-        ++uc;
-        ++c;
-    }
-    return (uc == e ? d->size < other.size() : *uc < *c);
+    return compare_helper(data(), size(), other, Qt::CaseSensitive) < 0;
 }
 
 /*! \fn bool QString::operator<(const QByteArray &other) const
@@ -2392,16 +2395,7 @@ bool QString::operator>(QLatin1String other) const
     if (!c || *c == '\0')
         return !isEmpty();
 
-    const ushort *uc = d->data();
-    const ushort *e = uc + qMin(d->size, other.size());
-
-    while (uc < e) {
-        if (*uc != *c)
-            break;
-        ++uc;
-        ++c;
-    }
-    return (uc == e) ? d->size > other.size() : *uc > *c;
+    return compare_helper(data(), size(), other, Qt::CaseSensitive) > 0;
 }
 
 /*! \fn bool QString::operator>(const QByteArray &other) const
@@ -5110,22 +5104,7 @@ int QString::compare_helper(const QChar *data1, int length1, QLatin1String s2,
         return length1;
 
     if (cs == Qt::CaseSensitive) {
-        const ushort *e = uc + length1;
-        if (s2.size() < length1)
-            e = uc + s2.size();
-        while (uc < e) {
-            int diff = *uc - *c;
-            if (diff)
-                return diff;
-            uc++, c++;
-        }
-
-        if (uc == uce) {
-            if (c == (const uchar *)s2.latin1() + s2.size())
-                return 0;
-            return -1;
-        }
-        return 1;
+        return ucstrcmp(data1, length1, c, s2.size());
     } else {
         return ucstricmp(uc, uce, c, c + s2.size());
     }
@@ -8329,19 +8308,10 @@ bool operator==(QLatin1String s1, const QStringRef &s2)
     if (s1.size() != s2.size())
         return false;
 
-    const ushort *uc = reinterpret_cast<const ushort *>(s2.unicode());
-    const ushort *e = uc + s2.size();
     const uchar *c = reinterpret_cast<const uchar *>(s1.latin1());
     if (!c)
         return s2.isEmpty();
-
-    while (*c) {
-        if (uc == e || *uc != *c)
-            return false;
-        ++uc;
-        ++c;
-    }
-    return (uc == e);
+    return ucstrncmp(s2.unicode(), c, s2.size()) == 0;
 }
 
 /*!
@@ -9313,9 +9283,7 @@ static inline bool qt_starts_with(const QChar *haystack, int haystackLen,
     const ushort *data = reinterpret_cast<const ushort*>(haystack);
     const uchar *latin = reinterpret_cast<const uchar*>(needle.latin1());
     if (cs == Qt::CaseSensitive) {
-        for (int i = 0; i < slen; ++i)
-            if (data[i] != latin[i])
-                return false;
+        return ucstrncmp(haystack, latin, slen) == 0;
     } else {
         for (int i = 0; i < slen; ++i)
             if (foldCase(data[i]) != foldCase((ushort)latin[i]))
@@ -9365,9 +9333,7 @@ static inline bool qt_ends_with(const QChar *haystack, int haystackLen,
     const uchar *latin = reinterpret_cast<const uchar*>(needle.latin1());
     const ushort *data = reinterpret_cast<const ushort*>(haystack);
     if (cs == Qt::CaseSensitive) {
-        for (int i = 0; i < slen; i++)
-            if (data[pos+i] != latin[i])
-                return false;
+        return ucstrncmp(haystack + pos, latin, slen) == 0;
     } else {
         for (int i = 0; i < slen; i++)
             if (foldCase(data[pos+i]) != foldCase((ushort)latin[i]))
