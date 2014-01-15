@@ -1051,18 +1051,15 @@ QRectF QGridLayoutEngine::cellRect(const QRectF &contentsGeometry, int row, int 
 QSizeF QGridLayoutEngine::sizeHint(Qt::SizeHint which, const QSizeF &constraint,
                                    const QAbstractLayoutStyleInfo *styleInfo) const
 {
-    QGridLayoutBox sizehint_totalBoxes[NOrientations];
 
-    bool sizeHintCalculated = false;
 
     if (hasDynamicConstraint() && rowCount() > 0 && columnCount() > 0) {
+        QGridLayoutBox sizehint_totalBoxes[NOrientations];
+        bool sizeHintCalculated = false;
         if (constraintOrientation() == Qt::Vertical) {
             //We have items whose height depends on their width
             if (constraint.width() >= 0) {
-                if (styleInfo->hasChanged() || !q_totalBoxesValid)
-                    ensureColumnAndRowData(&q_columnData, &sizehint_totalBoxes[Hor], NULL, NULL, Qt::Horizontal, styleInfo);
-                else
-                    sizehint_totalBoxes[Hor] = q_totalBoxes[Hor];
+                ensureColumnAndRowData(&q_columnData, &sizehint_totalBoxes[Hor], NULL, NULL, Qt::Horizontal, styleInfo);
                 QVector<qreal> sizehint_xx;
                 QVector<qreal> sizehint_widths;
 
@@ -1094,32 +1091,14 @@ QSizeF QGridLayoutEngine::sizeHint(Qt::SizeHint which, const QSizeF &constraint,
                 sizeHintCalculated = true;
             }
         }
+        if (sizeHintCalculated)
+            return QSizeF(sizehint_totalBoxes[Hor].q_sizes(which), sizehint_totalBoxes[Ver].q_sizes(which));
     }
 
-    if (!sizeHintCalculated) {
-        //No items with height for width, so it doesn't matter which order we do these in
-        if (styleInfo->hasChanged() || !q_totalBoxesValid) {
-            ensureColumnAndRowData(&q_columnData, &sizehint_totalBoxes[Hor], NULL, NULL, Qt::Horizontal, styleInfo);
-            ensureColumnAndRowData(&q_rowData, &sizehint_totalBoxes[Ver], NULL, NULL, Qt::Vertical, styleInfo);
-        } else {
-            sizehint_totalBoxes[Hor] = q_totalBoxes[Hor];
-            sizehint_totalBoxes[Ver] = q_totalBoxes[Ver];
-        }
-    }
-
-    switch (which) {
-    case Qt::MinimumSize:
-        return QSizeF(sizehint_totalBoxes[Hor].q_minimumSize, sizehint_totalBoxes[Ver].q_minimumSize);
-    case Qt::PreferredSize:
-        return QSizeF(sizehint_totalBoxes[Hor].q_preferredSize, sizehint_totalBoxes[Ver].q_preferredSize);
-    case Qt::MaximumSize:
-        return QSizeF(sizehint_totalBoxes[Hor].q_maximumSize, sizehint_totalBoxes[Ver].q_maximumSize);
-    case Qt::MinimumDescent:
-        return QSizeF(-1.0, sizehint_totalBoxes[Hor].q_minimumDescent);    // ### doesn't work
-    default:
-        break;
-    }
-    return QSizeF();
+    //No items with height for width, so it doesn't matter which order we do these in
+    ensureColumnAndRowData(&q_columnData, &q_totalBoxes[Hor], NULL, NULL, Qt::Horizontal, styleInfo);
+    ensureColumnAndRowData(&q_rowData, &q_totalBoxes[Ver], NULL, NULL, Qt::Vertical, styleInfo);
+    return QSizeF(q_totalBoxes[Hor].q_sizes(which), q_totalBoxes[Ver].q_sizes(which));
 }
 
 QLayoutPolicy::ControlTypes QGridLayoutEngine::controlTypes(LayoutSide side) const
