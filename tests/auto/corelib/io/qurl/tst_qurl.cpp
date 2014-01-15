@@ -169,6 +169,7 @@ private slots:
     void fileName();
     void isEmptyForEncodedUrl();
     void toEncodedNotUsingUninitializedPath();
+    void emptyAuthorityRemovesExistingAuthority_data();
     void emptyAuthorityRemovesExistingAuthority();
     void acceptEmptyAuthoritySegments();
     void lowercasesScheme();
@@ -3033,31 +3034,56 @@ void tst_QUrl::resolvedWithAbsoluteSchemes_data() const
         << QUrl::fromEncoded("http://andreas:hemmelig@www.vg.no/?my=query&your=query#yougotfragged");
 }
 
+void tst_QUrl::emptyAuthorityRemovesExistingAuthority_data()
+{
+    QTest::addColumn<QString>("input");
+    QTest::addColumn<QString>("expected");
+    QTest::newRow("regular") << "foo://example.com/something" << "foo:/something";
+    QTest::newRow("empty") << "foo:///something" << "foo:/something";
+}
+
 void tst_QUrl::emptyAuthorityRemovesExistingAuthority()
 {
-    QUrl url("http://example.com/something");
+    QFETCH(QString, input);
+    QFETCH(QString, expected);
+    QUrl url(input);
+    QUrl orig = url;
+
     url.setAuthority(QString());
     QCOMPARE(url.authority(), QString());
+    QVERIFY(url != orig);
+    QCOMPARE(url.toString(), expected);
+    QCOMPARE(url, QUrl(expected));
 }
 
 void tst_QUrl::acceptEmptyAuthoritySegments()
 {
     QCOMPARE(QUrl("remote://").toString(), QString::fromLatin1("remote://"));
 
-    // Verify that foo:///bar is not mangled to foo:/bar
+    // Verify that foo:///bar is not mangled to foo:/bar nor vice-versa
     QString foo_triple_bar("foo:///bar"), foo_uni_bar("foo:/bar");
 
-    QCOMPARE(foo_triple_bar, QUrl(foo_triple_bar).toString());
-    QCOMPARE(foo_triple_bar, QString::fromUtf8(QUrl(foo_triple_bar).toEncoded()));
+    QVERIFY(QUrl(foo_triple_bar) != QUrl(foo_uni_bar));
 
-    QCOMPARE(foo_uni_bar, QUrl(foo_uni_bar).toString());
-    QCOMPARE(foo_uni_bar, QString::fromUtf8(QUrl(foo_uni_bar).toEncoded()));
+    QCOMPARE(QUrl(foo_triple_bar).toString(), foo_triple_bar);
+    QCOMPARE(QUrl(foo_triple_bar).toEncoded(), foo_triple_bar.toLatin1());
 
-    QCOMPARE(foo_triple_bar, QUrl(foo_triple_bar, QUrl::StrictMode).toString());
-    QCOMPARE(foo_triple_bar, QString::fromUtf8(QUrl(foo_triple_bar, QUrl::StrictMode).toEncoded()));
+    QCOMPARE(QUrl(foo_uni_bar).toString(), foo_uni_bar);
+    QCOMPARE(QUrl(foo_uni_bar).toEncoded(), foo_uni_bar.toLatin1());
 
-    QCOMPARE(foo_uni_bar, QUrl(foo_uni_bar, QUrl::StrictMode).toString());
-    QCOMPARE(foo_uni_bar, QString::fromUtf8(QUrl(foo_uni_bar, QUrl::StrictMode).toEncoded()));
+    QCOMPARE(QUrl(foo_triple_bar, QUrl::StrictMode).toString(), foo_triple_bar);
+    QCOMPARE(QUrl(foo_triple_bar, QUrl::StrictMode).toEncoded(), foo_triple_bar.toLatin1());
+
+    QCOMPARE(QUrl(foo_uni_bar, QUrl::StrictMode).toString(), foo_uni_bar);
+    QCOMPARE(QUrl(foo_uni_bar, QUrl::StrictMode).toEncoded(), foo_uni_bar.toLatin1());
+
+    // However, file:/bar is the same as file:///bar
+    QString file_triple_bar("file:///bar"), file_uni_bar("file:/bar");
+
+    QVERIFY(QUrl(file_triple_bar) == QUrl(file_uni_bar));
+
+    QCOMPARE(QUrl(file_uni_bar).toString(), file_triple_bar);
+    QCOMPARE(QUrl(file_uni_bar, QUrl::StrictMode).toString(), file_triple_bar);
 }
 
 void tst_QUrl::effectiveTLDs_data()
@@ -3434,6 +3460,12 @@ void tst_QUrl::setComponents_data()
     QTest::newRow("host-empty") << QUrl("foo://example.com/path")
                                << int(Host) << "" << Tolerant << true
                                << PrettyDecoded << QString() << "foo:///path";
+    QTest::newRow("authority-null") << QUrl("foo://example.com/path")
+                                    << int(Authority) << QString() << Tolerant << true
+                                    << PrettyDecoded << QString() << "foo:/path";
+    QTest::newRow("authority-empty") << QUrl("foo://example.com/path")
+                                     << int(Authority) << "" << Tolerant << true
+                                     << PrettyDecoded << QString() << "foo:///path";
     QTest::newRow("query-null") << QUrl("http://example.com/?q=foo")
                                    << int(Query) << QString() << Tolerant << true
                                    << PrettyDecoded << QString() << "http://example.com/";
