@@ -50,7 +50,9 @@
 #include <QLibraryInfo>
 
 #ifdef Q_OS_MAC
+#ifdef Q_OS_OSX
 #include <Carbon/Carbon.h>
+#endif
 struct MacSpecialKey {
     int key;
     ushort macSymbol;
@@ -73,10 +75,12 @@ static const MacSpecialKey entries[NumEntries] = {
     { Qt::Key_Down, 0x2193 },
     { Qt::Key_PageUp, 0x21DE },
     { Qt::Key_PageDown, 0x21DF },
+#ifdef Q_OS_OSX
     { Qt::Key_Shift, kShiftUnicode },
     { Qt::Key_Control, kCommandUnicode },
     { Qt::Key_Meta, kControlUnicode },
     { Qt::Key_Alt, kOptionUnicode },
+#endif
     { Qt::Key_CapsLock, 0x21EA },
 };
 
