@@ -132,6 +132,12 @@ QT_BEGIN_NAMESPACE
  * for the common case.
  */
 
+#if defined(__mips_dsp)
+// From qstring_mips_dsp_asm.S
+extern "C" void qt_fromlatin1_mips_asm_unroll4 (ushort*, const char*, uint);
+extern "C" void qt_fromlatin1_mips_asm_unroll8 (ushort*, const char*, uint);
+#endif
+
 // internal
 int qFindString(const QChar *haystack, int haystackLen, int from,
     const QChar *needle, int needleLen, Qt::CaseSensitivity cs);
@@ -189,6 +195,45 @@ inline RetType UnrollTailLoop<0>::exec(int, RetType returnIfExited, Functor1, Fu
 }
 }
 #endif
+
+// conversion between Latin 1 and UTF-16
+static void qt_from_latin1(ushort *dst, const char *str, size_t size)
+{
+    /* SIMD:
+     * Unpacking with SSE has been shown to improve performance on recent CPUs
+     * The same method gives no improvement with NEON.
+     */
+#if defined(__SSE2__)
+    if (size >= 16) {
+        int chunkCount = size >> 4; // divided by 16
+        const __m128i nullMask = _mm_set1_epi32(0);
+        for (int i = 0; i < chunkCount; ++i) {
+            const __m128i chunk = _mm_loadu_si128((__m128i*)str); // load
+            str += 16;
+
+            // unpack the first 8 bytes, padding with zeros
+            const __m128i firstHalf = _mm_unpacklo_epi8(chunk, nullMask);
+            _mm_storeu_si128((__m128i*)dst, firstHalf); // store
+            dst += 8;
+
+            // unpack the last 8 bytes, padding with zeros
+            const __m128i secondHalf = _mm_unpackhi_epi8 (chunk, nullMask);
+            _mm_storeu_si128((__m128i*)dst, secondHalf); // store
+            dst += 8;
+        }
+        size = size % 16;
+    }
+#endif
+#if defined(__mips_dsp)
+    if (size > 20)
+        qt_fromlatin1_mips_asm_unroll8(dst, str, size);
+    else
+        qt_fromlatin1_mips_asm_unroll4(dst, str, size);
+#else
+    while (size--)
+        *dst++ = (uchar)*str++;
+#endif
+}
 
 // Unicode case-insensitive comparison
 static int ucstricmp(const ushort *a, const ushort *ae, const ushort *b, const ushort *be)
@@ -1614,7 +1659,7 @@ QString &QString::operator=(QChar ch)
 */
 QString &QString::insert(int i, QLatin1String str)
 {
-    const uchar *s = (const uchar *)str.latin1();
+    const char *s = str.latin1();
     if (i < 0 || !s || !(*s))
         return *this;
 
@@ -1622,8 +1667,7 @@ QString &QString::insert(int i, QLatin1String str)
     expand(qMax(d->size, i) + len - 1);
 
     ::memmove(d->data() + i + len, d->data() + i, (d->size - i - len) * sizeof(QChar));
-    for (int j = 0; j < len; ++j)
-        d->data()[i + j] = s[j];
+    qt_from_latin1(d->data() + i, s, uint(len));
     return *this;
 }
 
@@ -1735,14 +1779,14 @@ QString &QString::append(const QChar *str, int len)
 */
 QString &QString::append(QLatin1String str)
 {
-    const uchar *s = (const uchar *)str.latin1();
+    const char *s = str.latin1();
     if (s) {
         int len = str.size();
         if (d->ref.isShared() || uint(d->size + len) + 1u > d->alloc)
             reallocData(uint(d->size + len) + 1u, true);
         ushort *i = d->data() + d->size;
-        while ((*i++ = *s++))
-            ;
+        qt_from_latin1(i, s, uint(len));
+        i[len] = '\0';
         d->size += len;
     }
     return *this;
@@ -2249,13 +2293,11 @@ QString& QString::replace(QChar before, QChar after, Qt::CaseSensitivity cs)
 QString &QString::replace(QLatin1String before, QLatin1String after, Qt::CaseSensitivity cs)
 {
     int alen = after.size();
-    QVarLengthArray<ushort> a(alen);
-    for (int i = 0; i < alen; ++i)
-        a[i] = (uchar)after.latin1()[i];
     int blen = before.size();
+    QVarLengthArray<ushort> a(alen);
     QVarLengthArray<ushort> b(blen);
-    for (int i = 0; i < blen; ++i)
-        b[i] = (uchar)before.latin1()[i];
+    qt_from_latin1(a.data(), after.latin1(), alen);
+    qt_from_latin1(b.data(), before.latin1(), blen);
     return replace((const QChar *)b.data(), blen, (const QChar *)a.data(), alen, cs);
 }
 
@@ -2275,8 +2317,7 @@ QString &QString::replace(QLatin1String before, const QString &after, Qt::CaseSe
 {
     int blen = before.size();
     QVarLengthArray<ushort> b(blen);
-    for (int i = 0; i < blen; ++i)
-        b[i] = (uchar)before.latin1()[i];
+    qt_from_latin1(b.data(), before.latin1(), blen);
     return replace((const QChar *)b.data(), blen, after.constData(), after.d->size, cs);
 }
 
@@ -2296,8 +2337,7 @@ QString &QString::replace(const QString &before, QLatin1String after, Qt::CaseSe
 {
     int alen = after.size();
     QVarLengthArray<ushort> a(alen);
-    for (int i = 0; i < alen; ++i)
-        a[i] = (uchar)after.latin1()[i];
+    qt_from_latin1(a.data(), after.latin1(), alen);
     return replace(before.constData(), before.d->size, (const QChar *)a.data(), alen, cs);
 }
 
@@ -2317,8 +2357,7 @@ QString &QString::replace(QChar c, QLatin1String after, Qt::CaseSensitivity cs)
 {
     int alen = after.size();
     QVarLengthArray<ushort> a(alen);
-    for (int i = 0; i < alen; ++i)
-        a[i] = (uchar)after.latin1()[i];
+    qt_from_latin1(a.data(), after.latin1(), alen);
     return replace(&c, 1, (const QChar *)a.data(), alen, cs);
 }
 
@@ -2886,8 +2925,7 @@ int QString::lastIndexOf(QLatin1String str, int from, Qt::CaseSensitivity cs) co
         from = delta;
 
     QVarLengthArray<ushort> s(sl);
-    for (int i = 0; i < sl; ++i)
-        s[i] = str.latin1()[i];
+    qt_from_latin1(s.data(), str.latin1(), sl);
 
     return lastIndexOfHelper(d->data(), from, s.data(), sl, cs);
 }
@@ -4295,12 +4333,6 @@ QVector<uint> QString::toUcs4() const
     return v;
 }
 
-#if defined(__mips_dsp)
-// From qstring_mips_dsp_asm.S
-extern "C" void qt_fromlatin1_mips_asm_unroll4 (ushort*, const char*, uint);
-extern "C" void qt_fromlatin1_mips_asm_unroll8 (ushort*, const char*, uint);
-#endif
-
 QString::Data *QString::fromLatin1_helper(const char *str, int size)
 {
     Data *d;
@@ -4316,40 +4348,8 @@ QString::Data *QString::fromLatin1_helper(const char *str, int size)
         d->size = size;
         d->data()[size] = '\0';
         ushort *dst = d->data();
-        /* SIMD:
-         * Unpacking with SSE has been shown to improve performance on recent CPUs
-         * The same method gives no improvement with NEON.
-         */
-#if defined(__SSE2__)
-        if (size >= 16) {
-            int chunkCount = size >> 4; // divided by 16
-            const __m128i nullMask = _mm_set1_epi32(0);
-            for (int i = 0; i < chunkCount; ++i) {
-                const __m128i chunk = _mm_loadu_si128((__m128i*)str); // load
-                str += 16;
 
-                // unpack the first 8 bytes, padding with zeros
-                const __m128i firstHalf = _mm_unpacklo_epi8(chunk, nullMask);
-                _mm_storeu_si128((__m128i*)dst, firstHalf); // store
-                dst += 8;
-
-                // unpack the last 8 bytes, padding with zeros
-                const __m128i secondHalf = _mm_unpackhi_epi8 (chunk, nullMask);
-                _mm_storeu_si128((__m128i*)dst, secondHalf); // store
-                dst += 8;
-            }
-            size = size % 16;
-        }
-#endif
-#if defined(__mips_dsp)
-        if (size > 20)
-            qt_fromlatin1_mips_asm_unroll8(dst, str, size);
-        else
-            qt_fromlatin1_mips_asm_unroll4(dst, str, size);
-#else
-        while (size--)
-            *dst++ = (uchar)*str++;
-#endif
+        qt_from_latin1(dst, str, uint(size));
     }
     return d;
 }
@@ -9003,8 +9003,7 @@ int QStringRef::lastIndexOf(QLatin1String str, int from, Qt::CaseSensitivity cs)
         from = delta;
 
     QVarLengthArray<ushort> s(sl);
-    for (int i = 0; i < sl; ++i)
-        s[i] = str.latin1()[i];
+    qt_from_latin1(s.data(), str.latin1(), sl);
 
     return lastIndexOfHelper(reinterpret_cast<const ushort*>(unicode()), from, s.data(), sl, cs);
 }
@@ -9342,8 +9341,7 @@ static inline int qt_find_latin1_string(const QChar *haystack, int size,
     const char *latin1 = needle.latin1();
     int len = needle.size();
     QVarLengthArray<ushort> s(len);
-    for (int i = 0; i < len; ++i)
-        s[i] = latin1[i];
+    qt_from_latin1(s.data(), latin1, len);
 
     return qFindString(haystack, size, from,
                        reinterpret_cast<const QChar*>(s.constData()), len, cs);
