@@ -866,7 +866,7 @@ QJpegHandler::QJpegHandler()
 
     if (qCpuHasFeature(NEON))
         rgb888ToRgb32ConverterPtr = qt_convert_rgb888_to_rgb32_neon;
-#endif // QT_COMPILER_SUPPORTS_NEON
+#endif // __ARM_NEON__
 #if defined(QT_COMPILER_SUPPORTS_SSSE3)
     // from qimage_ssse3.cpp
 

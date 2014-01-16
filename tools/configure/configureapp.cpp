@@ -3389,8 +3389,6 @@ void Configure::generateConfigfiles()
             tmpStream << "#define QT_COMPILER_SUPPORTS_AVX2" << endl;
         if (dictionary[ "IWMMXT" ] == "yes")
             tmpStream << "#define QT_COMPILER_SUPPORTS_IWMMXT" << endl;
-        if (dictionary[ "NEON" ] == "yes")
-            tmpStream << "#define QT_COMPILER_SUPPORTS_NEON" << endl;
 
         if (dictionary["QREAL"] != "double")
             tmpStream << "#define QT_COORD_TYPE " << dictionary["QREAL"] << endl;

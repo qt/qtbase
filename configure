@@ -6213,7 +6213,7 @@ fi
 echo "" >>"$outpath/src/corelib/global/qconfig.h.new"
 echo "// Compiler sub-arch support" >>"$outpath/src/corelib/global/qconfig.h.new"
 for SUBARCH in SSE2 SSE3 SSSE3 SSE4_1 SSE4_2 AVX AVX2 \
-    IWMMXT NEON \
+    IWMMXT \
     MIPS_DSP MIPS_DSPR2; do
     eval "VAL=\$CFG_$SUBARCH"
     case "$VAL" in

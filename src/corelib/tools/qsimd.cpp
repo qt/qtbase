@@ -54,7 +54,7 @@
 #      include <intrin.h>
 #    endif
 #  endif
-#elif defined(Q_OS_LINUX) && (defined(Q_PROCESSOR_ARM) || defined(QT_COMPILER_SUPPORTS_IWMMXT) || defined(QT_COMPILER_SUPPORTS_NEON))
+#elif defined(Q_OS_LINUX) && (defined(Q_PROCESSOR_ARM) || defined(QT_COMPILER_SUPPORTS_IWMMXT))
 #include "private/qcore_unix_p.h"
 
 // the kernel header definitions for HWCAP_*
@@ -102,7 +102,7 @@ static inline uint detectProcessorFeatures()
     return features;
 }
 
-#elif defined(Q_PROCESSOR_ARM) || defined(QT_COMPILER_SUPPORTS_IWMMXT) || defined(QT_COMPILER_SUPPORTS_NEON)
+#elif defined(Q_PROCESSOR_ARM) || defined(QT_COMPILER_SUPPORTS_IWMMXT)
 static inline uint detectProcessorFeatures()
 {
     uint features = 0;
