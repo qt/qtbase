@@ -190,6 +190,16 @@ template <uint MaxCount> struct UnrollTailLoop
 
         return UnrollTailLoop<MaxCount - 1>::exec(count - 1, returnIfExited, loopCheck, returnIfFailed, i + 1);
     }
+
+    template <typename Functor>
+    static inline void exec(int count, Functor code)
+    {
+        /* equivalent to:
+         *   for (int i = 0; i < count; ++i)
+         *       code(i);
+         */
+        exec(count, 0, [=](int i) -> bool { code(i); return false; }, [](int) { return 0; });
+    }
 };
 template <> template <typename RetType, typename Functor1, typename Functor2>
 inline RetType UnrollTailLoop<0>::exec(int, RetType returnIfExited, Functor1, Functor2, int)
@@ -207,25 +217,29 @@ static void qt_from_latin1(ushort *dst, const char *str, size_t size)
      * The same method gives no improvement with NEON.
      */
 #if defined(__SSE2__)
-    if (size >= 16) {
-        int chunkCount = size >> 4; // divided by 16
+    const char *e = str + size;
+    qptrdiff offset = 0;
+
+    // we're going to read str[offset..offset+15] (16 bytes)
+    for ( ; str + offset + 15 < e; offset += 16) {
         const __m128i nullMask = _mm_set1_epi32(0);
-        for (int i = 0; i < chunkCount; ++i) {
-            const __m128i chunk = _mm_loadu_si128((__m128i*)str); // load
-            str += 16;
+        const __m128i chunk = _mm_loadu_si128((__m128i*)(str + offset)); // load
 
-            // unpack the first 8 bytes, padding with zeros
-            const __m128i firstHalf = _mm_unpacklo_epi8(chunk, nullMask);
-            _mm_storeu_si128((__m128i*)dst, firstHalf); // store
-            dst += 8;
+        // unpack the first 8 bytes, padding with zeros
+        const __m128i firstHalf = _mm_unpacklo_epi8(chunk, nullMask);
+        _mm_storeu_si128((__m128i*)(dst + offset), firstHalf); // store
 
-            // unpack the last 8 bytes, padding with zeros
-            const __m128i secondHalf = _mm_unpackhi_epi8 (chunk, nullMask);
-            _mm_storeu_si128((__m128i*)dst, secondHalf); // store
-            dst += 8;
-        }
-        size = size % 16;
+        // unpack the last 8 bytes, padding with zeros
+        const __m128i secondHalf = _mm_unpackhi_epi8 (chunk, nullMask);
+        _mm_storeu_si128((__m128i*)(dst + offset + 8), secondHalf); // store
     }
+
+    size = size % 16;
+    dst += offset;
+    str += offset;
+#  ifdef Q_COMPILER_LAMBDA
+    return UnrollTailLoop<15>::exec(size, [=](int i) { dst[i] = (uchar)str[i]; });
+#  endif
 #endif
 #if defined(__mips_dsp)
     if (size > 20)
@@ -295,61 +309,62 @@ static inline __m128i mergeQuestionMarks(__m128i chunk)
 
 static void qt_to_latin1(uchar *dst, const ushort *src, int length)
 {
-    if (length) {
 #if defined(__SSE2__)
-        if (length >= 16) {
-            const int chunkCount = length >> 4; // divided by 16
+    uchar *e = dst + length;
+    qptrdiff offset = 0;
 
-            for (int i = 0; i < chunkCount; ++i) {
-                __m128i chunk1 = _mm_loadu_si128((__m128i*)src); // load
-                chunk1 = mergeQuestionMarks(chunk1);
-                src += 8;
+    // we're going to write to dst[offset..offset+15] (16 bytes)
+    for ( ; dst + offset + 15 < e; offset += 16) {
+        __m128i chunk1 = _mm_loadu_si128((__m128i*)(src + offset)); // load
+        chunk1 = mergeQuestionMarks(chunk1);
 
-                __m128i chunk2 = _mm_loadu_si128((__m128i*)src); // load
-                chunk2 = mergeQuestionMarks(chunk2);
-                src += 8;
+        __m128i chunk2 = _mm_loadu_si128((__m128i*)(src + offset + 8)); // load
+        chunk2 = mergeQuestionMarks(chunk2);
 
-                // pack the two vector to 16 x 8bits elements
-                const __m128i result = _mm_packus_epi16(chunk1, chunk2);
+        // pack the two vector to 16 x 8bits elements
+        const __m128i result = _mm_packus_epi16(chunk1, chunk2);
+        _mm_storeu_si128((__m128i*)(dst + offset), result); // store
+    }
 
-                _mm_storeu_si128((__m128i*)dst, result); // store
-                dst += 16;
-            }
-            length = length % 16;
-        }
+    length = length % 16;
+    dst += offset;
+    src += offset;
+
+#  ifdef Q_COMPILER_LAMBDA
+    return UnrollTailLoop<15>::exec(length, [=](int i) { dst[i] = (src[i]>0xff) ? '?' : (uchar) src[i]; });
+#  endif
 #elif defined(__ARM_NEON__)
-        // Refer to the documentation of the SSE2 implementation
-        // this use eactly the same method as for SSE except:
-        // 1) neon has unsigned comparison
-        // 2) packing is done to 64 bits (8 x 8bits component).
-        if (length >= 16) {
-            const int chunkCount = length >> 3; // divided by 8
-            const uint16x8_t questionMark = vdupq_n_u16('?'); // set
-            const uint16x8_t thresholdMask = vdupq_n_u16(0xff); // set
-            for (int i = 0; i < chunkCount; ++i) {
-                uint16x8_t chunk = vld1q_u16((uint16_t *)src); // load
-                src += 8;
+    // Refer to the documentation of the SSE2 implementation
+    // this use eactly the same method as for SSE except:
+    // 1) neon has unsigned comparison
+    // 2) packing is done to 64 bits (8 x 8bits component).
+    if (length >= 16) {
+        const int chunkCount = length >> 3; // divided by 8
+        const uint16x8_t questionMark = vdupq_n_u16('?'); // set
+        const uint16x8_t thresholdMask = vdupq_n_u16(0xff); // set
+        for (int i = 0; i < chunkCount; ++i) {
+            uint16x8_t chunk = vld1q_u16((uint16_t *)src); // load
+            src += 8;
 
-                const uint16x8_t offLimitMask = vcgtq_u16(chunk, thresholdMask); // chunk > thresholdMask
-                const uint16x8_t offLimitQuestionMark = vandq_u16(offLimitMask, questionMark); // offLimitMask & questionMark
-                const uint16x8_t correctBytes = vbicq_u16(chunk, offLimitMask); // !offLimitMask & chunk
-                chunk = vorrq_u16(correctBytes, offLimitQuestionMark); // correctBytes | offLimitQuestionMark
-                const uint8x8_t result = vmovn_u16(chunk); // narrowing move->packing
-                vst1_u8(dst, result); // store
-                dst += 8;
-            }
-            length = length % 8;
+            const uint16x8_t offLimitMask = vcgtq_u16(chunk, thresholdMask); // chunk > thresholdMask
+            const uint16x8_t offLimitQuestionMark = vandq_u16(offLimitMask, questionMark); // offLimitMask & questionMark
+            const uint16x8_t correctBytes = vbicq_u16(chunk, offLimitMask); // !offLimitMask & chunk
+            chunk = vorrq_u16(correctBytes, offLimitQuestionMark); // correctBytes | offLimitQuestionMark
+            const uint8x8_t result = vmovn_u16(chunk); // narrowing move->packing
+            vst1_u8(dst, result); // store
+            dst += 8;
         }
+        length = length % 8;
+    }
 #endif
 #if defined(__mips_dsp)
-        qt_toLatin1_mips_dsp_asm(dst, src, length);
+    qt_toLatin1_mips_dsp_asm(dst, src, length);
 #else
-        while (length--) {
-            *dst++ = (*src>0xff) ? '?' : (uchar) *src;
-            ++src;
-        }
-#endif
+    while (length--) {
+        *dst++ = (*src>0xff) ? '?' : (uchar) *src;
+        ++src;
     }
+#endif
 }
 
 // Unicode case-insensitive comparison
