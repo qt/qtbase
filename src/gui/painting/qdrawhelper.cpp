@@ -53,6 +53,13 @@
 #    endif
 #endif
 
+#include <qglobal.h>
+#ifdef Q_OS_IOS
+// We don't build the NEON drawhelpers as they are implemented partly
+// in GAS syntax assembly, which is not supported by the iOS toolchain.
+#undef __ARM_NEON__
+#endif
+
 #include <qstylehints.h>
 #include <qguiapplication.h>
 #include <qatomic.h>
