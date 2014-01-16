@@ -280,8 +280,6 @@ QVistaHelper::~QVistaHelper()
 
 void QVistaHelper::updateCustomMargins(bool vistaMargins)
 {
-    if (QSysInfo::WindowsVersion >= QSysInfo::WV_WINDOWS8)
-        return; // Negative margins are not supported on Windows 8.
     if (QWindow *window = wizard->windowHandle()) {
         // Reduce top frame to zero since we paint it ourselves.
         const QMargins customMargins = vistaMargins ?
@@ -770,6 +768,33 @@ bool QVistaHelper::drawBlackRect(const QRect &rect, HDC hdc)
     return value;
 }
 
+#if !defined(_MSC_VER) || _MSC_VER < 1700
+static inline int getWindowBottomMargin()
+{
+    return GetSystemMetrics(SM_CYSIZEFRAME);
+}
+#else // !_MSC_VER || _MSC_VER < 1700
+// QTBUG-36192, GetSystemMetrics(SM_CYSIZEFRAME) returns bogus values
+// for MSVC2012 which leads to the custom margin having no effect since
+// that only works when removing the entire margin.
+static inline int getWindowBottomMargin()
+{
+    RECT rect = {0, 0, 0, 0};
+    AdjustWindowRectEx(&rect, WS_POPUP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_THICKFRAME | WS_DLGFRAME, FALSE, 0);
+    return qAbs(rect.bottom);
+}
+#endif // _MSC_VER >= 1700
+
+int QVistaHelper::frameSize()
+{
+    return getWindowBottomMargin();
+}
+
+int QVistaHelper::captionSize()
+{
+    return GetSystemMetrics(SM_CYCAPTION);
+}
+
 bool QVistaHelper::resolveSymbols()
 {
     static bool tried = false;
@@ -828,10 +853,7 @@ int QVistaHelper::topOffset()
     static const int aeroOffset =
         QSysInfo::WindowsVersion == QSysInfo::WV_WINDOWS7 ?
         QStyleHelper::dpiScaled(4) : QStyleHelper::dpiScaled(13);
-    int result = aeroOffset;
-    if (QSysInfo::WindowsVersion < QSysInfo::WV_WINDOWS8)
-        result += titleBarSize();
-    return result;
+    return aeroOffset + titleBarSize();
 }
 
 QT_END_NAMESPACE
