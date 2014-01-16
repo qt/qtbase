@@ -38,4 +38,3 @@ HEADERS = \
     qiosglobal.h \
     qiosservices.h
 
-#HEADERS = qiossoftwareinputhandler.h
