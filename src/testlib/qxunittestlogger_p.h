@@ -77,7 +77,7 @@ class QXunitTestLogger : public QAbstractTestLogger
         void addBenchmarkResult(const QBenchmarkResult &result);
         void addTag(QTestElement* element);
 
-        void addMessage(MessageTypes type, const char *message,
+        void addMessage(MessageTypes type, const QString &message,
                     const char *file = 0, int line = 0);
 
     private:

@@ -41,6 +41,7 @@
 
 
 #include <QtCore/QCoreApplication>
+#include <QtCore/QStringList>
 #include <QtTest/QtTest>
 #include <private/qmetaobjectbuilder_p.h>
 
@@ -60,6 +61,8 @@ private slots:
     void badMessage_data() const;
 
     void failWithNoFile() const;
+
+    void encoding();
 
 public:
     static QList<QByteArray> const& badStrings();
@@ -124,6 +127,24 @@ void tst_BadXml::badDataTag_data() const
 void tst_BadXml::failWithNoFile() const
 {
     QTest::qFail("failure message", 0, 0);
+}
+
+// QTBUG-35743, test whether XML is using correct UTF-8 encoding
+// on platforms where the console encoding differs.
+void tst_BadXml::encoding()
+{
+    QStringList arguments = QCoreApplication::arguments();
+    arguments.pop_front(); // Prevent match on binary "badxml"
+    if (arguments.filter(QStringLiteral("xml")).isEmpty())
+        QSKIP("Skipped for text due to unpredictable console encoding.");
+    QString string;
+    string += QChar(ushort(0xDC)); // German umlaut Ue
+    string += QStringLiteral("lrich ");
+    string += QChar(ushort(0xDC)); // German umlaut Ue
+    string += QStringLiteral("ml");
+    string += QChar(ushort(0xE4)); // German umlaut ae
+    string += QStringLiteral("ut");
+    qDebug() << string;
 }
 
 /*

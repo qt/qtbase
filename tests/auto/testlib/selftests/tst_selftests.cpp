@@ -486,6 +486,8 @@ void tst_Selftests::runSubTest_data()
                     continue;
                 }
             }
+            if (subtest == "badxml" && (loggerSet.name == "all loggers" || loggerSet.name.contains("txt")))
+                continue; // XML only, do not mix txt and XML for encoding test.
             const bool crashes = subtest == QLatin1String("assert") || subtest == QLatin1String("exceptionthrow")
                 || subtest == QLatin1String("fetchbogus") || subtest == QLatin1String("crashedterminate")
                 || subtest == QLatin1String("crashes") || subtest == QLatin1String("silent");

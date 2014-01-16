@@ -209,7 +209,7 @@ namespace QTest {
             FOREACH_LOGGER(logger->addBenchmarkResult(result));
         }
 
-        static void addMessage(QAbstractTestLogger::MessageTypes type, const char *message,
+        static void addMessage(QAbstractTestLogger::MessageTypes type, const QString &message,
                                const char *file = 0, int line = 0)
         {
             FOREACH_LOGGER(logger->addMessage(type, message, file, line));
@@ -242,11 +242,10 @@ namespace QTest {
 
     static QtMessageHandler oldMessageHandler;
 
-    static bool handleIgnoredMessage(QtMsgType type, const char *msg)
+    static bool handleIgnoredMessage(QtMsgType type, const QString &message)
     {
         if (!ignoreResultList)
             return false;
-        const QString message = QString::fromLocal8Bit(msg);
         IgnoreResultList *last = 0;
         IgnoreResultList *list = ignoreResultList;
         while (list) {
@@ -279,12 +278,11 @@ namespace QTest {
             QTEST_ASSERT(QTest::TestLoggers::loggerCount() != 0);
         }
 
-        QByteArray msg = message.toLocal8Bit();
-        if (handleIgnoredMessage(type, msg))
+        if (handleIgnoredMessage(type, message))
             // the message is expected, so just swallow it.
             return;
 
-        msg = qMessageFormatString(type, context, message).toLocal8Bit();
+        QString msg = qMessageFormatString(type, context, message);
         msg.chop(1); // remove trailing newline
 
         if (type != QtFatalMsg) {
@@ -293,7 +291,7 @@ namespace QTest {
 
             if (!counter.deref()) {
                 QTest::TestLoggers::addMessage(QAbstractTestLogger::QSystem,
-                        "Maximum amount of warnings exceeded. Use -maxwarnings to override.");
+                        QStringLiteral("Maximum amount of warnings exceeded. Use -maxwarnings to override."));
                 return;
             }
         }
@@ -354,15 +352,15 @@ void QTestLog::leaveTestFunction()
 
 void QTestLog::printUnhandledIgnoreMessages()
 {
-    char msg[1024];
+    QString message;
     QTest::IgnoreResultList *list = QTest::ignoreResultList;
     while (list) {
         if (list->pattern.type() == QVariant::String) {
-            qsnprintf(msg, 1024, "Did not receive message: \"%s\"", qPrintable(list->pattern.toString()));
+            message = QStringLiteral("Did not receive message: \"") + list->pattern.toString() + QLatin1Char('"');
         } else {
-            qsnprintf(msg, 1024, "Did not receive any message matching: \"%s\"", qPrintable(list->pattern.toRegularExpression().pattern()));
+            message = QStringLiteral("Did not receive any message matching: \"") + list->pattern.toRegularExpression().pattern() + QLatin1Char('"');
         }
-        QTest::TestLoggers::addMessage(QAbstractTestLogger::Info, msg);
+        QTest::TestLoggers::addMessage(QAbstractTestLogger::Info, message);
 
         list = list->next;
     }
@@ -419,7 +417,7 @@ void QTestLog::addSkip(const char *msg, const char *file, int line)
 
     ++QTest::skips;
 
-    QTest::TestLoggers::addMessage(QAbstractTestLogger::Skip, msg, file, line);
+    QTest::TestLoggers::addMessage(QAbstractTestLogger::Skip, QString::fromUtf8(msg), file, line);
 }
 
 void QTestLog::addBenchmarkResult(const QBenchmarkResult &result)
@@ -483,14 +481,14 @@ void QTestLog::warn(const char *msg, const char *file, int line)
     QTEST_ASSERT(msg);
 
     if (QTest::TestLoggers::loggerCount() > 0)
-        QTest::TestLoggers::addMessage(QAbstractTestLogger::Warn, msg, file, line);
+        QTest::TestLoggers::addMessage(QAbstractTestLogger::Warn, QString::fromUtf8(msg), file, line);
 }
 
 void QTestLog::info(const char *msg, const char *file, int line)
 {
     QTEST_ASSERT(msg);
 
-    QTest::TestLoggers::addMessage(QAbstractTestLogger::Info, msg, file, line);
+    QTest::TestLoggers::addMessage(QAbstractTestLogger::Info, QString::fromUtf8(msg), file, line);
 }
 
 void QTestLog::setVerboseLevel(int level)

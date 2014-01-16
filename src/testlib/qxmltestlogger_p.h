@@ -77,7 +77,7 @@ public:
                      const char *file = 0, int line = 0);
     void addBenchmarkResult(const QBenchmarkResult &result);
 
-    void addMessage(MessageTypes type, const char *message,
+    void addMessage(MessageTypes type, const QString &message,
                     const char *file = 0, int line = 0);
 
     static int xmlCdata(QTestCharBuffer *dest, char const* src);
