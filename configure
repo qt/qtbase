@@ -3358,7 +3358,7 @@ fi
 if [ "$XPLATFORM_IOS" = "yes" ]; then
     CFG_RPATH="no"
     CFG_PKGCONFIG="no"
-    CFG_NOBUILD_PARTS="$CFG_NOBUILD_PARTS examples tests"
+    CFG_NOBUILD_PARTS="$CFG_NOBUILD_PARTS examples"
     CFG_SHARED="no" # iOS builds should be static to be able to submit to the App Store
     CFG_SKIP_MODULES="$CFG_SKIP_MODULES qtconnectivity qtdoc qtlocation qtmacextras qtserialport qttools qtwebkit qtwebkit-examples"
 
