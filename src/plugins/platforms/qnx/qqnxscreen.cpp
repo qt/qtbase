@@ -200,6 +200,9 @@ QQnxScreen::~QQnxScreen()
     Q_FOREACH (QQnxWindow *childWindow, m_childWindows)
         childWindow->setScreen(0);
 
+    if (m_coverWindow)
+        m_coverWindow->setScreen(0);
+
     delete m_cursor;
 }
 
