@@ -46,6 +46,9 @@
 #include <bps/event.h>
 #include <bps/locale.h>
 #include <bps/virtualkeyboard.h>
+#if defined(Q_OS_BLACKBERRY)
+#include <bbndk.h>
+#endif
 
 #if defined(QQNXVIRTUALKEYBOARD_DEBUG)
 #define qVirtualKeyboardDebug qDebug
@@ -133,8 +136,12 @@ virtualkeyboard_layout_t QQnxVirtualKeyboardBps::keyboardLayout() const
         return VIRTUALKEYBOARD_LAYOUT_PIN;
     case Password:
         return VIRTUALKEYBOARD_LAYOUT_PASSWORD;
+#if defined(Q_OS_BLACKBERRY)
+#if BBNDK_VERSION_AT_LEAST(10, 2, 1)
     case Alphanumeric:
         return VIRTUALKEYBOARD_LAYOUT_ALPHANUMERIC;
+#endif
+#endif
     case Default: // fall through
     default:
         return VIRTUALKEYBOARD_LAYOUT_DEFAULT;
