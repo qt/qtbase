@@ -57,7 +57,7 @@ isWindows = sys.platform == 'win32'
 replacements = [
     (qtver, r'@INSERT_QT_VERSION_HERE@'),
     (rootPath.encode('unicode-escape').decode('utf-8'), r''),
-    (r'<Duration msecs="\d+"/>', r'<Duration msecs="0"/>'),
+    (r'( *)<Duration msecs="[\d\.]+"/>', r'\1<Duration msecs="0"/>'),
 ]
 
 extraArgs = {
