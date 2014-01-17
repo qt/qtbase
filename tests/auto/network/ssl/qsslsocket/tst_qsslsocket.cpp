@@ -589,13 +589,13 @@ void tst_QSslSocket::ciphers()
         return;
 
     QSslSocket socket;
-    QCOMPARE(socket.ciphers(), QSslSocket::supportedCiphers());
+    QCOMPARE(socket.ciphers(), QSslSocket::defaultCiphers());
     socket.setCiphers(QList<QSslCipher>());
     QVERIFY(socket.ciphers().isEmpty());
     socket.setCiphers(socket.defaultCiphers());
-    QCOMPARE(socket.ciphers(), QSslSocket::supportedCiphers());
+    QCOMPARE(socket.ciphers(), QSslSocket::defaultCiphers());
     socket.setCiphers(socket.defaultCiphers());
-    QCOMPARE(socket.ciphers(), QSslSocket::supportedCiphers());
+    QCOMPARE(socket.ciphers(), QSslSocket::defaultCiphers());
 
     // Task 164356
     socket.setCiphers("ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH");
@@ -678,6 +678,11 @@ void tst_QSslSocket::sessionCipher()
     if (!socket->waitForEncrypted(5000))
         QSKIP("Skipping flaky test - See QTBUG-29941");
     QVERIFY(!socket->sessionCipher().isNull());
+
+    qDebug() << "Supported Ciphers:" << QSslSocket::supportedCiphers();
+    qDebug() << "Default Ciphers:" << QSslSocket::defaultCiphers();
+    qDebug() << "Session Cipher:" << socket->sessionCipher();
+
     QVERIFY(QSslSocket::supportedCiphers().contains(socket->sessionCipher()));
     socket->disconnectFromHost();
     QVERIFY(socket->waitForDisconnected());
@@ -1386,6 +1391,15 @@ void tst_QSslSocket::defaultCaCertificates()
 
 void tst_QSslSocket::defaultCiphers()
 {
+    if (!QSslSocket::supportsSsl())
+        return;
+
+    QList<QSslCipher> ciphers = QSslSocket::defaultCiphers();
+    QVERIFY(ciphers.size() > 1);
+
+    QSslSocket socket;
+    QCOMPARE(socket.defaultCiphers(), ciphers);
+    QCOMPARE(socket.ciphers(), ciphers);
 }
 
 void tst_QSslSocket::resetDefaultCiphers()
@@ -1410,8 +1424,6 @@ void tst_QSslSocket::supportedCiphers()
 
     QSslSocket socket;
     QCOMPARE(socket.supportedCiphers(), ciphers);
-    QCOMPARE(socket.defaultCiphers(), ciphers);
-    QCOMPARE(socket.ciphers(), ciphers);
 }
 
 void tst_QSslSocket::systemCaCertificates()

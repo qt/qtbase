@@ -663,7 +663,7 @@ int QSslConfiguration::sessionTicketLifeTimeHint() const
       \li protocol SecureProtocols (meaning either TLS 1.0 or SSL 3 will be used)
       \li the system's default CA certificate list
       \li the cipher list equal to the list of the SSL libraries'
-         supported SSL ciphers
+         supported SSL ciphers that are 128 bits or more
     \endlist
 
     \sa QSslSocket::supportedCiphers(), setDefaultConfiguration()

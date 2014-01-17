@@ -1953,6 +1953,7 @@ void QSslSocketPrivate::init()
 */
 QList<QSslCipher> QSslSocketPrivate::defaultCiphers()
 {
+    QSslSocketPrivate::ensureInitialized();
     QMutexLocker locker(&globalData()->mutex);
     return globalData()->config->ciphers;
 }
