@@ -2193,6 +2193,11 @@ static int qt_timezone()
         long offset;
         _get_timezone(&offset);
         return offset;
+#elif defined(Q_OS_BSD4) && !defined(Q_OS_DARWIN)
+        time_t clock = time(NULL);
+        struct tm t;
+        localtime_r(&clock, &t);
+        return t.tm_gmtoff;
 #else
         return timezone;
 #endif // Q_OS_WIN
