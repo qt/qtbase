@@ -42,33 +42,28 @@
 #ifndef QWINDOWSDIRECT2DBACKINGSTORE_H
 #define QWINDOWSDIRECT2DBACKINGSTORE_H
 
+#include "qwindowsdirect2dplatformpixmap.h"
+
 #include <QtCore/QScopedPointer>
 #include <QtGui/qpa/qplatformbackingstore.h>
+#include <QtGui/QPixmap>
 
 QT_BEGIN_NAMESPACE
 
-class QWindowsWindow;
-class QWindowsDirect2DBackingStorePrivate;
-
 class QWindowsDirect2DBackingStore : public QPlatformBackingStore
 {
-    Q_DECLARE_PRIVATE(QWindowsDirect2DBackingStore)
     Q_DISABLE_COPY(QWindowsDirect2DBackingStore)
 
 public:
-    static QWindowsDirect2DBackingStore *create(QWindow *window);
+    QWindowsDirect2DBackingStore(QWindow *window);
     ~QWindowsDirect2DBackingStore();
 
     QPaintDevice *paintDevice() Q_DECL_OVERRIDE;
-    void flush(QWindow *, const QRegion &region, const QPoint &offset) Q_DECL_OVERRIDE;
+    void flush(QWindow *window, const QRegion &region, const QPoint &offset) Q_DECL_OVERRIDE;
     void resize(const QSize &size, const QRegion &staticContents) Q_DECL_OVERRIDE;
 
 private:
-    QWindowsDirect2DBackingStore(QWindow *window);
-    bool init();
-
-    QWindowsWindow *windowsWindow() const;
-    QScopedPointer<QWindowsDirect2DBackingStorePrivate> d_ptr;
+    QScopedPointer<QPixmap> m_pixmap;
 };
 
 QT_END_NAMESPACE

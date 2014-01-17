@@ -44,11 +44,13 @@
 #include "qwindowsdirect2dbackingstore.h"
 #include "qwindowsdirect2dplatformpixmap.h"
 #include "qwindowsdirect2dnativeinterface.h"
+#include "qwindowsdirect2dwindow.h"
 
 #include "qwindowscontext.h"
 
 #include <QtCore/QDebug>
 #include <QtGui/private/qpixmap_raster_p.h>
+#include <QtGui/qpa/qwindowsysteminterface.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -81,6 +83,13 @@ QWindowsDirect2DIntegration::~QWindowsDirect2DIntegration()
      return static_cast<QWindowsDirect2DIntegration *>(QWindowsIntegration::instance());
  }
 
+ QPlatformWindow *QWindowsDirect2DIntegration::createPlatformWindow(QWindow *window) const
+ {
+     QWindowsWindowData data = createWindowData(window);
+     return data.hwnd ? new QWindowsDirect2DWindow(window, data)
+                      : Q_NULLPTR;
+ }
+
  QPlatformNativeInterface *QWindowsDirect2DIntegration::nativeInterface() const
  {
      return &d->m_nativeInterface;
@@ -100,7 +109,7 @@ QPlatformPixmap *QWindowsDirect2DIntegration::createPlatformPixmap(QPlatformPixm
 
 QPlatformBackingStore *QWindowsDirect2DIntegration::createPlatformBackingStore(QWindow *window) const
 {
-    return QWindowsDirect2DBackingStore::create(window);
+    return new QWindowsDirect2DBackingStore(window);
 }
 
 QWindowsDirect2DContext *QWindowsDirect2DIntegration::direct2DContext() const

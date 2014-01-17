@@ -111,6 +111,22 @@ struct QWindowCreationContext
     int frameHeight;
 };
 
+struct QWindowsWindowData
+{
+    QWindowsWindowData() : hwnd(0), embedded(false) {}
+
+    Qt::WindowFlags flags;
+    QRect geometry;
+    QMargins frame; // Do not use directly for windows, see FrameDirty.
+    QMargins customMargins; // User-defined, additional frame for NCCALCSIZE
+    HWND hwnd;
+    bool embedded;
+
+    static QWindowsWindowData create(const QWindow *w,
+                                     const QWindowsWindowData &parameters,
+                                     const QString &title);
+};
+
 class QWindowsWindow : public QPlatformWindow
 {
 public:
@@ -140,23 +156,7 @@ public:
         WithinMaximize = 0x40000
     };
 
-    struct WindowData
-    {
-        WindowData() : hwnd(0) {}
-
-        Qt::WindowFlags flags;
-        QRect geometry;
-        QMargins frame; // Do not use directly for windows, see FrameDirty.
-        QMargins customMargins; // User-defined, additional frame for NCCALCSIZE
-        HWND hwnd;
-        bool embedded;
-
-        static WindowData create(const QWindow *w,
-                                 const WindowData &parameters,
-                                 const QString &title);
-    };
-
-    QWindowsWindow(QWindow *window, const WindowData &data);
+    QWindowsWindow(QWindow *window, const QWindowsWindowData &data);
     ~QWindowsWindow();
 
     virtual QSurfaceFormat format() const { return m_format; }
@@ -274,7 +274,7 @@ private:
     inline void setGeometry_sys(const QRect &rect) const;
     inline QRect frameGeometry_sys() const;
     inline QRect geometry_sys() const;
-    inline WindowData setWindowFlags_sys(Qt::WindowFlags wt, unsigned flags = 0) const;
+    inline QWindowsWindowData setWindowFlags_sys(Qt::WindowFlags wt, unsigned flags = 0) const;
     inline bool isFullScreen_sys() const;
     inline void setWindowState_sys(Qt::WindowState newState);
     inline void setParent_sys(const QPlatformWindow *parent) const;
@@ -287,7 +287,7 @@ private:
     inline void destroyIcon();
     void fireExpose(const QRegion &region, bool force=false);
 
-    mutable WindowData m_data;
+    mutable QWindowsWindowData m_data;
     mutable unsigned m_flags;
     HDC m_hdc;
     Qt::WindowState m_windowState;

@@ -234,9 +234,9 @@ bool QWindowsIntegration::hasCapability(QPlatformIntegration::Capability cap) co
     return false;
 }
 
-QPlatformWindow *QWindowsIntegration::createPlatformWindow(QWindow *window) const
+QWindowsWindowData QWindowsIntegration::createWindowData(QWindow *window) const
 {
-    QWindowsWindow::WindowData requested;
+    QWindowsWindowData requested;
     requested.flags = window->flags();
     requested.geometry = window->geometry();
     // Apply custom margins (see  QWindowsWindow::setCustomMargins())).
@@ -244,8 +244,8 @@ QPlatformWindow *QWindowsIntegration::createPlatformWindow(QWindow *window) cons
     if (customMarginsV.isValid())
         requested.customMargins = qvariant_cast<QMargins>(customMarginsV);
 
-    const QWindowsWindow::WindowData obtained
-            = QWindowsWindow::WindowData::create(window, requested, window->title());
+    const QWindowsWindowData obtained
+            = QWindowsWindowData::create(window, requested, window->title());
     qCDebug(lcQpaWindows).nospace()
         << __FUNCTION__ << '<' << window
         << "\n    Requested: " << requested.geometry << "frame incl.: "
@@ -254,14 +254,23 @@ QPlatformWindow *QWindowsIntegration::createPlatformWindow(QWindow *window) cons
         << "\n    Obtained : " << obtained.geometry << " Margins "<< obtained.frame
         << " Flags=" << QWindowsWindow::debugWindowFlags(obtained.flags)
         << " Handle=" << obtained.hwnd << '\n';
-    if (!obtained.hwnd)
-        return 0;
-    if (requested.flags != obtained.flags)
-        window->setFlags(obtained.flags);
-    // Trigger geometry change signals of QWindow.
-    if ((obtained.flags & Qt::Desktop) != Qt::Desktop && requested.geometry != obtained.geometry)
-        QWindowSystemInterface::handleGeometryChange(window, obtained.geometry);
-    return new QWindowsWindow(window, obtained);
+
+    if (obtained.hwnd) {
+        if (requested.flags != obtained.flags)
+            window->setFlags(obtained.flags);
+        // Trigger geometry change signals of QWindow.
+        if ((obtained.flags & Qt::Desktop) != Qt::Desktop && requested.geometry != obtained.geometry)
+            QWindowSystemInterface::handleGeometryChange(window, obtained.geometry);
+    }
+
+    return obtained;
+}
+
+QPlatformWindow *QWindowsIntegration::createPlatformWindow(QWindow *window) const
+{
+    QWindowsWindowData data = createWindowData(window);
+    return data.hwnd ? new QWindowsWindow(window, data)
+                     : Q_NULLPTR;
 }
 
 #ifndef QT_NO_OPENGL

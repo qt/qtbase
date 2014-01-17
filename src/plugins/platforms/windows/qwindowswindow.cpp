@@ -358,7 +358,7 @@ static void setWindowOpacity(HWND hwnd, Qt::WindowFlags flags, bool hasAlpha, bo
 
 struct WindowCreationData
 {
-    typedef QWindowsWindow::WindowData WindowData;
+    typedef QWindowsWindowData WindowData;
     enum Flags { ForceChild = 0x1, ForceTopLevel = 0x2 };
 
     WindowCreationData() : parentHandle(0), type(Qt::Widget), style(0), exStyle(0),
@@ -534,7 +534,7 @@ void WindowCreationData::fromWindow(const QWindow *w, const Qt::WindowFlags flag
     }
 }
 
-QWindowsWindow::WindowData
+QWindowsWindowData
     WindowCreationData::create(const QWindow *w, const WindowData &data, QString title) const
 {
     typedef QSharedPointer<QWindowCreationContext> QWindowCreationContextPtr;
@@ -851,7 +851,7 @@ QWindowCreationContext::QWindowCreationContext(const QWindow *w,
     \ingroup qt-lighthouse-win
 */
 
-QWindowsWindow::QWindowsWindow(QWindow *aWindow, const WindowData &data) :
+QWindowsWindow::QWindowsWindow(QWindow *aWindow, const QWindowsWindowData &data) :
     QPlatformWindow(aWindow),
     m_data(data),
     m_flags(WithinCreate),
@@ -1017,14 +1017,14 @@ QWindow *QWindowsWindow::topLevelOf(QWindow *w)
     return w;
 }
 
-QWindowsWindow::WindowData
-    QWindowsWindow::WindowData::create(const QWindow *w,
-                                       const WindowData &parameters,
+QWindowsWindowData
+    QWindowsWindowData::create(const QWindow *w,
+                                       const QWindowsWindowData &parameters,
                                        const QString &title)
 {
     WindowCreationData creationData;
     creationData.fromWindow(w, parameters.flags);
-    WindowData result = creationData.create(w, parameters, title);
+    QWindowsWindowData result = creationData.create(w, parameters, title);
     // Force WM_NCCALCSIZE (with wParam=1) via SWP_FRAMECHANGED for custom margin.
     creationData.initialize(result.hwnd, !parameters.customMargins.isNull(), 1);
     return result;
@@ -1452,7 +1452,7 @@ void QWindowsWindow::setWindowFlags(Qt::WindowFlags flags)
         << " geometry " << oldGeometry << "->" << newGeometry;
 }
 
-QWindowsWindow::WindowData QWindowsWindow::setWindowFlags_sys(Qt::WindowFlags wt,
+QWindowsWindowData QWindowsWindow::setWindowFlags_sys(Qt::WindowFlags wt,
                                                               unsigned flags) const
 {
     WindowCreationData creationData;
@@ -1460,7 +1460,7 @@ QWindowsWindow::WindowData QWindowsWindow::setWindowFlags_sys(Qt::WindowFlags wt
     creationData.applyWindowFlags(m_data.hwnd);
     creationData.initialize(m_data.hwnd, true, m_opacity);
 
-    WindowData result = m_data;
+    QWindowsWindowData result = m_data;
     result.flags = creationData.flags;
     result.embedded = creationData.embedded;
     setFlag(FrameDirty);

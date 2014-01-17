@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -39,65 +39,36 @@
 **
 ****************************************************************************/
 
-#include "qwindowsdirect2dbackingstore.h"
-#include "qwindowsdirect2dintegration.h"
-#include "qwindowsdirect2dcontext.h"
-#include "qwindowsdirect2dpaintdevice.h"
+#ifndef QWINDOWSDIRECT2DWINDOW_H
+#define QWINDOWSDIRECT2DWINDOW_H
+
+#include "qwindowswindow.h"
 #include "qwindowsdirect2dbitmap.h"
-#include "qwindowsdirect2ddevicecontext.h"
-#include "qwindowsdirect2dwindow.h"
 
-#include "qwindowscontext.h"
-
-#include <QtGui/QWindow>
-#include <QtCore/QDebug>
+#include <dxgi1_2.h>
+#include <wrl.h>
 
 QT_BEGIN_NAMESPACE
 
-/*!
-    \class QWindowsDirect2DBackingStore
-    \brief Backing store for windows.
-    \internal
-    \ingroup qt-lighthouse-win
-*/
-
-static inline QWindowsDirect2DPlatformPixmap *platformPixmap(QPixmap *p)
+class QWindowsDirect2DWindow : public QWindowsWindow
 {
-    return static_cast<QWindowsDirect2DPlatformPixmap *>(p->handle());
-}
+public:
+    QWindowsDirect2DWindow(QWindow *window, const QWindowsWindowData &data);
+    ~QWindowsDirect2DWindow();
 
-QWindowsDirect2DBackingStore::QWindowsDirect2DBackingStore(QWindow *window)
-    : QPlatformBackingStore(window)
-{
-}
+    void flush(QWindowsDirect2DBitmap *bitmap, const QRegion &region, const QPoint &offset);
 
-QWindowsDirect2DBackingStore::~QWindowsDirect2DBackingStore()
-{
-}
+private:
+    void resizeSwapChain(const QSize &size);
+    void setupBitmap();
 
-QPaintDevice *QWindowsDirect2DBackingStore::paintDevice()
-{
-    return m_pixmap.data();
-}
-
-void QWindowsDirect2DBackingStore::flush(QWindow *window, const QRegion &region, const QPoint &offset)
-{
-    QPlatformWindow *pw = window->handle();
-    if (pw && m_pixmap)
-        static_cast<QWindowsDirect2DWindow *>(pw)->flush(platformPixmap(m_pixmap.data())->bitmap(), region, offset);
-}
-
-void QWindowsDirect2DBackingStore::resize(const QSize &size, const QRegion &region)
-{
-    Q_UNUSED(region);
-
-    QScopedPointer<QPixmap> oldPixmap(m_pixmap.take());
-    m_pixmap.reset(new QPixmap(size.width(), size.height()));
-
-    if (oldPixmap) {
-        foreach (const QRect &rect, region.rects())
-            platformPixmap(m_pixmap.data())->copy(oldPixmap->handle(), rect);
-    }
-}
+private:
+    Microsoft::WRL::ComPtr<IDXGISwapChain1> m_swapChain;
+    Microsoft::WRL::ComPtr<ID2D1DeviceContext> m_deviceContext;
+    QScopedPointer<QWindowsDirect2DBitmap> m_bitmap;
+    bool m_needsFullFlush;
+};
 
 QT_END_NAMESPACE
+
+#endif // QWINDOWSDIRECT2DWINDOW_H

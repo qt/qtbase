@@ -50,6 +50,8 @@
 QT_BEGIN_NAMESPACE
 
 struct QWindowsIntegrationPrivate;
+struct QWindowsWindowData;
+class QWindowsWindow;
 
 class QWindowsIntegration : public QPlatformIntegration
 {
@@ -68,6 +70,7 @@ public:
 
     bool hasCapability(QPlatformIntegration::Capability cap) const;
 
+    QWindowsWindowData createWindowData(QWindow *window) const;
     QPlatformWindow *createPlatformWindow(QWindow *window) const;
 #ifndef QT_NO_OPENGL
     virtual QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;

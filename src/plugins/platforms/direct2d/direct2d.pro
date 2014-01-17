@@ -22,7 +22,8 @@ SOURCES += \
     qwindowsdirect2dintegration.cpp \
     qwindowsdirect2dplatformplugin.cpp \
     qwindowsdirect2ddevicecontext.cpp \
-    qwindowsdirect2dnativeinterface.cpp
+    qwindowsdirect2dnativeinterface.cpp \
+    qwindowsdirect2dwindow.cpp
 
 HEADERS += \
     qwindowsdirect2dpaintengine.h \
@@ -34,6 +35,7 @@ HEADERS += \
     qwindowsdirect2dbackingstore.h \
     qwindowsdirect2dintegration.h \
     qwindowsdirect2ddevicecontext.h \
-    qwindowsdirect2dnativeinterface.h
+    qwindowsdirect2dnativeinterface.h \
+    qwindowsdirect2dwindow.h
 
 OTHER_FILES += direct2d.json
