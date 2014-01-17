@@ -2042,6 +2042,9 @@ void tst_QVector::initializeList()
     QVector<QVector<T>> v3;
     v3 << v1 << (QVector<T>() << val4) << QVector<T>() << v1;
     QCOMPARE(v3, v2);
+
+    QVector<T> v4({});
+    QCOMPARE(v4.size(), 0);
 #endif
 }
 
