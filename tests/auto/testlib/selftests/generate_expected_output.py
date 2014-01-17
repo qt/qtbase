@@ -85,9 +85,11 @@ def replaceInFile(file):
         sys.stdout.write(line)
 
 def subdirs():
+    result = []
     for path in os.listdir('.'):
         if os.path.isdir('./' + path):
-            yield path
+            result.append(path)
+    return result
 
 def getTestForPath(path):
     if isWindows:
@@ -111,8 +113,11 @@ if isWindows:
     print("This script does not work on Windows.")
     exit()
 
-print("Generating test results for: " + qtver + " in: " + rootPath)
-for path in subdirs():
+tests = sys.argv[1:]
+if len(tests) == 0:
+   tests = subdirs()
+print("Generating " + str(len(tests)) + " test results for: " + qtver + " in: " + rootPath)
+for path in tests:
     if os.path.isfile(getTestForPath(path)):
         generateTestData(path)
     else:
