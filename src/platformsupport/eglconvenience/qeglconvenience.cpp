@@ -41,7 +41,7 @@
 
 #include <QByteArray>
 
-#ifdef Q_OS_UNIX
+#if (defined(Q_OS_UNIX) && !defined(Q_OS_QNX))
 #include <sys/ioctl.h>
 #include <linux/fb.h>
 #include <private/qmath_p.h>
@@ -433,7 +433,7 @@ void q_printEglConfig(EGLDisplay display, EGLConfig config)
     qWarning("\n");
 }
 
-#ifdef Q_OS_UNIX
+#if (defined(Q_OS_UNIX) && !defined(Q_OS_QNX))
 
 QSizeF q_physicalScreenSizeFromFb(int framebufferDevice)
 {
