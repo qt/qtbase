@@ -1,7 +1,7 @@
 /****************************************************************************
 **
+** Copyright (C) 2014 BogDan Vatra <bogdan@kde.org>
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
-** Copyright (C) 2012 BogDan Vatra <bogdan@kde.org>
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the Android port of the Qt Toolkit.
@@ -73,6 +73,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 
 public class QtActivityDelegate
@@ -105,7 +106,7 @@ public class QtActivityDelegate
     private int m_lastChar = 0;
     private boolean m_fullScreen = false;
     private boolean m_started = false;
-    private QtSurface m_surface = null;
+    private HashMap<Integer, QtSurface> m_surfaces = null;
     private QtLayout m_layout = null;
     private QtEditText m_editText = null;
     private InputMethodManager m_imm = null;
@@ -115,21 +116,6 @@ public class QtActivityDelegate
     private boolean m_keyboardIsVisible = false;
     public boolean m_backKeyPressedSent = false;
 
-
-    public QtLayout getQtLayout()
-    {
-        return m_layout;
-    }
-
-    public QtSurface getQtSurface()
-    {
-        return m_surface;
-    }
-
-    public void redrawWindow(int left, int top, int right, int bottom)
-    {
-        m_surface.drawBitmap(new Rect(left, top, right, bottom));
-    }
 
     public void setFullScreen(boolean enterFullScreen)
     {
@@ -175,6 +161,7 @@ public class QtActivityDelegate
                 }
             }
         }
+        m_layout.requestLayout();
     }
 
 
@@ -233,7 +220,8 @@ public class QtActivityDelegate
     {
         if (m_imm == null)
             return;
-        if (height > m_surface.getHeight()*2/3)
+
+        if (height > m_layout.getHeight() * 2 / 3)
             m_activity.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_UNCHANGED | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
         else
             m_activity.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_UNCHANGED | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
@@ -330,7 +318,7 @@ public class QtActivityDelegate
     {
         if (m_imm == null)
             return;
-        m_imm.hideSoftInputFromWindow(m_editText.getWindowToken(), 0, new ResultReceiver( new Handler()){
+        m_imm.hideSoftInputFromWindow(m_editText.getWindowToken(), 0, new ResultReceiver(new Handler()) {
             @Override
             protected void onReceiveResult(int resultCode, Bundle resultData) {
                 switch (resultCode) {
@@ -358,7 +346,7 @@ public class QtActivityDelegate
         if (size < 36 || size > 512) { // check size sanity
             DisplayMetrics metrics = new DisplayMetrics();
             a.getWindowManager().getDefaultDisplay().getMetrics(metrics);
-            size = metrics.densityDpi/10*3;
+            size = metrics.densityDpi / 10 * 3;
             if (size < 36)
                 size = 36;
 
@@ -626,13 +614,13 @@ public class QtActivityDelegate
                 m_applicationParameters += "\t-qmljsdebugger=" + qmljsdebugger;
             }
 
-            if (null == m_surface)
+            if (null == m_surfaces)
                 onCreate(null);
             String nativeLibraryDir = QtNativeLibrariesDir.nativeLibrariesDir(m_activity);
-            m_surface.applicationStarted( QtNative.startApplication(m_applicationParameters,
-                                                                    m_environmentVariables,
-                                                                    m_mainLib,
-                                                                    nativeLibraryDir));
+            QtNative.startApplication(m_applicationParameters,
+                    m_environmentVariables,
+                    m_mainLib,
+                    nativeLibraryDir);
             m_started = true;
             return true;
         } catch (Exception e) {
@@ -657,14 +645,12 @@ public class QtActivityDelegate
                                                   metrics.xdpi, metrics.ydpi, metrics.scaledDensity);
         }
         m_layout = new QtLayout(m_activity);
-        m_surface = new QtSurface(m_activity, 0);
         m_editText = new QtEditText(m_activity, this);
         m_imm = (InputMethodManager)m_activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-        m_layout.addView(m_surface, 0);
+        m_surfaces =  new HashMap<Integer, QtSurface>();
         m_activity.setContentView(m_layout,
-                                  new ViewGroup.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT,
-                                                             ViewGroup.LayoutParams.FILL_PARENT));
-        m_layout.bringChildToFront(m_surface);
+                new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT));
         m_activity.registerForContextMenu(m_layout);
 
         int orientation = m_activity.getResources().getConfiguration().orientation;
@@ -702,18 +688,6 @@ public class QtActivityDelegate
                 m_debuggerProcess.destroy();
             System.exit(0);// FIXME remove it or find a better way
         }
-    }
-
-    public void onRestoreInstanceState(Bundle savedInstanceState)
-    {
-        try {
-            m_super_onRestoreInstanceState.invoke(m_activity, savedInstanceState);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        m_started = savedInstanceState.getBoolean("Started");
-        if (m_started)
-            m_surface.applicationStarted(true);
     }
 
     public void onPause()
@@ -768,6 +742,19 @@ public class QtActivityDelegate
         }
         outState.putBoolean("FullScreen", m_fullScreen);
         outState.putBoolean("Started", m_started);
+        // It should never
+    }
+
+    public void onRestoreInstanceState(Bundle savedInstanceState)
+    {
+        try {
+            m_super_onRestoreInstanceState.invoke(m_activity, savedInstanceState);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        m_started = savedInstanceState.getBoolean("Started");
+        // FIXME restore all surfaces
+
     }
 
     public boolean onKeyDown(int keyCode, KeyEvent event)
@@ -966,5 +953,40 @@ public class QtActivityDelegate
                     e.printStackTrace();
                 }
         }
+    }
+
+    public void createSurface(int id, boolean onTop, int x, int y, int w, int h) {
+        if (m_surfaces.containsKey(id))
+            m_layout.removeView(m_surfaces.remove(id));
+
+        QtSurface surface = new QtSurface(m_activity, id, onTop);
+        if (w < 0 || h < 0) {
+            surface.setLayoutParams( new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT));
+        } else {
+            surface.setLayoutParams( new QtLayout.LayoutParams(w, h, x, y));
+        }
+
+        m_layout.addView(surface);
+        if (onTop)
+            m_layout.bringChildToFront(surface);
+        m_surfaces.put(id, surface);
+    }
+
+    public void setSurfaceGeometry(int id, int x, int y, int w, int h) {
+        if (!m_surfaces.containsKey(id)) {
+            Log.e(QtNative.QtTAG, "Surface " + id +" not found!");
+            return;
+        }
+        QtSurface surface = m_surfaces.get(id);
+        surface.setLayoutParams(new QtLayout.LayoutParams(w, h, x, y));
+        m_layout.requestLayout();
+    }
+
+    public void destroySurface(int id) {
+        if (m_surfaces.containsKey(id))
+            m_layout.removeView(m_surfaces.remove(id));
+        else
+            Log.e(QtNative.QtTAG, "Surface " + id +" not found!");
     }
 }

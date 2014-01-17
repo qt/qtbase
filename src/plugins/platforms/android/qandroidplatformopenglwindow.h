@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2014 BogDan Vatra <bogdan@kde.org>
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
@@ -39,23 +40,44 @@
 **
 ****************************************************************************/
 
-#include "qandroidopenglplatformscreen.h"
-#include "qandroidopenglplatformwindow.h"
-#include "androidjnimenu.h"
+#ifndef QANDROIDPLATFORMOPENGLWINDOW_H
+#define QANDROIDPLATFORMOPENGLWINDOW_H
+
+#include <EGL/egl.h>
+#include <QWaitCondition>
+#include <QtCore/private/qjni_p.h>
+
+#include "androidsurfaceclient.h"
+#include "qandroidplatformwindow.h"
 
 QT_BEGIN_NAMESPACE
 
-QAndroidOpenGLPlatformScreen::QAndroidOpenGLPlatformScreen(EGLDisplay display)
-    : QEglFSScreen(display)
+class QAndroidPlatformOpenGLWindow : public QAndroidPlatformWindow, public AndroidSurfaceClient
 {
-}
+public:
+    explicit QAndroidPlatformOpenGLWindow(QWindow *window, EGLDisplay display);
+    ~QAndroidPlatformOpenGLWindow();
 
-void QAndroidOpenGLPlatformScreen::topWindowChanged(QPlatformWindow *window)
-{
-    QtAndroidMenu::setActiveTopLevelWindow(window->window());
-    QAndroidOpenGLPlatformWindow *platformWindow = static_cast<QAndroidOpenGLPlatformWindow *>(window);
-    if (platformWindow != 0)
-        platformWindow->updateStatusBarVisibility();
-}
+    void setGeometry(const QRect &rect);
+    EGLSurface eglSurface(EGLConfig config);
+
+    void checkNativeSurface(EGLConfig config);
+
+protected:
+    virtual void surfaceChanged(JNIEnv *jniEnv, jobject surface, int w, int h);
+    void createEgl(EGLConfig config);
+    void clearEgl();
+
+private:
+    EGLDisplay m_eglDisplay;
+    EGLSurface m_eglSurface = EGL_NO_SURFACE;
+    EGLNativeWindowType m_nativeWindow = nullptr;
+
+    int m_nativeSurfaceId = -1;
+    QJNIObjectPrivate m_androidSurface;
+    QJNIObjectPrivate m_changedAndroidSurface;
+    QWaitCondition m_surfaceWaitCondition;
+};
 
 QT_END_NAMESPACE
+#endif // QANDROIDPLATFORMOPENGLWINDOW_H

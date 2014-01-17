@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2014 BogDan Vatra <bogdan@kde.org>
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
@@ -39,53 +40,45 @@
 **
 ****************************************************************************/
 
-#ifndef QANDROIDOPENGLPLATFORMWINDOW_H
-#define QANDROIDOPENGLPLATFORMWINDOW_H
+#include "qandroidplatformopenglcontext.h"
+#include "qandroidplatformopenglwindow.h"
 
-#include "qeglfswindow.h"
-#include <QtCore/qmutex.h>
-#include <QtCore/qreadwritelock.h>
+#include <QSurface>
+#include <QtGui/private/qopenglcontext_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class QAndroidOpenGLPlatformWindow : public QEglFSWindow
+QAndroidPlatformOpenGLContext::QAndroidPlatformOpenGLContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display)
+    :QEGLPlatformContext(format, share, display, EGL_OPENGL_ES_API)
 {
-public:
-    QAndroidOpenGLPlatformWindow(QWindow *window);
-    ~QAndroidOpenGLPlatformWindow();
+}
 
-    QSize scheduledResize() const { return m_scheduledResize; }
-    void scheduleResize(const QSize &size) { m_scheduledResize = size; }
+void QAndroidPlatformOpenGLContext::swapBuffers(QPlatformSurface *surface)
+{
+    QEGLPlatformContext::swapBuffers(surface);
 
-    void lock() { m_lock.lock(); }
-    void unlock() { m_lock.unlock(); }
+    if (surface->surface()->surfaceClass() == QSurface::Window)
+        static_cast<QAndroidPlatformOpenGLWindow *>(surface)->checkNativeSurface(eglConfig());
+}
 
-    bool isExposed() const;
+bool QAndroidPlatformOpenGLContext::makeCurrent(QPlatformSurface *surface)
+{
+    bool ret = QEGLPlatformContext::makeCurrent(surface);
 
-    void raise();
+    const char *rendererString = reinterpret_cast<const char *>(glGetString(GL_RENDERER));
+    if (rendererString != 0 && qstrncmp(rendererString, "Android Emulator", 16) == 0) {
+        QOpenGLContextPrivate *ctx_d = QOpenGLContextPrivate::get(context());
+        ctx_d->workaround_missingPrecisionQualifiers = true;
+    }
 
-    void invalidateSurface();
-    void resetSurface();
-    void setWindowState(Qt::WindowState state);
+    return ret;
+}
 
-    void setVisible(bool visible);
-
-    void destroy();
-
-    static void updateStaticNativeWindow();
-    void updateStatusBarVisibility();
-
-private:
-    QSize m_scheduledResize;
-    QMutex m_lock;
-    Qt::WindowState m_state;
-
-    static QReadWriteLock m_staticSurfaceLock;
-    static EGLSurface m_staticSurface;
-    static EGLNativeWindowType m_staticNativeWindow;
-    static QBasicAtomicInt m_referenceCount;
-};
+EGLSurface QAndroidPlatformOpenGLContext::eglSurfaceForPlatformSurface(QPlatformSurface *surface)
+{
+    if (surface->surface()->surfaceClass() == QSurface::Window)
+        return static_cast<QAndroidPlatformOpenGLWindow *>(surface)->eglSurface(eglConfig());
+    return EGL_NO_SURFACE;
+}
 
 QT_END_NAMESPACE
-
-#endif // QANDROIDOPENGLPLATFORMWINDOW_H

@@ -47,14 +47,11 @@
 #include <qpa/qplatformnativeinterface.h>
 #include <QtWidgets/QAction>
 
+#include <EGL/egl.h>
 #include <jni.h>
 #include "qandroidinputcontext.h"
 
-#ifndef ANDROID_PLUGIN_OPENGL
-#  include "qandroidplatformscreen.h"
-#else
-#  include "qeglfsintegration.h"
-#endif
+#include "qandroidplatformscreen.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -62,10 +59,6 @@ class QDesktopWidget;
 class QAndroidPlatformServices;
 class QAndroidSystemLocale;
 class QPlatformAccessibility;
-
-#ifdef ANDROID_PLUGIN_OPENGL
-class QAndroidOpenGLPlatformWindow;
-#endif
 
 class QAndroidPlatformNativeInterface: public QPlatformNativeInterface
 {
@@ -75,12 +68,7 @@ public:
     QHash<int, QFont> m_fonts;
 };
 
-class QAndroidPlatformIntegration
-#ifndef ANDROID_PLUGIN_OPENGL
-    : public QPlatformIntegration
-#else
-    : public QEglFSIntegration
-#endif
+class QAndroidPlatformIntegration : public QPlatformIntegration
 {
     friend class QAndroidPlatformScreen;
 
@@ -90,17 +78,11 @@ public:
 
     bool hasCapability(QPlatformIntegration::Capability cap) const;
 
-#ifndef ANDROID_PLUGIN_OPENGL
-    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
     QPlatformWindow *createPlatformWindow(QWindow *window) const;
+    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
+    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
     QAbstractEventDispatcher *createEventDispatcher() const;
     QAndroidPlatformScreen *screen() { return m_primaryScreen; }
-#else
-    QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    void invalidateNativeSurface();
-    void surfaceChanged();
-    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
-#endif
 
     virtual void setDesktopSize(int width, int height);
     virtual void setDisplayMetrics(int width, int height);
@@ -121,13 +103,11 @@ public:
 #endif
 
     QVariant styleHint(StyleHint hint) const;
-    Qt::WindowState defaultWindowState(Qt::WindowFlags flags) const Q_DECL_OVERRIDE;
+    Qt::WindowState defaultWindowState(Qt::WindowFlags flags) const;
 
     QStringList themeNames() const;
     QPlatformTheme *createPlatformTheme(const QString &name) const;
 
-    void pauseApp();
-    void resumeApp();
     static void setDefaultDisplayMetrics(int gw, int gh, int sw, int sh);
     static void setDefaultDesktopSize(int gw, int gh);
     static void setScreenOrientation(Qt::ScreenOrientation currentOrientation,
@@ -141,19 +121,12 @@ public:
     QTouchDevice *touchDevice() const { return m_touchDevice; }
     void setTouchDevice(QTouchDevice *touchDevice) { m_touchDevice = touchDevice; }
 
-#ifdef ANDROID_PLUGIN_OPENGL
-    QEglFSScreen *createScreen() const;
-#endif
-
 private:
-
-    friend class QEglFSAndroidHooks;
+    EGLDisplay m_eglDisplay;
 
     QTouchDevice *m_touchDevice;
 
-#ifndef ANDROID_PLUGIN_OPENGL
     QAndroidPlatformScreen *m_primaryScreen;
-#endif
 
     QThread *m_mainThread;
 

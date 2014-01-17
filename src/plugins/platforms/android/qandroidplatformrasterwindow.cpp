@@ -1,6 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 BogDan Vatra <bogdan@kde.org>
+** Copyright (C) 2014 BogDan Vatra <bogdan@kde.org>
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -39,56 +40,39 @@
 **
 ****************************************************************************/
 
+#include "qandroidplatformrasterwindow.h"
+
 #include "qandroidplatformscreen.h"
-#include "qandroidplatformintegration.h"
-#include "androidjnimain.h"
-#include "androidjnimenu.h"
-#include "qandroidplatformwindow.h"
 
-QAndroidPlatformScreen::QAndroidPlatformScreen():QFbScreen()
+QT_BEGIN_NAMESPACE
+
+QAndroidPlatformRasterWindow::QAndroidPlatformRasterWindow(QWindow *window)
+    :QAndroidPlatformWindow(window)
 {
-    mGeometry = QRect(0, 0, QAndroidPlatformIntegration::m_defaultGeometryWidth, QAndroidPlatformIntegration::m_defaultGeometryHeight);
-    mFormat = QImage::Format_RGB16;
-    mDepth = 16;
-    mPhysicalSize.setHeight(QAndroidPlatformIntegration::m_defaultPhysicalSizeHeight);
-    mPhysicalSize.setWidth(QAndroidPlatformIntegration::m_defaultPhysicalSizeWidth);
-    initializeCompositor();
+
 }
 
-void QAndroidPlatformScreen::topWindowChanged(QWindow *w)
+void QAndroidPlatformRasterWindow::repaint(const QRegion &region)
 {
-    QtAndroidMenu::setActiveTopLevelWindow(w);
+    QRect currentGeometry = geometry();
 
-    if (w != 0) {
-        QAndroidPlatformWindow *platformWindow = static_cast<QAndroidPlatformWindow *>(w->handle());
-        if (platformWindow != 0)
-            platformWindow->updateStatusBarVisibility();
-    }
+    QRect dirtyClient = region.boundingRect();
+    QRect dirtyRegion(currentGeometry.left() + dirtyClient.left(),
+                      currentGeometry.top() + dirtyClient.top(),
+                      dirtyClient.width(),
+                      dirtyClient.height());
+    QRect mOldGeometryLocal = m_oldGeometry;
+    m_oldGeometry = currentGeometry;
+    // If this is a move, redraw the previous location
+    if (mOldGeometryLocal != currentGeometry)
+        platformScreen()->setDirty(mOldGeometryLocal);
+    platformScreen()->setDirty(dirtyRegion);
 }
 
-QRegion QAndroidPlatformScreen::doRedraw()
+void QAndroidPlatformRasterWindow::setGeometry(const QRect &rect)
 {
-    QRegion touched;
-    touched = QFbScreen::doRedraw();
-    if (touched.isEmpty())
-        return touched;
-
-    QtAndroid::flushImage(mGeometry.topLeft(), *mScreenImage, touched.boundingRect());
-    return touched;
+    m_oldGeometry = geometry();
+    QAndroidPlatformWindow::setGeometry(rect);
 }
 
-QDpi QAndroidPlatformScreen::logicalDpi() const
-{
-    qreal lDpi = QtAndroid::scaledDensity() * 72;
-    return QDpi(lDpi, lDpi);
-}
-
-Qt::ScreenOrientation QAndroidPlatformScreen::orientation() const
-{
-    return QAndroidPlatformIntegration::m_orientation;
-}
-
-Qt::ScreenOrientation QAndroidPlatformScreen::nativeOrientation() const
-{
-    return QAndroidPlatformIntegration::m_nativeOrientation;
-}
+QT_END_NAMESPACE

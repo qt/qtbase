@@ -1,6 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 BogDan Vatra <bogdan@kde.org>
+** Copyright (C) 2014 BogDan Vatra <bogdan@kde.org>
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -42,21 +43,78 @@
 #ifndef QANDROIDPLATFORMSCREEN_H
 #define QANDROIDPLATFORMSCREEN_H
 
-#include <QtPlatformSupport/private/qfbscreen_p.h>
+#include <qpa/qplatformscreen.h>
+#include <QList>
+#include <QPainter>
+#include <QTimer>
+#include <QWaitCondition>
+#include <QtCore/private/qjni_p.h>
 
-class QAndroidPlatformScreen: public QFbScreen
+#include "androidsurfaceclient.h"
+
+QT_BEGIN_NAMESPACE
+
+class QAndroidPlatformWindow;
+class QAndroidPlatformBackingStore;
+
+class QAndroidPlatformScreen: public QObject, public QPlatformScreen, public AndroidSurfaceClient
 {
     Q_OBJECT
 public:
     QAndroidPlatformScreen();
+    ~QAndroidPlatformScreen();
+
+    QRect geometry() const { return m_geometry; }
+    int depth() const { return m_depth; }
+    QImage::Format format() const { return m_format; }
+    QSizeF physicalSize() const { return m_physicalSize; }
+
+    inline QWindow *topWindow() const;
+    QWindow *topLevelAt(const QPoint & p) const;
+
+    // compositor api
+    void addWindow(QAndroidPlatformWindow *window);
+    void removeWindow(QAndroidPlatformWindow *window);
+    void raise(QAndroidPlatformWindow *window);
+    void lower(QAndroidPlatformWindow *window);
+
+    void scheduleUpdate();
     void topWindowChanged(QWindow *w);
+
+public slots:
+    void setDirty(const QRect &rect);
+    void setPhysicalSize(const QSize &size);
+    void setGeometry(const QRect &rect);
+
+protected:
+    typedef QList<QAndroidPlatformWindow *> WindowStackType;
+    WindowStackType m_windowStack;
+    QRegion m_repaintRegion;
+    QTimer m_redrawTimer;
+
+    QRect m_geometry;
+    int m_depth;
+    QImage::Format m_format;
+    QSizeF m_physicalSize;
+
+private:
     QDpi logicalDpi() const;
     Qt::ScreenOrientation orientation() const;
     Qt::ScreenOrientation nativeOrientation() const;
+    void surfaceChanged(JNIEnv *env, jobject surface, int w, int h);
 
-public slots:
-    QRegion doRedraw();
+private slots:
+    void doRedraw();
 
+private:
+    int m_id = -1;
+    QJNIObjectPrivate m_surface;
+    jobject m_bitmap = nullptr;
+    QWaitCondition m_surfaceWaitCondition;
+    int m_bitmapStride = -1;
+    int m_bitmapWidth = -1;
+    int m_bitmapHeight = -1;
 };
 
+QT_END_NAMESPACE
 #endif

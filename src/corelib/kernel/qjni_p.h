@@ -178,11 +178,13 @@ public:
         jobject jobj = static_cast<jobject>(o);
         if (!isSameObject(jobj)) {
             d = QSharedPointer<QJNIObjectData>(new QJNIObjectData());
-            QJNIEnvironmentPrivate env;
-            d->m_jobject = env->NewGlobalRef(jobj);
-            jclass objectClass = env->GetObjectClass(jobj);
-            d->m_jclass = static_cast<jclass>(env->NewGlobalRef(objectClass));
-            env->DeleteLocalRef(objectClass);
+            if (jobj) {
+                QJNIEnvironmentPrivate env;
+                d->m_jobject = env->NewGlobalRef(jobj);
+                jclass objectClass = env->GetObjectClass(jobj);
+                d->m_jclass = static_cast<jclass>(env->NewGlobalRef(objectClass));
+                env->DeleteLocalRef(objectClass);
+            }
         }
 
         return *this;

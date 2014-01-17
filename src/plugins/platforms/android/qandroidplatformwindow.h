@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2014 BogDan Vatra <bogdan@kde.org>
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
@@ -39,22 +40,48 @@
 **
 ****************************************************************************/
 
-#ifndef QANDROIDOPENGLPLATFORMSCREEN_H
-#define QANDROIDOPENGLPLATFORMSCREEN_H
-
-#include "qeglfsscreen.h"
+#ifndef ANDROIDPLATFORMWINDOW_H
+#define ANDROIDPLATFORMWINDOW_H
+#include <qobject.h>
+#include <qrect.h>
+#include <qpa/qplatformwindow.h>
 
 QT_BEGIN_NAMESPACE
 
-class QAndroidOpenGLPlatformScreen : public QEglFSScreen
+class QAndroidPlatformScreen;
+
+class QAndroidPlatformWindow: public QPlatformWindow
 {
 public:
-    QAndroidOpenGLPlatformScreen(EGLDisplay display);
+    explicit QAndroidPlatformWindow(QWindow *window);
+
+    void lower();
+    void raise();
+
+    void setVisible(bool visible);
+
+    void setWindowState(Qt::WindowState state);
+    void setWindowFlags(Qt::WindowFlags flags);
+    Qt::WindowFlags windowFlags() const;
+
+    WId winId() const { return m_windowId; }
+
+    QAndroidPlatformScreen *platformScreen() const;
+
+    void propagateSizeHints();
+    void requestActivateWindow();
+    void updateStatusBarVisibility();
+    inline bool isRaster() const { return window()->surfaceType() == QSurface::RasterSurface; }
 
 protected:
-    void topWindowChanged(QPlatformWindow *window);
+    void setGeometry(const QRect &rect);
+
+protected:
+    Qt::WindowFlags m_windowFlags;
+    Qt::WindowState m_windowState;
+
+    WId m_windowId;
 };
 
 QT_END_NAMESPACE
-
-#endif // QANDROIDOPENGLPLATFORMSCREEN_H
+#endif // ANDROIDPLATFORMWINDOW_H

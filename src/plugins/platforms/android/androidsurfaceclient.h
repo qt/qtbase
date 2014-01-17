@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 BogDan Vatra <bogdan@kde.org>
+** Copyright (C) 2014 BogDan Vatra <bogdan@kde.org>
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -39,64 +39,20 @@
 **
 ****************************************************************************/
 
-#include "qandroidplatformwindow.h"
+#ifndef ANDROIDSURFACECLIENT_H
+#define ANDROIDSURFACECLIENT_H
+#include <QMutex>
+#include <jni.h>
 
-#include "androidjnimain.h"
-#include <qpa/qwindowsysteminterface.h>
-
-QAndroidPlatformWindow::QAndroidPlatformWindow(QWindow *window)
-    : QFbWindow(window)
+class AndroidSurfaceClient
 {
-}
+public:
+    virtual void surfaceChanged(JNIEnv *jniEnv, jobject surface, int w, int h) = 0;
+    void lockSurface() { m_surfaceMutex.lock(); }
+    void unlockSurface() { m_surfaceMutex.unlock(); }
 
-void QAndroidPlatformWindow::setGeometry(const QRect &rect)
-{
-    QFbWindow::setGeometry(rect);
-}
+protected:
+    QMutex m_surfaceMutex;
+};
 
-void QAndroidPlatformWindow::propagateSizeHints()
-{
-    //shut up warning from default implementation
-}
-
-void QAndroidPlatformWindow::updateStatusBarVisibility()
-{
-    Qt::WindowFlags flags = window()->flags();
-    bool isNonRegularWindow = flags & (Qt::Popup | Qt::Dialog | Qt::Sheet) & ~Qt::Window;
-    if (!isNonRegularWindow) {
-        if (mWindowState & Qt::WindowFullScreen)
-            QtAndroid::hideStatusBar();
-        else if (mWindowState & Qt::WindowMaximized)
-            QtAndroid::showStatusBar();
-    }
-}
-
-void QAndroidPlatformWindow::raise()
-{
-    updateStatusBarVisibility();
-    QFbWindow::raise();
-}
-
-void QAndroidPlatformWindow::setWindowState(Qt::WindowState state)
-{
-    if (mWindowState == state)
-        return;
-
-    if (window()->isVisible())
-        updateStatusBarVisibility();
-
-    QFbWindow::setWindowState(state);
-}
-
-void QAndroidPlatformWindow::setVisible(bool visible)
-{
-    if (visible)
-        updateStatusBarVisibility();
-
-    QFbWindow::setVisible(visible);
-
-    // The Android Activity is activated before Qt is initialized, causing the application state to
-    // never be set to 'active'. We explicitly set this state when the first window becomes visible.
-    if (visible)
-        QtAndroid::setApplicationActive();
-}
+#endif // ANDROIDSURFACECLIENT_H

@@ -871,7 +871,7 @@ static void android_default_message_handler(QtMsgType type,
                                   const QMessageLogContext &context,
                                   const QString &message)
 {
-    android_LogPriority priority;
+    android_LogPriority priority = ANDROID_LOG_DEBUG;
     switch (type) {
     case QtDebugMsg: priority = ANDROID_LOG_DEBUG; break;
     case QtWarningMsg: priority = ANDROID_LOG_WARN; break;

@@ -40,34 +40,31 @@
 ****************************************************************************/
 
 #include "qandroidplatformintegration.h"
-#include "qabstracteventdispatcher.h"
-#include "androidjnimain.h"
-#include <QtGui/qguiapplication.h>
-#include <qpa/qwindowsysteminterface.h>
+
+#include <QGuiApplication>
+#include <QOpenGLContext>
 #include <QThread>
+
+#include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
+
+#include <qpa/qwindowsysteminterface.h>
 #include <qpa/qplatformwindow.h>
+
+#warning sort the headers
+#include "androidjnimain.h"
+#include "qabstracteventdispatcher.h"
+#include "qandroidplatformrasterwindow.h"
+#include "qandroidplatformopenglwindow.h"
+#include "qandroidplatformbackingstore.h"
 #include "qandroidplatformservices.h"
 #include "qandroidplatformfontdatabase.h"
 #include "qandroidplatformclipboard.h"
 #include "qandroidplatformaccessibility.h"
-#include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
-
-#ifndef ANDROID_PLUGIN_OPENGL
-#  include "qandroidplatformscreen.h"
-#  include "qandroidplatformwindow.h"
-#  include <QtPlatformSupport/private/qfbbackingstore_p.h>
-#else
-#  include "qeglfswindow.h"
-#  include "androidjnimenu.h"
-#  include "qandroidopenglcontext.h"
-#  include "qandroidopenglplatformwindow.h"
-#  include "qandroidopenglplatformscreen.h"
-#  include "qeglfshooks.h"
-#  include <QtGui/qopenglcontext.h>
-#endif
-
+#include "qandroidplatformopenglcontext.h"
+#include "qandroidplatformscreen.h"
 #include "qandroidplatformtheme.h"
 #include "qandroidsystemlocale.h"
+
 
 QT_BEGIN_NAMESPACE
 
@@ -102,12 +99,21 @@ QAndroidPlatformIntegration::QAndroidPlatformIntegration(const QStringList &para
 
     m_androidPlatformNativeInterface = new QAndroidPlatformNativeInterface();
 
-#ifndef ANDROID_PLUGIN_OPENGL
+    if (!eglBindAPI(EGL_OPENGL_ES_API))
+        qFatal("Could not bind GL_ES API");
+
+    m_eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+    if (m_eglDisplay == EGL_NO_DISPLAY)
+        qFatal("Could not open egl display");
+
+    EGLint major, minor;
+    if (!eglInitialize(m_eglDisplay, &major, &minor))
+        qFatal("Could not initialize egl display");
+
     m_primaryScreen = new QAndroidPlatformScreen();
     screenAdded(m_primaryScreen);
     m_primaryScreen->setPhysicalSize(QSize(m_defaultPhysicalSizeWidth, m_defaultPhysicalSizeHeight));
     m_primaryScreen->setGeometry(QRect(0, 0, m_defaultGeometryWidth, m_defaultGeometryHeight));
-#endif
 
     m_mainThread = QThread::currentThread();
     QtAndroid::setAndroidPlatformIntegration(this);
@@ -124,83 +130,53 @@ bool QAndroidPlatformIntegration::hasCapability(Capability cap) const
     switch (cap) {
         case ThreadedPixmaps: return true;
         case ApplicationState: return true;
-        case NativeWidgets: return false;
+        case NativeWidgets: return true;
+        case OpenGL: return true;
+        case ThreadedOpenGL: return true;
         default:
-#ifndef ANDROID_PLUGIN_OPENGL
-        return QPlatformIntegration::hasCapability(cap);
-#else
-        return QEglFSIntegration::hasCapability(cap);
-#endif
+            return QPlatformIntegration::hasCapability(cap);
     }
 }
 
-#ifndef ANDROID_PLUGIN_OPENGL
 QPlatformBackingStore *QAndroidPlatformIntegration::createPlatformBackingStore(QWindow *window) const
 {
-    return new QFbBackingStore(window);
+    return new QAndroidPlatformBackingStore(window);
+}
+
+QPlatformOpenGLContext *QAndroidPlatformIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
+{
+    QSurfaceFormat format(context->format());
+    format.setAlphaBufferSize(8);
+    format.setRedBufferSize(8);
+    format.setGreenBufferSize(8);
+    format.setBlueBufferSize(8);
+    return new QAndroidPlatformOpenGLContext(format, context->shareHandle(), m_eglDisplay);
 }
 
 QPlatformWindow *QAndroidPlatformIntegration::createPlatformWindow(QWindow *window) const
 {
-    QAndroidPlatformWindow *platformWindow = new QAndroidPlatformWindow(window);
-    platformWindow->setWindowState(window->windowState());
-
-    return platformWindow;
+    if (window->surfaceType() == QSurface::RasterSurface)
+        return new QAndroidPlatformRasterWindow(window);
+    else
+        return new QAndroidPlatformOpenGLWindow(window, m_eglDisplay);
 }
 
 QAbstractEventDispatcher *QAndroidPlatformIntegration::createEventDispatcher() const
 {
     return createUnixEventDispatcher();
 }
-#else // !ANDROID_PLUGIN_OPENGL
-QPlatformWindow *QAndroidPlatformIntegration::createPlatformWindow(QWindow *window) const
-{
-    QAndroidOpenGLPlatformWindow *platformWindow = new QAndroidOpenGLPlatformWindow(window);
-    platformWindow->create();
-    platformWindow->requestActivateWindow();
-    platformWindow->setWindowState(window->windowState());
-    QtAndroidMenu::setActiveTopLevelWindow(window);
-
-    return platformWindow;
-}
-
-void QAndroidPlatformIntegration::invalidateNativeSurface()
-{
-    foreach (QWindow *w, QGuiApplication::topLevelWindows()) {
-        QAndroidOpenGLPlatformWindow *window =
-                static_cast<QAndroidOpenGLPlatformWindow *>(w->handle());
-        if (window != 0)
-            window->invalidateSurface();
-    }
-}
-
-void QAndroidPlatformIntegration::surfaceChanged()
-{
-    QAndroidOpenGLPlatformWindow::updateStaticNativeWindow();
-    foreach (QWindow *w, QGuiApplication::topLevelWindows()) {
-        QAndroidOpenGLPlatformWindow *window =
-                static_cast<QAndroidOpenGLPlatformWindow *>(w->handle());
-        if (window != 0)
-            window->resetSurface();
-    }
-}
-
-QPlatformOpenGLContext *QAndroidPlatformIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
-{
-    return new QAndroidOpenGLContext(this,
-                                     QEglFSHooks::hooks()->surfaceFormatFor(context->format()),
-                                     context->shareHandle(),
-                                     display());
-}
-#endif // ANDROID_PLUGIN_OPENGL
 
 QAndroidPlatformIntegration::~QAndroidPlatformIntegration()
 {
+    if (m_eglDisplay != EGL_NO_DISPLAY)
+        eglTerminate(m_eglDisplay);
+
     delete m_androidPlatformNativeInterface;
     delete m_androidFDB;
     delete m_androidSystemLocale;
     QtAndroid::setAndroidPlatformIntegration(NULL);
 }
+
 QPlatformFontDatabase *QAndroidPlatformIntegration::fontDatabase() const
 {
     return m_androidFDB;
@@ -295,8 +271,6 @@ QPlatformAccessibility *QAndroidPlatformIntegration::accessibility() const
 }
 #endif
 
-
-#ifndef ANDROID_PLUGIN_OPENGL
 void QAndroidPlatformIntegration::setDesktopSize(int width, int height)
 {
     if (m_primaryScreen)
@@ -307,37 +281,6 @@ void QAndroidPlatformIntegration::setDisplayMetrics(int width, int height)
 {
     if (m_primaryScreen)
         QMetaObject::invokeMethod(m_primaryScreen, "setPhysicalSize", Qt::AutoConnection, Q_ARG(QSize, QSize(width, height)));
-}
-#else
-void QAndroidPlatformIntegration::setDesktopSize(int width, int height)
-{
-    m_defaultGeometryWidth = width;
-    m_defaultGeometryHeight = height;
-}
-
-void QAndroidPlatformIntegration::setDisplayMetrics(int width, int height)
-{
-    m_defaultPhysicalSizeWidth = width;
-    m_defaultPhysicalSizeHeight = height;
-}
-
-QEglFSScreen *QAndroidPlatformIntegration::createScreen() const
-{
-    return new QAndroidOpenGLPlatformScreen(display());
-}
-
-#endif
-
-void QAndroidPlatformIntegration::pauseApp()
-{
-    if (QAbstractEventDispatcher::instance(m_mainThread))
-        QAbstractEventDispatcher::instance(m_mainThread)->interrupt();
-}
-
-void QAndroidPlatformIntegration::resumeApp()
-{
-    if (QAbstractEventDispatcher::instance(m_mainThread))
-        QAbstractEventDispatcher::instance(m_mainThread)->wakeUp();
 }
 
 QT_END_NAMESPACE

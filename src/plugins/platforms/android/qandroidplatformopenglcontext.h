@@ -1,6 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 BogDan Vatra <bogdan@kde.org>
+** Copyright (C) 2014 BogDan Vatra <bogdan@kde.org>
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -39,26 +40,24 @@
 **
 ****************************************************************************/
 
-#ifndef ANDROIDPLATFORMWINDOW_H
-#define ANDROIDPLATFORMWINDOW_H
-#include <qobject.h>
-#include <QtPlatformSupport/private/qfbwindow_p.h>
+#ifndef QANDROIDPLATFORMOPENGLCONTEXT_H
+#define QANDROIDPLATFORMOPENGLCONTEXT_H
 
-class QAndroidPlatformWindow: public QObject, public QFbWindow
+#include <QtPlatformSupport/private/qeglplatformcontext_p.h>
+
+QT_BEGIN_NAMESPACE
+
+class QAndroidPlatformOpenGLContext : public QEGLPlatformContext
 {
-    Q_OBJECT
 public:
-    explicit QAndroidPlatformWindow(QWindow *window);
+    QAndroidPlatformOpenGLContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display);
+    void swapBuffers(QPlatformSurface *surface);
+    bool makeCurrent(QPlatformSurface *surface);
 
-    void propagateSizeHints();
-
-    void raise();
-    void setWindowState(Qt::WindowState state);
-    void setVisible(bool visible);
-    void updateStatusBarVisibility();
-
-public slots:
-    void setGeometry(const QRect &rect);
+private:
+    virtual EGLSurface eglSurfaceForPlatformSurface(QPlatformSurface *surface);
 };
 
-#endif // ANDROIDPLATFORMWINDOW_H
+QT_END_NAMESPACE
+
+#endif // QANDROIDPLATFORMOPENGLCONTEXT_H

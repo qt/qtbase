@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2014 BogDan Vatra <bogdan@kde.org>
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
@@ -39,31 +40,31 @@
 **
 ****************************************************************************/
 
-#ifndef QANDROIDOPENGLCONTEXT_H
-#define QANDROIDOPENGLCONTEXT_H
+#ifndef QANDROIDPLATFORMRASTERWINDOW_H
+#define QANDROIDPLATFORMRASTERWINDOW_H
 
-#include <QtCore/qreadwritelock.h>
-#include "qeglfscontext.h"
-
+#include "qandroidplatformwindow.h"
 QT_BEGIN_NAMESPACE
 
-class QAndroidPlatformIntegration;
-class QAndroidOpenGLContext : public QEglFSContext
+class QAndroidPlatformBackingStore;
+class QAndroidPlatformRasterWindow : public QObject, public QAndroidPlatformWindow
 {
+    Q_OBJECT
 public:
-    QAndroidOpenGLContext(const QAndroidPlatformIntegration *integration,
-                          const QSurfaceFormat &format,
-                          QPlatformOpenGLContext *share,
-                          EGLDisplay display,
-                          EGLenum eglApi = EGL_OPENGL_ES_API);
+    QAndroidPlatformRasterWindow(QWindow *window);
 
-    void swapBuffers(QPlatformSurface *surface);
-    bool makeCurrent(QPlatformSurface *surface);
+    void setBackingStore(QAndroidPlatformBackingStore *store) { m_backingStore = store; }
+    QAndroidPlatformBackingStore *backingStore() const { return m_backingStore; }
+    void repaint(const QRegion&region);
+
+public slots:
+    void setGeometry(const QRect &rect);
 
 private:
-    const QAndroidPlatformIntegration *m_platformIntegration;
+    QAndroidPlatformBackingStore *m_backingStore = nullptr;
+    QRect m_oldGeometry;
+
 };
 
 QT_END_NAMESPACE
-
-#endif // QANDROIDOPENGLCONTEXT_H
+#endif // QANDROIDPLATFORMRASTERWINDOW_H

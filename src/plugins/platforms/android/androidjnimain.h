@@ -1,7 +1,7 @@
 /****************************************************************************
 **
+** Copyright (C) 2014 BogDan Vatra <bogdan@kde.org>
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
-** Copyright (C) 2012 BogDan Vatra <bogdan@kde.org>
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -45,16 +45,11 @@
 
 #include <android/log.h>
 
-#ifdef ANDROID_PLUGIN_OPENGL
-#  include <EGL/eglplatform.h>
-#endif
-
-#include <QtCore/qsize.h>
-
 #include <jni.h>
 #include <android/asset_manager.h>
 
-class QImage;
+#include <QImage>
+
 class QRect;
 class QPoint;
 class QThread;
@@ -62,6 +57,7 @@ class QAndroidPlatformIntegration;
 class QWidget;
 class QString;
 class QWindow;
+class AndroidSurfaceClient;
 
 namespace QtAndroid
 {
@@ -69,11 +65,10 @@ namespace QtAndroid
     void setAndroidPlatformIntegration(QAndroidPlatformIntegration *androidPlatformIntegration);
     void setQtThread(QThread *thread);
 
-#ifndef ANDROID_PLUGIN_OPENGL
-    void flushImage(const QPoint &pos, const QImage &image, const QRect &rect);
-#else
-    EGLNativeWindowType nativeWindow(bool waitToCreate = true);
-#endif
+
+    int createSurface(AndroidSurfaceClient * client, const QRect &geometry, bool onTop);
+    void setSurfaceGeometry(int surfaceId, const QRect &geometry);
+    void destroySurface(int surfaceId);
 
     QWindow *topLevelWindowAt(const QPoint &globalPos);
     int desktopWidthPixels();
@@ -91,6 +86,7 @@ namespace QtAndroid
     void hideStatusBar();
 
     jobject createBitmap(QImage img, JNIEnv *env = 0);
+    jobject createBitmap(int width, int height, QImage::Format format, JNIEnv *env);
     jobject createBitmapDrawable(jobject bitmap, JNIEnv *env = 0);
 
     struct AttachedJNIEnv

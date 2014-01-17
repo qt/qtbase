@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2014 BogDan Vatra <bogdan@kde.org>
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
@@ -39,57 +40,39 @@
 **
 ****************************************************************************/
 
-#include "qandroidopenglcontext.h"
-#include "qandroidopenglplatformwindow.h"
-#include "qandroidplatformintegration.h"
-
-#include <QtCore/qdebug.h>
-#include <qpa/qwindowsysteminterface.h>
-
-#include <QtGui/private/qopenglcontext_p.h>
+#include "qandroidplatformbackingstore.h"
+#include "qandroidplatformscreen.h"
+#include "qandroidplatformrasterwindow.h"
+#include <qpa/qplatformscreen.h>
 
 QT_BEGIN_NAMESPACE
 
-QAndroidOpenGLContext::QAndroidOpenGLContext(const QAndroidPlatformIntegration *integration,
-                                             const QSurfaceFormat &format,
-                                             QPlatformOpenGLContext *share,
-                                             EGLDisplay display,
-                                             EGLenum eglApi)
-    : QEglFSContext(format, share, display, eglApi)
-    , m_platformIntegration(integration)
+QAndroidPlatformBackingStore::QAndroidPlatformBackingStore(QWindow *window)
+    : QPlatformBackingStore(window)
 {
+    Q_ASSERT(window->handle());
+    (static_cast<QAndroidPlatformRasterWindow *>(window->handle()))->setBackingStore(this);
 }
 
-void QAndroidOpenGLContext::swapBuffers(QPlatformSurface *surface)
+QPaintDevice *QAndroidPlatformBackingStore::paintDevice()
 {
-    QEglFSContext::swapBuffers(surface);
-
-    if (surface->surface()->surfaceClass() == QSurface::Window) {
-        QAndroidOpenGLPlatformWindow *window = static_cast<QAndroidOpenGLPlatformWindow *>(surface);
-        window->lock();
-        QSize size = window->scheduledResize();
-        if (size.isValid()) {
-            QRect geometry(QPoint(0, 0), size);
-            window->setGeometry(geometry);
-            QWindowSystemInterface::handleGeometryChange(window->window(), geometry);
-            QWindowSystemInterface::handleExposeEvent(window->window(), QRegion(geometry));
-            window->scheduleResize(QSize());
-        }
-        window->unlock();
-    }
+    return &m_image;
 }
 
-bool QAndroidOpenGLContext::makeCurrent(QPlatformSurface *surface)
+void QAndroidPlatformBackingStore::flush(QWindow *window, const QRegion &region, const QPoint &offset)
 {
-    bool ret = QEglFSContext::makeCurrent(surface);
+    Q_UNUSED(window);
+    Q_UNUSED(offset);
 
-    const char *rendererString = reinterpret_cast<const char *>(glGetString(GL_RENDERER));
-    if (rendererString != 0 && qstrncmp(rendererString, "Android Emulator", 16) == 0) {
-        QOpenGLContextPrivate *ctx_d = QOpenGLContextPrivate::get(context());
-        ctx_d->workaround_missingPrecisionQualifiers = true;
-    }
+    (static_cast<QAndroidPlatformRasterWindow *>(window->handle()))->repaint(region);
+}
 
-    return ret;
+void QAndroidPlatformBackingStore::resize(const QSize &size, const QRegion &staticContents)
+{
+    Q_UNUSED(staticContents);
+
+    if (m_image.size() != size)
+        m_image = QImage(size, window()->screen()->handle()->format());
 }
 
 QT_END_NAMESPACE
