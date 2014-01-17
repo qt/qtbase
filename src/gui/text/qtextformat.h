@@ -408,7 +408,13 @@ public:
     QTextCharFormat();
 
     bool isValid() const { return isCharFormat(); }
-    void setFont(const QFont &font);
+
+    enum FontPropertiesInheritanceBehavior {
+        FontPropertiesSpecifiedOnly,
+        FontPropertiesAll
+    };
+    void setFont(const QFont &font, FontPropertiesInheritanceBehavior behavior);
+    void setFont(const QFont &font); // ### Qt6: Merge with above
     QFont font() const;
 
     inline void setFontFamily(const QString &family)

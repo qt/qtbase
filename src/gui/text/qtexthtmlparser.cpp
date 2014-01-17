@@ -1361,33 +1361,7 @@ void QTextHtmlParserNode::applyCssDeclarations(const QVector<QCss::Declaration> 
     QFont f;
     int adjustment = -255;
     extractor.extractFont(&f, &adjustment);
-    if (f.resolve() & QFont::SizeResolved) {
-        if (f.pointSize() > 0) {
-            charFormat.setFontPointSize(f.pointSize());
-        } else if (f.pixelSize() > 0) {
-            charFormat.setProperty(QTextFormat::FontPixelSize, f.pixelSize());
-        }
-    }
-    if (f.resolve() & QFont::StyleResolved)
-        charFormat.setFontItalic(f.style() != QFont::StyleNormal);
-
-    if (f.resolve() & QFont::WeightResolved)
-        charFormat.setFontWeight(f.weight());
-
-    if (f.resolve() & QFont::FamilyResolved)
-        charFormat.setFontFamily(f.family());
-
-    if (f.resolve() & QFont::UnderlineResolved)
-        charFormat.setUnderlineStyle(f.underline() ? QTextCharFormat::SingleUnderline : QTextCharFormat::NoUnderline);
-
-    if (f.resolve() & QFont::OverlineResolved)
-        charFormat.setFontOverline(f.overline());
-
-    if (f.resolve() & QFont::StrikeOutResolved)
-        charFormat.setFontStrikeOut(f.strikeOut());
-
-    if (f.resolve() & QFont::CapitalizationResolved)
-        charFormat.setFontCapitalization(f.capitalization());
+    charFormat.setFont(f, QTextCharFormat::FontPropertiesSpecifiedOnly);
 
     if (adjustment >= -1)
         charFormat.setProperty(QTextFormat::FontSizeAdjustment, adjustment);
