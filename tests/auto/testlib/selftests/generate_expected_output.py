@@ -105,7 +105,7 @@ def generateTestData(testname):
         result = 'expected_' + testname + '.' + format
         data = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True).communicate()[0]
         out = open(result, 'w')
-        out.write(data.decode('utf-8'))
+        out.write(data)
         out.close()
         replaceInFile(result)
 
