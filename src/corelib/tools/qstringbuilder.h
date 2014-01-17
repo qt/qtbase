@@ -112,7 +112,9 @@ private:
         const uint len = QConcatenable< QStringBuilder<A, B> >::size(*this);
         T s(len, Qt::Uninitialized);
 
-        typename T::iterator d = s.data();
+        // we abuse const_cast / constData here because we know we've just
+        // allocated the data and we're the only reference count
+        typename T::iterator d = const_cast<typename T::iterator>(s.constData());
         typename T::const_iterator const start = d;
         QConcatenable< QStringBuilder<A, B> >::appendTo(*this, d);
 
