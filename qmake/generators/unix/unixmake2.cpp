@@ -98,6 +98,81 @@ UnixMakefileGenerator::writeMakefile(QTextStream &t)
 }
 
 void
+UnixMakefileGenerator::writeDefaultVariables(QTextStream &t)
+{
+    MakefileGenerator::writeDefaultVariables(t);
+    t << "TAR           = " << var("QMAKE_TAR") << endl;
+    t << "COMPRESS      = " << var("QMAKE_GZIP") << endl;
+
+    if (project->isEmpty("QMAKE_DISTNAME")) {
+        ProString distname = project->first("QMAKE_ORIG_TARGET");
+        if (!project->isActiveConfig("no_dist_version"))
+            distname += project->first("VERSION");
+        project->values("QMAKE_DISTNAME") = distname;
+    }
+    t << "DISTNAME      = " << var("QMAKE_DISTNAME") << endl;
+
+    if (project->isEmpty("QMAKE_DISTDIR"))
+        project->values("QMAKE_DISTDIR") = project->first("QMAKE_DISTNAME");
+    t << "DISTDIR = " << escapeFilePath(fileFixify(
+            (project->isEmpty("OBJECTS_DIR") ? ProString(".tmp/") : project->first("OBJECTS_DIR")) + project->first("QMAKE_DISTDIR"),
+            Option::output_dir, Option::output_dir, FileFixifyAbsolute)) << endl;
+}
+
+void
+UnixMakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubTarget*> targets, int flags)
+{
+    MakefileGenerator::writeSubTargets(t, targets, flags);
+
+    t << "dist: distdir FORCE" << endl;
+    t << "\t(cd `dirname $(DISTDIR)` && $(TAR) $(DISTNAME).tar $(DISTNAME) && $(COMPRESS) $(DISTNAME).tar)"
+         " && $(MOVE) `dirname $(DISTDIR)`/$(DISTNAME).tar.gz . && $(DEL_FILE) -r $(DISTDIR)";
+    t << endl << endl;
+
+    t << "distdir:";
+    for (int target = 0; target < targets.size(); ++target) {
+        SubTarget *subtarget = targets.at(target);
+        t << " " << subtarget->target << "-distdir";
+    }
+    t << " FORCE\n\t"
+      << mkdir_p_asstring("$(DISTDIR)", false) << "\n\t"
+      << "$(COPY_FILE) --parents " << var("DISTFILES") << " $(DISTDIR)" << Option::dir_sep << endl << endl;
+
+    const QString abs_source_path = project->first("QMAKE_ABSOLUTE_SOURCE_PATH").toQString();
+    for (int target = 0; target < targets.size(); ++target) {
+        SubTarget *subtarget = targets.at(target);
+        QString in_directory = subtarget->in_directory;
+        if (!in_directory.isEmpty() && !in_directory.endsWith(Option::dir_sep))
+            in_directory += Option::dir_sep;
+        QString out_directory = subtarget->out_directory;
+        if (!out_directory.isEmpty() && !out_directory.endsWith(Option::dir_sep))
+            out_directory += Option::dir_sep;
+        if (!abs_source_path.isEmpty() && out_directory.startsWith(abs_source_path))
+            out_directory = Option::output_dir + out_directory.mid(abs_source_path.length());
+
+        QString dist_directory = out_directory;
+        if (dist_directory.endsWith(Option::dir_sep))
+            dist_directory.chop(Option::dir_sep.length());
+        if (!dist_directory.startsWith(Option::dir_sep))
+            dist_directory.prepend(Option::dir_sep);
+
+        QString out_directory_cdin = out_directory.isEmpty() ? "\n\t"
+                                                             : "\n\tcd " + out_directory + " && ";
+        QString makefilein = " -e -f " + subtarget->makefile + " distdir DISTDIR=$(DISTDIR)" + dist_directory;
+
+        QString out = subtarget->makefile;
+        QString in = escapeFilePath(fileFixify(in_directory + subtarget->profile, FileFixifyAbsolute));
+        if (out.startsWith(in_directory))
+            out.remove(0, in_directory.length());
+
+        t << subtarget->target << "-distdir: FORCE";
+        writeSubTargetCall(t, in_directory, in, out_directory, out,
+                           out_directory_cdin, makefilein);
+        t << endl;
+    }
+}
+
+void
 UnixMakefileGenerator::writeMakeParts(QTextStream &t)
 {
     QString deps = fileFixify(Option::output.fileName()), target_deps, prl;
@@ -152,8 +227,6 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
 
     t << "AR            = " << var("QMAKE_AR") << endl;
     t << "RANLIB        = " << var("QMAKE_RANLIB") << endl;
-    t << "TAR           = " << var("QMAKE_TAR") << endl;
-    t << "COMPRESS      = " << var("QMAKE_GZIP") << endl;
     if(project->isActiveConfig("compile_libtool"))
         t << "LIBTOOL       = " << var("QMAKE_LIBTOOL") << endl;
     t << "SED           = " << var("QMAKE_STREAM_EDITOR") << endl;
@@ -814,21 +887,15 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
         }
     }
 
-    ProString ddir;
-    ProString packageName(project->first("QMAKE_ORIG_TARGET"));
-    if(!project->isActiveConfig("no_dist_version"))
-        packageName += var("VERSION");
-    if (project->isEmpty("QMAKE_DISTDIR"))
-        ddir = packageName;
-    else
-        ddir = project->first("QMAKE_DISTDIR");
+    t << "dist: distdir FORCE\n\t";
+    t << "(cd `dirname $(DISTDIR)` && $(TAR) $(DISTNAME).tar $(DISTNAME) && $(COMPRESS) $(DISTNAME).tar)"
+         " && $(MOVE) `dirname $(DISTDIR)`" << Option::dir_sep << "$(DISTNAME).tar.gz ."
+         " && $(DEL_FILE) -r $(DISTDIR)";
+    t << endl << endl;
 
-    QString ddir_c = escapeFilePath(fileFixify((project->isEmpty("OBJECTS_DIR") ? ProString(".tmp/") :
-                                                project->first("OBJECTS_DIR")) + ddir,
-                                               Option::output_dir, Option::output_dir));
-    t << "dist: \n\t"
-      << mkdir_p_asstring(ddir_c, false) << "\n\t"
-      << "$(COPY_FILE) --parents $(DIST) " << ddir_c << Option::dir_sep << " && ";
+    t << "distdir: FORCE\n\t"
+      << mkdir_p_asstring("$(DISTDIR)", false) << "\n\t"
+      << "$(COPY_FILE) --parents $(DIST) $(DISTDIR)" << Option::dir_sep << endl;
     if(!project->isEmpty("QMAKE_EXTRA_COMPILERS")) {
         const ProStringList &quc = project->values("QMAKE_EXTRA_COMPILERS");
         for (ProStringList::ConstIterator it = quc.begin(); it != quc.end(); ++it) {
@@ -837,20 +904,13 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                 const ProStringList &val = project->values((*var_it).toKey());
                 if(val.isEmpty())
                     continue;
-                t << "$(COPY_FILE) --parents " << val.join(' ') << " " << ddir_c << Option::dir_sep << " && ";
+                t << "\t$(COPY_FILE) --parents " << val.join(' ') << " $(DISTDIR)" << Option::dir_sep << endl;
             }
         }
     }
     if(!project->isEmpty("TRANSLATIONS"))
-        t << "$(COPY_FILE) --parents " << var("TRANSLATIONS") << " " << ddir_c << Option::dir_sep << " && ";
-    t << "(cd `dirname " << ddir_c << "` && "
-      << "$(TAR) " << packageName << ".tar " << ddir << " && "
-      << "$(COMPRESS) " << packageName << ".tar) && "
-      << "$(MOVE) `dirname " << ddir_c << "`" << Option::dir_sep << packageName << ".tar.gz . && "
-      << "$(DEL_FILE) -r " << ddir_c
-      << endl << endl;
-
-    t << endl;
+        t << "\t$(COPY_FILE) --parents " << var("TRANSLATIONS") << " $(DISTDIR)" << Option::dir_sep << endl;
+    t << endl << endl;
 
     QString clean_targets = "compiler_clean " + var("CLEAN_DEPS");
     if(do_incremental) {

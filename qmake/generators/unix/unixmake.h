@@ -69,6 +69,8 @@ protected:
     virtual QStringList &findDependencies(const QString &);
     virtual void init();
 
+    virtual void writeDefaultVariables(QTextStream &t);
+    virtual void writeSubTargets(QTextStream &t, QList<SubTarget*> subtargets, int flags);
     void writeMakeParts(QTextStream &);
     bool writeMakefile(QTextStream &);
 

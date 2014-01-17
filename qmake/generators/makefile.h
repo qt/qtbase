@@ -107,7 +107,7 @@ protected:
     bool writeDummyMakefile(QTextStream &t);
     virtual bool writeStubMakefile(QTextStream &t);
     virtual bool writeMakefile(QTextStream &t);
-    void writeDefaultVariables(QTextStream &t);
+    virtual void writeDefaultVariables(QTextStream &t);
 
     QString pkgConfigPrefix() const;
     QString pkgConfigFileName(bool fixify=true);
@@ -136,7 +136,7 @@ protected:
             const QString &out_directory_cdin, const QString &makefilein);
     virtual void writeSubMakeCall(QTextStream &t, const QString &outDirectory_cdin,
                                   const QString &makeFileIn);
-    void writeSubTargets(QTextStream &t, QList<SubTarget*> subtargets, int flags);
+    virtual void writeSubTargets(QTextStream &t, QList<SubTarget*> subtargets, int flags);
 
     //extra compiler interface
     bool verifyExtraCompiler(const ProString &c, const QString &f);
