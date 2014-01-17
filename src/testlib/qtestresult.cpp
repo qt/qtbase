@@ -46,8 +46,10 @@
 #include <QtTest/qtestdata.h>
 #include <QtTest/qtestassert.h>
 
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <wchar.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -268,8 +270,8 @@ bool QTestResult::compare(bool success, const char *failureMsg,
     if (success && QTest::expectFailMode) {
         qsnprintf(msg, 1024, "QCOMPARE(%s, %s) returned TRUE unexpectedly.", actual, expected);
     } else if (val1 || val2) {
-        size_t len1 = strlen(actual);
-        size_t len2 = strlen(expected);
+        size_t len1 = mbstowcs(NULL, actual, 0);
+        size_t len2 = mbstowcs(NULL, expected, 0);
         qsnprintf(msg, 1024, "%s\n   Actual   (%s)%*s %s\n   Expected (%s)%*s %s",
                   failureMsg,
                   actual, qMax(len1, len2) - len1 + 1, ":", val1 ? val1 : "<null>",
