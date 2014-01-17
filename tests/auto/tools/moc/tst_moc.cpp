@@ -78,6 +78,7 @@
 #include "parse-defines.h"
 #include "related-metaobjects-in-namespaces.h"
 #include "related-metaobjects-in-gadget.h"
+#include "related-metaobjects-name-conflict.h"
 
 QT_USE_NAMESPACE
 
@@ -573,6 +574,8 @@ private slots:
     void writeEnumFromUnrelatedClass();
     void relatedMetaObjectsWithinNamespaces();
     void relatedMetaObjectsInGadget();
+    void relatedMetaObjectsNameConflict_data();
+    void relatedMetaObjectsNameConflict();
 
 signals:
     void sigWithUnsignedArg(unsigned foo);
@@ -3174,6 +3177,59 @@ void tst_Moc::relatedMetaObjectsInGadget()
     const QMetaObject *testMo = &QTBUG_35657::B::staticMetaObject;
     QVERIFY(testMo->d.relatedMetaObjects);
     QVERIFY(testMo->d.relatedMetaObjects[0] == relatedMo);
+}
+
+void tst_Moc::relatedMetaObjectsNameConflict_data()
+{
+    typedef QVector<const QMetaObject*> QMetaObjects;
+    QTest::addColumn<const QMetaObject*>("dependingObject");
+    QTest::addColumn<QMetaObjects>("relatedMetaObjects");
+
+    //NS1
+    const QMetaObject *n1gadget = &NS1::Gadget::staticMetaObject;
+    const QMetaObject *n1object = &NS1::Object::staticMetaObject;
+    const QMetaObject *n1nestedGadget = &NS1::Nested::Gadget::staticMetaObject;
+    const QMetaObject *n1nestedObject = &NS1::Nested::Object::staticMetaObject;
+    //N2
+    const QMetaObject *n2gadget = &NS2::Gadget::staticMetaObject;
+    const QMetaObject *n2object = &NS2::Object::staticMetaObject;
+    const QMetaObject *n2nestedGadget = &NS2::Nested::Gadget::staticMetaObject;
+    const QMetaObject *n2nestedObject = &NS2::Nested::Object::staticMetaObject;
+
+    QTest::newRow("N1::dependingObject") << &NS1::DependingObject::staticMetaObject
+                                        <<  (QMetaObjects() << n1gadget << n1object);
+    QTest::newRow("N2::dependingObject") << &NS2::DependingObject::staticMetaObject
+                                        <<  (QMetaObjects() << n2gadget << n2object);
+    QTest::newRow("N1::dependingNestedObject") << &NS1::DependingNestedObject::staticMetaObject
+                                        <<  (QMetaObjects() << n1nestedObject);
+    QTest::newRow("N2::dependingNestedObject") << &NS2::DependingNestedObject::staticMetaObject
+                                        <<  (QMetaObjects() << n2nestedObject);
+    QTest::newRow("N1::dependingNestedGadget") << &NS1::DependingNestedGadget::staticMetaObject
+                                        <<  (QMetaObjects() << n1nestedGadget);
+    QTest::newRow("N2::dependingNestedGadget") << &NS2::DependingNestedGadget::staticMetaObject
+                                        <<  (QMetaObjects() << n2nestedGadget);
+}
+
+void tst_Moc::relatedMetaObjectsNameConflict()
+{
+    typedef QVector<const QMetaObject*> QMetaObjects;
+    QFETCH(const QMetaObject*, dependingObject);
+    QFETCH(QMetaObjects, relatedMetaObjects);
+
+    // load all specified metaobjects int a set
+    QSet<const QMetaObject*> dependency;
+    const QMetaObject *const *i = dependingObject->d.relatedMetaObjects;
+    while (*i) {
+        dependency.insert(*i);
+        ++i;
+    }
+
+    // check if all required metaobjects are specified
+    foreach (const QMetaObject *mo, relatedMetaObjects)
+        QVERIFY(dependency.contains(mo));
+
+    // check if no additional metaobjects ara specified
+    QCOMPARE(dependency.size(), relatedMetaObjects.size());
 }
 
 QTEST_MAIN(tst_Moc)

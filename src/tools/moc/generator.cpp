@@ -438,6 +438,9 @@ void Generator::generateCode()
 // Build extra array
 //
     QList<QByteArray> extraList;
+    QHash<QByteArray, QByteArray> knownExtraMetaObject = knownGadgets;
+    knownExtraMetaObject.unite(knownQObjectClasses);
+
     for (int i = 0; i < cdef->propertyList.count(); ++i) {
         const PropertyDef &p = cdef->propertyList.at(i);
         if (isBuiltinType(p.type))
@@ -453,12 +456,19 @@ void Generator::generateCode()
         QByteArray unqualifiedScope = p.type.left(s);
 
         // The scope may be a namespace for example, so it's only safe to include scopes that are known QObjects (QTBUG-2151)
-        QHash<QByteArray, QByteArray>::ConstIterator scopeIt = knownQObjectClasses.find(unqualifiedScope);
-        if (scopeIt == knownQObjectClasses.constEnd()) {
-            scopeIt = knownGadgets.find(unqualifiedScope);
-            if (scopeIt == knownGadgets.constEnd())
-                continue;
-        }
+        QHash<QByteArray, QByteArray>::ConstIterator scopeIt;
+
+        QByteArray thisScope = cdef->qualified;
+        do {
+            int s = thisScope.lastIndexOf("::");
+            thisScope = thisScope.left(s);
+            QByteArray currentScope = thisScope.isEmpty() ? unqualifiedScope : thisScope + "::" + unqualifiedScope;
+            scopeIt = knownExtraMetaObject.constFind(currentScope);
+        } while (!thisScope.isEmpty() && scopeIt == knownExtraMetaObject.constEnd());
+
+        if (scopeIt == knownExtraMetaObject.constEnd())
+            continue;
+
         const QByteArray &scope = *scopeIt;
 
         if (scope == "Qt")
