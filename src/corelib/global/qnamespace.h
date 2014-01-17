@@ -64,7 +64,7 @@ Qt {
     Q_ENUMS(ArrowType ToolButtonStyle PenStyle PenCapStyle PenJoinStyle BrushStyle)
     Q_ENUMS(FillRule MaskMode BGMode ClipOperation SizeMode)
     Q_ENUMS(Axis Corner Edge LayoutDirection SizeHint Orientation DropAction)
-    Q_FLAGS(Alignment Orientations DropActions)
+    Q_FLAGS(Alignment Orientations DropActions Edges)
     Q_FLAGS(DockWidgetAreas ToolBarAreas)
     Q_ENUMS(DockWidgetArea ToolBarArea)
     Q_ENUMS(TextFormat)
@@ -1240,6 +1240,8 @@ public:
         BottomEdge = 0x00008
     };
 
+    Q_DECLARE_FLAGS(Edges, Edge)
+
     enum ConnectionType {
         AutoConnection,
         DirectConnection,
@@ -1617,6 +1619,7 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::Orientations)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::KeyboardModifiers)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::WindowFlags)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::Alignment)
+Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::Edges)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::ImageConversionFlags)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::DockWidgetAreas)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::ToolBarAreas)
