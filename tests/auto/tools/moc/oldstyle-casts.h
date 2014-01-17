@@ -43,7 +43,7 @@
 #define OLDSTYLE_CASTS_H
 #include <QtCore/qobject.h>
 
-class Foo: public QObject
+class OldStyleCast: public QObject
 {
     Q_OBJECT
 public:
