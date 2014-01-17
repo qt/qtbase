@@ -1940,7 +1940,7 @@ static QTime fromIsoTimeString(const QStringRef &string, Qt::DateFormat format, 
         const long minuteFractionInt = minuteFractionStr.toLong(&ok);
         if (!ok)
             return QTime();
-        const float minuteFraction = double(minuteFractionInt) / (pow(double(10), minuteFractionStr.count()));
+        const float minuteFraction = double(minuteFractionInt) / (std::pow(double(10), minuteFractionStr.count()));
 
         const float secondWithMs = minuteFraction * 60;
         const float secondNoMs = std::floor(secondWithMs);
@@ -1957,7 +1957,7 @@ static QTime fromIsoTimeString(const QStringRef &string, Qt::DateFormat format, 
             int msecInt = msecStr.isEmpty() ? 0 : msecStr.toInt(&ok);
             if (!ok)
                 return QTime();
-            const double secondFraction(msecInt / (pow(double(10), msecStr.count())));
+            const double secondFraction(msecInt / (std::pow(double(10), msecStr.count())));
             msec = qMin(qRound(secondFraction * 1000.0), 999);
         }
     }
