@@ -52,6 +52,38 @@
 QAndroidPlatformTheme::QAndroidPlatformTheme(QAndroidPlatformNativeInterface *androidPlatformNativeInterface)
 {
     m_androidPlatformNativeInterface = androidPlatformNativeInterface;
+    QColor background(229, 229, 229);
+    QColor light = background.lighter(150);
+    QColor mid(background.darker(130));
+    QColor midLight = mid.lighter(110);
+    QColor base(249, 249, 249);
+    QColor disabledBase(background);
+    QColor dark = background.darker(150);
+    QColor darkDisabled = dark.darker(110);
+    QColor text = Qt::black;
+    QColor highlightedText = Qt::black;
+    QColor disabledText = QColor(190, 190, 190);
+    QColor button(241, 241, 241);
+    QColor shadow(201, 201, 201);
+    QColor highlight(148, 210, 231);
+    QColor disabledShadow = shadow.lighter(150);
+
+    m_defaultPalette = QPalette(Qt::black,background,light,dark,mid,text,base);
+    m_defaultPalette.setBrush(QPalette::Midlight, midLight);
+    m_defaultPalette.setBrush(QPalette::Button, button);
+    m_defaultPalette.setBrush(QPalette::Shadow, shadow);
+    m_defaultPalette.setBrush(QPalette::HighlightedText, highlightedText);
+
+    m_defaultPalette.setBrush(QPalette::Disabled, QPalette::Text, disabledText);
+    m_defaultPalette.setBrush(QPalette::Disabled, QPalette::WindowText, disabledText);
+    m_defaultPalette.setBrush(QPalette::Disabled, QPalette::ButtonText, disabledText);
+    m_defaultPalette.setBrush(QPalette::Disabled, QPalette::Base, disabledBase);
+    m_defaultPalette.setBrush(QPalette::Disabled, QPalette::Dark, darkDisabled);
+    m_defaultPalette.setBrush(QPalette::Disabled, QPalette::Shadow, disabledShadow);
+
+    m_defaultPalette.setBrush(QPalette::Active, QPalette::Highlight, highlight);
+    m_defaultPalette.setBrush(QPalette::Inactive, QPalette::Highlight, highlight);
+    m_defaultPalette.setBrush(QPalette::Disabled, QPalette::Highlight, highlight.lighter(150));
 }
 
 QPlatformMenuBar *QAndroidPlatformTheme::createPlatformMenuBar() const
@@ -102,7 +134,7 @@ const QPalette *QAndroidPlatformTheme::palette(Palette type) const
     QHash<int, QPalette>::const_iterator it = m_androidPlatformNativeInterface->m_palettes.find(paletteType(type));
     if (it != m_androidPlatformNativeInterface->m_palettes.end())
         return &(it.value());
-    return 0;
+    return &m_defaultPalette;
 }
 
 static inline int fontType(QPlatformTheme::Font type)

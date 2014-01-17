@@ -43,6 +43,8 @@
 #define QANDROIDPLATFORMTHEME_H
 
 #include <qpa/qplatformtheme.h>
+#include <QPalette>
+
 class QAndroidPlatformNativeInterface;
 class QAndroidPlatformTheme: public QPlatformTheme
 {
@@ -61,6 +63,7 @@ public:
 
 private:
     QAndroidPlatformNativeInterface * m_androidPlatformNativeInterface;
+    QPalette m_defaultPalette;
 };
 
 #endif // QANDROIDPLATFORMTHEME_H
