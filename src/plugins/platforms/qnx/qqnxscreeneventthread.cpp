@@ -39,6 +39,8 @@
 **
 ****************************************************************************/
 
+#include "qqnxglobal.h"
+
 #include "qqnxscreeneventthread.h"
 #include "qqnxscreeneventhandler.h"
 
@@ -92,30 +94,34 @@ void QQnxScreenEventThread::run()
 {
     qScreenEventThreadDebug() << Q_FUNC_INFO << "screen event thread started";
 
+    int errorCounter = 0;
     // loop indefinitely
     while (!m_quit) {
         screen_event_t event;
 
         // create screen event
-        errno = 0;
-        int result = screen_create_event(&event);
-        if (result)
-            qFatal("QQNX: failed to create screen event, errno=%d", errno);
-
+        Q_SCREEN_CHECKERROR(screen_create_event(&event), "Failed to create screen event");
 
         // block until screen event is available
-        errno = 0;
-        result = screen_get_event(m_screenContext, event, -1);
-        if (result)
-            qFatal("QQNX: failed to get screen event, errno=%d", errno);
+        const int result = screen_get_event(m_screenContext, event, -1);
+        Q_SCREEN_CRITICALERROR(result, "Failed to get screen event");
+        // Only allow 50 consecutive errors before we exit the thread
+        if (!result) {
+            errorCounter++;
+            if (errorCounter > 50)
+                m_quit = true;
+
+            screen_destroy_event(event);
+            continue;
+        } else {
+            errorCounter = 0;
+        }
 
         // process received event
         // get the event type
-        errno = 0;
         int qnxType;
-        result = screen_get_event_property_iv(event, SCREEN_PROPERTY_TYPE, &qnxType);
-        if (result)
-            qFatal("QQNX: failed to query screen event type, errno=%d", errno);
+        Q_SCREEN_CHECKERROR(screen_get_event_property_iv(event, SCREEN_PROPERTY_TYPE, &qnxType),
+                            "Failed to query screen event type");
 
         if (qnxType == SCREEN_EVENT_USER) {
             // treat all user events as shutdown requests
@@ -145,25 +151,19 @@ void QQnxScreenEventThread::shutdown()
     screen_event_t event;
 
     // create screen event
-    errno = 0;
-    int result = screen_create_event(&event);
-    if (result)
-        qFatal("QQNX: failed to create screen event, errno=%d", errno);
+    Q_SCREEN_CHECKERROR(screen_create_event(&event),
+                        "Failed to create screen event");
 
     // set the event type as user
-    errno = 0;
     int type = SCREEN_EVENT_USER;
-    result = screen_set_event_property_iv(event, SCREEN_PROPERTY_TYPE, &type);
-    if (result)
-        qFatal("QQNX: failed to set screen event type, errno=%d", errno);
+    Q_SCREEN_CHECKERROR(screen_set_event_property_iv(event, SCREEN_PROPERTY_TYPE, &type),
+                        "Failed to set screen type");
 
     // NOTE: ignore SCREEN_PROPERTY_USER_DATA; treat all user events as shutdown events
 
     // post event to event loop so it will wake up and die
-    errno = 0;
-    result = screen_send_event(m_screenContext, event, getpid());
-    if (result)
-        qFatal("QQNX: failed to set screen event type, errno=%d", errno);
+    Q_SCREEN_CHECKERROR(screen_send_event(m_screenContext, event, getpid()),
+                        "Failed to set screen event type");
 
     // cleanup
     screen_destroy_event(event);

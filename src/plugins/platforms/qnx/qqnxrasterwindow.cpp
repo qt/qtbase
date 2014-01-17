@@ -39,6 +39,8 @@
 **
 ****************************************************************************/
 
+#include "qqnxglobal.h"
+
 #include "qqnxrasterwindow.h"
 #include "qqnxscreen.h"
 
@@ -102,10 +104,9 @@ void QQnxRasterWindow::post(const QRegion &dirty)
         int dirtyRect[4] = { rect.x(), rect.y(), rect.x() + rect.width(), rect.y() + rect.height() };
 
         // Update the display with contents of render buffer
-        errno = 0;
-        int result = screen_post_window(nativeHandle(), currentBuffer.nativeBuffer(), 1, dirtyRect, 0);
-        if (result != 0)
-            qFatal("QQnxWindow: failed to post window buffer, errno=%d", errno);
+        Q_SCREEN_CHECKERROR(
+                screen_post_window(nativeHandle(), currentBuffer.nativeBuffer(), 1, dirtyRect, 0),
+                "Failed to post window");
 
         // Advance to next nender buffer
         m_previousBufferIndex = m_currentBufferIndex++;
@@ -135,28 +136,23 @@ QQnxBuffer &QQnxRasterWindow::renderBuffer()
     // Check if render buffer is invalid
     if (m_currentBufferIndex == -1) {
         // Get all buffers available for rendering
-        errno = 0;
         screen_buffer_t buffers[MAX_BUFFER_COUNT];
-        int result = screen_get_window_property_pv(nativeHandle(), SCREEN_PROPERTY_RENDER_BUFFERS, (void **)buffers);
-        if (result != 0)
-            qFatal("QQnxRasterWindow: failed to query window buffers, errno=%d", errno);
+        const int result = screen_get_window_property_pv(nativeHandle(), SCREEN_PROPERTY_RENDER_BUFFERS,
+                                                   (void **)buffers);
+        Q_SCREEN_CRITICALERROR(result, "Failed to query window buffers");
 
         // Wrap each buffer and clear
         for (int i = 0; i < MAX_BUFFER_COUNT; ++i) {
             m_buffers[i] = QQnxBuffer(buffers[i]);
 
             // Clear Buffer
-            errno = 0;
             int bg[] = { SCREEN_BLIT_COLOR, 0x00000000, SCREEN_BLIT_END };
-            result = screen_fill(screen()->nativeContext(), buffers[i], bg);
-            if (result != 0)
-                qFatal("QQnxWindow: failed to clear window buffer, errno=%d", errno);
+            Q_SCREEN_CHECKERROR(screen_fill(screen()->nativeContext(), buffers[i], bg),
+                                "Failed to clear window buffer");
         }
 
-        errno = 0;
-        result = screen_flush_blits(screen()->nativeContext(), 0);
-        if (result != 0)
-            qFatal("QQnxWindow: failed to flush blits, errno=%d", errno);
+        Q_SCREEN_CHECKERROR(screen_flush_blits(screen()->nativeContext(), 0),
+                            "Failed to flush blits");
 
         // Use the first available render buffer
         m_currentBufferIndex = 0;
@@ -220,20 +216,16 @@ void QQnxRasterWindow::blitPreviousToCurrent(const QRegion &region, int dx, int 
                           SCREEN_BLIT_END };
 
         // Queue blit operation
-        errno = 0;
-        const int result = screen_blit(m_screenContext, currentBuffer.nativeBuffer(),
-                                       previousBuffer.nativeBuffer(), attribs);
-        if (result != 0)
-            qFatal("QQnxWindow: failed to blit buffers, errno=%d", errno);
+        Q_SCREEN_CHECKERROR(screen_blit(m_screenContext, currentBuffer.nativeBuffer(),
+                                       previousBuffer.nativeBuffer(), attribs),
+                            "Failed to blit buffers");
     }
 
     // Check if flush requested
     if (flush) {
         // Wait for all blits to complete
-        errno = 0;
-        const int result = screen_flush_blits(m_screenContext, SCREEN_WAIT_IDLE);
-        if (result != 0)
-            qFatal("QQnxWindow: failed to flush blits, errno=%d", errno);
+        Q_SCREEN_CHECKERROR(screen_flush_blits(m_screenContext, SCREEN_WAIT_IDLE),
+                            "Failed to flush blits");
 
         // Buffer was modified outside the CPU
         currentBuffer.invalidateInCache();

@@ -39,6 +39,8 @@
 **
 ****************************************************************************/
 
+#include "qqnxglobal.h"
+
 #include "qqnxbuffer.h"
 
 #include <QtCore/QDebug>
@@ -66,34 +68,30 @@ QQnxBuffer::QQnxBuffer(screen_buffer_t buffer)
     qBufferDebug() << Q_FUNC_INFO << "normal";
 
     // Get size of buffer
-    errno = 0;
     int size[2];
-    int result = screen_get_buffer_property_iv(buffer, SCREEN_PROPERTY_BUFFER_SIZE, size);
-    if (result != 0)
-        qFatal("QQNX: failed to query buffer size, errno=%d", errno);
+    Q_SCREEN_CRITICALERROR(screen_get_buffer_property_iv(buffer, SCREEN_PROPERTY_BUFFER_SIZE, size),
+                        "Failed to query buffer size");
 
     // Get stride of buffer
-    errno = 0;
     int stride;
-    result = screen_get_buffer_property_iv(buffer, SCREEN_PROPERTY_STRIDE, &stride);
-    if (result != 0)
-        qFatal("QQNX: failed to query buffer stride, errno=%d", errno);
+    Q_SCREEN_CHECKERROR(screen_get_buffer_property_iv(buffer, SCREEN_PROPERTY_STRIDE, &stride),
+                        "Failed to query buffer stride");
 
     // Get access to buffer's data
     errno = 0;
     uchar *dataPtr = 0;
-    result = screen_get_buffer_property_pv(buffer, SCREEN_PROPERTY_POINTER, (void **)&dataPtr);
-    if (result != 0)
-        qFatal("QQNX: failed to query buffer pointer, errno=%d", errno);
+    Q_SCREEN_CRITICALERROR(
+            screen_get_buffer_property_pv(buffer, SCREEN_PROPERTY_POINTER, (void **)&dataPtr),
+            "Failed to query buffer pointer");
+
     if (dataPtr == 0)
         qFatal("QQNX: buffer pointer is NULL, errno=%d", errno);
 
     // Get format of buffer
-    errno = 0;
     int screenFormat;
-    result = screen_get_buffer_property_iv(buffer, SCREEN_PROPERTY_FORMAT, &screenFormat);
-    if (result != 0)
-        qFatal("QQNX: failed to query buffer format, errno=%d", errno);
+    Q_SCREEN_CHECKERROR(
+            screen_get_buffer_property_iv(buffer, SCREEN_PROPERTY_FORMAT, &screenFormat),
+            "Failed to query buffer format");
 
     // Convert screen format to QImage format
     QImage::Format imageFormat = QImage::Format_Invalid;

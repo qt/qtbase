@@ -39,6 +39,8 @@
 **
 ****************************************************************************/
 
+#include "qqnxglobal.h"
+
 #include "qqnxscreen.h"
 #include "qqnxwindow.h"
 #include "qqnxcursor.h"
@@ -75,10 +77,9 @@ QT_BEGIN_NAMESPACE
 static QSize determineScreenSize(screen_display_t display, bool primaryScreen) {
     int val[2];
 
-    errno = 0;
     const int result = screen_get_display_property_iv(display, SCREEN_PROPERTY_PHYSICAL_SIZE, val);
+    Q_SCREEN_CHECKERROR(result, "Failed to query display physical size");
     if (result != 0) {
-        qFatal("QQnxScreen: failed to query display physical size, errno=%d", errno);
         return QSize(150, 90);
     }
 
@@ -163,19 +164,16 @@ QQnxScreen::QQnxScreen(screen_context_t screenContext, screen_display_t display,
 {
     qScreenDebug() << Q_FUNC_INFO;
     // Cache initial orientation of this display
-    errno = 0;
-    int result = screen_get_display_property_iv(m_display, SCREEN_PROPERTY_ROTATION, &m_initialRotation);
-    if (result != 0)
-        qFatal("QQnxScreen: failed to query display rotation, errno=%d", errno);
+    int result = screen_get_display_property_iv(m_display, SCREEN_PROPERTY_ROTATION,
+                                                &m_initialRotation);
+    Q_SCREEN_CHECKERROR(result, "Failed to query display rotation");
 
     m_currentRotation = m_initialRotation;
 
     // Cache size of this display in pixels
-    errno = 0;
     int val[2];
-    result = screen_get_display_property_iv(m_display, SCREEN_PROPERTY_SIZE, val);
-    if (result != 0)
-        qFatal("QQnxScreen: failed to query display size, errno=%d", errno);
+    Q_SCREEN_CRITICALERROR(screen_get_display_property_iv(m_display, SCREEN_PROPERTY_SIZE, val),
+                        "Failed to query display size");
 
     m_currentGeometry = m_initialGeometry = QRect(0, 0, val[0], val[1]);
 

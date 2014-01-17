@@ -39,6 +39,8 @@
 **
 ****************************************************************************/
 
+#include "qqnxglobal.h"
+
 #include "qqnxscreeneventhandler.h"
 #if defined(QQNX_SCREENEVENTTHREAD)
 #include "qqnxscreeneventthread.h"
@@ -104,11 +106,9 @@ void QQnxScreenEventHandler::removeScreenEventFilter(QQnxScreenEventFilter *filt
 bool QQnxScreenEventHandler::handleEvent(screen_event_t event)
 {
     // get the event type
-    errno = 0;
     int qnxType;
-    int result = screen_get_event_property_iv(event, SCREEN_PROPERTY_TYPE, &qnxType);
-    if (result)
-        qFatal("QQNX: failed to query event type, errno=%d", errno);
+    Q_SCREEN_CHECKERROR(screen_get_event_property_iv(event, SCREEN_PROPERTY_TYPE, &qnxType),
+                        "Failed to query event type");
 
     return handleEvent(event, qnxType);
 }
@@ -239,39 +239,32 @@ void QQnxScreenEventHandler::processEventsFromScreenThread()
 void QQnxScreenEventHandler::handleKeyboardEvent(screen_event_t event)
 {
     // get flags of key event
-    errno = 0;
     int flags;
-    int result = screen_get_event_property_iv(event, SCREEN_PROPERTY_KEY_FLAGS, &flags);
-    if (result)
-        qFatal("QQNX: failed to query event flags, errno=%d", errno);
+    Q_SCREEN_CHECKERROR(screen_get_event_property_iv(event, SCREEN_PROPERTY_KEY_FLAGS, &flags),
+                        "Failed to query event flags");
 
     // get key code
-    errno = 0;
     int sym;
-    result = screen_get_event_property_iv(event, SCREEN_PROPERTY_KEY_SYM, &sym);
-    if (result)
-        qFatal("QQNX: failed to query event sym, errno=%d", errno);
+    Q_SCREEN_CHECKERROR(screen_get_event_property_iv(event, SCREEN_PROPERTY_KEY_SYM, &sym),
+                        "Failed to query event sym");
 
     int modifiers;
-    result = screen_get_event_property_iv(event, SCREEN_PROPERTY_KEY_MODIFIERS, &modifiers);
-    if (result)
-        qFatal("QQNX: failed to query event modifiers, errno=%d", errno);
+    Q_SCREEN_CHECKERROR(screen_get_event_property_iv(event, SCREEN_PROPERTY_KEY_MODIFIERS, &modifiers),
+                        "Failed to query event modifieres");
 
     int scan;
-    result = screen_get_event_property_iv(event, SCREEN_PROPERTY_KEY_SCAN, &scan);
-    if (result)
-        qFatal("QQNX: failed to query event modifiers, errno=%d", errno);
+    Q_SCREEN_CHECKERROR(screen_get_event_property_iv(event, SCREEN_PROPERTY_KEY_SCAN, &scan),
+                        "Failed to query event scan");
 
     int cap;
-    result = screen_get_event_property_iv(event, SCREEN_PROPERTY_KEY_CAP, &cap);
-    if (result)
-        qFatal("QQNX: failed to query event cap, errno=%d", errno);
+    Q_SCREEN_CHECKERROR(screen_get_event_property_iv(event, SCREEN_PROPERTY_KEY_CAP, &cap),
+                        "Failed to query event cap");
 
     int sequenceId = 0;
 #if defined(Q_OS_BLACKBERRY)
-    result = screen_get_event_property_iv(event, SCREEN_PROPERTY_SEQUENCE_ID, &sequenceId);
-    if (result)
-        qFatal("QQNX: failed to query event seqId, errno=%d", errno);
+    Q_SCREEN_CHECKERROR(
+            screen_get_event_property_iv(event, SCREEN_PROPERTY_SEQUENCE_ID, &sequenceId),
+            "Failed to query event seqId");
 #endif
 
     bool inject = true;
@@ -293,35 +286,32 @@ void QQnxScreenEventHandler::handlePointerEvent(screen_event_t event)
     // Query the window that was clicked
     screen_window_t qnxWindow;
     void *handle;
-    int result = screen_get_event_property_pv(event, SCREEN_PROPERTY_WINDOW, &handle);
-    if (result)
-        qFatal("QQNX: failed to query event window, errno=%d", errno);
+    Q_SCREEN_CHECKERROR(screen_get_event_property_pv(event, SCREEN_PROPERTY_WINDOW, &handle),
+                        "Failed to query event window");
 
     qnxWindow = static_cast<screen_window_t>(handle);
 
     // Query the button states
     int buttonState = 0;
-    result = screen_get_event_property_iv(event, SCREEN_PROPERTY_BUTTONS, &buttonState);
-    if (result)
-        qFatal("QQNX: failed to query event button state, errno=%d", errno);
+    Q_SCREEN_CHECKERROR(screen_get_event_property_iv(event, SCREEN_PROPERTY_BUTTONS, &buttonState),
+                        "Failed to query event button state");
 
     // Query the window position
     int windowPos[2];
-    result = screen_get_event_property_iv(event, SCREEN_PROPERTY_SOURCE_POSITION, windowPos);
-    if (result)
-        qFatal("QQNX: failed to query event window position, errno=%d", errno);
+    Q_SCREEN_CHECKERROR(
+            screen_get_event_property_iv(event, SCREEN_PROPERTY_SOURCE_POSITION, windowPos),
+            "Failed to query event window position");
 
     // Query the screen position
     int pos[2];
-    result = screen_get_event_property_iv(event, SCREEN_PROPERTY_POSITION, pos);
-    if (result)
-        qFatal("QQNX: failed to query event position, errno=%d", errno);
+    Q_SCREEN_CHECKERROR(screen_get_event_property_iv(event, SCREEN_PROPERTY_POSITION, pos),
+                        "Failed to query event position");
 
     // Query the wheel delta
     int wheelDelta = 0;
-    result = screen_get_event_property_iv(event, SCREEN_PROPERTY_MOUSE_WHEEL, &wheelDelta);
-    if (result)
-        qFatal("QQNX: failed to query event wheel delta, errno=%d", errno);
+    Q_SCREEN_CHECKERROR(
+            screen_get_event_property_iv(event, SCREEN_PROPERTY_MOUSE_WHEEL, &wheelDelta),
+            "Failed to query event wheel delta");
 
     // Map window handle to top-level QWindow
     QWindow *w = QQnxIntegration::window(qnxWindow);
@@ -399,47 +389,36 @@ void QQnxScreenEventHandler::handlePointerEvent(screen_event_t event)
 void QQnxScreenEventHandler::handleTouchEvent(screen_event_t event, int qnxType)
 {
     // get display coordinates of touch
-    errno = 0;
     int pos[2];
-    int result = screen_get_event_property_iv(event, SCREEN_PROPERTY_POSITION, pos);
-    if (result)
-        qFatal("QQNX: failed to query event position, errno=%d", errno);
+    Q_SCREEN_CHECKERROR(screen_get_event_property_iv(event, SCREEN_PROPERTY_POSITION, pos),
+                        "Failed to query event position");
 
     QCursor::setPos(pos[0], pos[1]);
 
     // get window coordinates of touch
-    errno = 0;
     int windowPos[2];
-    result = screen_get_event_property_iv(event, SCREEN_PROPERTY_SOURCE_POSITION, windowPos);
-    if (result)
-        qFatal("QQNX: failed to query event window position, errno=%d", errno);
+    Q_SCREEN_CHECKERROR(screen_get_event_property_iv(event, SCREEN_PROPERTY_SOURCE_POSITION, windowPos),
+                        "Failed to query event window position");
 
     // determine which finger touched
-    errno = 0;
     int touchId;
-    result = screen_get_event_property_iv(event, SCREEN_PROPERTY_TOUCH_ID, &touchId);
-    if (result)
-        qFatal("QQNX: failed to query event touch id, errno=%d", errno);
+    Q_SCREEN_CHECKERROR(screen_get_event_property_iv(event, SCREEN_PROPERTY_TOUCH_ID, &touchId),
+                        "Failed to query event touch id");
 
     // determine which window was touched
-    errno = 0;
     void *handle;
-    result = screen_get_event_property_pv(event, SCREEN_PROPERTY_WINDOW, &handle);
-    if (result)
-        qFatal("QQNX: failed to query event window, errno=%d", errno);
+    Q_SCREEN_CHECKERROR(screen_get_event_property_pv(event, SCREEN_PROPERTY_WINDOW, &handle),
+                        "Failed to query event window");
 
     errno = 0;
     int touchArea[2];
-    result = screen_get_event_property_iv(event, SCREEN_PROPERTY_SIZE, touchArea);
-    if (result)
-        qFatal("QQNX: failed to query event touch area, errno=%d", errno);
+    Q_SCREEN_CHECKERROR(screen_get_event_property_iv(event, SCREEN_PROPERTY_SIZE, touchArea),
+                        "Failed to query event touch area");
 
-    errno = 0;
     int touchPressure;
-    result = screen_get_event_property_iv(event, SCREEN_PROPERTY_TOUCH_PRESSURE, &touchPressure);
-    if (result)
-        qFatal("QQNX: failed to query event touch pressure, errno=%d", errno);
-
+    Q_SCREEN_CHECKERROR(
+            screen_get_event_property_iv(event, SCREEN_PROPERTY_TOUCH_PRESSURE, &touchPressure),
+            "Failed to query event touch pressure");
 
     screen_window_t qnxWindow = static_cast<screen_window_t>(handle);
 
@@ -534,8 +513,9 @@ void QQnxScreenEventHandler::handleTouchEvent(screen_event_t event, int qnxType)
 void QQnxScreenEventHandler::handleCloseEvent(screen_event_t event)
 {
     screen_window_t window = 0;
-    if (screen_get_event_property_pv(event, SCREEN_PROPERTY_WINDOW, (void**)&window) != 0)
-        qFatal("QQnx: failed to query window property, errno=%d", errno);
+    Q_SCREEN_CHECKERROR(
+            screen_get_event_property_pv(event, SCREEN_PROPERTY_WINDOW, (void**)&window),
+            "Failed to query window property");
 
     Q_EMIT windowClosed(window);
 
@@ -548,8 +528,9 @@ void QQnxScreenEventHandler::handleCloseEvent(screen_event_t event)
 void QQnxScreenEventHandler::handleCreateEvent(screen_event_t event)
 {
     screen_window_t window = 0;
-    if (screen_get_event_property_pv(event, SCREEN_PROPERTY_WINDOW, (void**)&window) != 0)
-        qFatal("QQnx: failed to query window property, errno=%d", errno);
+    Q_SCREEN_CHECKERROR(
+            screen_get_event_property_pv(event, SCREEN_PROPERTY_WINDOW, (void**)&window),
+            "Failed to query window property");
 
     Q_EMIT newWindowCreated(window);
 }
@@ -601,8 +582,9 @@ void QQnxScreenEventHandler::handlePropertyEvent(screen_event_t event)
 {
     errno = 0;
     int objectType;
-    if (screen_get_event_property_iv(event, SCREEN_PROPERTY_OBJECT_TYPE, &objectType) != 0)
-        qFatal("QQNX: failed to query object type property, errno=%d", errno);
+    Q_SCREEN_CHECKERROR(
+            screen_get_event_property_iv(event, SCREEN_PROPERTY_OBJECT_TYPE, &objectType),
+            "Failed to query object type property");
 
     if (objectType != SCREEN_OBJECT_TYPE_WINDOW)
         return;

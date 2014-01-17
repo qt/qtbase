@@ -39,6 +39,8 @@
 **
 ****************************************************************************/
 
+#include "qqnxglobal.h"
+
 #include "qqnxwindow.h"
 #include "qqnxintegration.h"
 #include "qqnxscreen.h"
@@ -82,7 +84,6 @@ QQnxWindow::QQnxWindow(QWindow *window, screen_context_t context, bool needRootW
       m_mmRendererWindow(0)
 {
     qWindowDebug() << Q_FUNC_INFO << "window =" << window << ", size =" << window->size();
-    int result;
 
     QQnxScreen *platformScreen = static_cast<QQnxScreen *>(window->screen()->handle());
 
@@ -99,18 +100,18 @@ QQnxWindow::QQnxWindow(QWindow *window, screen_context_t context, bool needRootW
         m_isTopLevel = !needRootWindow || !platformScreen->rootWindow();
     }
 
-    errno = 0;
     if (m_isTopLevel) {
-        result = screen_create_window(&m_window, m_screenContext); // Creates an application window
+        Q_SCREEN_CRITICALERROR(screen_create_window(&m_window, m_screenContext),
+                            "Could not create top level window"); // Creates an application window
         if (window->type() != Qt::CoverWindow) {
             if (needRootWindow)
                 platformScreen->setRootWindow(this);
         }
     } else {
-        result = screen_create_window_type(&m_window, m_screenContext, SCREEN_CHILD_WINDOW);
+        Q_SCREEN_CHECKERROR(
+                screen_create_window_type(&m_window, m_screenContext, SCREEN_CHILD_WINDOW),
+                "Could not create child window");
     }
-    if (result != 0)
-        qFatal("QQnxWindow: failed to create window, errno=%d", errno);
 
     createWindowGroup();
 }
@@ -162,26 +163,20 @@ void QQnxWindow::setGeometryHelper(const QRect &rect)
     QPlatformWindow::setGeometry(rect);
 
     // Set window geometry equal to widget geometry
-    errno = 0;
     int val[2];
     val[0] = rect.x();
     val[1] = rect.y();
-    int result = screen_set_window_property_iv(m_window, SCREEN_PROPERTY_POSITION, val);
-    if (result != 0)
-        qFatal("QQnxWindow: failed to set window position, errno=%d", errno);
+    Q_SCREEN_CHECKERROR(screen_set_window_property_iv(m_window, SCREEN_PROPERTY_POSITION, val),
+                        "Failed to set window position");
 
-    errno = 0;
     val[0] = rect.width();
     val[1] = rect.height();
-    result = screen_set_window_property_iv(m_window, SCREEN_PROPERTY_SIZE, val);
-    if (result != 0)
-        qFatal("QQnxWindow: failed to set window size, errno=%d", errno);
+    Q_SCREEN_CHECKERROR(screen_set_window_property_iv(m_window, SCREEN_PROPERTY_SIZE, val),
+                        "Failed to set window size");
 
     // Set viewport size equal to window size
-    errno = 0;
-    result = screen_set_window_property_iv(m_window, SCREEN_PROPERTY_SOURCE_SIZE, val);
-    if (result != 0)
-        qFatal("QQnxWindow: failed to set window source size, errno=%d", errno);
+    Q_SCREEN_CHECKERROR(screen_set_window_property_iv(m_window, SCREEN_PROPERTY_SOURCE_SIZE, val),
+                        "Failed to set window source size");
 
     screen_flush_context(m_screenContext, 0);
 }
@@ -223,11 +218,9 @@ void QQnxWindow::updateVisibility(bool parentVisible)
 {
     qWindowDebug() << Q_FUNC_INFO << "parentVisible =" << parentVisible << "window =" << window();
     // Set window visibility
-    errno = 0;
     int val = (m_visible && parentVisible) ? 1 : 0;
-    int result = screen_set_window_property_iv(m_window, SCREEN_PROPERTY_VISIBLE, &val);
-    if (result != 0)
-        qFatal("QQnxWindow: failed to set window visibility, errno=%d", errno);
+    Q_SCREEN_CHECKERROR(screen_set_window_property_iv(m_window, SCREEN_PROPERTY_VISIBLE, &val),
+                        "Failed to set window visibility");
 
     Q_FOREACH (QQnxWindow *childWindow, m_childWindows)
         childWindow->updateVisibility(m_visible && parentVisible);
@@ -237,11 +230,9 @@ void QQnxWindow::setOpacity(qreal level)
 {
     qWindowDebug() << Q_FUNC_INFO << "window =" << window() << "opacity =" << level;
     // Set window global alpha
-    errno = 0;
     int val = (int)(level * 255);
-    int result = screen_set_window_property_iv(m_window, SCREEN_PROPERTY_GLOBAL_ALPHA, &val);
-    if (result != 0)
-        qFatal("QQnxWindow: failed to set window global alpha, errno=%d", errno);
+    Q_SCREEN_CHECKERROR(screen_set_window_property_iv(m_window, SCREEN_PROPERTY_GLOBAL_ALPHA, &val),
+                        "Failed to set global alpha");
 
     screen_flush_context(m_screenContext, 0);
 }
@@ -266,15 +257,12 @@ void QQnxWindow::setBufferSize(const QSize &size)
     qWindowDebug() << Q_FUNC_INFO << "window =" << window() << "size =" << size;
 
     // Set window buffer size
-    errno = 0;
-
     // libscreen fails when creating empty buffers
     const QSize nonEmptySize = size.isEmpty() ? QSize(1, 1) : size;
 
     int val[2] = { nonEmptySize.width(), nonEmptySize.height() };
-    int result = screen_set_window_property_iv(m_window, SCREEN_PROPERTY_BUFFER_SIZE, val);
-    if (result != 0)
-        qFatal("QQnxWindow: failed to set window buffer size, errno=%d", errno);
+    Q_SCREEN_CHECKERROR(screen_set_window_property_iv(m_window, SCREEN_PROPERTY_BUFFER_SIZE, val),
+                        "Failed to set window buffer size");
 
     // Create window buffers if they do not exist
     if (m_bufferSize.isEmpty()) {
@@ -282,24 +270,18 @@ void QQnxWindow::setBufferSize(const QSize &size)
         if (val[0] == -1) // The platform GL context was not set yet on the window, so we can't procede
             return;
 
-        errno = 0;
-        result = screen_set_window_property_iv(m_window, SCREEN_PROPERTY_FORMAT, val);
-        if (result != 0)
-            qFatal("QQnxWindow: failed to set window pixel format, errno=%d", errno);
+        Q_SCREEN_CRITICALERROR(
+                screen_set_window_property_iv(m_window, SCREEN_PROPERTY_FORMAT, val),
+                "Failed to set window format");
 
-        errno = 0;
-        result = screen_create_window_buffers(m_window, MAX_BUFFER_COUNT);
-        if (result != 0) {
-            qWarning() << "QQnxWindow: Buffer size was" << size;
-            qFatal("QQnxWindow: failed to create window buffers, errno=%d", errno);
-        }
+        Q_SCREEN_CRITICALERROR(screen_create_window_buffers(m_window, MAX_BUFFER_COUNT),
+                            "Failed to create window buffers");
 
         // check if there are any buffers available
         int bufferCount = 0;
-        result = screen_get_window_property_iv(m_window, SCREEN_PROPERTY_RENDER_BUFFER_COUNT, &bufferCount);
-
-        if (result != 0)
-            qFatal("QQnxWindow: failed to query window buffer count, errno=%d", errno);
+        Q_SCREEN_CRITICALERROR(
+                screen_get_window_property_iv(m_window, SCREEN_PROPERTY_RENDER_BUFFER_COUNT, &bufferCount),
+                "Failed to query render buffer count");
 
         if (bufferCount != MAX_BUFFER_COUNT) {
             qFatal("QQnxWindow: invalid buffer count. Expected = %d, got = %d. You might experience problems.",
@@ -322,10 +304,8 @@ void QQnxWindow::setBufferSize(const QSize &size)
         val[0] = SCREEN_TRANSPARENCY_SOURCE_OVER;
     }
 
-    errno = 0;
-    result = screen_set_window_property_iv(m_window, SCREEN_PROPERTY_TRANSPARENCY, val);
-    if (result != 0)
-        qFatal("QQnxWindow: failed to set window transparency, errno=%d", errno);
+    Q_SCREEN_CHECKERROR(screen_set_window_property_iv(m_window, SCREEN_PROPERTY_TRANSPARENCY, val),
+                        "Failed to set window transparency");
 
     // Cache new buffer size
     m_bufferSize = nonEmptySize;
@@ -350,9 +330,8 @@ void QQnxWindow::setScreen(QQnxScreen *platformScreen)
     if (m_screen) {
         qWindowDebug() << Q_FUNC_INFO << "Moving window to different screen";
         m_screen->removeWindow(this);
-        QQnxIntegration *platformIntegration = static_cast<QQnxIntegration*>(QGuiApplicationPrivate::platformIntegration());
 
-        if ((platformIntegration->options() & QQnxIntegration::RootWindow)) {
+        if ((QQnxIntegration::options() & QQnxIntegration::RootWindow)) {
             screen_leave_window_group(m_window);
         }
     }
@@ -362,15 +341,12 @@ void QQnxWindow::setScreen(QQnxScreen *platformScreen)
         platformScreen->addWindow(this);
     }
     if (m_isTopLevel) {
-          // Move window to proper screen/display
-        errno = 0;
+        // Move window to proper screen/display
         screen_display_t display = platformScreen->nativeDisplay();
-        int result = screen_set_window_property_pv(m_window, SCREEN_PROPERTY_DISPLAY, (void **)&display);
-        if (result != 0)
-            qFatal("QQnxWindow: failed to set window display, errno=%d", errno);
+        Q_SCREEN_CHECKERROR(
+               screen_set_window_property_pv(m_window, SCREEN_PROPERTY_DISPLAY, (void **)&display),
+               "Failed to set window display");
     } else {
-        errno = 0;
-
         Q_FOREACH (QQnxWindow *childWindow, m_childWindows) {
             // Only subwindows and tooltips need necessarily be moved to another display with the window.
             if (window()->type() == Qt::SubWindow || window()->type() == Qt::ToolTip)
@@ -532,34 +508,29 @@ void QQnxWindow::minimize()
 void QQnxWindow::setRotation(int rotation)
 {
     qWindowDebug() << Q_FUNC_INFO << "angle =" << rotation;
-    errno = 0;
-    int result = screen_set_window_property_iv(m_window, SCREEN_PROPERTY_ROTATION, &rotation);
-    if (result != 0)
-        qFatal("QQnxRootWindow: failed to set window rotation, errno=%d", errno);
+    Q_SCREEN_CHECKERROR(
+            screen_set_window_property_iv(m_window, SCREEN_PROPERTY_ROTATION, &rotation),
+            "Failed to set window rotation");
 }
 
 void QQnxWindow::initWindow()
 {
     // Alpha channel is always pre-multiplied if present
-    errno = 0;
     int val = SCREEN_PRE_MULTIPLIED_ALPHA;
-    int result = screen_set_window_property_iv(m_window, SCREEN_PROPERTY_ALPHA_MODE, &val);
-    if (result != 0)
-        qFatal("QQnxWindow: failed to set window alpha mode, errno=%d", errno);
+    Q_SCREEN_CHECKERROR(screen_set_window_property_iv(m_window, SCREEN_PROPERTY_ALPHA_MODE, &val),
+                        "Failed to set alpha mode");
 
     // Set the window swap interval
-    errno = 0;
     val = 1;
-    result = screen_set_window_property_iv(m_window, SCREEN_PROPERTY_SWAP_INTERVAL, &val);
-    if (result != 0)
-        qFatal("QQnxWindow: failed to set window swap interval, errno=%d", errno);
+    Q_SCREEN_CHECKERROR(
+            screen_set_window_property_iv(m_window, SCREEN_PROPERTY_SWAP_INTERVAL, &val),
+            "Failed to set swap interval");
 
     if (window()->flags() & Qt::WindowDoesNotAcceptFocus) {
-        errno = 0;
         val = SCREEN_SENSITIVITY_NO_FOCUS;
-        result = screen_set_window_property_iv(m_window, SCREEN_PROPERTY_SENSITIVITY, &val);
-        if (result != 0)
-            qFatal("QQnxWindow: failed to set window sensitivity, errno=%d", errno);
+        Q_SCREEN_CHECKERROR(
+                screen_set_window_property_iv(m_window, SCREEN_PROPERTY_SENSITIVITY, &val),
+                "Failed to set window sensitivity");
     }
 
     QQnxScreen *platformScreen = static_cast<QQnxScreen *>(window()->screen()->handle());
@@ -602,10 +573,8 @@ void QQnxWindow::createWindowGroup()
     m_windowGroupName = QUuid::createUuid().toString().toLatin1();
 
     // Create window group so child windows can be parented by container window
-    errno = 0;
-    int result = screen_create_window_group(m_window, m_windowGroupName.constData());
-    if (result != 0)
-        qFatal("QQnxRootWindow: failed to create app window group, errno=%d", errno);
+    Q_SCREEN_CHECKERROR(screen_create_window_group(m_window, m_windowGroupName.constData()),
+                        "Failed to create window group");
 }
 
 void QQnxWindow::joinWindowGroup(const QByteArray &groupName)
@@ -649,12 +618,9 @@ void QQnxWindow::updateZorder(int &topZorder)
 
 void QQnxWindow::updateZorder(screen_window_t window, int &topZorder)
 {
-    errno = 0;
-    int result = screen_set_window_property_iv(window, SCREEN_PROPERTY_ZORDER, &topZorder);
+    Q_SCREEN_CHECKERROR(screen_set_window_property_iv(window, SCREEN_PROPERTY_ZORDER, &topZorder),
+                        "Failed to set window z-order");
     topZorder++;
-
-    if (result != 0)
-        qFatal("QQnxWindow: failed to set window z-order=%d, errno=%d, mWindow=%p", topZorder, errno, window);
 }
 
 void QQnxWindow::applyWindowState()

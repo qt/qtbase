@@ -45,7 +45,8 @@ SOURCES =   main.cpp \
             qqnxabstractvirtualkeyboard.cpp \
             qqnxservices.cpp \
             qqnxcursor.cpp \
-            qqnxrasterwindow.cpp
+            qqnxrasterwindow.cpp \
+            qqnxglobal.cpp
 
 HEADERS =   main.h \
             qqnxbuffer.h \
@@ -63,7 +64,8 @@ HEADERS =   main.h \
             qqnxservices.h \
             qqnxcursor.h \
             qqnxrasterwindow.h \
-            qqnxscreeneventfilter.h
+            qqnxscreeneventfilter.h \
+            qqnxglobal.h
 
 CONFIG(qqnx_screeneventthread) {
     DEFINES += QQNX_SCREENEVENTTHREAD
