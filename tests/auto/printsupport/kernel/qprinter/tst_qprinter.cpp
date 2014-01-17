@@ -1067,8 +1067,8 @@ void tst_QPrinter::creator()
     // creator() / setCreator() / PPK_Creator
     // PdfFormat: Supported, default QString()
     // NativeFormat, Cups: Supported, default QString()
-    // NativeFormat, Win: Unsupported, always QString()
-    // NativeFormat, Mac: Unsupported, always QString()
+    // NativeFormat, Win: Supported, default QString()
+    // NativeFormat, Mac: Supported, default QString()
 
     QPrinter pdf;
     pdf.setOutputFormat(QPrinter::PdfFormat);
@@ -1084,9 +1084,6 @@ void tst_QPrinter::creator()
         // Test set/get
         QString expected = QStringLiteral("Test Creator");
         native.setCreator(expected);
-#if defined Q_OS_MAC || defined Q_OS_WIN
-        expected.clear();
-#endif // Q_OS_MAC || Q_OS_WIN
         QCOMPARE(native.creator(), expected);
 
         // Test value preservation

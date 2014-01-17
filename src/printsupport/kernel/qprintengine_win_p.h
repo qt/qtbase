@@ -210,6 +210,7 @@ public:
 
     // Document info
     QString docName;
+    QString m_creator;
     QString fileName;
 
     QPrinter::PrinterState state;

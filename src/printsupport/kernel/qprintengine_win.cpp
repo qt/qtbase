@@ -1290,9 +1290,6 @@ void QWin32PrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &
         break;
 
     // The following keys are settings that are unsupported by the Windows PrintEngine
-    case PPK_Creator:
-        // TODO Add value preservation support by using local variable
-        break;
     case PPK_CustomBase:
         break;
     case PPK_Duplex:
@@ -1324,6 +1321,10 @@ void QWin32PrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &
             d->devMode->dmColor = (value.toInt() == QPrinter::Color) ? DMCOLOR_COLOR : DMCOLOR_MONOCHROME;
             d->doReinit();
         }
+        break;
+
+    case PPK_Creator:
+        d->m_creator = value.toString();
         break;
 
     case PPK_DocumentName:
@@ -1505,9 +1506,6 @@ QVariant QWin32PrintEngine::property(PrintEnginePropertyKey key) const
 
     // The following keys are settings that are unsupported by the Windows PrintEngine
     // Return sensible default values to ensure consistent behavior across platforms
-    case PPK_Creator:
-        value = QString();
-        break;
     case PPK_Duplex:
         // TODO Add support using DEVMODE.dmDuplex
         value = QPrinter::DuplexNone;
@@ -1538,6 +1536,10 @@ QVariant QWin32PrintEngine::property(PrintEnginePropertyKey key) const
                 value = (d->devMode->dmColor == DMCOLOR_COLOR) ? QPrinter::Color : QPrinter::GrayScale;
             }
         }
+        break;
+
+    case PPK_Creator:
+        value = d->m_creator;
         break;
 
     case PPK_DocumentName:

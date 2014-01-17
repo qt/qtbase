@@ -607,9 +607,6 @@ void QMacPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
     // The following keys are settings that are unsupported by the Mac PrintEngine
     case PPK_ColorMode:
         break;
-    case PPK_Creator:
-        // TODO Add value preservation support by using local variable
-        break;
     case PPK_CustomBase:
         break;
     case PPK_Duplex:
@@ -661,6 +658,9 @@ void QMacPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
     }
     case PPK_CollateCopies:
         PMSetCollate(d->settings(), value.toBool());
+        break;
+    case PPK_Creator:
+        d->m_creator = value.toString();
         break;
     case PPK_DocumentName:
         PMPrintSettingsSetJobName(d->settings(), QCFString(value.toString()));
@@ -759,9 +759,6 @@ QVariant QMacPrintEngine::property(PrintEnginePropertyKey key) const
     case PPK_ColorMode:
         ret = QPrinter::Color;
         break;
-    case PPK_Creator:
-        ret = QString();
-        break;
     case PPK_CustomBase:
         // Special case, leave null
         break;
@@ -804,6 +801,9 @@ QVariant QMacPrintEngine::property(PrintEnginePropertyKey key) const
         ret = bool(status);
         break;
     }
+    case PPK_Creator:
+        ret = d->m_creator;
+        break;
     case PPK_DocumentName: {
         CFStringRef name;
         PMPrintSettingsGetJobName(d->settings(), &name);
