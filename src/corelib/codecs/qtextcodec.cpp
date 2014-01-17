@@ -993,6 +993,8 @@ QString QTextDecoder::toUnicode(const char *chars, int len)
     return c->toUnicode(chars, len, &state);
 }
 
+// in qstring.cpp:
+void qt_from_latin1(ushort *dst, const char *str, size_t size);
 
 /*! \overload
 
@@ -1005,12 +1007,10 @@ void QTextDecoder::toUnicode(QString *target, const char *chars, int len)
     case 106: // utf8
         static_cast<const QUtf8Codec*>(c)->convertToUnicode(target, chars, len, &state);
         break;
-    case 4: { // latin1
+    case 4: // latin1
         target->resize(len);
-        ushort *data = (ushort*)target->data();
-        for (int i = len; i >=0; --i)
-            data[i] = (uchar) chars[i];
-    } break;
+        qt_from_latin1((ushort*)target->data(), chars, len);
+        break;
     default:
         *target = c->toUnicode(chars, len, &state);
     }
