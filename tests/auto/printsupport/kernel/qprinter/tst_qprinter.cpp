@@ -1643,10 +1643,9 @@ void tst_QPrinter::printerSelectionOption()
     // printerSelectionOption() / setPrinterSelectionOption() / PPK_SelectionOption
     // PdfFormat: Supported
     // NativeFormat, Cups: Supported
-    // NativeFormat, Win: Unsupported, ifdef'd out TODO remove ifdef, always QString()
+    // NativeFormat, Win: Unsupported, always QString()
     // NativeFormat, Mac: Unsupported, always QString()
 
-#ifndef Q_OS_WIN
     QPrinter pdf;
     pdf.setOutputFormat(QPrinter::PdfFormat);
     QCOMPARE(pdf.printerSelectionOption(), QString());
@@ -1661,9 +1660,9 @@ void tst_QPrinter::printerSelectionOption()
         // Test set/get
         QString expected = QStringLiteral("Optional option");
         native.setPrinterSelectionOption(expected);
-#ifdef Q_OS_MAC
+#if defined Q_OS_MAC || defined Q_OS_WIN
         expected.clear();
-#endif // Q_OS_MAC
+#endif // Q_OS_MAC || Q_OS_WIN
         QCOMPARE(native.printerSelectionOption(), expected);
 
         // Test value preservation
@@ -1674,7 +1673,6 @@ void tst_QPrinter::printerSelectionOption()
     } else {
         QSKIP("No printers installed, cannot test NativeFormat, please install printers to test");
     }
-#endif // Q_OS_WIN
 }
 
 void tst_QPrinter::resolution()

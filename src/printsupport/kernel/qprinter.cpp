@@ -1828,10 +1828,16 @@ QList<QPrinter::PaperSource> QPrinter::supportedPaperSources() const
 
     Any other value implies that the given value should be used.
 
-    \warning This function is not available on Windows.
+    This function always returns an empty string on Windows and Mac.
 
-    \sa setPrinterSelectionOption()
+    \sa setPrinterSelectionOption(), setPrintProgram()
 */
+
+QString QPrinter::printerSelectionOption() const
+{
+    Q_D(const QPrinter);
+    return d->printEngine->property(QPrintEngine::PPK_SelectionOption).toString();
+}
 
 /*!
     \fn void QPrinter::setPrinterSelectionOption(const QString &option)
@@ -1844,24 +1850,16 @@ QList<QPrinter::PaperSource> QPrinter::supportedPaperSources() const
     If the printer selection option is changed while the printer is
     active, the current print job may or may not be affected.
 
-    \warning This function is not available on Windows.
+    This function has no effect on Windows or Mac.
 
-    \sa printerSelectionOption()
+    \sa printerSelectionOption(), setPrintProgram()
 */
-
-#ifndef Q_OS_WIN
-QString QPrinter::printerSelectionOption() const
-{
-    Q_D(const QPrinter);
-    return d->printEngine->property(QPrintEngine::PPK_SelectionOption).toString();
-}
 
 void QPrinter::setPrinterSelectionOption(const QString &option)
 {
     Q_D(QPrinter);
     d->setProperty(QPrintEngine::PPK_SelectionOption, option);
 }
-#endif
 
 /*!
     \since 4.1
