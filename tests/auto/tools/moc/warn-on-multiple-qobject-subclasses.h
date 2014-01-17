@@ -39,6 +39,9 @@
 **
 ****************************************************************************/
 
+#ifndef WARN_ON_MULTIPLE_QOBJECT_SUBCLASSES_H
+#define WARN_ON_MULTIPLE_QOBJECT_SUBCLASSES_H
+
 #include <QtGui>
 
 class Foo : public QObject
@@ -53,3 +56,4 @@ class Bar : public QWindow, public Foo
 };
 
 
+#endif // WARN_ON_MULTIPLE_QOBJECT_SUBCLASSES_H

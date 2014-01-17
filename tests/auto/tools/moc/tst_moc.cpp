@@ -692,8 +692,8 @@ void tst_Moc::warnOnExtraSignalSlotQualifiaction()
     QVERIFY(!mocOut.isEmpty());
     QString mocWarning = QString::fromLocal8Bit(proc.readAllStandardError());
     QCOMPARE(mocWarning, header +
-                QString(":53: Warning: Function declaration Test::badFunctionDeclaration contains extra qualification. Ignoring as signal or slot.\n") +
-                header + QString(":56: Warning: parsemaybe: Function declaration Test::anotherOne contains extra qualification. Ignoring as signal or slot.\n"));
+                QString(":56: Warning: Function declaration Test::badFunctionDeclaration contains extra qualification. Ignoring as signal or slot.\n") +
+                header + QString(":59: Warning: parsemaybe: Function declaration Test::anotherOne contains extra qualification. Ignoring as signal or slot.\n"));
 #else
     QSKIP("Only tested on linux/gcc");
 #endif
@@ -971,7 +971,7 @@ void tst_Moc::warnOnMultipleInheritance()
     QVERIFY(!mocOut.isEmpty());
     QString mocWarning = QString::fromLocal8Bit(proc.readAllStandardError());
     QCOMPARE(mocWarning, header +
-                QString(":53: Warning: Class Bar inherits from two QObject subclasses QWindow and Foo. This is not supported!\n"));
+                QString(":56: Warning: Class Bar inherits from two QObject subclasses QWindow and Foo. This is not supported!\n"));
 #else
     QSKIP("Only tested on linux/gcc");
 #endif
@@ -1034,7 +1034,7 @@ void tst_Moc::forgottenQInterface()
     QVERIFY(!mocOut.isEmpty());
     QString mocWarning = QString::fromLocal8Bit(proc.readAllStandardError());
     QCOMPARE(mocWarning, header +
-                QString(":55: Warning: Class Test implements the interface MyInterface but does not list it in Q_INTERFACES. qobject_cast to MyInterface will not work!\n"));
+                QString(":58: Warning: Class Test implements the interface MyInterface but does not list it in Q_INTERFACES. qobject_cast to MyInterface will not work!\n"));
 #else
     QSKIP("Only tested on linux/gcc");
 #endif
@@ -1350,7 +1350,7 @@ void tst_Moc::warnOnPropertyWithoutREAD()
     QVERIFY(!mocOut.isEmpty());
     QString mocWarning = QString::fromLocal8Bit(proc.readAllStandardError());
     QCOMPARE(mocWarning, header +
-                QString(":46: Warning: Property declaration foo has no READ accessor function or associated MEMBER variable. The property will be invalid.\n"));
+                QString(":49: Warning: Property declaration foo has no READ accessor function or associated MEMBER variable. The property will be invalid.\n"));
 #else
     QSKIP("Only tested on linux/gcc");
 #endif
@@ -1460,8 +1460,8 @@ void tst_Moc::warnOnVirtualSignal()
     QByteArray mocOut = proc.readAllStandardOutput();
     QVERIFY(!mocOut.isEmpty());
     QString mocWarning = QString::fromLocal8Bit(proc.readAllStandardError());
-    QCOMPARE(mocWarning, header + QString(":48: Warning: Signals cannot be declared virtual\n") +
-                         header + QString(":50: Warning: Signals cannot be declared virtual\n"));
+    QCOMPARE(mocWarning, header + QString(":51: Warning: Signals cannot be declared virtual\n") +
+                         header + QString(":53: Warning: Signals cannot be declared virtual\n"));
 #else
     QSKIP("Only tested on linux/gcc");
 #endif
@@ -1575,7 +1575,7 @@ void tst_Moc::notifyError()
     QVERIFY(mocOut.isEmpty());
     QString mocError = QString::fromLocal8Bit(proc.readAllStandardError());
     QCOMPARE(mocError, header +
-        QString(":52: Error: NOTIFY signal 'fooChanged' of property 'foo' does not exist in class ClassWithWrongNOTIFY.\n"));
+        QString(":55: Error: NOTIFY signal 'fooChanged' of property 'foo' does not exist in class ClassWithWrongNOTIFY.\n"));
 #else
     QSKIP("Only tested on linux/gcc");
 #endif

@@ -38,6 +38,9 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
+#ifndef PARSE_BOOST_H
+#define PARSE_BOOST_H
 #include <boost/aligned_storage.hpp>
 #include <boost/any.hpp>
 #include <boost/array.hpp>
@@ -124,3 +127,4 @@
 #include <boost/version.hpp>
 #include <boost/visit_each.hpp>
 #include <boost/weak_ptr.hpp>
+#endif // PARSE_BOOST_H

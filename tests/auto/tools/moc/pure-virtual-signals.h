@@ -38,6 +38,9 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
+#ifndef PURE_VIRTUAL_SIGNALS_H
+#define PURE_VIRTUAL_SIGNALS_H
 #include <QObject>
 
 class PureVirtualSignalsTest : public QObject
@@ -58,3 +61,4 @@ signals:
     void mySignal();
     void mySignal2(int foo);
 };
+#endif // PURE_VIRTUAL_SIGNALS_H

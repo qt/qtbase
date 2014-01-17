@@ -39,6 +39,9 @@
 **
 ****************************************************************************/
 
+#ifndef ASSIGN_NAMESPACE_H
+#define ASSIGN_NAMESPACE_H
+
 namespace A
 {
     namespace Nested
@@ -50,3 +53,4 @@ namespace A
 namespace Mine = Qt;
 namespace Theirs = A::Nested::Space;
 
+#endif // ASSIGN_NAMESPACE_H

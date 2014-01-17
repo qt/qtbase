@@ -38,6 +38,9 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
+#ifndef TASK87883_H
+#define TASK87883_H
 /*
     The bug is triggered only if there is a multiline comment after an #include
     statement that in the following line contains a single quote but lacks a finishing
@@ -55,3 +58,4 @@ public:
     inline Task87883() {}
 };
 
+#endif // TASK87883_H

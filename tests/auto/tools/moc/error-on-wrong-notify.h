@@ -38,6 +38,9 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
+#ifndef ERROR_ON_WRONG_NOTIFY_H
+#define ERROR_ON_WRONG_NOTIFY_H
 #include <QObject>
 
 class ClassWithWrongNOTIFY : public QObject
@@ -51,3 +54,4 @@ public:
     int foo() { return m_foo; }
 };
 
+#endif // ERROR_ON_WRONG_NOTIFY_H

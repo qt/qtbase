@@ -38,6 +38,9 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
+#ifndef FUNCTION_WITH_ATTRIBUTES_H
+#define FUNCTION_WITH_ATTRIBUTES_H
 #include <qobject.h>
 
 // test support for gcc attributes with functions
@@ -62,3 +65,4 @@ public slots:
     DEPRECATED2 void test2() {}
 
 };
+#endif // FUNCTION_WITH_ATTRIBUTES_H

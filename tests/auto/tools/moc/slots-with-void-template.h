@@ -38,6 +38,9 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
+#ifndef SLOTS_WITH_VOID_TEMPLATE_H
+#define SLOTS_WITH_VOID_TEMPLATE_H
 #include <QObject>
 
 template <typename T>
@@ -59,3 +62,4 @@ signals:
     void myVoidSignal();
     void myVoidSignal2(void);
 };
+#endif // SLOTS_WITH_VOID_TEMPLATE_H

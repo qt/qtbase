@@ -39,6 +39,9 @@
 **
 ****************************************************************************/
 
+#ifndef QTBUG_35657_GADGET_H
+#define QTBUG_35657_GADGET_H
+
 #include <QObject>
 
 namespace QTBUG_35657 {
@@ -49,3 +52,5 @@ namespace QTBUG_35657 {
         enum SomeEnum { SomeEnumValue = 0 };
     };
 }
+
+#endif // QTBUG_35657_GADGET_H

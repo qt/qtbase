@@ -38,6 +38,9 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
+#ifndef ESCAPES_IN_STRING_LITERALS_H
+#define ESCAPES_IN_STRING_LITERALS_H
 #include <QObject>
 
 class StringLiterals: public QObject
@@ -47,3 +50,4 @@ class StringLiterals: public QObject
         Q_CLASSINFO("Test2", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\123")
         Q_CLASSINFO("Test3", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\nb")
 };
+#endif // ESCAPES_IN_STRING_LITERALS_H

@@ -39,6 +39,9 @@
 **
 ****************************************************************************/
 
+#ifndef FORGOTTEN_QINTERFACE_H
+#define FORGOTTEN_QINTERFACE_H
+
 #include <QObject>
 
 struct MyInterface
@@ -53,3 +56,4 @@ class Test : public QObject, public MyInterface
 {
     Q_OBJECT
 };
+#endif // FORGOTTEN_QINTERFACE_H

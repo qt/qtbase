@@ -39,6 +39,9 @@
 **
 ****************************************************************************/
 
+#ifndef RELATED_METAOBJECTS_IN_NAMESPACES_H
+#define RELATED_METAOBJECTS_IN_NAMESPACES_H
+
 #include <QObject>
 
 namespace QTBUG_2151 {
@@ -58,3 +61,5 @@ namespace QTBUG_2151 {
         A::SomeEnum blah() const { return A::SomeEnumValue; }
     };
 }
+
+#endif // RELATED_METAOBJECTS_IN_NAMESPACES_H

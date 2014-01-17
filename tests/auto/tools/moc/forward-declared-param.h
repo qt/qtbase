@@ -38,6 +38,9 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
+#ifndef FORWARD_DECLARED_PARAM_H
+#define FORWARD_DECLARED_PARAM_H
 #include <qobject.h>
 #include <qmetatype.h>
 
@@ -74,3 +77,4 @@ signals:
     void signalQSet(const QSet<QString> &);
     void signalQSet(const QSet<FullyDefined> &);
 };
+#endif // FORWARD_DECLARED_PARAM_H

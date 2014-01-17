@@ -38,6 +38,9 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
+#ifndef WARN_ON_PROPERTY_WITHOUT_READ_H
+#define WARN_ON_PROPERTY_WITHOUT_READ_H
 #include <QObject>
 
 class ClassWithPropertyWithoutREAD : public QObject
@@ -46,3 +49,4 @@ class ClassWithPropertyWithoutREAD : public QObject
     Q_PROPERTY(int foo)
     Q_PROPERTY(int bar READ bar)
 };
+#endif // WARN_ON_PROPERTY_WITHOUT_READ_H

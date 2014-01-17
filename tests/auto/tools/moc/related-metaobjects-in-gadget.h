@@ -39,6 +39,9 @@
 **
 ****************************************************************************/
 
+#ifndef RELATED_METAOBJECTS_IN_GADGET_H
+#define RELATED_METAOBJECTS_IN_GADGET_H
+
 #include <QObject>
 #include "qtbug-35657-gadget.h"
 
@@ -52,3 +55,5 @@ namespace QTBUG_35657 {
         A::SomeEnum blah() const { return A::SomeEnumValue; }
     };
 }
+
+#endif // RELATED_METAOBJECTS_IN_GADGET_H

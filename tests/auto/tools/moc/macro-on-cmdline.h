@@ -39,6 +39,9 @@
 **
 ****************************************************************************/
 
+#ifndef MACRO_ON_CMDLINE_H
+#define MACRO_ON_CMDLINE_H
+
 #if FOO
 
 class Test : public QObject
@@ -48,3 +51,4 @@ public:
 };
 
 #endif
+#endif // MACRO_ON_CMDLINE_H

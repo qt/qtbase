@@ -39,6 +39,9 @@
 **
 ****************************************************************************/
 
+#ifndef EXTRAQUALIFICATION_H
+#define EXTRAQUALIFICATION_H
+
 #include <QObject>
 
 class Test : public QObject
@@ -55,3 +58,4 @@ public slots:
 public:
     Q_SLOT void Test::anotherOne() {}
 };
+#endif // EXTRAQUALIFICATION_H

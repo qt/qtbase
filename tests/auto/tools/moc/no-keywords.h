@@ -39,6 +39,9 @@
 **
 ****************************************************************************/
 
+#ifndef NO_KEYWORDS_H
+#define NO_KEYWORDS_H
+
 #define QT_NO_KEYWORDS
 #undef signals
 #undef slots
@@ -85,3 +88,4 @@ private:
 #define emit
 #undef QT_NO_KEYWORDS
 
+#endif // NO_KEYWORDS_H

@@ -39,6 +39,9 @@
 **
 ****************************************************************************/
 
+#ifndef QINVOKABLE_H
+#define QINVOKABLE_H
+
 #include <QObject>
 
 class InvokableBeforeReturnType : public QObject
@@ -55,3 +58,4 @@ public:
     Q_INVOKABLE inline void foo() {}
     Q_INVOKABLE virtual void bar() {}
 };
+#endif // QINVOKABLE_H

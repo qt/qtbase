@@ -38,6 +38,9 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
+#ifndef CSTYLE_ENUMS_H
+#define CSTYLE_ENUMS_H
 #include <QObject>
 
 class CStyleEnums
@@ -48,3 +51,4 @@ public:
     typedef enum { Foo, Bar } Baz;
 };
 
+#endif // CSTYLE_ENUMS_H

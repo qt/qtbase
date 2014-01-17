@@ -38,6 +38,9 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
+#ifndef SINGLE_FUNCTION_KEYWORD_H
+#define SINGLE_FUNCTION_KEYWORD_H
 #include <QObject>
 
 class SingleFunctionKeywordBeforeReturnType : public QObject
@@ -73,3 +76,4 @@ public:
     inline Q_SLOT void mySlot() { emit mySignal(); }
 };
 
+#endif // SINGLE_FUNCTION_KEYWORD_H

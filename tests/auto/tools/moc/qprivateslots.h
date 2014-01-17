@@ -39,6 +39,9 @@
 **
 ****************************************************************************/
 
+#ifndef QPRIVATESLOTS_H
+#define QPRIVATESLOTS_H
+
 #include <QObject>
 
 struct TestQPrivateSlots_Private
@@ -58,3 +61,4 @@ private:
     TestQPrivateSlots_Private *d;
 };
 
+#endif // QPRIVATESLOTS_H

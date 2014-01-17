@@ -38,6 +38,9 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
+#ifndef OLDSTYLE_CASTS_H
+#define OLDSTYLE_CASTS_H
 #include <QtCore/qobject.h>
 
 class Foo: public QObject
@@ -54,3 +57,4 @@ public slots:
     inline void slot(int, QObject * const) {}
 };
 
+#endif // OLDSTYLE_CASTS_H

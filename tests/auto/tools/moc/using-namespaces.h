@@ -39,6 +39,9 @@
 **
 ****************************************************************************/
 
+#ifndef USING_NAMESPACES_H
+#define USING_NAMESPACES_H
+
 namespace Foo {}
 namespace Bar
 {
@@ -54,3 +57,4 @@ using namespace Foo;
 using namespace Bar::Huh;
 using namespace ::Top;
 
+#endif // USING_NAMESPACES_H

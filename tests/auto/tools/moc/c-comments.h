@@ -38,6 +38,9 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
+#ifndef C_COMMENTS_H
+#define C_COMMENTS_H
 #include <qobject.h>
 
 /* test support for multi-line comments in preprocessor statements */
@@ -53,3 +56,4 @@ public:
 };
 
 #endif
+#endif // C_COMMENTS_H
