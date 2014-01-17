@@ -42,7 +42,7 @@ HEADERS = \
         qxcbxsettings.h \
         qxcbsystemtraytracker.h
 
-LIBS += -ldl
+LIBS += $$QMAKE_LIBS_DYNLOAD
 
 # needed by GLX, Xcursor ...
 contains(QT_CONFIG, xcb-xlib) {
