@@ -65,6 +65,7 @@ protected:
     {
         *out++ = QLatin1Char(a);
     }
+    static void appendLatin1To(const char *a, int len, QChar *out);
 };
 
 template <typename T> struct QConcatenable {};
@@ -222,7 +223,7 @@ template <> struct QConcatenable<QCharRef> : private QAbstractConcatenable
     { *out++ = QChar(c); }
 };
 
-template <> struct QConcatenable<QLatin1String>
+template <> struct QConcatenable<QLatin1String> : private QAbstractConcatenable
 {
     typedef QLatin1String type;
     typedef QString ConvertTo;
@@ -230,10 +231,8 @@ template <> struct QConcatenable<QLatin1String>
     static int size(const QLatin1String a) { return a.size(); }
     static inline void appendTo(const QLatin1String a, QChar *&out)
     {
-        if (a.data()) {
-            for (const char *s = a.data(); *s; )
-                *out++ = QLatin1Char(*s++);
-        }
+        appendLatin1To(a.latin1(), a.size(), out);
+        out += a.size();
     }
     static inline void appendTo(const QLatin1String a, char *&out)
     {

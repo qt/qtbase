@@ -54,6 +54,7 @@
 #include <qlist.h>
 #include "qlocale.h"
 #include "qlocale_p.h"
+#include "qstringbuilder.h"
 #include "qstringmatcher.h"
 #include "qvarlengtharray.h"
 #include "qtools_p.h"
@@ -9987,5 +9988,14 @@ QString QString::toHtmlEscaped() const
   \endcode
   \endlist
 */
+
+
+/*!
+    \internal
+ */
+void QAbstractConcatenable::appendLatin1To(const char *a, int len, QChar *out)
+{
+    qt_from_latin1(reinterpret_cast<ushort *>(out), a, uint(len));
+}
 
 QT_END_NAMESPACE
