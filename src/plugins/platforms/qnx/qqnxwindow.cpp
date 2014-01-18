@@ -243,8 +243,7 @@ void QQnxWindow::setOpacity(qreal level)
     if (result != 0)
         qFatal("QQnxWindow: failed to set window global alpha, errno=%d", errno);
 
-    // TODO: How to handle children of this window? If we change all the visibilities, then
-    //       the transparency will look wrong...
+    screen_flush_context(m_screenContext, 0);
 }
 
 void QQnxWindow::setExposed(bool exposed)
@@ -584,6 +583,8 @@ void QQnxWindow::initWindow()
 
     // Qt never calls these setters after creating the window, so we need to do that ourselves here
     setWindowState(window()->windowState());
+    setOpacity(window()->opacity());
+
     if (window()->parent() && window()->parent()->handle())
         setParent(window()->parent()->handle());
 
