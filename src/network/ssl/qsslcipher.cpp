@@ -79,6 +79,26 @@ QSslCipher::QSslCipher()
 
 /*!
     Constructs a QSslCipher object for the cipher determined by \a
+    name. The constructor accepts only supported ciphers (i.e., the
+    \a name must identify a cipher in the list of ciphers returned by
+    QSslSocket::supportedCiphers()).
+
+    You can call isNull() after construction to check if \a name
+    correctly identified a supported cipher.
+*/
+QSslCipher::QSslCipher(const QString &name)
+    : d(new QSslCipherPrivate)
+{
+    foreach (const QSslCipher &cipher, QSslSocket::supportedCiphers()) {
+        if (cipher.name() == name) {
+            *this = cipher;
+            return;
+        }
+    }
+}
+
+/*!
+    Constructs a QSslCipher object for the cipher determined by \a
     name and \a protocol. The constructor accepts only supported
     ciphers (i.e., the \a name and \a protocol must identify a cipher
     in the list of ciphers returned by
