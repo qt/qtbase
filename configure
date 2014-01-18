@@ -5130,6 +5130,14 @@ if [ "$CFG_XCB" != "no" ]; then
         else
             CFG_XCB="system"
 
+            if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists "x11" 2> /dev/null; then
+                QMAKE_X11_PREFIX="`$PKG_CONFIG --variable=prefix x11`"
+            else
+                # default to LSB prefix
+                QMAKE_X11_PREFIX="/usr"
+            fi
+            QMakeVar set QMAKE_X11_PREFIX "$QMAKE_X11_PREFIX"
+
             if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists "xcb >= 1.5" 2>/dev/null; then
                 XCB_PACKAGES="xcb xcb-shm xcb-sync xcb-xfixes xcb-randr xcb-image xcb-keysyms xcb-icccm"
                 QMAKE_CFLAGS_XCB="`$PKG_CONFIG --cflags $XCB_PACKAGES 2>/dev/null`"
