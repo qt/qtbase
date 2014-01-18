@@ -202,8 +202,6 @@ void QQnxWindow::setVisible(bool visible)
 
     root->updateVisibility(root->m_visible);
 
-    window()->requestActivate();
-
     QWindowSystemInterface::handleExposeEvent(window(), window()->geometry());
 
     if (visible) {
@@ -435,9 +433,59 @@ void QQnxWindow::lower()
 
 void QQnxWindow::requestActivateWindow()
 {
-    // Overwrite the default implementation where the window is activated
+    QQnxWindow *focusWindow = 0;
+    if (QGuiApplication::focusWindow())
+        focusWindow = static_cast<QQnxWindow*>(QGuiApplication::focusWindow()->handle());
+
+    if (focusWindow == this)
+        return;
+
+    if (screen()->rootWindow() == this ||
+            (focusWindow && findWindow(focusWindow->nativeHandle()))) {
+        // If the focus window is a child, we can just set the focus of our own window
+        // group to our window handle
+        setFocus(nativeHandle());
+    } else {
+        // In order to receive focus the parent's window group has to give focus to the
+        // child. If we have several hierarchy layers, we have to do that several times
+        QQnxWindow *currentWindow = this;
+        QList<QQnxWindow*> windowList;
+        while (currentWindow) {
+            windowList.prepend(currentWindow);
+            // If we find the focus window, we don't have to go further
+            if (currentWindow == focusWindow)
+                break;
+
+            if (currentWindow->parent()){
+                currentWindow = static_cast<QQnxWindow*>(currentWindow->parent());
+            } else if (screen()->rootWindow() &&
+                  screen()->rootWindow()->m_windowGroupName == currentWindow->m_parentGroupName) {
+                currentWindow = screen()->rootWindow();
+            } else {
+                currentWindow = 0;
+            }
+        }
+
+        // We have to apply the focus from parent to child windows
+        for (int i = 1; i < windowList.size(); ++i)
+            windowList.at(i-1)->setFocus(windowList.at(i)->nativeHandle());
+
+        windowList.last()->setFocus(windowList.last()->nativeHandle());
+    }
+
+    screen_flush_context(m_screenContext, 0);
 }
 
+void QQnxWindow::setFocus(screen_window_t newFocusWindow)
+{
+    screen_group_t screenGroup = 0;
+    screen_get_window_property_pv(nativeHandle(), SCREEN_PROPERTY_GROUP,
+                                  reinterpret_cast<void**>(&screenGroup));
+    if (screenGroup) {
+        screen_set_group_property_pv(screenGroup, SCREEN_PROPERTY_KEYBOARD_FOCUS,
+                                 reinterpret_cast<void**>(&newFocusWindow));
+    }
+}
 
 void QQnxWindow::setWindowState(Qt::WindowState state)
 {

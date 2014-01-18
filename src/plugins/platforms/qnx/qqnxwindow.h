@@ -130,6 +130,7 @@ private:
     void updateZorder(int &topZorder);
     void updateZorder(screen_window_t window, int &zOrder);
     void applyWindowState();
+    void setFocus(screen_window_t newFocusWindow);
 
     screen_window_t m_window;
     QSize m_bufferSize;
