@@ -512,7 +512,7 @@ public:
     Q_DECL_CONSTEXPR inline QRectF translated(qreal dx, qreal dy) const;
     Q_DECL_CONSTEXPR inline QRectF translated(const QPointF &p) const;
 
-    inline void moveTo(qreal x, qreal t);
+    inline void moveTo(qreal x, qreal y);
     inline void moveTo(const QPointF &p);
 
     inline void setRect(qreal x, qreal y, qreal w, qreal h);
