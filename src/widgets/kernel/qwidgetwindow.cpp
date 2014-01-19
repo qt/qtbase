@@ -473,7 +473,7 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
     if (!widget)
         widget = m_widget;
 
-    if (event->type() == QEvent::MouseButtonPress)
+    if (event->type() == QEvent::MouseButtonPress || event->type() == QEvent::MouseButtonDblClick)
         qt_button_down = widget;
 
     QWidget *receiver = QApplicationPrivate::pickMouseReceiver(m_widget, event->windowPos().toPoint(), &mapped, event->type(), event->buttons(),
@@ -484,12 +484,17 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
             QApplicationPrivate::mouse_buttons &= ~event->button();
         return;
     }
+    if ((event->type() != QEvent::MouseButtonPress)
+        || !(event->flags().testFlag(Qt::MouseEventCreatedDoubleClick))) {
 
-    QMouseEvent translated(event->type(), mapped, event->windowPos(), event->screenPos(), event->button(), event->buttons(), event->modifiers());
-    translated.setTimestamp(event->timestamp());
-    QApplicationPrivate::sendMouseEvent(receiver, &translated, widget, m_widget, &qt_button_down,
-                                        qt_last_mouse_receiver);
-
+        // The preceding statement excludes MouseButtonPress events which caused
+        // creation of a MouseButtonDblClick event. QTBUG-25831
+        QMouseEvent translated(event->type(), mapped, event->windowPos(), event->screenPos(),
+                               event->button(), event->buttons(), event->modifiers());
+        translated.setTimestamp(event->timestamp());
+        QApplicationPrivate::sendMouseEvent(receiver, &translated, widget, m_widget,
+                                            &qt_button_down, qt_last_mouse_receiver);
+    }
 #ifndef QT_NO_CONTEXTMENU
     if (event->type() == contextMenuTrigger && event->button() == Qt::RightButton) {
         QContextMenuEvent e(QContextMenuEvent::Mouse, mapped, event->globalPos(), event->modifiers());

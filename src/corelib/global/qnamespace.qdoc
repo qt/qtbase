@@ -2917,3 +2917,16 @@
 
     \sa Qt::AA_SynthesizeMouseForUnhandledTouchEvents
 */
+
+/*!
+    \enum Qt::MouseEventFlag
+    \since 5.3
+
+    This enum provides additional information concerning a QMouseEvent.
+
+    \value MouseEventCreatedDoubleClick Indicates that Qt has created a
+    MouseButtonDblClick event from this event. The flag is set in the causing
+    MouseButtonPress, and not in the resulting MouseButtonDblCLick.
+
+    \omitvalue MouseEventFlagMask
+*/

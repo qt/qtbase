@@ -136,6 +136,7 @@ public:
 #endif
 
     Qt::MouseEventSource source() const;
+    Qt::MouseEventFlags flags() const;
 
 protected:
     QPointF l, w, s;

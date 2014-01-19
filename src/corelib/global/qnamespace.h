@@ -1609,6 +1609,13 @@ public:
         MouseEventSynthesizedBySystem,
         MouseEventSynthesizedByQt
     };
+
+    enum MouseEventFlag {
+        MouseEventCreatedDoubleClick = 0x01,
+        MouseEventFlagMask = 0xFF
+    };
+    Q_DECLARE_FLAGS(MouseEventFlags, MouseEventFlag)
+
 }
 #ifdef Q_MOC_RUN
  ;
@@ -1632,6 +1639,7 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::TextInteractionFlags)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::InputMethodQueries)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::InputMethodHints)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::TouchPointStates)
+Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::MouseEventFlags)
 #ifndef QT_NO_GESTURES
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::GestureFlags)
 #endif

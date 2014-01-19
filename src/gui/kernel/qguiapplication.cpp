@@ -1600,6 +1600,11 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
         return;
     }
 
+    if (doubleClick && (ev.type() == QEvent::MouseButtonPress)) {
+        // QtBUG-25831, used to suppress delivery in qwidgetwindow.cpp
+        setMouseEventFlags(&ev, ev.flags() | Qt::MouseEventCreatedDoubleClick);
+    }
+
     QGuiApplication::sendSpontaneousEvent(window, &ev);
     if (!e->synthetic && !ev.isAccepted()
         && !frameStrut
@@ -3169,6 +3174,8 @@ enum {
     MouseSourceMaskDst = 0xFF00,
     MouseSourceMaskSrc = MouseCapsMask,
     MouseSourceShift = 8,
+    MouseFlagsCapsMask = 0xFF0000,
+    MouseFlagsShift = 16
 };
 
 int QGuiApplicationPrivate::mouseEventCaps(QMouseEvent *event)
@@ -3202,6 +3209,20 @@ void QGuiApplicationPrivate::setMouseEventSource(QMouseEvent *event, Qt::MouseEv
     Q_ASSERT(value <= MouseSourceMaskSrc);
     event->caps &= ~MouseSourceMaskDst;
     event->caps |= (value & MouseSourceMaskSrc) << MouseSourceShift;
+}
+
+Qt::MouseEventFlags QGuiApplicationPrivate::mouseEventFlags(const QMouseEvent *event)
+{
+    return Qt::MouseEventFlags((event->caps & MouseFlagsCapsMask) >> MouseFlagsShift);
+}
+
+void QGuiApplicationPrivate::setMouseEventFlags(QMouseEvent *event, Qt::MouseEventFlags flags)
+{
+    // use the 0x00FF0000 byte from caps (containing up to 7 mouse event flags)
+    unsigned int value = flags;
+    Q_ASSERT(value <= Qt::MouseEventFlagMask);
+    event->caps &= ~MouseFlagsCapsMask;
+    event->caps |= (value & Qt::MouseEventFlagMask) << MouseFlagsShift;
 }
 
 #include "moc_qguiapplication.cpp"

@@ -2767,6 +2767,13 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                 QApplicationPrivate::mouse_buttons |= me->button();
                 break;
             }
+        case QEvent::MouseButtonDblClick:
+            {
+                QMouseEvent *me = static_cast<QMouseEvent*>(e);
+                QApplicationPrivate::modifier_buttons = me->modifiers();
+                QApplicationPrivate::mouse_buttons |= me->button();
+                break;
+            }
         case QEvent::MouseButtonRelease:
             {
                 QMouseEvent *me = static_cast<QMouseEvent*>(e);
@@ -2995,6 +3002,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                                mouse->modifiers());
                 me.spont = mouse->spontaneous();
                 me.setTimestamp(mouse->timestamp());
+                QGuiApplicationPrivate::setMouseEventFlags(&me, mouse->flags());
                 // throw away any mouse-tracking-only mouse events
                 if (!w->hasMouseTracking()
                     && mouse->type() == QEvent::MouseMove && mouse->buttons() == 0) {
@@ -3748,6 +3756,7 @@ void QApplicationPrivate::giveFocusAccordingToFocusPolicy(QWidget *widget, QEven
 
     switch (event->type()) {
         case QEvent::MouseButtonPress:
+        case QEvent::MouseButtonDblClick:
         case QEvent::TouchBegin:
             if (setFocusOnRelease)
                 return;

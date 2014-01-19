@@ -294,6 +294,20 @@ Qt::MouseEventSource QMouseEvent::source() const
 }
 
 /*!
+     \since 5.3
+
+     Returns the mouse event flags.
+
+     The mouse event flags provide additional information about a mouse event.
+
+     \sa Qt::MouseEventFlag
+ */
+Qt::MouseEventFlags QMouseEvent::flags() const
+{
+    return QGuiApplicationPrivate::mouseEventFlags(this);
+}
+
+/*!
     \fn QPointF QMouseEvent::localPos() const
 
     \since 5.0

@@ -272,6 +272,9 @@ public:
     static Qt::MouseEventSource mouseEventSource(const QMouseEvent *event);
     static void setMouseEventSource(QMouseEvent *event, Qt::MouseEventSource source);
 
+    static Qt::MouseEventFlags mouseEventFlags(const QMouseEvent *event);
+    static void setMouseEventFlags(QMouseEvent *event, Qt::MouseEventFlags flags);
+
     const QDrawHelperGammaTables *gammaTables();
 
     // hook reimplemented in QApplication to apply the QStyle function on the QIcon
