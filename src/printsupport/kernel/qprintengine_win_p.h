@@ -107,7 +107,7 @@ public:
 
     static QList<QPrinter::PaperSize> supportedPaperSizes(const QPrinterInfo &printerInfo);
     static QList<QPair<QString, QSizeF> > supportedSizesWithNames(const QPrinterInfo &printerInfo);
-    static void queryDefaultPrinter(QString &name, QString &program, QString &port);
+    static void queryDefaultPrinter(QString &name);
 
 private:
     friend class QPrintDialog;
@@ -205,8 +205,6 @@ public:
 
     // Printer info
     QString name;
-    QString program;
-    QString port;
 
     // Document info
     QString docName;

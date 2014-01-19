@@ -101,9 +101,7 @@ QList<QPrinterInfo> QWindowsPrinterSupport::queryPrinters()
         return result;
     PPRINTER_INFO_4 infoList = reinterpret_cast<PPRINTER_INFO_4>(buffer.data());
     QString defaultPrinterName;
-    QString program;
-    QString port;
-    QWin32PrintEngine::queryDefaultPrinter(defaultPrinterName, program, port);
+    QWin32PrintEngine::queryDefaultPrinter(defaultPrinterName);
     for (uint i = 0; i < returned; ++i) {
         const QString printerName(QString::fromWCharArray(infoList[i].pPrinterName));
         const bool isDefault = (printerName == defaultPrinterName);

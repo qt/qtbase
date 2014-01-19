@@ -260,10 +260,6 @@ bool QWin32PrintEngine::begin(QPaintDevice *pdev)
     if (!d->hdc)
         return false;
 
-    // Assign the FILE: to get the query...
-    if (d->printToFile && d->fileName.isEmpty())
-        d->fileName = d->port;
-
     d->devMode->dmCopies = d->num_copies;
 
     DOCINFO di;
@@ -275,6 +271,8 @@ bool QWin32PrintEngine::begin(QPaintDevice *pdev)
         di.lpszDocName = reinterpret_cast<const wchar_t *>(d->docName.utf16());
     if (d->printToFile && !d->fileName.isEmpty())
         di.lpszOutput = reinterpret_cast<const wchar_t *>(d->fileName.utf16());
+    if (d->printToFile)
+        di.lpszOutput = d->fileName.isEmpty() ? L"FILE:" : reinterpret_cast<const wchar_t *>(d->fileName.utf16());
     if (ok && StartDoc(d->hdc, &di) == SP_ERROR) {
         qErrnoWarning("QWin32PrintEngine::begin: StartDoc failed");
         ok = false;
@@ -1039,7 +1037,7 @@ void QWin32PrintEngine::drawPolygon(const QPointF *points, int pointCount, Polyg
 
 void QWin32PrintEnginePrivate::queryDefault()
 {
-    QWin32PrintEngine::queryDefaultPrinter(name, program, port);
+    QWin32PrintEngine::queryDefaultPrinter(name);
 }
 
 QWin32PrintEnginePrivate::~QWin32PrintEnginePrivate()
@@ -1088,8 +1086,7 @@ void QWin32PrintEnginePrivate::initialize()
     }
 
     devMode = pInfo->pDevMode;
-    hdc = CreateDC(reinterpret_cast<const wchar_t *>(program.utf16()),
-                   reinterpret_cast<const wchar_t *>(name.utf16()), 0, devMode);
+    hdc = CreateDC(NULL, reinterpret_cast<const wchar_t *>(name.utf16()), 0, devMode);
 
     Q_ASSERT(hPrinter);
     Q_ASSERT(pInfo);
@@ -1216,15 +1213,13 @@ QList<QVariant> QWin32PrintEnginePrivate::queryResolutions() const
     // Read the supported resolutions of the printer.
     QList<QVariant> list;
 
-    DWORD numRes = DeviceCapabilities(reinterpret_cast<const wchar_t *>(name.utf16()),
-                                      reinterpret_cast<const wchar_t *>(port.utf16()),
+    DWORD numRes = DeviceCapabilities(reinterpret_cast<const wchar_t *>(name.utf16()), NULL,
                                       DC_ENUMRESOLUTIONS, 0, 0);
     if (numRes == (DWORD)-1)
         return list;
 
     LONG *enumRes = (LONG*)malloc(numRes * 2 * sizeof(LONG));
-    DWORD errRes = DeviceCapabilities(reinterpret_cast<const wchar_t *>(name.utf16()),
-                                      reinterpret_cast<const wchar_t *>(port.utf16()),
+    DWORD errRes = DeviceCapabilities(reinterpret_cast<const wchar_t *>(name.utf16()), NULL,
                                       DC_ENUMRESOLUTIONS, (LPWSTR)enumRes, 0);
 
     if (errRes == (DWORD)-1) {
@@ -1675,15 +1670,13 @@ QVariant QWin32PrintEngine::property(PrintEnginePropertyKey key) const
 
     case PPK_PaperSources:
         {
-            int available = DeviceCapabilities((const wchar_t *)d->name.utf16(),
-                                               (const wchar_t *)d->port.utf16(), DC_BINS, 0, d->devMode);
+            int available = DeviceCapabilities((const wchar_t *)d->name.utf16(), NULL, DC_BINS, 0, d->devMode);
 
             if (available <= 0)
                 break;
 
             wchar_t *data = new wchar_t[available];
-            int count = DeviceCapabilities((const wchar_t *)d->name.utf16(),
-                                           (const wchar_t *)d->port.utf16(), DC_BINS, data, d->devMode);
+            int count = DeviceCapabilities((const wchar_t *)d->name.utf16(), NULL, DC_BINS, data, d->devMode);
 
             QList<QVariant> out;
             for (int i=0; i<count; ++i) {
@@ -1783,7 +1776,7 @@ QList<QPair<QString, QSizeF> > QWin32PrintEngine::supportedSizesWithNames(const 
     return paperSizes;
 }
 
-void QWin32PrintEngine::queryDefaultPrinter(QString &name, QString &program, QString &port)
+void QWin32PrintEngine::queryDefaultPrinter(QString &name)
 {
     /* Read the default printer name, driver and port with the intuitive function
      * Strings "windows" and "device" are specified in the MSDN under EnumPrinters()
@@ -1802,29 +1795,20 @@ void QWin32PrintEngine::queryDefaultPrinter(QString &name, QString &program, QSt
     if (infoSize > 0) {
         if (name.isEmpty())
             name = info.at(0);
-        if (program.isEmpty() && infoSize > 1)
-            program = info.at(1);
-        if (port.isEmpty() && infoSize > 2)
-            port = info.at(2);
     }
 }
 
 HGLOBAL *QWin32PrintEnginePrivate::createDevNames()
 {
-    int size = sizeof(DEVNAMES)
-               + program.length() * 2 + 2
-               + name.length() * 2 + 2
-               + port.length() * 2 + 2;
+    int size = sizeof(DEVNAMES) + name.length() * 2 + 2;
     HGLOBAL *hGlobal = (HGLOBAL *) GlobalAlloc(GMEM_MOVEABLE, size);
     DEVNAMES *dn = (DEVNAMES*) GlobalLock(hGlobal);
 
-    dn->wDriverOffset = sizeof(DEVNAMES) / sizeof(wchar_t);
-    dn->wDeviceOffset = dn->wDriverOffset + program.length() + 1;
-    dn->wOutputOffset = dn->wDeviceOffset + name.length() + 1;
+    dn->wDriverOffset = 0;
+    dn->wDeviceOffset = sizeof(DEVNAMES) / sizeof(wchar_t);
+    dn->wOutputOffset = 0;
 
-    memcpy((ushort*)dn + dn->wDriverOffset, program.utf16(), program.length() * 2 + 2);
     memcpy((ushort*)dn + dn->wDeviceOffset, name.utf16(), name.length() * 2 + 2);
-    memcpy((ushort*)dn + dn->wOutputOffset, port.utf16(), port.length() * 2 + 2);
     dn->wDefault = 0;
 
     GlobalUnlock(hGlobal);
@@ -1850,8 +1834,6 @@ void QWin32PrintEnginePrivate::readDevnames(HGLOBAL globalDevnames)
     if (globalDevnames) {
         DEVNAMES *dn = (DEVNAMES*) GlobalLock(globalDevnames);
         name = QString::fromWCharArray((wchar_t*)(dn) + dn->wDeviceOffset);
-        port = QString::fromWCharArray((wchar_t*)(dn) + dn->wOutputOffset);
-        program = QString::fromWCharArray((wchar_t*)(dn) + dn->wDriverOffset);
         GlobalUnlock(globalDevnames);
     }
 }
@@ -1863,8 +1845,7 @@ void QWin32PrintEnginePrivate::readDevmode(HGLOBAL globalDevmode)
         release();
         globalDevMode = globalDevmode;
         devMode = dm;
-        hdc = CreateDC(reinterpret_cast<const wchar_t *>(program.utf16()),
-                       reinterpret_cast<const wchar_t *>(name.utf16()), 0, dm);
+        hdc = CreateDC(NULL, reinterpret_cast<const wchar_t *>(name.utf16()), 0, dm);
 
         num_copies = devMode->dmCopies;
         if (!OpenPrinter((wchar_t*)name.utf16(), &hPrinter, 0))

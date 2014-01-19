@@ -167,7 +167,7 @@ static void qt_win_read_back_PRINTDLGEX(PRINTDLGEX *pd, QPrintDialog *pdlg, QPri
     d->ep->updateCustomPaperSize();
 
     if (d->ep->printToFile && d->ep->fileName.isEmpty())
-        d->ep->fileName = d->ep->port;
+        d->ep->fileName = QLatin1String("FILE:");
     else if (!d->ep->printToFile && d->ep->fileName == QLatin1String("FILE:"))
         d->ep->fileName.clear();
 }
