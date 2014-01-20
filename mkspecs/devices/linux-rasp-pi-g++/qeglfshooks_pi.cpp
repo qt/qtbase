@@ -40,7 +40,6 @@
 ****************************************************************************/
 
 #include "qeglfshooks.h"
-#include "qeglfscursor.h"
 
 #include <QtDebug>
 
