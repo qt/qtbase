@@ -107,6 +107,12 @@ public:
 
     static QList<QPrinter::PaperSize> supportedPaperSizes(const QPrinterInfo &printerInfo);
     static QList<QPair<QString, QSizeF> > supportedSizesWithNames(const QPrinterInfo &printerInfo);
+
+    /* Used by print/page setup dialogs */
+    void setGlobalDevMode(HGLOBAL globalDevNames, HGLOBAL globalDevMode);
+    HGLOBAL *createGlobalDevNames();
+    HGLOBAL globalDevMode();
+
     static void queryDefaultPrinter(QString &name);
 
 private:
@@ -165,12 +171,6 @@ public:
        this function only sets the reinit variable to true so it
        is handled in the next begin or newpage. */
     void doReinit();
-
-    /* Used by print/page setup dialogs */
-    HGLOBAL *createDevNames();
-
-    void readDevmode(HGLOBAL globalDevmode);
-    void readDevnames(HGLOBAL globalDevnames);
 
     inline bool resetDC() {
         hdc = ResetDC(hdc, devMode);
