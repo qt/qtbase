@@ -151,15 +151,11 @@ Q_PRINTSUPPORT_EXPORT QSizeF qt_printerPaperSize(QPrinter::Orientation orientati
                            QPrinter::Unit unit,
                            int resolution)
 {
-    int width_index = 0;
-    int height_index = 1;
-    if (orientation == QPrinter::Landscape) {
-        width_index = 1;
-        height_index = 0;
-    }
-    const qreal multiplier = qt_multiplierForUnit(unit, resolution);
-    return QSizeF((qt_paperSizes[paperSize][width_index] * 72 / 25.4) / multiplier,
-                  (qt_paperSizes[paperSize][height_index] * 72 / 25.4) / multiplier);
+    QPageSize pageSize = QPageSize(QPageSize::PageSizeId(paperSize));
+    if (orientation == QPrinter::Landscape)
+        return pageSize.size(QPage::Unit(unit), resolution).transposed();
+    else
+        return pageSize.size(QPage::Unit(unit), resolution);
 }
 
 QPrinterInfo QPrinterPrivate::findValidPrinter(const QPrinterInfo &printer)
