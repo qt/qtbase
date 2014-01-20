@@ -264,6 +264,7 @@ QCocoaWindow::~QCocoaWindow()
     [m_contentView release];
     [m_nsWindow release];
     [m_nsWindowDelegate release];
+    [m_windowCursor release];
 }
 
 QSurfaceFormat QCocoaWindow::format() const
@@ -1059,7 +1060,10 @@ void QCocoaWindow::setWindowCursor(NSCursor *cursor)
         [cursor set];
     // or we can set the cursor on mouse enter/leave using tracking
     // areas. This is done in QNSView, save the cursor:
-    m_windowCursor = cursor;
+    if (m_windowCursor != cursor) {
+        [m_windowCursor release];
+        m_windowCursor = [cursor retain];
+    }
 }
 
 void QCocoaWindow::registerTouch(bool enable)
