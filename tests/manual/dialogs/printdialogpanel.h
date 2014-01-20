@@ -69,6 +69,7 @@ private slots:
     void deletePrinter();
     void showPrintDialog();
     void showPreviewDialog();
+    void showPageSetupDialog();
     void enableCustomSizeControl();
 
 private:

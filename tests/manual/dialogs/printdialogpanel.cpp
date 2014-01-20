@@ -47,6 +47,7 @@
 #include <QPrinter>
 #include <QPrintDialog>
 #include <QPrintPreviewDialog>
+#include <QPageSetupDialog>
 #include <QApplication>
 #include <QDesktopWidget>
 #include <QGroupBox>
@@ -335,6 +336,9 @@ PrintDialogPanel::PrintDialogPanel(QWidget *parent)
     button = new QPushButton(tr("Preview..."), m_dialogsGroupBox);
     connect(button, SIGNAL(clicked()), this, SLOT(showPreviewDialog()));
     vBoxLayout->addWidget(button);
+    button = new QPushButton(tr("Page Setup..."), m_dialogsGroupBox);
+    connect(button, SIGNAL(clicked()), this, SLOT(showPageSetupDialog()));
+    vBoxLayout->addWidget(button);
 
     QGridLayout *gridLayout = new QGridLayout(this);
     gridLayout->addWidget(m_creationGroupBox, 0, 0);
@@ -413,6 +417,14 @@ void PrintDialogPanel::showPreviewDialog()
     applySettings(m_printer.data());
     PrintPreviewDialog dialog(m_printer.data(), this);
     dialog.resize(QApplication::desktop()->availableGeometry().size() * 4/ 5);
+    if (dialog.exec() == QDialog::Accepted)
+        retrieveSettings(m_printer.data());
+}
+
+void PrintDialogPanel::showPageSetupDialog()
+{
+    applySettings(m_printer.data());
+    QPageSetupDialog dialog(m_printer.data(), this);
     if (dialog.exec() == QDialog::Accepted)
         retrieveSettings(m_printer.data());
 }
