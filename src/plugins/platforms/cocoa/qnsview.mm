@@ -830,6 +830,12 @@ Q_GLOBAL_STATIC(QCocoaTabletDeviceDataHash, tabletDeviceDataHash)
 
     uint deviceId = [theEvent deviceID];
     if (!tabletDeviceDataHash->contains(deviceId)) {
+        // 10.6 sends tablet events for trackpad interaction, but
+        // not proximity events. Silence the warning to prevent
+        // flooding the console.
+        if (QSysInfo::QSysInfo::MacintoshVersion == QSysInfo::MV_10_6)
+            return;
+
         qWarning("QNSView handleTabletEvent: This tablet device is unknown"
                  " (received no proximity event for it). Discarding event.");
         return;
