@@ -1154,6 +1154,7 @@ void QXcbConnection::processXcbEvents()
         xcb_generic_event_t *event = eventqueue->at(i);
         if (!event)
             continue;
+        QScopedPointer<xcb_generic_event_t, QScopedPointerPodDeleter> eventGuard(event);
         (*eventqueue)[i] = 0;
 
         uint response_type = event->response_type & ~0x80;
@@ -1204,8 +1205,6 @@ void QXcbConnection::processXcbEvents()
             handleXcbEvent(event);
             m_reader->lock();
         }
-
-        free(event);
     }
 
     eventqueue->clear();
