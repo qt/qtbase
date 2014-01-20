@@ -947,6 +947,16 @@ void QCocoaWindow::setContentView(NSView *contentView)
     recreateWindow(parent()); // Adds the content view to parent NSView
 }
 
+QNSView *QCocoaWindow::qtView() const
+{
+    return m_qtView;
+}
+
+NSWindow *QCocoaWindow::nativeWindow() const
+{
+    return m_nsWindow;
+}
+
 void QCocoaWindow::setEmbeddedInForeignView(bool embedded)
 {
     m_contentViewIsToBeEmbedded = embedded;

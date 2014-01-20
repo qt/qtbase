@@ -129,6 +129,8 @@ public:
 
     NSView *contentView() const;
     void setContentView(NSView *contentView);
+    QNSView *qtView() const;
+    NSWindow *nativeWindow() const;
 
     void setEmbeddedInForeignView(bool subwindow);
 

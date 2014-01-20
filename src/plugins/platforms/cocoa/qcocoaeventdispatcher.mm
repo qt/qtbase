@@ -75,6 +75,7 @@
 
 #include "qcocoaeventdispatcher.h"
 #include "qcocoaautoreleasepool.h"
+#include "qcocoawindow.h"
 
 #include "qcocoahelpers.h"
 #include "qguiapplication.h"
@@ -621,7 +622,7 @@ NSModalSession QCocoaEventDispatcherPrivate::currentModalSession()
 
         if (!info.session) {
             QCocoaAutoReleasePool pool;
-            NSWindow *nswindow = static_cast<NSWindow *>(QGuiApplication::platformNativeInterface()->nativeResourceForWindow("nswindow", info.window));
+            NSWindow *nswindow = static_cast<QCocoaWindow *>(info.window->handle())->nativeWindow();
             if (!nswindow)
                 continue;
 
