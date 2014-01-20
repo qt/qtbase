@@ -239,7 +239,7 @@ public:
 
     void setFocus(bool focus, Qt::FocusReason = Qt::OtherFocusReason);
 
-    virtual QVariant inputMethodQuery(Qt::InputMethodQuery property) const;
+    virtual QVariant inputMethodQuery(Qt::InputMethodQuery property, QVariant argument) const;
 
     virtual QMimeData *createMimeDataFromSelection() const;
     virtual bool canInsertFromMimeData(const QMimeData *source) const;

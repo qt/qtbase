@@ -1332,6 +1332,10 @@ public:
         ImHints = 0x100,
         ImPreferredLanguage = 0x200,
 
+        ImAbsolutePosition = 0x400,
+        ImTextBeforeCursor = 0x800,
+        ImTextAfterCursor = 0x1000,
+
         ImPlatformData = 0x80000000,
         ImQueryInput = ImCursorRectangle | ImCursorPosition | ImSurroundingText |
                        ImCurrentSelection | ImAnchorPosition,

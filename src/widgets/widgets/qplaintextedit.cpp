@@ -2192,7 +2192,7 @@ QVariant QPlainTextEdit::inputMethodQuery(Qt::InputMethodQuery property) const
         v = QWidget::inputMethodQuery(property);
         break;
     default:
-        v = d->control->inputMethodQuery(property);
+        v = d->control->inputMethodQuery(property, QVariant());
         const QPoint offset(-d->horizontalOffset(), -0);
         if (v.type() == QVariant::RectF)
             v = v.toRectF().toRect().translated(offset);

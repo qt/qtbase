@@ -10316,7 +10316,7 @@ QVariant QGraphicsTextItem::inputMethodQuery(Qt::InputMethodQuery query) const
     if (query == Qt::ImHints)
         v = int(inputMethodHints());
     else if (dd->control)
-        v = dd->control->inputMethodQuery(query);
+        v = dd->control->inputMethodQuery(query, QVariant());
     if (v.type() == QVariant::RectF)
         v = v.toRectF().translated(-dd->controlOffset());
     else if (v.type() == QVariant::PointF)

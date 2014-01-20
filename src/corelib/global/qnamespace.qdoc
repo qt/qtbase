@@ -2446,6 +2446,11 @@
     \value ImHints              The hints for input method on expected input. (See Qt::InputMethodHints)
     \value ImPreferredLanguage  The preferred input language.
     \value ImPlatformData       Platform specific data for input method.
+    \value ImAbsolutePosition   The logical position of the cursor within the entire document.
+    \value ImTextBeforeCursor   The plain text before the cursor. The widget can decide how much text to return,
+                                but \b{must} not return an empty string unless the cursor is at the start of the document.
+    \value ImTextAfterCursor    The plain text after the cursor. The widget can decide how much text to return,
+                                but \b{must} not return an empty string unless the cursor is at the end of the document.
 
     Masks:
 

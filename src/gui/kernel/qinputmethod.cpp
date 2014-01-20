@@ -45,6 +45,8 @@
 #include <qtimer.h>
 #include <qpa/qplatforminputcontext_p.h>
 
+#include <QDebug>
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -363,6 +365,29 @@ bool QInputMethodPrivate::objectAcceptsInputMethod(QObject *object)
     }
 
     return enabled;
+}
+
+/*!
+  Send \a query to the current focus object with parameters \a argument and return the result.
+ */
+QVariant QInputMethod::queryFocusObject(Qt::InputMethodQuery query, QVariant argument)
+{
+    QVariant retval;
+    QObject *focusObject = qGuiApp->focusObject();
+    if (!focusObject)
+        return retval;
+
+    bool newMethodWorks = QMetaObject::invokeMethod(focusObject, "inputMethodQuery",
+                                                    Qt::DirectConnection,
+                                                    Q_RETURN_ARG(QVariant, retval),
+                                                    Q_ARG(Qt::InputMethodQuery, query),
+                                                    Q_ARG(QVariant, argument));
+    if (newMethodWorks)
+        return retval;
+
+    QInputMethodQueryEvent queryEvent(query);
+    QCoreApplication::sendEvent(focusObject, &queryEvent);
+    return queryEvent.value(query);
 }
 
 QT_END_NAMESPACE

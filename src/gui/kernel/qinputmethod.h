@@ -50,6 +50,7 @@ class QInputMethodPrivate;
 class QWindow;
 class QRectF;
 class QTransform;
+class QInputMethodQueryEvent;
 
 class Q_GUI_EXPORT QInputMethod : public QObject
 {
@@ -88,6 +89,8 @@ public:
 
     QLocale locale() const;
     Qt::LayoutDirection inputDirection() const;
+
+    static QVariant queryFocusObject(Qt::InputMethodQuery query, QVariant argument);
 
 public Q_SLOTS:
     void show();
