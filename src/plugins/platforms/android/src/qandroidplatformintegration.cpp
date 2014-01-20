@@ -123,7 +123,7 @@ QAndroidPlatformIntegration::QAndroidPlatformIntegration(const QStringList &para
     m_androidSystemLocale = new QAndroidSystemLocale;
 }
 
-bool QAndroidPlatformIntegration::needsBasicRenderloopWorkaround()
+bool QAndroidPlatformIntegration::needsWorkaround()
 {
     static bool needsWorkaround =
             QtAndroid::deviceName().compare(QStringLiteral("samsung SM-T211"), Qt::CaseInsensitive) == 0
@@ -140,7 +140,7 @@ bool QAndroidPlatformIntegration::hasCapability(Capability cap) const
         case NativeWidgets: return false;
 
         case ThreadedOpenGL:
-            if (needsBasicRenderloopWorkaround())
+            if (needsWorkaround())
                 return false;
         // fall through
         default:
