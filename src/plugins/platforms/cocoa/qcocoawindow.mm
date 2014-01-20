@@ -45,6 +45,7 @@
 #include "qcocoaeventdispatcher.h"
 #include "qcocoaglcontext.h"
 #include "qcocoahelpers.h"
+#include "qcocoanativeinterface.h"
 #include "qnsview.h"
 #include <QtCore/qfileinfo.h>
 #include <QtCore/private/qcore_mac_p.h>
@@ -1124,6 +1125,11 @@ void QCocoaWindow::recreateWindow(const QPlatformWindow *parentWindow)
     const qreal opacity = qt_window_private(window())->opacity;
     if (!qFuzzyCompare(opacity, qreal(1.0)))
         setOpacity(opacity);
+
+    // top-level QWindows may have an attached NSToolBar, call
+    // update function which will attach to the NSWindow.
+    if (!parentWindow)
+        updateNSToolbar();
 }
 
 void QCocoaWindow::reinsertChildWindow(QCocoaWindow *child)
@@ -1387,6 +1393,19 @@ void QCocoaWindow::applyContentBorderThickness(NSWindow *window)
     }
 }
 
+void QCocoaWindow::updateNSToolbar()
+{
+    if (!m_nsWindow)
+        return;
+
+    NSToolbar *toolbar = QCocoaIntegration::instance()->toolbar(window());
+
+    if ([m_nsWindow toolbar] == toolbar)
+       return;
+
+    [m_nsWindow setToolbar: toolbar];
+    [m_nsWindow setShowsToolbarButton:YES];
+}
 
 qreal QCocoaWindow::devicePixelRatio() const
 {

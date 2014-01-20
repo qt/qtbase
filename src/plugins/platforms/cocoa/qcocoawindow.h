@@ -164,6 +164,7 @@ public:
     void registerTouch(bool enable);
     void setContentBorderThickness(int topThickness, int bottomThickness);
     void applyContentBorderThickness(NSWindow *window);
+    void updateNSToolbar();
 
     qreal devicePixelRatio() const;
     bool isWindowExposable();

@@ -301,6 +301,8 @@ QCocoaIntegration::~QCocoaIntegration()
     while (!mScreens.isEmpty()) {
         delete mScreens.takeLast();
     }
+
+    clearToolbars();
 }
 
 QCocoaIntegration *QCocoaIntegration::instance()
@@ -464,6 +466,29 @@ QVariant QCocoaIntegration::styleHint(StyleHint hint) const
 QList<int> QCocoaIntegration::possibleKeys(const QKeyEvent *event) const
 {
     return mKeyboardMapper->possibleKeys(event);
+}
+
+void QCocoaIntegration::setToolbar(QWindow *window, NSToolbar *toolbar)
+{
+    if (NSToolbar *prevToolbar = mToolbars.value(window))
+        [prevToolbar release];
+
+    [toolbar retain];
+    mToolbars.insert(window, toolbar);
+}
+
+NSToolbar *QCocoaIntegration::toolbar(QWindow *window) const
+{
+    return mToolbars.value(window);
+}
+
+void QCocoaIntegration::clearToolbars()
+{
+    QHash<QWindow *, NSToolbar *>::const_iterator it = mToolbars.constBegin();
+    while (it != mToolbars.constEnd()) {
+        [it.value() release];
+    }
+    mToolbars.clear();
 }
 
 QT_END_NAMESPACE

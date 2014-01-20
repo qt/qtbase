@@ -134,6 +134,9 @@ public:
     void updateScreens();
     QCocoaScreen *screenAtIndex(int index);
 
+    void setToolbar(QWindow *window, NSToolbar *toolbar);
+    NSToolbar *toolbar(QWindow *window) const;
+    void clearToolbars();
 private:
     static QCocoaIntegration *mInstance;
 
@@ -150,6 +153,8 @@ private:
     QScopedPointer<QCocoaNativeInterface> mNativeInterface;
     QScopedPointer<QCocoaServices> mServices;
     QScopedPointer<QCocoaKeyMapper> mKeyboardMapper;
+
+    QHash<QWindow *, NSToolbar *> mToolbars;
 };
 
 QT_END_NAMESPACE
