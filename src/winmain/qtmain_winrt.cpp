@@ -65,6 +65,8 @@ extern "C" {
 #include <qstring.h>
 #include <qlist.h>
 #include <qvector.h>
+#include <qdir.h>
+#include <qstandardpaths.h>
 
 #include <wrl.h>
 #include <Windows.ApplicationModel.core.h>
@@ -82,7 +84,7 @@ static int g_mainExitCode;
 class AppContainer : public Microsoft::WRL::RuntimeClass<Core::IFrameworkView>
 {
 public:
-    AppContainer(int argc, char *argv[]) : m_argc(argc), m_debugWait(false)
+    AppContainer(int argc, char *argv[]) : m_argc(argc)
     {
         m_argv.reserve(argc);
         for (int i = 0; i < argc; ++i)
@@ -106,8 +108,28 @@ public:
     HRESULT __stdcall Load(HSTRING) { return S_OK; }
     HRESULT __stdcall Run()
     {
+        bool develMode = false;
+        bool debugWait = false;
+        foreach (const QByteArray &arg, m_argv) {
+            if (arg == "-qdevel")
+                develMode = true;
+            if (arg == "-qdebug")
+                debugWait = true;
+        }
+        if (develMode) {
+            // Write a PID file to help runner
+            const QString pidFileName = QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation))
+                    .absoluteFilePath(QString::number(uint(GetCurrentProcessId())) + QStringLiteral(".pid"));
+            CREATEFILE2_EXTENDED_PARAMETERS params = {
+                sizeof(CREATEFILE2_EXTENDED_PARAMETERS),
+                FILE_ATTRIBUTE_NORMAL, FILE_FLAG_DELETE_ON_CLOSE
+            };
+            // (Unused) handle will automatically be closed when the app exits
+            CreateFile2(reinterpret_cast<LPCWSTR>(pidFileName.utf16()),
+                        0, FILE_SHARE_READ|FILE_SHARE_DELETE, CREATE_ALWAYS, &params);
+        }
         // Wait for debugger before continuing
-        if (m_debugWait) {
+        if (debugWait) {
             while (!IsDebuggerPresent())
                 WaitForSingleObjectEx(GetCurrentThread(), 1, true);
         }
@@ -131,8 +153,6 @@ private:
                 foreach (const QByteArray &arg, QString::fromWCharArray(
                              WindowsGetStringRawBuffer(arguments, nullptr)).toLocal8Bit().split(' ')) {
                     m_argv.append(qstrdup(arg.constData()));
-                    if (arg == "-qdebug")
-                        m_debugWait = true;
                 }
             }
         }
@@ -141,7 +161,6 @@ private:
 
     int m_argc;
     QVector<char *> m_argv;
-    bool m_debugWait;
     EventRegistrationToken m_activationToken;
 };
 
