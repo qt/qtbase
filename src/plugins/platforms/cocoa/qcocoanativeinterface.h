@@ -137,6 +137,7 @@ private:
     static void setContentBorderThickness(QWindow *window, int topThickness, int bottomThickness);
 };
 
+QT_END_NAMESPACE
+
 #endif // QCOCOANATIVEINTERFACE_H
 
-QT_END_NAMESPACE

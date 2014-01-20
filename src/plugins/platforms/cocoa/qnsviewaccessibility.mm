@@ -45,7 +45,7 @@
 #include "qcocoahelpers.h"
 #include "qcocoaaccessibility.h"
 #include "qcocoaaccessibilityelement.h"
-#include <qpa/qplatformintegration.h>
+#include "qcocoaintegration.h"
 
 #include <QtGui/qaccessible.h>
 #include <QtCore/QDebug>
@@ -63,7 +63,7 @@
 - (id)accessibilityAttributeValue:(NSString *)attribute {
 
     // activate accessibility updates
-    QGuiApplicationPrivate::platformIntegration()->accessibility()->setActive(true);
+    QCocoaIntegration::instance()->accessibility()->setActive(true);
 
     if ([attribute isEqualToString:NSAccessibilityRoleAttribute]) {
         if (m_window->accessibleRoot())

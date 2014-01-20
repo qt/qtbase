@@ -308,10 +308,9 @@ static QTouchDevice *touchDevice = 0;
         m_platformWindow->exposeWindow();
     } else if (notificationName == NSWindowDidChangeScreenNotification) {
         if (m_window) {
-            QCocoaIntegration *ci = static_cast<QCocoaIntegration *>(QGuiApplicationPrivate::platformIntegration());
             NSUInteger screenIndex = [[NSScreen screens] indexOfObject:self.window.screen];
             if (screenIndex != NSNotFound) {
-                QCocoaScreen *cocoaScreen = ci->screenAtIndex(screenIndex);
+                QCocoaScreen *cocoaScreen = QCocoaIntegration::instance()->screenAtIndex(screenIndex);
                 QWindowSystemInterface::handleWindowScreenChanged(m_window, cocoaScreen->screen());
             }
         }
@@ -552,7 +551,7 @@ static QTouchDevice *touchDevice = 0;
     [self convertFromScreen:[NSEvent mouseLocation] toWindowPoint:&qtWindowPoint andScreenPoint:&qtScreenPoint];
     ulong timestamp = [theEvent timestamp] * 1000;
 
-    QCocoaDrag* nativeDrag = static_cast<QCocoaDrag *>(QGuiApplicationPrivate::platformIntegration()->drag());
+    QCocoaDrag* nativeDrag = QCocoaIntegration::instance()->drag();
     nativeDrag->setLastMouseEvent(theEvent, self);
 
     Qt::KeyboardModifiers keyboardModifiers = [QNSView convertKeyModifiers:[theEvent modifierFlags]];
@@ -1602,7 +1601,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 - (NSDragOperation) draggingSourceOperationMaskForLocal:(BOOL)isLocal
 {
     Q_UNUSED(isLocal);
-    QCocoaDrag* nativeDrag = static_cast<QCocoaDrag *>(QGuiApplicationPrivate::platformIntegration()->drag());
+    QCocoaDrag* nativeDrag = QCocoaIntegration::instance()->drag();
     return qt_mac_mapDropActions(nativeDrag->currentDrag()->supportedActions());
 }
 
@@ -1633,7 +1632,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 
     QPlatformDragQtResponse response(false, Qt::IgnoreAction, QRect());
     if ([sender draggingSource] != nil) {
-        QCocoaDrag* nativeDrag = static_cast<QCocoaDrag *>(QGuiApplicationPrivate::platformIntegration()->drag());
+        QCocoaDrag* nativeDrag = QCocoaIntegration::instance()->drag();
         response = QWindowSystemInterface::handleDrag(m_window, nativeDrag->platformDropData(), qt_windowPoint, qtAllowed);
     } else {
         QCocoaDropData mimeData([sender draggingPasteboard]);
@@ -1661,14 +1660,14 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 
     QPlatformDropQtResponse response(false, Qt::IgnoreAction);
     if ([sender draggingSource] != nil) {
-        QCocoaDrag* nativeDrag = static_cast<QCocoaDrag *>(QGuiApplicationPrivate::platformIntegration()->drag());
+        QCocoaDrag* nativeDrag = QCocoaIntegration::instance()->drag();
         response = QWindowSystemInterface::handleDrop(m_window, nativeDrag->platformDropData(), qt_windowPoint, qtAllowed);
     } else {
         QCocoaDropData mimeData([sender draggingPasteboard]);
         response = QWindowSystemInterface::handleDrop(m_window, &mimeData, qt_windowPoint, qtAllowed);
     }
     if (response.isAccepted()) {
-        QCocoaDrag* nativeDrag = static_cast<QCocoaDrag *>(QGuiApplicationPrivate::platformIntegration()->drag());
+        QCocoaDrag* nativeDrag = QCocoaIntegration::instance()->drag();
         nativeDrag->setAcceptedAction(response.acceptedAction());
     }
     return response.isAccepted();
