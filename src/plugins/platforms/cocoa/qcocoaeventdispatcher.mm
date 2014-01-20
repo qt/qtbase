@@ -76,6 +76,7 @@
 #include "qcocoaeventdispatcher.h"
 #include "qcocoaautoreleasepool.h"
 
+#include "qcocoahelpers.h"
 #include "qguiapplication.h"
 #include "qevent.h"
 #include "qhash.h"
@@ -94,11 +95,6 @@
 QT_BEGIN_NAMESPACE
 
 QT_USE_NAMESPACE
-
-enum {
-    QtCocoaEventSubTypeWakeup       = SHRT_MAX,
-    QtCocoaEventSubTypePostMessage  = SHRT_MAX-1
-};
 
 static inline CFRunLoopRef mainRunLoop()
 {
