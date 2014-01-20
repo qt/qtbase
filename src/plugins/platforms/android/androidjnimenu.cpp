@@ -198,9 +198,9 @@ namespace QtAndroidMenu
 
     static void fillMenuItem(JNIEnv *env, jobject menuItem, bool checkable, bool checked, bool enabled, bool visible, const QIcon &icon=QIcon())
     {
-        env->CallObjectMethod(menuItem, setCheckableMenuItemMethodID, checkable);
-        env->CallObjectMethod(menuItem, setCheckedMenuItemMethodID, checked);
-        env->CallObjectMethod(menuItem, setEnabledMenuItemMethodID, enabled);
+        env->DeleteLocalRef(env->CallObjectMethod(menuItem, setCheckableMenuItemMethodID, checkable));
+        env->DeleteLocalRef(env->CallObjectMethod(menuItem, setCheckedMenuItemMethodID, checked));
+        env->DeleteLocalRef(env->CallObjectMethod(menuItem, setEnabledMenuItemMethodID, enabled));
 
         if (!icon.isNull()) { // isNull() only checks the d pointer, not the actual image data.
             int sz = qMax(36, qgetenv("QT_ANDROID_APP_ICON_SIZE").toInt());
@@ -210,13 +210,13 @@ namespace QtAndroidMenu
                                         : QIcon::Disabled,
                                      QIcon::On).toImage();
             if (!img.isNull()) { // Make sure we have a valid image.
-                env->CallObjectMethod(menuItem,
-                                      setIconMenuItemMethodID,
-                                      createBitmapDrawable(createBitmap(img, env), env));
+                env->DeleteLocalRef(env->CallObjectMethod(menuItem,
+                                                          setIconMenuItemMethodID,
+                                                          createBitmapDrawable(createBitmap(img, env), env)));
             }
         }
 
-        env->CallObjectMethod(menuItem, setVisibleMenuItemMethodID, visible);
+        env->DeleteLocalRef(env->CallObjectMethod(menuItem, setVisibleMenuItemMethodID, visible));
     }
 
     static int addAllMenuItemsToMenu(JNIEnv *env, jobject menu, QAndroidPlatformMenu *platformMenu) {
@@ -242,6 +242,7 @@ namespace QtAndroidMenu
                           item->isEnabled(),
                           item->isVisible(),
                           item->icon());
+             env->DeleteLocalRef(menuItem);
          }
 
          return order;
