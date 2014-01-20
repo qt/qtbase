@@ -2180,7 +2180,9 @@ void QObject::deleteLater()
 
 const char *qFlagLocation(const char *method)
 {
-    QThreadData::current()->flaggedSignatures.store(method);
+    QThreadData *currentThreadData = QThreadData::current(false);
+    if (currentThreadData != 0)
+        currentThreadData->flaggedSignatures.store(method);
     return method;
 }
 
@@ -3553,8 +3555,11 @@ void QMetaObject::activate(QObject *sender, int signalOffset, int local_signal_i
 {
     int signal_index = signalOffset + local_signal_index;
 
-    if (!sender->d_func()->isSignalConnected(signal_index))
+    if (!sender->d_func()->isSignalConnected(signal_index)
+        && !qt_signal_spy_callback_set.signal_begin_callback
+        && !qt_signal_spy_callback_set.signal_end_callback) {
         return; // nothing connected to these signals, and no spy
+    }
 
     if (sender->d_func()->blockSig)
         return;

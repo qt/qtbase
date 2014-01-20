@@ -91,7 +91,9 @@ public:
         PlatformPanel = UserInputEvent | 0x17,
         ContextMenu = UserInputEvent | 0x18,
         EnterWhatsThisMode = UserInputEvent | 0x19,
+#ifndef QT_NO_GESTURES
         Gesture = UserInputEvent | 0x1a,
+#endif
         ApplicationStateChanged = 0x19,
         FlushEvents = 0x20,
         WindowScreenChanged = 0x21
@@ -403,6 +405,7 @@ public:
     };
 #endif
 
+#ifndef QT_NO_GESTURES
     class GestureEvent : public InputEvent {
     public:
         GestureEvent(QWindow *window, ulong time, Qt::NativeGestureType type, QPointF pos, QPointF globalPos)
@@ -417,6 +420,7 @@ public:
         ulong sequenceId;
         quint64 intValue;
     };
+#endif
 
     class WindowSystemEventList {
         QList<WindowSystemEvent *> impl;

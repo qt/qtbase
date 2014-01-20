@@ -348,6 +348,9 @@ QVariant QSystemLocalePrivate::dateTimeFormat(QLocale::FormatType type)
 
 QVariant QSystemLocalePrivate::dayName(int day, QLocale::FormatType type)
 {
+    if (day < 1 || day > 7)
+        return QString();
+
     static const LCTYPE short_day_map[]
         = { LOCALE_SABBREVDAYNAME1, LOCALE_SABBREVDAYNAME2,
             LOCALE_SABBREVDAYNAME3, LOCALE_SABBREVDAYNAME4, LOCALE_SABBREVDAYNAME5,

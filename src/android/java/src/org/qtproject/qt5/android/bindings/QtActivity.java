@@ -34,6 +34,7 @@ import java.io.FileOutputStream;
 import java.io.FileInputStream;
 import java.io.DataOutputStream;
 import java.io.DataInputStream;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -816,6 +817,21 @@ public class QtActivity extends Activity
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+
+        try {
+            m_activityInfo = getPackageManager().getActivityInfo(getComponentName(), PackageManager.GET_META_DATA);
+            for (Field f : Class.forName("android.R$style").getDeclaredFields()) {
+                if (f.getInt(null) == m_activityInfo.getThemeResource()) {
+                    QT_ANDROID_THEMES = new String[] {f.getName()};
+                    QT_ANDROID_DEFAULT_THEME = f.getName();
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            finish();
+            return;
+        }
+
         try {
             setTheme(Class.forName("android.R$style").getDeclaredField(QT_ANDROID_DEFAULT_THEME).getInt(null));
         } catch (Exception e) {
@@ -839,14 +855,6 @@ public class QtActivity extends Activity
 
         ENVIRONMENT_VARIABLES += "\tQT_ANDROID_THEME=" + QT_ANDROID_DEFAULT_THEME
                               + "/\tQT_ANDROID_THEME_DISPLAY_DPI=" + getResources().getDisplayMetrics().densityDpi + "\t";
-
-        try {
-            m_activityInfo = getPackageManager().getActivityInfo(getComponentName(), PackageManager.GET_META_DATA);
-        } catch (NameNotFoundException e) {
-            e.printStackTrace();
-            finish();
-            return;
-        }
 
         if (null == getLastNonConfigurationInstance()) {
             // if splash screen is defined, then show it

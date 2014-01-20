@@ -42,6 +42,7 @@
 #include "msvc_objectmodel.h"
 #include "msvc_vcproj.h"
 #include "msvc_vcxproj.h"
+#include <qscopedpointer.h>
 #include <qstringlist.h>
 #include <qfileinfo.h>
 
@@ -2854,11 +2855,11 @@ void VCProjectWriter::write(XmlOutput &xml, VCFilter &tool)
 // outputs a given filter for all existing configurations of a project
 void VCProjectWriter::outputFilter(VCProject &project, XmlOutput &xml, const QString &filtername)
 {
-    Node *root;
+    QScopedPointer<Node> root;
     if (project.SingleProjects.at(0).flat_files)
-        root = new FlatNode;
+        root.reset(new FlatNode);
     else
-        root = new TreeNode;
+        root.reset(new TreeNode);
 
     QString name, extfilter, guid;
     triState parse = unset;

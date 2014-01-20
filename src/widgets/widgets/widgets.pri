@@ -155,15 +155,6 @@ macx {
         widgets/qmaccocoaviewcontainer_mac.mm
 }
 
-# TODO
-false:mac {
-    OBJECTIVE_HEADERS += widgets/qcocoatoolbardelegate_mac_p.h \
-                         widgets/qcocoamenu_mac_p.h
-    OBJECTIVE_SOURCES += widgets/qcocoatoolbardelegate_mac.mm \
-                         widgets/qmainwindowlayout_mac.mm
-
-}
-
 wince*: {
     SOURCES += widgets/qmenu_wince.cpp
     HEADERS += widgets/qmenu_wince_resource_p.h

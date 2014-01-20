@@ -97,6 +97,7 @@ probase = $$relative_path($$_PRO_FILE_PWD_, $$dirname(_QMAKE_CONF_)/examples)
         TEMPLATE = aux
         CONFIG -= have_target qt staticlib dll
         SOURCES =
+        OBJECTIVE_SOURCES =
         INSTALLS -= target
     }
 }

@@ -197,6 +197,10 @@ namespace QTest {
     }
 }
 
+#if defined(Q_OS_WIN)
+Q_CORE_EXPORT bool qWinLogToStderr(); // defined in qlogging.cpp
+#endif
+
 void QPlainTestLogger::outputMessage(const char *str)
 {
 #if defined(Q_OS_WINCE)
@@ -209,7 +213,11 @@ void QPlainTestLogger::outputMessage(const char *str)
     } while (!strUtf16.isEmpty());
     if (stream != stdout)
 #elif defined(Q_OS_WIN)
-    OutputDebugStringA(str);
+    // log to system log only if output is not redirected, and no console is attached
+    if (!qWinLogToStderr() && stream == stdout) {
+        OutputDebugStringA(str);
+        return;
+    }
 #elif defined(Q_OS_ANDROID)
     __android_log_write(ANDROID_LOG_INFO, "QTestLib", str);
 #endif

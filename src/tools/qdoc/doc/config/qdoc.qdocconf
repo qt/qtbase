@@ -62,7 +62,6 @@ depends += \
     qtsql \
     qtsvg \
     qttestlib \
-    qttools \
     qtuitools \
     qtversit \
     qtwidgets \

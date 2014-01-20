@@ -42,6 +42,7 @@
 #include "qeglfshooks.h"
 #include <QtPlatformSupport/private/qeglplatformcursor_p.h>
 #include <QtPlatformSupport/private/qeglconvenience_p.h>
+#include <QtCore/QRegularExpression>
 
 #include <fcntl.h>
 #include <unistd.h>
@@ -56,17 +57,34 @@ QT_BEGIN_NAMESPACE
 // this is a global static to keep the QEglFSHooks interface as clean as possible
 static int framebuffer = -1;
 
-const char *QEglFSHooks::fbDeviceName() const
+QByteArray QEglFSHooks::fbDeviceName() const
 {
-    return "/dev/fb0";
+    QByteArray fbDev = qgetenv("QT_QPA_EGLFS_FB");
+    if (fbDev.isEmpty())
+        fbDev = QByteArrayLiteral("/dev/fb0");
+
+    return fbDev;
+}
+
+int QEglFSHooks::framebufferIndex() const
+{
+    int fbIndex = 0;
+    QRegularExpression fbIndexRx(QLatin1String("fb(\\d+)"));
+    QRegularExpressionMatch match = fbIndexRx.match(fbDeviceName());
+    if (match.hasMatch())
+        fbIndex = match.captured(1).toInt();
+
+    return fbIndex;
 }
 
 void QEglFSHooks::platformInit()
 {
-    framebuffer = qt_safe_open(fbDeviceName(), O_RDONLY);
+    QByteArray fbDev = fbDeviceName();
+
+    framebuffer = qt_safe_open(fbDev, O_RDONLY);
 
     if (framebuffer == -1)
-        qWarning("EGLFS: Failed to open %s", fbDeviceName());
+        qWarning("EGLFS: Failed to open %s", qPrintable(fbDev));
 }
 
 void QEglFSHooks::platformDestroy()

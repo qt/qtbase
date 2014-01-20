@@ -333,20 +333,6 @@ void QToolBarLayout::updateGeomArray() const
     rpick(o, that->hint) += handleExtent;
     that->hint += QSize(2*margin, 2*margin);
     that->dirty = false;
-#ifdef Q_WS_MAC
-    if (QMainWindow *mw = qobject_cast<QMainWindow *>(parentWidget()->parentWidget())) {
-        if (mw->unifiedTitleAndToolBarOnMac()
-                && mw->toolBarArea(static_cast<QToolBar *>(parentWidget())) == Qt::TopToolBarArea) {
-            if (expandFlag) {
-                tb->setMaximumSize(0xFFFFFF, 0xFFFFFF);
-            } else {
-               tb->setMaximumSize(hint);
-            }
-        }
-    }
-#endif
-
-    that->dirty = false;
 }
 
 static bool defaultWidgetAction(QToolBarItem *item)
@@ -401,15 +387,6 @@ void QToolBarLayout::setGeometry(const QRect &rect)
         if (!extension->isHidden())
             extension->hide();
     }
-#ifdef Q_WS_MAC
-    if (QMainWindow *win = qobject_cast<QMainWindow*>(tb->parentWidget())) {
-        Qt::ToolBarArea area = win->toolBarArea(tb);
-        if (win->unifiedTitleAndToolBarOnMac() && area == Qt::TopToolBarArea) {
-            qt_mainwindow_layout(win)->fixSizeInUnifiedToolbar(tb);
-        }
-    }
-#endif
-
 }
 
 bool QToolBarLayout::layoutActions(const QSize &size)

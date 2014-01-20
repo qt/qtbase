@@ -72,7 +72,7 @@ QEglFSImx6Hooks::QEglFSImx6Hooks()
         qputenv("FB_MULTI_BUFFER", "2");
     }
 
-    mNativeDisplay = fbGetDisplayByIndex(0);
+    mNativeDisplay = fbGetDisplayByIndex(framebufferIndex());
     fbGetDisplayGeometry(mNativeDisplay, &width, &height);
     mScreenSize.setHeight(height);
     mScreenSize.setWidth(width);

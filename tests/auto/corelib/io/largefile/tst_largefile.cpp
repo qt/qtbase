@@ -121,9 +121,7 @@ private slots:
 
     // Map/unmap large file
     void mapFile();
-#ifndef Q_OS_MAC
     void mapOffsetOverflow();
-#endif
 
     void closeFile() { largeFile.close(); }
 
@@ -513,9 +511,9 @@ void tst_LargeFile::mapFile()
 }
 
 //Mac: memory-mapping beyond EOF may succeed but it could generate bus error on access
-#ifndef Q_OS_MAC
 void tst_LargeFile::mapOffsetOverflow()
 {
+#ifndef Q_OS_MAC
     // Out-of-range mappings should fail, and not silently clip the offset
     for (int i = 50; i < 63; ++i) {
         uchar *address = 0;
@@ -529,8 +527,8 @@ void tst_LargeFile::mapOffsetOverflow()
         address = largeFile.map(((qint64)1 << i) + blockSize, blockSize);
         QVERIFY( !address );
     }
-}
 #endif
+}
 
 QTEST_APPLESS_MAIN(tst_LargeFile)
 #include "tst_largefile.moc"

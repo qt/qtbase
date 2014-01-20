@@ -198,3 +198,7 @@ INCLUDEPATH += ../3rdparty/md5 \
 !macx-icc:!vxworks:unix:LIBS_PRIVATE += -lm
 
 TR_EXCLUDE += ../3rdparty/*
+
+# MIPS DSP
+MIPS_DSP_ASM += tools/qstring_mips_dsp_asm.S
+MIPS_DSP_HEADERS += ../gui/painting/qt_mips_asm_dsp_p.h

@@ -572,6 +572,8 @@ bool QWindowsDialogHelperBase<BaseClass>::show(Qt::WindowFlags,
                                                    QWindow *parent)
 {
     const bool modal = (windowModality != Qt::NonModal);
+    if (!parent)
+        parent = QGuiApplication::focusWindow(); // Need a parent window, else the application loses activation when closed.
     if (parent) {
         m_ownerWindow = QWindowsWindow::handleOf(parent);
     } else {

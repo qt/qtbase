@@ -77,7 +77,8 @@ public:
     virtual bool filterConfig(EGLDisplay display, EGLConfig config) const;
     virtual void waitForVSync() const;
 
-    virtual const char *fbDeviceName() const;
+    virtual QByteArray fbDeviceName() const;
+    virtual int framebufferIndex() const;
 
     static QEglFSHooks *hooks()
     {

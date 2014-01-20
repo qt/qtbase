@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include <linux/input.h>
+#include <linux/kd.h>
 
 enum {
     e1 = ABS_PRESSURE,
