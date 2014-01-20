@@ -317,19 +317,23 @@ void QKdeThemePrivate::readKdeSystemPalette(const QSettings &kdeSettings, QPalet
     const QBrush buttonBrushDark = QBrush(button.darker(v > 128 ? 200 : 50));
     const QBrush buttonBrushDark150 = QBrush(button.darker(v > 128 ? 150 : 75));
     const QBrush buttonBrushLight150 = QBrush(button.lighter(v > 128 ? 150 : 75));
+    const QBrush buttonBrushLight = QBrush(button.lighter(v > 128 ? 200 : 50));
 
     pal->setBrush(QPalette::Disabled, QPalette::WindowText, buttonBrushDark);
     pal->setBrush(QPalette::Disabled, QPalette::ButtonText, buttonBrushDark);
     pal->setBrush(QPalette::Disabled, QPalette::Button, buttonBrush);
-    pal->setBrush(QPalette::Disabled, QPalette::Light, buttonBrushLight150);
-    pal->setBrush(QPalette::Disabled, QPalette::Dark, buttonBrushDark);
-    pal->setBrush(QPalette::Disabled, QPalette::Mid, buttonBrushDark150);
     pal->setBrush(QPalette::Disabled, QPalette::Text, buttonBrushDark);
     pal->setBrush(QPalette::Disabled, QPalette::BrightText, whiteBrush);
     pal->setBrush(QPalette::Disabled, QPalette::Base, buttonBrush);
     pal->setBrush(QPalette::Disabled, QPalette::Window, buttonBrush);
     pal->setBrush(QPalette::Disabled, QPalette::Highlight, buttonBrushDark150);
     pal->setBrush(QPalette::Disabled, QPalette::HighlightedText, buttonBrushLight150);
+
+    // set calculated colors for all groups
+    pal->setBrush(QPalette::Light, buttonBrushLight);
+    pal->setBrush(QPalette::Midlight, buttonBrushLight150);
+    pal->setBrush(QPalette::Mid, buttonBrushDark150);
+    pal->setBrush(QPalette::Dark, buttonBrushDark);
 }
 
 /*!
