@@ -1550,7 +1550,7 @@ void QXcbWindow::handleClientMessageEvent(const xcb_client_message_event_t *even
         handleXEmbedMessage(event);
     } else if (event->type == atom(QXcbAtom::_NET_ACTIVE_WINDOW)) {
         connection()->setFocusWindow(this);
-        QWindowSystemInterface::handleWindowActivated(window());
+        QWindowSystemInterface::handleWindowActivated(window(), Qt::ActiveWindowFocusReason);
     } else if (event->type == atom(QXcbAtom::MANAGER)
                || event->type == atom(QXcbAtom::_NET_WM_STATE)
                || event->type == atom(QXcbAtom::WM_CHANGE_STATE)) {
@@ -1855,14 +1855,14 @@ void QXcbWindow::handleFocusInEvent(const xcb_focus_in_event_t *)
     QWindow *w = window();
     w = static_cast<QWindowPrivate *>(QObjectPrivate::get(w))->eventReceiver();
     connection()->setFocusWindow(static_cast<QXcbWindow *>(w->handle()));
-    QWindowSystemInterface::handleWindowActivated(w);
+    QWindowSystemInterface::handleWindowActivated(w, Qt::ActiveWindowFocusReason);
 }
 
 static bool focusInPeeker(QXcbConnection *connection, xcb_generic_event_t *event)
 {
     if (!event) {
         // FocusIn event is not in the queue, proceed with FocusOut normally.
-        QWindowSystemInterface::handleWindowActivated(0);
+        QWindowSystemInterface::handleWindowActivated(0, Qt::ActiveWindowFocusReason);
         return true;
     }
     uint response_type = event->response_type & ~0x80;
