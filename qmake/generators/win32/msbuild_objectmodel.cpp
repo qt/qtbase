@@ -1384,6 +1384,17 @@ static inline triState toTriState(termSvrAwarenessType option)
     return unset;
 }
 
+static XmlOutput::xml_output fixedProgramDataBaseFileNameOutput(const VCCLCompilerTool &tool)
+{
+    if (tool.config->CompilerVersion >= NET2012
+            && tool.DebugInformationFormat == debugDisabled
+            && tool.ProgramDataBaseFileName.isEmpty()) {
+        // Force the creation of an empty tag to work-around Visual Studio bug. See QTBUG-35570.
+        return tagValue(_ProgramDataBaseFileName, tool.ProgramDataBaseFileName);
+    }
+    return attrTagS(_ProgramDataBaseFileName, tool.ProgramDataBaseFileName);
+}
+
 void VCXProjectWriter::write(XmlOutput &xml, const VCCLCompilerTool &tool)
 {
     xml
@@ -1440,7 +1451,7 @@ void VCXProjectWriter::write(XmlOutput &xml, const VCCLCompilerTool &tool)
             << attrTagS(_PreprocessOutputPath, tool.PreprocessOutputPath)
             << attrTagT(_PreprocessSuppressLineNumbers, tool.PreprocessSuppressLineNumbers)
             << attrTagT(_PreprocessToFile, toTriState(tool.GeneratePreprocessedFile))
-            << attrTagS(_ProgramDataBaseFileName, tool.ProgramDataBaseFileName)
+            << fixedProgramDataBaseFileNameOutput(tool)
             << attrTagS(_ProcessorNumber, tool.MultiProcessorCompilationProcessorCount)
             << attrTagS(_RuntimeLibrary, toString(tool.RuntimeLibrary))
             << attrTagT(_RuntimeTypeInfo, tool.RuntimeTypeInfo)
