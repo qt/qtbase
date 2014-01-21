@@ -2077,6 +2077,10 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
         ret = 0;
         break;
 
+    case PM_MenuBarPanelWidth:
+        ret = 0;
+        break;
+
     case QStyle::PM_MenuDesktopFrameWidth:
         ret = 5;
         break;
@@ -6258,6 +6262,10 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
             }
             sz = QSize(w, h);
         }
+        break;
+    case CT_MenuBarItem:
+        if (!sz.isEmpty())
+            sz += QSize(12, 4); // Constants from QWindowsStyle
         break;
     case CT_ToolButton:
         sz.rwidth() += 10;
