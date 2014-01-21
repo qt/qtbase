@@ -746,7 +746,7 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QStringList const& logge
                                                       .arg(i).arg(loggers.at(n), output)));
             } else {
                 QVERIFY2(output == expected,
-                         qPrintable(QString::fromLatin1("Mismatch at line %1 (%2, %3): '%4' != '%5'")
+                         qPrintable(QString::fromLatin1("Mismatch at line %1 (%2, %3):\n'%4'\n !=\n'%5'")
                                     .arg(i + 1).arg(loggers.at(n), expectedFileName, output, expected)));
             }
 

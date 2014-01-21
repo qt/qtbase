@@ -12,28 +12,28 @@
     <!-- message="Next test should fail" type="info" -->
     <!-- message="Next test should fail" type="info" -->
     <failure message="Compared values are not the same
-   Actual   (a): 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 ...
-   Expected (b): 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 ..." result="fail"/>
+   Actual   (a): &quot;BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB&quot;...
+   Expected (b): &quot;AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&quot;..." result="fail"/>
   </testcase>
   <testcase result="fail" name="failByteArray">
     <failure message="Compared values are not the same
-   Actual   (QByteArray(&quot;abc&quot;)): 61 62 63
-   Expected (QByteArray(&quot;cba&quot;)): 63 62 61" result="fail"/>
+   Actual   (QByteArray(&quot;abc&quot;)): &quot;abc&quot;
+   Expected (QByteArray(&quot;cba&quot;)): &quot;cba&quot;" result="fail"/>
   </testcase>
   <testcase result="fail" name="failByteArrayNull">
     <failure message="Compared values are not the same
-   Actual   (QByteArray(&quot;foo&quot;)): 66 6F 6F
-   Expected (QByteArray())     : " result="fail"/>
+   Actual   (QByteArray(&quot;foo&quot;)): &quot;foo&quot;
+   Expected (QByteArray())     : &quot;&quot;" result="fail"/>
   </testcase>
   <testcase result="fail" name="failByteArrayEmpty">
     <failure message="Compared values are not the same
-   Actual   (QByteArray(&quot;&quot;))   : 
-   Expected (QByteArray(&quot;foo&quot;)): 66 6F 6F" result="fail"/>
+   Actual   (QByteArray(&quot;&quot;))   : &quot;&quot;
+   Expected (QByteArray(&quot;foo&quot;)): &quot;foo&quot;" result="fail"/>
   </testcase>
   <testcase result="fail" name="failByteArraySingleChars">
     <failure message="Compared values are not the same
-   Actual   (QByteArray(&quot;6&quot;)): 36
-   Expected (QByteArray(&quot;7&quot;)): 37" result="fail"/>
+   Actual   (QByteArray(&quot;6&quot;)): &quot;6&quot;
+   Expected (QByteArray(&quot;7&quot;)): &quot;7&quot;" result="fail"/>
   </testcase>
   <testcase result="pass" name="cleanupTestCase"/>
   <system-err>

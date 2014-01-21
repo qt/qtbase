@@ -70,7 +70,7 @@ template<> inline char *toString(const QLatin1String &str)
 
 template<> inline char *toString(const QByteArray &ba)
 {
-    return QTest::toHexRepresentation(ba.constData(), ba.length());
+    return QTest::toPrettyCString(ba.constData(), ba.length());
 }
 
 #ifndef QT_NO_DATESTRING

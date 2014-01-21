@@ -2181,6 +2181,72 @@ char *toHexRepresentation(const char *ba, int length)
 
 /*!
     \internal
+    Returns the same QByteArray but with only the ASCII characters still shown;
+    everything else is replaced with \c {\OOO}.
+*/
+char *toPrettyCString(const char *p, int length)
+{
+    bool trimmed = false;
+    QScopedArrayPointer<char> buffer(new char[256]);
+    const char *end = p + length;
+    char *dst = buffer.data();
+
+    *dst++ = '"';
+    for ( ; p != end; ++p) {
+        if (dst - buffer.data() > 246) {
+            // plus the the quote, the three dots and NUL, it's 251, 252 or 255
+            trimmed = true;
+            break;
+        }
+
+        if (*p < 0x7f && *p >= 0x20 && *p != '\\' && *p != '"') {
+            *dst++ = *p;
+            continue;
+        }
+
+        // write as an escape sequence
+        // this means we may advance dst to buffer.data() + 247 or 250
+        *dst++ = '\\';
+        switch (*p) {
+        case 0x5c:
+        case 0x22:
+            *dst++ = uchar(*p);
+            break;
+        case 0x8:
+            *dst++ = 'b';
+            break;
+        case 0xc:
+            *dst++ = 'f';
+            break;
+        case 0xa:
+            *dst++ = 'n';
+            break;
+        case 0xd:
+            *dst++ = 'r';
+            break;
+        case 0x9:
+            *dst++ = 't';
+            break;
+        default:
+            // write as octal
+            *dst++ = '0' + ((uchar(*p) >> 6) & 7);
+            *dst++ = '0' + ((uchar(*p) >> 3) & 7);
+            *dst++ = '0' + ((uchar(*p)) & 7);
+        }
+    }
+
+    *dst++ = '"';
+    if (trimmed) {
+        *dst++ = '.';
+        *dst++ = '.';
+        *dst++ = '.';
+    }
+    *dst++ = '\0';
+    return buffer.take();
+}
+
+/*!
+    \internal
     Returns the same QString but with only the ASCII characters still shown;
     everything else is replaced with \c {\uXXXX}.
 
