@@ -187,6 +187,7 @@ public:
 
     // #### Qt 5: Q_PID is a pointer on Windows and a value on Unix
     Q_PID pid() const;
+    qint64 processId() const;
 
     bool waitForStarted(int msecs = 30000);
     bool waitForReadyRead(int msecs = 30000);

@@ -943,13 +943,15 @@ void tst_QProcess::hardExit()
 void tst_QProcess::softExit()
 {
     QProcess proc;
-
+    QCOMPARE(proc.processId(), 0);
     proc.start("testSoftExit/testSoftExit");
 
     QVERIFY(proc.waitForStarted(10000));
 #if !defined(Q_OS_WINCE)
     QVERIFY(proc.waitForReadyRead(10000));
 #endif
+
+    QVERIFY(proc.processId() > 0);
 
     proc.terminate();
 

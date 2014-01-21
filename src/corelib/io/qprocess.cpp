@@ -1545,14 +1545,38 @@ void QProcess::setWorkingDirectory(const QString &dir)
     d->workingDirectory = dir;
 }
 
+
 /*!
+    \deprecated
+    Use processId() instead.
+
     Returns the native process identifier for the running process, if
-    available.  If no process is currently running, 0 is returned.
+    available.  If no process is currently running, \c 0 is returned.
+
+    \note Unlike \l processId(), pid() returns an integer on Unix and a pointer on Windows.
+
+    \sa Q_PID, processId()
 */
-Q_PID QProcess::pid() const
+Q_PID QProcess::pid() const // ### Qt 6 remove or rename this method to processInformation()
 {
     Q_D(const QProcess);
     return d->pid;
+}
+
+/*!
+    \since 5.3
+
+    Returns the native process identifier for the running process, if
+    available. If no process is currently running, \c 0 is returned.
+ */
+qint64 QProcess::processId() const
+{
+    Q_D(const QProcess);
+#ifdef Q_OS_WIN
+    return d->pid ? d->pid->dwProcessId : 0;
+#else
+    return d->pid;
+#endif
 }
 
 /*! \reimp
