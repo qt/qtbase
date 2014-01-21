@@ -223,6 +223,8 @@ private slots:
     void split_regexp();
     void fromUtf16_data();
     void fromUtf16();
+    void fromUtf16_char16_data();
+    void fromUtf16_char16();
     void latin1String();
     void nanAndInf();
     void compare_data();
@@ -3968,14 +3970,15 @@ void tst_QString::fromAscii()
 
 void tst_QString::fromUcs4()
 {
+    const uint *null = 0;
     QString s;
-    s = QString::fromUcs4( 0 );
+    s = QString::fromUcs4( null );
     QVERIFY( s.isNull() );
     QCOMPARE( s.size(), 0 );
-    s = QString::fromUcs4( 0, 0 );
+    s = QString::fromUcs4( null, 0 );
     QVERIFY( s.isNull() );
     QCOMPARE( s.size(), 0 );
-    s = QString::fromUcs4( 0, 5 );
+    s = QString::fromUcs4( null, 5 );
     QVERIFY( s.isNull() );
     QCOMPARE( s.size(), 0 );
 
@@ -3996,6 +3999,21 @@ void tst_QString::fromUcs4()
     s = QString::fromUcs4( &smp, 1 );
     QVERIFY( !s.isNull() );
     QCOMPARE( s.size(), 2 );
+
+#ifdef Q_COMPILER_UNICODE_STRINGS
+    static const char32_t str1[] = U"Hello Unicode World";
+    s = QString::fromUcs4(str1, sizeof(str1) / sizeof(str1[0]) - 1);
+    QCOMPARE(s, QString("Hello Unicode World"));
+
+    s = QString::fromUcs4(str1);
+    QCOMPARE(s, QString("Hello Unicode World"));
+
+    s = QString::fromUcs4(str1, 5);
+    QCOMPARE(s, QString("Hello"));
+
+    s = QString::fromUcs4(U"\u221212\U000020AC\U00010000");
+    QCOMPARE(s, QString::fromUtf8("\342\210\222" "12" "\342\202\254" "\360\220\200\200"));
+#endif
 }
 
 void tst_QString::toUcs4()
@@ -4935,6 +4953,25 @@ void tst_QString::fromUtf16()
     QCOMPARE(QString::fromUtf16(ucs2.utf16(), len), res);
 }
 
+void tst_QString::fromUtf16_char16_data()
+{
+#ifdef Q_COMPILER_UNICODE_STRINGS
+    fromUtf16_data();
+#else
+    QSKIP("Compiler does not support C++11 unicode strings");
+#endif
+}
+
+void tst_QString::fromUtf16_char16()
+{
+#ifdef Q_COMPILER_UNICODE_STRINGS
+    QFETCH(QString, ucs2);
+    QFETCH(QString, res);
+    QFETCH(int, len);
+
+    QCOMPARE(QString::fromUtf16(reinterpret_cast<const char16_t *>(ucs2.utf16()), len), res);
+#endif
+}
 
 void tst_QString::latin1String()
 {

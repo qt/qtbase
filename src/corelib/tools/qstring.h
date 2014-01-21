@@ -505,6 +505,13 @@ public:
     static QString fromUcs4(const uint *, int size = -1);
     static QString fromRawData(const QChar *, int size);
 
+#if defined(Q_COMPILER_UNICODE_STRINGS)
+    static QString fromUtf16(const char16_t *str, int size = -1)
+    { return fromUtf16(reinterpret_cast<const ushort *>(str), size); }
+    static QString fromUcs4(const char32_t *str, int size = -1)
+    { return fromUcs4(reinterpret_cast<const uint *>(str), size); }
+#endif
+
 #if QT_DEPRECATED_SINCE(5, 0)
     QT_DEPRECATED static inline QString fromAscii(const char *str, int size = -1)
     { return fromLatin1(str, size); }
