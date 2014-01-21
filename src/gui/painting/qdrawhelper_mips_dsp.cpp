@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 MIPS Technologies, www.mips.com, author Damir Tatalovic <dtatalovic@mips.com>
+** Copyright (C) 2013 Imagination Technologies Limited, www.imgtec.com
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -109,6 +109,78 @@ void qt_blend_rgb32_on_rgb32_mips_dsp(uchar *destPixels, int dbpl,
         src = (const quint32 *)(((const uchar *) src) + sbpl);
     }
 }
+
+#if defined QT_COMPILER_SUPPORTS_MIPS_DSPR2
+void qt_blend_rgb16_on_rgb16_mips_dspr2(uchar *destPixels, int dbpl,
+                                        const uchar *srcPixels, int sbpl,
+                                        int w, int h,
+                                        int const_alpha)
+{
+    if (const_alpha == 256) {
+        if (w < 256) {
+            const quint16 *src = (const quint16*) srcPixels;
+            quint16 *dst = (quint16*) destPixels;
+            for (int y = 0; y < h; ++y) {
+                qt_blend_rgb16_on_rgb16_const_alpha_256_mips_dsp_asm(dst, src, w);
+                dst = (quint16*) (((uchar*) dst) + dbpl);
+                src = (quint16*) (((uchar*) src) + sbpl);
+            }
+        }
+        else {
+            int length = w << 1;
+            while (h--) {
+                memcpy(destPixels, srcPixels, length);
+                destPixels += dbpl;
+                srcPixels += sbpl;
+            }
+        }
+    }
+    else if (const_alpha != 0) {
+        const quint16 *src = (const quint16*) srcPixels;
+        quint16 *dst = (quint16*) destPixels;
+        for (int y = 0; y < h; ++y) {
+            qt_blend_rgb16_on_rgb16_mips_dspr2_asm(dst, src, w, const_alpha);
+            dst = (quint16*) (((uchar*) dst) + dbpl);
+            src = (quint16*) (((uchar*) src) + sbpl);
+        }
+    }
+}
+#else
+void qt_blend_rgb16_on_rgb16_mips_dsp(uchar *destPixels, int dbpl,
+                                      const uchar *srcPixels, int sbpl,
+                                      int w, int h,
+                                      int const_alpha)
+{
+    if (const_alpha == 256) {
+        if (w < 256) {
+            const quint16 *src = (const quint16*) srcPixels;
+            quint16 *dst = (quint16*) destPixels;
+            for (int y = 0; y < h; ++y) {
+                qt_blend_rgb16_on_rgb16_const_alpha_256_mips_dsp_asm(dst, src, w);
+                dst = (quint16*) (((uchar*) dst) + dbpl);
+                src = (quint16*) (((uchar*) src) + sbpl);
+            }
+        }
+        else {
+            int length = w << 1;
+            while (h--) {
+                memcpy(destPixels, srcPixels, length);
+                destPixels += dbpl;
+                srcPixels += sbpl;
+            }
+        }
+    }
+    else if (const_alpha != 0) {
+        const quint16 *src = (const quint16*) srcPixels;
+        quint16 *dst = (quint16*) destPixels;
+        for (int y = 0; y < h; ++y) {
+            qt_blend_rgb16_on_rgb16_mips_dsp_asm(dst, src, w, const_alpha);
+            dst = (quint16*) (((uchar*) dst) + dbpl);
+            src = (quint16*) (((uchar*) src) + sbpl);
+        }
+    }
+}
+#endif
 
 void comp_func_Source_mips_dsp(uint *dest, const uint *src, int length, uint const_alpha)
 {
@@ -422,5 +494,28 @@ void QT_FASTCALL comp_func_SourceOut_mips_dsp(uint *dest, const uint *src, int l
     comp_func_SourceOut_dsp_asm_x2(dest, src, length, const_alpha);
 }
 
+const uint * QT_FASTCALL qt_fetchUntransformed_888_mips_dsp (uint *buffer, const Operator *, const QSpanData *data,
+                                             int y, int x, int length)
+{
+    uchar *line = (uchar *)data->texture.scanLine(y) + x;
+    fetchUntransformed_888_asm_mips_dsp(buffer, line, length);
+    return buffer;
+}
+
+const uint * QT_FASTCALL qt_fetchUntransformed_444_mips_dsp (uint *buffer, const Operator *, const QSpanData *data,
+                                             int y, int x, int length)
+{
+    uchar *line = (uchar *)data->texture.scanLine(y) + x;
+    fetchUntransformed_444_asm_mips_dsp(buffer, line, length);
+    return buffer;
+}
+
+const uint * QT_FASTCALL qt_fetchUntransformed_argb8565_premultiplied_mips_dsp (uint *buffer, const Operator *, const QSpanData *data,
+                                             int y, int x, int length)
+{
+    uchar *line = (uchar *)data->texture.scanLine(y) + x;
+    fetchUntransformed_argb8565_premultiplied_asm_mips_dsp(buffer, line, length);
+    return buffer;
+}
 
 QT_END_NAMESPACE

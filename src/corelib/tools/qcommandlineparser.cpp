@@ -720,7 +720,8 @@ QStringList QCommandLineParser::values(const QString &optionName) const
 */
 bool QCommandLineParser::isSet(const QCommandLineOption &option) const
 {
-    return isSet(option.names().first());
+    // option.names() might be empty if the constructor failed
+    return !option.names().isEmpty() && isSet(option.names().first());
 }
 
 /*!

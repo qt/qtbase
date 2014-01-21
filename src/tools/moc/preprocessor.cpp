@@ -158,8 +158,7 @@ bool Preprocessor::skipBranch()
 }
 
 
-enum TokenizeMode { TokenizeCpp, TokenizePreprocessor, PreparePreprocessorStatement, TokenizePreprocessorStatement, TokenizeInclude, PrepareDefine, TokenizeDefine };
-static Symbols tokenize(const QByteArray &input, int lineNum = 1, TokenizeMode mode = TokenizeCpp)
+Symbols Preprocessor::tokenize(const QByteArray& input, int lineNum, Preprocessor::TokenizeMode mode)
 {
     Symbols symbols;
     const char *begin = input.constData();

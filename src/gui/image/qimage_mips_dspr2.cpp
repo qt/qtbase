@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Imagination Technologies Limited, www.imgtec.com
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtWidgets module of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -39,31 +39,31 @@
 **
 ****************************************************************************/
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include "qmacdefines_mac.h"
-#import <Cocoa/Cocoa.h>
+#include "qimage.h"
+#include <private/qimage_p.h>
 
 QT_BEGIN_NAMESPACE
-class QMainWindowLayout;
-class QToolBar;
-QT_END_NAMESPACE
 
-@class NSToolbarItem;
+// Defined in qimage_mips_dspr2_asm.S
+//
+extern "C" void premultiply_argb_inplace_mips_asm(void*, unsigned, unsigned, int);
 
-@interface QT_MANGLE_NAMESPACE(QCocoaToolBarDelegate) : NSObject {
-    QT_PREPEND_NAMESPACE(QMainWindowLayout) *mainWindowLayout;
-    NSToolbarItem *toolbarItem;
+bool convert_ARGB_to_ARGB_PM_inplace_mips_dspr2(QImageData *data, Qt::ImageConversionFlags)
+{
+    Q_ASSERT(data->format == QImage::Format_ARGB32);
+
+    if (!data->width || !data->height)
+        return true;
+
+    Q_ASSERT((data->bytes_per_line - (data->width << 2)) >= 0);
+
+    premultiply_argb_inplace_mips_asm(data->data,
+                                      data->height,
+                                      data->width,
+                                      data->bytes_per_line - (data->width << 2));
+
+    data->format = QImage::Format_ARGB32_Premultiplied;
+    return true;
 }
 
-- (id)initWithMainWindowLayout:(QT_PREPEND_NAMESPACE(QMainWindowLayout) *)layout;
-@end
+QT_END_NAMESPACE

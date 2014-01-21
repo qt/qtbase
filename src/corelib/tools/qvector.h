@@ -438,11 +438,15 @@ QVector<T>::QVector(int asize, const T &t)
 template <typename T>
 QVector<T>::QVector(std::initializer_list<T> args)
 {
-    d = Data::allocate(args.size());
-    // std::initializer_list<T>::iterator is guaranteed to be
-    // const T* ([support.initlist]/1), so can be memcpy'ed away from by copyConstruct
-    copyConstruct(args.begin(), args.end(), d->begin());
-    d->size = int(args.size());
+    if (args.size() > 0) {
+        d = Data::allocate(args.size());
+        // std::initializer_list<T>::iterator is guaranteed to be
+        // const T* ([support.initlist]/1), so can be memcpy'ed away from by copyConstruct
+        copyConstruct(args.begin(), args.end(), d->begin());
+        d->size = int(args.size());
+    } else {
+        d = Data::sharedNull();
+    }
 }
 #endif
 

@@ -1946,9 +1946,6 @@ void tst_QSslSocket::verifyMode()
     loop.exec();
 
     QVERIFY(clientSocket.isEncrypted());
-#if (defined(UBUNTU_ONEIRIC) && defined(__x86_64__)) || defined(Q_OS_WIN) || defined(Q_OS_MAC)
-    QEXPECT_FAIL("", "QTBUG-24234", Abort);
-#endif
     QVERIFY(server.socket->sslErrors().isEmpty());
 }
 

@@ -30,6 +30,7 @@ Cpp.ignoretokens        += \
                           Q_DECL_DEPRECATED \
                           Q_DECL_NOEXCEPT \
                           Q_DECL_NOTHROW \
+                          Q_DECL_UNUSED \
                           Q_DECLARATIVE_EXPORT \
                           Q_EXPLICIT \
                           Q_EXPORT \

@@ -65,7 +65,6 @@ depends += \
     qtsvg \
     qtsysteminfo \
     qttestlib \
-    qttools \
     qtuitools \
     qtversit \
     qtwebkit \

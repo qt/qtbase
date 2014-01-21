@@ -56,7 +56,7 @@ QT_BEGIN_NAMESPACE
 
 namespace QTest
 {
-    inline static void qWait(int ms)
+    Q_DECL_UNUSED inline static void qWait(int ms)
     {
         Q_ASSERT(QCoreApplication::instance());
 

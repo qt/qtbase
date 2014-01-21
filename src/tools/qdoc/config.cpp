@@ -196,8 +196,7 @@ void MetaStack::process(QChar ch, const Location& location)
     if (ch == QLatin1Char('{')) {
         push(MetaStackEntry());
         top().open();
-    }
-    else if (ch == QLatin1Char('}')) {
+    } else if (ch == QLatin1Char('}')) {
         if (count() == 1)
             location.fatal(tr("Unexpected '}'"));
 
@@ -215,12 +214,10 @@ void MetaStack::process(QChar ch, const Location& location)
             }
             ++pre;
         }
-    }
-    else if (ch == QLatin1Char(',') && count() > 1) {
+    } else if (ch == QLatin1Char(',') && count() > 1) {
         top().close();
         top().open();
-    }
-    else {
+    } else {
         /*
           This is where all the processing is done.
          */
@@ -296,12 +293,10 @@ Config::~Config()
 void Config::load(const QString& fileName)
 {
     load(Location::null, fileName);
-    if (loc.isEmpty()) {
+    if (loc.isEmpty())
         loc = Location(fileName);
-    }
-    else {
+    else
         loc.setEtc(true);
-    }
     lastLocation_ = Location::null;
 }
 
@@ -472,9 +467,8 @@ QStringList Config::getCanonicalPathList(const QString& var) const
             const ConfigVar& cv = configVars[i];
             if (!cv.location_.isEmpty())
                 (Location&) lastLocation_ = cv.location_;
-            if (!cv.plus_) {
+            if (!cv.plus_)
                 t.clear();
-            }
             const QString d = cv.currentPath_;
             const QStringList& sl = cv.values_;
             if (!sl.isEmpty()) {
@@ -786,9 +780,8 @@ QString Config::findFile(const Location& location,
         QStringList::ConstIterator d = dirs.constBegin();
         while (d != dirs.constEnd()) {
             fileInfo.setFile(QDir(*d), firstComponent);
-            if (fileInfo.exists()) {
+            if (fileInfo.exists())
                 break;
-            }
             ++d;
         }
     }
@@ -808,9 +801,9 @@ QString Config::findFile(const Location& location,
             QString extracted = extractedDirs[fileInfo.filePath()];
             ++c;
             fileInfo.setFile(QDir(extracted), *c);
-        }
-        else
+        } else {
             break;
+        }
 
         userFriendlyFilePath += QLatin1Char('?');
     }
@@ -876,9 +869,8 @@ QString Config::copyFile(const Location& location,
 
     char buffer[1024];
     int len;
-    while ((len = inFile.read(buffer, sizeof(buffer))) > 0) {
+    while ((len = inFile.read(buffer, sizeof(buffer))) > 0)
         outFile.write(buffer, len);
-    }
     return outFileName;
 }
 
@@ -1002,17 +994,15 @@ void Config::load(Location location, const QString& fileName)
     QChar c = text.at(0);
     uint cc = c.unicode();
     while (i < (int) text.length()) {
-        if (cc == 0)
+        if (cc == 0) {
             ++i;
-        else if (c.isSpace()) {
+        } else if (c.isSpace()) {
             SKIP_CHAR();
-        }
-        else if (cc == '#') {
+        } else if (cc == '#') {
             do {
                 SKIP_CHAR();
             } while (cc != '\n');
-        }
-        else if (isMetaKeyChar(c)) {
+        } else if (isMetaKeyChar(c)) {
             Location keyLoc = location;
             bool plus = false;
             QString stringValue;
@@ -1184,15 +1174,13 @@ void Config::load(Location location, const QString& fileName)
                     ++key;
                 }
             }
-        }
-        else {
+        } else {
             location.fatal(tr("Unexpected character '%1' at beginning of line").arg(c));
         }
     }
     popWorkingDir();
-    if (!workingDirs_.isEmpty()) {
+    if (!workingDirs_.isEmpty())
         QDir::setCurrent(workingDirs_.top());
-    }
 }
 
 QStringList Config::getFilesHere(const QString& uncleanDir,
@@ -1219,9 +1207,8 @@ QStringList Config::getFilesHere(const QString& uncleanDir,
         if (!fn->startsWith(QLatin1Char('~'))) {
             QString s = dirInfo.filePath(*fn);
             QString c = QDir::cleanPath(s);
-            if (!excludedFiles.contains(c)) {
+            if (!excludedFiles.contains(c))
                 result.append(c);
-            }
         }
         ++fn;
     }
@@ -1251,9 +1238,9 @@ void Config::pushWorkingDir(const QString& dir)
  */
 QString Config::popWorkingDir()
 {
-    if (!workingDirs_.isEmpty()) {
+    if (!workingDirs_.isEmpty())
         return workingDirs_.pop();
-    }
+
     qDebug() << "RETURNED EMPTY WORKING DIR";
     return QString();
 }

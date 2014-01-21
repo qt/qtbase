@@ -47,6 +47,8 @@
 #include <QtNetwork/qnetworkrequest.h>
 #include <QtNetwork/qnetworkaccessmanager.h>
 #include <QtNetwork/qsslconfiguration.h>
+#include <QtNetwork/qhttpmultipart.h>
+#include <QtCore/QJsonDocument>
 #include "../../auto/network-settings.h"
 
 #if defined(QT_BUILD_INTERNAL) && !defined(QT_NO_SSL)
@@ -65,6 +67,9 @@ private slots:
     void limiting();
     void setSslConfiguration_data();
     void setSslConfiguration();
+    void uploadToFacebook();
+private:
+    QHttpMultiPart *createFacebookMultiPart(const QByteArray &accessToken);
 };
 
 QNetworkReply *reply;
@@ -175,6 +180,108 @@ void tst_qnetworkreply::setSslConfiguration()
     }
 #endif
 #endif // QT_NO_SSL
+}
+
+QHttpMultiPart *tst_qnetworkreply::createFacebookMultiPart(const QByteArray &accessToken)
+{
+    QHttpMultiPart *multiPart = new QHttpMultiPart(QHttpMultiPart::FormDataType);
+    QHttpPart accessTokenPart;
+    accessTokenPart.setHeader(QNetworkRequest::ContentDispositionHeader,
+                              QVariant("form-data; name=\"access_token\""));
+    accessTokenPart.setBody(accessToken);
+    multiPart->append(accessTokenPart);
+
+    QHttpPart batchPart;
+    batchPart.setHeader(QNetworkRequest::ContentDispositionHeader,
+                        QVariant("form-data; name=\"batch\""));
+    batchPart.setBody("["
+"   {"
+"      \"attached_files\" : \"image1\","
+"      \"body\" : \"message=&published=0\","
+"      \"method\" : \"POST\","
+"      \"relative_url\" : \"me/photos\""
+"   },"
+"   {"
+"      \"attached_files\" : \"image2\","
+"      \"body\" : \"message=&published=0\","
+"      \"method\" : \"POST\","
+"      \"relative_url\" : \"me/photos\""
+"   },"
+"   {"
+"      \"attached_files\" : \"image3\","
+"      \"body\" : \"message=&published=0\","
+"      \"method\" : \"POST\","
+"      \"relative_url\" : \"me/photos\""
+"   }"
+"]");
+    multiPart->append(batchPart);
+
+    QHttpPart imagePart1;
+    imagePart1.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("image/jpg"));
+    imagePart1.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"image1\"; filename=\"image1.jpg\""));
+    QFile *file1 = new QFile(QFINDTESTDATA("../../auto/network/access/qnetworkreply/image1.jpg"));
+    file1->open(QIODevice::ReadOnly);
+    imagePart1.setBodyDevice(file1);
+    file1->setParent(multiPart);
+
+    multiPart->append(imagePart1);
+
+    QHttpPart imagePart2;
+    imagePart2.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("image/jpg"));
+    imagePart2.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"image2\"; filename=\"image2.jpg\""));
+    QFile *file2 = new QFile(QFINDTESTDATA("../../auto/network/access/qnetworkreply/image2.jpg"));
+    file2->open(QIODevice::ReadOnly);
+    imagePart2.setBodyDevice(file2);
+    file2->setParent(multiPart);
+
+    multiPart->append(imagePart2);
+
+    QHttpPart imagePart3;
+    imagePart3.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("image/jpg"));
+    imagePart3.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"image3\"; filename=\"image3.jpg\""));
+    QFile *file3 = new QFile(QFINDTESTDATA("../../auto/network/access/qnetworkreply/image3.jpg"));
+    file3->open(QIODevice::ReadOnly);
+    imagePart3.setBodyDevice(file3);
+    file3->setParent(multiPart);
+
+    multiPart->append(imagePart3);
+    return multiPart;
+}
+
+void tst_qnetworkreply::uploadToFacebook()
+{
+    QByteArray accessToken = qgetenv("QT_FACEBOOK_ACCESS_TOKEN");
+    if (accessToken.isEmpty())
+        QSKIP("This test requires the QT_FACEBOOK_ACCESS_TOKEN environment variable to be set. "
+              "Do something like 'export QT_FACEBOOK_ACCESS_TOKEN=MyAccessToken'");
+
+    QElapsedTimer timer;
+    QNetworkAccessManager manager;
+    QNetworkRequest request(QUrl("https://graph.facebook.com/me/photos"));
+    QHttpMultiPart *multiPart = createFacebookMultiPart(accessToken);
+    timer.start();
+
+    QNetworkReply *reply = manager.post(request, multiPart);
+    multiPart->setParent(reply);
+    QObject::connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(120);
+    qint64 elapsed = timer.elapsed();
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    qDebug() << "reply finished after" << elapsed / 1000.0 << "seconds";
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+
+    QByteArray content = reply->readAll();
+    QJsonDocument jsonDocument = QJsonDocument::fromJson(content);
+    QVERIFY(jsonDocument.isArray());
+    QJsonArray uploadStatuses = jsonDocument.array();
+    QVERIFY(uploadStatuses.size() > 0);
+    for (int a = 0; a < uploadStatuses.size(); a++) {
+        QJsonValue currentUploadStatus = uploadStatuses.at(a);
+        QVERIFY(currentUploadStatus.isObject());
+        QJsonObject statusObject = currentUploadStatus.toObject();
+        QJsonValue statusCode = statusObject.value(QLatin1String("code"));
+        QCOMPARE(statusCode.toVariant().toInt(), 200); // 200 OK
+    }
 }
 
 QTEST_MAIN(tst_qnetworkreply)

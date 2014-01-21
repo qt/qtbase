@@ -148,7 +148,10 @@ public:
     static void processTabletEvent(QWindowSystemInterfacePrivate::TabletEvent *e);
     static void processTabletEnterProximityEvent(QWindowSystemInterfacePrivate::TabletEnterProximityEvent *e);
     static void processTabletLeaveProximityEvent(QWindowSystemInterfacePrivate::TabletLeaveProximityEvent *e);
+
+#ifndef QT_NO_GESTURES
     static void processGestureEvent(QWindowSystemInterfacePrivate::GestureEvent *e);
+#endif
 
     static void processPlatformPanelEvent(QWindowSystemInterfacePrivate::PlatformPanelEvent *e);
 #ifndef QT_NO_CONTEXTMENU

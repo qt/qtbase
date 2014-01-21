@@ -2334,6 +2334,31 @@ void QAbstractItemModel::doSetRoleNames(const QHash<int,QByteArray> &roleNames)
 
     Returns the model's role names.
 
+    The default role names set by Qt are:
+
+    \table
+    \header
+    \li Qt Role
+    \li QML Role Name
+    \row
+    \li Qt::DisplayRole
+    \li display
+    \row
+    \li Qt::DecorationRole
+    \li decoration
+    \row
+    \li Qt::EditRole
+    \li edit
+    \row
+    \li Qt::ToolTipRole
+    \li toolTip
+    \row
+    \li Qt::StatusTipRole
+    \li statusTip
+    \row
+    \li Qt::WhatsThisRole
+    \li whatsThis
+    \endtable
 */
 QHash<int,QByteArray> QAbstractItemModel::roleNames() const
 {
@@ -3377,6 +3402,9 @@ Qt::ItemFlags QAbstractTableModel::flags(const QModelIndex &index) const
     When subclassing QAbstractListModel, you must provide implementations
     of the rowCount() and data() functions. Well behaved models also provide
     a headerData() implementation.
+
+    If your model is used within QML and requires roles other than the
+    default ones provided by the roleNames() function, you must override it.
 
     For editable list models, you must also provide an implementation of
     setData(), implement the flags() function so that it returns a value

@@ -944,6 +944,13 @@ void tst_QDate::fromStringDateFormat_data()
     QTest::newRow("iso2") << QDate(1999, 11, 14).toString(Qt::ISODate) << Qt::ISODate << QDate(1999, 11, 14);
     QTest::newRow("iso3") << QString("0999-01-01") << Qt::ISODate << QDate(999, 1, 1);
     QTest::newRow("iso3b") << QString("0999-01-01") << Qt::ISODate << QDate(999, 1, 1);
+    QTest::newRow("iso4") << QString("2000101101")      << Qt::ISODate << QDate();
+    QTest::newRow("iso5") << QString("2000/01/01")      << Qt::ISODate << QDate(2000, 1, 1);
+    QTest::newRow("iso6") << QString("2000-01-01 blah") << Qt::ISODate << QDate(2000, 1, 1);
+    QTest::newRow("iso7") << QString("2000-01-011blah") << Qt::ISODate << QDate();
+    QTest::newRow("iso8") << QString("2000-01-01blah")  << Qt::ISODate << QDate(2000, 1, 1);
+    QTest::newRow("iso9") << QString("-001-01-01")      << Qt::ISODate << QDate();
+    QTest::newRow("iso10") << QString("99999-01-01")    << Qt::ISODate << QDate();
 
     // Test Qt::RFC2822Date format (RFC 2822).
     QTest::newRow("RFC 2822") << QString::fromLatin1("13 Feb 1987 13:24:51 +0100")

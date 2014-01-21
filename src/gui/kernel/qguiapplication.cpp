@@ -1488,10 +1488,12 @@ void QGuiApplicationPrivate::processWindowSystemEvent(QWindowSystemInterfacePriv
         QGuiApplicationPrivate::processTabletLeaveProximityEvent(
                     static_cast<QWindowSystemInterfacePrivate::TabletLeaveProximityEvent *>(e));
         break;
+#ifndef QT_NO_GESTURES
     case QWindowSystemInterfacePrivate::Gesture:
         QGuiApplicationPrivate::processGestureEvent(
                     static_cast<QWindowSystemInterfacePrivate::GestureEvent *>(e));
         break;
+#endif
     case QWindowSystemInterfacePrivate::PlatformPanel:
         QGuiApplicationPrivate::processPlatformPanelEvent(
                     static_cast<QWindowSystemInterfacePrivate::PlatformPanelEvent *>(e));

@@ -215,10 +215,10 @@ void QThreadData::clearCurrentThreadData()
     clear_thread_data();
 }
 
-QThreadData *QThreadData::current()
+QThreadData *QThreadData::current(bool createIfNecessary)
 {
     QThreadData *data = get_thread_data();
-    if (!data) {
+    if (!data && createIfNecessary) {
         data = new QThreadData;
         QT_TRY {
             set_thread_data(data);

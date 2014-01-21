@@ -220,6 +220,9 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
     , m_overrideBecomeKey(false)
     , m_alertRequest(NoAlertRequest)
     , monitor(nil)
+    , m_drawContentBorderGradient(false)
+    , m_topContentBorderThickness(0)
+    , m_bottomContentBorderThickness(0)
     , m_normalGeometry(QRect(0,0,-1,-1))
 {
 #ifdef QT_COCOA_ENABLE_WINDOW_DEBUG
@@ -510,6 +513,9 @@ NSUInteger QCocoaWindow::windowStyleMask(Qt::WindowFlags flags)
                 styleMask |= NSMiniaturizableWindowMask;
         }
     }
+
+    if (m_drawContentBorderGradient)
+        styleMask |= NSTexturedBackgroundWindowMask;
 
 #ifdef QT_COCOA_ENABLE_WINDOW_DEBUG
     qDebug("windowStyleMask of '%s': flags %X -> styleMask %lX", qPrintable(window()->title()), (int)flags, styleMask);
@@ -936,6 +942,9 @@ NSWindow * QCocoaWindow::createNSWindow()
     }
 
     m_windowModality = window()->modality();
+
+    applyContentBorderThickness(createdWindow);
+
     return createdWindow;
 }
 
@@ -1099,6 +1108,38 @@ void QCocoaWindow::registerTouch(bool enable)
     else if (m_registerTouchCount == 0)
         [m_contentView setAcceptsTouchEvents:NO];
 }
+
+void QCocoaWindow::setContentBorderThickness(int topThickness, int bottomThickness)
+{
+    m_topContentBorderThickness = topThickness;
+    m_bottomContentBorderThickness = bottomThickness;
+    bool enable = (topThickness > 0 || bottomThickness > 0);
+    m_drawContentBorderGradient = enable;
+
+    applyContentBorderThickness(m_nsWindow);
+}
+
+void QCocoaWindow::applyContentBorderThickness(NSWindow *window)
+{
+    if (!window)
+        return;
+
+    if (m_drawContentBorderGradient)
+        [window setStyleMask:[window styleMask] | NSTexturedBackgroundWindowMask];
+    else
+        [window setStyleMask:[window styleMask] & ~NSTexturedBackgroundWindowMask];
+
+    if (m_topContentBorderThickness > 0) {
+        [window setContentBorderThickness:m_topContentBorderThickness forEdge:NSMaxYEdge];
+        [window setAutorecalculatesContentBorderThickness:NO forEdge:NSMaxYEdge];
+    }
+
+    if (m_bottomContentBorderThickness > 0) {
+        [window setContentBorderThickness:m_topContentBorderThickness forEdge:NSMinYEdge];
+        [window setAutorecalculatesContentBorderThickness:NO forEdge:NSMinYEdge];
+    }
+}
+
 
 qreal QCocoaWindow::devicePixelRatio() const
 {

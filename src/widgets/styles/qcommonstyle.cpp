@@ -838,7 +838,10 @@ QSize QCommonStylePrivate::viewItemSize(const QStyleOptionViewItem *option, int 
                 break;
             case QStyleOptionViewItem::Top:
             case QStyleOptionViewItem::Bottom:
-                bounds.setWidth(wrapText ? option->decorationSize.width() : QFIXED_MAX);
+                if (wrapText)
+                    bounds.setWidth(bounds.isValid() ? bounds.width() - 2 * textMargin : option->decorationSize.width());
+                else
+                    bounds.setWidth(QFIXED_MAX);
                 break;
             default:
                 break;

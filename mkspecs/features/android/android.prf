@@ -8,4 +8,7 @@ contains(TEMPLATE, ".*app") {
             INSTALLS *= target
         }
     }
+} else: contains(TEMPLATE, "lib"):!QTDIR_build:android_install {
+    target.path = /libs/$$ANDROID_TARGET_ARCH/
+    INSTALLS *= target
 }

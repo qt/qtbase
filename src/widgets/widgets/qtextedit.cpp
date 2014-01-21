@@ -2042,7 +2042,7 @@ QList<QTextEdit::ExtraSelection> QTextEdit::extraSelections() const
     This function returns a new MIME data object to represent the contents
     of the text edit's current selection. It is called when the selection needs
     to be encapsulated into a new QMimeData object; for example, when a drag
-    and drop operation is started, or when data is copyied to the clipboard.
+    and drop operation is started, or when data is copied to the clipboard.
 
     If you reimplement this function, note that the ownership of the returned
     QMimeData object is passed to the caller. The selection can be retrieved

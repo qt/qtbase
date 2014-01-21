@@ -155,11 +155,16 @@ Q_SIGNALS:
     void propertyChanged(const QString &, const QDBusVariant &value);
     void stateChanged(const QString &);
     void propertyChangedContext(const QString &,const QString &,const QDBusVariant &);
+    void servicesChanged(const ConnmanMapList&, const QList<QDBusObjectPath> &);
 
 protected:
     void connectNotify(const QMetaMethod &signal);
     void disconnectNotify(const QMetaMethod &signal);
     QVariant getProperty(const QString &);
+
+private slots:
+    void onServicesChanged(const ConnmanMapList&, const QList<QDBusObjectPath> &);
+
 };
 
 class QConnmanProfileInterfacePrivate;
