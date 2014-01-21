@@ -1029,13 +1029,13 @@ inline QT_ASCII_CAST_WARN bool operator==(const char *s1, const QString &s2)
 inline QT_ASCII_CAST_WARN bool operator!=(const char *s1, const QString &s2)
 { return QString::compare_helper(s2.constData(), s2.size(), s1, -1) != 0; }
 inline QT_ASCII_CAST_WARN bool operator<(const char *s1, const QString &s2)
-{ return QString::compare_helper(s2.constData(), s2.size(), s1, -1) < 0; }
-inline QT_ASCII_CAST_WARN bool operator>(const char *s1, const QString &s2)
 { return QString::compare_helper(s2.constData(), s2.size(), s1, -1) > 0; }
+inline QT_ASCII_CAST_WARN bool operator>(const char *s1, const QString &s2)
+{ return QString::compare_helper(s2.constData(), s2.size(), s1, -1) < 0; }
 inline QT_ASCII_CAST_WARN bool operator<=(const char *s1, const QString &s2)
-{ return QString::compare_helper(s2.constData(), s2.size(), s1, -1) <= 0; }
-inline QT_ASCII_CAST_WARN bool operator>=(const char *s1, const QString &s2)
 { return QString::compare_helper(s2.constData(), s2.size(), s1, -1) >= 0; }
+inline QT_ASCII_CAST_WARN bool operator>=(const char *s1, const QString &s2)
+{ return QString::compare_helper(s2.constData(), s2.size(), s1, -1) <= 0; }
 
 inline QT_ASCII_CAST_WARN bool operator==(const char *s1, QLatin1String s2)
 { return QString::fromUtf8(s1) == s2; }

@@ -4419,6 +4419,62 @@ void tst_QString::operator_smaller()
     // operator< is not locale-aware (or shouldn't be)
     QVERIFY( foo < QString("\xc3\xa9") );
     QVERIFY( foo < "\xc3\xa9" );
+
+    QVERIFY(QString("a") < QString("b"));
+    QVERIFY(QString("a") <= QString("b"));
+    QVERIFY(QString("a") <= QString("a"));
+    QVERIFY(QString("a") == QString("a"));
+    QVERIFY(QString("a") >= QString("a"));
+    QVERIFY(QString("b") >= QString("a"));
+    QVERIFY(QString("b") > QString("a"));
+
+    QVERIFY("a" < QString("b"));
+    QVERIFY("a" <= QString("b"));
+    QVERIFY("a" <= QString("a"));
+    QVERIFY("a" == QString("a"));
+    QVERIFY("a" >= QString("a"));
+    QVERIFY("b" >= QString("a"));
+    QVERIFY("b" > QString("a"));
+
+    QVERIFY(QString("a") < "b");
+    QVERIFY(QString("a") <= "b");
+    QVERIFY(QString("a") <= "a");
+    QVERIFY(QString("a") == "a");
+    QVERIFY(QString("a") >= "a");
+    QVERIFY(QString("b") >= "a");
+    QVERIFY(QString("b") > "a");
+
+    QVERIFY(QLatin1String("a") < QString("b"));
+    QVERIFY(QLatin1String("a") <= QString("b"));
+    QVERIFY(QLatin1String("a") <= QString("a"));
+    QVERIFY(QLatin1String("a") == QString("a"));
+    QVERIFY(QLatin1String("a") >= QString("a"));
+    QVERIFY(QLatin1String("b") >= QString("a"));
+    QVERIFY(QLatin1String("b") > QString("a"));
+
+    QVERIFY(QString("a") < QLatin1String("b"));
+    QVERIFY(QString("a") <= QLatin1String("b"));
+    QVERIFY(QString("a") <= QLatin1String("a"));
+    QVERIFY(QString("a") == QLatin1String("a"));
+    QVERIFY(QString("a") >= QLatin1String("a"));
+    QVERIFY(QString("b") >= QLatin1String("a"));
+    QVERIFY(QString("b") > QLatin1String("a"));
+
+    QVERIFY("a" < QLatin1String("b"));
+    QVERIFY("a" <= QLatin1String("b"));
+    QVERIFY("a" <= QLatin1String("a"));
+    QVERIFY("a" == QLatin1String("a"));
+    QVERIFY("a" >= QLatin1String("a"));
+    QVERIFY("b" >= QLatin1String("a"));
+    QVERIFY("b" > QLatin1String("a"));
+
+    QVERIFY(QLatin1String("a") < "b");
+    QVERIFY(QLatin1String("a") <= "b");
+    QVERIFY(QLatin1String("a") <= "a");
+    QVERIFY(QLatin1String("a") == "a");
+    QVERIFY(QLatin1String("a") >= "a");
+    QVERIFY(QLatin1String("b") >= "a");
+    QVERIFY(QLatin1String("b") > "a");
 }
 
 void tst_QString::integer_conversion_data()
