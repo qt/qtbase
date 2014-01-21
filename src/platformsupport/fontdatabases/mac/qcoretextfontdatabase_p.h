@@ -52,6 +52,12 @@
 #include <CoreGraphics/CoreGraphics.h>
 #endif
 
+#ifdef Q_OS_MACX
+Q_DECLARE_METATYPE(QCFType<CGFontRef>);
+Q_DECLARE_METATYPE(QCFType<CFURLRef>);
+Q_DECLARE_METATYPE(ATSFontContainerRef);
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QCoreTextFontDatabase : public QPlatformFontDatabase
@@ -79,11 +85,7 @@ private:
 
     void removeApplicationFonts();
 #ifdef Q_OS_MACX
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_8
-    QVector<QCFType<CGFontRef> > m_applicationGraphicsFonts;
-    QVector<QCFType<CFURLRef> > m_applicationURLFonts;
-#endif
-    QVector<ATSFontContainerRef> m_applicationFonts;
+    QVector<QVariant> m_applicationFonts;
 #endif
 };
 
