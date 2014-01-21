@@ -241,6 +241,9 @@ namespace QtAndroid
 
     jobject createBitmap(QImage img, JNIEnv *env)
     {
+        if (!m_bitmapClass)
+            return 0;
+
         if (img.format() != QImage::Format_RGBA8888 && img.format() != QImage::Format_RGB16)
             img = img.convertToFormat(QImage::Format_RGBA8888);
 
@@ -298,7 +301,7 @@ namespace QtAndroid
 
     jobject createBitmapDrawable(jobject bitmap, JNIEnv *env)
     {
-        if (!bitmap)
+        if (!bitmap || !m_bitmapDrawableClass || !m_resourcesObj)
             return 0;
 
         return env->NewObject(m_bitmapDrawableClass,
@@ -476,12 +479,18 @@ static void terminateQt(JNIEnv *env, jclass /*clazz*/)
 {
     env->DeleteGlobalRef(m_applicationClass);
     env->DeleteGlobalRef(m_classLoaderObject);
-    env->DeleteGlobalRef(m_resourcesObj);
-    env->DeleteGlobalRef(m_activityObject);
-    env->DeleteGlobalRef(m_bitmapClass);
-    env->DeleteGlobalRef(m_ARGB_8888_BitmapConfigValue);
-    env->DeleteGlobalRef(m_RGB_565_BitmapConfigValue);
-    env->DeleteGlobalRef(m_bitmapDrawableClass);
+    if (m_resourcesObj)
+        env->DeleteGlobalRef(m_resourcesObj);
+    if (m_activityObject)
+        env->DeleteGlobalRef(m_activityObject);
+    if (m_bitmapClass)
+        env->DeleteGlobalRef(m_bitmapClass);
+    if (m_ARGB_8888_BitmapConfigValue)
+        env->DeleteGlobalRef(m_ARGB_8888_BitmapConfigValue);
+    if (m_RGB_565_BitmapConfigValue)
+        env->DeleteGlobalRef(m_RGB_565_BitmapConfigValue);
+    if (m_bitmapDrawableClass)
+        env->DeleteGlobalRef(m_bitmapDrawableClass);
     m_androidPlatformIntegration = 0;
     delete m_androidAssetsFileEngineHandler;
 }
@@ -640,38 +649,41 @@ static int registerNatives(JNIEnv *env)
     jmethodID methodID;
     GET_AND_CHECK_STATIC_METHOD(methodID, m_applicationClass, "activity", "()Landroid/app/Activity;");
     jobject activityObject = env->CallStaticObjectMethod(m_applicationClass, methodID);
-    m_activityObject = env->NewGlobalRef(activityObject);
     GET_AND_CHECK_STATIC_METHOD(methodID, m_applicationClass, "classLoader", "()Ljava/lang/ClassLoader;");
     m_classLoaderObject = env->NewGlobalRef(env->CallStaticObjectMethod(m_applicationClass, methodID));
-
     clazz = env->GetObjectClass(m_classLoaderObject);
     GET_AND_CHECK_METHOD(m_loadClassMethodID, clazz, "loadClass", "(Ljava/lang/String;)Ljava/lang/Class;");
 
-    FIND_AND_CHECK_CLASS("android/content/ContextWrapper");
-    GET_AND_CHECK_METHOD(methodID, clazz, "getAssets", "()Landroid/content/res/AssetManager;");
-    m_assetManager = AAssetManager_fromJava(env, env->CallObjectMethod(activityObject, methodID));
+    if (activityObject) {
+        m_activityObject = env->NewGlobalRef(activityObject);
 
-    GET_AND_CHECK_METHOD(methodID, clazz, "getResources", "()Landroid/content/res/Resources;");
-    m_resourcesObj = env->NewGlobalRef(env->CallObjectMethod(activityObject, methodID));
+        FIND_AND_CHECK_CLASS("android/content/ContextWrapper");
+        GET_AND_CHECK_METHOD(methodID, clazz, "getAssets", "()Landroid/content/res/AssetManager;");
+        m_assetManager = AAssetManager_fromJava(env, env->CallObjectMethod(activityObject, methodID));
 
-    FIND_AND_CHECK_CLASS("android/graphics/Bitmap");
-    m_bitmapClass = static_cast<jclass>(env->NewGlobalRef(clazz));
-    GET_AND_CHECK_STATIC_METHOD(m_createBitmapMethodID, m_bitmapClass
-                                , "createBitmap", "(IILandroid/graphics/Bitmap$Config;)Landroid/graphics/Bitmap;");
+        GET_AND_CHECK_METHOD(methodID, clazz, "getResources", "()Landroid/content/res/Resources;");
+        m_resourcesObj = env->NewGlobalRef(env->CallObjectMethod(activityObject, methodID));
 
-    FIND_AND_CHECK_CLASS("android/graphics/Bitmap$Config");
-    jfieldID fieldId;
-    GET_AND_CHECK_STATIC_FIELD(fieldId, clazz, "ARGB_8888", "Landroid/graphics/Bitmap$Config;");
-    m_ARGB_8888_BitmapConfigValue = env->NewGlobalRef(env->GetStaticObjectField(clazz, fieldId));
-    GET_AND_CHECK_STATIC_FIELD(fieldId, clazz, "RGB_565", "Landroid/graphics/Bitmap$Config;");
-    m_RGB_565_BitmapConfigValue = env->NewGlobalRef(env->GetStaticObjectField(clazz, fieldId));
+        FIND_AND_CHECK_CLASS("android/graphics/Bitmap");
+        m_bitmapClass = static_cast<jclass>(env->NewGlobalRef(clazz));
+        GET_AND_CHECK_STATIC_METHOD(m_createBitmapMethodID, m_bitmapClass
+                                    , "createBitmap", "(IILandroid/graphics/Bitmap$Config;)Landroid/graphics/Bitmap;");
+        FIND_AND_CHECK_CLASS("android/graphics/Bitmap$Config");
+        jfieldID fieldId;
+        GET_AND_CHECK_STATIC_FIELD(fieldId, clazz, "ARGB_8888", "Landroid/graphics/Bitmap$Config;");
+        m_ARGB_8888_BitmapConfigValue = env->NewGlobalRef(env->GetStaticObjectField(clazz, fieldId));
+        GET_AND_CHECK_STATIC_FIELD(fieldId, clazz, "RGB_565", "Landroid/graphics/Bitmap$Config;");
+        m_RGB_565_BitmapConfigValue = env->NewGlobalRef(env->GetStaticObjectField(clazz, fieldId));
 
-    FIND_AND_CHECK_CLASS("android/graphics/drawable/BitmapDrawable");
-    m_bitmapDrawableClass = static_cast<jclass>(env->NewGlobalRef(clazz));
-    GET_AND_CHECK_METHOD(m_bitmapDrawableConstructorMethodID,
-                         m_bitmapDrawableClass,
-                         "<init>",
-                         "(Landroid/content/res/Resources;Landroid/graphics/Bitmap;)V");
+        FIND_AND_CHECK_CLASS("android/graphics/drawable/BitmapDrawable");
+        m_bitmapDrawableClass = static_cast<jclass>(env->NewGlobalRef(clazz));
+        GET_AND_CHECK_METHOD(m_bitmapDrawableConstructorMethodID,
+                             m_bitmapDrawableClass,
+                             "<init>",
+                             "(Landroid/content/res/Resources;Landroid/graphics/Bitmap;)V");
+    }
+
+
 
     return JNI_TRUE;
 }
