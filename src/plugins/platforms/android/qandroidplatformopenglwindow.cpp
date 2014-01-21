@@ -51,9 +51,6 @@
 #include <android/native_window.h>
 #include <android/native_window_jni.h>
 
-#warning remove me
-#include <QDebug>
-
 QT_BEGIN_NAMESPACE
 
 QAndroidPlatformOpenGLWindow::QAndroidPlatformOpenGLWindow(QWindow *window, EGLDisplay display)
@@ -80,7 +77,6 @@ void QAndroidPlatformOpenGLWindow::setGeometry(const QRect &rect)
     if (rect == geometry())
         return;
 
-    qDebug() << rect;
     QAndroidPlatformWindow::setGeometry(rect);
     QtAndroid::setSurfaceGeometry(m_nativeSurfaceId, rect);
 }
@@ -99,7 +95,6 @@ EGLSurface QAndroidPlatformOpenGLWindow::eglSurface(EGLConfig config)
 void QAndroidPlatformOpenGLWindow::checkNativeSurface(EGLConfig config)
 {
     QMutexLocker lock(&m_surfaceMutex);
-    qDebug() << geometry() << m_changedAndroidSurface.isValid();
     if (m_nativeSurfaceId == -1 || !m_changedAndroidSurface.isValid())
         return;
 
@@ -147,7 +142,6 @@ void QAndroidPlatformOpenGLWindow::surfaceChanged(JNIEnv *jniEnv, jobject surfac
     Q_UNUSED(jniEnv);
     Q_UNUSED(w);
     Q_UNUSED(h);
-    qDebug() << w << h;
     lockSurface();
     m_changedAndroidSurface = surface;
     m_surfaceWaitCondition.wakeOne();
