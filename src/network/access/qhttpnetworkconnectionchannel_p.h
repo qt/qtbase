@@ -66,6 +66,7 @@
 #include <private/qhttpnetworkreply_p.h>
 
 #include <private/qhttpnetworkconnection_p.h>
+#include <private/qabstractprotocolhandler_p.h>
 
 #ifndef QT_NO_HTTP
 
@@ -117,6 +118,7 @@ public:
     QAuthenticator proxyAuthenticator;
     bool authenticationCredentialsSent;
     bool proxyCredentialsSent;
+    QScopedPointer<QAbstractProtocolHandler> protocolHandler;
 #ifndef QT_NO_SSL
     bool ignoreAllSslErrors;
     QList<QSslError> ignoreSslErrorsList;
@@ -193,6 +195,8 @@ public:
     void _q_sslErrors(const QList<QSslError> &errors); // ssl errors from the socket
     void _q_encryptedBytesWritten(qint64 bytes); // proceed sending
 #endif
+
+    friend class QHttpProtocolHandler;
 };
 
 QT_END_NAMESPACE
