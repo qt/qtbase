@@ -56,48 +56,48 @@
 <Incident type="fail" file="tst_cmptest.cpp" line="313">
     <DataTag><![CDATA[last item different]]></DataTag>
     <Description><![CDATA[Compared lists differ at index 2.
-   Actual   (opA): 'string3'
-   Expected (opB): 'DIFFERS']]></Description>
+   Actual   (opA): "string3"
+   Expected (opB): "DIFFERS"]]></Description>
 </Incident>
 <Incident type="fail" file="tst_cmptest.cpp" line="313">
     <DataTag><![CDATA[second-last item different]]></DataTag>
     <Description><![CDATA[Compared lists differ at index 2.
-   Actual   (opA): 'string3'
-   Expected (opB): 'DIFFERS']]></Description>
+   Actual   (opA): "string3"
+   Expected (opB): "DIFFERS"]]></Description>
 </Incident>
 <Incident type="fail" file="tst_cmptest.cpp" line="313">
     <DataTag><![CDATA[prefix]]></DataTag>
     <Description><![CDATA[Compared lists have different sizes.
-   Actual   (opA) size: '2'
-   Expected (opB) size: '1']]></Description>
+   Actual   (opA) size: 2
+   Expected (opB) size: 1]]></Description>
 </Incident>
 <Incident type="fail" file="tst_cmptest.cpp" line="313">
     <DataTag><![CDATA[short list second]]></DataTag>
     <Description><![CDATA[Compared lists have different sizes.
-   Actual   (opA) size: '12'
-   Expected (opB) size: '1']]></Description>
+   Actual   (opA) size: 12
+   Expected (opB) size: 1]]></Description>
 </Incident>
 <Incident type="fail" file="tst_cmptest.cpp" line="313">
     <DataTag><![CDATA[short list first]]></DataTag>
     <Description><![CDATA[Compared lists have different sizes.
-   Actual   (opA) size: '1'
-   Expected (opB) size: '12']]></Description>
+   Actual   (opA) size: 1
+   Expected (opB) size: 12]]></Description>
 </Incident>
 <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="compareQListInt">
 <Incident type="fail" file="tst_cmptest.cpp" line="320">
     <Description><![CDATA[Compared lists differ at index 2.
-   Actual   (int1): '3'
-   Expected (int2): '4']]></Description>
+   Actual   (int1): 3
+   Expected (int2): 4]]></Description>
 </Incident>
 <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="compareQListDouble">
 <Incident type="fail" file="tst_cmptest.cpp" line="327">
     <Description><![CDATA[Compared lists differ at index 0.
-   Actual   (double1): '1.5'
-   Expected (double2): '1']]></Description>
+   Actual   (double1): 1.5
+   Expected (double2): 1]]></Description>
 </Incident>
 <Duration msecs="0"/>
 </TestFunction>

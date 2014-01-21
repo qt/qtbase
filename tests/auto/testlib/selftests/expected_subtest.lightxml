@@ -125,8 +125,8 @@
 <Incident type="fail" file="tst_subtest.cpp" line="154">
     <DataTag><![CDATA[data1]]></DataTag>
     <Description><![CDATA[Compared values are not the same
-   Actual   (str)              : hello1
-   Expected (QString("hello0")): hello0]]></Description>
+   Actual   (str)              : "hello1"
+   Expected (QString("hello0")): "hello0"]]></Description>
 </Incident>
 <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[data1]]></DataTag>
@@ -143,8 +143,8 @@
 <Incident type="fail" file="tst_subtest.cpp" line="154">
     <DataTag><![CDATA[data2]]></DataTag>
     <Description><![CDATA[Compared values are not the same
-   Actual   (str)              : hello2
-   Expected (QString("hello0")): hello0]]></Description>
+   Actual   (str)              : "hello2"
+   Expected (QString("hello0")): "hello0"]]></Description>
 </Incident>
 <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[data2]]></DataTag>

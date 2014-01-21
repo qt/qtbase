@@ -1894,6 +1894,12 @@ void *fetchData(QTestData *data, const char *tagName, int typeId)
     return data->data(idx);
 }
 
+static char toHex(ushort value)
+{
+    static const char hexdigits[] = "0123456789ABCDEF";
+    return hexdigits[value & 0xF];
+}
+
 /*!
   \fn char* QTest::toHexRepresentation(const char *ba, int length)
 
@@ -1937,16 +1943,15 @@ char *toHexRepresentation(const char *ba, int length)
         result[size - 1] = '\0';
     }
 
-    const char toHex[] = "0123456789ABCDEF";
     int i = 0;
     int o = 0;
 
     while (true) {
         const char at = ba[i];
 
-        result[o] = toHex[(at >> 4) & 0x0F];
+        result[o] = toHex(at >> 4);
         ++o;
-        result[o] = toHex[at & 0x0F];
+        result[o] = toHex(at);
 
         ++i;
         ++o;
@@ -1959,6 +1964,61 @@ char *toHexRepresentation(const char *ba, int length)
     }
 
     return result;
+}
+
+/*!
+    \internal
+    Returns the same QString but with only the ASCII characters still shown;
+    everything else is replaced with \c {\uXXXX}.
+*/
+char *toPrettyUnicode(const ushort *p, int length)
+{
+    // keep it simple for the vast majority of cases
+    QScopedArrayPointer<char> buffer(new char[length * 6 + 3]);
+    const ushort *end = p + length;
+    char *dst = buffer.data();
+
+    *dst++ = '"';
+    for ( ; p != end; ++p) {
+        if (*p < 0x7f && *p >= 0x20 && *p != '\\') {
+            *dst++ = *p;
+            continue;
+        }
+
+        // write as an escape sequence
+        *dst++ = '\\';
+        switch (*p) {
+        case 0x22:
+        case 0x5c:
+            *dst++ = uchar(*p);
+            break;
+        case 0x8:
+            *dst++ = 'b';
+            break;
+        case 0xc:
+            *dst++ = 'f';
+            break;
+        case 0xa:
+            *dst++ = 'n';
+            break;
+        case 0xd:
+            *dst++ = 'r';
+            break;
+        case 0x9:
+            *dst++ = 't';
+            break;
+        default:
+            *dst++ = 'u';
+            *dst++ = toHex(*p >> 12);
+            *dst++ = toHex(*p >> 8);
+            *dst++ = toHex(*p >> 4);
+            *dst++ = toHex(*p);
+        }
+    }
+
+    *dst++ = '"';
+    *dst++ = '\0';
+    return buffer.take();
 }
 
 static void qInvokeTestMethods(QObject *testObject)
