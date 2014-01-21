@@ -1340,11 +1340,9 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
 
             painter->setPen(menuitem->palette.buttonText().color());
 
-            QColor discol;
-            if (dis) {
-                discol = menuitem->palette.text().color();
-                painter->setPen(discol);
-            }
+            const QColor textColor = menuitem->palette.text().color();
+            if (dis)
+                painter->setPen(textColor);
 
             int xm = windowsItemFrame + checkcol + windowsItemHMargin;
             int xpos = menuitem->rect.x() + xm;
@@ -1368,7 +1366,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
                 if (menuitem->menuItemType == QStyleOptionMenuItem::DefaultItem)
                     font.setBold(true);
                 painter->setFont(font);
-                painter->setPen(discol);
+                painter->setPen(textColor);
                 painter->drawText(vTextRect, text_flags, s.left(t));
                 painter->restore();
             }
