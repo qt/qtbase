@@ -40,10 +40,10 @@
 ****************************************************************************/
 
 #include "qprintengine_mac_p.h"
+#include "qcocoaprintersupport.h"
 #include <quuid.h>
 #include <QtGui/qpagesize.h>
 #include <QtCore/qcoreapplication.h>
-#include <qpa/qplatformprintersupport.h>
 
 #include "qcocoaautoreleasepool.h"
 
@@ -55,6 +55,8 @@ QMacPrintEngine::QMacPrintEngine(QPrinter::PrinterMode mode) : QPaintEngine(*(ne
 {
     Q_D(QMacPrintEngine);
     d->mode = mode;
+    d->m_printDevice = new QCocoaPrintDevice(QCocoaPrinterSupport().defaultPrintDeviceId());
+    d->m_pageSize = d->m_printDevice->defaultPageSize();
     d->initialize();
 }
 
@@ -136,126 +138,6 @@ QMacPrintEnginePrivate::~QMacPrintEnginePrivate()
 {
     [printInfo release];
     delete paintEngine;
-}
-
-void QMacPrintEnginePrivate::setPaperSize(QPrinter::PaperSize ps)
-{
-    Q_Q(QMacPrintEngine);
-    if (hasCustomPaperSize) {
-        PMRelease(customPaper);
-        customPaper = 0;
-    }
-    hasCustomPaperSize = (ps == QPrinter::Custom);
-    PMPrinter printer;
-    if (PMSessionGetCurrentPrinter(session(), &printer) == noErr) {
-        if (ps != QPrinter::Custom) {
-            QSizeF newSize = QPageSize(QPageSize::PageSizeId(ps)).size(QPageSize::Millimeter);
-            QCFType<CFArrayRef> formats;
-            if (PMSessionCreatePageFormatList(session(), printer, &formats) == noErr) {
-                CFIndex total = CFArrayGetCount(formats);
-                PMPageFormat tmp;
-                PMRect paper;
-                for (CFIndex idx = 0; idx < total; ++idx) {
-                    tmp = static_cast<PMPageFormat>(const_cast<void *>(CFArrayGetValueAtIndex(formats, idx)));
-                    PMGetUnadjustedPaperRect(tmp, &paper);
-                    int wMM = int((paper.right - paper.left) / 72 * 25.4 + 0.5);
-                    int hMM = int((paper.bottom - paper.top) / 72 * 25.4 + 0.5);
-                    if (newSize.width() == wMM && newSize.height() == hMM) {
-                        PMCopyPageFormat(tmp, format());
-                        // reset the orientation and resolution as they are lost in the copy.
-                        q->setProperty(QPrintEngine::PPK_Orientation, orient);
-                        if (PMSessionValidatePageFormat(session(), format(), kPMDontWantBoolean) != noErr) {
-                            // Don't know, warn for the moment.
-                            qWarning("QMacPrintEngine, problem setting format and resolution for this page size");
-                        }
-                        break;
-                    }
-                }
-            }
-        } else {
-            QCFString paperId = QCFString::toCFStringRef(QUuid::createUuid().toString());
-            PMPaperMargins paperMargins;
-            paperMargins.left = leftMargin;
-            paperMargins.top = topMargin;
-            paperMargins.right = rightMargin;
-            paperMargins.bottom = bottomMargin;
-            PMPaperCreateCustom(printer, paperId, QCFString("Custom size"), customSize.width(), customSize.height(), &paperMargins, &customPaper);
-            PMPageFormat tmp;
-            PMCreatePageFormatWithPMPaper(&tmp, customPaper);
-            PMCopyPageFormat(tmp, format());
-            if (PMSessionValidatePageFormat(session(), format(), kPMDontWantBoolean) != noErr) {
-                // Don't know, warn for the moment.
-                qWarning("QMacPrintEngine, problem setting paper name");
-            }
-        }
-    }
-}
-
-QPrinter::PaperSize QMacPrintEnginePrivate::paperSize() const
-{
-    if (hasCustomPaperSize)
-        return QPrinter::Custom;
-    PMRect paper;
-    PMGetUnadjustedPaperRect(format(), &paper);
-    QSizeF sizef((paper.right - paper.left) / 72.0 * 25.4, (paper.bottom - paper.top) / 72.0 * 25.4);
-    return QPrinter::PaperSize(QPageSize(sizef, QPageSize::Millimeter).id());
-}
-
-void QMacPrintEnginePrivate::setPaperName(const QString &name)
-{
-    Q_Q(QMacPrintEngine);
-    if (hasCustomPaperSize) {
-        PMRelease(customPaper);
-        customPaper = 0;
-        hasCustomPaperSize = false;
-    }
-    PMPrinter printer;
-
-    if (PMSessionGetCurrentPrinter(session(), &printer) == noErr) {
-        CFArrayRef array;
-        if (PMPrinterGetPaperList(printer, &array) != noErr)
-            return;
-        int count = CFArrayGetCount(array);
-        for (int i = 0; i < count; ++i) {
-            PMPaper paper = static_cast<PMPaper>(const_cast<void *>(CFArrayGetValueAtIndex(array, i)));
-            QCFString paperName;
-            if (PMPaperCreateLocalizedName(paper, printer, &paperName) == noErr) {
-                if (QString(paperName) == name) {
-                    PMPageFormat tmp;
-                    PMCreatePageFormatWithPMPaper(&tmp, paper);
-                    PMCopyPageFormat(tmp, format());
-                    q->setProperty(QPrintEngine::PPK_Orientation, orient);
-                    if (PMSessionValidatePageFormat(session(), format(), kPMDontWantBoolean) != noErr) {
-                        // Don't know, warn for the moment.
-                        qWarning("QMacPrintEngine, problem setting paper name");
-                    }
-                }
-            }
-        }
-    }
-}
-
-QList<QVariant> QMacPrintEnginePrivate::supportedResolutions() const
-{
-    Q_ASSERT_X(printInfo, "QMacPrinterEngine::supportedResolutions",
-               "must have a valid printer session");
-    UInt32 resCount;
-    QList<QVariant> resolutions;
-    PMPrinter printer;
-    if (PMSessionGetCurrentPrinter(session(), &printer) == noErr) {
-        PMResolution res;
-        OSStatus status = PMPrinterGetPrinterResolutionCount(printer, &resCount);
-        if (status == noErr) {
-            // According to the docs, index start at 1.
-            for (UInt32 i = 1; i <= resCount; ++i) {
-                if (PMPrinterGetIndexedPrinterResolution(printer, i, &res) == noErr)
-                    resolutions.append(QVariant(int(res.hRes)));
-            }
-        } else {
-            qWarning("QMacPrintEngine::supportedResolutions: Unexpected error: %ld", long(status));
-        }
-    }
-    return resolutions;
 }
 
 QPrinter::PrinterState QMacPrintEngine::printerState() const
@@ -413,27 +295,20 @@ void QMacPrintEnginePrivate::initialize()
     QCocoaAutoReleasePool pool;
     printInfo = [[NSPrintInfo alloc] initWithDictionary:[NSDictionary dictionary]];
 
-    PMPrinter printer;
-    if (printInfo && PMSessionGetCurrentPrinter(session(), &printer) == noErr) {
-        QList<QVariant> resolutions = supportedResolutions();
-        if (!resolutions.isEmpty() && mode != QPrinter::ScreenResolution) {
-            if (resolutions.count() > 1 && mode == QPrinter::HighResolution) {
-                int max = 0;
-                for (int i = 0; i < resolutions.count(); ++i) {
-                    int value = resolutions.at(i).toInt();
-                    if (value > max)
-                        max = value;
-                }
-                resolution.hRes = resolution.vRes = max;
-            } else {
-                resolution.hRes = resolution.vRes = resolutions.at(0).toInt();
-            }
-            if (resolution.hRes == 0)
-                resolution.hRes = resolution.vRes = 600;
-        } else {
-            resolution.hRes = resolution.vRes = qt_defaultDpi();
-        }
+    QList<int> resolutions = m_printDevice->supportedResolutions();
+    if (!resolutions.isEmpty() && mode != QPrinter::ScreenResolution) {
+        qSort(resolutions);
+        if (resolutions.count() > 1 && mode == QPrinter::HighResolution)
+            resolution.hRes = resolution.vRes = resolutions.last();
+        else
+            resolution.hRes = resolution.vRes = resolutions.first();
+        if (resolution.hRes == 0)
+            resolution.hRes = resolution.vRes = 600;
+    } else {
+        resolution.hRes = resolution.vRes = qt_defaultDpi();
     }
+
+    setPageSize(m_pageSize);
 
     QHash<QMacPrintEngine::PrintEnginePropertyKey, QVariant>::const_iterator propC;
     for (propC = valueCache.constBegin(); propC != valueCache.constEnd(); propC++) {
@@ -445,8 +320,6 @@ void QMacPrintEnginePrivate::releaseSession()
 {
     PMSessionEndPageNoDialog(session());
     PMSessionEndDocumentNoDialog(session());
-    if (hasCustomPaperSize)
-        PMRelease(customPaper);
     [printInfo release];
     printInfo = 0;
 }
@@ -506,6 +379,35 @@ bool QMacPrintEnginePrivate::newPage_helper()
     return true;
 }
 
+void QMacPrintEnginePrivate::setPageSize(const QPageSize &pageSize)
+{
+    if (!pageSize.isValid())
+        return;
+
+    // Get the matching printer paper
+    QPageSize printerPageSize = m_printDevice->supportedPageSize(pageSize);
+    if (printerPageSize.isValid()) {
+        m_pageSize = printerPageSize;
+        hasCustomPaperSize = false;
+    } else {
+        m_pageSize = pageSize;
+        hasCustomPaperSize = true;
+    }
+    if (orient == QPrinter::Landscape)
+        customSize = m_pageSize.size(QPage::Point).transposed();
+    else
+        customSize = m_pageSize.size(QPage::Point);
+
+    // You cannot set the page size on a PMPageFormat, you must create a new PMPageFormat
+    PMPageFormat pageFormat;
+    PMPaper macPaper = m_printDevice->macPaper(pageSize);
+    PMCreatePageFormatWithPMPaper(&pageFormat, macPaper);
+    PMSetOrientation(pageFormat, orient == QPrinter::Landscape ? kPMLandscape : kPMPortrait, kPMUnlocked);
+    PMCopyPageFormat(pageFormat, format());
+    if (PMSessionValidatePageFormat(session(), format(), kPMDontWantBoolean) != noErr)
+        qWarning("QMacPrintEngine: Invalid page format");
+    PMRelease(pageFormat);
+}
 
 void QMacPrintEngine::updateState(const QPaintEngineState &state)
 {
@@ -630,27 +532,19 @@ void QMacPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
 
     // The following keys are properties and settings that are supported by the Mac PrintEngine
     case PPK_Resolution:  {
-        PMPrinter printer;
-        UInt32 count;
-        if (PMSessionGetCurrentPrinter(d->session(), &printer) != noErr)
-            break;
-        if (PMPrinterGetPrinterResolutionCount(printer, &count) != noErr)
-            break;
-        PMResolution resolution = { 0.0, 0.0 };
-        PMResolution bestResolution = { 0.0, 0.0 };
+        // TODO It appears the old code didn't actually set the resolution???  Can we delete all this???
+        int bestResolution = 0;
         int dpi = value.toInt();
         int bestDistance = INT_MAX;
-        for (UInt32 i = 1; i <= count; ++i) {  // Yes, it starts at 1
-            if (PMPrinterGetIndexedPrinterResolution(printer, i, &resolution) == noErr) {
-                if (dpi == int(resolution.hRes)) {
+        foreach (int resolution, d->m_printDevice->supportedResolutions()) {
+            if (dpi == resolution) {
+                bestResolution = resolution;
+                break;
+            } else {
+                int distance = qAbs(dpi - resolution);
+                if (distance < bestDistance) {
+                    bestDistance = distance;
                     bestResolution = resolution;
-                    break;
-                } else {
-                    int distance = qAbs(dpi - int(resolution.hRes));
-                    if (distance < bestDistance) {
-                        bestDistance = distance;
-                        bestResolution = resolution;
-                    }
                 }
             }
         }
@@ -686,47 +580,29 @@ void QMacPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
     case PPK_OutputFileName:
         d->outputFilename = value.toString();
         break;
-    case PPK_PaperSize:
-        d->setPaperSize(QPrinter::PaperSize(value.toInt()));
+    case PPK_PageSize:
+        d->setPageSize(QPageSize(QPageSize::PageSizeId(value.toInt())));
         break;
     case PPK_PaperName:
-        d->setPaperName(value.toString());
+        // Get the named page size from the printer if supported
+        d->setPageSize(d->m_printDevice->supportedPageSize(value.toString()));
         break;
     case PPK_PrinterName: {
-        bool printerNameSet = false;
-        OSStatus status = noErr;
-        QCFType<CFArrayRef> printerList;
-        status = PMServerCreatePrinterList(kPMServerLocal, &printerList);
-        if (status == noErr) {
-            CFIndex count = CFArrayGetCount(printerList);
-            for (CFIndex i=0; i<count; ++i) {
-                PMPrinter printer = static_cast<PMPrinter>(const_cast<void *>(CFArrayGetValueAtIndex(printerList, i)));
-                QString name = QCFString::toQString(PMPrinterGetID(printer));
-                if (name == value.toString()) {
-                    status = PMSessionSetCurrentPMPrinter(d->session(), printer);
-                    printerNameSet = true;
-                    break;
-                }
-            }
-        }
-        if (status != noErr)
-            qWarning("QMacPrintEngine::setPrinterName: Error setting printer: %ld", long(status));
-        if (!printerNameSet) {
-            qWarning("QMacPrintEngine::setPrinterName: Failed to set printer named '%s'.", qPrintable(value.toString()));
-            d->releaseSession();
-            d->state = QPrinter::Idle;
-        }
-        break; }
-    case PPK_CustomPaperSize:
-    {
-        PMOrientation orientation;
-        PMGetOrientation(d->format(), &orientation);
-        d->customSize = value.toSizeF();
-        if (orientation != kPMPortrait)
-            d->customSize = QSizeF(d->customSize.height(), d->customSize.width());
-        d->setPaperSize(QPrinter::Custom);
+        QString id = value.toString();
+        if (id.isEmpty())
+            id = QCocoaPrinterSupport().defaultPrintDeviceId();
+        else if (!QCocoaPrinterSupport().availablePrintDeviceIds().contains(id))
+            break;
+        d->m_printDevice = new QCocoaPrintDevice(id);
+        PMPrinter printer = d->m_printDevice->macPrinter();
+        PMRetain(printer);
+        PMSessionSetCurrentPMPrinter(d->session(), printer);
+        // TODO Do we need to check if the page size, etc, are valid on new printer?
         break;
     }
+    case PPK_CustomPaperSize:
+        d->setPageSize(QPageSize(value.toSizeF(), QPageSize::Point));
+        break;
     case PPK_PageMargins:
     {
         QList<QVariant> margins(value.toList());
@@ -868,11 +744,11 @@ QVariant QMacPrintEngine::property(PrintEnginePropertyKey key) const
         }
         ret = r;
         break; }
-    case PPK_PaperSize:
-        ret = d->paperSize();
+    case PPK_PageSize:
+        ret = d->m_pageSize.id();
         break;
     case PPK_PaperName:
-        ret = QCFString::toQString([d->printInfo localizedPaperName]);
+        ret = d->m_pageSize.name();
         break;
     case PPK_PaperRect: {
         QRect r;
@@ -888,23 +764,22 @@ QVariant QMacPrintEngine::property(PrintEnginePropertyKey key) const
         }
         ret = r;
         break; }
-    case PPK_PrinterName: {
-        PMPrinter printer;
-        OSStatus status = PMSessionGetCurrentPrinter(d->session(), &printer);
-        if (status != noErr)
-            qWarning("QMacPrintEngine::printerName: Failed getting current PMPrinter: %ld", long(status));
-        if (printer)
-            ret = QCFString::toQString(PMPrinterGetID(printer));
-        break; }
+    case PPK_PrinterName:
+        return d->m_printDevice->id();
+        break;
     case PPK_Resolution: {
         ret = d->resolution.hRes;
         break;
     }
-    case PPK_SupportedResolutions:
-        ret = d->supportedResolutions();
+    case PPK_SupportedResolutions: {
+        QList<QVariant> list;
+        foreach (int resolution, d->m_printDevice->supportedResolutions())
+            list << resolution;
+        ret = list;
         break;
+    }
     case PPK_CustomPaperSize:
-        ret = d->customSize;
+        return d->m_pageSize.size(QPage::Point);
         break;
     case PPK_PageMargins:
     {

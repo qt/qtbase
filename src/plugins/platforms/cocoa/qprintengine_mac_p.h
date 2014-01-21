@@ -60,6 +60,9 @@
 #include <QtPrintSupport/qprinter.h>
 #include <QtPrintSupport/qprintengine.h>
 #include <QtGui/private/qpainter_p.h>
+#include <QtGui/qpagelayout.h>
+
+#include "qcocoaprintdevice.h"
 
 #include "qpaintengine_mac_p.h"
 
@@ -122,6 +125,8 @@ public:
     QPrinter::PrinterMode mode;
     QPrinter::PrinterState state;
     QPrinter::Orientation orient;
+    QSharedDataPointer<QCocoaPrintDevice> m_printDevice;
+    QPageSize m_pageSize;
     NSPrintInfo *printInfo;
     PMResolution resolution;
     QString outputFilename;
@@ -136,18 +141,16 @@ public:
     qreal rightMargin;
     qreal bottomMargin;
     QHash<QMacPrintEngine::PrintEnginePropertyKey, QVariant> valueCache;
-    PMPaper customPaper;
+
     QMacPrintEnginePrivate() : mode(QPrinter::ScreenResolution), state(QPrinter::Idle),
                                orient(QPrinter::Portrait), printInfo(0), paintEngine(0),
                                hasCustomPaperSize(false), hasCustomPageMargins(false) {}
     ~QMacPrintEnginePrivate();
+
     void initialize();
     void releaseSession();
     bool newPage_helper();
-    void setPaperSize(QPrinter::PaperSize ps);
-    QPrinter::PaperSize paperSize() const;
-    void setPaperName(const QString &name);
-    QList<QVariant> supportedResolutions() const;
+    void setPageSize(const QPageSize &pageSize);
     inline bool isPrintSessionInitialized() const
     {
         return printInfo != 0;
