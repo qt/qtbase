@@ -4024,13 +4024,19 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
         if [ $QT_EDITION = "QT_EDITION_OPENSOURCE" ]; then
             echo "EXTRA_CPPFLAGS = -DQMAKE_OPENSOURCE_EDITION" >> "$mkfile"
         fi
-        cat "$in_mkfile" >> "$mkfile"
 
-        if "$WHICH" makedepend >/dev/null 2>&1 && grep 'depend:' "$mkfile" >/dev/null 2>&1; then
-            (cd "$outpath/qmake" && "$MAKE" -f "$mkfile" depend) >/dev/null 2>&1
-            sed 's,^.*/\([^/]*.o\):,\1:,g' "$mkfile" >"$mkfile.tmp"
-	    sed "s,$outpath,$adjoutpath,g" "$mkfile.tmp" >"$mkfile"
-	    rm "$mkfile.tmp"
+        if [ "$BUILD_ON_MAC" = "yes" ]; then
+            echo "EXTRA_CXXFLAGS += -MMD" >> "$mkfile"
+            cat "$in_mkfile" >> "$mkfile"
+            echo "-include \$(notdir \$(DEPEND_SRC:%.cpp=%.d))" >> "$mkfile"
+        else
+            cat "$in_mkfile" >> "$mkfile"
+            if "$WHICH" makedepend >/dev/null 2>&1 && grep 'depend:' "$mkfile" >/dev/null 2>&1; then
+                (cd "$outpath/qmake" && "$MAKE" -f "$mkfile" depend) >/dev/null 2>&1
+                sed 's,^.*/\([^/]*.o\):,\1:,g' "$mkfile" >"$mkfile.tmp"
+                sed "s,$outpath,$adjoutpath,g" "$mkfile.tmp" >"$mkfile"
+                rm "$mkfile.tmp"
+            fi
         fi
     done
 
