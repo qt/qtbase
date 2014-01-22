@@ -752,6 +752,9 @@ void QNetworkReplyHttpImplPrivate::postRequest()
     if (request.attribute(QNetworkRequest::HttpPipeliningAllowedAttribute).toBool() == true)
         httpRequest.setPipeliningAllowed(true);
 
+    if (request.attribute(QNetworkRequest::SpdyAllowedAttribute).toBool() == true)
+        httpRequest.setSPDYAllowed(true);
+
     if (static_cast<QNetworkRequest::LoadControl>
         (request.attribute(QNetworkRequest::AuthenticationReuseAttribute,
                              QNetworkRequest::Automatic).toInt()) == QNetworkRequest::Manual)
@@ -811,8 +814,12 @@ void QNetworkReplyHttpImplPrivate::postRequest()
         QObject::connect(delegate, SIGNAL(downloadFinished()),
                 q, SLOT(replyFinished()),
                 Qt::QueuedConnection);
-        QObject::connect(delegate, SIGNAL(downloadMetaData(QList<QPair<QByteArray,QByteArray> >,int,QString,bool,QSharedPointer<char>,qint64)),
-                q, SLOT(replyDownloadMetaData(QList<QPair<QByteArray,QByteArray> >,int,QString,bool,QSharedPointer<char>,qint64)),
+        QObject::connect(delegate, SIGNAL(downloadMetaData(QList<QPair<QByteArray,QByteArray> >,
+                                                           int, QString, bool,
+                                                           QSharedPointer<char>, qint64, bool)),
+                q, SLOT(replyDownloadMetaData(QList<QPair<QByteArray,QByteArray> >,
+                                              int, QString, bool,
+                                              QSharedPointer<char>, qint64, bool)),
                 Qt::QueuedConnection);
         QObject::connect(delegate, SIGNAL(downloadProgress(qint64,qint64)),
                 q, SLOT(replyDownloadProgressSlot(qint64,qint64)),
@@ -907,7 +914,8 @@ void QNetworkReplyHttpImplPrivate::postRequest()
                      delegate->incomingReasonPhrase,
                      delegate->isPipeliningUsed,
                      QSharedPointer<char>(),
-                     delegate->incomingContentLength);
+                     delegate->incomingContentLength,
+                     delegate->isSpdyUsed);
             replyDownloadData(delegate->synchronousDownloadData);
             httpError(delegate->incomingErrorCode, delegate->incomingErrorDetail);
         } else {
@@ -917,7 +925,8 @@ void QNetworkReplyHttpImplPrivate::postRequest()
                      delegate->incomingReasonPhrase,
                      delegate->isPipeliningUsed,
                      QSharedPointer<char>(),
-                     delegate->incomingContentLength);
+                     delegate->incomingContentLength,
+                     delegate->isSpdyUsed);
             replyDownloadData(delegate->synchronousDownloadData);
         }
 
@@ -1074,7 +1083,7 @@ void QNetworkReplyHttpImplPrivate::replyDownloadMetaData
         (QList<QPair<QByteArray,QByteArray> > hm,
          int sc,QString rp,bool pu,
          QSharedPointer<char> db,
-         qint64 contentLength)
+         qint64 contentLength, bool spdyWasUsed)
 {
     Q_Q(QNetworkReplyHttpImpl);
     Q_UNUSED(contentLength);
@@ -1091,6 +1100,7 @@ void QNetworkReplyHttpImplPrivate::replyDownloadMetaData
     }
 
     q->setAttribute(QNetworkRequest::HttpPipeliningWasUsedAttribute, pu);
+    q->setAttribute(QNetworkRequest::SpdyWasUsedAttribute, spdyWasUsed);
 
     // reconstruct the HTTP header
     QList<QPair<QByteArray, QByteArray> > headerMap = hm;

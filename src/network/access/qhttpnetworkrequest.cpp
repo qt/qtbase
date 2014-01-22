@@ -49,8 +49,8 @@ QT_BEGIN_NAMESPACE
 QHttpNetworkRequestPrivate::QHttpNetworkRequestPrivate(QHttpNetworkRequest::Operation op,
         QHttpNetworkRequest::Priority pri, const QUrl &newUrl)
     : QHttpNetworkHeaderPrivate(newUrl), operation(op), priority(pri), uploadByteDevice(0),
-      autoDecompress(false), pipeliningAllowed(false), withCredentials(true),
-      preConnect(false)
+      autoDecompress(false), pipeliningAllowed(false), spdyAllowed(false),
+      withCredentials(true), preConnect(false)
 {
 }
 
@@ -62,6 +62,7 @@ QHttpNetworkRequestPrivate::QHttpNetworkRequestPrivate(const QHttpNetworkRequest
     uploadByteDevice = other.uploadByteDevice;
     autoDecompress = other.autoDecompress;
     pipeliningAllowed = other.pipeliningAllowed;
+    spdyAllowed = other.spdyAllowed;
     customVerb = other.customVerb;
     withCredentials = other.withCredentials;
     ssl = other.ssl;
@@ -80,6 +81,7 @@ bool QHttpNetworkRequestPrivate::operator==(const QHttpNetworkRequestPrivate &ot
         && (uploadByteDevice == other.uploadByteDevice)
         && (autoDecompress == other.autoDecompress)
         && (pipeliningAllowed == other.pipeliningAllowed)
+        && (spdyAllowed == other.spdyAllowed)
         // we do not clear the customVerb in setOperation
         && (operation != QHttpNetworkRequest::Custom || (customVerb == other.customVerb))
         && (withCredentials == other.withCredentials)
@@ -297,6 +299,16 @@ bool QHttpNetworkRequest::isPipeliningAllowed() const
 void QHttpNetworkRequest::setPipeliningAllowed(bool b)
 {
     d->pipeliningAllowed = b;
+}
+
+bool QHttpNetworkRequest::isSPDYAllowed() const
+{
+    return d->spdyAllowed;
+}
+
+void QHttpNetworkRequest::setSPDYAllowed(bool b)
+{
+    d->spdyAllowed = b;
 }
 
 bool QHttpNetworkRequest::withCredentials() const

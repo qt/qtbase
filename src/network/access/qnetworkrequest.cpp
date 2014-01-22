@@ -246,6 +246,17 @@ QT_BEGIN_NAMESPACE
         The QNetworkSession ConnectInBackground property will be set according to
         this attribute.
 
+    \value SpdyAllowedAttribute
+        Requests only, type: QMetaType::Bool (default: false)
+        Indicates whether the QNetworkAccessManager code is
+        allowed to use SPDY with this request. This applies only
+        to SSL requests, and depends on the server supporting SPDY.
+
+    \value SpdyWasUsedAttribute
+        Replies only, type: QMetaType::Bool
+        Indicates whether SPDY was used for receiving
+        this reply.
+
     \value User
         Special type. Additional information can be passed in
         QVariants with types ranging from User to UserMax. The default

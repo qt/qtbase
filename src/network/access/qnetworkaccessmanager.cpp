@@ -977,6 +977,12 @@ QNetworkAccessManager::NetworkAccessibility QNetworkAccessManager::networkAccess
     \a sslConfiguration. This function is useful to complete the TCP and SSL handshake
     to a host before the HTTPS request is made, resulting in a lower network latency.
 
+    \note Preconnecting a SPDY connection can be done by calling setAllowedNextProtocols()
+    on \a sslConfiguration with QSslConfiguration::NextProtocolSpdy3_0 contained in
+    the list of allowed protocols. When using SPDY, one single connection per host is
+    enough, i.e. calling this method multiple times per host will not result in faster
+    network transactions.
+
     \note This function has no possibility to report errors.
 
     \sa connectToHost(), get(), post(), put(), deleteResource()
@@ -991,6 +997,13 @@ void QNetworkAccessManager::connectToHostEncrypted(const QString &hostName, quin
     QNetworkRequest request(url);
     if (sslConfiguration != QSslConfiguration::defaultConfiguration())
         request.setSslConfiguration(sslConfiguration);
+
+    // There is no way to enable SPDY via a request, so we need to check
+    // the ssl configuration whether SPDY is allowed here.
+    if (sslConfiguration.allowedNextProtocols().contains(
+                QSslConfiguration::NextProtocolSpdy3_0))
+        request.setAttribute(QNetworkRequest::SpdyAllowedAttribute, true);
+
     get(request);
 }
 #endif

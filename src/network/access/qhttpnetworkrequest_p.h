@@ -114,6 +114,9 @@ public:
     bool isPipeliningAllowed() const;
     void setPipeliningAllowed(bool b);
 
+    bool isSPDYAllowed() const;
+    void setSPDYAllowed(bool b);
+
     bool withCredentials() const;
     void setWithCredentials(bool b);
 
@@ -135,6 +138,7 @@ private:
     friend class QHttpNetworkConnectionPrivate;
     friend class QHttpNetworkConnectionChannel;
     friend class QHttpProtocolHandler;
+    friend class QSpdyProtocolHandler;
 };
 
 class QHttpNetworkRequestPrivate : public QHttpNetworkHeaderPrivate
@@ -154,6 +158,7 @@ public:
     mutable QNonContiguousByteDevice* uploadByteDevice;
     bool autoDecompress;
     bool pipeliningAllowed;
+    bool spdyAllowed;
     bool withCredentials;
     bool ssl;
     bool preConnect;

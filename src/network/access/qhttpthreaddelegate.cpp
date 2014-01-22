@@ -180,11 +180,15 @@ class QNetworkAccessCachedHttpConnection: public QHttpNetworkConnection,
     // Q_OBJECT
 public:
 #ifdef QT_NO_BEARERMANAGEMENT
-    QNetworkAccessCachedHttpConnection(const QString &hostName, quint16 port, bool encrypt)
-        : QHttpNetworkConnection(hostName, port, encrypt)
+    QNetworkAccessCachedHttpConnection(const QString &hostName, quint16 port, bool encrypt,
+                                       QHttpNetworkConnection::ConnectionType connectionType)
+        : QHttpNetworkConnection(hostName, port, encrypt, connectionType)
 #else
-    QNetworkAccessCachedHttpConnection(const QString &hostName, quint16 port, bool encrypt, QSharedPointer<QNetworkSession> networkSession)
-        : QHttpNetworkConnection(hostName, port, encrypt, /*parent=*/0, networkSession)
+    QNetworkAccessCachedHttpConnection(const QString &hostName, quint16 port, bool encrypt,
+                                       QHttpNetworkConnection::ConnectionType connectionType,
+                                       QSharedPointer<QNetworkSession> networkSession)
+        : QHttpNetworkConnection(hostName, port, encrypt, connectionType, /*parent=*/0,
+                                 networkSession)
 #endif
     {
         setExpires(true);
@@ -230,6 +234,7 @@ QHttpThreadDelegate::QHttpThreadDelegate(QObject *parent) :
     , synchronous(false)
     , incomingStatusCode(0)
     , isPipeliningUsed(false)
+    , isSpdyUsed(false)
     , incomingContentLength(-1)
     , incomingErrorCode(QNetworkReply::NoError)
     , downloadBuffer(0)
@@ -281,6 +286,19 @@ void QHttpThreadDelegate::startRequest()
     QUrl urlCopy = httpRequest.url();
     urlCopy.setPort(urlCopy.port(ssl ? 443 : 80));
 
+    QHttpNetworkConnection::ConnectionType connectionType
+            = QHttpNetworkConnection::ConnectionTypeHTTP;
+#ifndef QT_NO_SSL
+    if (httpRequest.isSPDYAllowed() && ssl) {
+        connectionType = QHttpNetworkConnection::ConnectionTypeSPDY;
+        urlCopy.setScheme(QStringLiteral("spdy")); // to differentiate SPDY requests from HTTPS requests
+        QList<QByteArray> nextProtocols;
+        nextProtocols << QSslConfiguration::NextProtocolSpdy3_0
+                      << QSslConfiguration::NextProtocolHttp1_1;
+        incomingSslConfiguration.setAllowedNextProtocols(nextProtocols);
+    }
+#endif // QT_NO_SSL
+
 #ifndef QT_NO_NETWORKPROXY
     if (transparentProxy.type() != QNetworkProxy::NoProxy)
         cacheKey = makeCacheKey(urlCopy, &transparentProxy);
@@ -297,9 +315,12 @@ void QHttpThreadDelegate::startRequest()
         // no entry in cache; create an object
         // the http object is actually a QHttpNetworkConnection
 #ifdef QT_NO_BEARERMANAGEMENT
-        httpConnection = new QNetworkAccessCachedHttpConnection(urlCopy.host(), urlCopy.port(), ssl);
+        httpConnection = new QNetworkAccessCachedHttpConnection(urlCopy.host(), urlCopy.port(), ssl,
+                                                                connectionType);
 #else
-        httpConnection = new QNetworkAccessCachedHttpConnection(urlCopy.host(), urlCopy.port(), ssl, networkSession);
+        httpConnection = new QNetworkAccessCachedHttpConnection(urlCopy.host(), urlCopy.port(), ssl,
+                                                                connectionType,
+                                                                networkSession);
 #endif
 #ifndef QT_NO_SSL
         // Set the QSslConfiguration from this QNetworkRequest.
@@ -575,13 +596,15 @@ void QHttpThreadDelegate::headerChangedSlot()
     incomingReasonPhrase = httpReply->reasonPhrase();
     isPipeliningUsed = httpReply->isPipeliningUsed();
     incomingContentLength = httpReply->contentLength();
+    isSpdyUsed = httpReply->isSpdyUsed();
 
     emit downloadMetaData(incomingHeaders,
                           incomingStatusCode,
                           incomingReasonPhrase,
                           isPipeliningUsed,
                           downloadBuffer,
-                          incomingContentLength);
+                          incomingContentLength,
+                          isSpdyUsed);
 }
 
 void QHttpThreadDelegate::synchronousHeaderChangedSlot()
@@ -597,6 +620,7 @@ void QHttpThreadDelegate::synchronousHeaderChangedSlot()
     incomingStatusCode = httpReply->statusCode();
     incomingReasonPhrase = httpReply->reasonPhrase();
     isPipeliningUsed = httpReply->isPipeliningUsed();
+    isSpdyUsed = httpReply->isSpdyUsed();
     incomingContentLength = httpReply->contentLength();
 }
 

@@ -94,12 +94,27 @@ class Q_AUTOTEST_EXPORT QHttpNetworkConnection : public QObject
     Q_OBJECT
 public:
 
+    enum ConnectionType {
+        ConnectionTypeHTTP,
+        ConnectionTypeSPDY
+    };
+
 #ifndef QT_NO_BEARERMANAGEMENT
-    explicit QHttpNetworkConnection(const QString &hostName, quint16 port = 80, bool encrypt = false, QObject *parent = 0, QSharedPointer<QNetworkSession> networkSession = QSharedPointer<QNetworkSession>());
-    QHttpNetworkConnection(quint16 channelCount, const QString &hostName, quint16 port = 80, bool encrypt = false, QObject *parent = 0, QSharedPointer<QNetworkSession> networkSession = QSharedPointer<QNetworkSession>());
+    explicit QHttpNetworkConnection(const QString &hostName, quint16 port = 80, bool encrypt = false,
+                                    ConnectionType connectionType = ConnectionTypeHTTP,
+                                    QObject *parent = 0, QSharedPointer<QNetworkSession> networkSession
+                                    = QSharedPointer<QNetworkSession>());
+    QHttpNetworkConnection(quint16 channelCount, const QString &hostName, quint16 port = 80,
+                           bool encrypt = false, QObject *parent = 0,
+                           QSharedPointer<QNetworkSession> networkSession = QSharedPointer<QNetworkSession>(),
+                           ConnectionType connectionType = ConnectionTypeHTTP);
 #else
-    explicit QHttpNetworkConnection(const QString &hostName, quint16 port = 80, bool encrypt = false, QObject *parent = 0);
-    QHttpNetworkConnection(quint16 channelCount, const QString &hostName, quint16 port = 80, bool encrypt = false, QObject *parent = 0);
+    explicit QHttpNetworkConnection(const QString &hostName, quint16 port = 80, bool encrypt = false,
+                                    QObject *parent = 0,
+                                    ConnectionType connectionType = ConnectionTypeHTTP);
+    QHttpNetworkConnection(quint16 channelCount, const QString &hostName, quint16 port = 80,
+                           bool encrypt = false, QObject *parent = 0,
+                           ConnectionType connectionType = ConnectionTypeHTTP);
 #endif
     ~QHttpNetworkConnection();
 
@@ -123,6 +138,9 @@ public:
 
     QHttpNetworkConnectionChannel *channels() const;
 
+    ConnectionType connectionType();
+    void setConnectionType(ConnectionType type);
+
 #ifndef QT_NO_SSL
     void setSslConfiguration(const QSslConfiguration &config);
     void ignoreSslErrors(int channel = -1);
@@ -140,6 +158,7 @@ private:
     friend class QHttpNetworkReplyPrivate;
     friend class QHttpNetworkConnectionChannel;
     friend class QHttpProtocolHandler;
+    friend class QSpdyProtocolHandler;
 
     Q_PRIVATE_SLOT(d_func(), void _q_startNextRequest())
     Q_PRIVATE_SLOT(d_func(), void _q_hostLookupFinished(QHostInfo))
@@ -155,7 +174,7 @@ class QHttpNetworkConnectionPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QHttpNetworkConnection)
 public:
-    static const int defaultChannelCount;
+    static const int defaultHttpChannelCount;
     static const int defaultPipelineLength;
     static const int defaultRePipelineLength;
 
@@ -172,8 +191,10 @@ public:
         IPv4or6
     };
 
-    QHttpNetworkConnectionPrivate(const QString &hostName, quint16 port, bool encrypt);
-    QHttpNetworkConnectionPrivate(quint16 channelCount, const QString &hostName, quint16 port, bool encrypt);
+    QHttpNetworkConnectionPrivate(const QString &hostName, quint16 port, bool encrypt,
+                                  QHttpNetworkConnection::ConnectionType type);
+    QHttpNetworkConnectionPrivate(quint16 channelCount, const QString &hostName, quint16 port, bool encrypt,
+                                  QHttpNetworkConnection::ConnectionType type);
     ~QHttpNetworkConnectionPrivate();
     void init();
 
@@ -244,6 +265,8 @@ public:
     QList<HttpMessagePair> lowPriorityQueue;
 
     int preConnectRequests;
+
+    QHttpNetworkConnection::ConnectionType connectionType;
 
 #ifndef QT_NO_SSL
     QSharedPointer<QSslContext> sslContext;
