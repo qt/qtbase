@@ -118,7 +118,10 @@ QAndroidPlatformIntegration::QAndroidPlatformIntegration(const QStringList &para
 
     m_androidFDB = new QAndroidPlatformFontDatabase();
     m_androidPlatformServices = new QAndroidPlatformServices();
+
+#ifndef QT_NO_CLIPBOARD
     m_androidPlatformClipboard = new QAndroidPlatformClipboard();
+#endif
 
     m_androidSystemLocale = new QAndroidSystemLocale;
 }
@@ -217,6 +220,11 @@ QAndroidPlatformIntegration::~QAndroidPlatformIntegration()
     delete m_androidPlatformNativeInterface;
     delete m_androidFDB;
     delete m_androidSystemLocale;
+
+#ifndef QT_NO_CLIPBOARD
+    delete m_androidPlatformClipboard;
+#endif
+
     QtAndroid::setAndroidPlatformIntegration(NULL);
 }
 QPlatformFontDatabase *QAndroidPlatformIntegration::fontDatabase() const
@@ -227,11 +235,7 @@ QPlatformFontDatabase *QAndroidPlatformIntegration::fontDatabase() const
 #ifndef QT_NO_CLIPBOARD
 QPlatformClipboard *QAndroidPlatformIntegration::clipboard() const
 {
-static QAndroidPlatformClipboard *clipboard = 0;
-    if (!clipboard)
-        clipboard = new QAndroidPlatformClipboard;
-
-    return clipboard;
+    return m_androidPlatformClipboard;
 }
 #endif
 

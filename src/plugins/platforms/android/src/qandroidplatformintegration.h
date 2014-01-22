@@ -171,7 +171,11 @@ private:
     QPainter *m_compositePainter;
     QAndroidPlatformNativeInterface *m_androidPlatformNativeInterface;
     QAndroidPlatformServices *m_androidPlatformServices;
+
+#ifndef QT_NO_CLIPBOARD
     QPlatformClipboard *m_androidPlatformClipboard;
+#endif
+
     QAndroidSystemLocale *m_androidSystemLocale;
 #ifndef QT_NO_ACCESSIBILITY
     mutable QPlatformAccessibility *m_accessibility;
