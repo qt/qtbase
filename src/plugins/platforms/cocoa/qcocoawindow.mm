@@ -160,9 +160,7 @@ static bool isMouseEvent(NSEvent *ev)
 
     // Only tool or dialog windows should become key:
     if (m_cocoaPlatformWindow
-        && (m_cocoaPlatformWindow->m_overrideBecomeKey ||
-            m_cocoaPlatformWindow->window()->type() == Qt::Tool ||
-            m_cocoaPlatformWindow->window()->type() == Qt::Dialog))
+        && (m_cocoaPlatformWindow->window()->type() == Qt::Tool || m_cocoaPlatformWindow->window()->type() == Qt::Dialog))
         return YES;
     return NO;
 }
@@ -217,7 +215,6 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
     , m_isExposed(false)
     , m_registerTouchCount(0)
     , m_resizableTransientParent(false)
-    , m_overrideBecomeKey(false)
     , m_alertRequest(NoAlertRequest)
     , monitor(nil)
     , m_drawContentBorderGradient(false)
@@ -267,6 +264,7 @@ QCocoaWindow::~QCocoaWindow()
     [m_contentView release];
     [m_nsWindow release];
     [m_nsWindowDelegate release];
+    [m_windowCursor release];
 }
 
 QSurfaceFormat QCocoaWindow::format() const
@@ -705,8 +703,6 @@ bool QCocoaWindow::setKeyboardGrabEnabled(bool grab)
     if (!m_nsWindow)
         return false;
 
-    m_overrideBecomeKey = grab;
-
     if (grab && ![m_nsWindow isKeyWindow])
         [m_nsWindow makeKeyWindow];
     else if (!grab && [m_nsWindow isKeyWindow])
@@ -718,8 +714,6 @@ bool QCocoaWindow::setMouseGrabEnabled(bool grab)
 {
     if (!m_nsWindow)
         return false;
-
-    m_overrideBecomeKey = grab;
 
     if (grab && ![m_nsWindow isKeyWindow])
         [m_nsWindow makeKeyWindow];
@@ -1066,7 +1060,10 @@ void QCocoaWindow::setWindowCursor(NSCursor *cursor)
         [cursor set];
     // or we can set the cursor on mouse enter/leave using tracking
     // areas. This is done in QNSView, save the cursor:
-    m_windowCursor = cursor;
+    if (m_windowCursor != cursor) {
+        [m_windowCursor release];
+        m_windowCursor = [cursor retain];
+    }
 }
 
 void QCocoaWindow::registerTouch(bool enable)

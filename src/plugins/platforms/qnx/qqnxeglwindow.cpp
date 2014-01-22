@@ -63,6 +63,13 @@ QQnxEglWindow::QQnxEglWindow(QWindow *window, screen_context_t context, bool nee
     m_eglSurface(EGL_NO_SURFACE)
 {
     initWindow();
+
+    // Set window usage
+    const int val = SCREEN_USAGE_OPENGL_ES2;
+    const int result = screen_set_window_property_iv(nativeHandle(), SCREEN_PROPERTY_USAGE, &val);
+    if (result != 0)
+        qFatal("QQnxEglWindow: failed to set window alpha usage, errno=%d", errno);
+
     m_requestedBufferSize = screen()->rootWindow() == this ?
                             screen()->geometry().size() : window->geometry().size();
 }

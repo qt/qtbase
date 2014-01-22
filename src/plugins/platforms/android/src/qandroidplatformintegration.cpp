@@ -89,6 +89,10 @@ void *QAndroidPlatformNativeInterface::nativeResourceForIntegration(const QByteA
         return &m_palettes;
     if (resource == "AndroidStyleFonts")
         return &m_fonts;
+    if (resource == "AndroidDeviceName") {
+        static QString deviceName = QtAndroid::deviceName();
+        return &deviceName;
+    }
     return 0;
 }
 
@@ -119,12 +123,26 @@ QAndroidPlatformIntegration::QAndroidPlatformIntegration(const QStringList &para
     m_androidSystemLocale = new QAndroidSystemLocale;
 }
 
+bool QAndroidPlatformIntegration::needsWorkaround()
+{
+    static bool needsWorkaround =
+            QtAndroid::deviceName().compare(QStringLiteral("samsung SM-T211"), Qt::CaseInsensitive) == 0
+            || QtAndroid::deviceName().compare(QStringLiteral("samsung SM-T210"), Qt::CaseInsensitive) == 0
+            || QtAndroid::deviceName().compare(QStringLiteral("samsung SM-T215"), Qt::CaseInsensitive) == 0;
+    return needsWorkaround;
+}
+
 bool QAndroidPlatformIntegration::hasCapability(Capability cap) const
 {
     switch (cap) {
         case ThreadedPixmaps: return true;
         case ApplicationState: return true;
         case NativeWidgets: return false;
+
+        case ThreadedOpenGL:
+            if (needsWorkaround())
+                return false;
+        // fall through
         default:
 #ifndef ANDROID_PLUGIN_OPENGL
         return QPlatformIntegration::hasCapability(cap);

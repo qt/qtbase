@@ -523,7 +523,7 @@ void Display::initVendorString()
     if (mRenderer && mRenderer->getLUID(&adapterLuid))
     {
         char adapterLuidString[64];
-        sprintf_s(adapterLuidString, sizeof(adapterLuidString), " (adapter LUID: %08x%08x)", adapterLuid.HighPart, adapterLuid.LowPart);
+        snprintf(adapterLuidString, sizeof(adapterLuidString), " (adapter LUID: %08l%08l)", adapterLuid.HighPart, adapterLuid.LowPart);
 
         mVendorString += adapterLuidString;
     }

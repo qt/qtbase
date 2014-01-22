@@ -145,8 +145,9 @@ public:
     QEglFSScreen *createScreen() const;
 #endif
 
-private:
+    static bool needsWorkaround();
 
+private:
     friend class QEglFSAndroidHooks;
 
     QTouchDevice *m_touchDevice;

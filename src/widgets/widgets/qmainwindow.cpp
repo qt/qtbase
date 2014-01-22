@@ -60,6 +60,9 @@
 #include <private/qwidget_p.h>
 #include "qtoolbar_p.h"
 #include "qwidgetanimator_p.h"
+#ifdef Q_OS_OSX
+#include <qpa/qplatformnativeinterface.h>
+#endif
 #ifdef Q_WS_MAC
 #include <private/qt_mac_p.h>
 #include <private/qt_cocoa_helpers_mac_p.h>
@@ -76,6 +79,9 @@ class QMainWindowPrivate : public QWidgetPrivate
 public:
     inline QMainWindowPrivate()
         : layout(0), explicitIconSize(false), toolButtonStyle(Qt::ToolButtonIconOnly)
+#ifdef Q_OS_OSX
+            , useUnifiedToolBar(false)
+#endif
 #ifdef Q_WS_MAC
             , useHIToolBar(false)
             , activateUnifiedToolbarAfterFullScreen(false)
@@ -88,6 +94,9 @@ public:
     QSize iconSize;
     bool explicitIconSize;
     Qt::ToolButtonStyle toolButtonStyle;
+#ifdef Q_OS_OSX
+    bool useUnifiedToolBar;
+#endif
 #ifdef Q_WS_MAC
     bool useHIToolBar;
     bool activateUnifiedToolbarAfterFullScreen;
@@ -1492,16 +1501,29 @@ bool QMainWindow::event(QEvent *event)
 /*!
     \property QMainWindow::unifiedTitleAndToolBarOnMac
     \brief whether the window uses the unified title and toolbar look on Mac OS X
-    \since 4.3
-    \obsolete
-
-    This property is not implemented in Qt 5. Setting it has no effect.
-
-    A replacement API (QtMacUnifiedToolBar) is available in QtMacExtras at
-    http://qt.gitorious.org/qtplayground/qtmacextras
+    \since 5.2
 */
 void QMainWindow::setUnifiedTitleAndToolBarOnMac(bool set)
 {
+#ifdef Q_OS_OSX
+    Q_D(QMainWindow);
+    if (isWindow()) {
+        QPlatformNativeInterface *nativeInterface = QGuiApplication::platformNativeInterface();
+        QPlatformNativeInterface::NativeResourceForIntegrationFunction function =
+            nativeInterface->nativeResourceFunctionForIntegration("setContentBorderThickness");
+        if (!function)
+            return; // Not Cocoa platform plugin.
+
+        createWinId();
+
+        d->useUnifiedToolBar = set;
+
+        const int toolBarHeight = 50;
+        typedef void (*SetContentBorderThicknessFunction)(QWindow *window, int topThickness, int bottomThickness);
+        (reinterpret_cast<SetContentBorderThicknessFunction>(function))(window()->windowHandle(), toolBarHeight, 0);
+    }
+#endif
+
 #ifdef Q_WS_MAC
     Q_D(QMainWindow);
     if (!isWindow() || d->useHIToolBar == set || QSysInfo::MacintoshVersion < QSysInfo::MV_10_3)
@@ -1534,6 +1556,9 @@ void QMainWindow::setUnifiedTitleAndToolBarOnMac(bool set)
 
 bool QMainWindow::unifiedTitleAndToolBarOnMac() const
 {
+#ifdef Q_OS_OSX
+    return d_func()->useUnifiedToolBar;
+#endif
 #ifdef Q_WS_MAC
     return d_func()->useHIToolBar && !testAttribute(Qt::WA_MacBrushedMetal) && !(windowFlags() & Qt::FramelessWindowHint);
 #endif
@@ -1655,9 +1680,7 @@ QMenu *QMainWindow::createPopupMenu()
         for (int i = 0; i < toolbars.size(); ++i) {
             QToolBar *toolBar = toolbars.at(i);
             if (toolBar->parentWidget() == this
-                && (!d->layout->layoutState.toolBarAreaLayout.indexOf(toolBar).isEmpty()
-                    || (unifiedTitleAndToolBarOnMac()
-                        && toolBarArea(toolBar) == Qt::TopToolBarArea))) {
+                && (!d->layout->layoutState.toolBarAreaLayout.indexOf(toolBar).isEmpty())) {
                 menu->addAction(toolbars.at(i)->toggleViewAction());
             }
         }
