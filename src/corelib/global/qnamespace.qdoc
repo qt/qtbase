@@ -699,9 +699,10 @@
            retain an alpha channel for some other reason. If the image has no
            alpha channel this flag has no effect.
 
-    \omitvalue NoFormatConversion Don't do any format conversions on the image.
+    \value NoFormatConversion Don't do any format conversions on the image.
            Can be useful when converting a QImage to a QPixmap for a one-time
-           rendering operation for example.
+           rendering operation for example. Note that a QPixmap not in the
+           preferred format will be much slower as a paint device.
 */
 
 /*!
