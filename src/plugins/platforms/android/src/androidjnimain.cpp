@@ -418,7 +418,15 @@ namespace QtAndroid
     {
         return m_qtTag;
     }
-}
+
+    QString deviceName()
+    {
+        QString manufacturer = QJNIObjectPrivate::getStaticObjectField("android/os/Build", "MANUFACTURER", "Ljava/lang/String;").toString();
+        QString model = QJNIObjectPrivate::getStaticObjectField("android/os/Build", "MODEL", "Ljava/lang/String;").toString();
+
+        return manufacturer + QStringLiteral(" ") + model;
+    }
+} // namespace QtAndroid
 
 static jboolean startQtAndroidPlugin(JNIEnv* /*env*/, jobject /*object*//*, jobject applicationAssetManager*/)
 {

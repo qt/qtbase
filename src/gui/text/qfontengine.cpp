@@ -171,7 +171,8 @@ static const HB_FontClass hb_fontClass = {
 static HB_Error hb_getSFntTable(void *font, HB_Tag tableTag, HB_Byte *buffer, HB_UInt *length)
 {
     QFontEngine *fe = (QFontEngine *)font;
-    if (!fe->getSfntTableData(tableTag, buffer, length))
+    Q_ASSERT(fe->faceData.get_font_table);
+    if (!fe->faceData.get_font_table(fe->faceData.user_data, tableTag, buffer, length))
         return HB_Err_Invalid_Argument;
     return HB_Err_Ok;
 }
@@ -179,6 +180,13 @@ static HB_Error hb_getSFntTable(void *font, HB_Tag tableTag, HB_Byte *buffer, HB
 static void hb_freeFace(void *face)
 {
     qHBFreeFace((HB_Face)face);
+}
+
+
+static bool qt_get_font_table_default(void *user_data, uint tag, uchar *buffer, uint *length)
+{
+    QFontEngine *fe = (QFontEngine *)user_data;
+    return fe->getSfntTableData(tag, buffer, length);
 }
 
 
@@ -210,6 +218,9 @@ QFontEngine::QFontEngine()
       font_(0), font_destroy_func(0),
       face_(0), face_destroy_func(0)
 {
+    faceData.user_data = this;
+    faceData.get_font_table = qt_get_font_table_default;
+
     cache_cost = 0;
     fsType = 0;
     symbol = false;

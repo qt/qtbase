@@ -211,7 +211,6 @@ public: // for QNSView
     QRect m_exposedGeometry;
     int m_registerTouchCount;
     bool m_resizableTransientParent;
-    bool m_overrideBecomeKey;
 
     static const int NoAlertRequest;
     NSInteger m_alertRequest;
