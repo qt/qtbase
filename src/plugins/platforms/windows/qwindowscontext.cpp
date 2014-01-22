@@ -734,8 +734,20 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
     msg.message = message;   // time and pt fields ignored
     msg.wParam = wParam;
     msg.lParam = lParam;
-    msg.pt.x = GET_X_LPARAM(lParam);
-    msg.pt.y = GET_Y_LPARAM(lParam);
+    msg.pt.x = msg.pt.y = 0;
+    if (et != QtWindows::CursorEvent && (et & (QtWindows::MouseEventFlag | QtWindows::NonClientEventFlag))) {
+        msg.pt.x = GET_X_LPARAM(lParam);
+        msg.pt.y = GET_Y_LPARAM(lParam);
+        // For non-client-area messages, these are screen coordinates (as expected
+        // in the MSG structure), otherwise they are client coordinates.
+        if (!(et & QtWindows::NonClientEventFlag)) {
+            ClientToScreen(msg.hwnd, &msg.pt);
+        }
+    } else {
+#ifndef Q_OS_WINCE
+        GetCursorPos(&msg.pt);
+#endif
+    }
 
     // Run the native event filters.
     long filterResult = 0;
