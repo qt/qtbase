@@ -412,19 +412,31 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
 
         if (data->code == ABS_MT_POSITION_X || (m_singleTouch && data->code == ABS_X)) {
             m_currentData.x = qBound(hw_range_x_min, data->value, hw_range_x_max);
-            if (m_typeB || m_singleTouch)
+            if (m_singleTouch)
                 m_contacts[m_currentSlot].x = m_currentData.x;
+            if (m_typeB) {
+                m_contacts[m_currentSlot].x = m_currentData.x;
+                if (m_contacts[m_currentSlot].state == Qt::TouchPointStationary)
+                    m_contacts[m_currentSlot].state = Qt::TouchPointMoved;
+            }
         } else if (data->code == ABS_MT_POSITION_Y || (m_singleTouch && data->code == ABS_Y)) {
             m_currentData.y = qBound(hw_range_y_min, data->value, hw_range_y_max);
-            if (m_typeB || m_singleTouch)
+            if (m_singleTouch)
                 m_contacts[m_currentSlot].y = m_currentData.y;
+                if (m_typeB) {
+                    m_contacts[m_currentSlot].y = m_currentData.y;
+                    if (m_contacts[m_currentSlot].state == Qt::TouchPointStationary)
+                        m_contacts[m_currentSlot].state = Qt::TouchPointMoved;
+                }
         } else if (data->code == ABS_MT_TRACKING_ID) {
             m_currentData.trackingId = data->value;
             if (m_typeB) {
-                if (m_currentData.trackingId == -1)
+                if (m_currentData.trackingId == -1) {
                     m_contacts[m_currentSlot].state = Qt::TouchPointReleased;
-                else
+                } else {
+                    m_contacts[m_currentSlot].state = Qt::TouchPointPressed;
                     m_contacts[m_currentSlot].trackingId = m_currentData.trackingId;
+                }
             }
         } else if (data->code == ABS_MT_TOUCH_MAJOR) {
             m_currentData.maj = data->value;
@@ -468,8 +480,11 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
             it.next();
             Contact &contact(it.value());
 
+            if (!contact.state)
+                continue;
+
             int key = m_typeB ? it.key() : contact.trackingId;
-            if (m_lastContacts.contains(key)) {
+            if (!m_typeB && m_lastContacts.contains(key)) {
                 const Contact &prev(m_lastContacts.value(key));
                 if (contact.state == Qt::TouchPointReleased) {
                     // Copy over the previous values for released points, just in case.
@@ -483,7 +498,7 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
             }
 
             // Avoid reporting a contact in released state more than once.
-            if (contact.state == Qt::TouchPointReleased
+            if (!m_typeB && contact.state == Qt::TouchPointReleased
                     && !m_lastContacts.contains(key)) {
                 it.remove();
                 continue;
@@ -509,8 +524,14 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
         while (it.hasNext()) {
             it.next();
             Contact &contact(it.value());
-            if (contact.state == Qt::TouchPointReleased)
-                it.remove();
+            if (contact.state == Qt::TouchPointReleased) {
+                if (m_typeB)
+                    contact.state = static_cast<Qt::TouchPointState>(0);
+                else
+                    it.remove();
+            } else {
+                contact.state = Qt::TouchPointStationary;
+            }
         }
 
         m_lastContacts = m_contacts;
