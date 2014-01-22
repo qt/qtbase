@@ -115,6 +115,7 @@ SOURCES += \
         tools/qvsnprintf.cpp
 
 NO_PCH_SOURCES = tools/qstring_compat.cpp
+msvc: NO_PCH_SOURCES += tools/qvector_msvc.cpp
 false: SOURCES += $$NO_PCH_SOURCES # Hack for QtCreator
 
 !nacl:mac: {

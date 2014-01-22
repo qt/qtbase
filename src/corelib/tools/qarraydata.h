@@ -142,7 +142,7 @@ struct QTypedArrayData
 
         inline iterator() : i(0) {}
         inline iterator(T *n) : i(n) {}
-        inline iterator(const iterator &o): i(o.i){}
+        inline iterator(const iterator &o): i(o.i){} // #### Qt 6: remove, the implicit version is fine
         inline T &operator*() const { return *i; }
         inline T *operator->() const { return i; }
         inline T &operator[](int j) const { return *(i + j); }
@@ -176,7 +176,7 @@ struct QTypedArrayData
 
         inline const_iterator() : i(0) {}
         inline const_iterator(const T *n) : i(n) {}
-        inline const_iterator(const const_iterator &o): i(o.i) {}
+        inline const_iterator(const const_iterator &o): i(o.i) {} // #### Qt 6: remove, the default version is fine
         inline explicit const_iterator(const iterator &o): i(o.i) {}
         inline const T &operator*() const { return *i; }
         inline const T *operator->() const { return i; }
