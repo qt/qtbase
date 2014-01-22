@@ -594,7 +594,9 @@ void tst_QIcon::fromTheme()
     QCOMPARE(appointmentIcon.pixmap(22).size(), QSize(22, 22)); // exact
     QCOMPARE(appointmentIcon.pixmap(32).size(), QSize(32, 32)); // exact
     QCOMPARE(appointmentIcon.pixmap(48).size(), QSize(32, 32)); // smaller
+    QCOMPARE(appointmentIcon.pixmap(16).size(), QSize(16, 16)); // scaled down
     QCOMPARE(appointmentIcon.pixmap(8).size(), QSize(8, 8)); // scaled down
+    QCOMPARE(appointmentIcon.pixmap(16).size(), QSize(16, 16)); // scaled down
 
     QByteArray ba;
     // write to QByteArray
