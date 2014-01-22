@@ -395,7 +395,7 @@ QString QWindowsContext::registerWindowClass(const QWindow *w, bool isGL)
     bool icon = true;
     if (isGL || (flags & Qt::MSWindowsOwnDC))
         style |= CS_OWNDC;
-    if ((QSysInfo::WindowsVersion & QSysInfo::WV_NT_based)
+    if (!(flags & Qt::NoDropShadowWindowHint) && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based)
         && (type == Qt::Popup || w->property("_q_windowsDropShadow").toBool())) {
         style |= CS_DROPSHADOW;
     }
