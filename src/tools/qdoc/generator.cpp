@@ -1013,12 +1013,13 @@ void Generator::generateInnerNode(InnerNode* node)
         }
     }
 
-    NodeList::ConstIterator c = node->childNodes().constBegin();
-    while (c != node->childNodes().constEnd()) {
-        if ((*c)->isInnerNode() && (*c)->access() != Node::Private) {
-            generateInnerNode((InnerNode*)*c);
+    int i = 0;
+    while (i < node->childNodes().count()) {
+        Node *c = node->childNodes().at(i);
+        if (c->isInnerNode() && c->access() != Node::Private) {
+            generateInnerNode((InnerNode*)c);
         }
-        ++c;
+        ++i;
     }
 }
 
