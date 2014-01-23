@@ -1893,7 +1893,7 @@ char *toHexRepresentation(const char *ba, int length)
 
     if (length > maxLen) {
         const int size = len * 3 + 4;
-        result = static_cast<char *>(malloc(size));
+        result = new char[size];
 
         char *const forElipsis = result + size - 5;
         forElipsis[0] = ' ';
@@ -1901,9 +1901,10 @@ char *toHexRepresentation(const char *ba, int length)
         forElipsis[2] = '.';
         forElipsis[3] = '.';
         result[size - 1] = '\0';
-    } else {
+    }
+    else {
         const int size = len * 3;
-        result = static_cast<char *>(malloc(size));
+        result = new char[size];
         result[size - 1] = '\0';
     }
 
