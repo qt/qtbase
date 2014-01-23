@@ -521,8 +521,6 @@ void QPrinterPrivate::setProperty(QPrintEngine::PrintEnginePropertyKey key, cons
   \value OnlyOne
   \value Tractor
   \value SmallFormat
-  \value First
-  \value Last
   \value Upper
   \value CustomSource A PaperSource defined by the printer that is unknown to Qt
   \value LastPaperSource The highest valid PaperSource value, currently CustomSource

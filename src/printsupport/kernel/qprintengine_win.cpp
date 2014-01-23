@@ -182,7 +182,7 @@ static const struct {
     int winSourceName;
     QPrinter::PaperSource qtSourceName;
 }  sources[] = {
-    { DMBIN_ONLYONE,        QPrinter::OnlyOne },
+    { DMBIN_UPPER,          QPrinter::Upper },  // = DBMIN_ONLYONE
     { DMBIN_LOWER,          QPrinter::Lower },
     { DMBIN_MIDDLE,         QPrinter::Middle },
     { DMBIN_MANUAL,         QPrinter::Manual },
@@ -195,9 +195,7 @@ static const struct {
     { DMBIN_LARGECAPACITY,  QPrinter::LargeCapacity },
     { DMBIN_CASSETTE,       QPrinter::Cassette },
     { DMBIN_FORMSOURCE,     QPrinter::FormSource },
-    { DMBIN_FIRST,          QPrinter::First },
-    { DMBIN_LAST,           QPrinter::Last },
-    { DMBIN_UPPER,          QPrinter::Upper },
+    { DMBIN_USER,           QPrinter::CustomSource },
     { 0, (QPrinter::PaperSource) -1 }
 };
 

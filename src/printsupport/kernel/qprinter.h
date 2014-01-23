@@ -104,11 +104,9 @@ public:
                        Cassette,
                        FormSource,
                        MaxPageSource, // Deprecated
-                       First,
-                       Last,
-                       Upper,
                        CustomSource,
-                       LastPaperSource = CustomSource
+                       LastPaperSource = CustomSource,
+                       Upper = OnlyOne  // As defined in Windows
     };
 
     enum PrinterState { Idle,
