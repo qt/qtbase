@@ -398,6 +398,9 @@ void QCocoaWindow::setCocoaGeometry(const QRect &rect)
         [m_contentView setFrame : NSMakeRect(rect.x(), rect.y(), rect.width(), rect.height())];
     }
 
+    if (!m_qtView)
+        QPlatformWindow::setGeometry(rect);
+
     // will call QPlatformWindow::setGeometry(rect) during resize confirmation (see qnsview.mm)
 }
 
