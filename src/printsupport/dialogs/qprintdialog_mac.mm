@@ -49,8 +49,11 @@
 #include <QtWidgets/private/qapplication_p.h>
 #include <QtPrintSupport/qprinter.h>
 #include <QtPrintSupport/qprintengine.h>
+#include <qpa/qplatformprintdevice.h>
 
 #ifndef QT_NO_PRINTDIALOG
+
+extern qreal qt_pointMultiplier(QPageLayout::Unit unit);
 
 QT_BEGIN_NAMESPACE
 

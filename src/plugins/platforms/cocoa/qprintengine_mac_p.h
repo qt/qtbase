@@ -124,27 +124,18 @@ class QMacPrintEnginePrivate : public QPaintEnginePrivate
 public:
     QPrinter::PrinterMode mode;
     QPrinter::PrinterState state;
-    QPrinter::Orientation orient;
     QSharedDataPointer<QCocoaPrintDevice> m_printDevice;
-    QPageSize m_pageSize;
+    QPageLayout m_pageLayout;
     NSPrintInfo *printInfo;
     PMResolution resolution;
     QString outputFilename;
     QString m_creator;
-    bool fullPage;
     QPaintEngine *paintEngine;
-    bool hasCustomPaperSize;
-    QSizeF customSize;
-    bool hasCustomPageMargins;
-    qreal leftMargin;
-    qreal topMargin;
-    qreal rightMargin;
-    qreal bottomMargin;
     QHash<QMacPrintEngine::PrintEnginePropertyKey, QVariant> valueCache;
 
     QMacPrintEnginePrivate() : mode(QPrinter::ScreenResolution), state(QPrinter::Idle),
-                               orient(QPrinter::Portrait), printInfo(0), paintEngine(0),
-                               hasCustomPaperSize(false), hasCustomPageMargins(false) {}
+                               m_pageLayout(QPageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF(0, 0, 0, 0))),
+                               printInfo(0), paintEngine(0) {}
     ~QMacPrintEnginePrivate();
 
     void initialize();
