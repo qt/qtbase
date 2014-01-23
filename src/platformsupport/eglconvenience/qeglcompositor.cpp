@@ -144,10 +144,11 @@ void QEGLCompositor::render(QEGLPlatformWindow *window, uint texture, bool raste
     QPoint tl = r.topLeft();
     QPoint br = r.bottomRight();
 
+    // Map to [-1,1]
     GLfloat x1 = (tl.x() / sr.width()) * 2 - 1;
-    GLfloat x2 = (br.x() / sr.width()) * 2 - 1;
     GLfloat y1 = ((sr.height() - tl.y()) / sr.height()) * 2 - 1;
-    GLfloat y2 = ((sr.height() - br.y()) / sr.height()) * 2 - 1;
+    GLfloat x2 = ((br.x() + 1) / sr.width()) * 2 - 1;
+    GLfloat y2 = ((sr.height() - (br.y() + 1)) / sr.height()) * 2 - 1;
 
     if (!raster)
         qSwap(y1, y2);
