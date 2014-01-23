@@ -699,7 +699,8 @@ static Q_ALWAYS_INLINE uint INV_PREMUL(uint p) {
         return 0;
     // (p*(0x00ff00ff/alpha)) >> 16 == (p*255)/alpha for all p and alpha <= 256.
     const uint invAlpha = 0x00ff00ffU / alpha;
-    return qRgba((qRed(p)*invAlpha)>>16, (qGreen(p)*invAlpha)>>16, (qBlue(p)*invAlpha)>>16, alpha);
+    // We add 0x8000 to get even rounding. The rounding also ensures that PREMUL(INV_PREMUL(p)) == p for all p.
+    return qRgba((qRed(p)*invAlpha + 0x8000)>>16, (qGreen(p)*invAlpha + 0x8000)>>16, (qBlue(p)*invAlpha + 0x8000)>>16, alpha);
 }
 
 struct quint24 {

@@ -166,6 +166,8 @@ private slots:
     void deepCopyWhenPaintingActive();
     void scaled_QTBUG19157();
 
+    void convertOverUnPreMul();
+
     void cleanupFunctions();
 };
 
@@ -2420,6 +2422,26 @@ void tst_QImage::scaled_QTBUG19157()
     QImage foo(5000, 1, QImage::Format_RGB32);
     foo = foo.scaled(1024, 1024, Qt::KeepAspectRatio);
     QVERIFY(!foo.isNull());
+}
+
+void tst_QImage::convertOverUnPreMul()
+{
+    QImage image(256, 256, QImage::Format_ARGB32_Premultiplied);
+
+    for (int j = 0; j < 256; j++) {
+        for (int i = 0; i <= j; i++) {
+            image.setPixel(i, j, qRgba(i, i, i, j));
+        }
+    }
+
+    QImage image2 = image.convertToFormat(QImage::Format_ARGB32).convertToFormat(QImage::Format_ARGB32_Premultiplied);
+
+    for (int j = 0; j < 256; j++) {
+        for (int i = 0; i <= j; i++) {
+            QCOMPARE(qAlpha(image2.pixel(i, j)), qAlpha(image.pixel(i, j)));
+            QCOMPARE(qGray(image2.pixel(i, j)), qGray(image.pixel(i, j)));
+        }
+    }
 }
 
 static void cleanupFunction(void* info)
