@@ -316,7 +316,7 @@
     \title Plug & Paint Basic Tools Example
 
     The Basic Tools example is a static plugin for the
-    \l{plugandpaint}{Plug & Paint} example. It provides a set
+    \l{tools/plugandpaint}{Plug & Paint} example. It provides a set
     of basic brushes, shapes, and filters. Through the Basic Tools
     example, we will review the four steps involved in writing a Qt
     plugin:
@@ -333,7 +333,7 @@
     \snippet tools/plugandpaintplugins/basictools/basictoolsplugin.h 0
 
     We start by including \c interfaces.h, which defines the plugin
-    interfaces for the \l{plugandpaint}{Plug & Paint}
+    interfaces for the \l{tools/plugandpaint}{Plug & Paint}
     application. For the \c #include to work, we need to add an \c
     INCLUDEPATH entry to the \c .pro file with the path to Qt's \c
     examples/tools directory.
@@ -344,7 +344,7 @@
     The \c Q_INTERFACES() macro is necessary to tell \l{moc}, Qt's
     meta-object compiler, that the base classes are plugin
     interfaces. Without the \c Q_INTERFACES() macro, we couldn't use
-    \l qobject_cast() in the \l{plugandpaint}{Plug & Paint}
+    \l qobject_cast() in the \l{tools/plugandpaint}{Plug & Paint}
     application to detect interfaces.
     For an explanation for the \c Q_PLUGIN_METADATA() macro see
     \l {Exporting the Plugin}.
@@ -501,7 +501,7 @@
     \title Plug & Paint Extra Filters Example
 
     The Extra Filters example is a plugin for the
-    \l{plugandpaint}{Plug & Paint} example. It provides a set
+    \l{tools/plugandpaint}{Plug & Paint} example. It provides a set
     of filters in addition to those provided by the
     \l{tools/plugandpaintplugins/basictools}{Basic Tools} plugin.
 

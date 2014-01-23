@@ -33,7 +33,7 @@
 
     This example is intended to be run alongside the
     \l{fortuneclient}{Fortune Client} example or the
-    \l{blockingfortuneclient}{Blocking Fortune Client} example.
+    \l{blockingfortuneclient}{Blocking Fortune Client Example}.
 
     \image fortuneserver-example.png Screenshot of the Fortune Server example
 

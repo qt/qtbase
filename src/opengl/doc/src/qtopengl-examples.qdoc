@@ -34,7 +34,7 @@
     \image opengl-examples.png
 
     These examples describe how to use the Qt OpenGL Module. For new code,
-    please use the OpenGL classes in the \l {Qt GUI Module}.
+    please use the OpenGL classes in the \l QtGui module.
 
 
     Qt provides support for integration with OpenGL implementations on all
