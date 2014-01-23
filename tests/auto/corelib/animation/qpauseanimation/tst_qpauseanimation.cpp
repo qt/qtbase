@@ -262,7 +262,7 @@ void tst_QPauseAnimation::pauseResume()
     QTRY_COMPARE(animation.state(), QAbstractAnimation::Stopped);
 
 #ifdef Q_OS_WIN
-    if (animation.m_updateCurrentTimeCount != 3)
+    if (animation.m_updateCurrentTimeCount < 3)
         QEXPECT_FAIL("", winTimerError, Abort);
 #endif
     QVERIFY2(animation.m_updateCurrentTimeCount >= 3, qPrintable(
