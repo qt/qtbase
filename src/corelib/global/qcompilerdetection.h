@@ -868,8 +868,10 @@
 
 #ifdef Q_COMPILER_CONSTEXPR
 # define Q_DECL_CONSTEXPR constexpr
+# define Q_CONSTEXPR constexpr
 #else
 # define Q_DECL_CONSTEXPR
+# define Q_CONSTEXPR const
 #endif
 
 #ifdef Q_COMPILER_EXPLICIT_OVERRIDES

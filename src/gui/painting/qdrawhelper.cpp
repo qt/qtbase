@@ -91,80 +91,112 @@ enum {
 // must be multiple of 4 for easier SIMD implementations
 static const int buffer_size = 2048;
 
+#ifdef Q_COMPILER_CONSTEXPR
+
+template<QImage::Format> Q_DECL_CONSTEXPR uint redWidth();
+template<QImage::Format> Q_DECL_CONSTEXPR uint redShift();
+template<QImage::Format> Q_DECL_CONSTEXPR uint greenWidth();
+template<QImage::Format> Q_DECL_CONSTEXPR uint greenShift();
+template<QImage::Format> Q_DECL_CONSTEXPR uint blueWidth();
+template<QImage::Format> Q_DECL_CONSTEXPR uint blueShift();
+template<QImage::Format> Q_DECL_CONSTEXPR uint alphaWidth();
+template<QImage::Format> Q_DECL_CONSTEXPR uint alphaShift();
+
+template<> Q_DECL_CONSTEXPR uint redWidth<QImage::Format_RGB16>() { return 5; }
+template<> Q_DECL_CONSTEXPR uint redWidth<QImage::Format_RGB444>() { return 4; }
+template<> Q_DECL_CONSTEXPR uint redWidth<QImage::Format_RGB555>() { return 5; }
+template<> Q_DECL_CONSTEXPR uint redWidth<QImage::Format_RGB666>() { return 6; }
+template<> Q_DECL_CONSTEXPR uint redWidth<QImage::Format_RGB888>() { return 8; }
+template<> Q_DECL_CONSTEXPR uint redWidth<QImage::Format_ARGB4444_Premultiplied>() { return 4; }
+template<> Q_DECL_CONSTEXPR uint redWidth<QImage::Format_ARGB8555_Premultiplied>() { return 5; }
+template<> Q_DECL_CONSTEXPR uint redWidth<QImage::Format_ARGB8565_Premultiplied>() { return 5; }
+template<> Q_DECL_CONSTEXPR uint redWidth<QImage::Format_ARGB6666_Premultiplied>() { return 6; }
+template<> Q_DECL_CONSTEXPR uint redShift<QImage::Format_RGB16>() { return  11; }
+template<> Q_DECL_CONSTEXPR uint redShift<QImage::Format_RGB444>() { return  8; }
+template<> Q_DECL_CONSTEXPR uint redShift<QImage::Format_RGB555>() { return 10; }
+template<> Q_DECL_CONSTEXPR uint redShift<QImage::Format_RGB666>() { return 12; }
+template<> Q_DECL_CONSTEXPR uint redShift<QImage::Format_RGB888>() { return 16; }
+template<> Q_DECL_CONSTEXPR uint redShift<QImage::Format_ARGB4444_Premultiplied>() { return  8; }
+template<> Q_DECL_CONSTEXPR uint redShift<QImage::Format_ARGB8555_Premultiplied>() { return 18; }
+template<> Q_DECL_CONSTEXPR uint redShift<QImage::Format_ARGB8565_Premultiplied>() { return 19; }
+template<> Q_DECL_CONSTEXPR uint redShift<QImage::Format_ARGB6666_Premultiplied>() { return 12; }
+template<> Q_DECL_CONSTEXPR uint greenWidth<QImage::Format_RGB16>() { return 6; }
+template<> Q_DECL_CONSTEXPR uint greenWidth<QImage::Format_RGB444>() { return 4; }
+template<> Q_DECL_CONSTEXPR uint greenWidth<QImage::Format_RGB555>() { return 5; }
+template<> Q_DECL_CONSTEXPR uint greenWidth<QImage::Format_RGB666>() { return 6; }
+template<> Q_DECL_CONSTEXPR uint greenWidth<QImage::Format_RGB888>() { return 8; }
+template<> Q_DECL_CONSTEXPR uint greenWidth<QImage::Format_ARGB4444_Premultiplied>() { return 4; }
+template<> Q_DECL_CONSTEXPR uint greenWidth<QImage::Format_ARGB8555_Premultiplied>() { return 5; }
+template<> Q_DECL_CONSTEXPR uint greenWidth<QImage::Format_ARGB8565_Premultiplied>() { return 6; }
+template<> Q_DECL_CONSTEXPR uint greenWidth<QImage::Format_ARGB6666_Premultiplied>() { return 6; }
+template<> Q_DECL_CONSTEXPR uint greenShift<QImage::Format_RGB16>() { return  5; }
+template<> Q_DECL_CONSTEXPR uint greenShift<QImage::Format_RGB444>() { return 4; }
+template<> Q_DECL_CONSTEXPR uint greenShift<QImage::Format_RGB555>() { return 5; }
+template<> Q_DECL_CONSTEXPR uint greenShift<QImage::Format_RGB666>() { return 6; }
+template<> Q_DECL_CONSTEXPR uint greenShift<QImage::Format_RGB888>() { return 8; }
+template<> Q_DECL_CONSTEXPR uint greenShift<QImage::Format_ARGB4444_Premultiplied>() { return  4; }
+template<> Q_DECL_CONSTEXPR uint greenShift<QImage::Format_ARGB8555_Premultiplied>() { return 13; }
+template<> Q_DECL_CONSTEXPR uint greenShift<QImage::Format_ARGB8565_Premultiplied>() { return 13; }
+template<> Q_DECL_CONSTEXPR uint greenShift<QImage::Format_ARGB6666_Premultiplied>() { return  6; }
+template<> Q_DECL_CONSTEXPR uint blueWidth<QImage::Format_RGB16>() { return 5; }
+template<> Q_DECL_CONSTEXPR uint blueWidth<QImage::Format_RGB444>() { return 4; }
+template<> Q_DECL_CONSTEXPR uint blueWidth<QImage::Format_RGB555>() { return 5; }
+template<> Q_DECL_CONSTEXPR uint blueWidth<QImage::Format_RGB666>() { return 6; }
+template<> Q_DECL_CONSTEXPR uint blueWidth<QImage::Format_RGB888>() { return 8; }
+template<> Q_DECL_CONSTEXPR uint blueWidth<QImage::Format_ARGB4444_Premultiplied>() { return 4; }
+template<> Q_DECL_CONSTEXPR uint blueWidth<QImage::Format_ARGB8555_Premultiplied>() { return 5; }
+template<> Q_DECL_CONSTEXPR uint blueWidth<QImage::Format_ARGB8565_Premultiplied>() { return 5; }
+template<> Q_DECL_CONSTEXPR uint blueWidth<QImage::Format_ARGB6666_Premultiplied>() { return 6; }
+template<> Q_DECL_CONSTEXPR uint blueShift<QImage::Format_RGB16>() { return 0; }
+template<> Q_DECL_CONSTEXPR uint blueShift<QImage::Format_RGB444>() { return 0; }
+template<> Q_DECL_CONSTEXPR uint blueShift<QImage::Format_RGB555>() { return 0; }
+template<> Q_DECL_CONSTEXPR uint blueShift<QImage::Format_RGB666>() { return 0; }
+template<> Q_DECL_CONSTEXPR uint blueShift<QImage::Format_RGB888>() { return 0; }
+template<> Q_DECL_CONSTEXPR uint blueShift<QImage::Format_ARGB4444_Premultiplied>() { return 0; }
+template<> Q_DECL_CONSTEXPR uint blueShift<QImage::Format_ARGB8555_Premultiplied>() { return 8; }
+template<> Q_DECL_CONSTEXPR uint blueShift<QImage::Format_ARGB8565_Premultiplied>() { return 8; }
+template<> Q_DECL_CONSTEXPR uint blueShift<QImage::Format_ARGB6666_Premultiplied>() { return 0; }
+template<> Q_DECL_CONSTEXPR uint alphaWidth<QImage::Format_ARGB4444_Premultiplied>() { return  4; }
+template<> Q_DECL_CONSTEXPR uint alphaWidth<QImage::Format_ARGB8555_Premultiplied>() { return  8; }
+template<> Q_DECL_CONSTEXPR uint alphaWidth<QImage::Format_ARGB8565_Premultiplied>() { return  8; }
+template<> Q_DECL_CONSTEXPR uint alphaWidth<QImage::Format_ARGB6666_Premultiplied>() { return  6; }
+template<> Q_DECL_CONSTEXPR uint alphaShift<QImage::Format_ARGB4444_Premultiplied>() { return 12; }
+template<> Q_DECL_CONSTEXPR uint alphaShift<QImage::Format_ARGB8555_Premultiplied>() { return  0; }
+template<> Q_DECL_CONSTEXPR uint alphaShift<QImage::Format_ARGB8565_Premultiplied>() { return  0; }
+template<> Q_DECL_CONSTEXPR uint alphaShift<QImage::Format_ARGB6666_Premultiplied>() { return 18; }
+
+template<QImage::Format> Q_DECL_CONSTEXPR QPixelLayout::BPP bitsPerPixel();
+template<> Q_DECL_CONSTEXPR QPixelLayout::BPP bitsPerPixel<QImage::Format_RGB16>() { return QPixelLayout::BPP16; }
+template<> Q_DECL_CONSTEXPR QPixelLayout::BPP bitsPerPixel<QImage::Format_RGB444>() { return QPixelLayout::BPP16; }
+template<> Q_DECL_CONSTEXPR QPixelLayout::BPP bitsPerPixel<QImage::Format_RGB555>() { return QPixelLayout::BPP16; }
+template<> Q_DECL_CONSTEXPR QPixelLayout::BPP bitsPerPixel<QImage::Format_RGB666>() { return QPixelLayout::BPP24; }
+template<> Q_DECL_CONSTEXPR QPixelLayout::BPP bitsPerPixel<QImage::Format_RGB888>() { return QPixelLayout::BPP24; }
+template<> Q_DECL_CONSTEXPR QPixelLayout::BPP bitsPerPixel<QImage::Format_ARGB4444_Premultiplied>() { return QPixelLayout::BPP16; }
+template<> Q_DECL_CONSTEXPR QPixelLayout::BPP bitsPerPixel<QImage::Format_ARGB8555_Premultiplied>() { return QPixelLayout::BPP24; }
+template<> Q_DECL_CONSTEXPR QPixelLayout::BPP bitsPerPixel<QImage::Format_ARGB8565_Premultiplied>() { return QPixelLayout::BPP24; }
+template<> Q_DECL_CONSTEXPR QPixelLayout::BPP bitsPerPixel<QImage::Format_ARGB6666_Premultiplied>() { return QPixelLayout::BPP24; }
 
 
-
-// To convert in place, let 'dest' and 'src' be the same.
-static const uint *QT_FASTCALL convertIndexedToARGB32PM(uint *buffer, const uint *src, int count,
-                                                        const QPixelLayout *, const QRgb *clut)
-{
-    for (int i = 0; i < count; ++i)
-        buffer[i] = PREMUL(clut[src[i]]);
-    return buffer;
-}
-
-static const uint *QT_FASTCALL convertPassThrough(uint *, const uint *src, int,
-                                                  const QPixelLayout *, const QRgb *)
-{
-    return src;
-}
-
-static const uint *QT_FASTCALL convertRGB16ToRGB32(uint *buffer, const uint *src, int count,
-                                                      const QPixelLayout *, const QRgb *)
-{
-    for (int i = 0; i < count; ++i)
-        buffer[i] = qConvertRgb16To32(src[i]);
-    return buffer;
-}
-
-static const uint *QT_FASTCALL convertARGB32ToARGB32PM(uint *buffer, const uint *src, int count,
-                                                       const QPixelLayout *, const QRgb *)
-{
-    for (int i = 0; i < count; ++i)
-        buffer[i] = PREMUL(src[i]);
-    return buffer;
-}
-
-static const uint *QT_FASTCALL convertRGBA8888PMToARGB32PM(uint *buffer, const uint *src, int count,
-                                                           const QPixelLayout *, const QRgb *)
-{
-    for (int i = 0; i < count; ++i)
-        buffer[i] = RGBA2ARGB(src[i]);
-    return buffer;
-}
-
-static const uint *QT_FASTCALL convertRGBA8888ToARGB32PM(uint *buffer, const uint *src, int count,
-                                                         const QPixelLayout *, const QRgb *)
-{
-    for (int i = 0; i < count; ++i)
-        buffer[i] = PREMUL(RGBA2ARGB(src[i]));
-    return buffer;
-}
-
+template<QImage::Format Format>
 static const uint *QT_FASTCALL convertToRGB32(uint *buffer, const uint *src, int count,
-                                              const QPixelLayout *layout, const QRgb *)
+                                              const QPixelLayout *, const QRgb *)
 {
-    Q_ASSERT(layout->redWidth >= 4);
-    Q_ASSERT(layout->greenWidth >= 4);
-    Q_ASSERT(layout->blueWidth >= 4);
-    Q_ASSERT(layout->alphaWidth == 0);
+    Q_CONSTEXPR uint redMask = ((1 << redWidth<Format>()) - 1);
+    Q_CONSTEXPR uint greenMask = ((1 << greenWidth<Format>()) - 1);
+    Q_CONSTEXPR uint blueMask = ((1 << blueWidth<Format>()) - 1);
 
-    const uint redMask = ((1 << layout->redWidth) - 1);
-    const uint greenMask = ((1 << layout->greenWidth) - 1);
-    const uint blueMask = ((1 << layout->blueWidth) - 1);
+    Q_CONSTEXPR uchar redLeftShift = 8 - redWidth<Format>();
+    Q_CONSTEXPR uchar greenLeftShift = 8 - greenWidth<Format>();
+    Q_CONSTEXPR uchar blueLeftShift = 8 - blueWidth<Format>();
 
-    const uchar redLeftShift = 8 - layout->redWidth;
-    const uchar greenLeftShift = 8 - layout->greenWidth;
-    const uchar blueLeftShift = 8 - layout->blueWidth;
-
-    const uchar redRightShift = 2 * layout->redWidth - 8;
-    const uchar greenRightShift = 2 * layout->greenWidth - 8;
-    const uchar blueRightShift = 2 * layout->blueWidth - 8;
+    Q_CONSTEXPR uchar redRightShift = 2 * redWidth<Format>() - 8;
+    Q_CONSTEXPR uchar greenRightShift = 2 * greenWidth<Format>() - 8;
+    Q_CONSTEXPR uchar blueRightShift = 2 * blueWidth<Format>() - 8;
 
     for (int i = 0; i < count; ++i) {
-        uint red = (src[i] >> layout->redShift) & redMask;
-        uint green = (src[i] >> layout->greenShift) & greenMask;
-        uint blue = (src[i] >> layout->blueShift) & blueMask;
+        uint red = (src[i] >> redShift<Format>()) & redMask;
+        uint green = (src[i] >> greenShift<Format>()) & greenMask;
+        uint blue = (src[i] >> blueShift<Format>()) & blueMask;
 
         red = ((red << redLeftShift) | (red >> redRightShift)) << 16;
         green = ((green << greenLeftShift) | (green >> greenRightShift)) << 8;
@@ -174,6 +206,138 @@ static const uint *QT_FASTCALL convertToRGB32(uint *buffer, const uint *src, int
 
     return buffer;
 }
+
+template<QImage::Format Format>
+static const uint *QT_FASTCALL convertARGBPMToARGB32PM(uint *buffer, const uint *src, int count,
+                                                       const QPixelLayout *, const QRgb *)
+{
+    Q_CONSTEXPR uint alphaMask = ((1 << alphaWidth<Format>()) - 1);
+    Q_CONSTEXPR uint redMask = ((1 << redWidth<Format>()) - 1);
+    Q_CONSTEXPR uint greenMask = ((1 << greenWidth<Format>()) - 1);
+    Q_CONSTEXPR uint blueMask = ((1 << blueWidth<Format>()) - 1);
+
+    Q_CONSTEXPR uchar alphaLeftShift = 8 - alphaWidth<Format>();
+    Q_CONSTEXPR uchar redLeftShift = 8 - redWidth<Format>();
+    Q_CONSTEXPR uchar greenLeftShift = 8 - greenWidth<Format>();
+    Q_CONSTEXPR uchar blueLeftShift = 8 - blueWidth<Format>();
+
+    Q_CONSTEXPR uchar alphaRightShift = 2 * alphaWidth<Format>() - 8;
+    Q_CONSTEXPR uchar redRightShift = 2 * redWidth<Format>() - 8;
+    Q_CONSTEXPR uchar greenRightShift = 2 * greenWidth<Format>() - 8;
+    Q_CONSTEXPR uchar blueRightShift = 2 * blueWidth<Format>() - 8;
+
+    for (int i = 0; i < count; ++i) {
+        uint alpha = (src[i] >> alphaShift<Format>()) & alphaMask;
+        uint red = (src[i] >> redShift<Format>()) & redMask;
+        uint green = (src[i] >> greenShift<Format>()) & greenMask;
+        uint blue = (src[i] >> blueShift<Format>()) & blueMask;
+
+        alpha = (alpha << alphaLeftShift) | (alpha >> alphaRightShift);
+        red = qMin(alpha, (red << redLeftShift) | (red >> redRightShift));
+        green = qMin(alpha, (green << greenLeftShift) | (green >> greenRightShift));
+        blue = qMin(alpha, (blue << blueLeftShift) | (blue >> blueRightShift));
+        buffer[i] = (alpha << 24) | (red << 16) | (green << 8) | blue;
+    }
+
+    return buffer;
+}
+
+template<QImage::Format Format>
+static const uint *QT_FASTCALL convertRGBFromARGB32PM(uint *buffer, const uint *src, int count,
+                                                      const QPixelLayout *, const QRgb *)
+{
+    Q_CONSTEXPR uint redMask = ((1 << redWidth<Format>()) - 1);
+    Q_CONSTEXPR uint greenMask = ((1 << greenWidth<Format>()) - 1);
+    Q_CONSTEXPR uint blueMask = ((1 << blueWidth<Format>()) - 1);
+
+    Q_CONSTEXPR uchar redRightShift = 24 - redWidth<Format>();
+    Q_CONSTEXPR uchar greenRightShift = 16 - greenWidth<Format>();
+    Q_CONSTEXPR uchar blueRightShift = 8 - blueWidth<Format>();
+
+    for (int i = 0; i < count; ++i) {
+        const uint color = INV_PREMUL(src[i]);
+        const uint red = ((color >> redRightShift) & redMask) << redShift<Format>();
+        const uint green = ((color >> greenRightShift) & greenMask) << greenShift<Format>();
+        const uint blue = ((color >> blueRightShift) & blueMask) << blueShift<Format>();
+        buffer[i] = red | green | blue;
+    }
+    return buffer;
+}
+
+template<QImage::Format Format>
+static const uint *QT_FASTCALL convertRGBFromRGB32(uint *buffer, const uint *src, int count,
+                                                   const QPixelLayout *, const QRgb *)
+{
+    Q_CONSTEXPR uint redMask = ((1 << redWidth<Format>()) - 1);
+    Q_CONSTEXPR uint greenMask = ((1 << greenWidth<Format>()) - 1);
+    Q_CONSTEXPR uint blueMask = ((1 << blueWidth<Format>()) - 1);
+
+    Q_CONSTEXPR uchar redRightShift = 24 - redWidth<Format>();
+    Q_CONSTEXPR uchar greenRightShift = 16 - greenWidth<Format>();
+    Q_CONSTEXPR uchar blueRightShift = 8 - blueWidth<Format>();
+
+    for (int i = 0; i < count; ++i) {
+        const uint red = ((src[i] >> redRightShift) & redMask) << redShift<Format>();
+        const uint green = ((src[i] >> greenRightShift) & greenMask) << greenShift<Format>();
+        const uint blue = ((src[i] >> blueRightShift) & blueMask) << blueShift<Format>();
+        buffer[i] = red | green | blue;
+    }
+    return buffer;
+}
+
+template<QImage::Format Format>
+static const uint *QT_FASTCALL convertARGBPMFromARGB32PM(uint *buffer, const uint *src, int count,
+                                                         const QPixelLayout *, const QRgb *)
+{
+    Q_CONSTEXPR uint alphaMask = ((1 << alphaWidth<Format>()) - 1);
+    Q_CONSTEXPR uint redMask = ((1 << redWidth<Format>()) - 1);
+    Q_CONSTEXPR uint greenMask = ((1 << greenWidth<Format>()) - 1);
+    Q_CONSTEXPR uint blueMask = ((1 << blueWidth<Format>()) - 1);
+
+    Q_CONSTEXPR uchar alphaRightShift = 32 - alphaWidth<Format>();
+    Q_CONSTEXPR uchar redRightShift = 24 - redWidth<Format>();
+    Q_CONSTEXPR uchar greenRightShift = 16 - greenWidth<Format>();
+    Q_CONSTEXPR uchar blueRightShift = 8 - blueWidth<Format>();
+
+    for (int i = 0; i < count; ++i) {
+        const uint alpha = ((src[i] >> alphaRightShift) & alphaMask) << alphaShift<Format>();
+        const uint red = ((src[i] >> redRightShift) & redMask) << redShift<Format>();
+        const uint green = ((src[i] >> greenRightShift) & greenMask) << greenShift<Format>();
+        const uint blue = ((src[i] >> blueRightShift) & blueMask) << blueShift<Format>();
+        buffer[i] = alpha | red | green | blue;
+    }
+    return buffer;
+}
+
+template<QImage::Format Format> Q_DECL_CONSTEXPR static inline QPixelLayout pixelLayoutRGB()
+{
+    return QPixelLayout{
+        redWidth<Format>(), redShift<Format>(),
+        greenWidth<Format>(), greenShift<Format>(),
+        blueWidth<Format>(), blueShift<Format>(),
+        0, 0,
+        false, bitsPerPixel<Format>(),
+        convertToRGB32<Format>,
+        convertRGBFromARGB32PM<Format>,
+        convertRGBFromRGB32<Format>
+    };
+}
+
+template<QImage::Format Format> Q_DECL_CONSTEXPR static inline QPixelLayout pixelLayoutARGBPM()
+{
+    return QPixelLayout{
+        redWidth<Format>(), redShift<Format>(),
+        greenWidth<Format>(), greenShift<Format>(),
+        blueWidth<Format>(), blueShift<Format>(),
+        alphaWidth<Format>(), alphaShift<Format>(),
+        true, bitsPerPixel<Format>(),
+        convertARGBPMToARGB32PM<Format>,
+        convertARGBPMFromARGB32PM<Format>,
+        0
+    };
+}
+
+#else // CONSTEXPR
 
 static const uint *QT_FASTCALL convertToARGB32PM(uint *buffer, const uint *src, int count,
                                                  const QPixelLayout *layout, const QRgb *)
@@ -229,59 +393,36 @@ static const uint *QT_FASTCALL convertToARGB32PM(uint *buffer, const uint *src, 
     return buffer;
 }
 
-static const uint *QT_FASTCALL convertRGB16FromRGB32(uint *buffer, const uint *src, int count,
-                                                     const QPixelLayout *, const QRgb *)
+static const uint *QT_FASTCALL convertToRGB32(uint *buffer, const uint *src, int count,
+                                              const QPixelLayout *layout, const QRgb *)
 {
-    for (int i = 0; i < count; ++i)
-        buffer[i] = qConvertRgb32To16(src[i]);
-    return buffer;
-}
+    Q_ASSERT(layout->redWidth >= 4);
+    Q_ASSERT(layout->greenWidth >= 4);
+    Q_ASSERT(layout->blueWidth >= 4);
+    Q_ASSERT(layout->alphaWidth == 0);
 
-static const uint *QT_FASTCALL convertRGB16FromARGB32PM(uint *buffer, const uint *src, int count,
-                                                        const QPixelLayout *, const QRgb *)
-{
-    for (int i = 0; i < count; ++i)
-        buffer[i] = qConvertRgb32To16(INV_PREMUL(src[i]));
-    return buffer;
-}
+    const uint redMask = ((1 << layout->redWidth) - 1);
+    const uint greenMask = ((1 << layout->greenWidth) - 1);
+    const uint blueMask = ((1 << layout->blueWidth) - 1);
 
-static const uint *QT_FASTCALL convertARGB32FromARGB32PM(uint *buffer, const uint *src, int count,
-                                                         const QPixelLayout *, const QRgb *)
-{
-    for (int i = 0; i < count; ++i)
-        buffer[i] = INV_PREMUL(src[i]);
-    return buffer;
-}
+    const uchar redLeftShift = 8 - layout->redWidth;
+    const uchar greenLeftShift = 8 - layout->greenWidth;
+    const uchar blueLeftShift = 8 - layout->blueWidth;
 
-static const uint *QT_FASTCALL convertRGBA8888PMFromARGB32PM(uint *buffer, const uint *src, int count,
-                                                             const QPixelLayout *, const QRgb *)
-{
-    for (int i = 0; i < count; ++i)
-        buffer[i] = ARGB2RGBA(src[i]);
-    return buffer;
-}
+    const uchar redRightShift = 2 * layout->redWidth - 8;
+    const uchar greenRightShift = 2 * layout->greenWidth - 8;
+    const uchar blueRightShift = 2 * layout->blueWidth - 8;
 
-static const uint *QT_FASTCALL convertRGBA8888FromARGB32PM(uint *buffer, const uint *src, int count,
-                                                             const QPixelLayout *, const QRgb *)
-{
-    for (int i = 0; i < count; ++i)
-        buffer[i] = ARGB2RGBA(INV_PREMUL(src[i]));
-    return buffer;
-}
+    for (int i = 0; i < count; ++i) {
+        uint red = (src[i] >> layout->redShift) & redMask;
+        uint green = (src[i] >> layout->greenShift) & greenMask;
+        uint blue = (src[i] >> layout->blueShift) & blueMask;
 
-static const uint *QT_FASTCALL convertRGBXFromRGB32(uint *buffer, const uint *src, int count,
-                                                    const QPixelLayout *, const QRgb *)
-{
-    for (int i = 0; i < count; ++i)
-        buffer[i] = ARGB2RGBA(0xff000000 | src[i]);
-    return buffer;
-}
-
-static const uint *QT_FASTCALL convertRGBXFromARGB32PM(uint *buffer, const uint *src, int count,
-                                                       const QPixelLayout *, const QRgb *)
-{
-    for (int i = 0; i < count; ++i)
-        buffer[i] = ARGB2RGBA(0xff000000 | INV_PREMUL(src[i]));
+        red = (red << redLeftShift) | (red >> redRightShift);
+        green = (green << greenLeftShift) | (green >> greenRightShift);
+        blue = (blue << blueLeftShift) | (blue >> blueRightShift);
+        buffer[i] = 0xff000000 | (red << 16) | (green << 8) | blue;
+    }
     return buffer;
 }
 
@@ -341,6 +482,110 @@ static const uint *QT_FASTCALL convertFromRGB32(uint *buffer, const uint *src, i
         uint blue = ((src[i] >> blueRightShift) & blueMask) << layout->blueShift;
         buffer[i] = red | green | blue;
     }
+    return buffer;
+}
+
+static const uint *QT_FASTCALL convertRGB16ToRGB32(uint *buffer, const uint *src, int count,
+                                                      const QPixelLayout *, const QRgb *)
+{
+    for (int i = 0; i < count; ++i)
+        buffer[i] = qConvertRgb16To32(src[i]);
+    return buffer;
+}
+
+static const uint *QT_FASTCALL convertRGB16FromRGB32(uint *buffer, const uint *src, int count,
+                                                     const QPixelLayout *, const QRgb *)
+{
+    for (int i = 0; i < count; ++i)
+        buffer[i] = qConvertRgb32To16(src[i]);
+    return buffer;
+}
+
+static const uint *QT_FASTCALL convertRGB16FromARGB32PM(uint *buffer, const uint *src, int count,
+                                                        const QPixelLayout *, const QRgb *)
+{
+    for (int i = 0; i < count; ++i)
+        buffer[i] = qConvertRgb32To16(INV_PREMUL(src[i]));
+    return buffer;
+}
+#endif
+
+// To convert in place, let 'dest' and 'src' be the same.
+static const uint *QT_FASTCALL convertIndexedToARGB32PM(uint *buffer, const uint *src, int count,
+                                                        const QPixelLayout *, const QRgb *clut)
+{
+    for (int i = 0; i < count; ++i)
+        buffer[i] = PREMUL(clut[src[i]]);
+    return buffer;
+}
+
+static const uint *QT_FASTCALL convertPassThrough(uint *, const uint *src, int,
+                                                  const QPixelLayout *, const QRgb *)
+{
+    return src;
+}
+
+static const uint *QT_FASTCALL convertARGB32ToARGB32PM(uint *buffer, const uint *src, int count,
+                                                       const QPixelLayout *, const QRgb *)
+{
+    for (int i = 0; i < count; ++i)
+        buffer[i] = PREMUL(src[i]);
+    return buffer;
+}
+
+static const uint *QT_FASTCALL convertRGBA8888PMToARGB32PM(uint *buffer, const uint *src, int count,
+                                                           const QPixelLayout *, const QRgb *)
+{
+    for (int i = 0; i < count; ++i)
+        buffer[i] = RGBA2ARGB(src[i]);
+    return buffer;
+}
+
+static const uint *QT_FASTCALL convertRGBA8888ToARGB32PM(uint *buffer, const uint *src, int count,
+                                                         const QPixelLayout *, const QRgb *)
+{
+    for (int i = 0; i < count; ++i)
+        buffer[i] = PREMUL(RGBA2ARGB(src[i]));
+    return buffer;
+}
+
+static const uint *QT_FASTCALL convertARGB32FromARGB32PM(uint *buffer, const uint *src, int count,
+                                                         const QPixelLayout *, const QRgb *)
+{
+    for (int i = 0; i < count; ++i)
+        buffer[i] = INV_PREMUL(src[i]);
+    return buffer;
+}
+
+static const uint *QT_FASTCALL convertRGBA8888PMFromARGB32PM(uint *buffer, const uint *src, int count,
+                                                             const QPixelLayout *, const QRgb *)
+{
+    for (int i = 0; i < count; ++i)
+        buffer[i] = ARGB2RGBA(src[i]);
+    return buffer;
+}
+
+static const uint *QT_FASTCALL convertRGBA8888FromARGB32PM(uint *buffer, const uint *src, int count,
+                                                             const QPixelLayout *, const QRgb *)
+{
+    for (int i = 0; i < count; ++i)
+        buffer[i] = ARGB2RGBA(INV_PREMUL(src[i]));
+    return buffer;
+}
+
+static const uint *QT_FASTCALL convertRGBXFromRGB32(uint *buffer, const uint *src, int count,
+                                                    const QPixelLayout *, const QRgb *)
+{
+    for (int i = 0; i < count; ++i)
+        buffer[i] = ARGB2RGBA(0xff000000 | src[i]);
+    return buffer;
+}
+
+static const uint *QT_FASTCALL convertRGBXFromARGB32PM(uint *buffer, const uint *src, int count,
+                                                       const QPixelLayout *, const QRgb *)
+{
+    for (int i = 0; i < count; ++i)
+        buffer[i] = ARGB2RGBA(0xff000000 | INV_PREMUL(src[i]));
     return buffer;
 }
 
@@ -463,6 +708,17 @@ QPixelLayout qPixelLayouts[QImage::NImageFormats] = {
     { 8, 16, 8,  8, 8,  0, 0,  0, false, QPixelLayout::BPP32, convertPassThrough, convertPassThrough, convertPassThrough }, // Format_RGB32
     { 8, 16, 8,  8, 8,  0, 8, 24, false, QPixelLayout::BPP32, convertARGB32ToARGB32PM, convertARGB32FromARGB32PM, 0 }, // Format_ARGB32
     { 8, 16, 8,  8, 8,  0, 8, 24,  true, QPixelLayout::BPP32, convertPassThrough, convertPassThrough, 0 }, // Format_ARGB32_Premultiplied
+#ifdef Q_COMPILER_CONSTEXPR
+    pixelLayoutRGB<QImage::Format_RGB16>(),
+    pixelLayoutARGBPM<QImage::Format_ARGB8565_Premultiplied>(),
+    pixelLayoutRGB<QImage::Format_RGB666>(),
+    pixelLayoutARGBPM<QImage::Format_ARGB6666_Premultiplied>(),
+    pixelLayoutRGB<QImage::Format_RGB555>(),
+    pixelLayoutARGBPM<QImage::Format_ARGB8555_Premultiplied>(),
+    pixelLayoutRGB<QImage::Format_RGB888>(),
+    pixelLayoutRGB<QImage::Format_RGB444>(),
+    pixelLayoutARGBPM<QImage::Format_ARGB4444_Premultiplied>(),
+#else
     { 5, 11, 6,  5, 5,  0, 0,  0, false, QPixelLayout::BPP16, convertRGB16ToRGB32, convertRGB16FromARGB32PM, convertRGB16FromRGB32 }, // Format_RGB16
     { 5, 19, 6, 13, 5,  8, 8,  0,  true, QPixelLayout::BPP24, convertToARGB32PM, convertFromARGB32PM, 0 }, // Format_ARGB8565_Premultiplied
     { 6, 12, 6,  6, 6,  0, 0,  0, false, QPixelLayout::BPP24, convertToRGB32, convertFromARGB32PM, convertFromRGB32 }, // Format_RGB666
@@ -472,6 +728,7 @@ QPixelLayout qPixelLayouts[QImage::NImageFormats] = {
     { 8, 16, 8,  8, 8,  0, 0,  0, false, QPixelLayout::BPP24, convertToRGB32, convertFromARGB32PM, convertFromRGB32 }, // Format_RGB888
     { 4,  8, 4,  4, 4,  0, 0,  0, false, QPixelLayout::BPP16, convertToRGB32, convertFromARGB32PM, convertFromRGB32 }, // Format_RGB444
     { 4,  8, 4,  4, 4,  0, 4, 12,  true, QPixelLayout::BPP16, convertToARGB32PM, convertFromARGB32PM, 0 }, // Format_ARGB4444_Premultiplied
+#endif
 #if Q_BYTE_ORDER == Q_BIG_ENDIAN
     { 8, 24, 8, 16, 8,  8, 0,  0, false, QPixelLayout::BPP32, convertRGBA8888PMToARGB32PM, convertRGBXFromARGB32PM, convertRGBXFromRGB32 }, // Format_RGBX8888
     { 8, 24, 8, 16, 8,  8, 8,  0, false, QPixelLayout::BPP32, convertRGBA8888ToARGB32PM, convertRGBA8888FromARGB32PM, 0 }, // Format_RGBA8888
