@@ -13,10 +13,6 @@ p {
 }
 
 img {
-    -moz-box-shadow: 3px 3px 3px #ccc;
-    -webkit-box-shadow: 3px 3px 3px #ccc;
-    box-shadow: 3px 3px 3px #ccc;
-    border: #8E8D8D 2px solid;
     margin-left: 0px;
     max-width: 800px;
     height: auto;
@@ -36,7 +32,7 @@ img {
 
 .descr {
     margin-top: 35px;
-    /*max-width: 75%;*/
+    margin-bottom: 45px;
     margin-left: 5px;
     text-align: left;
     vertical-align: top;
@@ -51,6 +47,9 @@ tt {
     text-align: left
 }
 
+.main {
+    display: none;
+}
 /*
 -----------
 links
@@ -193,17 +192,19 @@ footer and license
 
 .footer {
     text-align: left;
-    margin-top: 50px;
+    padding-top: 45px;
     padding-left: 5px;
-    margin-bottom: 10px;
+    margin-top: 45px;
+    margin-bottom: 45px;
     font-size: 10px;
     border-top: 1px solid #999;
-    padding-top: 11px;
 }
 
 .footer p {
     line-height: 14px;
     font-size: 11px;
+    padding: 0;
+    margin: 0;
 }
 
 .footer a[href*="http://"], a[href*="ftp://"], a[href*="https://"] {
@@ -221,7 +222,7 @@ footer and license
     display: block;
     position: relative;
     top: -20px;
-    /*border-top: 2px solid #ffffff;*/
+    border-top: 1px solid #cecece;
     border-bottom: 1px solid #cecece;
     background-color: #F2F2F2;
     z-index: 1;
@@ -288,7 +289,7 @@ headers
 @media screen {
     .title {
         color: #313131;
-        font-size: 18px;
+        font-size: 24px;
         font-weight: normal;
         left: 0;
         padding-bottom: 20px;
@@ -320,7 +321,6 @@ h2, p.h2 {
     border-top: #E0E0DE 1px solid;
     border-bottom: #E0E0DE 1px solid;
     max-width: 99%;
-    overflow: hidden;
 }
 
 h3 {
@@ -625,73 +625,6 @@ Content table
     clear: both
 }
 
-/* start index box */
-
-.indexbox {
-    width: 100%;
-    display: inline-block;
-}
-
-.indexbox .indexIcon {
-     width: 11%
- }
-
-  .indexbox .indexIcon span {
-      display: block
-  }
-
-.indexboxcont {
-    display: block
-}
-
-.indexboxcont .sectionlist {
-     display: inline-block;
-     vertical-align: top;
-     width: 32.5%;
-     padding: 0;
- }
-
-  .indexboxcont .sectionlist ul {
-      margin-bottom: 20px
-  }
-
-   .indexboxcont .sectionlist ul li {
-       line-height: 1.5
-   }
-
-.indexboxcont .indexIcon {
-     width: 11%;
-     *width: 18%;
-     _width: 18%;
-     overflow: hidden;
- }
-
-.indexboxcont .section {
-     display: inline-block;
-     width: 49%;
-     *width: 42%;
-     _width: 42%;
-     padding: 0 2% 0 1%;
-     vertical-align: top;
- }
-
-  .indexboxcont .section p {
-      padding-top: 20px;
-      padding-bottom: 20px;
-  }
-
-.indexboxcont .section {
-     float: left
- }
-
-.indexboxcont:after {
-    content: ".";
-    display: block;
-    height: 0;
-    clear: both;
-    visibility: hidden;
-}
-
 /*
 -----------
 Landing page
@@ -703,6 +636,19 @@ Landing page
     vertical-align: top;
 }
 
+
+.landing h2 {
+    background-color: transparent;
+    border: none;
+    margin-bottom: 0px;
+    font-size: 18px;
+}
+
+.landing a, .landing li {
+    font-size: 13px;
+    font-weight: bold !important;
+}
+
 .col-1 {
     display: inline-block;
     white-space: normal;
@@ -711,17 +657,37 @@ Landing page
     float: left;
 }
 
-.col-1 h1 {
-     margin: 20px 0 0 0
- }
-
 .col-2 {
     display: inline-block;
     white-space: normal;
-    width: 25%;
-    margin: 0 0 0 50px;
+    width: 20%;
+    margin-left: 5%;
+    position: relative;
+    top: -20px;
 }
 
-.sectionlist {
-    width: 100% !important
+.col-1 h1 {
+     margin: 20px 0 0 0;
+ }
+
+.col-1 h2 {
+    font-size: 18px;
+    font-weight: bold !important;
+}
+
+.landingicons {
+    display: inline-block;
+    width: 100%;
+}
+
+.icons1of3 {
+    display: inline-block;
+    width: 33.3333%;
+    float: left;
+}
+
+.icons1of3  h2 {
+    font-size: 15px;
+    margin: 0px;
+    padding: 0px;
 }
