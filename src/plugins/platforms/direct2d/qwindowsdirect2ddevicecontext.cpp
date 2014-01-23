@@ -80,7 +80,7 @@ public:
     bool end()
     {
         Q_ASSERT(deviceContext);
-        Q_ASSERT(refCount >= 0);
+        Q_ASSERT(refCount > 0);
 
         bool success = true;
         refCount--;
