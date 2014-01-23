@@ -63,7 +63,7 @@
 #  include <resolv.h>
 #endif
 
-#ifdef __GNU_LIBRARY__
+#if defined(__GNU_LIBRARY__) && !defined(__UCLIBC__)
 #  include <gnu/lib-names.h>
 #endif
 
