@@ -44,10 +44,6 @@ QtCore
    U+2212.
  - Fixed sign conversion warnings in code using QMetaTypeId.
 
- - QProcess:
-   * [QTBUG-35357] Fixed a regression from Qt4 in QProcess that
-     prevented altering the pipe modes of stdin in the child process.
-
  - QTemporaryDir:
    * Fixed a bug in QTemporaryDir name generator that dramatically reduced
      randomness of the name.
@@ -141,6 +137,8 @@ Windows
    taskbar
  - [QTBUG-34799] Updated QWidgetBackingStore and the Windows
    implementation to support Qt::WA_StaticContents.
+ - [QTBUG-35357] Fixed a regression from Qt4 in QProcess that
+   prevented altering the pipe modes of stdin in the child process.
 
 
 ****************************************************************************
