@@ -370,9 +370,9 @@ void tst_QColumnView::scrollContentsBy_data()
 void tst_QColumnView::scrollContentsBy()
 {
     QFETCH(bool, reverse);
-    if (reverse)
-        qApp->setLayoutDirection(Qt::RightToLeft);
     ColumnView view;
+    if (reverse)
+        view.setLayoutDirection(Qt::RightToLeft);
     view.ScrollContentsBy(-1, -1);
     view.ScrollContentsBy(0, 0);
 
@@ -405,9 +405,9 @@ void tst_QColumnView::scrollTo()
 {
     QFETCH(bool, reverse);
     QFETCH(bool, giveFocus);
-    if (reverse)
-        qApp->setLayoutDirection(Qt::RightToLeft);
     QWidget topLevel;
+    if (reverse)
+        topLevel.setLayoutDirection(Qt::RightToLeft);
     ColumnView view(&topLevel);
     view.resize(200, 200);
     topLevel.show();
@@ -514,10 +514,9 @@ void tst_QColumnView::moveCursor_data()
 void tst_QColumnView::moveCursor()
 {
     QFETCH(bool, reverse);
-    if (reverse)
-        qApp->setLayoutDirection(Qt::RightToLeft);
     ColumnView view;
-
+    if (reverse)
+        view.setLayoutDirection(Qt::RightToLeft);
     // don't crash
     view.MoveCursor(ColumnView::MoveUp, Qt::NoModifier);
 
@@ -722,9 +721,9 @@ void tst_QColumnView::moveGrip_data()
 void tst_QColumnView::moveGrip()
 {
     QFETCH(bool, reverse);
-    if (reverse)
-        qApp->setLayoutDirection(Qt::RightToLeft);
     QWidget topLevel;
+    if (reverse)
+        topLevel.setLayoutDirection(Qt::RightToLeft);
     ColumnView view(&topLevel);
     TreeModel model;
     view.setModel(&model);
