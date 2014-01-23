@@ -87,8 +87,7 @@ private slots:
     void fromRawData_data();
     void fromRawData();
     void literals();
-#if defined(Q_COMPILER_VARIADIC_MACROS) \
-        && (defined(Q_COMPILER_LAMBDA) || defined(Q_CC_GNU))
+#if defined(Q_COMPILER_VARIADIC_MACROS) && defined(Q_COMPILER_LAMBDA)
     void variadicLiterals();
 #endif
 #ifdef Q_COMPILER_RVALUE_REFS
@@ -1555,8 +1554,7 @@ void tst_QArrayData::literals()
         QCOMPARE(v.size(), size_t(11));
         // v.capacity() is unspecified, for now
 
-#if defined(Q_COMPILER_VARIADIC_MACROS) \
-        && (defined(Q_COMPILER_LAMBDA) || defined(Q_CC_GNU))
+#if defined(Q_COMPILER_VARIADIC_MACROS) && defined(Q_COMPILER_LAMBDA)
         QVERIFY(v.isStatic());
 #endif
 
@@ -1569,8 +1567,7 @@ void tst_QArrayData::literals()
     }
 }
 
-#if defined(Q_COMPILER_VARIADIC_MACROS) \
-        && (defined(Q_COMPILER_LAMBDA) || defined(Q_CC_GNU))
+#if defined(Q_COMPILER_VARIADIC_MACROS) && defined(Q_COMPILER_LAMBDA)
 // Variadic Q_ARRAY_LITERAL need to be available in the current configuration.
 void tst_QArrayData::variadicLiterals()
 {
