@@ -145,8 +145,20 @@ Windows
 *                          Tools                                           *
 ****************************************************************************
 
+configure & build system
+------------------------
+
+ - [QTBUG-34949] EGL works with desktop OpenGL now
+ - A build from source will not install the Qt DLLs into lib/ any more.
+   The canonical location is bin/.
+
 qmake
 -----
 
  - [QTBUG-35530] Fixed the detection of multiple VS installations.
  - [QTBUG-35610] Fixed the generation of VS 2010 project files.
+ - [QTBUG-32412] Numerous fixes to Windows PDB file handling.
+ - [QTBUG-3883] Fixed make distclean not removing static library targets.
+ - Added makespec for clang using libc++ on Linux.
+ - qmake will not look for mkspecs/ directories in project trees any more.
+   Use .qmake.conf and/or .qmake.cache to "anchor" project roots.
