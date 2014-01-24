@@ -504,8 +504,8 @@ void tst_QEventLoop::processEventsExcludeTimers()
     // but not if we exclude timers
     eventLoop.processEvents(QEventLoop::X11ExcludeTimers);
 
-    QAbstractEventDispatcher *eventDispatcher = QCoreApplication::eventDispatcher();
 #if defined(Q_OS_UNIX)
+    QAbstractEventDispatcher *eventDispatcher = QCoreApplication::eventDispatcher();
     if (!qobject_cast<QEventDispatcherUNIX *>(eventDispatcher)
   #if defined(HAVE_GLIB)
         && !qobject_cast<QEventDispatcherGlib *>(eventDispatcher)
