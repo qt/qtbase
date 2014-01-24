@@ -137,7 +137,7 @@ void BlurPicker::keyPressEvent(QKeyEvent *event)
     }
 }
 
-void BlurPicker::resizeEvent(QResizeEvent */*event*/)
+void BlurPicker::resizeEvent(QResizeEvent * /* event */)
 {
 }
 
