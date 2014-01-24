@@ -468,8 +468,8 @@ void tst_QGuiVariant::vector3D()
     QVariant variant;
     QVector3D vector = qvariant_cast<QVector3D>(variant);
     QVERIFY(vector.isNull());
-    variant.setValue(QVector3D(0.1, 0.2, 0.3));
-    QCOMPARE(QVector3D(0.1, 0.2, 0.3), qvariant_cast<QVector3D>(variant));
+    variant.setValue(QVector3D(0.1f, 0.2f, 0.3f));
+    QCOMPARE(QVector3D(0.1f, 0.2f, 0.3f), qvariant_cast<QVector3D>(variant));
 
     void *pvector = QMetaType::create(QVariant::Vector3D, 0);
     QVERIFY(pvector);
@@ -481,8 +481,8 @@ void tst_QGuiVariant::vector4D()
     QVariant variant;
     QVector4D vector = qvariant_cast<QVector4D>(variant);
     QVERIFY(vector.isNull());
-    variant.setValue(QVector4D(0.1, 0.2, 0.3, 0.4));
-    QCOMPARE(QVector4D(0.1, 0.2, 0.3, 0.4), qvariant_cast<QVector4D>(variant));
+    variant.setValue(QVector4D(0.1f, 0.2f, 0.3f, 0.4f));
+    QCOMPARE(QVector4D(0.1f, 0.2f, 0.3f, 0.4f), qvariant_cast<QVector4D>(variant));
 
     void *pvector = QMetaType::create(QVariant::Vector4D, 0);
     QVERIFY(pvector);
@@ -494,8 +494,8 @@ void tst_QGuiVariant::quaternion()
     QVariant variant;
     QQuaternion quaternion = qvariant_cast<QQuaternion>(variant);
     QVERIFY(quaternion.isIdentity());
-    variant.setValue(QQuaternion(0.1, 0.2, 0.3, 0.4));
-    QCOMPARE(QQuaternion(0.1, 0.2, 0.3, 0.4), qvariant_cast<QQuaternion>(variant));
+    variant.setValue(QQuaternion(0.1f, 0.2f, 0.3f, 0.4f));
+    QCOMPARE(QQuaternion(0.1f, 0.2f, 0.3f, 0.4f), qvariant_cast<QQuaternion>(variant));
 
     void *pquaternion = QMetaType::create(QVariant::Quaternion, 0);
     QVERIFY(pquaternion);

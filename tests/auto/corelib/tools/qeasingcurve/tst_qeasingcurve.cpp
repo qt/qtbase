@@ -756,7 +756,7 @@ void tst_QEasingCurve::testCbrtDouble()
 
 void tst_QEasingCurve::testCbrtFloat()
 {
-    const float errorBound = 0.0005;
+    const float errorBound = 0.0005f;
 
     for (int i = 0; i < 100000; i++) {
         float f = float(i) / 1000.0f;
