@@ -60,7 +60,7 @@ public:
 #ifdef Q_COMPILER_INITIALIZER_LISTS
     inline QSet(std::initializer_list<T> list)
     {
-        reserve(list.size());
+        reserve(int(list.size()));
         for (typename std::initializer_list<T>::const_iterator it = list.begin(); it != list.end(); ++it)
             insert(*it);
     }

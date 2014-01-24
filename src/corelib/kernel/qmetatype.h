@@ -889,11 +889,11 @@ struct ContainerAPI<QVector<T> > : CapabilitiesImpl<QVector<T> >
 
 template<typename T>
 struct ContainerAPI<std::vector<T> > : CapabilitiesImpl<std::vector<T> >
-{ static int size(const std::vector<T> *t) { return t->size(); } };
+{ static int size(const std::vector<T> *t) { return int(t->size()); } };
 
 template<typename T>
 struct ContainerAPI<std::list<T> > : CapabilitiesImpl<std::list<T> >
-{ static int size(const std::list<T> *t) { return t->size(); } };
+{ static int size(const std::list<T> *t) { return int(t->size()); } };
 
 class QSequentialIterableImpl
 {

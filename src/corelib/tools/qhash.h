@@ -297,7 +297,7 @@ public:
     inline QHash(std::initializer_list<std::pair<Key,T> > list)
         : d(const_cast<QHashData *>(&QHashData::shared_null))
     {
-        reserve(list.size());
+        reserve(int(list.size()));
         for (typename std::initializer_list<std::pair<Key,T> >::const_iterator it = list.begin(); it != list.end(); ++it)
             insert(it->first, it->second);
     }
@@ -973,7 +973,7 @@ public:
 #ifdef Q_COMPILER_INITIALIZER_LISTS
     inline QMultiHash(std::initializer_list<std::pair<Key,T> > list)
     {
-        this->reserve(list.size());
+        this->reserve(int(list.size()));
         for (typename std::initializer_list<std::pair<Key,T> >::const_iterator it = list.begin(); it != list.end(); ++it)
             insert(it->first, it->second);
     }
