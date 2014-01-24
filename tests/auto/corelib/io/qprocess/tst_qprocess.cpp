@@ -1223,21 +1223,24 @@ void tst_QProcess::processInAThread()
 void tst_QProcess::processesInMultipleThreads()
 {
     for (int i = 0; i < 10; ++i) {
-        TestThread thread1;
-        TestThread thread2;
-        TestThread thread3;
+        // run from 1 to 10 threads, but run at least some tests
+        // with more threads than the ideal
+        int threadCount = i;
+        if (i > 7)
+            threadCount = qMax(threadCount, QThread::idealThreadCount() + 2);
 
-        thread1.start();
-        thread2.start();
-        thread3.start();
-
-        QVERIFY(thread2.wait(10000));
-        QVERIFY(thread3.wait(10000));
-        QVERIFY(thread1.wait(10000));
-
-        QCOMPARE(thread1.code(), 0);
-        QCOMPARE(thread2.code(), 0);
-        QCOMPARE(thread3.code(), 0);
+        QVector<TestThread *> threads(threadCount);
+        for (int j = 0; j < threadCount; ++j)
+            threads[j] = new TestThread;
+        for (int j = 0; j < threadCount; ++j)
+            threads[j]->start();
+        for (int j = 0; j < threadCount; ++j) {
+            QVERIFY(threads[j]->wait(10000));
+        }
+        for (int j = 0; j < threadCount; ++j) {
+            QCOMPARE(threads[j]->code(), 0);
+        }
+        qDeleteAll(threads);
     }
 }
 

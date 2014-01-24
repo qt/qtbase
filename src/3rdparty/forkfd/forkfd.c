@@ -160,6 +160,14 @@ static ProcessInfo *allocateInfo(Header **header)
     return info;
 }
 
+#ifdef HAVE_WAITID
+static int isChildReady(pid_t pid, siginfo_t *info)
+{
+    info->si_pid = 0;
+    return waitid(P_PID, pid, info, WEXITED | WNOHANG | WNOWAIT) == 0 && info->si_pid == pid;
+}
+#endif
+
 static int tryReaping(pid_t pid, siginfo_t *info)
 {
     /* reap the child */
@@ -226,9 +234,74 @@ static void sigchld_handler(int signum)
         siginfo_t info;
         int i;
 
+#ifdef HAVE_WAITID
+        /* be optimistic: try to see if we can get the child that exited */
+search_next_child:
+        /* waitid returns -1 ECHILD if there are no further children at all;
+         * it returns 0 and sets si_pid to 0 if there are children but they are not ready
+         * to be waited (we're passing WNOHANG). We should not get EINTR because
+         * we're passing WNOHANG and we should definitely not get EINVAL or anything else.
+         * That means we can actually ignore the return code and only inspect si_pid.
+         */
+        info.si_pid = 0;
+        waitid(P_ALL, 0, &info, WNOHANG | WNOWAIT | WEXITED);
+        if (info.si_pid == 0) {
+            /* there are no further un-waited-for children, so we can just exit.
+             * But before, transfer control to the chained SIGCHLD handler.
+             */
+            goto chain_handler;
+        }
+
+        for (i = 0; i < (int)sizeofarray(children.entries); ++i) {
+            /* acquire the child first: swap the PID with -1 to indicate it's busy */
+            int pid = info.si_pid;
+            if (ffd_atomic_compare_exchange(&children.entries[i].pid, &pid, -1,
+                                            FFD_ATOMIC_ACQUIRE, FFD_ATOMIC_RELAXED)) {
+                /* this is our child, send notification and free up this entry */
+                /* ### FIXME: what if tryReaping returns false? */
+                if (tryReaping(pid, &info))
+                    notifyAndFreeInfo(&children.header, &children.entries[i], &info);
+                goto search_next_child;
+            }
+        }
+
+        /* try the arrays */
+        array = ffd_atomic_load(&children.header.nextArray, FFD_ATOMIC_ACQUIRE);
+        while (array != NULL) {
+            for (i = 0; i < (int)sizeofarray(array->entries); ++i) {
+                int pid = info.si_pid;
+                if (ffd_atomic_compare_exchange(&array->entries[i].pid, &pid, -1,
+                                                FFD_ATOMIC_ACQUIRE, FFD_ATOMIC_RELAXED)) {
+                    /* this is our child, send notification and free up this entry */
+                    /* ### FIXME: what if tryReaping returns false? */
+                    if (tryReaping(pid, &info))
+                        notifyAndFreeInfo(&array->header, &array->entries[i], &info);
+                    goto search_next_child;
+                }
+            }
+
+            array = ffd_atomic_load(&array->header.nextArray, FFD_ATOMIC_ACQUIRE);
+        }
+
+        /* if we got here, we couldn't find this child in our list. That means this child
+         * belongs to one of the chained SIGCHLD handlers. However, there might be another
+         * child that exited and does belong to us, so we need to check each one individually.
+         */
+#endif
+
         for (i = 0; i < (int)sizeofarray(children.entries); ++i) {
             int pid = ffd_atomic_load(&children.entries[i].pid, FFD_ATOMIC_ACQUIRE);
-            if (pid > 0 && tryReaping(pid, &info)) {
+            if (pid <= 0)
+                continue;
+#ifdef HAVE_WAITID
+            /* The child might have been reaped by the block above in another thread,
+             * so first check if it's ready and, if it is, lock it */
+            if (!isChildReady(pid, &info) ||
+                    !ffd_atomic_compare_exchange(&children.entries[i].pid, &pid, -1,
+                                                 FFD_ATOMIC_RELAXED, FFD_ATOMIC_RELAXED))
+                continue;
+#endif
+            if (tryReaping(pid, &info)) {
                 /* this is our child, send notification and free up this entry */
                 notifyAndFreeInfo(&children.header, &children.entries[i], &info);
             }
@@ -239,7 +312,17 @@ static void sigchld_handler(int signum)
         while (array != NULL) {
             for (i = 0; i < (int)sizeofarray(array->entries); ++i) {
                 int pid = ffd_atomic_load(&array->entries[i].pid, FFD_ATOMIC_ACQUIRE);
-                if (pid > 0 && tryReaping(pid, &info)) {
+                if (pid <= 0)
+                    continue;
+#ifdef HAVE_WAITID
+                /* The child might have been reaped by the block above in another thread,
+                 * so first check if it's ready and, if it is, lock it */
+                if (!isChildReady(pid, &info) ||
+                        !ffd_atomic_compare_exchange(&array->entries[i].pid, &pid, -1,
+                                                     FFD_ATOMIC_RELAXED, FFD_ATOMIC_RELAXED))
+                    continue;
+#endif
+                if (tryReaping(pid, &info)) {
                     /* this is our child, send notification and free up this entry */
                     notifyAndFreeInfo(&array->header, &array->entries[i], &info);
                 }
@@ -249,6 +332,9 @@ static void sigchld_handler(int signum)
         }
     }
 
+#ifdef HAVE_WAITID
+chain_handler:
+#endif
     if (old_sigaction.sa_handler != SIG_IGN && old_sigaction.sa_handler != SIG_DFL)
         old_sigaction.sa_handler(signum);
 }
