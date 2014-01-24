@@ -68,8 +68,6 @@ public:
     HDC getDC() const;
 
 private:
-    QWindowsWindow *rasterWindow() const;
-
     QScopedPointer<QWindowsNativeImage> m_image;
 };
 

@@ -141,12 +141,12 @@ void QWindowsBackingStore::resize(const QSize &size, const QRegion &region)
 #ifndef QT_NO_DEBUG_OUTPUT
         if (QWindowsContext::verbose && lcQpaBackingStore().isDebugEnabled()) {
             qCDebug(lcQpaBackingStore)
-                << __FUNCTION__ << ' ' << rasterWindow()->window() << ' ' << size << ' ' << region
+                << __FUNCTION__ << ' ' << window() << ' ' << size << ' ' << region
                 << " from: " << (m_image.isNull() ? QSize() : m_image->image().size());
         }
 #endif
         QImage::Format format = QWindowsNativeImage::systemFormat();
-        if (format == QImage::Format_RGB32 && rasterWindow()->window()->format().hasAlpha())
+        if (format == QImage::Format_RGB32 && window()->format().hasAlpha())
             format = QImage::Format_ARGB32_Premultiplied;
 
         QWindowsNativeImage *oldwni = m_image.data();
@@ -194,14 +194,6 @@ void QWindowsBackingStore::beginPaint(const QRegion &region)
         foreach (const QRect &r, region.rects())
             p.fillRect(r, blank);
     }
-}
-
-QWindowsWindow *QWindowsBackingStore::rasterWindow() const
-{
-    if (const QWindow *w = window())
-        if (QPlatformWindow *pw = w->handle())
-            return static_cast<QWindowsWindow *>(pw);
-    return 0;
 }
 
 HDC QWindowsBackingStore::getDC() const
