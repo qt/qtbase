@@ -46,7 +46,6 @@
 #include "qkmsbackingstore.h"
 #include "qkmscontext.h"
 #include "qkmsnativeinterface.h"
-#include "qkmsvthandler.h"
 
 #if !defined(QT_NO_EVDEV)
 #include <QtPlatformSupport/private/qevdevmousemanager_p.h>
@@ -56,6 +55,8 @@
 
 #include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
 #include <QtPlatformSupport/private/qgenericunixfontdatabase_p.h>
+#include <QtPlatformSupport/private/qfbvthandler_p.h>
+
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QScreen>
@@ -68,7 +69,7 @@ QKmsIntegration::QKmsIntegration()
       m_nativeInterface(new QKmsNativeInterface)
 {
     setenv("EGL_PLATFORM", "drm",1);
-    m_vtHandler = new QKmsVTHandler;
+    m_vtHandler = new QFbVtHandler;
 
     m_deviceDiscovery = QDeviceDiscovery::create(QDeviceDiscovery::Device_DRM | QDeviceDiscovery::Device_DRM_PrimaryGPU, 0);
     if (m_deviceDiscovery) {

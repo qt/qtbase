@@ -50,7 +50,7 @@ QT_BEGIN_NAMESPACE
 
 class QKmsScreen;
 class QKmsDevice;
-class QKmsVTHandler;
+class QFbVtHandler;
 
 class QKmsIntegration : public QObject, public QPlatformIntegration
 {
@@ -85,7 +85,7 @@ private:
     QList<QKmsDevice *> m_devices;
     QPlatformFontDatabase *m_fontDatabase;
     QPlatformNativeInterface *m_nativeInterface;
-    QKmsVTHandler *m_vtHandler;
+    QFbVtHandler *m_vtHandler;
     QDeviceDiscovery *m_deviceDiscovery;
 };
 

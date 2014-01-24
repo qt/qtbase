@@ -50,6 +50,7 @@ QT_BEGIN_NAMESPACE
 
 class QEGLPlatformScreen;
 class QEGLPlatformWindow;
+class QFbVtHandler;
 
 class QEGLPlatformIntegration : public QPlatformIntegration, public QPlatformNativeInterface
 {
@@ -88,8 +89,9 @@ private:
     QEGLPlatformScreen *m_screen;
     EGLDisplay m_display;
     QPlatformInputContext *m_inputContext;
-    QScopedPointer<QPlatformFontDatabase> mFontDb;
-    QScopedPointer<QPlatformServices> mServices;
+    QScopedPointer<QPlatformFontDatabase> m_fontDb;
+    QScopedPointer<QPlatformServices> m_services;
+    QScopedPointer<QFbVtHandler> m_vtHandler;
 };
 
 QT_END_NAMESPACE

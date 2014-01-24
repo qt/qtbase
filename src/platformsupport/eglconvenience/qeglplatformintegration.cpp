@@ -43,9 +43,11 @@
 #include <QtGui/QOpenGLContext>
 #include <qpa/qwindowsysteminterface.h>
 #include <qpa/qplatforminputcontextfactory_p.h>
+
 #include <QtPlatformSupport/private/qgenericunixfontdatabase_p.h>
 #include <QtPlatformSupport/private/qgenericunixservices_p.h>
 #include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
+#include <QtPlatformSupport/private/qfbvthandler_p.h>
 
 #include "qeglplatformintegration_p.h"
 #include "qeglplatformcontext_p.h"
@@ -82,8 +84,8 @@ QEGLPlatformIntegration::QEGLPlatformIntegration()
     : m_screen(0),
       m_display(EGL_NO_DISPLAY),
       m_inputContext(0),
-      mFontDb(new QGenericUnixFontDatabase),
-      mServices(new QGenericUnixServices)
+      m_fontDb(new QGenericUnixFontDatabase),
+      m_services(new QGenericUnixServices)
 {
 }
 
@@ -111,6 +113,8 @@ void QEGLPlatformIntegration::initialize()
     screenAdded(m_screen);
 
     m_inputContext = QPlatformInputContextFactory::create();
+
+    m_vtHandler.reset(new QFbVtHandler);
 }
 
 QAbstractEventDispatcher *QEGLPlatformIntegration::createEventDispatcher() const
@@ -120,12 +124,12 @@ QAbstractEventDispatcher *QEGLPlatformIntegration::createEventDispatcher() const
 
 QPlatformServices *QEGLPlatformIntegration::services() const
 {
-    return mServices.data();
+    return m_services.data();
 }
 
 QPlatformFontDatabase *QEGLPlatformIntegration::fontDatabase() const
 {
-    return mFontDb.data();
+    return m_fontDb.data();
 }
 
 QPlatformBackingStore *QEGLPlatformIntegration::createPlatformBackingStore(QWindow *window) const

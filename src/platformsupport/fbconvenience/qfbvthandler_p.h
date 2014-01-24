@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -39,62 +39,30 @@
 **
 ****************************************************************************/
 
-#include <qkmsvthandler.h>
-#include <QtCore/private/qcrashhandler_p.h>
-#include <QtGui/private/qguiapplication_p.h>
-#include <sys/ioctl.h>
-#include <linux/vt.h>
-#include <linux/kd.h>
+#ifndef QFBVTHANDLER_H
+#define QFBVTHANDLER_H
 
-#ifdef K_OFF
-#define KBD_OFF_MODE K_OFF
-#else
-#define KBD_OFF_MODE K_RAW
-#endif
+#include <QObject>
 
 QT_BEGIN_NAMESPACE
 
-QKmsVTHandler *QKmsVTHandler::self = 0;
-
-QKmsVTHandler::QKmsVTHandler(QObject *parent)
-    : QObject(parent), m_tty(-1)
+class QFbVtHandler : public QObject
 {
-    Q_ASSERT(!self);
-    self = this;
+    Q_OBJECT
 
-    if (!isatty(0))
-        return;
+public:
+    QFbVtHandler(QObject *parent = 0);
+    ~QFbVtHandler();
 
-    m_tty = 0;
+private:
+    void cleanup();
+    static void crashHandler();
 
-    ioctl(m_tty, KDGKBMODE, &m_oldKbdMode);
-    if (!qgetenv("QT_KMS_TTYKBD").toInt()) {
-        ioctl(m_tty, KDSKBMODE, KBD_OFF_MODE);
-        QGuiApplicationPrivate *appd = QGuiApplicationPrivate::instance();
-        Q_ASSERT(appd);
-        QSegfaultHandler::initialize(appd->argv, appd->argc);
-        QSegfaultHandler::installCrashHandler(crashHandler);
-    }
-}
-
-QKmsVTHandler::~QKmsVTHandler()
-{
-    self->cleanup();
-    self = 0;
-}
-
-void QKmsVTHandler::cleanup()
-{
-    if (m_tty == -1)
-        return;
-
-    ioctl(m_tty, KDSKBMODE, m_oldKbdMode);
-}
-
-void QKmsVTHandler::crashHandler()
-{
-    Q_ASSERT(self);
-    self->cleanup();
-}
+    static QFbVtHandler *self;
+    int m_tty;
+    int m_oldKbdMode;
+};
 
 QT_END_NAMESPACE
+
+#endif

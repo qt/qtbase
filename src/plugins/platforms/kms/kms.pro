@@ -21,8 +21,8 @@ SOURCES =   main.cpp \
             qkmscursor.cpp \
             qkmsdevice.cpp \
             qkmsbackingstore.cpp \
-            qkmsnativeinterface.cpp \
-            qkmsvthandler.cpp
+            qkmsnativeinterface.cpp
+
 HEADERS =   qkmsintegration.h \
             qkmsscreen.h \
             qkmscontext.h \
@@ -30,8 +30,7 @@ HEADERS =   qkmsintegration.h \
             qkmscursor.h \
             qkmsdevice.h \
             qkmsbackingstore.h \
-            qkmsnativeinterface.h \
-            qkmsvthandler.h
+            qkmsnativeinterface.h
 
 OTHER_FILES += \
     kms.json

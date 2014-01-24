@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -39,30 +39,73 @@
 **
 ****************************************************************************/
 
-#ifndef QKMSVTHANDLER_H
-#define QKMSVTHANDLER_H
+#include "qfbvthandler_p.h"
+#include <QtCore/private/qcrashhandler_p.h>
+#include <QtGui/private/qguiapplication_p.h>
 
-#include <QObject>
+#if defined(Q_OS_LINUX) && !defined(QT_NO_EVDEV)
+#define HAS_VT
+#endif
+
+#ifdef HAS_VT
+
+#include <sys/ioctl.h>
+#include <linux/kd.h>
+
+#ifdef K_OFF
+#define KBD_OFF_MODE K_OFF
+#else
+#define KBD_OFF_MODE K_RAW
+#endif
+
+#endif // HAS_VT
 
 QT_BEGIN_NAMESPACE
 
-class QKmsVTHandler : public QObject
+QFbVtHandler *QFbVtHandler::self = 0;
+
+QFbVtHandler::QFbVtHandler(QObject *parent)
+    : QObject(parent), m_tty(-1)
 {
-    Q_OBJECT
+    Q_ASSERT(!self);
+    self = this;
 
-public:
-    QKmsVTHandler(QObject *parent = 0);
-    ~QKmsVTHandler();
+#ifdef HAS_VT
+    if (!isatty(0))
+        return;
 
-private:
-    void cleanup();
-    static void crashHandler();
+    m_tty = 0;
+    ::ioctl(m_tty, KDGKBMODE, &m_oldKbdMode);
+    if (!qgetenv("QT_QPA_ENABLE_TERMINAL_KEYBOARD").toInt()) {
+        ::ioctl(m_tty, KDSKBMODE, KBD_OFF_MODE);
+        QGuiApplicationPrivate *appd = QGuiApplicationPrivate::instance();
+        Q_ASSERT(appd);
+        QSegfaultHandler::initialize(appd->argv, appd->argc);
+        QSegfaultHandler::installCrashHandler(crashHandler);
+    }
+#endif
+}
 
-    static QKmsVTHandler *self;
-    int m_tty;
-    int m_oldKbdMode;
-};
+QFbVtHandler::~QFbVtHandler()
+{
+    self->cleanup();
+    self = 0;
+}
+
+void QFbVtHandler::cleanup()
+{
+    if (m_tty == -1)
+        return;
+
+#ifdef HAS_VT
+    ::ioctl(m_tty, KDSKBMODE, m_oldKbdMode);
+#endif
+}
+
+void QFbVtHandler::crashHandler()
+{
+    Q_ASSERT(self);
+    self->cleanup();
+}
 
 QT_END_NAMESPACE
-
-#endif
