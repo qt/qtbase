@@ -665,8 +665,10 @@ void QCocoaFileDialogHelper::selectNameFilter(const QString &filter)
     const int index = options()->nameFilters().indexOf(filter);
     if (index != -1) {
         QNSOpenSavePanelDelegate *delegate = static_cast<QNSOpenSavePanelDelegate *>(mDelegate);
-        if (!delegate)
+        if (!delegate) {
+            options()->setInitiallySelectedNameFilter(filter);
             return;
+        }
         [delegate->mPopUpButton selectItemAtIndex:index];
         [delegate filterChanged:nil];
     }
@@ -676,7 +678,7 @@ QString QCocoaFileDialogHelper::selectedNameFilter() const
 {
     QNSOpenSavePanelDelegate *delegate = static_cast<QNSOpenSavePanelDelegate *>(mDelegate);
     if (!delegate)
-        return QString();
+        return options()->initiallySelectedNameFilter();
     int index = [delegate->mPopUpButton indexOfSelectedItem];
     if (index >= options()->nameFilters().count())
         return QString();
