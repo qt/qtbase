@@ -224,12 +224,7 @@ static void ensureInitialized()
     \note The network and roaming support in QNetworkAccessManager is conditional
     upon the platform supporting connection management. The
     \l QNetworkConfigurationManager::NetworkSessionRequired can be used to
-    detect whether QNetworkAccessManager utilizes this feature. Currently only
-    Meego/Harmattan platforms provide connection management support.
-
-    \note This feature cannot be used in combination with the Bearer Management
-    API as provided by QtMobility. Applications have to migrate to the Qt version
-    of Bearer Management.
+    detect whether QNetworkAccessManager utilizes this feature.
 
     \sa QNetworkRequest, QNetworkReply, QNetworkProxy
 */
