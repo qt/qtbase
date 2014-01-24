@@ -43,14 +43,17 @@
 #define QWINDOWSDIRECT2DPAINTENGINE_H
 
 #include <QtCore/QScopedPointer>
-#include <QtGui/QPaintEngine>
+#include <QtGui/private/qpaintengineex_p.h>
+
+#include <d2d1_1.h>
+#include <dwrite_1.h>
 
 QT_BEGIN_NAMESPACE
 
 class QWindowsDirect2DPaintEnginePrivate;
 class QWindowsDirect2DBitmap;
 
-class QWindowsDirect2DPaintEngine : public QPaintEngine
+class QWindowsDirect2DPaintEngine : public QPaintEngineEx
 {
     Q_DECLARE_PRIVATE(QWindowsDirect2DPaintEngine)
 
@@ -60,26 +63,34 @@ public:
     bool begin(QPaintDevice *pdev) Q_DECL_OVERRIDE;
     bool end() Q_DECL_OVERRIDE;
 
-    void updateState(const QPaintEngineState &state) Q_DECL_OVERRIDE;
-
     Type type() const Q_DECL_OVERRIDE;
 
-    void drawEllipse(const QRectF &rect) Q_DECL_OVERRIDE;
-    void drawEllipse(const QRect &rect) Q_DECL_OVERRIDE;
+    void fill(const QVectorPath &path, const QBrush &brush) Q_DECL_OVERRIDE;
+
+    void clip(const QVectorPath &path, Qt::ClipOperation op) Q_DECL_OVERRIDE;
+    void clip(const QRect &rect, Qt::ClipOperation op) Q_DECL_OVERRIDE;
+    void clip(const QRegion &region, Qt::ClipOperation op) Q_DECL_OVERRIDE;
+    void clip(const QPainterPath &path, Qt::ClipOperation op) Q_DECL_OVERRIDE;
+
+    void clipEnabledChanged() Q_DECL_OVERRIDE;
+    void penChanged() Q_DECL_OVERRIDE;
+    void brushChanged() Q_DECL_OVERRIDE;
+    void brushOriginChanged() Q_DECL_OVERRIDE;
+    void opacityChanged() Q_DECL_OVERRIDE;
+    void compositionModeChanged() Q_DECL_OVERRIDE;
+    void renderHintsChanged() Q_DECL_OVERRIDE;
+    void transformChanged() Q_DECL_OVERRIDE;
+
     void drawImage(const QRectF &rectangle, const QImage &image, const QRectF &sr, Qt::ImageConversionFlags flags = Qt::AutoColor) Q_DECL_OVERRIDE;
-    void drawLines(const QLineF *lines, int lineCount) Q_DECL_OVERRIDE;
-    void drawLines(const QLine *lines, int lineCount) Q_DECL_OVERRIDE;
-    void drawPath(const QPainterPath &path) Q_DECL_OVERRIDE;
     void drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr) Q_DECL_OVERRIDE;
-    void drawPolygon(const QPointF *points, int pointCount, PolygonDrawMode mode) Q_DECL_OVERRIDE;
-    void drawPolygon(const QPoint *points, int pointCount, PolygonDrawMode mode) Q_DECL_OVERRIDE;
-    void drawRects(const QRectF *rects, int rectCount) Q_DECL_OVERRIDE;
-    void drawRects(const QRect *rects, int rectCount) Q_DECL_OVERRIDE;
+
+    void drawStaticTextItem(QStaticTextItem *staticTextItem) Q_DECL_OVERRIDE;
     void drawTextItem(const QPointF &p, const QTextItem &textItem) Q_DECL_OVERRIDE;
-    void drawTiledPixmap(const QRectF &rect, const QPixmap &pixmap, const QPointF &p) Q_DECL_OVERRIDE;
 
 private:
-    QScopedPointer<QWindowsDirect2DPaintEnginePrivate> d_ptr;
+    void drawGlyphRun(const D2D1_POINT_2F &pos, IDWriteFontFace *fontFace, const QFont &font,
+                      int numGlyphs, const UINT16 *glyphIndices, const FLOAT *glyphAdvances,
+                      const DWRITE_GLYPH_OFFSET *glyphOffsets, bool rtl);
 };
 
 QT_END_NAMESPACE

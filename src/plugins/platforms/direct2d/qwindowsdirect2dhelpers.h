@@ -54,12 +54,12 @@ QT_BEGIN_NAMESPACE
 
 Q_DECL_CONSTEXPR inline D2D1_RECT_U to_d2d_rect_u(const QRect &qrect)
 {
-    return D2D1::RectU(qrect.left(), qrect.top(), qrect.right(), qrect.bottom());
+    return D2D1::RectU(qrect.x(), qrect.y(), qrect.x() + qrect.width(), qrect.y() + qrect.height());
 }
 
 Q_DECL_CONSTEXPR inline D2D1_RECT_F to_d2d_rect_f(const QRectF &qrect)
 {
-    return D2D1::RectF(qrect.left(), qrect.top(), qrect.right(), qrect.bottom());
+    return D2D1::RectF(qrect.x(), qrect.y(), qrect.x() + qrect.width(), qrect.y() + qrect.height());
 }
 
 Q_DECL_CONSTEXPR inline D2D1_SIZE_U to_d2d_size_u(const QSizeF &qsize)
