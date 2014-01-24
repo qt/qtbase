@@ -469,7 +469,7 @@ void tst_QArrayData::simpleVector()
     for (int i = 0; i < 60; ++i)
         QCOMPARE(v1[i], v8[i % 10]);
 
-    v1.insert(v1.size(), v6.constBegin(), v6.constEnd());
+    v1.insert(int(v1.size()), v6.constBegin(), v6.constEnd());
     // v1 is now [ 0..9 x 6, <new data>0..9 x 3</new data> ]
     QCOMPARE(v1.size(), size_t(90));
 
@@ -1235,7 +1235,7 @@ void tst_QArrayData::arrayOps2()
     vo.resize(10);
 
     for (size_t i = 7; i < 10; ++i) {
-        vi[i] = i;
+        vi[i] = int(i);
         vs[i] = QString::number(i);
 
         QCOMPARE(vo[i].id, i);
@@ -1727,7 +1727,7 @@ void tst_QArrayData::grow()
             // Going element-wise is slow under valgrind
             if (previousCapacity - i > 10) {
                 i = previousCapacity - 5;
-                vector.back() = -i;
+                vector.back() = -int(i);
                 vector.resize(i);
 
                 // It's still not the time to re-allocate
