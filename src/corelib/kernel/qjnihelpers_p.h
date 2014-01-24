@@ -64,7 +64,7 @@ namespace QtAndroidPrivate
     Q_CORE_EXPORT JavaVM *javaVM();
     Q_CORE_EXPORT jint initJNI(JavaVM *vm, JNIEnv *env);
     jobject classLoader();
-    jint androidSdkVersion();
+    Q_CORE_EXPORT jint androidSdkVersion();
 }
 
 QT_END_NAMESPACE
