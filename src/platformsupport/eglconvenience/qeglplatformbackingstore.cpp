@@ -93,7 +93,6 @@ void QEGLPlatformBackingStore::updateTexture()
     if (!m_dirty.isNull()) {
         QRegion fixed;
         QRect imageRect = m_image.rect();
-        m_dirty |= imageRect;
 
         foreach (const QRect &rect, m_dirty.rects()) {
             // intersect with image rect to be sure
