@@ -57,7 +57,7 @@ bool q_hasEglExtension(EGLDisplay display,const char* extensionName);
 void q_printEglConfig(EGLDisplay display, EGLConfig config);
 
 #ifdef Q_OS_UNIX
-QSizeF q_physicalScreenSizeFromFb(int framebufferDevice);
+QSizeF q_physicalScreenSizeFromFb(int framebufferDevice, const QSize &screenSize = QSize());
 QSize q_screenSizeFromFb(int framebufferDevice);
 int q_screenDepthFromFb(int framebufferDevice);
 #endif

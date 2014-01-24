@@ -100,7 +100,7 @@ EGLNativeDisplayType QEglFSHooks::platformDisplay() const
 
 QSizeF QEglFSHooks::physicalScreenSize() const
 {
-    return q_physicalScreenSizeFromFb(framebuffer);
+    return q_physicalScreenSizeFromFb(framebuffer, screenSize());
 }
 
 QSize QEglFSHooks::screenSize() const

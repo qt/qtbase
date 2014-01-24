@@ -435,7 +435,7 @@ void q_printEglConfig(EGLDisplay display, EGLConfig config)
 
 #if (defined(Q_OS_UNIX) && !defined(Q_OS_QNX))
 
-QSizeF q_physicalScreenSizeFromFb(int framebufferDevice)
+QSizeF q_physicalScreenSizeFromFb(int framebufferDevice, const QSize &screenSize)
 {
     const int defaultPhysicalDpi = 100;
     static QSizeF size;
@@ -465,7 +465,9 @@ QSizeF q_physicalScreenSizeFromFb(int framebufferDevice)
                 screenResolution = QSize(vinfo.xres, vinfo.yres);
             }
         } else {
-            screenResolution = q_screenSizeFromFb(framebufferDevice);
+            // Use the provided screen size, when available, since some platforms may have their own
+            // specific way to query it. Otherwise try querying it from the framebuffer.
+            screenResolution = screenSize.isEmpty() ? q_screenSizeFromFb(framebufferDevice) : screenSize;
         }
 
         size.setWidth(w <= 0 ? screenResolution.width() * Q_MM_PER_INCH / defaultPhysicalDpi : qreal(w));
