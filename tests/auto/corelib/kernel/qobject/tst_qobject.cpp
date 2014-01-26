@@ -5564,8 +5564,8 @@ public:
 };
 
 class ConnectToPrivateSlotPrivate : public QObjectPrivate {
-public:
     Q_DECLARE_PUBLIC(ConnectToPrivateSlot)
+public:
     int receivedCount;
     QVariant receivedValue;
 
