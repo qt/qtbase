@@ -908,7 +908,17 @@ public:
 
     QChar::Category category() const { return QChar(*this).category(); }
     QChar::Direction direction() const { return QChar(*this).direction(); }
-    QChar::Joining joining() const { return QChar(*this).joining(); }
+    QChar::JoiningType joiningType() const { return QChar(*this).joiningType(); }
+#if QT_DEPRECATED_SINCE(5, 3)
+    QT_DEPRECATED QChar::Joining joining() const {
+        switch (QChar(*this).joiningType()) {
+        case QChar::Joining_Causing: return QChar::Center;
+        case QChar::Joining_Dual: return QChar::Dual;
+        case QChar::Joining_Right: return QChar::Right;
+        default: return QChar::OtherJoining;
+        }
+    }
+#endif
     bool hasMirrored() const { return QChar(*this).hasMirrored(); }
     QChar mirroredChar() const { return QChar(*this).mirroredChar(); }
     QString decomposition() const { return QChar(*this).decomposition(); }

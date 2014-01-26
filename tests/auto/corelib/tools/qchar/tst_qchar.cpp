@@ -74,7 +74,7 @@ private slots:
     void isSpaceSpecial();
     void category();
     void direction();
-    void joining();
+    void joiningType();
     void combiningClass();
     void digitValue();
     void mirroredChar();
@@ -483,30 +483,32 @@ void tst_QChar::direction()
     QVERIFY(QChar::direction(0x2FA17u) == QChar::DirL);
 }
 
-void tst_QChar::joining()
+void tst_QChar::joiningType()
 {
-    QVERIFY(QChar('a').joining() == QChar::OtherJoining);
-    QVERIFY(QChar('0').joining() == QChar::OtherJoining);
-    QVERIFY(QChar((ushort)0x627).joining() == QChar::Right);
-    QVERIFY(QChar((ushort)0x5d0).joining() == QChar::OtherJoining);
+    QVERIFY(QChar('a').joiningType() == QChar::Joining_None);
+    QVERIFY(QChar('0').joiningType() == QChar::Joining_None);
+    QVERIFY(QChar((ushort)0x0627).joiningType() == QChar::Joining_Right);
+    QVERIFY(QChar((ushort)0x05d0).joiningType() == QChar::Joining_None);
+    QVERIFY(QChar((ushort)0x00ad).joiningType() == QChar::Joining_Transparent);
 
-    QVERIFY(QChar::joining((ushort)'a') == QChar::OtherJoining);
-    QVERIFY(QChar::joining((ushort)'0') == QChar::OtherJoining);
-    QVERIFY(QChar::joining((ushort)0x627) == QChar::Right);
-    QVERIFY(QChar::joining((ushort)0x5d0) == QChar::OtherJoining);
+    QVERIFY(QChar::joiningType((ushort)'a') == QChar::Joining_None);
+    QVERIFY(QChar::joiningType((ushort)'0') == QChar::Joining_None);
+    QVERIFY(QChar::joiningType((ushort)0x0627) == QChar::Joining_Right);
+    QVERIFY(QChar::joiningType((ushort)0x05d0) == QChar::Joining_None);
+    QVERIFY(QChar::joiningType((ushort)0x00ad) == QChar::Joining_Transparent);
 
-    QVERIFY(QChar::joining((uint)'a') == QChar::OtherJoining);
-    QVERIFY(QChar::joining((uint)'0') == QChar::OtherJoining);
-    QVERIFY(QChar::joining((uint)0x627) == QChar::Right);
-    QVERIFY(QChar::joining((uint)0x5d0) == QChar::OtherJoining);
+    QVERIFY(QChar::joiningType((uint)'a') == QChar::Joining_None);
+    QVERIFY(QChar::joiningType((uint)'0') == QChar::Joining_None);
+    QVERIFY(QChar::joiningType((uint)0x0627) == QChar::Joining_Right);
+    QVERIFY(QChar::joiningType((uint)0x05d0) == QChar::Joining_None);
+    QVERIFY(QChar::joiningType((uint)0x00ad) == QChar::Joining_Transparent);
 
-    QVERIFY(QChar::joining(0xE01DAu) == QChar::OtherJoining);
-    QVERIFY(QChar::joining(0xf0000u) == QChar::OtherJoining);
-    QVERIFY(QChar::joining(0xE0030u) == QChar::OtherJoining);
-    QVERIFY(QChar::joining(0x2FA17u) == QChar::OtherJoining);
+    QVERIFY(QChar::joiningType(0xE01DAu) == QChar::Joining_Transparent);
+    QVERIFY(QChar::joiningType(0xf0000u) == QChar::Joining_None);
+    QVERIFY(QChar::joiningType(0xE0030u) == QChar::Joining_Transparent);
+    QVERIFY(QChar::joiningType(0x2FA17u) == QChar::Joining_None);
 
-    // ### U+A872 has joining type L
-    QVERIFY(QChar::joining((uint)0xA872) == QChar::OtherJoining);
+    QVERIFY(QChar::joiningType((uint)0xA872) == QChar::Joining_Left);
 }
 
 void tst_QChar::combiningClass()

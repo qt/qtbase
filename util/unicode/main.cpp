@@ -246,30 +246,30 @@ static void initDirectionMap()
 }
 
 
-enum Joining {
+enum JoiningType {
     Joining_None,
-    Joining_Left,
     Joining_Causing,
     Joining_Dual,
     Joining_Right,
+    Joining_Left,
     Joining_Transparent
 
     , Joining_Unassigned
 };
 
-static QHash<QByteArray, Joining> joining_map;
+static QHash<QByteArray, JoiningType> joining_map;
 
 static void initJoiningMap()
 {
     struct JoiningList {
-        Joining joining;
+        JoiningType joining;
         const char *name;
     } joinings[] = {
         { Joining_None,        "U" },
-        { Joining_Left,        "L" },
         { Joining_Causing,     "C" },
         { Joining_Dual,        "D" },
         { Joining_Right,       "R" },
+        { Joining_Left,        "L" },
         { Joining_Transparent, "T" },
         { Joining_Unassigned, 0 }
     };
@@ -719,8 +719,8 @@ static const char *property_string =
     "    ushort category            : 8; /* 5 used */\n"
     "    ushort direction           : 8; /* 5 used */\n"
     "    ushort combiningClass      : 8;\n"
-    "    ushort joining             : 2;\n"
-    "    signed short digitValue    : 6; /* 5 used */\n"
+    "    ushort joining             : 3;\n"
+    "    signed short digitValue    : 5; /* 5 used */\n"
     "    signed short mirrorDiff    : 16;\n"
     "    signed short lowerCaseDiff : 16;\n"
     "    signed short upperCaseDiff : 16;\n"
@@ -792,7 +792,7 @@ struct PropertyFlags {
     QChar::Category category : 5;
     QChar::Direction direction : 5;
     // from ArabicShaping.txt
-    QChar::Joining joining : 2;
+    QChar::JoiningType joining : 3;
     // from DerivedAge.txt
     QChar::UnicodeVersion age : 4;
     int digitValue;
@@ -944,7 +944,7 @@ struct UnicodeData {
 
         mirroredChar = 0;
         decompositionType = QChar::NoDecomposition;
-        p.joining = QChar::OtherJoining;
+        p.joining = QChar::Joining_None;
         p.age = QChar::Unicode_Unassigned;
         p.mirrorDiff = 0;
         p.digitValue = -1;
@@ -1171,7 +1171,7 @@ static void readUnicodeData()
             if (d[0].contains('<')) {
                 data.decompositionType = decompositionMap.value(d[0], QChar::NoDecomposition);
                 if (data.decompositionType == QChar::NoDecomposition)
-                    qFatal("unassigned decomposition type: %s", d[0].constData());
+                    qFatal("unhandled decomposition type: %s", d[0].constData());
                 d.takeFirst();
             } else {
                 data.decompositionType = QChar::Canonical;
@@ -1261,24 +1261,34 @@ static void readArabicShaping()
         int codepoint = l[0].toInt(&ok, 16);
         Q_ASSERT(ok);
 
-        Joining joining = joining_map.value(l[2].trimmed(), Joining_Unassigned);
-        if (joining == Joining_Unassigned)
-            qFatal("unassigned or unhandled joining value: %s", l[2].constData());
-
-        if (joining == Joining_Left) {
-            qWarning("ACHTUNG!!! joining type '%s' has been met for U+%X; the current implementation needs to be revised!",
-                     l[2].trimmed().constData(), codepoint);
-        }
-
         UnicodeData &d = UnicodeData::valueRef(codepoint);
-        if (joining == Joining_Right)
-            d.p.joining = QChar::Right;
-        else if (joining == Joining_Dual)
-            d.p.joining = QChar::Dual;
-        else if (joining == Joining_Causing)
-            d.p.joining = QChar::Center;
-        else
-            d.p.joining = QChar::OtherJoining;
+        JoiningType joining = joining_map.value(l[2].trimmed(), Joining_Unassigned);
+        switch (joining) {
+        case Joining_Unassigned:
+            qFatal("%x: unassigned or unhandled joining type: %s", codepoint, l[2].constData());
+            break;
+        case Joining_Transparent:
+            if (d.p.category != QChar::Mark_NonSpacing && d.p.category != QChar::Mark_Enclosing && d.p.category != QChar::Other_Format) {
+                qFatal("%x: joining type '%s' was met; the current implementation needs to be revised!",
+                       codepoint, l[2].constData());
+            }
+            // fall through
+
+        default:
+            d.p.joining = QChar::JoiningType(joining);
+            break;
+        }
+    }
+
+    // Code points that are not explicitly listed in ArabicShaping.txt are either of joining type T or U:
+    // - Those that not explicitly listed that are of General Category Mn, Me, or Cf have joining type T.
+    // - All others not explicitly listed have joining type U.
+    for (int codepoint = 0; codepoint <= QChar::LastValidCodePoint; ++codepoint) {
+        UnicodeData &d = UnicodeData::valueRef(codepoint);
+        if (d.p.joining == QChar::Joining_None) {
+            if (d.p.category == QChar::Mark_NonSpacing || d.p.category == QChar::Mark_Enclosing || d.p.category == QChar::Other_Format)
+                d.p.joining = QChar::Joining_Transparent;
+        }
     }
 }
 
@@ -2332,10 +2342,10 @@ static QByteArray createPropertyInfo()
 //     "        ushort combiningClass      : 8;\n"
         out += QByteArray::number( p.combiningClass );
         out += ", ";
-//     "        ushort joining             : 2;\n"
+//     "        ushort joining             : 3;\n"
         out += QByteArray::number( p.joining );
         out += ", ";
-//     "        signed short digitValue    : 6; /* 5 used */\n"
+//     "        signed short digitValue    : 5; /* 5 used */\n"
         out += QByteArray::number( p.digitValue );
         out += ", ";
 //     "        signed short mirrorDiff    : 16;\n"

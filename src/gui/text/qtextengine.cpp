@@ -2537,8 +2537,8 @@ static inline bool nextCharJoins(const QString &string, int pos)
         ++pos;
     if (pos == string.length())
         return false;
-    // ### U+A872 has joining type L
-    return string.at(pos) == QChar(0xA872) || string.at(pos).joining() != QChar::OtherJoining;
+    QChar::JoiningType joining = string.at(pos).joiningType();
+    return joining != QChar::Joining_None && joining != QChar::Joining_Transparent;
 }
 
 static inline bool prevCharJoins(const QString &string, int pos)
@@ -2547,8 +2547,8 @@ static inline bool prevCharJoins(const QString &string, int pos)
         --pos;
     if (pos == 0)
         return false;
-    QChar::Joining joining = string.at(pos - 1).joining();
-    return (joining == QChar::Dual || joining == QChar::Center);
+    QChar::JoiningType joining = string.at(pos - 1).joiningType();
+    return joining == QChar::Joining_Dual || joining == QChar::Joining_Causing;
 }
 
 static inline bool isRetainableControlCode(QChar c)
