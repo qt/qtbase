@@ -67,8 +67,8 @@ struct Properties {
     ushort category            : 8; /* 5 used */
     ushort direction           : 8; /* 5 used */
     ushort combiningClass      : 8;
-    ushort joining             : 2;
-    signed short digitValue    : 6; /* 5 used */
+    ushort joining             : 3;
+    signed short digitValue    : 5; /* 5 used */
     signed short mirrorDiff    : 16;
     signed short lowerCaseDiff : 16;
     signed short upperCaseDiff : 16;
