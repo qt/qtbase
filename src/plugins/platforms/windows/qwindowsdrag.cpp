@@ -54,6 +54,9 @@
 #include <QtGui/QMouseEvent>
 #include <QtGui/QPixmap>
 #include <QtGui/QPainter>
+#include <QtGui/QPaintDevice>
+#include <QtGui/QBackingStore>
+#include <QtGui/QWindow>
 #include <QtGui/QGuiApplication>
 #include <qpa/qwindowsysteminterface_p.h>
 #include <QtGui/private/qguiapplication_p.h>
@@ -207,6 +210,77 @@ static const char * const ignoreDragCursorXpmC[] = {
 "...............XXXX....."};
 
 /*!
+    \class QWindowsDragCursorWindow
+    \brief A toplevel window showing the drag icon in case of touch drag.
+
+    \sa QWindowsOleDropSource
+    \internal
+    \ingroup qt-lighthouse-win
+*/
+
+class QWindowsDragCursorWindow : public QWindow
+{
+public:
+    explicit QWindowsDragCursorWindow(QWindow *parent = 0);
+
+    void setPixmap(const QPixmap &p);
+
+protected:
+    void exposeEvent(QExposeEvent *);
+
+private:
+    void render();
+
+    QBackingStore m_backingStore;
+    QPixmap m_pixmap;
+};
+
+QWindowsDragCursorWindow::QWindowsDragCursorWindow(QWindow *parent)
+    : QWindow(parent)
+    , m_backingStore(this)
+{
+    QSurfaceFormat windowFormat = format();
+    windowFormat.setAlphaBufferSize(8);
+    setFormat(windowFormat);
+    setObjectName(QStringLiteral("QWindowsDragCursorWindow"));
+    setFlags(Qt::Popup | Qt::NoDropShadowWindowHint
+             | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint
+             | Qt::WindowDoesNotAcceptFocus | Qt::WindowTransparentForInput);
+}
+
+void QWindowsDragCursorWindow::setPixmap(const QPixmap &p)
+{
+    if (p.cacheKey() == m_pixmap.cacheKey())
+        return;
+    const QSize oldSize = m_pixmap.size();
+    const QSize newSize = p.size();
+    qCDebug(lcQpaMime) << __FUNCTION__ << p.cacheKey() << newSize;
+    m_pixmap = p;
+    if (oldSize != newSize) {
+        resize(newSize);
+        m_backingStore.resize(newSize);
+    }
+    if (isVisible())
+        render();
+}
+
+void QWindowsDragCursorWindow::exposeEvent(QExposeEvent *)
+{
+    Q_ASSERT(!m_pixmap.isNull());
+    render();
+}
+
+void QWindowsDragCursorWindow::render()
+{
+    const QRect rect(QPoint(0, 0), m_pixmap.size());
+    m_backingStore.beginPaint(rect);
+    QPainter painter(m_backingStore.paintDevice());
+    painter.drawPixmap(0, 0, m_pixmap);
+    m_backingStore.endPaint();
+    m_backingStore.flush(rect);
+}
+
+/*!
     \class QWindowsDropMimeData
     \brief Special mime data class for data retrieval from Drag operations.
 
@@ -286,6 +360,11 @@ static inline Qt::KeyboardModifiers toQtKeyboardModifiers(DWORD keyState)
 class QWindowsOleDropSource : public IDropSource
 {
 public:
+    enum Mode {
+        MouseDrag,
+        TouchDrag // Mouse cursor suppressed, use window as cursor.
+    };
+
     explicit QWindowsOleDropSource(QWindowsDrag *drag);
     virtual ~QWindowsOleDropSource();
 
@@ -325,9 +404,11 @@ private:
     typedef ActionCursorMap::Iterator ActionCursorMapIt;
     typedef ActionCursorMap::ConstIterator ActionCursorMapConstIt;
 
+    const Mode m_mode;
     QWindowsDrag *m_drag;
     Qt::MouseButtons m_currentButtons;
     ActionCursorMap m_cursors;
+    QWindowsDragCursorWindow *m_touchDragWindow;
 
     ULONG m_refs;
 #ifndef QT_NO_DEBUG_OUTPUT
@@ -335,16 +416,20 @@ private:
 #endif
 };
 
-QWindowsOleDropSource::QWindowsOleDropSource(QWindowsDrag *drag) :
-    m_drag(drag), m_currentButtons(Qt::NoButton),
-    m_refs(1)
+QWindowsOleDropSource::QWindowsOleDropSource(QWindowsDrag *drag)
+    : m_mode(QWindowsCursor::cursorState() != QWindowsCursor::CursorSuppressed ? MouseDrag : TouchDrag)
+    , m_drag(drag)
+    , m_currentButtons(Qt::NoButton)
+    , m_touchDragWindow(0)
+    , m_refs(1)
 {
-    qCDebug(lcQpaMime) << __FUNCTION__;
+    qCDebug(lcQpaMime) << __FUNCTION__ << m_mode;
 }
 
 QWindowsOleDropSource::~QWindowsOleDropSource()
 {
     m_cursors.clear();
+    delete m_touchDragWindow;
     qCDebug(lcQpaMime) << __FUNCTION__;
 }
 
@@ -517,7 +602,19 @@ QWindowsOleDropSource::GiveFeedback(DWORD dwEffect)
 
     if (it != m_cursors.constEnd()) {
         const CursorEntry &e = it.value();
-        SetCursor(e.cursor->cursor);
+        switch (m_mode) {
+        case MouseDrag:
+            SetCursor(e.cursor->cursor);
+            break;
+        case TouchDrag:
+            if (!m_touchDragWindow)
+                m_touchDragWindow = new QWindowsDragCursorWindow;
+            m_touchDragWindow->setPixmap(e.pixmap);
+            m_touchDragWindow->setFramePosition(QWindowsCursor::mousePosition() - e.hotSpot);
+            if (!m_touchDragWindow->isVisible())
+                m_touchDragWindow->show();
+            break;
+        }
         return ResultFromScode(S_OK);
     }
 
