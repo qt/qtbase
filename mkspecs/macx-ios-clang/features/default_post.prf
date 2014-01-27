@@ -178,15 +178,6 @@ macx-xcode {
     launch_images.files = $$copy_image.output
     QMAKE_BUNDLE_DATA += launch_images
 
-    !contains(QT_CONFIG, c++11) {
-        # Explicitly use libstdc++ if C++11 support is not enabled,
-        # as otherwise Xcode will choose the compiler default based
-        # on the deployment target, which for iOS 7 is libc++. This
-        # breaks compilation since Qt was built against libstdc++.
-        QMAKE_CXXFLAGS += -stdlib=libstdc++
-        QMAKE_LFLAGS   += -stdlib=libstdc++
-    }
-
     # Make the default debug information format for debug builds
     # DWARF instead of DWARF with dSYM. This cuts down build times
     # for application debug builds significantly, as Xcode doesn't

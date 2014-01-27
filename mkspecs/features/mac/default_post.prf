@@ -25,6 +25,15 @@ qt:!isEmpty(QT_CONFIG) {
             warning("Qt was not built with C++11 enabled, disabling feature")
             CONFIG -= c++11
         }
+
+        !c++11 {
+            # Explicitly use libstdc++ if C++11 support is not enabled,
+            # as otherwise the compiler will choose the standard library
+            # based on the deployment target, which for iOS 7 and OS X 10.9
+            # is libc++, and we can't mix and match the two.
+            QMAKE_CXXFLAGS += -stdlib=libstdc++
+            QMAKE_LFLAGS   += -stdlib=libstdc++
+        }
     }
 }
 
