@@ -24,4 +24,4 @@ Invalid( name="bar" qualifiedName="bar"
 
     Attribute( name="attr" namespaceUri="urn:xyzzy" qualifiedName="b:attr" prefix="b" value="2" )
  )
-ERROR: Attribute redefined.
+ERROR: Attribute 'b:attr' redefined.

@@ -13,4 +13,4 @@ Invalid( name="bar" qualifiedName="bar"
 
     Attribute( name="attr" namespaceUri="http://example.org/~wilbur" qualifiedName="a:attr" prefix="a" value="2" )
  )
-ERROR: Attribute redefined.
+ERROR: Attribute 'a:attr' redefined.
