@@ -43,11 +43,17 @@
 #include "qwindowswindow.h"
 #include "qwindowscontext.h"
 
-#if defined(QT_OPENGL_ES_2)
+#if defined(QT_OPENGL_ES_2) || defined(QT_OPENGL_DYNAMIC)
 #  include "qwindowseglcontext.h"
 #  include <QtGui/QOpenGLContext>
-#elif !defined(QT_NO_OPENGL)
+#endif
+
+#if !defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)
 #  include "qwindowsglcontext.h"
+#endif
+
+#if !defined(QT_NO_OPENGL)
+#  include <QtGui/QOpenGLFunctions>
 #endif
 
 #include <QtGui/QWindow>
@@ -113,19 +119,24 @@ void *QWindowsNativeInterface::nativeResourceForContext(const QByteArray &resour
         qWarning("%s: '%s' requested for null context or context without handle.", __FUNCTION__, resource.constData());
         return 0;
     }
-#ifdef QT_OPENGL_ES_2
-    QWindowsEGLContext *windowsEglContext = static_cast<QWindowsEGLContext *>(context->handle());
-    if (resource == QByteArrayLiteral("eglDisplay"))
-        return windowsEglContext->eglDisplay();
-    if (resource == QByteArrayLiteral("eglContext"))
-        return windowsEglContext->eglContext();
-    if (resource == QByteArrayLiteral("eglConfig"))
-        return windowsEglContext->eglConfig();
-#else // QT_OPENGL_ES_2
-    QWindowsGLContext *windowsContext = static_cast<QWindowsGLContext *>(context->handle());
-    if (resource == QByteArrayLiteral("renderingContext"))
-        return windowsContext->renderingContext();
-#endif // !QT_OPENGL_ES_2
+#if defined(QT_OPENGL_ES_2) || defined(QT_OPENGL_DYNAMIC)
+    if (QOpenGLFunctions::isES()) {
+        QWindowsEGLContext *windowsEglContext = static_cast<QWindowsEGLContext *>(context->handle());
+        if (resource == QByteArrayLiteral("eglDisplay"))
+            return windowsEglContext->eglDisplay();
+        if (resource == QByteArrayLiteral("eglContext"))
+            return windowsEglContext->eglContext();
+        if (resource == QByteArrayLiteral("eglConfig"))
+            return windowsEglContext->eglConfig();
+    }
+#endif // QT_OPENGL_ES_2 || QT_OPENGL_DYNAMIC
+#if !defined(QT_OPENGL_ES_2)
+    if (!QOpenGLFunctions::isES()) {
+        QWindowsGLContext *windowsContext = static_cast<QWindowsGLContext *>(context->handle());
+        if (resource == QByteArrayLiteral("renderingContext"))
+            return windowsContext->renderingContext();
+    }
+#endif // QT_OPENGL_ES_2 || QT_OPENGL_DYNAMIC
 
     qWarning("%s: Invalid key '%s' requested.", __FUNCTION__, resource.constData());
     return 0;

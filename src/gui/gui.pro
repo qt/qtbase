@@ -13,10 +13,12 @@ MODULE_PLUGIN_TYPES = \
     imageformats
 
 # This is here only because the platform plugin is no module, obviously.
-win32:contains(QT_CONFIG, angle) {
+win32:contains(QT_CONFIG, angle)|contains(QT_CONFIG, dynamicgl) {
     MODULE_AUX_INCLUDES = \
         \$\$QT_MODULE_INCLUDE_BASE/QtANGLE
 }
+
+contains(QT_CONFIG, dynamicgl): DEFINES += QT_OPENGL_DYNAMIC_IN_GUI
 
 load(qt_module)
 

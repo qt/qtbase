@@ -42,6 +42,7 @@
 #include "qeglplatformcontext_p.h"
 #include "qeglconvenience_p.h"
 #include <qpa/qplatformwindow.h>
+#include <QtGui/QOpenGLFunctions>
 
 QT_BEGIN_NAMESPACE
 
@@ -69,9 +70,12 @@ static inline void bindApi(const QSurfaceFormat &format)
         eglBindAPI(EGL_OPENVG_API);
         break;
 #ifdef EGL_VERSION_1_4
-#  if !defined(QT_OPENGL_ES_2)
     case QSurfaceFormat::DefaultRenderableType:
-#  endif
+        if (!QOpenGLFunctions::isES())
+            eglBindAPI(EGL_OPENGL_API);
+        else
+            eglBindAPI(EGL_OPENGL_ES_API);
+        break;
     case QSurfaceFormat::OpenGL:
         eglBindAPI(EGL_OPENGL_API);
         break;

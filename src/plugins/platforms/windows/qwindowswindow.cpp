@@ -48,8 +48,9 @@
 #  include "qwindowscursor.h"
 #endif
 
-#ifdef QT_OPENGL_ES_2
+#if defined(QT_OPENGL_ES_2) || defined(QT_OPENGL_DYNAMIC)
 #  include "qwindowseglcontext.h"
+#  include <QtGui/QOpenGLFunctions>
 #endif
 
 #include <QtGui/QGuiApplication>
@@ -861,7 +862,7 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const QWindowsWindowData &data)
     m_dropTarget(0),
     m_savedStyle(0),
     m_format(aWindow->format()),
-#ifdef QT_OPENGL_ES_2
+#if defined(QT_OPENGL_ES_2) || defined(QT_OPENGL_DYNAMIC)
     m_eglSurface(0),
 #endif
 #ifdef Q_OS_WINCE
@@ -878,8 +879,9 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const QWindowsWindowData &data)
         return; // No further handling for Qt::Desktop
     if (aWindow->surfaceType() == QWindow::OpenGLSurface) {
         setFlag(OpenGLSurface);
-#ifdef QT_OPENGL_ES_2
-        setFlag(OpenGL_ES2);
+#if defined(QT_OPENGL_ES_2) || defined(QT_OPENGL_DYNAMIC)
+        if (QOpenGLFunctions::isES())
+            setFlag(OpenGL_ES2);
 #endif
     }
     updateDropSite();
@@ -933,7 +935,7 @@ void QWindowsWindow::destroyWindow()
         if (hasMouseCapture())
             setMouseGrabEnabled(false);
         setDropSiteEnabled(false);
-#ifdef QT_OPENGL_ES_2
+#if defined(QT_OPENGL_ES_2) || defined(QT_OPENGL_DYNAMIC)
         if (m_eglSurface) {
             qCDebug(lcQpaGl) << __FUNCTION__ << "Freeing EGL surface " << m_eglSurface << window();
             eglDestroySurface(m_staticEglContext->display(), m_eglSurface);
@@ -2107,7 +2109,7 @@ void QWindowsWindow::setEnabled(bool enabled)
         setStyle(newStyle);
 }
 
-#ifdef QT_OPENGL_ES_2
+#if defined(QT_OPENGL_ES_2) || defined(QT_OPENGL_DYNAMIC)
 EGLSurface QWindowsWindow::ensureEglSurfaceHandle(const QWindowsWindow::QWindowsEGLStaticContextPtr &staticContext, EGLConfig config)
 {
     if (!m_eglSurface) {

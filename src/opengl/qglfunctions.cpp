@@ -213,94 +213,94 @@ QGLFunctions::QGLFunctions(const QGLContext *context)
 
 static int qt_gl_resolve_features()
 {
-#if defined(QT_OPENGL_ES_2)
-    int features = QGLFunctions::Multitexture |
-                   QGLFunctions::Shaders |
-                   QGLFunctions::Buffers |
-                   QGLFunctions::Framebuffers |
-                   QGLFunctions::BlendColor |
-                   QGLFunctions::BlendEquation |
-                   QGLFunctions::BlendEquationSeparate |
-                   QGLFunctions::BlendFuncSeparate |
-                   QGLFunctions::BlendSubtract |
-                   QGLFunctions::CompressedTextures |
-                   QGLFunctions::Multisample |
-                   QGLFunctions::StencilSeparate;
-    QOpenGLExtensionMatcher extensions;
-    if (extensions.match("GL_OES_texture_npot"))
-        features |= QGLFunctions::NPOTTextures;
-    if (extensions.match("GL_IMG_texture_npot"))
-        features |= QGLFunctions::NPOTTextures;
-    return features;
-#elif defined(QT_OPENGL_ES)
-    int features = QGLFunctions::Multitexture |
-                   QGLFunctions::Buffers |
-                   QGLFunctions::CompressedTextures |
-                   QGLFunctions::Multisample;
-    QOpenGLExtensionMatcher extensions;
-    if (extensions.match("GL_OES_framebuffer_object"))
-        features |= QGLFunctions::Framebuffers;
-    if (extensions.match("GL_OES_blend_equation_separate"))
-        features |= QGLFunctions::BlendEquationSeparate;
-    if (extensions.match("GL_OES_blend_func_separate"))
-        features |= QGLFunctions::BlendFuncSeparate;
-    if (extensions.match("GL_OES_blend_subtract"))
-        features |= QGLFunctions::BlendSubtract;
-    if (extensions.match("GL_OES_texture_npot"))
-        features |= QGLFunctions::NPOTTextures;
-    if (extensions.match("GL_IMG_texture_npot"))
-        features |= QGLFunctions::NPOTTextures;
-    return features;
-#else
-    int features = 0;
-    QGLFormat::OpenGLVersionFlags versions = QGLFormat::openGLVersionFlags();
-    QOpenGLExtensionMatcher extensions;
+    if (QOpenGLFunctions::platformGLType() == QOpenGLFunctions::GLES2) {
+        int features = QGLFunctions::Multitexture |
+            QGLFunctions::Shaders |
+            QGLFunctions::Buffers |
+            QGLFunctions::Framebuffers |
+            QGLFunctions::BlendColor |
+            QGLFunctions::BlendEquation |
+            QGLFunctions::BlendEquationSeparate |
+            QGLFunctions::BlendFuncSeparate |
+            QGLFunctions::BlendSubtract |
+            QGLFunctions::CompressedTextures |
+            QGLFunctions::Multisample |
+            QGLFunctions::StencilSeparate;
+        QOpenGLExtensionMatcher extensions;
+        if (extensions.match("GL_OES_texture_npot"))
+            features |= QGLFunctions::NPOTTextures;
+        if (extensions.match("GL_IMG_texture_npot"))
+            features |= QGLFunctions::NPOTTextures;
+        return features;
+    } if (QOpenGLFunctions::platformGLType() == QOpenGLFunctions::GLES1) {
+        int features = QGLFunctions::Multitexture |
+            QGLFunctions::Buffers |
+            QGLFunctions::CompressedTextures |
+            QGLFunctions::Multisample;
+        QOpenGLExtensionMatcher extensions;
+        if (extensions.match("GL_OES_framebuffer_object"))
+            features |= QGLFunctions::Framebuffers;
+        if (extensions.match("GL_OES_blend_equation_separate"))
+            features |= QGLFunctions::BlendEquationSeparate;
+        if (extensions.match("GL_OES_blend_func_separate"))
+            features |= QGLFunctions::BlendFuncSeparate;
+        if (extensions.match("GL_OES_blend_subtract"))
+            features |= QGLFunctions::BlendSubtract;
+        if (extensions.match("GL_OES_texture_npot"))
+            features |= QGLFunctions::NPOTTextures;
+        if (extensions.match("GL_IMG_texture_npot"))
+            features |= QGLFunctions::NPOTTextures;
+        return features;
+    } else {
+        int features = 0;
+        QGLFormat::OpenGLVersionFlags versions = QGLFormat::openGLVersionFlags();
+        QOpenGLExtensionMatcher extensions;
 
-    // Recognize features by extension name.
-    if (extensions.match("GL_ARB_multitexture"))
-        features |= QGLFunctions::Multitexture;
-    if (extensions.match("GL_ARB_shader_objects"))
-        features |= QGLFunctions::Shaders;
-    if (extensions.match("GL_EXT_framebuffer_object") ||
+        // Recognize features by extension name.
+        if (extensions.match("GL_ARB_multitexture"))
+            features |= QGLFunctions::Multitexture;
+        if (extensions.match("GL_ARB_shader_objects"))
+            features |= QGLFunctions::Shaders;
+        if (extensions.match("GL_EXT_framebuffer_object") ||
             extensions.match("GL_ARB_framebuffer_object"))
-        features |= QGLFunctions::Framebuffers;
-    if (extensions.match("GL_EXT_blend_color"))
-        features |= QGLFunctions::BlendColor;
-    if (extensions.match("GL_EXT_blend_equation_separate"))
-        features |= QGLFunctions::BlendEquationSeparate;
-    if (extensions.match("GL_EXT_blend_func_separate"))
-        features |= QGLFunctions::BlendFuncSeparate;
-    if (extensions.match("GL_EXT_blend_subtract"))
-        features |= QGLFunctions::BlendSubtract;
-    if (extensions.match("GL_ARB_texture_compression"))
-        features |= QGLFunctions::CompressedTextures;
-    if (extensions.match("GL_ARB_multisample"))
-        features |= QGLFunctions::Multisample;
-    if (extensions.match("GL_ARB_texture_non_power_of_two"))
-        features |= QGLFunctions::NPOTTextures;
+            features |= QGLFunctions::Framebuffers;
+        if (extensions.match("GL_EXT_blend_color"))
+            features |= QGLFunctions::BlendColor;
+        if (extensions.match("GL_EXT_blend_equation_separate"))
+            features |= QGLFunctions::BlendEquationSeparate;
+        if (extensions.match("GL_EXT_blend_func_separate"))
+            features |= QGLFunctions::BlendFuncSeparate;
+        if (extensions.match("GL_EXT_blend_subtract"))
+            features |= QGLFunctions::BlendSubtract;
+        if (extensions.match("GL_ARB_texture_compression"))
+            features |= QGLFunctions::CompressedTextures;
+        if (extensions.match("GL_ARB_multisample"))
+            features |= QGLFunctions::Multisample;
+        if (extensions.match("GL_ARB_texture_non_power_of_two"))
+            features |= QGLFunctions::NPOTTextures;
 
-    // Recognize features by minimum OpenGL version.
-    if (versions & QGLFormat::OpenGL_Version_1_2) {
-        features |= QGLFunctions::BlendColor |
-                    QGLFunctions::BlendEquation;
+        // Recognize features by minimum OpenGL version.
+        if (versions & QGLFormat::OpenGL_Version_1_2) {
+            features |= QGLFunctions::BlendColor |
+                QGLFunctions::BlendEquation;
+        }
+        if (versions & QGLFormat::OpenGL_Version_1_3) {
+            features |= QGLFunctions::Multitexture |
+                QGLFunctions::CompressedTextures |
+                QGLFunctions::Multisample;
+        }
+        if (versions & QGLFormat::OpenGL_Version_1_4)
+            features |= QGLFunctions::BlendFuncSeparate;
+        if (versions & QGLFormat::OpenGL_Version_1_5)
+            features |= QGLFunctions::Buffers;
+        if (versions & QGLFormat::OpenGL_Version_2_0) {
+            features |= QGLFunctions::Shaders |
+                QGLFunctions::StencilSeparate |
+                QGLFunctions::BlendEquationSeparate |
+                QGLFunctions::NPOTTextures;
+        }
+        return features;
     }
-    if (versions & QGLFormat::OpenGL_Version_1_3) {
-        features |= QGLFunctions::Multitexture |
-                    QGLFunctions::CompressedTextures |
-                    QGLFunctions::Multisample;
-    }
-    if (versions & QGLFormat::OpenGL_Version_1_4)
-        features |= QGLFunctions::BlendFuncSeparate;
-    if (versions & QGLFormat::OpenGL_Version_1_5)
-        features |= QGLFunctions::Buffers;
-    if (versions & QGLFormat::OpenGL_Version_2_0) {
-        features |= QGLFunctions::Shaders |
-                    QGLFunctions::StencilSeparate |
-                    QGLFunctions::BlendEquationSeparate |
-                    QGLFunctions::NPOTTextures;
-    }
-    return features;
-#endif
 }
 
 /*!

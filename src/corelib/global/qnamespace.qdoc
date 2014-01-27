@@ -168,6 +168,14 @@
     \value AA_ForceRasterWidgets Make top-level widgets use pure raster surfaces,
            and do not support non-native GL-based child widgets.
 
+    \value AA_UseDesktopOpenGL Forces the usage of the desktop OpenGL on
+           platforms that use dynamic loading of the OpenGL implementation.
+           This value has been added in Qt 5.3.
+
+    \value AA_UseOpenGLES Forces the usage of OpenGL ES 2.0 on platforms that
+           use dynamic loading of the OpenGL implementation.
+           This value has been added in Qt 5.3.
+
     The following values are obsolete:
 
     \value AA_ImmediateWidgetCreation This attribute is no longer fully

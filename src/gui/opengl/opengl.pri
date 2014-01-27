@@ -122,4 +122,8 @@ contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles2) {
 
         SOURCES += opengl/qopenglfunctions_es2.cpp
     }
+
+    contains(QT_CONFIG, dynamicgl) {
+        win32: SOURCES += opengl/qopenglproxy_win.cpp
+    }
 }

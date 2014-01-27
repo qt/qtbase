@@ -72,8 +72,6 @@ QT_BEGIN_NAMESPACE
 #define QT_CHECK_GLERROR() {}
 #endif
 
-// ####TODO Properly #ifdef this class to use #define symbols actually defined
-// by OpenGL/ES includes
 #ifndef GL_MAX_SAMPLES
 #define GL_MAX_SAMPLES 0x8D57
 #endif
@@ -592,30 +590,29 @@ void QOpenGLFramebufferObjectPrivate::initAttachments(QOpenGLContext *ctx, QOpen
         funcs.glBindRenderbuffer(GL_RENDERBUFFER, depth_buffer);
         Q_ASSERT(funcs.glIsRenderbuffer(depth_buffer));
         if (samples != 0 && funcs.hasOpenGLExtension(QOpenGLExtensions::FramebufferMultisample)) {
-#ifdef QT_OPENGL_ES
-            if (funcs.hasOpenGLExtension(QOpenGLExtensions::Depth24)) {
-                funcs.glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples,
-                    GL_DEPTH_COMPONENT24, size.width(), size.height());
+            if (QOpenGLFunctions::isES()) {
+                if (funcs.hasOpenGLExtension(QOpenGLExtensions::Depth24))
+                    funcs.glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples,
+                                                           GL_DEPTH_COMPONENT24, size.width(), size.height());
+                else
+                    funcs.glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples,
+                                                           GL_DEPTH_COMPONENT16, size.width(), size.height());
             } else {
                 funcs.glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples,
-                    GL_DEPTH_COMPONENT16, size.width(), size.height());
+                                                       GL_DEPTH_COMPONENT, size.width(), size.height());
             }
-#else
-            funcs.glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples,
-                GL_DEPTH_COMPONENT, size.width(), size.height());
-#endif
         } else {
-#ifdef QT_OPENGL_ES
-            if (funcs.hasOpenGLExtension(QOpenGLExtensions::Depth24)) {
-                funcs.glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24,
-                                        size.width(), size.height());
+            if (QOpenGLFunctions::isES()) {
+                if (funcs.hasOpenGLExtension(QOpenGLExtensions::Depth24)) {
+                    funcs.glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24,
+                                                size.width(), size.height());
+                } else {
+                    funcs.glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16,
+                                                size.width(), size.height());
+                }
             } else {
-                funcs.glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16,
-                                        size.width(), size.height());
+                funcs.glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, size.width(), size.height());
             }
-#else
-            funcs.glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, size.width(), size.height());
-#endif
         }
         funcs.glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
                                      GL_RENDERBUFFER, depth_buffer);
@@ -630,23 +627,18 @@ void QOpenGLFramebufferObjectPrivate::initAttachments(QOpenGLContext *ctx, QOpen
         funcs.glGenRenderbuffers(1, &stencil_buffer);
         funcs.glBindRenderbuffer(GL_RENDERBUFFER, stencil_buffer);
         Q_ASSERT(funcs.glIsRenderbuffer(stencil_buffer));
-        if (samples != 0 && funcs.hasOpenGLExtension(QOpenGLExtensions::FramebufferMultisample)) {
+
 #ifdef QT_OPENGL_ES
-            funcs.glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples,
-                GL_STENCIL_INDEX8, size.width(), size.height());
+        GLenum storage = GL_STENCIL_INDEX8;
 #else
-            funcs.glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples,
-                GL_STENCIL_INDEX, size.width(), size.height());
+        GLenum storage = QOpenGLFunctions::isES() ? GL_STENCIL_INDEX8 : GL_STENCIL_INDEX;
 #endif
-        } else {
-#ifdef QT_OPENGL_ES
-            funcs.glRenderbufferStorage(GL_RENDERBUFFER, GL_STENCIL_INDEX8,
-                                  size.width(), size.height());
-#else
-            funcs.glRenderbufferStorage(GL_RENDERBUFFER, GL_STENCIL_INDEX,
-                                  size.width(), size.height());
-#endif
-        }
+
+        if (samples != 0 && funcs.hasOpenGLExtension(QOpenGLExtensions::FramebufferMultisample))
+            funcs.glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, storage, size.width(), size.height());
+        else
+            funcs.glRenderbufferStorage(GL_RENDERBUFFER, storage, size.width(), size.height());
+
         funcs.glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
                                   GL_RENDERBUFFER, stencil_buffer);
         valid = checkFramebufferStatus(ctx);
@@ -779,7 +771,13 @@ QOpenGLFramebufferObject::QOpenGLFramebufferObject(const QSize &size, GLenum tar
     : d_ptr(new QOpenGLFramebufferObjectPrivate)
 {
     Q_D(QOpenGLFramebufferObject);
-    d->init(this, size, NoAttachment, target, DEFAULT_FORMAT);
+    d->init(this, size, NoAttachment, target,
+#ifndef QT_OPENGL_ES_2
+            QOpenGLFunctions::isES() ? GL_RGBA : GL_RGBA8
+#else
+            GL_RGBA
+#endif
+        );
 }
 
 /*! \overload
@@ -793,7 +791,13 @@ QOpenGLFramebufferObject::QOpenGLFramebufferObject(int width, int height, GLenum
     : d_ptr(new QOpenGLFramebufferObjectPrivate)
 {
     Q_D(QOpenGLFramebufferObject);
-    d->init(this, QSize(width, height), NoAttachment, target, DEFAULT_FORMAT);
+    d->init(this, QSize(width, height), NoAttachment, target,
+#ifndef QT_OPENGL_ES_2
+            QOpenGLFunctions::isES() ? GL_RGBA : GL_RGBA8
+#else
+            GL_RGBA
+#endif
+        );
 }
 
 /*! \overload
@@ -842,6 +846,12 @@ QOpenGLFramebufferObject::QOpenGLFramebufferObject(int width, int height, Attach
     : d_ptr(new QOpenGLFramebufferObjectPrivate)
 {
     Q_D(QOpenGLFramebufferObject);
+    if (!internal_format)
+#ifdef QT_OPENGL_ES_2
+        internal_format = GL_RGBA;
+#else
+        internal_format = QOpenGLFunctions::isES() ? GL_RGBA : GL_RGBA8;
+#endif
     d->init(this, QSize(width, height), attachment, target, internal_format);
 }
 
@@ -863,6 +873,12 @@ QOpenGLFramebufferObject::QOpenGLFramebufferObject(const QSize &size, Attachment
     : d_ptr(new QOpenGLFramebufferObjectPrivate)
 {
     Q_D(QOpenGLFramebufferObject);
+    if (!internal_format)
+#ifdef QT_OPENGL_ES_2
+        internal_format = GL_RGBA;
+#else
+        internal_format = QOpenGLFunctions::isES() ? GL_RGBA : GL_RGBA8;
+#endif
     d->init(this, size, attachment, target, internal_format);
 }
 

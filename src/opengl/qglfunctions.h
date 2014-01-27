@@ -51,6 +51,7 @@
 
 #include <QtOpenGL/qgl.h>
 #include <QtGui/qopenglcontext.h>
+#include <QtGui/qopenglfunctions.h>
 
 QT_BEGIN_NAMESPACE
 

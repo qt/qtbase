@@ -220,14 +220,14 @@ void QOpenGL2PaintEngineExPrivate::updateBrushTexture()
         if (currentBrushPixmap.width() > max_texture_size || currentBrushPixmap.height() > max_texture_size)
             currentBrushPixmap = currentBrushPixmap.scaled(max_texture_size, max_texture_size, Qt::KeepAspectRatio);
 
-#if defined(QT_OPENGL_ES_2)
-        // OpenGL ES does not support GL_REPEAT wrap modes for NPOT textures. So instead,
-        // we emulate GL_REPEAT by only taking the fractional part of the texture coords
-        // in the qopenglslTextureBrushSrcFragmentShader program.
-        GLuint wrapMode = GL_CLAMP_TO_EDGE;
-#else
         GLuint wrapMode = GL_REPEAT;
-#endif
+        if (QOpenGLFunctions::isES()) {
+            // OpenGL ES does not support GL_REPEAT wrap modes for NPOT textures. So instead,
+            // we emulate GL_REPEAT by only taking the fractional part of the texture coords
+            // in the qopenglslTextureBrushSrcFragmentShader program.
+            wrapMode = GL_CLAMP_TO_EDGE;
+        }
+
         funcs.glActiveTexture(GL_TEXTURE0 + QT_BRUSH_TEXTURE_UNIT);
         QOpenGLTextureCache::cacheForContext(ctx)->bindTexture(ctx, currentBrushPixmap);
         updateTextureFilter(GL_TEXTURE_2D, wrapMode, q->state()->renderHints & QPainter::SmoothPixmapTransform);
@@ -542,36 +542,38 @@ void QOpenGL2PaintEngineEx::beginNativePainting()
         d->funcs.glDisableVertexAttribArray(i);
 
 #ifndef QT_OPENGL_ES_2
-    Q_ASSERT(QOpenGLContext::currentContext());
-    const QOpenGLContext *ctx = d->ctx;
-    const QSurfaceFormat &fmt = d->device->context()->format();
-    if (fmt.majorVersion() < 3 || (fmt.majorVersion() == 3 && fmt.minorVersion() < 1)
-        || (fmt.majorVersion() == 3 && fmt.minorVersion() == 1 && ctx->hasExtension(QByteArrayLiteral("GL_ARB_compatibility")))
-        || fmt.profile() == QSurfaceFormat::CompatibilityProfile)
-    {
-        // be nice to people who mix OpenGL 1.x code with QPainter commands
-        // by setting modelview and projection matrices to mirror the GL 1
-        // paint engine
-        const QTransform& mtx = state()->matrix;
-
-        float mv_matrix[4][4] =
+    if (!QOpenGLFunctions::isES()) {
+        Q_ASSERT(QOpenGLContext::currentContext());
+        const QOpenGLContext *ctx = d->ctx;
+        const QSurfaceFormat &fmt = d->device->context()->format();
+        if (fmt.majorVersion() < 3 || (fmt.majorVersion() == 3 && fmt.minorVersion() < 1)
+            || (fmt.majorVersion() == 3 && fmt.minorVersion() == 1 && ctx->hasExtension(QByteArrayLiteral("GL_ARB_compatibility")))
+            || fmt.profile() == QSurfaceFormat::CompatibilityProfile)
         {
-            { float(mtx.m11()), float(mtx.m12()),     0, float(mtx.m13()) },
-            { float(mtx.m21()), float(mtx.m22()),     0, float(mtx.m23()) },
-            {                0,                0,     1,                0 },
-            {  float(mtx.dx()),  float(mtx.dy()),     0, float(mtx.m33()) }
-        };
+            // be nice to people who mix OpenGL 1.x code with QPainter commands
+            // by setting modelview and projection matrices to mirror the GL 1
+            // paint engine
+            const QTransform& mtx = state()->matrix;
 
-        const QSize sz = d->device->size();
+            float mv_matrix[4][4] =
+                {
+                    { float(mtx.m11()), float(mtx.m12()),     0, float(mtx.m13()) },
+                    { float(mtx.m21()), float(mtx.m22()),     0, float(mtx.m23()) },
+                    {                0,                0,     1,                0 },
+                    {  float(mtx.dx()),  float(mtx.dy()),     0, float(mtx.m33()) }
+                };
 
-        glMatrixMode(GL_PROJECTION);
-        glLoadIdentity();
-        glOrtho(0, sz.width(), sz.height(), 0, -999999, 999999);
+            const QSize sz = d->device->size();
 
-        glMatrixMode(GL_MODELVIEW);
-        glLoadMatrixf(&mv_matrix[0][0]);
+            glMatrixMode(GL_PROJECTION);
+            glLoadIdentity();
+            glOrtho(0, sz.width(), sz.height(), 0, -999999, 999999);
+
+            glMatrixMode(GL_MODELVIEW);
+            glLoadMatrixf(&mv_matrix[0][0]);
+        }
     }
-#endif
+#endif // QT_OPENGL_ES_2
 
     d->lastTextureUsed = GLuint(-1);
     d->dirtyStencilRegion = QRect(0, 0, d->width, d->height);
@@ -598,11 +600,11 @@ void QOpenGL2PaintEngineExPrivate::resetGLState()
     setVertexAttribArrayEnabled(QT_TEXTURE_COORDS_ATTR, false);
     setVertexAttribArrayEnabled(QT_VERTEX_COORDS_ATTR, false);
     setVertexAttribArrayEnabled(QT_OPACITY_ATTR, false);
-#ifndef QT_OPENGL_ES_2
-    // gl_Color, corresponding to vertex attribute 3, may have been changed
-    float color[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-    funcs.glVertexAttrib4fv(3, color);
-#endif
+    if (!QOpenGLFunctions::isES()) {
+        // gl_Color, corresponding to vertex attribute 3, may have been changed
+        float color[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+        funcs.glVertexAttrib4fv(3, color);
+    }
 }
 
 void QOpenGL2PaintEngineEx::endNativePainting()
@@ -1332,13 +1334,15 @@ void QOpenGL2PaintEngineEx::renderHintsChanged()
 {
     state()->renderHintsChanged = true;
 
-#if !defined(QT_OPENGL_ES_2)
-    if ((state()->renderHints & QPainter::Antialiasing)
-        || (state()->renderHints & QPainter::HighQualityAntialiasing))
-        glEnable(GL_MULTISAMPLE);
-    else
-        glDisable(GL_MULTISAMPLE);
-#endif
+#ifndef QT_OPENGL_ES_2
+    if (!QOpenGLFunctions::isES()) {
+        if ((state()->renderHints & QPainter::Antialiasing)
+            || (state()->renderHints & QPainter::HighQualityAntialiasing))
+            glEnable(GL_MULTISAMPLE);
+        else
+            glDisable(GL_MULTISAMPLE);
+    }
+#endif // QT_OPENGL_ES_2
 
     Q_D(QOpenGL2PaintEngineEx);
     d->lastTextureUsed = GLuint(-1);
@@ -2008,23 +2012,20 @@ bool QOpenGL2PaintEngineEx::begin(QPaintDevice *pdev)
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_SCISSOR_TEST);
 
-#if !defined(QT_OPENGL_ES_2)
-    glDisable(GL_MULTISAMPLE);
-#endif
+#ifndef QT_OPENGL_ES_2
+    if (!QOpenGLFunctions::isES()) {
+        glDisable(GL_MULTISAMPLE);
+        d->glyphCacheType = QFontEngineGlyphCache::Raster_RGBMask;
+        d->multisamplingAlwaysEnabled = false;
+    } else
+#endif // QT_OPENGL_ES_2
+    {
+        // OpenGL ES can't switch MSAA off, so if the gl paint device is
+        // multisampled, it's always multisampled.
+        d->multisamplingAlwaysEnabled = d->device->context()->format().samples() > 1;
+    }
 
     d->glyphCacheType = QFontEngineGlyphCache::Raster_A8;
-
-#if !defined(QT_OPENGL_ES_2)
-        d->glyphCacheType = QFontEngineGlyphCache::Raster_RGBMask;
-#endif
-
-#if defined(QT_OPENGL_ES_2)
-    // OpenGL ES can't switch MSAA off, so if the gl paint device is
-    // multisampled, it's always multisampled.
-    d->multisamplingAlwaysEnabled = d->device->context()->format().samples() > 1;
-#else
-    d->multisamplingAlwaysEnabled = false;
-#endif
 
     return true;
 }

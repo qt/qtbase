@@ -37,4 +37,15 @@ contains(QT_CONFIG,egl) {
             $$PWD/qxlibeglintegration.cpp
     }
     CONFIG += egl
+
+} else: contains(QT_CONFIG,dynamicgl) {
+    HEADERS += \
+        $$PWD/qeglconvenience_p.h \
+        $$PWD/qeglplatformcontext_p.h \
+        $$PWD/qeglpbuffer_p.h
+
+    SOURCES += \
+        $$PWD/qeglconvenience.cpp \
+        $$PWD/qeglplatformcontext.cpp \
+        $$PWD/qeglpbuffer.cpp
 }

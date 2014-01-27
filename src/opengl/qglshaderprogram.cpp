@@ -47,6 +47,7 @@
 #include <QtCore/qfile.h>
 #include <QtCore/qvarlengtharray.h>
 #include <QtCore/qvector.h>
+#include <QDebug>
 
 QT_BEGIN_NAMESPACE
 
@@ -246,7 +247,8 @@ bool QGLShaderPrivate::create()
         if (shaderType == QGLShader::Vertex)
             shader = glfuncs->glCreateShader(GL_VERTEX_SHADER);
 #if !defined(QT_OPENGL_ES_2)
-        else if (shaderType == QGLShader::Geometry)
+        else if (shaderType == QGLShader::Geometry
+                 && !QOpenGLFunctions::isES())
             shader = glfuncs->glCreateShader(GL_GEOMETRY_SHADER_EXT);
 #endif
         else
@@ -428,11 +430,14 @@ bool QGLShader::compileSourceCode(const char *source)
             srclen.append(GLint(headerLen));
         }
 #ifdef QGL_DEFINE_QUALIFIERS
-        src.append(qualifierDefines);
-        srclen.append(GLint(sizeof(qualifierDefines) - 1));
+        if (!QOpenGLFunctions::isES()) {
+            src.append(qualifierDefines);
+            srclen.append(GLint(sizeof(qualifierDefines) - 1));
+        }
 #endif
 #ifdef QGL_REDEFINE_HIGHP
-        if (d->shaderType == Fragment) {
+        if (d->shaderType == Fragment
+            && QOpenGLFunctions::isES()) {
             src.append(redefineHighp);
             srclen.append(GLint(sizeof(redefineHighp) - 1));
         }
@@ -562,13 +567,15 @@ public:
 
     void initializeGeometryShaderFunctions()
     {
-        QOpenGLContext *context = QOpenGLContext::currentContext();
-        glProgramParameteri = (type_glProgramParameteri)
-            context->getProcAddress("glProgramParameteri");
-
-        if (!glProgramParameteri) {
+        if (!QOpenGLFunctions::isES()) {
+            QOpenGLContext *context = QOpenGLContext::currentContext();
             glProgramParameteri = (type_glProgramParameteri)
-                context->getProcAddress("glProgramParameteriEXT");
+                context->getProcAddress("glProgramParameteri");
+
+            if (!glProgramParameteri) {
+                glProgramParameteri = (type_glProgramParameteri)
+                    context->getProcAddress("glProgramParameteriEXT");
+            }
         }
     }
 
@@ -929,7 +936,8 @@ bool QGLShaderProgram::link()
 
 #if !defined(QT_OPENGL_ES_2)
     // Set up the geometry shader parameters
-    if (d->glfuncs->glProgramParameteri) {
+    if (!QOpenGLFunctions::isES()
+        && d->glfuncs->glProgramParameteri) {
         foreach (QGLShader *shader, d->shaders) {
             if (shader->shaderType() & QGLShader::Geometry) {
                 d->glfuncs->glProgramParameteri(program, GL_GEOMETRY_INPUT_TYPE_EXT,
@@ -3060,7 +3068,8 @@ int QGLShaderProgram::maxGeometryOutputVertices() const
 {
     GLint n = 0;
 #if !defined(QT_OPENGL_ES_2)
-    glGetIntegerv(GL_MAX_GEOMETRY_OUTPUT_VERTICES_EXT, &n);
+    if (!QOpenGLFunctions::isES())
+        glGetIntegerv(GL_MAX_GEOMETRY_OUTPUT_VERTICES_EXT, &n);
 #endif
     return n;
 }

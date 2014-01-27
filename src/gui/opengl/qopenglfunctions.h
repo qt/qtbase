@@ -311,6 +311,15 @@ public:
     void glVertexAttrib4fv(GLuint indx, const GLfloat* values);
     void glVertexAttribPointer(GLuint indx, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void* ptr);
 
+    enum PlatformGLType {
+        DesktopGL = 0,
+        GLES2,
+        GLES1
+    };
+    static PlatformGLType platformGLType();
+    static void *platformGLHandle();
+    static bool isES() { return platformGLType() != DesktopGL; }
+
 protected:
     QOpenGLFunctionsPrivate *d_ptr;
     static bool isInitialized(const QOpenGLFunctionsPrivate *d) { return d != 0; }
@@ -322,7 +331,6 @@ struct QOpenGLFunctionsPrivate
 {
     QOpenGLFunctionsPrivate(QOpenGLContext *ctx);
 
-#ifndef QT_OPENGL_ES_2
     void (QOPENGLF_APIENTRYP ActiveTexture)(GLenum texture);
     void (QOPENGLF_APIENTRYP AttachShader)(GLuint program, GLuint shader);
     void (QOPENGLF_APIENTRYP BindAttribLocation)(GLuint program, GLuint index, const char* name);
@@ -418,7 +426,6 @@ struct QOpenGLFunctionsPrivate
     void (QOPENGLF_APIENTRYP VertexAttrib4f)(GLuint indx, GLfloat x, GLfloat y, GLfloat z, GLfloat w);
     void (QOPENGLF_APIENTRYP VertexAttrib4fv)(GLuint indx, const GLfloat* values);
     void (QOPENGLF_APIENTRYP VertexAttribPointer)(GLuint indx, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void* ptr);
-#endif
 };
 
 inline void QOpenGLFunctions::glActiveTexture(GLenum texture)

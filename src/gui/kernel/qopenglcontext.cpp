@@ -337,31 +337,32 @@ int QOpenGLContextPrivate::maxTextureSize()
 
     glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
 
-#if defined(QT_OPENGL_ES)
-    return max_texture_size;
-#else
-    GLenum proxy = GL_PROXY_TEXTURE_2D;
+#ifndef QT_OPENGL_ES
+    if (!QOpenGLFunctions::isES()) {
+        GLenum proxy = GL_PROXY_TEXTURE_2D;
 
-    GLint size;
-    GLint next = 64;
-    glTexImage2D(proxy, 0, GL_RGBA, next, next, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-    glGetTexLevelParameteriv(proxy, 0, GL_TEXTURE_WIDTH, &size);
-    if (size == 0) {
-        return max_texture_size;
-    }
-    do {
-        size = next;
-        next = size * 2;
-
-        if (next > max_texture_size)
-            break;
+        GLint size;
+        GLint next = 64;
         glTexImage2D(proxy, 0, GL_RGBA, next, next, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-        glGetTexLevelParameteriv(proxy, 0, GL_TEXTURE_WIDTH, &next);
-    } while (next > size);
+        glGetTexLevelParameteriv(proxy, 0, GL_TEXTURE_WIDTH, &size);
+        if (size == 0) {
+            return max_texture_size;
+        }
+        do {
+            size = next;
+            next = size * 2;
 
-    max_texture_size = size;
+            if (next > max_texture_size)
+                break;
+            glTexImage2D(proxy, 0, GL_RGBA, next, next, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+            glGetTexLevelParameteriv(proxy, 0, GL_TEXTURE_WIDTH, &next);
+        } while (next > size);
+
+        max_texture_size = size;
+    }
+#endif // QT_OPENGL_ES
+
     return max_texture_size;
-#endif
 }
 
 /*!
@@ -641,6 +642,13 @@ QOpenGLFunctions *QOpenGLContext::functions() const
 */
 QAbstractOpenGLFunctions *QOpenGLContext::versionFunctions(const QOpenGLVersionProfile &versionProfile) const
 {
+#ifndef QT_OPENGL_ES_2
+    if (QOpenGLFunctions::isES()) {
+        qWarning("versionFunctions: Not supported on dynamic GL ES");
+        return 0;
+    }
+#endif // QT_OPENGL_ES_2
+
     Q_D(const QOpenGLContext);
     const QSurfaceFormat f = format();
 

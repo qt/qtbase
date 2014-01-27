@@ -43,6 +43,7 @@
 
 #include <QtCore/private/qobject_p.h>
 #include <QtGui/qopenglcontext.h>
+#include <QtGui/qopenglfunctions.h>
 
 #if !defined(QT_OPENGL_ES_2)
 #include <QtGui/qopenglfunctions_3_0.h>
@@ -155,6 +156,13 @@ bool QOpenGLVertexArrayObjectPrivate::create()
         qWarning("QOpenGLVertexArrayObject::create() VAO is already created");
         return false;
     }
+
+#if !defined(QT_OPENGL_ES_2)
+    if (QOpenGLFunctions::isES()) {
+        qWarning("QOpenGLVertexArrayObject: Not supported on dynamic GL ES");
+        return false;
+    }
+#endif
 
     Q_Q(QOpenGLVertexArrayObject);
     if (context)

@@ -43,12 +43,20 @@
 #include "qwindowsintegration.h"
 #include "qwindowswindow.h"
 #include "qwindowscontext.h"
-#if defined(QT_OPENGL_ES_2)
+
+#if defined(QT_OPENGL_ES_2) || defined(QT_OPENGL_DYNAMIC)
 #  include "qwindowseglcontext.h"
 #  include <QtGui/QOpenGLContext>
-#elif !defined(QT_NO_OPENGL)
+#endif
+
+#if !defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)
 #  include "qwindowsglcontext.h"
 #endif
+
+#if !defined(QT_NO_OPENGL)
+#  include <QtGui/QOpenGLFunctions>
+#endif
+
 #include "qwindowsscreen.h"
 #include "qwindowstheme.h"
 #include "qwindowsservices.h"
@@ -125,9 +133,10 @@ QT_BEGIN_NAMESPACE
 
 struct QWindowsIntegrationPrivate
 {
-#if defined(QT_OPENGL_ES_2)
+#if defined(QT_OPENGL_ES_2) || defined(QT_OPENGL_DYNAMIC)
     typedef QSharedPointer<QWindowsEGLStaticContext> QEGLStaticContextPtr;
-#elif !defined(QT_NO_OPENGL)
+#endif
+#if !defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)
     typedef QSharedPointer<QOpenGLStaticContext> QOpenGLStaticContextPtr;
 #endif
 
@@ -143,9 +152,10 @@ struct QWindowsIntegrationPrivate
     QWindowsDrag m_drag;
 #  endif
 #endif
-#if defined(QT_OPENGL_ES_2)
+#if defined(QT_OPENGL_ES_2) || defined(QT_OPENGL_DYNAMIC)
     QEGLStaticContextPtr m_staticEGLContext;
-#elif !defined(QT_NO_OPENGL)
+#endif
+#if !defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)
     QOpenGLStaticContextPtr m_staticOpenGLContext;
 #endif
     QWindowsInputContext m_inputContext;
@@ -216,8 +226,8 @@ bool QWindowsIntegration::hasCapability(QPlatformIntegration::Capability cap) co
     case OpenGL:
         return true;
     case ThreadedOpenGL:
-#  ifdef QT_OPENGL_ES_2
-        return QWindowsEGLContext::hasThreadedOpenGLCapability();
+#if defined(QT_OPENGL_ES_2) || defined(QT_OPENGL_DYNAMIC)
+        return QOpenGLFunctions::isES() ? QWindowsEGLContext::hasThreadedOpenGLCapability() : true;
 #  else
         return true;
 #  endif // QT_OPENGL_ES_2
@@ -278,23 +288,27 @@ QPlatformOpenGLContext
     *QWindowsIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
     qCDebug(lcQpaGl) << __FUNCTION__ << context->format();
-#ifdef QT_OPENGL_ES_2
-    if (d->m_staticEGLContext.isNull()) {
-        QWindowsEGLStaticContext *staticContext = QWindowsEGLStaticContext::create();
-        if (!staticContext)
-            return 0;
-        d->m_staticEGLContext = QSharedPointer<QWindowsEGLStaticContext>(staticContext);
+#if defined(QT_OPENGL_ES_2) || defined(QT_OPENGL_DYNAMIC)
+    if (QOpenGLFunctions::isES()){
+        if (d->m_staticEGLContext.isNull()) {
+            QWindowsEGLStaticContext *staticContext = QWindowsEGLStaticContext::create();
+            if (!staticContext)
+                return 0;
+            d->m_staticEGLContext = QSharedPointer<QWindowsEGLStaticContext>(staticContext);
+        }
+        return new QWindowsEGLContext(d->m_staticEGLContext, context->format(), context->shareHandle());
     }
-    return new QWindowsEGLContext(d->m_staticEGLContext, context->format(), context->shareHandle());
-#else  // QT_OPENGL_ES_2
-    if (d->m_staticOpenGLContext.isNull())
-        d->m_staticOpenGLContext =
-            QSharedPointer<QOpenGLStaticContext>(QOpenGLStaticContext::create());
-    QScopedPointer<QWindowsGLContext> result(new QWindowsGLContext(d->m_staticOpenGLContext, context));
-    if (result->isValid())
-        return result.take();
-    return 0;
+#endif
+#if !defined(QT_OPENGL_ES_2)
+    if (!QOpenGLFunctions::isES()) {
+        if (d->m_staticOpenGLContext.isNull())
+            d->m_staticOpenGLContext =
+                QSharedPointer<QOpenGLStaticContext>(QOpenGLStaticContext::create());
+        QScopedPointer<QWindowsGLContext> result(new QWindowsGLContext(d->m_staticOpenGLContext, context));
+        return result->isValid() ? result.take() : 0;
+    }
 #endif // !QT_OPENGL_ES_2
+    return 0;
 }
 #endif // !QT_NO_OPENGL
 

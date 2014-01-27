@@ -107,7 +107,17 @@ typedef GLfloat GLdouble;
 #  include <OpenGL/glext.h>
 # else
 #  define GL_GLEXT_LEGACY // Prevents GL/gl.h from #including system glext.h
+   // In dynamic GL builds qopenglproxy will export the GL functions that are
+   // called also in QtGui itself. To prevent linker warnings (msvc) or errors (mingw)
+   // we need to make sure the prototypes do not have dllimport.
+#  ifdef QT_OPENGL_DYNAMIC_IN_GUI
+#    undef WINGDIAPI
+#    define WINGDIAPI
+#  endif // QT_OPENGL_DYNAMIC_IN_GUI
 #  include <GL/gl.h>
+#  ifdef QT_OPENGL_DYNAMIC_IN_GUI
+#    undef WINGDIAPI
+#  endif // QT_OPENGL_DYNAMIC_IN_GUI
 #  include <QtGui/qopenglext.h>
 # endif // Q_OS_MAC
 #endif

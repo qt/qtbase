@@ -135,11 +135,7 @@ QWindowsEGLContext::~QWindowsEGLContext()
 
 bool QWindowsEGLContext::hasThreadedOpenGLCapability()
 {
-#ifdef QT_OPENGL_ES_2_ANGLE
     return false;
-#else
-    return true;
-#endif
 }
 
 EGLSurface QWindowsEGLContext::eglSurfaceForPlatformSurface(QPlatformSurface *surface)

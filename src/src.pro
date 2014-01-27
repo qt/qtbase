@@ -130,7 +130,7 @@ contains(QT_CONFIG, dbus) {
 }
 contains(QT_CONFIG, concurrent):SUBDIRS += src_concurrent
 !contains(QT_CONFIG, no-gui) {
-    win32:contains(QT_CONFIG, angle) {
+    win32:contains(QT_CONFIG, angle)|contains(QT_CONFIG, dynamicgl) {
         SUBDIRS += src_angle
         src_gui.depends += src_angle
     }

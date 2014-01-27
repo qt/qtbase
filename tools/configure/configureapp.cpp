@@ -259,6 +259,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "ICU" ]             = "auto";
 
     dictionary[ "ANGLE" ]           = "auto";
+    dictionary[ "DYNAMICGL" ]       = "auto";
 
     dictionary[ "GIF" ]             = "auto";
     dictionary[ "JPEG" ]            = "auto";
@@ -682,6 +683,8 @@ void Configure::parseCmdLine()
                 dictionary[ "OPENGL_ES_2" ]     = "yes";
             } else if ( configCmdLine.at(i) == "desktop" ) {
                 // OPENGL=yes suffices
+            } else if ( configCmdLine.at(i) == "dynamic" ) {
+                dictionary[ "DYNAMICGL" ] = "yes";
             } else {
                 cout << "Argument passed to -opengl option is not valid." << endl;
                 dictionary[ "DONE" ] = "error";
@@ -1623,6 +1626,7 @@ void Configure::applySpecSpecifics()
         dictionary[ "CE_CRT" ]              = "yes";
         dictionary[ "LARGE_FILE" ]          = "no";
         dictionary[ "ANGLE" ]               = "d3d11";
+        dictionary[ "DYNAMICGL" ]           = "no";
         if (dictionary.value("XQMAKESPEC").startsWith("winphone"))
             dictionary[ "SQL_SQLITE" ] = "no";
     } else if (dictionary.value("XQMAKESPEC").startsWith("wince")) {
@@ -1645,6 +1649,7 @@ void Configure::applySpecSpecifics()
         dictionary[ "CE_CRT" ]              = "yes";
         dictionary[ "LARGE_FILE" ]          = "no";
         dictionary[ "ANGLE" ]               = "no";
+        dictionary[ "DYNAMICGL" ]           = "no";
         // We only apply MMX/IWMMXT for mkspecs we know they work
         if (dictionary[ "XQMAKESPEC" ].startsWith("wincewm")) {
             dictionary[ "MMX" ]    = "yes";
@@ -1674,6 +1679,7 @@ void Configure::applySpecSpecifics()
         dictionary["LGMON"]                 = "auto";
         dictionary["QT_XKBCOMMON"]          = "no";
         dictionary[ "ANGLE" ]               = "no";
+        dictionary[ "DYNAMICGL" ]           = "no";
         dictionary[ "FONT_CONFIG" ]         = "auto";
     } else if (platform() == ANDROID) {
         dictionary[ "REDUCE_EXPORTS" ]      = "yes";
@@ -1681,6 +1687,7 @@ void Configure::applySpecSpecifics()
         dictionary[ "BUILDALL" ]            = "no";
         dictionary[ "LARGE_FILE" ]          = "no";
         dictionary[ "ANGLE" ]               = "no";
+        dictionary[ "DYNAMICGL" ]           = "no";
         dictionary[ "REDUCE_RELOCATIONS" ]  = "yes";
         dictionary[ "QT_GETIFADDRS" ]       = "no";
         dictionary[ "QT_XKBCOMMON" ]        = "no";
@@ -1792,9 +1799,10 @@ bool Configure::displayHelp()
         desc("OPENGL", "no","-no-opengl",               "Do not support OpenGL.");
         desc("OPENGL", "no","-opengl <api>",            "Enable OpenGL support with specified API version.\n"
                                                         "Available values for <api>:");
-        desc("", "no", "",                                "  desktop - Enable support for Desktop OpenGL", ' ');
+        desc("", "no", "",                              "  desktop - Enable support for Desktop OpenGL", ' ');
+        desc("", "no", "",                              "  dynamic - Enable support for dynamically loaded OpenGL (either desktop or ES)", ' ');
         desc("OPENGL_ES_CM", "no", "",                  "  es1 - Enable support for OpenGL ES Common Profile", ' ');
-        desc("OPENGL_ES_2",  "yes", "",                  "  es2 - Enable support for OpenGL ES 2.0\n", ' ');
+        desc("OPENGL_ES_2",  "yes", "",                 "  es2 - Enable support for OpenGL ES 2.0\n", ' ');
 
         desc("OPENVG", "no","-no-openvg",               "Disables OpenVG functionality.");
         desc("OPENVG", "yes","-openvg",                 "Enables OpenVG functionality.\n");
@@ -2299,6 +2307,10 @@ void Configure::autoDetection()
         }
     }
 
+    // Dynamic GL. This must be explicitly requested, no autodetection.
+    if (dictionary["DYNAMICGL"] == "auto")
+        dictionary["DYNAMICGL"] = "no";
+
     // Image format detection
     if (dictionary["GIF"] == "auto")
         dictionary["GIF"] = defaultTo("GIF");
@@ -2503,6 +2515,13 @@ bool Configure::verifyConfiguration()
         }
     }
 
+    if (dictionary["DYNAMICGL"] == "yes") {
+        if (dictionary["OPENGL_ES_2"] == "yes" || dictionary["ANGLE"] != "no") {
+            cout << "ERROR: Dynamic OpenGL cannot be used together with native Angle (GLES2) builds." << endl;
+            dictionary[ "DONE" ] = "error";
+        }
+    }
+
     if (prompt)
         promptKeyPress();
 
@@ -2579,6 +2598,10 @@ void Configure::generateOutputVars()
         if (dictionary[ "ANGLE" ] == "d3d11")
             qmakeConfig += "angle_d3d11";
     }
+
+    // Dynamic OpenGL loading ---------------------------------------
+    if (dictionary[ "DYNAMICGL" ] != "no")
+        qtConfig += "dynamicgl";
 
     // Image formates -----------------------------------------------
     if (dictionary[ "GIF" ] == "no")
@@ -3460,6 +3483,7 @@ void Configure::generateConfigfiles()
 
         if (dictionary["OPENGL_ES_CM"] == "yes")     qconfigList += "QT_OPENGL_ES_1";
         if (dictionary["OPENGL_ES_2"]  == "yes")     qconfigList += "QT_OPENGL_ES_2";
+        if (dictionary["DYNAMICGL"] == "yes")        qconfigList += "QT_OPENGL_DYNAMIC";
         if (dictionary["SQL_MYSQL"] == "yes")        qconfigList += "QT_SQL_MYSQL";
         if (dictionary["SQL_ODBC"] == "yes")         qconfigList += "QT_SQL_ODBC";
         if (dictionary["SQL_OCI"] == "yes")          qconfigList += "QT_SQL_OCI";
@@ -3641,6 +3665,7 @@ void Configure::displayConfig()
         sout << "    LGMON support..........." << dictionary[ "LGMON" ] << endl;
     }
     sout << "    ANGLE..................." << dictionary[ "ANGLE" ] << endl;
+    sout << "    Dynamic OpenGL.........." << dictionary[ "DYNAMICGL" ] << endl;
     sout << endl;
 
     sout << "Styles:" << endl;

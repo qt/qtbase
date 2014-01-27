@@ -2,7 +2,7 @@
 LIBS *= -lole32
 !wince*:LIBS *= -luser32 -lwinspool -limm32 -lwinmm  -loleaut32
 
-contains(QT_CONFIG, opengl):!contains(QT_CONFIG, opengles2):LIBS *= -lopengl32
+contains(QT_CONFIG, opengl):!contains(QT_CONFIG, opengles2):!contains(QT_CONFIG, dynamicgl): LIBS *= -lopengl32
 
 mingw: LIBS *= -luuid
 # For the dialog helpers:
@@ -71,11 +71,15 @@ INCLUDEPATH += $$PWD
 contains(QT_CONFIG, opengles2) {
     SOURCES += $$PWD/qwindowseglcontext.cpp
     HEADERS += $$PWD/qwindowseglcontext.h
-} else {
-    contains(QT_CONFIG, opengl) {
-        SOURCES += $$PWD/qwindowsglcontext.cpp
-        HEADERS += $$PWD/qwindowsglcontext.h
-   }
+} else: contains(QT_CONFIG,opengl) {
+    SOURCES += $$PWD/qwindowsglcontext.cpp
+    HEADERS += $$PWD/qwindowsglcontext.h
+}
+
+# Dynamic GL needs both WGL and EGL
+contains(QT_CONFIG,dynamicgl) {
+    SOURCES += $$PWD/qwindowseglcontext.cpp
+    HEADERS += $$PWD/qwindowseglcontext.h
 }
 
 !contains( DEFINES, QT_NO_CLIPBOARD ) {
