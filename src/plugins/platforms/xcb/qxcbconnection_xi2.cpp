@@ -287,12 +287,14 @@ XInput2DeviceData *QXcbConnection::deviceForId(int id)
     return dev;
 }
 
-#ifdef XCB_USE_XINPUT22
+#if defined(XCB_USE_XINPUT22) || !defined(QT_NO_TABLETEVENT)
 static qreal fixed1616ToReal(FP1616 val)
 {
     return (qreal(val >> 16)) + (val & 0xFF) / (qreal)0xFF;
 }
+#endif
 
+#ifdef XCB_USE_XINPUT22
 static qreal valuatorNormalized(double value, XIValuatorClassInfo *vci)
 {
     if (value > vci->max)
