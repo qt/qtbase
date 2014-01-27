@@ -48,6 +48,25 @@
 QT_BEGIN_NAMESPACE
 
 class QOpenGLShaderProgram;
+class QDeviceDiscovery;
+class QEGLPlatformCursor;
+
+class QEGLPlatformCursorDeviceListener : public QObject
+{
+    Q_OBJECT
+
+public:
+    QEGLPlatformCursorDeviceListener(QDeviceDiscovery *dd, QEGLPlatformCursor *cursor);
+    bool hasMouse() const;
+
+private slots:
+    void onDeviceAdded();
+    void onDeviceRemoved();
+
+private:
+    QEGLPlatformCursor *m_cursor;
+    int m_mouseCount;
+};
 
 class QEGLPlatformCursor : public QPlatformCursor
 {
@@ -65,6 +84,9 @@ public:
     QRect cursorRect() const;
     void paintOnScreen();
     void resetResources();
+
+    void setMouseDeviceDiscovery(QDeviceDiscovery *dd);
+    void updateMouseStatus();
 
 private:
 #ifndef QT_NO_CURSOR
@@ -107,6 +129,7 @@ private:
     int m_vertexCoordEntry;
     int m_textureCoordEntry;
     int m_textureEntry;
+    QEGLPlatformCursorDeviceListener *m_deviceListener;
 };
 
 QT_END_NAMESPACE

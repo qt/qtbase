@@ -70,8 +70,6 @@ protected:
     EGLNativeDisplayType nativeDisplay() const Q_DECL_OVERRIDE;
 
 private:
-    void createInputHandlers();
-
     bool mDisableInputHandlers;
 };
 

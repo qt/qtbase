@@ -41,6 +41,7 @@
 
 #include <QtGui/QWindow>
 #include <QtGui/QOpenGLContext>
+#include <QtGui/QGuiApplication>
 #include <qpa/qwindowsysteminterface.h>
 #include <qpa/qplatforminputcontextfactory_p.h>
 
@@ -49,11 +50,18 @@
 #include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
 #include <QtPlatformSupport/private/qfbvthandler_p.h>
 
+#if !defined(QT_NO_EVDEV) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_NO_SDK))
+#include <QtPlatformSupport/private/qevdevmousemanager_p.h>
+#include <QtPlatformSupport/private/qevdevkeyboardmanager_p.h>
+#include <QtPlatformSupport/private/qevdevtouch_p.h>
+#endif
+
 #include "qeglplatformintegration_p.h"
 #include "qeglplatformcontext_p.h"
 #include "qeglplatformwindow_p.h"
 #include "qeglplatformbackingstore_p.h"
 #include "qeglplatformscreen_p.h"
+#include "qeglplatformcursor_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -254,6 +262,20 @@ QPlatformNativeInterface::NativeResourceForContextFunction QEGLPlatformIntegrati
         return NativeResourceForContextFunction(eglContextForContext);
 
     return 0;
+}
+
+void QEGLPlatformIntegration::createInputHandlers()
+{
+#if !defined(QT_NO_EVDEV) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_NO_SDK))
+    new QEvdevKeyboardManager(QLatin1String("EvdevKeyboard"), QString() /* spec */, this);
+    QEvdevMouseManager *mouseMgr = new QEvdevMouseManager(QLatin1String("EvdevMouse"), QString() /* spec */, this);
+    Q_FOREACH (QScreen *screen, QGuiApplication::screens()) {
+        QEGLPlatformCursor *cursor = static_cast<QEGLPlatformCursor *>(screen->handle()->cursor());
+        if (cursor)
+            cursor->setMouseDeviceDiscovery(mouseMgr->deviceDiscovery());
+    }
+    new QEvdevTouchScreenHandlerThread(QString() /* spec */, this);
+#endif
 }
 
 QT_END_NAMESPACE

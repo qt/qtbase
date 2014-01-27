@@ -43,6 +43,7 @@
 
 #include "qeglfswindow.h"
 #include "qeglfshooks.h"
+#include "qeglfscontext.h"
 
 #include <QtGui/private/qguiapplication_p.h>
 
@@ -50,20 +51,12 @@
 #include <QtPlatformSupport/private/qeglplatformcontext_p.h>
 #include <QtPlatformSupport/private/qeglpbuffer_p.h>
 
-#if !defined(QT_NO_EVDEV) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_NO_SDK))
-#include <QtPlatformSupport/private/qevdevmousemanager_p.h>
-#include <QtPlatformSupport/private/qevdevkeyboardmanager_p.h>
-#include <QtPlatformSupport/private/qevdevtouch_p.h>
-#endif
-
 #include <qpa/qplatformwindow.h>
 #include <QtGui/QSurfaceFormat>
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QScreen>
 #include <QtGui/QOffscreenSurface>
 #include <qpa/qplatformcursor.h>
-
-#include "qeglfscontext.h"
 
 #include <EGL/egl.h>
 
@@ -165,15 +158,6 @@ EGLConfig QEglFSIntegration::chooseConfig(EGLDisplay display, const QSurfaceForm
     Chooser chooser(display, QEglFSHooks::hooks());
     chooser.setSurfaceFormat(format);
     return chooser.chooseConfig();
-}
-
-void QEglFSIntegration::createInputHandlers()
-{
-#if !defined(QT_NO_EVDEV) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_NO_SDK))
-    new QEvdevKeyboardManager(QLatin1String("EvdevKeyboard"), QString() /* spec */, this);
-    new QEvdevMouseManager(QLatin1String("EvdevMouse"), QString() /* spec */, this);
-    new QEvdevTouchScreenHandlerThread(QString() /* spec */, this);
-#endif
 }
 
 QT_END_NAMESPACE

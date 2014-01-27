@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-#include "qeglplatformcursor_p.h"
 #include <qpa/qwindowsysteminterface.h>
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QOpenGLShaderProgram>
@@ -49,6 +48,9 @@
 #include <QtDebug>
 
 #include <QtPlatformSupport/private/qdevicediscovery_p.h>
+
+#include "qeglplatformcursor_p.h"
+#include "qeglplatformintegration_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -66,15 +68,12 @@ QEGLPlatformCursor::QEGLPlatformCursor(QPlatformScreen *screen)
       m_program(0),
       m_vertexCoordEntry(0),
       m_textureCoordEntry(0),
-      m_textureEntry(0)
+      m_textureEntry(0),
+      m_deviceListener(0)
 {
     QByteArray hideCursorVal = qgetenv("QT_QPA_EGLFS_HIDECURSOR");
-    if (hideCursorVal.isEmpty()) {
-        QScopedPointer<QDeviceDiscovery> dis(QDeviceDiscovery::create(QDeviceDiscovery::Device_Mouse));
-        m_visible = !dis->scanConnectedDevices().isEmpty();
-    } else {
+    if (!hideCursorVal.isEmpty())
         m_visible = hideCursorVal.toInt() == 0;
-    }
     if (!m_visible)
         return;
 
@@ -92,6 +91,45 @@ QEGLPlatformCursor::QEGLPlatformCursor(QPlatformScreen *screen)
 QEGLPlatformCursor::~QEGLPlatformCursor()
 {
     resetResources();
+    delete m_deviceListener;
+}
+
+void QEGLPlatformCursor::setMouseDeviceDiscovery(QDeviceDiscovery *dd)
+{
+    if (m_visible && dd) {
+        m_deviceListener = new QEGLPlatformCursorDeviceListener(dd, this);
+        updateMouseStatus();
+    }
+}
+
+void QEGLPlatformCursor::updateMouseStatus()
+{
+    m_visible = m_deviceListener->hasMouse();
+}
+
+QEGLPlatformCursorDeviceListener::QEGLPlatformCursorDeviceListener(QDeviceDiscovery *dd, QEGLPlatformCursor *cursor)
+    : m_cursor(cursor)
+{
+    m_mouseCount = dd->scanConnectedDevices().count();
+    connect(dd, SIGNAL(deviceDetected(QString)), SLOT(onDeviceAdded()));
+    connect(dd, SIGNAL(deviceRemoved(QString)), SLOT(onDeviceRemoved()));
+}
+
+bool QEGLPlatformCursorDeviceListener::hasMouse() const
+{
+    return m_mouseCount > 0;
+}
+
+void QEGLPlatformCursorDeviceListener::onDeviceAdded()
+{
+    ++m_mouseCount;
+    m_cursor->updateMouseStatus();
+}
+
+void QEGLPlatformCursorDeviceListener::onDeviceRemoved()
+{
+    --m_mouseCount;
+    m_cursor->updateMouseStatus();
 }
 
 void QEGLPlatformCursor::resetResources()

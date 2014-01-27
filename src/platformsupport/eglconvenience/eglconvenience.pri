@@ -27,6 +27,9 @@ contains(QT_CONFIG,egl) {
             $$PWD/qeglplatformintegration.cpp
     }
 
+    # Avoid X11 header collision
+    DEFINES += MESA_EGL_NO_X11_HEADERS
+
     contains(QT_CONFIG,xlib) {
         HEADERS += \
             $$PWD/qxlibeglintegration_p.h

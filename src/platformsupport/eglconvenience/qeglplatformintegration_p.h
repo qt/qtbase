@@ -85,6 +85,8 @@ protected:
     virtual QEGLPlatformWindow *createWindow(QWindow *window) const = 0;
     virtual EGLNativeDisplayType nativeDisplay() const { return EGL_DEFAULT_DISPLAY; }
 
+    void createInputHandlers();
+
 private:
     QEGLPlatformScreen *m_screen;
     EGLDisplay m_display;
