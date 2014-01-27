@@ -2958,6 +2958,19 @@ bool QWidgetTextControl::find(const QString &exp, QTextDocument::FindFlags optio
     return true;
 }
 
+#ifndef QT_NO_REGEXP
+bool QWidgetTextControl::find(const QRegExp &exp, QTextDocument::FindFlags options)
+{
+    Q_D(QWidgetTextControl);
+    QTextCursor search = d->doc->find(exp, d->cursor, options);
+    if (search.isNull())
+        return false;
+
+    setTextCursor(search);
+    return true;
+}
+#endif
+
 QString QWidgetTextControl::toPlainText() const
 {
     return document()->toPlainText();

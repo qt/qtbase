@@ -162,6 +162,9 @@ public:
     void setWordWrapMode(QTextOption::WrapMode policy);
 
     bool find(const QString &exp, QTextDocument::FindFlags options = 0);
+#ifndef QT_NO_REGEXP
+    bool find(const QRegExp &exp, QTextDocument::FindFlags options = 0);
+#endif
 
     QString toPlainText() const;
 #ifndef QT_NO_TEXTHTMLPARSER

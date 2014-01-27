@@ -145,6 +145,9 @@ public:
     bool centerOnScroll() const;
 
     bool find(const QString &exp, QTextDocument::FindFlags options = 0);
+#ifndef QT_NO_REGEXP
+    bool find(const QRegExp &exp, QTextDocument::FindFlags options = 0);
+#endif
 
     inline QString toPlainText() const
     { return document()->toPlainText(); }
