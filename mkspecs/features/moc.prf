@@ -5,7 +5,10 @@ isEmpty(MOC_DIR):MOC_DIR = .
 isEmpty(QMAKE_H_MOD_MOC):QMAKE_H_MOD_MOC = moc_
 isEmpty(QMAKE_EXT_CPP_MOC):QMAKE_EXT_CPP_MOC = .moc
 
-MOC_INCLUDEPATH = $$QMAKESPEC $$_PRO_FILE_PWD_ $$INCLUDEPATH $$QMAKE_DEFAULT_INCDIRS
+MOC_INCLUDEPATH =
+for (inc, INCLUDEPATH): \
+    MOC_INCLUDEPATH += $$absolute_path($$inc, $$_PRO_FILE_PWD_)
+MOC_INCLUDEPATH = $$QMAKESPEC $$_PRO_FILE_PWD_ $$MOC_INCLUDEPATH $$QMAKE_DEFAULT_INCDIRS
 
 # On Windows, put the includes into a .inc file which moc will read, if the project
 # has too many includes. We do this to overcome a command-line limit on Win < XP
