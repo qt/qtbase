@@ -129,12 +129,10 @@ public:
         mode(QPrinter::ScreenResolution),
         state(QPrinter::Idle),
         resolution(0),
-        pageMarginsSet(false),
+        m_pageLayout(QPageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF(0, 0, 0, 0))),
         num_copies(1),
         printToFile(false),
-        fullPage(false),
-        reinit(false),
-        has_custom_paper_size(false)
+        reinit(false)
     {
     }
 
@@ -173,13 +171,9 @@ public:
     void strokePath_dev(const QPainterPath &path, const QColor &color, qreal width);
 
     void setPageSize(const QPageSize &pageSize);
-    void updatePageSize();
-
-    void updateOrigin();
-
-    void initDevRects();
-    void setPageMargins(int margin_left, int margin_top, int margin_right, int margin_bottom);
-    QRect getPageMargins() const;
+    void updatePageLayout();
+    void updateMetrics();
+    void debugMetrics() const;
 
     // Windows GDI printer references.
     HANDLE hPrinter;
@@ -205,21 +199,13 @@ public:
     int resolution;
 
     // Page Layout
-    QPageSize m_pageSize;
+    QPageLayout m_pageLayout;
 
-    // This QRect is used to store the exact values
-    // entered into the PageSetup Dialog because those are
-    // entered in mm but are since converted to device coordinates.
-    // If they were to be converted back when displaying the dialog
-    // again, there would be inaccuracies so when the user entered 10
-    // it may show up as 9.99 the next time the dialog is opened.
-    // We don't want that confusion.
-    QRect previousDialogMargins;
+    // Page metrics cache
+    QRect m_paintRectPixels;
+    QSize m_paintSizeMM;
 
-    bool pageMarginsSet;
-    QRect devPageRect;
-    QRect devPhysicalPageRect;
-    QRect devPaperRect;
+    // Windows painting
     qreal stretch_x;
     qreal stretch_y;
     int origin_x;
@@ -231,7 +217,6 @@ public:
     int num_copies;
 
     uint printToFile : 1;
-    uint fullPage : 1;
     uint reinit : 1;
 
     uint complex_xform : 1;
