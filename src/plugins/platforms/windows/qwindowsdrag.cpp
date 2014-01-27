@@ -304,18 +304,35 @@ private:
     class DragCursorHandle {
         Q_DISABLE_COPY(DragCursorHandle)
     public:
-        DragCursorHandle(HCURSOR c, qint64 k) :  cursor(c), cacheKey(k) {}
+        DragCursorHandle(HCURSOR c) : cursor(c) {}
         ~DragCursorHandle() { DestroyCursor(cursor); }
-        HCURSOR cursor;
-        qint64 cacheKey;
+        const HCURSOR cursor;
     };
-    typedef QMap <Qt::DropAction, QSharedPointer<DragCursorHandle> > ActionCursorMap;
+    typedef QSharedPointer<DragCursorHandle> DragCursorHandlePtr;
+
+    struct CursorEntry {
+        CursorEntry() : cacheKey(0) {}
+        CursorEntry(const QPixmap &p, qint64 cK, const DragCursorHandlePtr &c, const QPoint &h) :
+            pixmap(p), cacheKey(cK), cursor(c), hotSpot(h) {}
+
+        QPixmap pixmap;
+        qint64 cacheKey; // Cache key of cursor
+        DragCursorHandlePtr cursor;
+        QPoint hotSpot;
+    };
+
+    typedef QMap<Qt::DropAction, CursorEntry> ActionCursorMap;
+    typedef ActionCursorMap::Iterator ActionCursorMapIt;
+    typedef ActionCursorMap::ConstIterator ActionCursorMapConstIt;
 
     QWindowsDrag *m_drag;
     Qt::MouseButtons m_currentButtons;
     ActionCursorMap m_cursors;
 
     ULONG m_refs;
+#ifndef QT_NO_DEBUG_OUTPUT
+    friend QDebug operator<<(QDebug, const QWindowsOleDropSource::CursorEntry &);
+#endif
 };
 
 QWindowsOleDropSource::QWindowsOleDropSource(QWindowsDrag *drag) :
@@ -331,6 +348,15 @@ QWindowsOleDropSource::~QWindowsOleDropSource()
     qCDebug(lcQpaMime) << __FUNCTION__;
 }
 
+#ifndef QT_NO_DEBUG_OUTPUT
+QDebug operator<<(QDebug d, const QWindowsOleDropSource::CursorEntry &e)
+{
+    d << "CursorEntry:" << e.pixmap.size() << '#' << e.cacheKey
+      << "HCURSOR" << e.cursor->cursor << "hotspot:" << e.hotSpot;
+    return d;
+}
+#endif // !QT_NO_DEBUG_OUTPUT
+
 /*!
     \brief Blend custom pixmap with cursors.
 */
@@ -341,58 +367,56 @@ void QWindowsOleDropSource::createCursors()
     const QPixmap pixmap = drag->pixmap();
     const bool hasPixmap = !pixmap.isNull();
 
-    QList<Qt::DropAction> actions;
-    actions << Qt::MoveAction << Qt::CopyAction << Qt::LinkAction;
-    if (hasPixmap)
-        actions << Qt::IgnoreAction;
+    Qt::DropAction actions[] = { Qt::MoveAction, Qt::CopyAction, Qt::LinkAction, Qt::IgnoreAction };
+    int actionCount = int(sizeof(actions) / sizeof(actions[0]));
+    if (!hasPixmap)
+        --actionCount; // No Qt::IgnoreAction unless pixmap
     const QPoint hotSpot = drag->hotSpot();
-    for (int cnum = 0; cnum < actions.size(); ++cnum) {
-        const Qt::DropAction action = actions.at(cnum);
-        QPixmap cpm = drag->dragCursor(action);
-        if (cpm.isNull())
-            cpm = m_drag->defaultCursor(action);
-        QSharedPointer<DragCursorHandle> cursorHandler = m_cursors.value(action);
-        if (!cursorHandler.isNull() && cpm.cacheKey() == cursorHandler->cacheKey)
+    for (int cnum = 0; cnum < actionCount; ++cnum) {
+        const Qt::DropAction action = actions[cnum];
+        QPixmap cursorPixmap = drag->dragCursor(action);
+        if (cursorPixmap.isNull())
+            cursorPixmap = m_drag->defaultCursor(action);
+        const qint64 cacheKey = cursorPixmap.cacheKey();
+        const ActionCursorMapIt it = m_cursors.find(action);
+        if (it != m_cursors.end() && it.value().cacheKey == cacheKey)
             continue;
-        if (cpm.isNull()) {
+        if (cursorPixmap.isNull()) {
             qWarning("%s: Unable to obtain drag cursor for %d.", __FUNCTION__, action);
             continue;
         }
 
-        int w = cpm.width();
-        int h = cpm.height();
+        QPoint newHotSpot(0, 0);
+        QPixmap newPixmap = cursorPixmap;
 
         if (hasPixmap) {
             const int x1 = qMin(-hotSpot.x(), 0);
-            const int x2 = qMax(pixmap.width() - hotSpot.x(), cpm.width());
+            const int x2 = qMax(pixmap.width() - hotSpot.x(), cursorPixmap.width());
             const int y1 = qMin(-hotSpot.y(), 0);
-            const int y2 = qMax(pixmap.height() - hotSpot.y(), cpm.height());
-
-            w = x2 - x1 + 1;
-            h = y2 - y1 + 1;
-        }
-
-        const QPoint newHotSpot = hotSpot;
-        QPixmap newCursor(w, h);
-        if (hasPixmap) {
+            const int y2 = qMax(pixmap.height() - hotSpot.y(), cursorPixmap.height());
+            QPixmap newCursor(x2 - x1 + 1, y2 - y1 + 1);
             newCursor.fill(Qt::transparent);
             QPainter p(&newCursor);
             const QRect srcRect = pixmap.rect();
             const QPoint pmDest = QPoint(qMax(0, -hotSpot.x()), qMax(0, -hotSpot.y()));
             p.drawPixmap(pmDest, pixmap, srcRect);
-            p.drawPixmap(qMax(0,newHotSpot.x()),qMax(0,newHotSpot.y()),cpm);
-        } else {
-            newCursor = cpm;
+            p.drawPixmap(qMax(0, hotSpot.x()),qMax(0, hotSpot.y()), cursorPixmap);
+            newPixmap = newCursor;
+            newHotSpot = QPoint(qMax(0, hotSpot.x()), qMax(0, hotSpot.y()));
         }
 
-        const int hotX = hasPixmap ? qMax(0,newHotSpot.x()) : 0;
-        const int hotY = hasPixmap ? qMax(0,newHotSpot.y()) : 0;
-
-        if (const HCURSOR sysCursor = QWindowsCursor::createPixmapCursor(newCursor, hotX, hotY)) {
-            m_cursors.insert(action, QSharedPointer<DragCursorHandle>(new DragCursorHandle(sysCursor, cpm.cacheKey())));
+        if (const HCURSOR sysCursor = QWindowsCursor::createPixmapCursor(newPixmap, newHotSpot.x(), newHotSpot.y())) {
+            const CursorEntry entry(newPixmap, cacheKey, DragCursorHandlePtr(new DragCursorHandle(sysCursor)), newHotSpot);
+            if (it == m_cursors.end())
+                m_cursors.insert(action, entry);
+            else
+                it.value() = entry;
         }
     }
-    qCDebug(lcQpaMime) << __FUNCTION__ << m_cursors.size() << "cursors";
+#ifndef QT_NO_DEBUG_OUTPUT
+    if (lcQpaMime().isDebugEnabled())
+        qCDebug(lcQpaMime) << __FUNCTION__ << "pixmap" << pixmap.size() << m_cursors.size() << "cursors:\n" << m_cursors;
+#endif // !QT_NO_DEBUG_OUTPUT
 }
 
 //---------------------------------------------------------------------
@@ -483,17 +507,17 @@ QWindowsOleDropSource::GiveFeedback(DWORD dwEffect)
     const Qt::DropAction action = translateToQDragDropAction(dwEffect);
     m_drag->updateAction(action);
 
-    if (QWindowsContext::verbose > 2)
-        qCDebug(lcQpaMime) << __FUNCTION__ << "dwEffect=" << dwEffect << "action=" << action;
-
-    QSharedPointer<DragCursorHandle> cursorHandler = m_cursors.value(action);
-    qint64 currentCacheKey = m_drag->currentDrag()->dragCursor(action).cacheKey();
-    if (cursorHandler.isNull() || currentCacheKey != cursorHandler->cacheKey)
+    const qint64 currentCacheKey = m_drag->currentDrag()->dragCursor(action).cacheKey();
+    ActionCursorMapConstIt it = m_cursors.constFind(action);
+    // If a custom drag cursor is set, check its cache key to detect changes.
+    if (it == m_cursors.constEnd() || (currentCacheKey && currentCacheKey != it.value().cacheKey)) {
         createCursors();
+        it = m_cursors.constFind(action);
+    }
 
-    const ActionCursorMap::const_iterator it = m_cursors.constFind(action);
     if (it != m_cursors.constEnd()) {
-        SetCursor(it.value()->cursor);
+        const CursorEntry &e = it.value();
+        SetCursor(e.cursor->cursor);
         return ResultFromScode(S_OK);
     }
 
