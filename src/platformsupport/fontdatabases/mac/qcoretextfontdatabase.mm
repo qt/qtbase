@@ -616,10 +616,10 @@ void QCoreTextFontDatabase::removeApplicationFonts()
 #if HAVE_CORETEXT
         if (&CTFontManagerUnregisterGraphicsFont && &CTFontManagerUnregisterFontsForURL) {
             CFErrorRef error;
-            if (font.canConvert(qMetaTypeId<QCFType<CGFontRef>>())) {
-                CTFontManagerUnregisterGraphicsFont(font.value<QCFType<CGFontRef>>(), &error);
-            } else if (font.canConvert(qMetaTypeId<QCFType<CFURLRef>>())) {
-                CTFontManagerUnregisterFontsForURL(font.value<QCFType<CFURLRef>>(), kCTFontManagerScopeProcess, &error);
+            if (font.canConvert(qMetaTypeId<QCFType<CGFontRef> >())) {
+                CTFontManagerUnregisterGraphicsFont(font.value<QCFType<CGFontRef> >(), &error);
+            } else if (font.canConvert(qMetaTypeId<QCFType<CFURLRef> >())) {
+                CTFontManagerUnregisterFontsForURL(font.value<QCFType<CFURLRef> >(), kCTFontManagerScopeProcess, &error);
             }
         }
 #endif
