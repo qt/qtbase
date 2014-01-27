@@ -84,6 +84,7 @@ bool QLinuxFbIntegration::hasCapability(QPlatformIntegration::Capability cap) co
 {
     switch (cap) {
     case ThreadedPixmaps: return true;
+    case WindowManagement: return false;
     default: return QPlatformIntegration::hasCapability(cap);
     }
 }
