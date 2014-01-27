@@ -223,8 +223,15 @@ void qt_from_latin1(ushort *dst, const char *str, size_t size)
 
     // we're going to read str[offset..offset+15] (16 bytes)
     for ( ; str + offset + 15 < e; offset += 16) {
-        const __m128i nullMask = _mm_set1_epi32(0);
         const __m128i chunk = _mm_loadu_si128((__m128i*)(str + offset)); // load
+#ifdef __AVX2__
+        // zero extend to an YMM register
+        const __m256i extended = _mm256_cvtepu8_epi16(chunk);
+
+        // store
+        _mm256_storeu_si256((__m256i*)(dst + offset), extended);
+#else
+        const __m128i nullMask = _mm_set1_epi32(0);
 
         // unpack the first 8 bytes, padding with zeros
         const __m128i firstHalf = _mm_unpacklo_epi8(chunk, nullMask);
@@ -233,6 +240,7 @@ void qt_from_latin1(ushort *dst, const char *str, size_t size)
         // unpack the last 8 bytes, padding with zeros
         const __m128i secondHalf = _mm_unpackhi_epi8 (chunk, nullMask);
         _mm_storeu_si128((__m128i*)(dst + offset + 8), secondHalf); // store
+#endif
     }
 
     size = size % 16;
@@ -540,8 +548,20 @@ static int ucstrncmp(const QChar *a, const uchar *c, int l)
     // and c[offset..offset+15] (16 bytes)
     for ( ; uc + offset + 15 < e; offset += 16) {
         // similar to fromLatin1_helper:
-        // load Latin 1 data and expand to UTF-16
+        // load 16 bytes of Latin 1 data
         __m128i chunk = _mm_loadu_si128((__m128i*)(c + offset));
+
+#  ifdef __AVX2__
+        // expand Latin 1 data via zero extension
+        __m256i ldata = _mm256_cvtepu8_epi16(chunk);
+
+        // load UTF-16 data and compare
+        __m256i ucdata = _mm256_loadu_si256((__m256i*)(uc + offset));
+        __m256i result = _mm256_cmpeq_epi16(ldata, ucdata);
+
+        uint mask = ~_mm256_movemask_epi8(result);
+#  else
+        // expand via unpacking
         __m128i firstHalf = _mm_unpacklo_epi8(chunk, nullmask);
         __m128i secondHalf = _mm_unpackhi_epi8(chunk, nullmask);
 
@@ -552,6 +572,7 @@ static int ucstrncmp(const QChar *a, const uchar *c, int l)
         __m128i result2 = _mm_cmpeq_epi16(secondHalf, ucdata2);
 
         uint mask = ~(_mm_movemask_epi8(result1) | _mm_movemask_epi8(result2) << 16);
+#  endif
         if (mask) {
             // found a different character
             uint idx = uint(_bit_scan_forward(mask));
