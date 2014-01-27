@@ -163,7 +163,7 @@ void QOpenGLVersionProfile::setVersion(int majorVersion, int minorVersion)
 }
 
 /*!
-    Returns the OpenGL profile. Only make sense if profiles are supported by this version.
+    Returns the OpenGL profile. Only makes sense if profiles are supported by this version.
 
     \sa setProfile(), supportsProfiles()
 */
@@ -173,7 +173,8 @@ QSurfaceFormat::OpenGLContextProfile QOpenGLVersionProfile::profile() const
 }
 
 /*!
-    Sets the profile.  Only make sense if profiles are supported by this version.
+    Sets the OpenGL profile \a profile. Only makes sense if profiles are supported by
+    this version.
 
     \sa profile(), supportsProfiles()
 */
@@ -205,7 +206,7 @@ bool QOpenGLVersionProfile::isLegacyVersion() const
 
 /*!
     Returns \c true if the version number is valid. Note that for a default constructed
-    QOpenGLVersionProfile object this function will return false.
+    QOpenGLVersionProfile object this function will return \c false.
 
     \sa setVersion(), version()
 */
@@ -634,9 +635,9 @@ QOpenGLFunctions *QOpenGLContext::functions() const
 */
 
 /*!
-    Returns a pointer to an object that provides access to all functions for
-    the version of the current context. Before using any of the functions
-    they must be initialized by calling QAbstractOpenGLFunctions::initializeOpenGLFunctions().
+    Returns a pointer to an object that provides access to all functions for the
+    \a versionProfile of the current context. Before using any of the functions they must
+    be initialized by calling QAbstractOpenGLFunctions::initializeOpenGLFunctions().
 
     Usually one would use the template version of this function to automatically
     have the result cast to the correct type.
@@ -704,7 +705,7 @@ QSet<QByteArray> QOpenGLContext::extensions() const
 
 /*!
     Returns \c true if this OpenGL context supports the specified OpenGL
-    \a extension, false otherwise.
+    \a extension, \c false otherwise.
 
     The context or a sharing context must be current.
 

@@ -394,7 +394,7 @@ Q_STATIC_ASSERT_X(UCHAR_MAX == 255, "Qt assumes that char is 8 bits");
     \fn bool QFlags::testFlag(Enum flag) const
     \since 4.2
 
-    Returns \c true if the \a flag is set, otherwise false.
+    Returns \c true if the \a flag is set, otherwise \c false.
 */
 
 /*!
@@ -1937,7 +1937,7 @@ const QSysInfo::WinVersion QSysInfo::WindowsVersion = QSysInfo::windowsVersion()
     \relates <QtGlobal>
 
     Prints a warning message containing the source code file name and
-    line number if \a test is false.
+    line number if \a test is \c false.
 
     Q_ASSERT() is useful for testing pre- and post-conditions
     during development. It does nothing if \c QT_NO_DEBUG was defined
@@ -1960,7 +1960,7 @@ const QSysInfo::WinVersion QSysInfo::WindowsVersion = QSysInfo::windowsVersion()
     \relates <QtGlobal>
 
     Prints the message \a what together with the location \a where,
-    the source file name and line number if \a test is false.
+    the source file name and line number if \a test is \c false.
 
     Q_ASSERT_X is useful for testing pre- and post-conditions during
     development. It does nothing if \c QT_NO_DEBUG was defined during
@@ -1983,18 +1983,18 @@ const QSysInfo::WinVersion QSysInfo::WindowsVersion = QSysInfo::windowsVersion()
     \relates <QtGlobal>
     \since 5.0
 
-    Causes the compiler to assume that \a expr is true. This macro is useful
+    Causes the compiler to assume that \a expr is \c true. This macro is useful
     for improving code generation, by providing the compiler with hints about
     conditions that it would not otherwise know about. However, there is no
     guarantee that the compiler will actually use those hints.
 
     This macro could be considered a "lighter" version of \l{Q_ASSERT()}. While
-    Q_ASSERT will abort the program's execution if the condition is false,
+    Q_ASSERT will abort the program's execution if the condition is \c false,
     Q_ASSUME will tell the compiler not to generate code for those conditions.
     Therefore, it is important that the assumptions always hold, otherwise
     undefined behaviour may occur.
 
-    If \a expr is a constantly false condition, Q_ASSUME will tell the compiler
+    If \a expr is a constantly \c false condition, Q_ASSUME will tell the compiler
     that the current code execution cannot be reached. That is, Q_ASSUME(false)
     is equivalent to Q_UNREACHABLE().
 
@@ -3346,6 +3346,8 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
 
     It expands to "std::move" if your compiler supports that C++11 function, or to nothing
     otherwise.
+
+    qMove takes an rvalue reference to its parameter \a x, and converts it to an xvalue.
 */
 
 /*!
@@ -3426,7 +3428,7 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
     \relates <QtGlobal>
     \since 5.0
 
-    This macro marks a function as non-throwing if \a x is true. If
+    This macro marks a function as non-throwing if \a x is \c true. If
     the function does nevertheless throw, the behaviour is defined:
     std::terminate() is called.
 

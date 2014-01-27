@@ -1617,7 +1617,7 @@ void QString::resize(int size)
 
     This function is useful for code that needs to build up a long
     string and wants to avoid repeated reallocation. In this example,
-    we want to add to the string until some condition is true, and
+    we want to add to the string until some condition is \c true, and
     we're fairly sure that size is large enough to make a call to
     reserve() worthwhile:
 
@@ -2534,6 +2534,9 @@ bool QString::operator==(QLatin1String other) const
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
+
+    Returns \c true if this string is lexically equal to the parameter
+    string \a other. Otherwise returns \c false.
 */
 
 /*! \fn bool QString::operator==(const char *other) const
@@ -2563,9 +2566,11 @@ bool operator<(const QString &s1, const QString &s2)
 {
     return ucstrcmp(s1.constData(), s1.length(), s2.constData(), s2.length()) < 0;
 }
-
 /*!
-    \overload operator<()
+   \overload operator<()
+   \relates QString
+    Returns \c true if this string is lexically less than the parameter
+    string called \a other; otherwise returns \c false.
 */
 bool QString::operator<(QLatin1String other) const
 {
@@ -2592,6 +2597,9 @@ bool QString::operator<(QLatin1String other) const
 
 /*! \fn bool QString::operator<(const char *other) const
 
+    Returns \c true if this string is lexically less than string \a other.
+    Otherwise returns \c false.
+
     \overload operator<()
 
     The \a other const char pointer is converted to a QString using
@@ -2615,6 +2623,9 @@ bool QString::operator<(QLatin1String other) const
 */
 
 /*! \fn bool QString::operator<=(QLatin1String other) const
+
+    Returns \c true if this string is lexically less than or equal to
+    parameter string \a other. Otherwise returns \c false.
 
     \overload operator<=()
 */
@@ -2658,7 +2669,10 @@ bool QString::operator<(QLatin1String other) const
 */
 
 /*!
-    \overload operator>()
+   \overload operator>()
+   \relates QString
+    Returns \c true if this string is lexically greater than the parameter
+    string \a other; otherwise returns \c false.
 */
 bool QString::operator>(QLatin1String other) const
 {
@@ -2710,6 +2724,9 @@ bool QString::operator>(QLatin1String other) const
 
 /*! \fn bool QString::operator>=(QLatin1String other) const
 
+    Returns \c true if this string is lexically greater than or equal to parameter
+    string \a other. Otherwise returns \c false.
+
     \overload operator>=()
 */
 
@@ -2753,6 +2770,9 @@ bool QString::operator>(QLatin1String other) const
 */
 
 /*! \fn bool QString::operator!=(QLatin1String other) const
+
+    Returns \c true if this string is not equal to parameter string \a other.
+    Otherwise returns \c false.
 
     \overload operator!=()
 */
@@ -4082,7 +4102,7 @@ QString QString::mid(int position, int n) const
 
 /*!
     Returns \c true if the string starts with \a s; otherwise returns
-    false.
+    \c false.
 
     If \a cs is Qt::CaseSensitive (default), the search is
     case sensitive; otherwise the search is case insensitive.
@@ -4109,7 +4129,7 @@ bool QString::startsWith(QLatin1String s, Qt::CaseSensitivity cs) const
   \overload startsWith()
 
   Returns \c true if the string starts with \a c; otherwise returns
-  false.
+  \c false.
 */
 bool QString::startsWith(QChar c, Qt::CaseSensitivity cs) const
 {
@@ -4138,7 +4158,7 @@ bool QString::startsWith(const QStringRef &s, Qt::CaseSensitivity cs) const
 
 /*!
     Returns \c true if the string ends with \a s; otherwise returns
-    false.
+    \c false.
 
     If \a cs is Qt::CaseSensitive (default), the search is case
     sensitive; otherwise the search is case insensitive.
@@ -4181,7 +4201,7 @@ bool QString::endsWith(QLatin1String s, Qt::CaseSensitivity cs) const
 
 /*!
   Returns \c true if the string ends with \a c; otherwise returns
-  false.
+  \c false.
 
   \overload endsWith()
  */
@@ -4581,7 +4601,7 @@ QString& QString::setUnicode(const QChar *unicode, int size)
     replaced with a single space.
 
     Whitespace means any character for which QChar::isSpace() returns
-    true. This includes the ASCII characters '\\t', '\\n', '\\v',
+    \c true. This includes the ASCII characters '\\t', '\\n', '\\v',
     '\\f', '\\r', and ' '.
 
     Example:
@@ -4671,7 +4691,7 @@ QString QString::simplified() const
     the end.
 
     Whitespace means any character for which QChar::isSpace() returns
-    true. This includes the ASCII characters '\\t', '\\n', '\\v',
+    \c true. This includes the ASCII characters '\\t', '\\n', '\\v',
     '\\f', '\\r', and ' '.
 
     Example:
@@ -4866,7 +4886,7 @@ QString& QString::fill(QChar ch, int size)
 /*! \fn bool QString::isEmpty() const
 
     Returns \c true if the string has no characters; otherwise returns
-    false.
+    \c false.
 
     Example:
 
@@ -4981,7 +5001,7 @@ QString& QString::fill(QChar ch, int size)
     \relates QString
 
     Returns \c true if \a s1 is not equal to \a s2; otherwise returns
-    false.
+    \c false.
 
     For \a s1 != 0, this is equivalent to \c {compare(} \a s1, \a s2
     \c {) != 0}. Note that no string is equal to \a s1 being 0.
@@ -5389,12 +5409,12 @@ const ushort *QString::utf16() const
     Returns a string of size \a width that contains this string
     padded by the \a fill character.
 
-    If \a truncate is false and the size() of the string is more than
+    If \a truncate is \c false and the size() of the string is more than
     \a width, then the returned string is a copy of the string.
 
     \snippet qstring/main.cpp 32
 
-    If \a truncate is true and the size() of the string is more than
+    If \a truncate is \c true and the size() of the string is more than
     \a width, then any characters in a copy of the string after
     position \a width are removed, and the copy is returned.
 
@@ -5430,7 +5450,7 @@ QString QString::leftJustified(int width, QChar fill, bool truncate) const
 
     \snippet qstring/main.cpp 49
 
-    If \a truncate is false and the size() of the string is more than
+    If \a truncate is \c false and the size() of the string is more than
     \a width, then the returned string is a copy of the string.
 
     If \a truncate is true and the size() of the string is more than
@@ -6053,8 +6073,8 @@ QString &QString::vsprintf(const char* cformat, va_list ap)
     base, which is 10 by default and must be between 2 and 36, or 0.
     Returns 0 if the conversion fails.
 
-    If a conversion error occurs, *\a{ok} is set to false; otherwise
-    *\a{ok} is set to true.
+    If a conversion error occurs, *\a{ok} is set to \c false; otherwise
+    *\a{ok} is set to \c true.
 
     If \a base is 0, the C language convention is used: If the string
     begins with "0x", base 16 is used; if the string begins with "0",
@@ -6093,8 +6113,8 @@ qlonglong QString::toIntegral_helper(const QChar *data, int len, bool *ok, int b
     base, which is 10 by default and must be between 2 and 36, or 0.
     Returns 0 if the conversion fails.
 
-    If a conversion error occurs, *\a{ok} is set to false; otherwise
-    *\a{ok} is set to true.
+    If a conversion error occurs, *\a{ok} is set to \c false; otherwise
+    *\a{ok} is set to \c true.
 
     If \a base is 0, the C language convention is used: If the string
     begins with "0x", base 16 is used; if the string begins with "0",
@@ -6134,8 +6154,8 @@ qulonglong QString::toIntegral_helper(const QChar *data, uint len, bool *ok, int
     base, which is 10 by default and must be between 2 and 36, or 0.
     Returns 0 if the conversion fails.
 
-    If a conversion error occurs, *\a{ok} is set to false; otherwise
-    *\a{ok} is set to true.
+    If a conversion error occurs, *\a{ok} is set to \c false; otherwise
+    *\a{ok} is set to \c true.
 
     If \a base is 0, the C language convention is used: If the string
     begins with "0x", base 16 is used; if the string begins with "0",
@@ -6163,8 +6183,8 @@ long QString::toLong(bool *ok, int base) const
     base, which is 10 by default and must be between 2 and 36, or 0.
     Returns 0 if the conversion fails.
 
-    If a conversion error occurs, *\a{ok} is set to false; otherwise
-    *\a{ok} is set to true.
+    If a conversion error occurs, *\a{ok} is set to \c false; otherwise
+    *\a{ok} is set to \c true.
 
     If \a base is 0, the C language convention is used: If the string
     begins with "0x", base 16 is used; if the string begins with "0",
@@ -6191,8 +6211,8 @@ ulong QString::toULong(bool *ok, int base) const
     base, which is 10 by default and must be between 2 and 36, or 0.
     Returns 0 if the conversion fails.
 
-    If a conversion error occurs, *\a{ok} is set to false; otherwise
-    *\a{ok} is set to true.
+    If a conversion error occurs, *\a{ok} is set to \c false; otherwise
+    *\a{ok} is set to \c true.
 
     If \a base is 0, the C language convention is used: If the string
     begins with "0x", base 16 is used; if the string begins with "0",
@@ -6218,8 +6238,8 @@ int QString::toInt(bool *ok, int base) const
     base, which is 10 by default and must be between 2 and 36, or 0.
     Returns 0 if the conversion fails.
 
-    If a conversion error occurs, *\a{ok} is set to false; otherwise
-    *\a{ok} is set to true.
+    If a conversion error occurs, *\a{ok} is set to \c false; otherwise
+    *\a{ok} is set to \c true.
 
     If \a base is 0, the C language convention is used: If the string
     begins with "0x", base 16 is used; if the string begins with "0",
@@ -6245,8 +6265,8 @@ uint QString::toUInt(bool *ok, int base) const
     base, which is 10 by default and must be between 2 and 36, or 0.
     Returns 0 if the conversion fails.
 
-    If a conversion error occurs, *\a{ok} is set to false; otherwise
-    *\a{ok} is set to true.
+    If a conversion error occurs, *\a{ok} is set to \c false; otherwise
+    *\a{ok} is set to \c true.
 
     If \a base is 0, the C language convention is used: If the string
     begins with "0x", base 16 is used; if the string begins with "0",
@@ -6272,8 +6292,8 @@ short QString::toShort(bool *ok, int base) const
     base, which is 10 by default and must be between 2 and 36, or 0.
     Returns 0 if the conversion fails.
 
-    If a conversion error occurs, *\a{ok} is set to false; otherwise
-    *\a{ok} is set to true.
+    If a conversion error occurs, *\a{ok} is set to \c false; otherwise
+    *\a{ok} is set to \c true.
 
     If \a base is 0, the C language convention is used: If the string
     begins with "0x", base 16 is used; if the string begins with "0",
@@ -6300,8 +6320,8 @@ ushort QString::toUShort(bool *ok, int base) const
 
     Returns 0.0 if the conversion fails.
 
-    If a conversion error occurs, \c{*}\a{ok} is set to false;
-    otherwise \c{*}\a{ok} is set to true.
+    If a conversion error occurs, \c{*}\a{ok} is set to \c false;
+    otherwise \c{*}\a{ok} is set to \c true.
 
     \snippet qstring/main.cpp 66
 
@@ -6332,8 +6352,8 @@ double QString::toDouble(bool *ok) const
 /*!
     Returns the string converted to a \c float value.
 
-    If a conversion error occurs, *\a{ok} is set to false; otherwise
-    *\a{ok} is set to true. Returns 0.0 if the conversion fails.
+    If a conversion error occurs, *\a{ok} is set to \c false; otherwise
+    *\a{ok} is set to \c true. Returns 0.0 if the conversion fails.
 
     The string conversion will always happen in the 'C' locale. For locale
     dependent conversion use QLocale::toFloat()
@@ -8276,7 +8296,7 @@ ownership of it, no memory is freed when instances are destroyed.
     \fn bool QStringRef::isEmpty() const
 
     Returns \c true if the string reference has no characters; otherwise returns
-    false.
+    \c false.
 
     A string reference is empty if its size is zero.
 
@@ -9523,7 +9543,7 @@ QVector<uint> QStringRef::toUcs4() const
     the end.
 
     Whitespace means any character for which QChar::isSpace() returns
-    true. This includes the ASCII characters '\\t', '\\n', '\\v',
+    \c true. This includes the ASCII characters '\\t', '\\n', '\\v',
     '\\f', '\\r', and ' '.
 
     Unlike QString::simplified(), trimmed() leaves internal whitespace alone.
@@ -9555,8 +9575,8 @@ QStringRef QStringRef::trimmed() const
     base, which is 10 by default and must be between 2 and 36, or 0.
     Returns 0 if the conversion fails.
 
-    If a conversion error occurs, *\a{ok} is set to false; otherwise
-    *\a{ok} is set to true.
+    If a conversion error occurs, *\a{ok} is set to \c false; otherwise
+    *\a{ok} is set to \c true.
 
     If \a base is 0, the C language convention is used: If the string
     begins with "0x", base 16 is used; if the string begins with "0",
@@ -9580,8 +9600,8 @@ qint64 QStringRef::toLongLong(bool *ok, int base) const
     base, which is 10 by default and must be between 2 and 36, or 0.
     Returns 0 if the conversion fails.
 
-    If a conversion error occurs, *\a{ok} is set to false; otherwise
-    *\a{ok} is set to true.
+    If a conversion error occurs, *\a{ok} is set to \c false; otherwise
+    *\a{ok} is set to \c true.
 
     If \a base is 0, the C language convention is used: If the string
     begins with "0x", base 16 is used; if the string begins with "0",
@@ -9607,8 +9627,8 @@ quint64 QStringRef::toULongLong(bool *ok, int base) const
     base, which is 10 by default and must be between 2 and 36, or 0.
     Returns 0 if the conversion fails.
 
-    If a conversion error occurs, *\a{ok} is set to false; otherwise
-    *\a{ok} is set to true.
+    If a conversion error occurs, *\a{ok} is set to \c false; otherwise
+    *\a{ok} is set to \c true.
 
     If \a base is 0, the C language convention is used: If the string
     begins with "0x", base 16 is used; if the string begins with "0",
@@ -9634,8 +9654,8 @@ long QStringRef::toLong(bool *ok, int base) const
     base, which is 10 by default and must be between 2 and 36, or 0.
     Returns 0 if the conversion fails.
 
-    If a conversion error occurs, *\a{ok} is set to false; otherwise
-    *\a{ok} is set to true.
+    If a conversion error occurs, *\a{ok} is set to \c false; otherwise
+    *\a{ok} is set to \c true.
 
     If \a base is 0, the C language convention is used: If the string
     begins with "0x", base 16 is used; if the string begins with "0",
@@ -9660,8 +9680,8 @@ ulong QStringRef::toULong(bool *ok, int base) const
     base, which is 10 by default and must be between 2 and 36, or 0.
     Returns 0 if the conversion fails.
 
-    If a conversion error occurs, *\a{ok} is set to false; otherwise
-    *\a{ok} is set to true.
+    If a conversion error occurs, *\a{ok} is set to \c false; otherwise
+    *\a{ok} is set to \c true.
 
     If \a base is 0, the C language convention is used: If the string
     begins with "0x", base 16 is used; if the string begins with "0",
@@ -9685,8 +9705,8 @@ int QStringRef::toInt(bool *ok, int base) const
     base, which is 10 by default and must be between 2 and 36, or 0.
     Returns 0 if the conversion fails.
 
-    If a conversion error occurs, *\a{ok} is set to false; otherwise
-    *\a{ok} is set to true.
+    If a conversion error occurs, *\a{ok} is set to \c false; otherwise
+    *\a{ok} is set to \c true.
 
     If \a base is 0, the C language convention is used: If the string
     begins with "0x", base 16 is used; if the string begins with "0",
@@ -9710,8 +9730,8 @@ uint QStringRef::toUInt(bool *ok, int base) const
     base, which is 10 by default and must be between 2 and 36, or 0.
     Returns 0 if the conversion fails.
 
-    If a conversion error occurs, *\a{ok} is set to false; otherwise
-    *\a{ok} is set to true.
+    If a conversion error occurs, *\a{ok} is set to \c false; otherwise
+    *\a{ok} is set to \c true.
 
     If \a base is 0, the C language convention is used: If the string
     begins with "0x", base 16 is used; if the string begins with "0",
@@ -9735,8 +9755,8 @@ short QStringRef::toShort(bool *ok, int base) const
     base, which is 10 by default and must be between 2 and 36, or 0.
     Returns 0 if the conversion fails.
 
-    If a conversion error occurs, *\a{ok} is set to false; otherwise
-    *\a{ok} is set to true.
+    If a conversion error occurs, *\a{ok} is set to \c false; otherwise
+    *\a{ok} is set to \c true.
 
     If \a base is 0, the C language convention is used: If the string
     begins with "0x", base 16 is used; if the string begins with "0",
@@ -9761,8 +9781,8 @@ ushort QStringRef::toUShort(bool *ok, int base) const
 
     Returns 0.0 if the conversion fails.
 
-    If a conversion error occurs, \c{*}\a{ok} is set to false;
-    otherwise \c{*}\a{ok} is set to true.
+    If a conversion error occurs, \c{*}\a{ok} is set to \c false;
+    otherwise \c{*}\a{ok} is set to \c true.
 
     The string conversion will always happen in the 'C' locale. For locale
     dependent conversion use QLocale::toDouble()
@@ -9784,8 +9804,8 @@ double QStringRef::toDouble(bool *ok) const
 /*!
     Returns the string converted to a \c float value.
 
-    If a conversion error occurs, *\a{ok} is set to false; otherwise
-    *\a{ok} is set to true. Returns 0.0 if the conversion fails.
+    If a conversion error occurs, *\a{ok} is set to \c false; otherwise
+    *\a{ok} is set to \c true. Returns 0.0 if the conversion fails.
 
     The string conversion will always happen in the 'C' locale. For locale
     dependent conversion use QLocale::toFloat()

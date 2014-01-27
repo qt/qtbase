@@ -189,6 +189,8 @@
 /*! \fn bool QVarLengthArray::empty() const
     \since 5.0
 
+    Returns \c true if the array has size 0; otherwise returns \c false.
+
     Same as isEmpty(). Provided for STL-compatibility.
 */
 
@@ -285,7 +287,8 @@
     \fn void QVarLengthArray::push_back(const T &t)
     \since 5.0
 
-    Same as append(). Provided for STL-compatibility.
+    Appends item \a t to the array, extending the array if necessary.
+    Provided for STL-compatibility.
 */
 
 /*!
@@ -665,8 +668,7 @@
 /*! \fn QVarLengthArray &QVarLengthArray::operator+=(const T &value)
 
     \since 4.8
-    Appends \a value to the array and returns a reference to this
-    vector.
+    Appends \a value to the array and returns a reference to this vector.
 
     \sa append(), operator<<()
 */

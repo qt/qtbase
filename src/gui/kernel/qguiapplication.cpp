@@ -910,7 +910,7 @@ qreal QGuiApplication::devicePixelRatio() const
 }
 
 /*!
-    Returns the top level window at the given position, if any.
+    Returns the top level window at the given position \a pos, if any.
 */
 QWindow *QGuiApplication::topLevelAt(const QPoint &pos)
 {
@@ -2711,7 +2711,7 @@ void QGuiApplicationPrivate::notifyWindowIconChanged()
     \brief whether the application implicitly quits when the last window is
     closed.
 
-    The default is true.
+    The default is \c true.
 
     If this property is \c true, the applications quits when the last visible
     primary window (i.e. window with no parent) is closed.
@@ -2739,7 +2739,7 @@ bool QGuiApplication::quitOnLastWindowClosed()
     primary window (i.e. window with no parent) is closed.
 
     By default, QGuiApplication quits after this signal is emitted. This feature
-    can be turned off by setting \l quitOnLastWindowClosed to false.
+    can be turned off by setting \l quitOnLastWindowClosed to \c false.
 
     \sa QWindow::close(), QWindow::isTopLevel()
 */
@@ -2915,7 +2915,7 @@ void QGuiApplicationPrivate::setApplicationState(Qt::ApplicationState state)
     Returns \c true if the application is currently saving the
     \l{Session Management}{session}; otherwise returns \c false.
 
-    This is true when commitDataRequest() and saveStateRequest() are emitted,
+    This is \c true when commitDataRequest() and saveStateRequest() are emitted,
     but also when the windows are closed afterwards by session management.
 
     \sa sessionId(), commitDataRequest(), saveStateRequest()
@@ -3186,7 +3186,7 @@ QStyleHints *QGuiApplication::styleHints()
 
 /*!
     Sets whether Qt should use the system's standard colors, fonts, etc., to
-    \a on. By default, this is true.
+    \a on. By default, this is \c true.
 
     This function must be called before creating the QGuiApplication object, like
     this:
@@ -3202,7 +3202,7 @@ void QGuiApplication::setDesktopSettingsAware(bool on)
 
 /*!
     Returns \c true if Qt is set to use the system's standard colors, fonts, etc.;
-    otherwise returns \c false. The default is true.
+    otherwise returns \c false. The default is \c true.
 
     \sa setDesktopSettingsAware()
 */
