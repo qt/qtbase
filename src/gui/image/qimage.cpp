@@ -2729,12 +2729,13 @@ inline void mirrored_helper_loop_inplace(int w, int h, int dxi, int dxs, int dyi
 inline void mirror_horizonal_bitmap(int w, int h, int dxs, uchar* data, int bpl, bool monolsb)
 {
     int shift = w % 8;
+    const uchar* bitflip = qt_get_bitflip_array();
     for (int y = h-1; y >= 0; y--) {
         quint8* a0 = (quint8*)(data + y*bpl);
         // Swap bytes
         quint8* a = a0+dxs;
         while (a >= a0) {
-            *a = qt_get_bitflip_array()[*a];
+            *a = bitflip[*a];
             a--;
         }
         // Shift bits if unaligned
