@@ -24,7 +24,9 @@ defineReplace(mocCmdBase) {
     !isEmpty(WIN_INCLUDETEMP) {
         incvar = @$$WIN_INCLUDETEMP
     } else {
-        incvar = $$join(MOC_INCLUDEPATH, " -I", -I)
+        incvar =
+        for (inc, MOC_INCLUDEPATH): \
+            incvar += -I$$shell_quote($$inc)
         incvar += $$QMAKE_FRAMEWORKPATH_FLAGS
     }
     RET += $$QMAKE_MOC $(DEFINES) $$join(QMAKE_COMPILER_DEFINES, " -D", -D) $$incvar $$QMAKE_MOC_OPTIONS
