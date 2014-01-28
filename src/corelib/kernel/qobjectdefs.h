@@ -42,6 +42,10 @@
 #ifndef QOBJECTDEFS_H
 #define QOBJECTDEFS_H
 
+#if defined(__OBJC__) && !defined(__cplusplus)
+#  warning "File built in Objective-C mode (.m), but using Qt requires Objective-C++ (.mm)"
+#endif
+
 #include <QtCore/qnamespace.h>
 
 #include <QtCore/qobjectdefs_impl.h>
