@@ -41,6 +41,7 @@
 
 #include "qiosglobal.h"
 #include "qioswindow.h"
+#include "quiview.h"
 #include "qioscontext.h"
 #include "qiosinputcontext.h"
 #include "qiosscreen.h"
@@ -57,31 +58,6 @@
 #include <qpa/qwindowsysteminterface.h>
 
 #include <QtDebug>
-
-@interface QUIView : UIView <UIKeyInput>
-{
-@public
-    UITextAutocapitalizationType autocapitalizationType;
-    UITextAutocorrectionType autocorrectionType;
-    BOOL enablesReturnKeyAutomatically;
-    UIKeyboardAppearance keyboardAppearance;
-    UIKeyboardType keyboardType;
-    UIReturnKeyType returnKeyType;
-    BOOL secureTextEntry;
-    QIOSWindow *m_qioswindow;
-    QHash<UITouch *, QWindowSystemInterface::TouchPoint> m_activeTouches;
-    int m_nextTouchId;
-}
-
-@property(nonatomic) UITextAutocapitalizationType autocapitalizationType;
-@property(nonatomic) UITextAutocorrectionType autocorrectionType;
-@property(nonatomic) BOOL enablesReturnKeyAutomatically;
-@property(nonatomic) UIKeyboardAppearance keyboardAppearance;
-@property(nonatomic) UIKeyboardType keyboardType;
-@property(nonatomic) UIReturnKeyType returnKeyType;
-@property(nonatomic, getter=isSecureTextEntry) BOOL secureTextEntry;
-
-@end
 
 @implementation QUIView
 

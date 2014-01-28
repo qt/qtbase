@@ -36,5 +36,6 @@ HEADERS = \
     qiosinputcontext.h \
     qiostheme.h \
     qiosglobal.h \
-    qiosservices.h
+    qiosservices.h \
+    quiview.h
 
