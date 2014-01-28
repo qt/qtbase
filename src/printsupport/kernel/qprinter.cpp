@@ -1882,15 +1882,11 @@ QPrintEngine *QPrinter::printEngine() const
     return d->printEngine;
 }
 
-#if defined (Q_OS_WIN)
 /*!
     \obsolete Use QPageSize::id(windowsId) and setPageLayout(QPageSize) instead.
 
     Sets the page size to be used by the printer under Windows to \a
     pageSize.
-
-    \warning This function is not portable so you may prefer to use
-    setPaperSize() instead.
 
     \sa pageLayout()
 */
@@ -1906,9 +1902,6 @@ void QPrinter::setWinPageSize(int pageSize)
 
     Returns the page size used by the printer under Windows.
 
-    \warning This function is not portable so you may prefer to use
-    paperSize() instead.
-
     \sa pageLayout()
 */
 int QPrinter::winPageSize() const
@@ -1916,7 +1909,6 @@ int QPrinter::winPageSize() const
     Q_D(const QPrinter);
     return d->printEngine->property(QPrintEngine::PPK_WindowsPageSize).toInt();
 }
-#endif // Q_OS_WIN
 
 /*!
     Returns a list of the resolutions (a list of dots-per-inch

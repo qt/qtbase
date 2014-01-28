@@ -372,10 +372,8 @@ public:
     void setDoubleSidedPrinting(bool enable);
     bool doubleSidedPrinting() const;
 
-#ifdef Q_OS_WIN
     void setWinPageSize(int winPageSize);
     int winPageSize() const;
-#endif
 
     QRect paperRect() const;
     QRect pageRect() const;

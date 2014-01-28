@@ -136,8 +136,6 @@ void QPdfPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
     // The following keys are settings that are unsupported by the PDF PrintEngine
     case PPK_CustomBase:
         break;
-    case PPK_WindowsPageSize:
-        break;
 
     // The following keys are properties and settings that are supported by the PDF PrintEngine
     case PPK_CollateCopies:
@@ -188,6 +186,9 @@ void QPdfPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
         }
         break;
     }
+    case PPK_WindowsPageSize:
+        d->m_pageLayout.setPageSize(QPageSize(QPageSize::id(value.toInt())));
+        break;
     case PPK_PaperSource:
         d->paperSource = QPrinter::PaperSource(value.toInt());
         break;
@@ -254,9 +255,6 @@ QVariant QPdfPrintEngine::property(PrintEnginePropertyKey key) const
     case PPK_CustomBase:
         // Special case, leave null
         break;
-    case PPK_WindowsPageSize:
-        // Special case, leave null
-        break;
 
     // The following keys are properties and settings that are supported by the PDF PrintEngine
     case PPK_CollateCopies:
@@ -297,6 +295,9 @@ QVariant QPdfPrintEngine::property(PrintEnginePropertyKey key) const
         break;
     case PPK_PaperName:
         ret = d->m_pageLayout.pageSize().name();
+        break;
+    case PPK_WindowsPageSize:
+        ret = d->m_pageLayout.pageSize().windowsId();
         break;
     case PPK_PaperSource:
         ret = d->paperSource;

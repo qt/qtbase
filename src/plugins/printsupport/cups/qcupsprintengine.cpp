@@ -83,6 +83,9 @@ void QCupsPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &v
     case PPK_PageSize:
         d->setPageSize(QPageSize(QPageSize::PageSizeId(value.toInt())));
         break;
+    case PPK_WindowsPageSize:
+        d->setPageSize(QPageSize(QPageSize::id(value.toInt())));
+        break;
     case PPK_CustomPaperSize:
         d->setPageSize(QPageSize(value.toSizeF(), QPageSize::Point));
         break;

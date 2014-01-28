@@ -1687,42 +1687,46 @@ void tst_QPrinter::supportedResolutions()
 void tst_QPrinter::windowsPageSize()
 {
     // winPageSize() / setWinPageSize() / PPK_WindowsPageSize
-    // PdfFormat: ifdef'd out TODO remove ifdef
-    // NativeFormat, Cups: ifdef'd out TODO remove ifdef
+    // PdfFormat: Supported, defaults to printer default
+    // NativeFormat, Cups: Supported, defaults to printer default
     // NativeFormat, Win: Supported, defaults to printer default
-    // NativeFormat, Mac: ifdef'd out TODO remove ifdef
+    // NativeFormat, Mac: Supported, defaults to printer default
 
-#ifdef Q_OS_WIN
+    QPrinter pdf;
+    pdf.setOutputFormat(QPrinter::PdfFormat);
+    QCOMPARE(pdf.winPageSize(), 9);  // DMPAPER_A4
+    pdf.setWinPageSize(1); // DMPAPER_LETTER
+    QCOMPARE(pdf.winPageSize(), 1);
+
     QPrinter native;
     if (native.outputFormat() == QPrinter::NativeFormat) {
         // Test set/get
         native.setPaperSize(QPrinter::A4);
         QCOMPARE(native.pageSize(), QPrinter::A4);
-        QCOMPARE(native.winPageSize(), DMPAPER_A4);
+        QCOMPARE(native.winPageSize(), 9);  // DMPAPER_A4
 
         native.setPaperSize(QPrinter::Letter);
         QCOMPARE(native.pageSize(), QPrinter::Letter);
-        QCOMPARE(native.winPageSize(), DMPAPER_LETTER);
+        QCOMPARE(native.winPageSize(), 1); // DMPAPER_LETTER
 
-        native.setWinPageSize(DMPAPER_A4);
+        native.setWinPageSize(9);  // DMPAPER_A4
         QCOMPARE(native.pageSize(), QPrinter::A4);
-        QCOMPARE(native.winPageSize(), DMPAPER_A4);
+        QCOMPARE(native.winPageSize(), 9);  // DMPAPER_A4
 
-        native.setWinPageSize(DMPAPER_LETTER);
+        native.setWinPageSize(1); // DMPAPER_LETTER
         QCOMPARE(native.pageSize(), QPrinter::Letter);
-        QCOMPARE(native.winPageSize(), DMPAPER_LETTER);
+        QCOMPARE(native.winPageSize(), 1); // DMPAPER_LETTER
 
         // Test value preservation
         native.setOutputFormat(QPrinter::PdfFormat);
         QCOMPARE(native.pageSize(), QPrinter::Letter);
-        QCOMPARE(native.winPageSize(), DMPAPER_LETTER);
+        QCOMPARE(native.winPageSize(), 1); // DMPAPER_LETTER
         native.setOutputFormat(QPrinter::NativeFormat);
         QCOMPARE(native.pageSize(), QPrinter::Letter);
-        QCOMPARE(native.winPageSize(), DMPAPER_LETTER);
+        QCOMPARE(native.winPageSize(), 1); // DMPAPER_LETTER
     } else {
         QSKIP("No printers installed, cannot test NativeFormat, please install printers to test");
     }
-#endif // Q_OS_WIN
 }
 
 // Test QPrinter setters/getters for non-QPrintEngine options

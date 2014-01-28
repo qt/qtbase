@@ -472,8 +472,6 @@ void QMacPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
         break;
     case PPK_SelectionOption:
         break;
-    case PPK_WindowsPageSize:
-        break;
 
     // The following keys are properties and settings that are supported by the Mac PrintEngine
     case PPK_Resolution:  {
@@ -534,6 +532,9 @@ void QMacPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
     case PPK_PaperName:
         // Get the named page size from the printer if supported
         d->setPageSize(d->m_printDevice->supportedPageSize(value.toString()));
+        break;
+    case PPK_WindowsPageSize:
+        d->setPageSize(QPageSize(QPageSize::id(value.toInt())));
         break;
     case PPK_PrinterName: {
         QString id = value.toString();
@@ -629,9 +630,6 @@ QVariant QMacPrintEngine::property(PrintEnginePropertyKey key) const
     case PPK_SelectionOption:
         ret = QString();
         break;
-    case PPK_WindowsPageSize:
-        // Special case, leave null
-        break;
 
     // The following keys are properties and settings that are supported by the Mac PrintEngine
     case PPK_CollateCopies: {
@@ -679,6 +677,9 @@ QVariant QMacPrintEngine::property(PrintEnginePropertyKey key) const
         break;
     case PPK_PaperName:
         ret = d->m_pageLayout.pageSize().name();
+        break;
+    case PPK_WindowsPageSize:
+        ret = d->m_pageLayout.pageSize().windowsId();
         break;
     case PPK_PaperRect:
         // PaperRect is returned in device pixels
