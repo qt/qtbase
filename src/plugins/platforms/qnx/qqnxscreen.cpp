@@ -670,7 +670,7 @@ void QQnxScreen::newWindowCreated(void *window)
         // Otherwise, assume that if a foreign window already has a Z-Order both negative and
         // less than the default Z-Order installed by mmrender on windows it creates,
         // the windows should be treated as an underlay. Otherwise, we treat it as an overlay.
-        if (!windowName.isEmpty() && windowName.startsWith("BbVideoWindowControl")) {
+        if (!windowName.isEmpty() && windowName.startsWith("MmRendererVideoWindowControl")) {
             addMultimediaWindow(windowName, windowHandle);
         } else if (!findWindow(windowHandle)) {
             if (zorder <= MAX_UNDERLAY_ZORDER)

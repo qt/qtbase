@@ -75,9 +75,9 @@ QT_BEGIN_NAMESPACE
 QQnxWindow::QQnxWindow(QWindow *window, screen_context_t context, bool needRootWindow)
     : QPlatformWindow(window),
       m_screenContext(context),
-      m_parentWindow(0),
       m_window(0),
       m_screen(0),
+      m_parentWindow(0),
       m_visible(false),
       m_exposed(true),
       m_windowState(Qt::WindowNoState),
@@ -379,6 +379,11 @@ void QQnxWindow::setParent(const QPlatformWindow *window)
 
     if (newParent == m_parentWindow)
         return;
+
+    if (screen()->rootWindow() == this) {
+        qWarning() << "Application window cannot be reparented";
+        return;
+    }
 
     removeFromParent();
     m_parentWindow = newParent;

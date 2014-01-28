@@ -166,7 +166,7 @@ void QQnxRasterWindow::adjustBufferSize()
 {
     // When having a raster window we don't need any buffers, since
     // Qt will draw to the parent TLW backing store.
-    const QSize windowSize = m_parentWindow ? QSize(1,1) : window()->size();
+    const QSize windowSize = window()->parent() ? QSize(1,1) : window()->size();
     if (windowSize != bufferSize())
         setBufferSize(windowSize);
 }

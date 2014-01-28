@@ -122,8 +122,6 @@ protected:
     screen_context_t m_screenContext;
     QScopedPointer<QQnxAbstractCover> m_cover;
 
-    QQnxWindow *m_parentWindow;
-
 private:
     void createWindowGroup();
     void setGeometryHelper(const QRect &rect);
@@ -137,6 +135,7 @@ private:
     QSize m_bufferSize;
 
     QQnxScreen *m_screen;
+    QQnxWindow *m_parentWindow;
     QList<QQnxWindow*> m_childWindows;
     bool m_visible;
     bool m_exposed;
