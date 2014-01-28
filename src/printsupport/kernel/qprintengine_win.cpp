@@ -1951,7 +1951,7 @@ void QWin32PrintEnginePrivate::updateCustomPaperSize()
         const QList<QPair<QSizeF, int> > paperSizes = printerPaperSizes(name);
         for (int i=0; i<paperSizes.size(); i++) {
             if ((uint)paperSizes.at(i).second == paperSize) {
-                paper_size = paperSizes.at(paperSize).first;
+                paper_size = paperSizes.at(i).first;
                 has_custom_paper_size = false;
                 break;
             }
