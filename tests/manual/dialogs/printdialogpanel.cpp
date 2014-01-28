@@ -211,15 +211,9 @@ static void print(QPrinter *printer)
     QPainter painter(printer);
     const QRectF pageF = printer->pageRect();
 
-    painter.drawRect(pageF);
-
-    drawHorizCmRuler(painter, pageF.x(), pageF.right(), pageF.height() /2);
-    drawVertCmRuler(painter, pageF.x() + pageF.width() / 2, pageF.top(), pageF.bottom());
-
     QFont font = painter.font();
     font.setFamily("Courier");
     font.setPointSize(10);
-    painter.setFont(font);
 
     // Format message.
     const int charHeight = QFontMetrics(font).boundingRect('X').height();
@@ -233,6 +227,17 @@ static void print(QPrinter *printer)
         << "\nFont: " << font.family() << ' ' << font.pointSize() << '\n'
         << *printer;
 
+    if (!painter.device()->logicalDpiY() || !painter.device()->logicalDpiX()) {
+        qWarning() << Q_FUNC_INFO << "Bailing out due to invalid DPI: " << msg;
+        return;
+    }
+
+    painter.drawRect(pageF);
+
+    drawHorizCmRuler(painter, pageF.x(), pageF.right(), pageF.height() /2);
+    drawVertCmRuler(painter, pageF.x() + pageF.width() / 2, pageF.top(), pageF.bottom());
+
+    painter.setFont(font);
     QPointF textPoint = pageF.topLeft() + QPoint(10, charHeight + 10);
     foreach (const QString &line, msg.split('\n')) {
         painter.drawText(textPoint, line);
