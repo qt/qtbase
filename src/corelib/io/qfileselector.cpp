@@ -157,7 +157,7 @@ QFileSelectorPrivate::QFileSelectorPrivate()
     Selectors normally available are
     \list
     \li platform, any of the following strings which match the platform the application is running
-        on: android, blackberry, ios, mac, linux, wince, unix, windows.
+        on: android, blackberry, ios, osx, darwin, mac, linux, wince, unix, windows.
     \li locale, same as QLocale::system().name().
     \endlist
 
@@ -374,12 +374,16 @@ QStringList QFileSelectorPrivate::platformSelectors()
     ret << QStringLiteral("blackberry");
 #  elif defined(Q_OS_QNX)
     ret << QStringLiteral("qnx");
-#  elif defined(Q_OS_IOS)
-    ret << QStringLiteral("ios");
 #  elif defined(Q_OS_LINUX)
     ret << QStringLiteral("linux");
-#  elif defined(Q_OS_MAC)
-    ret << QStringLiteral("mac");
+#  elif defined(Q_OS_DARWIN)
+    ret << QStringLiteral("darwin");
+    ret << QStringLiteral("mac"); // compatibility synonym
+#    if defined(Q_OS_IOS)
+    ret << QStringLiteral("ios");
+#    elif defined(Q_OS_OSX)
+    ret << QStringLiteral("osx");
+#    endif
 #  else
     struct utsname u;
     if (uname(&u) != -1)
