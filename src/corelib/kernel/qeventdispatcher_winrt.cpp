@@ -94,16 +94,7 @@ public:
 
 
 private:
-    static HRESULT timerExpiredCallback(ABI::Windows::System::Threading::IThreadPoolTimer *source);
-    static int idForTimer(IThreadPoolTimer *timer)
-    {
-        QAbstractEventDispatcher *eventDispatcher = QCoreApplication::eventDispatcher();
-        if (!eventDispatcher)
-            return -1;
-        if (QEventDispatcherWinRTPrivate *that = static_cast<QEventDispatcherWinRTPrivate *>(get(eventDispatcher)))
-            return that->timerIds.value(timer, -1);
-        return -1;
-    }
+    static HRESULT timerExpiredCallback(IThreadPoolTimer *timer);
 
     QHash<int, WinRTTimerInfo*> timerDict;
     QHash<IThreadPoolTimer *, int> timerIds;
@@ -365,8 +356,8 @@ void QEventDispatcherWinRTPrivate::registerTimer(WinRTTimerInfo *t)
 void QEventDispatcherWinRTPrivate::unregisterTimer(WinRTTimerInfo *t)
 {
     if (t->timer) {
-        t->timer->Cancel();
         timerIds.remove(t->timer.Get());
+        t->timer->Cancel();
     }
     timerDict.remove(t->id);
     delete t;
@@ -389,13 +380,22 @@ void QEventDispatcherWinRTPrivate::sendTimerEvent(int timerId)
     }
 }
 
-HRESULT QEventDispatcherWinRTPrivate::timerExpiredCallback(IThreadPoolTimer *source)
+HRESULT QEventDispatcherWinRTPrivate::timerExpiredCallback(IThreadPoolTimer *timer)
 {
-    int timerId = idForTimer(source);
-    if (timerId > 0)
-        QCoreApplication::postEvent(QCoreApplication::eventDispatcher(), new QTimerEvent(timerId));
-    else
-        qWarning("QEventDispatcherWinRT::timerExpiredCallback: Could not find timer %d in timer list", source);
+    QThread *thread = QThread::currentThread();
+    if (!thread)
+        return E_FAIL;
+
+    QAbstractEventDispatcher *eventDispatcher = thread->eventDispatcher();
+    if (!eventDispatcher)
+        return E_FAIL;
+
+    QEventDispatcherWinRTPrivate *d = static_cast<QEventDispatcherWinRTPrivate *>(get(eventDispatcher));
+    int timerId = d->timerIds.value(timer, -1);
+    if (timerId < 0)
+        return E_FAIL; // A callback was received after the timer was canceled
+
+    QCoreApplication::postEvent(eventDispatcher, new QTimerEvent(timerId));
     return S_OK;
 }
 
