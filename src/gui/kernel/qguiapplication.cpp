@@ -1642,12 +1642,14 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
     }
     if (doubleClick) {
         mousePressButton = Qt::NoButton;
-        const QEvent::Type doubleClickType = frameStrut ? QEvent::NonClientAreaMouseButtonDblClick : QEvent::MouseButtonDblClick;
-        QMouseEvent dblClickEvent(doubleClickType, localPoint, localPoint, globalPoint,
-                                  button, buttons, e->modifiers);
-        dblClickEvent.setTimestamp(e->timestamp);
-        setMouseEventSource(&dblClickEvent, e->source);
-        QGuiApplication::sendSpontaneousEvent(window, &dblClickEvent);
+        if (!e->window.isNull()) { // QTBUG-36364, check if window closed in response to press
+            const QEvent::Type doubleClickType = frameStrut ? QEvent::NonClientAreaMouseButtonDblClick : QEvent::MouseButtonDblClick;
+            QMouseEvent dblClickEvent(doubleClickType, localPoint, localPoint, globalPoint,
+                                      button, buttons, e->modifiers);
+            dblClickEvent.setTimestamp(e->timestamp);
+            setMouseEventSource(&dblClickEvent, e->source);
+            QGuiApplication::sendSpontaneousEvent(window, &dblClickEvent);
+        }
     }
 }
 
