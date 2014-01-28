@@ -2515,7 +2515,9 @@ void QTableWidget::removeColumn(int column)
 
 /*!
    Removes all items in the view.
-   This will also remove all selections.
+   This will also remove all selections and headers.
+   If you don't want to remove the headers, use
+   QTableWidget::clearContents().
    The table dimensions stay the same.
 */
 
