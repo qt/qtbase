@@ -98,6 +98,10 @@ public:
 
     void setGeometry(const QRect &rect);
     void setCocoaGeometry(const QRect &rect);
+    void clipChildWindows();
+    void clipWindow(const NSRect &clipRect);
+    void show(bool becauseOfAncestor = false);
+    void hide(bool becauseOfAncestor = false);
     void setVisible(bool visible);
     void setWindowFlags(Qt::WindowFlags flags);
     void setWindowState(Qt::WindowState state);
@@ -166,8 +170,6 @@ public:
     void updateExposedGeometry();
     QWindow *childWindowAt(QPoint windowPoint);
 protected:
-    // NSWindow handling. The QCocoaWindow/QNSView can either be displayed
-    // in an existing NSWindow or in one created by Qt.
     void recreateWindow(const QPlatformWindow *parentWindow);
     QNSWindow *createNSWindow();
     void setNSWindow(QNSWindow *window);
@@ -176,6 +178,8 @@ protected:
     QRect windowGeometry() const;
     QCocoaWindow *parentCocoaWindow() const;
     void syncWindowState(Qt::WindowState newState);
+    void reinsertChildWindow(QCocoaWindow *child);
+    void removeChildWindow(QCocoaWindow *child);
 
 // private:
 public: // for QNSView
@@ -185,12 +189,15 @@ public: // for QNSView
     NSView *m_contentView;
     QNSView *m_qtView;
     QNSWindow *m_nsWindow;
+    QCocoaWindow *m_forwardWindow;
 
     // TODO merge to one variable if possible
     bool m_contentViewIsEmbedded; // true if the m_contentView is actually embedded in a "foreign" NSView hiearchy
     bool m_contentViewIsToBeEmbedded; // true if the m_contentView is intended to be embedded in a "foreign" NSView hiearchy
 
     QCocoaWindow *m_parentCocoaWindow;
+    bool m_isNSWindowChild; // this window is a non-top level QWindow with a NSWindow.
+    QList<QCocoaWindow *> m_childWindows;
 
     QNSWindowDelegate *m_nsWindowDelegate;
     Qt::WindowFlags m_windowFlags;
@@ -213,6 +220,8 @@ public: // for QNSView
     int m_registerTouchCount;
     bool m_resizableTransientParent;
     bool m_overrideBecomeKey;
+    bool m_hiddenByClipping;
+    bool m_hiddenByAncestor;
 
     static const int NoAlertRequest;
     NSInteger m_alertRequest;
