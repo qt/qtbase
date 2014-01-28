@@ -102,7 +102,7 @@ QFileSelectorPrivate::QFileSelectorPrivate()
     your code might look something like this:
     \code
     QString defaultsPath = "data/defaults.conf";
-#if defined(Q_OS_LINUX_ANDROID)
+#if defined(Q_OS_ANDROID)
     defaultsPath = "data/android/defaults.conf";
 #elif defined(Q_OS_BLACKBERRY)
     defaultsPath = "data/blackberry/defaults.conf";
@@ -368,7 +368,7 @@ QStringList QFileSelectorPrivate::platformSelectors()
 #  endif
 #elif defined(Q_OS_UNIX)
     ret << QStringLiteral("unix");
-#  if defined(Q_OS_LINUX_ANDROID)
+#  if defined(Q_OS_ANDROID)
     ret << QStringLiteral("android");
 #  elif defined(Q_OS_BLACKBERRY)
     ret << QStringLiteral("blackberry");
