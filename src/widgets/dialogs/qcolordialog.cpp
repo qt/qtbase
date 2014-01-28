@@ -66,6 +66,8 @@
 #include "qscreen.h"
 #include "qcursor.h"
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 
 //////////// QWellArray BEGIN
@@ -758,13 +760,9 @@ void QColorLuminancePicker::paintEvent(QPaintEvent *)
         int y;
         uint *pixel = (uint *) img.scanLine(0);
         for (y = 0; y < hi; y++) {
-            const uint *end = pixel + wi;
-            while (pixel < end) {
-                QColor c;
-                c.setHsv(hue, sat, y2val(y+coff));
-                *pixel = c.rgb();
-                ++pixel;
-            }
+            uint *end = pixel + wi;
+            std::fill(pixel, end, QColor::fromHsv(hue, sat, y2val(y + coff)).rgb());
+            pixel = end;
         }
         pix = new QPixmap(QPixmap::fromImage(img));
     }
