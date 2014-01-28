@@ -113,9 +113,10 @@ static bool isPackage(const QFileSystemMetaData &data, const QFileSystemEntry &e
                                &application);
 
         if (application) {
-            CFStringRef path = CFURLGetString(application);
-            QString applicationPath = QCFString::toQString(path);
-            if (applicationPath != QLatin1String("file://localhost/System/Library/CoreServices/Finder.app/"))
+            QCFType<CFBundleRef> bundle = CFBundleCreate(kCFAllocatorDefault, application);
+            CFStringRef identifier = CFBundleGetIdentifier(bundle);
+            QString applicationId = QCFString::toQString(identifier);
+            if (applicationId != QLatin1String("com.apple.finder"))
                 return true;
         }
     }
