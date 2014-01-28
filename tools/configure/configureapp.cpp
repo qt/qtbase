@@ -2669,7 +2669,7 @@ void Configure::generateOutputVars()
         qmakeVars += "LIBS           += " + formatPaths(qmakeLibs);
 
     if (!dictionary["QT_LFLAGS_SQLITE"].isEmpty())
-        qmakeVars += "QT_LFLAGS_SQLITE += " + formatPath(dictionary["QT_LFLAGS_SQLITE"]);
+        qmakeVars += "QT_LFLAGS_SQLITE += " + dictionary["QT_LFLAGS_SQLITE"];
 
     if (dictionary["JAVASCRIPTCORE_JIT"] == "no")
         qmakeVars += "JAVASCRIPTCORE_JIT = no";
