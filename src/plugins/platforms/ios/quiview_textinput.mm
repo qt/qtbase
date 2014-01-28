@@ -496,6 +496,8 @@ Q_GLOBAL_STATIC(StaticVariables, staticVariables);
     self.secureTextEntry = BOOL(hints & Qt::ImhHiddenText);
     self.autocorrectionType = (hints & Qt::ImhNoPredictiveText) ?
                 UITextAutocorrectionTypeNo : UITextAutocorrectionTypeDefault;
+    self.spellCheckingType = (hints & Qt::ImhNoPredictiveText) ?
+                UITextSpellCheckingTypeNo : UITextSpellCheckingTypeDefault;
 
     if (hints & Qt::ImhUppercaseOnly)
         self.autocapitalizationType = UITextAutocapitalizationTypeAllCharacters;

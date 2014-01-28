@@ -62,6 +62,7 @@
 @property(nonatomic, assign) id<UITextInputDelegate> inputDelegate;
 @property(nonatomic) UITextAutocapitalizationType autocapitalizationType;
 @property(nonatomic) UITextAutocorrectionType autocorrectionType;
+@property(nonatomic) UITextSpellCheckingType spellCheckingType;
 @property(nonatomic) BOOL enablesReturnKeyAutomatically;
 @property(nonatomic) UIKeyboardAppearance keyboardAppearance;
 @property(nonatomic) UIKeyboardType keyboardType;
