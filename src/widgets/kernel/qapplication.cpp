@@ -1749,7 +1749,8 @@ bool QApplicationPrivate::tryCloseAllWidgetWindows(QWindowList *processedWindows
     QWidgetList list = QApplication::topLevelWidgets();
     for (int i = 0; i < list.size(); ++i) {
         QWidget *w = list.at(i);
-        if (w->isVisible() && w->windowType() != Qt::Desktop && !w->data->is_closing) {
+        if (w->isVisible() && w->windowType() != Qt::Desktop &&
+                !w->testAttribute(Qt::WA_DontShowOnScreen) && !w->data->is_closing) {
             QWindow *window = w->windowHandle();
             if (!w->close())  // Qt::WA_DeleteOnClose may cause deletion.
                 return false;
