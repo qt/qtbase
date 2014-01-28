@@ -667,6 +667,7 @@ void QDockWidgetPrivate::updateButtons()
     button->setIcon(q->style()->standardIcon(QStyle::SP_TitleBarNormalButton, &opt, q));
     button->setVisible(canFloat && !hideButtons);
 #ifndef QT_NO_ACCESSIBILITY
+    //: Accessible name for button undocking a dock widget (floating state)
     button->setAccessibleName(QDockWidget::tr("Float"));
     button->setAccessibleDescription(QDockWidget::tr("Undocks and re-attaches the dock widget"));
 #endif
@@ -675,6 +676,7 @@ void QDockWidgetPrivate::updateButtons()
     button->setIcon(q->style()->standardIcon(QStyle::SP_TitleBarCloseButton, &opt, q));
     button->setVisible(canClose && !hideButtons);
 #ifndef QT_NO_ACCESSIBILITY
+    //: Accessible name for button closing a dock widget
     button->setAccessibleName(QDockWidget::tr("Close"));
     button->setAccessibleDescription(QDockWidget::tr("Closes the dock widget"));
 #endif
