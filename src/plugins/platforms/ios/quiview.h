@@ -42,7 +42,7 @@
 #import <UIKit/UIKit.h>
 #include "qioswindow.h"
 
-@interface QUIView : UIView <UIKeyInput>
+@interface QUIView : UIView
 {
 @public
     UITextAutocapitalizationType autocapitalizationType;
@@ -65,4 +65,7 @@
 @property(nonatomic) UIReturnKeyType returnKeyType;
 @property(nonatomic, getter=isSecureTextEntry) BOOL secureTextEntry;
 
+@end
+
+@interface QUIView (TextInput) <UIKeyInput>
 @end

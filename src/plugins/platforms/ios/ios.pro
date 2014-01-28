@@ -39,3 +39,5 @@ HEADERS = \
     qiosservices.h \
     quiview.h
 
+OTHER_FILES = \
+    quiview_textinput.mm
