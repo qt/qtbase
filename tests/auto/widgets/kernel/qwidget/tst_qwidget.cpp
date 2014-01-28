@@ -4816,73 +4816,68 @@ static inline QByteArray msgRgbMismatch(unsigned actual, unsigned expected)
            QByteArrayLiteral(" != 0x") + QByteArray::number(expected, 16);
 }
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
-QT_BEGIN_NAMESPACE
-extern Q_GUI_EXPORT QPixmap qt_pixmapFromWinHBITMAP(HBITMAP bitmap, int hbitmapFormat = 0);
-QT_END_NAMESPACE
-
-// grabs the window *without including any overlapping windows*
-static QPixmap grabWindow(QWindow *window, int x, int y, int width, int height)
-{
-    const HWND hwnd = (HWND)window->winId();
-
-    // Create and setup bitmap
-    const HDC displayDc = ::GetDC(0);
-    const HDC bitmapDc = ::CreateCompatibleDC(displayDc);
-    const HBITMAP bitmap = ::CreateCompatibleBitmap(displayDc, width, height);
-    const HGDIOBJ oldBitmap = ::SelectObject(bitmapDc, bitmap);
-
-    // copy data
-    const HDC windowDc = ::GetDC(hwnd);
-    ::BitBlt(bitmapDc, 0, 0, width, height, windowDc, x, y, SRCCOPY);
-
-    // clean up all but bitmap
-    ::ReleaseDC(hwnd, windowDc);
-    ::SelectObject(bitmapDc, oldBitmap);
-    ::DeleteDC(bitmapDc);
-
-    const QPixmap pixmap = qt_pixmapFromWinHBITMAP(bitmap);
-
-    ::DeleteObject(bitmap);
-    ::ReleaseDC(0, displayDc);
-
-    return pixmap;
-}
-#else
-// fallback for other platforms.
 static QPixmap grabWindow(QWindow *window, int x, int y, int width, int height)
 {
     QScreen *screen = window->screen();
     return screen ? screen->grabWindow(window->winId(), x, y, width, height) : QPixmap();
 }
-#endif  //defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
 
-#define VERIFY_COLOR(child, region, color) do {  \
-    const QRegion r = QRegion(region);                                  \
-    QWindow *window = child.window()->windowHandle();                   \
-    Q_ASSERT(window);                                                   \
-    const QPoint offset = child.mapTo(child.window(), QPoint(0,0));     \
-    for (int i = 0; i < r.rects().size(); ++i) {                        \
-        const QRect rect = r.rects().at(i).translated(offset);          \
-        for (int t = 0; t < 5; t++) {                                   \
-            const QPixmap pixmap = grabWindow(window,                   \
-                                              rect.left(), rect.top(),  \
-                                              rect.width(), rect.height()); \
-            QCOMPARE(pixmap.size(), rect.size());                       \
-            QPixmap expectedPixmap(pixmap); /* ensure equal formats */  \
-            expectedPixmap.detach();                                    \
-            expectedPixmap.fill(color);                                 \
-            QImage image = pixmap.toImage();                            \
-            uint alphaCorrection = image.format() == QImage::Format_RGB32 ? 0xff000000 : 0; \
-            uint firstPixel = image.pixel(0,0) | alphaCorrection;       \
-            if ( firstPixel != QColor(color).rgb() && t < 4 )           \
-            { QTest::qWait(200); continue; }                            \
-            QVERIFY2(firstPixel == QColor(color).rgb(), msgRgbMismatch(firstPixel, QColor(color).rgb()));  \
-            QCOMPARE(pixmap, expectedPixmap);                           \
-            break;                                                      \
-        }                                                               \
-    }                                                                   \
-} while (0)
+#define VERIFY_COLOR(child, region, color) verifyColor(child, region, color, __LINE__)
+
+bool verifyColor(QWidget &child, const QRegion &region, const QColor &color, unsigned int callerLine)
+{
+    const QRegion r = QRegion(region);
+    QWindow *window = child.window()->windowHandle();
+    Q_ASSERT(window);
+    const QPoint offset = child.mapTo(child.window(), QPoint(0,0));
+    bool grabBackingStore = false;
+    for (int i = 0; i < r.rects().size(); ++i) {
+        QRect rect = r.rects().at(i).translated(offset);
+        for (int t = 0; t < 6; t++) {
+            const QPixmap pixmap = grabBackingStore
+                ? child.grab(rect)
+                : grabWindow(window, rect.left(), rect.top(), rect.width(), rect.height());
+            if (!QTest::qCompare(pixmap.size(), rect.size(), "pixmap.size()", "rect.size()", __FILE__, callerLine))
+                return false;
+            QPixmap expectedPixmap(pixmap); /* ensure equal formats */
+            expectedPixmap.detach();
+            expectedPixmap.fill(color);
+            QImage image = pixmap.toImage();
+            uint alphaCorrection = image.format() == QImage::Format_RGB32 ? 0xff000000 : 0;
+            uint firstPixel = image.pixel(0,0) | alphaCorrection;
+            if (t < 5) {
+                /* Normal run.
+                   If it succeeds: return success
+                   If it fails:    do not return, but wait a bit and reiterate (retry)
+                */
+                if (firstPixel == QColor(color).rgb()
+                        && image == expectedPixmap.toImage()) {
+                    return true;
+                } else {
+                    if (t == 4) {
+                        grabBackingStore = true;
+                        rect = r.rects().at(i);
+                    } else {
+                        QTest::qWait(200);
+                    }
+                }
+            } else {
+                // Last run, report failure if it still fails
+                if (!QTest::qVerify(firstPixel == QColor(color).rgb(),
+                                   "firstPixel == QColor(color).rgb()",
+                                    qPrintable(msgRgbMismatch(firstPixel, QColor(color).rgb())),
+                                    __FILE__, callerLine))
+                    return false;
+                if (!QTest::qVerify(image == expectedPixmap.toImage(),
+                                    "image == expectedPixmap.toImage()",
+                                    "grabbed pixmap differs from expected pixmap",
+                                    __FILE__, callerLine))
+                    return false;
+            }
+        }
+    }
+    return true;
+}
 
 void tst_QWidget::popupEnterLeave()
 {
