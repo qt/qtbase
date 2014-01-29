@@ -5145,6 +5145,8 @@ static void blend_transformed_tiled_argb(int count, const QSpan *spans, void *us
                 int px_delta = fdx % (image_width << 16);
                 int py_delta = fdy % (image_height << 16);
                 while (b < end) {
+                    if (px16 < 0) px16 += image_width << 16;
+                    if (py16 < 0) py16 += image_height << 16;
                     int px = px16 >> 16;
                     int py = py16 >> 16;
                     int y_offset = py * scanline_offset;
@@ -5161,8 +5163,6 @@ static void blend_transformed_tiled_argb(int count, const QSpan *spans, void *us
                     py16 += py_delta;
                     if (py16 >= image_height << 16)
                         py16 -= image_height << 16;
-                    if (px16 < 0) px16 += image_width << 16;
-                    if (py16 < 0) py16 += image_height << 16;
                     ++b;
                 }
                 func(target, buffer, l, coverage);
