@@ -603,7 +603,8 @@ public:
     void setPreeditArea(int position, const QString &text);
 
     inline bool hasFormats() const { return block.docHandle() || (specialData && !specialData->addFormats.isEmpty()); }
-    QList<QTextLayout::FormatRange> additionalFormats() const;
+    inline QList<QTextLayout::FormatRange> additionalFormats() const
+    { return specialData ? specialData->addFormats : QList<QTextLayout::FormatRange>(); }
     void setAdditionalFormats(const QList<QTextLayout::FormatRange> &formatList);
 
 private:
@@ -613,8 +614,7 @@ private:
         int preeditPosition;
         QString preeditText;
         QList<QTextLayout::FormatRange> addFormats;
-        QVector<int> addFormatIndices;
-        QVector<int> resolvedFormatIndices;
+        QVector<QTextCharFormat> resolvedFormats;
         // only used when no docHandle is available
         QScopedPointer<QTextFormatCollection> formats;
     };
