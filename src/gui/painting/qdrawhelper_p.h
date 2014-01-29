@@ -599,14 +599,6 @@ static Q_ALWAYS_INLINE uint BYTE_MUL(uint x, uint a) {
     return (uint(t)) | (uint(t >> 24));
 }
 
-static Q_ALWAYS_INLINE uint PREMUL(uint x) {
-    uint a = x >> 24;
-    quint64 t = (((quint64(x)) | ((quint64(x)) << 24)) & 0x00ff00ff00ff00ff) * a;
-    t = (t + ((t >> 8) & 0xff00ff00ff00ff) + 0x80008000800080) >> 8;
-    t &= 0x000000ff00ff00ff;
-    return (uint(t)) | (uint(t >> 24)) | (a << 24);
-}
-
 #else // 32-bit versions
 
 static Q_ALWAYS_INLINE uint INTERPOLATE_PIXEL_256(uint x, uint a, uint y, uint b) {
@@ -639,19 +631,8 @@ static Q_ALWAYS_INLINE uint BYTE_MUL(uint x, uint a) {
 #  pragma pop
 #endif
 
-static Q_ALWAYS_INLINE uint PREMUL(uint x) {
-    uint a = x >> 24;
-    uint t = (x & 0xff00ff) * a;
-    t = (t + ((t >> 8) & 0xff00ff) + 0x800080) >> 8;
-    t &= 0xff00ff;
-
-    x = ((x >> 8) & 0xff) * a;
-    x = (x + ((x >> 8) & 0xff) + 0x80);
-    x &= 0xff00;
-    x |= t | (a << 24);
-    return x;
-}
 #endif
+
 
 #if Q_BYTE_ORDER == Q_BIG_ENDIAN
 static Q_ALWAYS_INLINE quint32 RGBA2ARGB(quint32 x) {
@@ -691,17 +672,9 @@ static Q_ALWAYS_INLINE uint BYTE_MUL_RGB16_32(uint x, uint a) {
     return t;
 }
 
-static Q_ALWAYS_INLINE uint INV_PREMUL(uint p) {
-    const uint alpha = qAlpha(p);
-    if (alpha == 255)
-        return p;
-    if (alpha == 0)
-        return 0;
-    // (p*(0x00ff00ff/alpha)) >> 16 == (p*255)/alpha for all p and alpha <= 256.
-    const uint invAlpha = 0x00ff00ffU / alpha;
-    // We add 0x8000 to get even rounding. The rounding also ensures that PREMUL(INV_PREMUL(p)) == p for all p.
-    return qRgba((qRed(p)*invAlpha + 0x8000)>>16, (qGreen(p)*invAlpha + 0x8000)>>16, (qBlue(p)*invAlpha + 0x8000)>>16, alpha);
-}
+// FIXME: Remove when all Qt modules have stopped using PREMUL and INV_PREMUL
+#define PREMUL(x) qPremultiply(x)
+#define INV_PREMUL(p) qUnpremultiply(p)
 
 struct quint24 {
     quint24(uint value);

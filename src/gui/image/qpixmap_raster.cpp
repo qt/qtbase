@@ -208,7 +208,7 @@ void QRasterPlatformPixmap::fill(const QColor &color)
                 }
             }
         }
-        pixel = PREMUL(color.rgba());
+        pixel = qPremultiply(color.rgba());
         const QPixelLayout *layout = &qPixelLayouts[image.format()];
         layout->convertFromARGB32PM(&pixel, &pixel, 1, layout, 0);
     } else {

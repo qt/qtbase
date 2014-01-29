@@ -148,7 +148,7 @@ void QBlittablePlatformPixmap::fill(const QColor &color)
             m_alpha = true;
         }
 
-        uint pixel = PREMUL(color.rgba());
+        uint pixel = qPremultiply(color.rgba());
         const QPixelLayout *layout = &qPixelLayouts[blittable()->lock()->format()];
         Q_ASSERT(layout->convertFromARGB32PM);
         layout->convertFromARGB32PM(&pixel, &pixel, 1, layout, 0);

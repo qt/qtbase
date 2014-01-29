@@ -77,7 +77,7 @@ static const uchar bitflip[256] = {
     15, 143, 79, 207, 47, 175, 111, 239, 31, 159, 95, 223, 63, 191, 127, 255
 };
 
-const uchar *qt_get_bitflip_array()                        // called from QPixmap code
+const uchar *qt_get_bitflip_array()
 {
     return bitflip;
 }
@@ -187,7 +187,7 @@ static void convert_ARGB_to_ARGB_PM(QImageData *dest, const QImageData *src, Qt:
     for (int i = 0; i < src->height; ++i) {
         const QRgb *end = src_data + src->width;
         while (src_data < end) {
-            *dest_data = PREMUL(*src_data);
+            *dest_data = qPremultiply(*src_data);
             ++src_data;
             ++dest_data;
         }
@@ -304,7 +304,7 @@ static void convert_ARGB_to_RGBA_PM(QImageData *dest, const QImageData *src, Qt:
     for (int i = 0; i < src->height; ++i) {
         const quint32 *end = src_data + src->width;
         while (src_data < end) {
-            *dest_data = ARGB2RGBA(PREMUL(*src_data));
+            *dest_data = ARGB2RGBA(qPremultiply(*src_data));
             ++src_data;
             ++dest_data;
         }
@@ -376,7 +376,7 @@ static void convert_RGBA_to_ARGB_PM(QImageData *dest, const QImageData *src, Qt:
     for (int i = 0; i < src->height; ++i) {
         const quint32 *end = src_data + src->width;
         while (src_data < end) {
-            *dest_data = PREMUL(RGBA2ARGB(*src_data));
+            *dest_data = qPremultiply(RGBA2ARGB(*src_data));
             ++src_data;
             ++dest_data;
         }
@@ -395,7 +395,7 @@ static bool convert_RGBA_to_ARGB_PM_inplace(QImageData *data, Qt::ImageConversio
     for (int i = 0; i < data->height; ++i) {
         const QRgb *end = rgb_data + data->width;
         while (rgb_data < end) {
-            *rgb_data = PREMUL(RGBA2ARGB(*rgb_data));
+            *rgb_data = qPremultiply(RGBA2ARGB(*rgb_data));
             ++rgb_data;
         }
         rgb_data += pad;
@@ -429,7 +429,7 @@ static bool convert_indexed8_to_ARGB_PM_inplace(QImageData *data, Qt::ImageConve
             data->colortable[i] = qRgb(i, i, i);
     } else {
         for (int i = 0; i < data->colortable.size(); ++i)
-            data->colortable[i] = PREMUL(data->colortable.at(i));
+            data->colortable[i] = qPremultiply(data->colortable.at(i));
 
         // Fill the rest of the table in case src_data > colortable.size()
         const int oldSize = data->colortable.size();
@@ -604,7 +604,7 @@ static void convert_ARGB_PM_to_ARGB(QImageData *dest, const QImageData *src, Qt:
     for (int i = 0; i < src->height; ++i) {
         const QRgb *end = src_data + src->width;
         while (src_data < end) {
-            *dest_data = INV_PREMUL(*src_data);
+            *dest_data = qUnpremultiply(*src_data);
             ++src_data;
             ++dest_data;
         }
@@ -628,7 +628,7 @@ static void convert_ARGB_PM_to_RGB(QImageData *dest, const QImageData *src, Qt::
     for (int i = 0; i < src->height; ++i) {
         const QRgb *end = src_data + src->width;
         while (src_data < end) {
-            *dest_data = 0xff000000 | INV_PREMUL(*src_data);
+            *dest_data = 0xff000000 | qUnpremultiply(*src_data);
             ++src_data;
             ++dest_data;
         }
@@ -652,7 +652,7 @@ static void convert_ARGB_PM_to_RGBx(QImageData *dest, const QImageData *src, Qt:
     for (int i = 0; i < src->height; ++i) {
         const QRgb *end = src_data + src->width;
         while (src_data < end) {
-            *dest_data = ARGB2RGBA(0xff000000 | INV_PREMUL(*src_data));
+            *dest_data = ARGB2RGBA(0xff000000 | qUnpremultiply(*src_data));
             ++src_data;
             ++dest_data;
         }
@@ -676,7 +676,7 @@ static void convert_ARGB_PM_to_RGBA(QImageData *dest, const QImageData *src, Qt:
     for (int i = 0; i < src->height; ++i) {
         const QRgb *end = src_data + src->width;
         while (src_data < end) {
-            *dest_data = ARGB2RGBA(INV_PREMUL(*src_data));
+            *dest_data = ARGB2RGBA(qUnpremultiply(*src_data));
             ++src_data;
             ++dest_data;
         }
@@ -748,7 +748,7 @@ static void convert_RGBA_PM_to_ARGB(QImageData *dest, const QImageData *src, Qt:
     for (int i = 0; i < src->height; ++i) {
         const QRgb *end = src_data + src->width;
         while (src_data < end) {
-            *dest_data = INV_PREMUL(RGBA2ARGB(*src_data));
+            *dest_data = qUnpremultiply(RGBA2ARGB(*src_data));
             ++src_data;
             ++dest_data;
         }
@@ -772,7 +772,7 @@ static void convert_RGBA_PM_to_RGB(QImageData *dest, const QImageData *src, Qt::
     for (int i = 0; i < src->height; ++i) {
         const QRgb *end = src_data + src->width;
         while (src_data < end) {
-            *dest_data = 0xff000000 | INV_PREMUL(RGBA2ARGB(*src_data));
+            *dest_data = 0xff000000 | qUnpremultiply(RGBA2ARGB(*src_data));
             ++src_data;
             ++dest_data;
         }
@@ -862,7 +862,7 @@ static QVector<QRgb> fix_color_table(const QVector<QRgb> &ctbl, QImage::Format f
     } else if (format == QImage::Format_ARGB32_Premultiplied) {
         // check if the color table has alpha
         for (int i = 0; i < colorTable.size(); ++i)
-            colorTable[i] = PREMUL(colorTable.at(i));
+            colorTable[i] = qPremultiply(colorTable.at(i));
     }
     return colorTable;
 }

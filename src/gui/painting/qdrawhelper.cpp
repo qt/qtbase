@@ -255,7 +255,7 @@ static const uint *QT_FASTCALL convertRGBFromARGB32PM(uint *buffer, const uint *
     Q_CONSTEXPR uchar blueRightShift = 8 - blueWidth<Format>();
 
     for (int i = 0; i < count; ++i) {
-        const uint color = INV_PREMUL(src[i]);
+        const uint color = qUnpremultiply(src[i]);
         const uint red = ((color >> redRightShift) & redMask) << redShift<Format>();
         const uint green = ((color >> greenRightShift) & greenMask) << greenShift<Format>();
         const uint blue = ((color >> blueRightShift) & blueMask) << blueShift<Format>();
@@ -387,7 +387,7 @@ static const uint *QT_FASTCALL convertToARGB32PM(uint *buffer, const uint *src, 
             red = (red << redLeftShift) | (red >> redRightShift);
             green = (green << greenLeftShift) | (green >> greenRightShift);
             blue = (blue << blueLeftShift) | (blue >> blueRightShift);
-            buffer[i] = PREMUL((alpha << 24) | (red << 16) | (green << 8) | blue);
+            buffer[i] = qPremultiply((alpha << 24) | (red << 16) | (green << 8) | blue);
         }
     }
     return buffer;
@@ -446,7 +446,7 @@ static const uint *QT_FASTCALL convertFromARGB32PM(uint *buffer, const uint *src
 
     if (!layout->premultiplied) {
         for (int i = 0; i < count; ++i)
-            buffer[i] = INV_PREMUL(src[i]);
+            buffer[i] = qUnpremultiply(src[i]);
         src = buffer;
     }
     for (int i = 0; i < count; ++i) {
@@ -505,7 +505,7 @@ static const uint *QT_FASTCALL convertRGB16FromARGB32PM(uint *buffer, const uint
                                                         const QPixelLayout *, const QRgb *)
 {
     for (int i = 0; i < count; ++i)
-        buffer[i] = qConvertRgb32To16(INV_PREMUL(src[i]));
+        buffer[i] = qConvertRgb32To16(qUnpremultiply(src[i]));
     return buffer;
 }
 #endif
@@ -515,7 +515,7 @@ static const uint *QT_FASTCALL convertIndexedToARGB32PM(uint *buffer, const uint
                                                         const QPixelLayout *, const QRgb *clut)
 {
     for (int i = 0; i < count; ++i)
-        buffer[i] = PREMUL(clut[src[i]]);
+        buffer[i] = qPremultiply(clut[src[i]]);
     return buffer;
 }
 
@@ -529,7 +529,7 @@ static const uint *QT_FASTCALL convertARGB32ToARGB32PM(uint *buffer, const uint 
                                                        const QPixelLayout *, const QRgb *)
 {
     for (int i = 0; i < count; ++i)
-        buffer[i] = PREMUL(src[i]);
+        buffer[i] = qPremultiply(src[i]);
     return buffer;
 }
 
@@ -545,7 +545,7 @@ static const uint *QT_FASTCALL convertRGBA8888ToARGB32PM(uint *buffer, const uin
                                                          const QPixelLayout *, const QRgb *)
 {
     for (int i = 0; i < count; ++i)
-        buffer[i] = PREMUL(RGBA2ARGB(src[i]));
+        buffer[i] = qPremultiply(RGBA2ARGB(src[i]));
     return buffer;
 }
 
@@ -553,7 +553,7 @@ static const uint *QT_FASTCALL convertARGB32FromARGB32PM(uint *buffer, const uin
                                                          const QPixelLayout *, const QRgb *)
 {
     for (int i = 0; i < count; ++i)
-        buffer[i] = INV_PREMUL(src[i]);
+        buffer[i] = qUnpremultiply(src[i]);
     return buffer;
 }
 
@@ -569,7 +569,7 @@ static const uint *QT_FASTCALL convertRGBA8888FromARGB32PM(uint *buffer, const u
                                                              const QPixelLayout *, const QRgb *)
 {
     for (int i = 0; i < count; ++i)
-        buffer[i] = ARGB2RGBA(INV_PREMUL(src[i]));
+        buffer[i] = ARGB2RGBA(qUnpremultiply(src[i]));
     return buffer;
 }
 
@@ -585,7 +585,7 @@ static const uint *QT_FASTCALL convertRGBXFromARGB32PM(uint *buffer, const uint 
                                                        const QPixelLayout *, const QRgb *)
 {
     for (int i = 0; i < count; ++i)
-        buffer[i] = ARGB2RGBA(0xff000000 | INV_PREMUL(src[i]));
+        buffer[i] = ARGB2RGBA(0xff000000 | qUnpremultiply(src[i]));
     return buffer;
 }
 
@@ -853,9 +853,9 @@ static DestFetchProc destFetchProc[QImage::NImageFormats] =
 */
 static inline QRgb findNearestColor(QRgb color, QRasterBuffer *rbuf)
 {
-    QRgb color_0 = PREMUL(rbuf->destColor0);
-    QRgb color_1 = PREMUL(rbuf->destColor1);
-    color = PREMUL(color);
+    QRgb color_0 = qPremultiply(rbuf->destColor0);
+    QRgb color_1 = qPremultiply(rbuf->destColor1);
+    color = qPremultiply(color);
 
     int r = qRed(color);
     int g = qGreen(color);
@@ -6250,7 +6250,7 @@ static void qt_rectfill_nonpremul_argb32(QRasterBuffer *rasterBuffer,
                                          quint32 color)
 {
     qt_rectfill<quint32>(reinterpret_cast<quint32 *>(rasterBuffer->buffer()),
-                         INV_PREMUL(color), x, y, width, height, rasterBuffer->bytesPerLine());
+                         qUnpremultiply(color), x, y, width, height, rasterBuffer->bytesPerLine());
 }
 
 static void qt_rectfill_rgba(QRasterBuffer *rasterBuffer,
@@ -6266,7 +6266,7 @@ static void qt_rectfill_nonpremul_rgba(QRasterBuffer *rasterBuffer,
                                        quint32 color)
 {
     qt_rectfill<quint32>(reinterpret_cast<quint32 *>(rasterBuffer->buffer()),
-                         ARGB2RGBA(INV_PREMUL(color)), x, y, width, height, rasterBuffer->bytesPerLine());
+                         ARGB2RGBA(qUnpremultiply(color)), x, y, width, height, rasterBuffer->bytesPerLine());
 }
 
 

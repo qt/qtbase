@@ -184,7 +184,7 @@ void QGL2GradientCache::generateGradientColorTable(const QGradient& gradient, ui
     uint current_color = ARGB_COMBINE_ALPHA(colors[0], alpha);
     qreal incr = 1.0 / qreal(size);
     qreal fpos = 1.5 * incr;
-    colorTable[pos++] = qtToGlColor(PREMUL(current_color));
+    colorTable[pos++] = qtToGlColor(qPremultiply(current_color));
 
     while (fpos <= s.first().first) {
         colorTable[pos] = colorTable[pos - 1];
@@ -193,13 +193,13 @@ void QGL2GradientCache::generateGradientColorTable(const QGradient& gradient, ui
     }
 
     if (colorInterpolation)
-        current_color = PREMUL(current_color);
+        current_color = qPremultiply(current_color);
 
     for (int i = 0; i < s.size() - 1; ++i) {
         qreal delta = 1/(s[i+1].first - s[i].first);
         uint next_color = ARGB_COMBINE_ALPHA(colors[i+1], alpha);
         if (colorInterpolation)
-            next_color = PREMUL(next_color);
+            next_color = qPremultiply(next_color);
 
         while (fpos < s[i+1].first && pos < size) {
             int dist = int(256 * ((fpos - s[i].first) * delta));
@@ -207,7 +207,7 @@ void QGL2GradientCache::generateGradientColorTable(const QGradient& gradient, ui
             if (colorInterpolation)
                 colorTable[pos] = qtToGlColor(INTERPOLATE_PIXEL_256(current_color, idist, next_color, dist));
             else
-                colorTable[pos] = qtToGlColor(PREMUL(INTERPOLATE_PIXEL_256(current_color, idist, next_color, dist)));
+                colorTable[pos] = qtToGlColor(qPremultiply(INTERPOLATE_PIXEL_256(current_color, idist, next_color, dist)));
             ++pos;
             fpos += incr;
         }
@@ -216,7 +216,7 @@ void QGL2GradientCache::generateGradientColorTable(const QGradient& gradient, ui
 
     Q_ASSERT(s.size() > 0);
 
-    uint last_color = qtToGlColor(PREMUL(ARGB_COMBINE_ALPHA(colors[s.size() - 1], alpha)));
+    uint last_color = qtToGlColor(qPremultiply(ARGB_COMBINE_ALPHA(colors[s.size() - 1], alpha)));
     for (;pos < size; ++pos)
         colorTable[pos] = last_color;
 

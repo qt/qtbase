@@ -1719,7 +1719,7 @@ void QImage::fill(const QColor &color)
     if (d->depth == 32) {
         uint pixel = color.rgba();
         if (d->format == QImage::Format_ARGB32_Premultiplied || d->format == QImage::Format_RGBA8888_Premultiplied)
-            pixel = PREMUL(pixel);
+            pixel = qPremultiply(pixel);
         fill((uint) pixel);
 
     } else if (d->format == QImage::Format_RGB16) {
@@ -2204,17 +2204,17 @@ void QImage::setPixel(int x, int y, uint index_or_rgb)
     case Format_RGB32:
         //make sure alpha is 255, we depend on it in qdrawhelper for cases
         // when image is set as a texture pattern on a qbrush
-        ((uint *)s)[x] = uint(255 << 24) | index_or_rgb;
+        ((uint *)s)[x] = 0xff000000 | index_or_rgb;
         return;
     case Format_ARGB32:
     case Format_ARGB32_Premultiplied:
         ((uint *)s)[x] = index_or_rgb;
         return;
     case Format_RGB16:
-        ((quint16 *)s)[x] = qConvertRgb32To16(INV_PREMUL(index_or_rgb));
+        ((quint16 *)s)[x] = qConvertRgb32To16(qUnpremultiply(index_or_rgb));
         return;
     case Format_RGBX8888:
-        ((uint *)s)[x] = ARGB2RGBA(index_or_rgb | 0xff000000);
+        ((uint *)s)[x] = ARGB2RGBA(0xff000000 | index_or_rgb);
         return;
     case Format_RGBA8888:
     case Format_RGBA8888_Premultiplied:

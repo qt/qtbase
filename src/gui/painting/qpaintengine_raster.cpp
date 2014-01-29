@@ -1823,7 +1823,7 @@ void QRasterPaintEngine::fillRect(const QRectF &r, const QColor &color)
     Q_D(QRasterPaintEngine);
     QRasterPaintEngineState *s = state();
 
-    d->solid_color_filler.solid.color = PREMUL(ARGB_COMBINE_ALPHA(color.rgba(), s->intOpacity));
+    d->solid_color_filler.solid.color = qPremultiply(ARGB_COMBINE_ALPHA(color.rgba(), s->intOpacity));
     if ((d->solid_color_filler.solid.color & 0xff000000) == 0
         && s->composition_mode == QPainter::CompositionMode_SourceOver) {
         return;
@@ -2272,7 +2272,7 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
                 | ((((color & 0xff00ff00) >> 8) * s->intOpacity) & 0xff00ff00);
             break;
         default:
-            d->solid_color_filler.solid.color = PREMUL(ARGB_COMBINE_ALPHA(color, s->intOpacity));
+            d->solid_color_filler.solid.color = qPremultiply(ARGB_COMBINE_ALPHA(color, s->intOpacity));
             break;
         }
 
@@ -3662,7 +3662,7 @@ QImage QRasterBuffer::colorizeBitmap(const QImage &image, const QColor &color)
     QImage sourceImage = image.convertToFormat(QImage::Format_MonoLSB);
     QImage dest = QImage(sourceImage.size(), QImage::Format_ARGB32_Premultiplied);
 
-    QRgb fg = PREMUL(color.rgba());
+    QRgb fg = qPremultiply(color.rgba());
     QRgb bg = 0;
 
     int height = sourceImage.height();
@@ -3702,8 +3702,8 @@ QImage::Format QRasterBuffer::prepare(QImage *image)
     drawHelper = qDrawHelper + format;
     if (image->depth() == 1 && image->colorTable().size() == 2) {
         monoDestinationWithClut = true;
-        destColor0 = PREMUL(image->colorTable()[0]);
-        destColor1 = PREMUL(image->colorTable()[1]);
+        destColor0 = qPremultiply(image->colorTable()[0]);
+        destColor1 = qPremultiply(image->colorTable()[1]);
     }
 
     return format;
@@ -4260,8 +4260,8 @@ void QGradientCache::generateGradientColorTable(const QGradient& gradient, uint 
         }
 
         if (colorInterpolation) {
-            first_color = PREMUL(first_color);
-            second_color = PREMUL(second_color);
+            first_color = qPremultiply(first_color);
+            second_color = qPremultiply(second_color);
         }
 
         int first_index = qRound(first_stop * (GRADIENT_STOPTABLE_SIZE-1));
@@ -4282,7 +4282,7 @@ void QGradientCache::generateGradientColorTable(const QGradient& gradient, uint 
             if (colorInterpolation)
                 colorTable[i] = first_color;
             else
-                colorTable[i] = PREMUL(first_color);
+                colorTable[i] = qPremultiply(first_color);
         }
 
         if (i < second_index) {
@@ -4311,7 +4311,7 @@ void QGradientCache::generateGradientColorTable(const QGradient& gradient, uint 
                 if (colorInterpolation)
                     colorTable[i] = color;
                 else
-                    colorTable[i] = PREMUL(color);
+                    colorTable[i] = qPremultiply(color);
             }
         }
 
@@ -4319,7 +4319,7 @@ void QGradientCache::generateGradientColorTable(const QGradient& gradient, uint 
             if (colorInterpolation)
                 colorTable[i] = second_color;
             else
-                colorTable[i] = PREMUL(second_color);
+                colorTable[i] = qPremultiply(second_color);
         }
 
         return;
@@ -4327,7 +4327,7 @@ void QGradientCache::generateGradientColorTable(const QGradient& gradient, uint 
 
     uint current_color = ARGB_COMBINE_ALPHA(stops[0].second.rgba(), opacity);
     if (stopCount == 1) {
-        current_color = PREMUL(current_color);
+        current_color = qPremultiply(current_color);
         for (int i = 0; i < size; ++i)
             colorTable[i] = current_color;
         return;
@@ -4344,7 +4344,7 @@ void QGradientCache::generateGradientColorTable(const QGradient& gradient, uint 
     qreal dpos = 1.5 * incr; // current position in gradient stop list (0 to 1)
 
      // Up to first point
-    colorTable[pos++] = PREMUL(current_color);
+    colorTable[pos++] = qPremultiply(current_color);
     while (dpos <= begin_pos) {
         colorTable[pos] = colorTable[pos - 1];
         ++pos;
@@ -4366,8 +4366,8 @@ void QGradientCache::generateGradientColorTable(const QGradient& gradient, uint 
         next_color = ARGB_COMBINE_ALPHA(stops[current_stop+1].second.rgba(), opacity);
 
         if (colorInterpolation) {
-            current_color = PREMUL(current_color);
-            next_color = PREMUL(next_color);
+            current_color = qPremultiply(current_color);
+            next_color = qPremultiply(next_color);
         }
 
         qreal diff = stops[current_stop+1].first - stops[current_stop].first;
@@ -4384,7 +4384,7 @@ void QGradientCache::generateGradientColorTable(const QGradient& gradient, uint 
             if (colorInterpolation)
                 colorTable[pos] = INTERPOLATE_PIXEL_256(current_color, idist, next_color, dist);
             else
-                colorTable[pos] = PREMUL(INTERPOLATE_PIXEL_256(current_color, idist, next_color, dist));
+                colorTable[pos] = qPremultiply(INTERPOLATE_PIXEL_256(current_color, idist, next_color, dist));
 
             ++pos;
             dpos += incr;
@@ -4408,8 +4408,8 @@ void QGradientCache::generateGradientColorTable(const QGradient& gradient, uint 
 
                 if (colorInterpolation) {
                     if (skip != 1)
-                        current_color = PREMUL(current_color);
-                    next_color = PREMUL(next_color);
+                        current_color = qPremultiply(current_color);
+                    next_color = qPremultiply(next_color);
                 }
 
                 qreal diff = stops[current_stop+1].first - stops[current_stop].first;
@@ -4421,7 +4421,7 @@ void QGradientCache::generateGradientColorTable(const QGradient& gradient, uint 
     }
 
     // After last point
-    current_color = PREMUL(ARGB_COMBINE_ALPHA(stops[stopCount - 1].second.rgba(), opacity));
+    current_color = qPremultiply(ARGB_COMBINE_ALPHA(stops[stopCount - 1].second.rgba(), opacity));
     while (pos < size - 1) {
         colorTable[pos] = current_color;
         ++pos;
@@ -4455,7 +4455,7 @@ void QSpanData::setup(const QBrush &brush, int alpha, QPainter::CompositionMode 
         type = Solid;
         QColor c = qbrush_color(brush);
         QRgb rgba = c.rgba();
-        solid.color = PREMUL(ARGB_COMBINE_ALPHA(rgba, alpha));
+        solid.color = qPremultiply(ARGB_COMBINE_ALPHA(rgba, alpha));
         if ((solid.color & 0xff000000) == 0
             && compositionMode == QPainter::CompositionMode_SourceOver) {
             type = None;

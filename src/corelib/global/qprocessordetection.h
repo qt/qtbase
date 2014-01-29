@@ -331,8 +331,7 @@
    the size of the register). On some architectures where a pointer could be
    smaller than the register, the macro is defined above.
 
-   Try our best to define it to a literal, so it can be used in the preprocessor,
-   but fall back to sizeof(void*) on practically every 32-bit build.
+   Falls back to QT_POINTER_SIZE if not set explicitly for the platform.
 */
 #ifndef Q_PROCESSOR_WORDSIZE
 #  ifdef __SIZEOF_POINTER__
@@ -341,7 +340,7 @@
 #  elif defined(_LP64) || defined(__LP64__) || defined(WIN64) || defined(_WIN64)
 #    define Q_PROCESSOR_WORDSIZE        8
 #  else
-#    define Q_PROCESSOR_WORDSIZE        sizeof(void*)
+#    define Q_PROCESSOR_WORDSIZE        QT_POINTER_SIZE
 #  endif
 #endif
 
