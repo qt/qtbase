@@ -1,6 +1,5 @@
 TEMPLATE = lib
 TARGET = $$qtLibraryTarget(d3dcompiler_qt)
-DLLDESTDIR = $$QT_BUILD_TREE/bin
 
 include(../config.pri)
 CONFIG += qt
