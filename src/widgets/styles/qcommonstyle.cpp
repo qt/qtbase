@@ -1598,7 +1598,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
 
                     if (toolbutton->toolButtonStyle == Qt::ToolButtonTextUnderIcon) {
                         pr.setHeight(pmSize.height() + 6);
-                        tr.adjust(0, pr.height() - 1, 0, -2);
+                        tr.adjust(0, pr.height() - 1, 0, -1);
                         pr.translate(shiftX, shiftY);
                         if (!hasArrow) {
                             proxy()->drawItemPixmap(p, pr, Qt::AlignCenter, pm);
