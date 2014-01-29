@@ -453,19 +453,16 @@ Q_GLOBAL_STATIC(StaticVariables, staticVariables);
 
 - (void)insertText:(NSString *)text
 {
-    QString string = QString::fromUtf8([text UTF8String]);
-    int key = 0;
-    if ([text isEqualToString:@"\n"]) {
-        key = (int)Qt::Key_Return;
-        if (self.returnKeyType == UIReturnKeyDone)
-            [self resignFirstResponder];
-    }
+    QObject *focusObject = QGuiApplication::focusObject();
+    if (!focusObject)
+        return;
 
-    // Send key event to window system interface
-    QWindowSystemInterface::handleKeyEvent(
-        0, QEvent::KeyPress, key, Qt::NoModifier, string, false, int(string.length()));
-    QWindowSystemInterface::handleKeyEvent(
-        0, QEvent::KeyRelease, key, Qt::NoModifier, string, false, int(string.length()));
+    if ([text isEqualToString:@"\n"] && self.returnKeyType == UIReturnKeyDone)
+        [self resignFirstResponder];
+
+    QInputMethodEvent e;
+    e.setCommitString(QString::fromNSString(text));
+    [self sendEventToFocusObject:e];
 }
 
 - (void)deleteBackward
