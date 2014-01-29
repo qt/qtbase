@@ -1,6 +1,6 @@
 /***************************************************************************
 **
-** Copyright (C) 2013 BlackBerry Limited. All rights reserved.
+** Copyright (C) 2013 - 2014 BlackBerry Limited. All rights reserved.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -135,8 +135,7 @@ void QQnxEglWindow::swapEGLBuffers()
     if (eglResult != EGL_TRUE)
         qFatal("QQNX: failed to swap EGL buffers, err=%d", eglGetError());
 
-    if (m_cover)
-        m_cover->updateCover();
+    windowPosted();
 }
 
 EGLSurface QQnxEglWindow::getSurface()

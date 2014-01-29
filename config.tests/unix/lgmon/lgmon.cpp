@@ -1,9 +1,9 @@
 /***************************************************************************
 **
-** Copyright (C) 2011 - 2014 BlackBerry Limited. All rights reserved.
+** Copyright (C) 2014 BlackBerry Limited. All rights reserved.
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the config.tests of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -39,20 +39,11 @@
 **
 ****************************************************************************/
 
-#include "main.h"
-#include "qqnxintegration.h"
-#include "qqnxlgmon.h"
+#include <lgmon.h>
 
-QT_BEGIN_NAMESPACE
-
-QPlatformIntegration *QQnxIntegrationPlugin::create(const QString& system, const QStringList& paramList)
+int main(int, char **)
 {
-    if (!system.compare(QLatin1String("qnx"), Qt::CaseInsensitive)) {
-        qqnxLgmonInit();
-        return new QQnxIntegration(paramList);
-    }
-
+    lgmon_supported(getpid());
     return 0;
 }
 
-QT_END_NAMESPACE

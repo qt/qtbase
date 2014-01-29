@@ -65,7 +65,8 @@ HEADERS =   main.h \
             qqnxcursor.h \
             qqnxrasterwindow.h \
             qqnxscreeneventfilter.h \
-            qqnxglobal.h
+            qqnxglobal.h \
+            qqnxlgmon.h
 
 CONFIG(qqnx_screeneventthread) {
     DEFINES += QQNX_SCREENEVENTTHREAD
@@ -143,6 +144,12 @@ CONFIG(qqnx_pps) {
         HEADERS += qqnxinputcontext_noimf.h
         SOURCES += qqnxinputcontext_noimf.cpp
     }
+}
+
+lgmon {
+    DEFINES += QQNX_LGMON
+    SOURCES += qqnxlgmon.cpp
+    LIBS += -llgmon
 }
 
 OTHER_FILES += qnx.json

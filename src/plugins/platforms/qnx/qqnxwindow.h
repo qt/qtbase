@@ -117,9 +117,9 @@ protected:
     virtual void resetBuffers() = 0;
 
     void initWindow();
+    void windowPosted();
 
     screen_context_t m_screenContext;
-    QScopedPointer<QQnxAbstractCover> m_cover;
 
 private:
     void createWindowGroup();
@@ -137,6 +137,7 @@ private:
     QQnxScreen *m_screen;
     QQnxWindow *m_parentWindow;
     QList<QQnxWindow*> m_childWindows;
+    QScopedPointer<QQnxAbstractCover> m_cover;
     bool m_visible;
     bool m_exposed;
     QRect m_unmaximizedGeometry;

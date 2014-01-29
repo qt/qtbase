@@ -197,6 +197,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "SLOG2" ]           = "no";
     dictionary[ "QNX_IMF" ]         = "no";
     dictionary[ "PPS" ]             = "no";
+    dictionary[ "LGMON" ]           = "no";
     dictionary[ "SYSTEM_PROXIES" ]  = "no";
     dictionary[ "WERROR" ]          = "auto";
     dictionary[ "QREAL" ]           = "double";
@@ -890,6 +891,10 @@ void Configure::parseCmdLine()
             dictionary[ "PPS" ] = "no";
         } else if (configCmdLine.at(i) == "-pps") {
             dictionary[ "PPS" ] = "yes";
+        } else if (configCmdLine.at(i) == "-no-lgmon") {
+            dictionary[ "LGMON" ] = "no";
+        } else if (configCmdLine.at(i) == "-lgmon") {
+            dictionary[ "LGMON" ] = "yes";
         } else if (configCmdLine.at(i) == "-no-system-proxies") {
             dictionary[ "SYSTEM_PROXIES" ] = "no";
         } else if (configCmdLine.at(i) == "-system-proxies") {
@@ -1666,6 +1671,7 @@ void Configure::applySpecSpecifics()
         dictionary["SLOG2"]                 = "auto";
         dictionary["QNX_IMF"]               = "auto";
         dictionary["PPS"]                   = "auto";
+        dictionary["LGMON"]                 = "auto";
         dictionary["QT_XKBCOMMON"]          = "no";
         dictionary[ "ANGLE" ]               = "no";
         dictionary[ "FONT_CONFIG" ]         = "auto";
@@ -1877,7 +1883,7 @@ bool Configure::displayHelp()
                                                         "by setting QT_HARFBUZZ environment variable to \"old\".");
         desc("HARFBUZZ", "system","-system-harfbuzz",   "(experimental) Use HarfBuzz-NG from the operating system\n"
                                                         "to do text shaping. It can still be disabled\n"
-                                                        "by setting QT_HARFBUZZ environment variable to \"old\".");
+                                                        "by setting QT_HARFBUZZ environment variable to \"old\".\n");
 
         if ((platform() == QNX) || (platform() == BLACKBERRY)) {
             desc("SLOG2", "yes",  "-slog2",             "Compile with slog2 support.");
@@ -1886,6 +1892,8 @@ bool Configure::displayHelp()
             desc("QNX_IMF", "no",  "-no-imf",           "Do not compile with imf support.");
             desc("PPS", "yes",  "-pps",                 "Compile with PPS support.");
             desc("PPS", "no",  "-no-pps",               "Do not compile with PPS support.");
+            desc("LGMON", "yes",  "-lgmon",             "Compile with lgmon support.");
+            desc("LGMON", "no",   "-no-lgmon",          "Do not compile with lgmon support.\n");
         }
 
         desc("ANGLE", "yes",       "-angle",            "Use the ANGLE implementation of OpenGL ES 2.0.");
@@ -2236,6 +2244,9 @@ bool Configure::checkAvailability(const QString &part)
         available = tryCompileProject("unix/qqnx_imf");
     } else if (part == "PPS") {
         available = (platform() == QNX || platform() == BLACKBERRY) && tryCompileProject("unix/pps");
+    } else if (part == "LGMON") {
+        available = (platform() == QNX || platform() == BLACKBERRY)
+                    && tryCompileProject("unix/lgmon");
     } else if (part == "NEON") {
         available = (dictionary["QT_ARCH"] == "arm") && tryCompileProject("unix/neon");
     } else if (part == "FONT_CONFIG") {
@@ -2387,6 +2398,10 @@ void Configure::autoDetection()
 
     if (dictionary["PPS"] == "auto") {
         dictionary["PPS"] = checkAvailability("PPS") ? "yes" : "no";
+    }
+
+    if ((platform() == QNX || platform() == BLACKBERRY) && dictionary["LGMON"] == "auto") {
+        dictionary["LGMON"] = checkAvailability("LGMON") ? "yes" : "no";
     }
 
     if (dictionary["QT_EVENTFD"] == "auto")
@@ -3244,6 +3259,9 @@ void Configure::generateQConfigPri()
         if (dictionary[ "PPS" ] == "yes")
             configStream << " qqnx_pps";
 
+        if (dictionary[ "LGMON" ] == "yes")
+            configStream << " lgmon";
+
         if (dictionary["DIRECTWRITE"] == "yes")
             configStream << " directwrite";
 
@@ -3620,6 +3638,7 @@ void Configure::displayConfig()
         sout << "    SLOG2 support..........." << dictionary[ "SLOG2" ] << endl;
         sout << "    IMF support............." << dictionary[ "QNX_IMF" ] << endl;
         sout << "    PPS support............." << dictionary[ "PPS" ] << endl;
+        sout << "    LGMON support..........." << dictionary[ "LGMON" ] << endl;
     }
     sout << "    ANGLE..................." << dictionary[ "ANGLE" ] << endl;
     sout << endl;

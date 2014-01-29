@@ -633,6 +633,7 @@ CFG_STACK_PROTECTOR_STRONG=auto
 CFG_SLOG2=auto
 CFG_PPS=auto
 CFG_QNX_IMF=auto
+CFG_LGMON=auto
 CFG_SYSTEM_PROXIES=no
 
 # Target architecture
@@ -1800,6 +1801,13 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
+    lgmon)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_LGMON="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
     gtkstyle)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_QGTKSTYLE="$VAL"
@@ -2501,6 +2509,9 @@ QNX/Blackberry options:
 
     -no-imf ............ Do not compile with imf support.
     -imf ............... Compile with imf support.
+
+    -no-lgmon .......... Do not compile with lgmon support.
+    -lgmon ............. Compile with lgmon support.
 
 MacOS/iOS options:
 
@@ -4414,6 +4425,15 @@ if [ "$XPLATFORM_QNX" = "yes" ]; then
             QMAKE_CONFIG="$QMAKE_CONFIG qqnx_pps"
         else
             CFG_PPS=no
+        fi
+    fi
+
+    if [ "$CFG_LGMON" != "no" ]; then
+        if compileTest unix/lgmon "lgmon"; then
+            CFG_LGMON=yes
+            QMAKE_CONFIG="$QMAKE_CONFIG lgmon"
+        else
+            CFG_LGMON=no
         fi
     fi
 fi
@@ -6841,6 +6861,7 @@ if [ "$XPLATFORM_QNX" = "yes" ]; then
     report_support "  SLOG2 .................." "$CFG_SLOG2"
     report_support "  IMF ...................." "$CFG_QNX_IMF"
     report_support "  PPS ...................." "$CFG_PPS"
+    report_support "  LGMON .................." "$CFG_LGMON"
 fi
 report_support "  SQL drivers:"
 report_support "    DB2 .................." "$CFG_SQL_db2" plugin "plugin" yes "built into QtSql"

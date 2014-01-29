@@ -44,6 +44,7 @@
 #include "qqnxwindow.h"
 #include "qqnxintegration.h"
 #include "qqnxscreen.h"
+#include "qqnxlgmon.h"
 
 #include <QUuid>
 
@@ -705,5 +706,12 @@ void QQnxWindow::applyWindowState()
     }
 }
 
+void QQnxWindow::windowPosted()
+{
+    if (m_cover)
+        m_cover->updateCover();
+
+    qqnxLgmonFramePosted(m_cover);  // for performance measurements
+}
 
 QT_END_NAMESPACE

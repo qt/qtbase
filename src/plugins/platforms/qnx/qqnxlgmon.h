@@ -1,6 +1,6 @@
 /***************************************************************************
 **
-** Copyright (C) 2011 - 2014 BlackBerry Limited. All rights reserved.
+** Copyright (C) 2014 BlackBerry Limited. All rights reserved.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -39,20 +39,42 @@
 **
 ****************************************************************************/
 
-#include "main.h"
-#include "qqnxintegration.h"
-#include "qqnxlgmon.h"
+#ifndef QQNXLGMON_H
+#define QQNXLGMON_H
+
+#include <qglobal.h>
+
+#if defined(QQNX_LGMON)
+#include <lgmon.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
-QPlatformIntegration *QQnxIntegrationPlugin::create(const QString& system, const QStringList& paramList)
-{
-    if (!system.compare(QLatin1String("qnx"), Qt::CaseInsensitive)) {
-        qqnxLgmonInit();
-        return new QQnxIntegration(paramList);
-    }
+#if defined(QQNX_LGMON)
 
-    return 0;
+extern bool qqnxLgmonFirstFrame;
+
+inline void qqnxLgmonInit()
+{
+    lgmon_supported(getpid());
 }
 
+inline void qqnxLgmonFramePosted(bool isCover)
+{
+    if (qqnxLgmonFirstFrame && !isCover) {
+        qqnxLgmonFirstFrame = false;
+        lgmon_app_ready_for_user_input(getpid());
+    }
+}
+
+#else
+
+inline void qqnxLgmonInit() {}
+inline void qqnxLgmonFramePosted(bool /*isCover*/) {}
+
+#endif
+
 QT_END_NAMESPACE
+
+#endif  // QQNXLGMON_H
+
