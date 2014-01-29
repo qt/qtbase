@@ -1299,17 +1299,24 @@ QFontEngineBox::~QFontEngineBox()
 {
 }
 
-bool QFontEngineBox::stringToCMap(const QChar *, int len, QGlyphLayout *glyphs, int *nglyphs, QFontEngine::ShaperFlags flags) const
+bool QFontEngineBox::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, QFontEngine::ShaperFlags flags) const
 {
     if (*nglyphs < len) {
         *nglyphs = len;
         return false;
     }
 
-    memset(glyphs->glyphs, 0, len * sizeof(glyph_t));
+    int ucs4Length = 0;
+    for (int i = 0; i < len; ++i) {
+        if (str[i].isHighSurrogate() && i + 1 < len && str[i + 1].isLowSurrogate())
+            ++ucs4Length;
+        ++ucs4Length;
+    }
 
-    *nglyphs = len;
-    glyphs->numGlyphs = len;
+    memset(glyphs->glyphs, 0, ucs4Length * sizeof(glyph_t));
+
+    *nglyphs = ucs4Length;
+    glyphs->numGlyphs = ucs4Length;
 
     if (!(flags & GlyphIndicesOnly))
         recalcAdvances(glyphs, flags);
