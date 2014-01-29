@@ -54,15 +54,10 @@
 //
 #include "QtCore/qstring.h"
 #include "QtCore/qstringlist.h"
-#include "QtCore/qpair.h"
 #include "QtPrintSupport/qprinter.h"
 #include "QtCore/qdatetime.h"
 
 #ifndef QT_NO_CUPS
-#include <QtCore/qlibrary.h>
-#include <cups/cups.h>
-#include <cups/ppd.h>
-#include "qprintengine.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -72,22 +67,9 @@ QT_BEGIN_NAMESPACE
 // removed from the dialogs.
 #define PPK_CupsOptions QPrintEngine::PrintEnginePropertyKey(0xfe00)
 
-Q_DECLARE_TYPEINFO(cups_option_t, Q_MOVABLE_TYPE | Q_PRIMITIVE_TYPE);
-
 class Q_PRINTSUPPORT_EXPORT QCUPSSupport
 {
 public:
-    struct Printer
-    {
-        Printer(const QString &name = QString());
-
-        QString name;
-        bool isDefault;
-        int cupsPrinterIndex;
-    };
-    QCUPSSupport();
-    ~QCUPSSupport();
-
     // Enum for values of job-hold-until option
     enum JobHoldUntil {
         NoHold = 0,  //CUPS Default
@@ -140,28 +122,6 @@ public:
         TopToBottomRightToLeft
     };
 
-    static bool isAvailable();
-    static int cupsVersion() { return isAvailable() ? CUPS_VERSION_MAJOR*10000+CUPS_VERSION_MINOR*100+CUPS_VERSION_PATCH : 0; }
-    int availablePrintersCount() const;
-    const cups_dest_t* availablePrinters() const;
-    int currentPrinterIndex() const;
-    const ppd_file_t* setCurrentPrinter(int index);
-    const ppd_file_t* setCurrentPrinter(const QString &printerName);
-
-    const ppd_file_t* currentPPD() const;
-    const ppd_option_t* ppdOption(const char *key) const;
-
-    const cups_option_t* printerOption(const QString &key) const;
-    const ppd_option_t* pageSizes() const;
-
-    int markOption(const char* name, const char* value);
-    void saveOptions(QList<const ppd_option_t*> options, QList<const char*> markedOptions);
-
-    QRect paperRect(const char *choice) const;
-    QRect pageRect(const char *choice) const;
-
-    QStringList options() const;
-
     static QStringList cupsOptionsList(QPrinter *printer);
     static void setCupsOptions(QPrinter *printer, const QStringList &cupsOptions);
     static void setCupsOption(QStringList &cupsOptions, const QString &option, const QString &value);
@@ -174,31 +134,6 @@ public:
     static void setPagesPerSheetLayout(QPrinter *printer, const PagesPerSheet pagesPerSheet,
                                        const PagesPerSheetLayout pagesPerSheetLayout);
     static void setPageRange(QPrinter *printer, int pageFrom, int pageTo);
-
-    static bool printerHasPPD(const char *printerName);
-
-    QString unicodeString(const char *s);
-
-    QPair<int, QString> tempFd();
-    int printFile(const char * printerName, const char * filename, const char * title,
-                  int num_options, cups_option_t * options);
-
-    static QList<Printer> availableUnixPrinters();
-    static QList<QPrinter::PaperSize> getCupsPrinterPaperSizes(int cupsPrinterIndex);
-    static QList<QPair<QString, QSizeF> > getCupsPrinterPaperSizesWithNames(int cupsPrinterIndex);
-
-private:
-    void collectMarkedOptions(QStringList& list, const ppd_group_t* group = 0) const;
-    void collectMarkedOptionsHelper(QStringList& list, const ppd_group_t* group) const;
-
-    int prnCount;
-    cups_dest_t *printers;
-    const ppd_option_t* page_sizes;
-    int currPrinterIndex;
-    ppd_file_t *currPPD;
-#ifndef QT_NO_TEXTCODEC
-    QTextCodec *codec;
-#endif
 };
 
 QT_END_NAMESPACE
