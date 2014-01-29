@@ -908,7 +908,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
     ProString destdir = project->first("DESTDIR");
     if (!destdir.isEmpty() && !destdir.endsWith(Option::dir_sep))
         destdir += Option::dir_sep;
-    t << "distclean: clean\n";
+    t << "distclean: clean " << var("DISTCLEAN_DEPS") << '\n';
     if(!project->isEmpty("QMAKE_BUNDLE")) {
         QString bundlePath = escapeFilePath(destdir + project->first("QMAKE_BUNDLE"));
         t << "\t-$(DEL_FILE) -r " << bundlePath << endl;

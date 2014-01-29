@@ -2617,6 +2617,8 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
             t << varGlue("ALL_DEPS"," "," ","");
         if(suffix == "clean")
             t << varGlue("CLEAN_DEPS"," "," ","");
+        else if (suffix == "distclean")
+            t << varGlue("DISTCLEAN_DEPS"," "," ","");
         t << " FORCE\n";
         if(suffix == "clean") {
             t << fileVarGlue("QMAKE_CLEAN", "\t-$(DEL_FILE) ", "\n\t-$(DEL_FILE) ", "\n");

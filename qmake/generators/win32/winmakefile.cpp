@@ -565,7 +565,7 @@ void Win32MakefileGenerator::writeCleanParts(QTextStream &t)
     }
     t << endl << endl;
 
-    t << "distclean: clean";
+    t << "distclean: clean " << var("DISTCLEAN_DEPS");
     {
         const char *clean_targets[] = { "QMAKE_DISTCLEAN", 0 };
         for(int i = 0; clean_targets[i]; ++i) {
