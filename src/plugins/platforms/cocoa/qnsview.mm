@@ -706,8 +706,18 @@ static QTouchDevice *touchDevice = 0;
 -(void)cursorUpdate:(NSEvent *)theEvent
 {
     Q_UNUSED(theEvent)
-    if (m_platformWindow->m_windowCursor)
+    // Set the cursor manually if there is no NSWindow.
+    if (!m_platformWindow->m_nsWindow && m_platformWindow->m_windowCursor)
         [m_platformWindow->m_windowCursor set];
+    else
+        [super cursorUpdate:theEvent];
+}
+
+-(void)resetCursorRects
+{
+    // Use the cursor rect API if there is a NSWindow
+    if (m_platformWindow->m_nsWindow && m_platformWindow->m_windowCursor)
+        [self addCursorRect:[self visibleRect] cursor:m_platformWindow->m_windowCursor];
 }
 
 - (void)mouseMoved:(NSEvent *)theEvent

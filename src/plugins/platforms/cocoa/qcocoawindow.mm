@@ -1314,12 +1314,18 @@ void QCocoaWindow::setWindowCursor(NSCursor *cursor)
     // it should be accociated with the window until a different
     // cursor is set.
 
-    // Cocoa has different abstractions. We can set the cursor *now*:
-    if (m_windowUnderMouse)
-        [cursor set];
-    // or we can set the cursor on mouse enter/leave using tracking
-    // areas. This is done in QNSView, save the cursor:
     m_windowCursor = cursor;
+
+    // Use the built in cursor rect API if the QCocoaWindow has a NSWindow.
+    // Othervise, set the cursor if this window is under the mouse. In
+    // this case QNSView::cursorUpdate will set the cursor as the pointer
+    // moves.
+    if (m_nsWindow && m_qtView) {
+        [m_nsWindow invalidateCursorRectsForView : m_qtView];
+    } else {
+        if (m_windowUnderMouse)
+            [cursor set];
+    }
 }
 
 void QCocoaWindow::registerTouch(bool enable)
