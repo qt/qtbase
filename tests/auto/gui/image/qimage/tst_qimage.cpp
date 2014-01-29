@@ -220,15 +220,10 @@ void tst_QImage::createInvalidXPM()
 
 void tst_QImage::createFromUChar()
 {
-    uchar data[] = {
-#if Q_BYTE_ORDER == Q_BIG_ENDIAN
-        0xFF,
-#endif
-        1,1,1, 0xFF, 2,2,2, 0xFF, 3,3,3, 0xFF, 4,4,4,
-#if Q_BYTE_ORDER != Q_BIG_ENDIAN
-        0xFF,
-#endif
-    };
+    uint data[] = { 0xff010101U,
+                    0xff020202U,
+                    0xff030303U,
+                    0xff040404U };
 
     // When the data is const, nothing you do to the image will change the source data.
     QImage i1((const uchar*)data, 2, 2, 8, QImage::Format_RGB32);
@@ -242,8 +237,8 @@ void tst_QImage::createFromUChar()
     }
     QCOMPARE(i1.pixel(0,0), 0xFF010101U);
     QCOMPARE(*(QRgb*)data, 0xFF010101U);
-    *((QRgb*)i1.bits()) = 7U;
-    QCOMPARE(i1.pixel(0,0), 7U);
+    *((QRgb*)i1.bits()) = 0xFF070707U;
+    QCOMPARE(i1.pixel(0,0), 0xFF070707U);
     QCOMPARE(*(QRgb*)data, 0xFF010101U);
 
     // Changing copies should not change the original image or data.
@@ -270,16 +265,16 @@ void tst_QImage::createFromUChar()
     }
     QCOMPARE(i2.pixel(0,0), 0xFF010101U);
     QCOMPARE(*(QRgb*)data, 0xFF010101U);
-    *((QRgb*)i2.bits()) = 7U;
-    QCOMPARE(i2.pixel(0,0), 7U);
-    QCOMPARE(*(QRgb*)data, 7U);
+    *((QRgb*)i2.bits()) = 0xFF070707U;
+    QCOMPARE(i2.pixel(0,0), 0xFF070707U);
+    QCOMPARE(*(QRgb*)data, 0xFF070707U);
 
     // Changing the data will change the image in either case.
     QImage i3((uchar*)data, 2, 2, 8, QImage::Format_RGB32);
     QImage i4((const uchar*)data, 2, 2, 8, QImage::Format_RGB32);
-    *(QRgb*)data = 6U;
-    QCOMPARE(i3.pixel(0,0), 6U);
-    QCOMPARE(i4.pixel(0,0), 6U);
+    *(QRgb*)data = 0xFF060606U;
+    QCOMPARE(i3.pixel(0,0), 0xFF060606U);
+    QCOMPARE(i4.pixel(0,0), 0xFF060606U);
 }
 
 void tst_QImage::formatHandlersInput_data()

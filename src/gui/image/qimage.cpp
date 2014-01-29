@@ -2122,6 +2122,7 @@ QRgb QImage::pixel(int x, int y) const
     case Format_Indexed8:
         return d->colortable.at((int)s[x]);
     case Format_RGB32:
+        return 0xff000000 | reinterpret_cast<const QRgb *>(s)[x];
     case Format_ARGB32: // Keep old behaviour.
     case Format_ARGB32_Premultiplied:
         return reinterpret_cast<const QRgb *>(s)[x];
