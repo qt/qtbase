@@ -698,7 +698,7 @@ _hb_qt_font_create(QFontEngine *fe)
     const int x_ppem = (fe->fontDef.pixelSize * fe->fontDef.stretch) / 100;
 
     hb_font_set_funcs(font, hb_qt_get_font_funcs(), (void *)fe, NULL);
-    hb_font_set_scale(font, QFixed(x_ppem).value(), -QFixed(y_ppem).value());
+    hb_font_set_scale(font, QFixed(x_ppem).value(), QFixed(y_ppem).value());
     hb_font_set_ppem(font, x_ppem, y_ppem);
 
     return font;

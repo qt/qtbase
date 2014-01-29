@@ -5471,12 +5471,18 @@ fi
 
 # harfbuzz support
 [ "$XPLATFORM_MINGW" = "yes" ] && [ "$CFG_HARFBUZZ" = "auto" ] && CFG_HARFBUZZ=no
+[ "$XPLATFORM_MAC" = "yes" ] && [ "$CFG_HARFBUZZ" = "auto" ] && CFG_HARFBUZZ=yes
 if [ "$CFG_HARFBUZZ" = "auto" ]; then
     if compileTest unix/harfbuzz "HarfBuzz"; then
         CFG_HARFBUZZ=system
     else
         CFG_HARFBUZZ=yes
     fi
+fi
+if [ "$XPLATFORM_MAC" = "yes" -a "$CFG_HARFBUZZ" = "system" ]; then
+    echo
+    echo "WARNING: AAT is not supported with -system-harfbuzz on Mac OS X."
+    echo
 fi
 
 if ! compileTest unix/stl "STL" &&

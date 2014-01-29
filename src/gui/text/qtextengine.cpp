@@ -1195,6 +1195,13 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si, const ushort *st
                 g.glyphs[i] |= (engineIdx << 24);
         }
 
+#ifdef Q_OS_MAC
+        if (actualFontEngine->fontDef.styleStrategy & QFont::ForceIntegerMetrics) {
+            for (uint i = 0; i < num_glyphs; ++i)
+                g.advances[i] = g.advances[i].round();
+        }
+#endif
+
         glyphs_shaped += num_glyphs;
     }
 

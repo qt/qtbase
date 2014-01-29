@@ -188,6 +188,8 @@ void QCoreTextFontEngine::init()
         avgCharWidth = QFontEngine::averageCharWidth();
 
     cache_cost = (CTFontGetAscent(ctfont) + CTFontGetDescent(ctfont)) * avgCharWidth.toInt() * 2000;
+
+    setUserData(QVariant::fromValue((void *)cgFont));
 }
 
 bool QCoreTextFontEngine::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs,

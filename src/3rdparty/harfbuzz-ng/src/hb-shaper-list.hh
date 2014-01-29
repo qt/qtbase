@@ -35,6 +35,11 @@
 HB_SHAPER_IMPLEMENT (graphite2)
 #endif
 
+#ifdef HAVE_CORETEXT
+/* Only picks up fonts that have a "mort" or "morx" table. */
+HB_SHAPER_IMPLEMENT (coretext)
+#endif
+
 #ifdef HAVE_OT
 HB_SHAPER_IMPLEMENT (ot) /* <--- This is our main OpenType shaper. */
 #endif
@@ -47,9 +52,6 @@ HB_SHAPER_IMPLEMENT (icu_le)
 #endif
 #ifdef HAVE_UNISCRIBE
 HB_SHAPER_IMPLEMENT (uniscribe)
-#endif
-#ifdef HAVE_CORETEXT
-HB_SHAPER_IMPLEMENT (coretext)
 #endif
 
 #ifdef HAVE_FALLBACK

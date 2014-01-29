@@ -31,6 +31,9 @@
 
 #include "hb-coretext.h"
 
+#include "hb-face-private.hh"
+#include <private/qfontengine_p.h>
+
 
 #ifndef HB_DEBUG_CORETEXT
 #define HB_DEBUG_CORETEXT (HB_DEBUG+0)
@@ -61,10 +64,34 @@ release_data (void *info, const void *data, size_t size)
 hb_coretext_shaper_face_data_t *
 _hb_coretext_shaper_face_data_create (hb_face_t *face)
 {
+  hb_blob_t *mort_blob = face->reference_table (HB_CORETEXT_TAG_MORT);
+  /* Umm, we just reference the table to check whether it exists.
+   * Maybe add better API for this? */
+  if (!hb_blob_get_length (mort_blob))
+  {
+    hb_blob_destroy (mort_blob);
+    mort_blob = face->reference_table (HB_CORETEXT_TAG_MORX);
+    if (!hb_blob_get_length (mort_blob))
+    {
+      hb_blob_destroy (mort_blob);
+      return NULL;
+    }
+  }
+  hb_blob_destroy (mort_blob);
+
   hb_coretext_shaper_face_data_t *data = (hb_coretext_shaper_face_data_t *) calloc (1, sizeof (hb_coretext_shaper_face_data_t));
   if (unlikely (!data))
     return NULL;
 
+  QFontEngine *fe = (QFontEngine *) face->user_data;
+  if (fe->type () == QFontEngine::Mac)
+  {
+    data->cg_font = (CGFontRef) fe->userData ().value<void *> ();
+    if (likely (data->cg_font))
+      CFRetain (data->cg_font);
+  }
+  else
+  {
   hb_blob_t *blob = hb_face_reference_blob (face);
   unsigned int blob_length;
   const char *blob_data = hb_blob_get_data (blob, &blob_length);
@@ -74,6 +101,7 @@ _hb_coretext_shaper_face_data_create (hb_face_t *face)
   CGDataProviderRef provider = CGDataProviderCreateWithData (blob, blob_data, blob_length, &release_data);
   data->cg_font = CGFontCreateWithDataProvider (provider);
   CGDataProviderRelease (provider);
+  }
 
   if (unlikely (!data->cg_font)) {
     DEBUG_MSG (CORETEXT, face, "Face CGFontCreateWithDataProvider() failed");
@@ -120,7 +148,7 @@ _hb_coretext_shaper_font_data_create (hb_font_t *font)
   hb_face_t *face = font->face;
   hb_coretext_shaper_face_data_t *face_data = HB_SHAPER_DATA_GET (face);
 
-  data->ct_font = CTFontCreateWithGraphicsFont (face_data->cg_font, font->y_scale, NULL, NULL);
+  data->ct_font = CTFontCreateWithGraphicsFont (face_data->cg_font, font->y_scale / 64, NULL, NULL);
   if (unlikely (!data->ct_font)) {
     DEBUG_MSG (CORETEXT, font, "Font CTFontCreateWithGraphicsFont() failed");
     free (data);
@@ -691,7 +719,7 @@ _hb_coretext_shape (hb_shape_plan_t    *shape_plan,
 	     * hb-uniscribe.cc for example. */
             info->cluster = j;
 
-            info->mask = advance;
+            info->mask = advance * 64;
             info->var1.u32 = 0;
             info->var2.u32 = 0;
 
@@ -747,9 +775,9 @@ _hb_coretext_shape (hb_shape_plan_t    *shape_plan,
       info->cluster = string_indices[j];
 
       /* Currently, we do all x-positioning by setting the advance, we never use x-offset. */
-      info->mask = advance;
+      info->mask = advance * 64;
       info->var1.u32 = 0;
-      info->var2.u32 = positions[j].y;
+      info->var2.u32 = positions[j].y * 64;
 
       buffer->len++;
     }
