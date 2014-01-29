@@ -449,7 +449,7 @@ NSInteger QCocoaWindow::windowLevel(Qt::WindowFlags flags)
 
     // StayOnTop window should appear above Tool windows.
     if (flags & Qt::WindowStaysOnTopHint)
-        windowLevel = NSPopUpMenuWindowLevel;
+        windowLevel = NSModalPanelWindowLevel;
     // Tooltips should appear above StayOnTop windows.
     if (type == Qt::ToolTip)
         windowLevel = NSScreenSaverWindowLevel;
