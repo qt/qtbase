@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
-** Copyright (C) 2012 Klaralvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Christoph Schleifenbaum <christoph.schleifenbaum@kdab.com>
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Martin Graesslin <mgraesslin@kde.org>
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -40,58 +40,16 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMSYSTEMTRAYICON_H
-#define QPLATFORMSYSTEMTRAYICON_H
+#include "qplatformmenu.h"
 
-#include "QtCore/qobject.h"
-
-#ifndef QT_NO_SYSTEMTRAYICON
+#include <qpa/qplatformtheme.h>
+#include <private/qguiapplication_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class QPlatformMenu;
-class QIcon;
-class QString;
-class QRect;
-
-class Q_GUI_EXPORT QPlatformSystemTrayIcon : public QObject
+QPlatformMenuItem *QPlatformMenu::createMenuItem() const
 {
-    Q_OBJECT
-public:
-    enum ActivationReason {
-        Unknown,
-        Context,
-        DoubleClick,
-        Trigger,
-        MiddleClick
-    };
-
-    enum MessageIcon { NoIcon, Information, Warning, Critical };
-
-    QPlatformSystemTrayIcon();
-    ~QPlatformSystemTrayIcon();
-
-    virtual void init() = 0;
-    virtual void cleanup() = 0;
-    virtual void updateIcon(const QIcon &icon) = 0;
-    virtual void updateToolTip(const QString &tooltip) = 0;
-    virtual void updateMenu(QPlatformMenu *menu) = 0;
-    virtual QRect geometry() const = 0;
-    virtual void showMessage(const QString &msg, const QString &title,
-                             const QIcon &icon, MessageIcon iconType, int secs) = 0;
-
-    virtual bool isSystemTrayAvailable() const = 0;
-    virtual bool supportsMessages() const = 0;
-
-    virtual QPlatformMenu *createMenu() const;
-
-Q_SIGNALS:
-    void activated(QPlatformSystemTrayIcon::ActivationReason reason);
-    void messageClicked();
-};
+    return QGuiApplicationPrivate::platformTheme()->createPlatformMenuItem();
+}
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_SYSTEMTRAYICON
-
-#endif // QSYSTEMTRAYICON_P_H

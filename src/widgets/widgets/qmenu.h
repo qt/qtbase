@@ -140,6 +140,7 @@ public:
 
     void setNoReplayFor(QWidget *widget);
     QPlatformMenu *platformMenu();
+    void setPlatformMenu(QPlatformMenu *platformMenu);
 
 #ifdef Q_OS_WINCE
     HMENU wceMenu();

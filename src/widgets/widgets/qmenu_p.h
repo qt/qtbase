@@ -108,6 +108,8 @@ public:
 #endif
     }
     void init();
+    void setPlatformMenu(QPlatformMenu *menu);
+    void syncPlatformMenu();
 
     static QMenuPrivate *get(QMenu *m) { return m->d_func(); }
     int scrollerHeight() const;
