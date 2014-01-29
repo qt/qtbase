@@ -12,3 +12,5 @@ win32:!winrt: LIBS += -lole32
 
 # __stdcall exports get mangled, so use a def file
 DEF_FILE += $${TARGET}.def
+
+load(qt_installs)
