@@ -76,6 +76,9 @@ Q_SIGNALS:
     void newWindowCreated(void *window);
     void windowClosed(void *window);
 
+protected:
+    void timerEvent(QTimerEvent *event);
+
 #if defined(QQNX_SCREENEVENTTHREAD)
 private Q_SLOTS:
     void processEventsFromScreenThread();
@@ -107,6 +110,7 @@ private:
 #if defined(QQNX_SCREENEVENTTHREAD)
     QQnxScreenEventThread *m_eventThread;
 #endif
+    int m_focusLostTimer;
 };
 
 QT_END_NAMESPACE

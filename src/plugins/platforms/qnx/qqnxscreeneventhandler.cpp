@@ -72,6 +72,7 @@ QQnxScreenEventHandler::QQnxScreenEventHandler(QQnxIntegration *integration)
 #if defined(QQNX_SCREENEVENTTHREAD)
     , m_eventThread(0)
 #endif
+    , m_focusLostTimer(-1)
 {
     // Create a touch device
     m_touchDevice = new QTouchDevice;
@@ -617,13 +618,26 @@ void QQnxScreenEventHandler::handleKeyboardFocusPropertyEvent(screen_window_t wi
         qFatal("QQnx: failed to query keyboard focus property, errno=%d", errno);
 
     QWindow *focusWindow = QQnxIntegration::window(window);
-    if (focus) {
+
+    if (m_focusLostTimer != -1) {
+        killTimer(m_focusLostTimer);
+        m_focusLostTimer = -1;
+    }
+
+    if (focus && focusWindow != QGuiApplication::focusWindow())
         QWindowSystemInterface::handleWindowActivated(focusWindow);
-    } else if (focusWindow == QGuiApplication::focusWindow()) {
-        // Deactivate only if the window was the focus window.
-        // Screen might send a keyboard focus event for a newly created
-        // window on the secondary screen, with focus 0.
-        QWindowSystemInterface::handleWindowActivated(0);
+    else if (!focus && focusWindow == QGuiApplication::focusWindow())
+        m_focusLostTimer = startTimer(50);
+}
+
+void QQnxScreenEventHandler::timerEvent(QTimerEvent *event)
+{
+    if (event->timerId() == m_focusLostTimer) {
+        killTimer(m_focusLostTimer);
+        m_focusLostTimer = -1;
+        event->accept();
+    } else {
+        QObject::timerEvent(event);
     }
 }
 
