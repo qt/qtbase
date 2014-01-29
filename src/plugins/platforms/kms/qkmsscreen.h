@@ -111,7 +111,6 @@ private:
     drmModeCrtcPtr m_oldCrtc;
 
     QKmsCursor *m_cursor;
-    unsigned int m_refreshTime;
 
     gbm_surface *m_gbmSurface;
     EGLSurface m_eglWindowSurface;
