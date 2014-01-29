@@ -79,7 +79,7 @@ public:
     This class is used to describe an option on the command line. It allows
     different ways of defining the same option with multiple aliases possible.
     It is also used to describe how the option is used - it may be a flag (e.g. \c{-v})
-    or take an argument (e.g. \c{-o file}).
+    or take a value (e.g. \c{-o file}).
 
     Examples:
     \snippet code/src_corelib_tools_qcommandlineoption.cpp 0
@@ -232,8 +232,8 @@ void QCommandLineOptionPrivate::setNames(const QStringList &nameList)
     for the documentation of the option in the help output. An option with names \c{o} and \c{output},
     and a value name of \c{file} will appear as \c{-o, --output <file>}.
 
-    Call QCommandLineParser::argument() if you expect the option to be present
-    only once, and QCommandLineParser::arguments() if you expect that option
+    Call QCommandLineParser::value() if you expect the option to be present
+    only once, and QCommandLineParser::values() if you expect that option
     to be present multiple times.
 
     \sa valueName()
