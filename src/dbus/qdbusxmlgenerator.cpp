@@ -111,9 +111,9 @@ static QString generateInterfaceXml(const QMetaObject *mo, int flags, int method
                 continue;
 
             retval += QString::fromLatin1("    <property name=\"%1\" type=\"%2\" access=\"%3\"")
-                      .arg(QLatin1String(mp.name()))
-                      .arg(QLatin1String(signature))
-                      .arg(accessAsString(mp.isReadable(), mp.isWritable()));
+                      .arg(QLatin1String(mp.name()),
+                           QLatin1String(signature),
+                           accessAsString(mp.isReadable(), mp.isWritable()));
 
             if (QDBusMetaType::signatureToType(signature) == QVariant::Invalid) {
                 const char *typeName = QMetaType::typeName(typeId);
