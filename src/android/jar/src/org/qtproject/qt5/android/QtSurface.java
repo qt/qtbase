@@ -58,14 +58,12 @@ public class QtSurface extends SurfaceView implements SurfaceHolder.Callback
 {
     private GestureDetector m_gestureDetector;
     private Object m_accessibilityDelegate = null;
-    private boolean m_onTop;
 
     public QtSurface(Context context, int id, boolean onTop)
     {
         super(context);
         setFocusable(false);
         setFocusableInTouchMode(false);
-        m_onTop = onTop;
         setZOrderMediaOverlay(onTop);
         getHolder().addCallback(this);
         getHolder().setFormat(PixelFormat.RGBA_8888);
