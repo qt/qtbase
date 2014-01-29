@@ -126,6 +126,11 @@ Qt::WindowFlags QAndroidPlatformWindow::windowFlags() const
     return m_windowFlags;
 }
 
+void QAndroidPlatformWindow::setParent(const QPlatformWindow *window)
+{
+    Q_UNUSED(window);
+}
+
 QAndroidPlatformScreen *QAndroidPlatformWindow::platformScreen() const
 {
     return static_cast<QAndroidPlatformScreen *>(window()->screen()->handle());

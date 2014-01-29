@@ -63,7 +63,7 @@ public:
     void setWindowState(Qt::WindowState state);
     void setWindowFlags(Qt::WindowFlags flags);
     Qt::WindowFlags windowFlags() const;
-
+    void setParent(const QPlatformWindow *window);
     WId winId() const { return m_windowId; }
 
     QAndroidPlatformScreen *platformScreen() const;
