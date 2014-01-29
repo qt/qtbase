@@ -547,6 +547,10 @@ QFontEngine *QFontconfigDatabase::fontEngine(const QFontDef &f, QChar::Script sc
     FcPatternAdd(pattern,FC_INDEX,value,true);
 
     FcResult result;
+
+    FcConfigSubstitute(0, pattern, FcMatchPattern);
+    FcDefaultSubstitute(pattern);
+
     FcPattern *match = FcFontMatch(0, pattern, &result);
 
     QFontEngineFT *engine = new QFontEngineFT(fontDef);
