@@ -16,6 +16,5 @@ win32 {
 
 TEST_HELPER_INSTALLS = ../syslocaleapp/syslocaleapp
 
-win32:CONFIG+= insignificant_test # QTBUG-25284
 DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0
 blackberry:LIBS += -lpps
