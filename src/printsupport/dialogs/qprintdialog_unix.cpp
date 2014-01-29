@@ -52,8 +52,11 @@
 #include <QtWidgets/qfilesystemmodel.h>
 #include <QtWidgets/qstyleditemdelegate.h>
 #include <QtPrintSupport/qprinter.h>
-#include <QtPrintSupport/qprinterinfo.h>
-#include <private/qprintengine_pdf_p.h>
+
+#include <qpa/qplatformprintplugin.h>
+#include <qpa/qplatformprintersupport.h>
+
+#include <private/qprintdevice_p.h>
 
 #include <QtWidgets/qdialogbuttonbox.h>
 
@@ -62,12 +65,9 @@
 #include "ui_qprintsettingsoutput.h"
 #include "ui_qprintwidget.h"
 
-#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
-#  include <private/qcups_p.h>
-#  include "qcupsjobwidget_p.h"
-#else
-#  include <QtCore/qlibrary.h>
-#  include <private/qprintengine_pdf_p.h>
+#ifndef QT_NO_CUPS
+#include <private/qcups_p.h>
+#include "qcupsjobwidget_p.h"
 #endif
 
 /*
@@ -133,7 +133,7 @@ private:
     friend class QUnixPrintWidgetPrivate;
     Ui::QPrintPropertiesWidget widget;
     QDialogButtonBox *m_buttons;
-#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
+#ifndef QT_NO_CUPS
     QCupsJobWidget *m_jobOptions;
 #endif
 };
@@ -180,6 +180,8 @@ public:
     Ui::QPrintWidget widget;
     QAbstractPrintDialog * q;
     QPrinter *printer;
+    QPrintDevice m_currentPrintDevice;
+
     void updateWidget();
 
 private:
@@ -248,11 +250,9 @@ QPrintPropertiesDialog::QPrintPropertiesDialog(QAbstractPrintDialog *parent)
     connect(m_buttons->button(QDialogButtonBox::Ok), SIGNAL(clicked()), this, SLOT(accept()));
     connect(m_buttons->button(QDialogButtonBox::Cancel), SIGNAL(clicked()), this, SLOT(reject()));
 
-#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
-    if (QCUPSSupport::isAvailable()) {
-        m_jobOptions = new QCupsJobWidget();
-        widget.tabs->addTab(m_jobOptions, tr("Job Options"));
-    }
+#ifndef QT_NO_CUPS
+    m_jobOptions = new QCupsJobWidget();
+    widget.tabs->addTab(m_jobOptions, tr("Job Options"));
 #endif
 }
 
@@ -263,20 +263,16 @@ QPrintPropertiesDialog::~QPrintPropertiesDialog()
 void QPrintPropertiesDialog::applyPrinterProperties(QPrinter *p)
 {
     widget.pageSetup->setPrinter(p);
-#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
-    if (QCUPSSupport::isAvailable()) {
-        m_jobOptions->setPrinter(p);
-    }
+#ifndef QT_NO_CUPS
+    m_jobOptions->setPrinter(p);
 #endif
 }
 
 void QPrintPropertiesDialog::setupPrinter() const
 {
     widget.pageSetup->setupPrinter();
-#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
-    if (QCUPSSupport::isAvailable()) {
-        m_jobOptions->setupPrinter();
-    }
+#ifndef QT_NO_CUPS
+    m_jobOptions->setupPrinter();
 #endif
 }
 
@@ -323,13 +319,11 @@ void QPrintDialogPrivate::init()
     options.grayscale->setIconSize(QSize(32, 32));
     options.grayscale->setIcon(QIcon(QLatin1String(":/qt-project.org/dialogs/qprintdialog/images/status-gray-scale.png")));
 
-#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
+#ifndef QT_NO_CUPS
     // Add Page Set widget if CUPS is available
-    if (QCUPSSupport::isAvailable()) {
-        options.pageSetCombo->addItem(tr("All Pages"), QVariant::fromValue(QCUPSSupport::AllPages));
-        options.pageSetCombo->addItem(tr("Odd Pages"), QVariant::fromValue(QCUPSSupport::OddPages));
-        options.pageSetCombo->addItem(tr("Even Pages"), QVariant::fromValue(QCUPSSupport::EvenPages));
-    }
+    options.pageSetCombo->addItem(tr("All Pages"), QVariant::fromValue(QCUPSSupport::AllPages));
+    options.pageSetCombo->addItem(tr("Odd Pages"), QVariant::fromValue(QCUPSSupport::OddPages));
+    options.pageSetCombo->addItem(tr("Even Pages"), QVariant::fromValue(QCUPSSupport::EvenPages));
 #endif
 
     top->d->setOptionsPane(this);
@@ -447,24 +441,27 @@ void QPrintDialogPrivate::setupPrinter()
         }
     }
 
-#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
+#ifndef QT_NO_CUPS
     // page set
-    if (QCUPSSupport::isAvailable()) {
-        if (p->printRange() == QPrinter::AllPages || p->printRange() == QPrinter::PageRange) {
-            //If the application is selecting pages and the first page number is even then need to adjust the odd-even accordingly
-            QCUPSSupport::PageSet pageSet = options.pageSetCombo->itemData(options.pageSetCombo->currentIndex()).value<QCUPSSupport::PageSet>();
-            if (q->isOptionEnabled(QPrintDialog::PrintPageRange)
-                && p->printRange() == QPrinter::PageRange
-                && (q->fromPage() % 2 == 0)) {
+    if (p->printRange() == QPrinter::AllPages || p->printRange() == QPrinter::PageRange) {
+        //If the application is selecting pages and the first page number is even then need to adjust the odd-even accordingly
+        QCUPSSupport::PageSet pageSet = options.pageSetCombo->itemData(options.pageSetCombo->currentIndex()).value<QCUPSSupport::PageSet>();
+        if (q->isOptionEnabled(QPrintDialog::PrintPageRange)
+            && p->printRange() == QPrinter::PageRange
+            && (q->fromPage() % 2 == 0)) {
 
-                if (pageSet == QCUPSSupport::OddPages)
-                    QCUPSSupport::setPageSet(p, QCUPSSupport::EvenPages);
-                else if (pageSet == QCUPSSupport::EvenPages)
-                    QCUPSSupport::setPageSet(p, QCUPSSupport::OddPages);
-            } else if (pageSet != QCUPSSupport::AllPages) {
-                QCUPSSupport::setPageSet(p, pageSet);
+            switch (pageSet) {
+            case QCUPSSupport::AllPages:
+                break;
+            case QCUPSSupport::OddPages:
+                QCUPSSupport::setPageSet(p, QCUPSSupport::EvenPages);
+                break;
+            case QCUPSSupport::EvenPages:
+                QCUPSSupport::setPageSet(p, QCUPSSupport::OddPages);
+                break;
             }
-
+        } else if (pageSet != QCUPSSupport::AllPages) {
+            QCUPSSupport::setPageSet(p, pageSet);
         }
 
         // server-side page range, since we set the page range on the printer to 0-0/AllPages above,
@@ -527,26 +524,22 @@ void QPrintDialogPrivate::updateWidgets()
     options.printCurrentPage->setVisible(q->isOptionEnabled(QPrintDialog::PrintCurrentPage));
     options.collate->setVisible(q->isOptionEnabled(QPrintDialog::PrintCollateCopies));
 
-#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
-    if (QCUPSSupport::isAvailable()) {
-        // Don't display Page Set if only Selection or Current Page are enabled
-        if (!q->isOptionEnabled(QPrintDialog::PrintPageRange) && (
-            q->isOptionEnabled(QPrintDialog::PrintSelection) ||
-            q->isOptionEnabled(QPrintDialog::PrintCurrentPage))) {
+#ifndef QT_NO_CUPS
+    // Don't display Page Set if only Selection or Current Page are enabled
+    if (!q->isOptionEnabled(QPrintDialog::PrintPageRange)
+        && (q->isOptionEnabled(QPrintDialog::PrintSelection) || q->isOptionEnabled(QPrintDialog::PrintCurrentPage))) {
+        options.pageSetCombo->setVisible(false);
+        options.pageSetLabel->setVisible(false);
+    } else {
+        options.pageSetCombo->setVisible(true);
+        options.pageSetLabel->setVisible(true);
+    }
 
-            options.pageSetCombo->setVisible(false);
-            options.pageSetLabel->setVisible(false);
-        } else {
-            options.pageSetCombo->setVisible(true);
-            options.pageSetLabel->setVisible(true);
-        }
-
-        if (!q->isOptionEnabled(QPrintDialog::PrintPageRange)) {
-            // If we can do CUPS server side pages selection,
-            // display the page range widgets
-            options.gbPrintRange->setVisible(true);
-            options.printRange->setEnabled(true);
-        }
+    if (!q->isOptionEnabled(QPrintDialog::PrintPageRange)) {
+        // If we can do CUPS server side pages selection,
+        // display the page range widgets
+        options.gbPrintRange->setVisible(true);
+        options.printRange->setEnabled(true);
     }
 #endif
 
@@ -675,12 +668,17 @@ QUnixPrintWidgetPrivate::QUnixPrintWidgetPrivate(QUnixPrintWidget *p, QPrinter *
     widget.setupUi(parent);
 
     int currentPrinterIndex = 0;
-    QList<QPrinterInfo> printers = QPrinterInfo::availablePrinters();
+    QStringList printers;
+    QString defaultPrinter;
+    QPlatformPrinterSupport *ps = QPlatformPrinterSupportPlugin::get();
+    if (ps) {
+        printers = ps->availablePrintDeviceIds();
+        defaultPrinter = ps->defaultPrintDeviceId();
+    }
 
     for (int i = 0; i < printers.size(); ++i) {
-        QPrinterInfo pInfo = printers.at(i);
-        widget.printers->addItem(pInfo.printerName());
-        if (pInfo.isDefault())
+        widget.printers->addItem(printers.at(i));
+        if (printers.at(i) == defaultPrinter)
             currentPrinterIndex = i;
     }
     widget.properties->setEnabled(true);
@@ -769,12 +767,14 @@ void QUnixPrintWidgetPrivate::_q_printerChanged(int index)
     }
 
     if (printer) {
-        QString printerName = widget.printers->itemText(index);
-        printer->setPrinterName(printerName);
+        QPlatformPrinterSupport *ps = QPlatformPrinterSupportPlugin::get();
+        if (ps)
+            m_currentPrintDevice = ps->createPrintDevice(widget.printers->itemText(index));
 
-        QPrinterInfo printerInfo = QPrinterInfo::printerInfo(printer->printerName());
-        widget.location->setText(printerInfo.location());
-        widget.type->setText(printerInfo.makeAndModel());
+        printer->setPrinterName(m_currentPrintDevice.id());
+
+        widget.location->setText(m_currentPrintDevice.location());
+        widget.type->setText(m_currentPrintDevice.makeAndModel());
         if (optionsPane)
             optionsPane->selectPrinter(QPrinter::NativeFormat);
     }
@@ -841,7 +841,7 @@ void QUnixPrintWidgetPrivate::applyPrinterProperties()
             }
         }
     }
-    // PDF and PS printers are not added to the dialog yet, we'll handle those cases in QUnixPrintWidgetPrivate::updateWidget
+    // PDF printer not added to the dialog yet, we'll handle those cases in QUnixPrintWidgetPrivate::updateWidget
 
     if (propertiesDialog)
         propertiesDialog->applyPrinterProperties(printer);
@@ -878,7 +878,7 @@ bool QUnixPrintWidgetPrivate::checkFields()
         }
     }
 
-#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
+#ifndef QT_NO_CUPS
     if (propertiesDialogShown) {
         QCUPSSupport::PagesPerSheet pagesPerSheet = propertiesDialog->widget.pageSetup->m_ui.pagesPerSheetCombo
                                                                     ->currentData().value<QCUPSSupport::PagesPerSheet>();
