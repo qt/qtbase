@@ -963,21 +963,18 @@ foreach my $lib (@modules_to_sync) {
                                 $master_contents .= "#include \"$public_header\"\n" if (shouldMasterInclude($iheader));
 
                                 #deal with the install directives
-                                if($public_header) {
-                                    my $pri_install_iheader = fixPaths($iheader, $dir);
-                                    foreach my $class (@classes) {
-                                        # Strip namespaces:
-                                        $class =~ s/^.*:://;
-    #                                   if ($class =~ m/::/) {
-    #                                       $class =~ s,::,/,g;
-    #                                   }
-                                        my $class_header = fixPaths("$out_basedir/include/$lib/$class",
-                                                                    $dir) . " ";
-                                        $pri_install_classes .= $class_header
-                                                                    unless($pri_install_classes =~ $class_header);
-                                    }
-                                    $pri_install_files.= "$pri_install_iheader ";;
+                                my $pri_install_iheader = fixPaths($iheader, $dir);
+                                foreach my $class (@classes) {
+                                    # Strip namespaces:
+                                    $class =~ s/^.*:://;
+#                                   if ($class =~ m/::/) {
+#                                       $class =~ s,::,/,g;
+#                                   }
+                                    my $class_header = fixPaths("$out_basedir/include/$lib/$class", $dir) . " ";
+                                    $pri_install_classes .= $class_header
+                                                                unless($pri_install_classes =~ $class_header);
                                 }
+                                $pri_install_files.= "$pri_install_iheader ";;
                             }
                             elsif ($qpa_header) {
                                 my $pri_install_iheader = fixPaths($iheader, $dir);
