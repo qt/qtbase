@@ -101,6 +101,17 @@ contains(QT_CONFIG, harfbuzz) {
         $$QT_HARFBUZZ_DIR/src/hb-ot-shape.h \
         $$QT_HARFBUZZ_DIR/src/hb-ot-tag.h
 
+    mac {
+        # Apple Advanced Typography
+        SOURCES += \
+            $$QT_HARFBUZZ_DIR/src/hb-coretext.cc
+
+        HEADERS += \
+            $$QT_HARFBUZZ_DIR/src/hb-coretext.h
+
+        DEFINES += HAVE_CORETEXT
+    }
+
     DEFINES += HAVE_CONFIG_H
     QT += core-private
 
