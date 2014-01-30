@@ -1,5 +1,5 @@
 /*
- * Copyright © 2012  Google, Inc.
+ * Copyright © 2013  Red Hat, Inc.
  *
  *  This is part of HarfBuzz, a text shaping library.
  *
@@ -21,37 +21,34 @@
  * ON AN "AS IS" BASIS, AND THE COPYRIGHT HOLDER HAS NO OBLIGATION TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
  *
- * Google Author(s): Behdad Esfahbod
+ * Red Hat Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_SHAPER_LIST_HH
-#define HB_SHAPER_LIST_HH
-#endif /* HB_SHAPER_LIST_HH */ /* Dummy header guards */
+#ifndef HB_OT_SHAPE_H
+#define HB_OT_SHAPE_H
+#define HB_OT_SHAPE_H_IN
 
-/* v--- Add new shapers in the right place here. */
+#include "hb.h"
 
-#ifdef HAVE_GRAPHITE2
-/* Only picks up fonts that have a "Silf" table. */
-HB_SHAPER_IMPLEMENT (graphite2)
-#endif
+#include "hb-ot-layout.h"
+#include "hb-ot-tag.h"
 
-#ifdef HAVE_OT
-HB_SHAPER_IMPLEMENT (ot) /* <--- This is our main OpenType shaper. */
-#endif
+HB_BEGIN_DECLS
 
-#ifdef HAVE_HB_OLD
-HB_SHAPER_IMPLEMENT (old)
-#endif
-#ifdef HAVE_ICU_LE
-HB_SHAPER_IMPLEMENT (icu_le)
-#endif
-#ifdef HAVE_UNISCRIBE
-HB_SHAPER_IMPLEMENT (uniscribe)
-#endif
-#ifdef HAVE_CORETEXT
-HB_SHAPER_IMPLEMENT (coretext)
-#endif
+/* TODO port to shape-plan / set. */
+void
+hb_ot_shape_glyphs_closure (hb_font_t          *font,
+                hb_buffer_t        *buffer,
+                const hb_feature_t *features,
+                unsigned int        num_features,
+                hb_set_t           *glyphs);
 
-#ifdef HAVE_FALLBACK
-HB_SHAPER_IMPLEMENT (fallback) /* <--- This should be last. */
-#endif
+void
+hb_ot_shape_plan_collect_lookups (hb_shape_plan_t *shape_plan,
+                hb_tag_t         table_tag,
+                hb_set_t        *lookup_indexes /* OUT */);
+
+HB_END_DECLS
+
+#undef HB_OT_SHAPE_H_IN
+#endif /* HB_OT_SHAPE_H */
