@@ -231,6 +231,8 @@ public:
     static bool noGrab;
     QInputMethod *inputMethod;
 
+    QString firstWindowTitle;
+
     static QList<QObject *> generic_plugin_list;
 #ifndef QT_NO_SHORTCUT
     QShortcutMap shortcutMap;

@@ -471,6 +471,8 @@ static QWindowGeometrySpecification windowGeometrySpecification;
             and will make the application wait until a debugger connects to it.
         \li  -session \e session, restores the application from an earlier
             \l{Session Management}{session}.
+        \li  -qwindowgeometry, sets the geometry of the first window
+        \li  -qwindowtitle, sets the title of the first window
     \endlist
 
     \sa arguments()
@@ -1033,6 +1035,9 @@ void QGuiApplicationPrivate::createPlatformIntegration()
         } else if (arg == "-qwindowgeometry" || (platformName == "xcb" && arg == "-geometry")) {
             if (++i < argc)
                 windowGeometrySpecification = QWindowGeometrySpecification::fromArgument(argv[i]);
+        } else if (arg == "-qwindowtitle" || (platformName == "xcb" && arg == "-title")) {
+            if (++i < argc)
+                firstWindowTitle = QString::fromLocal8Bit(argv[i]);
         } else {
             argv[j++] = argv[i];
         }
