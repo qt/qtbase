@@ -1586,7 +1586,7 @@ int QTreeViewPrivate::widthHintForIndex(const QModelIndex &index, int hint, cons
 
 /*!
     Draws the row in the tree view that contains the model item \a index,
-    using the \a painter given. The \a option control how the item is
+    using the \a painter given. The \a option controls how the item is
     displayed.
 
     \sa setAlternatingRowColors()
