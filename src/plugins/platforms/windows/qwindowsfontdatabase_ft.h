@@ -60,9 +60,6 @@ public:
     virtual QString fontDir() const;
     virtual QFont defaultFont() const;
 
-    static HFONT systemFont();
-    static QFont LOGFONT_to_QFont(const LOGFONT& lf, int verticalDPI = 0);
-
 private:
     void populate(const QString &family = QString());
 

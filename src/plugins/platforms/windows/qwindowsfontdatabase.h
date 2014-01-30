@@ -103,6 +103,8 @@ public:
     static qreal fontSmoothingGamma();
     static LOGFONT fontDefToLOGFONT(const QFontDef &fontDef);
 
+    static QStringList extraTryFontsForFamily(const QString &family);
+
 private:
     void populate(const QString &family = QString());
     void removeApplicationFonts();
