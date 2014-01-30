@@ -108,6 +108,8 @@ public:
     {
     }
 
+    void init();
+
     void maybeQuitOnLastWindowClosed();
 #ifndef QT_NO_CURSOR
     void setCursor(const QCursor *c = 0);

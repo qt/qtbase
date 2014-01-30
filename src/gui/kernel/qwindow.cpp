@@ -163,9 +163,7 @@ QWindow::QWindow(QScreen *targetScreen)
     //if your applications aborts here, then chances are your creating a QWindow before the
     //screen list is populated.
     Q_ASSERT(d->screen);
-
-    connect(d->screen, SIGNAL(destroyed(QObject*)), this, SLOT(screenDestroyed(QObject*)));
-    QGuiApplicationPrivate::window_list.prepend(this);
+    d->init();
 }
 
 /*!
@@ -188,8 +186,7 @@ QWindow::QWindow(QWindow *parent)
         d->screen = parent->screen();
     if (!d->screen)
         d->screen = QGuiApplication::primaryScreen();
-    connect(d->screen, SIGNAL(destroyed(QObject*)), this, SLOT(screenDestroyed(QObject*)));
-    QGuiApplicationPrivate::window_list.prepend(this);
+    d->init();
 }
 
 /*!
@@ -214,8 +211,7 @@ QWindow::QWindow(QWindowPrivate &dd, QWindow *parent)
         d->screen = parent->screen();
     if (!d->screen)
         d->screen = QGuiApplication::primaryScreen();
-    connect(d->screen, SIGNAL(destroyed(QObject*)), this, SLOT(screenDestroyed(QObject*)));
-    QGuiApplicationPrivate::window_list.prepend(this);
+    d->init();
 }
 
 /*!
@@ -231,6 +227,13 @@ QWindow::~QWindow()
         QGuiApplicationPrivate::tabletPressTarget = 0;
     QGuiApplicationPrivate::window_list.removeAll(this);
     destroy();
+}
+
+void QWindowPrivate::init()
+{
+    Q_Q(QWindow);
+    QObject::connect(screen, SIGNAL(destroyed(QObject*)), q, SLOT(screenDestroyed(QObject*)));
+    QGuiApplicationPrivate::window_list.prepend(q);
 }
 
 /*!
