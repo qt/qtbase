@@ -777,7 +777,6 @@ while ( @ARGV ) {
 # if we have no $basedir we cannot be sure which sources you want, so die
 die "Could not find any sync.profile for your module!\nPass <module directory> to syncqt to sync your header files.\nsyncqt failed" if (!$basedir);
 
-my $class_lib_map_contents = "";
 our @ignore_headers = ();
 our @ignore_for_master_contents = ();
 our @ignore_for_include_check = ();
@@ -940,7 +939,6 @@ foreach my $lib (@modules_to_sync) {
                                     if (defined $explicitheaders{$lib}{$class}) {
                                         $header_copies++ if(syncHeader($lib, "$out_basedir/include/$lib/$class", "$out_basedir/include/$lib/$explicitheaders{$lib}{$class}", 0, $ts));
                                     } else {
-                                        $class_lib_map_contents .= "QT_CLASS_LIB($full_class, $lib, $header_base)\n";
                                         $header_copies++ if(syncHeader($lib, "$out_basedir/include/$lib/$class", "$out_basedir/include/$lib/$header", 0, $ts));
                                     }
                                 }
