@@ -11,7 +11,7 @@ save
   setFont "sansserif" 12 normal
   drawText 0 40 "sansserif 12pt, normal"
 
-  setFont "sansserif" 10 bold
+  setFont "sansserif" 12 bold
   drawText 0 60 "sansserif 12pt, bold"
 
   setFont "sansserif" 10 bold italic
@@ -27,7 +27,7 @@ save
   setFont "sansserif" 12 normal
   drawText 0 40 "alpha sansserif 12pt, normal"
 
-  setFont "sansserif" 10 bold
+  setFont "sansserif" 12 bold
   drawText 0 60 "alpha sansserif 12pt, bold"
 
   setFont "sansserif" 10 bold italic
@@ -45,7 +45,7 @@ save
     setFont "sansserif" 12 normal
     drawText 0 40 "scaled sansserif 12pt, normal"
 
-    setFont "sansserif" 10 bold
+    setFont "sansserif" 12 bold
     drawText 0 60 "scaled sansserif 12pt, bold"
 
     setFont "sansserif" 10 bold italic
@@ -63,7 +63,7 @@ save
     setFont "sansserif" 12 normal
     drawStaticText 0 40 "flipped sansserif 12pt, normal"
 
-    setFont "sansserif" 10 bold
+    setFont "sansserif" 12 bold
     drawStaticText 0 60 "flipped sansserif 12pt, bold"
 
     setFont "sansserif" 10 bold italic
@@ -82,7 +82,7 @@ save
     setFont "sansserif" 12 normal
     drawText 0 40 "scaled sansserif 12pt, normal"
 
-    setFont "sansserif" 10 bold
+    setFont "sansserif" 12 bold
     drawText 0 60 "scaled sansserif 12pt, bold"
 
     setFont "sansserif" 10 bold italic
@@ -102,7 +102,7 @@ save
   setFont "sansserif" 12 normal
   drawText 0 20 "gradient sansserif 12pt, normal"
 
-  setFont "sansserif" 10 bold
+  setFont "sansserif" 12 bold
   drawText 0 40 "gradient sansserif 12pt, bold"
 
   setFont "sansserif" 10 bold italic
