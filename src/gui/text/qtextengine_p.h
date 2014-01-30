@@ -543,6 +543,7 @@ public:
 
     mutable QScriptLineArray lines;
 
+private:
     struct FontEngineCache {
         FontEngineCache();
         mutable QFontEngine *prevFontEngine;
@@ -560,6 +561,7 @@ public:
     };
     mutable FontEngineCache feCache;
 
+public:
     QString text;
     mutable QFont fnt;
 #ifndef QT_NO_RAWFONT
