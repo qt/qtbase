@@ -2192,13 +2192,13 @@ bool QColorDialogPrivate::handleColorPickingKeyPress(QKeyEvent *e)
 void QColorDialog::done(int result)
 {
     Q_D(QColorDialog);
-    QDialog::done(result);
     if (result == Accepted) {
         d->selectedQColor = d->currentQColor();
         emit colorSelected(d->selectedQColor);
     } else {
         d->selectedQColor = QColor();
     }
+    QDialog::done(result);
     if (d->receiverToDisconnectOnClose) {
         disconnect(this, SIGNAL(colorSelected(QColor)),
                    d->receiverToDisconnectOnClose, d->memberToDisconnectOnClose);
