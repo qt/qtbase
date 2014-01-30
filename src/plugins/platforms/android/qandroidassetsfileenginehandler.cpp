@@ -293,6 +293,7 @@ QAbstractFileEngine * AndroidAssetsFileEngineHandler::create(const QString &file
         AAssetDir *assetDir = AAssetManager_openDir(m_assetManager, path.constData() + prefixSize);
         if (assetDir) {
             if (AAssetDir_getNextFileName(assetDir)) {
+                AAssetDir_rewind(assetDir);
                 aad = new QSharedPointer<AndroidAssetDir>(new AndroidAssetDir(assetDir));
                 m_assetsCacheMutext.lock();
                 m_assetsCache.insert(path, aad);
