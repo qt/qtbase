@@ -31,6 +31,7 @@
     "qevent.h" => "QtEvents",
     "qnamespace.h" => "Qt",
     "qnumeric.h" => "QtNumeric",
+    "qvariant.h" => "QVariantHash,QVariantList,QVariantMap",
     "qsql.h" => "QSql",
     "qssl.h" => "QSsl",
     "qtest.h" => "QTest",
@@ -42,13 +43,6 @@
     "QtGui" =>  {
         "QGenericPlugin" => "QtGui/QGenericPlugin",
         "QGenericPluginFactory" => "QtGui/QGenericPluginFactory"
-    }
-);
-%explicitheaders = (
-    "QtCore" => {
-        "QVariantHash" => "qvariant.h",
-        "QVariantList" => "qvariant.h",
-        "QVariantMap" => "qvariant.h",
     }
 );
 

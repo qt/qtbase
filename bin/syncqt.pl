@@ -84,8 +84,11 @@ our $quoted_basedir;
 $INPUT_RECORD_SEPARATOR = "\r\n" if ($^O eq "msys");
 
 # will be defined based on the modules sync.profile
-our (%modules, %moduleheaders, @allmoduleheadersprivate, %classnames, %explicitheaders, %deprecatedheaders);
+our (%modules, %moduleheaders, @allmoduleheadersprivate, %classnames, %deprecatedheaders);
 our @qpa_headers = ();
+
+# will be derived from sync.profile
+our %reverse_classnames = ();
 
 # global variables (modified by options)
 my $isunix = 0;
@@ -206,8 +209,9 @@ sub classNames {
     my @ret;
     my ($iheader) = @_;
 
-    my $classname = $classnames{basename($iheader)};
-    push @ret, $classname if ($classname);
+    my $ihdrbase = basename($iheader);
+    my $classname = $classnames{$ihdrbase};
+    push @ret, split(/,/, $classname) if ($classname);
 
     my $parsable = "";
     if(open(F, "<$iheader")) {
@@ -306,6 +310,8 @@ sub classNames {
             foreach my $symbol (@symbols) {
                 $symbol = (join("::", @namespaces) . "::" . $symbol) if (scalar @namespaces);
 
+                my $revhdr = $reverse_classnames{$symbol};
+                next if (defined($revhdr) and $revhdr ne $ihdrbase);
                 if ($symbol =~ /^Q[^:]*$/) {           # no-namespace, starting with Q
                     push @ret, $symbol;
                 } elsif (defined($publicclassregexp)) {
@@ -580,6 +586,13 @@ sub loadSyncProfile {
         die "syncqt couldn't parse $syncprofile: $@" if $@;
         die "syncqt couldn't execute $syncprofile: $!" unless defined $result;
     }
+
+    for my $fn (keys %classnames) {
+        for my $cn (split(/,/, $classnames{$fn})) {
+            $reverse_classnames{$cn} = $fn;
+        }
+    }
+
     return $result;
 }
 
@@ -936,17 +949,8 @@ foreach my $lib (@modules_to_sync) {
     #                                  class =~ s,::,/,g;
     #                               }
 
-                                    if (defined $explicitheaders{$lib}{$class}) {
-                                        $header_copies++ if(syncHeader($lib, "$out_basedir/include/$lib/$class", "$out_basedir/include/$lib/$explicitheaders{$lib}{$class}", 0, $ts));
-                                    } else {
-                                        $header_copies++ if(syncHeader($lib, "$out_basedir/include/$lib/$class", "$out_basedir/include/$lib/$header", 0, $ts));
-                                    }
+                                    $header_copies++ if (syncHeader($lib, "$out_basedir/include/$lib/$class", "$out_basedir/include/$lib/$header", 0, $ts));
                                 }
-
-                                if ($explicitheaders{$lib}{basename($header)}) {
-                                    $header_copies++ if(syncHeader($lib, "$out_basedir/include/$lib/$explicitheaders{$lib}{basename($header)}", "$out_basedir/include/$lib/$header", 0, $ts));
-                                }
-
                             } elsif ($create_private_headers && !$qpa_header) {
                                 @headers = ( "$out_basedir/include/$lib/$module_version/$lib/private/$header" );
                             } elsif ($create_private_headers) {
@@ -974,11 +978,6 @@ foreach my $lib (@modules_to_sync) {
                                                                     $dir) . " ";
                                         $pri_install_classes .= $class_header
                                                                     unless($pri_install_classes =~ $class_header);
-                                    }
-                                    if ($explicitheaders{$lib}{basename($iheader)}) {
-                                        my $compat_header = fixPaths("$out_basedir/include/$lib/$explicitheaders{$lib}{basename($iheader)}",
-                                                                     $dir) . " ";
-                                        $pri_install_files .= $compat_header unless($pri_install_files =~ $compat_header);
                                     }
                                     $pri_install_files.= "$pri_install_iheader ";;
                                 }
