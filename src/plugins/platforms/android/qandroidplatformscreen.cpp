@@ -125,6 +125,9 @@ QWindow *QAndroidPlatformScreen::topLevelAt(const QPoint &p) const
 
 void QAndroidPlatformScreen::addWindow(QAndroidPlatformWindow *window)
 {
+    if (window->parent())
+        return;
+
     m_windowStack.prepend(window);
     if (window->isRaster())
         setDirty(window->geometry());
@@ -136,6 +139,9 @@ void QAndroidPlatformScreen::addWindow(QAndroidPlatformWindow *window)
 
 void QAndroidPlatformScreen::removeWindow(QAndroidPlatformWindow *window)
 {
+    if (window->parent())
+        return;
+
     m_windowStack.removeOne(window);
     if (window->isRaster()) {
         setDirty(window->geometry());
@@ -147,6 +153,9 @@ void QAndroidPlatformScreen::removeWindow(QAndroidPlatformWindow *window)
 
 void QAndroidPlatformScreen::raise(QAndroidPlatformWindow *window)
 {
+    if (window->parent())
+        return;
+
     int index = m_windowStack.indexOf(window);
     if (index <= 0)
         return;
@@ -161,6 +170,9 @@ void QAndroidPlatformScreen::raise(QAndroidPlatformWindow *window)
 
 void QAndroidPlatformScreen::lower(QAndroidPlatformWindow *window)
 {
+    if (window->parent())
+        return;
+
     int index = m_windowStack.indexOf(window);
     if (index == -1 || index == (m_windowStack.size() - 1))
         return;
