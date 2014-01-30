@@ -439,18 +439,16 @@ _hb_qt_font_get_glyph_h_advance(hb_font_t *font, void *font_data,
     QFontEngine *fe = (QFontEngine *)font_data;
     Q_ASSERT(fe);
 
-    QFixed advance_x;
-    QFixed advance_y;
+    QFixed advance;
 
     QGlyphLayout g;
     g.numGlyphs = 1;
     g.glyphs = &glyph;
-    g.advances_x = &advance_x;
-    g.advances_y = &advance_y;
+    g.advances = &advance;
 
     fe->recalcAdvances(&g, QFontEngine::ShaperFlags(hb_qt_font_get_use_design_metrics(font)));
 
-    return g.advances_x[0].value();
+    return g.advances[0].value();
 }
 
 static hb_position_t
@@ -490,18 +488,16 @@ _hb_qt_font_get_glyph_h_kerning(hb_font_t *font, void *font_data,
     Q_ASSERT(fe);
 
     glyph_t glyphs[2] = { first_glyph, second_glyph };
-    QFixed advance_x;
-    QFixed advance_y;
+    QFixed advance;
 
     QGlyphLayout g;
     g.numGlyphs = 2;
     g.glyphs = glyphs;
-    g.advances_x = &advance_x;
-    g.advances_y = &advance_y;
+    g.advances = &advance;
 
     fe->doKerning(&g, QFontEngine::ShaperFlags(hb_qt_font_get_use_design_metrics(font)));
 
-    return g.advances_x[0].value();
+    return g.advances[0].value();
 }
 
 static hb_position_t

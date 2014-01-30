@@ -568,10 +568,8 @@ bool QRawFont::advancesForGlyphIndexes(const quint32 *glyphIndexes, QPointF *adv
     QGlyphLayout glyphs;
     glyphs.glyphs = const_cast<glyph_t *>(glyphIndexes);
     glyphs.numGlyphs = numGlyphs;
-    QVarLengthArray<QFixed> advances_x(numGlyphs);
-    QVarLengthArray<QFixed> advances_y(numGlyphs);
-    glyphs.advances_x = advances_x.data();
-    glyphs.advances_y = advances_y.data();
+    QVarLengthArray<QFixed> tmpAdvances(numGlyphs);
+    glyphs.advances = tmpAdvances.data();
 
     bool design = layoutFlags & UseDesignMetrics;
 
@@ -580,7 +578,7 @@ bool QRawFont::advancesForGlyphIndexes(const quint32 *glyphIndexes, QPointF *adv
         d->fontEngine->doKerning(&glyphs, design ? QFontEngine::DesignMetrics : QFontEngine::ShaperFlag(0));
 
     for (int i=0; i<numGlyphs; ++i)
-        advances[i] = QPointF(glyphs.advances_x[i].toReal(), glyphs.advances_y[i].toReal());
+        advances[i] = QPointF(glyphs.advances[i].toReal(), 0.0);
 
     return true;
 }

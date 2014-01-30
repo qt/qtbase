@@ -1598,24 +1598,23 @@ void QFontEngineFT::recalcAdvances(QGlyphLayout *glyphs, QFontEngine::ShaperFlag
         // Since we are passing Format_None to loadGlyph, use same default format logic as loadGlyph
         GlyphFormat acceptableFormat = (defaultFormat != Format_None) ? defaultFormat : Format_Mono;
         if (g && g->format == acceptableFormat) {
-            glyphs->advances_x[i] = design ? QFixed::fromFixed(g->linearAdvance) : QFixed(g->advance);
+            glyphs->advances[i] = design ? QFixed::fromFixed(g->linearAdvance) : QFixed(g->advance);
         } else {
             if (!face)
                 face = lockFace();
             g = loadGlyph(cacheEnabled ? &defaultGlyphSet : 0, glyphs->glyphs[i], 0, Format_None, true);
-            glyphs->advances_x[i] = design ? QFixed::fromFixed(face->glyph->linearHoriAdvance >> 10)
-                                           : QFixed::fromFixed(face->glyph->metrics.horiAdvance);
+            glyphs->advances[i] = design ? QFixed::fromFixed(face->glyph->linearHoriAdvance >> 10)
+                                         : QFixed::fromFixed(face->glyph->metrics.horiAdvance);
             if (!cacheEnabled)
                 delete g;
         }
-        glyphs->advances_y[i] = 0;
     }
     if (face)
         unlockFace();
 
     if (fontDef.styleStrategy & QFont::ForceIntegerMetrics) {
         for (int i = 0; i < glyphs->numGlyphs; ++i)
-            glyphs->advances_x[i] = glyphs->advances_x[i].round();
+            glyphs->advances[i] = glyphs->advances[i].round();
     }
 }
 

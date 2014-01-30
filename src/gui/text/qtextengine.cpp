@@ -1009,17 +1009,17 @@ void QTextEngine::shapeText(int item) const
         for (int i = 1; i < si.num_glyphs; ++i) {
             if (glyphs.attributes[i].clusterStart) {
                 if (letterSpacingIsAbsolute)
-                    glyphs.advances_x[i-1] += letterSpacing;
+                    glyphs.advances[i - 1] += letterSpacing;
                 else {
-                    QFixed &advance = glyphs.advances_x[i-1];
+                    QFixed &advance = glyphs.advances[i - 1];
                     advance += (letterSpacing - 100) * advance / 100;
                 }
             }
         }
         if (letterSpacingIsAbsolute)
-            glyphs.advances_x[si.num_glyphs-1] += letterSpacing;
+            glyphs.advances[si.num_glyphs - 1] += letterSpacing;
         else {
-            QFixed &advance = glyphs.advances_x[si.num_glyphs-1];
+            QFixed &advance = glyphs.advances[si.num_glyphs - 1];
             advance += (letterSpacing - 100) * advance / 100;
         }
     }
@@ -1031,13 +1031,13 @@ void QTextEngine::shapeText(int item) const
                 if (i + 1 == si.num_glyphs
                     ||(glyphs.attributes[i+1].justification != QGlyphAttributes::Space
                        && glyphs.attributes[i+1].justification != QGlyphAttributes::Arabic_Space))
-                    glyphs.advances_x[i] += wordSpacing;
+                    glyphs.advances[i] += wordSpacing;
             }
         }
     }
 
     for (int i = 0; i < si.num_glyphs; ++i)
-        si.width += glyphs.advances_x[i] * !glyphs.attributes[i].dontPrint;
+        si.width += glyphs.advances[i] * !glyphs.attributes[i].dontPrint;
 }
 
 static inline void moveGlyphData(const QGlyphLayout &destination, const QGlyphLayout &source, int num)
@@ -1045,7 +1045,7 @@ static inline void moveGlyphData(const QGlyphLayout &destination, const QGlyphLa
     if (num > 0 && destination.glyphs != source.glyphs) {
         memmove(destination.glyphs, source.glyphs, num * sizeof(glyph_t));
         memmove(destination.attributes, source.attributes, num * sizeof(QGlyphAttributes));
-        memmove(destination.advances_x, source.advances_x, num * sizeof(QFixed));
+        memmove(destination.advances, source.advances, num * sizeof(QFixed));
         memmove(destination.offsets, source.offsets, num * sizeof(QFixedPoint));
     }
 }
@@ -1163,8 +1163,7 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si, const ushort *st
             g.glyphs[i] = infos[i].codepoint;
             log_clusters[i] = infos[i].cluster;
 
-            g.advances_x[i] = QFixed::fromFixed(positions[i].x_advance);
-            g.advances_y[i] = QFixed::fromFixed(positions[i].y_advance);
+            g.advances[i] = QFixed::fromFixed(positions[i].x_advance);
             g.offsets[i].x = QFixed::fromFixed(positions[i].x_offset);
             g.offsets[i].y = QFixed::fromFixed(positions[i].y_offset);
 
@@ -1286,7 +1285,7 @@ int QTextEngine::shapeTextWithHarfbuzz(const QScriptItem &si, const ushort *stri
 
             shaper_item.glyphs = reinterpret_cast<HB_Glyph *>(g.glyphs);
             shaper_item.attributes = reinterpret_cast<HB_GlyphAttributes *>(g.attributes);
-            shaper_item.advances = reinterpret_cast<HB_Fixed *>(g.advances_x);
+            shaper_item.advances = reinterpret_cast<HB_Fixed *>(g.advances);
             shaper_item.offsets = reinterpret_cast<HB_FixedPoint *>(g.offsets);
 
             if (engineIdx != 0 && shaper_item.glyphIndicesPresent) {
@@ -1703,7 +1702,7 @@ QFixed QTextEngine::width(int from, int len) const
 
 //                 qDebug("char: start=%d end=%d / glyph: start = %d, end = %d", charFrom, charEnd, glyphStart, glyphEnd);
                 for (int i = glyphStart; i < glyphEnd; i++)
-                    w += glyphs.advances_x[i] * !glyphs.attributes[i].dontPrint;
+                    w += glyphs.advances[i] * !glyphs.attributes[i].dontPrint;
             }
         }
     }
@@ -1993,8 +1992,8 @@ static void set(QJustificationPoint *point, int type, const QGlyphLayout &glyph,
         QGlyphLayoutArray<8> glyphs;
         int nglyphs = 7;
         fe->stringToCMap(&ch, 1, &glyphs, &nglyphs, 0);
-        if (glyphs.glyphs[0] && glyphs.advances_x[0] != 0) {
-            point->kashidaWidth = glyphs.advances_x[0];
+        if (glyphs.glyphs[0] != 0 && glyphs.advances[0].value() != 0) {
+            point->kashidaWidth = glyphs.advances[0];
         } else {
             point->type = QGlyphAttributes::NoJustification;
             point->kashidaWidth = 0;
@@ -2236,7 +2235,7 @@ QTextEngine::LayoutData::LayoutData(const QString &str, void **stack_memory, int
 
     int space_charAttributes = sizeof(QCharAttributes)*string.length()/sizeof(void*) + 1;
     int space_logClusters = sizeof(unsigned short)*string.length()/sizeof(void*) + 1;
-    available_glyphs = ((int)allocated - space_charAttributes - space_logClusters)*(int)sizeof(void*)/(int)QGlyphLayout::spaceNeededForGlyphLayout(1);
+    available_glyphs = ((int)allocated - space_charAttributes - space_logClusters)*(int)sizeof(void*)/(int)QGlyphLayout::SpaceNeeded;
 
     if (available_glyphs < str.length()) {
         // need to allocate on the heap
@@ -2278,7 +2277,7 @@ bool QTextEngine::LayoutData::reallocate(int totalGlyphs)
 
     int space_charAttributes = sizeof(QCharAttributes)*string.length()/sizeof(void*) + 1;
     int space_logClusters = sizeof(unsigned short)*string.length()/sizeof(void*) + 1;
-    int space_glyphs = QGlyphLayout::spaceNeededForGlyphLayout(totalGlyphs)/sizeof(void*) + 2;
+    int space_glyphs = (totalGlyphs * QGlyphLayout::SpaceNeeded) / sizeof(void *) + 2;
 
     int newAllocated = space_charAttributes + space_glyphs + space_logClusters;
     // These values can be negative if the length of string/glyphs causes overflow,
@@ -2325,8 +2324,7 @@ void QGlyphLayout::grow(char *address, int totalGlyphs)
         // move the existing data
         memmove(newLayout.attributes, oldLayout.attributes, numGlyphs * sizeof(QGlyphAttributes));
         memmove(newLayout.justifications, oldLayout.justifications, numGlyphs * sizeof(QGlyphJustification));
-        memmove(newLayout.advances_y, oldLayout.advances_y, numGlyphs * sizeof(QFixed));
-        memmove(newLayout.advances_x, oldLayout.advances_x, numGlyphs * sizeof(QFixed));
+        memmove(newLayout.advances, oldLayout.advances, numGlyphs * sizeof(QFixed));
         memmove(newLayout.glyphs, oldLayout.glyphs, numGlyphs * sizeof(glyph_t));
     }
 
@@ -2650,7 +2648,7 @@ QString QTextEngine::elidedText(Qt::TextElideMode mode, const QFixed &width, int
         }
 
         if (ellipsisGlyph.glyphs[0]) {
-            ellipsisWidth = ellipsisGlyph.advances_x[0];
+            ellipsisWidth = ellipsisGlyph.advances[0];
             ellipsisText = ellipsisChar;
         } else {
             QString dotDotDot(QLatin1String("..."));
@@ -2661,7 +2659,7 @@ QString QTextEngine::elidedText(Qt::TextElideMode mode, const QFixed &width, int
                 // should never happen...
                 return layoutData->string;
             for (int i = 0; i < nGlyphs; ++i)
-                ellipsisWidth += glyphs.advances_x[i];
+                ellipsisWidth += glyphs.advances[i];
             ellipsisText = dotDotDot;
         }
     }
@@ -2810,7 +2808,7 @@ void QTextEngine::splitItem(int item, int pos) const
         QFixed w = 0;
         const QGlyphLayout g = shapedGlyphs(&oldItem);
         for(int j = 0; j < breakGlyph; ++j)
-            w += g.advances_x[j] * !g.attributes[j].dontPrint;
+            w += g.advances[j] * !g.attributes[j].dontPrint;
 
         newItem.width = oldItem.width - w;
         oldItem.width = w;
@@ -2883,9 +2881,9 @@ QFixed QTextEngine::calculateTabWidth(int item, QFixed x) const
                         QGlyphLayout glyphs = this->shapedGlyphs(&item);
                         const int end = qMin(item.position + item.num_glyphs, tabSectionEnd) - item.position;
                         for (int i=0; i < end; i++)
-                            length += glyphs.advances_x[i] * !glyphs.attributes[i].dontPrint;
+                            length += glyphs.advances[i] * !glyphs.attributes[i].dontPrint;
                         if (end + item.position == tabSectionEnd && tabSpec.type == QTextOption::DelimiterTab) // remove half of matching char
-                            length -= glyphs.advances_x[end] / 2 * !glyphs.attributes[end].dontPrint;
+                            length -= glyphs.advances[end] / 2 * !glyphs.attributes[end].dontPrint;
                     }
 
                     switch (tabSpec.type) {
@@ -3050,7 +3048,7 @@ QFixed QTextEngine::offsetInLigature(const QScriptItem *si, int pos, int max, in
                 break;
         }
         if (clusterLength)
-            return glyphs.advances_x[glyph_pos] * offsetInCluster / clusterLength;
+            return glyphs.advances[glyph_pos] * offsetInCluster / clusterLength;
     }
 
     return 0;

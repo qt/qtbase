@@ -546,7 +546,7 @@ int QFontMetrics::width(const QString &text, int len, int flags) const
 
         QFixed width;
         for (int i = 0; i < numGlyphs; ++i)
-            width += glyphs.advances_x[i];
+            width += glyphs.advances[i];
         return qRound(width);
     }
 
@@ -597,7 +597,7 @@ int QFontMetrics::width(QChar ch) const
     QGlyphLayoutArray<8> glyphs;
     int nglyphs = 7;
     engine->stringToCMap(&ch, 1, &glyphs, &nglyphs, 0);
-    return qRound(glyphs.advances_x[0]);
+    return qRound(glyphs.advances[0]);
 }
 
 /*! \obsolete
@@ -642,7 +642,7 @@ int QFontMetrics::charWidth(const QString &text, int pos) const
         QGlyphLayoutArray<8> glyphs;
         int nglyphs = 7;
         engine->stringToCMap(&ch, 1, &glyphs, &nglyphs, 0);
-        width = qRound(glyphs.advances_x[0]);
+        width = qRound(glyphs.advances[0]);
     }
     return width;
 }
@@ -1434,7 +1434,7 @@ qreal QFontMetricsF::width(QChar ch) const
     QGlyphLayoutArray<8> glyphs;
     int nglyphs = 7;
     engine->stringToCMap(&ch, 1, &glyphs, &nglyphs, 0);
-    return glyphs.advances_x[0].toReal();
+    return glyphs.advances[0].toReal();
 }
 
 /*!

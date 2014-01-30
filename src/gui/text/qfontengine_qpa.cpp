@@ -399,8 +399,7 @@ void QFontEngineQPA::recalcAdvances(QGlyphLayout *glyphs, QFontEngine::ShaperFla
             glyphs->glyphs[i] = 0;
             continue;
         }
-        glyphs->advances_x[i] = g->advance;
-        glyphs->advances_y[i] = 0;
+        glyphs->advances[i] = g->advance;
     }
 }
 
