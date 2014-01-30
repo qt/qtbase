@@ -937,9 +937,9 @@ foreach my $lib (@modules_to_sync) {
                         } else {
                             my $ts = (stat($iheader))[9];
                             #find out all the places it goes..
-                            my @headers;
+                            my $oheader;
                             if ($public_header) {
-                                @headers = ( "$out_basedir/include/$lib/$header" );
+                                $oheader = "$out_basedir/include/$lib/$header";
                                 foreach my $full_class (@classes) {
                                     my $header_base = basename($header);
                                     # Strip namespaces:
@@ -952,14 +952,11 @@ foreach my $lib (@modules_to_sync) {
                                     $header_copies++ if (syncHeader($lib, "$out_basedir/include/$lib/$class", "$out_basedir/include/$lib/$header", 0, $ts));
                                 }
                             } elsif ($create_private_headers && !$qpa_header) {
-                                @headers = ( "$out_basedir/include/$lib/$module_version/$lib/private/$header" );
+                                $oheader = "$out_basedir/include/$lib/$module_version/$lib/private/$header";
                             } elsif ($create_private_headers) {
-                                @headers = ( "$out_basedir/include/$lib/$module_version/$lib/qpa/$header" );
+                                $oheader = "$out_basedir/include/$lib/$module_version/$lib/qpa/$header";
                             }
-
-                            foreach(@headers) { #sync them
-                                $header_copies++ if (syncHeader($lib, $_, $iheader, $copy_headers, $ts));
-                            }
+                            $header_copies++ if (syncHeader($lib, $oheader, $iheader, $copy_headers, $ts));
 
                             if($public_header) {
                                 #put it into the master file
