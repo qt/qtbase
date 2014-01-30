@@ -53,6 +53,7 @@
 #include "qandroidplatformrasterwindow.h"
 
 #include <android/bitmap.h>
+#include <android/native_window_jni.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -85,7 +86,7 @@ QAndroidPlatformScreen::QAndroidPlatformScreen():QObject(),QPlatformScreen()
         m_format = QImage::Format_RGB16;
         m_depth = 16;
     } else {
-        m_format = QImage::Format_RGBA8888;
+        m_format = QImage::Format_ARGB32_Premultiplied;
         m_depth = 32;
     }
     m_physicalSize.setHeight(QAndroidPlatformIntegration::m_defaultPhysicalSizeHeight);
@@ -100,8 +101,8 @@ QAndroidPlatformScreen::~QAndroidPlatformScreen()
     if (m_id != -1) {
         QtAndroid::destroySurface(m_id);
         m_surfaceWaitCondition.wakeOne();
-        if (m_bitmap)
-            QtAndroid::AttachedJNIEnv().jniEnv->DeleteGlobalRef(m_bitmap);
+        if (m_nativeSurface)
+            ANativeWindow_release(m_nativeSurface);
     }
 }
 
@@ -181,8 +182,7 @@ void QAndroidPlatformScreen::scheduleUpdate()
 void QAndroidPlatformScreen::setDirty(const QRect &rect)
 {
     QRect intersection = rect.intersected(m_geometry);
-    QPoint screenOffset = m_geometry.topLeft();
-    m_repaintRegion += intersection.translated(-screenOffset);    // global to local translation
+    m_repaintRegion += intersection;
     scheduleUpdate();
 }
 
@@ -203,9 +203,9 @@ void QAndroidPlatformScreen::setGeometry(const QRect &rect)
     resizeMaximizedWindows();
 
     if (m_id != -1) {
-        if (m_bitmap) {
-            QtAndroid::AttachedJNIEnv().jniEnv->DeleteGlobalRef(m_bitmap);
-            m_bitmap = 0;
+        if (m_nativeSurface) {
+            ANativeWindow_release(m_nativeSurface);
+            m_nativeSurface = 0;
         }
         QtAndroid::setSurfaceGeometry(m_id, rect);
     }
@@ -237,23 +237,36 @@ void QAndroidPlatformScreen::doRedraw()
         m_surfaceWaitCondition.wait(&m_surfaceMutex);
     }
 
-    if (!m_bitmap || !m_surface.isValid())
+    if (!m_nativeSurface)
         return;
 
-    QJNIEnvironmentPrivate env;
-    if (!env)
-        return;
+    ANativeWindow_Buffer nativeWindowBuffer;
+    ARect nativeWindowRect;
+    QRect br = m_repaintRegion.boundingRect();
+    nativeWindowRect.top = br.top();
+    nativeWindowRect.left = br.left();
+    nativeWindowRect.bottom = br.bottom() + 1; // for some reason that I don't understand the QRect bottom needs to +1 to be the same with ARect bottom
+    nativeWindowRect.right = br.right() + 1; // same for the right
 
     int ret;
-    void *pixels;
-
-    if ((ret = AndroidBitmap_lockPixels(env, m_bitmap, &pixels)) < 0) {
-        qWarning() << "AndroidBitmap_lockPixels() failed! error=" << ret;
+    if ((ret = ANativeWindow_lock(m_nativeSurface, &nativeWindowBuffer, &nativeWindowRect)) < 0) {
+        qWarning() << "ANativeWindow_lock() failed! error=" << ret;
         return;
     }
 
-    QImage mScreenImage(reinterpret_cast<uchar *>(pixels), m_bitmapWidth, m_bitmapHeight, m_bitmapStride, m_format);
-    QPainter mCompositePainter(&mScreenImage);
+    int bpp = 4;
+    QImage::Format format = QImage::Format_RGBA8888_Premultiplied;
+    if (nativeWindowBuffer.format == WINDOW_FORMAT_RGB_565) {
+        bpp = 2;
+        format = QImage::Format_RGB16;
+    }
+
+    QImage screenImage(reinterpret_cast<uchar *>(nativeWindowBuffer.bits)
+                       , nativeWindowBuffer.width, nativeWindowBuffer.height
+                       , nativeWindowBuffer.stride * bpp , format);
+
+    QPainter compositePainter(&screenImage);
+    compositePainter.setCompositionMode(QPainter::CompositionMode_Source);
 
     for (int rectIndex = 0; rectIndex < rects.size(); rectIndex++) {
         QRegion visibleRegion = rects[rectIndex];
@@ -273,37 +286,18 @@ void QAndroidPlatformScreen::doRedraw()
                 QRect windowRect = targetRect.translated(-window->geometry().topLeft());
                 QAndroidPlatformBackingStore *backingStore = static_cast<QAndroidPlatformRasterWindow *>(window)->backingStore();
                 if (backingStore)
-                    mCompositePainter.drawImage(targetRect, backingStore->image(), windowRect);
+                    compositePainter.drawImage(targetRect.topLeft(), backingStore->image(), windowRect);
             }
         }
 
-        foreach (const QRect &rect, visibleRegion.rects())
-            mCompositePainter.fillRect(rect, Qt::transparent);
+        foreach (const QRect &rect, visibleRegion.rects()) {
+            compositePainter.fillRect(rect, QColor(Qt::transparent));
+        }
     }
 
-
-    QRect br = m_repaintRegion.boundingRect();
-    m_repaintRegion = QRegion();
-    AndroidBitmap_unlockPixels(env, m_bitmap);
-
-    QJNIObjectPrivate jrect("android.graphics.Rect", "(IIII)V",
-                            jint(br.left()),
-                            jint(br.top()),
-                            jint(br.right() + 1),
-                            jint(br.bottom() + 1));
-
-    QJNIObjectPrivate canvas = m_surface.callObjectMethod("lockCanvas",
-                                                "(Landroid/graphics/Rect;)Landroid/graphics/Canvas;",
-                                                jrect.object());
-    if (!canvas.isValid()) {
-        qWarning() << "Can't lockCanvas";
-        return;
-    }
-    canvas.callMethod<void>("drawBitmap",
-                          "(Landroid/graphics/Bitmap;Landroid/graphics/Rect;Landroid/graphics/Rect;Landroid/graphics/Paint;)V",
-                      m_bitmap, jrect.object(), jrect.object(), jobject(0));
-
-    m_surface.callMethod<void>("unlockCanvasAndPost", "(Landroid/graphics/Canvas;)V", canvas.object());
+    ret = ANativeWindow_unlockAndPost(m_nativeSurface);
+    if (ret >= 0)
+        m_repaintRegion = QRegion();
 }
 
 QDpi QAndroidPlatformScreen::logicalDpi() const
@@ -325,24 +319,14 @@ Qt::ScreenOrientation QAndroidPlatformScreen::nativeOrientation() const
 void QAndroidPlatformScreen::surfaceChanged(JNIEnv *env, jobject surface, int w, int h)
 {
     lockSurface();
-    m_surface = surface;
-
     if (surface && w && h) {
-        if (w != m_bitmapWidth || h != m_bitmapHeight) {
-            if (m_bitmap)
-                env->DeleteGlobalRef(m_bitmap);
-            m_bitmap = env->NewGlobalRef(QtAndroid::createBitmap(w, h, m_format, env));
-            AndroidBitmapInfo info;
-            int res = AndroidBitmap_getInfo(env, m_bitmap, &info);
-            Q_ASSERT(res > -1);
-            m_bitmapStride = info.stride;
-            m_bitmapWidth = info.width;
-            m_bitmapHeight = info.height;
-        }
+        if (m_nativeSurface)
+            ANativeWindow_release(m_nativeSurface);
+        m_nativeSurface = ANativeWindow_fromSurface(env, surface);
     } else {
-        if (m_bitmap) {
-            env->DeleteGlobalRef(m_bitmap);
-            m_bitmap = 0;
+        if (m_nativeSurface) {
+            ANativeWindow_release(m_nativeSurface);
+            m_nativeSurface = 0;
         }
     }
     unlockSurface();

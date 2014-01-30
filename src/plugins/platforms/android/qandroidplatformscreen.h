@@ -52,6 +52,8 @@
 
 #include "androidsurfaceclient.h"
 
+#include <android/native_window.h>
+
 QT_BEGIN_NAMESPACE
 
 class QAndroidPlatformWindow;
@@ -108,12 +110,8 @@ private slots:
 
 private:
     int m_id = -1;
-    QJNIObjectPrivate m_surface;
-    jobject m_bitmap = nullptr;
+    ANativeWindow* m_nativeSurface = nullptr;
     QWaitCondition m_surfaceWaitCondition;
-    int m_bitmapStride = -1;
-    int m_bitmapWidth = -1;
-    int m_bitmapHeight = -1;
 };
 
 QT_END_NAMESPACE
