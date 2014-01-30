@@ -74,8 +74,7 @@ private:
     EGLNativeWindowType m_nativeWindow = nullptr;
 
     int m_nativeSurfaceId = -1;
-    QJNIObjectPrivate m_androidSurface;
-    QJNIObjectPrivate m_changedAndroidSurface;
+    QJNIObjectPrivate m_androidSurfaceObject;
     QWaitCondition m_surfaceWaitCondition;
 };
 

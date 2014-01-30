@@ -95,7 +95,7 @@ EGLSurface QAndroidPlatformOpenGLWindow::eglSurface(EGLConfig config)
 void QAndroidPlatformOpenGLWindow::checkNativeSurface(EGLConfig config)
 {
     QMutexLocker lock(&m_surfaceMutex);
-    if (m_nativeSurfaceId == -1 || !m_changedAndroidSurface.isValid())
+    if (m_nativeSurfaceId == -1 || !m_androidSurfaceObject.isValid())
         return;
 
     createEgl(config);
@@ -107,14 +107,9 @@ void QAndroidPlatformOpenGLWindow::checkNativeSurface(EGLConfig config)
 void QAndroidPlatformOpenGLWindow::createEgl(EGLConfig config)
 {
     clearEgl();
-    m_androidSurface = QJNIObjectPrivate();
-    m_androidSurface = m_changedAndroidSurface;
-    m_changedAndroidSurface = QJNIObjectPrivate();
     QJNIEnvironmentPrivate env;
-    m_nativeWindow = ANativeWindow_fromSurface(env, m_androidSurface.object());
-    if (m_nativeWindow)
-        ANativeWindow_acquire(m_nativeWindow);
-
+    m_nativeWindow = ANativeWindow_fromSurface(env, m_androidSurfaceObject.object());
+    m_androidSurfaceObject = QJNIObjectPrivate();
     m_eglSurface = eglCreateWindowSurface(m_eglDisplay, config, m_nativeWindow, NULL);
     if (m_eglSurface == EGL_NO_SURFACE) {
         EGLint error = eglGetError();
@@ -143,7 +138,7 @@ void QAndroidPlatformOpenGLWindow::surfaceChanged(JNIEnv *jniEnv, jobject surfac
     Q_UNUSED(w);
     Q_UNUSED(h);
     lockSurface();
-    m_changedAndroidSurface = surface;
+    m_androidSurfaceObject = surface;
     m_surfaceWaitCondition.wakeOne();
     unlockSurface();
 
