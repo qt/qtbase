@@ -467,11 +467,13 @@ Q_GLOBAL_STATIC(StaticVariables, staticVariables);
 
 - (void)deleteBackward
 {
-    // Send key event to window system interface
-    QWindowSystemInterface::handleKeyEvent(
-        0, QEvent::KeyPress, (int)Qt::Key_Backspace, Qt::NoModifier);
-    QWindowSystemInterface::handleKeyEvent(
-        0, QEvent::KeyRelease, (int)Qt::Key_Backspace, Qt::NoModifier);
+    // Since we're posting im events directly to the focus object, we should do the
+    // same for key events. Otherwise they might end up in a different place or out
+    // of sync with im events.
+    QKeyEvent press(QEvent::KeyPress, (int)Qt::Key_Backspace, Qt::NoModifier);
+    QKeyEvent release(QEvent::KeyRelease, (int)Qt::Key_Backspace, Qt::NoModifier);
+    [self sendEventToFocusObject:press];
+    [self sendEventToFocusObject:release];
 }
 
 - (void)updateTextInputTraits
