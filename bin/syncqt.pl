@@ -958,12 +958,12 @@ foreach my $lib (@modules_to_sync) {
                             }
                             $header_copies++ if (syncHeader($lib, $oheader, $iheader, $copy_headers, $ts));
 
+                            my $pri_install_iheader = fixPaths($iheader, $dir);
                             if($public_header) {
                                 #put it into the master file
                                 $master_contents .= "#include \"$public_header\"\n" if (shouldMasterInclude($iheader));
 
                                 #deal with the install directives
-                                my $pri_install_iheader = fixPaths($iheader, $dir);
                                 foreach my $class (@classes) {
                                     # Strip namespaces:
                                     $class =~ s/^.*:://;
@@ -977,11 +977,9 @@ foreach my $lib (@modules_to_sync) {
                                 $pri_install_files.= "$pri_install_iheader ";;
                             }
                             elsif ($qpa_header) {
-                                my $pri_install_iheader = fixPaths($iheader, $dir);
                                 $pri_install_qpafiles.= "$pri_install_iheader ";;
                             }
                             else {
-                                my $pri_install_iheader = fixPaths($iheader, $dir);
                                 $pri_install_pfiles.= "$pri_install_iheader ";;
                             }
                         }
