@@ -764,7 +764,7 @@ void InnerNode::getMemberClasses(NodeMap& out)
   sure to also look in the children of its property
   group nodes. Return the matching node or 0.
  */
-Node *InnerNode::findChildNodeByName(const QString& name) const
+Node *InnerNode::findChildNode(const QString& name) const
 {
     Node *node = childMap.value(name);
     if (node && !node->isQmlPropertyGroup())
@@ -773,13 +773,76 @@ Node *InnerNode::findChildNodeByName(const QString& name) const
         for (int i=0; i<children_.size(); ++i) {
             Node* n = children_.at(i);
             if (n->isQmlPropertyGroup()) {
-                node = static_cast<InnerNode*>(n)->findChildNodeByName(name);
+                node = static_cast<InnerNode*>(n)->findChildNode(name);
                 if (node)
                     return node;
             }
         }
     }
     return primaryFunctionMap.value(name);
+}
+
+/*!
+  Find the node in this node's children that has the given \a name. If
+  this node is a QML class node, be sure to also look in the children
+  of its property group nodes. Return the matching node or 0. This is
+  not a recearsive search.
+
+  If \a qml is true, only match a node for which node->isQmlNode()
+  returns \c true. If \a qml is false, only match a node for which
+  node->isQmlNode() returns \c false.
+ */
+Node* InnerNode::findChildNode(const QString& name, bool qml) const
+{
+    QList<Node*> nodes = childMap.values(name);
+    if (!nodes.isEmpty()) {
+        for (int i=0; i<nodes.size(); ++i) {
+            Node* node = nodes.at(i);
+            if (!qml) {
+                if (!node->isQmlNode())
+                    return node;
+            }
+            else if (node->isQmlNode() && !node->isQmlPropertyGroup())
+                return node;
+        }
+    }
+    if (qml && isQmlType()) {
+        for (int i=0; i<children_.size(); ++i) {
+            Node* node = children_.at(i);
+            if (node->isQmlPropertyGroup()) {
+                node = static_cast<InnerNode*>(node)->findChildNode(name);
+                if (node)
+                    return node;
+            }
+        }
+    }
+    return primaryFunctionMap.value(name);
+}
+
+/*!
+  This function is like findChildNode(), but if a node
+  with the specified \a name is found but it is not of the
+  specified \a type, 0 is returned.
+
+  This function is not recursive and therefore can't handle
+  collisions. If it finds a collision node named \a name, it
+  will return that node. But it might not find the collision
+  node because it looks up \a name in the child map, not the
+  list.
+ */
+Node* InnerNode::findChildNode(const QString& name, Type type)
+{
+    if (type == Function)
+        return primaryFunctionMap.value(name);
+    else {
+        QList<Node*> nodes = childMap.values(name);
+        for (int i=0; i<nodes.size(); ++i) {
+            Node* node = nodes.at(i);
+            if (node->type() == type)
+                return node;
+        }
+    }
+    return 0;
 }
 
 /*!
@@ -800,7 +863,7 @@ void InnerNode::findNodes(const QString& name, QList<Node*>& n)
             for (int i=0; i<children_.size(); ++i) {
                 node = children_.at(i);
                 if (node->isQmlPropertyGroup()) {
-                    node = static_cast<InnerNode*>(node)->findChildNodeByName(name);
+                    node = static_cast<InnerNode*>(node)->findChildNode(name);
                     if (node) {
                         n.append(node);
                         return;
@@ -824,7 +887,7 @@ void InnerNode::findNodes(const QString& name, QList<Node*>& n)
             if (!node->isQmlPropertyGroup())
                 n.append(node);
             else {
-                node = static_cast<InnerNode*>(node)->findChildNodeByName(name);
+                node = static_cast<InnerNode*>(node)->findChildNode(name);
                 if (node)
                     n.append(node);
             }
@@ -835,69 +898,6 @@ void InnerNode::findNodes(const QString& name, QList<Node*>& n)
     node = primaryFunctionMap.value(name);
     if (node)
         n.append(node);
-}
-
-/*!
-  Find the node in this node's children that has the given \a name. If
-  this node is a QML class node, be sure to also look in the children
-  of its property group nodes. Return the matching node or 0. This is
-  not a recearsive search.
-
-  If \a qml is true, only match a node for which node->isQmlNode()
-  returns \c true. If \a qml is false, only match a node for which
-  node->isQmlNode() returns \c false.
- */
-Node* InnerNode::findChildNodeByName(const QString& name, bool qml) const
-{
-    QList<Node*> nodes = childMap.values(name);
-    if (!nodes.isEmpty()) {
-        for (int i=0; i<nodes.size(); ++i) {
-            Node* node = nodes.at(i);
-            if (!qml) {
-                if (!node->isQmlNode())
-                    return node;
-            }
-            else if (node->isQmlNode() && !node->isQmlPropertyGroup())
-                return node;
-        }
-    }
-    if (qml && isQmlType()) {
-        for (int i=0; i<children_.size(); ++i) {
-            Node* node = children_.at(i);
-            if (node->isQmlPropertyGroup()) {
-                node = static_cast<InnerNode*>(node)->findChildNodeByName(name);
-                if (node)
-                    return node;
-            }
-        }
-    }
-    return primaryFunctionMap.value(name);
-}
-
-/*!
-  This function is like findChildNodeByName(), but if a node
-  with the specified \a name is found but it is not of the
-  specified \a type, 0 is returned.
-
-  This function is not recursive and therefore can't handle
-  collisions. If it finds a collision node named \a name, it
-  will return that node. But it might not find the collision
-  node because it looks up \a name in the child map, not the
-  list.
- */
-Node* InnerNode::findChildNodeByNameAndType(const QString& name, Type type)
-{
-    if (type == Function)
-        return primaryFunctionMap.value(name);
-    else {
-        QList<Node*> nodes = childMap.values(name);
-        for (int i=0; i<nodes.size(); ++i) {
-            Node* node = nodes.at(i);
-            if (node->type() == type)
-                return node;
-        }
-    }
-    return 0;
 }
 
 /*!
@@ -1259,6 +1259,17 @@ void InnerNode::addChild(Node *child)
 }
 
 /*!
+  Adds the \a child to this node's child map using \a title
+  as the key. The \a child is not added to the child list
+  again, because it is presumed to already be there. We just
+  want to be able to find the child by its \a title.
+ */
+void InnerNode::addChild(Node* child, const QString& title)
+{
+    childMap.insertMulti(title, child);
+}
+
+/*!
  */
 void InnerNode::removeChild(Node *child)
 {
@@ -1282,6 +1293,16 @@ void InnerNode::removeChild(Node *child)
     }
     QMap<QString, Node *>::Iterator ent = childMap.find(child->name());
     while (ent != childMap.end() && ent.key() == child->name()) {
+        if (*ent == child) {
+            childMap.erase(ent);
+            break;
+        }
+        ++ent;
+    }
+    if (child->title().isEmpty())
+        return;
+    ent = childMap.find(child->title());
+    while (ent != childMap.end() && ent.key() == child->title()) {
         if (*ent == child) {
             childMap.erase(ent);
             break;
@@ -1533,7 +1554,7 @@ void ClassNode::fixPropertyUsingBaseClasses(PropertyNode* pn)
     while (bc != baseClasses().constEnd()) {
         ClassNode* cn = bc->node_;
         if (cn) {
-            Node* n = cn->findChildNodeByNameAndType(pn->name(), Node::Property);
+            Node* n = cn->findChildNode(pn->name(), Node::Property);
             if (n) {
                 PropertyNode* baseProperty = static_cast<PropertyNode*>(n);
                 cn->fixPropertyUsingBaseClasses(baseProperty);
@@ -1552,7 +1573,7 @@ void ClassNode::fixPropertyUsingBaseClasses(PropertyNode* pn)
  */
 PropertyNode* ClassNode::findPropertyNode(const QString& name)
 {
-    Node* n = findChildNodeByNameAndType(name, Node::Property);
+    Node* n = findChildNode(name, Node::Property);
 
     if (n)
         return static_cast<PropertyNode*>(n);
@@ -1663,6 +1684,15 @@ DocNode::DocNode(InnerNode* parent, const QString& name, SubType subtype, Node::
 QString DocNode::title() const
 {
     return title_;
+}
+
+/*!
+  Sets the document node's \a title. This is used for the page title.
+ */
+void DocNode::setTitle(const QString &title)
+{
+    title_ = title;
+    parent()->addChild(this, title);
 }
 
 /*!

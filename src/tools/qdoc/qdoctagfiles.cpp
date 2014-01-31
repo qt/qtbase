@@ -147,7 +147,7 @@ void QDocTagFiles::generateTagFileCompounds(QXmlStreamWriter& writer, const Inne
         QString objName = node->name();
 
         // Special case: only the root node should have an empty name.
-        if (objName.isEmpty() && node != qdb_->treeRoot())
+        if (objName.isEmpty() && node != qdb_->primaryTreeRoot())
             continue;
 
         // *** Write the starting tag for the element here. ***
@@ -244,7 +244,7 @@ void QDocTagFiles::generateTagFileMembers(QXmlStreamWriter& writer, const InnerN
         QString objName = node->name();
 
         // Special case: only the root node should have an empty name.
-        if (objName.isEmpty() && node != qdb_->treeRoot())
+        if (objName.isEmpty() && node != qdb_->primaryTreeRoot())
             continue;
 
         // *** Write the starting tag for the element here. ***
@@ -373,7 +373,7 @@ void QDocTagFiles::generateTagFile(const QString& fileName, Generator* g)
     writer.setAutoFormatting(true);
     writer.writeStartDocument();
     writer.writeStartElement("tagfile");
-    generateTagFileCompounds(writer, qdb_->treeRoot());
+    generateTagFileCompounds(writer, qdb_->primaryTreeRoot());
     writer.writeEndElement(); // tagfile
     writer.writeEndDocument();
     file.close();

@@ -77,6 +77,7 @@ QDocIndexFiles::QDocIndexFiles()
 QDocIndexFiles::~QDocIndexFiles()
 {
     qdb_ = 0;
+    gen_ = 0;
 }
 
 /*!
@@ -109,10 +110,9 @@ void QDocIndexFiles::readIndexes(const QStringList& indexFiles)
     foreach (const QString& indexFile, indexFiles) {
         QString msg = "Loading index file: " + indexFile;
         Location::logToStdErr(msg);
-        //qDebug() << "READING INDEX:" << indexFile;
+        //qDebug() << "  LOAD INDEX FILE:" << indexFile;
         readIndexFile(indexFile);
     }
-    //qDebug() << "DONE READING INDEX FILES";
 }
 
 /*!
@@ -146,12 +146,13 @@ void QDocIndexFiles::readIndexFile(const QString& path)
         basesList_.clear();
         relatedList_.clear();
 
+        NamespaceNode* root = qdb_->newIndexTree(project_);
+
         // Scan all elements in the XML file, constructing a map that contains
         // base classes for each class found.
-
         QDomElement child = indexElement.firstChildElement();
         while (!child.isNull()) {
-            readIndexSection(child, qdb_->treeRoot(), indexUrl);
+            readIndexSection(child, root, indexUrl);
             child = child.nextSiblingElement();
         }
 
@@ -523,7 +524,7 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
 
     QString moduleName = element.attribute("module");
     if (!moduleName.isEmpty())
-        node->setModuleName(moduleName);
+        qdb_->addToModule(moduleName, node);
     if (!href.isEmpty()) {
         if (node->isExternalPage())
             node->setUrl(href);
@@ -768,7 +769,7 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
 
     QString objName = node->name();
     // Special case: only the root node should have an empty name.
-    if (objName.isEmpty() && node != qdb_->treeRoot())
+    if (objName.isEmpty() && node != qdb_->primaryTreeRoot())
         return false;
 
     writer.writeStartElement(nodeName);
@@ -1325,7 +1326,7 @@ void QDocIndexFiles::generateIndex(const QString& fileName,
     writer.writeAttribute("version", qdb_->version());
     writer.writeAttribute("project", g->config()->getString(CONFIG_PROJECT));
 
-    generateIndexSections(writer, qdb_->treeRoot(), generateInternalNodes);
+    generateIndexSections(writer, qdb_->primaryTreeRoot(), generateInternalNodes);
 
     /*
       We wait until the end of the index file to output the group elements.

@@ -88,6 +88,8 @@ public:
     Config(const QString& programName);
     ~Config();
 
+    static bool debug_;
+
     void load(const QString& fileName);
     void setStringList(const QString& var, const QStringList& values);
 
@@ -167,6 +169,7 @@ private:
 struct ConfigStrings
 {
     static QString ALIAS;
+    static QString AUTOLINKERRORS;
     static QString BASE;
     static QString BASEDIR;
     static QString BUILDVERSION;
@@ -239,6 +242,7 @@ struct ConfigStrings
 };
 
 #define CONFIG_ALIAS ConfigStrings::ALIAS
+#define CONFIG_AUTOLINKERRORS ConfigStrings::AUTOLINKERRORS
 #define CONFIG_BASE ConfigStrings::BASE
 #define CONFIG_BASEDIR ConfigStrings::BASEDIR
 #define CONFIG_BUILDVERSION ConfigStrings::BUILDVERSION

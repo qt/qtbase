@@ -202,7 +202,7 @@ bool PureDocParser::processQdocComments()
                 }
             }
 
-            Node* treeRoot = QDocDatabase::qdocDB()->treeRoot();
+            Node* treeRoot = QDocDatabase::qdocDB()->primaryTreeRoot();
             NodeList::Iterator n = nodes.begin();
             QList<Doc>::Iterator d = docs.begin();
             while (n != nodes.end()) {

@@ -264,16 +264,16 @@ QString HtmlGenerator::format()
 }
 
 /*!
-  Traverses the database generating all the HTML documentation.
+  Traverses the current tree generating all the HTML documentation.
  */
-void HtmlGenerator::generateTree()
+void HtmlGenerator::generateDocs()
 {
     qdb_->buildCollections();
     Node* qflags = qdb_->findNodeByNameAndType(QStringList("QFlags"), Node::Class, Node::NoSubType);
     if (qflags)
         qflagsHref_ = linkForNode(qflags,0);
     if (!runPrepareOnly()) {
-        Generator::generateTree();
+        Generator::generateDocs();
         generateCollisionPages();
     }
 
@@ -303,10 +303,11 @@ int HtmlGenerator::generateAtom(const Atom *atom, const Node *relative, CodeMark
 {
     int skipAhead = 0;
     static bool in_para = false;
-
+#if 0
     if (Generator::debugging()) {
         atom->dump();
     }
+#endif
     switch (atom->type()) {
     case Atom::AbstractLeft:
         if (relative)
@@ -327,6 +328,8 @@ int HtmlGenerator::generateAtom(const Atom *atom, const Node *relative, CodeMark
             }
             else {
                 out() << protectEnc(atom->string());
+                if (autolinkErrors())
+                    relative->doc().location().warning(tr("Can't autolink to '%1'").arg(atom->string()));
             }
         }
         else {
@@ -1374,7 +1377,7 @@ void HtmlGenerator::generateCollisionPages()
                 int count = 0;
                 for (int i=0; i<collisions.size(); ++i) {
                     InnerNode* n = static_cast<InnerNode*>(collisions.at(i));
-                    if (n->findChildNodeByName(t.key())) {
+                    if (n->findChildNode(t.key())) {
                         ++count;
                         if (count > 1) {
                             targets.append(t.key());
@@ -1393,7 +1396,7 @@ void HtmlGenerator::generateCollisionPages()
                 out() << "<ul>\n";
                 for (int i=0; i<collisions.size(); ++i) {
                     InnerNode* n = static_cast<InnerNode*>(collisions.at(i));
-                    Node* p = n->findChildNodeByName(*t);
+                    Node* p = n->findChildNode(*t);
                     if (p) {
                         QString link = linkForNode(p,0);
                         QString label;
@@ -2798,7 +2801,7 @@ void HtmlGenerator::generateOverviewList(const Node *relative)
     QMap<QString, DocNode *> uncategorizedNodeMap;
     QRegExp singleDigit("\\b([0-9])\\b");
 
-    const NodeList children = qdb_->treeRoot()->childNodes();
+    const NodeList children = qdb_->primaryTreeRoot()->childNodes();
     foreach (Node *child, children) {
         if (child->type() == Node::Document && child != relative) {
             DocNode *docNode = static_cast<DocNode *>(child);
@@ -3149,7 +3152,6 @@ QString HtmlGenerator::highlightedCode(const QString& markedCode,
         if (src.at(i) == charLangle && src.at(i + 1) == charAt) {
             i += 2;
             if (parseArg(src, funcTag, &i, srcSize, &arg, &par1)) {
-
                 const Node* n = qdb_->resolveTarget(par1.toString(), relative);
                 QString link = linkForNode(n, relative);
                 addLink(link, arg, &html);
@@ -3165,7 +3167,7 @@ QString HtmlGenerator::highlightedCode(const QString& markedCode,
         }
     }
 
-    // replace all "(<@(type|headerfile|func)(?: +[^>]*)?>)(.*)(</@\\2>)" tags
+    // replace all "(<@(type|headerfile)(?: +[^>]*)?>)(.*)(</@\\2>)" tags
     src = html;
     html = QString();
 
@@ -3175,7 +3177,7 @@ QString HtmlGenerator::highlightedCode(const QString& markedCode,
             bool handled = false;
             if (parseArg(src, typeTag, &i, srcSize, &arg, &par1)) {
                 par1 = QStringRef();
-                const Node* n = qdb_->resolveTarget(arg.toString(), relative);
+                const Node* n = qdb_->resolveType(arg.toString(), relative);
                 html += QLatin1String("<span class=\"type\">");
                 if (n && n->subType() == Node::QmlBasicType) {
                     if (relative && relative->subType() == Node::QmlClass)
@@ -3194,13 +3196,16 @@ QString HtmlGenerator::highlightedCode(const QString& markedCode,
                 addLink(linkForNode(n,relative), arg, &html);
                 handled = true;
             }
+#if 0
+            // Apparently, this clause was never used.
+            // <@func> is taken out above.
             else if (parseArg(src, funcTag, &i, srcSize, &arg, &par1)) {
                 par1 = QStringRef();
                 const Node* n = qdb_->resolveTarget(arg.toString(), relative);
                 addLink(linkForNode(n,relative), arg, &html);
                 handled = true;
             }
-
+#endif
             if (!handled) {
                 html += charLangle;
                 html += charAt;
@@ -3755,11 +3760,11 @@ QString HtmlGenerator::getLink(const Atom *atom, const Node *relative, const Nod
             *node = qdb_->findNodeByNameAndType(QStringList(first), Node::Document, Node::NoSubType);
         }
         else {
-            *node = qdb_->resolveTarget(first, relative);
-            if (!*node) {
+            if (!(*node))
+                *node = qdb_->resolveTarget(first, relative);
+            if (!(*node))
                 *node = qdb_->findDocNodeByTitle(first, relative);
-            }
-            if (!*node) {
+            if (!(*node)) {
                 *node = qdb_->findUnambiguousTarget(first, ref, relative);
                 if (*node && !(*node)->url().isEmpty() && !ref.isEmpty()) {
                     QString final = (*node)->url() + "#" + ref;
@@ -3768,16 +3773,13 @@ QString HtmlGenerator::getLink(const Atom *atom, const Node *relative, const Nod
             }
         }
         if (*node) {
-            if (!(*node)->url().isEmpty()) {
+            if (!(*node)->url().isEmpty())
                 return (*node)->url();
-            }
-            else {
+            else
                 path.removeFirst();
-            }
         }
-        else {
+        else
             *node = relative;
-        }
 
         if (*node) {
             if ((*node)->status() == Node::Obsolete) {
@@ -3802,10 +3804,8 @@ QString HtmlGenerator::getLink(const Atom *atom, const Node *relative, const Nod
                         }
                     }
                 }
-                else {
-                    qDebug() << "Link to Obsolete entity"
-                             << (*node)->name() << "no relative";
-                }
+                else
+                    qDebug() << "Link to Obsolete entity" << (*node)->name() << "no relative";
             }
         }
 
@@ -3833,9 +3833,8 @@ QString HtmlGenerator::getLink(const Atom *atom, const Node *relative, const Nod
             link = linkForNode(*node, relative);
             if (*node && (*node)->subType() == Node::Image)
                 link = "images/used-in-examples/" + link;
-            if (!ref.isEmpty()) {
+            if (!ref.isEmpty())
                 link += QLatin1Char('#') + ref;
-            }
         }
     }
     return link;

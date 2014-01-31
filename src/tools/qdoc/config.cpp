@@ -56,6 +56,7 @@
 QT_BEGIN_NAMESPACE
 
 QString ConfigStrings::ALIAS = QStringLiteral("alias");
+QString ConfigStrings::AUTOLINKERRORS = QStringLiteral("autolinkerrors");
 QString ConfigStrings::BASE = QStringLiteral("base");
 QString ConfigStrings::BASEDIR = QStringLiteral("basedir");
 QString ConfigStrings::BUILDVERSION = QStringLiteral("buildversion");
@@ -242,6 +243,7 @@ QStringList MetaStack::getExpanded(const Location& location)
 }
 
 QT_STATIC_CONST_IMPL QString Config::dot = QLatin1String(".");
+bool Config::debug_ = false;
 bool Config::generateExamples = true;
 QString Config::overrideOutputDir;
 QString Config::installDir;

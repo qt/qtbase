@@ -339,9 +339,9 @@ class InnerNode : public Node
 public:
     virtual ~InnerNode();
 
-    Node* findChildNodeByName(const QString& name) const;
-    Node* findChildNodeByName(const QString& name, bool qml) const;
-    Node* findChildNodeByNameAndType(const QString& name, Type type);
+    Node* findChildNode(const QString& name) const;
+    Node* findChildNode(const QString& name, bool qml) const;
+    Node* findChildNode(const QString& name, Type type);
     void findNodes(const QString& name, QList<Node*>& n);
     FunctionNode* findFunctionNode(const QString& name) const;
     FunctionNode* findFunctionNode(const FunctionNode* clone);
@@ -382,6 +382,7 @@ public:
     virtual void setOutputFileName(const QString& f) { outputFileName_ = f; }
     virtual QString outputFileName() const { return outputFileName_; }
     virtual QmlPropertyNode* hasQmlProperty(const QString& ) const;
+    void addChild(Node* child, const QString& title);
 
     void printChildren(const QString& title);
     void printMembers(const QString& title);
@@ -508,7 +509,7 @@ public:
     virtual ~DocNode() { }
 
     void setQtVariable(const QString &variable) { qtVariable_ = variable; }
-    void setTitle(const QString &title) { title_ = title; }
+    void setTitle(const QString &title);
     void setSubTitle(const QString &subTitle) { subtitle_ = subTitle; }
 
     QString qtVariable() const { return qtVariable_; }
@@ -837,8 +838,6 @@ private:
     QString nam;
     QString def;
 };
-
-class PropertyNode;
 
 class FunctionNode : public LeafNode
 {

@@ -88,7 +88,7 @@ public:
     virtual void initializeGenerator(const Config& config);
     virtual void terminateGenerator();
     virtual QString format();
-    virtual void generateTree();
+    virtual void generateDocs();
     void generateCollisionPages();
     void generateManifestFiles();
 

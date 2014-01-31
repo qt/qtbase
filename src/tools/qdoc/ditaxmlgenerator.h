@@ -302,7 +302,7 @@ public:
     virtual void terminateGenerator();
     virtual QString format();
     virtual bool canHandleFormat(const QString& format);
-    virtual void generateTree();
+    virtual void generateDocs();
     void generateCollisionPages();
 
     QString protectEnc(const QString& string);

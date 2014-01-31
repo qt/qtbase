@@ -52,6 +52,7 @@
 #include "tokenizer.h"
 #include "qdocdatabase.h"
 #include <qdebug.h>
+#include "generator.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -173,7 +174,7 @@ void CppCodeParser::parseHeaderFile(const Location& location, const QString& fil
     Tokenizer fileTokenizer(fileLocation, in);
     tokenizer = &fileTokenizer;
     readToken();
-    matchDeclList(qdb_->treeRoot());
+    matchDeclList(qdb_->primaryTreeRoot());
     if (!fileTokenizer.version().isEmpty())
         qdb_->setVersion(fileTokenizer.version());
     in.close();
@@ -218,10 +219,10 @@ void CppCodeParser::parseSourceFile(const Location& location, const QString& fil
 }
 
 /*!
-  This is called after all the header files have been parsed.
-  I think the most important thing it does is resolve class
-  inheritance links in the tree. But it also initializes a
-  bunch of stuff.
+  This is called after all the C++ header files have been
+  parsed. The most important thing it does is resolve C++
+  class inheritance links in the tree. It also initializes
+  a bunch of other collections.
  */
 void CppCodeParser::doneParsingHeaderFiles()
 {
@@ -263,11 +264,11 @@ void CppCodeParser::doneParsingHeaderFiles()
  */
 void CppCodeParser::doneParsingSourceFiles()
 {
-    qdb_->treeRoot()->clearCurrentChildPointers();
-    qdb_->treeRoot()->normalizeOverloads();
+    qdb_->primaryTreeRoot()->clearCurrentChildPointers();
+    qdb_->primaryTreeRoot()->normalizeOverloads();
     qdb_->fixInheritance();
     qdb_->resolveProperties();
-    qdb_->treeRoot()->makeUndocumentedChildrenInternal();
+    qdb_->primaryTreeRoot()->makeUndocumentedChildrenInternal();
 }
 
 static QSet<QString> topicCommands_;
@@ -326,38 +327,33 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
             doc.startLocation().warning(tr("Invalid syntax in '\\%1'").arg(COMMAND_FN));
         }
         else {
-            func = qdb_->findNodeInOpenNamespace(parentPath, clone);
-            /*
-              Search the root namespace if no match was found.
-            */
+            func = qdb_->findFunctionNode(parentPath, clone);
             if (func == 0) {
-                func = qdb_->findFunctionNode(parentPath, clone);
+                if (parentPath.isEmpty() && !lastPath_.isEmpty())
+                    func = qdb_->findFunctionNode(lastPath_, clone);
             }
 
+            /*
+              If the node was not found, then search for it in the
+              open C++ namespaces. We don't expect this search to
+              be necessary often. Nor do we expect it to succeed
+              very often.
+            */
+            if (func == 0)
+                func = qdb_->findNodeInOpenNamespace(parentPath, clone);
+
             if (func == 0) {
-                if (parentPath.isEmpty() && !lastPath_.isEmpty()) {
-                    func = qdb_->findFunctionNode(lastPath_, clone);
-                }
-                if (func == 0) {
-                    doc.location().warning(tr("Cannot find '%1' in '\\%2' %3")
-                                           .arg(clone->name() + "(...)")
-                                           .arg(COMMAND_FN)
-                                           .arg(arg.first),
-                                           tr("I cannot find any function of that name with the "
-                                              "specified signature. Make sure that the signature "
-                                              "is identical to the declaration, including 'const' "
-                                              "qualifiers."));
-                }
-                else {
-                    doc.location().warning(tr("Missing '%1::' for '%2' in '\\%3'")
-                                           .arg(lastPath_.join("::"))
-                                           .arg(clone->name() + "()")
-                                           .arg(COMMAND_FN));
-                }
+                doc.location().warning(tr("Cannot find '%1' in '\\%2' %3")
+                                       .arg(clone->name() + "(...)")
+                                       .arg(COMMAND_FN)
+                                       .arg(arg.first),
+                                       tr("I cannot find any function of that name with the "
+                                          "specified signature. Make sure that the signature "
+                                          "is identical to the declaration, including 'const' "
+                                          "qualifiers."));
             }
-            else {
+            else
                 lastPath_ = parentPath;
-            }
             if (func) {
                 func->borrowParameterNames(clone);
                 func->setParentPath(clone->parentPath());
@@ -370,7 +366,7 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
         QStringList parentPath;
         FunctionNode *func = 0;
 
-        extra.root = qdb_->treeRoot();
+        extra.root = qdb_->primaryTreeRoot();
         extra.isMacro = true;
         if (makeFunctionNode(arg.first, &parentPath, &func, extra)) {
             if (!parentPath.isEmpty()) {
@@ -392,7 +388,7 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
             return func;
         }
         else if (QRegExp("[A-Za-z_][A-Za-z0-9_]+").exactMatch(arg.first)) {
-            func = new FunctionNode(qdb_->treeRoot(), arg.first);
+            func = new FunctionNode(qdb_->primaryTreeRoot(), arg.first);
             func->setAccess(Node::Public);
             func->setLocation(doc.startLocation());
             func->setMetaness(FunctionNode::MacroWithoutParams);
@@ -421,21 +417,9 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
         QStringList path = paths[0].split("::");
         Node *node = 0;
 
-        /*
-          If the command refers to something that can be in a
-          C++ namespace, search for it first in all the known
-          C++ namespaces.
-         */
         node = qdb_->findNodeInOpenNamespace(path, type, subtype);
-
-        /*
-          If the node was not found in a C++ namespace, search
-          for it in the root namespace.
-         */
-        if (node == 0) {
+        if (node == 0)
             node = qdb_->findNodeByNameAndType(path, type, subtype);
-        }
-
         if (node == 0) {
             doc.location().warning(tr("Cannot find '%1' specified with '\\%2' in any header file")
                                    .arg(arg.first).arg(command));
@@ -444,31 +428,33 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
         }
         else if (node->isInnerNode()) {
             /*
-              This treets a class as a namespace.
+              This treats a class as a namespace.
              */
-            if (path.size() > 1) {
-                path.pop_back();
-                QString ns = path.join("::");
-                qdb_->insertOpenNamespace(ns);
+            if ((type == Node::Class) || (type == Node::Namespace)) {
+                if (path.size() > 1) {
+                    path.pop_back();
+                    QString ns = path.join("::");
+                    qdb_->insertOpenNamespace(ns);
+                }
             }
         }
         return node;
     }
     else if (command == COMMAND_EXAMPLE) {
         if (Config::generateExamples) {
-            ExampleNode* en = new ExampleNode(qdb_->treeRoot(), arg.first);
+            ExampleNode* en = new ExampleNode(qdb_->primaryTreeRoot(), arg.first);
             en->setLocation(doc.startLocation());
             createExampleFileNodes(en);
             return en;
         }
     }
     else if (command == COMMAND_EXTERNALPAGE) {
-        DocNode* dn = new DocNode(qdb_->treeRoot(), arg.first, Node::ExternalPage, Node::ArticlePage);
+        DocNode* dn = new DocNode(qdb_->primaryTreeRoot(), arg.first, Node::ExternalPage, Node::ArticlePage);
         dn->setLocation(doc.startLocation());
         return dn;
     }
     else if (command == COMMAND_FILE) {
-        DocNode* dn = new DocNode(qdb_->treeRoot(), arg.first, Node::File, Node::NoPageType);
+        DocNode* dn = new DocNode(qdb_->primaryTreeRoot(), arg.first, Node::File, Node::NoPageType);
         dn->setLocation(doc.startLocation());
         return dn;
     }
@@ -478,7 +464,7 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
         return dn;
     }
     else if (command == COMMAND_HEADERFILE) {
-        DocNode* dn = new DocNode(qdb_->treeRoot(), arg.first, Node::HeaderFile, Node::ApiPage);
+        DocNode* dn = new DocNode(qdb_->primaryTreeRoot(), arg.first, Node::HeaderFile, Node::ApiPage);
         dn->setLocation(doc.startLocation());
         return dn;
     }
@@ -527,9 +513,9 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
         NameCollisionNode* ncn = qdb_->checkForCollision(args[0]);
         DocNode* dn = 0;
         if (ptype == Node::DitaMapPage)
-            dn = new DitaMapNode(qdb_->treeRoot(), args[0]);
+            dn = new DitaMapNode(qdb_->primaryTreeRoot(), args[0]);
         else
-            dn = new DocNode(qdb_->treeRoot(), args[0], Node::Page, ptype);
+            dn = new DocNode(qdb_->primaryTreeRoot(), args[0], Node::Page, ptype);
         dn->setLocation(doc.startLocation());
         if (ncn) {
             ncn->addCollision(dn);
@@ -537,7 +523,7 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
         return dn;
     }
     else if (command == COMMAND_DITAMAP) {
-        DocNode* dn = new DitaMapNode(qdb_->treeRoot(), arg.first);
+        DocNode* dn = new DitaMapNode(qdb_->primaryTreeRoot(), arg.first);
         dn->setLocation(doc.startLocation());
         return dn;
     }
@@ -577,7 +563,7 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
           node and return that one.
          */
         NameCollisionNode* ncn = qdb_->checkForCollision(names[0]);
-        QmlClassNode* qcn = new QmlClassNode(qdb_->treeRoot(), names[0]);
+        QmlClassNode* qcn = new QmlClassNode(qdb_->primaryTreeRoot(), names[0]);
         qcn->setClassNode(classNode);
         qcn->setLocation(doc.startLocation());
 #if 0
@@ -596,12 +582,13 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
             }
         }
 #endif
-        if (ncn)
+        if (ncn) {
             ncn->addCollision(qcn);
+        }
         return qcn;
     }
     else if (command == COMMAND_QMLBASICTYPE) {
-        QmlBasicTypeNode* n = new QmlBasicTypeNode(qdb_->treeRoot(), arg.first);
+        QmlBasicTypeNode* n = new QmlBasicTypeNode(qdb_->primaryTreeRoot(), arg.first);
         n->setLocation(doc.startLocation());
         return n;
     }
@@ -1644,7 +1631,7 @@ bool CppCodeParser::matchClassDecl(InnerNode *parent,
     while (tok == Tok_Ident)
         readToken();
     if (tok == Tok_Gulbrandsen) {
-        Node* n = parent->findChildNodeByNameAndType(previousLexeme(),Node::Class);
+        Node* n = parent->findChildNode(previousLexeme(),Node::Class);
         if (n) {
             parent = static_cast<InnerNode*>(n);
             if (parent) {
@@ -1704,7 +1691,7 @@ bool CppCodeParser::matchNamespaceDecl(InnerNode *parent)
     QString namespaceName = previousLexeme();
     NamespaceNode* ns = 0;
     if (parent)
-        ns = static_cast<NamespaceNode*>(parent->findChildNodeByNameAndType(namespaceName, Node::Namespace));
+        ns = static_cast<NamespaceNode*>(parent->findChildNode(namespaceName, Node::Namespace));
     if (!ns) {
         ns = new NamespaceNode(parent, namespaceName);
         ns->setAccess(access);
@@ -1842,7 +1829,7 @@ bool CppCodeParser::matchTypedefDecl(InnerNode *parent)
     if (!match(Tok_Semicolon))
         return false;
 
-    if (parent && !parent->findChildNodeByNameAndType(name, Node::Typedef)) {
+    if (parent && !parent->findChildNode(name, Node::Typedef)) {
         TypedefNode* td = new TypedefNode(parent, name);
         td->setAccess(access);
         td->setLocation(location());
@@ -2077,7 +2064,7 @@ bool CppCodeParser::matchDeclList(InnerNode *parent)
                     TypedefNode *flagsNode = new TypedefNode(parent, flagsType);
                     flagsNode->setAccess(access);
                     flagsNode->setLocation(location());
-                    EnumNode* en = static_cast<EnumNode*>(parent->findChildNodeByNameAndType(name, Node::Enum));
+                    EnumNode* en = static_cast<EnumNode*>(parent->findChildNode(name, Node::Enum));
                     if (en)
                         en->setFlagsType(flagsNode);
                 }
@@ -2156,9 +2143,15 @@ bool CppCodeParser::matchDocsAndStuff()
                 FunctionNode *func = 0;
 
                 if (matchFunctionDecl(0, &parentPath, &clone, QString(), extra)) {
-                    func = qdb_->findNodeInOpenNamespace(parentPath, clone);
+                    func = qdb_->findFunctionNode(parentPath, clone);
+                    /*
+                      If the node was not found, then search for it in the
+                      open C++ namespaces. We don't expect this search to
+                      be necessary often. Nor do we expect it to succeed
+                      very often.
+                    */
                     if (func == 0)
-                        func = qdb_->findFunctionNode(parentPath, clone);
+                        func = qdb_->findNodeInOpenNamespace(parentPath, clone);
 
                     if (func) {
                         func->borrowParameterNames(clone);
@@ -2220,8 +2213,9 @@ bool CppCodeParser::matchDocsAndStuff()
                 checkModuleInclusion(*n);
                 if ((*n)->isInnerNode() && ((InnerNode *)*n)->includes().isEmpty()) {
                     InnerNode *m = static_cast<InnerNode *>(*n);
-                    while (m->parent() != qdb_->treeRoot())
+                    while (m->parent() && m->moduleName().isEmpty()) {
                         m = m->parent();
+                    }
                     if (m == *n)
                         ((InnerNode *)*n)->addInclude((*n)->name());
                     else
@@ -2358,7 +2352,7 @@ void CppCodeParser::instantiateIteratorMacro(const QString &container,
     Tokenizer stringTokenizer(loc, latin1);
     tokenizer = &stringTokenizer;
     readToken();
-    matchDeclList(QDocDatabase::qdocDB()->treeRoot());
+    matchDeclList(QDocDatabase::qdocDB()->primaryTreeRoot());
 }
 
 void CppCodeParser::createExampleFileNodes(DocNode *dn)

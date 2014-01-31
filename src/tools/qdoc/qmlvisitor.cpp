@@ -97,7 +97,7 @@ QmlDocVisitor::QmlDocVisitor(const QString &filePath,
     this->engine = engine;
     this->commands_ = commands;
     this->topics_ = topics;
-    current = QDocDatabase::qdocDB()->treeRoot();
+    current = QDocDatabase::qdocDB()->primaryTreeRoot();
 }
 
 /*!

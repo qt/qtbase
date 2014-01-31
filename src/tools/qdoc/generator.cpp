@@ -97,23 +97,26 @@ QStringList Generator::styleDirs;
 QStringList Generator::styleFiles;
 bool Generator::debugging_ = false;
 bool Generator::noLinkErrors_ = false;
+bool Generator::autolinkErrors_ = false;
 bool Generator::redirectDocumentationToDevNull_ = false;
 Generator::Passes Generator::qdocPass_ = Both;
 bool Generator::useOutputSubdirs_ = true;
 
-void Generator::setDebugSegfaultFlag(bool b)
+void Generator::setDebugFlag(bool b)
 {
+#if 0
     if (b)
         qDebug() << "DEBUG: Setting debug flag.";
     else
         qDebug() << "DEBUG: Clearing debug flag.";
+#endif
     debugging_ = b;
 }
 
 /*!
   Prints \a message as an aid to debugging the release version.
  */
-void Generator::debugSegfault(const QString& message)
+void Generator::debug(const QString& message)
 {
     if (debugging())
         qDebug() << "DEBUG:" << message;
@@ -275,7 +278,7 @@ void Generator::beginSubPage(const InnerNode* node, const QString& fileName)
         node->location().error(tr("HTML file already exists; overwriting %1").arg(outFile->fileName()));
     if (!outFile->open(QFile::WriteOnly))
         node->location().fatal(tr("Cannot open output file '%1'").arg(outFile->fileName()));
-    Generator::debugSegfault("Writing: " + path);
+    Generator::debug("Writing: " + path);
     outFileNames.insert(fileName,fileName);
     QTextStream* out = new QTextStream(outFile);
 
@@ -1365,11 +1368,11 @@ void Generator::generateThreadSafeness(const Node *node, CodeMarker *marker)
 }
 
 /*!
-  Traverses the database recursivly to generate all the documentation.
+  Traverses the current tree to generate all the documentation.
  */
-void Generator::generateTree()
+void Generator::generateDocs()
 {
-    generateInnerNode(qdb_->treeRoot());
+    generateInnerNode(qdb_->primaryTreeRoot());
 }
 
 Generator *Generator::generatorForFormat(const QString& format)
@@ -1653,6 +1656,7 @@ void Generator::initialize(const Config &config)
     else
         outputPrefixes[QLatin1String("QML")] = QLatin1String("qml-");
     noLinkErrors_ = config.getBool(CONFIG_NOLINKERRORS);
+    autolinkErrors_ = config.getBool(CONFIG_AUTOLINKERRORS);
 }
 
 /*!

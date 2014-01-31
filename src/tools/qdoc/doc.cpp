@@ -316,17 +316,17 @@ Q_GLOBAL_STATIC(QHash_QString_Macro, macroHash)
 class DocPrivateExtra
 {
 public:
-    Doc::Sections       granularity;
-    Doc::Sections       section; // ###
-    QList<Atom*>        tableOfContents;
-    QList<int>          tableOfContentsLevels;
-    QList<Atom*>        keywords;
-    QList<Atom*>        targets;
-    QStringMultiMap     metaMap;
+    Doc::Sections       granularity_;
+    Doc::Sections       section_; // ###
+    QList<Atom*>        tableOfContents_;
+    QList<int>          tableOfContentsLevels_;
+    QList<Atom*>        keywords_;
+    QList<Atom*>        targets_;
+    QStringMultiMap     metaMap_;
 
     DocPrivateExtra()
-        : granularity(Doc::Part)
-        , section(Doc::NoSection)
+        : granularity_(Doc::Part)
+        , section_(Doc::NoSection)
     { }
 };
 
@@ -535,7 +535,7 @@ private:
     int braceDepth;
     int minIndent;
     Doc::Sections currentSection;
-    QMap<QString, Location> targetMap;
+    QMap<QString, Location> targetMap_;
     QMap<int, QString> pendingFormats;
     QStack<int> openedCommands;
     QStack<OpenedList> openedLists;
@@ -880,7 +880,7 @@ void DocParser::parse(const QString& source,
                     break;
                 case CMD_GRANULARITY:
                     priv->constructExtra();
-                    priv->extra->granularity = getSectioningUnit();
+                    priv->extra->granularity_ = getSectioningUnit();
                     break;
                 case CMD_HEADER:
                     if (openedCommands.top() == CMD_TABLE) {
@@ -1025,7 +1025,7 @@ void DocParser::parse(const QString& source,
                 case CMD_META:
                     priv->constructExtra();
                     p1 = getArgument();
-                    priv->extra->metaMap.insert(p1, getArgument());
+                    priv->extra->metaMap_.insert(p1, getArgument());
                     break;
                 case CMD_NEWCODE:
                     location().warning(tr("Unexpected '\\%1'").arg(cmdName(CMD_NEWCODE)));
@@ -1626,8 +1626,8 @@ void DocParser::parse(const QString& source,
         currentSection = Doc::NoSection;
     }
 
-    if (priv->extra && priv->extra->granularity < priv->extra->section)
-        priv->extra->granularity = priv->extra->section;
+    if (priv->extra && priv->extra->granularity_ < priv->extra->section_)
+        priv->extra->granularity_ = priv->extra->section_;
     priv->text.stripFirstAtom();
 }
 
@@ -1668,18 +1668,18 @@ QString DocParser::detailsUnknownCommand(const QSet<QString> &metaCommandSet,
 
 void DocParser::insertTarget(const QString &target, bool keyword)
 {
-    if (targetMap.contains(target)) {
+    if (targetMap_.contains(target)) {
         location().warning(tr("Duplicate target name '%1'").arg(target));
-        targetMap[target].warning(tr("(The previous occurrence is here)"));
+        targetMap_[target].warning(tr("(The previous occurrence is here)"));
     }
     else {
-        targetMap.insert(target, location());
+        targetMap_.insert(target, location());
         append(Atom::Target, target);
         priv->constructExtra();
         if (keyword)
-            priv->extra->keywords.append(priv->text.lastAtom());
+            priv->extra->keywords_.append(priv->text.lastAtom());
         else
-            priv->extra->targets.append(priv->text.lastAtom());
+            priv->extra->targets_.append(priv->text.lastAtom());
     }
 }
 
@@ -1883,15 +1883,15 @@ void DocParser::startSection(Doc::Sections unit, int cmd)
     if (currentSection == Doc::NoSection) {
         currentSection = (Doc::Sections) (unit);
         priv->constructExtra();
-        priv->extra->section = currentSection;
+        priv->extra->section_ = currentSection;
     }
     else
         endSection(unit,cmd);
 
     append(Atom::SectionLeft, QString::number(unit));
     priv->constructExtra();
-    priv->extra->tableOfContents.append(priv->text.lastAtom());
-    priv->extra->tableOfContentsLevels.append(unit);
+    priv->extra->tableOfContents_.append(priv->text.lastAtom());
+    priv->extra->tableOfContentsLevels_.append(unit);
     enterPara(Atom::SectionHeadingLeft,
               Atom::SectionHeadingRight,
               QString::number(unit));
@@ -2958,10 +2958,10 @@ Text Doc::legaleseText() const
 Doc::Sections Doc::granularity() const
 {
     if (priv == 0 || priv->extra == 0) {
-        return DocPrivateExtra().granularity;
+        return DocPrivateExtra().granularity_;
     }
     else {
-        return priv->extra->granularity;
+        return priv->extra->granularity_;
     }
 }
 
@@ -3007,46 +3007,46 @@ const QList<Text> &Doc::alsoList() const
 
 bool Doc::hasTableOfContents() const
 {
-    return priv && priv->extra && !priv->extra->tableOfContents.isEmpty();
+    return priv && priv->extra && !priv->extra->tableOfContents_.isEmpty();
 }
 
 bool Doc::hasKeywords() const
 {
-    return priv && priv->extra && !priv->extra->keywords.isEmpty();
+    return priv && priv->extra && !priv->extra->keywords_.isEmpty();
 }
 
 bool Doc::hasTargets() const
 {
-    return priv && priv->extra && !priv->extra->targets.isEmpty();
+    return priv && priv->extra && !priv->extra->targets_.isEmpty();
 }
 
 const QList<Atom *> &Doc::tableOfContents() const
 {
     priv->constructExtra();
-    return priv->extra->tableOfContents;
+    return priv->extra->tableOfContents_;
 }
 
 const QList<int> &Doc::tableOfContentsLevels() const
 {
     priv->constructExtra();
-    return priv->extra->tableOfContentsLevels;
+    return priv->extra->tableOfContentsLevels_;
 }
 
 const QList<Atom *> &Doc::keywords() const
 {
     priv->constructExtra();
-    return priv->extra->keywords;
+    return priv->extra->keywords_;
 }
 
 const QList<Atom *> &Doc::targets() const
 {
     priv->constructExtra();
-    return priv->extra->targets;
+    return priv->extra->targets_;
 }
 
 const QStringMultiMap &Doc::metaTagMap() const
 {
-    return priv && priv->extra ? priv->extra->metaMap : *null_QStringMultiMap();
+    return priv && priv->extra ? priv->extra->metaMap_ : *null_QStringMultiMap();
 }
 
 const Config* Doc::config_ = 0;

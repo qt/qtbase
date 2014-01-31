@@ -612,7 +612,7 @@ void HelpProjectWriter::generateProject(HelpProject &project)
     if (!project.indexRoot.isEmpty())
         rootNode = qdb_->findDocNodeByTitle(project.indexRoot);
     else
-        rootNode = qdb_->treeRoot();
+        rootNode = qdb_->primaryTreeRoot();
 
     if (!rootNode)
         return;

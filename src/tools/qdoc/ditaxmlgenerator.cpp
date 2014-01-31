@@ -667,13 +667,13 @@ GuidMap* DitaXmlGenerator::lookupGuidMap(const QString& fileName)
 }
 
 /*!
-  Traverses the database generating all the DITA XML documentation.
+  Traverses the current tree generating all the DITA XML documentation.
  */
-void DitaXmlGenerator::generateTree()
+void DitaXmlGenerator::generateDocs()
 {
     qdb_->buildCollections();
     if (!runPrepareOnly()) {
-        Generator::generateTree();
+        Generator::generateDocs();
         generateCollisionPages();
     }
 
@@ -3111,7 +3111,7 @@ void DitaXmlGenerator::generateOverviewList(const Node* relative)
     QMap<QString, DocNode*> uncategorizedNodeMap;
     QRegExp singleDigit("\\b([0-9])\\b");
 
-    const NodeList children = qdb_->treeRoot()->childNodes();
+    const NodeList children = qdb_->primaryTreeRoot()->childNodes();
     foreach (Node* child, children) {
         if (child->type() == Node::Document && child != relative) {
             DocNode* docNode = static_cast<DocNode*>(child);
@@ -5511,7 +5511,7 @@ void DitaXmlGenerator::writeDitaMap()
     Remove #if 0 to get a flat ditamap.
 */
 #if 0
-    beginSubPage(qdb_->treeRoot(),"qt.ditamap");
+    beginSubPage(qdb_->primaryTreeRoot(),"qt.ditamap");
     doctype = "<!DOCTYPE map PUBLIC \"-//OASIS//DTD DITA Map//EN\" \"map.dtd\">";
     xmlWriter().writeDTD(doctype);
     writeStartTag(DT_map);
@@ -5537,9 +5537,9 @@ void DitaXmlGenerator::writeDitaMap()
         nodeSubtypeMaps[i] = new NodeMultiMap;
     for (unsigned i=0; i<Node::OnBeyondZebra; ++i)
         pageTypeMaps[i] = new NodeMultiMap;
-    Node* rootPageNode = collectNodesByTypeAndSubtype(qdb_->treeRoot());
+    Node* rootPageNode = collectNodesByTypeAndSubtype(qdb_->primaryTreeRoot());
 
-    beginSubPage(qdb_->treeRoot(),"qt.ditamap");
+    beginSubPage(qdb_->primaryTreeRoot(),"qt.ditamap");
 
     doctype = "<!DOCTYPE map PUBLIC \"-//OASIS//DTD DITA Map//EN\" \"map.dtd\">";
     xmlWriter().writeDTD(doctype);
@@ -6132,7 +6132,7 @@ void DitaXmlGenerator::generateCollisionPages()
                 int count = 0;
                 for (int i=0; i<collisions.size(); ++i) {
                     InnerNode* n = static_cast<InnerNode*>(collisions.at(i));
-                    if (n->findChildNodeByName(t.key())) {
+                    if (n->findChildNode(t.key())) {
                         ++count;
                         if (count > 1) {
                             targets.append(t.key());
@@ -6154,7 +6154,7 @@ void DitaXmlGenerator::generateCollisionPages()
                 writeStartTag(DT_ul);
                 for (int i=0; i<collisions.size(); ++i) {
                     InnerNode* n = static_cast<InnerNode*>(collisions.at(i));
-                    Node* p = n->findChildNodeByName(*t);
+                    Node* p = n->findChildNode(*t);
                     if (p) {
                         QString link = linkForNode(p,0);
                         QString label;

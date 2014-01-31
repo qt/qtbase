@@ -56,7 +56,6 @@ QT_BEGIN_NAMESPACE
 class Config;
 class Node;
 class QString;
-class Tree;
 
 class PureDocParser : public CppCodeParser
 {

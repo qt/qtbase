@@ -77,7 +77,7 @@ public:
 
     virtual bool canHandleFormat(const QString &format) { return format == this->format(); }
     virtual QString format() = 0;
-    virtual void generateTree();
+    virtual void generateDocs();
     virtual void initializeGenerator(const Config &config);
     virtual void terminateGenerator();
 
@@ -92,10 +92,11 @@ public:
     static void terminate();
     static void writeOutFileNames();
     static void augmentImageDirs(QSet<QString>& moreImageDirs);
-    static void debugSegfault(const QString& message);
-    static void setDebugSegfaultFlag(bool b);
+    static void debug(const QString& message);
+    static void setDebugFlag(bool b);
     static bool debugging() { return debugging_; }
     static bool noLinkErrors() { return noLinkErrors_; }
+    static bool autolinkErrors() { return autolinkErrors_; }
     static void setQDocPass(Passes pass) { qdocPass_ = pass; }
     static bool runPrepareOnly() { return (qdocPass_ == Prepare); }
     static bool runGenerateOnly() { return (qdocPass_ == Generate); }
@@ -219,6 +220,7 @@ private:
     static QStringList styleFiles;
     static bool debugging_;
     static bool noLinkErrors_;
+    static bool autolinkErrors_;
     static bool redirectDocumentationToDevNull_;
     static Passes qdocPass_;
     static bool useOutputSubdirs_;
