@@ -57,7 +57,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#warning REMOVE ME
+#ifdef QANDROIDPLATFORMSCREEN_DEBUG
 class ScopedProfiler
 {
 public:
@@ -75,7 +75,10 @@ private:
     QString m_msg;
 };
 
-#define PROFILE_SCOPE ScopedProfiler ___sp___(__func__)
+# define PROFILE_SCOPE ScopedProfiler ___sp___(__func__)
+#else
+# define PROFILE_SCOPE
+#endif
 
 QAndroidPlatformScreen::QAndroidPlatformScreen():QObject(),QPlatformScreen()
 {
