@@ -60,134 +60,134 @@ public:
     QOpenGLTextureHelper(QOpenGLContext *context);
 
     // DSA API
-    inline void glTextureParameteri(GLuint texture, GLenum target, GLenum pname, GLint param)
+    inline void glTextureParameteri(GLuint texture, GLenum target, GLenum bindingTarget, GLenum pname, GLint param)
     {
-        (this->*TextureParameteri)(texture, target, pname, param);
+        (this->*TextureParameteri)(texture, target, bindingTarget, pname, param);
     }
 
-    inline void glTextureParameteriv(GLuint texture, GLenum target, GLenum pname, const GLint *params)
+    inline void glTextureParameteriv(GLuint texture, GLenum target, GLenum bindingTarget, GLenum pname, const GLint *params)
     {
-        (this->*TextureParameteriv)(texture, target, pname, params);
+        (this->*TextureParameteriv)(texture, target, bindingTarget, pname, params);
     }
 
-    inline void glTextureParameterf(GLuint texture, GLenum target, GLenum pname, GLfloat param)
+    inline void glTextureParameterf(GLuint texture, GLenum target, GLenum bindingTarget, GLenum pname, GLfloat param)
     {
-        (this->*TextureParameterf)(texture, target, pname, param);
+        (this->*TextureParameterf)(texture, target, bindingTarget, pname, param);
     }
 
-    inline void glTextureParameterfv(GLuint texture, GLenum target, GLenum pname, const GLfloat *params)
+    inline void glTextureParameterfv(GLuint texture, GLenum target, GLenum bindingTarget, GLenum pname, const GLfloat *params)
     {
-        (this->*TextureParameterfv)(texture, target, pname, params);
+        (this->*TextureParameterfv)(texture, target, bindingTarget, pname, params);
     }
 
-    inline void glGenerateTextureMipmap(GLuint texture, GLenum target)
+    inline void glGenerateTextureMipmap(GLuint texture, GLenum target, GLenum bindingTarget)
     {
-        (this->*GenerateTextureMipmap)(texture, target);
+        (this->*GenerateTextureMipmap)(texture, target, bindingTarget);
     }
 
-    inline void glTextureStorage3D(GLuint texture, GLenum target, GLsizei levels, GLenum internalFormat,
+    inline void glTextureStorage3D(GLuint texture, GLenum target, GLenum bindingTarget, GLsizei levels, GLenum internalFormat,
                                    GLsizei width, GLsizei height, GLsizei depth)
     {
-        (this->*TextureStorage3D)(texture, target, levels, internalFormat, width, height, depth);
+        (this->*TextureStorage3D)(texture, target, bindingTarget, levels, internalFormat, width, height, depth);
     }
 
-    inline void glTextureStorage2D(GLuint texture, GLenum target, GLsizei levels, GLenum internalFormat,
+    inline void glTextureStorage2D(GLuint texture, GLenum target, GLenum bindingTarget, GLsizei levels, GLenum internalFormat,
                                    GLsizei width, GLsizei height)
     {
-        (this->*TextureStorage2D)(texture, target, levels, internalFormat, width, height);
+        (this->*TextureStorage2D)(texture, target, bindingTarget, levels, internalFormat, width, height);
     }
 
-    inline void glTextureStorage1D(GLuint texture, GLenum target, GLsizei levels, GLenum internalFormat,
+    inline void glTextureStorage1D(GLuint texture, GLenum target, GLenum bindingTarget, GLsizei levels, GLenum internalFormat,
                                    GLsizei width)
     {
-        (this->*TextureStorage1D)(texture, target, levels, internalFormat, width);
+        (this->*TextureStorage1D)(texture, target, bindingTarget, levels, internalFormat, width);
     }
 
-    inline void glTextureStorage3DMultisample(GLuint texture, GLenum target, GLsizei samples, GLenum internalFormat,
+    inline void glTextureStorage3DMultisample(GLuint texture, GLenum target, GLenum bindingTarget, GLsizei samples, GLenum internalFormat,
                                               GLsizei width, GLsizei height, GLsizei depth, GLboolean fixedSampleLocations)
     {
-        (this->*TextureStorage3DMultisample)(texture, target, samples, internalFormat, width, height, depth, fixedSampleLocations);
+        (this->*TextureStorage3DMultisample)(texture, target, bindingTarget, samples, internalFormat, width, height, depth, fixedSampleLocations);
     }
 
-    inline void glTextureStorage2DMultisample(GLuint texture, GLenum target, GLsizei samples, GLenum internalFormat,
+    inline void glTextureStorage2DMultisample(GLuint texture, GLenum target, GLenum bindingTarget, GLsizei samples, GLenum internalFormat,
                                               GLsizei width, GLsizei height, GLboolean fixedSampleLocations)
     {
-        (this->*TextureStorage2DMultisample)(texture, target, samples, internalFormat, width, height, fixedSampleLocations);
+        (this->*TextureStorage2DMultisample)(texture, target, bindingTarget, samples, internalFormat, width, height, fixedSampleLocations);
     }
 
-    inline void glTextureImage3D(GLuint texture, GLenum target, GLint level, GLenum internalFormat,
+    inline void glTextureImage3D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLenum internalFormat,
                                  GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, const GLvoid *pixels)
     {
-        (this->*TextureImage3D)(texture, target, level, internalFormat, width, height, depth, border, format, type, pixels);
+        (this->*TextureImage3D)(texture, target, bindingTarget, level, internalFormat, width, height, depth, border, format, type, pixels);
     }
 
-    inline void glTextureImage2D(GLuint texture, GLenum target, GLint level, GLenum internalFormat,
+    inline void glTextureImage2D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLenum internalFormat,
                                  GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid *pixels)
     {
-        (this->*TextureImage2D)(texture, target, level, internalFormat, width, height, border, format, type, pixels);
+        (this->*TextureImage2D)(texture, target, bindingTarget, level, internalFormat, width, height, border, format, type, pixels);
     }
 
-    inline void glTextureImage1D(GLuint texture, GLenum target, GLint level, GLenum internalFormat,
+    inline void glTextureImage1D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLenum internalFormat,
                                  GLsizei width, GLint border, GLenum format, GLenum type, const GLvoid *pixels)
     {
-        (this->*TextureImage1D)(texture, target, level, internalFormat, width, border, format, type, pixels);
+        (this->*TextureImage1D)(texture, target, bindingTarget, level, internalFormat, width, border, format, type, pixels);
     }
 
-    inline void glTextureSubImage3D(GLuint texture, GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset,
+    inline void glTextureSubImage3D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLint xoffset, GLint yoffset, GLint zoffset,
                                     GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type,
                                     const GLvoid *pixels, const QOpenGLPixelTransferOptions * const options = 0)
     {
         if (options) {
             QOpenGLPixelTransferOptions oldOptions = savePixelUploadOptions();
             setPixelUploadOptions(*options);
-            (this->*TextureSubImage3D)(texture, target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels);
+            (this->*TextureSubImage3D)(texture, target, bindingTarget, level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels);
             setPixelUploadOptions(oldOptions);
         } else {
-            (this->*TextureSubImage3D)(texture, target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels);
+            (this->*TextureSubImage3D)(texture, target, bindingTarget, level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels);
         }
     }
 
-    inline void glTextureSubImage2D(GLuint texture, GLenum target, GLint level, GLint xoffset, GLint yoffset,
+    inline void glTextureSubImage2D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLint xoffset, GLint yoffset,
                                     GLsizei width, GLsizei height, GLenum format, GLenum type,
                                     const GLvoid *pixels, const QOpenGLPixelTransferOptions * const options = 0)
     {
         if (options) {
             QOpenGLPixelTransferOptions oldOptions = savePixelUploadOptions();
             setPixelUploadOptions(*options);
-            (this->*TextureSubImage2D)(texture, target, level, xoffset, yoffset, width, height, format, type, pixels);
+            (this->*TextureSubImage2D)(texture, target, bindingTarget, level, xoffset, yoffset, width, height, format, type, pixels);
             setPixelUploadOptions(oldOptions);
         } else {
-            (this->*TextureSubImage2D)(texture, target, level, xoffset, yoffset, width, height, format, type, pixels);
+            (this->*TextureSubImage2D)(texture, target, bindingTarget, level, xoffset, yoffset, width, height, format, type, pixels);
         }
     }
 
-    inline void glTextureSubImage1D(GLuint texture, GLenum target, GLint level, GLint xoffset,
+    inline void glTextureSubImage1D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLint xoffset,
                                     GLsizei width, GLenum format, GLenum type,
                                     const GLvoid *pixels, const QOpenGLPixelTransferOptions * const options = 0)
     {
         if (options) {
             QOpenGLPixelTransferOptions oldOptions = savePixelUploadOptions();
             setPixelUploadOptions(*options);
-            (this->*TextureSubImage1D)(texture, target, level, xoffset, width, format, type, pixels);
+            (this->*TextureSubImage1D)(texture, target, bindingTarget, level, xoffset, width, format, type, pixels);
             setPixelUploadOptions(oldOptions);
         } else {
-            (this->*TextureSubImage1D)(texture, target, level, xoffset, width, format, type, pixels);
+            (this->*TextureSubImage1D)(texture, target, bindingTarget, level, xoffset, width, format, type, pixels);
         }
     }
 
-    inline void glTextureImage3DMultisample(GLuint texture, GLenum target, GLsizei samples, GLint internalFormat,
+    inline void glTextureImage3DMultisample(GLuint texture, GLenum target, GLenum bindingTarget, GLsizei samples, GLint internalFormat,
                                             GLsizei width, GLsizei height, GLsizei depth, GLboolean fixedSampleLocations)
     {
-        (this->*TextureImage3DMultisample)(texture, target, samples, internalFormat, width, height, depth, fixedSampleLocations);
+        (this->*TextureImage3DMultisample)(texture, target, bindingTarget, samples, internalFormat, width, height, depth, fixedSampleLocations);
     }
 
-    inline void glTextureImage2DMultisample(GLuint texture, GLenum target, GLsizei samples, GLint internalFormat,
+    inline void glTextureImage2DMultisample(GLuint texture, GLenum target, GLenum bindingTarget, GLsizei samples, GLint internalFormat,
                                             GLsizei width, GLsizei height, GLboolean fixedSampleLocations)
     {
-        (this->*TextureImage2DMultisample)(texture, target, samples, internalFormat, width, height, fixedSampleLocations);
+        (this->*TextureImage2DMultisample)(texture, target, bindingTarget, samples, internalFormat, width, height, fixedSampleLocations);
     }
 
-    inline void glCompressedTextureSubImage1D(GLuint texture, GLenum target, GLint level,
+    inline void glCompressedTextureSubImage1D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level,
                                               GLint xoffset, GLsizei width,
                                               GLenum format, GLsizei imageSize, const GLvoid *bits,
                                               const QOpenGLPixelTransferOptions * const options = 0)
@@ -195,14 +195,14 @@ public:
         if (options) {
             QOpenGLPixelTransferOptions oldOptions = savePixelUploadOptions();
             setPixelUploadOptions(*options);
-            (this->*CompressedTextureSubImage1D)(texture, target, level, xoffset, width, format, imageSize, bits);
+            (this->*CompressedTextureSubImage1D)(texture, target, bindingTarget, level, xoffset, width, format, imageSize, bits);
             setPixelUploadOptions(oldOptions);
         } else {
-            (this->*CompressedTextureSubImage1D)(texture, target, level, xoffset, width, format, imageSize, bits);
+            (this->*CompressedTextureSubImage1D)(texture, target, bindingTarget, level, xoffset, width, format, imageSize, bits);
         }
     }
 
-    inline void glCompressedTextureSubImage2D(GLuint texture, GLenum target, GLint level,
+    inline void glCompressedTextureSubImage2D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level,
                                               GLint xoffset, GLint yoffset,
                                               GLsizei width, GLsizei height,
                                               GLenum format, GLsizei imageSize, const GLvoid *bits,
@@ -211,14 +211,14 @@ public:
         if (options) {
             QOpenGLPixelTransferOptions oldOptions = savePixelUploadOptions();
             setPixelUploadOptions(*options);
-            (this->*CompressedTextureSubImage2D)(texture, target, level, xoffset, yoffset, width, height, format, imageSize, bits);
+            (this->*CompressedTextureSubImage2D)(texture, target, bindingTarget, level, xoffset, yoffset, width, height, format, imageSize, bits);
             setPixelUploadOptions(oldOptions);
         } else {
-            (this->*CompressedTextureSubImage2D)(texture, target, level, xoffset, yoffset, width, height, format, imageSize, bits);
+            (this->*CompressedTextureSubImage2D)(texture, target, bindingTarget, level, xoffset, yoffset, width, height, format, imageSize, bits);
         }
     }
 
-    inline void glCompressedTextureSubImage3D(GLuint texture, GLenum target, GLint level,
+    inline void glCompressedTextureSubImage3D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level,
                                               GLint xoffset, GLint yoffset, GLint zoffset,
                                               GLsizei width, GLsizei height, GLsizei depth,
                                               GLenum format, GLsizei imageSize, const GLvoid *bits,
@@ -227,439 +227,463 @@ public:
         if (options) {
             QOpenGLPixelTransferOptions oldOptions = savePixelUploadOptions();
             setPixelUploadOptions(*options);
-            (this->*CompressedTextureSubImage3D)(texture, target, level, xoffset, yoffset, zoffset, width, height, depth, format, imageSize, bits);
+            (this->*CompressedTextureSubImage3D)(texture, target, bindingTarget, level, xoffset, yoffset, zoffset, width, height, depth, format, imageSize, bits);
             setPixelUploadOptions(oldOptions);
         } else {
-            (this->*CompressedTextureSubImage3D)(texture, target, level, xoffset, yoffset, zoffset, width, height, depth, format, imageSize, bits);
+            (this->*CompressedTextureSubImage3D)(texture, target, bindingTarget, level, xoffset, yoffset, zoffset, width, height, depth, format, imageSize, bits);
         }
     }
 
-    inline void glCompressedTextureImage1D(GLuint texture, GLenum target, GLint level,
+    inline void glCompressedTextureImage1D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level,
                                            GLenum internalFormat, GLsizei width,
                                            GLint border, GLsizei imageSize, const GLvoid *bits)
     {
-        (this->*CompressedTextureImage1D)(texture, target, level, internalFormat, width, border, imageSize, bits);
+        (this->*CompressedTextureImage1D)(texture, target, bindingTarget, level, internalFormat, width, border, imageSize, bits);
     }
 
-    inline void glCompressedTextureImage2D(GLuint texture, GLenum target, GLint level,
+    inline void glCompressedTextureImage2D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level,
                                            GLenum internalFormat, GLsizei width, GLsizei height,
                                            GLint border, GLsizei imageSize, const GLvoid *bits)
     {
-        (this->*CompressedTextureImage2D)(texture, target, level, internalFormat, width, height, border, imageSize, bits);
+        (this->*CompressedTextureImage2D)(texture, target, bindingTarget, level, internalFormat, width, height, border, imageSize, bits);
     }
 
-    inline void glCompressedTextureImage3D(GLuint texture, GLenum target, GLint level,
+    inline void glCompressedTextureImage3D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level,
                                            GLenum internalFormat, GLsizei width, GLsizei height, GLsizei depth,
                                            GLint border, GLsizei imageSize, const GLvoid *bits)
     {
-        (this->*CompressedTextureImage3D)(texture, target, level, internalFormat, width, height, depth, border, imageSize, bits);
+        (this->*CompressedTextureImage3D)(texture, target, bindingTarget, level, internalFormat, width, height, depth, border, imageSize, bits);
     }
 
 private:
 #if !defined(QT_OPENGL_ES_2)
     // DSA wrapper (so we can use pointer to member function as switch)
-    inline void dsa_TextureParameteri(GLuint texture, GLenum target, GLenum pname, GLint param)
+    inline void dsa_TextureParameteri(GLuint texture, GLenum target, GLenum bindingTarget, GLenum pname, GLint param)
     {
+        Q_UNUSED(bindingTarget);
         TextureParameteriEXT(texture, target, pname, param);
     }
 
-    inline void dsa_TextureParameteriv(GLuint texture, GLenum target, GLenum pname, const GLint *params)
+    inline void dsa_TextureParameteriv(GLuint texture, GLenum target, GLenum bindingTarget, GLenum pname, const GLint *params)
     {
+        Q_UNUSED(bindingTarget);
         TextureParameterivEXT(texture, target, pname, params);
     }
 
-    inline void dsa_TextureParameterf(GLuint texture, GLenum target, GLenum pname, GLfloat param)
+    inline void dsa_TextureParameterf(GLuint texture, GLenum target, GLenum bindingTarget, GLenum pname, GLfloat param)
     {
+        Q_UNUSED(bindingTarget);
         TextureParameterfEXT(texture, target, pname, param);
     }
 
-    inline void dsa_TextureParameterfv(GLuint texture, GLenum target, GLenum pname, const GLfloat *params)
+    inline void dsa_TextureParameterfv(GLuint texture, GLenum target, GLenum bindingTarget, GLenum pname, const GLfloat *params)
     {
+        Q_UNUSED(bindingTarget);
         TextureParameterfvEXT(texture, target, pname, params);
     }
 
-    inline void dsa_GenerateTextureMipmap(GLuint texture, GLenum target)
+    inline void dsa_GenerateTextureMipmap(GLuint texture, GLenum target, GLenum bindingTarget)
     {
+        Q_UNUSED(bindingTarget);
         GenerateTextureMipmapEXT(texture, target);
     }
 
-    inline void dsa_TextureStorage3D(GLuint texture, GLenum target, GLsizei levels, GLenum internalFormat,
+    inline void dsa_TextureStorage3D(GLuint texture, GLenum target, GLenum bindingTarget, GLsizei levels, GLenum internalFormat,
                                      GLsizei width, GLsizei height, GLsizei depth)
     {
+        Q_UNUSED(bindingTarget);
         TextureStorage3DEXT(texture, target, levels, internalFormat, width, height, depth);
     }
 
-    inline void dsa_TextureStorage2D(GLuint texture, GLenum target, GLsizei levels, GLenum internalFormat,
+    inline void dsa_TextureStorage2D(GLuint texture, GLenum target, GLenum bindingTarget, GLsizei levels, GLenum internalFormat,
                                      GLsizei width, GLsizei height)
     {
+        Q_UNUSED(bindingTarget);
         TextureStorage2DEXT(texture, target, levels, internalFormat, width, height);
     }
 
-    inline void dsa_TextureStorage1D(GLuint texture, GLenum target, GLsizei levels, GLenum internalFormat,
+    inline void dsa_TextureStorage1D(GLuint texture, GLenum target, GLenum bindingTarget, GLsizei levels, GLenum internalFormat,
                                      GLsizei width)
     {
+        Q_UNUSED(bindingTarget);
         TextureStorage1DEXT(texture, target, levels, internalFormat, width);
     }
 
-    inline void dsa_TextureStorage3DMultisample(GLuint texture, GLenum target, GLsizei samples, GLenum internalFormat,
+    inline void dsa_TextureStorage3DMultisample(GLuint texture, GLenum target, GLenum bindingTarget, GLsizei samples, GLenum internalFormat,
                                                 GLsizei width, GLsizei height, GLsizei depth, GLboolean fixedSampleLocations)
     {
+        Q_UNUSED(bindingTarget);
         TextureStorage3DMultisampleEXT(texture, target, samples, internalFormat, width, height, depth, fixedSampleLocations);
     }
 
-    inline void dsa_TextureStorage2DMultisample(GLuint texture, GLenum target, GLsizei samples, GLenum internalFormat,
+    inline void dsa_TextureStorage2DMultisample(GLuint texture, GLenum target, GLenum bindingTarget, GLsizei samples, GLenum internalFormat,
                                                 GLsizei width, GLsizei height, GLboolean fixedSampleLocations)
     {
+        Q_UNUSED(bindingTarget);
         TextureStorage2DMultisampleEXT(texture, target, samples, internalFormat, width, height, fixedSampleLocations);
     }
 
-    inline void dsa_TextureImage3D(GLuint texture, GLenum target, GLint level, GLenum internalFormat,
+    inline void dsa_TextureImage3D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLenum internalFormat,
                                    GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, const GLvoid *pixels)
     {
+        Q_UNUSED(bindingTarget);
         TextureImage3DEXT(texture, target, level, internalFormat, width, height, depth, border, format, type, pixels);
     }
 
-    inline void dsa_TextureImage2D(GLuint texture, GLenum target, GLint level, GLenum internalFormat,
+    inline void dsa_TextureImage2D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLenum internalFormat,
                                    GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid *pixels)
     {
+        Q_UNUSED(bindingTarget);
         TextureImage2DEXT(texture, target, level, internalFormat, width, height, border, format, type, pixels);
     }
 
-    inline void dsa_TextureImage1D(GLuint texture, GLenum target, GLint level, GLenum internalFormat,
+    inline void dsa_TextureImage1D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLenum internalFormat,
                                    GLsizei width, GLint border, GLenum format, GLenum type, const GLvoid *pixels)
     {
+        Q_UNUSED(bindingTarget);
         TextureImage1DEXT(texture, target, level, internalFormat, width, border, format, type, pixels);
     }
 
-    inline void dsa_TextureSubImage3D(GLuint texture, GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset,
+    inline void dsa_TextureSubImage3D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLint xoffset, GLint yoffset, GLint zoffset,
                                       GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, const GLvoid *pixels)
     {
+        Q_UNUSED(bindingTarget);
         TextureSubImage3DEXT(texture, target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels);
     }
 
-    inline void dsa_TextureSubImage2D(GLuint texture, GLenum target, GLint level, GLint xoffset, GLint yoffset,
+    inline void dsa_TextureSubImage2D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLint xoffset, GLint yoffset,
                                       GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *pixels)
     {
+        Q_UNUSED(bindingTarget);
         TextureSubImage2DEXT(texture, target, level, xoffset, yoffset, width, height, format, type, pixels);
     }
 
-    inline void dsa_TextureSubImage1D(GLuint texture, GLenum target, GLint level, GLint xoffset,
+    inline void dsa_TextureSubImage1D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLint xoffset,
                                       GLsizei width, GLenum format, GLenum type, const GLvoid *pixels)
     {
+        Q_UNUSED(bindingTarget);
         TextureSubImage1DEXT(texture, target, level, xoffset, width, format, type, pixels);
     }
 
-    inline void dsa_TextureImage3DMultisample(GLuint texture, GLenum target, GLsizei samples, GLint internalFormat,
+    inline void dsa_TextureImage3DMultisample(GLuint texture, GLenum target, GLenum bindingTarget, GLsizei samples, GLint internalFormat,
                                               GLsizei width, GLsizei height, GLsizei depth, GLboolean fixedSampleLocations)
     {
+        Q_UNUSED(bindingTarget);
         TextureImage3DMultisampleNV(texture, target, samples, internalFormat, width, height, depth, fixedSampleLocations);
     }
 
-    inline void dsa_TextureImage2DMultisample(GLuint texture, GLenum target, GLsizei samples, GLint internalFormat,
+    inline void dsa_TextureImage2DMultisample(GLuint texture, GLenum target, GLenum bindingTarget, GLsizei samples, GLint internalFormat,
                                               GLsizei width, GLsizei height, GLboolean fixedSampleLocations)
     {
+        Q_UNUSED(bindingTarget);
         TextureImage2DMultisampleNV(texture, target, samples, internalFormat, width, height, fixedSampleLocations);
     }
 
-    inline void dsa_CompressedTextureSubImage1D(GLuint texture, GLenum target, GLint level,
+    inline void dsa_CompressedTextureSubImage1D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level,
                                                 GLint xoffset, GLsizei width,
                                                 GLenum format, GLsizei imageSize, const GLvoid *bits)
     {
+        Q_UNUSED(bindingTarget);
         CompressedTextureSubImage1DEXT(texture, target, level, xoffset, width, format, imageSize, bits);
     }
 
-    inline void dsa_CompressedTextureSubImage2D(GLuint texture, GLenum target, GLint level,
+    inline void dsa_CompressedTextureSubImage2D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level,
                                                 GLint xoffset, GLint yoffset,
                                                 GLsizei width, GLsizei height,
                                                 GLenum format, GLsizei imageSize, const GLvoid *bits)
     {
+        Q_UNUSED(bindingTarget);
         CompressedTextureSubImage2DEXT(texture, target, level, xoffset, yoffset, width, height, format, imageSize, bits);
     }
 
-    inline void dsa_CompressedTextureSubImage3D(GLuint texture, GLenum target, GLint level,
+    inline void dsa_CompressedTextureSubImage3D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level,
                                                 GLint xoffset, GLint yoffset, GLint zoffset,
                                                 GLsizei width, GLsizei height, GLsizei depth,
                                                 GLenum format, GLsizei imageSize, const GLvoid *bits)
     {
+        Q_UNUSED(bindingTarget);
         CompressedTextureSubImage3DEXT(texture, target, level, xoffset, yoffset, zoffset, width, height, depth, format, imageSize, bits);
     }
 
-    inline void dsa_CompressedTextureImage1D(GLuint texture, GLenum target, GLint level,
+    inline void dsa_CompressedTextureImage1D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level,
                                              GLenum internalFormat, GLsizei width,
                                              GLint border, GLsizei imageSize, const GLvoid *bits)
     {
+        Q_UNUSED(bindingTarget);
         CompressedTextureImage1DEXT(texture, target, level, internalFormat, width, border, imageSize, bits);
     }
 
-    inline void dsa_CompressedTextureImage2D(GLuint texture, GLenum target, GLint level,
+    inline void dsa_CompressedTextureImage2D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level,
                                              GLenum internalFormat, GLsizei width, GLsizei height,
                                              GLint border, GLsizei imageSize, const GLvoid *bits)
     {
+        Q_UNUSED(bindingTarget);
         CompressedTextureImage2DEXT(texture, target, level, internalFormat, width, height, border, imageSize, bits);
     }
 
-    inline void dsa_CompressedTextureImage3D(GLuint texture, GLenum target, GLint level,
+    inline void dsa_CompressedTextureImage3D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level,
                                              GLenum internalFormat, GLsizei width, GLsizei height, GLsizei depth,
                                              GLint border, GLsizei imageSize, const GLvoid *bits)
     {
+        Q_UNUSED(bindingTarget);
         CompressedTextureImage3DEXT(texture, target, level, internalFormat, width, height, depth, border, imageSize, bits);
     }
 #endif
 
 
     // DSA-like API
-    inline void qt_TextureParameteri(GLuint texture, GLenum target, GLenum pname, GLint param)
+    inline void qt_TextureParameteri(GLuint texture, GLenum target, GLenum bindingTarget, GLenum pname, GLint param)
     {
         GLint oldTexture;
-        glGetIntegerv(target, &oldTexture);
+        glGetIntegerv(bindingTarget, &oldTexture);
         glBindTexture(target, texture);
         glTexParameteri(target, pname, param);
         glBindTexture(target, oldTexture);
     }
 
-    inline void qt_TextureParameteriv(GLuint texture, GLenum target, GLenum pname, const GLint *params)
+    inline void qt_TextureParameteriv(GLuint texture, GLenum target, GLenum bindingTarget, GLenum pname, const GLint *params)
     {
         GLint oldTexture;
-        glGetIntegerv(target, &oldTexture);
+        glGetIntegerv(bindingTarget, &oldTexture);
         glBindTexture(target, texture);
         glTexParameteriv(target, pname, params);
         glBindTexture(target, oldTexture);
     }
 
-    inline void qt_TextureParameterf(GLuint texture, GLenum target, GLenum pname, GLfloat param)
+    inline void qt_TextureParameterf(GLuint texture, GLenum target, GLenum bindingTarget, GLenum pname, GLfloat param)
     {
         GLint oldTexture;
-        glGetIntegerv(target, &oldTexture);
+        glGetIntegerv(bindingTarget, &oldTexture);
         glBindTexture(target, texture);
         glTexParameterf(target, pname, param);
         glBindTexture(target, oldTexture);
     }
 
-    inline void qt_TextureParameterfv(GLuint texture, GLenum target, GLenum pname, const GLfloat *params)
+    inline void qt_TextureParameterfv(GLuint texture, GLenum target, GLenum bindingTarget, GLenum pname, const GLfloat *params)
     {
         GLint oldTexture;
-        glGetIntegerv(target, &oldTexture);
+        glGetIntegerv(bindingTarget, &oldTexture);
         glBindTexture(target, texture);
         glTexParameterfv(target, pname, params);
         glBindTexture(target, oldTexture);
     }
 
-    inline void qt_GenerateTextureMipmap(GLuint texture, GLenum target)
+    inline void qt_GenerateTextureMipmap(GLuint texture, GLenum target, GLenum bindingTarget)
     {
         GLint oldTexture;
-        glGetIntegerv(target, &oldTexture);
+        glGetIntegerv(bindingTarget, &oldTexture);
         glBindTexture(target, texture);
         glGenerateMipmap(target);
         glBindTexture(target, oldTexture);
     }
 
-    inline void qt_TextureStorage3D(GLuint texture, GLenum target, GLsizei levels,
+    inline void qt_TextureStorage3D(GLuint texture, GLenum target, GLenum bindingTarget, GLsizei levels,
                                     GLenum internalFormat, GLsizei width, GLsizei height, GLsizei depth)
     {
         GLint oldTexture;
-        glGetIntegerv(target, &oldTexture);
+        glGetIntegerv(bindingTarget, &oldTexture);
         glBindTexture(target, texture);
         glTexStorage3D(target, levels, internalFormat, width, height, depth);
         glBindTexture(target, oldTexture);
     }
 
-    inline void qt_TextureStorage2D(GLuint texture, GLenum target, GLsizei levels,
+    inline void qt_TextureStorage2D(GLuint texture, GLenum target, GLenum bindingTarget, GLsizei levels,
                                     GLenum internalFormat, GLsizei width, GLsizei height)
     {
         GLint oldTexture;
-        glGetIntegerv(target, &oldTexture);
+        glGetIntegerv(bindingTarget, &oldTexture);
         glBindTexture(target, texture);
         glTexStorage2D(target, levels, internalFormat, width, height);
         glBindTexture(target, oldTexture);
     }
 
-    inline void qt_TextureStorage1D(GLuint texture, GLenum target, GLsizei levels,
+    inline void qt_TextureStorage1D(GLuint texture, GLenum target, GLenum bindingTarget, GLsizei levels,
                                     GLenum internalFormat, GLsizei width)
     {
         GLint oldTexture;
-        glGetIntegerv(target, &oldTexture);
+        glGetIntegerv(bindingTarget, &oldTexture);
         glBindTexture(target, texture);
         glTexStorage1D(target, levels, internalFormat, width);
         glBindTexture(target, oldTexture);
     }
 
-    inline void qt_TextureStorage3DMultisample(GLuint texture, GLenum target, GLsizei samples,
+    inline void qt_TextureStorage3DMultisample(GLuint texture, GLenum target, GLenum bindingTarget, GLsizei samples,
                                                GLenum internalFormat, GLsizei width, GLsizei height,
                                                GLsizei depth, GLboolean fixedSampleLocations)
     {
         GLint oldTexture;
-        glGetIntegerv(target, &oldTexture);
+        glGetIntegerv(bindingTarget, &oldTexture);
         glBindTexture(target, texture);
         glTexStorage3DMultisample(target, samples, internalFormat, width, height, depth, fixedSampleLocations);
         glBindTexture(target, oldTexture);
     }
 
-    inline void qt_TextureStorage2DMultisample(GLuint texture, GLenum target, GLsizei samples,
+    inline void qt_TextureStorage2DMultisample(GLuint texture, GLenum target, GLenum bindingTarget, GLsizei samples,
                                                GLenum internalFormat, GLsizei width, GLsizei height,
                                                GLboolean fixedSampleLocations)
     {
         GLint oldTexture;
-        glGetIntegerv(target, &oldTexture);
+        glGetIntegerv(bindingTarget, &oldTexture);
         glBindTexture(target, texture);
         glTexStorage2DMultisample(target, samples, internalFormat, width, height, fixedSampleLocations);
         glBindTexture(target, oldTexture);
     }
 
-    inline void qt_TextureImage3D(GLuint texture, GLenum target, GLint level, GLenum internalFormat,
+    inline void qt_TextureImage3D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLenum internalFormat,
                                   GLsizei width, GLsizei height, GLsizei depth,
                                   GLint border, GLenum format, GLenum type,
                                   const GLvoid *pixels)
     {
         GLint oldTexture;
-        glGetIntegerv(target, &oldTexture);
+        glGetIntegerv(bindingTarget, &oldTexture);
         glBindTexture(target, texture);
         glTexImage3D(target, level, internalFormat, width, height, depth, border, format, type, pixels);
         glBindTexture(target, oldTexture);
     }
 
-    inline void qt_TextureImage2D(GLuint texture, GLenum target, GLint level, GLenum internalFormat,
+    inline void qt_TextureImage2D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLenum internalFormat,
                                   GLsizei width, GLsizei height,
                                   GLint border, GLenum format, GLenum type,
                                   const GLvoid *pixels)
     {
         GLint oldTexture;
-        glGetIntegerv(target, &oldTexture);
+        glGetIntegerv(bindingTarget, &oldTexture);
         glBindTexture(target, texture);
         glTexImage2D(target, level, internalFormat, width, height, border, format, type, pixels);
         glBindTexture(target, oldTexture);
     }
 
-    inline void qt_TextureImage1D(GLuint texture, GLenum target, GLint level, GLenum internalFormat,
+    inline void qt_TextureImage1D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLenum internalFormat,
                                   GLsizei width, GLint border, GLenum format, GLenum type,
                                   const GLvoid *pixels)
     {
         GLint oldTexture;
-        glGetIntegerv(target, &oldTexture);
+        glGetIntegerv(bindingTarget, &oldTexture);
         glBindTexture(target, texture);
         glTexImage1D(target, level, internalFormat, width, border, format, type, pixels);
         glBindTexture(target, oldTexture);
     }
 
-    inline void qt_TextureSubImage3D(GLuint texture, GLenum target, GLint level,
+    inline void qt_TextureSubImage3D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level,
                                      GLint xoffset, GLint yoffset, GLint zoffset,
                                      GLsizei width, GLsizei height, GLsizei depth,
                                      GLenum format, GLenum type, const GLvoid *pixels)
     {
         GLint oldTexture;
-        glGetIntegerv(target, &oldTexture);
+        glGetIntegerv(bindingTarget, &oldTexture);
         glBindTexture(target, texture);
         glTexSubImage3D(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels);
         glBindTexture(target, oldTexture);
     }
 
-    inline void qt_TextureSubImage2D(GLuint texture, GLenum target, GLint level,
+    inline void qt_TextureSubImage2D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level,
                                      GLint xoffset, GLint yoffset,
                                      GLsizei width, GLsizei height,
                                      GLenum format, GLenum type, const GLvoid *pixels)
     {
         GLint oldTexture;
-        glGetIntegerv(target, &oldTexture);
+        glGetIntegerv(bindingTarget, &oldTexture);
         glBindTexture(target, texture);
         glTexSubImage2D(target, level, xoffset, yoffset, width, height, format, type, pixels);
         glBindTexture(target, oldTexture);
     }
 
-    inline void qt_TextureSubImage1D(GLuint texture, GLenum target, GLint level,
+    inline void qt_TextureSubImage1D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level,
                                      GLint xoffset, GLsizei width,
                                      GLenum format, GLenum type, const GLvoid *pixels)
     {
         GLint oldTexture;
-        glGetIntegerv(target, &oldTexture);
+        glGetIntegerv(bindingTarget, &oldTexture);
         glBindTexture(target, texture);
         glTexSubImage1D(target, level, xoffset, width, format, type, pixels);
         glBindTexture(target, oldTexture);
     }
 
-    inline void qt_TextureImage3DMultisample(GLuint texture, GLenum target, GLsizei samples,
+    inline void qt_TextureImage3DMultisample(GLuint texture, GLenum target, GLenum bindingTarget, GLsizei samples,
                                              GLint internalFormat, GLsizei width, GLsizei height, GLsizei depth,
                                              GLboolean fixedSampleLocations)
     {
         GLint oldTexture;
-        glGetIntegerv(target, &oldTexture);
+        glGetIntegerv(bindingTarget, &oldTexture);
         glBindTexture(target, texture);
         glTexImage3DMultisample(target, samples, internalFormat, width, height, depth, fixedSampleLocations);
         glBindTexture(target, oldTexture);
     }
 
-    inline void qt_TextureImage2DMultisample(GLuint texture, GLenum target, GLsizei samples,
+    inline void qt_TextureImage2DMultisample(GLuint texture, GLenum target, GLenum bindingTarget, GLsizei samples,
                                              GLint internalFormat, GLsizei width, GLsizei height,
                                              GLboolean fixedSampleLocations)
     {
         GLint oldTexture;
-        glGetIntegerv(target, &oldTexture);
+        glGetIntegerv(bindingTarget, &oldTexture);
         glBindTexture(target, texture);
         glTexImage2DMultisample(target, samples, internalFormat, width, height, fixedSampleLocations);
         glBindTexture(target, oldTexture);
     }
 
-    inline void qt_CompressedTextureSubImage1D(GLuint texture, GLenum target, GLint level,
+    inline void qt_CompressedTextureSubImage1D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level,
                                                GLint xoffset, GLsizei width, GLenum format,
                                                GLsizei imageSize, const GLvoid *bits)
     {
         GLint oldTexture;
-        glGetIntegerv(target, &oldTexture);
+        glGetIntegerv(bindingTarget, &oldTexture);
         glBindTexture(target, texture);
         glCompressedTexSubImage1D(target, level, xoffset, width, format, imageSize, bits);
         glBindTexture(target, oldTexture);
     }
 
-    inline void qt_CompressedTextureSubImage2D(GLuint texture, GLenum target, GLint level,
+    inline void qt_CompressedTextureSubImage2D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level,
                                                GLint xoffset, GLint yoffset,
                                                GLsizei width, GLsizei height,
                                                GLenum format, GLsizei imageSize, const GLvoid *bits)
     {
         GLint oldTexture;
-        glGetIntegerv(target, &oldTexture);
+        glGetIntegerv(bindingTarget, &oldTexture);
         glBindTexture(target, texture);
         glCompressedTexSubImage2D(target, level, xoffset, yoffset, width, height, format, imageSize, bits);
         glBindTexture(target, oldTexture);
     }
 
-    inline void qt_CompressedTextureSubImage3D(GLuint texture, GLenum target, GLint level,
+    inline void qt_CompressedTextureSubImage3D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level,
                                                GLint xoffset, GLint yoffset, GLint zoffset,
                                                GLsizei width, GLsizei height, GLsizei depth,
                                                GLenum format, GLsizei imageSize, const GLvoid *bits)
     {
         GLint oldTexture;
-        glGetIntegerv(target, &oldTexture);
+        glGetIntegerv(bindingTarget, &oldTexture);
         glBindTexture(target, texture);
         glCompressedTexSubImage3D(target, level, xoffset, yoffset, zoffset, width, height, depth, format, imageSize, bits);
         glBindTexture(target, oldTexture);
     }
 
-    inline void qt_CompressedTextureImage1D(GLuint texture, GLenum target, GLint level, GLenum internalFormat,
+    inline void qt_CompressedTextureImage1D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLenum internalFormat,
                                             GLsizei width, GLint border,
                                             GLsizei imageSize, const GLvoid *bits)
     {
         GLint oldTexture;
-        glGetIntegerv(target, &oldTexture);
+        glGetIntegerv(bindingTarget, &oldTexture);
         glBindTexture(target, texture);
         glCompressedTexImage1D(target, level, internalFormat, width, border, imageSize, bits);
         glBindTexture(target, oldTexture);
     }
 
-    inline void qt_CompressedTextureImage2D(GLuint texture, GLenum target, GLint level, GLenum internalFormat,
+    inline void qt_CompressedTextureImage2D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLenum internalFormat,
                                             GLsizei width, GLsizei height, GLint border,
                                             GLsizei imageSize, const GLvoid *bits)
     {
         GLint oldTexture;
-        glGetIntegerv(target, &oldTexture);
+        glGetIntegerv(bindingTarget, &oldTexture);
         glBindTexture(target, texture);
         glCompressedTexImage2D(target, level, internalFormat, width, height, border, imageSize, bits);
         glBindTexture(target, oldTexture);
     }
 
-    inline void qt_CompressedTextureImage3D(GLuint texture, GLenum target, GLint level, GLenum internalFormat,
+    inline void qt_CompressedTextureImage3D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLenum internalFormat,
                                             GLsizei width, GLsizei height, GLsizei depth, GLint border,
                                             GLsizei imageSize, const GLvoid *bits)
     {
         GLint oldTexture;
-        glGetIntegerv(target, &oldTexture);
+        glGetIntegerv(bindingTarget, &oldTexture);
         glBindTexture(target, texture);
         glCompressedTexImage3D(target, level, internalFormat, width, height, depth, border, imageSize, bits);
         glBindTexture(target, oldTexture);
@@ -937,30 +961,30 @@ public:
 
 private:
     // Typedefs and pointers to member functions used to switch between EXT_direct_state_access and our own emulated DSA
-    typedef void (QOpenGLTextureHelper::*TextureParameteriMemberFunc)(GLuint texture, GLenum target, GLenum pname, GLint param);
-    typedef void (QOpenGLTextureHelper::*TextureParameterivMemberFunc)(GLuint texture, GLenum target, GLenum pname, const GLint *params);
-    typedef void (QOpenGLTextureHelper::*TextureParameterfMemberFunc)(GLuint texture, GLenum target, GLenum pname, GLfloat param);
-    typedef void (QOpenGLTextureHelper::*TextureParameterfvMemberFunc)(GLuint texture, GLenum target, GLenum pname, const GLfloat *params);
-    typedef void (QOpenGLTextureHelper::*GenerateTextureMipmapMemberFunc)(GLuint texture, GLenum target);
-    typedef void (QOpenGLTextureHelper::*TextureStorage3DMemberFunc)(GLuint texture, GLenum target, GLsizei levels, GLenum internalFormat, GLsizei width, GLsizei height, GLsizei depth);
-    typedef void (QOpenGLTextureHelper::*TextureStorage2DMemberFunc)(GLuint texture, GLenum target, GLsizei levels, GLenum internalFormat, GLsizei width, GLsizei height);
-    typedef void (QOpenGLTextureHelper::*TextureStorage1DMemberFunc)(GLuint texture, GLenum target, GLsizei levels, GLenum internalFormat, GLsizei width);
-    typedef void (QOpenGLTextureHelper::*TextureStorage3DMultisampleMemberFunc)(GLuint texture, GLenum target, GLsizei samples, GLenum internalFormat, GLsizei width, GLsizei height, GLsizei depth, GLboolean fixedSampleLocations);
-    typedef void (QOpenGLTextureHelper::*TextureStorage2DMultisampleMemberFunc)(GLuint texture, GLenum target, GLsizei samples, GLenum internalFormat, GLsizei width, GLsizei height, GLboolean fixedSampleLocations);
-    typedef void (QOpenGLTextureHelper::*TextureImage3DMemberFunc)(GLuint texture, GLenum target, GLint level, GLenum internalFormat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, const GLvoid *pixels);
-    typedef void (QOpenGLTextureHelper::*TextureImage2DMemberFunc)(GLuint texture, GLenum target, GLint level, GLenum internalFormat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid *pixels);
-    typedef void (QOpenGLTextureHelper::*TextureImage1DMemberFunc)(GLuint texture, GLenum target, GLint level, GLenum internalFormat, GLsizei width, GLint border, GLenum format, GLenum type, const GLvoid *pixels);
-    typedef void (QOpenGLTextureHelper::*TextureSubImage3DMemberFunc)(GLuint texture, GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, const GLvoid *pixels);
-    typedef void (QOpenGLTextureHelper::*TextureSubImage2DMemberFunc)(GLuint texture, GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *pixels);
-    typedef void (QOpenGLTextureHelper::*TextureSubImage1DMemberFunc)(GLuint texture, GLenum target, GLint level, GLint xoffset, GLsizei width, GLenum format, GLenum type, const GLvoid *pixels);
-    typedef void (QOpenGLTextureHelper::*TextureImage3DMultisampleMemberFunc)(GLuint texture, GLenum target, GLsizei samples, GLint internalFormat, GLsizei width, GLsizei height, GLsizei depth, GLboolean fixedSampleLocations);
-    typedef void (QOpenGLTextureHelper::*TextureImage2DMultisampleMemberFunc)(GLuint texture, GLenum target, GLsizei samples, GLint internalFormat, GLsizei width, GLsizei height, GLboolean fixedSampleLocations);
-    typedef void (QOpenGLTextureHelper::*CompressedTextureSubImage1DMemberFunc)(GLuint texture, GLenum target, GLint level, GLint xoffset, GLsizei width, GLenum format, GLsizei imageSize, const GLvoid *bits);
-    typedef void (QOpenGLTextureHelper::*CompressedTextureSubImage2DMemberFunc)(GLuint texture, GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLsizei imageSize, const GLvoid *bits);
-    typedef void (QOpenGLTextureHelper::*CompressedTextureSubImage3DMemberFunc)(GLuint texture, GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLsizei imageSize, const GLvoid *bits);
-    typedef void (QOpenGLTextureHelper::*CompressedTextureImage1DMemberFunc)(GLuint texture, GLenum target, GLint level, GLenum internalformat, GLsizei width, GLint border, GLsizei imageSize, const GLvoid *bits);
-    typedef void (QOpenGLTextureHelper::*CompressedTextureImage2DMemberFunc)(GLuint texture, GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLsizei imageSize, const GLvoid *bits);
-    typedef void (QOpenGLTextureHelper::*CompressedTextureImage3DMemberFunc)(GLuint texture, GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLsizei imageSize, const GLvoid *bits);
+    typedef void (QOpenGLTextureHelper::*TextureParameteriMemberFunc)(GLuint texture, GLenum target, GLenum bindingTarget, GLenum pname, GLint param);
+    typedef void (QOpenGLTextureHelper::*TextureParameterivMemberFunc)(GLuint texture, GLenum target, GLenum bindingTarget, GLenum pname, const GLint *params);
+    typedef void (QOpenGLTextureHelper::*TextureParameterfMemberFunc)(GLuint texture, GLenum target, GLenum bindingTarget, GLenum pname, GLfloat param);
+    typedef void (QOpenGLTextureHelper::*TextureParameterfvMemberFunc)(GLuint texture, GLenum target, GLenum bindingTarget, GLenum pname, const GLfloat *params);
+    typedef void (QOpenGLTextureHelper::*GenerateTextureMipmapMemberFunc)(GLuint texture, GLenum target, GLenum bindingTarget);
+    typedef void (QOpenGLTextureHelper::*TextureStorage3DMemberFunc)(GLuint texture, GLenum target, GLenum bindingTarget, GLsizei levels, GLenum internalFormat, GLsizei width, GLsizei height, GLsizei depth);
+    typedef void (QOpenGLTextureHelper::*TextureStorage2DMemberFunc)(GLuint texture, GLenum target, GLenum bindingTarget, GLsizei levels, GLenum internalFormat, GLsizei width, GLsizei height);
+    typedef void (QOpenGLTextureHelper::*TextureStorage1DMemberFunc)(GLuint texture, GLenum target, GLenum bindingTarget, GLsizei levels, GLenum internalFormat, GLsizei width);
+    typedef void (QOpenGLTextureHelper::*TextureStorage3DMultisampleMemberFunc)(GLuint texture, GLenum target, GLenum bindingTarget, GLsizei samples, GLenum internalFormat, GLsizei width, GLsizei height, GLsizei depth, GLboolean fixedSampleLocations);
+    typedef void (QOpenGLTextureHelper::*TextureStorage2DMultisampleMemberFunc)(GLuint texture, GLenum target, GLenum bindingTarget, GLsizei samples, GLenum internalFormat, GLsizei width, GLsizei height, GLboolean fixedSampleLocations);
+    typedef void (QOpenGLTextureHelper::*TextureImage3DMemberFunc)(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLenum internalFormat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, const GLvoid *pixels);
+    typedef void (QOpenGLTextureHelper::*TextureImage2DMemberFunc)(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLenum internalFormat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid *pixels);
+    typedef void (QOpenGLTextureHelper::*TextureImage1DMemberFunc)(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLenum internalFormat, GLsizei width, GLint border, GLenum format, GLenum type, const GLvoid *pixels);
+    typedef void (QOpenGLTextureHelper::*TextureSubImage3DMemberFunc)(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, const GLvoid *pixels);
+    typedef void (QOpenGLTextureHelper::*TextureSubImage2DMemberFunc)(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *pixels);
+    typedef void (QOpenGLTextureHelper::*TextureSubImage1DMemberFunc)(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLint xoffset, GLsizei width, GLenum format, GLenum type, const GLvoid *pixels);
+    typedef void (QOpenGLTextureHelper::*TextureImage3DMultisampleMemberFunc)(GLuint texture, GLenum target, GLenum bindingTarget, GLsizei samples, GLint internalFormat, GLsizei width, GLsizei height, GLsizei depth, GLboolean fixedSampleLocations);
+    typedef void (QOpenGLTextureHelper::*TextureImage2DMultisampleMemberFunc)(GLuint texture, GLenum target, GLenum bindingTarget, GLsizei samples, GLint internalFormat, GLsizei width, GLsizei height, GLboolean fixedSampleLocations);
+    typedef void (QOpenGLTextureHelper::*CompressedTextureSubImage1DMemberFunc)(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLint xoffset, GLsizei width, GLenum format, GLsizei imageSize, const GLvoid *bits);
+    typedef void (QOpenGLTextureHelper::*CompressedTextureSubImage2DMemberFunc)(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLsizei imageSize, const GLvoid *bits);
+    typedef void (QOpenGLTextureHelper::*CompressedTextureSubImage3DMemberFunc)(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLsizei imageSize, const GLvoid *bits);
+    typedef void (QOpenGLTextureHelper::*CompressedTextureImage1DMemberFunc)(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLenum internalformat, GLsizei width, GLint border, GLsizei imageSize, const GLvoid *bits);
+    typedef void (QOpenGLTextureHelper::*CompressedTextureImage2DMemberFunc)(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLsizei imageSize, const GLvoid *bits);
+    typedef void (QOpenGLTextureHelper::*CompressedTextureImage3DMemberFunc)(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLsizei imageSize, const GLvoid *bits);
 
 
     TextureParameteriMemberFunc TextureParameteri;
