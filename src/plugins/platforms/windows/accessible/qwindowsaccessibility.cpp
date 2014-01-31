@@ -100,6 +100,25 @@ QWindowsAccessibility::QWindowsAccessibility()
 {
 }
 
+// Retrieve sound name by checking the icon property of a message box
+static inline QString messageBoxAlertSound(const QObject *messageBox)
+{
+    enum MessageBoxIcon { // Keep in sync with QMessageBox::Icon
+        Information = 1,
+        Warning = 2,
+        Critical = 3
+    };
+    switch (messageBox->property("icon").toInt()) {
+    case Information:
+        return QStringLiteral("SystemAsterisk");
+    case Warning:
+        return QStringLiteral("SystemExclamation");
+    case Critical:
+        return QStringLiteral("SystemHand");
+    }
+    return QString();
+}
+
 void QWindowsAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event)
 {
     QString soundName;
@@ -113,32 +132,8 @@ void QWindowsAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event)
         break;
 
     case QAccessible::Alert:
-        {
-        /*      ### FIXME
-#ifndef QT_NO_MESSAGEBOX
-            QMessageBox *mb = qobject_cast<QMessageBox*>(o);
-            if (mb) {
-                switch (mb->icon()) {
-                case QMessageBox::Warning:
-                    soundName = QLatin1String("SystemExclamation");
-                    break;
-                case QMessageBox::Critical:
-                    soundName = QLatin1String("SystemHand");
-                    break;
-                case QMessageBox::Information:
-                    soundName = QLatin1String("SystemAsterisk");
-                    break;
-                default:
-                    break;
-                }
-            } else
-#endif // QT_NO_MESSAGEBOX
-*/
-            {
-                soundName = QLatin1String("SystemAsterisk");
-            }
-
-        }
+        soundName = event->object()->inherits("QMessageBox") ?
+            messageBoxAlertSound(event->object()) : QStringLiteral("SystemAsterisk");
         break;
     default:
         break;
