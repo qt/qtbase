@@ -154,27 +154,32 @@ Q_GLOBAL_STATIC(StaticVariables, staticVariables);
 
 - (void)updateInputMethodWithQuery:(Qt::InputMethodQueries)query
 {
-    // TODO: check what changed, and perhaps update delegate if the text was
-    // changed from somewhere other than this plugin....
-
-    // Note: This function is called both when as a result of the application changing the
-    // input, but also (and most commonly) as a response to us sending QInputMethodQueryEvents.
-    // Because of the latter, we cannot call textWill/DidChange here, as that will confuse
-    // iOS IM handling, and e.g stop spellchecking from working.
     Q_UNUSED(query);
 
     QObject *focusObject = QGuiApplication::focusObject();
     if (!focusObject)
         return;
 
-    if (!m_inSendEventToFocusObject)
-        [self.inputDelegate textWillChange:id<UITextInput>(self)];
+    if (!m_inSendEventToFocusObject) {
+        if (query & (Qt::ImCursorPosition | Qt::ImAnchorPosition))
+            [self.inputDelegate selectionWillChange:id<UITextInput>(self)];
+        if (query & Qt::ImSurroundingText)
+            [self.inputDelegate textWillChange:id<UITextInput>(self)];
+    }
 
+    // Note that we ignore \a query, and instead update using Qt::ImQueryInput. This enables us to just
+    // store the event without copying out the result from the event each time. Besides, we seem to be
+    // called with Qt::ImQueryInput when only changing selection, and always if typing text. So there would
+    // not be any performance gain by only updating \a query.
     staticVariables()->inputMethodQueryEvent = QInputMethodQueryEvent(Qt::ImQueryInput);
     QCoreApplication::sendEvent(focusObject, &staticVariables()->inputMethodQueryEvent);
 
-    if (!m_inSendEventToFocusObject)
-        [self.inputDelegate textDidChange:id<UITextInput>(self)];
+    if (!m_inSendEventToFocusObject) {
+        if (query & (Qt::ImCursorPosition | Qt::ImAnchorPosition))
+            [self.inputDelegate selectionDidChange:id<UITextInput>(self)];
+        if (query & Qt::ImSurroundingText)
+            [self.inputDelegate textDidChange:id<UITextInput>(self)];
+    }
 }
 
 - (void)sendEventToFocusObject:(QEvent &)e
