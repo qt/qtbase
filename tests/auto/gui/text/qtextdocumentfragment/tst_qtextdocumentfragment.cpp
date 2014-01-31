@@ -266,6 +266,7 @@ private slots:
     void html_metaInBody();
     void html_importImageWithoutAspectRatio();
     void html_fromFirefox();
+    void html_emptyInlineInsideBlock();
 
 private:
     inline void setHtml(const QString &html)
@@ -4002,6 +4003,12 @@ void tst_QTextDocumentFragment::html_fromFirefox()
     // result in the following text on the clipboard (for text/html)
     doc->setHtml(QString::fromLatin1("<!--StartFragment-->Test\nText\n\n<!--EndFragment-->"));
     QCOMPARE(doc->toPlainText(), QString::fromLatin1("Test Text "));
+}
+
+void tst_QTextDocumentFragment::html_emptyInlineInsideBlock()
+{
+    doc->setHtml(QString::fromLatin1("<!--StartFragment--><blockquote><span/>Foobar</blockquote><!--EndFragment-->"));
+    QVERIFY(doc->firstBlock().blockFormat().leftMargin() > 0);
 }
 
 QTEST_MAIN(tst_QTextDocumentFragment)
