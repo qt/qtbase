@@ -2253,7 +2253,7 @@ void QOpenGLTexture::setData(const QImage& image, MipMapGeneration genMipMaps)
     QImage glImage = image.convertToFormat(QImage::Format_RGBA8888);
     QOpenGLPixelTransferOptions uploadOptions;
     uploadOptions.setAlignment(1);
-    setData(0, QOpenGLTexture::RGBA, QOpenGLTexture::UInt8, glImage.bits(), &uploadOptions);
+    setData(0, QOpenGLTexture::RGBA, QOpenGLTexture::UInt8, glImage.constBits(), &uploadOptions);
 }
 
 /*!
