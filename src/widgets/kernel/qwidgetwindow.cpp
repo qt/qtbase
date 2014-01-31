@@ -659,6 +659,11 @@ void QWidgetWindow::handleDragLeaveEvent(QDragLeaveEvent *event)
 
 void QWidgetWindow::handleDropEvent(QDropEvent *event)
 {
+    if (m_dragTarget.isNull()) {
+        qWarning() << Q_FUNC_INFO << m_widget << ": No drag target set.";
+        event->ignore();
+        return;
+    }
     const QPoint mapped = m_dragTarget.data()->mapFromGlobal(m_widget->mapToGlobal(event->pos()));
     QDropEvent translated(mapped, event->possibleActions(), event->mimeData(), event->mouseButtons(), event->keyboardModifiers());
     QGuiApplication::sendSpontaneousEvent(m_dragTarget.data(), &translated);
