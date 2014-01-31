@@ -1303,12 +1303,10 @@ void QByteArray::chop(int n)
     returns a reference to this byte array. The Unicode data is
     converted into 8-bit characters using QString::toUtf8().
 
-    If the QString contains non-ASCII Unicode characters, using this
-    operator can lead to loss of information. You can disable this
-    operator by defining \c QT_NO_CAST_TO_ASCII when you compile your
-    applications. You then need to call QString::toUtf8() (or
-    QString::toLatin1() or QString::toUtf8() or QString::toLocal8Bit())
-    explicitly if you want to convert the data to \c{const char *}.
+    You can disable this function by defining \c QT_NO_CAST_TO_ASCII when you
+    compile your applications. You then need to call QString::toUtf8() (or
+    QString::toLatin1() or QString::toLocal8Bit()) explicitly if you want to
+    convert the data to \c{const char *}.
 */
 
 /*! \fn QByteArray &QByteArray::operator+=(const char *str)
@@ -1667,12 +1665,10 @@ QByteArray &QByteArray::append(const QByteArray &ba)
     Appends the string \a str to this byte array. The Unicode data is
     converted into 8-bit characters using QString::toUtf8().
 
-    If the QString contains non-ASCII Unicode characters, using this
-    function can lead to loss of information. You can disable this
-    function by defining \c QT_NO_CAST_TO_ASCII when you compile your
-    applications. You then need to call QString::toUtf8() (or
-    QString::toLatin1() or QString::toUtf8() or QString::toLocal8Bit())
-    explicitly if you want to convert the data to \c{const char *}.
+    You can disable this function by defining \c QT_NO_CAST_TO_ASCII when you
+    compile your applications. You then need to call QString::toUtf8() (or
+    QString::toLatin1() or QString::toLocal8Bit()) explicitly if you want to
+    convert the data to \c{const char *}.
 */
 
 /*!
@@ -2148,12 +2144,10 @@ QByteArray &QByteArray::replace(char before, const QByteArray &after)
     string \a after. The Unicode data is converted into 8-bit
     characters using QString::toUtf8().
 
-    If the QString contains non-ASCII Unicode characters, using this
-    function can lead to loss of information. You can disable this
-    function by defining \c QT_NO_CAST_TO_ASCII when you compile your
-    applications. You then need to call QString::toUtf8() (or
-    QString::toLatin1() or QString::toUtf8() or QString::toLocal8Bit())
-    explicitly if you want to convert the data to \c{const char *}.
+    You can disable this function by defining \c QT_NO_CAST_TO_ASCII when you
+    compile your applications. You then need to call QString::toUtf8() (or
+    QString::toLatin1() or QString::toLocal8Bit()) explicitly if you want to
+    convert the data to \c{const char *}.
 */
 
 /*! \fn QByteArray &QByteArray::replace(char before, const char *after)
