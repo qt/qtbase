@@ -514,7 +514,7 @@ void QOpenGLTexturePrivate::allocateImmutableStorage()
 
 void QOpenGLTexturePrivate::setData(int mipLevel, int layer, QOpenGLTexture::CubeMapFace cubeFace,
                                     QOpenGLTexture::PixelFormat sourceFormat, QOpenGLTexture::PixelType sourceType,
-                                    void *data, const QOpenGLPixelTransferOptions * const options)
+                                    const void *data, const QOpenGLPixelTransferOptions * const options)
 {
     switch (target) {
     case QOpenGLTexture::Target1D:
@@ -611,7 +611,7 @@ void QOpenGLTexturePrivate::setData(int mipLevel, int layer, QOpenGLTexture::Cub
 }
 
 void QOpenGLTexturePrivate::setCompressedData(int mipLevel, int layer, QOpenGLTexture::CubeMapFace cubeFace,
-                                              int dataSize, void *data,
+                                              int dataSize, const void *data,
                                               const QOpenGLPixelTransferOptions * const options)
 {
     switch (target) {
@@ -2124,6 +2124,65 @@ bool QOpenGLTexture::isTextureView() const
     If using a compressed format() then you should use setCompressedData() instead of this
     function.
 
+    \since 5.3
+    \sa setCompressedData()
+*/
+void QOpenGLTexture::setData(int mipLevel, int layer, CubeMapFace cubeFace,
+                             PixelFormat sourceFormat, PixelType sourceType,
+                             const void *data, const QOpenGLPixelTransferOptions * const options)
+{
+    Q_D(QOpenGLTexture);
+    Q_ASSERT(d->textureId);
+    if (!isStorageAllocated()) {
+        qWarning("Cannot set data on a texture that does not have storage allocated.\n"
+                 "To do so call allocate() before this function");
+        return;
+    }
+    d->setData(mipLevel, layer, cubeFace, sourceFormat, sourceType, data, options);
+}
+
+/*!
+    \since 5.3
+    \overload
+*/
+void QOpenGLTexture::setData(int mipLevel, int layer,
+                             PixelFormat sourceFormat, PixelType sourceType,
+                             const void *data, const QOpenGLPixelTransferOptions * const options)
+{
+    Q_D(QOpenGLTexture);
+    Q_ASSERT(d->textureId);
+    d->setData(mipLevel, layer, QOpenGLTexture::CubeMapPositiveX, sourceFormat, sourceType, data, options);
+}
+
+/*!
+    \since 5.3
+    \overload
+*/
+void QOpenGLTexture::setData(int mipLevel,
+                             PixelFormat sourceFormat, PixelType sourceType,
+                             const void *data, const QOpenGLPixelTransferOptions * const options)
+{
+    Q_D(QOpenGLTexture);
+    Q_ASSERT(d->textureId);
+    d->setData(mipLevel, 0, QOpenGLTexture::CubeMapPositiveX, sourceFormat, sourceType, data, options);
+}
+
+/*!
+    \since 5.3
+    \overload
+*/
+void QOpenGLTexture::setData(PixelFormat sourceFormat, PixelType sourceType,
+                             const void *data, const QOpenGLPixelTransferOptions * const options)
+{
+    Q_D(QOpenGLTexture);
+    Q_ASSERT(d->textureId);
+    d->setData(0, 0, QOpenGLTexture::CubeMapPositiveX, sourceFormat, sourceType, data, options);
+}
+
+/*!
+    \obsolete
+    \overload
+
     \sa setCompressedData()
 */
 void QOpenGLTexture::setData(int mipLevel, int layer, CubeMapFace cubeFace,
@@ -2141,6 +2200,7 @@ void QOpenGLTexture::setData(int mipLevel, int layer, CubeMapFace cubeFace,
 }
 
 /*!
+    \obsolete
     \overload
 */
 void QOpenGLTexture::setData(int mipLevel, int layer,
@@ -2153,6 +2213,7 @@ void QOpenGLTexture::setData(int mipLevel, int layer,
 }
 
 /*!
+    \obsolete
     \overload
 */
 void QOpenGLTexture::setData(int mipLevel,
@@ -2165,6 +2226,7 @@ void QOpenGLTexture::setData(int mipLevel,
 }
 
 /*!
+    \obsolete
     \overload
 */
 void QOpenGLTexture::setData(PixelFormat sourceFormat, PixelType sourceType,
@@ -2201,6 +2263,59 @@ void QOpenGLTexture::setData(const QImage& image, MipMapGeneration genMipMaps)
 
     If not using a compressed format() then you should use setData() instead of this
     function.
+
+    \since 5.3
+*/
+void QOpenGLTexture::setCompressedData(int mipLevel, int layer, CubeMapFace cubeFace,
+                                       int dataSize, const void *data,
+                                       const QOpenGLPixelTransferOptions * const options)
+{
+    Q_D(QOpenGLTexture);
+    Q_ASSERT(d->textureId);
+    if (!isStorageAllocated()) {
+        qWarning("Cannot set data on a texture that does not have storage allocated.\n"
+                 "To do so call allocate() before this function");
+        return;
+    }
+    d->setCompressedData(mipLevel, layer, cubeFace, dataSize, data, options);
+}
+
+/*!
+    \overload
+*/
+void QOpenGLTexture::setCompressedData(int mipLevel, int layer, int dataSize, const void *data,
+                                       const QOpenGLPixelTransferOptions * const options)
+{
+    Q_D(QOpenGLTexture);
+    Q_ASSERT(d->textureId);
+    d->setCompressedData(mipLevel, layer, QOpenGLTexture::CubeMapPositiveX, dataSize, data, options);
+}
+
+/*!
+    \overload
+*/
+void QOpenGLTexture::setCompressedData(int mipLevel, int dataSize, const void *data,
+                                       const QOpenGLPixelTransferOptions * const options)
+{
+    Q_D(QOpenGLTexture);
+    Q_ASSERT(d->textureId);
+    d->setCompressedData(mipLevel, 0, QOpenGLTexture::CubeMapPositiveX, dataSize, data, options);
+}
+
+/*!
+    \overload
+*/
+void QOpenGLTexture::setCompressedData(int dataSize, const void *data,
+                                       const QOpenGLPixelTransferOptions * const options)
+{
+    Q_D(QOpenGLTexture);
+    Q_ASSERT(d->textureId);
+    d->setCompressedData(0, 0, QOpenGLTexture::CubeMapPositiveX, dataSize, data, options);
+}
+
+/*!
+    \obsolete
+    \overload
 */
 void QOpenGLTexture::setCompressedData(int mipLevel, int layer, CubeMapFace cubeFace,
                                        int dataSize, void *data,
@@ -2217,6 +2332,7 @@ void QOpenGLTexture::setCompressedData(int mipLevel, int layer, CubeMapFace cube
 }
 
 /*!
+    \obsolete
     \overload
 */
 void QOpenGLTexture::setCompressedData(int mipLevel, int layer, int dataSize, void *data,
@@ -2228,6 +2344,7 @@ void QOpenGLTexture::setCompressedData(int mipLevel, int layer, int dataSize, vo
 }
 
 /*!
+    \obsolete
     \overload
 */
 void QOpenGLTexture::setCompressedData(int mipLevel, int dataSize, void *data,
@@ -2239,6 +2356,7 @@ void QOpenGLTexture::setCompressedData(int mipLevel, int dataSize, void *data,
 }
 
 /*!
+    \obsolete
     \overload
 */
 void QOpenGLTexture::setCompressedData(int dataSize, void *data,
