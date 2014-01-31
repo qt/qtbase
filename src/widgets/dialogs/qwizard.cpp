@@ -76,6 +76,7 @@ extern bool qt_wince_is_mobile();     //defined in qguifunctions_wce.cpp
 #endif
 
 #include <string.h>     // for memset()
+#include <algorithm>
 
 QT_BEGIN_NAMESPACE
 
@@ -561,6 +562,7 @@ public:
         , canContinue(false)
         , canFinish(false)
         , disableUpdatesCount(0)
+        , wizStyle(QWizard::ClassicStyle)
         , opts(0)
         , buttonsHaveCustomLayout(false)
         , titleFmt(Qt::AutoText)
@@ -570,10 +572,12 @@ public:
         , headerWidget(0)
         , watermarkLabel(0)
         , sideWidget(0)
+        , pageFrame(0)
         , titleLabel(0)
         , subTitleLabel(0)
         , bottomRuler(0)
 #if !defined(QT_NO_STYLE_WINDOWSVISTA)
+        , vistaHelper(0)
         , vistaInitPending(false)
         , vistaState(QVistaHelper::Dirty)
         , vistaStateChanged(false)
@@ -584,8 +588,7 @@ public:
         , maximumWidth(QWIDGETSIZE_MAX)
         , maximumHeight(QWIDGETSIZE_MAX)
     {
-        for (int i = 0; i < QWizard::NButtons; ++i)
-            btns[i] = 0;
+        std::fill(btns, btns + QWizard::NButtons, static_cast<QAbstractButton *>(0));
 
 #if !defined(QT_NO_STYLE_WINDOWSVISTA)
         if (QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA
