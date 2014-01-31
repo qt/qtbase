@@ -54,6 +54,8 @@
 
 #include <wrl.h>
 #include <windows.system.h>
+#include <Windows.Applicationmodel.h>
+#include <Windows.ApplicationModel.core.h>
 #include <windows.devices.input.h>
 #include <windows.ui.h>
 #include <windows.ui.core.h>
@@ -64,6 +66,8 @@
 
 using namespace Microsoft::WRL;
 using namespace Microsoft::WRL::Wrappers;
+using namespace ABI::Windows::ApplicationModel;
+using namespace ABI::Windows::ApplicationModel::Core;
 using namespace ABI::Windows::Foundation;
 using namespace ABI::Windows::System;
 using namespace ABI::Windows::UI::Core;
@@ -72,6 +76,8 @@ using namespace ABI::Windows::UI::ViewManagement;
 using namespace ABI::Windows::Devices::Input;
 using namespace ABI::Windows::Graphics::Display;
 
+typedef IEventHandler<IInspectable*> ResumeHandler;
+typedef IEventHandler<SuspendingEventArgs*> SuspendHandler;
 typedef ITypedEventHandler<CoreWindow*, WindowActivatedEventArgs*> ActivatedHandler;
 typedef ITypedEventHandler<CoreWindow*, CoreWindowEventArgs*> ClosedHandler;
 typedef ITypedEventHandler<CoreWindow*, CharacterReceivedEventArgs*> CharacterReceivedHandler;
@@ -485,6 +491,13 @@ QWinRTScreen::QWinRTScreen(ICoreWindow *window)
     GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_UI_ViewManagement_ApplicationView).Get(),
                          &m_applicationView);
 #endif
+
+
+    if (SUCCEEDED(RoGetActivationFactory(Wrappers::HString::MakeReference(RuntimeClass_Windows_ApplicationModel_Core_CoreApplication).Get(),
+                                         IID_PPV_ARGS(&m_application)))) {
+        m_application->add_Suspending(Callback<SuspendHandler>(this, &QWinRTScreen::onSuspended).Get(), &m_suspendTokens[Qt::ApplicationSuspended]);
+        m_application->add_Resuming(Callback<ResumeHandler>(this, &QWinRTScreen::onResume).Get(), &m_suspendTokens[Qt::ApplicationHidden]);
+    }
 }
 
 QRect QWinRTScreen::geometry() const
@@ -935,6 +948,21 @@ HRESULT QWinRTScreen::onActivated(ICoreWindow *window, IWindowActivatedEventArgs
                 ? Qt::MouseFocusReason : Qt::ActiveWindowFocusReason;
         QWindowSystemInterface::handleWindowActivated(topWindow(), focusReason);
     }
+    return S_OK;
+}
+
+HRESULT QWinRTScreen::onSuspended(IInspectable *, ISuspendingEventArgs *)
+{
+    QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationSuspended);
+    QWindowSystemInterface::flushWindowSystemEvents();
+    return S_OK;
+}
+
+HRESULT QWinRTScreen::onResume(IInspectable *, IInspectable *)
+{
+    // First the system invokes onResume and then changes
+    // the visibility of the screen to be active.
+    QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationHidden);
     return S_OK;
 }
 

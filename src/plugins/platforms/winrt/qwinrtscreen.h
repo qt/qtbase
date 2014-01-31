@@ -53,6 +53,12 @@
 
 namespace ABI {
     namespace Windows {
+        namespace ApplicationModel {
+            struct ISuspendingEventArgs;
+            namespace Core {
+                struct ICoreApplication;
+            }
+        }
         namespace UI {
             namespace Core {
                 struct IAutomationProviderRequestedEventArgs;
@@ -123,6 +129,7 @@ private:
 
     // Event handlers
     QHash<QEvent::Type, EventRegistrationToken> m_tokens;
+    QHash<Qt::ApplicationState, EventRegistrationToken> m_suspendTokens;
 
     HRESULT onKeyDown(ABI::Windows::UI::Core::ICoreWindow *window, ABI::Windows::UI::Core::IKeyEventArgs *args);
     HRESULT onKeyUp(ABI::Windows::UI::Core::ICoreWindow *window, ABI::Windows::UI::Core::IKeyEventArgs *args);
@@ -133,6 +140,9 @@ private:
     HRESULT onSizeChanged(ABI::Windows::UI::Core::ICoreWindow *window, ABI::Windows::UI::Core::IWindowSizeChangedEventArgs *args);
 
     HRESULT onActivated(ABI::Windows::UI::Core::ICoreWindow *, ABI::Windows::UI::Core::IWindowActivatedEventArgs *args);
+    HRESULT onSuspended(IInspectable *, ABI::Windows::ApplicationModel::ISuspendingEventArgs *);
+    HRESULT onResume(IInspectable *, IInspectable *);
+
     HRESULT onClosed(ABI::Windows::UI::Core::ICoreWindow *, ABI::Windows::UI::Core::ICoreWindowEventArgs *args);
     HRESULT onVisibilityChanged(ABI::Windows::UI::Core::ICoreWindow *, ABI::Windows::UI::Core::IVisibilityChangedEventArgs *args);
     HRESULT onAutomationProviderRequested(ABI::Windows::UI::Core::ICoreWindow *, ABI::Windows::UI::Core::IAutomationProviderRequestedEventArgs *args);
@@ -141,6 +151,7 @@ private:
 
     ABI::Windows::UI::Core::ICoreWindow *m_coreWindow;
     ABI::Windows::UI::ViewManagement::IApplicationViewStatics *m_applicationView;
+    ABI::Windows::ApplicationModel::Core::ICoreApplication *m_application;
     QRect m_geometry;
     QImage::Format m_format;
     QSurfaceFormat m_surfaceFormat;
