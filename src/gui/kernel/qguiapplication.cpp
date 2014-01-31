@@ -1018,6 +1018,8 @@ void QGuiApplicationPrivate::createPlatformIntegration()
             continue;
         }
         QByteArray arg = argv[i];
+        if (arg.startsWith("--"))
+            arg.remove(0, 1);
         if (arg == "-platformpluginpath") {
             if (++i < argc)
                 platformPluginPath = QLatin1String(argv[i]);
@@ -1098,6 +1100,8 @@ void QGuiApplicationPrivate::init()
             continue;
         }
         QByteArray arg = argv[i];
+        if (arg.startsWith("--"))
+            arg.remove(0, 1);
         if (arg == "-plugin") {
             if (++i < argc)
                 pluginList << argv[i];

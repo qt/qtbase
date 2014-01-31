@@ -446,7 +446,8 @@ void QApplicationPrivate::process_cmdline()
             continue;
         }
         QByteArray arg = argv[i];
-        arg = arg;
+        if (arg.startsWith("--"))
+            arg.remove(0, 1);
         QString s;
         if (arg == "-qdevel" || arg == "-qdebug") {
             // obsolete argument
