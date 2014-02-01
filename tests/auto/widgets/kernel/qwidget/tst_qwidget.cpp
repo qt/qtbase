@@ -5345,17 +5345,17 @@ void tst_QWidget::setFocus()
     }
 }
 
-class EventSpy : public QObject
+template<class T> class EventSpy : public QObject
 {
 public:
-    EventSpy(QWidget *widget, QEvent::Type event)
+    EventSpy(T *widget, QEvent::Type event)
         : m_widget(widget), eventToSpy(event), m_count(0)
     {
         if (m_widget)
             m_widget->installEventFilter(this);
     }
 
-    QWidget *widget() const { return m_widget; }
+    T *widget() const { return m_widget; }
     int count() const { return m_count; }
     void clear() { m_count = 0; }
 
@@ -5368,7 +5368,7 @@ protected:
     }
 
 private:
-    QWidget *m_widget;
+    T *m_widget;
     QEvent::Type eventToSpy;
     int m_count;
 };
@@ -5483,7 +5483,7 @@ void tst_QWidget::setCursor()
     // test if CursorChange is sent
     {
         QWidget widget;
-        EventSpy spy(&widget, QEvent::CursorChange);
+        EventSpy<QWidget> spy(&widget, QEvent::CursorChange);
         QCOMPARE(spy.count(), 0);
         widget.setCursor(QCursor(Qt::WaitCursor));
         QCOMPARE(spy.count(), 1);
@@ -5505,7 +5505,7 @@ void tst_QWidget::setToolTip()
     widget.setWindowTitle(widget.objectName());
     widget.show();
     QVERIFY(QTest::qWaitForWindowExposed(&widget));
-    EventSpy spy(&widget, QEvent::ToolTipChange);
+    EventSpy<QWidget> spy(&widget, QEvent::ToolTipChange);
     QCOMPARE(spy.count(), 0);
 
     QCOMPARE(widget.toolTip(), QString());
@@ -5527,8 +5527,8 @@ void tst_QWidget::setToolTip()
         QFrame *frame = new QFrame(popup.data());
         frame->setGeometry(0, 0, 50, 50);
         frame->setFrameStyle(QFrame::Box | QFrame::Plain);
-        EventSpy spy1(frame, QEvent::ToolTip);
-        EventSpy spy2(popup.data(), QEvent::ToolTip);
+        EventSpy<QWidget> spy1(frame, QEvent::ToolTip);
+        EventSpy<QWidget> spy2(popup.data(), QEvent::ToolTip);
         frame->setMouseTracking(pass == 0 ? false : true);
         frame->setToolTip(QLatin1String("TOOLTIP FRAME"));
         popup->setToolTip(QLatin1String("TOOLTIP POPUP"));
@@ -5550,7 +5550,8 @@ void tst_QWidget::setToolTip()
 
 void tst_QWidget::testWindowIconChangeEventPropagation()
 {
-    typedef QSharedPointer<EventSpy> EventSpyPtr;
+    typedef QSharedPointer<EventSpy<QWidget> > EventSpyPtr;
+    typedef QSharedPointer<EventSpy<QWindow> > WindowEventSpyPtr;
     // Create widget hierarchy.
     QWidget topLevelWidget;
     QWidget topLevelChild(&topLevelWidget);
@@ -5563,12 +5564,27 @@ void tst_QWidget::testWindowIconChangeEventPropagation()
             << &dialog << &dialogChild;
     QCOMPARE(widgets.count(), 4);
 
+    topLevelWidget.show();
+    dialog.show();
+
+    QWindowList windows;
+    windows << topLevelWidget.windowHandle() << dialog.windowHandle();
+    QWindow otherWindow;
+    windows << &otherWindow;
+    const int lastWidgetWindow = 1; // 0 and 1 are qwidgetwindow, 2 is a pure qwindow
+
     // Create spy lists.
     QList <EventSpyPtr> applicationEventSpies;
     QList <EventSpyPtr> widgetEventSpies;
     foreach (QWidget *widget, widgets) {
-        applicationEventSpies.append(EventSpyPtr(new EventSpy(widget, QEvent::ApplicationWindowIconChange)));
-        widgetEventSpies.append(EventSpyPtr(new EventSpy(widget, QEvent::WindowIconChange)));
+        applicationEventSpies.append(EventSpyPtr(new EventSpy<QWidget>(widget, QEvent::ApplicationWindowIconChange)));
+        widgetEventSpies.append(EventSpyPtr(new EventSpy<QWidget>(widget, QEvent::WindowIconChange)));
+    }
+    QList <WindowEventSpyPtr> appWindowEventSpies;
+    QList <WindowEventSpyPtr> windowEventSpies;
+    foreach (QWindow *window, windows) {
+        appWindowEventSpies.append(WindowEventSpyPtr(new EventSpy<QWindow>(window, QEvent::ApplicationWindowIconChange)));
+        windowEventSpies.append(WindowEventSpyPtr(new EventSpy<QWindow>(window, QEvent::WindowIconChange)));
     }
 
     // QApplication::setWindowIcon
@@ -5589,6 +5605,20 @@ void tst_QWidget::testWindowIconChangeEventPropagation()
 
         // Check QEvent::WindowIconChange
         spy = widgetEventSpies.at(i);
+        QCOMPARE(spy->count(), 1);
+        spy->clear();
+    }
+    for (int i = 0; i < windows.count(); ++i) {
+        // Check QEvent::ApplicationWindowIconChange (sent to QWindow)
+        // QWidgetWindows don't get this event, since the widget takes care of changing the icon
+        WindowEventSpyPtr spy = appWindowEventSpies.at(i);
+        QWindow *window = spy->widget();
+        QCOMPARE(spy->count(), i > lastWidgetWindow ? 1 : 0);
+        QCOMPARE(window->icon(), windowIcon);
+        spy->clear();
+
+        // Check QEvent::WindowIconChange (sent to QWindow)
+        spy = windowEventSpies.at(i);
         QCOMPARE(spy->count(), 1);
         spy->clear();
     }

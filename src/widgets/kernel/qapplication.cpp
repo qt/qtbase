@@ -377,7 +377,6 @@ QPalette *QApplicationPrivate::set_pal = 0;        // default palette set by pro
 QFont *QApplicationPrivate::sys_font = 0;        // default system font
 QFont *QApplicationPrivate::set_font = 0;        // default font set by programmer
 
-QIcon *QApplicationPrivate::app_icon = 0;
 QWidget *QApplicationPrivate::main_widget = 0;        // main application widget
 QWidget *QApplicationPrivate::focus_widget = 0;        // has keyboard input focus
 QWidget *QApplicationPrivate::hidden_focus_widget = 0; // will get keyboard input focus after show()
@@ -730,8 +729,6 @@ QApplication::~QApplication()
 
     delete QApplicationPrivate::app_style;
     QApplicationPrivate::app_style = 0;
-    delete QApplicationPrivate::app_icon;
-    QApplicationPrivate::app_icon = 0;
 
 #ifndef QT_NO_DRAGANDDROP
     if (qt_is_gui_used)
@@ -1561,6 +1558,7 @@ QString QApplicationPrivate::desktopStyleKey()
     return QString();
 }
 
+#if QT_VERSION < 0x060000 // remove these forwarders in Qt 6
 /*!
     \property QApplication::windowIcon
     \brief the default window icon
@@ -1569,23 +1567,32 @@ QString QApplicationPrivate::desktopStyleKey()
 */
 QIcon QApplication::windowIcon()
 {
-    return QApplicationPrivate::app_icon ? *QApplicationPrivate::app_icon : QIcon();
+    return QGuiApplication::windowIcon();
 }
 
 void QApplication::setWindowIcon(const QIcon &icon)
 {
-    if (!QApplicationPrivate::app_icon)
-        QApplicationPrivate::app_icon = new QIcon();
-    *QApplicationPrivate::app_icon = icon;
-    if (QApplicationPrivate::is_app_running && !QApplicationPrivate::is_app_closing) {
-        QEvent e(QEvent::ApplicationWindowIconChange);
-        QWidgetList all = QApplication::allWidgets();
-        for (QWidgetList::ConstIterator it = all.constBegin(); it != all.constEnd(); ++it) {
-            QWidget *w = *it;
-            if (w->isWindow())
-                sendEvent(w, &e);
-        }
+    QGuiApplication::setWindowIcon(icon);
+}
+#endif
+
+void QApplicationPrivate::notifyWindowIconChanged()
+{
+    QEvent ev(QEvent::ApplicationWindowIconChange);
+    const QWidgetList list = QApplication::topLevelWidgets();
+    QWindowList windowList = QGuiApplication::topLevelWindows();
+
+    // send to all top-level QWidgets
+    for (int i = 0; i < list.size(); ++i) {
+        QWidget *w = list.at(i);
+        windowList.removeOne(w->windowHandle());
+        QCoreApplication::sendEvent(w, &ev);
     }
+
+    // in case there are any plain QWindows in this QApplication-using
+    // application, also send the notification to them
+    for (int i = 0; i < windowList.size(); ++i)
+        QCoreApplication::sendEvent(windowList.at(i), &ev);
 }
 
 /*!

@@ -73,6 +73,7 @@ class QStyleHints;
 class Q_GUI_EXPORT QGuiApplication : public QCoreApplication
 {
     Q_OBJECT
+    Q_PROPERTY(QIcon windowIcon READ windowIcon WRITE setWindowIcon)
     Q_PROPERTY(QString applicationDisplayName READ applicationDisplayName WRITE setApplicationDisplayName)
     Q_PROPERTY(Qt::LayoutDirection layoutDirection READ layoutDirection WRITE setLayoutDirection)
     Q_PROPERTY(QString platformName READ platformName STORED false)
@@ -92,6 +93,9 @@ public:
     static QWindowList allWindows();
     static QWindowList topLevelWindows();
     static QWindow *topLevelAt(const QPoint &pos);
+
+    static void setWindowIcon(const QIcon &icon);
+    static QIcon windowIcon();
 
     static QString platformName();
 

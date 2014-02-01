@@ -133,6 +133,8 @@ enum ApplicationResourceFlags
 
 static unsigned applicationResourceFlags = 0;
 
+QIcon *QGuiApplicationPrivate::app_icon = 0;
+
 QString *QGuiApplicationPrivate::platform_name = 0;
 QString *QGuiApplicationPrivate::displayName = 0;
 
@@ -523,6 +525,8 @@ QGuiApplication::~QGuiApplication()
     d->cursor_list.clear();
 #endif
 
+    delete QGuiApplicationPrivate::app_icon;
+    QGuiApplicationPrivate::app_icon = 0;
     delete QGuiApplicationPrivate::platform_name;
     QGuiApplicationPrivate::platform_name = 0;
     delete QGuiApplicationPrivate::displayName;
@@ -2595,6 +2599,35 @@ void QGuiApplicationPrivate::notifyLayoutDirectionChange()
 void QGuiApplicationPrivate::notifyActiveWindowChange(QWindow *)
 {
 }
+
+/*!
+    \property QGuiApplication::windowIcon
+    \brief the default window icon
+
+    \sa QWindow::setIcon(), {Setting the Application Icon}
+*/
+QIcon QGuiApplication::windowIcon()
+{
+    return QGuiApplicationPrivate::app_icon ? *QGuiApplicationPrivate::app_icon : QIcon();
+}
+
+void QGuiApplication::setWindowIcon(const QIcon &icon)
+{
+    if (!QGuiApplicationPrivate::app_icon)
+        QGuiApplicationPrivate::app_icon = new QIcon();
+    *QGuiApplicationPrivate::app_icon = icon;
+    if (QGuiApplicationPrivate::is_app_running && !QGuiApplicationPrivate::is_app_closing)
+        QGuiApplicationPrivate::self->notifyWindowIconChanged();
+}
+
+void QGuiApplicationPrivate::notifyWindowIconChanged()
+{
+    QEvent ev(QEvent::ApplicationWindowIconChange);
+    const QWindowList list = QGuiApplication::topLevelWindows();
+    for (int i = 0; i < list.size(); ++i)
+        QCoreApplication::sendEvent(list.at(i), &ev);
+}
+
 
 
 /*!

@@ -776,6 +776,8 @@ void QWindow::setIcon(const QIcon &icon)
     d->windowIcon = icon;
     if (d->platformWindow)
         d->platformWindow->setWindowIcon(icon);
+    QEvent e(QEvent::WindowIconChange);
+    QCoreApplication::sendEvent(this, &e);
 }
 
 /*!
@@ -786,6 +788,8 @@ void QWindow::setIcon(const QIcon &icon)
 QIcon QWindow::icon() const
 {
     Q_D(const QWindow);
+    if (d->windowIcon.isNull())
+        return QGuiApplication::windowIcon();
     return d->windowIcon;
 }
 
@@ -1938,6 +1942,10 @@ bool QWindow::event(QEvent *ev)
 
     case QEvent::Hide:
         hideEvent(static_cast<QHideEvent *>(ev));
+        break;
+
+    case QEvent::ApplicationWindowIconChange:
+        setIcon(icon());
         break;
 
     case QEvent::WindowStateChange: {

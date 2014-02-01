@@ -187,6 +187,7 @@ public:
 
     static QGuiApplicationPrivate *instance() { return self; }
 
+    static QIcon *app_icon;
     static QString *platform_name;
     static QString *displayName;
 
@@ -281,6 +282,8 @@ public:
 
     // hook reimplemented in QApplication to apply the QStyle function on the QIcon
     virtual QPixmap applyQIconStyleHelper(QIcon::Mode, const QPixmap &basePixmap) const { return basePixmap; }
+
+    virtual void notifyWindowIconChanged();
 
     static QRect applyWindowGeometrySpecification(const QRect &windowGeometry, const QWindow *window);
 

@@ -137,6 +137,8 @@ public:
     void createEventDispatcher();
     static void dispatchEnterLeave(QWidget *enter, QWidget *leave, const QPointF &globalPosF);
 
+    void notifyWindowIconChanged() Q_DECL_OVERRIDE;
+
     //modality
     bool isWindowBlocked(QWindow *window, QWindow **blockingWindow = 0) const Q_DECL_OVERRIDE;
     static bool isBlockedByModal(QWidget *widget);
@@ -198,7 +200,6 @@ public:
     static QWidget *focus_widget;
     static QWidget *hidden_focus_widget;
     static QWidget *active_window;
-    static QIcon *app_icon;
 #ifndef QT_NO_WHEELEVENT
     static int  wheel_scroll_lines;
 #endif
