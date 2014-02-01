@@ -72,7 +72,7 @@ Q_GLOBAL_STATIC_WITH_ARGS(QLoggingCategory, qtDefaultCategory,
     \section1 Checking category configuration
 
     QLoggingCategory provides \l isDebugEnabled(), \l isWarningEnabled(),
-    \l isCriticalEnabled(), \l isTraceEnabled(), as well as \l isEnabled()
+    \l isCriticalEnabled(), as well as \l isEnabled()
     to check whether messages for the given message type should be logged.
 
     \note The qCDebug(), qCWarning(), qCCritical() macros prevent arguments

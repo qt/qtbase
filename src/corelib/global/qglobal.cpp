@@ -1960,7 +1960,7 @@ const QSysInfo::WinVersion QSysInfo::WindowsVersion = QSysInfo::windowsVersion()
     conditions that it would not otherwise know about. However, there is no
     guarantee that the compiler will actually use those hints.
 
-    This macro could be considered a "lighter" version of \l{Q_ASSERT}. While
+    This macro could be considered a "lighter" version of \l{Q_ASSERT()}. While
     Q_ASSERT will abort the program's execution if the condition is false,
     Q_ASSUME will tell the compiler not to generate code for those conditions.
     Therefore, it is important that the assumptions always hold, otherwise
@@ -3318,7 +3318,7 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
     If you need C++11 noexcept semantics, don't use this macro, use
     Q_DECL_NOEXCEPT/Q_DECL_NOEXCEPT_EXPR instead.
 
-    \sa Q_DECL_NOEXCEPT, Q_DECL_NOEXCEPT_EXPR
+    \sa Q_DECL_NOEXCEPT, Q_DECL_NOEXCEPT_EXPR()
 */
 
 /*!
@@ -3372,7 +3372,7 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
     function can't possibly throw, don't use this macro, use
     Q_DECL_NOTHROW instead.
 
-    \sa Q_DECL_NOTHROW, Q_DECL_NOEXCEPT_EXPR
+    \sa Q_DECL_NOTHROW, Q_DECL_NOEXCEPT_EXPR()
 */
 
 /*!
@@ -3394,7 +3394,7 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
     function can't possibly throw, don't use this macro, use
     Q_DECL_NOTHROW instead.
 
-    \sa Q_DECL_NOTHROW, Q_DECL_NOEXCEPT_EXPR
+    \sa Q_DECL_NOTHROW, Q_DECL_NOEXCEPT
 */
 
 /*!

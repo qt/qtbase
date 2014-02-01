@@ -95,8 +95,6 @@ QGenericPlugin::~QGenericPlugin()
     Implement this function to create a driver matching the type
     specified by the given \a key and \a specification parameters. Note that
     keys are case-insensitive.
-
-    \sa keys()
 */
 
 QT_END_NAMESPACE

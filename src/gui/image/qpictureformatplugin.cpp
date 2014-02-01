@@ -79,8 +79,6 @@ QT_BEGIN_NAMESPACE
 
     Installs a QPictureIO picture I/O handler for the picture format \a
     format. Returns \c true on success.
-
-    \sa keys()
 */
 
 

@@ -716,7 +716,7 @@
     and \l{QMAKE_FRAMEWORK_VERSION} variables. By default, the values used for
     these variables are obtained from the \l{TARGET} and \l{VERSION} variables.
 
-    See \l{Deploying an Application on Mac OS X} for more information about
+    See \l{Qt for Mac OS X - Deployment} for more information about
     deploying applications and libraries.
 
     \section2 Creating and Moving Xcode Projects
@@ -810,7 +810,7 @@
     \snippet code/doc_src_qmake-manual.pro 23
 
     This is discussed in more detail in the
-    \l{Deploying an Application on Windows#Manifest files}
+    \l{Qt for Windows - Deployment#Manifest files}
     {deployment guide for Windows}.
 */
 
@@ -1999,7 +1999,7 @@
     platform, the variable will be forwarded to the MACOSX_DEPLOYMENT_TARGET
     environment variable, which is interpreted by the compiler or linker.
     For more information, see the
-    \l{Deploying an Application on Mac OS X#Mac OS X Version Dependencies}{Deploying
+    \l{Qt for Mac OS X - Deployment#Mac OS X Version Dependencies}{Deploying
     an Application on Mac OS X} document.
 
     \section1 QMAKE_MAKEFILE
@@ -2092,7 +2092,6 @@
     \row    \li dbus                       \li \l{Qt D-Bus}
     \row    \li declarative                \li \l{Qt Quick 1} (deprecated)
     \row    \li designer                   \li \l{Qt Designer}
-    \row    \li designercomponents         \li \l{Qt Designer Components}
     \row    \li gui  (included by default) \li \l{Qt GUI}
     \row    \li help                       \li \l{Qt Help}
     \row    \li multimedia                 \li \l{Qt Multimedia}
@@ -3273,7 +3272,7 @@
     \li \l{QMAKE_EXT_UI} modifies the extension used for \QD UI files
         (usually in \l{FORMS}).
     \li \l{QMAKE_EXT_PRL} modifies the extension placed on
-                       \l{#LibDepend}{library dependency files}.
+                       \l{LibDepend}{library dependency files}.
     \li \l{QMAKE_EXT_LEX} changes the suffix used in Lex files (usually in
         \l{LEXSOURCES}).
     \li \l{QMAKE_EXT_YACC} changes the suffix used in Yacc files (usually in
@@ -4335,8 +4334,7 @@
     them uses project-specific variables to customize output files.
 
     Platform-specific variables are not described here. For more information,
-    see  \l{Deploying an Application on Windows} and
-    \l{Developing Qt Applications for Mac OS X}.
+    see  \l{Qt for Windows - Deployment} and \l{Qt for Mac OS X}.
 
     \target Application
     \section1 Building an Application

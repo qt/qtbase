@@ -779,7 +779,7 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
 
     \note This class has been deprecated in favor of QOpenGLFramebufferObject.
 
-    \sa {Framebuffer Object Example}
+    \sa {Framebuffer Object 2 Example}
 */
 
 

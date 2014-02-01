@@ -270,7 +270,7 @@ void QActionPrivate::setShortcutEnabled(bool enable, QShortcutMap &map)
     \value AboutQtRole This action matches handles the "About Qt" menu item.
     \value AboutRole This action should be placed where the "About" menu item is in the application menu. The text of
            the menu item will be set to "About <application name>". The application name is fetched from the
-           \c{Info.plist} file in the application's bundle (See \l{Deploying an Application on Mac OS X}).
+           \c{Info.plist} file in the application's bundle (See \l{Qt for Mac OS X - Deployment}).
     \value PreferencesRole This action should be placed where the  "Preferences..." menu item is in the application menu.
     \value QuitRole This action should be placed where the Quit menu item is in the application menu.
 

@@ -2833,8 +2833,8 @@ static bool canConvertMetaObject(int fromId, int toId, QObject *fromObject)
 
     \snippet code/src_corelib_kernel_qvariant.cpp 10
 
-    \sa convert(), QSequentialIterable, qRegisterSequentialConverter(), QAssociativeIterable,
-        qRegisterAssociativeConverter()
+    \sa convert(), QSequentialIterable, Q_DECLARE_SEQUENTIAL_CONTAINER_METATYPE(), QAssociativeIterable,
+        Q_DECLARE_ASSOCIATIVE_CONTAINER_METATYPE()
 */
 bool QVariant::canConvert(int targetTypeId) const
 {
@@ -3334,7 +3334,7 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
 
     \snippet code/src_corelib_kernel_qvariant.cpp 9
 
-    \sa setValue(), fromValue(), canConvert(), qRegisterSequentialConverter()
+    \sa setValue(), fromValue(), canConvert(), Q_DECLARE_SEQUENTIAL_CONTAINER_METATYPE()
 */
 
 /*! \fn bool QVariant::canConvert() const

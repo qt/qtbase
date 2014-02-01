@@ -314,8 +314,7 @@
     \endcode
 
     See how QDoc renders this property on the reference page for the
-    \l {changes-prop} {State}
-    type.
+    \l {State::changes}{State} type.
 
     \target obsolete-command
     \section1 \\obsolete
