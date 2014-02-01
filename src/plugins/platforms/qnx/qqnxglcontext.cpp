@@ -227,7 +227,8 @@ bool QQnxGLContext::makeCurrent(QPlatformSurface *surface)
     eglResult = eglMakeCurrent(ms_eglDisplay, m_currentEglSurface, m_currentEglSurface, m_eglContext);
     if (eglResult != EGL_TRUE) {
         checkEGLError("eglMakeCurrent");
-        qFatal("QQNX: failed to set current EGL context, err=%d", eglGetError());
+        qWarning("QQNX: failed to set current EGL context, err=%d", eglGetError());
+        return false;
     }
     return (eglResult == EGL_TRUE);
 }

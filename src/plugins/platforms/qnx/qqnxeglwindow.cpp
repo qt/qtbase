@@ -79,8 +79,9 @@ void QQnxEglWindow::createEGLSurface()
     // the window's buffers before we create the EGL surface
     const QSize surfaceSize = requestedBufferSize();
     if (!surfaceSize.isValid()) {
-        qFatal("QQNX: Trying to create 0 size EGL surface. "
+        qWarning("QQNX: Trying to create 0 size EGL surface. "
                "Please set a valid window size before calling QOpenGLContext::makeCurrent()");
+        return;
     }
     setBufferSize(surfaceSize);
 
@@ -98,7 +99,7 @@ void QQnxEglWindow::createEGLSurface()
                                           (EGLNativeWindowType) nativeHandle(), eglSurfaceAttrs);
     if (m_eglSurface == EGL_NO_SURFACE) {
         const EGLenum error = QQnxGLContext::checkEGLError("eglCreateWindowSurface");
-        qFatal("QQNX: failed to create EGL surface, err=%d", error);
+        qWarning("QQNX: failed to create EGL surface, err=%d", error);
     }
 }
 
