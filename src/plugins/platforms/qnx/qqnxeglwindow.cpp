@@ -134,6 +134,8 @@ void QQnxEglWindow::swapEGLBuffers()
 EGLSurface QQnxEglWindow::getSurface()
 {
     if (m_newSurfaceRequested.testAndSetOrdered(true, false)) {
+        const QMutexLocker locker(&m_mutex); //Set geomety must not reset the requestedBufferSize till
+                                             //the surface is created
         if (m_eglSurface != EGL_NO_SURFACE) {
             platformOpenGLContext()->doneCurrent();
             destroyEGLSurface();
@@ -165,7 +167,6 @@ void QQnxEglWindow::setGeometry(const QRect &rect)
 
 QSize QQnxEglWindow::requestedBufferSize() const
 {
-    const QMutexLocker locker(&m_mutex);
     return m_requestedBufferSize;
 }
 
@@ -213,7 +214,6 @@ int QQnxEglWindow::pixelFormat() const
 
 void QQnxEglWindow::resetBuffers()
 {
-    const QMutexLocker locker(&m_mutex);
     m_requestedBufferSize = QSize();
 }
 
