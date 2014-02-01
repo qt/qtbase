@@ -398,8 +398,6 @@ void QQnxWindow::setParent(const QPlatformWindow *window)
         joinWindowGroup(QByteArray());
     }
 
-    adjustBufferSize();
-
     m_screen->updateHierarchy();
 }
 

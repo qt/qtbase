@@ -68,8 +68,6 @@ public:
     // Called by QQnxGLContext::createSurface()
     QSize requestedBufferSize() const;
 
-    void adjustBufferSize();
-
 protected:
     int pixelFormat() const;
     void resetBuffers();

@@ -78,7 +78,6 @@ public:
     WId winId() const { return (WId)m_window; }
     screen_window_t nativeHandle() const { return m_window; }
 
-    virtual void adjustBufferSize() = 0;
     void setBufferSize(const QSize &size);
     QSize bufferSize() const { return m_bufferSize; }
 

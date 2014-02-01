@@ -162,6 +162,12 @@ QQnxBuffer &QQnxRasterWindow::renderBuffer()
     return m_buffers[m_currentBufferIndex];
 }
 
+void QQnxRasterWindow::setParent(const QPlatformWindow *wnd)
+{
+    QQnxWindow::setParent(wnd);
+    adjustBufferSize();
+}
+
 void QQnxRasterWindow::adjustBufferSize()
 {
     // When having a raster window we don't need any buffers, since

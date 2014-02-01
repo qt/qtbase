@@ -170,13 +170,6 @@ QSize QQnxEglWindow::requestedBufferSize() const
     return m_requestedBufferSize;
 }
 
-void QQnxEglWindow::adjustBufferSize()
-{
-    const QSize windowSize = window()->size();
-    if (windowSize != bufferSize())
-        setBufferSize(windowSize);
-}
-
 void QQnxEglWindow::setPlatformOpenGLContext(QQnxGLContext *platformOpenGLContext)
 {
     // This function does not take ownership of the platform gl context.
