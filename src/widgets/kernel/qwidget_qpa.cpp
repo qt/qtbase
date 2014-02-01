@@ -879,9 +879,15 @@ int QWidget::metric(PaintDeviceMetric m) const
 }
 
 /*!
-    \preliminary
+    If this is a native widget, return the associated QWindow.
+    Otherwise return null.
 
-    Returns the QPlatformWindow this widget will be drawn into.
+    Native widgets include toplevel widgets, QGLWidget, and child widgets
+    on which winId() was called.
+
+    \since 5.0
+
+    \sa winId()
 */
 QWindow *QWidget::windowHandle() const
 {
