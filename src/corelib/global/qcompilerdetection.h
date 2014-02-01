@@ -153,7 +153,7 @@
 #    define Q_CC_INTEL
 #    define Q_ASSUME_IMPL(expr)  __assume(expr)
 #    define Q_UNREACHABLE_IMPL() __builtin_unreachable()
-#    if __INTEL_COMPILER >= 1300
+#    if __INTEL_COMPILER >= 1300 && !defined(__APPLE__)
 #      define Q_DECL_DEPRECATED_X(text) __attribute__ ((__deprecated__(text)))
 #    endif
 #  elif defined(__clang__)
