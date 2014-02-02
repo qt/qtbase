@@ -2697,8 +2697,8 @@ QPixmap QMessageBoxPrivate::standardIcon(QMessageBox::Icon icon, QMessageBox *mb
 void QMessageBoxPrivate::initHelper(QPlatformDialogHelper *h)
 {
     Q_Q(QMessageBox);
-    QObject::connect(h, SIGNAL(clicked(QPlatformDialogHelper::StandardButton, QPlatformDialogHelper::ButtonRole)),
-                     q, SLOT(_q_clicked(QPlatformDialogHelper::StandardButton, QPlatformDialogHelper::ButtonRole)));
+    QObject::connect(h, SIGNAL(clicked(QPlatformDialogHelper::StandardButton,QPlatformDialogHelper::ButtonRole)),
+                     q, SLOT(_q_clicked(QPlatformDialogHelper::StandardButton,QPlatformDialogHelper::ButtonRole)));
     static_cast<QPlatformMessageDialogHelper *>(h)->setOptions(options);
 }
 

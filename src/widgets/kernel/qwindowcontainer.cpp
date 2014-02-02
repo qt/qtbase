@@ -197,7 +197,7 @@ QWindowContainer::QWindowContainer(QWindow *embeddedWindow, QWidget *parent, Qt:
     d->window = embeddedWindow;
     d->window->setParent(&d->fakeParent);
 
-    connect(QGuiApplication::instance(), SIGNAL(focusWindowChanged(QWindow *)), this, SLOT(focusWindowChanged(QWindow *)));
+    connect(QGuiApplication::instance(), SIGNAL(focusWindowChanged(QWindow*)), this, SLOT(focusWindowChanged(QWindow*)));
 }
 
 QWindow *QWindowContainer::containedWindow() const

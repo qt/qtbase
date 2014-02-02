@@ -59,8 +59,8 @@ ClipWindow::ClipWindow(QWidget *parent)
 //! [0]
     connect(clipboard, SIGNAL(dataChanged()), this, SLOT(updateClipboard()));
 //! [0]
-    connect(mimeTypeCombo, SIGNAL(activated(const QString &)),
-            this, SLOT(updateData(const QString &)));
+    connect(mimeTypeCombo, SIGNAL(activated(QString)),
+            this, SLOT(updateData(QString)));
 
     QVBoxLayout *currentLayout = new QVBoxLayout(currentItem);
     currentLayout->addWidget(mimeTypeLabel);
