@@ -70,7 +70,6 @@ QKmsScreen::QKmsScreen(QKmsDevice *device, int connectorId)
       m_connectorId(connectorId),
       m_depth(32),
       m_format(QImage::Format_Invalid),
-      m_refreshTime(16000),
       m_eglWindowSurface(EGL_NO_SURFACE),
       m_modeSet(false)
 {
