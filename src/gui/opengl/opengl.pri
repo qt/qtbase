@@ -31,7 +31,8 @@ contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles2) {
                opengl/qopenglversionfunctions.h \
                opengl/qopenglversionfunctionsfactory_p.h \
                opengl/qopenglvertexarrayobject.h \
-               opengl/qopengldebug.h
+               opengl/qopengldebug.h \
+               opengl/qopengltextureblitter_p.h
 
     SOURCES += opengl/qopengl.cpp \
                opengl/qopenglfunctions.cpp \
@@ -51,7 +52,8 @@ contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles2) {
                opengl/qopenglversionfunctions.cpp \
                opengl/qopenglversionfunctionsfactory.cpp \
                opengl/qopenglvertexarrayobject.cpp \
-               opengl/qopengldebug.cpp
+               opengl/qopengldebug.cpp \
+               opengl/qopengltextureblitter.cpp
 
     !wince* {
         HEADERS += opengl/qopengltexture.h \
