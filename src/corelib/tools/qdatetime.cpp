@@ -2208,7 +2208,17 @@ static int qt_timezone()
         time_t clock = time(NULL);
         struct tm t;
         localtime_r(&clock, &t);
-        return t.tm_gmtoff;
+        // QTBUG-36080 Workaround for systems without the POSIX timezone
+        // variable. This solution is not very efficient but fixing it is up to
+        // the libc implementations.
+        //
+        // tm_gmtoff has some important differences compared to the timezone
+        // variable:
+        // - It returns the number of seconds east of UTC, and we want the
+        //   number of seconds west of UTC.
+        // - It also takes DST into account, so we need to adjust it to always
+        //   get the Standard Time offset.
+        return -t.tm_gmtoff + (t.tm_isdst ? SECS_PER_HOUR : 0L);
 #else
         return timezone;
 #endif // Q_OS_WIN
