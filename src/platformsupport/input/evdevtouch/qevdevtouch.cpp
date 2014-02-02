@@ -157,10 +157,12 @@ void QEvdevTouchScreenData::registerDevice()
 #define LONG_BITS (sizeof(long) << 3)
 #define NUM_LONGS(bits) (((bits) + LONG_BITS - 1) / LONG_BITS)
 
+#if defined(QT_NO_MTDEV)
 static inline bool testBit(long bit, const long *array)
 {
     return (array[bit / LONG_BITS] >> bit % LONG_BITS) & 1;
 }
+#endif
 
 QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &specification, QObject *parent)
     : QObject(parent), m_notify(0), m_fd(-1), d(0)
