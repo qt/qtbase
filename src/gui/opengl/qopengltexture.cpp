@@ -2698,9 +2698,9 @@ QOpenGLTexture::SwizzleValue QOpenGLTexture::swizzleMask(SwizzleComponent compon
     If using a texture that has a combined depth/stencil format this function sets
     which component of the texture is accessed to \a mode.
 
-    When the parameter is set to ?DepthMode, then accessing it from the
+    When the parameter is set to DepthMode, then accessing it from the
     shader will access the depth component as a single float, as normal. But when
-    the parameter is set to StencilMode?, the shader will access the stencil component.
+    the parameter is set to StencilMode, the shader will access the stencil component.
 
     \note This function has no effect on Mac and Qt built for OpenGL ES 2.
     \sa depthStencilMode()
