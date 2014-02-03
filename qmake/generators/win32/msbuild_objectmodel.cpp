@@ -2195,6 +2195,16 @@ QString VCXProjectWriter::generateCondition(const VCConfiguration &config)
 
 QString VCXProjectWriter::platformToolSetVersion(const DotNET version, bool winphoneBuild)
 {
+    // The PlatformToolset string corresponds to the name of a directory in
+    // $(VCTargetsPath)\Platforms\{Win32,x64,...}\PlatformToolsets
+    // e.g. v90, v100, v110, v110_xp, v120_CTP_Nov, v120, or WindowsSDK7.1
+
+    // This environment variable may be set by a commandline build
+    // environment such as the Windows SDK command prompt
+    QByteArray envVar = qgetenv("PlatformToolset");
+    if (!envVar.isEmpty())
+        return envVar;
+
     switch (version)
     {
     case NET2012:
