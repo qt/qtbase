@@ -882,20 +882,8 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const QWindowsWindowData &data)
         setFlag(OpenGL_ES2);
 #endif
     }
-    if (aWindow->isTopLevel()) {
-        switch (type) {
-        case Qt::Window:
-        case Qt::Dialog:
-        case Qt::Sheet:
-        case Qt::Drawer:
-        case Qt::Popup:
-        case Qt::Tool:
-            registerDropSite();
-            break;
-        default:
-            break;
-        }
-    }
+    updateDropSite();
+
 #ifndef Q_OS_WINCE
     if (QWindowsContext::instance()->systemInfo() & QWindowsContext::SI_SupportsTouch) {
         if (QWindowsContext::user32dll.registerTouchWindow(m_data.hwnd, 0)) {
@@ -944,7 +932,7 @@ void QWindowsWindow::destroyWindow()
             context->clearWindowUnderMouse();
         if (hasMouseCapture())
             setMouseGrabEnabled(false);
-        unregisterDropSite();
+        setDropSiteEnabled(false);
 #ifdef QT_OPENGL_ES_2
         if (m_eglSurface) {
             qCDebug(lcQpaGl) << __FUNCTION__ << "Freeing EGL surface " << m_eglSurface << window();
@@ -967,31 +955,44 @@ void QWindowsWindow::destroyWindow()
     }
 }
 
-void QWindowsWindow::registerDropSite()
+void QWindowsWindow::updateDropSite()
 {
-#ifndef QT_NO_CLIPBOARD
-#  ifndef QT_NO_DRAGANDDROP
-    if (m_data.hwnd && !m_dropTarget) {
+    bool enabled = false;
+    if (window()->isTopLevel()) {
+        switch (window()->type()) {
+        case Qt::Window:
+        case Qt::Dialog:
+        case Qt::Sheet:
+        case Qt::Drawer:
+        case Qt::Popup:
+        case Qt::Tool:
+            enabled = true;
+            break;
+        default:
+            break;
+        }
+    }
+    setDropSiteEnabled(enabled);
+}
+
+void QWindowsWindow::setDropSiteEnabled(bool dropEnabled)
+{
+    if (isDropSiteEnabled() == dropEnabled)
+        return;
+    qCDebug(lcQpaMime) << __FUNCTION__ << window() << dropEnabled;
+#if !defined(QT_NO_CLIPBOARD) && !defined(QT_NO_DRAGANDDROP)
+    if (dropEnabled) {
+        Q_ASSERT(m_data.hwnd);
         m_dropTarget = new QWindowsOleDropTarget(window());
         RegisterDragDrop(m_data.hwnd, m_dropTarget);
         CoLockObjectExternal(m_dropTarget, true, true);
-    }
-#  endif // !QT_NO_DRAGANDDROP
-#endif // !QT_NO_CLIPBOARD
-}
-
-void QWindowsWindow::unregisterDropSite()
-{
-#ifndef QT_NO_CLIPBOARD
-#  ifndef QT_NO_DRAGANDDROP
-    if (m_data.hwnd && m_dropTarget) {
+    } else {
         m_dropTarget->Release();
         CoLockObjectExternal(m_dropTarget, false, true);
         RevokeDragDrop(m_data.hwnd);
         m_dropTarget = 0;
     }
-#  endif // !QT_NO_DRAGANDDROP
-#endif // !QT_NO_CLIPBOARD
+#endif // !QT_NO_CLIPBOARD && !QT_NO_DRAGANDDROP
 }
 
 // Returns topmost QWindowsWindow ancestor even if there are embedded windows in the chain.
@@ -1188,7 +1189,7 @@ void QWindowsWindow::setParent(const QPlatformWindow *newParent)
         setParent_sys(newParent);
 }
 
-void QWindowsWindow::setParent_sys(const QPlatformWindow *parent) const
+void QWindowsWindow::setParent_sys(const QPlatformWindow *parent)
 {
     // Use GetAncestor instead of GetParent, as GetParent can return owner window for toplevels
     HWND oldParentHWND = GetAncestor(m_data.hwnd, GA_PARENT);
@@ -1217,8 +1218,11 @@ void QWindowsWindow::setParent_sys(const QPlatformWindow *parent) const
         // WS_CHILD/WS_POPUP must be manually set/cleared in addition
         // to dialog frames, etc (see  SetParent() ) if the top level state changes.
         // Force toplevel state as QWindow::isTopLevel cannot be relied upon here.
-        if (wasTopLevel != isTopLevel)
+        if (wasTopLevel != isTopLevel) {
+            setDropSiteEnabled(false);
             setWindowFlags_sys(window()->flags(), unsigned(isTopLevel ? WindowCreationData::ForceTopLevel : WindowCreationData::ForceChild));
+            updateDropSite();
+        }
     }
 }
 
@@ -1458,8 +1462,10 @@ void QWindowsWindow::setWindowFlags(Qt::WindowFlags flags)
     const QRect oldGeometry = geometry();
     if (m_data.flags != flags) {
         m_data.flags = flags;
-        if (m_data.hwnd)
+        if (m_data.hwnd) {
             m_data = setWindowFlags_sys(flags);
+            updateDropSite();
+        }
     }
     // When switching to a frameless window, geometry
     // may change without a WM_MOVE. Report change manually.

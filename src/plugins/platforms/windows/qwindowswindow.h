@@ -278,11 +278,12 @@ private:
     inline QWindowsWindowData setWindowFlags_sys(Qt::WindowFlags wt, unsigned flags = 0) const;
     inline bool isFullScreen_sys() const;
     inline void setWindowState_sys(Qt::WindowState newState);
-    inline void setParent_sys(const QPlatformWindow *parent) const;
+    inline void setParent_sys(const QPlatformWindow *parent);
     inline void updateTransientParent() const;
     void destroyWindow();
-    void registerDropSite();
-    void unregisterDropSite();
+    inline bool isDropSiteEnabled() const { return m_dropTarget != 0; }
+    void setDropSiteEnabled(bool enabled);
+    void updateDropSite();
     void handleGeometryChange();
     void handleWindowStateChange(Qt::WindowState state);
     inline void destroyIcon();
