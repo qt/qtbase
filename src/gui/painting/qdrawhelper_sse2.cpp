@@ -259,19 +259,6 @@ void qt_memfill32(quint32 *dest, quint32 value, int count)
     case 12: *dest++ = value; --count;
     }
 
-    int count128 = count / 4;
-    __m128i *dst128 = reinterpret_cast<__m128i*>(dest);
-    const __m128i value128 = _mm_set_epi32(value, value, value, value);
-
-    int n = (count128 + 3) / 4;
-    switch (count128 & 0x3) {
-    case 0: do { _mm_stream_si128(dst128++, value128);
-    case 3:      _mm_stream_si128(dst128++, value128);
-    case 2:      _mm_stream_si128(dst128++, value128);
-    case 1:      _mm_stream_si128(dst128++, value128);
-    } while (--n > 0);
-    }
-
     const int rest = count & 0x3;
     if (rest) {
         switch (rest) {
@@ -279,6 +266,25 @@ void qt_memfill32(quint32 *dest, quint32 value, int count)
         case 2: dest[count - 2] = value;
         case 1: dest[count - 1] = value;
         }
+    }
+
+    int count128 = count / 4;
+    __m128i *dst128 = reinterpret_cast<__m128i*>(dest);
+    __m128i *end128 = dst128 + count128;
+    const __m128i value128 = _mm_set_epi32(value, value, value, value);
+
+    while (dst128 + 3 < end128) {
+        _mm_stream_si128(dst128 + 0, value128);
+        _mm_stream_si128(dst128 + 1, value128);
+        _mm_stream_si128(dst128 + 2, value128);
+        _mm_stream_si128(dst128 + 3, value128);
+        dst128 += 4;
+    }
+
+    switch (count128 & 0x3) {
+    case 3:      _mm_stream_si128(dst128++, value128);
+    case 2:      _mm_stream_si128(dst128++, value128);
+    case 1:      _mm_stream_si128(dst128++, value128);
     }
 }
 
