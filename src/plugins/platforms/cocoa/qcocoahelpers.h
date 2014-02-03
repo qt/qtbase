@@ -162,6 +162,39 @@ CGContextRef qt_mac_cg_context(QPaintDevice *pdev);
 CGImageRef qt_mac_toCGImage(const QImage &qImage, bool isMask, uchar **dataCopy);
 QImage qt_mac_toQImage(CGImageRef image);
 
+template<typename T>
+T qt_mac_resolveOption(const T &fallback, const QByteArray &environment)
+{
+    // check for environment variable
+    if (!environment.isEmpty()) {
+        QByteArray env = qgetenv(environment);
+        if (!env.isEmpty())
+            return T(env.toInt()); // works when T is bool, int.
+    }
+
+    return fallback;
+}
+
+template<typename T>
+T qt_mac_resolveOption(const T &fallback, QWindow *window, const QByteArray &property, const QByteArray &environment)
+{
+    // check for environment variable
+    if (!environment.isEmpty()) {
+        QByteArray env = qgetenv(environment);
+        if (!env.isEmpty())
+            return T(env.toInt()); // works when T is bool, int.
+    }
+
+    // check for window property
+    if (window && !property.isNull()) {
+        QVariant windowProperty = window->property(property);
+        if (windowProperty.isValid())
+            return windowProperty.value<T>();
+    }
+
+    // return default value.
+    return fallback;
+}
 QT_END_NAMESPACE
 
 #endif //QCOCOAHELPERS_H

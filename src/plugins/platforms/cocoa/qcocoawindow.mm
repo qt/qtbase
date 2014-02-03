@@ -252,9 +252,15 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
         // problem, except if the appilcation wants to have a "custom" viewport.
         // (like the hellogl example)
         if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7
-            && tlw->surfaceType() == QSurface::OpenGLSurface)
-            [m_contentView setWantsBestResolutionOpenGLSurface:YES];
+            && tlw->surfaceType() == QSurface::OpenGLSurface) {
+            BOOL enable = qt_mac_resolveOption(YES, tlw, "_q_mac_wantsBestResolutionOpenGLSurface",
+                                                          "QT_MAC_WANTS_BEST_RESOLUTION_OPENGL_SURFACE");
+            [m_contentView setWantsBestResolutionOpenGLSurface:enable];
+        }
 #endif
+        BOOL enable = qt_mac_resolveOption(NO, tlw, "_q_mac_wantsLayer",
+                                                     "QT_MAC_WANTS_LAYER");
+        [m_contentView setWantsLayer:enable];
     }
     setGeometry(tlw->geometry());
     recreateWindow(parent());

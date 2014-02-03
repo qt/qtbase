@@ -42,6 +42,7 @@
 #include "qcocoaglcontext.h"
 #include "qcocoawindow.h"
 #include "qcocoaautoreleasepool.h"
+#include "qcocoahelpers.h"
 #include <qdebug.h>
 #include <QtCore/private/qcore_mac_p.h>
 #include <QtPlatformSupport/private/cglconvenience_p.h>
@@ -150,6 +151,11 @@ QCocoaGLContext::QCocoaGLContext(const QSurfaceFormat &format, QPlatformOpenGLCo
         int zeroOpacity = 0;
         [m_context setValues:&zeroOpacity forParameter:NSOpenGLCPSurfaceOpacity];
     }
+
+
+    // OpenGL surfaces can be ordered either above(default) or below the NSWindow.
+    const GLint order = qt_mac_resolveOption(1, "QT_MAC_OPENGL_SURFACE_ORDER");
+    [m_context setValues:&order forParameter:NSOpenGLCPSurfaceOrder];
 
     updateSurfaceFormat();
 }
