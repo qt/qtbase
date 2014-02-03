@@ -338,6 +338,7 @@ void QAndroidPlatformScreen::surfaceChanged(JNIEnv *env, jobject surface, int w,
         if (m_nativeSurface)
             ANativeWindow_release(m_nativeSurface);
         m_nativeSurface = ANativeWindow_fromSurface(env, surface);
+        QMetaObject::invokeMethod(this, "setDirty", Qt::QueuedConnection, Q_ARG(QRect, QRect(0, 0, w, h)));
     } else {
         if (m_nativeSurface) {
             ANativeWindow_release(m_nativeSurface);
