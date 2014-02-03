@@ -384,23 +384,39 @@ glyph_metrics_t QFontEngine::boundingBox(glyph_t glyph, const QTransform &matrix
 
 QFixed QFontEngine::xHeight() const
 {
-    QGlyphLayoutArray<8> glyphs;
-    int nglyphs = 7;
     QChar x((ushort)'x');
-    stringToCMap(&x, 1, &glyphs, &nglyphs, GlyphIndicesOnly);
 
-    glyph_metrics_t bb = const_cast<QFontEngine *>(this)->boundingBox(glyphs.glyphs[0]);
+    glyph_t glyph;
+
+    QGlyphLayout glyphs;
+    glyphs.numGlyphs = 1;
+    glyphs.glyphs = &glyph;
+
+    int nglyphs = 1;
+    if (!stringToCMap(&x, 1, &glyphs, &nglyphs, GlyphIndicesOnly))
+        Q_UNREACHABLE();
+    Q_ASSERT(nglyphs == 1);
+
+    glyph_metrics_t bb = const_cast<QFontEngine *>(this)->boundingBox(glyph);
     return bb.height;
 }
 
 QFixed QFontEngine::averageCharWidth() const
 {
-    QGlyphLayoutArray<8> glyphs;
-    int nglyphs = 7;
     QChar x((ushort)'x');
-    stringToCMap(&x, 1, &glyphs, &nglyphs, GlyphIndicesOnly);
 
-    glyph_metrics_t bb = const_cast<QFontEngine *>(this)->boundingBox(glyphs.glyphs[0]);
+    glyph_t glyph;
+
+    QGlyphLayout glyphs;
+    glyphs.numGlyphs = 1;
+    glyphs.glyphs = &glyph;
+
+    int nglyphs = 1;
+    if (!stringToCMap(&x, 1, &glyphs, &nglyphs, GlyphIndicesOnly))
+        Q_UNREACHABLE();
+    Q_ASSERT(nglyphs == 1);
+
+    glyph_metrics_t bb = const_cast<QFontEngine *>(this)->boundingBox(glyph);
     return bb.xoff;
 }
 
@@ -459,11 +475,22 @@ void QFontEngine::getGlyphPositions(const QGlyphLayout &glyphs, const QTransform
             ++current;
             if (glyphs.justifications[i].nKashidas) {
                 QChar ch(0x640); // Kashida character
-                QGlyphLayoutArray<8> g;
-                int nglyphs = 7;
-                stringToCMap(&ch, 1, &g, &nglyphs, 0);
+
+                glyph_t kashidaGlyph;
+                QFixed kashidaWidth;
+
+                QGlyphLayout g;
+                g.numGlyphs = 1;
+                g.glyphs = &kashidaGlyph;
+                g.advances = &kashidaWidth;
+
+                int nglyphs = 1;
+                if (!stringToCMap(&ch, 1, &g, &nglyphs, 0))
+                    Q_UNREACHABLE();
+                Q_ASSERT(nglyphs == 1);
+
                 for (uint k = 0; k < glyphs.justifications[i].nKashidas; ++k) {
-                    xpos -= g.advances[0];
+                    xpos -= kashidaWidth;
 
                     QFixed gpos_x = xpos + glyphs.offsets[i].x;
                     QFixed gpos_y = ypos + glyphs.offsets[i].y;
@@ -475,7 +502,7 @@ void QFontEngine::getGlyphPositions(const QGlyphLayout &glyphs, const QTransform
                     }
                     positions[current].x = gpos_x;
                     positions[current].y = gpos_y;
-                    glyphs_out[current] = g.glyphs[0];
+                    glyphs_out[current] = kashidaGlyph;
                     ++current;
                 }
             } else {
@@ -1536,9 +1563,10 @@ bool QFontEngineMulti::stringToCMap(const QChar *str, int len,
                 if (!(flags & GlyphIndicesOnly))
                     glyphs->advances[glyph_pos] = QFixed();
                 int num = 2;
-                QGlyphLayout offs = glyphs->mid(glyph_pos, num);
-                engine->stringToCMap(str + i, surrogate ? 2 : 1, &offs, &num, flags);
-                Q_ASSERT(num == 1); // surrogates only give 1 glyph
+                QGlyphLayout g = glyphs->mid(glyph_pos, num);
+                if (!engine->stringToCMap(str + i, surrogate ? 2 : 1, &g, &num, flags))
+                    Q_UNREACHABLE();
+                Q_ASSERT(num == 1);
                 if (glyphs->glyphs[glyph_pos]) {
                     // set the high byte to indicate which engine the glyph came from
                     glyphs->glyphs[glyph_pos] |= (x << 24);
@@ -1849,16 +1877,11 @@ bool QFontEngineMulti::canRender(const QChar *string, int len)
     QGlyphLayout g;
     g.numGlyphs = nglyphs;
     g.glyphs = glyphs.data();
-    if (!stringToCMap(string, len, &g, &nglyphs, GlyphIndicesOnly)) {
-        glyphs.resize(nglyphs);
-        g.numGlyphs = nglyphs;
-        g.glyphs = glyphs.data();
-        if (!stringToCMap(string, len, &g, &nglyphs, GlyphIndicesOnly))
-            Q_ASSERT_X(false, Q_FUNC_INFO, "stringToCMap shouldn't fail twice");
-    }
+    if (!stringToCMap(string, len, &g, &nglyphs, GlyphIndicesOnly))
+        Q_UNREACHABLE();
 
     for (int i = 0; i < nglyphs; i++) {
-        if (g.glyphs[i] == 0)
+        if (glyphs[i] == 0)
             return false;
     }
 

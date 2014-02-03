@@ -5845,11 +5845,8 @@ void QPainter::drawText(const QPointF &p, const QString &str, int tf, int justif
         int numGlyphs = len;
         QVarLengthGlyphLayoutArray glyphs(len);
         QFontEngine *fontEngine = d->state->font.d->engineForScript(QChar::Script_Common);
-        if (!fontEngine->stringToCMap(str.data(), len, &glyphs, &numGlyphs, 0)) {
-            glyphs.resize(numGlyphs);
-            if (!fontEngine->stringToCMap(str.data(), len, &glyphs, &numGlyphs, 0))
-                Q_ASSERT_X(false, Q_FUNC_INFO, "stringToCMap shouldn't fail twice");
-        }
+        if (!fontEngine->stringToCMap(str.data(), len, &glyphs, &numGlyphs, 0))
+            Q_UNREACHABLE();
 
         QTextItemInt gf(glyphs, &d->state->font, str.data(), len, fontEngine);
         drawTextItem(p, gf);

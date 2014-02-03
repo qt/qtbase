@@ -739,13 +739,19 @@ bool qt_fontHasNarrowOutlines(QFontEngine *fontEngine)
     if (!fe)
         return false;
 
-    QGlyphLayout glyphs;
+    const QChar uc(QLatin1Char('O'));
+
     glyph_t glyph;
-    glyphs.glyphs = &glyph;
+
+    QGlyphLayout glyphs;
     glyphs.numGlyphs = 1;
+    glyphs.glyphs = &glyph;
     int numGlyphs = 1;
-    QChar uc = QLatin1Char('O');
-    fe->stringToCMap(&uc, 1, &glyphs, &numGlyphs, QFontEngine::GlyphIndicesOnly);
+
+    if (!fe->stringToCMap(&uc, 1, &glyphs, &numGlyphs, QFontEngine::GlyphIndicesOnly))
+        Q_UNREACHABLE();
+    Q_ASSERT(numGlyphs == 1);
+
     QImage im = fe->alphaMapForGlyph(glyph, QFixed(), QTransform());
 
     Q_ASSERT(fe->ref.load() == 0);

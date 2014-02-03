@@ -932,18 +932,8 @@ void QTextEngine::shapeText(int item) const
 
         int nGlyphs = initialGlyphs.numGlyphs;
         QFontEngine::ShaperFlags shaperFlags(QFontEngine::GlyphIndicesOnly);
-        if (!fontEngine->stringToCMap(reinterpret_cast<const QChar *>(string), itemLength, &initialGlyphs, &nGlyphs, shaperFlags)) {
-            nGlyphs = qMax(nGlyphs, itemLength); // ### needed for QFontEngine::stringToCMap() to not fail twice
-            if (!ensureSpace(nGlyphs)) {
-                Q_UNREACHABLE(); // ### report OOM error somehow
-                return;
-            }
-            initialGlyphs = availableGlyphs(&si);
-            if (!fontEngine->stringToCMap(reinterpret_cast<const QChar *>(string), itemLength, &initialGlyphs, &nGlyphs, shaperFlags)) {
-                Q_UNREACHABLE(); // ### if this happens there is a bug in the fontengine
-                return;
-            }
-        }
+        if (!fontEngine->stringToCMap(reinterpret_cast<const QChar *>(string), itemLength, &initialGlyphs, &nGlyphs, shaperFlags))
+            Q_UNREACHABLE();
 
         uint lastEngine = 0;
         for (int i = 0, glyph_pos = 0; i < itemLength; ++i, ++glyph_pos) {
@@ -2003,11 +1993,22 @@ static void set(QJustificationPoint *point, int type, const QGlyphLayout &glyph,
 
     if (type >= QGlyphAttributes::Arabic_Normal) {
         QChar ch(0x640); // Kashida character
-        QGlyphLayoutArray<8> glyphs;
-        int nglyphs = 7;
-        fe->stringToCMap(&ch, 1, &glyphs, &nglyphs, 0);
-        if (glyphs.glyphs[0] != 0 && glyphs.advances[0].value() != 0) {
-            point->kashidaWidth = glyphs.advances[0];
+
+        glyph_t kashidaGlyph;
+        QFixed kashidaWidth;
+
+        QGlyphLayout glyphs;
+        glyphs.numGlyphs = 1;
+        glyphs.glyphs = &kashidaGlyph;
+        glyphs.advances = &kashidaWidth;
+
+        int nglyphs = 1;
+        if (!fe->stringToCMap(&ch, 1, &glyphs, &nglyphs, 0))
+            Q_UNREACHABLE();
+        Q_ASSERT(nglyphs == 1);
+
+        if (kashidaGlyph != 0 && kashidaWidth != 0) {
+            point->kashidaWidth = kashidaWidth;
         } else {
             point->type = QGlyphAttributes::NoJustification;
             point->kashidaWidth = 0;
@@ -2639,10 +2640,10 @@ QString QTextEngine::elidedText(Qt::TextElideMode mode, const QFixed &width, int
             if (feForEllipsis->type() == QFontEngine::Mac)
                 feForEllipsis = fe;
 
-            if (feForEllipsis->canRender(&ellipsisChar, 1)) {
-                int nGlyphs = 1;
-                feForEllipsis->stringToCMap(&ellipsisChar, 1, &ellipsisGlyph, &nGlyphs, 0);
-            }
+            int nGlyphs = 1;
+            if (!feForEllipsis->stringToCMap(&ellipsisChar, 1, &ellipsisGlyph, &nGlyphs, 0))
+                Q_UNREACHABLE();
+            Q_ASSERT(nGlyphs == 1);
         }
 
         if (ellipsisGlyph.glyphs[0]) {
@@ -2654,8 +2655,9 @@ QString QTextEngine::elidedText(Qt::TextElideMode mode, const QFixed &width, int
             QGlyphLayoutArray<3> glyphs;
             int nGlyphs = 3;
             if (!fe->stringToCMap(dotDotDot.constData(), 3, &glyphs, &nGlyphs, 0))
-                // should never happen...
-                return layoutData->string;
+                Q_UNREACHABLE();
+            Q_ASSERT(nGlyphs == 3);
+
             for (int i = 0; i < nGlyphs; ++i)
                 ellipsisWidth += glyphs.advances[i];
             ellipsisText = dotDotDot;

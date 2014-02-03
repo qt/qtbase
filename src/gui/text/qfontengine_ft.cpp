@@ -1274,13 +1274,22 @@ qreal QFontEngineFT::minRightBearing() const
 {
     if (rbearing == SHRT_MIN) {
         lbearing = rbearing = 0;
-        const QChar *ch = (const QChar *)(const void*)char_table;
-        QGlyphLayoutArray<char_table_entries> glyphs;
+
+        const QChar *ch = reinterpret_cast<const QChar *>(char_table);
+
+        glyph_t glyphs[char_table_entries];
+
+        QGlyphLayout g;
+        g.glyphs = glyphs;
+        g.numGlyphs = char_table_entries;
         int ng = char_table_entries;
-        stringToCMap(ch, char_table_entries, &glyphs, &ng, GlyphIndicesOnly);
+        if (!stringToCMap(ch, char_table_entries, &g, &ng, GlyphIndicesOnly))
+            Q_UNREACHABLE();
+        Q_ASSERT(ng == char_table_entries);
+
         while (--ng) {
-            if (glyphs.glyphs[ng]) {
-                glyph_metrics_t gi = const_cast<QFontEngineFT *>(this)->boundingBox(glyphs.glyphs[ng]);
+            if (glyphs[ng]) {
+                glyph_metrics_t gi = const_cast<QFontEngineFT *>(this)->boundingBox(glyphs[ng]);
                 lbearing = qMin(lbearing, gi.x);
                 rbearing = qMin(rbearing, (gi.xoff - gi.x - gi.width));
             }
