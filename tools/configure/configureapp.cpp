@@ -3520,23 +3520,6 @@ void Configure::generateConfigfiles()
             dictionary[ "DONE" ] = "error";
     }
 
-    {
-        FileWriter tmpStream(buildPath + "/include/QtCore/qconfig.h");
-
-        tmpStream << "#include \"../../src/corelib/global/qconfig.h\"" << endl;
-
-        if (!tmpStream.flush())
-            dictionary[ "DONE" ] = "error";
-    }
-    {
-        FileWriter tmpStream(buildPath + "/include/QtCore/QtConfig");
-
-        tmpStream << "#include \"qconfig.h\"" << endl;
-
-        if (!tmpStream.flush())
-            dictionary[ "DONE" ] = "error";
-    }
-
     if (dictionary["EDITION"] == "Evaluation" || qmakeDefines.contains("QT_EVAL")) {
         FileWriter tmpStream(buildPath + "/src/corelib/global/qconfig_eval.cpp");
 
