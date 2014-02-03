@@ -219,44 +219,11 @@ inline unsigned int getChar(const QChar *str, int &i, const int len)
     return uc;
 }
 
-int QWindowsFontEngine::getGlyphIndexes(const QChar *str, int numChars, QGlyphLayout *glyphs, bool mirrored) const
+int QWindowsFontEngine::getGlyphIndexes(const QChar *str, int numChars, QGlyphLayout *glyphs) const
 {
     int i = 0;
     int glyph_pos = 0;
-    if (mirrored) {
-#if defined(Q_OS_WINCE)
-        {
-#else
-        if (symbol) {
-            for (; i < numChars; ++i, ++glyph_pos) {
-                unsigned int uc = getChar(str, i, numChars);
-                glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, uc);
-                if (!glyphs->glyphs[glyph_pos] && uc < 0x100)
-                    glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, uc + 0xf000);
-            }
-        } else if (ttf) {
-            for (; i < numChars; ++i, ++glyph_pos) {
-                unsigned int uc = getChar(str, i, numChars);
-                glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, QChar::mirroredChar(uc));
-            }
-        } else {
-#endif
-            wchar_t first = tm.tmFirstChar;
-            wchar_t last = tm.tmLastChar;
-
-            for (; i < numChars; ++i, ++glyph_pos) {
-                uint ucs = QChar::mirroredChar(getChar(str, i, numChars));
-                if (
-#ifdef Q_WS_WINCE
-                    tm.tmFirstChar > 60000 ||
-#endif
-                         ucs >= first && ucs <= last)
-                    glyphs->glyphs[glyph_pos] = ucs;
-                else
-                    glyphs->glyphs[glyph_pos] = 0;
-            }
-        }
-    } else {
+    {
 #if defined(Q_OS_WINCE)
         {
 #else
@@ -390,7 +357,7 @@ bool QWindowsFontEngine::stringToCMap(const QChar *str, int len, QGlyphLayout *g
     }
 
     glyphs->numGlyphs = *nglyphs;
-    *nglyphs = getGlyphIndexes(str, len, glyphs, flags & RightToLeft);
+    *nglyphs = getGlyphIndexes(str, len, glyphs);
 
     if (!(flags & GlyphIndicesOnly))
         recalcAdvances(glyphs, flags);

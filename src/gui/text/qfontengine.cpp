@@ -89,17 +89,47 @@ static HB_Bool hb_stringToGlyphs(HB_Font font, const HB_UChar16 *string, hb_uint
 {
     QFontEngine *fe = (QFontEngine *)font->userData;
 
+    const QChar *str = reinterpret_cast<const QChar *>(string);
+
     QGlyphLayout qglyphs;
     qglyphs.numGlyphs = *numGlyphs;
     qglyphs.glyphs = glyphs;
-
-    QFontEngine::ShaperFlags shaperFlags(QFontEngine::GlyphIndicesOnly);
-    if (rightToLeft)
-        shaperFlags |= QFontEngine::RightToLeft;
-
     int nGlyphs = *numGlyphs;
-    bool result = fe->stringToCMap(reinterpret_cast<const QChar *>(string), length, &qglyphs, &nGlyphs, shaperFlags);
+    bool result = fe->stringToCMap(str, length, &qglyphs, &nGlyphs, QFontEngine::GlyphIndicesOnly);
     *numGlyphs = nGlyphs;
+
+    if (rightToLeft && result && !fe->symbol) {
+        uint glyph_pos = 0;
+        for (uint i = 0; i < length; ++i, ++glyph_pos) {
+            uint ucs4 = str[i].unicode();
+            if (Q_UNLIKELY(QChar::isHighSurrogate(ucs4) && i + 1 < length)) {
+                uint low = str[i + 1].unicode();
+                if (Q_LIKELY(QChar::isLowSurrogate(low))) {
+                    ucs4 = QChar::surrogateToUcs4(ucs4, low);
+                    ++i;
+                }
+            }
+
+            uint mirrored = QChar::mirroredChar(ucs4);
+            if (Q_UNLIKELY(mirrored != ucs4)) {
+                QChar chars[2];
+                uint numChars = 0;
+                if (Q_UNLIKELY(QChar::requiresSurrogates(mirrored))) {
+                    chars[numChars++] = QChar(QChar::highSurrogate(mirrored));
+                    chars[numChars++] = QChar(QChar::lowSurrogate(mirrored));
+                } else {
+                    chars[numChars++] = QChar(mirrored);
+                }
+
+                qglyphs.numGlyphs = numChars;
+                qglyphs.glyphs = glyphs + glyph_pos;
+                nGlyphs = numChars;
+                if (!fe->stringToCMap(chars, numChars, &qglyphs, &nGlyphs, QFontEngine::GlyphIndicesOnly))
+                    Q_UNREACHABLE();
+                Q_ASSERT(nGlyphs == 1);
+            }
+        }
+    }
 
     return result;
 }

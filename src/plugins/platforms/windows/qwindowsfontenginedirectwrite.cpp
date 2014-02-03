@@ -325,13 +325,8 @@ bool QWindowsFontEngineDirectWrite::stringToCMap(const QChar *str, int len, QGly
 
     QVarLengthArray<UINT32> codePoints(len);
     int actualLength = 0;
-    if (flags & QFontEngine::RightToLeft) {
-        for (int i = 0; i < len; ++i)
-            codePoints[actualLength++] = QChar::mirroredChar(getChar(str, i, len));
-    } else {
-        for (int i = 0; i < len; ++i)
-            codePoints[actualLength++] = getChar(str, i, len);
-    }
+    for (int i = 0; i < len; ++i)
+        codePoints[actualLength++] = getChar(str, i, len);
 
     QVarLengthArray<UINT16> glyphIndices(actualLength);
     HRESULT hr = m_directWriteFontFace->GetGlyphIndicesW(codePoints.data(), actualLength,

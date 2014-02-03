@@ -932,9 +932,6 @@ void QTextEngine::shapeText(int item) const
 
         int nGlyphs = initialGlyphs.numGlyphs;
         QFontEngine::ShaperFlags shaperFlags(QFontEngine::GlyphIndicesOnly);
-        if (si.analysis.bidiLevel % 2)
-            shaperFlags |= QFontEngine::RightToLeft;
-
         if (!fontEngine->stringToCMap(reinterpret_cast<const QChar *>(string), itemLength, &initialGlyphs, &nGlyphs, shaperFlags)) {
             nGlyphs = qMax(nGlyphs, itemLength); // ### needed for QFontEngine::stringToCMap() to not fail twice
             if (!ensureSpace(nGlyphs)) {
@@ -1274,7 +1271,8 @@ int QTextEngine::shapeTextWithHarfbuzz(const QScriptItem &si, const ushort *stri
             engineIdx = uint(availableGlyphs(&si).glyphs[glyph_pos] >> 24);
             actualFontEngine = static_cast<QFontEngineMulti *>(fontEngine)->engine(engineIdx);
 
-            shaper_item.glyphIndicesPresent = true;
+            if ((si.analysis.bidiLevel % 2) == 0)
+                shaper_item.glyphIndicesPresent = true;
         }
 
         shaper_item.font = (HB_Font)actualFontEngine->harfbuzzFont();

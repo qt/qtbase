@@ -1516,7 +1516,6 @@ bool QFontEngineFT::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs
         return false;
     }
 
-    bool mirrored = flags & QFontEngine::RightToLeft;
     int glyph_pos = 0;
     if (freetype->symbol_map) {
         FT_Face face = freetype->face;
@@ -1552,8 +1551,6 @@ bool QFontEngineFT::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs
         FT_Face face = freetype->face;
         for (int i = 0; i < len; ++i) {
             unsigned int uc = getChar(str, i, len);
-            if (mirrored)
-                uc = QChar::mirroredChar(uc);
             glyphs->glyphs[glyph_pos] = uc < QFreetypeFace::cmapCacheSize ? freetype->cmapCache[uc] : 0;
             if (!glyphs->glyphs[glyph_pos]) {
                 {
