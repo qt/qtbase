@@ -140,7 +140,7 @@ QWindowsOleDataObject::GetData(LPFORMATETC pformatetc, LPSTGMEDIUM pmedium)
 {
     HRESULT hr = ResultFromScode(DATA_E_FORMATETC);
 
-    if (lcQpaMime().isDebugEnabled()) {
+    if (QWindowsContext::verbose > 1 && lcQpaMime().isDebugEnabled()) {
         wchar_t buf[256] = {0};
         GetClipboardFormatName(pformatetc->cfFormat, buf, 255);
         qCDebug(lcQpaMime) <<__FUNCTION__ << "CF = " << pformatetc->cfFormat << QString::fromWCharArray(buf);
