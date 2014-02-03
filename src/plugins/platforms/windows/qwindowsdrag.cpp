@@ -673,14 +673,6 @@ QWindowsOleDropTarget::Release(void)
     return m_refs;
 }
 
-QWindow *QWindowsOleDropTarget::findDragOverWindow(const POINTL &pt) const
-{
-    if (QWindowsWindow *child =
-            QWindowsWindow::baseWindowOf(m_window)->childAtScreenPoint(QPoint(pt.x, pt.y)))
-            return child->window();
-    return m_window;
-}
-
 void QWindowsOleDropTarget::handleDrag(QWindow *window, DWORD grfKeyState,
                                        const QPoint &point, LPDWORD pdwEffect)
 {
@@ -735,10 +727,9 @@ QWindowsOleDropTarget::DragOver(DWORD grfKeyState, POINTL pt, LPDWORD pdwEffect)
     if (IDropTargetHelper* dh = QWindowsDrag::instance()->dropHelper())
         dh->DragOver(reinterpret_cast<POINT*>(&pt), *pdwEffect);
 
-    QWindow *dragOverWindow = findDragOverWindow(pt);
-    qCDebug(lcQpaMime) << __FUNCTION__ << "widget=" << dragOverWindow << " key=" << grfKeyState
+    qCDebug(lcQpaMime) << __FUNCTION__ << "m_window" << m_window << "key=" << grfKeyState
         << "pt=" << pt.x << pt.y;
-    const QPoint tmpPoint = QWindowsGeometryHint::mapFromGlobal(dragOverWindow, QPoint(pt.x,pt.y));
+    const QPoint tmpPoint = QWindowsGeometryHint::mapFromGlobal(m_window, QPoint(pt.x,pt.y));
     // see if we should compress this event
     if ((tmpPoint == m_lastPoint || m_answerRect.contains(tmpPoint))
         && m_lastKeyState == grfKeyState) {
@@ -747,7 +738,7 @@ QWindowsOleDropTarget::DragOver(DWORD grfKeyState, POINTL pt, LPDWORD pdwEffect)
         return NOERROR;
     }
 
-    handleDrag(dragOverWindow, grfKeyState, tmpPoint, pdwEffect);
+    handleDrag(m_window, grfKeyState, tmpPoint, pdwEffect);
     return NOERROR;
 }
 
@@ -774,12 +765,10 @@ QWindowsOleDropTarget::Drop(LPDATAOBJECT pDataObj, DWORD grfKeyState,
     if (IDropTargetHelper* dh = QWindowsDrag::instance()->dropHelper())
         dh->Drop(pDataObj, reinterpret_cast<POINT*>(&pt), *pdwEffect);
 
-    QWindow *dropWindow = findDragOverWindow(pt);
-
     qCDebug(lcQpaMime) << __FUNCTION__ << ' ' << m_window
-        << " on " << dropWindow << " keys=" << grfKeyState << " pt=" << pt.x << ',' << pt.y;
+        << "keys=" << grfKeyState << "pt=" << pt.x << ',' << pt.y;
 
-    m_lastPoint = QWindowsGeometryHint::mapFromGlobal(dropWindow, QPoint(pt.x,pt.y));
+    m_lastPoint = QWindowsGeometryHint::mapFromGlobal(m_window, QPoint(pt.x,pt.y));
     // grfKeyState does not all ways contain button state in the drop so if
     // it doesn't then use the last known button state;
     if ((grfKeyState & KEY_STATE_BUTTON_MASK) == 0)
@@ -789,7 +778,7 @@ QWindowsOleDropTarget::Drop(LPDATAOBJECT pDataObj, DWORD grfKeyState,
     QWindowsDrag *windowsDrag = QWindowsDrag::instance();
 
     const QPlatformDropQtResponse response =
-        QWindowSystemInterface::handleDrop(dropWindow, windowsDrag->dropData(), m_lastPoint,
+        QWindowSystemInterface::handleDrop(m_window, windowsDrag->dropData(), m_lastPoint,
                                            translateToQDragDropActions(*pdwEffect));
 
     if (response.isAccepted()) {
