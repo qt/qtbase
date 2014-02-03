@@ -76,6 +76,7 @@
 
 #include "qchar.cpp"
 #include "qstringmatcher.cpp"
+#include "qstringiterator_p.h"
 
 #ifdef Q_OS_WIN
 #  include <qt_windows.h>
@@ -1325,21 +1326,13 @@ const QString::Null QString::null = { };
 
 int QString::toUcs4_helper(const ushort *uc, int length, uint *out)
 {
-    int i = 0;
-    const ushort *const e = uc + length;
-    while (uc < e) {
-        uint u = *uc;
-        if (QChar::isHighSurrogate(u) && uc + 1 < e) {
-            ushort low = uc[1];
-            if (QChar::isLowSurrogate(low)) {
-                ++uc;
-                u = QChar::surrogateToUcs4(u, low);
-            }
-        }
-        out[i++] = u;
-        ++uc;
-    }
-    return i;
+    int count = 0;
+
+    QStringIterator i(reinterpret_cast<const QChar *>(uc), reinterpret_cast<const QChar *>(uc + length));
+    while (i.hasNext())
+        out[count++] = i.next();
+
+    return count;
 }
 
 /*! \fn int QString::toWCharArray(wchar_t *array) const
@@ -4315,8 +4308,12 @@ QByteArray QString::toUtf8_helper(const QString &str)
 
     Returns a UCS-4/UTF-32 representation of the string as a QVector<uint>.
 
-    UCS-4 is a Unicode codec and is lossless. All characters from this string
-    can be encoded in UCS-4. The vector is not null terminated.
+    UCS-4 is a Unicode codec and therefore it is lossless. All characters from
+    this string will be encoded in UCS-4. Any invalid sequence of code units in
+    this string is replaced by the Unicode's replacement character
+    (QChar::ReplacementCharacter, which corresponds to \c{U+FFFD}).
+
+    The returned vector is not NUL terminated.
 
     \sa fromUtf8(), toUtf8(), toLatin1(), toLocal8Bit(), QTextCodec, fromUcs4(), toWCharArray()
 */
@@ -9529,8 +9526,12 @@ QByteArray QStringRef::toUtf8() const
 
     Returns a UCS-4/UTF-32 representation of the string as a QVector<uint>.
 
-    UCS-4 is a Unicode codec and is lossless. All characters from this string
-    can be encoded in UCS-4.
+    UCS-4 is a Unicode codec and therefore it is lossless. All characters from
+    this string will be encoded in UCS-4. Any invalid sequence of code units in
+    this string is replaced by the Unicode's replacement character
+    (QChar::ReplacementCharacter, which corresponds to \c{U+FFFD}).
+
+    The returned vector is not NUL terminated.
 
     \sa toUtf8(), toLatin1(), toLocal8Bit(), QTextCodec
 */

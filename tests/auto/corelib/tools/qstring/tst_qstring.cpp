@@ -4019,15 +4019,78 @@ void tst_QString::fromUcs4()
 void tst_QString::toUcs4()
 {
     QString s;
+    QVector<uint> ucs4;
     QCOMPARE( s.toUcs4().size(), 0 );
 
-    QChar bmp = QLatin1Char('a');
+    static const QChar bmp = QLatin1Char('a');
     s = QString(&bmp, 1);
-    QCOMPARE( s.toUcs4().size(), 1 );
+    ucs4 = s.toUcs4();
+    QCOMPARE( ucs4.size(), 1 );
+    QCOMPARE( ucs4.at(0), 0x0061u );
 
-    QChar smp[] = { QChar::highSurrogate(0x10000), QChar::lowSurrogate(0x10000) };
-    s = QString(smp, 2);
-    QCOMPARE( s.toUcs4().size(), 1 );
+#define QSTRING_FROM_QCHARARRAY(x) (QString((x), sizeof(x)/sizeof((x)[0])))
+
+    static const QChar smp[] = { QChar::highSurrogate(0x10000), QChar::lowSurrogate(0x10000) };
+    s = QSTRING_FROM_QCHARARRAY(smp);
+    ucs4 = s.toUcs4();
+    QCOMPARE( ucs4.size(), 1 );
+    QCOMPARE( ucs4.at(0), 0x10000u );
+
+    static const QChar smp2[] = { QChar::highSurrogate(0x10000), QChar::lowSurrogate(0x10000), QChar::highSurrogate(0x10000), QChar::lowSurrogate(0x10000) };
+    s = QSTRING_FROM_QCHARARRAY(smp2);
+    ucs4 = s.toUcs4();
+    QCOMPARE( ucs4.size(), 2 );
+    QCOMPARE( ucs4.at(0), 0x10000u );
+    QCOMPARE( ucs4.at(1), 0x10000u );
+
+    static const QChar invalid_01[] = { QChar(0xd800) };
+    s = QSTRING_FROM_QCHARARRAY(invalid_01);
+    ucs4 = s.toUcs4();
+    QCOMPARE( ucs4.size(), 1 );
+    QCOMPARE( ucs4.at(0), 0xFFFDu );
+
+    static const QChar invalid_02[] = { QChar(0xdc00) };
+    s = QSTRING_FROM_QCHARARRAY(invalid_02);
+    ucs4 = s.toUcs4();
+    QCOMPARE( ucs4.size(), 1 );
+    QCOMPARE( ucs4.at(0), 0xFFFDu );
+
+    static const QChar invalid_03[] = { QLatin1Char('a'), QChar(0xd800), QLatin1Char('b') };
+    s = QSTRING_FROM_QCHARARRAY(invalid_03);
+    ucs4 = s.toUcs4();
+    QCOMPARE( ucs4.size(), 3 );
+    QCOMPARE( ucs4.at(0), 0x0061u );
+    QCOMPARE( ucs4.at(1), 0xFFFDu );
+    QCOMPARE( ucs4.at(2), 0x0062u );
+
+    static const QChar invalid_04[] = { QLatin1Char('a'), QChar(0xdc00), QLatin1Char('b') };
+    s = QSTRING_FROM_QCHARARRAY(invalid_04);
+    ucs4 = s.toUcs4();
+    QCOMPARE( ucs4.size(), 3 );
+    QCOMPARE( ucs4.at(0), 0x0061u );
+    QCOMPARE( ucs4.at(1), 0xFFFDu );
+    QCOMPARE( ucs4.at(2), 0x0062u );
+
+    static const QChar invalid_05[] = { QLatin1Char('a'), QChar(0xd800), QChar(0xd800), QLatin1Char('b') };
+    s = QSTRING_FROM_QCHARARRAY(invalid_05);
+    ucs4 = s.toUcs4();
+    QCOMPARE( ucs4.size(), 4 );
+    QCOMPARE( ucs4.at(0), 0x0061u );
+    QCOMPARE( ucs4.at(1), 0xFFFDu );
+    QCOMPARE( ucs4.at(2), 0xFFFDu );
+    QCOMPARE( ucs4.at(3), 0x0062u );
+
+    static const QChar invalid_06[] = { QLatin1Char('a'), QChar(0xdc00), QChar(0xdc00), QLatin1Char('b') };
+    s = QSTRING_FROM_QCHARARRAY(invalid_06);
+    ucs4 = s.toUcs4();
+    QCOMPARE( ucs4.size(), 4 );
+    QCOMPARE( ucs4.at(0), 0x0061u );
+    QCOMPARE( ucs4.at(1), 0xFFFDu );
+    QCOMPARE( ucs4.at(2), 0xFFFDu );
+    QCOMPARE( ucs4.at(3), 0x0062u );
+
+#undef QSTRING_FROM_QCHARARRAY
+
 }
 
 void tst_QString::arg()
