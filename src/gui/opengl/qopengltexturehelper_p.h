@@ -695,7 +695,9 @@ public:
     }
 
 private:
-    // Typedefs and pointers to member functions used to switch between EXT_direct_state_access and our own emulated DSA
+    // Typedefs and pointers to member functions used to switch between EXT_direct_state_access and our own emulated DSA.
+    // The argument match the corresponding GL function, but there's an extra "GLenum bindingTarget" which gets used with
+    // the DSA emulation -- it contains the right GL_BINDING_TEXTURE_X to use.
     typedef void (QOpenGLTextureHelper::*TextureParameteriMemberFunc)(GLuint texture, GLenum target, GLenum bindingTarget, GLenum pname, GLint param);
     typedef void (QOpenGLTextureHelper::*TextureParameterivMemberFunc)(GLuint texture, GLenum target, GLenum bindingTarget, GLenum pname, const GLint *params);
     typedef void (QOpenGLTextureHelper::*TextureParameterfMemberFunc)(GLuint texture, GLenum target, GLenum bindingTarget, GLenum pname, GLfloat param);
