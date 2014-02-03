@@ -441,6 +441,24 @@ Q_GLOBAL_STATIC(StaticVariables, staticVariables);
     // text instead of just guessing...
 }
 
+- (NSDictionary *)textStylingAtPosition:(UITextPosition *)position inDirection:(UITextStorageDirection)direction
+{
+    Q_UNUSED(position);
+    Q_UNUSED(direction);
+
+    QObject *focusObject = QGuiApplication::focusObject();
+    if (!focusObject)
+        return [NSDictionary dictionary];
+
+    // Assume position is the same as the cursor for now. QInputMethodQueryEvent with Qt::ImFont
+    // needs to be extended to take an extra position argument before this can be fully correct.
+    QInputMethodQueryEvent e(Qt::ImFont);
+    QCoreApplication::sendEvent(focusObject, &e);
+    QFont qfont = qvariant_cast<QFont>(e.value(Qt::ImFont));
+    UIFont *uifont = [UIFont fontWithName:qfont.family().toNSString() size:qfont.pointSize()];
+    return [NSDictionary dictionaryWithObject:uifont forKey:UITextInputTextFontKey];
+}
+
 -(NSDictionary *)markedTextStyle
 {
     return [NSDictionary dictionary];
