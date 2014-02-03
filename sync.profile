@@ -24,6 +24,7 @@
 %classnames = (
     "qglobal.h" => "QtGlobal",
     "qendian.h" => "QtEndian",
+    "qconfig.h" => "QtConfig",
     "qplugin.h" => "QtPlugin",
     "qalgorithms.h" => "QtAlgorithms",
     "qcontainerfwd.h" => "QtContainerFwd",
