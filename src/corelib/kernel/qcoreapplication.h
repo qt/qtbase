@@ -127,7 +127,9 @@ public:
     static void postEvent(QObject *receiver, QEvent *event, int priority = Qt::NormalEventPriority);
     static void sendPostedEvents(QObject *receiver = 0, int event_type = 0);
     static void removePostedEvents(QObject *receiver, int eventType = 0);
-    static bool hasPendingEvents();
+#if QT_DEPRECATED_SINCE(5, 3)
+    QT_DEPRECATED static bool hasPendingEvents();
+#endif
     static QAbstractEventDispatcher *eventDispatcher();
     static void setEventDispatcher(QAbstractEventDispatcher *eventDispatcher);
 

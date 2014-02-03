@@ -2558,9 +2558,15 @@ void QCoreApplication::removeNativeEventFilter(QAbstractNativeEventFilter *filte
 }
 
 /*!
+    \deprecated
+
     This function returns \c true if there are pending events; otherwise
     returns \c false. Pending events can be either from the window
     system or posted events using postEvent().
+
+    \note this function is not thread-safe. It may only be called in the main
+    thread and only if there are no other threads running in the application
+    (including threads Qt starts for its own purposes).
 
     \sa QAbstractEventDispatcher::hasPendingEvents()
 */
