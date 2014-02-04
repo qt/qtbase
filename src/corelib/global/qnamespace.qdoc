@@ -106,15 +106,6 @@
     QCoreApplication::setAttribute(), and can be tested for with
     QCoreApplication::testAttribute().
 
-    \value AA_ImmediateWidgetCreation Ensures that widgets are created
-           as soon as they are constructed. By default, resources for
-           widgets are allocated on demand to improve efficiency and
-           minimize resource usage. Setting or clearing this attribute
-           affects widgets constructed after the change. Setting it
-           tells Qt to create toplevel windows immediately.
-           Therefore, if it is important to minimize resource
-           consumption, do not set this attribute.
-
     \value AA_MSWindowsUseDirect3DByDefault This value is obsolete and
            has no effect.
 
@@ -175,6 +166,18 @@
            After setting this attribute application code that uses pixmap
            sizes in layout geometry calculations should typically divide by
            QPixmap::devicePixelRatio() to get device-independent layout geometry.
+
+    The following values are obsolete:
+
+    \value AA_ImmediateWidgetCreation This attribute is no longer fully
+           supported in Qt 5. It ensures that widgets are created
+           as soon as they are constructed. By default, resources for
+           widgets are allocated on demand to improve efficiency and
+           minimize resource usage. Setting or clearing this attribute
+           affects widgets constructed after the change. Setting it
+           tells Qt to create toplevel windows immediately.
+           Therefore, if it is important to minimize resource
+           consumption, do not set this attribute.
 
     \omitvalue AA_AttributeCount
 */

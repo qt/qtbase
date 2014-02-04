@@ -1188,7 +1188,7 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
     if (++QWidgetPrivate::instanceCounter > QWidgetPrivate::maxInstances)
         QWidgetPrivate::maxInstances = QWidgetPrivate::instanceCounter;
 
-    if (QApplicationPrivate::testAttribute(Qt::AA_ImmediateWidgetCreation))
+    if (QApplicationPrivate::testAttribute(Qt::AA_ImmediateWidgetCreation)) // ### fixme: Qt 6: Remove AA_ImmediateWidgetCreation.
         q->create();
 
     QEvent e(QEvent::Create);
@@ -9632,6 +9632,7 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
         oldBs->moveStaticWidgets(this);
     }
 
+    // ### fixme: Qt 6: Remove AA_ImmediateWidgetCreation.
     if (QApplicationPrivate::testAttribute(Qt::AA_ImmediateWidgetCreation) && !testAttribute(Qt::WA_WState_Created))
         create();
 
