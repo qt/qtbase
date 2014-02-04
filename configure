@@ -5193,20 +5193,20 @@ if [ "$CFG_XCB" != "no" ]; then
         QMAKE_CFLAGS_XCB="`$PKG_CONFIG --cflags xcb 2>/dev/null`"
         QMAKE_LIBS_XCB="`$PKG_CONFIG --libs xcb 2>/dev/null`"
     fi
+    if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists "x11" 2> /dev/null; then
+        QMAKE_X11_PREFIX="`$PKG_CONFIG --variable=prefix x11`"
+    else
+        # default to LSB prefix
+        QMAKE_X11_PREFIX="/usr"
+    fi
+    QMakeVar set QMAKE_X11_PREFIX "$QMAKE_X11_PREFIX"
+
     if compileTest qpa/xcb "xcb" $QMAKE_CFLAGS_XCB $QMAKE_LIBS_XCB; then
 
         if [ "$CFG_XCB" = "qt" ]; then
             QT_CONFIG="$QT_CONFIG xcb-qt"
         else
             CFG_XCB="system"
-
-            if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists "x11" 2> /dev/null; then
-                QMAKE_X11_PREFIX="`$PKG_CONFIG --variable=prefix x11`"
-            else
-                # default to LSB prefix
-                QMAKE_X11_PREFIX="/usr"
-            fi
-            QMakeVar set QMAKE_X11_PREFIX "$QMAKE_X11_PREFIX"
 
             if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists "xcb >= 1.5" 2>/dev/null; then
                 XCB_PACKAGES="xcb xcb-shm xcb-sync xcb-xfixes xcb-randr xcb-image xcb-keysyms xcb-icccm"
