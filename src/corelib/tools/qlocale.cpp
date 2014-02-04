@@ -3113,6 +3113,12 @@ bool QLocalePrivate::numberToCLocale(const QChar *str, int len,
     if (idx == l)
         return false;
 
+    // Check trailing whitespace
+    for (; idx < l; --l) {
+        if (!uc[l - 1].isSpace())
+            break;
+    }
+
     while (idx < l) {
         const QChar in = uc[idx];
 
@@ -3136,12 +3142,6 @@ bool QLocalePrivate::numberToCLocale(const QChar *str, int len,
         ++idx;
     }
 
-    // Check trailing whitespace
-    for (; idx < l; ++idx) {
-        if (!uc[idx].isSpace())
-            return false;
-    }
-
     result->append('\0');
 
     // Check separators
@@ -3150,7 +3150,7 @@ bool QLocalePrivate::numberToCLocale(const QChar *str, int len,
         return false;
 
 
-    return true;
+    return idx == l;
 }
 
 bool QLocalePrivate::validateChars(const QString &str, NumberMode numMode, QByteArray *buff,
@@ -3250,13 +3250,7 @@ double QLocalePrivate::stringToDouble(const QString &number, bool *ok,
                                         GroupSeparatorMode group_sep_mode) const
 {
     CharBuff buff;
-    // Do not use the ternary operator - triggers msvc2012 bug in optimized builds
-    QString trimmedNumber;
-    if (group().unicode() == 0xa0)
-        trimmedNumber = number.trimmed();
-    else
-        trimmedNumber = number;
-    if (!numberToCLocale(trimmedNumber.unicode(), trimmedNumber.size(),
+    if (!numberToCLocale(number.unicode(), number.size(),
                          group_sep_mode, &buff)) {
         if (ok != 0)
             *ok = false;
@@ -3269,13 +3263,7 @@ qlonglong QLocalePrivate::stringToLongLong(const QString &number, int base,
                                            bool *ok, GroupSeparatorMode group_sep_mode) const
 {
     CharBuff buff;
-    // Do not use the ternary operator - triggers msvc2012 bug in optimized builds
-    QString trimmedNumber;
-    if (group().unicode() == 0xa0)
-        trimmedNumber = number.trimmed();
-    else
-        trimmedNumber = number;
-    if (!numberToCLocale(trimmedNumber.unicode(), trimmedNumber.size(),
+    if (!numberToCLocale(number.unicode(), number.size(),
                          group_sep_mode, &buff)) {
         if (ok != 0)
             *ok = false;
@@ -3289,13 +3277,7 @@ qulonglong QLocalePrivate::stringToUnsLongLong(const QString &number, int base,
                                                bool *ok, GroupSeparatorMode group_sep_mode) const
 {
     CharBuff buff;
-    // Do not use the ternary operator - triggers msvc2012 bug in optimized builds
-    QString trimmedNumber;
-    if (group().unicode() == 0xa0)
-        trimmedNumber = number.trimmed();
-    else
-        trimmedNumber = number;
-    if (!numberToCLocale(trimmedNumber.unicode(), trimmedNumber.size(),
+    if (!numberToCLocale(number.unicode(), number.size(),
                          group_sep_mode, &buff)) {
         if (ok != 0)
             *ok = false;
@@ -3309,13 +3291,7 @@ double QLocalePrivate::stringToDouble(const QStringRef &number, bool *ok,
                                         GroupSeparatorMode group_sep_mode) const
 {
     CharBuff buff;
-    QStringRef trimmedNumber;
-    // Do not use the ternary operator - triggers msvc2012 bug in optimized builds
-    if (group().unicode() == 0xa0)
-        trimmedNumber = number.trimmed();
-    else
-        trimmedNumber = number;
-    if (!numberToCLocale(trimmedNumber.unicode(), trimmedNumber.size(),
+    if (!numberToCLocale(number.unicode(), number.size(),
                          group_sep_mode, &buff)) {
         if (ok != 0)
             *ok = false;
@@ -3328,13 +3304,7 @@ qlonglong QLocalePrivate::stringToLongLong(const QStringRef &number, int base,
                                            bool *ok, GroupSeparatorMode group_sep_mode) const
 {
     CharBuff buff;
-    QStringRef trimmedNumber;
-    // Do not use the ternary operator - triggers msvc2012 bug in optimized builds
-    if (group().unicode() == 0xa0)
-        trimmedNumber = number.trimmed();
-    else
-        trimmedNumber = number;
-    if (!numberToCLocale(trimmedNumber.unicode(), trimmedNumber.size(),
+    if (!numberToCLocale(number.unicode(), number.size(),
                          group_sep_mode, &buff)) {
         if (ok != 0)
             *ok = false;
@@ -3348,13 +3318,7 @@ qulonglong QLocalePrivate::stringToUnsLongLong(const QStringRef &number, int bas
                                                bool *ok, GroupSeparatorMode group_sep_mode) const
 {
     CharBuff buff;
-    QStringRef trimmedNumber;
-    // Do not use the ternary operator - triggers msvc2012 bug in optimized builds
-    if (group().unicode() == 0xa0)
-        trimmedNumber = number.trimmed();
-    else
-        trimmedNumber = number;
-    if (!numberToCLocale(trimmedNumber.unicode(), trimmedNumber.size(),
+    if (!numberToCLocale(number.unicode(), number.size(),
                          group_sep_mode, &buff)) {
         if (ok != 0)
             *ok = false;
