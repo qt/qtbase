@@ -3127,11 +3127,14 @@ int qEnvironmentVariableIntValue(const char *varName, bool *ok) Q_DECL_NOEXCEPT
         return 0;
     }
 #endif
-    const qlonglong value = qstrtoll(buffer, Q_NULLPTR, 0, ok);
+    bool ok_ = true;
+    const qlonglong value = qstrtoll(buffer, Q_NULLPTR, 0, &ok_);
     if (int(value) != value) { // this is the check in QByteArray::toInt(), keep it in sync
         if (ok)
             *ok = false;
         return 0;
+    } else if (ok) {
+        *ok = ok_;
     }
     return int(value);
 }
