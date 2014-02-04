@@ -1038,12 +1038,12 @@ QWindowsFontDatabase::~QWindowsFontDatabase()
     removeApplicationFonts();
 }
 
-QFontEngine * QWindowsFontDatabase::fontEngine(const QFontDef &fontDef, QChar::Script script, void *handle)
+QFontEngine * QWindowsFontDatabase::fontEngine(const QFontDef &fontDef, void *handle)
 {
-    QFontEngine *fe = QWindowsFontDatabase::createEngine(script, fontDef,
+    QFontEngine *fe = QWindowsFontDatabase::createEngine(QChar::Script_Common, fontDef,
                                               0, QWindowsContext::instance()->defaultDPI(), false,
                                               QStringList(), sharedFontData());
-    qCDebug(lcQpaFonts) << __FUNCTION__ << "FONTDEF" << fontDef << script << fe << handle;
+    qCDebug(lcQpaFonts) << __FUNCTION__ << "FONTDEF" << fontDef << fe << handle;
     return fe;
 }
 
@@ -1746,14 +1746,6 @@ QFontEngine *QWindowsFontDatabase::createEngine(int script, const QFontDef &requ
         QWindowsFontEngine *few = new QWindowsFontEngine(request.family, hfont, stockFont, lf, data);
         if (preferClearTypeAA)
             few->glyphFormat = QFontEngineGlyphCache::Raster_RGBMask;
-
-        // Also check for OpenType tables when using complex scripts
-        if (!few->supportsScript(QChar::Script(script))) {
-            qWarning("  OpenType support missing for script %d", int(script));
-            delete few;
-            return 0;
-        }
-
         few->initFontInfo(request, fontHdc, dpi);
         fe = few;
     }

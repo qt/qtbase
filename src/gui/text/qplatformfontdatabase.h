@@ -97,7 +97,7 @@ public:
     virtual ~QPlatformFontDatabase();
     virtual void populateFontDatabase();
     virtual QFontEngineMulti *fontEngineMulti(QFontEngine *fontEngine, QChar::Script script);
-    virtual QFontEngine *fontEngine(const QFontDef &fontDef, QChar::Script script, void *handle);
+    virtual QFontEngine *fontEngine(const QFontDef &fontDef, void *handle);
     virtual QStringList fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const;
     virtual QStringList addApplicationFont(const QByteArray &fontData, const QString &fileName);
     virtual void releaseHandle(void *handle);

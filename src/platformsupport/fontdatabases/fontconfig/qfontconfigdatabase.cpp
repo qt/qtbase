@@ -516,7 +516,7 @@ QFontEngineMulti *QFontconfigDatabase::fontEngineMulti(QFontEngine *fontEngine, 
     return new QFontEngineMultiFontConfig(fontEngine, script);
 }
 
-QFontEngine *QFontconfigDatabase::fontEngine(const QFontDef &f, QChar::Script script, void *usrPtr)
+QFontEngine *QFontconfigDatabase::fontEngine(const QFontDef &f, void *usrPtr)
 {
     if (!usrPtr)
         return 0;
@@ -652,16 +652,7 @@ QFontEngine *QFontconfigDatabase::fontEngine(const QFontDef &f, QChar::Script sc
 
     FcPatternDestroy(pattern);
 
-    if (!engine->init(fid,antialias,format)) {
-        delete engine;
-        engine = 0;
-        return engine;
-    }
-    if (engine->invalid()) {
-        delete engine;
-        engine = 0;
-    } else if (!engine->supportsScript(script)) {
-        qWarning("  OpenType support missing for script %d", int(script));
+    if (!engine->init(fid, antialias, format) || engine->invalid()) {
         delete engine;
         engine = 0;
     }

@@ -182,8 +182,16 @@ QFontEngine *loadSingleEngine(int script,
     QFontCache::Key key(def,script);
     QFontEngine *engine = QFontCache::instance()->findEngine(key);
     if (!engine) {
-        engine = pfdb->fontEngine(def, QChar::Script(script), size->handle);
+        engine = pfdb->fontEngine(def, size->handle);
         if (engine) {
+            // Also check for OpenType tables when using complex scripts
+            if (!engine->supportsScript(QChar::Script(script))) {
+                qWarning("  OpenType support missing for script %d", script);
+                if (engine->ref.load() == 0)
+                    delete engine;
+                return 0;
+            }
+
             QFontCache::instance()->insertEngine(key, engine);
         }
     }

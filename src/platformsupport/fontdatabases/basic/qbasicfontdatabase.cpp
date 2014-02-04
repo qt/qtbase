@@ -113,27 +113,18 @@ void QBasicFontDatabase::populateFontDatabase()
     }
 }
 
-QFontEngine *QBasicFontDatabase::fontEngine(const QFontDef &fontDef, QChar::Script script, void *usrPtr)
+QFontEngine *QBasicFontDatabase::fontEngine(const QFontDef &fontDef, void *usrPtr)
 {
-    QFontEngineFT *engine;
     FontFile *fontfile = static_cast<FontFile *> (usrPtr);
     QFontEngine::FaceId fid;
     fid.filename = QFile::encodeName(fontfile->fileName);
     fid.index = fontfile->indexValue;
-    engine = new QFontEngineFT(fontDef);
 
     bool antialias = !(fontDef.styleStrategy & QFont::NoAntialias);
     QFontEngineFT::GlyphFormat format = antialias? QFontEngineFT::Format_A8 : QFontEngineFT::Format_Mono;
-    if (!engine->init(fid,antialias,format)) {
-        delete engine;
-        engine = 0;
-        return engine;
-    }
-    if (engine->invalid()) {
-        delete engine;
-        engine = 0;
-    } else if (!engine->supportsScript(script)) {
-        qWarning("  OpenType support missing for script %d", int(script));
+
+    QFontEngineFT *engine = new QFontEngineFT(fontDef);
+    if (!engine->init(fid, antialias, format) || engine->invalid()) {
         delete engine;
         engine = 0;
     }

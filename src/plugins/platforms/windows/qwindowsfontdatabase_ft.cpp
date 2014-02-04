@@ -422,10 +422,10 @@ void QWindowsFontDatabaseFT::populate(const QString &family)
     ReleaseDC(0, dummy);
 }
 
-QFontEngine * QWindowsFontDatabaseFT::fontEngine(const QFontDef &fontDef, QChar::Script script, void *handle)
+QFontEngine * QWindowsFontDatabaseFT::fontEngine(const QFontDef &fontDef, void *handle)
 {
-    QFontEngine *fe = QBasicFontDatabase::fontEngine(fontDef, script, handle);
-    qCDebug(lcQpaFonts) << __FUNCTION__ << "FONTDEF" << fontDef.family << script << fe << handle;
+    QFontEngine *fe = QBasicFontDatabase::fontEngine(fontDef, handle);
+    qCDebug(lcQpaFonts) << __FUNCTION__ << "FONTDEF" << fontDef.family << fe << handle;
     return fe;
 }
 

@@ -278,10 +278,8 @@ void QCoreTextFontDatabase::releaseHandle(void *handle)
     CFRelease(CTFontDescriptorRef(handle));
 }
 
-QFontEngine *QCoreTextFontDatabase::fontEngine(const QFontDef &f, QChar::Script script, void *usrPtr)
+QFontEngine *QCoreTextFontDatabase::fontEngine(const QFontDef &f, void *usrPtr)
 {
-    Q_UNUSED(script);
-
     qreal scaledPointSize = f.pixelSize;
 
     // When 96 DPI is forced, the Mac plugin will use DPI 72 for some

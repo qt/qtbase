@@ -72,7 +72,7 @@ public:
     QCoreTextFontDatabase();
     ~QCoreTextFontDatabase();
     void populateFontDatabase();
-    QFontEngine *fontEngine(const QFontDef &fontDef, QChar::Script script, void *handle);
+    QFontEngine *fontEngine(const QFontDef &fontDef, void *handle);
     QFontEngine *fontEngine(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference);
     QStringList fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const;
     QStringList addApplicationFont(const QByteArray &fontData, const QString &fileName);
