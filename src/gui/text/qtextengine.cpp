@@ -1501,8 +1501,18 @@ void QTextEngine::itemize() const
     {
         QVarLengthArray<uchar> scripts(length);
         QUnicodeTools::initScripts(string, length, scripts.data());
-        for (int i = 0; i < length; ++i)
-            analysis[i].script = scripts.at(i);
+        for (int i = 0; i < length; ++i) {
+            ushort script = scripts.at(i);
+            switch (script) {
+            case QChar::Script_Hiragana:
+            case QChar::Script_Katakana:
+                script = QChar::Script_Han;
+                break;
+            default:
+                break;
+            }
+            analysis[i].script = script;
+        }
     }
 
     const ushort *uc = string;
