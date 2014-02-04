@@ -86,12 +86,62 @@ Q_GLOBAL_STATIC_WITH_ARGS(QLoggingCategory, qtDefaultCategory,
     In the default configuration \l isWarningEnabled() , \l isDebugEnabled() and
     \l isCriticalEnabled() will return \c true.
 
-    \section1 Changing the configuration of a category
+    \section1 Configuring Categories
 
-    Use either \l setFilterRules() or \l installFilter() to
-    configure categories, for example
+    Categories can be centrally configured by either setting logging rules,
+    or by installing a custom filter.
 
-    \snippet qloggingcategory/main.cpp 2
+    \section2 Logging Rules
+
+    Logging rules allow to enable or disable logging for categories in a flexible
+    way. Rules are specified in text, where every line must have the format
+
+    \code
+    <category>[.<type>] = true|false
+    \endcode
+
+    \c <category> is the name of the category, potentially with \c{*} as a
+    wildcard symbol as the first or last character (or at both positions).
+    The optional \c <type> must be either \c debug, \c warning, or \c critical.
+    Lines that do not fit to his scheme are ignored.
+
+    Rules are evaluated in text order, from first to last. That is, if two rules
+    apply to a category/type, the rule that comes later is applied.
+
+    Rules can be set via \l setFilterRules(). Since Qt 5.3 logging rules
+    are also automatically loaded from the \c [rules] section of a logging
+    configuration file. Such configuration files are looked up in the QtProject
+    configuration directory, or explicitly set in a \c QT_LOGGING_CONF
+    environment variable.
+
+    Rules set by \l setFilterRules() take precedence over rules specified
+    in the QtProject configuration directory, and can, in turn, be
+    overwritten by rules from the configuration file specified by
+    \c QT_LOGGING_CONF.
+
+    Order of evaluation:
+    \list
+    \li Rules from QtProject/qlogging.ini
+    \li Rules set by \l setFilterRules()
+    \li Rules from file in \c QT_LOGGING_CONF
+    \endlist
+
+    The \c QtProject/qlogging.ini file is looked up in all directories returned
+    by QStandardPaths::GenericConfigLocation, e.g.
+
+    \list
+    \li on Mac OS X: \c ~/Library/Preferences
+    \li on Unix: \c ~/.config, \c /etc/xdg
+    \li on Windows: \c %LOCALAPPDATA%, \c %ProgramData%,
+        \l QCoreApplication::applicationDirPath(),
+        QCoreApplication::applicationDirPath() + \c "/data"
+    \endlist
+
+    \section2 Installing a Custom Filter
+
+    As a lower-level alternative to the text rules you can also implement a
+    custom filter via \l installFilter(). All filter rules are ignored in this
+    case.
 
     \section1 Printing the category
 
@@ -278,27 +328,18 @@ QLoggingCategory::installFilter(QLoggingCategory::CategoryFilter filter)
     Configures which categories and message types should be enabled through a
     a set of \a rules.
 
-    Each line in \a rules must have the format
-
-    \code
-    <category>[.<type>] = true|false
-    \endcode
-
-    where \c <category> is the name of the category, potentially with \c{*} as a
-    wildcard symbol at the start and/or the end. The optional \c <type> must
-    be either \c debug, \c warning, or \c critical.
-
     Example:
 
     \snippet qloggingcategory/main.cpp 2
 
     \note The rules might be ignored if a custom category filter is installed
-    with \l installFilter().
+    with \l installFilter(), or if the user defined a custom logging
+    configuration file in the \c QT_LOGGING_CONF environment variable.
 
 */
 void QLoggingCategory::setFilterRules(const QString &rules)
 {
-    QLoggingRegistry::instance()->rulesParser.setRules(rules);
+    QLoggingRegistry::instance()->setApiRules(rules);
 }
 
 /*!

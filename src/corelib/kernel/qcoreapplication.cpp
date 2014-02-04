@@ -55,6 +55,7 @@
 #include <qfileinfo.h>
 #include <qhash.h>
 #include <qmutex.h>
+#include <private/qloggingregistry_p.h>
 #include <private/qprocess_p.h>
 #include <qstandardpaths.h>
 #include <qtextcodec.h>
@@ -721,6 +722,10 @@ void QCoreApplication::init()
 
     Q_ASSERT_X(!self, "QCoreApplication", "there should be only one application object");
     QCoreApplication::self = this;
+
+#ifndef QT_BOOTSTRAPPED
+    QLoggingRegistry::instance()->init();
+#endif
 
 #ifndef QT_NO_QOBJECT
     // use the event dispatcher created by the app programmer (if any)

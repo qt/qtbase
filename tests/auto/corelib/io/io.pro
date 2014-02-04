@@ -17,6 +17,7 @@ SUBDIRS=\
     qipaddress \
     qlockfile \
     qloggingcategory \
+    qloggingregistry \
     qnodebug \
     qprocess \
     qprocess-noapplication \
@@ -51,7 +52,8 @@ SUBDIRS=\
     qabstractfileengine \
     qfileinfo \
     qipaddress \
-    qurlinternal
+    qurlinternal \
+    qloggingregistry
 
 win32:!contains(QT_CONFIG, private_tests): SUBDIRS -= \
     qfilesystementry
