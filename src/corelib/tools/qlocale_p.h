@@ -306,14 +306,9 @@ public:
                                 int base = 10,
                                 int width = -1,
                                 unsigned flags = NoFlags) const;
-    double stringToDouble(const QString &num, bool *ok, GroupSeparatorMode group_sep_mode) const;
-    qint64 stringToLongLong(const QString &num, int base, bool *ok, GroupSeparatorMode group_sep_mode) const;
-    quint64 stringToUnsLongLong(const QString &num, int base, bool *ok, GroupSeparatorMode group_sep_mode) const;
-
-    double stringToDouble(const QStringRef &num, bool *ok, GroupSeparatorMode group_sep_mode) const;
-    qint64 stringToLongLong(const QStringRef &num, int base, bool *ok, GroupSeparatorMode group_sep_mode) const;
-    quint64 stringToUnsLongLong(const QStringRef &num, int base, bool *ok, GroupSeparatorMode group_sep_mode) const;
-
+    double stringToDouble(const QChar *begin, int len, bool *ok, GroupSeparatorMode group_sep_mode) const;
+    qint64 stringToLongLong(const QChar *begin, int len, int base, bool *ok, GroupSeparatorMode group_sep_mode) const;
+    quint64 stringToUnsLongLong(const QChar *begin, int len, int base, bool *ok, GroupSeparatorMode group_sep_mode) const;
 
     static double bytearrayToDouble(const char *num, bool *ok, bool *overflow = 0);
     static qint64 bytearrayToLongLong(const char *num, int base, bool *ok, bool *overflow = 0);

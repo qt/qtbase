@@ -6078,7 +6078,7 @@ qint64 QString::toLongLong(bool *ok, int base) const
 #endif
 
     QLocale c_locale(QLocale::C);
-    return c_locale.d->stringToLongLong(*this, base, ok, QLocalePrivate::FailOnGroupSeparators);
+    return c_locale.d->stringToLongLong(constData(), size(), base, ok, QLocalePrivate::FailOnGroupSeparators);
 }
 
 /*!
@@ -6113,7 +6113,7 @@ quint64 QString::toULongLong(bool *ok, int base) const
 #endif
 
     QLocale c_locale(QLocale::C);
-    return c_locale.d->stringToUnsLongLong(*this, base, ok, QLocalePrivate::FailOnGroupSeparators);
+    return c_locale.d->stringToUnsLongLong(constData(), size(), base, ok, QLocalePrivate::FailOnGroupSeparators);
 }
 
 /*!
@@ -6352,7 +6352,7 @@ ushort QString::toUShort(bool *ok, int base) const
 double QString::toDouble(bool *ok) const
 {
     QLocale c_locale(QLocale::C);
-    return c_locale.d->stringToDouble(*this, ok, QLocalePrivate::FailOnGroupSeparators);
+    return c_locale.d->stringToDouble(constData(), size(), ok, QLocalePrivate::FailOnGroupSeparators);
 }
 
 /*!
@@ -9622,7 +9622,7 @@ qint64 QStringRef::toLongLong(bool *ok, int base) const
 #endif
 
     QLocale c_locale(QLocale::C);
-    return c_locale.d->stringToLongLong(*this, base, ok, QLocalePrivate::FailOnGroupSeparators);
+    return c_locale.d->stringToLongLong(constData(), size(), base, ok, QLocalePrivate::FailOnGroupSeparators);
 }
 
 /*!
@@ -9655,7 +9655,7 @@ quint64 QStringRef::toULongLong(bool *ok, int base) const
 #endif
 
     QLocale c_locale(QLocale::C);
-    return c_locale.d->stringToUnsLongLong(*this, base, ok, QLocalePrivate::FailOnGroupSeparators);
+    return c_locale.d->stringToUnsLongLong(constData(), size(), base, ok, QLocalePrivate::FailOnGroupSeparators);
 }
 
 /*!
@@ -9873,7 +9873,7 @@ ushort QStringRef::toUShort(bool *ok, int base) const
 double QStringRef::toDouble(bool *ok) const
 {
     QLocale c_locale(QLocale::C);
-    return c_locale.d->stringToDouble(*this, ok, QLocalePrivate::FailOnGroupSeparators);
+    return c_locale.d->stringToDouble(constData(), size(), ok, QLocalePrivate::FailOnGroupSeparators);
 }
 
 /*!
