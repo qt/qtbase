@@ -3111,6 +3111,11 @@ bool QLocaleData::numberToCLocale(const QChar *str, int len,
             break;
     }
 
+    int group_cnt = 0; // counts number of group chars
+    int decpt_idx = -1;
+    int last_separator_idx = -1;
+    int start_of_digits_idx = -1;
+
     while (idx < l) {
         const QChar in = uc[idx];
 
@@ -3128,20 +3133,60 @@ bool QLocaleData::numberToCLocale(const QChar *str, int len,
             else
                 break;
         }
+        if (group_sep_mode == ParseGroupSeparators) {
+            if (start_of_digits_idx == -1 && out >= '0' && out <= '9') {
+                start_of_digits_idx = idx;
+            } else if (out == ',') {
+                // Don't allow group chars after the decimal point
+                if (decpt_idx != -1)
+                    return false;
+
+                // check distance from the last separator or from the beginning of the digits
+                // ### FIXME: Some locales allow other groupings! See https://en.wikipedia.org/wiki/Thousands_separator
+                if (last_separator_idx != -1 && idx - last_separator_idx != 4)
+                    return false;
+                if (last_separator_idx == -1 && (start_of_digits_idx == -1 || idx - start_of_digits_idx > 3))
+                    return false;
+
+                last_separator_idx = idx;
+                ++group_cnt;
+
+                // don't add the group separator
+                ++idx;
+                continue;
+            } else if (out == '.' || out == 'e' || out == 'E') {
+                // Fail if more than one decimal point
+                if (out == '.' && decpt_idx != -1)
+                    return false;
+                if (decpt_idx == -1)
+                    decpt_idx = idx;
+
+                // check distance from the last separator
+                // ### FIXME: Some locales allow other groupings! See https://en.wikipedia.org/wiki/Thousands_separator
+                if (last_separator_idx != -1 && idx - last_separator_idx != 4)
+                    return false;
+
+                // stop processing separators
+                last_separator_idx = -1;
+            }
+        }
 
         result->append(out);
 
         ++idx;
     }
 
+    if (group_sep_mode == ParseGroupSeparators) {
+        // group separator post-processing
+        // did we end in a separator?
+        if (last_separator_idx + 1 == idx)
+            return false;
+        // were there enough digits since the last separator?
+        if (last_separator_idx != -1 && idx - last_separator_idx != 4)
+            return false;
+    }
+
     result->append('\0');
-
-    // Check separators
-    if (group_sep_mode == ParseGroupSeparators
-            && !removeGroupSeparators(result))
-        return false;
-
-
     return idx == l;
 }
 
