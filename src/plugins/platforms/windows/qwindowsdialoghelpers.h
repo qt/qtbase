@@ -52,6 +52,7 @@ QT_BEGIN_NAMESPACE
 
 class QFileDialog;
 class QDialog;
+class QThread;
 class QWindowsNativeDialogBase;
 
 namespace QWindowsDialogs
@@ -68,6 +69,7 @@ class QWindowsDialogHelperBase : public BaseClass
     Q_DISABLE_COPY(QWindowsDialogHelperBase)
 public:
     typedef QSharedPointer<QWindowsNativeDialogBase> QWindowsNativeDialogBasePtr;
+    ~QWindowsDialogHelperBase() { cleanupThread(); }
 
     virtual void exec();
     virtual bool show(Qt::WindowFlags windowFlags,
@@ -88,10 +90,12 @@ private:
     inline QWindowsNativeDialogBase *ensureNativeDialog();
     inline void startDialogThread();
     inline void stopTimer();
+    void cleanupThread();
 
     QWindowsNativeDialogBasePtr m_nativeDialog;
     HWND m_ownerWindow;
     int m_timerId;
+    QThread *m_thread;
 };
 
 QT_END_NAMESPACE
