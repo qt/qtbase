@@ -112,6 +112,7 @@ class tst_QTabWidget:public QObject {
     void heightForWidth_data();
     void heightForWidth();
     void tabBarClicked();
+    void moveCurrentTab();
 
   private:
     int addPage();
@@ -707,6 +708,28 @@ void tst_QTabWidget::tabBarClicked()
 
         button = Qt::MouseButton(button << 1);
     }
+}
+
+void tst_QTabWidget::moveCurrentTab()
+{
+    QTabWidget tabWidget;
+    QWidget* firstTab = new QWidget(&tabWidget);
+    QWidget* secondTab = new QWidget(&tabWidget);
+    tabWidget.addTab(firstTab, "0");
+    tabWidget.addTab(secondTab, "1");
+
+    QCOMPARE(tabWidget.currentIndex(), 0);
+    QCOMPARE(tabWidget.currentWidget(), firstTab);
+
+    tabWidget.setCurrentIndex(1);
+
+    QCOMPARE(tabWidget.currentIndex(), 1);
+    QCOMPARE(tabWidget.currentWidget(), secondTab);
+
+    tabWidget.tabBar()->moveTab(1, 0);
+
+    QCOMPARE(tabWidget.currentIndex(), 0);
+    QCOMPARE(tabWidget.currentWidget(), secondTab);
 }
 
 QTEST_MAIN(tst_QTabWidget)
