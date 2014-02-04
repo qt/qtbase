@@ -107,6 +107,7 @@ public class QtActivityDelegate
     private boolean m_fullScreen = false;
     private boolean m_started = false;
     private HashMap<Integer, QtSurface> m_surfaces = null;
+    private HashMap<Integer, View> m_nativeViews = null;
     private QtLayout m_layout = null;
     private QtEditText m_editText = null;
     private InputMethodManager m_imm = null;
@@ -648,6 +649,7 @@ public class QtActivityDelegate
         m_editText = new QtEditText(m_activity, this);
         m_imm = (InputMethodManager)m_activity.getSystemService(Context.INPUT_METHOD_SERVICE);
         m_surfaces =  new HashMap<Integer, QtSurface>();
+        m_nativeViews = new HashMap<Integer, View>();
         m_activity.setContentView(m_layout,
                 new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.MATCH_PARENT));
@@ -955,6 +957,22 @@ public class QtActivityDelegate
         }
     }
 
+    public void insertNativeView(int id, View view, int x, int y, int w, int h) {
+        if (m_nativeViews.containsKey(id))
+            m_layout.removeView(m_nativeViews.remove(id));
+
+        if (w < 0 || h < 0) {
+            view.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                                 ViewGroup.LayoutParams.MATCH_PARENT));
+        } else {
+            view.setLayoutParams(new QtLayout.LayoutParams(w, h, x, y));
+        }
+
+        m_layout.addView(view);
+        m_layout.bringChildToFront(view);
+        m_nativeViews.put(id, view);
+    }
+
     public void createSurface(int id, boolean onTop, int x, int y, int w, int h) {
         if (m_surfaces.containsKey(id))
             m_layout.removeView(m_surfaces.remove(id));
@@ -974,19 +992,28 @@ public class QtActivityDelegate
     }
 
     public void setSurfaceGeometry(int id, int x, int y, int w, int h) {
-        if (!m_surfaces.containsKey(id)) {
+        if (m_surfaces.containsKey(id)) {
+            QtSurface surface = m_surfaces.get(id);
+            surface.setLayoutParams(new QtLayout.LayoutParams(w, h, x, y));
+        } else if (m_nativeViews.containsKey(id)) {
+            View view = m_nativeViews.get(id);
+            view.setLayoutParams(new QtLayout.LayoutParams(w, h, x, y));
+            m_layout.bringChildToFront(view);
+        } else {
             Log.e(QtNative.QtTAG, "Surface " + id +" not found!");
             return;
         }
-        QtSurface surface = m_surfaces.get(id);
-        surface.setLayoutParams(new QtLayout.LayoutParams(w, h, x, y));
+
         m_layout.requestLayout();
     }
 
     public void destroySurface(int id) {
-        if (m_surfaces.containsKey(id))
+        if (m_surfaces.containsKey(id)) {
             m_layout.removeView(m_surfaces.remove(id));
-        else
+        } else if (m_nativeViews.containsKey(id)) {
+            m_layout.removeView(m_nativeViews.remove(id));
+        } else {
             Log.e(QtNative.QtTAG, "Surface " + id +" not found!");
+        }
     }
 }

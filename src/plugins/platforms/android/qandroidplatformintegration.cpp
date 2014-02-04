@@ -64,6 +64,7 @@
 #include "qandroidplatformscreen.h"
 #include "qandroidplatformtheme.h"
 #include "qandroidsystemlocale.h"
+#include "qandroidplatformforeignwindow.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -148,6 +149,7 @@ bool QAndroidPlatformIntegration::hasCapability(Capability cap) const
         case ApplicationState: return true;
         case NativeWidgets: return true;
         case OpenGL: return true;
+        case ForeignWindows: return true;
         case ThreadedOpenGL:
             if (needsWorkaround())
                 return false;
@@ -174,7 +176,9 @@ QPlatformOpenGLContext *QAndroidPlatformIntegration::createPlatformOpenGLContext
 
 QPlatformWindow *QAndroidPlatformIntegration::createPlatformWindow(QWindow *window) const
 {
-    if (window->surfaceType() == QSurface::RasterSurface)
+    if (window->type() == Qt::ForeignWindow)
+        return new QAndroidPlatformForeignWindow(window);
+    else if (window->surfaceType() == QSurface::RasterSurface)
         return new QAndroidPlatformRasterWindow(window);
     else
         return new QAndroidPlatformOpenGLWindow(window, m_eglDisplay);

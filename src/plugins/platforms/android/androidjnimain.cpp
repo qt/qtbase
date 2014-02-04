@@ -84,6 +84,7 @@ static AAssetManager *m_assetManager = NULL;
 static jobject m_resourcesObj;
 static jobject m_activityObject = NULL;
 static jmethodID m_createSurfaceMethodID = 0;
+static jmethodID m_insertNativeViewMethodID = 0;
 static jmethodID m_setSurfaceGeometryMethodID = 0;
 static jmethodID m_destroySurfaceMethodID = 0;
 
@@ -356,6 +357,33 @@ namespace QtAndroid
                                      surfaceId,
                                      jboolean(onTop),
                                      x, y, w, h);
+        return surfaceId;
+    }
+
+    int insertNativeView(jobject view, const QRect &geometry)
+    {
+        QJNIEnvironmentPrivate env;
+        if (!env)
+            return 0;
+
+        m_surfacesMutex.lock();
+        const int surfaceId = m_surfaceId++;
+        m_surfacesMutex.unlock();
+
+        jint x = 0, y = 0, w = -1, h = -1;
+        if (!geometry.isNull()) {
+            x = geometry.x();
+            y = geometry.y();
+            w = std::max(geometry.width(), 1);
+            h = std::max(geometry.height(), 1);
+        }
+
+        env->CallStaticVoidMethod(m_applicationClass,
+                                  m_insertNativeViewMethodID,
+                                  surfaceId,
+                                  view,
+                                  x, y, w, h);
+
         return surfaceId;
     }
 
@@ -653,6 +681,7 @@ static int registerNatives(JNIEnv *env)
     }
 
     GET_AND_CHECK_STATIC_METHOD(m_createSurfaceMethodID, m_applicationClass, "createSurface", "(IZIIII)V");
+    GET_AND_CHECK_STATIC_METHOD(m_insertNativeViewMethodID, m_applicationClass, "insertNativeView", "(ILandroid/view/View;IIII)V");
     GET_AND_CHECK_STATIC_METHOD(m_setSurfaceGeometryMethodID, m_applicationClass, "setSurfaceGeometry", "(IIIII)V");
     GET_AND_CHECK_STATIC_METHOD(m_destroySurfaceMethodID, m_applicationClass, "destroySurface", "(I)V");
 
