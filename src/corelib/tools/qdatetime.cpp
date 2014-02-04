@@ -265,17 +265,24 @@ static int fromOffsetString(const QString &offsetString, bool *valid)
     if (size < 2 || size > 6)
         return 0;
 
+    // sign will be +1 for a positive and -1 for a negative offset
+    int sign;
+
     // First char must be + or -
-    const QChar sign = offsetString.at(0);
-    if (sign != QLatin1Char('+') && sign != QLatin1Char('-'))
+    const QChar signChar = offsetString.at(0);
+    if (signChar == QLatin1Char('+'))
+        sign = 1;
+    else if (signChar == QLatin1Char('-'))
+        sign = -1;
+    else
         return 0;
 
     // Split the hour and minute parts
-    QStringList parts = offsetString.split(QLatin1Char(':'));
+    QStringList parts = offsetString.mid(1).split(QLatin1Char(':'));
     if (parts.count() == 1) {
         // [+-]HHMM format
-        parts.append(parts.at(0).mid(3));
-        parts[0] = parts.at(0).left(3);
+        parts.append(parts.at(0).mid(2));
+        parts[0] = parts.at(0).left(2);
     }
 
     bool ok = false;
@@ -288,7 +295,7 @@ static int fromOffsetString(const QString &offsetString, bool *valid)
         return 0;
 
     *valid = true;
-    return ((hour * 60) + minute) * 60;
+    return sign * ((hour * 60) + minute) * 60;
 }
 
 /*****************************************************************************
