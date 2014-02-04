@@ -425,10 +425,9 @@ QString QAccessibleWidget::text(QAccessible::Text t) const
         }
         break;
     case QAccessible::Description:
-        if (!widget()->accessibleDescription().isEmpty())
-            str = widget()->accessibleDescription();
+        str = widget()->accessibleDescription();
 #ifndef QT_NO_TOOLTIP
-        else
+        if (str.isEmpty())
             str = widget()->toolTip();
 #endif
         break;
