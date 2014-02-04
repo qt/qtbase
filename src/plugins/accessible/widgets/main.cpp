@@ -247,6 +247,8 @@ QAccessibleInterface *AccessibleFactory::create(const QString &classname, QObjec
         iface = 0;
     } else if (classname == QLatin1String("QWidget")) {
         iface = new QAccessibleWidget(widget);
+    } else if (classname == QLatin1String("QWindowContainer")) {
+        iface = new QAccessibleWindowContainer(widget);
     }
 
     return iface;
