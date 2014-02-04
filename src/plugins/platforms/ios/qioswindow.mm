@@ -247,6 +247,9 @@
         m_activeTouches[touch].id = m_nextTouchId++;
     }
 
+    if (m_activeTouches.size() == 1 && m_qioswindow->window() != QGuiApplication::focusWindow())
+        m_qioswindow->requestActivateWindow();
+
     [self updateTouchList:touches withState:Qt::TouchPointPressed];
     [self sendTouchEventWithTimestamp:ulong(event.timestamp * 1000)];
 }
@@ -259,14 +262,6 @@
 
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    QWindow *window = m_qioswindow->window();
-    if (window != QGuiApplication::focusWindow() && m_activeTouches.size() == 1) {
-        // Activate the touched window if the last touch was released inside it:
-        UITouch *touch = static_cast<UITouch *>([[touches allObjects] lastObject]);
-        if (CGRectContainsPoint([self bounds], [touch locationInView:self]))
-            m_qioswindow->requestActivateWindow();
-    }
-
     [self updateTouchList:touches withState:Qt::TouchPointReleased];
     [self sendTouchEventWithTimestamp:ulong(event.timestamp * 1000)];
 
