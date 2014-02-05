@@ -554,7 +554,6 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
         && funcs.hasOpenGLExtension(QOpenGLExtensions::PackedDepthStencil)) {
         // depth and stencil buffer needs another extension
         funcs.glGenRenderbuffers(1, &depth_buffer);
-        Q_ASSERT(!funcs.glIsRenderbuffer(depth_buffer));
         funcs.glBindRenderbuffer(GL_RENDERBUFFER, depth_buffer);
         Q_ASSERT(funcs.glIsRenderbuffer(depth_buffer));
         if (samples != 0 && funcs.hasOpenGLExtension(QOpenGLExtensions::FramebufferMultisample))
@@ -581,7 +580,6 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
         || (attachment == QGLFramebufferObject::Depth)))
     {
         funcs.glGenRenderbuffers(1, &depth_buffer);
-        Q_ASSERT(!funcs.glIsRenderbuffer(depth_buffer));
         funcs.glBindRenderbuffer(GL_RENDERBUFFER, depth_buffer);
         Q_ASSERT(funcs.glIsRenderbuffer(depth_buffer));
         if (samples != 0 && funcs.hasOpenGLExtension(QOpenGLExtensions::FramebufferMultisample)) {
@@ -621,7 +619,6 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
 
     if (stencil_buffer == 0 && (attachment == QGLFramebufferObject::CombinedDepthStencil)) {
         funcs.glGenRenderbuffers(1, &stencil_buffer);
-        Q_ASSERT(!funcs.glIsRenderbuffer(stencil_buffer));
         funcs.glBindRenderbuffer(GL_RENDERBUFFER, stencil_buffer);
         Q_ASSERT(funcs.glIsRenderbuffer(stencil_buffer));
         if (samples != 0 && funcs.hasOpenGLExtension(QOpenGLExtensions::FramebufferMultisample)) {
