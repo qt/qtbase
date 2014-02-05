@@ -988,7 +988,7 @@ QWindowsGLContext::QWindowsGLContext(const QOpenGLStaticContextPtr &staticContex
     if (dummyWindow)
         DestroyWindow(dummyWindow);
 
-    qCDebug(lcQpaGl()) << __FUNCTION__ << this << (tryExtensions ? "ARB" : "GDI")
+    qCDebug(lcQpaGl) << __FUNCTION__ << this << (tryExtensions ? "ARB" : "GDI")
         << " requested: " << context->format()
         << "\n    obtained #" << m_pixelFormat << (m_extensionsUsed ? "ARB" : "GDI") << m_obtainedFormat
         << "\n    " << m_obtainedPixelFormatDescriptor << " swap interval: " << obtainedSwapInternal
