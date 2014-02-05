@@ -6068,15 +6068,21 @@ QString &QString::vsprintf(const char* cformat, va_list ap)
 
 qint64 QString::toLongLong(bool *ok, int base) const
 {
+    return toIntegral_helper<qlonglong>(constData(), size(), ok, base);
+}
+
+qlonglong QString::toIntegral_helper(const QChar *data, int len, bool *ok, int base)
+{
 #if defined(QT_CHECK_RANGE)
     if (base != 0 && (base < 2 || base > 36)) {
-        qWarning("QString::toLongLong: Invalid base (%d)", base);
+        qWarning("QString::toULongLong: Invalid base (%d)", base);
         base = 10;
     }
 #endif
 
-    return QLocaleData::c()->stringToLongLong(constData(), size(), base, ok, QLocaleData::FailOnGroupSeparators);
+    return QLocaleData::c()->stringToLongLong(data, len, base, ok, QLocaleData::FailOnGroupSeparators);
 }
+
 
 /*!
     Returns the string converted to an \c{unsigned long long} using base \a
@@ -6102,6 +6108,11 @@ qint64 QString::toLongLong(bool *ok, int base) const
 
 quint64 QString::toULongLong(bool *ok, int base) const
 {
+    return toIntegral_helper<qulonglong>(constData(), size(), ok, base);
+}
+
+qulonglong QString::toIntegral_helper(const QChar *data, uint len, bool *ok, int base)
+{
 #if defined(QT_CHECK_RANGE)
     if (base != 0 && (base < 2 || base > 36)) {
         qWarning("QString::toULongLong: Invalid base (%d)", base);
@@ -6109,7 +6120,7 @@ quint64 QString::toULongLong(bool *ok, int base) const
     }
 #endif
 
-    return QLocaleData::c()->stringToUnsLongLong(constData(), size(), base, ok, QLocaleData::FailOnGroupSeparators);
+    return QLocaleData::c()->stringToUnsLongLong(data, len, base, ok, QLocaleData::FailOnGroupSeparators);
 }
 
 /*!
@@ -6138,13 +6149,7 @@ quint64 QString::toULongLong(bool *ok, int base) const
 
 long QString::toLong(bool *ok, int base) const
 {
-    qint64 v = toLongLong(ok, base);
-    if (v < LONG_MIN || v > LONG_MAX) {
-        if (ok)
-            *ok = false;
-        v = 0;
-    }
-    return (long)v;
+    return toIntegral_helper<long>(constData(), size(), ok, base);
 }
 
 /*!
@@ -6173,13 +6178,7 @@ long QString::toLong(bool *ok, int base) const
 
 ulong QString::toULong(bool *ok, int base) const
 {
-    quint64 v = toULongLong(ok, base);
-    if (v > ULONG_MAX) {
-        if (ok)
-            *ok = false;
-        v = 0;
-    }
-    return (ulong)v;
+    return toIntegral_helper<ulong>(constData(), size(), ok, base);
 }
 
 
@@ -6207,13 +6206,7 @@ ulong QString::toULong(bool *ok, int base) const
 
 int QString::toInt(bool *ok, int base) const
 {
-    qint64 v = toLongLong(ok, base);
-    if (v < INT_MIN || v > INT_MAX) {
-        if (ok)
-            *ok = false;
-        v = 0;
-    }
-    return v;
+    return toIntegral_helper<int>(constData(), size(), ok, base);
 }
 
 /*!
@@ -6240,13 +6233,7 @@ int QString::toInt(bool *ok, int base) const
 
 uint QString::toUInt(bool *ok, int base) const
 {
-    quint64 v = toULongLong(ok, base);
-    if (v > UINT_MAX) {
-        if (ok)
-            *ok = false;
-        v = 0;
-    }
-    return (uint)v;
+    return toIntegral_helper<uint>(constData(), size(), ok, base);
 }
 
 /*!
@@ -6273,13 +6260,7 @@ uint QString::toUInt(bool *ok, int base) const
 
 short QString::toShort(bool *ok, int base) const
 {
-    long v = toLongLong(ok, base);
-    if (v < SHRT_MIN || v > SHRT_MAX) {
-        if (ok)
-            *ok = false;
-        v = 0;
-    }
-    return (short)v;
+    return toIntegral_helper<short>(constData(), size(), ok, base);
 }
 
 /*!
@@ -6306,13 +6287,7 @@ short QString::toShort(bool *ok, int base) const
 
 ushort QString::toUShort(bool *ok, int base) const
 {
-    ulong v = toULongLong(ok, base);
-    if (v > USHRT_MAX) {
-        if (ok)
-            *ok = false;
-        v = 0;
-    }
-    return (ushort)v;
+    return toIntegral_helper<ushort>(constData(), size(), ok, base);
 }
 
 
@@ -9606,14 +9581,7 @@ QStringRef QStringRef::trimmed() const
 
 qint64 QStringRef::toLongLong(bool *ok, int base) const
 {
-#if defined(QT_CHECK_RANGE)
-    if (base != 0 && (base < 2 || base > 36)) {
-        qWarning("QString::toLongLong: Invalid base (%d)", base);
-        base = 10;
-    }
-#endif
-
-    return QLocaleData::c()->stringToLongLong(constData(), size(), base, ok, QLocaleData::FailOnGroupSeparators);
+    return QString::toIntegral_helper<qint64>(constData(), size(), ok, base);
 }
 
 /*!
@@ -9638,14 +9606,7 @@ qint64 QStringRef::toLongLong(bool *ok, int base) const
 
 quint64 QStringRef::toULongLong(bool *ok, int base) const
 {
-#if defined(QT_CHECK_RANGE)
-    if (base != 0 && (base < 2 || base > 36)) {
-        qWarning("QString::toULongLong: Invalid base (%d)", base);
-        base = 10;
-    }
-#endif
-
-    return QLocaleData::c()->stringToUnsLongLong(constData(), size(), base, ok, QLocaleData::FailOnGroupSeparators);
+    return QString::toIntegral_helper<quint64>(constData(), size(), ok, base);
 }
 
 /*!
@@ -9672,13 +9633,7 @@ quint64 QStringRef::toULongLong(bool *ok, int base) const
 
 long QStringRef::toLong(bool *ok, int base) const
 {
-    qint64 v = toLongLong(ok, base);
-    if (v < LONG_MIN || v > LONG_MAX) {
-        if (ok)
-            *ok = false;
-        v = 0;
-    }
-    return long(v);
+    return QString::toIntegral_helper<long>(constData(), size(), ok, base);
 }
 
 /*!
@@ -9705,13 +9660,7 @@ long QStringRef::toLong(bool *ok, int base) const
 
 ulong QStringRef::toULong(bool *ok, int base) const
 {
-    quint64 v = toULongLong(ok, base);
-    if (v > ULONG_MAX) {
-        if (ok)
-            *ok = false;
-        v = 0;
-    }
-    return ulong(v);
+    return QString::toIntegral_helper<ulong>(constData(), size(), ok, base);
 }
 
 
@@ -9737,13 +9686,7 @@ ulong QStringRef::toULong(bool *ok, int base) const
 
 int QStringRef::toInt(bool *ok, int base) const
 {
-    qint64 v = toLongLong(ok, base);
-    if (v < INT_MIN || v > INT_MAX) {
-        if (ok)
-            *ok = false;
-        v = 0;
-    }
-    return int(v);
+    return QString::toIntegral_helper<int>(constData(), size(), ok, base);
 }
 
 /*!
@@ -9768,13 +9711,7 @@ int QStringRef::toInt(bool *ok, int base) const
 
 uint QStringRef::toUInt(bool *ok, int base) const
 {
-    quint64 v = toULongLong(ok, base);
-    if (v > UINT_MAX) {
-        if (ok)
-            *ok = false;
-        v = 0;
-    }
-    return uint(v);
+    return QString::toIntegral_helper<uint>(constData(), size(), ok, base);
 }
 
 /*!
@@ -9799,13 +9736,7 @@ uint QStringRef::toUInt(bool *ok, int base) const
 
 short QStringRef::toShort(bool *ok, int base) const
 {
-    long v = toLongLong(ok, base);
-    if (v < SHRT_MIN || v > SHRT_MAX) {
-        if (ok)
-            *ok = false;
-        v = 0;
-    }
-    return short(v);
+    return QString::toIntegral_helper<short>(constData(), size(), ok, base);
 }
 
 /*!
@@ -9830,13 +9761,7 @@ short QStringRef::toShort(bool *ok, int base) const
 
 ushort QStringRef::toUShort(bool *ok, int base) const
 {
-    ulong v = toULongLong(ok, base);
-    if (v > USHRT_MAX) {
-        if (ok)
-            *ok = false;
-        v = 0;
-    }
-    return ushort(v);
+    return QString::toIntegral_helper<ushort>(constData(), size(), ok, base);
 }
 
 

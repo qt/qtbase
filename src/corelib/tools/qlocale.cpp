@@ -1061,6 +1061,41 @@ QString QLocale::name() const
     return result;
 }
 
+static qlonglong toIntegral_helper(const QLocaleData *d, const QChar *data, int len, bool *ok,
+                                   QLocaleData::GroupSeparatorMode mode, qlonglong)
+{
+    return d->stringToLongLong(data, len, 10, ok, mode);
+}
+
+static qulonglong toIntegral_helper(const QLocaleData *d, const QChar *data, int len, bool *ok,
+                                    QLocaleData::GroupSeparatorMode mode, qulonglong)
+{
+    return d->stringToUnsLongLong(data, len, 10, ok, mode);
+}
+
+template <typename T> static inline
+T toIntegral_helper(const QLocalePrivate *d, const QChar *data, int len, bool *ok)
+{
+    // ### Qt6: use std::conditional<std::is_unsigned<T>::value, qulonglong, qlonglong>::type
+    const bool isUnsigned = T(0) < T(-1);
+    typedef typename QtPrivate::QConditional<isUnsigned, qulonglong, qlonglong>::Type Int64;
+
+    QLocaleData::GroupSeparatorMode mode
+            = d->m_numberOptions & QLocale::RejectGroupSeparator
+              ? QLocaleData::FailOnGroupSeparators
+              : QLocaleData::ParseGroupSeparators;
+
+    // we select the right overload by the last, unused parameter
+    Int64 val = toIntegral_helper(d->m_data, data, len, ok, mode, Int64());
+    if (T(val) != val) {
+        if (ok)
+            *ok = false;
+        val = 0;
+    }
+    return T(val);
+}
+
+
 /*!
     \since 4.8
 
@@ -1135,13 +1170,7 @@ QString QLocale::scriptToString(QLocale::Script script)
 
 short QLocale::toShort(const QString &s, bool *ok) const
 {
-    qlonglong i = toLongLong(s, ok);
-    if (i < SHRT_MIN || i > SHRT_MAX) {
-        if (ok != 0)
-            *ok = false;
-        return 0;
-    }
-    return short(i);
+    return toIntegral_helper<short>(d, s.constData(), s.size(), ok);
 }
 
 /*!
@@ -1159,13 +1188,7 @@ short QLocale::toShort(const QString &s, bool *ok) const
 
 ushort QLocale::toUShort(const QString &s, bool *ok) const
 {
-    qulonglong i = toULongLong(s, ok);
-    if (i > USHRT_MAX) {
-        if (ok != 0)
-            *ok = false;
-        return 0;
-    }
-    return ushort(i);
+    return toIntegral_helper<ushort>(d, s.constData(), s.size(), ok);
 }
 
 /*!
@@ -1183,13 +1206,7 @@ ushort QLocale::toUShort(const QString &s, bool *ok) const
 
 int QLocale::toInt(const QString &s, bool *ok) const
 {
-    qlonglong i = toLongLong(s, ok);
-    if (i < INT_MIN || i > INT_MAX) {
-        if (ok != 0)
-            *ok = false;
-        return 0;
-    }
-    return int(i);
+    return toIntegral_helper<int>(d, s.constData(), s.size(), ok);
 }
 
 /*!
@@ -1207,13 +1224,7 @@ int QLocale::toInt(const QString &s, bool *ok) const
 
 uint QLocale::toUInt(const QString &s, bool *ok) const
 {
-    qulonglong i = toULongLong(s, ok);
-    if (i > UINT_MAX) {
-        if (ok != 0)
-            *ok = false;
-        return 0;
-    }
-    return uint(i);
+    return toIntegral_helper<uint>(d, s.constData(), s.size(), ok);
 }
 
 /*!
@@ -1232,12 +1243,7 @@ uint QLocale::toUInt(const QString &s, bool *ok) const
 
 qlonglong QLocale::toLongLong(const QString &s, bool *ok) const
 {
-    QLocaleData::GroupSeparatorMode mode
-        = d->m_numberOptions & RejectGroupSeparator
-            ? QLocaleData::FailOnGroupSeparators
-            : QLocaleData::ParseGroupSeparators;
-
-    return d->m_data->stringToLongLong(s.constData(), s.size(), 10, ok, mode);
+    return toIntegral_helper<qlonglong>(d, s.constData(), s.size(), ok);
 }
 
 /*!
@@ -1256,12 +1262,7 @@ qlonglong QLocale::toLongLong(const QString &s, bool *ok) const
 
 qulonglong QLocale::toULongLong(const QString &s, bool *ok) const
 {
-    QLocaleData::GroupSeparatorMode mode
-        = d->m_numberOptions & RejectGroupSeparator
-            ? QLocaleData::FailOnGroupSeparators
-            : QLocaleData::ParseGroupSeparators;
-
-    return d->m_data->stringToUnsLongLong(s.constData(), s.size(), 10, ok, mode);
+    return toIntegral_helper<qulonglong>(d, s.constData(), s.size(), ok);
 }
 
 /*!
@@ -1340,13 +1341,7 @@ double QLocale::toDouble(const QString &s, bool *ok) const
 
 short QLocale::toShort(const QStringRef &s, bool *ok) const
 {
-    qlonglong i = toLongLong(s, ok);
-    if (i < SHRT_MIN || i > SHRT_MAX) {
-        if (ok)
-            *ok = false;
-        return 0;
-    }
-    return short(i);
+    return toIntegral_helper<short>(d, s.constData(), s.size(), ok);
 }
 
 /*!
@@ -1366,13 +1361,7 @@ short QLocale::toShort(const QStringRef &s, bool *ok) const
 
 ushort QLocale::toUShort(const QStringRef &s, bool *ok) const
 {
-    qulonglong i = toULongLong(s, ok);
-    if (i > USHRT_MAX) {
-        if (ok)
-            *ok = false;
-        return 0;
-    }
-    return ushort(i);
+    return toIntegral_helper<ushort>(d, s.constData(), s.size(), ok);
 }
 
 /*!
@@ -1392,13 +1381,7 @@ ushort QLocale::toUShort(const QStringRef &s, bool *ok) const
 
 int QLocale::toInt(const QStringRef &s, bool *ok) const
 {
-    qlonglong i = toLongLong(s, ok);
-    if (i < INT_MIN || i > INT_MAX) {
-        if (ok)
-            *ok = false;
-        return 0;
-    }
-    return int(i);
+    return toIntegral_helper<int>(d, s.constData(), s.size(), ok);
 }
 
 /*!
@@ -1418,13 +1401,7 @@ int QLocale::toInt(const QStringRef &s, bool *ok) const
 
 uint QLocale::toUInt(const QStringRef &s, bool *ok) const
 {
-    qulonglong i = toULongLong(s, ok);
-    if (i > UINT_MAX) {
-        if (ok)
-            *ok = false;
-        return 0;
-    }
-    return uint(i);
+    return toIntegral_helper<uint>(d, s.constData(), s.size(), ok);
 }
 
 /*!
@@ -1445,12 +1422,7 @@ uint QLocale::toUInt(const QStringRef &s, bool *ok) const
 
 qlonglong QLocale::toLongLong(const QStringRef &s, bool *ok) const
 {
-    QLocaleData::GroupSeparatorMode mode
-        = d->m_numberOptions & RejectGroupSeparator
-            ? QLocaleData::FailOnGroupSeparators
-            : QLocaleData::ParseGroupSeparators;
-
-    return d->m_data->stringToLongLong(s.constData(), s.size(), 10, ok, mode);
+    return toIntegral_helper<qlonglong>(d, s.constData(), s.size(), ok);
 }
 
 /*!
@@ -1471,12 +1443,7 @@ qlonglong QLocale::toLongLong(const QStringRef &s, bool *ok) const
 
 qulonglong QLocale::toULongLong(const QStringRef &s, bool *ok) const
 {
-    QLocaleData::GroupSeparatorMode mode
-        = d->m_numberOptions & RejectGroupSeparator
-            ? QLocaleData::FailOnGroupSeparators
-            : QLocaleData::ParseGroupSeparators;
-
-    return d->m_data->stringToUnsLongLong(s.constData(), s.size(), 10, ok, mode);
+    return toIntegral_helper<qulonglong>(d, s.constData(), s.size(), ok);
 }
 
 /*!

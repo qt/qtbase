@@ -552,6 +552,7 @@ public:
     int localeAwareCompare(const QStringRef &s) const;
     static int localeAwareCompare(const QString& s1, const QStringRef& s2);
 
+    // ### Qt6: make inline except for the long long versions
     short  toShort(bool *ok=0, int base=10) const;
     ushort toUShort(bool *ok=0, int base=10) const;
     int toInt(bool *ok=0, int base=10) const;
@@ -746,6 +747,8 @@ private:
     static QByteArray toUtf8_helper(const QString &);
     static QByteArray toLocal8Bit_helper(const QChar *data, int size);
     static int toUcs4_helper(const ushort *uc, int length, uint *out);
+    static qlonglong toIntegral_helper(const QChar *data, int len, bool *ok, int base);
+    static qulonglong toIntegral_helper(const QChar *data, uint len, bool *ok, int base);
     void replace_helper(uint *indices, int nIndices, int blen, const QChar *after, int alen);
     friend class QCharRef;
     friend class QTextCodec;
@@ -753,6 +756,24 @@ private:
     friend class QByteArray;
     friend class QCollator;
     friend struct QAbstractConcatenable;
+
+    template <typename T> static
+    T toIntegral_helper(const QChar *data, int len, bool *ok, int base)
+    {
+        // ### Qt6: use std::conditional<std::is_unsigned<T>::value, qulonglong, qlonglong>::type
+        const bool isUnsigned = T(0) < T(-1);
+        typedef typename QtPrivate::QConditional<isUnsigned, qulonglong, qlonglong>::Type Int64;
+        typedef typename QtPrivate::QConditional<isUnsigned, uint, int>::Type Int32;
+
+        // we select the right overload by casting size() to int or uint
+        Int64 val = toIntegral_helper(data, Int32(len), ok, base);
+        if (T(val) != val) {
+            if (ok)
+                *ok = false;
+            val = 0;
+        }
+        return T(val);
+    }
 
 public:
     typedef Data * DataPtr;

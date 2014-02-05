@@ -3266,6 +3266,39 @@ QByteArray QByteArray::rightJustified(int width, char fill, bool truncate) const
 
 bool QByteArray::isNull() const { return d == QArrayData::sharedNull(); }
 
+static qlonglong toIntegral_helper(const char *data, bool *ok, int base, qlonglong)
+{
+    return QLocaleData::bytearrayToLongLong(data, base, ok);
+}
+
+static qulonglong toIntegral_helper(const char *data, bool *ok, int base, qulonglong)
+{
+    return QLocaleData::bytearrayToUnsLongLong(data, base, ok);
+}
+
+template <typename T> static inline
+T toIntegral_helper(const char *data, bool *ok, int base)
+{
+    // ### Qt6: use std::conditional<std::is_unsigned<T>::value, qulonglong, qlonglong>::type
+    const bool isUnsigned = T(0) < T(-1);
+    typedef typename QtPrivate::QConditional<isUnsigned, qulonglong, qlonglong>::Type Int64;
+
+#if defined(QT_CHECK_RANGE)
+    if (base != 0 && (base < 2 || base > 36)) {
+        qWarning("QByteArray::toIntegral: Invalid base %d", base);
+        base = 10;
+    }
+#endif
+
+    // we select the right overload by the last, unused parameter
+    Int64 val = toIntegral_helper(data, ok, base, Int64());
+    if (T(val) != val) {
+        if (ok)
+            *ok = false;
+        val = 0;
+    }
+    return T(val);
+}
 
 /*!
     Returns the byte array converted to a \c {long long} using base \a
@@ -3289,14 +3322,7 @@ bool QByteArray::isNull() const { return d == QArrayData::sharedNull(); }
 
 qlonglong QByteArray::toLongLong(bool *ok, int base) const
 {
-#if defined(QT_CHECK_RANGE)
-    if (base != 0 && (base < 2 || base > 36)) {
-        qWarning("QByteArray::toLongLong: Invalid base %d", base);
-        base = 10;
-    }
-#endif
-
-    return QLocaleData::bytearrayToLongLong(nulTerminated().constData(), base, ok);
+    return toIntegral_helper<qlonglong>(nulTerminated().constData(), ok, base);
 }
 
 /*!
@@ -3322,16 +3348,8 @@ qlonglong QByteArray::toLongLong(bool *ok, int base) const
 
 qulonglong QByteArray::toULongLong(bool *ok, int base) const
 {
-#if defined(QT_CHECK_RANGE)
-    if (base != 0 && (base < 2 || base > 36)) {
-        qWarning("QByteArray::toULongLong: Invalid base %d", base);
-        base = 10;
-    }
-#endif
-
-    return QLocaleData::bytearrayToUnsLongLong(nulTerminated().constData(), base, ok);
+    return toIntegral_helper<qulonglong>(nulTerminated().constData(), ok, base);
 }
-
 
 /*!
     Returns the byte array converted to an \c int using base \a
@@ -3357,13 +3375,7 @@ qulonglong QByteArray::toULongLong(bool *ok, int base) const
 
 int QByteArray::toInt(bool *ok, int base) const
 {
-    qlonglong v = toLongLong(ok, base);
-    if (v < INT_MIN || v > INT_MAX) {
-        if (ok)
-            *ok = false;
-        v = 0;
-    }
-    return int(v);
+    return toIntegral_helper<int>(nulTerminated().constData(), ok, base);
 }
 
 /*!
@@ -3388,13 +3400,7 @@ int QByteArray::toInt(bool *ok, int base) const
 
 uint QByteArray::toUInt(bool *ok, int base) const
 {
-    qulonglong v = toULongLong(ok, base);
-    if (v > UINT_MAX) {
-        if (ok)
-            *ok = false;
-        v = 0;
-    }
-    return uint(v);
+    return toIntegral_helper<uint>(nulTerminated().constData(), ok, base);
 }
 
 /*!
@@ -3422,13 +3428,7 @@ uint QByteArray::toUInt(bool *ok, int base) const
 */
 long QByteArray::toLong(bool *ok, int base) const
 {
-    qlonglong v = toLongLong(ok, base);
-    if (v < LONG_MIN || v > LONG_MAX) {
-        if (ok)
-            *ok = false;
-        v = 0;
-    }
-    return long(v);
+    return toIntegral_helper<long>(nulTerminated().constData(), ok, base);
 }
 
 /*!
@@ -3454,13 +3454,7 @@ long QByteArray::toLong(bool *ok, int base) const
 */
 ulong QByteArray::toULong(bool *ok, int base) const
 {
-    qulonglong v = toULongLong(ok, base);
-    if (v > ULONG_MAX) {
-        if (ok)
-            *ok = false;
-        v = 0;
-    }
-    return ulong(v);
+    return toIntegral_helper<ulong>(nulTerminated().constData(), ok, base);
 }
 
 /*!
@@ -3485,13 +3479,7 @@ ulong QByteArray::toULong(bool *ok, int base) const
 
 short QByteArray::toShort(bool *ok, int base) const
 {
-    qlonglong v = toLongLong(ok, base);
-    if (v < SHRT_MIN || v > SHRT_MAX) {
-        if (ok)
-            *ok = false;
-        v = 0;
-    }
-    return short(v);
+    return toIntegral_helper<short>(nulTerminated().constData(), ok, base);
 }
 
 /*!
@@ -3516,13 +3504,7 @@ short QByteArray::toShort(bool *ok, int base) const
 
 ushort QByteArray::toUShort(bool *ok, int base) const
 {
-    qulonglong v = toULongLong(ok, base);
-    if (v > USHRT_MAX) {
-        if (ok)
-            *ok = false;
-        v = 0;
-    }
-    return ushort(v);
+    return toIntegral_helper<ushort>(nulTerminated().constData(), ok, base);
 }
 
 
