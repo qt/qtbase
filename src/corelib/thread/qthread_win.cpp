@@ -442,7 +442,7 @@ void QThreadPrivate::finish(void *arg, bool lockAnyway)
 #ifndef Q_OS_WINRT
         CloseHandle(d->handle);
 #else
-        CloseHandle(d->handle->native_handle());
+        d->handle->detach();
         delete d->handle;
 #endif
         d->handle = 0;
@@ -642,8 +642,6 @@ void QThread::terminate()
     TerminateThread(d->handle, 0);
 #else // !Q_OS_WINRT
     qWarning("QThread::terminate: Terminate is not supported on WinRT");
-    CloseHandle(d->handle->native_handle());
-    d->handle = 0;
 #endif // Q_OS_WINRT
     QThreadPrivate::finish(this, false);
 }
@@ -683,7 +681,8 @@ bool QThread::wait(unsigned long time)
     }
 #else // !Q_OS_WINRT
     if (d->handle->joinable()) {
-        switch (WaitForSingleObjectEx(d->handle->native_handle(), time, FALSE)) {
+        HANDLE handle = d->handle->native_handle();
+        switch (WaitForSingleObjectEx(handle, time, FALSE)) {
         case WAIT_OBJECT_0:
             ret = true;
             d->handle->join();
@@ -712,6 +711,7 @@ bool QThread::wait(unsigned long time)
 #ifndef Q_OS_WINRT
         CloseHandle(d->handle);
 #else
+        d->handle->detach();
         delete d->handle;
 #endif
         d->handle = 0;
