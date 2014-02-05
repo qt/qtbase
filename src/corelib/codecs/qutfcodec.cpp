@@ -46,6 +46,7 @@
 #include "qchar.h"
 
 #include "private/qsimd_p.h"
+#include "private/qstringiterator_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -503,21 +504,21 @@ QByteArray QUtf32::convertFromUnicode(const QChar *uc, int len, QTextCodec::Conv
         }
         data += 4;
     }
+
+    QStringIterator i(uc, uc + len);
     if (endian == BigEndianness) {
-        for (int i = 0; i < len; ++i) {
-            uint cp = uc[i].unicode();
-            if (uc[i].isHighSurrogate() && i < len - 1)
-                cp = QChar::surrogateToUcs4(cp, uc[++i].unicode());
+        while (i.hasNext()) {
+            uint cp = i.next();
+
             *(data++) = cp >> 24;
             *(data++) = (cp >> 16) & 0xff;
             *(data++) = (cp >> 8) & 0xff;
             *(data++) = cp & 0xff;
         }
     } else {
-        for (int i = 0; i < len; ++i) {
-            uint cp = uc[i].unicode();
-            if (uc[i].isHighSurrogate() && i < len - 1)
-                cp = QChar::surrogateToUcs4(cp, uc[++i].unicode());
+        while (i.hasNext()) {
+            uint cp = i.next();
+
             *(data++) = cp & 0xff;
             *(data++) = (cp >> 8) & 0xff;
             *(data++) = (cp >> 16) & 0xff;
