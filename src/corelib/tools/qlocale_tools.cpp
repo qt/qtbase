@@ -243,7 +243,7 @@ qulonglong qstrtoull(const char *nptr, const char **endptr, int base, bool *ok)
     s = nptr;
     do {
         c = *s++;
-    } while (isspace(c));
+    } while (ascii_isspace(c));
     if (c == '-') {
         if (ok != 0)
             *ok = false;
@@ -323,7 +323,7 @@ qlonglong qstrtoll(const char *nptr, const char **endptr, int base, bool *ok)
     s = nptr;
     do {
         c = *s++;
-    } while (isspace(c));
+    } while (ascii_isspace(c));
     if (c == '-') {
         neg = 1;
         c = *s++;
@@ -1468,7 +1468,7 @@ Q_CORE_EXPORT double qstrtod(const char *s00, const char **se, bool *ok)
     rv = 0.;
 
 
-    for(s = s00; isspace(uchar(*s)); s++)
+    for(s = s00; ascii_isspace(uchar(*s)); s++)
         ;
 
     if (*s == '-') {

@@ -3113,7 +3113,7 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
     replaced with a single space.
 
     Whitespace means any character for which the standard C++
-    isspace() function returns \c true. This includes the ASCII
+    isspace() function returns \c true in the C locale. This includes the ASCII
     characters '\\t', '\\n', '\\v', '\\f', '\\r', and ' '.
 
     Example:
@@ -3131,9 +3131,9 @@ QByteArray QByteArray::simplified() const
     int outc=0;
     char *to = result.d->data();
     for (;;) {
-        while (from!=fromend && isspace(uchar(*from)))
+        while (from!=fromend && ascii_isspace(uchar(*from)))
             from++;
-        while (from!=fromend && !isspace(uchar(*from)))
+        while (from!=fromend && !ascii_isspace(uchar(*from)))
             to[outc++] = *from++;
         if (from!=fromend)
             to[outc++] = ' ';
@@ -3151,7 +3151,7 @@ QByteArray QByteArray::simplified() const
     and the end.
 
     Whitespace means any character for which the standard C++
-    isspace() function returns \c true. This includes the ASCII
+    isspace() function returns \c true in the C locale. This includes the ASCII
     characters '\\t', '\\n', '\\v', '\\f', '\\r', and ' '.
 
     Example:
@@ -3166,14 +3166,14 @@ QByteArray QByteArray::trimmed() const
     if (d->size == 0)
         return *this;
     const char *s = d->data();
-    if (!isspace(uchar(*s)) && !isspace(uchar(s[d->size-1])))
+    if (!ascii_isspace(uchar(*s)) && !ascii_isspace(uchar(s[d->size-1])))
         return *this;
     int start = 0;
     int end = d->size - 1;
-    while (start<=end && isspace(uchar(s[start])))  // skip white space from start
+    while (start<=end && ascii_isspace(uchar(s[start])))  // skip white space from start
         start++;
     if (start <= end) {                          // only white space
-        while (end && isspace(uchar(s[end])))           // skip white space from end
+        while (end && ascii_isspace(uchar(s[end])))           // skip white space from end
             end--;
     }
     int l = end - start + 1;

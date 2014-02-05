@@ -402,6 +402,33 @@ QString qt_readEscapedFormatString(const QString &format, int *idx);
 bool qt_splitLocaleName(const QString &name, QString &lang, QString &script, QString &cntry);
 int qt_repeatCount(const QString &s, int i);
 
+enum { AsciiSpaceMask = (1 << (' ' - 1)) |
+                        (1 << ('\t' - 1)) |   // 9: HT - horizontal tab
+                        (1 << ('\n' - 1)) |   // 10: LF - line feed
+                        (1 << ('\v' - 1)) |   // 11: VT - vertical tab
+                        (1 << ('\f' - 1)) |   // 12: FF - form feed
+                        (1 << ('\r' - 1)) };  // 13: CR - carriage return
+Q_DECL_CONSTEXPR inline bool ascii_isspace(uchar c)
+{
+    return c >= 1U && c <= 32U && (uint(AsciiSpaceMask) >> uint(c - 1)) & 1U;
+}
+
+#if defined(Q_COMPILER_CONSTEXPR)
+Q_STATIC_ASSERT(ascii_isspace(' '));
+Q_STATIC_ASSERT(ascii_isspace('\t'));
+Q_STATIC_ASSERT(ascii_isspace('\n'));
+Q_STATIC_ASSERT(ascii_isspace('\v'));
+Q_STATIC_ASSERT(ascii_isspace('\f'));
+Q_STATIC_ASSERT(ascii_isspace('\r'));
+Q_STATIC_ASSERT(!ascii_isspace('\0'));
+Q_STATIC_ASSERT(!ascii_isspace('\a'));
+Q_STATIC_ASSERT(!ascii_isspace('a'));
+Q_STATIC_ASSERT(!ascii_isspace('\177'));
+Q_STATIC_ASSERT(!ascii_isspace('\200'));
+Q_STATIC_ASSERT(!ascii_isspace('\xA0'));
+Q_STATIC_ASSERT(!ascii_isspace('\377'));
+#endif
+
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QStringRef)
