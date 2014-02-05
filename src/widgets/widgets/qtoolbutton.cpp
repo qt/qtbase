@@ -778,14 +778,15 @@ void QToolButtonPrivate::popupTimerDone()
     actualMenu->d_func()->causedPopup.action = defaultAction;
     actionsCopy = q->actions(); //(the list of action may be modified in slots)
     actualMenu->exec(p);
+
+    if (!that)
+        return;
+
     QObject::disconnect(actualMenu, SIGNAL(aboutToHide()), q, SLOT(_q_updateButtonDown()));
     if (mustDeleteActualMenu)
         delete actualMenu;
     else
         QObject::disconnect(actualMenu, SIGNAL(triggered(QAction*)), q, SLOT(_q_menuTriggered(QAction*)));
-
-    if (!that)
-        return;
 
     actionsCopy.clear();
 
