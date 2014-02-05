@@ -97,13 +97,13 @@ private:
 #ifdef Q_COMPILER_VARIADIC_MACROS
 
 #define qCDebug(category, ...) \
-    if (!category().isDebugEnabled()) {} else \
+    for (bool qt_category_enabled = category().isDebugEnabled(); qt_category_enabled; qt_category_enabled = false) \
         QMessageLogger(__FILE__, __LINE__, Q_FUNC_INFO, category().categoryName()).debug(__VA_ARGS__)
 #define qCWarning(category, ...) \
-    if (!category().isWarningEnabled()) {} else \
+    for (bool qt_category_enabled = category().isWarningEnabled(); qt_category_enabled; qt_category_enabled = false) \
         QMessageLogger(__FILE__, __LINE__, Q_FUNC_INFO, category().categoryName()).warning(__VA_ARGS__)
 #define qCCritical(category, ...) \
-    if (!category().isCriticalEnabled()) {} else \
+    for (bool qt_category_enabled = category().isCriticalEnabled(); qt_category_enabled; qt_category_enabled = false) \
         QMessageLogger(__FILE__, __LINE__, Q_FUNC_INFO, category().categoryName()).critical(__VA_ARGS__)
 
 #else
