@@ -404,8 +404,9 @@ public:
         AnisotropicFiltering        = 0x00000400,
         NPOTTextures                = 0x00000800,
         NPOTTextureRepeat           = 0x00001000,
+        Texture1D                   = 0x00002000,
 #ifndef Q_QDOC
-        MaxFeatureFlag              = 0x00002000
+        MaxFeatureFlag              = 0x00004000
 #endif
     };
     Q_DECLARE_FLAGS(Features, Feature)

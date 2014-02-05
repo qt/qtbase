@@ -319,15 +319,21 @@ void QOpenGLTexturePrivate::allocateMutableStorage()
         return;
 
     case QOpenGLTexture::Target1D:
-        for (int level = 0; level < mipLevels; ++level)
-            texFuncs->glTextureImage1D(textureId, target, bindingTarget, level, format,
-                                       mipLevelSize(level, dimensions[0]),
-                                       0,
-                                       QOpenGLTexture::RGBA, QOpenGLTexture::UInt8, 0);
+        if (features.testFlag(QOpenGLTexture::Texture1D)) {
+            for (int level = 0; level < mipLevels; ++level)
+                texFuncs->glTextureImage1D(textureId, target, bindingTarget, level, format,
+                                           mipLevelSize(level, dimensions[0]),
+                                           0,
+                                           QOpenGLTexture::RGBA, QOpenGLTexture::UInt8, 0);
+        } else {
+            qWarning("1D textures are not supported");
+            return;
+        }
         break;
 
     case QOpenGLTexture::Target1DArray:
-        if (features.testFlag(QOpenGLTexture::TextureArrays)) {
+        if (features.testFlag(QOpenGLTexture::Texture1D)
+                && features.testFlag(QOpenGLTexture::TextureArrays)) {
             for (int level = 0; level < mipLevels; ++level)
                 texFuncs->glTextureImage2D(textureId, target, bindingTarget, level, format,
                                            mipLevelSize(level, dimensions[0]),
@@ -335,7 +341,7 @@ void QOpenGLTexturePrivate::allocateMutableStorage()
                                            0,
                                            QOpenGLTexture::RGBA, QOpenGLTexture::UInt8, 0);
         } else {
-            qWarning("Array textures are not supported");
+            qWarning("1D array textures are not supported");
             return;
         }
         break;
@@ -433,16 +439,22 @@ void QOpenGLTexturePrivate::allocateImmutableStorage()
         return;
 
     case QOpenGLTexture::Target1D:
-        texFuncs->glTextureStorage1D(textureId, target, bindingTarget, mipLevels, format,
-                                     dimensions[0]);
+        if (features.testFlag(QOpenGLTexture::Texture1D)) {
+            texFuncs->glTextureStorage1D(textureId, target, bindingTarget, mipLevels, format,
+                                         dimensions[0]);
+        } else {
+            qWarning("1D textures are not supported");
+            return;
+        }
         break;
 
     case QOpenGLTexture::Target1DArray:
-        if (features.testFlag(QOpenGLTexture::TextureArrays)) {
+        if (features.testFlag(QOpenGLTexture::Texture1D)
+                && features.testFlag(QOpenGLTexture::TextureArrays)) {
             texFuncs->glTextureStorage2D(textureId, target, bindingTarget, mipLevels, format,
                                          dimensions[0], layers);
         } else {
-            qWarning("Array textures are not supported");
+            qWarning("1D array textures are not supported");
             return;
         }
         break;
@@ -1356,6 +1368,7 @@ QOpenGLTexture *QOpenGLTexturePrivate::createTextureView(QOpenGLTexture::Target 
     \value NPOTTextures Basic support for non-power-of-two textures
     \value NPOTTextureRepeat Full support for non-power-of-two textures including texture
            repeat modes
+    \value Texture1D Support for the 1 dimensional texture target
 */
 
 /*!
@@ -2425,6 +2438,10 @@ bool QOpenGLTexture::hasFeature(Feature feature)
     case NPOTTextures:
     case NPOTTextureRepeat:
         supported = ctx->hasExtension(QByteArrayLiteral("GL_ARB_texture_non_power_of_two"));
+        break;
+
+    case Texture1D:
+        supported = f.version() >= qMakePair(1, 1);
         break;
 
     case MaxFeatureFlag:
