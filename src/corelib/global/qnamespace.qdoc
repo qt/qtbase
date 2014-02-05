@@ -106,8 +106,6 @@
     QCoreApplication::setAttribute(), and can be tested for with
     QCoreApplication::testAttribute().
 
-    \value AA_MSWindowsUseDirect3DByDefault This value is obsolete and
-           has no effect.
 
     \value AA_DontShowIconsInMenus Actions with the Icon property won't be
            shown in any menus unless specifically set by the
@@ -178,6 +176,9 @@
            tells Qt to create toplevel windows immediately.
            Therefore, if it is important to minimize resource
            consumption, do not set this attribute.
+
+    \value AA_MSWindowsUseDirect3DByDefault This value is obsolete and
+           has no effect.
 
     \omitvalue AA_AttributeCount
 */
