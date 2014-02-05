@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009 Dan Nicholson
+ * Copyright © 2013 Ran Benita
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -21,29 +21,34 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef ATOM_H
-#define ATOM_H
+#ifndef _XKBCOMMON_X11_PRIV_H
+#define _XKBCOMMON_X11_PRIV_H
 
-typedef uint32_t xkb_atom_t;
+#include <xcb/xkb.h>
 
-#define XKB_ATOM_NONE 0
+#include "xkbcommon/xkbcommon-x11.h"
+#include "keymap.h"
 
-struct atom_table;
+/* Get a strdup'd name of an X atom. */
+bool
+get_atom_name(xcb_connection_t *conn, xcb_atom_t atom, char **out);
 
-struct atom_table *
-atom_table_new(void);
+/*
+ * Make a xkb_atom_t's from X atoms (prefer to send as many as possible
+ * at once, to avoid many roundtrips).
+ *
+ * TODO: We can make this more flexible, such that @to doesn't have to
+ *       be sequential. Then we can convert most adopt_atom() calls to
+ *       adopt_atoms().
+ *       Atom caching would also likely be useful for avoiding quite a
+ *       few requests.
+ */
+bool
+adopt_atoms(struct xkb_context *ctx, xcb_connection_t *conn,
+            const xcb_atom_t *from, xkb_atom_t *to, size_t count);
 
-void
-atom_table_free(struct atom_table *table);
+bool
+adopt_atom(struct xkb_context *ctx, xcb_connection_t *conn, xcb_atom_t atom,
+           xkb_atom_t *out);
 
-xkb_atom_t
-atom_lookup(struct atom_table *table, const char *string, size_t len);
-
-xkb_atom_t
-atom_intern(struct atom_table *table, const char *string, size_t len,
-            bool steal);
-
-const char *
-atom_text(struct atom_table *table, xkb_atom_t atom);
-
-#endif /* ATOM_H */
+#endif

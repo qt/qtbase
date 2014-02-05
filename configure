@@ -3172,7 +3172,7 @@ if [ "$XPLATFORM_MAC" = "no" -a "$CFG_DEBUG_RELEASE" = "yes" ]; then
     echo
 fi
 
-if [ "$CFG_XCB" != "no" ] && [ "$CFG_XKBCOMMON" = "no" ]; then
+if ( [ "$CFG_XCB" = "system" ] || [ "$CFG_XCB" = "qt" ] ) && [ "$CFG_XKBCOMMON" = "no" ]; then
     echo "Error: -no-xkbcommon is not supported on XCB platform plugin."
     exit 101
 fi
@@ -5213,26 +5213,30 @@ if [ "$CFG_XCB" != "no" ]; then
     fi
     QMakeVar set QMAKE_X11_PREFIX "$QMAKE_X11_PREFIX"
 
-    if compileTest qpa/xcb "xcb" $QMAKE_CFLAGS_XCB $QMAKE_LIBS_XCB; then
+    if [ "$CFG_XKBCOMMON" != no ] && compileTest qpa/xcb "xcb" $QMAKE_CFLAGS_XCB $QMAKE_LIBS_XCB; then
+        QT_CONFIG="$QT_CONFIG xcb-plugin"
 
         if [ "$CFG_XCB" = "qt" ]; then
             QT_CONFIG="$QT_CONFIG xcb-qt"
         else
             CFG_XCB="system"
-
             if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists "xcb >= 1.5" 2>/dev/null; then
                 XCB_PACKAGES="xcb xcb-shm xcb-sync xcb-xfixes xcb-randr xcb-image xcb-keysyms xcb-icccm xcb-shape"
                 QMAKE_CFLAGS_XCB="`$PKG_CONFIG --cflags $XCB_PACKAGES 2>/dev/null`"
                 QMAKE_LIBS_XCB="`$PKG_CONFIG --libs $XCB_PACKAGES 2>/dev/null`"
-                # for xcb-xkb tests
-                QMAKE_CFLAGS_XKB="`$PKG_CONFIG --cflags xcb xcb-xkb 2>/dev/null`"
-                QMAKE_LIBS_XKB="`$PKG_CONFIG --libs xcb xcb-xkb 2>/dev/null`"
             fi
 
-            if compileTest qpa/xcb-xkb "xcb-xkb" $QMAKE_CFLAGS_XKB $QMAKE_LIBS_XKB; then
-                CFG_XKB=yes
-            else
-                CFG_XKB=no
+            # libxcb version 1.10 was the first version that enables xcb-xkb by default,
+            # therefore the minimal xcb-xkb version we support is 1.10
+            CFG_XKB=no
+            if $PKG_CONFIG --exists "xcb-xkb >= 1.10" 2>/dev/null; then
+                QMAKE_CFLAGS_XKB="`$PKG_CONFIG --cflags xcb xcb-xkb 2>/dev/null`"
+                QMAKE_LIBS_XKB="`$PKG_CONFIG --libs xcb xcb-xkb 2>/dev/null`"
+                if compileTest qpa/xcb-xkb "xcb-xkb" $QMAKE_CFLAGS_XKB $QMAKE_LIBS_XKB; then
+                    CFG_XKB=yes
+                fi
+            fi
+            if [ "$CFG_XKB" = "no" ]; then
                 QMakeVar add DEFINES QT_NO_XKB
             fi
 
@@ -5328,52 +5332,45 @@ fi
 
 # Detect libxkbcommon
 ORIG_CFG_XKBCOMMON="$CFG_XKBCOMMON"
-if [ "$CFG_XKBCOMMON" != "qt" ]; then
-    # currently only xcb platform plugin requires xkbcommon, for other platforms it can be set to 'no'
-    if [ "$CFG_XKBCOMMON" != "no" ]; then
-        if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists "xkbcommon >= 0.2.0" 2>/dev/null; then
-            QMAKE_CFLAGS_XKBCOMMON="`$PKG_CONFIG --cflags xkbcommon 2>/dev/null`"
-            QMAKE_LIBS_XKBCOMMON="`$PKG_CONFIG --libs xkbcommon 2>/dev/null`"
-            QMAKE_VERSION_XKBCOMMON="`$PKG_CONFIG --modversion xkbcommon 2>/dev/null`"
+# currently only xcb platform plugin supports building xkbcommon
+if [ "$CFG_XCB" != "no" ]; then
+    if [ "$CFG_XKBCOMMON" = "auto" ] || [ "$CFG_XKBCOMMON" = "system" ]; then
+        if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists "xkbcommon xkbcommon-x11 >= 0.4.0" 2>/dev/null; then
+            QMAKE_CFLAGS_XKBCOMMON="`$PKG_CONFIG --cflags xkbcommon xkbcommon-x11 2>/dev/null`"
+            QMAKE_LIBS_XKBCOMMON="`$PKG_CONFIG --libs xkbcommon xkbcommon-x11 2>/dev/null`"
 
             QMakeVar set QMAKE_CFLAGS_XKBCOMMON "$QMAKE_CFLAGS_XKBCOMMON"
             QMakeVar set QMAKE_LIBS_XKBCOMMON "$QMAKE_LIBS_XKBCOMMON"
-            QMakeVar set QMAKE_VERSION_XKBCOMMON "$QMAKE_VERSION_XKBCOMMON"
             CFG_XKBCOMMON=system
         else
-            CFG_XKBCOMMON=no
-        fi
-
-        if [ "$CFG_XCB" != "no" ] && [ "$CFG_XKBCOMMON" = "no" ]; then
             # use the bundled version instead
             CFG_XKBCOMMON=qt
         fi
     fi
-fi
-
-if [ "$CFG_XKBCOMMON" = "qt" ]; then
-    QT_CONFIG="$QT_CONFIG xkbcommon-qt"
-    # detect XKB config root
-    if [ "$CFG_XKB_CONFIG_ROOT" = "auto" ]; then
-        if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists "xkeyboard-config" 2> /dev/null; then
-            CFG_XKB_CONFIG_ROOT="`$PKG_CONFIG --variable=xkb_base xkeyboard-config`"
-        else
-            # search for xkb configs in most probable locations
-            if [ -d "/usr/share/X11/xkb" ]; then
-                # Linux
-                CFG_XKB_CONFIG_ROOT="/usr/share/X11/xkb"
-            elif [ -d "/usr/local/share/X11/xkb" ]; then
-                # BSD UNIX
-                CFG_XKB_CONFIG_ROOT="/usr/local/share/X11/xkb"
+    if [ "$CFG_XKBCOMMON" = "qt" ]; then
+        QT_CONFIG="$QT_CONFIG xkbcommon-qt"
+        # detect XKB config root
+        if [ "$CFG_XKB_CONFIG_ROOT" = "auto" ]; then
+            if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists "xkeyboard-config" 2> /dev/null; then
+                CFG_XKB_CONFIG_ROOT="`$PKG_CONFIG --variable=xkb_base xkeyboard-config`"
+            else
+                # search for xkb configs in most probable locations
+                if [ -d "/usr/share/X11/xkb" ]; then
+                    # Linux
+                    CFG_XKB_CONFIG_ROOT="/usr/share/X11/xkb"
+                elif [ -d "/usr/local/share/X11/xkb" ]; then
+                    # BSD UNIX
+                    CFG_XKB_CONFIG_ROOT="/usr/local/share/X11/xkb"
+                fi
             fi
         fi
+        QMakeVar set QMAKE_XKB_CONFIG_ROOT "$CFG_XKB_CONFIG_ROOT"
+        if [ "$CFG_XKB_CONFIG_ROOT" = "auto" ]; then
+            CFG_XKB_CONFIG_ROOT="not found"
+        fi
     fi
-    QMakeVar set QMAKE_XKB_CONFIG_ROOT "$CFG_XKB_CONFIG_ROOT"
-    if [ "$CFG_XKB_CONFIG_ROOT" = "auto" ]; then
-        CFG_XKB_CONFIG_ROOT="not found"
-    fi
-elif [ "$CFG_XKBCOMMON" = "no" ]; then
-    QMakeVar add DEFINES QT_NO_XKBCOMMON
+else
+    CFG_XKBCOMMON=no
 fi
 
 # EGL Support
@@ -6852,7 +6849,7 @@ if [ "$CFG_OPENSSL" = "linked" ] && [ "$OPENSSL_LIBS" = "" ]; then
     echo
 fi
 if [ "$ORIG_CFG_XKBCOMMON" != qt ] && [ "$CFG_XKBCOMMON" = qt ]; then
-    echo "NOTE: libxkbcommon 0.2.0 (or higher) not found on the system, will use "
+    echo "NOTE: libxkbcommon and libxkbcommon-x11 0.4.0 or higher not found on the system, will use "
     echo "the bundled version from 3rd party directory."
 fi
 if [ "$CFG_XKBCOMMON" = "qt" ] && [ "$CFG_XKB_CONFIG_ROOT" = "not found" ]; then

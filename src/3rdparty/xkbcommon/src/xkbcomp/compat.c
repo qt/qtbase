@@ -432,19 +432,19 @@ ResolveStateAndPredicate(ExprDef *expr, enum xkb_match_operation *pred_rtrn,
     }
 
     *pred_rtrn = MATCH_EXACTLY;
-    if (expr->op == EXPR_ACTION_DECL) {
+    if (expr->expr.op == EXPR_ACTION_DECL) {
         const char *pred_txt = xkb_atom_text(info->keymap->ctx,
-                                             expr->value.action.name);
+                                             expr->action.name);
         if (!LookupString(symInterpretMatchMaskNames, pred_txt, pred_rtrn)) {
             log_err(info->keymap->ctx,
                     "Illegal modifier predicate \"%s\"; Ignored\n", pred_txt);
             return false;
         }
-        expr = expr->value.action.args;
+        expr = expr->action.args;
     }
-    else if (expr->op == EXPR_IDENT) {
+    else if (expr->expr.op == EXPR_IDENT) {
         const char *pred_txt = xkb_atom_text(info->keymap->ctx,
-                                             expr->value.str);
+                                             expr->ident.ident);
         if (pred_txt && istreq(pred_txt, "any")) {
             *pred_rtrn = MATCH_ANY;
             *mods_rtrn = MOD_REAL_MASK_ALL;
@@ -805,7 +805,7 @@ HandleInterpBody(CompatInfo *info, VarDef *def, SymInterpInfo *si)
     ExprDef *arrayNdx;
 
     for (; def; def = (VarDef *) def->common.next) {
-        if (def->name && def->name->op == EXPR_FIELD_REF) {
+        if (def->name && def->name->expr.op == EXPR_FIELD_REF) {
             log_err(info->keymap->ctx,
                     "Cannot set a global default value from within an interpret statement; "
                     "Move statements to the global file scope\n");
@@ -840,15 +840,7 @@ HandleInterpDef(CompatInfo *info, InterpDef *def, enum merge_mode merge)
 
     si = info->default_interp;
     si.merge = merge = (def->merge == MERGE_DEFAULT ? merge : def->merge);
-
-    if (!LookupKeysym(def->sym, &si.interp.sym)) {
-        log_err(info->keymap->ctx,
-                "Could not resolve keysym %s; "
-                "Symbol interpretation ignored\n",
-                def->sym);
-        return false;
-    }
-
+    si.interp.sym = def->sym;
     si.interp.match = pred;
     si.interp.mods = mods;
 
@@ -941,7 +933,7 @@ HandleCompatMapFile(CompatInfo *info, XkbFile *file, enum merge_mode merge)
             break;
         default:
             log_err(info->keymap->ctx,
-                    "Interpretation files may not include other types; "
+                    "Compat files may not include other types; "
                     "Ignoring %s\n", stmt_type_to_string(stmt->type));
             ok = false;
             break;
@@ -958,15 +950,21 @@ HandleCompatMapFile(CompatInfo *info, XkbFile *file, enum merge_mode merge)
     }
 }
 
+/* Temporary struct for CopyInterps. */
+struct collect {
+    darray(struct xkb_sym_interpret) sym_interprets;
+};
+
 static void
-CopyInterps(CompatInfo *info, bool needSymbol, enum xkb_match_operation pred)
+CopyInterps(CompatInfo *info, bool needSymbol, enum xkb_match_operation pred,
+            struct collect *collect)
 {
     SymInterpInfo *si;
 
     darray_foreach(si, info->interps)
         if (si->interp.match == pred &&
             (si->interp.sym != XKB_KEY_NoSymbol) == needSymbol)
-            darray_append(info->keymap->sym_interprets, si->interp);
+            darray_append(collect->sym_interprets, si->interp);
 }
 
 static void
@@ -1025,19 +1023,26 @@ static bool
 CopyCompatToKeymap(struct xkb_keymap *keymap, CompatInfo *info)
 {
     keymap->compat_section_name = strdup_safe(info->name);
+    XkbEscapeMapName(keymap->compat_section_name);
 
     if (!darray_empty(info->interps)) {
+        struct collect collect;
+        darray_init(collect.sym_interprets);
+
         /* Most specific to least specific. */
-        CopyInterps(info, true, MATCH_EXACTLY);
-        CopyInterps(info, true, MATCH_ALL);
-        CopyInterps(info, true, MATCH_NONE);
-        CopyInterps(info, true, MATCH_ANY);
-        CopyInterps(info, true, MATCH_ANY_OR_NONE);
-        CopyInterps(info, false, MATCH_EXACTLY);
-        CopyInterps(info, false, MATCH_ALL);
-        CopyInterps(info, false, MATCH_NONE);
-        CopyInterps(info, false, MATCH_ANY);
-        CopyInterps(info, false, MATCH_ANY_OR_NONE);
+        CopyInterps(info, true, MATCH_EXACTLY, &collect);
+        CopyInterps(info, true, MATCH_ALL, &collect);
+        CopyInterps(info, true, MATCH_NONE, &collect);
+        CopyInterps(info, true, MATCH_ANY, &collect);
+        CopyInterps(info, true, MATCH_ANY_OR_NONE, &collect);
+        CopyInterps(info, false, MATCH_EXACTLY, &collect);
+        CopyInterps(info, false, MATCH_ALL, &collect);
+        CopyInterps(info, false, MATCH_NONE, &collect);
+        CopyInterps(info, false, MATCH_ANY, &collect);
+        CopyInterps(info, false, MATCH_ANY_OR_NONE, &collect);
+
+        keymap->num_sym_interprets = darray_size(collect.sym_interprets);
+        keymap->sym_interprets = darray_mem(collect.sym_interprets, 0);
     }
 
     CopyLedMapDefs(info);

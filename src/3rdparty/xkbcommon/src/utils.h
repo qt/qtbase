@@ -24,8 +24,10 @@
 #ifndef UTILS_H
 #define UTILS_H 1
 
+#include <errno.h>
 #include <inttypes.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <string.h>
 #include <strings.h>
 
@@ -70,6 +72,12 @@ strdup_safe(const char *s)
     return s ? strdup(s) : NULL;
 }
 
+static inline size_t
+strlen_safe(const char *s)
+{
+    return s ? strlen(s) : 0;
+}
+
 static inline bool
 isempty(const char *s)
 {
@@ -82,6 +90,12 @@ strnull(const char *s)
     return s ? s : "(null)";
 }
 
+static inline const char *
+strempty(const char *s)
+{
+    return s ? s : "";
+}
+
 static inline void *
 memdup(const void *mem, size_t nmemb, size_t size)
 {
@@ -90,6 +104,81 @@ memdup(const void *mem, size_t nmemb, size_t size)
         memcpy(p, mem, nmemb * size);
     return p;
 }
+
+static inline int
+min(int misc, int other)
+{
+    return (misc < other) ? misc : other;
+}
+
+static inline int
+max(int misc, int other)
+{
+    return (misc > other) ? misc : other;
+}
+
+/* ctype.h is locale-dependent and has other oddities. */
+static inline bool
+is_space(char ch)
+{
+    return ch == ' ' || (ch >= '\t' && ch <= '\r');
+}
+
+static inline bool
+is_alpha(char ch)
+{
+    return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
+}
+
+static inline bool
+is_digit(char ch)
+{
+    return ch >= '0' && ch <= '9';
+}
+
+static inline bool
+is_alnum(char ch)
+{
+    return is_alpha(ch) || is_digit(ch);
+}
+
+static inline bool
+is_xdigit(char ch)
+{
+    return
+        (ch >= '0' && ch <= '9') ||
+        (ch >= 'a' && ch <= 'f') ||
+        (ch >= 'A' && ch <= 'F');
+}
+
+static inline bool
+is_graph(char ch)
+{
+    /* See table in ascii(7). */
+    return ch >= '!' && ch <= '~';
+}
+
+/*
+ * Return the bit position of the most significant bit.
+ * Note: this is 1-based! It's more useful this way, and returns 0 when
+ * mask is all 0s.
+ */
+static inline int
+msb_pos(uint32_t mask)
+{
+    int pos = 0;
+    while (mask) {
+        pos++;
+        mask >>= 1;
+    }
+    return pos;
+}
+
+bool
+map_file(FILE *file, const char **string_out, size_t *size_out);
+
+void
+unmap_file(const char *str, size_t size);
 
 #define ARRAY_SIZE(arr) ((sizeof(arr) / sizeof(*(arr))))
 
@@ -132,5 +221,11 @@ memdup(const void *mem, size_t nmemb, size_t size)
 #else
 # define ATTR_NULL_SENTINEL
 #endif /* GNUC >= 4 */
+
+#if (defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__) >= 295)
+#define ATTR_PACKED  __attribute__((__packed__))
+#else
+#define ATTR_PACKED
+#endif
 
 #endif /* UTILS_H */

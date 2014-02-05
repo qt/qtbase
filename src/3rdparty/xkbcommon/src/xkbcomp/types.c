@@ -197,16 +197,6 @@ ReportTypeBadType(KeyTypesInfo *info, KeyTypeInfo *type,
                          TypeTxt(info, type), wanted);
 }
 
-static inline bool
-ReportTypeBadWidth(KeyTypesInfo *info, const char *type, int has, int needs)
-{
-    log_err(info->keymap->ctx,
-            "Key type \"%s\" has %d levels, must have %d; "
-            "Illegal type definition ignored\n",
-            type, has, needs);
-    return false;
-}
-
 /***====================================================================***/
 
 static void
@@ -775,6 +765,7 @@ static bool
 CopyKeyTypesToKeymap(struct xkb_keymap *keymap, KeyTypesInfo *info)
 {
     keymap->types_section_name = strdup_safe(info->name);
+    XkbEscapeMapName(keymap->types_section_name);
 
     keymap->num_types = darray_size(info->types);
     if (keymap->num_types == 0)
@@ -793,7 +784,7 @@ CopyKeyTypesToKeymap(struct xkb_keymap *keymap, KeyTypesInfo *info)
         type->num_levels = 1;
         type->entries = NULL;
         type->num_entries = 0;
-        type->name = xkb_atom_intern(keymap->ctx, "default");
+        type->name = xkb_atom_intern_literal(keymap->ctx, "default");
         type->level_names = NULL;
 
         return true;

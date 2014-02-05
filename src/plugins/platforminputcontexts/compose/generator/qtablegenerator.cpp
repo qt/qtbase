@@ -51,10 +51,6 @@
 
 #include <xkbcommon/xkbcommon.h>
 
-#ifdef XKBCOMMON_0_2_0
-#include <xkbcommon_workaround.h>
-#endif
-
 #include <locale.h> // LC_CTYPE
 #include <string.h> // strchr, strncmp, etc.
 #include <strings.h> // strncasecmp
@@ -326,23 +322,7 @@ ushort TableGenerator::keysymToUtf8(quint32 sym)
     QByteArray chars;
     int bytes;
     chars.resize(8);
-
-#ifdef XKBCOMMON_0_2_0
-    if (needWorkaround(sym)) {
-        quint32 codepoint;
-        if (sym == XKB_KEY_KP_Space)
-            codepoint = XKB_KEY_space & 0x7f;
-        else
-            codepoint = sym & 0x7f;
-
-        bytes = utf32_to_utf8(codepoint, chars.data());
-    } else {
-        bytes = xkb_keysym_to_utf8(sym, chars.data(), chars.size());
-    }
-#else
     bytes = xkb_keysym_to_utf8(sym, chars.data(), chars.size());
-#endif
-
     if (bytes == -1)
         qWarning("TableGenerator::keysymToUtf8 - buffer too small");
 

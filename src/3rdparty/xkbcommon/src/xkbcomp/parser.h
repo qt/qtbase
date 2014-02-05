@@ -175,16 +175,16 @@ typedef union YYSTYPE
 {
 
 /* Line 2068 of yacc.c  */
-#line 127 "parser.y"
+#line 167 "parser.y"
 
         int              ival;
-        unsigned         uval;
         int64_t          num;
         enum xkb_file_type file_type;
         char            *str;
         xkb_atom_t      sval;
         enum merge_mode merge;
         enum xkb_map_flags mapFlags;
+        xkb_keysym_t    keysym;
         ParseCommon     *any;
         ExprDef         *expr;
         VarDef          *var;
@@ -211,20 +211,6 @@ typedef union YYSTYPE
 # define YYSTYPE_IS_DECLARED 1
 #endif
 
-
-
-#if ! defined YYLTYPE && ! defined YYLTYPE_IS_DECLARED
-typedef struct YYLTYPE
-{
-  int first_line;
-  int first_column;
-  int last_line;
-  int last_column;
-} YYLTYPE;
-# define yyltype YYLTYPE /* obsolescent; will be withdrawn */
-# define YYLTYPE_IS_DECLARED 1
-# define YYLTYPE_IS_TRIVIAL 1
-#endif
 
 
 

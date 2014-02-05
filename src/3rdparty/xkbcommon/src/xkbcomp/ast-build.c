@@ -70,18 +70,63 @@ AppendStmt(ParseCommon *to, ParseCommon *append)
     return to;
 }
 
-ExprDef *
-ExprCreate(enum expr_op_type op, enum expr_value_type type)
+static ExprDef *
+ExprCreate(enum expr_op_type op, enum expr_value_type type, size_t size)
 {
-    ExprDef *expr = malloc(sizeof(*expr));
+    ExprDef *expr = malloc(size);
     if (!expr)
         return NULL;
 
     expr->common.type = STMT_EXPR;
     expr->common.next = NULL;
-    expr->op = op;
-    expr->value_type = type;
+    expr->expr.op = op;
+    expr->expr.value_type = type;
 
+    return expr;
+}
+
+#define EXPR_CREATE(type_, name_, op_, value_type_) \
+    ExprDef *name_ = ExprCreate(op_, value_type_, sizeof(type_)); \
+    if (!name_) \
+        return NULL;
+
+ExprDef *
+ExprCreateString(xkb_atom_t str)
+{
+    EXPR_CREATE(ExprString, expr, EXPR_VALUE, EXPR_TYPE_STRING);
+    expr->string.str = str;
+    return expr;
+}
+
+ExprDef *
+ExprCreateInteger(int ival)
+{
+    EXPR_CREATE(ExprInteger, expr, EXPR_VALUE, EXPR_TYPE_INT);
+    expr->integer.ival = ival;
+    return expr;
+}
+
+ExprDef *
+ExprCreateBoolean(bool set)
+{
+    EXPR_CREATE(ExprBoolean, expr, EXPR_VALUE, EXPR_TYPE_BOOLEAN);
+    expr->boolean.set = set;
+    return expr;
+}
+
+ExprDef *
+ExprCreateKeyName(xkb_atom_t key_name)
+{
+    EXPR_CREATE(ExprKeyName, expr, EXPR_VALUE, EXPR_TYPE_KEYNAME);
+    expr->key_name.key_name = key_name;
+    return expr;
+}
+
+ExprDef *
+ExprCreateIdent(xkb_atom_t ident)
+{
+    EXPR_CREATE(ExprIdent, expr, EXPR_IDENT, EXPR_TYPE_UNKNOWN);
+    expr->ident.ident = ident;
     return expr;
 }
 
@@ -89,38 +134,109 @@ ExprDef *
 ExprCreateUnary(enum expr_op_type op, enum expr_value_type type,
                 ExprDef *child)
 {
-    ExprDef *expr = malloc(sizeof(*expr));
-    if (!expr)
-        return NULL;
-
-    expr->common.type = STMT_EXPR;
-    expr->common.next = NULL;
-    expr->op = op;
-    expr->value_type = type;
-    expr->value.child = child;
-
+    EXPR_CREATE(ExprUnary, expr, op, type);
+    expr->unary.child = child;
     return expr;
 }
 
 ExprDef *
 ExprCreateBinary(enum expr_op_type op, ExprDef *left, ExprDef *right)
 {
-    ExprDef *expr = malloc(sizeof(*expr));
-    if (!expr)
-        return NULL;
+    EXPR_CREATE(ExprBinary, expr, op, EXPR_TYPE_UNKNOWN);
 
-    expr->common.type = STMT_EXPR;
-    expr->common.next = NULL;
-    expr->op = op;
-    if (op == EXPR_ASSIGN || left->value_type == EXPR_TYPE_UNKNOWN)
-        expr->value_type = right->value_type;
-    else if (left->value_type == right->value_type ||
-             right->value_type == EXPR_TYPE_UNKNOWN)
-        expr->value_type = left->value_type;
-    else
-        expr->value_type = EXPR_TYPE_UNKNOWN;
-    expr->value.binary.left = left;
-    expr->value.binary.right = right;
+    if (op == EXPR_ASSIGN || left->expr.value_type == EXPR_TYPE_UNKNOWN)
+        expr->expr.value_type = right->expr.value_type;
+    else if (left->expr.value_type == right->expr.value_type ||
+             right->expr.value_type == EXPR_TYPE_UNKNOWN)
+        expr->expr.value_type = left->expr.value_type;
+    expr->binary.left = left;
+    expr->binary.right = right;
+
+    return expr;
+}
+
+ExprDef *
+ExprCreateFieldRef(xkb_atom_t element, xkb_atom_t field)
+{
+    EXPR_CREATE(ExprFieldRef, expr, EXPR_FIELD_REF, EXPR_TYPE_UNKNOWN);
+    expr->field_ref.element = element;
+    expr->field_ref.field = field;
+    return expr;
+}
+
+ExprDef *
+ExprCreateArrayRef(xkb_atom_t element, xkb_atom_t field, ExprDef *entry)
+{
+    EXPR_CREATE(ExprArrayRef, expr, EXPR_ARRAY_REF, EXPR_TYPE_UNKNOWN);
+    expr->array_ref.element = element;
+    expr->array_ref.field = field;
+    expr->array_ref.entry = entry;
+    return expr;
+}
+
+ExprDef *
+ExprCreateAction(xkb_atom_t name, ExprDef *args)
+{
+    EXPR_CREATE(ExprAction, expr, EXPR_ACTION_DECL, EXPR_TYPE_UNKNOWN);
+    expr->action.name = name;
+    expr->action.args = args;
+    return expr;
+}
+
+ExprDef *
+ExprCreateKeysymList(xkb_keysym_t sym)
+{
+    EXPR_CREATE(ExprKeysymList, expr, EXPR_KEYSYM_LIST, EXPR_TYPE_SYMBOLS);
+
+    darray_init(expr->keysym_list.syms);
+    darray_init(expr->keysym_list.symsMapIndex);
+    darray_init(expr->keysym_list.symsNumEntries);
+
+    darray_append(expr->keysym_list.syms, sym);
+    darray_append(expr->keysym_list.symsMapIndex, 0);
+    darray_append(expr->keysym_list.symsNumEntries, 1);
+
+    return expr;
+}
+
+ExprDef *
+ExprCreateMultiKeysymList(ExprDef *expr)
+{
+    size_t nLevels = darray_size(expr->keysym_list.symsMapIndex);
+
+    darray_resize(expr->keysym_list.symsMapIndex, 1);
+    darray_resize(expr->keysym_list.symsNumEntries, 1);
+    darray_item(expr->keysym_list.symsMapIndex, 0) = 0;
+    darray_item(expr->keysym_list.symsNumEntries, 0) = nLevels;
+
+    return expr;
+}
+
+ExprDef *
+ExprAppendKeysymList(ExprDef *expr, xkb_keysym_t sym)
+{
+    size_t nSyms = darray_size(expr->keysym_list.syms);
+
+    darray_append(expr->keysym_list.symsMapIndex, nSyms);
+    darray_append(expr->keysym_list.symsNumEntries, 1);
+    darray_append(expr->keysym_list.syms, sym);
+
+    return expr;
+}
+
+ExprDef *
+ExprAppendMultiKeysymList(ExprDef *expr, ExprDef *append)
+{
+    size_t nSyms = darray_size(expr->keysym_list.syms);
+    size_t numEntries = darray_size(append->keysym_list.syms);
+
+    darray_append(expr->keysym_list.symsMapIndex, nSyms);
+    darray_append(expr->keysym_list.symsNumEntries, numEntries);
+    darray_append_items(expr->keysym_list.syms,
+                        darray_mem(append->keysym_list.syms, 0), numEntries);
+
+    darray_resize(append->keysym_list.syms, 0);
+    FreeStmt(&append->common);
 
     return expr;
 }
@@ -186,22 +302,14 @@ VarCreate(ExprDef *name, ExprDef *value)
 }
 
 VarDef *
-BoolVarCreate(xkb_atom_t nameToken, unsigned set)
+BoolVarCreate(xkb_atom_t ident, bool set)
 {
-    ExprDef *name, *value;
-    VarDef *def;
-
-    name = ExprCreate(EXPR_IDENT, EXPR_TYPE_UNKNOWN);
-    name->value.str = nameToken;
-    value = ExprCreate(EXPR_VALUE, EXPR_TYPE_BOOLEAN);
-    value->value.uval = set;
-    def = VarCreate(name, value);
-
-    return def;
+    return VarCreate((ExprDef *) ExprCreateIdent(ident),
+                     (ExprDef *) ExprCreateBoolean(set));
 }
 
 InterpDef *
-InterpCreate(char *sym, ExprDef *match)
+InterpCreate(xkb_keysym_t sym, ExprDef *match)
 {
     InterpDef *def = malloc(sizeof(*def));
     if (!def)
@@ -232,7 +340,7 @@ KeyTypeCreate(xkb_atom_t name, VarDef *body)
 }
 
 SymbolsDef *
-SymbolsCreate(xkb_atom_t keyName, ExprDef *symbols)
+SymbolsCreate(xkb_atom_t keyName, VarDef *symbols)
 {
     SymbolsDef *def = malloc(sizeof(*def));
     if (!def)
@@ -312,83 +420,6 @@ LedNameCreate(int ndx, ExprDef *name, bool virtual)
     return def;
 }
 
-ExprDef *
-ActionCreate(xkb_atom_t name, ExprDef *args)
-{
-    ExprDef *act = malloc(sizeof(*act));
-    if (!act)
-        return NULL;
-
-    act->common.type = STMT_EXPR;
-    act->common.next = NULL;
-    act->op = EXPR_ACTION_DECL;
-    act->value.action.name = name;
-    act->value.action.args = args;
-
-    return act;
-}
-
-ExprDef *
-CreateKeysymList(char *sym)
-{
-    ExprDef *def;
-
-    def = ExprCreate(EXPR_KEYSYM_LIST, EXPR_TYPE_SYMBOLS);
-
-    darray_init(def->value.list.syms);
-    darray_init(def->value.list.symsMapIndex);
-    darray_init(def->value.list.symsNumEntries);
-
-    darray_append(def->value.list.syms, sym);
-    darray_append(def->value.list.symsMapIndex, 0);
-    darray_append(def->value.list.symsNumEntries, 1);
-
-    return def;
-}
-
-ExprDef *
-CreateMultiKeysymList(ExprDef *list)
-{
-    size_t nLevels = darray_size(list->value.list.symsMapIndex);
-
-    darray_resize(list->value.list.symsMapIndex, 1);
-    darray_resize(list->value.list.symsNumEntries, 1);
-    darray_item(list->value.list.symsMapIndex, 0) = 0;
-    darray_item(list->value.list.symsNumEntries, 0) = nLevels;
-
-    return list;
-}
-
-ExprDef *
-AppendKeysymList(ExprDef *list, char *sym)
-{
-    size_t nSyms = darray_size(list->value.list.syms);
-
-    darray_append(list->value.list.symsMapIndex, nSyms);
-    darray_append(list->value.list.symsNumEntries, 1);
-    darray_append(list->value.list.syms, sym);
-
-    return list;
-}
-
-ExprDef *
-AppendMultiKeysymList(ExprDef *list, ExprDef *append)
-{
-    size_t nSyms = darray_size(list->value.list.syms);
-    size_t numEntries = darray_size(append->value.list.syms);
-
-    darray_append(list->value.list.symsMapIndex, nSyms);
-    darray_append(list->value.list.symsNumEntries, numEntries);
-    darray_append_items(list->value.list.syms,
-                        darray_mem(append->value.list.syms, 0),
-                        numEntries);
-
-    darray_resize(append->value.list.syms, 0);
-    FreeStmt(&append->common);
-
-    return list;
-}
-
 static void
 FreeInclude(IncludeStmt *incl);
 
@@ -464,30 +495,6 @@ err:
     return NULL;
 }
 
-static void
-EscapeMapName(char *name)
-{
-    /*
-     * All latin-1 alphanumerics, plus parens, slash, minus, underscore and
-     * wildcards.
-     */
-    static const unsigned char legal[] = {
-        0x00, 0x00, 0x00, 0x00, 0x00, 0xa7, 0xff, 0x83,
-        0xfe, 0xff, 0xff, 0x87, 0xfe, 0xff, 0xff, 0x07,
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-        0xff, 0xff, 0x7f, 0xff, 0xff, 0xff, 0x7f, 0xff
-    };
-
-    if (!name)
-        return;
-
-    while (*name) {
-        if (!(legal[*name / 8] & (1 << (*name % 8))))
-            *name = '_';
-        name++;
-    }
-}
-
 XkbFile *
 XkbFileCreate(struct xkb_context *ctx, enum xkb_file_type type, char *name,
               ParseCommon *defs, enum xkb_map_flags flags)
@@ -498,7 +505,7 @@ XkbFileCreate(struct xkb_context *ctx, enum xkb_file_type type, char *name,
     if (!file)
         return NULL;
 
-    EscapeMapName(name);
+    XkbEscapeMapName(name);
     file->file_type = type;
     file->topName = strdup_safe(name);
     file->name = name;
@@ -549,18 +556,16 @@ err:
 static void
 FreeExpr(ExprDef *expr)
 {
-    char **sym;
-
     if (!expr)
         return;
 
-    switch (expr->op) {
+    switch (expr->expr.op) {
     case EXPR_ACTION_LIST:
     case EXPR_NEGATE:
     case EXPR_UNARY_PLUS:
     case EXPR_NOT:
     case EXPR_INVERT:
-        FreeStmt(&expr->value.child->common);
+        FreeStmt(&expr->unary.child->common);
         break;
 
     case EXPR_DIVIDE:
@@ -568,24 +573,22 @@ FreeExpr(ExprDef *expr)
     case EXPR_SUBTRACT:
     case EXPR_MULTIPLY:
     case EXPR_ASSIGN:
-        FreeStmt(&expr->value.binary.left->common);
-        FreeStmt(&expr->value.binary.right->common);
+        FreeStmt(&expr->binary.left->common);
+        FreeStmt(&expr->binary.right->common);
         break;
 
     case EXPR_ACTION_DECL:
-        FreeStmt(&expr->value.action.args->common);
+        FreeStmt(&expr->action.args->common);
         break;
 
     case EXPR_ARRAY_REF:
-        FreeStmt(&expr->value.array.entry->common);
+        FreeStmt(&expr->array_ref.entry->common);
         break;
 
     case EXPR_KEYSYM_LIST:
-        darray_foreach(sym, expr->value.list.syms)
-            free(*sym);
-        darray_free(expr->value.list.syms);
-        darray_free(expr->value.list.symsMapIndex);
-        darray_free(expr->value.list.symsNumEntries);
+        darray_free(expr->keysym_list.syms);
+        darray_free(expr->keysym_list.symsMapIndex);
+        darray_free(expr->keysym_list.symsNumEntries);
         break;
 
     default:
@@ -640,7 +643,6 @@ FreeStmt(ParseCommon *stmt)
             FreeStmt(&u.keyType->body->common);
             break;
         case STMT_INTERP:
-            free(u.interp->sym);
             FreeStmt(&u.interp->match->common);
             FreeStmt(&u.interp->def->common);
             break;

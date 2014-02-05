@@ -199,17 +199,34 @@ FindFileInXkbPath(struct xkb_context *ctx, const char *name,
 {
     unsigned int i;
     FILE *file = NULL;
-    char buf[PATH_MAX];
+    char *buf = NULL;
     const char *typeDir;
+    size_t buf_size = 0, typeDirLen, name_len;
 
     typeDir = DirectoryForInclude(type);
+    typeDirLen = strlen(typeDir);
+    name_len = strlen(name);
 
     for (i = 0; i < xkb_context_num_include_paths(ctx); i++) {
-        int ret = snprintf(buf, sizeof(buf), "%s/%s/%s",
-                           xkb_context_include_path_get(ctx, i),
-                           typeDir, name);
-        if (ret >= (ssize_t) sizeof(buf)) {
-            log_err(ctx, "File name (%s/%s/%s) too long\n",
+        size_t new_buf_size = strlen(xkb_context_include_path_get(ctx, i)) +
+                              typeDirLen + name_len + 3;
+        int ret;
+        if (new_buf_size > buf_size) {
+            void *buf_new = realloc(buf, new_buf_size);
+            if (buf_new) {
+                buf_size = new_buf_size;
+                buf = buf_new;
+            } else {
+                log_err(ctx, "Cannot realloc for name (%s/%s/%s)\n",
+                        xkb_context_include_path_get(ctx, i), typeDir, name);
+                continue;
+            }
+        }
+        ret = snprintf(buf, buf_size, "%s/%s/%s",
+                       xkb_context_include_path_get(ctx, i),
+                       typeDir, name);
+        if (ret < 0) {
+            log_err(ctx, "snprintf error (%s/%s/%s)\n",
                     xkb_context_include_path_get(ctx, i), typeDir, name);
             continue;
         }
@@ -242,11 +259,14 @@ FindFileInXkbPath(struct xkb_context *ctx, const char *name,
                         xkb_context_failed_include_path_get(ctx, i));
         }
 
+        free(buf);
         return NULL;
     }
 
     if (pathRtrn)
-        *pathRtrn = strdup(buf);
+        *pathRtrn = buf;
+    else
+        free(buf);
     return file;
 }
 
@@ -275,7 +295,7 @@ ProcessIncludeFile(struct xkb_context *ctx, IncludeStmt *stmt,
 
     if (xkb_file->file_type != file_type) {
         log_err(ctx,
-                "Include file wrong type (expected %s, got %s); "
+                "Include file of wrong type (expected %s, got %s); "
                 "Include file \"%s\" ignored\n",
                 xkb_file_type_to_string(file_type),
                 xkb_file_type_to_string(xkb_file->file_type), stmt->file);
