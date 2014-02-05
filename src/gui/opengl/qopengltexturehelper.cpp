@@ -139,6 +139,9 @@ QOpenGLTextureHelper::QOpenGLTextureHelper(QOpenGLContext *context)
     }
 #endif
 
+    // wglGetProcAddress should not be used to (and indeed will not) load OpenGL <= 1.1 functions.
+    // Hence, we resolve them "the hard way"
+
 #if defined(Q_OS_WIN) && !defined(QT_OPENGL_ES_2)
     HMODULE handle = GetModuleHandleA("opengl32.dll");
 
