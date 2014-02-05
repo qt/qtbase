@@ -46,8 +46,6 @@
 #include "complexwidgets.h"
 #include "itemviews.h"
 
-#include <qaccessibleplugin.h>
-#include <qplugin.h>
 #include <qpushbutton.h>
 #include <qtoolbutton.h>
 #include <qtreeview.h>
@@ -58,23 +56,7 @@
 
 QT_BEGIN_NAMESPACE
 
-
-class AccessibleFactory : public QAccessiblePlugin
-{
-    Q_OBJECT
-    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QAccessibleFactoryInterface" FILE "widgets.json")
-
-public:
-    AccessibleFactory();
-
-    QAccessibleInterface *create(const QString &classname, QObject *object);
-};
-
-AccessibleFactory::AccessibleFactory()
-{
-}
-
-QAccessibleInterface *AccessibleFactory::create(const QString &classname, QObject *object)
+QAccessibleInterface *qAccessibleFactory(const QString &classname, QObject *object)
 {
     QAccessibleInterface *iface = 0;
     if (!object || !object->isWidgetType())
@@ -254,9 +236,6 @@ QAccessibleInterface *AccessibleFactory::create(const QString &classname, QObjec
     return iface;
 }
 
-
 QT_END_NAMESPACE
-
-#include "main.moc"
 
 #endif // QT_NO_ACCESSIBILITY

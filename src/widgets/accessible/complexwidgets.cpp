@@ -66,7 +66,7 @@
 
 QT_BEGIN_NAMESPACE
 
-QString Q_GUI_EXPORT qt_accStripAmp(const QString &text);
+QString qt_accStripAmp(const QString &text);
 
 #ifndef QT_NO_TABBAR
 /*!

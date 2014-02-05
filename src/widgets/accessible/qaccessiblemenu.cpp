@@ -52,8 +52,8 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_MENU
 
-QString Q_GUI_EXPORT qt_accStripAmp(const QString &text);
-QString Q_GUI_EXPORT qt_accHotKey(const QString &text);
+QString qt_accStripAmp(const QString &text);
+QString qt_accHotKey(const QString &text);
 
 QAccessibleInterface *getOrCreateMenu(QWidget *menu, QAction *action)
 {

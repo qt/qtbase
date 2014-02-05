@@ -77,6 +77,7 @@
 #endif
 
 #include "private/qkeymapper_p.h"
+#include "private/qaccessiblewidgetfactory_p.h"
 
 #include <qthread.h>
 #include <private/qthread_p.h>
@@ -555,6 +556,11 @@ void QApplicationPrivate::construct()
 #ifdef QT_EVAL
     extern void qt_gui_eval_init(QCoreApplicationPrivate::Type);
     qt_gui_eval_init(application_type);
+#endif
+
+#ifndef QT_NO_ACCESSIBILITY
+    // factory for accessible interfaces for widgets shipped with Qt
+    QAccessible::installFactory(&qAccessibleFactory);
 #endif
 
 #ifndef QT_NO_LIBRARY

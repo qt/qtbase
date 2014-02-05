@@ -71,8 +71,8 @@ QT_BEGIN_NAMESPACE
 
 extern QList<QWidget*> childWidgets(const QWidget *widget, bool includeTopLevel = false);
 
-QString Q_GUI_EXPORT qt_accStripAmp(const QString &text);
-QString Q_GUI_EXPORT qt_accHotKey(const QString &text);
+QString qt_accStripAmp(const QString &text);
+QString qt_accHotKey(const QString &text);
 
 /*!
   \class QAccessibleButton

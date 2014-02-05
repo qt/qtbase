@@ -134,7 +134,7 @@ static int qt_accAmpIndex(const QString &text)
 #endif
 }
 
-QString Q_WIDGETS_EXPORT qt_accStripAmp(const QString &text)
+QString qt_accStripAmp(const QString &text)
 {
     QString newText(text);
     int ampIndex = qt_accAmpIndex(newText);
@@ -144,7 +144,7 @@ QString Q_WIDGETS_EXPORT qt_accStripAmp(const QString &text)
     return newText.replace(QLatin1String("&&"), QLatin1String("&"));
 }
 
-QString Q_WIDGETS_EXPORT qt_accHotKey(const QString &text)
+QString qt_accHotKey(const QString &text)
 {
     int ampIndex = qt_accAmpIndex(text);
     if (ampIndex != -1)
