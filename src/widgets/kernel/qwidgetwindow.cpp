@@ -50,6 +50,7 @@
 #include <private/qwidgetbackingstore_p.h>
 #include <qpa/qwindowsysteminterface_p.h>
 #include <qpa/qplatformtheme.h>
+#include <qpa/qplatformwindow.h>
 #include <private/qgesturemanager_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -547,6 +548,24 @@ void QWidgetWindow::updateGeometry()
     m_widget->data->fstrut_dirty = false;
 }
 
+Qt::WindowState effectiveState(Qt::WindowStates state);
+
+// Store normal geometry used for saving application settings.
+void QWidgetWindow::updateNormalGeometry()
+{
+    QTLWExtra *tle = m_widget->d_func()->maybeTopData();
+    if (!tle)
+        return;
+     // Ask platform window, default to widget geometry.
+    QRect normalGeometry;
+    if (const QPlatformWindow *pw = handle())
+        normalGeometry = pw->normalGeometry();
+    if (!normalGeometry.isValid() && effectiveState(m_widget->windowState()) == Qt::WindowNoState)
+        normalGeometry = m_widget->geometry();
+    if (normalGeometry.isValid())
+        tle->normalGeometry = normalGeometry;
+}
+
 void QWidgetWindow::handleMoveEvent(QMoveEvent *event)
 {
     updateGeometry();
@@ -692,8 +711,6 @@ void QWidgetWindow::handleExposeEvent(QExposeEvent *event)
     }
 }
 
-Qt::WindowState effectiveState(Qt::WindowStates state);
-
 void QWidgetWindow::handleWindowStateChangedEvent(QWindowStateChangeEvent *event)
 {
     // QWindow does currently not know 'active'.
@@ -712,16 +729,12 @@ void QWidgetWindow::handleWindowStateChangedEvent(QWindowStateChangeEvent *event
         widgetState |= Qt::WindowMinimized;
         break;
     case Qt::WindowMaximized:
-        if (effectiveState(widgetState) == Qt::WindowNoState)
-            if (QTLWExtra *tle = m_widget->d_func()->maybeTopData())
-                tle->normalGeometry = m_widget->geometry();
+        updateNormalGeometry();
         widgetState |= Qt::WindowMaximized;
         widgetState &= ~(Qt::WindowMinimized | Qt::WindowFullScreen);
         break;
     case Qt::WindowFullScreen:
-        if (effectiveState(widgetState) == Qt::WindowNoState)
-            if (QTLWExtra *tle = m_widget->d_func()->maybeTopData())
-                tle->normalGeometry = m_widget->geometry();
+        updateNormalGeometry();
         widgetState |= Qt::WindowFullScreen;
         widgetState &= ~(Qt::WindowMinimized);
         break;

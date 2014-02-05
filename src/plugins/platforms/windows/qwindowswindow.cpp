@@ -1234,6 +1234,28 @@ void QWindowsWindow::handleCompositionSettingsChanged()
         applyBlurBehindWindow(handle());
 }
 
+static QRect normalFrameGeometry(HWND hwnd)
+{
+#ifndef Q_OS_WINCE
+    WINDOWPLACEMENT wp;
+    wp.length = sizeof(WINDOWPLACEMENT);
+    if (GetWindowPlacement(hwnd, &wp))
+        return qrectFromRECT(wp.rcNormalPosition);
+#else
+    Q_UNUSED(hwnd)
+#endif
+    return QRect();
+}
+
+QRect QWindowsWindow::normalGeometry() const
+{
+    // Check for fake 'fullscreen' mode.
+    const bool fakeFullScreen = m_savedFrameGeometry.isValid() && window()->windowState() == Qt::WindowFullScreen;
+    const QRect frame = fakeFullScreen ? m_savedFrameGeometry : normalFrameGeometry(m_data.hwnd);
+    const QMargins margins = fakeFullScreen ? QWindowsGeometryHint::frame(m_savedStyle, 0) : frameMargins();
+    return frame.isValid() ? frame.marginsRemoved(margins) : frame;
+}
+
 void QWindowsWindow::setGeometry(const QRect &rectIn)
 {
     QRect rect = rectIn;
@@ -1593,10 +1615,9 @@ void QWindowsWindow::setWindowState_sys(Qt::WindowState newState)
                 m_savedStyle = style();
 #ifndef Q_OS_WINCE
                 if (oldState == Qt::WindowMinimized) {
-                    WINDOWPLACEMENT wp;
-                    wp.length = sizeof(WINDOWPLACEMENT);
-                    if (GetWindowPlacement(m_data.hwnd, &wp))
-                        m_savedFrameGeometry = qrectFromRECT(wp.rcNormalPosition);
+                    const QRect nf = normalFrameGeometry(m_data.hwnd);
+                    if (nf.isValid())
+                        m_savedFrameGeometry = nf;
                 } else {
 #endif
                     m_savedFrameGeometry = frameGeometry_sys();

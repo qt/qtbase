@@ -127,6 +127,18 @@ QRect QPlatformWindow::geometry() const
     return d->rect;
 }
 
+/*!
+    Returns the geometry of a window in 'normal' state
+    (neither maximized, fullscreen nor minimized) for saving geometries to
+    application settings.
+
+    \since 5.3
+*/
+QRect QPlatformWindow::normalGeometry() const
+{
+    return QRect();
+}
+
 QMargins QPlatformWindow::frameMargins() const
 {
     return QMargins();

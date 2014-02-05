@@ -104,6 +104,7 @@ private slots:
 
 private:
     void updateGeometry();
+    void updateNormalGeometry();
 
     enum FocusWidgets {
         FirstFocusWidget,

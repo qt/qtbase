@@ -162,6 +162,7 @@ public:
     virtual QSurfaceFormat format() const { return m_format; }
     virtual void setGeometry(const QRect &rect);
     virtual QRect geometry() const { return m_data.geometry; }
+    QRect normalGeometry() const Q_DECL_OVERRIDE;
 
     virtual void setVisible(bool visible);
     bool isVisible() const;
