@@ -2073,6 +2073,18 @@ QString QFont::toString() const
         QString::number((int)   rawMode());
 }
 
+/*!
+    Returns the hash value for \a font. If specified, \a seed is used
+    to initialize the hash.
+
+    \relates QFont
+    \since 5.3
+*/
+uint qHash(const QFont &font, uint seed) Q_DECL_NOTHROW
+{
+    return qHash(QFontPrivate::get(font)->request, seed);
+}
+
 
 /*!
     Sets this font to match the description \a descrip. The description
