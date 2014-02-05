@@ -3561,9 +3561,15 @@ void QMetaObject::activate(QObject *sender, int signalOffset, int local_signal_i
             const int method_relative = c->method_relative;
             if (c->isSlotObject) {
                 c->slotObj->ref();
-                const QScopedPointer<QtPrivate::QSlotObjectBase, QSlotObjectBaseDeleter> obj(c->slotObj);
+                QScopedPointer<QtPrivate::QSlotObjectBase, QSlotObjectBaseDeleter> obj(c->slotObj);
                 locker.unlock();
                 obj->call(receiver, argv ? argv : empty_argv);
+
+                // Make sure the slot object gets destroyed before the mutex is locked again, as the
+                // destructor of the slot object might also lock a mutex from the signalSlotLock() mutex pool,
+                // and that would deadlock if the pool happens to return the same mutex.
+                obj.reset();
+
                 locker.relock();
             } else if (callFunction && c->method_offset <= receiver->metaObject()->methodOffset()) {
                 //we compare the vtable to make sure we are not in the destructor of the object.

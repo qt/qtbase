@@ -146,6 +146,7 @@ private slots:
     void connectFunctorOverloads();
     void connectFunctorQueued();
     void connectFunctorWithContext();
+    void connectFunctorDeadlock();
     void connectStaticSlotWithObject();
     void disconnectDoesNotLeakFunctor();
     void contextDoesNotLeakFunctor();
@@ -5696,6 +5697,47 @@ void tst_QObject::connectFunctorWithContext()
 
     // Free
     context->deleteLater();
+}
+
+class MyFunctor
+{
+public:
+    explicit MyFunctor(QObject *objectToDisconnect)
+        : m_objectToDisconnect(objectToDisconnect)
+    {}
+
+    ~MyFunctor() {
+        // Do operations that will lock the internal signalSlotLock mutex on many QObjects.
+        // The more QObjects, the higher the chance that the signalSlotLock mutex used
+        // is already in use. If the number of objects is higher than the number of mutexes in
+        // the pool (currently 131), the deadlock should always trigger. Use an even higher number
+        // to be on the safe side.
+        const int objectCount = 1024;
+        SenderObject lotsOfObjects[objectCount];
+        for (int i = 0; i < objectCount; ++i) {
+            QObject::connect(&lotsOfObjects[i], &SenderObject::signal1,
+                             &lotsOfObjects[i], &SenderObject::aPublicSlot);
+        }
+    }
+
+    void operator()() {
+        // This will cause the slot object associated with this functor to be destroyed after
+        // this function returns. That in turn will destroy this functor.
+        // If our dtor runs with the signalSlotLock held, the bunch of connect()
+        // performed there will deadlock trying to lock that lock again.
+        m_objectToDisconnect->disconnect();
+    }
+
+private:
+    QObject *m_objectToDisconnect;
+};
+
+void tst_QObject::connectFunctorDeadlock()
+{
+    SenderObject sender;
+    MyFunctor functor(&sender);
+    QObject::connect(&sender, &SenderObject::signal1, functor);
+    sender.emitSignal1();
 }
 
 static int s_static_slot_checker = 1;
