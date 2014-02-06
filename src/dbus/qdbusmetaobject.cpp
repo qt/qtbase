@@ -128,12 +128,7 @@ QDBusMetaObjectGenerator::QDBusMetaObjectGenerator(const QString &interfaceName,
     }
 }
 
-Q_DBUS_EXPORT bool qt_dbus_metaobject_skip_annotations = false;
-
-QDBusMetaObjectGenerator::Type
-QDBusMetaObjectGenerator::findType(const QByteArray &signature,
-                                   const QDBusIntrospection::Annotations &annotations,
-                                   const char *direction, int id)
+static int registerComplexDBusType(const char *typeName)
 {
     struct QDBusRawTypeHandler {
         static void destroy(void *)
@@ -159,6 +154,22 @@ QDBusMetaObjectGenerator::findType(const QByteArray &signature,
         }
     };
 
+    return QMetaType::registerNormalizedType(typeName, QDBusRawTypeHandler::destroy,
+                                             QDBusRawTypeHandler::create,
+                                             QDBusRawTypeHandler::destruct,
+                                             QDBusRawTypeHandler::construct,
+                                             sizeof(void *),
+                                             QMetaType::MovableType,
+                                             0);
+}
+
+Q_DBUS_EXPORT bool qt_dbus_metaobject_skip_annotations = false;
+
+QDBusMetaObjectGenerator::Type
+QDBusMetaObjectGenerator::findType(const QByteArray &signature,
+                                   const QDBusIntrospection::Annotations &annotations,
+                                   const char *direction, int id)
+{
     Type result;
     result.id = QVariant::Invalid;
 
@@ -195,13 +206,7 @@ QDBusMetaObjectGenerator::findType(const QByteArray &signature,
             // type is still unknown or doesn't match back to the signature that it
             // was expected to, so synthesize a fake type
             typeName = "QDBusRawType<0x" + signature.toHex() + ">*";
-            type = QMetaType::registerType(typeName, QDBusRawTypeHandler::destroy,
-                                           QDBusRawTypeHandler::create,
-                                           QDBusRawTypeHandler::destruct,
-                                           QDBusRawTypeHandler::construct,
-                                           sizeof(void *),
-                                           QMetaType::MovableType,
-                                           0);
+            type = registerComplexDBusType(typeName);
         }
 
         result.name = typeName;
@@ -217,7 +222,7 @@ QDBusMetaObjectGenerator::findType(const QByteArray &signature,
             type = QVariant::Map;
         } else {
             result.name = "QDBusRawType::" + signature;
-            type = -1;
+            type = registerComplexDBusType(result.name);
         }
     } else {
         result.name = QMetaType::typeName(type);

@@ -125,8 +125,7 @@ static bool isMouseEvent(NSEvent *ev)
     // Only tool or dialog windows should become key:
     if (m_cocoaPlatformWindow && m_cocoaPlatformWindow->windowShouldBehaveAsPanel()) {
         Qt::WindowType type = m_cocoaPlatformWindow->window()->type();
-        if (m_cocoaPlatformWindow->m_overrideBecomeKey
-            || type == Qt::Tool || type == Qt::Dialog)
+        if (type == Qt::Tool || type == Qt::Dialog)
             return YES;
         return NO;
     }
@@ -224,7 +223,6 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
     , m_isExposed(false)
     , m_registerTouchCount(0)
     , m_resizableTransientParent(false)
-    , m_overrideBecomeKey(false)
     , m_hiddenByClipping(false)
     , m_hiddenByAncestor(false)
     , m_alertRequest(NoAlertRequest)
@@ -290,6 +288,7 @@ QCocoaWindow::~QCocoaWindow()
     [m_contentView release];
     [m_nsWindow release];
     [m_nsWindowDelegate release];
+    [m_windowCursor release];
 }
 
 QSurfaceFormat QCocoaWindow::format() const
@@ -583,7 +582,7 @@ NSInteger QCocoaWindow::windowLevel(Qt::WindowFlags flags)
 
     // StayOnTop window should appear above Tool windows.
     if (flags & Qt::WindowStaysOnTopHint)
-        windowLevel = NSPopUpMenuWindowLevel;
+        windowLevel = NSModalPanelWindowLevel;
     // Tooltips should appear above StayOnTop windows.
     if (type == Qt::ToolTip)
         windowLevel = NSScreenSaverWindowLevel;
@@ -882,8 +881,6 @@ bool QCocoaWindow::setKeyboardGrabEnabled(bool grab)
     if (!m_nsWindow)
         return false;
 
-    m_overrideBecomeKey = grab;
-
     if (grab && ![m_nsWindow isKeyWindow])
         [m_nsWindow makeKeyWindow];
     else if (!grab && [m_nsWindow isKeyWindow])
@@ -895,8 +892,6 @@ bool QCocoaWindow::setMouseGrabEnabled(bool grab)
 {
     if (!m_nsWindow)
         return false;
-
-    m_overrideBecomeKey = grab;
 
     if (grab && ![m_nsWindow isKeyWindow])
         [m_nsWindow makeKeyWindow];
@@ -1313,8 +1308,10 @@ void QCocoaWindow::setWindowCursor(NSCursor *cursor)
     // for a popup window.) Qt expects the set cursor to "stick":
     // it should be accociated with the window until a different
     // cursor is set.
-
-    m_windowCursor = cursor;
+    if (m_windowCursor != cursor) {
+        [m_windowCursor release];
+        m_windowCursor = [cursor retain];
+    }
 
     // Use the built in cursor rect API if the QCocoaWindow has a NSWindow.
     // Othervise, set the cursor if this window is under the mouse. In

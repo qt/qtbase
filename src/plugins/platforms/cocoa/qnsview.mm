@@ -90,6 +90,7 @@ static QTouchDevice *touchDevice = 0;
         m_shouldSetGLContextinDrawRect = false;
         currentCustomDragTypes = 0;
         m_sendUpAsRightButton = false;
+        m_inputSource = 0;
 
         if (!touchDevice) {
             touchDevice = new QTouchDevice;
@@ -108,6 +109,7 @@ static QTouchDevice *touchDevice = 0;
     m_maskData = 0;
     m_window = 0;
     m_subscribesForGlobalFrameNotifications = false;
+    [m_inputSource release];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 
     delete currentCustomDragTypes;
@@ -859,6 +861,12 @@ Q_GLOBAL_STATIC(QCocoaTabletDeviceDataHash, tabletDeviceDataHash)
 
     uint deviceId = [theEvent deviceID];
     if (!tabletDeviceDataHash->contains(deviceId)) {
+        // 10.6 sends tablet events for trackpad interaction, but
+        // not proximity events. Silence the warning to prevent
+        // flooding the console.
+        if (QSysInfo::QSysInfo::MacintoshVersion == QSysInfo::MV_10_6)
+            return;
+
         qWarning("QNSView handleTabletEvent: This tablet device is unknown"
                  " (received no proximity event for it). Discarding event.");
         return;
@@ -1245,6 +1253,10 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     Qt::KeyboardModifiers modifiers = [QNSView convertKeyModifiers: nativeModifiers];
     NSString *charactersIgnoringModifiers = [nsevent charactersIgnoringModifiers];
     NSString *characters = [nsevent characters];
+    if (m_inputSource != characters) {
+        [m_inputSource release];
+        m_inputSource = [characters retain];
+    }
 
     // There is no way to get the scan code from carbon/cocoa. But we cannot
     // use the value 0, since it indicates that the event originates from somewhere
@@ -1374,6 +1386,11 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 - (void) insertText:(id)aString replacementRange:(NSRange)replacementRange
 {
     Q_UNUSED(replacementRange)
+
+    if (m_sendKeyEvent && m_composingText.isEmpty() && [aString isEqualToString:m_inputSource]) {
+        // don't send input method events for simple text input (let handleKeyEvent send key events instead)
+        return;
+    }
 
     QString commitString;
     if ([aString length]) {

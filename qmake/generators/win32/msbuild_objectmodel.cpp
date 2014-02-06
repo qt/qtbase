@@ -949,13 +949,15 @@ static inline QString toString(compileAsManagedOptions option)
     return QString();
 }
 
-static inline QString toString(debugOption option)
+static inline QString toString(debugOption option, DotNET compilerVersion)
 {
     switch (option) {
     case debugUnknown:
     case debugLineInfoOnly:
         break;
     case debugDisabled:
+        if (compilerVersion <= NET2010)
+            break;
         return "None";
     case debugOldStyleInfo:
         return "OldStyle";
@@ -1421,6 +1423,17 @@ static inline triState toTriState(termSvrAwarenessType option)
     return unset;
 }
 
+static XmlOutput::xml_output fixedProgramDataBaseFileNameOutput(const VCCLCompilerTool &tool)
+{
+    if (tool.config->CompilerVersion >= NET2012
+            && tool.DebugInformationFormat == debugDisabled
+            && tool.ProgramDataBaseFileName.isEmpty()) {
+        // Force the creation of an empty tag to work-around Visual Studio bug. See QTBUG-35570.
+        return tagValue(_ProgramDataBaseFileName, tool.ProgramDataBaseFileName);
+    }
+    return attrTagS(_ProgramDataBaseFileName, tool.ProgramDataBaseFileName);
+}
+
 void VCXProjectWriter::write(XmlOutput &xml, const VCCLCompilerTool &tool)
 {
     xml
@@ -1440,7 +1453,8 @@ void VCXProjectWriter::write(XmlOutput &xml, const VCCLCompilerTool &tool)
             << attrTagS(_CompileAsManaged, toString(tool.CompileAsManaged))
             << attrTagT(_CompileAsWinRT, tool.CompileAsWinRT)
             << attrTagT(_CreateHotpatchableImage, tool.CreateHotpatchableImage)
-            << attrTagS(_DebugInformationFormat, toString(tool.DebugInformationFormat))
+            << attrTagS(_DebugInformationFormat, toString(tool.DebugInformationFormat,
+                                                          tool.config->CompilerVersion))
             << attrTagT(_DisableLanguageExtensions, tool.DisableLanguageExtensions)
             << attrTagX(_DisableSpecificWarnings, tool.DisableSpecificWarnings, ";")
             << attrTagS(_EnableEnhancedInstructionSet, toString(tool.EnableEnhancedInstructionSet))
@@ -1476,7 +1490,7 @@ void VCXProjectWriter::write(XmlOutput &xml, const VCCLCompilerTool &tool)
             << attrTagS(_PreprocessOutputPath, tool.PreprocessOutputPath)
             << attrTagT(_PreprocessSuppressLineNumbers, tool.PreprocessSuppressLineNumbers)
             << attrTagT(_PreprocessToFile, toTriState(tool.GeneratePreprocessedFile))
-            << attrTagS(_ProgramDataBaseFileName, tool.ProgramDataBaseFileName)
+            << fixedProgramDataBaseFileNameOutput(tool)
             << attrTagS(_ProcessorNumber, tool.MultiProcessorCompilationProcessorCount)
             << attrTagS(_RuntimeLibrary, toString(tool.RuntimeLibrary))
             << attrTagT(_RuntimeTypeInfo, tool.RuntimeTypeInfo)

@@ -729,11 +729,15 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                    QString::fromLatin1("????") : project->first("QMAKE_PKGINFO_TYPEINFO").left(4)) << ",g\" ";
         if(project->first("TEMPLATE") == "app") {
             QString icon = fileFixify(var("ICON"));
+            QString bundleIdentifier = "com.yourcompany." + var("QMAKE_BUNDLE");
+            if (bundleIdentifier.endsWith(".app"))
+                bundleIdentifier.chop(4);
             t << "@$(DEL_FILE) " << info_plist_out << "\n\t"
               << "@sed ";
             foreach (const ProString &arg, commonSedArgs)
                 t << arg;
             t << "-e \"s,@ICON@," << icon.section(Option::dir_sep, -1) << ",g\" "
+              << "-e \"s,@BUNDLEIDENTIFIER@," << bundleIdentifier << ",g\" "
               << "-e \"s,@EXECUTABLE@," << var("QMAKE_ORIG_TARGET") << ",g\" "
               << "-e \"s,@TYPEINFO@,"<< (project->isEmpty("QMAKE_PKGINFO_TYPEINFO") ?
                          QString::fromLatin1("????") : project->first("QMAKE_PKGINFO_TYPEINFO").left(4)) << ",g\" "

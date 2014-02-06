@@ -2221,7 +2221,7 @@ bool QAbstractSocket::waitForBytesWritten(int msecs)
         if (readyToWrite) {
             if (d->canWriteNotification()) {
 #if defined (QABSTRACTSOCKET_DEBUG)
-                qDebug("QAbstractSocket::waitForBytesWritten returns \c true");
+                qDebug("QAbstractSocket::waitForBytesWritten returns true");
 #endif
                 return true;
             }

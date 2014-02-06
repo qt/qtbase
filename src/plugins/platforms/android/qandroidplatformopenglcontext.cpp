@@ -42,6 +42,7 @@
 
 #include "qandroidplatformopenglcontext.h"
 #include "qandroidplatformopenglwindow.h"
+#include "qandroidplatformintegration.h"
 
 #include <QSurface>
 #include <QtGui/private/qopenglcontext_p.h>
@@ -64,12 +65,14 @@ void QAndroidPlatformOpenGLContext::swapBuffers(QPlatformSurface *surface)
 bool QAndroidPlatformOpenGLContext::makeCurrent(QPlatformSurface *surface)
 {
     bool ret = QEGLPlatformContext::makeCurrent(surface);
+    QOpenGLContextPrivate *ctx_d = QOpenGLContextPrivate::get(context());
 
     const char *rendererString = reinterpret_cast<const char *>(glGetString(GL_RENDERER));
-    if (rendererString != 0 && qstrncmp(rendererString, "Android Emulator", 16) == 0) {
-        QOpenGLContextPrivate *ctx_d = QOpenGLContextPrivate::get(context());
+    if (rendererString != 0 && qstrncmp(rendererString, "Android Emulator", 16) == 0)
         ctx_d->workaround_missingPrecisionQualifiers = true;
-    }
+
+    if (!ctx_d->workaround_brokenFBOReadBack && QAndroidPlatformIntegration::needsWorkaround())
+        ctx_d->workaround_brokenFBOReadBack = true;
 
     return ret;
 }

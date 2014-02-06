@@ -666,8 +666,8 @@ void QMenuBar::initStyleOption(QStyleOptionMenuItem *option, const QAction *acti
 
     \b{Note:} The text used for the application name in the menu
     bar is obtained from the value set in the \c{Info.plist} file in
-    the application's bundle. See \l{Deploying an Application on
-    Mac OS X} for more information.
+    the application's bundle. See \l{Qt for Mac OS X - Deployment}
+    for more information.
 
     \section1 QMenuBar on Windows CE
 

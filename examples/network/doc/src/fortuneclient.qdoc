@@ -63,7 +63,7 @@
     \endlist
 
     In this example, we will demonstrate the asynchronous approach. The
-    \l{blockingfortuneclient}{Blocking Fortune Client} example
+    \l{blockingfortuneclient}{Blocking Fortune Client Example}
     illustrates the synchronous approach.
 
     Our class contains some data and a few private slots:

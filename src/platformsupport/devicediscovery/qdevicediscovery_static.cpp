@@ -102,23 +102,27 @@ QDeviceDiscovery::~QDeviceDiscovery()
 QStringList QDeviceDiscovery::scanConnectedDevices()
 {
     QStringList devices;
-
-    // check for input devices
-    QDir dir(QString::fromLatin1(QT_EVDEV_DEVICE_PATH));
+    QDir dir;
     dir.setFilter(QDir::System);
 
-    foreach (const QString &deviceFile, dir.entryList()) {
-        QString absoluteFilePath = dir.absolutePath() + QString::fromLatin1("/") + deviceFile;
-        if (checkDeviceType(absoluteFilePath))
-            devices << absoluteFilePath;
+    // check for input devices
+    if (m_types & Device_InputMask) {
+        dir.setPath(QString::fromLatin1(QT_EVDEV_DEVICE_PATH));
+        foreach (const QString &deviceFile, dir.entryList()) {
+            QString absoluteFilePath = dir.absolutePath() + QString::fromLatin1("/") + deviceFile;
+            if (checkDeviceType(absoluteFilePath))
+                devices << absoluteFilePath;
+        }
     }
 
     // check for drm devices
-    dir.setPath(QString::fromLatin1(QT_DRM_DEVICE_PATH));
-    foreach (const QString &deviceFile, dir.entryList()) {
-        QString absoluteFilePath = dir.absolutePath() + QString::fromLatin1("/") + deviceFile;
-        if (checkDeviceType(absoluteFilePath))
-            devices << absoluteFilePath;
+    if (m_types & Device_VideoMask) {
+        dir.setPath(QString::fromLatin1(QT_DRM_DEVICE_PATH));
+        foreach (const QString &deviceFile, dir.entryList()) {
+            QString absoluteFilePath = dir.absolutePath() + QString::fromLatin1("/") + deviceFile;
+            if (checkDeviceType(absoluteFilePath))
+                devices << absoluteFilePath;
+        }
     }
 
 #ifdef QT_QPA_DEVICE_DISCOVERY_DEBUG

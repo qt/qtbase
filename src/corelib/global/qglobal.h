@@ -838,9 +838,13 @@ Q_CORE_EXPORT void qFreeAligned(void *ptr);
 #    pragma warning(disable: 4800) /* 'type' : forcing value to bool 'true' or 'false' (performance warning) */
 #    pragma warning(disable: 4097) /* typedef-name 'identifier1' used as synonym for class-name 'identifier2' */
 #    pragma warning(disable: 4706) /* assignment within conditional expression */
-#    pragma warning(disable: 4786) /* 'identifier' : identifier was truncated to 'number' characters in the debug information */
+#    if _MSC_VER <= 1310 // MSVC 2003
+#      pragma warning(disable: 4786) /* 'identifier' : identifier was truncated to 'number' characters in the debug information */
+#    endif
 #    pragma warning(disable: 4355) /* 'this' : used in base member initializer list */
-#    pragma warning(disable: 4231) /* nonstandard extension used : 'identifier' before template explicit instantiation */
+#    if _MSC_VER < 1800 // MSVC 2013
+#      pragma warning(disable: 4231) /* nonstandard extension used : 'identifier' before template explicit instantiation */
+#    endif
 #    pragma warning(disable: 4710) /* function not inlined */
 #    pragma warning(disable: 4530) /* C++ exception handler used, but unwind semantics are not enabled. Specify /EHsc */
 #  elif defined(Q_CC_BOR)

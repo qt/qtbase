@@ -92,6 +92,7 @@ private slots:
 
     void filterTable();
     void filterCurrent();
+    void filter_qtbug30662();
 
     void changeSourceLayout();
     void removeSourceRows_data();
@@ -1478,6 +1479,33 @@ void tst_QSortFilterProxyModel::filterCurrent()
     QCOMPARE(spy.count(), 1);
     proxy.setFilterRegExp(QRegExp("^B"));
     QCOMPARE(spy.count(), 2);
+}
+
+void tst_QSortFilterProxyModel::filter_qtbug30662()
+{
+    QStringListModel model;
+    QSortFilterProxyModel proxy;
+    proxy.setSourceModel(&model);
+
+    // make sure the filter does not match any entry
+    proxy.setFilterRegExp(QRegExp("[0-9]+"));
+
+    QStringList slSource;
+    slSource << "z" << "x" << "a" << "b";
+
+    proxy.setDynamicSortFilter(true);
+    proxy.sort(0);
+    model.setStringList(slSource);
+
+    // without fix for QTBUG-30662 this will make all entries visible - but unsorted
+    proxy.setFilterRegExp(QRegExp("[a-z]+"));
+
+    QStringList slResult;
+    for (int i = 0; i < proxy.rowCount(); ++i)
+      slResult.append(proxy.index(i, 0).data().toString());
+
+    slSource.sort();
+    QCOMPARE(slResult, slSource);
 }
 
 void tst_QSortFilterProxyModel::changeSourceLayout()

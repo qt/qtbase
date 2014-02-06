@@ -79,9 +79,8 @@
     * /
     \endcode
 
-    From the QDoc comment above, QDoc generates the HTML page
-    \l {details}
-    {QObject Class Reference}.
+    From the QDoc comment above, QDoc generates the HTML \l {QObject}
+    {QObject class reference} page.
 
     This manual explains how to use the QDoc commands in QDoc comments
     to embed good documentation in your source files. It also explains

@@ -120,7 +120,7 @@
 
     \snippet code/doc_src_qtestlib.pro 2
 
-    See \l{qmake Common Projects#building-a-testcase}{the qmake manual} for
+    See the \l{Building a Testcase}{qmake manual} for
     more information about \c{make check}.
 
     If you are using other build tools, make sure that you add the location

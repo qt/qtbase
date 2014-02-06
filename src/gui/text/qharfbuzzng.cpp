@@ -619,19 +619,22 @@ hb_font_funcs_t *hb_qt_get_font_funcs()
 
 
 static hb_blob_t *
-_hb_qt_get_font_table(hb_face_t * /*face*/, hb_tag_t tag, void *user_data)
+_hb_qt_reference_table(hb_face_t * /*face*/, hb_tag_t tag, void *user_data)
 {
-    QFontEngine *fe = (QFontEngine *)user_data;
-    Q_ASSERT(fe);
+    QFontEngine::FaceData *data = (QFontEngine::FaceData *)user_data;
+    Q_ASSERT(data);
+
+    qt_get_font_table_func_t get_font_table = data->get_font_table;
+    Q_ASSERT(get_font_table);
 
     uint length = 0;
-    if (Q_UNLIKELY(!fe->getSfntTableData(tag, 0, &length) || length == 0))
+    if (Q_UNLIKELY(!get_font_table(data->user_data, tag, 0, &length) || length == 0))
         return hb_blob_get_empty();
 
     char *buffer = (char *)malloc(length);
     Q_CHECK_PTR(buffer);
 
-    if (Q_UNLIKELY(!fe->getSfntTableData(tag, reinterpret_cast<uchar *>(buffer), &length)))
+    if (Q_UNLIKELY(!get_font_table(data->user_data, tag, reinterpret_cast<uchar *>(buffer), &length)))
         length = 0;
 
     return hb_blob_create(const_cast<const char *>(buffer), length,
@@ -642,9 +645,14 @@ _hb_qt_get_font_table(hb_face_t * /*face*/, hb_tag_t tag, void *user_data)
 static inline hb_face_t *
 _hb_qt_face_create(QFontEngine *fe)
 {
-    hb_face_t *face;
+    Q_ASSERT(fe);
 
-    face = hb_face_create_for_tables(_hb_qt_get_font_table, (void *)fe, NULL);
+    QFontEngine::FaceData *data = (QFontEngine::FaceData *)malloc(sizeof(QFontEngine::FaceData));
+    Q_CHECK_PTR(data);
+    data->user_data = fe->faceData.user_data;
+    data->get_font_table = fe->faceData.get_font_table;
+
+    hb_face_t *face = hb_face_create_for_tables(_hb_qt_reference_table, (void *)data, free);
     if (Q_UNLIKELY(hb_face_is_immutable(face))) {
         hb_face_destroy(face);
         return NULL;

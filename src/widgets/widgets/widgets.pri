@@ -160,4 +160,13 @@ wince*: {
     HEADERS += widgets/qmenu_wince_resource_p.h
     RC_FILE = widgets/qmenu_wince.rc
     !static: QMAKE_WRITE_DEFAULT_RC = 1
+    !isEmpty(QT_LIBINFIX) {
+       ORIG_RCFILE = $${TARGET}_resource.rc
+       copyrcc.commands = $$QMAKE_COPY ${QMAKE_FILE_IN} ${QMAKE_FILE_OUT}
+       copyrcc.input = ORIG_RCFILE
+       CONFIG(debug, debug|release):copyrcc.output = $${ORIG_TARGET}d_resource.rc
+       else:copyrcc.output = $${ORIG_TARGET}_resource.rc
+       copyrcc.CONFIG = target_predeps no_link
+       QMAKE_EXTRA_COMPILERS += copyrcc
+    }
 }

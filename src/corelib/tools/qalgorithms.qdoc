@@ -662,9 +662,6 @@
     This function requires the item type (in the example above,
     QString) to implement \c operator<().
 
-    See the \l{<QtAlgorithms>#binaryFind example}{detailed
-    description} for an example usage.
-
     \sa qLowerBound(), qUpperBound(), {random access iterators}
 */
 

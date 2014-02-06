@@ -1681,6 +1681,7 @@ void QTabBar::moveTab(int from, int to)
         d->tabList[i].lastTab = d->calculateNewPosition(from, to, d->tabList[i].lastTab);
 
     // update external variables
+    int previousIndex = d->currentIndex;
     d->currentIndex = d->calculateNewPosition(from, to, d->currentIndex);
 
     // If we are in the middle of a drag update the dragStartPosition
@@ -1699,6 +1700,8 @@ void QTabBar::moveTab(int from, int to)
     d->layoutWidgets(start);
     update();
     emit tabMoved(from, to);
+    if (previousIndex != d->currentIndex)
+        emit currentChanged(d->currentIndex);
     emit tabLayoutChange();
 }
 

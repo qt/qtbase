@@ -4710,7 +4710,9 @@ int QStyleSheetStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const 
         break;
 
     case PM_TabBarBaseOverlap: {
-        const QWidget *tabWidget = qobject_cast<const QTabWidget *>(w) ? w : w->parentWidget();
+        const QWidget *tabWidget = qobject_cast<const QTabWidget *>(w);
+        if (!tabWidget && w)
+            tabWidget = w->parentWidget();
         if (hasStyleRule(tabWidget, PseudoElement_TabWidgetPane)) {
             return 0;
         }

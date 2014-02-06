@@ -7004,7 +7004,7 @@ void QWidget::setUpdatesEnabled(bool enable)
     depending on the platform's default behavior for the window flags.
 
      \sa raise(), showEvent(), hide(), setVisible(), showMinimized(), showMaximized(),
-    showNormal(), isVisible(), windowFlags(), flags()
+    showNormal(), isVisible(), windowFlags()
 */
 void QWidget::show()
 {

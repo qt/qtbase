@@ -87,8 +87,6 @@ QAccessiblePlugin::~QAccessiblePlugin()
 
     Creates and returns a QAccessibleInterface implementation for the
     class \a key and the object \a object. Keys are case sensitive.
-
-    \sa keys()
 */
 
 QT_END_NAMESPACE

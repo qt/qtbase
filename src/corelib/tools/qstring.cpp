@@ -7845,7 +7845,7 @@ QString &QString::setRawData(const QChar *unicode, int size)
 
     \snippet code/src_corelib_tools_qstring.cpp 6
 
-    \sa QString, QLatin1Char, QStringLiteral
+    \sa QString, QLatin1Char, {QStringLiteral()}{QStringLiteral}
 */
 
 /*! \fn QLatin1String::QLatin1String(const char *str)

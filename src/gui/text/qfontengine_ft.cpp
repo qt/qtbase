@@ -116,6 +116,21 @@ QT_BEGIN_NAMESPACE
 #define TRUNC(x)    ((x) >> 6)
 #define ROUND(x)    (((x)+32) & -64)
 
+static bool ft_getSfntTable(void *user_data, uint tag, uchar *buffer, uint *length)
+{
+    FT_Face face = (FT_Face)user_data;
+
+    bool result = false;
+    if (FT_IS_SFNT(face)) {
+        FT_ULong len = *length;
+        result = FT_Load_Sfnt_Table(face, tag, 0, buffer, &len) == FT_Err_Ok;
+        *length = len;
+    }
+
+    return result;
+}
+
+
 // -------------------------- Freetype support ------------------------------
 
 class QtFreetypeData
@@ -408,15 +423,7 @@ QFontEngine::Properties QFreetypeFace::properties() const
 
 bool QFreetypeFace::getSfntTable(uint tag, uchar *buffer, uint *length) const
 {
-    bool result = false;
-#if (FREETYPE_MAJOR*10000 + FREETYPE_MINOR*100 + FREETYPE_PATCH) > 20103
-    if (FT_IS_SFNT(face)) {
-        FT_ULong len = *length;
-        result = FT_Load_Sfnt_Table(face, tag, 0, buffer, &len) == FT_Err_Ok;
-        *length = len;
-    }
-#endif
-    return result;
+    return ft_getSfntTable(face, tag, buffer, length);
 }
 
 /* Some fonts (such as MingLiu rely on hinting to scale different
@@ -761,6 +768,8 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format,
     fontDef.styleName = QString::fromUtf8(face->style_name);
 
     if (!freetype->hbFace) {
+        faceData.user_data = face;
+        faceData.get_font_table = ft_getSfntTable;
         freetype->hbFace = harfbuzzFace();
         freetype->hbFace_destroy_func = face_destroy_func;
     } else {
@@ -1179,7 +1188,7 @@ QFixed QFontEngineFT::emSquareSize() const
 
 bool QFontEngineFT::getSfntTableData(uint tag, uchar *buffer, uint *length) const
 {
-    return freetype->getSfntTable(tag, buffer, length);
+    return ft_getSfntTable(freetype->face, tag, buffer, length);
 }
 
 int QFontEngineFT::synthesized() const

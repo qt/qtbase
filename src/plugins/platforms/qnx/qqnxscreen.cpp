@@ -564,7 +564,7 @@ void QQnxScreen::updateHierarchy()
 
     // After a hierarchy update, we need to force a flush on all screens.
     // Right now, all screens share a context.
-    screen_flush_context( m_screenContext, 0 );
+    screen_flush_context(m_screenContext, 0);
 }
 
 void QQnxScreen::adjustOrientation()

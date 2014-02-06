@@ -29,6 +29,9 @@ tagfile                 = ../../../doc/qtgui/qtgui.tags
 
 depends += \
     qtcore \
+    qtimageformats \
+    qtmacextras \
+    qtmultimedia \
     qtnetwork \
     qtopengl \
     qtsvg \

@@ -43,9 +43,9 @@
     The \c ImageWidget class is a simple QWidget subclass that reimplements the general
     QWidget::event() handler function in addition to several more specific event handlers:
 
-    \snippet examples/gestures/imagegestures/imagewidget.h class definition begin
+    \snippet gestures/imagegestures/imagewidget.h class definition begin
     \dots
-    \snippet examples/gestures/imagegestures/imagewidget.h class definition end
+    \snippet gestures/imagegestures/imagewidget.h class definition end
 
     We also implement a private helper function, \c gestureEvent(), to help manage
     gesture events delivered to the widget, and three functions to perform actions
@@ -56,7 +56,7 @@
     In the widget's constructor, we begin by setting up various parameters that will
     be used to control the way images are displayed.
 
-    \snippet examples/gestures/imagegestures/imagewidget.cpp constructor
+    \snippet gestures/imagegestures/imagewidget.cpp constructor
 
     We enable three of the standard gestures for the widget by calling QWidget::grabGesture()
     with the types of gesture we need. These will be recognized by the application's
@@ -65,7 +65,7 @@
     Since QWidget does not define a specific event handler for gestures, the widget
     needs to reimplement the general QWidget::event() to receive gesture events.
 
-    \snippet examples/gestures/imagegestures/imagewidget.cpp event handler
+    \snippet gestures/imagegestures/imagewidget.cpp event handler
 
     We implement the event handler to delegate gesture events to a private function
     specifically written for the task, and pass all other events to QWidget's
@@ -76,7 +76,7 @@
     used on a widget at any particular time, we can check for each gesture type
     using the QGestureEvent::gesture() function:
 
-    \snippet examples/gestures/imagegestures/imagewidget.cpp gesture event handler
+    \snippet gestures/imagegestures/imagewidget.cpp gesture event handler
 
     If a QGesture object is supplied for a certain type of gesture, we call a special
     purpose function to deal with it, casting the gesture object to the appropriate
@@ -87,7 +87,7 @@
     gesture associated with a brushing or swiping motion on the user's display or
     input device:
 
-    \snippet examples/gestures/imagegestures/imagewidget.cpp swipe function
+    \snippet gestures/imagegestures/imagewidget.cpp swipe function
 
     The QSwipeGesture class provides specialized functions and defines a enum
     to make it more convenient for developers to discover which direction, if

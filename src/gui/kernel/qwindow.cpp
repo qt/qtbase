@@ -79,8 +79,8 @@ QT_BEGIN_NAMESPACE
     QWindow directly. Still, it is possible to render directly to a QWindow
     with QBackingStore or QOpenGLContext, when wanting to keep dependencies to
     a minimum or when wanting to use OpenGL directly. The
-    \l{gui/rasterwindow}{Raster Window} and \l{gui/openglwindow}{OpenGL Window}
-    examples are useful reference examples for how to render to a QWindow using
+    \l{Raster Window Example} and \l{OpenGL Window Example}
+    are useful reference examples for how to render to a QWindow using
     either approach.
 
     \section1 Resource management

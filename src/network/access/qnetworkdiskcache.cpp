@@ -559,6 +559,20 @@ qint64 QNetworkDiskCache::expire()
             break;
         QString name = i.value();
         QFile file(name);
+
+        if (name.contains(PREPARED_SLASH)) {
+            QHashIterator<QIODevice*, QCacheItem*> iterator(d->inserting);
+            while (iterator.hasNext()) {
+                iterator.next();
+                QCacheItem *item = iterator.value();
+                if (item && item->file && item->file->fileName() == name) {
+                    delete item->file;
+                    item->file = 0;
+                    break;
+                }
+            }
+        }
+
         qint64 size = file.size();
         file.remove();
         totalSize -= size;
