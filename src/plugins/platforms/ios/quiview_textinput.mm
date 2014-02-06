@@ -336,6 +336,18 @@ Q_GLOBAL_STATIC(StaticVariables, staticVariables);
     return t - f;
 }
 
+- (UIView *)textInputView
+{
+    // iOS expects rects we return from other UITextInput methods
+    // to be relative to the view this method returns.
+    // Since QInputMethod returns rects relative to the top level
+    // QWindow, that is also the view we need to return.
+    QPlatformWindow *topLevel = m_qioswindow;
+    while (QPlatformWindow *p = topLevel->parent())
+        topLevel = p;
+    return reinterpret_cast<UIView *>(topLevel->winId());
+}
+
 - (CGRect)firstRectForRange:(UITextRange *)range
 {
     QObject *focusObject = QGuiApplication::focusObject();
