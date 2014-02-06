@@ -87,7 +87,7 @@ class QKdeTheme : public QPlatformTheme
 {
     Q_DECLARE_PRIVATE(QKdeTheme)
 public:
-    QKdeTheme(const QString &kdeHome, int kdeVersion);
+    QKdeTheme(const QStringList& kdeDirs, int kdeVersion);
 
     static QPlatformTheme *createKdeTheme();
     virtual QVariant themeHint(ThemeHint hint) const;
