@@ -322,6 +322,8 @@ void QMessageLogger::debug(QMessageLogger::CategoryFunction catFunc,
                            const char *msg, ...) const
 {
     const QLoggingCategory &cat = (*catFunc)();
+    if (!cat.isDebugEnabled())
+        return;
 
     QMessageLogContext ctxt;
     ctxt.copy(context);
