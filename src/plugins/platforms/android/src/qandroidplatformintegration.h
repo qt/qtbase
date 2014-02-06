@@ -45,7 +45,6 @@
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformmenu.h>
 #include <qpa/qplatformnativeinterface.h>
-#include <QtWidgets/QAction>
 
 #include <jni.h>
 #include "qandroidinputcontext.h"

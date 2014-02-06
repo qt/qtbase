@@ -39,8 +39,6 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets/QApplication>
-#include <QtWidgets/QStyle>
 #include "qandroidplatformdialoghelpers.h"
 #include "androidjnimain.h"
 

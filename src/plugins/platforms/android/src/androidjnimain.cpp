@@ -62,7 +62,6 @@
 #include "androidjnimenu.h"
 #include "qandroidplatformdialoghelpers.h"
 #include "qandroidplatformintegration.h"
-#include <QtWidgets/QApplication>
 
 #include <qabstracteventdispatcher.h>
 
