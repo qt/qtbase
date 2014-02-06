@@ -90,7 +90,7 @@ contains(QT_CONFIG, opengl) {
             DEFINES += XCB_HAS_XCB_GLX
             LIBS += -lxcb-glx
         }
-    } else:contains(QT_CONFIG, egl) {
+    } else:contains(QT_CONFIG, egl):contains(QT_CONFIG, egl_x11) {
         DEFINES += XCB_USE_EGL
         CONFIG += egl
         HEADERS += qxcbeglsurface.h

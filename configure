@@ -613,6 +613,7 @@ CFG_OPENVG_LC_INCLUDES=no
 CFG_OPENVG_SHIVA=auto
 CFG_OPENVG_ON_OPENGL=auto
 CFG_EGL=auto
+CFG_EGL_X=auto
 CFG_FONTCONFIG=auto
 CFG_FREETYPE=auto
 CFG_HARFBUZZ=no
@@ -1475,6 +1476,7 @@ while [ "$#" -gt 0 ]; do
     egl)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_EGL="$VAL"
+            CFG_EGL_X="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -5368,6 +5370,11 @@ if [ "$CFG_EGL" != "no" ]; then
     fi       # detect EGL support
     if compileTest qpa/egl "EGL" $QMAKE_CFLAGS_EGL $QMAKE_LIBS_EGL; then
         CFG_EGL=yes
+        if compileTest qpa/egl-x11 "EGL-X11" $QMAKE_CFLAGS_EGL $QMAKE_LIBS_EGL; then
+            CFG_EGL_X=yes
+        else
+            CFG_EGL_X=no
+        fi
     elif [ "$CFG_EGL" = "yes" ]; then
         echo " The EGL functionality test failed; EGL is required by some QPA plugins to manage contexts & surfaces."
         echo " You might need to modify the include and library search paths by editing"
@@ -5375,6 +5382,7 @@ if [ "$CFG_EGL" != "no" ]; then
         exit 1
     else
         CFG_EGL=no
+        CFG_EGL_X=no
     fi
 fi
 
@@ -5761,6 +5769,13 @@ if [ "$CFG_EGL" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG egl"
 else
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_EGL"
+fi
+
+# enable egl on X
+if [ "$CFG_EGL_X" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG egl_x11"
+else
+    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_EGL_X11"
 fi
 
 # enable eglfs
@@ -6788,6 +6803,9 @@ report_support "    getifaddrs ..........." "$CFG_GETIFADDRS"
 report_support "    IPv6 ifname .........." "$CFG_IPV6IFNAME"
 report_support "    OpenSSL .............." "$CFG_OPENSSL" yes "loading libraries at run-time" linked "linked to the libraries"
 report_support "  NIS ...................." "$CFG_NIS"
+report_support "  EGL ...................." "$CFG_EGL"
+report_support "  EGL on X ..............." "$CFG_EGL_X"
+report_support "  GLX ...................." "$CFG_XCB_GLX"
 report_support "  OpenGL ................." "$CFG_OPENGL" yes "Desktop OpenGL" es2 "OpenGL ES 2.x"
 report_support "  OpenVG ................." "$CFG_OPENVG-$CFG_OPENVG_SHIVA" yes-yes "ShivaVG" yes-no "native"
 report_support "  PCRE ..................." "$CFG_PCRE" yes "system library" qt "bundled copy"
