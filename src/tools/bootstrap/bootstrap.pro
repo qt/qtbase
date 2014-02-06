@@ -74,6 +74,8 @@ SOURCES += \
            ../../corelib/io/qtemporaryfile.cpp \
            ../../corelib/io/qtextstream.cpp \
            ../../corelib/io/qstandardpaths.cpp \
+           ../../corelib/io/qloggingcategory.cpp \
+           ../../corelib/io/qloggingregistry.cpp \
            ../../corelib/kernel/qcoreapplication.cpp \
            ../../corelib/kernel/qcoreglobaldata.cpp \
            ../../corelib/kernel/qmetatype.cpp \
