@@ -1068,7 +1068,6 @@ QString QAccessibleTableCell::text(QAccessible::Text t) const
     QAbstractItemModel *model = view->model();
     QString value;
     switch (t) {
-    case QAccessible::Value:
     case QAccessible::Name:
         value = model->data(m_index, Qt::AccessibleTextRole).toString();
         if (value.isEmpty())
@@ -1160,7 +1159,6 @@ QString QAccessibleTableHeaderCell::text(QAccessible::Text t) const
     QAbstractItemModel *model = view->model();
     QString value;
     switch (t) {
-    case QAccessible::Value:
     case QAccessible::Name:
         value = model->headerData(index, orientation, Qt::AccessibleTextRole).toString();
         if (value.isEmpty())

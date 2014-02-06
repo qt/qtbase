@@ -631,7 +631,7 @@ QDockWidget *QAccessibleDockWidget::dockWidget() const
 
 QString QAccessibleDockWidget::text(QAccessible::Text t) const
 {
-    if (t == QAccessible::Name || t == QAccessible::Value) {
+    if (t == QAccessible::Name) {
         return qt_accStripAmp(dockWidget()->windowTitle());
     }
     return QString();
