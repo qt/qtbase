@@ -123,6 +123,8 @@ NmakeMakefileGenerator::writeMakefile(QTextStream &t)
                 } else if (arch == QStringLiteral("x64")) {
                     compiler = QStringLiteral("x86_amd64");
                     compilerArch = QStringLiteral("amd64");
+                } else {
+                    arch = QStringLiteral("x86");
                 }
 
                 const QString msvcVer = project->first("MSVC_VER").toQString();
