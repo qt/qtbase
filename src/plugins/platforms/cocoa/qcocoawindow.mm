@@ -528,11 +528,13 @@ void QCocoaWindow::setVisible(bool visible)
         if (m_glContext)
             m_glContext->windowWasHidden();
         QCocoaEventDispatcher *cocoaEventDispatcher = qobject_cast<QCocoaEventDispatcher *>(QGuiApplication::instance()->eventDispatcher());
-        Q_ASSERT(cocoaEventDispatcher != 0);
-        QCocoaEventDispatcherPrivate *cocoaEventDispatcherPrivate = static_cast<QCocoaEventDispatcherPrivate *>(QObjectPrivate::get(cocoaEventDispatcher));
+        QCocoaEventDispatcherPrivate *cocoaEventDispatcherPrivate = 0;
+        if (cocoaEventDispatcher)
+            cocoaEventDispatcherPrivate = static_cast<QCocoaEventDispatcherPrivate *>(QObjectPrivate::get(cocoaEventDispatcher));
         if (m_nsWindow) {
             if (m_hasModalSession) {
-                cocoaEventDispatcherPrivate->endModalSession(window());
+                if (cocoaEventDispatcherPrivate)
+                    cocoaEventDispatcherPrivate->endModalSession(window());
                 m_hasModalSession = false;
             } else {
                 if ([m_nsWindow isSheet])
@@ -540,7 +542,8 @@ void QCocoaWindow::setVisible(bool visible)
             }
 
             hide();
-            if (m_nsWindow == [NSApp keyWindow] && !cocoaEventDispatcherPrivate->currentModalSession()) {
+            if (m_nsWindow == [NSApp keyWindow]
+                && !(cocoaEventDispatcherPrivate && cocoaEventDispatcherPrivate->currentModalSession())) {
                 // Probably because we call runModalSession: outside [NSApp run] in QCocoaEventDispatcher
                 // (e.g., when show()-ing a modal QDialog instead of exec()-ing it), it can happen that
                 // the current NSWindow is still key after being ordered out. Then, after checking we
