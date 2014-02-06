@@ -116,10 +116,8 @@ int main(int argc, char **argv)
     QGuiApplication app(argc, argv);
 
     const QPlatformIntegration *platformIntegration = QGuiApplicationPrivate::platformIntegration();
-    std::cout << "Qt " << QT_VERSION_STR << " on \"" << QGuiApplication::platformName().toStdString() << "\" "
-              <<  QSysInfo::WordSize << " bit/"
+    std::cout << QLibraryInfo::build() << " on \"" << QGuiApplication::platformName().toStdString() << "\" "
               << (QSysInfo::ByteOrder == QSysInfo::LittleEndian ? "little endian" : "big endian") << '/'
-              << (QLibraryInfo::isDebugBuild() ? "debug" : "release")
               << '\n';
 
 #if defined(Q_OS_WIN)

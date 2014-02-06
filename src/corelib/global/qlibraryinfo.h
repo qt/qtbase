@@ -59,6 +59,8 @@ public:
     static QDate buildDate();
 #endif //QT_NO_DATESTRING
 
+    static const char * build();
+
     static bool isDebugBuild();
 
     enum LibraryLocation
