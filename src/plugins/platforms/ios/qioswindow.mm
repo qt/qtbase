@@ -247,8 +247,13 @@
         m_activeTouches[touch].id = m_nextTouchId++;
     }
 
-    if (m_activeTouches.size() == 1 && m_qioswindow->window() != QGuiApplication::focusWindow())
-        m_qioswindow->requestActivateWindow();
+    if (m_activeTouches.size() == 1) {
+        QPlatformWindow *topLevel = m_qioswindow;
+        while (QPlatformWindow *p = topLevel->parent())
+            topLevel = p;
+        if (topLevel->window() != QGuiApplication::focusWindow())
+            topLevel->requestActivateWindow();
+    }
 
     [self updateTouchList:touches withState:Qt::TouchPointPressed];
     [self sendTouchEventWithTimestamp:ulong(event.timestamp * 1000)];
@@ -367,7 +372,7 @@ void QIOSWindow::setVisible(bool visible)
     m_view.hidden = !visible;
     [m_view setNeedsDisplay];
 
-    if (!isQtApplication())
+    if (!isQtApplication() || !window()->isTopLevel())
         return;
 
     // Since iOS doesn't do window management the way a Qt application
@@ -383,18 +388,16 @@ void QIOSWindow::setVisible(bool visible)
 
     if (visible) {
         requestActivateWindow();
-
-        if (window()->isTopLevel())
-            static_cast<QIOSScreen *>(screen())->updateStatusBarVisibility();
-
+        static_cast<QIOSScreen *>(screen())->updateStatusBarVisibility();
     } else {
         // Activate top-most visible QWindow:
         NSArray *subviews = m_view.viewController.view.subviews;
         for (int i = int(subviews.count) - 1; i >= 0; --i) {
             UIView *view = [subviews objectAtIndex:i];
             if (!view.hidden) {
-                if (QWindow *window = view.qwindow) {
-                    static_cast<QIOSWindow *>(window->handle())->requestActivateWindow();
+                QWindow *w = view.qwindow;
+                if (w && w->isTopLevel()) {
+                    static_cast<QIOSWindow *>(w->handle())->requestActivateWindow();
                     break;
                 }
             }
