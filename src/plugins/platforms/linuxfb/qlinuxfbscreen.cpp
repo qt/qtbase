@@ -333,6 +333,8 @@ bool QLinuxFbScreen::initialize()
     foreach (const QString &arg, mArgs) {
         if (arg == QLatin1String("nographicsmodeswitch"))
             doSwitchToGraphicsMode = false;
+        else if (mmSizeRx.indexIn(arg) != -1)
+            userMmSize = QSize(mmSizeRx.cap(1).toInt(), mmSizeRx.cap(2).toInt());
         else if (sizeRx.indexIn(arg) != -1)
             userGeometry.setSize(QSize(sizeRx.cap(1).toInt(), sizeRx.cap(2).toInt()));
         else if (offsetRx.indexIn(arg) != -1)
@@ -341,8 +343,6 @@ bool QLinuxFbScreen::initialize()
             ttyDevice = ttyRx.cap(1);
         else if (fbRx.indexIn(arg) != -1)
             fbDevice = fbRx.cap(1);
-        else if (mmSizeRx.indexIn(arg) != -1)
-            userMmSize = QSize(mmSizeRx.cap(1).toInt(), mmSizeRx.cap(2).toInt());
     }
 
     if (fbDevice.isEmpty()) {
