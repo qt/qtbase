@@ -353,10 +353,10 @@ void QWidgetPrivate::scrollChildren(int dx, int dy)
     }
 }
 
-void QWidgetPrivate::updateWidgetTransform()
+void QWidgetPrivate::updateWidgetTransform(QEvent *event)
 {
     Q_Q(QWidget);
-    if (q == qGuiApp->focusObject()) {
+    if (q == qGuiApp->focusObject() || event->type() == QEvent::FocusIn) {
         QTransform t;
         QPoint p = q->mapTo(q->topLevelWidget(), QPoint(0,0));
         t.translate(p.x(), p.y());
@@ -8058,7 +8058,7 @@ bool QWidget::event(QEvent *event)
         break;
     case QEvent::FocusIn:
         focusInEvent((QFocusEvent*)event);
-        d->updateWidgetTransform();
+        d->updateWidgetTransform(event);
         break;
 
     case QEvent::FocusOut:
@@ -8100,12 +8100,12 @@ bool QWidget::event(QEvent *event)
 
     case QEvent::Move:
         moveEvent((QMoveEvent*)event);
-        d->updateWidgetTransform();
+        d->updateWidgetTransform(event);
         break;
 
     case QEvent::Resize:
         resizeEvent((QResizeEvent*)event);
-        d->updateWidgetTransform();
+        d->updateWidgetTransform(event);
         break;
 
     case QEvent::Close:

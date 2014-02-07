@@ -438,7 +438,7 @@ public:
     void syncBackingStore(const QRegion &region);
 
     // tells the input method about the widgets transform
-    void updateWidgetTransform();
+    void updateWidgetTransform(QEvent *event);
 
     void reparentFocusWidgets(QWidget *oldtlw);
 
