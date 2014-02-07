@@ -77,6 +77,7 @@ private slots:
     void testAllWritableLocations_data();
     void testAllWritableLocations();
     void testCleanPath();
+    void testXdgPathCleanup();
 
 private:
 #ifdef Q_XDG_PLATFORM
@@ -489,6 +490,19 @@ void tst_qstandardpaths::testCleanPath()
                  qPrintable(QString::fromLatin1("Backslash found in %1 %2")
                             .arg(i).arg(paths.join(QLatin1Char(',')))));
     }
+}
+
+void tst_qstandardpaths::testXdgPathCleanup()
+{
+#ifdef Q_XDG_PLATFORM
+    setCustomLocations();
+    const QString uncleanGlobalAppDir = "/./" + QFile::encodeName(m_globalAppDir);
+    qputenv("XDG_DATA_DIRS", QFile::encodeName(uncleanGlobalAppDir) + "::relative/path");
+    const QStringList appsDirs = QStandardPaths::standardLocations(QStandardPaths::ApplicationsLocation);
+    QVERIFY(!appsDirs.contains("/applications"));
+    QVERIFY(!appsDirs.contains(uncleanGlobalAppDir + "/applications"));
+    QVERIFY(!appsDirs.contains("relative/path/applications"));
+#endif
 }
 
 QTEST_MAIN(tst_qstandardpaths)
