@@ -60,6 +60,7 @@
 #define qt_memfill32_sse2 qt_memfill32_avx
 #define qt_memfill16_sse2 qt_memfill16_avx
 #define qt_bitmapblit32_sse2 qt_bitmapblit32_avx
+#define qt_bitmapblit8888_sse2 qt_bitmapblit8888_avx
 #define qt_bitmapblit16_sse2 qt_bitmapblit16_avx
 #define QSimdSse2 QSimdAvx
 #define qt_fetch_radial_gradient_sse2 qt_fetch_radial_gradient_avx

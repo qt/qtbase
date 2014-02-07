@@ -5605,12 +5605,21 @@ static void qt_gradient_quint16(int count, const QSpan *spans, void *userData)
     }
 }
 
-inline static void qt_bitmapblit_quint32(QRasterBuffer *rasterBuffer,
+inline static void qt_bitmapblit_argb32(QRasterBuffer *rasterBuffer,
                                    int x, int y, quint32 color,
                                    const uchar *map,
                                    int mapWidth, int mapHeight, int mapStride)
 {
     qt_bitmapblit_template<quint32>(rasterBuffer, x,  y,  color,
+                                    map, mapWidth, mapHeight, mapStride);
+}
+
+inline static void qt_bitmapblit_rgba8888(QRasterBuffer *rasterBuffer,
+                                   int x, int y, quint32 color,
+                                   const uchar *map,
+                                   int mapWidth, int mapHeight, int mapStride)
+{
+    qt_bitmapblit_template<quint32>(rasterBuffer, x, y, ARGB2RGBA(color),
                                     map, mapWidth, mapHeight, mapStride);
 }
 
@@ -5725,11 +5734,11 @@ static inline void grayBlendPixel(quint32 *dst, int coverage, int sr, int sg, in
 }
 #endif
 
-static void qt_alphamapblit_quint32(QRasterBuffer *rasterBuffer,
-                                    int x, int y, quint32 color,
-                                    const uchar *map,
-                                    int mapWidth, int mapHeight, int mapStride,
-                                    const QClipData *clip)
+static void qt_alphamapblit_argb32(QRasterBuffer *rasterBuffer,
+                                   int x, int y, quint32 color,
+                                   const uchar *map,
+                                   int mapWidth, int mapHeight, int mapStride,
+                                   const QClipData *clip)
 {
     const quint32 c = color;
     const int destStride = rasterBuffer->bytesPerLine() / sizeof(quint32);
@@ -5820,10 +5829,19 @@ static void qt_alphamapblit_quint32(QRasterBuffer *rasterBuffer,
     }
 }
 
-static void qt_alphargbblit_quint32(QRasterBuffer *rasterBuffer,
-                                    int x, int y, quint32 color,
-                                    const uint *src, int mapWidth, int mapHeight, int srcStride,
-                                    const QClipData *clip)
+static void qt_alphamapblit_rgba8888(QRasterBuffer *rasterBuffer,
+                                     int x, int y, quint32 color,
+                                     const uchar *map,
+                                     int mapWidth, int mapHeight, int mapStride,
+                                     const QClipData *clip)
+{
+    qt_alphamapblit_argb32(rasterBuffer, x, y, ARGB2RGBA(color), map, mapWidth, mapHeight, mapStride, clip);
+}
+
+static void qt_alphargbblit_argb32(QRasterBuffer *rasterBuffer,
+                                   int x, int y, quint32 color,
+                                   const uint *src, int mapWidth, int mapHeight, int srcStride,
+                                   const QClipData *clip)
 {
     const quint32 c = color;
 
@@ -5965,27 +5983,27 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
     {
         blend_color_argb,
         qt_gradient_argb32,
-        qt_bitmapblit_quint32,
-        qt_alphamapblit_quint32,
-        qt_alphargbblit_quint32,
+        qt_bitmapblit_argb32,
+        qt_alphamapblit_argb32,
+        qt_alphargbblit_argb32,
         qt_rectfill_argb32
     },
     // Format_ARGB32,
     {
         blend_color_generic,
         qt_gradient_argb32,
-        qt_bitmapblit_quint32,
-        qt_alphamapblit_quint32,
-        qt_alphargbblit_quint32,
+        qt_bitmapblit_argb32,
+        qt_alphamapblit_argb32,
+        qt_alphargbblit_argb32,
         qt_rectfill_nonpremul_argb32
     },
     // Format_ARGB32_Premultiplied
     {
         blend_color_argb,
         qt_gradient_argb32,
-        qt_bitmapblit_quint32,
-        qt_alphamapblit_quint32,
-        qt_alphargbblit_quint32,
+        qt_bitmapblit_argb32,
+        qt_alphamapblit_argb32,
+        qt_alphargbblit_argb32,
         qt_rectfill_argb32
     },
     // Format_RGB16
@@ -6049,42 +6067,39 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
     {
         blend_color_generic,
         blend_src_generic,
-        qt_bitmapblit_quint32,
+        qt_bitmapblit_rgba8888,
 #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
-        qt_alphamapblit_quint32,
-        qt_alphargbblit_quint32,
+        qt_alphamapblit_rgba8888,
 #else
         0,
-        0,
 #endif
+        0,
         qt_rectfill_rgba
     },
     // Format_RGBA8888
     {
         blend_color_generic,
         blend_src_generic,
-        qt_bitmapblit_quint32,
+        qt_bitmapblit_rgba8888,
 #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
-        qt_alphamapblit_quint32,
-        qt_alphargbblit_quint32,
+        qt_alphamapblit_rgba8888,
 #else
         0,
-        0,
 #endif
+        0,
         qt_rectfill_nonpremul_rgba
     },
     // Format_RGB8888_Premultiplied
     {
         blend_color_generic,
         blend_src_generic,
-        qt_bitmapblit_quint32,
+        qt_bitmapblit_rgba8888,
 #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
-        qt_alphamapblit_quint32,
-        qt_alphargbblit_quint32,
+        qt_alphamapblit_rgba8888,
 #else
         0,
-        0,
 #endif
+        0,
         qt_rectfill_rgba
     }
 };
@@ -6173,9 +6188,9 @@ void qInitDrawhelperAsm()
         qDrawHelper[QImage::Format_ARGB32].bitmapBlit = qt_bitmapblit32_avx;
         qDrawHelper[QImage::Format_ARGB32_Premultiplied].bitmapBlit = qt_bitmapblit32_avx;
         qDrawHelper[QImage::Format_RGB16].bitmapBlit = qt_bitmapblit16_avx;
-        qDrawHelper[QImage::Format_RGBX8888].bitmapBlit = qt_bitmapblit32_avx;
-        qDrawHelper[QImage::Format_RGBA8888].bitmapBlit = qt_bitmapblit32_avx;
-        qDrawHelper[QImage::Format_RGBA8888_Premultiplied].bitmapBlit = qt_bitmapblit32_avx;
+        qDrawHelper[QImage::Format_RGBX8888].bitmapBlit = qt_bitmapblit8888_avx;
+        qDrawHelper[QImage::Format_RGBA8888].bitmapBlit = qt_bitmapblit8888_avx;
+        qDrawHelper[QImage::Format_RGBA8888_Premultiplied].bitmapBlit = qt_bitmapblit8888_avx;
 
         extern void qt_scale_image_argb32_on_argb32_avx(uchar *destPixels, int dbpl,
                                                          const uchar *srcPixels, int sbpl,
@@ -6198,9 +6213,9 @@ void qInitDrawhelperAsm()
         qDrawHelper[QImage::Format_ARGB32].bitmapBlit = qt_bitmapblit32_sse2;
         qDrawHelper[QImage::Format_ARGB32_Premultiplied].bitmapBlit = qt_bitmapblit32_sse2;
         qDrawHelper[QImage::Format_RGB16].bitmapBlit = qt_bitmapblit16_sse2;
-        qDrawHelper[QImage::Format_RGBX8888].bitmapBlit = qt_bitmapblit32_sse2;
-        qDrawHelper[QImage::Format_RGBA8888].bitmapBlit = qt_bitmapblit32_sse2;
-        qDrawHelper[QImage::Format_RGBA8888_Premultiplied].bitmapBlit = qt_bitmapblit32_sse2;
+        qDrawHelper[QImage::Format_RGBX8888].bitmapBlit = qt_bitmapblit8888_sse2;
+        qDrawHelper[QImage::Format_RGBA8888].bitmapBlit = qt_bitmapblit8888_sse2;
+        qDrawHelper[QImage::Format_RGBA8888_Premultiplied].bitmapBlit = qt_bitmapblit8888_sse2;
 
         extern void qt_scale_image_argb32_on_argb32_sse2(uchar *destPixels, int dbpl,
                                                          const uchar *srcPixels, int sbpl,
