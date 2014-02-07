@@ -1042,6 +1042,7 @@ QT_END_NAMESPACE
 #include <QtCore/qflags.h>
 #include <QtCore/qsysinfo.h>
 #include <QtCore/qtypeinfo.h>
+#include <QtCore/qnumeric.h>
 
 #endif /* __cplusplus */
 
