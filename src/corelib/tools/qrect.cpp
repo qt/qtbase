@@ -2379,6 +2379,71 @@ QRect QRectF::toAlignedRect() const
     returns \c false.
 */
 
+/*!
+    \fn QRectF operator+(const QRectF &lhs, const QMarginsF &rhs)
+    \relates QRectF
+    \since 5.3
+
+    Returns the \a lhs rectangle grown by the \a rhs margins.
+*/
+
+/*!
+    \fn QRectF operator-(const QRectF &lhs, const QMarginsF &rhs)
+    \relates QRectF
+    \since 5.3
+
+    Returns the \a lhs rectangle grown by the \a rhs margins.
+*/
+
+/*!
+    \fn QRectF operator+(const QMarginsF &lhs, const QRectF &rhs)
+    \relates QRectF
+    \overload
+    \since 5.3
+
+    Returns the \a lhs rectangle grown by the \a rhs margins.
+*/
+
+/*!
+    \fn QRectF QRectF::marginsAdded(const QMarginsF &margins) const
+    \relates QRectF
+    \since 5.3
+
+    Returns a rectangle grown by the \a margins.
+
+    \sa operator+=(), marginsRemoved(), operator-=()
+*/
+
+/*!
+    \fn QRectF QRectF::marginsRemoved(const QMarginsF &margins) const
+    \relates QRectF
+    \since 5.3
+
+    Removes the \a margins from the rectangle, shrinking it.
+
+    \sa marginsAdded(), operator+=(), operator-=()
+*/
+
+/*!
+    \fn QRectF QRectF::operator+=(const QMarginsF &margins)
+    \relates QRectF
+    \since 5.3
+
+    Adds the \a margins to the rectangle, growing it.
+
+    \sa marginsAdded(), marginsRemoved(), operator-=()
+*/
+
+/*!
+    \fn QRectF QRectF::operator-=(const QMarginsF &margins)
+    \relates QRectF
+    \since 5.3
+
+    Returns a rectangle shrunk by the \a margins.
+
+    \sa marginsRemoved(), operator+=(), marginsAdded()
+*/
+
 /*****************************************************************************
   QRectF stream functions
  *****************************************************************************/
