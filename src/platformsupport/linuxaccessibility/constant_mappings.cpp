@@ -61,6 +61,8 @@ quint64 spiStatesFromQState(QAccessible::State state)
 {
     quint64 spiState = 0;
 
+    if (state.active)
+        setSpiStateBit(&spiState, ATSPI_STATE_ACTIVE);
     if (state.editable)
         setSpiStateBit(&spiState, ATSPI_STATE_EDITABLE);
     if (!state.disabled) {
