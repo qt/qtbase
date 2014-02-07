@@ -768,3 +768,10 @@ X11
  * [QTBUG-34392][MSVS] Fixed /SAFESEH:NO with VS2010+.
  * [QTBUG-34357][MSVS] Fixed breakage with multiple VS versions in PATH.
  * [MSVS] Fixed sub-project dependency generation.
+
+- moc
+ * Porting moc to QCommandLineParser has changed one specific option in its
+   command line handling: using the -f option without argument
+   is not supported anymore (it wasn't necessary, since including the header
+   file is the default behavior).
+

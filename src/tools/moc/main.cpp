@@ -258,7 +258,7 @@ int runMoc(int argc, char **argv)
     parser.addOption(pathPrefixOption);
 
     QCommandLineOption forceIncludeOption(QStringLiteral("f"));
-    forceIncludeOption.setDescription(QStringLiteral("Force #include [optional <file>] (overwrite default)."));
+    forceIncludeOption.setDescription(QStringLiteral("Force #include <file> (overwrite default)."));
     forceIncludeOption.setValueName(QStringLiteral("file"));
     parser.addOption(forceIncludeOption);
 
