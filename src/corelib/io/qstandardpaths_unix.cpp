@@ -205,6 +205,8 @@ QString QStandardPaths::writableLocation(StandardLocation type)
                 // value can start with $HOME
                 if (value.startsWith(QLatin1String("$HOME")))
                     value = QDir::homePath() + value.mid(5);
+                if (value.length() > 1 && value.endsWith(QLatin1Char('/')))
+                    value.chop(1);
                 return value;
             }
         }
