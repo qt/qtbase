@@ -3663,7 +3663,7 @@ static Image_Converter converter_map[QImage::NImageFormats][QImage::NImageFormat
         0,
         convert_RGBA_to_RGB,
         convert_RGBA_to_ARGB,
-        convert_RGBA_to_ARGB_PM,
+        convert_RGBA_to_ARGB,
         0,
         0,
         0,
