@@ -179,7 +179,6 @@ QIOSInputContext::QIOSInputContext()
     , m_keyboardListener([[QIOSKeyboardListener alloc] initWithQIOSInputContext:this])
     , m_focusView(0)
     , m_hasPendingHideRequest(false)
-    , m_focusObject(0)
 {
     if (isQtApplication())
         connect(qGuiApp->inputMethod(), &QInputMethod::cursorRectangleChanged, this, &QIOSInputContext::cursorRectangleChanged);
@@ -227,8 +226,6 @@ bool QIOSInputContext::isInputPanelVisible() const
 
 void QIOSInputContext::setFocusObject(QObject *focusObject)
 {
-    m_focusObject = focusObject;
-
     if (!focusObject || !m_focusView || !m_focusView.isFirstResponder) {
         scroll(0);
         return;
@@ -262,7 +259,7 @@ void QIOSInputContext::cursorRectangleChanged()
     // itself moves, we need to ask the focus object for ImCursorRectangle:
     static QPoint prevCursor;
     QInputMethodQueryEvent queryEvent(Qt::ImCursorRectangle);
-    QCoreApplication::sendEvent(m_focusObject, &queryEvent);
+    QCoreApplication::sendEvent(qApp->focusObject(), &queryEvent);
     QPoint cursor = queryEvent.value(Qt::ImCursorRectangle).toRect().topLeft();
     if (cursor != prevCursor)
         scrollToCursor();

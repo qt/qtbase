@@ -77,7 +77,6 @@ private:
     QIOSKeyboardListener *m_keyboardListener;
     QUIView *m_focusView;
     bool m_hasPendingHideRequest;
-    QObject *m_focusObject;
 };
 
 QT_END_NAMESPACE
