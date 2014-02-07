@@ -354,7 +354,7 @@ QVariant QWindowsTheme::themeHint(ThemeHint hint) const
     case UseFullScreenForPopupMenu:
         return QVariant(true);
     case DialogButtonBoxLayout:
-        return QVariant(int(0)); // QDialogButtonBox::WinLayout
+        return QVariant(QPlatformDialogHelper::WinLayout);
     case IconThemeSearchPaths:
         return QVariant(iconThemeSearchPaths());
     case StyleNames:

@@ -408,7 +408,7 @@ QVariant QKdeTheme::themeHint(QPlatformTheme::ThemeHint hint) const
     case QPlatformTheme::DialogButtonBoxButtonsHaveIcons:
         return QVariant(true);
     case QPlatformTheme::DialogButtonBoxLayout:
-        return QVariant(2); // QDialogButtonBox::KdeLayout
+        return QVariant(QPlatformDialogHelper::KdeLayout);
     case QPlatformTheme::ToolButtonStyle:
         return QVariant(d->toolButtonStyle);
     case QPlatformTheme::ToolBarIconSize:
@@ -504,7 +504,7 @@ QVariant QGnomeTheme::themeHint(QPlatformTheme::ThemeHint hint) const
     case QPlatformTheme::DialogButtonBoxButtonsHaveIcons:
         return QVariant(true);
     case QPlatformTheme::DialogButtonBoxLayout:
-        return QVariant(3); // QDialogButtonBox::GnomeLayout
+        return QVariant(QPlatformDialogHelper::GnomeLayout);
     case QPlatformTheme::SystemIconThemeName:
     case QPlatformTheme::SystemIconFallbackThemeName:
         return QVariant(QString(QStringLiteral("gnome")));
@@ -541,15 +541,15 @@ const QFont *QGnomeTheme::font(Font type) const
 QString QGnomeTheme::standardButtonText(int button) const
 {
     switch (button) {
-    case QMessageDialogOptions::Ok:
+    case QPlatformDialogHelper::Ok:
         return QCoreApplication::translate("QGnomeTheme", "&OK");
-    case QMessageDialogOptions::Save:
+    case QPlatformDialogHelper::Save:
         return QCoreApplication::translate("QGnomeTheme", "&Save");
-    case QMessageDialogOptions::Cancel:
+    case QPlatformDialogHelper::Cancel:
         return QCoreApplication::translate("QGnomeTheme", "&Cancel");
-    case QMessageDialogOptions::QMessageDialogOptions::Close:
+    case QPlatformDialogHelper::Close:
         return QCoreApplication::translate("QGnomeTheme", "&Close");
-    case QMessageDialogOptions::Discard:
+    case QPlatformDialogHelper::Discard:
         return QCoreApplication::translate("QGnomeTheme", "Close without Saving");
     default:
         break;

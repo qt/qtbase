@@ -632,7 +632,7 @@ QList<QKeySequence> QPlatformTheme::keyBindings(QKeySequence::StandardKey key) c
    Returns the text of a standard \a button.
 
   \since 5.3
-  \sa QMessageDialogOptions::StandardButton
+  \sa QPlatformDialogHelper::StandardButton
  */
 
 QString QPlatformTheme::standardButtonText(int button) const
@@ -643,41 +643,41 @@ QString QPlatformTheme::standardButtonText(int button) const
 QString QPlatformTheme::defaultStandardButtonText(int button)
 {
     switch (button) {
-    case QMessageDialogOptions::Ok:
+    case QPlatformDialogHelper::Ok:
         return QCoreApplication::translate("QPlatformTheme", "OK");
-    case QMessageDialogOptions::Save:
+    case QPlatformDialogHelper::Save:
         return QCoreApplication::translate("QPlatformTheme", "Save");
-    case QMessageDialogOptions::SaveAll:
+    case QPlatformDialogHelper::SaveAll:
         return QCoreApplication::translate("QPlatformTheme", "Save All");
-    case QMessageDialogOptions::Open:
+    case QPlatformDialogHelper::Open:
         return QCoreApplication::translate("QPlatformTheme", "Open");
-    case QMessageDialogOptions::Yes:
+    case QPlatformDialogHelper::Yes:
         return QCoreApplication::translate("QPlatformTheme", "&Yes");
-    case QMessageDialogOptions::YesToAll:
+    case QPlatformDialogHelper::YesToAll:
         return QCoreApplication::translate("QPlatformTheme", "Yes to &All");
-    case QMessageDialogOptions::No:
+    case QPlatformDialogHelper::No:
         return QCoreApplication::translate("QPlatformTheme", "&No");
-    case QMessageDialogOptions::NoToAll:
+    case QPlatformDialogHelper::NoToAll:
         return QCoreApplication::translate("QPlatformTheme", "N&o to All");
-    case QMessageDialogOptions::Abort:
+    case QPlatformDialogHelper::Abort:
         return QCoreApplication::translate("QPlatformTheme", "Abort");
-    case QMessageDialogOptions::Retry:
+    case QPlatformDialogHelper::Retry:
         return QCoreApplication::translate("QPlatformTheme", "Retry");
-    case QMessageDialogOptions::Ignore:
+    case QPlatformDialogHelper::Ignore:
         return QCoreApplication::translate("QPlatformTheme", "Ignore");
-    case QMessageDialogOptions::Close:
+    case QPlatformDialogHelper::Close:
         return QCoreApplication::translate("QPlatformTheme", "Close");
-    case QMessageDialogOptions::Cancel:
+    case QPlatformDialogHelper::Cancel:
         return QCoreApplication::translate("QPlatformTheme", "Cancel");
-    case QMessageDialogOptions::Discard:
+    case QPlatformDialogHelper::Discard:
         return QCoreApplication::translate("QPlatformTheme", "Discard");
-    case QMessageDialogOptions::Help:
+    case QPlatformDialogHelper::Help:
         return QCoreApplication::translate("QPlatformTheme", "Help");
-    case QMessageDialogOptions::Apply:
+    case QPlatformDialogHelper::Apply:
         return QCoreApplication::translate("QPlatformTheme", "Apply");
-    case QMessageDialogOptions::Reset:
+    case QPlatformDialogHelper::Reset:
         return QCoreApplication::translate("QPlatformTheme", "Reset");
-    case QMessageDialogOptions::RestoreDefaults:
+    case QPlatformDialogHelper::RestoreDefaults:
         return QCoreApplication::translate("QPlatformTheme", "Restore Defaults");
     default:
         break;

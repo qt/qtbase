@@ -128,9 +128,9 @@ bool QWinRTPlatformMessageDialogHelper::show(Qt::WindowFlags windowFlags, Qt::Wi
     // If no button is specified we need to create one to get close notification
     int buttons = options->standardButtons();
     if (buttons == 0)
-        buttons = QMessageDialogOptions::Ok;
+        buttons = QPlatformDialogHelper::Ok;
 
-    for (int i = QMessageDialogOptions::FirstButton; i < QMessageDialogOptions::LastButton; i<<=1) {
+    for (int i = QPlatformDialogHelper::FirstButton; i < QPlatformDialogHelper::LastButton; i<<=1) {
         if (buttons & i) {
             // Add native command
             const QString label = QGuiApplicationPrivate::platformTheme()->standardButtonText(i);
@@ -176,7 +176,7 @@ HRESULT QWinRTPlatformMessageDialogHelper::onInvoked(ABI::Windows::UI::Popups::I
     command->get_Label(&hLabel);
     QString label = QString::fromWCharArray(::WindowsGetStringRawBuffer(hLabel, &labelLength));
     int buttonId = -1;
-    for (int i = QMessageDialogOptions::FirstButton; i < QMessageDialogOptions::LastButton; i<<=1) {
+    for (int i = QPlatformDialogHelper::FirstButton; i < QPlatformDialogHelper::LastButton; i<<=1) {
         if ( options()->standardButtons() & i ) {
             if (QGuiApplicationPrivate::platformTheme()->standardButtonText(i) == label) {
                 buttonId = i;
@@ -194,8 +194,8 @@ HRESULT QWinRTPlatformMessageDialogHelper::onInvoked(ABI::Windows::UI::Popups::I
         return S_OK;
     }
 
-    QMessageDialogOptions::StandardButton standardButton = static_cast<QMessageDialogOptions::StandardButton>(buttonId);
-    QMessageDialogOptions::ButtonRole role = QMessageDialogOptions::buttonRole(standardButton);
+    QPlatformDialogHelper::StandardButton standardButton = static_cast<QPlatformDialogHelper::StandardButton>(buttonId);
+    QPlatformDialogHelper::ButtonRole role = QPlatformDialogHelper::buttonRole(standardButton);
     emit clicked(standardButton, role);
     return S_OK;
 }

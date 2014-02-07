@@ -150,77 +150,6 @@ QT_BEGIN_NAMESPACE
     \sa QMessageBox, QPushButton, QDialog
 */
 
-enum {
-    AcceptRole      = QDialogButtonBox::AcceptRole,
-    RejectRole      = QDialogButtonBox::RejectRole,
-    DestructiveRole = QDialogButtonBox::DestructiveRole,
-    ActionRole      = QDialogButtonBox::ActionRole,
-    HelpRole        = QDialogButtonBox::HelpRole,
-    YesRole         = QDialogButtonBox::YesRole,
-    NoRole          = QDialogButtonBox::NoRole,
-    ApplyRole       = QDialogButtonBox::ApplyRole,
-    ResetRole       = QDialogButtonBox::ResetRole,
-
-    AlternateRole   = 0x10000000,
-    Stretch         = 0x20000000,
-    EOL             = 0x40000000,
-    Reverse         = 0x80000000
-};
-
-static QDialogButtonBox::ButtonRole roleFor(QDialogButtonBox::StandardButton button)
-{
-    return static_cast<QDialogButtonBox::ButtonRole>(QMessageDialogOptions::buttonRole(
-        static_cast<QMessageDialogOptions::StandardButton>(button)));
-}
-
-static const uint layouts[2][5][14] =
-{
-    // Qt::Horizontal
-    {
-        // WinLayout
-        { ResetRole, Stretch, YesRole, AcceptRole, AlternateRole, DestructiveRole, NoRole, ActionRole, RejectRole, ApplyRole,
-           HelpRole, EOL, EOL, EOL },
-
-        // MacLayout
-        { HelpRole, ResetRole, ApplyRole, ActionRole, Stretch, DestructiveRole | Reverse,
-          AlternateRole | Reverse, RejectRole | Reverse, AcceptRole | Reverse, NoRole | Reverse, YesRole | Reverse, EOL, EOL },
-
-        // KdeLayout
-        { HelpRole, ResetRole, Stretch, YesRole, NoRole, ActionRole, AcceptRole, AlternateRole,
-          ApplyRole, DestructiveRole, RejectRole, EOL },
-
-        // GnomeLayout
-        { HelpRole, ResetRole, Stretch, ActionRole, ApplyRole | Reverse, DestructiveRole | Reverse,
-          AlternateRole | Reverse, RejectRole | Reverse, AcceptRole | Reverse, NoRole | Reverse, YesRole | Reverse, EOL },
-
-        // Mac modeless
-        { ResetRole, ApplyRole, ActionRole, Stretch, HelpRole, EOL, EOL, EOL, EOL, EOL, EOL, EOL, EOL, EOL }
-    },
-
-    // Qt::Vertical
-    {
-        // WinLayout
-        { ActionRole, YesRole, AcceptRole, AlternateRole, DestructiveRole, NoRole, RejectRole, ApplyRole, ResetRole,
-          HelpRole, Stretch, EOL, EOL, EOL },
-
-        // MacLayout
-        { YesRole, NoRole, AcceptRole, RejectRole, AlternateRole, DestructiveRole, Stretch, ActionRole, ApplyRole,
-          ResetRole, HelpRole, EOL, EOL },
-
-        // KdeLayout
-        { AcceptRole, AlternateRole, ApplyRole, ActionRole, YesRole, NoRole, Stretch, ResetRole,
-          DestructiveRole, RejectRole, HelpRole, EOL },
-
-        // GnomeLayout
-        { YesRole, NoRole, AcceptRole, RejectRole, AlternateRole, DestructiveRole, ApplyRole, ActionRole, Stretch,
-          ResetRole, HelpRole, EOL, EOL, EOL },
-
-        // Mac modeless
-        { ActionRole, ApplyRole, ResetRole, Stretch, HelpRole, EOL, EOL, EOL, EOL, EOL, EOL, EOL, EOL, EOL }
-    }
-};
-
-
 class QDialogButtonBoxPrivate : public QWidgetPrivate
 {
     Q_DECLARE_PUBLIC(QDialogButtonBox)
@@ -323,7 +252,8 @@ void QDialogButtonBoxPrivate::layoutButtons()
     int tmpPolicy = layoutPolicy;
 
     static const int M = 5;
-    static const int ModalRoles[M] = { AcceptRole, RejectRole, DestructiveRole, YesRole, NoRole };
+    static const int ModalRoles[M] = { QPlatformDialogHelper::AcceptRole, QPlatformDialogHelper::RejectRole,
+        QPlatformDialogHelper::DestructiveRole, QPlatformDialogHelper::YesRole, QPlatformDialogHelper::NoRole };
     if (tmpPolicy == QDialogButtonBox::MacLayout) {
         bool hasModalButton = false;
         for (int i = 0; i < M; ++i) {
@@ -336,23 +266,24 @@ void QDialogButtonBoxPrivate::layoutButtons()
             tmpPolicy = 4;  // Mac modeless
     }
 
-    const uint *currentLayout = layouts[orientation == Qt::Vertical][tmpPolicy];
+    const quint32 *currentLayout = QPlatformDialogHelper::buttonLayout(
+        orientation, static_cast<QPlatformDialogHelper::ButtonLayout>(tmpPolicy));
 
     if (center)
         buttonLayout->addStretch();
 
-    QList<QAbstractButton *> acceptRoleList = buttonLists[AcceptRole];
+    QList<QAbstractButton *> acceptRoleList = buttonLists[QPlatformDialogHelper::AcceptRole];
 
-    while (*currentLayout != EOL) {
-        int role = (*currentLayout & ~Reverse);
-        bool reverse = (*currentLayout & Reverse);
+    while (*currentLayout != QPlatformDialogHelper::EOL) {
+        int role = (*currentLayout & ~QPlatformDialogHelper::Reverse);
+        bool reverse = (*currentLayout & QPlatformDialogHelper::Reverse);
 
         switch (role) {
-        case Stretch:
+        case QPlatformDialogHelper::Stretch:
             if (!center)
                 buttonLayout->addStretch();
             break;
-        case AcceptRole: {
+        case QPlatformDialogHelper::AcceptRole: {
             if (acceptRoleList.isEmpty())
                 break;
             // Only the first one
@@ -361,7 +292,7 @@ void QDialogButtonBoxPrivate::layoutButtons()
             button->show();
         }
             break;
-        case AlternateRole:
+        case QPlatformDialogHelper::AlternateRole:
             {
                 if (acceptRoleList.size() < 2)
                     break;
@@ -370,7 +301,7 @@ void QDialogButtonBoxPrivate::layoutButtons()
                 addButtonsToLayout(list, reverse);
             }
             break;
-        case DestructiveRole:
+        case QPlatformDialogHelper::DestructiveRole:
             {
                 const QList<QAbstractButton *> &list = buttonLists[role];
 
@@ -396,13 +327,13 @@ void QDialogButtonBoxPrivate::layoutButtons()
                     buttonLayout->addSpacing(MacGap);
             }
             break;
-        case RejectRole:
-        case ActionRole:
-        case HelpRole:
-        case YesRole:
-        case NoRole:
-        case ApplyRole:
-        case ResetRole:
+        case QPlatformDialogHelper::RejectRole:
+        case QPlatformDialogHelper::ActionRole:
+        case QPlatformDialogHelper::HelpRole:
+        case QPlatformDialogHelper::YesRole:
+        case QPlatformDialogHelper::NoRole:
+        case QPlatformDialogHelper::ApplyRole:
+        case QPlatformDialogHelper::ResetRole:
             addButtonsToLayout(buttonLists[role], reverse);
         }
         ++currentLayout;
@@ -484,8 +415,9 @@ QPushButton *QDialogButtonBoxPrivate::createButton(QDialogButtonBox::StandardBut
     if (style != QApplication::style()) // Propagate style
         button->setStyle(style);
     standardButtonHash.insert(button, sbutton);
-    if (roleFor(sbutton) != QDialogButtonBox::InvalidRole) {
-        addButton(button, roleFor(sbutton), doLayout);
+    QPlatformDialogHelper::ButtonRole role = QPlatformDialogHelper::buttonRole(static_cast<QPlatformDialogHelper::StandardButton>(sbutton));
+    if (role != QPlatformDialogHelper::InvalidRole) {
+        addButton(button, static_cast<QDialogButtonBox::ButtonRole>(role), doLayout);
     } else {
         qWarning("QDialogButtonBox::createButton: Invalid ButtonRole, button not added");
     }
@@ -934,15 +866,15 @@ void QDialogButtonBoxPrivate::_q_handleButtonClicked()
         emit q->clicked(button);
 
         switch (q->buttonRole(button)) {
-        case AcceptRole:
-        case YesRole:
+        case QPlatformDialogHelper::AcceptRole:
+        case QPlatformDialogHelper::YesRole:
             emit q->accepted();
             break;
-        case RejectRole:
-        case NoRole:
+        case QPlatformDialogHelper::RejectRole:
+        case QPlatformDialogHelper::NoRole:
             emit q->rejected();
             break;
-        case HelpRole:
+        case QPlatformDialogHelper::HelpRole:
             emit q->helpRequested();
             break;
         default:

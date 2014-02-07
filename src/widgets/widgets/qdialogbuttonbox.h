@@ -61,7 +61,7 @@ class Q_WIDGETS_EXPORT QDialogButtonBox : public QWidget
 
 public:
     enum ButtonRole {
-        // keep this in sync with QMessageBox::ButtonRole
+        // keep this in sync with QMessageBox::ButtonRole and QPlatformDialogHelper::ButtonRole
         InvalidRole = -1,
         AcceptRole,
         RejectRole,
@@ -77,7 +77,7 @@ public:
     };
 
     enum StandardButton {
-        // keep this in sync with QMessageBox::StandardButton
+        // keep this in sync with QMessageBox::StandardButton and QPlatformDialogHelper::StandardButton
         NoButton           = 0x00000000,
         Ok                 = 0x00000400,
         Save               = 0x00000800,
@@ -107,6 +107,7 @@ public:
     Q_DECLARE_FLAGS(StandardButtons, StandardButton)
 
     enum ButtonLayout {
+        // keep this in sync with QMessageBox::ButtonLayout and QPlatformDialogHelper::ButtonLayout
         WinLayout,
         MacLayout,
         KdeLayout,

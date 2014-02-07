@@ -188,13 +188,13 @@ QVariant QAndroidPlatformTheme::themeHint(ThemeHint hint) const
 QString QAndroidPlatformTheme::standardButtonText(int button) const
 {
     switch (button) {
-    case QMessageDialogOptions::Yes:
+    case QPlatformDialogHelper::Yes:
         return QCoreApplication::translate("QAndroidPlatformTheme", "Yes");
-    case QMessageDialogOptions::YesToAll:
+    case QPlatformDialogHelper::YesToAll:
         return QCoreApplication::translate("QAndroidPlatformTheme", "Yes to All");
-    case QMessageDialogOptions::No:
+    case QPlatformDialogHelper::No:
         return QCoreApplication::translate("QAndroidPlatformTheme", "No");
-    case QMessageDialogOptions::NoToAll:
+    case QPlatformDialogHelper::NoToAll:
         return QCoreApplication::translate("QAndroidPlatformTheme", "No to All");
     }
     return QPlatformTheme::standardButtonText(button);
