@@ -163,7 +163,8 @@ public:
 QDebug operator<< (QDebug s, const MyPoint& point)
 {
     const QDebugStateSaver saver(s);
-    return s.nospace() << "MyPoint(" << point.v1 << ", " << point.v2 << ")";
+    s.nospace() << "MyPoint(" << point.v1 << ", " << point.v2 << ")";
+    return s;
 }
 
 class MyLine
@@ -199,10 +200,17 @@ void tst_QDebug::debugSpaceHandling() const
         d << 1 << 2;
         MyLine line(MyPoint(10, 11), MyPoint (12, 13));
         d << line;
+        d << "bar";
         // With the old implementation of MyPoint doing dbg.nospace() << ...; dbg.space() we ended up with
         // MyLine(MyPoint(10, 11) ,  MyPoint(12, 13) )
     }
-    QCOMPARE(s_msg, QString::fromLatin1("  foo key=value 1 2 MyLine(MyPoint(10, 11), MyPoint(12, 13))"));
+    QCOMPARE(s_msg, QString::fromLatin1("  foo key=value 1 2 MyLine(MyPoint(10, 11), MyPoint(12, 13)) bar"));
+
+    QVERIFY(qDebug().autoInsertSpaces());
+    qDebug() << QPoint(21, 22) << QRect(23, 24, 25, 26) << QLine(27, 28, 29, 30);
+    QCOMPARE(s_msg, QString::fromLatin1("QPoint(21,22) QRect(23,24 25x26) QLine(QPoint(27,28),QPoint(29,30))"));
+    qDebug() << QPointF(21, 22) << QRectF(23, 24, 25, 26) << QLineF(27, 28, 29, 30);
+    QCOMPARE(s_msg, QString::fromLatin1("QPointF(21,22) QRectF(23,24 25x26) QLineF(QPointF(27,28),QPointF(29,30))"));
 }
 
 void tst_QDebug::stateSaver() const
@@ -214,7 +222,7 @@ void tst_QDebug::stateSaver() const
             QDebugStateSaver saver(d);
             d.nospace() << hex << right << qSetFieldWidth(3) << qSetPadChar('0') << 42;
         }
-        d.space() << 42;
+        d << 42;
     }
     QCOMPARE(s_msg, QString::fromLatin1("02a 42"));
 }

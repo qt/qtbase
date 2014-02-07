@@ -334,7 +334,9 @@ QT_BEGIN_NAMESPACE
 
     \brief Convenience class for custom QDebug operators
 
-    Saves the settings used by QDebug, and restores them upon destruction.
+    Saves the settings used by QDebug, and restores them upon destruction,
+    then calls maybeSpace(), to separate arguments with a space if
+    autoInsertSpaces() was true at the time of constructing the QDebugStateSaver.
 
     The automatic insertion of spaces between writes is one of the settings
     that QDebugStateSaver stores for the duration of the current block.
@@ -391,6 +393,7 @@ QDebugStateSaver::QDebugStateSaver(QDebug &dbg)
 QDebugStateSaver::~QDebugStateSaver()
 {
     d->restoreState();
+    d->m_dbg.maybeSpace();
 }
 
 QT_END_NAMESPACE

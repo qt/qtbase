@@ -451,15 +451,18 @@ QDataStream &operator>>(QDataStream &s, QPoint &p)
 */
 
 #ifndef QT_NO_DEBUG_STREAM
-QDebug operator<<(QDebug dbg, const QPoint &p) {
+QDebug operator<<(QDebug dbg, const QPoint &p)
+{
+    QDebugStateSaver saver(dbg);
     dbg.nospace() << "QPoint(" << p.x() << ',' << p.y() << ')';
-    return dbg.space();
+    return dbg;
 }
 
-QDebug operator<<(QDebug d, const QPointF &p)
+QDebug operator<<(QDebug dbg, const QPointF &p)
 {
-    d.nospace() << "QPointF(" << p.x() << ", " << p.y() << ')';
-    return d.space();
+    QDebugStateSaver saver(dbg);
+    dbg.nospace() << "QPointF(" << p.x() << ',' << p.y() << ')';
+    return dbg;
 }
 #endif
 

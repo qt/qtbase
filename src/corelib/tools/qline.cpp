@@ -259,10 +259,11 @@ QT_BEGIN_NAMESPACE
 
 
 #ifndef QT_NO_DEBUG_STREAM
-QDebug operator<<(QDebug d, const QLine &p)
+QDebug operator<<(QDebug dbg, const QLine &p)
 {
-    d << "QLine(" << p.p1() << ',' << p.p2() << ')';
-    return d;
+    QDebugStateSaver saver(dbg);
+    dbg.nospace() << "QLine(" << p.p1() << ',' << p.p2() << ')';
+    return dbg;
 }
 #endif
 
@@ -819,10 +820,11 @@ qreal QLineF::angle(const QLineF &l) const
 
 
 #ifndef QT_NO_DEBUG_STREAM
-QDebug operator<<(QDebug d, const QLineF &p)
+QDebug operator<<(QDebug dbg, const QLineF &p)
 {
-    d << "QLineF(" << p.p1() << ',' << p.p2() << ')';
-    return d;
+    QDebugStateSaver saver(dbg);
+    dbg.nospace() << "QLineF(" << p.p1() << ',' << p.p2() << ')';
+    return dbg;
 }
 #endif
 

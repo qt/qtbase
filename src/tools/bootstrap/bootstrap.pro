@@ -61,6 +61,7 @@ SOURCES += \
            ../../corelib/io/qabstractfileengine.cpp \
            ../../corelib/io/qbuffer.cpp \
            ../../corelib/io/qdatastream.cpp \
+           ../../corelib/io/qdebug.cpp \
            ../../corelib/io/qdir.cpp \
            ../../corelib/io/qdiriterator.cpp \
            ../../corelib/io/qfile.cpp \
