@@ -475,6 +475,8 @@ void tst_qstandardpaths::testAllWritableLocations()
     QString loc = QStandardPaths::writableLocation(location);
     if (loc.size() > 1)  // workaround for unlikely case of locations that return '/'
         QCOMPARE(loc.endsWith(QLatin1Char('/')), false);
+    QVERIFY(loc.contains(QLatin1Char('/')));
+    QVERIFY(!loc.contains(QLatin1Char('\\')));
 }
 
 void tst_qstandardpaths::testCleanPath()
