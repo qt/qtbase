@@ -5507,7 +5507,7 @@ inline void qt_bitmapblit_template(QRasterBuffer *rasterBuffer,
     }
 }
 
-static void qt_gradient_quint32(int count, const QSpan *spans, void *userData)
+static void qt_gradient_argb32(int count, const QSpan *spans, void *userData)
 {
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
@@ -5964,7 +5964,7 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
     // Format_RGB32,
     {
         blend_color_argb,
-        qt_gradient_quint32,
+        qt_gradient_argb32,
         qt_bitmapblit_quint32,
         qt_alphamapblit_quint32,
         qt_alphargbblit_quint32,
@@ -5973,7 +5973,7 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
     // Format_ARGB32,
     {
         blend_color_generic,
-        qt_gradient_quint32,
+        qt_gradient_argb32,
         qt_bitmapblit_quint32,
         qt_alphamapblit_quint32,
         qt_alphargbblit_quint32,
@@ -5982,7 +5982,7 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
     // Format_ARGB32_Premultiplied
     {
         blend_color_argb,
-        qt_gradient_quint32,
+        qt_gradient_argb32,
         qt_bitmapblit_quint32,
         qt_alphamapblit_quint32,
         qt_alphargbblit_quint32,
@@ -6048,7 +6048,7 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
     // Format_RGBX8888
     {
         blend_color_generic,
-        qt_gradient_quint32,
+        blend_src_generic,
         qt_bitmapblit_quint32,
 #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
         qt_alphamapblit_quint32,
@@ -6062,7 +6062,7 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
     // Format_RGBA8888
     {
         blend_color_generic,
-        qt_gradient_quint32,
+        blend_src_generic,
         qt_bitmapblit_quint32,
 #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
         qt_alphamapblit_quint32,
@@ -6076,7 +6076,7 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
     // Format_RGB8888_Premultiplied
     {
         blend_color_generic,
-        qt_gradient_quint32,
+        blend_src_generic,
         qt_bitmapblit_quint32,
 #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
         qt_alphamapblit_quint32,
