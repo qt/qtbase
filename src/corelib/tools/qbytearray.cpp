@@ -3545,7 +3545,7 @@ double QByteArray::toDouble(bool *ok) const
 
 float QByteArray::toFloat(bool *ok) const
 {
-    return float(toDouble(ok));
+    return QLocaleData::convertDoubleToFloat(toDouble(ok), ok);
 }
 
 /*!

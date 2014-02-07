@@ -56,8 +56,12 @@
 #include "QtCore/qstring.h"
 #include "QtCore/qvarlengtharray.h"
 #include "QtCore/qvariant.h"
+#include "QtCore/qnumeric.h"
 
 #include "qlocale.h"
+
+#include <limits>
+#include <cmath>
 
 QT_BEGIN_NAMESPACE
 
@@ -226,6 +230,19 @@ public:
                                 int base = 10,
                                 int width = -1,
                                 unsigned flags = NoFlags) const;
+
+    // this function is meant to be called with the result of stringToDouble or bytearrayToDouble
+    static float convertDoubleToFloat(double d, bool *ok)
+    {
+        if (qIsInf(d))
+            return float(d);
+        if (std::fabs(d) > std::numeric_limits<float>::max()) {
+            if (ok != 0)
+                *ok = false;
+            return 0.0f;
+        }
+        return float(d);
+    }
 
     double stringToDouble(const QChar *begin, int len, bool *ok, GroupSeparatorMode group_sep_mode) const;
     qint64 stringToLongLong(const QChar *begin, int len, int base, bool *ok, GroupSeparatorMode group_sep_mode) const;

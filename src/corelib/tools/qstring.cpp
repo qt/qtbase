@@ -6341,27 +6341,9 @@ double QString::toDouble(bool *ok) const
     \sa number(), toDouble(), toInt(), QLocale::toFloat()
 */
 
-#define QT_MAX_FLOAT 3.4028234663852886e+38
-
 float QString::toFloat(bool *ok) const
 {
-    bool myOk;
-    double d = toDouble(&myOk);
-    if (!myOk) {
-        if (ok != 0)
-            *ok = false;
-        return 0.0;
-    }
-    if (qIsInf(d))
-        return float(d);
-    if (d > QT_MAX_FLOAT || d < -QT_MAX_FLOAT) {
-        if (ok != 0)
-            *ok = false;
-        return 0.0;
-    }
-    if (ok != 0)
-        *ok = true;
-    return float(d);
+    return QLocaleData::convertDoubleToFloat(toDouble(ok), ok);
 }
 
 /*! \fn QString &QString::setNum(int n, int base)
@@ -9806,23 +9788,7 @@ double QStringRef::toDouble(bool *ok) const
 
 float QStringRef::toFloat(bool *ok) const
 {
-    bool myOk;
-    double d = toDouble(&myOk);
-    if (!myOk) {
-        if (ok != 0)
-            *ok = false;
-        return 0.0;
-    }
-    if (qIsInf(d))
-        return float(d);
-    if (d > QT_MAX_FLOAT || d < -QT_MAX_FLOAT) {
-        if (ok != 0)
-            *ok = false;
-        return 0.0;
-    }
-    if (ok)
-        *ok = true;
-    return float(d);
+    return QLocaleData::convertDoubleToFloat(toDouble(ok), ok);
 }
 
 /*!

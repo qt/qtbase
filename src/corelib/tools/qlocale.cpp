@@ -1277,20 +1277,9 @@ qulonglong QLocale::toULongLong(const QString &s, bool *ok) const
     \sa toDouble(), toInt(), toString()
 */
 
-#define QT_MAX_FLOAT 3.4028234663852886e+38
-
 float QLocale::toFloat(const QString &s, bool *ok) const
 {
-    bool myOk;
-    double d = toDouble(s, &myOk);
-    if (!myOk || d > QT_MAX_FLOAT || d < -QT_MAX_FLOAT) {
-        if (ok != 0)
-            *ok = false;
-        return 0.0;
-    }
-    if (ok != 0)
-        *ok = true;
-    return float(d);
+    return QLocaleData::convertDoubleToFloat(toDouble(s, ok), ok);
 }
 
 /*!
@@ -1462,16 +1451,7 @@ qulonglong QLocale::toULongLong(const QStringRef &s, bool *ok) const
 
 float QLocale::toFloat(const QStringRef &s, bool *ok) const
 {
-    bool myOk;
-    double d = toDouble(s, &myOk);
-    if (!myOk || d > QT_MAX_FLOAT || d < -QT_MAX_FLOAT) {
-        if (ok)
-            *ok = false;
-        return 0.0;
-    }
-    if (ok)
-        *ok = true;
-    return float(d);
+    return QLocaleData::convertDoubleToFloat(toDouble(s, ok), ok);
 }
 
 /*!
