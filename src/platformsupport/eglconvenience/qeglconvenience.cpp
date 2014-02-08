@@ -41,7 +41,7 @@
 
 #include <QByteArray>
 
-#if (defined(Q_OS_UNIX) && !defined(Q_OS_QNX))
+#ifdef Q_OS_LINUX
 #include <sys/ioctl.h>
 #include <linux/fb.h>
 #include <private/qmath_p.h>
@@ -433,7 +433,7 @@ void q_printEglConfig(EGLDisplay display, EGLConfig config)
     qWarning("\n");
 }
 
-#if (defined(Q_OS_UNIX) && !defined(Q_OS_QNX))
+#ifdef Q_OS_LINUX
 
 QSizeF q_physicalScreenSizeFromFb(int framebufferDevice, const QSize &screenSize)
 {
@@ -535,6 +535,6 @@ int q_screenDepthFromFb(int framebufferDevice)
     return depth;
 }
 
-#endif // Q_OS_UNIX
+#endif // Q_OS_LINUX
 
 QT_END_NAMESPACE
