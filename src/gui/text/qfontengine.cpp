@@ -48,6 +48,7 @@
 #include "qvarlengtharray.h"
 #include <qmath.h>
 #include <qendian.h>
+#include <private/qstringiterator_p.h>
 
 #ifdef QT_ENABLE_HARFBUZZ_NG
 #  include "qharfbuzzng_p.h"
@@ -1364,13 +1365,11 @@ bool QFontEngineBox::stringToCMap(const QChar *str, int len, QGlyphLayout *glyph
     }
 
     int ucs4Length = 0;
-    for (int i = 0; i < len; ++i) {
-        if (str[i].isHighSurrogate() && i + 1 < len && str[i + 1].isLowSurrogate())
-            ++ucs4Length;
-        ++ucs4Length;
+    QStringIterator it(str, str + len);
+    while (it.hasNext()) {
+        it.advance();
+        glyphs->glyphs[ucs4Length++] = 0;
     }
-
-    memset(glyphs->glyphs, 0, ucs4Length * sizeof(glyph_t));
 
     *nglyphs = ucs4Length;
     glyphs->numGlyphs = ucs4Length;
