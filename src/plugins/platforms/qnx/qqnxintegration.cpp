@@ -162,7 +162,7 @@ QQnxIntegration::QQnxIntegration(const QStringList &paramList)
 #else
     , m_eventDispatcher(createUnixEventDispatcher())
 #endif
-    , m_nativeInterface(new QQnxNativeInterface())
+    , m_nativeInterface(new QQnxNativeInterface(this))
     , m_screenEventHandler(new QQnxScreenEventHandler(this))
 #if !defined(QT_NO_CLIPBOARD)
     , m_clipboard(0)
@@ -595,6 +595,11 @@ QQnxIntegration::Options QQnxIntegration::options()
 screen_context_t QQnxIntegration::screenContext()
 {
     return ms_screenContext;
+}
+
+QQnxNavigatorEventHandler *QQnxIntegration::navigatorEventHandler()
+{
+    return m_navigatorEventHandler;
 }
 
 screen_context_t QQnxIntegration::ms_screenContext = 0;

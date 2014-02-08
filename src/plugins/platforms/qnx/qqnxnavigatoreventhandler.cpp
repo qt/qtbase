@@ -41,6 +41,9 @@
 
 #include "qqnxnavigatoreventhandler.h"
 
+#include "qqnxintegration.h"
+#include "qqnxscreen.h"
+
 #include <QDebug>
 #include <QGuiApplication>
 #include <qpa/qwindowsysteminterface.h>
@@ -76,15 +79,8 @@ void QQnxNavigatorEventHandler::handleOrientationChange(int angle)
 void QQnxNavigatorEventHandler::handleSwipeDown()
 {
     qNavigatorEventHandlerDebug() << Q_FUNC_INFO;
-    QWindow *w = QGuiApplication::focusWindow();
 
-    if (w) {
-        // Get the top level window that is ancestor of the focus window
-        while (QWindow *parent = w->parent())
-            w = parent;
-
-        QWindowSystemInterface::handlePlatformPanelEvent(w);
-    }
+    Q_EMIT swipeDown();
 }
 
 void QQnxNavigatorEventHandler::handleExit()

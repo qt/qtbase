@@ -141,6 +141,8 @@ public:
     static Options options();
     static screen_context_t screenContext();
 
+    QQnxNavigatorEventHandler *navigatorEventHandler();
+
 private:
     void createDisplays();
     void destroyDisplays();
