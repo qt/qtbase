@@ -44,10 +44,12 @@
 #include <QtPlatformSupport/private/qeglconvenience_p.h>
 #include <QtCore/QRegularExpression>
 
+#if defined(Q_OS_LINUX)
 #include <fcntl.h>
 #include <unistd.h>
 #include <linux/fb.h>
 #include <sys/ioctl.h>
+#endif
 
 #include <private/qcore_unix_p.h>
 
