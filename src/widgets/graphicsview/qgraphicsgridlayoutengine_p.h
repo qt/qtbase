@@ -44,6 +44,8 @@
 
 #include <QtGui/private/qgridlayoutengine_p.h>
 
+#ifndef QT_NO_GRAPHICSVIEW
+
 #include <QtWidgets/qsizepolicy.h>
 #include <QtWidgets/qstyle.h>
 #include <QtWidgets/qstyleoption.h>
@@ -121,5 +123,7 @@ public:
 };
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_GRAPHICSVIEW
 
 #endif // QGRAPHICSGRIDLAYOUTENGINE_P_H

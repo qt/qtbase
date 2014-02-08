@@ -38,7 +38,11 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
 #include "qgraphicslayoutstyleinfo_p.h"
+
+#ifndef QT_NO_GRAPHICSVIEW
+
 #include "qgraphicslayout_p.h"
 #include "qgraphicswidget.h"
 #include <QtWidgets/qstyle.h>
@@ -106,3 +110,5 @@ QStyle *QGraphicsLayoutStyleInfo::style() const
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_GRAPHICSVIEW
