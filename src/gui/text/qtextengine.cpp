@@ -1105,18 +1105,6 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si, const ushort *st
             buffer_flags |= HB_BUFFER_FLAG_PRESERVE_DEFAULT_IGNORABLES;
         hb_buffer_set_flags(buffer, hb_buffer_flags_t(buffer_flags));
 
-        const uint num_codes = hb_buffer_get_length(buffer);
-        {
-            // adjust clusters
-            hb_glyph_info_t *infos = hb_buffer_get_glyph_infos(buffer, 0);
-            const ushort *uc = string + item_pos;
-            for (uint i = 0, code_pos = 0; i < item_length; ++i, ++code_pos) {
-                if (QChar::isHighSurrogate(uc[i]) && i + 1 < item_length && QChar::isLowSurrogate(uc[i + 1]))
-                    ++i;
-                infos[code_pos].cluster = code_pos + item_glyph_pos;
-            }
-        }
-
 
         // shape
         bool shapedOk = false;
@@ -1139,8 +1127,7 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si, const ushort *st
         if (si.analysis.bidiLevel % 2)
             hb_buffer_reverse(buffer);
 
-
-        remaining_glyphs -= num_codes;
+        remaining_glyphs -= item_glyph_pos;
 
         // ensure we have enough space for shaped glyphs and metrics
         const uint num_glyphs = hb_buffer_get_length(buffer);
@@ -1151,44 +1138,36 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si, const ushort *st
 
         // fetch the shaped glyphs and metrics
         QGlyphLayout g = availableGlyphs(&si).mid(glyphs_shaped, num_glyphs);
-        if (num_glyphs > num_codes)
-            moveGlyphData(g.mid(num_glyphs), g.mid(num_codes), remaining_glyphs);
+        if (num_glyphs != item_glyph_pos)
+            moveGlyphData(g.mid(num_glyphs), g.mid(item_glyph_pos), remaining_glyphs);
         ushort *log_clusters = logClusters(&si) + item_pos;
 
         hb_glyph_info_t *infos = hb_buffer_get_glyph_infos(buffer, 0);
         hb_glyph_position_t *positions = hb_buffer_get_glyph_positions(buffer, 0);
-        uint last_cluster = -1;
+        uint str_pos = 0;
+        uint last_cluster = ~0u;
+        uint last_glyph_pos = glyphs_shaped;
         for (uint i = 0; i < num_glyphs; ++i) {
             g.glyphs[i] = infos[i].codepoint;
-            log_clusters[i] = infos[i].cluster;
 
             g.advances_x[i] = QFixed::fromFixed(positions[i].x_advance);
             g.advances_y[i] = QFixed::fromFixed(positions[i].y_advance);
             g.offsets[i].x = QFixed::fromFixed(positions[i].x_offset);
             g.offsets[i].y = QFixed::fromFixed(positions[i].y_offset);
 
-            if (infos[i].cluster != last_cluster) {
-                last_cluster = infos[i].cluster;
+            uint cluster = infos[i].cluster;
+            if (last_cluster != cluster) {
+                // fix up clusters so that the cluster indices will be monotonic
+                // and thus we never return out-of-order indices
+                while (last_cluster++ < cluster && str_pos < item_length)
+                    log_clusters[str_pos++] = last_glyph_pos;
+                last_glyph_pos = i + glyphs_shaped;
+                last_cluster = cluster;
                 g.attributes[i].clusterStart = true;
             }
         }
-
-        {
-            // adjust clusters
-            uint glyph_pos = 0;
-            for (uint i = 0; i < item_length; ++i) {
-                if (i + item_pos != infos[glyph_pos].cluster) {
-                    for (uint j = glyph_pos + 1; j < num_glyphs; ++j) {
-                        if (i + item_pos <= infos[j].cluster) {
-                            if (i + item_pos == infos[j].cluster)
-                                glyph_pos = j;
-                            break;
-                        }
-                    }
-                }
-                log_clusters[i] = glyph_pos + item_glyph_pos;
-            }
-        }
+        while (str_pos < item_length)
+            log_clusters[str_pos++] = last_glyph_pos;
 
         if (engineIdx != 0) {
             for (quint32 i = 0; i < num_glyphs; ++i)
