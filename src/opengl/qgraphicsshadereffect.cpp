@@ -40,6 +40,9 @@
 ****************************************************************************/
 
 #include "qgraphicsshadereffect_p.h"
+
+#ifndef QT_NO_GRAPHICSEFFECT
+
 #include "qglshaderprogram.h"
 #include "gl2paintengineex/qglcustomshaderstage_p.h"
 #define QGL_HAVE_CUSTOM_SHADERS 1
@@ -311,3 +314,5 @@ void QGraphicsShaderEffect::setUniforms(QGLShaderProgram *program)
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_GRAPHICSEFFECT
