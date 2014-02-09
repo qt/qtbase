@@ -918,12 +918,9 @@ void QTextEngine::shapeText(int item) const
     QFontEngine *fontEngine = this->fontEngine(si, &si.ascent, &si.descent, &si.leading);
 
     // split up the item into parts that come from different font engines
+    // k * 3 entries, array[k] == index in string, array[k + 1] == index in glyphs, array[k + 2] == engine index
     QVector<uint> itemBoundaries;
-    itemBoundaries.reserve(16);
-    // k * 2 entries, array[k] == index in string, array[k + 1] == index in glyphs
-    itemBoundaries.append(0);
-    itemBoundaries.append(0);
-
+    itemBoundaries.reserve(24);
     if (fontEngine->type() == QFontEngine::Multi) {
         // ask the font engine to find out which glyphs (as an index in the specific font)
         // to use for the text in one item.
@@ -947,22 +944,31 @@ void QTextEngine::shapeText(int item) const
             }
         }
 
-        uint lastEngine = 0;
+        uint lastEngine = ~0u;
         for (int i = 0, glyph_pos = 0; i < itemLength; ++i, ++glyph_pos) {
             const uint engineIdx = initialGlyphs.glyphs[glyph_pos] >> 24;
-            if (lastEngine != engineIdx && glyph_pos > 0) {
+            if (lastEngine != engineIdx) {
                 itemBoundaries.append(i);
                 itemBoundaries.append(glyph_pos);
+                itemBoundaries.append(engineIdx);
 
-                QFontEngine *actualFontEngine = static_cast<QFontEngineMulti *>(fontEngine)->engine(engineIdx);
-                si.ascent = qMax(actualFontEngine->ascent(), si.ascent);
-                si.descent = qMax(actualFontEngine->descent(), si.descent);
-                si.leading = qMax(actualFontEngine->leading(), si.leading);
+                if (engineIdx != 0) {
+                    QFontEngine *actualFontEngine = static_cast<QFontEngineMulti *>(fontEngine)->engine(engineIdx);
+                    si.ascent = qMax(actualFontEngine->ascent(), si.ascent);
+                    si.descent = qMax(actualFontEngine->descent(), si.descent);
+                    si.leading = qMax(actualFontEngine->leading(), si.leading);
+                }
+
+                lastEngine = engineIdx;
             }
-            lastEngine = engineIdx;
+
             if (QChar::isHighSurrogate(string[i]) && i + 1 < itemLength && QChar::isLowSurrogate(string[i + 1]))
                 ++i;
         }
+    } else {
+        itemBoundaries.append(0);
+        itemBoundaries.append(0);
+        itemBoundaries.append(0);
     }
 
     bool kerningEnabled;
@@ -1039,16 +1045,6 @@ void QTextEngine::shapeText(int item) const
         si.width += glyphs.advances_x[i] * !glyphs.attributes[i].dontPrint;
 }
 
-static inline void moveGlyphData(const QGlyphLayout &destination, const QGlyphLayout &source, int num)
-{
-    if (num > 0 && destination.glyphs != source.glyphs) {
-        memmove(destination.glyphs, source.glyphs, num * sizeof(glyph_t));
-        memmove(destination.attributes, source.attributes, num * sizeof(QGlyphAttributes));
-        memmove(destination.advances_x, source.advances_x, num * sizeof(QFixed));
-        memmove(destination.offsets, source.offsets, num * sizeof(QFixedPoint));
-    }
-}
-
 #ifdef QT_ENABLE_HARFBUZZ_NG
 
 QT_BEGIN_INCLUDE_NAMESPACE
@@ -1075,20 +1071,15 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si, const ushort *st
     uint glyphs_shaped = 0;
     int remaining_glyphs = itemLength;
 
-    for (int k = 0; k < itemBoundaries.size(); k += 2) { // for the +2, see the comment at the definition of itemBoundaries
+    for (int k = 0; k < itemBoundaries.size(); k += 3) {
         uint item_pos = itemBoundaries[k];
-        uint item_length = itemLength;
+        uint item_length = (k + 4 < itemBoundaries.size() ? itemBoundaries[k + 3] : itemLength) - item_pos;
         uint item_glyph_pos = itemBoundaries[k + 1];
-        if (k + 3 < itemBoundaries.size())
-            item_length = itemBoundaries[k + 2];
-        item_length -= item_pos;
+        uint engineIdx = itemBoundaries[k + 2];
 
         QFontEngine *actualFontEngine = fontEngine;
-        uint engineIdx = 0;
-        if (fontEngine->type() == QFontEngine::Multi) {
-            engineIdx = availableGlyphs(&si).glyphs[glyphs_shaped] >> 24;
+        if (fontEngine->type() == QFontEngine::Multi)
             actualFontEngine = static_cast<QFontEngineMulti *>(fontEngine)->engine(engineIdx);
-        }
 
 
         // prepare buffer
@@ -1138,8 +1129,6 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si, const ushort *st
 
         // fetch the shaped glyphs and metrics
         QGlyphLayout g = availableGlyphs(&si).mid(glyphs_shaped, num_glyphs);
-        if (num_glyphs != item_glyph_pos)
-            moveGlyphData(g.mid(num_glyphs), g.mid(item_glyph_pos), remaining_glyphs);
         ushort *log_clusters = logClusters(&si) + item_pos;
 
         hb_glyph_info_t *infos = hb_buffer_get_glyph_infos(buffer, 0);
@@ -1196,6 +1185,12 @@ Q_STATIC_ASSERT(sizeof(HB_GlyphAttributes) == sizeof(QGlyphAttributes));
 Q_STATIC_ASSERT(sizeof(HB_Fixed) == sizeof(QFixed));
 Q_STATIC_ASSERT(sizeof(HB_FixedPoint) == sizeof(QFixedPoint));
 
+static inline void moveGlyphData(const QGlyphLayout &destination, const QGlyphLayout &source, int num)
+{
+    if (num > 0 && destination.glyphs != source.glyphs)
+        memmove(destination.glyphs, source.glyphs, num * sizeof(glyph_t));
+}
+
 int QTextEngine::shapeTextWithHarfbuzz(const QScriptItem &si, const ushort *string, int itemLength, QFontEngine *fontEngine, const QVector<uint> &itemBoundaries, bool kerningEnabled) const
 {
     HB_ShaperItem entire_shaper_item;
@@ -1224,14 +1219,12 @@ int QTextEngine::shapeTextWithHarfbuzz(const QScriptItem &si, const ushort *stri
     int remaining_glyphs = entire_shaper_item.num_glyphs;
     int glyph_pos = 0;
     // for each item shape using harfbuzz and store the results in our layoutData's glyphs array.
-    for (int k = 0; k < itemBoundaries.size(); k += 2) { // for the +2, see the comment at the definition of itemBoundaries
-
+    for (int k = 0; k < itemBoundaries.size(); k += 3) {
         HB_ShaperItem shaper_item = entire_shaper_item;
-
         shaper_item.item.pos = itemBoundaries[k];
-        if (k < itemBoundaries.size() - 3) {
-            shaper_item.item.length = itemBoundaries[k + 2] - shaper_item.item.pos;
-            shaper_item.num_glyphs = itemBoundaries[k + 3] - itemBoundaries[k + 1];
+        if (k + 4 < itemBoundaries.size()) {
+            shaper_item.item.length = itemBoundaries[k + 3] - shaper_item.item.pos;
+            shaper_item.num_glyphs = itemBoundaries[k + 4] - itemBoundaries[k + 1];
         } else { // last combo in the list, avoid out of bounds access.
             shaper_item.item.length -= shaper_item.item.pos - entire_shaper_item.item.pos;
             shaper_item.num_glyphs -= itemBoundaries[k + 1];
@@ -1240,10 +1233,9 @@ int QTextEngine::shapeTextWithHarfbuzz(const QScriptItem &si, const ushort *stri
         if (shaper_item.num_glyphs < shaper_item.item.length)
             shaper_item.num_glyphs = shaper_item.item.length;
 
+        uint engineIdx = itemBoundaries[k + 2];
         QFontEngine *actualFontEngine = fontEngine;
-        uint engineIdx = 0;
         if (fontEngine->type() == QFontEngine::Multi) {
-            engineIdx = uint(availableGlyphs(&si).glyphs[glyph_pos] >> 24);
             actualFontEngine = static_cast<QFontEngineMulti *>(fontEngine)->engine(engineIdx);
 
             shaper_item.glyphIndicesPresent = true;
@@ -1259,7 +1251,7 @@ int QTextEngine::shapeTextWithHarfbuzz(const QScriptItem &si, const ushort *stri
                 return 0;
 
             const QGlyphLayout g = availableGlyphs(&si).mid(glyph_pos);
-            if (shaper_item.num_glyphs > shaper_item.item.length)
+            if (fontEngine->type() == QFontEngine::Multi && shaper_item.num_glyphs > shaper_item.item.length)
                 moveGlyphData(g.mid(shaper_item.num_glyphs), g.mid(shaper_item.initialGlyphCount), remaining_glyphs);
 
             shaper_item.glyphs = reinterpret_cast<HB_Glyph *>(g.glyphs);
@@ -1276,7 +1268,8 @@ int QTextEngine::shapeTextWithHarfbuzz(const QScriptItem &si, const ushort *stri
         } while (!qShapeItem(&shaper_item)); // this does the actual shaping via harfbuzz.
 
         QGlyphLayout g = availableGlyphs(&si).mid(glyph_pos, shaper_item.num_glyphs);
-        moveGlyphData(g.mid(shaper_item.num_glyphs), g.mid(shaper_item.initialGlyphCount), remaining_glyphs);
+        if (fontEngine->type() == QFontEngine::Multi)
+            moveGlyphData(g.mid(shaper_item.num_glyphs), g.mid(shaper_item.initialGlyphCount), remaining_glyphs);
 
         for (quint32 i = 0; i < shaper_item.item.length; ++i)
             shaper_item.log_clusters[i] += glyph_pos;
