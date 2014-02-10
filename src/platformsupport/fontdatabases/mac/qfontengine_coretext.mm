@@ -452,10 +452,10 @@ static void qcoretextfontengine_scaleMetrics(glyph_metrics_t &br, const QTransfo
     }
 }
 
-glyph_metrics_t QCoreTextFontEngine::alphaMapBoundingBox(glyph_t glyph, QFixed pos, const QTransform &matrix, GlyphFormat format)
+glyph_metrics_t QCoreTextFontEngine::alphaMapBoundingBox(glyph_t glyph, QFixed subPixelPosition, const QTransform &matrix, GlyphFormat format)
 {
     if (matrix.type() > QTransform::TxScale)
-        return QFontEngine::alphaMapBoundingBox(glyph, pos, matrix, format);
+        return QFontEngine::alphaMapBoundingBox(glyph, subPixelPosition, matrix, format);
 
     glyph_metrics_t br = boundingBox(glyph);
     qcoretextfontengine_scaleMetrics(br, matrix);
@@ -467,15 +467,14 @@ glyph_metrics_t QCoreTextFontEngine::alphaMapBoundingBox(glyph_t glyph, QFixed p
 }
 
 
-QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition, bool aa, const QTransform &m)
+QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition, bool aa, const QTransform &matrix)
 {
 
-    glyph_metrics_t br = boundingBox(glyph);
-    qcoretextfontengine_scaleMetrics(br, m);
+    glyph_metrics_t br = alphaMapBoundingBox(glyph, subPixelPosition, matrix, glyphFormat);
 
     bool isColorGlyph = glyphFormat == QFontEngine::Format_ARGB;
-    QImage::Format format = isColorGlyph ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32;
-    QImage im(qAbs(qRound(br.width)) + 2, qAbs(qRound(br.height)) + 2, format);
+    QImage::Format imageFormat = isColorGlyph ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32;
+    QImage im(br.width.toInt(), br.height.toInt(), imageFormat);
     im.fill(0);
 
 #ifndef Q_OS_IOS
@@ -503,8 +502,8 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition
     if (!isColorGlyph) // CTFontDrawGlyphs incorporates the font's matrix already
         cgMatrix = CGAffineTransformConcat(cgMatrix, transform);
 
-    if (m.isScaling())
-        cgMatrix = CGAffineTransformConcat(cgMatrix, CGAffineTransformMakeScale(m.m11(), m.m22()));
+    if (matrix.isScaling())
+        cgMatrix = CGAffineTransformConcat(cgMatrix, CGAffineTransformMakeScale(matrix.m11(), matrix.m22()));
 
     CGGlyph cgGlyph = glyph;
     qreal pos_x = -br.x.truncate() + subPixelPosition.toReal();
