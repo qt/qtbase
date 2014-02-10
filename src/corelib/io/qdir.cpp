@@ -1945,7 +1945,8 @@ QString QDir::homePath()
     variable or \c{/tmp} if \c TMPDIR is not defined. On Windows this is
     usually the path in the \c TEMP or \c TMP environment
     variable.
-    The path returned by this method doesn't end with a directory separator.
+    The path returned by this method doesn't end with a directory separator
+    unless it is the root directory (of a drive).
 
     \sa temp(), currentPath(), homePath(), rootPath()
 */
