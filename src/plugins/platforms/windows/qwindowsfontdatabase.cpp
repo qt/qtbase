@@ -841,7 +841,7 @@ static bool addFontToDatabase(const QString &familyName, uchar charSet,
                               int type)
 {
     // the "@family" fonts are just the same as "family". Ignore them.
-    if (familyName.at(0) == QLatin1Char('@') || familyName.startsWith(QStringLiteral("WST_")))
+    if (familyName.isEmpty() || familyName.at(0) == QLatin1Char('@') || familyName.startsWith(QStringLiteral("WST_")))
         return false;
 
     static const int SMOOTH_SCALABLE = 0xffff;

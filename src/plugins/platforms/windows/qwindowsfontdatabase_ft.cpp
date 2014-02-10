@@ -130,7 +130,7 @@ static bool addFontToDatabase(const QString &familyName, uchar charSet,
     typedef QPair<QString, QStringList> FontKey;
 
     // the "@family" fonts are just the same as "family". Ignore them.
-    if (familyName.at(0) == QLatin1Char('@') || familyName.startsWith(QStringLiteral("WST_")))
+    if (familyName.isEmpty() || familyName.at(0) == QLatin1Char('@') || familyName.startsWith(QStringLiteral("WST_")))
         return false;
 
     const int separatorPos = familyName.indexOf(QStringLiteral("::"));
