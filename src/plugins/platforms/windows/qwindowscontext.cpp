@@ -969,7 +969,8 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         if (lParam & ENDSESSION_LOGOFF)
             fflush(NULL);
 
-        return !sessionManager->wasCanceled();
+        *result = sessionManager->wasCanceled() ? 0 : 1;
+        return true;
     }
     case QtWindows::EndSessionApplicationEvent: {
         QWindowsSessionManager *sessionManager = platformSessionManager();
