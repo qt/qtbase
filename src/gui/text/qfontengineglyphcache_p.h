@@ -58,6 +58,7 @@
 #include "QtCore/qatomic.h"
 #include <QtCore/qvarlengtharray.h>
 #include "private/qfont_p.h"
+#include "private/qfontengine_p.h"
 
 
 
@@ -66,22 +67,18 @@ QT_BEGIN_NAMESPACE
 class QFontEngineGlyphCache: public QSharedData
 {
 public:
-    enum Type {
-        Raster_RGBMask,
-        Raster_A8,
-        Raster_Mono,
-        Raster_ARGB
-    };
-
-    QFontEngineGlyphCache(const QTransform &matrix, Type type) : m_transform(matrix), m_type(type) { }
+    QFontEngineGlyphCache(QFontEngine::GlyphFormat format, const QTransform &matrix) : m_format(format), m_transform(matrix)
+    {
+        Q_ASSERT(m_format != QFontEngine::Format_None);
+    }
 
     virtual ~QFontEngineGlyphCache() { }
 
-    Type cacheType() const { return m_type; }
+    QFontEngine::GlyphFormat glyphFormat() const { return m_format; }
     const QTransform &transform() const { return m_transform; }
 
+    QFontEngine::GlyphFormat m_format;
     QTransform m_transform;
-    QFontEngineGlyphCache::Type m_type;
 };
 typedef QHash<void *, QList<QFontEngineGlyphCache *> > GlyphPointerHash;
 typedef QHash<int, QList<QFontEngineGlyphCache *> > GlyphIntHash;

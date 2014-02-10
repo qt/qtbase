@@ -1745,7 +1745,7 @@ QFontEngine *QWindowsFontDatabase::createEngine(int script, const QFontDef &requ
     if (!useDirectWrite)  {
         QWindowsFontEngine *few = new QWindowsFontEngine(request.family, hfont, stockFont, lf, data);
         if (preferClearTypeAA)
-            few->glyphFormat = QFontEngineGlyphCache::Raster_RGBMask;
+            few->glyphFormat = QFontEngine::Format_A32;
         few->initFontInfo(request, fontHdc, dpi);
         fe = few;
     }

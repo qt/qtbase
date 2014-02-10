@@ -212,7 +212,7 @@ public:
     void drawTexture(const QOpenGLRect& dest, const QOpenGLRect& src, const QSize &textureSize, bool opaque, bool pattern = false);
     void drawPixmapFragments(const QPainter::PixmapFragment *fragments, int fragmentCount, const QPixmap &pixmap,
                              QPainter::PixmapFragmentHints hints);
-    void drawCachedGlyphs(QFontEngineGlyphCache::Type glyphType, QStaticTextItem *staticTextItem);
+    void drawCachedGlyphs(QFontEngine::GlyphFormat glyphFormat, QStaticTextItem *staticTextItem);
 
     // Calls glVertexAttributePointer if the pointer has changed
     inline void setVertexAttributePointer(unsigned int arrayIndex, const GLfloat *pointer);
@@ -267,7 +267,7 @@ public:
     int width, height;
     QOpenGLContext *ctx;
     EngineMode mode;
-    QFontEngineGlyphCache::Type glyphCacheType;
+    QFontEngine::GlyphFormat glyphCacheFormat;
 
     bool vertexAttributeArraysEnabledState[QT_GL_VERTEX_ARRAY_TRACKED_COUNT];
 

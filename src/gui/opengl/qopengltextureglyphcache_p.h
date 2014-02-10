@@ -109,7 +109,7 @@ public:
 class Q_GUI_EXPORT QOpenGLTextureGlyphCache : public QImageTextureGlyphCache
 {
 public:
-    QOpenGLTextureGlyphCache(QFontEngineGlyphCache::Type type, const QTransform &matrix);
+    QOpenGLTextureGlyphCache(QFontEngine::GlyphFormat glyphFormat, const QTransform &matrix);
     ~QOpenGLTextureGlyphCache();
 
     virtual void createTextureData(int width, int height);

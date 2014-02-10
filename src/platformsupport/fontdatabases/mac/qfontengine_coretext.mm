@@ -74,7 +74,7 @@ static void loadAdvancesForGlyphs(CTFontRef ctfont,
 
 
 int QCoreTextFontEngine::antialiasingThreshold = 0;
-QFontEngineGlyphCache::Type QCoreTextFontEngine::defaultGlyphFormat = QFontEngineGlyphCache::Raster_RGBMask;
+QFontEngine::GlyphFormat QCoreTextFontEngine::defaultGlyphFormat = QFontEngine::Format_A32;
 
 CGAffineTransform qt_transform_from_fontdef(const QFontDef &fontDef)
 {
@@ -155,7 +155,7 @@ void QCoreTextFontEngine::init()
 
 #if defined(Q_OS_IOS) || MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
     if (supportsColorGlyphs() && (traits & kCTFontColorGlyphsTrait))
-        glyphFormat = QFontEngineGlyphCache::Raster_ARGB;
+        glyphFormat = QFontEngine::Format_ARGB;
     else
 #endif
         glyphFormat = defaultGlyphFormat;
@@ -424,7 +424,7 @@ static void convertCGPathToQPainterPath(void *info, const CGPathElement *element
 void QCoreTextFontEngine::addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions, int nGlyphs,
                                           QPainterPath *path, QTextItem::RenderFlags)
 {
-    if (glyphFormat == QFontEngineGlyphCache::Raster_ARGB)
+    if (glyphFormat == QFontEngine::Format_ARGB)
         return; // We can't convert color-glyphs to path
 
     CGAffineTransform cgMatrix = CGAffineTransformIdentity;
@@ -473,7 +473,7 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition
     glyph_metrics_t br = boundingBox(glyph);
     qcoretextfontengine_scaleMetrics(br, m);
 
-    bool isColorGlyph = glyphFormat == QFontEngineGlyphCache::Raster_ARGB;
+    bool isColorGlyph = glyphFormat == QFontEngine::Format_ARGB;
     QImage::Format format = isColorGlyph ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32;
     QImage im(qAbs(qRound(br.width)) + 2, qAbs(qRound(br.height)) + 2, format);
     im.fill(0);

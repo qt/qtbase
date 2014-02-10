@@ -49,8 +49,8 @@ QT_BEGIN_NAMESPACE
 
 QBasicAtomicInt qgltextureglyphcache_serial_number = Q_BASIC_ATOMIC_INITIALIZER(1);
 
-QGLTextureGlyphCache::QGLTextureGlyphCache(QFontEngineGlyphCache::Type type, const QTransform &matrix)
-    : QImageTextureGlyphCache(type, matrix)
+QGLTextureGlyphCache::QGLTextureGlyphCache(QFontEngine::GlyphFormat format, const QTransform &matrix)
+    : QImageTextureGlyphCache(format, matrix)
     , m_textureResource(0)
     , pex(0)
     , m_blitProgram(0)
@@ -123,7 +123,7 @@ void QGLTextureGlyphCache::createTextureData(int width, int height)
     m_textureResource->m_width = width;
     m_textureResource->m_height = height;
 
-    if (m_type == QFontEngineGlyphCache::Raster_RGBMask) {
+    if (m_format == QFontEngine::Format_A32) {
         QVarLengthArray<uchar> data(width * height * 4);
         for (int i = 0; i < data.size(); ++i)
             data[i] = 0;

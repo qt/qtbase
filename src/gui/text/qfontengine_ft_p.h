@@ -264,7 +264,7 @@ private:
     virtual void unlockAlphaMapForGlyph();
 
     virtual void removeGlyphFromCache(glyph_t glyph);
-    virtual int glyphMargin(QFontEngineGlyphCache::Type /* type */) { return 0; }
+    virtual int glyphMargin(QFontEngine::GlyphFormat /* format */) { return 0; }
 
     virtual int glyphCount() const;
 
