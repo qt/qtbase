@@ -858,7 +858,7 @@ public:
 };
 
 #define Q_FOREACH(variable, container)                                \
-for (QForeachContainer<__typeof__(container)> _container_(container); \
+for (QForeachContainer<__typeof__((container))> _container_((container)); \
      !_container_.brk && _container_.i != _container_.e;              \
      __extension__  ({ ++_container_.brk; ++_container_.i; }))                       \
     for (variable = *_container_.i;; __extension__ ({--_container_.brk; break;}))
