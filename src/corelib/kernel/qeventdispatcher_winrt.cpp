@@ -44,18 +44,19 @@
 #include <QtCore/QCoreApplication>
 #include <QtCore/QThread>
 #include <QtCore/QHash>
-
-#include <private/qcoreapplication_p.h>
-#include <private/qthread_p.h>
 #include <private/qabstracteventdispatcher_p.h>
 
 #include <wrl.h>
 #include <windows.foundation.h>
 #include <windows.system.threading.h>
+#include <windows.ui.core.h>
+#include <windows.applicationmodel.core.h>
 using namespace Microsoft::WRL;
 using namespace Microsoft::WRL::Wrappers;
 using namespace ABI::Windows::System::Threading;
 using namespace ABI::Windows::Foundation;
+using namespace ABI::Windows::UI::Core;
+using namespace ABI::Windows::ApplicationModel::Core;
 
 QT_BEGIN_NAMESPACE
 
@@ -92,7 +93,6 @@ public:
     void unregisterTimer(WinRTTimerInfo *t);
     void sendTimerEvent(int timerId);
 
-
 private:
     static HRESULT timerExpiredCallback(IThreadPoolTimer *timer);
 
@@ -100,11 +100,33 @@ private:
     QHash<IThreadPoolTimer *, int> timerIds;
 
     ComPtr<IThreadPoolTimerStatics> timerFactory;
+    ComPtr<ICoreDispatcher> coreDispatcher;
+
+    bool interrupt;
 };
 
 QEventDispatcherWinRT::QEventDispatcherWinRT(QObject *parent)
     : QAbstractEventDispatcher(*new QEventDispatcherWinRTPrivate, parent)
 {
+    Q_D(QEventDispatcherWinRT);
+    ComPtr<ICoreApplication> application;
+    HRESULT hr = RoGetActivationFactory(HString::MakeReference(RuntimeClass_Windows_ApplicationModel_Core_CoreApplication).Get(),
+                                        IID_PPV_ARGS(&application));
+    if (SUCCEEDED(hr)) {
+        ComPtr<ICoreApplicationView> view;
+        hr = application->GetCurrentView(&view);
+        if (SUCCEEDED(hr)) {
+            ComPtr<ICoreWindow> window;
+            hr = view->get_CoreWindow(&window);
+            if (SUCCEEDED(hr)) {
+                hr = window->get_Dispatcher(&d->coreDispatcher);
+                if (SUCCEEDED(hr))
+                    return;
+            }
+        }
+    }
+    qCritical("QEventDispatcherWinRT: Unable to capture the core dispatcher. %s",
+              qPrintable(qt_error_string(hr)));
 }
 
 QEventDispatcherWinRT::QEventDispatcherWinRT(QEventDispatcherWinRTPrivate &dd, QObject *parent)
@@ -117,12 +139,40 @@ QEventDispatcherWinRT::~QEventDispatcherWinRT()
 
 bool QEventDispatcherWinRT::processEvents(QEventLoop::ProcessEventsFlags flags)
 {
+    Q_D(QEventDispatcherWinRT);
+
+    bool didProcess = false;
+    forever {
+        // Process native events
+        if (d->coreDispatcher)
+            d->coreDispatcher->ProcessEvents(CoreProcessEventsOption_ProcessAllIfPresent);
+
+        // Dispatch accumulated user events
+        didProcess = sendPostedEvents(flags);
+        if (didProcess)
+            break;
+
+        if (d->interrupt)
+            break;
+
+        // Short sleep if there is nothing to do
+        if (flags & QEventLoop::WaitForMoreEvents) {
+            emit aboutToBlock();
+            WaitForSingleObjectEx(GetCurrentThread(), 1, FALSE);
+            emit awake();
+        }
+    }
+    d->interrupt = false;
+    return didProcess;
+}
+
+bool QEventDispatcherWinRT::sendPostedEvents(QEventLoop::ProcessEventsFlags flags)
+{
     Q_UNUSED(flags);
-
-    // we are awake, broadcast it
-    emit awake();
-    QCoreApplicationPrivate::sendPostedEvents(0, 0, QThreadData::current());
-
+    if (hasPendingEvents()) {
+        QCoreApplication::sendPostedEvents();
+        return true;
+    }
     return false;
 }
 
@@ -268,6 +318,8 @@ void QEventDispatcherWinRT::wakeUp()
 
 void QEventDispatcherWinRT::interrupt()
 {
+    Q_D(QEventDispatcherWinRT);
+    d->interrupt = true;
 }
 
 void QEventDispatcherWinRT::flush()
@@ -318,6 +370,7 @@ bool QEventDispatcherWinRT::event(QEvent *e)
 }
 
 QEventDispatcherWinRTPrivate::QEventDispatcherWinRTPrivate()
+    : interrupt(false)
 {
     CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
     HRESULT hr = GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_System_Threading_ThreadPoolTimer).Get(), &timerFactory);

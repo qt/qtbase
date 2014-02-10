@@ -114,10 +114,7 @@ QWinRTIntegration::~QWinRTIntegration()
 
 QAbstractEventDispatcher *QWinRTIntegration::createEventDispatcher() const
 {
-    ICoreDispatcher *dispatcher;
-    if (FAILED(m_screen->coreWindow()->get_Dispatcher(&dispatcher)))
-        qCritical("Could not capture UI Dispatcher");
-    return new QWinRTEventDispatcher(dispatcher);
+    return new QWinRTEventDispatcher;
 }
 
 bool QWinRTIntegration::hasCapability(QPlatformIntegration::Capability cap) const

@@ -44,36 +44,17 @@
 
 #include <QtCore/private/qeventdispatcher_winrt_p.h>
 
-#include <wrl.h>
-
-namespace ABI {
-    namespace Windows {
-        namespace UI {
-            namespace Core {
-                struct ICoreDispatcher;
-            }
-        }
-    }
-}
-
 QT_BEGIN_NAMESPACE
 
 class QWinRTEventDispatcher : public QEventDispatcherWinRT
 {
     Q_OBJECT
 public:
-    explicit QWinRTEventDispatcher(ABI::Windows::UI::Core::ICoreDispatcher *dispatcher, QObject *parent = 0);
+    explicit QWinRTEventDispatcher(QObject *parent = 0);
 
 protected:
-    void interrupt();
     bool hasPendingEvents();
-    bool processEvents(QEventLoop::ProcessEventsFlags flags);
-
-private:
-    Microsoft::WRL::ComPtr<ABI::Windows::UI::Core::ICoreDispatcher> m_dispatcher;
-    bool m_interrupt;
-
-    friend class QWinRTIntegration;
+    bool sendPostedEvents(QEventLoop::ProcessEventsFlags flags);
 };
 
 QT_END_NAMESPACE

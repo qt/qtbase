@@ -99,6 +99,7 @@ public:
 protected:
     QEventDispatcherWinRT(QEventDispatcherWinRTPrivate &dd, QObject *parent = 0);
 
+    virtual bool sendPostedEvents(QEventLoop::ProcessEventsFlags flags);
     bool event(QEvent *);
     int activateTimers();
 };

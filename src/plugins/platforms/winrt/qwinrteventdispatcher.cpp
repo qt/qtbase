@@ -46,20 +46,10 @@
 #include <QtCore/QThread>
 #include <QtGui/QGuiApplication>
 
-#include <Windows.ui.core.h>
-#include <Windows.ApplicationModel.core.h>
-
-using namespace ABI::Windows::ApplicationModel::Core;
-using namespace ABI::Windows::UI::Core;
-using namespace ABI::Windows::Foundation;
-using namespace Microsoft::WRL;
-
 QT_BEGIN_NAMESPACE
 
-QWinRTEventDispatcher::QWinRTEventDispatcher(ICoreDispatcher *dispatcher, QObject *parent)
+QWinRTEventDispatcher::QWinRTEventDispatcher(QObject *parent)
     : QEventDispatcherWinRT(parent)
-    , m_dispatcher(dispatcher)
-    , m_interrupt(false)
 {
 }
 
@@ -68,37 +58,11 @@ bool QWinRTEventDispatcher::hasPendingEvents()
     return QEventDispatcherWinRT::hasPendingEvents() || QWindowSystemInterface::windowSystemEventsQueued();
 }
 
-void QWinRTEventDispatcher::interrupt()
+bool QWinRTEventDispatcher::sendPostedEvents(QEventLoop::ProcessEventsFlags flags)
 {
-    m_interrupt = true;
-}
-
-bool QWinRTEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
-{
-    bool canWait = flags & QEventLoop::WaitForMoreEvents;
-    bool didProcess;
-    m_interrupt = false;
-    do {
-        // Send Qt events
-        didProcess = QEventDispatcherWinRT::processEvents(flags);
-
-        // Process system events
-        emit aboutToBlock();
-        if (m_dispatcher)
-            m_dispatcher->ProcessEvents(CoreProcessEventsOption_ProcessAllIfPresent);
-        emit awake();
-
-        // Dispatch accumulated user events
+    bool didProcess = QEventDispatcherWinRT::sendPostedEvents(flags);
+    if (!(flags & QEventLoop::ExcludeUserInputEvents))
         didProcess |= QWindowSystemInterface::sendWindowSystemEvents(flags);
-        canWait = canWait && !didProcess && !m_interrupt;
-
-        // Short sleep if there is nothing to do
-        if (canWait) {
-            emit aboutToBlock();
-            WaitForSingleObjectEx(GetCurrentThread(), 1, true);
-            emit awake();
-        }
-    } while (canWait);
     return didProcess;
 }
 
