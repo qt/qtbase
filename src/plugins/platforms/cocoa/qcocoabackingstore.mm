@@ -96,10 +96,12 @@ void QCocoaBackingStore::flush(QWindow *win, const QRegion &region, const QPoint
     }
 }
 
+#ifndef QT_NO_OPENGL
 QImage QCocoaBackingStore::toImage() const
 {
     return m_qImage;
 }
+#endif
 
 void QCocoaBackingStore::resize(const QSize &size, const QRegion &)
 {

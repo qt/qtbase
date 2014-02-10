@@ -14,7 +14,6 @@ OBJECTIVE_SOURCES += main.mm \
     qnsviewaccessibility.mm \
     qcocoaautoreleasepool.mm \
     qnswindowdelegate.mm \
-    qcocoaglcontext.mm \
     qcocoanativeinterface.mm \
     qcocoaeventdispatcher.mm \
     qcocoaapplicationdelegate.mm \
@@ -51,7 +50,6 @@ HEADERS += qcocoaintegration.h \
     qnsview.h \
     qcocoaautoreleasepool.h \
     qnswindowdelegate.h \
-    qcocoaglcontext.h \
     qcocoanativeinterface.h \
     qcocoaeventdispatcher.h \
     qcocoaapplicationdelegate.h \
@@ -79,6 +77,12 @@ HEADERS += qcocoaintegration.h \
     qcocoakeymapper.h \
     messages.h \
     qcocoamimetypes.h
+
+contains(QT_CONFIG, opengl.*) {
+    OBJECTIVE_SOURCES += qcocoaglcontext.mm
+
+    HEADERS += qcocoaglcontext.h
+}
 
 RESOURCES += qcocoaresources.qrc
 

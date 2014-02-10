@@ -61,15 +61,19 @@ class QCocoaNativeInterface : public QPlatformNativeInterface
 public:
     QCocoaNativeInterface();
 
+#ifndef QT_NO_OPENGL
     void *nativeResourceForContext(const QByteArray &resourceString, QOpenGLContext *context);
+#endif
     void *nativeResourceForWindow(const QByteArray &resourceString, QWindow *window);
 
     NativeResourceForIntegrationFunction nativeResourceFunctionForIntegration(const QByteArray &resource) Q_DECL_OVERRIDE;
 
     Q_INVOKABLE void beep();
 
+#ifndef QT_NO_OPENGL
     static void *cglContextForContext(QOpenGLContext *context);
     static void *nsOpenGLContextForContext(QOpenGLContext* context);
+#endif
 
 public Q_SLOTS:
     void onAppFocusWindowChanged(QWindow *window);

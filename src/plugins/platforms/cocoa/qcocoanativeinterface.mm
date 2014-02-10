@@ -40,7 +40,6 @@
 ****************************************************************************/
 
 #include "qcocoanativeinterface.h"
-#include "qcocoaglcontext.h"
 #include "qcocoawindow.h"
 #include "qcocoamenu.h"
 #include "qcocoamenubar.h"
@@ -53,8 +52,11 @@
 #include <qpixmap.h>
 #include <qpa/qplatformwindow.h>
 #include "qsurfaceformat.h"
+#ifndef QT_NO_OPENGL
 #include <qpa/qplatformopenglcontext.h>
 #include "qopenglcontext.h"
+#include "qcocoaglcontext.h"
+#endif
 #include "qguiapplication.h"
 #include <qdebug.h>
 
@@ -72,6 +74,7 @@ QCocoaNativeInterface::QCocoaNativeInterface()
 {
 }
 
+#ifndef QT_NO_OPENGL
 void *QCocoaNativeInterface::nativeResourceForContext(const QByteArray &resourceString, QOpenGLContext *context)
 {
     if (!context)
@@ -83,16 +86,19 @@ void *QCocoaNativeInterface::nativeResourceForContext(const QByteArray &resource
 
     return 0;
 }
+#endif
 
 void *QCocoaNativeInterface::nativeResourceForWindow(const QByteArray &resourceString, QWindow *window)
 {
     if (!window->handle())
         return 0;
 
-    if (resourceString == "nsopenglcontext") {
-        return static_cast<QCocoaWindow *>(window->handle())->currentContext()->nsOpenGLContext();
-    } else if (resourceString == "nsview") {
+    if (resourceString == "nsview") {
         return static_cast<QCocoaWindow *>(window->handle())->m_contentView;
+#ifndef QT_NO_OPENGL
+    } else if (resourceString == "nsopenglcontext") {
+        return static_cast<QCocoaWindow *>(window->handle())->currentContext()->nsOpenGLContext();
+#endif
     } else if (resourceString == "nswindow") {
         return static_cast<QCocoaWindow *>(window->handle())->m_nsWindow;
     }
@@ -198,6 +204,7 @@ void QCocoaNativeInterface::onAppFocusWindowChanged(QWindow *window)
     QCocoaMenuBar::updateMenuBarImmediately();
 }
 
+#ifndef QT_NO_OPENGL
 void *QCocoaNativeInterface::cglContextForContext(QOpenGLContext* context)
 {
     NSOpenGLContext *nsOpenGLContext = static_cast<NSOpenGLContext*>(nsOpenGLContextForContext(context));
@@ -216,6 +223,7 @@ void *QCocoaNativeInterface::nsOpenGLContextForContext(QOpenGLContext* context)
     }
     return 0;
 }
+#endif
 
 void QCocoaNativeInterface::addToMimeList(void *macPasteboardMime)
 {
