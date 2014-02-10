@@ -2536,11 +2536,13 @@ void Configure::generateOutputVars()
     else
         qtConfig += "shared";
 
+    if (dictionary[ "GUI" ] == "no") {
+        qtConfig += "no-gui";
+        dictionary [ "WIDGETS" ] = "no";
+    }
+
     if (dictionary[ "WIDGETS" ] == "no")
         qtConfig += "no-widgets";
-
-    if (dictionary[ "GUI" ] == "no")
-        qtConfig += "no-gui";
 
     // Compression --------------------------------------------------
     if (dictionary[ "ZLIB" ] == "qt")
