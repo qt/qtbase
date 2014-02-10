@@ -230,7 +230,7 @@
 
 /*! \fn OutputIterator qCopy(InputIterator begin1, InputIterator end1, OutputIterator begin2)
     \relates <QtAlgorithms>
-    \obsolete
+    \deprecated
 
     Use std::copy instead.
 
@@ -249,7 +249,7 @@
 
 /*! \fn BiIterator2 qCopyBackward(BiIterator1 begin1, BiIterator1 end1, BiIterator2 end2)
     \relates <QtAlgorithms>
-    \obsolete
+    \deprecated
 
     Use std::copy_backward instead.
 
@@ -268,7 +268,7 @@
 
 /*! \fn bool qEqual(InputIterator1 begin1, InputIterator1 end1, InputIterator2 begin2)
     \relates <QtAlgorithms>
-    \obsolete
+    \deprecated
 
     Use std::equal instead.
 
@@ -287,7 +287,7 @@
 
 /*! \fn void qFill(ForwardIterator begin, ForwardIterator end, const T &value)
     \relates <QtAlgorithms>
-    \obsolete
+    \deprecated
 
     Use std::fill instead.
 
@@ -301,7 +301,7 @@
 
 /*! \fn void qFill(Container &container, const T &value)
     \relates <QtAlgorithms>
-    \obsolete
+    \deprecated
     \overload
 
     Use std::fill instead.
@@ -311,7 +311,7 @@
 
 /*! \fn InputIterator qFind(InputIterator begin, InputIterator end, const T &value)
     \relates <QtAlgorithms>
-    \obsolete
+    \deprecated
 
     Use std::find instead.
 
@@ -334,7 +334,7 @@
 
 /*! \fn void qFind(const Container &container, const T &value)
     \relates <QtAlgorithms>
-    \obsolete
+    \deprecated
     \overload
 
     Use std::find instead.
@@ -344,7 +344,7 @@
 
 /*! \fn void qCount(InputIterator begin, InputIterator end, const T &value, Size &n)
     \relates <QtAlgorithms>
-    \obsolete
+    \deprecated
 
     Use std::count instead.
 
@@ -364,7 +364,7 @@
 
 /*! \fn void qCount(const Container &container, const T &value, Size &n)
     \relates <QtAlgorithms>
-    \obsolete
+    \deprecated
     \overload
 
     Use std::count instead.
@@ -376,7 +376,7 @@
 
 /*! \fn void qSwap(T &var1, T &var2)
     \relates <QtAlgorithms>
-    \obsolete
+    \deprecated
 
     Use std::swap instead.
 
@@ -388,7 +388,7 @@
 
 /*! \fn void qSort(RandomAccessIterator begin, RandomAccessIterator end)
     \relates <QtAlgorithms>
-    \obsolete
+    \deprecated
 
     Use std::sort instead.
 
@@ -413,7 +413,7 @@
 
 /*! \fn void qSort(RandomAccessIterator begin, RandomAccessIterator end, LessThan lessThan)
     \relates <QtAlgorithms>
-    \obsolete
+    \deprecated
     \overload
 
     Use std::sort instead.
@@ -449,7 +449,7 @@
 
 /*! \fn void qSort(Container &container)
     \relates <QtAlgorithms>
-    \obsolete
+    \deprecated
     \overload
 
     Use std::sort instead.
@@ -460,7 +460,7 @@
 /*!
     \fn void qStableSort(RandomAccessIterator begin, RandomAccessIterator end)
     \relates <QtAlgorithms>
-    \obsolete
+    \deprecated
 
     Use std::stable_sort instead.
 
@@ -487,7 +487,7 @@
 /*!
     \fn void qStableSort(RandomAccessIterator begin, RandomAccessIterator end, LessThan lessThan)
     \relates <QtAlgorithms>
-    \obsolete
+    \deprecated
     \overload
 
     Use std::stable_sort instead.
@@ -519,7 +519,7 @@
 /*!
     \fn void qStableSort(Container &container)
     \relates <QtAlgorithms>
-    \obsolete
+    \deprecated
     \overload
 
     Use std::stable_sort instead.
@@ -529,7 +529,7 @@
 
 /*! \fn RandomAccessIterator qLowerBound(RandomAccessIterator begin, RandomAccessIterator end, const T &value)
     \relates <QtAlgorithms>
-    \obsolete
+    \deprecated
 
     Use std::lower_bound instead.
 
@@ -558,7 +558,7 @@
 /*!
     \fn RandomAccessIterator qLowerBound(RandomAccessIterator begin, RandomAccessIterator end, const T &value, LessThan lessThan)
     \relates <QtAlgorithms>
-    \obsolete
+    \deprecated
     \overload
 
     Use std::lower_bound instead.
@@ -573,7 +573,7 @@
 /*!
     \fn void qLowerBound(const Container &container, const T &value)
     \relates <QtAlgorithms>
-    \obsolete
+    \deprecated
     \overload
 
     Use std::lower_bound instead.
@@ -586,7 +586,7 @@
 
 /*! \fn RandomAccessIterator qUpperBound(RandomAccessIterator begin, RandomAccessIterator end, const T &value)
     \relates <QtAlgorithms>
-    \obsolete
+    \deprecated
 
     Use std::upper_bound instead.
 
@@ -615,7 +615,7 @@
 /*!
     \fn RandomAccessIterator qUpperBound(RandomAccessIterator begin, RandomAccessIterator end, const T &value, LessThan lessThan)
     \relates <QtAlgorithms>
-    \obsolete
+    \deprecated
     \overload
 
     Use std::upper_bound instead.
@@ -630,7 +630,7 @@
 /*!
     \fn void qUpperBound(const Container &container, const T &value)
     \relates <QtAlgorithms>
-    \obsolete
+    \deprecated
     \overload
 
     Use std::upper_bound instead.
@@ -641,7 +641,7 @@
 
 /*! \fn RandomAccessIterator qBinaryFind(RandomAccessIterator begin, RandomAccessIterator end, const T &value)
     \relates <QtAlgorithms>
-    \obsolete
+    \deprecated
 
     Use std::binary_search or std::lower_bound instead.
 
@@ -667,7 +667,7 @@
 
 /*! \fn RandomAccessIterator qBinaryFind(RandomAccessIterator begin, RandomAccessIterator end, const T &value, LessThan lessThan)
     \relates <QtAlgorithms>
-    \obsolete
+    \deprecated
     \overload
 
     Use std::binary_search or std::lower_bound instead.
@@ -682,7 +682,7 @@
 /*!
     \fn void qBinaryFind(const Container &container, const T &value)
     \relates <QtAlgorithms>
-    \obsolete
+    \deprecated
     \overload
 
     Use std::binary_search or std::lower_bound instead.
@@ -725,7 +725,7 @@
 
 /*! \fn LessThan qLess()
     \relates <QtAlgorithms>
-    \obsolete
+    \deprecated
 
     Use std::less instead.
 
@@ -741,7 +741,7 @@
 
 /*! \fn LessThan qGreater()
     \relates <QtAlgorithms>
-    \obsolete
+    \deprecated
 
     Use std::greater instead.
 
