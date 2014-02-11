@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include <QtCore/qglobal.h>
+#include <QtCore/qtypetraits.h>
 
 #ifndef QTYPEINFO_H
 #define QTYPEINFO_H
@@ -60,7 +60,7 @@ class QTypeInfo
 public:
     enum {
         isPointer = false,
-        isIntegral = false,
+        isIntegral = QtPrivate::is_integral<T>::value,
         isComplex = true,
         isStatic = true,
         isLarge = (sizeof(T)>sizeof(void*)),
@@ -173,8 +173,7 @@ enum { /* TYPEINFO flags */
     Q_PRIMITIVE_TYPE = 0x1,
     Q_STATIC_TYPE = 0,
     Q_MOVABLE_TYPE = 0x2,
-    Q_DUMMY_TYPE = 0x4,
-    Q_INTEGRAL_TYPE = 0x8
+    Q_DUMMY_TYPE = 0x4
 };
 
 #define Q_DECLARE_TYPEINFO_BODY(TYPE, FLAGS) \
@@ -186,7 +185,7 @@ public: \
         isStatic = (((FLAGS) & (Q_MOVABLE_TYPE | Q_PRIMITIVE_TYPE)) == 0), \
         isLarge = (sizeof(TYPE)>sizeof(void*)), \
         isPointer = false, \
-        isIntegral = ((FLAGS) & Q_INTEGRAL_TYPE) != 0, \
+        isIntegral = QtPrivate::is_integral< TYPE >::value, \
         isDummy = (((FLAGS) & Q_DUMMY_TYPE) != 0), \
         sizeOf = sizeof(TYPE) \
     }; \
@@ -228,33 +227,32 @@ Q_DECLARE_SHARED_STL(TYPE)
 /*
    QTypeInfo primitive specializations
 */
-Q_DECLARE_TYPEINFO(bool, Q_PRIMITIVE_TYPE | Q_INTEGRAL_TYPE);
-Q_DECLARE_TYPEINFO(char, Q_PRIMITIVE_TYPE | Q_INTEGRAL_TYPE);
-Q_DECLARE_TYPEINFO(signed char, Q_PRIMITIVE_TYPE | Q_INTEGRAL_TYPE);
-Q_DECLARE_TYPEINFO(uchar, Q_PRIMITIVE_TYPE | Q_INTEGRAL_TYPE);
-Q_DECLARE_TYPEINFO(short, Q_PRIMITIVE_TYPE | Q_INTEGRAL_TYPE);
-Q_DECLARE_TYPEINFO(ushort, Q_PRIMITIVE_TYPE | Q_INTEGRAL_TYPE);
-Q_DECLARE_TYPEINFO(int, Q_PRIMITIVE_TYPE | Q_INTEGRAL_TYPE);
-Q_DECLARE_TYPEINFO(uint, Q_PRIMITIVE_TYPE | Q_INTEGRAL_TYPE);
-Q_DECLARE_TYPEINFO(long, Q_PRIMITIVE_TYPE | Q_INTEGRAL_TYPE);
-Q_DECLARE_TYPEINFO(ulong, Q_PRIMITIVE_TYPE | Q_INTEGRAL_TYPE);
-Q_DECLARE_TYPEINFO(qint64, Q_PRIMITIVE_TYPE | Q_INTEGRAL_TYPE);
-Q_DECLARE_TYPEINFO(quint64, Q_PRIMITIVE_TYPE | Q_INTEGRAL_TYPE);
+Q_DECLARE_TYPEINFO(bool, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(char, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(signed char, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(uchar, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(short, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(ushort, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(int, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(uint, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(long, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(ulong, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(qint64, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(quint64, Q_PRIMITIVE_TYPE);
 Q_DECLARE_TYPEINFO(float, Q_PRIMITIVE_TYPE);
 Q_DECLARE_TYPEINFO(double, Q_PRIMITIVE_TYPE);
 #ifndef Q_OS_DARWIN
 Q_DECLARE_TYPEINFO(long double, Q_PRIMITIVE_TYPE);
 #endif
-#ifdef Q_COMPILER_UNICODE_STRINGS
-// ### Qt6: define as Q_PRIMITIVE_TYPE
+
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 // We can't do it now because it would break BC on QList<char32_t>
-Q_DECLARE_TYPEINFO(char16_t, Q_INTEGRAL_TYPE);
-Q_DECLARE_TYPEINFO(char32_t, Q_INTEGRAL_TYPE);
-#endif
-#if !defined(Q_CC_MSVC) || defined(_NATIVE_WCHAR_T_DEFINED)
-// ### Qt6: same as above
-Q_DECLARE_TYPEINFO(wchar_t, Q_INTEGRAL_TYPE);
-#endif
+Q_DECLARE_TYPEINFO(char16_t, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(char32_t, Q_PRIMITIVE_TYPE);
+#  if !defined(Q_CC_MSVC) || defined(_NATIVE_WCHAR_T_DEFINED)
+Q_DECLARE_TYPEINFO(wchar_t, Q_PRIMITIVE_TYPE);
+#  endif
+#endif // Qt 6
 
 QT_END_NAMESPACE
 #endif // QTYPEINFO_H
