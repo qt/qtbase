@@ -7,6 +7,6 @@ SOURCES   = imagewidget.cpp \
             mainwidget.cpp
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/gestures/imagegestures
+target.path = $$[QT_INSTALL_EXAMPLES]/widgets/gestures/imagegestures
 INSTALLS += target
 

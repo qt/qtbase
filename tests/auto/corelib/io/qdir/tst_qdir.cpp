@@ -1098,6 +1098,10 @@ void tst_QDir::absoluteFilePath_data()
     QTest::newRow("2") << "/" << "passwd" << "/passwd";
     QTest::newRow("3") << "relative" << "path" << QDir::currentPath() + "/relative/path";
     QTest::newRow("4") << "" << "" << QDir::currentPath();
+#ifdef Q_OS_WIN
+    QTest::newRow("5") << "//machine" << "share" << "//machine/share";
+#endif
+
     QTest::newRow("resource") << ":/prefix" << "foo.bar" << ":/prefix/foo.bar";
 }
 

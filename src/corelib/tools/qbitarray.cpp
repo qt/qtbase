@@ -119,14 +119,6 @@ QT_BEGIN_NAMESPACE
     \since 5.2
 */
 
-/*!
-    \fn QBitArray &QBitArray::operator=(QBitArray &&other)
-
-    Move-assigns \a other to this QBitArray instance.
-
-    \since 5.2
-*/
-
 /*! \fn QBitArray::QBitArray()
 
     Constructs an empty bit array.
@@ -464,6 +456,7 @@ void QBitArray::fill(bool value, int begin, int end)
 */
 
 /*! \fn QBitArray &QBitArray::operator=(QBitArray &&other)
+    \since 5.2
 
     Moves \a other to this bit array and returns a reference to
     this bit array.

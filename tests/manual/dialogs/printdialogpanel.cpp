@@ -408,8 +408,10 @@ void PrintDialogPanel::showPrintDialog()
     QPrintDialog dialog(m_printer.data(), this);
     dialog.setOptions(m_printDialogOptionsControl->value<QPrintDialog::PrintDialogOptions>());
     dialog.setPrintRange(comboBoxValue<QPrintDialog::PrintRange>(m_printDialogRangeCombo));
-    if (dialog.exec() == QDialog::Accepted)
+    if (dialog.exec() == QDialog::Accepted) {
         retrieveSettings(m_printer.data());
+        print(m_printer.data());
+    }
 }
 
 void PrintDialogPanel::showPreviewDialog()

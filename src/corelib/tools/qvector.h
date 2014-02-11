@@ -254,7 +254,10 @@ private:
 };
 
 #ifdef Q_CC_MSVC
-#   pragma warning ( disable : 4345 ) // behavior change: an object of POD type constructed with an initializer of the form () will be default-initialized
+// behavior change: an object of POD type constructed with an initializer of the form ()
+// will be default-initialized
+#   pragma warning ( push )
+#   pragma warning ( disable : 4345 )
 #endif
 
 template <typename T>
@@ -270,7 +273,7 @@ void QVector<T>::defaultConstruct(T *from, T *to)
 }
 
 #ifdef Q_CC_MSVC
-#   pragma warning ( default: 4345 )
+#   pragma warning ( pop )
 #endif
 
 template <typename T>

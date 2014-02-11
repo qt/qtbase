@@ -222,7 +222,6 @@ public: // for QNSView
     QRect m_exposedGeometry;
     int m_registerTouchCount;
     bool m_resizableTransientParent;
-    bool m_overrideBecomeKey;
     bool m_hiddenByClipping;
     bool m_hiddenByAncestor;
 

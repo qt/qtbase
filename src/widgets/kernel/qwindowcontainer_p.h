@@ -48,7 +48,7 @@ QT_BEGIN_NAMESPACE
 
 class QWindowContainerPrivate;
 
-class QWindowContainer : public QWidget
+class Q_WIDGETS_EXPORT QWindowContainer : public QWidget
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QWindowContainer)
@@ -56,6 +56,7 @@ class QWindowContainer : public QWidget
 public:
     explicit QWindowContainer(QWindow *embeddedWindow, QWidget *parent = 0, Qt::WindowFlags f = 0);
     ~QWindowContainer();
+    QWindow *containedWindow() const;
 
     static void toplevelAboutToBeDestroyed(QWidget *parent);
     static void parentWasChanged(QWidget *parent);

@@ -1879,8 +1879,10 @@ QFontEngine *QTextEngine::fontEngine(const QScriptItem &si, QFixed *ascent, QFix
             feCache.prevFontEngine = engine;
             feCache.prevScript = script;
             engine->ref.ref();
-            if (feCache.prevScaledFontEngine)
+            if (feCache.prevScaledFontEngine) {
                 releaseCachedFontEngine(feCache.prevScaledFontEngine);
+                feCache.prevScaledFontEngine = 0;
+            }
         }
         if (si.analysis.flags & QFont::SmallCaps) {
             if (feCache.prevScaledFontEngine) {

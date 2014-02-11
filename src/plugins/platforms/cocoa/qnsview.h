@@ -71,6 +71,7 @@ QT_END_NAMESPACE
     bool m_subscribesForGlobalFrameNotifications;
     QCocoaGLContext *m_glContext;
     bool m_shouldSetGLContextinDrawRect;
+    NSString *m_inputSource;
 }
 
 - (id)init;

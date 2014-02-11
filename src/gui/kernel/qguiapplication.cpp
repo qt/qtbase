@@ -60,6 +60,7 @@
 #include <QtCore/private/qthread_p.h>
 #include <QtCore/qdir.h>
 #include <QtCore/qlibraryinfo.h>
+#include <QtCore/qnumeric.h>
 #include <QtDebug>
 #ifndef QT_NO_ACCESSIBILITY
 #include "qaccessible.h"
@@ -111,7 +112,7 @@ Q_GUI_EXPORT bool qt_is_gui_used = true;
 Qt::MouseButtons QGuiApplicationPrivate::mouse_buttons = Qt::NoButton;
 Qt::KeyboardModifiers QGuiApplicationPrivate::modifier_buttons = Qt::NoModifier;
 
-QPointF QGuiApplicationPrivate::lastCursorPosition(0.0, 0.0);
+QPointF QGuiApplicationPrivate::lastCursorPosition(qInf(), qInf());
 
 bool QGuiApplicationPrivate::tabletState = false;
 QWindow *QGuiApplicationPrivate::tabletPressTarget = 0;

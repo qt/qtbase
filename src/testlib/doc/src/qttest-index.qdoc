@@ -56,7 +56,7 @@
 
     \list
         \li \l{Qt Test C++ Classes}{C++ Classes}
-        \li \l{Qt Quick Test}{QML Types}
+        \li \l{Qt Quick Test QML Types}{QML Types}
     \endlist
 
 */

@@ -116,5 +116,6 @@ namespace QtAndroid
     const char *methodErrorMsgFmt();
     const char *qtTagText();
 
+    QString deviceName();
 }
 #endif // ANDROID_APP_H

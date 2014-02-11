@@ -768,7 +768,10 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
             }
         }
 
-        if (isMove) {
+        // generate a move event for QWidgets without window handles. QWidgets with native
+        // window handles already receive a move event from
+        // QGuiApplicationPrivate::processGeometryChangeEvent.
+        if (isMove && (!q->windowHandle() || q->testAttribute(Qt::WA_DontShowOnScreen))) {
             QMoveEvent e(q->pos(), oldPos);
             QApplication::sendEvent(q, &e);
         }
@@ -876,9 +879,15 @@ int QWidget::metric(PaintDeviceMetric m) const
 }
 
 /*!
-    \preliminary
+    If this is a native widget, return the associated QWindow.
+    Otherwise return null.
 
-    Returns the QPlatformWindow this widget will be drawn into.
+    Native widgets include toplevel widgets, QGLWidget, and child widgets
+    on which winId() was called.
+
+    \since 5.0
+
+    \sa winId()
 */
 QWindow *QWidget::windowHandle() const
 {

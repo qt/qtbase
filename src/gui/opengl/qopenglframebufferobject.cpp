@@ -432,9 +432,11 @@ void QOpenGLFramebufferObjectPrivate::init(QOpenGLFramebufferObject *, const QSi
         samples = 0;
     }
 
+#ifndef QT_OPENGL_ES_2
     GLint maxSamples;
     glGetIntegerv(GL_MAX_SAMPLES, &maxSamples);
     samples = qBound(0, int(samples), int(maxSamples));
+#endif
 
     size = sz;
     target = texture_target;

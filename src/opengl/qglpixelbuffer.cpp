@@ -90,7 +90,7 @@
     Pbuffers are provided by the OpenGL \c pbuffer extension; call
     hasOpenGLPbuffer() to find out if the system provides pbuffers.
 
-    \sa {opengl/pbuffers}{Pbuffers Example}
+    \sa {Pixel Buffers Example}
 */
 
 #include <private/qopenglextensions_p.h>

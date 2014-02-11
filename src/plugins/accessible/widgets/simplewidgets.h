@@ -195,6 +195,19 @@ protected:
 };
 #endif
 
+class QWindowContainer;
+class QAccessibleWindowContainer : public QAccessibleWidget
+{
+public:
+    QAccessibleWindowContainer(QWidget *w);
+    int childCount() const Q_DECL_OVERRIDE;
+    int indexOfChild(const QAccessibleInterface *child) const Q_DECL_OVERRIDE;
+    QAccessibleInterface *child(int i) const Q_DECL_OVERRIDE;
+
+private:
+    QWindowContainer *container() const;
+};
+
 #endif // QT_NO_ACCESSIBILITY
 
 QT_END_NAMESPACE

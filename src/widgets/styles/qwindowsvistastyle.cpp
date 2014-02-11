@@ -1879,7 +1879,11 @@ void QWindowsVistaStyle::drawComplexControl(ComplexControl control, const QStyle
                 XPThemeData ftheme(widget, painter,
                                    QWindowsXPStylePrivate::EditTheme,
                                    partId, stateId, r);
-                ftheme.noContent = true;
+                // The spinbox in Windows QStyle is drawn with frameless QLineEdit inside it
+                // That however breaks with QtQuickControls where this results in transparent
+                // spinbox background, so if there's no "widget" passed (QtQuickControls case),
+                // let ftheme.noContent be false, which fixes the spinbox rendering in QQC
+                ftheme.noContent = (widget != NULL);
                 d->drawBackground(ftheme);
             }
             if (sub & SC_SpinBoxUp) {

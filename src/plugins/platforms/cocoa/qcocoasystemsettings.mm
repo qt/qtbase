@@ -254,6 +254,7 @@ QHash<QPlatformTheme::Font, QFont *> qt_mac_createRoleFonts()
     fonts.insert(QPlatformTheme::ListBoxFont, qt_mac_qfontForThemeFont(kThemeViewsFont));
     fonts.insert(QPlatformTheme::TitleBarFont, qt_mac_qfontForThemeFont(kThemeWindowTitleFont));
     fonts.insert(QPlatformTheme::MenuFont, qt_mac_qfontForThemeFont(kThemeMenuItemFont));
+    fonts.insert(QPlatformTheme::MenuBarFont, qt_mac_qfontForThemeFont(kThemeMenuItemFont));
     fonts.insert(QPlatformTheme::ComboMenuItemFont, qt_mac_qfontForThemeFont(kThemeSystemFont));
     fonts.insert(QPlatformTheme::HeaderViewFont, qt_mac_qfontForThemeFont(kThemeSmallSystemFont));
     fonts.insert(QPlatformTheme::TipLabelFont, qt_mac_qfontForThemeFont(kThemeSmallSystemFont));

@@ -1246,6 +1246,32 @@ static void qDefaultMsgHandler(QtMsgType type, const char *buf)
     qDefaultMessageHandler(type, emptyContext, QString::fromLocal8Bit(buf));
 }
 
+#if defined(Q_COMPILER_THREAD_LOCAL) || (defined(Q_CC_MSVC) && !defined(Q_OS_WINCE))
+#if defined(Q_CC_MSVC)
+static __declspec(thread) bool msgHandlerGrabbed = false;
+#else
+static thread_local bool msgHandlerGrabbed = false;
+#endif
+
+static bool grabMessageHandler()
+{
+    if (msgHandlerGrabbed)
+        return false;
+
+    msgHandlerGrabbed = true;
+    return true;
+}
+
+static void ungrabMessageHandler()
+{
+    msgHandlerGrabbed = false;
+}
+
+#else
+static bool grabMessageHandler() { return true; }
+static void ungrabMessageHandler() { }
+#endif // (Q_COMPILER_THREAD_LOCAL) || ((Q_CC_MSVC) && !(Q_OS_WINCE))
+
 static void qt_message_print(QtMsgType msgType, const QMessageLogContext &context, const QString &message)
 {
 #ifndef QT_BOOTSTRAPPED
@@ -1263,12 +1289,19 @@ static void qt_message_print(QtMsgType msgType, const QMessageLogContext &contex
     if (!messageHandler)
         messageHandler = qDefaultMessageHandler;
 
-    // prefer new message handler over the old one
-    if (msgHandler == qDefaultMsgHandler
-            || messageHandler != qDefaultMessageHandler) {
-        (*messageHandler)(msgType, context, message);
+    // prevent recursion in case the message handler generates messages
+    // itself, e.g. by using Qt API
+    if (grabMessageHandler()) {
+        // prefer new message handler over the old one
+        if (msgHandler == qDefaultMsgHandler
+                || messageHandler != qDefaultMessageHandler) {
+            (*messageHandler)(msgType, context, message);
+        } else {
+            (*msgHandler)(msgType, message.toLocal8Bit().constData());
+        }
+        ungrabMessageHandler();
     } else {
-        (*msgHandler)(msgType, message.toLocal8Bit().constData());
+        fprintf(stderr, "%s", message.toLocal8Bit().constData());
     }
 }
 
