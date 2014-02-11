@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -39,50 +39,22 @@
 **
 ****************************************************************************/
 
-#ifndef QWINRTINTEGRATION_H
-#define QWINRTINTEGRATION_H
+#ifndef QWINRTPLATFORMTHEME_H
+#define QWINRTPLATFORMTHEME_H
 
-#include <qpa/qplatformintegration.h>
+#include <qpa/qplatformtheme.h>
 
 QT_BEGIN_NAMESPACE
 
-class QAbstractEventDispatcher;
-class QWinRTScreen;
-
-class QWinRTIntegration : public QPlatformIntegration
+class QWinRTPlatformTheme : public QPlatformTheme
 {
-private:
-    explicit QWinRTIntegration();
 public:
-    ~QWinRTIntegration();
+    QWinRTPlatformTheme();
 
-    static QWinRTIntegration *create()
-    {
-        QWinRTIntegration *integration = new QWinRTIntegration;
-        return integration->m_success ? integration : 0;
-    }
-
-    bool hasCapability(QPlatformIntegration::Capability cap) const;
-    QVariant styleHint(StyleHint hint) const;
-
-    QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
-    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
-    QAbstractEventDispatcher *createEventDispatcher() const;
-    QPlatformFontDatabase *fontDatabase() const;
-    QPlatformInputContext *inputContext() const;
-    QPlatformServices *services() const;
-    Qt::KeyboardModifiers queryKeyboardModifiers() const;
-
-    QStringList themeNames() const;
-    QPlatformTheme *createPlatformTheme(const QString &name) const;
-private:
-    bool m_success;
-    QWinRTScreen *m_screen;
-    QPlatformFontDatabase *m_fontDatabase;
-    QPlatformServices *m_services;
+    bool usePlatformNativeDialog(DialogType type) const;
+    QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const;
 };
 
 QT_END_NAMESPACE
 
-#endif // QWINRTINTEGRATION_H
+#endif // QWINRTPLATFORMTHEME_H

@@ -20,6 +20,8 @@ SOURCES = \
     qwinrtfontdatabase.cpp \
     qwinrtinputcontext.cpp \
     qwinrtintegration.cpp \
+    qwinrtplatformmessagedialoghelper.cpp \
+    qwinrtplatformtheme.cpp \
     qwinrtscreen.cpp \
     qwinrtservices.cpp \
     qwinrtwindow.cpp
@@ -32,6 +34,8 @@ HEADERS = \
     qwinrtfontdatabase.h \
     qwinrtinputcontext.h \
     qwinrtintegration.h \
+    qwinrtplatformmessagedialoghelper.h \
+    qwinrtplatformtheme.h \
     qwinrtscreen.h \
     qwinrtservices.h \
     qwinrtwindow.h
@@ -50,6 +54,11 @@ fxc_blitvs.dependency_type = TYPE_C
 fxc_blitvs.variable_out = HEADERS
 fxc_blitvs.CONFIG += target_predeps
 QMAKE_EXTRA_COMPILERS += fxc_blitps fxc_blitvs
+
+winphone {
+    SOURCES -= qwinrtplatformmessagedialoghelper.cpp
+    HEADERS -= qwinrtplatformmessagedialoghelper.h
+}
 
 OTHER_FILES += winrt.json \
     blit.hlsl

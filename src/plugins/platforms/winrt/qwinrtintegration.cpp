@@ -48,6 +48,7 @@
 #include "qwinrtservices.h"
 #include "qwinrteglcontext.h"
 #include "qwinrtfontdatabase.h"
+#include "qwinrtplatformtheme.h"
 
 #include <QtGui/QOpenGLContext>
 
@@ -191,4 +192,17 @@ Qt::KeyboardModifiers QWinRTIntegration::queryKeyboardModifiers() const
     return m_screen->keyboardModifiers();
 }
 
+QStringList QWinRTIntegration::themeNames() const
+{
+    return QStringList(QLatin1String("winrt"));
+}
+
+QPlatformTheme *QWinRTIntegration::createPlatformTheme(const QString &
+name) const
+{
+    if (name == QLatin1String("winrt"))
+        return new QWinRTPlatformTheme();
+
+    return 0;
+}
 QT_END_NAMESPACE

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -39,50 +39,47 @@
 **
 ****************************************************************************/
 
-#ifndef QWINRTINTEGRATION_H
-#define QWINRTINTEGRATION_H
+#ifndef QWINRTPLATFORMMESSAGEDIALOGHELPER_H
+#define QWINRTPLATFORMMESSAGEDIALOGHELPER_H
 
-#include <qpa/qplatformintegration.h>
+#include <qpa/qplatformdialoghelper.h>
+#include <QtCore/QEventLoop>
+#include <QtCore/qt_windows.h>
+
+namespace ABI {
+    namespace Windows {
+        namespace UI {
+            namespace Popups {
+                struct IUICommand;
+            }
+        }
+    }
+}
 
 QT_BEGIN_NAMESPACE
 
-class QAbstractEventDispatcher;
-class QWinRTScreen;
+struct QWinRTPlatformMessageDialogInfo;
 
-class QWinRTIntegration : public QPlatformIntegration
+class QWinRTPlatformMessageDialogHelper : public QPlatformMessageDialogHelper
 {
-private:
-    explicit QWinRTIntegration();
+    Q_OBJECT
 public:
-    ~QWinRTIntegration();
+    explicit QWinRTPlatformMessageDialogHelper();
+    ~QWinRTPlatformMessageDialogHelper();
 
-    static QWinRTIntegration *create()
-    {
-        QWinRTIntegration *integration = new QWinRTIntegration;
-        return integration->m_success ? integration : 0;
-    }
+    void exec();
+    bool show(Qt::WindowFlags windowFlags,
+              Qt::WindowModality windowModality,
+              QWindow *parent);
+    void hide();
 
-    bool hasCapability(QPlatformIntegration::Capability cap) const;
-    QVariant styleHint(StyleHint hint) const;
-
-    QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
-    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
-    QAbstractEventDispatcher *createEventDispatcher() const;
-    QPlatformFontDatabase *fontDatabase() const;
-    QPlatformInputContext *inputContext() const;
-    QPlatformServices *services() const;
-    Qt::KeyboardModifiers queryKeyboardModifiers() const;
-
-    QStringList themeNames() const;
-    QPlatformTheme *createPlatformTheme(const QString &name) const;
+    HRESULT onInvoked(ABI::Windows::UI::Popups::IUICommand *command);
 private:
-    bool m_success;
-    QWinRTScreen *m_screen;
-    QPlatformFontDatabase *m_fontDatabase;
-    QPlatformServices *m_services;
+    QWinRTPlatformMessageDialogInfo *m_info;
+    QEventLoop m_loop;
+    bool m_shown;
 };
 
 QT_END_NAMESPACE
 
-#endif // QWINRTINTEGRATION_H
+#endif // QWINRTPLATFORMMESSAGEDIALOGHELPER_H
