@@ -1206,7 +1206,6 @@ QT_BEGIN_INCLUDE_NAMESPACE
 QT_END_INCLUDE_NAMESPACE
 
 Q_STATIC_ASSERT(sizeof(HB_Glyph) == sizeof(glyph_t));
-Q_STATIC_ASSERT(sizeof(HB_GlyphAttributes) == sizeof(QGlyphAttributes));
 Q_STATIC_ASSERT(sizeof(HB_Fixed) == sizeof(QFixed));
 Q_STATIC_ASSERT(sizeof(HB_FixedPoint) == sizeof(QFixedPoint));
 
@@ -1272,18 +1271,23 @@ int QTextEngine::shapeTextWithHarfbuzz(const QScriptItem &si, const ushort *stri
 
         remaining_glyphs -= shaper_item.initialGlyphCount;
 
+        QVarLengthArray<HB_GlyphAttributes, 128> hbGlyphAttributes;
         do {
             if (!ensureSpace(glyph_pos + shaper_item.num_glyphs + remaining_glyphs))
                 return 0;
+            if (hbGlyphAttributes.size() < int(shaper_item.num_glyphs)) {
+                hbGlyphAttributes.resize(shaper_item.num_glyphs);
+                memset(hbGlyphAttributes.data(), 0, hbGlyphAttributes.size() * sizeof(HB_GlyphAttributes));
+            }
 
             const QGlyphLayout g = availableGlyphs(&si).mid(glyph_pos);
             if (fontEngine->type() == QFontEngine::Multi && shaper_item.num_glyphs > shaper_item.item.length)
                 moveGlyphData(g.mid(shaper_item.num_glyphs), g.mid(shaper_item.initialGlyphCount), remaining_glyphs);
 
             shaper_item.glyphs = reinterpret_cast<HB_Glyph *>(g.glyphs);
-            shaper_item.attributes = reinterpret_cast<HB_GlyphAttributes *>(g.attributes);
             shaper_item.advances = reinterpret_cast<HB_Fixed *>(g.advances);
             shaper_item.offsets = reinterpret_cast<HB_FixedPoint *>(g.offsets);
+            shaper_item.attributes = hbGlyphAttributes.data();
 
             if (engineIdx != 0 && shaper_item.glyphIndicesPresent) {
                 for (quint32 i = 0; i < shaper_item.initialGlyphCount; ++i)
@@ -1296,6 +1300,14 @@ int QTextEngine::shapeTextWithHarfbuzz(const QScriptItem &si, const ushort *stri
         QGlyphLayout g = availableGlyphs(&si).mid(glyph_pos, shaper_item.num_glyphs);
         if (fontEngine->type() == QFontEngine::Multi)
             moveGlyphData(g.mid(shaper_item.num_glyphs), g.mid(shaper_item.initialGlyphCount), remaining_glyphs);
+
+        for (quint32 i = 0; i < shaper_item.num_glyphs; ++i) {
+            HB_GlyphAttributes hbAttrs = hbGlyphAttributes.at(i);
+            QGlyphAttributes &attrs = g.attributes[i];
+            attrs.clusterStart = hbAttrs.clusterStart;
+            attrs.dontPrint = hbAttrs.dontPrint;
+            attrs.justification = hbAttrs.justification;
+        }
 
         for (quint32 i = 0; i < shaper_item.item.length; ++i)
             shaper_item.log_clusters[i] += glyph_pos;

@@ -89,21 +89,6 @@ class QAbstractTextDocumentLayout;
 
 typedef quint32 glyph_t;
 
-#ifdef  __xlC__
-typedef unsigned q_hb_bitfield;
-#else
-typedef quint8 q_hb_bitfield;
-#endif
-
-struct QGlyphAttributes {
-    q_hb_bitfield justification   :4;
-    q_hb_bitfield clusterStart    :1;
-    q_hb_bitfield unused1         :1;
-    q_hb_bitfield unused2         :1;
-    q_hb_bitfield dontPrint       :1;
-    q_hb_bitfield unused3         :8;
-};
-
 // this uses the same coordinate system as Qt, but a different one to freetype.
 // * y is usually negative, and is equal to the ascent.
 // * negative yoff means the following stuff is drawn higher up.
@@ -174,6 +159,14 @@ struct QGlyphJustification
 };
 Q_DECLARE_TYPEINFO(QGlyphJustification, Q_PRIMITIVE_TYPE);
 
+struct QGlyphAttributes {
+    uchar clusterStart  : 1;
+    uchar dontPrint     : 1;
+    uchar justification : 4;
+    uchar reserved      : 2;
+};
+Q_STATIC_ASSERT(sizeof(QGlyphAttributes) == 1);
+
 struct QGlyphLayout
 {
     enum {
@@ -186,7 +179,7 @@ struct QGlyphLayout
     glyph_t *glyphs; // 4 bytes per element
     QFixed *advances; // 4 bytes per element
     QGlyphJustification *justifications; // 4 bytes per element
-    QGlyphAttributes *attributes; // 2 bytes per element
+    QGlyphAttributes *attributes; // 1 byte per element
 
     int numGlyphs;
 
