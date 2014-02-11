@@ -858,8 +858,8 @@ Q_CORE_EXPORT void qFreeAligned(void *ptr);
 #  endif
 #endif
 
-#if (defined(Q_CC_GNU) && !defined(Q_CC_RVCT))
-/* make use of typeof-extension */
+#if defined(Q_COMPILER_DECLTYPE) || (defined(Q_CC_GNU) && !defined(Q_CC_RVCT))
+/* make use of decltype or GCC's __typeof__ extension */
 template <typename T>
 class QForeachContainer {
 public:
@@ -869,6 +869,11 @@ public:
     int control;
 };
 
+#  ifdef Q_COMPILER_DECLTYPE
+#    define QT_FOREACH_DECLTYPE(x) typename QtPrivate::remove_reference<decltype(x)>::type
+#  else
+#    define QT_FOREACH_DECLTYPE(x) __typeof__((x))
+#  endif
 
 // Explanation of the control word:
 //  - it's initialized to 1
@@ -880,7 +885,7 @@ public:
 //  - if there was a break inside the inner loop, it will exit with control still
 //    set to 1; in that case, the outer loop will invert it to 0 and will exit too
 #  define Q_FOREACH(variable, container)                                \
-for (QForeachContainer<__typeof__((container))> _container_((container)); \
+for (QForeachContainer<QT_FOREACH_DECLTYPE(container)> _container_((container)); \
      _container_.control && _container_.i != _container_.e;         \
      ++_container_.i, _container_.control ^= 1)                     \
     for (variable = *_container_.i; _container_.control; _container_.control = 0)
