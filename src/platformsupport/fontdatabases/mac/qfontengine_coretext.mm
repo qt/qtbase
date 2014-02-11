@@ -460,8 +460,46 @@ glyph_metrics_t QCoreTextFontEngine::alphaMapBoundingBox(glyph_t glyph, QFixed s
     glyph_metrics_t br = boundingBox(glyph);
     qcoretextfontengine_scaleMetrics(br, matrix);
 
-    br.width = qAbs(qRound(br.width)) + 2;
-    br.height = qAbs(qRound(br.height)) + 2;
+    // Normalize width and height
+    if (br.width < 0)
+        br.width = -br.width;
+    if (br.height < 0)
+        br.height = -br.height;
+
+    if (format == QFontEngine::Format_A8 || format == QFontEngine::Format_A32) {
+        // Drawing a glyph at x-position 0 with anti-aliasing enabled
+        // will potentially fill the pixel to the left of 0, as the
+        // coordinates are not aligned to the center of pixels. To
+        // prevent clipping of this pixel we need to shift the glyph
+        // in the bitmap one pixel to the right. The shift needs to
+        // be reflected in the glyph metrics as well, so that the final
+        // position of the glyph is correct, which is why doing the
+        // shift in imageForGlyph() is not enough.
+        br.x -= 1;
+
+        // As we've shifted the glyph one pixel to the right, we need
+        // to expand the width of the alpha map bounding box as well.
+        br.width += 1;
+
+        // But we have the same anti-aliasing problem on the right
+        // hand side of the glyph, eg. if the width of the glyph
+        // results in the bounding rect landing between two pixels.
+        // We pad the bounding rect again to account for the possible
+        // anti-aliased drawing.
+        br.width += 1;
+
+        // We also shift the glyph to right right based on the subpixel
+        // position, so we pad the bounding box to take account for the
+        // subpixel positions that may result in the glyph being drawn
+        // one pixel to the right of the 0-subpixel position.
+        br.width += 1;
+
+        // The same same logic as for the x-position needs to be applied
+        // to the y-position, except we don't need to compensate for
+        // the subpixel positioning.
+        br.y -= 1;
+        br.height += 2;
+    }
 
     return br;
 }
@@ -474,7 +512,7 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition
 
     bool isColorGlyph = glyphFormat == QFontEngine::Format_ARGB;
     QImage::Format imageFormat = isColorGlyph ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32;
-    QImage im(br.width.toInt(), br.height.toInt(), imageFormat);
+    QImage im(br.width.ceil().toInt(), br.height.ceil().toInt(), imageFormat);
     im.fill(0);
 
 #ifndef Q_OS_IOS
