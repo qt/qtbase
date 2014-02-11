@@ -120,6 +120,7 @@ public:
     virtual void notifyActiveWindowChange(QWindow *);
 
     virtual bool shouldQuit();
+    bool tryCloseAllWindows() Q_DECL_OVERRIDE;
 
 #if defined(Q_WS_X11)
 #ifndef QT_NO_SETTINGS
@@ -294,6 +295,7 @@ public:
     QPixmap applyQIconStyleHelper(QIcon::Mode mode, const QPixmap& base) const;
 private:
     static QApplicationPrivate *self;
+    static bool tryCloseAllWidgetWindows(QWindowList *processedWindows);
 
     static void giveFocusAccordingToFocusPolicy(QWidget *w, QEvent *event, QPoint localPos);
     static bool shouldSetFocus(QWidget *w, Qt::FocusPolicy policy);

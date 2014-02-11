@@ -92,6 +92,7 @@ public:
     virtual bool shouldQuit();
 
     bool shouldQuitInternal(const QWindowList &processedWindows);
+    virtual bool tryCloseAllWindows();
 
     static Qt::KeyboardModifiers modifier_buttons;
     static Qt::MouseButtons mouse_buttons;
@@ -291,6 +292,7 @@ public:
 
 protected:
     virtual void notifyThemeChanged();
+    bool tryCloseRemainingWindows(QWindowList processedWindows);
 #ifndef QT_NO_DRAGANDDROP
     virtual void notifyDragStarted(const QDrag *);
 #endif // QT_NO_DRAGANDDROP

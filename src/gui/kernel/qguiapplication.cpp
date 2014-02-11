@@ -2696,6 +2696,27 @@ bool QGuiApplicationPrivate::shouldQuitInternal(const QWindowList &processedWind
     return true;
 }
 
+bool QGuiApplicationPrivate::tryCloseAllWindows()
+{
+    return tryCloseRemainingWindows(QWindowList());
+}
+
+bool QGuiApplicationPrivate::tryCloseRemainingWindows(QWindowList processedWindows)
+{
+    QWindowList list = QGuiApplication::topLevelWindows();
+    for (int i = 0; i < list.size(); ++i) {
+        QWindow *w = list.at(i);
+        if (w->isVisible() && !processedWindows.contains(w)) {
+            if (!w->close())
+                return false;
+            processedWindows.append(w);
+            list = QGuiApplication::topLevelWindows();
+            i = -1;
+        }
+    }
+    return true;
+}
+
 /*!
     \since 5.2
     \fn Qt::ApplicationState QGuiApplication::applicationState()
@@ -2902,23 +2923,8 @@ void QGuiApplicationPrivate::commitData()
     Q_Q(QGuiApplication);
     is_saving_session = true;
     emit q->commitDataRequest(*session_manager);
-    if (session_manager->allowsInteraction()) {
-        QWindowList done;
-        QWindowList list = QGuiApplication::topLevelWindows();
-        bool cancelled = false;
-        for (int i = 0; !cancelled && i < list.size(); ++i) {
-            QWindow* w = list.at(i);
-            if (w->isVisible() && !done.contains(w)) {
-                cancelled = !w->close();
-                if (!cancelled)
-                    done.append(w);
-                list = QGuiApplication::topLevelWindows();
-                i = -1;
-            }
-        }
-        if (cancelled)
-            session_manager->cancel();
-    }
+    if (session_manager->allowsInteraction() && !tryCloseAllWindows())
+        session_manager->cancel();
     is_saving_session = false;
 }
 

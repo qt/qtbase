@@ -1733,6 +1733,41 @@ QFontMetrics QApplication::fontMetrics()
     return desktop()->fontMetrics();
 }
 
+bool QApplicationPrivate::tryCloseAllWidgetWindows(QWindowList *processedWindows)
+{
+    Q_ASSERT(processedWindows);
+    while (QWidget *w = QApplication::activeModalWidget()) {
+        if (!w->isVisible() || w->data->is_closing)
+            break;
+        QWindow *window = w->windowHandle();
+        if (!w->close()) // Qt::WA_DeleteOnClose may cause deletion.
+            return false;
+        if (window)
+            processedWindows->append(window);
+    }
+
+    QWidgetList list = QApplication::topLevelWidgets();
+    for (int i = 0; i < list.size(); ++i) {
+        QWidget *w = list.at(i);
+        if (w->isVisible() && w->windowType() != Qt::Desktop && !w->data->is_closing) {
+            QWindow *window = w->windowHandle();
+            if (!w->close())  // Qt::WA_DeleteOnClose may cause deletion.
+                return false;
+            if (window)
+                processedWindows->append(window);
+            list = QApplication::topLevelWidgets();
+            i = -1;
+        }
+    }
+    return true;
+}
+
+bool QApplicationPrivate::tryCloseAllWindows()
+{
+    QWindowList processedWindows;
+    return QApplicationPrivate::tryCloseAllWidgetWindows(&processedWindows)
+        && QGuiApplicationPrivate::tryCloseRemainingWindows(processedWindows);
+}
 
 /*!
     Closes all top-level windows.
@@ -1754,24 +1789,8 @@ QFontMetrics QApplication::fontMetrics()
 */
 void QApplication::closeAllWindows()
 {
-    bool did_close = true;
-    QWidget *w;
-    while ((w = activeModalWidget()) && did_close) {
-        if (!w->isVisible() || w->data->is_closing)
-            break;
-        did_close = w->close();
-    }
-    QWidgetList list = QApplication::topLevelWidgets();
-    for (int i = 0; did_close && i < list.size(); ++i) {
-        w = list.at(i);
-        if (w->isVisible()
-            && w->windowType() != Qt::Desktop
-            && !w->data->is_closing) {
-            did_close = w->close();
-            list = QApplication::topLevelWidgets();
-            i = -1;
-        }
-    }
+    QWindowList processedWindows;
+    QApplicationPrivate::tryCloseAllWidgetWindows(&processedWindows);
 }
 
 /*!
