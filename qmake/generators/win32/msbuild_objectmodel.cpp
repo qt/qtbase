@@ -839,7 +839,7 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
 
         // Find all icons referenced in the manifest
         QSet<QString> icons;
-        QFile manifestFile(manifest);
+        QFile manifestFile(Option::output_dir + QLatin1Char('/') + manifest);
         if (manifestFile.open(QFile::ReadOnly)) {
             const QString contents = manifestFile.readAll();
             QRegExp regexp("[\\\\/a-zA-Z0-9_\\-\\!]*\\.(png|jpg|jpeg)");
