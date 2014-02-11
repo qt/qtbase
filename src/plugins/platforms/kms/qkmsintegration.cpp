@@ -66,9 +66,28 @@ QT_BEGIN_NAMESPACE
 QKmsIntegration::QKmsIntegration()
     : QPlatformIntegration(),
       m_fontDatabase(new QGenericUnixFontDatabase()),
-      m_nativeInterface(new QKmsNativeInterface)
+      m_nativeInterface(new QKmsNativeInterface),
+      m_vtHandler(0),
+      m_deviceDiscovery(0)
 {
-    setenv("EGL_PLATFORM", "drm",1);
+}
+
+QKmsIntegration::~QKmsIntegration()
+{
+    delete m_deviceDiscovery;
+    foreach (QKmsDevice *device, m_devices) {
+        delete device;
+    }
+    foreach (QPlatformScreen *screen, m_screens) {
+        delete screen;
+    }
+    delete m_fontDatabase;
+    delete m_vtHandler;
+}
+
+void QKmsIntegration::initialize()
+{
+    qputenv("EGL_PLATFORM", "drm");
     m_vtHandler = new QFbVtHandler;
 
     m_deviceDiscovery = QDeviceDiscovery::create(QDeviceDiscovery::Device_DRM | QDeviceDiscovery::Device_DRM_PrimaryGPU, 0);
@@ -86,19 +105,6 @@ QKmsIntegration::QKmsIntegration()
     new QEvdevMouseManager(QLatin1String("EvdevMouse"), QString() /* spec */, this);
     new QEvdevTouchScreenHandlerThread(QString() /* spec */, this);
 #endif
-}
-
-QKmsIntegration::~QKmsIntegration()
-{
-    delete m_deviceDiscovery;
-    foreach (QKmsDevice *device, m_devices) {
-        delete device;
-    }
-    foreach (QPlatformScreen *screen, m_screens) {
-        delete screen;
-    }
-    delete m_fontDatabase;
-    delete m_vtHandler;
 }
 
 void QKmsIntegration::addDevice(const QString &deviceNode)
