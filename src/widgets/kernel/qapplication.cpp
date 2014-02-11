@@ -2743,9 +2743,11 @@ bool QApplicationPrivate::shouldQuit()
     QWindowList processedWindows;
     for (int i = 0; i < list.size(); ++i) {
         QWidget *w = list.at(i);
-        processedWindows.push_back(w->windowHandle());
-        if (w->isVisible() && !w->parentWidget() && w->testAttribute(Qt::WA_QuitOnClose))
-            return false;
+        if (QWindow *window = w->windowHandle()) { // Menus, popup widgets may not have a QWindow
+            processedWindows.push_back(window);
+            if (w->isVisible() && !w->parentWidget() && w->testAttribute(Qt::WA_QuitOnClose))
+                return false;
+        }
     }
     return QGuiApplicationPrivate::shouldQuitInternal(processedWindows);
 }
