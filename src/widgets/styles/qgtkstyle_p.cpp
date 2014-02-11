@@ -855,7 +855,7 @@ QFont QGtkStylePrivate::getThemeFont()
 QIcon QGtkStylePrivate::getFilesystemIcon(const QFileInfo &info)
 {
     QIcon icon;
-    if (gnome_vfs_init && gnome_icon_lookup_sync) {
+    if (isThemeAvailable() && gnome_vfs_init && gnome_icon_lookup_sync) {
         gnome_vfs_init();
         GtkIconTheme *theme = gtk_icon_theme_get_default();
         QByteArray fileurl = QUrl::fromLocalFile(info.absoluteFilePath()).toEncoded();
