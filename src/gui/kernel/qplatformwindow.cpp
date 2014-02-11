@@ -521,6 +521,20 @@ static inline const QScreen *effectiveScreen(const QWindow *window)
 }
 
 /*!
+    Invalidates the window's surface by releasing its surface buffers.
+
+    Many platforms do not support releasing the surface memory,
+    and the default implementation does nothing.
+
+    The platform window is expected to recreate the surface again if
+    it is needed. For instance, if an OpenGL context is made current
+    on this window.
+ */
+void QPlatformWindow::invalidateSurface()
+{
+}
+
+/*!
     Helper function to get initial geometry on windowing systems which do not
     do smart positioning and also do not provide a means of centering a
     transient window w.r.t. its parent. For example this is useful on Windows

@@ -132,6 +132,8 @@ public:
     virtual void setAlertState(bool enabled);
     virtual bool isAlertState() const;
 
+    virtual void invalidateSurface();
+
     static QRect initialGeometry(const QWindow *w,
         const QRect &initialGeometry, int defaultWidth, int defaultHeight);
 
