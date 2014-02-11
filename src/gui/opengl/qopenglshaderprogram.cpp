@@ -123,7 +123,8 @@ QT_BEGIN_NAMESPACE
     on the return value from programId().  Then the application should
     call link(), which will notice that the program has already been
     specified and linked, allowing other operations to be performed
-    on the shader program.
+    on the shader program. The shader program's id can be explicitly
+    created using the create() function.
 
     \sa QOpenGLShader
 */
@@ -637,6 +638,26 @@ QOpenGLShaderProgram::QOpenGLShaderProgram(QObject *parent)
 */
 QOpenGLShaderProgram::~QOpenGLShaderProgram()
 {
+}
+
+/*!
+    Requests the shader program's id to be created immediately. Returns \c true
+    if successful; \c false otherwise.
+
+    This function is primarily useful when combining QOpenGLShaderProgram
+    with other OpenGL functions that operate directly on the shader
+    program id, like \c {GL_OES_get_program_binary}.
+
+    When the shader program is used normally, the shader program's id will
+    be created on demand.
+
+    \sa programId()
+
+    \since 5.3
+ */
+bool QOpenGLShaderProgram::create()
+{
+    return init();
 }
 
 bool QOpenGLShaderProgram::init()
