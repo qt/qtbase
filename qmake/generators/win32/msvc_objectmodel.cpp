@@ -510,6 +510,11 @@ bool VCCLCompilerTool::parseOption(const char* option)
                 BrowseInformation = brAllInfo;
                 BrowseInformationFile = option+3;
                 break;
+            case 'S':
+                if (config->CompilerVersion < NET2013)
+                    found = false;
+                // Ignore this flag. Visual Studio 2013 takes care of this setting.
+                break;
             case 'r':
                 BrowseInformation = brNoLocalSymbols;
                 BrowseInformationFile = option+3;
