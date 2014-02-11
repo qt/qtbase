@@ -618,52 +618,52 @@ QGridLayoutBox QGridLayoutItem::box(Qt::Orientation orientation, qreal constrain
 QRectF QGridLayoutItem::geometryWithin(qreal x, qreal y, qreal width, qreal height,
                                        qreal rowDescent, Qt::Alignment align) const
 {
-    QGridLayoutBox vBox = box(Qt::Vertical);
-    if (!(align & Qt::AlignBaseline) || vBox.q_minimumDescent < 0.0 || rowDescent < 0.0) {
-        qreal cellWidth = width;
-        qreal cellHeight = height;
+    const qreal cellWidth = width;
+    const qreal cellHeight = height;
 
-
-        QSizeF size = effectiveMaxSize(QSizeF(-1,-1));
-        if (hasDynamicConstraint()) {
-            if (dynamicConstraintOrientation() == Qt::Vertical) {
-               if (size.width() > cellWidth)
-                   size = effectiveMaxSize(QSizeF(cellWidth, -1));
-            } else if (size.height() > cellHeight) {
-                size = effectiveMaxSize(QSizeF(-1, cellHeight));
-            }
+    QSizeF size = effectiveMaxSize(QSizeF(-1,-1));
+    if (hasDynamicConstraint()) {
+        if (dynamicConstraintOrientation() == Qt::Vertical) {
+           if (size.width() > cellWidth)
+               size = effectiveMaxSize(QSizeF(cellWidth, -1));
+        } else if (size.height() > cellHeight) {
+            size = effectiveMaxSize(QSizeF(-1, cellHeight));
         }
-        size = size.boundedTo(QSizeF(cellWidth, cellHeight));
-        width = size.width();
-        height = size.height();
-
-        switch (align & Qt::AlignHorizontal_Mask) {
-        case Qt::AlignHCenter:
-            x += (cellWidth - width)/2;
-            break;
-        case Qt::AlignRight:
-            x += cellWidth - width;
-            break;
-        default:
-            break;
-        }
-        switch (align & Qt::AlignVertical_Mask) {
-        case Qt::AlignVCenter:
-            y += (cellHeight - height)/2;
-            break;
-        case Qt::AlignBottom:
-            y += cellHeight - height;
-            break;
-        default:
-            break;
-        }
-        return QRectF(x, y, width, height);
-    } else {
-        width = qMin(effectiveMaxSize(QSizeF(-1,-1)).width(), width);
-        qreal descent = vBox.q_minimumDescent;
-        qreal ascent = vBox.q_minimumSize - descent;
-        return QRectF(x, y + height - rowDescent - ascent, width, ascent + descent);
     }
+    size = size.boundedTo(QSizeF(cellWidth, cellHeight));
+    width = size.width();
+    height = size.height();
+
+    switch (align & Qt::AlignHorizontal_Mask) {
+    case Qt::AlignHCenter:
+        x += (cellWidth - width)/2;
+        break;
+    case Qt::AlignRight:
+        x += cellWidth - width;
+        break;
+    default:
+        break;
+    }
+
+    switch (align & Qt::AlignVertical_Mask) {
+    case Qt::AlignVCenter:
+        y += (cellHeight - height)/2;
+        break;
+    case Qt::AlignBottom:
+        y += cellHeight - height;
+        break;
+    case Qt::AlignBaseline: {
+        width = qMin(effectiveMaxSize(QSizeF(-1,-1)).width(), width);
+        QGridLayoutBox vBox = box(Qt::Vertical);
+        const qreal descent = vBox.q_minimumDescent;
+        const qreal ascent = vBox.q_minimumSize - descent;
+        y += (cellHeight - rowDescent - ascent);
+        height = ascent + descent;
+        break; }
+    default:
+        break;
+    }
+    return QRectF(x, y, width, height);
 }
 
 void QGridLayoutItem::transpose()
