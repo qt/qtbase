@@ -774,6 +774,10 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
             write(xml, config.preLink);
 
         xml << closetag();
+
+        // windeployqt
+        if (!config.windeployqt.ExcludedFromBuild)
+            write(xml, config.windeployqt);
     }
 
     // The file filters are added in a separate file for MSBUILD.
@@ -1718,6 +1722,42 @@ void VCXProjectWriter::write(XmlOutput &xml, const VCDeploymentTool &tool)
     Q_UNUSED(xml);
     Q_UNUSED(tool);
     // SmartDevice deployment not supported in VS 2010
+}
+
+void VCXProjectWriter::write(XmlOutput &xml, const VCWinDeployQtTool &tool)
+{
+    const QString name = QStringLiteral("WinDeployQt_") + tool.config->Name;
+    xml << tag("Target")
+           << attrTag(_Name, name)
+           << attrTag("Condition", generateCondition(*tool.config))
+           << attrTag("Inputs", "$(OutDir)\\$(TargetName).exe")
+           << attrTag("Outputs", tool.Record)
+           << tag(_Message)
+              << attrTag("Text", tool.CommandLine)
+           << closetag()
+           << tag("Exec")
+             << attrTag("Command", tool.CommandLine)
+           << closetag()
+        << closetag()
+        << tag("Target")
+           << attrTag(_Name, QStringLiteral("PopulateWinDeployQtItems_") + tool.config->Name)
+           << attrTag("Condition", generateCondition(*tool.config))
+           << attrTag("AfterTargets", "Link")
+           << attrTag("DependsOnTargets", name)
+           << tag("ReadLinesFromFile")
+              << attrTag("File", tool.Record)
+              << tag("Output")
+                 << attrTag("TaskParameter", "Lines")
+                 << attrTag("ItemName", "DeploymentItems")
+              << closetag()
+           << closetag()
+           << tag(_ItemGroup)
+              << tag("None")
+                 << attrTag("Include", "@(DeploymentItems)")
+                 << attrTagT("DeploymentContent", _True)
+              << closetag()
+           << closetag()
+        << closetag();
 }
 
 void VCXProjectWriter::write(XmlOutput &xml, const VCConfiguration &tool)

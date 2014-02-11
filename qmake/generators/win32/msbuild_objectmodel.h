@@ -174,6 +174,7 @@ public:
     void write(XmlOutput &, const VCResourceCompilerTool &);
     void write(XmlOutput &, const VCEventTool &);
     void write(XmlOutput &, const VCDeploymentTool &);
+    void write(XmlOutput &, const VCWinDeployQtTool &);
     void write(XmlOutput &, const VCConfiguration &);
     void write(XmlOutput &, VCFilter &);
 

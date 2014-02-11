@@ -1021,6 +1021,7 @@ void VcprojGenerator::initConfiguration()
     if ((!project->isHostBuild() && !project->isEmpty("CE_SDK") && !project->isEmpty("CE_ARCH"))
             || conf.WinRT)
         initDeploymentTool();
+    initWinDeployQtTool();
     initPreLinkEventTools();
 
     if (!isDebug)
@@ -1320,6 +1321,22 @@ void VcprojGenerator::initDeploymentTool()
             vcProject.DeploymentFiles.Config = &(vcProject.Configuration);
             vcProject.DeploymentFiles.CustomBuild = none;
         }
+    }
+}
+
+void VcprojGenerator::initWinDeployQtTool()
+{
+    VCConfiguration &conf = vcProject.Configuration;
+    conf.windeployqt.ExcludedFromBuild = true;
+    if (project->isActiveConfig("windeployqt")) {
+        conf.windeployqt.Record = QStringLiteral("$(TargetName).windeployqt.$(Platform).$(Configuration)");
+        conf.windeployqt.CommandLine =
+                MakefileGenerator::shellQuote(QDir::toNativeSeparators(project->first("QMAKE_WINDEPLOYQT").toQString()))
+                + QLatin1Char(' ') + project->values("WINDEPLOYQT_OPTIONS").join(QLatin1Char(' '))
+                + QStringLiteral(" -list relative -dir \"$(MSBuildProjectDirectory)\" \"$(OutDir)\\$(TargetName).exe\" > ")
+                + MakefileGenerator::shellQuote(conf.windeployqt.Record);
+        conf.windeployqt.config = &vcProject.Configuration;
+        conf.windeployqt.ExcludedFromBuild = false;
     }
 }
 

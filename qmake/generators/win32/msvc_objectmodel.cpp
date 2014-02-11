@@ -2794,6 +2794,12 @@ void VCProjectWriter::write(XmlOutput &xml, const VCDeploymentTool &tool)
         << closetag(tool.DeploymentTag);
 }
 
+void VCProjectWriter::write(XmlOutput &xml, const VCWinDeployQtTool &tool)
+{
+    Q_UNUSED(xml);
+    Q_UNUSED(tool);
+}
+
 void VCProjectWriter::write(XmlOutput &xml, const VCConfiguration &tool)
 {
     xml << tag(_Configuration)
