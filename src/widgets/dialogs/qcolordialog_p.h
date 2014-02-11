@@ -110,6 +110,8 @@ public:
     bool handleColorPickingMouseButtonRelease(QMouseEvent *e);
     bool handleColorPickingKeyPress(QKeyEvent *e);
 
+    bool canBeNativeDialog() const;
+
     QWellArray *custom;
     QWellArray *standard;
 

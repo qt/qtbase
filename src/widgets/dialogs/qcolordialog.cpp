@@ -1790,6 +1790,21 @@ void QColorDialogPrivate::retranslateStrings()
     cs->retranslateStrings();
 }
 
+bool QColorDialogPrivate::canBeNativeDialog() const
+{
+    Q_Q(const QColorDialog);
+    if (nativeDialogInUse)
+        return true;
+    if (q->testAttribute(Qt::WA_DontShowOnScreen))
+        return false;
+    if (q->options() & QColorDialog::DontUseNativeDialog)
+        return false;
+
+    QLatin1String staticName(QColorDialog::staticMetaObject.className());
+    QLatin1String dynamicName(q->metaObject()->className());
+    return (staticName == dynamicName);
+}
+
 static const Qt::WindowFlags DefaultWindowFlags =
         Qt::Dialog | Qt::WindowTitleHint | Qt::MSWindowsFixedSizeDialogHint
         | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint;
