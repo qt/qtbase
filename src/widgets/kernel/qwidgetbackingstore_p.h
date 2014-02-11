@@ -61,12 +61,30 @@
 QT_BEGIN_NAMESPACE
 
 class QPlatformTextureList;
+class QWidgetBackingStore;
 
 struct BeginPaintInfo {
     inline BeginPaintInfo() : wasFlushed(0), nothingToPaint(0), backingStoreRecreated(0) {}
     uint wasFlushed : 1;
     uint nothingToPaint : 1;
     uint backingStoreRecreated : 1;
+};
+
+class QPlatformTextureListWatcher : public QObject
+{
+    Q_OBJECT
+
+public:
+    QPlatformTextureListWatcher(QWidgetBackingStore *backingStore);
+    void watch(QPlatformTextureList *textureList);
+    bool isLocked() const { return m_locked; }
+
+private slots:
+     void onLockStatusChanged(bool locked);
+
+private:
+     bool m_locked;
+     QWidgetBackingStore *m_backingStore;
 };
 
 class Q_AUTOTEST_EXPORT QWidgetBackingStore
@@ -110,6 +128,8 @@ private:
     uint updateRequestSent : 1;
 
     QPoint tlwOffset;
+
+    QPlatformTextureListWatcher *textureListWatcher;
 
     void sendUpdateRequest(QWidget *widget, bool updateImmediately);
 

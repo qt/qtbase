@@ -50,31 +50,41 @@
 QT_BEGIN_NAMESPACE
 
 class QOpenGLContext;
+class QPlatformTextureList;
 class QEGLPlatformWindow;
 
 class QEGLPlatformBackingStore : public QPlatformBackingStore
 {
 public:
     QEGLPlatformBackingStore(QWindow *window);
+    ~QEGLPlatformBackingStore();
 
-    QPaintDevice *paintDevice();
+    QPaintDevice *paintDevice() Q_DECL_OVERRIDE;
 
-    void beginPaint(const QRegion &);
+    void beginPaint(const QRegion &) Q_DECL_OVERRIDE;
 
-    void flush(QWindow *window, const QRegion &region, const QPoint &offset);
-    void resize(const QSize &size, const QRegion &staticContents);
+    void flush(QWindow *window, const QRegion &region, const QPoint &offset) Q_DECL_OVERRIDE;
+    void resize(const QSize &size, const QRegion &staticContents) Q_DECL_OVERRIDE;
 
-    uint texture() const { return m_texture; }
+    QImage toImage() const Q_DECL_OVERRIDE;
+    void composeAndFlush(QWindow *window, const QRegion &region, const QPoint &offset,
+                         QPlatformTextureList *textures, QOpenGLContext *context) Q_DECL_OVERRIDE;
+
+    const QPlatformTextureList *textures() const { return m_textures; }
 
     virtual void composite(QOpenGLContext *context, QEGLPlatformWindow *window);
+
+    void composited();
 
 private:
     void updateTexture();
 
     QEGLPlatformWindow *m_window;
     QImage m_image;
-    uint m_texture;
     QRegion m_dirty;
+    uint m_bsTexture;
+    QPlatformTextureList *m_textures;
+    QPlatformTextureList *m_lockedWidgetTextures;
 };
 
 QT_END_NAMESPACE

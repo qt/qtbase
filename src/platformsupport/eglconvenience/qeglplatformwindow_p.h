@@ -48,6 +48,7 @@
 QT_BEGIN_NAMESPACE
 
 class QEGLPlatformBackingStore;
+class QPlatformTextureList;
 
 class QEGLPlatformWindow : public QPlatformWindow
 {
@@ -58,8 +59,9 @@ public:
 
     QEGLPlatformBackingStore *backingStore() { return m_backingStore; }
     void setBackingStore(QEGLPlatformBackingStore *backingStore) { m_backingStore = backingStore; }
-    uint texture() const;
-    bool isRaster() const { return m_raster; }
+    const QPlatformTextureList *textures() const;
+    void composited();
+    bool isRaster() const;
 
     WId winId() const Q_DECL_OVERRIDE;
 

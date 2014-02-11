@@ -81,12 +81,14 @@ public:
     ~QPlatformTextureList();
 
     int count() const;
+    bool isEmpty() const { return count() == 0; }
     GLuint textureId(int index) const;
     QRect geometry(int index) const;
     void lock(bool on);
     bool isLocked() const;
 
     void appendTexture(GLuint textureId, const QRect &geometry);
+    void clear();
 
  Q_SIGNALS:
     void locked(bool);

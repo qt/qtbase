@@ -1,7 +1,5 @@
 QT += core-private gui-private platformsupport-private
 
-#DEFINES += QEGL_EXTRA_DEBUG
-
 # Avoid X11 header collision
 DEFINES += MESA_EGL_NO_X11_HEADERS
 

@@ -41,6 +41,7 @@
 
 #include <QtGui/QWindow>
 #include <QtGui/QOpenGLContext>
+#include <QtGui/QOffscreenSurface>
 #include <QtGui/QGuiApplication>
 #include <qpa/qwindowsysteminterface.h>
 #include <qpa/qplatforminputcontextfactory_p.h>
@@ -79,8 +80,7 @@ QT_BEGIN_NAMESPACE
 
     The backing store, native interface accessors, font database,
     basic capability flags, etc. are provided out of the box, no
-    further customization is needed. Subclasses are still responsible
-    however for context and offscreen surface creation.
+    further customization is needed.
 
     \note It is critical that this class' implementation of
     initialize() is called. Therefore subclasses should either avoid
@@ -155,6 +155,23 @@ QPlatformWindow *QEGLPlatformIntegration::createPlatformWindow(QWindow *window) 
     return w;
 }
 
+QPlatformOpenGLContext *QEGLPlatformIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
+{
+    QEGLPlatformScreen *screen = static_cast<QEGLPlatformScreen *>(context->screen()->handle());
+    // If there is a "root" window into which raster and QOpenGLWidget content is
+    // composited, all other contexts must share with its context.
+    QOpenGLContext *compositingContext = screen ? screen->compositingContext() : 0;
+    return createContext(context->format(),
+                         compositingContext ? compositingContext->handle() : context->shareHandle(),
+                         display());
+}
+
+QPlatformOffscreenSurface *QEGLPlatformIntegration::createPlatformOffscreenSurface(QOffscreenSurface *surface) const
+{
+    QEGLPlatformScreen *screen = static_cast<QEGLPlatformScreen *>(surface->screen()->handle());
+    return createOffscreenSurface(screen->display(), surface->requestedFormat(), surface);
+}
+
 bool QEGLPlatformIntegration::hasCapability(QPlatformIntegration::Capability cap) const
 {
     switch (cap) {
@@ -162,6 +179,7 @@ bool QEGLPlatformIntegration::hasCapability(QPlatformIntegration::Capability cap
     case OpenGL: return true;
     case ThreadedOpenGL: return true;
     case WindowManagement: return false;
+    case RasterGLSurface: return true;
     default: return QPlatformIntegration::hasCapability(cap);
     }
 }

@@ -736,7 +736,8 @@ QWidgetBackingStore::QWidgetBackingStore(QWidget *topLevel)
       dirtyOnScreenWidgets(0),
       widgetTextures(0),
       fullUpdatePending(0),
-      updateRequestSent(0)
+      updateRequestSent(0),
+      textureListWatcher(0)
 {
     store = tlw->backingStore();
     Q_ASSERT(store);
@@ -962,6 +963,25 @@ static void findTextureWidgetsRecursively(QWidget *tlw, QWidget *widget, QPlatfo
 }
 #endif
 
+QPlatformTextureListWatcher::QPlatformTextureListWatcher(QWidgetBackingStore *backingStore)
+    : m_locked(false),
+      m_backingStore(backingStore)
+{
+}
+
+void QPlatformTextureListWatcher::watch(QPlatformTextureList *textureList)
+{
+    connect(textureList, SIGNAL(locked(bool)), SLOT(onLockStatusChanged(bool)));
+    m_locked = textureList->isLocked();
+}
+
+void QPlatformTextureListWatcher::onLockStatusChanged(bool locked)
+{
+    m_locked = locked;
+    if (!locked)
+        m_backingStore->sync();
+}
+
 /*!
     Synchronizes the backing store, i.e. dirty areas are repainted and flushed.
 */
@@ -982,6 +1002,17 @@ void QWidgetBackingStore::sync()
             dirtyWidgets.clear();
             fullUpdatePending = false;
         }
+        return;
+    }
+
+    if (textureListWatcher && !textureListWatcher->isLocked()) {
+        textureListWatcher->deleteLater();
+        textureListWatcher = 0;
+    } else if (widgetTextures && widgetTextures->isLocked()) {
+        if (!textureListWatcher)
+            textureListWatcher = new QPlatformTextureListWatcher(this);
+        if (!textureListWatcher->isLocked())
+            textureListWatcher->watch(widgetTextures);
         return;
     }
 
@@ -1077,7 +1108,7 @@ void QWidgetBackingStore::doSync()
     delete widgetTextures;
     widgetTextures = 0;
     if (tlw->d_func()->textureChildSeen) {
-        widgetTextures = new QPlatformTextureList; // TODO: implement support for locking
+        widgetTextures = new QPlatformTextureList;
         findTextureWidgetsRecursively(tlw, tlw, widgetTextures);
     }
     fullUpdatePending = false;

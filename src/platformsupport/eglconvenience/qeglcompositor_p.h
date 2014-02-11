@@ -46,8 +46,8 @@
 
 QT_BEGIN_NAMESPACE
 
-class QOpenGLShaderProgram;
 class QOpenGLContext;
+class QOpenGLTextureBlitter;
 class QEGLPlatformWindow;
 
 class QEGLCompositor : public QObject
@@ -67,16 +67,12 @@ private:
     QEGLCompositor();
     ~QEGLCompositor();
 
-    void render(QEGLPlatformWindow *window, uint texture, bool raster);
-    void ensureProgram();
+    void render(QEGLPlatformWindow *window);
 
     QOpenGLContext *m_context;
     QEGLPlatformWindow *m_window;
     QTimer m_updateTimer;
-    QOpenGLShaderProgram *m_program;
-    int m_vertexCoordEntry;
-    int m_textureCoordEntry;
-    int m_isRasterEntry;
+    QOpenGLTextureBlitter *m_blitter;
 };
 
 QT_END_NAMESPACE

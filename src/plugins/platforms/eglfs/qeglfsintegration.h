@@ -54,9 +54,6 @@ public:
     QEglFSIntegration();
     ~QEglFSIntegration();
 
-    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const Q_DECL_OVERRIDE;
-    QPlatformOffscreenSurface *createPlatformOffscreenSurface(QOffscreenSurface *surface) const Q_DECL_OVERRIDE;
-
     void initialize() Q_DECL_OVERRIDE;
 
     bool hasCapability(QPlatformIntegration::Capability cap) const Q_DECL_OVERRIDE;
@@ -67,6 +64,12 @@ public:
 protected:
     QEGLPlatformScreen *createScreen() const Q_DECL_OVERRIDE;
     QEGLPlatformWindow *createWindow(QWindow *window) const Q_DECL_OVERRIDE;
+    QEGLPlatformContext *createContext(const QSurfaceFormat &format,
+                                       QPlatformOpenGLContext *shareContext,
+                                       EGLDisplay display) const Q_DECL_OVERRIDE;
+    QPlatformOffscreenSurface *createOffscreenSurface(EGLDisplay display,
+                                                      const QSurfaceFormat &format,
+                                                      QOffscreenSurface *surface) const Q_DECL_OVERRIDE;
     EGLNativeDisplayType nativeDisplay() const Q_DECL_OVERRIDE;
 
 private:

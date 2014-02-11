@@ -50,6 +50,7 @@ QT_BEGIN_NAMESPACE
 
 class QEGLPlatformScreen;
 class QEGLPlatformWindow;
+class QEGLPlatformContext;
 class QFbVtHandler;
 
 class QEGLPlatformIntegration : public QPlatformIntegration, public QPlatformNativeInterface
@@ -70,6 +71,8 @@ public:
 
     QPlatformWindow *createPlatformWindow(QWindow *window) const Q_DECL_OVERRIDE;
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const Q_DECL_OVERRIDE;
+    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const Q_DECL_OVERRIDE;
+    QPlatformOffscreenSurface *createPlatformOffscreenSurface(QOffscreenSurface *surface) const Q_DECL_OVERRIDE;
 
     bool hasCapability(QPlatformIntegration::Capability cap) const Q_DECL_OVERRIDE;
 
@@ -83,6 +86,13 @@ public:
 protected:
     virtual QEGLPlatformScreen *createScreen() const = 0;
     virtual QEGLPlatformWindow *createWindow(QWindow *window) const = 0;
+    virtual QEGLPlatformContext *createContext(const QSurfaceFormat &format,
+                                               QPlatformOpenGLContext *shareContext,
+                                               EGLDisplay display) const = 0;
+    virtual QPlatformOffscreenSurface *createOffscreenSurface(EGLDisplay display,
+                                                              const QSurfaceFormat &format,
+                                                              QOffscreenSurface *surface) const = 0;
+
     virtual EGLNativeDisplayType nativeDisplay() const { return EGL_DEFAULT_DISPLAY; }
 
     void createInputHandlers();

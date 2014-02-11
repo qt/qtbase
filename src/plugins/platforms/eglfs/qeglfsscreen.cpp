@@ -53,10 +53,6 @@ QEglFSScreen::QEglFSScreen(EGLDisplay dpy)
       m_rootWindow(0),
       m_rootContext(0)
 {
-#ifdef QEGL_EXTRA_DEBUG
-    qWarning("QEglScreen %p\n", this);
-#endif
-
     m_cursor = QEglFSHooks::hooks()->createCursor(this);
 }
 

@@ -127,11 +127,8 @@ void QEGLPlatformContext::init(const QSurfaceFormat &format, QPlatformOpenGLCont
 
 bool QEGLPlatformContext::makeCurrent(QPlatformSurface *surface)
 {
-    Q_ASSERT(surface->surface()->surfaceType() == QSurface::OpenGLSurface);
+    Q_ASSERT(surface->surface()->supportsOpenGL());
 
-#ifdef QEGL_EXTRA_DEBUG
-    qWarning("QEglContext::makeCurrent: %p\n",this);
-#endif
     bindApi(m_format);
 
     EGLSurface eglSurface = eglSurfaceForPlatformSurface(surface);
@@ -192,9 +189,6 @@ bool QEGLPlatformContext::makeCurrent(QPlatformSurface *surface)
 
 QEGLPlatformContext::~QEGLPlatformContext()
 {
-#ifdef QEGL_EXTRA_DEBUG
-    qWarning("QEglContext::~QEglContext(): %p\n",this);
-#endif
     if (m_eglContext != EGL_NO_CONTEXT) {
         eglDestroyContext(m_eglDisplay, m_eglContext);
         m_eglContext = EGL_NO_CONTEXT;
@@ -203,9 +197,6 @@ QEGLPlatformContext::~QEGLPlatformContext()
 
 void QEGLPlatformContext::doneCurrent()
 {
-#ifdef QEGL_EXTRA_DEBUG
-    qWarning("QEglContext::doneCurrent:%p\n",this);
-#endif
     bindApi(m_format);
     bool ok = eglMakeCurrent(m_eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
     if (!ok)
@@ -214,9 +205,6 @@ void QEGLPlatformContext::doneCurrent()
 
 void QEGLPlatformContext::swapBuffers(QPlatformSurface *surface)
 {
-#ifdef QEGL_EXTRA_DEBUG
-    qWarning("QEglContext::swapBuffers:%p\n",this);
-#endif
     bindApi(m_format);
     EGLSurface eglSurface = eglSurfaceForPlatformSurface(surface);
     bool ok = eglSwapBuffers(m_eglDisplay, eglSurface);
@@ -226,9 +214,6 @@ void QEGLPlatformContext::swapBuffers(QPlatformSurface *surface)
 
 void (*QEGLPlatformContext::getProcAddress(const QByteArray &procName)) ()
 {
-#ifdef QEGL_EXTRA_DEBUG
-    qWarning("QEglContext::getProcAddress%p\n",this);
-#endif
     bindApi(m_format);
     return eglGetProcAddress(procName.constData());
 }

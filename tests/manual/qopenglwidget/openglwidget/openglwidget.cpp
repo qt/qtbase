@@ -58,8 +58,6 @@
 #include <QtCore/qmath.h>
 #include <qopengl.h>
 
-#include <GL/glext.h>
-
 class OpenGLWidgetPrivate
 {
 public:

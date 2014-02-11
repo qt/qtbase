@@ -92,7 +92,8 @@ void QEGLPlatformWindow::create()
 
     // Save the original surface type before changing to OpenGLSurface.
     m_raster = (window()->surfaceType() == QSurface::RasterSurface);
-    window()->setSurfaceType(QSurface::OpenGLSurface);
+    if (m_raster) // change to OpenGL, but not for RasterGLSurface
+        window()->setSurfaceType(QSurface::OpenGLSurface);
 
     if (window()->type() == Qt::Desktop) {
         QRect fullscreenRect(QPoint(), screen()->availableGeometry().size());
@@ -102,12 +103,23 @@ void QEGLPlatformWindow::create()
     }
 }
 
-uint QEGLPlatformWindow::texture() const
+bool QEGLPlatformWindow::isRaster() const
+{
+    return m_raster || window()->surfaceType() == QSurface::RasterGLSurface;
+}
+
+const QPlatformTextureList *QEGLPlatformWindow::textures() const
 {
     if (m_backingStore)
-        return m_backingStore->texture();
+        return m_backingStore->textures();
 
     return 0;
+}
+
+void QEGLPlatformWindow::composited()
+{
+    if (m_backingStore)
+        m_backingStore->composited();
 }
 
 WId QEGLPlatformWindow::winId() const

@@ -88,17 +88,6 @@ bool QEglFSIntegration::hasCapability(QPlatformIntegration::Capability cap) cons
     return QEGLPlatformIntegration::hasCapability(cap);
 }
 
-QPlatformOpenGLContext *QEglFSIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
-{
-    return new QEglFSContext(QEglFSHooks::hooks()->surfaceFormatFor(context->format()), context->shareHandle(), display());
-}
-
-QPlatformOffscreenSurface *QEglFSIntegration::createPlatformOffscreenSurface(QOffscreenSurface *surface) const
-{
-    QEglFSScreen *screen = static_cast<QEglFSScreen *>(surface->screen()->handle());
-    return new QEGLPbuffer(screen->display(), QEglFSHooks::hooks()->surfaceFormatFor(surface->requestedFormat()), surface);
-}
-
 void QEglFSIntegration::initialize()
 {
     QEglFSHooks::hooks()->platformInit();
@@ -122,6 +111,20 @@ QEGLPlatformScreen *QEglFSIntegration::createScreen() const
 QEGLPlatformWindow *QEglFSIntegration::createWindow(QWindow *window) const
 {
     return new QEglFSWindow(window);
+}
+
+QEGLPlatformContext *QEglFSIntegration::createContext(const QSurfaceFormat &format,
+                                                      QPlatformOpenGLContext *shareContext,
+                                                      EGLDisplay display) const
+{
+    return new QEglFSContext(QEglFSHooks::hooks()->surfaceFormatFor(format), shareContext, display);
+}
+
+QPlatformOffscreenSurface *QEglFSIntegration::createOffscreenSurface(EGLDisplay display,
+                                                                     const QSurfaceFormat &format,
+                                                                     QOffscreenSurface *surface) const
+{
+    return new QEGLPbuffer(display, QEglFSHooks::hooks()->surfaceFormatFor(format), surface);
 }
 
 QVariant QEglFSIntegration::styleHint(QPlatformIntegration::StyleHint hint) const

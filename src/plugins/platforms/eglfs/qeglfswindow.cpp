@@ -58,9 +58,6 @@ QEglFSWindow::QEglFSWindow(QWindow *w)
     , m_window(0)
     , m_flags(0)
 {
-#ifdef QEGL_EXTRA_DEBUG
-    qWarning("QEglWindow %p: %p 0x%x\n", this, w, uint(m_window));
-#endif
 }
 
 QEglFSWindow::~QEglFSWindow()
@@ -114,7 +111,8 @@ void QEglFSWindow::create()
         QOpenGLContext *context = new QOpenGLContext(QGuiApplication::instance());
         context->setFormat(window()->requestedFormat());
         context->setScreen(window()->screen());
-        context->create();
+        if (!context->create())
+            qFatal("EGLFS: Failed to create compositing context");
         screen->setRootContext(context);
         screen->setRootWindow(this);
     }

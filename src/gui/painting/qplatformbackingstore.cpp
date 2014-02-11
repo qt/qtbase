@@ -156,6 +156,12 @@ void QPlatformTextureList::appendTexture(GLuint textureId, const QRect &geometry
     bi.rect = geometry;
     d->textures.append(bi);
 }
+
+void QPlatformTextureList::clear()
+{
+    Q_D(QPlatformTextureList);
+    d->textures.clear();
+}
 #endif // QT_NO_OPENGL
 
 /*!

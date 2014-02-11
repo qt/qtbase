@@ -76,9 +76,16 @@ QT_BEGIN_NAMESPACE
 QEGLPlatformBackingStore::QEGLPlatformBackingStore(QWindow *window)
     : QPlatformBackingStore(window),
       m_window(static_cast<QEGLPlatformWindow *>(window->handle())),
-      m_texture(0)
+      m_bsTexture(0),
+      m_textures(new QPlatformTextureList),
+      m_lockedWidgetTextures(0)
 {
     m_window->setBackingStore(this);
+}
+
+QEGLPlatformBackingStore::~QEGLPlatformBackingStore()
+{
+    delete m_textures;
 }
 
 QPaintDevice *QEGLPlatformBackingStore::paintDevice()
@@ -88,7 +95,18 @@ QPaintDevice *QEGLPlatformBackingStore::paintDevice()
 
 void QEGLPlatformBackingStore::updateTexture()
 {
-    glBindTexture(GL_TEXTURE_2D, m_texture);
+    if (!m_bsTexture) {
+        glGenTextures(1, &m_bsTexture);
+        glBindTexture(GL_TEXTURE_2D, m_bsTexture);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        // QOpenGLTextureBlitter requires GL_REPEAT for the time being
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_image.width(), m_image.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+    } else {
+        glBindTexture(GL_TEXTURE_2D, m_bsTexture);
+    }
 
     if (!m_dirty.isNull()) {
         QRegion fixed;
@@ -126,29 +144,70 @@ void QEGLPlatformBackingStore::updateTexture()
 
 void QEGLPlatformBackingStore::flush(QWindow *window, const QRegion &region, const QPoint &offset)
 {
-    Q_UNUSED(window);
+    // Called for ordinary raster windows. This is rare since RasterGLSurface
+    // support is claimed which leads to having all QWidget windows marked as
+    // RasterGLSurface instead of just Raster. These go through
+    // compositeAndFlush() instead of this function.
+
     Q_UNUSED(region);
     Q_UNUSED(offset);
-
-#ifdef QEGL_EXTRA_DEBUG
-    qWarning("QEglBackingStore::flush %p", window);
-#endif
 
     QEGLPlatformScreen *screen = static_cast<QEGLPlatformScreen *>(m_window->screen());
     QEGLPlatformWindow *dstWin = screen->compositingWindow();
     if (!dstWin || !dstWin->isRaster())
         return;
 
-    m_window->create();
-    QOpenGLContext *context = screen->compositingContext();
-    context->makeCurrent(dstWin->window());
+    screen->compositingContext()->makeCurrent(dstWin->window());
     updateTexture();
-    composite(context, dstWin);
+    m_textures->clear();
+    m_textures->appendTexture(m_bsTexture, window->geometry());
+    composite(screen->compositingContext(), dstWin);
+}
+
+void QEGLPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &region, const QPoint &offset,
+                                               QPlatformTextureList *textures, QOpenGLContext *context)
+{
+    // QOpenGLWidget content provided as textures. The raster content should go on top.
+
+    Q_UNUSED(region);
+    Q_UNUSED(offset);
+    Q_UNUSED(context);
+
+    QEGLPlatformScreen *screen = static_cast<QEGLPlatformScreen *>(m_window->screen());
+    QEGLPlatformWindow *dstWin = screen->compositingWindow();
+    if (!dstWin || !dstWin->isRaster())
+        return;
+
+    screen->compositingContext()->makeCurrent(dstWin->window());
+
+    m_textures->clear();
+    for (int i = 0; i < textures->count(); ++i) {
+        uint textureId = textures->textureId(i);
+        QRect geom = textures->geometry(i);
+        m_textures->appendTexture(textureId, geom);
+    }
+
+    updateTexture();
+    m_textures->appendTexture(m_bsTexture, window->geometry());
+
+    textures->lock(true);
+    m_lockedWidgetTextures = textures;
+
+    composite(screen->compositingContext(), dstWin);
 }
 
 void QEGLPlatformBackingStore::composite(QOpenGLContext *context, QEGLPlatformWindow *window)
 {
     QEGLCompositor::instance()->schedule(context, window);
+}
+
+void QEGLPlatformBackingStore::composited()
+{
+    if (m_lockedWidgetTextures) {
+        QPlatformTextureList *textureList = m_lockedWidgetTextures;
+        m_lockedWidgetTextures = 0; // may reenter so null before unlocking
+        textureList->lock(false);
+    }
 }
 
 void QEGLPlatformBackingStore::beginPaint(const QRegion &rgn)
@@ -162,25 +221,22 @@ void QEGLPlatformBackingStore::resize(const QSize &size, const QRegion &staticCo
 
     QEGLPlatformScreen *screen = static_cast<QEGLPlatformScreen *>(m_window->screen());
     QEGLPlatformWindow *dstWin = screen->compositingWindow();
-    if (!dstWin || !dstWin->isRaster())
+    if (!dstWin || (!dstWin->isRaster() && dstWin->window()->surfaceType() != QSurface::RasterGLSurface))
         return;
 
     m_image = QImage(size, QImage::Format_RGB32);
     m_window->create();
 
     screen->compositingContext()->makeCurrent(dstWin->window());
+    if (m_bsTexture) {
+        glDeleteTextures(1, &m_bsTexture);
+        m_bsTexture = 0;
+    }
+}
 
-    if (m_texture)
-        glDeleteTextures(1, &m_texture);
-
-    glGenTextures(1, &m_texture);
-    glBindTexture(GL_TEXTURE_2D, m_texture);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, size.width(), size.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+QImage QEGLPlatformBackingStore::toImage() const
+{
+    return m_image;
 }
 
 QT_END_NAMESPACE

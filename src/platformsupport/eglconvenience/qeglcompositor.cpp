@@ -42,6 +42,8 @@
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QOpenGLShaderProgram>
 #include <QtGui/QOpenGLFramebufferObject>
+#include <QtGui/private/qopengltextureblitter_p.h>
+#include <qpa/qplatformbackingstore.h>
 
 #include "qeglcompositor_p.h"
 #include "qeglplatformwindow_p.h"
@@ -54,7 +56,7 @@ static QEGLCompositor *compositor = 0;
 QEGLCompositor::QEGLCompositor()
     : m_context(0),
       m_window(0),
-      m_program(0)
+      m_blitter(0)
 {
     Q_ASSERT(!compositor);
     m_updateTimer.setSingleShot(true);
@@ -65,7 +67,10 @@ QEGLCompositor::QEGLCompositor()
 QEGLCompositor::~QEGLCompositor()
 {
     Q_ASSERT(compositor == this);
-    delete m_program;
+    if (m_blitter) {
+        m_blitter->destroy();
+        delete m_blitter;
+    }
     compositor = 0;
 }
 
@@ -81,102 +86,53 @@ void QEGLCompositor::renderAll()
 {
     Q_ASSERT(m_context && m_window);
     m_context->makeCurrent(m_window->window());
-    ensureProgram();
-    m_program->bind();
+
+    if (!m_blitter) {
+        m_blitter = new QOpenGLTextureBlitter;
+        m_blitter->create();
+    }
+    m_blitter->bind();
 
     QEGLPlatformScreen *screen = static_cast<QEGLPlatformScreen *>(m_window->screen());
     QList<QEGLPlatformWindow *> windows = screen->windows();
-    for (int i = 0; i < windows.size(); ++i) {
-        QEGLPlatformWindow *window = windows.at(i);
-        uint texture = window->texture();
-        if (texture)
-            render(window, texture, window->isRaster());
-    }
+    for (int i = 0; i < windows.size(); ++i)
+        render(windows.at(i));
 
-    m_program->release();
+    m_blitter->release();
     m_context->swapBuffers(m_window->window());
+
+    for (int i = 0; i < windows.size(); ++i)
+        windows.at(i)->composited();
 }
 
-void QEGLCompositor::ensureProgram()
+void QEGLCompositor::render(QEGLPlatformWindow *window)
 {
-    if (!m_program) {
-        static const char *textureVertexProgram =
-            "attribute highp vec2 vertexCoordEntry;\n"
-            "attribute highp vec2 textureCoordEntry;\n"
-            "varying highp vec2 textureCoord;\n"
-            "void main() {\n"
-            "   textureCoord = textureCoordEntry;\n"
-            "   gl_Position = vec4(vertexCoordEntry, 0.0, 1.0);\n"
-            "}\n";
+    const QPlatformTextureList *textures = window->textures();
+    if (!textures)
+        return;
 
-        static const char *textureFragmentProgram =
-            "uniform sampler2D texture;\n"
-            "varying highp vec2 textureCoord;\n"
-            "uniform bool isRaster;\n"
-            "void main() {\n"
-            "   lowp vec4 c = texture2D(texture, textureCoord);\n"
-            "   gl_FragColor = isRaster ? c.bgra : c.rgba;\n"
-            "}\n";
+    const QRect targetWindowRect(QPoint(0, 0), window->screen()->geometry().size());
+    glViewport(0, 0, targetWindowRect.width(), targetWindowRect.height());
 
-        m_program = new QOpenGLShaderProgram;
+    for (int i = 0; i < textures->count(); ++i) {
+        uint textureId = textures->textureId(i);
+        glBindTexture(GL_TEXTURE_2D, textureId);
+        QMatrix4x4 target = QOpenGLTextureBlitter::targetTransform(textures->geometry(i),
+                                                                   targetWindowRect,
+                                                                   QOpenGLTextureBlitter::OriginTopLeft);
+        m_blitter->setSwizzleRB(window->isRaster());
 
-        m_program->addShaderFromSourceCode(QOpenGLShader::Vertex, textureVertexProgram);
-        m_program->addShaderFromSourceCode(QOpenGLShader::Fragment, textureFragmentProgram);
-        m_program->link();
-
-        m_vertexCoordEntry = m_program->attributeLocation("vertexCoordEntry");
-        m_textureCoordEntry = m_program->attributeLocation("textureCoordEntry");
-        m_isRasterEntry = m_program->uniformLocation("isRaster");
+        if (textures->count() > 1 && i == textures->count() - 1) {
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            m_blitter->blit(textureId, target, QOpenGLTextureBlitter::OriginTopLeft);
+            glDisable(GL_BLEND);
+        } else if (textures->count() == 1) {
+            m_blitter->blit(textureId, target, QOpenGLTextureBlitter::OriginTopLeft);
+        } else {
+            m_blitter->blit(textureId, target, QOpenGLTextureBlitter::OriginBottomLeft);
+        }
     }
-}
-
-void QEGLCompositor::render(QEGLPlatformWindow *window, uint texture, bool raster)
-{
-    const GLfloat textureCoordinates[] = {
-        0, 0,
-        1, 0,
-        1, 1,
-        0, 1
-    };
-
-    QRectF sr = window->screen()->geometry();
-    QRect r = window->window()->geometry();
-    QPoint tl = r.topLeft();
-    QPoint br = r.bottomRight();
-
-    // Map to [-1,1]
-    GLfloat x1 = (tl.x() / sr.width()) * 2 - 1;
-    GLfloat y1 = ((sr.height() - tl.y()) / sr.height()) * 2 - 1;
-    GLfloat x2 = ((br.x() + 1) / sr.width()) * 2 - 1;
-    GLfloat y2 = ((sr.height() - (br.y() + 1)) / sr.height()) * 2 - 1;
-
-    if (!raster)
-        qSwap(y1, y2);
-
-    const GLfloat vertexCoordinates[] = {
-        x1, y1,
-        x2, y1,
-        x2, y2,
-        x1, y2
-    };
-
-    glViewport(0, 0, sr.width(), sr.height());
-
-    m_program->enableAttributeArray(m_vertexCoordEntry);
-    m_program->enableAttributeArray(m_textureCoordEntry);
-
-    m_program->setAttributeArray(m_vertexCoordEntry, vertexCoordinates, 2);
-    m_program->setAttributeArray(m_textureCoordEntry, textureCoordinates, 2);
-
-    glBindTexture(GL_TEXTURE_2D, texture);
-
-    m_program->setUniformValue(m_isRasterEntry, raster);
-
-    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-    glBindTexture(GL_TEXTURE_2D, 0);
-    m_program->enableAttributeArray(m_textureCoordEntry);
-    m_program->enableAttributeArray(m_vertexCoordEntry);
 }
 
 QEGLCompositor *QEGLCompositor::instance()
