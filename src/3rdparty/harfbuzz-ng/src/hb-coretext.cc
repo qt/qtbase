@@ -83,7 +83,7 @@ _hb_coretext_shaper_face_data_create (hb_face_t *face)
   if (unlikely (!data))
     return NULL;
 
-  QFontEngine *fe = (QFontEngine *) face->user_data;
+  QFontEngine *fe = (QFontEngine *) ((QFontEngine::FaceData *) face->user_data)->user_data;
   if (fe->type () == QFontEngine::Mac)
   {
     data->cg_font = (CGFontRef) fe->userData ().value<void *> ();
