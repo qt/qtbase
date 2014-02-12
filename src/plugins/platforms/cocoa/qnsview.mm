@@ -1383,12 +1383,6 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     [self tryToPerform:aSelector with:self];
 }
 
-- (void)cancelOperation:(id)sender
-{
-    if (!m_platformWindow || m_platformWindow->windowShouldBehaveAsPanel())
-        [super cancelOperation:sender];
-}
-
 - (void) insertText:(id)aString replacementRange:(NSRange)replacementRange
 {
     Q_UNUSED(replacementRange)
