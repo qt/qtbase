@@ -202,6 +202,9 @@ private slots:
     void linearGradientSymmetry();
     void gradientInterpolation();
 
+    void gradientPixelFormat_data();
+    void gradientPixelFormat();
+
     void fpe_pixmapTransform();
     void fpe_zeroLengthLines();
     void fpe_divByZero();
@@ -3725,6 +3728,49 @@ void tst_QPainter::linearGradientSymmetry()
 
     b = b.mirrored(true);
     QCOMPARE(a, b);
+}
+
+void tst_QPainter::gradientPixelFormat_data()
+{
+    QTest::addColumn<QImage::Format>("format");
+
+    QTest::newRow("argb32") << QImage::Format_ARGB32;
+    QTest::newRow("rgb32") << QImage::Format_RGB32;
+    QTest::newRow("rgb888") << QImage::Format_RGB888;
+    QTest::newRow("rgbx8888") << QImage::Format_RGBX8888;
+    QTest::newRow("rgba8888") << QImage::Format_RGBA8888;
+    QTest::newRow("rgba8888_pm") << QImage::Format_RGBA8888_Premultiplied;
+}
+
+void tst_QPainter::gradientPixelFormat()
+{
+    QFETCH(QImage::Format, format);
+
+    QImage a(8, 64, QImage::Format_ARGB32_Premultiplied);
+    QImage b(8, 64, format);
+
+
+    QGradientStops stops;
+    stops << qMakePair(qreal(0.0), QColor(Qt::blue));
+    stops << qMakePair(qreal(0.3), QColor(Qt::red));
+    stops << qMakePair(qreal(0.6), QColor(Qt::green));
+    stops << qMakePair(qreal(1.0), QColor(Qt::black));
+
+    a.fill(0);
+    b.fill(0);
+
+    QLinearGradient gradient(QRectF(b.rect()).topLeft(), QRectF(b.rect()).bottomLeft());
+    gradient.setStops(stops);
+
+    QPainter pa(&a);
+    pa.fillRect(a.rect(), gradient);
+    pa.end();
+
+    QPainter pb(&b);
+    pb.fillRect(b.rect(), gradient);
+    pb.end();
+
+    QCOMPARE(a, b.convertToFormat(QImage::Format_ARGB32_Premultiplied));
 }
 
 void tst_QPainter::gradientInterpolation()

@@ -335,6 +335,8 @@ bool QLinuxFbScreen::initialize()
         QRegularExpressionMatch match;
         if (arg == QLatin1String("nographicsmodeswitch"))
             doSwitchToGraphicsMode = false;
+        else if (arg.contains(mmSizeRx, &match))
+            userMmSize = QSize(match.captured(1).toInt(), match.captured(2).toInt());
         else if (arg.contains(sizeRx, &match))
             userGeometry.setSize(QSize(match.captured(1).toInt(), match.captured(2).toInt()));
         else if (arg.contains(offsetRx, &match))
@@ -343,8 +345,6 @@ bool QLinuxFbScreen::initialize()
             ttyDevice = match.captured(1);
         else if (arg.contains(fbRx, &match))
             fbDevice = match.captured(1);
-        else if (arg.contains(mmSizeRx, &match))
-            userMmSize = QSize(match.captured(1).toInt(), match.captured(2).toInt());
     }
 
     if (fbDevice.isEmpty()) {

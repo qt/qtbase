@@ -2603,7 +2603,7 @@ QStringList QUrl::idnWhitelist()
     Note that if you call this function, you need to do so \e before
     you start any threads that might access idnWhitelist().
 
-    Qt has comes a default list that contains the Internet top-level domains
+    Qt comes with a default list that contains the Internet top-level domains
     that have published support for Internationalized Domain Names (IDNs)
     and rules to guarantee that no deception can happen between similarly-looking
     characters (such as the Latin lowercase letter \c 'a' and the Cyrillic

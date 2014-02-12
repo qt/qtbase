@@ -627,7 +627,8 @@ void QFileDialogPrivate::helperPrepareShow(QPlatformDialogHelper *)
     options->setInitialDirectory(directory.exists() ?
                                  QUrl::fromLocalFile(directory.absolutePath()) :
                                  QUrl());
-    options->setInitiallySelectedNameFilter(q->selectedNameFilter());
+    if (options->initiallySelectedNameFilter().isEmpty())
+        options->setInitiallySelectedNameFilter(q->selectedNameFilter());
     if (options->initiallySelectedFiles().isEmpty())
         options->setInitiallySelectedFiles(userSelectedFiles());
 }
@@ -1450,6 +1451,7 @@ QStringList QFileDialog::nameFilters() const
 void QFileDialog::selectNameFilter(const QString &filter)
 {
     Q_D(QFileDialog);
+    d->options->setInitiallySelectedNameFilter(filter);
     if (!d->usingWidgets()) {
         d->selectNameFilter_sys(filter);
         return;

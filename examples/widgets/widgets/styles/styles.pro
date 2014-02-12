@@ -7,8 +7,6 @@ SOURCES       = main.cpp \
                 widgetgallery.cpp
 RESOURCES     = styles.qrc
 
-REQUIRES += "contains(styles, windows)"
-
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/widgets/styles
 INSTALLS += target

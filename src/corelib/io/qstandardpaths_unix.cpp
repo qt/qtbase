@@ -205,6 +205,8 @@ QString QStandardPaths::writableLocation(StandardLocation type)
                 // value can start with $HOME
                 if (value.startsWith(QLatin1String("$HOME")))
                     value = QDir::homePath() + value.mid(5);
+                if (value.length() > 1 && value.endsWith(QLatin1Char('/')))
+                    value.chop(1);
                 return value;
             }
         }
@@ -257,10 +259,17 @@ static QStringList xdgDataDirs()
         dirs.append(QString::fromLatin1("/usr/local/share"));
         dirs.append(QString::fromLatin1("/usr/share"));
     } else {
-        dirs = xdgDataDirsEnv.split(QLatin1Char(':'));
-        // Normalize paths
-        for (int i = 0; i < dirs.count(); i++)
-            dirs[i] = QDir::cleanPath(dirs.at(i));
+        dirs = xdgDataDirsEnv.split(QLatin1Char(':'), QString::SkipEmptyParts);
+
+        // Normalize paths, skip relative paths
+        QMutableListIterator<QString> it(dirs);
+        while (it.hasNext()) {
+            const QString dir = it.next();
+            if (!dir.startsWith(QLatin1Char('/')))
+                it.remove();
+            else
+                it.setValue(QDir::cleanPath(dir));
+        }
 
         // Remove duplicates from the list, there's no use for duplicated
         // paths in XDG_DATA_DIRS - if it's not found in the given

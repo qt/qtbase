@@ -1012,6 +1012,8 @@ HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::get_accState(VARIANT varID, VA
         st |= STATE_SYSTEM_SIZEABLE;
     if (state.traversed)
         st |= STATE_SYSTEM_TRAVERSED;
+    if (state.disabled)
+        st |= STATE_SYSTEM_UNAVAILABLE;
 
     (*pvarState).vt = VT_I4;
     (*pvarState).lVal = st;

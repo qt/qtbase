@@ -1944,8 +1944,9 @@ QString QDir::homePath()
     On Unix/Linux systems this is the path in the \c TMPDIR environment
     variable or \c{/tmp} if \c TMPDIR is not defined. On Windows this is
     usually the path in the \c TEMP or \c TMP environment
-    variable. Whether a directory separator is added to the end or
-    not, depends on the operating system.
+    variable.
+    The path returned by this method doesn't end with a directory separator
+    unless it is the root directory (of a drive).
 
     \sa temp(), currentPath(), homePath(), rootPath()
 */
