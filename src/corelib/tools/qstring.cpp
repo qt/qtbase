@@ -3402,7 +3402,7 @@ bool QString::contains(const QRegularExpression &re) const
 
     If the match is successful and \a match is not a null pointer, it also
     writes the results of the match into the QRegularExpressionMatch object
-    pointed by \a match.
+    pointed to by \a match.
 
     \sa QRegularExpression::match()
 */
