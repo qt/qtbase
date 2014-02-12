@@ -737,6 +737,38 @@ void QHashData::checkSanity()
     Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
 
+/*! \relates QHash
+    \since 5.3
+
+    Returns the hash value for the \a key, using \a seed to seed the calculation.
+*/
+uint qHash(float key, uint seed) Q_DECL_NOTHROW
+{
+    return key != 0.0f ? hash(reinterpret_cast<const uchar *>(&key), sizeof(key), seed) : seed ;
+}
+
+/*! \relates QHash
+    \since 5.3
+
+    Returns the hash value for the \a key, using \a seed to seed the calculation.
+*/
+uint qHash(double key, uint seed) Q_DECL_NOTHROW
+{
+    return key != 0.0  ? hash(reinterpret_cast<const uchar *>(&key), sizeof(key), seed) : seed ;
+}
+
+#ifndef Q_OS_DARWIN
+/*! \relates QHash
+    \since 5.3
+
+    Returns the hash value for the \a key, using \a seed to seed the calculation.
+*/
+uint qHash(long double key, uint seed) Q_DECL_NOTHROW
+{
+    return key != 0.0L ? hash(reinterpret_cast<const uchar *>(&key), sizeof(key), seed) : seed ;
+}
+#endif
+
 /*! \fn uint qHash(QChar key, uint seed = 0)
     \relates QHash
     \since 5.0
