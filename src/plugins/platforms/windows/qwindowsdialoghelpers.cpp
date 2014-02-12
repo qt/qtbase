@@ -648,7 +648,7 @@ struct FindDialogContext
     HWND hwnd; // contains the HWND of the window found.
 };
 
-static BOOL CALLBACK findDialogEnumWindowsProc(HWND hwnd, LPARAM lParam)
+static BOOL QT_WIN_CALLBACK findDialogEnumWindowsProc(HWND hwnd, LPARAM lParam)
 {
     FindDialogContext *context = reinterpret_cast<FindDialogContext *>(lParam);
     DWORD winPid = 0;
@@ -1770,7 +1770,7 @@ void QWindowsXpNativeFileDialog::doExec(HWND owner)
 // Callback for QWindowsNativeXpFileDialog directory dialog.
 // MFC Directory Dialog. Contrib: Steve Williams (minor parts from Scott Powers)
 
-static int CALLBACK xpFileDialogGetExistingDirCallbackProc(HWND hwnd, UINT uMsg, LPARAM lParam, LPARAM lpData)
+static int QT_WIN_CALLBACK xpFileDialogGetExistingDirCallbackProc(HWND hwnd, UINT uMsg, LPARAM lParam, LPARAM lpData)
 {
     QWindowsXpNativeFileDialog *dialog = reinterpret_cast<QWindowsXpNativeFileDialog *>(lpData);
     return dialog->existingDirCallback(hwnd, uMsg, lParam);

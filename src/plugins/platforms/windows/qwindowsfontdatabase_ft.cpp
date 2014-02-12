@@ -336,8 +336,8 @@ static QByteArray getFntTable(HFONT hfont, uint tag)
 }
 #endif
 
-static int CALLBACK storeFont(ENUMLOGFONTEX* f, NEWTEXTMETRICEX *textmetric,
-                              int type, LPARAM namesSetIn)
+static int QT_WIN_CALLBACK storeFont(ENUMLOGFONTEX* f, NEWTEXTMETRICEX *textmetric,
+                                     int type, LPARAM namesSetIn)
 {
     typedef QSet<QString> StringSet;
     const QString familyName = QString::fromWCharArray(f->elfLogFont.lfFaceName)
