@@ -39,59 +39,30 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMINTEGRATION_UIKIT_H
-#define QPLATFORMINTEGRATION_UIKIT_H
+#ifndef QIOSCLIPBOARD_H
+#define QIOSCLIPBOARD_H
 
-#include <qpa/qplatformintegration.h>
-#include <qpa/qplatformnativeinterface.h>
-#include <qpa/qwindowsysteminterface.h>
+#import <UIKit/UIKit.h>
 
-#include "qiosapplicationstate.h"
+#include <qpa/qplatformclipboard.h>
+
+@class QUIClipboard;
 
 QT_BEGIN_NAMESPACE
 
-class QIOSServices;
-
-class QIOSIntegration : public QPlatformIntegration, public QPlatformNativeInterface
+class QIOSClipboard : public QPlatformClipboard
 {
 public:
-    QIOSIntegration();
-    ~QIOSIntegration();
+    QIOSClipboard();
+    QMimeData *mimeData(QClipboard::Mode mode = QClipboard::Clipboard) Q_DECL_OVERRIDE;
+    void setMimeData(QMimeData *mimeData, QClipboard::Mode mode = QClipboard::Clipboard) Q_DECL_OVERRIDE;
+    bool supportsMode(QClipboard::Mode mode) const Q_DECL_OVERRIDE;
+    bool ownsMode(QClipboard::Mode mode) const Q_DECL_OVERRIDE;
 
-    bool hasCapability(Capability cap) const;
-
-    QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
-
-    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
-
-    QPlatformFontDatabase *fontDatabase() const;
-    QPlatformClipboard *clipboard() const;
-    QPlatformInputContext *inputContext() const;
-    QPlatformServices *services() const Q_DECL_OVERRIDE;
-
-    QVariant styleHint(StyleHint hint) const;
-
-    QStringList themeNames() const;
-    QPlatformTheme *createPlatformTheme(const QString &name) const;
-
-    QAbstractEventDispatcher *createEventDispatcher() const;
-    QPlatformNativeInterface *nativeInterface() const;
-
-    void *nativeResourceForWindow(const QByteArray &resource, QWindow *window);
-
-    QTouchDevice *touchDevice();
 private:
-    QPlatformFontDatabase *m_fontDatabase;
-    QPlatformClipboard *m_clipboard;
-    QPlatformInputContext *m_inputContext;
-    QPlatformScreen *m_screen;
-    QTouchDevice *m_touchDevice;
-    QIOSApplicationState m_applicationState;
-    QIOSServices *m_platformServices;
+    QUIClipboard *m_clipboard;
 };
 
 QT_END_NAMESPACE
 
-#endif
-
+#endif // QIOSCLIPBOARD_H

@@ -46,11 +46,13 @@
 #include "qiosbackingstore.h"
 #include "qiosscreen.h"
 #include "qioscontext.h"
+#include "qiosclipboard.h"
 #include "qiosinputcontext.h"
 #include "qiostheme.h"
 #include "qiosservices.h"
 
 #include <QtPlatformSupport/private/qcoretextfontdatabase_p.h>
+#include <QtPlatformSupport/private/qmacmime_p.h>
 #include <QDir>
 
 #include <QtDebug>
@@ -59,6 +61,7 @@ QT_BEGIN_NAMESPACE
 
 QIOSIntegration::QIOSIntegration()
     : m_fontDatabase(new QCoreTextFontDatabase)
+    , m_clipboard(new QIOSClipboard)
     , m_inputContext(new QIOSInputContext)
     , m_screen(new QIOSScreen(QIOSScreen::MainScreen))
     , m_platformServices(new QIOSServices)
@@ -81,12 +84,17 @@ QIOSIntegration::QIOSIntegration()
     m_touchDevice->setType(QTouchDevice::TouchScreen);
     m_touchDevice->setCapabilities(QTouchDevice::Position | QTouchDevice::NormalizedPosition);
     QWindowSystemInterface::registerTouchDevice(m_touchDevice);
+    QMacInternalPasteboardMime::initializeMimeTypes();
 }
 
 QIOSIntegration::~QIOSIntegration()
 {
     delete m_fontDatabase;
     m_fontDatabase = 0;
+
+    delete m_clipboard;
+    m_clipboard = 0;
+    QMacInternalPasteboardMime::destroyMimeTypes();
 
     delete m_inputContext;
     m_inputContext = 0;
@@ -147,6 +155,11 @@ QAbstractEventDispatcher *QIOSIntegration::createEventDispatcher() const
 QPlatformFontDatabase * QIOSIntegration::fontDatabase() const
 {
     return m_fontDatabase;
+}
+
+QPlatformClipboard *QIOSIntegration::clipboard() const
+{
+    return m_clipboard;
 }
 
 QPlatformInputContext *QIOSIntegration::inputContext() const
