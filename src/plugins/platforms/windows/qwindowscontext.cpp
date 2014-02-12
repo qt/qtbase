@@ -330,6 +330,9 @@ QWindowsContext::QWindowsContext() :
 
 QWindowsContext::~QWindowsContext()
 {
+#if !defined(QT_NO_TABLETEVENT) && !defined(Q_OS_WINCE)
+    d->m_tabletSupport.reset(); // Destroy internal window before unregistering classes.
+#endif
     unregisterWindowClasses();
     if (d->m_oleInitializeResult == S_OK || d->m_oleInitializeResult == S_FALSE)
         OleUninitialize();
@@ -517,8 +520,10 @@ void QWindowsContext::unregisterWindowClasses()
 {
     const HINSTANCE appInstance = (HINSTANCE)GetModuleHandle(0);
 
-    foreach (const QString &name,  d->m_registeredWindowClassNames)
-        UnregisterClass((wchar_t*)name.utf16(), appInstance);
+    foreach (const QString &name,  d->m_registeredWindowClassNames) {
+        if (!UnregisterClass((wchar_t*)name.utf16(), appInstance) && QWindowsContext::verbose)
+            qErrnoWarning("UnregisterClass failed for '%s'", qPrintable(name));
+    }
     d->m_registeredWindowClassNames.clear();
 }
 
