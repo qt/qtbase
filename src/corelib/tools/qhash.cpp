@@ -163,6 +163,11 @@ static inline uint hash(const uchar *p, int len, uint seed) Q_DECL_NOTHROW
     return h;
 }
 
+uint qHashBits(const void *p, size_t len, uint seed) Q_DECL_NOTHROW
+{
+    return hash(static_cast<const uchar*>(p), int(len), seed);
+}
+
 static inline uint hash(const QChar *p, int len, uint seed) Q_DECL_NOTHROW
 {
     uint h = seed;
@@ -667,6 +672,25 @@ void QHashData::checkSanity()
     Returns the hash value for the \a key, using \a seed to seed the calculation.
 
     Types \c T1 and \c T2 must be supported by qHash().
+*/
+
+/*! \fn uint qHashBits(const void *p, size_t len, uint seed = 0)
+    \relates QHash
+    \since 5.4
+
+    Returns the hash value for the memory block of size \a len pointed
+    to by \a p, using \a seed to seed the calculation.
+
+    Use this function only to implement qHash() for your own custom
+    types. E.g., here's how you could implement a qHash() overload for
+    std::vector<int>:
+
+    \snippet code/src_corelib_tools_qhash.cpp qhashbits
+
+    It bears repeating that the implementation of qHashBits() - like
+    the qHash() overloads offered by Qt - may change at any time. You
+    \b{must not} rely on the fact that qHashBits() will give the same
+    results (for the same inputs) across different Qt versions.
 */
 
 /*! \fn uint qHash(char key, uint seed = 0)

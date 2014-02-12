@@ -60,6 +60,8 @@ class QString;
 class QStringRef;
 class QLatin1String;
 
+Q_CORE_EXPORT uint qHashBits(const void *p, size_t size, uint seed = 0) Q_DECL_NOTHROW;
+
 inline uint qHash(char key, uint seed = 0) Q_DECL_NOTHROW { return uint(key) ^ seed; }
 inline uint qHash(uchar key, uint seed = 0) Q_DECL_NOTHROW { return uint(key) ^ seed; }
 inline uint qHash(signed char key, uint seed = 0) Q_DECL_NOTHROW { return uint(key) ^ seed; }
