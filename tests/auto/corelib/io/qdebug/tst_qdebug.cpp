@@ -57,6 +57,7 @@ private slots:
     void veryLongWarningMessage() const;
     void qDebugQStringRef() const;
     void qDebugQLatin1String() const;
+    void textStreamModifiers() const;
     void defaultMessagehandler() const;
 };
 
@@ -275,6 +276,18 @@ void tst_QDebug::qDebugQLatin1String() const
     QString file = __FILE__; int line = __LINE__ - 1; QString function = Q_FUNC_INFO;
     QCOMPARE(s_msgType, QtDebugMsg);
     QCOMPARE(s_msg, QString::fromLatin1("\"foo\" \"\" \"bar\""));
+    QCOMPARE(QString::fromLatin1(s_file), file);
+    QCOMPARE(s_line, line);
+    QCOMPARE(QString::fromLatin1(s_function), function);
+}
+
+void tst_QDebug::textStreamModifiers() const
+{
+    MessageHandlerSetter mhs(myMessageHandler);
+    { qDebug() << hex << short(0xf) << int(0xf) << unsigned(0xf) << long(0xf) << qint64(0xf) << quint64(0xf); }
+    QString file = __FILE__; int line = __LINE__ - 1; QString function = Q_FUNC_INFO;
+    QCOMPARE(s_msgType, QtDebugMsg);
+    QCOMPARE(s_msg, QString::fromLatin1("f f f f f f"));
     QCOMPARE(QString::fromLatin1(s_file), file);
     QCOMPARE(s_line, line);
     QCOMPARE(QString::fromLatin1(s_function), function);
