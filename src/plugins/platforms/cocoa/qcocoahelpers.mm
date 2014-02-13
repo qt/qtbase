@@ -102,21 +102,31 @@ CGImageRef qt_mac_toCGImage(const QImage &inImage)
     uint cgflags = kCGImageAlphaNone;
     switch (image.format()) {
     case QImage::Format_ARGB32_Premultiplied:
-        cgflags = kCGImageAlphaPremultipliedFirst;
+        cgflags = kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host;
         break;
     case QImage::Format_ARGB32:
-        cgflags = kCGImageAlphaFirst;
+        cgflags = kCGImageAlphaFirst | kCGBitmapByteOrder32Host;
         break;
     case QImage::Format_RGB32:
-        cgflags = kCGImageAlphaNoneSkipFirst;
+        cgflags = kCGImageAlphaNoneSkipFirst | kCGBitmapByteOrder32Host;
         break;
     case QImage::Format_RGB888:
-        cgflags |= kCGImageAlphaNone;
-    break;
+        cgflags = kCGImageAlphaNone | kCGBitmapByteOrder32Big;
+        break;
+    case QImage::Format_RGBA8888_Premultiplied:
+        cgflags = kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big;
+        break;
+    case QImage::Format_RGBA8888:
+        cgflags = kCGImageAlphaLast | kCGBitmapByteOrder32Big;
+        break;
+    case QImage::Format_RGBX8888:
+        cgflags = kCGImageAlphaNoneSkipLast | kCGBitmapByteOrder32Big;
+        break;
     default:
+        Q_ASSERT(false); // Should never be reached.
         break;
     }
-    cgflags |= kCGBitmapByteOrder32Host;
+
     QCFType<CGDataProviderRef> dataProvider = qt_mac_CGDataProvider(image);
     return CGImageCreate(image.width(), image.height(), 8, 32,
                          image.bytesPerLine(),
