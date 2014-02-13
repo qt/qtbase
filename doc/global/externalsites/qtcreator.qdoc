@@ -467,3 +467,11 @@
     \externalpage http://qt-project.org/doc/qtcreator/creator-debuggers.html
     \title Qt Creator: Adding Debuggers
 */
+/*!
+    \externalpage http://qt-project.org/doc/qtcreator/creator-android-app-tutorial.html
+    \title Qt Creator: Creating an Android Application
+*/
+/*!
+    \externalpage http://qt-project.org/doc/qtcreator/creator-diff-editor.html
+    \title Qt Creator: Comparing Files
+*/
