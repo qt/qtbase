@@ -347,7 +347,7 @@ ushort TableGenerator::keysymToUtf8(quint32 sym)
     qDebug() << QString("keysym - 0x%1 : utf8 - %2").arg(QString::number(sym, 16))
                                                     .arg(codec->toUnicode(chars));
 #endif
-    return QString::fromLocal8Bit(chars).at(0).unicode();
+    return QString::fromUtf8(chars).at(0).unicode();
 }
 
 static inline int fromBase8(const char *s, const char *end)

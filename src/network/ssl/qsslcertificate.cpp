@@ -341,8 +341,9 @@ static QByteArray _q_SubjectInfoToString(QSslCertificate::SubjectInfo info)
   \fn QString QSslCertificate::issuerInfo(SubjectInfo subject) const
 
   Returns the issuer information for the \a subject from the
-  certificate, or an empty string if there is no information for
-  \a subject in the certificate.
+  certificate, or an empty list if there is no information for
+  \a subject in the certificate. There can be more than one entry
+  of each type.
 
   \sa subjectInfo()
 */
@@ -359,8 +360,8 @@ QStringList QSslCertificate::issuerInfo(SubjectInfo info) const
 
 /*!
   Returns the issuer information for \a attribute from the certificate,
-  or an empty string if there is no information for \a attribute in the
-  certificate.
+  or an empty list if there is no information for \a attribute in the
+  certificate. There can be more than one entry for an attribute.
 
   \sa subjectInfo()
 */
@@ -379,8 +380,9 @@ QStringList QSslCertificate::issuerInfo(const QByteArray &attribute) const
 
   \fn QString QSslCertificate::subjectInfo(SubjectInfo subject) const
 
-  Returns the information for the \a subject, or an empty string if
-  there is no information for \a subject in the certificate.
+  Returns the information for the \a subject, or an empty list if
+  there is no information for \a subject in the certificate. There
+  can be more than one entry of each type.
 
     \sa issuerInfo()
 */
@@ -396,8 +398,9 @@ QStringList QSslCertificate::subjectInfo(SubjectInfo info) const
 }
 
 /*!
-    Returns the subject information for \a attribute, or an empty string if
-    there is no information for \a attribute in the certificate.
+    Returns the subject information for \a attribute, or an empty list if
+    there is no information for \a attribute in the certificate. There
+    can be more than one entry for an attribute.
 
     \sa issuerInfo()
 */

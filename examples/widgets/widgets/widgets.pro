@@ -16,6 +16,7 @@ SUBDIRS       = analogclock \
                 shapedclock \
                 sliders \
                 spinboxes \
+                styles \
                 stylesheet \
                 tablet \
                 tetrix \
@@ -23,5 +24,3 @@ SUBDIRS       = analogclock \
                 validators \
                 wiggly \
                 windowflags
-
-contains(styles, windows): SUBDIRS += styles

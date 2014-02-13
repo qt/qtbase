@@ -160,7 +160,6 @@ void tst_QHttpNetworkConnection::head_data()
     QTest::addColumn<int>("contentLength");
 
     QTest::newRow("success-internal") << "http://" << QtNetworkSettings::serverName() << "/qtest/rfc3252.txt" << ushort(80) << false << 200 << "OK" << 25962;
-    QTest::newRow("success-external") << "http://" << "www.ietf.org" << "/rfc/rfc3252.txt" << ushort(80) << false << 200 << "OK" << 25962;
 
     QTest::newRow("failure-path") << "http://" << QtNetworkSettings::serverName() << "/t" << ushort(80) << false << 404 << "Not Found" << -1;
     QTest::newRow("failure-protocol") << "" << QtNetworkSettings::serverName() << "/qtest/rfc3252.txt" << ushort(80) << false << 400 << "Bad Request" << -1;
@@ -217,7 +216,6 @@ void tst_QHttpNetworkConnection::get_data()
     QTest::addColumn<int>("downloadSize");
 
     QTest::newRow("success-internal") << "http://" << QtNetworkSettings::serverName() << "/qtest/rfc3252.txt" << ushort(80) << false << 200 << "OK" << 25962 << 25962;
-    QTest::newRow("success-external") << "http://" << "www.ietf.org" << "/rfc/rfc3252.txt" << ushort(80) << false << 200 << "OK" << 25962 << 25962;
 
     QTest::newRow("failure-path") << "http://" << QtNetworkSettings::serverName() << "/t" << ushort(80) << false << 404 << "Not Found" << -1 << -1;
     QTest::newRow("failure-protocol") << "" << QtNetworkSettings::serverName() << "/qtest/rfc3252.txt" << ushort(80) << false << 400 << "Bad Request" << -1 << -1;

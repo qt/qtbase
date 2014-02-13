@@ -101,6 +101,13 @@ void tst_QGlobal::for_each()
         QCOMPARE(i, counter++);
     }
     QCOMPARE(counter, list.count());
+
+    // check whether we can pass a constructor as container argument
+    counter = 0;
+    foreach (int i, QList<int>(list)) {
+        QCOMPARE(i, counter++);
+    }
+    QCOMPARE(counter, list.count());
 }
 
 void tst_QGlobal::qassert()

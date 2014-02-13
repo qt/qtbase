@@ -63,6 +63,7 @@ private slots:
     void collapseTextOnPriority();
     void task230994_iconSize();
     void task176137_autoRepeatOfAction();
+    void qtbug_26956_popupTimerDone();
 
 protected slots:
     void sendMouseClick();
@@ -221,6 +222,15 @@ void tst_QToolButton::task176137_autoRepeatOfAction()
 void tst_QToolButton::sendMouseClick()
 {
     QTest::mouseClick(w, Qt::LeftButton, 0, QPoint(7,7));
+}
+
+void tst_QToolButton::qtbug_26956_popupTimerDone()
+{
+    QToolButton *tb = new QToolButton;
+    tb->setMenu(new QMenu(tb));
+    tb->menu()->addAction("Qt");
+    tb->deleteLater();
+    tb->showMenu();
 }
 
 QTEST_MAIN(tst_QToolButton)

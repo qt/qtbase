@@ -1391,13 +1391,6 @@ bool AtSpiAdaptor::accessibleInterface(QAccessibleInterface *interface, const QS
         if (interface->tableInterface()) {
             setSpiStateBit(&spiState, ATSPI_STATE_MANAGES_DESCENDANTS);
         }
-// FIXME: figure out if this is a top level window and set its active state accordingly
-//        if (interface->object() && interface->object()->isWidgetType()) {
-//            QWidget *w = qobject_cast<QWidget*>(interface->object());
-//            if (w->topLevelWidget() && w->isActiveWindow()) {
-//                setSpiStateBit(&spiState, ATSPI_STATE_ACTIVE);
-//            }
-//        }
         QAccessible::Role role = interface->role();
         if (role == QAccessible::TreeItem ||
             role == QAccessible::ListItem) {
