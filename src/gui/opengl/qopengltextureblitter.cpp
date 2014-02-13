@@ -210,6 +210,7 @@ void QOpenGLTextureBlitterPrivate::blit(GLuint texture,
         if (textureMatrixUniformState != IdentityFlipped) {
             QMatrix3x3 flipped;
             flipped(1,1) = -1;
+            flipped(1,2) = 1;
             program->setUniformValue(textureTransformUniformPos, flipped);
             textureMatrixUniformState = IdentityFlipped;
         }
@@ -375,8 +376,8 @@ QMatrix3x3 QOpenGLTextureBlitter::sourceTransform(const QRectF &subTexture,
     qreal y_translate = topLeft.y() / textureSize.height();
 
     if (origin == OriginTopLeft) {
-        y_translate += (y_translate * 2) + y_scale;
-        y_scale = y_scale - 1;
+        y_scale = -y_scale;
+        y_translate = 1 - y_translate;
     }
 
     QMatrix3x3 matrix;

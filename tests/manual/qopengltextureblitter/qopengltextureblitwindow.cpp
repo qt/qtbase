@@ -81,6 +81,7 @@ void QOpenGLTextureBlitWindow::render()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     QOpenGLTexture texture(m_image);
+    texture.setWrapMode(QOpenGLTexture::ClampToEdge);
     texture.create();
 
     QOpenGLTexture texture_mirrored(m_image_mirrord);
