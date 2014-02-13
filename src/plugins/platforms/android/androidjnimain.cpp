@@ -337,7 +337,7 @@ namespace QtAndroid
     {
         QJNIEnvironmentPrivate env;
         if (!env)
-            return 0;
+            return -1;
 
         m_surfacesMutex.lock();
         int surfaceId = m_surfaceId++;
