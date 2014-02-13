@@ -509,7 +509,6 @@
 #      define Q_COMPILER_LAMBDA
 #      define Q_COMPILER_RVALUE_REFS
 #      define Q_COMPILER_STATIC_ASSERT
-#      define Q_COMPILER_THREAD_LOCAL
 #      define Q_COMPILER_VARIADIC_MACROS
 #    endif
 #    if __INTEL_COMPILER >= 1210
