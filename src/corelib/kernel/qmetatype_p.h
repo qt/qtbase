@@ -207,6 +207,7 @@ template<> struct TypeDefinition<QJsonObject> { static const bool IsAvailable = 
 template<> struct TypeDefinition<QJsonValue> { static const bool IsAvailable = false; };
 template<> struct TypeDefinition<QModelIndex> { static const bool IsAvailable = false; };
 template<> struct TypeDefinition<QUrl> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QByteArrayList> { static const bool IsAvailable = false; };
 #endif
 #ifdef QT_NO_GEOM_VARIANT
 template<> struct TypeDefinition<QRect> { static const bool IsAvailable = false; };

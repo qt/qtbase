@@ -51,6 +51,9 @@
 #include <QtCore/qstring.h>
 #include <QtCore/qstringlist.h>
 #include <QtCore/qobject.h>
+#ifndef QT_BOOTSTRAPPED
+#include <QtCore/qbytearraylist.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -713,6 +716,11 @@ namespace QtPrivate {
             if (v.userType() == qMetaTypeId<QStringList>()) {
                 return QSequentialIterable(QtMetaTypePrivate::QSequentialIterableImpl(reinterpret_cast<const QStringList*>(v.constData())));
             }
+#ifndef QT_BOOTSTRAPPED
+            if (v.userType() == qMetaTypeId<QByteArrayList>()) {
+                return QSequentialIterable(QtMetaTypePrivate::QSequentialIterableImpl(reinterpret_cast<const QByteArrayList*>(v.constData())));
+            }
+#endif
             return QSequentialIterable(v.value<QtMetaTypePrivate::QSequentialIterableImpl>());
         }
     };
@@ -735,7 +743,7 @@ namespace QtPrivate {
     {
         static QVariantList invoke(const QVariant &v)
         {
-            if (v.userType() == qMetaTypeId<QStringList>() || QMetaType::hasRegisteredConverterFunction(v.userType(), qMetaTypeId<QtMetaTypePrivate::QSequentialIterableImpl>())) {
+            if (v.userType() == qMetaTypeId<QStringList>() || v.userType() == qMetaTypeId<QByteArrayList>() || QMetaType::hasRegisteredConverterFunction(v.userType(), qMetaTypeId<QtMetaTypePrivate::QSequentialIterableImpl>())) {
                 QSequentialIterable iter = QVariantValueHelperInterface<QSequentialIterable>::invoke(v);
                 QVariantList l;
                 l.reserve(iter.size());

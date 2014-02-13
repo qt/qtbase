@@ -398,7 +398,8 @@ void tst_QMetaType::typeName()
     QT_FOR_EACH_STATIC_CORE_POINTER(F) \
 
 #define FOR_EACH_COMPLEX_CORE_METATYPE(F) \
-    QT_FOR_EACH_STATIC_CORE_CLASS(F)
+    QT_FOR_EACH_STATIC_CORE_CLASS(F) \
+    QT_FOR_EACH_STATIC_CORE_TEMPLATE(F)
 
 #define FOR_EACH_CORE_METATYPE(F) \
     FOR_EACH_PRIMITIVE_METATYPE(F) \
@@ -488,6 +489,18 @@ template<> struct TestValueFactory<QMetaType::Double> {
 };
 template<> struct TestValueFactory<QMetaType::QByteArray> {
     static QByteArray *create() { return new QByteArray(QByteArray("QByteArray")); }
+};
+template<> struct TestValueFactory<QMetaType::QByteArrayList> {
+    static QByteArrayList *create() { return new QByteArrayList(QByteArrayList() << "Q" << "Byte" << "Array" << "List"); }
+};
+template<> struct TestValueFactory<QMetaType::QVariantMap> {
+    static QVariantMap *create() { return new QVariantMap(); }
+};
+template<> struct TestValueFactory<QMetaType::QVariantHash> {
+    static QVariantHash *create() { return new QVariantHash(); }
+};
+template<> struct TestValueFactory<QMetaType::QVariantList> {
+    static QVariantList *create() { return new QVariantList(QVariantList() << 123 << "Q" << "Variant" << "List"); }
 };
 template<> struct TestValueFactory<QMetaType::QChar> {
     static QChar *create() { return new QChar(QChar('q')); }
@@ -1371,12 +1384,12 @@ void tst_QMetaType::automaticTemplateRegistration()
   }
 
   {
-    QList<QByteArray> bytearrayList;
-    bytearrayList << QByteArray("foo");
-    QVERIFY(QVariant::fromValue(bytearrayList).value<QList<QByteArray> >().first() == QByteArray("foo"));
-    QVector<QList<QByteArray> > vectorList;
-    vectorList << bytearrayList;
-    QVERIFY(QVariant::fromValue(vectorList).value<QVector<QList<QByteArray> > >().first().first() == QByteArray("foo"));
+    QList<unsigned> unsignedList;
+    unsignedList << 123;
+    QVERIFY(QVariant::fromValue(unsignedList).value<QList<unsigned> >().first() == 123);
+    QVector<QList<unsigned> > vectorList;
+    vectorList << unsignedList;
+    QVERIFY(QVariant::fromValue(vectorList).value<QVector<QList<unsigned> > >().first().first() == 123);
   }
 
   QCOMPARE(::qMetaTypeId<QVariantList>(), (int)QMetaType::QVariantList);

@@ -61,6 +61,7 @@
 #include "qjsonobject.h"
 #include "qjsonarray.h"
 #include "qjsondocument.h"
+#include "qbytearraylist.h"
 #endif
 #include "private/qvariant_p.h"
 #include "qmetatype_p.h"
@@ -2841,6 +2842,7 @@ bool QVariant::canConvert(int targetTypeId) const
     if (targetTypeId == QMetaType::QVariantList
             && (d.type == QMetaType::QVariantList
               || d.type == QMetaType::QStringList
+              || d.type == QMetaType::QByteArrayList
               || QMetaType::hasRegisteredConverterFunction(d.type,
                     qMetaTypeId<QtMetaTypePrivate::QSequentialIterableImpl>()))) {
         return true;
