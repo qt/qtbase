@@ -1,5 +1,7 @@
 # Qt tools module
 
+intel_icc: QMAKE_CXXFLAGS += -fp-model strict
+
 HEADERS +=  \
         tools/qalgorithms.h \
         tools/qarraydata.h \
