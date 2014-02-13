@@ -478,11 +478,31 @@ void QOpenGLTextureHelper::qt_TextureImage3D(GLuint texture, GLenum target, GLen
 
 void QOpenGLTextureHelper::qt_TextureImage2D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLenum internalFormat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid *pixels)
 {
+    // For cubemaps we can't use the standard DSA emulation as it is illegal to
+    // try to bind a texture to one of the cubemap face targets. So we force the
+    // target and binding target to the cubemap values in this case.
     GLint oldTexture;
-    glGetIntegerv(bindingTarget, &oldTexture);
-    glBindTexture(target, texture);
-    glTexImage2D(target, level, internalFormat, width, height, border, format, type, pixels);
-    glBindTexture(target, oldTexture);
+
+    switch (target) {
+    case GL_TEXTURE_CUBE_MAP_NEGATIVE_X:
+    case GL_TEXTURE_CUBE_MAP_POSITIVE_X:
+    case GL_TEXTURE_CUBE_MAP_NEGATIVE_Y:
+    case GL_TEXTURE_CUBE_MAP_POSITIVE_Y:
+    case GL_TEXTURE_CUBE_MAP_NEGATIVE_Z:
+    case GL_TEXTURE_CUBE_MAP_POSITIVE_Z:
+        glGetIntegerv(GL_TEXTURE_BINDING_CUBE_MAP, &oldTexture);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
+        glTexImage2D(target, level, internalFormat, width, height, border, format, type, pixels);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, oldTexture);
+        break;
+
+    default:
+        glGetIntegerv(bindingTarget, &oldTexture);
+        glBindTexture(target, texture);
+        glTexImage2D(target, level, internalFormat, width, height, border, format, type, pixels);
+        glBindTexture(target, oldTexture);
+        break;
+    }
 }
 
 void QOpenGLTextureHelper::qt_TextureImage1D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLenum internalFormat, GLsizei width, GLint border, GLenum format, GLenum type, const GLvoid *pixels)
@@ -505,11 +525,31 @@ void QOpenGLTextureHelper::qt_TextureSubImage3D(GLuint texture, GLenum target, G
 
 void QOpenGLTextureHelper::qt_TextureSubImage2D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *pixels)
 {
+    // For cubemaps we can't use the standard DSA emulation as it is illegal to
+    // try to bind a texture to one of the cubemap face targets. So we force the
+    // target and binding target to the cubemap values in this case.
     GLint oldTexture;
-    glGetIntegerv(bindingTarget, &oldTexture);
-    glBindTexture(target, texture);
-    glTexSubImage2D(target, level, xoffset, yoffset, width, height, format, type, pixels);
-    glBindTexture(target, oldTexture);
+
+    switch (target) {
+    case GL_TEXTURE_CUBE_MAP_NEGATIVE_X:
+    case GL_TEXTURE_CUBE_MAP_POSITIVE_X:
+    case GL_TEXTURE_CUBE_MAP_NEGATIVE_Y:
+    case GL_TEXTURE_CUBE_MAP_POSITIVE_Y:
+    case GL_TEXTURE_CUBE_MAP_NEGATIVE_Z:
+    case GL_TEXTURE_CUBE_MAP_POSITIVE_Z:
+        glGetIntegerv(GL_TEXTURE_BINDING_CUBE_MAP, &oldTexture);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
+        glTexSubImage2D(target, level, xoffset, yoffset, width, height, format, type, pixels);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, oldTexture);
+        break;
+
+    default:
+        glGetIntegerv(bindingTarget, &oldTexture);
+        glBindTexture(target, texture);
+        glTexSubImage2D(target, level, xoffset, yoffset, width, height, format, type, pixels);
+        glBindTexture(target, oldTexture);
+        break;
+    }
 }
 
 void QOpenGLTextureHelper::qt_TextureSubImage1D(GLuint texture, GLenum target, GLenum bindingTarget, GLint level, GLint xoffset, GLsizei width, GLenum format, GLenum type, const GLvoid *pixels)

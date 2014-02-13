@@ -347,7 +347,6 @@ void QOpenGLTexturePrivate::allocateMutableStorage()
         break;
 
     case QOpenGLTexture::Target2D:
-    case QOpenGLTexture::TargetCubeMap:
     case QOpenGLTexture::TargetRectangle:
         for (int level = 0; level < mipLevels; ++level)
             texFuncs->glTextureImage2D(textureId, target, bindingTarget, level, format,
@@ -356,6 +355,29 @@ void QOpenGLTexturePrivate::allocateMutableStorage()
                                        0,
                                        QOpenGLTexture::RGBA, QOpenGLTexture::UInt8, 0);
         break;
+
+    case QOpenGLTexture::TargetCubeMap: {
+        // Cubemaps are the odd one out. We have to allocate storage for each
+        // face and miplevel using the special cubemap face targets rather than
+        // GL_TARGET_CUBEMAP.
+        const QOpenGLTexture::CubeMapFace faceTargets[] = {
+            QOpenGLTexture::CubeMapPositiveX, QOpenGLTexture::CubeMapNegativeX,
+            QOpenGLTexture::CubeMapPositiveY, QOpenGLTexture::CubeMapNegativeY,
+            QOpenGLTexture::CubeMapPositiveZ, QOpenGLTexture::CubeMapNegativeZ
+        };
+
+        for (int faceTarget = 0; faceTarget < 6; ++faceTarget) {
+            for (int level = 0; level < mipLevels; ++level) {
+                texFuncs->glTextureImage2D(textureId, faceTargets[faceTarget], bindingTarget,
+                                           level, format,
+                                           mipLevelSize(level, dimensions[0]),
+                                           mipLevelSize(level, dimensions[1]),
+                                           0,
+                                           QOpenGLTexture::RGBA, QOpenGLTexture::UInt8, 0);
+            }
+        }
+        break;
+    }
 
     case QOpenGLTexture::Target2DArray:
         if (features.testFlag(QOpenGLTexture::TextureArrays)) {
