@@ -1540,15 +1540,46 @@ void QCocoaWindow::setContentBorderThickness(int topThickness, int bottomThickne
     applyContentBorderThickness(m_nsWindow);
 }
 
+void QCocoaWindow::registerContentBorderArea(quintptr identifier, int upper, int lower)
+{
+    m_contentBorderAreas.insert(identifier, BorderRange(upper, lower));
+
+    // Find consecutive registered border areas, starting from the top.
+    QList<BorderRange> ranges = m_contentBorderAreas.values();
+    std::sort(ranges.begin(), ranges.end());
+    m_topContentBorderThickness = 0;
+    foreach (BorderRange range, ranges) {
+        // Is this sub-range adjacent to or overlaping the
+        // existing total border area range? If so merge
+        // it into the total range,
+        if (range.upper <= (m_topContentBorderThickness + 1))
+            m_topContentBorderThickness = qMax(m_topContentBorderThickness, range.lower);
+        else
+            break;
+    }
+
+    m_bottomContentBorderThickness = 0; // (not supported)
+    if (m_drawContentBorderGradient)
+        applyContentBorderThickness(m_nsWindow);
+}
+
+void QCocoaWindow::enableContentBorderArea(bool enable)
+{
+    m_drawContentBorderGradient = enable;
+    applyContentBorderThickness(m_nsWindow);
+}
+
 void QCocoaWindow::applyContentBorderThickness(NSWindow *window)
 {
     if (!window)
         return;
 
-    if (m_drawContentBorderGradient)
-        [window setStyleMask:[window styleMask] | NSTexturedBackgroundWindowMask];
-    else
+    if (!m_drawContentBorderGradient) {
         [window setStyleMask:[window styleMask] & ~NSTexturedBackgroundWindowMask];
+        return;
+    }
+
+    [window setStyleMask:[window styleMask] | NSTexturedBackgroundWindowMask];
 
     if (m_topContentBorderThickness > 0) {
         [window setContentBorderThickness:m_topContentBorderThickness forEdge:NSMaxYEdge];

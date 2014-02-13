@@ -208,6 +208,8 @@ public:
 
     void registerTouch(bool enable);
     void setContentBorderThickness(int topThickness, int bottomThickness);
+    void registerContentBorderArea(quintptr identifier, int upper, int lower);
+    void enableContentBorderArea(bool enable);
     void applyContentBorderThickness(NSWindow *window);
     void updateNSToolbar();
 
@@ -282,6 +284,16 @@ public: // for QNSView
     QRect m_normalGeometry;
     Qt::WindowFlags m_oldWindowFlags;
     NSApplicationPresentationOptions m_presentationOptions;
+
+    struct BorderRange {
+        BorderRange(int u, int l) : upper(u), lower(l) { }
+        int upper;
+        int lower;
+        bool operator<(BorderRange const& right) const {
+              return upper < right.upper;
+        }
+    };
+    QHash<quintptr, BorderRange> m_contentBorderAreas; // identifer -> uppper/lower
 };
 
 QT_END_NAMESPACE

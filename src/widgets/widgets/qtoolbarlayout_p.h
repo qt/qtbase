@@ -111,6 +111,7 @@ public:
     void updateMarginAndSpacing();
     bool hasExpandFlag() const;
 
+    void updateMacBorderMetrics();
 public Q_SLOTS:
     void setExpanded(bool b);
 
