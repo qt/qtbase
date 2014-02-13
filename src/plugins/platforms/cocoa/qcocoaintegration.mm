@@ -487,6 +487,7 @@ void QCocoaIntegration::clearToolbars()
     QHash<QWindow *, NSToolbar *>::const_iterator it = mToolbars.constBegin();
     while (it != mToolbars.constEnd()) {
         [it.value() release];
+        ++it;
     }
     mToolbars.clear();
 }
