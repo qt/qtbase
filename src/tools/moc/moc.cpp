@@ -224,6 +224,10 @@ Type Moc::parseType()
             ;
         }
         if (test(LANGLE)) {
+            if (type.name.isEmpty()) {
+                // '<' cannot start a type
+                return type;
+            }
             type.name += lexemUntil(RANGLE);
         }
         if (test(SCOPE)) {

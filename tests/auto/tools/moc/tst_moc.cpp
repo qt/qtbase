@@ -128,6 +128,7 @@ public:
         emit send(value);
     }
 
+    bool operator< ( const Sender & ) const { /* QTBUG-36834 */ return true;}
 signals:
     void send(const String::Type&);
     void send(const Int::Type&);
