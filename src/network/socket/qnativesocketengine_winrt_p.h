@@ -138,6 +138,70 @@ class QNativeSocketEnginePrivate : public QAbstractSocketEnginePrivate
 public:
     QNativeSocketEnginePrivate();
     ~QNativeSocketEnginePrivate();
+
+    qintptr socketDescriptor;
+
+    bool notifyOnRead, notifyOnWrite, notifyOnException;
+    bool closingDown;
+
+    enum ErrorString {
+        NonBlockingInitFailedErrorString,
+        BroadcastingInitFailedErrorString,
+        NoIpV6ErrorString,
+        RemoteHostClosedErrorString,
+        TimeOutErrorString,
+        ResourceErrorString,
+        OperationUnsupportedErrorString,
+        ProtocolUnsupportedErrorString,
+        InvalidSocketErrorString,
+        HostUnreachableErrorString,
+        NetworkUnreachableErrorString,
+        AccessErrorString,
+        ConnectionTimeOutErrorString,
+        ConnectionRefusedErrorString,
+        AddressInuseErrorString,
+        AddressNotAvailableErrorString,
+        AddressProtectedErrorString,
+        DatagramTooLargeErrorString,
+        SendDatagramErrorString,
+        ReceiveDatagramErrorString,
+        WriteErrorString,
+        ReadErrorString,
+        PortInuseErrorString,
+        NotSocketErrorString,
+        InvalidProxyTypeString,
+        TemporaryErrorString,
+
+        UnknownSocketErrorString = -1
+    };
+
+    void setError(QAbstractSocket::SocketError error, ErrorString errorString) const;
+
+    // native functions
+    int option(QNativeSocketEngine::SocketOption option) const;
+    bool setOption(QNativeSocketEngine::SocketOption option, int value);
+
+    bool createNewSocket(QAbstractSocket::SocketType type, QAbstractSocket::NetworkLayerProtocol &protocol);
+
+    bool checkProxy(const QHostAddress &address);
+    bool fetchConnectionParameters();
+private:
+    union {
+        ABI::Windows::Networking::Sockets::IStreamSocket *tcp;
+        ABI::Windows::Networking::Sockets::IDatagramSocket *udp;
+    };
+    Microsoft::WRL::ComPtr<ABI::Windows::Networking::Sockets::IStreamSocketListener> tcpListener;
+    Microsoft::WRL::ComPtr<ABI::Windows::Storage::Streams::IBuffer> inputBuffer;
+    QList<ABI::Windows::Networking::Sockets::IDatagramSocketMessageReceivedEventArgs *> pendingDatagrams;
+    QList<ABI::Windows::Networking::Sockets::IStreamSocket *> pendingConnections;
+    QList<ABI::Windows::Networking::Sockets::IStreamSocket *> currentConnections;
+
+    HRESULT handleNewDatagram(ABI::Windows::Networking::Sockets::IDatagramSocket *socket,
+                              ABI::Windows::Networking::Sockets::IDatagramSocketMessageReceivedEventArgs *args);
+    HRESULT handleClientConnection(ABI::Windows::Networking::Sockets::IStreamSocketListener *tcpListener,
+                                   ABI::Windows::Networking::Sockets::IStreamSocketListenerConnectionReceivedEventArgs *args);
+    static HRESULT interruptEventDispatcher(ABI::Windows::Foundation::IAsyncAction *, ABI::Windows::Foundation::AsyncStatus);
+    static HRESULT handleReadyRead(ABI::Windows::Foundation::IAsyncOperationWithProgress<ABI::Windows::Storage::Streams::IBuffer *, UINT32> *asyncInfo, ABI::Windows::Foundation::AsyncStatus);
 };
 
 QT_END_NAMESPACE
