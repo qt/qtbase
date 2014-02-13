@@ -64,6 +64,7 @@ private:
     QScopedPointer<QOpenGLContext> m_context;
     QOpenGLTextureBlitter m_blitter;
     QImage m_image;
+    QImage m_image_mirrord;
 };
 
 #endif

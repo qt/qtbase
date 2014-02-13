@@ -118,8 +118,7 @@ void QEGLCompositor::render(QEGLPlatformWindow *window)
         uint textureId = textures->textureId(i);
         glBindTexture(GL_TEXTURE_2D, textureId);
         QMatrix4x4 target = QOpenGLTextureBlitter::targetTransform(textures->geometry(i),
-                                                                   targetWindowRect,
-                                                                   QOpenGLTextureBlitter::OriginTopLeft);
+                                                                   targetWindowRect);
         m_blitter->setSwizzleRB(window->isRaster());
 
         if (textures->count() > 1 && i == textures->count() - 1) {

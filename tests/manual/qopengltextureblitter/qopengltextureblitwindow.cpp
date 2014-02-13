@@ -83,44 +83,57 @@ void QOpenGLTextureBlitWindow::render()
     QOpenGLTexture texture(m_image);
     texture.create();
 
-    QRectF topLeft(QPointF(0,0), QPointF(dWidth()/2.0, dHeight()/2.0));
-    QRectF topRight(QPointF(dWidth()/2.0,0), QPointF(dWidth(), dHeight()/2.0));
-    QRectF bottomLeft(QPointF(0, dHeight()/2.0), QPointF(dWidth() /2.0, dHeight()));
-    QRectF bottomRight(QPoint(dWidth()/2.0, dHeight()/2.0), QPointF(dWidth(), dHeight()));
+    QOpenGLTexture texture_mirrored(m_image_mirrord);
+    texture_mirrored.setWrapMode(QOpenGLTexture::ClampToEdge);
+    texture_mirrored.create();
+
+    QRectF topLeftOriginTopLeft(QPointF(0,0), QPointF(dWidth()/2.0, dHeight()/2.0));
+    QRectF topRightOriginTopLeft(QPointF(dWidth()/2.0,0), QPointF(dWidth(), dHeight()/2.0));
+    QRectF bottomLeftOriginTopLeft(QPointF(0, dHeight()/2.0), QPointF(dWidth() /2.0, dHeight()));
+    QRectF bottomRightOriginTopLeft(QPoint(dWidth()/2.0, dHeight()/2.0), QPointF(dWidth(), dHeight()));
+
+    QRectF topLeftOriginBottomLeft = bottomLeftOriginTopLeft; Q_UNUSED(topLeftOriginBottomLeft);
+    QRectF topRightOriginBottomLeft = bottomRightOriginTopLeft; Q_UNUSED(topRightOriginBottomLeft);
+    QRectF bottomLeftOriginBottomLeft = topLeftOriginTopLeft;
+    QRectF bottomRightOriginBottomLeft = topRightOriginTopLeft;
 
     QOpenGLTextureBlitter::Origin topLeftOrigin = QOpenGLTextureBlitter::OriginTopLeft;
     QOpenGLTextureBlitter::Origin bottomLeftOrigin = QOpenGLTextureBlitter::OriginBottomLeft;
-    QMatrix4x4 topRightVertexFlipped = QOpenGLTextureBlitter::targetTransform(topRight, viewport, topLeftOrigin);
-    QMatrix4x4 bottomLeftVertex = QOpenGLTextureBlitter::targetTransform(bottomLeft, viewport, topLeftOrigin);
-    QMatrix4x4 bottomRightVertexFlipped = QOpenGLTextureBlitter::targetTransform(bottomRight, viewport, topLeftOrigin);
 
-    QMatrix3x3 texTopLeft = QOpenGLTextureBlitter::sourceTransform(topLeft, m_image.size(), topLeftOrigin);
-    QMatrix3x3 texTopRight = QOpenGLTextureBlitter::sourceTransform(topRight, m_image.size(), topLeftOrigin);
-    QMatrix3x3 texBottomLeft = QOpenGLTextureBlitter::sourceTransform(bottomLeft, m_image.size(), topLeftOrigin);
-    QMatrix3x3 texBottomRight = QOpenGLTextureBlitter::sourceTransform(bottomRight, m_image.size(), bottomLeftOrigin);
+    QMatrix4x4 topRightOriginTopLeftVertex = QOpenGLTextureBlitter::targetTransform(topRightOriginTopLeft, viewport);
+    QMatrix4x4 bottomLeftOriginTopLeftVertex = QOpenGLTextureBlitter::targetTransform(bottomLeftOriginTopLeft, viewport);
+    QMatrix4x4 bottomRightOriginTopLeftVertex = QOpenGLTextureBlitter::targetTransform(bottomRightOriginTopLeft, viewport);
 
-    QSizeF subSize(topLeft.width()/2, topLeft.height()/2);
-    QRectF subTopLeft(topLeft.topLeft(), subSize);
-    QRectF subTopRight(QPointF(topLeft.topLeft().x() + topLeft.width() / 2, topLeft.topLeft().y()),subSize);
-    QRectF subBottomLeft(QPointF(topLeft.topLeft().x(), topLeft.topLeft().y() + topLeft.height() / 2), subSize);
-    QRectF subBottomRight(QPointF(topLeft.topLeft().x() + topLeft.width() / 2, topLeft.topLeft().y() + topLeft.height() / 2), subSize);
+    QMatrix3x3 texTopLeftOriginTopLeft = QOpenGLTextureBlitter::sourceTransform(topLeftOriginTopLeft, m_image.size(), topLeftOrigin);
+    QMatrix3x3 texTopRightOriginBottomLeft = QOpenGLTextureBlitter::sourceTransform(topRightOriginBottomLeft, m_image.size(), bottomLeftOrigin);
+    QMatrix3x3 texBottomLeftOriginBottomLeft = QOpenGLTextureBlitter::sourceTransform(bottomLeftOriginBottomLeft, m_image.size(), bottomLeftOrigin);
+    QMatrix3x3 texBottomRightOriginBottomLeft = QOpenGLTextureBlitter::sourceTransform(bottomRightOriginBottomLeft, m_image.size(), bottomLeftOrigin);
 
-    QMatrix4x4 subTopLeftVertex = QOpenGLTextureBlitter::targetTransform(subTopLeft, viewport, topLeftOrigin);
-    QMatrix4x4 subTopRightVertex = QOpenGLTextureBlitter::targetTransform(subTopRight, viewport, topLeftOrigin);
-    QMatrix4x4 subBottomLeftVertex = QOpenGLTextureBlitter::targetTransform(subBottomLeft, viewport, topLeftOrigin);
-    QMatrix4x4 subBottomRightVertex = QOpenGLTextureBlitter::targetTransform(subBottomRight, viewport, topLeftOrigin);
+    QSizeF subSize(topLeftOriginTopLeft.width()/2, topLeftOriginTopLeft.height()/2);
+    QRectF subTopLeftOriginTopLeft(topLeftOriginTopLeft.topLeft(), subSize);
+    QRectF subTopRightOriginTopLeft(QPointF(topLeftOriginTopLeft.topLeft().x() + topLeftOriginTopLeft.width() / 2,
+                               topLeftOriginTopLeft.topLeft().y()), subSize);
+    QRectF subBottomLeftOriginTopLeft(QPointF(topLeftOriginTopLeft.topLeft().x(),
+                                 topLeftOriginTopLeft.topLeft().y() + topLeftOriginTopLeft.height() / 2), subSize);
+    QRectF subBottomRightOriginTopLeft(QPointF(topLeftOriginTopLeft.topLeft().x() + topLeftOriginTopLeft.width() / 2, 
+                                  topLeftOriginTopLeft.topLeft().y() + topLeftOriginTopLeft.height() / 2), subSize);
+
+    QMatrix4x4 subTopLeftOriginTopLeftVertex = QOpenGLTextureBlitter::targetTransform(subTopLeftOriginTopLeft, viewport);
+    QMatrix4x4 subTopRightOriginTopLeftVertex = QOpenGLTextureBlitter::targetTransform(subTopRightOriginTopLeft, viewport);
+    QMatrix4x4 subBottomLeftOriginTopLeftVertex = QOpenGLTextureBlitter::targetTransform(subBottomLeftOriginTopLeft, viewport);
+    QMatrix4x4 subBottomRightOriginTopLeftVertex = QOpenGLTextureBlitter::targetTransform(subBottomRightOriginTopLeft, viewport);
 
     m_blitter.bind();
-    m_blitter.blit(texture.textureId(), subTopLeftVertex, texBottomRight);
-    m_blitter.blit(texture.textureId(), subTopRightVertex, texBottomLeft);
-    m_blitter.blit(texture.textureId(), subBottomLeftVertex, texTopRight);
-    m_blitter.blit(texture.textureId(), subBottomRightVertex, texTopLeft);
+    m_blitter.blit(texture_mirrored.textureId(), subTopLeftOriginTopLeftVertex, texBottomRightOriginBottomLeft);
+    m_blitter.blit(texture_mirrored.textureId(), subTopRightOriginTopLeftVertex, texBottomLeftOriginBottomLeft);
+    m_blitter.blit(texture.textureId(), subBottomLeftOriginTopLeftVertex, texTopRightOriginBottomLeft);
+    m_blitter.blit(texture.textureId(), subBottomRightOriginTopLeftVertex, texTopLeftOriginTopLeft);
 
-    m_blitter.blit(texture.textureId(), topRightVertexFlipped, topLeftOrigin);
-    m_blitter.blit(texture.textureId(), bottomLeftVertex, bottomLeftOrigin);
+    m_blitter.blit(texture.textureId(), topRightOriginTopLeftVertex, topLeftOrigin);
+    m_blitter.blit(texture_mirrored.textureId(), bottomLeftOriginTopLeftVertex, topLeftOrigin);
 
     m_blitter.setSwizzleRB(true);
-    m_blitter.blit(texture.textureId(), bottomRightVertexFlipped, texTopLeft);
+    m_blitter.blit(texture.textureId(), bottomRightOriginTopLeftVertex, texTopLeftOriginTopLeft);
     m_blitter.setSwizzleRB(false);
     m_blitter.release();
 
@@ -163,5 +176,6 @@ void QOpenGLTextureBlitWindow::resizeEvent(QResizeEvent *event)
 
     p.drawRect(QRectF(2.5,2.5,dWidth() - 5, dHeight() - 5));
 
+    m_image_mirrord = m_image.mirrored(false,true);
 }
 

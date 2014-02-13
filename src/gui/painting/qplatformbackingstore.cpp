@@ -218,8 +218,7 @@ void QPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &regi
         GLuint textureId = textures->textureId(i);
         glBindTexture(GL_TEXTURE_2D, textureId);
 
-        QMatrix4x4 target = QOpenGLTextureBlitter::targetTransform(textures->geometry(i), windowRect,
-                                                                   QOpenGLTextureBlitter::OriginTopLeft);
+        QMatrix4x4 target = QOpenGLTextureBlitter::targetTransform(textures->geometry(i), windowRect);
         d_ptr->blitter->blit(textureId, target, QOpenGLTextureBlitter::OriginBottomLeft);
     }
 
@@ -230,8 +229,7 @@ void QPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &regi
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    QMatrix4x4 target = QOpenGLTextureBlitter::targetTransform(windowRect, windowRect,
-                                                               QOpenGLTextureBlitter::OriginTopLeft);
+    QMatrix4x4 target = QOpenGLTextureBlitter::targetTransform(windowRect, windowRect);
     d_ptr->blitter->setSwizzleRB(true);
     d_ptr->blitter->blit(textureId, target, QOpenGLTextureBlitter::OriginTopLeft);
     d_ptr->blitter->setSwizzleRB(false);

@@ -344,25 +344,23 @@ void QOpenGLTextureBlitter::blit(GLuint texture,
 }
 
 QMatrix4x4 QOpenGLTextureBlitter::targetTransform(const QRectF &target,
-                                                  const QRect &viewport,
-                                                  Origin origin)
+                                                  const QRect &viewport)
 {
-    qreal x_scale = target.size().width() / viewport.width();
-    qreal y_scale = target.size().height() / viewport.height();
+    qreal x_scale = target.width() / viewport.width();
+    qreal y_scale = target.height() / viewport.height();
 
     const QPointF relative_to_viewport = target.topLeft() - viewport.topLeft();
-    qreal x_translate = ((relative_to_viewport.x() / viewport.width()) + (x_scale / 2)) * 2 - 1;
-    qreal y_translate = ((relative_to_viewport.y() / viewport.height()) + (y_scale / 2)) * 2 - 1;
+    qreal x_translate = x_scale - 1 + ((relative_to_viewport.x() / viewport.width()) * 2);
+    qreal y_translate = -y_scale + 1 - ((relative_to_viewport.y() / viewport.height()) * 2);
 
-    if (origin == OriginTopLeft) {
-        y_translate = -y_translate;
-    }
+    QMatrix4x4 matrix;
+    matrix(0,3) = x_translate;
+    matrix(1,3) = y_translate;
 
-    QMatrix4x4 vertexMatrix;
+    matrix(0,0) = x_scale;
+    matrix(1,1) = y_scale;
 
-    vertexMatrix.translate(x_translate, y_translate);
-    vertexMatrix.scale(x_scale, y_scale);
-    return vertexMatrix;
+    return matrix;
 }
 
 QMatrix3x3 QOpenGLTextureBlitter::sourceTransform(const QRectF &subTexture,
