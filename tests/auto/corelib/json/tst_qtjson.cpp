@@ -1209,7 +1209,7 @@ void tst_QtJson::toJson()
 
         QByteArray json = QJsonDocument(object).toJson(QJsonDocument::Compact);
         QByteArray expected =
-                "{\"Array\": [true,999,\"string\",null,\"\\\\\\u0007\\n\\r\\b\\tabcABC\\\"\"],\"\\\\Key\\n\": \"Value\",\"null\": null}";
+                "{\"Array\":[true,999,\"string\",null,\"\\\\\\u0007\\n\\r\\b\\tabcABC\\\"\"],\"\\\\Key\\n\":\"Value\",\"null\":null}";
         QCOMPARE(json, expected);
 
         QJsonDocument doc;
@@ -2004,7 +2004,7 @@ void tst_QtJson::testDebugStream()
         qDebug() << object;
 
         object.insert(QLatin1String("foo"), QLatin1String("bar"));
-        QTest::ignoreMessage(QtDebugMsg, "QJsonObject({\"foo\": \"bar\"})");
+        QTest::ignoreMessage(QtDebugMsg, "QJsonObject({\"foo\":\"bar\"})");
         qDebug() << object;
     }
 
@@ -2031,7 +2031,7 @@ void tst_QtJson::testDebugStream()
         QJsonObject object;
         object.insert(QLatin1String("foo"), QLatin1String("bar"));
         doc.setObject(object);
-        QTest::ignoreMessage(QtDebugMsg, "QJsonDocument({\"foo\": \"bar\"})");
+        QTest::ignoreMessage(QtDebugMsg, "QJsonDocument({\"foo\":\"bar\"})");
         qDebug() << doc;
 
         QJsonArray array;
@@ -2076,7 +2076,7 @@ void tst_QtJson::testDebugStream()
         QJsonObject object;
         object.insert(QLatin1String("foo"), QLatin1String("bar"));
         value = QJsonValue(object); // object
-        QTest::ignoreMessage(QtDebugMsg, "QJsonValue(object, QJsonObject({\"foo\": \"bar\"}) )");
+        QTest::ignoreMessage(QtDebugMsg, "QJsonValue(object, QJsonObject({\"foo\":\"bar\"}) )");
         qDebug() << value;
     }
 }

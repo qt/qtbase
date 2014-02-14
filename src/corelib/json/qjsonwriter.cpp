@@ -195,7 +195,7 @@ static void objectContentToJson(const QJsonPrivate::Object *o, QByteArray &json,
         json += indentString;
         json += '"';
         json += escapedString(e->key());
-        json += "\": ";
+        json += compact ? "\":" : "\": ";
         valueToJson(o, e->value, json, indent, compact);
 
         if (++i == o->length) {
