@@ -388,7 +388,8 @@ QString QMacPasteboardMimeUnicodeText::mimeFor(QString flav)
 
 bool QMacPasteboardMimeUnicodeText::canConvert(const QString &mime, QString flav)
 {
-    return flavorFor(mime) == flav;
+    return (mime == QLatin1String("text/plain")
+            && (flav == QLatin1String("public.utf8-plain-text") || (flav == QLatin1String("public.utf16-plain-text"))));
 }
 
 QVariant QMacPasteboardMimeUnicodeText::convertToMime(const QString &mimetype, QList<QByteArray> data, QString flavor)
