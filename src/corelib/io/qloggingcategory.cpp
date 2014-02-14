@@ -274,6 +274,14 @@ void QLoggingCategory::setEnabled(QtMsgType type, bool enable)
  */
 
 /*!
+    \fn const QLoggingCategory &QLoggingCategory::operator()() const
+
+    Returns the object itself. This allows both a QLoggingCategory variable, and
+    a factory method returning a QLoggingCategory, to be used in \l qCDebug(),
+    \l qCWarning(), \l qCCritical() macros.
+ */
+
+/*!
     Returns a pointer to the global category \c "default" that
     is used e.g. by qDebug(), qWarning(), qCritical(), qFatal().
 

@@ -428,6 +428,8 @@ private slots:
         QCOMPARE(logMessage, QString());
         qCDebug(TST_LOG, "Check debug with no filter active");
         QCOMPARE(logMessage, QString());
+        qCDebug(TST_LOG(), "Check debug with no filter active");
+        QCOMPARE(logMessage, QString());
         buf = QStringLiteral("tst.log.warning: Check warning with no filter active");
         qCWarning(TST_LOG) << "Check warning with no filter active";
         QCOMPARE(logMessage, buf);

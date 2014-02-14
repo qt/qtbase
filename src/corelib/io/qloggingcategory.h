@@ -65,6 +65,7 @@ public:
 
     // allows usage of both factory method and variable in qCX macros
     QLoggingCategory &operator()() { return *this; }
+    const QLoggingCategory &operator()() const { return *this; }
 
     static QLoggingCategory *defaultCategory();
 
