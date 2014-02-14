@@ -4,6 +4,7 @@ SUBDIRS=\
     qarraydata \
     qbitarray \
     qbytearray \
+    qbytearraylist \
     qbytearraymatcher \
     qbytedatabuffer \
     qcache \
