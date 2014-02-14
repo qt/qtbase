@@ -62,7 +62,7 @@ QT_BEGIN_NAMESPACE
 
 */
 
-static const quint32 buttonRoleLayouts[2][5][14] =
+static const int buttonRoleLayouts[2][5][14] =
 {
     // Qt::Horizontal
     {
@@ -800,7 +800,7 @@ QPlatformDialogHelper::ButtonRole QPlatformDialogHelper::buttonRole(QPlatformDia
     return InvalidRole;
 }
 
-const quint32 *QPlatformDialogHelper::buttonLayout(Qt::Orientation orientation, ButtonLayout policy)
+const int *QPlatformDialogHelper::buttonLayout(Qt::Orientation orientation, ButtonLayout policy)
 {
     if (policy == UnknownLayout) {
 #if defined (Q_OS_OSX)

@@ -266,7 +266,7 @@ void QDialogButtonBoxPrivate::layoutButtons()
             tmpPolicy = 4;  // Mac modeless
     }
 
-    const quint32 *currentLayout = QPlatformDialogHelper::buttonLayout(
+    const int *currentLayout = QPlatformDialogHelper::buttonLayout(
         orientation, static_cast<QPlatformDialogHelper::ButtonLayout>(tmpPolicy));
 
     if (center)

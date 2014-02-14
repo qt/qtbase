@@ -133,8 +133,8 @@ public:
         RoleMask        = 0x0FFFFFFF,
         AlternateRole   = 0x10000000,
         Stretch         = 0x20000000,
-        EOL             = 0x40000000,
-        Reverse         = 0x80000000
+        Reverse         = 0x40000000,
+        EOL             = InvalidRole
     };
 
     enum ButtonLayout {
@@ -160,7 +160,7 @@ public:
 
     static QVariant defaultStyleHint(QPlatformDialogHelper::StyleHint hint);
 
-    static const quint32 *buttonLayout(Qt::Orientation orientation = Qt::Horizontal, ButtonLayout policy = UnknownLayout);
+    static const int *buttonLayout(Qt::Orientation orientation = Qt::Horizontal, ButtonLayout policy = UnknownLayout);
     static ButtonRole buttonRole(StandardButton button);
 
 Q_SIGNALS:
