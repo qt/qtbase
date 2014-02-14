@@ -43,15 +43,25 @@
 
 QT_BEGIN_NAMESPACE
 
+class QMacMimeData;
 class QMacPasteboard
 {
+public:
+    enum DataRequestType { EagerRequest, LazyRequest };
+private:
     struct Promise {
         Promise() : itemId(0), convertor(0) { }
-        Promise(int itemId, QMacInternalPasteboardMime *c, QString m, QVariant d, int o=0) : itemId(itemId), offset(o), convertor(c), mime(m), data(d) { }
+
+        static Promise eagerPromise(int itemId, QMacInternalPasteboardMime *c, QString m, QMacMimeData *d, int o = 0);
+        static Promise lazyPromise(int itemId, QMacInternalPasteboardMime *c, QString m, QMacMimeData *d, int o = 0);
+        Promise(int itemId, QMacInternalPasteboardMime *c, QString m, QMacMimeData *md, int o, DataRequestType drt);
+
         int itemId, offset;
         QMacInternalPasteboardMime *convertor;
         QString mime;
-        QVariant data;
+        QPointer<QMacMimeData> mimeData;
+        QVariant variantData;
+        DataRequestType dataRequestType;
     };
     QList<Promise> promises;
 
@@ -72,7 +82,8 @@ public:
 
     PasteboardRef pasteBoard() const;
     QMimeData *mimeData() const;
-    void setMimeData(QMimeData *mime);
+
+    void setMimeData(QMimeData *mime, DataRequestType dataRequestType = EagerRequest);
 
     QStringList formats() const;
     bool hasFormat(const QString &format) const;
