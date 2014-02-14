@@ -3528,7 +3528,7 @@ static QRegionPrivate *PolygonRegion(const QPoint *Pts, int Count, int rule)
     QPoint *pts;             /* output buffer           */
     EdgeTableEntry *pPrevAET;        /* ptr to previous AET     */
     EdgeTable ET;                    /* header node for ET      */
-    EdgeTableEntry AET;              /* header node for AET     */
+    EdgeTableEntry *AET;             /* header node for AET     */
     EdgeTableEntry *pETEs;           /* EdgeTableEntries pool   */
     ScanLineListBlock SLLBlock;      /* header for scanlinelist */
     int fixWAET = false;
@@ -3567,8 +3567,9 @@ static QRegionPrivate *PolygonRegion(const QPoint *Pts, int Count, int rule)
 
     region->vectorize();
 
+    AET = new EdgeTableEntry;
     pts = FirstPtBlock.pts;
-    CreateETandAET(Count, Pts, &ET, &AET, pETEs, &SLLBlock);
+    CreateETandAET(Count, Pts, &ET, AET, pETEs, &SLLBlock);
 
     pSLL = ET.scanlines.next;
     curPtBlock = &FirstPtBlock;
@@ -3579,6 +3580,7 @@ static QRegionPrivate *PolygonRegion(const QPoint *Pts, int Count, int rule)
 #ifndef QT_NO_DEBUG
         qWarning("QRegion: creating region from big polygon failed...!");
 #endif
+        delete AET;
         delete region;
         return 0;
     }
@@ -3596,11 +3598,11 @@ static QRegionPrivate *PolygonRegion(const QPoint *Pts, int Count, int rule)
                  *  get to the next edge.
                  */
                 if (pSLL && y == pSLL->scanline) {
-                    loadAET(&AET, pSLL->edgelist);
+                    loadAET(AET, pSLL->edgelist);
                     pSLL = pSLL->next;
                 }
-                pPrevAET = &AET;
-                pAET = AET.next;
+                pPrevAET = AET;
+                pAET = AET->next;
 
                 /*
                  *  for each active edge
@@ -3626,7 +3628,7 @@ static QRegionPrivate *PolygonRegion(const QPoint *Pts, int Count, int rule)
                     }
                     EVALUATEEDGEEVENODD(pAET, pPrevAET, y)
                 }
-                InsertionSort(&AET);
+                InsertionSort(AET);
             }
         } else {
             /*
@@ -3638,12 +3640,12 @@ static QRegionPrivate *PolygonRegion(const QPoint *Pts, int Count, int rule)
                  *  get to the next edge.
                  */
                 if (pSLL && y == pSLL->scanline) {
-                    loadAET(&AET, pSLL->edgelist);
-                    computeWAET(&AET);
+                    loadAET(AET, pSLL->edgelist);
+                    computeWAET(AET);
                     pSLL = pSLL->next;
                 }
-                pPrevAET = &AET;
-                pAET = AET.next;
+                pPrevAET = AET;
+                pAET = AET->next;
                 pWETE = pAET;
 
                 /*
@@ -3681,8 +3683,8 @@ static QRegionPrivate *PolygonRegion(const QPoint *Pts, int Count, int rule)
                  *  recompute the winding active edge table if
                  *  we just resorted or have exited an edge.
                  */
-                if (InsertionSort(&AET) || fixWAET) {
-                    computeWAET(&AET);
+                if (InsertionSort(AET) || fixWAET) {
+                    computeWAET(AET);
                     fixWAET = false;
                 }
             }
@@ -3706,6 +3708,7 @@ static QRegionPrivate *PolygonRegion(const QPoint *Pts, int Count, int rule)
         free(curPtBlock);
         curPtBlock = tmpPtBlock;
     }
+    delete AET;
     free(pETEs);
     return region;
 }

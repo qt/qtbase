@@ -30,7 +30,7 @@ testcocoon {
 
 mac:!ios: LIBS_PRIVATE += -framework Cocoa
 
-CONFIG += simd
+CONFIG += simd optimize_full
 
 include(accessible/accessible.pri)
 include(kernel/kernel.pri)
