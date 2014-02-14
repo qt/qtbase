@@ -136,6 +136,8 @@ inline int qt_depthForFormat(QImage::Format format)
         depth = 1;
         break;
     case QImage::Format_Indexed8:
+    case QImage::Format_Alpha8:
+    case QImage::Format_Grayscale8:
         depth = 8;
         break;
     case QImage::Format_RGB32:

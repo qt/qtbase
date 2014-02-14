@@ -228,7 +228,7 @@ inline static bool read_jpeg_format(QImage::Format &format, j_decompress_ptr cin
     bool result = true;
     switch (cinfo->output_components) {
     case 1:
-        format = QImage::Format_Indexed8;
+        format = QImage::Format_Grayscale8;
         break;
     case 3:
     case 4:
@@ -248,7 +248,7 @@ static bool ensureValidImage(QImage *dest, struct jpeg_decompress_struct *info,
     QImage::Format format;
     switch (info->output_components) {
     case 1:
-        format = QImage::Format_Indexed8;
+        format = QImage::Format_Grayscale8;
         break;
     case 3:
     case 4:
@@ -258,15 +258,8 @@ static bool ensureValidImage(QImage *dest, struct jpeg_decompress_struct *info,
         return false; // unsupported format
     }
 
-    if (dest->size() != size || dest->format() != format) {
+    if (dest->size() != size || dest->format() != format)
         *dest = QImage(size, format);
-
-        if (format == QImage::Format_Indexed8) {
-            dest->setColorCount(256);
-            for (int i = 0; i < 256; i++)
-                dest->setColor(i, qRgb(i,i,i));
-        }
-    }
 
     return !dest->isNull();
 }
@@ -558,6 +551,9 @@ static bool write_jpeg_image(const QImage &image, QIODevice *device, volatile in
     bool success = false;
     const QVector<QRgb> cmap = image.colorTable();
 
+    if (image.format() == QImage::Format_Invalid || image.format() == QImage::Format_Alpha8)
+        return false;
+
     struct jpeg_compress_struct cinfo;
     JSAMPROW row_pointer[1];
     row_pointer[0] = 0;
@@ -581,18 +577,22 @@ static bool write_jpeg_image(const QImage &image, QIODevice *device, volatile in
         cinfo.image_width = image.width();
         cinfo.image_height = image.height();
 
-        bool gray=false;
+        bool gray = false;
         switch (image.format()) {
         case QImage::Format_Mono:
         case QImage::Format_MonoLSB:
         case QImage::Format_Indexed8:
             gray = true;
-            for (int i = image.colorCount(); gray && i--;) {
-                gray = gray & (qRed(cmap[i]) == qGreen(cmap[i]) &&
-                               qRed(cmap[i]) == qBlue(cmap[i]));
+            for (int i = image.colorCount(); gray && i; i--) {
+                gray = gray & qIsGray(cmap[i-1]);
             }
             cinfo.input_components = gray ? 1 : 3;
             cinfo.in_color_space = gray ? JCS_GRAYSCALE : JCS_RGB;
+            break;
+        case QImage::Format_Grayscale8:
+            gray = true;
+            cinfo.input_components = 1;
+            cinfo.in_color_space = JCS_GRAYSCALE;
             break;
         default:
             cinfo.input_components = 3;
@@ -677,6 +677,9 @@ static bool write_jpeg_image(const QImage &image, QIODevice *device, volatile in
                         ++pix;
                     }
                 }
+                break;
+            case QImage::Format_Grayscale8:
+                memcpy(row, image.constScanLine(cinfo.next_scanline), w);
                 break;
             case QImage::Format_RGB888:
                 memcpy(row, image.constScanLine(cinfo.next_scanline), w * 3);

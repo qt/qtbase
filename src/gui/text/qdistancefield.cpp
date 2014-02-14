@@ -42,6 +42,7 @@
 #include "qdistancefield_p.h"
 #include <qmath.h>
 #include <private/qdatabuffer_p.h>
+#include <private/qimage_p.h>
 #include <private/qpathsimplifier_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -995,12 +996,12 @@ QImage QDistanceField::toImage(QImage::Format format) const
     if (isNull())
         return QImage();
 
-    QImage image(d->width, d->height, format == QImage::Format_Indexed8 ?
+    QImage image(d->width, d->height, qt_depthForFormat(format) == 8 ?
                                       format : QImage::Format_ARGB32_Premultiplied);
     if (image.isNull())
         return image;
 
-    if (format == QImage::Format_Indexed8) {
+    if (image.depth() == 8) {
         for (int y = 0; y < d->height; ++y)
             memcpy(image.scanLine(y), scanLine(y), d->width);
     } else {

@@ -812,6 +812,10 @@ bool QBmpHandler::write(const QImage &img)
     case QImage::Format_RGB30:
         image = img.convertToFormat(QImage::Format_RGB32);
         break;
+    case QImage::Format_Alpha8:
+    case QImage::Format_Grayscale8:
+        image = img.convertToFormat(QImage::Format_Indexed8);
+        break;
     default:
         image = img;
     }

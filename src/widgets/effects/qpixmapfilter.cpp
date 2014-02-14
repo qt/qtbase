@@ -713,7 +713,8 @@ void expblur(QImage &img, qreal radius, bool improvedQuality = false, int transp
 
     Q_ASSERT(img.format() == QImage::Format_ARGB32_Premultiplied
              || img.format() == QImage::Format_RGB32
-             || img.format() == QImage::Format_Indexed8);
+             || img.format() == QImage::Format_Indexed8
+             || img.format() == QImage::Format_Grayscale8);
 
     // choose the alpha such that pixels at radius distance from a fully
     // saturated pixel will have an alpha component of no greater than
@@ -788,7 +789,7 @@ Q_WIDGETS_EXPORT QImage qt_halfScaled(const QImage &source)
 
     QImage srcImage = source;
 
-    if (source.format() == QImage::Format_Indexed8) {
+    if (source.format() == QImage::Format_Indexed8 || source.format() == QImage::Format_Grayscale8) {
         // assumes grayscale
         QImage dest(source.width() / 2, source.height() / 2, srcImage.format());
 
@@ -898,7 +899,7 @@ Q_WIDGETS_EXPORT void qt_blurImage(QPainter *p, QImage &blurImage, qreal radius,
 
 Q_WIDGETS_EXPORT void qt_blurImage(QImage &blurImage, qreal radius, bool quality, int transposed = 0)
 {
-    if (blurImage.format() == QImage::Format_Indexed8)
+    if (blurImage.format() == QImage::Format_Indexed8 || blurImage.format() == QImage::Format_Grayscale8)
         expblur<12, 10, true>(blurImage, radius, quality, transposed);
     else
         expblur<12, 10, false>(blurImage, radius, quality, transposed);

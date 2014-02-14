@@ -493,15 +493,11 @@ QImage QWindowsFontEngineDirectWrite::alphaMapForGlyph(glyph_t glyph, QFixed sub
 {
     QImage im = imageForGlyph(glyph, subPixelPosition, 0, QTransform());
 
-    QImage indexed(im.width(), im.height(), QImage::Format_Indexed8);
-    QVector<QRgb> colors(256);
-    for (int i=0; i<256; ++i)
-        colors[i] = qRgba(0, 0, 0, i);
-    indexed.setColorTable(colors);
+    QImage alphaMap(im.width(), im.height(), QImage::Format_Alpha8);
 
     for (int y=0; y<im.height(); ++y) {
         uint *src = (uint*) im.scanLine(y);
-        uchar *dst = indexed.scanLine(y);
+        uchar *dst = alphaMap.scanLine(y);
         for (int x=0; x<im.width(); ++x) {
             *dst = 255 - (m_fontEngineData->pow_gamma[qGray(0xffffffff - *src)] * 255. / 2047.);
             ++dst;
@@ -509,7 +505,7 @@ QImage QWindowsFontEngineDirectWrite::alphaMapForGlyph(glyph_t glyph, QFixed sub
         }
     }
 
-    return indexed;
+    return alphaMap;
 }
 
 bool QWindowsFontEngineDirectWrite::supportsSubPixelPositions() const

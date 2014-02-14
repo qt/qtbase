@@ -111,7 +111,8 @@ public:
         CMYK,
         HSL,
         HSV,
-        YUV
+        YUV,
+        Alpha
     };
 
     enum AlphaUsage {
@@ -307,6 +308,22 @@ Q_DECL_CONSTEXPR inline QPixelFormat qPixelFormatGrayscale(uchar channelSize,
                         0,
                         0,
                         QPixelFormat::IgnoresAlpha,
+                        QPixelFormat::AtBeginning,
+                        QPixelFormat::NotPremultiplied,
+                        typeInt);
+}
+
+Q_DECL_CONSTEXPR inline QPixelFormat qPixelFormatAlpha(uchar channelSize,
+                                                       QPixelFormat::TypeInterpretation typeInt=QPixelFormat::UnsignedInteger) Q_DECL_NOTHROW
+{
+    return QPixelFormat(QPixelFormat::Alpha,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        channelSize,
+                        QPixelFormat::UsesAlpha,
                         QPixelFormat::AtBeginning,
                         QPixelFormat::NotPremultiplied,
                         typeInt);

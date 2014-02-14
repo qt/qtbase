@@ -281,6 +281,22 @@ GLuint QOpenGLTextureCache::bindTexture(QOpenGLContext *context, qint64 key, con
         pixelType = GL_UNSIGNED_BYTE;
         targetFormat = image.format();
         break;
+    case QImage::Format_Alpha8:
+        if (context->isOpenGLES() || context->format().profile() != QSurfaceFormat::CoreProfile) {
+            externalFormat = internalFormat = GL_ALPHA;
+            pixelType = GL_UNSIGNED_BYTE;
+            targetFormat = image.format();
+        }
+        // ### add support for core profiles.
+        break;
+    case QImage::Format_Grayscale8:
+        if (context->isOpenGLES() || context->format().profile() != QSurfaceFormat::CoreProfile) {
+            externalFormat = internalFormat = GL_LUMINANCE;
+            pixelType = GL_UNSIGNED_BYTE;
+            targetFormat = image.format();
+        }
+        // ### add support for core profiles.
+        break;
     default:
         break;
     }

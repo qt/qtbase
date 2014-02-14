@@ -771,7 +771,7 @@ QImage QFontEngine::alphaMapForGlyph(glyph_t glyph, const QTransform &t)
 {
     QImage i = alphaMapForGlyph(glyph);
     if (t.type() > QTransform::TxTranslate)
-        i = i.transformed(t).convertToFormat(QImage::Format_Indexed8);
+        i = i.transformed(t).convertToFormat(QImage::Format_Alpha8);
     Q_ASSERT(i.depth() <= 8); // To verify that transformed didn't change the format...
 
     return i;
@@ -784,7 +784,7 @@ QImage QFontEngine::alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition, con
 
     QImage i = alphaMapForGlyph(glyph, subPixelPosition);
     if (t.type() > QTransform::TxTranslate)
-        i = i.transformed(t).convertToFormat(QImage::Format_Indexed8);
+        i = i.transformed(t).convertToFormat(QImage::Format_Alpha8);
     Q_ASSERT(i.depth() <= 8); // To verify that transformed didn't change the format...
 
     return i;
@@ -881,20 +881,16 @@ QImage QFontEngine::alphaMapForGlyph(glyph_t glyph)
     p.drawPath(path);
     p.end();
 
-    QImage indexed(im.width(), im.height(), QImage::Format_Indexed8);
-    QVector<QRgb> colors(256);
-    for (int i=0; i<256; ++i)
-        colors[i] = qRgba(0, 0, 0, i);
-    indexed.setColorTable(colors);
+    QImage alphaMap(im.width(), im.height(), QImage::Format_Alpha8);
 
     for (int y=0; y<im.height(); ++y) {
-        uchar *dst = (uchar *) indexed.scanLine(y);
+        uchar *dst = (uchar *) alphaMap.scanLine(y);
         uint *src = (uint *) im.scanLine(y);
         for (int x=0; x<im.width(); ++x)
             dst[x] = qAlpha(src[x]);
     }
 
-    return indexed;
+    return alphaMap;
 }
 
 void QFontEngine::removeGlyphFromCache(glyph_t)
@@ -1545,14 +1541,10 @@ bool QFontEngineBox::canRender(const QChar *, int) const
 
 QImage QFontEngineBox::alphaMapForGlyph(glyph_t)
 {
-    QImage image(_size, _size, QImage::Format_Indexed8);
-    QVector<QRgb> colors(256);
-    for (int i=0; i<256; ++i)
-        colors[i] = qRgba(0, 0, 0, i);
-    image.setColorTable(colors);
+    QImage image(_size, _size, QImage::Format_Alpha8);
     image.fill(0);
 
-    // can't use qpainter for index8; so use setPixel to draw our rectangle.
+    // FIXME: use qpainter
     for (int i=2; i <= _size-3; ++i) {
         image.setPixel(i, 2, 255);
         image.setPixel(i, _size-3, 255);

@@ -481,6 +481,21 @@ QT_IMPL_MEMROTATE(quint16)
 QT_IMPL_MEMROTATE(quint24)
 QT_IMPL_MEMROTATE(quint8)
 
+void qt_memrotate90_8(const uchar *srcPixels, int w, int h, int sbpl, uchar *destPixels, int dbpl)
+{
+    qt_memrotate90(srcPixels, w, h, sbpl, destPixels, dbpl);
+}
+
+void qt_memrotate180_8(const uchar *srcPixels, int w, int h, int sbpl, uchar *destPixels, int dbpl)
+{
+    qt_memrotate180(srcPixels, w, h, sbpl, destPixels, dbpl);
+}
+
+void qt_memrotate270_8(const uchar *srcPixels, int w, int h, int sbpl, uchar *destPixels, int dbpl)
+{
+    qt_memrotate270(srcPixels, w, h, sbpl, destPixels, dbpl);
+}
+
 void qt_memrotate90_16(const uchar *srcPixels, int w, int h, int sbpl, uchar *destPixels, int dbpl)
 {
     qt_memrotate90((const ushort *)srcPixels, w, h, sbpl, (ushort *)destPixels, dbpl);
@@ -537,6 +552,8 @@ MemRotateFunc qMemRotateFunctions[QImage::NImageFormats][3] =
     { qt_memrotate90_32, qt_memrotate180_32, qt_memrotate270_32 },      // Format_A2BGR30_Premultiplied,
     { qt_memrotate90_32, qt_memrotate180_32, qt_memrotate270_32 },      // Format_RGB30,
     { qt_memrotate90_32, qt_memrotate180_32, qt_memrotate270_32 },      // Format_A2RGB30_Premultiplied,
+    { qt_memrotate90_8, qt_memrotate180_8, qt_memrotate270_8 },         // Format_Alpha8,
+    { qt_memrotate90_8, qt_memrotate180_8, qt_memrotate270_8 },         // Format_Grayscale8,
 };
 
 QT_END_NAMESPACE

@@ -772,7 +772,9 @@ SrcOverScaleFunc qScaleFunctions[QImage::NImageFormats][QImage::NImageFormats] =
         0,      // Format_BGRs30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_Mono
         0,      // Format_Invalid,
@@ -797,7 +799,9 @@ SrcOverScaleFunc qScaleFunctions[QImage::NImageFormats][QImage::NImageFormats] =
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_MonoLSB
         0,      // Format_Invalid,
@@ -822,7 +826,9 @@ SrcOverScaleFunc qScaleFunctions[QImage::NImageFormats][QImage::NImageFormats] =
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_Indexed8
         0,      // Format_Invalid,
@@ -847,7 +853,9 @@ SrcOverScaleFunc qScaleFunctions[QImage::NImageFormats][QImage::NImageFormats] =
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_RGB32
         0,      // Format_Invalid,
@@ -872,7 +880,9 @@ SrcOverScaleFunc qScaleFunctions[QImage::NImageFormats][QImage::NImageFormats] =
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_ARGB32
         0,      // Format_Invalid,
@@ -897,7 +907,9 @@ SrcOverScaleFunc qScaleFunctions[QImage::NImageFormats][QImage::NImageFormats] =
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_ARGB32_Premultiplied
         0,      // Format_Invalid,
@@ -922,7 +934,9 @@ SrcOverScaleFunc qScaleFunctions[QImage::NImageFormats][QImage::NImageFormats] =
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_RGB16
         0,      // Format_Invalid,
@@ -947,7 +961,9 @@ SrcOverScaleFunc qScaleFunctions[QImage::NImageFormats][QImage::NImageFormats] =
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_ARGB8565_Premultiplied
         0,      // Format_Invalid,
@@ -972,7 +988,9 @@ SrcOverScaleFunc qScaleFunctions[QImage::NImageFormats][QImage::NImageFormats] =
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_RGB666
         0,      // Format_Invalid,
@@ -997,7 +1015,9 @@ SrcOverScaleFunc qScaleFunctions[QImage::NImageFormats][QImage::NImageFormats] =
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_ARGB6666_Premultiplied
         0,      // Format_Invalid,
@@ -1022,7 +1042,9 @@ SrcOverScaleFunc qScaleFunctions[QImage::NImageFormats][QImage::NImageFormats] =
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_RGB555
         0,      // Format_Invalid,
@@ -1047,7 +1069,9 @@ SrcOverScaleFunc qScaleFunctions[QImage::NImageFormats][QImage::NImageFormats] =
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_ARGB8555_Premultiplied
         0,      // Format_Invalid,
@@ -1072,7 +1096,9 @@ SrcOverScaleFunc qScaleFunctions[QImage::NImageFormats][QImage::NImageFormats] =
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_RGB888
         0,      // Format_Invalid,
@@ -1097,7 +1123,9 @@ SrcOverScaleFunc qScaleFunctions[QImage::NImageFormats][QImage::NImageFormats] =
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_RGB444
         0,      // Format_Invalid,
@@ -1122,7 +1150,9 @@ SrcOverScaleFunc qScaleFunctions[QImage::NImageFormats][QImage::NImageFormats] =
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_ARGB4444_Premultiplied
         0,      // Format_Invalid,
@@ -1147,7 +1177,9 @@ SrcOverScaleFunc qScaleFunctions[QImage::NImageFormats][QImage::NImageFormats] =
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_RGBX8888
         0,      // Format_Invalid,
@@ -1178,7 +1210,9 @@ SrcOverScaleFunc qScaleFunctions[QImage::NImageFormats][QImage::NImageFormats] =
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_RGBA8888
         0,      // Format_Invalid,
@@ -1203,7 +1237,9 @@ SrcOverScaleFunc qScaleFunctions[QImage::NImageFormats][QImage::NImageFormats] =
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_RGBA8888_Premultiplied
         0,      // Format_Invalid,
@@ -1234,7 +1270,9 @@ SrcOverScaleFunc qScaleFunctions[QImage::NImageFormats][QImage::NImageFormats] =
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_BGR30
         0,      // Format_Invalid,
@@ -1259,7 +1297,9 @@ SrcOverScaleFunc qScaleFunctions[QImage::NImageFormats][QImage::NImageFormats] =
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_A2BGR30_Premultiplied
         0,      // Format_Invalid,
@@ -1284,7 +1324,9 @@ SrcOverScaleFunc qScaleFunctions[QImage::NImageFormats][QImage::NImageFormats] =
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_RGB30
         0,      // Format_Invalid,
@@ -1309,7 +1351,9 @@ SrcOverScaleFunc qScaleFunctions[QImage::NImageFormats][QImage::NImageFormats] =
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_A2RGB30_Premultiplied
         0,      // Format_Invalid,
@@ -1334,8 +1378,64 @@ SrcOverScaleFunc qScaleFunctions[QImage::NImageFormats][QImage::NImageFormats] =
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
+    {   // Format_Alpha8
+        0,      // Format_Invalid,
+        0,      // Format_Mono,
+        0,      // Format_MonoLSB,
+        0,      // Format_Indexed8,
+        0,      // Format_RGB32,
+        0,      // Format_ARGB32,
+        0,      // Format_ARGB32_Premultiplied,
+        0,      // Format_RGB16,
+        0,      // Format_ARGB8565_Premultiplied,
+        0,      // Format_RGB666,
+        0,      // Format_ARGB6666_Premultiplied,
+        0,      // Format_RGB555,
+        0,      // Format_ARGB8555_Premultiplied,
+        0,      // Format_RGB888,
+        0,      // Format_RGB444,
+        0,      // Format_ARGB4444_Premultiplied,
+        0,      // Format_RGBX8888,
+        0,      // Format_RGBA8888,
+        0,      // Format_RGBA8888_Premultiplied,
+        0,      // Format_BGR30,
+        0,      // Format_A2BGR30_Premultiplied,
+        0,      // Format_RGB30,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
+    },
+    {   // Format_Grayscale8
+        0,      // Format_Invalid,
+        0,      // Format_Mono,
+        0,      // Format_MonoLSB,
+        0,      // Format_Indexed8,
+        0,      // Format_RGB32,
+        0,      // Format_ARGB32,
+        0,      // Format_ARGB32_Premultiplied,
+        0,      // Format_RGB16,
+        0,      // Format_ARGB8565_Premultiplied,
+        0,      // Format_RGB666,
+        0,      // Format_ARGB6666_Premultiplied,
+        0,      // Format_RGB555,
+        0,      // Format_ARGB8555_Premultiplied,
+        0,      // Format_RGB888,
+        0,      // Format_RGB444,
+        0,      // Format_ARGB4444_Premultiplied,
+        0,      // Format_RGBX8888,
+        0,      // Format_RGBA8888,
+        0,      // Format_RGBA8888_Premultiplied,
+        0,      // Format_BGR30,
+        0,      // Format_A2BGR30_Premultiplied,
+        0,      // Format_RGB30,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
+    }
 };
 
 
@@ -1363,7 +1463,9 @@ SrcOverBlendFunc qBlendFunctions[QImage::NImageFormats][QImage::NImageFormats] =
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_Mono
         0,      // Format_Invalid,
@@ -1388,7 +1490,9 @@ SrcOverBlendFunc qBlendFunctions[QImage::NImageFormats][QImage::NImageFormats] =
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_MonoLSB
         0,      // Format_Invalid,
@@ -1413,7 +1517,9 @@ SrcOverBlendFunc qBlendFunctions[QImage::NImageFormats][QImage::NImageFormats] =
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_Indexed8
         0,      // Format_Invalid,
@@ -1438,7 +1544,9 @@ SrcOverBlendFunc qBlendFunctions[QImage::NImageFormats][QImage::NImageFormats] =
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_RGB32
         0,      // Format_Invalid,
@@ -1463,7 +1571,9 @@ SrcOverBlendFunc qBlendFunctions[QImage::NImageFormats][QImage::NImageFormats] =
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_ARGB32
         0,      // Format_Invalid,
@@ -1488,7 +1598,9 @@ SrcOverBlendFunc qBlendFunctions[QImage::NImageFormats][QImage::NImageFormats] =
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_ARGB32_Premultiplied
         0,      // Format_Invalid,
@@ -1513,7 +1625,9 @@ SrcOverBlendFunc qBlendFunctions[QImage::NImageFormats][QImage::NImageFormats] =
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_RGB16
         0,      // Format_Invalid,
@@ -1538,7 +1652,9 @@ SrcOverBlendFunc qBlendFunctions[QImage::NImageFormats][QImage::NImageFormats] =
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_ARGB8565_Premultiplied
         0,      // Format_Invalid,
@@ -1563,7 +1679,9 @@ SrcOverBlendFunc qBlendFunctions[QImage::NImageFormats][QImage::NImageFormats] =
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_RGB666
         0,      // Format_Invalid,
@@ -1588,7 +1706,9 @@ SrcOverBlendFunc qBlendFunctions[QImage::NImageFormats][QImage::NImageFormats] =
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_ARGB6666_Premultiplied
         0,      // Format_Invalid,
@@ -1613,7 +1733,9 @@ SrcOverBlendFunc qBlendFunctions[QImage::NImageFormats][QImage::NImageFormats] =
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_RGB555
         0,      // Format_Invalid,
@@ -1638,7 +1760,9 @@ SrcOverBlendFunc qBlendFunctions[QImage::NImageFormats][QImage::NImageFormats] =
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_ARGB8555_Premultiplied
         0,      // Format_Invalid,
@@ -1663,7 +1787,9 @@ SrcOverBlendFunc qBlendFunctions[QImage::NImageFormats][QImage::NImageFormats] =
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_RGB888
         0,      // Format_Invalid,
@@ -1688,7 +1814,9 @@ SrcOverBlendFunc qBlendFunctions[QImage::NImageFormats][QImage::NImageFormats] =
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_RGB444
         0,      // Format_Invalid,
@@ -1713,7 +1841,9 @@ SrcOverBlendFunc qBlendFunctions[QImage::NImageFormats][QImage::NImageFormats] =
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_ARGB4444_Premultiplied
         0,      // Format_Invalid,
@@ -1738,7 +1868,9 @@ SrcOverBlendFunc qBlendFunctions[QImage::NImageFormats][QImage::NImageFormats] =
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_RGBX8888
         0,      // Format_Invalid,
@@ -1769,7 +1901,9 @@ SrcOverBlendFunc qBlendFunctions[QImage::NImageFormats][QImage::NImageFormats] =
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_RGBA8888
         0,      // Format_Invalid,
@@ -1794,7 +1928,9 @@ SrcOverBlendFunc qBlendFunctions[QImage::NImageFormats][QImage::NImageFormats] =
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_RGBA8888_Premultiplied
         0,      // Format_Invalid,
@@ -1826,6 +1962,8 @@ SrcOverBlendFunc qBlendFunctions[QImage::NImageFormats][QImage::NImageFormats] =
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
         0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_BGR30
         0,      // Format_Invalid,
@@ -1851,6 +1989,7 @@ SrcOverBlendFunc qBlendFunctions[QImage::NImageFormats][QImage::NImageFormats] =
         qt_blend_a2rgb30pm_on_a2rgb30pm,    // Format_A2RGB30_Premultiplied,
         qt_blend_a2bgr30pm_on_a2rgb30pm,    // Format_RGB30,
         qt_blend_a2bgr30pm_on_a2rgb30pm,    // Format_A2RGB30_Premultiplied,
+        0, 0,
     },
     {   // Format_A2BGR30_Premultiplied
         0,      // Format_Invalid,
@@ -1876,6 +2015,7 @@ SrcOverBlendFunc qBlendFunctions[QImage::NImageFormats][QImage::NImageFormats] =
         qt_blend_a2rgb30pm_on_a2rgb30pm,    // Format_A2BGR30_Premultiplied,
         qt_blend_a2bgr30pm_on_a2rgb30pm,    // Format_RGB30,
         qt_blend_a2bgr30pm_on_a2rgb30pm,    // Format_A2RGB30_Premultiplied,
+        0, 0,
     },
     {   // Format_RGB30
         0,      // Format_Invalid,
@@ -1901,6 +2041,7 @@ SrcOverBlendFunc qBlendFunctions[QImage::NImageFormats][QImage::NImageFormats] =
         qt_blend_a2bgr30pm_on_a2rgb30pm,    // Format_A2BGR30_Premultiplied,
         qt_blend_rgb30_on_rgb30,            // Format_RGB30,
         qt_blend_a2rgb30pm_on_a2rgb30pm,    // Format_A2RGB30_Premultiplied,
+        0, 0,
     },
     {   // Format_A2RGB30_Premultiplied
         0,      // Format_Invalid,
@@ -1925,8 +2066,63 @@ SrcOverBlendFunc qBlendFunctions[QImage::NImageFormats][QImage::NImageFormats] =
         qt_blend_a2bgr30pm_on_a2rgb30pm,      // Format_BGR30,
         qt_blend_a2bgr30pm_on_a2rgb30pm,      // Format_A2BGR30_Premultiplied,
         qt_blend_rgb30_on_rgb30,              // Format_RGB30,
-        qt_blend_a2rgb30pm_on_a2rgb30pm       // Format_A2RGB30_Premultiplied,
+        qt_blend_a2rgb30pm_on_a2rgb30pm,      // Format_A2RGB30_Premultiplied,
+        0, 0,
     },
+    {   // Format_Alpha8
+        0,      // Format_Invalid,
+        0,      // Format_Mono,
+        0,      // Format_MonoLSB,
+        0,      // Format_Indexed8,
+        0,      // Format_RGB32,
+        0,      // Format_ARGB32,
+        0,      // Format_ARGB32_Premultiplied,
+        0,      // Format_RGB16,
+        0,      // Format_ARGB8565_Premultiplied,
+        0,      // Format_RGB666,
+        0,      // Format_ARGB6666_Premultiplied,
+        0,      // Format_RGB555,
+        0,      // Format_ARGB8555_Premultiplied,
+        0,      // Format_RGB888,
+        0,      // Format_RGB444,
+        0,      // Format_ARGB4444_Premultiplied,
+        0,      // Format_RGBX8888,
+        0,      // Format_RGBA8888,
+        0,      // Format_RGBA8888_Premultiplied,
+        0,      // Format_BGR30,
+        0,      // Format_A2BGR30_Premultiplied,
+        0,      // Format_RGB30,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
+    },
+    {   // Format_Grayscale8
+        0,      // Format_Invalid,
+        0,      // Format_Mono,
+        0,      // Format_MonoLSB,
+        0,      // Format_Indexed8,
+        0,      // Format_RGB32,
+        0,      // Format_ARGB32,
+        0,      // Format_ARGB32_Premultiplied,
+        0,      // Format_RGB16,
+        0,      // Format_ARGB8565_Premultiplied,
+        0,      // Format_RGB666,
+        0,      // Format_ARGB6666_Premultiplied,
+        0,      // Format_RGB555,
+        0,      // Format_ARGB8555_Premultiplied,
+        0,      // Format_RGB888,
+        0,      // Format_RGB444,
+        0,      // Format_ARGB4444_Premultiplied,
+        0,      // Format_RGBX8888,
+        0,      // Format_RGBA8888,
+        0,      // Format_RGBA8888_Premultiplied,
+        0,      // Format_BGR30,
+        0,      // Format_A2BGR30_Premultiplied,
+        0,      // Format_RGB30,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
+    }
 };
 
 SrcOverTransformFunc qTransformFunctions[QImage::NImageFormats][QImage::NImageFormats] = {
@@ -1953,7 +2149,9 @@ SrcOverTransformFunc qTransformFunctions[QImage::NImageFormats][QImage::NImageFo
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_Mono
         0,      // Format_Invalid,
@@ -1978,7 +2176,9 @@ SrcOverTransformFunc qTransformFunctions[QImage::NImageFormats][QImage::NImageFo
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_MonoLSB
         0,      // Format_Invalid,
@@ -2003,7 +2203,9 @@ SrcOverTransformFunc qTransformFunctions[QImage::NImageFormats][QImage::NImageFo
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_Indexed8
         0,      // Format_Invalid,
@@ -2028,7 +2230,9 @@ SrcOverTransformFunc qTransformFunctions[QImage::NImageFormats][QImage::NImageFo
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_RGB32
         0,      // Format_Invalid,
@@ -2053,7 +2257,9 @@ SrcOverTransformFunc qTransformFunctions[QImage::NImageFormats][QImage::NImageFo
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_ARGB32
         0,      // Format_Invalid,
@@ -2078,7 +2284,9 @@ SrcOverTransformFunc qTransformFunctions[QImage::NImageFormats][QImage::NImageFo
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_ARGB32_Premultiplied
         0,      // Format_Invalid,
@@ -2103,7 +2311,9 @@ SrcOverTransformFunc qTransformFunctions[QImage::NImageFormats][QImage::NImageFo
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_RGB16
         0,      // Format_Invalid,
@@ -2128,7 +2338,9 @@ SrcOverTransformFunc qTransformFunctions[QImage::NImageFormats][QImage::NImageFo
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_ARGB8565_Premultiplied
         0,      // Format_Invalid,
@@ -2153,7 +2365,9 @@ SrcOverTransformFunc qTransformFunctions[QImage::NImageFormats][QImage::NImageFo
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_RGB666
         0,      // Format_Invalid,
@@ -2178,7 +2392,9 @@ SrcOverTransformFunc qTransformFunctions[QImage::NImageFormats][QImage::NImageFo
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_ARGB6666_Premultiplied
         0,      // Format_Invalid,
@@ -2203,7 +2419,9 @@ SrcOverTransformFunc qTransformFunctions[QImage::NImageFormats][QImage::NImageFo
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_RGB555
         0,      // Format_Invalid,
@@ -2228,7 +2446,9 @@ SrcOverTransformFunc qTransformFunctions[QImage::NImageFormats][QImage::NImageFo
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_ARGB8555_Premultiplied
         0,      // Format_Invalid,
@@ -2253,7 +2473,9 @@ SrcOverTransformFunc qTransformFunctions[QImage::NImageFormats][QImage::NImageFo
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_RGB888
         0,      // Format_Invalid,
@@ -2278,7 +2500,9 @@ SrcOverTransformFunc qTransformFunctions[QImage::NImageFormats][QImage::NImageFo
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_RGB444
         0,      // Format_Invalid,
@@ -2303,7 +2527,9 @@ SrcOverTransformFunc qTransformFunctions[QImage::NImageFormats][QImage::NImageFo
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_ARGB4444_Premultiplied
         0,      // Format_Invalid,
@@ -2328,7 +2554,9 @@ SrcOverTransformFunc qTransformFunctions[QImage::NImageFormats][QImage::NImageFo
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_RGBX8888
         0,      // Format_Invalid,
@@ -2359,7 +2587,9 @@ SrcOverTransformFunc qTransformFunctions[QImage::NImageFormats][QImage::NImageFo
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_RGBA8888
         0,      // Format_Invalid,
@@ -2384,7 +2614,9 @@ SrcOverTransformFunc qTransformFunctions[QImage::NImageFormats][QImage::NImageFo
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_RGBA8888_Premultiplied
         0,      // Format_Invalid,
@@ -2415,7 +2647,9 @@ SrcOverTransformFunc qTransformFunctions[QImage::NImageFormats][QImage::NImageFo
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_BGR30
         0,      // Format_Invalid,
@@ -2440,7 +2674,9 @@ SrcOverTransformFunc qTransformFunctions[QImage::NImageFormats][QImage::NImageFo
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_A2BGR30_Premultiplied
         0,      // Format_Invalid,
@@ -2465,7 +2701,9 @@ SrcOverTransformFunc qTransformFunctions[QImage::NImageFormats][QImage::NImageFo
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_RGB30
         0,      // Format_Invalid,
@@ -2490,7 +2728,9 @@ SrcOverTransformFunc qTransformFunctions[QImage::NImageFormats][QImage::NImageFo
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
     {   // Format_A2RGB30_Premultiplied
         0,      // Format_Invalid,
@@ -2515,7 +2755,63 @@ SrcOverTransformFunc qTransformFunctions[QImage::NImageFormats][QImage::NImageFo
         0,      // Format_BGR30,
         0,      // Format_A2BGR30_Premultiplied,
         0,      // Format_RGB30,
-        0       // Format_A2RGB30_Premultiplied,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
+    },
+    {   // Format_Alpha8
+        0,      // Format_Invalid,
+        0,      // Format_Mono,
+        0,      // Format_MonoLSB,
+        0,      // Format_Indexed8,
+        0,      // Format_RGB32,
+        0,      // Format_ARGB32,
+        0,      // Format_ARGB32_Premultiplied,
+        0,      // Format_RGB16,
+        0,      // Format_ARGB8565_Premultiplied,
+        0,      // Format_RGB666,
+        0,      // Format_ARGB6666_Premultiplied,
+        0,      // Format_RGB555,
+        0,      // Format_ARGB8555_Premultiplied,
+        0,      // Format_RGB888,
+        0,      // Format_RGB444,
+        0,      // Format_ARGB4444_Premultiplied,
+        0,      // Format_RGBX8888,
+        0,      // Format_RGBA8888,
+        0,      // Format_RGBA8888_Premultiplied,
+        0,      // Format_BGR30,
+        0,      // Format_A2BGR30_Premultiplied,
+        0,      // Format_RGB30,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
+    },
+    {   // Format_Grayscale8
+        0,      // Format_Invalid,
+        0,      // Format_Mono,
+        0,      // Format_MonoLSB,
+        0,      // Format_Indexed8,
+        0,      // Format_RGB32,
+        0,      // Format_ARGB32,
+        0,      // Format_ARGB32_Premultiplied,
+        0,      // Format_RGB16,
+        0,      // Format_ARGB8565_Premultiplied,
+        0,      // Format_RGB666,
+        0,      // Format_ARGB6666_Premultiplied,
+        0,      // Format_RGB555,
+        0,      // Format_ARGB8555_Premultiplied,
+        0,      // Format_RGB888,
+        0,      // Format_RGB444,
+        0,      // Format_ARGB4444_Premultiplied,
+        0,      // Format_RGBX8888,
+        0,      // Format_RGBA8888,
+        0,      // Format_RGBA8888_Premultiplied,
+        0,      // Format_BGR30,
+        0,      // Format_A2BGR30_Premultiplied,
+        0,      // Format_RGB30,
+        0,      // Format_A2RGB30_Premultiplied,
+        0,      // Format_Alpha8
+        0,      // Format_Grayscale8
     },
 };
 

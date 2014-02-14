@@ -781,6 +781,13 @@ void tst_QImage::convertToFormat_data()
                                            << int(QImage::Format_ARGB32) << 0xff00ff00;
     QTest::newRow("blue rgb30 -> argb32") << int(QImage::Format_RGB30) << 0xff0000ff
                                           << int(QImage::Format_ARGB32) << 0xff0000ff;
+
+    QTest::newRow("white gray8 -> argb pm") << int(QImage::Format_Grayscale8) << 0xfffffeffu
+                                            << int(QImage::Format_ARGB32_Premultiplied) << 0xfffefefeu;
+    QTest::newRow("gray gray8 -> argb pm") << int(QImage::Format_Grayscale8) << 0xff565557u
+                                            << int(QImage::Format_ARGB32_Premultiplied) << 0xff555555u;
+    QTest::newRow("black gray8 -> argb pm") << int(QImage::Format_Grayscale8) << 0xff000100u
+                                            << int(QImage::Format_ARGB32_Premultiplied) << 0xff000000u;
 }
 
 
@@ -1010,6 +1017,10 @@ void tst_QImage::rotate_data()
             << QImage::Format_RGBX8888 << d;
         QTest::newRow(qPrintable(title.arg("Format_RGBA8888_Premultiplied")))
             << QImage::Format_RGBA8888_Premultiplied << d;
+        QTest::newRow(qPrintable(title.arg("Format_Alpha8")))
+            << QImage::Format_Alpha8 << d;
+        QTest::newRow(qPrintable(title.arg("Format_Grayscale8")))
+            << QImage::Format_Grayscale8 << d;
     }
 }
 
@@ -2098,16 +2109,20 @@ void tst_QImage::fillPixel_data()
     QTest::newRow("ARGB32, transparent") << QImage::Format_ARGB32 << 0x0u << 0x00000000u;
     QTest::newRow("ARGB32pm, transparent") << QImage::Format_ARGB32_Premultiplied << 0x0u << 0x00000000u;
     QTest::newRow("RGBA8888pm, transparent") << QImage::Format_RGBA8888_Premultiplied << 0x0u << 0x00000000u;
+    QTest::newRow("Alpha8, transparent") << QImage::Format_Alpha8 << 0x0u << 0x00000000u;
 
     QTest::newRow("RGB16, red") << QImage::Format_RGB16 << (uint)qConvertRgb32To16(0xffff0000) << 0xffff0000u;
     QTest::newRow("RGB32, red") << QImage::Format_RGB32 << 0xffff0000u << 0xffff0000u;
     QTest::newRow("ARGB32, red") << QImage::Format_ARGB32 << 0xffff0000u << 0xffff0000u;
     QTest::newRow("RGBA8888, red") << QImage::Format_RGBA8888 << 0xff0000ffu << 0xffff0000u;
 
+    QTest::newRow("Grayscale8, grey") << QImage::Format_Grayscale8 << 0xff808080u << 0xff808080u;
+
     QTest::newRow("RGB32, semi-red") << QImage::Format_RGB32 << 0x80ff0000u << 0xffff0000u;
     QTest::newRow("ARGB32, semi-red") << QImage::Format_ARGB32 << 0x80ff0000u << 0x80ff0000u;
     QTest::newRow("ARGB32pm, semi-red") << QImage::Format_ARGB32 << 0x80800000u << 0x80800000u;
     QTest::newRow("RGBA8888pm, semi-red") << QImage::Format_RGBA8888_Premultiplied << 0x80000080u << 0x80800000u;
+    QTest::newRow("Alpha8, semi-red") << QImage::Format_Alpha8 << 0x80000080u << 0x80000000u;
 }
 
 void tst_QImage::fillPixel()

@@ -77,6 +77,7 @@ QT_BEGIN_NAMESPACE
     \enum QPixelFormat::ColorModel
 
     This enum type is used to describe the color model of the pixelformat.
+    Alpha was added in 5.5.
 
     \value RGB The color model is RGB.
 
@@ -94,6 +95,8 @@ QT_BEGIN_NAMESPACE
     \value HSV The color model is HSV.
 
     \value YUV The color model is YUV.
+
+    \value Alpha There is no color model, only alpha is used.
 */
 
 /*!
@@ -288,6 +291,21 @@ QT_BEGIN_NAMESPACE
 
     \sa QPixelFormat::TypeInterpretation
 */
+
+/*!
+    \fn QPixelFormat qPixelFormatAlpha(uchar channelSize,
+                                           QPixelFormat::TypeInterpretation typeInterpretation = QPixelFormat::UnsignedInteger)
+    \relates QPixelFormat
+    \since 5.5
+
+    Constructor function for creating an Alpha format. A mask format can be
+    described by passing 1 to \a channelSize. Its also possible to define very
+    accurate alpha formats using doubles to describe each pixel by passing 8
+    as \a channelSize and FloatingPoint as \a typeInterpretation.
+
+    \sa QPixelFormat::TypeInterpretation
+*/
+
 
 /*!
     \fn QPixelFormat qPixelFormatCmyk(uchar channelSize,

@@ -3448,7 +3448,8 @@ void tst_QPainter::drawImage_data()
 
     for (int srcFormat = QImage::Format_Mono; srcFormat < QImage::NImageFormats; ++srcFormat) {
         for (int dstFormat = QImage::Format_Mono; dstFormat < QImage::NImageFormats; ++dstFormat) {
-            if (dstFormat == QImage::Format_Indexed8)
+            // Indexed8 can't be painted to, and Alpha8 can't hold a color.
+            if (dstFormat == QImage::Format_Indexed8 || dstFormat == QImage::Format_Alpha8)
                 continue;
             for (int odd_x = 0; odd_x <= 1; ++odd_x) {
                 for (int odd_width = 0; odd_width <= 1; ++odd_width) {

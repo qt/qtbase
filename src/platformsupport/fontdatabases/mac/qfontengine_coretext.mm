@@ -642,15 +642,11 @@ QImage QCoreTextFontEngine::alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosit
 
     QImage im = imageForGlyph(glyph, subPixelPosition, false, x);
 
-    QImage indexed(im.width(), im.height(), QImage::Format_Indexed8);
-    QVector<QRgb> colors(256);
-    for (int i=0; i<256; ++i)
-        colors[i] = qRgba(0, 0, 0, i);
-    indexed.setColorTable(colors);
+    QImage alphaMap(im.width(), im.height(), QImage::Format_Alpha8);
 
     for (int y=0; y<im.height(); ++y) {
         uint *src = (uint*) im.scanLine(y);
-        uchar *dst = indexed.scanLine(y);
+        uchar *dst = alphaMap.scanLine(y);
         for (int x=0; x<im.width(); ++x) {
             *dst = qGray(*src);
             ++dst;
@@ -658,7 +654,7 @@ QImage QCoreTextFontEngine::alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosit
         }
     }
 
-    return indexed;
+    return alphaMap;
 }
 
 QImage QCoreTextFontEngine::alphaRGBMapForGlyph(glyph_t glyph, QFixed subPixelPosition, const QTransform &x)

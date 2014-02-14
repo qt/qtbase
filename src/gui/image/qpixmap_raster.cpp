@@ -211,9 +211,14 @@ void QRasterPlatformPixmap::fill(const QColor &color)
         pixel = qPremultiply(color.rgba());
         const QPixelLayout *layout = &qPixelLayouts[image.format()];
         layout->convertFromARGB32PM(&pixel, &pixel, 1, layout, 0);
-    } else {
+    } else if (image.format() == QImage::Format_Alpha8) {
+        pixel = qAlpha(color.rgba());
+    } else if (image.format() == QImage::Format_Grayscale8) {
+        pixel = qGray(color.rgba());
+    } else
+    {
         pixel = 0;
-        // ### what about 8 bits
+        // ### what about 8 bit indexed?
     }
 
     image.fill(pixel);

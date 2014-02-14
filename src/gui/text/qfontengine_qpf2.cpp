@@ -404,7 +404,7 @@ QImage QFontEngineQPF2::alphaMapForGlyph(glyph_t g)
 
     const uchar *bits = ((const uchar *) glyph) + sizeof(Glyph);
 
-    QImage image(bits,glyph->width, glyph->height, glyph->bytesPerLine, QImage::Format_Indexed8);
+    QImage image(bits,glyph->width, glyph->height, glyph->bytesPerLine, QImage::Format_Alpha8);
 
     return image;
 }

@@ -114,20 +114,16 @@ public:
         Format_RGBX8888,
         Format_RGBA8888,
         Format_RGBA8888_Premultiplied,
-#if 0
-        // reserved for future use
-        Format_RGB15,
-        Format_Grayscale16,
-        Format_Grayscale8,
-        Format_Grayscale4,
-        Format_Grayscale4LSB,
-        Format_Grayscale2,
-        Format_Grayscale2LSB
-#endif
         Format_BGR30,
         Format_A2BGR30_Premultiplied,
         Format_RGB30,
         Format_A2RGB30_Premultiplied,
+        Format_Alpha8,
+        Format_Grayscale8,
+#if 0
+        // reserved for future use
+        Format_Grayscale16,
+#endif
 #ifndef Q_QDOC
         NImageFormats
 #endif

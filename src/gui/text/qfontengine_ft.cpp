@@ -1858,7 +1858,7 @@ QImage *QFontEngineFT::lockedAlphaMapForGlyph(glyph_t glyphIndex, QFixed subPixe
         format = QImage::Format_Mono;
         break;
     case Format_A8:
-        format = QImage::Format_Indexed8;
+        format = QImage::Format_Alpha8;
         break;
     case Format_A32:
         format = QImage::Format_ARGB32;
@@ -1968,13 +1968,8 @@ QImage QFontEngineFT::alphaMapForGlyph(glyph_t g, QFixed subPixelPosition)
 
     const int pitch = antialias ? (glyph->width + 3) & ~3 : ((glyph->width + 31)/32) * 4;
 
-    QImage img(glyph->width, glyph->height, antialias ? QImage::Format_Indexed8 : QImage::Format_Mono);
-    if (antialias) {
-        QVector<QRgb> colors(256);
-        for (int i=0; i<256; ++i)
-            colors[i] = qRgba(0, 0, 0, i);
-        img.setColorTable(colors);
-    } else {
+    QImage img(glyph->width, glyph->height, antialias ? QImage::Format_Alpha8 : QImage::Format_Mono);
+    if (!antialias) {
         QVector<QRgb> colors(2);
         colors[0] = qRgba(0, 0, 0, 0);
         colors[1] = qRgba(0, 0, 0, 255);

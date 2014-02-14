@@ -293,13 +293,7 @@ void QImageTextureGlyphCache::createTextureData(int width, int height)
         m_image = QImage(width, height, QImage::Format_Mono);
         break;
     case QFontEngine::Format_A8: {
-        m_image = QImage(width, height, QImage::Format_Indexed8);
-        m_image.fill(0);
-        QVector<QRgb> colors(256);
-        QRgb *it = colors.data();
-        for (int i=0; i<256; ++i, ++it)
-            *it = 0xff000000 | i | (i<<8) | (i<<16);
-        m_image.setColorTable(colors);
+        m_image = QImage(width, height, QImage::Format_Alpha8);
         break;   }
     case QFontEngine::Format_A32:
         m_image = QImage(width, height, QImage::Format_RGB32);

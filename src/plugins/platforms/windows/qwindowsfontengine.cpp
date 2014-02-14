@@ -1168,19 +1168,13 @@ QImage QWindowsFontEngine::alphaMapForGlyph(glyph_t glyph, const QTransform &xfo
         return QImage();
     }
 
-    QImage indexed(mask->width(), mask->height(), QImage::Format_Indexed8);
+    QImage alphaMap(mask->width(), mask->height(), QImage::Format_Alpha8);
 
-    // ### This part is kinda pointless, but we'll crash later if we don't because some
-    // code paths expects there to be colortables for index8-bit...
-    QVector<QRgb> colors(256);
-    for (int i=0; i<256; ++i)
-        colors[i] = qRgba(0, 0, 0, i);
-    indexed.setColorTable(colors);
 
     // Copy data... Cannot use QPainter here as GDI has messed up the
     // Alpha channel of the ni.image pixels...
     for (int y=0; y<mask->height(); ++y) {
-        uchar *dest = indexed.scanLine(y);
+        uchar *dest = alphaMap.scanLine(y);
         if (mask->image().format() == QImage::Format_RGB16) {
             const qint16 *src = (qint16 *) ((const QImage &) mask->image()).scanLine(y);
             for (int x=0; x<mask->width(); ++x)
@@ -1202,7 +1196,7 @@ QImage QWindowsFontEngine::alphaMapForGlyph(glyph_t glyph, const QTransform &xfo
         DeleteObject(font);
     }
 
-    return indexed;
+    return alphaMap;
 }
 
 #define SPI_GETFONTSMOOTHINGCONTRAST           0x200C

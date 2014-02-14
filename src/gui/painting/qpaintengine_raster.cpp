@@ -425,6 +425,7 @@ void QRasterPaintEngine::init()
     case QImage::Format_RGBA8888:
     case QImage::Format_A2BGR30_Premultiplied:
     case QImage::Format_A2RGB30_Premultiplied:
+    case QImage::Format_Alpha8:
         gccaps |= PorterDuff;
         break;
     case QImage::Format_RGB32:
@@ -436,6 +437,7 @@ void QRasterPaintEngine::init()
     case QImage::Format_RGBX8888:
     case QImage::Format_BGR30:
     case QImage::Format_RGB30:
+    case QImage::Format_Grayscale8:
         break;
     default:
         break;

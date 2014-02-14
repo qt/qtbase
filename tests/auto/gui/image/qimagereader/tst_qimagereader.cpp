@@ -495,13 +495,13 @@ void tst_QImageReader::imageFormat_data()
     QTest::addColumn<QImage::Format>("imageFormat");
 
     QTest::newRow("pbm") << QString("image.pbm") << QByteArray("pbm") << QImage::Format_Mono;
-    QTest::newRow("pgm") << QString("image.pgm") << QByteArray("pgm") << QImage::Format_Indexed8;
+    QTest::newRow("pgm") << QString("image.pgm") << QByteArray("pgm") << QImage::Format_Grayscale8;
     QTest::newRow("ppm-1") << QString("image.ppm") << QByteArray("ppm") << QImage::Format_RGB32;
     QTest::newRow("ppm-2") << QString("teapot.ppm") << QByteArray("ppm") << QImage::Format_RGB32;
     QTest::newRow("ppm-3") << QString("runners.ppm") << QByteArray("ppm") << QImage::Format_RGB32;
     QTest::newRow("ppm-4") << QString("test.ppm") << QByteArray("ppm") << QImage::Format_RGB32;
 
-    QTest::newRow("jpeg-1") << QString("beavis.jpg") << QByteArray("jpeg") << QImage::Format_Indexed8;
+    QTest::newRow("jpeg-1") << QString("beavis.jpg") << QByteArray("jpeg") << QImage::Format_Grayscale8;
     QTest::newRow("jpeg-2") << QString("YCbCr_cmyk.jpg") << QByteArray("jpeg") << QImage::Format_RGB32;
     QTest::newRow("jpeg-3") << QString("YCbCr_rgb.jpg") << QByteArray("jpeg") << QImage::Format_RGB32;
 

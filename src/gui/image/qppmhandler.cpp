@@ -130,7 +130,7 @@ static bool read_pbm_body(QIODevice *device, char type, int w, int h, int mcc, Q
         case '2':                                // ascii PGM
         case '5':                                // raw PGM
             nbits = 8;
-            format = QImage::Format_Indexed8;
+            format = QImage::Format_Grayscale8;
             break;
         case '3':                                // ascii PPM
         case '6':                                // raw PPM
@@ -208,13 +208,13 @@ static bool read_pbm_body(QIODevice *device, char type, int w, int h, int mcc, Q
                     *p++ = b;
                 }
             } else if (nbits == 8) {
-                if (mcc == maxc) {
+                if (mcc == 255) {
                     while (n--) {
                         *p++ = read_pbm_int(device);
                     }
                 } else {
                     while (n--) {
-                        *p++ = read_pbm_int(device) * maxc / mcc;
+                        *p++ = read_pbm_int(device) * 255 / mcc;
                     }
                 }
             } else {                                // 32 bits
@@ -241,14 +241,10 @@ static bool read_pbm_body(QIODevice *device, char type, int w, int h, int mcc, Q
         }
     }
 
-    if (nbits == 1) {                                // bitmap
+    if (format == QImage::Format_Mono) {
         outImage->setColorCount(2);
-        outImage->setColor(0, qRgb(255,255,255)); // white
-        outImage->setColor(1, qRgb(0,0,0));        // black
-    } else if (nbits == 8) {                        // graymap
-        outImage->setColorCount(maxc+1);
-        for (int i=0; i<=maxc; i++)
-            outImage->setColor(i, qRgb(i*255/maxc,i*255/maxc,i*255/maxc));
+        outImage->setColor(0, qRgb(255,255,255));   // white
+        outImage->setColor(1, qRgb(0,0,0));         // black
     }
 
     return true;
@@ -267,6 +263,8 @@ static bool write_pbm_image(QIODevice *out, const QImage &sourceImage, const QBy
         image = image.convertToFormat(QImage::Format_Mono);
     } else if (image.depth() == 1) {
         image = image.convertToFormat(QImage::Format_Indexed8);
+    } else if (gray) {
+        image = image.convertToFormat(QImage::Format_Grayscale8);
     } else {
         switch (image.format()) {
         case QImage::Format_RGB16:
@@ -335,63 +333,77 @@ static bool write_pbm_image(QIODevice *out, const QImage &sourceImage, const QBy
             str.append("255\n");
             if (out->write(str, str.length()) != str.length())
                 return false;
-            QVector<QRgb> color = image.colorTable();
-            uint bpl = w*(gray ? 1 : 3);
-            uchar *buf   = new uchar[bpl];
-            for (uint y=0; y<h; y++) {
-                uchar *b = image.scanLine(y);
-                uchar *p = buf;
-                uchar *end = buf+bpl;
-                if (gray) {
-                    while (p < end) {
-                        uchar g = (uchar)qGray(color[*b++]);
-                        *p++ = g;
+            uint bpl = w * (gray ? 1 : 3);
+            uchar *buf = new uchar[bpl];
+            if (image.format() == QImage::Format_Indexed8) {
+                QVector<QRgb> color = image.colorTable();
+                for (uint y=0; y<h; y++) {
+                    uchar *b = image.scanLine(y);
+                    uchar *p = buf;
+                    uchar *end = buf+bpl;
+                    if (gray) {
+                        while (p < end) {
+                            uchar g = (uchar)qGray(color[*b++]);
+                            *p++ = g;
+                        }
+                    } else {
+                        while (p < end) {
+                            QRgb rgb = color[*b++];
+                            *p++ = qRed(rgb);
+                            *p++ = qGreen(rgb);
+                            *p++ = qBlue(rgb);
+                        }
                     }
-                } else {
-                    while (p < end) {
-                        QRgb rgb = color[*b++];
-                        *p++ = qRed(rgb);
-                        *p++ = qGreen(rgb);
-                        *p++ = qBlue(rgb);
-                    }
+                    if (bpl != (uint)out->write((char*)buf, bpl))
+                        return false;
                 }
-                if (bpl != (uint)out->write((char*)buf, bpl))
-                    return false;
+            } else {
+                for (uint y=0; y<h; y++) {
+                    uchar *b = image.scanLine(y);
+                    uchar *p = buf;
+                    uchar *end = buf + bpl;
+                    if (gray) {
+                        while (p < end)
+                            *p++ = *b++;
+                    } else {
+                        while (p < end) {
+                            uchar color = *b++;
+                            *p++ = color;
+                            *p++ = color;
+                            *p++ = color;
+                        }
+                    }
+                    if (bpl != (uint)out->write((char*)buf, bpl))
+                        return false;
+                }
             }
             delete [] buf;
-            }
             break;
+        }
 
         case 32: {
-            str.insert(1, gray ? '5' : '6');
+            str.insert(1, '6');
             str.append("255\n");
             if (out->write(str, str.length()) != str.length())
                 return false;
-            uint bpl = w*(gray ? 1 : 3);
+            uint bpl = w * 3;
             uchar *buf = new uchar[bpl];
             for (uint y=0; y<h; y++) {
                 QRgb  *b = (QRgb*)image.scanLine(y);
                 uchar *p = buf;
                 uchar *end = buf+bpl;
-                if (gray) {
-                    while (p < end) {
-                        uchar g = (uchar)qGray(*b++);
-                        *p++ = g;
-                    }
-                } else {
-                    while (p < end) {
-                        QRgb rgb = *b++;
-                        *p++ = qRed(rgb);
-                        *p++ = qGreen(rgb);
-                        *p++ = qBlue(rgb);
-                    }
+                while (p < end) {
+                    QRgb rgb = *b++;
+                    *p++ = qRed(rgb);
+                    *p++ = qGreen(rgb);
+                    *p++ = qBlue(rgb);
                 }
                 if (bpl != (uint)out->write((char*)buf, bpl))
                     return false;
             }
             delete [] buf;
-            }
             break;
+        }
 
     default:
         return false;
@@ -506,11 +518,11 @@ QVariant QPpmHandler::option(ImageOption option) const
         switch (type) {
             case '1':                                // ascii PBM
             case '4':                                // raw PBM
-            format = QImage::Format_Mono;
-            break;
+                format = QImage::Format_Mono;
+                break;
             case '2':                                // ascii PGM
             case '5':                                // raw PGM
-                format = QImage::Format_Indexed8;
+                format = QImage::Format_Grayscale8;
                 break;
             case '3':                                // ascii PPM
             case '6':                                // raw PPM

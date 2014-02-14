@@ -661,7 +661,8 @@ bool QImageData::checkForAlphaPixels() const
     The following image formats are available in Qt. Values from Format_ARGB8565_Premultiplied
     to Format_ARGB4444_Premultiplied were added in Qt 4.4. Values Format_RGBX8888, Format_RGBA8888
     and Format_RGBA8888_Premultiplied were added in Qt 5.2. Values Format_BGR30, Format_A2BGR30_Premultiplied,
-    Format_RGB30, Format_A2RGB30_Premultiplied were added in Qt 5.4.
+    Format_RGB30, Format_A2RGB30_Premultiplied were added in Qt 5.4. Format_Alpha8 and Format_Grayscale8
+    were added in Qt 5.5.
     See the notes after the table.
 
     \value Format_Invalid   The image is invalid.
@@ -717,6 +718,8 @@ bool QImageData::checkForAlphaPixels() const
     \value Format_A2BGR30_Premultiplied    The image is stored using a 32-bit premultiplied ABGR format (2-10-10-10).
     \value Format_RGB30      The image is stored using a 32-bit RGB format (x-10-10-10).
     \value Format_A2RGB30_Premultiplied    The image is stored using a 32-bit premultiplied ARGB format (2-10-10-10).
+    \value Format_Alpha8     The image is stored using an 8-bit alpha only format.
+    \value Format_Grayscale8 The image is stored using an 8-bit grayscale format.
 
     \note Drawing into a QImage with QImage::Format_Indexed8 is not
     supported.
@@ -2361,6 +2364,10 @@ bool QImage::allGray() const
                 return false;
         }
         return true;
+    case Format_Alpha8:
+        return false;
+    case Format_Grayscale8:
+        return true;
     case Format_RGB32:
     case Format_ARGB32:
     case Format_ARGB32_Premultiplied:
@@ -2414,9 +2421,9 @@ bool QImage::allGray() const
 /*!
     For 32-bit images, this function is equivalent to allGray().
 
-    For 8-bpp images, this function returns \c true if color(i) is
-    QRgb(i, i, i) for all indexes of the color table; otherwise
-    returns \c false.
+    For color indexed images, this function returns \c true if
+    color(i) is QRgb(i, i, i) for all indexes of the color table;
+    otherwise returns \c false.
 
     \sa allGray(), {QImage#Image Formats}{Image Formats}
 */
@@ -2425,12 +2432,19 @@ bool QImage::isGrayscale() const
     if (!d)
         return false;
 
+    if (d->format == QImage::Format_Alpha8)
+        return false;
+
+    if (d->format == QImage::Format_Grayscale8)
+        return true;
+
     switch (depth()) {
     case 32:
     case 24:
     case 16:
         return allGray();
     case 8: {
+        Q_ASSERT(d->format == QImage::Format_Indexed8);
         for (int i = 0; i < colorCount(); i++)
             if (d->colortable.at(i) != qRgb(i,i,i))
                 return false;
@@ -3005,6 +3019,9 @@ QImage QImage::rgbSwapped_helper() const
     case NImageFormats:
         Q_ASSERT(false);
         break;
+    case Format_Alpha8:
+    case Format_Grayscale8:
+        return *this;
     case Format_Mono:
     case Format_MonoLSB:
     case Format_Indexed8:
@@ -3091,6 +3108,9 @@ void QImage::rgbSwapped_inplace()
     case NImageFormats:
         Q_ASSERT(false);
         break;
+    case Format_Alpha8:
+    case Format_Grayscale8:
+        return;
     case Format_Mono:
     case Format_MonoLSB:
     case Format_Indexed8:
@@ -4024,7 +4044,7 @@ void QImage::setAlphaChannel(const QImage &alphaChannel)
         return;
 
     // Slight optimization since alphachannels are returned as 8-bit grays.
-    if (alphaChannel.d->depth == 8 && alphaChannel.isGrayscale()) {
+    if (alphaChannel.format() == QImage::Format_Alpha8 ||( alphaChannel.d->depth == 8 && alphaChannel.isGrayscale())) {
         const uchar *src_data = alphaChannel.d->data;
         const uchar *dest_data = d->data;
         for (int y=0; y<h; ++y) {
@@ -4082,9 +4102,13 @@ void QImage::setAlphaChannel(const QImage &alphaChannel)
     Most usecases for this function can be replaced with QPainter and
     using composition modes.
 
+    Note this returns a color-indexed image if you want the alpha channel in
+    the alpha8 format instead use convertToFormat(Format_Alpha8) on the source
+    image.
+
     \warning This is an expensive function.
 
-    \sa setAlphaChannel(), hasAlphaChannel(),
+    \sa setAlphaChannel(), hasAlphaChannel(), convertToFormat(),
     {QPixmap#Pixmap Information}{Pixmap},
     {QImage#Image Transformations}{Image Transformations}
 */
@@ -4093,6 +4117,9 @@ QImage QImage::alphaChannel() const
 {
     if (!d)
         return QImage();
+
+    if (d->format == QImage::Format_Alpha8)
+        return *this;
 
     int w = d->width;
     int h = d->height;
@@ -4168,6 +4195,7 @@ bool QImage::hasAlphaChannel() const
                  || d->format == Format_RGBA8888_Premultiplied
                  || d->format == Format_A2BGR30_Premultiplied
                  || d->format == Format_A2RGB30_Premultiplied
+                 || d->format == Format_Alpha8
                  || (d->has_alpha_clut && (d->format == Format_Indexed8
                                            || d->format == Format_Mono
                                            || d->format == Format_MonoLSB)));
@@ -4277,6 +4305,8 @@ static QImage rotated90(const QImage &image) {
                         reinterpret_cast<quint16*>(out.bits()),
                         out.bytesPerLine());
         break;
+    case QImage::Format_Alpha8:
+    case QImage::Format_Grayscale8:
     case QImage::Format_Indexed8:
         qt_memrotate270(reinterpret_cast<const quint8*>(image.bits()),
                         w, h, image.bytesPerLine(),
@@ -4343,6 +4373,8 @@ static QImage rotated270(const QImage &image) {
                        reinterpret_cast<quint16*>(out.bits()),
                        out.bytesPerLine());
         break;
+    case QImage::Format_Alpha8:
+    case QImage::Format_Grayscale8:
     case QImage::Format_Indexed8:
         qt_memrotate90(reinterpret_cast<const quint8*>(image.bits()),
                        w, h, image.bytesPerLine(),
@@ -4495,24 +4527,17 @@ QImage QImage::transformed(const QTransform &matrix, Qt::TransformationMode mode
     dImage.d->dpmy = dotsPerMeterY();
     dImage.d->devicePixelRatio = devicePixelRatio();
 
-    switch (bpp) {
-        // initizialize the data
-        case 8:
-            if (dImage.d->colortable.size() < 256) {
-                // colors are left in the color table, so pick that one as transparent
-                dImage.d->colortable.append(0x0);
-                memset(dImage.bits(), dImage.d->colortable.size() - 1, dImage.byteCount());
-            } else {
-                memset(dImage.bits(), 0, dImage.byteCount());
-            }
-            break;
-        case 1:
-        case 16:
-        case 24:
-        case 32:
-            memset(dImage.bits(), 0x00, dImage.byteCount());
-            break;
-    }
+    // initizialize the data
+    if (d->format == QImage::Format_Indexed8) {
+        if (dImage.d->colortable.size() < 256) {
+            // colors are left in the color table, so pick that one as transparent
+            dImage.d->colortable.append(0x0);
+            memset(dImage.bits(), dImage.d->colortable.size() - 1, dImage.byteCount());
+        } else {
+            memset(dImage.bits(), 0, dImage.byteCount());
+        }
+    } else
+        memset(dImage.bits(), 0x00, dImage.byteCount());
 
     if (target_format >= QImage::Format_RGB32) {
         QPainter p(&dImage);
@@ -4948,6 +4973,32 @@ static Q_CONSTEXPR QPixelFormat pixelformats[] = {
                      /*PREMULTIPLIED*/     QPixelFormat::Premultiplied,
                      /*INTERPRETATION*/    QPixelFormat::UnsignedInteger,
                      /*BYTE ORDER*/        QPixelFormat::CurrentSystemEndian),
+        //QImage::Format_Alpha8:
+        QPixelFormat(QPixelFormat::Alpha,
+                    /*First*/              0,
+                    /*SECOND*/             0,
+                    /*THIRD*/              0,
+                    /*FOURTH*/             0,
+                    /*FIFTH*/              0,
+                    /*ALPHA*/              8,
+                    /*ALPHA USAGE*/       QPixelFormat::UsesAlpha,
+                    /*ALPHA POSITION*/    QPixelFormat::AtBeginning,
+                    /*PREMULTIPLIED*/     QPixelFormat::Premultiplied,
+                    /*INTERPRETATION*/    QPixelFormat::UnsignedByte,
+                    /*BYTE ORDER*/        QPixelFormat::CurrentSystemEndian),
+        //QImage::Format_Grayscale8:
+        QPixelFormat(QPixelFormat::Grayscale,
+                    /*GRAY*/               8,
+                    /*SECOND*/             0,
+                    /*THIRD*/              0,
+                    /*FOURTH*/             0,
+                    /*FIFTH*/              0,
+                    /*ALPHA*/              0,
+                    /*ALPHA USAGE*/       QPixelFormat::IgnoresAlpha,
+                    /*ALPHA POSITION*/    QPixelFormat::AtBeginning,
+                    /*PREMULTIPLIED*/     QPixelFormat::NotPremultiplied,
+                    /*INTERPRETATION*/    QPixelFormat::UnsignedByte,
+                    /*BYTE ORDER*/        QPixelFormat::CurrentSystemEndian),
 };
 Q_STATIC_ASSERT(sizeof(pixelformats) / sizeof(*pixelformats) == QImage::NImageFormats);
 
