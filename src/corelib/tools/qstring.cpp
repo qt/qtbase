@@ -4090,21 +4090,22 @@ QString QString::right(int n) const
 
 QString QString::mid(int position, int n) const
 {
-    if (position > d->size)
+    using namespace QtPrivate;
+    switch (QContainerImplHelper::mid(d->size, &position, &n)) {
+    case QContainerImplHelper::Null:
         return QString();
-    if (position < 0) {
-        if (n < 0 || n + position >= d->size)
-            return *this;
-        if (n + position <= 0)
-            return QString();
-
-        n += position;
-        position = 0;
-    } else if (uint(n) > uint(d->size - position))
-        n = d->size - position;
-    if (position == 0 && n == d->size)
+    case QContainerImplHelper::Empty:
+    {
+        QStringDataPtr empty = { Data::allocate(0) };
+        return QString(empty);
+    }
+    case QContainerImplHelper::Full:
         return *this;
-    return QString((const QChar*) d->data() + position, n);
+    case QContainerImplHelper::Subset:
+        return QString((const QChar*)d->data() + position, n);
+    }
+    Q_UNREACHABLE();
+    return QString();
 }
 
 /*!
@@ -8794,19 +8795,19 @@ QStringRef QString::rightRef(int n) const
 */
 QStringRef QStringRef::mid(int pos, int n) const
 {
-    if (pos > m_size)
+    using namespace QtPrivate;
+    switch (QContainerImplHelper::mid(m_size, &pos, &n)) {
+    case QContainerImplHelper::Null:
         return QStringRef();
-    if (pos < 0) {
-        if (n < 0 || n + pos >= m_size)
-            return QStringRef(m_string, m_position, m_size);
-        if (n + pos <= 0)
-            return QStringRef();
-        n += pos;
-        pos = 0;
-    } else if (uint(n) > uint(m_size - pos)) {
-        n = m_size - pos;
+    case QContainerImplHelper::Empty:
+        return QStringRef(m_string, 0, 0);
+    case QContainerImplHelper::Full:
+        return *this;
+    case QContainerImplHelper::Subset:
+        return QStringRef(m_string, pos + m_position, n);
     }
-    return QStringRef(m_string, pos + m_position, n);
+    Q_UNREACHABLE();
+    return QStringRef();
 }
 
 /*!
@@ -8831,19 +8832,19 @@ QStringRef QStringRef::mid(int pos, int n) const
 */
 QStringRef QString::midRef(int position, int n) const
 {
-    if (position > d->size)
+    using namespace QtPrivate;
+    switch (QContainerImplHelper::mid(d->size, &position, &n)) {
+    case QContainerImplHelper::Null:
         return QStringRef();
-    if (position < 0) {
-        if (n < 0 || n + position >= d->size)
-            return QStringRef(this, 0, d->size);
-        if (n + position <= 0)
-            return QStringRef();
-
-        n += position;
-        position = 0;
-    } else if (uint(n) > uint(d->size - position))
-        n = d->size - position;
-    return QStringRef(this, position, n);
+    case QContainerImplHelper::Empty:
+        return QStringRef(this, 0, 0);
+    case QContainerImplHelper::Full:
+        return QStringRef(this, 0, d->size);
+    case QContainerImplHelper::Subset:
+        return QStringRef(this, position, n);
+    }
+    Q_UNREACHABLE();
+    return QStringRef();
 }
 
 /*!

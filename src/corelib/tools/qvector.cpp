@@ -180,11 +180,11 @@
 /*!
     \fn QVector<T> QVector::mid(int pos, int length = -1) const
 
-    Returns a vector whose elements are copied from this vector,
+    Returns a sub-vector which contains elements from this vector,
     starting at position \a pos. If \a length is -1 (the default), all
-    elements after \a pos are copied; otherwise \a length elements (or
+    elements after \a pos are included; otherwise \a length elements (or
     all remaining elements if there are less than \a length elements)
-    are copied.
+    are included.
 */
 
 

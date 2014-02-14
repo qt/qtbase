@@ -491,11 +491,11 @@ void **QListData::erase(void **xi)
 /*!
     \fn QList<T> QList<T>::mid(int pos, int length) const
 
-    Returns a list whose elements are copied from this list,
+    Returns a sub-list which includes elements from this list,
     starting at position \a pos. If \a length is -1 (the default), all
-    elements from \a pos are copied; otherwise \a length elements (or
+    elements from \a pos are included; otherwise \a length elements (or
     all remaining elements if there are less than \a length elements)
-    are copied.
+    are included.
 */
 
 /*! \fn QList::QList()

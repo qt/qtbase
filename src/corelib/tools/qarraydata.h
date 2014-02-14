@@ -361,6 +361,14 @@ namespace QtPrivate {
     QT_PREPEND_NAMESPACE(QtPrivate::qMakeArrayLiteral)<Type>( Array )
 #endif // !defined(Q_ARRAY_LITERAL)
 
+namespace QtPrivate {
+struct Q_CORE_EXPORT QContainerImplHelper
+{
+    enum CutResult { Null, Empty, Full, Subset };
+    static CutResult mid(int originalLength, int *position, int *length);
+};
+}
+
 QT_END_NAMESPACE
 
 #endif // include guard

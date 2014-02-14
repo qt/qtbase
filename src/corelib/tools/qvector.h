@@ -822,12 +822,17 @@ int QVector<T>::count(const T &t) const
 template <typename T>
 Q_OUTOFLINE_TEMPLATE QVector<T> QVector<T>::mid(int pos, int len) const
 {
-    if (len < 0)
-        len = size() - pos;
-    if (pos == 0 && len == size())
+    using namespace QtPrivate;
+    switch (QContainerImplHelper::mid(d->size, &pos, &len)) {
+    case QContainerImplHelper::Null:
+    case QContainerImplHelper::Empty:
+        return QVector<T>();
+    case QContainerImplHelper::Full:
         return *this;
-    if (pos + len > size())
-        len = size() - pos;
+    case QContainerImplHelper::Subset:
+        break;
+    }
+
     QVector<T> copy;
     copy.reserve(len);
     for (int i = pos; i < pos + len; ++i)

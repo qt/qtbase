@@ -2677,19 +2677,22 @@ QByteArray QByteArray::right(int len) const
 
 QByteArray QByteArray::mid(int pos, int len) const
 {
-    if ((d->size == 0 && d->ref.isStatic()) || pos > d->size)
+    using namespace QtPrivate;
+    switch (QContainerImplHelper::mid(size(), &pos, &len)) {
+    case QContainerImplHelper::Null:
         return QByteArray();
-    if (len < 0)
-        len = d->size - pos;
-    if (pos < 0) {
-        len += pos;
-        pos = 0;
+    case QContainerImplHelper::Empty:
+    {
+        QByteArrayDataPtr empty = { Data::allocate(0) };
+        return QByteArray(empty);
     }
-    if (len + pos > d->size)
-        len = d->size - pos;
-    if (pos == 0 && len == d->size)
+    case QContainerImplHelper::Full:
         return *this;
-    return QByteArray(d->data() + pos, len);
+    case QContainerImplHelper::Subset:
+        return QByteArray(d->data() + pos, len);
+    }
+    Q_UNREACHABLE();
+    return QByteArray();
 }
 
 /*!
