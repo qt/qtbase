@@ -654,7 +654,7 @@ static QString qgl_windowsErrorMessage(unsigned long errorCode)
             FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
             NULL, errorCode, 0, (LPTSTR)&lpMsgBuf, 0, NULL);
     if (len) {
-        rc = QString::fromUtf16(lpMsgBuf, len);
+        rc += QString::fromUtf16(lpMsgBuf, len);
         LocalFree(lpMsgBuf);
     } else {
         rc += QString::fromLatin1("<unknown error>");
@@ -671,7 +671,7 @@ static HMODULE qgl_loadLib(const char *name, bool warnOnFail = true)
 
     if (warnOnFail) {
         QString msg = qgl_windowsErrorMessage(GetLastError());
-        qCWarning(qglLc, "Failed to load %s (%s)", name, qPrintable(msg));
+        qCWarning(qglLc, "Failed to load %s: %s", name, qPrintable(msg));
     }
 
     return 0;
@@ -680,9 +680,8 @@ static HMODULE qgl_loadLib(const char *name, bool warnOnFail = true)
 QWindowsOpenGL::QWindowsOpenGL()
     : m_eglLib(0)
 {
-    qglLc().setEnabled(QtWarningMsg, true);
     if (qEnvironmentVariableIsSet("QT_OPENGLPROXY_DEBUG"))
-        qglLc().setEnabled(QtDebugMsg, true);
+        QLoggingCategory::setFilterRules(QStringLiteral("qt.gui.openglproxy=true"));
 
     enum RequestedLib {
         Unknown,
