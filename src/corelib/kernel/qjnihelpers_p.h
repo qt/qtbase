@@ -60,11 +60,22 @@ QT_BEGIN_NAMESPACE
 
 namespace QtAndroidPrivate
 {
+    class Q_CORE_EXPORT ActivityResultListener
+    {
+    public:
+        virtual ~ActivityResultListener() {}
+        virtual bool handleActivityResult(jint requestCode, jint resultCode, jobject data) = 0;
+    };
+
     Q_CORE_EXPORT jobject activity();
     Q_CORE_EXPORT JavaVM *javaVM();
     Q_CORE_EXPORT jint initJNI(JavaVM *vm, JNIEnv *env);
     jobject classLoader();
     Q_CORE_EXPORT jint androidSdkVersion();
+
+    Q_CORE_EXPORT void handleActivityResult(jint requestCode, jint resultCode, jobject data);
+    Q_CORE_EXPORT void registerActivityResultListener(ActivityResultListener *listener);
+    Q_CORE_EXPORT void unregisterActivityResultListener(ActivityResultListener *listener);
 }
 
 QT_END_NAMESPACE

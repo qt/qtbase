@@ -71,6 +71,7 @@
 #include <android/asset_manager_jni.h>
 #include "qandroidassetsfileenginehandler.h"
 #include <android/api-level.h>
+#include <QtCore/private/qjnihelpers_p.h>
 
 #include <qpa/qwindowsysteminterface.h>
 
@@ -621,6 +622,14 @@ static void handleOrientationChanged(JNIEnv */*env*/, jobject /*thiz*/, jint new
     }
 }
 
+static void onActivityResult(JNIEnv */*env*/, jclass /*cls*/,
+                             jint requestCode,
+                             jint resultCode,
+                             jobject data)
+{
+    QtAndroidPrivate::handleActivityResult(requestCode, resultCode, data);
+}
+
 static JNINativeMethod methods[] = {
     {"startQtAndroidPlugin", "()Z", (void *)startQtAndroidPlugin},
     {"startQtApplication", "(Ljava/lang/String;Ljava/lang/String;)V", (void *)startQtApplication},
@@ -630,7 +639,8 @@ static JNINativeMethod methods[] = {
     {"setSurface", "(ILjava/lang/Object;II)V", (void *)setSurface},
     {"updateWindow", "()V", (void *)updateWindow},
     {"updateApplicationState", "(I)V", (void *)updateApplicationState},
-    {"handleOrientationChanged", "(II)V", (void *)handleOrientationChanged}
+    {"handleOrientationChanged", "(II)V", (void *)handleOrientationChanged},
+    {"onActivityResult", "(IILandroid/content/Intent;)V", (void *)onActivityResult}
 };
 
 #define FIND_AND_CHECK_CLASS(CLASS_NAME) \

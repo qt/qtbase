@@ -598,4 +598,7 @@ public class QtNative
     public static native boolean onContextItemSelected(int itemId, boolean checked);
     public static native void onContextMenuClosed(Menu menu);
     // menu methods
+
+    // activity methods
+    public static native void onActivityResult(int requestCode, int resultCode, Intent data);
 }

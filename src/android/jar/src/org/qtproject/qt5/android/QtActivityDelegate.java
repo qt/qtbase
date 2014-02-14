@@ -44,6 +44,7 @@ package org.qtproject.qt5.android;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
@@ -86,6 +87,7 @@ public class QtActivityDelegate
     private Method m_super_onKeyDown = null;
     private Method m_super_onKeyUp = null;
     private Method m_super_onConfigurationChanged = null;
+    private Method m_super_onActivityResult = null;
 
     private static final String NATIVE_LIBRARIES_KEY = "native.libraries";
     private static final String BUNDLED_LIBRARIES_KEY = "bundled.libraries";
@@ -410,6 +412,7 @@ public class QtActivityDelegate
             m_super_onKeyDown = m_activity.getClass().getMethod("super_onKeyDown", Integer.TYPE, KeyEvent.class);
             m_super_onKeyUp = m_activity.getClass().getMethod("super_onKeyUp", Integer.TYPE, KeyEvent.class);
             m_super_onConfigurationChanged = m_activity.getClass().getMethod("super_onConfigurationChanged", Configuration.class);
+            m_super_onActivityResult = m_activity.getClass().getMethod("super_onActivityResult", Integer.TYPE, Integer.TYPE, Intent.class);
         } catch (Exception e) {
             e.printStackTrace();
             return false;
@@ -719,6 +722,18 @@ public class QtActivityDelegate
             }
         }
     }
+
+    public void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
+        try {
+            m_super_onActivityResult.invoke(m_activity, requestCode, resultCode, data);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        QtNative.onActivityResult(requestCode, resultCode, data);
+    }
+
 
     public void onStop()
     {
