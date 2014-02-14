@@ -680,9 +680,6 @@ static HMODULE qgl_loadLib(const char *name, bool warnOnFail = true)
 QWindowsOpenGL::QWindowsOpenGL()
     : m_eglLib(0)
 {
-    if (qEnvironmentVariableIsSet("QT_OPENGLPROXY_DEBUG"))
-        QLoggingCategory::setFilterRules(QStringLiteral("qt.gui.openglproxy=true"));
-
     enum RequestedLib {
         Unknown,
         Desktop,
