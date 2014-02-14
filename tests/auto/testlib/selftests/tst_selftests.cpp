@@ -169,12 +169,17 @@ QString tst_Selftests::logName(const QString &logger) const
     return (logger.startsWith("stdout") ? "" : QString(tempDir.path() + "/test_output." + logger));
 }
 
+static QString expectedFileNameFromTest(const QString &subdir, const QString &logger)
+{
+    return QStringLiteral("expected_") + subdir + QLatin1Char('.') + logFormat(logger);
+}
+
 // Load the expected test output for the nominated test (subdir) and logger
 // as an array of lines.  If there is no expected output file, return an
 // empty array.
-static QList<QByteArray> expectedResult(const QString &subdir, const QString &logger)
+static QList<QByteArray> expectedResult(const QString &fileName)
 {
-    QFile file(":/expected_" + subdir + "." + logFormat(logger));
+    QFile file(QStringLiteral(":/") + fileName);
     if (!file.open(QIODevice::ReadOnly))
         return QList<QByteArray>();
     return splitLines(file.readAll());
@@ -619,7 +624,8 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QStringList const& logge
     for (int n = 0; n < loggers.count(); ++n) {
         QString logger = loggers[n];
         QList<QByteArray> res = splitLines(actualOutputs[n]);
-        QList<QByteArray> exp = expectedResult(subdir, logger);
+        const QString expectedFileName = expectedFileNameFromTest(subdir, logger);
+        QList<QByteArray> exp = expectedResult(expectedFileName);
 #if defined (Q_CC_MSVC) || defined(Q_CC_MINGW)
         // MSVC, MinGW format double numbers differently
         if (n == 0 && subdir == QStringLiteral("float")) {
@@ -638,7 +644,7 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QStringList const& logge
             QList<QByteArray> tmp;
             int i = 1;
             do {
-                tmp = expectedResult(subdir + QString("_%1").arg(i++), logger);
+                tmp = expectedResult(expectedFileNameFromTest(subdir + QLatin1Char('_') + QString::number(i++), logger));
                 if (tmp.count())
                     expArr += tmp;
             } while (tmp.count());
@@ -667,8 +673,8 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QStringList const& logge
                 qDebug() << ">>>>>>";
 
                 QVERIFY2(res.count() == exp.count(),
-                     qPrintable(QString::fromLatin1("Mismatch in line count: %1 != %2 (%3).")
-                                .arg(res.count()).arg(exp.count()).arg(loggers.at(n))));
+                     qPrintable(QString::fromLatin1("Mismatch in line count: %1 != %2 (%3, %4).")
+                                .arg(res.count()).arg(exp.count()).arg(loggers.at(n), expectedFileName)));
             }
         }
 
@@ -740,8 +746,8 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QStringList const& logge
                                                       .arg(i).arg(loggers.at(n), output)));
             } else {
                 QVERIFY2(output == expected,
-                         qPrintable(QString::fromLatin1("Mismatch at line %1 (%2): '%3' != '%4'")
-                                    .arg(i).arg(loggers.at(n), output, expected)));
+                         qPrintable(QString::fromLatin1("Mismatch at line %1 (%2, %3): '%4' != '%5'")
+                                    .arg(i + 1).arg(loggers.at(n), expectedFileName, output, expected)));
             }
 
             benchmark = line.startsWith("RESULT : ");
