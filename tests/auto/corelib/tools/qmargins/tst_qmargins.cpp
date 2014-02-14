@@ -123,6 +123,13 @@ void tst_QMargins::operators()
     QCOMPARE(a, halved);
 
     QCOMPARE(m1 + (-m1), QMargins());
+
+    QMargins m3 = QMargins(10, 11, 12, 13);
+    QCOMPARE(m3 + 1, QMargins(11, 12, 13, 14));
+    QCOMPARE(1 + m3, QMargins(11, 12, 13, 14));
+    QCOMPARE(m3 - 1, QMargins(9, 10, 11, 12));
+    QCOMPARE(+m3, QMargins(10, 11, 12, 13));
+    QCOMPARE(-m3, QMargins(-10, -11, -12, -13));
 }
 
 // Testing QDataStream operators

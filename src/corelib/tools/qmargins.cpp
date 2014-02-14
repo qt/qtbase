@@ -182,6 +182,42 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn const QMargins operator+(const QMargins &lhs, int rhs)
+    \relates QMargins
+
+    Returns a QMargins object that is formed by adding \a rhs to
+    \a lhs.
+
+    \sa QMargins::operator+=(), QMargins::operator-=()
+
+    \since 5.3
+*/
+
+/*!
+    \fn const QMargins operator+(int lhs, const QMargins &rhs)
+    \relates QMargins
+
+    Returns a QMargins object that is formed by adding \a lhs to
+    \a rhs.
+
+    \sa QMargins::operator+=(), QMargins::operator-=()
+
+    \since 5.3
+*/
+
+/*!
+    \fn const QMargins operator-(const QMargins &lhs, int rhs)
+    \relates QMargins
+
+    Returns a QMargins object that is formed by subtracting \a rhs from
+    \a lhs.
+
+    \sa QMargins::operator+=(), QMargins::operator-=()
+
+    \since 5.3
+*/
+
+/*!
     \fn const QMargins operator*(const QMargins &margins, int factor)
     \relates QMargins
 
@@ -255,6 +291,15 @@ QT_BEGIN_NAMESPACE
     \sa QMargins::operator*=(), QMargins::operator/=()
 
     \since 5.1
+*/
+
+/*!
+    \fn QMargins operator+(const QMargins &margins)
+    \relates QMargins
+
+    Returns a QMargin object that is formed from all components of \a margins.
+
+    \since 5.3
 */
 
 /*!

@@ -161,6 +161,24 @@ Q_DECL_CONSTEXPR inline QMargins operator-(const QMargins &m1, const QMargins &m
                     m1.right() - m2.right(), m1.bottom() - m2.bottom());
 }
 
+Q_DECL_CONSTEXPR inline QMargins operator+(const QMargins &lhs, int rhs)
+{
+    return QMargins(lhs.left() + rhs, lhs.top() + rhs,
+                    lhs.right() + rhs, lhs.bottom() + rhs);
+}
+
+Q_DECL_CONSTEXPR inline QMargins operator+(int lhs, const QMargins &rhs)
+{
+    return QMargins(rhs.left() + lhs, rhs.top() + lhs,
+                    rhs.right() + lhs, rhs.bottom() + lhs);
+}
+
+Q_DECL_CONSTEXPR inline QMargins operator-(const QMargins &lhs, int rhs)
+{
+    return QMargins(lhs.left() - rhs, lhs.top() - rhs,
+                    lhs.right() - rhs, lhs.bottom() - rhs);
+}
+
 Q_DECL_CONSTEXPR inline QMargins operator*(const QMargins &margins, int factor)
 {
     return QMargins(margins.left() * factor, margins.top() * factor,
@@ -243,6 +261,11 @@ inline QMargins &QMargins::operator*=(qreal factor)
 inline QMargins &QMargins::operator/=(qreal divisor)
 {
     return *this = *this / divisor;
+}
+
+Q_DECL_CONSTEXPR inline QMargins operator+(const QMargins &margins)
+{
+    return margins;
 }
 
 Q_DECL_CONSTEXPR inline QMargins operator-(const QMargins &margins)
