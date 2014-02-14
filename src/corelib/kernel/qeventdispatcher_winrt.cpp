@@ -160,6 +160,8 @@ bool QEventDispatcherWinRT::processEvents(QEventLoop::ProcessEventsFlags flags)
             emit aboutToBlock();
             WaitForSingleObjectEx(GetCurrentThread(), 1, FALSE);
             emit awake();
+        } else {
+            break;
         }
     }
     d->interrupt = false;
