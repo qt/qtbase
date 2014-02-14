@@ -42,6 +42,7 @@
 #ifndef QRECT_H
 #define QRECT_H
 
+#include <QtCore/qmargins.h>
 #include <QtCore/qsize.h>
 #include <QtCore/qpoint.h>
 
@@ -50,8 +51,6 @@
 #endif
 
 QT_BEGIN_NAMESPACE
-
-class QMargins;
 
 class Q_CORE_EXPORT QRect
 {
@@ -138,8 +137,8 @@ public:
     inline QRect intersected(const QRect &other) const;
     bool intersects(const QRect &r) const;
 
-    inline QRect marginsAdded(const QMargins &margins) const;
-    inline QRect marginsRemoved(const QMargins &margins) const;
+    Q_DECL_CONSTEXPR inline QRect marginsAdded(const QMargins &margins) const;
+    Q_DECL_CONSTEXPR inline QRect marginsRemoved(const QMargins &margins) const;
     inline QRect &operator+=(const QMargins &margins);
     inline QRect &operator-=(const QMargins &margins);
 
@@ -450,6 +449,42 @@ Q_DECL_CONSTEXPR inline bool operator==(const QRect &r1, const QRect &r2)
 Q_DECL_CONSTEXPR inline bool operator!=(const QRect &r1, const QRect &r2)
 {
     return r1.x1!=r2.x1 || r1.x2!=r2.x2 || r1.y1!=r2.y1 || r1.y2!=r2.y2;
+}
+
+Q_DECL_CONSTEXPR inline QRect operator+(const QRect &rectangle, const QMargins &margins)
+{
+    return QRect(QPoint(rectangle.left() - margins.left(), rectangle.top() - margins.top()),
+                 QPoint(rectangle.right() + margins.right(), rectangle.bottom() + margins.bottom()));
+}
+
+Q_DECL_CONSTEXPR inline QRect operator+(const QMargins &margins, const QRect &rectangle)
+{
+    return QRect(QPoint(rectangle.left() - margins.left(), rectangle.top() - margins.top()),
+                 QPoint(rectangle.right() + margins.right(), rectangle.bottom() + margins.bottom()));
+}
+
+Q_DECL_CONSTEXPR inline QRect QRect::marginsAdded(const QMargins &margins) const
+{
+    return QRect(QPoint(x1 - margins.left(), y1 - margins.top()),
+                 QPoint(x2 + margins.right(), y2 + margins.bottom()));
+}
+
+Q_DECL_CONSTEXPR inline QRect QRect::marginsRemoved(const QMargins &margins) const
+{
+    return QRect(QPoint(x1 + margins.left(), y1 + margins.top()),
+                 QPoint(x2 - margins.right(), y2 - margins.bottom()));
+}
+
+inline QRect &QRect::operator+=(const QMargins &margins)
+{
+    *this = marginsAdded(margins);
+    return *this;
+}
+
+inline QRect &QRect::operator-=(const QMargins &margins)
+{
+    *this = marginsRemoved(margins);
+    return *this;
 }
 
 #ifndef QT_NO_DEBUG_STREAM
