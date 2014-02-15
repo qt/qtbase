@@ -463,6 +463,12 @@ Q_DECL_CONSTEXPR inline QRect operator+(const QMargins &margins, const QRect &re
                  QPoint(rectangle.right() + margins.right(), rectangle.bottom() + margins.bottom()));
 }
 
+Q_DECL_CONSTEXPR inline QRect operator-(const QRect &lhs, const QMargins &rhs)
+{
+    return QRect(QPoint(lhs.left() + rhs.left(), lhs.top() + rhs.top()),
+                 QPoint(lhs.right() - rhs.right(), lhs.bottom() - rhs.bottom()));
+}
+
 Q_DECL_CONSTEXPR inline QRect QRect::marginsAdded(const QMargins &margins) const
 {
     return QRect(QPoint(x1 - margins.left(), y1 - margins.top()),

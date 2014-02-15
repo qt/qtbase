@@ -1182,6 +1182,15 @@ bool QRect::intersects(const QRect &r) const
 */
 
 /*!
+    \fn QRect operator-(const QRect &lhs, const QMargins &rhs)
+    \relates QRect
+
+    Returns the \a lhs rectangle shrunken by the \a rhs margins.
+
+    \since 5.3
+*/
+
+/*!
     \fn QRect QRect::marginsAdded(const QMargins &margins) const
 
     Returns a rectangle grown by the \a margins.

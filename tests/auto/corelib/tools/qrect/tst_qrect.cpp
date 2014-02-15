@@ -3496,6 +3496,10 @@ void tst_QRect::margins()
     QCOMPARE(added, margins + rectangle);
     QCOMPARE(added, rectangle.marginsAdded(margins));
 
+    const QRect subtracted = rectangle - margins;
+    QCOMPARE(subtracted, QRect(QPoint(12, 13), QSize(44, 42)));
+    QCOMPARE(subtracted, rectangle.marginsRemoved(margins));
+
     QRect a = rectangle;
     a += margins;
     QCOMPARE(added, a);
