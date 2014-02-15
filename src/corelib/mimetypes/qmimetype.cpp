@@ -443,4 +443,17 @@ bool QMimeType::inherits(const QString &mimeTypeName) const
     return QMimeDatabasePrivate::instance()->inherits(d->name, mimeTypeName);
 }
 
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug debug, const QMimeType &mime)
+{
+    QDebugStateSaver saver(debug);
+    if (!mime.isValid()) {
+        debug.nospace() << "QMimeType(invalid)";
+    } else {
+        debug.nospace() << "QMimeType(" << mime.name() << ")";
+    }
+    return debug;
+}
+#endif
+
 QT_END_NAMESPACE

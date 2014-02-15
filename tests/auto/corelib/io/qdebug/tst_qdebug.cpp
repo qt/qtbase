@@ -211,6 +211,8 @@ void tst_QDebug::debugSpaceHandling() const
     QCOMPARE(s_msg, QString::fromLatin1("QPoint(21,22) QRect(23,24 25x26) QLine(QPoint(27,28),QPoint(29,30))"));
     qDebug() << QPointF(21, 22) << QRectF(23, 24, 25, 26) << QLineF(27, 28, 29, 30);
     QCOMPARE(s_msg, QString::fromLatin1("QPointF(21,22) QRectF(23,24 25x26) QLineF(QPointF(27,28),QPointF(29,30))"));
+    qDebug() << QMimeType() << QMimeDatabase().mimeTypeForName("application/pdf") << "foo";
+    QCOMPARE(s_msg, QString::fromLatin1("QMimeType(invalid) QMimeType(\"application/pdf\") foo"));
 }
 
 void tst_QDebug::stateSaver() const

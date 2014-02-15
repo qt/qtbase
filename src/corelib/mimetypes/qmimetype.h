@@ -110,5 +110,10 @@ protected:
 
 Q_DECLARE_SHARED(QMimeType)
 
+#ifndef QT_NO_DEBUG_STREAM
+class QDebug;
+Q_CORE_EXPORT QDebug operator<<(QDebug debug, const QMimeType &mime);
+#endif
+
 QT_END_NAMESPACE
 #endif   // QMIMETYPE_H
