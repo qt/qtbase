@@ -1165,7 +1165,7 @@ Q_CORE_EXPORT void QVariantPrivate::registerHandler(const int /* Modules::Names 
     instead to construct variants from the pointer types represented by
     \c QMetaType::VoidStar, and \c QMetaType::QObjectStar.
 
-    \sa QVariant::fromValue(), Type
+    \sa QVariant::fromValue(), QMetaType::Type
 */
 
 /*!
@@ -1765,7 +1765,7 @@ const char *QVariant::typeName() const
 }
 
 /*!
-    Convert this variant to type Invalid and free up any resources
+    Convert this variant to type QMetaType::UnknownType and free up any resources
     used.
 */
 void QVariant::clear()
@@ -1781,7 +1781,7 @@ void QVariant::clear()
     Converts the int representation of the storage type, \a typeId, to
     its string representation.
 
-    Returns a null pointer if the type is QVariant::Invalid or doesn't exist.
+    Returns a null pointer if the type is QMetaType::UnknownType or doesn't exist.
 */
 const char *QVariant::typeToName(int typeId)
 {
@@ -2019,7 +2019,7 @@ QDataStream& operator<<(QDataStream &s, const QVariant::Type p)
     \fn bool QVariant::isValid() const
 
     Returns \c true if the storage type of this variant is not
-    QVariant::Invalid; otherwise returns \c false.
+    QMetaType::UnknownType; otherwise returns \c false.
 */
 
 template <typename T>

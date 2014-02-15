@@ -107,7 +107,7 @@ QT_BEGIN_NAMESPACE
     \snippet shareddirmodel/main.cpp 7
 
     The view's root index can be used to control how much of a
-    hierarchical model is displayed. QDirModel provides a convenience
+    hierarchical model is displayed. QFileSystemModel provides a convenience
     function that returns a suitable model index for a path to a
     directory within the model.
 

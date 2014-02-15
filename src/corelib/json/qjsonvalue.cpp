@@ -344,16 +344,16 @@ QJsonValue &QJsonValue::operator =(const QJsonValue &other)
     The conversion will convert QVariant types as follows:
 
     \list
-    \li QVariant::Bool to Bool
-    \li QVariant::Int
-    \li QVariant::Double
-    \li QVariant::LongLong
-    \li QVariant::ULongLong
-    \li QVariant::UInt to Double
-    \li QVariant::String to String
-    \li QVariant::StringList
-    \li QVariant::VariantList to Array
-    \li QVariant::VariantMap to Object
+    \li QMetaType::Bool to Bool
+    \li QMetaType::Int
+    \li QMetaType::Double
+    \li QMetaType::LongLong
+    \li QMetaType::ULongLong
+    \li QMetaType::UInt to Double
+    \li QMetaType::QString to String
+    \li QMetaType::QStringList
+    \li QMetaType::QVariantList to Array
+    \li QMetaType::QVariantMap to Object
     \endlist
 
     For all other QVariant types a conversion to a QString will be attempted. If the returned string
@@ -395,9 +395,9 @@ QJsonValue QJsonValue::fromVariant(const QVariant &variant)
     The QJsonValue types will be converted as follows:
 
     \value Null     QVariant()
-    \value Bool     QVariant::Bool
-    \value Double   QVariant::Double
-    \value String   QVariant::String
+    \value Bool     QMetaType::Bool
+    \value Double   QMetaType::Double
+    \value String   QString
     \value Array    QVariantList
     \value Object   QVariantMap
     \value Undefined QVariant()

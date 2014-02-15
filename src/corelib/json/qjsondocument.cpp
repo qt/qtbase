@@ -260,8 +260,8 @@ QJsonDocument QJsonDocument::fromBinaryData(const QByteArray &data, DataValidati
 /*!
  Creates a QJsonDocument from the QVariant \a variant.
 
- If the \a variant contains any other type than a QVariant::Map,
- QVariant::List or QVariant::StringList, the returned document
+ If the \a variant contains any other type than a QVariantMap,
+ QVariantList or QStringList, the returned document
  document is invalid.
 
  \sa toVariant()

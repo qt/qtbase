@@ -816,7 +816,7 @@
         \row
             \li  Dir View
             \li  QTreeView
-            \li  QDirModel
+            \li  QFileSystemModel
             \li  Very small example to demonstrate how to assign a model to a view
         \row
             \li  Editable Tree Model
