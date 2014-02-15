@@ -2916,7 +2916,8 @@ void QTextEngine::resolveAdditionalFormats() const
 
     QTextFormatCollection *collection = formats();
 
-    specialData->resolvedFormats.resize(layoutData->items.count());
+    specialData->resolvedFormats.clear();
+    QVector<QTextCharFormat> resolvedFormats(layoutData->items.count());
 
     QVarLengthArray<int, 64> addFormatSortedByStart;
     addFormatSortedByStart.reserve(specialData->addFormats.count());
@@ -2953,7 +2954,7 @@ void QTextEngine::resolveAdditionalFormats() const
             ++endIt;
         }
 
-        QTextCharFormat &format = specialData->resolvedFormats[i];
+        QTextCharFormat &format = resolvedFormats[i];
         if (block.docHandle()) {
             // when we have a docHandle, formatIndex might still return a valid index based
             // on the preeditPosition. for all other cases, we cleared the resolved format indices
@@ -2968,6 +2969,8 @@ void QTextEngine::resolveAdditionalFormats() const
             format = collection->charFormat(collection->indexForFormat(format)); // get shared copy
         }
     }
+
+    specialData->resolvedFormats = resolvedFormats;
 }
 
 QFixed QTextEngine::leadingSpaceWidth(const QScriptLine &line)
