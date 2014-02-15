@@ -217,7 +217,7 @@
     \section1 Using models and views
 
     The following sections explain how to use the model/view pattern
-    in Qt. Each section includes an an example and is followed by a
+    in Qt. Each section includes an example and is followed by a
     section showing how to create new components.
 
     \section2 Two models included in Qt
