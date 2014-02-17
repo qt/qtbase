@@ -1493,6 +1493,9 @@ void QLineEdit::mousePressEvent(QMouseEvent* e)
         return;
     }
     bool mark = e->modifiers() & Qt::ShiftModifier;
+#ifdef Q_OS_ANDROID
+    mark = mark && (d->imHints & Qt::ImhNoPredictiveText);
+#endif // Q_OS_ANDROID
     int cursor = d->xToPos(e->pos().x());
 #ifndef QT_NO_DRAGANDDROP
     if (!mark && d->dragEnabled && d->control->echoMode() == Normal &&
@@ -1520,14 +1523,19 @@ void QLineEdit::mouseMoveEvent(QMouseEvent * e)
         } else
 #endif
         {
-            if (d->control->composeMode()) {
+#ifndef Q_OS_ANDROID
+            const bool select = true;
+#else
+            const bool select = (d->imHints & Qt::ImhNoPredictiveText);
+#endif
+            if (d->control->composeMode() && select) {
                 int startPos = d->xToPos(d->mousePressPos.x());
                 int currentPos = d->xToPos(e->pos().x());
                 if (startPos != currentPos)
                     d->control->setSelection(startPos, currentPos - startPos);
 
             } else {
-                d->control->moveCursor(d->xToPos(e->pos().x()), true);
+                d->control->moveCursor(d->xToPos(e->pos().x()), select);
             }
         }
     }
