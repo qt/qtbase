@@ -1717,8 +1717,9 @@ void QMacStylePrivate::drawColorlessButton(const HIRect &macRect, HIThemeButtonD
         }
     }
 
-    int width = int(macRect.size.width) + extraWidth;
-    int height = int(macRect.size.height) + extraHeight;
+    int devicePixelRatio = p->device()->devicePixelRatio();
+    int width = devicePixelRatio * (int(macRect.size.width) + extraWidth);
+    int height = devicePixelRatio * (int(macRect.size.height) + extraHeight);
 
     if (width <= 0 || height <= 0)
         return;   // nothing to draw
@@ -1730,6 +1731,7 @@ void QMacStylePrivate::drawColorlessButton(const HIRect &macRect, HIThemeButtonD
     QPixmap pm;
     if (!QPixmapCache::find(key, pm)) {
         QPixmap activePixmap(width, height);
+        activePixmap.setDevicePixelRatio(devicePixelRatio);
         activePixmap.fill(Qt::transparent);
         {
             if (combo){
@@ -1780,6 +1782,7 @@ void QMacStylePrivate::drawColorlessButton(const HIRect &macRect, HIThemeButtonD
             QImage colorlessImage;
             {
                 QPixmap colorlessPixmap(width, height);
+                colorlessPixmap.setDevicePixelRatio(devicePixelRatio);
                 colorlessPixmap.fill(Qt::transparent);
 
                 QMacCGContext cg(&colorlessPixmap);
@@ -1813,7 +1816,7 @@ void QMacStylePrivate::drawColorlessButton(const HIRect &macRect, HIThemeButtonD
         }
         QPixmapCache::insert(key, pm);
     }
-    p->drawPixmap(int(macRect.origin.x) - xoff, int(macRect.origin.y) + finalyoff, width, height, pm);
+    p->drawPixmap(int(macRect.origin.x) - xoff, int(macRect.origin.y) + finalyoff, width / devicePixelRatio, height / devicePixelRatio , pm);
 }
 
 QMacStyle::QMacStyle()
@@ -6715,6 +6718,8 @@ CGContextRef qt_mac_cg_context(const QPaintDevice *pdev)
         }
 
         CGContextTranslateCTM(ret, 0, pm->height());
+        int devicePixelRatio = pdev->devicePixelRatio();
+        CGContextScaleCTM(ret, devicePixelRatio, devicePixelRatio);
         CGContextScaleCTM(ret, 1, -1);
         return ret;
     } else if (pdev->devType() == QInternal::Widget) {

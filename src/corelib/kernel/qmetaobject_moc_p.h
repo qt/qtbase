@@ -155,21 +155,28 @@ static QByteArray normalizeTypeInternal(const char *t, const char *e, bool fixSc
             //template recursion
             const char* tt = t;
             int templdepth = 1;
+            int scopeDepth = 0;
             while (t != e) {
                 c = *t++;
-                if (c == '<')
-                    ++templdepth;
-                if (c == '>')
-                    --templdepth;
-                if (templdepth == 0 || (templdepth == 1 && c == ',')) {
-                    result += normalizeTypeInternal(tt, t-1, fixScope, false);
-                    result += c;
-                    if (templdepth == 0) {
-                        if (*t == '>')
-                            result += ' '; // avoid >>
-                        break;
+                if (c == '{' || c == '(' || c == '[')
+                    ++scopeDepth;
+                if (c == '}' || c == ')' || c == ']')
+                    --scopeDepth;
+                if (scopeDepth == 0) {
+                    if (c == '<')
+                        ++templdepth;
+                    if (c == '>')
+                        --templdepth;
+                    if (templdepth == 0 || (templdepth == 1 && c == ',')) {
+                        result += normalizeTypeInternal(tt, t-1, fixScope, false);
+                        result += c;
+                        if (templdepth == 0) {
+                            if (*t == '>')
+                                result += ' '; // avoid >>
+                            break;
+                        }
+                        tt = t;
                     }
-                    tt = t;
                 }
             }
         }

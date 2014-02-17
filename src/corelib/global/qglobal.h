@@ -1060,6 +1060,7 @@ QT_END_NAMESPACE
 
 #include <QtCore/qatomic.h>
 #include <QtCore/qglobalstatic.h>
+#include <QtCore/qnumeric.h>
 
 #endif /* __cplusplus */
 
