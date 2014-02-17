@@ -461,18 +461,63 @@ static QWindowGeometrySpecification windowGeometrySpecification;
     \note \a argc and \a argv might be changed as Qt removes command line
     arguments that it recognizes.
 
+    \section1 Supported Command Line Options
+
     All Qt programs automatically support the following command line options:
     \list
-        \li  -reverse, sets the application's layout direction to
-            Qt::RightToLeft
-        \li  -qmljsdebugger=, activates the QML/JS debugger with a specified port.
-            The value must be of format port:1234[,block], where block is optional
+
+        \li \c{-platform} \e {platformName[:options]}, specifies the
+            \l{Qt Platform Abstraction} (QPA) plugin.
+
+            Overridden by the \c QT_QPA_PLATFORM environment variable.
+        \li \c{-platformpluginpath} \e path, specifies the path to platform
+            plugins.
+
+            Overridden by the \c QT_QPA_PLATFORM_PLUGIN_PATH environment
+            variable.
+
+        \li \c{-platformtheme} \e platformTheme, specifies the platform theme.
+
+            Overridden by the \c QT_QPA_PLATFORMTHEME environment variable.
+        \li \c{-qmljsdebugger=}, activates the QML/JS debugger with a specified port.
+            The value must be of format \c{port:1234}\e{[,block]}, where
+            \e block is optional
             and will make the application wait until a debugger connects to it.
-        \li  -session \e session, restores the application from an earlier
+        \li \c {-qwindowgeometry} \e geometry, specifies window geometry for
+            the main window using the X11-syntax. For example:
+            \c {-qwindowgeometry 100x100+50+50}
+        \li \c{-reverse}, sets the application's layout direction to
+            Qt::RightToLeft
+        \li \c{-session} \e session, restores the application from an earlier
             \l{Session Management}{session}.
     \endlist
 
-    \sa arguments()
+    The following standard command line options are available for X11:
+
+    \list
+        \li \c {-display} \e {hostname:screen_number}, switches displays on X11.
+        \li \c {-geometry} \e geometry, same as \c {-qwindowgeometry}.
+    \endlist
+
+    \section1 Platform-Specific Arguments
+
+    You can specify platform-specific arguments for the \c{-platform} option.
+    Place them after the platform plugin name following a colon as a
+    comma-separated list. For example,
+    \c{-platform windows:dialogs=xp,fontengine=freetype}.
+
+    The following parameters are available for \c {-platform windows}:
+
+    \list
+        \li \c {dialogs=[xp|none]}, \c xp uses XP-style native dialogs and
+            \c none disables them.
+        \li \c {fontengine=freetype}, uses the FreeType font engine.
+    \endlist
+
+    For more information about the platform-specific arguments available for
+    embedded Linux platforms, see \l{Qt for Embedded Linux}.
+
+    \sa arguments() QGuiApplication::platformName
 */
 #ifdef Q_QDOC
 QGuiApplication::QGuiApplication(int &argc, char **argv)
@@ -878,8 +923,35 @@ QWindow *QGuiApplication::topLevelAt(const QPoint &pos)
     \property QGuiApplication::platformName
     \brief The name of the underlying platform plugin.
 
-    Examples: "xcb" (for X11), "Cocoa" (for Mac OS X), "windows", "qnx",
-       "directfb", "kms", "MinimalEgl", "LinuxFb", "EglFS", "OpenWFD"...
+    The QPA platform plugins are located in \c {qtbase\src\plugins\platforms}.
+    At the time of writing, the following platform plugin names are supported:
+
+    \list
+        \li \c android
+        \li \c cocoa is a platform plugin for Mac OS X.
+        \li \c directfb
+        \li \c eglfs is a platform plugin for running Qt5 applications on top of
+            EGL and  OpenGL ES 2.0 without an actual windowing system (like X11
+            or Wayland). For more information, see \l{EGLFS}.
+        \li \c ios
+        \li \c kms is an experimental platform plugin using kernel modesetting
+            and \l{http://dri.freedesktop.org/wiki/DRM}{DRM} (Direct Rendering
+            Manager).
+        \li \c linuxfb writes directly to the framebuffer. For more information,
+            see \l{LinuxFB}.
+        \li \c minimal is provided as an examples for developers who want to
+            write their own platform plugins. However, you can use the plugin to
+            run GUI applications in environments without a GUI, such as servers.
+        \li \c minimalegl is an example plugin.
+        \li \c offscreen
+        \li \c openwfd
+        \li \c qnx
+        \li \c windows
+        \li \c xcb is the X11 plugin used on regular desktop Linux platforms.
+    \endlist
+
+    For more information about the platform plugins for embedded Linux devices,
+    see \l{Qt for Embedded Linux}.
 */
 
 QString QGuiApplication::platformName()
