@@ -677,7 +677,7 @@ QByteArray QMetaObjectPrivate::decodeMethodSignature(
     const char *lparens = strchr(signature, '(');
     if (!lparens)
         return QByteArray();
-    const char *rparens = strchr(lparens + 1, ')');
+    const char *rparens = strrchr(lparens + 1, ')');
     if (!rparens || *(rparens+1))
         return QByteArray();
     int nameLength = lparens - signature;
