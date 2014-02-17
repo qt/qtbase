@@ -55,6 +55,8 @@
 #include <QTimer>
 #include <QTemporaryDir>
 
+#include <algorithm>
+
 typedef QMap<QString, QString> QStringMap;
 typedef QList<int> QIntList;
 Q_DECLARE_METATYPE(QImage::Format)
@@ -559,7 +561,7 @@ void tst_QImageReader::supportedFormats()
 {
     QList<QByteArray> formats = QImageReader::supportedImageFormats();
     QList<QByteArray> sortedFormats = formats;
-    qSort(sortedFormats);
+    std::sort(sortedFormats.begin(), sortedFormats.end());
 
     // check that the list is sorted
     QCOMPARE(formats, sortedFormats);
@@ -576,7 +578,7 @@ void tst_QImageReader::supportedMimeTypes()
 {
     QList<QByteArray> mimeTypes = QImageReader::supportedMimeTypes();
     QList<QByteArray> sortedMimeTypes = mimeTypes;
-    qSort(sortedMimeTypes);
+    std::sort(sortedMimeTypes.begin(), sortedMimeTypes.end());
 
     // check that the list is sorted
     QCOMPARE(mimeTypes, sortedMimeTypes);
