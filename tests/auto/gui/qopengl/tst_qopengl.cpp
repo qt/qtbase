@@ -78,6 +78,7 @@ private slots:
     void openGLPaintDevice_data();
     void openGLPaintDevice();
     void aboutToBeDestroyed();
+    void sizeLessWindow();
     void QTBUG15621_triangulatingStrokerDivZero();
     void textureblitterFullSourceRectTransform();
     void textureblitterPartOriginBottomLeftSourceRectTransform();
@@ -643,6 +644,43 @@ void tst_QOpenGL::aboutToBeDestroyed()
     delete context;
 
     QCOMPARE(spy.size(), 1);
+}
+
+// Verify that QOpenGLContext works with QWindows that do
+// not have an explicit size set.
+void tst_QOpenGL::sizeLessWindow()
+{
+    // top-level window
+    {
+        QWindow window;
+        window.setSurfaceType(QWindow::OpenGLSurface);
+
+        QOpenGLContext context;
+        QVERIFY(context.create());
+
+        window.show();
+        QVERIFY(context.makeCurrent(&window));
+        QVERIFY(QOpenGLContext::currentContext());
+    }
+
+    QVERIFY(!QOpenGLContext::currentContext());
+
+    // child window
+    {
+        QWindow parent;
+        QWindow window(&parent);
+        window.setSurfaceType(QWindow::OpenGLSurface);
+
+        QOpenGLContext context;
+        QVERIFY(context.create());
+
+        parent.show();
+        window.show();
+        QVERIFY(context.makeCurrent(&window));
+        QVERIFY(QOpenGLContext::currentContext());
+    }
+
+    QVERIFY(!QOpenGLContext::currentContext());
 }
 
 void tst_QOpenGL::QTBUG15621_triangulatingStrokerDivZero()
