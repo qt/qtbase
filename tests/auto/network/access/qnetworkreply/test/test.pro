@@ -14,4 +14,3 @@ contains(QT_CONFIG,xcb): CONFIG+=insignificant_test  # unstable, QTBUG-21102
 win32:CONFIG += insignificant_test # QTBUG-24226
 
 TEST_HELPER_INSTALLS = ../echo/echo
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

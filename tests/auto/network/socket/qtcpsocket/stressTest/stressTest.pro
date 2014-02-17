@@ -7,4 +7,3 @@ CONFIG += console
 DESTDIR = ./
 MOC_DIR = .moc/
 TMP_DIR = .tmp/
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

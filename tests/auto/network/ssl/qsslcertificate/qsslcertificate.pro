@@ -8,4 +8,3 @@ QT = core network testlib
 TARGET = tst_qsslcertificate
 
 TESTDATA += certificates/* more-certificates/* verify-certs/*
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

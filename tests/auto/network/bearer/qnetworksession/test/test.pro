@@ -16,4 +16,3 @@ CONFIG(debug_and_release) {
 }
 
 TEST_HELPER_INSTALLS = ../lackey/lackey
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

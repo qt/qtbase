@@ -15,4 +15,3 @@ wince*: {
 }
 
 CONFIG+=insignificant_test  # QTBUG-15111: uses live qt-test-server, inherently unstable
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0
