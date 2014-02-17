@@ -49,6 +49,8 @@
 # include <pthread.h>
 #endif
 
+#include <algorithm>
+
 // At least these specific versions of MSVC2010 has a severe performance problem with this file,
 // taking about 1 hour to compile if the portion making use of variadic macros is enabled.
 #if defined(_MSC_FULL_VER) && (_MSC_FULL_VER >= 160030319) && (_MSC_FULL_VER <= 160040219)
@@ -2153,7 +2155,7 @@ void tst_QMetaType::compareCustomType()
 {
     QFETCH(QVariantList, unsorted);
     QFETCH(QVariantList, sorted);
-    qSort(unsorted);
+    std::sort(unsorted.begin(), unsorted.end());
     QCOMPARE(unsorted, sorted);
 }
 
