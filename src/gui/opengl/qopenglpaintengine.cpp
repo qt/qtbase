@@ -2012,6 +2012,8 @@ bool QOpenGL2PaintEngineEx::begin(QPaintDevice *pdev)
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_SCISSOR_TEST);
 
+    d->glyphCacheType = QFontEngineGlyphCache::Raster_A8;
+
 #ifndef QT_OPENGL_ES_2
     if (!QOpenGLFunctions::isES()) {
         glDisable(GL_MULTISAMPLE);
@@ -2024,8 +2026,6 @@ bool QOpenGL2PaintEngineEx::begin(QPaintDevice *pdev)
         // multisampled, it's always multisampled.
         d->multisamplingAlwaysEnabled = d->device->context()->format().samples() > 1;
     }
-
-    d->glyphCacheType = QFontEngineGlyphCache::Raster_A8;
 
     return true;
 }
