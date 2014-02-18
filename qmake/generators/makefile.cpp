@@ -3299,7 +3299,7 @@ MakefileGenerator::writePkgConfigFile()
         pkgConfiglibName = "-framework " + bundle + " ";
     } else {
         pkgConfiglibDir = "-L${libdir}";
-        pkgConfiglibName = "-l" + fileInfo(fname).completeBaseName();
+        pkgConfiglibName = "-l" + unescapeFilePath(project->first("QMAKE_ORIG_TARGET"));
         if (project->isActiveConfig("shared"))
             pkgConfiglibName += project->first("TARGET_VERSION_EXT").toQString();
     }
