@@ -50,6 +50,8 @@
 #include <QtNetwork/qnetworksession.h>
 #endif
 
+#include <algorithm>
+
 #define TESTFILE QString("http://%1/qtest/cgi-bin/").arg(QtNetworkSettings::serverName())
 
 class tst_QAbstractNetworkCache : public QObject
@@ -334,8 +336,8 @@ void tst_QAbstractNetworkCache::runTest()
     if (fetchFromCache) {
         QList<QByteArray> rawHeaderList = reply->rawHeaderList();
         QList<QByteArray> rawHeaderList2 = reply2->rawHeaderList();
-        qSort(rawHeaderList);
-        qSort(rawHeaderList2);
+        std::sort(rawHeaderList.begin(), rawHeaderList.end());
+        std::sort(rawHeaderList2.begin(), rawHeaderList2.end());
     }
     QCOMPARE(diskCache->gotData, fetchFromCache);
 }
@@ -388,8 +390,8 @@ void tst_QAbstractNetworkCache::checkSynchronous()
     if (fetchFromCache) {
         QList<QByteArray> rawHeaderList = reply->rawHeaderList();
         QList<QByteArray> rawHeaderList2 = reply2->rawHeaderList();
-        qSort(rawHeaderList);
-        qSort(rawHeaderList2);
+        std::sort(rawHeaderList.begin(), rawHeaderList.end());
+        std::sort(rawHeaderList2.begin(), rawHeaderList2.end());
     }
     QCOMPARE(diskCache->gotData, fetchFromCache);
 }

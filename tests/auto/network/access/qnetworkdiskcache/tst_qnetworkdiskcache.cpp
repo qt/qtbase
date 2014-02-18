@@ -43,6 +43,9 @@
 #include <QtTest/QtTest>
 #include <QtNetwork/QtNetwork>
 #include <qnetworkdiskcache.h>
+
+#include <algorithm>
+
 #define EXAMPLE_URL "http://user:pass@www.example.com/#foo"
 //cached objects are organized into these many subdirs
 #define NUM_SUBDIRECTORIES 16
@@ -464,7 +467,7 @@ void tst_QNetworkDiskCache::expire()
             cacheList.append(metaData.url().toString());
         }
     }
-    qSort(cacheList);
+    std::sort(cacheList.begin(), cacheList.end());
     for (int i = 0; i < cacheList.count(); ++i) {
         QString fileName = cacheList[i];
         QCOMPARE(fileName, QString("http://www.foo.com/%1").arg(i + 6));

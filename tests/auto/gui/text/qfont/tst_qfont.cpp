@@ -646,7 +646,7 @@ QString getPlatformGenericFont(const char* genericName)
 
 static inline QByteArray msgNotAcceptableFont(const QString &defaultFamily, const QStringList &acceptableFamilies)
 {
-    QString res = QString::fromLatin1("Font family '%1' is not one of the following accaptable results: ").arg(defaultFamily);
+    QString res = QString::fromLatin1("Font family '%1' is not one of the following acceptable results: ").arg(defaultFamily);
     Q_FOREACH (const QString &family, acceptableFamilies)
         res += QString::fromLatin1("\n %1").arg(family);
     return res.toLocal8Bit();
