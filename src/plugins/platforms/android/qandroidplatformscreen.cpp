@@ -64,6 +64,7 @@ public:
     ScopedProfiler(const QString &msg)
     {
         m_msg = msg;
+        m_timer.start();
     }
     ~ScopedProfiler()
     {
