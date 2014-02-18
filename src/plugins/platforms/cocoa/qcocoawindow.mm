@@ -1153,6 +1153,10 @@ void QCocoaWindow::recreateWindow(const QPlatformWindow *parentWindow)
         // Child windows have no NSWindow, link the NSViews instead.
         [m_parentCocoaWindow->m_contentView addSubview : m_contentView];
         QRect rect = window()->geometry();
+        // Prevent setting a (0,0) window size; causes opengl context
+        // "Invalid Drawable" warnings.
+        if (rect.isNull())
+            rect.setSize(QSize(1, 1));
         NSRect frame = NSMakeRect(rect.x(), rect.y(), rect.width(), rect.height());
         [m_contentView setFrame:frame];
         [m_contentView setHidden: YES];
