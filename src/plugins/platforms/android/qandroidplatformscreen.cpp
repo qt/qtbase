@@ -247,7 +247,7 @@ void QAndroidPlatformScreen::doRedraw()
 
     QMutexLocker lock(&m_surfaceMutex);
     if (m_id == -1) {
-        m_id = QtAndroid::createSurface(this, m_geometry, true);
+        m_id = QtAndroid::createSurface(this, m_geometry, true, m_depth);
         m_surfaceWaitCondition.wait(&m_surfaceMutex);
     }
 

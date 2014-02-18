@@ -334,7 +334,7 @@ namespace QtAndroid
         return manufacturer + QStringLiteral(" ") + model;
     }
 
-    int createSurface(AndroidSurfaceClient *client, const QRect &geometry, bool onTop)
+    int createSurface(AndroidSurfaceClient *client, const QRect &geometry, bool onTop, int imageDepth)
     {
         QJNIEnvironmentPrivate env;
         if (!env)
@@ -356,7 +356,8 @@ namespace QtAndroid
                                      m_createSurfaceMethodID,
                                      surfaceId,
                                      jboolean(onTop),
-                                     x, y, w, h);
+                                     x, y, w, h,
+                                     imageDepth);
         return surfaceId;
     }
 
@@ -689,7 +690,7 @@ static int registerNatives(JNIEnv *env)
         return JNI_FALSE;
     }
 
-    GET_AND_CHECK_STATIC_METHOD(m_createSurfaceMethodID, m_applicationClass, "createSurface", "(IZIIII)V");
+    GET_AND_CHECK_STATIC_METHOD(m_createSurfaceMethodID, m_applicationClass, "createSurface", "(IZIIIII)V");
     GET_AND_CHECK_STATIC_METHOD(m_insertNativeViewMethodID, m_applicationClass, "insertNativeView", "(ILandroid/view/View;IIII)V");
     GET_AND_CHECK_STATIC_METHOD(m_setSurfaceGeometryMethodID, m_applicationClass, "setSurfaceGeometry", "(IIIII)V");
     GET_AND_CHECK_STATIC_METHOD(m_destroySurfaceMethodID, m_applicationClass, "destroySurface", "(I)V");

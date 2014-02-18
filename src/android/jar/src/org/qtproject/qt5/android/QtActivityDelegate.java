@@ -987,7 +987,7 @@ public class QtActivityDelegate
         m_nativeViews.put(id, view);
     }
 
-    public void createSurface(int id, boolean onTop, int x, int y, int w, int h) {
+    public void createSurface(int id, boolean onTop, int x, int y, int w, int h, int imageDepth) {
         if (m_surfaces.size() == 0) {
             TypedValue attr = new TypedValue();
             m_activity.getTheme().resolveAttribute(android.R.attr.windowBackground, attr, true);
@@ -1005,7 +1005,7 @@ public class QtActivityDelegate
         if (m_surfaces.containsKey(id))
             m_layout.removeView(m_surfaces.remove(id));
 
-        QtSurface surface = new QtSurface(m_activity, id, onTop);
+        QtSurface surface = new QtSurface(m_activity, id, onTop, imageDepth);
         if (w < 0 || h < 0) {
             surface.setLayoutParams( new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.MATCH_PARENT));
