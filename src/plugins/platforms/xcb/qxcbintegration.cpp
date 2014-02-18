@@ -253,7 +253,18 @@ QPlatformBackingStore *QXcbIntegration::createPlatformBackingStore(QWindow *wind
 QPlatformOffscreenSurface *QXcbIntegration::createPlatformOffscreenSurface(QOffscreenSurface *surface) const
 {
 #if defined(XCB_USE_GLX)
-    return new QGLXPbuffer(surface);
+    static bool vendorChecked = false;
+    static bool glxPbufferUsable = true;
+    if (!vendorChecked) {
+        vendorChecked = true;
+        const char *glxvendor = glXGetClientString(glXGetCurrentDisplay(), GLX_VENDOR);
+        if (glxvendor && !strcmp(glxvendor, "ATI"))
+            glxPbufferUsable = false;
+    }
+    if (glxPbufferUsable)
+        return new QGLXPbuffer(surface);
+    else
+        return 0; // trigger fallback to hidden QWindow
 #elif defined(XCB_USE_EGL)
     QXcbScreen *screen = static_cast<QXcbScreen *>(surface->screen()->handle());
     return new QEGLPbuffer(screen->connection()->egl_display(), surface->requestedFormat(), surface);
