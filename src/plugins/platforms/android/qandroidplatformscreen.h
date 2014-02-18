@@ -91,7 +91,7 @@ public slots:
 protected:
     typedef QList<QAndroidPlatformWindow *> WindowStackType;
     WindowStackType m_windowStack;
-    QRegion m_repaintRegion;
+    QRect m_dirtyRect;
     QTimer m_redrawTimer;
 
     QRect m_geometry;
