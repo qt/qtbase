@@ -50,21 +50,20 @@
 #include <qpa/qwindowsysteminterface.h>
 #include <qpa/qplatformwindow.h>
 
-#warning sort the headers
 #include "androidjnimain.h"
 #include "qabstracteventdispatcher.h"
-#include "qandroidplatformrasterwindow.h"
-#include "qandroidplatformopenglwindow.h"
 #include "qandroidplatformbackingstore.h"
-#include "qandroidplatformservices.h"
-#include "qandroidplatformfontdatabase.h"
-#include "qandroidplatformclipboard.h"
 #include "qandroidplatformaccessibility.h"
+#include "qandroidplatformclipboard.h"
+#include "qandroidplatformforeignwindow.h"
+#include "qandroidplatformfontdatabase.h"
 #include "qandroidplatformopenglcontext.h"
+#include "qandroidplatformopenglwindow.h"
+#include "qandroidplatformrasterwindow.h"
 #include "qandroidplatformscreen.h"
+#include "qandroidplatformservices.h"
 #include "qandroidplatformtheme.h"
 #include "qandroidsystemlocale.h"
-#include "qandroidplatformforeignwindow.h"
 
 
 QT_BEGIN_NAMESPACE
