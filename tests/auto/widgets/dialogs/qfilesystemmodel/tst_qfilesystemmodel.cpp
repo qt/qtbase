@@ -57,6 +57,8 @@
 # include <qt_windows.h> // for SetFileAttributes
 #endif
 
+#include <algorithm>
+
 #define WAITTIME 1000
 
 // Will try to wait for the condition while allowing event processing
@@ -710,8 +712,8 @@ void tst_QFileSystemModel::filters()
     for (int i = 0; i < rowCount; ++i)
         modelEntries.append(model->data(model->index(i, 0, root), QFileSystemModel::FileNameRole).toString());
 
-    qSort(dirEntries);
-    qSort(modelEntries);
+    std::sort(dirEntries.begin(), dirEntries.end());
+    std::sort(modelEntries.begin(), modelEntries.end());
     QCOMPARE(dirEntries, modelEntries);
 
 #ifdef Q_OS_LINUX
