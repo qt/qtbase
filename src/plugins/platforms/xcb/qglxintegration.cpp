@@ -493,19 +493,21 @@ void QGLXContext::queryDummyContext()
 
     m_supportsThreading = true;
 
-    const char *renderer = (const char *) glGetString(GL_RENDERER);
-    for (int i = 0; qglx_threadedgl_blacklist_renderer[i]; ++i) {
-        if (strstr(renderer, qglx_threadedgl_blacklist_renderer[i]) != 0) {
-            m_supportsThreading = false;
-            break;
+    if (const char *renderer = (const char *) glGetString(GL_RENDERER)) {
+        for (int i = 0; qglx_threadedgl_blacklist_renderer[i]; ++i) {
+            if (strstr(renderer, qglx_threadedgl_blacklist_renderer[i]) != 0) {
+                m_supportsThreading = false;
+                break;
+            }
         }
     }
 
-    const char *vendor = (const char *) glGetString(GL_VENDOR);
-    for (int i = 0; qglx_threadedgl_blacklist_vendor[i]; ++i) {
-        if (strstr(vendor, qglx_threadedgl_blacklist_vendor[i]) != 0) {
-            m_supportsThreading = false;
-            break;
+    if (const char *vendor = (const char *) glGetString(GL_VENDOR)) {
+        for (int i = 0; qglx_threadedgl_blacklist_vendor[i]; ++i) {
+            if (strstr(vendor, qglx_threadedgl_blacklist_vendor[i]) != 0) {
+                m_supportsThreading = false;
+                break;
+            }
         }
     }
 
