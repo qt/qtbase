@@ -103,23 +103,13 @@ CGColorSpaceRef qt_mac_displayColorSpace(const QWidget *widget);
 CGColorSpaceRef qt_mac_colorSpaceForDeviceType(const QPaintDevice *paintDevice);
 QString qt_mac_applicationName();
 
-inline int qt_mac_flipYCoordinate(int y)
-{ return QGuiApplication::primaryScreen()->geometry().height() - y; }
-
-inline qreal qt_mac_flipYCoordinate(qreal y)
-{ return QGuiApplication::primaryScreen()->geometry().height() - y; }
-
-inline QPointF qt_mac_flipPoint(const NSPoint &p)
-{ return QPointF(p.x, qt_mac_flipYCoordinate(p.y)); }
-
-inline NSPoint qt_mac_flipPoint(const QPoint &p)
-{ return NSMakePoint(p.x(), qt_mac_flipYCoordinate(p.y())); }
-
-inline NSPoint qt_mac_flipPoint(const QPointF &p)
-{ return NSMakePoint(p.x(), qt_mac_flipYCoordinate(p.y())); }
+int qt_mac_flipYCoordinate(int y);
+qreal qt_mac_flipYCoordinate(qreal y);
+QPointF qt_mac_flipPoint(const NSPoint &p);
+NSPoint qt_mac_flipPoint(const QPoint &p);
+NSPoint qt_mac_flipPoint(const QPointF &p);
 
 NSRect qt_mac_flipRect(const QRect &rect);
-NSRect qt_mac_flipRect(const QRect &rect, QWindow *window);
 
 Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum);
 

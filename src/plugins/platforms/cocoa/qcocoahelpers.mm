@@ -595,44 +595,42 @@ QString qt_mac_applicationName()
     return appName;
 }
 
+int qt_mac_mainScreenHeight()
+{
+    // The first screen in the screens array is documented
+    // to have the (0,0) origin.
+    NSRect screenFrame = [[[NSScreen screens] firstObject] frame];
+    return screenFrame.size.height;
+}
+
+int qt_mac_flipYCoordinate(int y)
+{
+    return qt_mac_mainScreenHeight() - y;
+}
+
+qreal qt_mac_flipYCoordinate(qreal y)
+{
+    return qt_mac_mainScreenHeight() - y;
+}
+
+QPointF qt_mac_flipPoint(const NSPoint &p)
+{
+    return QPointF(p.x, qt_mac_flipYCoordinate(p.y));
+}
+
+NSPoint qt_mac_flipPoint(const QPoint &p)
+{
+    return NSMakePoint(p.x(), qt_mac_flipYCoordinate(p.y()));
+}
+
+NSPoint qt_mac_flipPoint(const QPointF &p)
+{
+    return NSMakePoint(p.x(), qt_mac_flipYCoordinate(p.y()));
+}
+
 NSRect qt_mac_flipRect(const QRect &rect)
 {
     int flippedY = qt_mac_flipYCoordinate(rect.y() + rect.height());
-    return NSMakeRect(rect.x(), flippedY, rect.width(), rect.height());
-}
-
-/*
-    Mac window coordinates are in the first quadrant: 0, 0 is at the lower-left
-    corner of the primary screen. This function converts the given rect to an
-    NSRect for the window geometry, flipping from 4th quadrant to 1st quadrant
-    and simultaneously ensuring that as much of the window as possible will be
-    onscreen. If the rect is too tall for the screen, the OS will reduce the
-    window's height anyway; but by moving the window upwards we can have more
-    of it onscreen.  But the application can still control the y coordinate
-    in case it really wants the window to be positioned partially offscreen.
-*/
-NSRect qt_mac_flipRect(const QRect &rect, QWindow *window)
-{
-    QPlatformScreen *onScreen = QPlatformScreen::platformScreenForWindow(window);
-    int flippedY = onScreen->geometry().height() - (rect.y() + rect.height());
-    QList<QScreen *> screens = QGuiApplication::screens();
-    if (screens.size() > 1) {
-        int height = 0;
-        foreach (QScreen *scr, screens)
-            height = qMax(height, scr->size().height());
-        int difference = height - onScreen->geometry().height();
-        if (difference > 0)
-            flippedY += difference;
-        else
-            flippedY -= difference;
-    }
-    // In case of automatic positioning, try to put as much of the window onscreen as possible.
-    if (window->isTopLevel() && qt_window_private(const_cast<QWindow*>(window))->positionAutomatic && flippedY < 0)
-        flippedY = onScreen->geometry().height() - onScreen->availableGeometry().height() - onScreen->availableGeometry().y();
-#ifdef QT_COCOA_ENABLE_WINDOW_DEBUG
-    qDebug() << Q_FUNC_INFO << rect << "flippedY" << flippedY <<
-                "screen" << onScreen->geometry() << "available" << onScreen->availableGeometry();
-#endif
     return NSMakeRect(rect.x(), flippedY, rect.width(), rect.height());
 }
 

@@ -392,7 +392,7 @@ void QCocoaWindow::setCocoaGeometry(const QRect &rect)
         QWindowSystemInterface::handleGeometryChange(window(), rect);
         QWindowSystemInterface::handleExposeEvent(window(), rect);
     } else if (m_nsWindow) {
-        NSRect bounds = qt_mac_flipRect(rect, window());
+        NSRect bounds = qt_mac_flipRect(rect);
         [m_nsWindow setFrame:[m_nsWindow frameRectForContentRect:bounds] display:YES animate:NO];
     } else {
         [m_contentView setFrame : NSMakeRect(rect.x(), rect.y(), rect.width(), rect.height())];
@@ -418,7 +418,7 @@ void QCocoaWindow::clipWindow(const NSRect &clipRect)
 
     NSRect clippedWindowRect = NSZeroRect;
     if (!NSIsEmptyRect(clipRect)) {
-        NSRect windowFrame = qt_mac_flipRect(QRect(window()->mapToGlobal(QPoint(0, 0)), geometry().size()), window());
+        NSRect windowFrame = qt_mac_flipRect(QRect(window()->mapToGlobal(QPoint(0, 0)), geometry().size()));
         clippedWindowRect = NSIntersectionRect(windowFrame, clipRect);
         // Clipping top/left offsets the content. Move it back.
         NSPoint contentViewOffset = NSMakePoint(qMax(CGFloat(0), NSMinX(clippedWindowRect) - NSMinX(windowFrame)),
@@ -1208,7 +1208,7 @@ NSWindow * QCocoaWindow::createNSWindow()
     QCocoaAutoReleasePool pool;
 
     QRect rect = initialGeometry(window(), window()->geometry(), defaultWindowWidth, defaultWindowHeight);
-    NSRect frame = qt_mac_flipRect(rect, window());
+    NSRect frame = qt_mac_flipRect(rect);
 
     Qt::WindowType type = window()->type();
     Qt::WindowFlags flags = window()->flags();
