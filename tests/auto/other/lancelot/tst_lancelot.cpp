@@ -50,6 +50,8 @@
 #include <QOpenGLPaintDevice>
 #endif
 
+#include <algorithm>
+
 class tst_Lancelot : public QObject
 {
 Q_OBJECT
@@ -114,7 +116,7 @@ void tst_Lancelot::initTestCase()
         QSKIP("Aborted due to errors.");
     }
 
-    qSort(qpsFiles);
+    std::sort(qpsFiles.begin(), qpsFiles.end());
     foreach (const QString& fileName, qpsFiles) {
         QFile file(scriptsDir + fileName);
         file.open(QFile::ReadOnly);

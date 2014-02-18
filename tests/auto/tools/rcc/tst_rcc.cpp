@@ -54,6 +54,8 @@
 #include <QtCore/QLocale>
 #include <QtCore/QtGlobal>
 
+#include <algorithm>
+
 typedef QMap<QString, QString> QStringMap;
 Q_DECLARE_METATYPE(QStringMap)
 
@@ -325,8 +327,8 @@ void tst_rcc::binary()
     }
 
     // check that we have all (and only) the expected files
-    qSort(filesFound);
-    qSort(expectedFileNames);
+    std::sort(filesFound.begin(), filesFound.end());
+    std::sort(expectedFileNames.begin(), expectedFileNames.end());
     QCOMPARE(filesFound, expectedFileNames);
 
     // now actually check the file contents
