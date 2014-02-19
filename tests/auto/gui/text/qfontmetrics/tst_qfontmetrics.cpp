@@ -100,6 +100,12 @@ void tst_QFontMetrics::same()
     const QString text = QLatin1String("Some stupid STRING");
     QCOMPARE(fm.size(0, text), fm.size(0, text)) ;
 
+    for (int i = 10; i <= 32; ++i) {
+        font.setPixelSize(i);
+        QFontMetrics fm1(font);
+        QCOMPARE(fm1.size(0, text), fm1.size(0, text));
+    }
+
     {
         QImage image;
         QFontMetrics fm2(font, &image);

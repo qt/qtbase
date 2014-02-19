@@ -1617,7 +1617,7 @@ void QFontEngineFT::recalcAdvances(QGlyphLayout *glyphs, QFontEngine::ShaperFlag
                 face = lockFace();
             g = loadGlyph(cacheEnabled ? &defaultGlyphSet : 0, glyphs->glyphs[i], 0, Format_None, true);
             glyphs->advances[i] = design ? QFixed::fromFixed(face->glyph->linearHoriAdvance >> 10)
-                                         : QFixed::fromFixed(face->glyph->metrics.horiAdvance);
+                                         : QFixed::fromFixed(face->glyph->metrics.horiAdvance).round();
             if (!cacheEnabled)
                 delete g;
         }
