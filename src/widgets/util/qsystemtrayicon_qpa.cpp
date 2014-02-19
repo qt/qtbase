@@ -65,28 +65,20 @@ QSystemTrayIconPrivate::~QSystemTrayIconPrivate()
 
 void QSystemTrayIconPrivate::install_sys()
 {
-    if (qpa_sys) {
-        qpa_sys->init();
-        QObject::connect(qpa_sys, SIGNAL(activated(QPlatformSystemTrayIcon::ActivationReason)),
-                         q_func(), SLOT(_q_emitActivated(QPlatformSystemTrayIcon::ActivationReason)));
-        QObject::connect(qpa_sys, SIGNAL(messageClicked()),
-                         q_func(), SIGNAL(messageClicked()));
-        updateMenu_sys();
-        updateIcon_sys();
-        updateToolTip_sys();
-    }
+    if (qpa_sys)
+        install_sys_qpa();
 }
 
 void QSystemTrayIconPrivate::remove_sys()
 {
     if (qpa_sys)
-        qpa_sys->cleanup();
+        remove_sys_qpa();
 }
 
 QRect QSystemTrayIconPrivate::geometry_sys() const
 {
     if (qpa_sys)
-        return qpa_sys->geometry();
+        return geometry_sys_qpa();
     else
         return QRect();
 }
@@ -94,25 +86,19 @@ QRect QSystemTrayIconPrivate::geometry_sys() const
 void QSystemTrayIconPrivate::updateIcon_sys()
 {
     if (qpa_sys)
-        qpa_sys->updateIcon(icon);
+        updateIcon_sys_qpa();
 }
 
 void QSystemTrayIconPrivate::updateMenu_sys()
 {
-    if (qpa_sys && menu) {
-        if (!menu->platformMenu()) {
-            QPlatformMenu *platformMenu = qpa_sys->createMenu();
-            if (platformMenu)
-                menu->setPlatformMenu(platformMenu);
-        }
-        qpa_sys->updateMenu(menu->platformMenu());
-    }
+    if (qpa_sys)
+        updateMenu_sys_qpa();
 }
 
 void QSystemTrayIconPrivate::updateToolTip_sys()
 {
     if (qpa_sys)
-        qpa_sys->updateToolTip(toolTip);
+        updateToolTip_sys_qpa();
 }
 
 bool QSystemTrayIconPrivate::isSystemTrayAvailable_sys()
@@ -138,25 +124,8 @@ void QSystemTrayIconPrivate::showMessage_sys(const QString &message,
                                              QSystemTrayIcon::MessageIcon icon,
                                              int msecs)
 {
-    if (!qpa_sys)
-        return;
-
-    QIcon notificationIcon;
-    switch (icon) {
-    case QSystemTrayIcon::Information:
-        notificationIcon = QApplication::style()->standardIcon(QStyle::SP_MessageBoxInformation);
-        break;
-    case QSystemTrayIcon::Warning:
-        notificationIcon = QApplication::style()->standardIcon(QStyle::SP_MessageBoxWarning);
-        break;
-    case QSystemTrayIcon::Critical:
-        notificationIcon = QApplication::style()->standardIcon(QStyle::SP_MessageBoxCritical);
-        break;
-    default:
-        break;
-    }
-    qpa_sys->showMessage(message, title, notificationIcon,
-                     static_cast<QPlatformSystemTrayIcon::MessageIcon>(icon), msecs);
+    if (qpa_sys)
+        showMessage_sys_qpa(message, title, icon, msecs);
 }
 
 QT_END_NAMESPACE

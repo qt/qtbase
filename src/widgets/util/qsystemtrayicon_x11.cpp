@@ -55,6 +55,9 @@
 #include <qscreen.h>
 #include <qbackingstore.h>
 #include <qpa/qplatformnativeinterface.h>
+#include <qpa/qplatformsystemtrayicon.h>
+#include <qpa/qplatformtheme.h>
+#include <private/qguiapplication_p.h>
 #include <qdebug.h>
 
 #ifndef QT_NO_SYSTEMTRAYICON
@@ -209,16 +212,22 @@ void QSystemTrayIconSys::paintEvent(QPaintEvent *)
 
 QSystemTrayIconPrivate::QSystemTrayIconPrivate()
     : sys(0),
+      qpa_sys(QGuiApplicationPrivate::platformTheme()->createPlatformSystemTrayIcon()),
       visible(false)
 {
 }
 
 QSystemTrayIconPrivate::~QSystemTrayIconPrivate()
 {
+    delete qpa_sys;
 }
 
 void QSystemTrayIconPrivate::install_sys()
 {
+    if (qpa_sys) {
+        install_sys_qpa();
+        return;
+    }
     Q_Q(QSystemTrayIcon);
     if (!sys && locateSystemTray()) {
         sys = new QSystemTrayIconSys(q);
@@ -229,6 +238,8 @@ void QSystemTrayIconPrivate::install_sys()
 
 QRect QSystemTrayIconPrivate::geometry_sys() const
 {
+    if (qpa_sys)
+        return geometry_sys_qpa();
     if (!sys)
         return QRect();
     return sys->globalGeometry();
@@ -236,6 +247,10 @@ QRect QSystemTrayIconPrivate::geometry_sys() const
 
 void QSystemTrayIconPrivate::remove_sys()
 {
+    if (qpa_sys) {
+        remove_sys_qpa();
+        return;
+    }
     if (!sys)
         return;
     QBalloonTip::hideBalloon();
@@ -246,17 +261,26 @@ void QSystemTrayIconPrivate::remove_sys()
 
 void QSystemTrayIconPrivate::updateIcon_sys()
 {
+    if (qpa_sys) {
+        updateIcon_sys_qpa();
+        return;
+    }
     if (sys)
         sys->updateIcon();
 }
 
 void QSystemTrayIconPrivate::updateMenu_sys()
 {
-
+    if (qpa_sys)
+        updateMenu_sys_qpa();
 }
 
 void QSystemTrayIconPrivate::updateToolTip_sys()
 {
+    if (qpa_sys) {
+        updateToolTip_sys_qpa();
+        return;
+    }
     if (!sys)
         return;
 #ifndef QT_NO_TOOLTIP
@@ -266,6 +290,11 @@ void QSystemTrayIconPrivate::updateToolTip_sys()
 
 bool QSystemTrayIconPrivate::isSystemTrayAvailable_sys()
 {
+    QScopedPointer<QPlatformSystemTrayIcon> sys(QGuiApplicationPrivate::platformTheme()->createPlatformSystemTrayIcon());
+    if (sys)
+        return sys->isSystemTrayAvailable();
+
+    // no QPlatformSystemTrayIcon so fall back to default xcb platform behavior
     const QString platform = QGuiApplication::platformName();
     if (platform.compare(QStringLiteral("xcb"), Qt::CaseInsensitive) == 0)
        return locateSystemTray();
@@ -274,12 +303,21 @@ bool QSystemTrayIconPrivate::isSystemTrayAvailable_sys()
 
 bool QSystemTrayIconPrivate::supportsMessages_sys()
 {
+    QScopedPointer<QPlatformSystemTrayIcon> sys(QGuiApplicationPrivate::platformTheme()->createPlatformSystemTrayIcon());
+    if (sys)
+        return sys->supportsMessages();
+
+    // no QPlatformSystemTrayIcon so fall back to default xcb platform behavior
     return true;
 }
 
 void QSystemTrayIconPrivate::showMessage_sys(const QString &message, const QString &title,
                                    QSystemTrayIcon::MessageIcon icon, int msecs)
 {
+    if (qpa_sys) {
+        showMessage_sys_qpa(message, title, icon, msecs);
+        return;
+    }
     if (!sys)
         return;
     const QPoint g = sys->globalGeometry().topLeft();

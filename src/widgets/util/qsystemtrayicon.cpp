@@ -672,6 +672,74 @@ void QBalloonTip::timerEvent(QTimerEvent *e)
     QWidget::timerEvent(e);
 }
 
+//////////////////////////////////////////////////////////////////////
+void QSystemTrayIconPrivate::install_sys_qpa()
+{
+    qpa_sys->init();
+    QObject::connect(qpa_sys, SIGNAL(activated(QPlatformSystemTrayIcon::ActivationReason)),
+                     q_func(), SLOT(_q_emitActivated(QPlatformSystemTrayIcon::ActivationReason)));
+    QObject::connect(qpa_sys, &QPlatformSystemTrayIcon::messageClicked,
+                     q_func(), &QSystemTrayIcon::messageClicked);
+    updateMenu_sys();
+    updateIcon_sys();
+    updateToolTip_sys();
+}
+
+void QSystemTrayIconPrivate::remove_sys_qpa()
+{
+    qpa_sys->cleanup();
+}
+
+QRect QSystemTrayIconPrivate::geometry_sys_qpa() const
+{
+    return qpa_sys->geometry();
+}
+
+void QSystemTrayIconPrivate::updateIcon_sys_qpa()
+{
+    qpa_sys->updateIcon(icon);
+}
+
+void QSystemTrayIconPrivate::updateMenu_sys_qpa()
+{
+    if (menu) {
+        if (!menu->platformMenu()) {
+            QPlatformMenu *platformMenu = qpa_sys->createMenu();
+            if (platformMenu)
+                menu->setPlatformMenu(platformMenu);
+        }
+        qpa_sys->updateMenu(menu->platformMenu());
+    }
+}
+
+void QSystemTrayIconPrivate::updateToolTip_sys_qpa()
+{
+    qpa_sys->updateToolTip(toolTip);
+}
+
+void QSystemTrayIconPrivate::showMessage_sys_qpa(const QString &message,
+                                                 const QString &title,
+                                                 QSystemTrayIcon::MessageIcon icon,
+                                                 int msecs)
+{
+    QIcon notificationIcon;
+    switch (icon) {
+    case QSystemTrayIcon::Information:
+        notificationIcon = QApplication::style()->standardIcon(QStyle::SP_MessageBoxInformation);
+        break;
+    case QSystemTrayIcon::Warning:
+        notificationIcon = QApplication::style()->standardIcon(QStyle::SP_MessageBoxWarning);
+        break;
+    case QSystemTrayIcon::Critical:
+        notificationIcon = QApplication::style()->standardIcon(QStyle::SP_MessageBoxCritical);
+        break;
+    default:
+        break;
+    }
+    qpa_sys->showMessage(message, title, notificationIcon,
+                     static_cast<QPlatformSystemTrayIcon::MessageIcon>(icon), msecs);
+}
+
 QT_END_NAMESPACE
 
 #endif // QT_NO_SYSTEMTRAYICON
