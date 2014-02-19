@@ -833,11 +833,13 @@ Q_OUTOFLINE_TEMPLATE QVector<T> QVector<T>::mid(int pos, int len) const
         break;
     }
 
-    QVector<T> copy;
-    copy.reserve(len);
-    for (int i = pos; i < pos + len; ++i)
-        copy += at(i);
-    return copy;
+    QVector<T> midResult;
+    midResult.reallocData(0, len);
+    T *srcFrom = d->begin() + pos;
+    T *srcTo = d->begin() + pos + len;
+    midResult.copyConstruct(srcFrom, srcTo, midResult.data());
+    midResult.d->size = len;
+    return midResult;
 }
 
 template <typename T>

@@ -1379,6 +1379,8 @@ void tst_QVector::mid() const
     list << "foo" << "bar" << "baz" << "bak" << "buck" << "hello" << "kitty";
 
     QCOMPARE(list.mid(3, 3), QVector<QString>() << "bak" << "buck" << "hello");
+    QCOMPARE(list.mid(6, 10), QVector<QString>() << "kitty");
+    QCOMPARE(list.mid(-1, 20), list);
     QCOMPARE(list.mid(4), QVector<QString>() << "buck" << "hello" << "kitty");
 }
 
