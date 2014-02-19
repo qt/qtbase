@@ -1120,6 +1120,53 @@ qint64 QNativeSocketEnginePrivate::nativeRead(char *data, qint64 maxSize)
     return qint64(r);
 }
 
+#ifdef Q_OS_BLACKBERRY
+int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool selectForRead) const
+{
+    fd_set fds;
+    FD_ZERO(&fds);
+    FD_SET(socketDescriptor, &fds);
+
+    int retval;
+    QList<QSocketNotifier *> notifiers;
+    if (selectForRead) {
+        notifiers << readNotifier;
+        retval = bb_select(notifiers, socketDescriptor + 1, &fds, 0, timeout);
+    } else {
+        notifiers << writeNotifier;
+        retval = bb_select(notifiers, socketDescriptor + 1, 0, &fds, timeout);
+    }
+
+    return retval;
+}
+
+int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool checkRead, bool checkWrite,
+                       bool *selectForRead, bool *selectForWrite) const
+{
+    fd_set fdread;
+    FD_ZERO(&fdread);
+    if (checkRead)
+        FD_SET(socketDescriptor, &fdread);
+
+    fd_set fdwrite;
+    FD_ZERO(&fdwrite);
+    if (checkWrite)
+        FD_SET(socketDescriptor, &fdwrite);
+
+    QList<QSocketNotifier *> notifiers;
+    notifiers << readNotifier << writeNotifier;
+    int ret = bb_select(notifiers, socketDescriptor + 1, &fdread, &fdwrite, timeout);
+
+    if (ret <= 0)
+        return ret;
+    *selectForRead = FD_ISSET(socketDescriptor, &fdread);
+    *selectForWrite = FD_ISSET(socketDescriptor, &fdwrite);
+
+    return ret;
+}
+
+#else // not Q_OS_BLACKBERRY:
+
 int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool selectForRead) const
 {
     fd_set fds;
@@ -1166,5 +1213,6 @@ int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool checkRead, bool c
 
     return ret;
 }
+#endif // Q_OS_BLACKBERRY
 
 QT_END_NAMESPACE
