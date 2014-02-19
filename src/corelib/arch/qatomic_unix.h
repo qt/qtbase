@@ -59,16 +59,25 @@ QT_END_NAMESPACE
 #define Q_ATOMIC_INT_FETCH_AND_ADD_IS_NOT_NATIVE
 
 #define Q_ATOMIC_INT32_IS_SUPPORTED
+#define Q_ATOMIC_INT32_REFERENCE_COUNTING_IS_NOT_NATIVE
+#define Q_ATOMIC_INT32_TEST_AND_SET_IS_NOT_NATIVE
+#define Q_ATOMIC_INT32_FETCH_AND_STORE_IS_NOT_NATIVE
+#define Q_ATOMIC_INT32_FETCH_AND_ADD_IS_NOT_NATIVE
+
+#define Q_ATOMIC_INT64_IS_SUPPORTED
+#define Q_ATOMIC_INT64_REFERENCE_COUNTING_IS_NOT_NATIVE
+#define Q_ATOMIC_INT64_TEST_AND_SET_IS_NOT_NATIVE
+#define Q_ATOMIC_INT64_FETCH_AND_STORE_IS_NOT_NATIVE
+#define Q_ATOMIC_INT64_FETCH_AND_ADD_IS_NOT_NATIVE
 
 #define Q_ATOMIC_POINTER_TEST_AND_SET_IS_NOT_NATIVE
 #define Q_ATOMIC_POINTER_FETCH_AND_STORE_IS_NOT_NATIVE
 #define Q_ATOMIC_POINTER_FETCH_AND_ADD_IS_NOT_NATIVE
 
-template<> struct QAtomicIntegerTraits<int> { enum { IsInteger = 1 }; };
-
 // No definition, needs specialization
 template <typename T> struct QAtomicOps;
 
+// 32-bit version
 template <>
 struct QAtomicOps<int> : QGenericAtomicOps<QAtomicOps<int> >
 {
@@ -79,6 +88,18 @@ struct QAtomicOps<int> : QGenericAtomicOps<QAtomicOps<int> >
     Q_CORE_EXPORT static bool testAndSetRelaxed(int &_q_value, int expectedValue, int newValue) Q_DECL_NOTHROW;
 };
 
+// 64-bit version
+template <>
+struct QAtomicOps<long long> : QGenericAtomicOps<QAtomicOps<long long> >
+{
+    typedef long long Type;
+
+    static inline Q_DECL_CONSTEXPR bool isTestAndSetNative() Q_DECL_NOTHROW { return false; }
+    static inline Q_DECL_CONSTEXPR bool isTestAndSetWaitFree() Q_DECL_NOTHROW { return false; }
+    Q_CORE_EXPORT static bool testAndSetRelaxed(Type &_q_value, Type expectedValue, Type newValue) Q_DECL_NOTHROW;
+};
+
+// pointer version
 template <>
 struct QAtomicOps<void *> : QGenericAtomicOps<QAtomicOps<void *> >
 {
@@ -106,6 +127,24 @@ struct QAtomicOps<T *> : QGenericAtomicOps<QAtomicOps<T *> >
         bool returnValue = QAtomicOps<void *>::testAndSetRelaxed(voidp, nocv(expectedValue), nocv(newValue));
         _q_value = reinterpret_cast<T *>(voidp);
         return returnValue;
+    }
+};
+
+// 32- and 64-bit unsigned versions
+template <> struct QAtomicOps<unsigned> : QAtomicOps<int>
+{
+    typedef unsigned Type;
+    Q_CORE_EXPORT static bool testAndSetRelaxed(Type &_q_value, Type expectedValue, Type newValue) Q_DECL_NOTHROW
+    {
+        return QAtomicOps<int>::testAndSetRelaxed(reinterpret_cast<int &>(_q_value), int(expectedValue), int(newValue));
+    }
+};
+template <> struct QAtomicOps<unsigned long long> : QAtomicOps<long long>
+{
+    typedef unsigned long longType;
+    Q_CORE_EXPORT static bool testAndSetRelaxed(Type &_q_value, Type expectedValue, Type newValue) Q_DECL_NOTHROW
+    {
+        return QAtomicOps<long long>::testAndSetRelaxed(reinterpret_cast<long long &>(_q_value), int(expectedValue), int(newValue));
     }
 };
 

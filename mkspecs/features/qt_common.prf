@@ -27,11 +27,15 @@ warnings_are_errors:warning_clean {
     # This setting is compiler-dependent anyway because it depends on the version of the
     # compiler.
     clang {
-        # Apple clang 4.0-4.2
-        # Regular clang is not tested
-        ver = $${QT_APPLE_CLANG_MAJOR_VERSION}.$${QT_APPLE_CLANG_MINOR_VERSION}
-        contains(ver, "4\\.[012]") {
-            QMAKE_CXXFLAGS += -Werror -Wno-error=\\$${LITERAL_HASH}warnings -Wno-error=deprecated-declarations $$WERROR
+        # Apple clang 4.0-4.2,5.0
+        # Regular clang 3.3 & 3.4
+        apple_ver = $${QT_APPLE_CLANG_MAJOR_VERSION}.$${QT_APPLE_CLANG_MINOR_VERSION}
+        reg_ver = $${QT_CLANG_MAJOR_VERSION}.$${QT_CLANG_MINOR_VERSION}
+        contains(apple_ver, "4\\.[012]|5\\.0")|contains(reg_ver, "3\\.[34]") {
+            QMAKE_CXXFLAGS_WARN_ON += -Werror -Wno-error=\\$${LITERAL_HASH}warnings -Wno-error=deprecated-declarations $$WERROR
+
+            # glibc's bswap_XX macros use the "register" keyword
+            linux:equals(reg_ver, "3.4"): QMAKE_CXXFLAGS_WARN_ON += -Wno-error=deprecated-register
         }
     } else:intel_icc:linux {
         # Intel CC 13.0 - 14.0, on Linux only
@@ -43,20 +47,20 @@ warnings_are_errors:warning_clean {
             # 1478: function "entity" (declared at line N) was declared deprecated
             # 1881: argument must be a constant null pointer value
             #      (NULL in C++ is usually a literal 0)
-            QMAKE_CXXFLAGS += -Werror -ww177,1224,1478,1881 $$WERROR
+            QMAKE_CXXFLAGS_WARN_ON += -Werror -ww177,1224,1478,1881 $$WERROR
         }
     } else:gcc:!clang:!intel_icc {
         # GCC 4.6-4.8
         ver = $${QT_GCC_MAJOR_VERSION}.$${QT_GCC_MINOR_VERSION}
         contains(ver, "4\\.[678]") {
-            QMAKE_CXXFLAGS += -Werror -Wno-error=cpp -Wno-error=deprecated-declarations $$WERROR
+            QMAKE_CXXFLAGS_WARN_ON += -Werror -Wno-error=cpp -Wno-error=deprecated-declarations $$WERROR
 
             # GCC prints this bogus warning, after it has inlined a lot of code
             # error: assuming signed overflow does not occur when assuming that (X + c) < X is always false
-            QMAKE_CXXFLAGS += -Wno-error=strict-overflow
+            QMAKE_CXXFLAGS_WARN_ON += -Wno-error=strict-overflow
 
             # Work-around for bug https://code.google.com/p/android/issues/detail?id=58135
-            android: QMAKE_CXXFLAGS += -Wno-error=literal-suffix
+            android: QMAKE_CXXFLAGS_WARN_ON += -Wno-error=literal-suffix
         }
     }
     unset(ver)

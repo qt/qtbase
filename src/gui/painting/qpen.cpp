@@ -455,15 +455,19 @@ QVector<qreal> QPen::dashPattern() const
 
         switch (d->style) {
         case Qt::DashLine:
+            dd->dashPattern.reserve(2);
             dd->dashPattern << dash << space;
             break;
         case Qt::DotLine:
+            dd->dashPattern.reserve(2);
             dd->dashPattern << dot << space;
             break;
         case Qt::DashDotLine:
+            dd->dashPattern.reserve(4);
             dd->dashPattern << dash << space << dot << space;
             break;
         case Qt::DashDotDotLine:
+            dd->dashPattern.reserve(6);
             dd->dashPattern << dash << space << dot << space << dot << space;
             break;
         default:

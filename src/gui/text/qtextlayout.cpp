@@ -239,9 +239,7 @@ int QTextInlineObject::formatIndex() const
 */
 QTextFormat QTextInlineObject::format() const
 {
-    if (!eng->block.docHandle())
-        return QTextFormat();
-    return eng->formats()->format(eng->formatIndex(&eng->layoutData->items[itm]));
+    return eng->format(&eng->layoutData->items[itm]);
 }
 
 /*!
@@ -1693,7 +1691,7 @@ static inline void addNextCluster(int &pos, int end, QScriptLine &line, int &gly
     } while (pos < end && logClusters[pos] == glyphPosition);
     do { // calculate the textWidth for the rest of the current cluster.
         if (!glyphs.attributes[glyphPosition].dontPrint)
-            line.textWidth += glyphs.advances_x[glyphPosition];
+            line.textWidth += glyphs.advances[glyphPosition];
         ++glyphPosition;
     } while (glyphPosition < current.num_glyphs && !glyphs.attributes[glyphPosition].clusterStart);
 
@@ -1812,9 +1810,10 @@ void QTextLine::layout_helper(int maxGlyphs)
             lbh.whiteSpaceOrObject = true;
             lbh.tmpData.length++;
 
-            QTextFormat format = eng->formats()->format(eng->formatIndex(&eng->layoutData->items[item]));
-            if (eng->block.docHandle())
-                eng->docLayout()->positionInlineObject(QTextInlineObject(item, eng), eng->block.position() + current.position, format);
+            if (eng->block.docHandle()) {
+                QTextInlineObject inlineObject(item, eng);
+                eng->docLayout()->positionInlineObject(inlineObject, eng->block.position() + current.position, inlineObject.format());
+            }
 
             lbh.tmpData.textWidth += current.width;
 
@@ -1871,9 +1870,9 @@ void QTextLine::layout_helper(int maxGlyphs)
                 //     and thus become invisible again.
                 //
                 if (line.length)
-                    lbh.softHyphenWidth = lbh.glyphs.advances_x[lbh.logClusters[lbh.currentPosition - 1]];
+                    lbh.softHyphenWidth = lbh.glyphs.advances[lbh.logClusters[lbh.currentPosition - 1]];
                 else if (breakany)
-                    lbh.tmpData.textWidth += lbh.glyphs.advances_x[lbh.logClusters[lbh.currentPosition - 1]];
+                    lbh.tmpData.textWidth += lbh.glyphs.advances[lbh.logClusters[lbh.currentPosition - 1]];
             }
 
             // The actual width of the text needs to take the right bearing into account. The
@@ -2249,14 +2248,12 @@ QList<QGlyphRun> QTextLine::glyphRuns(int from, int length) const
         if (relativeFrom != (iterator.itemStart - si.position) && !rtl) {
             for (int i=itemGlyphsStart; i<glyphsStart; ++i) {
                 QFixed justification = QFixed::fromFixed(glyphLayout.justifications[i].space_18d6);
-                pos += QPointF((glyphLayout.advances_x[i] + justification).toReal(),
-                               glyphLayout.advances_y[i].toReal());
+                pos.rx() += (glyphLayout.advances[i] + justification).toReal();
             }
         } else if (relativeTo != (iterator.itemEnd - si.position - 1) && rtl) {
             for (int i=itemGlyphsEnd; i>glyphsEnd; --i) {
                 QFixed justification = QFixed::fromFixed(glyphLayout.justifications[i].space_18d6);
-                pos += QPointF((glyphLayout.advances_x[i] + justification).toReal(),
-                               glyphLayout.advances_y[i].toReal());
+                pos.rx() += (glyphLayout.advances[i] + justification).toReal();
             }
         }
 
@@ -2295,10 +2292,8 @@ QList<QGlyphRun> QTextLine::glyphRuns(int from, int length) const
 
                     glyphRuns.append(glyphRunWithInfo(multiFontEngine->engine(which),
                                                       subLayout, pos, subFlags, x, width));
-                    for (int i = 0; i < subLayout.numGlyphs; i++) {
-                        pos += QPointF(subLayout.advances_x[i].toReal(),
-                                       subLayout.advances_y[i].toReal());
-                    }
+                    for (int i = 0; i < subLayout.numGlyphs; ++i)
+                        pos.rx() += subLayout.advances[i].toReal();
 
                     if (rtl)
                         end = start;

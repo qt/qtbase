@@ -106,7 +106,12 @@ static int posix_helper(const wchar_t *dirpath)
     wchar_t appendedPath[MAX_PATH];
     wcscpy(appendedPath, dirpath);
     wcscat(appendedPath, L"\\*");
+#ifndef Q_OS_WINRT
     hSearch = FindFirstFile(appendedPath, &fd);
+#else
+    hSearch = FindFirstFileEx(appendedPath, FindExInfoStandard, &fd,
+                              FindExSearchNameMatch, NULL, FIND_FIRST_EX_LARGE_FETCH);
+#endif
     appendedPath[origDirPathLength] = 0;
 
     if (hSearch == INVALID_HANDLE_VALUE) {

@@ -1,7 +1,5 @@
 QT += core-private gui-private platformsupport-private
 
-#DEFINES += QEGL_EXTRA_DEBUG
-
 # Avoid X11 header collision
 DEFINES += MESA_EGL_NO_X11_HEADERS
 
@@ -12,21 +10,15 @@ DEFINES += MESA_EGL_NO_X11_HEADERS
 
 SOURCES +=  $$PWD/qeglfsintegration.cpp \
             $$PWD/qeglfswindow.cpp \
-            $$PWD/qeglfsbackingstore.cpp \
             $$PWD/qeglfsscreen.cpp \
             $$PWD/qeglfshooks_stub.cpp \
-            $$PWD/qeglfscursor.cpp \
-            $$PWD/qeglfscontext.cpp \
-            $$PWD/qeglfscompositor.cpp
+            $$PWD/qeglfscontext.cpp
 
 HEADERS +=  $$PWD/qeglfsintegration.h \
             $$PWD/qeglfswindow.h \
-            $$PWD/qeglfsbackingstore.h \
             $$PWD/qeglfsscreen.h \
-            $$PWD/qeglfscursor.h \
             $$PWD/qeglfshooks.h \
-            $$PWD/qeglfscontext.h \
-            $$PWD/qeglfscompositor.h
+            $$PWD/qeglfscontext.h
 
 QMAKE_LFLAGS += $$QMAKE_LFLAGS_NOUNDEF
 

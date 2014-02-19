@@ -186,6 +186,9 @@
     Outputs results as a stream of XML tags.
     \li \c -xunitxml \br
     Outputs results as an Xunit XML document.
+    \li \c -csv \br
+    Outputs results as comma-separated values (CSV). This mode is only suitable for
+    benchmarks, since it suppresses normal pass/fail messages.
     \endlist
 
     The first version of the \c -o option may be repeated in order to log

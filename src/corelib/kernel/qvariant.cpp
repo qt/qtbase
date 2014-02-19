@@ -868,7 +868,7 @@ static void customConstruct(QVariant::Private *d, const void *copy)
 
     // this logic should match with QVariantIntegrator::CanUseInternalSpace
     if (size <= sizeof(QVariant::Private::Data)
-            && (type.flags() & QMetaType::MovableType)) {
+            && (type.flags() & (QMetaType::MovableType | QMetaType::IsEnumeration))) {
         type.construct(&d->data.ptr, copy);
         d->is_shared = false;
     } else {

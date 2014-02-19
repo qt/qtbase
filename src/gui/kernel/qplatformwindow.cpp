@@ -127,6 +127,18 @@ QRect QPlatformWindow::geometry() const
     return d->rect;
 }
 
+/*!
+    Returns the geometry of a window in 'normal' state
+    (neither maximized, fullscreen nor minimized) for saving geometries to
+    application settings.
+
+    \since 5.3
+*/
+QRect QPlatformWindow::normalGeometry() const
+{
+    return QRect();
+}
+
 QMargins QPlatformWindow::frameMargins() const
 {
     return QMargins();
@@ -509,6 +521,20 @@ static inline const QScreen *effectiveScreen(const QWindow *window)
 }
 
 /*!
+    Invalidates the window's surface by releasing its surface buffers.
+
+    Many platforms do not support releasing the surface memory,
+    and the default implementation does nothing.
+
+    The platform window is expected to recreate the surface again if
+    it is needed. For instance, if an OpenGL context is made current
+    on this window.
+ */
+void QPlatformWindow::invalidateSurface()
+{
+}
+
+/*!
     Helper function to get initial geometry on windowing systems which do not
     do smart positioning and also do not provide a means of centering a
     transient window w.r.t. its parent. For example this is useful on Windows
@@ -521,14 +547,13 @@ QRect QPlatformWindow::initialGeometry(const QWindow *w,
     const QRect &initialGeometry, int defaultWidth, int defaultHeight)
 {
     QRect rect(initialGeometry);
-    if (rect.isNull()) {
-        QSize minimumSize = w->minimumSize();
-        if (minimumSize.width() > 0 || minimumSize.height() > 0) {
-            rect.setSize(minimumSize);
-        } else {
-            rect.setWidth(defaultWidth);
-            rect.setHeight(defaultHeight);
-        }
+    if (rect.width() == 0) {
+        const int minWidth = w->minimumWidth();
+        rect.setWidth(minWidth > 0 ? minWidth : defaultWidth);
+    }
+    if (rect.height() == 0) {
+        const int minHeight = w->minimumHeight();
+        rect.setHeight(minHeight > 0 ? minHeight : defaultHeight);
     }
     if (w->isTopLevel() && qt_window_private(const_cast<QWindow*>(w))->positionAutomatic
         && w->type() != Qt::Popup) {

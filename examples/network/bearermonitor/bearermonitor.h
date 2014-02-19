@@ -66,10 +66,10 @@ private slots:
 
     void onlineStateChanged(bool isOnline);
 
-#if defined(Q_OS_WIN)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     void registerNetwork();
     void unregisterNetwork();
-#endif
+#endif // Q_OS_WIN && !Q_OS_WINRT
 
     void showConfigurationFor(QTreeWidgetItem *item);
 

@@ -55,7 +55,7 @@ load(qt_common)
 wince*:LIBS += $$QMAKE_LIBS_GUI
 QMAKE_LFLAGS += $$QMAKE_LFLAGS_NOUNDEF
 
-unix|win32-g++* {
+unix|mingw {
     !isEmpty(_QMAKE_SUPER_CACHE_): \
         rplbase = $$dirname(_QMAKE_SUPER_CACHE_)/[^/][^/]*
     else: \

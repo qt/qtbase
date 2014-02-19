@@ -758,7 +758,7 @@ void __stdcall glBufferData(GLenum target, GLsizeiptr size, const GLvoid* data, 
                 return gl::error(GL_INVALID_OPERATION);
             }
 
-            buffer->bufferData(data, size, usage);
+            buffer->bufferData(data, size, usage, target);
         }
     }
     catch(std::bad_alloc&)
@@ -812,7 +812,7 @@ void __stdcall glBufferSubData(GLenum target, GLintptr offset, GLsizeiptr size, 
                 return gl::error(GL_INVALID_VALUE);
             }
 
-            buffer->bufferSubData(data, size, offset);
+            buffer->bufferSubData(data, size, offset, target);
         }
     }
     catch(std::bad_alloc&)

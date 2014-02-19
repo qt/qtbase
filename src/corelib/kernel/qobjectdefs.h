@@ -42,6 +42,10 @@
 #ifndef QOBJECTDEFS_H
 #define QOBJECTDEFS_H
 
+#if defined(__OBJC__) && !defined(__cplusplus)
+#  warning "File built in Objective-C mode (.m), but using Qt requires Objective-C++ (.mm)"
+#endif
+
 #include <QtCore/qnamespace.h>
 
 #include <QtCore/qobjectdefs_impl.h>
@@ -447,7 +451,7 @@ struct Q_CORE_EXPORT QMetaObject
         const uint *data;
         typedef void (*StaticMetacallFunction)(QObject *, QMetaObject::Call, int, void **);
         StaticMetacallFunction static_metacall;
-        const QMetaObject **relatedMetaObjects;
+        const QMetaObject * const *relatedMetaObjects;
         void *extradata; //reserved for future use
     } d;
 };

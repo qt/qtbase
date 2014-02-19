@@ -103,7 +103,10 @@ public:
                        LargeCapacity,
                        Cassette,
                        FormSource,
-                       MaxPageSource
+                       MaxPageSource, // Deprecated
+                       CustomSource,
+                       LastPaperSource = CustomSource,
+                       Upper = OnlyOne  // As defined in Windows
     };
 
     enum PrinterState { Idle,
@@ -222,10 +225,8 @@ public:
     QRectF paperRect(Unit) const;
     QRectF pageRect(Unit) const;
 
-#if !defined(Q_OS_WIN) || defined(Q_QDOC)
     QString printerSelectionOption() const;
     void setPrinterSelectionOption(const QString &);
-#endif
 
     bool newPage();
     bool abort();

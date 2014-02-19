@@ -102,12 +102,12 @@ void tst_QComplexText::bidiReorderString_data()
 
     const LV *data = logical_visual;
     while ( data->name ) {
-	//next we fill it with data
-	QTest::newRow( data->name )
-	    << QString::fromUtf8( data->logical )
-	    << QString::fromUtf8( data->visual )
-	    << (int) data->basicDir;
-	data++;
+        //next we fill it with data
+        QTest::newRow( data->name )
+            << QString::fromUtf8( data->logical )
+            << QString::fromUtf8( data->visual )
+            << (int) data->basicDir;
+        data++;
     }
 }
 
@@ -127,34 +127,34 @@ void tst_QComplexText::bidiReorderString()
     int nitems = e.layoutData->items.size();
     int i;
     for (i = 0; i < nitems; ++i) {
-	//qDebug("item %d bidiLevel=%d", i,  e.items[i].analysis.bidiLevel);
-	levels[i] = e.layoutData->items[i].analysis.bidiLevel;
+        //qDebug("item %d bidiLevel=%d", i,  e.items[i].analysis.bidiLevel);
+        levels[i] = e.layoutData->items[i].analysis.bidiLevel;
     }
     e.bidiReorder(nitems, levels, visualOrder);
 
     QString visual;
     for (i = 0; i < nitems; ++i) {
-	QScriptItem &si = e.layoutData->items[visualOrder[i]];
-	QString sub = logical.mid(si.position, e.length(visualOrder[i]));
-	if (si.analysis.bidiLevel % 2) {
-	    // reverse sub
-	    QChar *a = (QChar *)sub.unicode();
-	    QChar *b = a + sub.length() - 1;
-	    while (a < b) {
-		QChar tmp = *a;
-		*a = *b;
-		*b = tmp;
-		++a;
-		--b;
-	    }
-	    a = (QChar *)sub.unicode();
-	    b = a + sub.length();
-	    while (a<b) {
-		*a = a->mirroredChar();
-		++a;
-	    }
-	}
-	visual += sub;
+        QScriptItem &si = e.layoutData->items[visualOrder[i]];
+        QString sub = logical.mid(si.position, e.length(visualOrder[i]));
+        if (si.analysis.bidiLevel % 2) {
+            // reverse sub
+            QChar *a = (QChar *)sub.unicode();
+            QChar *b = a + sub.length() - 1;
+            while (a < b) {
+                QChar tmp = *a;
+                *a = *b;
+                *b = tmp;
+                ++a;
+                --b;
+            }
+            a = (QChar *)sub.unicode();
+            b = a + sub.length();
+            while (a<b) {
+                *a = a->mirroredChar();
+                ++a;
+            }
+        }
+        visual += sub;
     }
     // replace Unicode newline back with  \n to compare.
     visual.replace(QChar(0x2028), QChar('\n'));

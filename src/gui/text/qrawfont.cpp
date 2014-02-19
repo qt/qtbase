@@ -479,16 +479,8 @@ QVector<quint32> QRawFont::glyphIndexesForString(const QString &text) const
     QGlyphLayout glyphs;
     glyphs.numGlyphs = numGlyphs;
     glyphs.glyphs = glyphIndexes.data();
-    if (!d->fontEngine->stringToCMap(text.data(), text.size(), &glyphs, &numGlyphs, QFontEngine::GlyphIndicesOnly)) {
-        glyphIndexes.resize(numGlyphs);
-
-        glyphs.numGlyphs = numGlyphs;
-        glyphs.glyphs = glyphIndexes.data();
-        if (!d->fontEngine->stringToCMap(text.data(), text.size(), &glyphs, &numGlyphs, QFontEngine::GlyphIndicesOnly)) {
-            Q_ASSERT_X(false, Q_FUNC_INFO, "stringToCMap shouldn't fail twice");
-            return QVector<quint32>();
-        }
-    }
+    if (!d->fontEngine->stringToCMap(text.data(), text.size(), &glyphs, &numGlyphs, QFontEngine::GlyphIndicesOnly))
+        Q_UNREACHABLE();
 
     glyphIndexes.resize(numGlyphs);
     return glyphIndexes;
@@ -565,13 +557,12 @@ bool QRawFont::advancesForGlyphIndexes(const quint32 *glyphIndexes, QPointF *adv
     if (!d->isValid() || numGlyphs <= 0)
         return false;
 
+    QVarLengthArray<QFixed> tmpAdvances(numGlyphs);
+
     QGlyphLayout glyphs;
     glyphs.glyphs = const_cast<glyph_t *>(glyphIndexes);
     glyphs.numGlyphs = numGlyphs;
-    QVarLengthArray<QFixed> advances_x(numGlyphs);
-    QVarLengthArray<QFixed> advances_y(numGlyphs);
-    glyphs.advances_x = advances_x.data();
-    glyphs.advances_y = advances_y.data();
+    glyphs.advances = tmpAdvances.data();
 
     bool design = layoutFlags & UseDesignMetrics;
 
@@ -580,7 +571,7 @@ bool QRawFont::advancesForGlyphIndexes(const quint32 *glyphIndexes, QPointF *adv
         d->fontEngine->doKerning(&glyphs, design ? QFontEngine::DesignMetrics : QFontEngine::ShaperFlag(0));
 
     for (int i=0; i<numGlyphs; ++i)
-        advances[i] = QPointF(glyphs.advances_x[i].toReal(), glyphs.advances_y[i].toReal());
+        advances[i] = QPointF(tmpAdvances[i].toReal(), 0.0);
 
     return true;
 }

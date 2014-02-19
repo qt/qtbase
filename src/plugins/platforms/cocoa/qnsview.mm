@@ -229,7 +229,21 @@ static QTouchDevice *touchDevice = 0;
 - (void)updateGeometry
 {
     QRect geometry;
-    if (m_platformWindow->m_nsWindow) {
+
+    if (m_platformWindow->m_isNSWindowChild) {
+         return;
+#if 0
+        //geometry = qt_mac_toQRect([self frame]);
+        qDebug() << "nsview updateGeometry" << m_platformWindow->window();
+        QRect screenRect = qt_mac_toQRect([m_platformWindow->m_nsWindow convertRectToScreen:[self frame]]);
+        qDebug() << "screenRect" << screenRect;
+
+        screenRect.moveTop(qt_mac_flipYCoordinate(screenRect.y() + screenRect.height()));
+        geometry = QRect(m_platformWindow->window()->parent()->mapFromGlobal(screenRect.topLeft()), screenRect.size());
+        qDebug() << "geometry" << geometry;
+#endif
+        //geometry = QRect(screenRect.origin.x, qt_mac_flipYCoordinate(screenRect.origin.y + screenRect.size.height), screenRect.size.width, screenRect.size.height);
+    } else if (m_platformWindow->m_nsWindow) {
         // top level window, get window rect and flip y.
         NSRect rect = [self frame];
         NSRect windowRect = [[self window] frame];
@@ -310,10 +324,9 @@ static QTouchDevice *touchDevice = 0;
         m_platformWindow->exposeWindow();
     } else if (notificationName == NSWindowDidChangeScreenNotification) {
         if (m_window) {
-            QCocoaIntegration *ci = static_cast<QCocoaIntegration *>(QGuiApplicationPrivate::platformIntegration());
             NSUInteger screenIndex = [[NSScreen screens] indexOfObject:self.window.screen];
             if (screenIndex != NSNotFound) {
-                QCocoaScreen *cocoaScreen = ci->screenAtIndex(screenIndex);
+                QCocoaScreen *cocoaScreen = QCocoaIntegration::instance()->screenAtIndex(screenIndex);
                 QWindowSystemInterface::handleWindowScreenChanged(m_window, cocoaScreen->screen());
             }
         }
@@ -551,14 +564,20 @@ static QTouchDevice *touchDevice = 0;
 
     QPointF qtWindowPoint;
     QPointF qtScreenPoint;
-    [self convertFromScreen:[NSEvent mouseLocation] toWindowPoint:&qtWindowPoint andScreenPoint:&qtScreenPoint];
+    QNSView *targetView = self;
+    if (m_platformWindow && m_platformWindow->m_forwardWindow
+        && (theEvent.type == NSLeftMouseDragged || theEvent.type == NSLeftMouseUp)) {
+        targetView = m_platformWindow->m_forwardWindow->m_qtView;
+    }
+
+    [targetView convertFromScreen:[NSEvent mouseLocation] toWindowPoint:&qtWindowPoint andScreenPoint:&qtScreenPoint];
     ulong timestamp = [theEvent timestamp] * 1000;
 
-    QCocoaDrag* nativeDrag = static_cast<QCocoaDrag *>(QGuiApplicationPrivate::platformIntegration()->drag());
+    QCocoaDrag* nativeDrag = QCocoaIntegration::instance()->drag();
     nativeDrag->setLastMouseEvent(theEvent, self);
 
     Qt::KeyboardModifiers keyboardModifiers = [QNSView convertKeyModifiers:[theEvent modifierFlags]];
-    QWindowSystemInterface::handleMouseEvent(m_window, timestamp, qtWindowPoint, qtScreenPoint, m_buttons, keyboardModifiers);
+    QWindowSystemInterface::handleMouseEvent(targetView->m_window, timestamp, qtWindowPoint, qtScreenPoint, m_buttons, keyboardModifiers);
 }
 
 - (void)handleFrameStrutMouseEvent:(NSEvent *)theEvent
@@ -689,8 +708,18 @@ static QTouchDevice *touchDevice = 0;
 -(void)cursorUpdate:(NSEvent *)theEvent
 {
     Q_UNUSED(theEvent)
-    if (m_platformWindow->m_windowCursor)
+    // Set the cursor manually if there is no NSWindow.
+    if (!m_platformWindow->m_nsWindow && m_platformWindow->m_windowCursor)
         [m_platformWindow->m_windowCursor set];
+    else
+        [super cursorUpdate:theEvent];
+}
+
+-(void)resetCursorRects
+{
+    // Use the cursor rect API if there is a NSWindow
+    if (m_platformWindow->m_nsWindow && m_platformWindow->m_windowCursor)
+        [self addCursorRect:[self visibleRect] cursor:m_platformWindow->m_windowCursor];
 }
 
 - (void)mouseMoved:(NSEvent *)theEvent
@@ -1619,7 +1648,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 - (NSDragOperation) draggingSourceOperationMaskForLocal:(BOOL)isLocal
 {
     Q_UNUSED(isLocal);
-    QCocoaDrag* nativeDrag = static_cast<QCocoaDrag *>(QGuiApplicationPrivate::platformIntegration()->drag());
+    QCocoaDrag* nativeDrag = QCocoaIntegration::instance()->drag();
     return qt_mac_mapDropActions(nativeDrag->currentDrag()->supportedActions());
 }
 
@@ -1650,7 +1679,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 
     QPlatformDragQtResponse response(false, Qt::IgnoreAction, QRect());
     if ([sender draggingSource] != nil) {
-        QCocoaDrag* nativeDrag = static_cast<QCocoaDrag *>(QGuiApplicationPrivate::platformIntegration()->drag());
+        QCocoaDrag* nativeDrag = QCocoaIntegration::instance()->drag();
         response = QWindowSystemInterface::handleDrag(m_window, nativeDrag->platformDropData(), qt_windowPoint, qtAllowed);
     } else {
         QCocoaDropData mimeData([sender draggingPasteboard]);
@@ -1678,14 +1707,14 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 
     QPlatformDropQtResponse response(false, Qt::IgnoreAction);
     if ([sender draggingSource] != nil) {
-        QCocoaDrag* nativeDrag = static_cast<QCocoaDrag *>(QGuiApplicationPrivate::platformIntegration()->drag());
+        QCocoaDrag* nativeDrag = QCocoaIntegration::instance()->drag();
         response = QWindowSystemInterface::handleDrop(m_window, nativeDrag->platformDropData(), qt_windowPoint, qtAllowed);
     } else {
         QCocoaDropData mimeData([sender draggingPasteboard]);
         response = QWindowSystemInterface::handleDrop(m_window, &mimeData, qt_windowPoint, qtAllowed);
     }
     if (response.isAccepted()) {
-        QCocoaDrag* nativeDrag = static_cast<QCocoaDrag *>(QGuiApplicationPrivate::platformIntegration()->drag());
+        QCocoaDrag* nativeDrag = QCocoaIntegration::instance()->drag();
         nativeDrag->setAcceptedAction(response.acceptedAction());
     }
     return response.isAccepted();

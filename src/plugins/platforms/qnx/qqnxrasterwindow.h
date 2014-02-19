@@ -60,6 +60,8 @@ public:
 
     bool hasBuffers() const { return !bufferSize().isEmpty(); }
 
+    void setParent(const QPlatformWindow *window);
+
     void adjustBufferSize();
 
 protected:

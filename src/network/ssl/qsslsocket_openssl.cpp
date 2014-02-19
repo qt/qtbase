@@ -596,6 +596,7 @@ void QSslSocketPrivate::resetDefaultCiphers()
     SSL *mySsl = q_SSL_new(myCtx);
 
     QList<QSslCipher> ciphers;
+    QList<QSslCipher> defaultCiphers;
 
     STACK_OF(SSL_CIPHER) *supportedCiphers = q_SSL_get_ciphers(mySsl);
     for (int i = 0; i < q_sk_SSL_CIPHER_num(supportedCiphers); ++i) {
@@ -603,8 +604,11 @@ void QSslSocketPrivate::resetDefaultCiphers()
             if (cipher->valid) {
                 QSslCipher ciph = QSslSocketBackendPrivate::QSslCipher_from_SSL_CIPHER(cipher);
                 if (!ciph.isNull()) {
+                    // Unconditionally exclude ADH ciphers since they offer no MITM protection
                     if (!ciph.name().toLower().startsWith(QLatin1String("adh")))
                         ciphers << ciph;
+                    if (ciph.usedBits() >= 128)
+                        defaultCiphers << ciph;
                 }
             }
         }
@@ -614,7 +618,7 @@ void QSslSocketPrivate::resetDefaultCiphers()
     q_SSL_free(mySsl);
 
     setDefaultSupportedCiphers(ciphers);
-    setDefaultCiphers(ciphers);
+    setDefaultCiphers(defaultCiphers);
 }
 
 QList<QSslCertificate> QSslSocketPrivate::systemCaCertificates()
@@ -1481,6 +1485,15 @@ void QSslSocketBackendPrivate::continueHandshake()
             }
         }
     }
+
+#if OPENSSL_VERSION_NUMBER >= 0x1000100fL && !defined(OPENSSL_NO_TLSEXT) && !defined(OPENSSL_NO_NEXTPROTONEG)
+    const unsigned char *proto;
+    unsigned int proto_len;
+    q_SSL_get0_next_proto_negotiated(ssl, &proto, &proto_len);
+    QByteArray nextProtocol(reinterpret_cast<const char *>(proto), proto_len);
+    configuration.nextNegotiatedProtocol = nextProtocol;
+    configuration.nextProtocolNegotiationStatus = sslContextPointer->npnContext().status;
+#endif // OPENSSL_VERSION_NUMBER >= 0x1000100fL ...
 
     connectionEncrypted = true;
     emit q->encrypted();

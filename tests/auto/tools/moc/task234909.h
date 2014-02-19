@@ -38,6 +38,9 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
+#ifndef TASK234909_H
+#define TASK234909_H
 #include <qobject.h>
 
 namespace NS_A {
@@ -71,3 +74,4 @@ namespace NS_Main {
 
 }
 }
+#endif // TASK234909_H

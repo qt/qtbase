@@ -134,6 +134,33 @@ aix-g++* {
      QMAKE_CXXFLAGS += -mminimal-toc
 }
 
+sse2:!contains(QT_CPU_FEATURES.$$QT_ARCH, sse2):!host_build:!if(static:contains(QT_CONFIG, shared)) {
+    # If the compiler supports SSE2, enable it unconditionally in all of Qt shared libraries
+    # (and only the libraries). This is not expected to be a problem because:
+    # - on Windows, sharing of libraries is uncommon
+    # - on Mac OS X, all x86 CPUs already have SSE2 support (we won't even reach here)
+    # - on Linux, the dynamic loader can find the libraries on LIBDIR/sse2/
+    # The last guarantee does not apply to executables and plugins, so we can't enable for them.
+    QT_CPU_FEATURES.$$QT_ARCH += sse sse2
+    QMAKE_CFLAGS += $$QMAKE_CFLAGS_SSE2
+    QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_SSE2
+}
+
+clang {
+    apple_clang_ver = $${QT_APPLE_CLANG_MAJOR_VERSION}.$${QT_APPLE_CLANG_MINOR_VERSION}
+    reg_clang_ver = $${QT_CLANG_MAJOR_VERSION}.$${QT_CLANG_MINOR_VERSION}
+    !lessThan(apple_clang_ver, "5.1")|!lessThan(reg_clang_ver, "3.4"): \
+        CONFIG += compiler_supports_fpmath
+} else: gcc {
+    CONFIG += compiler_supports_fpmath
+}
+
+equals(QT_ARCH, i386):contains(QT_CPU_FEATURES.$$QT_ARCH, sse2):compiler_supports_fpmath {
+    # Turn on SSE-based floating-point math
+    QMAKE_CFLAGS += -mfpmath=sse
+    QMAKE_CXXFLAGS += -mfpmath=sse
+}
+
 android: CONFIG += qt_android_deps
 
 #install directives
@@ -154,7 +181,7 @@ else: \
 lib_replace.CONFIG = path
 QMAKE_PRL_INSTALL_REPLACE += include_replace lib_replace
 
-unix|win32-g++* {
+unix|mingw {
    CONFIG += create_pc
    QMAKE_PKGCONFIG_LIBDIR = $$lib_replace.replace
    QMAKE_PKGCONFIG_INCDIR = $$include_replace.replace
@@ -169,7 +196,7 @@ unix {
    QMAKE_LIBTOOL_INSTALL_REPLACE += include_replace lib_replace
 }
 
-unix|win32-g++* {
+unix|mingw {
     QMAKE_PKGCONFIG_NAME = $$replace(TARGET, ^Qt, "Qt$$section(VERSION, ., 0, 0) ")
     QMAKE_PKGCONFIG_FILE = $$replace(TARGET, ^Qt, Qt$$section(VERSION, ., 0, 0))
     for(i, MODULE_DEPENDS): \

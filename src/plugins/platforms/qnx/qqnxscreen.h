@@ -80,7 +80,7 @@ public:
     int nativeFormat() const { return (depth() == 32) ? SCREEN_FORMAT_RGBA8888 : SCREEN_FORMAT_RGB565; }
     screen_display_t nativeDisplay() const { return m_display; }
     screen_context_t nativeContext() const { return m_screenContext; }
-    const char *windowGroupName() const { return rootWindow()->groupName().constData(); }
+    const char *windowGroupName() const { return m_rootWindow ? m_rootWindow->groupName().constData() : 0; }
 
     QQnxWindow *findWindow(screen_window_t windowHandle);
 

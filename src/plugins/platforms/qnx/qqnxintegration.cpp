@@ -1,6 +1,6 @@
 /***************************************************************************
 **
-** Copyright (C) 2011 - 2013 BlackBerry Limited. All rights reserved.
+** Copyright (C) 2013 BlackBerry Limited. All rights reserved.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -38,6 +38,8 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
+#include "qqnxglobal.h"
 
 #include "qqnxintegration.h"
 #if defined(QQNX_SCREENEVENTTHREAD)
@@ -123,6 +125,10 @@ static inline QQnxIntegration::Options parseOptions(const QStringList &paramList
         options |= QQnxIntegration::FullScreenApplication;
     }
 
+    if (!paramList.contains(QLatin1String("flush-screen-context"))) {
+        options |= QQnxIntegration::AlwaysFlushScreenContext;
+    }
+
 // On Blackberry the first window is treated as a root window
 #ifdef Q_OS_BLACKBERRY
     if (!paramList.contains(QLatin1String("no-rootwindow"))) {
@@ -156,7 +162,7 @@ QQnxIntegration::QQnxIntegration(const QStringList &paramList)
 #else
     , m_eventDispatcher(createUnixEventDispatcher())
 #endif
-    , m_nativeInterface(new QQnxNativeInterface())
+    , m_nativeInterface(new QQnxNativeInterface(this))
     , m_screenEventHandler(new QQnxScreenEventHandler(this))
 #if !defined(QT_NO_CLIPBOARD)
     , m_clipboard(0)
@@ -165,14 +171,12 @@ QQnxIntegration::QQnxIntegration(const QStringList &paramList)
 #if !defined(QT_NO_DRAGANDDROP)
     , m_drag(new QSimpleDrag())
 #endif
-    , m_options(parseOptions(paramList))
 {
+    ms_options = parseOptions(paramList);
     qIntegrationDebug() << Q_FUNC_INFO;
     // Open connection to QNX composition manager
-    errno = 0;
-    int result = screen_create_context(&m_screenContext, SCREEN_APPLICATION_CONTEXT);
-    if (result != 0)
-        qFatal("QQnx: failed to connect to composition manager, errno=%d", errno);
+    Q_SCREEN_CRITICALERROR(screen_create_context(&ms_screenContext, SCREEN_APPLICATION_CONTEXT),
+                           "Failed to create screen context");
 
     // Not on BlackBerry, it has specialized event dispatcher which also handles navigator events
 #if !defined(Q_OS_BLACKBERRY) && defined(QQNX_PPS)
@@ -191,7 +195,7 @@ QQnxIntegration::QQnxIntegration(const QStringList &paramList)
 
     // Create/start event thread
 #if defined(QQNX_SCREENEVENTTHREAD)
-    m_screenEventThread = new QQnxScreenEventThread(m_screenContext, m_screenEventHandler);
+    m_screenEventThread = new QQnxScreenEventThread(ms_screenContext, m_screenEventHandler);
     m_screenEventThread->start();
 #endif
 
@@ -251,6 +255,9 @@ QQnxIntegration::QQnxIntegration(const QStringList &paramList)
 #if defined(QQNX_PPS)
         // Set up the input context
         m_inputContext = new QQnxInputContext(this, *m_virtualKeyboard);
+#if defined(QQNX_IMF)
+        m_screenEventHandler->addScreenEventFilter(m_inputContext);
+#endif
 #endif
     }
 
@@ -270,17 +277,6 @@ QQnxIntegration::~QQnxIntegration()
     // Destroy the drag object
     delete m_drag;
 #endif
-
-#if defined(QQNX_PPS)
-    // Destroy the hardware button notifier
-    delete m_buttonsNotifier;
-
-    // Destroy input context
-    delete m_inputContext;
-#endif
-
-    // Destroy the keyboard class.
-    delete m_virtualKeyboard;
 
 #if !defined(QT_NO_CLIPBOARD)
     // Delete the clipboard
@@ -314,12 +310,23 @@ QQnxIntegration::~QQnxIntegration()
     destroyDisplays();
 
     // Close connection to QNX composition manager
-    screen_destroy_context(m_screenContext);
+    screen_destroy_context(ms_screenContext);
 
 #if !defined(QT_NO_OPENGL)
     // Cleanup global OpenGL resources
     QQnxGLContext::shutdown();
 #endif
+
+#if defined(QQNX_PPS)
+    // Destroy the hardware button notifier
+    delete m_buttonsNotifier;
+
+    // Destroy input context
+    delete m_inputContext;
+#endif
+
+    // Destroy the keyboard class.
+    delete m_virtualKeyboard;
 
     // Destroy services class
     delete m_services;
@@ -355,10 +362,10 @@ QPlatformWindow *QQnxIntegration::createPlatformWindow(QWindow *window) const
     const bool needRootWindow = options() & RootWindow;
     switch (surfaceType) {
     case QSurface::RasterSurface:
-        return new QQnxRasterWindow(window, m_screenContext, needRootWindow);
+        return new QQnxRasterWindow(window, ms_screenContext, needRootWindow);
 #if !defined(QT_NO_OPENGL)
     case QSurface::OpenGLSurface:
-        return new QQnxEglWindow(window, m_screenContext, needRootWindow);
+        return new QQnxEglWindow(window, ms_screenContext, needRootWindow);
 #endif
     default:
         qFatal("QQnxWindow: unsupported window API");
@@ -441,7 +448,7 @@ QPlatformDrag *QQnxIntegration::drag() const
 QVariant QQnxIntegration::styleHint(QPlatformIntegration::StyleHint hint) const
 {
     qIntegrationDebug() << Q_FUNC_INFO;
-    if ((hint == ShowIsFullScreen) && (m_options & FullScreenApplication))
+    if ((hint == ShowIsFullScreen) && (ms_options & FullScreenApplication))
         return true;
 
     return QPlatformIntegration::styleHint(hint);
@@ -495,11 +502,10 @@ void QQnxIntegration::createDisplays()
 {
     qIntegrationDebug() << Q_FUNC_INFO;
     // Query number of displays
-    errno = 0;
-    int displayCount;
-    int result = screen_get_context_property_iv(m_screenContext, SCREEN_PROPERTY_DISPLAY_COUNT, &displayCount);
-    if (result != 0)
-        qFatal("QQnxIntegration: failed to query display count, errno=%d", errno);
+    int displayCount = 0;
+    int result = screen_get_context_property_iv(ms_screenContext, SCREEN_PROPERTY_DISPLAY_COUNT,
+                                                &displayCount);
+    Q_SCREEN_CRITICALERROR(result, "Failed to query display count");
 
     if (displayCount < 1) {
         // Never happens, even if there's no display, libscreen returns 1
@@ -507,23 +513,20 @@ void QQnxIntegration::createDisplays()
     }
 
     // Get all displays
-    errno = 0;
     screen_display_t *displays = (screen_display_t *)alloca(sizeof(screen_display_t) * displayCount);
-    result = screen_get_context_property_pv(m_screenContext, SCREEN_PROPERTY_DISPLAYS, (void **)displays);
-    if (result != 0)
-        qFatal("QQnxIntegration: failed to query displays, errno=%d", errno);
+    result = screen_get_context_property_pv(ms_screenContext, SCREEN_PROPERTY_DISPLAYS,
+                                            (void **)displays);
+    Q_SCREEN_CRITICALERROR(result, "Failed to query displays");
 
     // If it's primary, we create a QScreen for it even if it's not attached
     // since Qt will dereference QGuiApplication::primaryScreen()
     createDisplay(displays[0], /*isPrimary=*/true);
 
     for (int i=1; i<displayCount; i++) {
-        int isAttached = 0;
-        result = screen_get_display_property_iv(displays[i], SCREEN_PROPERTY_ATTACHED, &isAttached);
-        if (result != 0) {
-            qWarning("QQnxIntegration: failed to query display attachment, errno=%d", errno);
-            isAttached = 1; // assume attached
-        }
+        int isAttached = 1;
+        result = screen_get_display_property_iv(displays[i], SCREEN_PROPERTY_ATTACHED,
+                                                &isAttached);
+        Q_SCREEN_CHECKERROR(result, "Failed to query display attachment");
 
         if (!isAttached) {
             qIntegrationDebug() << Q_FUNC_INFO << "Skipping non-attached display" << i;
@@ -537,7 +540,7 @@ void QQnxIntegration::createDisplays()
 
 void QQnxIntegration::createDisplay(screen_display_t display, bool isPrimary)
 {
-    QQnxScreen *screen = new QQnxScreen(m_screenContext, display, isPrimary);
+    QQnxScreen *screen = new QQnxScreen(ms_screenContext, display, isPrimary);
     m_screens.append(screen);
     screenAdded(screen);
     screen->adjustOrientation();
@@ -584,10 +587,24 @@ QQnxScreen *QQnxIntegration::primaryDisplay() const
     return m_screens.first();
 }
 
-QQnxIntegration::Options QQnxIntegration::options() const
+QQnxIntegration::Options QQnxIntegration::options()
 {
-    return m_options;
+    return ms_options;
 }
+
+screen_context_t QQnxIntegration::screenContext()
+{
+    return ms_screenContext;
+}
+
+QQnxNavigatorEventHandler *QQnxIntegration::navigatorEventHandler()
+{
+    return m_navigatorEventHandler;
+}
+
+screen_context_t QQnxIntegration::ms_screenContext = 0;
+
+QQnxIntegration::Options QQnxIntegration::ms_options = 0;
 
 bool QQnxIntegration::supportsNavigatorEvents() const
 {

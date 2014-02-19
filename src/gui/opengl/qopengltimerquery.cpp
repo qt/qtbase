@@ -44,6 +44,7 @@
 #include "qopenglqueryhelper_p.h"
 #include <QtCore/private/qobject_p.h>
 #include <QtGui/QOpenGLContext>
+#include <QtGui/QOpenGLFunctions>
 
 QT_BEGIN_NAMESPACE
 
@@ -123,6 +124,11 @@ public:
 
 bool QOpenGLTimerQueryPrivate::create()
 {
+    if (QOpenGLFunctions::isES()) {
+        qWarning("QOpenGLTimerQuery: Not supported on dynamic GL ES");
+        return false;
+    }
+
     QOpenGLContext *ctx = QOpenGLContext::currentContext();
 
     if (timer && context == ctx)

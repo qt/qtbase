@@ -47,6 +47,8 @@
 
 QT_BEGIN_NAMESPACE
 
+class QStringList;
+
 class Q_CORE_EXPORT QLibraryInfo
 {
 public:
@@ -56,6 +58,8 @@ public:
 #ifndef QT_NO_DATESTRING
     static QDate buildDate();
 #endif //QT_NO_DATESTRING
+
+    static const char * build();
 
     static bool isDebugBuild();
 
@@ -95,6 +99,8 @@ public:
     enum PathGroup { FinalPaths, EffectivePaths, EffectiveSourcePaths };
     static QString rawLocation(LibraryLocation, PathGroup);
 #endif
+
+    static QStringList platformPluginArguments(const QString &platformName);
 
 private:
     QLibraryInfo();

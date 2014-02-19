@@ -141,7 +141,9 @@ public:
         BlockFormat = 1,
         CharFormat = 2,
         ListFormat = 3,
+#if QT_DEPRECATED_SINCE(5, 3)
         TableFormat = 4,
+#endif
         FrameFormat = 5,
 
         UserFormat = 100
@@ -295,6 +297,7 @@ public:
     void merge(const QTextFormat &other);
 
     inline bool isValid() const { return type() != InvalidFormat; }
+    inline bool isEmpty() const { return propertyCount() == 0; }
 
     int type() const;
 
@@ -407,7 +410,13 @@ public:
     QTextCharFormat();
 
     bool isValid() const { return isCharFormat(); }
-    void setFont(const QFont &font);
+
+    enum FontPropertiesInheritanceBehavior {
+        FontPropertiesSpecifiedOnly,
+        FontPropertiesAll
+    };
+    void setFont(const QFont &font, FontPropertiesInheritanceBehavior behavior);
+    void setFont(const QFont &font); // ### Qt6: Merge with above
     QFont font() const;
 
     inline void setFontFamily(const QString &family)

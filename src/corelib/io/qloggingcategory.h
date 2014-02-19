@@ -65,6 +65,7 @@ public:
 
     // allows usage of both factory method and variable in qCX macros
     QLoggingCategory &operator()() { return *this; }
+    const QLoggingCategory &operator()() const { return *this; }
 
     static QLoggingCategory *defaultCategory();
 
@@ -84,25 +85,36 @@ private:
 };
 
 #define Q_DECLARE_LOGGING_CATEGORY(name) \
-    extern QLoggingCategory &name();
+    extern const QLoggingCategory &name();
 
 // relies on QLoggingCategory(QString) being thread safe!
 #define Q_LOGGING_CATEGORY(name, string) \
-    QLoggingCategory &name() \
+    const QLoggingCategory &name() \
     { \
-        static QLoggingCategory category(string); \
+        static const QLoggingCategory category(string); \
         return category; \
     }
 
-#define qCDebug(category) \
-    for (bool enabled = category().isDebugEnabled(); Q_UNLIKELY(enabled); enabled = false) \
-        QMessageLogger(__FILE__, __LINE__, Q_FUNC_INFO, category().categoryName()).debug()
-#define qCWarning(category) \
-    for (bool enabled = category().isWarningEnabled(); enabled; enabled = false) \
-        QMessageLogger(__FILE__, __LINE__, Q_FUNC_INFO, category().categoryName()).warning()
-#define qCCritical(category) \
-    for (bool enabled = category().isCriticalEnabled(); enabled; enabled = false) \
-        QMessageLogger(__FILE__, __LINE__, Q_FUNC_INFO, category().categoryName()).critical()
+#ifdef Q_COMPILER_VARIADIC_MACROS
+
+#define qCDebug(category, ...) \
+    for (bool qt_category_enabled = category().isDebugEnabled(); qt_category_enabled; qt_category_enabled = false) \
+        QMessageLogger(__FILE__, __LINE__, Q_FUNC_INFO, category().categoryName()).debug(__VA_ARGS__)
+#define qCWarning(category, ...) \
+    for (bool qt_category_enabled = category().isWarningEnabled(); qt_category_enabled; qt_category_enabled = false) \
+        QMessageLogger(__FILE__, __LINE__, Q_FUNC_INFO, category().categoryName()).warning(__VA_ARGS__)
+#define qCCritical(category, ...) \
+    for (bool qt_category_enabled = category().isCriticalEnabled(); qt_category_enabled; qt_category_enabled = false) \
+        QMessageLogger(__FILE__, __LINE__, Q_FUNC_INFO, category().categoryName()).critical(__VA_ARGS__)
+
+#else
+
+// check for enabled category inside QMessageLogger.
+#define qCDebug qDebug
+#define qCWarning qWarning
+#define qCCritical qCritical
+
+#endif // Q_COMPILER_VARIADIC_MACROS
 
 #if defined(QT_NO_DEBUG_OUTPUT)
 #  undef qCDebug

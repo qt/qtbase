@@ -128,8 +128,8 @@ extern "C" int gethostname(char *, int);
 
 #if defined(_XOPEN_UNIX)
 // Solaris 2.6 and better
-#define QT_SNPRINTF		::snprintf
-#define QT_VSNPRINTF		::vsnprintf
+#define QT_SNPRINTF             ::snprintf
+#define QT_VSNPRINTF            ::vsnprintf
 #endif
 
 #endif // QPLATFORMDEFS_H

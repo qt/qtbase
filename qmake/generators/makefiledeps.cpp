@@ -345,6 +345,30 @@ bool QMakeSourceFileInfo::containsSourceFile(const QString &f, SourceFileType ty
     return false;
 }
 
+bool QMakeSourceFileInfo::isSystemInclude(const QString &name)
+{
+    if (QDir::isRelativePath(name)) {
+        // if we got a relative path here, it's either an -I flag with a relative path
+        // or an include file we couldn't locate. Either way, conclude it's not
+        // a system include.
+        return false;
+    }
+
+    for (int i = 0; i < systemIncludes.size(); ++i) {
+        // check if name is located inside the system include dir:
+        QDir systemDir(systemIncludes.at(i));
+        QString relativePath = systemDir.relativeFilePath(name);
+
+        // the relative path might be absolute if we're crossing drives on Windows
+        if (QDir::isAbsolutePath(relativePath) || relativePath.startsWith("../"))
+            continue;
+        debug_msg(5, "File/dir %s is in system dir %s, skipping",
+                  qPrintable(name), qPrintable(systemIncludes.at(i)));
+        return true;
+    }
+    return false;
+}
+
 char *QMakeSourceFileInfo::getBuffer(int s) {
     if(!spare_buffer || spare_buffer_size < s)
         spare_buffer = (char *)realloc(spare_buffer, spare_buffer_size=s);
@@ -655,7 +679,7 @@ bool QMakeSourceFileInfo::findDeps(SourceFile *file)
                 } else {
                     exists = QFile::exists(lfn.real());
                 }
-                if(!lfn.isNull()) {
+                if (!lfn.isNull() && !isSystemInclude(lfn.real())) {
                     dep = files->lookupFile(lfn);
                     if(!dep) {
                         dep = new SourceFile;

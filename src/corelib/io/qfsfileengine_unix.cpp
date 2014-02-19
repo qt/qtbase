@@ -45,6 +45,7 @@
 #include "private/qcore_unix_p.h"
 #include "qfilesystementry_p.h"
 #include "qfilesystemengine_p.h"
+#include "qcoreapplication.h"
 
 #ifndef QT_NO_FSFILEENGINE
 
@@ -142,6 +143,16 @@ static inline bool setCloseOnExec(int fd)
     return fd != -1 && fcntl(fd, F_SETFD, FD_CLOEXEC) != -1;
 }
 
+static inline QString msgOpenDirectory()
+{
+    const char message[] = QT_TRANSLATE_NOOP("QIODevice", "file to open is a directory");
+#ifndef QT_BOOTSTRAPPED
+    return QIODevice::tr(message);
+#else
+    return QLatin1String(message);
+#endif
+}
+
 /*!
     \internal
 */
@@ -169,7 +180,7 @@ bool QFSFileEnginePrivate::nativeOpen(QIODevice::OpenMode openMode)
             // we had received EISDIR anyway.
             if (QFileSystemEngine::fillMetaData(fd, metaData)
                     && metaData.isDirectory()) {
-                q->setError(QFile::OpenError, QLatin1String("file to open is a directory"));
+                q->setError(QFile::OpenError, msgOpenDirectory());
                 QT_CLOSE(fd);
                 return false;
             }
@@ -210,7 +221,7 @@ bool QFSFileEnginePrivate::nativeOpen(QIODevice::OpenMode openMode)
             // we had received EISDIR anyway.
             if (QFileSystemEngine::fillMetaData(QT_FILENO(fh), metaData)
                     && metaData.isDirectory()) {
-                q->setError(QFile::OpenError, QLatin1String("file to open is a directory"));
+                q->setError(QFile::OpenError, msgOpenDirectory());
                 fclose(fh);
                 return false;
             }

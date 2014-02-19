@@ -178,84 +178,10 @@ QString &exponentForm(QChar zero, QChar decimal, QChar exponential,
         digits.insert(1, decimal);
 
     digits.append(exponential);
-    digits.append(QLocalePrivate::longLongToString(zero, group, plus, minus,
-                   exp, 2, 10, -1, QLocalePrivate::AlwaysShowSign));
+    digits.append(QLocaleData::longLongToString(zero, group, plus, minus,
+                   exp, 2, 10, -1, QLocaleData::AlwaysShowSign));
 
     return digits;
-}
-
-// Removes thousand-group separators in "C" locale.
-bool removeGroupSeparators(QLocalePrivate::CharBuff *num)
-{
-    int group_cnt = 0; // counts number of group chars
-    int decpt_idx = -1;
-
-    char *data = num->data();
-    int l = qstrlen(data);
-
-    // Find the decimal point and check if there are any group chars
-    int i = 0;
-    for (; i < l; ++i) {
-        char c = data[i];
-
-        if (c == ',') {
-            if (i == 0 || data[i - 1] < '0' || data[i - 1] > '9')
-                return false;
-            if (i == l - 1 || data[i + 1] < '0' || data[i + 1] > '9')
-                return false;
-            ++group_cnt;
-        }
-        else if (c == '.') {
-            // Fail if more than one decimal points
-            if (decpt_idx != -1)
-                return false;
-            decpt_idx = i;
-        } else if (c == 'e' || c == 'E') {
-            // an 'e' or 'E' - if we have not encountered a decimal
-            // point, this is where it "is".
-            if (decpt_idx == -1)
-                decpt_idx = i;
-        }
-    }
-
-    // If no group chars, we're done
-    if (group_cnt == 0)
-        return true;
-
-    // No decimal point means that it "is" at the end of the string
-    if (decpt_idx == -1)
-        decpt_idx = l;
-
-    i = 0;
-    while (i < l && group_cnt > 0) {
-        char c = data[i];
-
-        if (c == ',') {
-            // Don't allow group chars after the decimal point
-            if (i > decpt_idx)
-                return false;
-
-            // Check that it is placed correctly relative to the decpt
-            if ((decpt_idx - i) % 4 != 0)
-                return false;
-
-            // Remove it
-            memmove(data + i, data + i + 1, l - i - 1);
-            data[--l] = '\0';
-
-            --group_cnt;
-            --decpt_idx;
-        } else {
-            // Check that we are not missing a separator
-            if (i < decpt_idx
-                    && (decpt_idx - i) % 4 == 0
-                    && !(i == 0 && (c == '-' || c == '+'))) // check for negative or positive sign at start of string
-                return false;
-            ++i;
-        }
-    }
-
-    return true;
 }
 
 /*-

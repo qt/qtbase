@@ -219,7 +219,7 @@ bool MainWindow::maybeSave()
                           tr("The image has been modified.\n"
                              "Do you want to save your changes?"),
                           QMessageBox::Save | QMessageBox::Discard
-			  | QMessageBox::Cancel);
+                          | QMessageBox::Cancel);
         if (ret == QMessageBox::Save) {
             return saveFile("png");
         } else if (ret == QMessageBox::Cancel) {

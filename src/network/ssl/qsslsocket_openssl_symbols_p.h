@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 BlackBerry Limited. All rights reserved.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -79,13 +80,13 @@ QT_BEGIN_NAMESPACE
 // **************** Shared declarations ******************
 // ret func(arg)
 
-#  define DEFINEFUNC(ret, func, arg, a, err, funcret)				\
-    typedef ret (*_q_PTR_##func)(arg);					\
-    static _q_PTR_##func _q_##func = 0;					\
-    ret q_##func(arg) {						\
+#  define DEFINEFUNC(ret, func, arg, a, err, funcret) \
+    typedef ret (*_q_PTR_##func)(arg); \
+    static _q_PTR_##func _q_##func = 0; \
+    ret q_##func(arg) { \
         if (Q_UNLIKELY(!_q_##func)) { \
             qsslSocketUnresolvedSymbolWarning(#func); \
-            err;								\
+            err; \
         } \
         funcret _q_##func(a); \
     }
@@ -180,8 +181,8 @@ QT_BEGIN_NAMESPACE
 // **************** Static declarations ******************
 
 // ret func(arg)
-#  define DEFINEFUNC(ret, func, arg, a, err, funcret)				\
-    ret q_##func(arg) {	funcret func(a); }
+#  define DEFINEFUNC(ret, func, arg, a, err, funcret) \
+    ret q_##func(arg) { funcret func(a); }
 
 // ret func(arg1, arg2)
 #  define DEFINEFUNC2(ret, func, arg1, a, arg2, b, err, funcret) \
@@ -384,7 +385,7 @@ int q_X509_cmp(X509 *a, X509 *b);
 #ifdef SSLEAY_MACROS
 void *q_ASN1_dup(i2d_of_void *i2d, d2i_of_void *d2i, char *x);
 #define q_X509_dup(x509) (X509 *)q_ASN1_dup((i2d_of_void *)q_i2d_X509, \
-		(d2i_of_void *)q_d2i_X509,(char *)x509)
+                (d2i_of_void *)q_d2i_X509,(char *)x509)
 #else
 X509 *q_X509_dup(X509 *a);
 #endif
@@ -429,22 +430,22 @@ STACK_OF(X509) *q_X509_STORE_CTX_get_chain(X509_STORE_CTX *ctx);
 #define q_BIO_get_mem_data(b, pp) (int)q_BIO_ctrl(b,BIO_CTRL_INFO,0,(char *)pp)
 #define q_BIO_pending(b) (int)q_BIO_ctrl(b,BIO_CTRL_PENDING,0,NULL)
 #ifdef SSLEAY_MACROS
-int 	q_i2d_DSAPrivateKey(const DSA *a, unsigned char **pp);
-int 	q_i2d_RSAPrivateKey(const RSA *a, unsigned char **pp);
+int     q_i2d_DSAPrivateKey(const DSA *a, unsigned char **pp);
+int     q_i2d_RSAPrivateKey(const RSA *a, unsigned char **pp);
 RSA *q_d2i_RSAPrivateKey(RSA **a, unsigned char **pp, long length);
 DSA *q_d2i_DSAPrivateKey(DSA **a, unsigned char **pp, long length);
-#define	q_PEM_read_bio_RSAPrivateKey(bp, x, cb, u) \
+#define q_PEM_read_bio_RSAPrivateKey(bp, x, cb, u) \
         (RSA *)q_PEM_ASN1_read_bio( \
         (void *(*)(void**, const unsigned char**, long int))q_d2i_RSAPrivateKey, PEM_STRING_RSA, bp, (void **)x, cb, u)
-#define	q_PEM_read_bio_DSAPrivateKey(bp, x, cb, u) \
+#define q_PEM_read_bio_DSAPrivateKey(bp, x, cb, u) \
         (DSA *)q_PEM_ASN1_read_bio( \
         (void *(*)(void**, const unsigned char**, long int))q_d2i_DSAPrivateKey, PEM_STRING_DSA, bp, (void **)x, cb, u)
-#define	q_PEM_write_bio_RSAPrivateKey(bp,x,enc,kstr,klen,cb,u) \
-		PEM_ASN1_write_bio((int (*)(void*, unsigned char**))q_i2d_RSAPrivateKey,PEM_STRING_RSA,\
-			bp,(char *)x,enc,kstr,klen,cb,u)
-#define	q_PEM_write_bio_DSAPrivateKey(bp,x,enc,kstr,klen,cb,u) \
-		PEM_ASN1_write_bio((int (*)(void*, unsigned char**))q_i2d_DSAPrivateKey,PEM_STRING_DSA,\
-			bp,(char *)x,enc,kstr,klen,cb,u)
+#define q_PEM_write_bio_RSAPrivateKey(bp,x,enc,kstr,klen,cb,u) \
+        PEM_ASN1_write_bio((int (*)(void*, unsigned char**))q_i2d_RSAPrivateKey,PEM_STRING_RSA,\
+                           bp,(char *)x,enc,kstr,klen,cb,u)
+#define q_PEM_write_bio_DSAPrivateKey(bp,x,enc,kstr,klen,cb,u) \
+        PEM_ASN1_write_bio((int (*)(void*, unsigned char**))q_i2d_DSAPrivateKey,PEM_STRING_DSA,\
+                           bp,(char *)x,enc,kstr,klen,cb,u)
 #endif
 #define q_SSL_CTX_set_options(ctx,op) q_SSL_CTX_ctrl((ctx),SSL_CTRL_OPTIONS,(op),NULL)
 #define q_SSL_CTX_set_mode(ctx,op) q_SSL_CTX_ctrl((ctx),SSL_CTRL_MODE,(op),NULL)
@@ -461,9 +462,9 @@ DSA *q_d2i_DSAPrivateKey(DSA **a, unsigned char **pp, long length);
 #define q_X509_get_notAfter(x) X509_get_notAfter(x)
 #define q_X509_get_notBefore(x) X509_get_notBefore(x)
 #define q_EVP_PKEY_assign_RSA(pkey,rsa) q_EVP_PKEY_assign((pkey),EVP_PKEY_RSA,\
-					(char *)(rsa))
+                                        (char *)(rsa))
 #define q_EVP_PKEY_assign_DSA(pkey,dsa) q_EVP_PKEY_assign((pkey),EVP_PKEY_DSA,\
-					(char *)(dsa))
+                                        (char *)(dsa))
 #define q_OpenSSL_add_all_algorithms() q_OPENSSL_add_all_algorithms_conf()
 void q_OPENSSL_add_all_algorithms_noconf();
 void q_OPENSSL_add_all_algorithms_conf();
@@ -472,6 +473,20 @@ long q_SSLeay();
 const char *q_SSLeay_version(int type);
 int q_i2d_SSL_SESSION(SSL_SESSION *in, unsigned char **pp);
 SSL_SESSION *q_d2i_SSL_SESSION(SSL_SESSION **a, const unsigned char **pp, long length);
+
+#if OPENSSL_VERSION_NUMBER >= 0x1000100fL && !defined(OPENSSL_NO_TLSEXT) && !defined(OPENSSL_NO_NEXTPROTONEG)
+int q_SSL_select_next_proto(unsigned char **out, unsigned char *outlen,
+                            const unsigned char *in, unsigned int inlen,
+                            const unsigned char *client, unsigned int client_len);
+void q_SSL_CTX_set_next_proto_select_cb(SSL_CTX *s,
+                                        int (*cb) (SSL *ssl, unsigned char **out,
+                                                   unsigned char *outlen,
+                                                   const unsigned char *in,
+                                                   unsigned int inlen, void *arg),
+                                        void *arg);
+void q_SSL_get0_next_proto_negotiated(const SSL *s, const unsigned char **data,
+                                      unsigned *len);
+#endif // OPENSSL_VERSION_NUMBER >= 0x1000100fL ...
 
 // Helper function
 class QDateTime;

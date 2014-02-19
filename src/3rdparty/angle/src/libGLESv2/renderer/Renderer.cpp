@@ -28,13 +28,18 @@
 #define D3DERR_OUTOFVIDEOMEMORY MAKE_HRESULT(1, 0x876, 380)
 #endif
 
-#ifdef __MINGW32__
-
 #ifndef D3DCOMPILER_DLL
+#define D3DCOMPILER_DLL L"d3dcompiler_43.dll" // Lowest common denominator
+#endif
+
+#ifndef QT_D3DCOMPILER_DLL
+#define QT_D3DCOMPILER_DLL D3DCOMPILER_DLL
+#endif
+
+#if defined(__MINGW32__) || defined(ANGLE_OS_WINPHONE)
 
 //Add define + typedefs for older MinGW-w64 headers (pre 5783)
-
-#define D3DCOMPILER_DLL L"d3dcompiler_43.dll"
+//Also define these on Windows Phone, which doesn't have a shader compiler
 
 HRESULT WINAPI D3DCompile(const void *data, SIZE_T data_size, const char *filename,
         const D3D_SHADER_MACRO *defines, ID3DInclude *include, const char *entrypoint,
@@ -43,9 +48,7 @@ typedef HRESULT (WINAPI *pD3DCompile)(const void *data, SIZE_T data_size, const 
         const D3D_SHADER_MACRO *defines, ID3DInclude *include, const char *entrypoint,
         const char *target, UINT sflags, UINT eflags, ID3DBlob **shader, ID3DBlob **error_messages);
 
-#endif // D3DCOMPILER_DLL
-
-#endif // __MINGW32__
+#endif // __MINGW32__ || ANGLE_OS_WINPHONE
 
 namespace rx
 {
@@ -80,8 +83,40 @@ bool Renderer::initializeCompiler()
         }
     }
 #else
-    // Load the version of the D3DCompiler DLL associated with the Direct3D version ANGLE was built with.
-    mD3dCompilerModule = LoadLibrary(D3DCOMPILER_DLL);
+    // Load the compiler DLL specified by the environment, or default to QT_D3DCOMPILER_DLL
+#if !defined(ANGLE_OS_WINRT)
+    const wchar_t *defaultCompiler = _wgetenv(L"QT_D3DCOMPILER_DLL");
+    if (!defaultCompiler)
+        defaultCompiler = QT_D3DCOMPILER_DLL;
+#else // !ANGLE_OS_WINRT
+#  ifdef _DEBUG
+    const wchar_t *defaultCompiler = L"d3dcompiler_qtd.dll";
+#  else
+    const wchar_t *defaultCompiler = L"d3dcompiler_qt.dll";
+#  endif
+#endif // ANGLE_OS_WINRT
+
+    const wchar_t *compilerDlls[] = {
+        defaultCompiler,
+        L"d3dcompiler_47.dll",
+        L"d3dcompiler_46.dll",
+        L"d3dcompiler_45.dll",
+        L"d3dcompiler_44.dll",
+        L"d3dcompiler_43.dll",
+        0
+    };
+
+    // Load the first available known compiler DLL
+    for (int i = 0; compilerDlls[i]; ++i)
+    {
+#if !defined(ANGLE_OS_WINRT)
+        mD3dCompilerModule = LoadLibrary(compilerDlls[i]);
+#else
+        mD3dCompilerModule = LoadPackagedLibrary(compilerDlls[i], NULL);
+#endif
+        if (mD3dCompilerModule)
+            break;
+    }
 #endif  // ANGLE_PRELOADED_D3DCOMPILER_MODULE_NAMES
 
     if (!mD3dCompilerModule)

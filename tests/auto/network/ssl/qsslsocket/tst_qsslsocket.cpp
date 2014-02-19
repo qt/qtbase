@@ -111,7 +111,9 @@ public slots:
     void initTestCase();
     void init();
     void cleanup();
+#ifndef QT_NO_NETWORKPROXY
     void proxyAuthenticationRequired(const QNetworkProxy &, QAuthenticator *auth);
+#endif
 
 #ifndef QT_NO_SSL
 private slots:
@@ -276,6 +278,7 @@ void tst_QSslSocket::init()
 {
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy) {
+#ifndef QT_NO_NETWORKPROXY
         QFETCH_GLOBAL(int, proxyType);
         QString fluke = QHostInfo::fromName(QtNetworkSettings::serverName()).addresses().first().toString();
         QNetworkProxy proxy;
@@ -302,6 +305,9 @@ void tst_QSslSocket::init()
             break;
         }
         QNetworkProxy::setApplicationProxy(proxy);
+#else // !QT_NO_NETWORKPROXY
+        QSKIP("No proxy support");
+#endif // QT_NO_NETWORKPROXY
     }
 
     qt_qhostinfo_clear_cache();
@@ -309,7 +315,9 @@ void tst_QSslSocket::init()
 
 void tst_QSslSocket::cleanup()
 {
+#ifndef QT_NO_NETWORKPROXY
     QNetworkProxy::setApplicationProxy(QNetworkProxy::DefaultProxy);
+#endif
 }
 
 #ifndef QT_NO_SSL
@@ -326,12 +334,14 @@ QSslSocketPtr tst_QSslSocket::newSocket()
 }
 #endif
 
+#ifndef QT_NO_NETWORKPROXY
 void tst_QSslSocket::proxyAuthenticationRequired(const QNetworkProxy &, QAuthenticator *auth)
 {
     ++proxyAuthCalled;
     auth->setUser("qsockstest");
     auth->setPassword("password");
 }
+#endif // !QT_NO_NETWORKPROXY
 
 #ifndef QT_NO_SSL
 
@@ -579,13 +589,13 @@ void tst_QSslSocket::ciphers()
         return;
 
     QSslSocket socket;
-    QCOMPARE(socket.ciphers(), QSslSocket::supportedCiphers());
+    QCOMPARE(socket.ciphers(), QSslSocket::defaultCiphers());
     socket.setCiphers(QList<QSslCipher>());
     QVERIFY(socket.ciphers().isEmpty());
     socket.setCiphers(socket.defaultCiphers());
-    QCOMPARE(socket.ciphers(), QSslSocket::supportedCiphers());
+    QCOMPARE(socket.ciphers(), QSslSocket::defaultCiphers());
     socket.setCiphers(socket.defaultCiphers());
-    QCOMPARE(socket.ciphers(), QSslSocket::supportedCiphers());
+    QCOMPARE(socket.ciphers(), QSslSocket::defaultCiphers());
 
     // Task 164356
     socket.setCiphers("ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH");
@@ -668,6 +678,11 @@ void tst_QSslSocket::sessionCipher()
     if (!socket->waitForEncrypted(5000))
         QSKIP("Skipping flaky test - See QTBUG-29941");
     QVERIFY(!socket->sessionCipher().isNull());
+
+    qDebug() << "Supported Ciphers:" << QSslSocket::supportedCiphers();
+    qDebug() << "Default Ciphers:" << QSslSocket::defaultCiphers();
+    qDebug() << "Session Cipher:" << socket->sessionCipher();
+
     QVERIFY(QSslSocket::supportedCiphers().contains(socket->sessionCipher()));
     socket->disconnectFromHost();
     QVERIFY(socket->waitForDisconnected());
@@ -1376,6 +1391,15 @@ void tst_QSslSocket::defaultCaCertificates()
 
 void tst_QSslSocket::defaultCiphers()
 {
+    if (!QSslSocket::supportsSsl())
+        return;
+
+    QList<QSslCipher> ciphers = QSslSocket::defaultCiphers();
+    QVERIFY(ciphers.size() > 1);
+
+    QSslSocket socket;
+    QCOMPARE(socket.defaultCiphers(), ciphers);
+    QCOMPARE(socket.ciphers(), ciphers);
 }
 
 void tst_QSslSocket::resetDefaultCiphers()
@@ -1400,8 +1424,6 @@ void tst_QSslSocket::supportedCiphers()
 
     QSslSocket socket;
     QCOMPARE(socket.supportedCiphers(), ciphers);
-    QCOMPARE(socket.defaultCiphers(), ciphers);
-    QCOMPARE(socket.ciphers(), ciphers);
 }
 
 void tst_QSslSocket::systemCaCertificates()

@@ -80,6 +80,7 @@
 Q_DECLARE_METATYPE(QGradientStops)
 Q_DECLARE_METATYPE(QPainterPath)
 Q_DECLARE_METATYPE(QImage::Format)
+Q_DECLARE_METATYPE(QPainter::CompositionMode)
 
 class tst_QPainter : public QObject
 {
@@ -289,6 +290,9 @@ private slots:
 
     void cosmeticStrokerClipping_data();
     void cosmeticStrokerClipping();
+
+    void blendARGBonRGB_data();
+    void blendARGBonRGB();
 
 private:
     void fillData();
@@ -514,7 +518,7 @@ void tst_QPainter::drawPixmap_comp()
     bool different = false;
     for (int y=0; y<result.height(); ++y)
         for (int x=0; x<result.width(); ++x) {
-	    bool diff;
+            bool diff;
             if (qAlpha(expected) == 0) {
                 diff = qAlpha(result.pixel(x, y)) != 0;
             } else {
@@ -526,12 +530,12 @@ void tst_QPainter::drawPixmap_comp()
                              || (qAbs(qBlue(pix) - qBlue(expected)) > off)
                              || (qAbs(qAlpha(pix) - qAlpha(expected)) > off);
             }
-	    if (diff && !different)
-		qDebug( "Different at %d,%d pixel [%d,%d,%d,%d] expected [%d,%d,%d,%d]", x, y,
+            if (diff && !different)
+                qDebug( "Different at %d,%d pixel [%d,%d,%d,%d] expected [%d,%d,%d,%d]", x, y,
                         qRed(result.pixel(x, y)), qGreen(result.pixel(x, y)),
                         qBlue(result.pixel(x, y)), qAlpha(result.pixel(x, y)),
                         qRed(expected), qGreen(expected), qBlue(expected), qAlpha(expected));
-	    different |= diff;
+            different |= diff;
         }
 
     QVERIFY(!different);
@@ -563,24 +567,24 @@ void tst_QPainter::saveAndRestore_data()
     QRect viewport = p.viewport();
 
     QTest::newRow("Original") << font << pen << brush << backgroundColor << int(backgroundMode)
-	    << brushOrigin << clipRegion << window << viewport;
+            << brushOrigin << clipRegion << window << viewport;
 
     QFont font2 = font;
     font2.setPointSize( 24 );
     QTest::newRow("Modified font.pointSize, brush, backgroundColor, backgroundMode")
             << font2 << pen << QBrush(Qt::red) << QColor(Qt::blue) << int(Qt::TransparentMode)
-	    << brushOrigin << clipRegion << window << viewport;
+            << brushOrigin << clipRegion << window << viewport;
 
     font2 = font;
     font2.setPixelSize( 20 );
     QTest::newRow("Modified font.pixelSize, brushOrigin, pos")
             << font2 << pen << brush << backgroundColor << int(backgroundMode)
-	    << QPoint( 50, 32 ) << clipRegion << window << viewport;
+            << QPoint( 50, 32 ) << clipRegion << window << viewport;
 
     QTest::newRow("Modified clipRegion, window, viewport")
             << font << pen << brush << backgroundColor << int(backgroundMode)
-	    << brushOrigin << clipRegion.subtracted(QRect(10,10,50,30))
-	    << QRect(-500, -500, 500, 500 ) << QRect( 0, 0, 50, 50 );
+            << brushOrigin << clipRegion.subtracted(QRect(10,10,50,30))
+            << QRect(-500, -500, 500, 500 ) << QRect( 0, 0, 50, 50 );
 }
 
 void tst_QPainter::saveAndRestore()
@@ -665,13 +669,13 @@ QBitmap tst_QPainter::getBitmap( const QString &dir, const QString &filename, bo
         return QBitmap();
     }
     if ( mask ) {
-	QBitmap mask;
-	QString maskFilename = dir + QString( "/%1-mask.xbm" ).arg( filename );
-	if ( !mask.load( maskFilename ) ) {
-        QWARN(QString("Could not load mask '%1'").arg(maskFilename).toLatin1());
-        return QBitmap();
-	}
-	bm.setMask( mask );
+        QBitmap mask;
+        QString maskFilename = dir + QString( "/%1-mask.xbm" ).arg( filename );
+        if (!mask.load(maskFilename)) {
+            QWARN(QString("Could not load mask '%1'").arg(maskFilename).toLatin1());
+            return QBitmap();
+        }
+        bm.setMask( mask );
     }
     return bm;
 }
@@ -701,17 +705,17 @@ static QRect getPaintedSize(const QImage &image, const QColor &background)
     uint color = background.rgba();
 
     for ( int y = 0; y < image.height(); ++y ) {
-	for ( int x = 0; x < image.width(); ++x ) {
+        for (int x = 0; x < image.width(); ++x) {
             QRgb pixel = image.pixel( x, y );
-	    if ( pixel != color && x < xmin )
-		xmin = x;
-	    if ( pixel != color && x > xmax )
-		xmax = x;
-	    if ( pixel != color && y < ymin )
-		ymin = y;
-	    if ( pixel != color && y > ymax )
-		ymax = y;
-	}
+            if (pixel != color && x < xmin)
+                xmin = x;
+            if (pixel != color && x > xmax)
+                xmax = x;
+            if (pixel != color && y < ymin)
+                ymin = y;
+            if (pixel != color && y > ymax)
+                ymax = y;
+        }
     }
 
     return QRect(xmin, ymin, xmax - xmin + 1, ymax - ymin + 1);
@@ -4572,6 +4576,112 @@ void tst_QPainter::QTBUG25153_drawLine()
         QCOMPARE(image.pixel(0, 1), 0xffffffff);
         QCOMPARE(image.pixel(1, 0), 0xffffffff);
     }
+}
+
+void tst_QPainter::blendARGBonRGB_data()
+{
+    QTest::addColumn<QImage::Format>("dst_format");
+    QTest::addColumn<QImage::Format>("src_format");
+    QTest::addColumn<QPainter::CompositionMode>("compositionMode");
+    QTest::addColumn<QRgb>("color");
+    QTest::addColumn<int>("expected_red");
+
+    QTest::newRow("ARGB over ARGB32") << QImage::Format_ARGB32 << QImage::Format_ARGB32
+                                      << QPainter::CompositionMode_SourceOver << qRgba(255, 0, 0, 127) << 127 ;
+    QTest::newRow("ARGB_PM over ARGB32") << QImage::Format_ARGB32 << QImage::Format_ARGB32_Premultiplied
+                                         << QPainter::CompositionMode_SourceOver<< qRgba(127, 0, 0, 127) << 127;
+    QTest::newRow("ARGB source ARGB32") << QImage::Format_ARGB32 << QImage::Format_ARGB32
+                                        << QPainter::CompositionMode_Source << qRgba(255, 0, 0, 127) << 255;
+    QTest::newRow("ARGB_PM source ARGB32") << QImage::Format_ARGB32 << QImage::Format_ARGB32_Premultiplied
+                                           << QPainter::CompositionMode_Source << qRgba(127, 0, 0, 127) << 255;
+    QTest::newRow("ARGB source-in ARGB32") << QImage::Format_ARGB32 << QImage::Format_ARGB32
+                                           << QPainter::CompositionMode_SourceIn << qRgba(255, 0, 0, 127) << 255 ;
+    QTest::newRow("ARGB_PM source-in ARGB32") << QImage::Format_ARGB32 << QImage::Format_ARGB32_Premultiplied
+                                              << QPainter::CompositionMode_SourceIn << qRgba(127, 0, 0, 127) << 255;
+    // Only ARGB does inverse premultiply, on the rest over and source gives similar results:
+    QTest::newRow("ARGB over RGB32") << QImage::Format_RGB32 << QImage::Format_ARGB32
+                                     << QPainter::CompositionMode_SourceOver << qRgba(255, 0, 0, 127) << 127;
+    QTest::newRow("ARGB_PM over RGB32") << QImage::Format_RGB32 << QImage::Format_ARGB32_Premultiplied
+                                        << QPainter::CompositionMode_SourceOver << qRgba(127, 0, 0, 127) << 127;
+    QTest::newRow("ARGB source RGB32") << QImage::Format_RGB32 << QImage::Format_ARGB32
+                                       << QPainter::CompositionMode_Source << qRgba(255, 0, 0, 127) << 127;
+    QTest::newRow("ARGB_PM source RGB32") << QImage::Format_RGB32 << QImage::Format_ARGB32_Premultiplied
+                                          << QPainter::CompositionMode_Source << qRgba(127, 0, 0, 127) << 127;
+    QTest::newRow("ARGB source-in RGB32") << QImage::Format_RGB32 << QImage::Format_ARGB32
+                                          << QPainter::CompositionMode_SourceIn << qRgba(255, 0, 0, 127) << 127;
+    QTest::newRow("ARGB_PM source-in RGB32") << QImage::Format_RGB32 << QImage::Format_ARGB32_Premultiplied
+                                             << QPainter::CompositionMode_SourceIn << qRgba(127, 0, 0, 127) << 127;
+    QTest::newRow("ARGB over RGB888") << QImage::Format_RGB888 << QImage::Format_ARGB32
+                                      << QPainter::CompositionMode_SourceOver << qRgba(255, 0, 0, 127) << 127;
+    QTest::newRow("ARGB_PM over RGB888") << QImage::Format_RGB888 << QImage::Format_ARGB32_Premultiplied
+                                         << QPainter::CompositionMode_SourceOver << qRgba(127, 0, 0, 127) << 127;
+    QTest::newRow("ARGB source RGB888") << QImage::Format_RGB888 << QImage::Format_ARGB32
+                                        << QPainter::CompositionMode_Source << qRgba(255, 0, 0, 127) << 127;
+    QTest::newRow("ARGB_PM source RGB888") << QImage::Format_RGB888 << QImage::Format_ARGB32_Premultiplied
+                                           << QPainter::CompositionMode_Source << qRgba(127, 0, 0, 127) << 127;
+    QTest::newRow("ARGB source-in RGB888") << QImage::Format_RGB888 << QImage::Format_ARGB32
+                                           << QPainter::CompositionMode_SourceIn << qRgba(255, 0, 0, 127) << 127;
+    QTest::newRow("ARGB_PM source-in RGB888") << QImage::Format_RGB888 << QImage::Format_ARGB32_Premultiplied
+                                              << QPainter::CompositionMode_SourceIn << qRgba(127, 0, 0, 127) << 127;
+    QTest::newRow("ARGB over RGBx8888") << QImage::Format_RGBX8888 << QImage::Format_ARGB32
+                                        << QPainter::CompositionMode_SourceOver << qRgba(255, 0, 0, 127) << 127;
+    QTest::newRow("ARGB_PM over RGBx8888") << QImage::Format_RGBX8888 << QImage::Format_ARGB32_Premultiplied
+                                           << QPainter::CompositionMode_SourceOver << qRgba(127, 0, 0, 127) << 127;
+    QTest::newRow("ARGB source RGBx8888") << QImage::Format_RGBX8888 << QImage::Format_ARGB32
+                                          << QPainter::CompositionMode_Source << qRgba(255, 0, 0, 127) << 127;
+    QTest::newRow("ARGB_PM source RGBx8888") << QImage::Format_RGBX8888 << QImage::Format_ARGB32_Premultiplied
+                                             << QPainter::CompositionMode_Source << qRgba(127, 0, 0, 127) << 127;
+    QTest::newRow("ARGB source-in RGBx8888") << QImage::Format_RGBX8888 << QImage::Format_ARGB32
+                                             << QPainter::CompositionMode_SourceIn << qRgba(255, 0, 0, 127) << 127;
+    QTest::newRow("ARGB_PM source-in RGBx8888") << QImage::Format_RGBX8888 << QImage::Format_ARGB32_Premultiplied
+                                                << QPainter::CompositionMode_SourceIn << qRgba(127, 0, 0, 127) << 127;
+    QTest::newRow("ARGB over RGB16") << QImage::Format_RGB16 << QImage::Format_ARGB32
+                                     << QPainter::CompositionMode_SourceOver << qRgba(255, 0, 0, 127) << 123;
+    QTest::newRow("ARGB_PM over RGB16") << QImage::Format_RGB16 << QImage::Format_ARGB32_Premultiplied
+                                        << QPainter::CompositionMode_SourceOver << qRgba(127, 0, 0, 127) << 123;
+    QTest::newRow("ARGB source RGB16") << QImage::Format_RGB16 << QImage::Format_ARGB32
+                                       << QPainter::CompositionMode_Source << qRgba(255, 0, 0, 127) << 123;
+    QTest::newRow("ARGB_PM source RGB16") << QImage::Format_RGB16 << QImage::Format_ARGB32_Premultiplied
+                                          << QPainter::CompositionMode_Source << qRgba(127, 0, 0, 127) << 123;
+    QTest::newRow("ARGB source-in RGB16") << QImage::Format_RGB16 << QImage::Format_ARGB32
+                                          << QPainter::CompositionMode_SourceIn << qRgba(255, 0, 0, 127) << 123;
+    QTest::newRow("ARGB_PM source-in RGB16") << QImage::Format_RGB16 << QImage::Format_ARGB32_Premultiplied
+                                             << QPainter::CompositionMode_SourceIn << qRgba(127, 0, 0, 127) << 123;
+    QTest::newRow("ARGB over RGB666") << QImage::Format_RGB666 << QImage::Format_ARGB32
+                                      << QPainter::CompositionMode_SourceOver << qRgba(255, 0, 0, 127) << 125;
+    QTest::newRow("ARGB_PM over RGB666") << QImage::Format_RGB666 << QImage::Format_ARGB32_Premultiplied
+                                         << QPainter::CompositionMode_SourceOver << qRgba(127, 0, 0, 127) << 125;
+    QTest::newRow("ARGB source RGB666") << QImage::Format_RGB666 << QImage::Format_ARGB32
+                                        << QPainter::CompositionMode_Source << qRgba(255, 0, 0, 127) << 125;
+    QTest::newRow("ARGB_PM source RGB666") << QImage::Format_RGB666 << QImage::Format_ARGB32_Premultiplied
+                                           << QPainter::CompositionMode_Source << qRgba(127, 0, 0, 127) << 125;
+    QTest::newRow("ARGB source-in RGB666") << QImage::Format_RGB666 << QImage::Format_ARGB32
+                                           << QPainter::CompositionMode_SourceIn << qRgba(255, 0, 0, 127) << 125;
+    QTest::newRow("ARGB_PM source-in RGB666") << QImage::Format_RGB666 << QImage::Format_ARGB32_Premultiplied
+                                              << QPainter::CompositionMode_SourceIn << qRgba(127, 0, 0, 127) << 125;
+}
+
+void tst_QPainter::blendARGBonRGB()
+{
+    QFETCH(QImage::Format, dst_format);
+    QFETCH(QImage::Format, src_format);
+    QFETCH(QPainter::CompositionMode, compositionMode);
+    QFETCH(QRgb, color);
+    QFETCH(int, expected_red);
+
+    QImage imageRgb(16,16, dst_format);
+    QImage imageArgb(16,16, src_format);
+    QPainter painter;
+
+    imageArgb.fill(color);
+
+    imageRgb.fill(Qt::black);
+    painter.begin(&imageRgb);
+    painter.setCompositionMode(compositionMode);
+    painter.drawImage(0, 0, imageArgb);
+    painter.end();
+
+    QCOMPARE(qRed(imageRgb.pixel(0,0)), expected_red);
 }
 
 enum CosmeticStrokerPaint

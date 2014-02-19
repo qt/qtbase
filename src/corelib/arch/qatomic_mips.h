@@ -69,16 +69,6 @@ QT_END_NAMESPACE
 #define Q_ATOMIC_POINTER_FETCH_AND_STORE_IS_ALWAYS_NATIVE
 #define Q_ATOMIC_POINTER_FETCH_AND_ADD_IS_ALWAYS_NATIVE
 
-template<> struct QAtomicIntegerTraits<int> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<unsigned int> { enum { IsInteger = 1 }; };
-#if defined(Q_COMPILER_UNICODE_STRINGS) && !defined(Q_PROCESSOR_MIPS_64)
-// for MIPS32, ensure that char32_t (an uint_least32_t), is 32-bit
-// it's extremely unlikely it won't be on a 32-bit MIPS, but just to be sure
-// For MIPS64, we're sure it works, but the definition is below
-template<> struct QAtomicIntegerTraits<char32_t>
-{ enum { IsInteger = sizeof(char32_t) == sizeof(int) ? 1 : -1 }; };
-#endif
-
 template <int size> struct QBasicAtomicOps: QGenericAtomicOps<QBasicAtomicOps<size> >
 {
     template <typename T>
@@ -94,7 +84,8 @@ template <int size> struct QBasicAtomicOps: QGenericAtomicOps<QBasicAtomicOps<si
 
     static inline Q_DECL_CONSTEXPR bool isTestAndSetNative() Q_DECL_NOTHROW { return true; }
     static inline Q_DECL_CONSTEXPR bool isTestAndSetWaitFree() Q_DECL_NOTHROW { return false; }
-    template <typename T> static bool testAndSetRelaxed(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW;
+    template <typename T> static bool
+    testAndSetRelaxed(T &_q_value, T expectedValue, T newValue, T *currentValue = 0) Q_DECL_NOTHROW;
 
     static inline Q_DECL_CONSTEXPR bool isFetchAndStoreNative() Q_DECL_NOTHROW { return true; }
     template <typename T> static T fetchAndStoreRelaxed(T &_q_value, T newValue) Q_DECL_NOTHROW;
@@ -173,13 +164,13 @@ bool QBasicAtomicOps<4>::deref(T &_q_value) Q_DECL_NOTHROW
 }
 
 template<> template <typename T> inline
-bool QBasicAtomicOps<4>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
+bool QBasicAtomicOps<4>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue, T *currentValue) Q_DECL_NOTHROW
 {
     T result;
     T tempValue;
     asm volatile("0:\n"
-                 "ll %[result], %[_q_value]\n"
-                 "xor %[result], %[result], %[expectedValue]\n"
+                 "ll %[tempValue], %[_q_value]\n"
+                 "xor %[result], %[tempValue], %[expectedValue]\n"
                  "bnez %[result], 0f\n"
                  "nop\n"
                  "move %[tempValue], %[newValue]\n"
@@ -193,6 +184,8 @@ bool QBasicAtomicOps<4>::testAndSetRelaxed(T &_q_value, T expectedValue, T newVa
                  : [expectedValue] "r" (expectedValue),
                    [newValue] "r" (newValue)
                  : "cc", "memory");
+    if (currentValue)
+        *currentValue = tempValue;
     return result == 0;
 }
 
@@ -242,14 +235,7 @@ T QBasicAtomicOps<4>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveTy
 #define Q_ATOMIC_INT64_FETCH_AND_STORE_IS_ALWAYS_NATIVE
 #define Q_ATOMIC_INT64_FETCH_AND_ADD_IS_ALWAYS_NATIVE
 
-template<> struct QAtomicIntegerTraits<long long> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<unsigned long long > { enum { IsInteger = 1 }; };
-
-#ifdef Q_COMPILER_UNICODE_STRINGS
-template<> struct QAtomicIntegerTraits<char16_t>
-{ enum { IsInteger = sizeof(char16_t) == sizeof(int) ? 1 : -1 }; };
-template<> struct QAtomicIntegerTraits<char32_t> { enum { IsInteger = 1 }; };
-#endif
+template<> struct QAtomicOpsSupport<8> { enum { IsSupported = 1 }; };
 
 template<> template<typename T> inline
 bool QBasicAtomicOps<8>::ref(T &_q_value) Q_DECL_NOTHROW
@@ -290,13 +276,13 @@ bool QBasicAtomicOps<8>::deref(T &_q_value) Q_DECL_NOTHROW
 }
 
 template<> template <typename T> inline
-bool QBasicAtomicOps<8>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
+bool QBasicAtomicOps<8>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue, T *currentValue) Q_DECL_NOTHROW
 {
     T result;
     T tempValue;
     asm volatile("0:\n"
-                 "lld %[result], %[_q_value]\n"
-                 "xor %[result], %[result], %[expectedValue]\n"
+                 "lld %[tempValue], %[_q_value]\n"
+                 "xor %[result], %[tempValue], %[expectedValue]\n"
                  "bnez %[result], 0f\n"
                  "nop\n"
                  "move %[tempValue], %[newValue]\n"
@@ -310,6 +296,8 @@ bool QBasicAtomicOps<8>::testAndSetRelaxed(T &_q_value, T expectedValue, T newVa
                  : [expectedValue] "r" (expectedValue),
                    [newValue] "r" (newValue)
                  : "cc", "memory");
+    if (currentValue)
+        *currentValue = tempValue;
     return result == 0;
 }
 

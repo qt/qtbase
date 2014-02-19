@@ -134,6 +134,8 @@ struct QTzType {
     bool   tz_ttisgmt; // Is in UTC time
     bool   tz_ttisstd; // Is in Standard time
 };
+Q_DECLARE_TYPEINFO(QTzType, Q_PRIMITIVE_TYPE);
+
 
 // TZ File parsing
 
@@ -521,12 +523,12 @@ QTzTimeZonePrivate::QTzTimeZonePrivate()
 }
 
 // Create a named time zone
-QTzTimeZonePrivate::QTzTimeZonePrivate(const QByteArray &olsenId)
+QTzTimeZonePrivate::QTzTimeZonePrivate(const QByteArray &ianaId)
 #ifdef QT_USE_ICU
     : m_icu(0)
 #endif // QT_USE_ICU
 {
-    init(olsenId);
+    init(ianaId);
 }
 
 QTzTimeZonePrivate::QTzTimeZonePrivate(const QTzTimeZonePrivate &other)
@@ -548,19 +550,19 @@ QTimeZonePrivate *QTzTimeZonePrivate::clone()
     return new QTzTimeZonePrivate(*this);
 }
 
-void QTzTimeZonePrivate::init(const QByteArray &olsenId)
+void QTzTimeZonePrivate::init(const QByteArray &ianaId)
 {
     QFile tzif;
-    if (olsenId.isEmpty()) {
+    if (ianaId.isEmpty()) {
         // Open system tz
         tzif.setFileName(QStringLiteral("/etc/localtime"));
         if (!tzif.open(QIODevice::ReadOnly))
             return;
     } else {
         // Open named tz, try modern path first, if fails try legacy path
-        tzif.setFileName(QLatin1String("/usr/share/zoneinfo/") + QString::fromLocal8Bit(olsenId));
+        tzif.setFileName(QLatin1String("/usr/share/zoneinfo/") + QString::fromLocal8Bit(ianaId));
         if (!tzif.open(QIODevice::ReadOnly)) {
-            tzif.setFileName(QLatin1String("/usr/lib/zoneinfo/") + QString::fromLocal8Bit(olsenId));
+            tzif.setFileName(QLatin1String("/usr/lib/zoneinfo/") + QString::fromLocal8Bit(ianaId));
             if (!tzif.open(QIODevice::ReadOnly))
                 return;
         }
@@ -665,10 +667,10 @@ void QTzTimeZonePrivate::init(const QByteArray &olsenId)
         m_tranTimes.append(tran);
     }
 
-    if (olsenId.isEmpty())
+    if (ianaId.isEmpty())
         m_id = systemTimeZoneId();
     else
-        m_id = olsenId;
+        m_id = ianaId;
 }
 
 QLocale::Country QTzTimeZonePrivate::country() const
@@ -910,55 +912,55 @@ QTimeZonePrivate::Data QTzTimeZonePrivate::previousTransition(qint64 beforeMSecs
 QByteArray QTzTimeZonePrivate::systemTimeZoneId() const
 {
     // Check TZ env var first, if not populated try find it
-    QByteArray olsenId = qgetenv("TZ");
-    if (!olsenId.isEmpty() && olsenId.at(0) == ':')
-        olsenId = olsenId.mid(1);
+    QByteArray ianaId = qgetenv("TZ");
+    if (!ianaId.isEmpty() && ianaId.at(0) == ':')
+        ianaId = ianaId.mid(1);
 
     // On Debian Etch and later /etc/localtime is real file with name held in /etc/timezone
-    if (olsenId.isEmpty()) {
+    if (ianaId.isEmpty()) {
         QFile tzif(QStringLiteral("/etc/timezone"));
         if (tzif.open(QIODevice::ReadOnly)) {
             // TODO QTextStream inefficient, replace later
             QTextStream ts(&tzif);
             if (!ts.atEnd())
-                olsenId = ts.readLine().toUtf8();
+                ianaId = ts.readLine().toUtf8();
         }
     }
 
     // On other distros /etc/localtime is symlink to real file so can extract name from the path
-    if (olsenId.isEmpty()) {
+    if (ianaId.isEmpty()) {
         const QString path = QFile::symLinkTarget(QStringLiteral("/etc/localtime"));
         if (!path.isEmpty()) {
             // /etc/localtime is a symlink to the current TZ file, so extract from path
             int index = path.indexOf(QLatin1String("/zoneinfo/")) + 10;
-            olsenId = path.mid(index).toUtf8();
+            ianaId = path.mid(index).toUtf8();
         }
     }
 
     // On some Red Hat distros /etc/localtime is real file with name held in /etc/sysconfig/clock
     // in a line like ZONE="Europe/Oslo" or TIMEZONE="Europe/Oslo"
-    if (olsenId.isEmpty()) {
+    if (ianaId.isEmpty()) {
         QFile tzif(QStringLiteral("/etc/sysconfig/clock"));
         if (tzif.open(QIODevice::ReadOnly)) {
             // TODO QTextStream inefficient, replace later
             QTextStream ts(&tzif);
             QString line;
-            while (olsenId.isEmpty() && !ts.atEnd() && ts.status() == QTextStream::Ok) {
+            while (ianaId.isEmpty() && !ts.atEnd() && ts.status() == QTextStream::Ok) {
                 line = ts.readLine();
                 if (line.left(5) == QStringLiteral("ZONE=")) {
-                    olsenId = line.mid(6, line.size() - 7).toUtf8();
+                    ianaId = line.mid(6, line.size() - 7).toUtf8();
                 } else if (line.left(9) == QStringLiteral("TIMEZONE=")) {
-                    olsenId = line.mid(10, line.size() - 11).toUtf8();
+                    ianaId = line.mid(10, line.size() - 11).toUtf8();
                 }
             }
         }
     }
 
     // Give up for now and return UTC
-    if (olsenId.isEmpty())
-        olsenId = QByteArrayLiteral("UTC");
+    if (ianaId.isEmpty())
+        ianaId = QByteArrayLiteral("UTC");
 
-    return olsenId;
+    return ianaId;
 }
 
 QSet<QByteArray> QTzTimeZonePrivate::availableTimeZoneIds() const

@@ -57,6 +57,7 @@ public:
     bool read(const QString &project, LoadFlags what = LoadAll);
 
     QString projectFile() const { return m_projectFile; }
+    QString sourceRoot() const { return m_sourceRoot.isEmpty() ? m_buildRoot : m_sourceRoot; }
     QString buildRoot() const { return m_buildRoot; }
     QString confFile() const { return m_conffile; }
     QString cacheFile() const { return m_cachefile; }

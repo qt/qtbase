@@ -80,7 +80,9 @@ public:
     inline QDebug &operator=(const QDebug &other);
     inline ~QDebug() {
         if (!--stream->ref) {
-            if(stream->message_output) {
+            if (stream->space && stream->buffer.endsWith(QLatin1Char(' ')))
+                stream->buffer.chop(1);
+            if (stream->message_output) {
                 QT_TRY {
                     qt_message_output(stream->type,
                                       stream->context,
@@ -172,6 +174,7 @@ template <class T>
 inline QDebug operator<<(QDebug debug, const QList<T> &list)
 #endif
 {
+    const bool oldSetting = debug.autoInsertSpaces();
     debug.nospace() << '(';
     for (typename QList<T>::size_type i = 0; i < list.count(); ++i) {
         if (i)
@@ -179,7 +182,8 @@ inline QDebug operator<<(QDebug debug, const QList<T> &list)
         debug << list.at(i);
     }
     debug << ')';
-    return debug.space();
+    debug.setAutoInsertSpaces(oldSetting);
+    return debug.maybeSpace();
 }
 
 #if defined(FORCE_UREF)
@@ -190,7 +194,9 @@ template <typename T>
 inline QDebug operator<<(QDebug debug, const QVector<T> &vec)
 #endif
 {
+    const bool oldSetting = debug.autoInsertSpaces();
     debug.nospace() << "QVector";
+    debug.setAutoInsertSpaces(oldSetting);
     return operator<<(debug, vec.toList());
 }
 
@@ -202,13 +208,15 @@ template <class aKey, class aT>
 inline QDebug operator<<(QDebug debug, const QMap<aKey, aT> &map)
 #endif
 {
+    const bool oldSetting = debug.autoInsertSpaces();
     debug.nospace() << "QMap(";
     for (typename QMap<aKey, aT>::const_iterator it = map.constBegin();
          it != map.constEnd(); ++it) {
         debug << '(' << it.key() << ", " << it.value() << ')';
     }
     debug << ')';
-    return debug.space();
+    debug.setAutoInsertSpaces(oldSetting);
+    return debug.maybeSpace();
 }
 
 #if defined(FORCE_UREF)
@@ -219,12 +227,14 @@ template <class aKey, class aT>
 inline QDebug operator<<(QDebug debug, const QHash<aKey, aT> &hash)
 #endif
 {
+    const bool oldSetting = debug.autoInsertSpaces();
     debug.nospace() << "QHash(";
     for (typename QHash<aKey, aT>::const_iterator it = hash.constBegin();
             it != hash.constEnd(); ++it)
         debug << '(' << it.key() << ", " << it.value() << ')';
     debug << ')';
-    return debug.space();
+    debug.setAutoInsertSpaces(oldSetting);
+    return debug.maybeSpace();
 }
 
 #if defined(FORCE_UREF)
@@ -235,14 +245,18 @@ template <class T1, class T2>
 inline QDebug operator<<(QDebug debug, const QPair<T1, T2> &pair)
 #endif
 {
+    const bool oldSetting = debug.autoInsertSpaces();
     debug.nospace() << "QPair(" << pair.first << ',' << pair.second << ')';
-    return debug.space();
+    debug.setAutoInsertSpaces(oldSetting);
+    return debug.maybeSpace();
 }
 
 template <typename T>
 inline QDebug operator<<(QDebug debug, const QSet<T> &set)
 {
+    const bool oldSetting = debug.autoInsertSpaces();
     debug.nospace() << "QSet";
+    debug.setAutoInsertSpaces(oldSetting);
     return operator<<(debug, set.toList());
 }
 
@@ -254,6 +268,7 @@ template <class T>
 inline QDebug operator<<(QDebug debug, const QContiguousCache<T> &cache)
 #endif
 {
+    const bool oldSetting = debug.autoInsertSpaces();
     debug.nospace() << "QContiguousCache(";
     for (int i = cache.firstIndex(); i <= cache.lastIndex(); ++i) {
         debug << cache[i];
@@ -261,7 +276,8 @@ inline QDebug operator<<(QDebug debug, const QContiguousCache<T> &cache)
             debug << ", ";
     }
     debug << ')';
-    return debug.space();
+    debug.setAutoInsertSpaces(oldSetting);
+    return debug.maybeSpace();
 }
 
 #if defined(FORCE_UREF)
@@ -272,6 +288,7 @@ template <class T>
 inline QDebug operator<<(QDebug debug, const QFlags<T> &flags)
 #endif
 {
+    const bool oldSetting = debug.autoInsertSpaces();
     debug.nospace() << "QFlags(";
     bool needSeparator = false;
     for (uint i = 0; i < sizeof(T) * 8; ++i) {
@@ -284,7 +301,8 @@ inline QDebug operator<<(QDebug debug, const QFlags<T> &flags)
         }
     }
     debug << ')';
-    return debug.space();
+    debug.setAutoInsertSpaces(oldSetting);
+    return debug.maybeSpace();
 }
 
 QT_END_NAMESPACE

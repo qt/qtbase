@@ -42,6 +42,7 @@
 
 #import "TestMouseMovedNSView.h"
 #include <QtGui>
+#include <QtWidgets>
 #include <QMacCocoaViewContainer>
 
 class MyWidget : public QWidget

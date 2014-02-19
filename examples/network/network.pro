@@ -23,7 +23,7 @@ qtHaveModule(widgets) {
                 multicastsender
 
     # no QProcess
-    !vxworks:!qnx:SUBDIRS += network-chat
+    !vxworks:!qnx:!winrt:SUBDIRS += network-chat
 
     contains(QT_CONFIG, openssl):SUBDIRS += securesocketclient
     contains(QT_CONFIG, openssl-linked):SUBDIRS += securesocketclient

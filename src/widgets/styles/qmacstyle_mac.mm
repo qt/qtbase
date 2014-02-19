@@ -143,8 +143,6 @@ const int QMacStylePrivate::SmallButtonH = 30;
 const int QMacStylePrivate::BevelButtonW = 50;
 const int QMacStylePrivate::BevelButtonH = 22;
 const int QMacStylePrivate::PushButtonContentPadding = 6;
-const qreal QMacStylePrivate::ScrollBarFadeOutDuration = 200.0;
-const qreal QMacStylePrivate::ScrollBarFadeOutDelay = 450.0;
 
 QSet<QPointer<QObject> > QMacStylePrivate::scrollBars;
 
@@ -5049,24 +5047,23 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                         styleObject->setProperty("_q_stylestate", static_cast<int>(slider->state));
                         styleObject->setProperty("_q_stylecontrols", static_cast<uint>(slider->activeSubControls));
 
-                        QScrollbarAnimation *anim  = qobject_cast<QScrollbarAnimation *>(d->animation(styleObject));
+                        QScrollbarStyleAnimation *anim  = qobject_cast<QScrollbarStyleAnimation *>(d->animation(styleObject));
                         if (transient) {
                             if (!anim) {
-                                anim = new QScrollbarAnimation(styleObject);
-                                anim->setFadingOut();
+                                anim = new QScrollbarStyleAnimation(QScrollbarStyleAnimation::Deactivating, styleObject);
                                 d->startAnimation(anim);
-                            } else if (anim->isFadingOut()) {
+                            } else if (anim->mode() == QScrollbarStyleAnimation::Deactivating) {
                                 // the scrollbar was already fading out while the
                                 // state changed -> restart the fade out animation
                                 anim->setCurrentTime(0);
                             }
-                        } else if (anim && anim->isFadingOut()) {
+                        } else if (anim && anim->mode() == QScrollbarStyleAnimation::Deactivating) {
                             d->stopAnimation(styleObject);
                         }
                     }
 
-                    QScrollbarAnimation *anim = qobject_cast<QScrollbarAnimation *>(d->animation(styleObject));
-                    if (anim && anim->isFadingOut()) {
+                    QScrollbarStyleAnimation *anim = qobject_cast<QScrollbarStyleAnimation *>(d->animation(styleObject));
+                    if (anim && anim->mode() == QScrollbarStyleAnimation::Deactivating) {
                         // once a scrollbar was active (hovered/pressed), it retains
                         // the active look even if it's no longer active while fading out
                         if (oldActiveControls)
@@ -5080,11 +5077,10 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                     if (shouldExpand) {
                         if (!anim && !oldActiveControls) {
                             // Start expand animation only once and when entering
-                            anim = new QScrollbarAnimation(styleObject);
-                            anim->setExpanding();
+                            anim = new QScrollbarStyleAnimation(QScrollbarStyleAnimation::Activating, styleObject);
                             d->startAnimation(anim);
                         }
-                        if (anim && !anim->isFadingOut()) {
+                        if (anim && anim->mode() == QScrollbarStyleAnimation::Activating) {
                             expandScale = 1.0 + (maxExpandScale - 1.0) * anim->currentValue();
                             expandOffset = 5.5 * anim->currentValue() - 1;
                         } else {

@@ -1468,7 +1468,7 @@ static QModelIndex indexFromText(QStandardItemModel *model, const QString &text)
 struct FriendlyTreeView : public QTreeView
 {
     friend class tst_QStandardItemModel;
-	Q_DECLARE_PRIVATE(QTreeView)
+    Q_DECLARE_PRIVATE(QTreeView)
 };
 #endif
 

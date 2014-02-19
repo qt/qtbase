@@ -203,6 +203,14 @@ private slots:
 
     void highlightLongLine();
 
+    void countTextChangedOnRemove();
+
+#ifndef QT_NO_REGEXP
+    void findWithRegExp();
+    void findBackwardWithRegExp();
+    void findWithRegExpReturnsFalseIfNoMoreResults();
+#endif
+
 private:
     void createSelection();
     int blockCount() const;
@@ -2499,6 +2507,58 @@ void tst_QTextEdit::highlightLongLine()
     QVERIFY(true);
 }
 
+//check for bug 15003, are there multiple textChanged() signals on remove?
+void tst_QTextEdit::countTextChangedOnRemove()
+{
+    QTextEdit edit;
+    edit.insertPlainText("Hello");
+
+    QSignalSpy spy(&edit, SIGNAL(textChanged()));
+
+    QKeyEvent event(QEvent::KeyPress, Qt::Key_Backspace, Qt::NoModifier);
+    QCoreApplication::instance()->notify(&edit, &event);
+
+    QCOMPARE(spy.count(), 1);
+}
+
+#ifndef QT_NO_REGEXP
+void tst_QTextEdit::findWithRegExp()
+{
+    ed->setHtml(QStringLiteral("arbitrary te<span style=\"color:#ff0000\">xt</span>"));
+    QRegExp rx("\\w{2}xt");
+
+    bool found = ed->find(rx);
+
+    QVERIFY(found == true);
+    QCOMPARE(ed->textCursor().selectedText(), QStringLiteral("text"));
+}
+
+void tst_QTextEdit::findBackwardWithRegExp()
+{
+    ed->setPlainText(QStringLiteral("arbitrary text"));
+    QTextCursor cursor = ed->textCursor();
+    cursor.movePosition(QTextCursor::End);
+    ed->setTextCursor(cursor);
+    QRegExp rx("a\\w*t");
+
+    bool found = ed->find(rx, QTextDocument::FindBackward);
+
+    QVERIFY(found == true);
+    QCOMPARE(ed->textCursor().selectedText(), QStringLiteral("arbit"));
+}
+
+void tst_QTextEdit::findWithRegExpReturnsFalseIfNoMoreResults()
+{
+    ed->setPlainText(QStringLiteral("arbitrary text"));
+    QRegExp rx("t.xt");
+    ed->find(rx);
+
+    bool found = ed->find(rx);
+
+    QVERIFY(found == false);
+    QCOMPARE(ed->textCursor().selectedText(), QStringLiteral("text"));
+}
+#endif
 
 QTEST_MAIN(tst_QTextEdit)
 #include "tst_qtextedit.moc"

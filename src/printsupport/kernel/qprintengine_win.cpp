@@ -182,7 +182,7 @@ static const struct {
     int winSourceName;
     QPrinter::PaperSource qtSourceName;
 }  sources[] = {
-    { DMBIN_ONLYONE,        QPrinter::OnlyOne },
+    { DMBIN_UPPER,          QPrinter::Upper },  // = DBMIN_ONLYONE
     { DMBIN_LOWER,          QPrinter::Lower },
     { DMBIN_MIDDLE,         QPrinter::Middle },
     { DMBIN_MANUAL,         QPrinter::Manual },
@@ -195,6 +195,7 @@ static const struct {
     { DMBIN_LARGECAPACITY,  QPrinter::LargeCapacity },
     { DMBIN_CASSETTE,       QPrinter::Cassette },
     { DMBIN_FORMSOURCE,     QPrinter::FormSource },
+    { DMBIN_USER,           QPrinter::CustomSource },
     { 0, (QPrinter::PaperSource) -1 }
 };
 
@@ -234,7 +235,6 @@ QWin32PrintEngine::QWin32PrintEngine(QPrinter::PrinterMode mode)
                                        | PaintOutsidePaintEvent))
 {
     Q_D(QWin32PrintEngine);
-    d->docName = QLatin1String("document1");
     d->mode = mode;
     d->queryDefault();
     d->initialize();
@@ -269,7 +269,10 @@ bool QWin32PrintEngine::begin(QPaintDevice *pdev)
     DOCINFO di;
     memset(&di, 0, sizeof(DOCINFO));
     di.cbSize = sizeof(DOCINFO);
-    di.lpszDocName = reinterpret_cast<const wchar_t *>(d->docName.utf16());
+    if (d->docName.isEmpty())
+        di.lpszDocName = L"document1";
+    else
+        di.lpszDocName = reinterpret_cast<const wchar_t *>(d->docName.utf16());
     if (d->printToFile && !d->fileName.isEmpty())
         di.lpszOutput = reinterpret_cast<const wchar_t *>(d->fileName.utf16());
     if (ok && StartDoc(d->hdc, &di) == SP_ERROR) {
@@ -1093,6 +1096,7 @@ void QWin32PrintEnginePrivate::initialize()
 
     if (devMode) {
         num_copies = devMode->dmCopies;
+        devMode->dmCollate = DMCOLLATE_TRUE;
     }
 
     initHDC();
@@ -1270,6 +1274,35 @@ void QWin32PrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &
 {
     Q_D(QWin32PrintEngine);
     switch (key) {
+
+    // The following keys are properties or derived values and so cannot be set
+    case PPK_PageRect:
+        break;
+    case PPK_PaperRect:
+        break;
+    case PPK_PaperSources:
+        break;
+    case PPK_SupportsMultipleCopies:
+        break;
+    case PPK_SupportedResolutions:
+        break;
+
+    // The following keys are settings that are unsupported by the Windows PrintEngine
+    case PPK_CustomBase:
+        break;
+    case PPK_Duplex:
+        // TODO Add support using DEVMODE.dmDuplex
+        break;
+    case PPK_FontEmbedding:
+        break;
+    case PPK_PageOrder:
+        break;
+    case PPK_PrinterProgram:
+        break;
+    case PPK_SelectionOption:
+        break;
+
+    // The following keys are properties and settings that are supported by the Windows PrintEngine
     case PPK_CollateCopies:
         {
             if (!d->devMode)
@@ -1289,7 +1322,7 @@ void QWin32PrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &
         break;
 
     case PPK_Creator:
-
+        d->m_creator = value.toString();
         break;
 
     case PPK_DocumentName:
@@ -1344,33 +1377,31 @@ void QWin32PrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &
         setDevModePaperFlags(d->devMode, d->has_custom_paper_size);
         d->doReinit();
         break;
+
     case PPK_PaperName:
         {
             if (!d->devMode)
                 break;
-            DWORD size = DeviceCapabilities(reinterpret_cast<const wchar_t*>(d->name.utf16()),
-                                            NULL, DC_PAPERNAMES, NULL, NULL);
+            const wchar_t *name = reinterpret_cast<const wchar_t*>(d->name.utf16());
+            DWORD size = DeviceCapabilities(name, NULL, DC_PAPERNAMES, NULL, NULL);
             if ((int)size > 0) {
-                wchar_t *paperNames = new wchar_t[size*64];
-                size = DeviceCapabilities(reinterpret_cast<const wchar_t*>(d->name.utf16()),
-                                          NULL, DC_PAPERNAMES, paperNames, NULL);
+                QScopedArrayPointer<wchar_t> paperNames(new wchar_t[size*64]);
+                if (size != DeviceCapabilities(name, NULL, DC_PAPERNAMES, paperNames.data(), NULL))
+                    break;
                 int paperPos = -1;
-                for (int i=0;i<(int)size;i++) {
-                    wchar_t *copyOfPaper = paperNames + (i * 64);
+                for (int i = 0; i < (int)size; ++i) {
+                    wchar_t *copyOfPaper = paperNames.data() + (i * 64);
                     if (value.toString() == QString::fromWCharArray(copyOfPaper, qwcsnlen(copyOfPaper, 64))) {
                         paperPos = i;
                         break;
                     }
                 }
-                delete [] paperNames;
-                size = DeviceCapabilities(reinterpret_cast<const wchar_t*>(d->name.utf16()),
-                                          NULL, DC_PAPERS, NULL, NULL);
+                size = DeviceCapabilities(name, NULL, DC_PAPERS, NULL, NULL);
                 if ((int)size > 0) {
-                    wchar_t *papers = new wchar_t[size];
-                    size = DeviceCapabilities(reinterpret_cast<const wchar_t*>(d->name.utf16()),
-                                              NULL, DC_PAPERS, papers, NULL);
+                    QScopedArrayPointer<wchar_t> papers(new wchar_t[size]);
+                    size = DeviceCapabilities(name, NULL, DC_PAPERS, papers.data(), NULL);
                     QScopedArrayPointer<POINT> paperSizes(new POINT[size]);
-                    DWORD paperNameCount = DeviceCapabilities(reinterpret_cast<const wchar_t*>(d->name.utf16()), NULL, DC_PAPERSIZE, (wchar_t *)paperSizes.data(), NULL);
+                    DWORD paperNameCount = DeviceCapabilities(name, NULL, DC_PAPERSIZE, (wchar_t *)paperSizes.data(), NULL);
                     if (paperNameCount == size) {
                         const double multiplier = qt_multiplierForUnit(QPrinter::Millimeter, d->resolution);
                         d->paper_size = QSizeF((paperSizes[paperPos].x / 10.0) * multiplier, (paperSizes[paperPos].y / 10.0) * multiplier);
@@ -1381,8 +1412,6 @@ void QWin32PrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &
                         setDevModePaperFlags(d->devMode, false);
                         d->doReinit();
                     }
-
-                    delete [] papers;
                  }
             }
         }
@@ -1417,15 +1446,6 @@ void QWin32PrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &
             d->stretch_y = d->dpi_y / double(d->resolution);
         }
         break;
-
-    case PPK_SelectionOption:
-
-        break;
-
-    case PPK_SupportedResolutions:
-
-        break;
-
 
     case PPK_WindowsPageSize:
         if (!d->devMode)
@@ -1470,9 +1490,9 @@ void QWin32PrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &
         d->setPageMargins(left, top, right, bottom);
         break;
     }
-    default:
-        // Do nothing
-        break;
+
+    // No default so that compiler will complain if new keys added and not handled in this engine
+
     }
 }
 
@@ -1482,8 +1502,28 @@ QVariant QWin32PrintEngine::property(PrintEnginePropertyKey key) const
     QVariant value;
     switch (key) {
 
-    case PPK_CollateCopies:
+    // The following keys are settings that are unsupported by the Windows PrintEngine
+    // Return sensible default values to ensure consistent behavior across platforms
+    case PPK_Duplex:
+        // TODO Add support using DEVMODE.dmDuplex
+        value = QPrinter::DuplexNone;
+        break;
+    case PPK_FontEmbedding:
         value = false;
+        break;
+    case PPK_PageOrder:
+        value = QPrinter::FirstPageFirst;
+        break;
+    case PPK_PrinterProgram:
+        value = QString();
+        break;
+    case PPK_SelectionOption:
+        value = QString();
+        break;
+
+    // The following keys are properties and settings that are supported by the Windows PrintEngine
+    case PPK_CollateCopies:
+        value = d->devMode->dmCollate == DMCOLLATE_TRUE;
         break;
 
     case PPK_ColorMode:
@@ -1494,6 +1534,10 @@ QVariant QWin32PrintEngine::property(PrintEnginePropertyKey key) const
                 value = (d->devMode->dmColor == DMCOLOR_COLOR) ? QPrinter::Color : QPrinter::GrayScale;
             }
         }
+        break;
+
+    case PPK_Creator:
+        value = d->m_creator;
         break;
 
     case PPK_DocumentName:
@@ -1569,40 +1613,37 @@ QVariant QWin32PrintEngine::property(PrintEnginePropertyKey key) const
             value = QTransform(1/d->stretch_x, 0, 0, 1/d->stretch_y, 0, 0).mapRect(d->devPaperRect);
         }
         break;
+
     case PPK_PaperName:
         if (!d->devMode) {
             value = QLatin1String("A4");
         } else {
-            DWORD size = DeviceCapabilities(reinterpret_cast<const wchar_t*>(d->name.utf16()),
-                                        NULL, DC_PAPERS, NULL, NULL);
+            const wchar_t *name = reinterpret_cast<const wchar_t*>(d->name.utf16());
+            DWORD size = DeviceCapabilities(name, NULL, DC_PAPERS, NULL, NULL);
             int paperSizePos = -1;
             if ((int)size > 0) {
-                wchar_t *papers = new wchar_t[size];
-                size = DeviceCapabilities(reinterpret_cast<const wchar_t*>(d->name.utf16()),
-                                           NULL, DC_PAPERS, papers, NULL);
+                QScopedArrayPointer<wchar_t> papers(new wchar_t[size]);
+                if (size != DeviceCapabilities(name, NULL, DC_PAPERS, papers.data(), NULL))
+                    break;
                 for (int i=0;i<(int)size;i++) {
                     if (papers[i] == d->devMode->dmPaperSize) {
                         paperSizePos = i;
                         break;
                     }
                 }
-                delete [] papers;
-
             }
             if (paperSizePos != -1) {
-                size = DeviceCapabilities(reinterpret_cast<const wchar_t*>(d->name.utf16()),
-                    NULL, DC_PAPERNAMES, NULL, NULL);
+                size = DeviceCapabilities(name, NULL, DC_PAPERNAMES, NULL, NULL);
                 if ((int)size > 0) {
-                    wchar_t *papers = new wchar_t[size*64];
-                    size = DeviceCapabilities(reinterpret_cast<const wchar_t*>(d->name.utf16()),
-                        NULL, DC_PAPERNAMES, papers, NULL);
-                    wchar_t *copyOfPaper = papers + (paperSizePos * 64);
+                    QScopedArrayPointer<wchar_t> paperNames(new wchar_t[size*64]);
+                    size = DeviceCapabilities(name, NULL, DC_PAPERNAMES, paperNames.data(), NULL);
+                    wchar_t *copyOfPaper = paperNames.data() + (paperSizePos * 64);
                     value = QString::fromWCharArray(copyOfPaper, qwcsnlen(copyOfPaper, 64));
-                    delete [] papers;
                 }
             }
         }
         break;
+
     case PPK_PaperSource:
         if (!d->devMode) {
             value = QPrinter::Auto;
@@ -1677,9 +1718,9 @@ QVariant QWin32PrintEngine::property(PrintEnginePropertyKey key) const
         value = margins;
         break;
     }
-    default:
-        // Do nothing
-        break;
+
+    // No default so that compiler will complain if new keys added and not handled in this engine
+
     }
     return value;
 }
@@ -1705,16 +1746,14 @@ QList<QPrinter::PaperSize> QWin32PrintEngine::supportedPaperSizes(const QPrinter
 
     if (printerInfo.isNull())
         return returnList;
-
-    DWORD size = DeviceCapabilities(reinterpret_cast<const wchar_t *>(printerInfo.printerName().utf16()),
-                                    NULL, DC_PAPERS, NULL, NULL);
+    const wchar_t *name = reinterpret_cast<const wchar_t*>(printerInfo.printerName().utf16());
+    DWORD size = DeviceCapabilities(name, NULL, DC_PAPERS, NULL, NULL);
     if ((int)size != -1) {
-        wchar_t *papers = new wchar_t[size];
-        size = DeviceCapabilities(reinterpret_cast<const wchar_t *>(printerInfo.printerName().utf16()),
-                                  NULL, DC_PAPERS, papers, NULL);
+        QScopedArrayPointer<wchar_t> papers(new wchar_t[size]);
+        if (size != DeviceCapabilities(name, NULL, DC_PAPERS, papers.data(), NULL))
+            return returnList;
         for (int c = 0; c < (int)size; ++c)
             returnList.append(mapDevmodePaperSize(papers[c]));
-        delete [] papers;
     }
     return returnList;
 }
@@ -1724,27 +1763,22 @@ QList<QPair<QString, QSizeF> > QWin32PrintEngine::supportedSizesWithNames(const 
     QList<QPair<QString, QSizeF> > paperSizes;
     if (printerInfo.isNull())
         return paperSizes;
-    DWORD size = DeviceCapabilities(reinterpret_cast<const wchar_t*>(printerInfo.printerName().utf16()),
-                                    NULL, DC_PAPERNAMES, NULL, NULL);
+    const wchar_t *name = reinterpret_cast<const wchar_t*>(printerInfo.printerName().utf16());
+    DWORD size = DeviceCapabilities(name, NULL, DC_PAPERNAMES, NULL, NULL);
     if ((int)size > 0) {
-        wchar_t *papers = new wchar_t[size*64];
-        size = DeviceCapabilities(reinterpret_cast<const wchar_t*>(printerInfo.printerName().utf16()),
-                                  NULL, DC_PAPERNAMES, papers, NULL);
-        DWORD size2 = DeviceCapabilities(reinterpret_cast<const wchar_t*>(printerInfo.printerName().utf16()),
-                                         NULL, DC_PAPERSIZE, NULL, NULL);
-        if ((int)size2 > 0) {
-            POINT *points = new POINT[size2*sizeof(POINT)];
-
-            size2 = DeviceCapabilities(reinterpret_cast<const wchar_t*>(printerInfo.printerName().utf16()),
-                                       NULL, DC_PAPERSIZE, (wchar_t *)points, NULL);
-            for (int i=0;i<(int)size;i++) {
-                wchar_t *paper = papers + (i * 64);
-                QString str = QString::fromWCharArray(paper, qwcsnlen(paper, 64));
-                paperSizes << qMakePair(str, QSizeF(points[i].x / 10.0, points[i].y / 10.0));
-            }
-            delete [] points;
+        QScopedArrayPointer<wchar_t> papers(new wchar_t[size*64]);
+        if (size != DeviceCapabilities(name, NULL, DC_PAPERNAMES, papers.data(), NULL))
+            return paperSizes;
+        if (size != DeviceCapabilities(name, NULL, DC_PAPERSIZE, NULL, NULL))
+            return paperSizes;
+        QScopedArrayPointer<POINT> points(new POINT[size*sizeof(POINT)]);
+        if (size != DeviceCapabilities(name, NULL, DC_PAPERSIZE, (wchar_t *)points.data(), NULL))
+            return paperSizes;
+        for (int i = 0; i < (int)size; ++i) {
+            wchar_t *paper = papers.data() + (i * 64);
+            QString str = QString::fromWCharArray(paper, qwcsnlen(paper, 64));
+            paperSizes << qMakePair(str, QSizeF(points[i].x / 10.0, points[i].y / 10.0));
         }
-        delete [] papers;
     }
     return paperSizes;
 }

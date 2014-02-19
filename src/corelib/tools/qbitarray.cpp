@@ -739,8 +739,8 @@ QDataStream &operator>>(QDataStream &in, QBitArray &ba)
     quint32 len;
     in >> len;
     if (len == 0) {
-	ba.clear();
-	return in;
+        ba.clear();
+        return in;
     }
 
     const quint32 Step = 8 * 1024 * 1024;

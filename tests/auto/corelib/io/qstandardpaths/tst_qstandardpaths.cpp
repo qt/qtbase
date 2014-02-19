@@ -290,9 +290,9 @@ void tst_qstandardpaths::testDataLocation()
 {
     // On all platforms, DataLocation should be GenericDataLocation / organization name / app name
     // This allows one app to access the data of another app.
-    // Blackberry OS and Android are exceptions to this case, owing to the fact that
+    // Blackberry OS, Android and WinRT are an exception to this case, owing to the fact that
     // applications are sandboxed.
-#if !defined(Q_OS_BLACKBERRY) && !defined(Q_OS_ANDROID)
+#if !defined(Q_OS_BLACKBERRY) && !defined(Q_OS_ANDROID) && !defined(Q_OS_WINRT)
     const QString base = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
     QCOMPARE(QStandardPaths::writableLocation(QStandardPaths::DataLocation), base + "/tst_qstandardpaths");
     QCoreApplication::instance()->setOrganizationName("Qt");
@@ -336,6 +336,7 @@ void tst_qstandardpaths::testFindExecutable_data()
     QTest::addColumn<QString>("needle");
     QTest::addColumn<QString>("expected");
 #ifdef Q_OS_WIN
+# ifndef Q_OS_WINRT
     const QFileInfo cmdFi = QFileInfo(QDir::cleanPath(QString::fromLocal8Bit(qgetenv("COMSPEC"))));
     const QString cmdPath = cmdFi.absoluteFilePath();
 
@@ -359,6 +360,7 @@ void tst_qstandardpaths::testFindExecutable_data()
         QTest::newRow("win8-logo-nosuffix")
             << QString() << logo << logoPath;
     }
+# endif // Q_OS_WINRT
 #else
     const QFileInfo shFi = findSh();
     Q_ASSERT(shFi.exists());

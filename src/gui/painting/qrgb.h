@@ -43,6 +43,7 @@
 #define QRGB_H
 
 #include <QtCore/qglobal.h>
+#include <QtCore/qprocessordetection.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -78,6 +79,48 @@ inline Q_DECL_CONSTEXPR int qGray(QRgb rgb)                // convert RGB to gra
 
 inline Q_DECL_CONSTEXPR bool qIsGray(QRgb rgb)
 { return qRed(rgb) == qGreen(rgb) && qRed(rgb) == qBlue(rgb); }
+
+
+#if Q_PROCESSOR_WORDSIZE == 8 // 64-bit version
+inline QRgb qPremultiply(QRgb x)
+{
+    const uint a = qAlpha(x);
+    quint64 t = (((quint64(x)) | ((quint64(x)) << 24)) & 0x00ff00ff00ff00ff) * a;
+    t = (t + ((t >> 8) & 0xff00ff00ff00ff) + 0x80008000800080) >> 8;
+    t &= 0x000000ff00ff00ff;
+    return (uint(t)) | (uint(t >> 24)) | (a << 24);
+}
+#else // 32-bit version
+inline QRgb qPremultiply(QRgb x)
+{
+    const uint a = qAlpha(x);
+    uint t = (x & 0xff00ff) * a;
+    t = (t + ((t >> 8) & 0xff00ff) + 0x800080) >> 8;
+    t &= 0xff00ff;
+
+    x = ((x >> 8) & 0xff) * a;
+    x = (x + ((x >> 8) & 0xff) + 0x80);
+    x &= 0xff00;
+    x |= t | (a << 24);
+    return x;
+}
+#endif
+
+Q_GUI_EXPORT extern const uint qt_inv_premul_factor[];
+
+inline QRgb qUnpremultiply(QRgb p)
+{
+    const uint alpha = qAlpha(p);
+    // Alpha 255 and 0 are the two most common values, which makes them beneficial to short-cut.
+    if (alpha == 255)
+        return p;
+    if (alpha == 0)
+        return 0;
+    // (p*(0x00ff00ff/alpha)) >> 16 == (p*255)/alpha for all p and alpha <= 256.
+    const uint invAlpha = qt_inv_premul_factor[alpha];
+    // We add 0x8000 to get even rounding. The rounding also ensures that qPremultiply(qUnpremultiply(p)) == p for all p.
+    return qRgba((qRed(p)*invAlpha + 0x8000)>>16, (qGreen(p)*invAlpha + 0x8000)>>16, (qBlue(p)*invAlpha + 0x8000)>>16, alpha);
+}
 
 QT_END_NAMESPACE
 

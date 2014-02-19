@@ -308,14 +308,16 @@ EGLSurface __stdcall eglCreateWindowSurface(EGLDisplay dpy, EGLConfig config, EG
             return EGL_NO_SURFACE;
         }
 
+#if !defined(ANGLE_OS_WINRT)
         HWND window = (HWND)win;
 
         if (!IsWindow(window))
         {
             return egl::error(EGL_BAD_NATIVE_WINDOW, EGL_NO_SURFACE);
         }
+#endif
 
-        return display->createWindowSurface(window, config, attrib_list);
+        return display->createWindowSurface(win, config, attrib_list);
     }
     catch(std::bad_alloc&)
     {

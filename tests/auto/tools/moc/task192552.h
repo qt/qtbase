@@ -38,6 +38,9 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
+#ifndef TASK192552_H
+#define TASK192552_H
 /*
   <:: is not valid C++, but we want moc to treat it as < :: since this
   is usually the intention
@@ -53,3 +56,4 @@ public:
     QList<::QObject*> m_objects;
 #endif
 };
+#endif // TASK192552_H

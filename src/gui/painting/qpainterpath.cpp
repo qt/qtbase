@@ -1738,8 +1738,8 @@ QList<QPolygonF> QPainterPath::toFillPolygons(const QMatrix &matrix) const
 
 //same as qt_polygon_isect_line in qpolygon.cpp
 static void qt_painterpath_isect_line(const QPointF &p1,
-				      const QPointF &p2,
-				      const QPointF &pos,
+                                      const QPointF &p2,
+                                      const QPointF &pos,
                                       int *winding)
 {
     qreal x1 = p1.x();
@@ -2548,6 +2548,26 @@ QPainterPathStrokerPrivate::QPainterPathStrokerPrivate()
 QPainterPathStroker::QPainterPathStroker()
     : d_ptr(new QPainterPathStrokerPrivate)
 {
+}
+
+/*!
+   Creates a new stroker based on \a pen.
+
+   \since 5.3
+ */
+QPainterPathStroker::QPainterPathStroker(const QPen &pen)
+    : d_ptr(new QPainterPathStrokerPrivate)
+{
+    setWidth(pen.widthF());
+    setCapStyle(pen.capStyle());
+    setJoinStyle(pen.joinStyle());
+    setMiterLimit(pen.miterLimit());
+    setDashOffset(pen.dashOffset());
+
+    if (pen.style() == Qt::CustomDashLine)
+        setDashPattern(pen.dashPattern());
+    else
+        setDashPattern(pen.style());
 }
 
 /*!

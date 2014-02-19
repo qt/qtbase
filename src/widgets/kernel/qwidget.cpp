@@ -78,6 +78,7 @@
 #include "private/qstyle_p.h"
 #include "qfileinfo.h"
 #include <QtGui/qinputmethod.h>
+#include <QtGui/qopenglcontext.h>
 
 #include <private/qgraphicseffect_p.h>
 #include <qbackingstore.h>
@@ -270,6 +271,8 @@ QWidgetPrivate::QWidgetPrivate(int version)
       , isMoved(0)
       , usesDoubleBufferedGLContext(0)
       , mustHaveWindowHandle(0)
+      , renderToTexture(0)
+      , textureChildSeen(0)
 #ifndef QT_NO_IM
       , inheritsInputMethodHints(0)
 #endif
@@ -353,10 +356,10 @@ void QWidgetPrivate::scrollChildren(int dx, int dy)
     }
 }
 
-void QWidgetPrivate::updateWidgetTransform()
+void QWidgetPrivate::updateWidgetTransform(QEvent *event)
 {
     Q_Q(QWidget);
-    if (q == qGuiApp->focusObject()) {
+    if (q == qGuiApp->focusObject() || event->type() == QEvent::FocusIn) {
         QTransform t;
         QPoint p = q->mapTo(q->topLevelWidget(), QPoint(0,0));
         t.translate(p.x(), p.y());
@@ -1188,7 +1191,7 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
     if (++QWidgetPrivate::instanceCounter > QWidgetPrivate::maxInstances)
         QWidgetPrivate::maxInstances = QWidgetPrivate::instanceCounter;
 
-    if (QApplicationPrivate::testAttribute(Qt::AA_ImmediateWidgetCreation))
+    if (QApplicationPrivate::testAttribute(Qt::AA_ImmediateWidgetCreation)) // ### fixme: Qt 6: Remove AA_ImmediateWidgetCreation.
         q->create();
 
     QEvent e(QEvent::Create);
@@ -1558,6 +1561,7 @@ void QWidgetPrivate::createTLExtra()
         x->inRepaint = false;
         x->embedded = 0;
         x->window = 0;
+        x->shareContext = 0;
         x->screenIndex = 0;
 #ifdef Q_WS_MAC
         x->wasMaximized = false;
@@ -4178,7 +4182,7 @@ const QPalette &QWidget::palette() const
     if (!isEnabled()) {
         data->pal.setCurrentColorGroup(QPalette::Disabled);
     } else if ((!isVisible() || isActiveWindow())
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
         && !QApplicationPrivate::isBlockedByModal(const_cast<QWidget *>(this))
 #endif
         ) {
@@ -5133,9 +5137,17 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
                      << "geometry ==" << QRect(q->mapTo(q->window(), QPoint(0, 0)), q->size());
 #endif
 
-            //actually send the paint event
-            QPaintEvent e(toBePainted);
-            QCoreApplication::sendSpontaneousEvent(q, &e);
+            if (renderToTexture) {
+                // This widget renders into a texture which is composed later. We just need to
+                // punch a hole in the backingstore, so the texture will be visible.
+                QPainter p(q);
+                p.setCompositionMode(QPainter::CompositionMode_Source);
+                p.fillRect(q->rect(), Qt::transparent);
+            } else {
+                //actually send the paint event
+                QPaintEvent e(toBePainted);
+                QCoreApplication::sendSpontaneousEvent(q, &e);
+            }
 
             // Native widgets need to be marked dirty on screen so painting will be done in correct context
             if (backingStore && !onScreen && !asRoot && (q->internalWinId() || !q->nativeParentWidget()->isWindow()))
@@ -6747,12 +6759,25 @@ bool QWidget::restoreGeometry(const QByteArray &geometry)
     if (maximized || fullScreen) {
         // set geometry before setting the window state to make
         // sure the window is maximized to the right screen.
-        // Skip on windows: the window is restored into a broken
-        // half-maximized state.
+        Qt::WindowStates ws = windowState();
 #ifndef Q_OS_WIN
         setGeometry(restoredNormalGeometry);
-#endif
-        Qt::WindowStates ws = windowState();
+#else
+        if (ws & Qt::WindowFullScreen) {
+            // Full screen is not a real window state on Windows.
+            move(availableGeometry.topLeft());
+        } else if (ws & Qt::WindowMaximized) {
+            // Setting a geometry on an already maximized window causes this to be
+            // restored into a broken, half-maximized state, non-resizable state (QTBUG-4397).
+            // Move the window in normal state if needed.
+            if (restoredScreenNumber != desktop->screenNumber(this)) {
+                setWindowState(Qt::WindowNoState);
+                setGeometry(restoredNormalGeometry);
+            }
+        } else {
+            setGeometry(restoredNormalGeometry);
+        }
+#endif // Q_OS_WIN
         if (maximized)
             ws |= Qt::WindowMaximized;
         if (fullScreen)
@@ -8058,7 +8083,7 @@ bool QWidget::event(QEvent *event)
         break;
     case QEvent::FocusIn:
         focusInEvent((QFocusEvent*)event);
-        d->updateWidgetTransform();
+        d->updateWidgetTransform(event);
         break;
 
     case QEvent::FocusOut:
@@ -8100,12 +8125,12 @@ bool QWidget::event(QEvent *event)
 
     case QEvent::Move:
         moveEvent((QMoveEvent*)event);
-        d->updateWidgetTransform();
+        d->updateWidgetTransform(event);
         break;
 
     case QEvent::Resize:
         resizeEvent((QResizeEvent*)event);
-        d->updateWidgetTransform();
+        d->updateWidgetTransform(event);
         break;
 
     case QEvent::Close:
@@ -9479,27 +9504,36 @@ void QWidget::updateGeometry()
 */
 void QWidget::setWindowFlags(Qt::WindowFlags flags)
 {
-    if (data->window_flags == flags)
+    Q_D(QWidget);
+    d->setWindowFlags(flags);
+}
+
+/*! \internal
+
+    Implemented in QWidgetPrivate so that QMdiSubWindowPrivate can reimplement it.
+*/
+void QWidgetPrivate::setWindowFlags(Qt::WindowFlags flags)
+{
+    Q_Q(QWidget);
+    if (q->data->window_flags == flags)
         return;
 
-    Q_D(QWidget);
-
-    if ((data->window_flags | flags) & Qt::Window) {
+    if ((q->data->window_flags | flags) & Qt::Window) {
         // the old type was a window and/or the new type is a window
-        QPoint oldPos = pos();
-        bool visible = isVisible();
-        setParent(parentWidget(), flags);
+        QPoint oldPos = q->pos();
+        bool visible = q->isVisible();
+        q->setParent(q->parentWidget(), flags);
 
         // if both types are windows or neither of them are, we restore
         // the old position
-        if (!((data->window_flags ^ flags) & Qt::Window)
-            && (visible || testAttribute(Qt::WA_Moved))) {
-            move(oldPos);
+        if (!((q->data->window_flags ^ flags) & Qt::Window)
+            && (visible || q->testAttribute(Qt::WA_Moved))) {
+            q->move(oldPos);
         }
         // for backward-compatibility we change Qt::WA_QuitOnClose attribute value only when the window was recreated.
-        d->adjustQuitOnCloseAttribute();
+        adjustQuitOnCloseAttribute();
     } else {
-        data->window_flags = flags;
+        q->data->window_flags = flags;
     }
 }
 
@@ -9615,6 +9649,13 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
     if (desktopWidget)
         parent = 0;
 
+#ifndef QT_NO_OPENGL
+    if (d->textureChildSeen && parent) {
+        // set the textureChildSeen flag up the whole parent chain
+        QWidgetPrivate::get(parent)->setTextureChildSeen();
+    }
+#endif
+
     if (QWidgetBackingStore *oldBs = oldtlw->d_func()->maybeBackingStore()) {
         if (newParent)
             oldBs->removeDirtyWidget(this);
@@ -9623,6 +9664,7 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
         oldBs->moveStaticWidgets(this);
     }
 
+    // ### fixme: Qt 6: Remove AA_ImmediateWidgetCreation.
     if (QApplicationPrivate::testAttribute(Qt::AA_ImmediateWidgetCreation) && !testAttribute(Qt::WA_WState_Created))
         create();
 
@@ -11085,7 +11127,25 @@ void QWidgetPrivate::adjustQuitOnCloseAttribute()
     }
 }
 
-
+QOpenGLContext *QWidgetPrivate::shareContext() const
+{
+#ifdef QT_NO_OPENGL
+    return 0;
+#else
+    if (!extra || !extra->topextra || !extra->topextra->window) {
+        qWarning() << "Asking for share context for widget that does not have a window handle";
+        return 0;
+    }
+    QWidgetPrivate *that = const_cast<QWidgetPrivate *>(this);
+    if (!extra->topextra->shareContext) {
+        QOpenGLContext *ctx = new QOpenGLContext();
+        ctx->setFormat(extra->topextra->window->format());
+        ctx->create();
+        that->extra->topextra->shareContext = ctx;
+    }
+    return that->extra->topextra->shareContext;
+#endif // QT_NO_OPENGL
+}
 
 Q_WIDGETS_EXPORT QWidgetData *qt_qwidget_data(QWidget *widget)
 {

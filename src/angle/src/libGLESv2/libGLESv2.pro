@@ -158,7 +158,7 @@ angle_d3d11 {
 
 !static {
     DEF_FILE = $$ANGLE_DIR/src/libGLESv2/$${TARGET}.def
-    win32-g++*:equals(QT_ARCH, i386): DEF_FILE = $$ANGLE_DIR/src/libGLESv2/$${TARGET}_mingw32.def
+    mingw:equals(QT_ARCH, i386): DEF_FILE = $$ANGLE_DIR/src/libGLESv2/$${TARGET}_mingw32.def
 }
 
 float_converter.target = float_converter
@@ -190,7 +190,7 @@ for (ps, PIXEL_SHADERS_BLIT) {
     QMAKE_EXTRA_COMPILERS += fxc_ps_$${ps}
 }
 for (ps, PIXEL_SHADERS_PASSTHROUGH) {
-    fxc_ps_$${ps}.commands = $$FXC /nologo /E PS_$$ps /T ps_4_0 /Fh ${QMAKE_FILE_OUT} ${QMAKE_FILE_NAME}
+    fxc_ps_$${ps}.commands = $$FXC /nologo /E PS_$$ps /T ps_4_0_level_9_1 /Fh ${QMAKE_FILE_OUT} ${QMAKE_FILE_NAME}
     fxc_ps_$${ps}.output = $$SHADER_DIR/$${ps}11ps.h
     fxc_ps_$${ps}.input = PASSTHROUGH_INPUT
     fxc_ps_$${ps}.dependency_type = TYPE_C
@@ -199,7 +199,7 @@ for (ps, PIXEL_SHADERS_PASSTHROUGH) {
     QMAKE_EXTRA_COMPILERS += fxc_ps_$${ps}
 }
 for (ps, PIXEL_SHADERS_CLEAR) {
-    fxc_ps_$${ps}.commands = $$FXC /nologo /E PS_$$ps /T ps_4_0 /Fh ${QMAKE_FILE_OUT} ${QMAKE_FILE_NAME}
+    fxc_ps_$${ps}.commands = $$FXC /nologo /E PS_$$ps /T ps_4_0_level_9_1 /Fh ${QMAKE_FILE_OUT} ${QMAKE_FILE_NAME}
     fxc_ps_$${ps}.output = $$SHADER_DIR/$${ps}11ps.h
     fxc_ps_$${ps}.input = CLEAR_INPUT
     fxc_ps_$${ps}.dependency_type = TYPE_C
@@ -217,7 +217,7 @@ for (vs, VERTEX_SHADERS_BLIT) {
     QMAKE_EXTRA_COMPILERS += fxc_vs_$${vs}
 }
 for (vs, VERTEX_SHADERS_PASSTHROUGH) {
-    fxc_vs_$${vs}.commands = $$FXC /nologo /E VS_$$vs /T vs_4_0 /Fh ${QMAKE_FILE_OUT} ${QMAKE_FILE_NAME}
+    fxc_vs_$${vs}.commands = $$FXC /nologo /E VS_$$vs /T vs_4_0_level_9_1 /Fh ${QMAKE_FILE_OUT} ${QMAKE_FILE_NAME}
     fxc_vs_$${vs}.output = $$SHADER_DIR/$${vs}11vs.h
     fxc_vs_$${vs}.input = PASSTHROUGH_INPUT
     fxc_vs_$${vs}.dependency_type = TYPE_C
@@ -226,7 +226,7 @@ for (vs, VERTEX_SHADERS_PASSTHROUGH) {
     QMAKE_EXTRA_COMPILERS += fxc_vs_$${vs}
 }
 for (vs, VERTEX_SHADERS_CLEAR) {
-    fxc_vs_$${vs}.commands = $$FXC /nologo /E VS_$$vs /T vs_4_0 /Fh ${QMAKE_FILE_OUT} ${QMAKE_FILE_NAME}
+    fxc_vs_$${vs}.commands = $$FXC /nologo /E VS_$$vs /T vs_4_0_level_9_1 /Fh ${QMAKE_FILE_OUT} ${QMAKE_FILE_NAME}
     fxc_vs_$${vs}.output = $$SHADER_DIR/$${vs}11vs.h
     fxc_vs_$${vs}.input = CLEAR_INPUT
     fxc_vs_$${vs}.dependency_type = TYPE_C

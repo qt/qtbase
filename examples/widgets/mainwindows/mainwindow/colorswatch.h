@@ -124,7 +124,7 @@ public:
     QSize minimumSizeHint() const;
 protected:
     void paintEvent(QPaintEvent *event);
-    void mousePressEvent(QMouseEvent *event);
+    void mouseReleaseEvent(QMouseEvent *event);
 public slots:
     void updateMask();
 

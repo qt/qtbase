@@ -53,12 +53,6 @@ QT_END_NAMESPACE
 #pragma qt_sync_stop_processing
 #endif
 
-template<> struct QAtomicIntegerTraits<int> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<unsigned int> { enum { IsInteger = 1 }; };
-#ifdef Q_COMPILER_UNICODE_STRINGS
-template<> struct QAtomicIntegerTraits<char32_t> { enum { IsInteger = 1 }; };
-#endif
-
 #define Q_ATOMIC_INT_REFERENCE_COUNTING_IS_SOMETIMES_NATIVE
 #define Q_ATOMIC_INT_TEST_AND_SET_IS_SOMETIMES_NATIVE
 #define Q_ATOMIC_INT_FETCH_AND_STORE_IS_SOMETIMES_NATIVE
@@ -74,6 +68,15 @@ template<> struct QAtomicIntegerTraits<char32_t> { enum { IsInteger = 1 }; };
 #define Q_ATOMIC_POINTER_TEST_AND_SET_IS_SOMETIMES_NATIVE
 #define Q_ATOMIC_POINTER_FETCH_AND_STORE_IS_SOMETIMES_NATIVE
 #define Q_ATOMIC_POINTER_FETCH_AND_ADD_IS_SOMETIMES_NATIVE
+
+#if QT_POINTER_SIZE == 8
+#  define Q_ATOMIC_INT64_IS_SUPPORTED
+#  define Q_ATOMIC_INT64_REFERENCE_COUNTING_IS_SOMETIMES_NATIVE
+#  define Q_ATOMIC_INT64_TEST_AND_SET_IS_SOMETIMES_NATIVE
+#  define Q_ATOMIC_INT64_FETCH_AND_STORE_IS_SOMETIMES_NATIVE
+#  define Q_ATOMIC_INT64_FETCH_AND_ADD_IS_SOMETIMES_NATIVE
+template<> struct QAtomicOpsSupport<8> { enum { IsSupported = 1 }; };
+#endif
 
 template <typename X> struct QAtomicOps: QGenericAtomicOps<QAtomicOps<X> >
 {
@@ -107,6 +110,17 @@ template <typename X> struct QAtomicOps: QGenericAtomicOps<QAtomicOps<X> >
     static bool testAndSetRelaxed(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
     {
         return __sync_bool_compare_and_swap(&_q_value, expectedValue, newValue);
+    }
+
+    template <typename T>
+    static bool testAndSetRelaxed(T &_q_value, T expectedValue, T newValue, T *currentValue) Q_DECL_NOTHROW
+    {
+        bool tmp = __sync_bool_compare_and_swap(&_q_value, expectedValue, newValue);
+        if (tmp)
+            *currentValue = expectedValue;
+        else
+            *currentValue = _q_value;
+        return tmp;
     }
 
     template <typename T>

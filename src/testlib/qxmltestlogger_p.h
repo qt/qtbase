@@ -55,6 +55,7 @@
 
 
 #include <QtTest/private/qabstracttestlogger_p.h>
+#include <QtCore/qelapsedtimer.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -76,7 +77,7 @@ public:
                      const char *file = 0, int line = 0);
     void addBenchmarkResult(const QBenchmarkResult &result);
 
-    void addMessage(MessageTypes type, const char *message,
+    void addMessage(MessageTypes type, const QString &message,
                     const char *file = 0, int line = 0);
 
     static int xmlCdata(QTestCharBuffer *dest, char const* src);
@@ -86,6 +87,8 @@ public:
 
 private:
     XmlMode xmlmode;
+    QElapsedTimer m_functionTime;
+    QElapsedTimer m_totalTime;
 };
 
 QT_END_NAMESPACE

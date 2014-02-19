@@ -125,10 +125,16 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
         t << " -I" << pwd;
     }
     {
+        QString isystem = var("QMAKE_CFLAGS_ISYSTEM");
         const ProStringList &incs = project->values("INCLUDEPATH");
         for(int i = 0; i < incs.size(); ++i) {
             ProString inc = escapeFilePath(incs.at(i));
-            if(!inc.isEmpty())
+            if (inc.isEmpty())
+                continue;
+
+            if (!isystem.isEmpty() && isSystemInclude(inc.toQString()))
+                t << ' ' << isystem << ' ' << inc;
+            else
                 t << " -I" << inc;
         }
     }
@@ -210,7 +216,8 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
     }
     if(do_incremental && !src_incremental)
         do_incremental = false;
-    t << "DIST          = " << valList(fileFixify(project->values("DISTFILES").toQStringList())) << endl;
+    t << "DIST          = " << valList(fileFixify(project->values("DISTFILES").toQStringList())) << " "
+                            << valList(escapeFilePaths(project->values("SOURCES"))) << endl;
     t << "QMAKE_TARGET  = " << var("QMAKE_ORIG_TARGET") << endl;
     // The comment is important for mingw32-make.exe on Windows as otherwise trailing slashes
     // would be interpreted as line continuation. The lack of spacing between the value and the
@@ -813,7 +820,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                                                Option::output_dir, Option::output_dir));
     t << "dist: \n\t"
       << mkdir_p_asstring(ddir_c, false) << "\n\t"
-      << "$(COPY_FILE) --parents $(SOURCES) $(DIST) " << ddir_c << Option::dir_sep << " && ";
+      << "$(COPY_FILE) --parents $(DIST) " << ddir_c << Option::dir_sep << " && ";
     if(!project->isEmpty("QMAKE_EXTRA_COMPILERS")) {
         const ProStringList &quc = project->values("QMAKE_EXTRA_COMPILERS");
         for (ProStringList::ConstIterator it = quc.begin(); it != quc.end(); ++it) {
@@ -901,22 +908,11 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
     t << varGlue("QMAKE_CLEAN","-$(DEL_FILE) "," ","\n\t")
       << "-$(DEL_FILE) *~ core *.core\n"
       << varGlue("CLEAN_FILES","\t-$(DEL_FILE) "," ","") << endl << endl;
-    t << "####### Sub-libraries\n\n";
-    if (!project->values("SUBLIBS").isEmpty()) {
-        ProString libdir = "tmp/";
-        if(!project->isEmpty("SUBLIBS_DIR"))
-            libdir = project->first("SUBLIBS_DIR");
-        const ProStringList &l = project->values("SUBLIBS");
-        for(it = l.begin(); it != l.end(); ++it)
-            t << libdir << project->first("QMAKE_PREFIX_STATICLIB") << (*it) << "."
-              << project->first("QMAKE_EXTENSION_STATICLIB") << ":\n\t"
-              << var(ProKey("MAKELIB" + *it)) << endl << endl;
-    }
 
     ProString destdir = project->first("DESTDIR");
     if (!destdir.isEmpty() && !destdir.endsWith(Option::dir_sep))
         destdir += Option::dir_sep;
-    t << "distclean: clean\n";
+    t << "distclean: clean " << var("DISTCLEAN_DEPS") << '\n';
     if(!project->isEmpty("QMAKE_BUNDLE")) {
         QString bundlePath = escapeFilePath(destdir + project->first("QMAKE_BUNDLE"));
         t << "\t-$(DEL_FILE) -r " << bundlePath << endl;
@@ -938,9 +934,21 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
     }
     t << endl << endl;
 
+    t << "####### Sub-libraries\n\n";
+    if (!project->values("SUBLIBS").isEmpty()) {
+        ProString libdir = "tmp/";
+        if (!project->isEmpty("SUBLIBS_DIR"))
+            libdir = project->first("SUBLIBS_DIR");
+        const ProStringList &l = project->values("SUBLIBS");
+        for (it = l.begin(); it != l.end(); ++it)
+            t << libdir << project->first("QMAKE_PREFIX_STATICLIB") << (*it) << "."
+              << project->first("QMAKE_EXTENSION_STATICLIB") << ":\n\t"
+              << var(ProKey("MAKELIB" + *it)) << endl << endl;
+    }
+
     if(doPrecompiledHeaders() && !project->isEmpty("PRECOMPILED_HEADER")) {
         QString pchInput = project->first("PRECOMPILED_HEADER").toQString();
-        t << "###### Prefix headers\n";
+        t << "###### Precompiled headers\n";
         QString comps[] = { "C", "CXX", "OBJC", "OBJCXX", QString() };
         for(int i = 0; !comps[i].isNull(); i++) {
             QString pchFlags = var(ProKey("QMAKE_" + comps[i] + "FLAGS_PRECOMPILE"));
@@ -1017,16 +1025,6 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
 
 void UnixMakefileGenerator::init2()
 {
-    //version handling
-    if(project->isEmpty("VERSION"))
-        project->values("VERSION").append("1.0." +
-                                               (project->isEmpty("VER_PAT") ? QString("0") :
-                                                project->first("VER_PAT")));
-    QStringList l = project->first("VERSION").toQString().split('.');
-    l << "0" << "0"; //make sure there are three
-    project->values("VER_MAJ").append(l[0]);
-    project->values("VER_MIN").append(l[1]);
-    project->values("VER_PAT").append(l[2]);
     if(project->isEmpty("QMAKE_FRAMEWORK_VERSION"))
         project->values("QMAKE_FRAMEWORK_VERSION").append(project->values("VER_MAJ").first());
 
@@ -1235,8 +1233,10 @@ void UnixMakefileGenerator::init2()
     }
 
     if (include_deps && project->isActiveConfig("gcc_MD_depends")) {
-        project->values("QMAKE_CFLAGS") += "-MD";
-        project->values("QMAKE_CXXFLAGS") += "-MD";
+        // use -MMD if we know about -isystem too
+        ProString MD_flag(project->values("QMAKE_CFLAGS_ISYSTEM").isEmpty() ? "-MD" : "-MMD");
+        project->values("QMAKE_CFLAGS") += MD_flag;
+        project->values("QMAKE_CXXFLAGS") += MD_flag;
     }
 
     if(!project->isEmpty("QMAKE_BUNDLE")) {
@@ -1318,7 +1318,7 @@ UnixMakefileGenerator::writeLibtoolFile()
     t << "# " << lname << " - a libtool library file\n";
     t << "# Generated by qmake/libtool (" QMAKE_VERSION_STR ") (Qt "
       << QT_VERSION_STR << ") on: " << QDateTime::currentDateTime().toString();
-	t << "\n";
+    t << "\n";
 
     t << "# The name that we can dlopen(3).\n"
       << "dlname='" << var(project->isActiveConfig("plugin") ? "TARGET" : "TARGET_x")

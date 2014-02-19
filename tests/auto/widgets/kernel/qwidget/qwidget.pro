@@ -20,7 +20,7 @@ x11 {
     LIBS += $$QMAKE_LIBS_X11
 }
 
-!wince*:win32: LIBS += -luser32 -lgdi32
+!wince*:win32:!winrt: LIBS += -luser32 -lgdi32
 
 mac:CONFIG+=insignificant_test # QTBUG-25300, QTBUG-23695
 linux-*:system(". /etc/lsb-release && [ $DISTRIB_CODENAME = oneiric ]"):DEFINES+=UBUNTU_ONEIRIC # QTBUG-30566

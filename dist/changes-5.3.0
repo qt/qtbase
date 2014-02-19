@@ -1,0 +1,36 @@
+Qt 5.3 introduces many new features and improvements as well as bugfixes
+over the 5.2.x series. For more details, refer to the online documentation
+included in this distribution. The documentation is also available online:
+
+  http://qt-project.org/doc/qt-5.3
+
+The Qt version 5.3 series is binary compatible with the 5.2.x series.
+Applications compiled for 5.2 will continue to run with 5.3.
+
+Some of the changes listed in this file include issue tracking numbers
+corresponding to tasks in the Qt Bug Tracker:
+
+  http://bugreports.qt-project.org/
+
+Each of these identifiers can be entered in the bug tracker to obtain more
+information about a particular change.
+
+****************************************************************************
+*                          Library                                         *
+****************************************************************************
+
+QtWidgets
+---------
+
+QtCore
+------
+
+ - Added QSignalBlocker, a RAII-style wrapper around
+   QObject::blockSignals().
+
+QtGui
+-----
+
+ - Added setSwapInterval() to QSurfaceFormat. Platforms that support
+   setting the swap interval are now defaulting to the value of 1,
+   meaning vsync is enabled.

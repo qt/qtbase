@@ -46,9 +46,9 @@
 
 QT_BEGIN_NAMESPACE
 
-class QLinuxFbIntegrationPrivate;
 class QAbstractEventDispatcher;
 class QLinuxFbScreen;
+class QFbVtHandler;
 
 class QLinuxFbIntegration : public QPlatformIntegration
 {
@@ -59,21 +59,25 @@ public:
     void initialize() Q_DECL_OVERRIDE;
     bool hasCapability(QPlatformIntegration::Capability cap) const Q_DECL_OVERRIDE;
 
-    QPlatformPixmap *createPlatformPixmap(QPlatformPixmap::PixelType type) const Q_DECL_OVERRIDE;
     QPlatformWindow *createPlatformWindow(QWindow *window) const Q_DECL_OVERRIDE;
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const Q_DECL_OVERRIDE;
+
     QAbstractEventDispatcher *createEventDispatcher() const Q_DECL_OVERRIDE;
+
     QPlatformFontDatabase *fontDatabase() const Q_DECL_OVERRIDE;
+    QPlatformServices *services() const Q_DECL_OVERRIDE;
+    QPlatformInputContext *inputContext() const Q_DECL_OVERRIDE { return m_inputContext; }
 
     QList<QPlatformScreen *> screens() const;
 
 private:
     QLinuxFbScreen *m_primaryScreen;
-    QPlatformFontDatabase *m_fontDb;
-
+    QPlatformInputContext *m_inputContext;
+    QScopedPointer<QPlatformFontDatabase> m_fontDb;
+    QScopedPointer<QPlatformServices> m_services;
+    QScopedPointer<QFbVtHandler> m_vtHandler;
 };
 
 QT_END_NAMESPACE
 
 #endif // QLINUXFBINTEGRATION_H
-

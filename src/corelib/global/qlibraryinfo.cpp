@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qdir.h"
+#include "qstringlist.h"
 #include "qfile.h"
 #include "qsettings.h"
 #include "qlibraryinfo.h"
@@ -113,6 +114,8 @@ public:
     }
 };
 
+static const char platformsSection[] = "Platforms";
+
 QLibrarySettings::QLibrarySettings()
     : settings(QLibraryInfoPrivate::findConfiguration())
 {
@@ -132,7 +135,8 @@ QLibrarySettings::QLibrarySettings()
         haveEffectivePaths = children.contains(QLatin1String("EffectivePaths"));
 #endif
         // Backwards compat: an existing but empty file is claimed to contain the Paths section.
-        havePaths = !haveEffectivePaths || children.contains(QLatin1String("Paths"));
+        havePaths = (!haveEffectivePaths && !children.contains(QLatin1String(platformsSection)))
+                    || children.contains(QLatin1String("Paths"));
 #ifndef QT_BOOTSTRAPPED
         if (!havePaths)
             settings.reset(0);
@@ -156,23 +160,23 @@ QSettings *QLibraryInfoPrivate::findConfiguration()
 #else
     if (!QFile::exists(qtconfig) && QCoreApplication::instance()) {
 #ifdef Q_OS_MAC
-	CFBundleRef bundleRef = CFBundleGetMainBundle();
+        CFBundleRef bundleRef = CFBundleGetMainBundle();
         if (bundleRef) {
-	    QCFType<CFURLRef> urlRef = CFBundleCopyResourceURL(bundleRef,
-							       QCFString(QLatin1String("qt.conf")),
-							       0,
-							       0);
-	    if (urlRef) {
-	        QCFString path = CFURLCopyFileSystemPath(urlRef, kCFURLPOSIXPathStyle);
-		qtconfig = QDir::cleanPath(path);
-	    }
-	}
-	if (qtconfig.isEmpty())
+            QCFType<CFURLRef> urlRef = CFBundleCopyResourceURL(bundleRef,
+                                                               QCFString(QLatin1String("qt.conf")),
+                                                               0,
+                                                               0);
+            if (urlRef) {
+                QCFString path = CFURLCopyFileSystemPath(urlRef, kCFURLPOSIXPathStyle);
+                qtconfig = QDir::cleanPath(path);
+            }
+        }
+        if (qtconfig.isEmpty())
 #endif
             {
                 QDir pwd(QCoreApplication::applicationDirPath());
                 qtconfig = pwd.filePath(QLatin1String("qt.conf"));
-	    }
+            }
     }
 #endif
     if (QFile::exists(qtconfig))
@@ -250,6 +254,57 @@ QLibraryInfo::buildDate()
     return QDate::fromString(QString::fromLatin1(qt_configure_installation + 12), Qt::ISODate);
 }
 #endif //QT_NO_DATESTRING
+
+#if defined(Q_CC_CLANG) // must be before GNU, because clang claims to be GNU too
+#  ifdef __apple_build_version__ // Apple clang has other version numbers
+#    define COMPILER_STRING __clang_version__ " (Apple)"
+#  else
+#    define COMPILER_STRING __clang_version__
+#  endif
+#elif defined(Q_CC_GNU)
+#  define COMPILER_STRING "GCC " __VERSION__
+#elif defined(Q_CC_MSVC)
+#  if _MSC_VER < 1600
+#    define COMPILER_STRING "MSVC 2008"
+#  elif _MSC_VER < 1700
+#    define COMPILER_STRING "MSVC 2010"
+#  elif _MSC_VER < 1800
+#    define COMPILER_STRING "MSVC 2012"
+#  elif _MSC_VER < 1900
+#    define COMPILER_STRING "MSVC 2013"
+#  else
+#    define COMPILER_STRING "MSVC <unknown version>"
+#  endif
+#else
+#  define COMPILER_STRING "<unknown compiler>"
+#endif
+
+/*!
+  Returns a string describing how this version of Qt was built.
+
+  \internal
+
+  \since 5.3
+*/
+
+const char *QLibraryInfo::build()
+{
+   static const char data[] = "Qt " QT_VERSION_STR " (" __DATE__ "), "
+        COMPILER_STRING ", "
+#if QT_POINTER_SIZE == 4
+        "32"
+#else
+        "64"
+#endif
+        " bit, "
+#ifdef QT_NO_DEBUG
+        "release"
+#else
+        "debug"
+#endif
+        " build)";
+    return data;
+}
 
 /*!
     \since 5.0
@@ -463,6 +518,33 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
         ret = QDir::cleanPath(baseDir + QLatin1Char('/') + ret);
     }
     return ret;
+}
+
+/*!
+  Returns additional arguments to the platform plugin matching
+  \a platformName which can be specified as a string list using
+  the key \c Arguments in a group called \c Platforms of the
+  \c qt.conf  file.
+
+  sa {Using qt.conf}
+
+  \internal
+
+  \since 5.3
+*/
+
+QStringList QLibraryInfo::platformPluginArguments(const QString &platformName)
+{
+#ifndef QT_BOOTSTRAPPED
+    if (const QSettings *settings = QLibraryInfoPrivate::findConfiguration()) {
+        QString key = QLatin1String(platformsSection);
+        key += QLatin1Char('/');
+        key += platformName;
+        key += QLatin1String("Arguments");
+        return settings->value(key).toStringList();
+    }
+#endif // !QT_BOOTSTRAPPED
+    return QStringList();
 }
 
 /*!

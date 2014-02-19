@@ -1,7 +1,7 @@
 HEADERS += $$PWD/qsql_psql_p.h
 SOURCES += $$PWD/qsql_psql.cpp
 
-unix|win32-g++* {
+unix|mingw {
     LIBS += $$QT_LFLAGS_PSQL
     !contains(LIBS, .*pq.*):LIBS += -lpq
     QMAKE_CXXFLAGS *= $$QT_CFLAGS_PSQL

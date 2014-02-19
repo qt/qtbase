@@ -51,8 +51,14 @@
 
 #include <string.h>
 
+#ifndef QT_NO_EXCEPTIONS
+#  include <exception>
+#endif // QT_NO_EXCEPTIONS
+
+
 QT_BEGIN_NAMESPACE
 
+class QRegularExpression;
 
 #define QVERIFY(statement) \
 do {\
@@ -83,34 +89,84 @@ do {\
         return;\
 } while (0)
 
-// Will try to wait for the expression to become true while allowing event processing
-#define QTRY_VERIFY_WITH_TIMEOUT(__expr, __timeout) \
-do { \
-    const int __step = 50; \
-    const int __timeoutValue = __timeout; \
+
+#ifndef QT_NO_EXCEPTIONS
+
+#  define QVERIFY_EXCEPTION_THROWN(expression, exceptiontype) \
+    do {\
+        QT_TRY {\
+            QT_TRY {\
+                expression;\
+                QTest::qFail("Expected exception of type " #exceptiontype " to be thrown" \
+                             " but no exception caught", __FILE__, __LINE__);\
+                return;\
+            } QT_CATCH (const exceptiontype &) {\
+            }\
+        } QT_CATCH (const std::exception &e) {\
+            QByteArray msg = QByteArray() + "Expected exception of type " #exceptiontype \
+                             " to be thrown but std::exception caught with message: " + e.what(); \
+            QTest::qFail(msg.constData(), __FILE__, __LINE__);\
+            return;\
+        } QT_CATCH (...) {\
+            QTest::qFail("Expected exception of type " #exceptiontype " to be thrown" \
+                         " but unknown exception caught", __FILE__, __LINE__);\
+            return;\
+        }\
+    } while (0)
+
+#else // QT_NO_EXCEPTIONS
+
+/*
+ * The expression passed to the macro should throw an exception and we can't
+ * catch it because Qt has been compiled without exception support. We can't
+ * skip the expression because it may have side effects and must be executed.
+ * So, users must use Qt with exception support enabled if they use exceptions
+ * in their code.
+ */
+#  define QVERIFY_EXCEPTION_THROWN(expression, exceptiontype) \
+    Q_STATIC_ASSERT_X(false, "Support of exceptions is disabled")
+
+#endif // !QT_NO_EXCEPTIONS
+
+
+#define QTRY_LOOP_IMPL(__expr, __timeoutValue, __step) \
     if (!(__expr)) { \
         QTest::qWait(0); \
     } \
-    for (int __i = 0; __i < __timeoutValue && !(__expr); __i+=__step) { \
+    int __i = 0; \
+    for (; __i < __timeoutValue && !(__expr); __i += __step) { \
         QTest::qWait(__step); \
-    } \
+    }
+
+#define QTRY_TIMEOUT_DEBUG_IMPL(__expr, __timeoutValue, __step)\
+    if (!(__expr)) { \
+        QTRY_LOOP_IMPL(__expr, (2 * __timeoutValue), __step);\
+        if (__expr) { \
+            QString msg = QString::fromUtf8("QTestLib: This test case check (\"%1\") failed because the requested timeout (%2 ms) was too short, %3 ms would have been sufficient this time."); \
+            msg = msg.arg(QString::fromUtf8(#__expr)).arg(__timeoutValue).arg(__timeoutValue + __i); \
+            QFAIL(qPrintable(msg)); \
+        } \
+    }
+
+#define QTRY_IMPL(__expr, __timeout)\
+    const int __step = 50; \
+    const int __timeoutValue = __timeout; \
+    QTRY_LOOP_IMPL(__expr, __timeoutValue, __step); \
+    QTRY_TIMEOUT_DEBUG_IMPL(__expr, __timeoutValue, __step)\
+
+// Will try to wait for the expression to become true while allowing event processing
+#define QTRY_VERIFY_WITH_TIMEOUT(__expr, __timeout) \
+do { \
+    QTRY_IMPL(__expr, __timeout);\
     QVERIFY(__expr); \
 } while (0)
 
 #define QTRY_VERIFY(__expr) QTRY_VERIFY_WITH_TIMEOUT(__expr, 5000)
 
 // Will try to wait for the comparison to become successful while allowing event processing
-
 #define QTRY_COMPARE_WITH_TIMEOUT(__expr, __expected, __timeout) \
 do { \
-    const int __step = 50; \
-    const int __timeoutValue = __timeout; \
-    if ((__expr) != (__expected)) { \
-        QTest::qWait(0); \
-    } \
-    for (int __i = 0; __i < __timeoutValue && ((__expr) != (__expected)); __i+=__step) { \
-        QTest::qWait(__step); \
-    } \
+    QTRY_IMPL(((__expr) == (__expected)), __timeout);\
     QCOMPARE(__expr, __expected); \
 } while (0)
 
@@ -177,6 +233,7 @@ namespace QTest
 
 
     Q_TESTLIB_EXPORT char *toHexRepresentation(const char *ba, int length);
+    Q_TESTLIB_EXPORT char *toPrettyUnicode(const ushort *unicode, int length);
     Q_TESTLIB_EXPORT char *toString(const char *);
     Q_TESTLIB_EXPORT char *toString(const void *);
 
@@ -191,6 +248,7 @@ namespace QTest
                            const char *file, int line);
     Q_TESTLIB_EXPORT void qWarn(const char *message, const char *file = 0, int line = 0);
     Q_TESTLIB_EXPORT void ignoreMessage(QtMsgType type, const char *message);
+    Q_TESTLIB_EXPORT void ignoreMessage(QtMsgType type, const QRegularExpression &messagePattern);
 
     Q_TESTLIB_EXPORT QString qFindTestData(const char* basepath, const char* file = 0, int line = 0, const char* builddir = 0);
     Q_TESTLIB_EXPORT QString qFindTestData(const QString& basepath, const char* file = 0, int line = 0, const char* builddir = 0);

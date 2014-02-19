@@ -1067,7 +1067,7 @@ void tst_QTextScriptEngine::controlInSyllable_qtbug14204()
     e->shape(0);
 
     QCOMPARE(e->layoutData->items[0].num_glyphs, ushort(2));
-    QVERIFY(e->layoutData->glyphLayout.advances_x[1] != 0);
+    QVERIFY(e->layoutData->glyphLayout.advances[1].toInt() != 0);
 #endif
 }
 
@@ -1087,8 +1087,7 @@ void tst_QTextScriptEngine::combiningMarks_qtbug15675()
     e->shape(0);
 
     QCOMPARE(e->layoutData->items[0].num_glyphs, ushort(4));
-    QEXPECT_FAIL("", "QTBUG-23064", Abort);
-    QVERIFY(e->layoutData->glyphLayout.advances_y[2] > 0);
+    QCOMPARE(e->layoutData->glyphLayout.advances[2].toInt(), 0);
 #else
     QFontDatabase db;
 
@@ -1106,7 +1105,7 @@ void tst_QTextScriptEngine::combiningMarks_qtbug15675()
     e->shape(0);
 
     QCOMPARE(e->layoutData->items[0].num_glyphs, ushort(3));
-    QVERIFY(e->layoutData->glyphLayout.advances_x[1] == 0);
+    QCOMPARE(e->layoutData->glyphLayout.advances[1].toInt(), 0);
 #endif
 }
 

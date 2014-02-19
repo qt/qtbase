@@ -99,6 +99,7 @@ class QXcbXSettingsPrivate
 public:
     QXcbXSettingsPrivate(QXcbScreen *screen)
         : screen(screen)
+        , initialized(false)
     {
     }
 
@@ -202,6 +203,7 @@ public:
     QXcbScreen *screen;
     xcb_window_t x_settings_window;
     QMap<QByteArray, QXcbXSettingsPropertyValue> settings;
+    bool initialized;
 };
 
 
@@ -217,7 +219,6 @@ QXcbXSettings::QXcbXSettings(QXcbScreen *screen)
     xcb_generic_error_t *error = 0;
     xcb_intern_atom_reply_t *atom_reply = xcb_intern_atom_reply(screen->xcb_connection(),atom_cookie,&error);
     if (error) {
-        qWarning() << Q_FUNC_INFO << "Failed to find XSETTINGS_S atom";
         free(error);
         return;
     }
@@ -230,7 +231,6 @@ QXcbXSettings::QXcbXSettings(QXcbScreen *screen)
     xcb_get_selection_owner_reply_t *selection_result =
             xcb_get_selection_owner_reply(screen->xcb_connection(), selection_cookie, &error);
     if (error) {
-        qWarning() << Q_FUNC_INFO << "Failed to get selection owner for XSETTINGS_S atom";
         free(error);
         return;
     }
@@ -246,6 +246,13 @@ QXcbXSettings::QXcbXSettings(QXcbScreen *screen)
     xcb_change_window_attributes(screen->xcb_connection(),d_ptr->x_settings_window,event,event_mask);
 
     d_ptr->populateSettings(d_ptr->getSettings());
+    d_ptr->initialized = true;
+}
+
+bool QXcbXSettings::initialized() const
+{
+    Q_D(const QXcbXSettings);
+    return d->initialized;
 }
 
 void QXcbXSettings::handlePropertyNotifyEvent(const xcb_property_notify_event_t *event)

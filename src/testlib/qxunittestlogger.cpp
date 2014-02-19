@@ -220,7 +220,7 @@ void QXunitTestLogger::addIncident(IncidentTypes type, const char *description,
         have some information about the expected failure.
     */
     if (type == QAbstractTestLogger::XFail) {
-        QXunitTestLogger::addMessage(QAbstractTestLogger::Info, description, file, line);
+        QXunitTestLogger::addMessage(QAbstractTestLogger::Info, QString::fromUtf8(description), file, line);
     }
 }
 
@@ -263,7 +263,7 @@ void QXunitTestLogger::addTag(QTestElement* element)
     element->addAttribute(QTest::AI_Tag, buf.constData());
 }
 
-void QXunitTestLogger::addMessage(MessageTypes type, const char *message, const char *file, int line)
+void QXunitTestLogger::addMessage(MessageTypes type, const QString &message, const char *file, int line)
 {
     QTestElement *errorElement = new QTestElement(QTest::LET_Error);
     const char *typeBuf = 0;
@@ -296,7 +296,7 @@ void QXunitTestLogger::addMessage(MessageTypes type, const char *message, const 
     }
 
     errorElement->addAttribute(QTest::AI_Type, typeBuf);
-    errorElement->addAttribute(QTest::AI_Description, message);
+    errorElement->addAttribute(QTest::AI_Description, message.toUtf8().constData());
     addTag(errorElement);
 
     if (file)
@@ -314,7 +314,7 @@ void QXunitTestLogger::addMessage(MessageTypes type, const char *message, const 
     // Also add the message to the system error log (i.e. stderr), if one exists
     if (errorLogElement) {
         QTestElement *systemErrorElement = new QTestElement(QTest::LET_Error);
-        systemErrorElement->addAttribute(QTest::AI_Description, message);
+        systemErrorElement->addAttribute(QTest::AI_Description, message.toUtf8().constData());
         errorLogElement->addLogElement(systemErrorElement);
     }
 }

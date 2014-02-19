@@ -41,16 +41,19 @@
 
 #include "qminimalintegration.h"
 #include "qminimalbackingstore.h"
-#ifndef Q_OS_WIN
-#include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
-#else
-#include <QtCore/private/qeventdispatcher_win_p.h>
-#endif
 
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <qpa/qplatformwindow.h>
 #include <qpa/qplatformfontdatabase.h>
+
+#if !defined(Q_OS_WIN)
+#include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
+#elif defined(Q_OS_WINRT)
+#include <QtCore/private/qeventdispatcher_winrt_p.h>
+#else
+#include <QtCore/private/qeventdispatcher_win_p.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -132,7 +135,11 @@ QPlatformBackingStore *QMinimalIntegration::createPlatformBackingStore(QWindow *
 QAbstractEventDispatcher *QMinimalIntegration::createEventDispatcher() const
 {
 #ifdef Q_OS_WIN
+#ifndef Q_OS_WINRT
     return new QEventDispatcherWin32;
+#else // !Q_OS_WINRT
+    return new QEventDispatcherWinRT;
+#endif // Q_OS_WINRT
 #else
     return createUnixEventDispatcher();
 #endif

@@ -77,7 +77,7 @@ typedef int NativeFileHandle;
 
 /*
  * Copyright (c) 1987, 1993
- *	The Regents of the University of California.  All rights reserved.
+ *      The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -151,18 +151,27 @@ static bool createFileFromTemplate(NativeFileHandle &file,
     for (;;) {
         // Atomically create file and obtain handle
 #if defined(Q_OS_WIN)
+#  ifndef Q_OS_WINRT
         file = CreateFile((const wchar_t *)path.constData(),
                 GENERIC_READ | GENERIC_WRITE,
                 FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, CREATE_NEW,
                 FILE_ATTRIBUTE_NORMAL, NULL);
+#  else // !Q_OS_WINRT
+        file = CreateFile2((const wchar_t *)path.constData(),
+                GENERIC_READ | GENERIC_WRITE,
+                FILE_SHARE_READ | FILE_SHARE_WRITE, CREATE_NEW,
+                NULL);
+#  endif // Q_OS_WINRT
 
         if (file != INVALID_HANDLE_VALUE)
             return true;
 
         DWORD err = GetLastError();
         if (err == ERROR_ACCESS_DENIED) {
-            DWORD attributes = GetFileAttributes((const wchar_t *)path.constData());
-            if (attributes == INVALID_FILE_ATTRIBUTES) {
+            WIN32_FILE_ATTRIBUTE_DATA attributes;
+            if (!GetFileAttributesEx((const wchar_t *)path.constData(),
+                                     GetFileExInfoStandard, &attributes)
+                    || attributes.dwFileAttributes == INVALID_FILE_ATTRIBUTES) {
                 // Potential write error (read-only parent directory, etc.).
                 error = QSystemError(err, QSystemError::NativeError);
                 return false;
@@ -336,7 +345,7 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
 
     d->fileEntry = QFileSystemEntry(filename, QFileSystemEntry::FromNativePath());
 
-#if !defined(Q_OS_WIN)
+#if !defined(Q_OS_WIN) || defined(Q_OS_WINRT)
     d->closeFileHandle = true;
 #endif
 

@@ -83,6 +83,8 @@ public:
     virtual bool isSystemTrayAvailable() const = 0;
     virtual bool supportsMessages() const = 0;
 
+    virtual QPlatformMenu *createMenu() const;
+
 Q_SIGNALS:
     void activated(QPlatformSystemTrayIcon::ActivationReason reason);
     void messageClicked();

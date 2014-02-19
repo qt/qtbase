@@ -132,7 +132,7 @@ QQnxGLContext::QQnxGLContext(QOpenGLContext *glContext)
         }
     }
 
-    m_eglContext = eglCreateContext(ms_eglDisplay, m_eglConfig, shareContext, contextAttrs());
+    m_eglContext = eglCreateContext(ms_eglDisplay, m_eglConfig, shareContext, contextAttrs(format));
     if (m_eglContext == EGL_NO_CONTEXT) {
         checkEGLError("eglCreateContext");
         qFatal("QQnxGLContext: failed to create EGL context, err=%d", eglGetError());
@@ -227,7 +227,8 @@ bool QQnxGLContext::makeCurrent(QPlatformSurface *surface)
     eglResult = eglMakeCurrent(ms_eglDisplay, m_currentEglSurface, m_currentEglSurface, m_eglContext);
     if (eglResult != EGL_TRUE) {
         checkEGLError("eglMakeCurrent");
-        qFatal("QQNX: failed to set current EGL context, err=%d", eglGetError());
+        qWarning("QQNX: failed to set current EGL context, err=%d", eglGetError());
+        return false;
     }
     return (eglResult == EGL_TRUE);
 }
@@ -274,13 +275,13 @@ EGLDisplay QQnxGLContext::getEglDisplay() {
     return ms_eglDisplay;
 }
 
-EGLint *QQnxGLContext::contextAttrs()
+EGLint *QQnxGLContext::contextAttrs(const QSurfaceFormat &format)
 {
     qGLContextDebug() << Q_FUNC_INFO;
 
     // Choose EGL settings based on OpenGL version
 #if defined(QT_OPENGL_ES_2)
-    static EGLint attrs[] = { EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE };
+    static EGLint attrs[] = { EGL_CONTEXT_CLIENT_VERSION, format.version().first, EGL_NONE };
     return attrs;
 #else
     return 0;

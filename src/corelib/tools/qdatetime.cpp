@@ -61,6 +61,9 @@
 #  ifdef Q_OS_WINCE
 #    include "qfunctions_wince.h"
 #  endif
+#  ifdef Q_OS_WINRT
+#    include "qfunctions_winrt.h"
+#  endif
 #endif
 
 #if defined(Q_OS_MAC)
@@ -2201,6 +2204,21 @@ static int qt_timezone()
         long offset;
         _get_timezone(&offset);
         return offset;
+#elif defined(Q_OS_BSD4) && !defined(Q_OS_DARWIN)
+        time_t clock = time(NULL);
+        struct tm t;
+        localtime_r(&clock, &t);
+        // QTBUG-36080 Workaround for systems without the POSIX timezone
+        // variable. This solution is not very efficient but fixing it is up to
+        // the libc implementations.
+        //
+        // tm_gmtoff has some important differences compared to the timezone
+        // variable:
+        // - It returns the number of seconds east of UTC, and we want the
+        //   number of seconds west of UTC.
+        // - It also takes DST into account, so we need to adjust it to always
+        //   get the Standard Time offset.
+        return -t.tm_gmtoff + (t.tm_isdst ? SECS_PER_HOUR : 0L);
 #else
         return timezone;
 #endif // Q_OS_WIN

@@ -23,7 +23,8 @@ HEADERS += graphicsview/qgraphicsgridlayout.h \
     graphicsview/qgraphicsview_p.h \
     graphicsview/qgraphicswidget.h \
     graphicsview/qgraphicswidget_p.h \
-    graphicsview/qgridlayoutengine_p.h \
+    graphicsview/qgraphicslayoutstyleinfo_p.h \
+    graphicsview/qgraphicsgridlayoutengine_p.h \
     graphicsview/qgraph_p.h \
     graphicsview/qsimplex_p.h \
     graphicsview/qgraphicsanchorlayout_p.h \
@@ -47,7 +48,8 @@ SOURCES += graphicsview/qgraphicsgridlayout.cpp \
     graphicsview/qgraphicsview.cpp \
     graphicsview/qgraphicswidget.cpp \
     graphicsview/qgraphicswidget_p.cpp \
-    graphicsview/qgridlayoutengine.cpp \
+    graphicsview/qgraphicslayoutstyleinfo.cpp \
+    graphicsview/qgraphicsgridlayoutengine.cpp \
     graphicsview/qsimplex_p.cpp \
     graphicsview/qgraphicsanchorlayout_p.cpp \
     graphicsview/qgraphicsanchorlayout.cpp

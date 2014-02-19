@@ -110,37 +110,37 @@
 #define QT_OFF_T                long
 #endif
 
-#define QT_STAT_REG		S_IFREG
-#define QT_STAT_DIR		S_IFDIR
-#define QT_STAT_MASK		S_IFMT
-#define QT_STAT_LNK		S_IFLNK
-#define QT_SOCKET_CONNECT	::connect
-#define QT_SOCKET_BIND		::bind
-#define QT_FILENO		fileno
+#define QT_STAT_REG             S_IFREG
+#define QT_STAT_DIR             S_IFDIR
+#define QT_STAT_MASK            S_IFMT
+#define QT_STAT_LNK             S_IFLNK
+#define QT_SOCKET_CONNECT       ::connect
+#define QT_SOCKET_BIND          ::bind
+#define QT_FILENO               fileno
 #ifndef QT_CLOSE
-#define QT_CLOSE		::close
+#define QT_CLOSE                ::close
 #endif
 #ifndef QT_READ
-#define QT_READ			::read
+#define QT_READ                 ::read
 #endif
 #ifndef QT_WRITE
-#define QT_WRITE		::write
+#define QT_WRITE                ::write
 #endif
-#define QT_ACCESS		::access
-#define QT_GETCWD		::getcwd
-#define QT_CHDIR		::chdir
-#define QT_MKDIR		::mkdir
-#define QT_RMDIR		::rmdir
-#define QT_OPEN_RDONLY		O_RDONLY
-#define QT_OPEN_WRONLY		O_WRONLY
-#define QT_OPEN_RDWR		O_RDWR
-#define QT_OPEN_CREAT		O_CREAT
-#define QT_OPEN_TRUNC		O_TRUNC
-#define QT_OPEN_APPEND		O_APPEND
+#define QT_ACCESS               ::access
+#define QT_GETCWD               ::getcwd
+#define QT_CHDIR                ::chdir
+#define QT_MKDIR                ::mkdir
+#define QT_RMDIR                ::rmdir
+#define QT_OPEN_RDONLY          O_RDONLY
+#define QT_OPEN_WRONLY          O_WRONLY
+#define QT_OPEN_RDWR            O_RDWR
+#define QT_OPEN_CREAT           O_CREAT
+#define QT_OPEN_TRUNC           O_TRUNC
+#define QT_OPEN_APPEND          O_APPEND
 
-#define QT_SIGNAL_RETTYPE	void
-#define QT_SIGNAL_ARGS		int
-#define QT_SIGNAL_IGNORE	SIG_IGN
+#define QT_SIGNAL_RETTYPE       void
+#define QT_SIGNAL_ARGS          int
+#define QT_SIGNAL_IGNORE        SIG_IGN
 
 #define QT_MMAP                 ::mmap
 
@@ -166,8 +166,8 @@
 #define QT_SOCKLEN_T           socklen_t
 
 #if defined(_XOPEN_SOURCE) && (_XOPEN_SOURCE >= 500)
-#define QT_SNPRINTF		::snprintf
-#define QT_VSNPRINTF		::vsnprintf
+#define QT_SNPRINTF             ::snprintf
+#define QT_VSNPRINTF            ::vsnprintf
 #endif
 
 // INTEGRITY doesn't enable the declaration in _POSIX_SOURCE mode,

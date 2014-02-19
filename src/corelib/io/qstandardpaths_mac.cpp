@@ -47,6 +47,7 @@
 #include <qcoreapplication.h>
 #endif
 
+#include <CoreFoundation/CoreFoundation.h>
 #include <ApplicationServices/ApplicationServices.h>
 
 QT_BEGIN_NAMESPACE
@@ -184,6 +185,30 @@ QStringList QStandardPaths::standardLocations(StandardLocation type)
             dirs.append(path);
     }
 
+    if (type == DataLocation) {
+        CFBundleRef mainBundle = CFBundleGetMainBundle();
+        if (mainBundle) {
+            CFURLRef bundleUrl = CFBundleCopyBundleURL(mainBundle);
+            CFStringRef cfBundlePath = CFURLCopyPath(bundleUrl);
+            QString bundlePath = QCFString::toQString(cfBundlePath);
+            CFRelease(cfBundlePath);
+            CFRelease(bundleUrl);
+
+            CFURLRef resourcesUrl = CFBundleCopyResourcesDirectoryURL(mainBundle);
+            CFStringRef cfResourcesPath = CFURLCopyPath(bundleUrl);
+            QString resourcesPath = QCFString::toQString(cfResourcesPath);
+            CFRelease(cfResourcesPath);
+            CFRelease(resourcesUrl);
+
+            // Handle bundled vs unbundled executables. CFBundleGetMainBundle() returns
+            // a valid bundle in both cases. CFBundleCopyResourcesDirectoryURL() returns
+            // an absolute path for unbundled executables.
+            if (resourcesPath.startsWith(QLatin1Char('/')))
+                dirs.append(resourcesPath);
+            else
+                dirs.append(bundlePath + resourcesPath);
+        }
+    }
     const QString localDir = writableLocation(type);
     dirs.prepend(localDir);
     return dirs;

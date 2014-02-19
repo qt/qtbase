@@ -165,6 +165,25 @@ QT_BEGIN_NAMESPACE
    \sa QVERIFY(), QTRY_COMPARE(), QTest::toString()
 */
 
+/*! \macro QVERIFY_EXCEPTION_THROWN(expression, exceptiontype)
+   \since 5.3
+
+   \relates QTest
+
+   The QVERIFY_EXCEPTION_THROWN macro executes an \a expression and tries
+   to catch an exception thrown from the \a expression. If the \a expression
+   throws an exception and its type is the same as \a exceptiontype
+   or \a exceptiontype is substitutable with the type of thrown exception
+   (i.e. usually the type of thrown exception is publically derived
+   from \a exceptiontype) then execution will be continued. If not-substitutable
+   type of exception is thrown or the \a expression doesn't throw an exception
+   at all, then a failure will be recorded in the test log and
+   the test won't be executed further.
+
+   \note This macro can only be used in a test function that is invoked
+   by the test framework.
+*/
+
 /*! \macro QTRY_VERIFY_WITH_TIMEOUT(condition, timeout)
    \since 5.0
 
@@ -1301,6 +1320,7 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
          "                       Use - to output to stdout\n"
          "                       Valid formats are:\n"
          "                         txt      : Plain text\n"
+         "                         csv      : CSV format (suitable for benchmarks)\n"
          "                         xunitxml : XML XUnit document\n"
          "                         xml      : XML document\n"
          "                         lightxml : A stream of XML tags\n"
@@ -1310,6 +1330,7 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
          " Old-style logging options:\n"
          " -o filename         : Write the output into file\n"
          " -txt                : Output results in Plain Text\n"
+         " -csv                : Output results in a CSV format (suitable for benchmarks)\n"
          " -xunitxml           : Output results as XML XUnit document\n"
          " -xml                : Output results as XML document\n"
          " -lightxml           : Output results as stream of XML tags\n"
@@ -1389,6 +1410,8 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
             }
         } else if (strcmp(argv[i], "-txt") == 0) {
             logFormat = QTestLog::Plain;
+        } else if (strcmp(argv[i], "-csv") == 0) {
+            logFormat = QTestLog::CSV;
         } else if (strcmp(argv[i], "-xunitxml") == 0) {
             logFormat = QTestLog::XunitXML;
         } else if (strcmp(argv[i], "-xml") == 0) {
@@ -1419,6 +1442,8 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
                 // New-style
                 if (strcmp(format, "txt") == 0)
                     logFormat = QTestLog::Plain;
+                else if (strcmp(format, "csv") == 0)
+                    logFormat = QTestLog::CSV;
                 else if (strcmp(format, "lightxml") == 0)
                     logFormat = QTestLog::LightXML;
                 else if (strcmp(format, "xml") == 0)
@@ -1426,7 +1451,7 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
                 else if (strcmp(format, "xunitxml") == 0)
                     logFormat = QTestLog::XunitXML;
                 else {
-                    fprintf(stderr, "output format must be one of txt, lightxml, xml or xunitxml\n");
+                    fprintf(stderr, "output format must be one of txt, csv, lightxml, xml or xunitxml\n");
                     exit(1);
                 }
                 if (strcmp(filename, "-") == 0 && QTestLog::loggerUsingStdout()) {
@@ -1540,6 +1565,10 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
 
         } else if (strcmp(argv[i], "-vb") == 0) {
             QBenchmarkGlobalData::current->verboseOutput = true;
+#ifdef Q_OS_WINRT
+        } else if (strncmp(argv[i], "-ServerName:", 12) == 0) {
+            continue;
+#endif
         } else if (argv[i][0] == '-') {
             fprintf(stderr, "Unknown option: '%s'\n\n%s", argv[i], testOptions);
             if (qml) {
@@ -1865,6 +1894,12 @@ void *fetchData(QTestData *data, const char *tagName, int typeId)
     return data->data(idx);
 }
 
+static char toHex(ushort value)
+{
+    static const char hexdigits[] = "0123456789ABCDEF";
+    return hexdigits[value & 0xF];
+}
+
 /*!
   \fn char* QTest::toHexRepresentation(const char *ba, int length)
 
@@ -1908,16 +1943,15 @@ char *toHexRepresentation(const char *ba, int length)
         result[size - 1] = '\0';
     }
 
-    const char toHex[] = "0123456789ABCDEF";
     int i = 0;
     int o = 0;
 
     while (true) {
         const char at = ba[i];
 
-        result[o] = toHex[(at >> 4) & 0x0F];
+        result[o] = toHex(at >> 4);
         ++o;
-        result[o] = toHex[at & 0x0F];
+        result[o] = toHex(at);
 
         ++i;
         ++o;
@@ -1930,6 +1964,61 @@ char *toHexRepresentation(const char *ba, int length)
     }
 
     return result;
+}
+
+/*!
+    \internal
+    Returns the same QString but with only the ASCII characters still shown;
+    everything else is replaced with \c {\uXXXX}.
+*/
+char *toPrettyUnicode(const ushort *p, int length)
+{
+    // keep it simple for the vast majority of cases
+    QScopedArrayPointer<char> buffer(new char[length * 6 + 3]);
+    const ushort *end = p + length;
+    char *dst = buffer.data();
+
+    *dst++ = '"';
+    for ( ; p != end; ++p) {
+        if (*p < 0x7f && *p >= 0x20 && *p != '\\') {
+            *dst++ = *p;
+            continue;
+        }
+
+        // write as an escape sequence
+        *dst++ = '\\';
+        switch (*p) {
+        case 0x22:
+        case 0x5c:
+            *dst++ = uchar(*p);
+            break;
+        case 0x8:
+            *dst++ = 'b';
+            break;
+        case 0xc:
+            *dst++ = 'f';
+            break;
+        case 0xa:
+            *dst++ = 'n';
+            break;
+        case 0xd:
+            *dst++ = 'r';
+            break;
+        case 0x9:
+            *dst++ = 't';
+            break;
+        default:
+            *dst++ = 'u';
+            *dst++ = toHex(*p >> 12);
+            *dst++ = toHex(*p >> 8);
+            *dst++ = toHex(*p >> 4);
+            *dst++ = toHex(*p);
+        }
+    }
+
+    *dst++ = '"';
+    *dst++ = '\0';
+    return buffer.take();
 }
 
 static void qInvokeTestMethods(QObject *testObject)
@@ -2170,13 +2259,15 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
 
     qtest_qParseArgs(argc, argv, false);
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     if (!noCrashHandler) {
 # ifndef Q_CC_MINGW
         _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_DEBUG);
 # endif
+# ifndef Q_OS_WINRT
         SetErrorMode(SetErrorMode(0) | SEM_NOGPFAULTERRORBOX);
         SetUnhandledExceptionFilter(windowsFaultHandler);
+# endif
     } // !noCrashHandler
 #endif // Q_OS_WIN) && !Q_OS_WINCE && !Q_OS_WINRT
 
@@ -2323,6 +2414,27 @@ void QTest::qWarn(const char *message, const char *file, int line)
 void QTest::ignoreMessage(QtMsgType type, const char *message)
 {
     QTestLog::ignoreMessage(type, message);
+}
+
+/*!
+    \overload
+
+    Ignores messages created by qDebug() or qWarning(). If the \a message
+    matching \a messagePattern
+    with the corresponding \a type is outputted, it will be removed from the
+    test log. If the test finished and the \a message was not outputted,
+    a test failure is appended to the test log.
+
+    \b {Note:} Invoking this function will only ignore one message.
+    If the message you want to ignore is outputted twice, you have to
+    call ignoreMessage() twice, too.
+
+    \since 5.3
+*/
+
+void QTest::ignoreMessage(QtMsgType type, const QRegularExpression &messagePattern)
+{
+    QTestLog::ignoreMessage(type, messagePattern);
 }
 
 /*! \internal

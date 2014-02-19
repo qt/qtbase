@@ -85,21 +85,21 @@ static QByteArray windowsId(const QWindowsData *windowsData)
     return (windowsIdData + windowsData->windowsIdIndex);
 }
 
-// Return the Olsen ID literal for a given QWindowsData
-static QByteArray olsenId(const QWindowsData *windowsData)
+// Return the IANA ID literal for a given QWindowsData
+static QByteArray ianaId(const QWindowsData *windowsData)
 {
-    return (olsenIdData + windowsData->olsenIdIndex);
+    return (ianaIdData + windowsData->ianaIdIndex);
 }
 
-// Return the Olsen ID literal for a given QZoneData
-static QByteArray olsenId(const QZoneData *zoneData)
+// Return the IANA ID literal for a given QZoneData
+static QByteArray ianaId(const QZoneData *zoneData)
 {
-    return (olsenIdData + zoneData->olsenIdIndex);
+    return (ianaIdData + zoneData->ianaIdIndex);
 }
 
 static QByteArray utcId(const QUtcData *utcData)
 {
-    return (olsenIdData + utcData->olsenIdIndex);
+    return (ianaIdData + utcData->ianaIdIndex);
 }
 
 static quint16 toWindowsIdKey(const QByteArray &winId)
@@ -172,7 +172,7 @@ QLocale::Country QTimeZonePrivate::country() const
     // Default fall-back mode, use the zoneTable to find Region of known Zones
     for (int i = 0; i < zoneDataTableSize; ++i) {
         const QZoneData *data = zoneData(i);
-        if (olsenId(data).split(' ').contains(m_id))
+        if (ianaId(data).split(' ').contains(m_id))
             return (QLocale::Country)data->country;
     }
     return QLocale::AnyCountry;
@@ -361,14 +361,14 @@ QSet<QByteArray> QTimeZonePrivate::availableTimeZoneIds(QLocale::Country country
     // First get all Zones in the Zones table belonging to the Region
     for (int i = 0; i < zoneDataTableSize; ++i) {
         if (zoneData(i)->country == country)
-            regionSet += olsenId(zoneData(i)).split(' ').toSet();
+            regionSet += ianaId(zoneData(i)).split(' ').toSet();
     }
 
     // Then select just those that are available
     QSet<QByteArray> set;
-    foreach (const QByteArray &olsenId, availableTimeZoneIds()) {
-        if (regionSet.contains(olsenId))
-            set << olsenId;
+    foreach (const QByteArray &ianaId, availableTimeZoneIds()) {
+        if (regionSet.contains(ianaId))
+            set << ianaId;
     }
 
     return set;
@@ -385,16 +385,16 @@ QSet<QByteArray> QTimeZonePrivate::availableTimeZoneIds(int offsetFromUtc) const
             for (int j = 0; j < zoneDataTableSize; ++j) {
                 const QZoneData *data = zoneData(j);
                 if (data->windowsIdKey == winData->windowsIdKey)
-                    offsetSet += olsenId(data).split(' ').toSet();
+                    offsetSet += ianaId(data).split(' ').toSet();
             }
         }
     }
 
     // Then select just those that are available
     QSet<QByteArray> set;
-    foreach (const QByteArray &olsenId, availableTimeZoneIds()) {
-        if (offsetSet.contains(olsenId))
-            set << olsenId;
+    foreach (const QByteArray &ianaId, availableTimeZoneIds()) {
+        if (offsetSet.contains(ianaId))
+            set << ianaId;
     }
 
     return set;
@@ -443,17 +443,17 @@ QTimeZone::OffsetData QTimeZonePrivate::toOffsetData(const QTimeZonePrivate::Dat
 }
 
 // If the format of the ID is valid
-bool QTimeZonePrivate::isValidId(const QByteArray &olsenId)
+bool QTimeZonePrivate::isValidId(const QByteArray &ianaId)
 {
-    // Rules for defining TZ/Olsen names as per ftp://ftp.iana.org/tz/code/Theory
+    // Rules for defining TZ/IANA names as per ftp://ftp.iana.org/tz/code/Theory
     // * Use only valid POSIX file name components
     // * Within a file name component, use only ASCII letters, `.', `-' and `_'.
     // * Do not use digits
     // * A file name component must not exceed 14 characters or start with `-'
     // Aliases such as "Etc/GMT+7" and "SystemV/EST5EDT" are valid so we need to accept digits
-    if (olsenId.contains(' '))
+    if (ianaId.contains(' '))
         return false;
-    QList<QByteArray> parts = olsenId.split('/');
+    QList<QByteArray> parts = ianaId.split('/');
     foreach (const QByteArray &part, parts) {
         if (part.size() > 14 || part.size() < 1)
             return false;
@@ -487,7 +487,7 @@ QByteArray QTimeZonePrivate::ianaIdToWindowsId(const QByteArray &id)
 {
     for (int i = 0; i < zoneDataTableSize; ++i) {
         const QZoneData *data = zoneData(i);
-        if (olsenId(data).split(' ').contains(id))
+        if (ianaId(data).split(' ').contains(id))
             return toWindowsIdLiteral(data->windowsIdKey);
     }
     return QByteArray();
@@ -499,7 +499,7 @@ QByteArray QTimeZonePrivate::windowsIdToDefaultIanaId(const QByteArray &windowsI
     for (int i = 0; i < windowsDataTableSize; ++i) {
         const QWindowsData *data = windowsData(i);
         if (data->windowsIdKey == windowsIdKey)
-            return olsenId(data);
+            return ianaId(data);
     }
     return QByteArray();
 }
@@ -522,7 +522,7 @@ QList<QByteArray> QTimeZonePrivate::windowsIdToIanaIds(const QByteArray &windows
     for (int i = 0; i < zoneDataTableSize; ++i) {
         const QZoneData *data = zoneData(i);
         if (data->windowsIdKey == windowsIdKey)
-            list << olsenId(data).split(' ');
+            list << ianaId(data).split(' ');
     }
 
     // Return the full list in alpha order
@@ -538,7 +538,7 @@ QList<QByteArray> QTimeZonePrivate::windowsIdToIanaIds(const QByteArray &windows
         const QZoneData *data = zoneData(i);
         // Return the region matches in preference order
         if (data->windowsIdKey == windowsIdKey && data->country == (quint16) country)
-            return olsenId(data).split(' ');
+            return ianaId(data).split(' ');
     }
 
     return QList<QByteArray>();

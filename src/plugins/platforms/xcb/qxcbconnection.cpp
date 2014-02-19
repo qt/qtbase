@@ -326,23 +326,6 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
     initializeXRandr();
     updateScreens();
 
-    m_connectionEventListener = xcb_generate_id(m_connection);
-    xcb_create_window(m_connection, XCB_COPY_FROM_PARENT,
-                      m_connectionEventListener, m_screens.at(0)->root(),
-                      0, 0, 1, 1, 0, XCB_WINDOW_CLASS_INPUT_ONLY,
-                      m_screens.at(0)->screen()->root_visual, 0, 0);
-#ifndef QT_NO_DEBUG
-    QByteArray ba("Qt xcb connection listener window");
-    Q_XCB_CALL(xcb_change_property(xcb_connection(),
-                                   XCB_PROP_MODE_REPLACE,
-                                   m_connectionEventListener,
-                                   atom(QXcbAtom::_NET_WM_NAME),
-                                   atom(QXcbAtom::UTF8_STRING),
-                                   8,
-                                   ba.length(),
-                                   ba.constData()));
-#endif
-
     initializeGLX();
     initializeXFixes();
     initializeXRender();
@@ -379,9 +362,6 @@ QXcbConnection::~QXcbConnection()
 #ifndef QT_NO_DRAGANDDROP
     delete m_drag;
 #endif
-    // Delete screens in reverse order to avoid crash in case of multiple screens
-    while (!m_screens.isEmpty())
-        delete m_screens.takeLast();
 
 #ifdef XCB_USE_XINPUT2_MAEMO
     finalizeXInput2Maemo();
@@ -395,6 +375,10 @@ QXcbConnection::~QXcbConnection()
     }
 
     delete m_reader;
+
+    // Delete screens in reverse order to avoid crash in case of multiple screens
+    while (!m_screens.isEmpty())
+        delete m_screens.takeLast();
 
 #ifdef XCB_USE_EGL
     if (m_has_egl)
@@ -1081,14 +1065,21 @@ void QXcbConnection::sendConnectionEvent(QXcbAtom::Atom a, uint id)
     xcb_client_message_event_t event;
     memset(&event, 0, sizeof(event));
 
+    const xcb_window_t eventListener = xcb_generate_id(m_connection);
+    Q_XCB_CALL(xcb_create_window(m_connection, XCB_COPY_FROM_PARENT,
+                                 eventListener, m_screens.at(0)->root(),
+                                 0, 0, 1, 1, 0, XCB_WINDOW_CLASS_INPUT_ONLY,
+                                 m_screens.at(0)->screen()->root_visual, 0, 0));
+
     event.response_type = XCB_CLIENT_MESSAGE;
     event.format = 32;
     event.sequence = 0;
-    event.window = m_connectionEventListener;
+    event.window = eventListener;
     event.type = atom(a);
     event.data.data32[0] = id;
 
-    Q_XCB_CALL(xcb_send_event(xcb_connection(), false, m_connectionEventListener, XCB_EVENT_MASK_NO_EVENT, (const char *)&event));
+    Q_XCB_CALL(xcb_send_event(xcb_connection(), false, eventListener, XCB_EVENT_MASK_NO_EVENT, (const char *)&event));
+    Q_XCB_CALL(xcb_destroy_window(m_connection, eventListener));
     xcb_flush(xcb_connection());
 }
 
@@ -1163,6 +1154,7 @@ void QXcbConnection::processXcbEvents()
         xcb_generic_event_t *event = eventqueue->at(i);
         if (!event)
             continue;
+        QScopedPointer<xcb_generic_event_t, QScopedPointerPodDeleter> eventGuard(event);
         (*eventqueue)[i] = 0;
 
         uint response_type = event->response_type & ~0x80;
@@ -1213,8 +1205,6 @@ void QXcbConnection::processXcbEvents()
             handleXcbEvent(event);
             m_reader->lock();
         }
-
-        free(event);
     }
 
     eventqueue->clear();
@@ -1450,6 +1440,10 @@ static const char * xcb_atomnames = {
     "Abs Distance\0"
     "Wacom Serial IDs\0"
     "INTEGER\0"
+    "Rel Horiz Wheel\0"
+    "Rel Vert Wheel\0"
+    "Rel Horiz Scroll\0"
+    "Rel Vert Scroll\0"
 #if XCB_USE_MAEMO_WINDOW_PROPERTIES
     "_MEEGOTOUCH_ORIENTATION_ANGLE\0"
 #endif
@@ -1731,21 +1725,23 @@ bool QXcbConnection::hasEgl() const
 #endif // defined(XCB_USE_EGL)
 
 #if defined(XCB_USE_XINPUT2) || defined(XCB_USE_XINPUT2_MAEMO)
-// Borrowed from libXi.
-int QXcbConnection::xi2CountBits(unsigned char *ptr, int len)
+static int xi2ValuatorOffset(unsigned char *maskPtr, int maskLen, int number)
 {
-    int bits = 0;
-    int i;
-    unsigned char x;
-
-    for (i = 0; i < len; i++) {
-        x = ptr[i];
-        while (x > 0) {
-            bits += (x & 0x1);
-            x >>= 1;
+    int offset = 0;
+    for (int i = 0; i < maskLen; i++) {
+        if (number < 8) {
+            if ((maskPtr[i] & (1 << number)) == 0)
+                return -1;
         }
+        for (int j = 0; j < 8; j++) {
+            if (j == number)
+                return offset;
+            if (maskPtr[i] & (1 << j))
+                offset++;
+        }
+        number -= 8;
     }
-    return bits;
+    return -1;
 }
 
 bool QXcbConnection::xi2GetValuatorValueIfSet(void *event, int valuatorNum, double *value)
@@ -1754,13 +1750,13 @@ bool QXcbConnection::xi2GetValuatorValueIfSet(void *event, int valuatorNum, doub
     unsigned char *buttonsMaskAddr = (unsigned char*)&xideviceevent[1];
     unsigned char *valuatorsMaskAddr = buttonsMaskAddr + xideviceevent->buttons_len * 4;
     FP3232 *valuatorsValuesAddr = (FP3232*)(valuatorsMaskAddr + xideviceevent->valuators_len * 4);
-    int numValuatorValues = xi2CountBits(valuatorsMaskAddr, xideviceevent->valuators_len * 4);
-    // This relies on all bit being set until a certain number i.e. it doesn't support only bit 0 and 5 being set in the mask.
-    // Just like the original code, works for now.
-    if (valuatorNum >= numValuatorValues)
+
+    int valuatorOffset = xi2ValuatorOffset(valuatorsMaskAddr, xideviceevent->valuators_len, valuatorNum);
+    if (valuatorOffset < 0)
         return false;
-    *value = valuatorsValuesAddr[valuatorNum].integral;
-    *value += ((double)valuatorsValuesAddr[valuatorNum].frac / (1 << 16) / (1 << 16));
+
+    *value = valuatorsValuesAddr[valuatorOffset].integral;
+    *value += ((double)valuatorsValuesAddr[valuatorOffset].frac / (1 << 16) / (1 << 16));
     return true;
 }
 

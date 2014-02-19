@@ -143,7 +143,7 @@ public:
     static Data invalidData();
     static QTimeZone::OffsetData invalidOffsetData();
     static QTimeZone::OffsetData toOffsetData(const Data &data);
-    static bool isValidId(const QByteArray &olsenId);
+    static bool isValidId(const QByteArray &ianaId);
     static QString isoOffsetFormat(int offsetFromUtc);
 
     static QByteArray ianaIdToWindowsId(const QByteArray &ianaId);
@@ -217,7 +217,7 @@ public:
     // Create default time zone
     QIcuTimeZonePrivate();
     // Create named time zone
-    QIcuTimeZonePrivate(const QByteArray &olsenId);
+    QIcuTimeZonePrivate(const QByteArray &ianaId);
     QIcuTimeZonePrivate(const QIcuTimeZonePrivate &other);
     ~QIcuTimeZonePrivate();
 
@@ -247,7 +247,7 @@ public:
     QSet<QByteArray> availableTimeZoneIds(int offsetFromUtc) const Q_DECL_OVERRIDE;
 
 private:
-    void init(const QByteArray &olsenId);
+    void init(const QByteArray &ianaId);
 
     UCalendar *m_ucal;
 };
@@ -260,7 +260,7 @@ public:
     // Create default time zone
     QTzTimeZonePrivate();
     // Create named time zone
-    QTzTimeZonePrivate(const QByteArray &olsenId);
+    QTzTimeZonePrivate(const QByteArray &ianaId);
     QTzTimeZonePrivate(const QTzTimeZonePrivate &other);
     ~QTzTimeZonePrivate();
 
@@ -296,7 +296,7 @@ public:
     QSet<QByteArray> availableTimeZoneIds(QLocale::Country country) const Q_DECL_OVERRIDE;
 
 private:
-    void init(const QByteArray &olsenId);
+    void init(const QByteArray &ianaId);
 
     struct QTzTransitionTime {
         qint64 atMSecsSinceEpoch;
@@ -327,7 +327,7 @@ public:
     // Create default time zone
     QMacTimeZonePrivate();
     // Create named time zone
-    QMacTimeZonePrivate(const QByteArray &olsenId);
+    QMacTimeZonePrivate(const QByteArray &ianaId);
     QMacTimeZonePrivate(const QMacTimeZonePrivate &other);
     ~QMacTimeZonePrivate();
 
@@ -378,7 +378,7 @@ public:
     // Create default time zone
     QWinTimeZonePrivate();
     // Create named time zone
-    QWinTimeZonePrivate(const QByteArray &olsenId);
+    QWinTimeZonePrivate(const QByteArray &ianaId);
     QWinTimeZonePrivate(const QWinTimeZonePrivate &other);
     ~QWinTimeZonePrivate();
 
@@ -408,7 +408,7 @@ public:
     QSet<QByteArray> availableTimeZoneIds() const Q_DECL_OVERRIDE;
 
 private:
-    void init(const QByteArray &olsenId);
+    void init(const QByteArray &ianaId);
     QWinTransitionRule ruleForYear(int year) const;
     QTimeZonePrivate::Data ruleToData(const QWinTransitionRule &rule, qint64 atMSecsSinceEpoch,
                                       QTimeZone::TimeType type) const;

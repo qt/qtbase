@@ -103,7 +103,7 @@ static bool read_xbm_header(QIODevice *device, int& w, int& h)
     // "#define .._height <num>"
     readBytes = device->readLine(buf, buflen);
     if (readBytes <= 0)
-	return false;
+        return false;
     buf[readBytes - 1] = '\0';
 
     sbuf = QString::fromLatin1(buf);
@@ -183,9 +183,9 @@ static bool read_xbm_image(QIODevice *device, QImage *outImage)
 static bool write_xbm_image(const QImage &sourceImage, QIODevice *device, const QString &fileName)
 {
     QImage image = sourceImage;
-    int	       w = image.width();
-    int	       h = image.height();
-    int	       i;
+    int        w = image.width();
+    int        h = image.height();
+    int        i;
     QString    s = fileName; // get file base name
     int        msize = s.length() + 100;
     char *buf = new char[msize];
@@ -203,16 +203,16 @@ static bool write_xbm_image(const QImage &sourceImage, QIODevice *device, const 
     bool invert = qGray(image.color(0)) < qGray(image.color(1));
     char hexrep[16];
     for (i=0; i<10; i++)
-	hexrep[i] = '0' + i;
+        hexrep[i] = '0' + i;
     for (i=10; i<16; i++)
-	hexrep[i] = 'a' -10 + i;
+        hexrep[i] = 'a' -10 + i;
     if (invert) {
-	char t;
-	for (i=0; i<8; i++) {
-	    t = hexrep[15-i];
-	    hexrep[15-i] = hexrep[i];
-	    hexrep[i] = t;
-	}
+        char t;
+        for (i=0; i<8; i++) {
+            t = hexrep[15-i];
+            hexrep[15-i] = hexrep[i];
+            hexrep[i] = t;
+        }
     }
     int bcnt = 0;
     char *p = buf;

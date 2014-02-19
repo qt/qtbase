@@ -69,7 +69,8 @@ public:
     };
 
     enum ClassId { RasterClass, DirectFBClass,
-                   BlitterClass, CustomClass = 1024 };
+                   BlitterClass, Direct2DClass,
+                   CustomClass = 1024 };
 
     QPlatformPixmap(PixelType pixelType, int classId);
     virtual ~QPlatformPixmap();
@@ -79,6 +80,12 @@ public:
     virtual void resize(int width, int height) = 0;
     virtual void fromImage(const QImage &image,
                            Qt::ImageConversionFlags flags) = 0;
+    virtual void fromImageInPlace(QImage &image,
+                                  Qt::ImageConversionFlags flags)
+    {
+        fromImage(image, flags);
+    }
+
     virtual void fromImageReader(QImageReader *imageReader,
                                  Qt::ImageConversionFlags flags);
 

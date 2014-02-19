@@ -126,10 +126,10 @@ public:
     static void setFont(const QFont &, const char* className = 0);
     static QFontMetrics fontMetrics();
 
+#if QT_VERSION < 0x060000 // remove these forwarders in Qt 6
     static void setWindowIcon(const QIcon &icon);
     static QIcon windowIcon();
-
-
+#endif
 
     static QWidgetList allWidgets();
     static QWidgetList topLevelWidgets();

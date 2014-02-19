@@ -167,8 +167,12 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
     if (et == QtWindows::MouseWheelEvent)
         return translateMouseWheelEvent(window, hwnd, msg, result);
 
+    Qt::MouseEventSource source = Qt::MouseEventNotSynthesized;
+
 #ifndef Q_OS_WINCE
-    static const bool passSynthesizedMouseEvents = QWindowsIntegration::instance()->options() & QWindowsIntegration::PassOsMouseEventsSynthesizedFromTouch;
+    // Check for events synthesized from touch. Lower byte is touch index, 0 means pen.
+    static const bool passSynthesizedMouseEvents =
+            !(QWindowsIntegration::instance()->options() & QWindowsIntegration::DontPassOsMouseEventsSynthesizedFromTouch);
     if (!passSynthesizedMouseEvents) {
         // Check for events synthesized from touch. Lower 7 bits are touch/pen index, bit 8 indicates touch.
         // However, when tablet support is active, extraInfo is a packet serial number. This is not a problem
@@ -177,6 +181,7 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
         const bool fromTouch = (extraInfo & signatureMask) == miWpSignature && (extraInfo & 0x80);
         if (fromTouch)
             return false;
+        source = Qt::MouseEventSynthesizedBySystem;
     }
 #endif // !Q_OS_WINCE
 
@@ -187,22 +192,21 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
         const Qt::MouseButtons buttons = QWindowsMouseHandler::queryMouseButtons();
         QWindowSystemInterface::handleFrameStrutMouseEvent(window, clientPosition,
                                                            globalPosition, buttons,
-                                                           QWindowsKeyMapper::queryKeyboardModifiers());
+                                                           QWindowsKeyMapper::queryKeyboardModifiers(),
+                                                           source);
         return false; // Allow further event processing (dragging of windows).
     }
 
     *result = 0;
     if (msg.message == WM_MOUSELEAVE) {
-        if (QWindowsContext::verboseEvents)
-            qDebug() << "WM_MOUSELEAVE for " << window << " previous window under mouse = " << m_windowUnderMouse << " tracked window =" << m_trackedWindow;
+        qCDebug(lcQpaEvents) << "WM_MOUSELEAVE for " << window << " previous window under mouse = " << m_windowUnderMouse << " tracked window =" << m_trackedWindow;
 
         // When moving out of a window, WM_MOUSEMOVE within the moved-to window is received first,
         // so if m_trackedWindow is not the window here, it means the cursor has left the
         // application.
         if (window == m_trackedWindow) {
             QWindow *leaveTarget = m_windowUnderMouse ? m_windowUnderMouse : m_trackedWindow;
-            if (QWindowsContext::verboseEvents)
-                qDebug() << "Generating leave event for " << leaveTarget;
+            qCDebug(lcQpaEvents) << "Generating leave event for " << leaveTarget;
             QWindowSystemInterface::handleLeaveEvent(leaveTarget);
             m_trackedWindow = 0;
             m_windowUnderMouse = 0;
@@ -231,8 +235,7 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
                 QWindowsWindow::baseWindowOf(window)->applyCursor();
                 platformWindow->setMouseGrabEnabled(true);
                 platformWindow->setFlag(QWindowsWindow::AutoMouseCapture);
-                if (QWindowsContext::verboseEvents)
-                    qDebug() << "Automatic mouse capture for missing buttondown event" << window;
+                qCDebug(lcQpaEvents) << "Automatic mouse capture for missing buttondown event" << window;
             }
             m_previousCaptureWindow = window;
             return true;
@@ -257,8 +260,7 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
             || msg.message == WM_RBUTTONDBLCLK || msg.message == WM_XBUTTONDBLCLK)) {
         platformWindow->setMouseGrabEnabled(true);
         platformWindow->setFlag(QWindowsWindow::AutoMouseCapture);
-        if (QWindowsContext::verboseEvents)
-            qDebug() << "Automatic mouse capture " << window;
+        qCDebug(lcQpaEvents) << "Automatic mouse capture " << window;
         // Implement "Click to focus" for native child windows (unless it is a native widget window).
         if (!window->isTopLevel() && !window->inherits("QWidgetWindow") && QGuiApplication::focusWindow() != window)
             window->requestActivate();
@@ -268,8 +270,7 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
                    || msg.message == WM_RBUTTONUP || msg.message == WM_XBUTTONUP)
                && !buttons) {
         platformWindow->setMouseGrabEnabled(false);
-        if (QWindowsContext::verboseEvents)
-            qDebug() << "Releasing automatic mouse capture " << window;
+        qCDebug(lcQpaEvents) << "Releasing automatic mouse capture " << window;
     }
 
     const bool hasCapture = platformWindow->hasMouseCapture();
@@ -301,8 +302,7 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
                 && (!hasCapture || window == m_windowUnderMouse))
             || (hasCapture && m_previousCaptureWindow != window && m_windowUnderMouse
                 && m_windowUnderMouse != window)) {
-            if (QWindowsContext::verboseEvents)
-                qDebug() << "Synthetic leave for " << m_windowUnderMouse;
+            qCDebug(lcQpaEvents) << "Synthetic leave for " << m_windowUnderMouse;
             QWindowSystemInterface::handleLeaveEvent(m_windowUnderMouse);
             if (currentNotCapturing) {
                 // Clear tracking if capturing and current window is not the capturing window
@@ -321,8 +321,7 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
                 && (!hasCapture || currentWindowUnderMouse == window))
             || (m_previousCaptureWindow && window != m_previousCaptureWindow && currentWindowUnderMouse
                 && currentWindowUnderMouse != m_previousCaptureWindow)) {
-            if (QWindowsContext::verboseEvents)
-                qDebug() << "Entering " << currentWindowUnderMouse;
+            qCDebug(lcQpaEvents) << "Entering " << currentWindowUnderMouse;
             QWindowsWindow::baseWindowOf(currentWindowUnderMouse)->applyCursor();
             QWindowSystemInterface::handleEnterEvent(currentWindowUnderMouse,
                                                      currentWindowUnderMouse->mapFromGlobal(globalPosition),
@@ -335,7 +334,8 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
     }
 
     QWindowSystemInterface::handleMouseEvent(window, winEventPosition, globalPosition, buttons,
-                                             QWindowsKeyMapper::queryKeyboardModifiers());
+                                             QWindowsKeyMapper::queryKeyboardModifiers(),
+                                             source);
     m_previousCaptureWindow = hasCapture ? window : 0;
     return true;
 }

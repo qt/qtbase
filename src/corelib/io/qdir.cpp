@@ -2146,7 +2146,7 @@ QString QDir::cleanPath(const QString &path)
        name.replace(dir_separator, QLatin1Char('/'));
 
     bool allowUncPaths = false;
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) //allow unc paths
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT) //allow unc paths
     allowUncPaths = true;
 #endif
 

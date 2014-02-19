@@ -55,6 +55,7 @@
 
 #include "QtGui/qfont.h"
 #include "QtCore/qmap.h"
+#include "QtCore/qhash.h"
 #include "QtCore/qobject.h"
 #include "QtCore/qstringlist.h"
 #include <QtGui/qfontdatabase.h>
@@ -132,6 +133,22 @@ struct QFontDef
         return false;
     }
 };
+
+inline uint qHash(const QFontDef &fd, uint seed = 0) Q_DECL_NOTHROW
+{
+    return qHash(qRound64(fd.pixelSize*10000)) // use only 4 fractional digits
+        ^  qHash(fd.weight)
+        ^  qHash(fd.style)
+        ^  qHash(fd.stretch)
+        ^  qHash(fd.styleHint)
+        ^  qHash(fd.styleStrategy)
+        ^  qHash(fd.ignorePitch)
+        ^  qHash(fd.fixedPitch)
+        ^  qHash(fd.family, seed)
+        ^  qHash(fd.styleName)
+        ^  qHash(fd.hintingPreference)
+        ;
+}
 
 class QFontEngineData
 {

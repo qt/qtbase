@@ -1717,14 +1717,21 @@ void QTextEdit::scrollContentsBy(int dx, int dy)
 */
 QVariant QTextEdit::inputMethodQuery(Qt::InputMethodQuery property) const
 {
+    return inputMethodQuery(property, QVariant());
+}
+
+/*!\internal
+ */
+QVariant QTextEdit::inputMethodQuery(Qt::InputMethodQuery query, QVariant argument) const
+{
     Q_D(const QTextEdit);
     QVariant v;
-    switch (property) {
+    switch (query) {
     case Qt::ImHints:
-        v = QWidget::inputMethodQuery(property);
+        v = QWidget::inputMethodQuery(query);
         break;
     default:
-        v = d->control->inputMethodQuery(property);
+        v = d->control->inputMethodQuery(query, argument);
         const QPoint offset(-d->horizontalOffset(), -d->verticalOffset());
         if (v.type() == QVariant::RectF)
             v = v.toRectF().toRect().translated(offset);
@@ -2454,6 +2461,27 @@ bool QTextEdit::find(const QString &exp, QTextDocument::FindFlags options)
     Q_D(QTextEdit);
     return d->control->find(exp, options);
 }
+
+/*!
+    \fn bool QTextEdit::find(const QRegExp &exp, QTextDocument::FindFlags options)
+
+    \since 5.3
+    \overload
+
+    Finds the next occurrence, matching the regular expression, \a exp, using the given
+    \a options. The QTextDocument::FindCaseSensitively option is ignored for this overload,
+    use QRegExp::caseSensitivity instead.
+
+    Returns \c true if a match was found and changes the cursor to select the match;
+    otherwise returns \c false.
+*/
+#ifndef QT_NO_REGEXP
+bool QTextEdit::find(const QRegExp &exp, QTextDocument::FindFlags options)
+{
+    Q_D(QTextEdit);
+    return d->control->find(exp, options);
+}
+#endif
 
 /*!
     \fn void QTextEdit::copyAvailable(bool yes)

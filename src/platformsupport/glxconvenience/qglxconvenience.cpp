@@ -39,6 +39,10 @@
 **
 ****************************************************************************/
 
+// We have to include this before the X11 headers dragged in by
+// qglxconvenience_p.h.
+#include <QtCore/QByteArray>
+
 #include "qglxconvenience_p.h"
 
 #include <QtCore/QVector>
@@ -116,6 +120,27 @@ QVector<int> qglx_buildSpec(const QSurfaceFormat &format, int drawableBit)
 
 GLXFBConfig qglx_findConfig(Display *display, int screen , const QSurfaceFormat &format, int drawableBit)
 {
+    // Allow forcing LIBGL_ALWAYS_SOFTWARE for Qt 5 applications only.
+    // This is most useful with drivers that only support OpenGL 1.
+    // We need OpenGL 2, but the user probably doesn't want
+    // LIBGL_ALWAYS_SOFTWARE in OpenGL 1 apps.
+    static bool checkedForceSoftwareOpenGL = false;
+    static bool forceSoftwareOpenGL = false;
+    if (!checkedForceSoftwareOpenGL) {
+        // If LIBGL_ALWAYS_SOFTWARE is already set, don't mess with it.
+        // We want to unset LIBGL_ALWAYS_SOFTWARE at the end so it does not
+        // get inherited by other processes, of course only if it wasn't
+        // already set before.
+        if (!qEnvironmentVariableIsEmpty("QT_XCB_FORCE_SOFTWARE_OPENGL")
+            && !qEnvironmentVariableIsSet("LIBGL_ALWAYS_SOFTWARE"))
+            forceSoftwareOpenGL = true;
+
+        checkedForceSoftwareOpenGL = true;
+    }
+
+    if (forceSoftwareOpenGL)
+        qputenv("LIBGL_ALWAYS_SOFTWARE", QByteArrayLiteral("1"));
+
     bool reduced = true;
     GLXFBConfig chosenConfig = 0;
     QSurfaceFormat reducedFormat = format;
@@ -158,6 +183,10 @@ GLXFBConfig qglx_findConfig(Display *display, int screen , const QSurfaceFormat 
         if (!chosenConfig)
             reducedFormat = qglx_reduceSurfaceFormat(reducedFormat,&reduced);
     }
+
+    // unset LIBGL_ALWAYS_SOFTWARE now so other processes don't inherit it
+    if (forceSoftwareOpenGL)
+        qunsetenv("LIBGL_ALWAYS_SOFTWARE");
 
     return chosenConfig;
 }

@@ -15,8 +15,26 @@ qt:!isEmpty(QT_CONFIG) {
         contains(QT_CONFIG, x86_64):!contains(QT_CONFIG, x86):CONFIG += x86_64
     }
 
-    # Ensure that C++11 is always used when linking against a static Qt build
-    contains(QT_CONFIG, static):contains(QT_CONFIG, c++11): CONFIG += c++11
+    contains(QT_CONFIG, static) {
+        # C++11 support means using libc++ instead of libstd++. As the
+        # two libraries are incompatible we need to ensure the end user
+        # project is built using the same C++11 support/no support as Qt.
+        contains(QT_CONFIG, c++11) {
+            CONFIG += c++11
+        } else: c++11 {
+            warning("Qt was not built with C++11 enabled, disabling feature")
+            CONFIG -= c++11
+        }
+
+        !c++11 {
+            # Explicitly use libstdc++ if C++11 support is not enabled,
+            # as otherwise the compiler will choose the standard library
+            # based on the deployment target, which for iOS 7 and OS X 10.9
+            # is libc++, and we can't mix and match the two.
+            QMAKE_CXXFLAGS += -stdlib=libstdc++
+            QMAKE_LFLAGS   += -stdlib=libstdc++
+        }
+    }
 }
 
 cache(QMAKE_XCODE_DEVELOPER_PATH, stash)

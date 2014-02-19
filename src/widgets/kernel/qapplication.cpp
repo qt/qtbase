@@ -377,7 +377,6 @@ QPalette *QApplicationPrivate::set_pal = 0;        // default palette set by pro
 QFont *QApplicationPrivate::sys_font = 0;        // default system font
 QFont *QApplicationPrivate::set_font = 0;        // default font set by programmer
 
-QIcon *QApplicationPrivate::app_icon = 0;
 QWidget *QApplicationPrivate::main_widget = 0;        // main application widget
 QWidget *QApplicationPrivate::focus_widget = 0;        // has keyboard input focus
 QWidget *QApplicationPrivate::hidden_focus_widget = 0; // will get keyboard input focus after show()
@@ -446,7 +445,8 @@ void QApplicationPrivate::process_cmdline()
             continue;
         }
         QByteArray arg = argv[i];
-        arg = arg;
+        if (arg.startsWith("--"))
+            arg.remove(0, 1);
         QString s;
         if (arg == "-qdevel" || arg == "-qdebug") {
             // obsolete argument
@@ -729,8 +729,6 @@ QApplication::~QApplication()
 
     delete QApplicationPrivate::app_style;
     QApplicationPrivate::app_style = 0;
-    delete QApplicationPrivate::app_icon;
-    QApplicationPrivate::app_icon = 0;
 
 #ifndef QT_NO_DRAGANDDROP
     if (qt_is_gui_used)
@@ -1560,6 +1558,7 @@ QString QApplicationPrivate::desktopStyleKey()
     return QString();
 }
 
+#if QT_VERSION < 0x060000 // remove these forwarders in Qt 6
 /*!
     \property QApplication::windowIcon
     \brief the default window icon
@@ -1568,23 +1567,32 @@ QString QApplicationPrivate::desktopStyleKey()
 */
 QIcon QApplication::windowIcon()
 {
-    return QApplicationPrivate::app_icon ? *QApplicationPrivate::app_icon : QIcon();
+    return QGuiApplication::windowIcon();
 }
 
 void QApplication::setWindowIcon(const QIcon &icon)
 {
-    if (!QApplicationPrivate::app_icon)
-        QApplicationPrivate::app_icon = new QIcon();
-    *QApplicationPrivate::app_icon = icon;
-    if (QApplicationPrivate::is_app_running && !QApplicationPrivate::is_app_closing) {
-        QEvent e(QEvent::ApplicationWindowIconChange);
-        QWidgetList all = QApplication::allWidgets();
-        for (QWidgetList::ConstIterator it = all.constBegin(); it != all.constEnd(); ++it) {
-            QWidget *w = *it;
-            if (w->isWindow())
-                sendEvent(w, &e);
-        }
+    QGuiApplication::setWindowIcon(icon);
+}
+#endif
+
+void QApplicationPrivate::notifyWindowIconChanged()
+{
+    QEvent ev(QEvent::ApplicationWindowIconChange);
+    const QWidgetList list = QApplication::topLevelWidgets();
+    QWindowList windowList = QGuiApplication::topLevelWindows();
+
+    // send to all top-level QWidgets
+    for (int i = 0; i < list.size(); ++i) {
+        QWidget *w = list.at(i);
+        windowList.removeOne(w->windowHandle());
+        QCoreApplication::sendEvent(w, &ev);
     }
+
+    // in case there are any plain QWindows in this QApplication-using
+    // application, also send the notification to them
+    for (int i = 0; i < windowList.size(); ++i)
+        QCoreApplication::sendEvent(windowList.at(i), &ev);
 }
 
 /*!
@@ -1725,6 +1733,41 @@ QFontMetrics QApplication::fontMetrics()
     return desktop()->fontMetrics();
 }
 
+bool QApplicationPrivate::tryCloseAllWidgetWindows(QWindowList *processedWindows)
+{
+    Q_ASSERT(processedWindows);
+    while (QWidget *w = QApplication::activeModalWidget()) {
+        if (!w->isVisible() || w->data->is_closing)
+            break;
+        QWindow *window = w->windowHandle();
+        if (!w->close()) // Qt::WA_DeleteOnClose may cause deletion.
+            return false;
+        if (window)
+            processedWindows->append(window);
+    }
+
+    QWidgetList list = QApplication::topLevelWidgets();
+    for (int i = 0; i < list.size(); ++i) {
+        QWidget *w = list.at(i);
+        if (w->isVisible() && w->windowType() != Qt::Desktop && !w->data->is_closing) {
+            QWindow *window = w->windowHandle();
+            if (!w->close())  // Qt::WA_DeleteOnClose may cause deletion.
+                return false;
+            if (window)
+                processedWindows->append(window);
+            list = QApplication::topLevelWidgets();
+            i = -1;
+        }
+    }
+    return true;
+}
+
+bool QApplicationPrivate::tryCloseAllWindows()
+{
+    QWindowList processedWindows;
+    return QApplicationPrivate::tryCloseAllWidgetWindows(&processedWindows)
+        && QGuiApplicationPrivate::tryCloseRemainingWindows(processedWindows);
+}
 
 /*!
     Closes all top-level windows.
@@ -1746,24 +1789,8 @@ QFontMetrics QApplication::fontMetrics()
 */
 void QApplication::closeAllWindows()
 {
-    bool did_close = true;
-    QWidget *w;
-    while ((w = activeModalWidget()) && did_close) {
-        if (!w->isVisible() || w->data->is_closing)
-            break;
-        did_close = w->close();
-    }
-    QWidgetList list = QApplication::topLevelWidgets();
-    for (int i = 0; did_close && i < list.size(); ++i) {
-        w = list.at(i);
-        if (w->isVisible()
-            && w->windowType() != Qt::Desktop
-            && !w->data->is_closing) {
-            did_close = w->close();
-            list = QApplication::topLevelWidgets();
-            i = -1;
-        }
-    }
+    QWindowList processedWindows;
+    QApplicationPrivate::tryCloseAllWidgetWindows(&processedWindows);
 }
 
 /*!
@@ -2611,7 +2638,7 @@ QDesktopWidget *QApplication::desktop()
 
 void QApplication::setStartDragTime(int ms)
 {
-    Q_UNUSED(ms)
+    QGuiApplication::styleHints()->setStartDragTime(ms);
 }
 
 /*!
@@ -2644,7 +2671,7 @@ int QApplication::startDragTime()
 
 void QApplication::setStartDragDistance(int l)
 {
-    Q_UNUSED(l);
+    QGuiApplication::styleHints()->setStartDragDistance(l);
 }
 
 /*!
@@ -2716,9 +2743,11 @@ bool QApplicationPrivate::shouldQuit()
     QWindowList processedWindows;
     for (int i = 0; i < list.size(); ++i) {
         QWidget *w = list.at(i);
-        processedWindows.push_back(w->windowHandle());
-        if (w->isVisible() && !w->parentWidget() && w->testAttribute(Qt::WA_QuitOnClose))
-            return false;
+        if (QWindow *window = w->windowHandle()) { // Menus, popup widgets may not have a QWindow
+            processedWindows.push_back(window);
+            if (w->isVisible() && !w->parentWidget() && w->testAttribute(Qt::WA_QuitOnClose))
+                return false;
+        }
     }
     return QGuiApplicationPrivate::shouldQuitInternal(processedWindows);
 }
@@ -2761,6 +2790,13 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         // QGuiApplicationPrivate::process(Mouse|Wheel|Key|Touch|Tablet)Event();
         switch (e->type()) {
         case QEvent::MouseButtonPress:
+            {
+                QMouseEvent *me = static_cast<QMouseEvent*>(e);
+                QApplicationPrivate::modifier_buttons = me->modifiers();
+                QApplicationPrivate::mouse_buttons |= me->button();
+                break;
+            }
+        case QEvent::MouseButtonDblClick:
             {
                 QMouseEvent *me = static_cast<QMouseEvent*>(e);
                 QApplicationPrivate::modifier_buttons = me->modifiers();
@@ -2995,6 +3031,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                                mouse->modifiers());
                 me.spont = mouse->spontaneous();
                 me.setTimestamp(mouse->timestamp());
+                QGuiApplicationPrivate::setMouseEventFlags(&me, mouse->flags());
                 // throw away any mouse-tracking-only mouse events
                 if (!w->hasMouseTracking()
                     && mouse->type() == QEvent::MouseMove && mouse->buttons() == 0) {
@@ -3611,7 +3648,7 @@ bool QApplication::keypadNavigationEnabled()
 */
 void QApplication::setCursorFlashTime(int msecs)
 {
-    Q_UNUSED(msecs);
+    QGuiApplication::styleHints()->setCursorFlashTime(msecs);
 }
 
 int QApplication::cursorFlashTime()
@@ -3626,12 +3663,10 @@ int QApplication::cursorFlashTime()
 
     The default value on X11 is 400 milliseconds. On Windows and Mac OS, the
     operating system's value is used.
-
-    Setting the interval is not supported anymore in Qt 5.
 */
 void QApplication::setDoubleClickInterval(int ms)
 {
-    Q_UNUSED(ms);
+    QGuiApplication::styleHints()->setMouseDoubleClickInterval(ms);
 }
 
 int QApplication::doubleClickInterval()
@@ -3659,7 +3694,7 @@ int QApplication::doubleClickInterval()
 */
 void QApplication::setKeyboardInputInterval(int ms)
 {
-    Q_UNUSED(ms);
+    QGuiApplication::styleHints()->setKeyboardInputInterval(ms);
 }
 
 int QApplication::keyboardInputInterval()
@@ -3750,6 +3785,7 @@ void QApplicationPrivate::giveFocusAccordingToFocusPolicy(QWidget *widget, QEven
 
     switch (event->type()) {
         case QEvent::MouseButtonPress:
+        case QEvent::MouseButtonDblClick:
         case QEvent::TouchBegin:
             if (setFocusOnRelease)
                 return;

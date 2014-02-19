@@ -64,10 +64,10 @@ QMacTimeZonePrivate::QMacTimeZonePrivate()
 }
 
 // Create a named time zone
-QMacTimeZonePrivate::QMacTimeZonePrivate(const QByteArray &olsenId)
+QMacTimeZonePrivate::QMacTimeZonePrivate(const QByteArray &ianaId)
     : m_nstz(0)
 {
-    init(olsenId);
+    init(ianaId);
 }
 
 QMacTimeZonePrivate::QMacTimeZonePrivate(const QMacTimeZonePrivate &other)
@@ -86,12 +86,12 @@ QTimeZonePrivate *QMacTimeZonePrivate::clone()
     return new QMacTimeZonePrivate(*this);
 }
 
-void QMacTimeZonePrivate::init(const QByteArray &olsenId)
+void QMacTimeZonePrivate::init(const QByteArray &ianaId)
 {
-    if (availableTimeZoneIds().contains(olsenId)) {
-        m_nstz = [NSTimeZone timeZoneWithName:QCFString::toNSString(QString::fromUtf8(olsenId))];
+    if (availableTimeZoneIds().contains(ianaId)) {
+        m_nstz = [NSTimeZone timeZoneWithName:QCFString::toNSString(QString::fromUtf8(ianaId))];
         if (m_nstz)
-            m_id = olsenId;
+            m_id = ianaId;
     }
 }
 

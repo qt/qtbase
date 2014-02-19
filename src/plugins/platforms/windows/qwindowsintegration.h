@@ -50,6 +50,8 @@
 QT_BEGIN_NAMESPACE
 
 struct QWindowsIntegrationPrivate;
+struct QWindowsWindowData;
+class QWindowsWindow;
 
 class QWindowsIntegration : public QPlatformIntegration
 {
@@ -60,7 +62,7 @@ public:
         DisableArb = 0x4,
         NoNativeDialogs = 0x8,
         XpNativeDialogs = 0x10,
-        PassOsMouseEventsSynthesizedFromTouch = 0x20 // Pass OS-generated mouse events from touch.
+        DontPassOsMouseEventsSynthesizedFromTouch = 0x20 // Do not pass OS-generated mouse events from touch.
     };
 
     explicit QWindowsIntegration(const QStringList &paramList);
@@ -68,9 +70,8 @@ public:
 
     bool hasCapability(QPlatformIntegration::Capability cap) const;
 
-    virtual QPlatformPixmap *createPlatformPixmap(QPlatformPixmap::PixelType type) const;
+    QWindowsWindowData createWindowData(QWindow *window) const;
     QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
 #ifndef QT_NO_OPENGL
     virtual QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
 #endif
@@ -85,7 +86,6 @@ public:
 #ifndef QT_NO_ACCESSIBILITY
     virtual QPlatformAccessibility *accessibility() const;
 #endif
-    virtual QPlatformNativeInterface *nativeInterface() const;
     virtual QPlatformFontDatabase *fontDatabase() const;
     virtual QStringList themeNames() const;
     virtual QPlatformTheme *createPlatformTheme(const QString &name) const;

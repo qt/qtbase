@@ -6,12 +6,16 @@
 </Environment>
 <TestFunction name="initTestCase">
 <Incident type="pass" file="" line="0" />
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="threeBillionTicks">
-<BenchmarkResult metric="walltime" tag="" value="1059" iterations="1" />
 <Incident type="pass" file="" line="0" />
+<BenchmarkResult metric="CPUTicks" tag="" value="3.00002e+09" iterations="1" />
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="cleanupTestCase">
 <Incident type="pass" file="" line="0" />
+<Duration msecs="0"/>
 </TestFunction>
+<Duration msecs="0"/>
 </TestCase>

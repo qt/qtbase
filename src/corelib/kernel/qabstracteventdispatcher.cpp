@@ -210,9 +210,11 @@ QAbstractEventDispatcher *QAbstractEventDispatcher::instance(QThread *thread)
 */
 
 /*! \fn bool QAbstractEventDispatcher::hasPendingEvents()
+    \deprecated
 
-    Returns \c true if there is an event waiting; otherwise returns
-    false.
+    Returns \c true if there is an event waiting; otherwise returns false. This
+    function is an implementation detail for
+    QCoreApplication::hasPendingEvents() and must not be called directly.
 */
 
 /*!

@@ -329,7 +329,7 @@ DXGI_FORMAT ConvertRenderbufferFormat(GLenum format)
     return DXGI_FORMAT_R8G8B8A8_UNORM;
 }
 
-DXGI_FORMAT ConvertTextureFormat(GLenum internalformat)
+DXGI_FORMAT ConvertTextureFormat(GLenum internalformat, D3D_FEATURE_LEVEL featureLevel)
 {
     switch (internalformat)
     {
@@ -342,7 +342,7 @@ DXGI_FORMAT ConvertTextureFormat(GLenum internalformat)
       case GL_LUMINANCE8_ALPHA8_EXT:
         return DXGI_FORMAT_R8G8B8A8_UNORM;
       case GL_ALPHA8_EXT:
-        return DXGI_FORMAT_A8_UNORM;
+        return featureLevel >= D3D_FEATURE_LEVEL_10_0 ? DXGI_FORMAT_A8_UNORM : DXGI_FORMAT_B8G8R8A8_UNORM;
       case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
       case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
         return DXGI_FORMAT_BC1_UNORM;

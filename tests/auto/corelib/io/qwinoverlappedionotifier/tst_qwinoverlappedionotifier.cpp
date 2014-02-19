@@ -42,6 +42,7 @@
 #include <QtTest/QtTest>
 #include <private/qwinoverlappedionotifier_p.h>
 #include <qbytearray.h>
+#include <qt_windows.h>
 
 #ifndef PIPE_REJECT_REMOTE_CLIENTS
 #define PIPE_REJECT_REMOTE_CLIENTS 0x08

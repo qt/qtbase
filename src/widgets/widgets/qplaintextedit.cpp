@@ -347,7 +347,7 @@ void QPlainTextDocumentLayout::documentChanged(int from, int /*charsRemoved*/, i
     }
 
     if (!d->blockUpdate)
-	emit update(QRectF(0., -doc->documentMargin(), 1000000000., 1000000000.)); // optimization potential
+        emit update(QRectF(0., -doc->documentMargin(), 1000000000., 1000000000.)); // optimization potential
 }
 
 
@@ -639,9 +639,10 @@ void QPlainTextEditPrivate::setTopBlock(int blockNumber, int lineNumber, int dx)
         lineNumber = maxTopLine - block.firstLineNumber();
     }
 
-    bool vbarSignalsBlocked = vbar->blockSignals(true);
-    vbar->setValue(newTopLine);
-    vbar->blockSignals(vbarSignalsBlocked);
+    {
+        const QSignalBlocker blocker(vbar);
+        vbar->setValue(newTopLine);
+    }
 
     if (!dx && blockNumber == control->topBlock && lineNumber == topLine)
         return;
@@ -657,9 +658,10 @@ void QPlainTextEditPrivate::setTopBlock(int blockNumber, int lineNumber, int dx)
         control->topBlock = blockNumber;
         topLine = lineNumber;
 
-        bool vbarSignalsBlocked = vbar->blockSignals(true);
-        vbar->setValue(block.firstLineNumber() + lineNumber);
-        vbar->blockSignals(vbarSignalsBlocked);
+        {
+            const QSignalBlocker blocker(vbar);
+            vbar->setValue(block.firstLineNumber() + lineNumber);
+        }
 
         if (dx || dy) {
             viewport->scroll(q->isRightToLeft() ? -dx : dx, dy);
@@ -1007,9 +1009,11 @@ void QPlainTextEditPrivate::_q_adjustScrollbars()
     QTextBlock firstVisibleBlock = q->firstVisibleBlock();
     if (firstVisibleBlock.isValid())
         visualTopLine = firstVisibleBlock.firstLineNumber() + topLine;
-    bool vbarSignalsBlocked = vbar->blockSignals(true);
-    vbar->setValue(visualTopLine);
-    vbar->blockSignals(vbarSignalsBlocked);
+
+    {
+        const QSignalBlocker blocker(vbar);
+        vbar->setValue(visualTopLine);
+    }
 
     hbar->setRange(0, (int)documentSize.width() - viewport->width());
     hbar->setPageStep(viewport->width());
@@ -1314,6 +1318,35 @@ QTextDocument *QPlainTextEdit::document() const
 {
     Q_D(const QPlainTextEdit);
     return d->control->document();
+}
+
+/*!
+    \since 5.3
+
+    \property QPlainTextEdit::placeholderText
+    \brief the editor placeholder text
+
+    Setting this property makes the editor display a grayed-out
+    placeholder text as long as the document() is empty.
+
+    By default, this property contains an empty string.
+
+    \sa document()
+*/
+void QPlainTextEdit::setPlaceholderText(const QString &placeholderText)
+{
+    Q_D(QPlainTextEdit);
+    if (d->placeholderText != placeholderText) {
+        d->placeholderText = placeholderText;
+        if (d->control->document()->isEmpty())
+            d->viewport->update();
+    }
+}
+
+QString QPlainTextEdit::placeholderText() const
+{
+    Q_D(const QPlainTextEdit);
+    return d->placeholderText;
 }
 
 /*!
@@ -1942,7 +1975,16 @@ void QPlainTextEdit::paintEvent(QPaintEvent *e)
             }
 
 
-            layout->draw(&painter, offset, selections, er);
+            if (!placeholderText().isEmpty() && document()->isEmpty()) {
+              Q_D(QPlainTextEdit);
+              QColor col = d->control->palette().text().color();
+              col.setAlpha(128);
+              painter.setPen(col);
+              const int margin = int(document()->documentMargin());
+              painter.drawText(r.adjusted(margin, 0, 0, 0), Qt::AlignTop | Qt::TextWordWrap, placeholderText());
+            } else {
+              layout->draw(&painter, offset, selections, er);
+            }
             if ((drawCursor && !drawCursorAsBlock)
                 || (editable && context.cursorPosition < -1
                     && !layout->preeditAreaText().isEmpty())) {
@@ -2150,7 +2192,7 @@ QVariant QPlainTextEdit::inputMethodQuery(Qt::InputMethodQuery property) const
         v = QWidget::inputMethodQuery(property);
         break;
     default:
-        v = d->control->inputMethodQuery(property);
+        v = d->control->inputMethodQuery(property, QVariant());
         const QPoint offset(-d->horizontalOffset(), -0);
         if (v.type() == QVariant::RectF)
             v = v.toRectF().toRect().translated(offset);
@@ -2756,6 +2798,27 @@ bool QPlainTextEdit::find(const QString &exp, QTextDocument::FindFlags options)
     Q_D(QPlainTextEdit);
     return d->control->find(exp, options);
 }
+
+/*!
+    \fn bool QPlainTextEdit::find(const QRegExp &exp, QTextDocument::FindFlags options)
+
+    \since 5.3
+    \overload
+
+    Finds the next occurrence, matching the regular expression, \a exp, using the given
+    \a options. The QTextDocument::FindCaseSensitively option is ignored for this overload,
+    use QRegExp::caseSensitivity instead.
+
+    Returns \c true if a match was found and changes the cursor to select the match;
+    otherwise returns \c false.
+*/
+#ifndef QT_NO_REGEXP
+bool QPlainTextEdit::find(const QRegExp &exp, QTextDocument::FindFlags options)
+{
+    Q_D(QPlainTextEdit);
+    return d->control->find(exp, options);
+}
+#endif
 
 /*!
     \fn void QPlainTextEdit::copyAvailable(bool yes)

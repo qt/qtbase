@@ -296,7 +296,7 @@ void QTextBrowserPrivate::setSource(const QUrl &url)
             QTextCodec *codec = Qt::codecForHtml(ba);
             txt = codec->toUnicode(ba);
 #else
-	    txt = data.toString();
+            txt = data.toString();
 #endif
         }
         if (txt.isEmpty())

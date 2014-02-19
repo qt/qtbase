@@ -60,6 +60,7 @@ OBJECTS = \
     qmap.o \
     qregexp.o \
     qstring.o \
+    qstring_compat.o \
     qstringlist.o \
     qvsnprintf.o \
     qvariant.o \
@@ -116,6 +117,10 @@ main.o: $(CONFSRC)/configureapp.h
 configureapp.o: $(CONFSRC)/configureapp.h $(CONFSRC)/environment.h $(CONFSRC)/tools.h
 environment.o: $(CONFSRC)/environment.h
 tools.o: $(CONFSRC)/tools.h
+
+# Make sure qstring_compat.obj isn't compiled with PCH enabled
+qstring_compat.o: $(CORESRC)/tools/qstring_compat.cpp
+	$(CXX) -c $(CXXFLAGS_BARE) -o $@ $<
 
 clean:
 	-rm -f *.o

@@ -94,7 +94,7 @@ public:
                              const char *file = 0, int line = 0) = 0;
     virtual void addBenchmarkResult(const QBenchmarkResult &result) = 0;
 
-    virtual void addMessage(MessageTypes type, const char *message,
+    virtual void addMessage(MessageTypes type, const QString &message,
                             const char *file = 0, int line = 0) = 0;
 
     void outputString(const char *msg);

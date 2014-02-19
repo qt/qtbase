@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 BlackBerry Limited. All rights reserved.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -905,6 +906,9 @@ void QSslSocket::setSslConfiguration(const QSslConfiguration &configuration)
     d->configuration.sslOptions = configuration.d->sslOptions;
     d->configuration.sslSession = configuration.sessionTicket();
     d->configuration.sslSessionTicketLifeTimeHint = configuration.sessionTicketLifeTimeHint();
+    d->configuration.nextAllowedProtocols = configuration.allowedNextProtocols();
+    d->configuration.nextNegotiatedProtocol = configuration.nextNegotiatedProtocol();
+    d->configuration.nextProtocolNegotiationStatus = configuration.nextProtocolNegotiationStatus();
 
     // if the CA certificates were set explicitly (either via
     // QSslConfiguration::setCaCertificates() or QSslSocket::setCaCertificates(),
@@ -1195,12 +1199,9 @@ void QSslSocket::setCiphers(const QString &ciphers)
     Q_D(QSslSocket);
     d->configuration.ciphers.clear();
     foreach (const QString &cipherName, ciphers.split(QLatin1String(":"),QString::SkipEmptyParts)) {
-        for (int i = 0; i < 3; ++i) {
-            // ### Crude
-            QSslCipher cipher(cipherName, QSsl::SslProtocol(i));
-            if (!cipher.isNull())
-                d->configuration.ciphers << cipher;
-        }
+        QSslCipher cipher(cipherName);
+        if (!cipher.isNull())
+            d->configuration.ciphers << cipher;
     }
 }
 
@@ -1953,6 +1954,7 @@ void QSslSocketPrivate::init()
 */
 QList<QSslCipher> QSslSocketPrivate::defaultCiphers()
 {
+    QSslSocketPrivate::ensureInitialized();
     QMutexLocker locker(&globalData()->mutex);
     return globalData()->config->ciphers;
 }

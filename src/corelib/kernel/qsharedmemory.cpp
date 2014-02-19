@@ -62,7 +62,7 @@ QT_BEGIN_NAMESPACE
   */
 QString
 QSharedMemoryPrivate::makePlatformSafeKey(const QString &key,
-					  const QString &prefix)
+                                          const QString &prefix)
 {
     if (key.isEmpty())
         return QString();
@@ -350,7 +350,7 @@ bool QSharedMemory::create(int size, AccessMode mode)
     if (size <= 0) {
         d->error = QSharedMemory::InvalidSize;
         d->errorString =
-	    QSharedMemory::tr("%1: create size is less then 0").arg(function);
+            QSharedMemory::tr("%1: create size is less then 0").arg(function);
         return false;
     }
 

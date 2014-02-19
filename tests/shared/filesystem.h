@@ -92,7 +92,7 @@ public:
         return file.isNull() ? qint64(-1) : file->write(relativeFileName.toUtf8());
     }
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
     static void createNtfsJunction(QString target, QString linkName)
     {
         typedef struct {
@@ -133,7 +133,7 @@ public:
 
         memset( reparseInfo, 0, sizeof( *reparseInfo ));
         reparseInfo->ReparseTag = IO_REPARSE_TAG_MOUNT_POINT;
-        reparseInfo->ReparseTargetLength = DWORD(target.size() * sizeof(wchar_t));
+        reparseInfo->ReparseTargetLength = WORD(target.size()) * WORD(sizeof(wchar_t));
         reparseInfo->ReparseTargetMaximumLength = reparseInfo->ReparseTargetLength + sizeof(wchar_t);
         target.toWCharArray(reparseInfo->ReparseTarget);
         reparseInfo->ReparseDataLength = reparseInfo->ReparseTargetLength + 12;

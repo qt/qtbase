@@ -121,10 +121,16 @@ void QXmlTestLogger::startLogging()
                 "    <QTestVersion>" QTEST_VERSION_STR "</QTestVersion>\n"
                 "</Environment>\n", qVersion());
     outputString(buf.constData());
+    m_totalTime.start();
 }
 
 void QXmlTestLogger::stopLogging()
 {
+    QTestCharBuffer buf;
+    QTest::qt_asprintf(&buf,
+                "<Duration msecs=\"%f\"/>\n",
+        m_totalTime.nsecsElapsed() / 1000000.);
+    outputString(buf.constData());
     if (xmlmode == QXmlTestLogger::Complete) {
         outputString("</TestCase>\n");
     }
@@ -139,11 +145,19 @@ void QXmlTestLogger::enterTestFunction(const char *function)
     xmlQuote(&quotedFunction, function);
     QTest::qt_asprintf(&buf, "<TestFunction name=\"%s\">\n", quotedFunction.constData());
     outputString(buf.constData());
+
+    m_functionTime.start();
 }
 
 void QXmlTestLogger::leaveTestFunction()
 {
-    outputString("</TestFunction>\n");
+    QTestCharBuffer buf;
+    QTest::qt_asprintf(&buf,
+                "    <Duration msecs=\"%f\"/>\n"
+                "</TestFunction>\n",
+        m_functionTime.nsecsElapsed() / 1000000.);
+
+    outputString(buf.constData());
 }
 
 namespace QTest
@@ -257,7 +271,7 @@ void QXmlTestLogger::addBenchmarkResult(const QBenchmarkResult &result)
     outputString(buf.constData());
 }
 
-void QXmlTestLogger::addMessage(MessageTypes type, const char *message,
+void QXmlTestLogger::addMessage(MessageTypes type, const QString &message,
                                 const char *file, int line)
 {
     QTestCharBuffer buf;
@@ -274,10 +288,10 @@ void QXmlTestLogger::addMessage(MessageTypes type, const char *message,
     xmlQuote(&quotedFile, file);
     xmlCdata(&cdataGtag, gtag);
     xmlCdata(&cdataTag, tag);
-    xmlCdata(&cdataDescription, message);
+    xmlCdata(&cdataDescription, message.toUtf8().constData());
 
     QTest::qt_asprintf(&buf,
-            QTest::messageFormatString(QTest::isEmpty(message), notag),
+            QTest::messageFormatString(message.isEmpty(), notag),
             QTest::xmlMessageType2String(type),
             quotedFile.constData(), line,
             cdataGtag.constData(),

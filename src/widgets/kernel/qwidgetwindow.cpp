@@ -50,6 +50,7 @@
 #include <private/qwidgetbackingstore_p.h>
 #include <qpa/qwindowsysteminterface_p.h>
 #include <qpa/qplatformtheme.h>
+#include <qpa/qplatformwindow.h>
 #include <private/qgesturemanager_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -91,6 +92,12 @@ QWidgetWindow::QWidgetWindow(QWidget *widget)
     , m_widget(widget)
 {
     updateObjectName();
+    // Enable QOpenGLWidget/QQuickWidget children if the platform plugin supports it,
+    // and the application developer has not explicitly disabled it.
+    if (QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::RasterGLSurface)
+        && !QApplication::testAttribute(Qt::AA_ForceRasterWidgets)) {
+        setSurfaceType(QSurface::RasterGLSurface);
+    }
     connect(m_widget, &QObject::objectNameChanged, this, &QWidgetWindow::updateObjectName);
 }
 
@@ -473,7 +480,7 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
     if (!widget)
         widget = m_widget;
 
-    if (event->type() == QEvent::MouseButtonPress)
+    if (event->type() == QEvent::MouseButtonPress || event->type() == QEvent::MouseButtonDblClick)
         qt_button_down = widget;
 
     QWidget *receiver = QApplicationPrivate::pickMouseReceiver(m_widget, event->windowPos().toPoint(), &mapped, event->type(), event->buttons(),
@@ -484,12 +491,17 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
             QApplicationPrivate::mouse_buttons &= ~event->button();
         return;
     }
+    if ((event->type() != QEvent::MouseButtonPress)
+        || !(event->flags().testFlag(Qt::MouseEventCreatedDoubleClick))) {
 
-    QMouseEvent translated(event->type(), mapped, event->windowPos(), event->screenPos(), event->button(), event->buttons(), event->modifiers());
-    translated.setTimestamp(event->timestamp());
-    QApplicationPrivate::sendMouseEvent(receiver, &translated, widget, m_widget, &qt_button_down,
-                                        qt_last_mouse_receiver);
-
+        // The preceding statement excludes MouseButtonPress events which caused
+        // creation of a MouseButtonDblClick event. QTBUG-25831
+        QMouseEvent translated(event->type(), mapped, event->windowPos(), event->screenPos(),
+                               event->button(), event->buttons(), event->modifiers());
+        translated.setTimestamp(event->timestamp());
+        QApplicationPrivate::sendMouseEvent(receiver, &translated, widget, m_widget,
+                                            &qt_button_down, qt_last_mouse_receiver);
+    }
 #ifndef QT_NO_CONTEXTMENU
     if (event->type() == contextMenuTrigger && event->button() == Qt::RightButton) {
         QContextMenuEvent e(QContextMenuEvent::Mouse, mapped, event->globalPos(), event->modifiers());
@@ -540,6 +552,24 @@ void QWidgetWindow::updateGeometry()
     te->posIncludesFrame= false;
     te->frameStrut.setCoords(margins.left(), margins.top(), margins.right(), margins.bottom());
     m_widget->data->fstrut_dirty = false;
+}
+
+Qt::WindowState effectiveState(Qt::WindowStates state);
+
+// Store normal geometry used for saving application settings.
+void QWidgetWindow::updateNormalGeometry()
+{
+    QTLWExtra *tle = m_widget->d_func()->maybeTopData();
+    if (!tle)
+        return;
+     // Ask platform window, default to widget geometry.
+    QRect normalGeometry;
+    if (const QPlatformWindow *pw = handle())
+        normalGeometry = pw->normalGeometry();
+    if (!normalGeometry.isValid() && effectiveState(m_widget->windowState()) == Qt::WindowNoState)
+        normalGeometry = m_widget->geometry();
+    if (normalGeometry.isValid())
+        tle->normalGeometry = normalGeometry;
 }
 
 void QWidgetWindow::handleMoveEvent(QMoveEvent *event)
@@ -654,6 +684,11 @@ void QWidgetWindow::handleDragLeaveEvent(QDragLeaveEvent *event)
 
 void QWidgetWindow::handleDropEvent(QDropEvent *event)
 {
+    if (m_dragTarget.isNull()) {
+        qWarning() << Q_FUNC_INFO << m_widget << ": No drag target set.";
+        event->ignore();
+        return;
+    }
     const QPoint mapped = m_dragTarget.data()->mapFromGlobal(m_widget->mapToGlobal(event->pos()));
     QDropEvent translated(mapped, event->possibleActions(), event->mimeData(), event->mouseButtons(), event->keyboardModifiers());
     QGuiApplication::sendSpontaneousEvent(m_dragTarget.data(), &translated);
@@ -682,8 +717,6 @@ void QWidgetWindow::handleExposeEvent(QExposeEvent *event)
     }
 }
 
-Qt::WindowState effectiveState(Qt::WindowStates state);
-
 void QWidgetWindow::handleWindowStateChangedEvent(QWindowStateChangeEvent *event)
 {
     // QWindow does currently not know 'active'.
@@ -702,16 +735,12 @@ void QWidgetWindow::handleWindowStateChangedEvent(QWindowStateChangeEvent *event
         widgetState |= Qt::WindowMinimized;
         break;
     case Qt::WindowMaximized:
-        if (effectiveState(widgetState) == Qt::WindowNoState)
-            if (QTLWExtra *tle = m_widget->d_func()->maybeTopData())
-                tle->normalGeometry = m_widget->geometry();
+        updateNormalGeometry();
         widgetState |= Qt::WindowMaximized;
         widgetState &= ~(Qt::WindowMinimized | Qt::WindowFullScreen);
         break;
     case Qt::WindowFullScreen:
-        if (effectiveState(widgetState) == Qt::WindowNoState)
-            if (QTLWExtra *tle = m_widget->d_func()->maybeTopData())
-                tle->normalGeometry = m_widget->geometry();
+        updateNormalGeometry();
         widgetState |= Qt::WindowFullScreen;
         widgetState &= ~(Qt::WindowMinimized);
         break;

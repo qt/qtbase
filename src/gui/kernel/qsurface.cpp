@@ -74,6 +74,9 @@ QT_BEGIN_NAMESPACE
     a software rasterizer like Qt's raster paint engine.
     \value OpenGLSurface The surface is an OpenGL compatible surface and can be used
     in conjunction with QOpenGLContext.
+    \value RasterGLSurface The surface can be rendered to using a software rasterizer,
+    and also supports OpenGL. This surface type is intended for internal Qt use, and
+    requires the use of private API.
  */
 
 
@@ -82,6 +85,19 @@ QT_BEGIN_NAMESPACE
 
     Returns the format of the surface.
  */
+
+/*!
+  Returns true if the surface is OpenGL compatible and can be used in
+  conjunction with QOpenGLContext; otherwise returns false.
+
+  \since 5.3
+*/
+
+bool QSurface::supportsOpenGL() const
+{
+    SurfaceType type = surfaceType();
+    return type == OpenGLSurface || type == RasterGLSurface;
+}
 
 /*!
     \fn QPlatformSurface *QSurface::surfaceHandle() const

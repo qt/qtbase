@@ -159,6 +159,22 @@ QPlatformSystemTrayIcon::~QPlatformSystemTrayIcon()
     \sa activated()
 */
 
+/*!
+    This method is called in case there is no QPlatformMenu available when
+    updating the menu. This allows the abstraction to provide a menu for the
+    system tray icon even if normally a non-native menu is used.
+
+    The default implementation returns a null pointer.
+
+    \sa updateMenu()
+    \since 5.3
+ */
+
+QPlatformMenu *QPlatformSystemTrayIcon::createMenu() const
+{
+    return Q_NULLPTR;
+}
+
 QT_END_NAMESPACE
 
 #include "moc_qplatformsystemtrayicon.cpp"

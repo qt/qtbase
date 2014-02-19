@@ -175,7 +175,24 @@ QJsonValue::QJsonValue(qint64 n)
 QJsonValue::QJsonValue(const QString &s)
     : d(0), t(String)
 {
-    stringData = *(QStringData **)(&s);
+    stringDataFromQStringHelper(s);
+}
+
+/*!
+    \fn QJsonValue::QJsonValue(const char *s)
+
+    Creates a value of type String with value \a s, assuming
+    UTF-8 encoding of the input.
+
+    You can disable this constructor by defining \c
+    QT_NO_CAST_FROM_ASCII when you compile your applications.
+
+    \since 5.3
+ */
+
+void QJsonValue::stringDataFromQStringHelper(const QString &string)
+{
+    stringData = *(QStringData **)(&string);
     stringData->ref.ref();
 }
 
@@ -187,8 +204,7 @@ QJsonValue::QJsonValue(QLatin1String s)
 {
     // ### FIXME: Avoid creating the temp QString below
     QString str(s);
-    stringData = *(QStringData **)(&str);
-    stringData->ref.ref();
+    stringDataFromQStringHelper(str);
 }
 
 /*!

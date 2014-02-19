@@ -183,9 +183,9 @@ TstWidget::TstWidget()
 
     connect( pb, SIGNAL(pressed()), this, SLOT(buttonPressed()) );
 
-//	QScrollBar *sb = new QScrollBar( Qt::Horizontal,  this );
+//    QScrollBar *sb = new QScrollBar( Qt::Horizontal,  this );
 
-//	sb->setGeometry( 5, pb->geometry().bottom() + 5, 100, sb->sizeHint().height() );
+//    sb->setGeometry( 5, pb->geometry().bottom() + 5, 100, sb->sizeHint().height() );
 
     d = new TstDialog( pb, this , 0 );
 }
@@ -218,8 +218,8 @@ void TstDialog::releaseMouse()
 void TstDialog::closeDialog()
 {
     if ( isVisible() ) {
-	c++;
-	accept();
+        c++;
+        accept();
     }
 }
 

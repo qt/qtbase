@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 BlackBerry Limited. All rights reserved.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -263,6 +264,45 @@ init_context:
     return sslContext;
 }
 
+#if OPENSSL_VERSION_NUMBER >= 0x1000100fL && !defined(OPENSSL_NO_TLSEXT) && !defined(OPENSSL_NO_NEXTPROTONEG)
+
+static int next_proto_cb(SSL *, unsigned char **out, unsigned char *outlen,
+                         const unsigned char *in, unsigned int inlen, void *arg)
+{
+    QSslContext::NPNContext *ctx = reinterpret_cast<QSslContext::NPNContext *>(arg);
+
+    // comment out to debug:
+//    QList<QByteArray> supportedVersions;
+//    for (unsigned int i = 0; i < inlen; ) {
+//        QByteArray version(reinterpret_cast<const char *>(&in[i+1]), in[i]);
+//        supportedVersions << version;
+//        i += in[i] + 1;
+//    }
+
+    int proto = q_SSL_select_next_proto(out, outlen, in, inlen, ctx->data, ctx->len);
+    switch (proto) {
+    case OPENSSL_NPN_UNSUPPORTED:
+        ctx->status = QSslConfiguration::NextProtocolNegotiationNone;
+        break;
+    case OPENSSL_NPN_NEGOTIATED:
+        ctx->status = QSslConfiguration::NextProtocolNegotiationNegotiated;
+        break;
+    case OPENSSL_NPN_NO_OVERLAP:
+        ctx->status = QSslConfiguration::NextProtocolNegotiationUnsupported;
+        break;
+    default:
+        qWarning("OpenSSL sent unknown NPN status");
+    }
+
+    return SSL_TLSEXT_ERR_OK;
+}
+
+QSslContext::NPNContext QSslContext::npnContext() const
+{
+    return m_npnContext;
+}
+#endif // OPENSSL_VERSION_NUMBER >= 0x1000100fL ...
+
 // Needs to be deleted by caller
 SSL* QSslContext::createSsl()
 {
@@ -283,6 +323,26 @@ SSL* QSslContext::createSsl()
             session = 0;
         }
     }
+
+#if OPENSSL_VERSION_NUMBER >= 0x1000100fL && !defined(OPENSSL_NO_TLSEXT) && !defined(OPENSSL_NO_NEXTPROTONEG)
+    QList<QByteArray> protocols = sslConfiguration.d->nextAllowedProtocols;
+    if (!protocols.isEmpty()) {
+        m_supportedNPNVersions.clear();
+        for (int a = 0; a < protocols.count(); ++a) {
+            if (protocols.at(a).size() > 255) {
+                qWarning() << "TLS NPN extension" << protocols.at(a)
+                           << "is too long and will be truncated to 255 characters.";
+                protocols[a] = protocols.at(a).left(255);
+            }
+            m_supportedNPNVersions.append(protocols.at(a).size()).append(protocols.at(a));
+        }
+        m_npnContext.data = reinterpret_cast<unsigned char *>(m_supportedNPNVersions.data());
+        m_npnContext.len = m_supportedNPNVersions.count();
+        m_npnContext.status = QSslConfiguration::NextProtocolNegotiationNone;
+        q_SSL_CTX_set_next_proto_select_cb(ctx, next_proto_cb, &m_npnContext);
+    }
+#endif // OPENSSL_VERSION_NUMBER >= 0x1000100fL ...
+
     return ssl;
 }
 

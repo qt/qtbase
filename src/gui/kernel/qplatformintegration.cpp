@@ -359,6 +359,8 @@ QVariant QPlatformIntegration::styleHint(StyleHint hint) const
         return true;
     case SetFocusOnTouchRelease:
         return QVariant(false);
+    case MousePressAndHoldInterval:
+        return QPlatformTheme::defaultThemeHint(QPlatformTheme::MousePressAndHoldInterval);
     }
 
     return 0;

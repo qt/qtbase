@@ -115,7 +115,7 @@ static void resolveLibrary()
         local_res_nquery = res_nquery_proto(lib.resolve("res_nquery"));
 }
 
-void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestName, QDnsLookupReply *reply)
+void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestName, const QHostAddress &nameserver, QDnsLookupReply *reply)
 {
     // Load dn_expand, res_ninit and res_nquery on demand.
     static QBasicAtomicInt triedResolve = Q_BASIC_ATOMIC_INITIALIZER(false);
@@ -141,6 +141,43 @@ void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestN
         reply->error = QDnsLookup::ResolverError;
         reply->errorString = tr("Resolver initialization failed");
         return;
+    }
+
+    //Check if a nameserver was set. If so, use it
+    if (!nameserver.isNull()) {
+        if (nameserver.protocol() == QAbstractSocket::IPv4Protocol) {
+            state.nsaddr_list[0].sin_addr.s_addr = htonl(nameserver.toIPv4Address());
+            state.nscount = 1;
+        } else if (nameserver.protocol() == QAbstractSocket::IPv6Protocol) {
+#if defined(Q_OS_LINUX)
+            struct sockaddr_in6 *ns;
+            ns = state._u._ext.nsaddrs[0];
+            // nsaddrs will be NULL if no nameserver is set in /etc/resolv.conf
+            if (!ns) {
+                // Memory allocated here will be free'd in res_close() as we
+                // have done res_init() above.
+                ns = (struct sockaddr_in6*) calloc(1, sizeof(struct sockaddr_in6));
+                Q_CHECK_PTR(ns);
+                state._u._ext.nsaddrs[0] = ns;
+            }
+            // Set nsmap[] to indicate that nsaddrs[0] is an IPv6 address
+            // See: https://sourceware.org/ml/libc-hacker/2002-05/msg00035.html
+            state._u._ext.nsmap[0] = MAXNS + 1;
+            state._u._ext.nscount6 = 1;
+            ns->sin6_family = AF_INET6;
+            ns->sin6_port = htons(53);
+
+            Q_IPV6ADDR ipv6Address = nameserver.toIPv6Address();
+            for (int i=0; i<16; i++) {
+                ns->sin6_addr.s6_addr[i] = ipv6Address[i];
+            }
+#else
+            qWarning() << Q_FUNC_INFO << "IPv6 addresses for nameservers is currently not supported";
+            reply->error = QDnsLookup::ResolverError;
+            reply->errorString = tr("IPv6 addresses for nameservers is currently not supported");
+            return;
+#endif
+        }
     }
 #ifdef QDNSLOOKUP_DEBUG
     state.options |= RES_DEBUG;

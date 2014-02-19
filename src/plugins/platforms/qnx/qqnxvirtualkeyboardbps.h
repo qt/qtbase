@@ -43,6 +43,7 @@
 #define QQNXVIRTUALKEYBOARDBPS_H
 
 #include "qqnxabstractvirtualkeyboard.h"
+#include <bps/virtualkeyboard.h>
 
 struct bps_event_t;
 
@@ -60,11 +61,14 @@ public:
     bool hideKeyboard();
 
 protected:
-    void applyKeyboardMode(KeyboardMode mode);
+    void applyKeyboardOptions();
 
 private:
     bool handleLocaleEvent(bps_event_t *event);
     bool handleVirtualKeyboardEvent(bps_event_t *event);
+
+    virtualkeyboard_layout_t keyboardLayout() const;
+    virtualkeyboard_enter_t enterKey() const;
 };
 
 QT_END_NAMESPACE

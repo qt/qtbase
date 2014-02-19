@@ -7,6 +7,9 @@ contains(QMAKE_MAC_SDK, ^iphonesimulator.*) {
     CONFIG += iphonesimulator
 }
 
+iphonesimulator_and_iphoneos:iphonesimulator: \
+    QMAKE_MAC_SDK ~= s,^iphoneos,iphonesimulator,
+
 # Resolve config so we don't need to use CONFIG() later on
 CONFIG(iphonesimulator, iphonesimulator|iphoneos) {
     CONFIG -= iphoneos
@@ -118,15 +121,6 @@ equals(TEMPLATE, app) {
     iphonesimulator.name = Simulator
     iphoneos.name = Device
     addExclusiveBuilds(iphonesimulator, iphoneos)
-
-    iphonesimulator_and_iphoneos:iphonesimulator {
-        QT_ARCH = i386
-        QMAKE_MAC_SDK ~= s,^iphoneos,iphonesimulator,
-
-        # Since the CPU feature detection done by configure is limited to one
-        # target at the moment, we disable SIMD support for simulator.
-        CONFIG -= simd
-    }
 } else: equals(TEMPLATE, subdirs) {
     # Prevent recursion into host_builds
     for(subdir, SUBDIRS) {
@@ -183,15 +177,6 @@ macx-xcode {
     QMAKE_SUBSTITUTES += copy_image
     launch_images.files = $$copy_image.output
     QMAKE_BUNDLE_DATA += launch_images
-
-    !c++11 {
-        # Explicitly use libstdc++ if C++11 support is not enabled,
-        # as otherwise Xcode will choose the compiler default based
-        # on the deployment target, which for iOS 7 is libc++. This
-        # breaks compilation since Qt was built against libstdc++.
-        QMAKE_CXXFLAGS += -stdlib=libstdc++
-        QMAKE_LFLAGS   += -stdlib=libstdc++
-    }
 
     # Make the default debug information format for debug builds
     # DWARF instead of DWARF with dSYM. This cuts down build times

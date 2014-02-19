@@ -60,6 +60,8 @@
 #include <QtCore/qtextstream.h>
 #include <QtCore/qvector.h>
 
+class tst_QLoggingRegistry;
+
 QT_BEGIN_NAMESPACE
 
 class QLoggingRule
@@ -89,45 +91,53 @@ private:
 Q_DECLARE_OPERATORS_FOR_FLAGS(QLoggingRule::PatternFlags)
 Q_DECLARE_TYPEINFO(QLoggingRule, Q_MOVABLE_TYPE);
 
-class QLoggingRulesParser
+class Q_AUTOTEST_EXPORT QLoggingSettingsParser
 {
-private:
-    explicit QLoggingRulesParser(class QLoggingRegistry *logging);
-
 public:
-    void setRules(const QString &content);
+    void setSection(const QString &section) { _section = section; }
+
+    void setContent(const QString &content);
+    void setContent(QTextStream &stream);
+
+    QVector<QLoggingRule> rules() const { return _rules; }
 
 private:
-    void parseRules(QTextStream &stream);
-    QLoggingRegistry *registry;
-
-    friend class QLoggingRegistry;
+    QString _section;
+    QVector<QLoggingRule> _rules;
 };
 
-class QLoggingRegistry
+class Q_AUTOTEST_EXPORT QLoggingRegistry
 {
 public:
     QLoggingRegistry();
 
+    void init();
+
     void registerCategory(QLoggingCategory *category);
     void unregisterCategory(QLoggingCategory *category);
 
-    void setRules(const QVector<QLoggingRule> &rules);
+    void setApiRules(const QString &content);
 
     QLoggingCategory::CategoryFilter
     installFilter(QLoggingCategory::CategoryFilter filter);
 
     static QLoggingRegistry *instance();
 
-    QLoggingRulesParser rulesParser;
-
 private:
+    void updateRules();
+
     static void defaultCategoryFilter(QLoggingCategory *category);
 
     QMutex registryMutex;
+
+    QVector<QLoggingRule> configRules;
+    QVector<QLoggingRule> envRules;
+    QVector<QLoggingRule> apiRules;
     QVector<QLoggingRule> rules;
     QList<QLoggingCategory*> categories;
     QLoggingCategory::CategoryFilter categoryFilter;
+
+    friend class ::tst_QLoggingRegistry;
 };
 
 QT_END_NAMESPACE

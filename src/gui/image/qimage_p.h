@@ -108,7 +108,20 @@ struct Q_GUI_EXPORT QImageData {        // internal image data
     QPaintEngine *paintEngine;
 };
 
+typedef void (*Image_Converter)(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags);
+typedef bool (*InPlace_Image_Converter)(QImageData *data, Qt::ImageConversionFlags);
+
+extern Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormats];
+extern InPlace_Image_Converter qimage_inplace_converter_map[QImage::NImageFormats][QImage::NImageFormats];
+
+void convert_generic(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags);
+bool convert_generic_inplace(QImageData *data, QImage::Format dst_format, Qt::ImageConversionFlags);
+
+void dither_to_Mono(QImageData *dst, const QImageData *src, Qt::ImageConversionFlags flags, bool fromalpha);
+
 void qInitImageConversions();
+
+const uchar *qt_get_bitflip_array();
 Q_GUI_EXPORT void qGamma_correct_back_to_linear_cs(QImage *image);
 
 inline int qt_depthForFormat(QImage::Format format)

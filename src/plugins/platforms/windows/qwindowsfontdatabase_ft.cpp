@@ -130,7 +130,7 @@ static bool addFontToDatabase(const QString &familyName, uchar charSet,
     typedef QPair<QString, QStringList> FontKey;
 
     // the "@family" fonts are just the same as "family". Ignore them.
-    if (familyName.at(0) == QLatin1Char('@') || familyName.startsWith(QStringLiteral("WST_")))
+    if (familyName.isEmpty() || familyName.at(0) == QLatin1Char('@') || familyName.startsWith(QStringLiteral("WST_")))
         return false;
 
     const int separatorPos = familyName.indexOf(QStringLiteral("::"));
@@ -151,19 +151,20 @@ static bool addFontToDatabase(const QString &familyName, uchar charSet,
     const QFont::Stretch stretch = QFont::Unstretched;
 
 #ifndef QT_NO_DEBUG_OUTPUT
-    if (QWindowsContext::verboseFonts > 2) {
-        QDebug nospace = qDebug().nospace();
-        nospace << __FUNCTION__ << familyName << faceName << fullName << charSet
-                 << "TTF=" << ttf;
+    if (QWindowsContext::verbose > 2) {
+        QString message;
+        QTextStream str(&message);
+        str << __FUNCTION__ << ' ' << familyName << ' ' << charSet << " TTF=" << ttf;
         if (type & DEVICE_FONTTYPE)
-            nospace << " DEVICE";
+            str << " DEVICE";
         if (type & RASTER_FONTTYPE)
-            nospace << " RASTER";
+            str << " RASTER";
         if (type & TRUETYPE_FONTTYPE)
-            nospace << " TRUETYPE";
-        nospace << " scalable=" << scalable << " Size=" << size
+            str << " TRUETYPE";
+        str << " scalable=" << scalable << " Size=" << size
                 << " Style=" << style << " Weight=" << weight
                 << " stretch=" << stretch;
+        qCDebug(lcQpaFonts) << message;
     }
 #endif
 
@@ -335,8 +336,8 @@ static QByteArray getFntTable(HFONT hfont, uint tag)
 }
 #endif
 
-static int CALLBACK storeFont(ENUMLOGFONTEX* f, NEWTEXTMETRICEX *textmetric,
-                              int type, LPARAM namesSetIn)
+static int QT_WIN_CALLBACK storeFont(ENUMLOGFONTEX* f, NEWTEXTMETRICEX *textmetric,
+                                     int type, LPARAM namesSetIn)
 {
     typedef QSet<QString> StringSet;
     const QString familyName = QString::fromWCharArray(f->elfLogFont.lfFaceName)
@@ -403,8 +404,7 @@ void QWindowsFontDatabaseFT::populateFontDatabase()
 void QWindowsFontDatabaseFT::populate(const QString &family)
     {
 
-    if (QWindowsContext::verboseFonts)
-        qDebug() << __FUNCTION__ << m_families.size() << family;
+    qCDebug(lcQpaFonts) << __FUNCTION__ << m_families.size() << family;
 
     HDC dummy = GetDC(0);
     LOGFONT lf;
@@ -422,111 +422,22 @@ void QWindowsFontDatabaseFT::populate(const QString &family)
     ReleaseDC(0, dummy);
 }
 
-QFontEngine * QWindowsFontDatabaseFT::fontEngine(const QFontDef &fontDef, QChar::Script script, void *handle)
+QFontEngine * QWindowsFontDatabaseFT::fontEngine(const QFontDef &fontDef, void *handle)
 {
-    QFontEngine *fe = QBasicFontDatabase::fontEngine(fontDef, script, handle);
-    if (QWindowsContext::verboseFonts)
-        qDebug() << __FUNCTION__ << "FONTDEF" << /*fontDef <<*/ script << fe << handle;
+    QFontEngine *fe = QBasicFontDatabase::fontEngine(fontDef, handle);
+    qCDebug(lcQpaFonts) << __FUNCTION__ << "FONTDEF" << fontDef.family << fe << handle;
     return fe;
 }
 
 QFontEngine *QWindowsFontDatabaseFT::fontEngine(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference)
 {
     QFontEngine *fe = QBasicFontDatabase::fontEngine(fontData, pixelSize, hintingPreference);
-    if (QWindowsContext::verboseFonts)
-        qDebug() << __FUNCTION__ << "FONTDATA" << fontData << pixelSize << hintingPreference << fe;
+    qCDebug(lcQpaFonts) << __FUNCTION__ << "FONTDATA" << fontData << pixelSize << hintingPreference << fe;
     return fe;
 }
 
-static const char *other_tryFonts[] = {
-    "Arial",
-    "MS UI Gothic",
-    "Gulim",
-    "SimSun",
-    "PMingLiU",
-    "Arial Unicode MS",
-    0
-};
-
-static const char *jp_tryFonts [] = {
-    "MS UI Gothic",
-    "Arial",
-    "Gulim",
-    "SimSun",
-    "PMingLiU",
-    "Arial Unicode MS",
-    0
-};
-
-static const char *ch_CN_tryFonts [] = {
-    "SimSun",
-    "Arial",
-    "PMingLiU",
-    "Gulim",
-    "MS UI Gothic",
-    "Arial Unicode MS",
-    0
-};
-
-static const char *ch_TW_tryFonts [] = {
-    "PMingLiU",
-    "Arial",
-    "SimSun",
-    "Gulim",
-    "MS UI Gothic",
-    "Arial Unicode MS",
-    0
-};
-
-static const char *kr_tryFonts[] = {
-    "Gulim",
-    "Arial",
-    "PMingLiU",
-    "SimSun",
-    "MS UI Gothic",
-    "Arial Unicode MS",
-    0
-};
-
-static const char **tryFonts = 0;
-
 QStringList QWindowsFontDatabaseFT::fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const
 {
-    if (script == QChar::Script_Common || script == QChar::Script_Han) {
-//            && !(request.styleStrategy & QFont::NoFontMerging)) {
-        QFontDatabase db;
-        if (!db.writingSystems(family).contains(QFontDatabase::Symbol)) {
-            if(!tryFonts) {
-                LANGID lid = GetUserDefaultLangID();
-                switch( lid&0xff ) {
-                case LANG_CHINESE: // Chinese (Taiwan)
-                    if ( lid == 0x0804 ) // Taiwan
-                        tryFonts = ch_TW_tryFonts;
-                    else
-                        tryFonts = ch_CN_tryFonts;
-                    break;
-                case LANG_JAPANESE:
-                    tryFonts = jp_tryFonts;
-                    break;
-                case LANG_KOREAN:
-                    tryFonts = kr_tryFonts;
-                    break;
-                default:
-                    tryFonts = other_tryFonts;
-                    break;
-                }
-            }
-            QStringList list;
-            const char **tf = tryFonts;
-            while(tf && *tf) {
-                if(m_families.contains(QLatin1String(*tf)))
-                    list << QLatin1String(*tf);
-                ++tf;
-            }
-            if (!list.isEmpty())
-                return list;
-        }
-    }
     QStringList result = QPlatformFontDatabase::fallbacksForFamily(family, style, styleHint, script);
     if (!result.isEmpty())
         return result;
@@ -566,51 +477,24 @@ QStringList QWindowsFontDatabaseFT::fallbacksForFamily(const QString &family, QF
     }
 #endif
 
-    if (QWindowsContext::verboseFonts)
-        qDebug() << __FUNCTION__ << family << style << styleHint
-                 << script << result << m_families;
+    if (script == QChar::Script_Common || script == QChar::Script_Han)
+        result.append(QWindowsFontDatabase::extraTryFontsForFamily(family));
+
+    qCDebug(lcQpaFonts) << __FUNCTION__ << family << style << styleHint
+        << script << result << m_families;
+
     return result;
 }
 QString QWindowsFontDatabaseFT::fontDir() const
 {
     const QString result = QLatin1String(qgetenv("windir")) + QLatin1String("/Fonts");//QPlatformFontDatabase::fontDir();
-    if (QWindowsContext::verboseFonts)
-        qDebug() << __FUNCTION__ << result;
+    qCDebug(lcQpaFonts) << __FUNCTION__ << result;
     return result;
-}
-
-HFONT QWindowsFontDatabaseFT::systemFont()
-{
-    static const HFONT stock_sysfont = (HFONT)GetStockObject(SYSTEM_FONT);
-    return stock_sysfont;
-}
-
-// Creation functions
-
-static inline int verticalDPI()
-{
-    return GetDeviceCaps(QWindowsContext::instance()->displayContext(), LOGPIXELSY);
 }
 
 QFont QWindowsFontDatabaseFT::defaultFont() const
 {
     return QWindowsFontDatabase::systemDefaultFont();
-}
-
-QFont QWindowsFontDatabaseFT::LOGFONT_to_QFont(const LOGFONT& logFont, int verticalDPI_In)
-{
-    if (verticalDPI_In <= 0)
-        verticalDPI_In = verticalDPI();
-    QFont qFont(QString::fromWCharArray(logFont.lfFaceName));
-    qFont.setItalic(logFont.lfItalic);
-    if (logFont.lfWeight != FW_DONTCARE)
-        qFont.setWeight(weightFromInteger(logFont.lfWeight));
-    const qreal logFontHeight = qAbs(logFont.lfHeight);
-    qFont.setPointSizeF(logFontHeight * 72.0 / qreal(verticalDPI_In));
-    qFont.setUnderline(logFont.lfUnderline);
-    qFont.setOverline(false);
-    qFont.setStrikeOut(logFont.lfStrikeOut);
-    return qFont;
 }
 
 QT_END_NAMESPACE

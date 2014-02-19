@@ -157,13 +157,13 @@ void Tools::checkLicense(QMap<QString,QString> &dictionary, QMap<QString,QString
     case PL('X','C'):
     case PL('X','U'):
     case PL('X','W'):
-	case PL('X','M'): // old license key
+    case PL('X','M'): // old license key
         dictionary["LICENSE_EXTENSION"] = "-ALLOS";
         break;
 
     case PL('6', 'M'):
     case PL('8', 'M'):
-	case PL('K', 'M'): // old license key
+    case PL('K', 'M'): // old license key
     case PL('N', '7'):
     case PL('N', '9'):
     case PL('N', 'X'):

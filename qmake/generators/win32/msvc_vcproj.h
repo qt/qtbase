@@ -109,6 +109,7 @@ protected:
     void initPreBuildEventTools();
     void initPostBuildEventTools();
     void initDeploymentTool();
+    void initWinDeployQtTool();
     void initPreLinkEventTools();
     void initRootFiles();
     void initSourceFiles();

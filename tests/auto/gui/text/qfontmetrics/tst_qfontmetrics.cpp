@@ -163,7 +163,7 @@ void tst_QFontMetrics::metrics()
                             fontmetrics.lineSpacing());
                 }
             }
-	}
+        }
     }
 }
 

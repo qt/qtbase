@@ -9,7 +9,7 @@ CXXFLAGS_BARE = -nologo -Zm200 -Zc:wchar_t -MT -W3 -GR -EHsc -w34100 -w34189 $(E
 CXXFLAGS      = -FIconfigure_pch.h -Yuconfigure_pch.h -Fp$(PCH) -MP $(CXXFLAGS_BARE)
 LINK          = link
 LFLAGS        = /NOLOGO /DYNAMICBASE /NXCOMPAT /INCREMENTAL:NO /SUBSYSTEM:CONSOLE "/MANIFESTDEPENDENCY:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' publicKeyToken='6595b64144ccf1df' language='*' processorArchitecture='*'" /MANIFEST /MANIFESTFILE:"configure.intermediate.manifest"
-LIBS          = ole32.lib advapi32.lib
+LIBS          = ole32.lib advapi32.lib shell32.lib
 
 TARGET        = ..\..\configure.exe
 
@@ -58,6 +58,7 @@ OBJECTS = \
     qmap.obj \
     qregexp.obj \
     qstring.obj \
+    qstring_compat.obj \
     qstringlist.obj \
     qvsnprintf.obj \
     qvariant.obj \
@@ -162,3 +163,7 @@ quuid.obj: $(CORESRC)\plugin\quuid.cpp $(PCH)
 	$(CXX) -c $(CXXFLAGS) $<
 {$(CORESRC)\xml}.cpp{}.obj::
 	$(CXX) -c $(CXXFLAGS) $<
+
+# Make sure qstring_compat.obj isn't compiled with PCH enabled
+qstring_compat.obj: $(CORESRC)\tools\qstring_compat.cpp
+	$(CXX) -c $(CXXFLAGS_BARE) $(CORESRC)\tools\qstring_compat.cpp

@@ -48,6 +48,10 @@
 #include <QtGui/QScreen>
 #include <QtGui/QWindow>
 #include <QtGui/QOffscreenSurface>
+#include <QtGui/QGenericMatrix>
+#include <QtGui/QMatrix4x4>
+#include <QtGui/private/qopengltextureblitter_p.h>
+
 
 #include <QtTest/QtTest>
 
@@ -66,6 +70,8 @@ private slots:
     void multiGroupSharedResourceCleanupCustom();
     void fboSimpleRendering_data();
     void fboSimpleRendering();
+    void fboTextureOwnership_data();
+    void fboTextureOwnership();
     void fboRendering_data();
     void fboRendering();
     void fboHandleNulledAfterContextDestroyed();
@@ -73,6 +79,11 @@ private slots:
     void openGLPaintDevice();
     void aboutToBeDestroyed();
     void QTBUG15621_triangulatingStrokerDivZero();
+    void textureblitterFullSourceRectTransform();
+    void textureblitterPartOriginBottomLeftSourceRectTransform();
+    void textureblitterPartOriginTopLeftSourceRectTransform();
+    void textureblitterFullTargetRectTransform();
+    void textureblitterPartTargetRectTransform();
 };
 
 struct SharedResourceTracker
@@ -429,6 +440,54 @@ void tst_QOpenGL::fboSimpleRendering()
     delete fbo;
 }
 
+void tst_QOpenGL::fboTextureOwnership_data()
+{
+    common_data();
+}
+
+void tst_QOpenGL::fboTextureOwnership()
+{
+    QFETCH(int, surfaceClass);
+    QScopedPointer<QSurface> surface(createSurface(surfaceClass));
+
+    QOpenGLContext ctx;
+    QVERIFY(ctx.create());
+
+    ctx.makeCurrent(surface.data());
+
+    if (!QOpenGLFramebufferObject::hasOpenGLFramebufferObjects())
+        QSKIP("QOpenGLFramebufferObject not supported on this platform");
+
+    QOpenGLFramebufferObjectFormat fboFormat;
+    fboFormat.setAttachment(QOpenGLFramebufferObject::NoAttachment);
+
+    QOpenGLFramebufferObject *fbo = new QOpenGLFramebufferObject(200, 100, fboFormat);
+    QVERIFY(fbo->texture() != 0);
+    fbo->bind();
+
+    // pull out the texture
+    GLuint texture = fbo->takeTexture();
+    QVERIFY(texture != 0);
+    QVERIFY(fbo->texture() == 0);
+
+    // verify that the next bind() creates a new texture
+    fbo->bind();
+    QVERIFY(fbo->texture() != 0 && fbo->texture() != texture);
+
+    glClearColor(1.0, 0.0, 0.0, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glFinish();
+
+    QImage fb = fbo->toImage().convertToFormat(QImage::Format_RGB32);
+    QImage reference(fb.size(), QImage::Format_RGB32);
+    reference.fill(0xffff0000);
+
+    QFUZZY_COMPARE_IMAGES(fb, reference);
+
+    glDeleteTextures(1, &texture);
+    delete fbo;
+}
+
 void tst_QOpenGL::fboRendering_data()
 {
     common_data();
@@ -658,6 +717,188 @@ void tst_QOpenGL::QTBUG15621_triangulatingStrokerDivZero()
     QCOMPARE(image.pixel(95, 95), blue);
 }
 
+typedef QGenericMatrix<1, 3, float> TestVertex3D;
+static const float uv_top_left[] = {0.f, 1.f, 1.f};
+static const float uv_bottom_left[] = {0.f, 0.f, 1.f};
+static const float uv_top_right[] = {1.f, 1.f, 1.f};
+static const float uv_bottom_right[] = {1.f, 0.f, 1.f};
+
+bool q_fuzzy_compare(const TestVertex3D &left, const TestVertex3D &right) {
+    return qFuzzyCompare(left(0,0), right(0,0)) &&
+           qFuzzyCompare(left(1,0), right(1,0)) &&
+           qFuzzyCompare(left(2,0), right(2,0));
+}
+
+void tst_QOpenGL::textureblitterFullSourceRectTransform()
+{
+    TestVertex3D topLeft(uv_top_left);
+    TestVertex3D bottomLeft(uv_bottom_left);
+    TestVertex3D topRight(uv_top_right);
+    TestVertex3D bottomRight(uv_bottom_right);
+
+    QRectF rect(0,0,1,1);
+    QMatrix3x3 flippedMatrix = QOpenGLTextureBlitter::sourceTransform(rect, rect.size().toSize(), QOpenGLTextureBlitter::OriginTopLeft);
+
+    TestVertex3D flippedTopLeft = flippedMatrix * topLeft;
+    QCOMPARE(flippedTopLeft, bottomLeft);
+
+    TestVertex3D flippedBottomLeft = flippedMatrix * bottomLeft;
+    QCOMPARE(flippedBottomLeft, topLeft);
+
+    TestVertex3D flippedTopRight = flippedMatrix * topRight;
+    QCOMPARE(flippedTopRight, bottomRight);
+
+    TestVertex3D flippedBottomRight = flippedMatrix * bottomRight;
+    QCOMPARE(flippedBottomRight, topRight);
+
+    QMatrix3x3 identityMatrix = QOpenGLTextureBlitter::sourceTransform(rect, rect.size().toSize(), QOpenGLTextureBlitter::OriginBottomLeft);
+
+    TestVertex3D notFlippedTopLeft = identityMatrix * topLeft;
+    QCOMPARE(notFlippedTopLeft, topLeft);
+
+    TestVertex3D notFlippedBottomLeft = identityMatrix * bottomLeft;
+    QCOMPARE(notFlippedBottomLeft, bottomLeft);
+
+    TestVertex3D notFlippedTopRight = identityMatrix * topRight;
+    QCOMPARE(notFlippedTopRight, topRight);
+
+    TestVertex3D notFlippedBottomRight = identityMatrix * bottomRight;
+    QCOMPARE(notFlippedBottomRight, bottomRight);
+}
+
+void tst_QOpenGL::textureblitterPartOriginBottomLeftSourceRectTransform()
+{
+    TestVertex3D topLeft(uv_top_left);
+    TestVertex3D bottomLeft(uv_bottom_left);
+    TestVertex3D topRight(uv_top_right);
+    TestVertex3D bottomRight(uv_bottom_right);
+
+    QRectF sourceRect(50,200,200,200);
+    QSize textureSize(400,400);
+
+    QMatrix3x3 sourceMatrix = QOpenGLTextureBlitter::sourceTransform(sourceRect, textureSize, QOpenGLTextureBlitter::OriginBottomLeft);
+
+    const float x_point_ratio = sourceRect.topLeft().x() / textureSize.width();
+    const float y_point_ratio = sourceRect.topLeft().y() / textureSize.height();
+    const float width_ratio = sourceRect.width() / textureSize.width();
+    const float height_ratio = sourceRect.height() / textureSize.height();
+
+    TestVertex3D uvTopLeft = sourceMatrix * topLeft;
+    const float expected_top_left[] = { x_point_ratio, y_point_ratio + height_ratio, 1 };
+    TestVertex3D expectedTopLeft(expected_top_left);
+    QCOMPARE(uvTopLeft, expectedTopLeft);
+
+    TestVertex3D uvBottomLeft = sourceMatrix * bottomLeft;
+    const float expected_bottom_left[] = { x_point_ratio, y_point_ratio, 1 };
+    TestVertex3D expectedBottomLeft(expected_bottom_left);
+    QCOMPARE(uvBottomLeft, expectedBottomLeft);
+
+    TestVertex3D uvTopRight = sourceMatrix * topRight;
+    const float expected_top_right[] = { x_point_ratio + width_ratio, y_point_ratio + height_ratio, 1 };
+    TestVertex3D expectedTopRight(expected_top_right);
+    QCOMPARE(uvTopRight, expectedTopRight);
+
+    TestVertex3D uvBottomRight = sourceMatrix * bottomRight;
+    const float expected_bottom_right[] = { x_point_ratio + width_ratio, y_point_ratio, 1 };
+    TestVertex3D expectedBottomRight(expected_bottom_right);
+    QCOMPARE(uvBottomRight, expectedBottomRight);
+}
+
+void tst_QOpenGL::textureblitterPartOriginTopLeftSourceRectTransform()
+{
+    TestVertex3D topLeft(uv_top_left);
+    TestVertex3D bottomLeft(uv_bottom_left);
+    TestVertex3D topRight(uv_top_right);
+    TestVertex3D bottomRight(uv_bottom_right);
+
+    QRectF sourceRect(50,190,170,170);
+    QSize textureSize(400,400);
+
+    QMatrix3x3 sourceMatrix = QOpenGLTextureBlitter::sourceTransform(sourceRect, textureSize, QOpenGLTextureBlitter::OriginTopLeft);
+
+    const float x_point_ratio = sourceRect.topLeft().x() / textureSize.width();
+    const float y_point_ratio = sourceRect.topLeft().y() / textureSize.height();
+    const float width_ratio = sourceRect.width() / textureSize.width();
+    const float height_ratio = sourceRect.height() / textureSize.height();
+
+    TestVertex3D uvTopLeft = sourceMatrix * topLeft;
+    const float expected_top_left[] = { x_point_ratio, 1 - y_point_ratio - height_ratio, 1 };
+    TestVertex3D expectedTopLeft(expected_top_left);
+    QVERIFY(q_fuzzy_compare(uvTopLeft, expectedTopLeft));
+
+    TestVertex3D uvBottomLeft = sourceMatrix * bottomLeft;
+    const float expected_bottom_left[] = { x_point_ratio, 1 - y_point_ratio, 1 };
+    TestVertex3D expectedBottomLeft(expected_bottom_left);
+    QVERIFY(q_fuzzy_compare(uvBottomLeft, expectedBottomLeft));
+
+    TestVertex3D uvTopRight = sourceMatrix * topRight;
+    const float expected_top_right[] = { x_point_ratio + width_ratio, 1 - y_point_ratio - height_ratio, 1 };
+    TestVertex3D expectedTopRight(expected_top_right);
+    QVERIFY(q_fuzzy_compare(uvTopRight, expectedTopRight));
+
+    TestVertex3D uvBottomRight = sourceMatrix * bottomRight;
+    const float expected_bottom_right[] = { x_point_ratio + width_ratio, 1 - y_point_ratio, 1 };
+    TestVertex3D expectedBottomRight(expected_bottom_right);
+    QVERIFY(q_fuzzy_compare(uvBottomRight, expectedBottomRight));
+}
+
+void tst_QOpenGL::textureblitterFullTargetRectTransform()
+{
+    QVector4D topLeft(-1.f, 1.f, 0.f, 1.f);
+    QVector4D bottomLeft(-1.f, -1.f, 0.f, 1.f);
+    QVector4D topRight(1.f, 1.f, 0.f, 1.f);
+    QVector4D bottomRight(1.f, -1.f, 0.f, 1.f);
+
+    QRectF rect(0,0,200,200);
+    QMatrix4x4 targetMatrix = QOpenGLTextureBlitter::targetTransform(rect,rect.toRect());
+
+    QVector4D translatedTopLeft = targetMatrix * topLeft;
+    QCOMPARE(translatedTopLeft, topLeft);
+
+    QVector4D translatedBottomLeft = targetMatrix * bottomLeft;
+    QCOMPARE(translatedBottomLeft, bottomLeft);
+
+    QVector4D translatedTopRight = targetMatrix * topRight;
+    QCOMPARE(translatedTopRight, topRight);
+
+    QVector4D translatedBottomRight = targetMatrix * bottomRight;
+    QCOMPARE(translatedBottomRight, bottomRight);
+}
+
+void tst_QOpenGL::textureblitterPartTargetRectTransform()
+{
+    QVector4D topLeft(-1.f, 1.f, 0.f, 1.f);
+    QVector4D bottomLeft(-1.f, -1.f, 0.f, 1.f);
+    QVector4D topRight(1.f, 1.f, 0.f, 1.f);
+    QVector4D bottomRight(1.f, -1.f, 0.f, 1.f);
+
+    QRectF targetRect(50,50,200,200);
+    QRect viewport(0,0,400,400);
+
+    //multiply by 2 since coordinate system goes from -1 -> 1;
+    qreal x_point_ratio = (50. / 400.) * 2;
+    qreal y_point_ratio = (50. / 400.) * 2;
+    qreal width_ratio = (200. / 400.) * 2;
+    qreal height_ratio = (200. / 400.) * 2;
+
+    QMatrix4x4 targetMatrix = QOpenGLTextureBlitter::targetTransform(targetRect, viewport);
+
+    QVector4D targetTopLeft = targetMatrix * topLeft;
+    QVector4D expectedTopLeft(-1 + x_point_ratio, 1 - y_point_ratio, .0, 1.0);
+    QCOMPARE(targetTopLeft, expectedTopLeft);
+
+    QVector4D targetBottomLeft = targetMatrix * bottomLeft;
+    QVector4D expectedBottomLeft(-1 + x_point_ratio, 1 - y_point_ratio  - height_ratio, 0.0, 1.0);
+    QCOMPARE(targetBottomLeft, expectedBottomLeft);
+
+    QVector4D targetTopRight = targetMatrix * topRight;
+    QVector4D expectedTopRight(-1 + x_point_ratio + width_ratio, 1 - y_point_ratio, 0.0, 1.0);
+    QCOMPARE(targetTopRight, expectedTopRight);
+
+    QVector4D targetBottomRight = targetMatrix * bottomRight;
+    QVector4D expectedBottomRight(-1 + x_point_ratio + width_ratio, 1 - y_point_ratio - height_ratio, 0.0, 1.0);
+    QCOMPARE(targetBottomRight, expectedBottomRight);
+}
 
 QTEST_MAIN(tst_QOpenGL)
 

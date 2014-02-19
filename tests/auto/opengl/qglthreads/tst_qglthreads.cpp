@@ -333,52 +333,55 @@ static inline float qrandom() { return (rand() % 100) / 100.f; }
 
 void renderAScene(int w, int h)
 {
-#ifdef QT_OPENGL_ES_2
-            Q_UNUSED(w)
-            Q_UNUSED(h)
-            QGLShaderProgram program;
-            program.addShaderFromSourceCode(QGLShader::Vertex, "attribute highp vec2 pos; void main() { gl_Position = vec4(pos.xy, 1.0, 1.0); }");
-            program.addShaderFromSourceCode(QGLShader::Fragment, "uniform lowp vec4 color; void main() { gl_FragColor = color; }");
-            program.bindAttributeLocation("pos", 0);
-            program.bind();
+    if (QOpenGLFunctions::isES()) {
+        QGLFunctions funcs(QGLContext::currentContext());
+        Q_UNUSED(w);
+        Q_UNUSED(h);
+        QGLShaderProgram program;
+        program.addShaderFromSourceCode(QGLShader::Vertex, "attribute highp vec2 pos; void main() { gl_Position = vec4(pos.xy, 1.0, 1.0); }");
+        program.addShaderFromSourceCode(QGLShader::Fragment, "uniform lowp vec4 color; void main() { gl_FragColor = color; }");
+        program.bindAttributeLocation("pos", 0);
+        program.bind();
 
-            glEnableVertexAttribArray(0);
+        funcs.glEnableVertexAttribArray(0);
 
-            for (int i=0; i<1000; ++i) {
-                GLfloat pos[] = {
-                    (rand() % 100) / 100.f,
-                    (rand() % 100) / 100.f,
-                    (rand() % 100) / 100.f,
-                    (rand() % 100) / 100.f,
-                    (rand() % 100) / 100.f,
-                    (rand() % 100) / 100.f
-                };
+        for (int i=0; i<1000; ++i) {
+            GLfloat pos[] = {
+                (rand() % 100) / 100.f,
+                (rand() % 100) / 100.f,
+                (rand() % 100) / 100.f,
+                (rand() % 100) / 100.f,
+                (rand() % 100) / 100.f,
+                (rand() % 100) / 100.f
+            };
 
-                glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, pos);
-                glDrawArrays(GL_TRIANGLE_STRIP, 0, 3);
-            }
-#else
-            glViewport(0, 0, w, h);
+            funcs.glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, pos);
+            glDrawArrays(GL_TRIANGLE_STRIP, 0, 3);
+        }
+    } else {
+#ifndef QT_OPENGL_ES_2
+        glViewport(0, 0, w, h);
 
-            glMatrixMode(GL_PROJECTION);
-            glLoadIdentity();
-            glFrustum(0, w, h, 0, 1, 100);
-            glTranslated(0, 0, -1);
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        glFrustum(0, w, h, 0, 1, 100);
+        glTranslated(0, 0, -1);
 
-            glMatrixMode(GL_MODELVIEW);
-            glLoadIdentity();
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
 
-            for (int i=0;i<1000; ++i) {
-                glBegin(GL_TRIANGLES);
-                glColor3f(qrandom(), qrandom(), qrandom());
-                glVertex2f(qrandom() * w, qrandom() * h);
-                glColor3f(qrandom(), qrandom(), qrandom());
-                glVertex2f(qrandom() * w, qrandom() * h);
-                glColor3f(qrandom(), qrandom(), qrandom());
-                glVertex2f(qrandom() * w, qrandom() * h);
-                glEnd();
-            }
+        for (int i=0;i<1000; ++i) {
+            glBegin(GL_TRIANGLES);
+            glColor3f(qrandom(), qrandom(), qrandom());
+            glVertex2f(qrandom() * w, qrandom() * h);
+            glColor3f(qrandom(), qrandom(), qrandom());
+            glVertex2f(qrandom() * w, qrandom() * h);
+            glColor3f(qrandom(), qrandom(), qrandom());
+            glVertex2f(qrandom() * w, qrandom() * h);
+            glEnd();
+        }
 #endif
+    }
 }
 
 class ThreadSafeGLWidget : public QGLWidget

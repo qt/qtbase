@@ -84,7 +84,7 @@ class QDockWidgetPrivate : public QWidgetPrivate
 
 public:
     inline QDockWidgetPrivate()
-	: QWidgetPrivate(), state(0),
+        : QWidgetPrivate(), state(0),
           features(QDockWidget::DockWidgetClosable
                    | QDockWidget::DockWidgetMovable
                    | QDockWidget::DockWidgetFloatable),

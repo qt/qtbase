@@ -356,7 +356,10 @@ language_list = {
     308 : [ "Tagbanwa",           "tbw" ],
     309 : [ "TaiDam",             "blt" ],
     310 : [ "TaiNua",             "tdd" ],
-    311 : [ "Ugaritic",           "uga" ]
+    311 : [ "Ugaritic",           "uga" ],
+    312 : [ "Akoose",             "bss" ],
+    313 : [ "Lakota",             "lkt" ],
+    314 : [ "Standard Moroccan Tamazight", "zgh" ]
 }
 
 country_list = {

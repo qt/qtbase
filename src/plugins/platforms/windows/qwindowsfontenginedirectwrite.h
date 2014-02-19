@@ -105,6 +105,8 @@ public:
 
     static QString fontNameSubstitute(const QString &familyName);
 
+    IDWriteFontFace *directWriteFontFace() const { return m_directWriteFontFace; }
+
 private:
     QImage imageForGlyph(glyph_t t, QFixed subPixelPosition, int margin, const QTransform &xform);
     void collectMetrics();

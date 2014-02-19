@@ -68,21 +68,6 @@
 
 QT_BEGIN_NAMESPACE
 
-typedef BOOL (WINAPI*GetSpecialFolderPath)(HWND, LPWSTR, int, BOOL);
-static GetSpecialFolderPath resolveGetSpecialFolderPath()
-{
-    static GetSpecialFolderPath gsfp = 0;
-    if (!gsfp) {
-#ifndef Q_OS_WINCE
-        QSystemLibrary library(QLatin1String("shell32"));
-#else
-        QSystemLibrary library(QLatin1String("coredll"));
-#endif // Q_OS_WINCE
-        gsfp = (GetSpecialFolderPath)library.resolve("SHGetSpecialFolderPathW");
-    }
-    return gsfp;
-}
-
 static QString convertCharArray(const wchar_t *path)
 {
     return QDir::fromNativeSeparators(QString::fromWCharArray(path));
@@ -91,10 +76,6 @@ static QString convertCharArray(const wchar_t *path)
 QString QStandardPaths::writableLocation(StandardLocation type)
 {
     QString result;
-
-    static GetSpecialFolderPath SHGetSpecialFolderPath = resolveGetSpecialFolderPath();
-    if (!SHGetSpecialFolderPath)
-        return QString();
 
     wchar_t path[MAX_PATH];
 
@@ -185,8 +166,7 @@ QStringList QStandardPaths::standardLocations(StandardLocation type)
     // type-specific handling goes here
 
 #ifndef Q_OS_WINCE
-    static GetSpecialFolderPath SHGetSpecialFolderPath = resolveGetSpecialFolderPath();
-    if (SHGetSpecialFolderPath) {
+    {
         wchar_t path[MAX_PATH];
         switch (type) {
         case ConfigLocation: // same as DataLocation, on Windows (oversight, but too late to fix it)
@@ -204,6 +184,12 @@ QStringList QStandardPaths::standardLocations(StandardLocation type)
 #endif
                 }
                 dirs.append(result);
+#ifndef QT_BOOTSTRAPPED
+                if (type != GenericDataLocation) {
+                    dirs.append(QCoreApplication::applicationDirPath());
+                    dirs.append(QCoreApplication::applicationDirPath() + QLatin1String("/data"));
+                }
+#endif
             }
             break;
         default:

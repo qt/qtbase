@@ -38,6 +38,9 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
+#ifndef CXX11_ENUMS_H
+#define CXX11_ENUMS_H
 #include <QtCore/QObject>
 
 #if defined(Q_COMPILER_CLASS_ENUM) || defined(Q_MOC_RUN)
@@ -64,3 +67,4 @@ public:
     enum TypedEnum { B0, B1 , B2, B3 };
 };
 #endif
+#endif // CXX11_ENUMS_H

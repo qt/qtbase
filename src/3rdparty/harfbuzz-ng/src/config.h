@@ -14,6 +14,10 @@
 #  define HB_INTERNAL Q_DECL_HIDDEN
 #endif
 
+#if !defined(QT_NO_DEBUG)
+#  define NDEBUG
+#endif
+
 // because strdup() is not part of strict Posix, declare it here
 extern "C" char *strdup(const char *src);
 

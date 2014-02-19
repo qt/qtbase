@@ -723,7 +723,7 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format,
         FT_Set_Transform(face, &matrix, 0);
         freetype->matrix = matrix;
         // fake bold
-        if ((fontDef.weight == QFont::Bold) && !(face->style_flags & FT_STYLE_FLAG_BOLD) && !FT_IS_FIXED_WIDTH(face))
+        if ((fontDef.weight >= QFont::Bold) && !(face->style_flags & FT_STYLE_FLAG_BOLD) && !FT_IS_FIXED_WIDTH(face))
             embolden = true;
         // underline metrics
         line_thickness =  QFixed::fromFixed(FT_MulFix(face->underline_thickness, face->size->metrics.y_scale));
@@ -1196,7 +1196,7 @@ int QFontEngineFT::synthesized() const
     int s = 0;
     if ((fontDef.style != QFont::StyleNormal) && !(freetype->face->style_flags & FT_STYLE_FLAG_ITALIC))
         s = SynthesizedItalic;
-    if ((fontDef.weight == QFont::Bold) && !(freetype->face->style_flags & FT_STYLE_FLAG_BOLD))
+    if ((fontDef.weight >= QFont::Bold) && !(freetype->face->style_flags & FT_STYLE_FLAG_BOLD))
         s |= SynthesizedBold;
     if (fontDef.stretch != 100 && FT_IS_SCALABLE(freetype->face))
         s |= SynthesizedStretch;
@@ -1283,13 +1283,22 @@ qreal QFontEngineFT::minRightBearing() const
 {
     if (rbearing == SHRT_MIN) {
         lbearing = rbearing = 0;
-        const QChar *ch = (const QChar *)(const void*)char_table;
-        QGlyphLayoutArray<char_table_entries> glyphs;
+
+        const QChar *ch = reinterpret_cast<const QChar *>(char_table);
+
+        glyph_t glyphs[char_table_entries];
+
+        QGlyphLayout g;
+        g.glyphs = glyphs;
+        g.numGlyphs = char_table_entries;
         int ng = char_table_entries;
-        stringToCMap(ch, char_table_entries, &glyphs, &ng, GlyphIndicesOnly);
+        if (!stringToCMap(ch, char_table_entries, &g, &ng, GlyphIndicesOnly))
+            Q_UNREACHABLE();
+        Q_ASSERT(ng == char_table_entries);
+
         while (--ng) {
-            if (glyphs.glyphs[ng]) {
-                glyph_metrics_t gi = const_cast<QFontEngineFT *>(this)->boundingBox(glyphs.glyphs[ng]);
+            if (glyphs[ng]) {
+                glyph_metrics_t gi = const_cast<QFontEngineFT *>(this)->boundingBox(glyphs[ng]);
                 lbearing = qMin(lbearing, gi.x);
                 rbearing = qMin(rbearing, (gi.xoff - gi.x - gi.width));
             }
@@ -1525,7 +1534,6 @@ bool QFontEngineFT::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs
         return false;
     }
 
-    bool mirrored = flags & QFontEngine::RightToLeft;
     int glyph_pos = 0;
     if (freetype->symbol_map) {
         FT_Face face = freetype->face;
@@ -1561,8 +1569,6 @@ bool QFontEngineFT::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs
         FT_Face face = freetype->face;
         for (int i = 0; i < len; ++i) {
             unsigned int uc = getChar(str, i, len);
-            if (mirrored)
-                uc = QChar::mirroredChar(uc);
             glyphs->glyphs[glyph_pos] = uc < QFreetypeFace::cmapCacheSize ? freetype->cmapCache[uc] : 0;
             if (!glyphs->glyphs[glyph_pos]) {
                 {
@@ -1607,24 +1613,23 @@ void QFontEngineFT::recalcAdvances(QGlyphLayout *glyphs, QFontEngine::ShaperFlag
         // Since we are passing Format_None to loadGlyph, use same default format logic as loadGlyph
         GlyphFormat acceptableFormat = (defaultFormat != Format_None) ? defaultFormat : Format_Mono;
         if (g && g->format == acceptableFormat) {
-            glyphs->advances_x[i] = design ? QFixed::fromFixed(g->linearAdvance) : QFixed(g->advance);
+            glyphs->advances[i] = design ? QFixed::fromFixed(g->linearAdvance) : QFixed(g->advance);
         } else {
             if (!face)
                 face = lockFace();
             g = loadGlyph(cacheEnabled ? &defaultGlyphSet : 0, glyphs->glyphs[i], 0, Format_None, true);
-            glyphs->advances_x[i] = design ? QFixed::fromFixed(face->glyph->linearHoriAdvance >> 10)
-                                           : QFixed::fromFixed(face->glyph->metrics.horiAdvance).round();
+            glyphs->advances[i] = design ? QFixed::fromFixed(face->glyph->linearHoriAdvance >> 10)
+                                         : QFixed::fromFixed(face->glyph->metrics.horiAdvance);
             if (!cacheEnabled)
                 delete g;
         }
-        glyphs->advances_y[i] = 0;
     }
     if (face)
         unlockFace();
 
     if (fontDef.styleStrategy & QFont::ForceIntegerMetrics) {
         for (int i = 0; i < glyphs->numGlyphs; ++i)
-            glyphs->advances_x[i] = glyphs->advances_x[i].round();
+            glyphs->advances[i] = glyphs->advances[i].round();
     }
 }
 

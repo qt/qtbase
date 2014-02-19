@@ -48,7 +48,7 @@ CXXFLAGS_BARE = $(CFLAGS_BARE)
 CXXFLAGS = $(CFLAGS)
 
 LFLAGS	    =
-LIBS	    = ole32.lib advapi32.lib
+LIBS	    = ole32.lib advapi32.lib shell32.lib
 LINKQMAKE   = $(LINKER) $(LFLAGS) -OUT:qmake.exe $(OBJS) $(QTOBJS) $(LIBS)
 ADDCLEAN    = qmake.pdb qmake.ilk
 
@@ -105,6 +105,7 @@ QTOBJS= \
 	qtextcodec.obj \
 	qutfcodec.obj \
 	qstring.obj \
+	qstring_compat.obj \
 	qstringlist.obj \
 	qstringbuilder.obj \
 	qsystemerror.obj \
@@ -218,3 +219,7 @@ qmake_pch.obj:
 
 {$(SOURCE_PATH)\tools\shared\windows}.cpp{}.obj::
 	$(CXX) $(CXXFLAGS) $<
+
+# Make sure qstring_compat.obj isn't compiled with PCH enabled
+qstring_compat.obj: $(SOURCE_PATH)\src\corelib\tools\qstring_compat.cpp
+	$(CXX) -c $(CXXFLAGS_BARE) $(SOURCE_PATH)\src\corelib\tools\qstring_compat.cpp

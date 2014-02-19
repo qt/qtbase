@@ -1,7 +1,10 @@
 TEMPLATE=subdirs
-SUBDIRS=\
+
+SUBDIRS = \
+    kernel
+
+!ios: SUBDIRS += \
     image \
-    kernel \
     math3d \
     painting \
     qopengl \

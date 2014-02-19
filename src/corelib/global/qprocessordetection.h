@@ -196,6 +196,7 @@
 #  define Q_PROCESSOR_X86       6
 #  define Q_PROCESSOR_X86_64
 #  define Q_BYTE_ORDER Q_LITTLE_ENDIAN
+#  define Q_PROCESSOR_WORDSIZE   8
 
 /*
     Itanium (IA-64) family, no revisions or variants
@@ -204,6 +205,7 @@
 */
 #elif defined(__ia64) || defined(__ia64__) || defined(_M_IA64)
 #  define Q_PROCESSOR_IA64
+#  define Q_PROCESSOR_WORDSIZE   8
 // Q_BYTE_ORDER not defined, use endianness auto-detection
 
 /*
@@ -321,6 +323,24 @@
 #    define Q_BYTE_ORDER Q_LITTLE_ENDIAN
 #  else
 #    error "Unable to determine byte order!"
+#  endif
+#endif
+
+/*
+   Define Q_PROCESSOR_WORDSIZE to be the size of the machine's word (usually,
+   the size of the register). On some architectures where a pointer could be
+   smaller than the register, the macro is defined above.
+
+   Falls back to QT_POINTER_SIZE if not set explicitly for the platform.
+*/
+#ifndef Q_PROCESSOR_WORDSIZE
+#  ifdef __SIZEOF_POINTER__
+     /* GCC & friends define this */
+#    define Q_PROCESSOR_WORDSIZE        __SIZEOF_POINTER__
+#  elif defined(_LP64) || defined(__LP64__) || defined(WIN64) || defined(_WIN64)
+#    define Q_PROCESSOR_WORDSIZE        8
+#  else
+#    define Q_PROCESSOR_WORDSIZE        QT_POINTER_SIZE
 #  endif
 #endif
 

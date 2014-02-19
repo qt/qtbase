@@ -315,6 +315,8 @@ private:
 
 Q_DECLARE_SHARED(QFont)
 
+Q_GUI_EXPORT uint qHash(const QFont &font, uint seed = 0) Q_DECL_NOTHROW;
+
 inline bool QFont::bold() const
 { return weight() > Normal; }
 

@@ -119,7 +119,7 @@ void tst_QTextList::autoNumbering()
     QVERIFY(list);
 
     for (int i = 0; i < 27; ++i)
-	cursor.insertBlock();
+        cursor.insertBlock();
 
     QVERIFY(list->count() == 28);
 

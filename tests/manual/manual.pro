@@ -25,6 +25,7 @@ qnetworkreply \
 qpainfo \
 qscreen \
 qssloptions \
+qsslsocket \
 qtabletevent \
 qtexteditlist \
 qtbug-8933 \
@@ -46,6 +47,8 @@ windowtransparency \
 unc
 
 !contains(QT_CONFIG, openssl):!contains(QT_CONFIG, openssl-linked):SUBDIRS -= qssloptions
+
+contains(QT_CONFIG, opengl):SUBDIRS += qopengltextureblitter
 
 win32 {
     SUBDIRS -= network_remote_stresstest network_stresstest

@@ -6,13 +6,14 @@
 </Environment>
 <TestFunction name="initTestCase">
 <Incident type="pass" file="" line="0" />
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="badDataTag">
 <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[fail end cdata ]]]><![CDATA[]> text ]]]><![CDATA[]> more text]]></DataTag>
     <Description><![CDATA[a message]]></Description>
 </Message>
-<Incident type="fail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/badxml/tst_badxml.cpp" line="111">
+<Incident type="fail" file="tst_badxml.cpp" line="114">
     <DataTag><![CDATA[fail end cdata ]]]><![CDATA[]> text ]]]><![CDATA[]> more text]]></DataTag>
     <Description><![CDATA[a failure]]></Description>
 </Incident>
@@ -28,7 +29,7 @@
     <DataTag><![CDATA[fail quotes " text" more text]]></DataTag>
     <Description><![CDATA[a message]]></Description>
 </Message>
-<Incident type="fail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/badxml/tst_badxml.cpp" line="111">
+<Incident type="fail" file="tst_badxml.cpp" line="114">
     <DataTag><![CDATA[fail quotes " text" more text]]></DataTag>
     <Description><![CDATA[a failure]]></Description>
 </Incident>
@@ -44,7 +45,7 @@
     <DataTag><![CDATA[fail xml close > open < tags < text]]></DataTag>
     <Description><![CDATA[a message]]></Description>
 </Message>
-<Incident type="fail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/badxml/tst_badxml.cpp" line="111">
+<Incident type="fail" file="tst_badxml.cpp" line="114">
     <DataTag><![CDATA[fail xml close > open < tags < text]]></DataTag>
     <Description><![CDATA[a failure]]></Description>
 </Incident>
@@ -60,7 +61,7 @@
     <DataTag><![CDATA[fail all > " mixed ]]]><![CDATA[]> up > " in < the ]]]><![CDATA[]> hopes < of triggering "< ]]]><![CDATA[]> bugs]]></DataTag>
     <Description><![CDATA[a message]]></Description>
 </Message>
-<Incident type="fail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/badxml/tst_badxml.cpp" line="111">
+<Incident type="fail" file="tst_badxml.cpp" line="114">
     <DataTag><![CDATA[fail all > " mixed ]]]><![CDATA[]> up > " in < the ]]]><![CDATA[]> hopes < of triggering "< ]]]><![CDATA[]> bugs]]></DataTag>
     <Description><![CDATA[a failure]]></Description>
 </Incident>
@@ -72,6 +73,7 @@
     <DataTag><![CDATA[pass all > " mixed ]]]><![CDATA[]> up > " in < the ]]]><![CDATA[]> hopes < of triggering "< ]]]><![CDATA[]> bugs]]></DataTag>
 </Incident>
 <BenchmarkResult metric="Events" tag="pass all &gt; &quot; mixed ]]&gt; up &gt; &quot; in &lt; the ]]&gt; hopes &lt; of triggering &quot;&lt; ]]&gt; bugs" value="0" iterations="1" />
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="badMessage">
 <Message type="qdebug" file="" line="0">
@@ -102,13 +104,24 @@
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[string 3]]></DataTag>
 </Incident>
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="failWithNoFile">
 <Incident type="fail" file="" line="0">
     <Description><![CDATA[failure message]]></Description>
 </Incident>
+    <Duration msecs="0"/>
+</TestFunction>
+<TestFunction name="encoding">
+<Message type="qdebug" file="" line="0">
+    <Description><![CDATA["Ülrich Ümläut"]]></Description>
+</Message>
+<Incident type="pass" file="" line="0" />
+    <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="cleanupTestCase">
 <Incident type="pass" file="" line="0" />
+    <Duration msecs="0"/>
 </TestFunction>
+<Duration msecs="0"/>
 </TestCase>

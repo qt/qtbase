@@ -47,11 +47,23 @@
 
 #include <QtCore/QScopedPointer>
 #include <QtCore/QSharedPointer>
+#include <QtCore/QLoggingCategory>
 
 struct IBindCtx;
 struct _SHSTOCKICONINFO;
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(lcQpaWindows)
+Q_DECLARE_LOGGING_CATEGORY(lcQpaBackingStore)
+Q_DECLARE_LOGGING_CATEGORY(lcQpaEvents)
+Q_DECLARE_LOGGING_CATEGORY(lcQpaFonts)
+Q_DECLARE_LOGGING_CATEGORY(lcQpaGl)
+Q_DECLARE_LOGGING_CATEGORY(lcQpaMime)
+Q_DECLARE_LOGGING_CATEGORY(lcQpaInputMethods)
+Q_DECLARE_LOGGING_CATEGORY(lcQpaDialogs)
+Q_DECLARE_LOGGING_CATEGORY(lcQpaTablet)
+Q_DECLARE_LOGGING_CATEGORY(lcQpaAccessibility)
 
 class QWindow;
 class QPlatformScreen;
@@ -128,17 +140,7 @@ public:
     };
 
     // Verbose flag set by environment variable QT_QPA_VERBOSE
-    static int verboseIntegration;
-    static int verboseWindows;
-    static int verboseBackingStore;
-    static int verboseEvents;
-    static int verboseFonts;
-    static int verboseGL;
-    static int verboseOLE;
-    static int verboseInputMethods;
-    static int verboseDialogs;
-    static int verboseTheming;
-    static int verboseTablet;
+    static int verbose;
 
     explicit QWindowsContext();
     ~QWindowsContext();

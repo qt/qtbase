@@ -86,8 +86,8 @@ class QKdeThemePrivate;
 class QKdeTheme : public QPlatformTheme
 {
     Q_DECLARE_PRIVATE(QKdeTheme)
-    QKdeTheme(const QString &kdeHome, int kdeVersion);
 public:
+    QKdeTheme(const QString &kdeHome, int kdeVersion);
 
     static QPlatformTheme *createKdeTheme();
     virtual QVariant themeHint(ThemeHint hint) const;
@@ -109,6 +109,7 @@ public:
     QGnomeTheme();
     virtual QVariant themeHint(ThemeHint hint) const;
     virtual const QFont *font(Font type) const;
+    QString standardButtonText(int button) const Q_DECL_OVERRIDE;
 
     static const char *name;
 };

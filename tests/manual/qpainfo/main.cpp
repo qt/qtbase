@@ -116,10 +116,8 @@ int main(int argc, char **argv)
     QGuiApplication app(argc, argv);
 
     const QPlatformIntegration *platformIntegration = QGuiApplicationPrivate::platformIntegration();
-    std::cout << "Qt " << QT_VERSION_STR << " on \"" << QGuiApplication::platformName().toStdString() << "\" "
-              <<  QSysInfo::WordSize << " bit/"
+    std::cout << QLibraryInfo::build() << " on \"" << QGuiApplication::platformName().toStdString() << "\" "
               << (QSysInfo::ByteOrder == QSysInfo::LittleEndian ? "little endian" : "big endian") << '/'
-              << (QLibraryInfo::isDebugBuild() ? "debug" : "release")
               << '\n';
 
 #if defined(Q_OS_WIN)
@@ -180,7 +178,8 @@ int main(int argc, char **argv)
               << " startDragVelocity=" << styleHints->startDragVelocity() << " keyboardInputInterval=" << styleHints->keyboardInputInterval()
               << " keyboardAutoRepeatRate=" << styleHints->keyboardAutoRepeatRate() << " cursorFlashTime=" << styleHints->cursorFlashTime()
               << " showIsFullScreen=" << styleHints->showIsFullScreen() << " passwordMaskDelay=" << styleHints->passwordMaskDelay()
-              << " fontSmoothingGamma=" << styleHints->fontSmoothingGamma() << " useRtlExtensions=" << styleHints->useRtlExtensions() << '\n';
+              << " fontSmoothingGamma=" << styleHints->fontSmoothingGamma() << " useRtlExtensions=" << styleHints->useRtlExtensions()
+              << " mousePressAndHoldInterval=" << styleHints->mousePressAndHoldInterval() << '\n';
 
     const QPlatformTheme *platformTheme = QGuiApplicationPrivate::platformTheme();
     std::cout << "\nTheme:\n  Styles: " << platformTheme->themeHint(QPlatformTheme::StyleNames).toStringList();

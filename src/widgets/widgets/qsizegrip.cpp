@@ -482,7 +482,7 @@ bool QSizeGrip::eventFilter(QObject *o, QEvent *e)
     Q_D(QSizeGrip);
     if ((isHidden() && testAttribute(Qt::WA_WState_ExplicitShowHide))
         || e->type() != QEvent::WindowStateChange
-		|| o != d->tlw) {
+        || o != d->tlw) {
         return QWidget::eventFilter(o, e);
     }
     Qt::WindowStates sizeGripNotVisibleState = Qt::WindowFullScreen;

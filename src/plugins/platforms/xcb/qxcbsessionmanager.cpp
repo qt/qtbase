@@ -50,6 +50,7 @@
 #include <X11/SM/SMlib.h>
 #include <errno.h> // ERANGE
 
+#include <cerrno> // ERANGE
 
 class QSmSocketReceiver : public QObject
 {
@@ -390,16 +391,6 @@ void* QXcbSessionManager::handle() const
     return (void*) smcConnection;
 }
 
-void QXcbSessionManager::setSessionId(const QString &id)
-{
-    m_sessionId = id;
-}
-
-void QXcbSessionManager::setSessionKey(const QString &key)
-{
-    m_sessionKey = key;
-}
-
 bool QXcbSessionManager::allowsInteraction()
 {
     if (sm_interactionActive)
@@ -493,16 +484,6 @@ bool QXcbSessionManager::isPhase2() const
 void QXcbSessionManager::requestPhase2()
 {
     sm_phase2 = true;
-}
-
-void QXcbSessionManager::appCommitData()
-{
-    QPlatformSessionManager::appCommitData();
-}
-
-void QXcbSessionManager::appSaveState()
-{
-    QPlatformSessionManager::appSaveState();
 }
 
 void QXcbSessionManager::exitEventLoop()

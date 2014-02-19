@@ -92,7 +92,7 @@
     \note For the current keyboard input locale take a look at
     QInputMethod::locale().
 
-    QLocale's data is based on Common Locale Data Repository v23.1.
+    QLocale's data is based on Common Locale Data Repository v24.
 
     The double-to-string and string-to-double conversion functions are
     covered by the following licenses:
@@ -130,6 +130,7 @@
     \value Afan Obsolete, please use Oromo
     \value Afar
     \value Afrikaans
+    \value Akoose Since Qt 5.3
     \value Albanian
     \value Amharic
     \value Arabic
@@ -215,6 +216,7 @@
     \value Rundi
     \value Kurundi Obsolete, please use Rundi
     \value Kwanyama
+    \value Lakota Since Qt 5.3
     \value Lao
     \value Latin
     \value Latvian
@@ -272,6 +274,7 @@
     \value Slovenian
     \value Somali
     \value Spanish
+    \value StandardMoroccanTamazight Since Qt 5.3
     \value Sundanese
     \value Swahili
     \value Swedish

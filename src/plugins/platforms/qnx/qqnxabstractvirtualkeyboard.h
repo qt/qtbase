@@ -1,6 +1,6 @@
 /***************************************************************************
 **
-** Copyright (C) 2011 - 2012 Research In Motion
+** Copyright (C) 2013 BlackBerry Limited. All rights reserved.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -51,18 +51,20 @@ class QQnxAbstractVirtualKeyboard : public QObject
 {
     Q_OBJECT
 public:
-    // NOTE:  Not all the following keyboard modes are currently used.
+    // Keyboard Types currently supported.
     // Default - Regular Keyboard
     // Url/Email - Enhanced keys for each types.
     // Web - Regular keyboard with two blank keys, currently unused.
     // NumPunc - Numbers & Punctionation, alternate to Symbol
+    // Number - Number pad
     // Symbol - All symbols, alternate to NumPunc, currently unused.
-    // Phone - Phone enhanced keyboard - currently unused as no alternate keyboard available to access a-zA-Z
-    // Pin - Keyboard for entering Pins (Hex values) currently unused.
+    // Phone - Phone enhanced keyboard
+    // Pin - Keyboard for entering Pins (Hex values).
+    // Password - Keyboard with lots of extra characters for password input.
+    // Alphanumeric - Similar to password without any of the security implications.
     //
-    // SPECIAL NOTE: Usage of NumPunc may have to be removed, ABC button is non-functional.
-    //
-    enum KeyboardMode { Default, Url, Email, Web, NumPunc, Symbol, Phone, Pin };
+    enum KeyboardMode { Default, Url, Email, Web, NumPunc, Number, Symbol, Phone, Pin, Password, Alphanumeric };
+    enum EnterKeyType { DefaultReturn, Connect, Done, Go, Join, Next, Search, Send, Submit };
 
     explicit QQnxAbstractVirtualKeyboard(QObject *parent = 0);
 
@@ -74,8 +76,11 @@ public:
     QLocale locale() const { return m_locale; }
 
     void setKeyboardMode(KeyboardMode mode);
-    void setInputHintsFromObject(QObject *focusObject);
+    void setEnterKeyType(EnterKeyType type);
+
+    void setInputHints(int inputHints);
     KeyboardMode keyboardMode() const { return m_keyboardMode; }
+    EnterKeyType enterKeyType() const { return m_enterKeyType; }
 
 Q_SIGNALS:
     void heightChanged(int height);
@@ -83,7 +88,7 @@ Q_SIGNALS:
     void localeChanged(const QLocale &locale);
 
 protected:
-    virtual void applyKeyboardMode(KeyboardMode mode) = 0;
+    virtual void applyKeyboardOptions() = 0;
 
     void setHeight(int height);
     void setVisible(bool visible);
@@ -94,6 +99,7 @@ private:
     bool m_visible;
     QLocale m_locale;
     KeyboardMode m_keyboardMode;
+    EnterKeyType m_enterKeyType;
 };
 
 QT_END_NAMESPACE

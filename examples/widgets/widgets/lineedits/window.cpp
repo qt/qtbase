@@ -182,7 +182,7 @@ void Window::echoChanged(int index)
         echoLineEdit->setEchoMode(QLineEdit::Password);
         break;
     case 2:
-    	echoLineEdit->setEchoMode(QLineEdit::PasswordEchoOnEdit);
+        echoLineEdit->setEchoMode(QLineEdit::PasswordEchoOnEdit);
         break;
     case 3:
         echoLineEdit->setEchoMode(QLineEdit::NoEcho);
@@ -221,7 +221,7 @@ void Window::alignmentChanged(int index)
         alignmentLineEdit->setAlignment(Qt::AlignCenter);
         break;
     case 2:
-    	alignmentLineEdit->setAlignment(Qt::AlignRight);
+        alignmentLineEdit->setAlignment(Qt::AlignRight);
     }
 }
 //! [11]

@@ -641,6 +641,7 @@ const QEvdevKeyboardMap::Mapping QEvdevKeyboardHandler::s_keymap_default[] = {
     { KEY_VOLUMEUP,     0xffff, Qt::Key_VolumeUp,       0x00, 0x00, 0x0000 },
     { KEY_PAUSE,        0xffff, Qt::Key_Pause,          0x00, 0x00, 0x0000 },
     { KEY_STOP,         0xffff, Qt::Key_Stop,           0x00, 0x00, 0x0000 },
+    { KEY_SETUP,        0xffff, Qt::Key_Settings,       0x00, 0x00, 0x0000 },
     { KEY_RECORD,       0xffff, Qt::Key_MediaRecord,    0x00, 0x00, 0x0000 },
     { KEY_REWIND,       0xffff, Qt::Key_AudioRewind,    0x00, 0x00, 0x0000 },
     { KEY_PLAYPAUSE,    0xffff, Qt::Key_MediaTogglePlayPause,  0x00, 0x00, 0x0000 },
@@ -651,6 +652,9 @@ const QEvdevKeyboardMap::Mapping QEvdevKeyboardHandler::s_keymap_default[] = {
     // 0x160 ->
     { KEY_SELECT,       0xffff, Qt::Key_Select,         0x00, 0x00, 0x0000 },
     { KEY_CLEAR,        0xffff, Qt::Key_Clear,          0x00, 0x00, 0x0000 },
+    { KEY_EXIT,         0xffff, Qt::Key_Exit,           0x00, 0x00, 0x0000 },
+    { KEY_INFO,         0xffff, Qt::Key_Info,           0x00, 0x00, 0x0000 },
+    { KEY_PROGRAM,      0xffff, Qt::Key_Guide,          0x00, 0x00, 0x0000 },
     { KEY_CALENDAR,     0xffff, Qt::Key_Calendar,       0x00, 0x00, 0x0000 },
     { KEY_RED,          0xffff, Qt::Key_Red,            0x00, 0x00, 0x0000 },
     { KEY_GREEN,        0xffff, Qt::Key_Green,          0x00, 0x00, 0x0000 },

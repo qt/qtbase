@@ -565,6 +565,9 @@ void tst_QCommandLineParser::testHelpOption()
 
 void tst_QCommandLineParser::testQuoteEscaping()
 {
+#ifdef QT_NO_PROCESS
+    QSKIP("This test requires QProcess support");
+#else
     QCoreApplication app(empty_argc, empty_argv);
     QProcess process;
     process.start("testhelper/qcommandlineparser_test_helper", QStringList() <<
@@ -581,6 +584,7 @@ void tst_QCommandLineParser::testQuoteEscaping()
     QVERIFY2(output.contains("KEY1=\"VALUE1\""), qPrintable(output));
     QVERIFY2(output.contains("QTBUG-15379=C:\\path\\'file.ext"), qPrintable(output));
     QVERIFY2(output.contains("QTBUG-30628=C:\\temp\\'file'.ext"), qPrintable(output));
+#endif // !QT_NO_PROCESS
 }
 
 QTEST_APPLESS_MAIN(tst_QCommandLineParser)

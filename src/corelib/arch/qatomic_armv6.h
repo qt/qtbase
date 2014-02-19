@@ -69,16 +69,6 @@ QT_END_NAMESPACE
 #define Q_ATOMIC_POINTER_FETCH_AND_STORE_IS_ALWAYS_NATIVE
 #define Q_ATOMIC_POINTER_FETCH_AND_ADD_IS_ALWAYS_NATIVE
 
-template<> struct QAtomicIntegerTraits<int> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<unsigned int> { enum { IsInteger = 1 }; };
-#if defined(Q_COMPILER_UNICODE_STRINGS) && !defined(Q_PROCESSOR_ARM_V6)
-// for ARMv5, ensure that char32_t (an uint_least32_t), is 32-bit
-// it's extremely unlikely it won't be on a 32-bit ARM, but just to be sure
-// For ARMv6 and up, we're sure it works, but the definition is below
-template<> struct QAtomicIntegerTraits<char32_t>
-{ enum { IsInteger = sizeof(char32_t) == sizeof(int) ? 1 : -1 }; };
-#endif
-
 template <int size> struct QBasicAtomicOps: QGenericAtomicOps<QBasicAtomicOps<size> >
 {
     template <typename T>
@@ -91,6 +81,8 @@ template <int size> struct QBasicAtomicOps: QGenericAtomicOps<QBasicAtomicOps<si
     static inline Q_DECL_CONSTEXPR bool isTestAndSetNative() Q_DECL_NOTHROW { return true; }
     static inline Q_DECL_CONSTEXPR bool isTestAndSetWaitFree() Q_DECL_NOTHROW { return false; }
     template <typename T> static bool testAndSetRelaxed(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW;
+    template <typename T> static bool testAndSetRelaxed(T &_q_value, T expectedValue,
+                                                        T newValue, T *currentValue) Q_DECL_NOTHROW;
 
     static inline Q_DECL_CONSTEXPR bool isFetchAndStoreNative() Q_DECL_NOTHROW { return true; }
     template <typename T> static T fetchAndStoreRelaxed(T &_q_value, T newValue) Q_DECL_NOTHROW;
@@ -173,6 +165,29 @@ bool QBasicAtomicOps<4>::testAndSetRelaxed(T &_q_value, T expectedValue, T newVa
 }
 
 template<> template <typename T> inline
+bool QBasicAtomicOps<4>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue, T *currentValue) Q_DECL_NOTHROW
+{
+    register T tempValue;
+    register int result;
+    asm volatile("0:\n"
+                 "ldrex %[tempValue], [%[_q_value]]\n"
+                 "eors %[result], %[tempValue], %[expectedValue]\n"
+                 "itt eq\n"
+                 "strexeq %[result], %[newValue], [%[_q_value]]\n"
+                 "teqeq %[result], #1\n"
+                 "beq 0b\n"
+                 : [result] "=&r" (result),
+                   [tempValue] "=&r" (tempValue),
+                   "+m" (_q_value)
+                 : [expectedValue] "r" (expectedValue),
+                   [newValue] "r" (newValue),
+                   [_q_value] "r" (&_q_value)
+                 : "cc");
+    *currentValue = tempValue;
+    return result == 0;
+}
+
+template<> template <typename T> inline
 T QBasicAtomicOps<4>::fetchAndStoreRelaxed(T &_q_value, T newValue) Q_DECL_NOTHROW
 {
     T originalValue;
@@ -220,20 +235,9 @@ T QBasicAtomicOps<4>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveTy
     || defined(__ARM_ARCH_6K__)
 // LDREXB, LDREXH and LDREXD are available on ARMv6K or higher
 
-template<> struct QAtomicIntegerTraits<char> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<signed char> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<unsigned char> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<short> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<unsigned short> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<long> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<unsigned long> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<long long> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<unsigned long long> { enum { IsInteger = 1 }; };
-
-# ifdef Q_COMPILER_UNICODE_STRINGS
-template<> struct QAtomicIntegerTraits<char16_t> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<char32_t> { enum { IsInteger = 1 }; };
-# endif
+template<> struct QAtomicOpsSupport<1> { enum { IsSupported = 1 }; };
+template<> struct QAtomicOpsSupport<2> { enum { IsSupported = 1 }; };
+template<> struct QAtomicOpsSupport<8> { enum { IsSupported = 1 }; };
 
 #define Q_ATOMIC_INT8_IS_SUPPORTED
 #define Q_ATOMIC_INT8_REFERENCE_COUNTING_IS_ALWAYS_NATIVE
@@ -308,6 +312,29 @@ bool QBasicAtomicOps<1>::testAndSetRelaxed(T &_q_value, T expectedValue, T newVa
                    [newValue] "r" (newValue),
                    [_q_value] "r" (&_q_value)
                  : "cc");
+    return result == 0;
+}
+
+template<> template <typename T> inline
+bool QBasicAtomicOps<1>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue, T *currentValue) Q_DECL_NOTHROW
+{
+    register T tempValue;
+    register T result;
+    asm volatile("0:\n"
+                 "ldrexb %[tempValue], [%[_q_value]]\n"
+                 "eors %[result], %[tempValue], %[expectedValue]\n"
+                 "itt eq\n"
+                 "strexbeq %[result], %[newValue], [%[_q_value]]\n"
+                 "teqeq %[result], #1\n"
+                 "beq 0b\n"
+                 : [result] "=&r" (result),
+                   [tempValue] "=&r" (tempValue),
+                   "+m" (_q_value)
+                 : [expectedValue] "r" (expectedValue),
+                   [newValue] "r" (newValue),
+                   [_q_value] "r" (&_q_value)
+                 : "cc");
+    *currentValue = tempValue;
     return result == 0;
 }
 
@@ -407,6 +434,29 @@ bool QBasicAtomicOps<2>::testAndSetRelaxed(T &_q_value, T expectedValue, T newVa
                    [newValue] "r" (newValue),
                    [_q_value] "r" (&_q_value)
                  : "cc");
+    return result == 0;
+}
+
+template<> template <typename T> inline
+bool QBasicAtomicOps<2>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue, T *currentValue) Q_DECL_NOTHROW
+{
+    register T tempValue;
+    register T result;
+    asm volatile("0:\n"
+                 "ldrexh %[tempValue], [%[_q_value]]\n"
+                 "eors %[result], %[tempValue], %[expectedValue]\n"
+                 "itt eq\n"
+                 "strexheq %[result], %[newValue], [%[_q_value]]\n"
+                 "teqeq %[result], #1\n"
+                 "beq 0b\n"
+                 : [result] "=&r" (result),
+                   [tempValue] "=&r" (tempValue),
+                   "+m" (_q_value)
+                 : [expectedValue] "r" (expectedValue),
+                   [newValue] "r" (newValue),
+                   [_q_value] "r" (&_q_value)
+                 : "cc");
+    *currentValue = tempValue;
     return result == 0;
 }
 
@@ -518,6 +568,31 @@ bool QBasicAtomicOps<8>::testAndSetRelaxed(T &_q_value, T expectedValue, T newVa
                    [newValue] "r" (newValue),
                    [_q_value] "r" (&_q_value)
                  : "cc");
+    return quint32(result) == 0;
+}
+
+template<> template <typename T> inline
+bool QBasicAtomicOps<8>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue, T *currentValue) Q_DECL_NOTHROW
+{
+    register T tempValue;
+    register T result;
+    asm volatile("0:\n"
+                 "ldrexd %[tempValue], %H[tempValue], [%[_q_value]]\n"
+                 "eor %[result], %[tempValue], %[expectedValue]\n"
+                 "eor %H[result], %H[tempValue], %H[expectedValue]\n"
+                 "orrs %[result], %[result], %H[result]\n"
+                 "itt eq\n"
+                 "strexdeq %[result], %[newValue], %H[newValue], [%[_q_value]]\n"
+                 "teqeq %[result], #1\n"
+                 "beq 0b\n"
+                 : [result] "=&r" (result),
+                   [tempValue] "=&r" (tempValue),
+                   "+m" (_q_value)
+                 : [expectedValue] "r" (expectedValue),
+                   [newValue] "r" (newValue),
+                   [_q_value] "r" (&_q_value)
+                 : "cc");
+    *currentValue = tempValue;
     return quint32(result) == 0;
 }
 

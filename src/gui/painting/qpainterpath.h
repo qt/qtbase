@@ -57,6 +57,7 @@ class QPainterPathPrivate;
 struct QPainterPathPrivateDeleter;
 class QPainterPathData;
 class QPainterPathStrokerPrivate;
+class QPen;
 class QPolygonF;
 class QRegion;
 class QVectorPath;
@@ -243,6 +244,7 @@ class Q_GUI_EXPORT QPainterPathStroker
     Q_DECLARE_PRIVATE(QPainterPathStroker)
 public:
     QPainterPathStroker();
+    QPainterPathStroker(const QPen &pen);
     ~QPainterPathStroker();
 
     void setWidth(qreal width);

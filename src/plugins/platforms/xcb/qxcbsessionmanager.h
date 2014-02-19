@@ -66,8 +66,8 @@ public:
 
     void *handle() const;
 
-    void setSessionId(const QString &id);
-    void setSessionKey(const QString &key);
+    void setSessionId(const QString &id) { m_sessionId = id; }
+    void setSessionKey(const QString &key) { m_sessionKey = key; }
 
     bool allowsInteraction() Q_DECL_OVERRIDE;
     bool allowsErrorInteraction() Q_DECL_OVERRIDE;
@@ -80,9 +80,6 @@ public:
 
     bool isPhase2() const Q_DECL_OVERRIDE;
     void requestPhase2() Q_DECL_OVERRIDE;
-
-    void appCommitData() Q_DECL_OVERRIDE;
-    void appSaveState() Q_DECL_OVERRIDE;
 
     void exitEventLoop();
 

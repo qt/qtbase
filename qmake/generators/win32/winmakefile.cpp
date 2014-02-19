@@ -89,12 +89,12 @@ Win32MakefileGenerator::findHighestVersion(const QString &d, const QString &stem
         QRegExp regx(QString("((lib)?%1([0-9]*)).(%2|prl)$").arg(stem).arg(ext), Qt::CaseInsensitive);
         for(QStringList::Iterator it = entries.begin(); it != entries.end(); ++it) {
             if(regx.exactMatch((*it))) {
-				if (!regx.cap(3).isEmpty()) {
-					bool ok = true;
-					int num = regx.cap(3).toInt(&ok);
-					biggest = qMax(biggest, (!ok ? -1 : num));
-				}
-			}
+                if (!regx.cap(3).isEmpty()) {
+                    bool ok = true;
+                    int num = regx.cap(3).toInt(&ok);
+                    biggest = qMax(biggest, (!ok ? -1 : num));
+                }
+            }
         }
     }
     if(libInfoRead
@@ -485,20 +485,20 @@ void Win32MakefileGenerator::processRcFileVar()
             rcFile.close();
         }
         if (writeRcFile) {
-	    bool ok;
-	    ok = rcFile.open(QFile::WriteOnly);
-	    if (!ok) {
-		// The file can't be opened... try creating the containing
-		// directory first (needed for clean shadow builds)
-		QDir().mkpath(QFileInfo(rcFile).path());
-		ok = rcFile.open(QFile::WriteOnly);
-	    }
-	    if (!ok) {
-		::fprintf(stderr, "Cannot open for writing: %s", rcFile.fileName().toLatin1().constData());
-		::exit(1);
-	    }
-	    rcFile.write(rcString);
-	    rcFile.close();
+            bool ok;
+            ok = rcFile.open(QFile::WriteOnly);
+            if (!ok) {
+                // The file can't be opened... try creating the containing
+                // directory first (needed for clean shadow builds)
+                QDir().mkpath(QFileInfo(rcFile).path());
+                ok = rcFile.open(QFile::WriteOnly);
+            }
+            if (!ok) {
+                ::fprintf(stderr, "Cannot open for writing: %s", rcFile.fileName().toLatin1().constData());
+                ::exit(1);
+            }
+            rcFile.write(rcString);
+            rcFile.close();
         }
         if (project->values("QMAKE_WRITE_DEFAULT_RC").isEmpty())
             project->values("RC_FILE").insert(0, rcFile.fileName());
@@ -530,7 +530,7 @@ void Win32MakefileGenerator::processRcFileVar()
         }
         project->values("RES_FILE").first() = Option::fixPathToTargetOS(
                     project->values("RES_FILE").first().toQString(), false, false);
-	project->values("POST_TARGETDEPS") += project->values("RES_FILE");
+        project->values("POST_TARGETDEPS") += project->values("RES_FILE");
         project->values("CLEAN_FILES") += project->values("RES_FILE");
     }
 }
@@ -565,7 +565,7 @@ void Win32MakefileGenerator::writeCleanParts(QTextStream &t)
     }
     t << endl << endl;
 
-    t << "distclean: clean";
+    t << "distclean: clean " << var("DISTCLEAN_DEPS");
     {
         const char *clean_targets[] = { "QMAKE_DISTCLEAN", 0 };
         for(int i = 0; clean_targets[i]; ++i) {

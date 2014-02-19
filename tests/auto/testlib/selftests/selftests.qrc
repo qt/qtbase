@@ -10,23 +10,28 @@
         <file>expected_badxml.xml</file>
         <file>expected_badxml.xunitxml</file>
         <file>expected_benchlibcallgrind.txt</file>
+        <file>expected_benchlibcallgrind.csv</file>
         <file>expected_benchlibcounting.lightxml</file>
         <file>expected_benchlibcounting.txt</file>
         <file>expected_benchlibcounting.xml</file>
         <file>expected_benchlibcounting.xunitxml</file>
+        <file>expected_benchlibcounting.csv</file>
         <file>expected_benchlibeventcounter.lightxml</file>
         <file>expected_benchlibeventcounter.txt</file>
         <file>expected_benchlibeventcounter.xml</file>
         <file>expected_benchlibeventcounter.xunitxml</file>
+        <file>expected_benchlibeventcounter.csv</file>
         <file>expected_benchliboptions.txt</file>
         <file>expected_benchlibtickcounter.lightxml</file>
         <file>expected_benchlibtickcounter.txt</file>
         <file>expected_benchlibtickcounter.xml</file>
         <file>expected_benchlibtickcounter.xunitxml</file>
+        <file>expected_benchlibtickcounter.csv</file>
         <file>expected_benchlibwalltime.lightxml</file>
         <file>expected_benchlibwalltime.txt</file>
         <file>expected_benchlibwalltime.xml</file>
         <file>expected_benchlibwalltime.xunitxml</file>
+        <file>expected_benchlibwalltime.csv</file>
         <file>expected_cmptest.lightxml</file>
         <file>expected_cmptest.txt</file>
         <file>expected_cmptest.xml</file>
@@ -134,6 +139,10 @@
         <file>expected_verbose2.txt</file>
         <file>expected_verbose2.xml</file>
         <file>expected_verbose2.xunitxml</file>
+        <file>expected_verifyexceptionthrown.lightxml</file>
+        <file>expected_verifyexceptionthrown.txt</file>
+        <file>expected_verifyexceptionthrown.xml</file>
+        <file>expected_verifyexceptionthrown.xunitxml</file>
         <file>expected_warnings.lightxml</file>
         <file>expected_warnings.txt</file>
         <file>expected_warnings.xml</file>

@@ -55,10 +55,13 @@
 #include <QtSql/private/qsqldriver_p.h>
 #include <QtTest/QtTest>
 
-#if defined (Q_OS_WIN) || defined (Q_OS_WIN32)
+#if defined(Q_OS_WIN)
 #  include <qt_windows.h>
-#  if defined (Q_OS_WINCE)
+#  if defined(Q_OS_WINCE) || defined(Q_OS_WINRT)
 #    include <winsock2.h>
+#  endif
+#  if defined(Q_OS_WINRT) && !defined(Q_OS_WINPHONE)
+static inline int gethostname(char *name, int len) { qstrcpy(name, "localhost"); return 9; }
 #  endif
 #else
 #include <unistd.h>
@@ -512,8 +515,8 @@ public:
     static QByteArray printError( const QSqlError& err )
     {
         QString result;
-        if(err.number() > 0)
-            result += '(' + QString::number(err.number()) + ") ";
+        if (!err.nativeErrorCode().isEmpty())
+            result += '(' + err.nativeErrorCode() + ") ";
         result += '\'';
         if(!err.driverText().isEmpty())
             result += err.driverText() + "' || '";
@@ -524,8 +527,8 @@ public:
     static QByteArray printError( const QSqlError& err, const QSqlDatabase& db )
     {
         QString result(dbToString(db) + ": ");
-        if(err.number() > 0)
-            result += '(' + QString::number(err.number()) + ") ";
+        if (!err.nativeErrorCode().isEmpty())
+            result += '(' + err.nativeErrorCode() + ") ";
         result += '\'';
         if(!err.driverText().isEmpty())
             result += err.driverText() + "' || '";

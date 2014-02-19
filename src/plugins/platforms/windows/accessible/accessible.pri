@@ -8,10 +8,10 @@ HEADERS += \
     $$PWD/qwindowsaccessibility.h \
     $$PWD/comutils.h
 
-!win32-g++*: {
+!mingw: {
     SOURCES += $$PWD/iaccessible2.cpp
     HEADERS += $$PWD/iaccessible2.h
     include(../../../../3rdparty/iaccessible2/iaccessible2.pri)
 }
 
-win32-g++*: LIBS *= -luuid
+mingw: LIBS *= -luuid

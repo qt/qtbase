@@ -65,6 +65,7 @@ Q_SIGNALS:
     void windowGroupActivated(const QByteArray &id);
     void windowGroupDeactivated(const QByteArray &id);
     void windowGroupStateChanged(const QByteArray &id, Qt::WindowState state);
+    void swipeDown();
 };
 
 QT_END_NAMESPACE

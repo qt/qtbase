@@ -1233,6 +1233,56 @@ QString QTextBlock::text() const
     return text;
 }
 
+/*!
+    \since 5.3
+
+    Returns the block's text format options as a list of continuous ranges
+    of QTextCharFormat. The range's character format is used when inserting text
+    within the range boundaries.
+
+    \sa charFormat(), blockFormat()
+*/
+QList<QTextLayout::FormatRange> QTextBlock::textFormats() const
+{
+    QList<QTextLayout::FormatRange> formats;
+    if (!p || !n)
+        return formats;
+
+    const QTextFormatCollection *formatCollection = p->formatCollection();
+
+    int start = 0;
+    int cur = start;
+    int format = -1;
+
+    const int pos = position();
+    QTextDocumentPrivate::FragmentIterator it = p->find(pos);
+    QTextDocumentPrivate::FragmentIterator end = p->find(pos + length() - 1); // -1 to omit the block separator char
+    for (; it != end; ++it) {
+        const QTextFragmentData * const frag = it.value();
+        if (format != it.value()->format) {
+            if (cur - start > 0) {
+                QTextLayout::FormatRange range;
+                range.start = start;
+                range.length = cur - start;
+                range.format = formatCollection->charFormat(format);
+                formats.append(range);
+            }
+
+            format = frag->format;
+            start = cur;
+        }
+        cur += frag->size_array[0];
+    }
+    if (cur - start > 0) {
+        QTextLayout::FormatRange range;
+        range.start = start;
+        range.length = cur - start;
+        range.format = formatCollection->charFormat(format);
+        formats.append(range);
+    }
+
+    return formats;
+}
 
 /*!
     Returns the text document this text block belongs to, or 0 if the

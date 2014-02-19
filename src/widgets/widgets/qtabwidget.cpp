@@ -759,11 +759,10 @@ void QTabWidgetPrivate::_q_removeTab(int index)
 
 void QTabWidgetPrivate::_q_tabMoved(int from, int to)
 {
-    stack->blockSignals(true);
+    const QSignalBlocker blocker(stack);
     QWidget *w = stack->widget(from);
     stack->removeWidget(w);
     stack->insertWidget(to, w);
-    stack->blockSignals(false);
 }
 
 /*

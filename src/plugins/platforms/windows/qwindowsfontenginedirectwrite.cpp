@@ -212,8 +212,7 @@ QWindowsFontEngineDirectWrite::QWindowsFontEngineDirectWrite(IDWriteFontFace *di
     , m_xHeight(-1)
     , m_lineGap(-1)
 {
-    if (QWindowsContext::verboseFonts)
-        qDebug("%s %g", __FUNCTION__, pixelSize);
+    qCDebug(lcQpaFonts) << __FUNCTION__ << pixelSize;
 
     Q_ASSERT(m_directWriteFontFace);
 
@@ -227,8 +226,7 @@ QWindowsFontEngineDirectWrite::QWindowsFontEngineDirectWrite(IDWriteFontFace *di
 
 QWindowsFontEngineDirectWrite::~QWindowsFontEngineDirectWrite()
 {
-    if (QWindowsContext::verboseFonts)
-        qDebug("%s", __FUNCTION__);
+    qCDebug(lcQpaFonts) << __FUNCTION__;
 
     m_fontEngineData->directWriteFactory->Release();
     m_directWriteFontFace->Release();
@@ -327,13 +325,8 @@ bool QWindowsFontEngineDirectWrite::stringToCMap(const QChar *str, int len, QGly
 
     QVarLengthArray<UINT32> codePoints(len);
     int actualLength = 0;
-    if (flags & QFontEngine::RightToLeft) {
-        for (int i = 0; i < len; ++i)
-            codePoints[actualLength++] = QChar::mirroredChar(getChar(str, i, len));
-    } else {
-        for (int i = 0; i < len; ++i)
-            codePoints[actualLength++] = getChar(str, i, len);
-    }
+    for (int i = 0; i < len; ++i)
+        codePoints[actualLength++] = getChar(str, i, len);
 
     QVarLengthArray<UINT16> glyphIndices(actualLength);
     HRESULT hr = m_directWriteFontFace->GetGlyphIndicesW(codePoints.data(), actualLength,
@@ -368,13 +361,11 @@ void QWindowsFontEngineDirectWrite::recalcAdvances(QGlyphLayout *glyphs, QFontEn
                                                               glyphIndices.size(),
                                                               glyphMetrics.data());
     if (SUCCEEDED(hr)) {
-        for (int i=0; i<glyphs->numGlyphs; ++i) {
-            glyphs->advances_x[i] = DESIGN_TO_LOGICAL(glyphMetrics[i].advanceWidth);
-            glyphs->advances_y[i] = 0;
-        }
+        for (int i = 0; i < glyphs->numGlyphs; ++i)
+            glyphs->advances[i] = DESIGN_TO_LOGICAL(glyphMetrics[i].advanceWidth);
         if (fontDef.styleStrategy & QFont::ForceIntegerMetrics) {
             for (int i = 0; i < glyphs->numGlyphs; ++i)
-                glyphs->advances_x[i] = glyphs->advances_x[i].round();
+                glyphs->advances[i] = glyphs->advances[i].round();
         }
     } else {
         qErrnoWarning("%s: GetDesignGlyphMetrics failed", __FUNCTION__);

@@ -56,6 +56,7 @@
 #include "../qbearerengine_impl.h"
 
 #include "qconnmanservice_linux_p.h"
+#include "qofonoservice_linux_p.h"
 
 #include <QMap>
 #include <QVariant>
@@ -91,28 +92,32 @@ public:
     virtual quint64 bytesReceived(const QString &id);
     virtual quint64 startTime(const QString &id);
 
-
     virtual QNetworkConfigurationManager::Capabilities capabilities() const;
     virtual QNetworkConfigurationPrivatePointer defaultConfiguration();
 
-    void configurationChange(const QString &id);
     QList<QNetworkConfigurationPrivate *> getConfigurations();
-
 
 private Q_SLOTS:
 
     void doRequestUpdate();
-    void servicePropertyChangedContext(const QString &,const QString &,const QDBusVariant &);
-    void propertyChangedContext(const QString &,const QString &,const QDBusVariant &);
-    void technologyPropertyChangedContext(const QString &,const QString &, const QDBusVariant &);
     void updateServices(const ConnmanMapList &changed, const QList<QDBusObjectPath> &removed);
 
+    void servicesReady(const QStringList &);
+    void finishedScan();
+    void changedModem();
+    void serviceStateChanged(const QString &state);
+    void configurationChange(QConnmanServiceInterface * service);
+    void reEvaluateCellular();
+    void inotifyActivated();
 private:
     QConnmanManagerInterface *connmanManager;
 
+    QOfonoManagerInterface *ofonoManager;
+    QOfonoNetworkRegistrationInterface *ofonoNetwork;
+    QOfonoDataConnectionManagerInterface *ofonoContextManager;
+
     QList<QNetworkConfigurationPrivate *> foundConfigurations;
 
-    QString serviceFromId(const QString &id);
     QString networkFromId(const QString &id);
 
     QNetworkConfiguration::StateFlags getStateForService(const QString &service);
@@ -130,6 +135,11 @@ private:
     QNetworkConfiguration::BearerType ofonoTechToBearerType(const QString &type);
     bool isRoamingAllowed(const QString &context);
     bool isAlwaysAskRoaming();
+    QMap <QString,QConnmanServiceInterface *> connmanServiceInterfaces;
+
+    int inotifyWatcher;
+    int inotifyFileDescriptor;
+
 protected:
     bool requiresPolling() const;
 };

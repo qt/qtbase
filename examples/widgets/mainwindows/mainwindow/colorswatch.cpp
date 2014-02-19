@@ -636,7 +636,7 @@ void BlueTitleBar::paintEvent(QPaintEvent*)
                         centerPm.height(), centerPm);
 }
 
-void BlueTitleBar::mousePressEvent(QMouseEvent *event)
+void BlueTitleBar::mouseReleaseEvent(QMouseEvent *event)
 {
     QPoint pos = event->pos();
 

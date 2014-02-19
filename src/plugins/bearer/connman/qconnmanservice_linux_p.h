@@ -71,22 +71,12 @@
 
 #ifndef __CONNMAN_DBUS_H
 
-#define	CONNMAN_SERVICE     "net.connman"
-#define	CONNMAN_PATH        "/net/connman"
-
-#define CONNMAN_DEBUG_INTERFACE		CONNMAN_SERVICE ".Debug"
-#define CONNMAN_ERROR_INTERFACE		CONNMAN_SERVICE ".Error"
-#define CONNMAN_AGENT_INTERFACE		CONNMAN_SERVICE ".Agent"
-#define CONNMAN_COUNTER_INTERFACE	CONNMAN_SERVICE ".Counter"
-
-#define CONNMAN_MANAGER_INTERFACE	CONNMAN_SERVICE ".Manager"
-#define CONNMAN_MANAGER_PATH		"/"
-
-#define CONNMAN_TASK_INTERFACE		CONNMAN_SERVICE ".Task"
-#define CONNMAN_PROFILE_INTERFACE	CONNMAN_SERVICE ".Profile"
-#define CONNMAN_SERVICE_INTERFACE	CONNMAN_SERVICE ".Service"
-#define CONNMAN_PROVIDER_INTERFACE	CONNMAN_SERVICE ".Provider"
-#define CONNMAN_TECHNOLOGY_INTERFACE	CONNMAN_SERVICE ".Technology"
+#define CONNMAN_SERVICE     "net.connman"
+#define CONNMAN_PATH        "/net/connman"
+#define CONNMAN_MANAGER_INTERFACE   CONNMAN_SERVICE ".Manager"
+#define CONNMAN_MANAGER_PATH        "/"
+#define CONNMAN_SERVICE_INTERFACE   CONNMAN_SERVICE ".Service"
+#define CONNMAN_TECHNOLOGY_INTERFACE    CONNMAN_SERVICE ".Technology"
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -108,6 +98,9 @@ QT_BEGIN_NAMESPACE
 QDBusArgument &operator<<(QDBusArgument &argument, const ConnmanMap &obj);
 const QDBusArgument &operator>>(const QDBusArgument &argument, ConnmanMap &obj);
 
+class QConnmanTechnologyInterface;
+class QConnmanServiceInterface;
+
 class QConnmanManagerInterface : public  QDBusAbstractInterface
 {
     Q_OBJECT
@@ -117,39 +110,16 @@ public:
     QConnmanManagerInterface( QObject *parent = 0);
     ~QConnmanManagerInterface();
 
-     QDBusObjectPath path() const;
-
+    QDBusObjectPath path() const;
     QVariantMap getProperties();
-    bool setProperty(const QString &name, const QDBusVariant &value);
-    QDBusObjectPath createProfile(const QString &name);
-    bool removeProfile(QDBusObjectPath path);
-    bool requestScan(const QString &type);
-    bool enableTechnology(const QString &type);
-    bool disableTechnology(const QString &type);
-    QDBusObjectPath connectService(QVariantMap &map);
-    void registerAgent(QDBusObjectPath &path);
-    void unregisterAgent(QDBusObjectPath path);
-    void registerCounter(const QString &path, quint32 interval);
-    void unregisterCounter(const QString &path);
 
-    QString requestSession(const QString &bearerName);
-    void releaseSession();
-
-      // properties
     QString getState();
-    QStringList getAvailableTechnologies();
-    QStringList getEnabledTechnologies();
-    QStringList getConnectedTechnologies();
-    QString getDefaultTechnology();
     bool getOfflineMode();
-    QString getActiveProfile();
-    QStringList getProfiles();
-    QStringList  getTechnologies();
+    QStringList getTechnologies();
     QStringList getServices();
-    QDBusObjectPath lookupService(const QString &);
+    void requestScan(const QString &type);
 
-    QString getPathForTechnology(const QString &tech);
-
+    QHash<QString, QConnmanTechnologyInterface *> technologiesMap;
 
 Q_SIGNALS:
     void propertyChanged(const QString &, const QDBusVariant &value);
@@ -157,41 +127,28 @@ Q_SIGNALS:
     void propertyChangedContext(const QString &,const QString &,const QDBusVariant &);
     void servicesChanged(const ConnmanMapList&, const QList<QDBusObjectPath> &);
 
+    void servicesReady(const QStringList &);
+    void scanFinished();
+
 protected:
     void connectNotify(const QMetaMethod &signal);
-    void disconnectNotify(const QMetaMethod &signal);
     QVariant getProperty(const QString &);
+
+private:
+     QVariantMap propertiesCacheMap;
+     QStringList servicesList;
+     QStringList technologiesList;
 
 private slots:
     void onServicesChanged(const ConnmanMapList&, const QList<QDBusObjectPath> &);
+    void changedProperty(const QString &, const QDBusVariant &value);
 
-};
+    void propertiesReply(QDBusPendingCallWatcher *call);
+    void servicesReply(QDBusPendingCallWatcher *call);
 
-class QConnmanProfileInterfacePrivate;
-class QConnmanProfileInterface : public QDBusAbstractInterface
-{
-    Q_OBJECT
+    void technologyAdded(const QDBusObjectPath &technology, const QVariantMap &properties);
+    void technologyRemoved(const QDBusObjectPath &technology);
 
-public:
-
-    explicit QConnmanProfileInterface(const QString &dbusPathName,QObject *parent = 0);
-    ~QConnmanProfileInterface();
-
-    QVariantMap getProperties();
-// properties
-    QString getName();
-    bool isOfflineMode();
-    QStringList getServices();
-
-Q_SIGNALS:
-    void propertyChanged(const QString &, const QDBusVariant &value);
-private:
-    QConnmanProfileInterfacePrivate *d;
-
-protected:
-    void connectNotify(const QMetaMethod &signal);
-    void disconnectNotify(const QMetaMethod &signal);
-    QVariant getProperty(const QString &);
 };
 
 class QConnmanServiceInterface : public QDBusAbstractInterface
@@ -208,52 +165,37 @@ public:
     void connect();
     void disconnect();
     void remove();
-      // void moveBefore(QDBusObjectPath &service);
-      // void moveAfter(QDBusObjectPath &service);
 
 // properties
-    QString getState();
-    QString getError();
-    QString getName();
-    QString getType();
-    QString getMode();
-    QString getSecurity();
-    QString getPassphrase();
-    bool isPassphraseRequired();
-    quint8 getSignalStrength();
-    bool isFavorite();
-    bool isImmutable();
-    bool isAutoConnect();
-    bool isSetupRequired();
-    QString getAPN();
-    QString getMCC();
-    QString getMNC();
-    bool isRoaming();
-    QStringList getNameservers();
-    QStringList getDomains();
-    QVariantMap getIPv4();
-    QVariantMap getIPv4Configuration();
-    QVariantMap getProxy();
-    QVariantMap getEthernet();
-
-    QString getMethod();
-    QString getInterface();
-    QString getMacAddress();
-    quint16 getMtu();
-    quint16 getSpeed();
-    QString getDuplex();
+    QString state();
+    QString lastError();
+    QString name();
+    QString type();
+    QString security();
+    bool favorite();
+    bool autoConnect();
+    bool roaming();
+    QVariantMap ethernet();
+    QString serviceInterface();
 
     bool isOfflineMode();
-    QStringList getServices();
+    QStringList services();
 
 Q_SIGNALS:
     void propertyChanged(const QString &, const QDBusVariant &value);
     void propertyChangedContext(const QString &,const QString &,const QDBusVariant &);
+    void propertiesReady();
+    void stateChanged(const QString &state);
 
 protected:
     void connectNotify(const QMetaMethod &signal);
-    void disconnectNotify(const QMetaMethod &signal);
     QVariant getProperty(const QString &);
+private:
+    QVariantMap propertiesCacheMap;
+private slots:
+    void propertiesReply(QDBusPendingCallWatcher *call);
+    void changedProperty(const QString &, const QDBusVariant &value);
+
 };
 
 class QConnmanTechnologyInterface : public QDBusAbstractInterface
@@ -265,72 +207,21 @@ public:
     explicit QConnmanTechnologyInterface(const QString &dbusPathName,QObject *parent = 0);
     ~QConnmanTechnologyInterface();
 
-    QVariantMap getProperties();
-// properties
-    QString getState();
-    QString getName();
-    QString getType();
+    QString type();
 
+    void scan();
 Q_SIGNALS:
     void propertyChanged(const QString &, const QDBusVariant &value);
     void propertyChangedContext(const QString &,const QString &,const QDBusVariant &);
+    void scanFinished();
 protected:
     void connectNotify(const QMetaMethod &signal);
-    void disconnectNotify(const QMetaMethod &signal);
     QVariant getProperty(const QString &);
-
-};
-
-class QConnmanAgentInterface : public QDBusAbstractInterface
-{
-    Q_OBJECT
-
-public:
-
-    explicit QConnmanAgentInterface(const QString &dbusPathName,QObject *parent = 0);
-    ~QConnmanAgentInterface();
-
-    void release();
-    void reportError(QDBusObjectPath &path, const QString &error);
-//    dict requestInput(QDBusObjectPath &path, dict fields);
-    void cancel();
-protected:
-    void connectNotify(const QMetaMethod &signal);
-    void disconnectNotify(const QMetaMethod &signal);
-};
-
-class QConnmanCounterInterfacePrivate;
-class QConnmanCounterInterface : public QDBusAbstractInterface
-{
-    Q_OBJECT
-
-public:
-
-    explicit QConnmanCounterInterface(const QString &dbusPathName, QObject *parent = 0);
-    ~QConnmanCounterInterface();
-
-//    void release();
-    QString getInterface();
-    quint32 getReceivedByteCount();
-    quint32 getTransmittedByteCount();
-    quint64 getTimeOnline();
-
 private:
-    QConnmanCounterInterfacePrivate *d;
-};
+    QVariantMap properties();
+    QVariantMap propertiesMap;
+    void scanReply(QDBusPendingCallWatcher *call);
 
-class QConnmanDBusHelper: public QObject, protected QDBusContext
- {
-     Q_OBJECT
- public:
-    QConnmanDBusHelper(QObject *parent = 0);
-    ~QConnmanDBusHelper();
-
- public slots:
-    void propertyChanged(const QString &, const QDBusVariant &);
-
-Q_SIGNALS:
-    void propertyChangedContext(const QString &,const QString &,const QDBusVariant &);
 };
 
 QT_END_NAMESPACE

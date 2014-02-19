@@ -164,9 +164,7 @@ void QWindowsClipboard::registerViewer()
                           qClipboardViewerWndProc, WS_OVERLAPPED);
     m_nextClipboardViewer = SetClipboardViewer(m_clipboardViewer);
 
-    if (QWindowsContext::verboseOLE)
-        qDebug("%s m_clipboardViewer: %p next=%p", __FUNCTION__,
-               m_clipboardViewer, m_nextClipboardViewer);
+    qCDebug(lcQpaMime) << __FUNCTION__ << "m_clipboardViewer: " << m_clipboardViewer << "next: " << m_nextClipboardViewer;
 }
 
 void QWindowsClipboard::unregisterViewer()
@@ -219,9 +217,8 @@ void QWindowsClipboard::propagateClipboardMessage(UINT message, WPARAM wParam, L
 bool QWindowsClipboard::clipboardViewerWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam, LRESULT *result)
 {
     *result = 0;
-    if (QWindowsContext::verboseOLE)
-            qDebug("%s HWND=%p 0x%x %s", __FUNCTION__, hwnd, message,
-                   QWindowsGuiEventDispatcher::windowsMessageName(message));
+    if (QWindowsContext::verbose)
+        qCDebug(lcQpaMime) << __FUNCTION__ << hwnd << message << QWindowsGuiEventDispatcher::windowsMessageName(message);
 
     switch (message) {
     case WM_CHANGECBCHAIN: {
@@ -235,8 +232,7 @@ bool QWindowsClipboard::clipboardViewerWndProc(HWND hwnd, UINT message, WPARAM w
         return true;
     case WM_DRAWCLIPBOARD: {
         const bool owned = ownsClipboard();
-        if (QWindowsContext::verboseOLE)
-            qDebug("Clipboard changed owned %d", owned);
+        qCDebug(lcQpaMime) << "Clipboard changed owned " << owned;
         emitChanged(QClipboard::Clipboard);
         // clean up the clipboard object if we no longer own the clipboard
         if (!owned && m_data)
@@ -247,8 +243,7 @@ bool QWindowsClipboard::clipboardViewerWndProc(HWND hwnd, UINT message, WPARAM w
     case WM_DESTROY:
         // Recommended shutdown
         if (ownsClipboard()) {
-            if (QWindowsContext::verboseOLE)
-                qDebug("Clipboard owner on shutdown, releasing.");
+            qCDebug(lcQpaMime) << "Clipboard owner on shutdown, releasing.";
             OleFlushClipboard();
             releaseIData();
         }
@@ -259,8 +254,7 @@ bool QWindowsClipboard::clipboardViewerWndProc(HWND hwnd, UINT message, WPARAM w
 
 QMimeData *QWindowsClipboard::mimeData(QClipboard::Mode mode)
 {
-    if (QWindowsContext::verboseOLE)
-        qDebug() << __FUNCTION__ <<  mode;
+    qCDebug(lcQpaMime) << __FUNCTION__ <<  mode;
     if (mode != QClipboard::Clipboard)
         return 0;
     if (ownsClipboard())
@@ -270,8 +264,7 @@ QMimeData *QWindowsClipboard::mimeData(QClipboard::Mode mode)
 
 void QWindowsClipboard::setMimeData(QMimeData *mimeData, QClipboard::Mode mode)
 {
-    if (QWindowsContext::verboseOLE)
-        qDebug() << __FUNCTION__ <<  mode << *mimeData;
+    qCDebug(lcQpaMime) << __FUNCTION__ <<  mode << *mimeData;
     if (mode != QClipboard::Clipboard)
         return;
 
@@ -316,8 +309,7 @@ bool QWindowsClipboard::ownsMode(QClipboard::Mode mode) const
 {
     const bool result = mode == QClipboard::Clipboard ?
         ownsClipboard() : false;
-    if (QWindowsContext::verboseOLE)
-        qDebug("%s %d returns %d", __FUNCTION__, mode, result);
+    qCDebug(lcQpaMime) << __FUNCTION__ <<  mode << result;
     return result;
 }
 

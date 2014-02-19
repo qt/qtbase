@@ -650,9 +650,9 @@ void QToolBar::setOrientation(Qt::Orientation orientation)
     d->orientation = orientation;
 
     if (orientation == Qt::Vertical)
- 	setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred));
+        setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred));
     else
- 	setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed));
+        setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed));
 
     d->layout->invalidate();
     d->layout->activate();

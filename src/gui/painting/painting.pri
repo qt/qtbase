@@ -87,14 +87,15 @@ SOURCES += \
         painting/qpaintbuffer.cpp \
         painting/qpathsimplifier.cpp
 
-SSE2_SOURCES += painting/qdrawhelper_sse2.cpp
-SSSE3_SOURCES += painting/qdrawhelper_ssse3.cpp
+contains(QT_CPU_FEATURES.$$QT_ARCH, sse2) {
+    SOURCES += painting/qdrawhelper_sse2.cpp
+    SSSE3_SOURCES += painting/qdrawhelper_ssse3.cpp
+}
 IWMMXT_SOURCES += painting/qdrawhelper_iwmmxt.cpp
-AVX_SOURCES += painting/qdrawhelper_avx.cpp
 
-!ios {
-    NEON_SOURCES += painting/qdrawhelper_neon.cpp
-    NEON_HEADERS += painting/qdrawhelper_neon_p.h
+!ios:contains(QT_CPU_FEATURES.$$QT_ARCH, neon) {
+    SOURCES += painting/qdrawhelper_neon.cpp
+    HEADERS += painting/qdrawhelper_neon_p.h
     NEON_ASM += ../3rdparty/pixman/pixman-arm-neon-asm.S painting/qdrawhelper_neon_asm.S
 }
 

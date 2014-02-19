@@ -73,7 +73,7 @@
 #include <sys/ioctl.h>
 // Cygwin does not provide <sys/ipc.h> and <sys/shm.h> because it
 // doesn't support SysV IPC or shared memory. See for example:
-// 	http://afni.nimh.nih.gov/afni/afniboard/messages/1725.html
+//      http://afni.nimh.nih.gov/afni/afniboard/messages/1725.html
 #include <sys/time.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
@@ -88,8 +88,8 @@
 #define QT_OPEN_LARGEFILE 0
 
 #if defined(_XOPEN_SOURCE) && (_XOPEN_SOURCE >= 500)
-#define QT_SNPRINTF		::snprintf
-#define QT_VSNPRINTF		::vsnprintf
+#define QT_SNPRINTF             ::snprintf
+#define QT_VSNPRINTF            ::vsnprintf
 #endif
 
 #endif // QPLATFORMDEFS_H

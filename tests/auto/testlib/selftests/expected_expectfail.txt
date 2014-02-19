@@ -3,52 +3,52 @@ Config: Using QtTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HER
 PASS   : tst_ExpectFail::initTestCase()
 QDEBUG : tst_ExpectFail::xfailAndContinue() begin
 XFAIL  : tst_ExpectFail::xfailAndContinue() This should xfail
-   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp(78)]
+   Loc: [tst_expectfail.cpp(78)]
 QDEBUG : tst_ExpectFail::xfailAndContinue() after
 PASS   : tst_ExpectFail::xfailAndContinue()
 QDEBUG : tst_ExpectFail::xfailAndAbort() begin
 XFAIL  : tst_ExpectFail::xfailAndAbort() This should xfail
-   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp(86)]
+   Loc: [tst_expectfail.cpp(86)]
 PASS   : tst_ExpectFail::xfailAndAbort()
 FAIL!  : tst_ExpectFail::xfailTwice() Already expecting a fail
-   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp(96)]
+   Loc: [tst_expectfail.cpp(96)]
 XFAIL  : tst_ExpectFail::xfailWithQString() A string
-   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp(105)]
+   Loc: [tst_expectfail.cpp(105)]
 XFAIL  : tst_ExpectFail::xfailWithQString() Bug 5 (The message)
-   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp(110)]
+   Loc: [tst_expectfail.cpp(110)]
 PASS   : tst_ExpectFail::xfailWithQString()
 PASS   : tst_ExpectFail::xfailDataDrivenWithQVerify(Pass 1)
 PASS   : tst_ExpectFail::xfailDataDrivenWithQVerify(Pass 2)
 XFAIL  : tst_ExpectFail::xfailDataDrivenWithQVerify(Abort) This test should xfail
-   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp(139)]
+   Loc: [tst_expectfail.cpp(139)]
 PASS   : tst_ExpectFail::xfailDataDrivenWithQVerify(Abort)
 XFAIL  : tst_ExpectFail::xfailDataDrivenWithQVerify(Continue) This test should xfail
-   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp(139)]
+   Loc: [tst_expectfail.cpp(139)]
 PASS   : tst_ExpectFail::xfailDataDrivenWithQVerify(Continue)
 PASS   : tst_ExpectFail::xfailDataDrivenWithQCompare(Pass 1)
 PASS   : tst_ExpectFail::xfailDataDrivenWithQCompare(Pass 2)
 XFAIL  : tst_ExpectFail::xfailDataDrivenWithQCompare(Abort) This test should xfail
-   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp(173)]
+   Loc: [tst_expectfail.cpp(173)]
 PASS   : tst_ExpectFail::xfailDataDrivenWithQCompare(Abort)
 XFAIL  : tst_ExpectFail::xfailDataDrivenWithQCompare(Continue) This test should xfail
-   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp(173)]
+   Loc: [tst_expectfail.cpp(173)]
 PASS   : tst_ExpectFail::xfailDataDrivenWithQCompare(Continue)
 PASS   : tst_ExpectFail::xfailOnWrongRow(right row)
 XFAIL  : tst_ExpectFail::xfailOnAnyRow(first row) This test should xfail
-   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp(208)]
+   Loc: [tst_expectfail.cpp(208)]
 PASS   : tst_ExpectFail::xfailOnAnyRow(first row)
 XFAIL  : tst_ExpectFail::xfailOnAnyRow(second row) This test should xfail
-   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp(208)]
+   Loc: [tst_expectfail.cpp(208)]
 PASS   : tst_ExpectFail::xfailOnAnyRow(second row)
 FAIL!  : tst_ExpectFail::xfailWithoutVerify(first row) QEXPECT_FAIL was called without any subsequent verification statements
 FAIL!  : tst_ExpectFail::xfailWithoutVerify(second row) QEXPECT_FAIL was called without any subsequent verification statements
 XPASS  : tst_ExpectFail::xpass() 'true' returned TRUE unexpectedly. ()
-   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp(228)]
+   Loc: [tst_expectfail.cpp(228)]
 XPASS  : tst_ExpectFail::xpassDataDrivenWithQVerify(XPass) 'true' returned TRUE unexpectedly. ()
-   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp(250)]
+   Loc: [tst_expectfail.cpp(250)]
 PASS   : tst_ExpectFail::xpassDataDrivenWithQVerify(Pass)
 XPASS  : tst_ExpectFail::xpassDataDrivenWithQCompare(XPass) QCOMPARE(1, 1) returned TRUE unexpectedly.
-   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp(271)]
+   Loc: [tst_expectfail.cpp(271)]
 PASS   : tst_ExpectFail::xpassDataDrivenWithQCompare(Pass)
 PASS   : tst_ExpectFail::cleanupTestCase()
 Totals: 18 passed, 6 failed, 0 skipped

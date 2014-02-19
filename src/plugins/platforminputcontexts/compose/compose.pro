@@ -8,6 +8,7 @@ QT += gui-private
 
 LIBS += $$QMAKE_LIBS_XKBCOMMON
 QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_XKBCOMMON
+DEFINES += COMPOSE_X11_PREFIX='\\"$$QMAKE_X11_PREFIX\\"'
 
 SOURCES += $$PWD/main.cpp \
            $$PWD/qcomposeplatforminputcontext.cpp \

@@ -1537,7 +1537,7 @@ bool VCLinkerTool::parseOption(const char* option)
             AdditionalOptions.append(option);
         }
         break;
-	case 0x379ED25:
+    case 0x379ED25:
     case 0x157cf65: // /MACHINE:{AM33|ARM|CEE|IA64|X86|M32R|MIPS|MIPS16|MIPSFPU|MIPSFPU16|MIPSR41XX|PPC|SH3|SH4|SH5|THUMB|TRICORE}
         switch (elfHash(option+9)) {
         // Very limited documentation on all options but X86,
@@ -1667,7 +1667,7 @@ bool VCLinkerTool::parseOption(const char* option)
         else
             AdditionalOptions += option;
         break;
-	case 0x9B3C00D:
+    case 0x9B3C00D:
     case 0x78dc00d: // /SUBSYSTEM:{CONSOLE|EFI_APPLICATION|EFI_BOOT_SERVICE_DRIVER|EFI_ROM|EFI_RUNTIME_DRIVER|NATIVE|POSIX|WINDOWS|WINDOWSCE}[,major[.minor]]
         {
             // Split up in subsystem, and version number
@@ -2253,7 +2253,7 @@ bool VCFilter::addExtraCompiler(const VCFilterFile &info)
     CustomBuildTool.Description.clear();
     CustomBuildTool.Outputs.clear();
     CustomBuildTool.ToolPath.clear();
-	CustomBuildTool.ToolName = QLatin1String(_VCCustomBuildTool);
+    CustomBuildTool.ToolName = QLatin1String(_VCCustomBuildTool);
 
     for (int x = 0; x < extraCompilers.count(); ++x) {
         const QString &extraCompilerName = extraCompilers.at(x);
@@ -2291,13 +2291,13 @@ bool VCFilter::addExtraCompiler(const VCFilterFile &info)
         }
 
         // Dependency for the output
-        if(!tmp_dep.isEmpty())
-	    deps = tmp_dep;
-	if(!tmp_dep_cmd.isEmpty()) {
+        if (!tmp_dep.isEmpty())
+            deps = tmp_dep;
+        if (!tmp_dep_cmd.isEmpty()) {
             // Execute dependency command, and add every line as a dep
-	    char buff[256];
-	    QString dep_cmd = Project->replaceExtraCompilerVariables(tmp_dep_cmd,
-							             Option::fixPathToLocalOS(inFile, true, false),
+            char buff[256];
+            QString dep_cmd = Project->replaceExtraCompilerVariables(tmp_dep_cmd,
+                                                                     Option::fixPathToLocalOS(inFile, true, false),
                                                                      out);
             if(Project->canExecute(dep_cmd)) {
                 dep_cmd.prepend(QLatin1String("cd ")
@@ -2324,7 +2324,7 @@ bool VCFilter::addExtraCompiler(const VCFilterFile &info)
             }
         }
         for (int i = 0; i < deps.count(); ++i)
-	    deps[i] = Option::fixPathToTargetOS(
+            deps[i] = Option::fixPathToTargetOS(
                         Project->replaceExtraCompilerVariables(deps.at(i), inFile, out),
                         false).trimmed();
         // Command for file
@@ -2353,18 +2353,18 @@ bool VCFilter::addExtraCompiler(const VCFilterFile &info)
                                                          out);
         }
         // Name for command
-	if(!tmp_cmd_name.isEmpty()) {
-	    cmd_name = Project->replaceExtraCompilerVariables(tmp_cmd_name, inFile, out);
-	} else {
-	    int space = cmd.indexOf(' ');
-	    if(space != -1)
-		cmd_name = cmd.left(space);
-	    else
-		cmd_name = cmd;
-	    if((cmd_name[0] == '\'' || cmd_name[0] == '"') &&
-		cmd_name[0] == cmd_name[cmd_name.length()-1])
-		cmd_name = cmd_name.mid(1,cmd_name.length()-2);
-	}
+        if (!tmp_cmd_name.isEmpty()) {
+            cmd_name = Project->replaceExtraCompilerVariables(tmp_cmd_name, inFile, out);
+        } else {
+            int space = cmd.indexOf(' ');
+            if (space != -1)
+                cmd_name = cmd.left(space);
+            else
+                cmd_name = cmd;
+            if ((cmd_name[0] == '\'' || cmd_name[0] == '"') &&
+                cmd_name[0] == cmd_name[cmd_name.length()-1])
+                cmd_name = cmd_name.mid(1,cmd_name.length()-2);
+        }
 
         // Fixify paths
         for (int i = 0; i < deps.count(); ++i)
@@ -2797,6 +2797,12 @@ void VCProjectWriter::write(XmlOutput &xml, const VCDeploymentTool &tool)
         << attrE(_RegisterOutput, tool.RegisterOutput)
         << attrS(_AdditionalFiles, tool.AdditionalFiles)
         << closetag(tool.DeploymentTag);
+}
+
+void VCProjectWriter::write(XmlOutput &xml, const VCWinDeployQtTool &tool)
+{
+    Q_UNUSED(xml);
+    Q_UNUSED(tool);
 }
 
 void VCProjectWriter::write(XmlOutput &xml, const VCConfiguration &tool)

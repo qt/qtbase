@@ -81,7 +81,7 @@ private:
     GLXContext m_shareContext;
     QSurfaceFormat m_format;
     bool m_isPBufferCurrent;
-
+    int m_swapInterval;
     static bool m_queriedDummyContext;
     static bool m_supportsThreading;
 };

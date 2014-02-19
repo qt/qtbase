@@ -40,7 +40,6 @@
 ****************************************************************************/
 
 #include "qeglfshooks.h"
-#include "qeglfscursor.h"
 
 #include <QtDebug>
 
@@ -106,12 +105,6 @@ static void moveDispmanxLayer(EGLNativeWindowType window, const QPoint &pos)
     dst_rect.y = pos.y();
     dst_rect.width = size.width();
     dst_rect.height = size.height();
-
-    VC_RECT_T src_rect;
-    src_rect.x = 0;
-    src_rect.y = 0;
-    src_rect.width = size.width() << 16;
-    src_rect.height = size.height() << 16;
 
     DISPMANX_UPDATE_HANDLE_T dispman_update = vc_dispmanx_update_start(0);
     vc_dispmanx_element_change_attributes(dispman_update,

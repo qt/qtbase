@@ -39,6 +39,9 @@
 **
 ****************************************************************************/
 
+#ifndef BACKSLASH_NEWLINES_H
+#define BACKSLASH_NEWLINES_H
+
 #include <QObject>
 
 const int blackslashNewlinesDummy = 0
@@ -61,3 +64,4 @@ public slots:
 
 #undef value
 
+#endif // BACKSLASH_NEWLINES_H

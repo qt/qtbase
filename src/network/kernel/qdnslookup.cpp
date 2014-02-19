@@ -363,6 +363,25 @@ void QDnsLookup::setType(Type type)
 }
 
 /*!
+    \property QDnsLookup::nameserver
+    \brief the nameserver to use for DNS lookup.
+*/
+
+QHostAddress QDnsLookup::nameserver() const
+{
+    return d_func()->nameserver;
+}
+
+void QDnsLookup::setNameserver(const QHostAddress &nameserver)
+{
+    Q_D(QDnsLookup);
+    if (nameserver != d->nameserver) {
+        d->nameserver = nameserver;
+        emit nameserverChanged(nameserver);
+    }
+}
+
+/*!
     Returns the list of canonical name records associated with this lookup.
 */
 
@@ -463,7 +482,7 @@ void QDnsLookup::lookup()
     Q_D(QDnsLookup);
     d->isFinished = false;
     d->reply = QDnsLookupReply();
-    d->runnable = new QDnsLookupRunnable(d->type, QUrl::toAce(d->name));
+    d->runnable = new QDnsLookupRunnable(d->type, QUrl::toAce(d->name), d->nameserver);
     connect(d->runnable, SIGNAL(finished(QDnsLookupReply)),
             this, SLOT(_q_lookupFinished(QDnsLookupReply)),
             Qt::BlockingQueuedConnection);
@@ -971,7 +990,7 @@ void QDnsLookupRunnable::run()
     }
 
     // Perform request.
-    query(requestType, requestName, &reply);
+    query(requestType, requestName, nameserver, &reply);
 
     // Sort results.
     if (!theDnsLookupSeedStorage()->hasLocalData()) {

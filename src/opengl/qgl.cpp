@@ -1699,10 +1699,12 @@ QImage qt_gl_read_texture(const QSize &size, bool alpha_format, bool include_alp
         return QImage();
     int w = size.width();
     int h = size.height();
-#if !defined(QT_OPENGL_ES_2)
-    //### glGetTexImage not in GL ES 2.0, need to do something else here!
-    glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, img.bits());
-#endif
+#ifndef QT_OPENGL_ES
+    if (!QOpenGLFunctions::isES()) {
+        //### glGetTexImage not in GL ES 2.0, need to do something else here!
+        glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, img.bits());
+    }
+#endif // QT_OPENGL_ES
     convertFromGLImage(img, w, h, alpha_format, include_alpha);
     return img;
 }
@@ -2282,17 +2284,20 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
     glBindTexture(target, tx_id);
     glTexParameteri(target, GL_TEXTURE_MAG_FILTER, filtering);
 
-#if defined(QT_OPENGL_ES_2)
-    bool genMipmap = false;
-#endif
+    bool genMipmap = !QOpenGLFunctions::isES();
     if (glFormat.directRendering()
         && (qgl_extensions()->hasOpenGLExtension(QOpenGLExtensions::GenerateMipmap))
         && target == GL_TEXTURE_2D
         && (options & QGLContext::MipmapBindOption))
     {
 #if !defined(QT_OPENGL_ES_2)
-        glHint(GL_GENERATE_MIPMAP_HINT_SGIS, GL_NICEST);
-        glTexParameteri(target, GL_GENERATE_MIPMAP_SGIS, GL_TRUE);
+        if (genMipmap) {
+            glHint(GL_GENERATE_MIPMAP_HINT_SGIS, GL_NICEST);
+            glTexParameteri(target, GL_GENERATE_MIPMAP_SGIS, GL_TRUE);
+        } else {
+            glHint(GL_GENERATE_MIPMAP_HINT, GL_NICEST);
+            genMipmap = true;
+        }
 #else
         glHint(GL_GENERATE_MIPMAP_HINT, GL_NICEST);
         genMipmap = true;
@@ -2421,11 +2426,11 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
             printf(" - did byte swapping (%d ms)\n", time.elapsed());
 #endif
     }
-#ifdef QT_OPENGL_ES
-    // OpenGL/ES requires that the internal and external formats be
-    // identical.
-    internalFormat = externalFormat;
-#endif
+    if (QOpenGLFunctions::isES()) {
+        // OpenGL/ES requires that the internal and external formats be
+        // identical.
+        internalFormat = externalFormat;
+    }
 #ifdef QGL_BIND_TEXTURE_DEBUG
     printf(" - uploading, image.format=%d, externalFormat=0x%x, internalFormat=0x%x, pixel_type=0x%x\n",
            img.format(), externalFormat, internalFormat, pixel_type);
@@ -2434,10 +2439,8 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
     const QImage &constRef = img; // to avoid detach in bits()...
     glTexImage2D(target, 0, internalFormat, img.width(), img.height(), 0, externalFormat,
                  pixel_type, constRef.bits());
-#if defined(QT_OPENGL_ES_2)
-    if (genMipmap)
-        glGenerateMipmap(target);
-#endif
+    if (genMipmap && QOpenGLFunctions::isES())
+        functions->glGenerateMipmap(target);
 #ifndef QT_NO_DEBUG
     GLenum error = glGetError();
     if (error != GL_NO_ERROR) {
@@ -2518,31 +2521,32 @@ int QGLContextPrivate::maxTextureSize()
 
     glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
 
-#if defined(QT_OPENGL_ES)
-    return max_texture_size;
-#else
-    GLenum proxy = GL_PROXY_TEXTURE_2D;
+#ifndef QT_OPENGL_ES
+    if (!QOpenGLFunctions::isES()) {
+        GLenum proxy = GL_PROXY_TEXTURE_2D;
 
-    GLint size;
-    GLint next = 64;
-    glTexImage2D(proxy, 0, GL_RGBA, next, next, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-    glGetTexLevelParameteriv(proxy, 0, GL_TEXTURE_WIDTH, &size);
-    if (size == 0) {
-        return max_texture_size;
-    }
-    do {
-        size = next;
-        next = size * 2;
-
-        if (next > max_texture_size)
-            break;
+        GLint size;
+        GLint next = 64;
         glTexImage2D(proxy, 0, GL_RGBA, next, next, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-        glGetTexLevelParameteriv(proxy, 0, GL_TEXTURE_WIDTH, &next);
-    } while (next > size);
+        glGetTexLevelParameteriv(proxy, 0, GL_TEXTURE_WIDTH, &size);
+        if (size == 0) {
+            return max_texture_size;
+        }
+        do {
+            size = next;
+            next = size * 2;
 
-    max_texture_size = size;
-    return max_texture_size;
+            if (next > max_texture_size)
+                break;
+            glTexImage2D(proxy, 0, GL_RGBA, next, next, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+            glGetTexLevelParameteriv(proxy, 0, GL_TEXTURE_WIDTH, &next);
+        } while (next > size);
+
+        max_texture_size = size;
+    }
 #endif
+
+    return max_texture_size;
 }
 
 /*!
@@ -2696,7 +2700,7 @@ static void qDrawTextureRect(const QRectF &target, GLint textureWidth, GLint tex
     Q_UNUSED(textureHeight);
     Q_UNUSED(textureTarget);
 #else
-    if (textureTarget != GL_TEXTURE_2D) {
+    if (textureTarget != GL_TEXTURE_2D && !QOpenGLFunctions::isES()) {
         if (textureWidth == -1 || textureHeight == -1) {
             glGetTexLevelParameteriv(textureTarget, 0, GL_TEXTURE_WIDTH, &textureWidth);
             glGetTexLevelParameteriv(textureTarget, 0, GL_TEXTURE_HEIGHT, &textureHeight);
@@ -2763,35 +2767,38 @@ void QGLContext::drawTexture(const QRectF &target, GLuint textureId, GLenum text
 #endif
 
 #ifndef QT_OPENGL_ES_2
+    if (!QOpenGLFunctions::isES()) {
 #ifdef QT_OPENGL_ES
-    if (textureTarget != GL_TEXTURE_2D) {
-        qWarning("QGLContext::drawTexture(): texture target must be GL_TEXTURE_2D on OpenGL ES");
+        if (textureTarget != GL_TEXTURE_2D) {
+            qWarning("QGLContext::drawTexture(): texture target must be GL_TEXTURE_2D on OpenGL ES");
+            return;
+        }
+#else
+        const bool wasEnabled = glIsEnabled(GL_TEXTURE_2D);
+        GLint oldTexture;
+        glGetIntegerv(GL_TEXTURE_BINDING_2D, &oldTexture);
+#endif
+
+        glEnable(textureTarget);
+        glBindTexture(textureTarget, textureId);
+
+        qDrawTextureRect(target, -1, -1, textureTarget);
+
+#ifdef QT_OPENGL_ES
+        glDisable(textureTarget);
+#else
+        if (!wasEnabled)
+            glDisable(textureTarget);
+        glBindTexture(textureTarget, oldTexture);
+#endif
         return;
     }
-#else
-    const bool wasEnabled = glIsEnabled(GL_TEXTURE_2D);
-    GLint oldTexture;
-    glGetIntegerv(GL_TEXTURE_BINDING_2D, &oldTexture);
-#endif
-
-    glEnable(textureTarget);
-    glBindTexture(textureTarget, textureId);
-
-    qDrawTextureRect(target, -1, -1, textureTarget);
-
-#ifdef QT_OPENGL_ES
-    glDisable(textureTarget);
-#else
-    if (!wasEnabled)
-        glDisable(textureTarget);
-    glBindTexture(textureTarget, oldTexture);
-#endif
 #else
     Q_UNUSED(target);
     Q_UNUSED(textureId);
     Q_UNUSED(textureTarget);
-    qWarning("drawTexture() with OpenGL ES 2.0 requires an active OpenGL2 paint engine");
 #endif
+    qWarning("drawTexture() with OpenGL ES 2.0 requires an active OpenGL2 paint engine");
 }
 
 /*!
@@ -2821,40 +2828,42 @@ void QGLContext::drawTexture(const QPointF &point, GLuint textureId, GLenum text
     Q_UNUSED(point);
     Q_UNUSED(textureId);
     Q_UNUSED(textureTarget);
-    qWarning("drawTexture(const QPointF &point, GLuint textureId, GLenum textureTarget) not supported with OpenGL ES, use rect version instead");
 #else
+    if (!QOpenGLFunctions::isES()) {
+        const bool wasEnabled = glIsEnabled(GL_TEXTURE_2D);
+        GLint oldTexture;
+        glGetIntegerv(GL_TEXTURE_BINDING_2D, &oldTexture);
 
-    const bool wasEnabled = glIsEnabled(GL_TEXTURE_2D);
-    GLint oldTexture;
-    glGetIntegerv(GL_TEXTURE_BINDING_2D, &oldTexture);
+        glEnable(textureTarget);
+        glBindTexture(textureTarget, textureId);
 
-    glEnable(textureTarget);
-    glBindTexture(textureTarget, textureId);
+        GLint textureWidth;
+        GLint textureHeight;
 
-    GLint textureWidth;
-    GLint textureHeight;
+        glGetTexLevelParameteriv(textureTarget, 0, GL_TEXTURE_WIDTH, &textureWidth);
+        glGetTexLevelParameteriv(textureTarget, 0, GL_TEXTURE_HEIGHT, &textureHeight);
 
-    glGetTexLevelParameteriv(textureTarget, 0, GL_TEXTURE_WIDTH, &textureWidth);
-    glGetTexLevelParameteriv(textureTarget, 0, GL_TEXTURE_HEIGHT, &textureHeight);
-
-    if (d_ptr->active_engine &&
-        d_ptr->active_engine->type() == QPaintEngine::OpenGL2) {
-        QGL2PaintEngineEx *eng = static_cast<QGL2PaintEngineEx*>(d_ptr->active_engine);
-        if (!eng->isNativePaintingActive()) {
-            QRectF dest(point, QSizeF(textureWidth, textureHeight));
-            QRectF src(0, 0, textureWidth, textureHeight);
-            QSize size(textureWidth, textureHeight);
-            if (eng->drawTexture(dest, textureId, size, src))
-                return;
+        if (d_ptr->active_engine &&
+            d_ptr->active_engine->type() == QPaintEngine::OpenGL2) {
+            QGL2PaintEngineEx *eng = static_cast<QGL2PaintEngineEx*>(d_ptr->active_engine);
+            if (!eng->isNativePaintingActive()) {
+                QRectF dest(point, QSizeF(textureWidth, textureHeight));
+                QRectF src(0, 0, textureWidth, textureHeight);
+                QSize size(textureWidth, textureHeight);
+                if (eng->drawTexture(dest, textureId, size, src))
+                    return;
+            }
         }
+
+        qDrawTextureRect(QRectF(point, QSizeF(textureWidth, textureHeight)), textureWidth, textureHeight, textureTarget);
+
+        if (!wasEnabled)
+            glDisable(textureTarget);
+        glBindTexture(textureTarget, oldTexture);
+        return;
     }
-
-    qDrawTextureRect(QRectF(point, QSizeF(textureWidth, textureHeight)), textureWidth, textureHeight, textureTarget);
-
-    if (!wasEnabled)
-        glDisable(textureTarget);
-    glBindTexture(textureTarget, oldTexture);
 #endif
+    qWarning("drawTexture(const QPointF &point, GLuint textureId, GLenum textureTarget) not supported with OpenGL ES, use rect version instead");
 }
 
 /*!
@@ -4163,7 +4172,7 @@ void QGLWidget::glDraw()
         return;
     makeCurrent();
 #ifndef QT_OPENGL_ES
-    if (d->glcx->deviceIsPixmap())
+    if (d->glcx->deviceIsPixmap() && !QOpenGLFunctions::isES())
         glDrawBuffer(GL_FRONT);
 #endif
     QSize readback_target_size = d->glcx->d_ptr->readback_target_size;
@@ -4206,18 +4215,20 @@ void QGLWidget::qglColor(const QColor& c) const
 #ifdef QT_OPENGL_ES
     glColor4f(c.redF(), c.greenF(), c.blueF(), c.alphaF());
 #else
-    Q_D(const QGLWidget);
-    const QGLContext *ctx = QGLContext::currentContext();
-    if (ctx) {
-        if (ctx->format().rgba())
-            glColor4f(c.redF(), c.greenF(), c.blueF(), c.alphaF());
-        else if (!d->cmap.isEmpty()) { // QGLColormap in use?
-            int i = d->cmap.find(c.rgb());
-            if (i < 0)
-                i = d->cmap.findNearest(c.rgb());
-            glIndexi(i);
-        } else
-            glIndexi(ctx->colorIndex(c));
+    if (!QOpenGLFunctions::isES()) {
+        Q_D(const QGLWidget);
+        const QGLContext *ctx = QGLContext::currentContext();
+        if (ctx) {
+            if (ctx->format().rgba())
+                glColor4f(c.redF(), c.greenF(), c.blueF(), c.alphaF());
+            else if (!d->cmap.isEmpty()) { // QGLColormap in use?
+                int i = d->cmap.find(c.rgb());
+                if (i < 0)
+                    i = d->cmap.findNearest(c.rgb());
+                glIndexi(i);
+            } else
+                glIndexi(ctx->colorIndex(c));
+        }
     }
 #endif //QT_OPENGL_ES
 #else
@@ -4238,18 +4249,23 @@ void QGLWidget::qglClearColor(const QColor& c) const
 #ifdef QT_OPENGL_ES
     glClearColor(c.redF(), c.greenF(), c.blueF(), c.alphaF());
 #else
-    Q_D(const QGLWidget);
-    const QGLContext *ctx = QGLContext::currentContext();
-    if (ctx) {
-        if (ctx->format().rgba())
-            glClearColor(c.redF(), c.greenF(), c.blueF(), c.alphaF());
-        else if (!d->cmap.isEmpty()) { // QGLColormap in use?
-            int i = d->cmap.find(c.rgb());
-            if (i < 0)
-                i = d->cmap.findNearest(c.rgb());
-            glClearIndex(i);
-        } else
-            glClearIndex(ctx->colorIndex(c));
+    if (!QOpenGLFunctions::isES()) {
+        Q_D(const QGLWidget);
+        const QGLContext *ctx = QGLContext::currentContext();
+        if (ctx) {
+            if (ctx->format().rgba())
+                glClearColor(c.redF(), c.greenF(), c.blueF(), c.alphaF());
+            else if (!d->cmap.isEmpty()) { // QGLColormap in use?
+                int i = d->cmap.find(c.rgb());
+                if (i < 0)
+                    i = d->cmap.findNearest(c.rgb());
+                glClearIndex(i);
+            } else {
+                glClearIndex(ctx->colorIndex(c));
+            }
+        }
+    } else {
+        glClearColor(c.redF(), c.greenF(), c.blueF(), c.alphaF());
     }
 #endif
 }
@@ -4411,72 +4427,75 @@ static void qt_gl_draw_text(QPainter *p, int x, int y, const QString &str,
 void QGLWidget::renderText(int x, int y, const QString &str, const QFont &font)
 {
 #ifndef QT_OPENGL_ES
-    Q_D(QGLWidget);
-    if (str.isEmpty() || !isValid())
+    if (!QOpenGLFunctions::isES()) {
+        Q_D(QGLWidget);
+        if (str.isEmpty() || !isValid())
+            return;
+
+        GLint view[4];
+        bool use_scissor_testing = glIsEnabled(GL_SCISSOR_TEST);
+        if (!use_scissor_testing)
+            glGetIntegerv(GL_VIEWPORT, &view[0]);
+        int width = d->glcx->device()->width();
+        int height = d->glcx->device()->height();
+        bool auto_swap = autoBufferSwap();
+
+        QPaintEngine *engine = paintEngine();
+
+        qt_save_gl_state();
+
+        QPainter *p;
+        bool reuse_painter = false;
+        if (engine->isActive()) {
+            reuse_painter = true;
+            p = engine->painter();
+
+            glDisable(GL_DEPTH_TEST);
+            glViewport(0, 0, width, height);
+            glMatrixMode(GL_PROJECTION);
+            glLoadIdentity();
+            glOrtho(0, width, height, 0, 0, 1);
+            glMatrixMode(GL_MODELVIEW);
+
+            glLoadIdentity();
+        } else {
+            setAutoBufferSwap(false);
+            // disable glClear() as a result of QPainter::begin()
+            d->disable_clear_on_painter_begin = true;
+            p = new QPainter(this);
+        }
+
+        QRect viewport(view[0], view[1], view[2], view[3]);
+        if (!use_scissor_testing && viewport != rect()) {
+            // if the user hasn't set a scissor box, we set one that
+            // covers the current viewport
+            glScissor(view[0], view[1], view[2], view[3]);
+            glEnable(GL_SCISSOR_TEST);
+        } else if (use_scissor_testing) {
+            // use the scissor box set by the user
+            glEnable(GL_SCISSOR_TEST);
+        }
+
+        qt_gl_draw_text(p, x, y, str, font);
+
+        if (!reuse_painter) {
+            p->end();
+            delete p;
+            setAutoBufferSwap(auto_swap);
+            d->disable_clear_on_painter_begin = false;
+        }
+
+        qt_restore_gl_state();
+
         return;
-
-    GLint view[4];
-    bool use_scissor_testing = glIsEnabled(GL_SCISSOR_TEST);
-    if (!use_scissor_testing)
-        glGetIntegerv(GL_VIEWPORT, &view[0]);
-    int width = d->glcx->device()->width();
-    int height = d->glcx->device()->height();
-    bool auto_swap = autoBufferSwap();
-
-    QPaintEngine *engine = paintEngine();
-
-    qt_save_gl_state();
-
-    QPainter *p;
-    bool reuse_painter = false;
-    if (engine->isActive()) {
-        reuse_painter = true;
-        p = engine->painter();
-
-        glDisable(GL_DEPTH_TEST);
-        glViewport(0, 0, width, height);
-        glMatrixMode(GL_PROJECTION);
-        glLoadIdentity();
-        glOrtho(0, width, height, 0, 0, 1);
-        glMatrixMode(GL_MODELVIEW);
-
-        glLoadIdentity();
-    } else {
-        setAutoBufferSwap(false);
-        // disable glClear() as a result of QPainter::begin()
-        d->disable_clear_on_painter_begin = true;
-        p = new QPainter(this);
     }
-
-    QRect viewport(view[0], view[1], view[2], view[3]);
-    if (!use_scissor_testing && viewport != rect()) {
-        // if the user hasn't set a scissor box, we set one that
-        // covers the current viewport
-        glScissor(view[0], view[1], view[2], view[3]);
-        glEnable(GL_SCISSOR_TEST);
-    } else if (use_scissor_testing) {
-        // use the scissor box set by the user
-        glEnable(GL_SCISSOR_TEST);
-    }
-
-    qt_gl_draw_text(p, x, y, str, font);
-
-    if (!reuse_painter) {
-        p->end();
-        delete p;
-        setAutoBufferSwap(auto_swap);
-        d->disable_clear_on_painter_begin = false;
-    }
-
-    qt_restore_gl_state();
-
 #else // QT_OPENGL_ES
     Q_UNUSED(x);
     Q_UNUSED(y);
     Q_UNUSED(str);
     Q_UNUSED(font);
-    qWarning("QGLWidget::renderText is not supported under OpenGL/ES");
 #endif
+    qWarning("QGLWidget::renderText is not supported under OpenGL/ES");
 }
 
 /*! \overload
@@ -4503,80 +4522,83 @@ void QGLWidget::renderText(int x, int y, const QString &str, const QFont &font)
 void QGLWidget::renderText(double x, double y, double z, const QString &str, const QFont &font)
 {
 #ifndef QT_OPENGL_ES
-    Q_D(QGLWidget);
-    if (str.isEmpty() || !isValid())
+    if (!QOpenGLFunctions::isES()) {
+        Q_D(QGLWidget);
+        if (str.isEmpty() || !isValid())
+            return;
+
+        bool auto_swap = autoBufferSwap();
+
+        int width = d->glcx->device()->width();
+        int height = d->glcx->device()->height();
+        GLdouble model[4 * 4], proj[4 * 4];
+        GLint view[4];
+        glGetDoublev(GL_MODELVIEW_MATRIX, &model[0]);
+        glGetDoublev(GL_PROJECTION_MATRIX, &proj[0]);
+        glGetIntegerv(GL_VIEWPORT, &view[0]);
+        GLdouble win_x = 0, win_y = 0, win_z = 0;
+        qgluProject(x, y, z, &model[0], &proj[0], &view[0],
+                    &win_x, &win_y, &win_z);
+        win_y = height - win_y; // y is inverted
+
+        QPaintEngine *engine = paintEngine();
+
+        QPainter *p;
+        bool reuse_painter = false;
+        bool use_depth_testing = glIsEnabled(GL_DEPTH_TEST);
+        bool use_scissor_testing = glIsEnabled(GL_SCISSOR_TEST);
+
+        qt_save_gl_state();
+
+        if (engine->isActive()) {
+            reuse_painter = true;
+            p = engine->painter();
+        } else {
+            setAutoBufferSwap(false);
+            // disable glClear() as a result of QPainter::begin()
+            d->disable_clear_on_painter_begin = true;
+            p = new QPainter(this);
+        }
+
+        QRect viewport(view[0], view[1], view[2], view[3]);
+        if (!use_scissor_testing && viewport != rect()) {
+            glScissor(view[0], view[1], view[2], view[3]);
+            glEnable(GL_SCISSOR_TEST);
+        } else if (use_scissor_testing) {
+            glEnable(GL_SCISSOR_TEST);
+        }
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        glViewport(0, 0, width, height);
+        glOrtho(0, width, height, 0, 0, 1);
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+        glAlphaFunc(GL_GREATER, 0.0);
+        glEnable(GL_ALPHA_TEST);
+        if (use_depth_testing)
+            glEnable(GL_DEPTH_TEST);
+        glTranslated(0, 0, -win_z);
+        qt_gl_draw_text(p, qRound(win_x), qRound(win_y), str, font);
+
+        if (!reuse_painter) {
+            p->end();
+            delete p;
+            setAutoBufferSwap(auto_swap);
+            d->disable_clear_on_painter_begin = false;
+        }
+
+        qt_restore_gl_state();
+
         return;
-
-    bool auto_swap = autoBufferSwap();
-
-    int width = d->glcx->device()->width();
-    int height = d->glcx->device()->height();
-    GLdouble model[4 * 4], proj[4 * 4];
-    GLint view[4];
-    glGetDoublev(GL_MODELVIEW_MATRIX, &model[0]);
-    glGetDoublev(GL_PROJECTION_MATRIX, &proj[0]);
-    glGetIntegerv(GL_VIEWPORT, &view[0]);
-    GLdouble win_x = 0, win_y = 0, win_z = 0;
-    qgluProject(x, y, z, &model[0], &proj[0], &view[0],
-                &win_x, &win_y, &win_z);
-    win_y = height - win_y; // y is inverted
-
-    QPaintEngine *engine = paintEngine();
-
-    QPainter *p;
-    bool reuse_painter = false;
-    bool use_depth_testing = glIsEnabled(GL_DEPTH_TEST);
-    bool use_scissor_testing = glIsEnabled(GL_SCISSOR_TEST);
-
-    qt_save_gl_state();
-
-    if (engine->isActive()) {
-        reuse_painter = true;
-        p = engine->painter();
-    } else {
-        setAutoBufferSwap(false);
-        // disable glClear() as a result of QPainter::begin()
-        d->disable_clear_on_painter_begin = true;
-        p = new QPainter(this);
     }
-
-    QRect viewport(view[0], view[1], view[2], view[3]);
-    if (!use_scissor_testing && viewport != rect()) {
-        glScissor(view[0], view[1], view[2], view[3]);
-        glEnable(GL_SCISSOR_TEST);
-    } else if (use_scissor_testing) {
-        glEnable(GL_SCISSOR_TEST);
-    }
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glViewport(0, 0, width, height);
-    glOrtho(0, width, height, 0, 0, 1);
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    glAlphaFunc(GL_GREATER, 0.0);
-    glEnable(GL_ALPHA_TEST);
-    if (use_depth_testing)
-        glEnable(GL_DEPTH_TEST);
-    glTranslated(0, 0, -win_z);
-    qt_gl_draw_text(p, qRound(win_x), qRound(win_y), str, font);
-
-    if (!reuse_painter) {
-        p->end();
-        delete p;
-        setAutoBufferSwap(auto_swap);
-        d->disable_clear_on_painter_begin = false;
-    }
-
-    qt_restore_gl_state();
-
 #else // QT_OPENGL_ES
     Q_UNUSED(x);
     Q_UNUSED(y);
     Q_UNUSED(z);
     Q_UNUSED(str);
     Q_UNUSED(font);
-    qWarning("QGLWidget::renderText is not supported under OpenGL/ES");
 #endif
+    qWarning("QGLWidget::renderText is not supported under OpenGL/ES");
 }
 
 QGLFormat QGLWidget::format() const

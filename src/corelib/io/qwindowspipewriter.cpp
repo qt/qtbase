@@ -114,7 +114,7 @@ void QWindowsPipeWriter::run()
         if (quitNow) {
             lock.unlock();
             quitNow = false;
-	    break;
+            break;
         }
 
         QByteArray copy = data;
@@ -153,7 +153,7 @@ void QWindowsPipeWriter::run()
             totalWritten += written;
 #if defined QPIPEWRITER_DEBUG
             qDebug("QWindowsPipeWriter::run() wrote %d %d/%d bytes",
-			    written, int(totalWritten), int(maxlen));
+                   written, int(totalWritten), int(maxlen));
 #endif
             lock.lock();
             data.remove(0, written);

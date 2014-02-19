@@ -309,18 +309,37 @@ QSqlQuery& QSqlQuery::operator=(const QSqlQuery& other)
 }
 
 /*!
-  Returns \c true if the query is \l{isActive()}{active} and positioned
-  on a valid record and the \a field is NULL; otherwise returns
-  false. Note that for some drivers, isNull() will not return accurate
-  information until after an attempt is made to retrieve data.
+    Returns \c true if the query is not \l{isActive()}{active},
+    the query is not positioned on a valid record,
+    there is no such field, or the field is null; otherwise \c false.
+    Note that for some drivers, isNull() will not return accurate
+    information until after an attempt is made to retrieve data.
 
-  \sa isActive(), isValid(), value()
+    \sa isActive(), isValid(), value()
 */
 
 bool QSqlQuery::isNull(int field) const
 {
-    if (d->sqlResult->isActive() && d->sqlResult->isValid())
-        return d->sqlResult->isNull(field);
+    return !d->sqlResult->isActive()
+             || !d->sqlResult->isValid()
+             || d->sqlResult->isNull(field);
+}
+
+/*!
+    \overload
+
+    Returns \c true if there is no field with this \a name; otherwise
+    returns isNull(int index) for the corresponding field index.
+
+    This overload is less efficient than \l{QSqlQuery::}{isNull()}
+*/
+
+bool QSqlQuery::isNull(const QString &name) const
+{
+    int index = d->sqlResult->record().indexOf(name);
+    if (index > -1)
+        return isNull(index);
+    qWarning("QSqlQuery::isNull: unknown field name '%s'", qPrintable(name));
     return true;
 }
 

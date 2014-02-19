@@ -173,22 +173,22 @@ const int RESET = 0;
 /*!
     Test plan:
         insertItem (all flavors and combinations)
-	removing menu items
-	clearing the menu
+        removing menu items
+        clearing the menu
 
-	check the common behaviour + emitted signals for:
-	    accelerator keys
-	    navigating tru the menu and then pressing ENTER
-	    mouse clicks
-	    mouse drags
-	    combinations of key + mouse (if possible)
-	    checked / unckecked state of menu options
-	    active / inactive state
+        check the common behaviour + emitted signals for:
+            accelerator keys
+            navigating tru the menu and then pressing ENTER
+            mouse clicks
+            mouse drags
+            combinations of key + mouse (if possible)
+            checked / unckecked state of menu options
+            active / inactive state
 
     Can't test these without pixmap comparison...
-	show and hide
-	icons in a menu
-	pixmaps in a menu
+        show and hide
+        icons in a menu
+        pixmaps in a menu
 
 */
 
@@ -481,17 +481,17 @@ void tst_QMenuBar::removeItemAt()
     switch (removeIndex )
     {
     case 0:
-	QCOMPARE( menuBarActions2.at(0)->text(), QString("Menu 2") );
-	QCOMPARE( menuBarActions2.at(1)->text(), QString("Menu 3") );
-	break;
+        QCOMPARE( menuBarActions2.at(0)->text(), QString("Menu 2") );
+        QCOMPARE( menuBarActions2.at(1)->text(), QString("Menu 3") );
+        break;
     case 1:
-	QCOMPARE( menuBarActions2.at(0)->text(), QString("Menu 1") );
-	QCOMPARE( menuBarActions2.at(1)->text(), QString("Menu 3") );
-	break;
+        QCOMPARE( menuBarActions2.at(0)->text(), QString("Menu 1") );
+        QCOMPARE( menuBarActions2.at(1)->text(), QString("Menu 3") );
+        break;
     case 2:
-	QCOMPARE( menuBarActions2.at(0)->text(), QString("Menu 1") );
-	QCOMPARE( menuBarActions2.at(1)->text(), QString("Menu 2") );
-	break;
+        QCOMPARE( menuBarActions2.at(0)->text(), QString("Menu 1") );
+        QCOMPARE( menuBarActions2.at(1)->text(), QString("Menu 2") );
+        break;
     }
 
     QVERIFY( menuBarActions2.size() == 2 );
@@ -827,7 +827,7 @@ void tst_QMenuBar::check_escKey()
 // void tst_QMenuBar::check_mouse1()
 // {
 //     if (QSystem::curStyle() == "Motif")
-// 	QSKIP("This fails in Motif due to a bug in the testing framework");
+//         QSKIP("This fails in Motif due to a bug in the testing framework");
 //     QFETCH( QString, popup_item );
 //     QFETCH( int, itemA_count );
 //     QFETCH( int, itemB_count );
@@ -888,7 +888,7 @@ void tst_QMenuBar::check_escKey()
 // void tst_QMenuBar::check_mouse2()
 // {
 //     if (QSystem::curStyle() == "Motif")
-// 	QSKIP("This fails in Motif due to a bug in the testing framework");
+//         QSKIP("This fails in Motif due to a bug in the testing framework");
 //     QFETCH( QString, label );
 //     QFETCH( int, itemA_count );
 //     QFETCH( int, itemB_count );
@@ -961,8 +961,8 @@ void tst_QMenuBar::allowActiveAndDisabled()
 void tst_QMenuBar::check_altPress()
 {
     if ( !qApp->style()->styleHint(QStyle::SH_MenuBar_AltKeyNavigation) ) {
-	QSKIP( QString( "this is not supposed to work in the %1 style. Skipping." ).
-	      arg( qApp->style()->objectName() ).toLatin1());
+        QSKIP(QString( "this is not supposed to work in the %1 style. Skipping." ).
+              arg(qApp->style()->objectName()).toLatin1());
     }
 
     QMainWindow w;
@@ -1141,7 +1141,7 @@ void tst_QMenuBar::task223138_triggered()
 void tst_QMenuBar::task256322_highlight()
 {
     QMainWindow win;
-	win.menuBar()->setNativeMenuBar(false);  //we can't check the geometry of native menubars
+    win.menuBar()->setNativeMenuBar(false);  //we can't check the geometry of native menubars
     QMenu menu;
     QAction *file = win.menuBar()->addMenu(&menu);
     file->setText("file");

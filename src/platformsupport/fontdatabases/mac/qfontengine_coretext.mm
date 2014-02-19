@@ -63,15 +63,12 @@ static void loadAdvancesForGlyphs(CTFontRef ctfont,
     for (int i = 0; i < len; ++i) {
         if (glyphs->glyphs[i] & 0xff000000)
             continue;
-        glyphs->advances_x[i] = QFixed::fromReal(advances[i].width);
-        glyphs->advances_y[i] = QFixed::fromReal(advances[i].height);
+        glyphs->advances[i] = QFixed::fromReal(advances[i].width);
     }
 
     if (fontDef.styleStrategy & QFont::ForceIntegerMetrics) {
-        for (int i = 0; i < len; ++i) {
-            glyphs->advances_x[i] = glyphs->advances_x[i].round();
-            glyphs->advances_y[i] = glyphs->advances_y[i].round();
-        }
+        for (int i = 0; i < len; ++i)
+            glyphs->advances[i] = glyphs->advances[i].round();
     }
 }
 
@@ -191,6 +188,8 @@ void QCoreTextFontEngine::init()
         avgCharWidth = QFontEngine::averageCharWidth();
 
     cache_cost = (CTFontGetAscent(ctfont) + CTFontGetDescent(ctfont)) * avgCharWidth.toInt() * 2000;
+
+    setUserData(QVariant::fromValue((void *)cgFont));
 }
 
 bool QCoreTextFontEngine::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs,
@@ -228,15 +227,12 @@ bool QCoreTextFontEngine::stringToCMap(const QChar *str, int len, QGlyphLayout *
     for (int i = 0; i < glyph_pos; ++i) {
         if (glyphs->glyphs[i] & 0xff000000)
             continue;
-        glyphs->advances_x[i] = QFixed::fromReal(advances[i].width);
-        glyphs->advances_y[i] = QFixed::fromReal(advances[i].height);
+        glyphs->advances[i] = QFixed::fromReal(advances[i].width);
     }
 
     if (fontDef.styleStrategy & QFont::ForceIntegerMetrics) {
-        for (int i = 0; i < glyph_pos; ++i) {
-            glyphs->advances_x[i] = glyphs->advances_x[i].round();
-            glyphs->advances_y[i] = glyphs->advances_y[i].round();
-        }
+        for (int i = 0; i < glyph_pos; ++i)
+            glyphs->advances[i] = glyphs->advances[i].round();
     }
     return true;
 }

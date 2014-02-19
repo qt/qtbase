@@ -50,9 +50,7 @@ GLWidget::GLWidget(QWidget *parent, QGLWidget *shareWidget)
     xRot = 0;
     yRot = 0;
     zRot = 0;
-#ifdef QT_OPENGL_ES_2
     program = 0;
-#endif
 }
 
 GLWidget::~GLWidget()
@@ -89,11 +87,9 @@ void GLWidget::initializeGL()
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
-#ifndef QT_OPENGL_ES_2
+#ifdef GL_TEXTURE_2D
     glEnable(GL_TEXTURE_2D);
 #endif
-
-#ifdef QT_OPENGL_ES_2
 
 #define PROGRAM_VERTEX_ATTRIBUTE 0
 #define PROGRAM_TEXCOORD_ATTRIBUTE 1
@@ -130,29 +126,12 @@ void GLWidget::initializeGL()
 
     program->bind();
     program->setUniformValue("texture", 0);
-
-#endif
 }
 
 void GLWidget::paintGL()
 {
     qglClearColor(clearColor);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-#if !defined(QT_OPENGL_ES_2)
-
-    glLoadIdentity();
-    glTranslatef(0.0f, 0.0f, -10.0f);
-    glRotatef(xRot / 16.0f, 1.0f, 0.0f, 0.0f);
-    glRotatef(yRot / 16.0f, 0.0f, 1.0f, 0.0f);
-    glRotatef(zRot / 16.0f, 0.0f, 0.0f, 1.0f);
-
-    glVertexPointer(3, GL_FLOAT, 0, vertices.constData());
-    glTexCoordPointer(2, GL_FLOAT, 0, texCoords.constData());
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-
-#else
 
     QMatrix4x4 m;
     m.ortho(-0.5f, +0.5f, +0.5f, -0.5f, 4.0f, 15.0f);
@@ -169,8 +148,6 @@ void GLWidget::paintGL()
     program->setAttributeArray
         (PROGRAM_TEXCOORD_ATTRIBUTE, texCoords.constData());
 
-#endif
-
     for (int i = 0; i < 6; ++i) {
         glBindTexture(GL_TEXTURE_2D, textures[i]);
         glDrawArrays(GL_TRIANGLE_FAN, i * 4, 4);
@@ -181,17 +158,6 @@ void GLWidget::resizeGL(int width, int height)
 {
     int side = qMin(width, height);
     glViewport((width - side) / 2, (height - side) / 2, side, side);
-
-#if !defined(QT_OPENGL_ES_2)
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-#ifndef QT_OPENGL_ES
-    glOrtho(-0.5, +0.5, +0.5, -0.5, 4.0, 15.0);
-#else
-    glOrthof(-0.5, +0.5, +0.5, -0.5, 4.0, 15.0);
-#endif
-    glMatrixMode(GL_MODELVIEW);
-#endif
 }
 
 void GLWidget::mousePressEvent(QMouseEvent *event)

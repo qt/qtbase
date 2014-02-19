@@ -188,8 +188,7 @@ void QWindowsInputContext::reset()
     if (!m_compositionContext.hwnd)
         return;
     QObject *fo = qApp->focusObject();
-    if (QWindowsContext::verboseInputMethods)
-        qDebug() << __FUNCTION__<< fo;
+    qCDebug(lcQpaInputMethods) << __FUNCTION__<< fo;
     if (!fo)
         return;
     if (m_compositionContext.isComposing) {
@@ -221,8 +220,7 @@ void QWindowsInputContext::cursorRectChanged()
     if (!cursorRectangle.isValid())
         return;
 
-    if (QWindowsContext::verboseInputMethods)
-        qDebug() << __FUNCTION__<< cursorRectangle;
+    qCDebug(lcQpaInputMethods) << __FUNCTION__<< cursorRectangle;
 
     const HIMC himc = ImmGetContext(m_compositionContext.hwnd);
     if (!himc)
@@ -259,8 +257,7 @@ void QWindowsInputContext::invokeAction(QInputMethod::Action action, int cursorP
         return;
     }
 
-    if (QWindowsContext::verboseInputMethods)
-        qDebug() << __FUNCTION__ << cursorPosition << action;
+    qCDebug(lcQpaInputMethods) << __FUNCTION__ << cursorPosition << action;
     if (cursorPosition < 0 || cursorPosition > m_compositionContext.composition.size())
         reset();
 
@@ -339,8 +336,7 @@ bool QWindowsInputContext::startComposition(HWND hwnd)
     QWindow *window = qApp->focusWindow();
     if (!window)
         return false;
-    if (QWindowsContext::verboseInputMethods)
-        qDebug() << __FUNCTION__ << fo << window;
+    qCDebug(lcQpaInputMethods) << __FUNCTION__ << fo << window;
     if (!fo || QWindowsWindow::handleOf(window) != hwnd)
         return false;
     initContext(hwnd);
@@ -402,9 +398,8 @@ bool QWindowsInputContext::composition(HWND hwnd, LPARAM lParamIn)
 {
     QObject *fo = qApp->focusObject();
     const int lParam = int(lParamIn);
-    if (QWindowsContext::verboseInputMethods)
-        qDebug() << '>' << __FUNCTION__ << fo << debugComposition(lParam)
-                 << " composing=" << m_compositionContext.isComposing;
+    qCDebug(lcQpaInputMethods) << '>' << __FUNCTION__ << fo << debugComposition(lParam)
+        << " composing=" << m_compositionContext.isComposing;
     if (!fo || m_compositionContext.hwnd != hwnd || !lParam)
         return false;
     const HIMC himc = ImmGetContext(m_compositionContext.hwnd);
@@ -443,11 +438,9 @@ bool QWindowsInputContext::composition(HWND hwnd, LPARAM lParamIn)
         endContextComposition();
     }
     const bool result = QCoreApplication::sendEvent(fo, event.data());
-    if (QWindowsContext::verboseInputMethods)
-        qDebug() << '<' << __FUNCTION__ << "sending markup="
-                  << event->attributes().size()
-                  << " commit=" << event->commitString()
-                  << " to " << fo << " returns " << result;
+    qCDebug(lcQpaInputMethods) << '<' << __FUNCTION__ << "sending markup="
+        << event->attributes().size() << " commit=" << event->commitString()
+        << " to " << fo << " returns " << result;
     update(Qt::ImQueryAll);
     ImmReleaseContext(m_compositionContext.hwnd, himc);
     return result;
@@ -455,8 +448,7 @@ bool QWindowsInputContext::composition(HWND hwnd, LPARAM lParamIn)
 
 bool QWindowsInputContext::endComposition(HWND hwnd)
 {
-    if (QWindowsContext::verboseInputMethods)
-        qDebug() << __FUNCTION__ << m_endCompositionRecursionGuard << hwnd;
+    qCDebug(lcQpaInputMethods) << __FUNCTION__ << m_endCompositionRecursionGuard << hwnd;
     // Googles Pinyin Input Method likes to call endComposition again
     // when we call notifyIME with CPS_CANCEL, so protect ourselves
     // against that.
@@ -549,10 +541,8 @@ int QWindowsInputContext::reconvertString(RECONVERTSTRING *reconv)
         return -1;
     const DWORD memSize = sizeof(RECONVERTSTRING)
             + (surroundingText.length() + 1) * sizeof(ushort);
-    if (QWindowsContext::verboseInputMethods)
-        qDebug() << __FUNCTION__ << " reconv=" << reconv
-                 << " surroundingText=" << surroundingText
-                 << " size=" << memSize;
+    qCDebug(lcQpaInputMethods) << __FUNCTION__ << " reconv=" << reconv
+        << " surroundingText=" << surroundingText << " size=" << memSize;
     // If memory is not allocated, return the required size.
     if (!reconv)
         return surroundingText.isEmpty() ? -1 : int(memSize);
@@ -567,8 +557,7 @@ int QWindowsInputContext::reconvertString(RECONVERTSTRING *reconv)
     const int startPos = bounds.position();
     bounds.toNextBoundary();
     const int endPos = bounds.position();
-    if (QWindowsContext::verboseInputMethods)
-        qDebug() << __FUNCTION__ << " boundary=" << startPos << endPos;
+    qCDebug(lcQpaInputMethods) << __FUNCTION__ << " boundary=" << startPos << endPos;
     // Select the text, this will be overwritten by following IME events.
     QList<QInputMethodEvent::Attribute> attributes;
     attributes << QInputMethodEvent::Attribute(QInputMethodEvent::Selection, startPos, endPos-startPos, QVariant());

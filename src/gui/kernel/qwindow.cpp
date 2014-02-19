@@ -163,9 +163,7 @@ QWindow::QWindow(QScreen *targetScreen)
     //if your applications aborts here, then chances are your creating a QWindow before the
     //screen list is populated.
     Q_ASSERT(d->screen);
-
-    connect(d->screen, SIGNAL(destroyed(QObject*)), this, SLOT(screenDestroyed(QObject*)));
-    QGuiApplicationPrivate::window_list.prepend(this);
+    d->init();
 }
 
 /*!
@@ -188,8 +186,7 @@ QWindow::QWindow(QWindow *parent)
         d->screen = parent->screen();
     if (!d->screen)
         d->screen = QGuiApplication::primaryScreen();
-    connect(d->screen, SIGNAL(destroyed(QObject*)), this, SLOT(screenDestroyed(QObject*)));
-    QGuiApplicationPrivate::window_list.prepend(this);
+    d->init();
 }
 
 /*!
@@ -214,8 +211,7 @@ QWindow::QWindow(QWindowPrivate &dd, QWindow *parent)
         d->screen = parent->screen();
     if (!d->screen)
         d->screen = QGuiApplication::primaryScreen();
-    connect(d->screen, SIGNAL(destroyed(QObject*)), this, SLOT(screenDestroyed(QObject*)));
-    QGuiApplicationPrivate::window_list.prepend(this);
+    d->init();
 }
 
 /*!
@@ -231,6 +227,13 @@ QWindow::~QWindow()
         QGuiApplicationPrivate::tabletPressTarget = 0;
     QGuiApplicationPrivate::window_list.removeAll(this);
     destroy();
+}
+
+void QWindowPrivate::init()
+{
+    Q_Q(QWindow);
+    QObject::connect(screen, SIGNAL(destroyed(QObject*)), q, SLOT(screenDestroyed(QObject*)));
+    QGuiApplicationPrivate::window_list.prepend(q);
 }
 
 /*!
@@ -428,6 +431,14 @@ void QWindow::setVisible(bool visible)
     if (visible) {
         // remove posted quit events when showing a new window
         QCoreApplication::removePostedEvents(qApp, QEvent::Quit);
+
+        if (type() == Qt::Window) {
+            QString &firstWindowTitle = QGuiApplicationPrivate::instance()->firstWindowTitle;
+            if (!firstWindowTitle.isEmpty()) {
+                setTitle(firstWindowTitle);
+                firstWindowTitle = QString();
+            }
+        }
 
         QShowEvent showEvent;
         QGuiApplication::sendEvent(this, &showEvent);
@@ -765,6 +776,8 @@ void QWindow::setIcon(const QIcon &icon)
     d->windowIcon = icon;
     if (d->platformWindow)
         d->platformWindow->setWindowIcon(icon);
+    QEvent e(QEvent::WindowIconChange);
+    QCoreApplication::sendEvent(this, &e);
 }
 
 /*!
@@ -775,6 +788,8 @@ void QWindow::setIcon(const QIcon &icon)
 QIcon QWindow::icon() const
 {
     Q_D(const QWindow);
+    if (d->windowIcon.isNull())
+        return QGuiApplication::windowIcon();
     return d->windowIcon;
 }
 
@@ -1929,6 +1944,10 @@ bool QWindow::event(QEvent *ev)
         hideEvent(static_cast<QHideEvent *>(ev));
         break;
 
+    case QEvent::ApplicationWindowIconChange:
+        setIcon(icon());
+        break;
+
     case QEvent::WindowStateChange: {
         Q_D(QWindow);
         emit windowStateChanged(d->windowState);
@@ -2145,6 +2164,26 @@ void QWindowPrivate::maybeQuitOnLastWindowClosed()
         }
     }
 
+}
+
+QWindow *QWindowPrivate::topLevelWindow() const
+{
+    Q_Q(const QWindow);
+
+    QWindow *window = const_cast<QWindow *>(q);
+
+    while (window) {
+        QWindow *parent = window->parent();
+        if (!parent)
+            parent = window->transientParent();
+
+        if (!parent)
+            break;
+
+        window = parent;
+    }
+
+    return window;
 }
 
 /*!

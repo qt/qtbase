@@ -43,18 +43,22 @@
 #include "qlinuxfbscreen.h"
 
 #include <QtPlatformSupport/private/qgenericunixfontdatabase_p.h>
+#include <QtPlatformSupport/private/qgenericunixservices_p.h>
 #include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
+
+#include <QtPlatformSupport/private/qfbvthandler_p.h>
 #include <QtPlatformSupport/private/qfbbackingstore_p.h>
 #include <QtPlatformSupport/private/qfbwindow_p.h>
 #include <QtPlatformSupport/private/qfbcursor_p.h>
 
 #include <QtGui/private/qguiapplication_p.h>
-#include <QtGui/private/qpixmap_raster_p.h>
+#include <qpa/qplatforminputcontextfactory_p.h>
 
 QT_BEGIN_NAMESPACE
 
 QLinuxFbIntegration::QLinuxFbIntegration(const QStringList &paramList)
-    : m_fontDb(new QGenericUnixFontDatabase())
+    : m_fontDb(new QGenericUnixFontDatabase),
+      m_services(new QGenericUnixServices)
 {
     m_primaryScreen = new QLinuxFbScreen(paramList);
 }
@@ -70,19 +74,19 @@ void QLinuxFbIntegration::initialize()
         screenAdded(m_primaryScreen);
     else
         qWarning("linuxfb: Failed to initialize screen");
+
+    m_inputContext = QPlatformInputContextFactory::create();
+
+    m_vtHandler.reset(new QFbVtHandler);
 }
 
 bool QLinuxFbIntegration::hasCapability(QPlatformIntegration::Capability cap) const
 {
     switch (cap) {
     case ThreadedPixmaps: return true;
+    case WindowManagement: return false;
     default: return QPlatformIntegration::hasCapability(cap);
     }
-}
-
-QPlatformPixmap *QLinuxFbIntegration::createPlatformPixmap(QPlatformPixmap::PixelType type) const
-{
-    return new QRasterPlatformPixmap(type);
 }
 
 QPlatformBackingStore *QLinuxFbIntegration::createPlatformBackingStore(QWindow *window) const
@@ -109,7 +113,12 @@ QList<QPlatformScreen *> QLinuxFbIntegration::screens() const
 
 QPlatformFontDatabase *QLinuxFbIntegration::fontDatabase() const
 {
-    return m_fontDb;
+    return m_fontDb.data();
+}
+
+QPlatformServices *QLinuxFbIntegration::services() const
+{
+    return m_services.data();
 }
 
 QT_END_NAMESPACE

@@ -166,12 +166,12 @@ void tst_QFileSystemModel::cleanup()
         for (int i = 0; i < list.count(); ++i) {
             QFileInfo fi(dir.path() + '/' + list.at(i));
             if (fi.exists() && fi.isFile()) {
-		        QFile p(fi.absoluteFilePath());
+                QFile p(fi.absoluteFilePath());
                 p.setPermissions(QFile::ReadUser | QFile::ReadOwner | QFile::ExeOwner | QFile::ExeUser | QFile::WriteUser | QFile::WriteOwner | QFile::WriteOther);
-		        QFile dead(dir.path() + '/' + list.at(i));
-		        dead.remove();
-	        }
-	        if (fi.exists() && fi.isDir())
+                QFile dead(dir.path() + '/' + list.at(i));
+                dead.remove();
+            }
+            if (fi.exists() && fi.isDir())
                 QVERIFY(dir.rmdir(list.at(i)));
         }
         list = dir.entryList(QDir::AllEntries | QDir::System | QDir::Hidden | QDir::NoDotAndDotDot);
@@ -426,7 +426,14 @@ bool tst_QFileSystemModel::createFiles(const QString &test_path, const QStringLi
             wchar_t nativeHiddenFile[MAX_PATH];
             memset(nativeHiddenFile, 0, sizeof(nativeHiddenFile));
             hiddenFile.toWCharArray(nativeHiddenFile);
+#ifndef Q_OS_WINRT
             DWORD currentAttributes = ::GetFileAttributes(nativeHiddenFile);
+#else // !Q_OS_WINRT
+            WIN32_FILE_ATTRIBUTE_DATA attributeData;
+            if (!::GetFileAttributesEx(nativeHiddenFile, GetFileExInfoStandard, &attributeData))
+                attributeData.dwFileAttributes = 0xFFFFFFFF;
+            DWORD currentAttributes = attributeData.dwFileAttributes;
+#endif // Q_OS_WINRT
             if (currentAttributes == 0xFFFFFFFF) {
                 qErrnoWarning("failed to get file attributes: %s", qPrintable(hiddenFile));
                 return false;

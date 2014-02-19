@@ -225,16 +225,16 @@ protected:
     virtual bool findLibraries();
 
     //for retrieving values and lists of values
-    virtual QString var(const ProKey &var);
-    QString varGlue(const ProKey &var, const QString &before, const QString &glue, const QString &after);
-    QString fileVarGlue(const ProKey &var, const QString &before, const QString &glue, const QString &after);
-    QString varList(const ProKey &var);
-    QString val(const ProStringList &varList);
-    QString val(const QStringList &varList);
-    QString valGlue(const QStringList &varList, const QString &before, const QString &glue, const QString &after);
-    QString valGlue(const ProStringList &varList, const QString &before, const QString &glue, const QString &after);
-    QString valList(const QStringList &varList);
-    QString valList(const ProStringList &varList);
+    virtual QString var(const ProKey &var) const;
+    QString varGlue(const ProKey &var, const QString &before, const QString &glue, const QString &after) const;
+    QString fileVarGlue(const ProKey &var, const QString &before, const QString &glue, const QString &after) const;
+    QString varList(const ProKey &var) const;
+    QString val(const ProStringList &varList) const;
+    QString val(const QStringList &varList) const;
+    QString valGlue(const QStringList &varList, const QString &before, const QString &glue, const QString &after) const;
+    QString valGlue(const ProStringList &varList, const QString &before, const QString &glue, const QString &after) const;
+    QString valList(const QStringList &varList) const;
+    QString valList(const ProStringList &varList) const;
 
     QString filePrefixRoot(const QString &, const QString &);
 

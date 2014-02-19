@@ -222,14 +222,14 @@ TextureStorage11_2D::TextureStorage11_2D(Renderer *renderer, SwapChain11 *swapch
 }
 
 TextureStorage11_2D::TextureStorage11_2D(Renderer *renderer, int levels, GLenum internalformat, GLenum usage, bool forceRenderable, GLsizei width, GLsizei height)
-    : TextureStorage11(renderer, GetTextureBindFlags(gl_d3d11::ConvertTextureFormat(internalformat), usage, forceRenderable))
+    : TextureStorage11(renderer, GetTextureBindFlags(gl_d3d11::ConvertTextureFormat(internalformat, Renderer11::makeRenderer11(renderer)->getFeatureLevel()), usage, forceRenderable))
 {
     for (unsigned int i = 0; i < gl::IMPLEMENTATION_MAX_TEXTURE_LEVELS; i++)
     {
         mRenderTarget[i] = NULL;
     }
 
-    DXGI_FORMAT convertedFormat = gl_d3d11::ConvertTextureFormat(internalformat);
+    DXGI_FORMAT convertedFormat = gl_d3d11::ConvertTextureFormat(internalformat, Renderer11::makeRenderer11(renderer)->getFeatureLevel());
     if (d3d11::IsDepthStencilFormat(convertedFormat))
     {
         mTextureFormat = d3d11::GetDepthTextureFormat(convertedFormat);
@@ -440,7 +440,7 @@ void TextureStorage11_2D::generateMipmap(int level)
 }
 
 TextureStorage11_Cube::TextureStorage11_Cube(Renderer *renderer, int levels, GLenum internalformat, GLenum usage, bool forceRenderable, int size)
-    : TextureStorage11(renderer, GetTextureBindFlags(gl_d3d11::ConvertTextureFormat(internalformat), usage, forceRenderable))
+    : TextureStorage11(renderer, GetTextureBindFlags(gl_d3d11::ConvertTextureFormat(internalformat, Renderer11::makeRenderer11(renderer)->getFeatureLevel()), usage, forceRenderable))
 {
     for (unsigned int i = 0; i < 6; i++)
     {
@@ -450,7 +450,7 @@ TextureStorage11_Cube::TextureStorage11_Cube(Renderer *renderer, int levels, GLe
         }
     }
 
-    DXGI_FORMAT convertedFormat = gl_d3d11::ConvertTextureFormat(internalformat);
+    DXGI_FORMAT convertedFormat = gl_d3d11::ConvertTextureFormat(internalformat, Renderer11::makeRenderer11(renderer)->getFeatureLevel());
     if (d3d11::IsDepthStencilFormat(convertedFormat))
     {
         mTextureFormat = d3d11::GetDepthTextureFormat(convertedFormat);

@@ -87,8 +87,8 @@ static inline int qt_socket_connect(int s, struct sockaddr *addr, QT_SOCKLEN_T a
 { return ::connect(s, addr, addrlen); }
 
 // Only Solaris 7 and better support 64-bit
-#define QT_SNPRINTF		::snprintf
-#define QT_VSNPRINTF		::vsnprintf
+#define QT_SNPRINTF             ::snprintf
+#define QT_VSNPRINTF            ::vsnprintf
 
 #ifdef connect
 #undef connect

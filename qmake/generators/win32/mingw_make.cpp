@@ -101,7 +101,7 @@ bool MingwMakefileGenerator::findLibraries()
             }
             if (!out.isEmpty()) // We assume if it never finds it that its correct
                 (*it) = out;
-	    } else if((*it).startsWith("-L")) {
+        } else if ((*it).startsWith("-L")) {
             dirs.append(QMakeLocalFileName((*it).mid(2).toQString()));
         }
 
@@ -159,7 +159,7 @@ void createLdObjectScriptFile(const QString &fileName, const ProStringList &objL
                 t << path << endl;
         }
         t << ");\n";
-	t.flush();
+        t.flush();
         file.close();
     }
 }
@@ -175,7 +175,7 @@ void createArObjectScriptFile(const QString &fileName, const QString &target, co
             t << "ADDMOD " << *it << endl;
         }
         t << "SAVE\n";
-	t.flush();
+        t.flush();
         file.close();
     }
 }
@@ -204,16 +204,16 @@ void MingwMakefileGenerator::writeMingwParts(QTextStream &t)
 
     if (!preCompHeaderOut.isEmpty()) {
         QString header = project->first("PRECOMPILED_HEADER").toQString();
-	QString cHeader = preCompHeaderOut + Option::dir_sep + "c";
-	t << escapeDependencyPath(cHeader) << ": " << escapeDependencyPath(header) << " "
+        QString cHeader = preCompHeaderOut + Option::dir_sep + "c";
+        t << escapeDependencyPath(cHeader) << ": " << escapeDependencyPath(header) << " "
           << escapeDependencyPaths(findDependencies(header)).join(" \\\n\t\t")
-	  << "\n\t" << mkdir_p_asstring(preCompHeaderOut)
+          << "\n\t" << mkdir_p_asstring(preCompHeaderOut)
           << "\n\t$(CC) -x c-header -c $(CFLAGS) $(INCPATH) -o " << cHeader << " " << header
           << endl << endl;
-	QString cppHeader = preCompHeaderOut + Option::dir_sep + "c++";
-	t << escapeDependencyPath(cppHeader) << ": " << escapeDependencyPath(header) << " "
+        QString cppHeader = preCompHeaderOut + Option::dir_sep + "c++";
+        t << escapeDependencyPath(cppHeader) << ": " << escapeDependencyPath(header) << " "
           << escapeDependencyPaths(findDependencies(header)).join(" \\\n\t\t")
-	  << "\n\t" << mkdir_p_asstring(preCompHeaderOut)
+          << "\n\t" << mkdir_p_asstring(preCompHeaderOut)
           << "\n\t$(CXX) -x c++-header -c $(CXXFLAGS) $(INCPATH) -o " << cppHeader << " " << header
           << endl << endl;
     }
@@ -269,7 +269,7 @@ void MingwMakefileGenerator::init()
             destDir = Option::fixPathToTargetOS(project->first("DESTDIR") + Option::dir_sep, false, false);
         project->values("MINGW_IMPORT_LIB").prepend(destDir + "lib" + project->first("TARGET")
                                                          + project->first("TARGET_VERSION_EXT") + ".a");
-	project->values("QMAKE_LFLAGS").append(QString("-Wl,--out-implib,") + project->first("MINGW_IMPORT_LIB"));
+        project->values("QMAKE_LFLAGS").append(QString("-Wl,--out-implib,") + project->first("MINGW_IMPORT_LIB"));
     }
 
     if (!project->values("DEF_FILE").isEmpty()) {
@@ -287,21 +287,21 @@ void MingwMakefileGenerator::init()
         && project->isActiveConfig("precompile_header")) {
         QString preCompHeader = var("PRECOMPILED_DIR")
                     + QFileInfo(project->first("PRECOMPILED_HEADER").toQString()).fileName();
-	preCompHeaderOut = preCompHeader + ".gch";
-	project->values("QMAKE_CLEAN").append(preCompHeaderOut + Option::dir_sep + "c");
-	project->values("QMAKE_CLEAN").append(preCompHeaderOut + Option::dir_sep + "c++");
+        preCompHeaderOut = preCompHeader + ".gch";
+        project->values("QMAKE_CLEAN").append(preCompHeaderOut + Option::dir_sep + "c");
+        project->values("QMAKE_CLEAN").append(preCompHeaderOut + Option::dir_sep + "c++");
 
-	project->values("QMAKE_RUN_CC").clear();
-	project->values("QMAKE_RUN_CC").append("$(CC) -c -include " + preCompHeader +
+        project->values("QMAKE_RUN_CC").clear();
+        project->values("QMAKE_RUN_CC").append("$(CC) -c -include " + preCompHeader +
                                                     " $(CFLAGS) $(INCPATH) " + var("QMAKE_CC_O_FLAG") + "$obj $src");
         project->values("QMAKE_RUN_CC_IMP").clear();
-	project->values("QMAKE_RUN_CC_IMP").append("$(CC)  -c -include " + preCompHeader +
+        project->values("QMAKE_RUN_CC_IMP").append("$(CC)  -c -include " + preCompHeader +
                                                         " $(CFLAGS) $(INCPATH) " + var("QMAKE_CC_O_FLAG") + "$@ $<");
         project->values("QMAKE_RUN_CXX").clear();
-	project->values("QMAKE_RUN_CXX").append("$(CXX) -c -include " + preCompHeader +
+        project->values("QMAKE_RUN_CXX").append("$(CXX) -c -include " + preCompHeader +
                                                      " $(CXXFLAGS) $(INCPATH) " + var("QMAKE_CC_O_FLAG") + "$obj $src");
         project->values("QMAKE_RUN_CXX_IMP").clear();
-	project->values("QMAKE_RUN_CXX_IMP").append("$(CXX) -c -include " + preCompHeader +
+        project->values("QMAKE_RUN_CXX_IMP").append("$(CXX) -c -include " + preCompHeader +
                                                          " $(CXXFLAGS) $(INCPATH) " + var("QMAKE_CC_O_FLAG") + "$@ $<");
     }
 
@@ -321,12 +321,18 @@ void MingwMakefileGenerator::writeIncPart(QTextStream &t)
         t << "-I" << pwd << " ";
     }
 
+    QString isystem = var("QMAKE_CFLAGS_ISYSTEM");
     const ProStringList &incs = project->values("INCLUDEPATH");
     for (ProStringList::ConstIterator incit = incs.begin(); incit != incs.end(); ++incit) {
         QString inc = (*incit).toQString();
         inc.replace(QRegExp("\\\\$"), "");
         inc.replace(QRegExp("\""), "");
-        t << "-I" << quote << inc << quote << " ";
+
+        if (!isystem.isEmpty() && isSystemInclude(inc))
+            t << isystem << ' ';
+        else
+            t << "-I";
+        t << quote << inc << quote << " ";
     }
     t << "-I" << quote << specdir() << quote
       << endl;
@@ -350,10 +356,10 @@ void MingwMakefileGenerator::writeObjectsPart(QTextStream &t)
     if (project->values("OBJECTS").count() < var("QMAKE_LINK_OBJECT_MAX").toInt()) {
         objectsLinkLine = "$(OBJECTS)";
     } else if (project->isActiveConfig("staticlib") && project->first("TEMPLATE") == "lib") {
-	QString ar_script_file = var("QMAKE_LINK_OBJECT_SCRIPT") + "." + var("TARGET");
-	if (!var("BUILD_NAME").isEmpty()) {
-	    ar_script_file += "." + var("BUILD_NAME");
-	}
+        QString ar_script_file = var("QMAKE_LINK_OBJECT_SCRIPT") + "." + var("TARGET");
+        if (!var("BUILD_NAME").isEmpty()) {
+            ar_script_file += "." + var("BUILD_NAME");
+        }
         // QMAKE_LIB is used for win32, including mingw, whereas QMAKE_AR is used on Unix.
         if (project->isActiveConfig("rvct_linker")) {
             createRvctObjectScriptFile(ar_script_file, project->values("OBJECTS"));
@@ -371,9 +377,9 @@ void MingwMakefileGenerator::writeObjectsPart(QTextStream &t)
         }
     } else {
         QString ld_script_file = var("QMAKE_LINK_OBJECT_SCRIPT") + "." + var("TARGET");
-	if (!var("BUILD_NAME").isEmpty()) {
-	    ld_script_file += "." + var("BUILD_NAME");
-	}
+        if (!var("BUILD_NAME").isEmpty()) {
+            ld_script_file += "." + var("BUILD_NAME");
+        }
         if (project->isActiveConfig("rvct_linker")) {
             createRvctObjectScriptFile(ld_script_file, project->values("OBJECTS"));
             objectsLinkLine = QString::fromLatin1("--via ") + escapeFilePath(ld_script_file);
@@ -393,7 +399,7 @@ void MingwMakefileGenerator::writeBuildRulesPart(QTextStream &t)
     if(!project->isEmpty("QMAKE_PRE_LINK"))
         t << "\n\t" <<var("QMAKE_PRE_LINK");
     if(project->isActiveConfig("staticlib") && project->first("TEMPLATE") == "lib") {
-	if (project->values("OBJECTS").count() < var("QMAKE_LINK_OBJECT_MAX").toInt()) {
+        if (project->values("OBJECTS").count() < var("QMAKE_LINK_OBJECT_MAX").toInt()) {
             t << "\n\t$(LIB) $(DESTDIR_TARGET) " << objectsLinkLine << " " ;
         } else {
             t << "\n\t" << objectsLinkLine << " " ;

@@ -1729,7 +1729,7 @@ int QFileDialogPrivate::maxNameLength(const QString &path)
 {
 #if defined(Q_OS_UNIX)
     return ::pathconf(QFile::encodeName(path).data(), _PC_NAME_MAX);
-#elif defined(Q_OS_WINCE)
+#elif defined(Q_OS_WINCE) || defined(Q_OS_WINRT)
     Q_UNUSED(path);
     return MAX_PATH;
 #elif defined(Q_OS_WIN)
@@ -2627,9 +2627,8 @@ void QFileDialog::accept()
     // special case for ".."
     if (lineEditText == QLatin1String("..")) {
         d->_q_navigateToParent();
-        bool block = d->qFileDialogUi->fileNameEdit->blockSignals(true);
+        const QSignalBlocker blocker(d->qFileDialogUi->fileNameEdit);
         d->lineEdit()->selectAll();
-        d->qFileDialogUi->fileNameEdit->blockSignals(block);
         return;
     }
 

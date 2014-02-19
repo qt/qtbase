@@ -47,6 +47,7 @@
 #include <QtCore/qrect.h>
 #include <QtCore/qvariant.h>
 #include <QtGui/qfont.h>
+#include <QtCore/qurl.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -63,7 +64,6 @@ class QTextFormat;
 class QTextFrame;
 class QTextBlock;
 class QTextCodec;
-class QUrl;
 class QVariant;
 class QRectF;
 class QTextOption;
@@ -116,6 +116,7 @@ class Q_GUI_EXPORT QTextDocument : public QObject
     Q_PROPERTY(int maximumBlockCount READ maximumBlockCount WRITE setMaximumBlockCount)
     Q_PROPERTY(qreal documentMargin READ documentMargin WRITE setDocumentMargin)
     QDOC_PROPERTY(QTextOption defaultTextOption READ defaultTextOption WRITE setDefaultTextOption)
+    Q_PROPERTY(QUrl baseUrl READ baseUrl WRITE setBaseUrl NOTIFY baseUrlChanged)
 
 public:
     explicit QTextDocument(QObject *parent = 0);
@@ -258,6 +259,9 @@ public:
     QTextOption defaultTextOption() const;
     void setDefaultTextOption(const QTextOption &option);
 
+    QUrl baseUrl() const;
+    void setBaseUrl(const QUrl &url);
+
     Qt::CursorMoveStyle defaultCursorMoveStyle() const;
     void setDefaultCursorMoveStyle(Qt::CursorMoveStyle style);
 
@@ -270,7 +274,7 @@ Q_SIGNALS:
     void modificationChanged(bool m);
     void cursorPositionChanged(const QTextCursor &cursor);
     void blockCountChanged(int newBlockCount);
-
+    void baseUrlChanged(const QUrl &url);
     void documentLayoutChanged();
 
 public Q_SLOTS:

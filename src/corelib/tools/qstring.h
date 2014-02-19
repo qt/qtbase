@@ -316,6 +316,7 @@ public:
 
     inline bool contains(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     inline bool contains(const QString &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    inline bool contains(QLatin1String s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     inline bool contains(const QStringRef &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     int count(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     int count(const QString &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
@@ -460,9 +461,24 @@ public:
 
     const ushort *utf16() const;
 
+#if defined(Q_COMPILER_REF_QUALIFIERS) && !defined(QT_COMPILING_QSTRING_COMPAT_CPP)
+    QByteArray toLatin1() const & Q_REQUIRED_RESULT
+    { return toLatin1_helper(*this); }
+    QByteArray toLatin1() && Q_REQUIRED_RESULT
+    { return toLatin1_helper_inplace(*this); }
+    QByteArray toUtf8() const & Q_REQUIRED_RESULT
+    { return toUtf8_helper(*this); }
+    QByteArray toUtf8() && Q_REQUIRED_RESULT
+    { return toUtf8_helper(*this); }
+    QByteArray toLocal8Bit() const & Q_REQUIRED_RESULT
+    { return toLocal8Bit_helper(constData(), size()); }
+    QByteArray toLocal8Bit() && Q_REQUIRED_RESULT
+    { return toLocal8Bit_helper(constData(), size()); }
+#else
     QByteArray toLatin1() const Q_REQUIRED_RESULT;
     QByteArray toUtf8() const Q_REQUIRED_RESULT;
     QByteArray toLocal8Bit() const Q_REQUIRED_RESULT;
+#endif
     QVector<uint> toUcs4() const Q_REQUIRED_RESULT;
 
     // note - this are all inline so we can benefit from strlen() compile time optimizations
@@ -488,6 +504,13 @@ public:
     static QString fromUtf16(const ushort *, int size = -1);
     static QString fromUcs4(const uint *, int size = -1);
     static QString fromRawData(const QChar *, int size);
+
+#if defined(Q_COMPILER_UNICODE_STRINGS)
+    static QString fromUtf16(const char16_t *str, int size = -1)
+    { return fromUtf16(reinterpret_cast<const ushort *>(str), size); }
+    static QString fromUcs4(const char32_t *str, int size = -1)
+    { return fromUcs4(reinterpret_cast<const uint *>(str), size); }
+#endif
 
 #if QT_DEPRECATED_SINCE(5, 0)
     QT_DEPRECATED static inline QString fromAscii(const char *str, int size = -1)
@@ -529,6 +552,7 @@ public:
     int localeAwareCompare(const QStringRef &s) const;
     static int localeAwareCompare(const QString& s1, const QStringRef& s2);
 
+    // ### Qt6: make inline except for the long long versions
     short  toShort(bool *ok=0, int base=10) const;
     ushort toUShort(bool *ok=0, int base=10) const;
     int toInt(bool *ok=0, int base=10) const;
@@ -717,7 +741,14 @@ private:
     static Data *fromAscii_helper(const char *str, int size = -1);
     static QString fromUtf8_helper(const char *str, int size);
     static QString fromLocal8Bit_helper(const char *, int size);
+    static QByteArray toLatin1_helper(const QString &);
+    static QByteArray toLatin1_helper(const QChar *data, int size);
+    static QByteArray toLatin1_helper_inplace(QString &);
+    static QByteArray toUtf8_helper(const QString &);
+    static QByteArray toLocal8Bit_helper(const QChar *data, int size);
     static int toUcs4_helper(const ushort *uc, int length, uint *out);
+    static qlonglong toIntegral_helper(const QChar *data, int len, bool *ok, int base);
+    static qulonglong toIntegral_helper(const QChar *data, uint len, bool *ok, int base);
     void replace_helper(uint *indices, int nIndices, int blen, const QChar *after, int alen);
     friend class QCharRef;
     friend class QTextCodec;
@@ -725,6 +756,24 @@ private:
     friend class QByteArray;
     friend class QCollator;
     friend struct QAbstractConcatenable;
+
+    template <typename T> static
+    T toIntegral_helper(const QChar *data, int len, bool *ok, int base)
+    {
+        // ### Qt6: use std::conditional<std::is_unsigned<T>::value, qulonglong, qlonglong>::type
+        const bool isUnsigned = T(0) < T(-1);
+        typedef typename QtPrivate::QConditional<isUnsigned, qulonglong, qlonglong>::Type Int64;
+        typedef typename QtPrivate::QConditional<isUnsigned, uint, int>::Type Int32;
+
+        // we select the right overload by casting size() to int or uint
+        Int64 val = toIntegral_helper(data, Int32(len), ok, base);
+        if (T(val) != val) {
+            if (ok)
+                *ok = false;
+            val = 0;
+        }
+        return T(val);
+    }
 
 public:
     typedef Data * DataPtr;
@@ -887,7 +936,17 @@ public:
 
     QChar::Category category() const { return QChar(*this).category(); }
     QChar::Direction direction() const { return QChar(*this).direction(); }
-    QChar::Joining joining() const { return QChar(*this).joining(); }
+    QChar::JoiningType joiningType() const { return QChar(*this).joiningType(); }
+#if QT_DEPRECATED_SINCE(5, 3)
+    QT_DEPRECATED QChar::Joining joining() const {
+        switch (QChar(*this).joiningType()) {
+        case QChar::Joining_Causing: return QChar::Center;
+        case QChar::Joining_Dual: return QChar::Dual;
+        case QChar::Joining_Right: return QChar::Right;
+        default: return QChar::OtherJoining;
+        }
+    }
+#endif
     bool hasMirrored() const { return QChar(*this).hasMirrored(); }
     QChar mirroredChar() const { return QChar(*this).mirroredChar(); }
     QString decomposition() const { return QChar(*this).decomposition(); }
@@ -968,6 +1027,8 @@ inline QString::const_iterator QString::constEnd() const
 inline bool QString::contains(const QString &s, Qt::CaseSensitivity cs) const
 { return indexOf(s, 0, cs) != -1; }
 inline bool QString::contains(const QStringRef &s, Qt::CaseSensitivity cs) const
+{ return indexOf(s, 0, cs) != -1; }
+inline bool QString::contains(QLatin1String s, Qt::CaseSensitivity cs) const
 { return indexOf(s, 0, cs) != -1; }
 inline bool QString::contains(QChar c, Qt::CaseSensitivity cs) const
 { return indexOf(c, 0, cs) != -1; }

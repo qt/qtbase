@@ -47,6 +47,7 @@
 #include <QPrinter>
 #include <QPrintDialog>
 #include <QPrintPreviewDialog>
+#include <QPageSetupDialog>
 #include <QApplication>
 #include <QDesktopWidget>
 #include <QGroupBox>
@@ -211,15 +212,9 @@ static void print(QPrinter *printer)
     QPainter painter(printer);
     const QRectF pageF = printer->pageRect();
 
-    painter.drawRect(pageF);
-
-    drawHorizCmRuler(painter, pageF.x(), pageF.right(), pageF.height() /2);
-    drawVertCmRuler(painter, pageF.x() + pageF.width() / 2, pageF.top(), pageF.bottom());
-
     QFont font = painter.font();
     font.setFamily("Courier");
     font.setPointSize(10);
-    painter.setFont(font);
 
     // Format message.
     const int charHeight = QFontMetrics(font).boundingRect('X').height();
@@ -233,6 +228,17 @@ static void print(QPrinter *printer)
         << "\nFont: " << font.family() << ' ' << font.pointSize() << '\n'
         << *printer;
 
+    if (!painter.device()->logicalDpiY() || !painter.device()->logicalDpiX()) {
+        qWarning() << Q_FUNC_INFO << "Bailing out due to invalid DPI: " << msg;
+        return;
+    }
+
+    painter.drawRect(pageF);
+
+    drawHorizCmRuler(painter, pageF.x(), pageF.right(), pageF.height() /2);
+    drawVertCmRuler(painter, pageF.x() + pageF.width() / 2, pageF.top(), pageF.bottom());
+
+    painter.setFont(font);
     QPointF textPoint = pageF.topLeft() + QPoint(10, charHeight + 10);
     foreach (const QString &line, msg.split('\n')) {
         painter.drawText(textPoint, line);
@@ -330,6 +336,9 @@ PrintDialogPanel::PrintDialogPanel(QWidget *parent)
     button = new QPushButton(tr("Preview..."), m_dialogsGroupBox);
     connect(button, SIGNAL(clicked()), this, SLOT(showPreviewDialog()));
     vBoxLayout->addWidget(button);
+    button = new QPushButton(tr("Page Setup..."), m_dialogsGroupBox);
+    connect(button, SIGNAL(clicked()), this, SLOT(showPageSetupDialog()));
+    vBoxLayout->addWidget(button);
 
     QGridLayout *gridLayout = new QGridLayout(this);
     gridLayout->addWidget(m_creationGroupBox, 0, 0);
@@ -410,6 +419,14 @@ void PrintDialogPanel::showPreviewDialog()
     applySettings(m_printer.data());
     PrintPreviewDialog dialog(m_printer.data(), this);
     dialog.resize(QApplication::desktop()->availableGeometry().size() * 4/ 5);
+    if (dialog.exec() == QDialog::Accepted)
+        retrieveSettings(m_printer.data());
+}
+
+void PrintDialogPanel::showPageSetupDialog()
+{
+    applySettings(m_printer.data());
+    QPageSetupDialog dialog(m_printer.data(), this);
     if (dialog.exec() == QDialog::Accepted)
         retrieveSettings(m_printer.data());
 }

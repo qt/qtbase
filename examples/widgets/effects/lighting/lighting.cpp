@@ -134,6 +134,6 @@ void Lighting::animate()
     m_scene.update();
 }
 
-void Lighting::resizeEvent(QResizeEvent */*event*/)
+void Lighting::resizeEvent(QResizeEvent * /* event */)
 {
 }

@@ -39,6 +39,9 @@
 **
 ****************************************************************************/
 
+#ifndef UNTERMINATED_FUNCTION_MACRO_H
+#define UNTERMINATED_FUNCTION_MACRO_H
+
 class Dummy : public QObject {
     Q_OBJECT
 }
@@ -49,3 +52,4 @@ static void foo() {
     MACRO(foo
 }
 
+#endif // UNTERMINATED_FUNCTION_MACRO_H

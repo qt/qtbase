@@ -88,9 +88,9 @@ public:
     QString addDefine(QString def);
 
     enum ProjectType {
-	App,
-	Lib,
-	Subdirs
+        App,
+        Lib,
+        Subdirs
     };
 
     ProjectType projectType( const QString& proFileName );
@@ -100,6 +100,7 @@ public:
     int platform() const;
     QString platformName() const;
     QString qpaPlatformName() const;
+    QString qpaPrintSupportPluginName() const;
 
 private:
     bool checkAngleAvailability(QString *errorMessage = 0) const;
@@ -182,10 +183,10 @@ class MakeItem
 {
 public:
     MakeItem( const QString &d, const QString &p, const QString &t, Configure::ProjectType qt )
-	: directory( d ),
-	  proFile( p ),
-	  target( t ),
-	  qmakeTemplate( qt )
+        : directory( d ),
+          proFile( p ),
+          target( t ),
+          qmakeTemplate( qt )
     { }
 
     QString directory;

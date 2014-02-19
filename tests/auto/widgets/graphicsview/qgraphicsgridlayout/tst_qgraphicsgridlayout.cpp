@@ -2974,7 +2974,7 @@ void tst_QGraphicsGridLayout::geometries()
 void tst_QGraphicsGridLayout::avoidRecursionInInsertItem()
 {
     QGraphicsWidget window(0, Qt::Window);
-	QGraphicsGridLayout *layout = new QGraphicsGridLayout(&window);
+    QGraphicsGridLayout *layout = new QGraphicsGridLayout(&window);
     QCOMPARE(layout->count(), 0);
     QTest::ignoreMessage(QtWarningMsg, "QGraphicsGridLayout::addItem: cannot insert itself");
     layout->addItem(layout, 0, 0);

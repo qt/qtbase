@@ -55,27 +55,31 @@ QT_BEGIN_NAMESPACE
 #endif
 
 // High-level atomic integer operations
-class QAtomicInt : public QBasicAtomicInt
+template <typename T>
+class QAtomicInteger : public QBasicAtomicInteger<T>
 {
 public:
     // Non-atomic API
-#ifdef Q_BASIC_ATOMIC_HAS_CONSTRUCTORS
-    constexpr QAtomicInt(int value = 0) Q_DECL_NOTHROW : QBasicAtomicInt(value) {}
+#ifdef QT_BASIC_ATOMIC_HAS_CONSTRUCTORS
+    constexpr QAtomicInteger(T value = 0) Q_DECL_NOTHROW : QBasicAtomicInteger<T>(value) {}
 #else
-    inline QAtomicInt(int value = 0) Q_DECL_NOTHROW
+    inline QAtomicInteger(T value = 0) Q_DECL_NOTHROW
     {
-        _q_value = value;
+        this->_q_value = value;
     }
 #endif
 
-    inline QAtomicInt(const QAtomicInt &other) Q_DECL_NOTHROW
+    inline QAtomicInteger(const QAtomicInteger &other) Q_DECL_NOTHROW
+#ifdef QT_BASIC_ATOMIC_HAS_CONSTRUCTORS
+        : QBasicAtomicInteger<T>()
+#endif
     {
-        store(other.load());
+        this->storeRelease(other.loadAcquire());
     }
 
-    inline QAtomicInt &operator=(const QAtomicInt &other) Q_DECL_NOTHROW
+    inline QAtomicInteger &operator=(const QAtomicInteger &other) Q_DECL_NOTHROW
     {
-        this->store(other.load());
+        this->storeRelease(other.loadAcquire());
         return *this;
     }
 
@@ -84,6 +88,9 @@ public:
     int loadAcquire() const;
     void store(int newValue);
     void storeRelease(int newValue);
+
+    operator int() const;
+    QAtomicInteger &operator=(int);
 
     static Q_DECL_CONSTEXPR bool isReferenceCountingNative();
     static Q_DECL_CONSTEXPR bool isReferenceCountingWaitFree();
@@ -114,7 +121,49 @@ public:
     int fetchAndAddAcquire(int valueToAdd);
     int fetchAndAddRelease(int valueToAdd);
     int fetchAndAddOrdered(int valueToAdd);
+
+    int fetchAndSubRelaxed(int valueToSub);
+    int fetchAndSubAcquire(int valueToSub);
+    int fetchAndSubRelease(int valueToSub);
+    int fetchAndSubOrdered(int valueToSub);
+
+    int fetchAndOrRelaxed(int valueToOr);
+    int fetchAndOrAcquire(int valueToOr);
+    int fetchAndOrRelease(int valueToOr);
+    int fetchAndOrOrdered(int valueToOr);
+
+    int fetchAndAndRelaxed(int valueToAnd);
+    int fetchAndAndAcquire(int valueToAnd);
+    int fetchAndAndRelease(int valueToAnd);
+    int fetchAndAndOrdered(int valueToAnd);
+
+    int fetchAndXorRelaxed(int valueToXor);
+    int fetchAndXorAcquire(int valueToXor);
+    int fetchAndXorRelease(int valueToXor);
+    int fetchAndXorOrdered(int valueToXor);
+
+    int operator++();
+    int operator++(int);
+    int operator--();
+    int operator--(int);
+    int operator+=(int value);
+    int operator-=(int value);
+    int operator|=(int value);
+    int operator&=(int value);
+    int operator^=(int value);
 #endif
+};
+
+class QAtomicInt : public QAtomicInteger<int>
+{
+public:
+    // Non-atomic API
+    // We could use QT_COMPILER_INHERITING_CONSTRUCTORS, but we need only one;
+    // the implicit definition for all the others is fine.
+#ifdef QT_BASIC_ATOMIC_HAS_CONSTRUCTORS
+    constexpr
+#endif
+    QAtomicInt(int value = 0) Q_DECL_NOTHROW : QAtomicInteger<int>(value) {}
 };
 
 // High-level atomic pointer operations
@@ -132,12 +181,12 @@ public:
 #endif
     inline QAtomicPointer(const QAtomicPointer<T> &other) Q_DECL_NOTHROW
     {
-        this->store(other.load());
+        this->storeRelease(other.loadAcquire());
     }
 
     inline QAtomicPointer<T> &operator=(const QAtomicPointer<T> &other) Q_DECL_NOTHROW
     {
-        this->store(other.load());
+        this->storeRelease(other.loadAcquire());
         return *this;
     }
 

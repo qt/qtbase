@@ -63,17 +63,11 @@ public:
 
     QGLFramebufferObject(const QSize &size, GLenum target = GL_TEXTURE_2D);
     QGLFramebufferObject(int width, int height, GLenum target = GL_TEXTURE_2D);
-#if !defined(QT_OPENGL_ES) || defined(Q_QDOC)
+
     QGLFramebufferObject(const QSize &size, Attachment attachment,
-                         GLenum target = GL_TEXTURE_2D, GLenum internal_format = GL_RGBA8);
+                         GLenum target = GL_TEXTURE_2D, GLenum internal_format = 0);
     QGLFramebufferObject(int width, int height, Attachment attachment,
-                         GLenum target = GL_TEXTURE_2D, GLenum internal_format = GL_RGBA8);
-#else
-    QGLFramebufferObject(const QSize &size, Attachment attachment,
-                         GLenum target = GL_TEXTURE_2D, GLenum internal_format = GL_RGBA);
-    QGLFramebufferObject(int width, int height, Attachment attachment,
-                         GLenum target = GL_TEXTURE_2D, GLenum internal_format = GL_RGBA);
-#endif
+                         GLenum target = GL_TEXTURE_2D, GLenum internal_format = 0);
 
     QGLFramebufferObject(const QSize &size, const QGLFramebufferObjectFormat &format);
     QGLFramebufferObject(int width, int height, const QGLFramebufferObjectFormat &format);

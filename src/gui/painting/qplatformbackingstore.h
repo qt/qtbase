@@ -52,9 +52,11 @@
 //
 
 #include <QtCore/qrect.h>
+#include <QtCore/qobject.h>
 
 #include <QtGui/qwindow.h>
 #include <QtGui/qregion.h>
+#include <QtGui/qopengl.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -65,6 +67,33 @@ class QPoint;
 class QImage;
 class QPlatformBackingStorePrivate;
 class QPlatformWindow;
+class QPlatformTextureList;
+class QPlatformTextureListPrivate;
+class QOpenGLContext;
+
+#ifndef QT_NO_OPENGL
+class Q_GUI_EXPORT QPlatformTextureList : public QObject
+{
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QPlatformTextureList)
+public:
+    explicit QPlatformTextureList(QObject *parent = 0);
+    ~QPlatformTextureList();
+
+    int count() const;
+    bool isEmpty() const { return count() == 0; }
+    GLuint textureId(int index) const;
+    QRect geometry(int index) const;
+    void lock(bool on);
+    bool isLocked() const;
+
+    void appendTexture(GLuint textureId, const QRect &geometry);
+    void clear();
+
+ Q_SIGNALS:
+    void locked(bool);
+};
+#endif
 
 class Q_GUI_EXPORT QPlatformBackingStore
 {
@@ -79,6 +108,11 @@ public:
     // 'window' can be a child window, in which case 'region' is in child window coordinates and
     // offset is the (child) window's offset in relation to the window surface.
     virtual void flush(QWindow *window, const QRegion &region, const QPoint &offset) = 0;
+#ifndef QT_NO_OPENGL
+    virtual void composeAndFlush(QWindow *window, const QRegion &region, const QPoint &offset, QPlatformTextureList *textures, QOpenGLContext *context);
+    virtual QImage toImage() const;
+    virtual GLuint toTexture(const QRegion &dirtyRegion) const;
+#endif
 
     virtual void resize(const QSize &size, const QRegion &staticContents) = 0;
 

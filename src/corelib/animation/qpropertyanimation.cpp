@@ -121,7 +121,7 @@ void QPropertyAnimationPrivate::updateMetaProperty()
             qWarning("QPropertyAnimation: you're trying to animate a non-existing property %s of your QObject", propertyName.constData());
     } else if (!targetValue->metaObject()->property(propertyIndex).isWritable()) {
         qWarning("QPropertyAnimation: you're trying to animate the non-writable property %s of your QObject", propertyName.constData());
-	}
+    }
 }
 
 void QPropertyAnimationPrivate::updateProperty(const QVariant &newValue)

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 BlackBerry Limited. All rights reserved.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -72,6 +73,21 @@ public:
     QByteArray sessionASN1() const;
     void setSessionASN1(const QByteArray &sessionASN1);
     int sessionTicketLifeTimeHint() const;
+
+#if OPENSSL_VERSION_NUMBER >= 0x1000100fL && !defined(OPENSSL_NO_TLSEXT) && !defined(OPENSSL_NO_NEXTPROTONEG)
+    // must be public because we want to use it from an OpenSSL callback
+    struct NPNContext {
+        NPNContext() : data(0),
+            len(0),
+            status(QSslConfiguration::NextProtocolNegotiationNone)
+        { }
+        unsigned char *data;
+        unsigned short len;
+        QSslConfiguration::NextProtocolNegotiationStatus status;
+    };
+    NPNContext npnContext() const;
+#endif // OPENSSL_VERSION_NUMBER >= 0x1000100fL ...
+
 protected:
     QSslContext();
 
@@ -84,6 +100,10 @@ private:
     QSslError::SslError errorCode;
     QString errorStr;
     QSslConfiguration sslConfiguration;
+#if OPENSSL_VERSION_NUMBER >= 0x1000100fL && !defined(OPENSSL_NO_TLSEXT) && !defined(OPENSSL_NO_NEXTPROTONEG)
+    QByteArray m_supportedNPNVersions;
+    NPNContext m_npnContext;
+#endif // OPENSSL_VERSION_NUMBER >= 0x1000100fL ...
 };
 
 #endif // QT_NO_SSL

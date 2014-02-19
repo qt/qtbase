@@ -75,7 +75,9 @@
 
 #include "qcocoaeventdispatcher.h"
 #include "qcocoaautoreleasepool.h"
+#include "qcocoawindow.h"
 
+#include "qcocoahelpers.h"
 #include "qguiapplication.h"
 #include "qevent.h"
 #include "qhash.h"
@@ -94,11 +96,6 @@
 QT_BEGIN_NAMESPACE
 
 QT_USE_NAMESPACE
-
-enum {
-    QtCocoaEventSubTypeWakeup       = SHRT_MAX,
-    QtCocoaEventSubTypePostMessage  = SHRT_MAX-1
-};
 
 static inline CFRunLoopRef mainRunLoop()
 {
@@ -625,7 +622,7 @@ NSModalSession QCocoaEventDispatcherPrivate::currentModalSession()
 
         if (!info.session) {
             QCocoaAutoReleasePool pool;
-            NSWindow *nswindow = static_cast<NSWindow *>(QGuiApplication::platformNativeInterface()->nativeResourceForWindow("nswindow", info.window));
+            NSWindow *nswindow = static_cast<QCocoaWindow *>(info.window->handle())->nativeWindow();
             if (!nswindow)
                 continue;
 

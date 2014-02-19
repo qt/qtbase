@@ -128,6 +128,27 @@ oldCategoryFilter = QLoggingCategory::installFilter(myCategoryFilter);
 //![12]
     }
 
+    {
+//![13]
+    QLoggingCategory category("qt.driver.usb");
+    qCDebug(category, "a debug message logged into category %s", category.categoryName());
+//![13]
+    }
+
+    {
+//![14]
+    QLoggingCategory category("qt.driver.usb");
+    qCWarning(category, "a warning message logged into category %s", category.categoryName());
+//![14]
+    }
+
+    {
+//![15]
+    QLoggingCategory category("qt.driver.usb");
+    qCCritical(category, "a critical message logged into category %s", category.categoryName());
+//![15]
+    }
+
     return 0;
 }
 

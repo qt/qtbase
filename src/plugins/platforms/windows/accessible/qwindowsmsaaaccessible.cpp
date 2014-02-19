@@ -185,23 +185,10 @@ HRESULT STDMETHODCALLTYPE QWindowsEnumerate::Skip(unsigned long celt)
     return S_OK;
 }
 
-#ifndef QT_NO_DEBUG
-bool debug_accessibility()
-{
-    static int debugging = -1;
-    if (debugging == -1)
-        debugging = qgetenv("QT_DEBUG_ACCESSIBILITY").toInt();
-    return !!debugging;
-}
-#endif
-
 #if defined(DEBUG_SHOW_ATCLIENT_COMMANDS)
 void accessibleDebugClientCalls_helper(const char* funcName, const QAccessibleInterface *iface)
 {
-    QString str;
-    QDebug dbg(&str);
-    dbg << iface << QLatin1String(funcName);
-    accessibleDebug("%s", qPrintable(str));
+    qCDebug(lcQpaAccessibility) << iface << funcName;
 }
 #endif
 
@@ -216,10 +203,8 @@ HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::QueryInterface(REFIID id, LPVO
 
     QByteArray strIID = IIDToString(id);
     if (!strIID.isEmpty()) {
-        QString ss;
-        QDebug dbg(&ss);
-        dbg << accessibleInterface();
-        accessibleDebug("QWindowsIA2Accessible::QI() - IID:%s, iface:%s ", strIID.constData(), qPrintable(ss));
+        qCDebug(lcQpaAccessibility) << "QWindowsIA2Accessible::QI() - IID:"
+                                    << strIID << ", iface:" << accessibleInterface();
     }
     if (id == IID_IUnknown) {
         *iface = (IUnknown*)(IDispatch*)this;
@@ -1059,7 +1044,7 @@ HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::get_accValue(VARIANT varID, BS
     }
 
     *pszValue = 0;
-    accessibleDebug("return S_FALSE");
+    qCDebug(lcQpaAccessibility) << "return S_FALSE";
     return S_FALSE;
 }
 
@@ -1198,7 +1183,7 @@ HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::GetWindow(HWND *phwnd)
     QPlatformNativeInterface *platform = QGuiApplication::platformNativeInterface();
     Q_ASSERT(platform);
     *phwnd = (HWND)platform->nativeResourceForWindow("handle", window);
-    accessibleDebug("QWindowsAccessible::GetWindow(): %p", *phwnd);
+    qCDebug(lcQpaAccessibility) << "QWindowsAccessible::GetWindow(): " << *phwnd;
     return S_OK;
 }
 

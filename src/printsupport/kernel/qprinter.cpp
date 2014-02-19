@@ -226,7 +226,6 @@ void QPrinterPrivate::changeEngines(QPrinter::OutputFormat format, const QPrinte
                 prop = QVariant(q_ptr->copyCount());
             else if (key != QPrintEngine::PPK_PrinterName)
                 prop = oldPrintEngine->property(key);
-
             if (prop.isValid())
                 setProperty(key, prop);
         }
@@ -516,12 +515,15 @@ void QPrinterPrivate::setProperty(QPrintEngine::PrintEnginePropertyKey key, cons
   \value LargeCapacity
   \value LargeFormat
   \value Lower
-  \value MaxPageSource
+  \value MaxPageSource Deprecated, use LastPaperSource instead
   \value Middle
   \value Manual
   \value OnlyOne
   \value Tractor
   \value SmallFormat
+  \value Upper
+  \value CustomSource A PaperSource defined by the printer that is unknown to Qt
+  \value LastPaperSource The highest valid PaperSource value, currently CustomSource
 */
 
 /*!
@@ -936,10 +938,8 @@ QPrinter::Orientation QPrinter::orientation() const
   The printer driver reads this setting and prints using the
   specified orientation.
 
-  On Windows, this option can be changed while printing and will
+  On Windows and Mac, this option can be changed while printing and will
   take effect from the next call to newPage().
-
-  On Mac OS X, changing the orientation during a print job has no effect.
 
   \sa orientation()
 */
@@ -1824,10 +1824,16 @@ QList<QPrinter::PaperSource> QPrinter::supportedPaperSources() const
 
     Any other value implies that the given value should be used.
 
-    \warning This function is not available on Windows.
+    This function always returns an empty string on Windows and Mac.
 
-    \sa setPrinterSelectionOption()
+    \sa setPrinterSelectionOption(), setPrintProgram()
 */
+
+QString QPrinter::printerSelectionOption() const
+{
+    Q_D(const QPrinter);
+    return d->printEngine->property(QPrintEngine::PPK_SelectionOption).toString();
+}
 
 /*!
     \fn void QPrinter::setPrinterSelectionOption(const QString &option)
@@ -1840,24 +1846,16 @@ QList<QPrinter::PaperSource> QPrinter::supportedPaperSources() const
     If the printer selection option is changed while the printer is
     active, the current print job may or may not be affected.
 
-    \warning This function is not available on Windows.
+    This function has no effect on Windows or Mac.
 
-    \sa printerSelectionOption()
+    \sa printerSelectionOption(), setPrintProgram()
 */
-
-#ifndef Q_OS_WIN
-QString QPrinter::printerSelectionOption() const
-{
-    Q_D(const QPrinter);
-    return d->printEngine->property(QPrintEngine::PPK_SelectionOption).toString();
-}
 
 void QPrinter::setPrinterSelectionOption(const QString &option)
 {
     Q_D(QPrinter);
     d->setProperty(QPrintEngine::PPK_SelectionOption, option);
 }
-#endif
 
 /*!
     \since 4.1

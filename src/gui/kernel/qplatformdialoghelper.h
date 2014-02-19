@@ -82,6 +82,71 @@ public:
     };
     enum DialogCode { Rejected, Accepted };
 
+    enum StandardButton {
+        // keep this in sync with QDialogButtonBox::StandardButton and QMessageBox::StandardButton
+        NoButton           = 0x00000000,
+        Ok                 = 0x00000400,
+        Save               = 0x00000800,
+        SaveAll            = 0x00001000,
+        Open               = 0x00002000,
+        Yes                = 0x00004000,
+        YesToAll           = 0x00008000,
+        No                 = 0x00010000,
+        NoToAll            = 0x00020000,
+        Abort              = 0x00040000,
+        Retry              = 0x00080000,
+        Ignore             = 0x00100000,
+        Close              = 0x00200000,
+        Cancel             = 0x00400000,
+        Discard            = 0x00800000,
+        Help               = 0x01000000,
+        Apply              = 0x02000000,
+        Reset              = 0x04000000,
+        RestoreDefaults    = 0x08000000,
+
+
+        FirstButton        = Ok,                // internal
+        LastButton         = RestoreDefaults,   // internal
+        LowestBit          = 10,                // internal: log2(FirstButton)
+        HighestBit         = 27                 // internal: log2(LastButton)
+    };
+
+    Q_DECLARE_FLAGS(StandardButtons, StandardButton)
+
+    enum ButtonRole {
+        // keep this in sync with QDialogButtonBox::ButtonRole and QMessageBox::ButtonRole
+        // TODO Qt 6: make the enum copies explicit, and make InvalidRole == 0 so that
+        // AcceptRole can be or'ed with flags, and EOL can be the same as InvalidRole (null-termination)
+        InvalidRole = -1,
+        AcceptRole,
+        RejectRole,
+        DestructiveRole,
+        ActionRole,
+        HelpRole,
+        YesRole,
+        NoRole,
+        ResetRole,
+        ApplyRole,
+
+        NRoles,
+
+        RoleMask        = 0x0FFFFFFF,
+        AlternateRole   = 0x10000000,
+        Stretch         = 0x20000000,
+        Reverse         = 0x40000000,
+        EOL             = InvalidRole
+    };
+
+    enum ButtonLayout {
+        // keep this in sync with QDialogButtonBox::ButtonLayout and QMessageBox::ButtonLayout
+        UnknownLayout = -1,
+        WinLayout,
+        MacLayout,
+        KdeLayout,
+        GnomeLayout,
+        MacModelessLayout
+    };
+
     QPlatformDialogHelper();
     virtual ~QPlatformDialogHelper();
 
@@ -94,6 +159,9 @@ public:
     virtual void hide() = 0;
 
     static QVariant defaultStyleHint(QPlatformDialogHelper::StyleHint hint);
+
+    static const int *buttonLayout(Qt::Orientation orientation = Qt::Horizontal, ButtonLayout policy = UnknownLayout);
+    static ButtonRole buttonRole(StandardButton button);
 
 Q_SIGNALS:
     void accept();
@@ -332,50 +400,6 @@ public:
     // Keep in sync with QMessageBox::Icon
     enum Icon { NoIcon, Information, Warning, Critical, Question };
 
-    enum StandardButton {
-        // keep this in sync with QDialogButtonBox::StandardButton and QMessageBox::StandardButton
-        NoButton           = 0x00000000,
-        Ok                 = 0x00000400,
-        Save               = 0x00000800,
-        SaveAll            = 0x00001000,
-        Open               = 0x00002000,
-        Yes                = 0x00004000,
-        YesToAll           = 0x00008000,
-        No                 = 0x00010000,
-        NoToAll            = 0x00020000,
-        Abort              = 0x00040000,
-        Retry              = 0x00080000,
-        Ignore             = 0x00100000,
-        Close              = 0x00200000,
-        Cancel             = 0x00400000,
-        Discard            = 0x00800000,
-        Help               = 0x01000000,
-        Apply              = 0x02000000,
-        Reset              = 0x04000000,
-        RestoreDefaults    = 0x08000000,
-
-
-        FirstButton        = Ok,                // internal
-        LastButton         = RestoreDefaults    // internal
-    };
-
-    Q_DECLARE_FLAGS(StandardButtons, StandardButton)
-
-    enum ButtonRole {
-        InvalidRole = -1,
-        AcceptRole,
-        RejectRole,
-        DestructiveRole,
-        ActionRole,
-        HelpRole,
-        YesRole,
-        NoRole,
-        ResetRole,
-        ApplyRole,
-
-        NRoles
-    };
-
     QMessageDialogOptions();
     QMessageDialogOptions(const QMessageDialogOptions &rhs);
     QMessageDialogOptions &operator=(const QMessageDialogOptions &rhs);
@@ -398,10 +422,8 @@ public:
     void setDetailedText(const QString &text);
     QString detailedText() const;
 
-    void setStandardButtons(StandardButtons buttons);
-    StandardButtons standardButtons() const;
-
-    static ButtonRole buttonRole(StandardButton button);
+    void setStandardButtons(QPlatformDialogHelper::StandardButtons buttons);
+    QPlatformDialogHelper::StandardButtons standardButtons() const;
 
 private:
     QSharedDataPointer<QMessageDialogOptionsPrivate> d;
@@ -417,7 +439,7 @@ public:
     void setOptions(const QSharedPointer<QMessageDialogOptions> &options);
 
 Q_SIGNALS:
-    void clicked(QMessageDialogOptions::StandardButton button, QMessageDialogOptions::ButtonRole role);
+    void clicked(QPlatformDialogHelper::StandardButton button, QPlatformDialogHelper::ButtonRole role);
 
 private:
     QSharedPointer<QMessageDialogOptions> m_options;

@@ -84,6 +84,7 @@ public:
 
     virtual void setGeometry(const QRect &rect);
     virtual QRect geometry() const;
+    virtual QRect normalGeometry() const;
 
     virtual QMargins frameMargins() const;
 
@@ -130,6 +131,8 @@ public:
 
     virtual void setAlertState(bool enabled);
     virtual bool isAlertState() const;
+
+    virtual void invalidateSurface();
 
     static QRect initialGeometry(const QWindow *w,
         const QRect &initialGeometry, int defaultWidth, int defaultHeight);

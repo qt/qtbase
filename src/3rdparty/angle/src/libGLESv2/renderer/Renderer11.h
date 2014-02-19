@@ -32,6 +32,7 @@ class StreamingIndexBufferInterface;
 
 enum
 {
+    MAX_VERTEX_UNIFORM_VECTORS_D3D9 = 254,
     MAX_VERTEX_UNIFORM_VECTORS_D3D11 = 1024,
     MAX_FRAGMENT_UNIFORM_VECTORS_D3D11 = 1024
 };
@@ -52,7 +53,7 @@ class Renderer11 : public Renderer
 
     virtual void sync(bool block);
 
-    virtual SwapChain *createSwapChain(HWND window, HANDLE shareHandle, GLenum backBufferFormat, GLenum depthBufferFormat);
+    virtual SwapChain *createSwapChain(EGLNativeWindowType window, HANDLE shareHandle, GLenum backBufferFormat, GLenum depthBufferFormat);
 
     virtual void setSamplerState(gl::SamplerType type, int index, const gl::SamplerState &sampler);
     virtual void setTexture(gl::SamplerType type, int index, gl::Texture *texture);
@@ -177,6 +178,7 @@ class Renderer11 : public Renderer
     ID3D11Device *getDevice() { return mDevice; }
     ID3D11DeviceContext *getDeviceContext() { return mDeviceContext; };
     IDXGIFactory *getDxgiFactory() { return mDxgiFactory; };
+    D3D_FEATURE_LEVEL getFeatureLevel() const { return mFeatureLevel; }
 
     bool getRenderTargetResource(gl::Renderbuffer *colorbuffer, unsigned int *subresourceIndex, ID3D11Texture2D **resource);
     void unapplyRenderTargets();

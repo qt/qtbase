@@ -531,8 +531,8 @@
     is not necessary to have a database server. SQLite operates on a
     single file, which must be set as the database name when opening
     a connection. If the file does not exist, SQLite will try to
-    create it. SQLite also supports in-memory databases, simply pass
-    ":memory:" as the database name.
+    create it. SQLite also supports in-memory and temporary databases. Simply
+    pass respectively ":memory:" or an empty string as the database name.
 
     SQLite has some restrictions regarding multiple users and
     multiple transactions. If you try to read/write on a resource from different

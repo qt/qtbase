@@ -42,6 +42,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "qcocoatheme.h"
+#include "messages.h"
 
 #include <QtCore/QVariant>
 
@@ -278,7 +279,7 @@ QVariant QCocoaTheme::themeHint(ThemeHint hint) const
     case QPlatformTheme::StyleNames:
         return QStringList(QStringLiteral("macintosh"));
     case QPlatformTheme::DialogButtonBoxLayout:
-        return QVariant(1); // QDialogButtonBox::MacLayout
+        return QVariant(QPlatformDialogHelper::MacLayout);
     case KeyboardScheme:
         return QVariant(int(MacKeyboardScheme));
     case TabAllWidgets:
@@ -298,6 +299,11 @@ QVariant QCocoaTheme::themeHint(ThemeHint hint) const
         break;
     }
     return QPlatformTheme::themeHint(hint);
+}
+
+QString QCocoaTheme::standardButtonText(int button) const
+{
+    return button == QPlatformDialogHelper::Discard ? msgDialogButtonDiscard() : QPlatformTheme::standardButtonText(button);
 }
 
 QPlatformMenuItem *QCocoaTheme::createPlatformMenuItem() const

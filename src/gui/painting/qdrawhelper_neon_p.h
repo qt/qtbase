@@ -57,7 +57,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifdef QT_COMPILER_SUPPORTS_NEON
+#ifdef __ARM_NEON__
 
 void qt_blend_argb32_on_argb32_neon(uchar *destPixels, int dbpl,
                                             const uchar *srcPixels, int sbpl,
@@ -139,7 +139,7 @@ void QT_FASTCALL qt_destStoreRGB16_neon(QRasterBuffer *rasterBuffer,
 void QT_FASTCALL comp_func_solid_SourceOver_neon(uint *destPixels, int length, uint color, uint const_alpha);
 void QT_FASTCALL comp_func_Plus_neon(uint *dst, const uint *src, int length, uint const_alpha);
 
-#endif // QT_COMPILER_SUPPORTS_NEON
+#endif // __ARM_NEON__
 
 QT_END_NAMESPACE
 

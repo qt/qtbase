@@ -89,16 +89,14 @@ QWindowsEGLStaticContext *QWindowsEGLStaticContext::create()
                  Q_FUNC_INFO, eglGetError());
         return 0;
     }
-    if (QWindowsContext::verboseGL)
-        qDebug("%s: Created EGL display %p v%d.%d",
-               __FUNCTION__, display, major, minor);
+
+    qCDebug(lcQpaGl) << __FUNCTION__ << "Created EGL display" << display << 'v' <<major << '.' << minor;
     return new QWindowsEGLStaticContext(display, (major << 8) | minor);
 }
 
 QWindowsEGLStaticContext::~QWindowsEGLStaticContext()
 {
-    if (QWindowsContext::verboseGL)
-        qDebug("%s: Releasing EGL display %p", __FUNCTION__, m_display);
+    qCDebug(lcQpaGl) << __FUNCTION__ << "Releasing EGL display " << m_display;
     eglTerminate(m_display);
 }
 
@@ -137,11 +135,7 @@ QWindowsEGLContext::~QWindowsEGLContext()
 
 bool QWindowsEGLContext::hasThreadedOpenGLCapability()
 {
-#ifdef QT_OPENGL_ES_2_ANGLE
     return false;
-#else
-    return true;
-#endif
 }
 
 EGLSurface QWindowsEGLContext::eglSurfaceForPlatformSurface(QPlatformSurface *surface)

@@ -405,7 +405,6 @@ static SLJIT_INLINE sljit_si detect_jump_type(struct sljit_jump *jump, sljit_uw 
 	if (diff & 0x3)
 		return 0;
 
-	diff >>= 2;
 	if (jump->flags & IS_BL) {
 		if (diff <= 0x01ffffff && diff >= -0x02000000) {
 			*code_ptr = (BL - CONDITIONAL) | (*(code_ptr + 1) & COND_MASK);
@@ -431,7 +430,6 @@ static SLJIT_INLINE sljit_si detect_jump_type(struct sljit_jump *jump, sljit_uw 
 	if (diff & 0x3)
 		return 0;
 
-	diff >>= 2;
 	if (diff <= 0x01ffffff && diff >= -0x02000000) {
 		code_ptr -= 2;
 		*code_ptr = ((jump->flags & IS_BL) ? (BL - CONDITIONAL) : (B - CONDITIONAL)) | (code_ptr[2] & COND_MASK);
@@ -787,9 +785,9 @@ SLJIT_API_FUNC_ATTRIBUTE void* sljit_generate_code(struct sljit_compiler *compil
 
 	SLJIT_ASSERT(code_ptr - code <= (sljit_si)size);
 
-	SLJIT_CACHE_FLUSH(code, code_ptr);
 	compiler->error = SLJIT_ERR_COMPILED;
-	compiler->executable_size = size * sizeof(sljit_uw);
+	compiler->executable_size = (code_ptr - code) * sizeof(sljit_uw);
+	SLJIT_CACHE_FLUSH(code, code_ptr);
 	return code;
 }
 
@@ -1989,6 +1987,12 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_si sljit_get_register_index(sljit_si reg)
 {
 	check_sljit_get_register_index(reg);
 	return reg_map[reg];
+}
+
+SLJIT_API_FUNC_ATTRIBUTE sljit_si sljit_get_float_register_index(sljit_si reg)
+{
+	check_sljit_get_float_register_index(reg);
+	return reg;
 }
 
 SLJIT_API_FUNC_ATTRIBUTE sljit_si sljit_emit_op_custom(struct sljit_compiler *compiler,

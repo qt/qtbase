@@ -135,9 +135,14 @@ bool QRasterPlatformPixmap::fromData(const uchar *buffer, uint len, const char *
 void QRasterPlatformPixmap::fromImage(const QImage &sourceImage,
                                   Qt::ImageConversionFlags flags)
 {
-    Q_UNUSED(flags);
     QImage image = sourceImage;
     createPixmapForImage(image, flags, /* inplace = */false);
+}
+
+void QRasterPlatformPixmap::fromImageInPlace(QImage &sourceImage,
+                                             Qt::ImageConversionFlags flags)
+{
+    createPixmapForImage(sourceImage, flags, /* inplace = */true);
 }
 
 void QRasterPlatformPixmap::fromImageReader(QImageReader *imageReader,
@@ -182,7 +187,7 @@ void QRasterPlatformPixmap::fill(const QColor &color)
         if (alpha != 255) {
             if (!image.hasAlphaChannel()) {
                 QImage::Format toFormat;
-#if !(defined(QT_COMPILER_SUPPORTS_NEON) || defined(__SSE2__))
+#if !(defined(__ARM_NEON__) || defined(__SSE2__))
                 if (image.format() == QImage::Format_RGB16)
                     toFormat = QImage::Format_ARGB8565_Premultiplied;
                 else if (image.format() == QImage::Format_RGB666)
@@ -203,7 +208,7 @@ void QRasterPlatformPixmap::fill(const QColor &color)
                 }
             }
         }
-        pixel = PREMUL(color.rgba());
+        pixel = qPremultiply(color.rgba());
         const QPixelLayout *layout = &qPixelLayouts[image.format()];
         layout->convertFromARGB32PM(&pixel, &pixel, 1, layout, 0);
     } else {
@@ -311,7 +316,7 @@ void QRasterPlatformPixmap::createPixmapForImage(QImage &sourceImage, Qt::ImageC
             QImage::Format opaqueFormat = QNativeImage::systemFormat();
             QImage::Format alphaFormat = QImage::Format_ARGB32_Premultiplied;
 
-#if !defined(QT_COMPILER_SUPPORTS_NEON) && !defined(__SSE2__)
+#if !defined(__ARM_NEON__) && !defined(__SSE2__)
             switch (opaqueFormat) {
             case QImage::Format_RGB16:
                 alphaFormat = QImage::Format_ARGB8565_Premultiplied;

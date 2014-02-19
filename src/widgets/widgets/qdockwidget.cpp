@@ -667,6 +667,7 @@ void QDockWidgetPrivate::updateButtons()
     button->setIcon(q->style()->standardIcon(QStyle::SP_TitleBarNormalButton, &opt, q));
     button->setVisible(canFloat && !hideButtons);
 #ifndef QT_NO_ACCESSIBILITY
+    //: Accessible name for button undocking a dock widget (floating state)
     button->setAccessibleName(QDockWidget::tr("Float"));
     button->setAccessibleDescription(QDockWidget::tr("Undocks and re-attaches the dock widget"));
 #endif
@@ -675,6 +676,7 @@ void QDockWidgetPrivate::updateButtons()
     button->setIcon(q->style()->standardIcon(QStyle::SP_TitleBarCloseButton, &opt, q));
     button->setVisible(canClose && !hideButtons);
 #ifndef QT_NO_ACCESSIBILITY
+    //: Accessible name for button closing a dock widget
     button->setAccessibleName(QDockWidget::tr("Close"));
     button->setAccessibleDescription(QDockWidget::tr("Closes the dock widget"));
 #endif
@@ -1104,8 +1106,8 @@ void QDockWidgetPrivate::setWindowState(bool floating, bool unplug, const QRect 
     \enum QDockWidget::DockWidgetFeature
 
     \value DockWidgetClosable   The dock widget can be closed. On some systems the dock
-	                            widget always has a close button when it's floating
-								(for example on MacOS 10.5).
+                                widget always has a close button when it's floating
+                                (for example on MacOS 10.5).
     \value DockWidgetMovable    The dock widget can be moved between docks
                                 by the user.
     \value DockWidgetFloatable  The dock widget can be detached from the

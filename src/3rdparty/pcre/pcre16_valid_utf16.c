@@ -6,7 +6,7 @@
 and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
-           Copyright (c) 1997-2012 University of Cambridge
+           Copyright (c) 1997-2013 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -69,7 +69,7 @@ PCRE_UTF16_ERR0  No error
 PCRE_UTF16_ERR1  Missing low surrogate at the end of the string
 PCRE_UTF16_ERR2  Invalid low surrogate
 PCRE_UTF16_ERR3  Isolated low surrogate
-PCRE_UTF16_ERR4  Non-character
+PCRE_UTF16_ERR4  Unused (was non-character)
 
 Arguments:
   string       points to the string
@@ -100,19 +100,10 @@ for (p = string; length-- > 0; p++)
   if ((c & 0xf800) != 0xd800)
     {
     /* Normal UTF-16 code point. Neither high nor low surrogate. */
-
-    /* Check for non-characters */
-    if ((c & 0xfffeu) == 0xfffeu || (c >= 0xfdd0u && c <= 0xfdefu))
-      {
-      *erroroffset = p - string;
-      return PCRE_UTF16_ERR4;
-      }
     }
   else if ((c & 0x0400) == 0)
     {
-    /* High surrogate. */
-
-    /* Must be a followed by a low surrogate. */
+    /* High surrogate. Must be a followed by a low surrogate. */
     if (length == 0)
       {
       *erroroffset = p - string;
@@ -124,16 +115,6 @@ for (p = string; length-- > 0; p++)
       {
       *erroroffset = p - string;
       return PCRE_UTF16_ERR2;
-      }
-    else
-      {
-      /* Valid surrogate, but check for non-characters */
-      c = (((c & 0x3ffu) << 10) | (*p & 0x3ffu)) + 0x10000u;
-      if ((c & 0xfffeu) == 0xfffeu)
-        {
-        *erroroffset = p - string;
-        return PCRE_UTF16_ERR4;
-        }
       }
     }
   else

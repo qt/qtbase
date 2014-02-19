@@ -5,7 +5,7 @@ QT =
 CONFIG += internal_module force_bootstrap
 
 # otherwise mingw headers do not declare common functions like putenv
-win32-g++*:QMAKE_CXXFLAGS_CXX11 = -std=gnu++0x
+mingw:QMAKE_CXXFLAGS_CXX11 = -std=gnu++0x
 
 MODULE_DEFINES = \
         QT_BOOTSTRAPPED \
@@ -74,6 +74,8 @@ SOURCES += \
            ../../corelib/io/qtemporaryfile.cpp \
            ../../corelib/io/qtextstream.cpp \
            ../../corelib/io/qstandardpaths.cpp \
+           ../../corelib/io/qloggingcategory.cpp \
+           ../../corelib/io/qloggingregistry.cpp \
            ../../corelib/kernel/qcoreapplication.cpp \
            ../../corelib/kernel/qcoreglobaldata.cpp \
            ../../corelib/kernel/qmetatype.cpp \
@@ -100,6 +102,7 @@ SOURCES += \
            ../../corelib/tools/qsize.cpp \
            ../../corelib/tools/qline.cpp \
            ../../corelib/tools/qstring.cpp \
+           ../../corelib/tools/qstring_compat.cpp \
            ../../corelib/tools/qstringlist.cpp \
            ../../corelib/tools/qvector.cpp \
            ../../corelib/tools/qvsnprintf.cpp \
@@ -147,7 +150,7 @@ macx {
 if(contains(QT_CONFIG, zlib)|cross_compile):include(../../3rdparty/zlib.pri)
 else:include(../../3rdparty/zlib_dependency.pri)
 
-win32:LIBS += -luser32 -lole32 -ladvapi32
+win32:LIBS += -luser32 -lole32 -ladvapi32 -lshell32
 
 lib.CONFIG = dummy_install
 INSTALLS += lib

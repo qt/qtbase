@@ -73,6 +73,7 @@ struct Option
     QString prefix;
     QString postfix;
     QString translateFunction;
+    QString includeFile;
 #ifdef QT_UIC_JAVA_GENERATOR
     QString javaPackage;
     QString javaOutputDirectory;

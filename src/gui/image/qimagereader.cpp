@@ -190,37 +190,36 @@ enum _qt_BuiltInFormatType {
 
 struct _qt_BuiltInFormatStruct
 {
-    _qt_BuiltInFormatType type;
     const char *extension;
     const char *mimeType;
 };
 
 static const _qt_BuiltInFormatStruct _qt_BuiltInFormats[] = {
 #ifndef QT_NO_IMAGEFORMAT_PNG
-    {_qt_PngFormat, "png", "image/png"},
+    {"png", "image/png"},
 #endif
 #ifndef QT_NO_IMAGEFORMAT_JPEG
-    {_qt_JpgFormat, "jpg", "image/jpeg"},
-    {_qt_JpegFormat, "jpeg", "image/jpeg"},
+    {"jpg", "image/jpeg"},
+    {"jpeg", "image/jpeg"},
 #endif
 #ifdef QT_BUILTIN_GIF_READER
-    {_qt_GifFormat, "gif", "image/gif"},
+    {"gif", "image/gif"},
 #endif
 #ifndef QT_NO_IMAGEFORMAT_BMP
-    {_qt_BmpFormat, "bmp", "image/bmp"},
+    {"bmp", "image/bmp"},
 #endif
 #ifndef QT_NO_IMAGEFORMAT_PPM
-    {_qt_PpmFormat, "ppm", "image/x-portable-pixmap"},
-    {_qt_PgmFormat, "pgm", "image/x-portable-graymap"},
-    {_qt_PbmFormat, "pbm", "image/x-portable-bitmap"},
+    {"ppm", "image/x-portable-pixmap"},
+    {"pgm", "image/x-portable-graymap"},
+    {"pbm", "image/x-portable-bitmap"},
 #endif
 #ifndef QT_NO_IMAGEFORMAT_XBM
-    {_qt_XbmFormat, "xbm", "image/x-xbitmap"},
+    {"xbm", "image/x-xbitmap"},
 #endif
 #ifndef QT_NO_IMAGEFORMAT_XPM
-    {_qt_XpmFormat, "xpm", "image/x-xpixmap"},
+    {"xpm", "image/x-xpixmap"},
 #endif
-    {_qt_NoFormat, "", ""}
+    {"", ""}
 };
 
 static QImageIOHandler *createReadHandlerHelper(QIODevice *device,
@@ -423,10 +422,8 @@ static QImageIOHandler *createReadHandlerHelper(QIODevice *device,
         QByteArray subType;
         int numFormats = _qt_NumFormats;
         while (device && numFormats >= 0) {
-            const _qt_BuiltInFormatStruct *formatStruct = &_qt_BuiltInFormats[currentFormat];
-
             const qint64 pos = device->pos();
-            switch (formatStruct->type) {
+            switch (currentFormat) {
 #ifndef QT_NO_IMAGEFORMAT_PNG
             case _qt_PngFormat:
                 if (QPngHandler::canRead(device))
@@ -482,7 +479,7 @@ static QImageIOHandler *createReadHandlerHelper(QIODevice *device,
 
             if (handler) {
 #ifdef QIMAGEREADER_DEBUG
-                qDebug() << "QImageReader::createReadHandler: the" << formatStruct->extension
+                qDebug() << "QImageReader::createReadHandler: the" << _qt_BuiltInFormats[currentFormat].extension
                          << "built-in handler can read this data";
 #endif
                 break;

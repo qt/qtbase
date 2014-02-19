@@ -145,18 +145,15 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters, int &argc, char 
     if (argc) {
         int j = 1;
         for (int i = 1; i < argc; i++) {
-            char *arg = argv[i];
-            if (arg) {
-                if (!strcmp(arg, "-display") && i < argc - 1) {
-                    displayName = argv[++i];
-                    arg = 0;
-                } else if (!strcmp(arg, "-name") && i < argc - 1) {
-                    m_instanceName = argv[++i];
-                    arg = 0;
-                }
-            }
-            if (arg)
-                argv[j++] = arg;
+            QByteArray arg(argv[i]);
+            if (arg.startsWith("--"))
+                arg.remove(0, 1);
+            if (arg == "-display" && i < argc - 1)
+                displayName = argv[++i];
+            else if (arg == "-name" && i < argc - 1)
+                m_instanceName = argv[++i];
+            else
+                argv[j++] = argv[i];
         }
         argc = j;
     } // argc
@@ -287,6 +284,7 @@ bool QXcbIntegration::hasCapability(QPlatformIntegration::Capability cap) const
     case MultipleWindows: return true;
     case ForeignWindows: return true;
     case SyncState: return true;
+    case RasterGLSurface: return true;
     default: return QPlatformIntegration::hasCapability(cap);
     }
 }

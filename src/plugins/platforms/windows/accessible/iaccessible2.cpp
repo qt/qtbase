@@ -59,10 +59,10 @@ HRESULT STDMETHODCALLTYPE AccessibleApplication::QueryInterface(REFIID id, LPVOI
 {
     *iface = 0;
     if (id == IID_IUnknown) {
-        accessibleDebug("AccessibleApplication::QI(): IID_IUnknown");
+        qCDebug(lcQpaAccessibility) << "AccessibleApplication::QI(): IID_IUnknown";
         *iface = (IUnknown*)this;
     } else if (id == IID_IAccessibleApplication) {
-        accessibleDebug("AccessibleApplication::QI(): IID_IAccessibleApplication");
+        qCDebug(lcQpaAccessibility) << "AccessibleApplication::QI(): IID_IAccessibleApplication";
         *iface = static_cast<IAccessibleApplication*>(this);
     }
 
@@ -476,7 +476,7 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_uniqueID(long *outUniqueID)
     if (!accessible)
         return E_FAIL;
 
-    accessibleDebug("uniqueID: %08x", id);
+    qCDebug(lcQpaAccessibility) << "uniqueID: " << showbase << hex << id;
 
     *outUniqueID = (long)id;
     return int(id) < 0 ? S_OK : S_FALSE;
@@ -841,7 +841,7 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_cellAt( long row, long colu
             *cell = QWindowsAccessibility::wrap(qtCell);
         }
     }
-    accessibleDebug("found cell? %p", *cell);
+    qCDebug(lcQpaAccessibility) << "found cell? " << *cell;
     return *cell ? S_OK : S_FALSE;
 }
 
@@ -1574,7 +1574,7 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::QueryService(REFGUID guidServic
         return E_POINTER;
     Q_UNUSED(guidService);
     *iface = 0;
-    accessibleDebug("QWindowsIA2Accessible::QS(): %s", IIDToString(riid).constData());
+    qCDebug(lcQpaAccessibility) << "QWindowsIA2Accessible::QS(): " << IIDToString(riid);
 
 
     if (guidService == IID_IAccessible) {

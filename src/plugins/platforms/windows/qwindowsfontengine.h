@@ -127,7 +127,7 @@ public:
     virtual void getGlyphBearings(glyph_t glyph, qreal *leftBearing = 0, qreal *rightBearing = 0);
 #endif
 
-    int getGlyphIndexes(const QChar *ch, int numChars, QGlyphLayout *glyphs, bool mirrored) const;
+    int getGlyphIndexes(const QChar *ch, int numChars, QGlyphLayout *glyphs) const;
     void getCMap();
 
     bool getOutlineMetrics(glyph_t glyph, const QTransform &t, glyph_metrics_t *metrics) const;

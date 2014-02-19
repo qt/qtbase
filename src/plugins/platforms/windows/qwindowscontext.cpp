@@ -79,18 +79,18 @@
 
 QT_BEGIN_NAMESPACE
 
-// Verbosity of components
-int QWindowsContext::verboseIntegration = 0;
-int QWindowsContext::verboseWindows = 0;
-int QWindowsContext::verboseEvents = 0;
-int QWindowsContext::verboseBackingStore = 0;
-int QWindowsContext::verboseFonts = 0;
-int QWindowsContext::verboseGL = 0;
-int QWindowsContext::verboseOLE = 0;
-int QWindowsContext::verboseInputMethods = 0;
-int QWindowsContext::verboseDialogs = 0;
-int QWindowsContext::verboseTheming = 0;
-int QWindowsContext::verboseTablet = 0;
+Q_LOGGING_CATEGORY(lcQpaWindows, "qt.qpa.windows")
+Q_LOGGING_CATEGORY(lcQpaBackingStore, "qt.qpa.backingstore")
+Q_LOGGING_CATEGORY(lcQpaEvents, "qt.qpa.events")
+Q_LOGGING_CATEGORY(lcQpaFonts, "qt.qpa.fonts")
+Q_LOGGING_CATEGORY(lcQpaGl, "qt.qpa.gl")
+Q_LOGGING_CATEGORY(lcQpaMime, "qt.qpa.mime")
+Q_LOGGING_CATEGORY(lcQpaInputMethods, "qt.qpa.inputmethods")
+Q_LOGGING_CATEGORY(lcQpaDialogs, "qt.qpa.dialogs")
+Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.tabletsupport")
+Q_LOGGING_CATEGORY(lcQpaAccessibility, "qt.qpa.accessibility")
+
+int QWindowsContext::verbose = 0;
 
 // Get verbosity of components from "foo:2,bar:3"
 static inline int componentVerbose(const char *v, const char *keyWord)
@@ -318,30 +318,21 @@ QWindowsContext::QWindowsContext() :
 #    pragma warning( disable : 4996 )
 #endif
     m_instance = this;
+    // ### FIXME: Remove this once the logging system has other options of configurations.
     const QByteArray bv = qgetenv("QT_QPA_VERBOSE");
-    if (!bv.isEmpty()) {
-        const char *v = bv.data();
-        QWindowsContext::verboseIntegration = componentVerbose(v, "integration");
-        QWindowsContext::verboseWindows = componentVerbose(v, "windows");
-        QWindowsContext::verboseEvents = componentVerbose(v, "events");
-        QWindowsContext::verboseBackingStore = componentVerbose(v, "backingstore");
-        QWindowsContext::verboseFonts = componentVerbose(v, "fonts");
-        QWindowsContext::verboseGL = componentVerbose(v, "gl");
-        QWindowsContext::verboseOLE = componentVerbose(v, "ole");
-        QWindowsContext::verboseInputMethods = componentVerbose(v, "im");
-        QWindowsContext::verboseDialogs = componentVerbose(v, "dialogs");
-        QWindowsContext::verboseTheming = componentVerbose(v, "theming");
-        QWindowsContext::verboseTablet = componentVerbose(v, "tablet");
-    }
+    if (!bv.isEmpty())
+        QLoggingCategory::setFilterRules(QString::fromLocal8Bit(bv));
 #if !defined(QT_NO_TABLETEVENT) && !defined(Q_OS_WINCE)
     d->m_tabletSupport.reset(QWindowsTabletSupport::create());
-    if (QWindowsContext::verboseTablet)
-        qDebug() << "Tablet support: " << (d->m_tabletSupport.isNull() ? QStringLiteral("None") : d->m_tabletSupport->description());
+    qCDebug(lcQpaTablet) << "Tablet support: " << (d->m_tabletSupport.isNull() ? QStringLiteral("None") : d->m_tabletSupport->description());
 #endif
 }
 
 QWindowsContext::~QWindowsContext()
 {
+#if !defined(QT_NO_TABLETEVENT) && !defined(Q_OS_WINCE)
+    d->m_tabletSupport.reset(); // Destroy internal window before unregistering classes.
+#endif
     unregisterWindowClasses();
     if (d->m_oleInitializeResult == S_OK || d->m_oleInitializeResult == S_FALSE)
         OleUninitialize();
@@ -407,7 +398,7 @@ QString QWindowsContext::registerWindowClass(const QWindow *w, bool isGL)
     bool icon = true;
     if (isGL || (flags & Qt::MSWindowsOwnDC))
         style |= CS_OWNDC;
-    if ((QSysInfo::WindowsVersion & QSysInfo::WV_NT_based)
+    if (!(flags & Qt::NoDropShadowWindowHint) && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based)
         && (type == Qt::Popup || w->property("_q_windowsDropShadow").toBool())) {
         style |= CS_DROPSHADOW;
     }
@@ -519,8 +510,7 @@ QString QWindowsContext::registerWindowClass(QString cname,
                       qPrintable(cname));
 
     d->m_registeredWindowClassNames.insert(cname);
-    if (QWindowsContext::verboseIntegration || QWindowsContext::verboseWindows)
-        qDebug().nospace() << __FUNCTION__ << ' ' << cname
+    qCDebug(lcQpaWindows).nospace() << __FUNCTION__ << ' ' << cname
                  << " style=0x" << QString::number(style, 16)
                  << " brush=" << brush << " icon=" << icon << " atom=" << atom;
     return cname;
@@ -531,9 +521,8 @@ void QWindowsContext::unregisterWindowClasses()
     const HINSTANCE appInstance = (HINSTANCE)GetModuleHandle(0);
 
     foreach (const QString &name,  d->m_registeredWindowClassNames) {
-        if (QWindowsContext::verboseIntegration)
-            qDebug() << __FUNCTION__ << name;
-        UnregisterClass((wchar_t*)name.utf16(), appInstance);
+        if (!UnregisterClass((wchar_t*)name.utf16(), appInstance) && QWindowsContext::verbose)
+            qErrnoWarning("UnregisterClass failed for '%s'", qPrintable(name));
     }
     d->m_registeredWindowClassNames.clear();
 }
@@ -750,8 +739,20 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
     msg.message = message;   // time and pt fields ignored
     msg.wParam = wParam;
     msg.lParam = lParam;
-    msg.pt.x = GET_X_LPARAM(lParam);
-    msg.pt.y = GET_Y_LPARAM(lParam);
+    msg.pt.x = msg.pt.y = 0;
+    if (et != QtWindows::CursorEvent && (et & (QtWindows::MouseEventFlag | QtWindows::NonClientEventFlag))) {
+        msg.pt.x = GET_X_LPARAM(lParam);
+        msg.pt.y = GET_Y_LPARAM(lParam);
+        // For non-client-area messages, these are screen coordinates (as expected
+        // in the MSG structure), otherwise they are client coordinates.
+        if (!(et & QtWindows::NonClientEventFlag)) {
+            ClientToScreen(msg.hwnd, &msg.pt);
+        }
+    } else {
+#ifndef Q_OS_WINCE
+        GetCursorPos(&msg.pt);
+#endif
+    }
 
     // Run the native event filters.
     long filterResult = 0;
@@ -834,8 +835,8 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         // Suppress events sent during DestroyWindow() for native children.
         if (platformWindow->testFlag(QWindowsWindow::WithinDestroy))
             return false;
-        if (QWindowsContext::verboseEvents > 1)
-            qDebug().nospace() << "Event window: " << platformWindow->window();
+        if (QWindowsContext::verbose > 1)
+            qCDebug(lcQpaEvents) << "Event window: " << platformWindow->window();
     } else {
         qWarning("%s: No Qt Window found for event 0x%x (%s), hwnd=0x%p.",
                  __FUNCTION__, message,
@@ -928,6 +929,10 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         return true;
 #ifndef Q_OS_WINCE
     case QtWindows::ActivateWindowEvent:
+        if (platformWindow->window()->flags() & Qt::WindowDoesNotAcceptFocus) {
+            *result = LRESULT(MA_NOACTIVATE);
+            return true;
+        }
 #ifndef QT_NO_TABLETEVENT
         if (!d->m_tabletSupport.isNull())
             d->m_tabletSupport->notifyActivate();
@@ -935,6 +940,12 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         if (platformWindow->testFlag(QWindowsWindow::BlockedByModal))
             if (const QWindow *modalWindow = QGuiApplication::modalWindow())
                 QWindowsWindow::baseWindowOf(modalWindow)->alertWindow();
+        break;
+    case QtWindows::MouseActivateWindowEvent:
+        if (platformWindow->window()->flags() & Qt::WindowDoesNotAcceptFocus) {
+            *result = LRESULT(MA_NOACTIVATE);
+            return true;
+        }
         break;
 #endif
 #ifndef QT_NO_CONTEXTMENU
@@ -963,7 +974,8 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         if (lParam & ENDSESSION_LOGOFF)
             fflush(NULL);
 
-        return !sessionManager->wasCanceled();
+        *result = sessionManager->wasCanceled() ? 0 : 1;
+        return true;
     }
     case QtWindows::EndSessionApplicationEvent: {
         QWindowsSessionManager *sessionManager = platformSessionManager();
@@ -1071,11 +1083,13 @@ extern "C" LRESULT QT_WIN_CALLBACK qWindowsWndProc(HWND hwnd, UINT message, WPAR
     LRESULT result;
     const QtWindows::WindowsEventType et = windowsEventType(message, wParam);
     const bool handled = QWindowsContext::instance()->windowsProc(hwnd, message, et, wParam, lParam, &result);
-    if (QWindowsContext::verboseEvents > 1)
-        if (const char *eventName = QWindowsGuiEventDispatcher::windowsMessageName(message))
-            qDebug("EVENT: hwd=%p %s msg=0x%x et=0x%x wp=%d at %d,%d handled=%d",
-                   hwnd, eventName, message, et, int(wParam),
-                   GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), handled);
+    if (QWindowsContext::verbose > 1 && lcQpaEvents().isDebugEnabled()) {
+        if (const char *eventName = QWindowsGuiEventDispatcher::windowsMessageName(message)) {
+            qCDebug(lcQpaEvents) << "EVENT: hwd=" << hwnd << eventName << hex << "msg=0x"  << message
+                << "et=0x" << et << dec << "wp=" << int(wParam) << "at"
+                << GET_X_LPARAM(lParam) << GET_Y_LPARAM(lParam) << "handled=" << handled;
+        }
+    }
     if (!handled)
         result = DefWindowProc(hwnd, message, wParam, lParam);
     return result;

@@ -52,7 +52,7 @@ class QFontconfigDatabase : public QBasicFontDatabase
 public:
     void populateFontDatabase();
     QFontEngineMulti *fontEngineMulti(QFontEngine *fontEngine, QChar::Script script);
-    QFontEngine *fontEngine(const QFontDef &fontDef, QChar::Script script, void *handle);
+    QFontEngine *fontEngine(const QFontDef &fontDef, void *handle);
     QStringList fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const;
     QStringList addApplicationFont(const QByteArray &fontData, const QString &fileName);
     QString resolveFontFamilyAlias(const QString &family) const;

@@ -50,7 +50,7 @@ QT_BEGIN_NAMESPACE
 
 class QKmsScreen;
 class QKmsDevice;
-class QKmsVTHandler;
+class QFbVtHandler;
 
 class QKmsIntegration : public QObject, public QPlatformIntegration
 {
@@ -60,16 +60,17 @@ public:
     QKmsIntegration();
     ~QKmsIntegration();
 
-    bool hasCapability(QPlatformIntegration::Capability cap) const;
+    void initialize() Q_DECL_OVERRIDE;
+    bool hasCapability(QPlatformIntegration::Capability cap) const Q_DECL_OVERRIDE;
 
-    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
-    QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
+    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const Q_DECL_OVERRIDE;
+    QPlatformWindow *createPlatformWindow(QWindow *window) const Q_DECL_OVERRIDE;
+    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const Q_DECL_OVERRIDE;
 
-    QPlatformFontDatabase *fontDatabase() const;
-    QAbstractEventDispatcher *createEventDispatcher() const;
+    QPlatformFontDatabase *fontDatabase() const Q_DECL_OVERRIDE;
+    QAbstractEventDispatcher *createEventDispatcher() const Q_DECL_OVERRIDE;
 
-    QPlatformNativeInterface *nativeInterface() const;
+    QPlatformNativeInterface *nativeInterface() const Q_DECL_OVERRIDE;
 
     void addScreen(QKmsScreen *screen);
     QObject *createDevice(const char *);
@@ -85,7 +86,7 @@ private:
     QList<QKmsDevice *> m_devices;
     QPlatformFontDatabase *m_fontDatabase;
     QPlatformNativeInterface *m_nativeInterface;
-    QKmsVTHandler *m_vtHandler;
+    QFbVtHandler *m_vtHandler;
     QDeviceDiscovery *m_deviceDiscovery;
 };
 

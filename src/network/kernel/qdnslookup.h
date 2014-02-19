@@ -180,6 +180,7 @@ class Q_NETWORK_EXPORT QDnsLookup : public QObject
     Q_PROPERTY(QString errorString READ errorString NOTIFY finished)
     Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
     Q_PROPERTY(Type type READ type WRITE setType NOTIFY typeChanged)
+    Q_PROPERTY(QHostAddress nameserver READ nameserver WRITE setNameserver NOTIFY nameserverChanged)
 
 public:
     enum Error
@@ -209,6 +210,7 @@ public:
 
     explicit QDnsLookup(QObject *parent = 0);
     QDnsLookup(Type type, const QString &name, QObject *parent = 0);
+    QDnsLookup(Type type, const QString &name, const QHostAddress &nameserver, QObject *parent = 0);
     ~QDnsLookup();
 
     Error error() const;
@@ -220,6 +222,9 @@ public:
 
     Type type() const;
     void setType(QDnsLookup::Type);
+
+    QHostAddress nameserver() const;
+    void setNameserver(const QHostAddress &nameserver);
 
     QList<QDnsDomainNameRecord> canonicalNameRecords() const;
     QList<QDnsHostAddressRecord> hostAddressRecords() const;
@@ -238,6 +243,7 @@ Q_SIGNALS:
     void finished();
     void nameChanged(const QString &name);
     void typeChanged(Type type);
+    void nameserverChanged(const QHostAddress &nameserver);
 
 private:
     Q_DECLARE_PRIVATE(QDnsLookup)

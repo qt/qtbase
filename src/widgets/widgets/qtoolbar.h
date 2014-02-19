@@ -105,7 +105,7 @@ public:
     QAction *addAction(const QIcon &icon, const QString &text);
     QAction *addAction(const QString &text, const QObject *receiver, const char* member);
     QAction *addAction(const QIcon &icon, const QString &text,
-		       const QObject *receiver, const char* member);
+                       const QObject *receiver, const char* member);
 
     QAction *addSeparator();
     QAction *insertSeparator(QAction *before);

@@ -40,12 +40,28 @@
 ****************************************************************************/
 
 #include "qeglplatformcontext_p.h"
-
 #include "qeglconvenience_p.h"
-
 #include <qpa/qplatformwindow.h>
+#include <QtGui/QOpenGLFunctions>
 
-#include <EGL/egl.h>
+QT_BEGIN_NAMESPACE
+
+/*!
+    \class QEGLPlatformContext
+    \brief An EGL context implementation.
+    \since 5.2
+    \internal
+    \ingroup qpa
+
+    Implement QPlatformOpenGLContext using EGL. To use it in platform
+    plugins a subclass must be created since
+    eglSurfaceForPlatformSurface() has to be reimplemented. This
+    function is used for mapping platform surfaces (windows) to EGL
+    surfaces and is necessary since different platform plugins may
+    have different ways of handling native windows (for example, a
+    plugin may choose not to back every platform window by a real EGL
+    surface). Other than that, no further customization is necessary.
+ */
 
 static inline void bindApi(const QSurfaceFormat &format)
 {
@@ -54,9 +70,12 @@ static inline void bindApi(const QSurfaceFormat &format)
         eglBindAPI(EGL_OPENVG_API);
         break;
 #ifdef EGL_VERSION_1_4
-#  if !defined(QT_OPENGL_ES_2)
     case QSurfaceFormat::DefaultRenderableType:
-#  endif
+        if (!QOpenGLFunctions::isES())
+            eglBindAPI(EGL_OPENGL_API);
+        else
+            eglBindAPI(EGL_OPENGL_ES_API);
+        break;
     case QSurfaceFormat::OpenGL:
         eglBindAPI(EGL_OPENGL_API);
         break;
@@ -72,6 +91,9 @@ QEGLPlatformContext::QEGLPlatformContext(const QSurfaceFormat &format, QPlatform
                                          EGLenum eglApi)
     : m_eglDisplay(display)
     , m_eglConfig(q_configFromGLFormat(display, format))
+    , m_swapInterval(-1)
+    , m_swapIntervalEnvChecked(false)
+    , m_swapIntervalFromEnv(-1)
 {
     init(format, share);
     Q_UNUSED(eglApi);
@@ -81,6 +103,9 @@ QEGLPlatformContext::QEGLPlatformContext(const QSurfaceFormat &format, QPlatform
                                          EGLConfig config, EGLenum eglApi)
     : m_eglDisplay(display)
     , m_eglConfig(config)
+    , m_swapInterval(-1)
+    , m_swapIntervalEnvChecked(false)
+    , m_swapIntervalFromEnv(-1)
 {
     init(format, share);
     Q_UNUSED(eglApi);
@@ -106,11 +131,8 @@ void QEGLPlatformContext::init(const QSurfaceFormat &format, QPlatformOpenGLCont
 
 bool QEGLPlatformContext::makeCurrent(QPlatformSurface *surface)
 {
-    Q_ASSERT(surface->surface()->surfaceType() == QSurface::OpenGLSurface);
+    Q_ASSERT(surface->surface()->supportsOpenGL());
 
-#ifdef QEGL_EXTRA_DEBUG
-    qWarning("QEglContext::makeCurrent: %p\n",this);
-#endif
     bindApi(m_format);
 
     EGLSurface eglSurface = eglSurfaceForPlatformSurface(surface);
@@ -145,14 +167,32 @@ bool QEGLPlatformContext::makeCurrent(QPlatformSurface *surface)
 
     }
 #endif
+
+    if (ok) {
+        if (!m_swapIntervalEnvChecked) {
+            m_swapIntervalEnvChecked = true;
+            if (qEnvironmentVariableIsSet("QT_QPA_EGLFS_SWAPINTERVAL")) {
+                QByteArray swapIntervalString = qgetenv("QT_QPA_EGLFS_SWAPINTERVAL");
+                bool ok;
+                const int swapInterval = swapIntervalString.toInt(&ok);
+                if (ok)
+                    m_swapIntervalFromEnv = swapInterval;
+            }
+        }
+        const int requestedSwapInterval = m_swapIntervalFromEnv >= 0
+            ? m_swapIntervalFromEnv
+            : surface->format().swapInterval();
+        if (requestedSwapInterval >= 0 && m_swapInterval != requestedSwapInterval) {
+            m_swapInterval = requestedSwapInterval;
+            eglSwapInterval(eglDisplay(), m_swapInterval);
+        }
+    }
+
     return ok;
 }
 
 QEGLPlatformContext::~QEGLPlatformContext()
 {
-#ifdef QEGL_EXTRA_DEBUG
-    qWarning("QEglContext::~QEglContext(): %p\n",this);
-#endif
     if (m_eglContext != EGL_NO_CONTEXT) {
         eglDestroyContext(m_eglDisplay, m_eglContext);
         m_eglContext = EGL_NO_CONTEXT;
@@ -161,9 +201,6 @@ QEGLPlatformContext::~QEGLPlatformContext()
 
 void QEGLPlatformContext::doneCurrent()
 {
-#ifdef QEGL_EXTRA_DEBUG
-    qWarning("QEglContext::doneCurrent:%p\n",this);
-#endif
     bindApi(m_format);
     bool ok = eglMakeCurrent(m_eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
     if (!ok)
@@ -172,9 +209,6 @@ void QEGLPlatformContext::doneCurrent()
 
 void QEGLPlatformContext::swapBuffers(QPlatformSurface *surface)
 {
-#ifdef QEGL_EXTRA_DEBUG
-    qWarning("QEglContext::swapBuffers:%p\n",this);
-#endif
     bindApi(m_format);
     EGLSurface eglSurface = eglSurfaceForPlatformSurface(surface);
     bool ok = eglSwapBuffers(m_eglDisplay, eglSurface);
@@ -184,9 +218,6 @@ void QEGLPlatformContext::swapBuffers(QPlatformSurface *surface)
 
 void (*QEGLPlatformContext::getProcAddress(const QByteArray &procName)) ()
 {
-#ifdef QEGL_EXTRA_DEBUG
-    qWarning("QEglContext::getProcAddress%p\n",this);
-#endif
     bindApi(m_format);
     return eglGetProcAddress(procName.constData());
 }
@@ -210,3 +241,5 @@ EGLConfig QEGLPlatformContext::eglConfig() const
 {
     return m_eglConfig;
 }
+
+QT_END_NAMESPACE

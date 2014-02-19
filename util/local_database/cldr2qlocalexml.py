@@ -46,6 +46,7 @@ import enumdata
 import xpathlite
 from  xpathlite import DraftResolution
 from dateconverter import convert_date
+from xml.sax.saxutils import escape, unescape
 import re
 
 findAlias = xpathlite.findAlias
@@ -94,11 +95,20 @@ def parse_list_pattern_part_format(pattern):
 def ordStr(c):
     if len(c) == 1:
         return str(ord(c))
+    raise xpathlite.Error("Unable to handle value \"%s\"" % addEscapes(c))
     return "##########"
 
 # the following functions are supposed to fix the problem with QLocale
 # returning a character instead of strings for QLocale::exponential()
 # and others. So we fallback to default values in these cases.
+def fixOrdStrMinus(c):
+    if len(c) == 1:
+        return str(ord(c))
+    return str(ord('-'))
+def fixOrdStrPlus(c):
+    if len(c) == 1:
+        return str(ord(c))
+    return str(ord('+'))
 def fixOrdStrExp(c):
     if len(c) == 1:
         return str(ord(c))
@@ -745,10 +755,10 @@ for key in locale_keys:
 
     print "        <locale>"
     print "            <language>" + l['language']        + "</language>"
-    print "            <languageEndonym>" + l['language_endonym'].encode('utf-8') + "</languageEndonym>"
+    print "            <languageEndonym>" + escape(l['language_endonym']).encode('utf-8') + "</languageEndonym>"
     print "            <script>" + l['script']        + "</script>"
     print "            <country>"  + l['country']         + "</country>"
-    print "            <countryEndonym>"  + l['country_endonym'].encode('utf-8') + "</countryEndonym>"
+    print "            <countryEndonym>"  + escape(l['country_endonym']).encode('utf-8') + "</countryEndonym>"
     print "            <languagecode>" + l['language_code']        + "</languagecode>"
     print "            <scriptcode>" + l['script_code']        + "</scriptcode>"
     print "            <countrycode>"  + l['country_code']         + "</countrycode>"
@@ -757,8 +767,8 @@ for key in locale_keys:
     print "            <list>"     + fixOrdStrList(l['list'])    + "</list>"
     print "            <percent>"  + fixOrdStrPercent(l['percent']) + "</percent>"
     print "            <zero>"     + ordStr(l['zero'])    + "</zero>"
-    print "            <minus>"    + ordStr(l['minus'])   + "</minus>"
-    print "            <plus>"     + ordStr(l['plus'])   + "</plus>"
+    print "            <minus>"    + fixOrdStrMinus(l['minus'])   + "</minus>"
+    print "            <plus>"     + fixOrdStrPlus(l['plus'])   + "</plus>"
     print "            <exp>"      + fixOrdStrExp(l['exp'])     + "</exp>"
     print "            <quotationStart>" + l['quotationStart'].encode('utf-8') + "</quotationStart>"
     print "            <quotationEnd>" + l['quotationEnd'].encode('utf-8')   + "</quotationEnd>"

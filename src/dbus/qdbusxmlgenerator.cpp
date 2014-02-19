@@ -77,6 +77,14 @@ static inline QString typeNameToXml(const char *typeName)
     return rich;
 }
 
+static inline QLatin1String accessAsString(bool read, bool write)
+{
+    if (read)
+        return write ? QLatin1String("readwrite") : QLatin1String("read") ;
+    else
+        return write ? QLatin1String("write") : QLatin1String("") ;
+}
+
 // implement the D-Bus org.freedesktop.DBus.Introspectable interface
 // we do that by analysing the metaObject of all the adaptor interfaces
 
@@ -88,19 +96,12 @@ static QString generateInterfaceXml(const QMetaObject *mo, int flags, int method
     if (flags & (QDBusConnection::ExportScriptableProperties |
                  QDBusConnection::ExportNonScriptableProperties)) {
         for (int i = propOffset; i < mo->propertyCount(); ++i) {
-            static const char *accessvalues[] = {0, "read", "write", "readwrite"};
 
             QMetaProperty mp = mo->property(i);
 
             if (!((mp.isScriptable() && (flags & QDBusConnection::ExportScriptableProperties)) ||
                   (!mp.isScriptable() && (flags & QDBusConnection::ExportNonScriptableProperties))))
                 continue;
-
-            int access = 0;
-            if (mp.isReadable())
-                access |= 1;
-            if (mp.isWritable())
-                access |= 2;
 
             int typeId = mp.userType();
             if (!typeId)
@@ -110,9 +111,9 @@ static QString generateInterfaceXml(const QMetaObject *mo, int flags, int method
                 continue;
 
             retval += QString::fromLatin1("    <property name=\"%1\" type=\"%2\" access=\"%3\"")
-                      .arg(QLatin1String(mp.name()))
-                      .arg(QLatin1String(signature))
-                      .arg(QLatin1String(accessvalues[access]));
+                      .arg(QLatin1String(mp.name()),
+                           QLatin1String(signature),
+                           accessAsString(mp.isReadable(), mp.isWritable()));
 
             if (QDBusMetaType::signatureToType(signature) == QVariant::Invalid) {
                 const char *typeName = QMetaType::typeName(typeId);

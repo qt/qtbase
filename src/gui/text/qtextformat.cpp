@@ -524,7 +524,7 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextFormat &fmt)
     \value BlockFormat The object formats a text block
     \value CharFormat The object formats a single character
     \value ListFormat The object formats a list
-    \value TableFormat The object formats a table
+    \omitvalue TableFormat Unused Value, a table's FormatType is FrameFormat.
     \value FrameFormat The object formats a frame
 
     \value UserFormat
@@ -703,6 +703,15 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextFormat &fmt)
 
     Returns \c true if the format is valid (i.e. is not
     InvalidFormat); otherwise returns \c false.
+*/
+
+/*!
+    \fn bool QTextFormat::isEmpty() const
+    \since 5.3
+
+    Returns true if the format does not store any properties; false otherwise.
+
+    \sa propertyCount(), properties()
 */
 
 /*!
@@ -1870,36 +1879,93 @@ QStringList QTextCharFormat::anchorNames() const
 */
 
 /*!
+    \enum QTextCharFormat::FontPropertiesInheritanceBehavior
+    \since 5.3
+
+    This enum specifies how the setFont() function should behave with
+    respect to unset font properties.
+
+    \value FontPropertiesSpecifiedOnly  If a property is not explicitly set, do not
+                                        change the text format's property value.
+    \value FontPropertiesAll  If a property is not explicitly set, override the
+                              text format's property with a default value.
+
+    \sa setFont()
+*/
+
+/*!
+    \overload
+
     Sets the text format's \a font.
+
+    \sa font()
 */
 void QTextCharFormat::setFont(const QFont &font)
 {
-    setFontFamily(font.family());
+    setFont(font, FontPropertiesAll);
+}
 
-    const qreal pointSize = font.pointSizeF();
-    if (pointSize > 0) {
-        setFontPointSize(pointSize);
-    } else {
-        const int pixelSize = font.pixelSize();
-        if (pixelSize > 0)
-            setProperty(QTextFormat::FontPixelSize, pixelSize);
+/*!
+    \since 5.3
+
+    Sets the text format's \a font.
+
+    If \a behavior is QTextCharFormat::FontPropertiesAll, the font property that
+    has not been explicitly set is treated like as it were set with default value;
+    If \a behavior is QTextCharFormat::FontPropertiesAll, the font property that
+    has not been explicitly set is ignored and the respective property value
+    remains unchanged.
+
+    \sa font()
+*/
+void QTextCharFormat::setFont(const QFont &font, FontPropertiesInheritanceBehavior behavior)
+{
+    const uint mask = behavior == FontPropertiesAll ? uint(QFont::AllPropertiesResolved)
+                                                    : font.resolve();
+
+    if (mask & QFont::FamilyResolved)
+        setFontFamily(font.family());
+    if (mask & QFont::SizeResolved) {
+        const qreal pointSize = font.pointSizeF();
+        if (pointSize > 0) {
+            setFontPointSize(pointSize);
+        } else {
+            const int pixelSize = font.pixelSize();
+            if (pixelSize > 0)
+                setProperty(QTextFormat::FontPixelSize, pixelSize);
+        }
     }
 
-    setFontWeight(font.weight());
-    setFontItalic(font.italic());
-    setUnderlineStyle(font.underline() ? SingleUnderline : NoUnderline);
-    setFontOverline(font.overline());
-    setFontStrikeOut(font.strikeOut());
-    setFontFixedPitch(font.fixedPitch());
-    setFontCapitalization(font.capitalization());
-    setFontWordSpacing(font.wordSpacing());
-    setFontLetterSpacingType(font.letterSpacingType());
-    setFontLetterSpacing(font.letterSpacing());
-    setFontStretch(font.stretch());
-    setFontStyleHint(font.styleHint());
-    setFontStyleStrategy(font.styleStrategy());
-    setFontHintingPreference(font.hintingPreference());
-    setFontKerning(font.kerning());
+    if (mask & QFont::WeightResolved)
+        setFontWeight(font.weight());
+    if (mask & QFont::StyleResolved)
+        setFontItalic(font.style() != QFont::StyleNormal);
+    if (mask & QFont::UnderlineResolved)
+        setUnderlineStyle(font.underline() ? SingleUnderline : NoUnderline);
+    if (mask & QFont::OverlineResolved)
+        setFontOverline(font.overline());
+    if (mask & QFont::StrikeOutResolved)
+        setFontStrikeOut(font.strikeOut());
+    if (mask & QFont::FixedPitchResolved)
+        setFontFixedPitch(font.fixedPitch());
+    if (mask & QFont::CapitalizationResolved)
+        setFontCapitalization(font.capitalization());
+    if (mask & QFont::LetterSpacingResolved)
+        setFontWordSpacing(font.wordSpacing());
+    if (mask & QFont::LetterSpacingResolved) {
+        setFontLetterSpacingType(font.letterSpacingType());
+        setFontLetterSpacing(font.letterSpacing());
+    }
+    if (mask & QFont::StretchResolved)
+        setFontStretch(font.stretch());
+    if (mask & QFont::StyleHintResolved)
+        setFontStyleHint(font.styleHint());
+    if (mask & QFont::StyleStrategyResolved)
+        setFontStyleStrategy(font.styleStrategy());
+    if (mask & QFont::HintingPreferenceResolved)
+        setFontHintingPreference(font.hintingPreference());
+    if (mask & QFont::KerningResolved)
+        setFontKerning(font.kerning());
 }
 
 /*!
@@ -3374,19 +3440,6 @@ bool QTextFormatCollection::hasFormatCached(const QTextFormat &format) const
         ++i;
     }
     return false;
-}
-
-QTextFormat QTextFormatCollection::objectFormat(int objectIndex) const
-{
-    if (objectIndex == -1)
-        return QTextFormat();
-    return format(objFormats.at(objectIndex));
-}
-
-void QTextFormatCollection::setObjectFormat(int objectIndex, const QTextFormat &f)
-{
-    const int formatIndex = indexForFormat(f);
-    objFormats[objectIndex] = formatIndex;
 }
 
 int QTextFormatCollection::objectFormatIndex(int objectIndex) const

@@ -163,7 +163,10 @@ QGLEngineSharedShaders::QGLEngineSharedShaders(const QGLContext* context)
         code[NonPremultipliedImageSrcFragmentShader] = qglslNonPremultipliedImageSrcFragmentShader;
         code[CustomImageSrcFragmentShader] = qglslCustomSrcFragmentShader; // Calls "customShader", which must be appended
         code[SolidBrushSrcFragmentShader] = qglslSolidBrushSrcFragmentShader;
-        code[TextureBrushSrcFragmentShader] = qglslTextureBrushSrcFragmentShader;
+        if (!QOpenGLFunctions::isES())
+            code[TextureBrushSrcFragmentShader] = qglslTextureBrushSrcFragmentShader_desktop;
+        else
+            code[TextureBrushSrcFragmentShader] = qglslTextureBrushSrcFragmentShader_ES;
         code[TextureBrushSrcWithPatternFragmentShader] = qglslTextureBrushSrcWithPatternFragmentShader;
         code[PatternBrushSrcFragmentShader] = qglslPatternBrushSrcFragmentShader;
         code[LinearGradientBrushSrcFragmentShader] = qglslLinearGradientBrushSrcFragmentShader;

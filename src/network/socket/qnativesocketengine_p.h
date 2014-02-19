@@ -162,8 +162,8 @@ public:
     bool waitForRead(int msecs = 30000, bool *timedOut = 0);
     bool waitForWrite(int msecs = 30000, bool *timedOut = 0);
     bool waitForReadOrWrite(bool *readyToRead, bool *readyToWrite,
-			    bool checkRead, bool checkWrite,
-			    int msecs = 30000, bool *timedOut = 0);
+                            bool checkRead, bool checkWrite,
+                            int msecs = 30000, bool *timedOut = 0);
 
     bool isReadNotificationEnabled() const;
     void setReadNotificationEnabled(bool enable);
@@ -271,7 +271,7 @@ public:
     qint64 nativeWrite(const char *data, qint64 length);
     int nativeSelect(int timeout, bool selectForRead) const;
     int nativeSelect(int timeout, bool checkRead, bool checkWrite,
-		     bool *selectForRead, bool *selectForWrite) const;
+                     bool *selectForRead, bool *selectForWrite) const;
 #ifdef Q_OS_WIN
     void setPortAndAddress(sockaddr_in * sockAddrIPv4, qt_sockaddr_in6 * sockAddrIPv6,
                            quint16 port, const QHostAddress & address, sockaddr ** sockAddrPtr, QT_SOCKLEN_T *sockAddrSize);

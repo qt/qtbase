@@ -45,6 +45,18 @@
 
 QT_BEGIN_NAMESPACE
 
+/*!
+    \class QEGLPbuffer
+    \brief A pbuffer-based implementation of QPlatformOffscreenSurface for EGL.
+    \since 5.2
+    \internal
+    \ingroup qpa
+
+    To use this implementation in the platform plugin simply
+    reimplement QPlatformIntegration::createPlatformOffscreenSurface()
+    and return a new instance of this class.
+*/
+
 QEGLPbuffer::QEGLPbuffer(EGLDisplay display, const QSurfaceFormat &format, QOffscreenSurface *offscreenSurface)
     : QPlatformOffscreenSurface(offscreenSurface)
     , m_format(format)

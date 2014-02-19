@@ -63,7 +63,7 @@ void WigglyWidget::paintEvent(QPaintEvent * /* event */)
 //! [1] //! [2]
 {
     static const int sineTable[16] = {
-        0, 38, 71, 92, 100, 92, 71, 38,	0, -38, -71, -92, -100, -92, -71, -38
+        0, 38, 71, 92, 100, 92, 71, 38, 0, -38, -71, -92, -100, -92, -71, -38
     };
 
     QFontMetrics metrics(font());
@@ -94,7 +94,7 @@ void WigglyWidget::timerEvent(QTimerEvent *event)
         ++step;
         update();
     } else {
-	QWidget::timerEvent(event);
+        QWidget::timerEvent(event);
     }
 //! [6]
 }

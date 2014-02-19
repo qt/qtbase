@@ -44,12 +44,22 @@
 #include "qqnxglcontext.h"
 #include "qqnxscreen.h"
 #include "qqnxwindow.h"
+#if defined(QQNX_IMF)
+#include "qqnxinputcontext_imf.h"
+#endif
+
+#include "qqnxintegration.h"
 
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QScreen>
 #include <QtGui/QWindow>
 
 QT_BEGIN_NAMESPACE
+
+QQnxNativeInterface::QQnxNativeInterface(QQnxIntegration *integration)
+    : m_integration(integration)
+{
+}
 
 void *QQnxNativeInterface::nativeResourceForWindow(const QByteArray &resource, QWindow *window)
 {
@@ -75,6 +85,16 @@ void *QQnxNativeInterface::nativeResourceForScreen(const QByteArray &resource, Q
     return 0;
 }
 
+void *QQnxNativeInterface::nativeResourceForIntegration(const QByteArray &resource)
+{
+#ifdef Q_OS_BLACKBERRY
+    if (resource == "navigatorEventHandler")
+        return m_integration->navigatorEventHandler();
+#endif
+
+    return 0;
+}
+
 void *QQnxNativeInterface::nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context)
 {
     if (resource == "eglcontext" && context)
@@ -85,10 +105,27 @@ void *QQnxNativeInterface::nativeResourceForContext(const QByteArray &resource, 
 
 void QQnxNativeInterface::setWindowProperty(QPlatformWindow *window, const QString &name, const QVariant &value)
 {
+    QQnxWindow *qnxWindow = static_cast<QQnxWindow*>(window);
+
     if (name == QStringLiteral("mmRendererWindowName")) {
-        QQnxWindow *qnxWindow = static_cast<QQnxWindow*>(window);
         qnxWindow->setMMRendererWindowName(value.toString());
+    } else if (name == QStringLiteral("windowGroup")) {
+        if (value.isNull())
+            qnxWindow->joinWindowGroup(QByteArray());
+        else if (value.canConvert<QByteArray>())
+            qnxWindow->joinWindowGroup(value.toByteArray());
     }
+}
+
+QPlatformNativeInterface::NativeResourceForIntegrationFunction QQnxNativeInterface::nativeResourceFunctionForIntegration(const QByteArray &resource)
+{
+#if defined(QQNX_IMF)
+    if (resource == "blackberryIMFSetHighlightColor")
+        return reinterpret_cast<NativeResourceForIntegrationFunction>(QQnxInputContext::setHighlightColor);
+    if (resource == "blackberryIMFCheckSpelling")
+        return reinterpret_cast<NativeResourceForIntegrationFunction>(QQnxInputContext::checkSpelling);
+#endif
+    return 0;
 }
 
 QT_END_NAMESPACE

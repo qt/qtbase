@@ -38,6 +38,9 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
+#ifndef TEMPLATE_GTGT_H
+#define TEMPLATE_GTGT_H
 template<class TYPE, size_t COUNT>
 class myTemplate :
       QString,
@@ -58,3 +61,4 @@ public:
     {
     }
 };
+#endif // TEMPLATE_GTGT_H

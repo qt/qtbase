@@ -1092,8 +1092,8 @@ QResource::unregisterResource(const QString &rccFilename, const QString &resourc
     for(int i = 0; i < list->size(); ++i) {
         QResourceRoot *res = list->at(i);
         if(res->type() == QResourceRoot::Resource_File) {
-	    QDynamicFileResourceRoot *root = reinterpret_cast<QDynamicFileResourceRoot*>(res);
-	    if(root->mappingFile() == rccFilename && root->mappingRoot() == r) {
+            QDynamicFileResourceRoot *root = reinterpret_cast<QDynamicFileResourceRoot*>(res);
+            if (root->mappingFile() == rccFilename && root->mappingRoot() == r) {
                 resourceList()->removeAt(i);
                 if(!root->ref.deref()) {
                     delete root;
@@ -1101,7 +1101,7 @@ QResource::unregisterResource(const QString &rccFilename, const QString &resourc
                 }
                 return false;
             }
-	}
+        }
     }
     return false;
 }
@@ -1163,16 +1163,16 @@ QResource::unregisterResource(const uchar *rccData, const QString &resourceRoot)
     for(int i = 0; i < list->size(); ++i) {
         QResourceRoot *res = list->at(i);
         if(res->type() == QResourceRoot::Resource_Buffer) {
-	    QDynamicBufferResourceRoot *root = reinterpret_cast<QDynamicBufferResourceRoot*>(res);
-	    if(root->mappingBuffer() == rccData && root->mappingRoot() == r) {
+            QDynamicBufferResourceRoot *root = reinterpret_cast<QDynamicBufferResourceRoot*>(res);
+            if (root->mappingBuffer() == rccData && root->mappingRoot() == r) {
                 resourceList()->removeAt(i);
                 if(!root->ref.deref()) {
                     delete root;
                     return true;
                 }
-		return false;
+                return false;
             }
-	}
+        }
     }
     return false;
 }
@@ -1381,13 +1381,13 @@ QString QResourceFileEngine::fileName(FileName file) const
 {
     Q_D(const QResourceFileEngine);
     if(file == BaseName) {
-	int slash = d->resource.fileName().lastIndexOf(QLatin1Char('/'));
-	if (slash == -1)
-	    return d->resource.fileName();
-	return d->resource.fileName().mid(slash + 1);
+        int slash = d->resource.fileName().lastIndexOf(QLatin1Char('/'));
+        if (slash == -1)
+            return d->resource.fileName();
+        return d->resource.fileName().mid(slash + 1);
     } else if(file == PathName || file == AbsolutePathName) {
         const QString path = (file == AbsolutePathName) ? d->resource.absoluteFilePath() : d->resource.fileName();
-	const int slash = path.lastIndexOf(QLatin1Char('/'));
+        const int slash = path.lastIndexOf(QLatin1Char('/'));
         if (slash == -1)
             return QLatin1String(":");
         else if (slash <= 1)

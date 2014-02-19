@@ -53,8 +53,10 @@
 
 #if defined(Q_OS_WIN)
 #  include <qt_windows.h>
-#  include <commctrl.h>
-#  include <objbase.h>
+#  ifndef Q_OS_WINRT
+#    include <commctrl.h>
+#    include <objbase.h>
+#  endif
 #endif
 
 #if defined(Q_OS_UNIX) && !defined(QT_NO_STYLE_GTK)
@@ -313,7 +315,7 @@ QIcon QFileIconProvider::icon(const QFileInfo &info) const
         return retIcon;
 
     if (info.isRoot())
-#if defined (Q_OS_WIN) && !defined(Q_OS_WINCE)
+#if defined (Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
     {
         UINT type = GetDriveType((wchar_t *)info.absoluteFilePath().utf16());
 

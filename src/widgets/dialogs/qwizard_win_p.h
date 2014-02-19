@@ -117,8 +117,8 @@ private:
     bool drawTitleText(QPainter *painter, const QString &text, const QRect &rect, HDC hdc);
     static bool drawBlackRect(const QRect &rect, HDC hdc);
 
-    static int frameSize() { return GetSystemMetrics(SM_CYSIZEFRAME); }
-    static int captionSize() { return GetSystemMetrics(SM_CYCAPTION); }
+    static int frameSize();
+    static int captionSize();
 
     static int backButtonSize() { return int(QStyleHelper::dpiScaled(30)); }
     static int iconSize() { return 16; } // Standard Aero

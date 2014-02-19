@@ -38,14 +38,14 @@
     <failure tag="fail" message="Fail in init()" result="fail"/>
   </testcase>
   <testcase result="fail" name="testFailInCleanup">
-    <!-- tag="fail" message="This test function should execute and then QFAIL in cleanup() " type="qdebug" -->
+    <!-- tag="fail" message="This test function should execute and then QFAIL in cleanup()" type="qdebug" -->
     <failure tag="fail" message="Fail in cleanup()" result="fail"/>
   </testcase>
   <testcase result="pass" name="testSkipInInit">
     <!-- tag="skip" message="Skip in init()" type="skip" -->
   </testcase>
   <testcase result="pass" name="testSkipInCleanup">
-    <!-- tag="skip" message="This test function should execute and then QSKIP in cleanup() " type="qdebug" -->
+    <!-- tag="skip" message="This test function should execute and then QSKIP in cleanup()" type="qdebug" -->
     <!-- tag="skip" message="Skip in cleanup()" type="skip" -->
   </testcase>
   <testcase result="pass" name="cleanupTestCase"/>
@@ -56,9 +56,9 @@
 <![CDATA[Skipping]]>
 <![CDATA[Skipping]]>
 <![CDATA[Skipping]]>
-<![CDATA[This test function should execute and then QFAIL in cleanup() ]]>
+<![CDATA[This test function should execute and then QFAIL in cleanup()]]>
 <![CDATA[Skip in init()]]>
-<![CDATA[This test function should execute and then QSKIP in cleanup() ]]>
+<![CDATA[This test function should execute and then QSKIP in cleanup()]]>
 <![CDATA[Skip in cleanup()]]>
   </system-err>
 </testsuite>

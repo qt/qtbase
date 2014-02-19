@@ -123,22 +123,9 @@ QT_END_NAMESPACE
 
 #define Q_ATOMIC_INT64_FETCH_AND_ADD_IS_ALWAYS_NATIVE
 
-template<> struct QAtomicIntegerTraits<int> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<unsigned int> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<char> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<signed char> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<unsigned char> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<short> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<unsigned short> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<long> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<unsigned long> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<long long> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<unsigned long long> { enum { IsInteger = 1 }; };
-
-# ifdef Q_COMPILER_UNICODE_STRINGS
-template<> struct QAtomicIntegerTraits<char16_t> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<char32_t> { enum { IsInteger = 1 }; };
-# endif
+template<> struct QAtomicOpsSupport<1> { enum { IsSupported = 1 }; };
+template<> struct QAtomicOpsSupport<2> { enum { IsSupported = 1 }; };
+template<> struct QAtomicOpsSupport<8> { enum { IsSupported = 1 }; };
 
 template <int size> struct QBasicAtomicOps: QGenericAtomicOps<QBasicAtomicOps<size> >
 {
@@ -163,10 +150,10 @@ template <int size> struct QBasicAtomicOps: QGenericAtomicOps<QBasicAtomicOps<si
 
     static inline Q_DECL_CONSTEXPR bool isTestAndSetNative() Q_DECL_NOTHROW { return true; }
     static inline Q_DECL_CONSTEXPR bool isTestAndSetWaitFree() Q_DECL_NOTHROW { return true; }
-    template <typename T> static bool testAndSetRelaxed(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW;
-    template <typename T> static bool testAndSetAcquire(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW;
-    template <typename T> static bool testAndSetRelease(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW;
-    template <typename T> static bool testAndSetOrdered(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW;
+    template <typename T> static bool testAndSetRelaxed(T &_q_value, T expectedValue, T newValue, T *currentValue = 0) Q_DECL_NOTHROW;
+    template <typename T> static bool testAndSetAcquire(T &_q_value, T expectedValue, T newValue, T *currentValue = 0) Q_DECL_NOTHROW;
+    template <typename T> static bool testAndSetRelease(T &_q_value, T expectedValue, T newValue, T *currentValue = 0) Q_DECL_NOTHROW;
+    template <typename T> static bool testAndSetOrdered(T &_q_value, T expectedValue, T newValue, T *currentValue = 0) Q_DECL_NOTHROW;
 
     static inline Q_DECL_CONSTEXPR bool isFetchAndStoreNative() Q_DECL_NOTHROW { return true; }
     static inline Q_DECL_CONSTEXPR bool isFetchAndStoreWaitFree() Q_DECL_NOTHROW { return true; }
@@ -302,7 +289,7 @@ Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetAcquire(T *expectedValu
     x = &_q_value;
     T *expectedValueCopy = expectedValue;
     return (_InterlockedCompareExchange64_acq(p, quintptr(newValue), quintptr(expectedValueCopy))
-	    == quintptr(expectedValue));
+            == quintptr(expectedValue));
 }
 
 template <typename T>
@@ -315,7 +302,7 @@ Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetRelease(T *expectedValu
     x = &_q_value;
     T *expectedValueCopy = expectedValue;
     return (_InterlockedCompareExchange64_rel(p, quintptr(newValue), quintptr(expectedValueCopy))
-	    == quintptr(expectedValue));
+            == quintptr(expectedValue));
 }
 
 template <typename T>
@@ -386,7 +373,7 @@ bool QBasicAtomicOps<8>::deref(T &_q_value) Q_DECL_NOTHROW
 }
 
 template<> template <typename T> inline
-bool QBasicAtomicOps<1>::testAndSetAcquire(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
+bool QBasicAtomicOps<1>::testAndSetAcquire(T &_q_value, T expectedValue, T newValue, T *currentValue) Q_DECL_NOTHROW
 {
     T ret;
     asm volatile("mov ar.ccv=%2\n"
@@ -395,11 +382,13 @@ bool QBasicAtomicOps<1>::testAndSetAcquire(T &_q_value, T expectedValue, T newVa
                  : "=r" (ret), "+m" (_q_value)
                  : "r" (expectedValue), "r" (newValue)
                  : "memory");
+    if (currentValue)
+        *currentValue = ret;
     return ret == expectedValue;
 }
 
 template<> template <typename T> inline
-bool QBasicAtomicOps<1>::testAndSetRelease(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
+bool QBasicAtomicOps<1>::testAndSetRelease(T &_q_value, T expectedValue, T newValue, T *currentValue) Q_DECL_NOTHROW
 {
     T ret;
     asm volatile("mov ar.ccv=%2\n"
@@ -408,11 +397,13 @@ bool QBasicAtomicOps<1>::testAndSetRelease(T &_q_value, T expectedValue, T newVa
                  : "=r" (ret), "+m" (_q_value)
                  : "r" (expectedValue), "r" (newValue)
                  : "memory");
+    if (currentValue)
+        *currentValue = ret;
     return ret == expectedValue;
 }
 
 template<> template <typename T> inline
-bool QBasicAtomicOps<2>::testAndSetAcquire(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
+bool QBasicAtomicOps<2>::testAndSetAcquire(T &_q_value, T expectedValue, T newValue, T *currentValue) Q_DECL_NOTHROW
 {
     T ret;
     asm volatile("mov ar.ccv=%2\n"
@@ -421,11 +412,13 @@ bool QBasicAtomicOps<2>::testAndSetAcquire(T &_q_value, T expectedValue, T newVa
                  : "=r" (ret), "+m" (_q_value)
                  : "r" (expectedValue), "r" (newValue)
                  : "memory");
+    if (currentValue)
+        *currentValue = ret;
     return ret == expectedValue;
 }
 
 template<> template <typename T> inline
-bool QBasicAtomicOps<2>::testAndSetRelease(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
+bool QBasicAtomicOps<2>::testAndSetRelease(T &_q_value, T expectedValue, T newValue, T *currentValue) Q_DECL_NOTHROW
 {
     T ret;
     asm volatile("mov ar.ccv=%2\n"
@@ -434,11 +427,13 @@ bool QBasicAtomicOps<2>::testAndSetRelease(T &_q_value, T expectedValue, T newVa
                  : "=r" (ret), "+m" (_q_value)
                  : "r" (expectedValue), "r" (newValue)
                  : "memory");
+    if (currentValue)
+        *currentValue = ret;
     return ret == expectedValue;
 }
 
 template<> template <typename T> inline
-bool QBasicAtomicOps<4>::testAndSetAcquire(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
+bool QBasicAtomicOps<4>::testAndSetAcquire(T &_q_value, T expectedValue, T newValue, T *currentValue) Q_DECL_NOTHROW
 {
     T ret;
     asm volatile("mov ar.ccv=%2\n"
@@ -447,11 +442,13 @@ bool QBasicAtomicOps<4>::testAndSetAcquire(T &_q_value, T expectedValue, T newVa
                  : "=r" (ret), "+m" (_q_value)
                  : "r" (expectedValue), "r" (newValue)
                  : "memory");
+    if (currentValue)
+        *currentValue = ret;
     return ret == expectedValue;
 }
 
 template<> template <typename T> inline
-bool QBasicAtomicOps<4>::testAndSetRelease(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
+bool QBasicAtomicOps<4>::testAndSetRelease(T &_q_value, T expectedValue, T newValue, T *currentValue) Q_DECL_NOTHROW
 {
     T ret;
     asm volatile("mov ar.ccv=%2\n"
@@ -460,11 +457,13 @@ bool QBasicAtomicOps<4>::testAndSetRelease(T &_q_value, T expectedValue, T newVa
                  : "=r" (ret), "+m" (_q_value)
                  : "r" (expectedValue), "r" (newValue)
                  : "memory");
+    if (currentValue)
+        *currentValue = ret;
     return ret == expectedValue;
 }
 
 template<> template <typename T> inline
-bool QBasicAtomicOps<8>::testAndSetAcquire(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
+bool QBasicAtomicOps<8>::testAndSetAcquire(T &_q_value, T expectedValue, T newValue, T *currentValue) Q_DECL_NOTHROW
 {
     T ret;
     asm volatile("mov ar.ccv=%2\n"
@@ -473,11 +472,13 @@ bool QBasicAtomicOps<8>::testAndSetAcquire(T &_q_value, T expectedValue, T newVa
                  : "=r" (ret), "+m" (_q_value)
                  : "r" (expectedValue), "r" (newValue)
                  : "memory");
+    if (currentValue)
+        *currentValue = ret;
     return ret == expectedValue;
 }
 
 template<> template <typename T> inline
-bool QBasicAtomicOps<8>::testAndSetRelease(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
+bool QBasicAtomicOps<8>::testAndSetRelease(T &_q_value, T expectedValue, T newValue, T *currentValue) Q_DECL_NOTHROW
 {
     T ret;
     asm volatile("mov ar.ccv=%2\n"
@@ -486,6 +487,8 @@ bool QBasicAtomicOps<8>::testAndSetRelease(T &_q_value, T expectedValue, T newVa
                  : "=r" (ret), "+m" (_q_value)
                  : "r" (expectedValue), "r" (newValue)
                  : "memory");
+    if (currentValue)
+        *currentValue = ret;
     return ret == expectedValue;
 }
 

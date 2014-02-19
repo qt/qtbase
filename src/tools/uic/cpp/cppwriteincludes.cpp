@@ -127,6 +127,9 @@ void WriteIncludes::acceptUI(DomUI *node)
 
     TreeWalker::acceptUI(node);
 
+    if (!m_uic->option().includeFile.isEmpty())
+        m_globalIncludes.insert(m_uic->option().includeFile, true);
+
     writeHeaders(m_globalIncludes, true);
     writeHeaders(m_localIncludes, false);
 

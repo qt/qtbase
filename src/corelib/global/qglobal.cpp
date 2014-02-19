@@ -115,7 +115,35 @@ Q_STATIC_ASSERT_X(UCHAR_MAX == 255, "Qt assumes that char is 8 bits");
 */
 
 /*!
+    \fn QFlag::QFlag(uint value)
+    \since Qt 5.3
+
+    Constructs a QFlag object that stores the given \a value.
+*/
+
+/*!
+    \fn QFlag::QFlag(short value)
+    \since 5.3
+
+    Constructs a QFlag object that stores the given \a value.
+*/
+
+/*!
+    \fn QFlag::QFlag(ushort value)
+    \since Qt 5.3
+
+    Constructs a QFlag object that stores the given \a value.
+*/
+
+/*!
     \fn QFlag::operator int() const
+
+    Returns the value stored by the QFlag object.
+*/
+
+/*!
+    \fn QFlag::operator uint() const
+    \since Qt 5.3
 
     Returns the value stored by the QFlag object.
 */
@@ -2186,7 +2214,9 @@ QString qt_error_string(int errorCode)
         s = QT_TRANSLATE_NOOP("QIODevice", "No space left on device");
         break;
     default: {
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN)
+        // Retrieve the system error message for the last-error code.
+#  ifndef Q_OS_WINRT
         wchar_t *string = 0;
         FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER|FORMAT_MESSAGE_FROM_SYSTEM,
                       NULL,
@@ -2197,6 +2227,17 @@ QString qt_error_string(int errorCode)
                       NULL);
         ret = QString::fromWCharArray(string);
         LocalFree((HLOCAL)string);
+#  else // !Q_OS_WINRT
+        __declspec(thread) static wchar_t errorString[4096];
+        FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                      NULL,
+                      errorCode,
+                      MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                      errorString,
+                      ARRAYSIZE(errorString),
+                      NULL);
+        ret = QString::fromWCharArray(errorString);
+#  endif // Q_OS_WINRT
 
         if (ret.isEmpty() && errorCode == ERROR_MOD_NOT_FOUND)
             ret = QString::fromLatin1("The specified module could not be found.");

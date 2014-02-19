@@ -32,7 +32,7 @@ FLOAT ConvertMinLOD(GLenum minFilter, unsigned int lodOffset);
 FLOAT ConvertMaxLOD(GLenum minFilter, unsigned int lodOffset);
 
 DXGI_FORMAT ConvertRenderbufferFormat(GLenum format);
-DXGI_FORMAT ConvertTextureFormat(GLenum format);
+DXGI_FORMAT ConvertTextureFormat(GLenum format, D3D_FEATURE_LEVEL featureLevel);
 }
 
 namespace d3d11_gl

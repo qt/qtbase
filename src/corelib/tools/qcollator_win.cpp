@@ -125,9 +125,15 @@ int QCollator::compare(const QChar *s1, int len1, const QChar *s2, int len2) con
     // comparing strings, the value 2 can be subtracted from a nonzero return value. Then, the
     // meaning of <0, ==0, and >0 is consistent with the C runtime.
 
+#ifndef Q_OS_WINRT
     return CompareString(LOCALE_USER_DEFAULT, d->collator,
                          reinterpret_cast<const wchar_t*>(s1), len1,
                          reinterpret_cast<const wchar_t*>(s2), len2) - 2;
+#else // !Q_OS_WINRT
+    return CompareStringEx(LOCALE_NAME_USER_DEFAULT, d->collator,
+                           reinterpret_cast<LPCWSTR>(s1), len1,
+                           reinterpret_cast<LPCWSTR>(s2), len2, NULL, NULL, 0) - 2;
+#endif // Q_OS_WINRT
 }
 
 int QCollator::compare(const QString &str1, const QString &str2) const
@@ -142,13 +148,31 @@ int QCollator::compare(const QStringRef &s1, const QStringRef &s2) const
 
 QCollatorSortKey QCollator::sortKey(const QString &string) const
 {
+#ifndef Q_OS_WINRT
     int size = LCMapStringW(LOCALE_USER_DEFAULT, LCMAP_SORTKEY | d->collator,
                            reinterpret_cast<const wchar_t*>(string.constData()), string.size(),
                            0, 0);
+#elif defined(Q_OS_WINPHONE)
+    int size = 0;
+    Q_UNIMPLEMENTED();
+#else // Q_OS_WINPHONE
+    int size = LCMapStringEx(LOCALE_NAME_USER_DEFAULT, LCMAP_SORTKEY | d->collator,
+                           reinterpret_cast<LPCWSTR>(string.constData()), string.size(),
+                           0, 0, NULL, NULL, 0);
+#endif // !Q_OS_WINPHONE
     QString ret(size, Qt::Uninitialized);
+#ifndef Q_OS_WINRT
     int finalSize = LCMapStringW(LOCALE_USER_DEFAULT, LCMAP_SORTKEY | d->collator,
                            reinterpret_cast<const wchar_t*>(string.constData()), string.size(),
                            reinterpret_cast<wchar_t*>(ret.data()), ret.size());
+#elif defined(Q_OS_WINPHONE)
+    int finalSize = 0;
+#else // Q_OS_WINPHONE
+    int finalSize = LCMapStringEx(LOCALE_NAME_USER_DEFAULT, LCMAP_SORTKEY | d->collator,
+                           reinterpret_cast<LPCWSTR>(string.constData()), string.size(),
+                           reinterpret_cast<LPWSTR>(ret.data()), ret.size(),
+                           NULL, NULL, 0);
+#endif // !Q_OS_WINPHONE
     if (finalSize == 0) {
         qWarning() << "there were problems when generating the ::sortKey by LCMapStringW with error:" << GetLastError();
     }

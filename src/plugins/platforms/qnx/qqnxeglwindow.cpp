@@ -1,6 +1,6 @@
 /***************************************************************************
 **
-** Copyright (C) 2013 BlackBerry Limited. All rights reserved.
+** Copyright (C) 2013 - 2014 BlackBerry Limited. All rights reserved.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -86,8 +86,9 @@ void QQnxEglWindow::createEGLSurface()
     // the window's buffers before we create the EGL surface
     const QSize surfaceSize = requestedBufferSize();
     if (!surfaceSize.isValid()) {
-        qFatal("QQNX: Trying to create 0 size EGL surface. "
+        qWarning("QQNX: Trying to create 0 size EGL surface. "
                "Please set a valid window size before calling QOpenGLContext::makeCurrent()");
+        return;
     }
     setBufferSize(surfaceSize);
 
@@ -104,8 +105,8 @@ void QQnxEglWindow::createEGLSurface()
                                           , platformOpenGLContext()->getEglConfig(),
                                           (EGLNativeWindowType) nativeHandle(), eglSurfaceAttrs);
     if (m_eglSurface == EGL_NO_SURFACE) {
-        QQnxGLContext::checkEGLError("eglCreateWindowSurface");
-        qFatal("QQNX: failed to create EGL surface, err=%d", eglGetError());
+        const EGLenum error = QQnxGLContext::checkEGLError("eglCreateWindowSurface");
+        qWarning("QQNX: failed to create EGL surface, err=%d", error);
     }
 }
 
@@ -134,13 +135,14 @@ void QQnxEglWindow::swapEGLBuffers()
     if (eglResult != EGL_TRUE)
         qFatal("QQNX: failed to swap EGL buffers, err=%d", eglGetError());
 
-    if (m_cover)
-        m_cover->updateCover();
+    windowPosted();
 }
 
 EGLSurface QQnxEglWindow::getSurface()
 {
     if (m_newSurfaceRequested.testAndSetOrdered(true, false)) {
+        const QMutexLocker locker(&m_mutex); //Set geomety must not reset the requestedBufferSize till
+                                             //the surface is created
         if (m_eglSurface != EGL_NO_SURFACE) {
             platformOpenGLContext()->doneCurrent();
             destroyEGLSurface();
@@ -172,15 +174,7 @@ void QQnxEglWindow::setGeometry(const QRect &rect)
 
 QSize QQnxEglWindow::requestedBufferSize() const
 {
-    const QMutexLocker locker(&m_mutex);
     return m_requestedBufferSize;
-}
-
-void QQnxEglWindow::adjustBufferSize()
-{
-    const QSize windowSize = window()->size();
-    if (windowSize != bufferSize())
-        setBufferSize(windowSize);
 }
 
 void QQnxEglWindow::setPlatformOpenGLContext(QQnxGLContext *platformOpenGLContext)
@@ -220,7 +214,6 @@ int QQnxEglWindow::pixelFormat() const
 
 void QQnxEglWindow::resetBuffers()
 {
-    const QMutexLocker locker(&m_mutex);
     m_requestedBufferSize = QSize();
 }
 

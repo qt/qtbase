@@ -735,9 +735,10 @@ void QSocks5SocketEnginePrivate::reauthenticate()
         proxyInfo.setPassword(auth.password());
         data->authenticator = new QSocks5PasswordAuthenticator(proxyInfo.user(), proxyInfo.password());
 
-        data->controlSocket->blockSignals(true);
-        data->controlSocket->abort();
-        data->controlSocket->blockSignals(false);
+        {
+            const QSignalBlocker blocker(data->controlSocket);
+            data->controlSocket->abort();
+        }
         data->controlSocket->connectToHost(proxyInfo.hostName(), proxyInfo.port());
     } else {
         // authentication failure

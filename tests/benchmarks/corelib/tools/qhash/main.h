@@ -51,6 +51,16 @@ QT_BEGIN_NAMESPACE
 uint qHash(const Qt4String &);
 QT_END_NAMESPACE
 
+struct Qt50String : QString
+{
+    Qt50String() {}
+    Qt50String(const QString &s) : QString(s) {}
+};
+
+QT_BEGIN_NAMESPACE
+uint qHash(const Qt50String &, uint seed = 0);
+QT_END_NAMESPACE
+
 
 struct JavaString : QString
 {

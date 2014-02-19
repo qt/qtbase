@@ -45,10 +45,13 @@
 #include <QtTest/private/qtestresult_p.h>
 #include <QtTest/private/qabstracttestlogger_p.h>
 #include <QtTest/private/qplaintestlogger_p.h>
+#include <QtTest/private/qcsvbenchmarklogger_p.h>
 #include <QtTest/private/qxunittestlogger_p.h>
 #include <QtTest/private/qxmltestlogger_p.h>
 #include <QtCore/qatomic.h>
 #include <QtCore/qbytearray.h>
+#include <QtCore/QVariant>
+#include <QtCore/QRegularExpression>
 
 #include <stdlib.h>
 #include <string.h>
@@ -86,11 +89,8 @@ namespace QTest {
 
     struct IgnoreResultList
     {
-        inline IgnoreResultList(QtMsgType tp, const char *message)
-            : type(tp), next(0)
-        { msg = qstrdup(message); }
-        inline ~IgnoreResultList()
-        { delete [] msg; }
+        inline IgnoreResultList(QtMsgType tp, const QVariant &patternIn)
+            : type(tp), pattern(patternIn), next(0) {}
 
         static inline void clearList(IgnoreResultList *&list)
         {
@@ -101,8 +101,43 @@ namespace QTest {
             }
         }
 
+        static void append(IgnoreResultList *&list, QtMsgType type, const QVariant &patternIn)
+        {
+            QTest::IgnoreResultList *item = new QTest::IgnoreResultList(type, patternIn);
+
+            if (!list) {
+                list = item;
+                return;
+            }
+            IgnoreResultList *last = list;
+            for ( ; last->next; last = last->next) ;
+            last->next = item;
+        }
+
+        static bool stringsMatch(const QString &expected, const QString &actual)
+        {
+            if (expected == actual)
+                return true;
+
+            // ignore an optional whitespace at the end of str
+            // (the space was added automatically by ~QDebug() until Qt 5.3,
+            //  so autotests still might expect it)
+            if (expected.endsWith(QLatin1Char(' ')))
+                return actual == expected.leftRef(expected.length() - 1);
+
+            return false;
+        }
+
+        inline bool matches(QtMsgType tp, const QString &message) const
+        {
+            return tp == type
+                   && (pattern.type() == QVariant::String ?
+                       stringsMatch(pattern.toString(), message) :
+                       pattern.toRegularExpression().match(message).hasMatch());
+        }
+
         QtMsgType type;
-        char *msg;
+        QVariant pattern;
         IgnoreResultList *next;
     };
 
@@ -175,7 +210,7 @@ namespace QTest {
             FOREACH_LOGGER(logger->addBenchmarkResult(result));
         }
 
-        static void addMessage(QAbstractTestLogger::MessageTypes type, const char *message,
+        static void addMessage(QAbstractTestLogger::MessageTypes type, const QString &message,
                                const char *file = 0, int line = 0)
         {
             FOREACH_LOGGER(logger->addMessage(type, message, file, line));
@@ -208,12 +243,14 @@ namespace QTest {
 
     static QtMessageHandler oldMessageHandler;
 
-    static bool handleIgnoredMessage(QtMsgType type, const char *msg)
+    static bool handleIgnoredMessage(QtMsgType type, const QString &message)
     {
+        if (!ignoreResultList)
+            return false;
         IgnoreResultList *last = 0;
         IgnoreResultList *list = ignoreResultList;
         while (list) {
-            if (list->type == type && strcmp(msg, list->msg) == 0) {
+            if (list->matches(type, message)) {
                 // remove the item from the list
                 if (last)
                     last->next = list->next;
@@ -242,12 +279,11 @@ namespace QTest {
             QTEST_ASSERT(QTest::TestLoggers::loggerCount() != 0);
         }
 
-        QByteArray msg = message.toLocal8Bit();
-        if (handleIgnoredMessage(type, msg))
+        if (handleIgnoredMessage(type, message))
             // the message is expected, so just swallow it.
             return;
 
-        msg = qMessageFormatString(type, context, message).toLocal8Bit();
+        QString msg = qMessageFormatString(type, context, message);
         msg.chop(1); // remove trailing newline
 
         if (type != QtFatalMsg) {
@@ -256,7 +292,7 @@ namespace QTest {
 
             if (!counter.deref()) {
                 QTest::TestLoggers::addMessage(QAbstractTestLogger::QSystem,
-                        "Maximum amount of warnings exceeded. Use -maxwarnings to override.");
+                        QStringLiteral("Maximum amount of warnings exceeded. Use -maxwarnings to override."));
                 return;
             }
         }
@@ -317,11 +353,15 @@ void QTestLog::leaveTestFunction()
 
 void QTestLog::printUnhandledIgnoreMessages()
 {
-    char msg[1024];
+    QString message;
     QTest::IgnoreResultList *list = QTest::ignoreResultList;
     while (list) {
-        qsnprintf(msg, 1024, "Did not receive message: \"%s\"", list->msg);
-        QTest::TestLoggers::addMessage(QAbstractTestLogger::Info, msg);
+        if (list->pattern.type() == QVariant::String) {
+            message = QStringLiteral("Did not receive message: \"") + list->pattern.toString() + QLatin1Char('"');
+        } else {
+            message = QStringLiteral("Did not receive any message matching: \"") + list->pattern.toRegularExpression().pattern() + QLatin1Char('"');
+        }
+        QTest::TestLoggers::addMessage(QAbstractTestLogger::Info, message);
 
         list = list->next;
     }
@@ -378,7 +418,7 @@ void QTestLog::addSkip(const char *msg, const char *file, int line)
 
     ++QTest::skips;
 
-    QTest::TestLoggers::addMessage(QAbstractTestLogger::Skip, msg, file, line);
+    QTest::TestLoggers::addMessage(QAbstractTestLogger::Skip, QString::fromUtf8(msg), file, line);
 }
 
 void QTestLog::addBenchmarkResult(const QBenchmarkResult &result)
@@ -413,6 +453,9 @@ void QTestLog::addLogger(LogMode mode, const char *filename)
     case QTestLog::Plain:
         logger = new QPlainTestLogger(filename);
         break;
+    case QTestLog::CSV:
+        logger = new QCsvBenchmarkLogger(filename);
+        break;
     case QTestLog::XML:
         logger = new QXmlTestLogger(QXmlTestLogger::Complete, filename);
         break;
@@ -442,14 +485,14 @@ void QTestLog::warn(const char *msg, const char *file, int line)
     QTEST_ASSERT(msg);
 
     if (QTest::TestLoggers::loggerCount() > 0)
-        QTest::TestLoggers::addMessage(QAbstractTestLogger::Warn, msg, file, line);
+        QTest::TestLoggers::addMessage(QAbstractTestLogger::Warn, QString::fromUtf8(msg), file, line);
 }
 
 void QTestLog::info(const char *msg, const char *file, int line)
 {
     QTEST_ASSERT(msg);
 
-    QTest::TestLoggers::addMessage(QAbstractTestLogger::Info, msg, file, line);
+    QTest::TestLoggers::addMessage(QAbstractTestLogger::Info, QString::fromUtf8(msg), file, line);
 }
 
 void QTestLog::setVerboseLevel(int level)
@@ -466,16 +509,14 @@ void QTestLog::ignoreMessage(QtMsgType type, const char *msg)
 {
     QTEST_ASSERT(msg);
 
-    QTest::IgnoreResultList *item = new QTest::IgnoreResultList(type, msg);
+    QTest::IgnoreResultList::append(QTest::ignoreResultList, type, QString::fromLocal8Bit(msg));
+}
 
-    QTest::IgnoreResultList *list = QTest::ignoreResultList;
-    if (!list) {
-        QTest::ignoreResultList = item;
-        return;
-    }
-    while (list->next)
-        list = list->next;
-    list->next = item;
+void QTestLog::ignoreMessage(QtMsgType type, const QRegularExpression &expression)
+{
+    QTEST_ASSERT(expression.isValid());
+
+    QTest::IgnoreResultList::append(QTest::ignoreResultList, type, QVariant(expression));
 }
 
 void QTestLog::setMaxWarnings(int m)

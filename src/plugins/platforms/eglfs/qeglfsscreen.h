@@ -42,7 +42,7 @@
 #ifndef QEGLFSSCREEN_H
 #define QEGLFSSCREEN_H
 
-#include <qpa/qplatformscreen.h>
+#include <QtPlatformSupport/private/qeglplatformscreen_p.h>
 
 #include <QtCore/QTextStream>
 
@@ -50,52 +50,48 @@
 
 QT_BEGIN_NAMESPACE
 
-class QEglFSCursor;
+class QEGLPlatformCursor;
 class QEglFSWindow;
 class QOpenGLContext;
 
-class QEglFSScreen : public QPlatformScreen
+class QEglFSScreen : public QEGLPlatformScreen
 {
 public:
     QEglFSScreen(EGLDisplay display);
     ~QEglFSScreen();
 
-    QRect geometry() const;
-    int depth() const;
-    QImage::Format format() const;
+    QRect geometry() const Q_DECL_OVERRIDE;
+    int depth() const Q_DECL_OVERRIDE;
+    QImage::Format format() const Q_DECL_OVERRIDE;
 
-    QSizeF physicalSize() const;
-    QDpi logicalDpi() const;
-    Qt::ScreenOrientation nativeOrientation() const;
-    Qt::ScreenOrientation orientation() const;
+    QSizeF physicalSize() const Q_DECL_OVERRIDE;
+    QDpi logicalDpi() const Q_DECL_OVERRIDE;
+    Qt::ScreenOrientation nativeOrientation() const Q_DECL_OVERRIDE;
+    Qt::ScreenOrientation orientation() const Q_DECL_OVERRIDE;
 
-    QPlatformCursor *cursor() const;
+    QPlatformCursor *cursor() const Q_DECL_OVERRIDE;
 
-    EGLDisplay display() const { return m_dpy; }
     EGLSurface primarySurface() const { return m_surface; }
 
-    QList<QEglFSWindow *> windows() const { return m_windows; }
-    void addWindow(QEglFSWindow *window);
-    void removeWindow(QEglFSWindow *window);
-    void moveToTop(QEglFSWindow *window);
-    void changeWindowIndex(QEglFSWindow *window, int newIdx);
-    QEglFSWindow *rootWindow();
-    QOpenGLContext *rootContext() { return m_rootContext; }
+    QEGLPlatformWindow *compositingWindow() Q_DECL_OVERRIDE { return m_rootWindow; }
+    QOpenGLContext *compositingContext() Q_DECL_OVERRIDE { return m_rootContext; }
+
+    void setRootWindow(QEGLPlatformWindow *window) { m_rootWindow = window; }
     void setRootContext(QOpenGLContext *context) { m_rootContext = context; }
 
 protected:
     void setPrimarySurface(EGLSurface surface);
-    virtual void topWindowChanged(QPlatformWindow *window);
 
 private:
     friend class QEglFSWindow;
 
     EGLDisplay m_dpy;
     EGLSurface m_surface;
-    QEglFSCursor *m_cursor;
-    QList<QEglFSWindow *> m_windows;
+    QEGLPlatformCursor *m_cursor;
+    QEGLPlatformWindow *m_rootWindow;
     QOpenGLContext *m_rootContext;
 };
 
 QT_END_NAMESPACE
+
 #endif // QEGLFSSCREEN_H

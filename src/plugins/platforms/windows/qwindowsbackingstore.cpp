@@ -61,14 +61,12 @@ QT_BEGIN_NAMESPACE
 QWindowsBackingStore::QWindowsBackingStore(QWindow *window) :
     QPlatformBackingStore(window)
 {
-     if (QWindowsContext::verboseBackingStore)
-         qDebug() << __FUNCTION__ << this << window;
+    qCDebug(lcQpaBackingStore) << __FUNCTION__ << this << window;
 }
 
 QWindowsBackingStore::~QWindowsBackingStore()
 {
-    if (QWindowsContext::verboseBackingStore)
-        qDebug() << __FUNCTION__ << this;
+    qCDebug(lcQpaBackingStore) << __FUNCTION__ << this;
 }
 
 QPaintDevice *QWindowsBackingStore::paintDevice()
@@ -83,8 +81,8 @@ void QWindowsBackingStore::flush(QWindow *window, const QRegion &region,
     Q_ASSERT(window);
 
     const QRect br = region.boundingRect();
-    if (QWindowsContext::verboseBackingStore > 1)
-        qDebug() << __FUNCTION__ << window << offset << br;
+    if (QWindowsContext::verbose > 1)
+        qCDebug(lcQpaBackingStore) << __FUNCTION__ << this << window << offset << br;
     QWindowsWindow *rw = QWindowsWindow::baseWindowOf(window);
 
 #ifndef Q_OS_WINCE
@@ -117,20 +115,23 @@ void QWindowsBackingStore::flush(QWindow *window, const QRegion &region,
         }
 
         if (!BitBlt(dc, br.x(), br.y(), br.width(), br.height(),
-                    m_image->hdc(), br.x() + offset.x(), br.y() + offset.y(), SRCCOPY))
-            qErrnoWarning("%s: BitBlt failed", __FUNCTION__);
+                    m_image->hdc(), br.x() + offset.x(), br.y() + offset.y(), SRCCOPY)) {
+            const DWORD lastError = GetLastError(); // QTBUG-35926, QTBUG-29716: may fail after lock screen.
+            if (lastError != ERROR_SUCCESS && lastError != ERROR_INVALID_HANDLE)
+                qErrnoWarning(lastError, "%s: BitBlt failed", __FUNCTION__);
+        }
         rw->releaseDC();
 #ifndef Q_OS_WINCE
     }
 #endif
 
     // Write image for debug purposes.
-    if (QWindowsContext::verboseBackingStore > 2) {
+    if (QWindowsContext::verbose > 2 && lcQpaBackingStore().isDebugEnabled()) {
         static int n = 0;
         const QString fileName = QString::fromLatin1("win%1_%2.png").
                 arg(rw->winId()).arg(n++);
         m_image->image().save(fileName);
-        qDebug() << "Wrote " << m_image->image().size() << fileName;
+        qCDebug(lcQpaBackingStore) << "Wrote " << m_image->image().size() << fileName;
     }
 }
 
@@ -138,16 +139,14 @@ void QWindowsBackingStore::resize(const QSize &size, const QRegion &region)
 {
     if (m_image.isNull() || m_image->image().size() != size) {
 #ifndef QT_NO_DEBUG_OUTPUT
-        if (QWindowsContext::verboseBackingStore) {
-            QDebug nsp = qDebug().nospace();
-            nsp << __FUNCTION__ << ' ' << rasterWindow()->window()
-                 << ' ' << size << ' ' << region;
-            if (!m_image.isNull())
-                nsp << " from: " << m_image->image().size();
+        if (QWindowsContext::verbose && lcQpaBackingStore().isDebugEnabled()) {
+            qCDebug(lcQpaBackingStore)
+                << __FUNCTION__ << ' ' << window() << ' ' << size << ' ' << region
+                << " from: " << (m_image.isNull() ? QSize() : m_image->image().size());
         }
 #endif
         QImage::Format format = QWindowsNativeImage::systemFormat();
-        if (format == QImage::Format_RGB32 && rasterWindow()->window()->format().hasAlpha())
+        if (format == QImage::Format_RGB32 && window()->format().hasAlpha())
             format = QImage::Format_ARGB32_Premultiplied;
 
         QWindowsNativeImage *oldwni = m_image.data();
@@ -185,8 +184,8 @@ bool QWindowsBackingStore::scroll(const QRegion &area, int dx, int dy)
 
 void QWindowsBackingStore::beginPaint(const QRegion &region)
 {
-    if (QWindowsContext::verboseBackingStore > 1)
-        qDebug() << __FUNCTION__;
+    if (QWindowsContext::verbose > 1)
+        qCDebug(lcQpaBackingStore) <<__FUNCTION__ << region;
 
     if (m_image->image().hasAlphaChannel()) {
         QPainter p(&m_image->image());
@@ -195,14 +194,6 @@ void QWindowsBackingStore::beginPaint(const QRegion &region)
         foreach (const QRect &r, region.rects())
             p.fillRect(r, blank);
     }
-}
-
-QWindowsWindow *QWindowsBackingStore::rasterWindow() const
-{
-    if (const QWindow *w = window())
-        if (QPlatformWindow *pw = w->handle())
-            return static_cast<QWindowsWindow *>(pw);
-    return 0;
 }
 
 HDC QWindowsBackingStore::getDC() const

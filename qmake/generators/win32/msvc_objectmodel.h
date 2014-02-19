@@ -860,6 +860,24 @@ public:
     ~VCPreLinkEventTool(){}
 };
 
+class VCWinDeployQtTool : public VCToolBase
+{
+public:
+    VCWinDeployQtTool() {}
+    ~VCWinDeployQtTool() {}
+
+protected:
+    bool parseOption(const char *) { return false; }
+
+public:
+    // Variables
+    QString                 Record;
+    QString                 CommandLine;
+    bool                    ExcludedFromBuild;
+
+    VCConfiguration *       config;
+};
+
 class VCConfiguration
 {
 public:
@@ -900,6 +918,7 @@ public:
     VCDeploymentTool        deployment;
     VCPreLinkEventTool      preLink;
     VCResourceCompilerTool  resource;
+    VCWinDeployQtTool       windeployqt;
 };
 
 struct VCFilterFile
@@ -955,7 +974,7 @@ public:
     VCConfiguration*        Config;
     QList<VCFilterFile>     Files;
 
-    customBuildCheck	    CustomBuild;
+    customBuildCheck        CustomBuild;
 
     bool                    useCustomBuildTool;
     VCCustomBuildTool       CustomBuildTool;
@@ -990,6 +1009,7 @@ public:
     QString                 SccProjectName;
     QString                 SccLocalPath;
     QString                 PlatformName;
+    QString                 SdkVersion;
 
     // XML sub-parts
     VCConfiguration         Configuration;
@@ -1129,6 +1149,7 @@ public:
     QString                 SccProjectName;
     QString                 SccLocalPath;
     QString                 PlatformName;
+    QString                 SdkVersion;
 
     // Single projects
     QList<VCProjectSingleConfig>  SingleProjects;
@@ -1154,6 +1175,7 @@ public:
     virtual void write(XmlOutput &, const VCResourceCompilerTool &);
     virtual void write(XmlOutput &, const VCEventTool &);
     virtual void write(XmlOutput &, const VCDeploymentTool &);
+    virtual void write(XmlOutput &, const VCWinDeployQtTool &);
     virtual void write(XmlOutput &, const VCConfiguration &);
     virtual void write(XmlOutput &, VCFilter &);
 

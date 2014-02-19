@@ -72,14 +72,14 @@ protected:
     {
         QLineEdit::focusInEvent( e );
         focusInEventReason = e->reason();
-	    focusInEventGotFocus = e->gotFocus();
+        focusInEventGotFocus = e->gotFocus();
         focusInEventRecieved = true;
     }
     void focusOutEvent( QFocusEvent* e )
     {
         QLineEdit::focusOutEvent( e );
         focusOutEventReason = e->reason();
-	    focusOutEventLostFocus = !e->gotFocus();
+        focusOutEventLostFocus = !e->gotFocus();
         focusOutEventRecieved = true;
     }
 };
@@ -371,9 +371,6 @@ void tst_QFocusEvent::checkReason_ActiveWindow()
 
 #if defined(Q_OS_IRIX)
     QEXPECT_FAIL("", "IRIX requires explicit activateWindow(), so this test does not make any sense.", Abort);
-#endif
-#ifdef Q_OS_MAC
-    QEXPECT_FAIL("", "QTBUG-22815", Abort);
 #endif
     QTRY_VERIFY(childFocusWidgetOne->focusInEventRecieved);
     QVERIFY(childFocusWidgetOne->focusInEventGotFocus);

@@ -93,4 +93,9 @@ QPlatformMenuItem::MenuRole detectMenuRole(const QString &caption)
     return QPlatformMenuItem::NoRole;
 }
 
+QString msgDialogButtonDiscard()
+{
+    return QCoreApplication::translate("QCocoaTheme", "Don't Save");
+}
+
 QT_END_NAMESPACE

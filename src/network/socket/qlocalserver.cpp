@@ -131,7 +131,7 @@ QLocalServer::QLocalServer(QObject *parent)
 QLocalServer::~QLocalServer()
 {
     if (isListening())
-	close();
+        close();
 }
 
 /*!

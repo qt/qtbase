@@ -1,6 +1,6 @@
 /***************************************************************************
 **
-** Copyright (C) 2011 - 2012 Research In Motion
+** Copyright (C) 2011 - 2014 BlackBerry Limited. All rights reserved.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -41,13 +41,16 @@
 
 #include "main.h"
 #include "qqnxintegration.h"
+#include "qqnxlgmon.h"
 
 QT_BEGIN_NAMESPACE
 
 QPlatformIntegration *QQnxIntegrationPlugin::create(const QString& system, const QStringList& paramList)
 {
-    if (!system.compare(QLatin1String("qnx"), Qt::CaseInsensitive))
+    if (!system.compare(QLatin1String("qnx"), Qt::CaseInsensitive)) {
+        qqnxLgmonInit();
         return new QQnxIntegration(paramList);
+    }
 
     return 0;
 }

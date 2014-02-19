@@ -127,9 +127,9 @@ QT_BEGIN_NAMESPACE
     Separator_* or an exceptional code point from Other_Control category).
 
     QChar also provides direction(), which indicates the "natural"
-    writing direction of this character. The joining() function
+    writing direction of this character. The joiningType() function
     indicates how the character joins with it's neighbors (needed
-    mostly for Arabic) and finally hasMirrored(), which indicates
+    mostly for Arabic or Syriac) and finally hasMirrored(), which indicates
     whether the character needs to be mirrored when it is printed in
     it's "unnatural" writing direction.
 
@@ -185,8 +185,9 @@ QT_BEGIN_NAMESPACE
     \value Unicode_6_0  Version 6.0
     \value Unicode_6_1  Version 6.1
     \value Unicode_6_2  Version 6.2
+    \value Unicode_6_3  Version 6.3  Since Qt 5.3
     \value Unicode_Unassigned  The value is not assigned to any character
-                               in version 6.2 of Unicode.
+                               in version 6.3 of Unicode.
 
     \sa unicodeVersion(), currentUnicodeVersion()
 */
@@ -408,14 +409,18 @@ QT_BEGIN_NAMESPACE
     \value DirEN
     \value DirES
     \value DirET
+    \value DirFSI Since Qt 5.3
     \value DirL
     \value DirLRE
+    \value DirLRI Since Qt 5.3
     \value DirLRO
     \value DirNSM
     \value DirON
     \value DirPDF
+    \value DirPDI Since Qt 5.3
     \value DirR
     \value DirRLE
+    \value DirRLI Since Qt 5.3
     \value DirRLO
     \value DirS
     \value DirWS
@@ -453,7 +458,29 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \enum QChar::JoiningType
+    since 5.3
+
+    This enum type defines the Unicode joining type attributes. See the
+    \l{http://www.unicode.org/}{Unicode Standard} for a description of the values.
+
+    In order to conform to C/C++ naming conventions "Joining_" is prepended
+    to the codes used in the Unicode Standard.
+
+    \value Joining_None
+    \value Joining_Causing
+    \value Joining_Dual
+    \value Joining_Right
+    \value Joining_Left
+    \value Joining_Transparent
+
+    \sa joiningType()
+*/
+
+#if QT_DEPRECATED_SINCE(5, 3)
+/*!
     \enum QChar::Joining
+    \deprecated in 5.3, use JoiningType instead.
 
     This enum type defines the Unicode joining attributes. See the
     \l{http://www.unicode.org/}{Unicode Standard} for a description
@@ -466,6 +493,7 @@ QT_BEGIN_NAMESPACE
 
     \sa joining()
 */
+#endif
 
 /*!
     \enum QChar::CombiningClass
@@ -1048,7 +1076,32 @@ QChar::Direction QChar::direction(uint ucs4)
 }
 
 /*!
+    \fn QChar::JoiningType QChar::joiningType() const
+    \since 5.3
+
+    Returns information about the joining type attributes of the character
+    (needed for certain languages such as Arabic or Syriac).
+*/
+
+/*!
+    \overload
+    \since 5.3
+
+    Returns information about the joining type attributes of the UCS-4-encoded
+    character specified by \a ucs4
+    (needed for certain languages such as Arabic or Syriac).
+*/
+QChar::JoiningType QChar::joiningType(uint ucs4)
+{
+    if (ucs4 > LastValidCodePoint)
+        return QChar::Joining_None;
+    return QChar::JoiningType(qGetProp(ucs4)->joining);
+}
+
+#if QT_DEPRECATED_SINCE(5, 3)
+/*!
     \fn QChar::Joining QChar::joining() const
+    \deprecated in 5.3, use joiningType() instead.
 
     Returns information about the joining properties of the character
     (needed for certain languages such as Arabic).
@@ -1056,6 +1109,8 @@ QChar::Direction QChar::direction(uint ucs4)
 
 /*!
     \overload
+    \deprecated in 5.3, use joiningType() instead.
+
     Returns information about the joining properties of the UCS-4-encoded
     character specified by \a ucs4 (needed for certain languages such as Arabic).
 */
@@ -1063,8 +1118,15 @@ QChar::Joining QChar::joining(uint ucs4)
 {
     if (ucs4 > LastValidCodePoint)
         return QChar::OtherJoining;
-    return (QChar::Joining) qGetProp(ucs4)->joining;
+    switch (qGetProp(ucs4)->joining) {
+    case QChar::Joining_Causing: return QChar::Center;
+    case QChar::Joining_Dual: return QChar::Dual;
+    case QChar::Joining_Right: return QChar::Right;
+    default: break;
+    }
+    return QChar::OtherJoining;
 }
+#endif
 
 /*!
     \fn bool QChar::hasMirrored() const

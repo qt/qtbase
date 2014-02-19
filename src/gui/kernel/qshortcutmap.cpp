@@ -359,7 +359,7 @@ bool QShortcutMap::tryShortcutEvent(QObject *o, QKeyEvent *e)
         resetState();
         dispatchEvent(e);
     default:
-	break;
+        break;
     }
     // If nextState is QKeySequence::ExactMatch && identicals.count == 0
     // we've only found disabled shortcuts

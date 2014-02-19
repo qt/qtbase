@@ -66,14 +66,14 @@ QT_BEGIN_NAMESPACE
 namespace QTest
 {
 
-template<> inline char *toString(const QLatin1String &str)
-{
-    return qstrdup(qPrintable(QString(str)));
-}
-
 template<> inline char *toString(const QString &str)
 {
-    return qstrdup(qPrintable(str));
+    return QTest::toPrettyUnicode(reinterpret_cast<const ushort *>(str.constData()), str.length());
+}
+
+template<> inline char *toString(const QLatin1String &str)
+{
+    return toString(QString(str));
 }
 
 template<> inline char *toString(const QByteArray &ba)
@@ -195,15 +195,15 @@ inline bool qCompare(QList<T> const &t1, QList<T> const &t2, const char *actual,
     const int expectedSize = t2.count();
     if (actualSize != expectedSize) {
         qsnprintf(msg, sizeof(msg), "Compared lists have different sizes.\n"
-                  "   Actual   (%s) size: '%d'\n"
-                  "   Expected (%s) size: '%d'", actual, actualSize, expected, expectedSize);
+                  "   Actual   (%s) size: %d\n"
+                  "   Expected (%s) size: %d", actual, actualSize, expected, expectedSize);
         isOk = false;
     }
     for (int i = 0; isOk && i < actualSize; ++i) {
         if (!(t1.at(i) == t2.at(i))) {
             qsnprintf(msg, sizeof(msg), "Compared lists differ at index %d.\n"
-                      "   Actual   (%s): '%s'\n"
-                      "   Expected (%s): '%s'", i, actual, toString(t1.at(i)),
+                      "   Actual   (%s): %s\n"
+                      "   Expected (%s): %s", i, actual, toString(t1.at(i)),
                       expected, toString(t2.at(i)));
             isOk = false;
         }

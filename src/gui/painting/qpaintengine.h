@@ -207,6 +207,7 @@ public:
         OpenGL2,
         PaintBuffer,
         Blitter,
+        Direct2D,
 
         User = 50,    // first user type id
         MaxUser = 100 // last user type id

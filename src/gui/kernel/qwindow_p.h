@@ -108,6 +108,8 @@ public:
     {
     }
 
+    void init();
+
     void maybeQuitOnLastWindowClosed();
 #ifndef QT_NO_CURSOR
     void setCursor(const QCursor *c = 0);
@@ -121,6 +123,8 @@ public:
             offset += p->position();
         return offset;
     }
+
+    QWindow *topLevelWindow() const;
 
     virtual QWindow *eventReceiver() { Q_Q(QWindow); return q; }
 

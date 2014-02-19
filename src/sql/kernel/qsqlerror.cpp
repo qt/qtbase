@@ -47,11 +47,21 @@ QT_BEGIN_NAMESPACE
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QSqlError &s)
 {
-    dbg.nospace() << "QSqlError(" << s.number() << ", " << s.driverText() <<
+    dbg.nospace() << "QSqlError(" << s.nativeErrorCode() << ", " << s.driverText() <<
                      ", " << s.databaseText() << ')';
     return dbg.space();
 }
 #endif
+
+class QSqlErrorPrivate
+{
+public:
+    QString driverError;
+    QString databaseError;
+    QSqlError::ErrorType errorType;
+    QString errorCode;
+};
+
 
 /*!
     \class QSqlError
@@ -62,7 +72,7 @@ QDebug operator<<(QDebug dbg, const QSqlError &s)
 
     A QSqlError object can provide database-specific error data,
     including the driverText() and databaseText() messages (or both
-    concatenated together as text()), and the error number() and
+    concatenated together as text()), and the nativeErrorCode() and
     type().
 
     \sa QSqlDatabase::lastError(), QSqlQuery::lastError()
@@ -81,25 +91,52 @@ QDebug operator<<(QDebug dbg, const QSqlError &s)
 */
 
 /*!
+    \obsolete
+
     Constructs an error containing the driver error text \a
     driverText, the database-specific error text \a databaseText, the
     type \a type and the optional error number \a number.
 */
 
+#if QT_DEPRECATED_SINCE(5, 3)
 QSqlError::QSqlError(const QString& driverText, const QString& databaseText, ErrorType type,
                     int number)
-    : driverError(driverText), databaseError(databaseText), errorType(type), errorNumber(number)
 {
+    d = new QSqlErrorPrivate;
+
+    d->driverError = driverText;
+    d->databaseError = databaseText;
+    d->errorType = type;
+    d->errorCode = QString::number(number);
 }
+#endif
+
+/*!
+    Constructs an error containing the driver error text \a
+    driverText, the database-specific error text \a databaseText, the
+    type \a type and the error code \a code.
+*/
+
+QSqlError::QSqlError(const QString &driverText, const QString &databaseText,
+                     ErrorType type, const QString &code)
+{
+    d = new QSqlErrorPrivate;
+
+    d->driverError = driverText;
+    d->databaseError = databaseText;
+    d->errorType = type;
+    d->errorCode = code;
+}
+
 
 /*!
     Creates a copy of \a other.
 */
 QSqlError::QSqlError(const QSqlError& other)
-    : driverError(other.driverError), databaseError(other.databaseError),
-      errorType(other.errorType),
-      errorNumber(other.errorNumber)
 {
+    d = new QSqlErrorPrivate;
+
+    *d = *other.d;
 }
 
 /*!
@@ -108,10 +145,7 @@ QSqlError::QSqlError(const QSqlError& other)
 
 QSqlError& QSqlError::operator=(const QSqlError& other)
 {
-    driverError = other.driverError;
-    databaseError = other.databaseError;
-    errorType = other.errorType;
-    errorNumber = other.errorNumber;
+    *d = *other.d;
     return *this;
 }
 
@@ -121,7 +155,7 @@ QSqlError& QSqlError::operator=(const QSqlError& other)
 
 bool QSqlError::operator==(const QSqlError& other) const
 {
-    return (errorType == other.errorType);
+    return (d->errorType == other.d->errorType);
 }
 
 
@@ -131,7 +165,7 @@ bool QSqlError::operator==(const QSqlError& other) const
 
 bool QSqlError::operator!=(const QSqlError& other) const
 {
-    return (errorType != other.errorType);
+    return (d->errorType != other.d->errorType);
 }
 
 
@@ -141,6 +175,7 @@ bool QSqlError::operator!=(const QSqlError& other) const
 
 QSqlError::~QSqlError()
 {
+    delete d;
 }
 
 /*!
@@ -151,7 +186,7 @@ QSqlError::~QSqlError()
 */
 QString QSqlError::driverText() const
 {
-    return driverError;
+    return d->driverError;
 }
 
 /*!
@@ -169,7 +204,7 @@ QString QSqlError::driverText() const
 #if QT_DEPRECATED_SINCE(5, 1)
 void QSqlError::setDriverText(const QString& driverText)
 {
-    driverError = driverText;
+    d->driverError = driverText;
 }
 #endif
 
@@ -182,7 +217,7 @@ void QSqlError::setDriverText(const QString& driverText)
 
 QString QSqlError::databaseText() const
 {
-    return databaseError;
+    return d->databaseError;
 }
 
 /*!
@@ -200,7 +235,7 @@ QString QSqlError::databaseText() const
 #if QT_DEPRECATED_SINCE(5, 1)
 void QSqlError::setDatabaseText(const QString& databaseText)
 {
-    databaseError = databaseText;
+    d->databaseError = databaseText;
 }
 #endif
 
@@ -210,7 +245,7 @@ void QSqlError::setDatabaseText(const QString& databaseText)
 
 QSqlError::ErrorType QSqlError::type() const
 {
-    return errorType;
+    return d->errorType;
 }
 
 /*!
@@ -228,19 +263,33 @@ QSqlError::ErrorType QSqlError::type() const
 #if QT_DEPRECATED_SINCE(5, 1)
 void QSqlError::setType(ErrorType type)
 {
-    errorType = type;
+    d->errorType = type;
 }
 #endif
 
 /*!
+    \fn int QSqlError::number() const
+    \obsolete
+
     Returns the database-specific error number, or -1 if it cannot be
     determined.
+
+    Returns 0 if the error code is not an integer.
+
+    \warning Some databases use alphanumeric error codes, which makes
+             number() unreliable if such a database is used.
+
+    Use nativeErrorCode() instead
+
+    \sa nativeErrorCode()
 */
 
+#if QT_DEPRECATED_SINCE(5, 3)
 int QSqlError::number() const
 {
-    return errorNumber;
+    return d->errorCode.toInt();
 }
+#endif
 
 /*!
     \fn void QSqlError::setNumber(int number)
@@ -257,9 +306,19 @@ int QSqlError::number() const
 #if QT_DEPRECATED_SINCE(5, 1)
 void QSqlError::setNumber(int number)
 {
-    errorNumber = number;
+    d->errorCode = QString::number(number);
 }
 #endif
+
+/*!
+    Returns the database-specific error code, or an empty string if
+    it cannot be determined.
+*/
+
+QString QSqlError::nativeErrorCode() const
+{
+    return d->errorCode;
+}
 
 /*!
     This is a convenience function that returns databaseText() and
@@ -270,10 +329,10 @@ void QSqlError::setNumber(int number)
 
 QString QSqlError::text() const
 {
-    QString result = databaseError;
-    if (!databaseError.endsWith(QLatin1String("\n")))
+    QString result = d->databaseError;
+    if (!d->databaseError.endsWith(QLatin1String("\n")))
         result += QLatin1Char(' ');
-    result += driverError;
+    result += d->driverError;
     return result;
 }
 
@@ -287,7 +346,7 @@ QString QSqlError::text() const
 */
 bool QSqlError::isValid() const
 {
-    return errorType != NoError;
+    return d->errorType != NoError;
 }
 
 QT_END_NAMESPACE

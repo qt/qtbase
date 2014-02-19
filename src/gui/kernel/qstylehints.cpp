@@ -62,6 +62,25 @@ static inline QVariant themeableHint(QPlatformTheme::ThemeHint th,
     return QGuiApplicationPrivate::platformIntegration()->styleHint(ih);
 }
 
+class QStyleHintsPrivate : public QObjectPrivate
+{
+    Q_DECLARE_PUBLIC(QStyleHints)
+public:
+    inline QStyleHintsPrivate()
+        : m_mouseDoubleClickInterval(-1)
+        , m_startDragDistance(-1)
+        , m_startDragTime(-1)
+        , m_keyboardInputInterval(-1)
+        , m_cursorFlashTime(-1)
+        {}
+
+    int m_mouseDoubleClickInterval;
+    int m_startDragDistance;
+    int m_startDragTime;
+    int m_keyboardInputInterval;
+    int m_cursorFlashTime;
+};
+
 /*!
     \class QStyleHints
     \since 5.0
@@ -80,8 +99,20 @@ static inline QVariant themeableHint(QPlatformTheme::ThemeHint th,
     \sa QGuiApplication::styleHints(), QPlatformTheme
  */
 QStyleHints::QStyleHints()
-    : QObject()
+    : QObject(*new QStyleHintsPrivate(), 0)
 {
+}
+
+/*!
+    Sets the \a mouseDoubleClickInterval.
+    \internal
+    \sa mouseDoubleClickInterval()
+    \since 5.3
+*/
+void  QStyleHints::setMouseDoubleClickInterval(int mouseDoubleClickInterval)
+{
+    Q_D(QStyleHints);
+    d->m_mouseDoubleClickInterval = mouseDoubleClickInterval;
 }
 
 /*!
@@ -90,7 +121,33 @@ QStyleHints::QStyleHints()
 */
 int QStyleHints::mouseDoubleClickInterval() const
 {
-    return themeableHint(QPlatformTheme::MouseDoubleClickInterval, QPlatformIntegration::MouseDoubleClickInterval).toInt();
+    Q_D(const QStyleHints);
+    return d->m_mouseDoubleClickInterval >= 0 ?
+           d->m_mouseDoubleClickInterval :
+           themeableHint(QPlatformTheme::MouseDoubleClickInterval, QPlatformIntegration::MouseDoubleClickInterval).toInt();
+}
+
+/*!
+    Returns the time limit in milliseconds that activates
+    a press and hold.
+
+    \since 5.3
+*/
+int QStyleHints::mousePressAndHoldInterval() const
+{
+    return themeableHint(QPlatformTheme::MousePressAndHoldInterval, QPlatformIntegration::MousePressAndHoldInterval).toInt();
+}
+
+/*!
+    Sets the \a startDragDistance.
+    \internal
+    \sa startDragDistance()
+    \since 5.3
+*/
+void QStyleHints::setStartDragDistance(int startDragDistance)
+{
+    Q_D(QStyleHints);
+    d->m_startDragDistance = startDragDistance;
 }
 
 /*!
@@ -112,7 +169,22 @@ int QStyleHints::mouseDoubleClickInterval() const
 */
 int QStyleHints::startDragDistance() const
 {
-    return themeableHint(QPlatformTheme::StartDragDistance, QPlatformIntegration::StartDragDistance).toInt();
+    Q_D(const QStyleHints);
+    return d->m_startDragDistance >= 0 ?
+           d->m_startDragDistance :
+           themeableHint(QPlatformTheme::StartDragDistance, QPlatformIntegration::StartDragDistance).toInt();
+}
+
+/*!
+    Sets the \a startDragDragTime.
+    \internal
+    \sa startDragTime()
+    \since 5.3
+*/
+void QStyleHints::setStartDragTime(int startDragTime)
+{
+    Q_D(QStyleHints);
+    d->m_startDragTime = startDragTime;
 }
 
 /*!
@@ -127,7 +199,10 @@ int QStyleHints::startDragDistance() const
 */
 int QStyleHints::startDragTime() const
 {
-    return themeableHint(QPlatformTheme::StartDragTime, QPlatformIntegration::StartDragTime).toInt();
+    Q_D(const QStyleHints);
+    return d->m_startDragTime >= 0 ?
+           d->m_startDragTime :
+           themeableHint(QPlatformTheme::StartDragTime, QPlatformIntegration::StartDragTime).toInt();
 }
 
 /*!
@@ -143,12 +218,27 @@ int QStyleHints::startDragVelocity() const
 }
 
 /*!
+    Sets the \a keyboardInputInterval.
+    \internal
+    \sa keyboardInputInterval()
+    \since 5.3
+*/
+void QStyleHints::setKeyboardInputInterval(int keyboardInputInterval)
+{
+    Q_D(QStyleHints);
+    d->m_keyboardInputInterval = keyboardInputInterval;
+}
+
+/*!
     Returns the time limit, in milliseconds, that distinguishes a key press
     from two consecutive key presses.
 */
 int QStyleHints::keyboardInputInterval() const
 {
-    return themeableHint(QPlatformTheme::KeyboardInputInterval, QPlatformIntegration::KeyboardInputInterval).toInt();
+    Q_D(const QStyleHints);
+    return d->m_keyboardInputInterval >= 0 ?
+           d->m_keyboardInputInterval :
+           themeableHint(QPlatformTheme::KeyboardInputInterval, QPlatformIntegration::KeyboardInputInterval).toInt();
 }
 
 /*!
@@ -161,6 +251,18 @@ int QStyleHints::keyboardAutoRepeatRate() const
 }
 
 /*!
+    Sets the \a cursorFlashTime.
+    \internal
+    \sa cursorFlashTime()
+    \since 5.3
+*/
+void QStyleHints::setCursorFlashTime(int cursorFlashTime)
+{
+    Q_D(QStyleHints);
+    d->m_cursorFlashTime = cursorFlashTime;
+}
+
+/*!
     Returns the text cursor's flash (blink) time in milliseconds.
 
     The flash time is the time used to display, invert and restore the
@@ -169,7 +271,10 @@ int QStyleHints::keyboardAutoRepeatRate() const
 */
 int QStyleHints::cursorFlashTime() const
 {
-    return themeableHint(QPlatformTheme::CursorFlashTime, QPlatformIntegration::CursorFlashTime).toInt();
+    Q_D(const QStyleHints);
+    return d->m_cursorFlashTime >= 0 ?
+           d->m_cursorFlashTime :
+           themeableHint(QPlatformTheme::CursorFlashTime, QPlatformIntegration::CursorFlashTime).toInt();
 }
 
 /*!

@@ -162,6 +162,9 @@ public:
     void setWordWrapMode(QTextOption::WrapMode policy);
 
     bool find(const QString &exp, QTextDocument::FindFlags options = 0);
+#ifndef QT_NO_REGEXP
+    bool find(const QRegExp &exp, QTextDocument::FindFlags options = 0);
+#endif
 
     QString toPlainText() const;
 #ifndef QT_NO_TEXTHTMLPARSER
@@ -209,6 +212,7 @@ public:
     void print(QPagedPaintDevice *printer) const;
 
     QVariant inputMethodQuery(Qt::InputMethodQuery property) const;
+    Q_INVOKABLE QVariant inputMethodQuery(Qt::InputMethodQuery query, QVariant argument) const;
 
 public Q_SLOTS:
     void setFontPointSize(qreal s);

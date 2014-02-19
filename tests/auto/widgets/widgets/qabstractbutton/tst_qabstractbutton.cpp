@@ -419,7 +419,7 @@ void tst_QAbstractButton::setIcon()
 
     QPixmap p2( test2_xpm );
     for ( int a = 0; a<5; a++ )
-	testWidget->setIcon( p2 );
+        testWidget->setIcon( p2 );
 
     QCOMPARE( testWidget->icon().pixmap(12, 8), p2 );
 

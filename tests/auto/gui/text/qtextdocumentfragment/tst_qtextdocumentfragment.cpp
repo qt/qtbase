@@ -266,6 +266,7 @@ private slots:
     void html_metaInBody();
     void html_importImageWithoutAspectRatio();
     void html_fromFirefox();
+    void html_emptyInlineInsideBlock();
 
 private:
     inline void setHtml(const QString &html)
@@ -360,8 +361,8 @@ void tst_QTextDocumentFragment::listCopying2()
     cursor.movePosition(QTextCursor::Start);
     int listItemCount = 0;
     do {
-	if (cursor.currentList())
-	    listItemCount++;
+        if (cursor.currentList())
+            listItemCount++;
     } while (cursor.movePosition(QTextCursor::NextBlock));
 
     QCOMPARE(listItemCount, 4);
@@ -378,35 +379,35 @@ void tst_QTextDocumentFragment::tableCopying()
     // as the pasiveness of the tablemanager.
     QTextDocumentFragment fragment;
     {
-	QTextDocument doc;
-	QTextCursor cursor(&doc);
+        QTextDocument doc;
+        QTextCursor cursor(&doc);
 
-	QTextTableFormat fmt;
-	QTextTable *table = cursor.insertTable(2, 2, fmt);
+        QTextTableFormat fmt;
+        QTextTable *table = cursor.insertTable(2, 2, fmt);
 
-	table->cellAt(0, 0).firstCursorPosition().insertText("First Cell");
-	table->cellAt(0, 1).firstCursorPosition().insertText("Second Cell");
-	table->cellAt(1, 0).firstCursorPosition().insertText("Third Cell");
-	table->cellAt(1, 1).firstCursorPosition().insertText("Fourth Cell");
+        table->cellAt(0, 0).firstCursorPosition().insertText("First Cell");
+        table->cellAt(0, 1).firstCursorPosition().insertText("Second Cell");
+        table->cellAt(1, 0).firstCursorPosition().insertText("Third Cell");
+        table->cellAt(1, 1).firstCursorPosition().insertText("Fourth Cell");
 
-	fragment = QTextDocumentFragment(&doc);
+        fragment = QTextDocumentFragment(&doc);
     }
     {
-	QTextDocument doc;
-	QTextCursor cursor(&doc);
+        QTextDocument doc;
+        QTextCursor cursor(&doc);
 
-	cursor.insertText("FooBar");
-	cursor.insertBlock();
-	cursor.movePosition(QTextCursor::Left);
+        cursor.insertText("FooBar");
+        cursor.insertBlock();
+        cursor.movePosition(QTextCursor::Left);
 
-	cursor.insertFragment(fragment);
-	cursor.movePosition(QTextCursor::Start);
-	cursor.movePosition(QTextCursor::NextBlock);
+        cursor.insertFragment(fragment);
+        cursor.movePosition(QTextCursor::Start);
+        cursor.movePosition(QTextCursor::NextBlock);
 
-	QTextTable *table = cursor.currentTable();
-	QVERIFY(table);
-	QCOMPARE(table->rows(), 2);
-	QCOMPARE(table->columns(), 2);
+        QTextTable *table = cursor.currentTable();
+        QVERIFY(table);
+        QCOMPARE(table->rows(), 2);
+        QCOMPARE(table->columns(), 2);
     }
 }
 
@@ -488,91 +489,91 @@ void tst_QTextDocumentFragment::tableImport()
 void tst_QTextDocumentFragment::tableImport2()
 {
     {
-	const char html[] = ""
-	    "<table>"
-	    "<tr><td>First Cell</td><td>Second Cell</td></tr>"
-	    "<tr><td>Third Cell</td><td>Fourth Cell</td></tr>"
-	    "</table>";
+        const char html[] = ""
+            "<table>"
+            "<tr><td>First Cell</td><td>Second Cell</td></tr>"
+            "<tr><td>Third Cell</td><td>Fourth Cell</td></tr>"
+            "</table>";
 
-	QTextDocument doc;
-	QTextCursor cursor(&doc);
-	cursor.insertFragment(QTextDocumentFragment::fromHtml(QByteArray::fromRawData(html, sizeof(html) / sizeof(html[0]))));
+        QTextDocument doc;
+        QTextCursor cursor(&doc);
+        cursor.insertFragment(QTextDocumentFragment::fromHtml(QByteArray::fromRawData(html, sizeof(html) / sizeof(html[0]))));
 
-	cursor.movePosition(QTextCursor::Start);
-	cursor.movePosition(QTextCursor::NextBlock);
-	QTextTable *table = cursor.currentTable();
-	QVERIFY(table);
-	QCOMPARE(table->columns(), 2);
-	QCOMPARE(table->rows(), 2);
+        cursor.movePosition(QTextCursor::Start);
+        cursor.movePosition(QTextCursor::NextBlock);
+        QTextTable *table = cursor.currentTable();
+        QVERIFY(table);
+        QCOMPARE(table->columns(), 2);
+        QCOMPARE(table->rows(), 2);
     }
     {
-	const char html[] = ""
-	    "<table>"
-	    "<tr><td>First Cell</td><td>Second Cell</td></tr>"
-	    "<tr><td>Third Cell</td><td>"
-	    "                           <table>"
-	    "                           <tr><td>First Nested Cell</td><td>Second Nested Cell</td></tr>"
-	    "                           <tr><td>Third Nested Cell</td><td>Fourth Nested Cell</td></tr>"
-	    "                           <tr><td>Fifth Nested Cell</td><td>Sixth Nested Cell</td></tr>"
-	    "                           </table></td></tr>"
-	    "</table>";
+        const char html[] = ""
+            "<table>"
+            "<tr><td>First Cell</td><td>Second Cell</td></tr>"
+            "<tr><td>Third Cell</td><td>"
+            "                           <table>"
+            "                           <tr><td>First Nested Cell</td><td>Second Nested Cell</td></tr>"
+            "                           <tr><td>Third Nested Cell</td><td>Fourth Nested Cell</td></tr>"
+            "                           <tr><td>Fifth Nested Cell</td><td>Sixth Nested Cell</td></tr>"
+            "                           </table></td></tr>"
+            "</table>";
 
-	QTextDocument doc;
-	QTextCursor cursor(&doc);
-	cursor.insertFragment(QTextDocumentFragment::fromHtml(QByteArray::fromRawData(html, sizeof(html) / sizeof(html[0]))));
+        QTextDocument doc;
+        QTextCursor cursor(&doc);
+        cursor.insertFragment(QTextDocumentFragment::fromHtml(QByteArray::fromRawData(html, sizeof(html) / sizeof(html[0]))));
 
-	cursor.movePosition(QTextCursor::Start);
-	cursor.movePosition(QTextCursor::NextBlock);
-	QTextTable *table = cursor.currentTable();
-	QVERIFY(table);
-	QCOMPARE(table->columns(), 2);
-	QCOMPARE(table->rows(), 2);
+        cursor.movePosition(QTextCursor::Start);
+        cursor.movePosition(QTextCursor::NextBlock);
+        QTextTable *table = cursor.currentTable();
+        QVERIFY(table);
+        QCOMPARE(table->columns(), 2);
+        QCOMPARE(table->rows(), 2);
 
         /*
-	QTextCursor fourthCell = table->cellAt(1, 1).firstCursorPosition();
-	fourthCell.movePosition(QTextCursor::NextBlock);
-	table = fourthCell.currentTable();
-	QVERIFY(table);
-	QVERIFY(table != cursor.currentTable());
-	QCOMPARE(table->columns(), 2);
-	QCOMPARE(table->rows(), 3);
+        QTextCursor fourthCell = table->cellAt(1, 1).firstCursorPosition();
+        fourthCell.movePosition(QTextCursor::NextBlock);
+        table = fourthCell.currentTable();
+        QVERIFY(table);
+        QVERIFY(table != cursor.currentTable());
+        QCOMPARE(table->columns(), 2);
+        QCOMPARE(table->rows(), 3);
         */
     }
     {
-	const char buggyHtml[] = ""
-	    "<table>"
-	    "<tr><td>First Cell<td>Second Cell"
-	    "<tr><td>Third Cell<td>Fourth Cell"
-	    "</table>";
+        const char buggyHtml[] = ""
+            "<table>"
+            "<tr><td>First Cell<td>Second Cell"
+            "<tr><td>Third Cell<td>Fourth Cell"
+            "</table>";
 
-	QTextDocument doc;
-	QTextCursor cursor(&doc);
-	cursor.insertFragment(QTextDocumentFragment::fromHtml(QByteArray::fromRawData(buggyHtml, sizeof(buggyHtml) / sizeof(buggyHtml[0]))));
+        QTextDocument doc;
+        QTextCursor cursor(&doc);
+        cursor.insertFragment(QTextDocumentFragment::fromHtml(QByteArray::fromRawData(buggyHtml, sizeof(buggyHtml) / sizeof(buggyHtml[0]))));
 
-	cursor.movePosition(QTextCursor::Start);
-	cursor.movePosition(QTextCursor::NextBlock);
-	QTextTable *table = cursor.currentTable();
-	QVERIFY(table);
-	QCOMPARE(table->columns(), 2);
-	QCOMPARE(table->rows(), 2);
+        cursor.movePosition(QTextCursor::Start);
+        cursor.movePosition(QTextCursor::NextBlock);
+        QTextTable *table = cursor.currentTable();
+        QVERIFY(table);
+        QCOMPARE(table->columns(), 2);
+        QCOMPARE(table->rows(), 2);
     }
     {
-	const char buggyHtml[] = ""
-	    "<table>"
-	    "<tr><th>First Cell<th>Second Cell"
-	    "<tr><td>Third Cell<td>Fourth Cell"
-	    "</table>";
+        const char buggyHtml[] = ""
+            "<table>"
+            "<tr><th>First Cell<th>Second Cell"
+            "<tr><td>Third Cell<td>Fourth Cell"
+            "</table>";
 
-	QTextDocument doc;
-	QTextCursor cursor(&doc);
-	cursor.insertFragment(QTextDocumentFragment::fromHtml(QByteArray::fromRawData(buggyHtml, sizeof(buggyHtml) / sizeof(buggyHtml[0]))));
+        QTextDocument doc;
+        QTextCursor cursor(&doc);
+        cursor.insertFragment(QTextDocumentFragment::fromHtml(QByteArray::fromRawData(buggyHtml, sizeof(buggyHtml) / sizeof(buggyHtml[0]))));
 
-	cursor.movePosition(QTextCursor::Start);
-	cursor.movePosition(QTextCursor::NextBlock);
-	QTextTable *table = cursor.currentTable();
-	QVERIFY(table);
-	QCOMPARE(table->columns(), 2);
-	QCOMPARE(table->rows(), 2);
+        cursor.movePosition(QTextCursor::Start);
+        cursor.movePosition(QTextCursor::NextBlock);
+        QTextTable *table = cursor.currentTable();
+        QVERIFY(table);
+        QCOMPARE(table->columns(), 2);
+        QCOMPARE(table->rows(), 2);
     }
 
 }
@@ -4002,6 +4003,12 @@ void tst_QTextDocumentFragment::html_fromFirefox()
     // result in the following text on the clipboard (for text/html)
     doc->setHtml(QString::fromLatin1("<!--StartFragment-->Test\nText\n\n<!--EndFragment-->"));
     QCOMPARE(doc->toPlainText(), QString::fromLatin1("Test Text "));
+}
+
+void tst_QTextDocumentFragment::html_emptyInlineInsideBlock()
+{
+    doc->setHtml(QString::fromLatin1("<!--StartFragment--><blockquote><span/>Foobar</blockquote><!--EndFragment-->"));
+    QVERIFY(doc->firstBlock().blockFormat().leftMargin() > 0);
 }
 
 QTEST_MAIN(tst_QTextDocumentFragment)

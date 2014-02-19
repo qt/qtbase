@@ -65,7 +65,8 @@ static QTimeZonePrivate *newBackendTimeZone()
     return new QMacTimeZonePrivate();
 #elif defined Q_OS_UNIX
     return new QTzTimeZonePrivate();
-#elif defined Q_OS_WIN
+    // Registry based timezone backend not available on WinRT
+#elif defined Q_OS_WIN && !defined Q_OS_WINRT
     return new QWinTimeZonePrivate();
 #elif defined QT_USE_ICU
     return new QIcuTimeZonePrivate();
@@ -76,25 +77,26 @@ static QTimeZonePrivate *newBackendTimeZone()
 }
 
 // Create named time zone using appropriate backend
-static QTimeZonePrivate *newBackendTimeZone(const QByteArray &olsenId)
+static QTimeZonePrivate *newBackendTimeZone(const QByteArray &ianaId)
 {
 #ifdef QT_NO_SYSTEMLOCALE
 #ifdef QT_USE_ICU
-    return new QIcuTimeZonePrivate(olsenId);
+    return new QIcuTimeZonePrivate(ianaId);
 #else
-    return new QUtcTimeZonePrivate(olsenId);
+    return new QUtcTimeZonePrivate(ianaId);
 #endif // QT_USE_ICU
 #else
 #if defined Q_OS_MAC
-    return new QMacTimeZonePrivate(olsenId);
+    return new QMacTimeZonePrivate(ianaId);
 #elif defined Q_OS_UNIX
-    return new QTzTimeZonePrivate(olsenId);
-#elif defined Q_OS_WIN
-    return new QWinTimeZonePrivate(olsenId);
+    return new QTzTimeZonePrivate(ianaId);
+    // Registry based timezone backend not available on WinRT
+#elif defined Q_OS_WIN && !defined Q_OS_WINRT
+    return new QWinTimeZonePrivate(ianaId);
 #elif defined QT_USE_ICU
-    return new QIcuTimeZonePrivate(olsenId);
+    return new QIcuTimeZonePrivate(ianaId);
 #else
-    return new QUtcTimeZonePrivate(olsenId);
+    return new QUtcTimeZonePrivate(ianaId);
 #endif // System Locales
 #endif // QT_NO_SYSTEMLOCALE
 }
@@ -931,18 +933,18 @@ QDataStream &operator<<(QDataStream &ds, const QTimeZone &tz)
 
 QDataStream &operator>>(QDataStream &ds, QTimeZone &tz)
 {
-    QString olsenId;
-    ds >> olsenId;
-    if (olsenId == QStringLiteral("OffsetFromUtc")) {
+    QString ianaId;
+    ds >> ianaId;
+    if (ianaId == QStringLiteral("OffsetFromUtc")) {
         int utcOffset;
         QString name;
         QString abbreviation;
         int country;
         QString comment;
-        ds >> olsenId >> utcOffset >> name >> abbreviation >> country >> comment;
-        tz = QTimeZone(olsenId.toUtf8(), utcOffset, name, abbreviation, (QLocale::Country) country, comment);
+        ds >> ianaId >> utcOffset >> name >> abbreviation >> country >> comment;
+        tz = QTimeZone(ianaId.toUtf8(), utcOffset, name, abbreviation, (QLocale::Country) country, comment);
     } else {
-        tz = QTimeZone(olsenId.toUtf8());
+        tz = QTimeZone(ianaId.toUtf8());
     }
     return ds;
 }

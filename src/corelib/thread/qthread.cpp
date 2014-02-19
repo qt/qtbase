@@ -154,7 +154,9 @@ QThreadPrivate::QThreadPrivate(QThreadData *d)
     thread_id = 0;
 #elif defined (Q_OS_WIN)
     handle = 0;
+#  ifndef Q_OS_WINRT
     id = 0;
+#  endif
     waiters = 0;
 #endif
 #if defined (Q_OS_WIN)

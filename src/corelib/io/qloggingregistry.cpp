@@ -42,6 +42,10 @@
 #include "qloggingregistry_p.h"
 #include "qloggingcategory_p.h"
 
+#include <QtCore/qfile.h>
+#include <QtCore/qstandardpaths.h>
+#include <QtCore/qtextstream.h>
+
 QT_BEGIN_NAMESPACE
 
 Q_GLOBAL_STATIC(QLoggingRegistry, qtLoggingRegistry)
@@ -150,33 +154,38 @@ void QLoggingRule::parse()
 }
 
 /*!
+    \class QLoggingSettingsParser
+    \since 5.3
     \internal
-    Creates a new QLoggingRules object.
+
+    Parses a .ini file with the following format:
+
+    [rules]
+    rule1=[true|false]
+    rule2=[true|false]
+    ...
+
+    [rules] is the default section, and therefore optional.
 */
-QLoggingRulesParser::QLoggingRulesParser(QLoggingRegistry *registry)  :
-    registry(registry)
-{
-}
 
 /*!
     \internal
-    Sets logging rules string.
+    Parses configuration from \a content.
 */
-void QLoggingRulesParser::setRules(const QString &content)
+void QLoggingSettingsParser::setContent(const QString &content)
 {
     QString content_ = content;
     QTextStream stream(&content_, QIODevice::ReadOnly);
-    parseRules(stream);
+    setContent(stream);
 }
 
 /*!
     \internal
-    Parses rules out of a QTextStream.
+    Parses configuration from \a stream.
 */
-void QLoggingRulesParser::parseRules(QTextStream &stream)
+void QLoggingSettingsParser::setContent(QTextStream &stream)
 {
-    QVector<QLoggingRule> rules;
-
+    _rules.clear();
     while (!stream.atEnd()) {
         QString line = stream.readLine();
 
@@ -184,27 +193,75 @@ void QLoggingRulesParser::parseRules(QTextStream &stream)
         line = line.simplified();
         line.remove(QLatin1Char(' '));
 
-        const QStringList pair = line.split(QLatin1Char('='));
-        if (pair.count() == 2) {
-            const QString pattern = pair.at(0);
-            bool enabled = (QString::compare(pair.at(1),
-                                             QLatin1String("true"),
-                                             Qt::CaseInsensitive) == 0);
-            rules.append(QLoggingRule(pattern, enabled));
+        // comment
+        if (line.startsWith(QLatin1Char(';')))
+            continue;
+
+        if (line.startsWith(QLatin1Char('[')) && line.endsWith(QLatin1Char(']'))) {
+            // new section
+            _section = line.mid(1, line.size() - 2);
+            continue;
+        }
+
+        if (_section == QLatin1String("rules")) {
+            int equalPos = line.indexOf(QLatin1Char('='));
+            if ((equalPos != -1)
+                    && (line.lastIndexOf(QLatin1Char('=')) == equalPos)) {
+                const QString pattern = line.left(equalPos);
+                const QStringRef value = line.midRef(equalPos + 1);
+                bool enabled = (value.compare(QLatin1String("true"),
+                                              Qt::CaseInsensitive) == 0);
+                _rules.append(QLoggingRule(pattern, enabled));
+            }
         }
     }
-
-    registry->setRules(rules);
 }
 
 /*!
     \internal
-    QLoggingPrivate constructor
+    QLoggingRegistry constructor
  */
 QLoggingRegistry::QLoggingRegistry()
-    : rulesParser(this),
-      categoryFilter(defaultCategoryFilter)
+    : categoryFilter(defaultCategoryFilter)
 {
+}
+
+/*!
+    \internal
+    Initializes the rules database by loading
+    .config/QtProject/qtlogging.ini and $QT_LOGGING_CONF.
+ */
+void QLoggingRegistry::init()
+{
+    // get rules from environment
+    const QByteArray rulesFilePath = qgetenv("QT_LOGGING_CONF");
+    if (!rulesFilePath.isEmpty()) {
+        QFile file(QFile::decodeName(rulesFilePath));
+        if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            QTextStream stream(&file);
+            QLoggingSettingsParser parser;
+            parser.setContent(stream);
+            envRules = parser.rules();
+        }
+    }
+
+    // get rules from qt configuration
+    QString envPath = QStandardPaths::locate(QStandardPaths::GenericConfigLocation,
+                                             QStringLiteral("QtProject/qtlogging.ini"));
+    if (!envPath.isEmpty()) {
+        QFile file(envPath);
+        if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            QTextStream stream(&file);
+            QLoggingSettingsParser parser;
+            parser.setContent(stream);
+            configRules = parser.rules();
+        }
+    }
+
+    if (!envRules.isEmpty() || !configRules.isEmpty()) {
+        QMutexLocker locker(&registryMutex);
+        updateRules();
+    }
 }
 
 /*!
@@ -236,16 +293,32 @@ void QLoggingRegistry::unregisterCategory(QLoggingCategory *cat)
 
 /*!
     \internal
-    Activates a new set of logging rules for the default filter.
-*/
-void QLoggingRegistry::setRules(const QVector<QLoggingRule> &rules_)
+    Installs logging rules as specified in \a content.
+ */
+void QLoggingRegistry::setApiRules(const QString &content)
 {
+    QLoggingSettingsParser parser;
+    parser.setSection(QStringLiteral("rules"));
+    parser.setContent(content);
+
     QMutexLocker locker(&registryMutex);
+    apiRules = parser.rules();
 
-    rules = rules_;
+    updateRules();
+}
 
+/*!
+    \internal
+    Activates a new set of logging rules for the default filter.
+
+    (The caller must lock registryMutex to make sure the API is thread safe.)
+*/
+void QLoggingRegistry::updateRules()
+{
     if (categoryFilter != defaultCategoryFilter)
         return;
+
+    rules = configRules + apiRules + envRules;
 
     foreach (QLoggingCategory *cat, categories)
         (*categoryFilter)(cat);
@@ -283,9 +356,13 @@ QLoggingRegistry *QLoggingRegistry::instance()
 */
 void QLoggingRegistry::defaultCategoryFilter(QLoggingCategory *cat)
 {
-    // QLoggingCategory() normalizes all "default" strings
+    // QLoggingCategory() normalizes "default" strings
     // to qtDefaultCategoryName
-    bool debug = (cat->categoryName() == qtDefaultCategoryName);
+    bool debug = true;
+    char c;
+    if (!memcmp(cat->categoryName(), "qt", 2) && (!(c = cat->categoryName()[2]) || c == '.'))
+        debug = false;
+
     bool warning = true;
     bool critical = true;
 

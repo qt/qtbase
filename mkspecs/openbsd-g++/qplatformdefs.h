@@ -85,8 +85,8 @@
 // OpenBSD 2.2 - 2.4            int
 // OpenBSD 2.5 - 2.8            socklen_t
 
-#define QT_SNPRINTF		::snprintf
-#define QT_VSNPRINTF		::vsnprintf
+#define QT_SNPRINTF             ::snprintf
+#define QT_VSNPRINTF            ::vsnprintf
 
 // 1003.1c-1995 says on page 38 (2.9.3, paragraph 3) that if _POSIX_THREADS
 // is defined, then _POSIX_THREAD_SAFE_FUNCTIONS must also be defined.

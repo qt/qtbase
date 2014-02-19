@@ -67,6 +67,7 @@ bootstrap { #Qt code
         qtextcodec.cpp \
         qutfcodec.cpp \
         qstring.cpp \
+        qstring_compat.cpp \
         qstringlist.cpp \
         qtemporaryfile.cpp \
         qtextstream.cpp \
@@ -149,7 +150,7 @@ bootstrap { #Qt code
         SOURCES += qfilesystemengine_win.cpp qfsfileengine_win.cpp qfilesystemiterator_win.cpp qsettings_win.cpp \
             qsystemlibrary.cpp qlocale_win.cpp registry.cpp
         win32-msvc*:LIBS += ole32.lib advapi32.lib
-        win32-g++*:LIBS += -lole32 -luuid -ladvapi32 -lkernel32
+        mingw:LIBS += -lole32 -luuid -ladvapi32 -lkernel32
     }
 
     qnx {

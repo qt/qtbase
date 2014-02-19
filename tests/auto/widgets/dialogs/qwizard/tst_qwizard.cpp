@@ -90,6 +90,7 @@ private slots:
     void setOption_HaveNextButtonOnLastPage();
     void setOption_HaveFinishButtonOnEarlyPages();
     void setOption_NoCancelButton();
+    void setOption_NoCancelButtonOnLastPage();
     void setOption_CancelButtonOnLeft();
     void setOption_HaveHelpButton();
     void setOption_HelpButtonOnRight();
@@ -1423,6 +1424,50 @@ void tst_QWizard::setOption_NoCancelButton()
     }
 }
 
+void tst_QWizard::setOption_NoCancelButtonOnLastPage()
+{
+    for (int i = 0; i < 2; ++i) {
+        QWizard wizard;
+        wizard.setOption(QWizard::NoCancelButton, false);
+        wizard.setOption(QWizard::NoCancelButtonOnLastPage, true);
+        wizard.addPage(new QWizardPage);
+        wizard.addPage(new QWizardPage);
+        wizard.page(1)->setFinalPage(true);     // changes nothing (final != last in general)
+        wizard.addPage(new QWizardPage);
+
+        wizard.setStartId(1);
+        wizard.show();
+        qApp->processEvents();
+
+        QVERIFY(wizard.button(QWizard::CancelButton)->isVisible());
+
+        wizard.next();
+        qApp->processEvents();
+        QVERIFY(!wizard.button(QWizard::CancelButton)->isVisible());
+
+        wizard.next();
+        qApp->processEvents();
+        QVERIFY(!wizard.button(QWizard::CancelButton)->isVisible());
+
+        wizard.back();
+        qApp->processEvents();
+        QVERIFY(wizard.button(QWizard::CancelButton)->isVisible());
+
+        wizard.next();
+        qApp->processEvents();
+        QVERIFY(!wizard.button(QWizard::CancelButton)->isVisible());
+
+        wizard.setOption(QWizard::NoCancelButtonOnLastPage, false);
+        QVERIFY(wizard.button(QWizard::CancelButton)->isVisible());
+
+        wizard.setOption(QWizard::NoCancelButtonOnLastPage, true);
+        QVERIFY(!wizard.button(QWizard::CancelButton)->isVisible());
+
+        wizard.addPage(new QWizardPage);
+        QVERIFY(!wizard.button(QWizard::CancelButton)->isVisible());  // this is maybe wrong
+    }
+}
+
 void tst_QWizard::setOption_CancelButtonOnLeft()
 {
     for (int i = 0; i < 2; ++i) {
@@ -1767,7 +1812,7 @@ public:
             QWizardPage *page_to_delete = page(id);
             removePage(id);
             delete page_to_delete;
-	}
+        }
     }
 
     void applyOperations(const QList<Operation *> &operations)

@@ -38,6 +38,9 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
+#ifndef DIR_IN_INCLUDE_PATH_H
+#define DIR_IN_INCLUDE_PATH_H
 #include <Plugin>
 
 class DirInIncludePath : public QObject, public MyInterface
@@ -45,3 +48,4 @@ class DirInIncludePath : public QObject, public MyInterface
     Q_OBJECT
     Q_INTERFACES(MyInterface)
 };
+#endif // DIR_IN_INCLUDE_PATH_H

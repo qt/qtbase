@@ -647,7 +647,7 @@ void QPushButton::setFlat(bool flat)
     if (d->flat == flat)
         return;
     d->flat = flat;
-	d->resetLayoutItemMargins();
+    d->resetLayoutItemMargins();
     d->sizeHint = QSize();
     update();
     updateGeometry();
@@ -673,8 +673,8 @@ bool QPushButton::event(QEvent *e)
                || e->type() == QEvent::MacSizeChange
 #endif
                ) {
-		d->resetLayoutItemMargins();
-		updateGeometry();
+        d->resetLayoutItemMargins();
+        updateGeometry();
     } else if (e->type() == QEvent::PolishRequest) {
         updateGeometry();
     }

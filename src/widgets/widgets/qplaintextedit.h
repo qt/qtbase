@@ -83,6 +83,7 @@ class Q_WIDGETS_EXPORT QPlainTextEdit : public QAbstractScrollArea
     Q_PROPERTY(int maximumBlockCount READ maximumBlockCount WRITE setMaximumBlockCount)
     Q_PROPERTY(bool backgroundVisible READ backgroundVisible WRITE setBackgroundVisible)
     Q_PROPERTY(bool centerOnScroll READ centerOnScroll WRITE setCenterOnScroll)
+    Q_PROPERTY(QString placeholderText READ placeholderText WRITE setPlaceholderText)
 public:
     enum LineWrapMode {
         NoWrap,
@@ -95,6 +96,9 @@ public:
 
     void setDocument(QTextDocument *document);
     QTextDocument *document() const;
+
+    void setPlaceholderText(const QString &placeholderText);
+    QString placeholderText() const;
 
     void setTextCursor(const QTextCursor &cursor);
     QTextCursor textCursor() const;
@@ -141,6 +145,9 @@ public:
     bool centerOnScroll() const;
 
     bool find(const QString &exp, QTextDocument::FindFlags options = 0);
+#ifndef QT_NO_REGEXP
+    bool find(const QRegExp &exp, QTextDocument::FindFlags options = 0);
+#endif
 
     inline QString toPlainText() const
     { return document()->toPlainText(); }

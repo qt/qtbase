@@ -43,7 +43,7 @@
 #include <private/qblendfunctions_p.h>
 #include <private/qmath_p.h>
 
-#ifdef QT_COMPILER_SUPPORTS_NEON
+#ifdef __ARM_NEON__
 
 #include <private/qdrawhelper_neon_p.h>
 #include <private/qpaintengine_raster_p.h>
@@ -51,7 +51,7 @@
 
 QT_BEGIN_NAMESPACE
 
-void qt_memfill32_neon(quint32 *dest, quint32 value, int count)
+void qt_memfill32(quint32 *dest, quint32 value, int count)
 {
     const int epilogueSize = count % 16;
     if (count >= 16) {
@@ -998,5 +998,5 @@ const uint * QT_FASTCALL qt_fetch_radial_gradient_neon(uint *buffer, const Opera
 
 QT_END_NAMESPACE
 
-#endif // QT_COMPILER_SUPPORTS_NEON
+#endif // __ARM_NEON__
 

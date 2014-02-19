@@ -211,6 +211,17 @@ void tst_QNetworkCookieJar::setCookiesFromUrl_data()
     result += cookie;
     QTest::newRow("effective-tld2-accepted") << preset << cookie << "http://www.gobiernoelectronico.ar" << result << true;
 
+    result.clear();
+    preset.clear();
+    cookie.setDomain("127.0.0.1");
+    result += cookie;
+    QTest::newRow("IPv4-address-as-domain") << preset << cookie << "http://127.0.0.1/" << result << true;
+
+    result.clear();
+    preset.clear();
+    cookie.setDomain("fe80::250:56ff:fec0:1");
+    result += cookie;
+    QTest::newRow("IPv6-address-as-domain") << preset << cookie << "http://[fe80::250:56ff:fec0:1]/" << result << true;
 
     // setting the defaults:
     finalCookie = cookie;

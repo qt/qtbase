@@ -43,10 +43,11 @@
 
 QT_BEGIN_NAMESPACE
 
-void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestName, QDnsLookupReply *reply)
+void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestName, const QHostAddress &nameserver, QDnsLookupReply *reply)
 {
     Q_UNUSED(requestType);
     Q_UNUSED(requestName);
+    Q_UNUSED(nameserver);
     Q_UNUSED(reply);
     qWarning() << Q_FUNC_INFO << "Not yet supported on Android";
     reply->error = QDnsLookup::ResolverError;

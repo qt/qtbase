@@ -190,7 +190,7 @@ bool QLibraryPrivate::load_sys()
     }
 #endif
 
-#if defined(Q_OS_AIX)	// Not sure if any other platform actually support this thing.
+#if defined(Q_OS_AIX)   // Not sure if any other platform actually support this thing.
     if (loadHints & QLibrary::LoadArchiveMemberHint) {
         dlFlags |= RTLD_MEMBER;
     }

@@ -182,10 +182,17 @@ QFontEngine *loadSingleEngine(int script,
     QFontCache::Key key(def,script);
     QFontEngine *engine = QFontCache::instance()->findEngine(key);
     if (!engine) {
-        engine = pfdb->fontEngine(def, QChar::Script(script), size->handle);
+        engine = pfdb->fontEngine(def, size->handle);
         if (engine) {
-            QFontCache::Key key(def,script);
-            QFontCache::instance()->instance()->insertEngine(key,engine);
+            // Also check for OpenType tables when using complex scripts
+            if (!engine->supportsScript(QChar::Script(script))) {
+                qWarning("  OpenType support missing for script %d", script);
+                if (engine->ref.load() == 0)
+                    delete engine;
+                return 0;
+            }
+
+            QFontCache::instance()->insertEngine(key, engine);
         }
     }
     return engine;
@@ -221,10 +228,10 @@ QFontEngine *loadEngine(int script, const QFontDef &request,
         pfMultiEngine->setFallbackFamiliesList(fallbacks);
         engine = pfMultiEngine;
 
-        // Cache Multi font engine as well in case we got the FT single
+        // Cache Multi font engine as well in case we got the single
         // font engine when we are actually looking for a Multi one
         QFontCache::Key key(request, script, 1);
-        QFontCache::instance()->instance()->insertEngine(key, engine);
+        QFontCache::instance()->insertEngine(key, engine);
     }
 
     return engine;

@@ -87,9 +87,9 @@ bool QHttpNetworkRequestPrivate::operator==(const QHttpNetworkRequestPrivate &ot
         && (preConnect == other.preConnect);
 }
 
-QByteArray QHttpNetworkRequestPrivate::methodName() const
+QByteArray QHttpNetworkRequest::methodName() const
 {
-    switch (operation) {
+    switch (d->operation) {
     case QHttpNetworkRequest::Get:
         return "GET";
     case QHttpNetworkRequest::Head:
@@ -107,24 +107,24 @@ QByteArray QHttpNetworkRequestPrivate::methodName() const
     case QHttpNetworkRequest::Connect:
         return "CONNECT";
     case QHttpNetworkRequest::Custom:
-        return customVerb;
+        return d->customVerb;
     default:
         break;
     }
     return QByteArray();
 }
 
-QByteArray QHttpNetworkRequestPrivate::uri(bool throughProxy) const
+QByteArray QHttpNetworkRequest::uri(bool throughProxy) const
 {
     QUrl::FormattingOptions format(QUrl::RemoveFragment | QUrl::RemoveUserInfo | QUrl::FullyEncoded);
 
     // for POST, query data is send as content
-    if (operation == QHttpNetworkRequest::Post && !uploadByteDevice)
+    if (d->operation == QHttpNetworkRequest::Post && !d->uploadByteDevice)
         format |= QUrl::RemoveQuery;
     // for requests through proxy, the Request-URI contains full url
     if (!throughProxy)
         format |= QUrl::RemoveScheme | QUrl::RemoveAuthority;
-    QUrl copy = url;
+    QUrl copy = d->url;
     if (copy.path().isEmpty())
         copy.setPath(QStringLiteral("/"));
     QByteArray uri = copy.toEncoded(format);
@@ -137,9 +137,9 @@ QByteArray QHttpNetworkRequestPrivate::header(const QHttpNetworkRequest &request
     QByteArray ba;
     ba.reserve(40 + fields.length()*25); // very rough lower bound estimation
 
-    ba += request.d->methodName();
+    ba += request.methodName();
     ba += ' ';
-    ba += request.d->uri(throughProxy);
+    ba += request.uri(throughProxy);
 
     ba += " HTTP/";
     ba += QByteArray::number(request.majorVersion());

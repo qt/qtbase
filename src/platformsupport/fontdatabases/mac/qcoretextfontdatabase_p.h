@@ -42,6 +42,10 @@
 #ifndef QCORETEXTFONTDATABASE_H
 #define QCORETEXTFONTDATABASE_H
 
+#include <qglobal.h>
+#define HAVE_CORETEXT QT_MAC_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_8, __IPHONE_4_1)
+#define HAVE_ATS QT_MAC_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_5, __IPHONE_NA)
+
 #include <qpa/qplatformfontdatabase.h>
 #include <private/qcore_mac_p.h>
 
@@ -52,6 +56,14 @@
 #include <CoreGraphics/CoreGraphics.h>
 #endif
 
+#if HAVE_CORETEXT
+Q_DECLARE_METATYPE(QCFType<CGFontRef>);
+Q_DECLARE_METATYPE(QCFType<CFURLRef>);
+#endif
+#if HAVE_ATS
+Q_DECLARE_METATYPE(ATSFontContainerRef);
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QCoreTextFontDatabase : public QPlatformFontDatabase
@@ -60,12 +72,10 @@ public:
     QCoreTextFontDatabase();
     ~QCoreTextFontDatabase();
     void populateFontDatabase();
-    QFontEngine *fontEngine(const QFontDef &fontDef, QChar::Script script, void *handle);
+    QFontEngine *fontEngine(const QFontDef &fontDef, void *handle);
     QFontEngine *fontEngine(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference);
     QStringList fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const;
-#ifdef Q_OS_MACX
     QStringList addApplicationFont(const QByteArray &fontData, const QString &fileName);
-#endif
     void releaseHandle(void *handle);
     QFont defaultFont() const;
     QList<int> standardSizes() const;
@@ -78,13 +88,8 @@ private:
     mutable QHash<QString, QString> familyNameToPsName;
 
     void removeApplicationFonts();
-#ifdef Q_OS_MACX
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_8
-    QVector<QCFType<CGFontRef> > m_applicationGraphicsFonts;
-    QVector<QCFType<CFURLRef> > m_applicationURLFonts;
-#endif
-    QVector<ATSFontContainerRef> m_applicationFonts;
-#endif
+
+    QVector<QVariant> m_applicationFonts;
 };
 
 QT_END_NAMESPACE

@@ -42,7 +42,7 @@
 #include <QtGui>
 
 TextEdit::TextEdit(QWidget *parent)
-	: QTextEdit(parent)
+    : QTextEdit(parent)
 {
 }
 

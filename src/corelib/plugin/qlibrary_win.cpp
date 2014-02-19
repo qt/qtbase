@@ -107,12 +107,16 @@ bool QLibraryPrivate::load_sys()
         attempts.append(QFileInfo(fileName).absoluteFilePath());
 #endif
     }
+#ifdef Q_OS_WINRT
+    if (fileName.startsWith(QLatin1Char('/')))
+        attempts.prepend(QDir::rootPath() + fileName);
+#endif
 
     Q_FOREACH (const QString &attempt, attempts) {
 #ifndef Q_OS_WINRT
         pHnd = LoadLibrary((wchar_t*)QDir::toNativeSeparators(attempt).utf16());
 #else // Q_OS_WINRT
-        QString path = QDir::toNativeSeparators(QDir::current().relativeFilePath(fileName));
+        QString path = QDir::toNativeSeparators(QDir::current().relativeFilePath(attempt));
         pHnd = LoadPackagedLibrary((LPCWSTR)path.utf16(), 0);
         if (pHnd)
             qualifiedFileName = attempt;

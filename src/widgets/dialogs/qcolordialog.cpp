@@ -66,6 +66,8 @@
 #include "qscreen.h"
 #include "qcursor.h"
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 
 //////////// QWellArray BEGIN
@@ -758,13 +760,9 @@ void QColorLuminancePicker::paintEvent(QPaintEvent *)
         int y;
         uint *pixel = (uint *) img.scanLine(0);
         for (y = 0; y < hi; y++) {
-            const uint *end = pixel + wi;
-            while (pixel < end) {
-                QColor c;
-                c.setHsv(hue, sat, y2val(y+coff));
-                *pixel = c.rgb();
-                ++pixel;
-            }
+            uint *end = pixel + wi;
+            std::fill(pixel, end, QColor::fromHsv(hue, sat, y2val(y + coff)).rgb());
+            pixel = end;
         }
         pix = new QPixmap(QPixmap::fromImage(img));
     }
@@ -907,10 +905,8 @@ public:
     QColSpinBox(QWidget *parent)
         : QSpinBox(parent) { setRange(0, 255); }
     void setValue(int i) {
-        bool block = signalsBlocked();
-        blockSignals(true);
+        const QSignalBlocker blocker(this);
         QSpinBox::setValue(i);
-        blockSignals(block);
     }
 };
 
@@ -1393,7 +1389,7 @@ void QColorShower::setRgb(QRgb rgb)
 void QColorShower::setHsv(int h, int s, int v)
 {
     if (h < -1 || (uint)s > 255 || (uint)v > 255)
-	    return;
+        return;
 
     rgbOriginal = false;
     hue = h; val = v; sat = s;
@@ -1792,6 +1788,21 @@ void QColorDialogPrivate::retranslateStrings()
     }
 
     cs->retranslateStrings();
+}
+
+bool QColorDialogPrivate::canBeNativeDialog() const
+{
+    Q_Q(const QColorDialog);
+    if (nativeDialogInUse)
+        return true;
+    if (q->testAttribute(Qt::WA_DontShowOnScreen))
+        return false;
+    if (q->options() & QColorDialog::DontUseNativeDialog)
+        return false;
+
+    QLatin1String staticName(QColorDialog::staticMetaObject.className());
+    QLatin1String dynamicName(q->metaObject()->className());
+    return (staticName == dynamicName);
 }
 
 static const Qt::WindowFlags DefaultWindowFlags =
@@ -2196,13 +2207,13 @@ bool QColorDialogPrivate::handleColorPickingKeyPress(QKeyEvent *e)
 void QColorDialog::done(int result)
 {
     Q_D(QColorDialog);
-    QDialog::done(result);
     if (result == Accepted) {
         d->selectedQColor = d->currentQColor();
         emit colorSelected(d->selectedQColor);
     } else {
         d->selectedQColor = QColor();
     }
+    QDialog::done(result);
     if (d->receiverToDisconnectOnClose) {
         disconnect(this, SIGNAL(colorSelected(QColor)),
                    d->receiverToDisconnectOnClose, d->memberToDisconnectOnClose);

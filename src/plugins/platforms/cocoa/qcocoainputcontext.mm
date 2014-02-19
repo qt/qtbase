@@ -43,6 +43,7 @@
 #include "qcocoainputcontext.h"
 #include "qcocoanativeinterface.h"
 #include "qcocoaautoreleasepool.h"
+#include "qcocoawindow.h"
 
 #include <QtCore/QRect>
 #include <QtGui/QGuiApplication>
@@ -98,13 +99,12 @@ void QCocoaInputContext::reset()
 {
     QPlatformInputContext::reset();
 
-    if (!mWindow) return;
+    if (!mWindow)
+        return;
 
-    QCocoaNativeInterface *nativeInterface = qobject_cast<QCocoaNativeInterface *>(QGuiApplication::platformNativeInterface());
-    if (!nativeInterface) return;
-
-    QNSView *view = static_cast<QNSView *>(nativeInterface->nativeResourceForWindow("nsview", mWindow));
-    if (!view) return;
+    QNSView *view = static_cast<QCocoaWindow *>(mWindow->handle())->qtView();
+    if (!view)
+        return;
 
     QCocoaAutoReleasePool pool;
     NSInputManager *currentIManager = [NSInputManager currentInputManager];

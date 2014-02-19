@@ -224,11 +224,12 @@ static QSqlError qMakeError(const QString& err, QSqlError::ErrorType type,
 {
     const char *s = PQerrorMessage(p->connection);
     QString msg = p->isUtf8 ? QString::fromUtf8(s) : QString::fromLocal8Bit(s);
+    QString errorCode;
     if (result) {
-      const char *sCode = PQresultErrorField(result, PG_DIAG_SQLSTATE);
-      msg += QString::fromLatin1("(%1)").arg(QString::fromLatin1(sCode));
+      errorCode = QString::fromLatin1(PQresultErrorField(result, PG_DIAG_SQLSTATE));
+      msg += QString::fromLatin1("(%1)").arg(errorCode);
     }
-    return QSqlError(QLatin1String("QPSQL: ") + err, msg, type);
+    return QSqlError(QLatin1String("QPSQL: ") + err, msg, type, errorCode);
 }
 
 bool QPSQLResultPrivate::processResults()

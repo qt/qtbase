@@ -614,12 +614,16 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
         << tag("ItemGroup")
         << attrTag("Label", "ProjectConfigurations");
 
+    bool isWinRT = false;
+    bool isPhone = false;
     for (int i = 0; i < tool.SingleProjects.count(); ++i) {
         xml << tag("ProjectConfiguration")
             << attrTag("Include" , tool.SingleProjects.at(i).Configuration.Name)
             << tagValue("Configuration", tool.SingleProjects.at(i).Configuration.ConfigurationName)
             << tagValue("Platform", tool.SingleProjects.at(i).PlatformName)
             << closetag();
+        isWinRT = isWinRT || tool.SingleProjects.at(i).Configuration.WinRT;
+        isPhone = isPhone || tool.SingleProjects.at(i).Configuration.WinPhone;
     }
 
     xml << closetag()
@@ -629,18 +633,19 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
         << tagValue("RootNamespace", tool.Name)
         << tagValue("Keyword", tool.Keyword);
 
-    if (tool.SingleProjects.at(0).Configuration.WinRT) {
-        xml << tagValue("MinimumVisualStudioVersion", "11.0");
-        if (tool.SingleProjects.at(0).Configuration.WinPhone)
+    if (isWinRT) {
+        xml << tagValue("MinimumVisualStudioVersion", tool.Version);
+        if (isPhone) {
             xml << tagValue("WinMDAssembly", "true");
-        else
-            xml << tagValue("AppContainerApplication", "true");
-    }
-
-    if (tool.SingleProjects.at(0).Configuration.WinPhone
-            && tool.SingleProjects.at(0).Configuration.ConfigurationType == typeApplication) {
-        xml << tagValue("XapOutputs", "true");
-        xml << tagValue("XapFilename", "$(RootNamespace)_$(Configuration)_$(Platform).xap");
+            if (tool.SingleProjects.at(0).Configuration.ConfigurationType == typeApplication) {
+                xml << tagValue("XapOutputs", "true");
+                xml << tagValue("XapFilename", "$(RootNamespace)_$(Configuration)_$(Platform).xap");
+            }
+        } else {
+            xml << tagValue("AppContainerApplication", "true")
+                << tagValue("ApplicationType", "Windows Store")
+                << tagValue("ApplicationTypeRevision", tool.SdkVersion);
+        }
     }
 
     xml << closetag();
@@ -769,6 +774,10 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
             write(xml, config.preLink);
 
         xml << closetag();
+
+        // windeployqt
+        if (!config.windeployqt.ExcludedFromBuild)
+            write(xml, config.windeployqt);
     }
 
     // The file filters are added in a separate file for MSBUILD.
@@ -824,9 +833,43 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
             << closetag();
     }
 
+    // App manifest
+    if (isWinRT) {
+        QString manifest = isPhone ? QStringLiteral("WMAppManifest.xml") : QStringLiteral("Package.appxmanifest");
+
+        // Find all icons referenced in the manifest
+        QSet<QString> icons;
+        QFile manifestFile(Option::output_dir + QLatin1Char('/') + manifest);
+        if (manifestFile.open(QFile::ReadOnly)) {
+            const QString contents = manifestFile.readAll();
+            QRegExp regexp("[\\\\/a-zA-Z0-9_\\-\\!]*\\.(png|jpg|jpeg)");
+            int pos = 0;
+            while (pos > -1) {
+                pos = regexp.indexIn(contents, pos);
+                if (pos >= 0) {
+                    const QString match = regexp.cap(0);
+                    icons.insert(match);
+                    pos += match.length();
+                }
+            }
+        }
+
+        // Write out manifest + icons as content items
+        xml << tag(_ItemGroup)
+            << tag(isPhone ? "Xml" : "AppxManifest")
+            << attrTag("Include", manifest)
+            << closetag();
+        foreach (const QString &icon, icons) {
+            xml << tag("Image")
+                << attrTag("Include", icon)
+                << closetag();
+        }
+        xml << closetag();
+    }
+
     xml << import("Project", "$(VCTargetsPath)\\Microsoft.Cpp.targets");
 
-    if (tool.SingleProjects.at(0).Configuration.WinPhone)
+    if (isPhone)
         xml << import("Project", "$(MSBuildExtensionsPath)\\Microsoft\\WindowsPhone\\v8.0\\Microsoft.Cpp.WindowsPhone.8.0.targets");
 
     xml << tag("ImportGroup")
@@ -1693,6 +1736,42 @@ void VCXProjectWriter::write(XmlOutput &xml, const VCDeploymentTool &tool)
     Q_UNUSED(xml);
     Q_UNUSED(tool);
     // SmartDevice deployment not supported in VS 2010
+}
+
+void VCXProjectWriter::write(XmlOutput &xml, const VCWinDeployQtTool &tool)
+{
+    const QString name = QStringLiteral("WinDeployQt_") + tool.config->Name;
+    xml << tag("Target")
+           << attrTag(_Name, name)
+           << attrTag("Condition", generateCondition(*tool.config))
+           << attrTag("Inputs", "$(OutDir)\\$(TargetName).exe")
+           << attrTag("Outputs", tool.Record)
+           << tag(_Message)
+              << attrTag("Text", tool.CommandLine)
+           << closetag()
+           << tag("Exec")
+             << attrTag("Command", tool.CommandLine)
+           << closetag()
+        << closetag()
+        << tag("Target")
+           << attrTag(_Name, QStringLiteral("PopulateWinDeployQtItems_") + tool.config->Name)
+           << attrTag("Condition", generateCondition(*tool.config))
+           << attrTag("AfterTargets", "Link")
+           << attrTag("DependsOnTargets", name)
+           << tag("ReadLinesFromFile")
+              << attrTag("File", tool.Record)
+              << tag("Output")
+                 << attrTag("TaskParameter", "Lines")
+                 << attrTag("ItemName", "DeploymentItems")
+              << closetag()
+           << closetag()
+           << tag(_ItemGroup)
+              << tag("None")
+                 << attrTag("Include", "@(DeploymentItems)")
+                 << attrTagT("DeploymentContent", _True)
+              << closetag()
+           << closetag()
+        << closetag();
 }
 
 void VCXProjectWriter::write(XmlOutput &xml, const VCConfiguration &tool)

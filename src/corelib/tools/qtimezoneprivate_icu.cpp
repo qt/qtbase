@@ -277,12 +277,12 @@ QIcuTimeZonePrivate::QIcuTimeZonePrivate()
 }
 
 // Create a named time zone
-QIcuTimeZonePrivate::QIcuTimeZonePrivate(const QByteArray &olsenId)
+QIcuTimeZonePrivate::QIcuTimeZonePrivate(const QByteArray &ianaId)
     : m_ucal(0)
 {
     // Need to check validity here as ICu will create a GMT tz if name is invalid
-    if (availableTimeZoneIds().contains(olsenId))
-        init(olsenId);
+    if (availableTimeZoneIds().contains(ianaId))
+        init(ianaId);
 }
 
 QIcuTimeZonePrivate::QIcuTimeZonePrivate(const QIcuTimeZonePrivate &other)
@@ -307,9 +307,9 @@ QTimeZonePrivate *QIcuTimeZonePrivate::clone()
     return new QIcuTimeZonePrivate(*this);
 }
 
-void QIcuTimeZonePrivate::init(const QByteArray &olsenId)
+void QIcuTimeZonePrivate::init(const QByteArray &ianaId)
 {
-    m_id = olsenId;
+    m_id = ianaId;
 
     const QString id = QString::fromUtf8(m_id);
     UErrorCode status = U_ZERO_ERROR;

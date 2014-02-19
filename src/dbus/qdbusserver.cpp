@@ -150,6 +150,33 @@ QString QDBusServer::address() const
 }
 
 /*!
+    \since 5.3
+
+    If \a value is set to true, an incoming connection can proceed even if the
+    connecting client is not authenticated as a user.
+
+    By default, this value is false.
+
+    \sa isAnonymousAuthenticationAllowed()
+*/
+void QDBusServer::setAnonymousAuthenticationAllowed(bool value)
+{
+    d->anonymousAuthenticationAllowed = value;
+}
+
+/*!
+    \since 5.3
+
+    Returns true if anonymous authentication is allowed.
+
+    \sa setAnonymousAuthenticationAllowed()
+*/
+bool QDBusServer::isAnonymousAuthenticationAllowed() const
+{
+    return d->anonymousAuthenticationAllowed;
+}
+
+/*!
   \fn void QDBusServer::newConnection(const QDBusConnection &connection)
 
   This signal is emitted when a new client connection \a connection is

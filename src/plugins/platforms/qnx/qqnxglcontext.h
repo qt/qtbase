@@ -88,7 +88,7 @@ private:
     EGLContext m_eglContext;
     EGLSurface m_currentEglSurface;
 
-    static EGLint *contextAttrs();
+    static EGLint *contextAttrs(const QSurfaceFormat &format);
 };
 
 QT_END_NAMESPACE

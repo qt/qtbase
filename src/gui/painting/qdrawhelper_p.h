@@ -171,6 +171,8 @@ extern MemRotateFunc qMemRotateFunctions[QImage::NImageFormats][3];
 extern DrawHelper qDrawHelper[QImage::NImageFormats];
 
 void qBlendTexture(int count, const QSpan *spans, void *userData);
+extern void qt_memfill32(quint32 *dest, quint32 value, int count);
+extern void qt_memfill16(quint16 *dest, quint16 value, int count);
 
 typedef void (QT_FASTCALL *CompositionFunction)(uint *Q_DECL_RESTRICT dest, const uint *Q_DECL_RESTRICT src, int length, uint const_alpha);
 typedef void (QT_FASTCALL *CompositionFunctionSolid)(uint *dest, int length, uint color, uint const_alpha);
@@ -386,8 +388,6 @@ static inline qreal qRadialDeterminant(qreal a, qreal b, qreal c)
     return (b * b) - (4 * a * c);
 }
 
-extern void (*qt_memfill32)(quint32 *dest, quint32 value, int count);
-
 template <class RadialFetchFunc> Q_STATIC_TEMPLATE_FUNCTION
 const uint * QT_FASTCALL qt_fetch_radial_gradient_template(uint *buffer, const Operator *op, const QSpanData *data,
                                                            int y, int x, int length)
@@ -599,14 +599,6 @@ static Q_ALWAYS_INLINE uint BYTE_MUL(uint x, uint a) {
     return (uint(t)) | (uint(t >> 24));
 }
 
-static Q_ALWAYS_INLINE uint PREMUL(uint x) {
-    uint a = x >> 24;
-    quint64 t = (((quint64(x)) | ((quint64(x)) << 24)) & 0x00ff00ff00ff00ff) * a;
-    t = (t + ((t >> 8) & 0xff00ff00ff00ff) + 0x80008000800080) >> 8;
-    t &= 0x000000ff00ff00ff;
-    return (uint(t)) | (uint(t >> 24)) | (a << 24);
-}
-
 #else // 32-bit versions
 
 static Q_ALWAYS_INLINE uint INTERPOLATE_PIXEL_256(uint x, uint a, uint y, uint b) {
@@ -639,19 +631,8 @@ static Q_ALWAYS_INLINE uint BYTE_MUL(uint x, uint a) {
 #  pragma pop
 #endif
 
-static Q_ALWAYS_INLINE uint PREMUL(uint x) {
-    uint a = x >> 24;
-    uint t = (x & 0xff00ff) * a;
-    t = (t + ((t >> 8) & 0xff00ff) + 0x800080) >> 8;
-    t &= 0xff00ff;
-
-    x = ((x >> 8) & 0xff) * a;
-    x = (x + ((x >> 8) & 0xff) + 0x80);
-    x &= 0xff00;
-    x |= t | (a << 24);
-    return x;
-}
 #endif
+
 
 #if Q_BYTE_ORDER == Q_BIG_ENDIAN
 static Q_ALWAYS_INLINE quint32 RGBA2ARGB(quint32 x) {
@@ -691,12 +672,9 @@ static Q_ALWAYS_INLINE uint BYTE_MUL_RGB16_32(uint x, uint a) {
     return t;
 }
 
-#define INV_PREMUL(p)                                   \
-    (qAlpha(p) == 0 ? 0 :                               \
-    ((qAlpha(p) << 24)                                  \
-     | (((255*qRed(p))/ qAlpha(p)) << 16)               \
-     | (((255*qGreen(p)) / qAlpha(p))  << 8)            \
-     | ((255*qBlue(p)) / qAlpha(p))))
+// FIXME: Remove when all Qt modules have stopped using PREMUL and INV_PREMUL
+#define PREMUL(x) qPremultiply(x)
+#define INV_PREMUL(p) qUnpremultiply(p)
 
 struct quint24 {
     quint24(uint value);
@@ -726,7 +704,6 @@ template<> inline void qt_memfill(quint32 *dest, quint32 color, int count)
 
 template<> inline void qt_memfill(quint16 *dest, quint16 color, int count)
 {
-    extern void (*qt_memfill16)(quint16 *dest, quint16 value, int count);
     qt_memfill16(dest, color, count);
 }
 
@@ -1031,6 +1008,7 @@ struct QPixelLayout
     BPP bpp;
     ConvertFunc convertToARGB32PM;
     ConvertFunc convertFromARGB32PM;
+    ConvertFunc convertFromRGB32;
 };
 
 typedef const uint *(QT_FASTCALL *FetchPixelsFunc)(uint *buffer, const uchar *src, int index, int count);

@@ -87,8 +87,9 @@ QT_FOR_EACH_STATIC_TYPE(RETURN_METATYPENAME_STRING)
     return 0;
  }
 
-Generator::Generator(ClassDef *classDef, const QList<QByteArray> &metaTypes, const QSet<QByteArray> &knownQObjectClasses, FILE *outfile)
+Generator::Generator(ClassDef *classDef, const QList<QByteArray> &metaTypes, const QHash<QByteArray, QByteArray> &knownQObjectClasses, const QHash<QByteArray, QByteArray> &knownGadgets, FILE *outfile)
     : out(outfile), cdef(classDef), metaTypes(metaTypes), knownQObjectClasses(knownQObjectClasses)
+    , knownGadgets(knownGadgets)
 {
     if (cdef->superclassList.size())
         purestSuperClass = cdef->superclassList.first().first;
@@ -243,7 +244,7 @@ void Generator::generateCode()
         int len = 0;
         for (int i = 0; i < strings.size(); ++i)
             len += strings.at(i).length() + 1;
-        fprintf(out, "    char stringdata[%d];\n", len + 1);
+        fprintf(out, "    char stringdata[%d];\n", len);
     }
     fprintf(out, "};\n");
 
@@ -254,8 +255,8 @@ void Generator::generateCode()
     // QByteArrayData::data() implementation returning simply "this + offset".
     fprintf(out, "#define QT_MOC_LITERAL(idx, ofs, len) \\\n"
             "    Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \\\n"
-            "    offsetof(qt_meta_stringdata_%s_t, stringdata) + ofs \\\n"
-            "        - idx * sizeof(QByteArrayData) \\\n"
+            "    qptrdiff(offsetof(qt_meta_stringdata_%s_t, stringdata) + ofs \\\n"
+            "        - idx * sizeof(QByteArrayData)) \\\n"
             "    )\n",
             qualifiedClassNameIdentifier.constData());
 
@@ -315,7 +316,8 @@ void Generator::generateCode()
             col += spanLen;
         }
 
-        fputs("\\0", out);
+        if (i != strings.size() - 1) // skip the last \0 the c++ will add it for us
+            fputs("\\0", out);
         col += len + 2;
     }
 
@@ -436,17 +438,46 @@ void Generator::generateCode()
 // Build extra array
 //
     QList<QByteArray> extraList;
+    QHash<QByteArray, QByteArray> knownExtraMetaObject = knownGadgets;
+    knownExtraMetaObject.unite(knownQObjectClasses);
+
     for (int i = 0; i < cdef->propertyList.count(); ++i) {
         const PropertyDef &p = cdef->propertyList.at(i);
-        if (!isBuiltinType(p.type) && !metaTypes.contains(p.type) && !p.type.contains('*') &&
-                !p.type.contains('<') && !p.type.contains('>')) {
-            int s = p.type.lastIndexOf("::");
-            if (s > 0) {
-                QByteArray scope = p.type.left(s);
-                if (scope != "Qt" && !qualifiedNameEquals(cdef->qualified, scope)  && !extraList.contains(scope))
-                    extraList += scope;
-            }
-        }
+        if (isBuiltinType(p.type))
+            continue;
+
+        if (p.type.contains('*') || p.type.contains('<') || p.type.contains('>'))
+            continue;
+
+        int s = p.type.lastIndexOf("::");
+        if (s <= 0)
+            continue;
+
+        QByteArray unqualifiedScope = p.type.left(s);
+
+        // The scope may be a namespace for example, so it's only safe to include scopes that are known QObjects (QTBUG-2151)
+        QHash<QByteArray, QByteArray>::ConstIterator scopeIt;
+
+        QByteArray thisScope = cdef->qualified;
+        do {
+            int s = thisScope.lastIndexOf("::");
+            thisScope = thisScope.left(s);
+            QByteArray currentScope = thisScope.isEmpty() ? unqualifiedScope : thisScope + "::" + unqualifiedScope;
+            scopeIt = knownExtraMetaObject.constFind(currentScope);
+        } while (!thisScope.isEmpty() && scopeIt == knownExtraMetaObject.constEnd());
+
+        if (scopeIt == knownExtraMetaObject.constEnd())
+            continue;
+
+        const QByteArray &scope = *scopeIt;
+
+        if (scope == "Qt")
+            continue;
+        if (qualifiedNameEquals(cdef->qualified, scope))
+            continue;
+
+        if (!extraList.contains(scope))
+            extraList += scope;
     }
 
     // QTBUG-20639 - Accept non-local enums for QML signal/slot parameters.
@@ -464,7 +495,7 @@ void Generator::generateCode()
     }
 
     if (!extraList.isEmpty()) {
-        fprintf(out, "static const QMetaObject *qt_meta_extradata_%s[] = {\n    ", qualifiedClassNameIdentifier.constData());
+        fprintf(out, "static const QMetaObject * const qt_meta_extradata_%s[] = {\n    ", qualifiedClassNameIdentifier.constData());
         for (int i = 0; i < extraList.count(); ++i) {
             fprintf(out, "    &%s::staticMetaObject,\n", extraList.at(i).constData());
         }
@@ -610,31 +641,38 @@ void Generator::generateFunctions(const QList<FunctionDef>& list, const char *fu
     for (int i = 0; i < list.count(); ++i) {
         const FunctionDef &f = list.at(i);
 
+        QByteArray comment;
         unsigned char flags = type;
-        if (f.access == FunctionDef::Private)
+        if (f.access == FunctionDef::Private) {
             flags |= AccessPrivate;
-        else if (f.access == FunctionDef::Public)
+            comment.append(QByteArrayLiteral("Private"));
+        } else if (f.access == FunctionDef::Public) {
             flags |= AccessPublic;
-        else if (f.access == FunctionDef::Protected)
+            comment.append(QByteArrayLiteral("Public"));
+        } else if (f.access == FunctionDef::Protected) {
             flags |= AccessProtected;
-        if (f.access == FunctionDef::Private)
-            flags |= AccessPrivate;
-        else if (f.access == FunctionDef::Public)
-            flags |= AccessPublic;
-        else if (f.access == FunctionDef::Protected)
-            flags |= AccessProtected;
-        if (f.isCompat)
+            comment.append(QByteArrayLiteral("Protected"));
+        }
+        if (f.isCompat) {
             flags |= MethodCompatibility;
-        if (f.wasCloned)
+            comment.append(QByteArrayLiteral(" | MethodCompatibility"));
+        }
+        if (f.wasCloned) {
             flags |= MethodCloned;
-        if (f.isScriptable)
+            comment.append(QByteArrayLiteral(" | MethodCloned"));
+        }
+        if (f.isScriptable) {
             flags |= MethodScriptable;
-        if (f.revision > 0)
+            comment.append(QByteArrayLiteral(" | isScriptable"));
+        }
+        if (f.revision > 0) {
             flags |= MethodRevisioned;
+            comment.append(QByteArrayLiteral(" | MethodRevisioned"));
+        }
 
         int argc = f.arguments.count();
-        fprintf(out, "    %4d, %4d, %4d, %4d, 0x%02x,\n",
-            stridx(f.name), argc, paramsIndex, stridx(f.tag), flags);
+        fprintf(out, "    %4d, %4d, %4d, %4d, 0x%02x /* %s */,\n",
+            stridx(f.name), argc, paramsIndex, stridx(f.tag), flags, comment.constData());
 
         paramsIndex += 1 + argc * 2;
     }

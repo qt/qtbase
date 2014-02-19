@@ -17,7 +17,7 @@
 namespace rx
 {
 
-SwapChain11::SwapChain11(Renderer11 *renderer, HWND window, HANDLE shareHandle,
+SwapChain11::SwapChain11(Renderer11 *renderer, EGLNativeWindowType window, HANDLE shareHandle,
                          GLenum backBufferFormat, GLenum depthBufferFormat)
     : mRenderer(renderer), SwapChain(window, shareHandle, backBufferFormat, depthBufferFormat)
 {
@@ -468,6 +468,7 @@ EGLint SwapChain11::reset(int backbufferWidth, int backbufferHeight, EGLint swap
 
     if (mWindow)
     {
+#if !defined(ANGLE_OS_WINRT)
         // We cannot create a swap chain for an HWND that is owned by a different process
         DWORD currentProcessId = GetCurrentProcessId();
         DWORD wndProcessId;
@@ -491,14 +492,39 @@ EGLint SwapChain11::reset(int backbufferWidth, int backbufferHeight, EGLint swap
         swapChainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
         swapChainDesc.BufferDesc.RefreshRate.Numerator = 0;
         swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
+        swapChainDesc.Windowed = TRUE;
+        swapChainDesc.OutputWindow = mWindow;
+#else
+        IDXGIFactory2 *factory;
+        HRESULT result = mRenderer->getDxgiFactory()->QueryInterface(IID_PPV_ARGS(&factory));
+        ASSERT(SUCCEEDED(result));
+
+        DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {0};
+        swapChainDesc.Format = gl_d3d11::ConvertRenderbufferFormat(mBackBufferFormat);
+        swapChainDesc.Width = backbufferWidth;
+        swapChainDesc.Height = backbufferHeight;
+        swapChainDesc.Stereo = FALSE;
+#if !defined(ANGLE_OS_WINPHONE)
+        swapChainDesc.BufferCount = 2;
+        swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
+#else
+        swapChainDesc.BufferCount = 1;
+        swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+#endif
+#endif
+
         swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
         swapChainDesc.Flags = 0;
-        swapChainDesc.OutputWindow = mWindow;
         swapChainDesc.SampleDesc.Count = 1;
         swapChainDesc.SampleDesc.Quality = 0;
-        swapChainDesc.Windowed = TRUE;
 
+#if !defined(ANGLE_OS_WINRT)
         HRESULT result = factory->CreateSwapChain(device, &swapChainDesc, &mSwapChain);
+#else
+        IDXGISwapChain1 *swapChain;
+        result = factory->CreateSwapChainForCoreWindow(device, mWindow, &swapChainDesc, NULL, &swapChain);
+        mSwapChain = swapChain;
+#endif
 
         if (FAILED(result))
         {

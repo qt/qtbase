@@ -51,33 +51,17 @@
 #elif defined(Q_CC_MSVC)
 #  include <QtCore/qatomic_msvc.h>
 
-// Operating system dependent implementation
-#elif defined(Q_OS_INTEGRITY)
-#  include "QtCore/qatomic_integrity.h"
-#elif defined(Q_OS_VXWORKS)
-#  include "QtCore/qatomic_vxworks.h"
-
 // Processor dependent implementation
-#elif defined(Q_PROCESSOR_ALPHA)
-#  include "QtCore/qatomic_alpha.h"
 #elif defined(Q_PROCESSOR_ARM_V7) && defined(Q_PROCESSOR_ARM_32)
 # include "QtCore/qatomic_armv7.h"
 #elif defined(Q_PROCESSOR_ARM_V6) && defined(Q_PROCESSOR_ARM_32)
 # include "QtCore/qatomic_armv6.h"
 #elif defined(Q_PROCESSOR_ARM_V5) && defined(Q_PROCESSOR_ARM_32)
 # include "QtCore/qatomic_armv5.h"
-#elif defined(Q_PROCESSOR_BFIN)
-#  include "QtCore/qatomic_bfin.h"
 #elif defined(Q_PROCESSOR_IA64)
 #  include "QtCore/qatomic_ia64.h"
 #elif defined(Q_PROCESSOR_MIPS)
 #  include "QtCore/qatomic_mips.h"
-#elif defined(Q_PROCESSOR_POWER)
-#  include "QtCore/qatomic_power.h"
-#elif defined(Q_PROCESSOR_S390)
-#  include "QtCore/qatomic_s390.h"
-#elif defined(Q_PROCESSOR_SH4A)
-#  include "QtCore/qatomic_sh4a.h"
 #elif defined(Q_PROCESSOR_SPARC)
 #  include "QtCore/qatomic_sparc.h"
 #elif defined(Q_PROCESSOR_X86)
@@ -97,9 +81,6 @@
 #else
 #  error "Qt has not been ported to this platform"
 #endif
-
-// Only include if the implementation has been ported to QAtomicOps
-#ifndef QOLDBASICATOMIC_H
 
 QT_BEGIN_NAMESPACE
 
@@ -133,7 +114,8 @@ class QBasicAtomicInteger
 public:
     typedef QAtomicOps<T> Ops;
     // static check that this is a valid integer
-    typedef char PermittedIntegerType[QAtomicIntegerTraits<T>::IsInteger ? 1 : -1];
+    Q_STATIC_ASSERT_X(QTypeInfo<T>::isIntegral, "template parameter is not an integral type");
+    Q_STATIC_ASSERT_X(QAtomicOpsSupport<sizeof(T)>::IsSupported, "template parameter is an integral of a size not supported on this platform");
 
     typename Ops::Type _q_value;
 
@@ -144,6 +126,8 @@ public:
 
     T loadAcquire() const Q_DECL_NOTHROW { return Ops::loadAcquire(_q_value); }
     void storeRelease(T newValue) Q_DECL_NOTHROW { Ops::storeRelease(_q_value, newValue); }
+    operator T() const Q_DECL_NOTHROW { return loadAcquire(); }
+    T operator=(T newValue) Q_DECL_NOTHROW { storeRelease(newValue); return newValue; }
 
     static Q_DECL_CONSTEXPR bool isReferenceCountingNative() Q_DECL_NOTHROW { return Ops::isReferenceCountingNative(); }
     static Q_DECL_CONSTEXPR bool isReferenceCountingWaitFree() Q_DECL_NOTHROW { return Ops::isReferenceCountingWaitFree(); }
@@ -162,6 +146,15 @@ public:
     { return Ops::testAndSetRelease(_q_value, expectedValue, newValue); }
     bool testAndSetOrdered(T expectedValue, T newValue) Q_DECL_NOTHROW
     { return Ops::testAndSetOrdered(_q_value, expectedValue, newValue); }
+
+    bool testAndSetRelaxed(T expectedValue, T newValue, T &currentValue) Q_DECL_NOTHROW
+    { return Ops::testAndSetRelaxed(_q_value, expectedValue, newValue, &currentValue); }
+    bool testAndSetAcquire(T expectedValue, T newValue, T &currentValue) Q_DECL_NOTHROW
+    { return Ops::testAndSetAcquire(_q_value, expectedValue, newValue, &currentValue); }
+    bool testAndSetRelease(T expectedValue, T newValue, T &currentValue) Q_DECL_NOTHROW
+    { return Ops::testAndSetRelease(_q_value, expectedValue, newValue, &currentValue); }
+    bool testAndSetOrdered(T expectedValue, T newValue, T &currentValue) Q_DECL_NOTHROW
+    { return Ops::testAndSetOrdered(_q_value, expectedValue, newValue, &currentValue); }
 
     static Q_DECL_CONSTEXPR bool isFetchAndStoreNative() Q_DECL_NOTHROW { return Ops::isFetchAndStoreNative(); }
     static Q_DECL_CONSTEXPR bool isFetchAndStoreWaitFree() Q_DECL_NOTHROW { return Ops::isFetchAndStoreWaitFree(); }
@@ -187,6 +180,63 @@ public:
     T fetchAndAddOrdered(T valueToAdd) Q_DECL_NOTHROW
     { return Ops::fetchAndAddOrdered(_q_value, valueToAdd); }
 
+    T fetchAndSubRelaxed(T valueToAdd) Q_DECL_NOTHROW
+    { return Ops::fetchAndSubRelaxed(_q_value, valueToAdd); }
+    T fetchAndSubAcquire(T valueToAdd) Q_DECL_NOTHROW
+    { return Ops::fetchAndSubAcquire(_q_value, valueToAdd); }
+    T fetchAndSubRelease(T valueToAdd) Q_DECL_NOTHROW
+    { return Ops::fetchAndSubRelease(_q_value, valueToAdd); }
+    T fetchAndSubOrdered(T valueToAdd) Q_DECL_NOTHROW
+    { return Ops::fetchAndSubOrdered(_q_value, valueToAdd); }
+
+    T fetchAndAndRelaxed(T valueToAdd) Q_DECL_NOTHROW
+    { return Ops::fetchAndAndRelaxed(_q_value, valueToAdd); }
+    T fetchAndAndAcquire(T valueToAdd) Q_DECL_NOTHROW
+    { return Ops::fetchAndAndAcquire(_q_value, valueToAdd); }
+    T fetchAndAndRelease(T valueToAdd) Q_DECL_NOTHROW
+    { return Ops::fetchAndAndRelease(_q_value, valueToAdd); }
+    T fetchAndAndOrdered(T valueToAdd) Q_DECL_NOTHROW
+    { return Ops::fetchAndAndOrdered(_q_value, valueToAdd); }
+
+    T fetchAndOrRelaxed(T valueToAdd) Q_DECL_NOTHROW
+    { return Ops::fetchAndOrRelaxed(_q_value, valueToAdd); }
+    T fetchAndOrAcquire(T valueToAdd) Q_DECL_NOTHROW
+    { return Ops::fetchAndOrAcquire(_q_value, valueToAdd); }
+    T fetchAndOrRelease(T valueToAdd) Q_DECL_NOTHROW
+    { return Ops::fetchAndOrRelease(_q_value, valueToAdd); }
+    T fetchAndOrOrdered(T valueToAdd) Q_DECL_NOTHROW
+    { return Ops::fetchAndOrOrdered(_q_value, valueToAdd); }
+
+    T fetchAndXorRelaxed(T valueToAdd) Q_DECL_NOTHROW
+    { return Ops::fetchAndXorRelaxed(_q_value, valueToAdd); }
+    T fetchAndXorAcquire(T valueToAdd) Q_DECL_NOTHROW
+    { return Ops::fetchAndXorAcquire(_q_value, valueToAdd); }
+    T fetchAndXorRelease(T valueToAdd) Q_DECL_NOTHROW
+    { return Ops::fetchAndXorRelease(_q_value, valueToAdd); }
+    T fetchAndXorOrdered(T valueToAdd) Q_DECL_NOTHROW
+    { return Ops::fetchAndXorOrdered(_q_value, valueToAdd); }
+
+    T operator++() Q_DECL_NOTHROW
+    { return fetchAndAddOrdered(1) + 1; }
+    T operator++(int) Q_DECL_NOTHROW
+    { return fetchAndAddOrdered(1); }
+    T operator--() Q_DECL_NOTHROW
+    { return fetchAndSubOrdered(1) - 1; }
+    T operator--(int) Q_DECL_NOTHROW
+    { return fetchAndSubOrdered(1); }
+
+    T operator+=(T v) Q_DECL_NOTHROW
+    { return fetchAndAddOrdered(v) + v; }
+    T operator-=(T v) Q_DECL_NOTHROW
+    { return fetchAndSubOrdered(v) - v; }
+    T operator&=(T v) Q_DECL_NOTHROW
+    { return fetchAndAndOrdered(v) & v; }
+    T operator|=(T v) Q_DECL_NOTHROW
+    { return fetchAndOrOrdered(v) | v; }
+    T operator^=(T v) Q_DECL_NOTHROW
+    { return fetchAndXorOrdered(v) ^ v; }
+
+
 #ifdef QT_BASIC_ATOMIC_HAS_CONSTRUCTORS
     QBasicAtomicInteger() = default;
     constexpr QBasicAtomicInteger(T value) Q_DECL_NOTHROW : _q_value(value) {}
@@ -207,9 +257,10 @@ public:
 
     AtomicType _q_value;
 
-    // Non-atomic API
     Type load() const Q_DECL_NOTHROW { return _q_value; }
     void store(Type newValue) Q_DECL_NOTHROW { _q_value = newValue; }
+    operator Type() const Q_DECL_NOTHROW { return loadAcquire(); }
+    Type operator=(Type newValue) Q_DECL_NOTHROW { storeRelease(newValue); return newValue; }
 
     // Atomic API, implemented in qatomic_XXX.h
     Type loadAcquire() const Q_DECL_NOTHROW { return Ops::loadAcquire(_q_value); }
@@ -226,6 +277,15 @@ public:
     { return Ops::testAndSetRelease(_q_value, expectedValue, newValue); }
     bool testAndSetOrdered(Type expectedValue, Type newValue) Q_DECL_NOTHROW
     { return Ops::testAndSetOrdered(_q_value, expectedValue, newValue); }
+
+    bool testAndSetRelaxed(Type expectedValue, Type newValue, Type &currentValue) Q_DECL_NOTHROW
+    { return Ops::testAndSetRelaxed(_q_value, expectedValue, newValue, &currentValue); }
+    bool testAndSetAcquire(Type expectedValue, Type newValue, Type &currentValue) Q_DECL_NOTHROW
+    { return Ops::testAndSetAcquire(_q_value, expectedValue, newValue, &currentValue); }
+    bool testAndSetRelease(Type expectedValue, Type newValue, Type &currentValue) Q_DECL_NOTHROW
+    { return Ops::testAndSetRelease(_q_value, expectedValue, newValue, &currentValue); }
+    bool testAndSetOrdered(Type expectedValue, Type newValue, Type &currentValue) Q_DECL_NOTHROW
+    { return Ops::testAndSetOrdered(_q_value, expectedValue, newValue, &currentValue); }
 
     static Q_DECL_CONSTEXPR bool isFetchAndStoreNative() Q_DECL_NOTHROW { return Ops::isFetchAndStoreNative(); }
     static Q_DECL_CONSTEXPR bool isFetchAndStoreWaitFree() Q_DECL_NOTHROW { return Ops::isFetchAndStoreWaitFree(); }
@@ -251,6 +311,28 @@ public:
     Type fetchAndAddOrdered(qptrdiff valueToAdd) Q_DECL_NOTHROW
     { return Ops::fetchAndAddOrdered(_q_value, valueToAdd); }
 
+    Type fetchAndSubRelaxed(qptrdiff valueToAdd) Q_DECL_NOTHROW
+    { return Ops::fetchAndSubRelaxed(_q_value, valueToAdd); }
+    Type fetchAndSubAcquire(qptrdiff valueToAdd) Q_DECL_NOTHROW
+    { return Ops::fetchAndSubAcquire(_q_value, valueToAdd); }
+    Type fetchAndSubRelease(qptrdiff valueToAdd) Q_DECL_NOTHROW
+    { return Ops::fetchAndSubRelease(_q_value, valueToAdd); }
+    Type fetchAndSubOrdered(qptrdiff valueToAdd) Q_DECL_NOTHROW
+    { return Ops::fetchAndSubOrdered(_q_value, valueToAdd); }
+
+    Type operator++() Q_DECL_NOTHROW
+    { return fetchAndAddOrdered(1) + 1; }
+    Type operator++(int) Q_DECL_NOTHROW
+    { return fetchAndAddOrdered(1); }
+    Type operator--() Q_DECL_NOTHROW
+    { return fetchAndSubOrdered(1) - 1; }
+    Type operator--(int) Q_DECL_NOTHROW
+    { return fetchAndSubOrdered(1); }
+    Type operator+=(qptrdiff valueToAdd) Q_DECL_NOTHROW
+    { return fetchAndAddOrdered(valueToAdd) + valueToAdd; }
+    Type operator-=(qptrdiff valueToSub) Q_DECL_NOTHROW
+    { return fetchAndSubOrdered(valueToSub) - valueToSub; }
+
 #ifdef QT_BASIC_ATOMIC_HAS_CONSTRUCTORS
     QBasicAtomicPointer() = default;
     constexpr QBasicAtomicPointer(Type value) Q_DECL_NOTHROW : _q_value(value) {}
@@ -265,7 +347,5 @@ public:
 #endif
 
 QT_END_NAMESPACE
-
-#endif // QOLDBASICATOMIC_H
 
 #endif // QBASICATOMIC_H

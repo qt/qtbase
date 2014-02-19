@@ -960,8 +960,8 @@ void QSortFilterProxyModelPrivate::updateChildrenMapping(const QModelIndex &sour
             // update mapping
             Mapping *cm = source_index_mapping.take(source_child_index);
             Q_ASSERT(cm);
-	    // we do not reinsert right away, because the new index might be identical with another, old index
-	    moved_source_index_mappings.append(QPair<QModelIndex, Mapping*>(new_index, cm));
+            // we do not reinsert right away, because the new index might be identical with another, old index
+            moved_source_index_mappings.append(QPair<QModelIndex, Mapping*>(new_index, cm));
         }
     }
 
@@ -1139,7 +1139,7 @@ QSet<int> QSortFilterProxyModelPrivate::handle_filter_changed(
 }
 
 void QSortFilterProxyModelPrivate::_q_sourceDataChanged(const QModelIndex &source_top_left,
-							const QModelIndex &source_bottom_right)
+                                                        const QModelIndex &source_bottom_right)
 {
     Q_Q(QSortFilterProxyModel);
     if (!source_top_left.isValid() || !source_bottom_right.isValid())
@@ -1211,8 +1211,8 @@ void QSortFilterProxyModelPrivate::_q_sourceDataChanged(const QModelIndex &sourc
                             source_parent, Qt::Vertical, false);
         update_persistent_indexes(source_indexes);
         emit q->layoutChanged(parents, QAbstractItemModel::VerticalSortHint);
-	// Make sure we also emit dataChanged for the rows
-	source_rows_change += source_rows_resort;
+        // Make sure we also emit dataChanged for the rows
+        source_rows_change += source_rows_resort;
     }
 
     if (!source_rows_change.isEmpty()) {

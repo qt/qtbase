@@ -74,7 +74,6 @@ public:
     STDMETHOD(Drop)(LPDATAOBJECT pDataObj, DWORD grfKeyState, POINTL pt, LPDWORD pdwEffect);
 
 private:
-    inline QWindow *findDragOverWindow(const POINTL &pt) const;
     void handleDrag(QWindow *window, DWORD grfKeyState, const QPoint &, LPDWORD pdwEffect);
 
     ULONG m_refs;

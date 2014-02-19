@@ -29,7 +29,7 @@
     \page coordsys.html
     \title Coordinate System
     \ingroup qt-graphics
-	\ingroup best-practices
+    \ingroup best-practices
     \brief Information about the coordinate system used by the paint
     system.
 

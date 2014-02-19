@@ -76,6 +76,9 @@
 #include "cxx11-explicit-override-control.h"
 
 #include "parse-defines.h"
+#include "related-metaobjects-in-namespaces.h"
+#include "related-metaobjects-in-gadget.h"
+#include "related-metaobjects-name-conflict.h"
 
 QT_USE_NAMESPACE
 
@@ -569,6 +572,11 @@ private slots:
     void preprocessorOnly();
     void unterminatedFunctionMacro();
     void QTBUG32933_relatedObjectsDontIncludeItself();
+    void writeEnumFromUnrelatedClass();
+    void relatedMetaObjectsWithinNamespaces();
+    void relatedMetaObjectsInGadget();
+    void relatedMetaObjectsNameConflict_data();
+    void relatedMetaObjectsNameConflict();
 
 signals:
     void sigWithUnsignedArg(unsigned foo);
@@ -688,8 +696,8 @@ void tst_Moc::warnOnExtraSignalSlotQualifiaction()
     QVERIFY(!mocOut.isEmpty());
     QString mocWarning = QString::fromLocal8Bit(proc.readAllStandardError());
     QCOMPARE(mocWarning, header +
-                QString(":53: Warning: Function declaration Test::badFunctionDeclaration contains extra qualification. Ignoring as signal or slot.\n") +
-                header + QString(":56: Warning: parsemaybe: Function declaration Test::anotherOne contains extra qualification. Ignoring as signal or slot.\n"));
+                QString(":56: Warning: Function declaration Test::badFunctionDeclaration contains extra qualification. Ignoring as signal or slot.\n") +
+                header + QString(":59: Warning: parsemaybe: Function declaration Test::anotherOne contains extra qualification. Ignoring as signal or slot.\n"));
 #else
     QSKIP("Only tested on linux/gcc");
 #endif
@@ -885,7 +893,7 @@ void tst_Moc::testExtraDataForEnum()
     const QMetaObject *mobjUser = &EnumUserClass::staticMetaObject;
     QCOMPARE(mobjUser->enumeratorCount(), 0);
 
-    const QMetaObject **objects = mobjUser->d.relatedMetaObjects;
+    const QMetaObject * const *objects = mobjUser->d.relatedMetaObjects;
     QVERIFY(objects);
     QVERIFY(objects[0] == mobjSource);
     QVERIFY(objects[1] == 0);
@@ -967,7 +975,7 @@ void tst_Moc::warnOnMultipleInheritance()
     QVERIFY(!mocOut.isEmpty());
     QString mocWarning = QString::fromLocal8Bit(proc.readAllStandardError());
     QCOMPARE(mocWarning, header +
-                QString(":53: Warning: Class Bar inherits from two QObject subclasses QWindow and Foo. This is not supported!\n"));
+                QString(":56: Warning: Class Bar inherits from two QObject subclasses QWindow and Foo. This is not supported!\n"));
 #else
     QSKIP("Only tested on linux/gcc");
 #endif
@@ -1030,7 +1038,7 @@ void tst_Moc::forgottenQInterface()
     QVERIFY(!mocOut.isEmpty());
     QString mocWarning = QString::fromLocal8Bit(proc.readAllStandardError());
     QCOMPARE(mocWarning, header +
-                QString(":55: Warning: Class Test implements the interface MyInterface but does not list it in Q_INTERFACES. qobject_cast to MyInterface will not work!\n"));
+                QString(":58: Warning: Class Test implements the interface MyInterface but does not list it in Q_INTERFACES. qobject_cast to MyInterface will not work!\n"));
 #else
     QSKIP("Only tested on linux/gcc");
 #endif
@@ -1346,7 +1354,7 @@ void tst_Moc::warnOnPropertyWithoutREAD()
     QVERIFY(!mocOut.isEmpty());
     QString mocWarning = QString::fromLocal8Bit(proc.readAllStandardError());
     QCOMPARE(mocWarning, header +
-                QString(":46: Warning: Property declaration foo has no READ accessor function or associated MEMBER variable. The property will be invalid.\n"));
+                QString(":49: Warning: Property declaration foo has no READ accessor function or associated MEMBER variable. The property will be invalid.\n"));
 #else
     QSKIP("Only tested on linux/gcc");
 #endif
@@ -1456,8 +1464,8 @@ void tst_Moc::warnOnVirtualSignal()
     QByteArray mocOut = proc.readAllStandardOutput();
     QVERIFY(!mocOut.isEmpty());
     QString mocWarning = QString::fromLocal8Bit(proc.readAllStandardError());
-    QCOMPARE(mocWarning, header + QString(":48: Warning: Signals cannot be declared virtual\n") +
-                         header + QString(":50: Warning: Signals cannot be declared virtual\n"));
+    QCOMPARE(mocWarning, header + QString(":51: Warning: Signals cannot be declared virtual\n") +
+                         header + QString(":53: Warning: Signals cannot be declared virtual\n"));
 #else
     QSKIP("Only tested on linux/gcc");
 #endif
@@ -1590,7 +1598,7 @@ void tst_Moc::notifyError()
     QVERIFY(mocOut.isEmpty());
     QString mocError = QString::fromLocal8Bit(proc.readAllStandardError());
     QCOMPARE(mocError, header +
-        QString(":52: Error: NOTIFY signal 'fooChanged' of property 'foo' does not exist in class ClassWithWrongNOTIFY.\n"));
+        QString(":55: Error: NOTIFY signal 'fooChanged' of property 'foo' does not exist in class ClassWithWrongNOTIFY.\n"));
 #else
     QSKIP("Only tested on linux/gcc");
 #endif
@@ -3121,10 +3129,127 @@ namespace QTBUG32933_relatedObjectsDontIncludeItself {
 void tst_Moc::QTBUG32933_relatedObjectsDontIncludeItself()
 {
     const QMetaObject *mo = &QTBUG32933_relatedObjectsDontIncludeItself::NS::Obj::staticMetaObject;
-    const QMetaObject **objects = mo->d.relatedMetaObjects;
+    const QMetaObject * const *objects = mo->d.relatedMetaObjects;
     // the related objects should be empty because the enums is in the same object.
     QVERIFY(!objects);
 
+}
+
+class UnrelatedClass : public QObject
+{
+    Q_OBJECT
+    Q_ENUMS(UnrelatedEnum)
+public:
+    enum UnrelatedEnum {
+        UnrelatedInvalidValue = -1,
+        UnrelatedValue = 42
+    };
+};
+
+// The presence of this macro used to confuse moc and prevent
+// UnrelatedClass from being listed in the related meta objects.
+Q_DECLARE_METATYPE(UnrelatedClass::UnrelatedEnum)
+
+class TestClassReferencingUnrelatedEnum : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(UnrelatedClass::UnrelatedEnum enumProperty READ enumProperty WRITE setEnumProperty)
+public:
+    TestClassReferencingUnrelatedEnum()
+        : m_enumProperty(UnrelatedClass::UnrelatedInvalidValue)
+    {}
+
+    UnrelatedClass::UnrelatedEnum enumProperty() const {
+        return m_enumProperty;
+    }
+
+    void setEnumProperty(UnrelatedClass::UnrelatedEnum arg) {
+        m_enumProperty = arg;
+    }
+
+private:
+    UnrelatedClass::UnrelatedEnum m_enumProperty;
+};
+
+void tst_Moc::writeEnumFromUnrelatedClass()
+{
+    TestClassReferencingUnrelatedEnum obj;
+    QString enumValueAsString("UnrelatedValue");
+    obj.setProperty("enumProperty", enumValueAsString);
+    QCOMPARE(int(obj.enumProperty()), int(UnrelatedClass::UnrelatedValue));
+}
+
+
+
+void tst_Moc::relatedMetaObjectsWithinNamespaces()
+{
+    const QMetaObject *relatedMo = &QTBUG_2151::A::staticMetaObject;
+
+    const QMetaObject *testMo = &QTBUG_2151::B::staticMetaObject;
+    QVERIFY(testMo->d.relatedMetaObjects);
+    QVERIFY(testMo->d.relatedMetaObjects[0] == relatedMo);
+}
+
+void tst_Moc::relatedMetaObjectsInGadget()
+{
+    const QMetaObject *relatedMo = &QTBUG_35657::A::staticMetaObject;
+
+    const QMetaObject *testMo = &QTBUG_35657::B::staticMetaObject;
+    QVERIFY(testMo->d.relatedMetaObjects);
+    QVERIFY(testMo->d.relatedMetaObjects[0] == relatedMo);
+}
+
+void tst_Moc::relatedMetaObjectsNameConflict_data()
+{
+    typedef QVector<const QMetaObject*> QMetaObjects;
+    QTest::addColumn<const QMetaObject*>("dependingObject");
+    QTest::addColumn<QMetaObjects>("relatedMetaObjects");
+
+    //NS1
+    const QMetaObject *n1gadget = &NS1::Gadget::staticMetaObject;
+    const QMetaObject *n1object = &NS1::Object::staticMetaObject;
+    const QMetaObject *n1nestedGadget = &NS1::Nested::Gadget::staticMetaObject;
+    const QMetaObject *n1nestedObject = &NS1::Nested::Object::staticMetaObject;
+    //N2
+    const QMetaObject *n2gadget = &NS2::Gadget::staticMetaObject;
+    const QMetaObject *n2object = &NS2::Object::staticMetaObject;
+    const QMetaObject *n2nestedGadget = &NS2::Nested::Gadget::staticMetaObject;
+    const QMetaObject *n2nestedObject = &NS2::Nested::Object::staticMetaObject;
+
+    QTest::newRow("N1::dependingObject") << &NS1::DependingObject::staticMetaObject
+                                        <<  (QMetaObjects() << n1gadget << n1object);
+    QTest::newRow("N2::dependingObject") << &NS2::DependingObject::staticMetaObject
+                                        <<  (QMetaObjects() << n2gadget << n2object);
+    QTest::newRow("N1::dependingNestedObject") << &NS1::DependingNestedObject::staticMetaObject
+                                        <<  (QMetaObjects() << n1nestedObject);
+    QTest::newRow("N2::dependingNestedObject") << &NS2::DependingNestedObject::staticMetaObject
+                                        <<  (QMetaObjects() << n2nestedObject);
+    QTest::newRow("N1::dependingNestedGadget") << &NS1::DependingNestedGadget::staticMetaObject
+                                        <<  (QMetaObjects() << n1nestedGadget);
+    QTest::newRow("N2::dependingNestedGadget") << &NS2::DependingNestedGadget::staticMetaObject
+                                        <<  (QMetaObjects() << n2nestedGadget);
+}
+
+void tst_Moc::relatedMetaObjectsNameConflict()
+{
+    typedef QVector<const QMetaObject*> QMetaObjects;
+    QFETCH(const QMetaObject*, dependingObject);
+    QFETCH(QMetaObjects, relatedMetaObjects);
+
+    // load all specified metaobjects int a set
+    QSet<const QMetaObject*> dependency;
+    const QMetaObject *const *i = dependingObject->d.relatedMetaObjects;
+    while (*i) {
+        dependency.insert(*i);
+        ++i;
+    }
+
+    // check if all required metaobjects are specified
+    foreach (const QMetaObject *mo, relatedMetaObjects)
+        QVERIFY(dependency.contains(mo));
+
+    // check if no additional metaobjects ara specified
+    QCOMPARE(dependency.size(), relatedMetaObjects.size());
 }
 
 QTEST_MAIN(tst_Moc)

@@ -165,7 +165,7 @@ public:
 #ifndef QT_NO_ICON
     bool delegate(const QIcon *)
     {
-        return false;
+        return v_cast<QIcon>(Base::m_a)->cacheKey() == v_cast<QIcon>(Base::m_b)->cacheKey();
     }
 #endif
     bool delegate(const void *p) { return Base::delegate(p); }

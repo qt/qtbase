@@ -63,9 +63,9 @@
     layout. The layout takes ownership of the items. In some cases when the layout
     item also inherits from QGraphicsItem (such as QGraphicsWidget) there will be a
     ambiguity in ownership because the layout item belongs to two ownership hierarchies.
-	See the documentation of QGraphicsLayoutItem::setOwnedByLayout() how to handle
-	this.
-	You can access each item in the layout by calling count() and itemAt(). Calling
+    See the documentation of QGraphicsLayoutItem::setOwnedByLayout() how to handle
+    this.
+    You can access each item in the layout by calling count() and itemAt(). Calling
     removeAt() or removeItem() will remove an item from the layout, without
     destroying it.
 
@@ -122,7 +122,8 @@
 #include "qgraphicslayoutitem.h"
 #include "qgraphicslinearlayout.h"
 #include "qgraphicswidget.h"
-#include "qgridlayoutengine_p.h"
+#include "qgraphicsgridlayoutengine_p.h"
+#include "qgraphicslayoutstyleinfo_p.h"
 #ifdef QT_DEBUG
 #include <QtCore/qdebug.h>
 #endif
@@ -132,16 +133,20 @@ QT_BEGIN_NAMESPACE
 class QGraphicsLinearLayoutPrivate : public QGraphicsLayoutPrivate
 {
 public:
-    QGraphicsLinearLayoutPrivate(Qt::Orientation orientation) : orientation(orientation) { }
+    QGraphicsLinearLayoutPrivate(Qt::Orientation orientation)
+        : orientation(orientation),
+          m_styleInfo(0)
+    { }
 
     void removeGridItem(QGridLayoutItem *gridItem);
-    QLayoutStyleInfo styleInfo() const;
+    QGraphicsLayoutStyleInfo *styleInfo() const;
     void fixIndex(int *index) const;
     int gridRow(int index) const;
     int gridColumn(int index) const;
 
     Qt::Orientation orientation;
-    QGridLayoutEngine engine;
+    mutable QGraphicsLayoutStyleInfo *m_styleInfo;
+    QGraphicsGridLayoutEngine engine;
 };
 
 void QGraphicsLinearLayoutPrivate::removeGridItem(QGridLayoutItem *gridItem)
@@ -172,13 +177,12 @@ int QGraphicsLinearLayoutPrivate::gridColumn(int index) const
     return int(qMin(uint(index), uint(engine.columnCount())));
 }
 
-Q_GLOBAL_STATIC(QWidget, globalStyleInfoWidget)
-
-QLayoutStyleInfo QGraphicsLinearLayoutPrivate::styleInfo() const
+QGraphicsLayoutStyleInfo *QGraphicsLinearLayoutPrivate::styleInfo() const
 {
-    QGraphicsItem *item = parentItem();
-    QStyle *style = (item && item->isWidget()) ? static_cast<QGraphicsWidget*>(item)->style() : QApplication::style();
-    return QLayoutStyleInfo(style, globalStyleInfoWidget());
+    if (!m_styleInfo)
+        m_styleInfo = new QGraphicsLayoutStyleInfo(this);
+    m_styleInfo->updateChanged(QAbstractLayoutStyleInfo::Unknown);
+    return m_styleInfo;
 }
 
 /*!
@@ -281,7 +285,8 @@ void QGraphicsLinearLayout::insertItem(int index, QGraphicsLayoutItem *item)
     Q_ASSERT(item);
     d->fixIndex(&index);
     d->engine.insertRow(index, d->orientation);
-    new QGridLayoutItem(&d->engine, item, d->gridRow(index), d->gridColumn(index), 1, 1, 0, index);
+    QGraphicsGridLayoutEngineItem *gridEngineItem = new QGraphicsGridLayoutEngineItem(item, d->gridRow(index), d->gridColumn(index), 1, 1, 0);
+    d->engine.insertItem(gridEngineItem, index);
     invalidate();
 }
 
@@ -309,7 +314,7 @@ void QGraphicsLinearLayout::insertStretch(int index, int stretch)
 void QGraphicsLinearLayout::removeItem(QGraphicsLayoutItem *item)
 {
     Q_D(QGraphicsLinearLayout);
-    if (QGridLayoutItem *gridItem = d->engine.findLayoutItem(item)) {
+    if (QGraphicsGridLayoutEngineItem *gridItem = d->engine.findLayoutItem(item)) {
         item->setParentLayoutItem(0);
         d->removeGridItem(gridItem);
         delete gridItem;
@@ -330,7 +335,8 @@ void QGraphicsLinearLayout::removeAt(int index)
         qWarning("QGraphicsLinearLayout::removeAt: invalid index %d", index);
         return;
     }
-    if (QGridLayoutItem *gridItem = d->engine.itemAt(index)) {
+
+    if (QGraphicsGridLayoutEngineItem *gridItem = static_cast<QGraphicsGridLayoutEngineItem*>(d->engine.itemAt(index))) {
         if (QGraphicsLayoutItem *layoutItem = gridItem->layoutItem())
             layoutItem->setParentLayoutItem(0);
         d->removeGridItem(gridItem);
@@ -365,7 +371,7 @@ void QGraphicsLinearLayout::setSpacing(qreal spacing)
 qreal QGraphicsLinearLayout::spacing() const
 {
     Q_D(const QGraphicsLinearLayout);
-    return d->engine.spacing(d->styleInfo(), d->orientation);
+    return d->engine.spacing(d->orientation, d->styleInfo());
 }
 
 /*!
@@ -485,7 +491,7 @@ QGraphicsLayoutItem *QGraphicsLinearLayout::itemAt(int index) const
         return 0;
     }
     QGraphicsLayoutItem *item = 0;
-    if (QGridLayoutItem *gridItem = d->engine.itemAt(index))
+    if (QGraphicsGridLayoutEngineItem *gridItem = static_cast<QGraphicsGridLayoutEngineItem *>(d->engine.itemAt(index)))
         item = gridItem->layoutItem();
     return item;
 }
@@ -505,15 +511,15 @@ void QGraphicsLinearLayout::setGeometry(const QRectF &rect)
     if (visualDir == Qt::RightToLeft)
         qSwap(left, right);
     effectiveRect.adjust(+left, +top, -right, -bottom);
-#ifdef QT_DEBUG
+#ifdef QGRIDLAYOUTENGINE_DEBUG
     if (qt_graphicsLayoutDebug()) {
         static int counter = 0;
         qDebug() << counter++ << "QGraphicsLinearLayout::setGeometry - " << rect;
         dump(1);
     }
 #endif
-    d->engine.setGeometries(d->styleInfo(), effectiveRect);
-#ifdef QT_DEBUG
+    d->engine.setGeometries(effectiveRect, d->styleInfo());
+#ifdef QGRIDLAYOUTENGINE_DEBUG
     if (qt_graphicsLayoutDebug()) {
         qDebug() << "post dump";
         dump(1);
@@ -530,7 +536,7 @@ QSizeF QGraphicsLinearLayout::sizeHint(Qt::SizeHint which, const QSizeF &constra
     qreal left, top, right, bottom;
     getContentsMargins(&left, &top, &right, &bottom);
     const QSizeF extraMargins(left + right, top + bottom);
-    return d->engine.sizeHint(d->styleInfo(), which , constraint - extraMargins) + extraMargins;
+    return d->engine.sizeHint(which , constraint - extraMargins, d->styleInfo()) + extraMargins;
 }
 
 /*!
@@ -540,6 +546,8 @@ void QGraphicsLinearLayout::invalidate()
 {
     Q_D(QGraphicsLinearLayout);
     d->engine.invalidate();
+    if (d->m_styleInfo)
+        d->m_styleInfo->invalidate();
     QGraphicsLayout::invalidate();
 }
 
@@ -548,7 +556,7 @@ void QGraphicsLinearLayout::invalidate()
 */
 void QGraphicsLinearLayout::dump(int indent) const
 {
-#ifdef QT_DEBUG
+#ifdef QGRIDLAYOUTENGINE_DEBUG
     if (qt_graphicsLayoutDebug()) {
         Q_D(const QGraphicsLinearLayout);
         qDebug("%*s%s layout", indent, "",

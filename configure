@@ -596,6 +596,7 @@ CFG_XINERAMA=runtime
 CFG_XFIXES=runtime
 CFG_ZLIB=auto
 CFG_MTDEV=auto
+CFG_JOURNALD=no
 CFG_SQLITE=qt
 CFG_GIF=auto
 CFG_PNG=yes
@@ -612,6 +613,7 @@ CFG_OPENVG_LC_INCLUDES=no
 CFG_OPENVG_SHIVA=auto
 CFG_OPENVG_ON_OPENGL=auto
 CFG_EGL=auto
+CFG_EGL_X=auto
 CFG_FONTCONFIG=auto
 CFG_FREETYPE=auto
 CFG_HARFBUZZ=no
@@ -630,6 +632,8 @@ CFG_PKGCONFIG=auto
 CFG_STACK_PROTECTOR_STRONG=auto
 CFG_SLOG2=auto
 CFG_PPS=auto
+CFG_QNX_IMF=auto
+CFG_LGMON=auto
 CFG_SYSTEM_PROXIES=no
 
 # Target architecture
@@ -778,6 +782,8 @@ QT_LIBS_GLIB=
 
 # default qpa platform
 QT_QPA_DEFAULT_PLATFORM=
+# default print support plugin
+QT_PRINTSUPPORT_DEFAULT_PLUGIN=
 
 # Android vars
 CFG_DEFAULT_ANDROID_NDK_ROOT=$ANDROID_NDK_ROOT
@@ -1471,6 +1477,7 @@ while [ "$#" -gt 0 ]; do
     egl)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_EGL="$VAL"
+            CFG_EGL_X="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -1551,13 +1558,6 @@ while [ "$#" -gt 0 ]; do
     iwmmxt)
 	CFG_IWMMXT="yes"
 	;;
-    neon)
-        if [ "$VAL" = "no" ]; then
-            CFG_NEON="$VAL"
-        else
-            UNKNOWN_OPT=yes
-        fi
-        ;;
     mips_dsp)
         if [ "$VAL" = "no" ]; then
             CFG_MIPS_DSP="$VAL"
@@ -1592,6 +1592,13 @@ while [ "$#" -gt 0 ]; do
     mtdev)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_MTDEV="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
+    journald)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_JOURNALD="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -1780,9 +1787,23 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
+    imf)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_QNX_IMF="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
     pps)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_PPS="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
+    lgmon)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_LGMON="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -2275,7 +2296,6 @@ Configure options:
     -no-sse4.2 ......... Do not compile with use of SSE4.2 instructions.
     -no-avx ............ Do not compile with use of AVX instructions.
     -no-avx2 ........... Do not compile with use of AVX2 instructions.
-    -no-neon ........... Do not compile with use of NEON instructions.
     -no-mips_dsp ....... Do not compile with use of MIPS DSP instructions.
     -no-mips_dspr2 ..... Do not compile with use of MIPS DSP rev2 instructions.
 
@@ -2306,6 +2326,9 @@ Third Party Libraries:
 
     -no-mtdev .........  Do not compile mtdev support.
  +  -mtdev ............. Enable mtdev support.
+
+ +  -no-journald ....... Do not send logging output to journald.
+    -journald .......... Send logging output to journald.
 
     -no-gif ............ Do not compile GIF reading support.
 
@@ -2483,6 +2506,12 @@ QNX/Blackberry options:
 
     -no-pps ............ Do not compile with pps support.
     -pps ............... Compile with pps support.
+
+    -no-imf ............ Do not compile with imf support.
+    -imf ............... Compile with imf support.
+
+    -no-lgmon .......... Do not compile with lgmon support.
+    -lgmon ............. Compile with lgmon support.
 
 MacOS/iOS options:
 
@@ -3344,9 +3373,8 @@ fi
 if [ "$XPLATFORM_IOS" = "yes" ]; then
     CFG_RPATH="no"
     CFG_PKGCONFIG="no"
-    CFG_NOBUILD_PARTS="$CFG_NOBUILD_PARTS examples tests"
+    CFG_NOBUILD_PARTS="$CFG_NOBUILD_PARTS examples"
     CFG_SHARED="no" # iOS builds should be static to be able to submit to the App Store
-    CFG_CXX11="no" # C++11 support disabled for now
     CFG_SKIP_MODULES="$CFG_SKIP_MODULES qtconnectivity qtdoc qtlocation qtmacextras qtserialport qttools qtwebkit qtwebkit-examples"
 
     # If the user passes -sdk on the command line we build a SDK-specific Qt build.
@@ -4011,13 +4039,19 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
         if [ $QT_EDITION = "QT_EDITION_OPENSOURCE" ]; then
             echo "EXTRA_CPPFLAGS = -DQMAKE_OPENSOURCE_EDITION" >> "$mkfile"
         fi
-        cat "$in_mkfile" >> "$mkfile"
 
-        if "$WHICH" makedepend >/dev/null 2>&1 && grep 'depend:' "$mkfile" >/dev/null 2>&1; then
-            (cd "$outpath/qmake" && "$MAKE" -f "$mkfile" depend) >/dev/null 2>&1
-            sed 's,^.*/\([^/]*.o\):,\1:,g' "$mkfile" >"$mkfile.tmp"
-	    sed "s,$outpath,$adjoutpath,g" "$mkfile.tmp" >"$mkfile"
-	    rm "$mkfile.tmp"
+        if [ "$BUILD_ON_MAC" = "yes" ]; then
+            echo "EXTRA_CXXFLAGS += -MMD" >> "$mkfile"
+            cat "$in_mkfile" >> "$mkfile"
+            echo "-include \$(notdir \$(DEPEND_SRC:%.cpp=%.d))" >> "$mkfile"
+        else
+            cat "$in_mkfile" >> "$mkfile"
+            if "$WHICH" makedepend >/dev/null 2>&1 && grep 'depend:' "$mkfile" >/dev/null 2>&1; then
+                (cd "$outpath/qmake" && "$MAKE" -f "$mkfile" depend) >/dev/null 2>&1
+                sed 's,^.*/\([^/]*.o\):,\1:,g' "$mkfile" >"$mkfile.tmp"
+                sed "s,$outpath,$adjoutpath,g" "$mkfile.tmp" >"$mkfile"
+                rm "$mkfile.tmp"
+            fi
         fi
     done
 
@@ -4328,17 +4362,6 @@ if [ "$CFG_IWMMXT" = "yes" ]; then
     fi
 fi
 
-# detect neon support
-if [ "$CFG_ARCH" = "arm" ] && [ "${CFG_NEON}" = "auto" ]; then
-    if compileTest unix/neon "neon"; then
-	CFG_NEON=yes
-    else
-	CFG_NEON=no
-    fi
-elif [ "$CFG_ARCH" != "arm" ]; then
-    CFG_NEON=no
-fi
-
 # detect mips_dsp support
 if [ "$CFG_ARCH" = "mips" ] && [ "${CFG_MIPS_DSP}" = "auto" ]; then
     if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/mips_dsp "mips_dsp" $L_FLAGS $I_FLAGS $D_FLAGS $l_FLAGS; then
@@ -4388,13 +4411,29 @@ if [ "$XPLATFORM_QNX" = "yes" ]; then
             CFG_SLOG2=no
         fi
     fi
-
+    if [ "$CFG_QNX_IMF" != "no" ]; then
+        if compileTest unix/qqnx_imf "qqnx_imf"; then
+            CFG_QNX_IMF=yes
+            QMAKE_CONFIG="$QMAKE_CONFIG qqnx_imf"
+        else
+            CFG_QNX_IMF=no
+        fi
+    fi
     if [ "$CFG_PPS" != "no" ]; then
         if compileTest unix/pps "pps"; then
             CFG_PPS=yes
             QMAKE_CONFIG="$QMAKE_CONFIG qqnx_pps"
         else
             CFG_PPS=no
+        fi
+    fi
+
+    if [ "$CFG_LGMON" != "no" ]; then
+        if compileTest unix/lgmon "lgmon"; then
+            CFG_LGMON=yes
+            QMAKE_CONFIG="$QMAKE_CONFIG lgmon"
+        else
+            CFG_LGMON=no
         fi
     fi
 fi
@@ -4416,6 +4455,23 @@ if [ "$CFG_MTDEV" != "no" ]; then
 fi
 if [ "$CFG_MTDEV" = "no" ]; then
     QMakeVar add DEFINES QT_NO_MTDEV
+fi
+
+if [ "$CFG_JOURNALD" != "no" ]; then
+    if compileTest unix/journald "journald"; then
+        CFG_JOURNALD=yes
+        QMAKE_CONFIG="$QMAKE_CONFIG journald"
+    else
+        if [ "$CFG_JOURNALD" != "auto" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
+            echo "journald support cannot be enabled due to functionality tests!"
+            echo " Turn on verbose messaging (-v) to $0 to see the final report."
+            echo " If you believe this message is in error you may use the continue"
+            echo " switch (-continue) to $0 to continue."
+            exit 101
+        else
+            CFG_JOURNALD=no
+        fi
+    fi
 fi
 
 if [ "$CFG_LARGEFILE" = "auto" ]; then
@@ -5161,6 +5217,14 @@ if [ "$CFG_XCB" != "no" ]; then
         QMAKE_CFLAGS_XCB="`$PKG_CONFIG --cflags xcb 2>/dev/null`"
         QMAKE_LIBS_XCB="`$PKG_CONFIG --libs xcb 2>/dev/null`"
     fi
+    if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists "x11" 2> /dev/null; then
+        QMAKE_X11_PREFIX="`$PKG_CONFIG --variable=prefix x11`"
+    else
+        # default to LSB prefix
+        QMAKE_X11_PREFIX="/usr"
+    fi
+    QMakeVar set QMAKE_X11_PREFIX "$QMAKE_X11_PREFIX"
+
     if compileTest qpa/xcb "xcb" $QMAKE_CFLAGS_XCB $QMAKE_LIBS_XCB; then
 
         if [ "$CFG_XCB" = "qt" ]; then
@@ -5326,6 +5390,11 @@ if [ "$CFG_EGL" != "no" ]; then
     fi       # detect EGL support
     if compileTest qpa/egl "EGL" $QMAKE_CFLAGS_EGL $QMAKE_LIBS_EGL; then
         CFG_EGL=yes
+        if compileTest qpa/egl-x11 "EGL-X11" $QMAKE_CFLAGS_EGL $QMAKE_LIBS_EGL; then
+            CFG_EGL_X=yes
+        else
+            CFG_EGL_X=no
+        fi
     elif [ "$CFG_EGL" = "yes" ]; then
         echo " The EGL functionality test failed; EGL is required by some QPA plugins to manage contexts & surfaces."
         echo " You might need to modify the include and library search paths by editing"
@@ -5333,6 +5402,7 @@ if [ "$CFG_EGL" != "no" ]; then
         exit 1
     else
         CFG_EGL=no
+        CFG_EGL_X=no
     fi
 fi
 
@@ -5387,6 +5457,15 @@ if [ -z "$QT_QPA_DEFAULT_PLATFORM" ]; then
     fi
 fi
 
+# Determine print support plugin belonging to the default QPA platform
+if [ "$QT_QPA_DEFAULT_PLATFORM" = "cocoa" ]; then
+    QT_PRINTSUPPORT_DEFAULT_PLUGIN=cocoaprintersupport
+elif [ "$QT_QPA_DEFAULT_PLATFORM" = "windows" ]; then
+    QT_PRINTSUPPORT_DEFAULT_PLUGIN=windowsprintersupport
+elif [ "$QT_QPA_DEFAULT_PLATFORM" = "xcb" ]; then
+    QT_PRINTSUPPORT_DEFAULT_PLUGIN=cupsprintersupport
+fi
+
 if [ -n "$QMAKE_CFLAGS_XCB" ] || [ -n "$QMAKE_LIBS_XCB" ]; then
     QMakeVar set QMAKE_CFLAGS_XCB "$QMAKE_CFLAGS_XCB"
     QMakeVar set QMAKE_LIBS_XCB "$QMAKE_LIBS_XCB"
@@ -5431,12 +5510,18 @@ fi
 
 # harfbuzz support
 [ "$XPLATFORM_MINGW" = "yes" ] && [ "$CFG_HARFBUZZ" = "auto" ] && CFG_HARFBUZZ=no
+[ "$XPLATFORM_MAC" = "yes" ] && [ "$CFG_HARFBUZZ" = "auto" ] && CFG_HARFBUZZ=yes
 if [ "$CFG_HARFBUZZ" = "auto" ]; then
     if compileTest unix/harfbuzz "HarfBuzz"; then
         CFG_HARFBUZZ=system
     else
         CFG_HARFBUZZ=yes
     fi
+fi
+if [ "$XPLATFORM_MAC" = "yes" -a "$CFG_HARFBUZZ" = "system" ]; then
+    echo
+    echo "WARNING: AAT is not supported with -system-harfbuzz on Mac OS X."
+    echo
 fi
 
 if ! compileTest unix/stl "STL" &&
@@ -5706,6 +5791,13 @@ else
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_EGL"
 fi
 
+# enable egl on X
+if [ "$CFG_EGL_X" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG egl_x11"
+else
+    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_EGL_X11"
+fi
+
 # enable eglfs
 if [ "$CFG_EGLFS" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG eglfs"
@@ -5782,7 +5874,6 @@ fi
 [ "$CFG_AVX" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG avx"
 [ "$CFG_AVX2" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG avx2"
 [ "$CFG_IWMMXT" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG iwmmxt"
-[ "$CFG_NEON" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG neon"
 if [ "$CFG_ARCH" = "mips" ]; then
     [ "$CFG_MIPS_DSP" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG mips_dsp"
     [ "$CFG_MIPS_DSPR2" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG mips_dspr2"
@@ -6216,7 +6307,7 @@ fi
 echo "" >>"$outpath/src/corelib/global/qconfig.h.new"
 echo "// Compiler sub-arch support" >>"$outpath/src/corelib/global/qconfig.h.new"
 for SUBARCH in SSE2 SSE3 SSSE3 SSE4_1 SSE4_2 AVX AVX2 \
-    IWMMXT NEON \
+    IWMMXT \
     MIPS_DSP MIPS_DSPR2; do
     eval "VAL=\$CFG_$SUBARCH"
     case "$VAL" in
@@ -6367,6 +6458,7 @@ EOF
 fi
 
 echo "#define QT_QPA_DEFAULT_PLATFORM_NAME \"$QT_QPA_DEFAULT_PLATFORM\"" >>"$outpath/src/corelib/global/qconfig.h.new"
+echo "#define QT_QPA_DEFAULT_PRINTSUPPORTPLUGIN_NAME \"QT_PRINTSUPPORT_DEFAULT_PLUGIN\"" >>"$outpath/src/corelib/global/qconfig.h.new"
 
 # avoid unecessary rebuilds by copying only if qconfig.h has changed
 if cmp -s "$outpath/src/corelib/global/qconfig.h" "$outpath/src/corelib/global/qconfig.h.new"; then
@@ -6454,6 +6546,7 @@ EOF
 
 if [ "$CFG_SHARED" = "no" ]; then
     echo "QT_DEFAULT_QPA_PLUGIN = q$QT_QPA_DEFAULT_PLATFORM" >> "$QTCONFIG.tmp"
+    echo "QT_DEFAULT_PRINTSUPPORTPLUGIN = $QT_PRINTSUPPORT_DEFAULT_PLUGIN" >> "$QTCONFIG.tmp"
     echo >> "$QTCONFIG.tmp"
 fi
 
@@ -6719,6 +6812,7 @@ report_support_plugin "    JPEG ................." "$CFG_JPEG" "$CFG_LIBJPEG" Qt
 report_support_plugin "    PNG .................." "$CFG_PNG" "$CFG_LIBPNG" QtGui
 report_support "  Glib ..................." "$CFG_GLIB"
 report_support "  GTK theme .............." "$CFG_QGTKSTYLE"
+report_support "  journald ..............." "$CFG_JOURNALD"
 report_support "  Large File ............." "$CFG_LARGEFILE"
 report_support "  mtdev .................." "$CFG_MTDEV" yes "system library"
 report_support "  Networking:"
@@ -6729,6 +6823,9 @@ report_support "    getifaddrs ..........." "$CFG_GETIFADDRS"
 report_support "    IPv6 ifname .........." "$CFG_IPV6IFNAME"
 report_support "    OpenSSL .............." "$CFG_OPENSSL" yes "loading libraries at run-time" linked "linked to the libraries"
 report_support "  NIS ...................." "$CFG_NIS"
+report_support "  EGL ...................." "$CFG_EGL"
+report_support "  EGL on X ..............." "$CFG_EGL_X"
+report_support "  GLX ...................." "$CFG_XCB_GLX"
 report_support "  OpenGL ................." "$CFG_OPENGL" yes "Desktop OpenGL" es2 "OpenGL ES 2.x"
 report_support "  OpenVG ................." "$CFG_OPENVG-$CFG_OPENVG_SHIVA" yes-yes "ShivaVG" yes-no "native"
 report_support "  PCRE ..................." "$CFG_PCRE" yes "system library" qt "bundled copy"
@@ -6762,7 +6859,9 @@ fi
 report_support "  Session management ....." "$CFG_SM"
 if [ "$XPLATFORM_QNX" = "yes" ]; then
     report_support "  SLOG2 .................." "$CFG_SLOG2"
+    report_support "  IMF ...................." "$CFG_QNX_IMF"
     report_support "  PPS ...................." "$CFG_PPS"
+    report_support "  LGMON .................." "$CFG_LGMON"
 fi
 report_support "  SQL drivers:"
 report_support "    DB2 .................." "$CFG_SQL_db2" plugin "plugin" yes "built into QtSql"

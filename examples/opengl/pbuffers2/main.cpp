@@ -51,8 +51,8 @@ int main(int argc, char **argv)
     widget.resize(640, 480);
     widget.makeCurrent();
     if (!QGLFormat::hasOpenGL() || !QGLPixelBuffer::hasOpenGLPbuffers()) {
-	QMessageBox::information(0, "OpenGL pbuffers 2",
-				 "This system does not support OpenGL/pbuffers.");
+        QMessageBox::information(0, "OpenGL pbuffers 2",
+                                 "This system does not support OpenGL/pbuffers.");
         return -1;
     }
     widget.show();

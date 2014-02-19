@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 BlackBerry Limited. All rights reserved.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -346,6 +347,20 @@ DEFINEFUNC(long, SSLeay, void, DUMMYARG, return 0, return)
 DEFINEFUNC(const char *, SSLeay_version, int a, a, return 0, return)
 DEFINEFUNC2(int, i2d_SSL_SESSION, SSL_SESSION *in, in, unsigned char **pp, pp, return 0, return)
 DEFINEFUNC3(SSL_SESSION *, d2i_SSL_SESSION, SSL_SESSION **a, a, const unsigned char **pp, pp, long length, length, return 0, return)
+#if OPENSSL_VERSION_NUMBER >= 0x1000100fL && !defined(OPENSSL_NO_TLSEXT) && !defined(OPENSSL_NO_NEXTPROTONEG)
+DEFINEFUNC6(int, SSL_select_next_proto, unsigned char **out, out, unsigned char *outlen, outlen,
+            const unsigned char *in, in, unsigned int inlen, inlen,
+            const unsigned char *client, client, unsigned int client_len, client_len,
+            return -1, return)
+DEFINEFUNC3(void, SSL_CTX_set_next_proto_select_cb, SSL_CTX *s, s,
+            int (*cb) (SSL *ssl, unsigned char **out,
+                       unsigned char *outlen,
+                       const unsigned char *in,
+                       unsigned int inlen, void *arg), cb,
+            void *arg, arg, return, DUMMYARG)
+DEFINEFUNC3(void, SSL_get0_next_proto_negotiated, const SSL *s, s,
+            const unsigned char **data, data, unsigned *len, len, return, DUMMYARG)
+#endif // OPENSSL_VERSION_NUMBER >= 0x1000100fL ...
 
 #define RESOLVEFUNC(func) \
     if (!(_q_##func = _q_PTR_##func(libs.first->resolve(#func)))     \
@@ -815,6 +830,11 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(SSLeay_version)
     RESOLVEFUNC(i2d_SSL_SESSION)
     RESOLVEFUNC(d2i_SSL_SESSION)
+#if OPENSSL_VERSION_NUMBER >= 0x1000100fL && !defined(OPENSSL_NO_TLSEXT) && !defined(OPENSSL_NO_NEXTPROTONEG)
+    RESOLVEFUNC(SSL_select_next_proto)
+    RESOLVEFUNC(SSL_CTX_set_next_proto_select_cb)
+    RESOLVEFUNC(SSL_get0_next_proto_negotiated)
+#endif // OPENSSL_VERSION_NUMBER >= 0x1000100fL ...
 
     symbolsResolved = true;
     delete libs.first;

@@ -105,13 +105,13 @@ public:
     inline operator T() { return type; }
     inline QCFType operator =(const QCFType &helper)
     {
-	if (helper.type)
-	    CFRetain(helper.type);
-	CFTypeRef type2 = type;
-	type = helper.type;
-	if (type2)
-	    CFRelease(type2);
-	return *this;
+        if (helper.type)
+            CFRetain(helper.type);
+        CFTypeRef type2 = type;
+        type = helper.type;
+        if (type2)
+            CFRelease(type2);
+        return *this;
     }
     inline T *operator&() { return &type; }
     template <typename X> X as() const { return reinterpret_cast<X>(type); }

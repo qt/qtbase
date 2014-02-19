@@ -173,6 +173,21 @@ QNetworkReplyPrivate::QNetworkReplyPrivate()
     again, but this failed for example because the upload data
     could not be read a second time.
 
+    \value ContentConflictError         the request could not be completed due
+    to a conflict with the current state of the resource.
+
+    \value ContentGoneError             the requested resource is no longer
+    available at the server.
+
+    \value InternalServerError          the server encountered an unexpected
+    condition which prevented it from fulfilling the request.
+
+    \value OperationNotImplementedError the server does not support the
+    functionality required to fulfill the request.
+
+    \value ServiceUnavailableError      the server is unable to handle the
+    request at this time.
+
     \value ProtocolUnknownError         the Network Access API cannot
     honor the request because the protocol is not known
 
@@ -190,6 +205,9 @@ QNetworkReplyPrivate::QNetworkReplyPrivate()
 
     \value ProtocolFailure              a breakdown in protocol was
     detected (parsing error, invalid or unexpected responses, etc.)
+
+    \value UnknownServerError           an unknown error related to
+    the server response was detected
 
     \sa error()
 */

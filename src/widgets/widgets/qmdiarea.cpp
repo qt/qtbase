@@ -1115,10 +1115,9 @@ void QMdiAreaPrivate::updateActiveWindow(int removedIndex, bool activeRemoved)
 
 #ifndef QT_NO_TABBAR
     if (tabBar && removedIndex >= 0) {
-        tabBar->blockSignals(true);
+        const QSignalBlocker blocker(tabBar);
         tabBar->removeTab(removedIndex);
         updateTabBarGeometry();
-        tabBar->blockSignals(false);
     }
 #endif
 

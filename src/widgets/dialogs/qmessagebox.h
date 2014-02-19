@@ -72,6 +72,7 @@ class Q_WIDGETS_EXPORT QMessageBox : public QDialog
 
 public:
     enum Icon {
+        // keep this in sync with QMessageDialogOptions::Icon
         NoIcon = 0,
         Information = 1,
         Warning = 2,
@@ -80,7 +81,7 @@ public:
     };
 
     enum ButtonRole {
-        // keep this in sync with QDialogButtonBox::ButtonRole
+        // keep this in sync with QDialogButtonBox::ButtonRole and QPlatformDialogHelper::ButtonRole
         InvalidRole = -1,
         AcceptRole,
         RejectRole,
@@ -96,7 +97,7 @@ public:
     };
 
     enum StandardButton {
-        // keep this in sync with QDialogButtonBox::StandardButton and QMessageDialogOptions::StandardButton
+        // keep this in sync with QDialogButtonBox::StandardButton and QPlatformDialogHelper::StandardButton
         NoButton           = 0x00000000,
         Ok                 = 0x00000400,
         Save               = 0x00000800,
@@ -309,7 +310,7 @@ protected:
 
 private:
     Q_PRIVATE_SLOT(d_func(), void _q_buttonClicked(QAbstractButton *))
-    Q_PRIVATE_SLOT(d_func(), void _q_clicked(QMessageDialogOptions::StandardButton, QMessageDialogOptions::ButtonRole))
+    Q_PRIVATE_SLOT(d_func(), void _q_clicked(QPlatformDialogHelper::StandardButton, QPlatformDialogHelper::ButtonRole))
 
     Q_DISABLE_COPY(QMessageBox)
     Q_DECLARE_PRIVATE(QMessageBox)

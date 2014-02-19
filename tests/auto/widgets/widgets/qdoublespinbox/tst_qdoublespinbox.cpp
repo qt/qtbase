@@ -145,6 +145,9 @@ private slots:
     void taskQTBUG_6670_selectAllWithPrefix();
     void taskQTBUG_6496_fiddlingWithPrecision();
 
+    void setGroupSeparatorShown_data();
+    void setGroupSeparatorShown();
+
 public slots:
     void valueChangedHelper(const QString &);
     void valueChangedHelper(double);
@@ -155,6 +158,9 @@ private:
 };
 
 typedef QList<double> DoubleList;
+
+Q_DECLARE_METATYPE(QLocale::Language)
+Q_DECLARE_METATYPE(QLocale::Country)
 
 tst_QDoubleSpinBox::tst_QDoubleSpinBox()
 
@@ -634,7 +640,7 @@ void tst_QDoubleSpinBox::setDecimals()
         QTest::keyClick(&spin, Qt::Key_1);
         QTest::keyClick(&spin, Qt::Key_1);
         QTest::keyClick(&spin, Qt::Key_1);
-	if (sizeof(qreal) == sizeof(float))
+        if (sizeof(qreal) == sizeof(float))
             QCOMPARE(spin.text().left(17), expected.left(17));
         else
             QCOMPARE(spin.text(), expected);
@@ -1097,6 +1103,46 @@ void tst_QDoubleSpinBox::taskQTBUG_6496_fiddlingWithPrecision()
     QCOMPARE(dsb.maximum(), 0.99);
     dsb.setDecimals(3);
     QCOMPARE(dsb.maximum(), 0.991);
+}
+
+void tst_QDoubleSpinBox::setGroupSeparatorShown_data()
+{
+    QTest::addColumn<QLocale::Language>("lang");
+    QTest::addColumn<QLocale::Country>("country");
+
+    QTest::newRow("data0") << QLocale::English << QLocale::UnitedStates;
+    QTest::newRow("data1") << QLocale::Swedish << QLocale::Sweden;
+    QTest::newRow("data2") << QLocale::German << QLocale::Germany;
+    QTest::newRow("data3") << QLocale::Georgian << QLocale::Georgia;
+    QTest::newRow("data3") << QLocale::Macedonian << QLocale::Macedonia;
+}
+
+void tst_QDoubleSpinBox::setGroupSeparatorShown()
+{
+    QFETCH(QLocale::Language, lang);
+    QFETCH(QLocale::Country, country);
+
+    QLocale loc(lang, country);
+    QLocale::setDefault(loc);
+    DoubleSpinBox spinBox;
+    spinBox.setMaximum(99999999);
+    spinBox.setValue(1300000.00);
+    spinBox.setGroupSeparatorShown(true);
+    QCOMPARE(spinBox.lineEdit()->text(), spinBox.locale().toString(1300000.00, 'f', 2));
+    QCOMPARE(spinBox.isGroupSeparatorShown(), true);
+    QCOMPARE(spinBox.textFromValue(23421),spinBox.locale().toString(23421.00, 'f', 2));
+
+    spinBox.setGroupSeparatorShown(false);
+    QCOMPARE(spinBox.lineEdit()->text(), spinBox.locale().toString(1300000.00, 'f', 2).remove(
+                 spinBox.locale().groupSeparator()));
+    QCOMPARE(spinBox.isGroupSeparatorShown(), false);
+
+    spinBox.setMaximum(72000);
+    spinBox.lineEdit()->setText(spinBox.locale().toString(32000.64, 'f', 2));
+    QCOMPARE(spinBox.value()+1000, 33000.64);
+
+    spinBox.lineEdit()->setText(spinBox.locale().toString(32000.44, 'f', 2));
+    QCOMPARE(spinBox.value()+1000, 33000.44);
 }
 
 QTEST_MAIN(tst_QDoubleSpinBox)

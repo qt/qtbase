@@ -87,8 +87,8 @@ public:
     void stealRunnable(QRunnable *);
 
     mutable QMutex mutex;
-    QWaitCondition runnableReady;
     QSet<QThreadPoolThread *> allThreads;
+    QQueue<QThreadPoolThread *> waitingThreads;
     QQueue<QThreadPoolThread *> expiredThreads;
     QList<QPair<QRunnable *, int> > queue;
     QWaitCondition noActiveThreads;
@@ -97,7 +97,6 @@ public:
     int expiryTimeout;
     int maxThreadCount;
     int reservedThreads;
-    int waitingThreads;
     int activeThreads;
 };
 

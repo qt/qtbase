@@ -38,6 +38,9 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
+#ifndef NAMESPACED_FLAGS_H
+#define NAMESPACED_FLAGS_H
 #include <QObject>
 
 namespace Foo {
@@ -78,3 +81,4 @@ namespace Foo {
 }
 
 Q_DECLARE_OPERATORS_FOR_FLAGS( Foo::Bar::Flags )
+#endif // NAMESPACED_FLAGS_H

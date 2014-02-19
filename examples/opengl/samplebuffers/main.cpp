@@ -50,16 +50,16 @@ int main(int argc, char **argv)
     f.setSampleBuffers(true);
     QGLFormat::setDefaultFormat(f);
     if (!QGLFormat::hasOpenGL()) {
-	QMessageBox::information(0, "OpenGL samplebuffers",
-				 "This system does not support OpenGL.");
+        QMessageBox::information(0, "OpenGL samplebuffers",
+                                 "This system does not support OpenGL.");
         return 0;
     }
 
     GLWidget widget(0);
 
     if (!widget.format().sampleBuffers()) {
-	QMessageBox::information(0, "OpenGL samplebuffers",
-				 "This system does not have sample buffer support.");
+        QMessageBox::information(0, "OpenGL samplebuffers",
+                                 "This system does not have sample buffer support.");
         return 0;
     }
 

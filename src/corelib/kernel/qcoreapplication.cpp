@@ -55,6 +55,7 @@
 #include <qfileinfo.h>
 #include <qhash.h>
 #include <qmutex.h>
+#include <private/qloggingregistry_p.h>
 #include <private/qprocess_p.h>
 #include <qstandardpaths.h>
 #include <qtextcodec.h>
@@ -85,7 +86,11 @@
 #  endif
 #endif
 #ifdef Q_OS_WIN
+# ifdef Q_OS_WINRT
+#  include "qeventdispatcher_winrt_p.h"
+# else
 #  include "qeventdispatcher_win_p.h"
+# endif
 #endif
 #endif // QT_NO_QOBJECT
 
@@ -98,6 +103,7 @@
 #ifdef Q_OS_UNIX
 #  include <locale.h>
 #  include <unistd.h>
+#  include <sys/types.h>
 #endif
 
 #ifdef Q_OS_VXWORKS
@@ -133,6 +139,8 @@ extern QString qAppFileName();
 # error "Bump QCoreApplicatoinPrivate::app_compile_version to 0x060000"
 #endif
 int QCoreApplicationPrivate::app_compile_version = 0x050000; //we don't know exactly, but it's at least 5.0.0
+
+bool QCoreApplicationPrivate::setuidAllowed = false;
 
 #if !defined(Q_OS_WIN)
 #ifdef Q_OS_MAC
@@ -179,6 +187,8 @@ void QCoreApplicationPrivate::processCommandLineArguments()
             continue;
         }
         QByteArray arg = argv[i];
+        if (arg.startsWith("--"))
+            arg.remove(0, 1);
         if (arg.startsWith("-qmljsdebugger=")) {
             qmljs_debug_arguments = QString::fromLocal8Bit(arg.right(arg.length() - 15));
         } else if (arg == "-qmljsdebugger" && i < argc - 1) {
@@ -410,6 +420,11 @@ QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv, uint 
     QCoreApplicationPrivate::is_app_closing = false;
 
 #  if defined(Q_OS_UNIX)
+    if (!setuidAllowed && (geteuid() != getuid()))
+        qFatal("FATAL: The application binary appears to be running setuid, this is a security hole.");
+#  endif // Q_OS_UNIX
+
+#  if defined(Q_OS_UNIX)
     qt_application_thread_id = QThread::currentThreadId();
 #  endif
 
@@ -471,6 +486,8 @@ void QCoreApplicationPrivate::createEventDispatcher()
 #  endif
         eventDispatcher = new QEventDispatcherUNIX(q);
 #  endif
+#elif defined(Q_OS_WINRT)
+    eventDispatcher = new QEventDispatcherWinRT(q);
 #elif defined(Q_OS_WIN)
     eventDispatcher = new QEventDispatcherWin32(q);
 #else
@@ -518,6 +535,10 @@ void QCoreApplicationPrivate::appendApplicationPathToLibraryPaths()
         coreappdata()->app_libpaths = app_libpaths = new QStringList;
     QString app_location = QCoreApplication::applicationFilePath();
     app_location.truncate(app_location.lastIndexOf(QLatin1Char('/')));
+#ifdef Q_OS_WINRT
+    if (app_location.isEmpty())
+        app_location.append(QLatin1Char('/'));
+#endif
     app_location = QDir(app_location).canonicalPath();
     if (QFile::exists(app_location) && !app_libpaths->contains(app_location))
         app_libpaths->append(app_location);
@@ -702,6 +723,10 @@ void QCoreApplication::init()
     Q_ASSERT_X(!self, "QCoreApplication", "there should be only one application object");
     QCoreApplication::self = this;
 
+#ifndef QT_BOOTSTRAPPED
+    QLoggingRegistry::instance()->init();
+#endif
+
 #ifndef QT_NO_QOBJECT
     // use the event dispatcher created by the app programmer (if any)
     if (!QCoreApplicationPrivate::eventDispatcher)
@@ -786,17 +811,48 @@ QCoreApplication::~QCoreApplication()
 #endif
 }
 
+/*!
+    \since 5.3
+
+    Allows the application to run setuid on UNIX platforms if \a allow
+    is true.
+
+    If \a allow is false (the default) and Qt detects the application is
+    running with an effective user id different than the real user id,
+    the application will be aborted when a QCoreApplication instance is
+    created.
+
+    Qt is not an appropriate solution for setuid programs due to its
+    large attack surface. However some applications may be required
+    to run in this manner for historical reasons. This flag will
+    prevent Qt from aborting the application when this is detected,
+    and must be set before a QCoreApplication instance is created.
+
+    \note It is strongly recommended not to enable this option since
+    it introduces security risks.
+*/
+void QCoreApplication::setSetuidAllowed(bool allow)
+{
+    QCoreApplicationPrivate::setuidAllowed = allow;
+}
+
+/*!
+    \since 5.3
+
+    Returns true if the application is allowed to run setuid on UNIX
+    platforms.
+
+    \sa QCoreApplication::setSetuidAllowed()
+*/
+bool QCoreApplication::isSetuidAllowed()
+{
+    return QCoreApplicationPrivate::setuidAllowed;
+}
+
 
 /*!
     Sets the attribute \a attribute if \a on is true;
     otherwise clears the attribute.
-
-    One of the attributes that can be set with this method is
-    Qt::AA_ImmediateWidgetCreation. It tells Qt to create toplevel
-    windows immediately. Normally, resources for widgets are allocated
-    on demand to improve efficiency and minimize resource usage.
-    Therefore, if it is important to minimize resource consumption, do
-    not set this attribute.
 
     \sa testAttribute()
 */
@@ -2502,9 +2558,15 @@ void QCoreApplication::removeNativeEventFilter(QAbstractNativeEventFilter *filte
 }
 
 /*!
+    \deprecated
+
     This function returns \c true if there are pending events; otherwise
     returns \c false. Pending events can be either from the window
     system or posted events using postEvent().
+
+    \note this function is not thread-safe. It may only be called in the main
+    thread and only if there are no other threads running in the application
+    (including threads Qt starts for its own purposes).
 
     \sa QAbstractEventDispatcher::hasPendingEvents()
 */
@@ -2572,9 +2634,11 @@ void QCoreApplication::setEventDispatcher(QAbstractEventDispatcher *eventDispatc
     \fn void qAddPostRoutine(QtCleanUpFunction ptr)
     \relates QCoreApplication
 
-    Adds a global routine that will be called from the QApplication
+    Adds a global routine that will be called from the QCoreApplication
     destructor. This function is normally used to add cleanup routines
     for program-wide functionality.
+
+    The cleanup routines are called in the reverse order of their addition.
 
     The function specified by \a ptr should take no arguments and should
     return nothing. For example:
@@ -2584,8 +2648,11 @@ void QCoreApplication::setEventDispatcher(QAbstractEventDispatcher *eventDispatc
     Note that for an application- or module-wide cleanup,
     qAddPostRoutine() is often not suitable. For example, if the
     program is split into dynamically loaded modules, the relevant
-    module may be unloaded long before the QApplication destructor is
-    called.
+    module may be unloaded long before the QCoreApplication destructor is
+    called. In such cases, if using qAddPostRoutine() is still desirable,
+    qRemovePostRoutine() can be used to prevent a routine from being
+    called by the QCoreApplication destructor. For example, if that
+    routine was called before the module was unloaded.
 
     For modules and libraries, using a reference-counted
     initialization manager or Qt's parent-child deletion mechanism may
@@ -2597,6 +2664,21 @@ void QCoreApplication::setEventDispatcher(QAbstractEventDispatcher *eventDispatc
 
     By selecting the right parent object, this can often be made to
     clean up the module's data at the right moment.
+
+    \sa qRemovePostRoutine()
+*/
+
+/*!
+    \fn void qRemovePostRoutine(QtCleanUpFunction ptr)
+    \relates QCoreApplication
+    \since 5.3
+
+    Removes the cleanup routine specified by \a ptr from the list of
+    routines called by the QCoreApplication destructor. The routine
+    must have been previously added to the list by a call to
+    qAddPostRoutine(), otherwise this function has no effect.
+
+    \sa qAddPostRoutine()
 */
 
 /*!

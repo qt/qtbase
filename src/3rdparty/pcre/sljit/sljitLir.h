@@ -77,7 +77,7 @@
 #endif
 
 /* The following header file defines useful macros for fine tuning
-sljit based code generators. They are listed in the begining
+sljit based code generators. They are listed in the beginning
 of sljitConfigInternal.h */
 
 #include "sljitConfigInternal.h"
@@ -161,12 +161,14 @@ of sljitConfigInternal.h */
 /* Floating point operations are performed on double or
    single precision values. */
 
-#define SLJIT_FLOAT_REG1	1
-#define SLJIT_FLOAT_REG2	2
-#define SLJIT_FLOAT_REG3	3
-#define SLJIT_FLOAT_REG4	4
-#define SLJIT_FLOAT_REG5	5
-#define SLJIT_FLOAT_REG6	6
+#define SLJIT_FLOAT_REG1		1
+#define SLJIT_FLOAT_REG2		2
+#define SLJIT_FLOAT_REG3		3
+#define SLJIT_FLOAT_REG4		4
+#define SLJIT_FLOAT_REG5		5
+#define SLJIT_FLOAT_REG6		6
+
+#define SLJIT_NO_FLOAT_REGISTERS	6
 
 /* --------------------------------------------------------------------- */
 /*  Main structures and functions                                        */
@@ -281,6 +283,11 @@ struct sljit_compiler {
 	sljit_sw cache_argw;
 #endif
 
+#if (defined SLJIT_CONFIG_TILEGX && SLJIT_CONFIG_TILEGX)
+	sljit_si cache_arg;
+	sljit_sw cache_argw;
+#endif
+
 #if (defined SLJIT_VERBOSE && SLJIT_VERBOSE)
 	FILE* verbose;
 #endif
@@ -306,7 +313,7 @@ SLJIT_API_FUNC_ATTRIBUTE struct sljit_compiler* sljit_create_compiler(void);
 /* Free everything except the compiled machine code. */
 SLJIT_API_FUNC_ATTRIBUTE void sljit_free_compiler(struct sljit_compiler *compiler);
 
-/* Returns the current error code. If an error is occured, future sljit
+/* Returns the current error code. If an error is occurred, future sljit
    calls which uses the same compiler argument returns early with the same
    error code. Thus there is no need for checking the error after every
    call, it is enough to do it before the code is compiled. Removing
@@ -447,7 +454,7 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_si sljit_emit_fast_return(struct sljit_compiler *
            sequences. This information could help to improve those code
            generators which focuses only a few architectures.
 
-   x86:    [reg+imm], -2^32+1 <= imm <= 2^32-1 (full adress space on x86-32)
+   x86:    [reg+imm], -2^32+1 <= imm <= 2^32-1 (full address space on x86-32)
            [reg+(reg<<imm)] is supported
            [imm], -2^32+1 <= imm <= 2^32-1 is supported
            Write-back is not supported
@@ -698,11 +705,15 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_si sljit_emit_op2(struct sljit_compiler *compiler
 /* The following function is a helper function for sljit_emit_op_custom.
    It returns with the real machine register index of any SLJIT_SCRATCH
    SLJIT_SAVED or SLJIT_LOCALS register.
-   Note: it returns with -1 for virtual registers (all EREGs on x86-32).
-   Note: register returned by SLJIT_LOCALS_REG is not necessary the real
-         stack pointer register of the target architecture. */
+   Note: it returns with -1 for virtual registers (all EREGs on x86-32). */
 
 SLJIT_API_FUNC_ATTRIBUTE sljit_si sljit_get_register_index(sljit_si reg);
+
+/* The following function is a helper function for sljit_emit_op_custom.
+   It returns with the real machine register index of any SLJIT_FLOAT register.
+   Note: the index is divided by 2 on ARM 32 bit architectures. */
+
+SLJIT_API_FUNC_ATTRIBUTE sljit_si sljit_get_float_register_index(sljit_si reg);
 
 /* Any instruction can be inserted into the instruction stream by
    sljit_emit_op_custom. It has a similar purpose as inline assembly.
@@ -896,7 +907,7 @@ SLJIT_API_FUNC_ATTRIBUTE void sljit_set_const(sljit_uw addr, sljit_sw new_consta
 /* --------------------------------------------------------------------- */
 
 #define SLJIT_MAJOR_VERSION	0
-#define SLJIT_MINOR_VERSION	90
+#define SLJIT_MINOR_VERSION	91
 
 /* Get the human readable name of the platform. Can be useful on platforms
    like ARM, where ARM and Thumb2 functions can be mixed, and

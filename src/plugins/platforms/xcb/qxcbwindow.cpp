@@ -292,12 +292,10 @@ void QXcbWindow::create()
     if (QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL)) {
 #if defined(XCB_USE_GLX)
         XVisualInfo *visualInfo = qglx_findVisualInfo(DISPLAY_FROM_XCB(m_screen), m_screen->screenNumber(), &m_format);
-        if (!visualInfo && window()->surfaceType() == QSurface::OpenGLSurface)
-            qFatal("Could not initialize GLX");
 #elif defined(XCB_USE_EGL)
         EGLDisplay eglDisplay = connection()->egl_display();
         EGLConfig eglConfig = q_configFromGLFormat(eglDisplay, m_format, true);
-        m_format = q_glFormatFromConfig(eglDisplay, eglConfig);
+        m_format = q_glFormatFromConfig(eglDisplay, eglConfig, m_format);
 
         VisualID id = QXlibEglIntegration::getCompatibleVisualId(DISPLAY_FROM_XCB(this), eglDisplay, eglConfig);
 
@@ -308,9 +306,14 @@ void QXcbWindow::create()
         XVisualInfo *visualInfo;
         int matchingCount = 0;
         visualInfo = XGetVisualInfo(DISPLAY_FROM_XCB(this), VisualIDMask, &visualInfoTemplate, &matchingCount);
-        if (!visualInfo && window()->surfaceType() == QSurface::OpenGLSurface)
-            qFatal("Could not initialize EGL");
 #endif //XCB_USE_GLX
+        if (!visualInfo && window()->surfaceType() == QSurface::OpenGLSurface)
+            qFatal("Could not initialize OpenGL");
+
+        if (!visualInfo && window()->surfaceType() == QSurface::RasterGLSurface) {
+            qWarning("Could not initialize OpenGL for RasterGLSurface, reverting to RasterSurface.");
+            window()->setSurfaceType(QSurface::RasterSurface);
+        }
         if (visualInfo) {
             m_depth = visualInfo->depth;
             m_imageFormat = imageFormatForDepth(m_depth);
@@ -671,8 +674,6 @@ void QXcbWindow::show()
     Q_XCB_CALL(xcb_map_window(xcb_connection(), m_window));
 
     m_screen->windowShown(this);
-
-    xcb_flush(xcb_connection());
 
     connection()->sync();
 }
@@ -1377,6 +1378,7 @@ void QXcbWindow::requestActivateWindow()
     updateNetWmUserTime(connection()->time());
 
     if (window()->isTopLevel()
+        && !(window()->flags() & Qt::X11BypassWindowManagerHint)
         && connection()->wmSupport()->isSupportedByWM(atom(QXcbAtom::_NET_ACTIVE_WINDOW))) {
         xcb_client_message_event_t event;
 
@@ -1392,9 +1394,9 @@ void QXcbWindow::requestActivateWindow()
         event.data.data32[4] = 0;
 
         Q_XCB_CALL(xcb_send_event(xcb_connection(), 0, m_screen->root(), XCB_EVENT_MASK_STRUCTURE_NOTIFY | XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT, (const char *)&event));
+    } else {
+        Q_XCB_CALL(xcb_set_input_focus(xcb_connection(), XCB_INPUT_FOCUS_PARENT, m_window, connection()->time()));
     }
-
-    Q_XCB_CALL(xcb_set_input_focus(xcb_connection(), XCB_INPUT_FOCUS_PARENT, m_window, connection()->time()));
 
     connection()->sync();
 }
@@ -1586,6 +1588,16 @@ void QXcbWindow::handleConfigureNotifyEvent(const xcb_configure_notify_event_t *
     QPlatformWindow::setGeometry(rect);
     QWindowSystemInterface::handleGeometryChange(window(), rect);
 
+    if (!m_screen->availableGeometry().intersects(rect)) {
+        Q_FOREACH (QPlatformScreen* screen, m_screen->virtualSiblings()) {
+            if (screen->availableGeometry().intersects(rect)) {
+                m_screen = static_cast<QXcbScreen*>(screen);
+                QWindowSystemInterface::handleWindowScreenChanged(window(), m_screen->QPlatformScreen::screen());
+                break;
+            }
+        }
+    }
+
     m_configureNotifyPending = false;
 
     if (m_deferredExpose) {
@@ -1695,6 +1707,7 @@ void QXcbWindow::handleButtonPressEvent(const xcb_button_press_event_t *event)
     Qt::KeyboardModifiers modifiers = connection()->keyboard()->translateModifiers(event->state);
 
     if (isWheel) {
+#ifndef XCB_USE_XINPUT21
         // Logic borrowed from qapplication_x11.cpp
         int delta = 120 * ((event->detail == 4 || event->detail == 6) ? 1 : -1);
         bool hor = (((event->detail == 4 || event->detail == 5)
@@ -1703,6 +1716,7 @@ void QXcbWindow::handleButtonPressEvent(const xcb_button_press_event_t *event)
 
         QWindowSystemInterface::handleWheelEvent(window(), event->time,
                                                  local, global, delta, hor ? Qt::Horizontal : Qt::Vertical, modifiers);
+#endif
         return;
     }
 
@@ -1893,7 +1907,6 @@ void QXcbWindow::updateSyncRequestCounter()
 {
     if (m_usingSyncProtocol && (m_syncValue.lo != 0 || m_syncValue.hi != 0)) {
         Q_XCB_CALL(xcb_sync_set_counter(xcb_connection(), m_syncCounter, m_syncValue));
-        xcb_flush(xcb_connection());
         connection()->sync();
 
         m_syncValue.lo = 0;

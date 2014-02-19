@@ -1323,8 +1323,8 @@ bool tst_QMetaObjectBuilder::sameMetaObject
             return false;
     }
 
-    const QMetaObject **objects1 = meta1->d.relatedMetaObjects;
-    const QMetaObject **objects2 = meta2->d.relatedMetaObjects;
+    const QMetaObject * const *objects1 = meta1->d.relatedMetaObjects;
+    const QMetaObject * const *objects2 = meta2->d.relatedMetaObjects;
     if (objects1 && !objects2)
         return false;
     if (objects2 && !objects1)

@@ -114,23 +114,23 @@ void tst_QPen::operator_eq_eq_data()
     QTest::addColumn<bool>("isEqual");
 
     QTest::newRow("differentColor") << QPen(Qt::red)
-				 << QPen(Qt::blue)
-				 << false;
+                                    << QPen(Qt::blue)
+                                    << false;
     QTest::newRow("differentWidth") << QPen(Qt::red, 2)
-				 << QPen(Qt::red, 3)
-				 << false;
+                                    << QPen(Qt::red, 3)
+                                    << false;
     QTest::newRow("differentPenStyle") << QPen(Qt::red, 2, Qt::DashLine)
-				    << QPen(Qt::red, 2, Qt::DotLine)
-				    << false;
+                                       << QPen(Qt::red, 2, Qt::DotLine)
+                                       << false;
     QTest::newRow("differentCapStyle") << QPen(Qt::red, 2, Qt::DashLine, Qt::RoundCap, Qt::BevelJoin)
-				    << QPen(Qt::red, 2, Qt::DashLine, Qt::SquareCap, Qt::BevelJoin)
-				    << false;
+                                       << QPen(Qt::red, 2, Qt::DashLine, Qt::SquareCap, Qt::BevelJoin)
+                                       << false;
     QTest::newRow("differentJoinStyle") << QPen(Qt::red, 2, Qt::DashLine, Qt::RoundCap, Qt::BevelJoin)
-				     << QPen(Qt::red, 2, Qt::DashLine, Qt::RoundCap, Qt::MiterJoin)
-				     << false;
+                                        << QPen(Qt::red, 2, Qt::DashLine, Qt::RoundCap, Qt::MiterJoin)
+                                        << false;
     QTest::newRow("same") << QPen(Qt::red, 2, Qt::DashLine, Qt::RoundCap, Qt::BevelJoin)
-		       << QPen(Qt::red, 2, Qt::DashLine, Qt::RoundCap, Qt::BevelJoin)
-		       << true;
+                          << QPen(Qt::red, 2, Qt::DashLine, Qt::RoundCap, Qt::BevelJoin)
+                          << true;
 
 }
 

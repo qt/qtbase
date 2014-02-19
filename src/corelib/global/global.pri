@@ -51,3 +51,9 @@ slog2 {
     LIBS_PRIVATE += -lslog2
     DEFINES += QT_USE_SLOG2
 }
+
+journald {
+    CONFIG += link_pkgconfig
+    PKGCONFIG_PRIVATE += libsystemd-journal
+    DEFINES += QT_USE_JOURNALD
+}

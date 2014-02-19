@@ -1,7 +1,7 @@
 /****************************************************************************
 **
+** Copyright (C) 2014 BogDan Vatra <bogdan@kde.org>
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
-** Copyright (C) 2012 BogDan Vatra <bogdan@kde.org>
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the Android port of the Qt Toolkit.
@@ -55,6 +55,7 @@ import android.util.Log;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MotionEvent;
+import android.view.View;
 
 import java.security.KeyStore;
 import java.security.cert.X509Certificate;
@@ -250,29 +251,10 @@ public class QtNative
         }
     }
 
-    public static void pauseApplication()
-    {
-        synchronized (m_mainActivityMutex) {
-            if (m_started)
-                pauseQtApp();
-        }
-    }
 
-    public static void resumeApplication()
-    {
-        synchronized (m_mainActivityMutex) {
-            if (m_started) {
-                resumeQtApp();
-                updateWindow();
-            }
-        }
-    }
 
     // application methods
     public static native void startQtApplication(String params, String env);
-    public static native void startQtApp(String params, String env);
-    public static native void pauseQtApp();
-    public static native void resumeQtApp();
     public static native boolean startQtAndroidPlugin();
     public static native void quitQtAndroidPlugin();
     public static native void terminateQt();
@@ -281,16 +263,6 @@ public class QtNative
     private static void quitApp()
     {
         m_activity.finish();
-    }
-
-    private static void redrawSurface(final int left, final int top, final int right, final int bottom )
-    {
-        runAction(new Runnable() {
-            @Override
-            public void run() {
-                m_activityDelegate.redrawWindow(left, top, right, bottom);
-            }
-        });
     }
 
     //@ANDROID-9
@@ -539,6 +511,46 @@ public class QtNative
         return certificateArray;
     }
 
+    private static void createSurface(final int id, final boolean onTop, final int x, final int y, final int w, final int h)
+    {
+        runAction(new Runnable() {
+            @Override
+            public void run() {
+                m_activityDelegate.createSurface(id, onTop, x, y, w, h);
+            }
+        });
+    }
+
+    private static void insertNativeView(final int id, final View view, final int x, final int y, final int w, final int h)
+    {
+        runAction(new Runnable() {
+            @Override
+            public void run() {
+                m_activityDelegate.insertNativeView(id, view, x, y, w, h);
+            }
+        });
+    }
+
+    private static void setSurfaceGeometry(final int id, final int x, final int y, final int w, final int h)
+    {
+        runAction(new Runnable() {
+            @Override
+            public void run() {
+                m_activityDelegate.setSurfaceGeometry(id, x, y, w, h);
+            }
+        });
+    }
+
+    private static void destroySurface(final int id)
+    {
+        runAction(new Runnable() {
+            @Override
+            public void run() {
+                m_activityDelegate.destroySurface(id);
+            }
+        });
+    }
+
     // screen methods
     public static native void setDisplayMetrics(int screenWidthPixels,
                                                 int screenHeightPixels,
@@ -567,10 +579,7 @@ public class QtNative
     // keyboard methods
 
     // surface methods
-    public static native void destroySurface();
-    public static native void setSurface(Object surface);
-    public static native void lockSurface();
-    public static native void unlockSurface();
+    public static native void setSurface(int id, Object surface, int w, int h);
     // surface methods
 
     // window methods
@@ -589,4 +598,7 @@ public class QtNative
     public static native boolean onContextItemSelected(int itemId, boolean checked);
     public static native void onContextMenuClosed(Menu menu);
     // menu methods
+
+    // activity methods
+    public static native void onActivityResult(int requestCode, int resultCode, Intent data);
 }

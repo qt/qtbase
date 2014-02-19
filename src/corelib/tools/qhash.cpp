@@ -60,6 +60,7 @@
 #include <qbytearray.h>
 #include <qdatetime.h>
 #include <qbasicatomic.h>
+#include <private/qsimd_p.h>
 
 #ifndef QT_BOOTSTRAPPED
 #include <qcoreapplication.h>
@@ -93,9 +94,68 @@ QT_BEGIN_NAMESPACE
     (for instance, gcc 4.4 does that even at -O0).
 */
 
+#ifdef __SSE4_2__
+static inline bool hasFastCrc32()
+{
+    return true;
+}
+
+template <typename Char>
+static uint crc32(const Char *ptr, size_t len, uint h)
+{
+    // The CRC32 instructions from Nehalem calculate a 32-bit CRC32 checksum
+    const uchar *p = reinterpret_cast<const uchar *>(ptr);
+    const uchar *const e = p + (len * sizeof(Char));
+#  ifdef Q_PROCESSOR_X86_64
+    // The 64-bit instruction still calculates only 32-bit, but without this
+    // variable GCC 4.9 still tries to clear the high bits on every loop
+    qulonglong h2 = h;
+
+    p += 8;
+    for ( ; p <= e; p += 8)
+        h2 = _mm_crc32_u64(h2, *reinterpret_cast<const qlonglong *>(p - 8));
+    h = h2;
+    p -= 8;
+
+    len = e - p;
+    if (len & 4) {
+        h = _mm_crc32_u32(h, *reinterpret_cast<const uint *>(p));
+        p += 4;
+    }
+#  else
+    p += 4;
+    for ( ; p <= e; p += 4)
+        h = _mm_crc32_u32(h, *reinterpret_cast<const uint *>(p));
+    p -= 4;
+    len = e - p;
+#  endif
+    if (len & 2) {
+        h = _mm_crc32_u16(h, *reinterpret_cast<const ushort *>(p));
+        p += 2;
+    }
+    if (sizeof(Char) == 1 && len & 1)
+        h = _mm_crc32_u8(h, *p);
+    return h;
+}
+#else
+static inline bool hasFastCrc32()
+{
+    return false;
+}
+
+static uint crc32(...)
+{
+    Q_UNREACHABLE();
+    return 0;
+}
+#endif
+
 static inline uint hash(const uchar *p, int len, uint seed) Q_DECL_NOTHROW
 {
     uint h = seed;
+
+    if (hasFastCrc32())
+        return crc32(p, size_t(len), h);
 
     for (int i = 0; i < len; ++i)
         h = 31 * h + p[i];
@@ -106,6 +166,9 @@ static inline uint hash(const uchar *p, int len, uint seed) Q_DECL_NOTHROW
 static inline uint hash(const QChar *p, int len, uint seed) Q_DECL_NOTHROW
 {
     uint h = seed;
+
+    if (hasFastCrc32())
+        return crc32(p, size_t(len), h);
 
     for (int i = 0; i < len; ++i)
         h = 31 * h + p[i].unicode();
@@ -673,6 +736,38 @@ void QHashData::checkSanity()
 
     Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
+
+/*! \relates QHash
+    \since 5.3
+
+    Returns the hash value for the \a key, using \a seed to seed the calculation.
+*/
+uint qHash(float key, uint seed) Q_DECL_NOTHROW
+{
+    return key != 0.0f ? hash(reinterpret_cast<const uchar *>(&key), sizeof(key), seed) : seed ;
+}
+
+/*! \relates QHash
+    \since 5.3
+
+    Returns the hash value for the \a key, using \a seed to seed the calculation.
+*/
+uint qHash(double key, uint seed) Q_DECL_NOTHROW
+{
+    return key != 0.0  ? hash(reinterpret_cast<const uchar *>(&key), sizeof(key), seed) : seed ;
+}
+
+#ifndef Q_OS_DARWIN
+/*! \relates QHash
+    \since 5.3
+
+    Returns the hash value for the \a key, using \a seed to seed the calculation.
+*/
+uint qHash(long double key, uint seed) Q_DECL_NOTHROW
+{
+    return key != 0.0L ? hash(reinterpret_cast<const uchar *>(&key), sizeof(key), seed) : seed ;
+}
+#endif
 
 /*! \fn uint qHash(QChar key, uint seed = 0)
     \relates QHash

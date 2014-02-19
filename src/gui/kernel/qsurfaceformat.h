@@ -127,8 +127,16 @@ public:
     bool stereo() const;
     void setStereo(bool enable);
 
-    void setOption(QSurfaceFormat::FormatOptions opt);
-    bool testOption(QSurfaceFormat::FormatOptions opt) const;
+    QT_DEPRECATED void setOption(QSurfaceFormat::FormatOptions opt);
+    QT_DEPRECATED bool testOption(QSurfaceFormat::FormatOptions opt) const;
+
+    void setOptions(QSurfaceFormat::FormatOptions options);
+    void setOption(FormatOption option, bool on = true);
+    bool testOption(FormatOption option) const;
+    QSurfaceFormat::FormatOptions options() const;
+
+    int swapInterval() const;
+    void setSwapInterval(int interval);
 
 private:
     QSurfaceFormatPrivate *d;

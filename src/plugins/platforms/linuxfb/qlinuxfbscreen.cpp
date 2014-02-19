@@ -41,6 +41,7 @@
 
 #include "qlinuxfbscreen.h"
 #include <QtPlatformSupport/private/qfbcursor_p.h>
+#include <QtCore/QRegularExpression>
 #include <QtGui/QPainter>
 
 #include <private/qcore_unix_p.h> // overrides QT_OPEN
@@ -318,11 +319,11 @@ QLinuxFbScreen::~QLinuxFbScreen()
 
 bool QLinuxFbScreen::initialize()
 {
-    QRegExp ttyRx(QLatin1String("tty=(.*)"));
-    QRegExp fbRx(QLatin1String("fb=(.*)"));
-    QRegExp mmSizeRx(QLatin1String("mmsize=(\\d+)x(\\d+)"));
-    QRegExp sizeRx(QLatin1String("size=(\\d+)x(\\d+)"));
-    QRegExp offsetRx(QLatin1String("offset=(\\d+)x(\\d+)"));
+    QRegularExpression ttyRx(QLatin1String("tty=(.*)"));
+    QRegularExpression fbRx(QLatin1String("fb=(.*)"));
+    QRegularExpression mmSizeRx(QLatin1String("mmsize=(\\d+)x(\\d+)"));
+    QRegularExpression sizeRx(QLatin1String("size=(\\d+)x(\\d+)"));
+    QRegularExpression offsetRx(QLatin1String("offset=(\\d+)x(\\d+)"));
 
     QString fbDevice, ttyDevice;
     QSize userMmSize;
@@ -331,18 +332,19 @@ bool QLinuxFbScreen::initialize()
 
     // Parse arguments
     foreach (const QString &arg, mArgs) {
+        QRegularExpressionMatch match;
         if (arg == QLatin1String("nographicsmodeswitch"))
             doSwitchToGraphicsMode = false;
-        else if (mmSizeRx.indexIn(arg) != -1)
-            userMmSize = QSize(mmSizeRx.cap(1).toInt(), mmSizeRx.cap(2).toInt());
-        else if (sizeRx.indexIn(arg) != -1)
-            userGeometry.setSize(QSize(sizeRx.cap(1).toInt(), sizeRx.cap(2).toInt()));
-        else if (offsetRx.indexIn(arg) != -1)
-            userGeometry.setTopLeft(QPoint(offsetRx.cap(1).toInt(), offsetRx.cap(2).toInt()));
-        else if (ttyRx.indexIn(arg) != -1)
-            ttyDevice = ttyRx.cap(1);
-        else if (fbRx.indexIn(arg) != -1)
-            fbDevice = fbRx.cap(1);
+        else if (arg.contains(mmSizeRx, &match))
+            userMmSize = QSize(match.captured(1).toInt(), match.captured(2).toInt());
+        else if (arg.contains(sizeRx, &match))
+            userGeometry.setSize(QSize(match.captured(1).toInt(), match.captured(2).toInt()));
+        else if (arg.contains(offsetRx, &match))
+            userGeometry.setTopLeft(QPoint(match.captured(1).toInt(), match.captured(2).toInt()));
+        else if (arg.contains(ttyRx, &match))
+            ttyDevice = match.captured(1);
+        else if (arg.contains(fbRx, &match))
+            fbDevice = match.captured(1);
     }
 
     if (fbDevice.isEmpty()) {

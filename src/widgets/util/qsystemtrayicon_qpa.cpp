@@ -99,8 +99,14 @@ void QSystemTrayIconPrivate::updateIcon_sys()
 
 void QSystemTrayIconPrivate::updateMenu_sys()
 {
-    if (qpa_sys && menu)
+    if (qpa_sys && menu) {
+        if (!menu->platformMenu()) {
+            QPlatformMenu *platformMenu = qpa_sys->createMenu();
+            if (platformMenu)
+                menu->setPlatformMenu(platformMenu);
+        }
         qpa_sys->updateMenu(menu->platformMenu());
+    }
 }
 
 void QSystemTrayIconPrivate::updateToolTip_sys()

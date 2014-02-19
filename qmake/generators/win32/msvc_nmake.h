@@ -62,7 +62,7 @@ protected:
     virtual QString getPdbTarget();
     virtual QString defaultInstall(const QString &t);
     virtual QStringList &findDependencies(const QString &file);
-    QString var(const ProKey &value);
+    QString var(const ProKey &value) const;
     QString precompH, precompObj, precompPch;
     bool usePCH;
 

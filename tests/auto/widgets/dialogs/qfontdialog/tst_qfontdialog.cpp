@@ -108,11 +108,11 @@ void tst_QFontDialog::cleanup()
 void tst_QFontDialog::postKeyReturn() {
     QWidgetList list = QApplication::topLevelWidgets();
     for (int i=0; i<list.count(); ++i) {
-	QFontDialog *dialog = qobject_cast<QFontDialog*>(list[i]);
-	if (dialog) {
-	    QTest::keyClick( list[i], Qt::Key_Return, Qt::NoModifier );
-	    return;
-	}
+        QFontDialog *dialog = qobject_cast<QFontDialog*>(list[i]);
+        if (dialog) {
+            QTest::keyClick( list[i], Qt::Key_Return, Qt::NoModifier );
+            return;
+        }
     }
 }
 

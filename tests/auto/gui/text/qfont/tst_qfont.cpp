@@ -316,25 +316,25 @@ void tst_QFont::italicOblique()
     QStringList::ConstIterator f_it, f_end = families.end();
     for (f_it = families.begin(); f_it != f_end; ++f_it) {
 
-	QString family = *f_it;
-	QStringList styles = fdb.styles(family);
-	QVERIFY(!styles.isEmpty());
-	QStringList::ConstIterator s_it, s_end = styles.end();
-	for (s_it = styles.begin(); s_it != s_end; ++s_it) {
-	    QString style = *s_it;
+        QString family = *f_it;
+        QStringList styles = fdb.styles(family);
+        QVERIFY(!styles.isEmpty());
+        QStringList::ConstIterator s_it, s_end = styles.end();
+        for (s_it = styles.begin(); s_it != s_end; ++s_it) {
+            QString style = *s_it;
 
-	    if (fdb.isSmoothlyScalable(family, style)) {
-		if (style.contains("Oblique")) {
-		    style.replace("Oblique", "Italic");
-		} else if (style.contains("Italic")) {
-		    style.replace("Italic", "Oblique");
-		} else {
-		    continue;
-		}
-		QFont f = fdb.font(family, style, 12);
-		QVERIFY(f.italic());
-	    }
-	}
+            if (fdb.isSmoothlyScalable(family, style)) {
+                if (style.contains("Oblique")) {
+                    style.replace("Oblique", "Italic");
+                } else if (style.contains("Italic")) {
+                    style.replace("Italic", "Oblique");
+                } else {
+                    continue;
+                }
+                QFont f = fdb.font(family, style, 12);
+                QVERIFY(f.italic());
+            }
+        }
     }
 }
 
@@ -342,16 +342,16 @@ void tst_QFont::compare()
 {
     QFont font;
     {
-	QFont font2 = font;
-	font2.setPointSize( 24 );
-	QVERIFY( font != font2 );
-    QCOMPARE(font < font2,!(font2 < font));
+        QFont font2 = font;
+        font2.setPointSize(24);
+        QVERIFY(font != font2);
+        QCOMPARE(font < font2,!(font2 < font));
     }
     {
-	QFont font2 = font;
-	font2.setPixelSize( 24 );
-	QVERIFY( font != font2 );
-    QCOMPARE(font < font2,!(font2 < font));
+        QFont font2 = font;
+        font2.setPixelSize(24);
+        QVERIFY(font != font2);
+        QCOMPARE(font < font2,!(font2 < font));
     }
 
     font.setPointSize(12);
@@ -361,69 +361,69 @@ void tst_QFont::compare()
     font.setStrikeOut(false);
     font.setOverline(false);
     {
-	QFont font2 = font;
-	font2.setPointSize( 24 );
-	QVERIFY( font != font2 );
-    QCOMPARE(font < font2,!(font2 < font));
+        QFont font2 = font;
+        font2.setPointSize(24);
+        QVERIFY(font != font2);
+        QCOMPARE(font < font2,!(font2 < font));
     }
     {
-	QFont font2 = font;
-	font2.setPixelSize( 24 );
-	QVERIFY( font != font2 );
-    QCOMPARE(font < font2,!(font2 < font));
+        QFont font2 = font;
+        font2.setPixelSize(24);
+        QVERIFY(font != font2);
+        QCOMPARE(font < font2,!(font2 < font));
     }
     {
-	QFont font2 = font;
+        QFont font2 = font;
 
-	font2.setItalic(true);
-	QVERIFY( font != font2 );
-    QCOMPARE(font < font2,!(font2 < font));
-	font2.setItalic(false);
-	QVERIFY( font == font2 );
-    QVERIFY(!(font < font2));
+        font2.setItalic(true);
+        QVERIFY(font != font2);
+        QCOMPARE(font < font2,!(font2 < font));
+        font2.setItalic(false);
+        QVERIFY(font == font2);
+        QVERIFY(!(font < font2));
 
-	font2.setWeight(QFont::Bold);
-	QVERIFY( font != font2 );
-    QCOMPARE(font < font2,!(font2 < font));
-	font2.setWeight(QFont::Normal);
-	QVERIFY( font == font2 );
-    QVERIFY(!(font < font2));
+        font2.setWeight(QFont::Bold);
+        QVERIFY(font != font2);
+        QCOMPARE(font < font2,!(font2 < font));
+        font2.setWeight(QFont::Normal);
+        QVERIFY(font == font2);
+        QVERIFY(!(font < font2));
 
-	font.setUnderline(true);
-	QVERIFY( font != font2 );
-    QCOMPARE(font < font2,!(font2 < font));
-	font.setUnderline(false);
-	QVERIFY( font == font2 );
-    QVERIFY(!(font < font2));
+        font.setUnderline(true);
+        QVERIFY(font != font2);
+        QCOMPARE(font < font2,!(font2 < font));
+        font.setUnderline(false);
+        QVERIFY(font == font2);
+        QVERIFY(!(font < font2));
 
-	font.setStrikeOut(true);
-	QVERIFY( font != font2 );
-    QCOMPARE(font < font2,!(font2 < font));
-	font.setStrikeOut(false);
-	QVERIFY( font == font2 );
-    QVERIFY(!(font < font2));
+        font.setStrikeOut(true);
+        QVERIFY(font != font2);
+        QCOMPARE(font < font2,!(font2 < font));
+        font.setStrikeOut(false);
+        QVERIFY(font == font2);
+        QVERIFY(!(font < font2));
 
-	font.setOverline(true);
-	QVERIFY( font != font2 );
-    QCOMPARE(font < font2,!(font2 < font));
-	font.setOverline(false);
-	QVERIFY( font == font2 );
-    QVERIFY(!(font < font2));
+        font.setOverline(true);
+        QVERIFY(font != font2);
+        QCOMPARE(font < font2,!(font2 < font));
+        font.setOverline(false);
+        QVERIFY(font == font2);
+        QVERIFY(!(font < font2));
 
         font.setCapitalization(QFont::SmallCaps);
-        QVERIFY( font != font2 );
-    QCOMPARE(font < font2,!(font2 < font));
+        QVERIFY(font != font2);
+        QCOMPARE(font < font2,!(font2 < font));
         font.setCapitalization(QFont::MixedCase);
-        QVERIFY( font == font2 );
-    QVERIFY(!(font < font2));
+        QVERIFY(font == font2);
+        QVERIFY(!(font < font2));
     }
 
 #if defined(Q_WS_X11)
     {
-	QFont font1, font2;
-	font1.setRawName("-Adobe-Helvetica-medium-r-normal--12-120-75-75-p-67-iso8859-1");
-	font2.setRawName("-Adobe-Helvetica-medium-r-normal--24-240-75-75-p-130-iso8859-1");
-	QVERIFY(font1 != font2);
+        QFont font1, font2;
+        font1.setRawName("-Adobe-Helvetica-medium-r-normal--12-120-75-75-p-67-iso8859-1");
+        font2.setRawName("-Adobe-Helvetica-medium-r-normal--24-240-75-75-p-130-iso8859-1");
+        QVERIFY(font1 != font2);
     }
 #endif
 }

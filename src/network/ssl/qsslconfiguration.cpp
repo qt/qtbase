@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 BlackBerry Limited. All rights reserved.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -51,6 +52,9 @@ const QSsl::SslOptions QSslConfigurationPrivate::defaultSslOptions = QSsl::SslOp
                                                                     |QSsl::SslOptionDisableLegacyRenegotiation
                                                                     |QSsl::SslOptionDisableCompression
                                                                     |QSsl::SslOptionDisableSessionPersistence;
+
+const char QSslConfiguration::NextProtocolSpdy3_0[] = "spdy/3";
+const char QSslConfiguration::NextProtocolHttp1_1[] = "http/1.1";
 
 /*!
     \class QSslConfiguration
@@ -110,6 +114,33 @@ const QSsl::SslOptions QSslConfigurationPrivate::defaultSslOptions = QSsl::SslOp
     \sa QSsl::SslProtocol, QSslCertificate, QSslCipher, QSslKey,
         QSslSocket, QNetworkAccessManager,
         QSslSocket::sslConfiguration(), QSslSocket::setSslConfiguration()
+*/
+
+/*!
+    \enum QSslConfiguration::NextProtocolNegotiationStatus
+
+    Describes the status of the Next Protocol Negotiation (NPN).
+
+    \value NextProtocolNegotiationNone No application protocol
+    has been negotiated (yet).
+
+    \value NextProtocolNegotiationNegotiated A next protocol
+    has been negotiated (see nextNegotiatedProtocol()).
+
+    \value NextProtocolNegotiationUnsupported The client and
+    server could not agree on a common next application protocol.
+*/
+
+/*!
+    \variable QSslConfiguration::NextProtocolSpdy3_0
+    \brief The value used for negotiating SPDY 3.0 during the Next
+    Protocol Negotiation.
+*/
+
+/*!
+    \variable QSslConfiguration::NextProtocolHttp1_1
+    \brief The value used for negotiating HTTP 1.1 during the Next
+    Protocol Negotiation.
 */
 
 /*!
@@ -185,7 +216,10 @@ bool QSslConfiguration::operator==(const QSslConfiguration &other) const
         d->allowRootCertOnDemandLoading == other.d->allowRootCertOnDemandLoading &&
         d->sslOptions == other.d->sslOptions &&
         d->sslSession == other.d->sslSession &&
-        d->sslSessionTicketLifeTimeHint == other.d->sslSessionTicketLifeTimeHint;
+        d->sslSessionTicketLifeTimeHint == other.d->sslSessionTicketLifeTimeHint &&
+        d->nextAllowedProtocols == other.d->nextAllowedProtocols &&
+        d->nextNegotiatedProtocol == other.d->nextNegotiatedProtocol &&
+        d->nextProtocolNegotiationStatus == other.d->nextProtocolNegotiationStatus;
 }
 
 /*!
@@ -221,7 +255,10 @@ bool QSslConfiguration::isNull() const
             d->peerCertificateChain.count() == 0 &&
             d->sslOptions == QSslConfigurationPrivate::defaultSslOptions &&
             d->sslSession.isNull() &&
-            d->sslSessionTicketLifeTimeHint == -1);
+            d->sslSessionTicketLifeTimeHint == -1 &&
+            d->nextAllowedProtocols.isEmpty() &&
+            d->nextNegotiatedProtocol.isNull() &&
+            d->nextProtocolNegotiationStatus == QSslConfiguration::NextProtocolNegotiationNone);
 }
 
 /*!
@@ -653,6 +690,71 @@ int QSslConfiguration::sessionTicketLifeTimeHint() const
 }
 
 /*!
+  \since 5.3
+
+  This function returns the protocol negotiated with the server
+  if the Next Protocol Negotiation (NPN) TLS extension was enabled.
+  In order for the NPN extension to be enabled, setAllowedNextProtocols()
+  needs to be called explicitly before connecting to the server.
+
+  If no protocol could be negotiated or the extension was not enabled,
+  this function returns a QByteArray which is null.
+
+  \sa setAllowedNextProtocols(), nextProtocolNegotiationStatus()
+ */
+QByteArray QSslConfiguration::nextNegotiatedProtocol() const
+{
+    return d->nextNegotiatedProtocol;
+}
+
+/*!
+  \since 5.3
+
+  This function sets the allowed \a protocols to be negotiated with the
+  server through the Next Protocol Negotiation (NPN) TLS extension; each
+  element in \a protocols must define one allowed protocol.
+  The function must be called explicitly before connecting to send the NPN
+  extension in the SSL handshake.
+  Whether or not the negotiation succeeded can be queried through
+  nextProtocolNegotiationStatus().
+
+  \sa nextNegotiatedProtocol(), nextProtocolNegotiationStatus(), allowedNextProtocols(), QSslConfiguration::NextProtocolSpdy3_0, QSslConfiguration::NextProtocolHttp1_1
+ */
+void QSslConfiguration::setAllowedNextProtocols(QList<QByteArray> protocols)
+{
+    d->nextAllowedProtocols = protocols;
+}
+
+/*!
+  \since 5.3
+
+  This function returns the allowed protocols to be negotiated with the
+  server through the Next Protocol Negotiation (NPN) TLS extension, as set
+  by setAllowedNextProtocols().
+
+  \sa nextNegotiatedProtocol(), nextProtocolNegotiationStatus(), setAllowedNextProtocols(), QSslConfiguration::NextProtocolSpdy3_0, QSslConfiguration::NextProtocolHttp1_1
+ */
+QList<QByteArray> QSslConfiguration::allowedNextProtocols() const
+{
+    return d->nextAllowedProtocols;
+}
+
+/*!
+  \since 5.3
+
+  This function returns the status of the Next Protocol Negotiation (NPN).
+  If the feature has not been enabled through setAllowedNextProtocols(),
+  this function returns NextProtocolNegotiationNone.
+  The status will be set before emitting the encrypted() signal.
+
+  \sa setAllowedNextProtocols(), allowedNextProtocols(), nextNegotiatedProtocol(), QSslConfiguration::NextProtocolNegotiationStatus
+ */
+QSslConfiguration::NextProtocolNegotiationStatus QSslConfiguration::nextProtocolNegotiationStatus() const
+{
+    return d->nextProtocolNegotiationStatus;
+}
+
+/*!
     Returns the default SSL configuration to be used in new SSL
     connections.
 
@@ -663,7 +765,7 @@ int QSslConfiguration::sessionTicketLifeTimeHint() const
       \li protocol SecureProtocols (meaning either TLS 1.0 or SSL 3 will be used)
       \li the system's default CA certificate list
       \li the cipher list equal to the list of the SSL libraries'
-         supported SSL ciphers
+         supported SSL ciphers that are 128 bits or more
     \endlist
 
     \sa QSslSocket::supportedCiphers(), setDefaultConfiguration()

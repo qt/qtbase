@@ -102,8 +102,8 @@ extern "C" int usleep(useconds_t);
 
 #if defined(_XOPEN_SOURCE) && (_XOPEN_SOURCE-0 >= 400)
 // Tru64 5.0 and better
-#define QT_SNPRINTF		::snprintf
-#define QT_VSNPRINTF		::vsnprintf
+#define QT_SNPRINTF             ::snprintf
+#define QT_VSNPRINTF            ::vsnprintf
 #endif
 
 #endif // QPLATFORMDEFS_H

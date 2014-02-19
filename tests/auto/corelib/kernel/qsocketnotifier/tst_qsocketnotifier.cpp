@@ -48,7 +48,11 @@
 #include <QtCore/QSocketNotifier>
 #include <QtNetwork/QTcpServer>
 #include <QtNetwork/QTcpSocket>
+#ifndef Q_OS_WINRT
 #include <private/qnativesocketengine_p.h>
+#else
+#include <private/qnativesocketengine_winrt_p.h>
+#endif
 #define NATIVESOCKETENGINE QNativeSocketEngine
 #ifdef Q_OS_UNIX
 #include <private/qnet_unix_p.h>

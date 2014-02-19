@@ -170,6 +170,12 @@ void QFileSystemEntry::resolveNativeFilePath() const
 #else
         m_nativeFilePath = QFile::encodeName(QDir::toNativeSeparators(m_filePath));
 #endif
+#ifdef Q_OS_WINRT
+        while (m_nativeFilePath.startsWith(QLatin1Char('\\')))
+            m_nativeFilePath.remove(0,1);
+        if (m_nativeFilePath.isEmpty())
+            m_nativeFilePath.append(QLatin1Char('.'));
+#endif
     }
 }
 

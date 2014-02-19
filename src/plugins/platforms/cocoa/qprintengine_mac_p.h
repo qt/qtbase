@@ -125,6 +125,7 @@ public:
     NSPrintInfo *printInfo;
     PMResolution resolution;
     QString outputFilename;
+    QString m_creator;
     bool fullPage;
     QPaintEngine *paintEngine;
     bool hasCustomPaperSize;

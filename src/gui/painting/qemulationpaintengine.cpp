@@ -169,7 +169,7 @@ void QEmulationPaintEngine::drawTextItem(const QPointF &p, const QTextItem &text
 {
     if (state()->bgMode == Qt::OpaqueMode) {
         const QTextItemInt &ti = static_cast<const QTextItemInt &>(textItem);
-        QRectF rect(p.x(), p.y() - ti.ascent.toReal(), ti.width.toReal(), (ti.ascent + ti.descent + 1).toReal());
+        QRectF rect(p.x(), p.y() - ti.ascent.toReal(), ti.width.toReal(), (ti.ascent + ti.descent).toReal());
         fillBGRect(rect);
     }
 

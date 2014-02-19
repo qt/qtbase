@@ -56,7 +56,8 @@
  *
  * We will try to include all headers possible under this configuration.
  *
- * MSVC does not define __SSE2__ & family, so we will define them.
+ * MSVC does not define __SSE2__ & family, so we will define them. MSVC 2013 &
+ * up do define __AVX__ if the -arch:AVX option is passed on the command-line.
  *
  * Supported XXX are:
  *   Flag  | Arch |  GCC  | Intel CC |  MSVC  |
@@ -72,7 +73,7 @@
  * I = intrinsics; C = code generation
  */
 
-#ifdef __MINGW64_VERSION_MAJOR
+#if defined(__MINGW64_VERSION_MAJOR) || (defined(Q_CC_MSVC) && !defined(Q_OS_WINCE))
 #include <intrin.h>
 #endif
 
@@ -118,31 +119,31 @@
 // immintrin.h is the ultimate header, we don't need anything else after this
 #include <immintrin.h>
 
-#  if defined(Q_CC_MSVC) && defined(_M_AVX)
+#  if defined(Q_CC_MSVC) && (defined(_M_AVX) || defined(__AVX__))
 // MS Visual Studio 2010 has no macro pre-defined to identify the use of /arch:AVX
+// MS Visual Studio 2013 adds it: __AVX__
 // See: http://connect.microsoft.com/VisualStudio/feedback/details/605858/arch-avx-should-define-a-predefined-macro-in-x64-and-set-a-unique-value-for-m-ix86-fp-in-win32
-// When such a macro exists, add it above, replacing _M_AVX as appropriate
 #    define __SSE3__ 1
 #    define __SSSE3__ 1
 // no Intel CPU supports SSE4a, so don't define it
 #    define __SSE4_1__ 1
 #    define __SSE4_2__ 1
-#    define __AVX__ 1
-#    ifdef _M_AVX2
-// replace the macro above with the proper MS macro when it exists
-// All processors with AVX2 will support BMI1 and FMA
-#      define __AVX2__ 1
-#      define __BMI__ 1
-#      define __FMA__ 1
-#   endif
+#    ifndef __AVX__
+#      define __AVX__ 1
+#    endif
 #  endif
 #endif
 
 // other x86 intrinsics
-#if defined(QT_COMPILER_SUPPORTS_AVX) && defined(Q_CC_GNU) && \
-    (!defined(Q_CC_INTEL)|| __INTEL_COMPILER >= 1310 || (__GNUC__ * 100 + __GNUC_MINOR__ < 407))
-#define QT_COMPILER_SUPPORTS_X86INTRIN
-#include <x86intrin.h>
+#if defined(Q_PROCESSOR_X86) && ((defined(Q_CC_GNU) && (__GNUC__ * 100 + __GNUC_MINOR__ >= 404)) \
+    || (defined(Q_CC_CLANG) && (__clang_major__ * 100 + __clang_minor__ >= 208)) \
+    || defined(Q_CC_INTEL))
+#  define QT_COMPILER_SUPPORTS_X86INTRIN
+#  ifndef Q_CC_INTEL
+// The Intel compiler has no <x86intrin.h> -- all intrinsics are in <immintrin.h>;
+// GCC 4.4 and Clang 2.8 added a few more intrinsics there
+#    include <x86intrin.h>
+#  endif
 #endif
 
 // NEON intrinsics
@@ -240,6 +241,43 @@ static inline uint qCpuFeatures()
 }
 
 #define qCpuHasFeature(feature)  ((qCompilerCpuFeatures & (feature)) || (qCpuFeatures() & (feature)))
+
+#ifdef Q_PROCESSOR_X86
+// Bit scan functions for x86
+#  ifdef Q_CC_MSVC
+// MSVC calls it _BitScanReverse and returns the carry flag, which we don't need
+static __forceinline unsigned long _bit_scan_reverse(uint val)
+{
+    unsigned long result;
+    _BitScanReverse(&result, val);
+    return result;
+}
+static __forceinline unsigned long _bit_scan_forward(uint val)
+{
+    unsigned long result;
+    _BitScanForward(&result, val);
+    return result;
+}
+#  elif (defined(Q_CC_CLANG) || (defined(Q_CC_GNU) && __GNUC__ * 100 + __GNUC_MINOR__ < 405)) \
+    && !defined(Q_CC_INTEL)
+// Clang is missing the intrinsic for _bit_scan_reverse
+// GCC only added it in version 4.5
+static inline __attribute__((always_inline))
+unsigned _bit_scan_reverse(unsigned val)
+{
+    unsigned result;
+    asm("bsr %1, %0" : "=r" (result) : "r" (val));
+    return result;
+}
+static inline __attribute__((always_inline))
+unsigned _bit_scan_forward(unsigned val)
+{
+    unsigned result;
+    asm("bsf %1, %0" : "=r" (result) : "r" (val));
+    return result;
+}
+#  endif
+#endif // Q_PROCESSOR_X86
 
 #define ALIGNMENT_PROLOGUE_16BYTES(ptr, i, length) \
     for (; i < static_cast<int>(qMin(static_cast<quintptr>(length), ((4 - ((reinterpret_cast<quintptr>(ptr) >> 2) & 0x3)) & 0x3))); ++i)

@@ -64,6 +64,7 @@ private slots:
     void rehash_isnt_quadratic();
     void dont_need_default_constructor();
     void qhash();
+    void fp_qhash_of_zero_is_zero();
     void qmultihash_specific();
 
     void compare();
@@ -1041,6 +1042,20 @@ void tst_QHash::qhash()
 
         QVERIFY(qHash(pA) != qHash(pB));
     }
+}
+
+void tst_QHash::fp_qhash_of_zero_is_zero()
+{
+    QCOMPARE(qHash(-0.0f), 0U);
+    QCOMPARE(qHash( 0.0f), 0U);
+
+    QCOMPARE(qHash(-0.0 ), 0U);
+    QCOMPARE(qHash( 0.0 ), 0U);
+
+#ifndef Q_OS_DARWIN
+    QCOMPARE(qHash(-0.0L), 0U);
+    QCOMPARE(qHash( 0.0L), 0U);
+#endif
 }
 
 void tst_QHash::qmultihash_specific()

@@ -48,6 +48,7 @@
 
 QT_BEGIN_NAMESPACE
 
+
 class QSocketNotifier;
 
 class QQnxVirtualKeyboardPps : public QQnxAbstractVirtualKeyboard
@@ -64,7 +65,7 @@ public Q_SLOTS:
     void start();
 
 protected:
-    void applyKeyboardMode(KeyboardMode mode);
+    void applyKeyboardOptions();
 
 private Q_SLOTS:
     void ppsDataReady();
@@ -76,15 +77,11 @@ private:
     bool queryPPSInfo();
     void handleKeyboardInfoMessage();
 
-    void applyKeyboardModeOptions(KeyboardMode mode);
-    void addDefaultModeOptions();
-    void addUrlModeOptions();
-    void addEmailModeOptions();
-    void addWebModeOptions();
-    void addNumPuncModeOptions();
-    void addSymbolModeOptions();
-    void addPhoneModeOptions();
-    void addPinModeOptions();
+    const char* keyboardModeStr() const;
+    const char* enterKeyTypeStr() const;
+
+    bool prepareToSend();
+    bool writeCurrentPPSEncoder();
 
     pps_encoder_t  *m_encoder;
     pps_decoder_t  *m_decoder;

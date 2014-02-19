@@ -15,7 +15,12 @@ mac {
     else: SUBDIRS += cocoa
 }
 
-win32: SUBDIRS += windows
+win32:!winrt: SUBDIRS += windows
+winrt: SUBDIRS += winrt
+
+contains(QT_CONFIG, direct2d) {
+    SUBDIRS += direct2d
+}
 
 qnx {
     SUBDIRS += qnx

@@ -44,6 +44,16 @@
 #include <qpixmap.h>
 #include <private/qwindow_p.h>
 
+#include <qopengl.h>
+#include <qopenglcontext.h>
+#include <QtGui/QMatrix4x4>
+#include <QtGui/QOpenGLShaderProgram>
+#include <QtGui/QOpenGLContext>
+#include <QtGui/QOpenGLFunctions>
+#ifndef QT_NO_OPENGL
+#include <QtGui/private/qopengltextureblitter_p.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QPlatformBackingStorePrivate
@@ -51,12 +61,108 @@ class QPlatformBackingStorePrivate
 public:
     QPlatformBackingStorePrivate(QWindow *w)
         : window(w)
+#ifndef QT_NO_OPENGL
+        , blitter(0)
+#endif
     {
     }
 
+    ~QPlatformBackingStorePrivate()
+    {
+#ifndef QT_NO_OPENGL
+        if (blitter)
+            blitter->destroy();
+        delete blitter;
+#endif
+    }
     QWindow *window;
     QSize size;
+#ifndef QT_NO_OPENGL
+    mutable GLuint textureId;
+    mutable QSize textureSize;
+    QOpenGLTextureBlitter *blitter;
+#endif
 };
+
+#ifndef QT_NO_OPENGL
+
+struct QBackingstoreTextureInfo
+{
+    GLuint textureId;
+    QRect rect;
+};
+
+Q_DECLARE_TYPEINFO(QBackingstoreTextureInfo, Q_MOVABLE_TYPE);
+
+class QPlatformTextureListPrivate : public QObjectPrivate
+{
+public:
+    QPlatformTextureListPrivate()
+        : locked(false)
+    {
+    }
+
+    QList<QBackingstoreTextureInfo> textures;
+    bool locked;
+};
+
+QPlatformTextureList::QPlatformTextureList(QObject *parent)
+: QObject(*new QPlatformTextureListPrivate, parent)
+{
+}
+
+QPlatformTextureList::~QPlatformTextureList()
+{
+}
+
+int QPlatformTextureList::count() const
+{
+    Q_D(const QPlatformTextureList);
+    return d->textures.count();
+}
+
+GLuint QPlatformTextureList::textureId(int index) const
+{
+    Q_D(const QPlatformTextureList);
+    return d->textures.at(index).textureId;
+}
+
+QRect QPlatformTextureList::geometry(int index) const
+{
+    Q_D(const QPlatformTextureList);
+    return d->textures.at(index).rect;
+}
+
+void QPlatformTextureList::lock(bool on)
+{
+    Q_D(QPlatformTextureList);
+    if (on != d->locked) {
+        d->locked = on;
+        emit locked(on);
+    }
+}
+
+bool QPlatformTextureList::isLocked() const
+{
+    Q_D(const QPlatformTextureList);
+    return d->locked;
+}
+
+void QPlatformTextureList::appendTexture(GLuint textureId, const QRect &geometry)
+{
+    Q_D(QPlatformTextureList);
+    QBackingstoreTextureInfo bi;
+    bi.textureId = textureId;
+    bi.rect = geometry;
+    d->textures.append(bi);
+}
+
+void QPlatformTextureList::clear()
+{
+    Q_D(QPlatformTextureList);
+    d->textures.clear();
+}
+#endif // QT_NO_OPENGL
 
 /*!
     \class QPlatformBackingStore
@@ -78,6 +184,147 @@ public:
 
     Note that the \a offset parameter is currently unused.
 */
+
+#ifndef QT_NO_OPENGL
+/*!
+    Flushes the given \a region from the specified \a window onto the
+    screen, and composes it with the specified \a textures.
+
+    The default implementation retrieves the contents using toTexture()
+    and composes using OpenGL. May be reimplemented in subclasses if there
+    is a more efficient native way to do it.
+
+    Note that the \a offset parameter is currently unused.
+ */
+
+void QPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &region,
+                                            const QPoint &offset,
+                                            QPlatformTextureList *textures, QOpenGLContext *context)
+{
+    Q_UNUSED(offset);
+
+    context->makeCurrent(window);
+    glViewport(0, 0, window->width(), window->height());
+
+    if (!d_ptr->blitter) {
+        d_ptr->blitter = new QOpenGLTextureBlitter;
+        d_ptr->blitter->create();
+    }
+
+    d_ptr->blitter->bind();
+
+    QRect windowRect(QPoint(), window->size());
+    for (int i = 0; i < textures->count(); ++i) {
+        GLuint textureId = textures->textureId(i);
+        glBindTexture(GL_TEXTURE_2D, textureId);
+
+        QMatrix4x4 target = QOpenGLTextureBlitter::targetTransform(textures->geometry(i), windowRect);
+        d_ptr->blitter->blit(textureId, target, QOpenGLTextureBlitter::OriginBottomLeft);
+    }
+
+    GLuint textureId = toTexture(region);
+    if (!textureId)
+        return;
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    QMatrix4x4 target = QOpenGLTextureBlitter::targetTransform(windowRect, windowRect);
+    d_ptr->blitter->setSwizzleRB(true);
+    d_ptr->blitter->blit(textureId, target, QOpenGLTextureBlitter::OriginTopLeft);
+    d_ptr->blitter->setSwizzleRB(false);
+
+    glDisable(GL_BLEND);
+    d_ptr->blitter->release();
+    context->swapBuffers(window);
+}
+
+/*!
+  Implemented in subclasses to return the content of the backingstore as a QImage.
+
+  If QPlatformIntegration::RasterGLSurface is supported, either this function or
+  toTexture() must be implemented.
+
+  \sa toTexture()
+ */
+QImage QPlatformBackingStore::toImage() const
+{
+    return QImage();
+}
+
+/*!
+  May be reimplemented in subclasses to return the content of the
+  backingstore as an OpenGL texture. \a dirtyRegion is the part of the
+  backingstore which may have changed since the last call to this function. The
+  caller of this function must ensure that there is a current context.
+
+  The ownership of the texture is not transferred. The caller must not store
+  the return value between calls, but instead call this function before each use.
+
+  The default implementation returns a cached texture if \a dirtyRegion is
+  empty and the window has not been resized, otherwise it retrieves the
+  content using toImage() and performs a texture upload.
+ */
+
+GLuint QPlatformBackingStore::toTexture(const QRegion &dirtyRegion) const
+{
+    QImage image = toImage();
+    QSize imageSize = image.size();
+    if (imageSize.isEmpty())
+        return 0;
+
+    bool resized = d_ptr->textureSize != imageSize;
+    if (dirtyRegion.isEmpty() && !resized)
+        return d_ptr->textureId;
+
+    if (image.format() != QImage::Format_RGB32 && image.format() != QImage::Format_RGBA8888)
+        image = image.convertToFormat(QImage::Format_RGBA8888);
+
+    if (resized) {
+        if (d_ptr->textureId)
+            glDeleteTextures(1, &d_ptr->textureId);
+        glGenTextures(1, &d_ptr->textureId);
+        glBindTexture(GL_TEXTURE_2D, d_ptr->textureId);
+#ifndef QT_OPENGL_ES_2
+        if (!QOpenGLFunctions::isES()) {
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+        }
+#endif
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imageSize.width(), imageSize.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                     const_cast<uchar*>(image.constBits()));
+        d_ptr->textureSize = imageSize;
+    } else {
+        glBindTexture(GL_TEXTURE_2D, d_ptr->textureId);
+        QRect imageRect = image.rect();
+        QRect rect = dirtyRegion.boundingRect() & imageRect;
+        // if the rect is wide enough it's cheaper to just
+        // extend it instead of doing an image copy
+        if (rect.width() >= imageRect.width() / 2) {
+            rect.setX(0);
+            rect.setWidth(imageRect.width());
+        }
+
+        // if the sub-rect is full-width we can pass the image data directly to
+        // OpenGL instead of copying, since there's no gap between scanlines
+
+        if (rect.width() == imageRect.width()) {
+            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, rect.y(), rect.width(), rect.height(), GL_RGBA, GL_UNSIGNED_BYTE,
+                            image.constScanLine(rect.y()));
+        } else {
+            glTexSubImage2D(GL_TEXTURE_2D, 0, rect.x(), rect.y(), rect.width(), rect.height(), GL_RGBA, GL_UNSIGNED_BYTE,
+                            image.copy(rect).constBits());
+        }
+    }
+
+    return d_ptr->textureId;
+}
+#endif // QT_NO_OPENGL
 
 /*!
     \fn QPaintDevice* QPlatformBackingStore::paintDevice()

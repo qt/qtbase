@@ -215,7 +215,7 @@ void PeerWireClient::sendPieceList(const QBitArray &bitField)
 
     // Don't send the bitfield if it's all zeros.
     if (bitField.count(true) == 0)
-	return;
+        return;
 
     int bitFieldSize = bitField.size();
     int size = (bitFieldSize + 7) / 8;

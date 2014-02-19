@@ -456,6 +456,8 @@ MakefileGenerator::init()
     if (v["QMAKE_LINK_O_FLAG"].isEmpty())
         v["QMAKE_LINK_O_FLAG"].append("-o ");
 
+    setSystemIncludes(v["QMAKE_DEFAULT_INCDIRS"]);
+
     ProStringList &quc = v["QMAKE_EXTRA_COMPILERS"];
 
     //make sure the COMPILERS are in the correct input/output chain order
@@ -1420,31 +1422,31 @@ MakefileGenerator::writeInstalls(QTextStream &t, bool noBuild)
 }
 
 QString
-MakefileGenerator::var(const ProKey &var)
+MakefileGenerator::var(const ProKey &var) const
 {
     return val(project->values(var));
 }
 
 QString
-MakefileGenerator::val(const ProStringList &varList)
+MakefileGenerator::val(const ProStringList &varList) const
 {
     return valGlue(varList, "", " ", "");
 }
 
 QString
-MakefileGenerator::val(const QStringList &varList)
+MakefileGenerator::val(const QStringList &varList) const
 {
     return valGlue(varList, "", " ", "");
 }
 
 QString
-MakefileGenerator::varGlue(const ProKey &var, const QString &before, const QString &glue, const QString &after)
+MakefileGenerator::varGlue(const ProKey &var, const QString &before, const QString &glue, const QString &after) const
 {
     return valGlue(project->values(var), before, glue, after);
 }
 
 QString
-MakefileGenerator::fileVarGlue(const ProKey &var, const QString &before, const QString &glue, const QString &after)
+MakefileGenerator::fileVarGlue(const ProKey &var, const QString &before, const QString &glue, const QString &after) const
 {
     ProStringList varList;
     foreach (const ProString &val, project->values(var))
@@ -1453,7 +1455,7 @@ MakefileGenerator::fileVarGlue(const ProKey &var, const QString &before, const Q
 }
 
 QString
-MakefileGenerator::valGlue(const ProStringList &varList, const QString &before, const QString &glue, const QString &after)
+MakefileGenerator::valGlue(const ProStringList &varList, const QString &before, const QString &glue, const QString &after) const
 {
     QString ret;
     for (ProStringList::ConstIterator it = varList.begin(); it != varList.end(); ++it) {
@@ -1467,7 +1469,7 @@ MakefileGenerator::valGlue(const ProStringList &varList, const QString &before, 
 }
 
 QString
-MakefileGenerator::valGlue(const QStringList &varList, const QString &before, const QString &glue, const QString &after)
+MakefileGenerator::valGlue(const QStringList &varList, const QString &before, const QString &glue, const QString &after) const
 {
     QString ret;
     for(QStringList::ConstIterator it = varList.begin(); it != varList.end(); ++it) {
@@ -1482,19 +1484,19 @@ MakefileGenerator::valGlue(const QStringList &varList, const QString &before, co
 
 
 QString
-MakefileGenerator::varList(const ProKey &var)
+MakefileGenerator::varList(const ProKey &var) const
 {
     return valList(project->values(var));
 }
 
 QString
-MakefileGenerator::valList(const ProStringList &varList)
+MakefileGenerator::valList(const ProStringList &varList) const
 {
     return valGlue(varList, "", " \\\n\t\t", "");
 }
 
 QString
-MakefileGenerator::valList(const QStringList &varList)
+MakefileGenerator::valList(const QStringList &varList) const
 {
     return valGlue(varList, "", " \\\n\t\t", "");
 }
@@ -2464,8 +2466,6 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
         t << "include " << (*qeui_it) << endl;
 
     if (!(flags & SubTargetSkipDefaultVariables)) {
-        /* Calling Option::fixPathToTargetOS() is necessary for MinGW/MSYS, which requires
-         * back-slashes to be turned into slashes. */
         t << "QMAKE         = " << var("QMAKE_QMAKE") << endl;
         t << "DEL_FILE      = " << var("QMAKE_DEL_FILE") << endl;
         t << "CHK_DIR_EXISTS= " << var("QMAKE_CHK_DIR_EXISTS") << endl;
@@ -2617,6 +2617,8 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
             t << varGlue("ALL_DEPS"," "," ","");
         if(suffix == "clean")
             t << varGlue("CLEAN_DEPS"," "," ","");
+        else if (suffix == "distclean")
+            t << varGlue("DISTCLEAN_DEPS"," "," ","");
         t << " FORCE\n";
         if(suffix == "clean") {
             t << fileVarGlue("QMAKE_CLEAN", "\t-$(DEL_FILE) ", "\n\t-$(DEL_FILE) ", "\n");

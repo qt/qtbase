@@ -42,61 +42,37 @@
 #ifndef QEGLFSINTEGRATION_H
 #define QEGLFSINTEGRATION_H
 
-#include "qeglfsscreen.h"
-
-#include <qpa/qplatformintegration.h>
-#include <qpa/qplatformnativeinterface.h>
+#include <QtPlatformSupport/private/qeglplatformintegration_p.h>
 #include <qpa/qplatformscreen.h>
+#include <EGL/egl.h>
 
 QT_BEGIN_NAMESPACE
 
-class QEglFSIntegration : public QPlatformIntegration, public QPlatformNativeInterface
+class QEglFSIntegration : public QEGLPlatformIntegration
 {
 public:
     QEglFSIntegration();
     ~QEglFSIntegration();
 
-    bool hasCapability(QPlatformIntegration::Capability cap) const;
+    void initialize() Q_DECL_OVERRIDE;
 
-    QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
-    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
-    QPlatformOffscreenSurface *createPlatformOffscreenSurface(QOffscreenSurface *surface) const;
-    QPlatformNativeInterface *nativeInterface() const;
+    bool hasCapability(QPlatformIntegration::Capability cap) const Q_DECL_OVERRIDE;
+    QVariant styleHint(QPlatformIntegration::StyleHint hint) const Q_DECL_OVERRIDE;
 
-    QPlatformFontDatabase *fontDatabase() const;
-    QPlatformServices *services() const;
-
-    QAbstractEventDispatcher *createEventDispatcher() const;
-    void initialize();
-
-    QVariant styleHint(QPlatformIntegration::StyleHint hint) const;
-
-    // QPlatformNativeInterface
-    void *nativeResourceForIntegration(const QByteArray &resource);
-    void *nativeResourceForWindow(const QByteArray &resource, QWindow *window) Q_DECL_OVERRIDE;
-    void *nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context);
-
-    NativeResourceForContextFunction nativeResourceFunctionForContext(const QByteArray &resource) Q_DECL_OVERRIDE;
-
-    QPlatformScreen *screen() const { return mScreen; }
     static EGLConfig chooseConfig(EGLDisplay display, const QSurfaceFormat &format);
 
-    EGLDisplay display() const { return mDisplay; }
-
-    QPlatformInputContext *inputContext() const { return mInputContext; }
-
 protected:
-    virtual QEglFSScreen *createScreen() const;
+    QEGLPlatformScreen *createScreen() const Q_DECL_OVERRIDE;
+    QEGLPlatformWindow *createWindow(QWindow *window) const Q_DECL_OVERRIDE;
+    QEGLPlatformContext *createContext(const QSurfaceFormat &format,
+                                       QPlatformOpenGLContext *shareContext,
+                                       EGLDisplay display) const Q_DECL_OVERRIDE;
+    QPlatformOffscreenSurface *createOffscreenSurface(EGLDisplay display,
+                                                      const QSurfaceFormat &format,
+                                                      QOffscreenSurface *surface) const Q_DECL_OVERRIDE;
+    EGLNativeDisplayType nativeDisplay() const Q_DECL_OVERRIDE;
 
 private:
-    void createInputHandlers();
-
-    EGLDisplay mDisplay;
-    QScopedPointer<QPlatformFontDatabase> mFontDb;
-    QScopedPointer<QPlatformServices> mServices;
-    QEglFSScreen *mScreen;
-    QPlatformInputContext *mInputContext;
     bool mDisableInputHandlers;
 };
 

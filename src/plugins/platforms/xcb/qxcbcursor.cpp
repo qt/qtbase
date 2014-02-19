@@ -549,7 +549,7 @@ xcb_cursor_t QXcbCursor::createFontCursor(int cshape)
         void *dpy = connection()->xlib_display();
         // special case for non-standard dnd-* cursors
         cursor = loadCursor(dpy, cshape);
-        if (!cursor && !m_gtkCursorThemeInitialized) {
+        if (!cursor && !m_gtkCursorThemeInitialized && m_screen->xSettings()->initialized()) {
             QByteArray gtkCursorTheme = m_screen->xSettings()->setting("Gtk/CursorThemeName").toByteArray();
             m_screen->xSettings()->registerCallbackForProperty("Gtk/CursorThemeName",cursorThemePropertyChanged,this);
             if (updateCursorTheme(dpy,gtkCursorTheme)) {

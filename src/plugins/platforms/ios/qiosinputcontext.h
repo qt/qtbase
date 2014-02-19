@@ -50,6 +50,7 @@
 QT_BEGIN_NAMESPACE
 
 @class QIOSKeyboardListener;
+@class QUIView;
 
 class QIOSInputContext : public QPlatformInputContext
 {
@@ -64,14 +65,18 @@ public:
     void setFocusObject(QObject *object);
 
     void focusWindowChanged(QWindow *focusWindow);
-    void scrollRootView();
+    void cursorRectangleChanged();
+    void scrollToCursor();
+    void scroll(int y);
+
+    void update(Qt::InputMethodQueries);
+    void reset();
+    void commit();
 
 private:
     QIOSKeyboardListener *m_keyboardListener;
-    UIView<UIKeyInput> *m_focusView;
-    QTransform m_inputItemTransform;
+    QUIView *m_focusView;
     bool m_hasPendingHideRequest;
-    bool m_inSetFocusObject;
 };
 
 QT_END_NAMESPACE

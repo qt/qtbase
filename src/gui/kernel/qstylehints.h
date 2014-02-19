@@ -48,17 +48,25 @@ QT_BEGIN_NAMESPACE
 
 
 class QPlatformIntegration;
+class QStyleHintsPrivate;
 
 class Q_GUI_EXPORT QStyleHints : public QObject
 {
     Q_OBJECT
+    Q_DECLARE_PRIVATE(QStyleHints)
 public:
+    void setMouseDoubleClickInterval(int mouseDoubleClickInterval);
     int mouseDoubleClickInterval() const;
+    int mousePressAndHoldInterval() const;
+    void setStartDragDistance(int startDragDistance);
     int startDragDistance() const;
+    void setStartDragTime(int startDragTime);
     int startDragTime() const;
     int startDragVelocity() const;
+    void setKeyboardInputInterval(int keyboardInputInterval);
     int keyboardInputInterval() const;
     int keyboardAutoRepeatRate() const;
+    void setCursorFlashTime(int cursorFlashTime);
     int cursorFlashTime() const;
     bool showIsFullScreen() const;
     int passwordMaskDelay() const;

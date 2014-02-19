@@ -397,13 +397,7 @@ _hb_qt_font_get_glyph(hb_font_t * /*font*/, void *font_data,
     QFontEngine *fe = (QFontEngine *)font_data;
     Q_ASSERT(fe);
 
-    glyph_t glyphs[2] = { 0, 0 };
-
-    QGlyphLayout g;
-    g.numGlyphs = 2;
-    g.glyphs = glyphs;
-
-    QChar chars[4];
+    QChar chars[2];
     int numChars = 0;
     if (Q_UNLIKELY(QChar::requiresSurrogates(unicode))) {
         chars[numChars++] = QChar(QChar::highSurrogate(unicode));
@@ -422,11 +416,14 @@ _hb_qt_font_get_glyph(hb_font_t * /*font*/, void *font_data,
     }
 #endif
 
-    int numGlyphs = g.numGlyphs;
-    bool ok = fe->stringToCMap(chars, numChars, &g, &numGlyphs, QFontEngine::GlyphIndicesOnly);
-    Q_ASSERT(ok); Q_UNUSED(ok)
+    QGlyphLayout g;
+    g.numGlyphs = numChars;
+    g.glyphs = glyph;
 
-    *glyph = g.glyphs[0];
+    int numGlyphs = numChars;
+    if (!fe->stringToCMap(chars, numChars, &g, &numGlyphs, QFontEngine::GlyphIndicesOnly))
+        Q_UNREACHABLE();
+    Q_ASSERT(numGlyphs == 1);
 
     return true;
 }
@@ -439,18 +436,16 @@ _hb_qt_font_get_glyph_h_advance(hb_font_t *font, void *font_data,
     QFontEngine *fe = (QFontEngine *)font_data;
     Q_ASSERT(fe);
 
-    QFixed advance_x;
-    QFixed advance_y;
+    QFixed advance;
 
     QGlyphLayout g;
     g.numGlyphs = 1;
     g.glyphs = &glyph;
-    g.advances_x = &advance_x;
-    g.advances_y = &advance_y;
+    g.advances = &advance;
 
     fe->recalcAdvances(&g, QFontEngine::ShaperFlags(hb_qt_font_get_use_design_metrics(font)));
 
-    return g.advances_x[0].value();
+    return advance.value();
 }
 
 static hb_position_t
@@ -490,18 +485,16 @@ _hb_qt_font_get_glyph_h_kerning(hb_font_t *font, void *font_data,
     Q_ASSERT(fe);
 
     glyph_t glyphs[2] = { first_glyph, second_glyph };
-    QFixed advance_x;
-    QFixed advance_y;
+    QFixed advance;
 
     QGlyphLayout g;
     g.numGlyphs = 2;
     g.glyphs = glyphs;
-    g.advances_x = &advance_x;
-    g.advances_y = &advance_y;
+    g.advances = &advance;
 
     fe->doKerning(&g, QFontEngine::ShaperFlags(hb_qt_font_get_use_design_metrics(font)));
 
-    return g.advances_x[0].value();
+    return advance.value();
 }
 
 static hb_position_t
@@ -710,7 +703,11 @@ _hb_qt_font_create(QFontEngine *fe)
     const int x_ppem = (fe->fontDef.pixelSize * fe->fontDef.stretch) / 100;
 
     hb_font_set_funcs(font, hb_qt_get_font_funcs(), (void *)fe, NULL);
+#ifdef Q_OS_MAC
+    hb_font_set_scale(font, QFixed(x_ppem).value(), QFixed(y_ppem).value());
+#else
     hb_font_set_scale(font, QFixed(x_ppem).value(), -QFixed(y_ppem).value());
+#endif
     hb_font_set_ppem(font, x_ppem, y_ppem);
 
     return font;

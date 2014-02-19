@@ -142,8 +142,8 @@ void BearerEx::on_showDetailsButton_clicked()
     }
 
     QNetworkConfiguration networkConfiguration = qvariant_cast<QNetworkConfiguration>(item->data(Qt::UserRole));
-	DetailedInfoDialog infoDialog(&networkConfiguration,this);
-	infoDialog.exec();
+    DetailedInfoDialog infoDialog(&networkConfiguration,this);
+    infoDialog.exec();
 }
 
 void BearerEx::on_createSessionButton_clicked()
@@ -236,12 +236,12 @@ DetailedInfoDialog::DetailedInfoDialog(QNetworkConfiguration* apNetworkConfigura
         rowCount = rowCount + apNetworkConfiguration->children().count();
     }
 
-	tableWidget->setRowCount(rowCount);
-	tableWidget->setColumnWidth(1,250);
-	tableWidget->setItem(0, 0, new QTableWidgetItem(tr("Name")));
-	tableWidget->setItem(0, 1, new QTableWidgetItem(apNetworkConfiguration->name()));
-	tableWidget->setItem(1, 0, new QTableWidgetItem(tr("Id")));
-	tableWidget->setItem(1, 1, new QTableWidgetItem(apNetworkConfiguration->identifier()));
+    tableWidget->setRowCount(rowCount);
+    tableWidget->setColumnWidth(1,250);
+    tableWidget->setItem(0, 0, new QTableWidgetItem(tr("Name")));
+    tableWidget->setItem(0, 1, new QTableWidgetItem(apNetworkConfiguration->name()));
+    tableWidget->setItem(1, 0, new QTableWidgetItem(tr("Id")));
+    tableWidget->setItem(1, 1, new QTableWidgetItem(apNetworkConfiguration->identifier()));
     if (apNetworkConfiguration->type() == QNetworkConfiguration::ServiceNetwork) {
         for (int i=0; i<apNetworkConfiguration->children().count(); i++) {
             tableWidget->setItem(i+2, 0, new QTableWidgetItem(QString("IAP")+QString::number(i+1)));

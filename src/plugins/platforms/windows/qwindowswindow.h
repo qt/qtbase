@@ -50,7 +50,7 @@
 
 #include <qpa/qplatformwindow.h>
 
-#ifdef QT_OPENGL_ES_2
+#if defined(QT_OPENGL_ES_2) || defined(QT_OPENGL_DYNAMIC)
 #  include <QtCore/QSharedPointer>
 #  include <EGL/egl.h>
 #endif
@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
 class QWindowsOleDropTarget;
 class QDebug;
 
-#ifdef QT_OPENGL_ES_2
+#if defined(QT_OPENGL_ES_2) || defined(QT_OPENGL_DYNAMIC)
 class QWindowsEGLStaticContext;
 #endif
 
@@ -111,10 +111,26 @@ struct QWindowCreationContext
     int frameHeight;
 };
 
+struct QWindowsWindowData
+{
+    QWindowsWindowData() : hwnd(0), embedded(false) {}
+
+    Qt::WindowFlags flags;
+    QRect geometry;
+    QMargins frame; // Do not use directly for windows, see FrameDirty.
+    QMargins customMargins; // User-defined, additional frame for NCCALCSIZE
+    HWND hwnd;
+    bool embedded;
+
+    static QWindowsWindowData create(const QWindow *w,
+                                     const QWindowsWindowData &parameters,
+                                     const QString &title);
+};
+
 class QWindowsWindow : public QPlatformWindow
 {
 public:
-#ifdef QT_OPENGL_ES_2
+#if defined(QT_OPENGL_ES_2) || defined(QT_OPENGL_DYNAMIC)
     typedef QSharedPointer<QWindowsEGLStaticContext> QWindowsEGLStaticContextPtr;
 #endif
 
@@ -140,28 +156,13 @@ public:
         WithinMaximize = 0x40000
     };
 
-    struct WindowData
-    {
-        WindowData() : hwnd(0) {}
-
-        Qt::WindowFlags flags;
-        QRect geometry;
-        QMargins frame; // Do not use directly for windows, see FrameDirty.
-        QMargins customMargins; // User-defined, additional frame for NCCALCSIZE
-        HWND hwnd;
-        bool embedded;
-
-        static WindowData create(const QWindow *w,
-                                 const WindowData &parameters,
-                                 const QString &title);
-    };
-
-    QWindowsWindow(QWindow *window, const WindowData &data);
+    QWindowsWindow(QWindow *window, const QWindowsWindowData &data);
     ~QWindowsWindow();
 
     virtual QSurfaceFormat format() const { return m_format; }
     virtual void setGeometry(const QRect &rect);
     virtual QRect geometry() const { return m_data.geometry; }
+    QRect normalGeometry() const Q_DECL_OVERRIDE;
 
     virtual void setVisible(bool visible);
     bool isVisible() const;
@@ -205,7 +206,7 @@ public:
     QMargins customMargins() const { return m_data.customMargins; }
     void setCustomMargins(const QMargins &m);
 
-#ifdef QT_OPENGL_ES_2
+#if defined(QT_OPENGL_ES_2) || defined(QT_OPENGL_DYNAMIC)
     EGLSurface eglSurfaceHandle() const { return m_eglSurface;}
     EGLSurface ensureEglSurfaceHandle(const QWindowsEGLStaticContextPtr &staticContext, EGLConfig config);
 #endif
@@ -274,20 +275,21 @@ private:
     inline void setGeometry_sys(const QRect &rect) const;
     inline QRect frameGeometry_sys() const;
     inline QRect geometry_sys() const;
-    inline WindowData setWindowFlags_sys(Qt::WindowFlags wt, unsigned flags = 0) const;
+    inline QWindowsWindowData setWindowFlags_sys(Qt::WindowFlags wt, unsigned flags = 0) const;
     inline bool isFullScreen_sys() const;
     inline void setWindowState_sys(Qt::WindowState newState);
-    inline void setParent_sys(const QPlatformWindow *parent) const;
+    inline void setParent_sys(const QPlatformWindow *parent);
     inline void updateTransientParent() const;
     void destroyWindow();
-    void registerDropSite();
-    void unregisterDropSite();
+    inline bool isDropSiteEnabled() const { return m_dropTarget != 0; }
+    void setDropSiteEnabled(bool enabled);
+    void updateDropSite();
     void handleGeometryChange();
     void handleWindowStateChange(Qt::WindowState state);
     inline void destroyIcon();
     void fireExpose(const QRegion &region, bool force=false);
 
-    mutable WindowData m_data;
+    mutable QWindowsWindowData m_data;
     mutable unsigned m_flags;
     HDC m_hdc;
     Qt::WindowState m_windowState;
@@ -299,7 +301,7 @@ private:
     unsigned m_savedStyle;
     QRect m_savedFrameGeometry;
     const QSurfaceFormat m_format;
-#ifdef QT_OPENGL_ES_2
+#if defined(QT_OPENGL_ES_2) || defined(QT_OPENGL_DYNAMIC)
     EGLSurface m_eglSurface;
     QSharedPointer<QWindowsEGLStaticContext> m_staticEglContext;
 #endif

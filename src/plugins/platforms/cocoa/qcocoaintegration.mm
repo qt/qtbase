@@ -58,7 +58,6 @@
 #include <qpa/qplatformaccessibility.h>
 #include <QtCore/qcoreapplication.h>
 
-#include <QtPlatformSupport/private/qcoretextfontdatabase_p.h>
 #include <IOKit/graphics/IOGraphicsLib.h>
 
 static void initResources()
@@ -214,6 +213,8 @@ QPixmap QCocoaScreen::grabWindow(WId window, int x, int y, int width, int height
     return windowPixmap;
 }
 
+QCocoaIntegration *QCocoaIntegration::mInstance = 0;
+
 QCocoaIntegration::QCocoaIntegration()
     : mFontDb(new QCoreTextFontDatabase())
     , mInputContext(new QCocoaInputContext)
@@ -226,6 +227,10 @@ QCocoaIntegration::QCocoaIntegration()
     , mServices(new QCocoaServices)
     , mKeyboardMapper(new QCocoaKeyMapper)
 {
+    if (mInstance != 0)
+        qWarning("Creating multiple Cocoa platform integrations is not supported");
+    mInstance = this;
+
     initResources();
     QCocoaAutoReleasePool pool;
 
@@ -273,6 +278,8 @@ QCocoaIntegration::QCocoaIntegration()
 
 QCocoaIntegration::~QCocoaIntegration()
 {
+    mInstance = 0;
+
     qt_resetNSApplicationSendEvent();
 
     QCocoaAutoReleasePool pool;
@@ -294,6 +301,13 @@ QCocoaIntegration::~QCocoaIntegration()
     while (!mScreens.isEmpty()) {
         delete mScreens.takeLast();
     }
+
+    clearToolbars();
+}
+
+QCocoaIntegration *QCocoaIntegration::instance()
+{
+    return mInstance;
 }
 
 /*!
@@ -388,22 +402,22 @@ QAbstractEventDispatcher *QCocoaIntegration::createEventDispatcher() const
     return new QCocoaEventDispatcher;
 }
 
-QPlatformFontDatabase *QCocoaIntegration::fontDatabase() const
+QCoreTextFontDatabase *QCocoaIntegration::fontDatabase() const
 {
     return mFontDb.data();
 }
 
-QPlatformNativeInterface *QCocoaIntegration::nativeInterface() const
+QCocoaNativeInterface *QCocoaIntegration::nativeInterface() const
 {
     return mNativeInterface.data();
 }
 
-QPlatformInputContext *QCocoaIntegration::inputContext() const
+QCocoaInputContext *QCocoaIntegration::inputContext() const
 {
     return mInputContext.data();
 }
 
-QPlatformAccessibility *QCocoaIntegration::accessibility() const
+QCocoaAccessibility *QCocoaIntegration::accessibility() const
 {
 #ifndef QT_NO_ACCESSIBILITY
     return mAccessibility.data();
@@ -412,12 +426,12 @@ QPlatformAccessibility *QCocoaIntegration::accessibility() const
 #endif
 }
 
-QPlatformClipboard *QCocoaIntegration::clipboard() const
+QCocoaClipboard *QCocoaIntegration::clipboard() const
 {
     return mCocoaClipboard;
 }
 
-QPlatformDrag *QCocoaIntegration::drag() const
+QCocoaDrag *QCocoaIntegration::drag() const
 {
     return mCocoaDrag.data();
 }
@@ -434,7 +448,7 @@ QPlatformTheme *QCocoaIntegration::createPlatformTheme(const QString &name) cons
     return QPlatformIntegration::createPlatformTheme(name);
 }
 
-QPlatformServices *QCocoaIntegration::services() const
+QCocoaServices *QCocoaIntegration::services() const
 {
     return mServices.data();
 }
@@ -452,6 +466,29 @@ QVariant QCocoaIntegration::styleHint(StyleHint hint) const
 QList<int> QCocoaIntegration::possibleKeys(const QKeyEvent *event) const
 {
     return mKeyboardMapper->possibleKeys(event);
+}
+
+void QCocoaIntegration::setToolbar(QWindow *window, NSToolbar *toolbar)
+{
+    if (NSToolbar *prevToolbar = mToolbars.value(window))
+        [prevToolbar release];
+
+    [toolbar retain];
+    mToolbars.insert(window, toolbar);
+}
+
+NSToolbar *QCocoaIntegration::toolbar(QWindow *window) const
+{
+    return mToolbars.value(window);
+}
+
+void QCocoaIntegration::clearToolbars()
+{
+    QHash<QWindow *, NSToolbar *>::const_iterator it = mToolbars.constBegin();
+    while (it != mToolbars.constEnd()) {
+        [it.value() release];
+    }
+    mToolbars.clear();
 }
 
 QT_END_NAMESPACE

@@ -93,6 +93,12 @@ private:
 class QWindowsCursor : public QPlatformCursor
 {
 public:
+    enum CursorState {
+        CursorShowing,
+        CursorHidden,
+        CursorSuppressed // Cursor suppressed by touch interaction (Windows 8).
+    };
+
     QWindowsCursor() {}
 
     virtual void changeCursor(QCursor * widgetCursor, QWindow * widget);
@@ -102,6 +108,7 @@ public:
     static HCURSOR createPixmapCursor(const QPixmap &pixmap, int hotX, int hotY);
     static HCURSOR createSystemCursor(const QCursor &c);
     static QPoint mousePosition();
+    static CursorState cursorState();
 
     QWindowsWindowCursor standardWindowCursor(Qt::CursorShape s = Qt::ArrowCursor);
     QWindowsWindowCursor pixmapWindowCursor(const QCursor &c);

@@ -45,7 +45,8 @@ SOURCES =   main.cpp \
             qqnxabstractvirtualkeyboard.cpp \
             qqnxservices.cpp \
             qqnxcursor.cpp \
-            qqnxrasterwindow.cpp
+            qqnxrasterwindow.cpp \
+            qqnxglobal.cpp
 
 HEADERS =   main.h \
             qqnxbuffer.h \
@@ -62,7 +63,10 @@ HEADERS =   main.h \
             qqnxabstractcover.h \
             qqnxservices.h \
             qqnxcursor.h \
-            qqnxrasterwindow.h
+            qqnxrasterwindow.h \
+            qqnxscreeneventfilter.h \
+            qqnxglobal.h \
+            qqnxlgmon.h
 
 CONFIG(qqnx_screeneventthread) {
     DEFINES += QQNX_SCREENEVENTTHREAD
@@ -140,6 +144,12 @@ CONFIG(qqnx_pps) {
         HEADERS += qqnxinputcontext_noimf.h
         SOURCES += qqnxinputcontext_noimf.cpp
     }
+}
+
+lgmon {
+    DEFINES += QQNX_LGMON
+    SOURCES += qqnxlgmon.cpp
+    LIBS += -llgmon
 }
 
 OTHER_FILES += qnx.json

@@ -115,7 +115,7 @@ bool QSystemSemaphorePrivate::modifySemaphore(int count)
         return false;
 
     if (count > 0) {
-	if (0 == ReleaseSemaphore(semaphore, count, 0)) {
+        if (0 == ReleaseSemaphore(semaphore, count, 0)) {
             setErrorString(QLatin1String("QSystemSemaphore::modifySemaphore"));
 #if defined QSYSTEMSEMAPHORE_DEBUG
             qDebug() << QLatin1String("QSystemSemaphore::modifySemaphore ReleaseSemaphore failed");

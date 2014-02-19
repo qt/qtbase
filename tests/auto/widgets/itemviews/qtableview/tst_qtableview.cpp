@@ -1645,7 +1645,7 @@ void tst_QTableView::selection()
         view.setColumnWidth(c, columnWidth);
 
     view.setSelection(QRect(x, y, width, height),
-		      QItemSelectionModel::SelectionFlags(command));
+                      QItemSelectionModel::SelectionFlags(command));
 
     QCOMPARE(view.selectedIndexes().count(), selectedCount);
 }
@@ -2952,7 +2952,7 @@ void tst_QTableView::span()
 
     if (hiddenRow > -1) {
         QModelIndex hidden = model.index(hiddenRow, columnCount - 1);
-	QVERIFY(view.isIndexHidden(hidden));
+        QVERIFY(view.isIndexHidden(hidden));
     }
 
     if (hiddenColumn > -1) {
@@ -3599,7 +3599,7 @@ void tst_QTableView::task173773_updateVerticalHeader()
 
 void tst_QTableView::task227953_setRootIndex()
 {
-	QTableView tableView;
+    QTableView tableView;
 
     //model = tree with two items with tables as children
     QStandardItemModel model;
@@ -3621,16 +3621,16 @@ void tst_QTableView::task227953_setRootIndex()
 
     //show the first 10 rows of the first table
     QModelIndex root = model.indexFromItem(&item1);
-	tableView.setRootIndex(root);
-	for (int i = 10; i != 40; ++i) {
-		tableView.setRowHidden(i, true);
-	}
+    tableView.setRootIndex(root);
+    for (int i = 10; i != 40; ++i) {
+        tableView.setRowHidden(i, true);
+    }
 
     QCOMPARE(tableView.verticalHeader()->count(), 40);
     QCOMPARE(tableView.verticalHeader()->hiddenSectionCount(), 30);
 
-	//show the first 10 rows of the second table
-	tableView.setRootIndex(model.indexFromItem(&item2));
+    //show the first 10 rows of the second table
+    tableView.setRootIndex(model.indexFromItem(&item2));
 
     QCOMPARE(tableView.verticalHeader()->count(), 10);
     QCOMPARE(tableView.verticalHeader()->hiddenSectionCount(), 0);
@@ -3672,8 +3672,8 @@ void tst_QTableView::task248688_autoScrollNavigation()
     QTableView view;
     view.setModel(&model);
 
-	view.hideColumn(8);
-	view.hideRow(8);
+    view.hideColumn(8);
+    view.hideRow(8);
     view.show();
     for (int r = 0; r < model.rowCount(); ++r) {
         if (view.isRowHidden(r))

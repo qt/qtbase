@@ -60,6 +60,7 @@ class tst_QGuiApplication: public tst_QCoreApplication
 
 private slots:
     void displayName();
+    void firstWindowTitle();
     void focusObject();
     void allWindows();
     void topLevelWindows();
@@ -81,6 +82,17 @@ void tst_QGuiApplication::displayName()
     QCOMPARE(QGuiApplication::applicationDisplayName(), QString::fromLatin1("tst_qguiapplication"));
     QGuiApplication::setApplicationDisplayName("The GUI Application");
     QCOMPARE(QGuiApplication::applicationDisplayName(), QString::fromLatin1("The GUI Application"));
+}
+
+void tst_QGuiApplication::firstWindowTitle()
+{
+    int argc = 3;
+    char *argv[] = { const_cast<char*>("tst_qguiapplication"), const_cast<char*>("-qwindowtitle"), const_cast<char*>("User Title") };
+    QGuiApplication app(argc, argv);
+    QWindow window;
+    window.setTitle("Application Title");
+    window.show();
+    QCOMPARE(window.title(), QString("User Title"));
 }
 
 class DummyWindow : public QWindow

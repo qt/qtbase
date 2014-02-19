@@ -64,7 +64,7 @@ void TorrentServer::removeClient(TorrentClient *client)
 void TorrentServer::incomingConnection(qintptr socketDescriptor)
 {
     PeerWireClient *client =
-  	new PeerWireClient(ConnectionManager::instance()->clientId(), this);
+        new PeerWireClient(ConnectionManager::instance()->clientId(), this);
 
     if (client->setSocketDescriptor(socketDescriptor)) {
         if (ConnectionManager::instance()->canAddConnection() && !clients.isEmpty()) {

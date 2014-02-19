@@ -467,8 +467,8 @@ bool Environment::cpdir(const QString &srcDir, const QString &destDir)
     qDebug() << "Attempt to cpdir " << cleanSrcName << "->" << cleanDstName;
 #endif
     if(!QFile::exists(cleanDstName) && !QDir().mkpath(cleanDstName)) {
-	qDebug() << "cpdir: Failure to create " << cleanDstName;
-	return false;
+        qDebug() << "cpdir: Failure to create " << cleanDstName;
+        return false;
     }
 
     bool result = true;
@@ -476,23 +476,23 @@ bool Environment::cpdir(const QString &srcDir, const QString &destDir)
     QFileInfoList allEntries = dir.entryInfoList(QDir::AllDirs | QDir::Files | QDir::NoDotAndDotDot);
     for (int i = 0; result && (i < allEntries.count()); ++i) {
         QFileInfo entry = allEntries.at(i);
-	bool intermediate = true;
+        bool intermediate = true;
         if (entry.isDir()) {
             intermediate = cpdir(QString("%1/%2").arg(cleanSrcName).arg(entry.fileName()),
                                  QString("%1/%2").arg(cleanDstName).arg(entry.fileName()));
         } else {
             QString destFile = QString("%1/%2").arg(cleanDstName).arg(entry.fileName());
 #ifdef CONFIGURE_DEBUG_CP_DIR
-	    qDebug() << "About to cp (file)" << entry.absoluteFilePath() << "->" << destFile;
+            qDebug() << "About to cp (file)" << entry.absoluteFilePath() << "->" << destFile;
 #endif
-	    QFile::remove(destFile);
+            QFile::remove(destFile);
             intermediate = QFile::copy(entry.absoluteFilePath(), destFile);
             SetFileAttributes((wchar_t*)destFile.utf16(), FILE_ATTRIBUTE_NORMAL);
         }
-	if(!intermediate) {
-	    qDebug() << "cpdir: Failure for " << entry.fileName() << entry.isDir();
-	    result = false;
-	}
+        if (!intermediate) {
+            qDebug() << "cpdir: Failure for " << entry.fileName() << entry.isDir();
+            result = false;
+        }
     }
     return result;
 }

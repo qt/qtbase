@@ -49,6 +49,7 @@
 #include <qglframebufferobject.h>
 #include <qglcolormap.h>
 #include <qpaintengine.h>
+#include <qopenglfunctions.h>
 
 #include <QGraphicsView>
 #include <QGraphicsProxyWidget>
@@ -751,7 +752,10 @@ void tst_QGL::openGLVersionCheck()
 #elif defined(QT_OPENGL_ES_2)
     QVERIFY(QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_ES_Version_2_0);
 #else
-    QVERIFY(QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_1_1);
+    if (QOpenGLFunctions::isES())
+        QVERIFY(QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_ES_Version_2_0);
+    else
+        QVERIFY(QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_1_1);
 #endif //defined(QT_OPENGL_ES_1)
 }
 #endif //QT_BUILD_INTERNAL
@@ -1511,12 +1515,6 @@ void tst_QGL::colormap()
     QCOMPARE(cmap4.size(), 256);
 }
 
-#ifndef QT_OPENGL_ES
-#define DEFAULT_FORMAT GL_RGBA8
-#else
-#define DEFAULT_FORMAT GL_RGBA
-#endif
-
 #ifndef GL_TEXTURE_3D
 #define GL_TEXTURE_3D 0x806F
 #endif
@@ -1532,7 +1530,13 @@ void tst_QGL::fboFormat()
     QCOMPARE(format1.samples(), 0);
     QVERIFY(format1.attachment() == QGLFramebufferObject::NoAttachment);
     QCOMPARE(int(format1.textureTarget()), int(GL_TEXTURE_2D));
-    QCOMPARE(int(format1.internalTextureFormat()), int(DEFAULT_FORMAT));
+    int expectedFormat =
+#ifdef QT_OPENGL_ES_2
+        GL_RGBA;
+#else
+        QOpenGLFunctions::isES() ? GL_RGBA : GL_RGBA8;
+#endif
+    QCOMPARE(int(format1.internalTextureFormat()), expectedFormat);
 
     // Modify the values and re-check.
     format1.setSamples(8);
@@ -1603,14 +1607,26 @@ void tst_QGL::fboFormat()
     QGLFramebufferObjectFormat format4c;
     QVERIFY(format1c == format3c);
     QVERIFY(!(format1c != format3c));
-    format3c.setInternalTextureFormat(DEFAULT_FORMAT);
+    format3c.setInternalTextureFormat(
+#ifdef QT_OPENGL_ES_2
+        GL_RGBA
+#else
+        QOpenGLFunctions::isES() ? GL_RGBA : GL_RGBA8
+#endif
+        );
     QVERIFY(!(format1c == format3c));
     QVERIFY(format1c != format3c);
 
     format4c = format1c;
     QVERIFY(format1c == format4c);
     QVERIFY(!(format1c != format4c));
-    format4c.setInternalTextureFormat(DEFAULT_FORMAT);
+    format4c.setInternalTextureFormat(
+#ifdef QT_OPENGL_ES_2
+        GL_RGBA
+#else
+        QOpenGLFunctions::isES() ? GL_RGBA : GL_RGBA8
+#endif
+        );
     QVERIFY(!(format1c == format4c));
     QVERIFY(format1c != format4c);
 }

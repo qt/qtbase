@@ -46,6 +46,10 @@
 
 #include "qcocoaautoreleasepool.h"
 #include "qcocoacursor.h"
+#include "qcocoawindow.h"
+#include "qcocoanativeinterface.h"
+#include "qcocoainputcontext.h"
+#include "qcocoaaccessibility.h"
 #include "qcocoaclipboard.h"
 #include "qcocoadrag.h"
 #include "qcocoaservices.h"
@@ -53,6 +57,7 @@
 
 #include <QtCore/QScopedPointer>
 #include <qpa/qplatformintegration.h>
+#include <QtPlatformSupport/private/qcoretextfontdatabase_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -103,23 +108,25 @@ public:
     QCocoaIntegration();
     ~QCocoaIntegration();
 
+    static QCocoaIntegration *instance();
+
     bool hasCapability(QPlatformIntegration::Capability cap) const;
     QPlatformWindow *createPlatformWindow(QWindow *window) const;
     QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
     QPlatformBackingStore *createPlatformBackingStore(QWindow *widget) const;
 
     QAbstractEventDispatcher *createEventDispatcher() const;
-    QPlatformFontDatabase *fontDatabase() const;
 
-    QPlatformNativeInterface *nativeInterface() const;
-    QPlatformInputContext *inputContext() const;
-    QPlatformAccessibility *accessibility() const;
-    QPlatformClipboard *clipboard() const;
-    QPlatformDrag *drag() const;
+    QCoreTextFontDatabase *fontDatabase() const;
+    QCocoaNativeInterface *nativeInterface() const;
+    QCocoaInputContext *inputContext() const;
+    QCocoaAccessibility *accessibility() const;
+    QCocoaClipboard *clipboard() const;
+    QCocoaDrag *drag() const;
 
     QStringList themeNames() const;
     QPlatformTheme *createPlatformTheme(const QString &name) const;
-    QPlatformServices *services() const;
+    QCocoaServices *services() const;
     QVariant styleHint(StyleHint hint) const;
 
     QList<int> possibleKeys(const QKeyEvent *event) const;
@@ -127,21 +134,27 @@ public:
     void updateScreens();
     QCocoaScreen *screenAtIndex(int index);
 
+    void setToolbar(QWindow *window, NSToolbar *toolbar);
+    NSToolbar *toolbar(QWindow *window) const;
+    void clearToolbars();
 private:
+    static QCocoaIntegration *mInstance;
 
-    QScopedPointer<QPlatformFontDatabase> mFontDb;
+    QScopedPointer<QCoreTextFontDatabase> mFontDb;
 
-    QScopedPointer<QPlatformInputContext> mInputContext;
+    QScopedPointer<QCocoaInputContext> mInputContext;
 #ifndef QT_NO_ACCESSIBILITY
-    QScopedPointer<QPlatformAccessibility> mAccessibility;
+    QScopedPointer<QCocoaAccessibility> mAccessibility;
 #endif
     QScopedPointer<QPlatformTheme> mPlatformTheme;
     QList<QCocoaScreen *> mScreens;
     QCocoaClipboard  *mCocoaClipboard;
     QScopedPointer<QCocoaDrag> mCocoaDrag;
-    QScopedPointer<QPlatformNativeInterface> mNativeInterface;
+    QScopedPointer<QCocoaNativeInterface> mNativeInterface;
     QScopedPointer<QCocoaServices> mServices;
     QScopedPointer<QCocoaKeyMapper> mKeyboardMapper;
+
+    QHash<QWindow *, NSToolbar *> mToolbars;
 };
 
 QT_END_NAMESPACE

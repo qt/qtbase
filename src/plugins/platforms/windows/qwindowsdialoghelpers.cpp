@@ -422,8 +422,7 @@ void eatMouseMove()
         ;
     if (msg.message == WM_MOUSEMOVE)
         PostMessage(msg.hwnd, msg.message, 0, msg.lParam);
-    if (QWindowsContext::verboseDialogs)
-        qDebug("%s triggered=%d" , __FUNCTION__, msg.message == WM_MOUSEMOVE);
+    qCDebug(lcQpaDialogs) << __FUNCTION__ << "triggered=" << (msg.message == WM_MOUSEMOVE);
 }
 
 } // namespace QWindowsDialogs
@@ -503,8 +502,28 @@ template <class BaseClass>
 QWindowsDialogHelperBase<BaseClass>::QWindowsDialogHelperBase() :
     m_nativeDialog(0),
     m_ownerWindow(0),
-    m_timerId(0)
+    m_timerId(0),
+    m_thread(0)
 {
+}
+
+template <class BaseClass>
+void QWindowsDialogHelperBase<BaseClass>::cleanupThread()
+{
+    if (m_thread) { // Thread may be running if the dialog failed to close.
+        if (m_thread->isRunning())
+            m_thread->wait(500);
+        if (m_thread->isRunning()) {
+            m_thread->terminate();
+            m_thread->wait(300);
+            if (m_thread->isRunning())
+                qCCritical(lcQpaDialogs) <<__FUNCTION__ << "Failed to terminate thread.";
+            else
+                qCWarning(lcQpaDialogs) << __FUNCTION__ << "Thread terminated.";
+        }
+        delete m_thread;
+        m_thread = 0;
+    }
 }
 
 template <class BaseClass>
@@ -558,12 +577,9 @@ private:
 
 void QWindowsDialogThread::run()
 {
-    if (QWindowsContext::verboseDialogs)
-        qDebug(">%s" , __FUNCTION__);
+    qCDebug(lcQpaDialogs) << '>' << __FUNCTION__;
     m_dialog->exec(m_owner);
-    deleteLater();
-    if (QWindowsContext::verboseDialogs)
-        qDebug("<%s" , __FUNCTION__);
+    qCDebug(lcQpaDialogs) << '<' << __FUNCTION__;
 }
 
 template <class BaseClass>
@@ -579,9 +595,9 @@ bool QWindowsDialogHelperBase<BaseClass>::show(Qt::WindowFlags,
     } else {
         m_ownerWindow = 0;
     }
-    if (QWindowsContext::verboseDialogs)
-        qDebug("%s modal=%d modal supported? %d native=%p parent=%p" ,
-               __FUNCTION__, modal, supportsNonModalDialog(parent), m_nativeDialog.data(), m_ownerWindow);
+    qCDebug(lcQpaDialogs) << __FUNCTION__ << "modal=" << modal
+        << " modal supported? " << supportsNonModalDialog(parent)
+        << "native=" << m_nativeDialog.data() << "owner" << m_ownerWindow;
     if (!modal && !supportsNonModalDialog(parent))
         return false; // Was it changed in-between?
     if (!ensureNativeDialog())
@@ -590,6 +606,7 @@ bool QWindowsDialogHelperBase<BaseClass>::show(Qt::WindowFlags,
     // a subsequent call to exec() may follow. So, start an idle timer
     // which will start the dialog thread. If exec() is then called, the
     // timer is stopped and dialog->exec() is called directly.
+    cleanupThread();
     if (modal) {
         m_timerId = this->startTimer(0);
     } else {
@@ -602,8 +619,9 @@ template <class BaseClass>
 void QWindowsDialogHelperBase<BaseClass>::startDialogThread()
 {
     Q_ASSERT(!m_nativeDialog.isNull());
-    QWindowsDialogThread *thread = new QWindowsDialogThread(m_nativeDialog, m_ownerWindow);
-    thread->start();
+    Q_ASSERT(!m_thread);
+    m_thread = new QWindowsDialogThread(m_nativeDialog, m_ownerWindow);
+    m_thread->start();
     stopTimer();
 }
 
@@ -630,7 +648,7 @@ struct FindDialogContext
     HWND hwnd; // contains the HWND of the window found.
 };
 
-static BOOL CALLBACK findDialogEnumWindowsProc(HWND hwnd, LPARAM lParam)
+static BOOL QT_WIN_CALLBACK findDialogEnumWindowsProc(HWND hwnd, LPARAM lParam)
 {
     FindDialogContext *context = reinterpret_cast<FindDialogContext *>(lParam);
     DWORD winPid = 0;
@@ -665,8 +683,7 @@ void QWindowsDialogHelperBase<BaseClass>::hide()
 template <class BaseClass>
 void QWindowsDialogHelperBase<BaseClass>::exec()
 {
-    if (QWindowsContext::verboseDialogs)
-        qDebug("%s" , __FUNCTION__);
+    qCDebug(lcQpaDialogs) << __FUNCTION__;
     stopTimer();
     if (QWindowsNativeDialogBase *nd = nativeDialog()) {
          nd->exec(m_ownerWindow);
@@ -956,8 +973,7 @@ bool QWindowsNativeFileDialogBase::init(const CLSID &clsId, const IID &iid)
         qErrnoWarning("IFileDialog::Advise failed");
         return false;
     }
-    if (QWindowsContext::verboseDialogs)
-        qDebug("%s %p %p cookie=%lu" , __FUNCTION__, m_fileDialog, m_dialogEvents, m_cookie);
+    qCDebug(lcQpaDialogs) << __FUNCTION__ << m_fileDialog << m_dialogEvents <<  m_cookie;
 
     return true;
 }
@@ -1008,14 +1024,12 @@ QString QWindowsNativeFileDialogBase::directory() const
 
 void QWindowsNativeFileDialogBase::doExec(HWND owner)
 {
-    if (QWindowsContext::verboseDialogs)
-        qDebug(">%s on %p", __FUNCTION__, (void *)owner);
+    qCDebug(lcQpaDialogs) << '>' << __FUNCTION__;
     // Show() blocks until the user closes the dialog, the dialog window
     // gets a WM_CLOSE or the parent window is destroyed.
     const HRESULT hr = m_fileDialog->Show(owner);
     QWindowsDialogs::eatMouseMove();
-    if (QWindowsContext::verboseDialogs)
-        qDebug("<%s returns 0x%lx", __FUNCTION__, hr);
+    qCDebug(lcQpaDialogs) << '<' << __FUNCTION__ << " returns " << hex << hr;
     if (hr == S_OK) {
         emit accepted();
     } else {
@@ -1045,10 +1059,8 @@ void QWindowsNativeFileDialogBase::setMode(QFileDialogOptions::FileMode mode, QF
         flags |= FOS_FILEMUSTEXIST | FOS_ALLOWMULTISELECT;
         break;
     }
-    if (QWindowsContext::verboseDialogs)
-        qDebug().nospace()
-            << __FUNCTION__ << " mode=" << mode << " options"
-            << options << " results in 0x" << flags;
+    qCDebug(lcQpaDialogs) << __FUNCTION__ << " mode=" << mode << " options"
+        << options << " results in 0x" << flags;
 
     if (FAILED(m_fileDialog->SetOptions(flags)))
         qErrnoWarning("%s: SetOptions() failed", __FUNCTION__);
@@ -1352,8 +1364,7 @@ void QWindowsNativeFileDialogBase::close()
     // IFileDialog::Close() does not work unless invoked from a callback.
     // Try to find the window and send it a WM_CLOSE in addition.
     const HWND hwnd = findDialogWindow(m_title);
-    if (QWindowsContext::verboseDialogs)
-        qDebug() << __FUNCTION__ << "closing" << hwnd;
+    qCDebug(lcQpaDialogs) << __FUNCTION__ << "closing" << hwnd;
     if (hwnd && IsWindowVisible(hwnd))
         PostMessageW(hwnd, WM_CLOSE, 0, 0);
 #endif // !Q_OS_WINCE
@@ -1617,8 +1628,7 @@ QWindowsNativeDialogBase *QWindowsFileDialogHelper::createNativeDialog()
 
 void QWindowsFileDialogHelper::setDirectory(const QUrl &directory)
 {
-    if (QWindowsContext::verboseDialogs)
-        qDebug("%s %s" , __FUNCTION__, qPrintable(directory.toString()));
+    qCDebug(lcQpaDialogs) << __FUNCTION__ << directory.toString();
 
     m_data.setDirectory(directory);
     if (hasNativeDialog())
@@ -1632,8 +1642,7 @@ QUrl QWindowsFileDialogHelper::directory() const
 
 void QWindowsFileDialogHelper::selectFile(const QUrl &fileName)
 {
-    if (QWindowsContext::verboseDialogs)
-        qDebug("%s %s" , __FUNCTION__, qPrintable(fileName.toString()));
+    qCDebug(lcQpaDialogs) << __FUNCTION__ << fileName.toString();
 
     if (hasNativeDialog()) // Might be invoked from the QFileDialog constructor.
         nativeFileDialog()->selectFile(fileName.toLocalFile()); // ## should use QUrl::fileName() once it exists
@@ -1646,8 +1655,7 @@ QList<QUrl> QWindowsFileDialogHelper::selectedFiles() const
 
 void QWindowsFileDialogHelper::setFilter()
 {
-    if (QWindowsContext::verboseDialogs)
-        qDebug("%s" , __FUNCTION__);
+    qCDebug(lcQpaDialogs) << __FUNCTION__;
 }
 
 void QWindowsFileDialogHelper::selectNameFilter(const QString &filter)
@@ -1762,7 +1770,7 @@ void QWindowsXpNativeFileDialog::doExec(HWND owner)
 // Callback for QWindowsNativeXpFileDialog directory dialog.
 // MFC Directory Dialog. Contrib: Steve Williams (minor parts from Scott Powers)
 
-static int CALLBACK xpFileDialogGetExistingDirCallbackProc(HWND hwnd, UINT uMsg, LPARAM lParam, LPARAM lpData)
+static int QT_WIN_CALLBACK xpFileDialogGetExistingDirCallbackProc(HWND hwnd, UINT uMsg, LPARAM lParam, LPARAM lpData)
 {
     QWindowsXpNativeFileDialog *dialog = reinterpret_cast<QWindowsXpNativeFileDialog *>(lpData);
     return dialog->existingDirCallback(hwnd, uMsg, lParam);
@@ -2039,8 +2047,6 @@ void QWindowsNativeColorDialog::doExec(HWND owner)
     typedef BOOL (WINAPI *ChooseColorWType)(LPCHOOSECOLORW);
 
     CHOOSECOLOR chooseColor;
-    if (QWindowsContext::verboseDialogs)
-        qDebug() << '>' << __FUNCTION__ << " on " << owner;
     ZeroMemory(&chooseColor, sizeof(chooseColor));
     chooseColor.lStructSize = sizeof(chooseColor);
     chooseColor.hwndOwner = owner;
@@ -2069,8 +2075,6 @@ void QWindowsNativeColorDialog::doExec(HWND owner)
         for (int c= 0; c < customColorCount; ++c)
             qCustomColors[c] = COLORREFToQColor(m_customColors[c]).rgb();
         emit accepted();
-        if (QWindowsContext::verboseDialogs)
-            qDebug() << '<' << __FUNCTION__ << *m_color;
     } else {
         emit rejected();
     }

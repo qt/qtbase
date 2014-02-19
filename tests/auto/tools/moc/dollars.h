@@ -39,6 +39,9 @@
 **
 ****************************************************************************/
 
+#ifndef DOLLARS_H
+#define DOLLARS_H
+
 /* both GCC and clang allow $ in identifiers
  * So moc should not throw a parse error if it parses a file that contains such identifiers
  */
@@ -68,3 +71,4 @@ namespace $NS {
     };
 }
 
+#endif // DOLLARS_H

@@ -18,7 +18,7 @@ QT_CPU_FEATURES = $$eval(QT_CPU_FEATURES.$$QT_ARCH)
 #
 # Set up compilers for SIMD (SSE/AVX, NEON etc)
 #
-*-g++*|linux-icc*|*-clang*|*-qcc* {
+*-g++*|intel_icc|*-clang*|*-qcc* {
     sse2 {
         HEADERS += $$SSE2_HEADERS
 
@@ -289,7 +289,7 @@ QT_CPU_FEATURES = $$eval(QT_CPU_FEATURES.$$QT_ARCH)
     avx2 {
         HEADERS += $$AVX2_HEADERS
 
-        avx2_compiler.commands = $$QMAKE_CXX -c $(CXXFLAGS) -D_M_AVX2
+        avx2_compiler.commands = $$QMAKE_CXX -c $(CXXFLAGS)
         !contains(QT_CPU_FEATURES, avx):avx2_compiler.commands += $$QMAKE_CFLAGS_AVX2
         avx2_compiler.commands += $(INCPATH) ${QMAKE_FILE_IN} -Fo${QMAKE_FILE_OUT}
         avx2_compiler.dependency_type = TYPE_C

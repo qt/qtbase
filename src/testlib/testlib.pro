@@ -33,7 +33,7 @@ HEADERS = qbenchmark.h \
     qtestmouse.h \
     qtestspontaneevent.h \
     qtestsystem.h \
-    qtesttouch.h \
+    qtesttouch.h
 
 SOURCES = qtestcase.cpp \
     qtestlog.cpp \
@@ -51,6 +51,7 @@ SOURCES = qtestcase.cpp \
     qbenchmarkevent.cpp \
     qbenchmarkperfevents.cpp \
     qbenchmarkmetric.cpp \
+    qcsvbenchmarklogger.cpp \
     qtestelement.cpp \
     qtestelementattribute.cpp \
     qtestxunitstreamer.cpp \

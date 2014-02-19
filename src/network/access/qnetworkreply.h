@@ -93,12 +93,20 @@ public:
         ContentNotFoundError,
         AuthenticationRequiredError,
         ContentReSendError,
+        ContentConflictError,
+        ContentGoneError,
         UnknownContentError = 299,
 
         // protocol errors
         ProtocolUnknownError = 301,
         ProtocolInvalidOperationError,
-        ProtocolFailure = 399
+        ProtocolFailure = 399,
+
+        // Server side errors (401-499)
+        InternalServerError = 401,
+        OperationNotImplementedError,
+        ServiceUnavailableError,
+        UnknownServerError = 499
     };
 
     ~QNetworkReply();

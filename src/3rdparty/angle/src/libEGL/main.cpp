@@ -1,3 +1,4 @@
+#include "../libGLESv2/precompiled.h"
 //
 // Copyright (c) 2002-2012 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
@@ -12,7 +13,13 @@
 
 #ifndef QT_OPENGL_ES_2_ANGLE_STATIC
 
+#if !defined(ANGLE_OS_WINRT)
 static DWORD currentTLS = TLS_OUT_OF_INDEXES;
+#else
+static __declspec(thread) void *currentTLS = 0;
+#endif
+
+namespace egl { Current *getCurrent(); }
 
 extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved)
 {
@@ -35,22 +42,25 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved
             }
 #endif
 
+#if !defined(ANGLE_OS_WINRT)
             currentTLS = TlsAlloc();
 
             if (currentTLS == TLS_OUT_OF_INDEXES)
             {
                 return FALSE;
             }
+#endif
         }
         // Fall throught to initialize index
       case DLL_THREAD_ATTACH:
         {
-            egl::Current *current = (egl::Current*)LocalAlloc(LPTR, sizeof(egl::Current));
+            egl::Current *current = egl::getCurrent();
 
             if (current)
             {
+#if !defined(ANGLE_OS_WINRT)
                 TlsSetValue(currentTLS, current);
-
+#endif
                 current->error = EGL_SUCCESS;
                 current->API = EGL_OPENGL_ES_API;
                 current->display = EGL_NO_DISPLAY;
@@ -61,24 +71,35 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved
         break;
       case DLL_THREAD_DETACH:
         {
-            void *current = TlsGetValue(currentTLS);
+            egl::Current *current = egl::getCurrent();
 
             if (current)
             {
+#if !defined(ANGLE_OS_WINRT)
                 LocalFree((HLOCAL)current);
+#else
+                HeapFree(GetProcessHeap(), HEAP_GENERATE_EXCEPTIONS, current);
+                currentTLS = 0;
+#endif
             }
         }
         break;
       case DLL_PROCESS_DETACH:
         {
-            void *current = TlsGetValue(currentTLS);
+            egl::Current *current = egl::getCurrent();
 
             if (current)
             {
+#if !defined(ANGLE_OS_WINRT)
                 LocalFree((HLOCAL)current);
             }
 
             TlsFree(currentTLS);
+#else
+                HeapFree(GetProcessHeap(), HEAP_GENERATE_EXCEPTIONS, current);
+                currentTLS = 0;
+            }
+#endif
         }
         break;
       default:
@@ -95,7 +116,16 @@ namespace egl
 Current *getCurrent()
 {
 #ifndef QT_OPENGL_ES_2_ANGLE_STATIC
-    return (Current*)TlsGetValue(currentTLS);
+#if !defined(ANGLE_OS_WINRT)
+    Current *current = (Current*)TlsGetValue(currentTLS);
+    if (!current)
+        current = (Current*)LocalAlloc(LPTR, sizeof(Current));
+    return current;
+#else
+    if (!currentTLS)
+        currentTLS = HeapAlloc(GetProcessHeap(), HEAP_GENERATE_EXCEPTIONS|HEAP_ZERO_MEMORY, sizeof(Current));
+    return (Current*)currentTLS;
+#endif
 #else
     // No precautions for thread safety taken as ANGLE is used single-threaded in Qt.
     static Current curr = { EGL_SUCCESS, EGL_OPENGL_ES_API, EGL_NO_DISPLAY, EGL_NO_SURFACE, EGL_NO_SURFACE };

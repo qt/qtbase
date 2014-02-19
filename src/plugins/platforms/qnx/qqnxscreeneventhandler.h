@@ -1,6 +1,6 @@
 /***************************************************************************
 **
-** Copyright (C) 2011 - 2012 Research In Motion
+** Copyright (C) 2013 BlackBerry Limited. All rights reserved.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -49,6 +49,7 @@
 QT_BEGIN_NAMESPACE
 
 class QQnxIntegration;
+class QQnxScreenEventFilter;
 #if defined(QQNX_SCREENEVENTTHREAD)
 class QQnxScreenEventThread;
 #endif
@@ -58,6 +59,9 @@ class QQnxScreenEventHandler : public QObject
     Q_OBJECT
 public:
     explicit QQnxScreenEventHandler(QQnxIntegration *integration);
+
+    void addScreenEventFilter(QQnxScreenEventFilter *filter);
+    void removeScreenEventFilter(QQnxScreenEventFilter *filter);
 
     bool handleEvent(screen_event_t event);
     bool handleEvent(screen_event_t event, int qnxType);
@@ -71,6 +75,9 @@ public:
 Q_SIGNALS:
     void newWindowCreated(void *window);
     void windowClosed(void *window);
+
+protected:
+    void timerEvent(QTimerEvent *event);
 
 #if defined(QQNX_SCREENEVENTTHREAD)
 private Q_SLOTS:
@@ -99,9 +106,11 @@ private:
     screen_window_t m_lastMouseWindow;
     QTouchDevice *m_touchDevice;
     QWindowSystemInterface::TouchPoint m_touchPoints[MaximumTouchPoints];
+    QList<QQnxScreenEventFilter*> m_eventFilters;
 #if defined(QQNX_SCREENEVENTTHREAD)
     QQnxScreenEventThread *m_eventThread;
 #endif
+    int m_focusLostTimer;
 };
 
 QT_END_NAMESPACE

@@ -46,7 +46,6 @@
 #include "qkmsbackingstore.h"
 #include "qkmscontext.h"
 #include "qkmsnativeinterface.h"
-#include "qkmsvthandler.h"
 
 #if !defined(QT_NO_EVDEV)
 #include <QtPlatformSupport/private/qevdevmousemanager_p.h>
@@ -56,6 +55,8 @@
 
 #include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
 #include <QtPlatformSupport/private/qgenericunixfontdatabase_p.h>
+#include <QtPlatformSupport/private/qfbvthandler_p.h>
+
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QScreen>
@@ -65,10 +66,29 @@ QT_BEGIN_NAMESPACE
 QKmsIntegration::QKmsIntegration()
     : QPlatformIntegration(),
       m_fontDatabase(new QGenericUnixFontDatabase()),
-      m_nativeInterface(new QKmsNativeInterface)
+      m_nativeInterface(new QKmsNativeInterface),
+      m_vtHandler(0),
+      m_deviceDiscovery(0)
 {
-    setenv("EGL_PLATFORM", "drm",1);
-    m_vtHandler = new QKmsVTHandler;
+}
+
+QKmsIntegration::~QKmsIntegration()
+{
+    delete m_deviceDiscovery;
+    foreach (QKmsDevice *device, m_devices) {
+        delete device;
+    }
+    foreach (QPlatformScreen *screen, m_screens) {
+        delete screen;
+    }
+    delete m_fontDatabase;
+    delete m_vtHandler;
+}
+
+void QKmsIntegration::initialize()
+{
+    qputenv("EGL_PLATFORM", "drm");
+    m_vtHandler = new QFbVtHandler;
 
     m_deviceDiscovery = QDeviceDiscovery::create(QDeviceDiscovery::Device_DRM | QDeviceDiscovery::Device_DRM_PrimaryGPU, 0);
     if (m_deviceDiscovery) {
@@ -85,19 +105,6 @@ QKmsIntegration::QKmsIntegration()
     new QEvdevMouseManager(QLatin1String("EvdevMouse"), QString() /* spec */, this);
     new QEvdevTouchScreenHandlerThread(QString() /* spec */, this);
 #endif
-}
-
-QKmsIntegration::~QKmsIntegration()
-{
-    delete m_deviceDiscovery;
-    foreach (QKmsDevice *device, m_devices) {
-        delete device;
-    }
-    foreach (QPlatformScreen *screen, m_screens) {
-        delete screen;
-    }
-    delete m_fontDatabase;
-    delete m_vtHandler;
 }
 
 void QKmsIntegration::addDevice(const QString &deviceNode)

@@ -2768,9 +2768,9 @@ void tst_QSortFilterProxyModel::mapFromToSource()
     QCOMPARE(proxy.mapToSource(QModelIndex()), QModelIndex());
 
 #ifdef QT_NO_DEBUG  //if Qt is compiled in debug mode, this will assert
-    QTest::ignoreMessage(QtWarningMsg, "QSortFilterProxyModel: index from wrong model passed to mapToSource ");
+    QTest::ignoreMessage(QtWarningMsg, "QSortFilterProxyModel: index from wrong model passed to mapToSource");
     QCOMPARE(proxy.mapToSource(source.index(2, 3)), QModelIndex());
-    QTest::ignoreMessage(QtWarningMsg, "QSortFilterProxyModel: index from wrong model passed to mapFromSource ");
+    QTest::ignoreMessage(QtWarningMsg, "QSortFilterProxyModel: index from wrong model passed to mapFromSource");
     QCOMPARE(proxy.mapFromSource(proxy.index(6, 2)), QModelIndex());
 #endif
 }

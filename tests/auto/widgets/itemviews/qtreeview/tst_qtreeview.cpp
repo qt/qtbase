@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include "../../../../shared/fakedirmodel.h"
 #include <qabstractitemview.h>
 #include <QtTest/QtTest>
 #include <QtGui/QtGui>
@@ -3719,7 +3720,9 @@ void tst_QTreeView::task246536_scrollbarsNotWorking()
 
 void tst_QTreeView::task250683_wrongSectionSize()
 {
-    QDirModel model;
+    QStandardItemModel model;
+    populateFakeDirModel(&model);
+
     QTreeView treeView;
     treeView.header()->setSectionResizeMode(QHeaderView::ResizeToContents);
     treeView.setModel(&model);

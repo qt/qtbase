@@ -90,7 +90,7 @@ QAccessible::Id QAccessibleCache::insert(QObject *object, QAccessibleInterface *
     Q_ASSERT(object == obj);
     if (obj) {
         objectToId.insert(obj, id);
-        connect(obj, SIGNAL(destroyed(QObject *)), this, SLOT(objectDestroyed(QObject *)));
+        connect(obj, &QObject::destroyed, this, &QAccessibleCache::objectDestroyed);
     }
     idToInterface.insert(id, iface);
     return id;

@@ -39,4 +39,8 @@
 **
 ****************************************************************************/
 
+#ifndef PP_DOLLAR_SIGNS_H
+#define PP_DOLLAR_SIGNS_H
+
 $$ = parser->createFoo()
+#endif // PP_DOLLAR_SIGNS_H

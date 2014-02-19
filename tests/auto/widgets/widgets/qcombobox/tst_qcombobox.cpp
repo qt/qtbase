@@ -162,6 +162,7 @@ private slots:
     void highlightedSignal();
     void itemData();
     void task_QTBUG_31146_popupCompletion();
+    void keyboardSelection();
 };
 
 class MyAbstractItemDelegate : public QAbstractItemDelegate
@@ -1848,7 +1849,7 @@ void tst_QComboBox::flaggedItems_data()
 
             itemList << "nine" << "ten";
             keyMovementList << Qt::Key_T;
-            QTest::newRow(testCase.toLatin1() + "search same start letter") << itemList << deselectFlagList << disableFlagList << keyMovementList << bool(editable) << 9;
+            QTest::newRow(testCase.toLatin1() + "search same start letter") << itemList << deselectFlagList << disableFlagList << keyMovementList << bool(editable) << 2;
 
             keyMovementList.clear();
             keyMovementList << Qt::Key_T << Qt::Key_H;
@@ -2944,6 +2945,33 @@ void tst_QComboBox::task_QTBUG_31146_popupCompletion()
     QTest::keyClick(comboBox.completer()->popup(), Qt::Key_Up);
     QTest::keyClick(comboBox.completer()->popup(), Qt::Key_Enter);
     QCOMPARE(comboBox.currentIndex(), 0);
+}
+
+void tst_QComboBox::keyboardSelection()
+{
+    QComboBox comboBox;
+    const int keyboardInterval = QApplication::keyboardInputInterval();
+    QStringList list;
+    list << "OA" << "OB" << "OC" << "OO" << "OP" << "PP";
+    comboBox.addItems(list);
+
+    // Clear any remaining keyboard input from previous tests.
+    QTest::qWait(keyboardInterval);
+    QTest::keyClicks(&comboBox, "oo", Qt::NoModifier, 50);
+    QCOMPARE(comboBox.currentText(), list.at(3));
+
+    QTest::qWait(keyboardInterval);
+    QTest::keyClicks(&comboBox, "op", Qt::NoModifier, 50);
+    QCOMPARE(comboBox.currentText(), list.at(4));
+
+    QTest::keyClick(&comboBox, Qt::Key_P, Qt::NoModifier, keyboardInterval);
+    QCOMPARE(comboBox.currentText(), list.at(5));
+
+    QTest::keyClick(&comboBox, Qt::Key_O, Qt::NoModifier, keyboardInterval);
+    QCOMPARE(comboBox.currentText(), list.at(0));
+
+    QTest::keyClick(&comboBox, Qt::Key_O, Qt::NoModifier, keyboardInterval);
+    QCOMPARE(comboBox.currentText(), list.at(1));
 }
 
 QTEST_MAIN(tst_QComboBox)

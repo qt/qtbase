@@ -75,11 +75,11 @@ QWindowsGuiEventDispatcher::QWindowsGuiEventDispatcher(QObject *parent) :
 bool QWindowsGuiEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
 {
     m_flags = flags;
-    if (QWindowsContext::verboseEvents > 2)
-        qDebug(">%s %s %d", __FUNCTION__, qPrintable(objectName()), int(flags));
+    if (QWindowsContext::verbose > 2 && lcQpaEvents().isDebugEnabled())
+        qCDebug(lcQpaEvents) << '>' << __FUNCTION__ << objectName() << flags;
     const bool rc = QEventDispatcherWin32::processEvents(flags);
-    if (QWindowsContext::verboseEvents > 2)
-        qDebug("<%s %s returns %d", __FUNCTION__, qPrintable(objectName()), rc);
+    if (QWindowsContext::verbose > 2 && lcQpaEvents().isDebugEnabled())
+        qCDebug(lcQpaEvents) << '<' << __FUNCTION__ << "returns" << rc;
     return rc;
 }
 

@@ -41,7 +41,11 @@
 
 #include "qwineventnotifier.h"
 
+#ifdef Q_OS_WINRT
+#include "qeventdispatcher_winrt_p.h"
+#else
 #include "qeventdispatcher_win_p.h"
+#endif
 #include "qcoreapplication.h"
 
 #include <private/qthread_p.h>

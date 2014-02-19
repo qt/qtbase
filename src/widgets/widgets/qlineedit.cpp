@@ -333,7 +333,12 @@ void QLineEdit::setText(const QString& text)
     \brief the line edit's placeholder text
 
     Setting this property makes the line edit display a grayed-out
-    placeholder text as long as the text() is empty.
+    placeholder text as long as the line edit is empty.
+
+    Normally, an empty line edit shows the placeholder text even
+    when it has focus. However, if the content is horizontally
+    centered, the placeholder text is not displayed under
+    the cursor when the line edit has focus.
 
     By default, this property contains an empty string.
 
@@ -350,7 +355,7 @@ void QLineEdit::setPlaceholderText(const QString& placeholderText)
     Q_D(QLineEdit);
     if (d->placeholderText != placeholderText) {
         d->placeholderText = placeholderText;
-        if (d->control->text().isEmpty())
+        if (d->shouldShowPlaceholderText())
             update();
     }
 }
@@ -1895,7 +1900,7 @@ void QLineEdit::paintEvent(QPaintEvent *)
     int minLB = qMax(0, -fm.minLeftBearing());
     int minRB = qMax(0, -fm.minRightBearing());
 
-    if (d->control->text().isEmpty() && d->control->preeditAreaText().isEmpty()) {
+    if (d->shouldShowPlaceholderText()) {
         if (!d->placeholderText.isEmpty()) {
             QColor col = pal.text().color();
             col.setAlpha(128);

@@ -85,7 +85,8 @@ public:
     enum Option { // Options to be passed on command line.
         NoOptions = 0x0,
         FullScreenApplication = 0x1,
-        RootWindow = 0x2
+        RootWindow = 0x2,
+        AlwaysFlushScreenContext = 0x4
     };
     Q_DECLARE_FLAGS(Options, Option)
     explicit QQnxIntegration(const QStringList &paramList);
@@ -137,7 +138,10 @@ public:
     void createDisplay(screen_display_t display, bool isPrimary);
     void removeDisplay(QQnxScreen *screen);
     QQnxScreen *primaryDisplay() const;
-    Options options() const;
+    static Options options();
+    static screen_context_t screenContext();
+
+    QQnxNavigatorEventHandler *navigatorEventHandler();
 
 private:
     void createDisplays();
@@ -146,7 +150,7 @@ private:
     static void addWindow(screen_window_t qnxWindow, QWindow *window);
     static void removeWindow(screen_window_t qnxWindow);
 
-    screen_context_t m_screenContext;
+    static screen_context_t ms_screenContext;
 #if defined(QQNX_SCREENEVENTTHREAD)
     QQnxScreenEventThread *m_screenEventThread;
 #endif
@@ -176,7 +180,7 @@ private:
     static QQnxWindowMapper ms_windowMapper;
     static QMutex ms_windowMapperMutex;
 
-    const Options m_options;
+    static Options ms_options;
 
     friend class QQnxWindow;
 };

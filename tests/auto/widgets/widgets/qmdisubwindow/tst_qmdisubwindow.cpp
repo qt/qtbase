@@ -146,7 +146,7 @@ static void sendMouseDoubleClick(QWidget *widget, const QPoint &point, Qt::Mouse
 }
 
 static const Qt::WindowFlags StandardWindowFlags
-    = Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowMinMaxButtonsHint;
+    = Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint;
 static const Qt::WindowFlags DialogWindowFlags
     = Qt::WindowTitleHint | Qt::WindowSystemMenuHint;
 
@@ -901,40 +901,12 @@ void tst_QMdiSubWindow::setWindowFlags()
     QVERIFY(QTest::qWaitForWindowExposed(&workspace));
 
     window->setWindowFlags(windowType | customFlags);
-    QEXPECT_FAIL("Qt::Widget", "QTBUG-27274", Continue);
-    QEXPECT_FAIL("Qt::Window", "QTBUG-27274", Continue);
-    QEXPECT_FAIL("Qt::Dialog", "QTBUG-27274", Continue);
-    QEXPECT_FAIL("Qt::Sheet", "QTBUG-27274", Continue);
-    QEXPECT_FAIL("Qt::Drawer", "QTBUG-27274", Continue);
-    QEXPECT_FAIL("Qt::Popup", "QTBUG-27274", Continue);
-    QEXPECT_FAIL("Qt::Tool", "QTBUG-27274", Continue);
-    QEXPECT_FAIL("Qt::ToolTip", "QTBUG-27274", Continue);
-    QEXPECT_FAIL("Qt::SplashScreen", "QTBUG-27274", Continue);
-    QEXPECT_FAIL("Qt::Desktop", "QTBUG-27274", Continue);
     QCOMPARE(window->windowType(), expectedWindowType);
 
-    if (!expectedCustomFlags) {
-        // We expect the same as 'customFlags'
+    if (!expectedCustomFlags) // We expect the same as 'customFlags'
         QCOMPARE(window->windowFlags() & ~expectedWindowType, customFlags);
-    } else {
-        QEXPECT_FAIL("Qt::Widget", "QTBUG-27274", Continue);
-        QEXPECT_FAIL("Qt::Window", "QTBUG-27274", Continue);
-        QEXPECT_FAIL("Qt::Dialog", "QTBUG-27274", Continue);
-        QEXPECT_FAIL("Qt::Sheet", "QTBUG-27274", Continue);
-        QEXPECT_FAIL("Qt::Drawer", "QTBUG-27274", Continue);
-        QEXPECT_FAIL("Qt::Popup", "QTBUG-27274", Continue);
-        QEXPECT_FAIL("Qt::Tool", "QTBUG-27274", Continue);
-        QEXPECT_FAIL("Qt::ToolTip", "QTBUG-27274", Continue);
-        QEXPECT_FAIL("Qt::SplashScreen", "QTBUG-27274", Continue);
-        QEXPECT_FAIL("Qt::Desktop", "QTBUG-27274", Continue);
-        QEXPECT_FAIL("Qt::SubWindow", "QTBUG-27274", Continue);
-        QEXPECT_FAIL("StandardAndFrameless", "QTBUG-27274", Continue);
-        QEXPECT_FAIL("StandardAndFramelessAndStaysOnTop", "QTBUG-27274", Continue);
-        QEXPECT_FAIL("Shade", "QTBUG-27274", Continue);
-        QEXPECT_FAIL("Context", "QTBUG-27274", Continue);
-        QEXPECT_FAIL("ShadeAndContext", "QTBUG-27274", Continue);
+    else
         QCOMPARE(window->windowFlags() & ~expectedWindowType, expectedCustomFlags);
-    }
 }
 
 void tst_QMdiSubWindow::mouseDoubleClick()
@@ -981,18 +953,12 @@ void tst_QMdiSubWindow::mouseDoubleClick()
     sendMouseDoubleClick(window, mousePosition);
     qApp->processEvents();
     QVERIFY(!window->isShaded());
-#ifndef Q_OS_MAC
-    QEXPECT_FAIL("", "QTBUG-27274", Continue);
-#endif
     QCOMPARE(window->geometry(), originalGeometry);
 
     window->showMinimized();
     QVERIFY(window->isMinimized());
     sendMouseDoubleClick(window, mousePosition);
     QVERIFY(!window->isMinimized());
-#ifndef Q_OS_MAC
-    QEXPECT_FAIL("", "QTBUG-27274", Continue);
-#endif
     QCOMPARE(window->geometry(), originalGeometry);
 }
 

@@ -182,6 +182,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "QML_DEBUG" ]       = "yes";
     dictionary[ "PLUGIN_MANIFESTS" ] = "no";
     dictionary[ "DIRECTWRITE" ]     = "no";
+    dictionary[ "DIRECT2D" ]        = "no";
     dictionary[ "NIS" ]             = "no";
     dictionary[ "NEON" ]            = "auto";
     dictionary[ "LARGE_FILE" ]      = "yes";
@@ -194,7 +195,9 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "QT_CUPS" ]         = "auto";
     dictionary[ "CFG_GCC_SYSROOT" ] = "yes";
     dictionary[ "SLOG2" ]           = "no";
+    dictionary[ "QNX_IMF" ]         = "no";
     dictionary[ "PPS" ]             = "no";
+    dictionary[ "LGMON" ]           = "no";
     dictionary[ "SYSTEM_PROXIES" ]  = "no";
     dictionary[ "WERROR" ]          = "auto";
     dictionary[ "QREAL" ]           = "double";
@@ -256,6 +259,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "ICU" ]             = "auto";
 
     dictionary[ "ANGLE" ]           = "auto";
+    dictionary[ "DYNAMICGL" ]       = "auto";
 
     dictionary[ "GIF" ]             = "auto";
     dictionary[ "JPEG" ]            = "auto";
@@ -679,6 +683,8 @@ void Configure::parseCmdLine()
                 dictionary[ "OPENGL_ES_2" ]     = "yes";
             } else if ( configCmdLine.at(i) == "desktop" ) {
                 // OPENGL=yes suffices
+            } else if ( configCmdLine.at(i) == "dynamic" ) {
+                dictionary[ "DYNAMICGL" ] = "yes";
             } else {
                 cout << "Argument passed to -opengl option is not valid." << endl;
                 dictionary[ "DONE" ] = "error";
@@ -880,10 +886,18 @@ void Configure::parseCmdLine()
             dictionary[ "SLOG2" ] = "no";
         } else if (configCmdLine.at(i) == "-slog2") {
             dictionary[ "SLOG2" ] = "yes";
+        } else if (configCmdLine.at(i) == "-no-imf") {
+            dictionary[ "QNX_IMF" ] = "no";
+        } else if (configCmdLine.at(i) == "-imf") {
+            dictionary[ "QNX_IMF" ] = "yes";
         } else if (configCmdLine.at(i) == "-no-pps") {
             dictionary[ "PPS" ] = "no";
         } else if (configCmdLine.at(i) == "-pps") {
             dictionary[ "PPS" ] = "yes";
+        } else if (configCmdLine.at(i) == "-no-lgmon") {
+            dictionary[ "LGMON" ] = "no";
+        } else if (configCmdLine.at(i) == "-lgmon") {
+            dictionary[ "LGMON" ] = "yes";
         } else if (configCmdLine.at(i) == "-no-system-proxies") {
             dictionary[ "SYSTEM_PROXIES" ] = "no";
         } else if (configCmdLine.at(i) == "-system-proxies") {
@@ -1211,6 +1225,12 @@ void Configure::parseCmdLine()
             dictionary["DIRECTWRITE"] = "yes";
         } else if (configCmdLine.at(i) == "-no-directwrite") {
             dictionary["DIRECTWRITE"] = "no";
+        }
+
+        else if (configCmdLine.at(i) == "-direct2d") {
+            dictionary["DIRECT2D"] = "yes";
+        } else if (configCmdLine.at(i) == "-no-direct2d") {
+            dictionary["DIRECT2D"] = "no";
         }
 
         else if (configCmdLine.at(i) == "-nis") {
@@ -1595,18 +1615,18 @@ void Configure::applySpecSpecifics()
         dictionary[ "LIBJPEG" ]             = "qt";
         dictionary[ "LIBPNG" ]              = "qt";
         dictionary[ "FREETYPE" ]            = "yes";
-        dictionary[ "ACCESSIBILITY" ]       = "no";
-        dictionary[ "OPENGL" ]              = "no";
-        dictionary[ "OPENGL_ES_2" ]         = "no";
+        dictionary[ "OPENGL" ]              = "yes";
+        dictionary[ "OPENGL_ES_2" ]         = "yes";
         dictionary[ "OPENVG" ]              = "no";
-        dictionary[ "OPENSSL" ]             = "auto";
+        dictionary[ "OPENSSL" ]             = "no";
         dictionary[ "DBUS" ]                = "no";
         dictionary[ "ZLIB" ]                = "qt";
         dictionary[ "PCRE" ]                = "qt";
         dictionary[ "ICU" ]                 = "qt";
         dictionary[ "CE_CRT" ]              = "yes";
         dictionary[ "LARGE_FILE" ]          = "no";
-        dictionary[ "ANGLE" ]               = "no";
+        dictionary[ "ANGLE" ]               = "d3d11";
+        dictionary[ "DYNAMICGL" ]           = "no";
         if (dictionary.value("XQMAKESPEC").startsWith("winphone"))
             dictionary[ "SQL_SQLITE" ] = "no";
     } else if (dictionary.value("XQMAKESPEC").startsWith("wince")) {
@@ -1629,6 +1649,7 @@ void Configure::applySpecSpecifics()
         dictionary[ "CE_CRT" ]              = "yes";
         dictionary[ "LARGE_FILE" ]          = "no";
         dictionary[ "ANGLE" ]               = "no";
+        dictionary[ "DYNAMICGL" ]           = "no";
         // We only apply MMX/IWMMXT for mkspecs we know they work
         if (dictionary[ "XQMAKESPEC" ].startsWith("wincewm")) {
             dictionary[ "MMX" ]    = "yes";
@@ -1653,9 +1674,12 @@ void Configure::applySpecSpecifics()
     } else if ((platform() == QNX) || (platform() == BLACKBERRY)) {
         dictionary["STACK_PROTECTOR_STRONG"] = "auto";
         dictionary["SLOG2"]                 = "auto";
+        dictionary["QNX_IMF"]               = "auto";
         dictionary["PPS"]                   = "auto";
+        dictionary["LGMON"]                 = "auto";
         dictionary["QT_XKBCOMMON"]          = "no";
         dictionary[ "ANGLE" ]               = "no";
+        dictionary[ "DYNAMICGL" ]           = "no";
         dictionary[ "FONT_CONFIG" ]         = "auto";
     } else if (platform() == ANDROID) {
         dictionary[ "REDUCE_EXPORTS" ]      = "yes";
@@ -1663,6 +1687,7 @@ void Configure::applySpecSpecifics()
         dictionary[ "BUILDALL" ]            = "no";
         dictionary[ "LARGE_FILE" ]          = "no";
         dictionary[ "ANGLE" ]               = "no";
+        dictionary[ "DYNAMICGL" ]           = "no";
         dictionary[ "REDUCE_RELOCATIONS" ]  = "yes";
         dictionary[ "QT_GETIFADDRS" ]       = "no";
         dictionary[ "QT_XKBCOMMON" ]        = "no";
@@ -1774,9 +1799,10 @@ bool Configure::displayHelp()
         desc("OPENGL", "no","-no-opengl",               "Do not support OpenGL.");
         desc("OPENGL", "no","-opengl <api>",            "Enable OpenGL support with specified API version.\n"
                                                         "Available values for <api>:");
-        desc("", "no", "",                                "  desktop - Enable support for Desktop OpenGL", ' ');
+        desc("", "no", "",                              "  desktop - Enable support for Desktop OpenGL", ' ');
+        desc("", "no", "",                              "  dynamic - Enable support for dynamically loaded OpenGL (either desktop or ES)", ' ');
         desc("OPENGL_ES_CM", "no", "",                  "  es1 - Enable support for OpenGL ES Common Profile", ' ');
-        desc("OPENGL_ES_2",  "yes", "",                  "  es2 - Enable support for OpenGL ES 2.0\n", ' ');
+        desc("OPENGL_ES_2",  "yes", "",                 "  es2 - Enable support for OpenGL ES 2.0\n", ' ');
 
         desc("OPENVG", "no","-no-openvg",               "Disables OpenVG functionality.");
         desc("OPENVG", "yes","-openvg",                 "Enables OpenVG functionality.\n");
@@ -1865,14 +1891,17 @@ bool Configure::displayHelp()
                                                         "by setting QT_HARFBUZZ environment variable to \"old\".");
         desc("HARFBUZZ", "system","-system-harfbuzz",   "(experimental) Use HarfBuzz-NG from the operating system\n"
                                                         "to do text shaping. It can still be disabled\n"
-                                                        "by setting QT_HARFBUZZ environment variable to \"old\".");
+                                                        "by setting QT_HARFBUZZ environment variable to \"old\".\n");
 
         if ((platform() == QNX) || (platform() == BLACKBERRY)) {
             desc("SLOG2", "yes",  "-slog2",             "Compile with slog2 support.");
             desc("SLOG2", "no",  "-no-slog2",           "Do not compile with slog2 support.");
-
+            desc("QNX_IMF", "yes",  "-imf",             "Compile with imf support.");
+            desc("QNX_IMF", "no",  "-no-imf",           "Do not compile with imf support.");
             desc("PPS", "yes",  "-pps",                 "Compile with PPS support.");
             desc("PPS", "no",  "-no-pps",               "Do not compile with PPS support.");
+            desc("LGMON", "yes",  "-lgmon",             "Compile with lgmon support.");
+            desc("LGMON", "no",   "-no-lgmon",          "Do not compile with lgmon support.\n");
         }
 
         desc("ANGLE", "yes",       "-angle",            "Use the ANGLE implementation of OpenGL ES 2.0.");
@@ -1932,6 +1961,11 @@ bool Configure::displayHelp()
         desc("QML_DEBUG", "yes",   "-qml-debug",        "Build the in-process QML debugging support.\n");
         desc("DIRECTWRITE", "no", "-no-directwrite", "Do not build support for DirectWrite font rendering.");
         desc("DIRECTWRITE", "yes", "-directwrite", "Build support for DirectWrite font rendering (experimental, requires DirectWrite availability on target systems, e.g. Windows Vista with Platform Update, Windows 7, etc.)\n");
+
+        desc("DIRECT2D", "no",  "-no-direct2d",         "Do not build the Direct2D platform plugin.");
+        desc("DIRECT2D", "yes", "-direct2d",            "Build the Direct2D platform plugin (experimental,\n"
+                                                        "requires Direct2D availability on target systems,\n"
+                                                        "e.g. Windows 7 with Platform Update, Windows 8, etc.)\n");
 
         desc(                   "-no-style-<style>",    "Disable <style> entirely.");
         desc(                   "-qt-style-<style>",    "Enable <style> in the Qt Library.\nAvailable styles: ");
@@ -2200,6 +2234,8 @@ bool Configure::checkAvailability(const QString &part)
         available = findFile("mfapi.h") && findFile("mf.lib");
     } else if (part == "DIRECTWRITE") {
         available = findFile("dwrite.h") && findFile("d2d1.h") && findFile("dwrite.lib");
+    } else if (part == "DIRECT2D") {
+        available = tryCompileProject("qpa/direct2d");
     } else if (part == "ICONV") {
         available = tryCompileProject("unix/iconv") || tryCompileProject("unix/gnu-libiconv");
     } else if (part == "INOTIFY") {
@@ -2212,8 +2248,13 @@ bool Configure::checkAvailability(const QString &part)
         available = (platform() == QNX || platform() == BLACKBERRY) && compilerSupportsFlag("qcc -fstack-protector-strong");
     } else if (part == "SLOG2") {
         available = tryCompileProject("unix/slog2");
+    } else if (part == "QNX_IMF") {
+        available = tryCompileProject("unix/qqnx_imf");
     } else if (part == "PPS") {
         available = (platform() == QNX || platform() == BLACKBERRY) && tryCompileProject("unix/pps");
+    } else if (part == "LGMON") {
+        available = (platform() == QNX || platform() == BLACKBERRY)
+                    && tryCompileProject("unix/lgmon");
     } else if (part == "NEON") {
         available = (dictionary["QT_ARCH"] == "arm") && tryCompileProject("unix/neon");
     } else if (part == "FONT_CONFIG") {
@@ -2265,6 +2306,10 @@ void Configure::autoDetection()
             dictionary["ANGLE"] = "no";
         }
     }
+
+    // Dynamic GL. This must be explicitly requested, no autodetection.
+    if (dictionary["DYNAMICGL"] == "auto")
+        dictionary["DYNAMICGL"] = "no";
 
     // Image format detection
     if (dictionary["GIF"] == "auto")
@@ -2359,8 +2404,16 @@ void Configure::autoDetection()
         dictionary["SLOG2"] = checkAvailability("SLOG2") ? "yes" : "no";
     }
 
+    if ((platform() == QNX || platform() == BLACKBERRY) && dictionary["QNX_IMF"] == "auto") {
+        dictionary["QNX_IMF"] = checkAvailability("QNX_IMF") ? "yes" : "no";
+    }
+
     if (dictionary["PPS"] == "auto") {
         dictionary["PPS"] = checkAvailability("PPS") ? "yes" : "no";
+    }
+
+    if ((platform() == QNX || platform() == BLACKBERRY) && dictionary["LGMON"] == "auto") {
+        dictionary["LGMON"] = checkAvailability("LGMON") ? "yes" : "no";
     }
 
     if (dictionary["QT_EVENTFD"] == "auto")
@@ -2429,6 +2482,13 @@ bool Configure::verifyConfiguration()
         prompt = true;
     }
 
+    if (dictionary["DIRECT2D"] == "yes" && !checkAvailability("DIRECT2D")) {
+        cout << "WARNING: To be able to build the Direct2D platform plugin you will" << endl
+             << "need the Microsoft DirectWrite and Microsoft Direct2D development" << endl
+             << "files such as headers and libraries." << endl;
+        prompt = true;
+    }
+
     // -angle given on command line, but Direct X cannot be found.
     if (dictionary["ANGLE"] != "no") {
         QString errorMessage;
@@ -2452,6 +2512,13 @@ bool Configure::verifyConfiguration()
                  << "Specify -opengl desktop to use Open GL." << endl
                  <<  "The build will most likely fail." << endl;
             prompt = true;
+        }
+    }
+
+    if (dictionary["DYNAMICGL"] == "yes") {
+        if (dictionary["OPENGL_ES_2"] == "yes" || dictionary["ANGLE"] != "no") {
+            cout << "ERROR: Dynamic OpenGL cannot be used together with native Angle (GLES2) builds." << endl;
+            dictionary[ "DONE" ] = "error";
         }
     }
 
@@ -2503,11 +2570,13 @@ void Configure::generateOutputVars()
     else
         qtConfig += "shared";
 
+    if (dictionary[ "GUI" ] == "no") {
+        qtConfig += "no-gui";
+        dictionary [ "WIDGETS" ] = "no";
+    }
+
     if (dictionary[ "WIDGETS" ] == "no")
         qtConfig += "no-widgets";
-
-    if (dictionary[ "GUI" ] == "no")
-        qtConfig += "no-gui";
 
     // Compression --------------------------------------------------
     if (dictionary[ "ZLIB" ] == "qt")
@@ -2529,6 +2598,10 @@ void Configure::generateOutputVars()
         if (dictionary[ "ANGLE" ] == "d3d11")
             qmakeConfig += "angle_d3d11";
     }
+
+    // Dynamic OpenGL loading ---------------------------------------
+    if (dictionary[ "DYNAMICGL" ] != "no")
+        qtConfig += "dynamicgl";
 
     // Image formates -----------------------------------------------
     if (dictionary[ "GIF" ] == "no")
@@ -2717,6 +2790,9 @@ void Configure::generateOutputVars()
 
     if (dictionary["DIRECTWRITE"] == "yes")
         qtConfig += "directwrite";
+
+    if (dictionary["DIRECT2D"] == "yes")
+        qtConfig += "direct2d";
 
     if (dictionary[ "NATIVE_GESTURES" ] == "yes")
         qtConfig += "native-gestures";
@@ -2988,6 +3064,10 @@ void Configure::detectArch()
             .arg(QDir::toNativeSeparators(buildPath + "/bin/qmake.exe"),
                  QDir::toNativeSeparators(qmakespec),
                  QDir::toNativeSeparators(sourcePath + "/config.tests/arch/arch.pro"));
+
+        if (qmakespec.startsWith("winrt") || qmakespec.startsWith("winphone"))
+            command.append(" QMAKE_LFLAGS+=/ENTRY:main");
+
         int returnValue = 0;
         Environment::execute(command, &returnValue);
         if (returnValue != 0) {
@@ -3088,6 +3168,13 @@ bool Configure::tryCompileProject(const QString &projectPath, const QString &ext
         .arg(QDir::toNativeSeparators(buildPath + "/bin/qmake.exe"),
              QDir::toNativeSeparators(sourcePath + "/config.tests/" + projectPath),
              extraOptions);
+
+    if (dictionary.contains("XQMAKESPEC")) {
+        const QString qmakespec = dictionary["XQMAKESPEC"];
+        if (qmakespec.startsWith("winrt") || qmakespec.startsWith("winphone"))
+            command.append(" QMAKE_LFLAGS+=/ENTRY:main");
+    }
+
     int code = 0;
     QString output = Environment::execute(command, &code);
     //cout << output << endl;
@@ -3189,8 +3276,14 @@ void Configure::generateQConfigPri()
         if (dictionary[ "SLOG2" ] == "yes")
             configStream << " slog2";
 
+        if (dictionary[ "QNX_IMF" ] == "yes")
+            configStream << " qqnx_imf";
+
         if (dictionary[ "PPS" ] == "yes")
             configStream << " qqnx_pps";
+
+        if (dictionary[ "LGMON" ] == "yes")
+            configStream << " lgmon";
 
         if (dictionary["DIRECTWRITE"] == "yes")
             configStream << " directwrite";
@@ -3241,8 +3334,10 @@ void Configure::generateQConfigPri()
         if (!dictionary["QT_NAMESPACE"].isEmpty())
             configStream << "#namespaces" << endl << "QT_NAMESPACE = " << dictionary["QT_NAMESPACE"] << endl;
 
-        if (dictionary[ "SHARED" ] == "no")
-            configStream << "QT_DEFAULT_QPA_PLUGIN = q" << qpaPlatformName() << endl;
+        if (dictionary[ "SHARED" ] == "no") {
+            configStream << "QT_DEFAULT_QPA_PLUGIN = q" << qpaPlatformName() << endl
+                         << "QT_DEFAULT_PRINTSUPPORTPLUGIN = " << qpaPrintSupportPluginName() << endl;
+        }
 
         if (!configStream.flush())
             dictionary[ "DONE" ] = "error";
@@ -3339,8 +3434,6 @@ void Configure::generateConfigfiles()
             tmpStream << "#define QT_COMPILER_SUPPORTS_AVX2" << endl;
         if (dictionary[ "IWMMXT" ] == "yes")
             tmpStream << "#define QT_COMPILER_SUPPORTS_IWMMXT" << endl;
-        if (dictionary[ "NEON" ] == "yes")
-            tmpStream << "#define QT_COMPILER_SUPPORTS_NEON" << endl;
 
         if (dictionary["QREAL"] != "double")
             tmpStream << "#define QT_COORD_TYPE " << dictionary["QREAL"] << endl;
@@ -3390,6 +3483,7 @@ void Configure::generateConfigfiles()
 
         if (dictionary["OPENGL_ES_CM"] == "yes")     qconfigList += "QT_OPENGL_ES_1";
         if (dictionary["OPENGL_ES_2"]  == "yes")     qconfigList += "QT_OPENGL_ES_2";
+        if (dictionary["DYNAMICGL"] == "yes")        qconfigList += "QT_OPENGL_DYNAMIC";
         if (dictionary["SQL_MYSQL"] == "yes")        qconfigList += "QT_SQL_MYSQL";
         if (dictionary["SQL_ODBC"] == "yes")         qconfigList += "QT_SQL_ODBC";
         if (dictionary["SQL_OCI"] == "yes")          qconfigList += "QT_SQL_OCI";
@@ -3426,7 +3520,8 @@ void Configure::generateConfigfiles()
         for (int i = 0; i < qconfigList.count(); ++i)
             tmpStream << addDefine(qconfigList.at(i));
 
-        tmpStream<<"#define QT_QPA_DEFAULT_PLATFORM_NAME \"" << qpaPlatformName() << "\""<<endl;
+        tmpStream << "#define QT_QPA_DEFAULT_PLATFORM_NAME \"" << qpaPlatformName() << "\"" << endl
+                  << "#define QT_QPA_DEFAULT_PRINTSUPPORTPLUGIN_NAME \"" << qpaPrintSupportPluginName() << "\"" << endl;
 
         if (!tmpStream.flush())
             dictionary[ "DONE" ] = "error";
@@ -3548,6 +3643,11 @@ void Configure::displayConfig()
     sout << "Use system proxies.........." << dictionary[ "SYSTEM_PROXIES" ] << endl;
     sout << endl;
 
+    sout << "QPA Backends:" << endl;
+    sout << "    GDI....................." << "yes" << endl;
+    sout << "    Direct2D................" << dictionary[ "DIRECT2D" ] << endl;
+    sout << endl;
+
     sout << "Third Party Libraries:" << endl;
     sout << "    ZLIB support............" << dictionary[ "ZLIB" ] << endl;
     sout << "    GIF support............." << dictionary[ "GIF" ] << endl;
@@ -3560,9 +3660,12 @@ void Configure::displayConfig()
     sout << "    ICU support............." << dictionary[ "ICU" ] << endl;
     if ((platform() == QNX) || (platform() == BLACKBERRY)) {
         sout << "    SLOG2 support..........." << dictionary[ "SLOG2" ] << endl;
+        sout << "    IMF support............." << dictionary[ "QNX_IMF" ] << endl;
         sout << "    PPS support............." << dictionary[ "PPS" ] << endl;
+        sout << "    LGMON support..........." << dictionary[ "LGMON" ] << endl;
     }
     sout << "    ANGLE..................." << dictionary[ "ANGLE" ] << endl;
+    sout << "    Dynamic OpenGL.........." << dictionary[ "DYNAMICGL" ] << endl;
     sout << endl;
 
     sout << "Styles:" << endl;
@@ -4349,6 +4452,11 @@ QString Configure::qpaPlatformName() const
     case ANDROID:
         return QStringLiteral("android");
     }
+}
+
+QString Configure::qpaPrintSupportPluginName() const
+{
+    return platform() == WINDOWS ? QStringLiteral("windowsprintersupport") : QString();
 }
 
 int Configure::platform() const

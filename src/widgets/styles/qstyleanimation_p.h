@@ -162,6 +162,28 @@ private:
     QImage _current;
 };
 
+class QScrollbarStyleAnimation : public QNumberStyleAnimation
+{
+    Q_OBJECT
+
+public:
+    enum Mode { Activating, Deactivating };
+
+    QScrollbarStyleAnimation(Mode mode, QObject *target);
+
+    Mode mode() const;
+
+    bool wasActive() const;
+    void setActive(bool active);
+
+private slots:
+    void updateCurrentTime(int time);
+
+private:
+    Mode _mode;
+    bool _active;
+};
+
 QT_END_NAMESPACE
 
 #endif // QSTYLEANIMATION_P_H

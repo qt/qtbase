@@ -42,11 +42,11 @@
 #ifndef QEGLCONVENIENCE_H
 #define QEGLCONVENIENCE_H
 
-
 #include <QtGui/QSurfaceFormat>
 #include <QtCore/QVector>
-
+#include <QtCore/QSizeF>
 #include <EGL/egl.h>
+
 QT_BEGIN_NAMESPACE
 
 QVector<EGLint> q_createConfigAttributesFromFormat(const QSurfaceFormat &format);
@@ -55,6 +55,12 @@ EGLConfig q_configFromGLFormat(EGLDisplay display, const QSurfaceFormat &format,
 QSurfaceFormat q_glFormatFromConfig(EGLDisplay display, const EGLConfig config, const QSurfaceFormat &referenceFormat = QSurfaceFormat());
 bool q_hasEglExtension(EGLDisplay display,const char* extensionName);
 void q_printEglConfig(EGLDisplay display, EGLConfig config);
+
+#ifdef Q_OS_UNIX
+QSizeF q_physicalScreenSizeFromFb(int framebufferDevice, const QSize &screenSize = QSize());
+QSize q_screenSizeFromFb(int framebufferDevice);
+int q_screenDepthFromFb(int framebufferDevice);
+#endif
 
 class QEglConfigChooser
 {

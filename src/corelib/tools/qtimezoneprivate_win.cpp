@@ -334,10 +334,10 @@ QWinTimeZonePrivate::QWinTimeZonePrivate()
 }
 
 // Create a named time zone
-QWinTimeZonePrivate::QWinTimeZonePrivate(const QByteArray &olsenId)
+QWinTimeZonePrivate::QWinTimeZonePrivate(const QByteArray &ianaId)
                    : QTimeZonePrivate()
 {
-    init(olsenId);
+    init(ianaId);
 }
 
 QWinTimeZonePrivate::QWinTimeZonePrivate(const QWinTimeZonePrivate &other)
@@ -356,14 +356,14 @@ QTimeZonePrivate *QWinTimeZonePrivate::clone()
     return new QWinTimeZonePrivate(*this);
 }
 
-void QWinTimeZonePrivate::init(const QByteArray &olsenId)
+void QWinTimeZonePrivate::init(const QByteArray &ianaId)
 {
-    if (olsenId.isEmpty()) {
+    if (ianaId.isEmpty()) {
         m_windowsId = windowsSystemZoneId();
         m_id = systemTimeZoneId();
     } else {
-        m_windowsId = ianaIdToWindowsId(olsenId);
-        m_id = olsenId;
+        m_windowsId = ianaIdToWindowsId(ianaId);
+        m_id = ianaId;
     }
 
     if (!m_windowsId.isEmpty()) {
@@ -626,26 +626,26 @@ QByteArray QWinTimeZonePrivate::systemTimeZoneId() const
 {
     const QLocale::Country country = userCountry();
     const QByteArray windowsId = windowsSystemZoneId();
-    QByteArray olsenId;
+    QByteArray ianaId;
     // If we have a real country, then try get a specific match for that country
     if (country != QLocale::AnyCountry)
-        olsenId = windowsIdToDefaultIanaId(windowsId, country);
+        ianaId = windowsIdToDefaultIanaId(windowsId, country);
     // If we don't have a real country, or there wasn't a specific match, try the global default
-    if (olsenId.isEmpty()) {
-        olsenId = windowsIdToDefaultIanaId(windowsId);
+    if (ianaId.isEmpty()) {
+        ianaId = windowsIdToDefaultIanaId(windowsId);
         // If no global default then probably an unknown Windows ID so return UTC
-        if (olsenId.isEmpty())
+        if (ianaId.isEmpty())
             return QByteArrayLiteral("UTC");
     }
-    return olsenId;
+    return ianaId;
 }
 
 QSet<QByteArray> QWinTimeZonePrivate::availableTimeZoneIds() const
 {
     QSet<QByteArray> set;
     foreach (const QByteArray &winId, availableWindowsIds()) {
-        foreach (const QByteArray &olsenId, windowsIdToIanaIds(winId))
-            set << olsenId;
+        foreach (const QByteArray &ianaId, windowsIdToIanaIds(winId))
+            set << ianaId;
     }
     return set;
 }

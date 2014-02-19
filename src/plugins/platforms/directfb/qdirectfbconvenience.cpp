@@ -281,12 +281,16 @@ QDirectFbKeyMap::QDirectFbKeyMap()
     insert(DIKS_CLEAR                 , Qt::Key_Clear);
     insert(DIKS_MENU                  , Qt::Key_Menu);
     insert(DIKS_HELP                  , Qt::Key_Help);
+    insert(DIKS_INFO                  , Qt::Key_Info);
+    insert(DIKS_EXIT                  , Qt::Key_Exit);
+    insert(DIKS_SETUP                 , Qt::Key_Settings);
 
     insert(DIKS_CD                    , Qt::Key_CD);
     insert(DIKS_INTERNET              , Qt::Key_HomePage);
     insert(DIKS_MAIL                  , Qt::Key_LaunchMail);
     insert(DIKS_FAVORITES             , Qt::Key_Favorites);
     insert(DIKS_PHONE                 , Qt::Key_Phone);
+    insert(DIKS_PROGRAM               , Qt::Key_Guide);
     insert(DIKS_TIME                  , Qt::Key_Time);
 
     insert(DIKS_RED                   , Qt::Key_Red);

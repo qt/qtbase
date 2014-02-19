@@ -44,6 +44,9 @@
 #include <QtGui/QGuiApplication>
 #include <QtGui/QWindow>
 #include <QtGui/QScreen>
+
+#include <QtGui/private/qwindow_p.h>
+
 #include "qiosscreen.h"
 #include "qiosglobal.h"
 #include "qioswindow.h"
@@ -105,11 +108,10 @@
     if (hiddenFromPlist)
         return YES;
     QWindow *focusWindow = QGuiApplication::focusWindow();
-    if (!focusWindow || !focusWindow->handle())
+    if (!focusWindow)
         return [UIApplication sharedApplication].statusBarHidden;
 
-    QWindow *topLevel = static_cast<QIOSWindow *>(focusWindow->handle())->topLevelWindow();
-    return topLevel->windowState() == Qt::WindowFullScreen;
+    return qt_window_private(focusWindow)->topLevelWindow()->windowState() == Qt::WindowFullScreen;
 }
 
 @end

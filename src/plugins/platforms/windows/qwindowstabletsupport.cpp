@@ -182,8 +182,7 @@ QWindowsTabletSupport *QWindowsTabletSupport::create()
                                                                        L"TabletDummyWindow",
                                                                        qWindowsTabletSupportWndProc);
     if (!window) {
-        if (QWindowsContext::verboseTablet)
-            qWarning() << __FUNCTION__ << "Unable to create window for tablet.";
+        qCWarning(lcQpaTablet) << __FUNCTION__ << "Unable to create window for tablet.";
         return 0;
     }
     LOGCONTEXT lcMine;
@@ -199,8 +198,7 @@ QWindowsTabletSupport *QWindowsTabletSupport::create()
     lcMine.lcOutExtY = -lcMine.lcInExtY;
     const HCTX context = QWindowsTabletSupport::m_winTab32DLL.wTOpen(window, &lcMine, true);
     if (!context) {
-        if (QWindowsContext::verboseTablet)
-            qWarning() << __FUNCTION__ << "Unable to open tablet.";
+        qCDebug(lcQpaTablet) << __FUNCTION__ << "Unable to open tablet.";
         DestroyWindow(window);
         return 0;
 
@@ -217,9 +215,9 @@ QWindowsTabletSupport *QWindowsTabletSupport::create()
             } // cannot restore old size
         } // cannot set
     } // mismatch
-    if (QWindowsContext::verboseTablet)
-        qDebug("Opened tablet context %p on window %p, changed packet queue size %d -> %d",
-               context, window, currentQueueSize, TabletPacketQSize);
+    qCDebug(lcQpaTablet) << "Opened tablet context " << context << " on window "
+        <<  window << "changed packet queue size " << currentQueueSize
+        << "->" <<  TabletPacketQSize;
     return new QWindowsTabletSupport(window, context);
 }
 
@@ -261,8 +259,7 @@ void QWindowsTabletSupport::notifyActivate()
     // Cooperate with other tablet applications, but when we get focus, I want to use the tablet.
     const bool result = QWindowsTabletSupport::m_winTab32DLL.wTEnable(m_context, true)
         && QWindowsTabletSupport::m_winTab32DLL.wTOverlap(m_context, true);
-    if (QWindowsContext::verboseTablet)
-        qDebug() << __FUNCTION__ << result;
+   qCDebug(lcQpaTablet) << __FUNCTION__ << result;
 }
 
 static inline int indexOfDevice(const QVector<QWindowsTabletDeviceData> &devices, qint64 uniqueId)
@@ -369,10 +366,8 @@ bool QWindowsTabletSupport::translateTabletProximityEvent(WPARAM /* wParam */, L
         m_devices.push_back(tabletInit(uniqueId, cursorType));
     }
     m_devices[m_currentDevice].currentPointerType = pointerType(currentCursor);
-    if (QWindowsContext::verboseTablet)
-        qDebug() << __FUNCTION__ << (enteredProximity ? "enter" : "leave")
-                 << " proximity for device #"
-                 << m_currentDevice << m_devices.at(m_currentDevice);
+    qCDebug(lcQpaTablet) << __FUNCTION__ << (enteredProximity ? "enter" : "leave")
+        << " proximity for device #" << m_currentDevice << m_devices.at(m_currentDevice);
     if (enteredProximity) {
         QWindowSystemInterface::handleTabletEnterProximityEvent(m_devices.at(m_currentDevice).currentDevice,
                                                                 m_devices.at(m_currentDevice).currentPointerType,
@@ -410,9 +405,8 @@ bool QWindowsTabletSupport::translateTabletPacketEvent()
     enum { absoluteRange = 20 };
     const QRect virtualDesktopArea = QGuiApplication::primaryScreen()->virtualGeometry();
 
-    if (QWindowsContext::verboseTablet)
-        qDebug() << __FUNCTION__ << "processing " << packetCount
-                 << "target:" << QGuiApplicationPrivate::tabletPressTarget;
+    qCDebug(lcQpaTablet) << __FUNCTION__ << "processing " << packetCount
+        << "target:" << QGuiApplicationPrivate::tabletPressTarget;
 
     const Qt::KeyboardModifiers keyboardModifiers = QWindowsKeyMapper::queryKeyboardModifiers();
 
@@ -474,8 +468,8 @@ bool QWindowsTabletSupport::translateTabletPacketEvent()
             rotation = packet.pkOrientation.orTwist;
         }
 
-        if (QWindowsContext::verboseTablet > 1)  {
-            qDebug()
+        if (QWindowsContext::verbose > 1)  {
+            qCDebug(lcQpaTablet)
                 << "Packet #" << i << '/' << packetCount << "button:" << packet.pkButtons
                 << globalPosF << z << "to:" << target << localPos << "(packet" << packet.pkX
                 << packet.pkY << ") dev:" << currentDevice << "pointer:"

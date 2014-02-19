@@ -353,13 +353,10 @@ bool QFontEngineQPA::stringToCMap(const QChar *str, int len, QGlyphLayout *glyph
 
     const uchar *cmap = externalCMap ? externalCMap : (fontData + cmapOffset);
 
-    bool mirrored = flags & QFontEngine::RightToLeft;
     int glyph_pos = 0;
     if (symbol) {
         for (int i = 0; i < len; ++i) {
             unsigned int uc = getChar(str, i, len);
-            if (mirrored)
-                uc = QChar::mirroredChar(uc);
             glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, uc);
             if(!glyphs->glyphs[glyph_pos] && uc < 0x100)
                 glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, uc + 0xf000);
@@ -368,8 +365,6 @@ bool QFontEngineQPA::stringToCMap(const QChar *str, int len, QGlyphLayout *glyph
     } else {
         for (int i = 0; i < len; ++i) {
             unsigned int uc = getChar(str, i, len);
-            if (mirrored)
-                uc = QChar::mirroredChar(uc);
             glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, uc);
 #if 0 && defined(DEBUG_FONTENGINE)
             QChar c(uc);
@@ -399,8 +394,7 @@ void QFontEngineQPA::recalcAdvances(QGlyphLayout *glyphs, QFontEngine::ShaperFla
             glyphs->glyphs[i] = 0;
             continue;
         }
-        glyphs->advances_x[i] = g->advance;
-        glyphs->advances_y[i] = 0;
+        glyphs->advances[i] = g->advance;
     }
 }
 

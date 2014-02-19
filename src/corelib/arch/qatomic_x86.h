@@ -89,9 +89,6 @@ QT_END_NAMESPACE
 #define Q_ATOMIC_POINTER_FETCH_AND_ADD_IS_ALWAYS_NATIVE
 #define Q_ATOMIC_POINTER_FETCH_AND_ADD_IS_WAIT_FREE
 
-template<> struct QAtomicIntegerTraits<int> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<unsigned int> { enum { IsInteger = 1 }; };
-
 template <int size> struct QBasicAtomicOps: QGenericAtomicOps<QBasicAtomicOps<size> >
 {
     static inline Q_DECL_CONSTEXPR bool isReferenceCountingNative() Q_DECL_NOTHROW { return true; }
@@ -102,6 +99,8 @@ template <int size> struct QBasicAtomicOps: QGenericAtomicOps<QBasicAtomicOps<si
     static inline Q_DECL_CONSTEXPR bool isTestAndSetNative() Q_DECL_NOTHROW { return true; }
     static inline Q_DECL_CONSTEXPR bool isTestAndSetWaitFree() Q_DECL_NOTHROW { return true; }
     template <typename T> static bool testAndSetRelaxed(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW;
+    template <typename T> static bool
+    testAndSetRelaxed(T &_q_value, T expectedValue, T newValue, T *currentValue) Q_DECL_NOTHROW;
 
     static inline Q_DECL_CONSTEXPR bool isFetchAndStoreNative() Q_DECL_NOTHROW { return true; }
     static inline Q_DECL_CONSTEXPR bool isFetchAndStoreWaitFree() Q_DECL_NOTHROW { return true; }
@@ -120,21 +119,9 @@ template <typename T> struct QAtomicOps : QBasicAtomicOps<sizeof(T)>
 
 #if defined(Q_CC_GNU)
 
-template<> struct QAtomicIntegerTraits<char> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<signed char> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<unsigned char> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<short> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<unsigned short> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<long> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<unsigned long> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<long long> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<unsigned long long> { enum { IsInteger = 1 }; };
-
-# ifdef Q_COMPILER_UNICODE_STRINGS
-template<> struct QAtomicIntegerTraits<char16_t> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<char32_t> { enum { IsInteger = 1 }; };
-# endif
-
+template<> struct QAtomicOpsSupport<1> { enum { IsSupported = 1 }; };
+template<> struct QAtomicOpsSupport<2> { enum { IsSupported = 1 }; };
+template<> struct QAtomicOpsSupport<8> { enum { IsSupported = 1 }; };
 
 /*
  * Guide for the inline assembly below:
@@ -268,6 +255,36 @@ bool QBasicAtomicOps<1>::testAndSetRelaxed(T &_q_value, T expectedValue, T newVa
 }
 
 template<int size> template <typename T> inline
+bool QBasicAtomicOps<size>::testAndSetRelaxed(T &_q_value, T expectedValue,
+                                              T newValue, T *currentValue) Q_DECL_NOTHROW
+{
+    unsigned char ret;
+    asm volatile("lock\n"
+                 "cmpxchg %3,%2\n"
+                 "sete %1\n"
+                 : "=a" (newValue), "=qm" (ret), "+m" (_q_value)
+                 : "r" (newValue), "0" (expectedValue)
+                 : "memory");
+    *currentValue = newValue;
+    return ret != 0;
+}
+
+template<> template <typename T> inline
+bool QBasicAtomicOps<1>::testAndSetRelaxed(T &_q_value, T expectedValue,
+                                           T newValue, T *currentValue) Q_DECL_NOTHROW
+{
+    unsigned char ret;
+    asm volatile("lock\n"
+                 "cmpxchg %3,%2\n"
+                 "sete %1\n"
+                 : "=a" (newValue), "=qm" (ret), "+m" (_q_value)
+                 : "q" (newValue), "0" (expectedValue)
+                 : "memory");
+    *currentValue = newValue;
+    return ret != 0;
+}
+
+template<int size> template <typename T> inline
 T QBasicAtomicOps<size>::fetchAndStoreRelaxed(T &_q_value, T newValue) Q_DECL_NOTHROW
 {
     asm volatile("xchg %0,%1"
@@ -339,6 +356,8 @@ T QBasicAtomicOps<1>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveTy
 #define Q_ATOMIC_INT16_FETCH_AND_ADD_IS_ALWAYS_NATIVE
 #define Q_ATOMIC_INT16_FETCH_AND_ADD_IS_WAIT_FREE
 
+#ifdef Q_PROCESSOR_X86_64
+
 #define Q_ATOMIC_INT64_IS_SUPPORTED
 
 #define Q_ATOMIC_INT64_REFERENCE_COUNTING_IS_ALWAYS_NATIVE
@@ -353,7 +372,6 @@ T QBasicAtomicOps<1>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveTy
 #define Q_ATOMIC_INT64_FETCH_AND_ADD_IS_ALWAYS_NATIVE
 #define Q_ATOMIC_INT64_FETCH_AND_ADD_IS_WAIT_FREE
 
-#ifdef Q_PROCESSOR_X86_64
 // native support for 64-bit types
 template<> template<typename T> inline
 bool QBasicAtomicOps<8>::ref(T &_q_value) Q_DECL_NOTHROW

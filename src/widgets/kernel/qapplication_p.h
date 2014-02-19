@@ -120,6 +120,7 @@ public:
     virtual void notifyActiveWindowChange(QWindow *);
 
     virtual bool shouldQuit();
+    bool tryCloseAllWindows() Q_DECL_OVERRIDE;
 
 #if defined(Q_WS_X11)
 #ifndef QT_NO_SETTINGS
@@ -137,6 +138,8 @@ public:
     void createEventDispatcher();
     static void dispatchEnterLeave(QWidget *enter, QWidget *leave, const QPointF &globalPosF);
 
+    void notifyWindowIconChanged() Q_DECL_OVERRIDE;
+
     //modality
     bool isWindowBlocked(QWindow *window, QWindow **blockingWindow = 0) const Q_DECL_OVERRIDE;
     static bool isBlockedByModal(QWidget *widget);
@@ -144,7 +147,7 @@ public:
     static bool tryModalHelper(QWidget *widget, QWidget **rettop = 0);
 #ifdef Q_WS_MAC
     static QWidget *tryModalHelper_sys(QWidget *top);
-	bool canQuit();
+    bool canQuit();
 #endif
 
     bool notify_helper(QObject *receiver, QEvent * e);
@@ -198,7 +201,6 @@ public:
     static QWidget *focus_widget;
     static QWidget *hidden_focus_widget;
     static QWidget *active_window;
-    static QIcon *app_icon;
 #ifndef QT_NO_WHEELEVENT
     static int  wheel_scroll_lines;
 #endif
@@ -293,6 +295,7 @@ public:
     QPixmap applyQIconStyleHelper(QIcon::Mode mode, const QPixmap& base) const;
 private:
     static QApplicationPrivate *self;
+    static bool tryCloseAllWidgetWindows(QWindowList *processedWindows);
 
     static void giveFocusAccordingToFocusPolicy(QWidget *w, QEvent *event, QPoint localPos);
     static bool shouldSetFocus(QWidget *w, Qt::FocusPolicy policy);

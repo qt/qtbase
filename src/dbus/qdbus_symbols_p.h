@@ -183,6 +183,9 @@ DEFINEFUNC(unsigned int , dbus_watch_get_flags, (DBusWatch        *watch),
 DEFINEFUNC(dbus_bool_t  , dbus_watch_handle, (DBusWatch        *watch,
                                               unsigned int      flags),
            (watch, flags), return)
+DEFINEFUNC(void         , dbus_connection_set_allow_anonymous, (DBusConnection             *connection,
+                                                                dbus_bool_t                 value),
+           (connection, value), return)
 
 /* dbus-errors.h */
 DEFINEFUNC(void        , dbus_error_free, (DBusError       *error),

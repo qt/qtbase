@@ -539,33 +539,35 @@ void QGL2PaintEngineEx::beginNativePainting()
         d->funcs.glDisableVertexAttribArray(i);
 
 #ifndef QT_OPENGL_ES_2
-    const QGLContext *ctx = d->ctx;
-    const QGLFormat &fmt = d->device->format();
-    if (fmt.majorVersion() < 3 || (fmt.majorVersion() == 3 && fmt.minorVersion() < 1)
-        || (fmt.majorVersion() == 3 && fmt.minorVersion() == 1 && ctx->contextHandle()->hasExtension(QByteArrayLiteral("GL_ARB_compatibility")))
-        || fmt.profile() == QGLFormat::CompatibilityProfile)
-    {
-        // be nice to people who mix OpenGL 1.x code with QPainter commands
-        // by setting modelview and projection matrices to mirror the GL 1
-        // paint engine
-        const QTransform& mtx = state()->matrix;
-
-        float mv_matrix[4][4] =
+    if (!QOpenGLFunctions::isES()) {
+        const QGLContext *ctx = d->ctx;
+        const QGLFormat &fmt = d->device->format();
+        if (fmt.majorVersion() < 3 || (fmt.majorVersion() == 3 && fmt.minorVersion() < 1)
+            || (fmt.majorVersion() == 3 && fmt.minorVersion() == 1 && ctx->contextHandle()->hasExtension(QByteArrayLiteral("GL_ARB_compatibility")))
+            || fmt.profile() == QGLFormat::CompatibilityProfile)
         {
-            { float(mtx.m11()), float(mtx.m12()),     0, float(mtx.m13()) },
-            { float(mtx.m21()), float(mtx.m22()),     0, float(mtx.m23()) },
-            {                0,                0,     1,                0 },
-            {  float(mtx.dx()),  float(mtx.dy()),     0, float(mtx.m33()) }
-        };
+            // be nice to people who mix OpenGL 1.x code with QPainter commands
+            // by setting modelview and projection matrices to mirror the GL 1
+            // paint engine
+            const QTransform& mtx = state()->matrix;
 
-        const QSize sz = d->device->size();
+            float mv_matrix[4][4] =
+                {
+                    { float(mtx.m11()), float(mtx.m12()),     0, float(mtx.m13()) },
+                    { float(mtx.m21()), float(mtx.m22()),     0, float(mtx.m23()) },
+                    {                0,                0,     1,                0 },
+                    {  float(mtx.dx()),  float(mtx.dy()),     0, float(mtx.m33()) }
+                };
 
-        glMatrixMode(GL_PROJECTION);
-        glLoadIdentity();
-        glOrtho(0, sz.width(), sz.height(), 0, -999999, 999999);
+            const QSize sz = d->device->size();
 
-        glMatrixMode(GL_MODELVIEW);
-        glLoadMatrixf(&mv_matrix[0][0]);
+            glMatrixMode(GL_PROJECTION);
+            glLoadIdentity();
+            glOrtho(0, sz.width(), sz.height(), 0, -999999, 999999);
+
+            glMatrixMode(GL_MODELVIEW);
+            glLoadMatrixf(&mv_matrix[0][0]);
+        }
     }
 #endif
 
@@ -595,9 +597,11 @@ void QGL2PaintEngineExPrivate::resetGLState()
     ctx->d_func()->setVertexAttribArrayEnabled(QT_VERTEX_COORDS_ATTR, false);
     ctx->d_func()->setVertexAttribArrayEnabled(QT_OPACITY_ATTR, false);
 #ifndef QT_OPENGL_ES_2
-    // gl_Color, corresponding to vertex attribute 3, may have been changed
-    float color[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-    funcs.glVertexAttrib4fv(3, color);
+    if (!QOpenGLFunctions::isES()) {
+        // gl_Color, corresponding to vertex attribute 3, may have been changed
+        float color[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+        funcs.glVertexAttrib4fv(3, color);
+    }
 #endif
 }
 
@@ -1352,11 +1356,13 @@ void QGL2PaintEngineEx::renderHintsChanged()
     state()->renderHintsChanged = true;
 
 #if !defined(QT_OPENGL_ES_2)
-    if ((state()->renderHints & QPainter::Antialiasing)
-        || (state()->renderHints & QPainter::HighQualityAntialiasing))
-        glEnable(GL_MULTISAMPLE);
-    else
-        glDisable(GL_MULTISAMPLE);
+    if (!QOpenGLFunctions::isES()) {
+        if ((state()->renderHints & QPainter::Antialiasing)
+            || (state()->renderHints & QPainter::HighQualityAntialiasing))
+            glEnable(GL_MULTISAMPLE);
+        else
+            glDisable(GL_MULTISAMPLE);
+    }
 #endif
 
     Q_D(QGL2PaintEngineEx);
@@ -2027,21 +2033,23 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
     glDisable(GL_SCISSOR_TEST);
 
 #if !defined(QT_OPENGL_ES_2)
-    glDisable(GL_MULTISAMPLE);
+    if (!QOpenGLFunctions::isES())
+        glDisable(GL_MULTISAMPLE);
 #endif
 
     d->glyphCacheType = QFontEngineGlyphCache::Raster_A8;
 
 #if !defined(QT_OPENGL_ES_2)
+    if (!QOpenGLFunctions::isES()) {
         d->glyphCacheType = QFontEngineGlyphCache::Raster_RGBMask;
-#endif
-
-#if defined(QT_OPENGL_ES_2)
+        d->multisamplingAlwaysEnabled = false;
+    } else {
+        d->multisamplingAlwaysEnabled = d->device->format().sampleBuffers();
+    }
+#else
     // OpenGL ES can't switch MSAA off, so if the gl paint device is
     // multisampled, it's always multisampled.
     d->multisamplingAlwaysEnabled = d->device->format().sampleBuffers();
-#else
-    d->multisamplingAlwaysEnabled = false;
 #endif
 
     return true;

@@ -7,6 +7,8 @@ HEADERS += \
     access/qhttpnetworkreply_p.h \
     access/qhttpnetworkconnection_p.h \
     access/qhttpnetworkconnectionchannel_p.h \
+    access/qabstractprotocolhandler_p.h \
+    access/qhttpprotocolhandler_p.h \
     access/qnetworkaccessauthenticationmanager_p.h \
     access/qnetworkaccessmanager.h \
     access/qnetworkaccessmanager_p.h \
@@ -43,6 +45,8 @@ SOURCES += \
     access/qhttpnetworkreply.cpp \
     access/qhttpnetworkconnection.cpp \
     access/qhttpnetworkconnectionchannel.cpp \
+    access/qabstractprotocolhandler.cpp \
+    access/qhttpprotocolhandler.cpp \
     access/qnetworkaccessauthenticationmanager.cpp \
     access/qnetworkaccessmanager.cpp \
     access/qnetworkaccesscache.cpp \

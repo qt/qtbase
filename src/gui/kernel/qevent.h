@@ -135,6 +135,9 @@ public:
     QT_DEPRECATED inline QPointF posF() const { return l; }
 #endif
 
+    Qt::MouseEventSource source() const;
+    Qt::MouseEventFlags flags() const;
+
 protected:
     QPointF l, w, s;
     Qt::MouseButton b;

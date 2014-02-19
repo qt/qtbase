@@ -77,6 +77,7 @@ static void initAgeMap()
         { QChar::Unicode_6_0,   "6.0" },
         { QChar::Unicode_6_1,   "6.1" },
         { QChar::Unicode_6_2,   "6.2" },
+        { QChar::Unicode_6_3,   "6.3" },
         { QChar::Unicode_Unassigned, 0 }
     };
     AgeMap *d = ageMap;
@@ -176,34 +177,66 @@ static void initDecompositionMap()
 }
 
 
-static QHash<QByteArray, QChar::Direction> directionMap;
+enum Direction {
+    DirL = QChar::DirL,
+    DirR = QChar::DirR,
+    DirEN = QChar::DirEN,
+    DirES = QChar::DirES,
+    DirET = QChar::DirET,
+    DirAN = QChar::DirAN,
+    DirCS = QChar::DirCS,
+    DirB = QChar::DirB,
+    DirS = QChar::DirS,
+    DirWS = QChar::DirWS,
+    DirON = QChar::DirON,
+    DirLRE = QChar::DirLRE,
+    DirLRO = QChar::DirLRO,
+    DirAL = QChar::DirAL,
+    DirRLE = QChar::DirRLE,
+    DirRLO = QChar::DirRLO,
+    DirPDF = QChar::DirPDF,
+    DirNSM = QChar::DirNSM,
+    DirBN = QChar::DirBN,
+    DirLRI = QChar::DirLRI,
+    DirRLI = QChar::DirRLI,
+    DirFSI = QChar::DirFSI,
+    DirPDI = QChar::DirPDI
+
+    , Dir_Unassigned
+};
+
+static QHash<QByteArray, Direction> directionMap;
 
 static void initDirectionMap()
 {
     struct Dir {
-        QChar::Direction dir;
+        Direction dir;
         const char *name;
     } directions[] = {
-        { QChar::DirL, "L" },
-        { QChar::DirR, "R" },
-        { QChar::DirEN, "EN" },
-        { QChar::DirES, "ES" },
-        { QChar::DirET, "ET" },
-        { QChar::DirAN, "AN" },
-        { QChar::DirCS, "CS" },
-        { QChar::DirB, "B" },
-        { QChar::DirS, "S" },
-        { QChar::DirWS, "WS" },
-        { QChar::DirON, "ON" },
-        { QChar::DirLRE, "LRE" },
-        { QChar::DirLRO, "LRO" },
-        { QChar::DirAL, "AL" },
-        { QChar::DirRLE, "RLE" },
-        { QChar::DirRLO, "RLO" },
-        { QChar::DirPDF, "PDF" },
-        { QChar::DirNSM, "NSM" },
-        { QChar::DirBN, "BN" },
-        { QChar::DirL, 0 }
+        { DirL, "L" },
+        { DirR, "R" },
+        { DirEN, "EN" },
+        { DirES, "ES" },
+        { DirET, "ET" },
+        { DirAN, "AN" },
+        { DirCS, "CS" },
+        { DirB, "B" },
+        { DirS, "S" },
+        { DirWS, "WS" },
+        { DirON, "ON" },
+        { DirLRE, "LRE" },
+        { DirLRO, "LRO" },
+        { DirAL, "AL" },
+        { DirRLE, "RLE" },
+        { DirRLO, "RLO" },
+        { DirPDF, "PDF" },
+        { DirNSM, "NSM" },
+        { DirBN, "BN" },
+        { DirLRI, "LRI" },
+        { DirRLI, "RLI" },
+        { DirFSI, "FSI" },
+        { DirPDI, "PDI" },
+        { Dir_Unassigned, 0 }
     };
     Dir *d = directions;
     while (d->name) {
@@ -213,30 +246,30 @@ static void initDirectionMap()
 }
 
 
-enum Joining {
+enum JoiningType {
     Joining_None,
-    Joining_Left,
     Joining_Causing,
     Joining_Dual,
     Joining_Right,
+    Joining_Left,
     Joining_Transparent
 
     , Joining_Unassigned
 };
 
-static QHash<QByteArray, Joining> joining_map;
+static QHash<QByteArray, JoiningType> joining_map;
 
 static void initJoiningMap()
 {
     struct JoiningList {
-        Joining joining;
+        JoiningType joining;
         const char *name;
     } joinings[] = {
         { Joining_None,        "U" },
-        { Joining_Left,        "L" },
         { Joining_Causing,     "C" },
         { Joining_Dual,        "D" },
         { Joining_Right,       "R" },
+        { Joining_Left,        "L" },
         { Joining_Transparent, "T" },
         { Joining_Unassigned, 0 }
     };
@@ -323,7 +356,10 @@ static const char *word_break_class_string =
     "    WordBreak_Extend,\n"
     "    WordBreak_RegionalIndicator,\n"
     "    WordBreak_Katakana,\n"
+    "    WordBreak_HebrewLetter,\n"
     "    WordBreak_ALetter,\n"
+    "    WordBreak_SingleQuote,\n"
+    "    WordBreak_DoubleQuote,\n"
     "    WordBreak_MidNumLet,\n"
     "    WordBreak_MidLetter,\n"
     "    WordBreak_MidNum,\n"
@@ -339,7 +375,10 @@ enum WordBreakClass {
     WordBreak_Extend,
     WordBreak_RegionalIndicator,
     WordBreak_Katakana,
+    WordBreak_HebrewLetter,
     WordBreak_ALetter,
+    WordBreak_SingleQuote,
+    WordBreak_DoubleQuote,
     WordBreak_MidNumLet,
     WordBreak_MidLetter,
     WordBreak_MidNum,
@@ -365,7 +404,10 @@ static void initWordBreak()
         { WordBreak_Extend, "Format" },
         { WordBreak_RegionalIndicator, "Regional_Indicator" },
         { WordBreak_Katakana, "Katakana" },
+        { WordBreak_HebrewLetter, "Hebrew_Letter" },
         { WordBreak_ALetter, "ALetter" },
+        { WordBreak_SingleQuote, "Single_Quote" },
+        { WordBreak_DoubleQuote, "Double_Quote" },
         { WordBreak_MidNumLet, "MidNumLet" },
         { WordBreak_MidLetter, "MidLetter" },
         { WordBreak_MidNum, "MidNum" },
@@ -677,8 +719,8 @@ static const char *property_string =
     "    ushort category            : 8; /* 5 used */\n"
     "    ushort direction           : 8; /* 5 used */\n"
     "    ushort combiningClass      : 8;\n"
-    "    ushort joining             : 2;\n"
-    "    signed short digitValue    : 6; /* 5 used */\n"
+    "    ushort joining             : 3;\n"
+    "    signed short digitValue    : 5; /* 5 used */\n"
     "    signed short mirrorDiff    : 16;\n"
     "    signed short lowerCaseDiff : 16;\n"
     "    signed short upperCaseDiff : 16;\n"
@@ -750,7 +792,7 @@ struct PropertyFlags {
     QChar::Category category : 5;
     QChar::Direction direction : 5;
     // from ArabicShaping.txt
-    QChar::Joining joining : 2;
+    QChar::JoiningType joining : 3;
     // from DerivedAge.txt
     QChar::UnicodeVersion age : 4;
     int digitValue;
@@ -815,6 +857,31 @@ static int appendToSpecialCaseMap(const QList<int> &map)
     return pos;
 }
 
+static inline bool isDefaultIgnorable(uint ucs4)
+{
+    // Default_Ignorable_Code_Point:
+    //  Generated from
+    //    Other_Default_Ignorable_Code_Point + Cf + Variation_Selector
+    //    - White_Space - FFF9..FFFB (Annotation Characters)
+    //    - 0600..0604, 06DD, 070F, 110BD (exceptional Cf characters that should be visible)
+    if (ucs4 <= 0xff)
+        return ucs4 == 0xad;
+
+    return ucs4 == 0x034f
+            || (ucs4 >= 0x115f && ucs4 <= 0x1160)
+            || (ucs4 >= 0x17b4 && ucs4 <= 0x17b5)
+            || (ucs4 >= 0x180b && ucs4 <= 0x180d)
+            || (ucs4 >= 0x200b && ucs4 <= 0x200f)
+            || (ucs4 >= 0x202a && ucs4 <= 0x202e)
+            || (ucs4 >= 0x2060 && ucs4 <= 0x206f)
+            || ucs4 == 0x3164
+            || (ucs4 >= 0xfe00 && ucs4 <= 0xfe0f)
+            || ucs4 == 0xfeff
+            || ucs4 == 0xffa0
+            || (ucs4 >= 0xfff0 && ucs4 <= 0xfff8)
+            || (ucs4 >= 0x1d173 && ucs4 <= 0xe0fff && (ucs4 <= 0x1d17a || ucs4 >= 0xe0000));
+}
+
 struct UnicodeData {
     UnicodeData(int codepoint = 0) {
         p.category = QChar::Other_NotAssigned; // Cn
@@ -842,6 +909,17 @@ struct UnicodeData {
             || (codepoint >= 0x1EF00 && codepoint <= 0x1EFFF)) {
             p.direction = QChar::DirR;
         }
+        // The unassigned code points that default to ET are in the range:
+        //     [U+20A0..U+20CF]
+        else if (codepoint >= 0x20A0 && codepoint <= 0x20CF) {
+            p.direction = QChar::DirET;
+        }
+        // The unassigned code points that default to BN have one of the following properties:
+        //     Default_Ignorable_Code_Point
+        //     Noncharacter_Code_Point
+        else if (QChar::isNonCharacter(codepoint) || isDefaultIgnorable(codepoint)) {
+            p.direction = QChar::DirBN;
+        }
 
         p.lineBreakClass = LineBreak_AL; // XX -> AL
         // LineBreak.txt
@@ -858,10 +936,15 @@ struct UnicodeData {
             || (codepoint >= 0x30000 && codepoint <= 0x3FFFD)) {
             p.lineBreakClass = LineBreak_ID;
         }
+        // The unassigned code points that default to "PR" comprise a range in the following block:
+        //     [U+20A0..U+20CF]
+        else if (codepoint >= 0x20A0 && codepoint <= 0x20CF) {
+            p.lineBreakClass = LineBreak_PR;
+        }
 
         mirroredChar = 0;
         decompositionType = QChar::NoDecomposition;
-        p.joining = QChar::OtherJoining;
+        p.joining = QChar::Joining_None;
         p.age = QChar::Unicode_Unassigned;
         p.mirrorDiff = 0;
         p.digitValue = -1;
@@ -1008,7 +1091,10 @@ static void readUnicodeData()
         else
             ++combiningClassUsage[data.p.combiningClass];
 
-        data.p.direction = directionMap.value(properties[UD_BidiCategory], data.p.direction);
+        Direction dir = directionMap.value(properties[UD_BidiCategory], Dir_Unassigned);
+        if (dir == Dir_Unassigned)
+            qFatal("unhandled direction value: %s", properties[UD_BidiCategory].constData());
+        data.p.direction = QChar::Direction(dir);
 
         if (!properties[UD_UpperCase].isEmpty()) {
             int upperCase = properties[UD_UpperCase].toInt(&ok, 16);
@@ -1085,7 +1171,7 @@ static void readUnicodeData()
             if (d[0].contains('<')) {
                 data.decompositionType = decompositionMap.value(d[0], QChar::NoDecomposition);
                 if (data.decompositionType == QChar::NoDecomposition)
-                    qFatal("unassigned decomposition type: %s", d[0].constData());
+                    qFatal("unhandled decomposition type: %s", d[0].constData());
                 d.takeFirst();
             } else {
                 data.decompositionType = QChar::Canonical;
@@ -1175,24 +1261,34 @@ static void readArabicShaping()
         int codepoint = l[0].toInt(&ok, 16);
         Q_ASSERT(ok);
 
-        Joining joining = joining_map.value(l[2].trimmed(), Joining_Unassigned);
-        if (joining == Joining_Unassigned)
-            qFatal("unassigned or unhandled joining value: %s", l[2].constData());
-
-        if (joining == Joining_Left) {
-            // There are currently no characters of joining type Left_Joining defined in Unicode.
-            qFatal("%x: joining type '%s' was met; the current implementation needs to be revised!", codepoint, l[2].constData());
-        }
-
         UnicodeData &d = UnicodeData::valueRef(codepoint);
-        if (joining == Joining_Right)
-            d.p.joining = QChar::Right;
-        else if (joining == Joining_Dual)
-            d.p.joining = QChar::Dual;
-        else if (joining == Joining_Causing)
-            d.p.joining = QChar::Center;
-        else
-            d.p.joining = QChar::OtherJoining;
+        JoiningType joining = joining_map.value(l[2].trimmed(), Joining_Unassigned);
+        switch (joining) {
+        case Joining_Unassigned:
+            qFatal("%x: unassigned or unhandled joining type: %s", codepoint, l[2].constData());
+            break;
+        case Joining_Transparent:
+            if (d.p.category != QChar::Mark_NonSpacing && d.p.category != QChar::Mark_Enclosing && d.p.category != QChar::Other_Format) {
+                qFatal("%x: joining type '%s' was met; the current implementation needs to be revised!",
+                       codepoint, l[2].constData());
+            }
+            // fall through
+
+        default:
+            d.p.joining = QChar::JoiningType(joining);
+            break;
+        }
+    }
+
+    // Code points that are not explicitly listed in ArabicShaping.txt are either of joining type T or U:
+    // - Those that not explicitly listed that are of General Category Mn, Me, or Cf have joining type T.
+    // - All others not explicitly listed have joining type U.
+    for (int codepoint = 0; codepoint <= QChar::LastValidCodePoint; ++codepoint) {
+        UnicodeData &d = UnicodeData::valueRef(codepoint);
+        if (d.p.joining == QChar::Joining_None) {
+            if (d.p.category == QChar::Mark_NonSpacing || d.p.category == QChar::Mark_Enclosing || d.p.category == QChar::Other_Format)
+                d.p.joining = QChar::Joining_Transparent;
+        }
     }
 }
 
@@ -2246,10 +2342,10 @@ static QByteArray createPropertyInfo()
 //     "        ushort combiningClass      : 8;\n"
         out += QByteArray::number( p.combiningClass );
         out += ", ";
-//     "        ushort joining             : 2;\n"
+//     "        ushort joining             : 3;\n"
         out += QByteArray::number( p.joining );
         out += ", ";
-//     "        signed short digitValue    : 6; /* 5 used */\n"
+//     "        signed short digitValue    : 5; /* 5 used */\n"
         out += QByteArray::number( p.digitValue );
         out += ", ";
 //     "        signed short mirrorDiff    : 16;\n"

@@ -106,17 +106,6 @@
     QCoreApplication::setAttribute(), and can be tested for with
     QCoreApplication::testAttribute().
 
-    \value AA_ImmediateWidgetCreation Ensures that widgets are created
-           as soon as they are constructed. By default, resources for
-           widgets are allocated on demand to improve efficiency and
-           minimize resource usage. Setting or clearing this attribute
-           affects widgets constructed after the change. Setting it
-           tells Qt to create toplevel windows immediately.
-           Therefore, if it is important to minimize resource
-           consumption, do not set this attribute.
-
-    \value AA_MSWindowsUseDirect3DByDefault This value is obsolete and
-           has no effect.
 
     \value AA_DontShowIconsInMenus Actions with the Icon property won't be
            shown in any menus unless specifically set by the
@@ -175,6 +164,32 @@
            After setting this attribute application code that uses pixmap
            sizes in layout geometry calculations should typically divide by
            QPixmap::devicePixelRatio() to get device-independent layout geometry.
+
+    \value AA_ForceRasterWidgets Make top-level widgets use pure raster surfaces,
+           and do not support non-native GL-based child widgets.
+
+    \value AA_UseDesktopOpenGL Forces the usage of the desktop OpenGL on
+           platforms that use dynamic loading of the OpenGL implementation.
+           This value has been added in Qt 5.3.
+
+    \value AA_UseOpenGLES Forces the usage of OpenGL ES 2.0 on platforms that
+           use dynamic loading of the OpenGL implementation.
+           This value has been added in Qt 5.3.
+
+    The following values are obsolete:
+
+    \value AA_ImmediateWidgetCreation This attribute is no longer fully
+           supported in Qt 5. It ensures that widgets are created
+           as soon as they are constructed. By default, resources for
+           widgets are allocated on demand to improve efficiency and
+           minimize resource usage. Setting or clearing this attribute
+           affects widgets constructed after the change. Setting it
+           tells Qt to create toplevel windows immediately.
+           Therefore, if it is important to minimize resource
+           consumption, do not set this attribute.
+
+    \value AA_MSWindowsUseDirect3DByDefault This value is obsolete and
+           has no effect.
 
     \omitvalue AA_AttributeCount
 */
@@ -699,9 +714,10 @@
            retain an alpha channel for some other reason. If the image has no
            alpha channel this flag has no effect.
 
-    \omitvalue NoFormatConversion Don't do any format conversions on the image.
+    \value NoFormatConversion Don't do any format conversions on the image.
            Can be useful when converting a QImage to a QPixmap for a one-time
-           rendering operation for example.
+           rendering operation for example. Note that a QPixmap not in the
+           preferred format will be much slower as a paint device.
 */
 
 /*!
@@ -2430,6 +2446,11 @@
     \value ImHints              The hints for input method on expected input. (See Qt::InputMethodHints)
     \value ImPreferredLanguage  The preferred input language.
     \value ImPlatformData       Platform specific data for input method.
+    \value ImAbsolutePosition   The logical position of the cursor within the entire document.
+    \value ImTextBeforeCursor   The plain text before the cursor. The widget can decide how much text to return,
+                                but \b{must} not return an empty string unless the cursor is at the start of the document.
+    \value ImTextAfterCursor    The plain text after the cursor. The widget can decide how much text to return,
+                                but \b{must} not return an empty string unless the cursor is at the end of the document.
 
     Masks:
 
@@ -2894,4 +2915,39 @@
 
     \value ScrollEnd Scrolling has ended, but the scrolling distance
     did not change anymore.
+*/
+
+/*!
+    \enum Qt::MouseEventSource
+    \since 5.3
+
+    This enum describes the source of a mouse event and can be useful
+    to determine if the event is an artificial mouse event originating
+    from another device such as a touchscreen.
+
+    \value MouseEventNotSynthesized The most common value. On
+    platforms where such information is available this value indicates
+    that the event was generated in response to a genuine mouse event
+    in the system.
+
+    \value MouseEventSynthesizedBySystem Indicates that the mouse
+    event was synthesized from a touch event by the platform.
+
+    \value MouseEventSynthesizedByQt Indicates that the mouse event was
+    synthesized from an unhandled touch event by Qt.
+
+    \sa Qt::AA_SynthesizeMouseForUnhandledTouchEvents
+*/
+
+/*!
+    \enum Qt::MouseEventFlag
+    \since 5.3
+
+    This enum provides additional information concerning a QMouseEvent.
+
+    \value MouseEventCreatedDoubleClick Indicates that Qt has created a
+    MouseButtonDblClick event from this event. The flag is set in the causing
+    MouseButtonPress, and not in the resulting MouseButtonDblCLick.
+
+    \omitvalue MouseEventFlagMask
 */

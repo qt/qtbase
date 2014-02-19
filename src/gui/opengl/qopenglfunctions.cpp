@@ -249,98 +249,98 @@ QOpenGLExtensions::QOpenGLExtensions(QOpenGLContext *context)
 
 static int qt_gl_resolve_features()
 {
-#if defined(QT_OPENGL_ES_2)
-    int features = QOpenGLFunctions::Multitexture |
-                   QOpenGLFunctions::Shaders |
-                   QOpenGLFunctions::Buffers |
-                   QOpenGLFunctions::Framebuffers |
-                   QOpenGLFunctions::BlendColor |
-                   QOpenGLFunctions::BlendEquation |
-                   QOpenGLFunctions::BlendEquationSeparate |
-                   QOpenGLFunctions::BlendFuncSeparate |
-                   QOpenGLFunctions::BlendSubtract |
-                   QOpenGLFunctions::CompressedTextures |
-                   QOpenGLFunctions::Multisample |
-                   QOpenGLFunctions::StencilSeparate;
-    QOpenGLExtensionMatcher extensions;
-    if (extensions.match("GL_IMG_texture_npot"))
-        features |= QOpenGLFunctions::NPOTTextures;
-    if (extensions.match("GL_OES_texture_npot"))
-        features |= QOpenGLFunctions::NPOTTextures |
-                    QOpenGLFunctions::NPOTTextureRepeat;
-    return features;
-#elif defined(QT_OPENGL_ES)
-    int features = QOpenGLFunctions::Multitexture |
-                   QOpenGLFunctions::Buffers |
-                   QOpenGLFunctions::CompressedTextures |
-                   QOpenGLFunctions::Multisample;
-    QOpenGLExtensionMatcher extensions;
-    if (extensions.match("GL_OES_framebuffer_object"))
-        features |= QOpenGLFunctions::Framebuffers;
-    if (extensions.match("GL_OES_blend_equation_separate"))
-        features |= QOpenGLFunctions::BlendEquationSeparate;
-    if (extensions.match("GL_OES_blend_func_separate"))
-        features |= QOpenGLFunctions::BlendFuncSeparate;
-    if (extensions.match("GL_OES_blend_subtract"))
-        features |= QOpenGLFunctions::BlendSubtract;
-    if (extensions.match("GL_OES_texture_npot"))
-        features |= QOpenGLFunctions::NPOTTextures;
-    if (extensions.match("GL_IMG_texture_npot"))
-        features |= QOpenGLFunctions::NPOTTextures;
-    return features;
-#else
-    int features = 0;
-    QSurfaceFormat format = QOpenGLContext::currentContext()->format();
-    QOpenGLExtensionMatcher extensions;
+    if (QOpenGLFunctions::platformGLType() == QOpenGLFunctions::GLES2) {
+        int features = QOpenGLFunctions::Multitexture |
+            QOpenGLFunctions::Shaders |
+            QOpenGLFunctions::Buffers |
+            QOpenGLFunctions::Framebuffers |
+            QOpenGLFunctions::BlendColor |
+            QOpenGLFunctions::BlendEquation |
+            QOpenGLFunctions::BlendEquationSeparate |
+            QOpenGLFunctions::BlendFuncSeparate |
+            QOpenGLFunctions::BlendSubtract |
+            QOpenGLFunctions::CompressedTextures |
+            QOpenGLFunctions::Multisample |
+            QOpenGLFunctions::StencilSeparate;
+        QOpenGLExtensionMatcher extensions;
+        if (extensions.match("GL_IMG_texture_npot"))
+            features |= QOpenGLFunctions::NPOTTextures;
+        if (extensions.match("GL_OES_texture_npot"))
+            features |= QOpenGLFunctions::NPOTTextures |
+                QOpenGLFunctions::NPOTTextureRepeat;
+        return features;
+    } else if (QOpenGLFunctions::platformGLType() == QOpenGLFunctions::GLES1) {
+        int features = QOpenGLFunctions::Multitexture |
+            QOpenGLFunctions::Buffers |
+            QOpenGLFunctions::CompressedTextures |
+            QOpenGLFunctions::Multisample;
+        QOpenGLExtensionMatcher extensions;
+        if (extensions.match("GL_OES_framebuffer_object"))
+            features |= QOpenGLFunctions::Framebuffers;
+        if (extensions.match("GL_OES_blend_equation_separate"))
+            features |= QOpenGLFunctions::BlendEquationSeparate;
+        if (extensions.match("GL_OES_blend_func_separate"))
+            features |= QOpenGLFunctions::BlendFuncSeparate;
+        if (extensions.match("GL_OES_blend_subtract"))
+            features |= QOpenGLFunctions::BlendSubtract;
+        if (extensions.match("GL_OES_texture_npot"))
+            features |= QOpenGLFunctions::NPOTTextures;
+        if (extensions.match("GL_IMG_texture_npot"))
+            features |= QOpenGLFunctions::NPOTTextures;
+        return features;
+    } else {
+        int features = 0;
+        QSurfaceFormat format = QOpenGLContext::currentContext()->format();
+        QOpenGLExtensionMatcher extensions;
 
-    // Recognize features by extension name.
-    if (extensions.match("GL_ARB_multitexture"))
-        features |= QOpenGLFunctions::Multitexture;
-    if (extensions.match("GL_ARB_shader_objects"))
-        features |= QOpenGLFunctions::Shaders;
-    if (extensions.match("GL_EXT_framebuffer_object") ||
+        // Recognize features by extension name.
+        if (extensions.match("GL_ARB_multitexture"))
+            features |= QOpenGLFunctions::Multitexture;
+        if (extensions.match("GL_ARB_shader_objects"))
+            features |= QOpenGLFunctions::Shaders;
+        if (extensions.match("GL_EXT_framebuffer_object") ||
             extensions.match("GL_ARB_framebuffer_object"))
-        features |= QOpenGLFunctions::Framebuffers;
-    if (extensions.match("GL_EXT_blend_color"))
-        features |= QOpenGLFunctions::BlendColor;
-    if (extensions.match("GL_EXT_blend_equation_separate"))
-        features |= QOpenGLFunctions::BlendEquationSeparate;
-    if (extensions.match("GL_EXT_blend_func_separate"))
-        features |= QOpenGLFunctions::BlendFuncSeparate;
-    if (extensions.match("GL_EXT_blend_subtract"))
-        features |= QOpenGLFunctions::BlendSubtract;
-    if (extensions.match("GL_ARB_texture_compression"))
-        features |= QOpenGLFunctions::CompressedTextures;
-    if (extensions.match("GL_ARB_multisample"))
-        features |= QOpenGLFunctions::Multisample;
-    if (extensions.match("GL_ARB_texture_non_power_of_two"))
-        features |= QOpenGLFunctions::NPOTTextures;
+            features |= QOpenGLFunctions::Framebuffers;
+        if (extensions.match("GL_EXT_blend_color"))
+            features |= QOpenGLFunctions::BlendColor;
+        if (extensions.match("GL_EXT_blend_equation_separate"))
+            features |= QOpenGLFunctions::BlendEquationSeparate;
+        if (extensions.match("GL_EXT_blend_func_separate"))
+            features |= QOpenGLFunctions::BlendFuncSeparate;
+        if (extensions.match("GL_EXT_blend_subtract"))
+            features |= QOpenGLFunctions::BlendSubtract;
+        if (extensions.match("GL_ARB_texture_compression"))
+            features |= QOpenGLFunctions::CompressedTextures;
+        if (extensions.match("GL_ARB_multisample"))
+            features |= QOpenGLFunctions::Multisample;
+        if (extensions.match("GL_ARB_texture_non_power_of_two"))
+            features |= QOpenGLFunctions::NPOTTextures;
 
-    // assume version 2.0 or higher
-    features |= QOpenGLFunctions::BlendColor |
-                QOpenGLFunctions::BlendEquation |
-                QOpenGLFunctions::Multitexture |
-                QOpenGLFunctions::CompressedTextures |
-                QOpenGLFunctions::Multisample |
-                QOpenGLFunctions::BlendFuncSeparate |
-                QOpenGLFunctions::Buffers |
-                QOpenGLFunctions::Shaders |
-                QOpenGLFunctions::StencilSeparate |
-                QOpenGLFunctions::BlendEquationSeparate |
-                QOpenGLFunctions::NPOTTextures;
+        // assume version 2.0 or higher
+        features |= QOpenGLFunctions::BlendColor |
+            QOpenGLFunctions::BlendEquation |
+            QOpenGLFunctions::Multitexture |
+            QOpenGLFunctions::CompressedTextures |
+            QOpenGLFunctions::Multisample |
+            QOpenGLFunctions::BlendFuncSeparate |
+            QOpenGLFunctions::Buffers |
+            QOpenGLFunctions::Shaders |
+            QOpenGLFunctions::StencilSeparate |
+            QOpenGLFunctions::BlendEquationSeparate |
+            QOpenGLFunctions::NPOTTextures;
 
-    if (format.majorVersion() >= 3)
-        features |= QOpenGLFunctions::Framebuffers;
+        if (format.majorVersion() >= 3)
+            features |= QOpenGLFunctions::Framebuffers;
 
-    const QPair<int, int> version = format.version();
-    if (version < qMakePair(3, 0)
+        const QPair<int, int> version = format.version();
+        if (version < qMakePair(3, 0)
             || (version == qMakePair(3, 0) && format.testOption(QSurfaceFormat::DeprecatedFunctions))
             || (version == qMakePair(3, 1) && extensions.match("GL_ARB_compatibility"))
             || (version >= qMakePair(3, 2) && format.profile() == QSurfaceFormat::CompatibilityProfile)) {
-        features |= QOpenGLFunctions::FixedFunctionPipeline;
+            features |= QOpenGLFunctions::FixedFunctionPipeline;
+        }
+        return features;
     }
-    return features;
-#endif
 }
 
 static int qt_gl_resolve_extensions()
@@ -350,38 +350,38 @@ static int qt_gl_resolve_extensions()
     if (extensionMatcher.match("GL_EXT_bgra"))
         extensions |= QOpenGLExtensions::BGRATextureFormat;
 
-#if defined(QT_OPENGL_ES)
-    if (extensionMatcher.match("GL_OES_mapbuffer"))
-        extensions |= QOpenGLExtensions::MapBuffer;
-    if (extensionMatcher.match("GL_OES_packed_depth_stencil"))
-        extensions |= QOpenGLExtensions::PackedDepthStencil;
-    if (extensionMatcher.match("GL_OES_element_index_uint"))
-        extensions |= QOpenGLExtensions::ElementIndexUint;
-    if (extensionMatcher.match("GL_OES_depth24"))
-        extensions |= QOpenGLExtensions::Depth24;
-    // TODO: Consider matching GL_APPLE_texture_format_BGRA8888 as well, but it needs testing.
-    if (extensionMatcher.match("GL_IMG_texture_format_BGRA8888") || extensionMatcher.match("GL_EXT_texture_format_BGRA8888"))
-        extensions |= QOpenGLExtensions::BGRATextureFormat;
-#else
-    QSurfaceFormat format = QOpenGLContext::currentContext()->format();
-    extensions |= QOpenGLExtensions::ElementIndexUint | QOpenGLExtensions::MapBuffer;
-
-    // Recognize features by extension name.
-    if (format.majorVersion() >= 3
-        || extensionMatcher.match("GL_ARB_framebuffer_object"))
-    {
-        extensions |= QOpenGLExtensions::FramebufferMultisample |
-                      QOpenGLExtensions::FramebufferBlit |
-                      QOpenGLExtensions::PackedDepthStencil;
-    } else {
-        if (extensionMatcher.match("GL_EXT_framebuffer_multisample"))
-            extensions |= QOpenGLExtensions::FramebufferMultisample;
-        if (extensionMatcher.match("GL_EXT_framebuffer_blit"))
-            extensions |= QOpenGLExtensions::FramebufferBlit;
-        if (extensionMatcher.match("GL_EXT_packed_depth_stencil"))
+    if (QOpenGLFunctions::isES()) {
+        if (extensionMatcher.match("GL_OES_mapbuffer"))
+            extensions |= QOpenGLExtensions::MapBuffer;
+        if (extensionMatcher.match("GL_OES_packed_depth_stencil"))
             extensions |= QOpenGLExtensions::PackedDepthStencil;
+        if (extensionMatcher.match("GL_OES_element_index_uint"))
+            extensions |= QOpenGLExtensions::ElementIndexUint;
+        if (extensionMatcher.match("GL_OES_depth24"))
+            extensions |= QOpenGLExtensions::Depth24;
+        // TODO: Consider matching GL_APPLE_texture_format_BGRA8888 as well, but it needs testing.
+        if (extensionMatcher.match("GL_IMG_texture_format_BGRA8888") || extensionMatcher.match("GL_EXT_texture_format_BGRA8888"))
+            extensions |= QOpenGLExtensions::BGRATextureFormat;
+    } else {
+        QSurfaceFormat format = QOpenGLContext::currentContext()->format();
+        extensions |= QOpenGLExtensions::ElementIndexUint | QOpenGLExtensions::MapBuffer;
+
+        // Recognize features by extension name.
+        if (format.majorVersion() >= 3
+            || extensionMatcher.match("GL_ARB_framebuffer_object"))
+        {
+            extensions |= QOpenGLExtensions::FramebufferMultisample |
+                QOpenGLExtensions::FramebufferBlit |
+                QOpenGLExtensions::PackedDepthStencil;
+        } else {
+            if (extensionMatcher.match("GL_EXT_framebuffer_multisample"))
+                extensions |= QOpenGLExtensions::FramebufferMultisample;
+            if (extensionMatcher.match("GL_EXT_framebuffer_blit"))
+                extensions |= QOpenGLExtensions::FramebufferBlit;
+            if (extensionMatcher.match("GL_EXT_packed_depth_stencil"))
+                extensions |= QOpenGLExtensions::PackedDepthStencil;
+        }
     }
-#endif
     return extensions;
 }
 
@@ -2507,6 +2507,90 @@ QOpenGLExtensionsPrivate::QOpenGLExtensionsPrivate(QOpenGLContext *ctx)
     BlitFramebuffer = qopenglfResolveBlitFramebuffer;
     RenderbufferStorageMultisample = qopenglfResolveRenderbufferStorageMultisample;
     GetBufferSubData = qopenglfResolveGetBufferSubData;
+}
+
+#if defined(QT_OPENGL_DYNAMIC)
+extern int qgl_proxyLibraryType(void);
+extern HMODULE qgl_glHandle(void);
+#endif
+
+/*!
+    \enum QOpenGLFunctions::PlatformGLType
+    This enum defines the type of the underlying GL implementation.
+
+    \value DesktopGL Desktop OpenGL
+    \value GLES2 OpenGL ES 2.0 or higher
+    \value GLES1 OpenGL ES 1.x
+
+    \since 5.3
+ */
+
+/*!
+  \fn QOpenGLFunctions::isES()
+
+  On platforms where the OpenGL implementation is dynamically loaded
+  this function returns true if the underlying GL implementation is
+  Open GL ES.
+
+  On platforms that do not use runtime loading of the GL the return
+  value is based on Qt's compile-time configuration and will never
+  change during runtime.
+
+  \sa platformGLType()
+
+  \since 5.3
+  */
+
+/*!
+  Returns the underlying GL implementation type.
+
+  On platforms where the OpenGL implementation is not dynamically
+  loaded, the return value is determined during compile time and never
+  changes.
+
+  Platforms that use dynamic GL loading (e.g. Windows) cannot rely on
+  compile-time defines for differentiating between desktop and ES
+  OpenGL code. Instead, they rely on this function to query, during
+  runtime, the type of the loaded graphics library.
+
+  \since 5.3
+ */
+QOpenGLFunctions::PlatformGLType QOpenGLFunctions::platformGLType()
+{
+#if defined(QT_OPENGL_DYNAMIC)
+    return PlatformGLType(qgl_proxyLibraryType());
+#elif defined(QT_OPENGL_ES_2)
+    return GLES2;
+#elif defined(QT_OPENGL_ES)
+    return GLES1;
+#else
+    return DesktopGL;
+#endif
+}
+
+/*!
+  Returns the platform-specific handle for the OpenGL implementation that
+  is currently in use. (for example, a HMODULE on Windows)
+
+  On platforms that do not use dynamic GL switch the return value is null.
+
+  The library might be GL-only, meaning that windowing system interface
+  functions (for example EGL) may live in another, separate library.
+
+  Always use platformGLType() before resolving any functions to check if the
+  library implements desktop OpenGL or OpenGL ES.
+
+  \sa platformGLType()
+
+  \since 5.3
+ */
+void *QOpenGLFunctions::platformGLHandle()
+{
+#if defined(QT_OPENGL_DYNAMIC)
+    return qgl_glHandle();
+#else
+    return 0;
+#endif
 }
 
 QT_END_NAMESPACE

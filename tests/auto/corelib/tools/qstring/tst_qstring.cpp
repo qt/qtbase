@@ -223,6 +223,8 @@ private slots:
     void split_regexp();
     void fromUtf16_data();
     void fromUtf16();
+    void fromUtf16_char16_data();
+    void fromUtf16_char16();
     void latin1String();
     void nanAndInf();
     void compare_data();
@@ -1440,6 +1442,8 @@ void tst_QString::contains()
     QVERIFY(a.contains('F',Qt::CaseInsensitive));
     QVERIFY(a.contains("FG"));
     QVERIFY(a.contains("FG",Qt::CaseInsensitive));
+    QVERIFY(a.contains(QLatin1String("FG")));
+    QVERIFY(a.contains(QLatin1String("fg"),Qt::CaseInsensitive));
     QVERIFY(a.contains( QString(), Qt::CaseInsensitive));
     QVERIFY(a.contains( "", Qt::CaseInsensitive));
     QVERIFY(a.contains(QRegExp("[FG][HI]")));
@@ -3880,6 +3884,14 @@ void tst_QString::toLatin1Roundtrip()
     // and back:
     QCOMPARE(QString::fromLatin1(latin1, latin1.length()).length(), unicodedst.length());
     QCOMPARE(QString::fromLatin1(latin1, latin1.length()), unicodedst);
+
+    // try the rvalue version of toLatin1()
+    QString s = unicodesrc;
+    QCOMPARE(qMove(s).toLatin1(), latin1);
+
+    // and verify that the moved-from object can still be used
+    s = "foo";
+    s.clear();
 }
 
 void tst_QString::stringRef_toLatin1Roundtrip_data()
@@ -3958,14 +3970,15 @@ void tst_QString::fromAscii()
 
 void tst_QString::fromUcs4()
 {
+    const uint *null = 0;
     QString s;
-    s = QString::fromUcs4( 0 );
+    s = QString::fromUcs4( null );
     QVERIFY( s.isNull() );
     QCOMPARE( s.size(), 0 );
-    s = QString::fromUcs4( 0, 0 );
+    s = QString::fromUcs4( null, 0 );
     QVERIFY( s.isNull() );
     QCOMPARE( s.size(), 0 );
-    s = QString::fromUcs4( 0, 5 );
+    s = QString::fromUcs4( null, 5 );
     QVERIFY( s.isNull() );
     QCOMPARE( s.size(), 0 );
 
@@ -3986,20 +3999,98 @@ void tst_QString::fromUcs4()
     s = QString::fromUcs4( &smp, 1 );
     QVERIFY( !s.isNull() );
     QCOMPARE( s.size(), 2 );
+
+#ifdef Q_COMPILER_UNICODE_STRINGS
+    static const char32_t str1[] = U"Hello Unicode World";
+    s = QString::fromUcs4(str1, sizeof(str1) / sizeof(str1[0]) - 1);
+    QCOMPARE(s, QString("Hello Unicode World"));
+
+    s = QString::fromUcs4(str1);
+    QCOMPARE(s, QString("Hello Unicode World"));
+
+    s = QString::fromUcs4(str1, 5);
+    QCOMPARE(s, QString("Hello"));
+
+    s = QString::fromUcs4(U"\u221212\U000020AC\U00010000");
+    QCOMPARE(s, QString::fromUtf8("\342\210\222" "12" "\342\202\254" "\360\220\200\200"));
+#endif
 }
 
 void tst_QString::toUcs4()
 {
     QString s;
+    QVector<uint> ucs4;
     QCOMPARE( s.toUcs4().size(), 0 );
 
-    QChar bmp = QLatin1Char('a');
+    static const QChar bmp = QLatin1Char('a');
     s = QString(&bmp, 1);
-    QCOMPARE( s.toUcs4().size(), 1 );
+    ucs4 = s.toUcs4();
+    QCOMPARE( ucs4.size(), 1 );
+    QCOMPARE( ucs4.at(0), 0x0061u );
 
-    QChar smp[] = { QChar::highSurrogate(0x10000), QChar::lowSurrogate(0x10000) };
-    s = QString(smp, 2);
-    QCOMPARE( s.toUcs4().size(), 1 );
+#define QSTRING_FROM_QCHARARRAY(x) (QString((x), sizeof(x)/sizeof((x)[0])))
+
+    static const QChar smp[] = { QChar::highSurrogate(0x10000), QChar::lowSurrogate(0x10000) };
+    s = QSTRING_FROM_QCHARARRAY(smp);
+    ucs4 = s.toUcs4();
+    QCOMPARE( ucs4.size(), 1 );
+    QCOMPARE( ucs4.at(0), 0x10000u );
+
+    static const QChar smp2[] = { QChar::highSurrogate(0x10000), QChar::lowSurrogate(0x10000), QChar::highSurrogate(0x10000), QChar::lowSurrogate(0x10000) };
+    s = QSTRING_FROM_QCHARARRAY(smp2);
+    ucs4 = s.toUcs4();
+    QCOMPARE( ucs4.size(), 2 );
+    QCOMPARE( ucs4.at(0), 0x10000u );
+    QCOMPARE( ucs4.at(1), 0x10000u );
+
+    static const QChar invalid_01[] = { QChar(0xd800) };
+    s = QSTRING_FROM_QCHARARRAY(invalid_01);
+    ucs4 = s.toUcs4();
+    QCOMPARE( ucs4.size(), 1 );
+    QCOMPARE( ucs4.at(0), 0xFFFDu );
+
+    static const QChar invalid_02[] = { QChar(0xdc00) };
+    s = QSTRING_FROM_QCHARARRAY(invalid_02);
+    ucs4 = s.toUcs4();
+    QCOMPARE( ucs4.size(), 1 );
+    QCOMPARE( ucs4.at(0), 0xFFFDu );
+
+    static const QChar invalid_03[] = { QLatin1Char('a'), QChar(0xd800), QLatin1Char('b') };
+    s = QSTRING_FROM_QCHARARRAY(invalid_03);
+    ucs4 = s.toUcs4();
+    QCOMPARE( ucs4.size(), 3 );
+    QCOMPARE( ucs4.at(0), 0x0061u );
+    QCOMPARE( ucs4.at(1), 0xFFFDu );
+    QCOMPARE( ucs4.at(2), 0x0062u );
+
+    static const QChar invalid_04[] = { QLatin1Char('a'), QChar(0xdc00), QLatin1Char('b') };
+    s = QSTRING_FROM_QCHARARRAY(invalid_04);
+    ucs4 = s.toUcs4();
+    QCOMPARE( ucs4.size(), 3 );
+    QCOMPARE( ucs4.at(0), 0x0061u );
+    QCOMPARE( ucs4.at(1), 0xFFFDu );
+    QCOMPARE( ucs4.at(2), 0x0062u );
+
+    static const QChar invalid_05[] = { QLatin1Char('a'), QChar(0xd800), QChar(0xd800), QLatin1Char('b') };
+    s = QSTRING_FROM_QCHARARRAY(invalid_05);
+    ucs4 = s.toUcs4();
+    QCOMPARE( ucs4.size(), 4 );
+    QCOMPARE( ucs4.at(0), 0x0061u );
+    QCOMPARE( ucs4.at(1), 0xFFFDu );
+    QCOMPARE( ucs4.at(2), 0xFFFDu );
+    QCOMPARE( ucs4.at(3), 0x0062u );
+
+    static const QChar invalid_06[] = { QLatin1Char('a'), QChar(0xdc00), QChar(0xdc00), QLatin1Char('b') };
+    s = QSTRING_FROM_QCHARARRAY(invalid_06);
+    ucs4 = s.toUcs4();
+    QCOMPARE( ucs4.size(), 4 );
+    QCOMPARE( ucs4.at(0), 0x0061u );
+    QCOMPARE( ucs4.at(1), 0xFFFDu );
+    QCOMPARE( ucs4.at(2), 0xFFFDu );
+    QCOMPARE( ucs4.at(3), 0x0062u );
+
+#undef QSTRING_FROM_QCHARARRAY
+
 }
 
 void tst_QString::arg()
@@ -4981,6 +5072,25 @@ void tst_QString::fromUtf16()
     QCOMPARE(QString::fromUtf16(ucs2.utf16(), len), res);
 }
 
+void tst_QString::fromUtf16_char16_data()
+{
+#ifdef Q_COMPILER_UNICODE_STRINGS
+    fromUtf16_data();
+#else
+    QSKIP("Compiler does not support C++11 unicode strings");
+#endif
+}
+
+void tst_QString::fromUtf16_char16()
+{
+#ifdef Q_COMPILER_UNICODE_STRINGS
+    QFETCH(QString, ucs2);
+    QFETCH(QString, res);
+    QFETCH(int, len);
+
+    QCOMPARE(QString::fromUtf16(reinterpret_cast<const char16_t *>(ucs2.utf16()), len), res);
+#endif
+}
 
 void tst_QString::latin1String()
 {

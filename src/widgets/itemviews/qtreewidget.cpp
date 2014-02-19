@@ -493,8 +493,7 @@ bool QTreeModel::removeRows(int row, int count, const QModelIndex &parent) {
 
     beginRemoveRows(parent, row, row + count - 1);
 
-    bool blockSignal = signalsBlocked();
-    blockSignals(true);
+    QSignalBlocker blocker(this);
 
     QTreeWidgetItem *itm = item(parent);
     for (int i = row + count - 1; i >= row; --i) {
@@ -504,7 +503,7 @@ bool QTreeModel::removeRows(int row, int count, const QModelIndex &parent) {
         delete child;
         child = 0;
     }
-    blockSignals(blockSignal);
+    blocker.unblock();
 
     endRemoveRows();
     return true;
@@ -2824,7 +2823,7 @@ void QTreeWidget::setCurrentItem(QTreeWidgetItem *item, int column)
   \sa currentItem()
 */
 void QTreeWidget::setCurrentItem(QTreeWidgetItem *item, int column,
-				 QItemSelectionModel::SelectionFlags command)
+                                 QItemSelectionModel::SelectionFlags command)
 {
     Q_D(QTreeWidget);
     d->selectionModel->setCurrentIndex(d->index(item, column), command);
@@ -2860,7 +2859,7 @@ QRect QTreeWidget::visualItemRect(const QTreeWidgetItem *item) const
 {
     Q_D(const QTreeWidget);
     //the visual rect for an item is across all columns. So we need to determine
-	//what is the first and last column and get their visual index rects
+    //what is the first and last column and get their visual index rects
     QModelIndex base = d->index(item);
     const int firstVisiblesection = header()->logicalIndexAt(- header()->offset());
     const int lastVisibleSection = header()->logicalIndexAt(header()->length() - header()->offset() - 1);

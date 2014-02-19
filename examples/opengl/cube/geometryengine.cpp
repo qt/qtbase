@@ -79,40 +79,40 @@ void GeometryEngine::initCubeGeometry()
     // is different.
     VertexData vertices[] = {
         // Vertex data for face 0
-        {QVector3D(-1.0, -1.0,  1.0), QVector2D(0.0, 0.0)},  // v0
-        {QVector3D( 1.0, -1.0,  1.0), QVector2D(0.33, 0.0)}, // v1
-        {QVector3D(-1.0,  1.0,  1.0), QVector2D(0.0, 0.5)},  // v2
-        {QVector3D( 1.0,  1.0,  1.0), QVector2D(0.33, 0.5)}, // v3
+        {QVector3D(-1.0f, -1.0f,  1.0f), QVector2D(0.0f, 0.0f)},  // v0
+        {QVector3D( 1.0f, -1.0f,  1.0f), QVector2D(0.33f, 0.0f)}, // v1
+        {QVector3D(-1.0f,  1.0f,  1.0f), QVector2D(0.0f, 0.5f)},  // v2
+        {QVector3D( 1.0f,  1.0f,  1.0f), QVector2D(0.33f, 0.5f)}, // v3
 
         // Vertex data for face 1
-        {QVector3D( 1.0, -1.0,  1.0), QVector2D( 0.0, 0.5)}, // v4
-        {QVector3D( 1.0, -1.0, -1.0), QVector2D(0.33, 0.5)}, // v5
-        {QVector3D( 1.0,  1.0,  1.0), QVector2D(0.0, 1.0)},  // v6
-        {QVector3D( 1.0,  1.0, -1.0), QVector2D(0.33, 1.0)}, // v7
+        {QVector3D( 1.0f, -1.0f,  1.0f), QVector2D( 0.0f, 0.5f)}, // v4
+        {QVector3D( 1.0f, -1.0f, -1.0f), QVector2D(0.33f, 0.5f)}, // v5
+        {QVector3D( 1.0f,  1.0f,  1.0f), QVector2D(0.0f, 1.0f)},  // v6
+        {QVector3D( 1.0f,  1.0f, -1.0f), QVector2D(0.33f, 1.0f)}, // v7
 
         // Vertex data for face 2
-        {QVector3D( 1.0, -1.0, -1.0), QVector2D(0.66, 0.5)}, // v8
-        {QVector3D(-1.0, -1.0, -1.0), QVector2D(1.0, 0.5)},  // v9
-        {QVector3D( 1.0,  1.0, -1.0), QVector2D(0.66, 1.0)}, // v10
-        {QVector3D(-1.0,  1.0, -1.0), QVector2D(1.0, 1.0)},  // v11
+        {QVector3D( 1.0f, -1.0f, -1.0f), QVector2D(0.66f, 0.5f)}, // v8
+        {QVector3D(-1.0f, -1.0f, -1.0f), QVector2D(1.0f, 0.5f)},  // v9
+        {QVector3D( 1.0f,  1.0f, -1.0f), QVector2D(0.66f, 1.0f)}, // v10
+        {QVector3D(-1.0f,  1.0f, -1.0f), QVector2D(1.0f, 1.0f)},  // v11
 
         // Vertex data for face 3
-        {QVector3D(-1.0, -1.0, -1.0), QVector2D(0.66, 0.0)}, // v12
-        {QVector3D(-1.0, -1.0,  1.0), QVector2D(1.0, 0.0)},  // v13
-        {QVector3D(-1.0,  1.0, -1.0), QVector2D(0.66, 0.5)}, // v14
-        {QVector3D(-1.0,  1.0,  1.0), QVector2D(1.0, 0.5)},  // v15
+        {QVector3D(-1.0f, -1.0f, -1.0f), QVector2D(0.66f, 0.0f)}, // v12
+        {QVector3D(-1.0f, -1.0f,  1.0f), QVector2D(1.0f, 0.0f)},  // v13
+        {QVector3D(-1.0f,  1.0f, -1.0f), QVector2D(0.66f, 0.5f)}, // v14
+        {QVector3D(-1.0f,  1.0f,  1.0f), QVector2D(1.0f, 0.5f)},  // v15
 
         // Vertex data for face 4
-        {QVector3D(-1.0, -1.0, -1.0), QVector2D(0.33, 0.0)}, // v16
-        {QVector3D( 1.0, -1.0, -1.0), QVector2D(0.66, 0.0)}, // v17
-        {QVector3D(-1.0, -1.0,  1.0), QVector2D(0.33, 0.5)}, // v18
-        {QVector3D( 1.0, -1.0,  1.0), QVector2D(0.66, 0.5)}, // v19
+        {QVector3D(-1.0f, -1.0f, -1.0f), QVector2D(0.33f, 0.0f)}, // v16
+        {QVector3D( 1.0f, -1.0f, -1.0f), QVector2D(0.66f, 0.0f)}, // v17
+        {QVector3D(-1.0f, -1.0f,  1.0f), QVector2D(0.33f, 0.5f)}, // v18
+        {QVector3D( 1.0f, -1.0f,  1.0f), QVector2D(0.66f, 0.5f)}, // v19
 
         // Vertex data for face 5
-        {QVector3D(-1.0,  1.0,  1.0), QVector2D(0.33, 0.5)}, // v20
-        {QVector3D( 1.0,  1.0,  1.0), QVector2D(0.66, 0.5)}, // v21
-        {QVector3D(-1.0,  1.0, -1.0), QVector2D(0.33, 1.0)}, // v22
-        {QVector3D( 1.0,  1.0, -1.0), QVector2D(0.66, 1.0)}  // v23
+        {QVector3D(-1.0f,  1.0f,  1.0f), QVector2D(0.33f, 0.5f)}, // v20
+        {QVector3D( 1.0f,  1.0f,  1.0f), QVector2D(0.66f, 0.5f)}, // v21
+        {QVector3D(-1.0f,  1.0f, -1.0f), QVector2D(0.33f, 1.0f)}, // v22
+        {QVector3D( 1.0f,  1.0f, -1.0f), QVector2D(0.66f, 1.0f)}  // v23
     };
 
     // Indices for drawing cube faces using triangle strips.

@@ -53,7 +53,11 @@ public:
     // test data:
     QTextCodec *codec;
     QString (*from8BitPtr)(const char *, int);
+#ifdef Q_COMPILER_REF_QUALIFIERS
+    QByteArray (QString:: *to8Bit)() const &;
+#else
     QByteArray (QString:: *to8Bit)() const;
+#endif
 
     inline QString from8Bit(const QByteArray &ba)
     { return from8BitPtr(ba.constData(), ba.length()); }

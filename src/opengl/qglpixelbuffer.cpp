@@ -361,7 +361,8 @@ void QGLPixelBuffer::updateDynamicTexture(GLuint texture_id) const
 
     glBindTexture(GL_TEXTURE_2D, texture_id);
 #ifndef QT_OPENGL_ES
-    glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 0, 0, d->req_size.width(), d->req_size.height(), 0);
+    GLenum format = QOpenGLFunctions::isES() ? GL_RGBA : GL_RGBA8;
+    glCopyTexImage2D(GL_TEXTURE_2D, 0, format, 0, 0, d->req_size.width(), d->req_size.height(), 0);
 #else
     glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, d->req_size.width(), d->req_size.height(), 0);
 #endif
@@ -487,7 +488,8 @@ GLuint QGLPixelBuffer::bindTexture(const QImage &image, GLenum target)
 {
     Q_D(QGLPixelBuffer);
 #ifndef QT_OPENGL_ES
-    return d->qctx->bindTexture(image, target, GLint(GL_RGBA8));
+    GLenum format = QOpenGLFunctions::isES() ? GL_RGBA : GL_RGBA8;
+    return d->qctx->bindTexture(image, target, GLint(format));
 #else
     return d->qctx->bindTexture(image, target, GL_RGBA);
 #endif
@@ -505,7 +507,8 @@ GLuint QGLPixelBuffer::bindTexture(const QPixmap &pixmap, GLenum target)
 {
     Q_D(QGLPixelBuffer);
 #ifndef QT_OPENGL_ES
-    return d->qctx->bindTexture(pixmap, target, GLint(GL_RGBA8));
+    GLenum format = QOpenGLFunctions::isES() ? GL_RGBA : GL_RGBA8;
+    return d->qctx->bindTexture(pixmap, target, GLint(format));
 #else
     return d->qctx->bindTexture(pixmap, target, GL_RGBA);
 #endif

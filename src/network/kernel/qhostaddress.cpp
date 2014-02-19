@@ -71,7 +71,7 @@ QT_BEGIN_NAMESPACE
 // sockaddr_in6 size changed between old and new SDK
 // Only the new version is the correct one, so always
 // use this structure.
-#if defined(Q_OS_WINCE)
+#if defined(Q_OS_WINCE) || defined(Q_OS_WINRT)
 #  if !defined(u_char)
 #    define u_char unsigned char
 #  endif
@@ -448,10 +448,12 @@ QHostAddress::QHostAddress(const QString &address)
 QHostAddress::QHostAddress(const struct sockaddr *sockaddr)
     : d(new QHostAddressPrivate)
 {
+#ifndef Q_OS_WINRT
     if (sockaddr->sa_family == AF_INET)
         setAddress(htonl(((sockaddr_in *)sockaddr)->sin_addr.s_addr));
     else if (sockaddr->sa_family == AF_INET6)
         setAddress(((qt_sockaddr_in6 *)sockaddr)->sin6_addr.qt_s6_addr);
+#endif
 }
 
 /*!
@@ -604,11 +606,13 @@ bool QHostAddress::setAddress(const QString &address)
 */
 void QHostAddress::setAddress(const struct sockaddr *sockaddr)
 {
+#ifndef Q_OS_WINRT
     clear();
     if (sockaddr->sa_family == AF_INET)
         setAddress(htonl(((sockaddr_in *)sockaddr)->sin_addr.s_addr));
     else if (sockaddr->sa_family == AF_INET6)
         setAddress(((qt_sockaddr_in6 *)sockaddr)->sin6_addr.qt_s6_addr);
+#endif
 }
 
 /*!

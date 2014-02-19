@@ -218,7 +218,7 @@ QMutableListIterator<int> i(list);
 while (i.hasNext()) {
     int val = i.next();
     if (val < -32768 || val > 32767)
-	i.remove();
+        i.remove();
 }
 //! [19]
 
@@ -228,7 +228,7 @@ QMutableLinkedListIterator<int> i(list);
 while (i.hasNext()) {
     int val = i.next();
     if (val < -32768 || val > 32767)
-	i.remove();
+        i.remove();
 }
 //! [20]
 
@@ -238,7 +238,7 @@ QMutableVectorIterator<int> i(vector);
 while (i.hasNext()) {
     int val = i.next();
     if (val < -32768 || val > 32767)
-	i.remove();
+        i.remove();
 }
 //! [21]
 
@@ -248,7 +248,7 @@ QMutableSetIterator<int> i(set);
 while (i.hasNext()) {
     int val = i.next();
     if (val < -32768 || val > 32767)
-	i.remove();
+        i.remove();
 }
 //! [22]
 
@@ -305,7 +305,7 @@ while (i.hasPrevious()) {
 QMapIterator<int, QWidget *> i(map);
 while (i.findNext(widget)) {
     qDebug() << "Found widget " << widget << " under key "
-	     << i.key();
+             << i.key();
 }
 //! [28]
 
@@ -335,7 +335,7 @@ while (i.hasPrevious()) {
 QHashIterator<int, QWidget *> i(hash);
 while (i.findNext(widget)) {
     qDebug() << "Found widget " << widget << " under key "
-	     << i.key();
+             << i.key();
 }
 //! [31]
 
@@ -365,7 +365,7 @@ while (i.hasPrevious()) {
 QMutableMapIterator<int, QWidget *> i(map);
 while (i.findNext(widget)) {
     qDebug() << "Found widget " << widget << " under key "
-	     << i.key();
+             << i.key();
 }
 //! [34]
 
@@ -405,7 +405,7 @@ while (i.hasPrevious()) {
 QMutableHashIterator<int, QWidget *> i(hash);
 while (i.findNext(widget)) {
     qDebug() << "Found widget " << widget << " under key "
-	     << i.key();
+             << i.key();
 }
 //! [38]
 

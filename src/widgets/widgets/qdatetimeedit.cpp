@@ -1718,7 +1718,7 @@ void QDateTimeEditPrivate::updateEdit()
     if (newText == displayText())
         return;
     int selsize = edit->selectedText().size();
-    const bool sb = edit->blockSignals(true);
+    const QSignalBlocker blocker(edit);
 
     edit->setText(newText);
 
@@ -1740,7 +1740,6 @@ void QDateTimeEditPrivate::updateEdit()
 
         }
     }
-    edit->blockSignals(sb);
 }
 
 
@@ -1871,7 +1870,7 @@ void QDateTimeEditPrivate::clearSection(int index)
 {
     const QLatin1Char space(' ');
     int cursorPos = edit->cursorPosition();
-    bool blocked = edit->blockSignals(true);
+    const QSignalBlocker blocker(edit);
     QString t = edit->text();
     const int pos = sectionPos(index);
     if (pos == -1) {
@@ -1883,8 +1882,6 @@ void QDateTimeEditPrivate::clearSection(int index)
     edit->setText(t);
     edit->setCursorPosition(cursorPos);
     QDTEDEBUG << cursorPos;
-
-    edit->blockSignals(blocked);
 }
 
 
@@ -2313,7 +2310,7 @@ void QDateTimeEdit::paintEvent(QPaintEvent *event)
 
     optCombo.init(this);
     optCombo.editable = true;
-	optCombo.frame = opt.frame;
+    optCombo.frame = opt.frame;
     optCombo.subControls = opt.subControls;
     optCombo.activeSubControls = opt.activeSubControls;
     optCombo.state = opt.state;
@@ -2574,10 +2571,9 @@ void QDateTimeEditPrivate::syncCalendarWidget()
 {
     Q_Q(QDateTimeEdit);
     if (monthCalendar) {
-        const bool sb = monthCalendar->blockSignals(true);
+        const QSignalBlocker blocker(monthCalendar);
         monthCalendar->setDateRange(q->minimumDate(), q->maximumDate());
         monthCalendar->setDate(q->date());
-        monthCalendar->blockSignals(sb);
     }
 }
 

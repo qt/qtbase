@@ -38,7 +38,8 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef INTERFACE_FROM-FRAMEWORK_H
+
+#ifndef INTERFACE_FROM_FRAMEWORK_H
 #define INTERFACE_FROM_FRAMEWORK_H
 
 #include <Test/testinterface.h>

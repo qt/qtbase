@@ -33,6 +33,14 @@ OS_TLSIndex OS_AllocTLSIndex()
 }
 
 
+void *OS_GetTLSValue(OS_TLSIndex nIndex)
+{
+    ASSERT(nIndex != OS_INVALID_TLS_INDEX);
+
+    return pthread_getspecific(nIndex);
+}
+
+
 bool OS_SetTLSValue(OS_TLSIndex nIndex, void *lpvValue)
 {
     if (nIndex == OS_INVALID_TLS_INDEX) {

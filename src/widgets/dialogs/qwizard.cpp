@@ -76,6 +76,7 @@ extern bool qt_wince_is_mobile();     //defined in qguifunctions_wce.cpp
 #endif
 
 #include <string.h>     // for memset()
+#include <algorithm>
 
 QT_BEGIN_NAMESPACE
 
@@ -129,22 +130,41 @@ static bool objectInheritsXAndXIsCloserThanY(const QObject *object, const QByteA
     return false;
 }
 
-const int NFallbackDefaultProperties = 7;
-
 const struct {
-    const char *className;
-    const char *property;
-    const char *changedSignal;
-} fallbackProperties[NFallbackDefaultProperties] = {
+    const char className[16];
+    const char property[13];
+} fallbackProperties[] = {
     // If you modify this list, make sure to update the documentation (and the auto test)
-    { "QAbstractButton", "checked", SIGNAL(toggled(bool)) },
-    { "QAbstractSlider", "value", SIGNAL(valueChanged(int)) },
-    { "QComboBox", "currentIndex", SIGNAL(currentIndexChanged(int)) },
-    { "QDateTimeEdit", "dateTime", SIGNAL(dateTimeChanged(QDateTime)) },
-    { "QLineEdit", "text", SIGNAL(textChanged(QString)) },
-    { "QListWidget", "currentRow", SIGNAL(currentRowChanged(int)) },
-    { "QSpinBox", "value", SIGNAL(valueChanged(int)) }
+    { "QAbstractButton", "checked" },
+    { "QAbstractSlider", "value" },
+    { "QComboBox", "currentIndex" },
+    { "QDateTimeEdit", "dateTime" },
+    { "QLineEdit", "text" },
+    { "QListWidget", "currentRow" },
+    { "QSpinBox", "value" },
 };
+const size_t NFallbackDefaultProperties = sizeof fallbackProperties / sizeof *fallbackProperties;
+
+static const char *changed_signal(int which)
+{
+    // since it might expand to a runtime function call (to
+    // qFlagLocations()), we cannot store the result of SIGNAL() in a
+    // character array and expect it to be statically initialized. To
+    // avoid the relocations caused by a char pointer table, use a
+    // switch statement:
+    switch (which) {
+    case 0: return SIGNAL(toggled(bool));
+    case 1: return SIGNAL(valueChanged(int));
+    case 2: return SIGNAL(currentIndexChanged(int));
+    case 3: return SIGNAL(dateTimeChanged(QDateTime));
+    case 4: return SIGNAL(textChanged(QString));
+    case 5: return SIGNAL(currentRowChanged(int));
+    case 6: return SIGNAL(valueChanged(int));
+    };
+    Q_STATIC_ASSERT(7 == NFallbackDefaultProperties);
+    Q_UNREACHABLE();
+    return 0;
+}
 
 class QWizardDefaultProperty
 {
@@ -542,6 +562,7 @@ public:
         , canContinue(false)
         , canFinish(false)
         , disableUpdatesCount(0)
+        , wizStyle(QWizard::ClassicStyle)
         , opts(0)
         , buttonsHaveCustomLayout(false)
         , titleFmt(Qt::AutoText)
@@ -551,10 +572,12 @@ public:
         , headerWidget(0)
         , watermarkLabel(0)
         , sideWidget(0)
+        , pageFrame(0)
         , titleLabel(0)
         , subTitleLabel(0)
         , bottomRuler(0)
 #if !defined(QT_NO_STYLE_WINDOWSVISTA)
+        , vistaHelper(0)
         , vistaInitPending(false)
         , vistaState(QVistaHelper::Dirty)
         , vistaStateChanged(false)
@@ -565,8 +588,7 @@ public:
         , maximumWidth(QWIDGETSIZE_MAX)
         , maximumHeight(QWIDGETSIZE_MAX)
     {
-        for (int i = 0; i < QWizard::NButtons; ++i)
-            btns[i] = 0;
+        std::fill(btns, btns + QWizard::NButtons, static_cast<QAbstractButton *>(0));
 
 #if !defined(QT_NO_STYLE_WINDOWSVISTA)
         if (QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA
@@ -737,10 +759,10 @@ void QWizardPrivate::init()
 
     updateButtonLayout();
 
-    for (int i = 0; i < NFallbackDefaultProperties; ++i)
+    for (uint i = 0; i < NFallbackDefaultProperties; ++i)
         defaultPropertyTable.append(QWizardDefaultProperty(fallbackProperties[i].className,
                                                            fallbackProperties[i].property,
-                                                           fallbackProperties[i].changedSignal));
+                                                           changed_signal(i)));
 }
 
 void QWizardPrivate::reset()
@@ -887,9 +909,28 @@ void QWizardPrivate::switchToPage(int newId, Direction direction)
 }
 
 // keep in sync with QWizard::WizardButton
-static const char * const buttonSlots[QWizard::NStandardButtons] = {
-    SLOT(back()), SLOT(next()), SLOT(next()), SLOT(accept()), SLOT(reject()),
-    SIGNAL(helpRequested())
+static const char * buttonSlots(QWizard::WizardButton which)
+{
+    switch (which) {
+    case QWizard::BackButton:
+        return SLOT(back());
+    case QWizard::NextButton:
+    case QWizard::CommitButton:
+        return SLOT(next());
+    case QWizard::FinishButton:
+        return SLOT(accept());
+    case QWizard::CancelButton:
+        return SLOT(reject());
+    case QWizard::HelpButton:
+        return SIGNAL(helpRequested());
+    case QWizard::CustomButton1:
+    case QWizard::CustomButton2:
+    case QWizard::CustomButton3:
+    case QWizard::Stretch:
+    case QWizard::NoButton:
+        Q_UNREACHABLE();
+    };
+    return 0;
 };
 
 QWizardLayoutInfo QWizardPrivate::layoutInfoForCurrentPage()
@@ -1405,7 +1446,7 @@ void QWizardPrivate::connectButton(QWizard::WizardButton which) const
 {
     Q_Q(const QWizard);
     if (which < QWizard::NStandardButtons) {
-        QObject::connect(btns[which], SIGNAL(clicked()), q, buttonSlots[which]);
+        QObject::connect(btns[which], SIGNAL(clicked()), q, buttonSlots(which));
     } else {
         QObject::connect(btns[which], SIGNAL(clicked()), q, SLOT(_q_emitCustomButtonClicked()));
     }
@@ -1424,6 +1465,11 @@ void QWizardPrivate::updateButtonTexts()
                 btns[i]->setText(buttonDefaultText(wizStyle, i, this));
         }
     }
+    // Vista: Add shortcut for 'next'. Note: native dialogs use ALT-Right
+    // even in RTL mode, so do the same, even if it might be counter-intuitive.
+    // The shortcut for 'back' is set in class QVistaBackButton.
+    if (btns[QWizard::NextButton])
+        btns[QWizard::NextButton]->setShortcut(isVistaThemeEnabled() ? QKeySequence(Qt::ALT | Qt::Key_Right) : QKeySequence());
 }
 
 void QWizardPrivate::updateButtonLayout()
@@ -1576,7 +1622,7 @@ bool QWizardPrivate::handleAeroStyleChange()
         if (isWindow)
             vistaHelper->setTitleBarIconAndCaptionVisible(false);
         QObject::connect(
-            vistaHelper->backButton(), SIGNAL(clicked()), q, buttonSlots[QWizard::BackButton]);
+            vistaHelper->backButton(), SIGNAL(clicked()), q, buttonSlots(QWizard::BackButton));
         vistaHelper->backButton()->show();
     } else {
         q->setMouseTracking(true); // ### original value possibly different
@@ -1665,6 +1711,10 @@ void QWizardPrivate::_q_updateButtonStates()
                            && canContinue);
     btn.finish->setVisible(buttonLayoutContains(QWizard::FinishButton)
                            && (canFinish || (opts & QWizard::HaveFinishButtonOnEarlyPages)));
+
+    if (!(opts & QWizard::NoCancelButton))
+        btn.cancel->setVisible(buttonLayoutContains(QWizard::CancelButton)
+                               && (canContinue || !(opts & QWizard::NoCancelButtonOnLastPage)));
 
     bool useDefault = !(opts & QWizard::NoDefaultButton);
     if (QPushButton *nextPush = qobject_cast<QPushButton *>(btn.next))
@@ -2150,6 +2200,7 @@ void QWizardAntiFlickerWidget::paintEvent(QPaintEvent *)
     \value HaveCustomButton1  Show the first user-defined button (CustomButton1).
     \value HaveCustomButton2  Show the second user-defined button (CustomButton2).
     \value HaveCustomButton3  Show the third user-defined button (CustomButton3).
+    \value NoCancelButtonOnLastPage   Don't show the \uicontrol Cancel button on the last page.
 
     \sa setOptions(), setOption(), testOption()
 */
@@ -2604,7 +2655,7 @@ void QWizard::setOptions(WizardOptions options)
         d->updateButtonLayout();
     } else if (changed & (NoBackButtonOnStartPage | NoBackButtonOnLastPage
                           | HaveNextButtonOnLastPage | HaveFinishButtonOnEarlyPages
-                          | DisabledBackButtonOnLastPage)) {
+                          | DisabledBackButtonOnLastPage | NoCancelButtonOnLastPage)) {
         d->_q_updateButtonStates();
     }
 

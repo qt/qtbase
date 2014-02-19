@@ -36,6 +36,8 @@ HEADERS = \
     qiosinputcontext.h \
     qiostheme.h \
     qiosglobal.h \
-    qiosservices.h
+    qiosservices.h \
+    quiview.h
 
-#HEADERS = qiossoftwareinputhandler.h
+OTHER_FILES = \
+    quiview_textinput.mm

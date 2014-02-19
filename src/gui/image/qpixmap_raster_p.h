@@ -69,6 +69,7 @@ public:
     void resize(int width, int height);
     bool fromData(const uchar *buffer, uint len, const char *format, Qt::ImageConversionFlags flags);
     void fromImage(const QImage &image, Qt::ImageConversionFlags flags);
+    void fromImageInPlace(QImage &image, Qt::ImageConversionFlags flags);
     void fromImageReader(QImageReader *imageReader, Qt::ImageConversionFlags flags);
 
     void copy(const QPlatformPixmap *data, const QRect &rect);

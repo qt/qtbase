@@ -76,6 +76,7 @@ private Q_SLOTS:
     void testObjectNested();
     void testArrayNested();
     void testArrayNestedEmpty();
+    void testArrayComfortOperators();
     void testObjectNestedEmpty();
 
     void testValueRef();
@@ -665,6 +666,20 @@ void tst_QtJson::testObjectNestedEmpty()
     QCOMPARE(reconstituted.value("inner2").type(), QJsonValue::Object);
 }
 
+void tst_QtJson::testArrayComfortOperators()
+{
+    QJsonArray first;
+    first.append(123.);
+    first.append(QLatin1String("foo"));
+
+    QJsonArray second = QJsonArray() << 123. << QLatin1String("foo");
+    QCOMPARE(first, second);
+
+    first = first + QLatin1String("bar");
+    second += QLatin1String("bar");
+    QCOMPARE(first, second);
+}
+
 void tst_QtJson::testValueRef()
 {
     QJsonArray array;
@@ -1194,7 +1209,7 @@ void tst_QtJson::toJson()
 
         QByteArray json = QJsonDocument(object).toJson(QJsonDocument::Compact);
         QByteArray expected =
-                "{\"Array\": [true,999,\"string\",null,\"\\\\\\u0007\\n\\r\\b\\tabcABC\\\"\"],\"\\\\Key\\n\": \"Value\",\"null\": null}";
+                "{\"Array\":[true,999,\"string\",null,\"\\\\\\u0007\\n\\r\\b\\tabcABC\\\"\"],\"\\\\Key\\n\":\"Value\",\"null\":null}";
         QCOMPARE(json, expected);
 
         QJsonDocument doc;
@@ -1546,7 +1561,7 @@ void tst_QtJson::fromJsonErrors()
         QJsonDocument doc = QJsonDocument::fromJson(json, &error);
         QVERIFY(doc.isEmpty());
         QCOMPARE(error.error, QJsonParseError::IllegalUTF8String);
-        QCOMPARE(error.offset, 14);
+        QCOMPARE(error.offset, 12);
     }
     {
         QJsonParseError error;
@@ -1570,7 +1585,7 @@ void tst_QtJson::fromJsonErrors()
         QJsonDocument doc = QJsonDocument::fromJson(json, &error);
         QVERIFY(doc.isEmpty());
         QCOMPARE(error.error, QJsonParseError::IllegalUTF8String);
-        QCOMPARE(error.offset, 15);
+        QCOMPARE(error.offset, 13);
     }
     {
         QJsonParseError error;
@@ -1985,11 +2000,11 @@ void tst_QtJson::testDebugStream()
         // QJsonObject
 
         QJsonObject object;
-        QTest::ignoreMessage(QtDebugMsg, "QJsonObject() ");
+        QTest::ignoreMessage(QtDebugMsg, "QJsonObject()");
         qDebug() << object;
 
         object.insert(QLatin1String("foo"), QLatin1String("bar"));
-        QTest::ignoreMessage(QtDebugMsg, "QJsonObject({\"foo\": \"bar\"}) ");
+        QTest::ignoreMessage(QtDebugMsg, "QJsonObject({\"foo\":\"bar\"})");
         qDebug() << object;
     }
 
@@ -1997,12 +2012,12 @@ void tst_QtJson::testDebugStream()
         // QJsonArray
 
         QJsonArray array;
-        QTest::ignoreMessage(QtDebugMsg, "QJsonArray() ");
+        QTest::ignoreMessage(QtDebugMsg, "QJsonArray()");
         qDebug() << array;
 
         array.append(1);
         array.append(QLatin1String("foo"));
-        QTest::ignoreMessage(QtDebugMsg, "QJsonArray([1,\"foo\"]) ");
+        QTest::ignoreMessage(QtDebugMsg, "QJsonArray([1,\"foo\"])");
         qDebug() << array;
     }
 
@@ -2010,19 +2025,19 @@ void tst_QtJson::testDebugStream()
         // QJsonDocument
 
         QJsonDocument doc;
-        QTest::ignoreMessage(QtDebugMsg, "QJsonDocument() ");
+        QTest::ignoreMessage(QtDebugMsg, "QJsonDocument()");
         qDebug() << doc;
 
         QJsonObject object;
         object.insert(QLatin1String("foo"), QLatin1String("bar"));
         doc.setObject(object);
-        QTest::ignoreMessage(QtDebugMsg, "QJsonDocument({\"foo\": \"bar\"}) ");
+        QTest::ignoreMessage(QtDebugMsg, "QJsonDocument({\"foo\":\"bar\"})");
         qDebug() << doc;
 
         QJsonArray array;
         array.append(1);
         array.append(QLatin1String("foo"));
-        QTest::ignoreMessage(QtDebugMsg, "QJsonDocument([1,\"foo\"]) ");
+        QTest::ignoreMessage(QtDebugMsg, "QJsonDocument([1,\"foo\"])");
         doc.setArray(array);
         qDebug() << doc;
     }
@@ -2032,36 +2047,36 @@ void tst_QtJson::testDebugStream()
 
         QJsonValue value;
 
-        QTest::ignoreMessage(QtDebugMsg, "QJsonValue(null) ");
+        QTest::ignoreMessage(QtDebugMsg, "QJsonValue(null)");
         qDebug() << value;
 
         value = QJsonValue(true); // bool
-        QTest::ignoreMessage(QtDebugMsg, "QJsonValue(bool, true) ");
+        QTest::ignoreMessage(QtDebugMsg, "QJsonValue(bool, true)");
         qDebug() << value;
 
         value = QJsonValue((double)4.2); // double
-        QTest::ignoreMessage(QtDebugMsg, "QJsonValue(double, 4.2) ");
+        QTest::ignoreMessage(QtDebugMsg, "QJsonValue(double, 4.2)");
         qDebug() << value;
 
         value = QJsonValue((int)42); // int
-        QTest::ignoreMessage(QtDebugMsg, "QJsonValue(double, 42) ");
+        QTest::ignoreMessage(QtDebugMsg, "QJsonValue(double, 42)");
         qDebug() << value;
 
         value = QJsonValue(QLatin1String("foo")); // string
-        QTest::ignoreMessage(QtDebugMsg, "QJsonValue(string, \"foo\") ");
+        QTest::ignoreMessage(QtDebugMsg, "QJsonValue(string, \"foo\")");
         qDebug() << value;
 
         QJsonArray array;
         array.append(1);
         array.append(QLatin1String("foo"));
         value = QJsonValue(array); // array
-        QTest::ignoreMessage(QtDebugMsg, "QJsonValue(array, QJsonArray([1,\"foo\"]) ) ");
+        QTest::ignoreMessage(QtDebugMsg, "QJsonValue(array, QJsonArray([1,\"foo\"]) )");
         qDebug() << value;
 
         QJsonObject object;
         object.insert(QLatin1String("foo"), QLatin1String("bar"));
         value = QJsonValue(object); // object
-        QTest::ignoreMessage(QtDebugMsg, "QJsonValue(object, QJsonObject({\"foo\": \"bar\"}) ) ");
+        QTest::ignoreMessage(QtDebugMsg, "QJsonValue(object, QJsonObject({\"foo\":\"bar\"}) )");
         qDebug() << value;
     }
 }
@@ -2227,6 +2242,14 @@ void tst_QtJson::valueEquals()
     QVERIFY(QJsonValue(QJsonObject()) != QJsonValue(true));
     QVERIFY(QJsonValue(QJsonObject()) != QJsonValue(1.));
     QVERIFY(QJsonValue(QJsonObject()) != QJsonValue(QJsonArray()));
+
+    QVERIFY(QJsonValue("foo") == QJsonValue(QLatin1String("foo")));
+    QVERIFY(QJsonValue("foo") == QJsonValue(QString("foo")));
+    QVERIFY(QJsonValue("\x66\x6f\x6f") == QJsonValue(QString("foo")));
+    QVERIFY(QJsonValue("\x62\x61\x72") == QJsonValue("bar"));
+    QVERIFY(QJsonValue(UNICODE_NON_CHARACTER) == QJsonValue(QString(UNICODE_NON_CHARACTER)));
+    QVERIFY(QJsonValue(UNICODE_DJE) == QJsonValue(QString(UNICODE_DJE)));
+    QVERIFY(QJsonValue("\xc3\xa9") == QJsonValue(QString("\xc3\xa9")));
 }
 
 void tst_QtJson::bom()

@@ -92,6 +92,7 @@ public:
     virtual bool shouldQuit();
 
     bool shouldQuitInternal(const QWindowList &processedWindows);
+    virtual bool tryCloseAllWindows();
 
     static Qt::KeyboardModifiers modifier_buttons;
     static Qt::MouseButtons mouse_buttons;
@@ -171,7 +172,7 @@ public:
     {
         if (!(alignment & Qt::AlignHorizontal_Mask))
             alignment |= Qt::AlignLeft;
-        if ((alignment & Qt::AlignAbsolute) == 0 && (alignment & (Qt::AlignLeft | Qt::AlignRight))) {
+        if (!(alignment & Qt::AlignAbsolute) && (alignment & (Qt::AlignLeft | Qt::AlignRight))) {
             if (direction == Qt::RightToLeft)
                 alignment ^= (Qt::AlignLeft | Qt::AlignRight);
             alignment |= Qt::AlignAbsolute;
@@ -187,6 +188,7 @@ public:
 
     static QGuiApplicationPrivate *instance() { return self; }
 
+    static QIcon *app_icon;
     static QString *platform_name;
     static QString *displayName;
 
@@ -231,6 +233,8 @@ public:
     static bool noGrab;
     QInputMethod *inputMethod;
 
+    QString firstWindowTitle;
+
     static QList<QObject *> generic_plugin_list;
 #ifndef QT_NO_SHORTCUT
     QShortcutMap shortcutMap;
@@ -268,12 +272,19 @@ public:
     static int mouseEventCaps(QMouseEvent *event);
     static QVector2D mouseEventVelocity(QMouseEvent *event);
     static void setMouseEventCapsAndVelocity(QMouseEvent *event, int caps, const QVector2D &velocity);
-    static void setMouseEventCapsAndVelocity(QMouseEvent *event, QMouseEvent *other);
+
+    static Qt::MouseEventSource mouseEventSource(const QMouseEvent *event);
+    static void setMouseEventSource(QMouseEvent *event, Qt::MouseEventSource source);
+
+    static Qt::MouseEventFlags mouseEventFlags(const QMouseEvent *event);
+    static void setMouseEventFlags(QMouseEvent *event, Qt::MouseEventFlags flags);
 
     const QDrawHelperGammaTables *gammaTables();
 
     // hook reimplemented in QApplication to apply the QStyle function on the QIcon
     virtual QPixmap applyQIconStyleHelper(QIcon::Mode, const QPixmap &basePixmap) const { return basePixmap; }
+
+    virtual void notifyWindowIconChanged();
 
     static QRect applyWindowGeometrySpecification(const QRect &windowGeometry, const QWindow *window);
 
@@ -281,6 +292,7 @@ public:
 
 protected:
     virtual void notifyThemeChanged();
+    bool tryCloseRemainingWindows(QWindowList processedWindows);
 #ifndef QT_NO_DRAGANDDROP
     virtual void notifyDragStarted(const QDrag *);
 #endif // QT_NO_DRAGANDDROP

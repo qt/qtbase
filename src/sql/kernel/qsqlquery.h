@@ -70,6 +70,7 @@ public:
     bool isValid() const;
     bool isActive() const;
     bool isNull(int field) const;
+    bool isNull(const QString &name) const;
     int at() const;
     QString lastQuery() const;
     int numRowsAffected() const;

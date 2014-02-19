@@ -91,10 +91,10 @@ public:
     virtual bool isPhase2() const;
     virtual void requestPhase2();
 
-protected:
-    virtual void appCommitData();
-    virtual void appSaveState();
+    void appCommitData();
+    void appSaveState();
 
+protected:
     QString m_sessionId;
     QString m_sessionKey;
 

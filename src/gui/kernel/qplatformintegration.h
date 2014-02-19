@@ -95,7 +95,8 @@ public:
         NonFullScreenWindows,
         NativeWidgets,
         WindowManagement,
-        SyncState
+        SyncState,
+        RasterGLSurface
     };
 
     virtual ~QPlatformIntegration() { }
@@ -148,7 +149,8 @@ public:
         SynthesizeMouseFromTouchEvents,
         PasswordMaskCharacter,
         SetFocusOnTouchRelease,
-        ShowIsMaximized
+        ShowIsMaximized,
+        MousePressAndHoldInterval
     };
 
     virtual QVariant styleHint(StyleHint hint) const;

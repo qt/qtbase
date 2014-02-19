@@ -7,7 +7,7 @@ INCLUDEPATH += \
 LIBS_PRIVATE = $$QMAKE_LIBS_CORE $$QMAKE_LIBS_GUI
 
 # DirectX is included in the Windows 8 Kit, but everything else requires the DX SDK.
-win32-msvc2012|win32-msvc2013 {
+win32-msvc2012|win32-msvc2013|winrt {
     FXC = fxc.exe
 } else {
     DX_DIR = $$(DXSDK_DIR)

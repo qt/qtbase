@@ -77,11 +77,11 @@ void tst_QPolygon::makeEllipse()
     // make sure that all points are R+-1 away from the center
     bool err = false;
     for (i = 1; i < pa.size(); i++) {
-	QPoint p = pa.at( i );
-	double r = sqrt( pow( double(p.x() - R), 2.0 ) + pow( double(p.y() - R), 2.0 ) );
-	// ### too strict ? at least from visual inspection it looks
-	// quite odd around the main axes. 2.0 passes easily.
-	err |= ( qAbs( r - double(R) ) > 2.0 );
+        QPoint p = pa.at(i);
+        double r = sqrt(pow(double(p.x() - R), 2.0) + pow(double(p.y() - R), 2.0));
+        // ### too strict ? at least from visual inspection it looks
+        // quite odd around the main axes. 2.0 passes easily.
+        err |= (qAbs(r - double(R)) > 2.0);
     }
     QVERIFY( !err );
 }

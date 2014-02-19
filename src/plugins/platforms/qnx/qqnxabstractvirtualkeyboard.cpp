@@ -1,6 +1,6 @@
 /***************************************************************************
 **
-** Copyright (C) 2011 - 2012 Research In Motion
+** Copyright (C) 2013 BlackBerry Limited. All rights reserved.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -49,6 +49,7 @@ QQnxAbstractVirtualKeyboard::QQnxAbstractVirtualKeyboard(QObject *parent)
     , m_visible(false)
     , m_locale(QLocale::system())
     , m_keyboardMode(Default)
+    , m_enterKeyType(DefaultReturn)
 {
 }
 
@@ -59,26 +60,35 @@ void QQnxAbstractVirtualKeyboard::setKeyboardMode(KeyboardMode mode)
 
     m_keyboardMode = mode;
 
-    applyKeyboardMode(mode);
+    if (m_visible)
+        applyKeyboardOptions();
 }
 
-void QQnxAbstractVirtualKeyboard::setInputHintsFromObject(QObject *focusObject)
+void QQnxAbstractVirtualKeyboard::setEnterKeyType(EnterKeyType type)
 {
-    if (focusObject) {
-        const Qt::InputMethodHints hints = static_cast<Qt::InputMethodHints>(
-                    focusObject->property("inputMethodHints").toInt());
-        if (hints & Qt::ImhEmailCharactersOnly) {
-            setKeyboardMode(QQnxAbstractVirtualKeyboard::Email);
-        } else if (hints & Qt::ImhDialableCharactersOnly) {
-            setKeyboardMode(QQnxAbstractVirtualKeyboard::Phone);
-        } else if (hints & Qt::ImhUrlCharactersOnly) {
-            setKeyboardMode(QQnxAbstractVirtualKeyboard::Web);
-        } else if (hints & Qt::ImhFormattedNumbersOnly || hints & Qt::ImhDigitsOnly ||
-                   hints & Qt::ImhDate || hints & Qt::ImhTime) {
-            setKeyboardMode(QQnxAbstractVirtualKeyboard::NumPunc);
-        } else {
-            setKeyboardMode(QQnxAbstractVirtualKeyboard::Default);
-        }
+    if (type == m_enterKeyType)
+        return;
+
+    m_enterKeyType = type;
+
+    if (m_visible)
+        applyKeyboardOptions();
+}
+
+void QQnxAbstractVirtualKeyboard::setInputHints(int inputHints)
+{
+    if (inputHints & Qt::ImhEmailCharactersOnly) {
+        setKeyboardMode(QQnxAbstractVirtualKeyboard::Email);
+    } else if (inputHints & Qt::ImhDialableCharactersOnly) {
+        setKeyboardMode(QQnxAbstractVirtualKeyboard::Phone);
+    } else if (inputHints & Qt::ImhUrlCharactersOnly) {
+        setKeyboardMode(QQnxAbstractVirtualKeyboard::Url);
+    } else if (inputHints & Qt::ImhFormattedNumbersOnly || inputHints & Qt::ImhDigitsOnly) {
+        setKeyboardMode(QQnxAbstractVirtualKeyboard::Number);
+    } else if (inputHints & Qt::ImhDate || inputHints & Qt::ImhTime) {
+        setKeyboardMode(QQnxAbstractVirtualKeyboard::NumPunc); // Use NumPunc so that : is available.
+    } else if (inputHints & Qt::ImhHiddenText) {
+        setKeyboardMode(QQnxAbstractVirtualKeyboard::Password);
     } else {
         setKeyboardMode(QQnxAbstractVirtualKeyboard::Default);
     }

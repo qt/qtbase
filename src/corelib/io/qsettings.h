@@ -117,7 +117,7 @@ public:
     QSettings(Scope scope, const QString &organization,
               const QString &application = QString(), QObject *parent = 0);
     QSettings(Format format, Scope scope, const QString &organization,
-	      const QString &application = QString(), QObject *parent = 0);
+              const QString &application = QString(), QObject *parent = 0);
     QSettings(const QString &fileName, Format format, QObject *parent = 0);
     explicit QSettings(QObject *parent = 0);
 #else

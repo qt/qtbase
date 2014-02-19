@@ -66,14 +66,13 @@ QT_BEGIN_NAMESPACE
 
 #if !defined(QT_NO_GRAPHICSVIEW)
 
-class QGraphicsSceneIndexIntersector;
-class QGraphicsSceneIndexPointIntersector;
-class QGraphicsSceneIndexRectIntersector;
-class QGraphicsSceneIndexPathIntersector;
 class QGraphicsSceneIndexPrivate;
 class QPointF;
 class QRectF;
 template<typename T> class QList;
+
+typedef bool (*QGraphicsSceneIndexIntersector)(const QGraphicsItem *item, const QRectF &exposeRect, Qt::ItemSelectionMode mode,
+                                               const QTransform &deviceTransform, const void *data);
 
 class Q_AUTOTEST_EXPORT QGraphicsSceneIndex : public QObject
 {
@@ -133,42 +132,30 @@ public:
     static bool itemCollidesWithPath(const QGraphicsItem *item, const QPainterPath &path, Qt::ItemSelectionMode mode);
 
     void recursive_items_helper(QGraphicsItem *item, QRectF exposeRect,
-                                QGraphicsSceneIndexIntersector *intersector, QList<QGraphicsItem *> *items,
+                                QGraphicsSceneIndexIntersector intersect, QList<QGraphicsItem *> *items,
                                 const QTransform &viewTransform,
-                                Qt::ItemSelectionMode mode, qreal parentOpacity = 1.0) const;
-    inline void items_helper(const QRectF &rect, QGraphicsSceneIndexIntersector *intersector,
+                                Qt::ItemSelectionMode mode, qreal parentOpacity, const void *intersectData) const;
+    inline void items_helper(const QRectF &rect, QGraphicsSceneIndexIntersector intersect,
                              QList<QGraphicsItem *> *items, const QTransform &viewTransform,
-                             Qt::ItemSelectionMode mode, Qt::SortOrder order) const;
+                             Qt::ItemSelectionMode mode, Qt::SortOrder order, const void *intersectData) const;
 
     QGraphicsScene *scene;
-    QGraphicsSceneIndexPointIntersector *pointIntersector;
-    QGraphicsSceneIndexRectIntersector *rectIntersector;
-    QGraphicsSceneIndexPathIntersector *pathIntersector;
 };
 
-inline void QGraphicsSceneIndexPrivate::items_helper(const QRectF &rect, QGraphicsSceneIndexIntersector *intersector,
+inline void QGraphicsSceneIndexPrivate::items_helper(const QRectF &rect, QGraphicsSceneIndexIntersector intersect,
                                                      QList<QGraphicsItem *> *items, const QTransform &viewTransform,
-                                                     Qt::ItemSelectionMode mode, Qt::SortOrder order) const
+                                                     Qt::ItemSelectionMode mode, Qt::SortOrder order, const void *intersectData) const
 {
     Q_Q(const QGraphicsSceneIndex);
     const QList<QGraphicsItem *> tli = q->estimateTopLevelItems(rect, Qt::AscendingOrder);
     for (int i = 0; i < tli.size(); ++i)
-        recursive_items_helper(tli.at(i), rect, intersector, items, viewTransform, mode);
+        recursive_items_helper(tli.at(i), rect, intersect, items, viewTransform, mode, 1.0, intersectData);
     if (order == Qt::DescendingOrder) {
         const int n = items->size();
         for (int i = 0; i < n / 2; ++i)
             items->swap(i, n - i - 1);
     }
 }
-
-class QGraphicsSceneIndexIntersector
-{
-public:
-    QGraphicsSceneIndexIntersector() { }
-    virtual ~QGraphicsSceneIndexIntersector() { }
-    virtual bool intersect(const QGraphicsItem *item, const QRectF &exposeRect, Qt::ItemSelectionMode mode,
-                           const QTransform &deviceTransform) const = 0;
-};
 
 #endif // QT_NO_GRAPHICSVIEW
 

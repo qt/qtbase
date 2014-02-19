@@ -90,6 +90,9 @@ class tst_QAccessibilityLinux : public QObject
 {
     Q_OBJECT
 
+public:
+    tst_QAccessibilityLinux() : m_window(0), root(0), rootApplication(0), mainWindow(0) {}
+
 private slots:
     void initTestCase();
 

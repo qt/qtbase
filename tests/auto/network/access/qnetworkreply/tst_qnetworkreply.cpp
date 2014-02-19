@@ -97,7 +97,9 @@ Q_DECLARE_METATYPE(QSharedPointer<char>)
 #include "../../../network-settings.h"
 
 Q_DECLARE_METATYPE(QAuthenticator*)
+#ifndef QT_NO_NETWORKPROXY
 Q_DECLARE_METATYPE(QNetworkProxyQuery)
+#endif
 
 typedef QSharedPointer<QNetworkReply> QNetworkReplyPtr;
 
@@ -106,6 +108,7 @@ class tst_QNetworkReply: public QObject
 {
     Q_OBJECT
 
+#ifndef QT_NO_NETWORKPROXY
     struct ProxyData {
         ProxyData(const QNetworkProxy &p, const QByteArray &t, bool auth)
             : tag(t), proxy(p), requiresAuthentication(auth)
@@ -114,6 +117,7 @@ class tst_QNetworkReply: public QObject
         QNetworkProxy proxy;
         bool requiresAuthentication;
     };
+#endif // !QT_NO_NETWORKPROXY
 
     static bool seedCreated;
     static QString createUniqueExtension() {
@@ -134,7 +138,9 @@ class tst_QNetworkReply: public QObject
     QString wronlyFileName;
 #endif
     QString uniqueExtension;
+#ifndef QT_NO_NETWORKPROXY
     QList<ProxyData> proxies;
+#endif
     QNetworkAccessManager manager;
     MyCookieJar *cookieJar;
 #ifndef QT_NO_SSL
@@ -203,8 +209,10 @@ private Q_SLOTS:
     void getFromHttp();
     void getErrors_data();
     void getErrors();
+#ifndef QT_NO_NETWORKPROXY
     void headFromHttp_data();
     void headFromHttp();
+#endif // !QT_NO_NETWORKPROXY
     void putToFile_data();
     void putToFile();
     void putToFtp_data();
@@ -261,9 +269,11 @@ private Q_SLOTS:
     void ioGetFromHttpWithAuth_data();
     void ioGetFromHttpWithAuth();
     void ioGetFromHttpWithAuthSynchronous();
+#ifndef QT_NO_NETWORKPROXY
     void ioGetFromHttpWithProxyAuth();
     void ioGetFromHttpWithProxyAuthSynchronous();
     void ioGetFromHttpWithSocksProxy();
+#endif // !QT_NO_NETWORKPROXY
 #ifndef QT_NO_SSL
     void ioGetFromHttpsWithSslErrors();
     void ioGetFromHttpsWithIgnoreSslErrors();
@@ -278,8 +288,10 @@ private Q_SLOTS:
     void ioGetFromHttpWithCache_data();
     void ioGetFromHttpWithCache();
 
+#ifndef QT_NO_NETWORKPROXY
     void ioGetWithManyProxies_data();
     void ioGetWithManyProxies();
+#endif // !QT_NO_NETWORKPROXY
 
     void ioPutToFileFromFile_data();
     void ioPutToFileFromFile();
@@ -297,10 +309,12 @@ private Q_SLOTS:
     void ioPutToHttpFromFile();
     void ioPostToHttpFromFile_data();
     void ioPostToHttpFromFile();
+#ifndef QT_NO_NETWORKPROXY
     void ioPostToHttpFromSocket_data();
     void ioPostToHttpFromSocket();
     void ioPostToHttpFromSocketSynchronous();
     void ioPostToHttpFromSocketSynchronous_data();
+#endif // !QT_NO_NETWORKPROXY
     void ioPostToHttpFromMiddleOfFileToEnd();
     void ioPostToHttpFromMiddleOfFileFiveBytes();
     void ioPostToHttpFromMiddleOfQBufferFiveBytes();
@@ -339,11 +353,13 @@ private Q_SLOTS:
 
     void nestedEventLoops();
 
+#ifndef QT_NO_NETWORKPROXY
     void httpProxyCommands_data();
     void httpProxyCommands();
     void httpProxyCommandsSynchronous_data();
     void httpProxyCommandsSynchronous();
     void proxyChange();
+#endif // !QT_NO_NETWORKPROXY
     void authorizationError_data();
     void authorizationError();
 
@@ -419,9 +435,11 @@ private Q_SLOTS:
     void dontInsertPartialContentIntoTheCache();
 
     void httpUserAgent();
+#ifndef QT_NO_NETWORKPROXY
     void authenticationCacheAfterCancel_data();
     void authenticationCacheAfterCancel();
     void authenticationWithDifferentRealm();
+#endif // !QT_NO_NETWORKPROXY
     void synchronousAuthenticationCache();
     void pipelining();
 
@@ -638,6 +656,7 @@ public:
         { QNetworkCookieJar::setAllCookies(cookieList); }
 };
 
+#ifndef QT_NO_NETWORKPROXY
 class MyProxyFactory: public QNetworkProxyFactory
 {
 public:
@@ -660,6 +679,7 @@ public:
         return toReturn;
     }
 };
+#endif // !QT_NO_NETWORKPROXY
 
 class MyMemoryCache: public QAbstractNetworkCache
 {
@@ -1154,7 +1174,9 @@ tst_QNetworkReply::tst_QNetworkReply()
 {
     qRegisterMetaType<QNetworkReply *>(); // for QSignalSpy
     qRegisterMetaType<QAuthenticator *>();
+#ifndef QT_NO_NETWORKPROXY
     qRegisterMetaType<QNetworkProxy>();
+#endif
 #ifndef QT_NO_SSL
     qRegisterMetaType<QList<QSslError> >();
 #endif
@@ -1165,6 +1187,7 @@ tst_QNetworkReply::tst_QNetworkReply()
     cookieJar = new MyCookieJar;
     manager.setCookieJar(cookieJar);
 
+#ifndef QT_NO_NETWORKPROXY
     QHostInfo hostInfo = QHostInfo::fromName(QtNetworkSettings::serverName());
 
     proxies << ProxyData(QNetworkProxy::NoProxy, "", false);
@@ -1178,10 +1201,13 @@ tst_QNetworkReply::tst_QNetworkReply()
                 << ProxyData(QNetworkProxy(QNetworkProxy::Socks5Proxy, proxyserver, 1080), "+socks", false)
                 << ProxyData(QNetworkProxy(QNetworkProxy::Socks5Proxy, proxyserver, 1081), "+socksauth", true);
     } else {
+#endif // !QT_NO_NETWORKPROXY
         printf("==================================================================\n");
         printf("Proxy could not be looked up. No proxy will be used while testing!\n");
         printf("==================================================================\n");
+#ifndef QT_NO_NETWORKPROXY
     }
+#endif // !QT_NO_NETWORKPROXY
 }
 
 tst_QNetworkReply::~tst_QNetworkReply()
@@ -1438,7 +1464,9 @@ void tst_QNetworkReply::cleanup()
 
     // clear the internal cache
     manager.clearAccessCache();
+#ifndef QT_NO_NETWORKPROXY
     manager.setProxy(QNetworkProxy());
+#endif
     manager.setCache(0);
 
     // clear cookies
@@ -1732,6 +1760,7 @@ void tst_QNetworkReply::getFromHttp()
     QCOMPARE(reply->readAll(), reference.readAll());
 }
 
+#ifndef QT_NO_NETWORKPROXY
 void tst_QNetworkReply::headFromHttp_data()
 {
     QTest::addColumn<qint64>("referenceSize");
@@ -1790,6 +1819,7 @@ void tst_QNetworkReply::headFromHttp()
     if (reply->header(QNetworkRequest::ContentTypeHeader).isValid())
         QCOMPARE(reply->header(QNetworkRequest::ContentTypeHeader).toString(), contentType);
 }
+#endif // !QT_NO_NETWORKPROXY
 
 void tst_QNetworkReply::getErrors_data()
 {
@@ -2826,9 +2856,9 @@ void tst_QNetworkReply::sendCustomRequestToHttp_data()
     QTest::newRow("trace") << QUrl("http://" + QtNetworkSettings::serverName()) <<
             QByteArray("TRACE") << (QBuffer *) 0 << 200 << QNetworkReply::NoError << QByteArray();
     QTest::newRow("connect") << QUrl("http://" + QtNetworkSettings::serverName()) <<
-            QByteArray("CONNECT") << (QBuffer *) 0 << 400 << QNetworkReply::UnknownContentError << QByteArray(); // 400 = Bad Request
+            QByteArray("CONNECT") << (QBuffer *) 0 << 400 << QNetworkReply::ProtocolInvalidOperationError << QByteArray(); // 400 = Bad Request
     QTest::newRow("nonsense") << QUrl("http://" + QtNetworkSettings::serverName()) <<
-            QByteArray("NONSENSE") << (QBuffer *) 0 << 501 << QNetworkReply::ProtocolUnknownError << QByteArray(); // 501 = Method Not Implemented
+            QByteArray("NONSENSE") << (QBuffer *) 0 << 501 << QNetworkReply::OperationNotImplementedError << QByteArray(); // 501 = Method Not Implemented
 
     QByteArray ba("test");
     QBuffer *buffer = new QBuffer;
@@ -3270,6 +3300,7 @@ void tst_QNetworkReply::ioGetFromHttpWithAuthSynchronous()
     QCOMPARE(replySync->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 401);
 }
 
+#ifndef QT_NO_NETWORKPROXY
 void tst_QNetworkReply::ioGetFromHttpWithProxyAuth()
 {
     // This test sends three requests
@@ -3432,6 +3463,7 @@ void tst_QNetworkReply::ioGetFromHttpWithSocksProxy()
         QCOMPARE(authspy.count(), 0);
     }
 }
+#endif // !QT_NO_NETWORKPROXY
 
 #ifndef QT_NO_SSL
 void tst_QNetworkReply::ioGetFromHttpsWithSslErrors()
@@ -3793,6 +3825,7 @@ void tst_QNetworkReply::ioGetFromHttpWithCache()
     QCOMPARE(reply->readAll().constData(), qPrintable(body));
 }
 
+#ifndef QT_NO_NETWORKPROXY
 void tst_QNetworkReply::ioGetWithManyProxies_data()
 {
     QTest::addColumn<QList<QNetworkProxy> >("proxyList");
@@ -4054,6 +4087,7 @@ void tst_QNetworkReply::ioGetWithManyProxies()
         QCOMPARE(authspy.count(), 0);
     }
 }
+#endif // !QT_NO_NETWORKPROXY
 
 void tst_QNetworkReply::ioPutToFileFromFile_data()
 {
@@ -4346,6 +4380,7 @@ void tst_QNetworkReply::ioPostToHttpFromFile()
     QCOMPARE(reply->readAll().trimmed(), md5sum(sourceFile.readAll()).toHex());
 }
 
+#ifndef QT_NO_NETWORKPROXY
 void tst_QNetworkReply::ioPostToHttpFromSocket_data()
 {
     QTest::addColumn<QByteArray>("data");
@@ -4496,6 +4531,7 @@ void tst_QNetworkReply::ioPostToHttpFromSocketSynchronous()
 
     QCOMPARE(reply->readAll().trimmed(), md5sum(data).toHex());
 }
+#endif // !QT_NO_NETWORKPROXY
 
 // this tests checks if rewinding the POST-data to some place in the middle
 // worked.
@@ -5410,6 +5446,7 @@ void tst_QNetworkReply::nestedEventLoops()
     QCOMPARE(errorspy.count(), 0);
 }
 
+#ifndef QT_NO_NETWORKPROXY
 void tst_QNetworkReply::httpProxyCommands_data()
 {
     QTest::addColumn<QUrl>("url");
@@ -5485,6 +5522,7 @@ void tst_QNetworkReply::httpProxyCommandsSynchronous_data()
 {
     httpProxyCommands_data();
 }
+#endif // !QT_NO_NETWORKPROXY
 
 struct QThreadCleanup
 {
@@ -5506,6 +5544,7 @@ struct QDeleteLaterCleanup
     }
 };
 
+#ifndef QT_NO_NETWORKPROXY
 void tst_QNetworkReply::httpProxyCommandsSynchronous()
 {
     QFETCH(QUrl, url);
@@ -5586,6 +5625,7 @@ void tst_QNetworkReply::proxyChange()
 
     QVERIFY(int(reply3->error()) > 0);
 }
+#endif // !QT_NO_NETWORKPROXY
 
 void tst_QNetworkReply::authorizationError_data()
 {
@@ -6502,6 +6542,7 @@ void tst_QNetworkReply::qtbug4121unknownAuthentication()
     QCOMPARE(reply->error(), QNetworkReply::AuthenticationRequiredError);
 }
 
+#ifndef QT_NO_NETWORKPROXY
 void tst_QNetworkReply::authenticationCacheAfterCancel_data()
 {
     QTest::addColumn<QNetworkProxy>("proxy");
@@ -6715,6 +6756,7 @@ void tst_QNetworkReply::authenticationWithDifferentRealm()
     QVERIFY(!QTestEventLoop::instance().timeout());
     QCOMPARE(reply->error(), QNetworkReply::NoError);
 }
+#endif // !QT_NO_NETWORKPROXY
 
 class QtBug13431Helper : public QObject {
     Q_OBJECT

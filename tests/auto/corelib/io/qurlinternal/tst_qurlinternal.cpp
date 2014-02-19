@@ -1040,7 +1040,7 @@ void tst_QUrlInternal::encodingRecodeInvalidUtf8()
     output = QTest::currentDataTag();
     if (!qt_urlRecode(output, input.constData(), input.constData() + input.length(), QUrl::FullyEncoded))
         output += input;
-    for (int i = strlen(QTest::currentDataTag()); i < output.length(); ++i) {
+    for (int i = int(strlen(QTest::currentDataTag())); i < output.length(); ++i) {
         QVERIFY2(output.at(i).unicode() < 0x80 || output.at(i) == QChar::ReplacementCharacter,
                  qPrintable(QString("Character at i == %1 was U+%2").arg(i).arg(output.at(i).unicode(), 4, 16, QLatin1Char('0'))));
     }

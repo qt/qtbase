@@ -43,7 +43,7 @@
 #include <qpa/qplatformintegrationplugin.h>
 #include <QtCore/QStringList>
 
-#include "qwindowsintegration.h"
+#include "qwindowsgdiintegration.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -113,7 +113,7 @@ public:
 QPlatformIntegration *QWindowsIntegrationPlugin::create(const QString& system, const QStringList& paramList, int &, char **)
 {
     if (system.compare(system, QStringLiteral("windows"), Qt::CaseInsensitive) == 0)
-        return new QWindowsIntegration(paramList);
+        return new QWindowsGdiIntegration(paramList);
     return 0;
 }
 

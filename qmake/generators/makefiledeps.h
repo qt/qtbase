@@ -78,6 +78,7 @@ private:
     SourceFiles *files, *includes;
     bool files_changed;
     QList<QMakeLocalFileName> depdirs;
+    QStringList systemIncludes;
 
     //sleezy buffer code
     char *spare_buffer;
@@ -98,6 +99,7 @@ protected:
     virtual QFileInfo findFileInfo(const QMakeLocalFileName &);
 
 public:
+
     QMakeSourceFileInfo(const QString &cachefile="");
     virtual ~QMakeSourceFileInfo();
 
@@ -108,11 +110,15 @@ public:
     inline void setDependencyMode(DependencyMode mode) { dep_mode = mode; }
     inline DependencyMode dependencyMode() const { return dep_mode; }
 
+    void setSystemIncludes(const ProStringList &list)
+    { systemIncludes = list.toQStringList(); }
+
     enum SourceFileType { TYPE_UNKNOWN, TYPE_C, TYPE_UI, TYPE_QRC };
     enum SourceFileSeek { SEEK_DEPS=0x01, SEEK_MOCS=0x02 };
     void addSourceFiles(const ProStringList &, uchar seek, SourceFileType type=TYPE_C);
     void addSourceFile(const QString &, uchar seek, SourceFileType type=TYPE_C);
     bool containsSourceFile(const QString &, SourceFileType type=TYPE_C);
+    bool isSystemInclude(const QString &);
 
     int included(const QString &file);
     QStringList dependencies(const QString &file);

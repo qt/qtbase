@@ -126,11 +126,15 @@ public:
     void setUploadByteDevice(QNonContiguousByteDevice *bd);
     QNonContiguousByteDevice* uploadByteDevice() const;
 
+    QByteArray methodName() const;
+    QByteArray uri(bool throughProxy) const;
+
 private:
     QSharedDataPointer<QHttpNetworkRequestPrivate> d;
     friend class QHttpNetworkRequestPrivate;
     friend class QHttpNetworkConnectionPrivate;
     friend class QHttpNetworkConnectionChannel;
+    friend class QHttpProtocolHandler;
 };
 
 class QHttpNetworkRequestPrivate : public QHttpNetworkHeaderPrivate
@@ -141,8 +145,6 @@ public:
     QHttpNetworkRequestPrivate(const QHttpNetworkRequestPrivate &other);
     ~QHttpNetworkRequestPrivate();
     bool operator==(const QHttpNetworkRequestPrivate &other) const;
-    QByteArray methodName() const;
-    QByteArray uri(bool throughProxy) const;
 
     static QByteArray header(const QHttpNetworkRequest &request, bool throughProxy);
 

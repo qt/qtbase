@@ -549,6 +549,83 @@ template <class T> inline const char * qobject_interface_iid()
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QObject *);
 #endif
 
+class Q_CORE_EXPORT QSignalBlocker
+{
+public:
+    inline explicit QSignalBlocker(QObject *o);
+    inline explicit QSignalBlocker(QObject &o);
+    inline ~QSignalBlocker();
+
+#ifdef Q_COMPILER_RVALUE_REFS
+    inline QSignalBlocker(QSignalBlocker &&other);
+    inline QSignalBlocker &operator=(QSignalBlocker &&other);
+#endif
+
+    inline void reblock();
+    inline void unblock();
+private:
+    Q_DISABLE_COPY(QSignalBlocker)
+    QObject * m_o;
+    bool m_blocked;
+    bool m_inhibited;
+};
+
+QSignalBlocker::QSignalBlocker(QObject *o)
+    : m_o(o),
+      m_blocked(o && o->blockSignals(true)),
+      m_inhibited(false)
+{}
+
+QSignalBlocker::QSignalBlocker(QObject &o)
+    : m_o(&o),
+      m_blocked(o.blockSignals(true)),
+      m_inhibited(false)
+{}
+
+#ifdef Q_COMPILER_RVALUE_REFS
+QSignalBlocker::QSignalBlocker(QSignalBlocker &&other)
+    : m_o(other.m_o),
+      m_blocked(other.m_blocked),
+      m_inhibited(other.m_inhibited)
+{
+    other.m_o = 0;
+}
+
+QSignalBlocker &QSignalBlocker::operator=(QSignalBlocker &&other)
+{
+    if (this != &other) {
+        // if both *this and other block the same object's signals:
+        // unblock *this iff our dtor would unblock, but other's wouldn't
+        if (m_o != other.m_o || (!m_inhibited && other.m_inhibited))
+            unblock();
+        m_o = other.m_o;
+        m_blocked = other.m_blocked;
+        m_inhibited = other.m_inhibited;
+        // disable other:
+        other.m_o = 0;
+    }
+    return *this;
+}
+#endif
+
+QSignalBlocker::~QSignalBlocker()
+{
+    if (m_o && !m_inhibited)
+        m_o->blockSignals(m_blocked);
+}
+
+void QSignalBlocker::reblock()
+{
+    if (m_o) m_o->blockSignals(true);
+    m_inhibited = false;
+}
+
+void QSignalBlocker::unblock()
+{
+    if (m_o) m_o->blockSignals(m_blocked);
+    m_inhibited = true;
+}
+
 namespace QtPrivate {
     inline QObject & deref_for_methodcall(QObject &o) { return  o; }
     inline QObject & deref_for_methodcall(QObject *o) { return *o; }

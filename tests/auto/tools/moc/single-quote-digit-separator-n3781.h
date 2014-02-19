@@ -39,6 +39,9 @@
 **
 ****************************************************************************/
 
+#ifndef SINGLE_QUOTE_DIGIT_SEPARATOR_N3781_H
+#define SINGLE_QUOTE_DIGIT_SEPARATOR_N3781_H
+
 #include <QObject>
 
 class KDAB : public QObject
@@ -56,3 +59,4 @@ public:
     };
     Q_ENUMS(Salaries)
 };
+#endif // SINGLE_QUOTE_DIGIT_SEPARATOR_N3781_H

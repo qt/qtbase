@@ -50,7 +50,7 @@
 
 static void usage() {
     printf("Qt DNS example - performs DNS lookups\n"
-           "Usage: dnslookup [-t <type>] name\n\n");
+           "Usage: dnslookup [-t <type>] [-s nameserver] name\n\n");
 }
 
 DnsManager::DnsManager()
@@ -92,6 +92,17 @@ void DnsManager::execute()
             QCoreApplication::instance()->quit();
             return;
         }
+    }
+    if (args.size() > 1 && args.first() == "-s") {
+        args.takeFirst();
+        const QString ns = args.takeFirst();
+        QHostAddress nameserver(ns);
+        if (nameserver.isNull() || nameserver.protocol() == QAbstractSocket::UnknownNetworkLayerProtocol) {
+            printf("Bad nameserver address: %s\n", qPrintable(ns));
+            QCoreApplication::instance()->quit();
+            return;
+        }
+        dns->setNameserver(nameserver);
     }
     if (args.isEmpty()) {
         usage();

@@ -8,5 +8,5 @@ QT = core-private sql-private testlib
 wince*: {
    DEPLOYMENT_PLUGIN += qsqlite
 }
-win32-g++*: LIBS += -lws2_32
+mingw: LIBS += -lws2_32
 

@@ -87,7 +87,7 @@ private slots:
     void task248604_infiniteResize();
     void task258459_visibilityChanged();
     void taskQTBUG_1665_closableChanged();
-	void taskQTBUG_9758_undockedGeometry();
+    void taskQTBUG_9758_undockedGeometry();
 };
 
 // Testing get/set functions
@@ -588,7 +588,7 @@ void tst_QDockWidget::visibilityChanged()
     QCOMPARE(spy.count(), 0);
 
     mw.addDockWidget(Qt::RightDockWidgetArea, &dw2);
-	QTest::qWait(200);
+    QTest::qWait(200);
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.at(0).at(0).toBool(), true);
 }
@@ -758,19 +758,19 @@ void tst_QDockWidget::task169808_setFloating()
         }
     };
     QMainWindow mw;
-	mw.setCentralWidget(new MyWidget);
-	QDockWidget *dw = new QDockWidget("my dock");
-	dw->setWidget(new MyWidget);
-	mw.addDockWidget(Qt::LeftDockWidgetArea, dw);
-	dw->setFloating(true);
-	mw.show();
+    mw.setCentralWidget(new MyWidget);
+    QDockWidget *dw = new QDockWidget("my dock");
+    dw->setWidget(new MyWidget);
+    mw.addDockWidget(Qt::LeftDockWidgetArea, dw);
+    dw->setFloating(true);
+    mw.show();
     QVERIFY(QTest::qWaitForWindowExposed(&mw));
 
     QCOMPARE(dw->widget()->size(), dw->widget()->sizeHint());
 
     //and now we try to test if the contents margin is taken into account
     dw->widget()->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-	dw->setFloating(false);
+    dw->setFloating(false);
     QVERIFY(QTest::qWaitForWindowExposed(&mw));
     qApp->processEvents(); //leave time processing events
 

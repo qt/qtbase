@@ -117,11 +117,13 @@ static bool qt_wince_is_platform(const QString &platformString) {
 }
 static inline bool qt_wince_is_smartphone() { return qt_wince_is_platform(QString::fromLatin1("Smartphone")); }
 #    endif // Q_OS_WINCE_WM
-#  else //  Q_OS_WINCE
+#  elif !defined(Q_OS_WINRT) //  Q_OS_WINCE
 #    define Q_CHECK_PAINTEVENTS \
     if (::SwitchDesktop(::GetThreadDesktop(::GetCurrentThreadId())) == 0) \
         QSKIP("desktop is not visible, this test would fail");
-#  endif //  !Q_OS_WINCE
+#  else //  !Q_OS_WINCE && !Q_OS_WINRT
+#    define Q_CHECK_PAINTEVENTS
+#  endif // Q_OS_WINRT
 #else // Q_OS_WIN
 #  define Q_CHECK_PAINTEVENTS
 #endif // else Q_OS_WIN
@@ -304,7 +306,7 @@ private slots:
     void subtractOpaqueSiblings();
 #endif
 
-#if defined (Q_OS_WIN) && !defined(Q_OS_WINCE)
+#if defined (Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
     void setGeometry_win();
 #endif
 
@@ -374,7 +376,7 @@ private slots:
     void quitOnCloseAttribute();
     void moveRect();
 
-#if defined (Q_OS_WIN)
+#if defined (Q_OS_WIN) && !defined(Q_OS_WINRT)
     void gdiPainting();
     void paintOnScreenPossible();
 #endif
@@ -592,7 +594,7 @@ void tst_QWidget::getSetCheck()
     QCOMPARE(true, obj1.autoFillBackground());
 
     var1.reset();
-#if defined (Q_OS_WIN) && !defined(Q_OS_WINCE)
+#if defined (Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
     obj1.setWindowFlags(Qt::FramelessWindowHint | Qt::WindowSystemMenuHint);
     const HWND handle = reinterpret_cast<HWND>(obj1.winId());   // explicitly create window handle
     QVERIFY(GetWindowLong(handle, GWL_STYLE) & WS_POPUP);
@@ -667,7 +669,7 @@ void tst_QWidget::cleanup()
 // Helper class...
 
 BezierViewer::BezierViewer( QWidget* parent)
-	: QWidget( parent )
+    : QWidget(parent)
 {
     setObjectName(QLatin1String("TestWidget"));
     setWindowTitle(objectName());
@@ -687,9 +689,9 @@ void BezierViewer::paintEvent( QPaintEvent* )
 {
     if ( points.size() != 4 ) {
 #if defined(QT_CHECK_RANGE)
-	qWarning( "QPolygon::bezier: The array must have 4 control points" );
+        qWarning( "QPolygon::bezier: The array must have 4 control points" );
 #endif
-	return;
+        return;
     }
 
     /* Calculate Bezier curve */
@@ -705,18 +707,18 @@ void BezierViewer::paintEvent( QPaintEvent* )
 
     /* Scale Bezier curve vertices */
     for ( QPolygonF::Iterator it = bezier.begin(); it != bezier.end(); ++it ) {
-	it->setX( (it->x()-br.x()) * scl + border );
-	it->setY( (it->y()-br.y()) * scl + border );
+        it->setX( (it->x()-br.x()) * scl + border );
+        it->setY( (it->y()-br.y()) * scl + border );
     }
 
     /* Draw grid */
     painter.setPen( Qt::lightGray );
-	int i;
-	for ( i = border; i <= pr.width(); i += scl ) {
-		painter.drawLine( i, 0, i, pr.height() );
+    int i;
+    for ( i = border; i <= pr.width(); i += scl ) {
+        painter.drawLine( i, 0, i, pr.height() );
     }
     for ( int j = border; j <= pr.height(); j += scl ) {
-	painter.drawLine( 0, j, pr.width(), j );
+        painter.drawLine( 0, j, pr.width(), j );
     }
 
     /* Write number of vertices */
@@ -734,17 +736,17 @@ void BezierViewer::paintEvent( QPaintEvent* )
     /* Scale and draw control points */
     painter.setPen( Qt::darkGreen );
     for ( QPolygonF::Iterator p1 = points.begin(); p1 != points.end(); ++p1 ) {
-	int x = (p1->x()-br.x()) * scl + border;
-	int y = (p1->y()-br.y()) * scl + border;
-	painter.drawLine( x-4, y-4, x+4, y+4 );
-	painter.drawLine( x+4, y-4, x-4, y+4 );
+        int x = (p1->x()-br.x()) * scl + border;
+        int y = (p1->y()-br.y()) * scl + border;
+        painter.drawLine( x-4, y-4, x+4, y+4 );
+        painter.drawLine( x+4, y-4, x-4, y+4 );
     }
 
     /* Draw vertices */
     painter.setPen( Qt::red );
     painter.setBrush( Qt::red );
     for ( QPolygonF::Iterator p2 = bezier.begin(); p2 != bezier.end(); ++p2 )
-	painter.drawEllipse( p2->x()-1, p2->y()-1, 3, 3 );
+        painter.drawEllipse( p2->x()-1, p2->y()-1, 3, 3 );
 }
 
 void tst_QWidget::fontPropagation()
@@ -1283,7 +1285,7 @@ void tst_QWidget::visible_setWindowOpacity()
     testWidget->hide();
     QVERIFY( !testWidget->isVisible() );
     testWidget->setWindowOpacity(0.5);
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     QVERIFY(!::IsWindowVisible(winHandleOf(testWidget)));
 #endif
     testWidget->setWindowOpacity(1.0);
@@ -1675,17 +1677,17 @@ public:
     Container()
     {
         box = new QVBoxLayout(this);
-	//(new QVBoxLayout(this))->setAutoAdd(true);
+        //(new QVBoxLayout(this))->setAutoAdd(true);
     }
 
     void tab()
     {
-	focusNextPrevChild(true);
+        focusNextPrevChild(true);
     }
 
     void backTab()
     {
-	focusNextPrevChild(false);
+        focusNextPrevChild(false);
     }
 };
 
@@ -1710,7 +1712,7 @@ public:
         setFocusProxy( lineEdit );
         setFocusPolicy( Qt::StrongFocus );
 
-	setTabOrder(lineEdit, button);
+        setTabOrder(lineEdit, button);
     }
 
 private:
@@ -1759,9 +1761,9 @@ void tst_QWidget::setTabOrder()
     QTRY_VERIFY(lastEdit->hasFocus());
     container.tab();
     do {
-	QVERIFY(comp[current]->focusProxy()->hasFocus());
-	container.tab();
-	current--;
+        QVERIFY(comp[current]->focusProxy()->hasFocus());
+        container.tab();
+        current--;
     } while (current >= 0);
 
     QVERIFY(firstEdit->hasFocus());
@@ -3623,7 +3625,7 @@ void tst_QWidget::optimizedResize_topLevel()
     topLevel.partial = false;
     topLevel.paintedRegion = QRegion();
 
-#ifndef Q_OS_WIN
+#if !defined(Q_OS_WIN32) && !defined(Q_OS_WINCE)
     topLevel.resize(topLevel.size() + QSize(10, 10));
 #else
     // Static contents does not work when programmatically resizing
@@ -4555,7 +4557,7 @@ void tst_QWidget::setWindowGeometry()
     }
 }
 
-#if defined (Q_OS_WIN) && !defined(Q_OS_WINCE)
+#if defined (Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
 void tst_QWidget::setGeometry_win()
 {
     QWidget widget;
@@ -4573,7 +4575,7 @@ void tst_QWidget::setGeometry_win()
     QVERIFY(rt.left <= 0);
     QVERIFY(rt.top <= 0);
 }
-#endif // defined (Q_OS_WIN) && !defined(Q_OS_WINCE)
+#endif // defined (Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
 
 // Since X11 WindowManager operation are all async, and we have no way to know if the window
 // manager has finished playing with the window geometry, this test can't be reliable on X11.
@@ -4814,73 +4816,68 @@ static inline QByteArray msgRgbMismatch(unsigned actual, unsigned expected)
            QByteArrayLiteral(" != 0x") + QByteArray::number(expected, 16);
 }
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
-QT_BEGIN_NAMESPACE
-extern Q_GUI_EXPORT QPixmap qt_pixmapFromWinHBITMAP(HBITMAP bitmap, int hbitmapFormat = 0);
-QT_END_NAMESPACE
-
-// grabs the window *without including any overlapping windows*
-static QPixmap grabWindow(QWindow *window, int x, int y, int width, int height)
-{
-    const HWND hwnd = (HWND)window->winId();
-
-    // Create and setup bitmap
-    const HDC displayDc = ::GetDC(0);
-    const HDC bitmapDc = ::CreateCompatibleDC(displayDc);
-    const HBITMAP bitmap = ::CreateCompatibleBitmap(displayDc, width, height);
-    const HGDIOBJ oldBitmap = ::SelectObject(bitmapDc, bitmap);
-
-    // copy data
-    const HDC windowDc = ::GetDC(hwnd);
-    ::BitBlt(bitmapDc, 0, 0, width, height, windowDc, x, y, SRCCOPY);
-
-    // clean up all but bitmap
-    ::ReleaseDC(hwnd, windowDc);
-    ::SelectObject(bitmapDc, oldBitmap);
-    ::DeleteDC(bitmapDc);
-
-    const QPixmap pixmap = qt_pixmapFromWinHBITMAP(bitmap);
-
-    ::DeleteObject(bitmap);
-    ::ReleaseDC(0, displayDc);
-
-    return pixmap;
-}
-#else
-// fallback for other platforms.
 static QPixmap grabWindow(QWindow *window, int x, int y, int width, int height)
 {
     QScreen *screen = window->screen();
     return screen ? screen->grabWindow(window->winId(), x, y, width, height) : QPixmap();
 }
-#endif  //defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
 
-#define VERIFY_COLOR(child, region, color) do {  \
-    const QRegion r = QRegion(region);                                  \
-    QWindow *window = child.window()->windowHandle();                   \
-    Q_ASSERT(window);                                                   \
-    const QPoint offset = child.mapTo(child.window(), QPoint(0,0));     \
-    for (int i = 0; i < r.rects().size(); ++i) {                        \
-        const QRect rect = r.rects().at(i).translated(offset);          \
-        for (int t = 0; t < 5; t++) {                                   \
-            const QPixmap pixmap = grabWindow(window,                   \
-                                              rect.left(), rect.top(),  \
-                                              rect.width(), rect.height()); \
-            QCOMPARE(pixmap.size(), rect.size());                       \
-            QPixmap expectedPixmap(pixmap); /* ensure equal formats */  \
-            expectedPixmap.detach();                                    \
-            expectedPixmap.fill(color);                                 \
-            QImage image = pixmap.toImage();                            \
-            uint alphaCorrection = image.format() == QImage::Format_RGB32 ? 0xff000000 : 0; \
-            uint firstPixel = image.pixel(0,0) | alphaCorrection;       \
-            if ( firstPixel != QColor(color).rgb() && t < 4 )           \
-            { QTest::qWait(200); continue; }                            \
-            QVERIFY2(firstPixel == QColor(color).rgb(), msgRgbMismatch(firstPixel, QColor(color).rgb()));  \
-            QCOMPARE(pixmap, expectedPixmap);                           \
-            break;                                                      \
-        }                                                               \
-    }                                                                   \
-} while (0)
+#define VERIFY_COLOR(child, region, color) verifyColor(child, region, color, __LINE__)
+
+bool verifyColor(QWidget &child, const QRegion &region, const QColor &color, unsigned int callerLine)
+{
+    const QRegion r = QRegion(region);
+    QWindow *window = child.window()->windowHandle();
+    Q_ASSERT(window);
+    const QPoint offset = child.mapTo(child.window(), QPoint(0,0));
+    bool grabBackingStore = false;
+    for (int i = 0; i < r.rects().size(); ++i) {
+        QRect rect = r.rects().at(i).translated(offset);
+        for (int t = 0; t < 6; t++) {
+            const QPixmap pixmap = grabBackingStore
+                ? child.grab(rect)
+                : grabWindow(window, rect.left(), rect.top(), rect.width(), rect.height());
+            if (!QTest::qCompare(pixmap.size(), rect.size(), "pixmap.size()", "rect.size()", __FILE__, callerLine))
+                return false;
+            QPixmap expectedPixmap(pixmap); /* ensure equal formats */
+            expectedPixmap.detach();
+            expectedPixmap.fill(color);
+            QImage image = pixmap.toImage();
+            uint alphaCorrection = image.format() == QImage::Format_RGB32 ? 0xff000000 : 0;
+            uint firstPixel = image.pixel(0,0) | alphaCorrection;
+            if (t < 5) {
+                /* Normal run.
+                   If it succeeds: return success
+                   If it fails:    do not return, but wait a bit and reiterate (retry)
+                */
+                if (firstPixel == QColor(color).rgb()
+                        && image == expectedPixmap.toImage()) {
+                    return true;
+                } else {
+                    if (t == 4) {
+                        grabBackingStore = true;
+                        rect = r.rects().at(i);
+                    } else {
+                        QTest::qWait(200);
+                    }
+                }
+            } else {
+                // Last run, report failure if it still fails
+                if (!QTest::qVerify(firstPixel == QColor(color).rgb(),
+                                   "firstPixel == QColor(color).rgb()",
+                                    qPrintable(msgRgbMismatch(firstPixel, QColor(color).rgb())),
+                                    __FILE__, callerLine))
+                    return false;
+                if (!QTest::qVerify(image == expectedPixmap.toImage(),
+                                    "image == expectedPixmap.toImage()",
+                                    "grabbed pixmap differs from expected pixmap",
+                                    __FILE__, callerLine))
+                    return false;
+            }
+        }
+    }
+    return true;
+}
 
 void tst_QWidget::popupEnterLeave()
 {
@@ -5348,17 +5345,17 @@ void tst_QWidget::setFocus()
     }
 }
 
-class EventSpy : public QObject
+template<class T> class EventSpy : public QObject
 {
 public:
-    EventSpy(QWidget *widget, QEvent::Type event)
+    EventSpy(T *widget, QEvent::Type event)
         : m_widget(widget), eventToSpy(event), m_count(0)
     {
         if (m_widget)
             m_widget->installEventFilter(this);
     }
 
-    QWidget *widget() const { return m_widget; }
+    T *widget() const { return m_widget; }
     int count() const { return m_count; }
     void clear() { m_count = 0; }
 
@@ -5371,7 +5368,7 @@ protected:
     }
 
 private:
-    QWidget *m_widget;
+    T *m_widget;
     QEvent::Type eventToSpy;
     int m_count;
 };
@@ -5486,7 +5483,7 @@ void tst_QWidget::setCursor()
     // test if CursorChange is sent
     {
         QWidget widget;
-        EventSpy spy(&widget, QEvent::CursorChange);
+        EventSpy<QWidget> spy(&widget, QEvent::CursorChange);
         QCOMPARE(spy.count(), 0);
         widget.setCursor(QCursor(Qt::WaitCursor));
         QCOMPARE(spy.count(), 1);
@@ -5508,7 +5505,7 @@ void tst_QWidget::setToolTip()
     widget.setWindowTitle(widget.objectName());
     widget.show();
     QVERIFY(QTest::qWaitForWindowExposed(&widget));
-    EventSpy spy(&widget, QEvent::ToolTipChange);
+    EventSpy<QWidget> spy(&widget, QEvent::ToolTipChange);
     QCOMPARE(spy.count(), 0);
 
     QCOMPARE(widget.toolTip(), QString());
@@ -5530,8 +5527,8 @@ void tst_QWidget::setToolTip()
         QFrame *frame = new QFrame(popup.data());
         frame->setGeometry(0, 0, 50, 50);
         frame->setFrameStyle(QFrame::Box | QFrame::Plain);
-        EventSpy spy1(frame, QEvent::ToolTip);
-        EventSpy spy2(popup.data(), QEvent::ToolTip);
+        EventSpy<QWidget> spy1(frame, QEvent::ToolTip);
+        EventSpy<QWidget> spy2(popup.data(), QEvent::ToolTip);
         frame->setMouseTracking(pass == 0 ? false : true);
         frame->setToolTip(QLatin1String("TOOLTIP FRAME"));
         popup->setToolTip(QLatin1String("TOOLTIP POPUP"));
@@ -5553,7 +5550,8 @@ void tst_QWidget::setToolTip()
 
 void tst_QWidget::testWindowIconChangeEventPropagation()
 {
-    typedef QSharedPointer<EventSpy> EventSpyPtr;
+    typedef QSharedPointer<EventSpy<QWidget> > EventSpyPtr;
+    typedef QSharedPointer<EventSpy<QWindow> > WindowEventSpyPtr;
     // Create widget hierarchy.
     QWidget topLevelWidget;
     QWidget topLevelChild(&topLevelWidget);
@@ -5566,12 +5564,27 @@ void tst_QWidget::testWindowIconChangeEventPropagation()
             << &dialog << &dialogChild;
     QCOMPARE(widgets.count(), 4);
 
+    topLevelWidget.show();
+    dialog.show();
+
+    QWindowList windows;
+    windows << topLevelWidget.windowHandle() << dialog.windowHandle();
+    QWindow otherWindow;
+    windows << &otherWindow;
+    const int lastWidgetWindow = 1; // 0 and 1 are qwidgetwindow, 2 is a pure qwindow
+
     // Create spy lists.
     QList <EventSpyPtr> applicationEventSpies;
     QList <EventSpyPtr> widgetEventSpies;
     foreach (QWidget *widget, widgets) {
-        applicationEventSpies.append(EventSpyPtr(new EventSpy(widget, QEvent::ApplicationWindowIconChange)));
-        widgetEventSpies.append(EventSpyPtr(new EventSpy(widget, QEvent::WindowIconChange)));
+        applicationEventSpies.append(EventSpyPtr(new EventSpy<QWidget>(widget, QEvent::ApplicationWindowIconChange)));
+        widgetEventSpies.append(EventSpyPtr(new EventSpy<QWidget>(widget, QEvent::WindowIconChange)));
+    }
+    QList <WindowEventSpyPtr> appWindowEventSpies;
+    QList <WindowEventSpyPtr> windowEventSpies;
+    foreach (QWindow *window, windows) {
+        appWindowEventSpies.append(WindowEventSpyPtr(new EventSpy<QWindow>(window, QEvent::ApplicationWindowIconChange)));
+        windowEventSpies.append(WindowEventSpyPtr(new EventSpy<QWindow>(window, QEvent::WindowIconChange)));
     }
 
     // QApplication::setWindowIcon
@@ -5592,6 +5605,20 @@ void tst_QWidget::testWindowIconChangeEventPropagation()
 
         // Check QEvent::WindowIconChange
         spy = widgetEventSpies.at(i);
+        QCOMPARE(spy->count(), 1);
+        spy->clear();
+    }
+    for (int i = 0; i < windows.count(); ++i) {
+        // Check QEvent::ApplicationWindowIconChange (sent to QWindow)
+        // QWidgetWindows don't get this event, since the widget takes care of changing the icon
+        WindowEventSpyPtr spy = appWindowEventSpies.at(i);
+        QWindow *window = spy->widget();
+        QCOMPARE(spy->count(), i > lastWidgetWindow ? 1 : 0);
+        QCOMPARE(window->icon(), windowIcon);
+        spy->clear();
+
+        // Check QEvent::WindowIconChange (sent to QWindow)
+        spy = windowEventSpies.at(i);
         QCOMPARE(spy->count(), 1);
         spy->clear();
     }
@@ -8118,7 +8145,7 @@ void tst_QWidget::moveRect()
     child.move(10, 10); // Don't crash.
 }
 
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
 class GDIWidget : public QDialog
 {
     Q_OBJECT
@@ -8185,7 +8212,7 @@ void tst_QWidget::paintOnScreenPossible()
     w2.setAttribute(Qt::WA_PaintOnScreen);
     QVERIFY(w2.testAttribute(Qt::WA_PaintOnScreen));
 }
-#endif // Q_OS_WIN
+#endif // Q_OS_WIN && !Q_OS_WINRT
 
 void tst_QWidget::reparentStaticWidget()
 {

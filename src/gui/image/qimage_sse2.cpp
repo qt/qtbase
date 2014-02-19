@@ -94,7 +94,7 @@ bool convert_ARGB_to_ARGB_PM_inplace_sse2(QImageData *data, Qt::ImageConversionF
             if (*p < 0x00ffffff)
                 *p = 0;
             else if (*p < 0xff000000)
-                *p = PREMUL(*p);
+                *p = qPremultiply(*p);
         }
 
         d = reinterpret_cast<__m128i*>(p+pad);

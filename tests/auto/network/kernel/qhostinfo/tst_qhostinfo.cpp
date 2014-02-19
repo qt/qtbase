@@ -67,7 +67,7 @@
 
 #include <time.h>
 #include <qlibrary.h>
-#if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN)
 #include <windows.h>
 #else
 #include <unistd.h>

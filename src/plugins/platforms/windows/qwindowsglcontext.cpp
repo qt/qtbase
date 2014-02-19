@@ -223,7 +223,7 @@ static void describeFormats(HDC hdc)
         PIXELFORMATDESCRIPTOR pfd;
         initPixelFormatDescriptor(&pfd);
         DescribePixelFormat(hdc, i, sizeof(PIXELFORMATDESCRIPTOR), &pfd);
-        qDebug() << '#' << i << '/' << pfiMax << ':' << pfd;
+        qCDebug(lcQpaGl) << '#' << i << '/' << pfiMax << ':' << pfd;
     }
 }
 
@@ -341,10 +341,8 @@ static int choosePixelFormat(HDC hdc, const QSurfaceFormat &format,
                 bestPfi = pfi;
                 *obtainedPfd = checkPfd;
             }
-            if (QWindowsContext::verboseGL)
-                qDebug() << __FUNCTION__ << "    checking  " << pfi << '/' << pfiMax
-                         << " score=" << score << " (best " << bestPfi << '/' << bestScore
-                         << ") " << checkPfd;
+            qCDebug(lcQpaGl) << __FUNCTION__ << "    checking  " << pfi << '/' << pfiMax
+                << " score=" << score << " (best " << bestPfi << '/' << bestScore << ") " << checkPfd;
         }
     } // for
     if (bestPfi > 0)
@@ -471,15 +469,15 @@ static int choosePixelFormat(HDC hdc,
     initPixelFormatDescriptor(obtainedPfd);
     DescribePixelFormat(hdc, pixelFormat, sizeof(PIXELFORMATDESCRIPTOR), obtainedPfd);
     if (!isAcceptableFormat(additional, *obtainedPfd, true)) {
-        if (QWindowsContext::verboseGL)
-            qDebug() << __FUNCTION__ << " obtained px #" << pixelFormat
-                     << " not acceptable=" << *obtainedPfd;
+        qCDebug(lcQpaGl) << __FUNCTION__ << " obtained px #" << pixelFormat
+            << " not acceptable=" << *obtainedPfd;
         pixelFormat = 0;
     }
 
 #ifndef QT_NO_DEBUG_OUTPUT
-    if (QWindowsContext::verboseGL) {
-        QDebug nsp = qDebug().nospace();
+    if (lcQpaGl().isDebugEnabled()) {
+        QString message;
+        QDebug nsp(&message);
         nsp << __FUNCTION__;
         if (sampleBuffersRequested)
             nsp << " samples=" << iAttributes[samplesValuePosition];
@@ -488,6 +486,7 @@ static int choosePixelFormat(HDC hdc,
             nsp << iAttributes[ii] << ',';
         nsp << noshowbase << dec << "\n    obtained px #" << pixelFormat
             << " of " << numFormats << "\n    " << *obtainedPfd;
+        qCDebug(lcQpaGl) << message;
     } // Debug
 #endif
 
@@ -611,9 +610,8 @@ static HGLRC createContext(const QOpenGLStaticContext &staticContext,
             break;
         }
     }
-    if (QWindowsContext::verboseGL)
-        qDebug("%s: Creating context version %d.%d with %d attributes",
-               __FUNCTION__,  majorVersion, minorVersion, attribIndex / 2);
+    qCDebug(lcQpaGl) << __FUNCTION__ << "Creating context version"
+        << majorVersion << '.' << minorVersion <<  attribIndex / 2 << "attributes";
 
     const HGLRC result =
         staticContext.wglCreateContextAttribsARB(hdc, shared, attributes);
@@ -842,8 +840,7 @@ QOpenGLStaticContext *QOpenGLStaticContext::create()
     if (!wglGetCurrentContext())
         temporaryContext.reset(new QOpenGLTemporaryContext);
     QOpenGLStaticContext *result = new QOpenGLStaticContext;
-    if (QWindowsContext::verboseGL)
-         qDebug() << __FUNCTION__ << *result;
+    qCDebug(lcQpaGl) << __FUNCTION__ << *result;
     return result;
 }
 
@@ -857,7 +854,7 @@ QDebug operator<<(QDebug d, const QOpenGLStaticContext &s)
     if (s.hasExtensions())
         nsp << ", Extension-API present";
     nsp  << "\nExtensions: " << (s.extensionNames.count(' ') + 1);
-    if (QWindowsContext::verboseGL > 1)
+    if (QWindowsContext::verbose > 1)
         nsp <<  s.extensionNames;
     return d;
 }
@@ -882,7 +879,9 @@ QWindowsGLContext::QWindowsGLContext(const QOpenGLStaticContextPtr &staticContex
     m_staticContext(staticContext),
     m_context(context),
     m_renderingContext(0),
-    m_pixelFormat(0), m_extensionsUsed(false)
+    m_pixelFormat(0),
+    m_extensionsUsed(false),
+    m_swapInterval(-1)
 {
     QSurfaceFormat format = context->format();
     if (format.renderableType() == QSurfaceFormat::DefaultRenderableType)
@@ -915,7 +914,7 @@ QWindowsGLContext::QWindowsGLContext(const QOpenGLStaticContextPtr &staticContex
         if (!hdc)
             break;
 
-        if (QWindowsContext::verboseGL > 1)
+        if (QWindowsContext::verbose > 1)
             describeFormats(hdc);
         // Preferably use direct rendering and ARB extensions (unless pixmap
         // or explicitly turned off on command line).
@@ -979,11 +978,9 @@ QWindowsGLContext::QWindowsGLContext(const QOpenGLStaticContextPtr &staticContex
 
         QWindowsOpenGLContextFormat::current().apply(&m_obtainedFormat);
 
-        if (requestedAdditional.swapInterval != -1 && m_staticContext->wglSwapInternalExt) {
-            m_staticContext->wglSwapInternalExt(requestedAdditional.swapInterval);
-            if (m_staticContext->wglGetSwapInternalExt)
-                obtainedSwapInternal = m_staticContext->wglGetSwapInternalExt();
-        }
+        if (m_staticContext->wglGetSwapInternalExt)
+            obtainedSwapInternal = m_staticContext->wglGetSwapInternalExt();
+
         wglMakeCurrent(0, 0);
     } while (false);
     if (hdc)
@@ -991,14 +988,12 @@ QWindowsGLContext::QWindowsGLContext(const QOpenGLStaticContextPtr &staticContex
     if (dummyWindow)
         DestroyWindow(dummyWindow);
 
-    if (QWindowsContext::verboseGL)
-        qDebug() << __FUNCTION__ << this << (tryExtensions ? "ARB" : "GDI")
-            << " requested: " << context->format()
-            << "\n    obtained #" << m_pixelFormat << (m_extensionsUsed ? "ARB" : "GDI")
-            << m_obtainedFormat << "\n    " << m_obtainedPixelFormatDescriptor
-            << " swap interval: " << obtainedSwapInternal
-            << "\n    default: " << m_staticContext->defaultFormat
-            << "\n    HGLRC=" << m_renderingContext;
+    qCDebug(lcQpaGl) << __FUNCTION__ << this << (tryExtensions ? "ARB" : "GDI")
+        << " requested: " << context->format()
+        << "\n    obtained #" << m_pixelFormat << (m_extensionsUsed ? "ARB" : "GDI") << m_obtainedFormat
+        << "\n    " << m_obtainedPixelFormatDescriptor << " swap interval: " << obtainedSwapInternal
+        << "\n    default: " << m_staticContext->defaultFormat
+        << "\n    HGLRC=" << m_renderingContext;
 }
 
 QWindowsGLContext::~QWindowsGLContext()
@@ -1039,8 +1034,8 @@ static inline const QOpenGLContextData *
 
 void QWindowsGLContext::swapBuffers(QPlatformSurface *surface)
 {
-    if (QWindowsContext::verboseGL > 1)
-        qDebug() << __FUNCTION__ << surface;
+    if (QWindowsContext::verbose > 1)
+        qCDebug(lcQpaGl) << __FUNCTION__ << surface;
     if (const QOpenGLContextData *contextData = findByHWND(m_windowContexts, handleOf(surface))) {
         SwapBuffers(contextData->hdc);
     } else {
@@ -1051,8 +1046,8 @@ void QWindowsGLContext::swapBuffers(QPlatformSurface *surface)
 bool QWindowsGLContext::makeCurrent(QPlatformSurface *surface)
 {
 #ifdef DEBUG_GL
-    if (QWindowsContext::verboseGL > 1)
-        qDebug("%s context=%p contexts=%d", __FUNCTION__, this, m_windowContexts.size());
+    if (QWindowsContext::verbose > 1)
+        qCDebug(lcQpaGl) << __FUNCTION__ << this << m_windowContexts.size() << "contexts";
 #endif // DEBUG_GL
 
     Q_ASSERT(surface->surface()->surfaceType() == QSurface::OpenGLSurface);
@@ -1087,14 +1082,26 @@ bool QWindowsGLContext::makeCurrent(QPlatformSurface *surface)
             window->setFlag(QWindowsWindow::OpenGLDoubleBuffered);
     }
     m_windowContexts.append(newContext);
-    return wglMakeCurrent(newContext.hdc, newContext.renderingContext);
+
+    bool success = wglMakeCurrent(newContext.hdc, newContext.renderingContext);
+
+    // Set the swap interval
+    if (m_staticContext->wglSwapInternalExt) {
+        const int interval = surface->format().swapInterval();
+        if (interval >= 0 && m_swapInterval != interval) {
+            m_swapInterval = interval;
+            m_staticContext->wglSwapInternalExt(interval);
+        }
+    }
+
+    return success;
 }
 
 void QWindowsGLContext::doneCurrent()
 {
 #ifdef DEBUG_GL
-    if (QWindowsContext::verboseGL > 1)
-        qDebug("%s context=%p %d contexts", __FUNCTION__, this, m_windowContexts.size());
+    if (QWindowsContext::verbose > 1)
+        qCDebug(lcQpaGl) << __FUNCTION__ << this << m_windowContexts.size() << "contexts";
 #endif // DEBUG_GL
     wglMakeCurrent(0, 0);
     releaseDCs();
@@ -1104,10 +1111,8 @@ QWindowsGLContext::GL_Proc QWindowsGLContext::getProcAddress(const QByteArray &p
 {
     // TODO: Will that work with the calling conventions?
     GL_Proc procAddress = reinterpret_cast<GL_Proc>(wglGetProcAddress(procName.constData()));
-    if (QWindowsContext::verboseGL > 1)
-        qDebug("%s('%s') with current_hglrc=%p returns %p",
-               __FUNCTION__, procName.constData(),
-               wglGetCurrentContext(), procAddress);
+    if (QWindowsContext::verbose > 1)
+        qCDebug(lcQpaGl) << __FUNCTION__ <<  procName << wglGetCurrentContext() << "returns" << procAddress;
     if (!procAddress)
         qWarning("%s: Unable to resolve '%s'", __FUNCTION__, procName.constData());
     return procAddress;

@@ -201,8 +201,6 @@ Q_GUI_EXPORT QPixmap qt_pixmapFromWinHBITMAP(HBITMAP bitmap, int hbitmapFormat =
 
 QPixmap QWindowsScreen::grabWindow(WId window, int x, int y, int width, int height) const
 {
-    if (QWindowsContext::verboseIntegration)
-        qDebug() << __FUNCTION__ << window << x << y << width << height;
     RECT r;
     HWND hwnd = window ? (HWND)window : GetDesktopWindow();
     GetClientRect(hwnd, &r);
@@ -243,8 +241,7 @@ QWindow *QWindowsScreen::findTopLevelAt(const QPoint &point, unsigned flags)
     if (QPlatformWindow *bw = QWindowsContext::instance()->
             findPlatformWindowAt(GetDesktopWindow(), point, flags))
         result = QWindowsWindow::topLevelOf(bw->window());
-    if (QWindowsContext::verboseWindows)
-        qDebug() << __FUNCTION__ << point << flags << result;
+    qCDebug(lcQpaWindows) <<__FUNCTION__ << point << flags << result;
     return result;
 }
 
@@ -254,8 +251,7 @@ QWindow *QWindowsScreen::windowAt(const QPoint &screenPoint, unsigned flags)
     if (QPlatformWindow *bw = QWindowsContext::instance()->
             findPlatformWindowAt(GetDesktopWindow(), screenPoint, flags))
         result = bw->window();
-    if (QWindowsContext::verboseWindows)
-        qDebug() << __FUNCTION__ << screenPoint << " returns " << result;
+    qCDebug(lcQpaWindows) <<__FUNCTION__ << screenPoint << " returns " << result;
     return result;
 }
 
@@ -366,9 +362,8 @@ bool QWindowsScreenManager::handleDisplayChange(WPARAM wParam, LPARAM lParam)
         m_lastDepth = newDepth;
         m_lastHorizontalResolution = newHorizontalResolution;
         m_lastVerticalResolution = newVerticalResolution;
-        if (QWindowsContext::verboseWindows)
-            qDebug("%s: Depth=%d, resolution=%hux%hu",
-                   __FUNCTION__, newDepth, newHorizontalResolution, newVerticalResolution);
+        qCDebug(lcQpaWindows) << __FUNCTION__ << "Depth=" << newDepth
+            << ", resolution " << newHorizontalResolution << 'x' << newVerticalResolution;
         handleScreenChanges();
     }
     return false;
@@ -410,8 +405,7 @@ bool QWindowsScreenManager::handleScreenChanges()
             QWindowsScreen *newScreen = new QWindowsScreen(newData);
             m_screens.push_back(newScreen);
             QWindowsIntegration::instance()->emitScreenAdded(newScreen);
-            if (QWindowsContext::verboseWindows)
-                qDebug() << "New Monitor: " << newData;
+            qCDebug(lcQpaWindows) << "New Monitor: " << newData;
         }    // exists
     }        // for new screens.
     // Remove deleted ones but keep main monitors if we get only the
@@ -419,8 +413,7 @@ bool QWindowsScreenManager::handleScreenChanges()
     if (!lockScreen) {
         for (int i = m_screens.size() - 1; i >= 0; --i) {
             if (indexOfMonitor(newDataList, m_screens.at(i)->data().name) == -1) {
-                if (QWindowsContext::verboseWindows)
-                    qDebug() << "Removing Monitor: " << m_screens.at(i) ->data();
+                qCDebug(lcQpaWindows) << "Removing Monitor: " << m_screens.at(i) ->data();
                 delete m_screens.takeAt(i);
             } // not found
         }     // for existing screens

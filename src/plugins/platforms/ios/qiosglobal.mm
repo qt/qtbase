@@ -86,10 +86,10 @@ Qt::ScreenOrientation toQtScreenOrientation(UIDeviceOrientation uiDeviceOrientat
         qtOrientation = Qt::InvertedPortraitOrientation;
         break;
     case UIDeviceOrientationLandscapeLeft:
-        qtOrientation = Qt::InvertedLandscapeOrientation;
+        qtOrientation = Qt::LandscapeOrientation;
         break;
     case UIDeviceOrientationLandscapeRight:
-        qtOrientation = Qt::LandscapeOrientation;
+        qtOrientation = Qt::InvertedLandscapeOrientation;
         break;
     case UIDeviceOrientationFaceUp:
     case UIDeviceOrientationFaceDown:
@@ -108,10 +108,10 @@ UIDeviceOrientation fromQtScreenOrientation(Qt::ScreenOrientation qtOrientation)
     UIDeviceOrientation uiOrientation;
     switch (qtOrientation) {
     case Qt::LandscapeOrientation:
-        uiOrientation = UIDeviceOrientationLandscapeRight;
+        uiOrientation = UIDeviceOrientationLandscapeLeft;
         break;
     case Qt::InvertedLandscapeOrientation:
-        uiOrientation = UIDeviceOrientationLandscapeLeft;
+        uiOrientation = UIDeviceOrientationLandscapeRight;
         break;
     case Qt::InvertedPortraitOrientation:
         uiOrientation = UIDeviceOrientationPortraitUpsideDown;

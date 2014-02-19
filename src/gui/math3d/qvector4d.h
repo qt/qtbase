@@ -57,10 +57,10 @@ class QVector3D;
 class Q_GUI_EXPORT QVector4D
 {
 public:
-    QVector4D();
-    QVector4D(float xpos, float ypos, float zpos, float wpos);
-    explicit QVector4D(const QPoint& point);
-    explicit QVector4D(const QPointF& point);
+    Q_DECL_CONSTEXPR QVector4D();
+    Q_DECL_CONSTEXPR QVector4D(float xpos, float ypos, float zpos, float wpos);
+    Q_DECL_CONSTEXPR explicit QVector4D(const QPoint& point);
+    Q_DECL_CONSTEXPR explicit QVector4D(const QPointF& point);
 #ifndef QT_NO_VECTOR2D
     QVector4D(const QVector2D& vector);
     QVector4D(const QVector2D& vector, float zpos, float wpos);
@@ -72,10 +72,10 @@ public:
 
     bool isNull() const;
 
-    float x() const;
-    float y() const;
-    float z() const;
-    float w() const;
+    Q_DECL_CONSTEXPR float x() const;
+    Q_DECL_CONSTEXPR float y() const;
+    Q_DECL_CONSTEXPR float z() const;
+    Q_DECL_CONSTEXPR float w() const;
 
     void setX(float x);
     void setY(float y);
@@ -86,7 +86,12 @@ public:
     float operator[](int i) const;
 
     float length() const;
+#ifdef QT_BUILD_GUI_LIB
     float lengthSquared() const;
+#else
+    Q_DECL_CONSTEXPR inline float lengthSquared() const
+    { return xp * xp + yp * yp + zp * zp + wp * wp; }
+#endif
 
     QVector4D normalized() const;
     void normalize();
@@ -97,19 +102,24 @@ public:
     QVector4D &operator*=(const QVector4D &vector);
     QVector4D &operator/=(float divisor);
 
+#ifdef QT_BUILD_GUI_LIB
     static float dotProduct(const QVector4D& v1, const QVector4D& v2);
+#else
+    static float dotProduct(const QVector4D& v1, const QVector4D& v2)
+    { return v1.xp * v2.xp + v1.yp * v2.yp + v1.zp * v2.zp + v1.wp * v2.wp; }
+#endif
 
-    friend inline bool operator==(const QVector4D &v1, const QVector4D &v2);
-    friend inline bool operator!=(const QVector4D &v1, const QVector4D &v2);
-    friend inline const QVector4D operator+(const QVector4D &v1, const QVector4D &v2);
-    friend inline const QVector4D operator-(const QVector4D &v1, const QVector4D &v2);
-    friend inline const QVector4D operator*(float factor, const QVector4D &vector);
-    friend inline const QVector4D operator*(const QVector4D &vector, float factor);
-    friend inline const QVector4D operator*(const QVector4D &v1, const QVector4D& v2);
-    friend inline const QVector4D operator-(const QVector4D &vector);
-    friend inline const QVector4D operator/(const QVector4D &vector, float divisor);
+    Q_DECL_CONSTEXPR friend inline bool operator==(const QVector4D &v1, const QVector4D &v2);
+    Q_DECL_CONSTEXPR friend inline bool operator!=(const QVector4D &v1, const QVector4D &v2);
+    Q_DECL_CONSTEXPR friend inline const QVector4D operator+(const QVector4D &v1, const QVector4D &v2);
+    Q_DECL_CONSTEXPR friend inline const QVector4D operator-(const QVector4D &v1, const QVector4D &v2);
+    Q_DECL_CONSTEXPR friend inline const QVector4D operator*(float factor, const QVector4D &vector);
+    Q_DECL_CONSTEXPR friend inline const QVector4D operator*(const QVector4D &vector, float factor);
+    Q_DECL_CONSTEXPR friend inline const QVector4D operator*(const QVector4D &v1, const QVector4D& v2);
+    Q_DECL_CONSTEXPR friend inline const QVector4D operator-(const QVector4D &vector);
+    Q_DECL_CONSTEXPR friend inline const QVector4D operator/(const QVector4D &vector, float divisor);
 
-    friend inline bool qFuzzyCompare(const QVector4D& v1, const QVector4D& v2);
+    Q_DECL_CONSTEXPR friend inline bool qFuzzyCompare(const QVector4D& v1, const QVector4D& v2);
 
 #ifndef QT_NO_VECTOR2D
     QVector2D toVector2D() const;
@@ -120,8 +130,8 @@ public:
     QVector3D toVector3DAffine() const;
 #endif
 
-    QPoint toPoint() const;
-    QPointF toPointF() const;
+    Q_DECL_CONSTEXPR QPoint toPoint() const;
+    Q_DECL_CONSTEXPR QPointF toPointF() const;
 
     operator QVariant() const;
 
@@ -138,23 +148,23 @@ private:
 
 Q_DECLARE_TYPEINFO(QVector4D, Q_MOVABLE_TYPE);
 
-inline QVector4D::QVector4D() : xp(0.0f), yp(0.0f), zp(0.0f), wp(0.0f) {}
+Q_DECL_CONSTEXPR inline QVector4D::QVector4D() : xp(0.0f), yp(0.0f), zp(0.0f), wp(0.0f) {}
 
-inline QVector4D::QVector4D(float xpos, float ypos, float zpos, float wpos) : xp(xpos), yp(ypos), zp(zpos), wp(wpos) {}
+Q_DECL_CONSTEXPR inline QVector4D::QVector4D(float xpos, float ypos, float zpos, float wpos) : xp(xpos), yp(ypos), zp(zpos), wp(wpos) {}
 
-inline QVector4D::QVector4D(const QPoint& point) : xp(point.x()), yp(point.y()), zp(0.0f), wp(0.0f) {}
+Q_DECL_CONSTEXPR inline QVector4D::QVector4D(const QPoint& point) : xp(point.x()), yp(point.y()), zp(0.0f), wp(0.0f) {}
 
-inline QVector4D::QVector4D(const QPointF& point) : xp(point.x()), yp(point.y()), zp(0.0f), wp(0.0f) {}
+Q_DECL_CONSTEXPR inline QVector4D::QVector4D(const QPointF& point) : xp(point.x()), yp(point.y()), zp(0.0f), wp(0.0f) {}
 
 inline bool QVector4D::isNull() const
 {
     return qIsNull(xp) && qIsNull(yp) && qIsNull(zp) && qIsNull(wp);
 }
 
-inline float QVector4D::x() const { return xp; }
-inline float QVector4D::y() const { return yp; }
-inline float QVector4D::z() const { return zp; }
-inline float QVector4D::w() const { return wp; }
+Q_DECL_CONSTEXPR inline float QVector4D::x() const { return xp; }
+Q_DECL_CONSTEXPR inline float QVector4D::y() const { return yp; }
+Q_DECL_CONSTEXPR inline float QVector4D::z() const { return zp; }
+Q_DECL_CONSTEXPR inline float QVector4D::w() const { return wp; }
 
 inline void QVector4D::setX(float aX) { xp = aX; }
 inline void QVector4D::setY(float aY) { yp = aY; }
@@ -218,52 +228,52 @@ inline QVector4D &QVector4D::operator/=(float divisor)
     return *this;
 }
 
-inline bool operator==(const QVector4D &v1, const QVector4D &v2)
+Q_DECL_CONSTEXPR inline bool operator==(const QVector4D &v1, const QVector4D &v2)
 {
     return v1.xp == v2.xp && v1.yp == v2.yp && v1.zp == v2.zp && v1.wp == v2.wp;
 }
 
-inline bool operator!=(const QVector4D &v1, const QVector4D &v2)
+Q_DECL_CONSTEXPR inline bool operator!=(const QVector4D &v1, const QVector4D &v2)
 {
     return v1.xp != v2.xp || v1.yp != v2.yp || v1.zp != v2.zp || v1.wp != v2.wp;
 }
 
-inline const QVector4D operator+(const QVector4D &v1, const QVector4D &v2)
+Q_DECL_CONSTEXPR inline const QVector4D operator+(const QVector4D &v1, const QVector4D &v2)
 {
     return QVector4D(v1.xp + v2.xp, v1.yp + v2.yp, v1.zp + v2.zp, v1.wp + v2.wp);
 }
 
-inline const QVector4D operator-(const QVector4D &v1, const QVector4D &v2)
+Q_DECL_CONSTEXPR inline const QVector4D operator-(const QVector4D &v1, const QVector4D &v2)
 {
     return QVector4D(v1.xp - v2.xp, v1.yp - v2.yp, v1.zp - v2.zp, v1.wp - v2.wp);
 }
 
-inline const QVector4D operator*(float factor, const QVector4D &vector)
+Q_DECL_CONSTEXPR inline const QVector4D operator*(float factor, const QVector4D &vector)
 {
     return QVector4D(vector.xp * factor, vector.yp * factor, vector.zp * factor, vector.wp * factor);
 }
 
-inline const QVector4D operator*(const QVector4D &vector, float factor)
+Q_DECL_CONSTEXPR inline const QVector4D operator*(const QVector4D &vector, float factor)
 {
     return QVector4D(vector.xp * factor, vector.yp * factor, vector.zp * factor, vector.wp * factor);
 }
 
-inline const QVector4D operator*(const QVector4D &v1, const QVector4D& v2)
+Q_DECL_CONSTEXPR inline const QVector4D operator*(const QVector4D &v1, const QVector4D& v2)
 {
     return QVector4D(v1.xp * v2.xp, v1.yp * v2.yp, v1.zp * v2.zp, v1.wp * v2.wp);
 }
 
-inline const QVector4D operator-(const QVector4D &vector)
+Q_DECL_CONSTEXPR inline const QVector4D operator-(const QVector4D &vector)
 {
     return QVector4D(-vector.xp, -vector.yp, -vector.zp, -vector.wp);
 }
 
-inline const QVector4D operator/(const QVector4D &vector, float divisor)
+Q_DECL_CONSTEXPR inline const QVector4D operator/(const QVector4D &vector, float divisor)
 {
     return QVector4D(vector.xp / divisor, vector.yp / divisor, vector.zp / divisor, vector.wp / divisor);
 }
 
-inline bool qFuzzyCompare(const QVector4D& v1, const QVector4D& v2)
+Q_DECL_CONSTEXPR inline bool qFuzzyCompare(const QVector4D& v1, const QVector4D& v2)
 {
     return qFuzzyCompare(v1.xp, v2.xp) &&
            qFuzzyCompare(v1.yp, v2.yp) &&
@@ -271,12 +281,12 @@ inline bool qFuzzyCompare(const QVector4D& v1, const QVector4D& v2)
            qFuzzyCompare(v1.wp, v2.wp);
 }
 
-inline QPoint QVector4D::toPoint() const
+Q_DECL_CONSTEXPR inline QPoint QVector4D::toPoint() const
 {
     return QPoint(qRound(xp), qRound(yp));
 }
 
-inline QPointF QVector4D::toPointF() const
+Q_DECL_CONSTEXPR inline QPointF QVector4D::toPointF() const
 {
     return QPointF(qreal(xp), qreal(yp));
 }

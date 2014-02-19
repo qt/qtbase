@@ -305,25 +305,23 @@ static const char* const qglslPositionWithTextureBrushVertexShader = "\n\
 static const char* const qglslAffinePositionWithTextureBrushVertexShader
                  = qglslPositionWithTextureBrushVertexShader;
 
-#if defined(QT_OPENGL_ES_2)
 // OpenGL ES does not support GL_REPEAT wrap modes for NPOT textures. So instead,
 // we emulate GL_REPEAT by only taking the fractional part of the texture coords.
 // TODO: Special case POT textures which don't need this emulation
-static const char* const qglslTextureBrushSrcFragmentShader = "\n\
+static const char* const qglslTextureBrushSrcFragmentShader_ES = "\n\
     varying highp   vec2      brushTextureCoords; \n\
     uniform         sampler2D brushTexture; \n\
     lowp vec4 srcPixel() { \n\
         return texture2D(brushTexture, fract(brushTextureCoords)); \n\
     }\n";
-#else
-static const char* const qglslTextureBrushSrcFragmentShader = "\n\
+
+static const char* const qglslTextureBrushSrcFragmentShader_desktop = "\n\
     varying   highp   vec2      brushTextureCoords; \n\
     uniform           sampler2D brushTexture; \n\
     lowp vec4 srcPixel() \n\
     { \n\
         return texture2D(brushTexture, brushTextureCoords); \n\
     }\n";
-#endif
 
 static const char* const qglslTextureBrushSrcWithPatternFragmentShader = "\n\
     varying   highp   vec2      brushTextureCoords; \n\

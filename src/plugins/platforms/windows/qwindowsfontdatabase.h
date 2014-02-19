@@ -78,7 +78,7 @@ public:
     ~QWindowsFontDatabase();
 
     virtual void populateFontDatabase();
-    virtual QFontEngine *fontEngine(const QFontDef &fontDef, QChar::Script script, void *handle);
+    virtual QFontEngine *fontEngine(const QFontDef &fontDef, void *handle);
     virtual QFontEngine *fontEngine(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference);
     virtual QStringList fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const;
     virtual QStringList addApplicationFont(const QByteArray &fontData, const QString &fileName);
@@ -102,6 +102,8 @@ public:
 
     static qreal fontSmoothingGamma();
     static LOGFONT fontDefToLOGFONT(const QFontDef &fontDef);
+
+    static QStringList extraTryFontsForFamily(const QString &family);
 
 private:
     void populate(const QString &family = QString());

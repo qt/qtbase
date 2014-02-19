@@ -86,7 +86,7 @@
 //
 
 /*
-	Cocoa Application Categories
+        Cocoa Application Categories
 */
 #include "qglobal.h"
 #include "private/qcore_mac_p.h"

@@ -42,6 +42,7 @@
 #include "qiosglobal.h"
 #include "qiosinputcontext.h"
 #include "qioswindow.h"
+#include "quiview.h"
 #include <QGuiApplication>
 
 @interface QIOSKeyboardListener : NSObject {
@@ -49,6 +50,7 @@
     QIOSInputContext *m_context;
     BOOL m_keyboardVisible;
     BOOL m_keyboardVisibleAndDocked;
+    BOOL m_ignoreKeyboardChanges;
     QRectF m_keyboardRect;
     QRectF m_keyboardEndRect;
     NSTimeInterval m_duration;
@@ -66,6 +68,7 @@
         m_context = context;
         m_keyboardVisible = NO;
         m_keyboardVisibleAndDocked = NO;
+        m_ignoreKeyboardChanges = NO;
         m_duration = 0;
         m_curve = UIViewAnimationCurveEaseOut;
         m_viewController = 0;
@@ -128,6 +131,8 @@
 
 - (void) keyboardDidChangeFrame:(NSNotification *)notification
 {
+    if (m_ignoreKeyboardChanges)
+        return;
     m_keyboardRect = [self getKeyboardRect:notification];
     m_context->emitKeyboardRectChanged();
 
@@ -140,11 +145,13 @@
     // If the keyboard was visible and docked from before, this is just a geometry
     // change (normally caused by an orientation change). In that case, update scroll:
     if (m_keyboardVisibleAndDocked)
-        m_context->scrollRootView();
+        m_context->scrollToCursor();
 }
 
 - (void) keyboardWillShow:(NSNotification *)notification
 {
+    if (m_ignoreKeyboardChanges)
+        return;
     // Note that UIKeyboardWillShowNotification is only sendt when the keyboard is docked.
     m_keyboardVisibleAndDocked = YES;
     m_keyboardEndRect = [self getKeyboardRect:notification];
@@ -152,15 +159,17 @@
         m_duration = [notification.userInfo[UIKeyboardAnimationDurationUserInfoKey] doubleValue];
         m_curve = UIViewAnimationCurve([notification.userInfo[UIKeyboardAnimationCurveUserInfoKey] integerValue] << 16);
     }
-    m_context->scrollRootView();
+    m_context->scrollToCursor();
 }
 
 - (void) keyboardWillHide:(NSNotification *)notification
 {
+    if (m_ignoreKeyboardChanges)
+        return;
     // Note that UIKeyboardWillHideNotification is also sendt when the keyboard is undocked.
     m_keyboardVisibleAndDocked = NO;
     m_keyboardEndRect = [self getKeyboardRect:notification];
-    m_context->scrollRootView();
+    m_context->scroll(0);
 }
 
 @end
@@ -170,10 +179,9 @@ QIOSInputContext::QIOSInputContext()
     , m_keyboardListener([[QIOSKeyboardListener alloc] initWithQIOSInputContext:this])
     , m_focusView(0)
     , m_hasPendingHideRequest(false)
-    , m_inSetFocusObject(false)
 {
     if (isQtApplication())
-        connect(qGuiApp->inputMethod(), &QInputMethod::cursorRectangleChanged, this, &QIOSInputContext::scrollRootView);
+        connect(qGuiApp->inputMethod(), &QInputMethod::cursorRectangleChanged, this, &QIOSInputContext::cursorRectangleChanged);
     connect(qGuiApp, &QGuiApplication::focusWindowChanged, this, &QIOSInputContext::focusWindowChanged);
 }
 
@@ -216,76 +224,99 @@ bool QIOSInputContext::isInputPanelVisible() const
     return m_keyboardListener->m_keyboardVisible;
 }
 
-void QIOSInputContext::setFocusObject(QObject *)
+void QIOSInputContext::setFocusObject(QObject *focusObject)
 {
-    m_inputItemTransform = qApp->inputMethod()->inputItemTransform();
-
-    if (!m_focusView || !m_focusView.isFirstResponder)
+    if (!focusObject || !m_focusView || !m_focusView.isFirstResponder) {
+        scroll(0);
         return;
+    }
 
-    // Since m_focusView is the first responder, it means that the keyboard is open and we
-    // should update keyboard layout. But there seem to be no way to tell it to reread the
-    // UITextInputTraits from m_focusView. To work around that, we quickly resign first
-    // responder status just to reassign it again. To not remove the focusObject in the same
-    // go, we need to call the super implementation of resignFirstResponder. Since the call
-    // will cause a 'keyboardWillHide' notification to be sendt, we also block scrollRootView
-    // to avoid artifacts:
-    m_inSetFocusObject = true;
-    SEL sel = @selector(resignFirstResponder);
-    [[m_focusView superclass] instanceMethodForSelector:sel](m_focusView, sel);
-    m_inSetFocusObject = false;
-    [m_focusView becomeFirstResponder];
+    reset();
+
+    if (m_keyboardListener->m_keyboardVisibleAndDocked)
+        scrollToCursor();
 }
 
 void QIOSInputContext::focusWindowChanged(QWindow *focusWindow)
 {
-    UIView<UIKeyInput> *view = reinterpret_cast<UIView<UIKeyInput> *>(focusWindow->handle()->winId());
+    QUIView *view = focusWindow ? reinterpret_cast<QUIView *>(focusWindow->handle()->winId()) : 0;
     if ([m_focusView isFirstResponder])
         [view becomeFirstResponder];
     [m_focusView release];
     m_focusView = [view retain];
+
+    if (view.window != m_keyboardListener->m_viewController.view)
+        scroll(0);
 }
 
-void QIOSInputContext::scrollRootView()
+void QIOSInputContext::cursorRectangleChanged()
 {
-    // Scroll the root view (screen) if:
-    // - our backend controls the root view controller on the main screen (no hybrid app)
-    // - the focus object is on the same screen as the keyboard.
-    // - the first responder is a QUIView, and not some other foreign UIView.
-    // - the keyboard is docked. Otherwise the user can move the keyboard instead.
-    // - the inputItem has not been moved/scrolled
-    if (!isQtApplication() || !m_focusView || m_inSetFocusObject)
+    if (!m_keyboardListener->m_keyboardVisibleAndDocked)
         return;
 
-    if (m_inputItemTransform != qApp->inputMethod()->inputItemTransform()) {
-        // The inputItem has moved since the last scroll update. To avoid competing
-        // with the application where the cursor/inputItem should be, we bail:
+    // Check if the cursor has changed position inside the input item. Since
+    // qApp->inputMethod()->cursorRectangle() will also change when the input item
+    // itself moves, we need to ask the focus object for ImCursorRectangle:
+    static QPoint prevCursor;
+    QInputMethodQueryEvent queryEvent(Qt::ImCursorRectangle);
+    QCoreApplication::sendEvent(qApp->focusObject(), &queryEvent);
+    QPoint cursor = queryEvent.value(Qt::ImCursorRectangle).toRect().topLeft();
+    if (cursor != prevCursor)
+        scrollToCursor();
+    prevCursor = cursor;
+}
+
+void QIOSInputContext::scrollToCursor()
+{
+    if (!isQtApplication() || !m_focusView)
         return;
-    }
 
     UIView *view = m_keyboardListener->m_viewController.view;
-    qreal scrollTo = 0;
+    if (view.window != m_focusView.window)
+        return;
 
-    if (m_focusView.isFirstResponder
-            && m_keyboardListener->m_keyboardVisibleAndDocked
-            && m_focusView.window == view.window) {
-        QRectF cursorRect = qGuiApp->inputMethod()->cursorRectangle();
-        cursorRect.translate(m_focusView.qwindow->geometry().topLeft());
-        qreal keyboardY = m_keyboardListener->m_keyboardEndRect.y();
-        int statusBarY = qGuiApp->primaryScreen()->availableGeometry().y();
-        const int margin = 20;
+    const int margin = 20;
+    QRectF translatedCursorPos = qApp->inputMethod()->cursorRectangle();
+    translatedCursorPos.translate(m_focusView.qwindow->geometry().topLeft());
+    qreal keyboardY = m_keyboardListener->m_keyboardEndRect.y();
+    int statusBarY = qGuiApp->primaryScreen()->availableGeometry().y();
 
-        if (cursorRect.bottomLeft().y() > keyboardY - margin)
-            scrollTo = qMin(view.bounds.size.height - keyboardY, cursorRect.y() - statusBarY - margin);
-    }
-
-    if (scrollTo != view.bounds.origin.y) {
-        // Scroll the view the same way a UIScrollView works: by changing bounds.origin:
-        CGRect newBounds = view.bounds;
-        newBounds.origin.y = scrollTo;
-        [UIView animateWithDuration:m_keyboardListener->m_duration delay:0
-            options:m_keyboardListener->m_curve
-            animations:^{ view.bounds = newBounds; }
-            completion:0];
-    }
+    scroll((translatedCursorPos.bottomLeft().y() < keyboardY - margin) ? 0
+        : qMin(view.bounds.size.height - keyboardY, translatedCursorPos.y() - statusBarY - margin));
 }
+
+void QIOSInputContext::scroll(int y)
+{
+    // Scroll the view the same way a UIScrollView
+    // works: by changing bounds.origin:
+    UIView *view = m_keyboardListener->m_viewController.view;
+    if (y == view.bounds.origin.y)
+        return;
+
+    CGRect newBounds = view.bounds;
+    newBounds.origin.y = y;
+    [UIView animateWithDuration:m_keyboardListener->m_duration delay:0
+        options:m_keyboardListener->m_curve
+        animations:^{ view.bounds = newBounds; }
+        completion:0];
+}
+
+void QIOSInputContext::update(Qt::InputMethodQueries query)
+{
+    [m_focusView updateInputMethodWithQuery:query];
+}
+
+void QIOSInputContext::reset()
+{
+    // Since the call to reset will cause a 'keyboardWillHide'
+    // notification to be sendt, we block keyboard nofifications to avoid artifacts:
+    m_keyboardListener->m_ignoreKeyboardChanges = true;
+    [m_focusView reset];
+    m_keyboardListener->m_ignoreKeyboardChanges = false;
+}
+
+void QIOSInputContext::commit()
+{
+    [m_focusView commit];
+}
+

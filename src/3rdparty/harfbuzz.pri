@@ -9,7 +9,6 @@ contains(QT_CONFIG, harfbuzz) {
         $$QT_HARFBUZZ_DIR/src/hb-buffer-serialize.cc \
         $$QT_HARFBUZZ_DIR/src/hb-common.cc \
         $$QT_HARFBUZZ_DIR/src/hb-face.cc \
-        $$QT_HARFBUZZ_DIR/src/hb-fallback-shape.cc \
         $$QT_HARFBUZZ_DIR/src/hb-font.cc \
         $$QT_HARFBUZZ_DIR/src/hb-ot-tag.cc \
         $$QT_HARFBUZZ_DIR/src/hb-set.cc \
@@ -65,11 +64,14 @@ contains(QT_CONFIG, harfbuzz) {
         $$QT_HARFBUZZ_DIR/src/hb-ot-shape.cc \
         $$QT_HARFBUZZ_DIR/src/hb-ot-shape-complex-arabic.cc \
         $$QT_HARFBUZZ_DIR/src/hb-ot-shape-complex-default.cc \
+        $$QT_HARFBUZZ_DIR/src/hb-ot-shape-complex-hangul.cc \
+        $$QT_HARFBUZZ_DIR/src/hb-ot-shape-complex-hebrew.cc \
         $$QT_HARFBUZZ_DIR/src/hb-ot-shape-complex-indic.cc \
         $$QT_HARFBUZZ_DIR/src/hb-ot-shape-complex-indic-table.cc \
         $$QT_HARFBUZZ_DIR/src/hb-ot-shape-complex-myanmar.cc \
         $$QT_HARFBUZZ_DIR/src/hb-ot-shape-complex-sea.cc \
         $$QT_HARFBUZZ_DIR/src/hb-ot-shape-complex-thai.cc \
+        $$QT_HARFBUZZ_DIR/src/hb-ot-shape-complex-tibetan.cc \
         $$QT_HARFBUZZ_DIR/src/hb-ot-shape-fallback.cc \
         $$QT_HARFBUZZ_DIR/src/hb-ot-shape-normalize.cc
 
@@ -96,7 +98,19 @@ contains(QT_CONFIG, harfbuzz) {
     HEADERS += \
         $$QT_HARFBUZZ_DIR/src/hb-ot.h \
         $$QT_HARFBUZZ_DIR/src/hb-ot-layout.h \
+        $$QT_HARFBUZZ_DIR/src/hb-ot-shape.h \
         $$QT_HARFBUZZ_DIR/src/hb-ot-tag.h
+
+    mac {
+        # Apple Advanced Typography
+        SOURCES += \
+            $$QT_HARFBUZZ_DIR/src/hb-coretext.cc
+
+        HEADERS += \
+            $$QT_HARFBUZZ_DIR/src/hb-coretext.h
+
+        DEFINES += HAVE_CORETEXT
+    }
 
     DEFINES += HAVE_CONFIG_H
     QT += core-private

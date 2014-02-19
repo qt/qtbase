@@ -188,6 +188,31 @@ QJsonArray &QJsonArray::operator =(const QJsonArray &other)
     return *this;
 }
 
+/*! \fn QJsonArray &QJsonArray::operator+=(const QJsonValue &value)
+
+    Appends \a value to the array, and returns a reference to the array itself.
+
+    \since 5.3
+    \sa append(), operator<<()
+*/
+
+/*! \fn QJsonArray QJsonArray::operator+(const QJsonValue &value) const
+
+    Returns an array that contains all the items in this array followed
+    by the provided \a value.
+
+    \since 5.3
+    \sa operator+=()
+*/
+
+/*! \fn QJsonArray &QJsonArray::operator<<(const QJsonValue &value)
+
+    Appends \a value to the array, and returns a reference to the array itself.
+
+    \since 5.3
+    \sa operator+=(), append()
+*/
+
 /*!
     Converts the string list \a list to a QJsonArray.
 

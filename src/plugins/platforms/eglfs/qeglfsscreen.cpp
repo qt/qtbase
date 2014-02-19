@@ -39,39 +39,21 @@
 **
 ****************************************************************************/
 
-#include "qeglfscursor.h"
 #include "qeglfsscreen.h"
 #include "qeglfswindow.h"
 #include "qeglfshooks.h"
-
-#if !defined(QT_NO_EVDEV) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_NO_SDK))
-#include <QtPlatformSupport/private/qdevicediscovery_p.h>
-#endif
+#include <QtPlatformSupport/private/qeglplatformcursor_p.h>
 
 QT_BEGIN_NAMESPACE
 
 QEglFSScreen::QEglFSScreen(EGLDisplay dpy)
-    : m_dpy(dpy),
+    : QEGLPlatformScreen(dpy),
       m_surface(EGL_NO_SURFACE),
       m_cursor(0),
+      m_rootWindow(0),
       m_rootContext(0)
 {
-#ifdef QEGL_EXTRA_DEBUG
-    qWarning("QEglScreen %p\n", this);
-#endif
-
-    QByteArray hideCursorVal = qgetenv("QT_QPA_EGLFS_HIDECURSOR");
-    bool hideCursor = false;
-    if (hideCursorVal.isEmpty()) {
-#if !defined(QT_NO_EVDEV) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_NO_SDK))
-        QScopedPointer<QDeviceDiscovery> dis(QDeviceDiscovery::create(QDeviceDiscovery::Device_Mouse));
-        hideCursor = dis->scanConnectedDevices().isEmpty();
-#endif
-    } else {
-        hideCursor = hideCursorVal.toInt() != 0;
-    }
-    if (!hideCursor)
-        m_cursor = QEglFSHooks::hooks()->createCursor(this);
+    m_cursor = QEglFSHooks::hooks()->createCursor(this);
 }
 
 QEglFSScreen::~QEglFSScreen()
@@ -122,52 +104,6 @@ QPlatformCursor *QEglFSScreen::cursor() const
 void QEglFSScreen::setPrimarySurface(EGLSurface surface)
 {
     m_surface = surface;
-}
-
-void QEglFSScreen::addWindow(QEglFSWindow *window)
-{
-    if (!m_windows.contains(window)) {
-        m_windows.append(window);
-        topWindowChanged(window);
-    }
-}
-
-void QEglFSScreen::removeWindow(QEglFSWindow *window)
-{
-    m_windows.removeOne(window);
-    if (!m_windows.isEmpty())
-        topWindowChanged(m_windows.last());
-}
-
-void QEglFSScreen::moveToTop(QEglFSWindow *window)
-{
-    m_windows.removeOne(window);
-    m_windows.append(window);
-    topWindowChanged(window);
-}
-
-void QEglFSScreen::changeWindowIndex(QEglFSWindow *window, int newIdx)
-{
-    int idx = m_windows.indexOf(window);
-    if (idx != -1 && idx != newIdx) {
-        m_windows.move(idx, newIdx);
-        if (newIdx == m_windows.size() - 1)
-            topWindowChanged(m_windows.last());
-    }
-}
-
-QEglFSWindow *QEglFSScreen::rootWindow()
-{
-    Q_FOREACH (QEglFSWindow *window, m_windows) {
-        if (window->hasNativeWindow())
-            return window;
-    }
-    return 0;
-}
-
-void QEglFSScreen::topWindowChanged(QPlatformWindow *window)
-{
-    Q_UNUSED(window);
 }
 
 QT_END_NAMESPACE

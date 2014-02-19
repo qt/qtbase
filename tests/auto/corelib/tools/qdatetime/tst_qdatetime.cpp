@@ -49,6 +49,9 @@
 
 #ifdef Q_OS_WIN
 #   include <qt_windows.h>
+#  if defined(Q_OS_WINRT)
+#    define tzset()
+#  endif
 #endif
 
 class tst_QDateTime : public QObject
@@ -213,7 +216,7 @@ void tst_QDateTime::init()
 {
 #if defined(Q_OS_WINCE)
     SetUserDefaultLCID(MAKELCID(MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US), SORT_DEFAULT));
-#elif defined(Q_OS_WIN)
+#elif defined(Q_OS_WIN32)
     SetThreadLocale(MAKELCID(MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US), SORT_DEFAULT));
 #endif
 }
@@ -1626,7 +1629,8 @@ void tst_QDateTime::operator_eqeq_data()
     QTest::newRow("data10") << dateTime3 << dateTime3c << true << false;
     QTest::newRow("data11") << dateTime3 << dateTime3d << true << false;
     QTest::newRow("data12") << dateTime3c << dateTime3d << true << false;
-    QTest::newRow("data13") << dateTime3 << dateTime3e << false << false;
+    QTest::newRow("data13") << dateTime3 << dateTime3e
+                            << (localTimeType == LocalTimeIsUtc) << false;
     QTest::newRow("invalid == invalid") << invalidDateTime() << invalidDateTime() << true << false;
     QTest::newRow("invalid == valid #1") << invalidDateTime() << dateTime1 << false << false;
 

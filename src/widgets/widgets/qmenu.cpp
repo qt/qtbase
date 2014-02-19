@@ -153,11 +153,46 @@ void QMenuPrivate::init()
         scroll->scrollFlags = QMenuPrivate::QMenuScroller::ScrollNone;
     }
 
-    platformMenu = QGuiApplicationPrivate::platformTheme()->createPlatformMenu();
+    setPlatformMenu(QGuiApplicationPrivate::platformTheme()->createPlatformMenu());
+}
+
+void QMenuPrivate::setPlatformMenu(QPlatformMenu *menu)
+{
+    Q_Q(QMenu);
+    if (!platformMenu.isNull() && !platformMenu->parent())
+        delete platformMenu.data();
+
+    platformMenu = menu;
     if (!platformMenu.isNull()) {
         QObject::connect(platformMenu, SIGNAL(aboutToShow()), q, SIGNAL(aboutToShow()));
         QObject::connect(platformMenu, SIGNAL(aboutToHide()), q, SIGNAL(aboutToHide()));
     }
+}
+
+// forward declare function
+static void copyActionToPlatformItem(const QAction *action, QPlatformMenuItem* item);
+
+void QMenuPrivate::syncPlatformMenu()
+{
+    Q_Q(QMenu);
+    if (platformMenu.isNull())
+        return;
+
+    QPlatformMenuItem *beforeItem = Q_NULLPTR;
+    QListIterator<QAction*> it(q->actions());
+    it.toBack();
+    while (it.hasPrevious()) {
+        QPlatformMenuItem *menuItem = platformMenu->createMenuItem();
+        QAction *action = it.previous();
+        menuItem->setTag(reinterpret_cast<quintptr>(action));
+        QObject::connect(menuItem, SIGNAL(activated()), action, SLOT(trigger()));
+        QObject::connect(menuItem, SIGNAL(hovered()), action, SIGNAL(hovered()));
+        copyActionToPlatformItem(action, menuItem);
+        platformMenu->insertMenuItem(menuItem, beforeItem);
+        beforeItem = menuItem;
+    }
+    platformMenu->syncSeparatorsCollapsible(collapsibleSeparators);
+    platformMenu->setEnabled(q->isEnabled());
 }
 
 int QMenuPrivate::scrollerHeight() const
@@ -435,7 +470,7 @@ void QMenuPrivate::hideMenu(QMenu *menu)
     if (!menu)
         return;
 #if !defined(QT_NO_EFFECTS)
-    menu->blockSignals(true);
+    QSignalBlocker blocker(menu);
     aboutToHide = true;
     // Flash item which is about to trigger (if any).
     if (menu->style()->styleHint(QStyle::SH_Menu_FlashTriggeredItem)
@@ -455,7 +490,7 @@ void QMenuPrivate::hideMenu(QMenu *menu)
     }
 
     aboutToHide = false;
-    menu->blockSignals(false);
+    blocker.unblock();
 #endif // QT_NO_EFFECTS
     menu->close();
 }
@@ -2976,8 +3011,7 @@ void QMenu::actionEvent(QActionEvent *e)
 
     if (!d->platformMenu.isNull()) {
         if (e->type() == QEvent::ActionAdded) {
-            QPlatformMenuItem *menuItem =
-                QGuiApplicationPrivate::platformTheme()->createPlatformMenuItem();
+            QPlatformMenuItem *menuItem = d->platformMenu->createMenuItem();
             menuItem->setTag(reinterpret_cast<quintptr>(e->action()));
             QObject::connect(menuItem, SIGNAL(activated()), e->action(), SLOT(trigger()));
             QObject::connect(menuItem, SIGNAL(hovered()), e->action(), SIGNAL(hovered()));
@@ -3152,6 +3186,14 @@ QPlatformMenu *QMenu::platformMenu()
 {
 
     return d_func()->platformMenu;
+}
+
+/*!\internal
+*/
+void QMenu::setPlatformMenu(QPlatformMenu *platformMenu)
+{
+    d_func()->setPlatformMenu(platformMenu);
+    d_func()->syncPlatformMenu();
 }
 
 /*!

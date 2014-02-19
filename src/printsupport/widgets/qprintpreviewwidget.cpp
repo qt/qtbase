@@ -162,9 +162,10 @@ signals:
 protected:
     void resizeEvent(QResizeEvent* e)
     {
-        const bool blocked = verticalScrollBar()->blockSignals(true); // Don't change page, QTBUG-14517
-        QGraphicsView::resizeEvent(e);
-        verticalScrollBar()->blockSignals(blocked);
+        {
+            const QSignalBlocker blocker(verticalScrollBar()); // Don't change page, QTBUG-14517
+            QGraphicsView::resizeEvent(e);
+        }
         emit resized();
     }
 

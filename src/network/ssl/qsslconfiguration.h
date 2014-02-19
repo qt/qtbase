@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 BlackBerry Limited. All rights reserved.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -130,6 +131,21 @@ public:
 
     static QSslConfiguration defaultConfiguration();
     static void setDefaultConfiguration(const QSslConfiguration &configuration);
+
+    enum NextProtocolNegotiationStatus {
+        NextProtocolNegotiationNone,
+        NextProtocolNegotiationNegotiated,
+        NextProtocolNegotiationUnsupported
+    };
+
+    void setAllowedNextProtocols(QList<QByteArray> protocols);
+    QList<QByteArray> allowedNextProtocols() const;
+
+    QByteArray nextNegotiatedProtocol() const;
+    NextProtocolNegotiationStatus nextProtocolNegotiationStatus() const;
+
+    static const char NextProtocolSpdy3_0[];
+    static const char NextProtocolHttp1_1[];
 
 private:
     friend class QSslSocket;

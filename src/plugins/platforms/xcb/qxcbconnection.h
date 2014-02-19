@@ -69,8 +69,11 @@
 struct XInput2MaemoData;
 #elif XCB_USE_XINPUT2
 #include <X11/extensions/XI2.h>
+#ifdef XIScrollClass
+#define XCB_USE_XINPUT21    // XI 2.1 adds smooth scrolling support
 #ifdef XI_TouchBeginMask
 #define XCB_USE_XINPUT22    // XI 2.2 adds multi-point touch support
+#endif
 #endif
 struct XInput2DeviceData;
 #endif
@@ -271,6 +274,10 @@ namespace QXcbAtom {
         AbsDistance,
         WacomSerialIDs,
         INTEGER,
+        RelHorizWheel,
+        RelVertWheel,
+        RelHorizScroll,
+        RelVertScroll,
 
 #if XCB_USE_MAEMO_WINDOW_PROPERTIES
         MeegoTouchOrientationAngle,
@@ -499,10 +506,19 @@ private:
     void xi2ReportTabletEvent(const TabletData &tabletData, void *event);
     QVector<TabletData> m_tabletData;
 #endif
+    struct ScrollingDevice {
+        ScrollingDevice() : deviceId(0), verticalIndex(0), horizontalIndex(0), orientations(0) { }
+        int deviceId;
+        int verticalIndex, horizontalIndex;
+        double verticalIncrement, horizontalIncrement;
+        Qt::Orientations orientations;
+        QPointF lastScrollPosition;
+    };
+    void xi2HandleScrollEvent(void *event, ScrollingDevice &scrollingDevice);
+    QHash<int, ScrollingDevice> m_scrollingDevices;
 #endif // XCB_USE_XINPUT2
 
 #if defined(XCB_USE_XINPUT2) || defined(XCB_USE_XINPUT2_MAEMO)
-    static int xi2CountBits(unsigned char *ptr, int len);
     static bool xi2GetValuatorValueIfSet(void *event, int valuatorNum, double *value);
     static bool xi2PrepareXIGenericDeviceEvent(xcb_ge_event_t *event, int opCode);
 #endif
@@ -520,8 +536,6 @@ private:
     xcb_timestamp_t m_netWmUserTime;
 
     QByteArray m_displayName;
-
-    xcb_window_t m_connectionEventListener;
 
     QXcbKeyboard *m_keyboard;
 #ifndef QT_NO_CLIPBOARD

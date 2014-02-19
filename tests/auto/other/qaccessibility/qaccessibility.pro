@@ -13,10 +13,11 @@ wince*: {
 }
 
 win32 {
-    !*g++ {
+    !*g++:!winrt {
         include(../../../../src/3rdparty/iaccessible2/iaccessible2.pri)
         DEFINES += QT_SUPPORTS_IACCESSIBLE2
     }
-    LIBS += -loleacc -loleaut32 -lole32 -luuid
+    LIBS += -luuid
+    !winphone: LIBS += -loleacc -loleaut32 -lole32
 }
 DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

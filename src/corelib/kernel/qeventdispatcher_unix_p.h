@@ -94,6 +94,12 @@ public:
 
 class QEventDispatcherUNIXPrivate;
 
+#ifdef Q_OS_QNX
+#  define FINAL_EXCEPT_BLACKBERRY
+#else
+#  define FINAL_EXCEPT_BLACKBERRY Q_DECL_FINAL
+#endif
+
 class Q_CORE_EXPORT QEventDispatcherUNIX : public QAbstractEventDispatcher
 {
     Q_OBJECT
@@ -106,18 +112,18 @@ public:
     bool processEvents(QEventLoop::ProcessEventsFlags flags);
     bool hasPendingEvents();
 
-    void registerSocketNotifier(QSocketNotifier *notifier);
-    void unregisterSocketNotifier(QSocketNotifier *notifier);
+    void registerSocketNotifier(QSocketNotifier *notifier) FINAL_EXCEPT_BLACKBERRY;
+    void unregisterSocketNotifier(QSocketNotifier *notifier) FINAL_EXCEPT_BLACKBERRY;
 
-    void registerTimer(int timerId, int interval, Qt::TimerType timerType, QObject *object);
-    bool unregisterTimer(int timerId);
-    bool unregisterTimers(QObject *object);
-    QList<TimerInfo> registeredTimers(QObject *object) const;
+    void registerTimer(int timerId, int interval, Qt::TimerType timerType, QObject *object) Q_DECL_FINAL;
+    bool unregisterTimer(int timerId) Q_DECL_FINAL;
+    bool unregisterTimers(QObject *object) Q_DECL_FINAL;
+    QList<TimerInfo> registeredTimers(QObject *object) const Q_DECL_FINAL;
 
-    int remainingTime(int timerId);
+    int remainingTime(int timerId) Q_DECL_FINAL;
 
-    void wakeUp();
-    void interrupt();
+    void wakeUp() FINAL_EXCEPT_BLACKBERRY;
+    void interrupt() Q_DECL_FINAL;
     void flush();
 
 protected:
@@ -130,7 +136,7 @@ protected:
 
     virtual int select(int nfds,
                        fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
-                       timespec *timeout);
+                       timespec *timeout) Q_DECL_FINAL;
 };
 
 class Q_CORE_EXPORT QEventDispatcherUNIXPrivate : public QAbstractEventDispatcherPrivate
@@ -142,8 +148,8 @@ public:
     ~QEventDispatcherUNIXPrivate();
 
     int doSelect(QEventLoop::ProcessEventsFlags flags, timespec *timeout);
-    virtual int initThreadWakeUp();
-    virtual int processThreadWakeUp(int nsel);
+    virtual int initThreadWakeUp() FINAL_EXCEPT_BLACKBERRY;
+    virtual int processThreadWakeUp(int nsel) FINAL_EXCEPT_BLACKBERRY;
 
     bool mainThread;
 
@@ -164,6 +170,8 @@ public:
     QAtomicInt wakeUps;
     QAtomicInt interrupt; // bool
 };
+
+#undef FINAL_EXCEPT_BLACKBERRY
 
 QT_END_NAMESPACE
 

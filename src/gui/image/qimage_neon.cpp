@@ -43,7 +43,7 @@
 #include <private/qimage_p.h>
 #include <private/qsimd_p.h>
 
-#ifdef QT_COMPILER_SUPPORTS_NEON
+#ifdef __ARM_NEON__
 
 QT_BEGIN_NAMESPACE
 
@@ -111,4 +111,4 @@ void convert_RGB888_to_RGB32_neon(QImageData *dest, const QImageData *src, Qt::I
 
 QT_END_NAMESPACE
 
-#endif // QT_COMPILER_SUPPORTS_NEON
+#endif // __ARM_NEON__

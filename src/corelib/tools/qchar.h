@@ -262,7 +262,8 @@ public:
     enum Direction
     {
         DirL, DirR, DirEN, DirES, DirET, DirAN, DirCS, DirB, DirS, DirWS, DirON,
-        DirLRE, DirLRO, DirAL, DirRLE, DirRLO, DirPDF, DirNSM, DirBN
+        DirLRE, DirLRO, DirAL, DirRLE, DirRLO, DirPDF, DirNSM, DirBN,
+        DirLRI, DirRLI, DirFSI, DirPDI
     };
 
     enum Decomposition
@@ -287,10 +288,21 @@ public:
         Fraction
     };
 
+    enum JoiningType {
+        Joining_None,
+        Joining_Causing,
+        Joining_Dual,
+        Joining_Right,
+        Joining_Left,
+        Joining_Transparent
+    };
+
+#if QT_DEPRECATED_SINCE(5, 3)
     enum Joining
     {
         OtherJoining, Dual, Right, Center
     };
+#endif
 
     enum CombiningClass
     {
@@ -332,13 +344,24 @@ public:
         Unicode_5_2,
         Unicode_6_0,
         Unicode_6_1,
-        Unicode_6_2
+        Unicode_6_2,
+        Unicode_6_3
     };
     // ****** WHEN ADDING FUNCTIONS, CONSIDER ADDING TO QCharRef TOO
 
     inline Category category() const { return QChar::category(ucs); }
     inline Direction direction() const { return QChar::direction(ucs); }
-    inline Joining joining() const { return QChar::joining(ucs); }
+    inline JoiningType joiningType() const { return QChar::joiningType(ucs); }
+#if QT_DEPRECATED_SINCE(5, 3)
+    QT_DEPRECATED inline Joining joining() const {
+        switch (QChar::joiningType(ucs)) {
+        case QChar::Joining_Causing: return QChar::Center;
+        case QChar::Joining_Dual: return QChar::Dual;
+        case QChar::Joining_Right: return QChar::Right;
+        default: return QChar::OtherJoining;
+        }
+    }
+#endif
     inline unsigned char combiningClass() const { return QChar::combiningClass(ucs); }
 
     inline QChar mirroredChar() const { return QChar::mirroredChar(ucs); }
@@ -425,7 +448,10 @@ public:
 
     static Category QT_FASTCALL category(uint ucs4);
     static Direction QT_FASTCALL direction(uint ucs4);
-    static Joining QT_FASTCALL joining(uint ucs4);
+    static JoiningType QT_FASTCALL joiningType(uint ucs4);
+#if QT_DEPRECATED_SINCE(5, 3)
+    QT_DEPRECATED static Joining QT_FASTCALL joining(uint ucs4);
+#endif
     static unsigned char QT_FASTCALL combiningClass(uint ucs4);
 
     static uint QT_FASTCALL mirroredChar(uint ucs4);

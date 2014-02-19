@@ -41,6 +41,7 @@
 
 
 #include <QtCore/QCoreApplication>
+#include <QtCore/QRegularExpression>
 #include <QtTest/QtTest>
 
 class tst_Warnings: public QObject
@@ -49,6 +50,7 @@ class tst_Warnings: public QObject
 private slots:
     void testWarnings();
     void testMissingWarnings();
+    void testMissingWarningsRegularExpression();
     void testMissingWarningsWithData_data();
     void testMissingWarningsWithData();
 };
@@ -73,6 +75,17 @@ void tst_Warnings::testWarnings()
     qDebug("Baba");
     qDebug("Bubu");
     qDebug("Baba");
+
+    QTest::ignoreMessage(QtDebugMsg, QRegularExpression("^Bubu.*"));
+    QTest::ignoreMessage(QtWarningMsg, QRegularExpression("^Baba.*"));
+    qDebug("Bubublabla");
+    qWarning("Babablabla");
+    qDebug("Bubublabla");
+    qWarning("Babablabla");
+
+    // accept redundant space at end to keep compatibility with Qt < 5.2
+    QTest::ignoreMessage(QtDebugMsg, "Bubu ");
+    qDebug() << "Bubu";
 }
 
 void tst_Warnings::testMissingWarnings()
@@ -82,6 +95,14 @@ void tst_Warnings::testMissingWarnings()
     QTest::ignoreMessage(QtWarningMsg, "Warning2");
 
     qWarning("Warning2");
+}
+
+void tst_Warnings::testMissingWarningsRegularExpression()
+{
+    QTest::ignoreMessage(QtWarningMsg, QRegularExpression("Warning\\d\\d"));
+    QTest::ignoreMessage(QtWarningMsg, QRegularExpression("Warning\\s\\d"));
+
+    qWarning("Warning11");
 }
 
 void tst_Warnings::testMissingWarningsWithData_data()

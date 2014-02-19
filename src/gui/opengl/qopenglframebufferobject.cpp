@@ -72,8 +72,6 @@ QT_BEGIN_NAMESPACE
 #define QT_CHECK_GLERROR() {}
 #endif
 
-// ####TODO Properly #ifdef this class to use #define symbols actually defined
-// by OpenGL/ES includes
 #ifndef GL_MAX_SAMPLES
 #define GL_MAX_SAMPLES 0x8D57
 #endif
@@ -448,42 +446,12 @@ void QOpenGLFramebufferObjectPrivate::init(QOpenGLFramebufferObject *, const QSi
     funcs.glGenFramebuffers(1, &fbo);
     funcs.glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 
-    GLuint texture = 0;
     GLuint color_buffer = 0;
 
     QT_CHECK_GLERROR();
     // init texture
     if (samples == 0) {
-        glGenTextures(1, &texture);
-        glBindTexture(target, texture);
-
-        glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-        glTexImage2D(target, 0, internal_format, size.width(), size.height(), 0,
-                GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-        if (mipmap) {
-            int width = size.width();
-            int height = size.height();
-            int level = 0;
-            while (width > 1 || height > 1) {
-                width = qMax(1, width >> 1);
-                height = qMax(1, height >> 1);
-                ++level;
-                glTexImage2D(target, level, internal_format, width, height, 0,
-                        GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-            }
-        }
-        funcs.glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                target, texture, 0);
-
-        QT_CHECK_GLERROR();
-        valid = checkFramebufferStatus(ctx);
-        glBindTexture(target, 0);
-
-        color_buffer = 0;
+        initTexture(texture_target, internal_format, size, mipmap);
     } else {
         mipmap = false;
         funcs.glGenRenderbuffers(1, &color_buffer);
@@ -494,8 +462,10 @@ void QOpenGLFramebufferObjectPrivate::init(QOpenGLFramebufferObject *, const QSi
         QT_CHECK_GLERROR();
         valid = checkFramebufferStatus(ctx);
 
-        if (valid)
+        if (valid) {
             funcs.glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_SAMPLES, &samples);
+            color_buffer_guard = new QOpenGLSharedResourceGuard(ctx, color_buffer, freeRenderbufferFunc);
+        }
     }
 
     format.setTextureTarget(target);
@@ -508,18 +478,57 @@ void QOpenGLFramebufferObjectPrivate::init(QOpenGLFramebufferObject *, const QSi
     funcs.glBindFramebuffer(GL_FRAMEBUFFER, ctx->d_func()->current_fbo);
     if (valid) {
         fbo_guard = new QOpenGLSharedResourceGuard(ctx, fbo, freeFramebufferFunc);
-        if (color_buffer)
-            color_buffer_guard = new QOpenGLSharedResourceGuard(ctx, color_buffer, freeRenderbufferFunc);
-        else
-            texture_guard = new QOpenGLSharedResourceGuard(ctx, texture, freeTextureFunc);
     } else {
-        if (color_buffer)
-            funcs.glDeleteRenderbuffers(1, &color_buffer);
-        else
-            glDeleteTextures(1, &texture);
+        if (color_buffer_guard) {
+            color_buffer_guard->free();
+            color_buffer_guard = 0;
+        } else if (texture_guard) {
+            texture_guard->free();
+            texture_guard = 0;
+        }
         funcs.glDeleteFramebuffers(1, &fbo);
     }
     QT_CHECK_GLERROR();
+}
+
+void QOpenGLFramebufferObjectPrivate::initTexture(GLenum target, GLenum internal_format,
+                                                  const QSize &size, bool mipmap)
+{
+    QOpenGLContext *ctx = QOpenGLContext::currentContext();
+    GLuint texture = 0;
+
+    glGenTextures(1, &texture);
+    glBindTexture(target, texture);
+
+    glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    glTexImage2D(target, 0, internal_format, size.width(), size.height(), 0,
+                 GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    if (mipmap) {
+        int width = size.width();
+        int height = size.height();
+        int level = 0;
+        while (width > 1 || height > 1) {
+            width = qMax(1, width >> 1);
+            height = qMax(1, height >> 1);
+            ++level;
+            glTexImage2D(target, level, internal_format, width, height, 0,
+                         GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+        }
+    }
+    funcs.glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                                 target, texture, 0);
+
+    QT_CHECK_GLERROR();
+    glBindTexture(target, 0);
+    valid = checkFramebufferStatus(ctx);
+    if (valid)
+        texture_guard = new QOpenGLSharedResourceGuard(ctx, texture, freeTextureFunc);
+    else
+        glDeleteTextures(1, &texture);
 }
 
 void QOpenGLFramebufferObjectPrivate::initAttachments(QOpenGLContext *ctx, QOpenGLFramebufferObject::Attachment attachment)
@@ -581,30 +590,29 @@ void QOpenGLFramebufferObjectPrivate::initAttachments(QOpenGLContext *ctx, QOpen
         funcs.glBindRenderbuffer(GL_RENDERBUFFER, depth_buffer);
         Q_ASSERT(funcs.glIsRenderbuffer(depth_buffer));
         if (samples != 0 && funcs.hasOpenGLExtension(QOpenGLExtensions::FramebufferMultisample)) {
-#ifdef QT_OPENGL_ES
-            if (funcs.hasOpenGLExtension(QOpenGLExtensions::Depth24)) {
-                funcs.glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples,
-                    GL_DEPTH_COMPONENT24, size.width(), size.height());
+            if (QOpenGLFunctions::isES()) {
+                if (funcs.hasOpenGLExtension(QOpenGLExtensions::Depth24))
+                    funcs.glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples,
+                                                           GL_DEPTH_COMPONENT24, size.width(), size.height());
+                else
+                    funcs.glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples,
+                                                           GL_DEPTH_COMPONENT16, size.width(), size.height());
             } else {
                 funcs.glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples,
-                    GL_DEPTH_COMPONENT16, size.width(), size.height());
+                                                       GL_DEPTH_COMPONENT, size.width(), size.height());
             }
-#else
-            funcs.glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples,
-                GL_DEPTH_COMPONENT, size.width(), size.height());
-#endif
         } else {
-#ifdef QT_OPENGL_ES
-            if (funcs.hasOpenGLExtension(QOpenGLExtensions::Depth24)) {
-                funcs.glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24,
-                                        size.width(), size.height());
+            if (QOpenGLFunctions::isES()) {
+                if (funcs.hasOpenGLExtension(QOpenGLExtensions::Depth24)) {
+                    funcs.glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24,
+                                                size.width(), size.height());
+                } else {
+                    funcs.glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16,
+                                                size.width(), size.height());
+                }
             } else {
-                funcs.glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16,
-                                        size.width(), size.height());
+                funcs.glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, size.width(), size.height());
             }
-#else
-            funcs.glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, size.width(), size.height());
-#endif
         }
         funcs.glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
                                      GL_RENDERBUFFER, depth_buffer);
@@ -619,23 +627,18 @@ void QOpenGLFramebufferObjectPrivate::initAttachments(QOpenGLContext *ctx, QOpen
         funcs.glGenRenderbuffers(1, &stencil_buffer);
         funcs.glBindRenderbuffer(GL_RENDERBUFFER, stencil_buffer);
         Q_ASSERT(funcs.glIsRenderbuffer(stencil_buffer));
-        if (samples != 0 && funcs.hasOpenGLExtension(QOpenGLExtensions::FramebufferMultisample)) {
+
 #ifdef QT_OPENGL_ES
-            funcs.glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples,
-                GL_STENCIL_INDEX8, size.width(), size.height());
+        GLenum storage = GL_STENCIL_INDEX8;
 #else
-            funcs.glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples,
-                GL_STENCIL_INDEX, size.width(), size.height());
+        GLenum storage = QOpenGLFunctions::isES() ? GL_STENCIL_INDEX8 : GL_STENCIL_INDEX;
 #endif
-        } else {
-#ifdef QT_OPENGL_ES
-            funcs.glRenderbufferStorage(GL_RENDERBUFFER, GL_STENCIL_INDEX8,
-                                  size.width(), size.height());
-#else
-            funcs.glRenderbufferStorage(GL_RENDERBUFFER, GL_STENCIL_INDEX,
-                                  size.width(), size.height());
-#endif
-        }
+
+        if (samples != 0 && funcs.hasOpenGLExtension(QOpenGLExtensions::FramebufferMultisample))
+            funcs.glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, storage, size.width(), size.height());
+        else
+            funcs.glRenderbufferStorage(GL_RENDERBUFFER, storage, size.width(), size.height());
+
         funcs.glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
                                   GL_RENDERBUFFER, stencil_buffer);
         valid = checkFramebufferStatus(ctx);
@@ -768,7 +771,13 @@ QOpenGLFramebufferObject::QOpenGLFramebufferObject(const QSize &size, GLenum tar
     : d_ptr(new QOpenGLFramebufferObjectPrivate)
 {
     Q_D(QOpenGLFramebufferObject);
-    d->init(this, size, NoAttachment, target, DEFAULT_FORMAT);
+    d->init(this, size, NoAttachment, target,
+#ifndef QT_OPENGL_ES_2
+            QOpenGLFunctions::isES() ? GL_RGBA : GL_RGBA8
+#else
+            GL_RGBA
+#endif
+        );
 }
 
 /*! \overload
@@ -782,7 +791,13 @@ QOpenGLFramebufferObject::QOpenGLFramebufferObject(int width, int height, GLenum
     : d_ptr(new QOpenGLFramebufferObjectPrivate)
 {
     Q_D(QOpenGLFramebufferObject);
-    d->init(this, QSize(width, height), NoAttachment, target, DEFAULT_FORMAT);
+    d->init(this, QSize(width, height), NoAttachment, target,
+#ifndef QT_OPENGL_ES_2
+            QOpenGLFunctions::isES() ? GL_RGBA : GL_RGBA8
+#else
+            GL_RGBA
+#endif
+        );
 }
 
 /*! \overload
@@ -831,6 +846,12 @@ QOpenGLFramebufferObject::QOpenGLFramebufferObject(int width, int height, Attach
     : d_ptr(new QOpenGLFramebufferObjectPrivate)
 {
     Q_D(QOpenGLFramebufferObject);
+    if (!internal_format)
+#ifdef QT_OPENGL_ES_2
+        internal_format = GL_RGBA;
+#else
+        internal_format = QOpenGLFunctions::isES() ? GL_RGBA : GL_RGBA8;
+#endif
     d->init(this, QSize(width, height), attachment, target, internal_format);
 }
 
@@ -852,6 +873,12 @@ QOpenGLFramebufferObject::QOpenGLFramebufferObject(const QSize &size, Attachment
     : d_ptr(new QOpenGLFramebufferObjectPrivate)
 {
     Q_D(QOpenGLFramebufferObject);
+    if (!internal_format)
+#ifdef QT_OPENGL_ES_2
+        internal_format = GL_RGBA;
+#else
+        internal_format = QOpenGLFunctions::isES() ? GL_RGBA : GL_RGBA8;
+#endif
     d->init(this, size, attachment, target, internal_format);
 }
 
@@ -907,12 +934,16 @@ bool QOpenGLFramebufferObject::isValid() const
     framebuffer to this framebuffer object.
     Returns \c true upon success, false otherwise.
 
+    \note If takeTexture() was called, a new texture is created and associated
+    with the framebuffer object. This is potentially expensive and changes the
+    context state (the currently bound texture).
+
     \sa release()
 */
 bool QOpenGLFramebufferObject::bind()
 {
     if (!isValid())
-	return false;
+        return false;
     Q_D(QOpenGLFramebufferObject);
     QOpenGLContext *current = QOpenGLContext::currentContext();
     if (!current)
@@ -922,7 +953,10 @@ bool QOpenGLFramebufferObject::bind()
         qWarning("QOpenGLFramebufferObject::bind() called from incompatible context");
 #endif
     d->funcs.glBindFramebuffer(GL_FRAMEBUFFER, d->fbo());
-    d->valid = d->checkFramebufferStatus(current);
+    if (d->texture_guard || d->format.samples() != 0)
+        d->valid = d->checkFramebufferStatus(current);
+    else
+        d->initTexture(d->format.textureTarget(), d->format.internalTextureFormat(), d->size, d->format.mipmap());
     if (d->valid && current)
         current->d_func()->current_fbo = d->fbo();
     return d->valid;
@@ -940,7 +974,7 @@ bool QOpenGLFramebufferObject::bind()
 bool QOpenGLFramebufferObject::release()
 {
     if (!isValid())
-	return false;
+        return false;
 
     QOpenGLContext *current = QOpenGLContext::currentContext();
     if (!current)
@@ -969,11 +1003,47 @@ bool QOpenGLFramebufferObject::release()
 
     If a multisample framebuffer object is used then the value returned
     from this function will be invalid.
+
+    \sa takeTexture()
 */
 GLuint QOpenGLFramebufferObject::texture() const
 {
     Q_D(const QOpenGLFramebufferObject);
     return d->texture_guard ? d->texture_guard->id() : 0;
+}
+
+/*!
+   \fn GLuint QOpenGLFramebufferObject::takeTexture()
+
+   Returns the texture id for the texture attached to this framebuffer
+   object. The ownership of the texture is transferred to the caller.
+
+   If the framebuffer object is currently bound, an implicit release()
+   will be done. During the next call to bind() a new texture will be
+   created.
+
+   If a multisample framebuffer object is used, then there is no
+   texture and the return value from this function will be invalid.
+   Similarly, incomplete framebuffer objects will also return 0.
+
+   \since 5.3
+
+   \sa texture(), bind(), release()
+ */
+GLuint QOpenGLFramebufferObject::takeTexture()
+{
+    Q_D(QOpenGLFramebufferObject);
+    GLuint id = 0;
+    if (isValid() && d->texture_guard) {
+        QOpenGLContext *current = QOpenGLContext::currentContext();
+        if (current && current->shareGroup() == d->fbo_guard->group() && current->d_func()->current_fbo == d->fbo())
+            release();
+        id = d->texture_guard->id();
+        // Do not call free() on texture_guard, just null it out.
+        // This way the texture will not be deleted when the guard is destroyed.
+        d->texture_guard = 0;
+    }
+    return id;
 }
 
 /*!

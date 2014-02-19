@@ -54,58 +54,35 @@
 //
 
 #include <qobject.h>
-#include <qt_windows.h>
-#include <qqueue.h>
+
+typedef struct _OVERLAPPED OVERLAPPED;
 
 QT_BEGIN_NAMESPACE
 
-class QWinIoCompletionPort;
+class QWinOverlappedIoNotifierPrivate;
 
 class Q_CORE_EXPORT QWinOverlappedIoNotifier : public QObject
 {
     Q_OBJECT
+    Q_DISABLE_COPY(QWinOverlappedIoNotifier)
+    Q_DECLARE_PRIVATE(QWinOverlappedIoNotifier)
+    Q_PRIVATE_SLOT(d_func(), OVERLAPPED *_q_notified())
+    friend class QWinIoCompletionPort;
 public:
     QWinOverlappedIoNotifier(QObject *parent = 0);
     ~QWinOverlappedIoNotifier();
 
-    void setHandle(HANDLE h);
-    HANDLE handle() const { return hHandle; }
+    void setHandle(Qt::HANDLE h);
+    Qt::HANDLE handle() const;
 
     void setEnabled(bool enabled);
     bool waitForNotified(int msecs, OVERLAPPED *overlapped);
 
 Q_SIGNALS:
-    void notified(DWORD numberOfBytes, DWORD errorCode, OVERLAPPED *overlapped);
+    void notified(quint32 numberOfBytes, quint32 errorCode, OVERLAPPED *overlapped);
+#if !defined(Q_QDOC)
     void _q_notify();
-
-private Q_SLOTS:
-    OVERLAPPED *_q_notified();
-
-private:
-    void notify(DWORD numberOfBytes, DWORD errorCode, OVERLAPPED *overlapped);
-
-private:
-    static QWinIoCompletionPort *iocp;
-    static HANDLE iocpInstanceLock;
-    static unsigned int iocpInstanceRefCount;
-    HANDLE hHandle;
-    HANDLE hSemaphore;
-    HANDLE hResultsMutex;
-
-    struct IOResult
-    {
-        IOResult(DWORD n = 0, DWORD e = 0, OVERLAPPED *p = 0)
-            : numberOfBytes(n), errorCode(e), overlapped(p)
-        {}
-
-        DWORD numberOfBytes;
-        DWORD errorCode;
-        OVERLAPPED *overlapped;
-    };
-
-    QQueue<IOResult> results;
-
-    friend class QWinIoCompletionPort;
+#endif
 };
 
 QT_END_NAMESPACE

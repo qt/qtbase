@@ -42,7 +42,6 @@
 #ifndef QEGLFSCONTEXT_H
 #define QEGLFSCONTEXT_H
 
-#include <QtPlatformSupport/private/qeglconvenience_p.h>
 #include <QtPlatformSupport/private/qeglplatformcontext_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -52,12 +51,8 @@ class QEglFSContext : public QEGLPlatformContext
 public:
     QEglFSContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display,
                   EGLenum eglApi = EGL_OPENGL_ES_API);
-    bool makeCurrent(QPlatformSurface *surface);
-    EGLSurface eglSurfaceForPlatformSurface(QPlatformSurface *surface);
-    void swapBuffers(QPlatformSurface *surface);
-
-private:
-    bool m_swapIntervalSet;
+    EGLSurface eglSurfaceForPlatformSurface(QPlatformSurface *surface) Q_DECL_OVERRIDE;
+    void swapBuffers(QPlatformSurface *surface) Q_DECL_OVERRIDE;
 };
 
 QT_END_NAMESPACE

@@ -115,7 +115,9 @@ public:
         KeepAliveOption, // SO_KEEPALIVE
         MulticastTtlOption, // IP_MULTICAST_TTL
         MulticastLoopbackOption, // IP_MULTICAST_LOOPBACK
-        TypeOfServiceOption //IP_TOS
+        TypeOfServiceOption, //IP_TOS
+        SendBufferSizeSocketOption,    //SO_SNDBUF
+        ReceiveBufferSizeSocketOption  //SO_RCVBUF
     };
     enum BindFlag {
         DefaultForPlatform = 0x0,

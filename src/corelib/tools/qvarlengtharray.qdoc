@@ -671,3 +671,42 @@
     \sa append(), operator<<()
 */
 
+/*! \fn int QVarLengthArray::indexOf(const T &value, int from = 0) const
+
+    \since 5.3
+    Returns the index position of the first occurrence of \a value in
+    the array, searching forward from index position \a from.
+    Returns -1 if no item matched.
+
+    This function requires the value type to have an implementation of
+    \c operator==().
+
+    \sa lastIndexOf(), contains()
+*/
+
+/*! \fn int QVarLengthArray::lastIndexOf(const T &value, int from = -1) const
+
+    \since 5.3
+    Returns the index position of the last occurrence of the value \a
+    value in the array, searching backward from index position \a
+    from. If \a from is -1 (the default), the search starts at the
+    last item. Returns -1 if no item matched.
+
+    This function requires the value type to have an implementation of
+    \c operator==().
+
+    \sa indexOf(), contains()
+*/
+
+/*! \fn bool QVarLengthArray::contains(const T &value) const
+
+    \since 5.3
+    Returns \c true if the array contains an occurrence of \a value;
+    otherwise returns \c false.
+
+    This function requires the value type to have an implementation of
+    \c operator==().
+
+    \sa indexOf(), lastIndexOf()
+*/
+

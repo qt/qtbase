@@ -72,34 +72,240 @@ QT_BEGIN_NAMESPACE
     methods such as QStandardPaths::writableLocation, QStandardPaths::standardLocations,
     and QStandardPaths::displayName.
 
-    \value DesktopLocation Returns the user's desktop directory.
-    \value DocumentsLocation Returns the user's document.
-    \value FontsLocation Returns the user's fonts.
-    \value ApplicationsLocation Returns the user's applications.
-    \value MusicLocation Returns the user's music.
-    \value MoviesLocation Returns the user's movies.
-    \value PicturesLocation Returns the user's pictures.
-    \value TempLocation Returns the system's temporary directory.
-    \value HomeLocation Returns the user's home directory.
+    Some of the values in this enum represent a user configuration. Such enum
+    values will return the same paths in different applications, so they could
+    be used to share data with other applications. Other values are specific to
+    this application. Each enum value in the table below describes whether it's
+    application-specific or generic.
+
+    Application-specific directories should be assumed to be unreachable by
+    other applications. Therefore, files placed there might not be readable by
+    other applications, even if run by the same user. On the other hand, generic
+    directories should be assumed to be accessible by all applications run by
+    this user, but should still be assumed to be unreachable by applications by
+    other users.
+
+    The only exception is QStandardPaths::TempLocation (which is the same as
+    QDir::tempPath()): the path returned may be application-specific, but files
+    stored there may be accessed by other applications run by the same user.
+
+    Data interchange with other users is out of the scope of QStandardPaths.
+
+    \value DesktopLocation Returns the user's desktop directory. This is a generic value.
+           On systems with no concept of a desktop, this is the same as
+           QStandardPaths::HomeLocation.
+    \value DocumentsLocation Returns the directory containing user document files.
+           This is a generic value. The returned path is never empty.
+    \value FontsLocation Returns the directory containing user's fonts. This is a generic value.
+           Note that installing fonts may require additional, platform-specific operations.
+    \value ApplicationsLocation Returns the directory containing the user applications
+           (either executables, application bundles, or shortcuts to them). This is a generic value.
+           Note that installing applications may require additional, platform-specific operations.
+           Files, folders or shortcuts in this directory are platform-specific.
+    \value MusicLocation Returns the directory containing the user's music or other audio files.
+           This is a generic value. If no directory specific for music files exists, a sensible
+           fallback for storing user documents is returned.
+    \value MoviesLocation Returns the directory containing the user's movies and videos.
+           This is a generic value. If no directory specific for movie files exists, a sensible
+           fallback for storing user documents is returned.
+    \value PicturesLocation Returns the directory containing the user's pictures or photos.
+           This is a generic value. If no directory specific for picture files exists, a sensible
+           fallback for storing user documents is returned.
+    \value TempLocation Returns a directory where temporary files can be stored. The returned value
+           might be application-specific, shared among other applications for this user, or even
+           system-wide. The returned path is never empty.
+    \value HomeLocation Returns the user's home directory (the same as QDir::homePath()). On Unix
+           systems, this is equal to the HOME environment variable. This value might be
+           generic or application-specific, but the returned path is never empty.
     \value DataLocation Returns a directory location where persistent
-           application data can be stored. QCoreApplication::organizationName
-           and QCoreApplication::applicationName are appended to the directory location
-           returned for GenericDataLocation.
+           application data can be stored. This is an application-specific directory. To obtain a
+           path to store data to be shared with other applications, use
+           QStandardPaths::GenericDataLocation. The returned path is never empty.
     \value CacheLocation Returns a directory location where user-specific
-           non-essential (cached) data should be written.
-    \value GenericCacheLocation Returns a directory location where user-specific
-           non-essential (cached) data, shared across applications, should be written.
+           non-essential (cached) data should be written. This is an application-specific directory.
+           The returned path is never empty.
+    \value GenericCacheLocation Returns a directory location where user-specific non-essential
+           (cached) data, shared across applications, should be written. This is a generic value.
+           Note that the returned path may be empty if the system has no concept of shared cache.
     \value GenericDataLocation Returns a directory location where persistent
-           data shared across applications can be stored.
+           data shared across applications can be stored. This is a generic value. The returned
+           path is never empty.
     \value RuntimeLocation Returns a directory location where runtime communication
-           files should be written. For instance unix local sockets.
+           files should be written, like Unix local sockets. This is a generic value.
+           The returned path may be empty on some systems.
     \value ConfigLocation Returns a directory location where user-specific
-           configuration files should be written.
+           configuration files should be written. This may be either a generic value
+           or application-specific, and the returned path is never empty.
+    \value DownloadLocation Returns a directory for user's downloaded files. This is a generic value.
+           If no directory specific for downloads exists, a sensible fallback for storing user
+           documents is returned.
     \value GenericConfigLocation Returns a directory location where user-specific
            configuration files shared between multiple applications should be written.
            This is a generic value and the returned path is never empty.
-    \value DownloadLocation Returns a directory for user's downloaded files.
 
+    The following table gives examples of paths on different operating systems.
+    The first path is the writable path (unless noted). Other, additional
+    paths, if any, represent non-writable locations.
+
+    \table
+    \header \li Path type \li OS X  \li Windows
+    \row \li DesktopLocation
+         \li "~/Desktop"
+         \li "C:/Users/<USER>/Desktop"
+    \row \li DocumentsLocation
+         \li "~/Documents"
+         \li "C:/Users/<USER>/Documents"
+    \row \li FontsLocation
+         \li "/System/Library/Fonts" (not writable)
+         \li "C:/Windows/Fonts" (not writable)
+    \row \li ApplicationsLocation
+         \li "/Applications" (not writable)
+         \li "C:/Users/<USER>/AppData/Roaming/Microsoft/Windows/Start Menu/Programs"
+    \row \li MusicLocation
+         \li "~/Music"
+         \li "C:/Users/<USER>/Music"
+    \row \li MoviesLocation
+         \li "~/Movies"
+         \li "C:/Users/<USER>/Videos"
+    \row \li PicturesLocation
+         \li "~/Pictures"
+         \li "C:/Users/<USER>/Pictures"
+    \row \li TempLocation
+         \li randomly generated by the OS
+         \li "C:/Users/<USER>/AppData/Local/Temp"
+    \row \li HomeLocation
+         \li "~"
+         \li "C:/Users/<USER>"
+    \row \li DataLocation
+         \li "~/Library/Application Support/<APPNAME>", "/Library/Application Support/<APPNAME>". "<APPDIR>/../Resources"
+         \li "C:/Users/<USER>/AppData/Local/<APPNAME>", "C:/ProgramData/<APPNAME>", "<APPDIR>", "<APPDIR>/data"
+    \row \li CacheLocation
+         \li "~/Library/Caches/<APPNAME>", "/Library/Caches/<APPNAME>"
+         \li "C:/Users/<USER>/AppData/Local/<APPNAME>/cache"
+    \row \li GenericDataLocation
+         \li "~/Library/Application Support", "/Library/Application Support"
+         \li "C:/Users/<USER>/AppData/Local", "C:/ProgramData"
+    \row \li RuntimeLocation
+         \li "~/Library/Application Support"
+         \li "C:/Users/<USER>"
+    \row \li ConfigLocation
+         \li "~/Library/Preferences"
+         \li "C:/Users/<USER>/AppData/Local/<APPNAME>", "C:/ProgramData/<APPNAME>"
+    \row \li GenericConfigLocation
+         \li "~/Library/Preferences"
+         \li "C:/Users/<USER>/AppData/Local", "C:/ProgramData"
+    \row \li DownloadLocation
+         \li "~/Documents"
+         \li "C:/Users/<USER>/Documents"
+    \row \li GenericCacheLocation
+         \li "~/Library/Caches", "/Library/Caches"
+         \li "C:/Users/<USER>/AppData/Local/cache"
+    \endtable
+
+    \table
+    \header \li Path type \li Blackberry \li Linux
+    \row \li DesktopLocation
+         \li "<APPROOT>/data"
+         \li "~/Desktop"
+    \row \li DocumentsLocation
+         \li "<APPROOT>/shared/documents"
+         \li "~/Documents"
+    \row \li FontsLocation
+         \li "/base/usr/fonts" (not writable)
+         \li "~/.fonts"
+    \row \li ApplicationsLocation
+         \li not supported (directory not readable)
+         \li "~/.local/share/applications", "/usr/local/share/applications", "/usr/share/applications"
+    \row \li MusicLocation
+         \li "<APPROOT>/shared/music"
+         \li "~/Music"
+    \row \li MoviesLocation
+         \li "<APPROOT>/shared/videos"
+         \li "~/Videos"
+    \row \li PicturesLocation
+         \li "<APPROOT>/shared/photos"
+         \li "~/Pictures"
+    \row \li TempLocation
+         \li "/var/tmp"
+         \li "/tmp"
+    \row \li HomeLocation
+         \li "<APPROOT>/data"
+         \li "~"
+    \row \li DataLocation
+         \li "<APPROOT>/data", "<APPROOT>/app/native/assets"
+         \li "~/.local/share/<APPNAME>", "/usr/local/share/<APPNAME>", "/usr/share/<APPNAME>"
+    \row \li CacheLocation
+         \li "<APPROOT>/data/Cache"
+         \li "~/.cache/<APPNAME>"
+    \row \li GenericDataLocation
+         \li "<APPROOT>/shared/misc"
+         \li "~/.local/share", "/usr/local/share", "/usr/share"
+    \row \li RuntimeLocation
+         \li "/var/tmp"
+         \li "/run/user/<USER>"
+    \row \li ConfigLocation
+         \li "<APPROOT>/data/Settings"
+         \li "~/.config", "/etc/xdg"
+    \row \li GenericConfigLocation
+         \li "<APPROOT>/data/Settings"
+         \li "~/.config", "/etc/xdg"
+    \row \li DownloadLocation
+         \li "<APPROOT>/shared/downloads"
+         \li "~/Downloads"
+    \row \li GenericCacheLocation
+         \li "<APPROOT>/data/Cache" (there is no shared cache)
+         \li "~/.cache"
+    \endtable
+
+    \table
+    \header \li Path type \li Android
+    \row \li DesktopLocation
+         \li "<APPROOT>/files"
+    \row \li DocumentsLocation
+         \li "<USER>/Documents", "<USER>/<APPNAME>/Documents"
+    \row \li FontsLocation
+         \li "/system/fonts" (not writable)
+    \row \li ApplicationsLocation
+         \li not supported (directory not readable)
+    \row \li MusicLocation
+         \li "<USER>/Music", "<USER>/<APPNAME>/Music"
+    \row \li MoviesLocation
+         \li "<USER>/Movies", "<USER>/<APPNAME>/Movies"
+    \row \li PicturesLocation
+         \li "<USER>/Pictures", "<USER>/<APPNAME>/Pictures"
+    \row \li TempLocation
+         \li "<APPROOT>/cache"
+    \row \li HomeLocation
+         \li "<APPROOT>/files"
+    \row \li DataLocation
+         \li "<APPROOT>/files", "<USER>/<APPNAME>/files"
+    \row \li CacheLocation
+         \li "<APPROOT>/cache", "<USER>/<APPNAME>/cache"
+    \row \li GenericDataLocation
+         \li "<USER>"
+    \row \li RuntimeLocation
+         \li "<APPROOT>/cache"
+    \row \li ConfigLocation
+         \li "<APPROOT>/files/settings"
+    \row \li GenericConfigLocation
+         \li "<APPROOT>/files/settings" (there is no shared settings)
+    \row \li DownloadLocation
+         \li "<USER>/Downloads", "<USER>/<APPNAME>/Downloads"
+    \row \li GenericCacheLocation
+         \li "<APPROOT>/cache" (there is no shared cache)
+    \endtable
+
+    In the table above, \c <APPNAME> is usually the organization name, the
+    application name, or both, or a unique name generated at packaging.
+    Similarly, <APPROOT> is the location where this application is installed
+    (often a sandbox). <APPDIR> is the directory containing the application
+    executable.
+
+    The paths above should not be relied upon, as they may change according to
+    OS configuration, locale, or they may change in future Qt versions.
+
+    \note On Android, applications with open files on the external storage (<USER> locations),
+          will be killed if the external storage is unmounted.
 
     \sa writableLocation(), standardLocations(), displayName(), locate(), locateAll()
 */

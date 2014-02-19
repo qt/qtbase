@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 BlackBerry Limited. All rights reserved.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -86,7 +87,8 @@ public:
           allowRootCertOnDemandLoading(true),
           peerSessionShared(false),
           sslOptions(QSslConfigurationPrivate::defaultSslOptions),
-          sslSessionTicketLifeTimeHint(-1)
+          sslSessionTicketLifeTimeHint(-1),
+          nextProtocolNegotiationStatus(QSslConfiguration::NextProtocolNegotiationNone)
     { }
 
     QSslCertificate peerCertificate;
@@ -113,6 +115,10 @@ public:
 
     QByteArray sslSession;
     int sslSessionTicketLifeTimeHint;
+
+    QList<QByteArray> nextAllowedProtocols;
+    QByteArray nextNegotiatedProtocol;
+    QSslConfiguration::NextProtocolNegotiationStatus nextProtocolNegotiationStatus;
 
     // in qsslsocket.cpp:
     static QSslConfiguration defaultConfiguration();

@@ -391,6 +391,10 @@ static void qDBusNewConnection(DBusServer *server, DBusConnection *connection, v
     q_dbus_connection_ref(connection);
     QDBusConnectionPrivate *serverConnection = static_cast<QDBusConnectionPrivate *>(data);
 
+    // allow anonymous authentication
+    if (serverConnection->anonymousAuthenticationAllowed)
+        q_dbus_connection_set_allow_anonymous(connection, true);
+
     QDBusConnectionPrivate *newConnection = new QDBusConnectionPrivate(serverConnection->parent());
     QMutexLocker locker(&QDBusConnectionManager::instance()->mutex);
     QDBusConnectionManager::instance()->setConnection(QLatin1String("QDBusServer-") + QString::number(reinterpret_cast<qulonglong>(newConnection)), newConnection);
@@ -986,9 +990,9 @@ void QDBusConnectionPrivate::deliverCall(QObject *object, int /*flags*/, const Q
         fail = object->qt_metacall(QMetaObject::InvokeMetaMethod,
                                    slotIdx, params.data()) >= 0;
         QDBusConnectionPrivate::setSender(0);
-	// the object might be deleted in the slot
-	if (!ptr.isNull())
-	    QDBusContextPrivate::set(object, old);
+        // the object might be deleted in the slot
+        if (!ptr.isNull())
+            QDBusContextPrivate::set(object, old);
     }
 
     // do we create a reply? Only if the caller is waiting for a reply and one hasn't been sent
@@ -1014,7 +1018,8 @@ extern bool qDBusInitThreads();
 QDBusConnectionPrivate::QDBusConnectionPrivate(QObject *p)
     : QObject(p), ref(1), capabilities(0), mode(InvalidMode), connection(0), server(0), busService(0),
       watchAndTimeoutLock(QMutex::Recursive),
-      rootNode(QString(QLatin1Char('/')))
+      rootNode(QString(QLatin1Char('/'))),
+      anonymousAuthenticationAllowed(false)
 {
     static const bool threads = q_dbus_threads_init_default();
     static const int debugging = qgetenv("QDBUS_DEBUG").toInt();

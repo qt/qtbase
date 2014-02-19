@@ -206,6 +206,7 @@ static SLJIT_CONST sljit_ub reg_lmap[SLJIT_NO_REGISTERS + 4] = {
 #define OR_r_rm		0x0b
 #define OR_EAX_i32	0x0d
 #define OR_rm_r		0x09
+#define OR_rm8_r8	0x08
 #define POP_r		0x58
 #define POP_rm		0x8f
 #define POPF		0x9d
@@ -267,75 +268,54 @@ static sljit_si cpu_has_sse2 = -1;
 #endif
 static sljit_si cpu_has_cmov = -1;
 
-#if defined(_MSC_VER) && (defined SLJIT_CONFIG_X86_64 && SLJIT_CONFIG_X86_64)
-#if _MSC_VER >= 1400
+#if defined(_MSC_VER) && _MSC_VER >= 1400
 #include <intrin.h>
-#else
-#error "MSVC does not support inline assembly in 64 bit mode"
 #endif
-#endif /* _MSC_VER && SLJIT_CONFIG_X86_64 */
 
 static void get_cpu_features(void)
 {
 	sljit_ui features;
 
-#if (defined SLJIT_CONFIG_X86_32 && SLJIT_CONFIG_X86_32)
+#if defined(_MSC_VER) && _MSC_VER >= 1400
 
-#if defined(__GNUC__) || defined(__INTEL_COMPILER) || defined(__SUNPRO_C)
+	int CPUInfo[4];
+	__cpuid(CPUInfo, 1);
+	features = (sljit_ui)CPUInfo[3];
+
+#elif defined(__GNUC__) || defined(__INTEL_COMPILER) || defined(__SUNPRO_C)
+
 	/* AT&T syntax. */
 	__asm__ (
-		"pushl %%ebx\n"
 		"movl $0x1, %%eax\n"
+#if (defined SLJIT_CONFIG_X86_32 && SLJIT_CONFIG_X86_32)
+		/* On x86-32, there is no red zone, so this
+		   should work (no need for a local variable). */
+		"push %%ebx\n"
+#endif
 		"cpuid\n"
-		"popl %%ebx\n"
+#if (defined SLJIT_CONFIG_X86_32 && SLJIT_CONFIG_X86_32)
+		"pop %%ebx\n"
+#endif
 		"movl %%edx, %0\n"
 		: "=g" (features)
 		:
+#if (defined SLJIT_CONFIG_X86_32 && SLJIT_CONFIG_X86_32)
 		: "%eax", "%ecx", "%edx"
+#else
+		: "%rax", "%rbx", "%rcx", "%rdx"
+#endif
 	);
-#elif defined(_MSC_VER) || defined(__BORLANDC__)
+
+#else /* _MSC_VER && _MSC_VER >= 1400 */
+
 	/* Intel syntax. */
 	__asm {
 		mov eax, 1
-		push ebx
 		cpuid
-		pop ebx
 		mov features, edx
 	}
-#else
-#	error "SLJIT_DETECT_SSE2 is not implemented for this C compiler"
-#endif
 
-#else /* SLJIT_CONFIG_X86_32 */
-
-#if defined(__GNUC__) || defined(__INTEL_COMPILER) || defined(__SUNPRO_C)
-	/* AT&T syntax. */
-	__asm__ (
-		"pushq %%rbx\n"
-		"movl $0x1, %%eax\n"
-		"cpuid\n"
-		"popq %%rbx\n"
-		"movl %%edx, %0\n"
-		: "=g" (features)
-		:
-		: "%rax", "%rcx", "%rdx"
-	);
-#elif defined(_MSC_VER) && _MSC_VER >= 1400
-	int CPUInfo[4];
-
-	__cpuid(CPUInfo, 1);
-	features = (sljit_ui)CPUInfo[3];
-#else
-	__asm {
-		mov eax, 1
-		push rbx
-		cpuid
-		pop rbx
-		mov features, edx
-	}
-#endif
-
-#endif /* SLJIT_CONFIG_X86_32 */
+#endif /* _MSC_VER && _MSC_VER >= 1400 */
 
 #if (defined SLJIT_SSE2 && SLJIT_SSE2) && (defined SLJIT_DETECT_SSE2 && SLJIT_DETECT_SSE2)
 	cpu_has_sse2 = (features >> 26) & 0x1;
@@ -570,7 +550,7 @@ SLJIT_API_FUNC_ATTRIBUTE void* sljit_generate_code(struct sljit_compiler *compil
 	/* Maybe we waste some space because of short jumps. */
 	SLJIT_ASSERT(code_ptr <= code + compiler->size);
 	compiler->error = SLJIT_ERR_COMPILED;
-	compiler->executable_size = compiler->size;
+	compiler->executable_size = code_ptr - code;
 	return (void*)code;
 }
 
@@ -650,9 +630,10 @@ static void SLJIT_CALL sljit_grow_stack(sljit_sw local_size)
 	This function touches all 4k pages belongs to the requested stack space,
 	which size is passed in local_size. This is necessary on Windows where
 	the stack can only grow in 4k steps. However, this function just burn
-	CPU cycles if the stack is large enough, but you don't know it in advance.
-	I think this is a bad design even if it has some reasons. */
-	alloca(local_size);
+	CPU cycles if the stack is large enough. However, you don't know it in
+	advance, so it must always be called. I think this is a bad design in
+	general even if it has some reasons. */
+	*(sljit_si*)alloca(local_size) = 0;
 }
 
 #endif
@@ -1785,7 +1766,7 @@ static sljit_si emit_mul(struct sljit_compiler *compiler,
 	return SLJIT_SUCCESS;
 }
 
-static sljit_si emit_lea_binary(struct sljit_compiler *compiler,
+static sljit_si emit_lea_binary(struct sljit_compiler *compiler, sljit_si keep_flags,
 	sljit_si dst, sljit_sw dstw,
 	sljit_si src1, sljit_sw src1w,
 	sljit_si src2, sljit_sw src2w)
@@ -1794,10 +1775,12 @@ static sljit_si emit_lea_binary(struct sljit_compiler *compiler,
 	sljit_si dst_r, done = 0;
 
 	/* These cases better be left to handled by normal way. */
-	if (dst == src1 && dstw == src1w)
-		return SLJIT_ERR_UNSUPPORTED;
-	if (dst == src2 && dstw == src2w)
-		return SLJIT_ERR_UNSUPPORTED;
+	if (!keep_flags) {
+		if (dst == src1 && dstw == src1w)
+			return SLJIT_ERR_UNSUPPORTED;
+		if (dst == src2 && dstw == src2w)
+			return SLJIT_ERR_UNSUPPORTED;
+	}
 
 	dst_r = (dst <= TMP_REGISTER) ? dst : TMP_REGISTER;
 
@@ -2153,7 +2136,7 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_si sljit_emit_op2(struct sljit_compiler *compiler
 	switch (GET_OPCODE(op)) {
 	case SLJIT_ADD:
 		if (!GET_FLAGS(op)) {
-			if (emit_lea_binary(compiler, dst, dstw, src1, src1w, src2, src2w) != SLJIT_ERR_UNSUPPORTED)
+			if (emit_lea_binary(compiler, op & SLJIT_KEEP_FLAGS, dst, dstw, src1, src1w, src2, src2w) != SLJIT_ERR_UNSUPPORTED)
 				return compiler->error;
 		}
 		else
@@ -2173,7 +2156,7 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_si sljit_emit_op2(struct sljit_compiler *compiler
 			dst, dstw, src1, src1w, src2, src2w);
 	case SLJIT_SUB:
 		if (!GET_FLAGS(op)) {
-			if ((src2 & SLJIT_IMM) && emit_lea_binary(compiler, dst, dstw, src1, src1w, SLJIT_IMM, -src2w) != SLJIT_ERR_UNSUPPORTED)
+			if ((src2 & SLJIT_IMM) && emit_lea_binary(compiler, op & SLJIT_KEEP_FLAGS, dst, dstw, src1, src1w, SLJIT_IMM, -src2w) != SLJIT_ERR_UNSUPPORTED)
 				return compiler->error;
 		}
 		else
@@ -2229,6 +2212,12 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_si sljit_get_register_index(sljit_si reg)
 		return -1;
 #endif
 	return reg_map[reg];
+}
+
+SLJIT_API_FUNC_ATTRIBUTE sljit_si sljit_get_float_register_index(sljit_si reg)
+{
+	check_sljit_get_float_register_index(reg);
+	return reg;
 }
 
 SLJIT_API_FUNC_ATTRIBUTE sljit_si sljit_emit_op_custom(struct sljit_compiler *compiler,
@@ -2637,6 +2626,21 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_si sljit_emit_op_flags(struct sljit_compiler *com
 	cond_set = get_jump_code(type) + 0x10;
 
 #if (defined SLJIT_CONFIG_X86_64 && SLJIT_CONFIG_X86_64)
+	if (GET_OPCODE(op) == SLJIT_OR && !GET_ALL_FLAGS(op) && dst <= TMP_REGISTER && dst == src) {
+		inst = (sljit_ub*)ensure_buf(compiler, 1 + 4 + 3);
+		FAIL_IF(!inst);
+		INC_SIZE(4 + 3);
+		/* Set low register to conditional flag. */
+		*inst++ = (reg_map[TMP_REGISTER] <= 7) ? REX : REX_B;
+		*inst++ = GROUP_0F;
+		*inst++ = cond_set;
+		*inst++ = MOD_REG | reg_lmap[TMP_REGISTER];
+		*inst++ = REX | (reg_map[TMP_REGISTER] <= 7 ? 0 : REX_R) | (reg_map[dst] <= 7 ? 0 : REX_B);
+		*inst++ = OR_rm8_r8;
+		*inst++ = MOD_REG | (reg_lmap[TMP_REGISTER] << 3) | reg_lmap[dst];
+		return SLJIT_SUCCESS;
+	}
+
 	reg = (op == SLJIT_MOV && dst <= TMP_REGISTER) ? dst : TMP_REGISTER;
 
 	inst = (sljit_ub*)ensure_buf(compiler, 1 + 4 + 4);
@@ -2717,6 +2721,39 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_si sljit_emit_op_flags(struct sljit_compiler *com
 		return SLJIT_SUCCESS;
 	}
 
+	if (GET_OPCODE(op) == SLJIT_OR && !GET_ALL_FLAGS(op) && dst <= TMP_REGISTER && dst == src && reg_map[dst] <= 4) {
+		SLJIT_COMPILE_ASSERT(reg_map[SLJIT_SCRATCH_REG1] == 0, scratch_reg1_must_be_eax);
+		if (dst != SLJIT_SCRATCH_REG1) {
+			inst = (sljit_ub*)ensure_buf(compiler, 1 + 1 + 3 + 2 + 1);
+			FAIL_IF(!inst);
+			INC_SIZE(1 + 3 + 2 + 1);
+			/* Set low register to conditional flag. */
+			*inst++ = XCHG_EAX_r + reg_map[TMP_REGISTER];
+			*inst++ = GROUP_0F;
+			*inst++ = cond_set;
+			*inst++ = MOD_REG | 0 /* eax */;
+			*inst++ = OR_rm8_r8;
+			*inst++ = MOD_REG | (0 /* eax */ << 3) | reg_map[dst];
+			*inst++ = XCHG_EAX_r + reg_map[TMP_REGISTER];
+		}
+		else {
+			inst = (sljit_ub*)ensure_buf(compiler, 1 + 2 + 3 + 2 + 2);
+			FAIL_IF(!inst);
+			INC_SIZE(2 + 3 + 2 + 2);
+			/* Set low register to conditional flag. */
+			*inst++ = XCHG_r_rm;
+			*inst++ = MOD_REG | (1 /* ecx */ << 3) | reg_map[TMP_REGISTER];
+			*inst++ = GROUP_0F;
+			*inst++ = cond_set;
+			*inst++ = MOD_REG | 1 /* ecx */;
+			*inst++ = OR_rm8_r8;
+			*inst++ = MOD_REG | (1 /* ecx */ << 3) | 0 /* eax */;
+			*inst++ = XCHG_r_rm;
+			*inst++ = MOD_REG | (1 /* ecx */ << 3) | reg_map[TMP_REGISTER];
+		}
+		return SLJIT_SUCCESS;
+	}
+
 	/* Set TMP_REGISTER to the bit. */
 	inst = (sljit_ub*)ensure_buf(compiler, 1 + 1 + 3 + 3 + 1);
 	FAIL_IF(!inst);
@@ -2761,16 +2798,16 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_si sljit_get_local_base(struct sljit_compiler *co
 	if (NOT_HALFWORD(offset)) {
 		FAIL_IF(emit_load_imm64(compiler, TMP_REGISTER, offset));
 #if (defined SLJIT_DEBUG && SLJIT_DEBUG)
-		SLJIT_ASSERT(emit_lea_binary(compiler, dst, dstw, SLJIT_LOCALS_REG, 0, TMP_REGISTER, 0) != SLJIT_ERR_UNSUPPORTED);
+		SLJIT_ASSERT(emit_lea_binary(compiler, SLJIT_KEEP_FLAGS, dst, dstw, SLJIT_LOCALS_REG, 0, TMP_REGISTER, 0) != SLJIT_ERR_UNSUPPORTED);
 		return compiler->error;
 #else
-		return emit_lea_binary(compiler, dst, dstw, SLJIT_LOCALS_REG, 0, TMP_REGISTER, 0);
+		return emit_lea_binary(compiler, SLJIT_KEEP_FLAGS, dst, dstw, SLJIT_LOCALS_REG, 0, TMP_REGISTER, 0);
 #endif
 	}
 #endif
 
 	if (offset != 0)
-		return emit_lea_binary(compiler, dst, dstw, SLJIT_LOCALS_REG, 0, SLJIT_IMM, offset);
+		return emit_lea_binary(compiler, SLJIT_KEEP_FLAGS, dst, dstw, SLJIT_LOCALS_REG, 0, SLJIT_IMM, offset);
 	return emit_mov(compiler, dst, dstw, SLJIT_LOCALS_REG, 0);
 }
 

@@ -73,7 +73,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
 HMENU qt_getWindowsSystemMenu(const QWidget *w)
 {
     if (QWindow *window = QApplicationPrivate::windowForWidget(w))
@@ -209,7 +209,7 @@ public:
     void init(const QString &title = QString(), const QString &text = QString());
     void setupLayout();
     void _q_buttonClicked(QAbstractButton *);
-    void _q_clicked(QMessageDialogOptions::StandardButton button, QMessageDialogOptions::ButtonRole role);
+    void _q_clicked(QPlatformDialogHelper::StandardButton button, QPlatformDialogHelper::ButtonRole role);
 
     QAbstractButton *findButton(int button0, int button1, int button2, int flags);
     void addOldButtons(int button0, int button1, int button2);
@@ -524,7 +524,7 @@ void QMessageBoxPrivate::_q_buttonClicked(QAbstractButton *button)
     }
 }
 
-void QMessageBoxPrivate::_q_clicked(QMessageDialogOptions::StandardButton button, QMessageDialogOptions::ButtonRole role)
+void QMessageBoxPrivate::_q_clicked(QPlatformDialogHelper::StandardButton button, QPlatformDialogHelper::ButtonRole role)
 {
     Q_UNUSED(role);
     Q_Q(QMessageBox);
@@ -1620,7 +1620,7 @@ void QMessageBox::showEvent(QShowEvent *e)
     QAccessibleEvent event(this, QAccessible::Alert);
     QAccessible::updateAccessibility(&event);
 #endif
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     if (const HMENU systemMenu = qt_getWindowsSystemMenu(this)) {
         EnableMenuItem(systemMenu, SC_CLOSE, d->detectedEscapeButton ?
                        MF_BYCOMMAND|MF_ENABLED : MF_BYCOMMAND|MF_GRAYED);
@@ -2697,8 +2697,8 @@ QPixmap QMessageBoxPrivate::standardIcon(QMessageBox::Icon icon, QMessageBox *mb
 void QMessageBoxPrivate::initHelper(QPlatformDialogHelper *h)
 {
     Q_Q(QMessageBox);
-    QObject::connect(h, SIGNAL(clicked(QMessageDialogOptions::StandardButton, QMessageDialogOptions::ButtonRole)),
-                     q, SLOT(_q_clicked(QMessageDialogOptions::StandardButton, QMessageDialogOptions::ButtonRole)));
+    QObject::connect(h, SIGNAL(clicked(QPlatformDialogHelper::StandardButton, QPlatformDialogHelper::ButtonRole)),
+                     q, SLOT(_q_clicked(QPlatformDialogHelper::StandardButton, QPlatformDialogHelper::ButtonRole)));
     static_cast<QPlatformMessageDialogHelper *>(h)->setOptions(options);
 }
 
@@ -2719,9 +2719,9 @@ static QMessageDialogOptions::Icon helperIcon(QMessageBox::Icon i)
     return QMessageDialogOptions::NoIcon;
 }
 
-static QMessageDialogOptions::StandardButtons helperStandardButtons(QMessageBox * q)
+static QPlatformDialogHelper::StandardButtons helperStandardButtons(QMessageBox * q)
 {
-    QMessageDialogOptions::StandardButtons buttons(int(q->standardButtons()));
+    QPlatformDialogHelper::StandardButtons buttons(int(q->standardButtons()));
     return buttons;
 }
 

@@ -942,7 +942,7 @@ static const QMetaObject *QMetaObject_findMetaObject(const QMetaObject *self, co
             return self;
         if (self->d.relatedMetaObjects) {
             Q_ASSERT(priv(self->d.data)->revision >= 2);
-            const QMetaObject **e = self->d.relatedMetaObjects;
+            const QMetaObject * const *e = self->d.relatedMetaObjects;
             if (e) {
                 while (*e) {
                     if (const QMetaObject *m =QMetaObject_findMetaObject((*e), name))
@@ -2694,10 +2694,14 @@ int QMetaProperty::userType() const
     if (type != QMetaType::UnknownType)
         return type;
     if (isEnumType()) {
-        int enumMetaTypeId = QMetaType::type(qualifiedName(menum));
-        if (enumMetaTypeId == QMetaType::UnknownType)
-            return QVariant::Int; // Match behavior of QMetaType::type()
-        return enumMetaTypeId;
+        type = QMetaType::type(qualifiedName(menum));
+        if (type == QMetaType::UnknownType) {
+            void *argv[] = { &type };
+            mobj->static_metacall(QMetaObject::RegisterPropertyMetaType, idx, argv);
+            if (type == -1 || type == QMetaType::UnknownType)
+                return QVariant::Int; // Match behavior of QMetaType::type()
+        }
+        return type;
     }
     type = QMetaType::type(typeName());
     if (type != QMetaType::UnknownType)

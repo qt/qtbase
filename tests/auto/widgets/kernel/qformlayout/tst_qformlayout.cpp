@@ -263,7 +263,7 @@ void tst_QFormLayout::wrapping()
 {
     QWidget *w = new QWidget;
     QFormLayout *fl = new QFormLayout(w);
-	fl->setRowWrapPolicy(QFormLayout::WrapLongRows);
+    fl->setRowWrapPolicy(QFormLayout::WrapLongRows);
 
     QLineEdit *le = new QLineEdit;
     QLabel *lbl = new QLabel("A long label");

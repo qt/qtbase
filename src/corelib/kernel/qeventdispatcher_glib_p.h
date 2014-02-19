@@ -77,19 +77,19 @@ public:
     bool processEvents(QEventLoop::ProcessEventsFlags flags);
     bool hasPendingEvents();
 
-    void registerSocketNotifier(QSocketNotifier *socketNotifier);
-    void unregisterSocketNotifier(QSocketNotifier *socketNotifier);
+    void registerSocketNotifier(QSocketNotifier *socketNotifier) Q_DECL_FINAL;
+    void unregisterSocketNotifier(QSocketNotifier *socketNotifier) Q_DECL_FINAL;
 
-    void registerTimer(int timerId, int interval, Qt::TimerType timerType, QObject *object);
-    bool unregisterTimer(int timerId);
-    bool unregisterTimers(QObject *object);
-    QList<TimerInfo> registeredTimers(QObject *object) const;
+    void registerTimer(int timerId, int interval, Qt::TimerType timerType, QObject *object) Q_DECL_FINAL;
+    bool unregisterTimer(int timerId) Q_DECL_FINAL;
+    bool unregisterTimers(QObject *object) Q_DECL_FINAL;
+    QList<TimerInfo> registeredTimers(QObject *object) const Q_DECL_FINAL;
 
-    int remainingTime(int timerId);
+    int remainingTime(int timerId) Q_DECL_FINAL;
 
-    void wakeUp();
-    void interrupt();
-    void flush();
+    void wakeUp() Q_DECL_FINAL;
+    void interrupt() Q_DECL_FINAL;
+    void flush() Q_DECL_FINAL;
 
     static bool versionSupported();
 

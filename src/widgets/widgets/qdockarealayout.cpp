@@ -1940,9 +1940,9 @@ bool QDockAreaLayoutInfo::restoreState(QDataStream &stream, QList<QDockWidget*> 
             } else {
                 QDockAreaLayoutItem item(new QDockWidgetItem(widget));
                 if (flags & StateFlagFloating) {
-               	    bool drawer = false;
+                    bool drawer = false;
 #ifdef Q_WS_MAC // drawer support
-               	    extern bool qt_mac_is_macdrawer(const QWidget *); //qwidget_mac.cpp
+                    extern bool qt_mac_is_macdrawer(const QWidget *); //qwidget_mac.cpp
                     extern bool qt_mac_set_drawer_preferred_edge(QWidget *, Qt::DockWidgetArea); //qwidget_mac.cpp
                     drawer = qt_mac_is_macdrawer(widget);
 #endif
@@ -1988,10 +1988,10 @@ bool QDockAreaLayoutInfo::restoreState(QDataStream &stream, QList<QDockWidget*> 
                         emit widget->dockLocationChanged(toDockWidgetArea(dockPos));
                     }
                 }
-		if (testing) {
-		  //was it is not really added to the layout, we need to delete the object here
-		  delete item.widgetItem;
-		}
+                if (testing) {
+                    //was it is not really added to the layout, we need to delete the object here
+                    delete item.widgetItem;
+                }
             }
         } else if (nextMarker == SequenceMarker) {
             int dummy;
@@ -2096,7 +2096,7 @@ bool QDockAreaLayoutInfo::updateTabBar() const
         that->tabBar->setDrawBase(true);
     }
 
-    bool blocked = tabBar->blockSignals(true);
+    const QSignalBlocker blocker(tabBar);
     bool gap = false;
 
     int tab_idx = 0;
@@ -2146,8 +2146,6 @@ bool QDockAreaLayoutInfo::updateTabBar() const
     while (tab_idx < tabBar->count()) {
         tabBar->removeTab(tab_idx);
     }
-
-    tabBar->blockSignals(blocked);
 
     //returns if the tabbar is visible or not
     return ( (gap ? 1 : 0) + tabBar->count()) > 1;

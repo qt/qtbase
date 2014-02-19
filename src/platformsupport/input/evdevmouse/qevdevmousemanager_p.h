@@ -59,6 +59,8 @@ public:
     QEvdevMouseManager(const QString &key, const QString &specification, QObject *parent = 0);
     ~QEvdevMouseManager();
 
+    QDeviceDiscovery *deviceDiscovery() { return m_deviceDiscovery; }
+
 public slots:
     void handleMouseEvent(int x, int y, Qt::MouseButtons buttons);
     void handleWheelEvent(int delta, Qt::Orientation orientation);

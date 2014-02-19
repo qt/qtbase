@@ -103,7 +103,7 @@ QT_BEGIN_NAMESPACE
 
     \sa {Drag and Drop}, QClipboard, QMimeData, QWindowsMime, QMacPasteboardMime,
         {Draggable Icons Example}, {Draggable Text Example}, {Drop Site Example},
-	    {Fridge Magnets Example}
+        {Fridge Magnets Example}
 */
 
 /*!
@@ -253,8 +253,8 @@ Qt::DropAction QDrag::exec(Qt::DropActions supportedActions)
     loop. Other events are still delivered to the application while
     the operation is performed. On Windows, the Qt event loop is
     blocked during the operation. However, QDrag::exec() on
-	Windows causes processEvents() to be called frequently to keep the GUI responsive.
-	If any loops or operations are called while a drag operation is active, it will block the drag operation.
+    Windows causes processEvents() to be called frequently to keep the GUI responsive.
+    If any loops or operations are called while a drag operation is active, it will block the drag operation.
 */
 
 Qt::DropAction QDrag::exec(Qt::DropActions supportedActions, Qt::DropAction defaultDropAction)

@@ -39,6 +39,9 @@
 **
 ****************************************************************************/
 
+#ifndef TRIGRAPHS_H
+#define TRIGRAPHS_H
+
 #include <QObject>
 
 namespace AAA {
@@ -61,3 +64,4 @@ namespace BBB {
     };
 }
 
+#endif // TRIGRAPHS_H

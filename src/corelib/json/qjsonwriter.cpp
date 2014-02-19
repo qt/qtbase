@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Intel Corporation
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -41,6 +42,7 @@
 
 #include "qjsonwriter_p.h"
 #include "qjson_p.h"
+#include "private/qutfcodec_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -59,15 +61,12 @@ static QByteArray escapedString(const QString &s)
     const uchar replacement = '?';
     QByteArray ba(s.length(), Qt::Uninitialized);
 
-    uchar *cursor = (uchar *)ba.data();
+    uchar *cursor = reinterpret_cast<uchar *>(const_cast<char *>(ba.constData()));
     const uchar *ba_end = cursor + ba.length();
+    const ushort *src = reinterpret_cast<const ushort *>(s.constBegin());
+    const ushort *const end = reinterpret_cast<const ushort *>(s.constEnd());
 
-    const QChar *ch = (const QChar *)s.constData();
-    const QChar *end = ch + s.length();
-
-    int surrogate_high = -1;
-
-    while (ch < end) {
+    while (src != end) {
         if (cursor >= ba_end - 6) {
             // ensure we have enough space
             int pos = cursor - (const uchar *)ba.constData();
@@ -76,29 +75,7 @@ static QByteArray escapedString(const QString &s)
             ba_end = (const uchar *)ba.constData() + ba.length();
         }
 
-        uint u = ch->unicode();
-        if (surrogate_high >= 0) {
-            if (ch->isLowSurrogate()) {
-                u = QChar::surrogateToUcs4(surrogate_high, u);
-                surrogate_high = -1;
-            } else {
-                // high surrogate without low
-                *cursor = replacement;
-                ++ch;
-                surrogate_high = -1;
-                continue;
-            }
-        } else if (ch->isLowSurrogate()) {
-            // low surrogate without high
-            *cursor = replacement;
-            ++ch;
-            continue;
-        } else if (ch->isHighSurrogate()) {
-            surrogate_high = u;
-            ++ch;
-            continue;
-        }
-
+        uint u = *src++;
         if (u < 0x80) {
             if (u < 0x20 || u == 0x22 || u == 0x5c) {
                 *cursor++ = '\\';
@@ -135,20 +112,9 @@ static QByteArray escapedString(const QString &s)
                 *cursor++ = (uchar)u;
             }
         } else {
-            if (u < 0x0800) {
-                *cursor++ = 0xc0 | ((uchar) (u >> 6));
-            } else {
-                if (QChar::requiresSurrogates(u)) {
-                    *cursor++ = 0xf0 | ((uchar) (u >> 18));
-                    *cursor++ = 0x80 | (((uchar) (u >> 12)) & 0x3f);
-                } else {
-                    *cursor++ = 0xe0 | (((uchar) (u >> 12)) & 0x3f);
-                }
-                *cursor++ = 0x80 | (((uchar) (u >> 6)) & 0x3f);
-            }
-            *cursor++ = 0x80 | ((uchar) (u&0x3f));
+            if (QUtf8Functions::toUtf8<QUtf8BaseTraits>(u, cursor, src, end) < 0)
+                *cursor++ = replacement;
         }
-        ++ch;
     }
 
     ba.resize(cursor - (const uchar *)ba.constData());
@@ -229,7 +195,7 @@ static void objectContentToJson(const QJsonPrivate::Object *o, QByteArray &json,
         json += indentString;
         json += '"';
         json += escapedString(e->key());
-        json += "\": ";
+        json += compact ? "\":" : "\": ";
         valueToJson(o, e->value, json, indent, compact);
 
         if (++i == o->length) {

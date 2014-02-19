@@ -44,8 +44,9 @@
 
 #include <QObject>
 #include <QSocketNotifier>
+#include <QStringList>
 
-#ifndef QT_NO_LIBUDEV
+#ifdef QDEVICEDISCOVERY_UDEV
 #include <libudev.h>
 #endif
 
@@ -88,13 +89,13 @@ signals:
     void deviceDetected(const QString &deviceNode);
     void deviceRemoved(const QString &deviceNode);
 
-#ifndef QT_NO_LIBUDEV
+#ifdef QDEVICEDISCOVERY_UDEV
 private slots:
     void handleUDevNotification();
 #endif
 
 private:
-#ifndef QT_NO_LIBUDEV
+#ifdef QDEVICEDISCOVERY_UDEV
     QDeviceDiscovery(QDeviceTypes types, struct udev *udev, QObject *parent = 0);
     bool checkDeviceType(struct udev_device *dev);
 #else
@@ -104,7 +105,7 @@ private:
 
     QDeviceTypes m_types;
 
-#ifndef QT_NO_LIBUDEV
+#ifdef QDEVICEDISCOVERY_UDEV
     void startWatching();
     void stopWatching();
 

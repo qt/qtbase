@@ -40,6 +40,13 @@
 ****************************************************************************/
 
 #include <QByteArray>
+#include <QOpenGLFunctions>
+
+#ifdef Q_OS_LINUX
+#include <sys/ioctl.h>
+#include <linux/fb.h>
+#include <private/qmath_p.h>
+#endif
 
 #include "qeglconvenience_p.h"
 
@@ -237,12 +244,15 @@ EGLConfig QEglConfigChooser::chooseConfig()
         configureAttributes.append(EGL_OPENVG_BIT);
         break;
 #ifdef EGL_VERSION_1_4
-#  if !defined(QT_OPENGL_ES_2)
     case QSurfaceFormat::DefaultRenderableType:
-#  endif
-    case QSurfaceFormat::OpenGL:
-        configureAttributes.append(EGL_OPENGL_BIT);
+        if (!QOpenGLFunctions::isES())
+            configureAttributes.append(EGL_OPENGL_BIT);
+        else
+            configureAttributes.append(EGL_OPENGL_ES2_BIT);
         break;
+    case QSurfaceFormat::OpenGL:
+         configureAttributes.append(EGL_OPENGL_BIT);
+         break;
 #endif
     case QSurfaceFormat::OpenGLES:
         if (m_format.majorVersion() == 1) {
@@ -347,11 +357,12 @@ QSurfaceFormat q_glFormatFromConfig(EGLDisplay display, const EGLConfig config, 
     if (referenceFormat.renderableType() == QSurfaceFormat::OpenVG && (renderableType & EGL_OPENVG_BIT))
         format.setRenderableType(QSurfaceFormat::OpenVG);
 #ifdef EGL_VERSION_1_4
-    else if ((referenceFormat.renderableType() == QSurfaceFormat::OpenGL
-#  if !defined(QT_OPENGL_ES_2)
-              || referenceFormat.renderableType() == QSurfaceFormat::DefaultRenderableType
-#  endif
-              ) && (renderableType & EGL_OPENGL_BIT))
+    else if (referenceFormat.renderableType() == QSurfaceFormat::OpenGL
+             && (renderableType & EGL_OPENGL_BIT))
+        format.setRenderableType(QSurfaceFormat::OpenGL);
+    else if (referenceFormat.renderableType() == QSurfaceFormat::DefaultRenderableType
+             && !QOpenGLFunctions::isES()
+             && (renderableType & EGL_OPENGL_BIT))
         format.setRenderableType(QSurfaceFormat::OpenGL);
 #endif
     else
@@ -365,6 +376,7 @@ QSurfaceFormat q_glFormatFromConfig(EGLDisplay display, const EGLConfig config, 
     format.setStencilBufferSize(stencilSize);
     format.setSamples(sampleCount);
     format.setStereo(false);         // EGL doesn't support stereo buffers
+    format.setSwapInterval(referenceFormat.swapInterval());
 
     // Clear the EGL error state because some of the above may
     // have errored out because the attribute is not applicable
@@ -425,5 +437,109 @@ void q_printEglConfig(EGLDisplay display, EGLConfig config)
 
     qWarning("\n");
 }
+
+#ifdef Q_OS_LINUX
+
+QSizeF q_physicalScreenSizeFromFb(int framebufferDevice, const QSize &screenSize)
+{
+    const int defaultPhysicalDpi = 100;
+    static QSizeF size;
+
+    if (size.isEmpty()) {
+        // Note: in millimeters
+        int width = qgetenv("QT_QPA_EGLFS_PHYSICAL_WIDTH").toInt();
+        int height = qgetenv("QT_QPA_EGLFS_PHYSICAL_HEIGHT").toInt();
+
+        if (width && height) {
+            size.setWidth(width);
+            size.setHeight(height);
+            return size;
+        }
+
+        struct fb_var_screeninfo vinfo;
+        int w = -1;
+        int h = -1;
+        QSize screenResolution;
+
+        if (framebufferDevice != -1) {
+            if (ioctl(framebufferDevice, FBIOGET_VSCREENINFO, &vinfo) == -1) {
+                qWarning("eglconvenience: Could not query screen info");
+            } else {
+                w = vinfo.width;
+                h = vinfo.height;
+                screenResolution = QSize(vinfo.xres, vinfo.yres);
+            }
+        } else {
+            // Use the provided screen size, when available, since some platforms may have their own
+            // specific way to query it. Otherwise try querying it from the framebuffer.
+            screenResolution = screenSize.isEmpty() ? q_screenSizeFromFb(framebufferDevice) : screenSize;
+        }
+
+        size.setWidth(w <= 0 ? screenResolution.width() * Q_MM_PER_INCH / defaultPhysicalDpi : qreal(w));
+        size.setHeight(h <= 0 ? screenResolution.height() * Q_MM_PER_INCH / defaultPhysicalDpi : qreal(h));
+    }
+
+    return size;
+}
+
+QSize q_screenSizeFromFb(int framebufferDevice)
+{
+    const int defaultWidth = 800;
+    const int defaultHeight = 600;
+    static QSize size;
+
+    if (size.isEmpty()) {
+        int width = qgetenv("QT_QPA_EGLFS_WIDTH").toInt();
+        int height = qgetenv("QT_QPA_EGLFS_HEIGHT").toInt();
+
+        if (width && height) {
+            size.setWidth(width);
+            size.setHeight(height);
+            return size;
+        }
+
+        struct fb_var_screeninfo vinfo;
+        int xres = -1;
+        int yres = -1;
+
+        if (framebufferDevice != -1) {
+            if (ioctl(framebufferDevice, FBIOGET_VSCREENINFO, &vinfo) == -1) {
+                qWarning("eglconvenience: Could not read screen info");
+            } else {
+                xres = vinfo.xres;
+                yres = vinfo.yres;
+            }
+        }
+
+        size.setWidth(xres <= 0 ? defaultWidth : xres);
+        size.setHeight(yres <= 0 ? defaultHeight : yres);
+    }
+
+    return size;
+}
+
+int q_screenDepthFromFb(int framebufferDevice)
+{
+    const int defaultDepth = 32;
+    static int depth = qgetenv("QT_QPA_EGLFS_DEPTH").toInt();
+
+    if (depth == 0) {
+        struct fb_var_screeninfo vinfo;
+
+        if (framebufferDevice != -1) {
+            if (ioctl(framebufferDevice, FBIOGET_VSCREENINFO, &vinfo) == -1)
+                qWarning("eglconvenience: Could not query screen info");
+            else
+                depth = vinfo.bits_per_pixel;
+        }
+
+        if (depth <= 0)
+            depth = defaultDepth;
+    }
+
+    return depth;
+}
+
+#endif // Q_OS_LINUX
 
 QT_END_NAMESPACE

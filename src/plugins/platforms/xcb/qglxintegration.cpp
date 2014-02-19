@@ -167,6 +167,7 @@ QGLXContext::QGLXContext(QXcbScreen *screen, const QSurfaceFormat &format, QPlat
     , m_shareContext(0)
     , m_format(format)
     , m_isPBufferCurrent(false)
+    , m_swapInterval(-1)
 {
     if (m_format.renderableType() == QSurfaceFormat::DefaultRenderableType)
         m_format.setRenderableType(QSurfaceFormat::OpenGL);
@@ -326,19 +327,50 @@ QGLXContext::~QGLXContext()
 
 bool QGLXContext::makeCurrent(QPlatformSurface *surface)
 {
-    Q_ASSERT(surface->surface()->surfaceType() == QSurface::OpenGLSurface);
+    bool success = false;
+    Q_ASSERT(surface->surface()->supportsOpenGL());
 
+    Display *dpy = DISPLAY_FROM_XCB(m_screen);
+    GLXDrawable glxDrawable = 0;
     QSurface::SurfaceClass surfaceClass = surface->surface()->surfaceClass();
     if (surfaceClass == QSurface::Window) {
         m_isPBufferCurrent = false;
         QXcbWindow *window = static_cast<QXcbWindow *>(surface);
-        return glXMakeCurrent(DISPLAY_FROM_XCB(m_screen), window->xcb_window(), m_context);
+        glxDrawable = window->xcb_window();
+        success = glXMakeCurrent(dpy, glxDrawable, m_context);
     } else if (surfaceClass == QSurface::Offscreen) {
         m_isPBufferCurrent = true;
         QGLXPbuffer *pbuffer = static_cast<QGLXPbuffer *>(surface);
-        return glXMakeContextCurrent(DISPLAY_FROM_XCB(m_screen), pbuffer->pbuffer(), pbuffer->pbuffer(), m_context);
+        glxDrawable = pbuffer->pbuffer();
+        success = glXMakeContextCurrent(dpy, glxDrawable, glxDrawable, m_context);
     }
-    return false;
+
+    if (success) {
+        int interval = surface->format().swapInterval();
+        if (interval >= 0 && m_swapInterval != interval) {
+            m_swapInterval = interval;
+            typedef void (*qt_glXSwapIntervalEXT)(Display *, GLXDrawable, int);
+            typedef void (*qt_glXSwapIntervalMESA)(unsigned int);
+            static qt_glXSwapIntervalEXT glXSwapIntervalEXT = 0;
+            static qt_glXSwapIntervalMESA glXSwapIntervalMESA = 0;
+            static bool resolved = false;
+            if (!resolved) {
+                resolved = true;
+                QList<QByteArray> glxExt = QByteArray(glXQueryExtensionsString(dpy,
+                                                                               m_screen->screenNumber())).split(' ');
+                if (glxExt.contains("GLX_EXT_swap_control"))
+                    glXSwapIntervalEXT = (qt_glXSwapIntervalEXT) getProcAddress("glXSwapIntervalEXT");
+                if (glxExt.contains("GLX_MESA_swap_control"))
+                    glXSwapIntervalMESA = (qt_glXSwapIntervalMESA) getProcAddress("glXSwapIntervalMESA");
+            }
+            if (glXSwapIntervalEXT)
+                glXSwapIntervalEXT(dpy, glxDrawable, interval);
+            else if (glXSwapIntervalMESA)
+                glXSwapIntervalMESA(interval);
+        }
+    }
+
+    return success;
 }
 
 void QGLXContext::doneCurrent()

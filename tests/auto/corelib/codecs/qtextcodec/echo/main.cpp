@@ -47,8 +47,7 @@
 
 int main(int argc, char **argv)
 {
-    static char lc_all[] = "LC_ALL=C";
-    putenv(lc_all);
+    qputenv("LC_ALL", "C");
     QCoreApplication app(argc, argv);
 
     QString string(QChar(0x410));

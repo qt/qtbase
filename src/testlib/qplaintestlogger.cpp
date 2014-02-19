@@ -389,14 +389,14 @@ void QPlainTestLogger::addBenchmarkResult(const QBenchmarkResult &result)
     printBenchmarkResult(result);
 }
 
-void QPlainTestLogger::addMessage(MessageTypes type, const char *message,
+void QPlainTestLogger::addMessage(MessageTypes type, const QString &message,
                                   const char *file, int line)
 {
     // suppress non-fatal messages in silent mode
     if (type != QAbstractTestLogger::QFatal && QTestLog::verboseLevel() < 0)
         return;
 
-    printMessage(QTest::messageType2String(type), message, file, line);
+    printMessage(QTest::messageType2String(type), qPrintable(message), file, line);
 }
 
 QT_END_NAMESPACE

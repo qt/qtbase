@@ -14,6 +14,11 @@ src_tools_rcc.target = sub-rcc
 src_tools_rcc.depends = src_tools_bootstrap
 src_tools_rcc.CONFIG = host_build
 
+src_tools_qlalr.subdir = tools/qlalr
+src_tools_qlalr.target = sub-qlalr
+force_bootstrap: src_tools_qlalr.depends = src_tools_bootstrap
+else: src_tools_qlalr.depends = src_corelib
+
 src_tools_uic.subdir = tools/uic
 src_tools_uic.target = sub-uic
 src_tools_uic.CONFIG = host_build
@@ -77,6 +82,7 @@ src_testlib.depends = src_corelib   # src_gui & src_widgets are not build-depend
 
 src_angle.subdir = $$PWD/angle
 src_angle.target = sub-angle
+angle_d3d11: src_angle.depends = src_corelib
 
 src_gui.subdir = $$PWD/gui
 src_gui.target = sub-gui
@@ -109,8 +115,8 @@ src_plugins.depends = src_sql src_xml src_network
 src_android.subdir = $$PWD/android
 
 # this order is important
-SUBDIRS += src_tools_bootstrap src_tools_moc src_tools_rcc src_corelib
-TOOLS = src_tools_moc src_tools_rcc
+SUBDIRS += src_tools_bootstrap src_tools_moc src_tools_rcc src_corelib src_tools_qlalr
+TOOLS = src_tools_moc src_tools_rcc src_tools_qlalr
 win32:SUBDIRS += src_winmain
 SUBDIRS += src_network src_sql src_xml src_testlib
 contains(QT_CONFIG, dbus) {
@@ -124,7 +130,7 @@ contains(QT_CONFIG, dbus) {
 }
 contains(QT_CONFIG, concurrent):SUBDIRS += src_concurrent
 !contains(QT_CONFIG, no-gui) {
-    win32:contains(QT_CONFIG, angle) {
+    win32:contains(QT_CONFIG, angle)|contains(QT_CONFIG, dynamicgl) {
         SUBDIRS += src_angle
         src_gui.depends += src_angle
     }
@@ -152,7 +158,7 @@ nacl: SUBDIRS -= src_network src_testlib
 android:!android-no-sdk: SUBDIRS += src_android
 
 TR_EXCLUDE = \
-    src_tools_bootstrap src_tools_moc src_tools_rcc src_tools_uic \
+    src_tools_bootstrap src_tools_moc src_tools_rcc src_tools_uic src_tools_qlalr \
     src_tools_bootstrap_dbus src_tools_qdbusxml2cpp src_tools_qdbuscpp2xml
 
 sub-tools.depends = $$TOOLS

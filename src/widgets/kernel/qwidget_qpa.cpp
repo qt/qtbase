@@ -49,6 +49,7 @@
 #include "QtWidgets/qdesktopwidget.h"
 #include <qpa/qplatformwindow.h>
 #include "QtGui/qsurfaceformat.h"
+#include <QtGui/qopenglcontext.h>
 #include <qpa/qplatformopenglcontext.h>
 #include <qpa/qplatformintegration.h>
 #include "QtGui/private/qwindow_p.h"
@@ -953,6 +954,10 @@ void QWidgetPrivate::deleteTLSysExtra()
         delete extra->topextra->backingStore;
         extra->topextra->backingStore = 0;
 
+#ifndef QT_NO_OPENGL
+        delete extra->topextra->shareContext;
+        extra->topextra->shareContext = 0;
+#endif
     }
 }
 

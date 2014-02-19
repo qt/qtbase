@@ -491,6 +491,100 @@ void QMetaCallEvent::placeMetaCall(QObject *object)
 }
 
 /*!
+    \class QSignalBlocker
+    \brief Exception-safe wrapper around QObject::blockSignals()
+    \since 5.3
+    \ingroup objectmodel
+
+    \reentrant
+
+    QSignalBlocker can be used whereever you would otherwise use a
+    pair of calls to blockSignals(). It blocks signals in its
+    constructor and in the destructor it resets the state to what
+    it was before the constructor ran.
+
+    \code
+    {
+    const QSignalBlocker blocker(someQObject);
+    // no signals here
+    }
+    \endcode
+    is thus equivalent to
+    \code
+    const bool wasBlocked = someQObject->blockSignals(true);
+    // no signals here
+    someQObject->blockSignals(false);
+    \endcode
+
+    except the code using QSignalBlocker is safe in the face of
+    exceptions.
+
+    \sa QMutexLocker, QEventLoopLocker
+*/
+
+/*!
+    \fn QSignalBlocker::QSignalBlocker(QObject *object)
+
+    Constructor. Calls \a{object}->blockSignals(true).
+*/
+
+/*!
+    \fn QSignalBlocker::QSignalBlocker(QObject &object)
+    \overload
+
+    Calls \a{object}.blockSignals(true).
+*/
+
+/*!
+    \fn QSignalBlocker::QSignalBlocker(QSignalBlocker &&other)
+
+    Move-constructs a signal blocker from \a other. \a other will have
+    a no-op destructor, while repsonsibility for restoring the
+    QObject::signalsBlocked() state is transferred to the new object.
+*/
+
+/*!
+    \fn QSignalBlocker &QSignalBlocker::operator=(QSignalBlocker &&other)
+
+    Move-assigns this signal blocker from \a other. \a other will have
+    a no-op destructor, while repsonsibility for restoring the
+    QObject::signalsBlocked() state is transferred to this object.
+
+    The object's signals this signal blocker was blocking prior to
+    being moved to, if any, are unblocked \em except in the case where
+    both instances block the same object's signals and \c *this is
+    unblocked while \a other is not, at the time of the move.
+*/
+
+/*!
+    \fn QSignalBlocker::~QSignalBlocker()
+
+    Destructor. Restores the QObject::signalsBlocked() state to what it
+    was before the constructor ran, unless unblock() has been called
+    without a following reblock(), in which case it does nothing.
+*/
+
+/*!
+    \fn void QSignalBlocker::reblock()
+
+    Re-blocks signals after a previous unblock().
+
+    The numbers of reblock() and unblock() calls are not counted, so
+    every reblock() undoes any number of unblock() calls.
+*/
+
+/*!
+    \fn void QSignalBlocker::unblock()
+
+    Temporarily restores the QObject::signalsBlocked() state to what
+    it was before this QSignaBlocker's constructor ran. To undo, use
+    reblock().
+
+    The numbers of reblock() and unblock() calls are not counted, so
+    every unblock() undoes any number of reblock() calls.
+*/
+
+/*!
     \class QObject
     \inmodule QtCore
     \brief The QObject class is the base class of all Qt objects.
@@ -2235,11 +2329,19 @@ QObject *QObject::sender() const
 int QObject::senderSignalIndex() const
 {
     Q_D(const QObject);
-    int signal_index = d->senderSignalIndex();
-    if (signal_index < 0)
-        return signal_index;
-    // Convert from signal range to method range
-    return QMetaObjectPrivate::signal(sender()->metaObject(), signal_index).methodIndex();
+
+    QMutexLocker locker(signalSlotLock(this));
+    if (!d->currentSender)
+        return -1;
+
+    for (QObjectPrivate::Connection *c = d->senders; c; c = c->next) {
+        if (c->sender == d->currentSender->sender) {
+            // Convert from signal range to method range
+            return QMetaObjectPrivate::signal(c->sender->metaObject(), d->currentSender->signal).methodIndex();
+        }
+    }
+
+    return -1;
 }
 
 /*!
@@ -3631,25 +3733,6 @@ void QMetaObject::activate(QObject *sender, int signal_index, void **argv)
 
 /*!
     \internal
-    Implementation of QObject::senderSignalIndex()
-*/
-int QObjectPrivate::senderSignalIndex() const
-{
-    Q_Q(const QObject);
-    QMutexLocker locker(signalSlotLock(q));
-    if (!currentSender)
-        return -1;
-
-    for (QObjectPrivate::Connection *c = senders; c; c = c->next) {
-        if (c->sender == currentSender->sender)
-            return currentSender->signal;
-    }
-
-    return -1;
-}
-
-/*!
-    \internal
     Returns the signal index used in the internal connectionLists vector.
 
     It is different from QMetaObject::indexOfSignal():  indexOfSignal is the same as indexOfMethod
@@ -3726,6 +3809,8 @@ bool QObject::setProperty(const char *name, const QVariant &value)
                 d->extraData->propertyNames.append(name);
                 d->extraData->propertyValues.append(value);
             } else {
+                if (value == d->extraData->propertyValues.at(idx))
+                    return false;
                 d->extraData->propertyValues[idx] = value;
             }
         }

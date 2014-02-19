@@ -179,6 +179,8 @@ private slots:
     void globalStaticObjectDestruction(); // run this last
 
     void abortQuitOnShow();
+
+    void settableStyleHints();  // Needs to run last as it changes style hints.
 };
 
 class EventSpy : public QObject
@@ -286,7 +288,7 @@ public:
     TestApplication( int &argc, char **argv )
     : QApplication( argc, argv)
     {
-	startTimer( 150 );
+        startTimer( 150 );
     }
 
     void timerEvent( QTimerEvent * )
@@ -336,24 +338,24 @@ void tst_QApplication::multiple()
 
     int i = 0;
     int argc = 0;
-    while ( i++ < 5 ) {
-	TestApplication app( argc, 0 );
+    while (i++ < 5) {
+        TestApplication app(argc, 0);
 
-	if ( features.contains( "QFont" ) ) {
-	    // create font and force loading
-	    QFont font( "Arial", 12 );
-	    QFontInfo finfo( font );
-	    finfo.exactMatch();
-	}
-	if ( features.contains( "QPixmap" ) ) {
-	    QPixmap pix( 100, 100 );
-	    pix.fill( Qt::black );
-	}
-	if ( features.contains( "QWidget" ) ) {
-	    QWidget widget;
-	}
+        if (features.contains("QFont")) {
+            // create font and force loading
+            QFont font("Arial", 12);
+            QFontInfo finfo(font);
+            finfo.exactMatch();
+        }
+        if (features.contains("QPixmap")) {
+            QPixmap pix(100, 100);
+            pix.fill(Qt::black);
+        }
+        if (features.contains("QWidget")) {
+            QWidget widget;
+        }
 
-	QVERIFY(!app.exec());
+        QVERIFY(!app.exec());
     }
 }
 
@@ -382,29 +384,29 @@ void tst_QApplication::setFont_data()
     QFontDatabase fdb;
     QStringList families = fdb.families();
     for (QStringList::const_iterator itr = families.begin();
-	 itr != families.end();
-	 ++itr) {
-	if (cnt < 3) {
-	    QString family = *itr;
-	    QStringList styles = fdb.styles(family);
-	    if (styles.size() > 0) {
-		QString style = styles.first();
-		QList<int> sizes = fdb.pointSizes(family, style);
-		if (!sizes.size())
-		    sizes = fdb.standardSizes();
-		if (sizes.size() > 0) {
-		    QTest::newRow(QString("data%1a").arg(cnt).toLatin1().constData())
-			<< family
-			<< sizes.first()
+         itr != families.end();
+         ++itr) {
+        if (cnt < 3) {
+            QString family = *itr;
+            QStringList styles = fdb.styles(family);
+            if (styles.size() > 0) {
+                QString style = styles.first();
+                QList<int> sizes = fdb.pointSizes(family, style);
+                if (!sizes.size())
+                    sizes = fdb.standardSizes();
+                if (sizes.size() > 0) {
+                    QTest::newRow(QString("data%1a").arg(cnt).toLatin1().constData())
+                        << family
+                        << sizes.first()
                         << false;
-		    QTest::newRow(QString("data%1b").arg(cnt).toLatin1().constData())
-			<< family
-			<< sizes.first()
+                    QTest::newRow(QString("data%1b").arg(cnt).toLatin1().constData())
+                        << family
+                        << sizes.first()
                         << true;
                 }
-	    }
-	}
-	++cnt;
+            }
+        }
+        ++cnt;
     }
 
     QTest::newRow("nonexistingfont after") << "nosuchfont_probably_quiteunlikely"
@@ -450,7 +452,7 @@ void tst_QApplication::args_data()
     QTest::newRow( "No arguments" ) << 0 << QString() << 0 << QString();
     QTest::newRow( "App name, style" ) << 3 << "/usr/bin/appname -style windows" << 1 << "/usr/bin/appname";
     QTest::newRow( "App name, style, arbitrary, reverse" ) << 5 << "/usr/bin/appname -style windows -arbitrary -reverse"
-							<< 2 << "/usr/bin/appname -arbitrary";
+                                                           << 2 << "/usr/bin/appname -arbitrary";
 }
 
 void tst_QApplication::task109149()
@@ -489,14 +491,14 @@ static QString cstrings2QString( char **args )
 {
     QString string;
     if ( !args )
-	return string;
+        return string;
 
     int i = 0;
     while ( args[i] ) {
-	string += args[i];
-	if ( args[i+1] )
-	    string += " ";
-	++i;
+        string += args[i];
+        if ( args[i+1] )
+            string += " ";
+        ++i;
     }
     return string;
 }
@@ -1949,7 +1951,7 @@ void tst_QApplication::windowsCommandLine_data()
 
 void tst_QApplication::windowsCommandLine()
 {
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
     QFETCH(QString, args);
     QFETCH(QString, expected);
 
@@ -2305,6 +2307,22 @@ void tst_QApplication::abortQuitOnShow()
     QCOMPARE(app.exec(), 1);
 }
 
+void tst_QApplication::settableStyleHints()
+{
+    int argc = 0;
+    QApplication app(argc, 0);
+    QApplication::setCursorFlashTime(437);
+    QCOMPARE(QApplication::cursorFlashTime(), 437);
+    QApplication::setDoubleClickInterval(128);
+    QCOMPARE(QApplication::doubleClickInterval(), 128);
+    QApplication::setStartDragDistance(122000);
+    QCOMPARE(QApplication::startDragDistance(), 122000);
+    QApplication::setStartDragTime(834);
+    QCOMPARE(QApplication::startDragTime(), 834);
+    QApplication::setKeyboardInputInterval(309);
+    QCOMPARE(QApplication::keyboardInputInterval(), 309);
+}
+
 /*
     This test is meant to ensure that certain objects (public & commonly used)
     can safely be used in a Q_GLOBAL_STATIC such that their destructors are
@@ -2314,7 +2332,9 @@ Q_GLOBAL_STATIC(QLocale, tst_qapp_locale);
 #ifndef QT_NO_PROCESS
 Q_GLOBAL_STATIC(QProcess, tst_qapp_process);
 #endif
+#ifndef QT_NO_FILESYSTEMWATCHER
 Q_GLOBAL_STATIC(QFileSystemWatcher, tst_qapp_fileSystemWatcher);
+#endif
 #ifndef QT_NO_SHAREDMEMORY
 Q_GLOBAL_STATIC(QSharedMemory, tst_qapp_sharedMemory);
 #endif
@@ -2337,7 +2357,9 @@ void tst_QApplication::globalStaticObjectDestruction()
 #ifndef QT_NO_PROCESS
     QVERIFY(tst_qapp_process());
 #endif
+#ifndef QT_NO_FILESYSTEMWATCHER
     QVERIFY(tst_qapp_fileSystemWatcher());
+#endif
 #ifndef QT_NO_SHAREDMEMORY
     QVERIFY(tst_qapp_sharedMemory());
 #endif

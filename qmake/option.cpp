@@ -329,9 +329,9 @@ Option::init(int argc, char **argv)
             globals->qmake_abslocation = argv0;
         } else if (argv0.contains(QLatin1Char('/'))
 #ifdef Q_OS_WIN
-		   || argv0.contains(QLatin1Char('\\'))
+                   || argv0.contains(QLatin1Char('\\'))
 #endif
-	    ) { //relative PWD
+            ) { //relative PWD
             globals->qmake_abslocation = QDir::current().absoluteFilePath(argv0);
         } else { //in the PATH
             QByteArray pEnv = qgetenv("PATH");

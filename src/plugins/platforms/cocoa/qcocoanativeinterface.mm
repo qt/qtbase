@@ -47,6 +47,7 @@
 #include "qmacmime.h"
 #include "qcocoahelpers.h"
 #include "qcocoaapplication.h"
+#include "qcocoaintegration.h"
 
 #include <qbytearray.h>
 #include <qwindow.h>
@@ -125,6 +126,8 @@ QPlatformNativeInterface::NativeResourceForIntegrationFunction QCocoaNativeInter
         return NativeResourceForIntegrationFunction(QCocoaNativeInterface::setEmbeddedInForeignView);
     if (resource.toLower() == "setcontentborderthickness")
         return NativeResourceForIntegrationFunction(QCocoaNativeInterface::setContentBorderThickness);
+    if (resource.toLower() == "setnstoolbar")
+        return NativeResourceForIntegrationFunction(QCocoaNativeInterface::setNSToolbar);
 
     return 0;
 }
@@ -283,6 +286,18 @@ void QCocoaNativeInterface::setContentBorderThickness(QWindow *window, int topTh
     QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(window->handle());
     if (cocoaWindow)
         cocoaWindow->setContentBorderThickness(topThickness, bottomThickness);
+}
+
+void QCocoaNativeInterface::setNSToolbar(QWindow *window, void *nsToolbar)
+{
+    if (!window)
+        return;
+
+    QCocoaIntegration::instance()->setToolbar(window, static_cast<NSToolbar *>(nsToolbar));
+
+    QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(window->handle());
+    if (cocoaWindow)
+        cocoaWindow->updateNSToolbar();
 }
 
 QT_END_NAMESPACE

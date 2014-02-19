@@ -597,8 +597,6 @@ bool QSQLiteDriver::open(const QString & db, const QString &, const QString &, c
     if (isOpen())
         close();
 
-    if (db.isEmpty())
-        return false;
 
     int timeOut = 5000;
     bool sharedCache = false;

@@ -401,8 +401,8 @@ Qt::ScreenOrientations QScreen::orientationUpdateMask() const
 
     The screen orientation represents the physical orientation
     of the display. For example, the screen orientation of a mobile device
-    will change based on the device is being held, and a desktop display
-    might be rotated so that it's in portrait mode.
+    will change based on how it is being held. A change to the orientation
+    might or might not trigger a change to the primary orientation of the screen.
 
     Changes to this property will be filtered by orientationUpdateMask(),
     so in order to receive orientation updates the application must first
@@ -435,7 +435,12 @@ qreal QScreen::refreshRate() const
 
     The primary screen orientation is Qt::LandscapeOrientation
     if the screen geometry's width is greater than or equal to its
-    height, or Qt::PortraitOrientation otherwise.
+    height, or Qt::PortraitOrientation otherwise. This property might
+    change when the screen orientation was changed (i.e. when the
+    display is rotated).
+    The behavior is however platform dependent and can often be specified in
+    an application manifest file.
+
 */
 Qt::ScreenOrientation QScreen::primaryOrientation() const
 {

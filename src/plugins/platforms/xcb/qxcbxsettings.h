@@ -53,6 +53,7 @@ class QXcbXSettings : public QXcbWindowEventListener
     Q_DECLARE_PRIVATE(QXcbXSettings)
 public:
     QXcbXSettings(QXcbScreen *screen);
+    bool initialized() const;
 
     QVariant setting(const QByteArray &property) const;
 

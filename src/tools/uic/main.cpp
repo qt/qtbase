@@ -95,6 +95,11 @@ int runUic(int argc, char *argv[])
     translateOption.setValueName(QStringLiteral("function"));
     parser.addOption(translateOption);
 
+    QCommandLineOption includeOption(QStringList() << QStringLiteral("include"));
+    includeOption.setDescription(QStringLiteral("Add #include <include-file> to <file>."));
+    includeOption.setValueName(QStringLiteral("include-file"));
+    parser.addOption(includeOption);
+
     QCommandLineOption generatorOption(QStringList() << QStringLiteral("g") << QStringLiteral("generator"));
     generatorOption.setDescription(QStringLiteral("Select generator."));
     generatorOption.setValueName(QStringLiteral("java|cpp"));
@@ -110,6 +115,7 @@ int runUic(int argc, char *argv[])
     driver.option().implicitIncludes = !parser.isSet(noImplicitIncludesOption);
     driver.option().postfix = parser.value(postfixOption);
     driver.option().translateFunction = parser.value(translateOption);
+    driver.option().includeFile = parser.value(includeOption);
     driver.option().generator = (parser.value(generatorOption).toLower() == QLatin1String("java")) ? Option::JavaGenerator : Option::CppGenerator;
 
     QString inputFile;

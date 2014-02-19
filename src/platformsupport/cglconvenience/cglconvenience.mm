@@ -121,6 +121,7 @@ void *qcgl_createNSOpenGLPixelFormat(const QSurfaceFormat &format)
               << NSOpenGLPFASamples << (NSOpenGLPixelFormatAttribute) format.samples();
     }
 
+    attrs << NSOpenGLPFAAllowOfflineRenderers;
     attrs << 0;
 
     NSOpenGLPixelFormat* pixelFormat = [[NSOpenGLPixelFormat alloc] initWithAttributes:attrs.constData()];

@@ -509,7 +509,7 @@ bool QSimplex::iterate()
 
   Both solveMin and solveMax are interfaces to this method.
 
-  The enum solverFactor admits 2 values: Minimum (-1) and Maximum (+1).
+  The enum SolverFactor admits 2 values: Minimum (-1) and Maximum (+1).
 
   This method sets the original objective and runs the second phase
   Simplex to obtain the optimal solution for the problem. As the internal
@@ -517,7 +517,7 @@ bool QSimplex::iterate()
   minimization case by inverting the original objective and then
   maximizing it.
 */
-qreal QSimplex::solver(solverFactor factor)
+qreal QSimplex::solver(SolverFactor factor)
 {
     // Remove old objective
     clearRow(0);

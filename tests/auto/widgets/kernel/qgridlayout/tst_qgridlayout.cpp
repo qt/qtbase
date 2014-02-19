@@ -974,8 +974,8 @@ QRect CustomLayoutStyle::subElementRect(SubElement sr, const QStyleOption *opt,
         case SE_GroupBoxLayoutItem:
             rect = opt->rect.adjusted(0, +10, 0, 0);
             break;
-	default:
-	    break;
+        default:
+            break;
         }
     }
     if (rect.isNull())

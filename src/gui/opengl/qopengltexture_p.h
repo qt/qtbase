@@ -89,9 +89,9 @@ public:
     void allocateImmutableStorage();
     void setData(int mipLevel, int layer, QOpenGLTexture::CubeMapFace cubeFace,
                  QOpenGLTexture::PixelFormat sourceFormat, QOpenGLTexture::PixelType sourceType,
-                 void *data, const QOpenGLPixelTransferOptions * const options);
+                 const void *data, const QOpenGLPixelTransferOptions * const options);
     void setCompressedData(int mipLevel, int layer, QOpenGLTexture::CubeMapFace cubeFace,
-                           int dataSize, void *data,
+                           int dataSize, const void *data,
                            const QOpenGLPixelTransferOptions * const options);
 
     void setWrapMode(QOpenGLTexture::WrapMode mode);

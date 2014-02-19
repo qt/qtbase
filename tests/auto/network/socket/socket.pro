@@ -14,3 +14,7 @@ SUBDIRS=\
    qtcpsocket \
    qhttpsocketengine \
    qsocks5socketengine \
+
+winrt: SUBDIRS -= \
+   qhttpsocketengine \
+   qsocks5socketengine \

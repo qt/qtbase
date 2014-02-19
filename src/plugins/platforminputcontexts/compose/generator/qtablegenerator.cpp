@@ -58,6 +58,7 @@
 #include <locale.h> // LC_CTYPE
 #include <string.h> // strchr, strncmp, etc.
 #include <strings.h> // strncasecmp
+#include <clocale> // LC_CTYPE
 
 TableGenerator::TableGenerator() : m_state(NoErrors),
     m_systemComposeDir(QString())
@@ -72,17 +73,13 @@ TableGenerator::TableGenerator() : m_state(NoErrors),
 
 void TableGenerator::initPossibleLocations()
 {
-    // AFAICT there is no way to know the exact location
-    // of the compose files. It depends on how Xlib was configured
-    // on a specific platform. During the "./configure" process
-    // xlib generates a config.h file which contains a bunch of defines,
-    // including XLOCALEDIR which points to the location of the compose file dir.
     // To add an extra system path use the QTCOMPOSE environment variable
     if (qEnvironmentVariableIsSet("QTCOMPOSE")) {
         m_possibleLocations.append(QString(qgetenv("QTCOMPOSE")));
     }
-    m_possibleLocations.append(QStringLiteral("/usr/share/X11/locale"));
-    m_possibleLocations.append(QStringLiteral("/usr/lib/X11/locale"));
+
+    m_possibleLocations.append(QStringLiteral(COMPOSE_X11_PREFIX "/share/X11/locale"));
+    m_possibleLocations.append(QStringLiteral(COMPOSE_X11_PREFIX "/lib/X11/locale"));
 }
 
 void TableGenerator::findComposeFile()

@@ -68,22 +68,34 @@ SOURCES += \
 
 win32 {
         SOURCES += \
-                kernel/qeventdispatcher_win.cpp \
                 kernel/qcoreapplication_win.cpp \
                 kernel/qwineventnotifier.cpp \
                 kernel/qsharedmemory_win.cpp \
                 kernel/qsystemsemaphore_win.cpp
         HEADERS += \
-                kernel/qeventdispatcher_win_p.h \
                 kernel/qwineventnotifier.h
-}
 
+        winrt {
+            SOURCES += kernel/qeventdispatcher_winrt.cpp
+            HEADERS += kernel/qeventdispatcher_winrt_p.h
+        } else {
+            SOURCES += kernel/qeventdispatcher_win.cpp
+            HEADERS += kernel/qeventdispatcher_win_p.h
+        }
+}
 
 wince*: {
         SOURCES += \
                 kernel/qfunctions_wince.cpp
         HEADERS += \
                 kernel/qfunctions_wince.h
+}
+
+winrt {
+        SOURCES += \
+                kernel/qfunctions_winrt.cpp
+        HEADERS += \
+                kernel/qfunctions_winrt.h
 }
 
 mac {
@@ -152,9 +164,15 @@ vxworks {
 
 blackberry {
         SOURCES += \
-                kernel/qeventdispatcher_blackberry.cpp
+                kernel/qeventdispatcher_blackberry.cpp \
+                kernel/qppsattribute.cpp \
+                kernel/qppsobject.cpp
         HEADERS += \
-                kernel/qeventdispatcher_blackberry_p.h
+                kernel/qeventdispatcher_blackberry_p.h \
+                kernel/qppsattribute_p.h \
+                kernel/qppsattributeprivate_p.h \
+                kernel/qppsobject_p.h \
+                kernel/qppsobjectprivate_p.h
 }
 
 android:!android-no-sdk {

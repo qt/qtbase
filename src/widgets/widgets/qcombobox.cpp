@@ -2608,9 +2608,9 @@ void QComboBox::hidePopup()
     Q_D(QComboBox);
     if (d->container && d->container->isVisible()) {
 #if !defined(QT_NO_EFFECTS)
-        d->model->blockSignals(true);
-        d->container->itemView()->blockSignals(true);
-        d->container->blockSignals(true);
+        QSignalBlocker modelBlocker(d->model);
+        QSignalBlocker viewBlocker(d->container->itemView());
+        QSignalBlocker containerBlocker(d->container);
         // Flash selected/triggered item (if any).
         if (style()->styleHint(QStyle::SH_Menu_FlashTriggeredItem)) {
             QItemSelectionModel *selectionModel = view() ? view()->selectionModel() : 0;
@@ -2646,9 +2646,9 @@ void QComboBox::hidePopup()
 #endif // Q_OS_MAC
             // Other platform implementations welcome :-)
         }
-        d->model->blockSignals(false);
-        d->container->itemView()->blockSignals(false);
-        d->container->blockSignals(false);
+        containerBlocker.unblock();
+        viewBlocker.unblock();
+        modelBlocker.unblock();
 
         if (!didFade)
 #endif // QT_NO_EFFECTS

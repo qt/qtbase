@@ -215,7 +215,9 @@ public:
     QList<ClassDef> classList;
     QMap<QByteArray, QByteArray> interface2IdMap;
     QList<QByteArray> metaTypes;
-    QSet<QByteArray> knownQObjectClasses;
+    // map from class name to fully qualified name
+    QHash<QByteArray, QByteArray> knownQObjectClasses;
+    QHash<QByteArray, QByteArray> knownGadgets;
     QMap<QString, QJsonArray> metaArgs;
 
     void parse();

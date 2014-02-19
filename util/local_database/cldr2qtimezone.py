@@ -197,7 +197,8 @@ windowsIdList = {
    96 : [ u'W. Europe Standard Time',           3600  ],
    97 : [ u'West Asia Standard Time',          18000  ],
    98 : [ u'West Pacific Standard Time',       36000  ],
-   99 : [ u'Yakutsk Standard Time',            36000  ]
+   99 : [ u'Yakutsk Standard Time',            36000  ],
+   100: [ u'Libya Standard Time',              3600   ]
 }
 
 def windowsIdToKey(windowsId):
@@ -296,7 +297,7 @@ if mapTimezones:
                 if attribute[0] == u'territory':
                     data['countryCode'] = attribute[1]
                 if attribute[0] == u'type':
-                    data['olsenList'] = attribute[1]
+                    data['ianaList'] = attribute[1]
 
             data['windowsKey'] = windowsIdToKey(data['windowsId'])
             if data['windowsKey'] <= 0:
@@ -304,7 +305,7 @@ if mapTimezones:
 
             countryId = 0
             if data['countryCode'] == u'001':
-                defaultDict[data['windowsKey']] = data['olsenList']
+                defaultDict[data['windowsKey']] = data['ianaList']
             else:
                 data['countryId'] = enumdata.countryCodeToId(data['countryCode'])
                 if data['countryId'] < 0:
@@ -342,17 +343,17 @@ newTempFile.write("\n\
 */\n\n" % (str(datetime.date.today()), versionNumber, generationDate) )
 
 windowsIdData = ByteArrayData()
-olsenIdData = ByteArrayData()
+ianaIdData = ByteArrayData()
 
-# Write Windows/Olsen table
-newTempFile.write("// Windows ID Key, Country Enum, Olsen ID Index\n")
+# Write Windows/IANA table
+newTempFile.write("// Windows ID Key, Country Enum, IANA ID Index\n")
 newTempFile.write("static const QZoneData zoneDataTable[] = {\n")
 for index in windowsIdDict:
     data = windowsIdDict[index]
     newTempFile.write("    { %6d,%6d,%6d }, // %s / %s\n" \
                          % (data['windowsKey'],
                             data['countryId'],
-                            olsenIdData.append(data['olsenList']),
+                            ianaIdData.append(data['ianaList']),
                             data['windowsId'],
                             data['country']))
 newTempFile.write("    {      0,     0,     0 } // Trailing zeroes\n")
@@ -361,13 +362,13 @@ newTempFile.write("};\n\n")
 print "Done Zone Data"
 
 # Write Windows ID key table
-newTempFile.write("// Windows ID Key, Windows ID Index, Olsen ID Index, UTC Offset\n")
+newTempFile.write("// Windows ID Key, Windows ID Index, IANA ID Index, UTC Offset\n")
 newTempFile.write("static const QWindowsData windowsDataTable[] = {\n")
 for windowsKey in windowsIdList:
     newTempFile.write("    { %6d,%6d,%6d,%6d }, // %s\n" \
                          % (windowsKey,
                             windowsIdData.append(windowsIdList[windowsKey][0]),
-                            olsenIdData.append(defaultDict[windowsKey]),
+                            ianaIdData.append(defaultDict[windowsKey]),
                             windowsIdList[windowsKey][1],
                             windowsIdList[windowsKey][0]))
 newTempFile.write("    {      0,     0,     0,     0 } // Trailing zeroes\n")
@@ -376,12 +377,12 @@ newTempFile.write("};\n\n")
 print "Done Windows Data Table"
 
 # Write UTC ID key table
-newTempFile.write("// Olsen ID Index, UTC Offset\n")
+newTempFile.write("// IANA ID Index, UTC Offset\n")
 newTempFile.write("static const QUtcData utcDataTable[] = {\n")
 for index in utcIdList:
     data = utcIdList[index]
     newTempFile.write("    { %6d,%6d }, // %s\n" \
-                         % (olsenIdData.append(data[0]),
+                         % (ianaIdData.append(data[0]),
                             data[1],
                             data[0]))
 newTempFile.write("    {     0,      0 } // Trailing zeroes\n")
@@ -394,9 +395,9 @@ newTempFile.write("static const char windowsIdData[] = {\n")
 newTempFile.write(wrap_list(windowsIdData.data))
 newTempFile.write("\n};\n\n")
 
-# Write out Olsen ID's data
-newTempFile.write("static const char olsenIdData[] = {\n")
-newTempFile.write(wrap_list(olsenIdData.data))
+# Write out IANA ID's data
+newTempFile.write("static const char ianaIdData[] = {\n")
+newTempFile.write(wrap_list(ianaIdData.data))
 newTempFile.write("\n};\n")
 
 print "Done ID Data Table"

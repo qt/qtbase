@@ -489,7 +489,7 @@ void QTextHtmlImporter::import()
                 && currentNode->id != Html_unknown)
             {
                 hasBlock = false;
-            } else if (hasBlock) {
+            } else if (blockTagClosed && hasBlock) {
                 // when collapsing subsequent block tags we need to clear the block format
                 QTextBlockFormat blockFormat = currentNode->blockFormat;
                 blockFormat.setIndent(indent);

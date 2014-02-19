@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include <QtCore/qglobal.h>
+#include <QtCore/qtypetraits.h>
 
 #ifndef QTYPEINFO_H
 #define QTYPEINFO_H
@@ -60,6 +60,7 @@ class QTypeInfo
 public:
     enum {
         isPointer = false,
+        isIntegral = QtPrivate::is_integral<T>::value,
         isComplex = true,
         isStatic = true,
         isLarge = (sizeof(T)>sizeof(void*)),
@@ -74,6 +75,7 @@ class QTypeInfo<void>
 public:
     enum {
         isPointer = false,
+        isIntegral = false,
         isComplex = false,
         isStatic = false,
         isLarge = false,
@@ -88,6 +90,7 @@ class QTypeInfo<T*>
 public:
     enum {
         isPointer = true,
+        isIntegral = false,
         isComplex = false,
         isStatic = false,
         isLarge = false,
@@ -125,6 +128,7 @@ public:
         isStatic = QTypeInfo<T1>::isStatic || QTypeInfo<T2>::isStatic || QTypeInfo<T3>::isStatic || QTypeInfo<T4>::isStatic,
         isLarge = sizeof(T) > sizeof(void*),
         isPointer = false,
+        isIntegral = false,
         isDummy = false,
         sizeOf = sizeof(T)
     };
@@ -138,6 +142,7 @@ class QTypeInfo< CONTAINER<T> > \
 public: \
     enum { \
         isPointer = false, \
+        isIntegral = false, \
         isComplex = true, \
         isStatic = false, \
         isLarge = (sizeof(CONTAINER<T>) > sizeof(void*)), \
@@ -180,6 +185,7 @@ public: \
         isStatic = (((FLAGS) & (Q_MOVABLE_TYPE | Q_PRIMITIVE_TYPE)) == 0), \
         isLarge = (sizeof(TYPE)>sizeof(void*)), \
         isPointer = false, \
+        isIntegral = QtPrivate::is_integral< TYPE >::value, \
         isDummy = (((FLAGS) & Q_DUMMY_TYPE) != 0), \
         sizeOf = sizeof(TYPE) \
     }; \
@@ -238,6 +244,15 @@ Q_DECLARE_TYPEINFO(double, Q_PRIMITIVE_TYPE);
 #ifndef Q_OS_DARWIN
 Q_DECLARE_TYPEINFO(long double, Q_PRIMITIVE_TYPE);
 #endif
+
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+// We can't do it now because it would break BC on QList<char32_t>
+Q_DECLARE_TYPEINFO(char16_t, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(char32_t, Q_PRIMITIVE_TYPE);
+#  if !defined(Q_CC_MSVC) || defined(_NATIVE_WCHAR_T_DEFINED)
+Q_DECLARE_TYPEINFO(wchar_t, Q_PRIMITIVE_TYPE);
+#  endif
+#endif // Qt 6
 
 QT_END_NAMESPACE
 #endif // QTYPEINFO_H

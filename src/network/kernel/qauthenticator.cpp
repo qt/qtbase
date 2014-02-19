@@ -55,8 +55,10 @@
 #include <qmutex.h>
 #include <private/qmutexpool_p.h>
 #include <rpc.h>
+#ifndef Q_OS_WINRT
 #define SECURITY_WIN32 1
 #include <security.h>
+#endif
 #endif
 
 //#define NTLMV1_CLIENT
@@ -69,7 +71,7 @@ QT_BEGIN_NAMESPACE
 
 static QByteArray qNtlmPhase1();
 static QByteArray qNtlmPhase3(QAuthenticatorPrivate *ctx, const QByteArray& phase2data);
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
 static QByteArray qNtlmPhase1_SSPI(QAuthenticatorPrivate *ctx);
 static QByteArray qNtlmPhase3_SSPI(QAuthenticatorPrivate *ctx, const QByteArray& phase2data);
 #endif
@@ -328,7 +330,7 @@ bool QAuthenticator::isNull() const
     return !d;
 }
 
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
 class QNtlmWindowsHandles
 {
 public:
@@ -340,7 +342,7 @@ public:
 
 QAuthenticatorPrivate::QAuthenticatorPrivate()
     : method(None)
-    #ifdef Q_OS_WIN
+    #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     , ntlmWindowsHandles(0)
     #endif
     , hasFailed(false)
@@ -354,7 +356,7 @@ QAuthenticatorPrivate::QAuthenticatorPrivate()
 
 QAuthenticatorPrivate::~QAuthenticatorPrivate()
 {
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     if (ntlmWindowsHandles)
         delete ntlmWindowsHandles;
 #endif
@@ -485,7 +487,7 @@ QByteArray QAuthenticatorPrivate::calculateResponse(const QByteArray &requestMet
     case QAuthenticatorPrivate::Ntlm:
         methodString = "NTLM ";
         if (challenge.isEmpty()) {
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
             QByteArray phase1Token;
             if (user.isEmpty()) // Only pull from system if no user was specified in authenticator
                 phase1Token = qNtlmPhase1_SSPI(this);
@@ -502,7 +504,7 @@ QByteArray QAuthenticatorPrivate::calculateResponse(const QByteArray &requestMet
                     phase = Phase2;
             }
         } else {
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
             QByteArray phase3Token;
             if (ntlmWindowsHandles)
                 phase3Token = qNtlmPhase3_SSPI(this, QByteArray::fromBase64(challenge));
@@ -1475,7 +1477,7 @@ static QByteArray qNtlmPhase3(QAuthenticatorPrivate *ctx, const QByteArray& phas
     return rc;
 }
 
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
 // See http://davenport.sourceforge.net/ntlm.html
 // and libcurl http_ntlm.c
 
@@ -1513,7 +1515,6 @@ static bool q_NTLM_SSPI_library_load()
     return true;
 }
 
-#ifdef Q_OS_WIN
 // Phase 1:
 static QByteArray qNtlmPhase1_SSPI(QAuthenticatorPrivate *ctx)
 {
@@ -1631,8 +1632,6 @@ static QByteArray qNtlmPhase3_SSPI(QAuthenticatorPrivate *ctx, const QByteArray&
 
     return result;
 }
-#endif // Q_OS_WIN
-
-#endif
+#endif // Q_OS_WIN && !Q_OS_WINRT
 
 QT_END_NAMESPACE

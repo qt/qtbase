@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qxcbconnection.h"
+#include "qxcbkeyboard.h"
 #include "qxcbscreen.h"
 #include "qxcbwindow.h"
 #include "qtouchdevice.h"
@@ -75,16 +76,20 @@ void QXcbConnection::initializeXInput2()
 #ifndef QT_NO_TABLETEVENT
     m_tabletData.clear();
 #endif
+    m_scrollingDevices.clear();
     Display *xDisplay = static_cast<Display *>(m_xlib_display);
     if (XQueryExtension(xDisplay, "XInputExtension", &m_xiOpCode, &m_xiEventBase, &m_xiErrorBase)) {
         int xiMajor = 2;
         m_xi2Minor = 2; // try 2.2 first, needed for TouchBegin/Update/End
         if (XIQueryVersion(xDisplay, &xiMajor, &m_xi2Minor) == BadRequest) {
-            m_xi2Minor = 0; // for tablet support 2.0 is enough
-            m_xi2Enabled = XIQueryVersion(xDisplay, &xiMajor, &m_xi2Minor) != BadRequest;
-        } else {
+            m_xi2Minor = 1; // for smooth scrolling 2.1 is enough
+            if (XIQueryVersion(xDisplay, &xiMajor, &m_xi2Minor) == BadRequest) {
+                m_xi2Minor = 0; // for tablet support 2.0 is enough
+                m_xi2Enabled = XIQueryVersion(xDisplay, &xiMajor, &m_xi2Minor) != BadRequest;
+            } else
+                m_xi2Enabled = true;
+        } else
             m_xi2Enabled = true;
-        }
         if (m_xi2Enabled) {
             if (Q_UNLIKELY(debug_xinput_devices))
 #ifdef XCB_USE_XINPUT22
@@ -103,6 +108,7 @@ void QXcbConnection::initializeXInput2()
 #ifndef QT_NO_TABLETEVENT
                 TabletData tabletData;
 #endif
+                ScrollingDevice scrollingDevice;
                 for (int c = 0; c < devices[i].num_classes; ++c) {
                     switch (devices[i].classes[c]->type) {
                     case XIValuatorClass: {
@@ -119,7 +125,29 @@ void QXcbConnection::initializeXInput2()
                             tabletData.valuatorInfo[valuatorAtom] = info;
                         }
 #endif // QT_NO_TABLETEVENT
-                    } break;
+                        if (valuatorAtom == QXcbAtom::RelHorizScroll || valuatorAtom == QXcbAtom::RelHorizWheel)
+                            scrollingDevice.lastScrollPosition.setX(vci->value);
+                        else if (valuatorAtom == QXcbAtom::RelVertScroll || valuatorAtom == QXcbAtom::RelVertWheel)
+                            scrollingDevice.lastScrollPosition.setY(vci->value);
+                        break;
+                    }
+#ifdef XCB_USE_XINPUT21
+                    case XIScrollClass: {
+                        XIScrollClassInfo *sci = reinterpret_cast<XIScrollClassInfo *>(devices[i].classes[c]);
+                        scrollingDevice.deviceId = devices[i].deviceid;
+                        if (sci->scroll_type == XIScrollTypeVertical) {
+                            scrollingDevice.orientations |= Qt::Vertical;
+                            scrollingDevice.verticalIndex = sci->number;
+                            scrollingDevice.verticalIncrement = sci->increment;
+                        }
+                        else if (sci->scroll_type == XIScrollTypeHorizontal) {
+                            scrollingDevice.orientations |= Qt::Horizontal;
+                            scrollingDevice.horizontalIndex = sci->number;
+                            scrollingDevice.horizontalIncrement = sci->increment;
+                        }
+                        break;
+                    }
+#endif
                     default:
                         break;
                     }
@@ -140,6 +168,15 @@ void QXcbConnection::initializeXInput2()
                         qDebug() << "   it's a tablet with pointer type" << tabletData.pointerType;
                 }
 #endif // QT_NO_TABLETEVENT
+
+#ifdef XCB_USE_XINPUT21
+                if (scrollingDevice.orientations) {
+                    m_scrollingDevices.insert(scrollingDevice.deviceId, scrollingDevice);
+                    if (Q_UNLIKELY(debug_xinput_devices))
+                        qDebug() << "   it's a scrolling device";
+                }
+#endif
+
                 if (!isTablet) {
                     XInput2DeviceData *dev = deviceForId(devices[i].deviceid);
                     if (Q_UNLIKELY(debug_xinput_devices)) {
@@ -181,7 +218,7 @@ void QXcbConnection::xi2Select(xcb_window_t window)
     mask.mask_len = sizeof(bitMask);
     mask.mask = xiBitMask;
     // Enable each touchscreen
-    foreach (XInput2DeviceData *dev, m_touchDevices.values()) {
+    foreach (XInput2DeviceData *dev, m_touchDevices) {
         mask.deviceid = dev->xiDeviceInfo->deviceid;
         Status result = XISelectEvents(xDisplay, window, &mask, 1);
         // If we have XInput >= 2.2 and successfully enable a touchscreen, then
@@ -213,6 +250,22 @@ void QXcbConnection::xi2Select(xcb_window_t window)
         XISelectEvents(xDisplay, window, xiEventMask.data(), m_tabletData.count());
     }
 #endif // QT_NO_TABLETEVENT
+
+#ifdef XCB_USE_XINPUT21
+    // Enable each scroll device
+    if (!m_scrollingDevices.isEmpty()) {
+        QVector<XIEventMask> xiEventMask(m_scrollingDevices.size());
+        bitMask = XI_MotionMask;
+        int i=0;
+        Q_FOREACH (const ScrollingDevice& scrollingDevice, m_scrollingDevices) {
+            xiEventMask[i].deviceid = scrollingDevice.deviceId;
+            xiEventMask[i].mask_len = sizeof(bitMask);
+            xiEventMask[i].mask = xiBitMask;
+            i++;
+        }
+        XISelectEvents(xDisplay, window, xiEventMask.data(), m_scrollingDevices.size());
+    }
+#endif
 }
 
 XInput2DeviceData *QXcbConnection::deviceForId(int id)
@@ -243,7 +296,8 @@ XInput2DeviceData *QXcbConnection::deviceForId(int id)
                     type = QTouchDevice::TouchScreen;
                     break;
                 }
-            } break;
+                break;
+            }
 #endif // XCB_USE_XINPUT22
             case XIValuatorClass: {
                 XIValuatorClassInfo *vci = reinterpret_cast<XIValuatorClassInfo *>(classinfo);
@@ -260,7 +314,8 @@ XInput2DeviceData *QXcbConnection::deviceForId(int id)
                     hasRelativeCoords = true;
                     dev->size.setHeight((vci->max - vci->min) * 1000.0 / vci->resolution);
                 }
-            } break;
+                break;
+            }
             }
         }
         if (type < 0 && caps && hasRelativeCoords) {
@@ -287,14 +342,14 @@ XInput2DeviceData *QXcbConnection::deviceForId(int id)
     return dev;
 }
 
-#if defined(XCB_USE_XINPUT22) || !defined(QT_NO_TABLETEVENT)
+#if defined(XCB_USE_XINPUT21) || !defined(QT_NO_TABLETEVENT)
 static qreal fixed1616ToReal(FP1616 val)
 {
     return (qreal(val >> 16)) + (val & 0xFF) / (qreal)0xFF;
 }
-#endif
+#endif // defined(XCB_USE_XINPUT21) || !defined(QT_NO_TABLETEVENT)
 
-#ifdef XCB_USE_XINPUT22
+#if defined(XCB_USE_XINPUT21)
 static qreal valuatorNormalized(double value, XIValuatorClassInfo *vci)
 {
     if (value > vci->max)
@@ -303,7 +358,7 @@ static qreal valuatorNormalized(double value, XIValuatorClassInfo *vci)
         value = vci->min;
     return (value - vci->min) / (vci->max - vci->min);
 }
-#endif // XCB_USE_XINPUT22
+#endif // XCB_USE_XINPUT21
 
 void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
 {
@@ -318,6 +373,12 @@ void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
             }
         }
 #endif // QT_NO_TABLETEVENT
+
+#ifdef XCB_USE_XINPUT21
+        QHash<int, ScrollingDevice>::iterator device = m_scrollingDevices.find(xiEvent->deviceid);
+        if (device != m_scrollingDevices.end())
+            xi2HandleScrollEvent(xiEvent, device.value());
+#endif // XCB_USE_XINPUT21
 
 #ifdef XCB_USE_XINPUT22
         if (xiEvent->evtype == XI_TouchBegin || xiEvent->evtype == XI_TouchUpdate || xiEvent->evtype == XI_TouchEnd) {
@@ -461,6 +522,55 @@ void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
         }
 #endif // XCB_USE_XINPUT22
     }
+}
+
+void QXcbConnection::xi2HandleScrollEvent(void *event, ScrollingDevice &scrollingDevice)
+{
+#ifdef XCB_USE_XINPUT21
+    xXIGenericDeviceEvent *xiEvent = reinterpret_cast<xXIGenericDeviceEvent *>(event);
+
+    if (xiEvent->evtype == XI_Motion) {
+        xXIDeviceEvent* xiDeviceEvent = reinterpret_cast<xXIDeviceEvent *>(event);
+        if (QXcbWindow *platformWindow = platformWindowFromId(xiDeviceEvent->event)) {
+            QPoint rawDelta;
+            QPoint angleDelta;
+            double value;
+            if (scrollingDevice.orientations & Qt::Vertical) {
+                if (xi2GetValuatorValueIfSet(xiDeviceEvent, scrollingDevice.verticalIndex, &value)) {
+                    double delta = scrollingDevice.lastScrollPosition.y() - value;
+                    scrollingDevice.lastScrollPosition.setY(value);
+                    angleDelta.setY((delta / scrollingDevice.verticalIncrement) * 120);
+                    // We do not set "pixel" delta if it is only measured in ticks.
+                    if (scrollingDevice.verticalIncrement > 1)
+                        rawDelta.setY(delta);
+                }
+            }
+            if (scrollingDevice.orientations & Qt::Horizontal) {
+                if (xi2GetValuatorValueIfSet(xiDeviceEvent, scrollingDevice.horizontalIndex, &value)) {
+                    double delta = scrollingDevice.lastScrollPosition.x() - value;
+                    scrollingDevice.lastScrollPosition.setX(value);
+                    angleDelta.setX((delta / scrollingDevice.horizontalIncrement) * 120);
+                    // We do not set "pixel" delta if it is only measured in ticks.
+                    if (scrollingDevice.horizontalIncrement > 1)
+                        rawDelta.setX(delta);
+                }
+            }
+            if (!angleDelta.isNull()) {
+                QPoint local(fixed1616ToReal(xiDeviceEvent->event_x), fixed1616ToReal(xiDeviceEvent->event_y));
+                QPoint global(fixed1616ToReal(xiDeviceEvent->root_x), fixed1616ToReal(xiDeviceEvent->root_y));
+                Qt::KeyboardModifiers modifiers = keyboard()->translateModifiers(xiDeviceEvent->mods.effective_mods);
+                if (modifiers & Qt::AltModifier) {
+                    std::swap(angleDelta.rx(), angleDelta.ry());
+                    std::swap(rawDelta.rx(), rawDelta.ry());
+                }
+                QWindowSystemInterface::handleWheelEvent(platformWindow->window(), xiEvent->time, local, global, rawDelta, angleDelta, modifiers);
+            }
+        }
+    }
+#else
+    Q_UNUSED(event);
+    Q_UNUSED(scrollingDevice);
+#endif // XCB_USE_XINPUT21
 }
 
 #ifndef QT_NO_TABLETEVENT

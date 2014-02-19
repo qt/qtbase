@@ -68,21 +68,13 @@
 #ifndef QT_NO_BEARERMANAGEMENT
 #ifndef QT_NO_DBUS
 
-#define OFONO_SERVICE	                         "org.ofono"
+#define OFONO_SERVICE                            "org.ofono"
 #define OFONO_MANAGER_INTERFACE                  "org.ofono.Manager"
 #define OFONO_MANAGER_PATH                       "/"
+
 #define OFONO_MODEM_INTERFACE                    "org.ofono.Modem"
 #define OFONO_NETWORK_REGISTRATION_INTERFACE     "org.ofono.NetworkRegistration"
-#define OFONO_NETWORK_OPERATOR_INTERFACE         "org.ofono.NetworkOperator"
 #define OFONO_DATA_CONNECTION_MANAGER_INTERFACE  "org.ofono.ConnectionManager"
-#define OFONO_SIM_MANAGER_INTERFACE              "org.ofono.SimManager"
-#define OFONO_DATA_CONTEXT_INTERFACE             "org.ofono.ConnectionContext"
-
-#define OFONO_SMS_MANAGER_INTERFACE              "org.ofono.SmsManager"
-#define OFONO_PHONEBOOK_INTERFACE                "org.ofono.Phonebook"
-#define OFONO_MESSAGE_WAITING_INTERFACE          "org.ofono.MessageWaiting"
-
-
 
 QT_BEGIN_NAMESPACE
 
@@ -108,35 +100,15 @@ public:
     QOfonoManagerInterface( QObject *parent = 0);
     ~QOfonoManagerInterface();
 
-     QDBusObjectPath path() const;
-
-    QVariantMap getProperties();
-    bool setProperty(const QString &name, const QDBusVariant &value);
-    QList <QDBusObjectPath> getModems();
-    QDBusObjectPath currentModem();
-
-Q_SIGNALS:
-    void propertyChanged(const QString &, const QDBusVariant &value);
-    void propertyChangedContext(const QString &,const QString &,const QDBusVariant &);
-protected:
-    void connectNotify(const QMetaMethod &signal);
-    void disconnectNotify(const QMetaMethod &signal);
-    QVariant getProperty(const QString &);
-
-};
-
-
-class QOfonoDBusHelper: public QObject, protected QDBusContext
- {
-     Q_OBJECT
- public:
-    QOfonoDBusHelper(QObject *parent = 0);
-    ~QOfonoDBusHelper();
-
- public slots:
-    void propertyChanged(const QString &, const QDBusVariant &);
- Q_SIGNALS:
-    void propertyChangedContext(const QString &,const QString &,const QDBusVariant &);
+    QStringList getModems();
+    QString currentModem();
+signals:
+    void modemChanged();
+private:
+    QStringList modemList;
+private slots:
+    void modemAdded(const QDBusObjectPath &path, const QVariantMap &var);
+    void modemRemoved(const QDBusObjectPath &path);
 };
 
 class QOfonoModemInterface : public QDBusAbstractInterface
@@ -148,27 +120,13 @@ public:
     explicit QOfonoModemInterface(const QString &dbusModemPathName, QObject *parent = 0);
     ~QOfonoModemInterface();
 
-    QVariantMap getProperties();
-    //properties
     bool isPowered();
     bool isOnline();
-    QString getName();
-    QString getManufacturer();
-    QString getModel();
-    QString getRevision();
-    QString getSerial();
-
-    QStringList getFeatures(); //sms, sim
-    QStringList getInterfaces();
-    QString defaultInterface();
-
-protected:
-    void connectNotify(const QMetaMethod &signal);
-    void disconnectNotify(const QMetaMethod &signal);
+private:
+    QVariantMap getProperties();
+    QVariantMap propertiesMap;
     QVariant getProperty(const QString &);
-Q_SIGNALS:
     void propertyChanged(const QString &, const QDBusVariant &value);
-    void propertyChangedContext(const QString &,const QString &,const QDBusVariant &);
 };
 
 
@@ -181,79 +139,15 @@ public:
     explicit QOfonoNetworkRegistrationInterface(const QString &dbusModemPathName, QObject *parent = 0);
     ~QOfonoNetworkRegistrationInterface();
 
-    QVariantMap getProperties();
-
-    //properties
-    QString getStatus();
-    quint16 getLac();
-    quint32 getCellId();
     QString getTechnology();
-    QString getOperatorName();
-    int getSignalStrength();
-    QString getBaseStation();
-    QList <QDBusObjectPath> getOperators();
 
-protected:
-    void connectNotify(const QMetaMethod &signal);
-    void disconnectNotify(const QMetaMethod &signal);
+private:
+    QVariantMap getProperties();
     QVariant getProperty(const QString &);
+    QVariantMap propertiesMap;
 Q_SIGNALS:
     void propertyChanged(const QString &, const QDBusVariant &value);
-    void propertyChangedContext(const QString &,const QString &,const QDBusVariant &);
-
 };
-
-class QOfonoNetworkOperatorInterface : public QDBusAbstractInterface
-{
-    Q_OBJECT
-
-public:
-//modem or operator paths
-    explicit QOfonoNetworkOperatorInterface(const QString &dbusPathName, QObject *parent = 0);
-    ~QOfonoNetworkOperatorInterface();
-
-    QVariantMap getProperties();
-
-    //properties
-    QString getName();
-    QString getStatus();// "unknown", "available", "current" and "forbidden"
-    QString getMcc();
-    QString getMnc();
-    QStringList getTechnologies();
-
-protected:
-    void connectNotify(const QMetaMethod &signal);
-    void disconnectNotify(const QMetaMethod &signal);
-    QVariant getProperty(const QString &);
-};
-
-class QOfonoSimInterface : public QDBusAbstractInterface
-{
-    Q_OBJECT
-
-public:
-
-    explicit QOfonoSimInterface(const QString &dbusModemPathName, QObject *parent = 0);
-    ~QOfonoSimInterface();
-
-    QVariantMap getProperties();
-
-    //properties
-    bool isPresent();
-    QString getHomeMcc();
-    QString getHomeMnc();
-//    QStringList subscriberNumbers();
-//    QMap<QString,QString> serviceNumbers();
-    QString pinRequired();
-    QString lockedPins();
-    QString cardIdentifier();
-
-protected:
-    void connectNotify(const QMetaMethod &signal);
-    void disconnectNotify(const QMetaMethod &signal);
-    QVariant getProperty(const QString &);
-};
-
 
 class QOfonoDataConnectionManagerInterface : public QDBusAbstractInterface
 {
@@ -264,81 +158,19 @@ public:
     explicit QOfonoDataConnectionManagerInterface(const QString &dbusPathName, QObject *parent = 0);
     ~QOfonoDataConnectionManagerInterface();
 
-    QVariantMap getProperties();
-
-    //properties
-    QList<QDBusObjectPath> getPrimaryContexts();
-    bool isAttached();
-    bool isRoamingAllowed();
-    bool isPowered();
-
-    bool setPower(bool on);
-
-protected:
-    void connectNotify(const QMetaMethod &signal);
-    void disconnectNotify(const QMetaMethod &signal);
-    QVariant getProperty(const QString &);
-};
-
-
-class QOfonoConnectionContextInterface : public QDBusAbstractInterface
-{
-    Q_OBJECT
-
-public:
-
-    explicit QOfonoConnectionContextInterface(const QString &dbusPathName, QObject *parent = 0);
-    ~QOfonoConnectionContextInterface();
-
-    QVariantMap getProperties();
-
-    //properties
-    bool isActive();
-    QString getApName();
-    QString getType();
-    QString getName();
-    QVariantMap getSettings();
-    QString getInterface();
-    QString getAddress();
-
-    bool setActive(bool on);
-    bool setApn(const QString &name);
-
-protected:
-    void connectNotify(const QMetaMethod &signal);
-    void disconnectNotify(const QMetaMethod &signal);
-    QVariant getProperty(const QString &);
-    bool setProp(const QString &, const QVariant &var);
-};
-
-class QOfonoSmsInterface : public QDBusAbstractInterface
-{
-    Q_OBJECT
-
-public:
-
-    explicit QOfonoSmsInterface(const QString &dbusModemPathName, QObject *parent = 0);
-    ~QOfonoSmsInterface();
-
-    QVariantMap getProperties();
-    void sendMessage(const QString &to, const QString &message);
-
-    //properties
-    QString  serviceCenterAddress();
-    bool useDeliveryReports();
-    QString bearer();
-
-protected:
-    void connectNotify(const QMetaMethod &signal);
-    void disconnectNotify(const QMetaMethod &signal);
-    QVariant getProperty(const QString &);
-
+    QStringList contexts();
+    bool roamingAllowed();
 Q_SIGNALS:
+    void roamingAllowedChanged(bool);
+private:
+    QVariantMap getProperties();
+    QVariantMap propertiesMap;
+    QVariant getProperty(const QString &);
+    QStringList contextList;
+private slots:
     void propertyChanged(const QString &, const QDBusVariant &value);
-    void propertyChangedContext(const QString &,const QString &,const QDBusVariant &);
-    void immediateMessage(const QString &message, const QVariantMap &info);
-    void incomingMessage(const QString &message, const QVariantMap &info);
 };
+
 
 QT_END_NAMESPACE
 

@@ -51,6 +51,7 @@
 #include <private/qiconloader_p.h>
 #include <private/qguiapplication_p.h>
 #include <qpa/qplatformintegration.h>
+#include <qpa/qplatformdialoghelper.h>
 
 
 QT_BEGIN_NAMESPACE
@@ -77,6 +78,9 @@ QT_BEGIN_NAMESPACE
                                  QPlatformIntegration::styleHint.
 
     \value MouseDoubleClickInterval (int) Mouse double click interval in ms,
+                                    overriding QPlatformIntegration::styleHint.
+
+    \value MousePressAndHoldInterval (int) Mouse press and hold interval in ms,
                                     overriding QPlatformIntegration::styleHint.
 
     \value StartDragDistance (int) Start drag distance,
@@ -425,6 +429,8 @@ QVariant QPlatformTheme::themeHint(ThemeHint hint) const
         return QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::PasswordMaskDelay);
     case QPlatformTheme::PasswordMaskCharacter:
         return QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::PasswordMaskCharacter);
+    case QPlatformTheme::MousePressAndHoldInterval:
+        return QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::MousePressAndHoldInterval);
     default:
         return QPlatformTheme::defaultThemeHint(hint);
     }
@@ -491,6 +497,8 @@ QVariant QPlatformTheme::defaultThemeHint(ThemeHint hint)
     case DialogSnapToDefaultButton:
     case ContextMenuOnMouseRelease:
         return QVariant(false);
+    case MousePressAndHoldInterval:
+        return QVariant(800);
     }
     return QVariant();
 }
@@ -618,6 +626,63 @@ QList<QKeySequence> QPlatformTheme::keyBindings(QKeySequence::StandardKey key) c
         }
     }
     return list;
+}
+
+/*!
+   Returns the text of a standard \a button.
+
+  \since 5.3
+  \sa QPlatformDialogHelper::StandardButton
+ */
+
+QString QPlatformTheme::standardButtonText(int button) const
+{
+    return QPlatformTheme::defaultStandardButtonText(button);
+}
+
+QString QPlatformTheme::defaultStandardButtonText(int button)
+{
+    switch (button) {
+    case QPlatformDialogHelper::Ok:
+        return QCoreApplication::translate("QPlatformTheme", "OK");
+    case QPlatformDialogHelper::Save:
+        return QCoreApplication::translate("QPlatformTheme", "Save");
+    case QPlatformDialogHelper::SaveAll:
+        return QCoreApplication::translate("QPlatformTheme", "Save All");
+    case QPlatformDialogHelper::Open:
+        return QCoreApplication::translate("QPlatformTheme", "Open");
+    case QPlatformDialogHelper::Yes:
+        return QCoreApplication::translate("QPlatformTheme", "&Yes");
+    case QPlatformDialogHelper::YesToAll:
+        return QCoreApplication::translate("QPlatformTheme", "Yes to &All");
+    case QPlatformDialogHelper::No:
+        return QCoreApplication::translate("QPlatformTheme", "&No");
+    case QPlatformDialogHelper::NoToAll:
+        return QCoreApplication::translate("QPlatformTheme", "N&o to All");
+    case QPlatformDialogHelper::Abort:
+        return QCoreApplication::translate("QPlatformTheme", "Abort");
+    case QPlatformDialogHelper::Retry:
+        return QCoreApplication::translate("QPlatformTheme", "Retry");
+    case QPlatformDialogHelper::Ignore:
+        return QCoreApplication::translate("QPlatformTheme", "Ignore");
+    case QPlatformDialogHelper::Close:
+        return QCoreApplication::translate("QPlatformTheme", "Close");
+    case QPlatformDialogHelper::Cancel:
+        return QCoreApplication::translate("QPlatformTheme", "Cancel");
+    case QPlatformDialogHelper::Discard:
+        return QCoreApplication::translate("QPlatformTheme", "Discard");
+    case QPlatformDialogHelper::Help:
+        return QCoreApplication::translate("QPlatformTheme", "Help");
+    case QPlatformDialogHelper::Apply:
+        return QCoreApplication::translate("QPlatformTheme", "Apply");
+    case QPlatformDialogHelper::Reset:
+        return QCoreApplication::translate("QPlatformTheme", "Reset");
+    case QPlatformDialogHelper::RestoreDefaults:
+        return QCoreApplication::translate("QPlatformTheme", "Restore Defaults");
+    default:
+        break;
+    }
+    return QString();
 }
 
 unsigned QPlatformThemePrivate::currentKeyPlatforms()

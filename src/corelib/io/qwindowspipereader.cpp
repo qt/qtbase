@@ -173,7 +173,8 @@ bool QWindowsPipeReader::canReadLine() const
     \internal
     Will be called whenever the read operation completes.
  */
-void QWindowsPipeReader::notified(DWORD numberOfBytesRead, DWORD errorCode, OVERLAPPED *notifiedOverlapped)
+void QWindowsPipeReader::notified(quint32 numberOfBytesRead, quint32 errorCode,
+                                  OVERLAPPED *notifiedOverlapped)
 {
     if (&overlapped != notifiedOverlapped)
         return;

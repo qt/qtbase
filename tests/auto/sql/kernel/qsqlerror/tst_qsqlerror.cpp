@@ -120,6 +120,24 @@ void tst_QSqlError::construction()
 
    QSqlError obj4;
    QVERIFY(!obj4.isValid());
+
+   QSqlError obj5(QStringLiteral("drivertext"), QStringLiteral("databasetext"),
+                  QSqlError::UnknownError, QStringLiteral("123"));
+   QCOMPARE(obj5.driverText(), QString("drivertext"));
+   QCOMPARE(obj5.databaseText(), QString("databasetext"));
+   QCOMPARE(obj5.type(), QSqlError::UnknownError);
+   QCOMPARE(obj5.number(), 123);
+   QCOMPARE(obj5.nativeErrorCode(), QStringLiteral("123"));
+   QVERIFY(obj5.isValid());
+
+   QSqlError obj6(QStringLiteral("drivertext"), QStringLiteral("databasetext"),
+                  QSqlError::UnknownError, QStringLiteral("Err123"));
+   QCOMPARE(obj6.driverText(), QString("drivertext"));
+   QCOMPARE(obj6.databaseText(), QString("databasetext"));
+   QCOMPARE(obj6.type(), QSqlError::UnknownError);
+   QCOMPARE(obj6.number(), 0);
+   QCOMPARE(obj6.nativeErrorCode(), QStringLiteral("Err123"));
+   QVERIFY(obj6.isValid());
 }
 
 void tst_QSqlError::operators()

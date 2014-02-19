@@ -55,13 +55,28 @@ class tst_QHash : public QObject
 
 private slots:
     void initTestCase();
+    void qhash_current_data() { data(); }
+    void qhash_current() { qhash_template<QString>(); }
+    void qhash_qt50_data() { data(); }
+    void qhash_qt50() { qhash_template<Qt50String>(); }
     void qhash_qt4_data() { data(); }
-    void qhash_qt4();
-    void javaString_data() { data(); }
-    void javaString();
+    void qhash_qt4() { qhash_template<Qt4String>(); }
+    void qhash_javaString_data() { data(); }
+    void qhash_javaString() { qhash_template<JavaString>(); }
+
+    void hashing_current_data() { data(); }
+    void hashing_current() { hashing_template<QString>(); }
+    void hashing_qt50_data() { data(); }
+    void hashing_qt50()  { hashing_template<Qt50String>(); }
+    void hashing_qt4_data() { data(); }
+    void hashing_qt4() { hashing_template<Qt4String>(); }
+    void hashing_javaString_data() { data(); }
+    void hashing_javaString() { hashing_template<JavaString>(); }
 
 private:
     void data();
+    template <typename String> void qhash_template();
+    template <typename String> void hashing_template();
 
     QStringList smallFilePaths;
     QStringList uuids;
@@ -76,7 +91,7 @@ private:
 void tst_QHash::initTestCase()
 {
     // small list of file paths
-    QFile smallPathsData("paths_small_data.txt");
+    QFile smallPathsData(QFINDTESTDATA("paths_small_data.txt"));
     QVERIFY(smallPathsData.open(QIODevice::ReadOnly));
     smallFilePaths = QString::fromLatin1(smallPathsData.readAll()).split(QLatin1Char('\n'));
     QVERIFY(!smallFilePaths.isEmpty());
@@ -133,12 +148,12 @@ void tst_QHash::data()
     QTest::newRow("numbers") << numbers;
 }
 
-void tst_QHash::qhash_qt4()
+template <typename String> void tst_QHash::qhash_template()
 {
     QFETCH(QStringList, items);
-    QHash<Qt4String, int> hash;
+    QHash<String, int> hash;
 
-    QList<Qt4String> realitems;
+    QList<String> realitems;
     foreach (const QString &s, items)
         realitems.append(s);
 
@@ -149,22 +164,21 @@ void tst_QHash::qhash_qt4()
     }
 }
 
-void tst_QHash::javaString()
+template <typename String> void tst_QHash::hashing_template()
 {
+    // just the hashing function
     QFETCH(QStringList, items);
-    QHash<JavaString, int> hash;
 
-    QList<JavaString> realitems;
+    QVector<String> realitems;
+    realitems.reserve(items.size());
     foreach (const QString &s, items)
         realitems.append(s);
 
     QBENCHMARK {
-        for (int i = 0, n = realitems.size(); i != n; ++i) {
-            hash[realitems.at(i)] = i;
-        }
+        for (int i = 0, n = realitems.size(); i != n; ++i)
+            (void)qHash(realitems.at(i));
     }
 }
-
 
 QTEST_MAIN(tst_QHash)
 

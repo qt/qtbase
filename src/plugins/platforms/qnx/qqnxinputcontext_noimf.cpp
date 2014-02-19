@@ -1,6 +1,6 @@
 /***************************************************************************
 **
-** Copyright (C) 2011 - 2012 Research In Motion
+** Copyright (C) 2013 BlackBerry Limited. All rights reserved.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -46,6 +46,7 @@
 
 #include <QtCore/QDebug>
 #include <QtGui/QGuiApplication>
+#include <QtGui/QInputMethodEvent>
 
 #if defined(QQNXINPUTCONTEXT_DEBUG)
 #define qInputContextDebug qDebug
@@ -179,7 +180,11 @@ void QQnxInputContext::setFocusObject(QObject *object)
         if (m_inputPanelVisible)
             hideInputPanel();
     } else {
-        m_virtualKeyboard.setInputHintsFromObject(object);
+        QInputMethodQueryEvent query(Qt::ImHints);
+        QCoreApplication::sendEvent(object, &query);
+        int inputHints = query.value(Qt::ImHints).toInt();
+
+        m_virtualKeyboard.setInputHints(inputHints);
 
         if (!m_inputPanelVisible)
             showInputPanel();

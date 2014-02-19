@@ -44,6 +44,10 @@
 
 #include <QtCore/qglobal.h>
 
+#if defined(__OBJC__) && !defined(__cplusplus)
+#  warning "File built in Objective-C mode (.m), but using Qt requires Objective-C++ (.mm)"
+#endif
+
 QT_BEGIN_NAMESPACE
 
 
@@ -64,7 +68,7 @@ Qt {
     Q_ENUMS(ArrowType ToolButtonStyle PenStyle PenCapStyle PenJoinStyle BrushStyle)
     Q_ENUMS(FillRule MaskMode BGMode ClipOperation SizeMode)
     Q_ENUMS(Axis Corner Edge LayoutDirection SizeHint Orientation DropAction)
-    Q_FLAGS(Alignment Orientations DropActions)
+    Q_FLAGS(Alignment Orientations DropActions Edges)
     Q_FLAGS(DockWidgetAreas ToolBarAreas)
     Q_ENUMS(DockWidgetArea ToolBarArea)
     Q_ENUMS(TextFormat)
@@ -512,6 +516,9 @@ public:
         AA_SynthesizeTouchForUnhandledMouseEvents = 11,
         AA_SynthesizeMouseForUnhandledTouchEvents = 12,
         AA_UseHighDpiPixmaps = 13,
+        AA_ForceRasterWidgets = 14,
+        AA_UseDesktopOpenGL = 15,
+        AA_UseOpenGLES = 16,
 
         // Add new attributes before this line
         AA_AttributeCount
@@ -998,6 +1005,10 @@ public:
         Key_ChannelUp = 0x01000118,
         Key_ChannelDown = 0x01000119,
 
+        Key_Guide    = 0x0100011a,
+        Key_Info     = 0x0100011b,
+        Key_Settings = 0x0100011c,
+
         Key_MediaLast = 0x0100ffff,
 
         // Keypad navigation keys
@@ -1015,6 +1026,7 @@ public:
         //Key_Jisho   = 0x01020007, // IME: Dictionary key
         //Key_Oyayubi_Left = 0x01020008, // IME: Left Oyayubi key
         //Key_Oyayubi_Right = 0x01020009, // IME: Right Oyayubi key
+        Key_Exit    = 0x0102000a,
 
         // Device keys
         Key_Context1 = 0x01100000,
@@ -1235,6 +1247,8 @@ public:
         BottomEdge = 0x00008
     };
 
+    Q_DECLARE_FLAGS(Edges, Edge)
+
     enum ConnectionType {
         AutoConnection,
         DirectConnection,
@@ -1317,6 +1331,10 @@ public:
         ImAnchorPosition = 0x80,
         ImHints = 0x100,
         ImPreferredLanguage = 0x200,
+
+        ImAbsolutePosition = 0x400,
+        ImTextBeforeCursor = 0x800,
+        ImTextAfterCursor = 0x1000,
 
         ImPlatformData = 0x80000000,
         ImQueryInput = ImCursorRectangle | ImCursorPosition | ImSurroundingText |
@@ -1596,6 +1614,19 @@ public:
         ScrollUpdate,
         ScrollEnd
     };
+
+    enum MouseEventSource {
+        MouseEventNotSynthesized,
+        MouseEventSynthesizedBySystem,
+        MouseEventSynthesizedByQt
+    };
+
+    enum MouseEventFlag {
+        MouseEventCreatedDoubleClick = 0x01,
+        MouseEventFlagMask = 0xFF
+    };
+    Q_DECLARE_FLAGS(MouseEventFlags, MouseEventFlag)
+
 }
 #ifdef Q_MOC_RUN
  ;
@@ -1606,6 +1637,7 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::Orientations)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::KeyboardModifiers)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::WindowFlags)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::Alignment)
+Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::Edges)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::ImageConversionFlags)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::DockWidgetAreas)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::ToolBarAreas)
@@ -1618,6 +1650,7 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::TextInteractionFlags)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::InputMethodQueries)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::InputMethodHints)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::TouchPointStates)
+Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::MouseEventFlags)
 #ifndef QT_NO_GESTURES
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::GestureFlags)
 #endif

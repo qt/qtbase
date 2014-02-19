@@ -93,8 +93,8 @@
     \page paintsystem-devices.html
     \title Paint Devices and Backends
 
-	\contentspage The Paint System
-	\nextpage Drawing and Filling
+    \contentspage The Paint System
+    \nextpage Drawing and Filling
 
     \section1 Creating a Paint Device
 

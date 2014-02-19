@@ -82,6 +82,8 @@ private:
     friend class QDebug;
 };
 
+class QLoggingCategory;
+
 class Q_CORE_EXPORT QMessageLogger
 {
     Q_DISABLE_COPY(QMessageLogger)
@@ -98,6 +100,15 @@ public:
     void warning(const char *msg, ...) const Q_ATTRIBUTE_FORMAT_PRINTF(2, 3);
     void critical(const char *msg, ...) const Q_ATTRIBUTE_FORMAT_PRINTF(2, 3);
 
+    typedef const QLoggingCategory &(*CategoryFunction)();
+
+    void debug(const QLoggingCategory &cat, const char *msg, ...) const Q_ATTRIBUTE_FORMAT_PRINTF(3, 4);
+    void debug(CategoryFunction catFunc, const char *msg, ...) const Q_ATTRIBUTE_FORMAT_PRINTF(3, 4);
+    void warning(const QLoggingCategory &cat, const char *msg, ...) const Q_ATTRIBUTE_FORMAT_PRINTF(3, 4);
+    void warning(CategoryFunction catFunc, const char *msg, ...) const Q_ATTRIBUTE_FORMAT_PRINTF(3, 4);
+    void critical(const QLoggingCategory &cat, const char *msg, ...) const Q_ATTRIBUTE_FORMAT_PRINTF(3, 4);
+    void critical(CategoryFunction catFunc, const char *msg, ...) const Q_ATTRIBUTE_FORMAT_PRINTF(3, 4);
+
 #ifndef Q_CC_MSVC
     Q_NORETURN
 #endif
@@ -105,8 +116,14 @@ public:
 
 #ifndef QT_NO_DEBUG_STREAM
     QDebug debug() const;
+    QDebug debug(const QLoggingCategory &cat) const;
+    QDebug debug(CategoryFunction catFunc) const;
     QDebug warning() const;
+    QDebug warning(const QLoggingCategory &cat) const;
+    QDebug warning(CategoryFunction catFunc) const;
     QDebug critical() const;
+    QDebug critical(const QLoggingCategory &cat) const;
+    QDebug critical(CategoryFunction catFunc) const;
 
     QNoDebug noDebug() const Q_DECL_NOTHROW;
 #endif // QT_NO_DEBUG_STREAM

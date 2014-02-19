@@ -59,12 +59,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_OPENGL_ES
-#define DEFAULT_FORMAT GL_RGBA8
-#else
-#define DEFAULT_FORMAT GL_RGBA
-#endif
-
 class QOpenGLFramebufferObjectFormatPrivate
 {
 public:
@@ -73,9 +67,13 @@ public:
           samples(0),
           attachment(QOpenGLFramebufferObject::NoAttachment),
           target(GL_TEXTURE_2D),
-          internal_format(DEFAULT_FORMAT),
           mipmap(false)
     {
+#ifndef QT_OPENGL_ES_2
+        internal_format = QOpenGLFunctions::isES() ? GL_RGBA : GL_RGBA8;
+#else
+        internal_format = GL_RGBA;
+#endif
     }
     QOpenGLFramebufferObjectFormatPrivate
             (const QOpenGLFramebufferObjectFormatPrivate *other)
@@ -116,6 +114,7 @@ public:
               QOpenGLFramebufferObject::Attachment attachment,
               GLenum internal_format, GLenum texture_target,
               GLint samples = 0, bool mipmap = false);
+    void initTexture(GLenum target, GLenum internal_format, const QSize &size, bool mipmap);
     void initAttachments(QOpenGLContext *ctx, QOpenGLFramebufferObject::Attachment attachment);
 
     bool checkFramebufferStatus(QOpenGLContext *ctx) const;

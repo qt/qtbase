@@ -72,6 +72,7 @@ public:
         , profile(QSurfaceFormat::NoProfile)
         , major(2)
         , minor(0)
+        , swapInterval(1) // default to vsync
     {
     }
 
@@ -89,7 +90,8 @@ public:
           renderableType(other->renderableType),
           profile(other->profile),
           major(other->major),
-          minor(other->minor)
+          minor(other->minor),
+          swapInterval(other->swapInterval)
     {
     }
 
@@ -107,6 +109,7 @@ public:
     QSurfaceFormat::OpenGLContextProfile profile;
     int major;
     int minor;
+    int swapInterval;
 };
 
 /*!
@@ -311,9 +314,15 @@ void QSurfaceFormat::setSamples(int numSamples)
 }
 
 /*!
-    Sets the format option to \a opt.
+    \obsolete
+    \overload
 
-    \sa testOption()
+    Use setOption(QSurfaceFormat::FormatOption, bool) or setOptions() instead.
+
+    Sets the format options to the OR combination of \a opt and the
+    current format options.
+
+    \sa options(), testOption()
 */
 void QSurfaceFormat::setOption(QSurfaceFormat::FormatOptions opt)
 {
@@ -325,13 +334,76 @@ void QSurfaceFormat::setOption(QSurfaceFormat::FormatOptions opt)
 }
 
 /*!
-    Returns \c true if format option \a opt is set; otherwise returns \c false.
+    \obsolete
+    \overload
+
+    Use testOption(QSurfaceFormat::FormatOption) instead.
+
+    Returns \c true if any of the options in \a opt is currently set
+    on this object; otherwise returns false.
 
     \sa setOption()
 */
 bool QSurfaceFormat::testOption(QSurfaceFormat::FormatOptions opt) const
 {
     return d->opts & opt;
+}
+
+/*!
+    \since 5.3
+
+    Sets the format options to \a options.
+
+    \sa options(), testOption()
+*/
+void QSurfaceFormat::setOptions(QSurfaceFormat::FormatOptions options)
+{
+    if (int(d->opts) != int(options)) {
+        detach();
+        d->opts = options;
+    }
+}
+
+/*!
+    \since 5.3
+
+    Sets the format option \a option if \a on is true; otherwise, clears the option.
+
+    \sa setOptions(), options(), testOption()
+*/
+void QSurfaceFormat::setOption(QSurfaceFormat::FormatOption option, bool on)
+{
+    if (testOption(option) == on)
+        return;
+    detach();
+    if (on)
+        d->opts |= option;
+    else
+        d->opts &= ~option;
+}
+
+/*!
+    \since 5.3
+
+    Returns true if the format option \a option is set; otherwise returns false.
+
+    \sa options(), testOption()
+*/
+bool QSurfaceFormat::testOption(QSurfaceFormat::FormatOption option) const
+{
+    return d->opts & option;
+}
+
+/*!
+    \since 5.3
+
+    Returns the currently set format options.
+
+    \sa setOption(), setOptions(), testOption()
+*/
+QSurfaceFormat::FormatOptions QSurfaceFormat::options() const
+{
+    return d->opts;
 }
 
 /*!
@@ -607,6 +679,46 @@ void QSurfaceFormat::setVersion(int major, int minor)
 }
 
 /*!
+    Sets the preferred swap interval. The swap interval specifies the
+    minimum number of video frames that are displayed before a buffer
+    swap occurs. This can be used to sync the GL drawing into a window
+    to the vertical refresh of the screen.
+
+    Setting an \a interval value of 0 will turn the vertical refresh
+    syncing off, any value higher than 0 will turn the vertical
+    syncing on. Setting \a interval to a higher value, for example 10,
+    results in having 10 vertical retraces between every buffer swap.
+
+    The default interval is 1.
+
+    Changing the swap interval may not be supported by the underlying
+    platform. In this case, the request will be silently ignored.
+
+    \since 5.3
+
+    \sa swapInterval()
+ */
+void QSurfaceFormat::setSwapInterval(int interval)
+{
+    if (d->swapInterval != interval) {
+        detach();
+        d->swapInterval = interval;
+    }
+}
+
+/*!
+    Returns the swap interval.
+
+    \since 5.3
+
+    \sa setSwapInterval()
+*/
+int QSurfaceFormat::swapInterval() const
+{
+    return d->swapInterval;
+}
+
+/*!
     Returns \c true if all the options of the two QSurfaceFormat objects
     \a a and \a b are equal.
 
@@ -625,7 +737,8 @@ bool operator==(const QSurfaceFormat& a, const QSurfaceFormat& b)
         && a.d->swapBehavior == b.d->swapBehavior
         && a.d->profile == b.d->profile
         && a.d->major == b.d->major
-        && a.d->minor == b.d->minor);
+        && a.d->minor == b.d->minor
+        && a.d->swapInterval == b.d->swapInterval);
 }
 
 /*!
@@ -655,6 +768,7 @@ QDebug operator<<(QDebug dbg, const QSurfaceFormat &f)
                   << ", stencilBufferSize " << d->stencilSize
                   << ", samples " << d->numSamples
                   << ", swapBehavior " << d->swapBehavior
+                  << ", swapInterval " << d->swapInterval
                   << ", profile  " << d->profile
                   << ')';
 

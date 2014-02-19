@@ -17,8 +17,7 @@ HEADERS += thread/qmutex.h \
            thread/qfuturesynchronizer.h \
            thread/qfuturewatcher.h \
            thread/qbasicatomic.h \
-           thread/qgenericatomic.h \
-           thread/qoldbasicatomic.h
+           thread/qgenericatomic.h
 
 # private headers
 HEADERS += thread/qmutex_p.h \

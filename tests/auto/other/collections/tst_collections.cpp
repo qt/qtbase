@@ -210,231 +210,231 @@ void tst_Collections::typeinfo()
 void tst_Collections::list()
 {
     {
-	QList<int> list;
-	QVERIFY(list.isEmpty());
-	list.append(1);
-	QVERIFY(list.size() == 1);
+        QList<int> list;
+        QVERIFY(list.isEmpty());
+        list.append(1);
+        QVERIFY(list.size() == 1);
 
-	QVERIFY(*list.begin() == 1);
+        QVERIFY(*list.begin() == 1);
 
-	list.push_back(2);
-	list += (3);
-	list << 4 << 5 << 6;
-	QVERIFY(!list.isEmpty());
-	QVERIFY(list.size() == 6);
-	QVERIFY(list.end() - list.begin() == list.size());
+        list.push_back(2);
+        list += (3);
+        list << 4 << 5 << 6;
+        QVERIFY(!list.isEmpty());
+        QVERIFY(list.size() == 6);
+        QVERIFY(list.end() - list.begin() == list.size());
 
 #if !defined(Q_CC_MSVC) && !defined(Q_CC_SUN)
-	QVERIFY(std::binary_search(list.begin(), list.end(), 2) == true);
-	QVERIFY(std::binary_search(list.begin(), list.end(), 9) == false);
+        QVERIFY(std::binary_search(list.begin(), list.end(), 2) == true);
+        QVERIFY(std::binary_search(list.begin(), list.end(), 9) == false);
 #endif
-	QVERIFY(qBinaryFind(list.begin(), list.end(), 2) == list.begin() + 1);
-	QVERIFY(qLowerBound(list.begin(), list.end(), 2) == list.begin() + 1);
+        QVERIFY(qBinaryFind(list.begin(), list.end(), 2) == list.begin() + 1);
+        QVERIFY(qLowerBound(list.begin(), list.end(), 2) == list.begin() + 1);
         QVERIFY(qUpperBound(list.begin(), list.end(), 2) == list.begin() + 2);
-	QVERIFY(qBinaryFind(list.begin(), list.end(), 9) == list.end());
-	QVERIFY(qLowerBound(list.begin(), list.end(), 9) == list.end());
+        QVERIFY(qBinaryFind(list.begin(), list.end(), 9) == list.end());
+        QVERIFY(qLowerBound(list.begin(), list.end(), 9) == list.end());
         QVERIFY(qUpperBound(list.begin(), list.end(), 9) == list.end());
-	{
-	    int sum = 0;
-	    QListIterator<int> i(list);
-	    while (i.hasNext())
-		sum += i.next();
-	    QVERIFY(sum == 21);
-	}
+        {
+            int sum = 0;
+            QListIterator<int> i(list);
+            while (i.hasNext())
+                sum += i.next();
+            QVERIFY(sum == 21);
+        }
 
-	{
-	    QList<int> list1;
+        {
+            QList<int> list1;
             list1 << 1 << 2 << 3 << 5 << 7 << 8 << 9;
-	    QList<int> list2 = list1;
+            QList<int> list2 = list1;
 
-	    QMutableListIterator<int> i1(list1);
+            QMutableListIterator<int> i1(list1);
             while (i1.hasNext()) {
-		if (i1.next() % 2 != 0)
-		    i1.remove();
-	    }
+                if (i1.next() % 2 != 0)
+                    i1.remove();
+            }
 
-	    QMutableListIterator<int> i2(list2);
+            QMutableListIterator<int> i2(list2);
             i2.toBack();
             while (i2.hasPrevious()) {
-		if (i2.previous() % 2 != 0)
-		    i2.remove();
+                if (i2.previous() % 2 != 0)
+                    i2.remove();
             }
             QVERIFY(list1.size() == 2);
             QVERIFY(list2.size() == 2);
             QVERIFY(list1 == list2);
         }
 
-	{
-	    int sum = 0;
-	    for (int i = 0; i < list.size(); ++i)
-		sum += list[i];
-	    QVERIFY(sum == 21);
-	}
-	{
-	    int sum = 0;
-	    QList<int>::const_iterator i = list.begin();
-	    while (i != list.end())
-		sum += *i++;
-	    QVERIFY(sum == 21);
-	}
-	{
-	    int sum = 0;
-	    QList<int>::ConstIterator i = list.begin();
-	    while (i != list.end())
-		sum += *i++;
-	    QVERIFY(sum == 21);
-	}
-	{
-	    QList<int>::Iterator i = list.begin();
+        {
+            int sum = 0;
+            for (int i = 0; i < list.size(); ++i)
+                sum += list[i];
+            QVERIFY(sum == 21);
+        }
+        {
+            int sum = 0;
+            QList<int>::const_iterator i = list.begin();
+            while (i != list.end())
+                sum += *i++;
+            QVERIFY(sum == 21);
+        }
+        {
+            int sum = 0;
+            QList<int>::ConstIterator i = list.begin();
+            while (i != list.end())
+                sum += *i++;
+            QVERIFY(sum == 21);
+        }
+        {
+            QList<int>::Iterator i = list.begin();
             i += 2;
             QCOMPARE(*i, 3);
             i -= 1;
             QCOMPARE(*i, 2);
-	}
-	{
-	    QList<int>::ConstIterator i = list.begin();
+        }
+        {
+            QList<int>::ConstIterator i = list.begin();
             i += 2;
             QCOMPARE(*i, 3);
             i -= 1;
             QCOMPARE(*i, 2);
-	}
-	{
-	    int sum = 0;
-	    int i;
-	    for (i = 0; i < list.size(); ++i)
-		list[i] = list[i] +1;
-	    for (i = 0; i < list.size(); ++i)
-		sum += list[i];
-	    QVERIFY(sum == 21 + list.size());
-	}
-	{
-	    int sum = 0;
-	    int i;
-	    for (i = 0; i < list.size(); ++i)
-		--list[i];
-	    for (i = 0; i < list.size(); ++i)
-		sum += list[i];
-	    QVERIFY(sum == 21);
-	}
-	{
-	    QMutableListIterator<int> i(list);
-	    while (i.hasNext())
-		i.setValue(2*i.next());
-	}
-	{
-	    int sum = 0;
-	    QListIterator<int> i(list);
-	    i.toBack();
-	    while (i.hasPrevious())
-		sum += i.previous();
-	    QVERIFY(sum == 2*21);
-	}
-	{
-	    QMutableListIterator<int> i(list);
-	    i.toBack();
-	    while (i.hasPrevious())
-		i.setValue(2*i.previous());
-	}
-	{
-	    int sum = 0;
-	    QListIterator<int> i(list);
-	    i.toBack();
-	    while (i.hasPrevious())
-		sum += i.previous();
-	    QVERIFY(sum == 2*2*21);
-	}
-	{
-	    QMutableListIterator<int> i(list);
-	    while (i.hasNext()) {
-		int a = i.next();
-		i.insert(a);
-	    }
-	}
-	{
-	    int sum = 0;
-	    QList<int>::iterator i = list.begin();
-	    while (i != list.end())
-		sum += *i++;
-	    QVERIFY(sum == 2*2*2*21);
-	}
-	{
-	    int duplicates = 0;
-	    QListIterator<int> i(list);
-	    while (i.hasNext()) {
-		int a = i.next();
-		if (i.hasNext() && a == i.peekNext())
-		    duplicates++;
-	    }
-	    QVERIFY(duplicates == 6);
-	}
-	{
-	    int duplicates = 0;
-	    QListIterator<int> i(list);
-	    i.toBack();
-	    while (i.hasPrevious()) {
-		int a = i.previous();
-		if (i.hasPrevious() && a == i.peekPrevious())
-		    duplicates++;
-	    }
-	    QVERIFY(duplicates == 6);
-	}
-	{
-	    QMutableListIterator<int> i(list);
-	    while (i.hasNext()) {
-		int a = i.next();
-		if (i.hasNext() &&
-		     i.peekNext() == a)
-		    i.remove();
-	    }
-	}
-	{
-	    int duplicates = 0;
-	    QMutableListIterator<int> i = list;
-	    i.toBack();
-	    while (i.hasPrevious()) {
-		int a = i.previous();
-		if (i.hasPrevious() && a == i.peekPrevious())
-		    duplicates++;
-	    }
-	    QVERIFY(duplicates == 0);
-	}
-	{
-	    QVERIFY(list.size() == 6);
-	    QMutableListIterator<int> i = list;
-	    while (i.hasNext()) {
-		int a = i.peekNext();
-		i.insert(42);
-		QVERIFY(i.peekPrevious() == 42 && i.peekNext() == a);
-		i.next();
-	    }
-	    QVERIFY(list.size() == 12);
-	    i.toFront();
-	    while (i.findNext(42))
-		i.remove();
-	}
-	{
-	    QList<int> l;
-	    l << 4 << 8 << 12 << 16 << 20 << 24;
-	    QVERIFY(l == list);
-	    QList<int> copy = list;
-	    list += list;
-	    QVERIFY(l != list && l.size() == list.size()/2 && l == copy);
-	    l += copy;
-	    QVERIFY(l == list);
-	    list = copy;
-	}
-	{
-	    QList<int> copy = list;
-	    list << 8;
-	    QVERIFY(list.indexOf(8) == 1);
-	    QVERIFY(list.indexOf(8, list.indexOf(8)+1) == 6);
-	    int a = list.indexOf(8);
-	    QVERIFY(list.count(8) == 2);
-	    int r = list.removeAll(8);
-	    QVERIFY(r == 2);
-	    list.insert(a, 8);
-	    QVERIFY(list == copy);
-	}
+        }
+        {
+            int sum = 0;
+            int i;
+            for (i = 0; i < list.size(); ++i)
+                list[i] = list[i] +1;
+            for (i = 0; i < list.size(); ++i)
+                sum += list[i];
+            QVERIFY(sum == 21 + list.size());
+        }
+        {
+            int sum = 0;
+            int i;
+            for (i = 0; i < list.size(); ++i)
+                --list[i];
+            for (i = 0; i < list.size(); ++i)
+                sum += list[i];
+            QVERIFY(sum == 21);
+        }
+        {
+            QMutableListIterator<int> i(list);
+            while (i.hasNext())
+                i.setValue(2*i.next());
+        }
+        {
+            int sum = 0;
+            QListIterator<int> i(list);
+            i.toBack();
+            while (i.hasPrevious())
+                sum += i.previous();
+            QVERIFY(sum == 2*21);
+        }
+        {
+            QMutableListIterator<int> i(list);
+            i.toBack();
+            while (i.hasPrevious())
+                i.setValue(2*i.previous());
+        }
+        {
+            int sum = 0;
+            QListIterator<int> i(list);
+            i.toBack();
+            while (i.hasPrevious())
+                sum += i.previous();
+            QVERIFY(sum == 2*2*21);
+        }
+        {
+            QMutableListIterator<int> i(list);
+            while (i.hasNext()) {
+                int a = i.next();
+                i.insert(a);
+            }
+        }
+        {
+            int sum = 0;
+            QList<int>::iterator i = list.begin();
+            while (i != list.end())
+                sum += *i++;
+            QVERIFY(sum == 2*2*2*21);
+        }
+        {
+            int duplicates = 0;
+            QListIterator<int> i(list);
+            while (i.hasNext()) {
+                int a = i.next();
+                if (i.hasNext() && a == i.peekNext())
+                    duplicates++;
+            }
+            QVERIFY(duplicates == 6);
+        }
+        {
+            int duplicates = 0;
+            QListIterator<int> i(list);
+            i.toBack();
+            while (i.hasPrevious()) {
+                int a = i.previous();
+                if (i.hasPrevious() && a == i.peekPrevious())
+                    duplicates++;
+            }
+            QVERIFY(duplicates == 6);
+        }
+        {
+            QMutableListIterator<int> i(list);
+            while (i.hasNext()) {
+                int a = i.next();
+                if (i.hasNext() &&
+                     i.peekNext() == a)
+                    i.remove();
+            }
+        }
+        {
+            int duplicates = 0;
+            QMutableListIterator<int> i = list;
+            i.toBack();
+            while (i.hasPrevious()) {
+                int a = i.previous();
+                if (i.hasPrevious() && a == i.peekPrevious())
+                    duplicates++;
+            }
+            QVERIFY(duplicates == 0);
+        }
+        {
+            QVERIFY(list.size() == 6);
+            QMutableListIterator<int> i = list;
+            while (i.hasNext()) {
+                int a = i.peekNext();
+                i.insert(42);
+                QVERIFY(i.peekPrevious() == 42 && i.peekNext() == a);
+                i.next();
+            }
+            QVERIFY(list.size() == 12);
+            i.toFront();
+            while (i.findNext(42))
+                i.remove();
+        }
+        {
+            QList<int> l;
+            l << 4 << 8 << 12 << 16 << 20 << 24;
+            QVERIFY(l == list);
+            QList<int> copy = list;
+            list += list;
+            QVERIFY(l != list && l.size() == list.size()/2 && l == copy);
+            l += copy;
+            QVERIFY(l == list);
+            list = copy;
+        }
+        {
+            QList<int> copy = list;
+            list << 8;
+            QVERIFY(list.indexOf(8) == 1);
+            QVERIFY(list.indexOf(8, list.indexOf(8)+1) == 6);
+            int a = list.indexOf(8);
+            QVERIFY(list.count(8) == 2);
+            int r = list.removeAll(8);
+            QVERIFY(r == 2);
+            list.insert(a, 8);
+            QVERIFY(list == copy);
+        }
         {
             QList<QString> list;
             list << "one" << "two" << "three" << "four" << "five" << "six";
@@ -458,73 +458,73 @@ void tst_Collections::list()
             QVERIFY(!list.removeOne("one"));
             QVERIFY(list.isEmpty());
         }
-	{
-	    QList<int> copy = list;
-	    list << 8;
-	    QVERIFY(list.lastIndexOf(8) == 6);
-	    QVERIFY(list.lastIndexOf(8, list.lastIndexOf(8)-1) == 1);
-	    list = copy;
-	}
-	{
-	    QList<int> copy = list;
-	    list.insert(3, 999);
-	    QVERIFY(list[3] == 999);
-	    list.replace(3, 222);
-	    QVERIFY(list[3] == 222);
-	    QVERIFY(list.contains(222) && ! list.contains(999));
-	    list.removeAt(3);
-	    list = copy;
-	    QVERIFY(list == copy);
-	}
-	{
-	    list.clear();
-	    QVERIFY(list.isEmpty());
-	    QVERIFY(list.begin() == list.end());
-	    QListIterator<int> i(list);
-	    QVERIFY(!i.hasNext() && !i.hasPrevious());
-	}
-	{
-	    QList<int> l1;
-	    QList<int> l2;
-	    l1 << 1 << 2 << 3;
-	    l2 << 4 << 5 << 6;
-	    QList<int> l3 = l1 + l2;
-	    l1 += l2;
-	    QVERIFY(l3 == l1);
-	}
-	{
-	    QList<int> list;
-	    QVERIFY(list.isEmpty());
-	    list.append(1);
-	    QList<int> list2;
-	    list2 = list;
-	    list2.clear();
-	    QVERIFY(list2.size() == 0);
-	    QVERIFY(list.size() == 1);
-	}
-	{
-	    QList<int> list;
-	    list.append(1);
-	    list = list;
-	    QVERIFY(list.size() == 1);
-	}
+        {
+            QList<int> copy = list;
+            list << 8;
+            QVERIFY(list.lastIndexOf(8) == 6);
+            QVERIFY(list.lastIndexOf(8, list.lastIndexOf(8)-1) == 1);
+            list = copy;
+        }
+        {
+            QList<int> copy = list;
+            list.insert(3, 999);
+            QVERIFY(list[3] == 999);
+            list.replace(3, 222);
+            QVERIFY(list[3] == 222);
+            QVERIFY(list.contains(222) && ! list.contains(999));
+            list.removeAt(3);
+            list = copy;
+            QVERIFY(list == copy);
+        }
+        {
+            list.clear();
+            QVERIFY(list.isEmpty());
+            QVERIFY(list.begin() == list.end());
+            QListIterator<int> i(list);
+            QVERIFY(!i.hasNext() && !i.hasPrevious());
+        }
+        {
+            QList<int> l1;
+            QList<int> l2;
+            l1 << 1 << 2 << 3;
+            l2 << 4 << 5 << 6;
+            QList<int> l3 = l1 + l2;
+            l1 += l2;
+            QVERIFY(l3 == l1);
+        }
+        {
+            QList<int> list;
+            QVERIFY(list.isEmpty());
+            list.append(1);
+            QList<int> list2;
+            list2 = list;
+            list2.clear();
+            QVERIFY(list2.size() == 0);
+            QVERIFY(list.size() == 1);
+        }
+        {
+            QList<int> list;
+            list.append(1);
+            list = list;
+            QVERIFY(list.size() == 1);
+        }
     }
     {
-	QList<void*> list;
-	list.append(0);
-	list.append((void*)42);
-	QCOMPARE(list.size(), 2);
-	QCOMPARE(list.at(0), (void*)0);
-	QCOMPARE(list.at(1), (void*)42);
+        QList<void*> list;
+        list.append(0);
+        list.append((void*)42);
+        QCOMPARE(list.size(), 2);
+        QCOMPARE(list.at(0), (void*)0);
+        QCOMPARE(list.at(1), (void*)42);
     }
 
     {
-	QVector<QString> vector(5);
+        QVector<QString> vector(5);
         vector[0] = "99";
         vector[4] ="100";
         QList<QString> list = vector.toList();
 
-	QVERIFY(list.size() == 5);
+        QVERIFY(list.size() == 5);
         QVERIFY(list.at(0) == "99");
         QVERIFY(list.at(4) == "100");
         list[0] = "10";
@@ -783,145 +783,145 @@ void tst_Collections::list()
 void tst_Collections::linkedList()
 {
     {
-	QLinkedList<int> list;
-	QVERIFY(list.isEmpty());
-	list.append(1);
-	list.push_back(2);
-	list += (3);
-	list << 4 << 5 << 6;
-	QVERIFY(!list.isEmpty());
-	QVERIFY(list.size() == 6);
-	{
-	    int sum = 0;
-	    QLinkedListIterator<int> i = list;
-	    while (i.hasNext()) {
-		sum += i.next();
-	    }
-	    QVERIFY(sum == 21);
-	}
-	{
-	    int sum = 0;
-	    QLinkedList<int>::const_iterator i = list.begin();
-	    while (i != list.end())
-		sum += *i++;
-	    QVERIFY(sum == 21);
-	}
-	{
-	    QMutableLinkedListIterator<int> i = list;
-	    while (i.hasNext())
-		i.setValue(2*i.next());
-	}
-	{
-	    int sum = 0;
-	    QLinkedListIterator<int> i = list;
-	    i.toBack();
-	    while (i.hasPrevious())
-		sum += i.previous();
-	    QVERIFY(sum == 2*21);
-	}
-	{
-	    QMutableLinkedListIterator<int> i = list;
-	    i.toBack();
-	    while (i.hasPrevious())
-		i.setValue(2*i.previous());
-	}
-	{
-	    int sum = 0;
-	    QLinkedListIterator<int> i = list;
-	    i.toBack();
-	    while (i.hasPrevious())
-		sum += i.previous();
-	    QVERIFY(sum == 2*2*21);
-	}
-	{
-	    QMutableLinkedListIterator<int> i = list;
-	    while (i.hasNext()) {
-		int a = i.next();
-		i.insert(a);
-	    }
-	}
-	{
-	    int sum = 0;
-	    QLinkedList<int>::iterator i = list.begin();
-	    while (i != list.end())
-		sum += *i++;
-	    QVERIFY(sum == 2*2*2*21);
-	}
-	{
-	    int duplicates = 0;
-	    QLinkedListIterator<int> i = list;
-	    while (i.hasNext()) {
-		int a = i.next();
-		if (i.hasNext() && a == i.peekNext())
-		    duplicates++;
-	    }
-	    QVERIFY(duplicates == 6);
-	}
-	{
-	    int duplicates = 0;
-	    QLinkedListIterator<int> i = list;
-	    i.toBack();
-	    while (i.hasPrevious()) {
-		int a = i.previous();
-		if (i.hasPrevious() && a == i.peekPrevious())
-		    duplicates++;
-	    }
-	    QVERIFY(duplicates == 6);
-	}
-	{
-	    QMutableLinkedListIterator<int> i = list;
-	    while (i.hasNext()) {
-		int a = i.next();
-		if (i.hasNext() &&
-		     i.peekNext() == a)
-		    i.remove();
-	    }
-	}
-	{
-	    int duplicates = 0;
-	    QMutableLinkedListIterator<int> i = list;
-	    i.toBack();
-	    while (i.hasPrevious()) {
-		int a = i.previous();
-		if (i.hasPrevious() && a == i.peekPrevious())
-		    duplicates++;
-	    }
-	    QVERIFY(duplicates == 0);
-	}
-	{
-	    QVERIFY(list.size() == 6);
-	    QMutableLinkedListIterator<int> i = list;
-	    while (i.hasNext()) {
-		int a = i.peekNext();
-		i.insert(42);
-		QVERIFY(i.peekPrevious() == 42 && i.peekNext() == a);
-		i.next();
-	    }
-	    QVERIFY(list.size() == 12);
-	    i.toFront();
-	    while (i.findNext(42))
-		i.remove();
-	}
-	{
-	    QLinkedList<int> l;
-	    l << 4 << 8 << 12 << 16 << 20 << 24;
-	    QVERIFY(l == list);
-	    QLinkedList<int> copy = list;
-	    list += list;
-	    QVERIFY(l != list && l.size() == list.size()/2 && l == copy);
-	    l += copy;
-	    QVERIFY(l == list);
-	    list = copy;
-	}
-	{
-	    QLinkedList<int> copy = list;
-	    list.prepend(999);
-	    list.append(999);
-	    QVERIFY(list.contains(999));
-	    QVERIFY(list.count(999) == 2);
-	    list.removeAll(999);
-	    QVERIFY(list == copy);
-	}
+        QLinkedList<int> list;
+        QVERIFY(list.isEmpty());
+        list.append(1);
+        list.push_back(2);
+        list += (3);
+        list << 4 << 5 << 6;
+        QVERIFY(!list.isEmpty());
+        QVERIFY(list.size() == 6);
+        {
+            int sum = 0;
+            QLinkedListIterator<int> i = list;
+            while (i.hasNext()) {
+                sum += i.next();
+            }
+            QVERIFY(sum == 21);
+        }
+        {
+            int sum = 0;
+            QLinkedList<int>::const_iterator i = list.begin();
+            while (i != list.end())
+                sum += *i++;
+            QVERIFY(sum == 21);
+        }
+        {
+            QMutableLinkedListIterator<int> i = list;
+            while (i.hasNext())
+                i.setValue(2*i.next());
+        }
+        {
+            int sum = 0;
+            QLinkedListIterator<int> i = list;
+            i.toBack();
+            while (i.hasPrevious())
+                sum += i.previous();
+            QVERIFY(sum == 2*21);
+        }
+        {
+            QMutableLinkedListIterator<int> i = list;
+            i.toBack();
+            while (i.hasPrevious())
+                i.setValue(2*i.previous());
+        }
+        {
+            int sum = 0;
+            QLinkedListIterator<int> i = list;
+            i.toBack();
+            while (i.hasPrevious())
+                sum += i.previous();
+            QVERIFY(sum == 2*2*21);
+        }
+        {
+            QMutableLinkedListIterator<int> i = list;
+            while (i.hasNext()) {
+                int a = i.next();
+                i.insert(a);
+            }
+        }
+        {
+            int sum = 0;
+            QLinkedList<int>::iterator i = list.begin();
+            while (i != list.end())
+                sum += *i++;
+            QVERIFY(sum == 2*2*2*21);
+        }
+        {
+            int duplicates = 0;
+            QLinkedListIterator<int> i = list;
+            while (i.hasNext()) {
+                int a = i.next();
+                if (i.hasNext() && a == i.peekNext())
+                    duplicates++;
+            }
+            QVERIFY(duplicates == 6);
+        }
+        {
+            int duplicates = 0;
+            QLinkedListIterator<int> i = list;
+            i.toBack();
+            while (i.hasPrevious()) {
+                int a = i.previous();
+                if (i.hasPrevious() && a == i.peekPrevious())
+                    duplicates++;
+            }
+            QVERIFY(duplicates == 6);
+        }
+        {
+            QMutableLinkedListIterator<int> i = list;
+            while (i.hasNext()) {
+                int a = i.next();
+                if (i.hasNext() &&
+                     i.peekNext() == a)
+                    i.remove();
+            }
+        }
+        {
+            int duplicates = 0;
+            QMutableLinkedListIterator<int> i = list;
+            i.toBack();
+            while (i.hasPrevious()) {
+                int a = i.previous();
+                if (i.hasPrevious() && a == i.peekPrevious())
+                    duplicates++;
+            }
+            QVERIFY(duplicates == 0);
+        }
+        {
+            QVERIFY(list.size() == 6);
+            QMutableLinkedListIterator<int> i = list;
+            while (i.hasNext()) {
+                int a = i.peekNext();
+                i.insert(42);
+                QVERIFY(i.peekPrevious() == 42 && i.peekNext() == a);
+                i.next();
+            }
+            QVERIFY(list.size() == 12);
+            i.toFront();
+            while (i.findNext(42))
+                i.remove();
+        }
+        {
+            QLinkedList<int> l;
+            l << 4 << 8 << 12 << 16 << 20 << 24;
+            QVERIFY(l == list);
+            QLinkedList<int> copy = list;
+            list += list;
+            QVERIFY(l != list && l.size() == list.size()/2 && l == copy);
+            l += copy;
+            QVERIFY(l == list);
+            list = copy;
+        }
+        {
+            QLinkedList<int> copy = list;
+            list.prepend(999);
+            list.append(999);
+            QVERIFY(list.contains(999));
+            QVERIFY(list.count(999) == 2);
+            list.removeAll(999);
+            QVERIFY(list == copy);
+        }
         {
             QLinkedList<QString> list;
             list << "one" << "two" << "three" << "four" << "five" << "six";
@@ -946,12 +946,12 @@ void tst_Collections::linkedList()
             QVERIFY(list.isEmpty());
         }
         {
-	    list.clear();
-	    QVERIFY(list.isEmpty());
-	    QVERIFY(list.begin() == list.end());
-	    QLinkedListIterator<int> i(list);
-	    QVERIFY(!i.hasNext() && !i.hasPrevious());
-	}
+            list.clear();
+            QVERIFY(list.isEmpty());
+            QVERIFY(list.begin() == list.end());
+            QLinkedListIterator<int> i(list);
+            QVERIFY(!i.hasNext() && !i.hasPrevious());
+        }
     }
 
     {
@@ -1102,7 +1102,7 @@ void tst_Collections::vector()
             dummy = new LargeStatic;
             vector.append(LargeStatic());
         }
-	delete dummy;
+        delete dummy;
     }
     QVERIFY(LargeStatic::count == originalLargeStaticCount);
 
@@ -1364,11 +1364,11 @@ void tst_Collections::byteArray()
         ba1 += ba1;
         QCOMPARE(ba1, QByteArray("yyyyyy"));
 
-	ba1.remove(1, -1); // do nothing
-	QCOMPARE(ba1, QByteArray("yyyyyy"));
+        ba1.remove(1, -1); // do nothing
+        QCOMPARE(ba1, QByteArray("yyyyyy"));
 
-	ba1.replace(0, -1, "ZZZ");
-	QCOMPARE(ba1, QByteArray("ZZZyyyyyy"));
+        ba1.replace(0, -1, "ZZZ");
+        QCOMPARE(ba1, QByteArray("ZZZyyyyyy"));
     }
 };
 
@@ -1382,16 +1382,16 @@ void tst_Collections::stack()
     i.toBack();
     int sum = 0;
     while (i.hasPrevious())
-	sum += i.previous();
+        sum += i.previous();
     QVERIFY(sum == 6);
 
     sum = 0;
     for (QStack<int>::iterator i = stack.begin(); i != stack.end(); ++i)
-	sum += *i;
+        sum += *i;
     QVERIFY(sum == 6);
 
     while (!stack.isEmpty())
-	sum -= stack.pop();
+        sum -= stack.pop();
     QVERIFY(sum == 0);
 }
 
@@ -1403,194 +1403,194 @@ void tst_Collections::hash()
     const char *monde = "monde";
 
     {
-	typedef QHash<QString, QString> Hash;
-	Hash hash;
-	QString key;
-	for (int i = 0; i < 10; ++i) {
-	    key[0] = i + '0';
-	    for (int j = 0; j < 10; ++j) {
-		key[1] = j + '0';
-		hash.insert(key, "V" + key);
-	    }
-	}
+        typedef QHash<QString, QString> Hash;
+        Hash hash;
+        QString key;
+        for (int i = 0; i < 10; ++i) {
+            key[0] = i + '0';
+            for (int j = 0; j < 10; ++j) {
+                key[1] = j + '0';
+                hash.insert(key, "V" + key);
+            }
+        }
 
-	for (int i = 0; i < 10; ++i) {
-	    key[0] = i + '0';
-	    for (int j = 0; j < 10; ++j) {
-		key[1] = j + '0';
-		hash.remove(key);
-	    }
-	}
+        for (int i = 0; i < 10; ++i) {
+            key[0] = i + '0';
+            for (int j = 0; j < 10; ++j) {
+                key[1] = j + '0';
+                hash.remove(key);
+            }
+        }
     }
 
     {
-	typedef QHash<int, const char *> Hash;
-	Hash hash;
-	hash.insert(1, hello);
-	hash.insert(2, world);
+        typedef QHash<int, const char *> Hash;
+        Hash hash;
+        hash.insert(1, hello);
+        hash.insert(2, world);
 
-	QVERIFY(hash.size() == 2);
-	QVERIFY(!hash.isEmpty());
+        QVERIFY(hash.size() == 2);
+        QVERIFY(!hash.isEmpty());
 
-	{
-	    Hash hash2 = hash;
-	    hash2 = hash;
-	    hash = hash2;
-	    hash2 = hash2;
-	    hash = hash;
-	    hash2.clear();
-	    hash2 = hash2;
-	    QVERIFY(hash2.size() == 0);
-	    QVERIFY(hash2.isEmpty());
-	}
-	QVERIFY(hash.size() == 2);
+        {
+            Hash hash2 = hash;
+            hash2 = hash;
+            hash = hash2;
+            hash2 = hash2;
+            hash = hash;
+            hash2.clear();
+            hash2 = hash2;
+            QVERIFY(hash2.size() == 0);
+            QVERIFY(hash2.isEmpty());
+        }
+        QVERIFY(hash.size() == 2);
 
-	{
-	    Hash hash2 = hash;
-	    hash2[1] = allo;
-	    hash2[2] = monde;
+        {
+            Hash hash2 = hash;
+            hash2[1] = allo;
+            hash2[2] = monde;
 
-	    QVERIFY(hash2[1] == allo);
-	    QVERIFY(hash2[2] == monde);
-	    QVERIFY(hash[1] == hello);
-	    QVERIFY(hash[2] == world);
+            QVERIFY(hash2[1] == allo);
+            QVERIFY(hash2[2] == monde);
+            QVERIFY(hash[1] == hello);
+            QVERIFY(hash[2] == world);
 
-	    hash2[1] = hash[1];
-	    hash2[2] = hash[2];
+            hash2[1] = hash[1];
+            hash2[2] = hash[2];
 
-	    QVERIFY(hash2[1] == hello);
-	    QVERIFY(hash2[2] == world);
+            QVERIFY(hash2[1] == hello);
+            QVERIFY(hash2[2] == world);
 
-	    hash[1] = hash[1];
-	    QVERIFY(hash[1] == hello);
-	}
+            hash[1] = hash[1];
+            QVERIFY(hash[1] == hello);
+        }
 
-	{
-	    Hash hash2 = hash;
-	    hash2.detach();
-	    hash2.remove(1);
-	    QVERIFY(hash2.size() == 1);
-	    hash2.remove(1);
-	    QVERIFY(hash2.size() == 1);
-	    hash2.remove(0);
-	    QVERIFY(hash2.size() == 1);
-	    hash2.remove(2);
-	    QVERIFY(hash2.size() == 0);
-	    QVERIFY(hash.size() == 2);
-	}
+        {
+            Hash hash2 = hash;
+            hash2.detach();
+            hash2.remove(1);
+            QVERIFY(hash2.size() == 1);
+            hash2.remove(1);
+            QVERIFY(hash2.size() == 1);
+            hash2.remove(0);
+            QVERIFY(hash2.size() == 1);
+            hash2.remove(2);
+            QVERIFY(hash2.size() == 0);
+            QVERIFY(hash.size() == 2);
+        }
 
-	hash.detach();
+        hash.detach();
 
-	{
-	    Hash::iterator it1 = hash.find(1);
-	    QVERIFY(it1 != hash.end());
+        {
+            Hash::iterator it1 = hash.find(1);
+            QVERIFY(it1 != hash.end());
 
-	    Hash::iterator it2 = hash.find(0);
-	    QVERIFY(it2 != hash.begin());
-	    QVERIFY(it2 == hash.end());
+            Hash::iterator it2 = hash.find(0);
+            QVERIFY(it2 != hash.begin());
+            QVERIFY(it2 == hash.end());
 
-	    *it1 = monde;
-	    QVERIFY(*it1 == monde);
-	    QVERIFY(hash[1] == monde);
+            *it1 = monde;
+            QVERIFY(*it1 == monde);
+            QVERIFY(hash[1] == monde);
 
-	    *it1 = hello;
-	    QVERIFY(*it1 == hello);
-	    QVERIFY(hash[1] == hello);
+            *it1 = hello;
+            QVERIFY(*it1 == hello);
+            QVERIFY(hash[1] == hello);
 
-	    hash[1] = monde;
-	    QVERIFY(it1.key() == 1);
-	    QVERIFY(it1.value() == monde);
-	    QVERIFY(*it1 == monde);
-	    QVERIFY(hash[1] == monde);
+            hash[1] = monde;
+            QVERIFY(it1.key() == 1);
+            QVERIFY(it1.value() == monde);
+            QVERIFY(*it1 == monde);
+            QVERIFY(hash[1] == monde);
 
-	    hash[1] = hello;
-	    QVERIFY(*it1 == hello);
-	    QVERIFY(hash[1] == hello);
-	}
+            hash[1] = hello;
+            QVERIFY(*it1 == hello);
+            QVERIFY(hash[1] == hello);
+        }
 
-	{
-	    const Hash hash2 = hash;
+        {
+            const Hash hash2 = hash;
 
-	    Hash::const_iterator it1 = hash2.find(1);
-	    QVERIFY(it1 != hash2.end());
-	    QVERIFY(it1.key() == 1);
-	    QVERIFY(it1.value() == hello);
-	    QVERIFY(*it1 == hello);
+            Hash::const_iterator it1 = hash2.find(1);
+            QVERIFY(it1 != hash2.end());
+            QVERIFY(it1.key() == 1);
+            QVERIFY(it1.value() == hello);
+            QVERIFY(*it1 == hello);
 
-	    Hash::const_iterator it2 = hash2.find(2);
-	    QVERIFY(it1 != it2);
-	    QVERIFY(it1 != hash2.end());
-	    QVERIFY(it2 != hash2.end());
+            Hash::const_iterator it2 = hash2.find(2);
+            QVERIFY(it1 != it2);
+            QVERIFY(it1 != hash2.end());
+            QVERIFY(it2 != hash2.end());
 
-	    int count = 0;
-	    it1 = hash2.begin();
-	    while (it1 != hash2.end()) {
-		count++;
-		++it1;
-	    }
-	    QVERIFY(count == 2);
+            int count = 0;
+            it1 = hash2.begin();
+            while (it1 != hash2.end()) {
+                count++;
+                ++it1;
+            }
+            QVERIFY(count == 2);
 
-	    count = 0;
-	    it1 = hash.begin();
-	    while (it1 != hash.end()) {
-		count++;
-		++it1;
-	    }
-	    QVERIFY(count == 2);
-	}
+            count = 0;
+            it1 = hash.begin();
+            while (it1 != hash.end()) {
+                count++;
+                ++it1;
+            }
+            QVERIFY(count == 2);
+        }
 
-	{
-	    QVERIFY(hash.contains(1));
-	    QVERIFY(hash.contains(2));
-	    QVERIFY(!hash.contains(0));
-	    QVERIFY(!hash.contains(3));
-	}
+        {
+            QVERIFY(hash.contains(1));
+            QVERIFY(hash.contains(2));
+            QVERIFY(!hash.contains(0));
+            QVERIFY(!hash.contains(3));
+        }
 
-	{
-	    QVERIFY(hash.value(1) == hello);
-	    QVERIFY(hash.value(2) == world);
-	    QVERIFY(hash.value(3) == 0);
-	    QVERIFY(hash.value(1, allo) == hello);
-	    QVERIFY(hash.value(2, allo) == world);
-	    QVERIFY(hash.value(3, allo) == allo);
-	    QVERIFY(hash.value(0, monde) == monde);
-	}
+        {
+            QVERIFY(hash.value(1) == hello);
+            QVERIFY(hash.value(2) == world);
+            QVERIFY(hash.value(3) == 0);
+            QVERIFY(hash.value(1, allo) == hello);
+            QVERIFY(hash.value(2, allo) == world);
+            QVERIFY(hash.value(3, allo) == allo);
+            QVERIFY(hash.value(0, monde) == monde);
+        }
 
-	{
-	    QHash<int,LargeStatic> hash;
-	    for (int i = 0; i < 10; i++)
-		hash.insert(i, LargeStatic());
-	    QVERIFY(LargeStatic::count == 10);
-	    hash.remove(7);
-	    QVERIFY(LargeStatic::count == 9);
+        {
+            QHash<int,LargeStatic> hash;
+            for (int i = 0; i < 10; i++)
+                hash.insert(i, LargeStatic());
+            QVERIFY(LargeStatic::count == 10);
+            hash.remove(7);
+            QVERIFY(LargeStatic::count == 9);
 
-	}
-	QVERIFY(LargeStatic::count == 0);
-	{
-	    QHash<int, int*> hash;
-	    QVERIFY(((const QHash<int,int*>*) &hash)->operator[](7) == 0);
-	}
+        }
+        QVERIFY(LargeStatic::count == 0);
+        {
+            QHash<int, int*> hash;
+            QVERIFY(((const QHash<int,int*>*) &hash)->operator[](7) == 0);
+        }
 
-	{
-	    /*
+        {
+            /*
                 This test relies on a certain implementation of
                 QHash. If you change the way QHash works internally,
                 change this test as well.
             */
-	    QHash<int, int> hash;
+            QHash<int, int> hash;
             for (int i = 0; i < 1000; ++i)
-		hash.insert(i, i);
-	    QVERIFY(hash.capacity() == 1031);
+                hash.insert(i, i);
+            QVERIFY(hash.capacity() == 1031);
             hash.squeeze();
             QVERIFY(hash.capacity() == 521);
 
-	    hash.insert(12345, 12345);
+            hash.insert(12345, 12345);
             QVERIFY(hash.capacity() == 1031);
 
-	    for (int j = 0; j < 900; ++j)
-		hash.remove(j);
+            for (int j = 0; j < 900; ++j)
+                hash.remove(j);
             QVERIFY(hash.capacity() == 257);
-	    hash.squeeze();
+            hash.squeeze();
             QVERIFY(hash.capacity() == 67);
             hash.reserve(0);
         }
@@ -1643,211 +1643,211 @@ void tst_Collections::map()
     const char *monde = "monde";
 
     {
-	typedef QMap<int, const char *> Map;
-	Map map;
-	map.insert(1, hello);
-	map.insert(2, world);
+        typedef QMap<int, const char *> Map;
+        Map map;
+        map.insert(1, hello);
+        map.insert(2, world);
 
-	QVERIFY(*map.begin() == hello);
+        QVERIFY(*map.begin() == hello);
 
-	QVERIFY(map.size() == 2);
-	QVERIFY(!map.isEmpty());
+        QVERIFY(map.size() == 2);
+        QVERIFY(!map.isEmpty());
 
-	{
-	    Map map2 = map;
-	    map2 = map;
-	    map = map2;
-	    map2 = map2;
-	    map = map;
-	    map2.clear();
-	    map2 = map2;
-	    QVERIFY(map2.size() == 0);
-	    QVERIFY(map2.isEmpty());
-	}
-	QVERIFY(map.size() == 2);
+        {
+            Map map2 = map;
+            map2 = map;
+            map = map2;
+            map2 = map2;
+            map = map;
+            map2.clear();
+            map2 = map2;
+            QVERIFY(map2.size() == 0);
+            QVERIFY(map2.isEmpty());
+        }
+        QVERIFY(map.size() == 2);
 
-	{
-	    Map map2 = map;
-	    map2[1] = allo;
-	    map2[2] = monde;
+        {
+            Map map2 = map;
+            map2[1] = allo;
+            map2[2] = monde;
 
-	    QVERIFY(map2[1] == allo);
-	    QVERIFY(map2[2] == monde);
-	    QVERIFY(map[1] == hello);
-	    QVERIFY(map[2] == world);
+            QVERIFY(map2[1] == allo);
+            QVERIFY(map2[2] == monde);
+            QVERIFY(map[1] == hello);
+            QVERIFY(map[2] == world);
 
-	    map2[1] = map[1];
-	    map2[2] = map[2];
+            map2[1] = map[1];
+            map2[2] = map[2];
 
-	    QVERIFY(map2[1] == hello);
-	    QVERIFY(map2[2] == world);
+            QVERIFY(map2[1] == hello);
+            QVERIFY(map2[2] == world);
 
-	    map[1] = map[1];
-	    QVERIFY(map[1] == hello);
-	}
+            map[1] = map[1];
+            QVERIFY(map[1] == hello);
+        }
 
-	{
-	    Map map2 = map;
-	    map2.detach();
-	    map2.remove(1);
-	    QVERIFY(map2.size() == 1);
-	    map2.remove(1);
-	    QVERIFY(map2.size() == 1);
-	    map2.remove(0);
-	    QVERIFY(map2.size() == 1);
-	    map2.remove(2);
-	    QVERIFY(map2.size() == 0);
-	    QVERIFY(map.size() == 2);
-	}
+        {
+            Map map2 = map;
+            map2.detach();
+            map2.remove(1);
+            QVERIFY(map2.size() == 1);
+            map2.remove(1);
+            QVERIFY(map2.size() == 1);
+            map2.remove(0);
+            QVERIFY(map2.size() == 1);
+            map2.remove(2);
+            QVERIFY(map2.size() == 0);
+            QVERIFY(map.size() == 2);
+        }
 
-	map.detach();
+        map.detach();
 
-	{
-	    Map::iterator it1 = map.find(1);
-	    QVERIFY(it1 == map.begin());
-	    QVERIFY(it1 != map.end());
+        {
+            Map::iterator it1 = map.find(1);
+            QVERIFY(it1 == map.begin());
+            QVERIFY(it1 != map.end());
 
-	    Map::iterator it2 = map.find(0);
-	    QVERIFY(it2 != map.begin());
-	    QVERIFY(it2 == map.end());
+            Map::iterator it2 = map.find(0);
+            QVERIFY(it2 != map.begin());
+            QVERIFY(it2 == map.end());
 
-	    *it1 = monde;
-	    QVERIFY(*it1 == monde);
-	    QVERIFY(map[1] == monde);
+            *it1 = monde;
+            QVERIFY(*it1 == monde);
+            QVERIFY(map[1] == monde);
 
-	    *it1 = hello;
-	    QVERIFY(*it1 == hello);
-	    QVERIFY(map[1] == hello);
+            *it1 = hello;
+            QVERIFY(*it1 == hello);
+            QVERIFY(map[1] == hello);
 
-	    map[1] = monde;
-	    QVERIFY(it1.key() == 1);
-	    QVERIFY(it1.value() == monde);
-	    QVERIFY(*it1 == monde);
-	    QVERIFY(map[1] == monde);
+            map[1] = monde;
+            QVERIFY(it1.key() == 1);
+            QVERIFY(it1.value() == monde);
+            QVERIFY(*it1 == monde);
+            QVERIFY(map[1] == monde);
 
-	    map[1] = hello;
-	    QVERIFY(*it1 == hello);
-	    QVERIFY(map[1] == hello);
+            map[1] = hello;
+            QVERIFY(*it1 == hello);
+            QVERIFY(map[1] == hello);
 
-	    *++it1 = allo;
-	    QVERIFY(*it1 == allo);
-	    QVERIFY(map[2] == allo);
-	    *it1 = world;
+            *++it1 = allo;
+            QVERIFY(*it1 == allo);
+            QVERIFY(map[2] == allo);
+            *it1 = world;
 
-	    ++it1;
-	    QVERIFY(it1 == map.end());
+            ++it1;
+            QVERIFY(it1 == map.end());
 
-	    int count = 0;
-	    it1 = map.begin();
-	    while (it1 != map.end()) {
-		count++;
-		++it1;
-	    }
-	    QVERIFY(count == 2);
-	}
+            int count = 0;
+            it1 = map.begin();
+            while (it1 != map.end()) {
+                count++;
+                ++it1;
+            }
+            QVERIFY(count == 2);
+        }
 
-	{
-	    const Map map2 = map;
+        {
+            const Map map2 = map;
 
-	    Map::const_iterator it1 = map2.find(1);
-	    QVERIFY(it1 != map2.end());
-	    QVERIFY(it1.key() == 1);
-	    QVERIFY(it1.value() == hello);
-	    QVERIFY(*it1 == hello);
-	    ++it1;
+            Map::const_iterator it1 = map2.find(1);
+            QVERIFY(it1 != map2.end());
+            QVERIFY(it1.key() == 1);
+            QVERIFY(it1.value() == hello);
+            QVERIFY(*it1 == hello);
+            ++it1;
 
-	    Map::const_iterator it2 = map2.find(2);
-	    QVERIFY(it1 == it2);
-	    ++it1;
-	    QVERIFY(it1 == map2.end());
-	    QVERIFY(it2 != map2.end());
-	    QVERIFY(it1 != it2);
+            Map::const_iterator it2 = map2.find(2);
+            QVERIFY(it1 == it2);
+            ++it1;
+            QVERIFY(it1 == map2.end());
+            QVERIFY(it2 != map2.end());
+            QVERIFY(it1 != it2);
 
-	    int count = 0;
-	    it1 = map2.begin();
-	    while (it1 != map2.end()) {
-		count++;
-		++it1;
-	    }
-	    QVERIFY(count == 2);
+            int count = 0;
+            it1 = map2.begin();
+            while (it1 != map2.end()) {
+                count++;
+                ++it1;
+            }
+            QVERIFY(count == 2);
 
-	    count = 0;
-	    it1 = map.begin();
-	    while (it1 != map.end()) {
-		count++;
-		++it1;
-	    }
-	    QVERIFY(count == 2);
-	}
+            count = 0;
+            it1 = map.begin();
+            while (it1 != map.end()) {
+                count++;
+                ++it1;
+            }
+            QVERIFY(count == 2);
+        }
 
-	{
-	    QVERIFY(map.contains(1));
-	    QVERIFY(map.contains(2));
-	    QVERIFY(!map.contains(0));
-	    QVERIFY(!map.contains(3));
-	}
+        {
+            QVERIFY(map.contains(1));
+            QVERIFY(map.contains(2));
+            QVERIFY(!map.contains(0));
+            QVERIFY(!map.contains(3));
+        }
 
-	{
-	    QVERIFY(map.value(1) == hello);
-	    QVERIFY(map.value(2) == world);
-	    QVERIFY(map.value(3) == 0);
-	    QVERIFY(map.value(1, allo) == hello);
-	    QVERIFY(map.value(2, allo) == world);
-	    QVERIFY(map.value(3, allo) == allo);
-	    QVERIFY(map.value(0, monde) == monde);
-	}
-	int originalLargeStaticCount = LargeStatic::count;
-	{
-	    QMap<int,LargeStatic> map;
-	    for (int i = 0; i < 10; i++)
-		map.insert(i, LargeStatic());
+        {
+            QVERIFY(map.value(1) == hello);
+            QVERIFY(map.value(2) == world);
+            QVERIFY(map.value(3) == 0);
+            QVERIFY(map.value(1, allo) == hello);
+            QVERIFY(map.value(2, allo) == world);
+            QVERIFY(map.value(3, allo) == allo);
+            QVERIFY(map.value(0, monde) == monde);
+        }
+        int originalLargeStaticCount = LargeStatic::count;
+        {
+            QMap<int,LargeStatic> map;
+            for (int i = 0; i < 10; i++)
+                map.insert(i, LargeStatic());
             QVERIFY(LargeStatic::count == (originalLargeStaticCount + 10));
-	    map.remove(7);
-	    QVERIFY(LargeStatic::count == (originalLargeStaticCount + 9));
+            map.remove(7);
+            QVERIFY(LargeStatic::count == (originalLargeStaticCount + 9));
 
-	}
-	QVERIFY(LargeStatic::count == originalLargeStaticCount);
-	{
-	    QMap<int, int*> map;
-	    QVERIFY(((const QMap<int,int*>*) &map)->operator[](7) == 0);
-	}
+        }
+        QVERIFY(LargeStatic::count == originalLargeStaticCount);
+        {
+            QMap<int, int*> map;
+            QVERIFY(((const QMap<int,int*>*) &map)->operator[](7) == 0);
+        }
 
-	{
-	    QMap<int, int> map;
-	    map[0] = 1;
-	    map[1] = 2;
-	    map[2] = 4;
-	    map[3] = 8;
-	    int sum = 0;
-	    int sumkey = 0;
-	    QMapIterator<int,int> i = map;
-	    while (i.hasNext()) {
-		sum += i.next().value();
-		sumkey += i.key();
-	    }
-	    QVERIFY(sum == 15);
-	    QVERIFY(sumkey == 6);
-	}
-	{
-	    QMap<int, int> map;
-	    map[0] = 1;
-	    map[1] = 2;
-	    map[2] = 4;
-	    map[3] = 8;
-	    int sum = 0;
-	    QMutableMapIterator<int,int> i = map;
-	    while(i.hasNext())
-		if (i.next().key()  == 2)
-		    i.remove();
-	    i.toFront();
-	    while(i.hasNext()) {
-		sum += i.next().value();
+        {
+            QMap<int, int> map;
+            map[0] = 1;
+            map[1] = 2;
+            map[2] = 4;
+            map[3] = 8;
+            int sum = 0;
+            int sumkey = 0;
+            QMapIterator<int,int> i = map;
+            while (i.hasNext()) {
+                sum += i.next().value();
+                sumkey += i.key();
+            }
+            QVERIFY(sum == 15);
+            QVERIFY(sumkey == 6);
+        }
+        {
+            QMap<int, int> map;
+            map[0] = 1;
+            map[1] = 2;
+            map[2] = 4;
+            map[3] = 8;
+            int sum = 0;
+            QMutableMapIterator<int,int> i = map;
+            while (i.hasNext())
+                if (i.next().key()  == 2)
+                    i.remove();
+            i.toFront();
+            while (i.hasNext()) {
+                sum += i.next().value();
                 i.setValue(10);
                 i.value() += 22;
                 QVERIFY(i.value() == 32);
             }
-	    QVERIFY(sum == 11);
-	}
+            QVERIFY(sum == 11);
+        }
         {
             QMap<int, int> map;
             map[0] = 1;
@@ -2177,14 +2177,14 @@ void tst_Collections::qstring()
     QVERIFY(s == "stl rocks");
 
     {
-	QString str("Bananas");
-	QVERIFY(str.startsWith("Ban"));
-	QVERIFY(false == str.startsWith("Car"));
+        QString str("Bananas");
+        QVERIFY(str.startsWith("Ban"));
+        QVERIFY(false == str.startsWith("Car"));
     }
     {
-	QString str("Bananas");
-	QVERIFY(str.endsWith("anas"));
-	QVERIFY(false == str.endsWith("pple"));
+        QString str("Bananas");
+        QVERIFY(str.endsWith("anas"));
+        QVERIFY(false == str.endsWith("pple"));
     }
 
 
@@ -2257,7 +2257,7 @@ void tst_Collections::bitArray()
     QVERIFY(ba[4]);
     int sum = 0;
     for(int i = 0; i < 20; i++)
-	sum += ba.testBit(i) ? 1 : 0;
+        sum += ba.testBit(i) ? 1 : 0;
     QVERIFY(sum == 2);
 
     ba = QBitArray(7, true);
@@ -2288,36 +2288,36 @@ int CacheFoo::counter = 0;
 void tst_Collections::cache()
 {
     {
-	QCache<int, CacheFoo> cache(120);
-	int i;
-	for (i = 0; i < 30; i++) {
+        QCache<int, CacheFoo> cache(120);
+        int i;
+        for (i = 0; i < 30; i++) {
             cache.object(10);
-	    cache.insert(i, new CacheFoo(i), i);
-	}
+            cache.insert(i, new CacheFoo(i), i);
+        }
 
-	QVERIFY(cache.contains(10));
-	QVERIFY(!cache.contains(1));
-	QVERIFY(!cache.contains(2));
-	delete cache.take(10);
+        QVERIFY(cache.contains(10));
+        QVERIFY(!cache.contains(1));
+        QVERIFY(!cache.contains(2));
+        delete cache.take(10);
     }
     {
-	QCache<int, QString> cache(120);
-	int i;
-	QString two;
-	for (i = 0; i < 30; i++) {
-	    QString s = QString::number(i);
-	    cache.insert(i, new QString(s), i);
-	    if (i == 2)
-		two = s;
-	}
-	QVERIFY(!cache.contains(3));
-	QVERIFY(!cache.contains(2));
+        QCache<int, QString> cache(120);
+        int i;
+        QString two;
+        for (i = 0; i < 30; i++) {
+            QString s = QString::number(i);
+            cache.insert(i, new QString(s), i);
+            if (i == 2)
+                two = s;
+        }
+        QVERIFY(!cache.contains(3));
+        QVERIFY(!cache.contains(2));
     }
     {
-	QCache<int, int> cache(100);
-	cache.insert(2, new int(2));
-	*cache[2] = 3;
-	QVERIFY(*cache.object(2) == 3);
+        QCache<int, int> cache(100);
+        cache.insert(2, new int(2));
+        *cache[2] = 3;
+        QVERIFY(*cache.object(2) == 3);
     }
 
     QVERIFY(CacheFoo::counter == 0);

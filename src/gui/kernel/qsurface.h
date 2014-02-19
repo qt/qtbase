@@ -64,7 +64,8 @@ public:
 
     enum SurfaceType {
         RasterSurface,
-        OpenGLSurface
+        OpenGLSurface,
+        RasterGLSurface
     };
 
     virtual ~QSurface();
@@ -75,6 +76,7 @@ public:
     virtual QPlatformSurface *surfaceHandle() const = 0;
 
     virtual SurfaceType surfaceType() const = 0;
+    bool supportsOpenGL() const;
 
     virtual QSize size() const = 0;
 

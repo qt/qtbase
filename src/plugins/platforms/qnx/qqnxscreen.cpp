@@ -39,6 +39,8 @@
 **
 ****************************************************************************/
 
+#include "qqnxglobal.h"
+
 #include "qqnxscreen.h"
 #include "qqnxwindow.h"
 #include "qqnxcursor.h"
@@ -75,10 +77,9 @@ QT_BEGIN_NAMESPACE
 static QSize determineScreenSize(screen_display_t display, bool primaryScreen) {
     int val[2];
 
-    errno = 0;
     const int result = screen_get_display_property_iv(display, SCREEN_PROPERTY_PHYSICAL_SIZE, val);
+    Q_SCREEN_CHECKERROR(result, "Failed to query display physical size");
     if (result != 0) {
-        qFatal("QQnxScreen: failed to query display physical size, errno=%d", errno);
         return QSize(150, 90);
     }
 
@@ -163,19 +164,16 @@ QQnxScreen::QQnxScreen(screen_context_t screenContext, screen_display_t display,
 {
     qScreenDebug() << Q_FUNC_INFO;
     // Cache initial orientation of this display
-    errno = 0;
-    int result = screen_get_display_property_iv(m_display, SCREEN_PROPERTY_ROTATION, &m_initialRotation);
-    if (result != 0)
-        qFatal("QQnxScreen: failed to query display rotation, errno=%d", errno);
+    int result = screen_get_display_property_iv(m_display, SCREEN_PROPERTY_ROTATION,
+                                                &m_initialRotation);
+    Q_SCREEN_CHECKERROR(result, "Failed to query display rotation");
 
     m_currentRotation = m_initialRotation;
 
     // Cache size of this display in pixels
-    errno = 0;
     int val[2];
-    result = screen_get_display_property_iv(m_display, SCREEN_PROPERTY_SIZE, val);
-    if (result != 0)
-        qFatal("QQnxScreen: failed to query display size, errno=%d", errno);
+    Q_SCREEN_CRITICALERROR(screen_get_display_property_iv(m_display, SCREEN_PROPERTY_SIZE, val),
+                        "Failed to query display size");
 
     m_currentGeometry = m_initialGeometry = QRect(0, 0, val[0], val[1]);
 
@@ -199,6 +197,9 @@ QQnxScreen::~QQnxScreen()
     qScreenDebug() << Q_FUNC_INFO;
     Q_FOREACH (QQnxWindow *childWindow, m_childWindows)
         childWindow->setScreen(0);
+
+    if (m_coverWindow)
+        m_coverWindow->setScreen(0);
 
     delete m_cursor;
 }
@@ -505,7 +506,6 @@ void QQnxScreen::raiseWindow(QQnxWindow *window)
     if (window != m_coverWindow) {
         removeWindow(window);
         m_childWindows.push_back(window);
-        updateHierarchy();
     }
 }
 
@@ -516,7 +516,6 @@ void QQnxScreen::lowerWindow(QQnxWindow *window)
     if (window != m_coverWindow) {
         removeWindow(window);
         m_childWindows.push_front(window);
-        updateHierarchy();
     }
 }
 
@@ -671,7 +670,7 @@ void QQnxScreen::newWindowCreated(void *window)
         // Otherwise, assume that if a foreign window already has a Z-Order both negative and
         // less than the default Z-Order installed by mmrender on windows it creates,
         // the windows should be treated as an underlay. Otherwise, we treat it as an overlay.
-        if (!windowName.isEmpty() && windowName.startsWith("BbVideoWindowControl")) {
+        if (!windowName.isEmpty() && windowName.startsWith("MmRendererVideoWindowControl")) {
             addMultimediaWindow(windowName, windowHandle);
         } else if (!findWindow(windowHandle)) {
             if (zorder <= MAX_UNDERLAY_ZORDER)
@@ -728,8 +727,6 @@ void QQnxScreen::activateWindowGroup(const QByteArray &id)
 
     if (m_coverWindow)
         m_coverWindow->setExposed(false);
-
-    QWindowSystemInterface::handleWindowActivated(window);
 }
 
 void QQnxScreen::deactivateWindowGroup(const QByteArray &id)
@@ -744,8 +741,6 @@ void QQnxScreen::deactivateWindowGroup(const QByteArray &id)
 
     Q_FOREACH (QQnxWindow *childWindow, m_childWindows)
         childWindow->setExposed(false);
-
-    QWindowSystemInterface::handleWindowActivated(rootWindow()->window());
 }
 
 QQnxWindow *QQnxScreen::rootWindow() const

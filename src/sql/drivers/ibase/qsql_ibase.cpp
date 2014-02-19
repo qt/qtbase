@@ -1732,7 +1732,7 @@ QString QIBaseDriver::formatValue(const QSqlField &field, bool trimStrings) cons
                 QString::number(datetime.time().minute()) + QLatin1Char(':') +
                 QString::number(datetime.time().second()) + QLatin1Char('.') +
                 QString::number(datetime.time().msec()).rightJustified(3, QLatin1Char('0'), true) +
-		QLatin1Char('\'');
+                QLatin1Char('\'');
         else
             return QLatin1String("NULL");
     }

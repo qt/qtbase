@@ -44,6 +44,7 @@
 
 #include <QtCore/qobject.h>
 #include <QtGui/qtextformat.h>
+#include <QtGui/qtextlayout.h>
 #include <QtGui/qglyphrun.h>
 
 QT_BEGIN_NAMESPACE
@@ -55,7 +56,6 @@ class QTextDocumentPrivate;
 class QTextCursor;
 class QTextBlock;
 class QTextFragment;
-class QTextLayout;
 class QTextList;
 
 class Q_GUI_EXPORT QTextObject : public QObject
@@ -222,6 +222,8 @@ public:
     Qt::LayoutDirection textDirection() const;
 
     QString text() const;
+
+    QList<QTextLayout::FormatRange> textFormats() const;
 
     const QTextDocument *document() const;
 

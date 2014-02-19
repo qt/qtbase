@@ -80,6 +80,7 @@ private slots:
     void destruction();
     void threadRecycling();
     void expiryTimeout();
+    void expiryTimeoutRace();
 #ifndef QT_NO_EXCEPTIONS
     void exceptions();
 #endif
@@ -315,7 +316,7 @@ class ExpiryTimeoutTask : public QRunnable
 {
 public:
     QThread *thread;
-    int runCount;
+    QAtomicInt runCount;
     QSemaphore semaphore;
 
     ExpiryTimeoutTask()
@@ -327,7 +328,7 @@ public:
     void run()
     {
         thread = QThread::currentThread();
-        ++runCount;
+        runCount.ref();
         semaphore.release();
     }
 };
@@ -346,7 +347,7 @@ void tst_QThreadPool::expiryTimeout()
     // run the task
     threadPool.start(&task);
     QVERIFY(task.semaphore.tryAcquire(1, 10000));
-    QCOMPARE(task.runCount, 1);
+    QCOMPARE(task.runCount.load(), 1);
     QVERIFY(!task.thread->wait(100));
     // thread should expire
     QThread *firstThread = task.thread;
@@ -355,7 +356,7 @@ void tst_QThreadPool::expiryTimeout()
     // run task again, thread should be restarted
     threadPool.start(&task);
     QVERIFY(task.semaphore.tryAcquire(1, 10000));
-    QCOMPARE(task.runCount, 2);
+    QCOMPARE(task.runCount.load(), 2);
     QVERIFY(!task.thread->wait(100));
     // thread should expire again
     QVERIFY(task.thread->wait(10000));
@@ -366,6 +367,22 @@ void tst_QThreadPool::expiryTimeout()
 
     threadPool.setExpiryTimeout(expiryTimeout);
     QCOMPARE(threadPool.expiryTimeout(), expiryTimeout);
+}
+
+void tst_QThreadPool::expiryTimeoutRace() // QTBUG-3786
+{
+    ExpiryTimeoutTask task;
+
+    QThreadPool threadPool;
+    threadPool.setMaxThreadCount(1);
+    threadPool.setExpiryTimeout(50);
+    const int numTasks = 20;
+    for (int i = 0; i < numTasks; ++i) {
+        threadPool.start(&task);
+        QThread::msleep(50); // exactly the same as the expiry timeout
+    }
+    QCOMPARE(task.runCount.load(), numTasks);
+    QVERIFY(threadPool.waitForDone(2000));
 }
 
 #ifndef QT_NO_EXCEPTIONS
@@ -503,7 +520,8 @@ void tst_QThreadPool::setMaxThreadCountStartsAndStopsThreads()
     QVERIFY(task->waitForStarted.tryAcquire(6, 1000));
 
     task->waitToFinish.release(10);
-//    delete task;
+    threadPool.waitForDone();
+    delete task;
 }
 
 void tst_QThreadPool::reserveThread_data()

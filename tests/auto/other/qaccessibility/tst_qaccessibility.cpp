@@ -43,7 +43,9 @@
 #include <QtCore/qglobal.h>
 #ifdef Q_OS_WIN
 # include <QtCore/qt_windows.h>
+#ifndef Q_OS_WINRT
 # include <oleacc.h>
+#endif
 # include <servprov.h>
 # include <winuser.h>
 # ifdef QT_SUPPORTS_IACCESSIBLE2
@@ -3366,7 +3368,7 @@ void tst_QAccessibility::bridgeTest()
 {
     // For now this is a simple test to see if the bridge is working at all.
     // Ideally it should be extended to test all aspects of the bridge.
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     // First, test MSAA part of bridge
     QWidget *window = new QWidget;
     QVBoxLayout *lay = new QVBoxLayout(window);

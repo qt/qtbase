@@ -135,8 +135,14 @@ private:
 
     // Request a unified title and toolbar look for the window.
     static void setContentBorderThickness(QWindow *window, int topThickness, int bottomThickness);
+
+    // Sets a NSToolbar instance for the given QWindow. The
+    // toolbar will be attached to the native NSWindow when
+    // that is created;
+   static void setNSToolbar(QWindow *window, void *nsToolbar);
 };
+
+QT_END_NAMESPACE
 
 #endif // QCOCOANATIVEINTERFACE_H
 
-QT_END_NAMESPACE

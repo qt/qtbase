@@ -65,6 +65,15 @@
 
 #ifndef QT_NO_PRINTPREVIEWDIALOG
 
+static void initResources()
+{
+    static bool resourcesInitialized = false;
+    if (!resourcesInitialized) {
+        Q_INIT_RESOURCE(qprintdialog);
+        resourcesInitialized = true;
+    }
+}
+
 QT_BEGIN_NAMESPACE
 
 namespace {
@@ -216,6 +225,8 @@ public:
 void QPrintPreviewDialogPrivate::init(QPrinter *_printer)
 {
     Q_Q(QPrintPreviewDialog);
+
+    initResources();
 
     if (_printer) {
         preview = new QPrintPreviewWidget(_printer, q);

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Intel Corporation
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -53,6 +54,7 @@
 #include <qlist.h>
 #include "qlocale.h"
 #include "qlocale_p.h"
+#include "qstringbuilder.h"
 #include "qstringmatcher.h"
 #include "qvarlengtharray.h"
 #include "qtools_p.h"
@@ -75,6 +77,7 @@
 
 #include "qchar.cpp"
 #include "qstringmatcher.cpp"
+#include "qstringiterator_p.h"
 
 #ifdef Q_OS_WIN
 #  include <qt_windows.h>
@@ -101,6 +104,43 @@
 
 QT_BEGIN_NAMESPACE
 
+/*
+ * Note on the use of SIMD in qstring.cpp:
+ *
+ * Several operations with strings are improved with the use of SIMD code,
+ * since they are repetitive. For MIPS, we have hand-written assembly code
+ * outside of qstring.cpp targeting MIPS DSP and MIPS DSPr2. For ARM and for
+ * x86, we can only use intrinsics and therefore everything is contained in
+ * qstring.cpp. We need to use intrinsics only for those platforms due to the
+ * different compilers and toolchains used, which have different syntax for
+ * assembly sources.
+ *
+ * ** SSE notes: **
+ *
+ * Whenever multiple alternatives are equivalent or near so, we prefer the one
+ * using instructions from SSE2, since SSE2 is guaranteed to be enabled for all
+ * 64-bit builds and we enable it for 32-bit builds by default. Use of higher
+ * SSE versions should be done when there's a clear performance benefit and
+ * requires fallback code to SSE2, if it exists.
+ *
+ * Performance measurement in the past shows that most strings are short in
+ * size and, therefore, do not benefit from alignment prologues. That is,
+ * trying to find a 16-byte-aligned boundary to operate on is often more
+ * expensive than executing the unaligned operation directly. In addition, note
+ * that the QString private data is designed so that the data is stored on
+ * 16-byte boundaries if the system malloc() returns 16-byte aligned pointers
+ * on its own (64-bit glibc on Linux does; 32-bit glibc on Linux returns them
+ * 50% of the time), so skipping the alignment prologue is actually optimizing
+ * for the common case.
+ */
+
+#if defined(__mips_dsp)
+// From qstring_mips_dsp_asm.S
+extern "C" void qt_fromlatin1_mips_asm_unroll4 (ushort*, const char*, uint);
+extern "C" void qt_fromlatin1_mips_asm_unroll8 (ushort*, const char*, uint);
+extern "C" void qt_toLatin1_mips_dsp_asm(uchar *dst, const ushort *src, int length);
+#endif
+
 // internal
 int qFindString(const QChar *haystack, int haystackLen, int from,
     const QChar *needle, int needleLen, Qt::CaseSensitivity cs);
@@ -123,6 +163,209 @@ static inline bool qt_ends_with(const QChar *haystack, int haystackLen,
                                 const QChar *needle, int needleLen, Qt::CaseSensitivity cs);
 static inline bool qt_ends_with(const QChar *haystack, int haystackLen,
                                 QLatin1String needle, Qt::CaseSensitivity cs);
+
+#ifdef Q_COMPILER_LAMBDA
+namespace {
+template <uint MaxCount> struct UnrollTailLoop
+{
+    template <typename RetType, typename Functor1, typename Functor2>
+    static inline RetType exec(int count, RetType returnIfExited, Functor1 loopCheck, Functor2 returnIfFailed, int i = 0)
+    {
+        /* equivalent to:
+         *   while (count--) {
+         *       if (loopCheck(i))
+         *           return returnIfFailed(i);
+         *   }
+         *   return returnIfExited;
+         */
+
+        if (!count)
+            return returnIfExited;
+
+        bool check = loopCheck(i);
+        if (check) {
+            const RetType &retval = returnIfFailed(i);
+            return retval;
+        }
+
+        return UnrollTailLoop<MaxCount - 1>::exec(count - 1, returnIfExited, loopCheck, returnIfFailed, i + 1);
+    }
+
+    template <typename Functor>
+    static inline void exec(int count, Functor code)
+    {
+        /* equivalent to:
+         *   for (int i = 0; i < count; ++i)
+         *       code(i);
+         */
+        exec(count, 0, [=](int i) -> bool { code(i); return false; }, [](int) { return 0; });
+    }
+};
+template <> template <typename RetType, typename Functor1, typename Functor2>
+inline RetType UnrollTailLoop<0>::exec(int, RetType returnIfExited, Functor1, Functor2, int)
+{
+    return returnIfExited;
+}
+}
+#endif
+
+// conversion between Latin 1 and UTF-16
+static void qt_from_latin1(ushort *dst, const char *str, size_t size)
+{
+    /* SIMD:
+     * Unpacking with SSE has been shown to improve performance on recent CPUs
+     * The same method gives no improvement with NEON.
+     */
+#if defined(__SSE2__)
+    const char *e = str + size;
+    qptrdiff offset = 0;
+
+    // we're going to read str[offset..offset+15] (16 bytes)
+    for ( ; str + offset + 15 < e; offset += 16) {
+        const __m128i nullMask = _mm_set1_epi32(0);
+        const __m128i chunk = _mm_loadu_si128((__m128i*)(str + offset)); // load
+
+        // unpack the first 8 bytes, padding with zeros
+        const __m128i firstHalf = _mm_unpacklo_epi8(chunk, nullMask);
+        _mm_storeu_si128((__m128i*)(dst + offset), firstHalf); // store
+
+        // unpack the last 8 bytes, padding with zeros
+        const __m128i secondHalf = _mm_unpackhi_epi8 (chunk, nullMask);
+        _mm_storeu_si128((__m128i*)(dst + offset + 8), secondHalf); // store
+    }
+
+    size = size % 16;
+    dst += offset;
+    str += offset;
+#  ifdef Q_COMPILER_LAMBDA
+    return UnrollTailLoop<15>::exec(size, [=](int i) { dst[i] = (uchar)str[i]; });
+#  endif
+#endif
+#if defined(__mips_dsp)
+    if (size > 20)
+        qt_fromlatin1_mips_asm_unroll8(dst, str, size);
+    else
+        qt_fromlatin1_mips_asm_unroll4(dst, str, size);
+#else
+    while (size--)
+        *dst++ = (uchar)*str++;
+#endif
+}
+
+#if defined(__SSE2__)
+static inline __m128i mergeQuestionMarks(__m128i chunk)
+{
+    const __m128i questionMark = _mm_set1_epi16('?');
+
+# ifdef __SSE4_2__
+    // compare the unsigned shorts for the range 0x0100-0xFFFF
+    // note on the use of _mm_cmpestrm:
+    //  The MSDN documentation online (http://technet.microsoft.com/en-us/library/bb514080.aspx)
+    //  says for range search the following:
+    //    For each character c in a, determine whether b0 <= c <= b1 or b2 <= c <= b3
+    //
+    //  However, all examples on the Internet, including from Intel
+    //  (see http://software.intel.com/en-us/articles/xml-parsing-accelerator-with-intel-streaming-simd-extensions-4-intel-sse4/)
+    //  put the range to be searched first
+    //
+    //  Disassembly and instruction-level debugging with GCC and ICC show
+    //  that they are doing the right thing. Inverting the arguments in the
+    //  instruction does cause a bunch of test failures.
+
+    const int mode = _SIDD_UWORD_OPS | _SIDD_CMP_RANGES | _SIDD_UNIT_MASK;
+    const __m128i rangeMatch = _mm_cvtsi32_si128(0xffff0100);
+    const __m128i offLimitMask = _mm_cmpestrm(rangeMatch, 2, chunk, 8, mode);
+
+    // replace the non-Latin 1 characters in the chunk with question marks
+    chunk = _mm_blendv_epi8(chunk, questionMark, offLimitMask);
+# else
+    // SSE has no compare instruction for unsigned comparison.
+    // The variables must be shiffted + 0x8000 to be compared
+    const __m128i signedBitOffset = _mm_set1_epi16(short(0x8000));
+    const __m128i thresholdMask = _mm_set1_epi16(short(0xff + 0x8000));
+
+    const __m128i signedChunk = _mm_add_epi16(chunk, signedBitOffset);
+    const __m128i offLimitMask = _mm_cmpgt_epi16(signedChunk, thresholdMask);
+
+#  ifdef __SSE4_1__
+    // replace the non-Latin 1 characters in the chunk with question marks
+    chunk = _mm_blendv_epi8(chunk, questionMark, offLimitMask);
+#  else
+    // offLimitQuestionMark contains '?' for each 16 bits that was off-limit
+    // the 16 bits that were correct contains zeros
+    const __m128i offLimitQuestionMark = _mm_and_si128(offLimitMask, questionMark);
+
+    // correctBytes contains the bytes that were in limit
+    // the 16 bits that were off limits contains zeros
+    const __m128i correctBytes = _mm_andnot_si128(offLimitMask, chunk);
+
+    // merge offLimitQuestionMark and correctBytes to have the result
+    chunk = _mm_or_si128(correctBytes, offLimitQuestionMark);
+#  endif
+# endif
+    return chunk;
+}
+#endif
+
+static void qt_to_latin1(uchar *dst, const ushort *src, int length)
+{
+#if defined(__SSE2__)
+    uchar *e = dst + length;
+    qptrdiff offset = 0;
+
+    // we're going to write to dst[offset..offset+15] (16 bytes)
+    for ( ; dst + offset + 15 < e; offset += 16) {
+        __m128i chunk1 = _mm_loadu_si128((__m128i*)(src + offset)); // load
+        chunk1 = mergeQuestionMarks(chunk1);
+
+        __m128i chunk2 = _mm_loadu_si128((__m128i*)(src + offset + 8)); // load
+        chunk2 = mergeQuestionMarks(chunk2);
+
+        // pack the two vector to 16 x 8bits elements
+        const __m128i result = _mm_packus_epi16(chunk1, chunk2);
+        _mm_storeu_si128((__m128i*)(dst + offset), result); // store
+    }
+
+    length = length % 16;
+    dst += offset;
+    src += offset;
+
+#  ifdef Q_COMPILER_LAMBDA
+    return UnrollTailLoop<15>::exec(length, [=](int i) { dst[i] = (src[i]>0xff) ? '?' : (uchar) src[i]; });
+#  endif
+#elif defined(__ARM_NEON__)
+    // Refer to the documentation of the SSE2 implementation
+    // this use eactly the same method as for SSE except:
+    // 1) neon has unsigned comparison
+    // 2) packing is done to 64 bits (8 x 8bits component).
+    if (length >= 16) {
+        const int chunkCount = length >> 3; // divided by 8
+        const uint16x8_t questionMark = vdupq_n_u16('?'); // set
+        const uint16x8_t thresholdMask = vdupq_n_u16(0xff); // set
+        for (int i = 0; i < chunkCount; ++i) {
+            uint16x8_t chunk = vld1q_u16((uint16_t *)src); // load
+            src += 8;
+
+            const uint16x8_t offLimitMask = vcgtq_u16(chunk, thresholdMask); // chunk > thresholdMask
+            const uint16x8_t offLimitQuestionMark = vandq_u16(offLimitMask, questionMark); // offLimitMask & questionMark
+            const uint16x8_t correctBytes = vbicq_u16(chunk, offLimitMask); // !offLimitMask & chunk
+            chunk = vorrq_u16(correctBytes, offLimitQuestionMark); // correctBytes | offLimitQuestionMark
+            const uint8x8_t result = vmovn_u16(chunk); // narrowing move->packing
+            vst1_u8(dst, result); // store
+            dst += 8;
+        }
+        length = length % 8;
+    }
+#endif
+#if defined(__mips_dsp)
+    qt_toLatin1_mips_dsp_asm(dst, src, length);
+#else
+    while (length--) {
+        *dst++ = (*src>0xff) ? '?' : (uchar) *src;
+        ++src;
+    }
+#endif
+}
 
 // Unicode case-insensitive comparison
 static int ucstricmp(const ushort *a, const ushort *ae, const ushort *b, const ushort *be)
@@ -205,11 +448,153 @@ static int ucstrncmp(const QChar *a, const QChar *b, int l)
                                          l);
     }
 #endif // __mips_dsp
-    while (l-- && *a == *b)
-        a++,b++;
-    if (l==-1)
+#ifdef __SSE2__
+    const char *ptr = reinterpret_cast<const char*>(a);
+    qptrdiff distance = reinterpret_cast<const char*>(b) - ptr;
+    a += l & ~7;
+    b += l & ~7;
+    l &= 7;
+
+    // we're going to read ptr[0..15] (16 bytes)
+    for ( ; ptr + 15 < reinterpret_cast<const char *>(a); ptr += 16) {
+        __m128i a_data = _mm_loadu_si128((__m128i*)ptr);
+        __m128i b_data = _mm_loadu_si128((__m128i*)(ptr + distance));
+        __m128i result = _mm_cmpeq_epi16(a_data, b_data);
+        uint mask = ~_mm_movemask_epi8(result);
+        if (ushort(mask)) {
+            // found a different byte
+            uint idx = uint(_bit_scan_forward(mask));
+            return reinterpret_cast<const QChar *>(ptr + idx)->unicode()
+                    - reinterpret_cast<const QChar *>(ptr + distance + idx)->unicode();
+        }
+    }
+#  ifdef Q_COMPILER_LAMBDA
+    const auto &lambda = [=](int i) -> int {
+        return reinterpret_cast<const QChar *>(ptr)[i].unicode()
+                - reinterpret_cast<const QChar *>(ptr + distance)[i].unicode();
+    };
+    return UnrollTailLoop<7>::exec(l, 0, lambda, lambda);
+#  endif
+#endif
+    if (!l)
         return 0;
-    return a->unicode() - b->unicode();
+
+    union {
+        const QChar *w;
+        const quint32 *d;
+        quintptr value;
+    } sa, sb;
+    sa.w = a;
+    sb.w = b;
+
+    // check alignment
+    if ((sa.value & 2) == (sb.value & 2)) {
+        // both addresses have the same alignment
+        if (sa.value & 2) {
+            // both addresses are not aligned to 4-bytes boundaries
+            // compare the first character
+            if (*sa.w != *sb.w)
+                return sa.w->unicode() - sb.w->unicode();
+            --l;
+            ++sa.w;
+            ++sb.w;
+
+            // now both addresses are 4-bytes aligned
+        }
+
+        // both addresses are 4-bytes aligned
+        // do a fast 32-bit comparison
+        const quint32 *e = sa.d + (l >> 1);
+        for ( ; sa.d != e; ++sa.d, ++sb.d) {
+            if (*sa.d != *sb.d) {
+                if (*sa.w != *sb.w)
+                    return sa.w->unicode() - sb.w->unicode();
+                return sa.w[1].unicode() - sb.w[1].unicode();
+            }
+        }
+
+        // do we have a tail?
+        return (l & 1) ? sa.w->unicode() - sb.w->unicode() : 0;
+    } else {
+        // one of the addresses isn't 4-byte aligned but the other is
+        const QChar *e = sa.w + l;
+        for ( ; sa.w != e; ++sa.w, ++sb.w) {
+            if (*sa.w != *sb.w)
+                return sa.w->unicode() - sb.w->unicode();
+        }
+    }
+    return 0;
+}
+
+static int ucstrncmp(const QChar *a, const uchar *c, int l)
+{
+    const ushort *uc = reinterpret_cast<const ushort *>(a);
+    const ushort *e = uc + l;
+
+#ifdef __SSE2__
+    __m128i nullmask = _mm_setzero_si128();
+    qptrdiff offset = 0;
+
+    // we're going to read uc[offset..offset+15] (32 bytes)
+    // and c[offset..offset+15] (16 bytes)
+    for ( ; uc + offset + 15 < e; offset += 16) {
+        // similar to fromLatin1_helper:
+        // load Latin 1 data and expand to UTF-16
+        __m128i chunk = _mm_loadu_si128((__m128i*)(c + offset));
+        __m128i firstHalf = _mm_unpacklo_epi8(chunk, nullmask);
+        __m128i secondHalf = _mm_unpackhi_epi8(chunk, nullmask);
+
+        // load UTF-16 data and compare
+        __m128i ucdata1 = _mm_loadu_si128((__m128i*)(uc + offset));
+        __m128i ucdata2 = _mm_loadu_si128((__m128i*)(uc + offset + 8));
+        __m128i result1 = _mm_cmpeq_epi16(firstHalf, ucdata1);
+        __m128i result2 = _mm_cmpeq_epi16(secondHalf, ucdata2);
+
+        uint mask = ~(_mm_movemask_epi8(result1) | _mm_movemask_epi8(result2) << 16);
+        if (mask) {
+            // found a different character
+            uint idx = uint(_bit_scan_forward(mask));
+            return uc[offset + idx / 2] - c[offset + idx / 2];
+        }
+    }
+
+    // we'll read uc[offset..offset+7] (16 bytes) and c[offset-8..offset+7] (16 bytes)
+    if (uc + offset + 7 < e) {
+        // same, but we'll throw away half the data
+        __m128i chunk = _mm_loadu_si128((__m128i*)(c + offset - 8));
+        __m128i secondHalf = _mm_unpackhi_epi8(chunk, nullmask);
+
+        __m128i ucdata = _mm_loadu_si128((__m128i*)(uc + offset));
+        __m128i result = _mm_cmpeq_epi16(secondHalf, ucdata);
+        uint mask = ~_mm_movemask_epi8(result);
+        if (ushort(mask)) {
+            // found a different character
+            uint idx = uint(_bit_scan_forward(mask));
+            return uc[offset + idx / 2] - c[offset + idx / 2];
+        }
+
+        // still matched
+        offset += 8;
+    }
+
+    // reset uc and c
+    uc += offset;
+    c += offset;
+
+#  ifdef Q_COMPILER_LAMBDA
+    const auto &lambda = [=](int i) { return uc[i] - ushort(c[i]); };
+    return UnrollTailLoop<7>::exec(e - uc, 0, lambda, lambda);
+#  endif
+#endif
+
+    while (uc < e) {
+        int diff = *uc - *c;
+        if (diff)
+            return diff;
+        uc++, c++;
+    }
+
+    return 0;
 }
 
 // Unicode case-sensitive comparison
@@ -228,100 +613,19 @@ static int ucstrnicmp(const ushort *a, const ushort *b, int l)
     return ucstricmp(a, a + l, b, b + l);
 }
 
-// Benchmarking indicates that doing memcmp is much slower than
-// executing the comparison ourselves.
-//
-// The profiling was done on a population of calls to qMemEquals, generated
-// during a run of the demo browser. The profile of the data (32-bit x86
-// Linux) was:
-//
-//  total number of comparisons: 21353
-//  longest string compared: 95
-//  average comparison length: 14.8786
-//  cache-line crosses: 5661 (13.3%)
-//  alignment histogram:
-//   0xXXX0 = 512 (1.2%) strings, 0 (0.0%) of which same-aligned
-//   0xXXX2 = 15087 (35.3%) strings, 5145 (34.1%) of which same-aligned
-//   0xXXX4 = 525 (1.2%) strings, 0 (0.0%) of which same-aligned
-//   0xXXX6 = 557 (1.3%) strings, 6 (1.1%) of which same-aligned
-//   0xXXX8 = 509 (1.2%) strings, 0 (0.0%) of which same-aligned
-//   0xXXXa = 24358 (57.0%) strings, 9901 (40.6%) of which same-aligned
-//   0xXXXc = 557 (1.3%) strings, 0 (0.0%) of which same-aligned
-//   0xXXXe = 601 (1.4%) strings, 15 (2.5%) of which same-aligned
-//   total  = 42706 (100%) strings, 15067 (35.3%) of which same-aligned
-//
-// 92% of the strings have alignment of 2 or 10, which is due to malloc on
-// 32-bit Linux returning values aligned to 8 bytes, and offsetof(array, QString::Data) == 18.
-//
-// The profile on 64-bit will be different since offsetof(array, QString::Data) == 26.
-//
-// The benchmark results were, for a Core-i7 @ 2.67 GHz 32-bit, compiled with -O3 -funroll-loops:
-//   16-bit loads only:           872,301 CPU ticks [Qt 4.5 / memcmp]
-//   32- and 16-bit loads:        773,362 CPU ticks [Qt 4.6]
-//   SSE2 "movdqu" 128-bit loads: 618,736 CPU ticks
-//   SSE3 "lddqu" 128-bit loads:  619,954 CPU ticks
-//   SSSE3 "palignr" corrections: 852,147 CPU ticks
-//   SSE4.2 "pcmpestrm":          738,702 CPU ticks
-//
-// The same benchmark on an Atom N450 @ 1.66 GHz, is:
-//  16-bit loads only:            2,185,882 CPU ticks
-//  32- and 16-bit loads:         1,805,060 CPU ticks
-//  SSE2 "movdqu" 128-bit loads:  2,529,843 CPU ticks
-//  SSE3 "lddqu" 128-bit loads:   2,514,858 CPU ticks
-//  SSSE3 "palignr" corrections:  2,160,325 CPU ticks
-//  SSE4.2 not available
-//
-// The conclusion we reach is that alignment the SSE2 unaligned code can gain
-// 20% improvement in performance in some systems, but suffers a penalty due
-// to the unaligned loads on others.
-
 static bool qMemEquals(const quint16 *a, const quint16 *b, int length)
 {
     if (a == b || !length)
         return true;
 
-    union {
-        const quint16 *w;
-        const quint32 *d;
-        quintptr value;
-    } sa, sb;
-    sa.w = a;
-    sb.w = b;
+    return ucstrncmp(reinterpret_cast<const QChar *>(a), reinterpret_cast<const QChar *>(b), length) == 0;
+}
 
-    // check alignment
-    if ((sa.value & 2) == (sb.value & 2)) {
-        // both addresses have the same alignment
-        if (sa.value & 2) {
-            // both addresses are not aligned to 4-bytes boundaries
-            // compare the first character
-            if (*sa.w != *sb.w)
-                return false;
-            --length;
-            ++sa.w;
-            ++sb.w;
-
-            // now both addresses are 4-bytes aligned
-        }
-
-        // both addresses are 4-bytes aligned
-        // do a fast 32-bit comparison
-        const quint32 *e = sa.d + (length >> 1);
-        for ( ; sa.d != e; ++sa.d, ++sb.d) {
-            if (*sa.d != *sb.d)
-                return false;
-        }
-
-        // do we have a tail?
-        return (length & 1) ? *sa.w == *sb.w : true;
-    } else {
-        // one of the addresses isn't 4-byte aligned but the other is
-        const quint16 *e = sa.w + length;
-        for ( ; sa.w != e; ++sa.w, ++sb.w) {
-            if (*sa.w != *sb.w)
-                return false;
-        }
-    }
-    return true;
+static int ucstrcmp(const QChar *a, int alen, const uchar *b, int blen)
+{
+    int l = qMin(alen, blen);
+    int cmp = ucstrncmp(a, b, l);
+    return cmp ? cmp : (alen-blen);
 }
 
 /*!
@@ -340,14 +644,38 @@ static int findChar(const QChar *str, int len, QChar ch, int from,
     if (from < 0)
         from = qMax(from + len, 0);
     if (from < len) {
-        const ushort *n = s + from - 1;
+        const ushort *n = s + from;
         const ushort *e = s + len;
         if (cs == Qt::CaseSensitive) {
+#ifdef __SSE2__
+            __m128i mch = _mm_set1_epi32(c | (c << 16));
+
+            // we're going to read n[0..7] (16 bytes)
+            for (const ushort *next = n + 8; next <= e; n = next, next += 8) {
+                __m128i data = _mm_loadu_si128((__m128i*)n);
+                __m128i result = _mm_cmpeq_epi16(data, mch);
+                uint mask = _mm_movemask_epi8(result);
+                if (ushort(mask)) {
+                    // found a match
+                    // same as: return n - s + _bit_scan_forward(mask) / 2
+                    return (reinterpret_cast<const char *>(n) - reinterpret_cast<const char *>(s)
+                            + _bit_scan_forward(mask)) >> 1;
+                }
+            }
+
+#  ifdef Q_COMPILER_LAMBDA
+            return UnrollTailLoop<7>::exec(e - n, -1,
+                                           [=](int i) { return n[i] == c; },
+                                           [=](int i) { return n - s + i; });
+#  endif
+#endif
+            --n;
             while (++n != e)
                 if (*n == c)
                     return  n - s;
         } else {
             c = foldCase(c);
+            --n;
             while (++n != e)
                 if (foldCase(*n) == c)
                     return  n - s;
@@ -1014,21 +1342,13 @@ const QString::Null QString::null = { };
 
 int QString::toUcs4_helper(const ushort *uc, int length, uint *out)
 {
-    int i = 0;
-    const ushort *const e = uc + length;
-    while (uc < e) {
-        uint u = *uc;
-        if (QChar::isHighSurrogate(u) && uc + 1 < e) {
-            ushort low = uc[1];
-            if (QChar::isLowSurrogate(low)) {
-                ++uc;
-                u = QChar::surrogateToUcs4(u, low);
-            }
-        }
-        out[i++] = u;
-        ++uc;
-    }
-    return i;
+    int count = 0;
+
+    QStringIterator i(reinterpret_cast<const QChar *>(uc), reinterpret_cast<const QChar *>(uc + length));
+    while (i.hasNext())
+        out[count++] = i.next();
+
+    return count;
 }
 
 /*! \fn int QString::toWCharArray(wchar_t *array) const
@@ -1463,7 +1783,7 @@ QString &QString::operator=(QChar ch)
 */
 QString &QString::insert(int i, QLatin1String str)
 {
-    const uchar *s = (const uchar *)str.latin1();
+    const char *s = str.latin1();
     if (i < 0 || !s || !(*s))
         return *this;
 
@@ -1471,8 +1791,7 @@ QString &QString::insert(int i, QLatin1String str)
     expand(qMax(d->size, i) + len - 1);
 
     ::memmove(d->data() + i + len, d->data() + i, (d->size - i - len) * sizeof(QChar));
-    for (int j = 0; j < len; ++j)
-        d->data()[i + j] = s[j];
+    qt_from_latin1(d->data() + i, s, uint(len));
     return *this;
 }
 
@@ -1584,14 +1903,14 @@ QString &QString::append(const QChar *str, int len)
 */
 QString &QString::append(QLatin1String str)
 {
-    const uchar *s = (const uchar *)str.latin1();
+    const char *s = str.latin1();
     if (s) {
         int len = str.size();
         if (d->ref.isShared() || uint(d->size + len) + 1u > d->alloc)
             reallocData(uint(d->size + len) + 1u, true);
         ushort *i = d->data() + d->size;
-        while ((*i++ = *s++))
-            ;
+        qt_from_latin1(i, s, uint(len));
+        i[len] = '\0';
         d->size += len;
     }
     return *this;
@@ -2098,13 +2417,11 @@ QString& QString::replace(QChar before, QChar after, Qt::CaseSensitivity cs)
 QString &QString::replace(QLatin1String before, QLatin1String after, Qt::CaseSensitivity cs)
 {
     int alen = after.size();
-    QVarLengthArray<ushort> a(alen);
-    for (int i = 0; i < alen; ++i)
-        a[i] = (uchar)after.latin1()[i];
     int blen = before.size();
+    QVarLengthArray<ushort> a(alen);
     QVarLengthArray<ushort> b(blen);
-    for (int i = 0; i < blen; ++i)
-        b[i] = (uchar)before.latin1()[i];
+    qt_from_latin1(a.data(), after.latin1(), alen);
+    qt_from_latin1(b.data(), before.latin1(), blen);
     return replace((const QChar *)b.data(), blen, (const QChar *)a.data(), alen, cs);
 }
 
@@ -2124,8 +2441,7 @@ QString &QString::replace(QLatin1String before, const QString &after, Qt::CaseSe
 {
     int blen = before.size();
     QVarLengthArray<ushort> b(blen);
-    for (int i = 0; i < blen; ++i)
-        b[i] = (uchar)before.latin1()[i];
+    qt_from_latin1(b.data(), before.latin1(), blen);
     return replace((const QChar *)b.data(), blen, after.constData(), after.d->size, cs);
 }
 
@@ -2145,8 +2461,7 @@ QString &QString::replace(const QString &before, QLatin1String after, Qt::CaseSe
 {
     int alen = after.size();
     QVarLengthArray<ushort> a(alen);
-    for (int i = 0; i < alen; ++i)
-        a[i] = (uchar)after.latin1()[i];
+    qt_from_latin1(a.data(), after.latin1(), alen);
     return replace(before.constData(), before.d->size, (const QChar *)a.data(), alen, cs);
 }
 
@@ -2166,8 +2481,7 @@ QString &QString::replace(QChar c, QLatin1String after, Qt::CaseSensitivity cs)
 {
     int alen = after.size();
     QVarLengthArray<ushort> a(alen);
-    for (int i = 0; i < alen; ++i)
-        a[i] = (uchar)after.latin1()[i];
+    qt_from_latin1(a.data(), after.latin1(), alen);
     return replace(&c, 1, (const QChar *)a.data(), alen, cs);
 }
 
@@ -2201,17 +2515,7 @@ bool QString::operator==(QLatin1String other) const
     if (!other.size())
         return isEmpty();
 
-    const ushort *uc = d->data();
-    const ushort *e = uc + d->size;
-    const uchar *c = (uchar *)other.latin1();
-
-    while (uc < e) {
-        if (*uc != *c)
-            return false;
-        ++uc;
-        ++c;
-    }
-    return true;
+    return compare_helper(data(), size(), other, Qt::CaseSensitive) == 0;
 }
 
 /*! \fn bool QString::operator==(const QByteArray &other) const
@@ -2265,16 +2569,7 @@ bool QString::operator<(QLatin1String other) const
     if (!c || *c == 0)
         return false;
 
-    const ushort *uc = d->data();
-    const ushort *e = uc + qMin(d->size, other.size());
-
-    while (uc < e) {
-        if (*uc != *c)
-            break;
-        ++uc;
-        ++c;
-    }
-    return (uc == e ? d->size < other.size() : *uc < *c);
+    return compare_helper(data(), size(), other, Qt::CaseSensitive) < 0;
 }
 
 /*! \fn bool QString::operator<(const QByteArray &other) const
@@ -2367,16 +2662,7 @@ bool QString::operator>(QLatin1String other) const
     if (!c || *c == '\0')
         return !isEmpty();
 
-    const ushort *uc = d->data();
-    const ushort *e = uc + qMin(d->size, other.size());
-
-    while (uc < e) {
-        if (*uc != *c)
-            break;
-        ++uc;
-        ++c;
-    }
-    return (uc == e) ? d->size > other.size() : *uc > *c;
+    return compare_helper(data(), size(), other, Qt::CaseSensitive) > 0;
 }
 
 /*! \fn bool QString::operator>(const QByteArray &other) const
@@ -2763,8 +3049,7 @@ int QString::lastIndexOf(QLatin1String str, int from, Qt::CaseSensitivity cs) co
         from = delta;
 
     QVarLengthArray<ushort> s(sl);
-    for (int i = 0; i < sl; ++i)
-        s[i] = str.latin1()[i];
+    qt_from_latin1(s.data(), str.latin1(), sl);
 
     return lastIndexOfHelper(d->data(), from, s.data(), sl, cs);
 }
@@ -3170,6 +3455,15 @@ int QString::count(const QStringRef &str, Qt::CaseSensitivity cs) const
     \snippet qstring/main.cpp 17
 
     \sa indexOf(), count()
+*/
+
+/*! \fn bool QString::contains(QLatin1String str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
+    \since 5.3
+
+    \overload contains()
+
+    Returns \c true if this string contains an occurrence of the latin-1 string
+    \a str; otherwise returns \c false.
 */
 
 /*! \fn bool QString::contains(QChar ch, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
@@ -3895,131 +4189,58 @@ bool QString::endsWith(QChar c, Qt::CaseSensitivity cs) const
                : foldCase(d->data()[d->size - 1]) == foldCase(c.unicode()));
 }
 
-
-#if defined(__SSE2__)
-static inline __m128i mergeQuestionMarks(__m128i chunk)
+QByteArray QString::toLatin1_helper(const QString &string)
 {
-    const __m128i questionMark = _mm_set1_epi16('?');
+    if (Q_UNLIKELY(string.isNull()))
+        return QByteArray();
 
-# ifdef __SSE4_2__
-    // compare the unsigned shorts for the range 0x0100-0xFFFF
-    // note on the use of _mm_cmpestrm:
-    //  The MSDN documentation online (http://technet.microsoft.com/en-us/library/bb514080.aspx)
-    //  says for range search the following:
-    //    For each character c in a, determine whether b0 <= c <= b1 or b2 <= c <= b3
-    //
-    //  However, all examples on the Internet, including from Intel
-    //  (see http://software.intel.com/en-us/articles/xml-parsing-accelerator-with-intel-streaming-simd-extensions-4-intel-sse4/)
-    //  put the range to be searched first
-    //
-    //  Disassembly and instruction-level debugging with GCC and ICC show
-    //  that they are doing the right thing. Inverting the arguments in the
-    //  instruction does cause a bunch of test failures.
-
-    const int mode = _SIDD_UWORD_OPS | _SIDD_CMP_RANGES | _SIDD_UNIT_MASK;
-    const __m128i rangeMatch = _mm_cvtsi32_si128(0xffff0100);
-    const __m128i offLimitMask = _mm_cmpestrm(rangeMatch, 2, chunk, 8, mode);
-
-    // replace the non-Latin 1 characters in the chunk with question marks
-    chunk = _mm_blendv_epi8(chunk, questionMark, offLimitMask);
-# else
-    // SSE has no compare instruction for unsigned comparison.
-    // The variables must be shiffted + 0x8000 to be compared
-    const __m128i signedBitOffset = _mm_set1_epi16(short(0x8000));
-    const __m128i thresholdMask = _mm_set1_epi16(short(0xff + 0x8000));
-
-    const __m128i signedChunk = _mm_add_epi16(chunk, signedBitOffset);
-    const __m128i offLimitMask = _mm_cmpgt_epi16(signedChunk, thresholdMask);
-
-#  ifdef __SSE4_1__
-    // replace the non-Latin 1 characters in the chunk with question marks
-    chunk = _mm_blendv_epi8(chunk, questionMark, offLimitMask);
-#  else
-    // offLimitQuestionMark contains '?' for each 16 bits that was off-limit
-    // the 16 bits that were correct contains zeros
-    const __m128i offLimitQuestionMark = _mm_and_si128(offLimitMask, questionMark);
-
-    // correctBytes contains the bytes that were in limit
-    // the 16 bits that were off limits contains zeros
-    const __m128i correctBytes = _mm_andnot_si128(offLimitMask, chunk);
-
-    // merge offLimitQuestionMark and correctBytes to have the result
-    chunk = _mm_or_si128(correctBytes, offLimitQuestionMark);
-#  endif
-# endif
-    return chunk;
+    return toLatin1_helper(string.constData(), string.length());
 }
-#endif
 
-#if defined(__mips_dsp)
-extern "C" void qt_toLatin1_mips_dsp_asm(uchar *dst, const ushort *src, int length);
-#endif
-
-static QByteArray toLatin1_helper(const QChar *data, int length)
+QByteArray QString::toLatin1_helper(const QChar *data, int length)
 {
-    QByteArray ba;
-    if (length) {
-        ba.resize(length);
-        const ushort *src = reinterpret_cast<const ushort *>(data);
-        uchar *dst = (uchar*) ba.data();
-#if defined(__SSE2__)
-        if (length >= 16) {
-            const int chunkCount = length >> 4; // divided by 16
+    QByteArray ba(length, Qt::Uninitialized);
 
-            for (int i = 0; i < chunkCount; ++i) {
-                __m128i chunk1 = _mm_loadu_si128((__m128i*)src); // load
-                chunk1 = mergeQuestionMarks(chunk1);
-                src += 8;
-
-                __m128i chunk2 = _mm_loadu_si128((__m128i*)src); // load
-                chunk2 = mergeQuestionMarks(chunk2);
-                src += 8;
-
-                // pack the two vector to 16 x 8bits elements
-                const __m128i result = _mm_packus_epi16(chunk1, chunk2);
-
-                _mm_storeu_si128((__m128i*)dst, result); // store
-                dst += 16;
-            }
-            length = length % 16;
-        }
-#elif defined(__ARM_NEON__)
-        // Refer to the documentation of the SSE2 implementation
-        // this use eactly the same method as for SSE except:
-        // 1) neon has unsigned comparison
-        // 2) packing is done to 64 bits (8 x 8bits component).
-        if (length >= 16) {
-            const int chunkCount = length >> 3; // divided by 8
-            const uint16x8_t questionMark = vdupq_n_u16('?'); // set
-            const uint16x8_t thresholdMask = vdupq_n_u16(0xff); // set
-            for (int i = 0; i < chunkCount; ++i) {
-                uint16x8_t chunk = vld1q_u16((uint16_t *)src); // load
-                src += 8;
-
-                const uint16x8_t offLimitMask = vcgtq_u16(chunk, thresholdMask); // chunk > thresholdMask
-                const uint16x8_t offLimitQuestionMark = vandq_u16(offLimitMask, questionMark); // offLimitMask & questionMark
-                const uint16x8_t correctBytes = vbicq_u16(chunk, offLimitMask); // !offLimitMask & chunk
-                chunk = vorrq_u16(correctBytes, offLimitQuestionMark); // correctBytes | offLimitQuestionMark
-                const uint8x8_t result = vmovn_u16(chunk); // narrowing move->packing
-                vst1_u8(dst, result); // store
-                dst += 8;
-            }
-            length = length % 8;
-        }
-#endif
-#if defined(__mips_dsp)
-        qt_toLatin1_mips_dsp_asm(dst, src, length);
-#else
-        while (length--) {
-            *dst++ = (*src>0xff) ? '?' : (uchar) *src;
-            ++src;
-        }
-#endif
-    }
+    // since we own the only copy, we're going to const_cast the constData;
+    // that avoids an unnecessary call to detach() and expansion code that will never get used
+    qt_to_latin1(reinterpret_cast<uchar *>(const_cast<char *>(ba.constData())),
+                 reinterpret_cast<const ushort *>(data), length);
     return ba;
 }
 
+QByteArray QString::toLatin1_helper_inplace(QString &s)
+{
+    if (!s.isDetached())
+        return s.toLatin1();
+
+    // We can return our own buffer to the caller.
+    // Conversion to Latin-1 always shrinks the buffer by half.
+    const ushort *data = reinterpret_cast<const ushort *>(s.constData());
+    uint length = s.size();
+
+    // Swap the d pointers.
+    // Kids, avert your eyes. Don't try this at home.
+    QArrayData *ba_d = s.d;
+
+    // multiply the allocated capacity by sizeof(ushort)
+    ba_d->alloc *= sizeof(ushort);
+
+    // reset ourselves to QString()
+    s.d = QString().d;
+
+    // do the in-place conversion
+    uchar *dst = reinterpret_cast<uchar *>(ba_d->data());
+    qt_to_latin1(dst, data, length);
+    dst[length] = '\0';
+
+    QByteArrayDataPtr badptr = { ba_d };
+    return QByteArray(badptr);
+}
+
+
 /*!
+    \fn QByteArray QString::toLatin1() const
+
     Returns a Latin-1 representation of the string as a QByteArray.
 
     The returned byte array is undefined if the string contains non-Latin1
@@ -4028,10 +4249,6 @@ static QByteArray toLatin1_helper(const QChar *data, int length)
 
     \sa fromLatin1(), toUtf8(), toLocal8Bit(), QTextCodec
 */
-QByteArray QString::toLatin1() const
-{
-    return toLatin1_helper(unicode(), length());
-}
 
 /*!
     \fn QByteArray QString::toAscii() const
@@ -4046,19 +4263,9 @@ QByteArray QString::toLatin1() const
     \sa fromAscii(), toLatin1(), toUtf8(), toLocal8Bit(), QTextCodec
 */
 
-#if !defined(Q_OS_MAC) && defined(Q_OS_UNIX) && !defined(QT_USE_ICU)
-static QByteArray toLocal8Bit_helper(const QChar *data, int length)
-{
-#ifndef QT_NO_TEXTCODEC
-    QTextCodec *localeCodec = QTextCodec::codecForLocale();
-    if (localeCodec)
-        return localeCodec->fromUnicode(data, length);
-#endif // QT_NO_TEXTCODEC
-    return toLatin1_helper(data, length);
-}
-#endif
-
 /*!
+    \fn QByteArray QString::toLocal8Bit() const
+
     Returns the local 8-bit representation of the string as a
     QByteArray. The returned byte array is undefined if the string
     contains characters not supported by the local 8-bit encoding.
@@ -4073,17 +4280,21 @@ static QByteArray toLocal8Bit_helper(const QChar *data, int length)
 
     \sa fromLocal8Bit(), toLatin1(), toUtf8(), QTextCodec
 */
-QByteArray QString::toLocal8Bit() const
+
+QByteArray QString::toLocal8Bit_helper(const QChar *data, int size)
 {
 #ifndef QT_NO_TEXTCODEC
     QTextCodec *localeCodec = QTextCodec::codecForLocale();
     if (localeCodec)
-        return localeCodec->fromUnicode(*this);
+        return localeCodec->fromUnicode(data, size);
 #endif // QT_NO_TEXTCODEC
-    return toLatin1();
+    return toLatin1_helper(data, size);
 }
 
+
 /*!
+    \fn QByteArray QString::toUtf8() const
+
     Returns a UTF-8 representation of the string as a QByteArray.
 
     UTF-8 is a Unicode codec and can represent all characters in a Unicode
@@ -4099,12 +4310,13 @@ QByteArray QString::toLocal8Bit() const
 
     \sa fromUtf8(), toLatin1(), toLocal8Bit(), QTextCodec
 */
-QByteArray QString::toUtf8() const
+
+QByteArray QString::toUtf8_helper(const QString &str)
 {
-    if (isNull())
+    if (str.isNull())
         return QByteArray();
 
-    return QUtf8::convertFromUnicode(constData(), length(), 0);
+    return QUtf8::convertFromUnicode(str.constData(), str.length());
 }
 
 /*!
@@ -4112,8 +4324,12 @@ QByteArray QString::toUtf8() const
 
     Returns a UCS-4/UTF-32 representation of the string as a QVector<uint>.
 
-    UCS-4 is a Unicode codec and is lossless. All characters from this string
-    can be encoded in UCS-4. The vector is not null terminated.
+    UCS-4 is a Unicode codec and therefore it is lossless. All characters from
+    this string will be encoded in UCS-4. Any invalid sequence of code units in
+    this string is replaced by the Unicode's replacement character
+    (QChar::ReplacementCharacter, which corresponds to \c{U+FFFD}).
+
+    The returned vector is not NUL terminated.
 
     \sa fromUtf8(), toUtf8(), toLatin1(), toLocal8Bit(), QTextCodec, fromUcs4(), toWCharArray()
 */
@@ -4125,12 +4341,6 @@ QVector<uint> QString::toUcs4() const
     v.resize(len);
     return v;
 }
-
-#if defined(__mips_dsp)
-// From qstring_mips_dsp_asm.S
-extern "C" void qt_fromlatin1_mips_asm_unroll4 (ushort*, const char*, uint);
-extern "C" void qt_fromlatin1_mips_asm_unroll8 (ushort*, const char*, uint);
-#endif
 
 QString::Data *QString::fromLatin1_helper(const char *str, int size)
 {
@@ -4147,40 +4357,8 @@ QString::Data *QString::fromLatin1_helper(const char *str, int size)
         d->size = size;
         d->data()[size] = '\0';
         ushort *dst = d->data();
-        /* SIMD:
-         * Unpacking with SSE has been shown to improve performance on recent CPUs
-         * The same method gives no improvement with NEON.
-         */
-#if defined(__SSE2__)
-        if (size >= 16) {
-            int chunkCount = size >> 4; // divided by 16
-            const __m128i nullMask = _mm_set1_epi32(0);
-            for (int i = 0; i < chunkCount; ++i) {
-                const __m128i chunk = _mm_loadu_si128((__m128i*)str); // load
-                str += 16;
 
-                // unpack the first 8 bytes, padding with zeros
-                const __m128i firstHalf = _mm_unpacklo_epi8(chunk, nullMask);
-                _mm_storeu_si128((__m128i*)dst, firstHalf); // store
-                dst += 8;
-
-                // unpack the last 8 bytes, padding with zeros
-                const __m128i secondHalf = _mm_unpackhi_epi8 (chunk, nullMask);
-                _mm_storeu_si128((__m128i*)dst, secondHalf); // store
-                dst += 8;
-            }
-            size = size % 16;
-        }
-#endif
-#if defined(__mips_dsp)
-        if (size > 20)
-            qt_fromlatin1_mips_asm_unroll8(dst, str, size);
-        else
-            qt_fromlatin1_mips_asm_unroll4(dst, str, size);
-#else
-        while (size--)
-            *dst++ = (uchar)*str++;
-#endif
+        qt_from_latin1(dst, str, uint(size));
     }
     return d;
 }
@@ -4305,7 +4483,7 @@ QString QString::fromUtf8_helper(const char *str, int size)
         return QString();
 
     Q_ASSERT(size != -1);
-    return QUtf8::convertToUnicode(str, size, 0);
+    return QUtf8::convertToUnicode(str, size);
 }
 
 /*!
@@ -5039,22 +5217,7 @@ int QString::compare_helper(const QChar *data1, int length1, QLatin1String s2,
         return length1;
 
     if (cs == Qt::CaseSensitive) {
-        const ushort *e = uc + length1;
-        if (s2.size() < length1)
-            e = uc + s2.size();
-        while (uc < e) {
-            int diff = *uc - *c;
-            if (diff)
-                return diff;
-            uc++, c++;
-        }
-
-        if (uc == uce) {
-            if (c == (const uchar *)s2.latin1() + s2.size())
-                return 0;
-            return -1;
-        }
-        return 1;
+        return ucstrcmp(data1, length1, c, s2.size());
     } else {
         return ucstricmp(uc, uce, c, c + s2.size());
     }
@@ -5144,7 +5307,11 @@ int QString::localeAwareCompare_helper(const QChar *data1, int length1,
         return ucstrcmp(data1, length1, data2, length2);
 
 #if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
+#ifndef Q_OS_WINRT
     int res = CompareString(GetUserDefaultLCID(), 0, (wchar_t*)data1, length1, (wchar_t*)data2, length2);
+#else
+    int res = CompareStringEx(LOCALE_NAME_USER_DEFAULT, 0, (LPCWSTR)data1, length1, (LPCWSTR)data2, length2, NULL, NULL, 0);
+#endif
 
     switch (res) {
     case CSTR_LESS_THAN:
@@ -5553,8 +5720,6 @@ QString &QString::sprintf(const char *cformat, ...)
 
 QString &QString::vsprintf(const char* cformat, va_list ap)
 {
-    const QLocale locale(QLocale::C);
-
     if (!cformat || !*cformat) {
         // Qt 1.x compat
         *this = fromLatin1("");
@@ -5594,12 +5759,12 @@ QString &QString::vsprintf(const char* cformat, va_list ap)
         bool no_more_flags = false;
         do {
             switch (*c) {
-                case '#': flags |= QLocalePrivate::Alternate; break;
-                case '0': flags |= QLocalePrivate::ZeroPadded; break;
-                case '-': flags |= QLocalePrivate::LeftAdjusted; break;
-                case ' ': flags |= QLocalePrivate::BlankBeforePositive; break;
-                case '+': flags |= QLocalePrivate::AlwaysShowSign; break;
-                case '\'': flags |= QLocalePrivate::ThousandsGroup; break;
+                case '#': flags |= QLocaleData::Alternate; break;
+                case '0': flags |= QLocaleData::ZeroPadded; break;
+                case '-': flags |= QLocaleData::LeftAdjusted; break;
+                case ' ': flags |= QLocaleData::BlankBeforePositive; break;
+                case '+': flags |= QLocaleData::AlwaysShowSign; break;
+                case '\'': flags |= QLocaleData::ThousandsGroup; break;
                 default: no_more_flags = true; break;
             }
 
@@ -5731,7 +5896,7 @@ QString &QString::vsprintf(const char* cformat, va_list ap)
                     case lm_t: i = va_arg(ap, int); break;
                     default: i = 0; break;
                 }
-                subst = locale.d->longLongToString(i, precision, 10, width, flags);
+                subst = QLocaleData::c()->longLongToString(i, precision, 10, width, flags);
                 ++c;
                 break;
             }
@@ -5751,7 +5916,7 @@ QString &QString::vsprintf(const char* cformat, va_list ap)
                 }
 
                 if (qIsUpper(*c))
-                    flags |= QLocalePrivate::CapitalEorX;
+                    flags |= QLocaleData::CapitalEorX;
 
                 int base = 10;
                 switch (qToLower(*c)) {
@@ -5763,7 +5928,7 @@ QString &QString::vsprintf(const char* cformat, va_list ap)
                         base = 16; break;
                     default: break;
                 }
-                subst = locale.d->unsLongLongToString(u, precision, base, width, flags);
+                subst = QLocaleData::c()->unsLongLongToString(u, precision, base, width, flags);
                 ++c;
                 break;
             }
@@ -5782,17 +5947,17 @@ QString &QString::vsprintf(const char* cformat, va_list ap)
                     d = va_arg(ap, double);
 
                 if (qIsUpper(*c))
-                    flags |= QLocalePrivate::CapitalEorX;
+                    flags |= QLocaleData::CapitalEorX;
 
-                QLocalePrivate::DoubleForm form = QLocalePrivate::DFDecimal;
+                QLocaleData::DoubleForm form = QLocaleData::DFDecimal;
                 switch (qToLower(*c)) {
-                    case 'e': form = QLocalePrivate::DFExponent; break;
+                    case 'e': form = QLocaleData::DFExponent; break;
                     case 'a':                             // not supported - decimal form used instead
-                    case 'f': form = QLocalePrivate::DFDecimal; break;
-                    case 'g': form = QLocalePrivate::DFSignificantDigits; break;
+                    case 'f': form = QLocaleData::DFDecimal; break;
+                    case 'g': form = QLocaleData::DFSignificantDigits; break;
                     default: break;
                 }
-                subst = locale.d->doubleToString(d, precision, form, width, flags);
+                subst = QLocaleData::c()->doubleToString(d, precision, form, width, flags);
                 ++c;
                 break;
             }
@@ -5825,8 +5990,8 @@ QString &QString::vsprintf(const char* cformat, va_list ap)
 #else
                 quint64 i = reinterpret_cast<unsigned long>(arg);
 #endif
-                flags |= QLocalePrivate::Alternate;
-                subst = locale.d->unsLongLongToString(i, precision, 16, width, flags);
+                flags |= QLocaleData::Alternate;
+                subst = QLocaleData::c()->unsLongLongToString(i, precision, 16, width, flags);
                 ++c;
                 break;
             }
@@ -5868,7 +6033,7 @@ QString &QString::vsprintf(const char* cformat, va_list ap)
                 continue;
         }
 
-        if (flags & QLocalePrivate::LeftAdjusted)
+        if (flags & QLocaleData::LeftAdjusted)
             result.append(subst.leftJustified(width));
         else
             result.append(subst.rightJustified(width));
@@ -5903,16 +6068,21 @@ QString &QString::vsprintf(const char* cformat, va_list ap)
 
 qint64 QString::toLongLong(bool *ok, int base) const
 {
+    return toIntegral_helper<qlonglong>(constData(), size(), ok, base);
+}
+
+qlonglong QString::toIntegral_helper(const QChar *data, int len, bool *ok, int base)
+{
 #if defined(QT_CHECK_RANGE)
     if (base != 0 && (base < 2 || base > 36)) {
-        qWarning("QString::toLongLong: Invalid base (%d)", base);
+        qWarning("QString::toULongLong: Invalid base (%d)", base);
         base = 10;
     }
 #endif
 
-    QLocale c_locale(QLocale::C);
-    return c_locale.d->stringToLongLong(*this, base, ok, QLocalePrivate::FailOnGroupSeparators);
+    return QLocaleData::c()->stringToLongLong(data, len, base, ok, QLocaleData::FailOnGroupSeparators);
 }
+
 
 /*!
     Returns the string converted to an \c{unsigned long long} using base \a
@@ -5938,6 +6108,11 @@ qint64 QString::toLongLong(bool *ok, int base) const
 
 quint64 QString::toULongLong(bool *ok, int base) const
 {
+    return toIntegral_helper<qulonglong>(constData(), size(), ok, base);
+}
+
+qulonglong QString::toIntegral_helper(const QChar *data, uint len, bool *ok, int base)
+{
 #if defined(QT_CHECK_RANGE)
     if (base != 0 && (base < 2 || base > 36)) {
         qWarning("QString::toULongLong: Invalid base (%d)", base);
@@ -5945,8 +6120,7 @@ quint64 QString::toULongLong(bool *ok, int base) const
     }
 #endif
 
-    QLocale c_locale(QLocale::C);
-    return c_locale.d->stringToUnsLongLong(*this, base, ok, QLocalePrivate::FailOnGroupSeparators);
+    return QLocaleData::c()->stringToUnsLongLong(data, len, base, ok, QLocaleData::FailOnGroupSeparators);
 }
 
 /*!
@@ -5975,13 +6149,7 @@ quint64 QString::toULongLong(bool *ok, int base) const
 
 long QString::toLong(bool *ok, int base) const
 {
-    qint64 v = toLongLong(ok, base);
-    if (v < LONG_MIN || v > LONG_MAX) {
-        if (ok)
-            *ok = false;
-        v = 0;
-    }
-    return (long)v;
+    return toIntegral_helper<long>(constData(), size(), ok, base);
 }
 
 /*!
@@ -6010,13 +6178,7 @@ long QString::toLong(bool *ok, int base) const
 
 ulong QString::toULong(bool *ok, int base) const
 {
-    quint64 v = toULongLong(ok, base);
-    if (v > ULONG_MAX) {
-        if (ok)
-            *ok = false;
-        v = 0;
-    }
-    return (ulong)v;
+    return toIntegral_helper<ulong>(constData(), size(), ok, base);
 }
 
 
@@ -6044,13 +6206,7 @@ ulong QString::toULong(bool *ok, int base) const
 
 int QString::toInt(bool *ok, int base) const
 {
-    qint64 v = toLongLong(ok, base);
-    if (v < INT_MIN || v > INT_MAX) {
-        if (ok)
-            *ok = false;
-        v = 0;
-    }
-    return v;
+    return toIntegral_helper<int>(constData(), size(), ok, base);
 }
 
 /*!
@@ -6077,13 +6233,7 @@ int QString::toInt(bool *ok, int base) const
 
 uint QString::toUInt(bool *ok, int base) const
 {
-    quint64 v = toULongLong(ok, base);
-    if (v > UINT_MAX) {
-        if (ok)
-            *ok = false;
-        v = 0;
-    }
-    return (uint)v;
+    return toIntegral_helper<uint>(constData(), size(), ok, base);
 }
 
 /*!
@@ -6110,13 +6260,7 @@ uint QString::toUInt(bool *ok, int base) const
 
 short QString::toShort(bool *ok, int base) const
 {
-    long v = toLongLong(ok, base);
-    if (v < SHRT_MIN || v > SHRT_MAX) {
-        if (ok)
-            *ok = false;
-        v = 0;
-    }
-    return (short)v;
+    return toIntegral_helper<short>(constData(), size(), ok, base);
 }
 
 /*!
@@ -6143,13 +6287,7 @@ short QString::toShort(bool *ok, int base) const
 
 ushort QString::toUShort(bool *ok, int base) const
 {
-    ulong v = toULongLong(ok, base);
-    if (v > USHRT_MAX) {
-        if (ok)
-            *ok = false;
-        v = 0;
-    }
-    return (ushort)v;
+    return toIntegral_helper<ushort>(constData(), size(), ok, base);
 }
 
 
@@ -6184,8 +6322,7 @@ ushort QString::toUShort(bool *ok, int base) const
 
 double QString::toDouble(bool *ok) const
 {
-    QLocale c_locale(QLocale::C);
-    return c_locale.d->stringToDouble(*this, ok, QLocalePrivate::FailOnGroupSeparators);
+    return QLocaleData::c()->stringToDouble(constData(), size(), ok, QLocaleData::FailOnGroupSeparators);
 }
 
 /*!
@@ -6204,27 +6341,9 @@ double QString::toDouble(bool *ok) const
     \sa number(), toDouble(), toInt(), QLocale::toFloat()
 */
 
-#define QT_MAX_FLOAT 3.4028234663852886e+38
-
 float QString::toFloat(bool *ok) const
 {
-    bool myOk;
-    double d = toDouble(&myOk);
-    if (!myOk) {
-        if (ok != 0)
-            *ok = false;
-        return 0.0;
-    }
-    if (qIsInf(d))
-        return float(d);
-    if (d > QT_MAX_FLOAT || d < -QT_MAX_FLOAT) {
-        if (ok != 0)
-            *ok = false;
-        return 0.0;
-    }
-    if (ok != 0)
-        *ok = true;
-    return float(d);
+    return QLocaleData::convertDoubleToFloat(toDouble(ok), ok);
 }
 
 /*! \fn QString &QString::setNum(int n, int base)
@@ -6268,8 +6387,7 @@ QString &QString::setNum(qlonglong n, int base)
         base = 10;
     }
 #endif
-    QLocale locale(QLocale::C);
-    *this = locale.d->longLongToString(n, -1, base);
+    *this = QLocaleData::c()->longLongToString(n, -1, base);
     return *this;
 }
 
@@ -6284,8 +6402,7 @@ QString &QString::setNum(qulonglong n, int base)
         base = 10;
     }
 #endif
-    QLocale locale(QLocale::C);
-    *this = locale.d->unsLongLongToString(n, -1, base);
+    *this = QLocaleData::c()->unsLongLongToString(n, -1, base);
     return *this;
 }
 
@@ -6317,22 +6434,22 @@ QString &QString::setNum(qulonglong n, int base)
 
 QString &QString::setNum(double n, char f, int prec)
 {
-    QLocalePrivate::DoubleForm form = QLocalePrivate::DFDecimal;
+    QLocaleData::DoubleForm form = QLocaleData::DFDecimal;
     uint flags = 0;
 
     if (qIsUpper(f))
-        flags = QLocalePrivate::CapitalEorX;
+        flags = QLocaleData::CapitalEorX;
     f = qToLower(f);
 
     switch (f) {
         case 'f':
-            form = QLocalePrivate::DFDecimal;
+            form = QLocaleData::DFDecimal;
             break;
         case 'e':
-            form = QLocalePrivate::DFExponent;
+            form = QLocaleData::DFExponent;
             break;
         case 'g':
-            form = QLocalePrivate::DFSignificantDigits;
+            form = QLocaleData::DFSignificantDigits;
             break;
         default:
 #if defined(QT_CHECK_RANGE)
@@ -6341,8 +6458,7 @@ QString &QString::setNum(double n, char f, int prec)
             break;
     }
 
-    QLocale locale(QLocale::C);
-    *this = locale.d->doubleToString(n, prec, form, -1, flags);
+    *this = QLocaleData::c()->doubleToString(n, prec, form, -1, flags);
     return *this;
 }
 
@@ -7140,20 +7256,20 @@ QString QString::arg(qlonglong a, int fieldWidth, int base, QChar fillChar) cons
         return *this;
     }
 
-    unsigned flags = QLocalePrivate::NoFlags;
+    unsigned flags = QLocaleData::NoFlags;
     if (fillChar == QLatin1Char('0'))
-        flags = QLocalePrivate::ZeroPadded;
+        flags = QLocaleData::ZeroPadded;
 
     QString arg;
     if (d.occurrences > d.locale_occurrences)
-        arg = QLocale::c().d->longLongToString(a, -1, base, fieldWidth, flags);
+        arg = QLocaleData::c()->longLongToString(a, -1, base, fieldWidth, flags);
 
     QString locale_arg;
     if (d.locale_occurrences > 0) {
         QLocale locale;
         if (!(locale.numberOptions() & QLocale::OmitGroupSeparator))
-            flags |= QLocalePrivate::ThousandsGroup;
-        locale_arg = locale.d->longLongToString(a, -1, base, fieldWidth, flags);
+            flags |= QLocaleData::ThousandsGroup;
+        locale_arg = locale.d->m_data->longLongToString(a, -1, base, fieldWidth, flags);
     }
 
     return replaceArgEscapes(*this, d, fieldWidth, arg, locale_arg, fillChar);
@@ -7184,20 +7300,20 @@ QString QString::arg(qulonglong a, int fieldWidth, int base, QChar fillChar) con
         return *this;
     }
 
-    unsigned flags = QLocalePrivate::NoFlags;
+    unsigned flags = QLocaleData::NoFlags;
     if (fillChar == QLatin1Char('0'))
-        flags = QLocalePrivate::ZeroPadded;
+        flags = QLocaleData::ZeroPadded;
 
     QString arg;
     if (d.occurrences > d.locale_occurrences)
-        arg = QLocale::c().d->unsLongLongToString(a, -1, base, fieldWidth, flags);
+        arg = QLocaleData::c()->unsLongLongToString(a, -1, base, fieldWidth, flags);
 
     QString locale_arg;
     if (d.locale_occurrences > 0) {
         QLocale locale;
         if (!(locale.numberOptions() & QLocale::OmitGroupSeparator))
-            flags |= QLocalePrivate::ThousandsGroup;
-        locale_arg = locale.d->unsLongLongToString(a, -1, base, fieldWidth, flags);
+            flags |= QLocaleData::ThousandsGroup;
+        locale_arg = locale.d->m_data->unsLongLongToString(a, -1, base, fieldWidth, flags);
     }
 
     return replaceArgEscapes(*this, d, fieldWidth, arg, locale_arg, fillChar);
@@ -7296,24 +7412,24 @@ QString QString::arg(double a, int fieldWidth, char fmt, int prec, QChar fillCha
         return *this;
     }
 
-    unsigned flags = QLocalePrivate::NoFlags;
+    unsigned flags = QLocaleData::NoFlags;
     if (fillChar == QLatin1Char('0'))
-        flags = QLocalePrivate::ZeroPadded;
+        flags = QLocaleData::ZeroPadded;
 
     if (qIsUpper(fmt))
-        flags |= QLocalePrivate::CapitalEorX;
+        flags |= QLocaleData::CapitalEorX;
     fmt = qToLower(fmt);
 
-    QLocalePrivate::DoubleForm form = QLocalePrivate::DFDecimal;
+    QLocaleData::DoubleForm form = QLocaleData::DFDecimal;
     switch (fmt) {
     case 'f':
-        form = QLocalePrivate::DFDecimal;
+        form = QLocaleData::DFDecimal;
         break;
     case 'e':
-        form = QLocalePrivate::DFExponent;
+        form = QLocaleData::DFExponent;
         break;
     case 'g':
-        form = QLocalePrivate::DFSignificantDigits;
+        form = QLocaleData::DFSignificantDigits;
         break;
     default:
 #if defined(QT_CHECK_RANGE)
@@ -7324,15 +7440,15 @@ QString QString::arg(double a, int fieldWidth, char fmt, int prec, QChar fillCha
 
     QString arg;
     if (d.occurrences > d.locale_occurrences)
-        arg = QLocale::c().d->doubleToString(a, prec, form, fieldWidth, flags);
+        arg = QLocaleData::c()->doubleToString(a, prec, form, fieldWidth, flags);
 
     QString locale_arg;
     if (d.locale_occurrences > 0) {
         QLocale locale;
 
         if (!(locale.numberOptions() & QLocale::OmitGroupSeparator))
-            flags |= QLocalePrivate::ThousandsGroup;
-        locale_arg = locale.d->doubleToString(a, prec, form, fieldWidth, flags);
+            flags |= QLocaleData::ThousandsGroup;
+        locale_arg = locale.d->m_data->doubleToString(a, prec, form, fieldWidth, flags);
     }
 
     return replaceArgEscapes(*this, d, fieldWidth, arg, locale_arg, fillChar);
@@ -8254,19 +8370,10 @@ bool operator==(QLatin1String s1, const QStringRef &s2)
     if (s1.size() != s2.size())
         return false;
 
-    const ushort *uc = reinterpret_cast<const ushort *>(s2.unicode());
-    const ushort *e = uc + s2.size();
     const uchar *c = reinterpret_cast<const uchar *>(s1.latin1());
     if (!c)
         return s2.isEmpty();
-
-    while (*c) {
-        if (uc == e || *uc != *c)
-            return false;
-        ++uc;
-        ++c;
-    }
-    return (uc == e);
+    return ucstrncmp(s2.unicode(), c, s2.size()) == 0;
 }
 
 /*!
@@ -8854,8 +8961,7 @@ int QStringRef::lastIndexOf(QLatin1String str, int from, Qt::CaseSensitivity cs)
         from = delta;
 
     QVarLengthArray<ushort> s(sl);
-    for (int i = 0; i < sl; ++i)
-        s[i] = str.latin1()[i];
+    qt_from_latin1(s.data(), str.latin1(), sl);
 
     return lastIndexOfHelper(reinterpret_cast<const ushort*>(unicode()), from, s.data(), sl, cs);
 }
@@ -9193,8 +9299,7 @@ static inline int qt_find_latin1_string(const QChar *haystack, int size,
     const char *latin1 = needle.latin1();
     int len = needle.size();
     QVarLengthArray<ushort> s(len);
-    for (int i = 0; i < len; ++i)
-        s[i] = latin1[i];
+    qt_from_latin1(s.data(), latin1, len);
 
     return qFindString(haystack, size, from,
                        reinterpret_cast<const QChar*>(s.constData()), len, cs);
@@ -9238,9 +9343,7 @@ static inline bool qt_starts_with(const QChar *haystack, int haystackLen,
     const ushort *data = reinterpret_cast<const ushort*>(haystack);
     const uchar *latin = reinterpret_cast<const uchar*>(needle.latin1());
     if (cs == Qt::CaseSensitive) {
-        for (int i = 0; i < slen; ++i)
-            if (data[i] != latin[i])
-                return false;
+        return ucstrncmp(haystack, latin, slen) == 0;
     } else {
         for (int i = 0; i < slen; ++i)
             if (foldCase(data[i]) != foldCase((ushort)latin[i]))
@@ -9290,9 +9393,7 @@ static inline bool qt_ends_with(const QChar *haystack, int haystackLen,
     const uchar *latin = reinterpret_cast<const uchar*>(needle.latin1());
     const ushort *data = reinterpret_cast<const ushort*>(haystack);
     if (cs == Qt::CaseSensitive) {
-        for (int i = 0; i < slen; i++)
-            if (data[pos+i] != latin[i])
-                return false;
+        return ucstrncmp(haystack + pos, latin, slen) == 0;
     } else {
         for (int i = 0; i < slen; i++)
             if (foldCase(data[pos+i]) != foldCase((ushort)latin[i]))
@@ -9314,7 +9415,7 @@ static inline bool qt_ends_with(const QChar *haystack, int haystackLen,
 */
 QByteArray QStringRef::toLatin1() const
 {
-    return toLatin1_helper(unicode(), length());
+    return QString::toLatin1_helper(unicode(), length());
 }
 
 /*!
@@ -9390,8 +9491,12 @@ QByteArray QStringRef::toUtf8() const
 
     Returns a UCS-4/UTF-32 representation of the string as a QVector<uint>.
 
-    UCS-4 is a Unicode codec and is lossless. All characters from this string
-    can be encoded in UCS-4.
+    UCS-4 is a Unicode codec and therefore it is lossless. All characters from
+    this string will be encoded in UCS-4. Any invalid sequence of code units in
+    this string is replaced by the Unicode's replacement character
+    (QChar::ReplacementCharacter, which corresponds to \c{U+FFFD}).
+
+    The returned vector is not NUL terminated.
 
     \sa toUtf8(), toLatin1(), toLocal8Bit(), QTextCodec
 */
@@ -9458,15 +9563,7 @@ QStringRef QStringRef::trimmed() const
 
 qint64 QStringRef::toLongLong(bool *ok, int base) const
 {
-#if defined(QT_CHECK_RANGE)
-    if (base != 0 && (base < 2 || base > 36)) {
-        qWarning("QString::toLongLong: Invalid base (%d)", base);
-        base = 10;
-    }
-#endif
-
-    QLocale c_locale(QLocale::C);
-    return c_locale.d->stringToLongLong(*this, base, ok, QLocalePrivate::FailOnGroupSeparators);
+    return QString::toIntegral_helper<qint64>(constData(), size(), ok, base);
 }
 
 /*!
@@ -9491,15 +9588,7 @@ qint64 QStringRef::toLongLong(bool *ok, int base) const
 
 quint64 QStringRef::toULongLong(bool *ok, int base) const
 {
-#if defined(QT_CHECK_RANGE)
-    if (base != 0 && (base < 2 || base > 36)) {
-        qWarning("QString::toULongLong: Invalid base (%d)", base);
-        base = 10;
-    }
-#endif
-
-    QLocale c_locale(QLocale::C);
-    return c_locale.d->stringToUnsLongLong(*this, base, ok, QLocalePrivate::FailOnGroupSeparators);
+    return QString::toIntegral_helper<quint64>(constData(), size(), ok, base);
 }
 
 /*!
@@ -9526,13 +9615,7 @@ quint64 QStringRef::toULongLong(bool *ok, int base) const
 
 long QStringRef::toLong(bool *ok, int base) const
 {
-    qint64 v = toLongLong(ok, base);
-    if (v < LONG_MIN || v > LONG_MAX) {
-        if (ok)
-            *ok = false;
-        v = 0;
-    }
-    return long(v);
+    return QString::toIntegral_helper<long>(constData(), size(), ok, base);
 }
 
 /*!
@@ -9559,13 +9642,7 @@ long QStringRef::toLong(bool *ok, int base) const
 
 ulong QStringRef::toULong(bool *ok, int base) const
 {
-    quint64 v = toULongLong(ok, base);
-    if (v > ULONG_MAX) {
-        if (ok)
-            *ok = false;
-        v = 0;
-    }
-    return ulong(v);
+    return QString::toIntegral_helper<ulong>(constData(), size(), ok, base);
 }
 
 
@@ -9591,13 +9668,7 @@ ulong QStringRef::toULong(bool *ok, int base) const
 
 int QStringRef::toInt(bool *ok, int base) const
 {
-    qint64 v = toLongLong(ok, base);
-    if (v < INT_MIN || v > INT_MAX) {
-        if (ok)
-            *ok = false;
-        v = 0;
-    }
-    return int(v);
+    return QString::toIntegral_helper<int>(constData(), size(), ok, base);
 }
 
 /*!
@@ -9622,13 +9693,7 @@ int QStringRef::toInt(bool *ok, int base) const
 
 uint QStringRef::toUInt(bool *ok, int base) const
 {
-    quint64 v = toULongLong(ok, base);
-    if (v > UINT_MAX) {
-        if (ok)
-            *ok = false;
-        v = 0;
-    }
-    return uint(v);
+    return QString::toIntegral_helper<uint>(constData(), size(), ok, base);
 }
 
 /*!
@@ -9653,13 +9718,7 @@ uint QStringRef::toUInt(bool *ok, int base) const
 
 short QStringRef::toShort(bool *ok, int base) const
 {
-    long v = toLongLong(ok, base);
-    if (v < SHRT_MIN || v > SHRT_MAX) {
-        if (ok)
-            *ok = false;
-        v = 0;
-    }
-    return short(v);
+    return QString::toIntegral_helper<short>(constData(), size(), ok, base);
 }
 
 /*!
@@ -9684,13 +9743,7 @@ short QStringRef::toShort(bool *ok, int base) const
 
 ushort QStringRef::toUShort(bool *ok, int base) const
 {
-    ulong v = toULongLong(ok, base);
-    if (v > USHRT_MAX) {
-        if (ok)
-            *ok = false;
-        v = 0;
-    }
-    return ushort(v);
+    return QString::toIntegral_helper<ushort>(constData(), size(), ok, base);
 }
 
 
@@ -9716,8 +9769,7 @@ ushort QStringRef::toUShort(bool *ok, int base) const
 
 double QStringRef::toDouble(bool *ok) const
 {
-    QLocale c_locale(QLocale::C);
-    return c_locale.d->stringToDouble(*this, ok, QLocalePrivate::FailOnGroupSeparators);
+    return QLocaleData::c()->stringToDouble(constData(), size(), ok, QLocaleData::FailOnGroupSeparators);
 }
 
 /*!
@@ -9736,23 +9788,7 @@ double QStringRef::toDouble(bool *ok) const
 
 float QStringRef::toFloat(bool *ok) const
 {
-    bool myOk;
-    double d = toDouble(&myOk);
-    if (!myOk) {
-        if (ok != 0)
-            *ok = false;
-        return 0.0;
-    }
-    if (qIsInf(d))
-        return float(d);
-    if (d > QT_MAX_FLOAT || d < -QT_MAX_FLOAT) {
-        if (ok != 0)
-            *ok = false;
-        return 0.0;
-    }
-    if (ok)
-        *ok = true;
-    return float(d);
+    return QLocaleData::convertDoubleToFloat(toDouble(ok), ok);
 }
 
 /*!
@@ -9847,5 +9883,14 @@ QString QString::toHtmlEscaped() const
   \endcode
   \endlist
 */
+
+
+/*!
+    \internal
+ */
+void QAbstractConcatenable::appendLatin1To(const char *a, int len, QChar *out)
+{
+    qt_from_latin1(reinterpret_cast<ushort *>(out), a, uint(len));
+}
 
 QT_END_NAMESPACE

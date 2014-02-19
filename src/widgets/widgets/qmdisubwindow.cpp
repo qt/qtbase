@@ -2057,13 +2057,13 @@ void QMdiSubWindowPrivate::restoreFocus()
 
 /*!
     \internal
-    ### Please add QEvent::WindowFlagsChange event
 */
 void QMdiSubWindowPrivate::setWindowFlags(Qt::WindowFlags windowFlags)
 {
     Q_Q(QMdiSubWindow);
+
     if (!parent) {
-        q->setWindowFlags(windowFlags);
+        QWidgetPrivate::setWindowFlags(windowFlags);
         return;
     }
 
@@ -2097,7 +2097,7 @@ void QMdiSubWindowPrivate::setWindowFlags(Qt::WindowFlags windowFlags)
         delete sizeGrip;
 #endif
 
-    q->setWindowFlags(windowFlags);
+    QWidgetPrivate::setWindowFlags(windowFlags);
     updateGeometryConstraints();
     updateActions();
     QSize currentSize = q->size();

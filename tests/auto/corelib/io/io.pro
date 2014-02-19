@@ -17,6 +17,7 @@ SUBDIRS=\
     qipaddress \
     qlockfile \
     qloggingcategory \
+    qloggingregistry \
     qnodebug \
     qprocess \
     qprocess-noapplication \
@@ -43,7 +44,6 @@ SUBDIRS=\
     qsettings
 
 !qtHaveModule(network): SUBDIRS -= \
-    qfile \
     qiodevice \
     qprocess \
     qtextstream
@@ -52,7 +52,14 @@ SUBDIRS=\
     qabstractfileengine \
     qfileinfo \
     qipaddress \
-    qurlinternal
+    qurlinternal \
+    qloggingregistry
 
 win32:!contains(QT_CONFIG, private_tests): SUBDIRS -= \
     qfilesystementry
+
+winrt: SUBDIRS -= \
+    qprocess \
+    qprocess-noapplication \
+    qprocessenvironment \
+    qwinoverlappedionotifier

@@ -252,7 +252,7 @@ void QWindowsStyle::polish(QApplication *app)
     d->inactiveGradientCaptionColor = app->palette().dark().color();
     d->inactiveCaptionText = app->palette().background().color();
 
-#if defined(Q_OS_WIN) //fetch native title bar colors
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT) //fetch native title bar colors
     if(app->desktopSettingsAware()){
         DWORD activeCaption = GetSysColor(COLOR_ACTIVECAPTION);
         DWORD gradientActiveCaption = GetSysColor(COLOR_GRADIENTACTIVECAPTION);
@@ -413,6 +413,7 @@ int QWindowsStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, const QW
 
 
 #if defined(Q_OS_WIN)
+#ifndef Q_OS_WINRT // There is no title bar in Windows Runtime applications
     case PM_TitleBarHeight:
         if (widget && (widget->windowType() == Qt::Tool)) {
             // MS always use one less than they say
@@ -426,16 +427,17 @@ int QWindowsStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, const QW
         }
 
         break;
+#endif // !Q_OS_WINRT
 
     case PM_ScrollBarExtent:
         {
-#ifndef Q_OS_WINCE
+#if !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
             NONCLIENTMETRICS ncm;
             ncm.cbSize = FIELD_OFFSET(NONCLIENTMETRICS, lfMessageFont) + sizeof(LOGFONT);
             if (SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), &ncm, 0))
                 ret = qMax(ncm.iScrollHeight, ncm.iScrollWidth);
             else
-#endif
+#endif // !Q_OS_WINCE && !Q_OS_WINRT
                 ret = QCommonStyle::pixelMetric(pm, opt, widget);
         }
         break;
@@ -446,6 +448,7 @@ int QWindowsStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, const QW
         break;
 
 #if defined(Q_OS_WIN)
+#ifndef Q_OS_WINRT // Mdi concept not available for WinRT applications
     case PM_MdiSubWindowFrameWidth:
 #if defined(Q_OS_WINCE)
         ret = GetSystemMetrics(SM_CYDLGFRAME);
@@ -453,7 +456,8 @@ int QWindowsStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, const QW
         ret = GetSystemMetrics(SM_CYFRAME);
 #endif
         break;
-#endif
+#endif // !Q_OS_WINRT
+#endif // Q_OS_WIN
     case PM_ToolBarItemMargin:
         ret = 1;
         break;
@@ -477,7 +481,7 @@ int QWindowsStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, const QW
 QPixmap QWindowsStyle::standardPixmap(StandardPixmap standardPixmap, const QStyleOption *opt,
                                       const QWidget *widget) const
 {
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
     QPixmap desktopIcon;
     switch(standardPixmap) {
     case SP_DriveCDIcon:
@@ -516,7 +520,7 @@ QPixmap QWindowsStyle::standardPixmap(StandardPixmap standardPixmap, const QStyl
     if (!desktopIcon.isNull()) {
         return desktopIcon;
     }
-#endif
+#endif // Q_OS_WIN && !Q_OS_WINCE && !Q_OS_WINRT
     return QCommonStyle::standardPixmap(standardPixmap, opt, widget);
 }
 
@@ -554,7 +558,7 @@ int QWindowsStyle::styleHint(StyleHint hint, const QStyleOption *opt, const QWid
         ret = 0;
         break;
 
-#if defined(Q_OS_WIN)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT) // Option not used on WinRT -> common style
     case SH_UnderlineShortcut:
     {
         ret = 1;
@@ -590,7 +594,7 @@ int QWindowsStyle::styleHint(StyleHint hint, const QStyleOption *opt, const QWid
 #endif // QT_NO_ACCESSIBILITY
         break;
     }
-#endif
+#endif // Q_OS_WIN && !Q_OS_WINRT
 #ifndef QT_NO_RUBBERBAND
     case SH_RubberBand_Mask:
         if (const QStyleOptionRubberBand *rbOpt = qstyleoption_cast<const QStyleOptionRubberBand *>(opt)) {

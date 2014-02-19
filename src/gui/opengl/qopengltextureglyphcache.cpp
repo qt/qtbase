@@ -328,8 +328,11 @@ void QOpenGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph, QFixed
         if (mask.format() == QImage::Format_RGB32
             // We need to make the alpha component equal to the average of the RGB values.
             // This is needed when drawing sub-pixel antialiased text on translucent targets.
-#if defined(QT_OPENGL_ES_2) || Q_BYTE_ORDER == Q_BIG_ENDIAN
+#if Q_BYTE_ORDER == Q_BIG_ENDIAN
             || mask.format() == QImage::Format_ARGB32_Premultiplied
+#else
+            || (mask.format() == QImage::Format_ARGB32_Premultiplied
+                && QOpenGLFunctions::isES())
 #endif
             ) {
             for (int y = 0; y < maskHeight; ++y) {
@@ -345,10 +348,11 @@ void QOpenGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph, QFixed
                         avg = qAlpha(src[x]);
 
                     src[x] = qRgba(r, g, b, avg);
-#if defined(QT_OPENGL_ES_2) || Q_BYTE_ORDER == Q_BIG_ENDIAN
                     // swizzle the bits to accommodate for the GL_RGBA upload.
-                    src[x] = ARGB2RGBA(src[x]);
+#if Q_BYTE_ORDER != Q_BIG_ENDIAN
+                    if (QOpenGLFunctions::isES())
 #endif
+                        src[x] = ARGB2RGBA(src[x]);
                 }
             }
         }
@@ -356,11 +360,16 @@ void QOpenGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph, QFixed
 
     glBindTexture(GL_TEXTURE_2D, m_textureResource->m_texture);
     if (mask.depth() == 32) {
-#if defined(QT_OPENGL_ES_2) || Q_BYTE_ORDER == Q_BIG_ENDIAN
-        glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y, maskWidth, maskHeight, GL_RGBA, GL_UNSIGNED_BYTE, mask.bits());
+#ifdef QT_OPENGL_ES_2
+        GLenum fmt = GL_RGBA;
 #else
-        glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y, maskWidth, maskHeight, GL_BGRA, GL_UNSIGNED_BYTE, mask.bits());
+        GLenum fmt = QOpenGLFunctions::isES() ? GL_RGBA : GL_BGRA;
+#endif // QT_OPENGL_ES_2
+
+#if Q_BYTE_ORDER == Q_BIG_ENDIAN
+        fmt = GL_RGBA;
 #endif
+        glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y, maskWidth, maskHeight, fmt, GL_UNSIGNED_BYTE, mask.bits());
     } else {
         // glTexSubImage2D() might cause some garbage to appear in the texture if the mask width is
         // not a multiple of four bytes. The bug appeared on a computer with 32-bit Windows Vista

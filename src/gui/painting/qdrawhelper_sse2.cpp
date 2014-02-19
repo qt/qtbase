@@ -238,7 +238,7 @@ void QT_FASTCALL comp_func_Source_sse2(uint *dst, const uint *src, int length, u
     }
 }
 
-void qt_memfill32_sse2(quint32 *dest, quint32 value, int count)
+void qt_memfill32(quint32 *dest, quint32 value, int count)
 {
     if (count < 7) {
         switch (count) {
@@ -259,19 +259,6 @@ void qt_memfill32_sse2(quint32 *dest, quint32 value, int count)
     case 12: *dest++ = value; --count;
     }
 
-    int count128 = count / 4;
-    __m128i *dst128 = reinterpret_cast<__m128i*>(dest);
-    const __m128i value128 = _mm_set_epi32(value, value, value, value);
-
-    int n = (count128 + 3) / 4;
-    switch (count128 & 0x3) {
-    case 0: do { _mm_stream_si128(dst128++, value128);
-    case 3:      _mm_stream_si128(dst128++, value128);
-    case 2:      _mm_stream_si128(dst128++, value128);
-    case 1:      _mm_stream_si128(dst128++, value128);
-    } while (--n > 0);
-    }
-
     const int rest = count & 0x3;
     if (rest) {
         switch (rest) {
@@ -280,12 +267,31 @@ void qt_memfill32_sse2(quint32 *dest, quint32 value, int count)
         case 1: dest[count - 1] = value;
         }
     }
+
+    int count128 = count / 4;
+    __m128i *dst128 = reinterpret_cast<__m128i*>(dest);
+    __m128i *end128 = dst128 + count128;
+    const __m128i value128 = _mm_set_epi32(value, value, value, value);
+
+    while (dst128 + 3 < end128) {
+        _mm_stream_si128(dst128 + 0, value128);
+        _mm_stream_si128(dst128 + 1, value128);
+        _mm_stream_si128(dst128 + 2, value128);
+        _mm_stream_si128(dst128 + 3, value128);
+        dst128 += 4;
+    }
+
+    switch (count128 & 0x3) {
+    case 3:      _mm_stream_si128(dst128++, value128);
+    case 2:      _mm_stream_si128(dst128++, value128);
+    case 1:      _mm_stream_si128(dst128++, value128);
+    }
 }
 
 void QT_FASTCALL comp_func_solid_SourceOver_sse2(uint *destPixels, int length, uint color, uint const_alpha)
 {
     if ((const_alpha & qAlpha(color)) == 255) {
-        qt_memfill32_sse2(destPixels, color, length);
+        qt_memfill32(destPixels, color, length);
     } else {
         if (const_alpha != 255)
             color = BYTE_MUL(color, const_alpha);
@@ -397,7 +403,7 @@ CompositionFunction qt_functionForMode_SSE2[numCompositionFunctions] = {
 };
 #endif
 
-void qt_memfill16_sse2(quint16 *dest, quint16 value, int count)
+void qt_memfill16(quint16 *dest, quint16 value, int count)
 {
     if (count < 3) {
         switch (count) {
@@ -413,7 +419,7 @@ void qt_memfill16_sse2(quint16 *dest, quint16 value, int count)
     }
 
     const quint32 value32 = (value << 16) | value;
-    qt_memfill32_sse2(reinterpret_cast<quint32*>(dest), value32, count / 2);
+    qt_memfill32(reinterpret_cast<quint32*>(dest), value32, count / 2);
 
     if (count & 0x1)
         dest[count - 1] = value;

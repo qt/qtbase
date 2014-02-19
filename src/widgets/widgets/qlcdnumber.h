@@ -43,7 +43,6 @@
 #define QLCDNUMBER_H
 
 #include <QtWidgets/qframe.h>
-#include <QtCore/qbitarray.h>
 
 QT_BEGIN_NAMESPACE
 

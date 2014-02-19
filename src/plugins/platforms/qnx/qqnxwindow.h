@@ -78,7 +78,6 @@ public:
     WId winId() const { return (WId)m_window; }
     screen_window_t nativeHandle() const { return m_window; }
 
-    virtual void adjustBufferSize() = 0;
     void setBufferSize(const QSize &size);
     QSize bufferSize() const { return m_bufferSize; }
 
@@ -93,7 +92,6 @@ public:
 
     void propagateSizeHints();
 
-    void gainedFocus();
     void setMMRendererWindowName(const QString &name);
     void setMMRendererWindow(screen_window_t handle);
     void clearMMRendererWindow();
@@ -112,33 +110,34 @@ public:
     void setRotation(int rotation);
 
     QByteArray groupName() const { return m_windowGroupName; }
+    void joinWindowGroup(const QByteArray &groupName);
 
 protected:
     virtual int pixelFormat() const = 0;
     virtual void resetBuffers() = 0;
 
     void initWindow();
+    void windowPosted();
 
     screen_context_t m_screenContext;
-    QScopedPointer<QQnxAbstractCover> m_cover;
-
-    QQnxWindow *m_parentWindow;
 
 private:
     void createWindowGroup();
-    QRect setGeometryHelper(const QRect &rect);
+    void setGeometryHelper(const QRect &rect);
     void removeFromParent();
-    void setOffset(const QPoint &setOffset);
     void updateVisibility(bool parentVisible);
     void updateZorder(int &topZorder);
     void updateZorder(screen_window_t window, int &zOrder);
     void applyWindowState();
+    void setFocus(screen_window_t newFocusWindow);
 
     screen_window_t m_window;
     QSize m_bufferSize;
 
     QQnxScreen *m_screen;
+    QQnxWindow *m_parentWindow;
     QList<QQnxWindow*> m_childWindows;
+    QScopedPointer<QQnxAbstractCover> m_cover;
     bool m_visible;
     bool m_exposed;
     QRect m_unmaximizedGeometry;
@@ -146,7 +145,10 @@ private:
     QString m_mmRendererWindowName;
     screen_window_t m_mmRendererWindow;
 
+    // Group name of window group headed by this window
     QByteArray m_windowGroupName;
+    // Group name that we have joined or "" if we've not joined any group.
+    QByteArray m_parentGroupName;
 
     bool m_isTopLevel;
 };

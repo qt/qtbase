@@ -111,9 +111,10 @@ QT_END_NAMESPACE
 #endif
 
 QT_BEGIN_NAMESPACE
-DotNET which_dotnet_version()
+DotNET which_dotnet_version(const QByteArray &preferredVersion = QByteArray())
 {
 #ifndef Q_OS_WIN32
+    Q_UNUSED(preferredVersion);
     return NET2002; // Always generate 7.0 versions on other platforms
 #else
     // Only search for the version once
@@ -135,6 +136,10 @@ DotNET which_dotnet_version()
             installPaths.insert(lowestInstalledVersion->version, path);
             ++installed;
             current_version = lowestInstalledVersion->version;
+            if (QByteArray(lowestInstalledVersion->versionStr).contains(preferredVersion)) {
+                installed = 1;
+                break;
+            }
         }
     }
 
@@ -286,6 +291,7 @@ bool VcprojGenerator::writeProjectMakefile()
             mergedProjects.at(0)->writePrlFile();
         mergedProject.Name = project->first("QMAKE_PROJECT_NAME").toQString();
         mergedProject.Version = mergedProjects.at(0)->vcProject.Version;
+        mergedProject.SdkVersion = mergedProjects.at(0)->vcProject.SdkVersion;
         mergedProject.ProjectGUID = project->isEmpty("QMAKE_UUID") ? getProjectUUID().toString().toUpper() : project->first("QMAKE_UUID").toQString();
         mergedProject.Keyword = project->first("VCPROJ_KEYWORD").toQString();
         mergedProject.SccProjectName = mergedProjects.at(0)->vcProject.SccProjectName;
@@ -585,7 +591,7 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
         return;
     }
 
-    switch(which_dotnet_version()) {
+    switch (which_dotnet_version(project->first("MSVC_VER").toLatin1())) {
     case NET2013:
         t << _slnHeader120;
         break;
@@ -874,12 +880,12 @@ void VcprojGenerator::initProject()
 
     // Own elements -----------------------------
     vcProject.Name = unescapeFilePath(project->first("QMAKE_ORIG_TARGET").toQString());
-    switch(which_dotnet_version()) {
+    switch (which_dotnet_version(project->first("MSVC_VER").toLatin1())) {
     case NET2013:
-        vcProject.Version = "13.00";
+        vcProject.Version = "12.00";
         break;
     case NET2012:
-        vcProject.Version = "12.00";
+        vcProject.Version = "11.00";
         break;
     case NET2010:
         vcProject.Version = "10.00";
@@ -912,6 +918,7 @@ void VcprojGenerator::initProject()
     } else {
         vcProject.PlatformName = project->values("CE_SDK").join(' ') + " (" + project->first("CE_ARCH") + ")";
     }
+    vcProject.SdkVersion = project->first("WINSDK_VER").toQString();
     // These are not used by Qt, but may be used by customers
     vcProject.SccProjectName = project->first("SCCPROJECTNAME").toQString();
     vcProject.SccLocalPath = project->first("SCCLOCALPATH").toQString();
@@ -924,7 +931,7 @@ void VcprojGenerator::initConfiguration()
     // - Do this first since main configuration elements may need
     // - to know of certain compiler/linker options
     VCConfiguration &conf = vcProject.Configuration;
-    conf.CompilerVersion = which_dotnet_version();
+    conf.CompilerVersion = which_dotnet_version(project->first("MSVC_VER").toLatin1());
 
     initCompilerTool();
 
@@ -970,8 +977,13 @@ void VcprojGenerator::initConfiguration()
 
     if (conf.CompilerVersion >= NET2012) {
         conf.WinRT = project->isActiveConfig("winrt");
-        if (conf.WinRT)
+        if (conf.WinRT) {
             conf.WinPhone = project->isActiveConfig("winphone");
+            // Saner defaults
+            conf.compiler.UsePrecompiledHeader = pchNone;
+            conf.compiler.CompileAsWinRT = _False;
+            conf.linker.GenerateWindowsMetadata = _False;
+        }
     }
 
     conf.Name = project->values("BUILD_NAME").join(' ');
@@ -988,7 +1000,7 @@ void VcprojGenerator::initConfiguration()
     conf.ATLMinimizesCRunTimeLibraryUsage = (project->first("ATLMinimizesCRunTimeLibraryUsage").isEmpty() ? _False : _True);
     conf.BuildBrowserInformation = triState(temp.isEmpty() ? (short)unset : temp.toShort());
     temp = project->first("CharacterSet");
-    conf.CharacterSet = charSet(temp.isEmpty() ? (short)charSetNotSet : temp.toShort());
+    conf.CharacterSet = charSet(temp.isEmpty() ? short(conf.WinRT ? charSetUnicode : charSetNotSet) : temp.toShort());
     conf.DeleteExtensionsOnClean = project->first("DeleteExtensionsOnClean").toQString();
     conf.ImportLibrary = conf.linker.ImportLibrary;
     conf.IntermediateDirectory = project->first("OBJECTS_DIR").toQString();
@@ -1009,6 +1021,7 @@ void VcprojGenerator::initConfiguration()
     if ((!project->isHostBuild() && !project->isEmpty("CE_SDK") && !project->isEmpty("CE_ARCH"))
             || conf.WinRT)
         initDeploymentTool();
+    initWinDeployQtTool();
     initPreLinkEventTools();
 
     if (!isDebug)
@@ -1308,6 +1321,22 @@ void VcprojGenerator::initDeploymentTool()
             vcProject.DeploymentFiles.Config = &(vcProject.Configuration);
             vcProject.DeploymentFiles.CustomBuild = none;
         }
+    }
+}
+
+void VcprojGenerator::initWinDeployQtTool()
+{
+    VCConfiguration &conf = vcProject.Configuration;
+    conf.windeployqt.ExcludedFromBuild = true;
+    if (project->isActiveConfig("windeployqt")) {
+        conf.windeployqt.Record = QStringLiteral("$(TargetName).windeployqt.$(Platform).$(Configuration)");
+        conf.windeployqt.CommandLine =
+                MakefileGenerator::shellQuote(QDir::toNativeSeparators(project->first("QMAKE_WINDEPLOYQT").toQString()))
+                + QLatin1Char(' ') + project->values("WINDEPLOYQT_OPTIONS").join(QLatin1Char(' '))
+                + QStringLiteral(" -list relative -dir \"$(MSBuildProjectDirectory)\" \"$(OutDir)\\$(TargetName).exe\" > ")
+                + MakefileGenerator::shellQuote(conf.windeployqt.Record);
+        conf.windeployqt.config = &vcProject.Configuration;
+        conf.windeployqt.ExcludedFromBuild = false;
     }
 }
 

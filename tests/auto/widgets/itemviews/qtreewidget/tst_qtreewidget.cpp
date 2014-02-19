@@ -1467,14 +1467,14 @@ void tst_QTreeWidget::keyboardNavigation()
 
     QVector<Qt::Key> keymoves;
     keymoves << Qt::Key_Down << Qt::Key_Right << Qt::Key_Left
-	     << Qt::Key_Down << Qt::Key_Down << Qt::Key_Down << Qt::Key_Down
-	     << Qt::Key_Right
-	     << Qt::Key_Up << Qt::Key_Left << Qt::Key_Left
-	     << Qt::Key_Up << Qt::Key_Down << Qt::Key_Up << Qt::Key_Up
-	     << Qt::Key_Up << Qt::Key_Up << Qt::Key_Up << Qt::Key_Up
+             << Qt::Key_Down << Qt::Key_Down << Qt::Key_Down << Qt::Key_Down
+             << Qt::Key_Right
+             << Qt::Key_Up << Qt::Key_Left << Qt::Key_Left
+             << Qt::Key_Up << Qt::Key_Down << Qt::Key_Up << Qt::Key_Up
+             << Qt::Key_Up << Qt::Key_Up << Qt::Key_Up << Qt::Key_Up
              << Qt::Key_Down << Qt::Key_Right << Qt::Key_Down << Qt::Key_Down
              << Qt::Key_Down << Qt::Key_Right << Qt::Key_Down << Qt::Key_Down
-	     << Qt::Key_Left << Qt::Key_Left << Qt::Key_Up << Qt::Key_Down
+             << Qt::Key_Left << Qt::Key_Left << Qt::Key_Up << Qt::Key_Down
              << Qt::Key_Up << Qt::Key_Up << Qt::Key_Up << Qt::Key_Left
              << Qt::Key_Down << Qt::Key_Right << Qt::Key_Right << Qt::Key_Right
              << Qt::Key_Left << Qt::Key_Left << Qt::Key_Right << Qt::Key_Left;
@@ -1499,16 +1499,16 @@ void tst_QTreeWidget::keyboardNavigation()
 
         switch (key) {
         case Qt::Key_Up:
-	    if (row > 0) {
+            if (row > 0) {
                 if (item->parent())
                     item = item->parent()->child(row - 1);
                 else
                     item = testWidget->topLevelItem(row - 1);
-		row -= 1;
-	    } else if (item->parent()) {
-		item = item->parent();
-		row = item->parent() ? item->parent()->indexOfChild(item) : testWidget->indexOfTopLevelItem(item);
-	    }
+                row -= 1;
+            } else if (item->parent()) {
+                item = item->parent();
+                row = item->parent() ? item->parent()->indexOfChild(item) : testWidget->indexOfTopLevelItem(item);
+            }
             break;
         case Qt::Key_Down:
             if (testWidget->isItemExpanded(item)) {
@@ -1537,7 +1537,7 @@ void tst_QTreeWidget::keyboardNavigation()
         case Qt::Key_Right:
             if (checkScroll)
                 QCOMPARE(scrollBar->value(), valueBeforeClick + scrollBar->singleStep());
-	    // windows style right will walk to the first child
+            // windows style right will walk to the first child
             if (testWidget->currentItem() != item) {
                 QCOMPARE(testWidget->currentItem()->parent(), item);
                 row = item->indexOfChild(testWidget->currentItem());
@@ -1758,9 +1758,7 @@ void tst_QTreeWidget::setData()
                     QCOMPARE(qvariant_cast<QTreeWidgetItem*>(args.at(0)), item);
                     QCOMPARE(qvariant_cast<int>(args.at(1)), j);
                     item->setIcon(j, icon);
-                    // #### shouldn't cause dataChanged()
-                    QCOMPARE(itemChangedSpy.count(), 1);
-                    itemChangedSpy.clear();
+                    QCOMPARE(itemChangedSpy.count(), 0);
 
                     QString toolTip = QString("toolTip %0").arg(i);
                     item->setToolTip(j, toolTip);

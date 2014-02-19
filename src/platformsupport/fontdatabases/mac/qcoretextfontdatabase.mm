@@ -278,10 +278,8 @@ void QCoreTextFontDatabase::releaseHandle(void *handle)
     CFRelease(CTFontDescriptorRef(handle));
 }
 
-QFontEngine *QCoreTextFontDatabase::fontEngine(const QFontDef &f, QChar::Script script, void *usrPtr)
+QFontEngine *QCoreTextFontDatabase::fontEngine(const QFontDef &f, void *usrPtr)
 {
-    Q_UNUSED(script);
-
     qreal scaledPointSize = f.pixelSize;
 
     // When 96 DPI is forced, the Mac plugin will use DPI 72 for some
@@ -474,104 +472,120 @@ QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family, QFo
     return fallbackLists[styleLookupKey.arg(styleHint)];
 }
 
-#ifdef Q_OS_MACX
+#if HAVE_CORETEXT
+static CFArrayRef createDescriptorArrayForFont(CTFontRef font)
+{
+    CFMutableArrayRef array = CFArrayCreateMutable(kCFAllocatorDefault, 0, &kCFTypeArrayCallBacks);
+    CFArrayAppendValue(array, QCFType<CTFontDescriptorRef>(CTFontCopyFontDescriptor(font)));
+    return array;
+}
+#endif
+
 QStringList QCoreTextFontDatabase::addApplicationFont(const QByteArray &fontData, const QString &fileName)
 {
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_8
-    if (QSysInfo::QSysInfo::MacintoshVersion >= QSysInfo::MV_10_8) {
-        CTFontRef font = NULL;
+    QCFType<CFArrayRef> fonts;
+    QStringList families;
 
+#if HAVE_CORETEXT
+    if (&CTFontManagerRegisterGraphicsFont) {
+        CFErrorRef error = 0;
         if (!fontData.isEmpty()) {
             QByteArray* fontDataCopy = new QByteArray(fontData);
             QCFType<CGDataProviderRef> dataProvider = CGDataProviderCreateWithData(fontDataCopy,
                     fontDataCopy->constData(), fontDataCopy->size(), releaseFontData);
-            CGFontRef cgFont = CGFontCreateWithDataProvider(dataProvider);
+            QCFType<CGFontRef> cgFont = CGFontCreateWithDataProvider(dataProvider);
             if (cgFont) {
-                CFErrorRef error;
-                bool success = CTFontManagerRegisterGraphicsFont(cgFont, &error);
-                if (success) {
-                    font = CTFontCreateWithGraphicsFont(cgFont, 0.0, NULL, NULL);
-                    m_applicationGraphicsFonts.append(QCFType<CGFontRef>::constructFromGet(cgFont));
-                } else {
-                    NSLog(@"Unable to register font: %@", error);
-                    CFRelease(error);
+                if (CTFontManagerRegisterGraphicsFont(cgFont, &error)) {
+                    QCFType<CTFontRef> font = CTFontCreateWithGraphicsFont(cgFont, 0.0, NULL, NULL);
+                    fonts = createDescriptorArrayForFont(font);
+                    m_applicationFonts.append(QVariant::fromValue(QCFType<CGFontRef>::constructFromGet(cgFont)));
                 }
-                CGFontRelease(cgFont);
             }
         } else {
-            CFErrorRef error;
             QCFType<CFURLRef> fontURL = CFURLCreateWithFileSystemPath(NULL, QCFString(fileName), kCFURLPOSIXPathStyle, false);
-            bool success = CTFontManagerRegisterFontsForURL(fontURL, kCTFontManagerScopeProcess, &error);
-            if (success) {
-                const void *keys[] = { kCTFontURLAttribute };
-                const void *values[] = { fontURL };
-                QCFType<CFDictionaryRef> attributes = CFDictionaryCreate(NULL, keys, values, 1,
-                    &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
-                QCFType<CTFontDescriptorRef> descriptor = CTFontDescriptorCreateWithAttributes(attributes);
-                font = CTFontCreateWithFontDescriptor(descriptor, 0.0, NULL);
-                m_applicationURLFonts.append(QCFType<CFURLRef>::constructFromGet(fontURL));
-            } else {
-                NSLog(@"Unable to register font: %@", error);
-                CFRelease(error);
+            if (CTFontManagerRegisterFontsForURL(fontURL, kCTFontManagerScopeProcess, &error)) {
+#if QT_MAC_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_6, __IPHONE_7_0)
+                if (&CTFontManagerCreateFontDescriptorsFromURL)
+                    fonts = CTFontManagerCreateFontDescriptorsFromURL(fontURL);
+                else
+#endif
+                {
+                    // We're limited to a single font per file, unless we dive into the font tables
+                    QCFType<CFMutableDictionaryRef> attributes = CFDictionaryCreateMutable(kCFAllocatorDefault, 1,
+                        &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+                    CFDictionaryAddValue(attributes, kCTFontURLAttribute, fontURL);
+                    QCFType<CTFontDescriptorRef> descriptor = CTFontDescriptorCreateWithAttributes(attributes);
+                    QCFType<CTFontRef> font = CTFontCreateWithFontDescriptor(descriptor, 0.0, NULL);
+                    fonts = createDescriptorArrayForFont(font);
+                }
+
+                m_applicationFonts.append(QVariant::fromValue(QCFType<CFURLRef>::constructFromGet(fontURL)));
             }
         }
 
-        if (font) {
-            QStringList families;
-            families.append(QCFString(CTFontCopyFamilyName(font)));
-
-            QCFType<CTFontDescriptorRef> descriptor = CTFontCopyFontDescriptor(font);
-            populateFromDescriptor(descriptor);
-
-            CFRelease(font);
-            return families;
+        if (error) {
+            NSLog(@"Unable to register font: %@", error);
+            CFRelease(error);
         }
-    } else
+    }
 #endif
+#if HAVE_CORETEXT && HAVE_ATS
+    else
+#endif
+#if HAVE_ATS
     {
-    ATSFontContainerRef fontContainer;
-    OSStatus e;
+        ATSFontContainerRef fontContainer;
+        OSStatus e;
 
-    if (!fontData.isEmpty()) {
-        e = ATSFontActivateFromMemory((void *) fontData.constData(), fontData.size(),
-                                      kATSFontContextLocal, kATSFontFormatUnspecified, NULL,
-                                      kATSOptionFlagsDefault, &fontContainer);
-    } else {
-        FSRef ref;
-        OSErr qt_mac_create_fsref(const QString &file, FSRef *fsref);
-        if (qt_mac_create_fsref(fileName, &ref) != noErr)
-            return QStringList();
-        e = ATSFontActivateFromFileReference(&ref, kATSFontContextLocal, kATSFontFormatUnspecified, 0,
-                                             kATSOptionFlagsDefault, &fontContainer);
-    }
-
-    if (e == noErr) {
-        ItemCount fontCount = 0;
-        e = ATSFontFindFromContainer(fontContainer, kATSOptionFlagsDefault, 0, 0, &fontCount);
-        if (e != noErr)
-            return QStringList();
-
-        QVarLengthArray<ATSFontRef> containedFonts(fontCount);
-        e = ATSFontFindFromContainer(fontContainer, kATSOptionFlagsDefault, fontCount, containedFonts.data(), &fontCount);
-        if (e != noErr)
-            return QStringList();
-
-        QStringList families;
-        for (int i = 0; i < containedFonts.size(); ++i) {
-            QCFType<CTFontRef> font = CTFontCreateWithPlatformFont(containedFonts[i], 12.0, NULL, NULL);
-            QCFType<CTFontDescriptorRef> descriptor = CTFontCopyFontDescriptor(font);
-            populateFromDescriptor(descriptor);
-            families.append(QCFString(CTFontCopyFamilyName(font)));
+        if (!fontData.isEmpty()) {
+            e = ATSFontActivateFromMemory((void *) fontData.constData(), fontData.size(),
+                                          kATSFontContextLocal, kATSFontFormatUnspecified, NULL,
+                                          kATSOptionFlagsDefault, &fontContainer);
+        } else {
+            FSRef ref;
+            OSErr qt_mac_create_fsref(const QString &file, FSRef *fsref);
+            if (qt_mac_create_fsref(fileName, &ref) != noErr)
+                return QStringList();
+            e = ATSFontActivateFromFileReference(&ref, kATSFontContextLocal, kATSFontFormatUnspecified, 0,
+                                                 kATSOptionFlagsDefault, &fontContainer);
         }
 
-        m_applicationFonts.append(fontContainer);
-        return families;
+        if (e == noErr) {
+            ItemCount fontCount = 0;
+            e = ATSFontFindFromContainer(fontContainer, kATSOptionFlagsDefault, 0, 0, &fontCount);
+            if (e != noErr)
+                return QStringList();
+
+            QVarLengthArray<ATSFontRef> containedFonts(fontCount);
+            e = ATSFontFindFromContainer(fontContainer, kATSOptionFlagsDefault, fontCount, containedFonts.data(), &fontCount);
+            if (e != noErr)
+                return QStringList();
+
+            CFMutableArrayRef fontsArray = CFArrayCreateMutable(NULL, 0, &kCFTypeArrayCallBacks);
+            for (int i = 0; i < containedFonts.size(); ++i) {
+                QCFType<CTFontRef> font = CTFontCreateWithPlatformFont(containedFonts[i], 12.0, NULL, NULL);
+                CFArrayAppendValue(fontsArray, QCFType<CTFontDescriptorRef>(CTFontCopyFontDescriptor(font)));
+            }
+
+            fonts = fontsArray;
+
+            m_applicationFonts.append(QVariant::fromValue(fontContainer));
+        }
     }
+#endif
+
+    if (fonts) {
+        const int numFonts = CFArrayGetCount(fonts);
+        for (int i = 0; i < numFonts; ++i) {
+            CTFontDescriptorRef fontDescriptor = CTFontDescriptorRef(CFArrayGetValueAtIndex(fonts, i));
+            populateFromDescriptor(fontDescriptor);
+            QCFType<CFStringRef> familyName = CFStringRef(CTFontDescriptorCopyLocalizedAttribute(fontDescriptor, kCTFontFamilyNameAttribute, NULL));
+            families.append(QCFString(familyName));
+        }
     }
 
-    return QStringList();
+    return families;
 }
-#endif
 
 QFont QCoreTextFontDatabase::defaultFont() const
 {
@@ -596,25 +610,31 @@ QList<int> QCoreTextFontDatabase::standardSizes() const
 
 void QCoreTextFontDatabase::removeApplicationFonts()
 {
-#ifdef Q_OS_MACX
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_8
-    if (QSysInfo::QSysInfo::MacintoshVersion >= QSysInfo::MV_10_8) {
-        CFErrorRef error;
-        for (int i = 0; i < m_applicationGraphicsFonts.count(); ++i)
-            CTFontManagerUnregisterGraphicsFont(m_applicationGraphicsFonts[i], &error);
-        m_applicationGraphicsFonts.clear();
-
-        for (int i = 0; i < m_applicationURLFonts.count(); ++i)
-            CTFontManagerUnregisterFontsForURL(m_applicationURLFonts[i], kCTFontManagerScopeProcess, &error);
-        m_applicationURLFonts.clear();
-    } else
+    foreach (const QVariant &font, m_applicationFonts) {
+#if HAVE_CORETEXT
+        if (&CTFontManagerUnregisterGraphicsFont && &CTFontManagerUnregisterFontsForURL) {
+            CFErrorRef error;
+            if (font.canConvert(qMetaTypeId<QCFType<CGFontRef> >())) {
+                CTFontManagerUnregisterGraphicsFont(font.value<QCFType<CGFontRef> >(), &error);
+            } else if (font.canConvert(qMetaTypeId<QCFType<CFURLRef> >())) {
+                CTFontManagerUnregisterFontsForURL(font.value<QCFType<CFURLRef> >(), kCTFontManagerScopeProcess, &error);
+            }
+        }
 #endif
-    {
-    for (int i = 0; i < m_applicationFonts.count(); ++i)
-        ATSFontDeactivate(m_applicationFonts[i], 0, kATSOptionFlagsDoNotNotify);
-    m_applicationFonts.clear();
-    ATSFontNotify(kATSFontNotifyActionFontsChanged, 0);
+#if HAVE_CORETEXT && HAVE_ATS
+        else
+#endif
+#if HAVE_ATS
+        if (font.canConvert(qMetaTypeId<ATSFontContainerRef>())) {
+            ATSFontDeactivate(font.value<ATSFontContainerRef>(), 0, kATSOptionFlagsDoNotNotify);
+        }
+#endif
     }
+
+    m_applicationFonts.clear();
+
+#if HAVE_ATS
+    ATSFontNotify(kATSFontNotifyActionFontsChanged, 0);
 #endif
 }
 
