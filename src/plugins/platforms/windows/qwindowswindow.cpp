@@ -1065,7 +1065,7 @@ bool QWindowsWindow::isVisible() const
 bool QWindowsWindow::isActive() const
 {
     // Check for native windows or children of the active native window.
-    if (const HWND activeHwnd = GetActiveWindow())
+    if (const HWND activeHwnd = GetForegroundWindow())
         if (m_data.hwnd == activeHwnd || IsChild(activeHwnd, m_data.hwnd))
             return true;
     return false;
