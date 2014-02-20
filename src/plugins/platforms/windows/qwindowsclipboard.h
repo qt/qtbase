@@ -64,6 +64,7 @@ public:
     QWindowsClipboard();
     ~QWindowsClipboard();
     void registerViewer(); // Call in initialization, when context is up.
+    void cleanup();
 
     virtual QMimeData *mimeData(QClipboard::Mode mode = QClipboard::Clipboard);
     virtual void setMimeData(QMimeData *data, QClipboard::Mode mode = QClipboard::Clipboard);
