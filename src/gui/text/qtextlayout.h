@@ -129,6 +129,9 @@ public:
     void setAdditionalFormats(const QList<FormatRange> &overrides);
     QList<FormatRange> additionalFormats() const;
     void clearAdditionalFormats();
+    void setFormats(const QVector<FormatRange> &overrides);
+    QVector<FormatRange> formats() const;
+    void clearFormats();
 
     void setCacheEnabled(bool enable);
     bool cacheEnabled() const;
