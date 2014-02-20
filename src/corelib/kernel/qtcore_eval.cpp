@@ -529,8 +529,6 @@ void qt_gui_eval_init(QCoreApplicationPrivate::Type type)
         box.exec();
         ::exit(0);
     } else {
-        EvalMessageBox *box = new EvalMessageBox(false);
-        box->show();
         Q_UNUSED(new QGuiFuriCuri());
     }
 }
