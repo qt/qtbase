@@ -289,7 +289,7 @@ QLibraryInfo::buildDate()
 
 const char *QLibraryInfo::build() Q_DECL_NOTHROW
 {
-   static const char data[] = "Qt " QT_VERSION_STR " (" __DATE__ "), "
+   static const char data[] = "Qt " QT_VERSION_STR " (" __DATE__ ", "
         COMPILER_STRING ", "
 #if QT_POINTER_SIZE == 4
         "32"
