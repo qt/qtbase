@@ -223,7 +223,7 @@ public:
 
     QString text() const;
 
-    QList<QTextLayout::FormatRange> textFormats() const;
+    QVector<QTextLayout::FormatRange> textFormats() const;
 
     const QTextDocument *document() const;
 

@@ -1242,9 +1242,9 @@ QString QTextBlock::text() const
 
     \sa charFormat(), blockFormat()
 */
-QList<QTextLayout::FormatRange> QTextBlock::textFormats() const
+QVector<QTextLayout::FormatRange> QTextBlock::textFormats() const
 {
-    QList<QTextLayout::FormatRange> formats;
+    QVector<QTextLayout::FormatRange> formats;
     if (!p || !n)
         return formats;
 
