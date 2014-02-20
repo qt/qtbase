@@ -135,6 +135,9 @@ private:
 
     static bool flushPaint(QWidget *widget, const QRegion &rgn);
     static void unflushPaint(QWidget *widget, const QRegion &rgn);
+    static void qt_flush(QWidget *widget, const QRegion &region, QBackingStore *backingStore,
+                         QWidget *tlw, const QPoint &tlwOffset,
+                         QPlatformTextureList *widgetTextures = 0);
 
     void doSync();
     bool bltRect(const QRect &rect, int dx, int dy, QWidget *widget);

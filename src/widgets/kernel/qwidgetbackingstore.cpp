@@ -73,16 +73,14 @@ extern QRegion qt_dirtyRegion(QWidget *);
  * \a tlwOffset is the position of the top level widget relative to the window surface.
  * \a region is the region to be updated in \a widget coordinates.
  */
-static inline void qt_flush(QWidget *widget, const QRegion &region, QBackingStore *backingStore,
-                            QWidget *tlw, const QPoint &tlwOffset, QPlatformTextureList *widgetTextures = 0,
-                            QOpenGLContext *context = 0)
+void QWidgetBackingStore::qt_flush(QWidget *widget, const QRegion &region, QBackingStore *backingStore,
+                            QWidget *tlw, const QPoint &tlwOffset, QPlatformTextureList *widgetTextures)
 {
 #ifdef QT_NO_OPENGL
     Q_UNUSED(widgetTextures);
-    Q_UNUSED(context);
 #endif
     Q_ASSERT(widget);
-    Q_ASSERT(!region.isEmpty() || (context && widgetTextures && widgetTextures->count()));
+    Q_ASSERT(!region.isEmpty() || (widgetTextures && widgetTextures->count()));
     Q_ASSERT(backingStore);
     Q_ASSERT(tlw);
 
@@ -117,7 +115,7 @@ static inline void qt_flush(QWidget *widget, const QRegion &region, QBackingStor
 
 #ifndef QT_NO_OPENGL
     if (widgetTextures)
-        backingStore->handle()->composeAndFlush(widget->windowHandle(), region, offset, widgetTextures, context);
+        backingStore->handle()->composeAndFlush(widget->windowHandle(), region, offset, widgetTextures, tlw->d_func()->shareContext());
     else
 #endif
         backingStore->flush(region, widget->windowHandle(), offset);
@@ -936,7 +934,7 @@ void QWidgetBackingStore::sync(QWidget *exposedWidget, const QRegion &exposedReg
 
     // Nothing to repaint.
     if (!isDirty()) {
-        qt_flush(exposedWidget, exposedRegion, store, tlw, tlwOffset, widgetTextures, tlw->d_func()->shareContext());
+        qt_flush(exposedWidget, exposedRegion, store, tlw, tlwOffset, widgetTextures);
         return;
     }
 
@@ -1190,7 +1188,7 @@ void QWidgetBackingStore::flush(QWidget *widget)
 {
     if (!dirtyOnScreen.isEmpty()) {
         QWidget *target = widget ? widget : tlw;
-        qt_flush(target, dirtyOnScreen, store, tlw, tlwOffset, widgetTextures, tlw->d_func()->shareContext());
+        qt_flush(target, dirtyOnScreen, store, tlw, tlwOffset, widgetTextures);
         dirtyOnScreen = QRegion();
     }
 
@@ -1198,7 +1196,7 @@ void QWidgetBackingStore::flush(QWidget *widget)
 #ifndef QT_NO_OPENGL
         if (widgetTextures && widgetTextures->count()) {
             QWidget *target = widget ? widget : tlw;
-            qt_flush(target, QRegion(), store, tlw, tlwOffset, widgetTextures, tlw->d_func()->shareContext());
+            qt_flush(target, QRegion(), store, tlw, tlwOffset, widgetTextures);
         }
 #endif
         return;
