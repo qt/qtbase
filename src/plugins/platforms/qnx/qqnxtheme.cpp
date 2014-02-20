@@ -49,6 +49,23 @@ QT_BEGIN_NAMESPACE
 
 QQnxTheme::QQnxTheme(const QQnxIntegration *integration) : m_integration(integration)
 {
+    // Set the dark theme as default palette
+    QColor color = QColor(211, 211, 211);
+    m_defaultPalette.setBrush(QPalette::ButtonText, color);
+    m_defaultPalette.setBrush(QPalette::WindowText, color);
+    m_defaultPalette.setBrush(QPalette::Text, color);
+
+    color.setAlpha(179);
+    m_defaultPalette.setBrush(QPalette::Disabled, QPalette::ButtonText, color);
+    m_defaultPalette.setBrush(QPalette::Disabled, QPalette::WindowText, color);
+    m_defaultPalette.setBrush(QPalette::Disabled, QPalette::Text, color);
+
+    m_defaultPalette.setColor(QPalette::Window, QColor(18, 18, 18));
+    m_defaultPalette.setColor(QPalette::Base, QColor(18, 18, 18));
+    m_defaultPalette.setColor(QPalette::AlternateBase, QColor(50, 50, 50));
+
+    m_defaultPalette.setBrush(QPalette::Highlight, QColor(0, 168, 223));
+    m_defaultPalette.setBrush(QPalette::HighlightedText, QColor(250, 250,250));
 }
 
 QQnxTheme::~QQnxTheme()
@@ -94,6 +111,15 @@ const QFont *QQnxTheme::font(Font type) const
     if (fontDatabase && m_fonts.isEmpty())
         m_fonts = qt_qnx_createRoleFonts(fontDatabase);
     return m_fonts.value(type, 0);
+}
+
+const QPalette *QQnxTheme::palette(Palette type) const
+{
+    // Return the default palette
+    if (type == SystemPalette)
+        return &m_defaultPalette;
+
+    return QPlatformTheme::palette(type);
 }
 
 QT_END_NAMESPACE

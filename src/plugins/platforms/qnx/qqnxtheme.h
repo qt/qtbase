@@ -49,6 +49,8 @@
 #include <QtCore/qhash.h>
 #include <QtCore/qstring.h>
 
+#include <QtGui/QPalette>
+
 QT_BEGIN_NAMESPACE
 
 class QQnxIntegration;
@@ -66,9 +68,12 @@ public:
 
     const QFont *font(Font type = SystemFont) const;
 
+    const QPalette *palette(Palette type = SystemPalette) const;
+
 private:
     mutable QHash<QPlatformTheme::Font, QFont*> m_fonts;
     const QQnxIntegration *m_integration;
+    QPalette m_defaultPalette;
 };
 
 QT_END_NAMESPACE
