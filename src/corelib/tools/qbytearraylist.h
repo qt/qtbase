@@ -97,9 +97,8 @@ inline QByteArray QByteArrayList::join(char sep) const
 
 inline QByteArrayList operator+(const QByteArrayList &lhs, const QByteArrayList &rhs)
 {
-    QByteArrayList res;
-    res.append( lhs );
-    res.append( rhs );
+    QByteArrayList res = lhs;
+    res += rhs;
     return res;
 }
 
