@@ -74,7 +74,6 @@ private slots:
     void resetFont();
 #endif
     void isCopyOf();
-    void setFontRaw();
     void italicOblique();
     void insertAndRemoveSubstitutions();
     void serializeSpacing();
@@ -417,15 +416,6 @@ void tst_QFont::compare()
         QVERIFY(font == font2);
         QVERIFY(!(font < font2));
     }
-
-#if defined(Q_WS_X11)
-    {
-        QFont font1, font2;
-        font1.setRawName("-Adobe-Helvetica-medium-r-normal--12-120-75-75-p-67-iso8859-1");
-        font2.setRawName("-Adobe-Helvetica-medium-r-normal--24-240-75-75-p-130-iso8859-1");
-        QVERIFY(font1 != font2);
-    }
-#endif
 }
 
 void tst_QFont::resolve()
@@ -517,30 +507,6 @@ void tst_QFont::isCopyOf()
     QVERIFY(!font3.isCopyOf(font));
     font3.setPointSize(font.pointSize());
     QVERIFY(!font3.isCopyOf(font));
-}
-
-void tst_QFont::setFontRaw()
-{
-#ifndef Q_WS_X11
-    QSKIP("Only tested on X11");
-#else
-    QFont f;
-    f.setRawName("-*-fixed-bold-r-normal--0-0-*-*-*-0-iso8859-1");
-//     qDebug("font family: %s", f.family().utf8());
-    QFontDatabase fdb;
-    QStringList families = fdb.families();
-    bool found = false;
-    for (int i = 0; i < families.size(); ++i) {
-        QString str = families.at(i);
-        if (str.contains('['))
-            str = str.left(str.indexOf('[')-1);
-        if (str.toLower() == "fixed")
-            found = true;
-    }
-    if (!found)
-        QSKIP("Fixed font not available.");
-    QCOMPARE(QFontInfo(f).family().left(5).toLower(), QString("fixed"));
-#endif
 }
 
 void tst_QFont::insertAndRemoveSubstitutions()

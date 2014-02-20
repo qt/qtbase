@@ -546,6 +546,7 @@ QFontEngineData::~QFontEngineData()
 
 /*!
     \fn QString QFont::rawName() const
+    \deprecated
 
     Returns the name of the font within the underlying window system.
 
@@ -559,6 +560,7 @@ QFontEngineData::~QFontEngineData()
 
 /*!
     \fn void QFont::setRawName(const QString &name)
+    \deprecated
 
     Sets a font by its system specific name.
 
