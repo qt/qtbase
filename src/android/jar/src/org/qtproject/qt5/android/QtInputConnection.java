@@ -78,6 +78,7 @@ class QtNativeInputConnection
     static native boolean copy();
     static native boolean copyURL();
     static native boolean paste();
+    static native boolean updateCursorPosition();
 }
 
 class HideKeyboardRunnable implements Runnable {
