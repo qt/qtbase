@@ -10829,9 +10829,7 @@ void QGraphicsSimpleTextItem::paint(QPainter *painter, const QStyleOptionGraphic
         range.start = 0;
         range.length = layout.text().length();
         range.format.setTextOutline(d->pen);
-        QVector<QTextLayout::FormatRange> formats;
-        formats.append(range);
-        layout.setFormats(formats);
+        layout.setFormats(QVector<QTextLayout::FormatRange>(1, range));
     }
 
     setupTextLayout(&layout);
