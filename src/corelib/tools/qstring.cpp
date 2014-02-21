@@ -1494,6 +1494,10 @@ QString::QString(QChar ch)
     \internal
 */
 
+/*! \fn QString::QString(QStringDataPtr)
+    \internal
+*/
+
 /*! \fn QString &QString::operator=(const Null &)
     \internal
 */
@@ -8462,6 +8466,11 @@ bool operator<(const QStringRef &s1,const QStringRef &s2)
 
     Constructs a string reference to the given \a string and assigns it to
     this string reference, returning the result.
+*/
+
+/*!
+    \typedef QString::Data
+    \internal
 */
 
 /*!
