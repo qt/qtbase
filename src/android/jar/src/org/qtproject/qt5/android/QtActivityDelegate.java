@@ -48,6 +48,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
@@ -56,6 +57,7 @@ import android.os.ResultReceiver;
 import android.text.method.MetaKeyKeyListener;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.KeyCharacterMap;
@@ -653,9 +655,6 @@ public class QtActivityDelegate
         m_imm = (InputMethodManager)m_activity.getSystemService(Context.INPUT_METHOD_SERVICE);
         m_surfaces =  new HashMap<Integer, QtSurface>();
         m_nativeViews = new HashMap<Integer, View>();
-        m_activity.setContentView(m_layout,
-                new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT));
         m_activity.registerForContextMenu(m_layout);
 
         int orientation = m_activity.getResources().getConfiguration().orientation;
@@ -989,6 +988,20 @@ public class QtActivityDelegate
     }
 
     public void createSurface(int id, boolean onTop, int x, int y, int w, int h) {
+        if (m_surfaces.size() == 0) {
+            TypedValue attr = new TypedValue();
+            m_activity.getTheme().resolveAttribute(android.R.attr.windowBackground, attr, true);
+            if (attr.type >= TypedValue.TYPE_FIRST_COLOR_INT && attr.type <= TypedValue.TYPE_LAST_COLOR_INT) {
+                m_activity.getWindow().setBackgroundDrawable(new ColorDrawable(attr.data));
+            } else {
+                m_activity.getWindow().setBackgroundDrawable(m_activity.getResources().getDrawable(attr.resourceId));
+            }
+
+            m_activity.setContentView(m_layout,
+                    new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.MATCH_PARENT));
+        }
+
         if (m_surfaces.containsKey(id))
             m_layout.removeView(m_surfaces.remove(id));
 
