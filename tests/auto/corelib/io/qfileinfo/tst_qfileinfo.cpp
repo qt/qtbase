@@ -713,7 +713,7 @@ void tst_QFileInfo::dir_data()
     QTest::newRow("resource1") << ":/tst_qfileinfo/resources/file1.ext1" << true << ":/tst_qfileinfo/resources";
 #ifdef Q_OS_WIN
     QTest::newRow("driveWithSlash") << "C:/file1.ext1.ext2" << true << "C:/";
-    QTest::newRow("driveWithoutSlash") << QDir::currentPath().left(2) + "file1.ext1.ext2" << false << QDir::currentPath();
+    QTest::newRow("driveWithoutSlash") << QDir::currentPath().left(2) + "file1.ext1.ext2" << false << QDir::currentPath().left(2);
 #endif
 }
 
