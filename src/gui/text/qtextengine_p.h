@@ -505,10 +505,10 @@ public:
     void freeMemory();
 
     int findItem(int strPos) const;
-    inline QTextFormatCollection *formats() const {
+    inline QTextFormatCollection *formatCollection() const {
         if (block.docHandle())
             return block.docHandle()->formatCollection();
-        return specialData ? specialData->formats.data() : 0;
+        return specialData ? specialData->formatCollection.data() : 0;
     }
     QTextCharFormat format(const QScriptItem *si) const;
     inline QAbstractTextDocumentLayout *docLayout() const {
@@ -578,10 +578,11 @@ public:
     inline QString preeditAreaText() const { return specialData ? specialData->preeditText : QString(); }
     void setPreeditArea(int position, const QString &text);
 
-    inline bool hasFormats() const { return block.docHandle() || (specialData && !specialData->addFormats.isEmpty()); }
-    inline QList<QTextLayout::FormatRange> additionalFormats() const
-    { return specialData ? specialData->addFormats : QList<QTextLayout::FormatRange>(); }
-    void setAdditionalFormats(const QList<QTextLayout::FormatRange> &formatList);
+    inline bool hasFormats() const
+    { return block.docHandle() || (specialData && !specialData->formats.isEmpty()); }
+    inline QList<QTextLayout::FormatRange> formats() const
+    { return specialData ? specialData->formats : QList<QTextLayout::FormatRange>(); }
+    void setFormats(const QList<QTextLayout::FormatRange> &formats);
 
 private:
     static void init(QTextEngine *e);
@@ -589,15 +590,15 @@ private:
     struct SpecialData {
         int preeditPosition;
         QString preeditText;
-        QList<QTextLayout::FormatRange> addFormats;
+        QList<QTextLayout::FormatRange> formats;
         QVector<QTextCharFormat> resolvedFormats;
         // only used when no docHandle is available
-        QScopedPointer<QTextFormatCollection> formats;
+        QScopedPointer<QTextFormatCollection> formatCollection;
     };
     SpecialData *specialData;
 
-    void indexAdditionalFormats();
-    void resolveAdditionalFormats() const;
+    void indexFormats();
+    void resolveFormats() const;
 
 public:
     bool atWordSeparator(int position) const;

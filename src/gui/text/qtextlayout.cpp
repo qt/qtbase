@@ -500,7 +500,7 @@ QString QTextLayout::preeditAreaText() const
 */
 void QTextLayout::setAdditionalFormats(const QList<FormatRange> &formatList)
 {
-    d->setAdditionalFormats(formatList);
+    d->setFormats(formatList);
 
     if (d->block.docHandle())
         d->block.docHandle()->documentChange(d->block.position(), d->block.length());
@@ -513,7 +513,7 @@ void QTextLayout::setAdditionalFormats(const QList<FormatRange> &formatList)
 */
 QList<QTextLayout::FormatRange> QTextLayout::additionalFormats() const
 {
-    return d->additionalFormats();
+    return d->formats();
 }
 
 /*!
