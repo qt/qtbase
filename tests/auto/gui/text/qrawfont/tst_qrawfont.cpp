@@ -312,16 +312,24 @@ void tst_QRawFont::advances()
 
     bool supportsSubPixelPositions = font_d->fontEngine->supportsSubPixelPositions();
     QVector<QPointF> advances = font.advancesForGlyphIndexes(glyphIndices);
-    for (int i=0; i<glyphIndices.size(); ++i) {
-#ifdef Q_OS_WIN
-        // In Windows, freetype engine returns advance of 9 when full hinting is used (default) for
-        // some of the glyphs.
-        if (font_d->fontEngine->type() == QFontEngine::Freetype
-            && (hintingPreference == QFont::PreferFullHinting || hintingPreference == QFont::PreferDefaultHinting)
-            && (i == 0 || i == 5)) {
-            QEXPECT_FAIL("", "Advance for some glyphs is not the expected with Windows Freetype engine (9 instead of 8)", Continue);
-        }
+
+    // On Windows and QNX, freetype engine returns advance of 9 for some of the glyphs
+    // when full hinting is used (default on Windows).
+    bool mayFail = false;
+#if defined (Q_OS_WIN)
+    mayFail = font_d->fontEngine->type() == QFontEngine::Freetype
+              && (hintingPreference == QFont::PreferFullHinting
+               || hintingPreference == QFont::PreferDefaultHinting);
+#elif defined(Q_OS_QNX)
+    mayFail = font_d->fontEngine->type() == QFontEngine::Freetype
+              && hintingPreference == QFont::PreferFullHinting;
 #endif
+
+    for (int i = 0; i < glyphIndices.size(); ++i) {
+        if (mayFail && (i == 0 || i == 5)) {
+            QEXPECT_FAIL("", "FreeType engine reports unexpected advance "
+                             "for some glyphs (9 instead of 8)", Continue);
+        }
         QVERIFY(qFuzzyCompare(qRound(advances.at(i).x()), 8.0));
         if (supportsSubPixelPositions)
             QVERIFY(advances.at(i).x() > 8.0);
@@ -339,16 +347,11 @@ void tst_QRawFont::advances()
 
     QVERIFY(font.advancesForGlyphIndexes(glyphIndices.constData(), advances.data(), numGlyphs));
 
-    for (int i=0; i<glyphIndices.size(); ++i) {
-#ifdef Q_OS_WIN
-        // In Windows, freetype engine returns advance of 9 when full hinting is used (default) for
-        // some of the glyphs.
-        if (font_d->fontEngine->type() == QFontEngine::Freetype
-            && (hintingPreference == QFont::PreferFullHinting || hintingPreference == QFont::PreferDefaultHinting)
-            && (i == 0 || i == 5)) {
-            QEXPECT_FAIL("", "Advance for some glyphs is not the expected with Windows Freetype engine (9 instead of 8)", Continue);
+    for (int i = 0; i < glyphIndices.size(); ++i) {
+        if (mayFail && (i == 0 || i == 5)) {
+            QEXPECT_FAIL("", "FreeType engine reports unexpected advance "
+                             "for some glyphs (9 instead of 8)", Continue);
         }
-#endif
         QVERIFY(qFuzzyCompare(qRound(advances.at(i).x()), 8.0));
         if (supportsSubPixelPositions)
             QVERIFY(advances.at(i).x() > 8.0);
