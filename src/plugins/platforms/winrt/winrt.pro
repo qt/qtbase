@@ -9,7 +9,7 @@ QT += core-private gui-private platformsupport-private
 
 DEFINES *= QT_NO_CAST_FROM_ASCII __WRL_NO_DEFAULT_LIB__ GL_GLEXT_PROTOTYPES
 
-LIBS += $$QMAKE_LIBS_CORE -ldxgi
+LIBS += $$QMAKE_LIBS_CORE
 
 SOURCES = \
     main.cpp  \
