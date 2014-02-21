@@ -124,15 +124,11 @@ QQnxGLContext::QQnxGLContext(QOpenGLContext *glContext)
     if (m_eglConfig == 0)
         qFatal("QQnxGLContext: failed to find EGL config");
 
-    EGLContext shareContext = EGL_NO_CONTEXT;
-    if (m_glContext) {
-        QQnxGLContext *qshareContext = dynamic_cast<QQnxGLContext*>(m_glContext->shareHandle());
-        if (qshareContext) {
-            shareContext = qshareContext->m_eglContext;
-        }
-    }
+    QQnxGLContext *glShareContext = static_cast<QQnxGLContext*>(m_glContext->shareHandle());
+    m_eglShareContext = glShareContext ? glShareContext->m_eglContext : EGL_NO_CONTEXT;
 
-    m_eglContext = eglCreateContext(ms_eglDisplay, m_eglConfig, shareContext, contextAttrs(format));
+    m_eglContext = eglCreateContext(ms_eglDisplay, m_eglConfig, m_eglShareContext,
+                                    contextAttrs(format));
     if (m_eglContext == EGL_NO_CONTEXT) {
         checkEGLError("eglCreateContext");
         qFatal("QQnxGLContext: failed to create EGL context, err=%d", eglGetError());
@@ -269,6 +265,11 @@ QFunctionPointer QQnxGLContext::getProcAddress(const QByteArray &procName)
 
     // Lookup EGL extension function pointer
     return static_cast<QFunctionPointer>(eglGetProcAddress(procName.constData()));
+}
+
+bool QQnxGLContext::isSharing() const
+{
+    return m_eglShareContext != EGL_NO_CONTEXT;
 }
 
 EGLDisplay QQnxGLContext::getEglDisplay() {

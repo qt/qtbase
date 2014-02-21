@@ -72,6 +72,7 @@ public:
     QFunctionPointer getProcAddress(const QByteArray &procName);
 
     virtual QSurfaceFormat format() const { return m_windowFormat; }
+    bool isSharing() const;
 
     static EGLDisplay getEglDisplay();
     EGLConfig getEglConfig() const { return m_eglConfig;}
@@ -86,6 +87,7 @@ private:
 
     EGLConfig m_eglConfig;
     EGLContext m_eglContext;
+    EGLContext m_eglShareContext;
     EGLSurface m_currentEglSurface;
 
     static EGLint *contextAttrs(const QSurfaceFormat &format);
