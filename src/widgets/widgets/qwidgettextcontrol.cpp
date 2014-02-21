@@ -2030,6 +2030,7 @@ void QWidgetTextControlPrivate::inputMethodEvent(QInputMethodEvent *e)
     if (isGettingInput)
         layout->setPreeditArea(cursor.position() - block.position(), e->preeditString());
     QVector<QTextLayout::FormatRange> overrides;
+    overrides.reserve(e->attributes().size());
     const int oldPreeditCursor = preeditCursor;
     preeditCursor = e->preeditString().length();
     hideCursor = false;

@@ -558,6 +558,7 @@ void QWidgetLineControl::processInputMethodEvent(QInputMethodEvent *event)
     m_preeditCursor = event->preeditString().length();
     m_hideCursor = false;
     QVector<QTextLayout::FormatRange> formats;
+    formats.reserve(event->attributes().size());
     for (int i = 0; i < event->attributes().size(); ++i) {
         const QInputMethodEvent::Attribute &a = event->attributes().at(i);
         if (a.type == QInputMethodEvent::Cursor) {
