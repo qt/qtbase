@@ -64,7 +64,7 @@ class tst_QLoggingRegistry;
 
 QT_BEGIN_NAMESPACE
 
-class QLoggingRule
+class Q_AUTOTEST_EXPORT QLoggingRule
 {
 public:
     QLoggingRule();
@@ -80,12 +80,13 @@ public:
     };
     Q_DECLARE_FLAGS(PatternFlags, PatternFlag)
 
-    QString pattern;
+    QString category;
+    int messageType;
     PatternFlags flags;
     bool enabled;
 
 private:
-    void parse();
+    void parse(const QString &pattern);
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QLoggingRule::PatternFlags)

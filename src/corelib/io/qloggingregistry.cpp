@@ -65,11 +65,11 @@ QLoggingRule::QLoggingRule() :
     Constructs a logging rule.
 */
 QLoggingRule::QLoggingRule(const QString &pattern, bool enabled) :
-    pattern(pattern),
+    messageType(-1),
     flags(Invalid),
     enabled(enabled)
 {
-    parse();
+    parse(pattern);
 }
 
 /*!
@@ -77,48 +77,33 @@ QLoggingRule::QLoggingRule(const QString &pattern, bool enabled) :
     Return value 1 means filter passed, 0 means filter doesn't influence this
     category, -1 means category doesn't pass this filter.
  */
-int QLoggingRule::pass(const QString &categoryName, QtMsgType msgType) const
+int QLoggingRule::pass(const QString &cat, QtMsgType msgType) const
 {
-    QString fullCategory = categoryName;
-    switch (msgType) {
-    case QtDebugMsg:
-        fullCategory += QLatin1String(".debug");
-        break;
-    case QtWarningMsg:
-        fullCategory += QLatin1String(".warning");
-        break;
-    case QtCriticalMsg:
-        fullCategory += QLatin1String(".critical");
-        break;
-    default:
-        break;
-    }
+    // check message type
+    if (messageType > -1 && messageType != msgType)
+        return 0;
 
     if (flags == FullText) {
-        // can be
-        //   qtproject.org.debug = true
-        // or
-        //   qtproject.org = true
-        if (pattern == categoryName
-                || pattern == fullCategory)
+        // full match
+        if (category == cat)
             return (enabled ? 1 : -1);
+        else
+            return 0;
     }
 
-    int idx = 0;
-    if (flags == MidFilter) {
-        // e.g. *.qtproject*
-        idx = fullCategory.indexOf(pattern);
-        if (idx >= 0)
-            return (enabled ? 1 : -1);
-    } else {
-        idx = fullCategory.indexOf(pattern);
-        if (flags == LeftFilter) {
-            // e.g. org.qtproject.*
+    const int idx = cat.indexOf(category);
+    if (idx >= 0) {
+        if (flags == MidFilter) {
+            // matches somewhere
+            if (idx >= 0)
+                return (enabled ? 1 : -1);
+        } else if (flags == LeftFilter) {
+            // matches left
             if (idx == 0)
                 return (enabled ? 1 : -1);
         } else if (flags == RightFilter) {
-            // e.g. *.qtproject
-            if (idx == (fullCategory.count() - pattern.count()))
+            // matches right
+            if (idx == (cat.count() - category.count()))
                 return (enabled ? 1 : -1);
         }
     }
@@ -127,28 +112,41 @@ int QLoggingRule::pass(const QString &categoryName, QtMsgType msgType) const
 
 /*!
     \internal
-    Parses the category and checks which kind of wildcard the filter can contain.
+    Parses \a pattern.
     Allowed is f.ex.:
-             org.qtproject.logging FullText
-             org.qtproject.*       LeftFilter
-             *.qtproject           RightFilter
-             *.qtproject*          MidFilter
+             qt.core.io.debug      FullText, QtDebugMsg
+             qt.core.*             LeftFilter, all types
+             *.io.warning          RightFilter, QtWarningMsg
+             *.core.*              MidFilter
  */
-void QLoggingRule::parse()
+void QLoggingRule::parse(const QString &pattern)
 {
-    int index = pattern.indexOf(QLatin1Char('*'));
+    category = pattern;
+    // strip trailing ".messagetype"
+    if (pattern.endsWith(QLatin1String(".debug"))) {
+        category.chop(strlen(".debug"));
+        messageType = QtDebugMsg;
+    } else if (pattern.endsWith(QLatin1String(".warning"))) {
+        category.chop(strlen(".warning"));
+        messageType = QtWarningMsg;
+    } else if (pattern.endsWith(QLatin1String(".critical"))) {
+        category.chop(strlen(".critical"));
+        messageType = QtCriticalMsg;
+    }
+
+    int index = category.indexOf(QLatin1Char('*'));
     if (index < 0) {
         flags = FullText;
     } else {
         flags = Invalid;
         if (index == 0) {
             flags |= RightFilter;
-            pattern = pattern.remove(0, 1);
-            index = pattern.indexOf(QLatin1Char('*'));
+            category.remove(0, 1);
+            index = category.indexOf(QLatin1Char('*'));
         }
-        if (index == (pattern.length() - 1)) {
+        if (index == (category.length() - 1)) {
             flags |= LeftFilter;
-            pattern = pattern.remove(pattern.length() - 1, 1);
+            category.chop(1);
         }
     }
 }
