@@ -64,6 +64,7 @@ public:
     ~tst_Spdy();
 
 private Q_SLOTS:
+    void initTestCase();
     void settingsAndNegotiation_data();
     void settingsAndNegotiation();
     void download_data();
@@ -101,6 +102,11 @@ tst_Spdy::tst_Spdy()
 
 tst_Spdy::~tst_Spdy()
 {
+}
+
+void tst_Spdy::initTestCase()
+{
+    QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
 }
 
 void tst_Spdy::settingsAndNegotiation_data()
