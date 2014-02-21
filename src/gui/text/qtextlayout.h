@@ -125,6 +125,11 @@ public:
         int start;
         int length;
         QTextCharFormat format;
+
+        friend bool operator==(const FormatRange &lhs, const FormatRange &rhs)
+        { return lhs.start == rhs.start && lhs.length == rhs.length && lhs.format == rhs.format; }
+        friend bool operator!=(const FormatRange &lhs, const FormatRange &rhs)
+        { return !operator==(lhs, rhs); }
     };
     void setAdditionalFormats(const QList<FormatRange> &overrides);
     QList<FormatRange> additionalFormats() const;

@@ -69,7 +69,7 @@ QT_BEGIN_NAMESPACE
     for a specified area in the text layout's content.
     \inmodule QtGui
 
-    \sa QTextLayout::setAdditionalFormats(), QTextLayout::draw()
+    \sa QTextLayout::setFormats(), QTextLayout::draw()
 */
 
 /*!
@@ -541,7 +541,7 @@ QVector<QTextLayout::FormatRange> QTextLayout::formats() const
 */
 void QTextLayout::clearAdditionalFormats()
 {
-    setAdditionalFormats(QList<FormatRange>());
+    clearFormats();
 }
 
 /*!

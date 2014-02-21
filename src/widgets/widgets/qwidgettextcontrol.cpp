@@ -2029,7 +2029,7 @@ void QWidgetTextControlPrivate::inputMethodEvent(QInputMethodEvent *e)
     QTextLayout *layout = block.layout();
     if (isGettingInput)
         layout->setPreeditArea(cursor.position() - block.position(), e->preeditString());
-    QList<QTextLayout::FormatRange> overrides;
+    QVector<QTextLayout::FormatRange> overrides;
     const int oldPreeditCursor = preeditCursor;
     preeditCursor = e->preeditString().length();
     hideCursor = false;
@@ -2049,7 +2049,7 @@ void QWidgetTextControlPrivate::inputMethodEvent(QInputMethodEvent *e)
             }
         }
     }
-    layout->setAdditionalFormats(overrides);
+    layout->setFormats(overrides);
 
     cursor.endEditBlock();
 
@@ -2878,7 +2878,7 @@ void QWidgetTextControlPrivate::commitPreedit()
     QTextBlock block = cursor.block();
     QTextLayout *layout = block.layout();
     layout->setPreeditArea(-1, QString());
-    layout->clearAdditionalFormats();
+    layout->clearFormats();
     cursor.endEditBlock();
 }
 
