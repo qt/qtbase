@@ -327,6 +327,12 @@ public:
         return *this;
     }
 #ifdef Q_COMPILER_RVALUE_REFS
+    inline QSharedPointer(QSharedPointer &&other)
+        : value(other.value), d(other.d)
+    {
+        other.d = 0;
+        other.value = 0;
+    }
     inline QSharedPointer<T> &operator=(QSharedPointer<T> &&other)
     {
         swap(other);
