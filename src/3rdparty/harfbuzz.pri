@@ -113,7 +113,6 @@ contains(QT_CONFIG, harfbuzz) {
     }
 
     DEFINES += HAVE_CONFIG_H
-    QT += core-private
 
     TR_EXCLUDE += $$QT_HARFBUZZ_DIR/*
 } else:contains(QT_CONFIG, system-harfbuzz) {
