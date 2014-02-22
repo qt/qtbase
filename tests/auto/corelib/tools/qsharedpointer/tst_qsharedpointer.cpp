@@ -63,6 +63,7 @@ private slots:
     void basics();
     void operators();
     void swap();
+    void moveSemantics();
     void useOfForwardDeclared();
     void memoryManagement();
     void dropLastReferenceOfForwardDeclared();
@@ -409,6 +410,66 @@ void tst_QSharedPointer::swap()
 
     QVERIFY(w1.isNull());
     QVERIFY(w2.isNull());
+}
+
+void tst_QSharedPointer::moveSemantics()
+{
+#ifdef Q_COMPILER_RVALUE_REFS
+    QSharedPointer<int> p1, p2(new int(42)), control = p2;
+    QVERIFY(p1 != control);
+    QVERIFY(p1.isNull());
+    QVERIFY(p2 == control);
+    QVERIFY(!p2.isNull());
+    QVERIFY(*p2 == 42);
+
+    // move assignment
+    p1 = std::move(p2);
+    QVERIFY(p1 == control);
+    QVERIFY(!p1.isNull());
+    QVERIFY(p2 != control);
+    QVERIFY(p2.isNull());
+    QVERIFY(*p1 == 42);
+
+    // move construction
+    QSharedPointer<int> p3 = std::move(p1);
+    QVERIFY(p1 != control);
+    QVERIFY(p1.isNull());
+    QVERIFY(p3 == control);
+    QVERIFY(!p3.isNull());
+    QVERIFY(*p3 == 42);
+
+    QWeakPointer<int> w1, w2 = control;
+
+    QVERIFY(w1.isNull());
+    QVERIFY(!w2.isNull());
+    QVERIFY(w2.lock() == control);
+    QVERIFY(!w1.lock());
+
+    // move assignment
+    w1 = std::move(w2);
+    QVERIFY(w2.isNull());
+    QVERIFY(!w1.isNull());
+    QVERIFY(w1.lock() == control);
+    QVERIFY(!w2.lock());
+
+    // move construction
+    QWeakPointer<int> w3 = std::move(w1);
+    QVERIFY(w1.isNull());
+    QVERIFY(!w3.isNull());
+    QVERIFY(w3.lock() == control);
+    QVERIFY(!w1.lock());
+
+    p1.reset();
+    p2.reset();
+    p3.reset();
+    control.reset();
+
+    QVERIFY(w1.isNull());
+    QVERIFY(w2.isNull());
+    QVERIFY(w3.isNull());
+#else
+    QSKIP("This test requires C++11 rvalue/move semantics support in the compiler.");
+#endif
 }
 
 void tst_QSharedPointer::useOfForwardDeclared()

@@ -617,6 +617,16 @@ public:
 
     QWeakPointer(const QWeakPointer &other) Q_DECL_NOTHROW : d(other.d), value(other.value)
     { if (d) d->weakref.ref(); }
+#ifdef Q_COMPILER_RVALUE_REFS
+    QWeakPointer(QWeakPointer &&other) Q_DECL_NOTHROW
+        : d(other.d), value(other.value)
+    {
+        other.d = Q_NULLPTR;
+        other.value = Q_NULLPTR;
+    }
+    QWeakPointer &operator=(QWeakPointer &&other) Q_DECL_NOTHROW
+    { QWeakPointer moved(std::move(other)); swap(moved); return *this; }
+#endif
     QWeakPointer &operator=(const QWeakPointer &other) Q_DECL_NOTHROW
     {
         QWeakPointer copy(other);
