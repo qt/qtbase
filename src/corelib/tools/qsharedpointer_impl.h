@@ -318,9 +318,9 @@ public:
     inline QSharedPointer(T *ptr, Deleter deleter) : value(ptr) // throws
     { internalConstruct(ptr, deleter); }
 
-    inline QSharedPointer(const QSharedPointer<T> &other) : value(other.value), d(other.d)
+    inline QSharedPointer(const QSharedPointer &other) : value(other.value), d(other.d)
     { if (d) ref(); }
-    inline QSharedPointer<T> &operator=(const QSharedPointer<T> &other)
+    inline QSharedPointer &operator=(const QSharedPointer &other)
     {
         QSharedPointer copy(other);
         swap(copy);
@@ -333,7 +333,7 @@ public:
         other.d = 0;
         other.value = 0;
     }
-    inline QSharedPointer<T> &operator=(QSharedPointer<T> &&other)
+    inline QSharedPointer &operator=(QSharedPointer &&other)
     {
         swap(other);
         return *this;
@@ -345,7 +345,7 @@ public:
     { if (d) ref(); }
 
     template <class X>
-    inline QSharedPointer<T> &operator=(const QSharedPointer<X> &other)
+    inline QSharedPointer &operator=(const QSharedPointer<X> &other)
     {
         QSHAREDPOINTER_VERIFY_AUTO_CAST(T, X); // if you get an error in this line, the cast is invalid
         internalCopy(other);
@@ -361,7 +361,7 @@ public:
     { internalSet(other.d, other.value); return *this; }
 
     inline void swap(QSharedPointer &other)
-    { QSharedPointer<T>::internalSwap(other); }
+    { this->internalSwap(other); }
 
     inline void reset() { clear(); }
     inline void reset(T *t)
@@ -402,7 +402,7 @@ public:
 
 #if defined(Q_COMPILER_RVALUE_REFS) && defined(Q_COMPILER_VARIADIC_TEMPLATES)
     template <typename... Args>
-    static QSharedPointer<T> create(Args && ...arguments)
+    static QSharedPointer create(Args && ...arguments)
     {
         typedef QtSharedPointer::ExternalRefCountWithContiguousData<T> Private;
 # ifdef QT_SHAREDPOINTER_TRACK_POINTERS
@@ -410,7 +410,7 @@ public:
 # else
         typename Private::DestroyerFn destroy = &Private::deleter;
 # endif
-        QSharedPointer<T> result(Qt::Uninitialized);
+        QSharedPointer result(Qt::Uninitialized);
         result.d = Private::create(&result.value, destroy);
 
         // now initialize the data
@@ -422,7 +422,7 @@ public:
         return result;
     }
 #else
-    static inline QSharedPointer<T> create()
+    static inline QSharedPointer create()
     {
         typedef QtSharedPointer::ExternalRefCountWithContiguousData<T> Private;
 # ifdef QT_SHAREDPOINTER_TRACK_POINTERS
@@ -430,7 +430,7 @@ public:
 # else
         typename Private::DestroyerFn destroy = &Private::deleter;
 # endif
-        QSharedPointer<T> result(Qt::Uninitialized);
+        QSharedPointer result(Qt::Uninitialized);
         result.d = Private::create(&result.value, destroy);
 
         // now initialize the data
@@ -579,9 +579,9 @@ public:
     { return *this = QWeakPointer(ptr); }
 #endif
 
-    inline QWeakPointer(const QWeakPointer<T> &o) : d(o.d), value(o.value)
+    inline QWeakPointer(const QWeakPointer &o) : d(o.d), value(o.value)
     { if (d) d->weakref.ref(); }
-    inline QWeakPointer<T> &operator=(const QWeakPointer<T> &o)
+    inline QWeakPointer &operator=(const QWeakPointer &o)
     {
         internalSet(o.d, o.value);
         return *this;
@@ -589,7 +589,7 @@ public:
 
     inline QWeakPointer(const QSharedPointer<T> &o) : d(o.d), value(o.data())
     { if (d) d->weakref.ref();}
-    inline QWeakPointer<T> &operator=(const QSharedPointer<T> &o)
+    inline QWeakPointer &operator=(const QSharedPointer<T> &o)
     {
         internalSet(o.d, o.value);
         return *this;
@@ -600,7 +600,7 @@ public:
     { *this = o; }
 
     template <class X>
-    inline QWeakPointer<T> &operator=(const QWeakPointer<X> &o)
+    inline QWeakPointer &operator=(const QWeakPointer<X> &o)
     {
         // conversion between X and T could require access to the virtual table
         // so force the operation to go through QSharedPointer
@@ -621,7 +621,7 @@ public:
     { *this = o; }
 
     template <class X>
-    inline QWeakPointer<T> &operator=(const QSharedPointer<X> &o)
+    inline QWeakPointer &operator=(const QSharedPointer<X> &o)
     {
         QSHAREDPOINTER_VERIFY_AUTO_CAST(T, X); // if you get an error in this line, the cast is invalid
         internalSet(o.d, o.data());
@@ -636,7 +636,7 @@ public:
     inline bool operator!=(const QSharedPointer<X> &o) const
     { return !(*this == o); }
 
-    inline void clear() { *this = QWeakPointer<T>(); }
+    inline void clear() { *this = QWeakPointer(); }
 
     inline QSharedPointer<T> toStrongRef() const { return QSharedPointer<T>(*this); }
 
