@@ -2442,6 +2442,9 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
 
 #ifdef QTESTLIB_USE_VALGRIND
     if (QBenchmarkGlobalData::current->mode() == QBenchmarkGlobalData::CallgrindParentProcess) {
+        if (!qApp)
+            qFatal("QtTest: -callgrind option is not available with QTEST_APPLESS_MAIN");
+
         const QStringList origAppArgs(QCoreApplication::arguments());
         if (!QBenchmarkValgrindUtils::rerunThroughCallgrind(origAppArgs, callgrindChildExitCode))
             return -1;
