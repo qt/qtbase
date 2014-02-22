@@ -184,7 +184,7 @@ public:
         : QHttpNetworkConnection(hostName, port, encrypt)
 #else
     QNetworkAccessCachedHttpConnection(const QString &hostName, quint16 port, bool encrypt, QSharedPointer<QNetworkSession> networkSession)
-        : QHttpNetworkConnection(hostName, port, encrypt, /*parent=*/0, networkSession)
+        : QHttpNetworkConnection(hostName, port, encrypt, /*parent=*/0, qMove(networkSession))
 #endif
     {
         setExpires(true);

@@ -1131,7 +1131,7 @@ QHttpNetworkConnection::QHttpNetworkConnection(const QString &hostName, quint16 
     : QObject(*(new QHttpNetworkConnectionPrivate(hostName, port, encrypt)), parent)
 {
     Q_D(QHttpNetworkConnection);
-    d->networkSession = networkSession;
+    d->networkSession = qMove(networkSession);
     d->init();
 }
 
@@ -1139,7 +1139,7 @@ QHttpNetworkConnection::QHttpNetworkConnection(quint16 connectionCount, const QS
      : QObject(*(new QHttpNetworkConnectionPrivate(connectionCount, hostName, port, encrypt)), parent)
 {
     Q_D(QHttpNetworkConnection);
-    d->networkSession = networkSession;
+    d->networkSession = qMove(networkSession);
     d->init();
 }
 #else
@@ -1248,7 +1248,7 @@ QSharedPointer<QSslContext> QHttpNetworkConnection::sslContext()
 void QHttpNetworkConnection::setSslContext(QSharedPointer<QSslContext> context)
 {
     Q_D(QHttpNetworkConnection);
-    d->sslContext = context;
+    d->sslContext = qMove(context);
 }
 
 void QHttpNetworkConnection::ignoreSslErrors(int channel)
