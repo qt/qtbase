@@ -1133,6 +1133,21 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si, const ushort *st
 
             uint cluster = infos[i].cluster;
             if (last_cluster != cluster) {
+                if (Q_UNLIKELY(g.glyphs[i] == 0)) {
+                    // hide characters that should normally be invisible
+                    switch (string[item_pos + str_pos]) {
+                    case QChar::LineFeed:
+                    case 0x000c: // FormFeed
+                    case QChar::CarriageReturn:
+                    case QChar::LineSeparator:
+                    case QChar::ParagraphSeparator:
+                        g.attributes[i].dontPrint = true;
+                        break;
+                    default:
+                        break;
+                    }
+                }
+
                 // fix up clusters so that the cluster indices will be monotonic
                 // and thus we never return out-of-order indices
                 while (last_cluster++ < cluster && str_pos < item_length)
