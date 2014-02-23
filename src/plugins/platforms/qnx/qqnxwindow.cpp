@@ -88,8 +88,10 @@ QQnxWindow::QQnxWindow(QWindow *window, screen_context_t context, bool needRootW
 
     QQnxScreen *platformScreen = static_cast<QQnxScreen *>(window->screen()->handle());
 
-    if (window->type() == Qt::CoverWindow) {
+    if (window->type() == Qt::CoverWindow || window->type() == Qt::Desktop) {
         // Cover windows have to be top level to be accessible to window delegate (i.e. navigator)
+        // Desktop windows also need to be toplevel because they are not
+        // supposed to be part of the window hierarchy tree
         m_isTopLevel = true;
     } else if (parent() || (window->type() & Qt::Dialog) == Qt::Dialog) {
         // If we have a parent we are a child window.  Sometimes we have to be a child even if we
@@ -104,7 +106,7 @@ QQnxWindow::QQnxWindow(QWindow *window, screen_context_t context, bool needRootW
     if (m_isTopLevel) {
         Q_SCREEN_CRITICALERROR(screen_create_window(&m_window, m_screenContext),
                             "Could not create top level window"); // Creates an application window
-        if (window->type() != Qt::CoverWindow) {
+        if (window->type() != Qt::CoverWindow && window->type() != Qt::Desktop) {
             if (needRootWindow)
                 platformScreen->setRootWindow(this);
         }
