@@ -57,6 +57,7 @@
 #include <private/qopenglcontext_p.h>
 #include <qopenglshaderprogram.h>
 #include <qopenglfunctions.h>
+#include <qopenglbuffer.h>
 
 // #define QT_GL_TEXTURE_GLYPH_CACHE_DEBUG
 
@@ -162,6 +163,8 @@ private:
     GLfloat m_textureCoordinateArray[8];
 
     int m_serialNumber;
+
+    QOpenGLBuffer m_buffer;
 };
 
 QT_END_NAMESPACE

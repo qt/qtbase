@@ -58,6 +58,7 @@ QOpenGLTextureGlyphCache::QOpenGLTextureGlyphCache(QFontEngine::GlyphFormat form
     , m_blitProgram(0)
     , m_filterMode(Nearest)
     , m_serialNumber(qopengltextureglyphcache_serial_number.fetchAndAddRelaxed(1))
+    , m_buffer(QOpenGLBuffer::VertexBuffer)
 {
 #ifdef QT_GL_TEXTURE_GLYPH_CACHE_DEBUG
     qDebug(" -> QOpenGLTextureGlyphCache() %p for context %p.", this, QOpenGLContext::currentContext());
@@ -139,6 +140,18 @@ void QOpenGLTextureGlyphCache::createTextureData(int width, int height)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     m_filterMode = Nearest;
+
+    if (!m_buffer.isCreated()) {
+        m_buffer.create();
+        m_buffer.bind();
+        static GLfloat buf[sizeof(m_vertexCoordinateArray) + sizeof(m_textureCoordinateArray)];
+        memcpy(buf, m_vertexCoordinateArray, sizeof(m_vertexCoordinateArray));
+        memcpy(buf + (sizeof(m_vertexCoordinateArray) / sizeof(GLfloat)),
+               m_textureCoordinateArray,
+               sizeof(m_textureCoordinateArray));
+        m_buffer.allocate(buf, sizeof(buf));
+        m_buffer.release();
+    }
 }
 
 void QOpenGLTextureGlyphCache::resizeTextureData(int width, int height)
@@ -239,10 +252,10 @@ void QOpenGLTextureGlyphCache::resizeTextureData(int width, int height)
             m_blitProgram->link();
         }
 
-        funcs.glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, m_vertexCoordinateArray);
-        funcs.glVertexAttribPointer(QT_TEXTURE_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, m_textureCoordinateArray);
-
+        m_buffer.bind();
         m_blitProgram->bind();
+        m_blitProgram->setAttributeBuffer(int(QT_VERTEX_COORDS_ATTR), GL_FLOAT, 0, 2);
+        m_blitProgram->setAttributeBuffer(int(QT_TEXTURE_COORDS_ATTR), GL_FLOAT, sizeof(m_vertexCoordinateArray), 2);
         m_blitProgram->enableAttributeArray(int(QT_VERTEX_COORDS_ATTR));
         m_blitProgram->enableAttributeArray(int(QT_TEXTURE_COORDS_ATTR));
         m_blitProgram->disableAttributeArray(int(QT_OPACITY_ATTR));
@@ -278,6 +291,7 @@ void QOpenGLTextureGlyphCache::resizeTextureData(int width, int height)
     } else {
         m_blitProgram->disableAttributeArray(int(QT_VERTEX_COORDS_ATTR));
         m_blitProgram->disableAttributeArray(int(QT_TEXTURE_COORDS_ATTR));
+        m_buffer.release();
     }
 }
 
