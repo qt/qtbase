@@ -63,16 +63,16 @@ private slots:
     {
         //
         // Logging configuration can be described
-        // in an .ini file. [rules] is the
+        // in an .ini file. [Rules] is the
         // default category, and optional ...
         //
         QLoggingSettingsParser parser;
-        parser.setContent("[rules]\n"
+        parser.setContent("[Rules]\n"
                           "default=false\n"
                           "default=true");
         QCOMPARE(parser.rules().size(), 2);
 
-        parser.setContent("[rules]\n"
+        parser.setContent("[Rules]\n"
                           "default=false");
         QCOMPARE(parser.rules().size(), 1);
 
@@ -115,7 +115,7 @@ private slots:
         QFile file(dir.absoluteFilePath("qtlogging.ini"));
         QVERIFY(file.open(QFile::WriteOnly | QFile::Text));
         QTextStream out(&file);
-        out << "[rules]\n";
+        out << "[Rules]\n";
         out << "Digia.*=false\n";
         file.close();
 
@@ -153,7 +153,7 @@ private slots:
 
         // set Config rule
         QLoggingSettingsParser parser;
-        parser.setContent("[rules]\nDigia.*=false");
+        parser.setContent("[Rules]\nDigia.*=false");
         registry->configRules=parser.rules();
         registry->updateRules();
 

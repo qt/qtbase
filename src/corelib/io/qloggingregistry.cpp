@@ -203,7 +203,7 @@ void QLoggingSettingsParser::setContent(QTextStream &stream)
             continue;
         }
 
-        if (_section == QLatin1String("rules")) {
+        if (_section == QLatin1String("Rules")) {
             int equalPos = line.indexOf(QLatin1Char('='));
             if ((equalPos != -1)
                     && (line.lastIndexOf(QLatin1Char('=')) == equalPos)) {
@@ -298,7 +298,7 @@ void QLoggingRegistry::unregisterCategory(QLoggingCategory *cat)
 void QLoggingRegistry::setApiRules(const QString &content)
 {
     QLoggingSettingsParser parser;
-    parser.setSection(QStringLiteral("rules"));
+    parser.setSection(QStringLiteral("Rules"));
     parser.setContent(content);
 
     QMutexLocker locker(&registryMutex);
