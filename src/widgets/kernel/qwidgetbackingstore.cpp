@@ -78,9 +78,11 @@ void QWidgetBackingStore::qt_flush(QWidget *widget, const QRegion &region, QBack
 {
 #ifdef QT_NO_OPENGL
     Q_UNUSED(widgetTextures);
+    Q_ASSERT(!region.isEmpty());
+#else
+    Q_ASSERT(!region.isEmpty() || (widgetTextures && widgetTextures->count()));
 #endif
     Q_ASSERT(widget);
-    Q_ASSERT(!region.isEmpty() || (widgetTextures && widgetTextures->count()));
     Q_ASSERT(backingStore);
     Q_ASSERT(tlw);
 
@@ -749,8 +751,9 @@ QWidgetBackingStore::~QWidgetBackingStore()
     for (int c = 0; c < dirtyWidgets.size(); ++c) {
         resetWidget(dirtyWidgets.at(c));
     }
-
+#ifndef QT_NO_OPENGL
     delete dirtyOnScreenWidgets;
+#endif
     dirtyOnScreenWidgets = 0;
 }
 
@@ -959,7 +962,6 @@ static void findTextureWidgetsRecursively(QWidget *tlw, QWidget *widget, QPlatfo
             findTextureWidgetsRecursively(tlw, w, widgetTextures);
     }
 }
-#endif
 
 QPlatformTextureListWatcher::QPlatformTextureListWatcher(QWidgetBackingStore *backingStore)
     : m_locked(false),
@@ -979,6 +981,7 @@ void QPlatformTextureListWatcher::onLockStatusChanged(bool locked)
     if (!locked)
         m_backingStore->sync();
 }
+#endif // QT_NO_OPENGL
 
 /*!
     Synchronizes the backing store, i.e. dirty areas are repainted and flushed.
@@ -1003,6 +1006,7 @@ void QWidgetBackingStore::sync()
         return;
     }
 
+#ifndef QT_NO_OPENGL
     if (textureListWatcher && !textureListWatcher->isLocked()) {
         textureListWatcher->deleteLater();
         textureListWatcher = 0;
@@ -1013,6 +1017,7 @@ void QWidgetBackingStore::sync()
             textureListWatcher->watch(widgetTextures);
         return;
     }
+#endif
 
     doSync();
 }
