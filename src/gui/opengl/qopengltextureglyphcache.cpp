@@ -89,6 +89,11 @@ QOpenGLTextureGlyphCache::~QOpenGLTextureGlyphCache()
 #endif
 }
 
+static inline bool isCoreProfile()
+{
+    return QOpenGLContext::currentContext()->format().profile() == QSurfaceFormat::CoreProfile;
+}
+
 void QOpenGLTextureGlyphCache::createTextureData(int width, int height)
 {
     QOpenGLContext *ctx = const_cast<QOpenGLContext *>(QOpenGLContext::currentContext());
@@ -132,7 +137,14 @@ void QOpenGLTextureGlyphCache::createTextureData(int width, int height)
         QVarLengthArray<uchar> data(width * height);
         for (int i = 0; i < data.size(); ++i)
             data[i] = 0;
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, width, height, 0, GL_ALPHA, GL_UNSIGNED_BYTE, &data[0]);
+#if !defined(QT_OPENGL_ES_2)
+        const GLint internalFormat = isCoreProfile() ? GL_R8 : GL_ALPHA;
+        const GLenum format = isCoreProfile() ? GL_RED : GL_ALPHA;
+#else
+        const GLint internalFormat = GL_ALPHA;
+        const GLenum format = GL_ALPHA;
+#endif
+        glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, GL_UNSIGNED_BYTE, &data[0]);
     }
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -409,7 +421,14 @@ void QOpenGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph, QFixed
                 glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y + i, maskWidth, 1, GL_ALPHA, GL_UNSIGNED_BYTE, mask.scanLine(i));
         } else {
 #endif
-            glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y, maskWidth, maskHeight, GL_ALPHA, GL_UNSIGNED_BYTE, mask.bits());
+
+#if !defined(QT_OPENGL_ES_2)
+        const GLenum format = isCoreProfile() ? GL_RED : GL_ALPHA;
+#else
+        const GLenum format = GL_ALPHA;
+#endif
+        glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y, maskWidth, maskHeight, format, GL_UNSIGNED_BYTE, mask.bits());
+
 #if 0
         }
 #endif
