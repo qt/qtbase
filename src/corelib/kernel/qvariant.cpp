@@ -3488,7 +3488,7 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
 
 /*!
     \class QSequentialIterable
-
+    \since 5.2
     \inmodule QtCore
     \brief The QSequentialIterable class is an iterable interface for a container in a QVariant.
 
@@ -3591,7 +3591,7 @@ bool QSequentialIterable::canReverseIterate() const
 
 /*!
     \class QSequentialIterable::const_iterator
-
+    \since 5.2
     \inmodule QtCore
     \brief The QSequentialIterable::const_iterator allows iteration over a container in a QVariant.
 
@@ -3794,7 +3794,7 @@ QSequentialIterable::const_iterator QSequentialIterable::const_iterator::operato
 
 /*!
     \class QAssociativeIterable
-
+    \since 5.2
     \inmodule QtCore
     \brief The QAssociativeIterable class is an iterable interface for an associative container in a QVariant.
 
@@ -3899,7 +3899,7 @@ int QAssociativeIterable::size() const
 
 /*!
     \class QAssociativeIterable::const_iterator
-
+    \since 5.2
     \inmodule QtCore
     \brief The QAssociativeIterable::const_iterator allows iteration over a container in a QVariant.
 
