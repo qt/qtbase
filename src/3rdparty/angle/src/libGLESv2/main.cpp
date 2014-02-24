@@ -11,15 +11,60 @@
 
 #include "libGLESv2/Context.h"
 
-#ifndef QT_OPENGL_ES_2_ANGLE_STATIC
-
 #if !defined(ANGLE_OS_WINRT)
 static DWORD currentTLS = TLS_OUT_OF_INDEXES;
 #else
 static __declspec(thread) void *currentTLS = 0;
 #endif
 
-namespace gl { Current *getCurrent(); }
+namespace gl
+{
+
+Current *AllocateCurrent()
+{
+#if !defined(ANGLE_OS_WINRT)
+    Current *current = (Current*)LocalAlloc(LPTR, sizeof(Current));
+#else
+    currentTLS = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(Current));
+    Current *current = (Current*)currentTLS;
+#endif
+
+    if (!current)
+    {
+        ERR("Could not allocate thread local storage.");
+        return NULL;
+    }
+
+#if !defined(ANGLE_OS_WINRT)
+    ASSERT(currentTLS != TLS_OUT_OF_INDEXES);
+    TlsSetValue(currentTLS, current);
+#endif
+
+    current->context = NULL;
+    current->display = NULL;
+
+    return current;
+}
+
+void DeallocateCurrent()
+{
+#if !defined(ANGLE_OS_WINRT)
+    void *current = TlsGetValue(currentTLS);
+
+    if (current)
+    {
+        LocalFree((HLOCAL)current);
+    }
+#else
+    if (currentTLS)
+    {
+        HeapFree(GetProcessHeap(), 0, currentTLS);
+        currentTLS = 0;
+    }
+#endif
+}
+
+}
 
 extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved)
 {
@@ -39,48 +84,19 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved
         // Fall throught to initialize index
       case DLL_THREAD_ATTACH:
         {
-            gl::Current *current = gl::getCurrent();
-
-            if (current)
-            {
-#if !defined(ANGLE_OS_WINRT)
-                TlsSetValue(currentTLS, current);
-#endif
-                current->context = NULL;
-                current->display = NULL;
-            }
+            gl::AllocateCurrent();
         }
         break;
       case DLL_THREAD_DETACH:
         {
-            gl::Current *current = gl::getCurrent();
-
-            if (current)
-            {
-#if !defined(ANGLE_OS_WINRT)
-                LocalFree((HLOCAL)current);
-#else
-                HeapFree(GetProcessHeap(), HEAP_GENERATE_EXCEPTIONS, current);
-                currentTLS = 0;
-#endif
-            }
+            gl::DeallocateCurrent();
         }
         break;
       case DLL_PROCESS_DETACH:
         {
-            gl::Current *current = gl::getCurrent();
-
-            if (current)
-            {
+            gl::DeallocateCurrent();
 #if !defined(ANGLE_OS_WINRT)
-                LocalFree((HLOCAL)current);
-            }
-
             TlsFree(currentTLS);
-#else
-            HeapFree(GetProcessHeap(), HEAP_GENERATE_EXCEPTIONS, current);
-            currentTLS = 0;
-        }
 #endif
         }
         break;
@@ -91,33 +107,31 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved
     return TRUE;
 }
 
-#endif // !QT_OPENGL_ES_2_ANGLE_STATIC
-
 namespace gl
 {
-Current *getCurrent()
+
+Current *GetCurrentData()
 {
 #ifndef QT_OPENGL_ES_2_ANGLE_STATIC
 #if !defined(ANGLE_OS_WINRT)
     Current *current = (Current*)TlsGetValue(currentTLS);
-    if (!current)
-        current = (Current*)LocalAlloc(LPTR, sizeof(Current));
-    return current;
 #else
-    if (!currentTLS)
-        currentTLS = HeapAlloc(GetProcessHeap(), HEAP_GENERATE_EXCEPTIONS|HEAP_ZERO_MEMORY, sizeof(Current));
-    return (Current*)currentTLS;
+    Current *current = (Current*)currentTLS;
 #endif
 #else
     // No precautions for thread safety taken as ANGLE is used single-threaded in Qt.
-    static gl::Current curr = { 0, 0 };
-    return &curr;
+    static Current s_current = { 0, 0 };
+    Current *current = &s_current;
 #endif
+
+    // ANGLE issue 488: when the dll is loaded after thread initialization,
+    // thread local storage (current) might not exist yet.
+    return (current ? current : AllocateCurrent());
 }
 
 void makeCurrent(Context *context, egl::Display *display, egl::Surface *surface)
 {
-    Current *current = getCurrent();
+    Current *current = GetCurrentData();
 
     current->context = context;
     current->display = display;
@@ -130,7 +144,7 @@ void makeCurrent(Context *context, egl::Display *display, egl::Surface *surface)
 
 Context *getContext()
 {
-    Current *current = getCurrent();
+    Current *current = GetCurrentData();
 
     return current->context;
 }
@@ -156,7 +170,7 @@ Context *getNonLostContext()
 
 egl::Display *getDisplay()
 {
-    Current *current = getCurrent();
+    Current *current = GetCurrentData();
 
     return current->display;
 }

@@ -1,0 +1,68 @@
+From 9b24b25eeb5ca97d7978c6840fdb1e903bf63a55 Mon Sep 17 00:00:00 2001
+From: Friedemann Kleint <Friedemann.Kleint@digia.com>
+Date: Tue, 18 Feb 2014 09:52:52 +0200
+Subject: [PATCH] Make it possible to link ANGLE statically for
+ single-thread use.
+
+Fix exports and provide static instances of thread-local
+data depending on QT_OPENGL_ES_2_ANGLE_STATIC.
+
+Change-Id: Ifab25a820adf5953bb3b09036de53dbf7f1a7fd5
+---
+ src/3rdparty/angle/include/KHR/khrplatform.h | 2 +-
+ src/3rdparty/angle/src/libEGL/main.cpp       | 6 ++++++
+ src/3rdparty/angle/src/libGLESv2/main.cpp    | 6 ++++++
+ 3 files changed, 13 insertions(+), 1 deletion(-)
+
+diff --git a/src/3rdparty/angle/include/KHR/khrplatform.h b/src/3rdparty/angle/include/KHR/khrplatform.h
+index c9e6f17..1ac2d3f 100644
+--- a/src/3rdparty/angle/include/KHR/khrplatform.h
++++ b/src/3rdparty/angle/include/KHR/khrplatform.h
+@@ -97,7 +97,7 @@
+  *-------------------------------------------------------------------------
+  * This precedes the return type of the function in the function prototype.
+  */
+-#if defined(_WIN32) && !defined(__SCITECH_SNAP__)
++#if defined(_WIN32) && !defined(__SCITECH_SNAP__) && !defined(QT_OPENGL_ES_2_ANGLE_STATIC)
+ #   define KHRONOS_APICALL __declspec(dllimport)
+ #elif defined (__SYMBIAN32__)
+ #   define KHRONOS_APICALL IMPORT_C
+diff --git a/src/3rdparty/angle/src/libEGL/main.cpp b/src/3rdparty/angle/src/libEGL/main.cpp
+index 80dcc34..772b8eb 100644
+--- a/src/3rdparty/angle/src/libEGL/main.cpp
++++ b/src/3rdparty/angle/src/libEGL/main.cpp
+@@ -106,7 +106,13 @@ namespace egl
+ 
+ Current *GetCurrentData()
+ {
++#ifndef QT_OPENGL_ES_2_ANGLE_STATIC
+     Current *current = (Current*)TlsGetValue(currentTLS);
++#else
++    // No precautions for thread safety taken as ANGLE is used single-threaded in Qt.
++    static Current s_current = { EGL_SUCCESS, EGL_OPENGL_ES_API, EGL_NO_DISPLAY, EGL_NO_SURFACE, EGL_NO_SURFACE };
++    Current *current = &s_current;
++#endif
+ 
+     // ANGLE issue 488: when the dll is loaded after thread initialization,
+     // thread local storage (current) might not exist yet.
+diff --git a/src/3rdparty/angle/src/libGLESv2/main.cpp b/src/3rdparty/angle/src/libGLESv2/main.cpp
+index 50e2593..6b459d3 100644
+--- a/src/3rdparty/angle/src/libGLESv2/main.cpp
++++ b/src/3rdparty/angle/src/libGLESv2/main.cpp
+@@ -89,7 +89,13 @@ namespace gl
+ 
+ Current *GetCurrentData()
+ {
++#ifndef QT_OPENGL_ES_2_ANGLE_STATIC
+     Current *current = (Current*)TlsGetValue(currentTLS);
++#else
++    // No precautions for thread safety taken as ANGLE is used single-threaded in Qt.
++    static Current s_current = { 0, 0 };
++    Current *current = &s_current;
++#endif
+ 
+     // ANGLE issue 488: when the dll is loaded after thread initialization,
+     // thread local storage (current) might not exist yet.
+-- 
+1.8.4.msysgit.0
+

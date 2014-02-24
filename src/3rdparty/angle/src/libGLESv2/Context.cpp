@@ -1779,7 +1779,7 @@ void Context::applyState(GLenum drawMode)
     {
         mask = 0xFFFFFFFF;
     }
-    mRenderer->setBlendState(mState.blend, mState.blendColor, mask);
+    mRenderer->setBlendState(framebufferObject, mState.blend, mState.blendColor, mask);
 
     mRenderer->setDepthStencilState(mState.depthStencil, mState.stencilRef, mState.stencilBackRef,
                                     mState.rasterizer.frontFace == GL_CCW);
@@ -1813,6 +1813,8 @@ void Context::applyTextures(SamplerType type)
 {
     ProgramBinary *programBinary = getCurrentProgramBinary();
 
+    FramebufferTextureSerialSet boundFramebufferTextures = getBoundFramebufferTextureSerials();
+
     // Range of Direct3D samplers of given sampler type
     int samplerCount = (type == SAMPLER_PIXEL) ? MAX_TEXTURE_IMAGE_UNITS : mRenderer->getMaxVertexTextureImageUnits();
     int samplerRange = programBinary->getUsedSamplerRange(type);
@@ -1826,7 +1828,8 @@ void Context::applyTextures(SamplerType type)
             TextureType textureType = programBinary->getSamplerTextureType(type, samplerIndex);
             Texture *texture = getSamplerTexture(textureUnit, textureType);
 
-            if (texture->isSamplerComplete())
+            if (texture->isSamplerComplete() &&
+                boundFramebufferTextures.find(texture->getTextureSerial()) == boundFramebufferTextures.end())
             {
                 SamplerState samplerState;
                 texture->getSamplerState(&samplerState);
@@ -2654,6 +2657,29 @@ void Context::initRendererString()
 const char *Context::getRendererString() const
 {
     return mRendererString;
+}
+
+Context::FramebufferTextureSerialSet Context::getBoundFramebufferTextureSerials()
+{
+    FramebufferTextureSerialSet set;
+
+    Framebuffer *drawFramebuffer = getDrawFramebuffer();
+    for (unsigned int i = 0; i < IMPLEMENTATION_MAX_DRAW_BUFFERS; i++)
+    {
+        Renderbuffer *renderBuffer = drawFramebuffer->getColorbuffer(i);
+        if (renderBuffer && renderBuffer->getTextureSerial() != 0)
+        {
+            set.insert(renderBuffer->getTextureSerial());
+        }
+    }
+
+    Renderbuffer *depthStencilBuffer = drawFramebuffer->getDepthOrStencilbuffer();
+    if (depthStencilBuffer && depthStencilBuffer->getTextureSerial() != 0)
+    {
+        set.insert(depthStencilBuffer->getTextureSerial());
+    }
+
+    return set;
 }
 
 void Context::blitFramebuffer(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, 

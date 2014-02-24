@@ -1,0 +1,35 @@
+From a03d8f647816767525489a2b26663d897f0264a0 Mon Sep 17 00:00:00 2001
+From: Kai Koehne <kai.koehne@digia.com>
+Date: Tue, 18 Feb 2014 09:34:39 +0200
+Subject: [PATCH] Fix compilation with MinGW gcc 64 bit
+
+Fix compilation of ANGLE with gcc 4.8.0 64 bit: The
+
+  reinterpret_cast<unsigned long>(void*)
+
+was causing
+
+  error: cast from 'const void*' to 'long unsigned int' loses precision
+
+Task-number: QTBUG-34395
+Change-Id: Ibde75dd4b5536f3827bdf0ab02a15e93a1a8a4f0
+---
+ src/3rdparty/angle/src/third_party/trace_event/trace_event.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/3rdparty/angle/src/third_party/trace_event/trace_event.h b/src/3rdparty/angle/src/third_party/trace_event/trace_event.h
+index 1880056..637cf9a 100644
+--- a/src/3rdparty/angle/src/third_party/trace_event/trace_event.h
++++ b/src/3rdparty/angle/src/third_party/trace_event/trace_event.h
+@@ -587,7 +587,7 @@ const unsigned long long noEventId = 0;
+ class TraceID {
+ public:
+     explicit TraceID(const void* id, unsigned char* flags) :
+-        m_data(static_cast<unsigned long long>(reinterpret_cast<unsigned long>(id)))
++        m_data(reinterpret_cast<unsigned long long>(id))
+     {
+         *flags |= TRACE_EVENT_FLAG_MANGLE_ID;
+     }
+-- 
+1.8.4.msysgit.0
+

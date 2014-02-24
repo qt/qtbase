@@ -1,3 +1,4 @@
+#include "../libGLESv2/precompiled.h"
 //
 // Copyright (c) 2002-2013 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
@@ -40,13 +41,13 @@ egl::Display *Display::getDisplay(EGLNativeDisplayType displayId)
 
     // FIXME: Check if displayId is a valid display device context
 
-    egl::Display *display = new egl::Display(displayId, (HDC)displayId);
+    egl::Display *display = new egl::Display(displayId);
 
     displays[displayId] = display;
     return display;
 }
 
-Display::Display(EGLNativeDisplayType displayId, HDC deviceContext) : mDc(deviceContext)
+Display::Display(EGLNativeDisplayType displayId)
 {
     mDisplayId = displayId;
     mRenderer = NULL;
@@ -71,7 +72,7 @@ bool Display::initialize()
         return true;
     }
 
-    mRenderer = glCreateRenderer(this, mDc, mDisplayId);
+    mRenderer = glCreateRenderer(this, mDisplayId);
     
     if (!mRenderer)
     {
@@ -486,7 +487,7 @@ void Display::initExtensionString()
 
     mExtensionString += "EGL_ANGLE_query_surface_pointer ";
 
-#if !defined(ANGLE_OS_WINRT)
+#if defined(ANGLE_ENABLE_D3D9)
     HMODULE swiftShader = GetModuleHandle(TEXT("swiftshader_d3d9.dll"));
     if (swiftShader)
     {
@@ -525,7 +526,7 @@ void Display::initVendorString()
     if (mRenderer && mRenderer->getLUID(&adapterLuid))
     {
         char adapterLuidString[64];
-        snprintf(adapterLuidString, sizeof(adapterLuidString), " (adapter LUID: %08l%08l)", adapterLuid.HighPart, adapterLuid.LowPart);
+        snprintf(adapterLuidString, sizeof(adapterLuidString), " (adapter LUID: %08x%08x)", adapterLuid.HighPart, adapterLuid.LowPart);
 
         mVendorString += adapterLuidString;
     }

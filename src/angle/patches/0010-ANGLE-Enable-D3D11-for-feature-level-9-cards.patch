@@ -1,0 +1,426 @@
+From e84f947df4ae095eae600550749b3a4e8de5ee8b Mon Sep 17 00:00:00 2001
+From: Andrew Knight <andrew.knight@digia.com>
+Date: Thu, 20 Feb 2014 16:51:36 +0200
+Subject: [PATCH] ANGLE: Enable D3D11 for feature level 9 cards
+
+Enable use of ANGLE on lower-end hardware, such as Surface RT and
+Windows Phone 8.
+
+Based on https://codereview.appspot.com/12917046/
+
+Change-Id: Ice536802e4eedc1d264abd0dd65960638fce59e4
+---
+ .../angle/src/libGLESv2/renderer/d3d11/Image11.cpp |  7 +-
+ .../libGLESv2/renderer/d3d11/RenderStateCache.cpp  |  5 +-
+ .../src/libGLESv2/renderer/d3d11/Renderer11.cpp    | 90 ++++++++++++++++++++--
+ .../src/libGLESv2/renderer/d3d11/Renderer11.h      |  1 +
+ .../libGLESv2/renderer/d3d11/TextureStorage11.cpp  | 10 +--
+ .../libGLESv2/renderer/d3d11/renderer11_utils.cpp  |  4 +-
+ .../libGLESv2/renderer/d3d11/renderer11_utils.h    |  2 +-
+ 7 files changed, 100 insertions(+), 19 deletions(-)
+
+diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/Image11.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/Image11.cpp
+index 2b07b9d..5d039a3 100644
+--- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/Image11.cpp
++++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/Image11.cpp
+@@ -142,7 +142,7 @@ bool Image11::redefine(Renderer *renderer, GLint internalformat, GLsizei width,
+         mHeight = height;
+         mInternalFormat = internalformat;
+         // compute the d3d format that will be used
+-        mDXGIFormat = gl_d3d11::ConvertTextureFormat(internalformat);
++        mDXGIFormat = gl_d3d11::ConvertTextureFormat(internalformat, mRenderer->getFeatureLevel());
+         mActualFormat = d3d11_gl::ConvertTextureInternalFormat(mDXGIFormat);
+ 
+         if (mStagingTexture)
+@@ -191,7 +191,10 @@ void Image11::loadData(GLint xoffset, GLint yoffset, GLsizei width, GLsizei heig
+     switch (mInternalFormat)
+     {
+       case GL_ALPHA8_EXT:
+-        loadAlphaDataToNative(width, height, inputPitch, input, mappedImage.RowPitch, offsetMappedData);
++        if (mRenderer->getFeatureLevel() >= D3D_FEATURE_LEVEL_10_0)
++            loadAlphaDataToNative(width, height, inputPitch, input, mappedImage.RowPitch, offsetMappedData);
++        else
++            loadAlphaDataToBGRA(width, height, inputPitch, input, mappedImage.RowPitch, offsetMappedData);
+         break;
+       case GL_LUMINANCE8_EXT:
+         loadLuminanceDataToNativeOrBGRA(width, height, inputPitch, input, mappedImage.RowPitch, offsetMappedData, false);
+diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/RenderStateCache.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/RenderStateCache.cpp
+index 0047e04..a1c324c 100644
+--- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/RenderStateCache.cpp
++++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/RenderStateCache.cpp
+@@ -419,7 +419,8 @@ ID3D11SamplerState *RenderStateCache::getSamplerState(const gl::SamplerState &sa
+         samplerDesc.BorderColor[2] = 0.0f;
+         samplerDesc.BorderColor[3] = 0.0f;
+         samplerDesc.MinLOD = gl_d3d11::ConvertMinLOD(samplerState.minFilter, samplerState.lodOffset);
+-        samplerDesc.MaxLOD = gl_d3d11::ConvertMaxLOD(samplerState.minFilter, samplerState.lodOffset);
++        samplerDesc.MaxLOD = mDevice->GetFeatureLevel() >= D3D_FEATURE_LEVEL_10_0
++                ? gl_d3d11::ConvertMaxLOD(samplerState.minFilter, samplerState.lodOffset) : FLT_MAX;
+ 
+         ID3D11SamplerState *dx11SamplerState = NULL;
+         HRESULT result = mDevice->CreateSamplerState(&samplerDesc, &dx11SamplerState);
+@@ -435,4 +436,4 @@ ID3D11SamplerState *RenderStateCache::getSamplerState(const gl::SamplerState &sa
+     }
+ }
+ 
+-}
+\ No newline at end of file
++}
+diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/Renderer11.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/Renderer11.cpp
+index 7f166fd..31d976d 100644
+--- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/Renderer11.cpp
++++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/Renderer11.cpp
+@@ -164,6 +164,11 @@ EGLint Renderer11::initialize()
+         D3D_FEATURE_LEVEL_11_0,
+         D3D_FEATURE_LEVEL_10_1,
+         D3D_FEATURE_LEVEL_10_0,
++#if !defined(ANGLE_ENABLE_D3D9)
++        D3D_FEATURE_LEVEL_9_3,
++        D3D_FEATURE_LEVEL_9_2,
++        D3D_FEATURE_LEVEL_9_1,
++#endif
+     };
+ 
+     HRESULT result = S_OK;
+@@ -1533,7 +1538,7 @@ void Renderer11::applyUniforms(gl::ProgramBinary *programBinary, gl::UniformArra
+     }
+ 
+     // needed for the point sprite geometry shader
+-    if (mCurrentGeometryConstantBuffer != mDriverConstantBufferPS)
++    if (mFeatureLevel >= D3D_FEATURE_LEVEL_10_0 && mCurrentGeometryConstantBuffer != mDriverConstantBufferPS)
+     {
+         mDeviceContext->GSSetConstantBuffers(0, 1, &mDriverConstantBufferPS);
+         mCurrentGeometryConstantBuffer = mDriverConstantBufferPS;
+@@ -1956,6 +1961,11 @@ bool Renderer11::testDeviceResettable()
+         D3D_FEATURE_LEVEL_11_0,
+         D3D_FEATURE_LEVEL_10_1,
+         D3D_FEATURE_LEVEL_10_0,
++#if !defined(ANGLE_ENABLE_D3D9)
++        D3D_FEATURE_LEVEL_9_3,
++        D3D_FEATURE_LEVEL_9_2,
++        D3D_FEATURE_LEVEL_9_1,
++#endif
+     };
+ 
+     ID3D11Device* dummyDevice;
+@@ -2139,6 +2149,11 @@ float Renderer11::getTextureMaxAnisotropy() const
+       case D3D_FEATURE_LEVEL_10_1:
+       case D3D_FEATURE_LEVEL_10_0:
+         return D3D10_MAX_MAXANISOTROPY;
++      case D3D_FEATURE_LEVEL_9_3:
++      case D3D_FEATURE_LEVEL_9_2:
++        return 16;
++      case D3D_FEATURE_LEVEL_9_1:
++        return D3D_FL9_1_DEFAULT_MAX_ANISOTROPY;
+       default: UNREACHABLE();
+         return 0;
+     }
+@@ -2158,6 +2173,11 @@ Range Renderer11::getViewportBounds() const
+       case D3D_FEATURE_LEVEL_10_1:
+       case D3D_FEATURE_LEVEL_10_0:
+         return Range(D3D10_VIEWPORT_BOUNDS_MIN, D3D10_VIEWPORT_BOUNDS_MAX);
++      case D3D_FEATURE_LEVEL_9_3:
++        return Range(D3D_FL9_3_REQ_TEXTURE2D_U_OR_V_DIMENSION * -2, D3D_FL9_3_REQ_TEXTURE2D_U_OR_V_DIMENSION * 2);
++      case D3D_FEATURE_LEVEL_9_2:
++      case D3D_FEATURE_LEVEL_9_1:
++        return Range(D3D_FL9_1_REQ_TEXTURE2D_U_OR_V_DIMENSION * -2, D3D_FL9_1_REQ_TEXTURE2D_U_OR_V_DIMENSION * 2);
+       default: UNREACHABLE();
+         return Range(0, 0);
+     }
+@@ -2172,6 +2192,10 @@ unsigned int Renderer11::getMaxVertexTextureImageUnits() const
+       case D3D_FEATURE_LEVEL_10_1:
+       case D3D_FEATURE_LEVEL_10_0:
+         return MAX_TEXTURE_IMAGE_UNITS_VTF_SM4;
++      case D3D_FEATURE_LEVEL_9_3:
++      case D3D_FEATURE_LEVEL_9_2:
++      case D3D_FEATURE_LEVEL_9_1:
++        return 0;
+       default: UNREACHABLE();
+         return 0;
+     }
+@@ -2195,14 +2219,14 @@ unsigned int Renderer11::getReservedFragmentUniformVectors() const
+ unsigned int Renderer11::getMaxVertexUniformVectors() const
+ {
+     META_ASSERT(MAX_VERTEX_UNIFORM_VECTORS_D3D11 <= D3D10_REQ_CONSTANT_BUFFER_ELEMENT_COUNT);
+-    ASSERT(mFeatureLevel >= D3D_FEATURE_LEVEL_10_0);
++    ASSERT(mFeatureLevel >= D3D_FEATURE_LEVEL_9_1);
+     return MAX_VERTEX_UNIFORM_VECTORS_D3D11;
+ }
+ 
+ unsigned int Renderer11::getMaxFragmentUniformVectors() const
+ {
+     META_ASSERT(MAX_FRAGMENT_UNIFORM_VECTORS_D3D11 <= D3D10_REQ_CONSTANT_BUFFER_ELEMENT_COUNT);
+-    ASSERT(mFeatureLevel >= D3D_FEATURE_LEVEL_10_0);
++    ASSERT(mFeatureLevel >= D3D_FEATURE_LEVEL_9_1);
+     return MAX_FRAGMENT_UNIFORM_VECTORS_D3D11;
+ }
+ 
+@@ -2216,6 +2240,10 @@ unsigned int Renderer11::getMaxVaryingVectors() const
+       case D3D_FEATURE_LEVEL_10_1:
+       case D3D_FEATURE_LEVEL_10_0:
+         return D3D10_VS_OUTPUT_REGISTER_COUNT;
++      case D3D_FEATURE_LEVEL_9_3:
++      case D3D_FEATURE_LEVEL_9_2:
++      case D3D_FEATURE_LEVEL_9_1:
++        return 8;
+       default: UNREACHABLE();
+         return 0;
+     }
+@@ -2229,6 +2257,10 @@ bool Renderer11::getNonPower2TextureSupport() const
+       case D3D_FEATURE_LEVEL_10_1:
+       case D3D_FEATURE_LEVEL_10_0:
+         return true;
++      case D3D_FEATURE_LEVEL_9_3:
++      case D3D_FEATURE_LEVEL_9_2:
++      case D3D_FEATURE_LEVEL_9_1:
++        return false;
+       default: UNREACHABLE();
+         return false;
+     }
+@@ -2242,6 +2274,11 @@ bool Renderer11::getOcclusionQuerySupport() const
+       case D3D_FEATURE_LEVEL_10_1:
+       case D3D_FEATURE_LEVEL_10_0:
+         return true;
++      case D3D_FEATURE_LEVEL_9_3:
++      case D3D_FEATURE_LEVEL_9_2:
++        return true;
++      case D3D_FEATURE_LEVEL_9_1:
++        return false;
+       default: UNREACHABLE();
+         return false;
+     }
+@@ -2254,7 +2291,11 @@ bool Renderer11::getInstancingSupport() const
+       case D3D_FEATURE_LEVEL_11_0:
+       case D3D_FEATURE_LEVEL_10_1:
+       case D3D_FEATURE_LEVEL_10_0:
+-        return true;
++      case D3D_FEATURE_LEVEL_9_3:
++         return true;
++      case D3D_FEATURE_LEVEL_9_2:
++      case D3D_FEATURE_LEVEL_9_1:
++        return false;
+       default: UNREACHABLE();
+         return false;
+     }
+@@ -2276,6 +2317,11 @@ bool Renderer11::getDerivativeInstructionSupport() const
+       case D3D_FEATURE_LEVEL_10_1:
+       case D3D_FEATURE_LEVEL_10_0:
+         return true;
++      case D3D_FEATURE_LEVEL_9_3:
++        return true;
++      case D3D_FEATURE_LEVEL_9_2:
++      case D3D_FEATURE_LEVEL_9_1:
++        return false;
+       default: UNREACHABLE();
+         return false;
+     }
+@@ -2294,6 +2340,9 @@ int Renderer11::getMajorShaderModel() const
+       case D3D_FEATURE_LEVEL_11_0: return D3D11_SHADER_MAJOR_VERSION;   // 5
+       case D3D_FEATURE_LEVEL_10_1: return D3D10_1_SHADER_MAJOR_VERSION; // 4
+       case D3D_FEATURE_LEVEL_10_0: return D3D10_SHADER_MAJOR_VERSION;   // 4
++      case D3D_FEATURE_LEVEL_9_3:
++      case D3D_FEATURE_LEVEL_9_2:
++      case D3D_FEATURE_LEVEL_9_1:  return D3D10_SHADER_MAJOR_VERSION;   // 4 (level 9)
+       default: UNREACHABLE();      return 0;
+     }
+ }
+@@ -2305,6 +2354,9 @@ int Renderer11::getMinorShaderModel() const
+       case D3D_FEATURE_LEVEL_11_0: return D3D11_SHADER_MINOR_VERSION;   // 0
+       case D3D_FEATURE_LEVEL_10_1: return D3D10_1_SHADER_MINOR_VERSION; // 1
+       case D3D_FEATURE_LEVEL_10_0: return D3D10_SHADER_MINOR_VERSION;   // 0
++      case D3D_FEATURE_LEVEL_9_3:
++      case D3D_FEATURE_LEVEL_9_2:
++      case D3D_FEATURE_LEVEL_9_1:  return D3D10_SHADER_MINOR_VERSION;   // 0 (level 9)
+       default: UNREACHABLE();      return 0;
+     }
+ }
+@@ -2330,6 +2382,11 @@ int Renderer11::getMaxViewportDimension() const
+       case D3D_FEATURE_LEVEL_10_1:
+       case D3D_FEATURE_LEVEL_10_0: 
+         return D3D10_REQ_TEXTURE2D_U_OR_V_DIMENSION;   // 8192
++      case D3D_FEATURE_LEVEL_9_3:
++        return D3D_FL9_3_REQ_TEXTURE2D_U_OR_V_DIMENSION; // 4096
++      case D3D_FEATURE_LEVEL_9_2:
++      case D3D_FEATURE_LEVEL_9_1:
++        return D3D_FL9_1_REQ_TEXTURE2D_U_OR_V_DIMENSION; // 2048
+       default: UNREACHABLE();      
+         return 0;
+     }
+@@ -2342,6 +2399,9 @@ int Renderer11::getMaxTextureWidth() const
+       case D3D_FEATURE_LEVEL_11_0: return D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION;   // 16384
+       case D3D_FEATURE_LEVEL_10_1:
+       case D3D_FEATURE_LEVEL_10_0: return D3D10_REQ_TEXTURE2D_U_OR_V_DIMENSION;   // 8192
++      case D3D_FEATURE_LEVEL_9_3: return D3D_FL9_3_REQ_TEXTURE2D_U_OR_V_DIMENSION; // 4096
++      case D3D_FEATURE_LEVEL_9_2:
++      case D3D_FEATURE_LEVEL_9_1: return D3D_FL9_1_REQ_TEXTURE2D_U_OR_V_DIMENSION; // 2048
+       default: UNREACHABLE();      return 0;
+     }
+ }
+@@ -2353,6 +2413,9 @@ int Renderer11::getMaxTextureHeight() const
+       case D3D_FEATURE_LEVEL_11_0: return D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION;   // 16384
+       case D3D_FEATURE_LEVEL_10_1:
+       case D3D_FEATURE_LEVEL_10_0: return D3D10_REQ_TEXTURE2D_U_OR_V_DIMENSION;   // 8192
++      case D3D_FEATURE_LEVEL_9_3: return D3D_FL9_3_REQ_TEXTURE2D_U_OR_V_DIMENSION; // 4096
++      case D3D_FEATURE_LEVEL_9_2:
++      case D3D_FEATURE_LEVEL_9_1: return D3D_FL9_1_REQ_TEXTURE2D_U_OR_V_DIMENSION; // 2048
+       default: UNREACHABLE();      return 0;
+     }
+ }
+@@ -2364,6 +2427,9 @@ bool Renderer11::get32BitIndexSupport() const
+       case D3D_FEATURE_LEVEL_11_0: 
+       case D3D_FEATURE_LEVEL_10_1:
+       case D3D_FEATURE_LEVEL_10_0: return D3D10_REQ_DRAWINDEXED_INDEX_COUNT_2_TO_EXP >= 32;   // true
++      case D3D_FEATURE_LEVEL_9_3:
++      case D3D_FEATURE_LEVEL_9_2:
++      case D3D_FEATURE_LEVEL_9_1:  return false;
+       default: UNREACHABLE();      return false;
+     }
+ }
+@@ -2410,6 +2476,8 @@ unsigned int Renderer11::getMaxRenderTargets() const
+ {
+     META_ASSERT(D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT <= gl::IMPLEMENTATION_MAX_DRAW_BUFFERS);
+     META_ASSERT(D3D10_SIMULTANEOUS_RENDER_TARGET_COUNT <= gl::IMPLEMENTATION_MAX_DRAW_BUFFERS);
++    META_ASSERT(D3D_FL9_3_SIMULTANEOUS_RENDER_TARGET_COUNT <= gl::IMPLEMENTATION_MAX_DRAW_BUFFERS);
++    META_ASSERT(D3D_FL9_1_SIMULTANEOUS_RENDER_TARGET_COUNT <= gl::IMPLEMENTATION_MAX_DRAW_BUFFERS);
+ 
+     switch (mFeatureLevel)
+     {
+@@ -2417,6 +2485,9 @@ unsigned int Renderer11::getMaxRenderTargets() const
+         return D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT;  // 8
+       case D3D_FEATURE_LEVEL_10_1:
+       case D3D_FEATURE_LEVEL_10_0:
++      case D3D_FEATURE_LEVEL_9_3: //  return D3D_FL9_3_SIMULTANEOUS_RENDER_TARGET_COUNT; // 4
++      case D3D_FEATURE_LEVEL_9_2:
++      case D3D_FEATURE_LEVEL_9_1: //  return D3D_FL9_1_SIMULTANEOUS_RENDER_TARGET_COUNT; // 1
+         // Feature level 10.0 and 10.1 cards perform very poorly when the pixel shader
+         // outputs to multiple RTs that are not bound.
+         // TODO: Remove pixel shader outputs for render targets that are not bound.
+@@ -2603,7 +2674,7 @@ bool Renderer11::copyTexture(ID3D11ShaderResourceView *source, const gl::Rectang
+         samplerDesc.BorderColor[2] = 0.0f;
+         samplerDesc.BorderColor[3] = 0.0f;
+         samplerDesc.MinLOD = 0.0f;
+-        samplerDesc.MaxLOD = 0.0f;
++        samplerDesc.MaxLOD = mDevice->GetFeatureLevel() >= D3D_FEATURE_LEVEL_10_0 ? 0.0f : FLT_MAX;
+ 
+         result = mDevice->CreateSamplerState(&samplerDesc, &mCopySampler);
+         ASSERT(SUCCEEDED(result));
+@@ -2848,7 +2919,7 @@ ShaderExecutable *Renderer11::loadExecutable(const void *function, size_t length
+ 
+ ShaderExecutable *Renderer11::compileToExecutable(gl::InfoLog &infoLog, const char *shaderHLSL, rx::ShaderType type, D3DWorkaroundType workaround)
+ {
+-    const char *profile = NULL;
++    std::string profile;
+ 
+     switch (type)
+     {
+@@ -2866,7 +2937,12 @@ ShaderExecutable *Renderer11::compileToExecutable(gl::InfoLog &infoLog, const ch
+         return NULL;
+     }
+ 
+-    ID3DBlob *binary = (ID3DBlob*)compileToBinary(infoLog, shaderHLSL, profile, D3DCOMPILE_OPTIMIZATION_LEVEL0, false);
++    if (mFeatureLevel == D3D_FEATURE_LEVEL_9_3)
++        profile += "_level_9_3";
++    else if (mFeatureLevel == D3D_FEATURE_LEVEL_9_2 || mFeatureLevel == D3D_FEATURE_LEVEL_9_1)
++        profile += "_level_9_1";
++
++    ID3DBlob *binary = (ID3DBlob*)compileToBinary(infoLog, shaderHLSL, profile.c_str(), D3DCOMPILE_OPTIMIZATION_LEVEL0, false);
+     if (!binary)
+         return NULL;
+ 
+diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/Renderer11.h b/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/Renderer11.h
+index ba3f0c6..a8a722c 100644
+--- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/Renderer11.h
++++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/Renderer11.h
+@@ -177,6 +177,7 @@ class Renderer11 : public Renderer
+     ID3D11Device *getDevice() { return mDevice; }
+     ID3D11DeviceContext *getDeviceContext() { return mDeviceContext; };
+     IDXGIFactory *getDxgiFactory() { return mDxgiFactory; };
++    D3D_FEATURE_LEVEL getFeatureLevel() { return mFeatureLevel; }
+ 
+     bool getRenderTargetResource(gl::Renderbuffer *colorbuffer, unsigned int *subresourceIndex, ID3D11Texture2D **resource);
+     void unapplyRenderTargets();
+diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/TextureStorage11.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/TextureStorage11.cpp
+index 5f6ea21..fdfbe52 100644
+--- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/TextureStorage11.cpp
++++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/TextureStorage11.cpp
+@@ -222,14 +222,14 @@ TextureStorage11_2D::TextureStorage11_2D(Renderer *renderer, SwapChain11 *swapch
+ }
+ 
+ TextureStorage11_2D::TextureStorage11_2D(Renderer *renderer, int levels, GLenum internalformat, GLenum usage, bool forceRenderable, GLsizei width, GLsizei height)
+-    : TextureStorage11(renderer, GetTextureBindFlags(gl_d3d11::ConvertTextureFormat(internalformat), usage, forceRenderable))
++    : TextureStorage11(renderer, GetTextureBindFlags(gl_d3d11::ConvertTextureFormat(internalformat, Renderer11::makeRenderer11(renderer)->getFeatureLevel()), usage, forceRenderable))
+ {
+     for (unsigned int i = 0; i < gl::IMPLEMENTATION_MAX_TEXTURE_LEVELS; i++)
+     {
+         mRenderTarget[i] = NULL;
+     }
+ 
+-    DXGI_FORMAT convertedFormat = gl_d3d11::ConvertTextureFormat(internalformat);
++    DXGI_FORMAT convertedFormat = gl_d3d11::ConvertTextureFormat(internalformat, mRenderer->getFeatureLevel());
+     if (d3d11::IsDepthStencilFormat(convertedFormat))
+     {
+         mTextureFormat = d3d11::GetDepthTextureFormat(convertedFormat);
+@@ -331,7 +331,7 @@ RenderTarget *TextureStorage11_2D::getRenderTarget(int level)
+             srvDesc.Format = mShaderResourceFormat;
+             srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+             srvDesc.Texture2D.MostDetailedMip = level;
+-            srvDesc.Texture2D.MipLevels = 1;
++            srvDesc.Texture2D.MipLevels = level ? 1 : -1;
+ 
+             ID3D11ShaderResourceView *srv;
+             result = device->CreateShaderResourceView(mTexture, &srvDesc, &srv);
+@@ -440,7 +440,7 @@ void TextureStorage11_2D::generateMipmap(int level)
+ }
+ 
+ TextureStorage11_Cube::TextureStorage11_Cube(Renderer *renderer, int levels, GLenum internalformat, GLenum usage, bool forceRenderable, int size)
+-    : TextureStorage11(renderer, GetTextureBindFlags(gl_d3d11::ConvertTextureFormat(internalformat), usage, forceRenderable))
++    : TextureStorage11(renderer, GetTextureBindFlags(gl_d3d11::ConvertTextureFormat(internalformat, Renderer11::makeRenderer11(renderer)->getFeatureLevel()), usage, forceRenderable))
+ {
+     for (unsigned int i = 0; i < 6; i++)
+     {
+@@ -450,7 +450,7 @@ TextureStorage11_Cube::TextureStorage11_Cube(Renderer *renderer, int levels, GLe
+         }
+     }
+ 
+-    DXGI_FORMAT convertedFormat = gl_d3d11::ConvertTextureFormat(internalformat);
++    DXGI_FORMAT convertedFormat = gl_d3d11::ConvertTextureFormat(internalformat, mRenderer->getFeatureLevel());
+     if (d3d11::IsDepthStencilFormat(convertedFormat))
+     {
+         mTextureFormat = d3d11::GetDepthTextureFormat(convertedFormat);
+diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/renderer11_utils.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/renderer11_utils.cpp
+index 6f06024..34b8259 100644
+--- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/renderer11_utils.cpp
++++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/renderer11_utils.cpp
+@@ -329,7 +329,7 @@ DXGI_FORMAT ConvertRenderbufferFormat(GLenum format)
+     return DXGI_FORMAT_R8G8B8A8_UNORM;
+ }
+ 
+-DXGI_FORMAT ConvertTextureFormat(GLenum internalformat)
++DXGI_FORMAT ConvertTextureFormat(GLenum internalformat, D3D_FEATURE_LEVEL featureLevel)
+ {
+     switch (internalformat)
+     {
+@@ -342,7 +342,7 @@ DXGI_FORMAT ConvertTextureFormat(GLenum internalformat)
+       case GL_LUMINANCE8_ALPHA8_EXT:
+         return DXGI_FORMAT_R8G8B8A8_UNORM;
+       case GL_ALPHA8_EXT:
+-        return DXGI_FORMAT_A8_UNORM;
++        return featureLevel >= D3D_FEATURE_LEVEL_10_0 ? DXGI_FORMAT_A8_UNORM : DXGI_FORMAT_B8G8R8A8_UNORM;
+       case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
+       case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
+         return DXGI_FORMAT_BC1_UNORM;
+diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/renderer11_utils.h b/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/renderer11_utils.h
+index 1bc48c1..70ad4fe 100644
+--- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/renderer11_utils.h
++++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/renderer11_utils.h
+@@ -32,7 +32,7 @@ FLOAT ConvertMinLOD(GLenum minFilter, unsigned int lodOffset);
+ FLOAT ConvertMaxLOD(GLenum minFilter, unsigned int lodOffset);
+ 
+ DXGI_FORMAT ConvertRenderbufferFormat(GLenum format);
+-DXGI_FORMAT ConvertTextureFormat(GLenum format);
++DXGI_FORMAT ConvertTextureFormat(GLenum format, D3D_FEATURE_LEVEL featureLevel);
+ }
+ 
+ namespace d3d11_gl
+-- 
+1.8.4.msysgit.0
+

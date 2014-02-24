@@ -1,0 +1,53 @@
+From 68ba96d224a84389567f506661a78c32b307e84d Mon Sep 17 00:00:00 2001
+From: Kai Koehne <kai.koehne@digia.com>
+Date: Tue, 18 Feb 2014 10:29:14 +0200
+Subject: [PATCH] Fix compilation of libGLESv2 with older MinGW-w64
+ headers
+
+Fix compilation of libGLESv2 for mingw-headers predating MinGW-w64
+svn commit 5567 (like MinGW-builds gcc 4.7.2-rev8, the toolchain
+we officially support).
+
+Commit 5567 added the D3DCOMPILER_DLL define to d3dcompiler.h, but with
+a trailing semicolon that has then fixed in commit 5783. Any toolchain
+that ships MinGW-w64 headers from a version in between (like
+MinGW-builds gcc 4.7.2-rev11) will unfortunately remain broken.
+
+Change-Id: I31272a1a991c4fc0f1611f8fb7510be51d6bb925
+---
+ .../angle/src/libGLESv2/renderer/Renderer.cpp         | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
+
+diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/Renderer.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/Renderer.cpp
+index 3407353..e74120d 100644
+--- a/src/3rdparty/angle/src/libGLESv2/renderer/Renderer.cpp
++++ b/src/3rdparty/angle/src/libGLESv2/renderer/Renderer.cpp
+@@ -24,6 +24,25 @@
+ #define D3DERR_OUTOFVIDEOMEMORY MAKE_HRESULT(1, 0x876, 380)
+ #endif
+ 
++#ifdef __MINGW32__
++
++#ifndef D3DCOMPILER_DLL
++
++// Add define + typedefs for older MinGW-w64 headers (pre 5783)
++
++#define D3DCOMPILER_DLL L"d3dcompiler_43.dll"
++
++HRESULT WINAPI D3DCompile(const void *data, SIZE_T data_size, const char *filename,
++        const D3D_SHADER_MACRO *defines, ID3DInclude *include, const char *entrypoint,
++        const char *target, UINT sflags, UINT eflags, ID3DBlob **shader, ID3DBlob **error_messages);
++typedef HRESULT (WINAPI *pD3DCompile)(const void *data, SIZE_T data_size, const char *filename,
++        const D3D_SHADER_MACRO *defines, ID3DInclude *include, const char *entrypoint,
++        const char *target, UINT sflags, UINT eflags, ID3DBlob **shader, ID3DBlob **error_messages);
++
++#endif // D3DCOMPILER_DLL
++
++#endif // __MINGW32__
++
+ namespace rx
+ {
+ 
+-- 
+1.8.4.msysgit.0
+

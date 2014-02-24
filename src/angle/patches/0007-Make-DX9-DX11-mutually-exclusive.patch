@@ -1,0 +1,141 @@
+From e1b26c6669cafb5c1298d6e5476c24686fccf1bd Mon Sep 17 00:00:00 2001
+From: Andrew Knight <andrew.knight@digia.com>
+Date: Thu, 20 Feb 2014 16:46:15 +0200
+Subject: [PATCH] Make DX9/DX11 support configurable
+
+ANGLE supports selecting the renderer on creation, choosing between
+D3D11 and D3D9 backends. This patch improves upon this by enabling the
+D3D backend(s) at compile time. This can make the binary size smaller
+(no extra render is built) and ensures compatibility with Windows Runtime
+when building only the D3D11 renderer.
+
+Change-Id: Id9473e0e631721083fe4026d475e37603a144c37
+---
+ src/3rdparty/angle/src/libEGL/Display.cpp             |  4 +++-
+ src/3rdparty/angle/src/libGLESv2/Texture.cpp          |  6 +++++-
+ src/3rdparty/angle/src/libGLESv2/precompiled.h        | 10 +++++++---
+ .../angle/src/libGLESv2/renderer/Renderer.cpp         | 19 +++++++++++++------
+ 4 files changed, 28 insertions(+), 11 deletions(-)
+
+diff --git a/src/3rdparty/angle/src/libEGL/Display.cpp b/src/3rdparty/angle/src/libEGL/Display.cpp
+index 13ef701..a7f5f5a 100644
+--- a/src/3rdparty/angle/src/libEGL/Display.cpp
++++ b/src/3rdparty/angle/src/libEGL/Display.cpp
+@@ -471,7 +471,6 @@ bool Display::hasExistingWindowSurface(HWND window)
+ 
+ void Display::initExtensionString()
+ {
+-    HMODULE swiftShader = GetModuleHandle(TEXT("swiftshader_d3d9.dll"));
+     bool shareHandleSupported = mRenderer->getShareHandleSupport();
+ 
+     mExtensionString = "";
+@@ -487,10 +486,13 @@ void Display::initExtensionString()
+ 
+     mExtensionString += "EGL_ANGLE_query_surface_pointer ";
+ 
++#if defined(ANGLE_ENABLE_D3D9)
++    HMODULE swiftShader = GetModuleHandle(TEXT("swiftshader_d3d9.dll"));
+     if (swiftShader)
+     {
+         mExtensionString += "EGL_ANGLE_software_display ";
+     }
++#endif
+ 
+     if (shareHandleSupported)
+     {
+diff --git a/src/3rdparty/angle/src/libGLESv2/Texture.cpp b/src/3rdparty/angle/src/libGLESv2/Texture.cpp
+index 3deecaf..3257d05 100644
+--- a/src/3rdparty/angle/src/libGLESv2/Texture.cpp
++++ b/src/3rdparty/angle/src/libGLESv2/Texture.cpp
+@@ -14,7 +14,11 @@
+ #include "libGLESv2/main.h"
+ #include "libGLESv2/mathutil.h"
+ #include "libGLESv2/utilities.h"
+-#include "libGLESv2/renderer/d3d9/Blit.h"
++#if defined(ANGLE_ENABLE_D3D9)
++#  include "libGLESv2/renderer/d3d9/Blit.h"
++#else
++#  define D3DFMT_UNKNOWN DXGI_FORMAT_UNKNOWN
++#endif
+ #include "libGLESv2/Renderbuffer.h"
+ #include "libGLESv2/renderer/Image.h"
+ #include "libGLESv2/renderer/Renderer.h"
+diff --git a/src/3rdparty/angle/src/libGLESv2/precompiled.h b/src/3rdparty/angle/src/libGLESv2/precompiled.h
+index 58ad181..79490b1 100644
+--- a/src/3rdparty/angle/src/libGLESv2/precompiled.h
++++ b/src/3rdparty/angle/src/libGLESv2/precompiled.h
+@@ -32,9 +32,13 @@
+ #include <unordered_map>
+ #include <vector>
+ 
+-#include <d3d9.h>
+-#include <d3d11.h>
+-#include <dxgi.h>
++#if defined(ANGLE_ENABLE_D3D9)
++#  include <d3d9.h>
++#endif
++#if defined(ANGLE_ENABLE_D3D11)
++#  include <d3d11.h>
++#  include <dxgi.h>
++#endif
+ #include <d3dcompiler.h>
+ 
+ #ifdef _MSC_VER
+diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/Renderer.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/Renderer.cpp
+index 86be93f..3407353 100644
+--- a/src/3rdparty/angle/src/libGLESv2/renderer/Renderer.cpp
++++ b/src/3rdparty/angle/src/libGLESv2/renderer/Renderer.cpp
+@@ -11,14 +11,17 @@
+ #include "libGLESv2/main.h"
+ #include "libGLESv2/Program.h"
+ #include "libGLESv2/renderer/Renderer.h"
+-#include "libGLESv2/renderer/d3d9/Renderer9.h"
+-#include "libGLESv2/renderer/d3d11/Renderer11.h"
++#if defined(ANGLE_ENABLE_D3D9)
++#  include "libGLESv2/renderer/d3d9/Renderer9.h"
++#endif
++#if defined(ANGLE_ENABLE_D3D11)
++#  include "libGLESv2/renderer/d3d11/Renderer11.h"
++#endif
+ #include "libGLESv2/utilities.h"
+ #include "third_party/trace_event/trace_event.h"
+ 
+-#if !defined(ANGLE_ENABLE_D3D11)
+-// Enables use of the Direct3D 11 API for a default display, when available
+-#define ANGLE_ENABLE_D3D11 0
++#ifndef D3DERR_OUTOFVIDEOMEMORY
++#define D3DERR_OUTOFVIDEOMEMORY MAKE_HRESULT(1, 0x876, 380)
+ #endif
+ 
+ namespace rx
+@@ -177,7 +180,8 @@ rx::Renderer *glCreateRenderer(egl::Display *display, HDC hDc, EGLNativeDisplayT
+     rx::Renderer *renderer = NULL;
+     EGLint status = EGL_BAD_ALLOC;
+ 
+-    if (ANGLE_ENABLE_D3D11 ||
++#if defined(ANGLE_ENABLE_D3D11)
++    if (displayId == EGL_DEFAULT_DISPLAY ||
+         displayId == EGL_D3D11_ELSE_D3D9_DISPLAY_ANGLE ||
+         displayId == EGL_D3D11_ONLY_DISPLAY_ANGLE)
+     {
+@@ -200,7 +204,9 @@ rx::Renderer *glCreateRenderer(egl::Display *display, HDC hDc, EGLNativeDisplayT
+         // Failed to create a D3D11 renderer, try creating a D3D9 renderer
+         delete renderer;
+     }
++#endif // ANGLE_ENABLE_D3D11
+ 
++#if defined(ANGLE_ENABLE_D3D9)
+     bool softwareDevice = (displayId == EGL_SOFTWARE_DISPLAY_ANGLE);
+     renderer = new rx::Renderer9(display, hDc, softwareDevice);
+ 
+@@ -213,6 +219,7 @@ rx::Renderer *glCreateRenderer(egl::Display *display, HDC hDc, EGLNativeDisplayT
+     {
+         return renderer;
+     }
++#endif // ANGLE_ENABLE_D3D9
+ 
+     return NULL;
+ }
+-- 
+1.8.4.msysgit.0
+

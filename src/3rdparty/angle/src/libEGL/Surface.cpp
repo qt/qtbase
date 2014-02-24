@@ -1,3 +1,4 @@
+#include "../libGLESv2/precompiled.h"
 //
 // Copyright (c) 2002-2012 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
@@ -10,6 +11,8 @@
 
 #include <tchar.h>
 
+#include <algorithm>
+
 #include "libEGL/Surface.h"
 
 #include "common/debug.h"
@@ -19,8 +22,6 @@
 
 #include "libEGL/main.h"
 #include "libEGL/Display.h"
-
-#include <algorithm>
 
 #if defined(ANGLE_OS_WINRT)
 #include <windows.foundation.h>
@@ -118,12 +119,9 @@ bool Surface::resetSwapChain()
 #else
         ABI::Windows::Foundation::Rect windowRect;
         ABI::Windows::UI::Core::ICoreWindow *window;
-        HRESULT result = mWindow->QueryInterface(IID_PPV_ARGS(&window));
-        if (FAILED(result))
-        {
-            ASSERT(false);
+        HRESULT hr = mWindow->QueryInterface(IID_PPV_ARGS(&window));
+        if (FAILED(hr))
             return false;
-        }
         window->get_Bounds(&windowRect);
         width = windowRect.Width;
         height = windowRect.Height;
@@ -156,15 +154,8 @@ bool Surface::resetSwapChain()
 
 bool Surface::resizeSwapChain(int backbufferWidth, int backbufferHeight)
 {
+    ASSERT(backbufferWidth >= 0 && backbufferHeight >= 0);
     ASSERT(mSwapChain);
-
-    // Prevent bad swap chain resize by calling reset if size is invalid
-    if (backbufferWidth < 1 || backbufferHeight < 1)
-    {
-        mWidth = backbufferWidth;
-        mHeight = backbufferHeight;
-        return mSwapChain->reset(0, 0, mSwapInterval) == EGL_SUCCESS;
-    }
 
     EGLint status = mSwapChain->resize(backbufferWidth, backbufferHeight);
 
@@ -347,17 +338,25 @@ bool Surface::checkForOutOfDateSwapChain()
 #else
     ABI::Windows::Foundation::Rect windowRect;
     ABI::Windows::UI::Core::ICoreWindow *window;
-    HRESULT result = mWindow->QueryInterface(IID_PPV_ARGS(&window));
-    if (FAILED(result))
-    {
-        ASSERT(false);
+    HRESULT hr = mWindow->QueryInterface(IID_PPV_ARGS(&window));
+    if (FAILED(hr))
         return false;
-    }
     window->get_Bounds(&windowRect);
     int clientWidth = windowRect.Width;
     int clientHeight = windowRect.Height;
 #endif
     bool sizeDirty = clientWidth != getWidth() || clientHeight != getHeight();
+
+#if !defined(ANGLE_OS_WINRT)
+    if (IsIconic(getWindowHandle()))
+    {
+        // The window is automatically resized to 150x22 when it's minimized, but the swapchain shouldn't be resized
+        // because that's not a useful size to render to.
+        sizeDirty = false;
+    }
+#endif
+
+    bool wasDirty = (mSwapIntervalDirty || sizeDirty);
 
     if (mSwapIntervalDirty)
     {
@@ -368,7 +367,7 @@ bool Surface::checkForOutOfDateSwapChain()
         resizeSwapChain(clientWidth, clientHeight);
     }
 
-    if (mSwapIntervalDirty || sizeDirty)
+    if (wasDirty)
     {
         if (static_cast<egl::Surface*>(getCurrentDrawSurface()) == this)
         {

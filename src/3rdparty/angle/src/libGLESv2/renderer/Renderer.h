@@ -14,30 +14,6 @@
 #include "libGLESv2/Uniform.h"
 #include "libGLESv2/angletypes.h"
 
-#ifndef D3DCOMPILE_OPTIMIZATION_LEVEL0
-#define D3DCOMPILE_OPTIMIZATION_LEVEL0 (1 << 14)
-#endif
-#ifndef D3DCOMPILE_OPTIMIZATION_LEVEL1
-#define D3DCOMPILE_OPTIMIZATION_LEVEL1 0
-#endif
-#ifndef D3DCOMPILE_OPTIMIZATION_LEVEL2
-#define D3DCOMPILE_OPTIMIZATION_LEVEL2 ((1 << 14) | (1 << 15))
-#endif
-#ifndef D3DCOMPILE_OPTIMIZATION_LEVEL3
-#define D3DCOMPILE_OPTIMIZATION_LEVEL3 (1 << 15)
-#endif
-#ifndef D3DCOMPILE_DEBUG
-#define D3DCOMPILE_DEBUG (1 << 0)
-#endif
-#ifndef D3DCOMPILE_SKIP_OPTIMIZATION
-#define D3DCOMPILE_SKIP_OPTIMIZATION (1 << 2)
-#endif
-#ifndef D3DCOMPILE_AVOID_FLOW_CONTROL
-#define D3DCOMPILE_AVOID_FLOW_CONTROL (1 << 9)
-#endif
-#ifndef D3DCOMPILE_PREFER_FLOW_CONTROL
-#define D3DCOMPILE_PREFER_FLOW_CONTROL (1 << 10)
-#endif
 #if !defined(ANGLE_COMPILE_OPTIMIZATION_LEVEL)
 #define ANGLE_COMPILE_OPTIMIZATION_LEVEL D3DCOMPILE_OPTIMIZATION_LEVEL3
 #endif
@@ -118,6 +94,12 @@ enum ShaderType
     SHADER_GEOMETRY
 };
 
+enum D3DWorkaroundType
+{
+    ANGLE_D3D_WORKAROUND_NONE,
+    ANGLE_D3D_WORKAROUND_SM3_OPTIMIZER
+};
+
 class Renderer
 {
   public:
@@ -138,7 +120,7 @@ class Renderer
     virtual void setTexture(gl::SamplerType type, int index, gl::Texture *texture) = 0;
 
     virtual void setRasterizerState(const gl::RasterizerState &rasterState) = 0;
-    virtual void setBlendState(const gl::BlendState &blendState, const gl::Color &blendColor,
+    virtual void setBlendState(gl::Framebuffer *framebuffer, const gl::BlendState &blendState, const gl::Color &blendColor,
                                unsigned int sampleMask) = 0;
     virtual void setDepthStencilState(const gl::DepthStencilState &depthStencilState, int stencilRef,
                                       int stencilBackRef, bool frontFaceCCW) = 0;
@@ -232,7 +214,7 @@ class Renderer
 
     // Shader operations
     virtual ShaderExecutable *loadExecutable(const void *function, size_t length, rx::ShaderType type) = 0;
-    virtual ShaderExecutable *compileToExecutable(gl::InfoLog &infoLog, const char *shaderHLSL, rx::ShaderType type) = 0;
+    virtual ShaderExecutable *compileToExecutable(gl::InfoLog &infoLog, const char *shaderHLSL, rx::ShaderType type, D3DWorkaroundType workaround) = 0;
 
     // Image operations
     virtual Image *createImage() = 0;

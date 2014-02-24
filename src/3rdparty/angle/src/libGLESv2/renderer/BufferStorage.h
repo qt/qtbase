@@ -22,7 +22,7 @@ class BufferStorage
 
     // The data returned is only guaranteed valid until next non-const method.
     virtual void *getData() = 0;
-    virtual void setData(const void* data, unsigned int size, unsigned int offset, unsigned int target) = 0;
+    virtual void setData(const void* data, unsigned int size, unsigned int offset) = 0;
     virtual void clear() = 0;
     virtual unsigned int getSize() const = 0;
     virtual bool supportsDirectBinding() const = 0;

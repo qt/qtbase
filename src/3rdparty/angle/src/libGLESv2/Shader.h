@@ -18,7 +18,7 @@
 #include <list>
 #include <vector>
 
-#include "compiler/Uniform.h"
+#include "compiler/translator/Uniform.h"
 #include "common/angleutils.h"
 
 namespace rx
@@ -107,6 +107,7 @@ class Shader
     bool mUsesPointCoord;
     bool mUsesDepthRange;
     bool mUsesFragDepth;
+    bool mUsesDiscardRewriting;
 
     static void *mFragmentCompiler;
     static void *mVertexCompiler;

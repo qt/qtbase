@@ -1,0 +1,33 @@
+From 95e3ca47772ef0552662b1d04b7ee08d9d1d2338 Mon Sep 17 00:00:00 2001
+From: Kai Koehne <kai.koehne@digia.com>
+Date: Mon, 17 Feb 2014 16:59:19 +0200
+Subject: [PATCH] Fix compilation of ANGLE with mingw-tdm64 gcc 4.8.1
+
+Do not rely on sprintf_s being declared/defined. This also fixes
+deployment to Windows XP.
+
+See https://chromium-review.googlesource.com/#/c/182975/ for a similar
+commit proposed upstream.
+
+Task-number: QTBUG-36242
+Change-Id: I520e2f61aeab34963e7a57baafd413c7db93f110
+---
+ src/3rdparty/angle/src/libEGL/Display.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/3rdparty/angle/src/libEGL/Display.cpp b/src/3rdparty/angle/src/libEGL/Display.cpp
+index a382c3b..13ef701 100644
+--- a/src/3rdparty/angle/src/libEGL/Display.cpp
++++ b/src/3rdparty/angle/src/libEGL/Display.cpp
+@@ -523,7 +523,7 @@ void Display::initVendorString()
+     if (mRenderer && mRenderer->getLUID(&adapterLuid))
+     {
+         char adapterLuidString[64];
+-        sprintf_s(adapterLuidString, sizeof(adapterLuidString), " (adapter LUID: %08x%08x)", adapterLuid.HighPart, adapterLuid.LowPart);
++        snprintf(adapterLuidString, sizeof(adapterLuidString), " (adapter LUID: %08x%08x)", adapterLuid.HighPart, adapterLuid.LowPart);
+ 
+         mVendorString += adapterLuidString;
+     }
+-- 
+1.8.4.msysgit.0
+
