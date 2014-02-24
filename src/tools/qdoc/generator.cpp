@@ -322,7 +322,7 @@ QString Generator::fileBase(const Node *node) const
         return node->baseName();
 
     QString base;
-    if (node->type() == Node::Document) {
+    if (node->isDocNode()) {
         base = node->name();
         if (node->subType() == Node::Collision) {
             const NameCollisionNode* ncn = static_cast<const NameCollisionNode*>(node);
@@ -347,12 +347,6 @@ QString Generator::fileBase(const Node *node) const
                 base.prepend(outputPrefix(QLatin1String("QML")));
             }
         }
-        else if (node->subType() == Node::QmlModule) {
-            base.append("-qmlmodule");
-        }
-        else if (node->subType() == Node::Module) {
-            base.append("-module");
-        }
         if (node->isExample() || node->isExampleFile()) {
             QString modPrefix(node->moduleName());
             if (modPrefix.isEmpty()) {
@@ -363,6 +357,19 @@ QString Generator::fileBase(const Node *node) const
         if (node->isExample()) {
             base.append(QLatin1String("-example"));
         }
+    }
+    else if (node->isCollectionNode()) {
+        base = node->name();
+        if (base.endsWith(".html"))
+            base.truncate(base.length() - 5);
+
+        if (node->isQmlModule()) {
+            base.append("-qmlmodule");
+        }
+        else if (node->isModule()) {
+            base.append("-module");
+        }
+        // Why not add "-group" for gropup pages?
     }
     else {
         const Node *p = node;
@@ -845,6 +852,10 @@ void Generator::generateDocNode(DocNode* /* dn */, CodeMarker* /* marker */)
 {
 }
 
+void Generator::generateCollectionNode(CollectionNode* , CodeMarker* )
+{
+}
+
 /*!
   This function is called when the documentation for an
   example is being formatted. It outputs the list of source
@@ -1002,19 +1013,49 @@ void Generator::generateInnerNode(InnerNode* node)
           later in generateCollisionPages(). Each one is
           appended to a list for later.
          */
-        if ((node->type() == Node::Document) && (node->subType() == Node::Collision)) {
+        if (node->isCollisionNode()) {
             NameCollisionNode* ncn = static_cast<NameCollisionNode*>(node);
             collisionNodes.append(const_cast<NameCollisionNode*>(ncn));
         }
         else {
-            beginSubPage(node, fileName(node));
-            if (node->type() == Node::Namespace || node->type() == Node::Class) {
+            if (node->isNamespace() || node->isClass()) {
+                beginSubPage(node, fileName(node));
                 generateClassLikeNode(node, marker);
+                endSubPage();
             }
-            else if (node->type() == Node::Document) {
+            else if (node->isDocNode()) {
+                beginSubPage(node, fileName(node));
                 generateDocNode(static_cast<DocNode*>(node), marker);
+                endSubPage();
             }
-            endSubPage();
+            else if (node->isCollectionNode()) {
+                CollectionNode* cn = static_cast<CollectionNode*>(node);
+                /*
+                  A collection node is one of: group, module,
+                  or QML module.
+
+                  Don't output an HTML page for the collection
+                  node unless the \group, \module, or \qmlmodule
+                  command was actually seen by qdoc in the qdoc
+                  comment for the node.
+
+                  A key prerequisite in this case is the call to
+                  mergeCollections(cn). We don't know if this
+                  collection (group, module, or QML module) has
+                  members in other modules. We know at this point
+                  that cn's members list contains only members in
+                  the current module. Therefore, before outputting
+                  the page for cn, we must search for members of
+                  cn in the other modules and add them to the
+                  members list.
+                 */
+                if (cn->wasSeen()) {
+                    qdb_->mergeCollections(cn);
+                    beginSubPage(node, fileName(node));
+                    generateCollectionNode(cn, marker);
+                    endSubPage();
+                }
+            }
         }
     }
 
@@ -1923,7 +1964,6 @@ void Generator::terminate()
     imageDirs.clear();
     outDir_.clear();
     QmlClassNode::terminate();
-    ExampleNode::terminate();
 }
 
 void Generator::terminateGenerator()

@@ -76,11 +76,6 @@ class QDocIndexFiles
     void resolveIndex();
     bool generateIndexSection(QXmlStreamWriter& writer, Node* node, bool generateInternalNodes = false);
     void generateIndexSections(QXmlStreamWriter& writer, Node* node, bool generateInternalNodes = false);
-    void writeMembersAttribute(QXmlStreamWriter& writer,
-                               const InnerNode* n,
-                               Node::Type t,
-                               Node::SubType st,
-                               const QString& attr);
 
  private:
     static QDocIndexFiles* qdocIndexFiles_;

@@ -458,25 +458,28 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
         dn->setLocation(doc.startLocation());
         return dn;
     }
-    else if (command == COMMAND_GROUP) {
-        DocNode* dn = qdb_->addGroup(arg.first);
-        dn->setLocation(doc.startLocation());
-        return dn;
-    }
     else if (command == COMMAND_HEADERFILE) {
         DocNode* dn = new DocNode(qdb_->primaryTreeRoot(), arg.first, Node::HeaderFile, Node::ApiPage);
         dn->setLocation(doc.startLocation());
         return dn;
     }
+    else if (command == COMMAND_GROUP) {
+        GroupNode* gn = qdb_->addGroup(arg.first);
+        gn->setLocation(doc.startLocation());
+        gn->markSeen();
+        return gn;
+    }
     else if (command == COMMAND_MODULE) {
-        DocNode* dn = qdb_->addModule(arg.first);
-        dn->setLocation(doc.startLocation());
-        return dn;
+        ModuleNode* mn = qdb_->addModule(arg.first);
+        mn->setLocation(doc.startLocation());
+        mn->markSeen();
+        return mn;
     }
     else if (command == COMMAND_QMLMODULE) {
-        DocNode* dn = qdb_->addQmlModule(arg.first);
-        dn->setLocation(doc.startLocation());
-        return dn;
+        QmlModuleNode* qmn = qdb_->addQmlModule(arg.first);
+        qmn->setLocation(doc.startLocation());
+        qmn->markSeen();
+        return qmn;
     }
     else if (command == COMMAND_PAGE) {
         Node::PageType ptype = Node::ArticlePage;

@@ -81,7 +81,6 @@ public:
     static CodeParser *parserForLanguage(const QString& language);
     static CodeParser *parserForHeaderFile(const QString &filePath);
     static CodeParser *parserForSourceFile(const QString &filePath);
-    static const QString titleFromName(const QString& name);
     static void setLink(Node* node, Node::LinkType linkType, const QString& arg);
     static const QString& currentOutputSubdirectory() { return currentSubDir_; }
 
@@ -101,7 +100,6 @@ private:
     static QString currentSubDir_;
     static QList<CodeParser *> parsers;
     static bool showInternal;
-    static QMap<QString,QString> nameToTitle;
 };
 
 QT_END_NAMESPACE

@@ -282,6 +282,31 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
         FunctionNode* fn = new FunctionNode(t, parent, name, attached);
         node = fn;
     }
+    else if (element.nodeName() == "group") {
+        GroupNode* gn = qdb_->addGroup(name);
+        gn->setTitle(element.attribute("title"));
+        gn->setSubTitle(element.attribute("subtitle"));
+        if (element.attribute("seen") == "true")
+            gn->markSeen();
+        node = gn;
+    }
+    else if (element.nodeName() == "module") {
+        ModuleNode* mn = qdb_->addModule(name);
+        mn->setTitle(element.attribute("title"));
+        mn->setSubTitle(element.attribute("subtitle"));
+        if (element.attribute("seen") == "true")
+            mn->markSeen();
+        node = mn;
+    }
+    else if (element.nodeName() == "qmlmodule") {
+        QString t = element.attribute("qml-module-name") + " " + element.attribute("qml-module-version");
+        QmlModuleNode* qmn = qdb_->addQmlModule(t);
+        qmn->setTitle(element.attribute("title"));
+        qmn->setSubTitle(element.attribute("subtitle"));
+        if (element.attribute("seen") == "true")
+            qmn->markSeen();
+        node = qmn;
+    }
     else if (element.nodeName() == "page") {
         Node::SubType subtype;
         Node::PageType ptype = Node::NoPageType;
@@ -297,18 +322,6 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
         else if (attr == "file") {
             subtype = Node::File;
             ptype = Node::NoPageType;
-        }
-        else if (attr == "group") {
-            subtype = Node::Group;
-            ptype = Node::OverviewPage;
-        }
-        else if (attr == "module") {
-            subtype = Node::Module;
-            ptype = Node::OverviewPage;
-        }
-        else if (attr == "qmlmodule") {
-            subtype = Node::QmlModule;
-            ptype = Node::OverviewPage;
         }
         else if (attr == "page") {
             subtype = Node::Page;
@@ -329,14 +342,7 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
         else
             return;
 
-        DocNode* docNode = 0;
-        if (subtype == Node::QmlModule) {
-            QString t = element.attribute("qml-module-name") + " " +
-                element.attribute("qml-module-version");
-            docNode = qdb_->addQmlModule(t);
-        }
-        else
-            docNode = new DocNode(parent, name, subtype, ptype);
+        DocNode* docNode = new DocNode(parent, name, subtype, ptype);
         docNode->setTitle(element.attribute("title"));
 
         if (element.hasAttribute("location"))
@@ -540,17 +546,8 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
     QString groupsAttr = element.attribute("groups");
     if (!groupsAttr.isEmpty()) {
         QStringList groupNames = groupsAttr.split(",");
-        for (int i=0; i<groupNames.size(); ++i) {
-            DocNode* dn = qdb_->findGroup(groupNames[i]);
-            if (dn) {
-                dn->addMember(node);
-            }
-#if 0
-            else {
-                qDebug() << "NODE:" << node->name() << "GROUPS:" << groupNames;
-                qDebug() << "DID NOT FIND GROUP:" << dn->name() << "for:" << node->name();
-            }
-#endif
+        foreach (QString name, groupNames) {
+            qdb_->addToGroup(name, node);
         }
     }
 
@@ -634,38 +631,6 @@ void QDocIndexFiles::resolveIndex()
 }
 
 /*!
-  Normally this is used for writing the \e groups attribute,
-  but it can be used for writing any attribute with a list
-  value that comes from some subset of the members of \a n.
-
-  \note The members of \a n are \e not the children of \a n.
-
-  The names we want to include are the names of the members
-  of \a n that have node type \a t and node subtype \a st.
-  The attribute name is \a attr. The names are joined with
-  the space character and written with \a writer.
- */
-void QDocIndexFiles::writeMembersAttribute(QXmlStreamWriter& writer,
-                                           const InnerNode* n,
-                                           Node::Type t,
-                                           Node::SubType st,
-                                           const QString& attr)
-{
-    const NodeList& members = n->members();
-    if (!members.isEmpty()) {
-        QStringList names;
-        NodeList::ConstIterator i = members.constBegin();
-        while (i != members.constEnd()) {
-            if ((*i)->type() == t && (*i)->subType() == st)
-                names.append((*i)->name());
-            ++i;
-        }
-        if (!names.isEmpty())
-            writer.writeAttribute(attr, names.join(","));
-    }
-}
-
-/*!
   Generate the index section with the given \a writer for the \a node
   specified, returning true if an element was written; otherwise returns
   false.
@@ -702,6 +667,15 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
         }
         else if (node->subType() == Node::QmlBasicType)
             nodeName = "qmlbasictype";
+        break;
+    case Node::Group:
+        nodeName = "group";
+        break;
+    case Node::Module:
+        nodeName = "module";
+        break;
+    case Node::QmlModule:
+        nodeName = "qmlmodule";
         break;
     case Node::Enum:
         nodeName = "enum";
@@ -776,7 +750,10 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
 
     QXmlStreamAttributes attributes;
 
-    if (node->type() != Node::Document) {
+    if ((node->type() != Node::Document) &&
+        (node->type() != Node::Group) &&
+        (node->type() != Node::Module) &&
+        (node->type() != Node::QmlModule)) {
         QString threadSafety;
         switch (node->threadSafeness()) {
         case Node::NonReentrant:
@@ -860,10 +837,15 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
     if (!href.isEmpty())
         writer.writeAttribute("href", href);
 
-    writer.writeAttribute("access", access);
     writer.writeAttribute("status", status);
-    if (node->isAbstract())
-        writer.writeAttribute("abstract", "true");
+    if ((node->type() != Node::Document) &&
+        (node->type() != Node::Group) &&
+        (node->type() != Node::Module) &&
+        (node->type() != Node::QmlModule)) {
+        writer.writeAttribute("access", access);
+        if (node->isAbstract())
+            writer.writeAttribute("abstract", "true");
+    }
     if (!node->location().fileName().isEmpty())
         writer.writeAttribute("location", node->location().fileName());
     if (!node->location().filePath().isEmpty()) {
@@ -875,7 +857,7 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
         writer.writeAttribute("since", node->since());
     }
 
-    QString brief = node->doc().briefText().toString();
+    QString brief = node->doc().trimmedBriefText(node->name()).toString();
     switch (node->type()) {
     case Node::Class:
         {
@@ -892,7 +874,8 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
                 writer.writeAttribute("bases", QStringList(baseStrings.toList()).join(","));
             if (!node->moduleName().isEmpty())
                 writer.writeAttribute("module", node->moduleName());
-            writeMembersAttribute(writer, classNode, Node::Document, Node::Group, "groups");
+            if (!classNode->groupNames().isEmpty())
+                writer.writeAttribute("groups", classNode->groupNames().join(","));
             if (!brief.isEmpty())
                 writer.writeAttribute("brief", brief);
         }
@@ -902,7 +885,8 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
             const NamespaceNode* namespaceNode = static_cast<const NamespaceNode*>(node);
             if (!namespaceNode->moduleName().isEmpty())
                 writer.writeAttribute("module", namespaceNode->moduleName());
-            writeMembersAttribute(writer, namespaceNode, Node::Document, Node::Group, "groups");
+            if (!namespaceNode->groupNames().isEmpty())
+                writer.writeAttribute("groups", namespaceNode->groupNames().join(","));
             if (!brief.isEmpty())
                 writer.writeAttribute("brief", brief);
         }
@@ -910,8 +894,8 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
     case Node::Document:
         {
             /*
-              Document nodes (such as manual pages) contain subtypes,
-              titles and other attributes.
+              Document nodes (such as manual pages) have a subtype,
+              a title, and other attributes.
             */
             bool writeModuleName = false;
             const DocNode* docNode = static_cast<const DocNode*>(node);
@@ -926,26 +910,6 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
                 break;
             case Node::File:
                 writer.writeAttribute("subtype", "file");
-                break;
-            case Node::Group:
-                {
-                    writer.writeAttribute("subtype", "group");
-                    writer.writeAttribute("seen", docNode->wasSeen() ? "true" : "false");
-                    // Groups contain information about their group members.
-                    const NodeList& members = docNode->members();
-                    QStringList names;
-                    foreach (const Node* member, members) {
-                        names.append(member->name());
-                    }
-                    writer.writeAttribute("members", names.join(","));
-                    writeModuleName = true;
-                }
-                break;
-            case Node::Module:
-                writer.writeAttribute("subtype", "module");
-                break;
-            case Node::QmlModule:
-                writer.writeAttribute("subtype", "qmlmodule");
                 break;
             case Node::Page:
                 writer.writeAttribute("subtype", "page");
@@ -969,7 +933,82 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
             if (!node->moduleName().isEmpty() && writeModuleName) {
                 writer.writeAttribute("module", node->moduleName());
             }
-            writeMembersAttribute(writer, docNode, Node::Document, Node::Group, "groups");
+            if (!docNode->groupNames().isEmpty())
+                writer.writeAttribute("groups", docNode->groupNames().join(","));
+            if (!brief.isEmpty())
+                writer.writeAttribute("brief", brief);
+        }
+        break;
+    case Node::Group:
+        {
+            const GroupNode* gn = static_cast<const GroupNode*>(node);
+            writer.writeAttribute("seen", gn->wasSeen() ? "true" : "false");
+            writer.writeAttribute("title", gn->title());
+            if (!gn->subTitle().isEmpty())
+                writer.writeAttribute("subtitle", gn->subTitle());
+            if (!gn->moduleName().isEmpty())
+                writer.writeAttribute("module", gn->moduleName());
+            if (!gn->groupNames().isEmpty())
+                writer.writeAttribute("groups", gn->groupNames().join(","));
+            /*
+              This is not read back in, so it probably
+              shouldn't be written out in the first place.
+            */
+            if (!gn->members().isEmpty()) {
+                QStringList names;
+                foreach (const Node* member, gn->members())
+                    names.append(member->name());
+                writer.writeAttribute("members", names.join(","));
+            }
+            if (!brief.isEmpty())
+                writer.writeAttribute("brief", brief);
+        }
+        break;
+    case Node::Module:
+        {
+            const ModuleNode* mn = static_cast<const ModuleNode*>(node);
+            writer.writeAttribute("seen", mn->wasSeen() ? "true" : "false");
+            writer.writeAttribute("title", mn->title());
+            if (!mn->subTitle().isEmpty())
+                writer.writeAttribute("subtitle", mn->subTitle());
+            if (!mn->moduleName().isEmpty())
+                writer.writeAttribute("module", mn->moduleName());
+            if (!mn->groupNames().isEmpty())
+                writer.writeAttribute("groups", mn->groupNames().join(","));
+            /*
+              This is not read back in, so it probably
+              shouldn't be written out in the first place.
+            */
+            if (!mn->members().isEmpty()) {
+                QStringList names;
+                foreach (const Node* member, mn->members())
+                    names.append(member->name());
+                writer.writeAttribute("members", names.join(","));
+            }
+            if (!brief.isEmpty())
+                writer.writeAttribute("brief", brief);
+        }
+    case Node::QmlModule:
+        {
+            const QmlModuleNode* qmn = static_cast<const QmlModuleNode*>(node);
+            writer.writeAttribute("seen", qmn->wasSeen() ? "true" : "false");
+            writer.writeAttribute("title", qmn->title());
+            if (!qmn->subTitle().isEmpty())
+                writer.writeAttribute("subtitle", qmn->subTitle());
+            if (!qmn->moduleName().isEmpty())
+                writer.writeAttribute("module", qmn->moduleName());
+            if (!qmn->groupNames().isEmpty())
+                writer.writeAttribute("groups", qmn->groupNames().join(","));
+            /*
+              This is not read back in, so it probably
+              shouldn't be written out in the first place.
+            */
+            if (!qmn->members().isEmpty()) {
+                QStringList names;
+                foreach (const Node* member, qmn->members())
+                    names.append(member->name());
+                writer.writeAttribute("members", names.join(","));
+            }
             if (!brief.isEmpty())
                 writer.writeAttribute("brief", brief);
         }
@@ -1268,9 +1307,13 @@ void QDocIndexFiles::generateIndexSections(QXmlStreamWriter& writer,
                                            bool generateInternalNodes)
 {
     /*
-      Note that the groups are written after all the other nodes.
+      Note that groups, modules, and QML modules are written
+      after all the other nodes.
      */
-    if (!node->isGroup() && generateIndexSection(writer, node, generateInternalNodes)) {
+    if (node->isGroup() || node->isModule() || node->isQmlModule())
+        return;
+
+    if (generateIndexSection(writer, node, generateInternalNodes)) {
         if (node->isInnerNode()) {
             const InnerNode* inner = static_cast<const InnerNode*>(node);
 
@@ -1329,15 +1372,37 @@ void QDocIndexFiles::generateIndex(const QString& fileName,
     generateIndexSections(writer, qdb_->primaryTreeRoot(), generateInternalNodes);
 
     /*
-      We wait until the end of the index file to output the group elements.
-      By waiting until the end, when we read each group element, its members
-      will have already been created. It is then only necessary to create
-      the group page and add each member to its member list.
+      We wait until the end of the index file to output the group, module,
+      and QML module elements. By outputting them at the end, when we read
+      the index file back in, all the group, module, and QML module member
+      elements will have already been created. It is then only necessary to
+      create the group, module, or QML module element and add each member to
+      its member list.
      */
-    const DocNodeMap& groups = qdb_->groups();
+    const CNMap& groups = qdb_->groups();
     if (!groups.isEmpty()) {
-        DocNodeMap::ConstIterator g = groups.constBegin();
+        CNMap::ConstIterator g = groups.constBegin();
         while (g != groups.constEnd()) {
+            if (generateIndexSection(writer, g.value(), generateInternalNodes))
+                writer.writeEndElement();
+            ++g;
+        }
+    }
+
+    const CNMap& modules = qdb_->modules();
+    if (!modules.isEmpty()) {
+        CNMap::ConstIterator g = modules.constBegin();
+        while (g != modules.constEnd()) {
+            if (generateIndexSection(writer, g.value(), generateInternalNodes))
+                writer.writeEndElement();
+            ++g;
+        }
+    }
+
+    const CNMap& qmlModules = qdb_->qmlModules();
+    if (!qmlModules.isEmpty()) {
+        CNMap::ConstIterator g = qmlModules.constBegin();
+        while (g != qmlModules.constEnd()) {
             if (generateIndexSection(writer, g.value(), generateInternalNodes))
                 writer.writeEndElement();
             ++g;

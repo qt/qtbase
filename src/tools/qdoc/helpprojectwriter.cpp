@@ -131,6 +131,9 @@ void HelpProjectWriter::readSelectors(SubProject &subproject, const QStringList 
     typeHash["function"] = Node::Function;
     typeHash["property"] = Node::Property;
     typeHash["variable"] = Node::Variable;
+    typeHash["group"] = Node::Group;
+    typeHash["module"] = Node::Module;
+    typeHash["qmlmodule"] = Node::QmlModule;
     typeHash["qmlproperty"] = Node::QmlProperty;
     typeHash["qmlsignal"] = Node::QmlSignal;
     typeHash["qmlsignalhandler"] = Node::QmlSignalHandler;
@@ -141,8 +144,6 @@ void HelpProjectWriter::readSelectors(SubProject &subproject, const QStringList 
     subTypeHash["example"] = Node::Example;
     subTypeHash["headerfile"] = Node::HeaderFile;
     subTypeHash["file"] = Node::File;
-    subTypeHash["group"] = Node::Group;
-    subTypeHash["module"] = Node::Module;
     subTypeHash["page"] = Node::Page;
     subTypeHash["externalpage"] = Node::ExternalPage;
     subTypeHash["qmlclass"] = Node::QmlClass;
@@ -314,6 +315,34 @@ bool HelpProjectWriter::generateSection(HelpProject &project,
             project.keywords.append(details);
         }
     }
+        break;
+
+    case Node::Group:
+    case Node::Module:
+    case Node::QmlModule:
+        {
+            const CollectionNode* cn = static_cast<const CollectionNode*>(node);
+            if (!cn->fullTitle().isEmpty()) {
+                if (cn->doc().hasKeywords()) {
+                    foreach (const Atom* keyword, cn->doc().keywords()) {
+                        if (!keyword->string().isEmpty()) {
+                            QStringList details;
+                            details << keyword->string()
+                                    << keyword->string()
+                                    << gen_->fullDocumentLocation(node, Generator::useOutputSubdirs()) +
+                                       QLatin1Char('#') + Doc::canonicalTitle(keyword->string());
+                            project.keywords.append(details);
+                        }
+                        else
+                            cn->doc().location().warning(
+                                      tr("Bad keyword in %1").arg(gen_->fullDocumentLocation(node,Generator::useOutputSubdirs()))
+                                     );
+                    }
+                }
+                project.keywords.append(keywordDetails(node));
+                project.files.insert(gen_->fullDocumentLocation(node,Generator::useOutputSubdirs()));
+            }
+        }
         break;
 
     case Node::Property:
@@ -600,6 +629,17 @@ void HelpProjectWriter::writeNode(HelpProject &project, QXmlStreamWriter &writer
 
         writer.writeEndElement(); // section
     }
+        break;
+    case Node::Group:
+    case Node::Module:
+    case Node::QmlModule:
+        {
+            const CollectionNode* cn = static_cast<const CollectionNode*>(node);
+            writer.writeStartElement("section");
+            writer.writeAttribute("ref", href);
+            writer.writeAttribute("title", cn->fullTitle());
+            writer.writeEndElement(); // section
+        }
         break;
     default:
         ;

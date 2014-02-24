@@ -103,6 +103,7 @@ protected:
                              CodeMarker *marker);
     virtual void generateClassLikeNode(InnerNode* inner, CodeMarker* marker);
     virtual void generateDocNode(DocNode* dn, CodeMarker* marker);
+    virtual void generateCollectionNode(CollectionNode* cn, CodeMarker* marker);
     virtual QString fileExtension() const;
     virtual QString refForNode(const Node *node);
     virtual QString linkForNode(const Node *node, const Node *relative);
@@ -167,7 +168,7 @@ private:
                              QString commonPrefix);
     void generateFunctionIndex(const Node *relative);
     void generateLegaleseList(const Node *relative, CodeMarker *marker);
-    void generateOverviewList(const Node *relative);
+    void generateList(const Node* relative, CodeMarker* marker, const QString& selector);
     void generateSectionList(const Section& section,
                              const Node *relative,
                              CodeMarker *marker,

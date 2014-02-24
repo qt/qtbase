@@ -110,16 +110,13 @@ protected:
     virtual QString fileBase(const Node* node) const;
     virtual QString fileExtension() const = 0;
     virtual void generateAlsoList(const Node *node, CodeMarker *marker);
-    virtual int generateAtom(const Atom *atom,
-                             const Node *relative,
-                             CodeMarker *marker);
+    virtual int generateAtom(const Atom *atom, const Node *relative, CodeMarker *marker);
     virtual void generateBody(const Node *node, CodeMarker *marker);
     virtual void generateClassLikeNode(InnerNode* inner, CodeMarker* marker);
     virtual void generateDocNode(DocNode* dn, CodeMarker* marker);
-    virtual void generateInheritedBy(const ClassNode *classe,
-                                     CodeMarker *marker);
-    virtual void generateInherits(const ClassNode *classe,
-                                  CodeMarker *marker);
+    virtual void generateCollectionNode(CollectionNode* cn, CodeMarker* marker);
+    virtual void generateInheritedBy(const ClassNode *classe, CodeMarker *marker);
+    virtual void generateInherits(const ClassNode *classe, CodeMarker *marker);
     virtual void generateInnerNode(InnerNode* node);
     virtual void generateMaintainerList(const InnerNode* node, CodeMarker* marker);
     virtual void generateQmlInheritedBy(const QmlClassNode* qcn, CodeMarker* marker);
@@ -128,9 +125,7 @@ protected:
                                  const Node *relative,
                                  CodeMarker *marker,
                                  const QString& qmlName);
-    virtual bool generateText(const Text& text,
-                              const Node *relative,
-                              CodeMarker *marker);
+    virtual bool generateText(const Text& text, const Node *relative, CodeMarker *marker);
     virtual QString imageFileName(const Node *relative, const QString& fileBase);
     virtual int skipAtoms(const Atom *atom, Atom::Type type) const;
     virtual QString typeString(const Node *node);

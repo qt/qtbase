@@ -50,7 +50,6 @@
 QT_BEGIN_NAMESPACE
 
 int Node::propertyGroupCount_ = 0;
-ExampleNodeMap ExampleNode::exampleNodeMap;
 QStringMap Node::operators_;
 
 /*!
@@ -127,14 +126,14 @@ QString Node::plainFullName(const Node* relative) const
  */
 QString Node::fullName(const Node* relative) const
 {
-    if (type() == Node::Document) {
+    if (isDocNode() || isCollectionNode()) {
         const DocNode* dn = static_cast<const DocNode*>(this);
         // Only print modulename::type on collision pages.
         if (!dn->qmlModuleName().isEmpty() && relative != 0 && relative->isCollisionNode())
             return dn->qmlModuleName() + "::" + dn->title();
         return dn->title();
     }
-    else if (type() == Node::Class) {
+    else if (isClass()) {
         const ClassNode* cn = static_cast<const ClassNode*>(this);
         if (!cn->serviceName().isEmpty())
             return cn->serviceName();
@@ -195,7 +194,6 @@ Node::Node(Type type, InnerNode *parent, const QString& name)
       pageType_(NoPageType),
       status_(Commendable),
       indexNodeFlag_(false),
-      seen_(true),
       parent_(parent),
       relatesTo_(0),
       name_(name)
@@ -249,21 +247,13 @@ Node::Node(Type type, InnerNode *parent, const QString& name)
     }
 }
 
-/*!
+/*! \fn QString Node::url() const
   Returns the node's URL.
  */
-QString Node::url() const
-{
-    return url_;
-}
 
-/*!
+/*! \fn void Node::setUrl(const QString &url)
   Sets the node's URL to \a url
  */
-void Node::setUrl(const QString &url)
-{
-    url_ = url;
-}
 
 /*!
   Returns this node's page type as a string, for use as an
@@ -334,6 +324,12 @@ QString Node::nodeTypeString(unsigned t)
         return "property";
     case Variable:
         return "variable";
+    case Group:
+        return "group";
+    case Module:
+        return "module";
+    case QmlModule:
+        return "QML module";
     case QmlProperty:
         return "QML property";
     case QmlPropertyGroup:
@@ -376,10 +372,6 @@ QString Node::nodeSubtypeString(unsigned t)
         return "file";
     case Image:
         return "image";
-    case Group:
-        return "group";
-    case Module:
-        return "module";
     case Page:
         return "page";
     case ExternalPage:
@@ -388,8 +380,6 @@ QString Node::nodeSubtypeString(unsigned t)
         return "QML type";
     case QmlBasicType:
         return "QML basic type";
-    case QmlModule:
-        return "QML module";
     case DitaMap:
         return "ditamap";
     case Collision:
@@ -676,86 +666,6 @@ InnerNode::~InnerNode()
 {
     deleteChildren();
     removeFromRelated();
-}
-
-/*!
-  Returns \c true if this node's members coolection is not empty.
- */
-bool InnerNode::hasMembers() const
-{
-    return !members_.isEmpty();
-}
-
-/*!
-  Appends \a node to the members list, if and only if it
-  isn't already in the members list.
- */
-void InnerNode::addMember(Node* node)
-{
-    if (!members_.contains(node))
-        members_.append(node);
-}
-
-/*!
-  Returns \c true if this node's members collection contains at
-  least one namespace node.
- */
-bool InnerNode::hasNamespaces() const
-{
-    if (!members_.isEmpty()) {
-        NodeList::const_iterator i = members_.begin();
-        while (i != members_.end()) {
-            if ((*i)->isNamespace())
-                return true;
-            ++i;
-        }
-    }
-    return false;
-}
-
-/*!
-  Returns \c true if this node's members collection contains at
-  least one class node.
- */
-bool InnerNode::hasClasses() const
-{
-    if (!members_.isEmpty()) {
-        NodeList::const_iterator i = members_.begin();
-        while (i != members_.end()) {
-            if ((*i)->isClass())
-                return true;
-            ++i;
-        }
-    }
-    return false;
-}
-
-/*!
-  Loads \a out with all this node's member nodes that are namespace nodes.
- */
-void InnerNode::getMemberNamespaces(NodeMap& out)
-{
-    out.clear();
-    NodeList::const_iterator i = members_.begin();
-    while (i != members_.end()) {
-        if ((*i)->isNamespace())
-            out.insert((*i)->name(),(*i));
-        ++i;
-    }
-}
-
-/*!
-  Loads \a out with all this node's member nodes that are class nodes.
- */
-void InnerNode::getMemberClasses(NodeMap& out)
-{
-    out.clear();
-    NodeList::const_iterator i = members_.begin();
-    while (i != members_.end()) {
-        if ((*i)->isClass())
-            out.insert((*i)->name(),(*i));
-        ++i;
-    }
 }
 
 /*!
@@ -1493,6 +1403,15 @@ void ClassNode::addResolvedBaseClass(Access access, ClassNode* node)
 }
 
 /*!
+  Adds the derived class \a node to this class's list of derived
+  classes. The derived class inherits this class with \a access.
+ */
+void ClassNode::addDerivedClass(Access access, ClassNode* node)
+{
+    derived_.append(RelatedClass(access, node));
+}
+
+/*!
   Add an unresolved base class to this class node's list of
   base classes. The unresolved base class will be resolved
   before the generate phase of qdoc. In an unresolved base
@@ -1656,13 +1575,6 @@ DocNode::DocNode(InnerNode* parent, const QString& name, SubType subtype, Node::
     case DitaMap:
         setPageType(ptype);
         break;
-    case Module:
-    case Group:
-        setPageType(OverviewPage);
-        break;
-    case QmlModule:
-        setPageType(OverviewPage);
-        break;
     case QmlClass:
     case QmlBasicType:
         setPageType(ApiPage);
@@ -1678,13 +1590,9 @@ DocNode::DocNode(InnerNode* parent, const QString& name, SubType subtype, Node::
     }
 }
 
-/*!
+/*! \fn QString DocNode::title() const
   Returns the document node's title. This is used for the page title.
 */
-QString DocNode::title() const
-{
-    return title_;
-}
 
 /*!
   Sets the document node's \a title. This is used for the page title.
@@ -1741,16 +1649,6 @@ QString DocNode::subTitle() const
             return name();
     }
     return QString();
-}
-
-/*!
-  The constructor calls the DocNode constructor with
-  \a parent, \a name, and Node::Example.
- */
-ExampleNode::ExampleNode(InnerNode* parent, const QString& name)
-    : DocNode(parent, name, Node::Example, Node::ExamplePage)
-{
-    // nothing
 }
 
 /*!
@@ -2857,8 +2755,6 @@ QString Node::idForNode() const
                 str = "qml-class-" + name();
                 break;
             case Node::Page:
-            case Node::Group:
-            case Node::Module:
             case Node::HeaderFile:
                 str = title();
                 if (str.isEmpty()) {
@@ -2879,9 +2775,6 @@ QString Node::idForNode() const
             case Node::QmlBasicType:
                 str = "qml-basic-type-" + name();
                 break;
-            case Node::QmlModule:
-                str = "qml-module-" + name();
-                break;
             case Node::Collision:
                 str = title();
                 str.replace(": ","-");
@@ -2892,6 +2785,19 @@ QString Node::idForNode() const
                 break;
             }
         }
+        break;
+    case Node::Group:
+    case Node::Module:
+        str = title();
+        if (str.isEmpty()) {
+            str = name();
+            if (str.endsWith(".html"))
+                str.remove(str.size()-5,5);
+        }
+        str.replace(QLatin1Char('/'), QLatin1Char('-'));
+        break;
+    case Node::QmlModule:
+        str = "qml-module-" + name();
         break;
     case Node::QmlProperty:
         str = "qml-property-" + name();
@@ -2953,10 +2859,93 @@ void InnerNode::printChildren(const QString& title)
 }
 
 /*!
-  Prints the inner node's list of members.
+  Returns \c true if the collection node's member list is
+  not empty.
+ */
+bool CollectionNode::hasMembers() const
+{
+    return !members_.isEmpty();
+}
+
+/*!
+  Appends \a node to the collection node's member list, if
+  and only if it isn't already in the member list.
+ */
+void CollectionNode::addMember(Node* node)
+{
+    if (!members_.contains(node))
+        members_.append(node);
+}
+
+/*!
+  Returns \c true if this collection node contains at least
+  one namespace node.
+ */
+bool CollectionNode::hasNamespaces() const
+{
+    if (!members_.isEmpty()) {
+        NodeList::const_iterator i = members_.begin();
+        while (i != members_.end()) {
+            if ((*i)->isNamespace())
+                return true;
+            ++i;
+        }
+    }
+    return false;
+}
+
+/*!
+  Returns \c true if this collection node contains at least
+  one class node.
+ */
+bool CollectionNode::hasClasses() const
+{
+    if (!members_.isEmpty()) {
+        NodeList::const_iterator i = members_.begin();
+        while (i != members_.end()) {
+            if ((*i)->isClass())
+                return true;
+            ++i;
+        }
+    }
+    return false;
+}
+
+/*!
+  Loads \a out with all this collection node's members that
+  are namespace nodes.
+ */
+void CollectionNode::getMemberNamespaces(NodeMap& out)
+{
+    out.clear();
+    NodeList::const_iterator i = members_.begin();
+    while (i != members_.end()) {
+        if ((*i)->isNamespace())
+            out.insert((*i)->name(),(*i));
+        ++i;
+    }
+}
+
+/*!
+  Loads \a out with all this collection node's members that
+  are class nodes.
+ */
+void CollectionNode::getMemberClasses(NodeMap& out)
+{
+    out.clear();
+    NodeList::const_iterator i = members_.begin();
+    while (i != members_.end()) {
+        if ((*i)->isClass())
+            out.insert((*i)->name(),(*i));
+        ++i;
+    }
+}
+
+/*!
+  Prints the collection node's list of members.
   For debugging only.
  */
-void InnerNode::printMembers(const QString& title)
+void CollectionNode::printMembers(const QString& title)
 {
     qDebug() << title << name() << members_.size();
     if (members_.size() > 0) {
@@ -2965,6 +2954,15 @@ void InnerNode::printMembers(const QString& title)
             qDebug() << "  MEMBER:" << n->name() << n->nodeTypeString() << n->nodeSubtypeString();
         }
     }
+}
+
+/*!
+  Sets the document node's \a title. This is used for the page title.
+ */
+void CollectionNode::setTitle(const QString& title)
+{
+    title_ = title;
+    parent()->addChild(this, title);
 }
 
 QT_END_NAMESPACE

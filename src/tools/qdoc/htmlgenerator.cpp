@@ -268,7 +268,6 @@ QString HtmlGenerator::format()
  */
 void HtmlGenerator::generateDocs()
 {
-    qdb_->buildCollections();
     Node* qflags = qdb_->findNodeByNameAndType(QStringList("QFlags"), Node::Class, Node::NoSubType);
     if (qflags)
         qflagsHref_ = linkForNode(qflags,0);
@@ -488,9 +487,9 @@ int HtmlGenerator::generateAtom(const Atom *atom, const Node *relative, CodeMark
         break;
     case Atom::AnnotatedList:
         {
-            DocNode* dn = qdb_->getGroup(atom->string());
-            if (dn)
-                generateAnnotatedList(relative, marker, dn->members());
+            GroupNode* gn = qdb_->getGroup(atom->string());
+            if (gn)
+                generateList(gn, marker, atom->string());
         }
         break;
     case Atom::GeneratedList:
@@ -507,10 +506,10 @@ int HtmlGenerator::generateAtom(const Atom *atom, const Node *relative, CodeMark
             QString arg = atom->string().trimmed();
             QString moduleName = atom->string().mid(atom->string().indexOf("classesbymodule") + 15).trimmed();
             QDocDatabase* qdb = QDocDatabase::qdocDB();
-            DocNode* dn = qdb->findModule(moduleName);
-            if (dn) {
+            ModuleNode* mn = qdb->findModule(moduleName);
+            if (mn) {
                 NodeMap m;
-                dn->getMemberClasses(m);
+                mn->getMemberClasses(m);
                 if (!m.isEmpty()) {
                     generateAnnotatedList(relative, marker, m);
                 }
@@ -553,16 +552,25 @@ int HtmlGenerator::generateAtom(const Atom *atom, const Node *relative, CodeMark
             generateCompactList(Generic, relative, qdb_->getServiceClasses(), false, QStringLiteral("Q"));
         }
         else if (atom->string() == "overviews") {
-            generateOverviewList(relative);
+            generateList(relative, marker, "overviews");
+        }
+        else if (atom->string() == "cpp-modules") {
+            generateList(relative, marker, "cpp-modules");
+        }
+        else if (atom->string() == "qml-modules") {
+            generateList(relative, marker, "qml-modules");
         }
         else if (atom->string() == "namespaces") {
             generateAnnotatedList(relative, marker, qdb_->getNamespaces());
         }
         else if (atom->string() == "related") {
-            const DocNode *dn = static_cast<const DocNode *>(relative);
-            if (dn)
-                generateAnnotatedList(dn, marker, dn->members());
+            generateList(relative, marker, "related");
         }
+#if 0
+        /*
+          This is not used in Qt5, as of 10/02/2014
+          Remove permanently if it is not missed.
+         */
         else if (atom->string() == "relatedinline") {
             const DocNode *dn = static_cast<const DocNode *>(relative);
             if (dn && !dn->members().isEmpty()) {
@@ -576,6 +584,7 @@ int HtmlGenerator::generateAtom(const Atom *atom, const Node *relative, CodeMark
                     generateBody(node, marker);
             }
         }
+#endif
         break;
     case Atom::SinceList:
     {
@@ -1473,29 +1482,7 @@ void HtmlGenerator::generateDocNode(DocNode* dn, CodeMarker* marker)
                   dn,
                   marker);
 
-    if (dn->subType() == Node::Module) {
-        // Generate brief text and status for modules.
-        generateBrief(dn, marker);
-        generateStatus(dn, marker);
-        generateSince(dn, marker);
-
-        NodeMap nm;
-        dn->getMemberNamespaces(nm);
-        if (!nm.isEmpty()) {
-            out() << "<a name=\"" << registerRef("namespaces") << "\"></a>" << divNavTop << '\n';
-            out() << "<h2>Namespaces</h2>\n";
-            generateAnnotatedList(dn, marker, nm);
-        }
-        nm.clear();
-        dn->getMemberClasses(nm);
-        if (!nm.isEmpty()) {
-            out() << "<a name=\"" << registerRef("classes") << "\"></a>" << divNavTop << '\n';
-            out() << "<h2>Classes</h2>\n";
-            generateAnnotatedList(dn, marker, nm);
-        }
-        nm.clear();
-    }
-    else if (dn->subType() == Node::HeaderFile) {
+    if (dn->subType() == Node::HeaderFile) {
         // Generate brief text and status for modules.
         generateBrief(dn, marker);
         generateStatus(dn, marker);
@@ -1584,27 +1571,13 @@ void HtmlGenerator::generateDocNode(DocNode* dn, CodeMarker* marker)
         ++s;
     }
 
-    Text brief = dn->doc().briefText();
-    if (dn->subType() == Node::Module && !brief.isEmpty()) {
-        generateExtractionMark(dn, DetailedDescriptionMark);
-        out() << "<a name=\"" << registerRef("details") << "\"></a>" << divNavTop << '\n';
-        out() << "<div class=\"descr\">\n"; // QTBUG-9504
-        out() << "<h2>" << "Detailed Description" << "</h2>\n";
-    }
-    else {
-        generateExtractionMark(dn, DetailedDescriptionMark);
-        out() << "<div class=\"descr\"> <a name=\"" << registerRef("details") << "\"></a>\n"; // QTBUG-9504
-    }
+    generateExtractionMark(dn, DetailedDescriptionMark);
+    out() << "<div class=\"descr\"> <a name=\"" << registerRef("details") << "\"></a>\n"; // QTBUG-9504
 
     generateBody(dn, marker);
     out() << "</div>\n"; // QTBUG-9504
     generateAlsoList(dn, marker);
     generateExtractionMark(dn, EndMark);
-
-    if ((dn->subType() == Node::Group))
-        generateAnnotatedList(dn, marker, dn->members());
-    else if (dn->subType() == Node::QmlModule)
-        generateAnnotatedList(dn, marker, dn->members());
 
     sections = marker->sections(dn, CodeMarker::Detailed, CodeMarker::Okay);
     s = sections.constBegin();
@@ -1620,6 +1593,91 @@ void HtmlGenerator::generateDocNode(DocNode* dn, CodeMarker* marker)
         ++s;
     }
     generateFooter(dn);
+}
+
+/*!
+  Generate the HTML page for a group, module, or QML module.
+ */
+void HtmlGenerator::generateCollectionNode(CollectionNode* cn, CodeMarker* marker)
+{
+    SubTitleSize subTitleSize = LargeSubTitle;
+    QList<Section> sections;
+    QList<Section>::const_iterator s;
+    QString fullTitle = cn->fullTitle();
+    QString htmlTitle = fullTitle;
+
+    generateHeader(htmlTitle, cn, marker);
+    generateTableOfContents(cn,marker,0);
+    generateTitle(fullTitle, Text() << cn->subTitle(), subTitleSize, cn, marker);
+
+    if (cn->isModule()) {
+        // Generate brief text and status for modules.
+        generateBrief(cn, marker);
+        generateStatus(cn, marker);
+        generateSince(cn, marker);
+
+        NodeMap nm;
+        cn->getMemberNamespaces(nm);
+        if (!nm.isEmpty()) {
+            out() << "<a name=\"" << registerRef("namespaces") << "\"></a>" << divNavTop << '\n';
+            out() << "<h2>Namespaces</h2>\n";
+            generateAnnotatedList(cn, marker, nm);
+        }
+        nm.clear();
+        cn->getMemberClasses(nm);
+        if (!nm.isEmpty()) {
+            out() << "<a name=\"" << registerRef("classes") << "\"></a>" << divNavTop << '\n';
+            out() << "<h2>Classes</h2>\n";
+            generateAnnotatedList(cn, marker, nm);
+        }
+        nm.clear();
+    }
+
+    sections = marker->sections(cn, CodeMarker::Summary, CodeMarker::Okay);
+    s = sections.constBegin();
+    while (s != sections.constEnd()) {
+        out() << "<a name=\"" << registerRef((*s).name) << "\"></a>" << divNavTop << '\n';
+        out() << "<h2>" << protectEnc((*s).name) << "</h2>\n";
+        generateSectionList(*s, cn, marker, CodeMarker::Summary);
+        ++s;
+    }
+
+    Text brief = cn->doc().briefText();
+    if (cn->isModule() && !brief.isEmpty()) {
+        generateExtractionMark(cn, DetailedDescriptionMark);
+        out() << "<a name=\"" << registerRef("details") << "\"></a>" << divNavTop << '\n';
+        out() << "<div class=\"descr\">\n"; // QTBUG-9504
+        out() << "<h2>" << "Detailed Description" << "</h2>\n";
+    }
+    else {
+        generateExtractionMark(cn, DetailedDescriptionMark);
+        out() << "<div class=\"descr\"> <a name=\"" << registerRef("details") << "\"></a>\n"; // QTBUG-9504
+    }
+
+    generateBody(cn, marker);
+    out() << "</div>\n"; // QTBUG-9504
+    generateAlsoList(cn, marker);
+    generateExtractionMark(cn, EndMark);
+
+    if (cn->isGroup())
+        generateAnnotatedList(cn, marker, cn->members());
+    else if (cn->isQmlModule())
+        generateAnnotatedList(cn, marker, cn->members());
+
+    sections = marker->sections(cn, CodeMarker::Detailed, CodeMarker::Okay);
+    s = sections.constBegin();
+    while (s != sections.constEnd()) {
+        //out() << "<hr />\n";
+        out() << "<h2>" << protectEnc((*s).name) << "</h2>\n";
+
+        NodeList::ConstIterator m = (*s).members.constBegin();
+        while (m != (*s).members.constEnd()) {
+            generateDetailedMember(*m, cn, marker);
+            ++m;
+        }
+        ++s;
+    }
+    generateFooter(cn);
 }
 
 /*!
@@ -1895,7 +1953,7 @@ void HtmlGenerator::generateRequisites(InnerNode *inner, CodeMarker *marker)
     if (inner->type() == Node::Class || inner->type() == Node::Namespace) {
         //add the QT variable to the map
         if (!inner->moduleName().isEmpty()) {
-            DocNode * moduleNode = qdb_->findModule(inner->moduleName());
+            ModuleNode* moduleNode = qdb_->findModule(inner->moduleName());
             if (moduleNode && !moduleNode->qtVariable().isEmpty()) {
                 text.clear();
                 text << Atom(Atom::FormattingLeft, ATOM_FORMATTING_TELETYPE)
@@ -2007,9 +2065,9 @@ void HtmlGenerator::generateQmlRequisites(QmlClassNode *qcn, CodeMarker *marker)
 
     //add the module name and version to the map
     QString qmlModuleVersion;
-    DocNode* dn = qdb_->findQmlModule(qcn->qmlModuleName());
-    if (dn)
-        qmlModuleVersion = dn->qmlModuleVersion();
+    QmlModuleNode* qmn = qdb_->findQmlModule(qcn->qmlModuleName());
+    if (qmn)
+        qmlModuleVersion = qmn->qmlModuleVersion();
     else
         qmlModuleVersion = qcn->qmlModuleVersion();
     text.clear();
@@ -2141,7 +2199,7 @@ void HtmlGenerator::generateTableOfContents(const Node *node,
     QList<Atom*> toc;
     if (node->doc().hasTableOfContents())
         toc = node->doc().tableOfContents();
-    if (toc.isEmpty() && !sections && (node->subType() != Node::Module))
+    if (toc.isEmpty() && !sections && !node->isModule())
         return;
 
     QStringList sectionNumber;
@@ -2156,7 +2214,7 @@ void HtmlGenerator::generateTableOfContents(const Node *node,
     sectionNumber.append("1");
     out() << "<ul>\n";
 
-    if (node->subType() == Node::Module) {
+    if (node->isModule()) {
         if (node->hasNamespaces()) {
             out() << "<li class=\"level"
                   << sectionNumber.size()
@@ -2183,9 +2241,7 @@ void HtmlGenerator::generateTableOfContents(const Node *node,
             }
         }
     }
-    else if (sections && ((node->type() == Node::Class) ||
-                          (node->type() == Node::Namespace) ||
-                          (node->subType() == Node::QmlClass))) {
+    else if (sections && (node->isClass() || node->isNamespace() || node->isQmlType())) {
         QList<Section>::ConstIterator s = sections->constBegin();
         while (s != sections->constEnd()) {
             if (!s->members.isEmpty() || !s->reimpMembers.isEmpty()) {
@@ -2453,7 +2509,7 @@ void HtmlGenerator::generateClassHierarchy(const Node *relative, NodeMap& classM
 
             NodeMap newTop;
             foreach (const RelatedClass &d, child->derivedClasses()) {
-                if (d.node_ && (d.access_ != Node::Private && !d.node_->doc().isEmpty()))
+                if (d.node_ && !d.isPrivate() && !d.node_->isInternal() && d.node_->hasDoc())
                     newTop.insert(d.node_->name(), d.node_);
             }
             if (!newTop.isEmpty()) {
@@ -2474,33 +2530,29 @@ void HtmlGenerator::generateAnnotatedList(const Node* relative,
 {
     if (nodeMap.isEmpty())
         return;
-    NodeList nl;
-    NodeMap::const_iterator i = nodeMap.begin();
-    while (i != nodeMap.end()) {
-        nl.append(i.value());
-        ++i;
-    }
-    generateAnnotatedList(relative, marker, nl);
+    generateAnnotatedList(relative, marker, nodeMap.values());
 }
 
+/*!
+ */
 void HtmlGenerator::generateAnnotatedList(const Node *relative,
                                           CodeMarker *marker,
-                                          const NodeList& nodes)
+                                          const NodeList& unsortedNodes)
 {
+    NodeMap nm;
     bool allInternal = true;
-    foreach (const Node* node, nodes) {
-        if (!node->isInternal() && node->status() != Node::Obsolete) {
+    foreach (Node* node, unsortedNodes) {
+        if (!node->isInternal() && !node->isObsolete()) {
             allInternal = false;
+            nm.insert(node->fullName(relative), node);
         }
     }
     if (allInternal)
         return;
     out() << "<table class=\"annotated\">\n";
     int row = 0;
+    NodeList nodes = nm.values();
     foreach (const Node* node, nodes) {
-        if (node->isInternal() || node->status() == Node::Obsolete)
-            continue;
-
         if (++row % 2 == 1)
             out() << "<tr class=\"odd topAlign\">";
         else
@@ -2509,7 +2561,7 @@ void HtmlGenerator::generateAnnotatedList(const Node *relative,
         generateFullName(node, relative);
         out() << "</p></td>";
 
-        if (!(node->type() == Node::Document)) {
+        if (!node->isDocNode()) {
             Text brief = node->doc().trimmedBriefText(node->name());
             if (!brief.isEmpty()) {
                 out() << "<td class=\"tblDescr\"><p>";
@@ -2794,114 +2846,102 @@ void HtmlGenerator::generateQmlItem(const Node *node,
     out() << highlightedCode(marked, relative, false);
 }
 
-void HtmlGenerator::generateOverviewList(const Node *relative)
+void HtmlGenerator::generateList(const Node* relative, CodeMarker* marker, const QString& selector)
 {
-    QMap<const DocNode *, QMap<QString, DocNode *> > docNodeMap;
-    QMap<QString, const DocNode *> groupTitlesMap;
-    QMap<QString, DocNode *> uncategorizedNodeMap;
+    NodeList nl;
+    CollectionList cl;
     QRegExp singleDigit("\\b([0-9])\\b");
 
-    const NodeList children = qdb_->primaryTreeRoot()->childNodes();
-    foreach (Node *child, children) {
-        if (child->type() == Node::Document && child != relative) {
-            DocNode *docNode = static_cast<DocNode *>(child);
-
-            // Check whether the page is part of a group or is the group
-            // definition page.
-            QString group;
-            bool isGroupPage = false;
-            if (docNode->doc().metaCommandsUsed().contains("group")) {
-                group = docNode->doc().metaCommandArgs("group")[0].first;
-                isGroupPage = true;
-            }
-
-            // there are too many examples; they would clutter the list
-            if (docNode->subType() == Node::Example)
-                continue;
-
-            // not interested either in individual (Qt Designer etc.) manual chapters
-            if (docNode->links().contains(Node::ContentsLink))
-                continue;
-
-            // Discard external nodes.
-            if (docNode->subType() == Node::ExternalPage)
-                continue;
-
-            QString sortKey = docNode->fullTitle().toLower();
-            if (sortKey.startsWith("the "))
-                sortKey.remove(0, 4);
-            sortKey.replace(singleDigit, "0\\1");
-
-            if (!group.isEmpty()) {
-                if (isGroupPage) {
-                    // If we encounter a group definition page, we add all
-                    // the pages in that group to the list for that group.
-                    foreach (Node *member, docNode->members()) {
-                        if (member->isInternal() || member->type() != Node::Document)
-                            continue;
-                        DocNode *page = static_cast<DocNode *>(member);
-                        if (page) {
-                            QString sortKey = page->fullTitle().toLower();
-                            if (sortKey.startsWith("the "))
-                                sortKey.remove(0, 4);
-                            sortKey.replace(singleDigit, "0\\1");
-                            docNodeMap[const_cast<const DocNode *>(docNode)].insert(sortKey, page);
-                            groupTitlesMap[docNode->fullTitle()] = const_cast<const DocNode *>(docNode);
-                        }
-                    }
-                }
-                else if (!isGroupPage) {
-                    // If we encounter a page that belongs to a group then
-                    // we add that page to the list for that group.
-                    const DocNode* gn = qdb_->getGroup(group);
-                    if (gn && !docNode->isInternal())
-                        docNodeMap[gn].insert(sortKey, docNode);
-                }
-            }
+    if (selector == "overviews") {
+        CNMap groups;
+        qdb_->mergeCollections(Node::Group, groups, relative);
+        cl = groups.values();
+        foreach (CollectionNode* cn, cl)
+            nl.append(cn);
+        generateAnnotatedList(relative, marker, nl);
+    }
+    else if (selector == "cpp-modules") {
+        CNMap modules;
+        qdb_->mergeCollections(Node::Module, modules, relative);
+        cl = modules.values();
+        foreach (CollectionNode* cn, cl)
+            nl.append(cn);
+        generateAnnotatedList(relative, marker, nl);
+    }
+    else if (selector == "qml-modules") {
+        CNMap qmlModules;
+        qdb_->mergeCollections(Node::QmlModule, qmlModules, relative);
+        cl = qmlModules.values();
+        foreach (CollectionNode* cn, cl)
+            nl.append(cn);
+        generateAnnotatedList(relative, marker, nl);
+    }
+    else {
+        /*
+          \generatelist {selector} is only allowed in a
+          comment where the topic is \group, \module, or
+          \qmlmodule.
+        */
+        if (!relative || !relative->isCollectionNode()) {
+            relative->doc().location().warning(tr("\\generatelist {%1} is only allowed in \\group, \\module, and \\qmlmodule comments.").arg(selector));
+            return;
+        }
+        if (selector == "related") {
+            Node* n = const_cast<Node*>(relative);
+            CollectionNode* cn = static_cast<CollectionNode*>(n);
+            qdb_->mergeCollections(cn);
+            generateAnnotatedList(cn, marker, cn->members());
+        }
+        else {
+            Node* n = const_cast<Node*>(relative);
+            CollectionNode* cn = static_cast<CollectionNode*>(n);
+            qdb_->mergeCollections(cn);
+            generateAnnotatedList(cn, marker, cn->members());
         }
     }
 
-    // We now list all the pages found that belong to groups.
-    // If only certain pages were found for a group, but the definition page
-    // for that group wasn't listed, the list of pages will be intentionally
-    // incomplete. However, if the group definition page was listed, all the
-    // pages in that group are listed for completeness.
-
-    if (!docNodeMap.isEmpty()) {
-        foreach (const QString &groupTitle, groupTitlesMap.keys()) {
-            const DocNode *groupNode = groupTitlesMap[groupTitle];
+#if 0
+    QStringList keys = groups.uniqueKeys();
+    foreach (QString key, keys) {
+        GroupNode* gn = static_cast<GroupNode*>(groups.value(key));
+        if (gn) {
             out() << QString("<h3><a href=\"%1\">%2</a></h3>\n").arg(
-                         linkForNode(groupNode, relative)).arg(
-                         protectEnc(groupNode->fullTitle()));
-
-            if (docNodeMap[groupNode].count() == 0)
+                         linkForNode(gn, relative)).arg(
+                         protectEnc(gn->fullTitle()));
+#if 0
+            if (gn->members().isEmpty())
                 continue;
 
-            out() << "<ul>\n";
+            NodeMap nm;
+            foreach (Node* member, gn->members()) {
+                if (member->isInternal() || member->isExample() || member->isExternalPage() ||
+                    member->isObsolete())
+                    continue;
+                // not interested either in individual (Qt Designer etc.) manual chapters
+                if (member->links().contains(Node::ContentsLink))
+                    continue;
+                QString sortKey = member->fullTitle().toLower();
+                if (sortKey.startsWith("the "))
+                    sortKey.remove(0, 4);
+                sortKey.replace(singleDigit, "0\\1");
+                nm.insert(sortKey, member);
+            }
 
-            foreach (const DocNode *docNode, docNodeMap[groupNode]) {
-                QString title = docNode->fullTitle();
+            out() << "<ul>\n";
+            QStringList titles = nm.keys();
+            foreach (QString t, titles) {
+                Node* member = nm.value(t);
+                QString title = member->fullTitle();
                 if (title.startsWith("The "))
                     title.remove(0, 4);
-                out() << "<li><a href=\"" << linkForNode(docNode, relative) << "\">"
+                out() << "<li><a href=\"" << linkForNode(member, relative) << "\">"
                       << protectEnc(title) << "</a></li>\n";
             }
             out() << "</ul>\n";
+#endif
         }
     }
-
-    if (!uncategorizedNodeMap.isEmpty()) {
-        out() << QString("<h3>Miscellaneous</h3>\n");
-        out() << "<ul>\n";
-        foreach (const DocNode *docNode, uncategorizedNodeMap) {
-            QString title = docNode->fullTitle();
-            if (title.startsWith("The "))
-                title.remove(0, 4);
-            out() << "<li><a href=\"" << linkForNode(docNode, relative) << "\">"
-                  << protectEnc(title) << "</a></li>\n";
-        }
-        out() << "</ul>\n";
-    }
+#endif
 }
 
 void HtmlGenerator::generateSection(const NodeList& nl,
@@ -4229,7 +4269,7 @@ void HtmlGenerator::generateManifestFiles()
 {
     generateManifestFile("examples", "example");
     generateManifestFile("demos", "demo");
-    ExampleNode::exampleNodeMap.clear();
+    qdb_->exampleNodeMap().clear();
     manifestMetaContent.clear();
 }
 
@@ -4240,7 +4280,8 @@ void HtmlGenerator::generateManifestFiles()
  */
 void HtmlGenerator::generateManifestFile(QString manifest, QString element)
 {
-    if (ExampleNode::exampleNodeMap.isEmpty())
+    ExampleNodeMap& exampleNodeMap = qdb_->exampleNodeMap();
+    if (exampleNodeMap.isEmpty())
         return;
     QString fileName = manifest +"-manifest.xml";
     QFile file(outputDir() + QLatin1Char('/') + fileName);
@@ -4251,8 +4292,8 @@ void HtmlGenerator::generateManifestFile(QString manifest, QString element)
         demos = true;
 
     bool proceed = false;
-    ExampleNodeMap::Iterator i = ExampleNode::exampleNodeMap.begin();
-    while (i != ExampleNode::exampleNodeMap.end()) {
+    ExampleNodeMap::Iterator i = exampleNodeMap.begin();
+    while (i != exampleNodeMap.end()) {
         const ExampleNode* en = i.value();
         if (demos) {
             if (en->name().startsWith("demos")) {
@@ -4276,8 +4317,8 @@ void HtmlGenerator::generateManifestFile(QString manifest, QString element)
     writer.writeAttribute("module", project);
     writer.writeStartElement(manifest);
 
-    i = ExampleNode::exampleNodeMap.begin();
-    while (i != ExampleNode::exampleNodeMap.end()) {
+    i = exampleNodeMap.begin();
+    while (i != exampleNodeMap.end()) {
         const ExampleNode* en = i.value();
         if (demos) {
             if (!en->name().startsWith("demos")) {
@@ -4501,6 +4542,12 @@ void HtmlGenerator::reportOrphans(const InnerNode* parent)
             break;
         case Node::Class:
             break;
+        case Node::Group:
+            break;
+        case Node::Module:
+            break;
+        case Node::QmlModule:
+            break;
         case Node::Document:
             switch (child->subType()) {
             case Node::Example:
@@ -4511,10 +4558,6 @@ void HtmlGenerator::reportOrphans(const InnerNode* parent)
                 break;
             case Node::Image:
                 break;
-            case Node::Group:
-                break;
-            case Node::Module:
-                break;
             case Node::Page:
                 break;
             case Node::ExternalPage:
@@ -4522,8 +4565,6 @@ void HtmlGenerator::reportOrphans(const InnerNode* parent)
             case Node::QmlClass:
                 break;
             case Node::QmlBasicType:
-                break;
-            case Node::QmlModule:
                 break;
             case Node::Collision:
                 break;

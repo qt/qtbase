@@ -671,7 +671,6 @@ GuidMap* DitaXmlGenerator::lookupGuidMap(const QString& fileName)
  */
 void DitaXmlGenerator::generateDocs()
 {
-    qdb_->buildCollections();
     if (!runPrepareOnly()) {
         Generator::generateDocs();
         generateCollisionPages();
@@ -1013,9 +1012,9 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         break;
     case Atom::AnnotatedList:
         {
-            DocNode* dn = qdb_->getGroup(atom->string());
-            if (dn)
-                generateAnnotatedList(relative, marker, dn->members());
+            GroupNode* gn = qdb_->getGroup(atom->string());
+            if (gn)
+                generateAnnotatedList(relative, marker, gn->members());
         }
         break;
     case Atom::GeneratedList:
@@ -1032,10 +1031,10 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
             QString arg = atom->string().trimmed();
             QString moduleName = atom->string().mid(atom->string().indexOf("classesbymodule") + 15).trimmed();
             QDocDatabase* qdb = QDocDatabase::qdocDB();
-            DocNode* dn = qdb->findModule(moduleName);
-            if (dn) {
+            ModuleNode* mn = qdb->findModule(moduleName);
+            if (mn) {
                 NodeMap m;
-                dn->getMemberClasses(m);
+                mn->getMemberClasses(m);
                 if (!m.isEmpty()) {
                     generateAnnotatedList(relative, marker, m);
                 }
@@ -1084,9 +1083,11 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
             generateAnnotatedList(relative, marker, qdb_->getNamespaces());
         }
         else if (atom->string() == "related") {
-            const DocNode *dn = static_cast<const DocNode *>(relative);
-            if (dn)
-                generateAnnotatedList(dn, marker, dn->members());
+            if (relative && relative->isCollectionNode()) {
+                const CollectionNode* cn = static_cast<const CollectionNode *>(relative);
+                if (cn)
+                    generateAnnotatedList(cn, marker, cn->members());
+            }
         }
         break;
     case Atom::SinceList:
@@ -2263,24 +2264,6 @@ void DitaXmlGenerator::generateDocNode(DocNode* dn, CodeMarker* marker)
 
     writeStartTag(DT_body);
     enterSection(QString(), QString());
-    if (dn->subType() == Node::Module) {
-        generateStatus(dn, marker);
-        NodeMap nm;
-        dn->getMemberNamespaces(nm);
-        if (!nm.isEmpty()) {
-            enterSection("h2","Namespaces");
-            generateAnnotatedList(dn, marker, nm);
-            leaveSection();
-        }
-        nm.clear();
-        dn->getMemberClasses(nm);
-        if (!nm.isEmpty()) {
-            enterSection("h2","Classes");
-            generateAnnotatedList(dn, marker, nm);
-            leaveSection();
-        }
-        nm.clear();
-    }
 
     if (dn->doc().isEmpty()) {
         if (dn->subType() == Node::File) {
@@ -2299,16 +2282,8 @@ void DitaXmlGenerator::generateDocNode(DocNode* dn, CodeMarker* marker)
         }
     }
     else {
-        if (dn->subType() == Node::Module) {
-            enterSection(QString(), QString());
-            generateBody(dn, marker);
-            leaveSection();
-        }
-        else {
-            generateBody(dn, marker);
-        }
+        generateBody(dn, marker);
         generateAlsoList(dn, marker);
-        generateAnnotatedList(dn, marker, dn->members());
     }
     leaveSection(); // </section>
     if (!writeEndTag()) { // </body>
@@ -2316,6 +2291,61 @@ void DitaXmlGenerator::generateDocNode(DocNode* dn, CodeMarker* marker)
         return;
     }
     writeRelatedLinks(dn);
+    writeEndTag(); // </topic>
+}
+
+/*!
+  Generate the DITA XML file for a group, module, or QML module.
+ */
+void DitaXmlGenerator::generateCollectionNode(CollectionNode* cn, CodeMarker* marker)
+{
+    QList<Section> sections;
+    QList<Section>::const_iterator s;
+    QString fullTitle = cn->fullTitle();
+
+    generateHeader(cn, fullTitle);
+    generateBrief(cn, marker); // <shortdesc>
+    writeProlog(cn);
+
+    writeStartTag(DT_body);
+    enterSection(QString(), QString());
+    if (cn->isModule()) {
+        generateStatus(cn, marker);
+        NodeMap nm;
+        cn->getMemberNamespaces(nm);
+        if (!nm.isEmpty()) {
+            enterSection("h2","Namespaces");
+            generateAnnotatedList(cn, marker, nm);
+            leaveSection();
+        }
+        nm.clear();
+        cn->getMemberClasses(nm);
+        if (!nm.isEmpty()) {
+            enterSection("h2","Classes");
+            generateAnnotatedList(cn, marker, nm);
+            leaveSection();
+        }
+        nm.clear();
+    }
+
+    if (!cn->doc().isEmpty()) {
+        if (cn->isModule()) {
+            enterSection(QString(), QString());
+            generateBody(cn, marker);
+            leaveSection();
+        }
+        else {
+            generateBody(cn, marker);
+        }
+        generateAlsoList(cn, marker);
+        generateAnnotatedList(cn, marker, cn->members());
+    }
+    leaveSection(); // </section>
+    if (!writeEndTag()) { // </body>
+        cn->doc().location().warning(tr("Pop of empty XML tag stack; generating DITA for '%1'").arg(cn->name()));
+        return;
+    }
+    writeRelatedLinks(cn);
     writeEndTag(); // </topic>
 }
 
@@ -2350,7 +2380,7 @@ void DitaXmlGenerator::writeLink(const Node* node,
   value of the \e role attribute is \c{parent} for the
   \c{start} link.
  */
-void DitaXmlGenerator::writeRelatedLinks(const DocNode* node)
+void DitaXmlGenerator::writeRelatedLinks(const Node* node)
 {
     const Node* linkNode = 0;
     QPair<QString,QString> linkPair;
@@ -2405,12 +2435,9 @@ QString DitaXmlGenerator::fileExtension() const
   Writes an XML file header to the current XML stream. This
   depends on which kind of DITA XML file is being generated,
   which is determined by the \a node type and subtype and the
-  \a subpage flag. If the \subpage flag is true, a \c{<topic>}
-  header is written, regardless of the type of \a node.
+  \a subpage flag.
  */
-void DitaXmlGenerator::generateHeader(const Node* node,
-                                      const QString& name,
-                                      bool subpage)
+void DitaXmlGenerator::generateHeader(const Node* node, const QString& name)
 {
     if (!node)
         return;
@@ -2423,7 +2450,7 @@ void DitaXmlGenerator::generateHeader(const Node* node,
     QString version;
     QString outputclass;
 
-    if (node->type() == Node::Class) {
+    if (node->isClass()) {
         mainTag = DT_cxxClass;
         nameTag = DT_apiName;
         dtd = "dtd/cxxClass.dtd";
@@ -2432,7 +2459,7 @@ void DitaXmlGenerator::generateHeader(const Node* node,
                 " PUBLIC \"-//NOKIA//DTD DITA C++ API Class Reference Type v" +
                 version + "//EN\" \"" + dtd + "\">";
     }
-    else if (node->type() == Node::Namespace) {
+    else if (node->isNamespace()) {
         mainTag = DT_cxxClass;
         nameTag = DT_apiName;
         dtd = "dtd/cxxClass.dtd";
@@ -2442,8 +2469,28 @@ void DitaXmlGenerator::generateHeader(const Node* node,
                 version + "//EN\" \"" + dtd + "\">";
         outputclass = "namespace";
     }
-    else if (node->type() == Node::Document || subpage) {
-        if (node->subType() == Node::HeaderFile) {
+    else if (node->isCollectionNode()) {
+        mainTag = DT_topic;
+        nameTag = DT_title;
+        dtd = "dtd/topic.dtd";
+        doctype = "<!DOCTYPE " + ditaTags[mainTag] +
+                " PUBLIC \"-//OASIS//DTD DITA Topic//EN\" \"" + dtd + "\">";
+        switch (node->type()) {
+            case Node::Group:
+                outputclass = "group";
+                break;
+            case Node::Module:
+                outputclass = "module";
+                break;
+            case Node::QmlModule:
+                outputclass = "qmlmodule";
+                break;
+            default:
+                outputclass = "page";
+        }
+    }
+    else if (node->isDocNode()) {
+        if (node->isHeaderFile()) {
             mainTag = DT_cxxClass;
             nameTag = DT_apiName;
             dtd = "dtd/cxxClass.dtd";
@@ -2453,7 +2500,7 @@ void DitaXmlGenerator::generateHeader(const Node* node,
                     version + "//EN\" \"" + dtd + "\">";
             outputclass = "headerfile";
         }
-        else if (node->subType() == Node::QmlClass) {
+        else if (node->isQmlType()) {
             mainTag = DT_qmlType;
             nameTag = DT_apiName;
             dtd = "dtd/qmlType.dtd";
@@ -2473,9 +2520,6 @@ void DitaXmlGenerator::generateHeader(const Node* node,
             case Node::Page:
                 outputclass = node->pageTypeString();
                 break;
-            case Node::Group:
-                outputclass = "group";
-                break;
             case Node::Example:
                 outputclass = "example";
                 break;
@@ -2484,9 +2528,6 @@ void DitaXmlGenerator::generateHeader(const Node* node,
                 break;
             case Node::Image:  // not used
                 outputclass = "image";
-                break;
-            case Node::Module:
-                outputclass = "module";
                 break;
             case Node::ExternalPage: // not used
                 outputclass = "externalpage";
@@ -3106,127 +3147,63 @@ void DitaXmlGenerator::generateQmlItem(const Node* node,
  */
 void DitaXmlGenerator::generateOverviewList(const Node* relative)
 {
-    QMap<const DocNode*, QMap<QString, DocNode*> > docNodeMap;
-    QMap<QString, const DocNode*> groupTitlesMap;
-    QMap<QString, DocNode*> uncategorizedNodeMap;
+    CNMap groups;
+    CNMap modules;
+    CNMap qmlModules;
     QRegExp singleDigit("\\b([0-9])\\b");
 
-    const NodeList children = qdb_->primaryTreeRoot()->childNodes();
-    foreach (Node* child, children) {
-        if (child->type() == Node::Document && child != relative) {
-            DocNode* docNode = static_cast<DocNode*>(child);
+    qdb_->mergeCollections(Node::Group, groups, relative);
+    qdb_->mergeCollections(Node::Module, modules, relative);
+    qdb_->mergeCollections(Node::QmlModule, qmlModules, relative);
 
-            // Check whether the page is part of a group or is the group
-            // definition page.
-            QString group;
-            bool isGroupPage = false;
-            if (docNode->doc().metaCommandsUsed().contains("group")) {
-                group = docNode->doc().metaCommandArgs("group")[0].first;
-                isGroupPage = true;
-            }
-
-            // there are too many examples; they would clutter the list
-            if (docNode->subType() == Node::Example)
-                continue;
-
-            // not interested either in individual (Qt Designer etc.) manual chapters
-            if (docNode->links().contains(Node::ContentsLink))
-                continue;
-
-            // Discard external nodes.
-            if (docNode->subType() == Node::ExternalPage)
-                continue;
-
-            QString sortKey = docNode->fullTitle().toLower();
-            if (sortKey.startsWith("the "))
-                sortKey.remove(0, 4);
-            sortKey.replace(singleDigit, "0\\1");
-
-            if (!group.isEmpty()) {
-                if (isGroupPage) {
-                    // If we encounter a group definition page, we add all
-                    // the pages in that group to the list for that group.
-                    foreach (Node* member, docNode->members()) {
-                        if (member->isInternal() || member->type() != Node::Document)
-                            continue;
-                        DocNode* page = static_cast<DocNode*>(member);
-                        if (page) {
-                            QString sortKey = page->fullTitle().toLower();
-                            if (sortKey.startsWith("the "))
-                                sortKey.remove(0, 4);
-                            sortKey.replace(singleDigit, "0\\1");
-                            docNodeMap[const_cast<const DocNode*>(docNode)].insert(sortKey, page);
-                            groupTitlesMap[docNode->fullTitle()] = const_cast<const DocNode*>(docNode);
-                        }
-                    }
-                }
-                else if (!isGroupPage) {
-                    // If we encounter a page that belongs to a group then
-                    // we add that page to the list for that group.
-                    const DocNode* gn = qdb_->getGroup(group);
-                    if (gn && !docNode->isInternal())
-                        docNodeMap[gn].insert(sortKey, docNode);
-                }
-            }
-        }
-    }
-
-    // We now list all the pages found that belong to groups.
-    // If only certain pages were found for a group, but the definition page
-    // for that group wasn't listed, the list of pages will be intentionally
-    // incomplete. However, if the group definition page was listed, all the
-    // pages in that group are listed for completeness.
-
-    if (!docNodeMap.isEmpty()) {
-        foreach (const QString& groupTitle, groupTitlesMap.keys()) {
-            const DocNode* groupNode = groupTitlesMap[groupTitle];
+    QStringList keys = groups.uniqueKeys();
+    foreach (QString key, keys) {
+        GroupNode* gn = static_cast<GroupNode*>(groups.value(key));
+        if (gn) {
             writeStartTag(DT_p);
             xmlWriter().writeAttribute("outputclass","h3");
             writeStartTag(DT_xref);
             // formathtml
-            xmlWriter().writeAttribute("href",linkForNode(groupNode, relative));
-            writeCharacters(protectEnc(groupNode->fullTitle()));
+            xmlWriter().writeAttribute("href",linkForNode(gn, relative));
+            writeCharacters(protectEnc(gn->fullTitle()));
             writeEndTag(); // </xref>
             writeEndTag(); // </p>
-            if (docNodeMap[groupNode].count() == 0)
+
+            if (gn->members().isEmpty())
                 continue;
 
+            NodeMap nm;
+            foreach (Node* member, gn->members()) {
+                if (member->isInternal() || member->isExample() || member->isExternalPage() ||
+                    member->isObsolete())
+                    continue;
+                // not interested either in individual (Qt Designer etc.) manual chapters
+                if (member->links().contains(Node::ContentsLink))
+                    continue;
+                QString sortKey = member->fullTitle().toLower();
+                if (sortKey.startsWith("the "))
+                    sortKey.remove(0, 4);
+                sortKey.replace(singleDigit, "0\\1");
+                nm.insert(sortKey, member);
+            }
+
             writeStartTag(DT_ul);
-            foreach (const DocNode* docNode, docNodeMap[groupNode]) {
-                QString title = docNode->fullTitle();
+            QStringList titles = nm.keys();
+            foreach (QString t, titles) {
+                Node* member = nm.value(t);
+                QString title = member->fullTitle();
                 if (title.startsWith("The "))
                     title.remove(0, 4);
                 writeStartTag(DT_li);
                 writeStartTag(DT_xref);
                 // formathtml
-                xmlWriter().writeAttribute("href",linkForNode(docNode, relative));
+                xmlWriter().writeAttribute("href",linkForNode(member, relative));
                 writeCharacters(protectEnc(title));
                 writeEndTag(); // </xref>
                 writeEndTag(); // </li>
             }
             writeEndTag(); // </ul>
         }
-    }
-
-    if (!uncategorizedNodeMap.isEmpty()) {
-        writeStartTag(DT_p);
-        xmlWriter().writeAttribute("outputclass","h3");
-        xmlWriter().writeCharacters("Miscellaneous");
-        writeEndTag(); // </p>
-        writeStartTag(DT_ul);
-        foreach (const DocNode *docNode, uncategorizedNodeMap) {
-            QString title = docNode->fullTitle();
-            if (title.startsWith("The "))
-                title.remove(0, 4);
-            writeStartTag(DT_li);
-            writeStartTag(DT_xref);
-            // formathtml
-            xmlWriter().writeAttribute("href",linkForNode(docNode, relative));
-            writeCharacters(protectEnc(title));
-            writeEndTag(); // </xref>
-            writeEndTag(); // </li>
-        }
-        writeEndTag(); // </ul>
     }
 }
 
@@ -3703,13 +3680,12 @@ QString DitaXmlGenerator::guidForNode(const Node* node)
 
 /*!
   Constructs a file name appropriate for the \a node and returns
-  it. If the \a node is not a fake node, or if it is a fake node but
-  it is neither an external page node nor an image node or a ditamap,
-  call the Generator::fileName() function.
+  it. If the \a node is not a not an external page, an image, or
+  a ditamap, call fileName() in the base class, Generator.
  */
 QString DitaXmlGenerator::fileName(const Node* node)
 {
-    if (node->type() == Node::Document) {
+    if (node->isDocNode()) {
         if (static_cast<const DocNode*>(node)->pageType() == Node::DitaMapPage)
             return node->name();
         if (static_cast<const DocNode*>(node)->subType() == Node::ExternalPage)
@@ -5422,6 +5398,18 @@ Node* DitaXmlGenerator::collectNodesByTypeAndSubtype(const InnerNode* parent)
             if (!isDuplicate(nodeTypeMaps[Node::Class],child->name(),child))
                 nodeTypeMaps[Node::Class]->insert(child->name(),child);
             break;
+        case Node::Group:
+            if (!isDuplicate(nodeTypeMaps[Node::Group],child->title(),child))
+                nodeTypeMaps[Node::Group]->insert(child->title(),child);
+            break;
+        case Node::Module:
+            if (!isDuplicate(nodeTypeMaps[Node::Module],child->title(),child))
+                nodeTypeMaps[Node::Module]->insert(child->title(),child);
+            break;
+        case Node::QmlModule:
+            if (!isDuplicate(nodeTypeMaps[Node::QmlModule],child->title(),child))
+                nodeTypeMaps[Node::QmlModule]->insert(child->title(),child);
+            break;
         case Node::Document:
             switch (child->subType()) {
             case Node::Example:
@@ -5435,14 +5423,6 @@ Node* DitaXmlGenerator::collectNodesByTypeAndSubtype(const InnerNode* parent)
             case Node::File:
                 break;
             case Node::Image:
-                break;
-            case Node::Group:
-                if (!isDuplicate(nodeSubtypeMaps[Node::Group],child->title(),child))
-                    nodeSubtypeMaps[Node::Group]->insert(child->title(),child);
-                break;
-            case Node::Module:
-                if (!isDuplicate(nodeSubtypeMaps[Node::Module],child->title(),child))
-                    nodeSubtypeMaps[Node::Module]->insert(child->title(),child);
                 break;
             case Node::Page:
                 if (!isDuplicate(pageTypeMaps[child->pageType()],child->title(),child))
@@ -5459,10 +5439,6 @@ Node* DitaXmlGenerator::collectNodesByTypeAndSubtype(const InnerNode* parent)
             case Node::QmlBasicType:
                 if (!isDuplicate(nodeSubtypeMaps[Node::QmlBasicType],child->title(),child))
                     nodeSubtypeMaps[Node::QmlBasicType]->insert(child->title(),child);
-                break;
-            case Node::QmlModule:
-                if (!isDuplicate(nodeSubtypeMaps[Node::QmlModule],child->title(),child))
-                    nodeSubtypeMaps[Node::QmlModule]->insert(child->title(),child);
                 break;
             case Node::Collision:
                 if (!isDuplicate(nodeSubtypeMaps[Node::Collision],child->title(),child))
@@ -5567,22 +5543,26 @@ void DitaXmlGenerator::writeDitaMap()
     writeTopicrefs(pageTypeMaps[Node::FAQPage], "FAQs");
     writeTopicrefs(pageTypeMaps[Node::ArticlePage], "Articles");
     writeTopicrefs(nodeSubtypeMaps[Node::Example], "Examples");
-    if (nodeSubtypeMaps[Node::QmlModule]->size() > 1)
-        writeTopicrefs(nodeSubtypeMaps[Node::QmlModule], "QML modules");
-    if (nodeSubtypeMaps[Node::QmlModule]->size() == 1)
-        writeTopicrefs(nodeSubtypeMaps[Node::QmlClass], "QML types", nodeSubtypeMaps[Node::QmlModule]->values()[0]);
+
+    if (nodeTypeMaps[Node::QmlModule]->size() > 1)
+        writeTopicrefs(nodeTypeMaps[Node::QmlModule], "QML modules");
+
+    if (nodeTypeMaps[Node::QmlModule]->size() == 1)
+        writeTopicrefs(nodeSubtypeMaps[Node::QmlClass], "QML types", nodeTypeMaps[Node::QmlModule]->values()[0]);
     else
         writeTopicrefs(nodeSubtypeMaps[Node::QmlClass], "QML types");
     writeTopicrefs(nodeSubtypeMaps[Node::QmlBasicType], "QML basic types");
-    if (nodeSubtypeMaps[Node::Module]->size() > 1)
-        writeTopicrefs(nodeSubtypeMaps[Node::Module], "Modules");
-    if (nodeSubtypeMaps[Node::Module]->size() == 1)
-        writeTopicrefs(nodeTypeMaps[Node::Class], "C++ classes", nodeSubtypeMaps[Node::Module]->values()[0]);
+
+    if (nodeTypeMaps[Node::Module]->size() > 1)
+        writeTopicrefs(nodeTypeMaps[Node::Module], "Modules");
+
+    if (nodeTypeMaps[Node::Module]->size() == 1)
+        writeTopicrefs(nodeTypeMaps[Node::Class], "C++ classes", nodeTypeMaps[Node::Module]->values()[0]);
     else
         writeTopicrefs(nodeTypeMaps[Node::Class], "C++ classes");
     writeTopicrefs(nodeTypeMaps[Node::Namespace], "C++ namespaces");
     writeTopicrefs(nodeSubtypeMaps[Node::HeaderFile], "Header files");
-    writeTopicrefs(nodeSubtypeMaps[Node::Group], "Groups");
+    writeTopicrefs(nodeTypeMaps[Node::Group], "Groups");
 
     writeEndTag(); // </topicref>
     endSubPage();
@@ -5931,6 +5911,12 @@ DitaXmlGenerator::writeProlog(const InnerNode* inner)
             category = "Class reference";
         else if (inner->type() == Node::Namespace)
             category = "Namespace";
+        else if (inner->type() == Node::Module)
+            category = "Module";
+        else if (inner->type() == Node::QmlModule)
+            category = "QML Module";
+        else if (inner->type() == Node::Group)
+            category = "Group";
         else if (inner->type() == Node::Document) {
             if (inner->subType() == Node::QmlClass)
                 category = "QML Reference";
@@ -5938,16 +5924,12 @@ DitaXmlGenerator::writeProlog(const InnerNode* inner)
                 category = "QML Basic Type";
             else if (inner->subType() == Node::HeaderFile)
                 category = "Header File";
-            else if (inner->subType() == Node::Module)
-                category = "Module";
             else if (inner->subType() == Node::File)
                 category = "Example Source File";
             else if (inner->subType() == Node::Example)
                 category = "Example";
             else if (inner->subType() == Node::Image)
                 category = "Image";
-            else if (inner->subType() == Node::Group)
-                category = "Group";
             else if (inner->subType() == Node::Page)
                 category = "Page";
             else if (inner->subType() == Node::ExternalPage)

@@ -65,8 +65,11 @@ struct TargetRec
     int priority_;
     Type type_;
 };
+
 typedef QMultiMap<QString, TargetRec> TargetMap;
 typedef QMultiMap<QString, DocNode*> DocNodeMultiMap;
+typedef QMap<QString, QmlClassNode*> QmlTypeMap;
+typedef QMultiMap<QString, const ExampleNode*> ExampleNodeMap;
 
 class Tree
 {
@@ -141,6 +144,40 @@ class Tree
     NodeList allBaseClasses(const ClassNode *classe) const;
     QString refForAtom(const Atom* atom);
 
+    const CNMap& groups() const { return groups_; }
+    const CNMap& modules() const { return modules_; }
+    const CNMap& qmlModules() const { return qmlModules_; }
+    const CNMap& getCollections(Node::Type t) const {
+        if (t == Node::Group)
+            return groups_;
+        if (t == Node::Module)
+            return modules_;
+        return qmlModules_;
+    }
+
+    CollectionNode* getCorrespondingCollection(CollectionNode* cn);
+
+    GroupNode* getGroup(const QString& name);
+    ModuleNode* getModule(const QString& name);
+    QmlModuleNode* getQmlModule(const QString& name);
+
+    GroupNode* findGroup(const QString& name);
+    ModuleNode* findModule(const QString& name);
+    QmlModuleNode* findQmlModule(const QString& name);
+
+    GroupNode* addGroup(const QString& name);
+    ModuleNode* addModule(const QString& name);
+    QmlModuleNode* addQmlModule(const QString& name);
+
+    GroupNode* addToGroup(const QString& name, Node* node);
+    ModuleNode* addToModule(const QString& name, Node* node);
+    QmlModuleNode* addToQmlModule(const QString& name, Node* node);
+
+    QmlClassNode* lookupQmlType(const QString& name) { return qmlTypeMap_.value(name); }
+    void insertQmlType(const QString& key, QmlClassNode* n);
+    void addExampleNode(ExampleNode* n) { exampleNodeMap_.insert(n->title(), n); }
+    ExampleNodeMap& exampleNodeMap() { return exampleNodeMap_; }
+
  public:
     const QString& moduleName() const { return module_; }
 
@@ -151,8 +188,11 @@ private:
     PropertyMap unresolvedPropertyMap;
     DocNodeMultiMap         docNodesByTitle_;
     TargetMap               nodesByTarget_;
-    //NodeMap                 nodesByName_;
-    //NodeMap                 nodesByTitle_;
+    CNMap                   groups_;
+    CNMap                   modules_;
+    CNMap                   qmlModules_;
+    QmlTypeMap              qmlTypeMap_;
+    ExampleNodeMap          exampleNodeMap_;
 };
 
 QT_END_NAMESPACE

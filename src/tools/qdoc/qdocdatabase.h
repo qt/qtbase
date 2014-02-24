@@ -50,12 +50,11 @@
 
 QT_BEGIN_NAMESPACE
 
-typedef QMap<QString, DocNode*> DocNodeMap;
-typedef QMap<QString, QmlClassNode*> QmlTypeMap;
 typedef QMap<QString, NodeMap> NodeMapMap;
 typedef QMap<QString, NodeMultiMap> NodeMultiMapMap;
 typedef QMultiMap<QString, Node*> QDocMultiMap;
 typedef QMap<Text, const Node*> TextToNodeMap;
+typedef QList<CollectionNode*> CollectionList;
 
 class Atom;
 class Generator;
@@ -81,17 +80,16 @@ class QDocForest
     Tree* nextTree();
     Tree* primaryTree() { return primaryTree_; }
     NamespaceNode* primaryTreeRoot() { return (primaryTree_ ? primaryTree_->root() : 0); }
-    bool isEmpty() const { return searchOrder_.isEmpty(); }
-    bool done() const { return (currentIndex_ >= searchOrder_.size()); }
+    bool isEmpty() { return searchOrder().isEmpty(); }
+    bool done() { return (currentIndex_ >= searchOrder().size()); }
     const QVector<Tree*>& searchOrder();
+    const QVector<Tree*>& indexSearchOrder();
     void setSearchOrder();
 
     const Node* findNode(const QStringList& path, const Node* relative, int findFlags) {
-        foreach (Tree* t, searchOrder_) {
+        foreach (Tree* t, searchOrder()) {
             const Node* n = t->findNode(path, relative, findFlags);
-            if (n) {
-                return n;
-            }
+            if (n) return n;
             relative = 0;
         }
         if (Config::debug_)
@@ -103,11 +101,9 @@ class QDocForest
                                 Node::Type type,
                                 Node::SubType subtype,
                                 bool acceptCollision = false) {
-        foreach (Tree* t, searchOrder_) {
+        foreach (Tree* t, searchOrder()) {
             Node* n = t->findNodeByNameAndType(path, type, subtype, acceptCollision);
-            if (n) {
-                return n;
-            }
+            if (n) return n;
         }
         if (Config::debug_)
             qDebug() << "FAILED SEARCH 2" << path << type << subtype;
@@ -115,11 +111,9 @@ class QDocForest
     }
 
     ClassNode* findClassNode(const QStringList& path) {
-        foreach (Tree* t, searchOrder_) {
+        foreach (Tree* t, searchOrder()) {
             ClassNode* n = t->findClassNode(path);
-            if (n) {
-                return n;
-            }
+            if (n) return n;
         }
         if (Config::debug_)
             qDebug() << "FAILED SEARCH 3" << path;
@@ -127,11 +121,9 @@ class QDocForest
     }
 
     InnerNode* findRelatesNode(const QStringList& path) {
-        foreach (Tree* t, searchOrder_) {
+        foreach (Tree* t, searchOrder()) {
             InnerNode* n = t->findRelatesNode(path);
-            if (n) {
-                return n;
-            }
+            if (n) return n;
         }
         if (Config::debug_)
             qDebug() << "FAILED SEARCH 4" << path;
@@ -140,11 +132,9 @@ class QDocForest
 
     const Node* resolveTarget(const QString& target, const Node* relative) {
         const Node* r = relative;
-        foreach (Tree* t, searchOrder_) {
+        foreach (Tree* t, searchOrder()) {
             const Node* n = resolveTargetHelper(target, relative, t);
-            if (n) {
-                return n;
-            }
+            if (n) return n;
             relative = 0;
         }
         if (Config::debug_) {
@@ -155,11 +145,9 @@ class QDocForest
 
     const Node* resolveType(const QStringList& path, const Node* relative)
     {
-        foreach (Tree* t, searchOrder_) {
+        foreach (Tree* t, searchOrder()) {
             const Node* n = resolveTypeHelper(path, relative, t);
-            if (n) {
-                return n;
-            }
+            if (n) return n;
             relative = 0;
         }
         if (Config::debug_)
@@ -167,13 +155,11 @@ class QDocForest
         return 0;
     }
 
-    QString findTarget(const QString& target, const Node* node) const
+    QString findTarget(const QString& target, const Node* node)
     {
-        foreach (Tree* t, searchOrder_) {
+        foreach (Tree* t, searchOrder()) {
             QString ref = t->findTarget(target, node);
-            if (!ref.isEmpty()) {
-                return ref;
-            }
+            if (!ref.isEmpty()) return ref;
         }
         if (Config::debug_)
             qDebug() << "FAILED SEARCH 7" << target;
@@ -182,28 +168,42 @@ class QDocForest
 
     const Node* findUnambiguousTarget(const QString& target, QString& ref, const Node* relative)
     {
-        foreach (Tree* t, searchOrder_) {
+        foreach (Tree* t, searchOrder()) {
             const Node* n = t->findUnambiguousTarget(target, ref, relative);
-            if (n) {
-                return n;
-            }
+            if (n) return n;
         }
         if (Config::debug_)
             qDebug() << "FAILED SEARCH 8" << target;
         return 0;
     }
 
-    const DocNode* findDocNodeByTitle(const QString& title, const Node* relative) const
+    const DocNode* findDocNodeByTitle(const QString& title, const Node* relative)
     {
-        foreach (Tree* t, searchOrder_) {
+        foreach (Tree* t, searchOrder()) {
             const DocNode* n = t->findDocNodeByTitle(title, relative);
-            if (n) {
-                return n;
-            }
+            if (n) return n;
         }
         if (Config::debug_)
             qDebug() << "FAILED SEARCH 9" << title;
         return 0;
+    }
+
+    QmlClassNode* lookupQmlType(const QString& name)
+    {
+        foreach (Tree* t, searchOrder()) {
+            QmlClassNode* qcn = t->lookupQmlType(name);
+            if (qcn) return qcn;
+        }
+        return 0;
+    }
+    void mergeCollectionMaps(Node::Type nt, CNMultiMap& cnmm);
+    void getCorrespondingCollections(CollectionNode* cn, CollectionList& cl)
+    {
+        foreach (Tree* t, searchOrder()) {
+            CollectionNode* ccn = t->getCorrespondingCollection(cn);
+            if (ccn)
+                cl.append(ccn);
+        }
     }
 
   private:
@@ -218,6 +218,7 @@ class QDocForest
     int                    currentIndex_;
     QMap<QString, Tree*>   forest_;
     QVector<Tree*>         searchOrder_;
+    QVector<Tree*>         indexSearchOrder_;
     QVector<QString>       moduleNames_;
 };
 
@@ -230,50 +231,59 @@ class QDocDatabase
     static void destroyQdocDB();
     ~QDocDatabase();
 
-    const DocNodeMap& groups() const { return groups_; }
-    //const DocNodeMap& modules() const { return modules_; } // not used
-    //const DocNodeMap& qmlModules() const { return qmlModules_; } // not used
+    const CNMap& groups() { return primaryTree()->groups(); }
+    const CNMap& modules() { return primaryTree()->modules(); }
+    const CNMap& qmlModules() { return primaryTree()->qmlModules(); }
 
-    DocNode* getGroup(const QString& name);
-    DocNode* findGroup(const QString& name);
-    DocNode* findModule(const QString& name);
-    QmlModuleNode* findQmlModule(const QString& name);
+    GroupNode* getGroup(const QString& name) { return primaryTree()->getGroup(name); }
+    GroupNode* findGroup(const QString& name) { return primaryTree()->findGroup(name); }
+    ModuleNode* findModule(const QString& name) { return primaryTree()->findModule(name); }
+    QmlModuleNode* findQmlModule(const QString& name) { return primaryTree()->findQmlModule(name); }
 
-    DocNode* addGroup(const QString& name);
-    DocNode* addModule(const QString& name);
-    QmlModuleNode* addQmlModule(const QString& name);
+    GroupNode* addGroup(const QString& name) { return primaryTree()->addGroup(name); }
+    ModuleNode* addModule(const QString& name) { return primaryTree()->addModule(name); }
+    QmlModuleNode* addQmlModule(const QString& name) { return primaryTree()->addQmlModule(name); }
 
-    DocNode* addToGroup(const QString& name, Node* node);
-    DocNode* addToModule(const QString& name, Node* node);
-    void addToQmlModule(const QString& name, Node* node);
+    GroupNode* addToGroup(const QString& name, Node* node) {
+        return primaryTree()->addToGroup(name, node);
+    }
+    ModuleNode* addToModule(const QString& name, Node* node) {
+        return primaryTree()->addToModule(name, node);
+    }
+    QmlModuleNode* addToQmlModule(const QString& name, Node* node) {
+        return primaryTree()->addToQmlModule(name, node);
+    }
+    void addExampleNode(ExampleNode* n) { primaryTree()->addExampleNode(n); }
+    ExampleNodeMap& exampleNodeMap() { return primaryTree()->exampleNodeMap(); }
 
     QmlClassNode* findQmlType(const QString& qmid, const QString& name);
-    QmlClassNode* findQmlType(const ImportRec& import, const QString& name) const;
+    QmlClassNode* findQmlType(const ImportRec& import, const QString& name);
 
+ private:
     void findAllClasses(InnerNode *node);
     void findAllFunctions(InnerNode *node);
     void findAllLegaleseTexts(InnerNode *node);
     void findAllNamespaces(InnerNode *node);
     void findAllObsoleteThings(InnerNode* node);
     void findAllSince(InnerNode *node);
-    void buildCollections();
 
+ public:
     // special collection access functions
-    NodeMap& getCppClasses() { return nonCompatClasses_; }
-    NodeMap& getMainClasses() { return mainClasses_; }
-    NodeMap& getCompatibilityClasses() { return compatClasses_; }
-    NodeMap& getObsoleteClasses() { return obsoleteClasses_; }
-    NodeMap& getClassesWithObsoleteMembers() { return classesWithObsoleteMembers_; }
-    NodeMap& getObsoleteQmlTypes() { return obsoleteQmlTypes_; }
-    NodeMap& getQmlTypesWithObsoleteMembers() { return qmlTypesWithObsoleteMembers_; }
-    NodeMap& getNamespaces() { return namespaceIndex_; }
-    NodeMap& getServiceClasses() { return serviceClasses_; }
-    NodeMap& getQmlTypes() { return qmlClasses_; }
-    NodeMapMap& getFunctionIndex() { return funcIndex_; }
-    TextToNodeMap& getLegaleseTexts() { return legaleseTexts_; }
-    const NodeMap& getClassMap(const QString& key) const;
-    const NodeMap& getQmlTypeMap(const QString& key) const;
-    const NodeMultiMap& getSinceMap(const QString& key) const;
+    NodeMap& getCppClasses();
+    NodeMap& getMainClasses();
+    NodeMap& getCompatibilityClasses();
+    NodeMap& getObsoleteClasses();
+    NodeMap& getClassesWithObsoleteMembers();
+    NodeMap& getObsoleteQmlTypes();
+    NodeMap& getQmlTypesWithObsoleteMembers();
+    NodeMap& getNamespaces();
+    NodeMap& getServiceClasses();
+    NodeMap& getQmlTypes();
+    NodeMapMap& getFunctionIndex();
+    TextToNodeMap& getLegaleseTexts();
+    const NodeMap& getClassMap(const QString& key);
+    const NodeMap& getQmlTypeMap(const QString& key);
+    const NodeMultiMap& getSinceMap(const QString& key);
 
     /* convenience functions
        Many of these will be either eliminated or replaced.
@@ -312,7 +322,7 @@ class QDocDatabase
     ********************************************************************/
     ClassNode* findClassNode(const QStringList& path) { return forest_.findClassNode(path); }
     InnerNode* findRelatesNode(const QStringList& path) { return forest_.findRelatesNode(path); }
-    QString findTarget(const QString& target, const Node* node) const {
+    QString findTarget(const QString& target, const Node* node) {
         return forest_.findTarget(target, node);
     }
     const Node* resolveTarget(const QString& target, const Node* relative) {
@@ -320,7 +330,7 @@ class QDocDatabase
     }
     const Node* resolveType(const QString& type, const Node* relative);
     const Node* findNodeForTarget(const QString& target, const Node* relative);
-    const DocNode* findDocNodeByTitle(const QString& title, const Node* relative = 0) const {
+    const DocNode* findDocNodeByTitle(const QString& title, const Node* relative = 0) {
         return forest_.findDocNodeByTitle(title, relative);
     }
     const Node* findUnambiguousTarget(const QString& target, QString& ref, const Node* relative) {
@@ -359,10 +369,8 @@ class QDocDatabase
     NamespaceNode* newIndexTree(const QString& module) { return forest_.newIndexTree(module); }
     const QVector<Tree*>& searchOrder() { return forest_.searchOrder(); }
     void setSearchOrder() { forest_.setSearchOrder(); }
-
-    /* debugging functions */
-    void printModules() const;
-    void printQmlModules() const;
+    void mergeCollections(Node::Type nt, CNMap& cnm, const Node* relative);
+    void mergeCollections(CollectionNode* cn);
 
  private:
     friend class QDocIndexFiles;
@@ -385,12 +393,7 @@ class QDocDatabase
     static NodeMap          typeNodeMap_;
     bool                    showInternal_;
     QString                 version_;
-    QDocMultiMap            masterMap_;
     QDocForest              forest_;
-    DocNodeMap              groups_;
-    DocNodeMap              modules_;
-    DocNodeMap              qmlModules_;
-    QmlTypeMap              qmlTypeMap_;
 
     NodeMap                 nonCompatClasses_;
     NodeMap                 mainClasses_;

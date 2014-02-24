@@ -76,7 +76,6 @@ QT_BEGIN_NAMESPACE
 QString CodeParser::currentSubDir_;
 QList<CodeParser *> CodeParser::parsers;
 bool CodeParser::showInternal = false;
-QMap<QString,QString> CodeParser::nameToTitle;
 
 /*!
   The constructor adds this code parser to the static
@@ -300,47 +299,27 @@ void CodeParser::processCommonMetaCommand(const Location& location,
     else if (command == COMMAND_PAGEKEYWORDS) {
         node->addPageKeywords(arg.first);
     }
-    else if (command == COMMAND_SUBTITLE) {
-        if (node->type() == Node::Document) {
-            DocNode *dn = static_cast<DocNode *>(node);
-            dn->setSubTitle(arg.first);
-        }
-        else
-            location.warning(tr("Ignored '\\%1'").arg(COMMAND_SUBTITLE));
-    }
     else if (command == COMMAND_THREADSAFE) {
         node->setThreadSafeness(Node::ThreadSafe);
     }
     else if (command == COMMAND_TITLE) {
-        if (node->type() == Node::Document) {
-            DocNode *dn = static_cast<DocNode *>(node);
-            dn->setTitle(arg.first);
-            if (dn->subType() == Node::Example) {
-                ExampleNode::exampleNodeMap.insert(dn->title(),static_cast<ExampleNode*>(dn));
-            }
-            nameToTitle.insert(dn->name(),arg.first);
-        }
-        else
-            location.warning(tr("Ignored '\\%1'").arg(COMMAND_TITLE));
+        node->setTitle(arg.first);
+        if (!node->isDocNode() && !node->isCollectionNode())
+            location.warning(tr("Ignored '\\%1'").arg(COMMAND_SUBTITLE));
+        else if (node->isExample())
+            qdb_->addExampleNode(static_cast<ExampleNode*>(node));
+    }
+    else if (command == COMMAND_SUBTITLE) {
+        node->setSubTitle(arg.first);
+        if (!node->isDocNode() && !node->isCollectionNode())
+            location.warning(tr("Ignored '\\%1'").arg(COMMAND_SUBTITLE));
     }
     else if (command == COMMAND_QTVARIABLE) {
-        if (node->subType() == Node::Module) {
-            DocNode *dn = static_cast<DocNode *>(node);
-            dn->setQtVariable(arg.first);
-        }
-        else
-            location.warning(tr("Command '\\%1' found outside of '\\module'. It can only be used within a module page.")
+        node->setQtVariable(arg.first);
+        if (!node->isModule() && !node->isQmlModule())
+            location.warning(tr("Command '\\%1' is only meanigfule in '\\module' and '\\qmlmodule'.")
                              .arg(COMMAND_QTVARIABLE));
     }
-}
-
-/*!
-  Find the page title given the page \a name and return it.
- */
-const QString CodeParser::titleFromName(const QString& name)
-{
-    const QString t = nameToTitle.value(name);
-    return t;
 }
 
 /*!

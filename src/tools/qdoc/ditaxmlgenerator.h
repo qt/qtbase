@@ -316,6 +316,7 @@ protected:
                              CodeMarker* marker);
     virtual void generateClassLikeNode(InnerNode* inner, CodeMarker* marker);
     virtual void generateDocNode(DocNode* dn, CodeMarker* marker);
+    virtual void generateCollectionNode(CollectionNode* cn, CodeMarker* marker);
     virtual QString fileExtension() const;
     virtual QString guidForNode(const Node* node);
     virtual QString linkForNode(const Node* node, const Node* relative);
@@ -349,7 +350,7 @@ protected:
                      CodeMarker* marker,
                      const QString& attribute = QString());
     void writePropertyParameter(const QString& tag, const NodeList& nlist);
-    void writeRelatedLinks(const DocNode* dn);
+    void writeRelatedLinks(const Node* dn);
     void writeLink(const Node* node, const QString& tex, const QString& role);
     void writeProlog(const InnerNode* inner);
     bool writeMetadataElement(const InnerNode* inner,
@@ -364,9 +365,7 @@ private:
     enum SubTitleSize { SmallSubTitle, LargeSubTitle };
 
     const QPair<QString,QString> anchorForNode(const Node* node);
-    void generateHeader(const Node* node,
-                        const QString& name,
-                        bool subpage = false);
+    void generateHeader(const Node* node, const QString& name);
     void generateBrief(const Node* node, CodeMarker* marker);
     void generateTableOfContents(const Node* node,
                                  CodeMarker* marker,
