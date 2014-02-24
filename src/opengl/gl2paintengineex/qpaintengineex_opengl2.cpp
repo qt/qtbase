@@ -1482,9 +1482,10 @@ void QGL2PaintEngineEx::drawStaticTextItem(QStaticTextItem *textItem)
     // don't try to cache huge fonts or vastly transformed fonts
     QFontEngine *fontEngine = textItem->fontEngine();
     if (shouldDrawCachedGlyphs(fontEngine, s->matrix)) {
-        QFontEngine::GlyphFormat glyphFormat = fontEngine->glyphFormat >= 0
-                                                ? QFontEngine::GlyphFormat(textItem->fontEngine()->glyphFormat)
-                                                : d->glyphCacheFormat;
+
+        QFontEngine::GlyphFormat glyphFormat = fontEngine->glyphFormat != QFontEngine::Format_None
+                                                ? fontEngine->glyphFormat : d->glyphCacheFormat;
+
         if (glyphFormat == QFontEngine::Format_A32) {
             if (!QGLFramebufferObject::hasOpenGLFramebufferObjects()
                 || d->device->alphaRequested() || s->matrix.type() > QTransform::TxTranslate
@@ -1532,10 +1533,8 @@ void QGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &textItem
 
     QTransform::TransformationType txtype = s->matrix.type();
 
-    QFontEngine::GlyphFormat glyphFormat = ti.fontEngine->glyphFormat >= 0
-                                            ? ti.fontEngine->glyphFormat
-                                            : d->glyphCacheFormat;
-
+    QFontEngine::GlyphFormat glyphFormat = ti.fontEngine->glyphFormat != QFontEngine::Format_None
+                                                ? ti.fontEngine->glyphFormat : d->glyphCacheFormat;
 
     if (glyphFormat == QFontEngine::Format_A32) {
         if (!QGLFramebufferObject::hasOpenGLFramebufferObjects()
