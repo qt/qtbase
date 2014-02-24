@@ -2810,12 +2810,17 @@ int qrand()
 
     The char pointer will be invalid after the statement in which
     qPrintable() is used. This is because the array returned by
-    toLocal8Bit() will fall out of scope.
+    QString::toLocal8Bit() will fall out of scope.
 
     Example:
 
     \snippet code/src_corelib_global_qglobal.cpp 37
 
+    \note qDebug(), qWarning(), qCritical(), qFatal() expect %s
+    arguments to be UTF-8 encoded, while qPrintable() converts to
+    local 8-bit encoding. Therefore using qPrintable for logging
+    strings is only safe if the argument contains only ASCII
+    characters.
 
     \sa qDebug(), qWarning(), qCritical(), qFatal()
 */
