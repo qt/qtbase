@@ -6428,8 +6428,8 @@ QString &QString::setNum(qulonglong n, int base)
     to the given \a format and \a precision, and returns a reference
     to the string.
 
-    The \a format can be 'f', 'F', 'e', 'E', 'g' or 'G' (see the
-    arg() function documentation for an explanation of the formats).
+    The \a format can be 'e', 'E', 'f', 'g' or 'G' (see
+    \l{Argument Formats} for an explanation of the formats).
 
     The formatting always uses QLocale::C, i.e., English/UnitedStates.
     To get a localized string representation of a number, use
