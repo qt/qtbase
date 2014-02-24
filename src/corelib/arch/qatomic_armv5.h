@@ -54,6 +54,7 @@ QT_END_NAMESPACE
 #pragma qt_sync_stop_processing
 #endif
 
+#define Q_ATOMIC_INT32_IS_SUPPORTED
 #define Q_ATOMIC_INT_REFERENCE_COUNTING_IS_NOT_NATIVE
 #define Q_ATOMIC_INT_TEST_AND_SET_IS_NOT_NATIVE
 #define Q_ATOMIC_INT_FETCH_AND_STORE_IS_ALWAYS_NATIVE
@@ -98,6 +99,7 @@ template <int size> struct QBasicAtomicOps: QGenericAtomicOps<QBasicAtomicOps<si
     static Q_DECL_CONSTEXPR bool isTestAndSetNative() Q_DECL_NOTHROW { return false; }
     static Q_DECL_CONSTEXPR bool isTestAndSetWaitFree() Q_DECL_NOTHROW { return false; }
     template <typename T> static bool testAndSetRelaxed(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW;
+    template <typename T> static bool testAndSetRelaxed(T &_q_value, T expectedValue, T newValue, T *currentValue) Q_DECL_NOTHROW;
     template <typename T> static T fetchAndStoreRelaxed(T &_q_value, T newValue) Q_DECL_NOTHROW;
     template <typename T> static
     T fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW;
@@ -130,6 +132,18 @@ bool QBasicAtomicOps<4>::deref(T &_q_value) Q_DECL_NOTHROW
         newValue = originalValue - 1;
     } while (_q_cmpxchg(originalValue, newValue, &_q_value) != 0);
     return newValue != 0;
+}
+
+template<> template <typename T> inline
+bool QBasicAtomicOps<4>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
+{
+    T originalValue;
+    do {
+        originalValue = _q_value;
+        if (originalValue != expectedValue)
+            return false;
+    } while (_q_cmpxchg(expectedValue, newValue, &_q_value) != 0);
+    return true;
 }
 
 template<> template <typename T> inline
