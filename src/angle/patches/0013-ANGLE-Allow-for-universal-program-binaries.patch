@@ -1,0 +1,93 @@
+From 5eeb4a06f182b4fc0e3dcb82f47fcf4286890f94 Mon Sep 17 00:00:00 2001
+From: Andrew Knight <andrew.knight@digia.com>
+Date: Fri, 21 Feb 2014 08:35:01 +0200
+Subject: [PATCH] ANGLE: Allow for universal program binaries
+
+As a safety precaution, ANGLE writes the commit hash, optimization level,
+and adapter ID to its binary format. However, this hurts portability
+between systems by making shader pre-compilation/caching artificially
+system-specific.
+
+The shader compiler doesn't take the target adapter into account, and the
+optimization level information discarded by ANGLE anyway. So, allow ANGLE
+to bypass these checks on systems where precompilation is required (i.e.
+WinRT). The default mechanism still applies unless
+ANGLE_ENABLE_UNIVERSAL_BINARY is passed as a define.
+
+Change-Id: Iec6d833fd7010ed163978557238f00e7ac6ae416
+---
+ src/3rdparty/angle/src/libGLESv2/ProgramBinary.cpp | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
+
+diff --git a/src/3rdparty/angle/src/libGLESv2/ProgramBinary.cpp b/src/3rdparty/angle/src/libGLESv2/ProgramBinary.cpp
+index 8896665..41a83b6 100644
+--- a/src/3rdparty/angle/src/libGLESv2/ProgramBinary.cpp
++++ b/src/3rdparty/angle/src/libGLESv2/ProgramBinary.cpp
+@@ -1637,6 +1637,7 @@ bool ProgramBinary::load(InfoLog &infoLog, const void *binary, GLsizei length)
+         return false;
+     }
+ 
++#if !defined(ANGLE_ENABLE_UNIVERSAL_BINARY)
+     unsigned char commitString[ANGLE_COMMIT_HASH_SIZE];
+     stream.read(commitString, ANGLE_COMMIT_HASH_SIZE);
+     if (memcmp(commitString, ANGLE_COMMIT_HASH, sizeof(unsigned char) * ANGLE_COMMIT_HASH_SIZE) != 0)
+@@ -1652,6 +1653,7 @@ bool ProgramBinary::load(InfoLog &infoLog, const void *binary, GLsizei length)
+         infoLog.append("Mismatched compilation flags.");
+         return false;
+     }
++#endif
+ 
+     for (int i = 0; i < MAX_VERTEX_ATTRIBS; ++i)
+     {
+@@ -1742,6 +1744,7 @@ bool ProgramBinary::load(InfoLog &infoLog, const void *binary, GLsizei length)
+ 
+     const char *ptr = (const char*) binary + stream.offset();
+ 
++#if !defined(ANGLE_ENABLE_UNIVERSAL_BINARY)
+     const GUID *binaryIdentifier = (const GUID *) ptr;
+     ptr += sizeof(GUID);
+ 
+@@ -1751,6 +1754,7 @@ bool ProgramBinary::load(InfoLog &infoLog, const void *binary, GLsizei length)
+         infoLog.append("Invalid program binary.");
+         return false;
+     }
++#endif
+ 
+     const char *pixelShaderFunction = ptr;
+     ptr += pixelShaderSize;
+@@ -1808,9 +1812,10 @@ bool ProgramBinary::save(void* binary, GLsizei bufSize, GLsizei *length)
+     stream.write(GL_PROGRAM_BINARY_ANGLE);
+     stream.write(ANGLE_MAJOR_VERSION);
+     stream.write(ANGLE_MINOR_VERSION);
++#if !defined(ANGLE_ENABLE_UNIVERSAL_BINARY)
+     stream.write(ANGLE_COMMIT_HASH, ANGLE_COMMIT_HASH_SIZE);
+     stream.write(ANGLE_COMPILE_OPTIMIZATION_LEVEL);
+-
++#endif
+     for (unsigned int i = 0; i < MAX_VERTEX_ATTRIBS; ++i)
+     {
+         stream.write(mLinkedAttribute[i].type);
+@@ -1866,7 +1871,9 @@ bool ProgramBinary::save(void* binary, GLsizei bufSize, GLsizei *length)
+     UINT geometryShaderSize = (mGeometryExecutable != NULL) ? mGeometryExecutable->getLength() : 0;
+     stream.write(geometryShaderSize);
+ 
++#if !defined(ANGLE_ENABLE_UNIVERSAL_BINARY)
+     GUID identifier = mRenderer->getAdapterIdentifier();
++#endif
+ 
+     GLsizei streamLength = stream.length();
+     const void *streamData = stream.data();
+@@ -1889,8 +1896,10 @@ bool ProgramBinary::save(void* binary, GLsizei bufSize, GLsizei *length)
+         memcpy(ptr, streamData, streamLength);
+         ptr += streamLength;
+ 
++#if !defined(ANGLE_ENABLE_UNIVERSAL_BINARY)
+         memcpy(ptr, &identifier, sizeof(GUID));
+         ptr += sizeof(GUID);
++#endif
+ 
+         memcpy(ptr, mPixelExecutable->getFunction(), pixelShaderSize);
+         ptr += pixelShaderSize;
+-- 
+1.8.4.msysgit.0
+
