@@ -127,6 +127,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QCocoaMenuDelegate);
 {
     QCocoaMenuItem *cocoaItem = reinterpret_cast<QCocoaMenuItem *>([item tag]);
     QScopedLoopLevelCounter loopLevelCounter(QGuiApplicationPrivate::instance()->threadData);
+    QGuiApplicationPrivate::modifier_buttons = [QNSView convertKeyModifiers:[NSEvent modifierFlags]];
     cocoaItem->activated();
 }
 
