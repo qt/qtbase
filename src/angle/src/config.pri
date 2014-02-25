@@ -54,7 +54,7 @@ angle_d3d11 {
 CONFIG(debug, debug|release) {
     DEFINES += _DEBUG
 } else {
-    CONFIG += rtti_off
+    !static: CONFIG += rtti_off
     DEFINES += NDEBUG
 }
 
