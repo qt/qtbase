@@ -3,5 +3,5 @@ TARGET = tst_qchar
 QT = core-private testlib
 SOURCES = tst_qchar.cpp
 
-TESTDATA += NormalizationTest.txt
+TESTDATA += data/NormalizationTest.txt
 DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0
