@@ -164,6 +164,19 @@ void QOpenGLTextureGlyphCache::createTextureData(int width, int height)
         m_buffer.allocate(buf, sizeof(buf));
         m_buffer.release();
     }
+
+    if (!m_vao.isCreated())
+        m_vao.create();
+}
+
+void QOpenGLTextureGlyphCache::setupVertexAttribs()
+{
+    m_buffer.bind();
+    m_blitProgram->setAttributeBuffer(int(QT_VERTEX_COORDS_ATTR), GL_FLOAT, 0, 2);
+    m_blitProgram->setAttributeBuffer(int(QT_TEXTURE_COORDS_ATTR), GL_FLOAT, sizeof(m_vertexCoordinateArray), 2);
+    m_blitProgram->enableAttributeArray(int(QT_VERTEX_COORDS_ATTR));
+    m_blitProgram->enableAttributeArray(int(QT_TEXTURE_COORDS_ATTR));
+    m_buffer.release();
 }
 
 void QOpenGLTextureGlyphCache::resizeTextureData(int width, int height)
@@ -262,16 +275,19 @@ void QOpenGLTextureGlyphCache::resizeTextureData(int width, int height)
             m_blitProgram->bindAttributeLocation("textureCoordArray", QT_TEXTURE_COORDS_ATTR);
 
             m_blitProgram->link();
+
+            if (m_vao.isCreated()) {
+                m_vao.bind();
+                setupVertexAttribs();
+            }
         }
 
-        m_buffer.bind();
-        m_blitProgram->bind();
-        m_blitProgram->setAttributeBuffer(int(QT_VERTEX_COORDS_ATTR), GL_FLOAT, 0, 2);
-        m_blitProgram->setAttributeBuffer(int(QT_TEXTURE_COORDS_ATTR), GL_FLOAT, sizeof(m_vertexCoordinateArray), 2);
-        m_blitProgram->enableAttributeArray(int(QT_VERTEX_COORDS_ATTR));
-        m_blitProgram->enableAttributeArray(int(QT_TEXTURE_COORDS_ATTR));
-        m_blitProgram->disableAttributeArray(int(QT_OPACITY_ATTR));
+        if (m_vao.isCreated())
+            m_vao.bind();
+        else
+            setupVertexAttribs();
 
+        m_blitProgram->bind();
         blitProgram = m_blitProgram;
 
     } else {
@@ -301,9 +317,12 @@ void QOpenGLTextureGlyphCache::resizeTextureData(int width, int height)
         glViewport(0, 0, pex->width, pex->height);
         pex->updateClipScissorTest();
     } else {
-        m_blitProgram->disableAttributeArray(int(QT_VERTEX_COORDS_ATTR));
-        m_blitProgram->disableAttributeArray(int(QT_TEXTURE_COORDS_ATTR));
-        m_buffer.release();
+        if (m_vao.isCreated()) {
+            m_vao.release();
+        } else {
+            m_blitProgram->disableAttributeArray(int(QT_VERTEX_COORDS_ATTR));
+            m_blitProgram->disableAttributeArray(int(QT_TEXTURE_COORDS_ATTR));
+        }
     }
 }
 

@@ -58,6 +58,7 @@
 #include <qopenglshaderprogram.h>
 #include <qopenglfunctions.h>
 #include <qopenglbuffer.h>
+#include <qopenglvertexarrayobject.h>
 
 // #define QT_GL_TEXTURE_GLYPH_CACHE_DEBUG
 
@@ -153,6 +154,8 @@ public:
     void clear();
 
 private:
+    void setupVertexAttribs();
+
     QOpenGLGlyphTexture *m_textureResource;
 
     QOpenGL2PaintEngineExPrivate *pex;
@@ -165,6 +168,7 @@ private:
     int m_serialNumber;
 
     QOpenGLBuffer m_buffer;
+    QOpenGLVertexArrayObject m_vao;
 };
 
 QT_END_NAMESPACE
