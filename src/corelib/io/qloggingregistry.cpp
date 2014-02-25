@@ -64,7 +64,7 @@ QLoggingRule::QLoggingRule() :
     \internal
     Constructs a logging rule.
 */
-QLoggingRule::QLoggingRule(const QString &pattern, bool enabled) :
+QLoggingRule::QLoggingRule(const QStringRef &pattern, bool enabled) :
     messageType(-1),
     flags(Invalid),
     enabled(enabled)
@@ -119,36 +119,44 @@ int QLoggingRule::pass(const QString &cat, QtMsgType msgType) const
              *.io.warning          RightFilter, QtWarningMsg
              *.core.*              MidFilter
  */
-void QLoggingRule::parse(const QString &pattern)
+void QLoggingRule::parse(const QStringRef &pattern)
 {
-    category = pattern;
+    QStringRef p;
+
     // strip trailing ".messagetype"
     if (pattern.endsWith(QLatin1String(".debug"))) {
-        category.chop(strlen(".debug"));
+        p = QStringRef(pattern.string(), pattern.position(),
+                       pattern.length() - strlen(".debug"));
         messageType = QtDebugMsg;
     } else if (pattern.endsWith(QLatin1String(".warning"))) {
-        category.chop(strlen(".warning"));
+        p = QStringRef(pattern.string(), pattern.position(),
+                       pattern.length() - strlen(".warning"));
         messageType = QtWarningMsg;
     } else if (pattern.endsWith(QLatin1String(".critical"))) {
-        category.chop(strlen(".critical"));
+        p = QStringRef(pattern.string(), pattern.position(),
+                       pattern.length() - strlen(".critical"));
         messageType = QtCriticalMsg;
+    } else {
+        p = pattern;
     }
 
     flags = Invalid;
-    if (!category.contains(QLatin1Char('*'))) {
+    if (!p.contains(QLatin1Char('*'))) {
         flags = FullText;
     } else {
-        if (category.endsWith(QLatin1Char('*'))) {
+        if (p.endsWith(QLatin1Char('*'))) {
             flags |= LeftFilter;
-            category.chop(1);
+            p = QStringRef(p.string(), p.position(), p.length() - 1);
         }
-        if (category.startsWith(QLatin1Char('*'))) {
+        if (p.startsWith(QLatin1Char('*'))) {
             flags |= RightFilter;
-            category.remove(0, 1);
+            p = QStringRef(p.string(), p.position() + 1, p.length() - 1);
         }
-        if (category.contains(QLatin1Char('*'))) // '*' only supported at start/end
+        if (p.contains(QLatin1Char('*'))) // '*' only supported at start/end
             flags = Invalid;
     }
+
+    category = p.toString();
 }
 
 /*!
@@ -205,7 +213,7 @@ void QLoggingSettingsParser::setContent(QTextStream &stream)
             int equalPos = line.indexOf(QLatin1Char('='));
             if ((equalPos != -1)
                     && (line.lastIndexOf(QLatin1Char('=')) == equalPos)) {
-                const QString pattern = line.left(equalPos);
+                const QStringRef pattern = line.leftRef(equalPos);
                 const QStringRef value = line.midRef(equalPos + 1);
                 bool enabled = (value.compare(QLatin1String("true"),
                                               Qt::CaseInsensitive) == 0);

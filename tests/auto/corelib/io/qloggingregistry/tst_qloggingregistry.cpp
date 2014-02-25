@@ -169,7 +169,7 @@ private slots:
         QFETCH(QtMsgType, msgType);
         QFETCH(LoggingRuleState, result);
 
-        QLoggingRule rule(pattern, true);
+        QLoggingRule rule(QStringRef(&pattern), true);
         LoggingRuleState state = Invalid;
         if (rule.flags != QLoggingRule::Invalid) {
             switch (rule.pass(category, msgType)) {
