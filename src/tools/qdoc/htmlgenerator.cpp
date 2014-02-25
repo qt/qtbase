@@ -1353,7 +1353,6 @@ void HtmlGenerator::generateCollisionPages()
         if (collisions.size() <= 1)
             continue;
 
-        ncn->clearCurrentChild();
         beginSubPage(ncn, Generator::fileName(ncn));
         QString fullTitle = ncn->fullTitle();
         QString htmlTitle = fullTitle;
@@ -1513,7 +1512,6 @@ void HtmlGenerator::generateDocNode(DocNode* dn, CodeMarker* marker)
         out() << "</ul>\n";
     }
     else if (dn->subType() == Node::QmlClass) {
-        const_cast<DocNode*>(dn)->setCurrentChild();
         ClassNode* cn = qml_cn->classNode();
         generateBrief(qml_cn, marker);
         generateQmlRequisites(qml_cn, marker);
@@ -1558,7 +1556,6 @@ void HtmlGenerator::generateDocNode(DocNode* dn, CodeMarker* marker)
             ++s;
         }
         generateFooter(dn);
-        const_cast<DocNode*>(dn)->clearCurrentChild();
         return;
     }
 

@@ -923,19 +923,6 @@ void InnerNode::makeUndocumentedChildrenInternal()
 }
 
 /*!
-  In each child node that is a collision node,
-  clear the current child pointer.
- */
-void InnerNode::clearCurrentChildPointers()
-{
-    foreach (Node* child, childNodes()) {
-        if (child->subType() == Collision) {
-            child->clearCurrentChild();
-        }
-    }
-}
-
-/*!
  */
 void InnerNode::normalizeOverloads()
 {
@@ -2162,38 +2149,6 @@ QString QmlClassNode::qmlFullBaseName() const
 }
 
 /*!
-  The name of this QML class node might be the same as the
-  name of some other QML class node. If so, then this node's
-  parent will be a NameCollisionNode.This function sets the
-  NameCollisionNode's current child to this node. This is
-  important when outputting the documentation for this node,
-  when, for example, the documentation contains a link to
-  the page being output. We don't want to generate a link
-  to the disambiguation page if we can avoid it, and to be
-  able to avoid it, the NameCollisionNode must maintain the
-  current child pointer. That's the purpose of this function.
- */
-void QmlClassNode::setCurrentChild()
-{
-    if (parent()) {
-        InnerNode* n = parent();
-        if (n->subType() == Node::Collision)
-            n->setCurrentChild(this);
-    }
-}
-
-/*!
- */
-void QmlClassNode::clearCurrentChild()
-{
-    if (parent()) {
-        InnerNode* n = parent();
-        if (n->subType() == Node::Collision)
-            n->clearCurrentChild();
-    }
-}
-
-/*!
   If the QML type's QML module pointer is set, return the QML
   module name from the QML module node. Otherwise, return the
   empty string.
@@ -2390,7 +2345,6 @@ NameCollisionNode::NameCollisionNode(InnerNode* child)
 {
     setTitle("Name Collision: " + child->name());
     addCollision(child);
-    current = 0;
 }
 
 /*!
@@ -2416,28 +2370,11 @@ NameCollisionNode::~NameCollisionNode()
     // nothing.
 }
 
-/*! \fn const InnerNode* NameCollisionNode::currentChild() const
-  Returns a pointer to the current child, which may be 0.
- */
-
-/*! \fn void NameCollisionNode::setCurrentChild(InnerNode* child)
-  Sets the current child to \a child. The current child is
-  valid only within the file where it is defined.
- */
-
-/*! \fn void NameCollisionNode::clearCurrentChild()
-  Sets the current child to 0. This should be called at the
-  end of each file, because the current child is only valid
-  within the file where the child is defined.
- */
-
 /*!
   Returns \c true if this collision node's current node is a QML node.
  */
 bool NameCollisionNode::isQmlNode() const
 {
-    if (current)
-        return current->isQmlNode();
     return false;
 }
 
@@ -2447,10 +2384,6 @@ bool NameCollisionNode::isQmlNode() const
 */
 InnerNode* NameCollisionNode::findAny(Node::Type t, Node::SubType st)
 {
-    if (current) {
-        if (current->type() == t && current->subType() == st)
-            return current;
-    }
     const NodeList& cn = childNodes();
     NodeList::ConstIterator i = cn.constBegin();
     while (i != cn.constEnd()) {

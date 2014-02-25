@@ -6080,7 +6080,6 @@ void DitaXmlGenerator::generateCollisionPages()
         if (collisions.size() <= 1)
             continue;
 
-        ncn->clearCurrentChild();
         beginSubPage(ncn, Generator::fileName(ncn));
         QString fullTitle = ncn->fullTitle();
         QString ditaTitle = fullTitle;

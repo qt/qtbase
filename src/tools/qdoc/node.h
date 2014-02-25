@@ -297,7 +297,6 @@ public:
     virtual void setQmlModule(QmlModuleNode* ) { }
     virtual ClassNode* classNode() { return 0; }
     virtual void setClassNode(ClassNode* ) { }
-    virtual void clearCurrentChild() { }
     virtual const Node* applyModuleName(const Node* ) const { return 0; }
     virtual QString idNumber() { return "0"; }
     QmlClassNode* qmlClassNode();
@@ -363,7 +362,6 @@ public:
     void setOverload(const FunctionNode* func, bool overlode);
     void normalizeOverloads();
     void makeUndocumentedChildrenInternal();
-    void clearCurrentChildPointers();
     void deleteChildren();
     void removeFromRelated();
 
@@ -382,8 +380,6 @@ public:
     QStringList secondaryKeys();
     const QStringList& pageKeywords() const { return pageKeywds; }
     virtual void addPageKeywords(const QString& t) { pageKeywds << t; }
-    virtual void setCurrentChild() { }
-    virtual void setCurrentChild(InnerNode* ) { }
     virtual void setOutputFileName(const QString& f) { outputFileName_ = f; }
     virtual QString outputFileName() const { return outputFileName_; }
     virtual QmlPropertyNode* hasQmlProperty(const QString& ) const;
@@ -538,9 +534,6 @@ class NameCollisionNode : public DocNode
 public:
     NameCollisionNode(InnerNode* child);
     ~NameCollisionNode();
-    const InnerNode* currentChild() const { return current; }
-    virtual void setCurrentChild(InnerNode* child) { current = child; }
-    virtual void clearCurrentChild() { current = 0; }
     virtual bool isQmlNode() const;
     virtual bool isCollisionNode() const { return true; }
     virtual const Node* applyModuleName(const Node* origin) const;
@@ -551,7 +544,6 @@ public:
     void addLinkTarget(const QString& t, const QString& v) { targets.insert(t,v); }
 
 private:
-    InnerNode* current;
     QMap<QString,QString> targets;
 };
 
@@ -598,8 +590,6 @@ public:
     virtual bool isQtQuickNode() const { return (qmlModuleName() == QLatin1String("QtQuick")); }
     virtual ClassNode* classNode() { return cnode_; }
     virtual void setClassNode(ClassNode* cn) { cnode_ = cn; }
-    virtual void setCurrentChild();
-    virtual void clearCurrentChild();
     virtual bool isAbstract() const { return abstract_; }
     virtual bool isWrapper() const { return wrapper_; }
     virtual void setAbstract(bool b) { abstract_ = b; }

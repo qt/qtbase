@@ -264,7 +264,6 @@ void CppCodeParser::doneParsingHeaderFiles()
  */
 void CppCodeParser::doneParsingSourceFiles()
 {
-    qdb_->primaryTreeRoot()->clearCurrentChildPointers();
     qdb_->primaryTreeRoot()->normalizeOverloads();
     qdb_->fixInheritance();
     qdb_->resolveProperties();

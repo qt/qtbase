@@ -312,24 +312,14 @@ QString Generator::fileBase(const Node *node) const
         node = node->parent();
     }
 
-    if (node->type() == Node::Document && node->subType() == Node::Collision) {
-        const NameCollisionNode* ncn = static_cast<const NameCollisionNode*>(node);
-        if (ncn->currentChild())
-            return fileBase(ncn->currentChild());
-    }
-
     if (node->hasBaseName())
         return node->baseName();
 
     QString base;
     if (node->isDocNode()) {
         base = node->name();
-        if (node->subType() == Node::Collision) {
-            const NameCollisionNode* ncn = static_cast<const NameCollisionNode*>(node);
-            if (ncn->currentChild())
-                return fileBase(ncn->currentChild());
+        if (node->subType() == Node::Collision)
             base.prepend("collision-");
-        }
         //Was QDOC2_COMPAT, required for index.html
         if (base.endsWith(".html"))
             base.truncate(base.length() - 5);
