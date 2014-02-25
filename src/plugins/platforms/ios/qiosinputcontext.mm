@@ -131,16 +131,11 @@
 
 - (void) keyboardDidChangeFrame:(NSNotification *)notification
 {
+    Q_UNUSED(notification);
     if (m_ignoreKeyboardChanges)
         return;
-    m_keyboardRect = [self getKeyboardRect:notification];
-    m_context->emitKeyboardRectChanged();
 
-    BOOL visible = m_keyboardRect.intersects(fromCGRect([UIScreen mainScreen].bounds));
-    if (m_keyboardVisible != visible) {
-        m_keyboardVisible = visible;
-        m_context->emitInputPanelVisibleChanged();
-    }
+    [self handleKeyboardRectChanged];
 
     // If the keyboard was visible and docked from before, this is just a geometry
     // change (normally caused by an orientation change). In that case, update scroll:
@@ -170,6 +165,22 @@
     m_keyboardVisibleAndDocked = NO;
     m_keyboardEndRect = [self getKeyboardRect:notification];
     m_context->scroll(0);
+}
+
+- (void) handleKeyboardRectChanged
+{
+    QRectF rect = m_keyboardEndRect;
+    rect.moveTop(rect.y() + m_viewController.view.bounds.origin.y);
+    if (m_keyboardRect != rect) {
+        m_keyboardRect = rect;
+        m_context->emitKeyboardRectChanged();
+    }
+
+    BOOL visible = m_keyboardEndRect.intersects(fromCGRect([UIScreen mainScreen].bounds));
+    if (m_keyboardVisible != visible) {
+        m_keyboardVisible = visible;
+        m_context->emitInputPanelVisibleChanged();
+    }
 }
 
 @end
@@ -295,10 +306,15 @@ void QIOSInputContext::scroll(int y)
 
     CGRect newBounds = view.bounds;
     newBounds.origin.y = y;
+    QPointer<QIOSInputContext> self = this;
     [UIView animateWithDuration:m_keyboardListener->m_duration delay:0
         options:m_keyboardListener->m_curve
         animations:^{ view.bounds = newBounds; }
-        completion:0];
+        completion:^(BOOL){
+            if (self)
+                [m_keyboardListener handleKeyboardRectChanged];
+        }
+    ];
 }
 
 void QIOSInputContext::update(Qt::InputMethodQueries query)
