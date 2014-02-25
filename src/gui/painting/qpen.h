@@ -72,6 +72,8 @@ public:
 
     QPen &operator=(const QPen &pen);
 #ifdef Q_COMPILER_RVALUE_REFS
+    inline QPen(QPen &&other)
+        : d(other.d) { other.d = 0; }
     inline QPen &operator=(QPen &&other)
     { qSwap(d, other.d); return *this; }
 #endif

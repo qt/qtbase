@@ -327,9 +327,21 @@ QPen::QPen(const QBrush &brush, qreal width, Qt::PenStyle s, Qt::PenCapStyle c, 
 QPen::QPen(const QPen &p)
 {
     d = p.d;
-    d->ref.ref();
+    if (d)
+        d->ref.ref();
 }
 
+
+/*!
+    \fn QPen::QPen(QPen &&pen)
+    \since 5.4
+
+    Constructs a pen that is moved from the given \a pen.
+
+    The moved-from pen can only be assigned to, copied, or
+    destroyed. Any other operation (prior to assignment) leads to
+    undefined behavior.
+*/
 
 /*!
     Destroys the pen.
@@ -337,7 +349,7 @@ QPen::QPen(const QPen &p)
 
 QPen::~QPen()
 {
-    if (!d->ref.deref())
+    if (d && !d->ref.deref())
         delete d;
 }
 
@@ -373,7 +385,7 @@ void QPen::detach()
 
 QPen &QPen::operator=(const QPen &p)
 {
-    qAtomicAssign(d, p.d);
+    QPen(p).swap(*this);
     return *this;
 }
 

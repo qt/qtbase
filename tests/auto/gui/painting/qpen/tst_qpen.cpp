@@ -57,6 +57,8 @@ public:
 private slots:
     void getSetCheck();
     void swap();
+    void move();
+    void move_assign();
     void operator_eq_eq();
     void operator_eq_eq_data();
 
@@ -101,6 +103,57 @@ void tst_QPen::swap()
     QCOMPARE(p2.color(), QColor(Qt::black));
 }
 
+void tst_QPen::move()
+{
+    QPen p1(Qt::black);
+
+    // check that moving does the right thing:
+    QPen p2 = qMove(p1); // could be move or copy construction, so don't check p1's state
+    QCOMPARE(p2.color(), QColor(Qt::black));
+
+    // this, executed ehre, would crash:
+    // QVERIFY(p1.style() != Qt::NoPen);
+
+    // check that moved-from QPen p1 can still be safely copied:
+    const QPen p3 = p1;
+
+    // check that moved-from QPen p1 can still be safely assigned to:
+    const QPen p4(Qt::yellow);
+    p1 = p4;
+    QCOMPARE(p1.color(), QColor(Qt::yellow));
+
+    // check that moved-from QPens p2, p3 can still be safely destroyed:
+    QPen p5 = qMove(p2);
+
+    // intentionally no more statements beyond this point
+}
+
+void tst_QPen::move_assign()
+{
+    QPen p1(Qt::black), p2(Qt::white);
+
+    // check that moving does the right thing:
+    p2 = qMove(p1); // could be move or copy assignment, so don't check p1's state
+    QCOMPARE(p2.color(), QColor(Qt::black));
+
+    // check that move-assigned-from QPen p1 can still be used, albeit
+    // with undocumented state (it's p2's original state):
+    QVERIFY(p1.style() != Qt::NoPen);
+
+    // check that moved-from QPen p1 can still be safely copied:
+    const QPen p3 = p1;
+
+    // check that moved-from QPen p1 can still be safely assigned to:
+    const QPen p4(Qt::yellow);
+    p1 = p4;
+    QCOMPARE(p1.color(), QColor(Qt::yellow));
+
+    // check that moved-from QPens p2, p3 can still be safely destroyed:
+    QPen p5;
+    p5 = qMove(p2);
+
+    // intentionally no more statements beyond this point
+}
 
 tst_QPen::tst_QPen()
 
