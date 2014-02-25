@@ -39,13 +39,16 @@
 **
 ****************************************************************************/
 
-#include "qiosglobal.h"
 #include "qiosinputcontext.h"
+
+#import <UIKit/UIGestureRecognizerSubclass.h>
+
+#include "qiosglobal.h"
 #include "qioswindow.h"
 #include "quiview.h"
 #include <QGuiApplication>
 
-@interface QIOSKeyboardListener : NSObject {
+@interface QIOSKeyboardListener : UIGestureRecognizer {
 @public
     QIOSInputContext *m_context;
     BOOL m_keyboardVisible;
@@ -63,7 +66,7 @@
 
 - (id)initWithQIOSInputContext:(QIOSInputContext *)context
 {
-    self = [super init];
+    self = [super initWithTarget:self action:@selector(gestureTriggered)];
     if (self) {
         m_context = context;
         m_keyboardVisible = NO;
@@ -82,6 +85,14 @@
                 }
             }
             Q_ASSERT(m_viewController);
+
+            // Attach 'hide keyboard' gesture to the window, but keep it disabled when the
+            // keyboard is not visible. Note that we never trigger the gesture the way it is intended
+            // since we don't want to cancel touch events and interrupt flicking etc. Instead we use
+            // the gesture framework more as an event filter and hide the keyboard silently.
+            self.enabled = NO;
+            self.delaysTouchesEnded = NO;
+            [m_viewController.view.window addGestureRecognizer:self];
         }
 
         [[NSNotificationCenter defaultCenter]
@@ -102,7 +113,9 @@
 
 - (void) dealloc
 {
+    [m_viewController.view.window removeGestureRecognizer:self];
     [m_viewController release];
+
     [[NSNotificationCenter defaultCenter]
         removeObserver:self
         name:@"UIKeyboardWillShowNotification" object:nil];
@@ -150,6 +163,7 @@
     // Note that UIKeyboardWillShowNotification is only sendt when the keyboard is docked.
     m_keyboardVisibleAndDocked = YES;
     m_keyboardEndRect = [self getKeyboardRect:notification];
+    self.enabled = YES;
     if (!m_duration) {
         m_duration = [[notification.userInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey] doubleValue];
         m_curve = UIViewAnimationCurve([[notification.userInfo objectForKey:UIKeyboardAnimationCurveUserInfoKey] integerValue] << 16);
@@ -164,6 +178,7 @@
     // Note that UIKeyboardWillHideNotification is also sendt when the keyboard is undocked.
     m_keyboardVisibleAndDocked = NO;
     m_keyboardEndRect = [self getKeyboardRect:notification];
+    self.enabled = NO;
     m_context->scroll(0);
 }
 
@@ -181,6 +196,15 @@
         m_keyboardVisible = visible;
         m_context->emitInputPanelVisibleChanged();
     }
+}
+
+- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    QPointF p = fromCGPoint([[touches anyObject] locationInView:m_viewController.view]);
+    if (m_keyboardRect.contains(p))
+        m_context->hideInputPanel();
+
+    [super touchesMoved:touches withEvent:event];
 }
 
 @end
