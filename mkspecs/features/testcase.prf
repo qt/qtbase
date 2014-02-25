@@ -134,6 +134,28 @@ contains(INSTALLS, target) {
         INSTALLS += $$tdi
     }
 
+    # Install GENERATED_TESTDATA.
+    # Logic is copied from the TESTDATA installation, only difference being that
+    # INSTALL target is added with CONFIG = no_check_exist
+    for(file, GENERATED_TESTDATA) {
+        tnam = $$file
+        tnam ~= s,\\.\\.,dotdot,
+        tnam ~= s,[?*],wildcard,
+        tnam ~= s,[^A-Za-z0-9],_,
+        tdi = testdata_$$tnam
+        tdif = $${tdi}.files
+        tdip = $${tdi}.path
+        tdic = $${tdi}.CONFIG
+
+        $$tdif = $$file
+        $$tdic = no_check_exist
+
+        file = $$replace(file, ^(\\.\\./)+, )
+        $$tdip = $${target.path}/$$dirname(file)
+
+        INSTALLS += $$tdi
+    }
+
     # TEST_HELPER_INSTALLS specifies additional test helper executables for installation.
     #
     # Typical usage is:
