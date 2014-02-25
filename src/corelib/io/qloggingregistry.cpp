@@ -134,20 +134,20 @@ void QLoggingRule::parse(const QString &pattern)
         messageType = QtCriticalMsg;
     }
 
-    int index = category.indexOf(QLatin1Char('*'));
-    if (index < 0) {
+    flags = Invalid;
+    if (!category.contains(QLatin1Char('*'))) {
         flags = FullText;
     } else {
-        flags = Invalid;
-        if (index == 0) {
-            flags |= RightFilter;
-            category.remove(0, 1);
-            index = category.indexOf(QLatin1Char('*'));
-        }
-        if (index == (category.length() - 1)) {
+        if (category.endsWith(QLatin1Char('*'))) {
             flags |= LeftFilter;
             category.chop(1);
         }
+        if (category.startsWith(QLatin1Char('*'))) {
+            flags |= RightFilter;
+            category.remove(0, 1);
+        }
+        if (category.contains(QLatin1Char('*'))) // '*' only supported at start/end
+            flags = Invalid;
     }
 }
 

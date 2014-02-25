@@ -152,6 +152,14 @@ private slots:
                 << QString("*qt.*.debug") << QString("qt.io") << QtDebugMsg << Match;
         QTest::newRow("_star_.qt._star_.warning-qt.io")
                 << QString("*.qt.*.warning") << QString("qt.io") << QtDebugMsg << NoMatch;
+        QTest::newRow("**")
+                << QString("**") << QString("qt.core.io") << QtDebugMsg << Match;
+
+        // * outside of start/end
+        QTest::newRow("qt.*.io")
+                << QString("qt.*.io") << QString("qt.core.io") << QtDebugMsg << Invalid;
+        QTest::newRow("***")
+                << QString("***") << QString("qt.core.io") << QtDebugMsg << Invalid;
     }
 
     void QLoggingRule_parse()
