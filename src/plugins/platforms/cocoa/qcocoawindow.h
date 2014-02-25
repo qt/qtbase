@@ -52,27 +52,57 @@
 
 QT_FORWARD_DECLARE_CLASS(QCocoaWindow)
 
-@interface QNSWindow : NSWindow
-{
-    @public QCocoaWindow *m_cocoaPlatformWindow;
-}
-- (id)initWithContentRect:(NSRect)contentRect
-      styleMask:(NSUInteger)windowStyle
-      qPlatformWindow:(QCocoaWindow *)qpw;
+@class QNSWindowHelper;
 
-- (void)clearPlatformWindow;
+@protocol QNSWindowProtocol
+
+@property (nonatomic, readonly) QNSWindowHelper *helper;
+
+- (void)superSendEvent:(NSEvent *)theEvent;
+- (void)closeAndRelease;
+
 @end
 
-@interface QNSPanel : NSPanel
+typedef NSWindow<QNSWindowProtocol> QCocoaNSWindow;
+
+@interface QNSWindowHelper : NSObject
 {
-    @public QCocoaWindow *m_cocoaPlatformWindow;
+    QCocoaNSWindow *_window;
+    QCocoaWindow *_platformWindow;
 }
+
+@property (nonatomic, readonly) QCocoaNSWindow *window;
+@property (nonatomic, readonly) QCocoaWindow *platformWindow;
+
+- (id)initWithNSWindow:(QCocoaNSWindow *)window platformWindow:(QCocoaWindow *)platformWindow;
+- (void)handleWindowEvent:(NSEvent *)theEvent;
+
+@end
+
+@interface QNSWindow : NSWindow<QNSWindowProtocol>
+{
+    QNSWindowHelper *_helper;
+}
+
+@property (nonatomic, readonly) QNSWindowHelper *helper;
 
 - (id)initWithContentRect:(NSRect)contentRect
       styleMask:(NSUInteger)windowStyle
       qPlatformWindow:(QCocoaWindow *)qpw;
 
-- (void)clearPlatformWindow;
+@end
+
+@interface QNSPanel : NSPanel<QNSWindowProtocol>
+{
+    QNSWindowHelper *_helper;
+}
+
+@property (nonatomic, readonly) QNSWindowHelper *helper;
+
+- (id)initWithContentRect:(NSRect)contentRect
+      styleMask:(NSUInteger)windowStyle
+      qPlatformWindow:(QCocoaWindow *)qpw;
+
 @end
 
 @class QNSWindowDelegate;
@@ -183,9 +213,8 @@ public:
     QWindow *childWindowAt(QPoint windowPoint);
 protected:
     void recreateWindow(const QPlatformWindow *parentWindow);
-    NSWindow *createNSWindow();
-    void setNSWindow(NSWindow *window);
-    void clearNSWindow(NSWindow *window);
+    QCocoaNSWindow *createNSWindow();
+    void setNSWindow(QCocoaNSWindow *window);
 
     bool shouldUseNSPanel();
 
@@ -202,7 +231,7 @@ public: // for QNSView
 
     NSView *m_contentView;
     QNSView *m_qtView;
-    NSWindow *m_nsWindow;
+    QCocoaNSWindow *m_nsWindow;
     QCocoaWindow *m_forwardWindow;
 
     // TODO merge to one variable if possible
@@ -213,7 +242,6 @@ public: // for QNSView
     bool m_isNSWindowChild; // this window is a non-top level QWindow with a NSWindow.
     QList<QCocoaWindow *> m_childWindows;
 
-    QNSWindowDelegate *m_nsWindowDelegate;
     Qt::WindowFlags m_windowFlags;
     Qt::WindowState m_synchedWindowState;
     Qt::WindowModality m_windowModality;
