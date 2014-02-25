@@ -990,9 +990,9 @@ void QAbstractItemModel::resetInternalData()
 */
 
 /*!
-    \fn void *QModelIndex::internalId() const
+    \fn quintptr QModelIndex::internalId() const
 
-    Returns a \c{qint64} used by the model to associate
+    Returns a \c{quintptr} used by the model to associate
     the index with the internal data structure.
 
     \sa QAbstractItemModel::createIndex()
