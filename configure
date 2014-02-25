@@ -627,7 +627,6 @@ CFG_COMPILE_EXAMPLES=yes
 CFG_RELEASE_QMAKE=no
 CFG_AUDIO_BACKEND=auto
 CFG_QML_DEBUG=yes
-CFG_JAVASCRIPTCORE_JIT=auto
 CFG_PKGCONFIG=auto
 CFG_STACK_PROTECTOR_STRONG=auto
 CFG_SLOG2=auto
@@ -1895,13 +1894,6 @@ while [ "$#" -gt 0 ]; do
             else
                 UNKNOWN_OPT=yes
             fi
-        fi
-        ;;
-    javascript-jit)
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "auto" ] || [ "$VAL" = "no" ]; then
-            CFG_JAVASCRIPTCORE_JIT="$VAL"
-        else
-            UNKNOWN_OPT=yes
         fi
         ;;
     confirm-license)
@@ -5737,27 +5729,6 @@ if [ "$CFG_ALSA" = "auto" ]; then
     fi
 fi
 
-if [ "$CFG_JAVASCRIPTCORE_JIT" = "yes" ] || [ "$CFG_JAVASCRIPTCORE_JIT" = "auto" ]; then
-    if [ "$CFG_ARCH" = "arm" ]; then
-       compileTest unix/javascriptcore-jit "javascriptcore-jit"
-        if [ $? != "0" ]; then
-           CFG_JAVASCRIPTCORE_JIT=no
-        fi
-    else
-	case "$XPLATFORM" in
-	    linux-icc*)
-		CFG_JAVASCRIPTCORE_JIT=no
-		;;
-	esac
-    fi
-fi
-
-if [ "$CFG_JAVASCRIPTCORE_JIT" = "yes" ]; then
-    QMakeVar set JAVASCRIPTCORE_JIT yes
-elif [ "$CFG_JAVASCRIPTCORE_JIT" = "no" ]; then
-    QMakeVar set JAVASCRIPTCORE_JIT no
-fi
-
 if [ "$CFG_AUDIO_BACKEND" = "auto" ]; then
     CFG_AUDIO_BACKEND=yes
 fi
@@ -6787,7 +6758,6 @@ report_support "  Qt Concurrent .........." "$CFG_CONCURRENT"
 report_support "  Qt GUI ................." "$CFG_GUI"
 report_support "  Qt Widgets ............." "$CFG_WIDGETS"
 report_support "  Large File ............." "$CFG_LARGEFILE"
-report_support "  JavaScriptCore JIT ....." "$CFG_JAVASCRIPTCORE_JIT" auto "To be decided by JavaScriptCore"
 report_support "  QML debugging .........." "$CFG_QML_DEBUG"
 report_support "  Use system proxies ....." "$CFG_SYSTEM_PROXIES"
 
