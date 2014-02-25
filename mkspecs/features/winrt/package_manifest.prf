@@ -39,8 +39,13 @@
 
     manifest_file.input = $$WINRT_MANIFEST
 
-    load(resolve_target)
-    BUILD_DIR = $$dirname(QMAKE_RESOLVED_TARGET)
+    contains(TEMPLATE, "vc.*") {
+        BUILD_DIR = $$OUT_PWD
+    } else {
+        load(resolve_target)
+        BUILD_DIR = $$dirname(QMAKE_RESOLVED_TARGET)
+    }
+
     winphone: \
         manifest_file.output = $$BUILD_DIR/WMAppManifest.xml
     else: contains(TEMPLATE, "vc.*"): \
