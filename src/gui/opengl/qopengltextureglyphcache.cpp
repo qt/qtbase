@@ -248,11 +248,12 @@ void QOpenGLTextureGlyphCache::resizeTextureData(int width, int height)
     if (pex == 0) {
         if (m_blitProgram == 0) {
             m_blitProgram = new QOpenGLShaderProgram(ctx);
+            const bool isCoreProfile = ctx->format().profile() == QSurfaceFormat::CoreProfile;
 
             {
                 QString source;
-                source.append(QLatin1String(qopenglslMainWithTexCoordsVertexShader));
-                source.append(QLatin1String(qopenglslUntransformedPositionVertexShader));
+                source.append(QLatin1String(isCoreProfile ? qopenglslMainWithTexCoordsVertexShader_core : qopenglslMainWithTexCoordsVertexShader));
+                source.append(QLatin1String(isCoreProfile ? qopenglslUntransformedPositionVertexShader_core : qopenglslUntransformedPositionVertexShader));
 
                 QOpenGLShader *vertexShader = new QOpenGLShader(QOpenGLShader::Vertex, m_blitProgram);
                 vertexShader->compileSourceCode(source);
@@ -262,8 +263,8 @@ void QOpenGLTextureGlyphCache::resizeTextureData(int width, int height)
 
             {
                 QString source;
-                source.append(QLatin1String(qopenglslMainFragmentShader));
-                source.append(QLatin1String(qopenglslImageSrcFragmentShader));
+                source.append(QLatin1String(isCoreProfile ? qopenglslMainFragmentShader_core : qopenglslMainFragmentShader));
+                source.append(QLatin1String(isCoreProfile ? qopenglslImageSrcFragmentShader_core : qopenglslImageSrcFragmentShader));
 
                 QOpenGLShader *fragmentShader = new QOpenGLShader(QOpenGLShader::Fragment, m_blitProgram);
                 fragmentShader->compileSourceCode(source);
