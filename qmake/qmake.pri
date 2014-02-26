@@ -29,10 +29,6 @@ HEADERS += project.h property.h \
            generators/integrity/gbuild.h \
            generators/win32/cesdkhandler.h
 
-contains(QT_EDITION, OpenSource) {
-   DEFINES += QMAKE_OPENSOURCE_EDITION
-}
-
 bootstrap { #Qt code
    SOURCES+= \
         qbitarray.cpp \

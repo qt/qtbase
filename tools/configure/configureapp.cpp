@@ -2950,9 +2950,6 @@ void Configure::generateCachefile()
         moduleStream << "}" << endl;
         moduleStream << "QT_COORD_TYPE += " << dictionary["QREAL"] << endl;
 
-        if (dictionary["QT_EDITION"] != "QT_EDITION_OPENSOURCE")
-            moduleStream << "DEFINES        *= QT_EDITION=QT_EDITION_DESKTOP" << endl;
-
         if (dictionary["QT_XKBCOMMON"] == "no")
             moduleStream << "DEFINES += QT_NO_XKBCOMMON" << endl;
 
@@ -3296,10 +3293,6 @@ void Configure::generateQConfigPri()
             configStream << "    QMAKE_DEFAULT_INCDIRS = /usr/include /usr/local/include" << endl;
         }
         configStream << "}" << endl;
-        if (dictionary["QT_EDITION"].contains("OPENSOURCE"))
-            configStream << "QT_EDITION = " << QLatin1String("OpenSource") << endl;
-        else
-            configStream << "QT_EDITION = " << dictionary["EDITION"] << endl;
         configStream << "QT_CONFIG += " << qtConfig.join(' ') << endl;
 
         configStream << "#versioning " << endl
@@ -3397,11 +3390,6 @@ void Configure::generateConfigfiles()
         tmpStream << "/* License information */" << endl;
         tmpStream << "#define QT_PRODUCT_LICENSEE \"" << licenseInfo[ "LICENSEE" ] << "\"" << endl;
         tmpStream << "#define QT_PRODUCT_LICENSE \"" << dictionary[ "EDITION" ] << "\"" << endl;
-        tmpStream << endl;
-        tmpStream << "// Qt Edition" << endl;
-        tmpStream << "#ifndef QT_EDITION" << endl;
-        tmpStream << "#  define QT_EDITION " << dictionary["QT_EDITION"] << endl;
-        tmpStream << "#endif" << endl;
         tmpStream << endl;
         if (dictionary["BUILDDEV"] == "yes") {
             dictionary["QMAKE_INTERNAL"] = "yes";
@@ -4038,9 +4026,6 @@ void Configure::buildQmake()
                 } else {
                     stream << "QMAKESPEC = " << dictionary["QMAKESPEC"] << endl;
                 }
-                if (dictionary["EDITION"] == "OpenSource" ||
-                    dictionary["QT_EDITION"].contains("OPENSOURCE"))
-                    stream << "EXTRA_CPPFLAGS = -DQMAKE_OPENSOURCE_EDITION" << endl;
 
                 stream << "\n\n";
 
@@ -4319,7 +4304,6 @@ void Configure::readLicense()
         cout << endl << "This is the " << dictionary["PLATFORM NAME"] << " Open Source Edition." << endl;
         licenseInfo["LICENSEE"] = "Open Source";
         dictionary["EDITION"] = "OpenSource";
-        dictionary["QT_EDITION"] = "QT_EDITION_OPENSOURCE";
         cout << endl;
         if (!showLicense(dictionary["LICENSE FILE"])) {
             cout << "Configuration aborted since license was not accepted";

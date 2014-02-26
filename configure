@@ -2776,7 +2776,6 @@ if [ -f "$relpath"/LICENSE.PREVIEW.COMMERCIAL ] && [ $COMMERCIAL_USER = "yes" ];
     # Commercial preview release
     Licensee="Preview"
     Edition="Preview"
-    QT_EDITION="QT_EDITION_DESKTOP"
     LicenseType="Technology Preview"
 elif [ $COMMERCIAL_USER = "yes" ]; then
     # one of commercial editions
@@ -2832,17 +2831,14 @@ elif [ $COMMERCIAL_USER = "yes" ]; then
         case $ProductCode in
         F)
             Edition="Universal"
-            QT_EDITION="QT_EDITION_UNIVERSAL"
             ;;
         B)
             Edition="FullFramework"
             EditionString="Full Framework"
-            QT_EDITION="QT_EDITION_DESKTOP"
             ;;
         L)
             Edition="GUIFramework"
             EditionString="GUI Framework"
-            QT_EDITION="QT_EDITION_DESKTOPLIGHT"
             ;;
         esac
         ;;
@@ -2852,12 +2848,11 @@ elif [ $COMMERCIAL_USER = "yes" ]; then
         case $ProductCode in
         B)
             Edition="Evaluation"
-            QT_EDITION="QT_EDITION_EVALUATION"
             ;;
         esac
         ;;
     esac
-    if [ -z "$LicenseType" -o -z "$Edition" -o -z "$QT_EDITION" ]; then
+    if [ -z "$LicenseType" -o -z "$Edition" ]; then
         echo
         echo "Invalid license key. Please check the license key."
         exit 1
@@ -2927,7 +2922,6 @@ elif [ $COMMERCIAL_USER = "yes" ]; then
         esac
         Licensee="$Edition"
         EditionString="$Edition"
-        QT_EDITION="QT_EDITION_DESKTOP"
     fi
 
     case "$LicenseFeatureCode" in
@@ -2981,7 +2975,6 @@ elif [ $COMMERCIAL_USER = "no" ]; then
     Licensee="Open Source"
     Edition="OpenSource"
     EditionString="Open Source"
-    QT_EDITION="QT_EDITION_OPENSOURCE"
 fi
 echo
 echo "This is the Qt ${EditionString} Edition."
@@ -4034,9 +4027,6 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
         echo "EXEEXT = $EXEEXT" >> "$mkfile"
         echo "RM_F = rm -f" >> "$mkfile"
         echo "RM_RF = rm -rf" >> "$mkfile"
-        if [ $QT_EDITION = "QT_EDITION_OPENSOURCE" ]; then
-            echo "EXTRA_CPPFLAGS = -DQMAKE_OPENSOURCE_EDITION" >> "$mkfile"
-        fi
 
         if [ "$BUILD_ON_MAC" = "yes" ]; then
             echo "EXTRA_CXXFLAGS += -MMD" >> "$mkfile"
@@ -6247,10 +6237,6 @@ esac
 
 cat >>"$outpath/src/corelib/global/qconfig.h.new" <<EOF
 
-/* Qt Edition */
-#ifndef QT_EDITION
-#  define QT_EDITION $QT_EDITION
-#endif
 EOF
 
 echo '/* Compile time features */' >>"$outpath/src/corelib/global/qconfig.h.new"
@@ -6505,7 +6491,6 @@ host_build {
     QMAKE_DEFAULT_LIBDIRS = `shellQuoteLines "$DEFAULT_LIBDIRS"`
     QMAKE_DEFAULT_INCDIRS = `shellQuoteLines "$DEFAULT_INCDIRS"`
 }
-QT_EDITION = $Edition
 QT_CONFIG += $QT_CONFIG
 
 #versioning
@@ -6630,10 +6615,6 @@ if [ -n "$QT_LFLAGS_ODBC" ]; then
 fi
 if [ -n "$QT_LFLAGS_TDS" ]; then
     echo "QT_LFLAGS_TDS   = $QT_LFLAGS_TDS" >> "$QTMODULE.tmp"
-fi
-
-if [ "$QT_EDITION" != "QT_EDITION_OPENSOURCE" ]; then
-    echo "DEFINES *= QT_EDITION=QT_EDITION_DESKTOP" >> "$QTMODULE.tmp"
 fi
 
 #dump in the OPENSSL_LIBS info

@@ -62,14 +62,12 @@ void Tools::checkLicense(QMap<QString,QString> &dictionary, QMap<QString,QString
     if (QFile::exists(tpLicense)) {
         dictionary["EDITION"] = "Preview";
         dictionary["LICENSE FILE"] = tpLicense;
-        dictionary["QT_EDITION"] = "QT_EDITION_OPENSOURCE";
         return; // No license key checking in Tech Preview
     }
     tpLicense = sourcePath + "/LICENSE.PREVIEW.COMMERCIAL";
     if (QFile::exists(tpLicense)) {
         dictionary["EDITION"] = "Preview";
         dictionary["LICENSE FILE"] = tpLicense;
-        dictionary["QT_EDITION"] = "QT_EDITION_DESKTOP";
         return; // No license key checking in Tech Preview
     }
 
@@ -127,18 +125,14 @@ void Tools::checkLicense(QMap<QString,QString> &dictionary, QMap<QString,QString
         licenseType = "Commercial";
         if (products == 'F') {
             dictionary["EDITION"] = "Universal";
-            dictionary["QT_EDITION"] = "QT_EDITION_UNIVERSAL";
         } else if (products == 'B') {
             dictionary["EDITION"] = "FullFramework";
-            dictionary["QT_EDITION"] = "QT_EDITION_DESKTOP";
         } else {
             dictionary["EDITION"] = "GUIFramework";
-            dictionary["QT_EDITION"] = "QT_EDITION_DESKTOPLIGHT";
         }
     } else if (strcmp(licenseSchema,"Z4M") == 0 || strcmp(licenseSchema,"R4M") == 0 || strcmp(licenseSchema,"Q4M") == 0) {
         if (products == 'B') {
             dictionary["EDITION"] = "Evaluation";
-            dictionary["QT_EDITION"] = "QT_EDITION_EVALUATION";
             licenseType = "Evaluation";
         }
     }
@@ -212,8 +206,7 @@ void Tools::checkLicense(QMap<QString,QString> &dictionary, QMap<QString,QString
         dictionary["DONE"] = "error";
     }
     if (licenseType.isEmpty()
-        || dictionary["EDITION"].isEmpty()
-        || dictionary["QT_EDITION"].isEmpty()) {
+        || dictionary["EDITION"].isEmpty()) {
         cout << "License file does not contain proper license key." << endl;
         dictionary["DONE"] = "error";
         return;
