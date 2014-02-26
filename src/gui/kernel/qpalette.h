@@ -72,8 +72,7 @@ public:
 #ifdef Q_COMPILER_RVALUE_REFS
     inline QPalette &operator=(QPalette &&other)
     {
-        data.resolve_mask = other.data.resolve_mask;
-        data.current_group = other.data.current_group;
+        for_faster_swapping_dont_use = other.for_faster_swapping_dont_use;
         qSwap(d, other.d); return *this;
     }
 #endif
