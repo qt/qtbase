@@ -25,6 +25,7 @@ contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles2){
 }
 
 SUBDIRS += hellowindow \
-           paintedwindow
+           paintedwindow \
+           contextinfo
 
 EXAMPLE_FILES = shared
