@@ -993,7 +993,7 @@ QSize QDateTimeEdit::sizeHint() const
 
         QSize hint(w, h);
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
         if (d->calendarPopupEnabled()) {
             QStyleOptionComboBox opt;
             d->cachedSizeHint = style()->sizeFromContents(QStyle::CT_ComboBox, &opt, hint, this);

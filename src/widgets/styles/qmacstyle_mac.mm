@@ -5827,12 +5827,6 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
             switch (sc) {
             case SC_ComboBoxEditField:{
                 ret = QMacStylePrivate::comboboxEditBounds(combo->rect, bdi);
-                    // hack to posistion the edit feld correctly for QDateTimeEdits
-                    // in calendarPopup mode.
-                    if (qobject_cast<const QDateTimeEdit *>(widget)) {
-                       ret.moveTop(ret.top() - 2);
-                       ret.setHeight(ret.height() +1);
-                    }
                 break; }
             case SC_ComboBoxArrow:{
                 ret = QMacStylePrivate::comboboxEditBounds(combo->rect, bdi);
