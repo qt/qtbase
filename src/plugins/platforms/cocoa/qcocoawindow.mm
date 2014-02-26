@@ -103,6 +103,8 @@ static bool isMouseEvent(NSEvent *ev)
 
 @synthesize window = _window;
 @synthesize platformWindow = _platformWindow;
+@synthesize grabbingMouse = _grabbingMouse;
+@synthesize releaseOnMouseUp = _releaseOnMouseUp;
 
 - (id)initWithNSWindow:(QCocoaNSWindow *)window platformWindow:(QCocoaWindow *)platformWindow
 {
@@ -139,6 +141,17 @@ static bool isMouseEvent(NSEvent *ev)
 
         if (!pw->m_isNSWindowChild && theEvent.type == NSLeftMouseDown) {
             pw->m_forwardWindow = 0;
+        }
+    }
+
+    if (theEvent.type == NSLeftMouseDown) {
+        self.grabbingMouse = YES;
+    } else if (theEvent.type == NSLeftMouseUp) {
+        self.grabbingMouse = NO;
+        if (self.releaseOnMouseUp) {
+            [self detachFromPlatformWindow];
+            [self.window release];
+            return;
         }
     }
 
@@ -234,9 +247,14 @@ static bool isMouseEvent(NSEvent *ev)
 
 - (void)closeAndRelease
 {
-    [self.helper detachFromPlatformWindow];
     [self close];
-    [self release];
+
+    if (self.helper.grabbingMouse) {
+        self.helper.releaseOnMouseUp = YES;
+    } else {
+        [self.helper detachFromPlatformWindow];
+        [self release];
+    }
 }
 
 - (void)dealloc
