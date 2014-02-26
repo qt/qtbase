@@ -167,6 +167,9 @@ void tst_QNumeric::floatDistance()
     QFETCH(float, val1);
     QFETCH(float, val2);
     QFETCH(quint32, expectedDistance);
+#ifdef Q_OS_BLACKBERRY
+    QEXPECT_FAIL("denormal", "See QTBUG-37094", Continue);
+#endif
     QCOMPARE(qFloatDistance(val1, val2), expectedDistance);
 }
 
@@ -211,6 +214,9 @@ void tst_QNumeric::floatDistance_double()
     QFETCH(double, val1);
     QFETCH(double, val2);
     QFETCH(quint64, expectedDistance);
+#ifdef Q_OS_BLACKBERRY
+    QEXPECT_FAIL("denormal", "See QTBUG-37094", Continue);
+#endif
     QCOMPARE(qFloatDistance(val1, val2), expectedDistance);
 }
 
