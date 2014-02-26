@@ -143,7 +143,7 @@ struct QWindowsIntegrationPrivate
     explicit QWindowsIntegrationPrivate(const QStringList &paramList);
     ~QWindowsIntegrationPrivate();
 
-    const unsigned m_options;
+    unsigned m_options;
     QWindowsContext m_context;
     QPlatformFontDatabase *m_fontDatabase;
 #ifndef QT_NO_CLIPBOARD
@@ -165,7 +165,8 @@ struct QWindowsIntegrationPrivate
     QWindowsServices m_services;
 };
 
-static inline unsigned parseOptions(const QStringList &paramList)
+static inline unsigned parseOptions(const QStringList &paramList,
+                                    int *tabletAbsoluteRange)
 {
     unsigned options = 0;
     foreach (const QString &param, paramList) {
@@ -187,15 +188,21 @@ static inline unsigned parseOptions(const QStringList &paramList)
             options |= QWindowsIntegration::DontPassOsMouseEventsSynthesizedFromTouch;
         } else if (param.startsWith(QLatin1String("verbose="))) {
             QWindowsContext::verbose = param.right(param.size() - 8).toInt();
+        } else if (param.startsWith(QLatin1String("tabletabsoluterange="))) {
+            *tabletAbsoluteRange = param.rightRef(param.size() - 20).toInt();
         }
     }
     return options;
 }
 
 QWindowsIntegrationPrivate::QWindowsIntegrationPrivate(const QStringList &paramList)
-    : m_options(parseOptions(paramList))
+    : m_options(0)
     , m_fontDatabase(0)
 {
+    int tabletAbsoluteRange = -1;
+    m_options = parseOptions(paramList, &tabletAbsoluteRange);
+    if (tabletAbsoluteRange >= 0)
+        m_context.setTabletAbsoluteRange(tabletAbsoluteRange);
 }
 
 QWindowsIntegrationPrivate::~QWindowsIntegrationPrivate()

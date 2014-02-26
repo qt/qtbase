@@ -183,6 +183,8 @@ public:
 
     void setWindowCreationContext(const QSharedPointer<QWindowCreationContext> &ctx);
 
+    void setTabletAbsoluteRange(int a);
+
     // Returns a combination of SystemInfoFlags
     unsigned systemInfo() const;
 
