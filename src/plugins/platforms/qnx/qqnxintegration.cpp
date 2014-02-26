@@ -470,7 +470,7 @@ QPlatformTheme *QQnxIntegration::createPlatformTheme(const QString &name) const
     qIntegrationDebug() << Q_FUNC_INFO << "name =" << name;
     if (name == QBlackberryTheme::name())
         return new QBlackberryTheme(this);
-    return QPlatformIntegration::createPlatformTheme(name);
+    return 0;
 }
 #endif
 
