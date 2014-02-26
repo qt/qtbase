@@ -959,7 +959,6 @@ void QSpdyProtocolHandler::handleRST_STREAM(char /*flags*/, quint32 length,
     Q_UNUSED(length); // silence -Wunused-parameter
     qint32 streamID = getStreamID(frameData.constData());
     QHttpNetworkReply *httpReply = m_inFlightStreams.value(streamID).second;
-    Q_ASSERT(httpReply);
 
     qint32 statusCodeInt = fourBytesToInt(frameData.constData() + 4);
     RST_STREAM_STATUS_CODE statusCode = static_cast<RST_STREAM_STATUS_CODE>(statusCodeInt);
@@ -1016,7 +1015,8 @@ void QSpdyProtocolHandler::handleRST_STREAM(char /*flags*/, quint32 length,
         errorCode = QNetworkReply::ProtocolFailure;
         errorMessage = "got SPDY RST_STREAM message with unknown error code";
     }
-    replyFinishedWithError(httpReply, streamID, errorCode, errorMessage.constData());
+    if (httpReply)
+        replyFinishedWithError(httpReply, streamID, errorCode, errorMessage.constData());
 }
 
 void QSpdyProtocolHandler::handleSETTINGS(char flags, quint32 /*length*/, const QByteArray &frameData)
@@ -1266,6 +1266,7 @@ void QSpdyProtocolHandler::replyFinished(QHttpNetworkReply *httpReply, qint32 st
 void QSpdyProtocolHandler::replyFinishedWithError(QHttpNetworkReply *httpReply, qint32 streamID,
                                                   QNetworkReply::NetworkError errorCode, const char *errorMessage)
 {
+    Q_ASSERT(httpReply);
     httpReply->d_func()->state = QHttpNetworkReplyPrivate::SPDYClosed;
     int streamsRemoved = m_inFlightStreams.remove(streamID);
     Q_ASSERT(streamsRemoved == 1);
