@@ -33,7 +33,6 @@ OBJECTIVE_SOURCES += main.mm \
     qcocoaclipboard.mm \
     qcocoadrag.mm \
     qmacclipboard.mm \
-    qmacmime.mm \
     qcocoasystemsettings.mm \
     qcocoainputcontext.mm \
     qcocoaservices.mm \
@@ -71,7 +70,6 @@ HEADERS += qcocoaintegration.h \
     qcocoaclipboard.h \
     qcocoadrag.h \
     qmacclipboard.h \
-    qmacmime.h \
     qcocoasystemsettings.h \
     qcocoainputcontext.h \
     qcocoaservices.h \

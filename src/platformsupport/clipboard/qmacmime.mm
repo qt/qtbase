@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qmacmime.h"
+#include "qmacmime_p.h"
 #include "qguiapplication.h"
 
 QT_BEGIN_NAMESPACE

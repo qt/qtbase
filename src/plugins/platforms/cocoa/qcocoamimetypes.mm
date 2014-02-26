@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "qcocoamimetypes.h"
-#include "qmacmime.h"
+#include <QtPlatformSupport/private/qmacmime_p.h>
 #include "qcocoahelpers.h"
 
 QT_BEGIN_NAMESPACE
