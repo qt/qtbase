@@ -1,6 +1,7 @@
 #
 # Statically compile in code for
-# libxcb-fixes, libxcb-randr, libxcb-shm, libxcb-sync, libxcb-image, libxcb-keysyms, libxcb-icccm, libxcb-renderutil
+# libxcb-fixes, libxcb-randr, libxcb-shm, libxcb-sync, libxcb-image,
+# libxcb-keysyms, libxcb-icccm, libxcb-renderutil, libxcb-xkb
 #
 TEMPLATE = lib
 TARGET = xcb-static
