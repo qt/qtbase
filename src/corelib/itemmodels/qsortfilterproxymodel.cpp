@@ -2610,6 +2610,7 @@ void QSortFilterProxyModel::invalidateFilter()
     \li QMetaType::UInt
     \li QMetaType::LongLong
     \li QMetaType::ULongLong
+    \li QMetaType::Float
     \li QMetaType::Double
     \li QMetaType::QChar
     \li QMetaType::QDate
