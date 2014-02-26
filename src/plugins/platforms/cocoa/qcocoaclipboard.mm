@@ -40,7 +40,6 @@
 ****************************************************************************/
 
 #include "qcocoaclipboard.h"
-#include "qmacmime.h"
 #include "qmacclipboard.h"
 
 QT_BEGIN_NAMESPACE

@@ -52,7 +52,6 @@
 #include "qcocoafiledialoghelper.h"
 #include "qcocoatheme.h"
 #include "qcocoainputcontext.h"
-#include "qmacmime.h"
 #include "qcocoamimetypes.h"
 #include "qcocoaaccessibility.h"
 

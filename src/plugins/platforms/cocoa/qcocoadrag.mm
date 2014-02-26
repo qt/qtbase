@@ -40,7 +40,6 @@
 ****************************************************************************/
 
 #include "qcocoadrag.h"
-#include "qmacmime.h"
 #include "qmacclipboard.h"
 #include "qcocoahelpers.h"
 
