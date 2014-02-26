@@ -84,10 +84,12 @@ public:
 Q_SIGNALS:
     void emitFileChanged(const QString path, bool removed);
     void emitDirectoryChanged(const QString path, bool removed);
+    void scheduleStreamRestart();
 
 private slots:
     void doEmitFileChanged(const QString path, bool removed);
     void doEmitDirectoryChanged(const QString path, bool removed);
+    void restartStream();
 
 private:
     struct Info {
@@ -122,11 +124,11 @@ private:
     bool startStream();
     void stopStream(bool isStopped = false);
     InfoByName scanForDirEntries(const QString &path);
-    void derefPath(const QString &watchedPath);
-    void checkDir(DirsByName::iterator &it);
-    void rescanDirs(const QString &path);
-    void rescanFiles(InfoByName &filesInPath);
-    void rescanFiles(const QString &path);
+    bool derefPath(const QString &watchedPath);
+    bool checkDir(DirsByName::iterator &it);
+    bool rescanDirs(const QString &path);
+    bool rescanFiles(InfoByName &filesInPath);
+    bool rescanFiles(const QString &path);
 
     QMutex lock;
     dispatch_queue_t queue;
@@ -134,6 +136,7 @@ private:
     FilesByPath watchedFiles;
     DirsByName watchedDirectories;
     PathRefCounts watchedPaths;
+    FSEventStreamEventId lastReceivedEvent;
 };
 
 QT_END_NAMESPACE
