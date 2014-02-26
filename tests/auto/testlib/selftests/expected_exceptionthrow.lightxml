@@ -1,5 +1,6 @@
 <Environment>
     <QtVersion>@INSERT_QT_VERSION_HERE@</QtVersion>
+    <QtBuild/>
     <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
 </Environment>
 <TestFunction name="initTestCase">
@@ -7,7 +8,7 @@
 <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="throwException">
-<Incident type="fail" file="/home/frederik/dev/qt/qt&#x002D;src&#x002D;dev/qtbase/src/testlib/qtestcase.cpp" line="2229">
+<Incident type="fail" file="qtestcase.cpp" line="2235">
     <Description><![CDATA[Caught unhandled exception]]></Description>
 </Incident>
 <Duration msecs="0"/>

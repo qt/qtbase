@@ -717,6 +717,12 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QStringList const& logge
             if (line.endsWith(" : failure location"))
                 continue;
 
+            if (line.startsWith("Config: Using QtTest library") // Text build string
+                || line.startsWith("    <QtBuild") // XML, Light XML build string
+                || (line.startsWith("    <property value=") &&  line.endsWith("name=\"QtBuild\"/>"))) { // XUNIT-XML build string
+                    continue;
+            }
+
             const QString output(QString::fromLatin1(line));
             const QString expected(QString::fromLatin1(exp.at(i)).replace("@INSERT_QT_VERSION_HERE@", QT_VERSION_STR));
 

@@ -42,6 +42,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <QtCore/qglobal.h>
+#include <QtCore/qlibraryinfo.h>
 
 #include <QtTest/private/qxmltestlogger_p.h>
 #include <QtTest/private/qtestresult_p.h>
@@ -115,11 +116,15 @@ void QXmlTestLogger::startLogging()
         outputString(buf.constData());
     }
 
+    QTestCharBuffer quotedBuild;
+    xmlQuote(&quotedBuild, QLibraryInfo::build());
+
     QTest::qt_asprintf(&buf,
                 "<Environment>\n"
                 "    <QtVersion>%s</QtVersion>\n"
+                "    <QtBuild>%s</QtBuild>\n"
                 "    <QTestVersion>" QTEST_VERSION_STR "</QTestVersion>\n"
-                "</Environment>\n", qVersion());
+                "</Environment>\n", qVersion(), quotedBuild.constData());
     outputString(buf.constData());
     m_totalTime.start();
 }

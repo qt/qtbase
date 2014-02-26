@@ -46,6 +46,15 @@
 #include <QtTest/private/qtestresult_p.h>
 #include <QtTest/private/qbenchmark_p.h>
 
+#ifdef min // windows.h without NOMINMAX is included by the benchmark headers.
+#  undef min
+#endif
+#ifdef max
+#  undef max
+#endif
+
+#include <QtCore/qlibraryinfo.h>
+
 #include <string.h>
 
 QT_BEGIN_NAMESPACE
@@ -106,6 +115,11 @@ void QXunitTestLogger::stopLogging()
     property = new QTestElement(QTest::LET_Property);
     property->addAttribute(QTest::AI_Name, "QtVersion");
     property->addAttribute(QTest::AI_PropertyValue, qVersion());
+    properties->addLogElement(property);
+
+    property = new QTestElement(QTest::LET_Property);
+    property->addAttribute(QTest::AI_Name, "QtBuild");
+    property->addAttribute(QTest::AI_PropertyValue, QLibraryInfo::build());
     properties->addLogElement(property);
 
     currentLogElement->addLogElement(properties);

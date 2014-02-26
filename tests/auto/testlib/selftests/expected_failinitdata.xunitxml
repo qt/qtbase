@@ -3,6 +3,7 @@
   <properties>
     <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
     <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
+    <property value="" name="QtBuild"/>
   </properties>
   <testcase result="fail" name="initTestCase">
     <failure message="&apos;false&apos; returned FALSE. ()" result="fail"/>

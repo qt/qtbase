@@ -3,6 +3,7 @@
   <properties>
     <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
     <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
+    <property value="" name="QtBuild"/>
   </properties>
   <testcase name="initTestCase">
     <!-- message="Skip inside initTestCase. This should skip all tests in the class." type="skip" -->

@@ -56,8 +56,11 @@ isWindows = sys.platform == 'win32'
 
 replacements = [
     (qtver, r'@INSERT_QT_VERSION_HERE@'),
+    (r'Config: Using QtTest library.*', r'Config: Using QtTest library'), # Build string in text logs
     (rootPath.encode('unicode-escape').decode('utf-8'), r''),
     (r'( *)<Duration msecs="[\d\.]+"/>', r'\1<Duration msecs="0"/>'),
+    (r'( *)<QtBuild>[^<]+</QtBuild>', r'\1<QtBuild/>'), # Build element in xml, lightxml
+    (r'<property value="[^"]+" name="QtBuild"/>', r'<property value="" name="QtBuild"/>') # Build in xunitxml
 ]
 
 extraArgs = {

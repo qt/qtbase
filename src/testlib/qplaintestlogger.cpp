@@ -51,19 +51,27 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef Q_OS_WIN
-#include <windows.h>
-#endif
-
 #ifdef Q_OS_WINCE
 #include <QtCore/QString>
 #endif
 
+#ifdef min // windows.h without NOMINMAX is included by the benchmark headers.
+#  undef min
+#endif
+#ifdef max
+#  undef max
+#endif
+
 #include <QtCore/QByteArray>
 #include <QtCore/qmath.h>
+#include <QtCore/QLibraryInfo>
 
 #ifdef Q_OS_ANDROID
 #  include <android/log.h>
+#endif
+
+#ifdef Q_OS_WIN
+#  include <qt_windows.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -334,7 +342,7 @@ void QPlainTestLogger::startLogging()
         qsnprintf(buf, sizeof(buf),
                   "********* Start testing of %s *********\n"
                   "Config: Using QtTest library " QTEST_VERSION_STR
-                  ", Qt %s\n", QTestResult::currentTestObjectName(), qVersion());
+                  ", %s\n", QTestResult::currentTestObjectName(), QLibraryInfo::build());
     }
     outputMessage(buf);
 }
