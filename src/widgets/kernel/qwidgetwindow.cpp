@@ -407,6 +407,7 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
                 widgetPos = receiver->mapFromGlobal(event->globalPos());
             QWidget *alien = m_widget->childAt(m_widget->mapFromGlobal(event->globalPos()));
             QMouseEvent e(event->type(), widgetPos, event->windowPos(), event->screenPos(), event->button(), event->buttons(), event->modifiers());
+            QGuiApplicationPrivate::setMouseEventSource(&e, QGuiApplicationPrivate::mouseEventSource(event));
             e.setTimestamp(event->timestamp());
             QApplicationPrivate::sendMouseEvent(receiver, &e, alien, m_widget, &qt_button_down, qt_last_mouse_receiver);
         } else {
@@ -442,6 +443,7 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
                     if (win && win->geometry().contains(event->globalPos())) {
                         const QPoint localPos = win->mapFromGlobal(event->globalPos());
                         QMouseEvent e(QEvent::MouseButtonPress, localPos, localPos, event->globalPos(), event->button(), event->buttons(), event->modifiers());
+                        QGuiApplicationPrivate::setMouseEventSource(&e, QGuiApplicationPrivate::mouseEventSource(event));
                         e.setTimestamp(event->timestamp());
                         QApplication::sendSpontaneousEvent(win, &e);
                     }
@@ -498,6 +500,7 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
         // creation of a MouseButtonDblClick event. QTBUG-25831
         QMouseEvent translated(event->type(), mapped, event->windowPos(), event->screenPos(),
                                event->button(), event->buttons(), event->modifiers());
+        QGuiApplicationPrivate::setMouseEventSource(&translated, QGuiApplicationPrivate::mouseEventSource(event));
         translated.setTimestamp(event->timestamp());
         QApplicationPrivate::sendMouseEvent(receiver, &translated, widget, m_widget,
                                             &qt_button_down, qt_last_mouse_receiver);
