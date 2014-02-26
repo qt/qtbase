@@ -43,15 +43,13 @@
 #define _TOOLS_H_
 
 #include <qstring.h>
-#include <qstringlist.h>
 #include <qmap.h>
-
 
 class Tools
 {
 public:
-    static void checkLicense(QMap<QString,QString> &dictionary, QMap<QString,QString> &licenseInfo,
-                             const QString &path, const QString &sourcePath);
+    static void checkLicense(QMap<QString,QString> &dictionary,
+                             const QString &sourcePath, const QString &buildPath);
 };
 
 #endif // _TOOLS_H_

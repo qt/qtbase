@@ -3388,7 +3388,7 @@ void Configure::generateConfigfiles()
                       << endl;
         }
         tmpStream << "/* License information */" << endl;
-        tmpStream << "#define QT_PRODUCT_LICENSEE \"" << licenseInfo[ "LICENSEE" ] << "\"" << endl;
+        tmpStream << "#define QT_PRODUCT_LICENSEE \"" << dictionary[ "LICENSEE" ] << "\"" << endl;
         tmpStream << "#define QT_PRODUCT_LICENSE \"" << dictionary[ "EDITION" ] << "\"" << endl;
         tmpStream << endl;
         if (dictionary["BUILDDEV"] == "yes") {
@@ -3508,16 +3508,6 @@ void Configure::generateConfigfiles()
             dictionary[ "DONE" ] = "error";
     }
 
-    if (dictionary["EDITION"] == "Evaluation" || qmakeDefines.contains("QT_EVAL")) {
-        FileWriter tmpStream(buildPath + "/src/corelib/global/qconfig_eval.cpp");
-
-        tmpStream << "/* Evaluation license key */" << endl
-                  << "static const volatile char qt_eval_key_data              [512 + 12] = \"qt_qevalkey=" << licenseInfo["LICENSEKEYEXT"] << "\";" << endl;
-
-        if (!tmpStream.flush())
-            dictionary[ "DONE" ] = "error";
-    }
-
 }
 
 void Configure::displayConfig()
@@ -3542,10 +3532,10 @@ void Configure::displayConfig()
     sout << "    PATH=\n      " << env << endl;
 
     if (dictionary[QStringLiteral("EDITION")] != QStringLiteral("OpenSource")) {
-        QString l1 = licenseInfo[ "LICENSEE" ];
-        QString l2 = licenseInfo[ "LICENSEID" ];
+        QString l1 = dictionary[ "LICENSEE" ];
+        QString l2 = dictionary[ "LICENSEID" ];
         QString l3 = dictionary["EDITION"] + ' ' + "Edition";
-        QString l4 = licenseInfo[ "EXPIRYDATE" ];
+        QString l4 = dictionary[ "EXPIRYDATE" ];
         sout << "Licensee...................." << (l1.isNull() ? "" : l1) << endl;
         sout << "License ID.................." << (l2.isNull() ? "" : l2) << endl;
         sout << "Product license............." << (l3.isNull() ? "" : l3) << endl;
@@ -3877,7 +3867,7 @@ void Configure::generateQConfigCpp()
     {
         FileWriter tmpStream(buildPath + "/src/corelib/global/qconfig.cpp");
         tmpStream << "/* Licensed */" << endl
-                  << "static const char qt_configure_licensee_str          [512 + 12] = \"qt_lcnsuser=" << licenseInfo["LICENSEE"] << "\";" << endl
+                  << "static const char qt_configure_licensee_str          [512 + 12] = \"qt_lcnsuser=" << dictionary["LICENSEE"] << "\";" << endl
                   << "static const char qt_configure_licensed_products_str [512 + 12] = \"qt_lcnsprod=" << dictionary["EDITION"] << "\";" << endl
                   << endl
                   << "/* Build date */" << endl
@@ -4302,7 +4292,7 @@ void Configure::readLicense()
     }
     if (hasOpenSource && openSource) {
         cout << endl << "This is the " << dictionary["PLATFORM NAME"] << " Open Source Edition." << endl;
-        licenseInfo["LICENSEE"] = "Open Source";
+        dictionary["LICENSEE"] = "Open Source";
         dictionary["EDITION"] = "OpenSource";
         cout << endl;
         if (!showLicense(dictionary["LICENSE FILE"])) {
@@ -4316,20 +4306,14 @@ void Configure::readLicense()
     }
 #ifdef COMMERCIAL_VERSION
     else {
-        Tools::checkLicense(dictionary, licenseInfo, firstLicensePath(), sourcePath);
-        if (dictionary["DONE"] != "error") {
-            // give the user some feedback, and prompt for license acceptance
-            cout << endl << "This is the " << dictionary["PLATFORM NAME"] << " " << dictionary["EDITION"] << " Edition."<< endl << endl;
-            if (!showLicense(dictionary["LICENSE FILE"])) {
-                cout << "Configuration aborted since license was not accepted";
-                dictionary["DONE"] = "error";
-                return;
-            }
-        }
+        Tools::checkLicense(dictionary, sourcePath, buildPath);
     }
 #else // !COMMERCIAL_VERSION
     else {
-        cout << endl << "Cannot build commercial edition from the open source version of the library." << endl;
+        cout << endl << "Error: This is the Open Source version of Qt."
+             << endl << "If you want to use Enterprise features of Qt,"
+             << endl << "use the contact form at http://qt.digia.com/contact-us"
+             << endl << "to purchase a license." << endl << endl;
         dictionary["DONE"] = "error";
     }
 #endif
