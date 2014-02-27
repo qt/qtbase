@@ -709,6 +709,11 @@ bool QSpdyProtocolHandler::uploadData(qint32 streamID)
     QHttpNetworkReplyPrivate *replyPrivate = reply->d_func();
     Q_ASSERT(replyPrivate);
 
+    if (reply->d_func()->state == QHttpNetworkReplyPrivate::SPDYHalfClosed || reply->d_func()->state == QHttpNetworkReplyPrivate::SPDYClosed) {
+        qWarning() << Q_FUNC_INFO << "Trying to upload to closed stream";
+        return false;
+    }
+
     qint32 dataLeftInWindow = replyPrivate->windowSizeUpload
             - replyPrivate->currentlyUploadedDataInWindow;
 
@@ -754,6 +759,8 @@ bool QSpdyProtocolHandler::uploadData(qint32 streamID)
         Q_ASSERT(writeSize == 0);
         Q_UNUSED(writeSize); // silence -Wunused-variable
         replyPrivate->state = QHttpNetworkReplyPrivate::SPDYHalfClosed;
+        if (reply->request().uploadByteDevice())
+            reply->request().uploadByteDevice()->disconnect(this);
         // ### this will not work if the content length is not known, but
         // then again many servers will fail in this case anyhow according
         // to the SPDY RFC
@@ -1179,6 +1186,10 @@ void QSpdyProtocolHandler::handleWINDOW_UPDATE(char /*flags*/, quint32 /*length*
     QHttpNetworkReplyPrivate *replyPrivate = reply->d_func();
     Q_ASSERT(replyPrivate);
 
+    // Ignore WINDOW_UPDATE if we are already done.
+    if (replyPrivate->state == QHttpNetworkReplyPrivate::SPDYHalfClosed || replyPrivate->state == QHttpNetworkReplyPrivate::SPDYClosed)
+        return;
+
     replyPrivate->currentlyUploadedDataInWindow = replyPrivate->windowSizeUpload - deltaWindowSize;
     uploadData(streamID); // we hopefully can continue to upload
 }
@@ -1293,6 +1304,9 @@ void QSpdyProtocolHandler::handleDataFrame(const QByteArray &frameHeaders)
 void QSpdyProtocolHandler::replyFinished(QHttpNetworkReply *httpReply, qint32 streamID)
 {
     httpReply->d_func()->state = QHttpNetworkReplyPrivate::SPDYClosed;
+    httpReply->disconnect(this);
+    if (httpReply->request().uploadByteDevice())
+        httpReply->request().uploadByteDevice()->disconnect(this);
     int streamsRemoved = m_inFlightStreams.remove(streamID);
     Q_ASSERT(streamsRemoved == 1);
     Q_UNUSED(streamsRemoved); // silence -Wunused-variable
@@ -1304,6 +1318,9 @@ void QSpdyProtocolHandler::replyFinishedWithError(QHttpNetworkReply *httpReply, 
 {
     Q_ASSERT(httpReply);
     httpReply->d_func()->state = QHttpNetworkReplyPrivate::SPDYClosed;
+    httpReply->disconnect(this);
+    if (httpReply->request().uploadByteDevice())
+        httpReply->request().uploadByteDevice()->disconnect(this);
     int streamsRemoved = m_inFlightStreams.remove(streamID);
     Q_ASSERT(streamsRemoved == 1);
     Q_UNUSED(streamsRemoved); // silence -Wunused-variable
