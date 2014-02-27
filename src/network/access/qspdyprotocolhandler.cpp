@@ -911,6 +911,11 @@ void QSpdyProtocolHandler::parseHttpHeaders(char flags, const QByteArray &frameD
     QHttpNetworkReply *httpReply = pair.second;
     Q_ASSERT(httpReply != 0);
 
+    if (httpReply->d_func()->state == QHttpNetworkReplyPrivate::SPDYClosed) {
+        sendRST_STREAM(streamID, RST_STREAM_STREAM_ALREADY_CLOSED);
+        return;
+    }
+
     QByteArray uncompressedHeader;
     if (!uncompressHeader(headerValuePairs, &uncompressedHeader)) {
         qWarning() << Q_FUNC_INFO << "error reading header from SYN_REPLY message";
@@ -973,22 +978,9 @@ void QSpdyProtocolHandler::parseHttpHeaders(char flags, const QByteArray &frameD
     emit httpReply->headerChanged();
 
     if (flag_fin) {
-        switch (httpReply->d_func()->state) {
-        case QHttpNetworkReplyPrivate::SPDYSYNSent:
-            httpReply->d_func()->state = QHttpNetworkReplyPrivate::SPDYHalfClosed;
-            break;
-        case QHttpNetworkReplyPrivate::SPDYHalfClosed:
-            replyFinished(httpReply, streamID);
-            break;
-        case QHttpNetworkReplyPrivate::SPDYClosed: {
-            sendRST_STREAM(streamID, RST_STREAM_PROTOCOL_ERROR);
-            replyFinishedWithError(httpReply, streamID, QNetworkReply::ProtocolFailure,
-                                   "server sent SYN_REPLY on an already closed stream");
-            break;
-        }
-        default:
-            qWarning() << Q_FUNC_INFO << "got data frame in unknown state";
-        }
+        if (httpReply->d_func()->state != QHttpNetworkReplyPrivate::SPDYHalfClosed)
+            sendDataFrame(streamID, DataFrame_FLAG_FIN, 0, 0);
+        replyFinished(httpReply, streamID);
     }
 }
 
@@ -1238,6 +1230,11 @@ void QSpdyProtocolHandler::handleDataFrame(const QByteArray &frameHeaders)
 
     QHttpNetworkReplyPrivate *replyPrivate = httpReply->d_func();
 
+    if (replyPrivate->state == QHttpNetworkReplyPrivate::SPDYClosed) {
+        sendRST_STREAM(streamID, RST_STREAM_STREAM_ALREADY_CLOSED);
+        return;
+    }
+
     // check whether we need to send WINDOW_UPDATE (i.e. tell the sender it can send more)
     replyPrivate->currentlyReceivedDataInWindow += length;
     qint32 dataLeftInWindow = replyPrivate->windowSizeDownload - replyPrivate->currentlyReceivedDataInWindow;
@@ -1290,23 +1287,9 @@ void QSpdyProtocolHandler::handleDataFrame(const QByteArray &frameHeaders)
     }
 
     if (flag_fin) {
-        switch (httpReply->d_func()->state) {
-        case QHttpNetworkReplyPrivate::SPDYSYNSent:
-            httpReply->d_func()->state = QHttpNetworkReplyPrivate::SPDYHalfClosed;
-            // ### send FIN ourselves?
-            break;
-        case QHttpNetworkReplyPrivate::SPDYHalfClosed:
-            replyFinished(httpReply, streamID);
-            break;
-        case QHttpNetworkReplyPrivate::SPDYClosed: {
-            sendRST_STREAM(streamID, RST_STREAM_PROTOCOL_ERROR);
-            replyFinishedWithError(httpReply, streamID, QNetworkReply::ProtocolFailure,
-                                   "server sent data on an already closed stream");
-            break;
-        }
-        default:
-            qWarning() << Q_FUNC_INFO << "got data frame in unknown state";
-        }
+        if (httpReply->d_func()->state != QHttpNetworkReplyPrivate::SPDYHalfClosed)
+            sendDataFrame(streamID, DataFrame_FLAG_FIN, 0, 0);
+        replyFinished(httpReply, streamID);
     }
 }
 
