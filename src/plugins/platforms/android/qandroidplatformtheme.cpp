@@ -47,6 +47,7 @@
 #include <QVariant>
 #include <QFileInfo>
 #include <QCoreApplication>
+#include <private/qguiapplication_p.h>
 #include <qandroidplatformintegration.h>
 
 QAndroidPlatformTheme::QAndroidPlatformTheme(QAndroidPlatformNativeInterface *androidPlatformNativeInterface)
@@ -179,7 +180,30 @@ QVariant QAndroidPlatformTheme::themeHint(ThemeHint hint) const
             return QStringList("android");
         }
         return QStringList("fusion");
-        break;
+
+    case MouseDoubleClickDistance:
+    {
+            int minimumDistance = qgetenv("QT_ANDROID_MINIMUM_MOUSE_DOUBLE_CLICK_DISTANCE").toInt();
+            int ret = minimumDistance;
+
+            QAndroidPlatformIntegration *platformIntegration
+                    = static_cast<QAndroidPlatformIntegration *>(QGuiApplicationPrivate::platformIntegration());
+            QAndroidPlatformScreen *platformScreen = platformIntegration->screen();
+            if (platformScreen != 0) {
+                QScreen *screen = platformScreen->screen();
+                qreal dotsPerInch = screen->physicalDotsPerInch();
+
+                // Allow 15% of an inch between clicks when double clicking
+                int distance = qRound(dotsPerInch * 0.15);
+                if (distance > minimumDistance)
+                    ret = distance;
+            }
+
+            if (ret > 0)
+                return ret;
+
+            // fall through
+    }
     default:
         return QPlatformTheme::themeHint(hint);
     }

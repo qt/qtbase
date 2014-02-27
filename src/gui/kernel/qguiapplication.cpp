@@ -145,7 +145,7 @@ ulong QGuiApplicationPrivate::mousePressTime = 0;
 Qt::MouseButton QGuiApplicationPrivate::mousePressButton = Qt::NoButton;
 int QGuiApplicationPrivate::mousePressX = 0;
 int QGuiApplicationPrivate::mousePressY = 0;
-int QGuiApplicationPrivate::mouse_double_click_distance = 5;
+int QGuiApplicationPrivate::mouse_double_click_distance = -1;
 
 static Qt::LayoutDirection layout_direction = Qt::LeftToRight;
 static bool force_reverse = false;
@@ -1254,6 +1254,8 @@ void QGuiApplicationPrivate::init()
 
     initPalette();
     QFont::initialize();
+
+    mouse_double_click_distance = platformTheme()->themeHint(QPlatformTheme::MouseDoubleClickDistance).toInt();
 
 #ifndef QT_NO_CURSOR
     QCursorData::initialize();
