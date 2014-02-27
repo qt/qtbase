@@ -103,7 +103,7 @@ class Q_GUI_EXPORT QWindow : public QObject, public QSurface
     // C++ properties in qwindow.cpp AND as QML properties in qquickwindow.cpp.
     // http://qt-project.org/doc/qt-5.0/qtqml/qtqml-cppintegration-definetypes.html#type-revisions-and-versions
 
-    Q_PROPERTY(QString title READ title WRITE setTitle)
+    Q_PROPERTY(QString title READ title WRITE setTitle NOTIFY windowTitleChanged)
     Q_PROPERTY(Qt::WindowModality modality READ modality WRITE setModality NOTIFY modalityChanged)
     Q_PROPERTY(Qt::WindowFlags flags READ flags WRITE setFlags)
     Q_PROPERTY(int x READ x WRITE setX NOTIFY xChanged)
@@ -297,6 +297,7 @@ Q_SIGNALS:
     void screenChanged(QScreen *screen);
     void modalityChanged(Qt::WindowModality modality);
     void windowStateChanged(Qt::WindowState windowState);
+    void windowTitleChanged(const QString &title);
 
     void xChanged(int arg);
     void yChanged(int arg);
