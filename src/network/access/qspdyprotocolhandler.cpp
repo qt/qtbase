@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2014 BlackBerry Limited. All rights reserved.
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -694,6 +695,10 @@ void QSpdyProtocolHandler::sendPING(quint32 pingID)
 bool QSpdyProtocolHandler::uploadData(qint32 streamID)
 {
     // we only rely on SPDY flow control here and don't care about TCP buffers
+    if (!m_inFlightStreams.contains(streamID)) {
+        sendRST_STREAM(streamID, RST_STREAM_INVALID_STREAM);
+        return false;
+    }
 
     HttpMessagePair messagePair = m_inFlightStreams.value(streamID);
     QHttpNetworkRequest request = messagePair.first;
@@ -874,6 +879,10 @@ void QSpdyProtocolHandler::handleSYN_REPLY(char flags, quint32 /*length*/, const
 void QSpdyProtocolHandler::parseHttpHeaders(char flags, const QByteArray &frameData)
 {
     qint32 streamID = getStreamID(frameData.constData());
+    if (!m_inFlightStreams.contains(streamID)) {
+        sendRST_STREAM(streamID, RST_STREAM_INVALID_STREAM);
+        return;
+    }
 
     flags &= 0x3f;
     bool flag_fin = flags & 0x01;
@@ -891,16 +900,31 @@ void QSpdyProtocolHandler::parseHttpHeaders(char flags, const QByteArray &frameD
     }
 
     qint32 headerCount = fourBytesToInt(uncompressedHeader.constData());
+    if (headerCount * 8 > uncompressedHeader.size()) {
+        qWarning() << Q_FUNC_INFO << "error parsing header from SYN_REPLY message";
+        sendRST_STREAM(streamID, RST_STREAM_PROTOCOL_ERROR);
+        return;
+    }
     qint32 readPointer = 4;
     for (qint32 a = 0; a < headerCount; ++a) {
         qint32 count = fourBytesToInt(uncompressedHeader.constData() + readPointer);
         readPointer += 4;
         QByteArray name = uncompressedHeader.mid(readPointer, count);
         readPointer += count;
+        if (readPointer > uncompressedHeader.size()) {
+            qWarning() << Q_FUNC_INFO << "error parsing header from SYN_REPLY message";
+            sendRST_STREAM(streamID, RST_STREAM_PROTOCOL_ERROR);
+            return;
+        }
         count = fourBytesToInt(uncompressedHeader.constData() + readPointer);
         readPointer += 4;
         QByteArray value = uncompressedHeader.mid(readPointer, count);
         readPointer += count;
+        if (readPointer > uncompressedHeader.size()) {
+            qWarning() << Q_FUNC_INFO << "error parsing header from SYN_REPLY message";
+            sendRST_STREAM(streamID, RST_STREAM_PROTOCOL_ERROR);
+            return;
+        }
         if (name == ":status") {
             httpReply->setStatusCode(value.left(3).toInt());
             httpReply->d_func()->reasonPhrase = QString::fromLatin1(value.mid(4));
@@ -1143,6 +1167,11 @@ void QSpdyProtocolHandler::handleWINDOW_UPDATE(char /*flags*/, quint32 /*length*
     qint32 streamID = getStreamID(frameData.constData());
     qint32 deltaWindowSize = fourBytesToInt(frameData.constData() + 4);
 
+    if (!m_inFlightStreams.contains(streamID)) {
+        sendRST_STREAM(streamID, RST_STREAM_INVALID_STREAM);
+        return;
+    }
+
     QHttpNetworkReply *reply = m_inFlightStreams.value(streamID).second;
     Q_ASSERT(reply);
     QHttpNetworkReplyPrivate *replyPrivate = reply->d_func();
@@ -1158,6 +1187,11 @@ void QSpdyProtocolHandler::handleDataFrame(const QByteArray &frameHeaders)
     Q_ASSERT(frameHeaders.count() >= 8);
 
     qint32 streamID = getStreamID(frameHeaders.constData());
+    if (!m_inFlightStreams.contains(streamID)) {
+        sendRST_STREAM(streamID, RST_STREAM_INVALID_STREAM);
+        return;
+    }
+
     unsigned char flags = static_cast<unsigned char>(frameHeaders.at(4));
     flags &= 0x3f;
     bool flag_fin = flags & 0x01;
