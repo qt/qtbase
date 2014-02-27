@@ -104,8 +104,10 @@ public:
             dirty = false;
 
 // This is a workaround for http://gcc.gnu.org/bugzilla/show_bug.cgi?id=58800
-// Avoid using std::nth_element for stdlibc++ <= 4.7.3 || (>= 4.8.0 && <= 4.8.2)
-#if defined(__GLIBCXX__) && (__GLIBCXX__ <= 20130411 || (__GLIBCXX__ >= 20130322 && __GLIBCXX__ <= 20131016))
+// Avoid using std::nth_element for the affected stdlibc++ releases 4.7.3 and 4.8.2.
+// Note that the official __GLIBCXX__ value of the releases is not used since that
+// one might be patched on some GNU/Linux distributions.
+#if defined(__GLIBCXX__) && __GLIBCXX__ <= 20140107
             QVector<T> sorted = values;
             std::sort(sorted.begin(), sorted.end());
             currentMedian = sorted.at(bufferSize / 2);
