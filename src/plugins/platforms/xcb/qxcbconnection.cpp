@@ -766,6 +766,7 @@ namespace {
             xcb_timestamp_t time;
             uint8_t deviceID;
         } any;
+        xcb_xkb_new_keyboard_notify_event_t new_keyboard_notify;
         xcb_xkb_map_notify_event_t map_notify;
         xcb_xkb_state_notify_event_t state_notify;
     } _xkb_event;
@@ -796,15 +797,11 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
         case XCB_EXPOSE:
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_expose_event_t, window, handleExposeEvent);
         case XCB_BUTTON_PRESS:
-#ifdef QT_NO_XKB
             m_keyboard->updateXKBStateFromCore(((xcb_button_press_event_t *)event)->state);
-#endif
             handleButtonPress(event);
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_button_press_event_t, event, handleButtonPressEvent);
         case XCB_BUTTON_RELEASE:
-#ifdef QT_NO_XKB
             m_keyboard->updateXKBStateFromCore(((xcb_button_release_event_t *)event)->state);
-#endif
             handleButtonRelease(event);
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_button_release_event_t, event, handleButtonReleaseEvent);
         case XCB_MOTION_NOTIFY:
@@ -812,9 +809,7 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
                 xcb_motion_notify_event_t *mev = (xcb_motion_notify_event_t *)event;
                 qDebug("xcb: moved mouse to %4d, %4d; button state %X", mev->event_x, mev->event_y, static_cast<unsigned int>(m_buttons));
             }
-#ifdef QT_NO_XKB
             m_keyboard->updateXKBStateFromCore(((xcb_motion_notify_event_t *)event)->state);
-#endif
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_motion_notify_event_t, event, handleMotionNotifyEvent);
         case XCB_CONFIGURE_NOTIFY:
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_configure_notify_event_t, event, handleConfigureNotifyEvent);
@@ -830,29 +825,21 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
         case XCB_ENTER_NOTIFY:
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_enter_notify_event_t, event, handleEnterNotifyEvent);
         case XCB_LEAVE_NOTIFY:
-#ifdef QT_NO_XKB
             m_keyboard->updateXKBStateFromCore(((xcb_leave_notify_event_t *)event)->state);
-#endif
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_leave_notify_event_t, event, handleLeaveNotifyEvent);
         case XCB_FOCUS_IN:
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_focus_in_event_t, event, handleFocusInEvent);
         case XCB_FOCUS_OUT:
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_focus_out_event_t, event, handleFocusOutEvent);
         case XCB_KEY_PRESS:
-#ifdef QT_NO_XKB
             m_keyboard->updateXKBStateFromCore(((xcb_key_press_event_t *)event)->state);
-#endif
             HANDLE_KEYBOARD_EVENT(xcb_key_press_event_t, handleKeyPressEvent);
         case XCB_KEY_RELEASE:
-#ifdef QT_NO_XKB
             m_keyboard->updateXKBStateFromCore(((xcb_key_release_event_t *)event)->state);
-#endif
             HANDLE_KEYBOARD_EVENT(xcb_key_release_event_t, handleKeyReleaseEvent);
-#ifdef QT_NO_XKB
         case XCB_MAPPING_NOTIFY:
             m_keyboard->handleMappingNotifyEvent((xcb_mapping_notify_event_t *)event);
             break;
-#endif
         case XCB_SELECTION_REQUEST:
         {
             xcb_selection_request_event_t *sr = (xcb_selection_request_event_t *)event;
@@ -920,6 +907,8 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
             _xkb_event *xkb_event = reinterpret_cast<_xkb_event *>(event);
             if (xkb_event->any.deviceID == m_keyboard->coreDeviceId()) {
                 switch (xkb_event->any.xkbType) {
+                    // XkbNewKkdNotify and XkbMapNotify together capture all sorts of keymap
+                    // updates (e.g. xmodmap, xkbcomp, setxkbmap), with minimal redundent recompilations.
                     case XCB_XKB_STATE_NOTIFY:
                         m_keyboard->updateXKBState(&xkb_event->state_notify);
                         handled = true;
@@ -928,6 +917,12 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
                         m_keyboard->handleMappingNotifyEvent(&xkb_event->map_notify);
                         handled = true;
                         break;
+                    case XCB_XKB_NEW_KEYBOARD_NOTIFY: {
+                        xcb_xkb_new_keyboard_notify_event_t *ev = &xkb_event->new_keyboard_notify;
+                        if (ev->changed & XCB_XKB_NKN_DETAIL_KEYCODES)
+                            m_keyboard->updateKeymap();
+                        break;
+                    }
                     default:
                         break;
                 }
@@ -1661,6 +1656,7 @@ void QXcbConnection::initializeXKB()
 #ifndef QT_NO_XKB
     const xcb_query_extension_reply_t *reply = xcb_get_extension_data(m_connection, &xcb_xkb_id);
     if (!reply || !reply->present) {
+        qWarning() << "Qt: XKEYBOARD extension not present on the X server.";
         xkb_first_event = 0;
         return;
     }
@@ -1670,14 +1666,14 @@ void QXcbConnection::initializeXKB()
     xcb_xkb_use_extension_cookie_t xkb_query_cookie;
     xcb_xkb_use_extension_reply_t *xkb_query;
 
-    xkb_query_cookie = xcb_xkb_use_extension(c, XCB_XKB_MAJOR_VERSION, XCB_XKB_MINOR_VERSION);
+    xkb_query_cookie = xcb_xkb_use_extension(c, XKB_X11_MIN_MAJOR_XKB_VERSION, XKB_X11_MIN_MINOR_XKB_VERSION);
     xkb_query = xcb_xkb_use_extension_reply(c, xkb_query_cookie, 0);
 
     if (!xkb_query) {
         qWarning("Qt: Failed to initialize XKB extension");
         return;
     } else if (!xkb_query->supported) {
-        qWarning("Qt: Unsupported XKB version (want %d %d, has %d %d)",
+        qWarning("Qt: Unsupported XKB version (We want %d %d, but X server has %d %d)",
                  XCB_XKB_MAJOR_VERSION, XCB_XKB_MINOR_VERSION,
                  xkb_query->serverMajor, xkb_query->serverMinor);
         free(xkb_query);
@@ -1687,25 +1683,28 @@ void QXcbConnection::initializeXKB()
     has_xkb = true;
     free(xkb_query);
 
-    uint affectMap, map;
-    affectMap = map = XCB_XKB_MAP_PART_KEY_TYPES |
-            XCB_XKB_MAP_PART_KEY_SYMS |
-            XCB_XKB_MAP_PART_MODIFIER_MAP |
-            XCB_XKB_MAP_PART_EXPLICIT_COMPONENTS |
-            XCB_XKB_MAP_PART_KEY_ACTIONS |
-            XCB_XKB_MAP_PART_KEY_BEHAVIORS |
-            XCB_XKB_MAP_PART_VIRTUAL_MODS |
-            XCB_XKB_MAP_PART_VIRTUAL_MOD_MAP;
+    const uint16_t required_map_parts = (XCB_XKB_MAP_PART_KEY_TYPES |
+        XCB_XKB_MAP_PART_KEY_SYMS |
+        XCB_XKB_MAP_PART_MODIFIER_MAP |
+        XCB_XKB_MAP_PART_EXPLICIT_COMPONENTS |
+        XCB_XKB_MAP_PART_KEY_ACTIONS |
+        XCB_XKB_MAP_PART_KEY_BEHAVIORS |
+        XCB_XKB_MAP_PART_VIRTUAL_MODS |
+        XCB_XKB_MAP_PART_VIRTUAL_MOD_MAP);
 
-    // Xkb events are reported to all interested clients without regard
+    const uint16_t required_events = (XCB_XKB_EVENT_TYPE_NEW_KEYBOARD_NOTIFY |
+        XCB_XKB_EVENT_TYPE_MAP_NOTIFY |
+        XCB_XKB_EVENT_TYPE_STATE_NOTIFY);
+
+    // XKB events are reported to all interested clients without regard
     // to the current keyboard input focus or grab state
     xcb_void_cookie_t select = xcb_xkb_select_events_checked(c,
                        XCB_XKB_ID_USE_CORE_KBD,
-                       XCB_XKB_EVENT_TYPE_STATE_NOTIFY | XCB_XKB_EVENT_TYPE_MAP_NOTIFY,
+                       required_events,
                        0,
-                       XCB_XKB_EVENT_TYPE_STATE_NOTIFY | XCB_XKB_EVENT_TYPE_MAP_NOTIFY,
-                       affectMap,
-                       map,
+                       required_events,
+                       required_map_parts,
+                       required_map_parts,
                        0);
 
     xcb_generic_error_t *error = xcb_request_check(c, select);

@@ -44,11 +44,15 @@
 
 #include "qxcbobject.h"
 
-#ifdef QT_NO_XKB
 #include <xcb/xcb_keysyms.h>
-#endif
 
 #include <xkbcommon/xkbcommon.h>
+#ifndef QT_NO_XKB
+// note: extern won't be needed from libxkbcommon 0.4.1 and above
+extern "C" {
+#include <xkbcommon/xkbcommon-x11.h>
+}
+#endif
 
 #include <QEvent>
 
@@ -65,41 +69,37 @@ public:
 
     void handleKeyPressEvent(QXcbWindowEventListener *eventListener, const xcb_key_press_event_t *event);
     void handleKeyReleaseEvent(QXcbWindowEventListener *eventListener, const xcb_key_release_event_t *event);
-
     void handleMappingNotifyEvent(const void *event);
 
     Qt::KeyboardModifiers translateModifiers(int s) const;
-
     void updateKeymap();
     QList<int> possibleKeys(const QKeyEvent *e) const;
 
-#ifdef QT_NO_XKB
-    void updateXKBStateFromCore(quint16 state);
+    // when XKEYBOARD not present on the X server
     void updateXKBMods();
     quint32 xkbModMask(quint16 state);
-#else
-    int coreDeviceId() { return core_device_id; }
+    void updateXKBStateFromCore(quint16 state);
+    // when XKEYBOARD is present on the X server
+    int coreDeviceId() const { return core_device_id; }
+#ifndef QT_NO_XKB
     void updateXKBState(xcb_xkb_state_notify_event_t *state);
 #endif
 
 protected:
     void handleKeyEvent(QWindow *window, QEvent::Type type, xcb_keycode_t code, quint16 state, xcb_timestamp_t time);
+
     void resolveMaskConflicts();
-
     QString keysymToUnicode(xcb_keysym_t sym) const;
-
     int keysymToQtKey(xcb_keysym_t keysym) const;
     int keysymToQtKey(xcb_keysym_t keysym, Qt::KeyboardModifiers &modifiers, QString text) const;
 
     void readXKBConfig();
     void clearXKBConfig();
-
-#ifdef QT_NO_XKB
+    // when XKEYBOARD not present on the X server
     void updateModifiers();
-#else
+    // when XKEYBOARD is present on the X server
     void updateVModMapping();
     void updateVModToRModMapping();
-#endif
 
 private:
     bool m_config;
@@ -120,9 +120,8 @@ private:
 
     _mod_masks rmod_masks;
 
-#ifdef QT_NO_XKB
+    // when XKEYBOARD not present on the X server
     xcb_key_symbols_t *m_key_symbols;
-
     struct _xkb_mods {
         xkb_mod_index_t shift;
         xkb_mod_index_t lock;
@@ -133,12 +132,10 @@ private:
         xkb_mod_index_t mod4;
         xkb_mod_index_t mod5;
     };
-
     _xkb_mods xkb_mods;
-#else
+    // when XKEYBOARD is present on the X server
     _mod_masks vmod_masks;
     int core_device_id;
-#endif
 };
 
 QT_END_NAMESPACE
