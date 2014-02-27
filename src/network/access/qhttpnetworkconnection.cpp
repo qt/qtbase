@@ -864,6 +864,19 @@ void QHttpNetworkConnectionPrivate::removeReply(QHttpNetworkReply *reply)
                return;
             }
         }
+#ifndef QT_NO_SSL
+        // is the reply inside the SPDY pipeline of this channel already?
+        QMultiMap<int, HttpMessagePair>::iterator it = channels[i].spdyRequestsToSend.begin();
+        QMultiMap<int, HttpMessagePair>::iterator end = channels[i].spdyRequestsToSend.end();
+        for (; it != end; ++it) {
+            if (it.value().second == reply) {
+                channels[i].spdyRequestsToSend.remove(it.key());
+
+                QMetaObject::invokeMethod(q, "_q_startNextRequest", Qt::QueuedConnection);
+                return;
+            }
+        }
+#endif
     }
     // remove from the high priority queue
     if (!highPriorityQueue.isEmpty()) {
