@@ -412,9 +412,17 @@ QString QWindowsContext::registerWindowClass(const QWindow *w, bool isGL)
         && (type == Qt::Popup || w->property("_q_windowsDropShadow").toBool())) {
         style |= CS_DROPSHADOW;
     }
-    if (type == Qt::Tool || type == Qt::ToolTip || type == Qt::Popup) {
+    switch (type) {
+    case Qt::Tool:
+    case Qt::ToolTip:
+    case Qt::Popup:
         style |= CS_SAVEBITS; // Save/restore background
         icon = false;
+        break;
+    case Qt::Dialog:
+        if (!(flags & Qt::WindowSystemMenuHint))
+            icon = false; // QTBUG-2027, dialogs without system menu.
+        break;
     }
     // Create a unique name for the flag combination
     QString cname = QStringLiteral("Qt5QWindow");

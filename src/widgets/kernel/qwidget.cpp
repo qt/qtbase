@@ -1064,7 +1064,11 @@ void QWidgetPrivate::adjustFlags(Qt::WindowFlags &flags, QWidget *w)
         // interpret WindowSystemMenuHint as a close button and we can't change that behavior
         // we can't just add this in.
 #ifndef Q_WS_MAC
-        if (flags & (Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint | Qt::WindowContextHelpButtonHint)) {
+        if ((flags & (Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint | Qt::WindowContextHelpButtonHint))
+#  ifdef Q_OS_WIN
+            && type != Qt::Dialog // QTBUG-2027, allow for menu-less dialogs.
+#  endif
+           ) {
             flags |= Qt::WindowSystemMenuHint;
 #else
         if (flags & (Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint
