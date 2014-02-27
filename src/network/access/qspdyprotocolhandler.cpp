@@ -309,11 +309,13 @@ bool QSpdyProtocolHandler::sendRequest()
 
         currentReply->setSpdyWasUsed(true);
         qint32 streamID = generateNextStreamID();
+        currentReply->setProperty("SPDYStreamID", streamID);
 
         currentReply->setRequest(currentRequest);
         currentReply->d_func()->connection = m_connection;
         currentReply->d_func()->connectionChannel = m_channel;
         m_inFlightStreams.insert(streamID, currentPair);
+        connect(currentReply, SIGNAL(destroyed(QObject*)), this, SLOT(_q_replyDestroyed(QObject*)));
 
         sendSYN_STREAM(currentPair, streamID, /* associatedToStreamID = */ 0);
         int requestsRemoved = m_channel->spdyRequestsToSend.remove(
@@ -323,6 +325,13 @@ bool QSpdyProtocolHandler::sendRequest()
     }
     m_channel->state = QHttpNetworkConnectionChannel::IdleState;
     return true;
+}
+
+void QSpdyProtocolHandler::_q_replyDestroyed(QObject* reply)
+{
+    qint32 streamID = reply->property("SPDYStreamID").toInt();
+    if (m_inFlightStreams.remove(streamID))
+        sendRST_STREAM(streamID, RST_STREAM_CANCEL);
 }
 
 void QSpdyProtocolHandler::_q_receiveReply()
