@@ -524,7 +524,10 @@ void QWidgetPrivate::show_sys()
         return;
     }
 
-    QApplication::postEvent(q, new QUpdateLaterEvent(q->rect()));
+    if (renderToTexture && !q->isWindow())
+        QApplication::postEvent(q->parentWidget(), new QUpdateLaterEvent(q->geometry()));
+    else
+        QApplication::postEvent(q, new QUpdateLaterEvent(q->rect()));
 
     if (!q->isWindow() && !q->testAttribute(Qt::WA_NativeWindow))
         return;
@@ -588,7 +591,10 @@ void QWidgetPrivate::hide_sys()
     if (!q->isWindow()) {
         QWidget *p = q->parentWidget();
         if (p &&p->isVisible()) {
-            invalidateBuffer(q->rect());
+            if (renderToTexture)
+                p->d_func()->invalidateBuffer(q->geometry());
+            else
+                invalidateBuffer(q->rect());
         }
     } else {
         invalidateBuffer(q->rect());
@@ -663,6 +669,11 @@ void QWidgetPrivate::raise_sys()
     Q_Q(QWidget);
     if (q->isWindow() || q->testAttribute(Qt::WA_NativeWindow)) {
         q->windowHandle()->raise();
+    } else if (renderToTexture) {
+        if (QWidget *p = q->parentWidget()) {
+            setDirtyOpaqueRegion();
+            p->d_func()->invalidateBuffer(effectiveRectFor(q->geometry()));
+        }
     }
 }
 
