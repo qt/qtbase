@@ -2,6 +2,16 @@
     Copyright (c) 2011-2013, BogDan Vatra <bogdan@kde.org>
     Contact: http://www.qt-project.org/legal
 
+    Commercial License Usage
+    Licensees holding valid commercial Qt licenses may use this file in
+    accordance with the commercial license agreement provided with the
+    Software or, alternatively, in accordance with the terms contained in
+    a written agreement between you and Digia.  For licensing terms and
+    conditions see http://qt.digia.com/licensing.  For further information
+    use the contact form at http://qt.digia.com/contact-us.
+
+    BSD License Usage
+    Alternatively, this file may be used under the BSD license as follows:
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
     are met:
