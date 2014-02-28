@@ -4186,6 +4186,91 @@ QByteArray QByteArray::fromPercentEncoding(const QByteArray &input, char percent
     return tmp;
 }
 
+/*! \fn QByteArray QByteArray::fromCFData(CFDataRef data)
+    \since 5.3
+
+    Constructs a new QByteArray containing a copy of the CFData \a data.
+
+    \sa fromRawCFData(), fromRawData(), toRawCFData(), toCFData()
+*/
+
+/*! \fn QByteArray QByteArray::fromRawCFData(CFDataRef data)
+    \since 5.3
+
+    Constructs a QByteArray that uses the bytes of the CFData \a data.
+
+    The \a data's bytes are not copied.
+
+    The caller guarantees that the CFData will not be deleted
+    or modified as long as this QByteArray object exists.
+
+    \sa fromCFData(), fromRawData(), toRawCFData(), toCFData()
+*/
+
+/*! \fn CFDataRef QByteArray::toCFData() const
+    \since 5.3
+
+    Creates a CFData from a QByteArray. The caller owns the CFData object
+    and is responsible for releasing it.
+
+    \sa toRawCFData(), fromCFData(), fromRawCFData(), fromRawData()
+*/
+
+/*! \fn CFDataRef QByteArray::toRawCFData() const
+    \since 5.3
+
+    Constructs a CFData that uses the bytes of the QByteArray.
+
+    The QByteArray's bytes are not copied.
+
+    The caller guarantees that the QByteArray will not be deleted
+    or modified as long as this CFData object exists.
+
+    \sa toCFData(), fromRawCFData(), fromCFData(), fromRawData()
+*/
+
+/*! \fn QByteArray QByteArray::fromNSData(const NSData *data)
+    \since 5.3
+
+    Constructs a new QByteArray containing a copy of the NSData \a data.
+
+    \sa fromRawNSData(), fromRawData(), toNSData(), toRawNSData()
+*/
+
+/*! \fn QByteArray QByteArray::fromRawNSData(const NSData *data)
+    \since 5.3
+
+    Constructs a QByteArray that uses the bytes of the NSData \a data.
+
+    The \a data's bytes are not copied.
+
+    The caller guarantees that the NSData will not be deleted
+    or modified as long as this QByteArray object exists.
+
+    \sa fromNSData(), fromRawData(), toRawNSData(), toNSData()
+*/
+
+/*! \fn NSData QByteArray::toNSData() const
+    \since 5.3
+
+    Creates a NSData from a QByteArray. The NSData object is autoreleased.
+
+    \sa fromNSData(), fromRawNSData(), fromRawData(), toRawNSData()
+*/
+
+/*! \fn NSData QByteArray::toRawNSData() const
+    \since 5.3
+
+    Constructs a NSData that uses the bytes of the QByteArray.
+
+    The QByteArray's bytes are not copied.
+
+    The caller guarantees that the QByteArray will not be deleted
+    or modified as long as this NSData object exists.
+
+    \sa fromRawNSData(), fromNSData(), fromRawData(), toNSData()
+*/
+
 static inline bool q_strchr(const char str[], char chr)
 {
     if (!str) return false;
