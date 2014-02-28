@@ -44,12 +44,18 @@
 #include <QtCore/qthreadstorage.h>
 #include <QtCore/qhash.h>
 #include <QtCore/qstring.h>
+#include <QtCore/QThread>
 
 QT_BEGIN_NAMESPACE
 
 static inline QString keyBase()
 {
     return QStringLiteral("%1%2%3");
+}
+
+static inline QByteArray threadBaseName()
+{
+    return QByteArrayLiteral("QtThread-");
 }
 
 static QString qt_convertJString(jstring string)
@@ -179,7 +185,10 @@ QJNIEnvironmentPrivate::QJNIEnvironmentPrivate()
 {
     JavaVM *vm = QtAndroidPrivate::javaVM();
     if (vm->GetEnv((void**)&jniEnv, JNI_VERSION_1_6) == JNI_EDETACHED) {
-        if (vm->AttachCurrentThread(&jniEnv, 0) != JNI_OK)
+        const qulonglong id = reinterpret_cast<qulonglong>(QThread::currentThreadId());
+        const QByteArray threadName = threadBaseName() + QByteArray::number(id);
+        JavaVMAttachArgs args = { JNI_VERSION_1_6, threadName, Q_NULLPTR };
+        if (vm->AttachCurrentThread(&jniEnv, &args) != JNI_OK)
             return;
     }
 
