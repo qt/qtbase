@@ -1007,16 +1007,17 @@ static void init_platform(const QString &pluginArgument, const QString &platform
     if (!platformThemeName.isEmpty())
         themeNames.append(platformThemeName);
 
-    // 2) Ask the platform integration for a list of names and try loading them.
+    // 2) Ask the platform integration for a list of theme names
     themeNames += QGuiApplicationPrivate::platform_integration->themeNames();
+    // 3) Look for a theme plugin.
     foreach (const QString &themeName, themeNames) {
         QGuiApplicationPrivate::platform_theme = QPlatformThemeFactory::create(themeName, platformPluginPath);
         if (QGuiApplicationPrivate::platform_theme)
             break;
     }
 
-    // 3) If none found, look for a theme plugin. Theme plugins are located in the
-    // same directory as platform plugins.
+    // 4) If no theme plugin was found ask the platform integration to
+    // create a theme
     if (!QGuiApplicationPrivate::platform_theme) {
         foreach (const QString &themeName, themeNames) {
             QGuiApplicationPrivate::platform_theme = QGuiApplicationPrivate::platform_integration->createPlatformTheme(themeName);
@@ -1026,7 +1027,7 @@ static void init_platform(const QString &pluginArgument, const QString &platform
         // No error message; not having a theme plugin is allowed.
     }
 
-    // 4) Fall back on the built-in "null" platform theme.
+    // 5) Fall back on the built-in "null" platform theme.
     if (!QGuiApplicationPrivate::platform_theme)
         QGuiApplicationPrivate::platform_theme = new QPlatformTheme;
 
