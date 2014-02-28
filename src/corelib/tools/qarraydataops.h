@@ -122,7 +122,7 @@ struct QPodArrayOps
         Q_ASSERT(b >= this->begin() && b < this->end());
         Q_ASSERT(e > this->begin() && e < this->end());
 
-        ::memmove(b, e, (this->end() - e) * sizeof(T));
+        ::memmove(b, e, (static_cast<T *>(this->end()) - e) * sizeof(T));
         this->size -= (e - b);
     }
 };

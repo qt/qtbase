@@ -210,7 +210,7 @@ void QEGLPlatformCursor::initCursorAtlas()
     m_cursorAtlas.cursorsPerRow = cursorsPerRow;
 
     const QJsonArray hotSpots = object.value(QLatin1String("hotSpots")).toArray();
-    Q_ASSERT(hotSpots.count() == Qt::LastCursor);
+    Q_ASSERT(hotSpots.count() == Qt::LastCursor + 1);
     for (int i = 0; i < hotSpots.count(); i++) {
         QPoint hotSpot(hotSpots[i].toArray()[0].toDouble(), hotSpots[i].toArray()[1].toDouble());
         m_cursorAtlas.hotSpots << hotSpot;
@@ -218,7 +218,7 @@ void QEGLPlatformCursor::initCursorAtlas()
 
     QImage image = QImage(atlas).convertToFormat(QImage::Format_ARGB32_Premultiplied);
     m_cursorAtlas.cursorWidth = image.width() / m_cursorAtlas.cursorsPerRow;
-    m_cursorAtlas.cursorHeight = image.height() / ((Qt::LastCursor + cursorsPerRow - 1) / cursorsPerRow);
+    m_cursorAtlas.cursorHeight = image.height() / ((Qt::LastCursor + cursorsPerRow) / cursorsPerRow);
     m_cursorAtlas.width = image.width();
     m_cursorAtlas.height = image.height();
     m_cursorAtlas.image = image;

@@ -1,0 +1,37 @@
+From 8ea24fcce69900f42299fd01772714a566f9111e Mon Sep 17 00:00:00 2001
+From: Andrew Knight <andrew.knight@digia.com>
+Date: Mon, 24 Feb 2014 11:08:23 +0200
+Subject: [PATCH] ANGLE: Fix compilation error on MinGW caused by trace_event.h
+
+The event trace header in ANGLE's third_party directory has an unused
+template which causes a compilation error on MinGW. Disable this part
+of the code.
+
+Change-Id: I167eac56507fafba34e3eb5ce6071d8f136a4e41
+---
+ src/3rdparty/angle/src/third_party/trace_event/trace_event.h | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/src/3rdparty/angle/src/third_party/trace_event/trace_event.h b/src/3rdparty/angle/src/third_party/trace_event/trace_event.h
+index 637cf9a..96ac910 100644
+--- a/src/3rdparty/angle/src/third_party/trace_event/trace_event.h
++++ b/src/3rdparty/angle/src/third_party/trace_event/trace_event.h
+@@ -791,6 +791,7 @@ private:
+ // TraceEventSamplingStateScope records the current sampling state
+ // and sets a new sampling state. When the scope exists, it restores
+ // the sampling state having recorded.
++#if 0 // This is not used by ANGLE and causes a compilation error on MinGW
+ template<size_t BucketNumber>
+ class SamplingStateScope {
+ public:
+@@ -818,6 +819,7 @@ public:
+ private:
+     const char* m_previousState;
+ };
++#endif
+ 
+ } // namespace TraceEvent
+ 
+-- 
+1.8.4.msysgit.0
+

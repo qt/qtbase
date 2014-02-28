@@ -44,6 +44,8 @@
 #include <qhash.h>
 #include <qmap.h>
 
+#include <algorithm>
+
 class tst_QHash : public QObject
 {
     Q_OBJECT
@@ -1167,7 +1169,7 @@ template <typename T>
 QList<T> sorted(const QList<T> &list)
 {
     QList<T> res = list;
-    qSort(res);
+    std::sort(res.begin(), res.end());
     return res;
 }
 

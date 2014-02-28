@@ -248,7 +248,7 @@ void *QCocoaNativeInterface::qMenuBarToNSMenu(QPlatformMenuBar *platformMenuBar)
 
 CGImageRef QCocoaNativeInterface::qImageToCGImage(const QImage &image)
 {
-    return qt_mac_toCGImage(image, false, 0);
+    return qt_mac_toCGImage(image);
 }
 
 QImage QCocoaNativeInterface::cgImageToQImage(CGImageRef image)

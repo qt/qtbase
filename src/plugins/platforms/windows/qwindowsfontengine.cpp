@@ -1148,7 +1148,7 @@ glyph_metrics_t QWindowsFontEngine::alphaMapBoundingBox(glyph_t glyph, QFixed, c
 {
     int margin = 0;
     if (format == QFontEngine::Format_A32 || format == QFontEngine::Format_ARGB)
-        margin = glyphMargin(QFontEngineGlyphCache::Raster_RGBMask);
+        margin = glyphMargin(QFontEngine::Format_A32);
     glyph_metrics_t gm = boundingBox(glyph, matrix);
     gm.width += margin * 2;
     gm.height += margin * 2;
@@ -1221,7 +1221,7 @@ QImage QWindowsFontEngine::alphaRGBMapForGlyph(glyph_t glyph, QFixed, const QTra
     SystemParametersInfo(SPI_GETFONTSMOOTHINGCONTRAST, 0, &contrast, 0);
     SystemParametersInfo(SPI_SETFONTSMOOTHINGCONTRAST, 0, (void *) 1000, 0);
 
-    int margin = glyphMargin(QFontEngineGlyphCache::Raster_RGBMask);
+    int margin = glyphMargin(QFontEngine::Format_A32);
     QWindowsNativeImage *mask = drawGDIGlyph(font, glyph, margin, t, QImage::Format_RGB32);
     SystemParametersInfo(SPI_SETFONTSMOOTHINGCONTRAST, 0, (void *) quintptr(contrast), 0);
 

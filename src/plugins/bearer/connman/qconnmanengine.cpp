@@ -98,8 +98,8 @@ void QConnmanEngine::initialize()
     ofonoContextManager = new QOfonoDataConnectionManagerInterface(ofonoManager->currentModem(),this);
     connect(ofonoContextManager,SIGNAL(roamingAllowedChanged(bool)),this,SLOT(reEvaluateCellular()));
 
-    connect(connmanManager,SIGNAL(servicesChanged(ConnmanMapList, QList<QDBusObjectPath>)),
-            this, SLOT(updateServices(ConnmanMapList, QList<QDBusObjectPath>)));
+    connect(connmanManager,SIGNAL(servicesChanged(ConnmanMapList,QList<QDBusObjectPath>)),
+            this, SLOT(updateServices(ConnmanMapList,QList<QDBusObjectPath>)));
 
     connect(connmanManager,SIGNAL(servicesReady(QStringList)),this,SLOT(servicesReady(QStringList)));
     connect(connmanManager,SIGNAL(scanFinished()),this,SLOT(finishedScan()));

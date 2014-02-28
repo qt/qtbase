@@ -90,6 +90,10 @@ template <int size> struct QBasicAtomicOps: QGenericAtomicOps<QBasicAtomicOps<si
     static inline Q_DECL_CONSTEXPR bool isFetchAndAddNative() Q_DECL_NOTHROW { return true; }
     template <typename T> static
     T fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW;
+
+private:
+    template <typename T> static inline T shrinkFrom32Bit(T value);
+    template <typename T> static inline T extendTo32Bit(T value);
 };
 
 template <typename T> struct QAtomicOps : QBasicAtomicOps<sizeof(T)>
@@ -257,6 +261,36 @@ template<> struct QAtomicOpsSupport<8> { enum { IsSupported = 1 }; };
 #define Q_ATOMIC_INT64_FETCH_AND_STORE_IS_ALWAYS_NATIVE
 #define Q_ATOMIC_INT64_FETCH_AND_ADD_IS_ALWAYS_NATIVE
 
+// note: if T is signed, parameters are passed sign-extended in the
+// registers. However, our 8- and 16-bit operations don't do sign
+// extension. So we need to clear out the input on entry and sign-extend again
+// on exit.
+template<int Size> template <typename T>
+T QBasicAtomicOps<Size>::shrinkFrom32Bit(T value)
+{
+    Q_STATIC_ASSERT(Size == 1 || Size == 2);
+    if (T(-1) > T(0))
+        return value;   // unsigned, ABI will zero extend
+    if (Size == 1)
+        asm volatile("and %0, %0, %1" : "+r" (value) : "I" (0xff));
+    else
+        asm volatile("and %0, %0, %1" : "+r" (value) : "r" (0xffff));
+    return value;
+}
+
+template<int Size> template <typename T>
+T QBasicAtomicOps<Size>::extendTo32Bit(T value)
+{
+    Q_STATIC_ASSERT(Size == 1 || Size == 2);
+    if (T(-1) > T(0))
+        return value;   // unsigned, ABI will zero extend
+    if (Size == 1)
+        asm volatile("sxtb %0, %0" : "+r" (value));
+    else
+        asm volatile("sxth %0, %0" : "+r" (value));
+    return value;
+}
+
 template<> template<typename T> inline
 bool QBasicAtomicOps<1>::ref(T &_q_value) Q_DECL_NOTHROW
 {
@@ -308,7 +342,7 @@ bool QBasicAtomicOps<1>::testAndSetRelaxed(T &_q_value, T expectedValue, T newVa
                  "beq 0b\n"
                  : [result] "=&r" (result),
                    "+m" (_q_value)
-                 : [expectedValue] "r" (expectedValue),
+                 : [expectedValue] "r" (shrinkFrom32Bit(expectedValue)),
                    [newValue] "r" (newValue),
                    [_q_value] "r" (&_q_value)
                  : "cc");
@@ -330,11 +364,11 @@ bool QBasicAtomicOps<1>::testAndSetRelaxed(T &_q_value, T expectedValue, T newVa
                  : [result] "=&r" (result),
                    [tempValue] "=&r" (tempValue),
                    "+m" (_q_value)
-                 : [expectedValue] "r" (expectedValue),
+                 : [expectedValue] "r" (shrinkFrom32Bit(expectedValue)),
                    [newValue] "r" (newValue),
                    [_q_value] "r" (&_q_value)
                  : "cc");
-    *currentValue = tempValue;
+    *currentValue = extendTo32Bit(tempValue);
     return result == 0;
 }
 
@@ -354,7 +388,7 @@ T QBasicAtomicOps<1>::fetchAndStoreRelaxed(T &_q_value, T newValue) Q_DECL_NOTHR
                  : [newValue] "r" (newValue),
                    [_q_value] "r" (&_q_value)
                  : "cc");
-    return originalValue;
+    return extendTo32Bit(originalValue);
 }
 
 template<> template <typename T> inline
@@ -376,7 +410,7 @@ T QBasicAtomicOps<1>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveTy
                  : [valueToAdd] "r" (valueToAdd * QAtomicAdditiveType<T>::AddScale),
                    [_q_value] "r" (&_q_value)
                  : "cc");
-    return originalValue;
+    return extendTo32Bit(originalValue);
 }
 
 template<> template<typename T> inline
@@ -430,7 +464,7 @@ bool QBasicAtomicOps<2>::testAndSetRelaxed(T &_q_value, T expectedValue, T newVa
                  "beq 0b\n"
                  : [result] "=&r" (result),
                    "+m" (_q_value)
-                 : [expectedValue] "r" (expectedValue),
+                 : [expectedValue] "r" (shrinkFrom32Bit(expectedValue)),
                    [newValue] "r" (newValue),
                    [_q_value] "r" (&_q_value)
                  : "cc");
@@ -452,11 +486,11 @@ bool QBasicAtomicOps<2>::testAndSetRelaxed(T &_q_value, T expectedValue, T newVa
                  : [result] "=&r" (result),
                    [tempValue] "=&r" (tempValue),
                    "+m" (_q_value)
-                 : [expectedValue] "r" (expectedValue),
+                 : [expectedValue] "r" (shrinkFrom32Bit(expectedValue)),
                    [newValue] "r" (newValue),
                    [_q_value] "r" (&_q_value)
                  : "cc");
-    *currentValue = tempValue;
+    *currentValue = extendTo32Bit(tempValue);
     return result == 0;
 }
 
@@ -476,7 +510,7 @@ T QBasicAtomicOps<2>::fetchAndStoreRelaxed(T &_q_value, T newValue) Q_DECL_NOTHR
                  : [newValue] "r" (newValue),
                    [_q_value] "r" (&_q_value)
                  : "cc");
-    return originalValue;
+    return extendTo32Bit(originalValue);
 }
 
 template<> template <typename T> inline
@@ -498,7 +532,7 @@ T QBasicAtomicOps<2>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveTy
                  : [valueToAdd] "r" (valueToAdd * QAtomicAdditiveType<T>::AddScale),
                    [_q_value] "r" (&_q_value)
                  : "cc");
-    return originalValue;
+    return extendTo32Bit(originalValue);
 }
 
 // Explanation from GCC's source code (config/arm/arm.c) on the modifiers below:

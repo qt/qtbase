@@ -341,6 +341,16 @@ QWindowsContext::~QWindowsContext()
     m_instance = 0;
 }
 
+void QWindowsContext::setTabletAbsoluteRange(int a)
+{
+#if !defined(QT_NO_TABLETEVENT) && !defined(Q_OS_WINCE)
+    if (!d->m_tabletSupport.isNull())
+        d->m_tabletSupport->setAbsoluteRange(a);
+#else
+    Q_UNUSED(a)
+#endif
+}
+
 QWindowsContext *QWindowsContext::instance()
 {
     return m_instance;

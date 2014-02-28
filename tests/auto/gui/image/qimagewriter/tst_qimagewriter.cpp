@@ -57,6 +57,8 @@
 # include <unistd.h>
 #endif
 
+#include <algorithm>
+
 typedef QMap<QString, QString> QStringMap;
 typedef QList<int> QIntList;
 Q_DECLARE_METATYPE(QImageWriter::ImageWriterError)
@@ -342,7 +344,7 @@ void tst_QImageWriter::supportedFormats()
 {
     QList<QByteArray> formats = QImageWriter::supportedImageFormats();
     QList<QByteArray> sortedFormats = formats;
-    qSort(sortedFormats);
+    std::sort(sortedFormats.begin(), sortedFormats.end());
 
     // check that the list is sorted
     QCOMPARE(formats, sortedFormats);
@@ -359,7 +361,7 @@ void tst_QImageWriter::supportedMimeTypes()
 {
     QList<QByteArray> mimeTypes = QImageWriter::supportedMimeTypes();
     QList<QByteArray> sortedMimeTypes = mimeTypes;
-    qSort(sortedMimeTypes);
+    std::sort(sortedMimeTypes.begin(), sortedMimeTypes.end());
 
     // check that the list is sorted
     QCOMPARE(mimeTypes, sortedMimeTypes);

@@ -171,7 +171,7 @@ bool QSpiApplicationAdaptor::eventFilter(QObject *target, QEvent *event)
         // FIXME: this is critical, the timeout should probably be pretty low to allow normal processing
         int timeout = 100;
         bool sent = dbusConnection.callWithCallback(m, this, SLOT(notifyKeyboardListenerCallback(QDBusMessage)),
-                        SLOT(notifyKeyboardListenerError(QDBusError, QDBusMessage)), timeout);
+                        SLOT(notifyKeyboardListenerError(QDBusError,QDBusMessage)), timeout);
         if (sent) {
             //queue the event and send it after callback
             keyEvents.enqueue(QPair<QPointer<QObject>, QKeyEvent*> (QPointer<QObject>(target), copyKeyEvent(keyEvent)));

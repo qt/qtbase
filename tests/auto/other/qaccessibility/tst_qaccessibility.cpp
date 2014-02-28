@@ -73,6 +73,8 @@
 
 #include "QtTest/qtestaccessible.h"
 
+#include <algorithm>
+
 // Make a widget frameless to prevent size constraints of title bars
 // from interfering (Windows).
 static inline void setFrameless(QWidget *w)
@@ -2192,7 +2194,7 @@ void tst_QAccessibility::dialogButtonBoxTest()
     for (int i = 0; i < iface->childCount(); ++i)
         buttons <<  iface->child(i);
 
-    qSort(buttons.begin(), buttons.end(), accessibleInterfaceLeftOf);
+    std::sort(buttons.begin(), buttons.end(), accessibleInterfaceLeftOf);
 
     for (int i = 0; i < buttons.count(); ++i)
         actualOrder << buttons.at(i)->text(QAccessible::Name);
@@ -2243,7 +2245,7 @@ void tst_QAccessibility::dialogButtonBoxTest()
     for (int i = 0; i < iface->childCount(); ++i)
         buttons <<  iface->child(i);
 
-    qSort(buttons.begin(), buttons.end(), accessibleInterfaceAbove);
+    std::sort(buttons.begin(), buttons.end(), accessibleInterfaceAbove);
 
     for (int i = 0; i < buttons.count(); ++i)
         actualOrder << buttons.at(i)->text(QAccessible::Name);

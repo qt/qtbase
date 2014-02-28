@@ -84,8 +84,11 @@ our $quoted_basedir;
 $INPUT_RECORD_SEPARATOR = "\r\n" if ($^O eq "msys");
 
 # will be defined based on the modules sync.profile
-our (%modules, %moduleheaders, @allmoduleheadersprivate, %classnames, %explicitheaders, %deprecatedheaders);
+our (%modules, %moduleheaders, @allmoduleheadersprivate, %classnames, %deprecatedheaders);
 our @qpa_headers = ();
+
+# will be derived from sync.profile
+our %reverse_classnames = ();
 
 # global variables (modified by options)
 my $isunix = 0;
@@ -206,8 +209,9 @@ sub classNames {
     my @ret;
     my ($iheader) = @_;
 
-    my $classname = $classnames{basename($iheader)};
-    push @ret, $classname if ($classname);
+    my $ihdrbase = basename($iheader);
+    my $classname = $classnames{$ihdrbase};
+    push @ret, split(/,/, $classname) if ($classname);
 
     my $parsable = "";
     if(open(F, "<$iheader")) {
@@ -306,6 +310,8 @@ sub classNames {
             foreach my $symbol (@symbols) {
                 $symbol = (join("::", @namespaces) . "::" . $symbol) if (scalar @namespaces);
 
+                my $revhdr = $reverse_classnames{$symbol};
+                next if (defined($revhdr) and $revhdr ne $ihdrbase);
                 if ($symbol =~ /^Q[^:]*$/) {           # no-namespace, starting with Q
                     push @ret, $symbol;
                 } elsif (defined($publicclassregexp)) {
@@ -580,6 +586,13 @@ sub loadSyncProfile {
         die "syncqt couldn't parse $syncprofile: $@" if $@;
         die "syncqt couldn't execute $syncprofile: $!" unless defined $result;
     }
+
+    for my $fn (keys %classnames) {
+        for my $cn (split(/,/, $classnames{$fn})) {
+            $reverse_classnames{$cn} = $fn;
+        }
+    }
+
     return $result;
 }
 
@@ -777,7 +790,6 @@ while ( @ARGV ) {
 # if we have no $basedir we cannot be sure which sources you want, so die
 die "Could not find any sync.profile for your module!\nPass <module directory> to syncqt to sync your header files.\nsyncqt failed" if (!$basedir);
 
-my $class_lib_map_contents = "";
 our @ignore_headers = ();
 our @ignore_for_master_contents = ();
 our @ignore_for_include_check = ();
@@ -821,6 +833,7 @@ foreach my $lib (@modules_to_sync) {
     my $pri_install_files = "";
     my $pri_install_pfiles = "";
     my $pri_install_qpafiles = "";
+    my $pri_injections = "";
 
     my $libcapitals = uc($lib);
     my $master_contents =
@@ -893,8 +906,15 @@ foreach my $lib (@modules_to_sync) {
             #calc files and "copy" them
             foreach my $subdir (@subdirs) {
                 my @headers = findFiles($subdir, "^[-a-z0-9_]*\\.h\$" , 0);
+                if (defined $inject_headers{$subdir}) {
+                    foreach my $if (@{$inject_headers{$subdir}}) {
+                        @headers = grep(!/^\Q$if\E$/, @headers); #in case we configure'd previously
+                        push @headers, "*".$if;
+                    }
+                }
                 my $header_dirname = "";
                 foreach my $header (@headers) {
+                    my $shadow = ($header =~ s/^\*//);
                     $header = 0 if($header =~ /^ui_.*.h/);
                     foreach (@ignore_headers) {
                         $header = 0 if($header eq $_);
@@ -916,6 +936,7 @@ foreach my $lib (@modules_to_sync) {
                         }
 
                         my $iheader = $subdir . "/" . $header;
+                        $iheader =~ s/^\Q$basedir\E/$out_basedir/ if ($shadow);
                         my @classes = $public_header && (!$minimal && $is_qt) ? classNames($iheader) : ();
                         if($showonly) {
                             print "$header [$lib]\n";
@@ -923,11 +944,11 @@ foreach my $lib (@modules_to_sync) {
                                 print "SYMBOL: $_\n";
                             }
                         } else {
-                            my $ts = (stat($iheader))[9];
+                            my $ts = $shadow ? 0 : (stat($iheader))[9];
                             #find out all the places it goes..
-                            my @headers;
+                            my $oheader;
                             if ($public_header) {
-                                @headers = ( "$out_basedir/include/$lib/$header" );
+                                $oheader = "$out_basedir/include/$lib/$header";
                                 foreach my $full_class (@classes) {
                                     my $header_base = basename($header);
                                     # Strip namespaces:
@@ -937,62 +958,44 @@ foreach my $lib (@modules_to_sync) {
     #                                  class =~ s,::,/,g;
     #                               }
 
-                                    if (defined $explicitheaders{$lib}{$class}) {
-                                        $header_copies++ if(syncHeader($lib, "$out_basedir/include/$lib/$class", "$out_basedir/include/$lib/$explicitheaders{$lib}{$class}", 0, $ts));
-                                    } else {
-                                        $class_lib_map_contents .= "QT_CLASS_LIB($full_class, $lib, $header_base)\n";
-                                        $header_copies++ if(syncHeader($lib, "$out_basedir/include/$lib/$class", "$out_basedir/include/$lib/$header", 0, $ts));
-                                    }
+                                    $header_copies++ if (!$shadow && syncHeader($lib, "$out_basedir/include/$lib/$class", "$out_basedir/include/$lib/$header", 0, $ts));
                                 }
-
-                                if ($explicitheaders{$lib}{basename($header)}) {
-                                    $header_copies++ if(syncHeader($lib, "$out_basedir/include/$lib/$explicitheaders{$lib}{basename($header)}", "$out_basedir/include/$lib/$header", 0, $ts));
-                                }
-
                             } elsif ($create_private_headers && !$qpa_header) {
-                                @headers = ( "$out_basedir/include/$lib/$module_version/$lib/private/$header" );
+                                $oheader = "$out_basedir/include/$lib/$module_version/$lib/private/$header";
                             } elsif ($create_private_headers) {
-                                @headers = ( "$out_basedir/include/$lib/$module_version/$lib/qpa/$header" );
+                                $oheader = "$out_basedir/include/$lib/$module_version/$lib/qpa/$header";
                             }
+                            $header_copies++ if (!$shadow && syncHeader($lib, $oheader, $iheader, $copy_headers, $ts));
 
-                            foreach(@headers) { #sync them
-                                $header_copies++ if (syncHeader($lib, $_, $iheader, $copy_headers, $ts));
-                            }
-
+                            my $pri_install_iheader = fixPaths($iheader, $dir);
+                            my $injection = "";
                             if($public_header) {
                                 #put it into the master file
-                                $master_contents .= "#include \"$public_header\"\n" if (shouldMasterInclude($iheader));
+                                $master_contents .= "#include \"$public_header\"\n" if (!$shadow && shouldMasterInclude($iheader));
 
                                 #deal with the install directives
-                                if($public_header) {
-                                    my $pri_install_iheader = fixPaths($iheader, $dir);
-                                    foreach my $class (@classes) {
-                                        # Strip namespaces:
-                                        $class =~ s/^.*:://;
-    #                                   if ($class =~ m/::/) {
-    #                                       $class =~ s,::,/,g;
-    #                                   }
-                                        my $class_header = fixPaths("$out_basedir/include/$lib/$class",
-                                                                    $dir) . " ";
-                                        $pri_install_classes .= $class_header
-                                                                    unless($pri_install_classes =~ $class_header);
-                                    }
-                                    if ($explicitheaders{$lib}{basename($iheader)}) {
-                                        my $compat_header = fixPaths("$out_basedir/include/$lib/$explicitheaders{$lib}{basename($iheader)}",
-                                                                     $dir) . " ";
-                                        $pri_install_files .= $compat_header unless($pri_install_files =~ $compat_header);
-                                    }
-                                    $pri_install_files.= "$pri_install_iheader ";;
+                                foreach my $class (@classes) {
+                                    # Strip namespaces:
+                                    $class =~ s/^.*:://;
+#                                   if ($class =~ m/::/) {
+#                                       $class =~ s,::,/,g;
+#                                   }
+                                    my $class_header = fixPaths("$out_basedir/include/$lib/$class", $dir) . " ";
+                                    $pri_install_classes .= $class_header
+                                                                unless($pri_install_classes =~ $class_header);
+                                    $injection .= ":$class";
                                 }
+                                $pri_install_files.= "$pri_install_iheader ";;
                             }
                             elsif ($qpa_header) {
-                                my $pri_install_iheader = fixPaths($iheader, $dir);
                                 $pri_install_qpafiles.= "$pri_install_iheader ";;
                             }
                             else {
-                                my $pri_install_iheader = fixPaths($iheader, $dir);
                                 $pri_install_pfiles.= "$pri_install_iheader ";;
                             }
+                            $pri_injections .= fixPaths($iheader, "$out_basedir/include/$lib")
+                                               .":".fixPaths($oheader, "$out_basedir/include/$lib")
+                                               .$injection." " if ($shadow);
                         }
 
                         if ($verbose_level && $header_copies) {
@@ -1123,6 +1126,7 @@ foreach my $lib (@modules_to_sync) {
         $headers_pri_contents .= "SYNCQT.HEADER_CLASSES = $pri_install_classes\n";
         $headers_pri_contents .= "SYNCQT.PRIVATE_HEADER_FILES = $pri_install_pfiles\n";
         $headers_pri_contents .= "SYNCQT.QPA_HEADER_FILES = $pri_install_qpafiles\n";
+        $headers_pri_contents .= "SYNCQT.INJECTIONS = $pri_injections\n";
         my $headers_pri_file = "$out_basedir/include/$lib/headers.pri";
         writeFile($headers_pri_file, $headers_pri_contents, $lib, "headers.pri file");
     }

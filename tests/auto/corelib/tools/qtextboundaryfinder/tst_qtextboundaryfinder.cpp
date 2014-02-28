@@ -47,6 +47,8 @@
 #include <qdebug.h>
 #include <qlist.h>
 
+#include <algorithm>
+
 class tst_QTextBoundaryFinder : public QObject
 {
     Q_OBJECT
@@ -203,7 +205,7 @@ static void doTestData(const QString &testString, const QList<int> &expectedBrea
     // test toPreviousBoundary()
     {
         QList<int> expectedBreakPositionsRev = expectedBreakPositions;
-        qSort(expectedBreakPositionsRev.begin(), expectedBreakPositionsRev.end(), qGreater<int>());
+        std::sort(expectedBreakPositionsRev.begin(), expectedBreakPositionsRev.end(), qGreater<int>());
 
         QList<int> actualBreakPositions;
         boundaryFinder.toEnd();

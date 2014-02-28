@@ -104,8 +104,8 @@ public:
     bool ssl;
     bool isInitialized;
     ChannelState state;
-    QHttpNetworkRequest request; // current request
-    QHttpNetworkReply *reply; // current reply for this request
+    QHttpNetworkRequest request; // current request, only used for HTTP
+    QHttpNetworkReply *reply; // current reply for this request, only used for HTTP
     qint64 written;
     qint64 bytesTotal;
     bool resendCurrent;
@@ -123,9 +123,13 @@ public:
     bool ignoreAllSslErrors;
     QList<QSslError> ignoreSslErrorsList;
     QSslConfiguration sslConfiguration;
+    QMultiMap<int, HttpMessagePair> spdyRequestsToSend; // sorted by priority
     void ignoreSslErrors();
     void ignoreSslErrors(const QList<QSslError> &errors);
     void setSslConfiguration(const QSslConfiguration &config);
+    void requeueSpdyRequests(); // when we wanted SPDY but got HTTP
+    // to emit the signal for all in-flight replies:
+    void emitFinishedWithError(QNetworkReply::NetworkError error, const char *message);
 #endif
 #ifndef QT_NO_BEARERMANAGEMENT
     QSharedPointer<QNetworkSession> networkSession;

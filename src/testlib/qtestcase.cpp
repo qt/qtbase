@@ -567,23 +567,6 @@ QT_BEGIN_NAMESPACE
     \value MouseMove     The mouse pointer has moved.
 */
 
-/*! \fn void QTest::keyClick(QWidget *widget, char key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
-
-    \overload
-
-    Simulates clicking of \a key with an optional \a modifier on a \a widget.
-    If \a delay is larger than 0, the test will wait for \a delay milliseconds
-    before clicking the key.
-
-    Example:
-    \snippet code/src_qtestlib_qtestcase.cpp 13
-
-    The example above simulates clicking \c a on \c myWidget without
-    any keyboard modifiers and without delay of the test.
-
-    \sa QTest::keyClicks()
-*/
-
 /*! \fn void QTest::keyClick(QWidget *widget, Qt::Key key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
 
     Simulates clicking of \a key with an optional \a modifier on a \a widget.
@@ -601,6 +584,58 @@ QT_BEGIN_NAMESPACE
     \sa QTest::keyClicks()
 */
 
+/*! \fn void QTest::keyClick(QWidget *widget, char key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
+    \overload
+
+    Simulates clicking of \a key with an optional \a modifier on a \a widget.
+    If \a delay is larger than 0, the test will wait for \a delay milliseconds
+    before clicking the key.
+
+    Example:
+    \snippet code/src_qtestlib_qtestcase.cpp 13
+
+    The example above simulates clicking \c a on \c myWidget without
+    any keyboard modifiers and without delay of the test.
+
+    \sa QTest::keyClicks()
+*/
+
+/*! \fn void QTest::keyClick(QWindow *window, Qt::Key key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
+    \overload
+    \since 5.0
+
+    Simulates clicking of \a key with an optional \a modifier on a \a window.
+    If \a delay is larger than 0, the test will wait for \a delay milliseconds
+    before clicking the key.
+
+    Examples:
+    \snippet code/src_qtestlib_qtestcase.cpp 29
+
+    The first example above simulates clicking the \c escape key on \c
+    myWindow without any keyboard modifiers and without delay. The
+    second example simulates clicking \c shift-escape on \c myWindow
+    following a 200 ms delay of the test.
+
+    \sa QTest::keyClicks()
+*/
+
+/*! \fn void QTest::keyClick(QWindow *window, char key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
+    \overload
+    \since 5.0
+
+    Simulates clicking of \a key with an optional \a modifier on a \a window.
+    If \a delay is larger than 0, the test will wait for \a delay milliseconds
+    before clicking the key.
+
+    Example:
+    \snippet code/src_qtestlib_qtestcase.cpp 28
+
+    The example above simulates clicking \c a on \c myWindow without
+    any keyboard modifiers and without delay of the test.
+
+    \sa QTest::keyClicks()
+*/
+
 /*! \fn void QTest::keyEvent(KeyAction action, QWidget *widget, Qt::Key key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
 
     Sends a Qt key event to \a widget with the given \a key and an associated \a action.
@@ -609,13 +644,29 @@ QT_BEGIN_NAMESPACE
 */
 
 /*! \fn void QTest::keyEvent(KeyAction action, QWidget *widget, char ascii, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
-
     \overload
 
     Sends a Qt key event to \a widget with the given key \a ascii and an associated \a action.
     Optionally, a keyboard \a modifier can be specified, as well as a \a delay
     (in milliseconds) of the test before sending the event.
+*/
 
+/*! \fn void QTest::keyEvent(KeyAction action, QWindow *window, Qt::Key key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
+    \overload
+    \since 5.0
+
+    Sends a Qt key event to \a window with the given \a key and an associated \a action.
+    Optionally, a keyboard \a modifier can be specified, as well as a \a delay
+    (in milliseconds) of the test before sending the event.
+*/
+
+/*! \fn void QTest::keyEvent(KeyAction action, QWindow *window, char ascii, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
+    \overload
+    \since 5.0
+
+    Sends a Qt key event to \a window with the given key \a ascii and an associated \a action.
+    Optionally, a keyboard \a modifier can be specified, as well as a \a delay
+    (in milliseconds) of the test before sending the event.
 */
 
 /*! \fn void QTest::keyPress(QWidget *widget, Qt::Key key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
@@ -629,10 +680,34 @@ QT_BEGIN_NAMESPACE
 */
 
 /*! \fn void QTest::keyPress(QWidget *widget, char key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
-
     \overload
 
     Simulates pressing a \a key with an optional \a modifier on a \a widget.
+    If \a delay is larger than 0, the test will wait for \a delay milliseconds
+    before pressing the key.
+
+    \b {Note:} At some point you should release the key using \l keyRelease().
+
+    \sa QTest::keyRelease(), QTest::keyClick()
+*/
+
+/*! \fn void QTest::keyPress(QWindow *window, Qt::Key key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
+    \overload
+    \since 5.0
+
+    Simulates pressing a \a key with an optional \a modifier on a \a window. If \a delay
+    is larger than 0, the test will wait for \a delay milliseconds before pressing the key.
+
+    \b {Note:} At some point you should release the key using \l keyRelease().
+
+    \sa QTest::keyRelease(), QTest::keyClick()
+*/
+
+/*! \fn void QTest::keyPress(QWindow *window, char key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
+    \overload
+    \since 5.0
+
+    Simulates pressing a \a key with an optional \a modifier on a \a window.
     If \a delay is larger than 0, the test will wait for \a delay milliseconds
     before pressing the key.
 
@@ -651,7 +726,6 @@ QT_BEGIN_NAMESPACE
 */
 
 /*! \fn void QTest::keyRelease(QWidget *widget, char key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
-
     \overload
 
     Simulates releasing a \a key with an optional \a modifier on a \a widget.
@@ -661,6 +735,27 @@ QT_BEGIN_NAMESPACE
     \sa QTest::keyClick()
 */
 
+/*! \fn void QTest::keyRelease(QWindow *window, Qt::Key key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
+    \overload
+    \since 5.0
+
+    Simulates releasing a \a key with an optional \a modifier on a \a window.
+    If \a delay is larger than 0, the test will wait for \a delay milliseconds
+    before releasing the key.
+
+    \sa QTest::keyPress(), QTest::keyClick()
+*/
+
+/*! \fn void QTest::keyRelease(QWindow *window, char key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
+    \overload
+    \since 5.0
+
+    Simulates releasing a \a key with an optional \a modifier on a \a window.
+    If \a delay is larger than 0, the test will wait for \a delay milliseconds
+    before releasing the key.
+
+    \sa QTest::keyClick()
+*/
 
 /*! \fn void QTest::keyClicks(QWidget *widget, const QString &sequence, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
 
@@ -679,11 +774,36 @@ QT_BEGIN_NAMESPACE
     \sa QTest::keyClick()
 */
 
+/*! \fn void QTest::waitForEvents()
+    \internal
+*/
+
+/*! \fn void QTest::mouseEvent(MouseAction action, QWidget *widget, Qt::MouseButton button, Qt::KeyboardModifiers stateKey, QPoint pos, int delay=-1)
+    \internal
+*/
+
+/*! \fn void QTest::mouseEvent(MouseAction action, QWindow *window, Qt::MouseButton button, Qt::KeyboardModifiers stateKey, QPoint pos, int delay=-1)
+    \internal
+*/
+
 /*! \fn void QTest::mousePress(QWidget *widget, Qt::MouseButton button, Qt::KeyboardModifiers modifier = 0, QPoint pos = QPoint(), int delay=-1)
 
     Simulates pressing a mouse \a button with an optional \a modifier
     on a \a widget.  The position is defined by \a pos; the default
     position is the center of the widget. If \a delay is specified,
+    the test will wait for the specified amount of milliseconds before
+    the press.
+
+    \sa QTest::mouseRelease(), QTest::mouseClick()
+*/
+
+/*! \fn void QTest::mousePress(QWindow *window, Qt::MouseButton button, Qt::KeyboardModifiers stateKey = 0, QPoint pos = QPoint(), int delay=-1)
+    \overload
+    \since 5.0
+
+    Simulates pressing a mouse \a button with an optional \a stateKey modifier
+    on a \a window.  The position is defined by \a pos; the default
+    position is the center of the window. If \a delay is specified,
     the test will wait for the specified amount of milliseconds before
     the press.
 
@@ -701,11 +821,37 @@ QT_BEGIN_NAMESPACE
     \sa QTest::mousePress(), QTest::mouseClick()
 */
 
+/*! \fn void QTest::mouseRelease(QWindow *window, Qt::MouseButton button, Qt::KeyboardModifiers stateKey = 0, QPoint pos = QPoint(), int delay=-1)
+    \overload
+    \since 5.0
+
+    Simulates releasing a mouse \a button with an optional \a stateKey modifier
+    on a \a window.  The position of the release is defined by \a pos;
+    the default position is the center of the window. If \a delay is
+    specified, the test will wait for the specified amount of
+    milliseconds before releasing the button.
+
+    \sa QTest::mousePress(), QTest::mouseClick()
+*/
+
 /*! \fn void QTest::mouseClick(QWidget *widget, Qt::MouseButton button, Qt::KeyboardModifiers modifier = 0, QPoint pos = QPoint(), int delay=-1)
 
     Simulates clicking a mouse \a button with an optional \a modifier
     on a \a widget.  The position of the click is defined by \a pos;
     the default position is the center of the widget. If \a delay is
+    specified, the test will wait for the specified amount of
+    milliseconds before pressing and before releasing the button.
+
+    \sa QTest::mousePress(), QTest::mouseRelease()
+*/
+
+/*! \fn void QTest::mouseClick(QWindow *window, Qt::MouseButton button, Qt::KeyboardModifiers stateKey = 0, QPoint pos = QPoint(), int delay=-1)
+    \overload
+    \since 5.0
+
+    Simulates clicking a mouse \a button with an optional \a stateKey modifier
+    on a \a window.  The position of the click is defined by \a pos;
+    the default position is the center of the window. If \a delay is
     specified, the test will wait for the specified amount of
     milliseconds before pressing and before releasing the button.
 
@@ -723,10 +869,33 @@ QT_BEGIN_NAMESPACE
     \sa QTest::mouseClick()
 */
 
+/*! \fn void QTest::mouseDClick(QWindow *window, Qt::MouseButton button, Qt::KeyboardModifiers stateKey = 0, QPoint pos = QPoint(), int delay=-1)
+    \overload
+    \since 5.0
+
+    Simulates double clicking a mouse \a button with an optional \a stateKey
+    modifier on a \a window.  The position of the click is defined by
+    \a pos; the default position is the center of the window. If \a
+    delay is specified, the test will wait for the specified amount of
+    milliseconds before each press and release.
+
+    \sa QTest::mouseClick()
+*/
+
 /*! \fn void QTest::mouseMove(QWidget *widget, QPoint pos = QPoint(), int delay=-1)
 
     Moves the mouse pointer to a \a widget. If \a pos is not
     specified, the mouse pointer moves to the center of the widget. If
+    a \a delay (in milliseconds) is given, the test will wait before
+    moving the mouse pointer.
+*/
+
+/*! \fn void QTest::mouseMove(QWindow *window, QPoint pos = QPoint(), int delay=-1)
+    \overload
+    \since 5.0
+
+    Moves the mouse pointer to a \a window. If \a pos is not
+    specified, the mouse pointer moves to the center of the window. If
     a \a delay (in milliseconds) is given, the test will wait before
     moving the mouse pointer.
 */
@@ -2273,6 +2442,9 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
 
 #ifdef QTESTLIB_USE_VALGRIND
     if (QBenchmarkGlobalData::current->mode() == QBenchmarkGlobalData::CallgrindParentProcess) {
+        if (!qApp)
+            qFatal("QtTest: -callgrind option is not available with QTEST_APPLESS_MAIN");
+
         const QStringList origAppArgs(QCoreApplication::arguments());
         if (!QBenchmarkValgrindUtils::rerunThroughCallgrind(origAppArgs, callgrindChildExitCode))
             return -1;
@@ -2447,6 +2619,9 @@ static inline bool isWindowsBuildDirectory(const QString &dirName)
            || dirName.compare(QStringLiteral("Release"), Qt::CaseInsensitive) == 0;
 }
 #endif
+
+/*! \internal
+ */
 
 QString QTest::qFindTestData(const QString& base, const char *file, int line, const char *builddir)
 {
@@ -2726,7 +2901,7 @@ bool QTest::compare_helper(bool success, const char *failureMsg,
 }
 
 /*! \fn bool QTest::qCompare(float const &t1, float const &t2, const char *actual, const char *expected, const char *file, int line)
-\internal
+    \internal
  */
 bool QTest::qCompare(float const &t1, float const &t2, const char *actual, const char *expected,
                     const char *file, int line)
@@ -2736,7 +2911,7 @@ bool QTest::qCompare(float const &t1, float const &t2, const char *actual, const
 }
 
 /*! \fn bool QTest::qCompare(double const &t1, double const &t2, const char *actual, const char *expected, const char *file, int line)
-\internal
+    \internal
  */
 bool QTest::qCompare(double const &t1, double const &t2, const char *actual, const char *expected,
                     const char *file, int line)
@@ -2744,6 +2919,14 @@ bool QTest::qCompare(double const &t1, double const &t2, const char *actual, con
     return compare_helper(qFuzzyCompare(t1, t2), "Compared doubles are not the same (fuzzy compare)",
                           toString(t1), toString(t2), actual, expected, file, line);
 }
+
+/*! \fn bool QTest::qCompare(double const &t1, float const &t2, const char *actual, const char *expected, const char *file, int line)
+    \internal
+ */
+
+/*! \fn bool QTest::qCompare(float const &t1, double const &t2, const char *actual, const char *expected, const char *file, int line)
+    \internal
+ */
 
 #define TO_STRING_IMPL(TYPE, FORMAT) \
 template <> Q_TESTLIB_EXPORT char *QTest::toString<TYPE >(const TYPE &t) \
@@ -2807,12 +2990,11 @@ bool QTest::compare_string_helper(const char *t1, const char *t2, const char *ac
     \internal
 */
 
-
-/*! \fn void QTest::mouseEvent(MouseAction action, QWidget *widget, Qt::MouseButton button, Qt::KeyboardModifiers stateKey, QPoint pos, int delay=-1)
+/*! \fn bool QTest::qCompare(QIcon const &t1, QIcon const &t2, const char *actual, const char *expected, const char *file, int line)
     \internal
 */
 
-/*! \fn bool QTest::qCompare(QIcon const &t1, QIcon const &t2, const char *actual, const char *expected, const char *file, int line)
+/*! \fn bool QTest::qCompare(QImage const &t1, QImage const &t2, const char *actual, const char *expected, const char *file, int line)
     \internal
 */
 
@@ -2916,11 +3098,23 @@ bool QTest::compare_string_helper(const char *t1, const char *t2, const char *ac
     \internal
 */
 
+/*! \fn void QTest::sendKeyEvent(KeyAction action, QWindow *window, Qt::Key code, QString text, Qt::KeyboardModifiers modifier, int delay=-1)
+    \internal
+*/
+
 /*! \fn void QTest::sendKeyEvent(KeyAction action, QWidget *widget, Qt::Key code, char ascii, Qt::KeyboardModifiers modifier, int delay=-1)
     \internal
 */
 
+/*! \fn void QTest::sendKeyEvent(KeyAction action, QWindow *window, Qt::Key code, char ascii, Qt::KeyboardModifiers modifier, int delay=-1)
+    \internal
+*/
+
 /*! \fn void QTest::simulateEvent(QWidget *widget, bool press, int code, Qt::KeyboardModifiers modifier, QString text, bool repeat, int delay=-1)
+    \internal
+*/
+
+/*! \fn void QTest::simulateEvent(QWindow *window, bool press, int code, Qt::KeyboardModifiers modifier, QString text, bool repeat, int delay=-1)
     \internal
 */
 

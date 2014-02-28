@@ -83,7 +83,7 @@ private:
 };
 
 tst_QFontDatabase::tst_QFontDatabase()
-    : m_testFont(QFINDTESTDATA("LED_REAL.TTF"))
+    : m_testFont(QFINDTESTDATA("FreeMono.ttf"))
 {
 }
 

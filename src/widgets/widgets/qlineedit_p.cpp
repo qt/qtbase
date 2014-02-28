@@ -95,7 +95,12 @@ void QLineEditPrivate::_q_completionHighlighted(QString newText)
         QString text = control->text();
         q->setText(text.left(c) + newText.mid(c));
         control->moveCursor(control->end(), false);
-        control->moveCursor(c, true);
+#ifndef Q_OS_ANDROID
+        const bool mark = true;
+#else
+        const bool mark = (imHints & Qt::ImhNoPredictiveText);
+#endif
+        control->moveCursor(c, mark);
     }
 }
 

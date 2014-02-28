@@ -82,7 +82,7 @@ int QPageSetupDialog::exec()
     // we need a temp DEVMODE struct if we don't have a global DEVMODE
     HGLOBAL hDevMode = 0;
     int devModeSize = 0;
-    if (!ep->globalDevMode) {
+    if (!engine->globalDevMode()) {
         devModeSize = sizeof(DEVMODE) + ep->devMode->dmDriverExtra;
         hDevMode = GlobalAlloc(GHND, devModeSize);
         if (hDevMode) {
@@ -92,10 +92,10 @@ int QPageSetupDialog::exec()
         }
         psd.hDevMode = hDevMode;
     } else {
-        psd.hDevMode = ep->devMode;
+        psd.hDevMode = engine->globalDevMode();
     }
 
-    HGLOBAL *tempDevNames = ep->createDevNames();
+    HGLOBAL *tempDevNames = engine->createGlobalDevNames();
     psd.hDevNames = tempDevNames;
 
     QWidget *parent = parentWidget();
@@ -129,8 +129,7 @@ int QPageSetupDialog::exec()
     bool result = PageSetupDlg(&psd);
     QDialog::setVisible(false);
     if (result) {
-        ep->readDevnames(psd.hDevNames);
-        ep->readDevmode(psd.hDevMode);
+        engine->setGlobalDevMode(psd.hDevNames, psd.hDevMode);
 
         QRect theseMargins = QRect(psd.rtMargin.left   * multiplier,
                                    psd.rtMargin.top    * multiplier,
@@ -144,17 +143,15 @@ int QPageSetupDialog::exec()
                                psd.rtMargin.bottom * multiplier);
         }
 
-        ep->updateCustomPaperSize();
-
         // copy from our temp DEVMODE struct
-        if (!ep->globalDevMode && hDevMode) {
+        if (!engine->globalDevMode() && hDevMode) {
             void *src = GlobalLock(hDevMode);
             memcpy(ep->devMode, src, devModeSize);
             GlobalUnlock(hDevMode);
         }
     }
 
-    if (!ep->globalDevMode && hDevMode)
+    if (!engine->globalDevMode() && hDevMode)
         GlobalFree(hDevMode);
     GlobalFree(tempDevNames);
     done(result);

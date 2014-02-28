@@ -83,7 +83,7 @@
     \snippet tools/treemodelcompleter/treemodelcompleter.cpp 2
 
     As mentioned earlier, the \c splitPath() function is reimplemented because
-    the default implementation is more suited to QDirModel or list models. In
+    the default implementation is more suited to QFileSystemModel or list models. In
     order for QCompleter to split the path into a list of strings that are
     matched at each level, we split it using QString::split() with \c sep as its
     separator.

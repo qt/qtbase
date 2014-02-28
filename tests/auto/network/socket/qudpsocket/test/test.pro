@@ -24,4 +24,3 @@ wince* {
 TARGET = tst_qudpsocket
 
 CONFIG+=insignificant_test # QTBUG-25367, QTBUG-25368
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

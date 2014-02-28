@@ -60,11 +60,10 @@
 #include "private/qtextengine_p.h"
 #include "private/qfont_p.h"
 
-#include <private/qfontengineglyphcache_p.h>
-
 QT_BEGIN_NAMESPACE
 
 class QPainterPath;
+class QFontEngineGlyphCache;
 
 struct QGlyphLayout;
 
@@ -246,7 +245,7 @@ public:
     virtual Type type() const = 0;
 
     virtual int glyphCount() const;
-    virtual int glyphMargin(QFontEngineGlyphCache::Type type) { return type == QFontEngineGlyphCache::Raster_RGBMask ? 2 : 0; }
+    virtual int glyphMargin(GlyphFormat format) { return format == Format_A32 ? 2 : 0; }
 
     virtual QFontEngine *cloneWithSize(qreal /*pixelSize*/) const { return 0; }
 
@@ -258,7 +257,7 @@ public:
 
     void clearGlyphCache(const void *key);
     void setGlyphCache(const void *key, QFontEngineGlyphCache *data);
-    QFontEngineGlyphCache *glyphCache(const void *key, QFontEngineGlyphCache::Type type, const QTransform &transform) const;
+    QFontEngineGlyphCache *glyphCache(const void *key, GlyphFormat format, const QTransform &transform) const;
 
     static const uchar *getCMap(const uchar *table, uint tableSize, bool *isSymbolFont, int *cmapSize);
     static quint32 getTrueTypeGlyphIndex(const uchar *cmap, uint unicode);
@@ -300,7 +299,7 @@ public:
     QVector<KernPair> kerning_pairs;
     void loadKerningPairs(QFixed scalingFactor);
 
-    int glyphFormat;
+    GlyphFormat glyphFormat;
     QImage currentlyLockedAlphaMap;
     int m_subPixelPositionCount; // Number of positions within a single pixel for this cache
 
@@ -313,6 +312,12 @@ protected:
 
 private:
     struct GlyphCacheEntry {
+        GlyphCacheEntry();
+        GlyphCacheEntry(const GlyphCacheEntry &);
+        ~GlyphCacheEntry();
+
+        GlyphCacheEntry &operator=(const GlyphCacheEntry &);
+
         const void *context;
         QExplicitlySharedDataPointer<QFontEngineGlyphCache> cache;
         bool operator==(const GlyphCacheEntry &other) const { return context == other.context && cache == other.cache; }

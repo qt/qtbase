@@ -34,6 +34,11 @@ std::string str(int i)
     return buffer;
 }
 
+static rx::D3DWorkaroundType DiscardWorkaround(bool usesDiscard)
+{
+    return (usesDiscard ? rx::ANGLE_D3D_WORKAROUND_SM3_OPTIMIZER : rx::ANGLE_D3D_WORKAROUND_NONE);
+}
+
 UniformLocation::UniformLocation(const std::string &name, unsigned int element, unsigned int index) 
     : name(name), element(element), index(index)
 {
@@ -1622,9 +1627,20 @@ bool ProgramBinary::load(InfoLog &infoLog, const void *binary, GLsizei length)
         return false;
     }
 
-    int version = 0;
-    stream.read(&version);
-    if (version != VERSION_DWORD)
+    int majorVersion = 0;
+    int minorVersion = 0;
+    stream.read(&majorVersion);
+    stream.read(&minorVersion);
+    if (majorVersion != ANGLE_MAJOR_VERSION || minorVersion != ANGLE_MINOR_VERSION)
+    {
+        infoLog.append("Invalid program binary version.");
+        return false;
+    }
+
+#if !defined(ANGLE_ENABLE_UNIVERSAL_BINARY)
+    unsigned char commitString[ANGLE_COMMIT_HASH_SIZE];
+    stream.read(commitString, ANGLE_COMMIT_HASH_SIZE);
+    if (memcmp(commitString, ANGLE_COMMIT_HASH, sizeof(unsigned char) * ANGLE_COMMIT_HASH_SIZE) != 0)
     {
         infoLog.append("Invalid program binary version.");
         return false;
@@ -1637,6 +1653,7 @@ bool ProgramBinary::load(InfoLog &infoLog, const void *binary, GLsizei length)
         infoLog.append("Mismatched compilation flags.");
         return false;
     }
+#endif
 
     for (int i = 0; i < MAX_VERTEX_ATTRIBS; ++i)
     {
@@ -1727,6 +1744,7 @@ bool ProgramBinary::load(InfoLog &infoLog, const void *binary, GLsizei length)
 
     const char *ptr = (const char*) binary + stream.offset();
 
+#if !defined(ANGLE_ENABLE_UNIVERSAL_BINARY)
     const GUID *binaryIdentifier = (const GUID *) ptr;
     ptr += sizeof(GUID);
 
@@ -1736,6 +1754,7 @@ bool ProgramBinary::load(InfoLog &infoLog, const void *binary, GLsizei length)
         infoLog.append("Invalid program binary.");
         return false;
     }
+#endif
 
     const char *pixelShaderFunction = ptr;
     ptr += pixelShaderSize;
@@ -1791,9 +1810,12 @@ bool ProgramBinary::save(void* binary, GLsizei bufSize, GLsizei *length)
     BinaryOutputStream stream;
 
     stream.write(GL_PROGRAM_BINARY_ANGLE);
-    stream.write(VERSION_DWORD);
+    stream.write(ANGLE_MAJOR_VERSION);
+    stream.write(ANGLE_MINOR_VERSION);
+#if !defined(ANGLE_ENABLE_UNIVERSAL_BINARY)
+    stream.write(ANGLE_COMMIT_HASH, ANGLE_COMMIT_HASH_SIZE);
     stream.write(ANGLE_COMPILE_OPTIMIZATION_LEVEL);
-
+#endif
     for (unsigned int i = 0; i < MAX_VERTEX_ATTRIBS; ++i)
     {
         stream.write(mLinkedAttribute[i].type);
@@ -1849,7 +1871,9 @@ bool ProgramBinary::save(void* binary, GLsizei bufSize, GLsizei *length)
     UINT geometryShaderSize = (mGeometryExecutable != NULL) ? mGeometryExecutable->getLength() : 0;
     stream.write(geometryShaderSize);
 
+#if !defined(ANGLE_ENABLE_UNIVERSAL_BINARY)
     GUID identifier = mRenderer->getAdapterIdentifier();
+#endif
 
     GLsizei streamLength = stream.length();
     const void *streamData = stream.data();
@@ -1872,8 +1896,10 @@ bool ProgramBinary::save(void* binary, GLsizei bufSize, GLsizei *length)
         memcpy(ptr, streamData, streamLength);
         ptr += streamLength;
 
+#if !defined(ANGLE_ENABLE_UNIVERSAL_BINARY)
         memcpy(ptr, &identifier, sizeof(GUID));
         ptr += sizeof(GUID);
+#endif
 
         memcpy(ptr, mPixelExecutable->getFunction(), pixelShaderSize);
         ptr += pixelShaderSize;
@@ -1962,13 +1988,13 @@ bool ProgramBinary::link(InfoLog &infoLog, const AttributeBindings &attributeBin
 
     if (success)
     {
-        mVertexExecutable = mRenderer->compileToExecutable(infoLog, vertexHLSL.c_str(), rx::SHADER_VERTEX);
-        mPixelExecutable = mRenderer->compileToExecutable(infoLog, pixelHLSL.c_str(), rx::SHADER_PIXEL);
+        mVertexExecutable = mRenderer->compileToExecutable(infoLog, vertexHLSL.c_str(), rx::SHADER_VERTEX, DiscardWorkaround(vertexShader->mUsesDiscardRewriting));
+        mPixelExecutable = mRenderer->compileToExecutable(infoLog, pixelHLSL.c_str(), rx::SHADER_PIXEL, DiscardWorkaround(fragmentShader->mUsesDiscardRewriting));
 
         if (usesGeometryShader())
         {
             std::string geometryHLSL = generateGeometryShaderHLSL(registers, packing, fragmentShader, vertexShader);
-            mGeometryExecutable = mRenderer->compileToExecutable(infoLog, geometryHLSL.c_str(), rx::SHADER_GEOMETRY);
+            mGeometryExecutable = mRenderer->compileToExecutable(infoLog, geometryHLSL.c_str(), rx::SHADER_GEOMETRY, rx::ANGLE_D3D_WORKAROUND_NONE);
         }
 
         if (!mVertexExecutable || !mPixelExecutable || (usesGeometryShader() && !mGeometryExecutable))
@@ -2587,7 +2613,9 @@ struct AttributeSorter
 
     bool operator()(int a, int b)
     {
-        return originalIndices[a] == -1 ? false : originalIndices[a] < originalIndices[b];
+        if (originalIndices[a] == -1) return false;
+        if (originalIndices[b] == -1) return true;
+        return (originalIndices[a] < originalIndices[b]);
     }
 
     const int (&originalIndices)[MAX_VERTEX_ATTRIBS];
@@ -2615,7 +2643,7 @@ void ProgramBinary::sortAttributesByLayout(rx::TranslatedAttribute attributes[MA
     for (int i = 0; i < MAX_VERTEX_ATTRIBS; i++)
     {
         int oldIndex = mAttributesByLayout[i];
-        sortedSemanticIndices[i] = mSemanticIndex[oldIndex];
+        sortedSemanticIndices[i] = oldIndex;
         attributes[i] = oldTranslatedAttributes[oldIndex];
     }
 }

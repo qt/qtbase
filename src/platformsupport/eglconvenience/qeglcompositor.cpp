@@ -119,16 +119,21 @@ void QEGLCompositor::render(QEGLPlatformWindow *window)
         glBindTexture(GL_TEXTURE_2D, textureId);
         QMatrix4x4 target = QOpenGLTextureBlitter::targetTransform(textures->geometry(i),
                                                                    targetWindowRect);
-        m_blitter->setSwizzleRB(window->isRaster());
 
         if (textures->count() > 1 && i == textures->count() - 1) {
+            // Backingstore for a widget with QOpenGLWidget subwidgets
+            m_blitter->setSwizzleRB(true);
             glEnable(GL_BLEND);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             m_blitter->blit(textureId, target, QOpenGLTextureBlitter::OriginTopLeft);
             glDisable(GL_BLEND);
         } else if (textures->count() == 1) {
+            // A regular QWidget window
+            m_blitter->setSwizzleRB(true);
             m_blitter->blit(textureId, target, QOpenGLTextureBlitter::OriginTopLeft);
         } else {
+            // Texture from an FBO belonging to a QOpenGLWidget
+            m_blitter->setSwizzleRB(false);
             m_blitter->blit(textureId, target, QOpenGLTextureBlitter::OriginBottomLeft);
         }
     }

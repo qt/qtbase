@@ -511,12 +511,12 @@ public class QtNative
         return certificateArray;
     }
 
-    private static void createSurface(final int id, final boolean onTop, final int x, final int y, final int w, final int h)
+    private static void createSurface(final int id, final boolean onTop, final int x, final int y, final int w, final int h, final int imageDepth)
     {
         runAction(new Runnable() {
             @Override
             public void run() {
-                m_activityDelegate.createSurface(id, onTop, x, y, w, h);
+                m_activityDelegate.createSurface(id, onTop, x, y, w, h, imageDepth);
             }
         });
     }

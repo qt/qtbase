@@ -265,6 +265,16 @@ bool QHttpNetworkReply::isPipeliningUsed() const
     return d_func()->pipeliningUsed;
 }
 
+bool QHttpNetworkReply::isSpdyUsed() const
+{
+    return d_func()->spdyUsed;
+}
+
+void QHttpNetworkReply::setSpdyWasUsed(bool spdy)
+{
+    d_func()->spdyUsed = spdy;
+}
+
 QHttpNetworkConnection* QHttpNetworkReply::connection()
 {
     return d_func()->connection;
@@ -281,9 +291,15 @@ QHttpNetworkReplyPrivate::QHttpNetworkReplyPrivate(const QUrl &newUrl)
       connectionCloseEnabled(true),
       forceConnectionCloseEnabled(false),
       lastChunkRead(false),
-      currentChunkSize(0), currentChunkRead(0), readBufferMaxSize(0), connection(0),
+      currentChunkSize(0), currentChunkRead(0), readBufferMaxSize(0),
+      windowSizeDownload(65536), // 64K initial window size according to SPDY standard
+      windowSizeUpload(65536), // 64K initial window size according to SPDY standard
+      currentlyReceivedDataInWindow(0),
+      currentlyUploadedDataInWindow(0),
+      totallyUploadedData(0),
+      connection(0),
       autoDecompress(false), responseData(), requestIsPrepared(false)
-      ,pipeliningUsed(false), downstreamLimited(false)
+      ,pipeliningUsed(false), spdyUsed(false), downstreamLimited(false)
       ,userProvidedDownloadBuffer(0)
 #ifndef QT_NO_COMPRESS
       ,inflateStrm(0)
@@ -550,15 +566,7 @@ qint64 QHttpNetworkReplyPrivate::readHeader(QAbstractSocket *socket)
             // allocate inflate state
             if (!inflateStrm)
                 inflateStrm = new z_stream;
-            inflateStrm->zalloc = Z_NULL;
-            inflateStrm->zfree = Z_NULL;
-            inflateStrm->opaque = Z_NULL;
-            inflateStrm->avail_in = 0;
-            inflateStrm->next_in = Z_NULL;
-            // "windowBits can also be greater than 15 for optional gzip decoding.
-            // Add 32 to windowBits to enable zlib and gzip decoding with automatic header detection"
-            // http://www.zlib.net/manual.html
-            int ret = inflateInit2(inflateStrm, MAX_WBITS+32);
+            int ret = initializeInflateStream();
             if (ret != Z_OK)
                 return -1;
         }
@@ -703,8 +711,28 @@ qint64 QHttpNetworkReplyPrivate::readBody(QAbstractSocket *socket, QByteDataBuff
 }
 
 #ifndef QT_NO_COMPRESS
+int QHttpNetworkReplyPrivate::initializeInflateStream()
+{
+    inflateStrm->zalloc = Z_NULL;
+    inflateStrm->zfree = Z_NULL;
+    inflateStrm->opaque = Z_NULL;
+    inflateStrm->avail_in = 0;
+    inflateStrm->next_in = Z_NULL;
+    // "windowBits can also be greater than 15 for optional gzip decoding.
+    // Add 32 to windowBits to enable zlib and gzip decoding with automatic header detection"
+    // http://www.zlib.net/manual.html
+    int ret = inflateInit2(inflateStrm, MAX_WBITS+32);
+    Q_ASSERT(ret == Z_OK);
+    return ret;
+}
+
 qint64 QHttpNetworkReplyPrivate::uncompressBodyData(QByteDataBuffer *in, QByteDataBuffer *out)
 {
+    if (!inflateStrm) { // happens when called from the SPDY protocol handler
+        inflateStrm = new z_stream;
+        initializeInflateStream();
+    }
+
     if (!inflateStrm)
         return -1;
 

@@ -11,15 +11,63 @@
 
 #include "common/debug.h"
 
-#ifndef QT_OPENGL_ES_2_ANGLE_STATIC
-
 #if !defined(ANGLE_OS_WINRT)
 static DWORD currentTLS = TLS_OUT_OF_INDEXES;
 #else
 static __declspec(thread) void *currentTLS = 0;
 #endif
 
-namespace egl { Current *getCurrent(); }
+namespace egl
+{
+
+Current *AllocateCurrent()
+{
+#if !defined(ANGLE_OS_WINRT)
+    Current *current = (egl::Current*)LocalAlloc(LPTR, sizeof(egl::Current));
+#else
+    currentTLS = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(Current));
+    Current *current = (egl::Current*)currentTLS;
+#endif
+
+    if (!current)
+    {
+        ERR("Could not allocate thread local storage.");
+        return NULL;
+    }
+
+#if !defined(ANGLE_OS_WINRT)
+    ASSERT(currentTLS != TLS_OUT_OF_INDEXES);
+    TlsSetValue(currentTLS, current);
+#endif
+
+    current->error = EGL_SUCCESS;
+    current->API = EGL_OPENGL_ES_API;
+    current->display = EGL_NO_DISPLAY;
+    current->drawSurface = EGL_NO_SURFACE;
+    current->readSurface = EGL_NO_SURFACE;
+
+    return current;
+}
+
+void DeallocateCurrent()
+{
+#if !defined(ANGLE_OS_WINRT)
+    void *current = TlsGetValue(currentTLS);
+
+    if (current)
+    {
+        LocalFree((HLOCAL)current);
+    }
+#else
+    if (currentTLS)
+    {
+        HeapFree(GetProcessHeap(), 0, currentTLS);
+        currentTLS = 0;
+    }
+#endif
+}
+
+}
 
 extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved)
 {
@@ -27,7 +75,7 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved
     {
       case DLL_PROCESS_ATTACH:
         {
-#if !defined(ANGLE_DISABLE_TRACE)
+#if defined(ANGLE_ENABLE_TRACE)
             FILE *debug = fopen(TRACE_OUTPUT_FILE, "rt");
 
             if (debug)
@@ -41,7 +89,6 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved
                 }
             }
 #endif
-
 #if !defined(ANGLE_OS_WINRT)
             currentTLS = TlsAlloc();
 
@@ -54,51 +101,19 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved
         // Fall throught to initialize index
       case DLL_THREAD_ATTACH:
         {
-            egl::Current *current = egl::getCurrent();
-
-            if (current)
-            {
-#if !defined(ANGLE_OS_WINRT)
-                TlsSetValue(currentTLS, current);
-#endif
-                current->error = EGL_SUCCESS;
-                current->API = EGL_OPENGL_ES_API;
-                current->display = EGL_NO_DISPLAY;
-                current->drawSurface = EGL_NO_SURFACE;
-                current->readSurface = EGL_NO_SURFACE;
-            }
+            egl::AllocateCurrent();
         }
         break;
       case DLL_THREAD_DETACH:
         {
-            egl::Current *current = egl::getCurrent();
-
-            if (current)
-            {
-#if !defined(ANGLE_OS_WINRT)
-                LocalFree((HLOCAL)current);
-#else
-                HeapFree(GetProcessHeap(), HEAP_GENERATE_EXCEPTIONS, current);
-                currentTLS = 0;
-#endif
-            }
+            egl::DeallocateCurrent();
         }
         break;
       case DLL_PROCESS_DETACH:
         {
-            egl::Current *current = egl::getCurrent();
-
-            if (current)
-            {
+            egl::DeallocateCurrent();
 #if !defined(ANGLE_OS_WINRT)
-                LocalFree((HLOCAL)current);
-            }
-
             TlsFree(currentTLS);
-#else
-                HeapFree(GetProcessHeap(), HEAP_GENERATE_EXCEPTIONS, current);
-                currentTLS = 0;
-            }
 #endif
         }
         break;
@@ -109,96 +124,94 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved
     return TRUE;
 }
 
-#endif // !QT_OPENGL_ES_2_ANGLE_STATIC
-
 namespace egl
 {
-Current *getCurrent()
+
+Current *GetCurrentData()
 {
 #ifndef QT_OPENGL_ES_2_ANGLE_STATIC
 #if !defined(ANGLE_OS_WINRT)
     Current *current = (Current*)TlsGetValue(currentTLS);
-    if (!current)
-        current = (Current*)LocalAlloc(LPTR, sizeof(Current));
-    return current;
 #else
-    if (!currentTLS)
-        currentTLS = HeapAlloc(GetProcessHeap(), HEAP_GENERATE_EXCEPTIONS|HEAP_ZERO_MEMORY, sizeof(Current));
-    return (Current*)currentTLS;
+    Current *current = (Current*)currentTLS;
 #endif
 #else
     // No precautions for thread safety taken as ANGLE is used single-threaded in Qt.
-    static Current curr = { EGL_SUCCESS, EGL_OPENGL_ES_API, EGL_NO_DISPLAY, EGL_NO_SURFACE, EGL_NO_SURFACE };
-    return &curr;
+    static Current s_current = { EGL_SUCCESS, EGL_OPENGL_ES_API, EGL_NO_DISPLAY, EGL_NO_SURFACE, EGL_NO_SURFACE };
+    Current *current = &s_current;
 #endif
+
+    // ANGLE issue 488: when the dll is loaded after thread initialization,
+    // thread local storage (current) might not exist yet.
+    return (current ? current : AllocateCurrent());
 }
 
 void setCurrentError(EGLint error)
 {
-    Current *current = getCurrent();
+    Current *current = GetCurrentData();
 
     current->error = error;
 }
 
 EGLint getCurrentError()
 {
-    Current *current = getCurrent();
+    Current *current = GetCurrentData();
 
     return current->error;
 }
 
 void setCurrentAPI(EGLenum API)
 {
-    Current *current = getCurrent();
+    Current *current = GetCurrentData();
 
     current->API = API;
 }
 
 EGLenum getCurrentAPI()
 {
-    Current *current = getCurrent();
+    Current *current = GetCurrentData();
 
     return current->API;
 }
 
 void setCurrentDisplay(EGLDisplay dpy)
 {
-    Current *current = getCurrent();
+    Current *current = GetCurrentData();
 
     current->display = dpy;
 }
 
 EGLDisplay getCurrentDisplay()
 {
-    Current *current = getCurrent();
+    Current *current = GetCurrentData();
 
     return current->display;
 }
 
 void setCurrentDrawSurface(EGLSurface surface)
 {
-    Current *current = getCurrent();
+    Current *current = GetCurrentData();
 
     current->drawSurface = surface;
 }
 
 EGLSurface getCurrentDrawSurface()
 {
-    Current *current = getCurrent();
+    Current *current = GetCurrentData();
 
     return current->drawSurface;
 }
 
 void setCurrentReadSurface(EGLSurface surface)
 {
-    Current *current = getCurrent();
+    Current *current = GetCurrentData();
 
     current->readSurface = surface;
 }
 
 EGLSurface getCurrentReadSurface()
 {
-    Current *current = getCurrent();
+    Current *current = GetCurrentData();
 
     return current->readSurface;
 }

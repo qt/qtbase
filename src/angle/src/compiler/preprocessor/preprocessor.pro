@@ -21,6 +21,7 @@ HEADERS += \
     $$ANGLE_DIR/src/compiler/preprocessor/DirectiveParser.h \
     $$ANGLE_DIR/src/compiler/preprocessor/ExpressionParser.h \
     $$ANGLE_DIR/src/compiler/preprocessor/Input.h \
+    $$ANGLE_DIR/src/compiler/preprocessor/length_limits.h \
     $$ANGLE_DIR/src/compiler/preprocessor/Lexer.h \
     $$ANGLE_DIR/src/compiler/preprocessor/Macro.h \
     $$ANGLE_DIR/src/compiler/preprocessor/MacroExpander.h \

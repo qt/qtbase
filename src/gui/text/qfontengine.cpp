@@ -41,6 +41,7 @@
 
 #include <qdebug.h>
 #include <private/qfontengine_p.h>
+#include <private/qfontengineglyphcache_p.h>
 
 #include "qbitmap.h"
 #include "qpainter.h"
@@ -253,7 +254,7 @@ QFontEngine::QFontEngine()
     fsType = 0;
     symbol = false;
 
-    glyphFormat = -1;
+    glyphFormat = Format_None;
     m_subPixelPositionCount = 0;
 
 #ifdef QT_BUILD_INTERNAL
@@ -979,12 +980,12 @@ void QFontEngine::setGlyphCache(const void *key, QFontEngineGlyphCache *data)
 
 }
 
-QFontEngineGlyphCache *QFontEngine::glyphCache(const void *key, QFontEngineGlyphCache::Type type, const QTransform &transform) const
+QFontEngineGlyphCache *QFontEngine::glyphCache(const void *key, GlyphFormat format, const QTransform &transform) const
 {
     for (QLinkedList<GlyphCacheEntry>::const_iterator it = m_glyphCaches.constBegin(), end = m_glyphCaches.constEnd(); it != end; ++it) {
         QFontEngineGlyphCache *c = it->cache.data();
         if (key == it->context
-            && type == c->cacheType()
+            && format == c->glyphFormat()
             && qtransform_equals_no_translate(c->m_transform, transform)) {
             return c;
         }
@@ -1352,6 +1353,28 @@ QFixed QFontEngine::lastRightBearing(const QGlyphLayout &glyphs, bool round)
                          : QFixed(gi.xoff - gi.x - gi.width);
     }
     return 0;
+}
+
+
+QFontEngine::GlyphCacheEntry::GlyphCacheEntry()
+    : context(0)
+{
+}
+
+QFontEngine::GlyphCacheEntry::GlyphCacheEntry(const GlyphCacheEntry &o)
+    : context(o.context), cache(o.cache)
+{
+}
+
+QFontEngine::GlyphCacheEntry::~GlyphCacheEntry()
+{
+}
+
+QFontEngine::GlyphCacheEntry &QFontEngine::GlyphCacheEntry::operator=(const GlyphCacheEntry &o)
+{
+    context = o.context;
+    cache = o.cache;
+    return *this;
 }
 
 // ------------------------------------------------------------------

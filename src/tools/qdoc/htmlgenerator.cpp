@@ -1465,7 +1465,7 @@ void HtmlGenerator::generateDocNode(DocNode* dn, CodeMarker* marker)
         // Replace the marker with a QML code marker.
         marker = CodeMarker::markerForLanguage(QLatin1String("QML"));
     }
-    else if (dn->subType() != Node::Collision && dn->name() != QString("index.html"))
+    else if (dn->subType() != Node::Collision && dn->name() != QString("index.html") && dn->name() != QString("qtexamplesandtutorials.html"))
         generateTableOfContents(dn,marker,0);
 
     generateTitle(fullTitle,

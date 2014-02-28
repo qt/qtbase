@@ -260,5 +260,16 @@ void TestBenchmark::simple()
 }
 //! [27]
 
+//! [28]
+QTest::keyClick(myWindow, 'a');
+//! [28]
+
+
+//! [29]
+QTest::keyClick(myWindow, Qt::Key_Escape);
+
+QTest::keyClick(myWindow, Qt::Key_Escape, Qt::ShiftModifier, 200);
+//! [29]
+
 }
 

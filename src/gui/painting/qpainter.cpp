@@ -171,9 +171,6 @@ static bool qt_painter_thread_test(int devType, const char *what)
 void QPainterPrivate::checkEmulation()
 {
     Q_ASSERT(extended);
-    if (extended->flags() & QPaintEngineEx::DoNotEmulate)
-        return;
-
     bool doEmulation = false;
     if (state->bgMode == Qt::OpaqueMode)
         doEmulation = true;
@@ -185,6 +182,9 @@ void QPainterPrivate::checkEmulation()
     const QGradient *pg = qpen_brush(state->pen).gradient();
     if (pg && pg->coordinateMode() > QGradient::LogicalMode)
         doEmulation = true;
+
+    if (doEmulation && extended->flags() & QPaintEngineEx::DoNotEmulate)
+        return;
 
     if (doEmulation) {
         if (extended != emulationEngine) {

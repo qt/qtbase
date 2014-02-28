@@ -59,7 +59,7 @@ public:
     static QDate buildDate();
 #endif //QT_NO_DATESTRING
 
-    static const char * build();
+    static const char * build() Q_DECL_NOTHROW;
 
     static bool isDebugBuild();
 

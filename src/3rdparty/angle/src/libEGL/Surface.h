@@ -15,7 +15,6 @@
 #include <EGL/egl.h>
 
 #include "common/angleutils.h"
-#include "windows.h"
 
 namespace gl
 {
@@ -80,7 +79,7 @@ private:
     bool resetSwapChain(int backbufferWidth, int backbufferHeight);
     bool swapRect(EGLint x, EGLint y, EGLint width, EGLint height);
 
-    const EGLNativeWindowType mWindow;            // Window that the surface is created for.
+    const EGLNativeWindowType mWindow; // Window that the surface is created for.
     bool mWindowSubclassed;        // Indicates whether we successfully subclassed mWindow for WM_RESIZE hooking
     const egl::Config *mConfig;    // EGL config surface was created with
     EGLint mHeight;                // Height of surface

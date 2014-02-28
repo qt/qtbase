@@ -48,7 +48,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#define qreal_to_fixed_26_6(f) (int(f * 64))
+#define qreal_to_fixed_26_6(f) (qRound(f * 64))
 
 
 

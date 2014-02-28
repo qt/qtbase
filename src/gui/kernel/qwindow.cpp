@@ -727,9 +727,15 @@ Qt::WindowType QWindow::type() const
 void QWindow::setTitle(const QString &title)
 {
     Q_D(QWindow);
-    d->windowTitle = title;
+    bool changed = false;
+    if (d->windowTitle != title) {
+        d->windowTitle = title;
+        changed = true;
+    }
     if (d->platformWindow)
         d->platformWindow->setWindowTitle(title);
+    if (changed)
+        emit windowTitleChanged(title);
 }
 
 QString QWindow::title() const

@@ -135,6 +135,7 @@ private slots:
     void newMoveBottomRight_data();
     void newMoveBottomRight();
     void margins();
+    void marginsf();
 
     void translate_data();
     void translate();
@@ -3496,6 +3497,10 @@ void tst_QRect::margins()
     QCOMPARE(added, margins + rectangle);
     QCOMPARE(added, rectangle.marginsAdded(margins));
 
+    const QRect subtracted = rectangle - margins;
+    QCOMPARE(subtracted, QRect(QPoint(12, 13), QSize(44, 42)));
+    QCOMPARE(subtracted, rectangle.marginsRemoved(margins));
+
     QRect a = rectangle;
     a += margins;
     QCOMPARE(added, a);
@@ -3503,6 +3508,30 @@ void tst_QRect::margins()
     a = rectangle;
     a -= margins;
     QCOMPARE(a, QRect(QPoint(12, 13), QSize(44, 42)));
+    QCOMPARE(a, rectangle.marginsRemoved(margins));
+}
+
+void tst_QRect::marginsf()
+{
+    const QRectF rectangle = QRectF(QPointF(10.5, 10.5), QSizeF(50.5 ,150.5));
+    const QMarginsF margins = QMarginsF(2.5, 3.5, 4.5, 5.5);
+
+    const QRectF added = rectangle + margins;
+    QCOMPARE(added, QRectF(QPointF(8.0, 7.0), QSizeF(57.5, 159.5)));
+    QCOMPARE(added, margins + rectangle);
+    QCOMPARE(added, rectangle.marginsAdded(margins));
+
+    const QRectF subtracted = rectangle - margins;
+    QCOMPARE(subtracted, QRectF(QPointF(13.0, 14.0), QSizeF(43.5, 141.5)));
+    QCOMPARE(subtracted, rectangle.marginsRemoved(margins));
+
+    QRectF a = rectangle;
+    a += margins;
+    QCOMPARE(added, a);
+
+    a = rectangle;
+    a -= margins;
+    QCOMPARE(a, QRectF(QPoint(13.0, 14.0), QSizeF(43.5, 141.5)));
     QCOMPARE(a, rectangle.marginsRemoved(margins));
 }
 

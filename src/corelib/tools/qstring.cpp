@@ -210,7 +210,7 @@ inline RetType UnrollTailLoop<0>::exec(int, RetType returnIfExited, Functor1, Fu
 #endif
 
 // conversion between Latin 1 and UTF-16
-static void qt_from_latin1(ushort *dst, const char *str, size_t size)
+void qt_from_latin1(ushort *dst, const char *str, size_t size)
 {
     /* SIMD:
      * Unpacking with SSE has been shown to improve performance on recent CPUs
@@ -1491,6 +1491,10 @@ QString::QString(QChar ch)
 */
 
 /*! \fn QString::QString(const Null &)
+    \internal
+*/
+
+/*! \fn QString::QString(QStringDataPtr)
     \internal
 */
 
@@ -6424,8 +6428,8 @@ QString &QString::setNum(qulonglong n, int base)
     to the given \a format and \a precision, and returns a reference
     to the string.
 
-    The \a format can be 'f', 'F', 'e', 'E', 'g' or 'G' (see the
-    arg() function documentation for an explanation of the formats).
+    The \a format can be 'e', 'E', 'f', 'g' or 'G' (see
+    \l{Argument Formats} for an explanation of the formats).
 
     The formatting always uses QLocale::C, i.e., English/UnitedStates.
     To get a localized string representation of a number, use
@@ -8462,6 +8466,11 @@ bool operator<(const QStringRef &s1,const QStringRef &s2)
 
     Constructs a string reference to the given \a string and assigns it to
     this string reference, returning the result.
+*/
+
+/*!
+    \typedef QString::Data
+    \internal
 */
 
 /*!

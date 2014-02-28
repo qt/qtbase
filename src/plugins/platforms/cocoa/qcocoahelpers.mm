@@ -79,24 +79,28 @@ void *qt_mac_QStringListToNSMutableArrayVoid(const QStringList &list)
     return result;
 }
 
-static void drawImageReleaseData (void *info, const void *, size_t)
+static void qt_mac_deleteImage(void *image, const void *, size_t)
 {
-    delete static_cast<QImage *>(info);
+    delete static_cast<QImage *>(image);
 }
 
-CGImageRef qt_mac_image_to_cgimage(const QImage &img)
+// Creates a CGDataProvider with the data from the given image.
+// The data provider retains a copy of the image.
+CGDataProviderRef qt_mac_CGDataProvider(const QImage &image)
 {
-    if (img.isNull())
+    return CGDataProviderCreateWithData(new QImage(image), image.bits(),
+                                        image.byteCount(), qt_mac_deleteImage);
+}
+
+CGImageRef qt_mac_toCGImage(const QImage &inImage)
+{
+    if (inImage.isNull())
         return 0;
 
-    QImage *image;
-    if (img.depth() != 32)
-        image = new QImage(img.convertToFormat(QImage::Format_ARGB32_Premultiplied));
-    else
-        image = new QImage(img);
+    QImage image = (inImage.depth() == 32) ? inImage : inImage.convertToFormat(QImage::Format_ARGB32_Premultiplied);
 
     uint cgflags = kCGImageAlphaNone;
-    switch (image->format()) {
+    switch (image.format()) {
     case QImage::Format_ARGB32_Premultiplied:
         cgflags = kCGImageAlphaPremultipliedFirst;
         break;
@@ -105,20 +109,26 @@ CGImageRef qt_mac_image_to_cgimage(const QImage &img)
         break;
     case QImage::Format_RGB32:
         cgflags = kCGImageAlphaNoneSkipFirst;
+        break;
+    case QImage::Format_RGB888:
+        cgflags |= kCGImageAlphaNone;
+    break;
     default:
         break;
     }
     cgflags |= kCGBitmapByteOrder32Host;
-    QCFType<CGDataProviderRef> dataProvider = CGDataProviderCreateWithData(image,
-                                                          static_cast<const QImage *>(image)->bits(),
-                                                          image->byteCount(),
-                                                          drawImageReleaseData);
+    QCFType<CGDataProviderRef> dataProvider = qt_mac_CGDataProvider(image);
+    return CGImageCreate(image.width(), image.height(), 8, 32,
+                         image.bytesPerLine(),
+                         qt_mac_genericColorSpace(),
+                         cgflags, dataProvider, 0, false, kCGRenderingIntentDefault);
+}
 
-    return CGImageCreate(image->width(), image->height(), 8, 32,
-                                        image->bytesPerLine(),
-                                        qt_mac_genericColorSpace(),
-                                        cgflags, dataProvider, 0, false, kCGRenderingIntentDefault);
-
+CGImageRef qt_mac_toCGImageMask(const QImage &image)
+{
+    QCFType<CGDataProviderRef> dataProvider = qt_mac_CGDataProvider(image);
+    return CGImageMaskCreate(image.width(), image.height(), 8, image.depth(),
+                              image.bytesPerLine(), dataProvider, NULL, false);
 }
 
 NSImage *qt_mac_cgimage_to_nsimage(CGImageRef image)
@@ -132,7 +142,7 @@ NSImage *qt_mac_create_nsimage(const QPixmap &pm)
     if (pm.isNull())
         return 0;
     QImage image = pm.toImage();
-    CGImageRef cgImage = qt_mac_image_to_cgimage(image);
+    CGImageRef cgImage = qt_mac_toCGImage(image);
     NSImage *nsImage = qt_mac_cgimage_to_nsimage(cgImage);
     CGImageRelease(cgImage);
     return nsImage;
@@ -147,7 +157,7 @@ NSImage *qt_mac_create_nsimage(const QIcon &icon)
     foreach (QSize size, icon.availableSizes()) {
         QPixmap pm = icon.pixmap(size);
         QImage image = pm.toImage();
-        CGImageRef cgImage = qt_mac_image_to_cgimage(image);
+        CGImageRef cgImage = qt_mac_toCGImage(image);
         NSBitmapImageRep *imageRep = [[NSBitmapImageRep alloc] initWithCGImage:cgImage];
         [nsImage addRepresentation:imageRep];
         [imageRep release];
@@ -585,44 +595,42 @@ QString qt_mac_applicationName()
     return appName;
 }
 
+int qt_mac_mainScreenHeight()
+{
+    // The first screen in the screens array is documented
+    // to have the (0,0) origin.
+    NSRect screenFrame = [[[NSScreen screens] firstObject] frame];
+    return screenFrame.size.height;
+}
+
+int qt_mac_flipYCoordinate(int y)
+{
+    return qt_mac_mainScreenHeight() - y;
+}
+
+qreal qt_mac_flipYCoordinate(qreal y)
+{
+    return qt_mac_mainScreenHeight() - y;
+}
+
+QPointF qt_mac_flipPoint(const NSPoint &p)
+{
+    return QPointF(p.x, qt_mac_flipYCoordinate(p.y));
+}
+
+NSPoint qt_mac_flipPoint(const QPoint &p)
+{
+    return NSMakePoint(p.x(), qt_mac_flipYCoordinate(p.y()));
+}
+
+NSPoint qt_mac_flipPoint(const QPointF &p)
+{
+    return NSMakePoint(p.x(), qt_mac_flipYCoordinate(p.y()));
+}
+
 NSRect qt_mac_flipRect(const QRect &rect)
 {
     int flippedY = qt_mac_flipYCoordinate(rect.y() + rect.height());
-    return NSMakeRect(rect.x(), flippedY, rect.width(), rect.height());
-}
-
-/*
-    Mac window coordinates are in the first quadrant: 0, 0 is at the lower-left
-    corner of the primary screen. This function converts the given rect to an
-    NSRect for the window geometry, flipping from 4th quadrant to 1st quadrant
-    and simultaneously ensuring that as much of the window as possible will be
-    onscreen. If the rect is too tall for the screen, the OS will reduce the
-    window's height anyway; but by moving the window upwards we can have more
-    of it onscreen.  But the application can still control the y coordinate
-    in case it really wants the window to be positioned partially offscreen.
-*/
-NSRect qt_mac_flipRect(const QRect &rect, QWindow *window)
-{
-    QPlatformScreen *onScreen = QPlatformScreen::platformScreenForWindow(window);
-    int flippedY = onScreen->geometry().height() - (rect.y() + rect.height());
-    QList<QScreen *> screens = QGuiApplication::screens();
-    if (screens.size() > 1) {
-        int height = 0;
-        foreach (QScreen *scr, screens)
-            height = qMax(height, scr->size().height());
-        int difference = height - onScreen->geometry().height();
-        if (difference > 0)
-            flippedY += difference;
-        else
-            flippedY -= difference;
-    }
-    // In case of automatic positioning, try to put as much of the window onscreen as possible.
-    if (window->isTopLevel() && qt_window_private(const_cast<QWindow*>(window))->positionAutomatic && flippedY < 0)
-        flippedY = onScreen->geometry().height() - onScreen->availableGeometry().height() - onScreen->availableGeometry().y();
-#ifdef QT_COCOA_ENABLE_WINDOW_DEBUG
-    qDebug() << Q_FUNC_INFO << rect << "flippedY" << flippedY <<
-                "screen" << onScreen->geometry() << "available" << onScreen->availableGeometry();
-#endif
     return NSMakeRect(rect.x(), flippedY, rect.width(), rect.height());
 }
 
@@ -778,85 +786,6 @@ CGContextRef qt_mac_cg_context(QPaintDevice *pdev)
     CGContextTranslateCTM(ret, 0, image->height());
     CGContextScaleCTM(ret, 1, -1);
     return ret;
-}
-
-// qpaintengine_mac.mm
-extern void qt_mac_cgimage_data_free(void *, const void *memoryToFree, size_t);
-
-CGImageRef qt_mac_toCGImage(const QImage &qImage, bool isMask, uchar **dataCopy)
-{
-    int width = qImage.width();
-    int height = qImage.height();
-
-    if (width <= 0 || height <= 0) {
-        qWarning() << Q_FUNC_INFO <<
-            "setting invalid size" << width << "x" << height << "for qnsview image";
-        return 0;
-    }
-
-    const uchar *imageData = qImage.bits();
-    if (dataCopy) {
-        *dataCopy = static_cast<uchar *>(malloc(qImage.byteCount()));
-        memcpy(*dataCopy, imageData, qImage.byteCount());
-    }
-    int bitDepth = qImage.depth();
-    int colorBufferSize = 8;
-    int bytesPrLine = qImage.bytesPerLine();
-
-    CGDataProviderRef cgDataProviderRef = CGDataProviderCreateWithData(
-                NULL,
-                dataCopy ? *dataCopy : imageData,
-                qImage.byteCount(),
-                dataCopy ? qt_mac_cgimage_data_free : NULL);
-
-    CGImageRef cgImage = 0;
-    if (isMask) {
-        cgImage = CGImageMaskCreate(width,
-                                    height,
-                                    colorBufferSize,
-                                    bitDepth,
-                                    bytesPrLine,
-                                    cgDataProviderRef,
-                                    NULL,
-                                    false);
-    } else {
-        CGColorSpaceRef cgColourSpaceRef = qt_mac_displayColorSpace(0);
-
-        // Create a CGBitmapInfo contiaining the image format.
-        // Support the 8-bit per component (A)RGB formats.
-        CGBitmapInfo bitmapInfo = kCGBitmapByteOrder32Little;
-        switch (qImage.format()) {
-            case QImage::Format_ARGB32_Premultiplied :
-                bitmapInfo |= kCGImageAlphaPremultipliedFirst;
-            break;
-            case QImage::Format_ARGB32 :
-                bitmapInfo |= kCGImageAlphaFirst;
-            break;
-            case QImage::Format_RGB32 :
-                bitmapInfo |= kCGImageAlphaNoneSkipFirst;
-            break;
-            case QImage::Format_RGB888 :
-                bitmapInfo |= kCGImageAlphaNone;
-            break;
-            default:
-                qWarning() << "qt_mac_toCGImage: Unsupported image format" << qImage.format();
-            break;
-        }
-
-        cgImage = CGImageCreate(width,
-                                height,
-                                colorBufferSize,
-                                bitDepth,
-                                bytesPrLine,
-                                cgColourSpaceRef,
-                                bitmapInfo,
-                                cgDataProviderRef,
-                                NULL,
-                                false,
-                                kCGRenderingIntentDefault);
-    }
-    CGDataProviderRelease(cgDataProviderRef);
-    return cgImage;
 }
 
 QImage qt_mac_toQImage(CGImageRef image)

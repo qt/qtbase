@@ -1,6 +1,6 @@
-From af7cb8e35774f5cba15256cb463da8c1c4d533f3 Mon Sep 17 00:00:00 2001
+From cebc37237a74a130dffaefad0a10da17abc42981 Mon Sep 17 00:00:00 2001
 From: Andy Shaw <andy.shaw@digia.com>
-Date: Sat, 14 Sep 2013 11:25:53 +0300
+Date: Tue, 18 Feb 2014 09:59:17 +0200
 Subject: [PATCH] Fix build when SSE2 is not available.
 
 Although SSE2 support is detected at runtime it still may not be
@@ -9,15 +9,15 @@ when it is available at build time too.
 
 Change-Id: I86c45a6466ab4cec79aa0f62b0d5230a78ad825a
 ---
- src/3rdparty/angle/src/libGLESv2/mathutil.h          | 2 ++
- src/3rdparty/angle/src/libGLESv2/renderer/Image9.cpp | 4 ++++
- 2 files changed, 6 insertions(+)
+ src/3rdparty/angle/src/libGLESv2/mathutil.h               | 2 ++
+ src/3rdparty/angle/src/libGLESv2/renderer/d3d9/Image9.cpp | 6 +++++-
+ 2 files changed, 7 insertions(+), 1 deletion(-)
 
 diff --git a/src/3rdparty/angle/src/libGLESv2/mathutil.h b/src/3rdparty/angle/src/libGLESv2/mathutil.h
-index bb48b94..0835486 100644
+index f902131..6474b66 100644
 --- a/src/3rdparty/angle/src/libGLESv2/mathutil.h
 +++ b/src/3rdparty/angle/src/libGLESv2/mathutil.h
-@@ -93,6 +93,7 @@ inline bool supportsSSE2()
+@@ -92,6 +92,7 @@ inline bool supportsSSE2()
          return supports;
      }
  
@@ -25,7 +25,7 @@ index bb48b94..0835486 100644
      int info[4];
      __cpuid(info, 0);
      
-@@ -102,6 +103,7 @@ inline bool supportsSSE2()
+@@ -101,6 +102,7 @@ inline bool supportsSSE2()
  
          supports = (info[3] >> 26) & 1;
      }
@@ -33,10 +33,10 @@ index bb48b94..0835486 100644
  
      checked = true;
  
-diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/Image9.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/Image9.cpp
-index b3dcc59..53030b7 100644
---- a/src/3rdparty/angle/src/libGLESv2/renderer/Image9.cpp
-+++ b/src/3rdparty/angle/src/libGLESv2/renderer/Image9.cpp
+diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d9/Image9.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/d3d9/Image9.cpp
+index 8511946..cd12d8c 100644
+--- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d9/Image9.cpp
++++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d9/Image9.cpp
 @@ -373,11 +373,13 @@ void Image9::loadData(GLint xoffset, GLint yoffset, GLsizei width, GLsizei heigh
      switch (mInternalFormat)
      {
@@ -65,6 +65,13 @@ index b3dcc59..53030b7 100644
          {
              loadRGBAUByteDataToBGRA(width, height, inputPitch, input, locked.Pitch, locked.pBits);
          }
+@@ -729,4 +733,4 @@ void Image9::copy(GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width,
+     mDirty = true;
+ }
+ 
+-}
+\ No newline at end of file
++}
 -- 
-1.8.1.msysgit.1
+1.8.4.msysgit.0
 

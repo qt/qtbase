@@ -754,6 +754,8 @@ void QTreeView::expand(const QModelIndex &index)
         return;
     if (index.flags() & Qt::ItemNeverHasChildren)
         return;
+    if (d->isIndexExpanded(index))
+        return;
     if (d->delayedPendingLayout) {
         //A complete relayout is going to be performed, just store the expanded index, no need to layout.
         if (d->storeExpanded(index))
@@ -784,6 +786,8 @@ void QTreeView::collapse(const QModelIndex &index)
 {
     Q_D(QTreeView);
     if (!d->isIndexValid(index))
+        return;
+    if (!d->isIndexExpanded(index))
         return;
     //if the current item is now invisible, the autoscroll will expand the tree to see it, so disable the autoscroll
     d->delayedAutoScroll.stop();

@@ -162,6 +162,9 @@ QCocoaGLContext::QCocoaGLContext(const QSurfaceFormat &format, QPlatformOpenGLCo
 
 QCocoaGLContext::~QCocoaGLContext()
 {
+    if (m_currentWindow && m_currentWindow.data()->handle())
+        static_cast<QCocoaWindow *>(m_currentWindow.data()->handle())->setCurrentContext(0);
+
     [m_context release];
 }
 

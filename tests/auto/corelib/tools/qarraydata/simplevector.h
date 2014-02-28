@@ -269,9 +269,9 @@ public:
         if (first == last)
             return;
 
-        T *const begin = d->begin();
-        T *const where = begin + position;
-        const T *const end = begin + d->size;
+        const iterator begin = d->begin();
+        const iterator where = begin + position;
+        const iterator end = begin + d->size;
         if (d.needsDetach()
                 || capacity() - size() < size_t(last - first)) {
             SimpleVector detached(Data::allocate(
@@ -290,8 +290,8 @@ public:
         if ((first >= where && first < end)
                 || (last > where && last <= end)) {
             // Copy overlapping data first and only then shuffle it into place
-            T *start = d->begin() + position;
-            T *middle = d->end();
+            iterator start = d->begin() + position;
+            iterator middle = d->end();
 
             d->copyAppend(first, last);
             std::rotate(start, middle, d->end());

@@ -132,19 +132,35 @@ extern "C" LRESULT QT_WIN_CALLBACK qClipboardViewerWndProc(HWND hwnd, UINT messa
     return DefWindowProc(hwnd, message, wParam, lParam);
 }
 
+// QTBUG-36958, ensure the clipboard is flushed before
+// QGuiApplication is destroyed since OleFlushClipboard()
+// might query the data again which causes problems
+// for QMimeData-derived classes using QPixmap/QImage.
+static void cleanClipboardPostRoutine()
+{
+    if (QWindowsClipboard *cl = QWindowsClipboard::instance())
+        cl->cleanup();
+}
+
 QWindowsClipboard *QWindowsClipboard::m_instance = 0;
 
 QWindowsClipboard::QWindowsClipboard() :
     m_data(0), m_clipboardViewer(0), m_nextClipboardViewer(0)
 {
     QWindowsClipboard::m_instance = this;
+    qAddPostRoutine(cleanClipboardPostRoutine);
 }
 
 QWindowsClipboard::~QWindowsClipboard()
 {
+    cleanup();
+    QWindowsClipboard::m_instance = 0;
+}
+
+void QWindowsClipboard::cleanup()
+{
     unregisterViewer(); // Should release data if owner.
     releaseIData();
-    QWindowsClipboard::m_instance = 0;
 }
 
 void QWindowsClipboard::releaseIData()

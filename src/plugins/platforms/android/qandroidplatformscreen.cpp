@@ -64,6 +64,7 @@ public:
     ScopedProfiler(const QString &msg)
     {
         m_msg = msg;
+        m_timer.start();
     }
     ~ScopedProfiler()
     {
@@ -197,7 +198,7 @@ void QAndroidPlatformScreen::scheduleUpdate()
 void QAndroidPlatformScreen::setDirty(const QRect &rect)
 {
     QRect intersection = rect.intersected(m_geometry);
-    m_repaintRegion += intersection;
+    m_dirtyRect |= intersection;
     scheduleUpdate();
 }
 
@@ -241,14 +242,12 @@ void QAndroidPlatformScreen::doRedraw()
 {
     PROFILE_SCOPE;
 
-    if (m_repaintRegion.isEmpty())
+    if (m_dirtyRect.isEmpty())
         return;
-
-    QVector<QRect> rects = m_repaintRegion.rects();
 
     QMutexLocker lock(&m_surfaceMutex);
     if (m_id == -1) {
-        m_id = QtAndroid::createSurface(this, m_geometry, true);
+        m_id = QtAndroid::createSurface(this, m_geometry, true, m_depth);
         m_surfaceWaitCondition.wait(&m_surfaceMutex);
     }
 
@@ -257,11 +256,10 @@ void QAndroidPlatformScreen::doRedraw()
 
     ANativeWindow_Buffer nativeWindowBuffer;
     ARect nativeWindowRect;
-    QRect br = m_repaintRegion.boundingRect();
-    nativeWindowRect.top = br.top();
-    nativeWindowRect.left = br.left();
-    nativeWindowRect.bottom = br.bottom() + 1; // for some reason that I don't understand the QRect bottom needs to +1 to be the same with ARect bottom
-    nativeWindowRect.right = br.right() + 1; // same for the right
+    nativeWindowRect.top = m_dirtyRect.top();
+    nativeWindowRect.left = m_dirtyRect.left();
+    nativeWindowRect.bottom = m_dirtyRect.bottom() + 1; // for some reason that I don't understand the QRect bottom needs to +1 to be the same with ARect bottom
+    nativeWindowRect.right = m_dirtyRect.right() + 1; // same for the right
 
     int ret;
     if ((ret = ANativeWindow_lock(m_nativeSurface, &nativeWindowBuffer, &nativeWindowRect)) < 0) {
@@ -283,36 +281,35 @@ void QAndroidPlatformScreen::doRedraw()
     QPainter compositePainter(&screenImage);
     compositePainter.setCompositionMode(QPainter::CompositionMode_Source);
 
-    for (int rectIndex = 0; rectIndex < rects.size(); rectIndex++) {
-        QRegion visibleRegion = rects[rectIndex];
-        foreach (QAndroidPlatformWindow *window, m_windowStack) {
-            if (!window->window()->isVisible()
-                    || !window->isRaster())
+    QRegion visibleRegion(m_dirtyRect);
+    foreach (QAndroidPlatformWindow *window, m_windowStack) {
+        if (!window->window()->isVisible()
+                || !window->isRaster())
+            continue;
+
+        QVector<QRect> visibleRects = visibleRegion.rects();
+        foreach (const QRect &rect, visibleRects) {
+            QRect targetRect = window->geometry();
+            targetRect &= rect;
+
+            if (targetRect.isNull())
                 continue;
 
-            foreach (const QRect &rect, visibleRegion.rects()) {
-                QRect targetRect = window->geometry();
-                targetRect &= rect;
-
-                if (targetRect.isNull())
-                    continue;
-
-                visibleRegion -= targetRect;
-                QRect windowRect = targetRect.translated(-window->geometry().topLeft());
-                QAndroidPlatformBackingStore *backingStore = static_cast<QAndroidPlatformRasterWindow *>(window)->backingStore();
-                if (backingStore)
-                    compositePainter.drawImage(targetRect.topLeft(), backingStore->image(), windowRect);
-            }
+            visibleRegion -= targetRect;
+            QRect windowRect = targetRect.translated(-window->geometry().topLeft());
+            QAndroidPlatformBackingStore *backingStore = static_cast<QAndroidPlatformRasterWindow *>(window)->backingStore();
+            if (backingStore)
+                compositePainter.drawImage(targetRect.topLeft(), backingStore->image(), windowRect);
         }
+    }
 
-        foreach (const QRect &rect, visibleRegion.rects()) {
-            compositePainter.fillRect(rect, QColor(Qt::transparent));
-        }
+    foreach (const QRect &rect, visibleRegion.rects()) {
+        compositePainter.fillRect(rect, QColor(Qt::transparent));
     }
 
     ret = ANativeWindow_unlockAndPost(m_nativeSurface);
     if (ret >= 0)
-        m_repaintRegion = QRegion();
+        m_dirtyRect = QRect();
 }
 
 QDpi QAndroidPlatformScreen::logicalDpi() const

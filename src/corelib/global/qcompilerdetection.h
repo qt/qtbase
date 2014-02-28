@@ -489,6 +489,7 @@
 
 #ifdef Q_CC_INTEL
 #  define Q_COMPILER_RESTRICTED_VLA
+#  define Q_COMPILER_VARIADIC_MACROS // C++11 feature supported as an extension in other modes, too
 #  if __INTEL_COMPILER < 1200
 #    define Q_NO_TEMPLATE_FRIENDS
 #  endif
@@ -498,7 +499,6 @@
 #     define Q_COMPILER_BINARY_LITERALS
 #  endif
 #  if __cplusplus >= 201103L
-#    define Q_COMPILER_VARIADIC_MACROS
 #    if __INTEL_COMPILER >= 1200
 #      define Q_COMPILER_AUTO_TYPE
 #      define Q_COMPILER_CLASS_ENUM
@@ -558,6 +558,15 @@
 // It's been supported "since the dawn of time itself" (cf. commit 179883)
 #  if __has_extension(cxx_binary_literals)
 #    define Q_COMPILER_BINARY_LITERALS
+#  endif
+
+// Variadic macros are supported for gnu++98, c++11, c99 ... since 2.9
+#  if ((__clang_major__ * 100) + __clang_minor__) >= 209
+#    if !defined(__STRICT_ANSI__) || defined(__GXX_EXPERIMENTAL_CXX0X__) \
+      || (defined(__cplusplus) && (__cplusplus >= 201103L)) \
+      || (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L))
+#      define Q_COMPILER_VARIADIC_MACROS
+#    endif
 #  endif
 
 /* C++11 features, see http://clang.llvm.org/cxx_status.html */
@@ -656,7 +665,6 @@
     /* Features that have no __has_feature() check */
 #    if ((__clang_major__ * 100) + __clang_minor__) >= 209 /* since clang 2.9 */
 #      define Q_COMPILER_EXTERN_TEMPLATES
-#      define Q_COMPILER_VARIADIC_MACROS
 #    endif
 #  endif
 
@@ -693,13 +701,18 @@
 //   GCC supports binary literals in C, C++98 and C++11 modes
 #    define Q_COMPILER_BINARY_LITERALS
 #  endif
+#  if !defined(__STRICT_ANSI__) || defined(__GXX_EXPERIMENTAL_CXX0X__) \
+    || (defined(__cplusplus) && (__cplusplus >= 201103L)) \
+    || (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L))
+     // Variadic macros are supported for gnu++98, c++11, C99 ... since forever (gcc 2.97)
+#    define Q_COMPILER_VARIADIC_MACROS
+#  endif
 #  if defined(__GXX_EXPERIMENTAL_CXX0X__) || __cplusplus >= 201103L
 #    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 403
        /* C++11 features supported in GCC 4.3: */
 #      define Q_COMPILER_DECLTYPE
 #      define Q_COMPILER_RVALUE_REFS
 #      define Q_COMPILER_STATIC_ASSERT
-#      define Q_COMPILER_VARIADIC_MACROS
 #    endif
 #    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 404
        /* C++11 features supported in GCC 4.4: */

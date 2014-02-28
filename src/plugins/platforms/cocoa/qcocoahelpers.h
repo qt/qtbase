@@ -68,10 +68,12 @@ void *qt_mac_QStringListToNSMutableArrayVoid(const QStringList &list);
 inline NSMutableArray *qt_mac_QStringListToNSMutableArray(const QStringList &qstrlist)
 { return reinterpret_cast<NSMutableArray *>(qt_mac_QStringListToNSMutableArrayVoid(qstrlist)); }
 
-CGImageRef qt_mac_image_to_cgimage(const QImage &image);
 NSImage *qt_mac_cgimage_to_nsimage(CGImageRef iamge);
 NSImage *qt_mac_create_nsimage(const QPixmap &pm);
 NSImage *qt_mac_create_nsimage(const QIcon &icon);
+CGImageRef qt_mac_toCGImage(const QImage &qImage);
+CGImageRef qt_mac_toCGImageMask(const QImage &qImage);
+QImage qt_mac_toQImage(CGImageRef image);
 
 NSSize qt_mac_toNSSize(const QSize &qtSize);
 NSRect qt_mac_toNSRect(const QRect &rect);
@@ -101,23 +103,13 @@ CGColorSpaceRef qt_mac_displayColorSpace(const QWidget *widget);
 CGColorSpaceRef qt_mac_colorSpaceForDeviceType(const QPaintDevice *paintDevice);
 QString qt_mac_applicationName();
 
-inline int qt_mac_flipYCoordinate(int y)
-{ return QGuiApplication::primaryScreen()->geometry().height() - y; }
-
-inline qreal qt_mac_flipYCoordinate(qreal y)
-{ return QGuiApplication::primaryScreen()->geometry().height() - y; }
-
-inline QPointF qt_mac_flipPoint(const NSPoint &p)
-{ return QPointF(p.x, qt_mac_flipYCoordinate(p.y)); }
-
-inline NSPoint qt_mac_flipPoint(const QPoint &p)
-{ return NSMakePoint(p.x(), qt_mac_flipYCoordinate(p.y())); }
-
-inline NSPoint qt_mac_flipPoint(const QPointF &p)
-{ return NSMakePoint(p.x(), qt_mac_flipYCoordinate(p.y())); }
+int qt_mac_flipYCoordinate(int y);
+qreal qt_mac_flipYCoordinate(qreal y);
+QPointF qt_mac_flipPoint(const NSPoint &p);
+NSPoint qt_mac_flipPoint(const QPoint &p);
+NSPoint qt_mac_flipPoint(const QPointF &p);
 
 NSRect qt_mac_flipRect(const QRect &rect);
-NSRect qt_mac_flipRect(const QRect &rect, QWindow *window);
 
 Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum);
 
@@ -159,8 +151,6 @@ public:
 };
 
 CGContextRef qt_mac_cg_context(QPaintDevice *pdev);
-CGImageRef qt_mac_toCGImage(const QImage &qImage, bool isMask, uchar **dataCopy);
-QImage qt_mac_toQImage(CGImageRef image);
 
 template<typename T>
 T qt_mac_resolveOption(const T &fallback, const QByteArray &environment)

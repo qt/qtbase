@@ -3665,12 +3665,6 @@ QByteArray QByteArray::toBase64(Base64Options options) const
     \sa toUShort()
 */
 
-/*!
-    \overload
-
-    \sa toLongLong()
-*/
-
 static char *qulltoa2(char *p, qulonglong n, int base)
 {
 #if defined(QT_CHECK_RANGE)
@@ -3689,6 +3683,11 @@ static char *qulltoa2(char *p, qulonglong n, int base)
     return p;
 }
 
+/*!
+    \overload
+
+    \sa toLongLong()
+*/
 QByteArray &QByteArray::setNum(qlonglong n, int base)
 {
     const int buffsize = 66; // big enough for MAX_ULLONG in base 2

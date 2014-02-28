@@ -858,8 +858,8 @@ public class QtActivity extends Activity
 
         if (null == getLastNonConfigurationInstance()) {
             // if splash screen is defined, then show it
-            if (m_activityInfo.metaData.containsKey("android.app.splash_screen") )
-                setContentView(m_activityInfo.metaData.getInt("android.app.splash_screen"));
+            if (m_activityInfo.metaData.containsKey("android.app.splash_screen_drawable"))
+                getWindow().setBackgroundDrawableResource(m_activityInfo.metaData.getInt("android.app.splash_screen_drawable"));
             startApp(true);
         }
     }

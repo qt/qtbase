@@ -109,7 +109,7 @@ Q_GLOBAL_STATIC_WITH_ARGS(QLoggingCategory, qtDefaultCategory,
     apply to a category/type, the rule that comes later is applied.
 
     Rules can be set via \l setFilterRules(). Since Qt 5.3 logging rules
-    are also automatically loaded from the \c [rules] section of a logging
+    are also automatically loaded from the \c [Rules] section of a logging
     configuration file. Such configuration files are looked up in the QtProject
     configuration directory, or explicitly set in a \c QT_LOGGING_CONF
     environment variable.

@@ -119,8 +119,8 @@ void Viewer::createMenus()
     connect(openAction, SIGNAL(triggered()), this, SLOT(chooseFile()));
     connect(saveAction, SIGNAL(triggered()), this, SLOT(saveImage()));
     connect(quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
-    connect(brightnessMenu, SIGNAL(triggered(QAction *)), this,
-            SLOT(setBrightness(QAction *)));
+    connect(brightnessMenu, SIGNAL(triggered(QAction*)), this,
+            SLOT(setBrightness(QAction*)));
 }
 
 /*

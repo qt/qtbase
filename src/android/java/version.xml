@@ -1,4 +1,4 @@
-<version value="5.2">
+<version value="5.3">
     <ignore>
         <file>AndroidManifest.xml</file>
         <file>libs.xml</file>

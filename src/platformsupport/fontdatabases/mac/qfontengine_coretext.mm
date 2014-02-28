@@ -74,7 +74,7 @@ static void loadAdvancesForGlyphs(CTFontRef ctfont,
 
 
 int QCoreTextFontEngine::antialiasingThreshold = 0;
-QFontEngineGlyphCache::Type QCoreTextFontEngine::defaultGlyphFormat = QFontEngineGlyphCache::Raster_RGBMask;
+QFontEngine::GlyphFormat QCoreTextFontEngine::defaultGlyphFormat = QFontEngine::Format_A32;
 
 CGAffineTransform qt_transform_from_fontdef(const QFontDef &fontDef)
 {
@@ -155,7 +155,7 @@ void QCoreTextFontEngine::init()
 
 #if defined(Q_OS_IOS) || MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
     if (supportsColorGlyphs() && (traits & kCTFontColorGlyphsTrait))
-        glyphFormat = QFontEngineGlyphCache::Raster_ARGB;
+        glyphFormat = QFontEngine::Format_ARGB;
     else
 #endif
         glyphFormat = defaultGlyphFormat;
@@ -424,7 +424,7 @@ static void convertCGPathToQPainterPath(void *info, const CGPathElement *element
 void QCoreTextFontEngine::addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions, int nGlyphs,
                                           QPainterPath *path, QTextItem::RenderFlags)
 {
-    if (glyphFormat == QFontEngineGlyphCache::Raster_ARGB)
+    if (glyphFormat == QFontEngine::Format_ARGB)
         return; // We can't convert color-glyphs to path
 
     CGAffineTransform cgMatrix = CGAffineTransformIdentity;
@@ -452,30 +452,67 @@ static void qcoretextfontengine_scaleMetrics(glyph_metrics_t &br, const QTransfo
     }
 }
 
-glyph_metrics_t QCoreTextFontEngine::alphaMapBoundingBox(glyph_t glyph, QFixed pos, const QTransform &matrix, GlyphFormat format)
+glyph_metrics_t QCoreTextFontEngine::alphaMapBoundingBox(glyph_t glyph, QFixed subPixelPosition, const QTransform &matrix, GlyphFormat format)
 {
     if (matrix.type() > QTransform::TxScale)
-        return QFontEngine::alphaMapBoundingBox(glyph, pos, matrix, format);
+        return QFontEngine::alphaMapBoundingBox(glyph, subPixelPosition, matrix, format);
 
     glyph_metrics_t br = boundingBox(glyph);
     qcoretextfontengine_scaleMetrics(br, matrix);
 
-    br.width = qAbs(qRound(br.width)) + 2;
-    br.height = qAbs(qRound(br.height)) + 2;
+    // Normalize width and height
+    if (br.width < 0)
+        br.width = -br.width;
+    if (br.height < 0)
+        br.height = -br.height;
+
+    if (format == QFontEngine::Format_A8 || format == QFontEngine::Format_A32) {
+        // Drawing a glyph at x-position 0 with anti-aliasing enabled
+        // will potentially fill the pixel to the left of 0, as the
+        // coordinates are not aligned to the center of pixels. To
+        // prevent clipping of this pixel we need to shift the glyph
+        // in the bitmap one pixel to the right. The shift needs to
+        // be reflected in the glyph metrics as well, so that the final
+        // position of the glyph is correct, which is why doing the
+        // shift in imageForGlyph() is not enough.
+        br.x -= 1;
+
+        // As we've shifted the glyph one pixel to the right, we need
+        // to expand the width of the alpha map bounding box as well.
+        br.width += 1;
+
+        // But we have the same anti-aliasing problem on the right
+        // hand side of the glyph, eg. if the width of the glyph
+        // results in the bounding rect landing between two pixels.
+        // We pad the bounding rect again to account for the possible
+        // anti-aliased drawing.
+        br.width += 1;
+
+        // We also shift the glyph to right right based on the subpixel
+        // position, so we pad the bounding box to take account for the
+        // subpixel positions that may result in the glyph being drawn
+        // one pixel to the right of the 0-subpixel position.
+        br.width += 1;
+
+        // The same same logic as for the x-position needs to be applied
+        // to the y-position, except we don't need to compensate for
+        // the subpixel positioning.
+        br.y -= 1;
+        br.height += 2;
+    }
 
     return br;
 }
 
 
-QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition, bool aa, const QTransform &m)
+QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition, bool aa, const QTransform &matrix)
 {
 
-    glyph_metrics_t br = boundingBox(glyph);
-    qcoretextfontengine_scaleMetrics(br, m);
+    glyph_metrics_t br = alphaMapBoundingBox(glyph, subPixelPosition, matrix, glyphFormat);
 
-    bool isColorGlyph = glyphFormat == QFontEngineGlyphCache::Raster_ARGB;
-    QImage::Format format = isColorGlyph ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32;
-    QImage im(qAbs(qRound(br.width)) + 2, qAbs(qRound(br.height)) + 2, format);
+    bool isColorGlyph = glyphFormat == QFontEngine::Format_ARGB;
+    QImage::Format imageFormat = isColorGlyph ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32;
+    QImage im(br.width.ceil().toInt(), br.height.ceil().toInt(), imageFormat);
     im.fill(0);
 
 #ifndef Q_OS_IOS
@@ -503,8 +540,8 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition
     if (!isColorGlyph) // CTFontDrawGlyphs incorporates the font's matrix already
         cgMatrix = CGAffineTransformConcat(cgMatrix, transform);
 
-    if (m.isScaling())
-        cgMatrix = CGAffineTransformConcat(cgMatrix, CGAffineTransformMakeScale(m.m11(), m.m22()));
+    if (matrix.isScaling())
+        cgMatrix = CGAffineTransformConcat(cgMatrix, CGAffineTransformMakeScale(matrix.m11(), matrix.m22()));
 
     CGGlyph cgGlyph = glyph;
     qreal pos_x = -br.x.truncate() + subPixelPosition.toReal();

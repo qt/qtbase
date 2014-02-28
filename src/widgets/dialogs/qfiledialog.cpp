@@ -2739,9 +2739,8 @@ void QFileDialogPrivate::init(const QString &directory, const QString &nameFilte
     q->selectFile(initialSelection(directory));
 
 #ifndef QT_NO_SETTINGS
-    QSettings settings(QSettings::UserScope, QLatin1String("QtProject"));
-    settings.beginGroup(QLatin1String("Qt"));
-    q->restoreState(settings.value(QLatin1String("filedialog")).toByteArray());
+    const QSettings settings(QSettings::UserScope, QLatin1String("QtProject"));
+    q->restoreState(settings.value(QLatin1String("Qt/filedialog")).toByteArray());
 #endif
 
 #if defined(Q_EMBEDDED_SMALLSCREEN)
@@ -2887,6 +2886,11 @@ void QFileDialogPrivate::createWidgets()
 
     createToolButtons();
     createMenuActions();
+
+#ifndef QT_NO_SETTINGS
+    const QSettings settings(QSettings::UserScope, QLatin1String("QtProject"));
+    q->restoreState(settings.value(QLatin1String("Qt/filedialog")).toByteArray());
+#endif
 
     // Initial widget states from options
     q->setFileMode(static_cast<QFileDialog::FileMode>(options->fileMode()));

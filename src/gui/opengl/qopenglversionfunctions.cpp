@@ -191,6 +191,8 @@ QAbstractOpenGLFunctions::~QAbstractOpenGLFunctions()
     delete d_ptr;
 }
 
+/*! \internal
+ */
 bool QAbstractOpenGLFunctions::initializeOpenGLFunctions()
 {
     Q_D(QAbstractOpenGLFunctions);

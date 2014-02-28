@@ -33,8 +33,8 @@ class Buffer : public RefCountObject
 
     virtual ~Buffer();
 
-    void bufferData(const void *data, GLsizeiptr size, GLenum usage, GLenum target);
-    void bufferSubData(const void *data, GLsizeiptr size, GLintptr offset, GLenum target);
+    void bufferData(const void *data, GLsizeiptr size, GLenum usage);
+    void bufferSubData(const void *data, GLsizeiptr size, GLintptr offset);
 
     GLenum usage() const;
 

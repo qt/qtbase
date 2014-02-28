@@ -25,4 +25,3 @@ win32 {
 QT = core network testlib
 
 MOC_DIR=tmp
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

@@ -314,7 +314,8 @@ static int qt_gl_resolve_features()
         if (extensions.match("GL_ARB_multisample"))
             features |= QOpenGLFunctions::Multisample;
         if (extensions.match("GL_ARB_texture_non_power_of_two"))
-            features |= QOpenGLFunctions::NPOTTextures;
+            features |= QOpenGLFunctions::NPOTTextures |
+                QOpenGLFunctions::NPOTTextureRepeat;
 
         // assume version 2.0 or higher
         features |= QOpenGLFunctions::BlendColor |
@@ -327,7 +328,8 @@ static int qt_gl_resolve_features()
             QOpenGLFunctions::Shaders |
             QOpenGLFunctions::StencilSeparate |
             QOpenGLFunctions::BlendEquationSeparate |
-            QOpenGLFunctions::NPOTTextures;
+            QOpenGLFunctions::NPOTTextures |
+            QOpenGLFunctions::NPOTTextureRepeat;
 
         if (format.majorVersion() >= 3)
             features |= QOpenGLFunctions::Framebuffers;

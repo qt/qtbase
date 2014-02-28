@@ -318,7 +318,7 @@ static QString strippedText(QString s)
         }
     }
 
-    QString qtFileName = QCFString::toQString(filename);
+    QString qtFileName = QFileInfo(QCFString::toQString(filename)).fileName();
     // No filter means accept everything
     bool nameMatches = mSelectedNameFilter->isEmpty();
     // Check if the current file name filter accepts the file:

@@ -43,6 +43,7 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qvarlengtharray.h>
 #include <QtGui/qopengl.h>
+#include <QtGui/qopenglfunctions.h>
 
 #include "qopengldebug.h"
 
@@ -1364,7 +1365,20 @@ bool QOpenGLDebugLogger::initialize()
     GET_DEBUG_PROC_ADDRESS(glGetDebugMessageLog);
     GET_DEBUG_PROC_ADDRESS(glPushDebugGroup);
     GET_DEBUG_PROC_ADDRESS(glPopDebugGroup);
+
+    // Windows' Desktop GL doesn't allow resolution of "basic GL entry points"
+    // through wglGetProcAddress
+#if defined(Q_OS_WIN) && !defined(QT_OPENGL_ES_2)
+    {
+        HMODULE handle = static_cast<HMODULE>(QOpenGLFunctions::platformGLHandle());
+        if (!handle)
+            handle = GetModuleHandleA("opengl32.dll");
+        d->glGetPointerv = reinterpret_cast<qt_glGetPointerv_t>(GetProcAddress(handle, QByteArrayLiteral("glGetPointerv")));
+    }
+#else
     GET_DEBUG_PROC_ADDRESS(glGetPointerv)
+#endif
+
 #undef GET_DEBUG_PROC_ADDRESS
 
     glGetIntegerv(GL_MAX_DEBUG_MESSAGE_LENGTH, &d->maxMessageLength);

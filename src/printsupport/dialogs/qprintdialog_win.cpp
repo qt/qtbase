@@ -68,12 +68,13 @@ class QPrintDialogPrivate : public QAbstractPrintDialogPrivate
     Q_DECLARE_PUBLIC(QPrintDialog)
 public:
     QPrintDialogPrivate()
-        : ep(0)
+        : engine(0), ep(0)
     {
     }
 
     int openWindowsPrintDialogModally();
 
+    QWin32PrintEngine *engine;
     QWin32PrintEnginePrivate *ep;
 };
 
@@ -141,7 +142,7 @@ static void qt_win_setup_PRINTDLGEX(PRINTDLGEX *pd, QWidget *parent,
     pd->hwndOwner = parentWindow ? (HWND)QGuiApplication::platformNativeInterface()->nativeResourceForWindow("handle", parentWindow) : 0;
     pd->lpPageRanges[0].nFromPage = qMax(pdlg->fromPage(), pdlg->minPage());
     pd->lpPageRanges[0].nToPage   = (pdlg->toPage() > 0) ? qMin(pdlg->toPage(), pdlg->maxPage()) : 1;
-    pd->nCopies = d->ep->num_copies;
+    pd->nCopies = d->printer->copyCount();
 }
 
 static void qt_win_read_back_PRINTDLGEX(PRINTDLGEX *pd, QPrintDialog *pdlg, QPrintDialogPrivate *d)
@@ -162,12 +163,10 @@ static void qt_win_read_back_PRINTDLGEX(PRINTDLGEX *pd, QPrintDialog *pdlg, QPri
 
     d->ep->printToFile = (pd->Flags & PD_PRINTTOFILE) != 0;
 
-    d->ep->readDevnames(pd->hDevNames);
-    d->ep->readDevmode(pd->hDevMode);
-    d->ep->updateCustomPaperSize();
+    d->engine->setGlobalDevMode(pd->hDevNames, pd->hDevMode);
 
     if (d->ep->printToFile && d->ep->fileName.isEmpty())
-        d->ep->fileName = d->ep->port;
+        d->ep->fileName = QLatin1String("FILE:");
     else if (!d->ep->printToFile && d->ep->fileName == QLatin1String("FILE:"))
         d->ep->fileName.clear();
 }
@@ -187,6 +186,7 @@ QPrintDialog::QPrintDialog(QPrinter *printer, QWidget *parent)
     Q_D(QPrintDialog);
     if (!warnIfNotNative(d->printer))
         return;
+    d->engine = static_cast<QWin32PrintEngine *>(d->printer->printEngine());
     d->ep = static_cast<QWin32PrintEngine *>(d->printer->printEngine())->d_func();
     setAttribute(Qt::WA_DontShowOnScreen);
 }
@@ -197,6 +197,7 @@ QPrintDialog::QPrintDialog(QWidget *parent)
     Q_D(QPrintDialog);
     if (!warnIfNotNative(d->printer))
         return;
+    d->engine = static_cast<QWin32PrintEngine *>(d->printer->printEngine());
     d->ep = static_cast<QWin32PrintEngine *>(d->printer->printEngine())->d_func();
     setAttribute(Qt::WA_DontShowOnScreen);
 }
@@ -229,7 +230,7 @@ int QPrintDialogPrivate::openWindowsPrintDialogModally()
 
     q->QDialog::setVisible(true);
 
-    HGLOBAL *tempDevNames = ep->createDevNames();
+    HGLOBAL *tempDevNames = engine->createGlobalDevNames();
 
     bool done;
     bool result;
@@ -278,7 +279,7 @@ int QPrintDialogPrivate::openWindowsPrintDialogModally()
     {
         qt_win_read_back_PRINTDLGEX(&pd, q, this);
         // update printer validity
-        printer->d_func()->validPrinter = !ep->name.isEmpty();
+        printer->d_func()->validPrinter = !printer->printerName().isEmpty();
     }
 
     // Cleanup...

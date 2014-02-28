@@ -112,7 +112,7 @@ struct QGLGlyphTexture : public QOpenGLSharedResource
 class Q_OPENGL_EXPORT QGLTextureGlyphCache : public QImageTextureGlyphCache
 {
 public:
-    QGLTextureGlyphCache(QFontEngineGlyphCache::Type type, const QTransform &matrix);
+    QGLTextureGlyphCache(QFontEngine::GlyphFormat format, const QTransform &matrix);
     ~QGLTextureGlyphCache();
 
     virtual void createTextureData(int width, int height);

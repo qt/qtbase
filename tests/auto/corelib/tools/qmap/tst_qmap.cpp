@@ -39,8 +39,6 @@
 **
 ****************************************************************************/
 
-#define QT_STRICT_ITERATORS
-
 #include <qmap.h>
 #include <QtTest/QtTest>
 #include <QDebug>

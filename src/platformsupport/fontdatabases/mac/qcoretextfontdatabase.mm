@@ -163,10 +163,10 @@ QCoreTextFontDatabase::QCoreTextFontDatabase()
         [fontImage release];
     }
     QCoreTextFontEngine::defaultGlyphFormat = (font_smoothing > 0
-                                               ? QFontEngineGlyphCache::Raster_RGBMask
-                                               : QFontEngineGlyphCache::Raster_A8);
+                                               ? QFontEngine::Format_A32
+                                               : QFontEngine::Format_A8);
 #else
-    QCoreTextFontEngine::defaultGlyphFormat = QFontEngineGlyphCache::Raster_A8;
+    QCoreTextFontEngine::defaultGlyphFormat = QFontEngine::Format_A8;
 #endif
 }
 

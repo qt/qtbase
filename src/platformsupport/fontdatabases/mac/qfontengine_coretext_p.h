@@ -104,7 +104,7 @@ public:
     bool supportsTransformation(const QTransform &transform) const;
 
     virtual QFontEngine *cloneWithSize(qreal pixelSize) const;
-    virtual int glyphMargin(QFontEngineGlyphCache::Type type) { Q_UNUSED(type); return 0; }
+    virtual int glyphMargin(QFontEngine::GlyphFormat format) { Q_UNUSED(format); return 0; }
 
     static bool supportsColorGlyphs()
     {
@@ -122,7 +122,7 @@ public:
     }
 
     static int antialiasingThreshold;
-    static QFontEngineGlyphCache::Type defaultGlyphFormat;
+    static QFontEngine::GlyphFormat defaultGlyphFormat;
 
 private:
     friend class QRawFontPrivate;

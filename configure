@@ -627,7 +627,6 @@ CFG_COMPILE_EXAMPLES=yes
 CFG_RELEASE_QMAKE=no
 CFG_AUDIO_BACKEND=auto
 CFG_QML_DEBUG=yes
-CFG_JAVASCRIPTCORE_JIT=auto
 CFG_PKGCONFIG=auto
 CFG_STACK_PROTECTOR_STRONG=auto
 CFG_SLOG2=auto
@@ -1895,13 +1894,6 @@ while [ "$#" -gt 0 ]; do
             else
                 UNKNOWN_OPT=yes
             fi
-        fi
-        ;;
-    javascript-jit)
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "auto" ] || [ "$VAL" = "no" ]; then
-            CFG_JAVASCRIPTCORE_JIT="$VAL"
-        else
-            UNKNOWN_OPT=yes
         fi
         ;;
     confirm-license)
@@ -5737,27 +5729,6 @@ if [ "$CFG_ALSA" = "auto" ]; then
     fi
 fi
 
-if [ "$CFG_JAVASCRIPTCORE_JIT" = "yes" ] || [ "$CFG_JAVASCRIPTCORE_JIT" = "auto" ]; then
-    if [ "$CFG_ARCH" = "arm" ]; then
-       compileTest unix/javascriptcore-jit "javascriptcore-jit"
-        if [ $? != "0" ]; then
-           CFG_JAVASCRIPTCORE_JIT=no
-        fi
-    else
-	case "$XPLATFORM" in
-	    linux-icc*)
-		CFG_JAVASCRIPTCORE_JIT=no
-		;;
-	esac
-    fi
-fi
-
-if [ "$CFG_JAVASCRIPTCORE_JIT" = "yes" ]; then
-    QMakeVar set JAVASCRIPTCORE_JIT yes
-elif [ "$CFG_JAVASCRIPTCORE_JIT" = "no" ]; then
-    QMakeVar set JAVASCRIPTCORE_JIT no
-fi
-
 if [ "$CFG_AUDIO_BACKEND" = "auto" ]; then
     CFG_AUDIO_BACKEND=yes
 fi
@@ -6467,23 +6438,6 @@ else
     mv -f "$outpath/src/corelib/global/qconfig.h.new" "$outpath/src/corelib/global/qconfig.h"
 fi
 
-# create a forwarding header
-mkdir -p "$outpath/include/QtCore" || exit
-echo '#include "../../src/corelib/global/qconfig.h"' > $outpath/include/QtCore/qconfig.h.new
-if cmp -s "$outpath/include/QtCore/qconfig.h.new" "$outpath/include/QtCore/qconfig.h"; then
-    rm -f "$outpath/include/QtCore/qconfig.h.new"
-else
-    mv "$outpath/include/QtCore/qconfig.h.new" "$outpath/include/QtCore/qconfig.h" || exit
-fi
-
-# create a camelcase forwarding header
-echo '#include "qconfig.h"' > $outpath/include/QtCore/QtConfig.new
-if cmp -s "$outpath/include/QtCore/QtConfig.new" "$outpath/include/QtCore/QtConfig"; then
-    rm -f "$outpath/include/QtCore/QtConfig.new"
-else
-    mv "$outpath/include/QtCore/QtConfig.new" "$outpath/include/QtCore/QtConfig" || exit
-fi
-
 #-------------------------------------------------------------------------------
 # save configuration into qconfig.pri
 #-------------------------------------------------------------------------------
@@ -6786,7 +6740,7 @@ report_support "  Qt D-Bus ..............." "$CFG_DBUS" yes "loading dbus-1 at r
 report_support "  Qt Concurrent .........." "$CFG_CONCURRENT"
 report_support "  Qt GUI ................." "$CFG_GUI"
 report_support "  Qt Widgets ............." "$CFG_WIDGETS"
-report_support "  JavaScriptCore JIT ....." "$CFG_JAVASCRIPTCORE_JIT" auto "To be decided by JavaScriptCore"
+report_support "  Large File ............." "$CFG_LARGEFILE"
 report_support "  QML debugging .........." "$CFG_QML_DEBUG"
 report_support "  Use system proxies ....." "$CFG_SYSTEM_PROXIES"
 
@@ -6801,19 +6755,17 @@ report_support "  CUPS ..................." "$CFG_CUPS"
 [ "$XPLATFORM_MINGW" = "yes" ] && \
     report_support "  DirectWrite ............" "$CFG_DIRECTWRITE"
 report_support "  FontConfig ............." "$CFG_FONTCONFIG"
-report_support "  FreeType ..............." "$CFG_FREETYPE"
-[ "$CFG_HARFBUZZ" != "no" ] && \
-    report_support "  HarfBuzz ..............." "$CFG_HARFBUZZ"
+report_support "  FreeType ..............." "$CFG_FREETYPE" system "system library" yes "bundled copy"
+report_support "  Glib ..................." "$CFG_GLIB"
+report_support "  GTK theme .............." "$CFG_QGTKSTYLE"
+report_support "  HarfBuzz ..............." "$CFG_HARFBUZZ"
 report_support "  Iconv .................." "$CFG_ICONV"
 report_support "  ICU ...................." "$CFG_ICU"
 report_support "  Image formats:"
 report_support_plugin "    GIF .................." "$CFG_GIF" qt QtGui
 report_support_plugin "    JPEG ................." "$CFG_JPEG" "$CFG_LIBJPEG" QtGui
 report_support_plugin "    PNG .................." "$CFG_PNG" "$CFG_LIBPNG" QtGui
-report_support "  Glib ..................." "$CFG_GLIB"
-report_support "  GTK theme .............." "$CFG_QGTKSTYLE"
 report_support "  journald ..............." "$CFG_JOURNALD"
-report_support "  Large File ............." "$CFG_LARGEFILE"
 report_support "  mtdev .................." "$CFG_MTDEV" yes "system library"
 report_support "  Networking:"
 [ "$XPLATFORM_MAC" = "yes" ] && \
@@ -6823,11 +6775,10 @@ report_support "    getifaddrs ..........." "$CFG_GETIFADDRS"
 report_support "    IPv6 ifname .........." "$CFG_IPV6IFNAME"
 report_support "    OpenSSL .............." "$CFG_OPENSSL" yes "loading libraries at run-time" linked "linked to the libraries"
 report_support "  NIS ...................." "$CFG_NIS"
-report_support "  EGL ...................." "$CFG_EGL"
-report_support "  EGL on X ..............." "$CFG_EGL_X"
-report_support "  GLX ...................." "$CFG_XCB_GLX"
-report_support "  OpenGL ................." "$CFG_OPENGL" yes "Desktop OpenGL" es2 "OpenGL ES 2.x"
-report_support "  OpenVG ................." "$CFG_OPENVG-$CFG_OPENVG_SHIVA" yes-yes "ShivaVG" yes-no "native"
+report_support "  OpenGL / OpenVG:"
+report_support "    EGL .................." "$CFG_EGL"
+report_support "    OpenGL ..............." "$CFG_OPENGL" yes "Desktop OpenGL" es2 "OpenGL ES 2.x"
+report_support "    OpenVG ..............." "$CFG_OPENVG-$CFG_OPENVG_SHIVA" yes-yes "ShivaVG" yes-no "native"
 report_support "  PCRE ..................." "$CFG_PCRE" yes "system library" qt "bundled copy"
 if [ -n "$PKG_CONFIG" ]; then
     report_support "  pkg-config ............. yes"
@@ -6842,6 +6793,8 @@ report_support "    KMS .................." "$CFG_KMS"
 report_support "    LinuxFB .............." "$CFG_LINUXFB"
 report_support "    XCB .................." "$CFG_XCB" system "system library" qt "bundled copy"
 if [ "$CFG_XCB" != "no" ]; then
+    report_support "      EGL on X ..........." "$CFG_EGL_X"
+    report_support "      GLX ................" "$CFG_XCB_GLX"
     report_support "      MIT-SHM ............" "$CFG_MITSHM"
     report_support "      Xcb-Xlib ..........." "$CFG_XCB_XLIB"
     report_support "      Xcursor ............" "$CFG_XCURSOR" runtime "loaded at runtime"

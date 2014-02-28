@@ -1259,6 +1259,8 @@ void tst_QPrinter::fullPage()
     QCOMPARE(pdf.fullPage(), false);
     pdf.setFullPage(true);
     QCOMPARE(pdf.fullPage(), true);
+    pdf.setFullPage(false);
+    QCOMPARE(pdf.fullPage(), false);
 
     QPrinter native;
     if (native.outputFormat() == QPrinter::NativeFormat) {
@@ -1267,6 +1269,17 @@ void tst_QPrinter::fullPage()
 
         // Test set/get
         bool expected = true;
+        native.setFullPage(expected);
+        QCOMPARE(native.fullPage(), expected);
+
+        // Test value preservation
+        native.setOutputFormat(QPrinter::PdfFormat);
+        QCOMPARE(native.fullPage(), expected);
+        native.setOutputFormat(QPrinter::NativeFormat);
+        QCOMPARE(native.fullPage(), expected);
+
+        // Test set/get
+        expected = false;
         native.setFullPage(expected);
         QCOMPARE(native.fullPage(), expected);
 
@@ -1302,6 +1315,17 @@ void tst_QPrinter::orientation()
 
         // Test set/get
         QPrinter::Orientation expected = QPrinter::Landscape;
+        native.setOrientation(expected);
+        QCOMPARE(native.orientation(), expected);
+
+        // Test value preservation
+        native.setOutputFormat(QPrinter::PdfFormat);
+        QCOMPARE(native.orientation(), expected);
+        native.setOutputFormat(QPrinter::NativeFormat);
+        QCOMPARE(native.orientation(), expected);
+
+        // Test set/get
+        expected = QPrinter::Portrait;
         native.setOrientation(expected);
         QCOMPARE(native.orientation(), expected);
 
@@ -1710,13 +1734,8 @@ void tst_QPrinter::resolution()
         // Test set/get
         int expected = 333;
 #ifdef Q_OS_MAC
+        // Set resolution does nothing on OSX, see QTBUG-7000
         expected = native.resolution();
-        foreach (int supported, native.supportedResolutions()) {
-            if (supported != expected) {
-                expected = supported;
-                break;
-            }
-        }
 #endif // Q_OS_MAC
         native.setResolution(expected);
         QCOMPARE(native.resolution(), expected);

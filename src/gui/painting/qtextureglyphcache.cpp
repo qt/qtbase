@@ -130,14 +130,6 @@ bool QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
     QHash<GlyphAndSubPixelPosition, Coord> listItemCoordinates;
     int rowHeight = 0;
 
-    QFontEngine::GlyphFormat format;
-    switch (m_type) {
-    case Raster_A8: format = QFontEngine::Format_A8; break;
-    case Raster_RGBMask: format = QFontEngine::Format_A32; break;
-    case Raster_ARGB: format = QFontEngine::Format_ARGB; break;
-    default: format = QFontEngine::Format_Mono; break;
-    }
-
     // check each glyph for its metrics and get the required rowHeight.
     for (int i=0; i < numGlyphs; ++i) {
         const glyph_t glyph = glyphs[i];
@@ -159,12 +151,12 @@ bool QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
         // we ask for the alphaMapBoundingBox(), the glyph will be loaded, rasterized and its
         // proper metrics will be cached and used later.
         if (fontEngine->hasInternalCaching()) {
-            QImage *locked = fontEngine->lockedAlphaMapForGlyph(glyph, subPixelPosition, format);
+            QImage *locked = fontEngine->lockedAlphaMapForGlyph(glyph, subPixelPosition, m_format);
             if (locked && !locked->isNull())
                 fontEngine->unlockAlphaMapForGlyph();
         }
 
-        glyph_metrics_t metrics = fontEngine->alphaMapBoundingBox(glyph, subPixelPosition, m_transform, format);
+        glyph_metrics_t metrics = fontEngine->alphaMapBoundingBox(glyph, subPixelPosition, m_transform, m_format);
 
 #ifdef CACHE_DEBUG
         printf("(%4x): w=%.2f, h=%.2f, xoff=%.2f, yoff=%.2f, x=%.2f, y=%.2f\n",
@@ -186,7 +178,7 @@ bool QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
             continue;
         }
         // align to 8-bit boundary
-        if (m_type == QFontEngineGlyphCache::Raster_Mono)
+        if (m_format == QFontEngine::Format_Mono)
             glyph_width = (glyph_width+7)&~7;
 
         Coord c = { 0, 0, // will be filled in later
@@ -289,11 +281,14 @@ void QTextureGlyphCache::fillInPendingGlyphs()
 
 QImage QTextureGlyphCache::textureMapForGlyph(glyph_t g, QFixed subPixelPosition) const
 {
-    if (m_type == QFontEngineGlyphCache::Raster_RGBMask)
+    switch (m_format) {
+    case QFontEngine::Format_A32:
         return m_current_fontengine->alphaRGBMapForGlyph(g, subPixelPosition, m_transform);
-    else if (m_type == QFontEngineGlyphCache::Raster_ARGB)
+    case QFontEngine::Format_ARGB:
         return m_current_fontengine->bitmapForGlyph(g, subPixelPosition, m_transform);
-    return m_current_fontengine->alphaMapForGlyph(g, subPixelPosition, m_transform);
+    default:
+        return m_current_fontengine->alphaMapForGlyph(g, subPixelPosition, m_transform);
+    }
 }
 
 /************************************************************************
@@ -307,11 +302,11 @@ void QImageTextureGlyphCache::resizeTextureData(int width, int height)
 
 void QImageTextureGlyphCache::createTextureData(int width, int height)
 {
-    switch (m_type) {
-    case QFontEngineGlyphCache::Raster_Mono:
+    switch (m_format) {
+    case QFontEngine::Format_Mono:
         m_image = QImage(width, height, QImage::Format_Mono);
         break;
-    case QFontEngineGlyphCache::Raster_A8: {
+    case QFontEngine::Format_A8: {
         m_image = QImage(width, height, QImage::Format_Indexed8);
         m_image.fill(0);
         QVector<QRgb> colors(256);
@@ -320,12 +315,14 @@ void QImageTextureGlyphCache::createTextureData(int width, int height)
             *it = 0xff000000 | i | (i<<8) | (i<<16);
         m_image.setColorTable(colors);
         break;   }
-    case QFontEngineGlyphCache::Raster_RGBMask:
+    case QFontEngine::Format_A32:
         m_image = QImage(width, height, QImage::Format_RGB32);
         break;
-    case QFontEngineGlyphCache::Raster_ARGB:
+    case QFontEngine::Format_ARGB:
         m_image = QImage(width, height, QImage::Format_ARGB32_Premultiplied);
         break;
+    default:
+        Q_UNREACHABLE();
     }
 }
 
@@ -341,8 +338,8 @@ void QImageTextureGlyphCache::fillTexture(const Coord &c, glyph_t g, QFixed subP
     }
 #endif
 
-    if (m_type == QFontEngineGlyphCache::Raster_RGBMask
-        || m_type == QFontEngineGlyphCache::Raster_ARGB) {
+    if (m_format == QFontEngine::Format_A32
+        || m_format == QFontEngine::Format_ARGB) {
         QImage ref(m_image.bits() + (c.x * 4 + c.y * m_image.bytesPerLine()),
                    qMax(mask.width(), c.w), qMax(mask.height(), c.h), m_image.bytesPerLine(),
                    m_image.format());
@@ -351,7 +348,7 @@ void QImageTextureGlyphCache::fillTexture(const Coord &c, glyph_t g, QFixed subP
         p.fillRect(0, 0, c.w, c.h, QColor(0,0,0,0)); // TODO optimize this
         p.drawImage(0, 0, mask);
         p.end();
-    } else if (m_type == QFontEngineGlyphCache::Raster_Mono) {
+    } else if (m_format == QFontEngine::Format_Mono) {
         if (mask.depth() > 1) {
             // TODO optimize this
             mask = mask.alphaChannel();
@@ -414,7 +411,7 @@ void QImageTextureGlyphCache::fillTexture(const Coord &c, glyph_t g, QFixed subP
 #ifdef CACHE_DEBUG
 //     QPainter p(&m_image);
 //     p.drawLine(
-    int margin = m_current_fontengine ? m_current_fontengine->glyphMargin(m_type) : 0;
+    int margin = m_current_fontengine ? m_current_fontengine->glyphMargin(m_format) : 0;
     QPoint base(c.x + margin, c.y + margin + c.baseLineY-1);
     if (m_image.rect().contains(base))
         m_image.setPixel(base, 255);

@@ -42,6 +42,7 @@
 #ifndef QRECT_H
 #define QRECT_H
 
+#include <QtCore/qmargins.h>
 #include <QtCore/qsize.h>
 #include <QtCore/qpoint.h>
 
@@ -50,8 +51,6 @@
 #endif
 
 QT_BEGIN_NAMESPACE
-
-class QMargins;
 
 class Q_CORE_EXPORT QRect
 {
@@ -138,8 +137,8 @@ public:
     inline QRect intersected(const QRect &other) const;
     bool intersects(const QRect &r) const;
 
-    inline QRect marginsAdded(const QMargins &margins) const;
-    inline QRect marginsRemoved(const QMargins &margins) const;
+    Q_DECL_CONSTEXPR inline QRect marginsAdded(const QMargins &margins) const;
+    Q_DECL_CONSTEXPR inline QRect marginsRemoved(const QMargins &margins) const;
     inline QRect &operator+=(const QMargins &margins);
     inline QRect &operator-=(const QMargins &margins);
 
@@ -452,6 +451,48 @@ Q_DECL_CONSTEXPR inline bool operator!=(const QRect &r1, const QRect &r2)
     return r1.x1!=r2.x1 || r1.x2!=r2.x2 || r1.y1!=r2.y1 || r1.y2!=r2.y2;
 }
 
+Q_DECL_CONSTEXPR inline QRect operator+(const QRect &rectangle, const QMargins &margins)
+{
+    return QRect(QPoint(rectangle.left() - margins.left(), rectangle.top() - margins.top()),
+                 QPoint(rectangle.right() + margins.right(), rectangle.bottom() + margins.bottom()));
+}
+
+Q_DECL_CONSTEXPR inline QRect operator+(const QMargins &margins, const QRect &rectangle)
+{
+    return QRect(QPoint(rectangle.left() - margins.left(), rectangle.top() - margins.top()),
+                 QPoint(rectangle.right() + margins.right(), rectangle.bottom() + margins.bottom()));
+}
+
+Q_DECL_CONSTEXPR inline QRect operator-(const QRect &lhs, const QMargins &rhs)
+{
+    return QRect(QPoint(lhs.left() + rhs.left(), lhs.top() + rhs.top()),
+                 QPoint(lhs.right() - rhs.right(), lhs.bottom() - rhs.bottom()));
+}
+
+Q_DECL_CONSTEXPR inline QRect QRect::marginsAdded(const QMargins &margins) const
+{
+    return QRect(QPoint(x1 - margins.left(), y1 - margins.top()),
+                 QPoint(x2 + margins.right(), y2 + margins.bottom()));
+}
+
+Q_DECL_CONSTEXPR inline QRect QRect::marginsRemoved(const QMargins &margins) const
+{
+    return QRect(QPoint(x1 + margins.left(), y1 + margins.top()),
+                 QPoint(x2 - margins.right(), y2 - margins.bottom()));
+}
+
+inline QRect &QRect::operator+=(const QMargins &margins)
+{
+    *this = marginsAdded(margins);
+    return *this;
+}
+
+inline QRect &QRect::operator-=(const QMargins &margins)
+{
+    *this = marginsRemoved(margins);
+    return *this;
+}
+
 #ifndef QT_NO_DEBUG_STREAM
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QRect &);
 #endif
@@ -542,6 +583,11 @@ public:
     inline QRectF united(const QRectF &other) const;
     inline QRectF intersected(const QRectF &other) const;
     bool intersects(const QRectF &r) const;
+
+    Q_DECL_CONSTEXPR inline QRectF marginsAdded(const QMarginsF &margins) const;
+    Q_DECL_CONSTEXPR inline QRectF marginsRemoved(const QMarginsF &margins) const;
+    inline QRectF &operator+=(const QMarginsF &margins);
+    inline QRectF &operator-=(const QMarginsF &margins);
 
 #if QT_DEPRECATED_SINCE(5, 0)
     QT_DEPRECATED QRectF unite(const QRectF &r) const { return united(r); }
@@ -782,6 +828,48 @@ Q_DECL_CONSTEXPR inline bool operator!=(const QRectF &r1, const QRectF &r2)
 Q_DECL_CONSTEXPR inline QRect QRectF::toRect() const
 {
     return QRect(qRound(xp), qRound(yp), qRound(w), qRound(h));
+}
+
+Q_DECL_CONSTEXPR inline QRectF operator+(const QRectF &lhs, const QMarginsF &rhs)
+{
+    return QRectF(QPointF(lhs.left() - rhs.left(), lhs.top() - rhs.top()),
+                  QSizeF(lhs.width() + rhs.left() + rhs.right(), lhs.height() + rhs.top() + rhs.bottom()));
+}
+
+Q_DECL_CONSTEXPR inline QRectF operator+(const QMarginsF &lhs, const QRectF &rhs)
+{
+    return QRectF(QPointF(rhs.left() - lhs.left(), rhs.top() - lhs.top()),
+                  QSizeF(rhs.width() + lhs.left() + lhs.right(), rhs.height() + lhs.top() + lhs.bottom()));
+}
+
+Q_DECL_CONSTEXPR inline QRectF operator-(const QRectF &lhs, const QMarginsF &rhs)
+{
+    return QRectF(QPointF(lhs.left() + rhs.left(), lhs.top() + rhs.top()),
+                  QSizeF(lhs.width() - rhs.left() - rhs.right(), lhs.height() - rhs.top() - rhs.bottom()));
+}
+
+Q_DECL_CONSTEXPR inline QRectF QRectF::marginsAdded(const QMarginsF &margins) const
+{
+    return QRectF(QPointF(xp - margins.left(), yp - margins.top()),
+                  QSizeF(w + margins.left() + margins.right(), h + margins.top() + margins.bottom()));
+}
+
+Q_DECL_CONSTEXPR inline QRectF QRectF::marginsRemoved(const QMarginsF &margins) const
+{
+    return QRectF(QPointF(xp + margins.left(), yp + margins.top()),
+                  QSizeF(w - margins.left() - margins.right(), h - margins.top() - margins.bottom()));
+}
+
+inline QRectF &QRectF::operator+=(const QMarginsF &margins)
+{
+    *this = marginsAdded(margins);
+    return *this;
+}
+
+inline QRectF &QRectF::operator-=(const QMarginsF &margins)
+{
+    *this = marginsRemoved(margins);
+    return *this;
 }
 
 #ifndef QT_NO_DEBUG_STREAM

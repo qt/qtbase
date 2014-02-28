@@ -134,8 +134,8 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
     QHostInfo results;
 
 #if defined(QHOSTINFO_DEBUG)
-    qDebug("QHostInfoAgent::fromName(%p): looking up \"%s\" (IPv6 support is %s)",
-           this, hostName.toLatin1().constData(),
+    qDebug("QHostInfoAgent::fromName(): looking up \"%s\" (IPv6 support is %s)",
+           hostName.toLatin1().constData(),
            (local_getaddrinfo && local_freeaddrinfo) ? "enabled" : "disabled");
 #endif
 
@@ -248,8 +248,8 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
 
 #if defined(QHOSTINFO_DEBUG)
     if (results.error() != QHostInfo::NoError) {
-        qDebug("QHostInfoAgent::run(%p): error (%s)",
-               this, results.errorString().toLatin1().constData());
+        qDebug("QHostInfoAgent::run(): error (%s)",
+               results.errorString().toLatin1().constData());
     } else {
         QString tmp;
         QList<QHostAddress> addresses = results.addresses();
@@ -257,8 +257,8 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
             if (i != 0) tmp += ", ";
             tmp += addresses.at(i).toString();
         }
-        qDebug("QHostInfoAgent::run(%p): found %i entries: {%s}",
-               this, addresses.count(), tmp.toLatin1().constData());
+        qDebug("QHostInfoAgent::run(): found %i entries: {%s}",
+               addresses.count(), tmp.toLatin1().constData());
     }
 #endif
     return results;

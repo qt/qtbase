@@ -574,8 +574,6 @@
 
 namespace gl {
 
-extern long **traceSamplingState;
-
 namespace TraceEvent {
 
 // Specify these values when the corresponding argument of addTraceEvent is not
@@ -793,6 +791,7 @@ private:
 // TraceEventSamplingStateScope records the current sampling state
 // and sets a new sampling state. When the scope exists, it restores
 // the sampling state having recorded.
+#if 0 // This is not used by ANGLE and causes a compilation error on MinGW
 template<size_t BucketNumber>
 class SamplingStateScope {
 public:
@@ -820,6 +819,7 @@ public:
 private:
     const char* m_previousState;
 };
+#endif
 
 } // namespace TraceEvent
 

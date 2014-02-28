@@ -57,7 +57,7 @@ QAndroidPlatformOpenGLWindow::QAndroidPlatformOpenGLWindow(QWindow *window, EGLD
     :QAndroidPlatformWindow(window), m_eglDisplay(display)
 {
     lockSurface();
-    m_nativeSurfaceId = QtAndroid::createSurface(this, geometry(), bool(window->flags() & Qt::WindowStaysOnTopHint));
+    m_nativeSurfaceId = QtAndroid::createSurface(this, geometry(), bool(window->flags() & Qt::WindowStaysOnTopHint), 32);
     m_surfaceWaitCondition.wait(&m_surfaceMutex);
     unlockSurface();
 }

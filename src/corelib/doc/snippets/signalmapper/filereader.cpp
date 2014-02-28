@@ -74,8 +74,8 @@ FileReader::FileReader(QWidget *parent)
 //! [2]
     //slower due to signature normalization at runtime
 
-    connect(signalMapper, SIGNAL(mapped(const QString &)),
-        this, SLOT(readFile(const QString &)));
+    connect(signalMapper, SIGNAL(mapped(QString)),
+        this, SLOT(readFile(QString)));
 //! [2]
 */
     QHBoxLayout *buttonLayout = new QHBoxLayout;

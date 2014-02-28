@@ -690,11 +690,9 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format,
     this->antialias = antialias;
 
     if (!antialias)
-        glyphFormat = QFontEngineGlyphCache::Raster_Mono;
-    else if (format == Format_A8)
-        glyphFormat = QFontEngineGlyphCache::Raster_A8;
-    else if (format == Format_A32)
-        glyphFormat = QFontEngineGlyphCache::Raster_RGBMask;
+        glyphFormat = QFontEngine::Format_Mono;
+    else
+        glyphFormat = defaultFormat;
 
     face_id = faceId;
 
@@ -1619,7 +1617,7 @@ void QFontEngineFT::recalcAdvances(QGlyphLayout *glyphs, QFontEngine::ShaperFlag
                 face = lockFace();
             g = loadGlyph(cacheEnabled ? &defaultGlyphSet : 0, glyphs->glyphs[i], 0, Format_None, true);
             glyphs->advances[i] = design ? QFixed::fromFixed(face->glyph->linearHoriAdvance >> 10)
-                                         : QFixed::fromFixed(face->glyph->metrics.horiAdvance);
+                                         : QFixed::fromFixed(face->glyph->metrics.horiAdvance).round();
             if (!cacheEnabled)
                 delete g;
         }

@@ -14,8 +14,8 @@
 #include "libGLESv2/main.h"
 #include "libGLESv2/mathutil.h"
 #include "libGLESv2/utilities.h"
-#ifndef ANGLE_ENABLE_D3D11
-#  include "libGLESv2/renderer/Blit.h"
+#if defined(ANGLE_ENABLE_D3D9)
+#  include "libGLESv2/renderer/d3d9/Blit.h"
 #else
 #  define D3DFMT_UNKNOWN DXGI_FORMAT_UNKNOWN
 #endif
@@ -1362,10 +1362,10 @@ void TextureCubeMap::storage(GLsizei levels, GLenum internalformat, GLsizei size
 
     for (int level = 0; level < levels; level++)
     {
+        GLsizei mipSize = std::max(1, size >> level);
         for (int face = 0; face < 6; face++)
         {
-            mImageArray[face][level]->redefine(mRenderer, internalformat, size, size, true);
-            size = std::max(1, size >> 1);
+            mImageArray[face][level]->redefine(mRenderer, internalformat, mipSize, mipSize, true);
         }
     }
 

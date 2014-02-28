@@ -44,6 +44,8 @@
 #include <QtAlgorithms>
 #include <QtPrintSupport/qprinterinfo.h>
 
+#include <algorithm>
+
 #ifdef Q_OS_UNIX
 #  include <unistd.h>
 #  include <sys/types.h>
@@ -246,8 +248,8 @@ void tst_QPrinterInfo::testForPrinters()
     for (int i = 0; i < printers.size(); ++i)
         qtPrinters.append(printers.at(i).printerName());
 
-    qSort(testPrinters);
-    qSort(qtPrinters);
+    std::sort(testPrinters.begin(), testPrinters.end());
+    std::sort(qtPrinters.begin(), qtPrinters.end());
 
     qDebug() << "Test believes Available Printers                              = " << testPrinters;
     qDebug() << "QPrinterInfo::availablePrinters() believes Available Printers = " << qtPrinters;

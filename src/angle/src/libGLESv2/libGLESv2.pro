@@ -7,13 +7,13 @@ include(../common/common.pri)
 INCLUDEPATH += $$OUT_PWD/.. $$ANGLE_DIR/src/libGLESv2
 
 # Remember to adapt tools/configure/configureapp.cpp if the Direct X version changes.
-angle_d3d11 {
+angle_d3d11: \
     LIBS_PRIVATE += -ldxgi -ld3d11
-} else {
+!winrt: \
     LIBS_PRIVATE += -ld3d9
-}
+
 LIBS_PRIVATE += -ldxguid
-STATICLIBS = translator_common translator_hlsl preprocessor
+STATICLIBS = translator preprocessor
 
 for(libname, STATICLIBS) {
     # Appends 'd' to the library for debug builds and builds up the fully
@@ -93,67 +93,69 @@ SSE2_SOURCES += $$ANGLE_DIR/src/libGLESv2/renderer/ImageSSE2.cpp
 
 angle_d3d11 {
     HEADERS += \
-        $$ANGLE_DIR/src/libGLESv2/renderer/BufferStorage11.h \
-        $$ANGLE_DIR/src/libGLESv2/renderer/Fence11.h \
-        $$ANGLE_DIR/src/libGLESv2/renderer/Image11.h \
-        $$ANGLE_DIR/src/libGLESv2/renderer/IndexBuffer11.h \
-        $$ANGLE_DIR/src/libGLESv2/renderer/InputLayoutCache.h \
-        $$ANGLE_DIR/src/libGLESv2/renderer/Query11.h \
-        $$ANGLE_DIR/src/libGLESv2/renderer/Renderer11.h \
-        $$ANGLE_DIR/src/libGLESv2/renderer/renderer11_utils.h \
-        $$ANGLE_DIR/src/libGLESv2/renderer/RenderTarget11.h \
-        $$ANGLE_DIR/src/libGLESv2/renderer/RenderStateCache.h \
-        $$ANGLE_DIR/src/libGLESv2/renderer/ShaderExecutable11.h \
-        $$ANGLE_DIR/src/libGLESv2/renderer/SwapChain11.h \
-        $$ANGLE_DIR/src/libGLESv2/renderer/TextureStorage11.h \
-        $$ANGLE_DIR/src/libGLESv2/renderer/VertexBuffer11.h
+        $$ANGLE_DIR/src/libGLESv2/renderer/d3d11/BufferStorage11.h \
+        $$ANGLE_DIR/src/libGLESv2/renderer/d3d11/Fence11.h \
+        $$ANGLE_DIR/src/libGLESv2/renderer/d3d11/Image11.h \
+        $$ANGLE_DIR/src/libGLESv2/renderer/d3d11/IndexBuffer11.h \
+        $$ANGLE_DIR/src/libGLESv2/renderer/d3d11/InputLayoutCache.h \
+        $$ANGLE_DIR/src/libGLESv2/renderer/d3d11/Query11.h \
+        $$ANGLE_DIR/src/libGLESv2/renderer/d3d11/Renderer11.h \
+        $$ANGLE_DIR/src/libGLESv2/renderer/d3d11/renderer11_utils.h \
+        $$ANGLE_DIR/src/libGLESv2/renderer/d3d11/RenderTarget11.h \
+        $$ANGLE_DIR/src/libGLESv2/renderer/d3d11/RenderStateCache.h \
+        $$ANGLE_DIR/src/libGLESv2/renderer/d3d11/ShaderExecutable11.h \
+        $$ANGLE_DIR/src/libGLESv2/renderer/d3d11/SwapChain11.h \
+        $$ANGLE_DIR/src/libGLESv2/renderer/d3d11/TextureStorage11.h \
+        $$ANGLE_DIR/src/libGLESv2/renderer/d3d11/VertexBuffer11.h
 
     SOURCES += \
-        $$ANGLE_DIR/src/libGLESv2/renderer/BufferStorage11.cpp \
-        $$ANGLE_DIR/src/libGLESv2/renderer/Fence11.cpp \
-        $$ANGLE_DIR/src/libGLESv2/renderer/Image11.cpp \
-        $$ANGLE_DIR/src/libGLESv2/renderer/IndexBuffer11.cpp \
-        $$ANGLE_DIR/src/libGLESv2/renderer/InputLayoutCache.cpp \
-        $$ANGLE_DIR/src/libGLESv2/renderer/Query11.cpp \
-        $$ANGLE_DIR/src/libGLESv2/renderer/Renderer11.cpp \
-        $$ANGLE_DIR/src/libGLESv2/renderer/renderer11_utils.cpp \
-        $$ANGLE_DIR/src/libGLESv2/renderer/RenderTarget11.cpp \
-        $$ANGLE_DIR/src/libGLESv2/renderer/RenderStateCache.cpp \
-        $$ANGLE_DIR/src/libGLESv2/renderer/ShaderExecutable11.cpp \
-        $$ANGLE_DIR/src/libGLESv2/renderer/SwapChain11.cpp \
-        $$ANGLE_DIR/src/libGLESv2/renderer/TextureStorage11.cpp \
-        $$ANGLE_DIR/src/libGLESv2/renderer/VertexBuffer11.cpp
-} else {
+        $$ANGLE_DIR/src/libGLESv2/renderer/d3d11/BufferStorage11.cpp \
+        $$ANGLE_DIR/src/libGLESv2/renderer/d3d11/Fence11.cpp \
+        $$ANGLE_DIR/src/libGLESv2/renderer/d3d11/Image11.cpp \
+        $$ANGLE_DIR/src/libGLESv2/renderer/d3d11/IndexBuffer11.cpp \
+        $$ANGLE_DIR/src/libGLESv2/renderer/d3d11/InputLayoutCache.cpp \
+        $$ANGLE_DIR/src/libGLESv2/renderer/d3d11/Query11.cpp \
+        $$ANGLE_DIR/src/libGLESv2/renderer/d3d11/Renderer11.cpp \
+        $$ANGLE_DIR/src/libGLESv2/renderer/d3d11/renderer11_utils.cpp \
+        $$ANGLE_DIR/src/libGLESv2/renderer/d3d11/RenderTarget11.cpp \
+        $$ANGLE_DIR/src/libGLESv2/renderer/d3d11/RenderStateCache.cpp \
+        $$ANGLE_DIR/src/libGLESv2/renderer/d3d11/ShaderExecutable11.cpp \
+        $$ANGLE_DIR/src/libGLESv2/renderer/d3d11/SwapChain11.cpp \
+        $$ANGLE_DIR/src/libGLESv2/renderer/d3d11/TextureStorage11.cpp \
+        $$ANGLE_DIR/src/libGLESv2/renderer/d3d11/VertexBuffer11.cpp
+}
+
+!winrt {
     HEADERS += \
-        $$ANGLE_DIR/src/libGLESv2/renderer/Blit.h \
-        $$ANGLE_DIR/src/libGLESv2/renderer/BufferStorage9.h \
-        $$ANGLE_DIR/src/libGLESv2/renderer/Fence9.h \
-        $$ANGLE_DIR/src/libGLESv2/renderer/Image9.h \
-        $$ANGLE_DIR/src/libGLESv2/renderer/IndexBuffer9.h \
-        $$ANGLE_DIR/src/libGLESv2/renderer/Query9.h \
-        $$ANGLE_DIR/src/libGLESv2/renderer/Renderer9.h \
-        $$ANGLE_DIR/src/libGLESv2/renderer/renderer9_utils.h \
-        $$ANGLE_DIR/src/libGLESv2/renderer/RenderTarget9.h \
-        $$ANGLE_DIR/src/libGLESv2/renderer/ShaderExecutable9.h \
-        $$ANGLE_DIR/src/libGLESv2/renderer/SwapChain9.h \
-        $$ANGLE_DIR/src/libGLESv2/renderer/TextureStorage9.h \
-        $$ANGLE_DIR/src/libGLESv2/renderer/VertexBuffer9.h
+        $$ANGLE_DIR/src/libGLESv2/renderer/d3d9/Blit.h \
+        $$ANGLE_DIR/src/libGLESv2/renderer/d3d9/BufferStorage9.h \
+        $$ANGLE_DIR/src/libGLESv2/renderer/d3d9/Fence9.h \
+        $$ANGLE_DIR/src/libGLESv2/renderer/d3d9/Image9.h \
+        $$ANGLE_DIR/src/libGLESv2/renderer/d3d9/IndexBuffer9.h \
+        $$ANGLE_DIR/src/libGLESv2/renderer/d3d9/Query9.h \
+        $$ANGLE_DIR/src/libGLESv2/renderer/d3d9/Renderer9.h \
+        $$ANGLE_DIR/src/libGLESv2/renderer/d3d9/renderer9_utils.h \
+        $$ANGLE_DIR/src/libGLESv2/renderer/d3d9/RenderTarget9.h \
+        $$ANGLE_DIR/src/libGLESv2/renderer/d3d9/ShaderExecutable9.h \
+        $$ANGLE_DIR/src/libGLESv2/renderer/d3d9/SwapChain9.h \
+        $$ANGLE_DIR/src/libGLESv2/renderer/d3d9/TextureStorage9.h \
+        $$ANGLE_DIR/src/libGLESv2/renderer/d3d9/VertexBuffer9.h
 
     SOURCES += \
-        $$ANGLE_DIR/src/libGLESv2/renderer/Blit.cpp \
-        $$ANGLE_DIR/src/libGLESv2/renderer/BufferStorage9.cpp \
-        $$ANGLE_DIR/src/libGLESv2/renderer/Fence9.cpp \
-        $$ANGLE_DIR/src/libGLESv2/renderer/Image9.cpp \
-        $$ANGLE_DIR/src/libGLESv2/renderer/IndexBuffer9.cpp \
-        $$ANGLE_DIR/src/libGLESv2/renderer/Query9.cpp \
-        $$ANGLE_DIR/src/libGLESv2/renderer/Renderer9.cpp \
-        $$ANGLE_DIR/src/libGLESv2/renderer/renderer9_utils.cpp \
-        $$ANGLE_DIR/src/libGLESv2/renderer/RenderTarget9.cpp \
-        $$ANGLE_DIR/src/libGLESv2/renderer/ShaderExecutable9.cpp \
-        $$ANGLE_DIR/src/libGLESv2/renderer/SwapChain9.cpp \
-        $$ANGLE_DIR/src/libGLESv2/renderer/TextureStorage9.cpp \
-        $$ANGLE_DIR/src/libGLESv2/renderer/VertexBuffer9.cpp \
-        $$ANGLE_DIR/src/libGLESv2/renderer/VertexDeclarationCache.cpp
+        $$ANGLE_DIR/src/libGLESv2/renderer/d3d9/Blit.cpp \
+        $$ANGLE_DIR/src/libGLESv2/renderer/d3d9/BufferStorage9.cpp \
+        $$ANGLE_DIR/src/libGLESv2/renderer/d3d9/Fence9.cpp \
+        $$ANGLE_DIR/src/libGLESv2/renderer/d3d9/Image9.cpp \
+        $$ANGLE_DIR/src/libGLESv2/renderer/d3d9/IndexBuffer9.cpp \
+        $$ANGLE_DIR/src/libGLESv2/renderer/d3d9/Query9.cpp \
+        $$ANGLE_DIR/src/libGLESv2/renderer/d3d9/Renderer9.cpp \
+        $$ANGLE_DIR/src/libGLESv2/renderer/d3d9/renderer9_utils.cpp \
+        $$ANGLE_DIR/src/libGLESv2/renderer/d3d9/RenderTarget9.cpp \
+        $$ANGLE_DIR/src/libGLESv2/renderer/d3d9/ShaderExecutable9.cpp \
+        $$ANGLE_DIR/src/libGLESv2/renderer/d3d9/SwapChain9.cpp \
+        $$ANGLE_DIR/src/libGLESv2/renderer/d3d9/TextureStorage9.cpp \
+        $$ANGLE_DIR/src/libGLESv2/renderer/d3d9/VertexBuffer9.cpp \
+        $$ANGLE_DIR/src/libGLESv2/renderer/d3d9/VertexDeclarationCache.cpp
 }
 
 !static {
@@ -167,10 +169,10 @@ float_converter.commands = python $$ANGLE_DIR/src/libGLESv2/Float16ToFloat32.py 
 QMAKE_EXTRA_TARGETS += float_converter
 
 # Generate the shader header files.
-PS_BLIT_INPUT = $$ANGLE_DIR/src/libGLESv2/renderer/shaders/Blit.ps
-VS_BLIT_INPUT = $$ANGLE_DIR/src/libGLESv2/renderer/shaders/Blit.vs
-PASSTHROUGH_INPUT = $$ANGLE_DIR/src/libGLESv2/renderer/shaders/Passthrough11.hlsl
-CLEAR_INPUT = $$ANGLE_DIR/src/libGLESv2/renderer/shaders/Clear11.hlsl
+PS_BLIT_INPUT = $$ANGLE_DIR/src/libGLESv2/renderer/d3d9/shaders/Blit.ps
+VS_BLIT_INPUT = $$ANGLE_DIR/src/libGLESv2/renderer/d3d9/shaders/Blit.vs
+PASSTHROUGH_INPUT = $$ANGLE_DIR/src/libGLESv2/renderer/d3d11/shaders/Passthrough11.hlsl
+CLEAR_INPUT = $$ANGLE_DIR/src/libGLESv2/renderer/d3d11/shaders/Clear11.hlsl
 PIXEL_SHADERS_BLIT = passthroughps luminanceps componentmaskps
 PIXEL_SHADERS_PASSTHROUGH = PassthroughRGBA PassthroughRGB \
                             PassthroughLum PassthroughLumAlpha
@@ -178,61 +180,62 @@ PIXEL_SHADERS_CLEAR = ClearSingle ClearMultiple
 VERTEX_SHADERS_BLIT = standardvs flipyvs
 VERTEX_SHADERS_PASSTHROUGH = Passthrough
 VERTEX_SHADERS_CLEAR = Clear
-SHADER_DIR = $$OUT_PWD/renderer/shaders/compiled
+SHADER_DIR_9 = $$OUT_PWD/renderer/d3d9/shaders/compiled
+SHADER_DIR_11 = $$OUT_PWD/renderer/d3d11/shaders/compiled
 
 for (ps, PIXEL_SHADERS_BLIT) {
     fxc_ps_$${ps}.commands = $$FXC /nologo /E $$ps /T ps_2_0 /Fh ${QMAKE_FILE_OUT} ${QMAKE_FILE_NAME}
-    fxc_ps_$${ps}.output = $$SHADER_DIR/$${ps}.h
+    fxc_ps_$${ps}.output = $$SHADER_DIR_9/$${ps}.h
     fxc_ps_$${ps}.input = PS_BLIT_INPUT
     fxc_ps_$${ps}.dependency_type = TYPE_C
     fxc_ps_$${ps}.variable_out = HEADERS
     fxc_ps_$${ps}.CONFIG += target_predeps
-    QMAKE_EXTRA_COMPILERS += fxc_ps_$${ps}
+    !winrt: QMAKE_EXTRA_COMPILERS += fxc_ps_$${ps}
 }
 for (ps, PIXEL_SHADERS_PASSTHROUGH) {
     fxc_ps_$${ps}.commands = $$FXC /nologo /E PS_$$ps /T ps_4_0_level_9_1 /Fh ${QMAKE_FILE_OUT} ${QMAKE_FILE_NAME}
-    fxc_ps_$${ps}.output = $$SHADER_DIR/$${ps}11ps.h
+    fxc_ps_$${ps}.output = $$SHADER_DIR_11/$${ps}11ps.h
     fxc_ps_$${ps}.input = PASSTHROUGH_INPUT
     fxc_ps_$${ps}.dependency_type = TYPE_C
     fxc_ps_$${ps}.variable_out = HEADERS
     fxc_ps_$${ps}.CONFIG += target_predeps
-    QMAKE_EXTRA_COMPILERS += fxc_ps_$${ps}
+    angle_d3d11: QMAKE_EXTRA_COMPILERS += fxc_ps_$${ps}
 }
 for (ps, PIXEL_SHADERS_CLEAR) {
     fxc_ps_$${ps}.commands = $$FXC /nologo /E PS_$$ps /T ps_4_0_level_9_1 /Fh ${QMAKE_FILE_OUT} ${QMAKE_FILE_NAME}
-    fxc_ps_$${ps}.output = $$SHADER_DIR/$${ps}11ps.h
+    fxc_ps_$${ps}.output = $$SHADER_DIR_11/$${ps}11ps.h
     fxc_ps_$${ps}.input = CLEAR_INPUT
     fxc_ps_$${ps}.dependency_type = TYPE_C
     fxc_ps_$${ps}.variable_out = HEADERS
     fxc_ps_$${ps}.CONFIG += target_predeps
-    QMAKE_EXTRA_COMPILERS += fxc_ps_$${ps}
+    angle_d3d11: QMAKE_EXTRA_COMPILERS += fxc_ps_$${ps}
 }
 for (vs, VERTEX_SHADERS_BLIT) {
     fxc_vs_$${vs}.commands = $$FXC /nologo /E $$vs /T vs_2_0 /Fh ${QMAKE_FILE_OUT} ${QMAKE_FILE_NAME}
-    fxc_vs_$${vs}.output = $$SHADER_DIR/$${vs}.h
+    fxc_vs_$${vs}.output = $$SHADER_DIR_9/$${vs}.h
     fxc_vs_$${vs}.input = VS_BLIT_INPUT
     fxc_vs_$${vs}.dependency_type = TYPE_C
     fxc_vs_$${vs}.variable_out = HEADERS
     fxc_vs_$${vs}.CONFIG += target_predeps
-    QMAKE_EXTRA_COMPILERS += fxc_vs_$${vs}
+    !winrt: QMAKE_EXTRA_COMPILERS += fxc_vs_$${vs}
 }
 for (vs, VERTEX_SHADERS_PASSTHROUGH) {
     fxc_vs_$${vs}.commands = $$FXC /nologo /E VS_$$vs /T vs_4_0_level_9_1 /Fh ${QMAKE_FILE_OUT} ${QMAKE_FILE_NAME}
-    fxc_vs_$${vs}.output = $$SHADER_DIR/$${vs}11vs.h
+    fxc_vs_$${vs}.output = $$SHADER_DIR_11/$${vs}11vs.h
     fxc_vs_$${vs}.input = PASSTHROUGH_INPUT
     fxc_vs_$${vs}.dependency_type = TYPE_C
     fxc_vs_$${vs}.variable_out = HEADERS
     fxc_vs_$${vs}.CONFIG += target_predeps
-    QMAKE_EXTRA_COMPILERS += fxc_vs_$${vs}
+    angle_d3d11: QMAKE_EXTRA_COMPILERS += fxc_vs_$${vs}
 }
 for (vs, VERTEX_SHADERS_CLEAR) {
     fxc_vs_$${vs}.commands = $$FXC /nologo /E VS_$$vs /T vs_4_0_level_9_1 /Fh ${QMAKE_FILE_OUT} ${QMAKE_FILE_NAME}
-    fxc_vs_$${vs}.output = $$SHADER_DIR/$${vs}11vs.h
+    fxc_vs_$${vs}.output = $$SHADER_DIR_11/$${vs}11vs.h
     fxc_vs_$${vs}.input = CLEAR_INPUT
     fxc_vs_$${vs}.dependency_type = TYPE_C
     fxc_vs_$${vs}.variable_out = HEADERS
     fxc_vs_$${vs}.CONFIG += target_predeps
-    QMAKE_EXTRA_COMPILERS += fxc_vs_$${vs}
+    angle_d3d11: QMAKE_EXTRA_COMPILERS += fxc_vs_$${vs}
 }
 
 load(qt_installs)

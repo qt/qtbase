@@ -308,12 +308,12 @@ void GLWidget::paintGL()
             bubble->drawBubble(&painter);
     }
 
-    QString framesPerSecond;
-    framesPerSecond.setNum(frames /(time.elapsed() / 1000.0), 'f', 2);
-
-    painter.setPen(Qt::white);
-
-    painter.drawText(20, 40, framesPerSecond + " fps");
+    if (const int elapsed = time.elapsed()) {
+        QString framesPerSecond;
+        framesPerSecond.setNum(frames /(elapsed / 1000.0), 'f', 2);
+        painter.setPen(Qt::white);
+        painter.drawText(20, 40, framesPerSecond + " fps");
+    }
 
     painter.end();
 

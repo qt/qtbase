@@ -24,6 +24,9 @@ ANDROID_LIB_DEPENDENCIES = \
 ANDROID_BUNDLED_JAR_DEPENDENCIES = \
     jar/QtAndroid-bundled.jar \
     jar/QtAndroidAccessibility-bundled.jar
+ANDROID_PERMISSIONS = \
+    android.permission.INTERNET \
+    android.permission.WRITE_EXTERNAL_STORAGE
 
 load(qt_module)
 

@@ -565,7 +565,7 @@ QList<QByteArray> QMacPasteboardMimeTiff::convertFromMime(const QString &mime, Q
         return ret;
 
     QImage img = qvariant_cast<QImage>(variant);
-    QCFType<CGImageRef> cgimage = qt_mac_image_to_cgimage(img);
+    QCFType<CGImageRef> cgimage = qt_mac_toCGImage(img);
 
     QCFType<CFMutableDataRef> data = CFDataCreateMutable(0, 0);
     QCFType<CGImageDestinationRef> imageDestination = CGImageDestinationCreateWithData(data, kUTTypeTIFF, 1, 0);

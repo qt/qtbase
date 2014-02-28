@@ -61,6 +61,7 @@
 QT_BEGIN_NAMESPACE
 
 class QPlatformTextureList;
+class QPlatformTextureListWatcher;
 class QWidgetBackingStore;
 
 struct BeginPaintInfo {
@@ -70,6 +71,7 @@ struct BeginPaintInfo {
     uint backingStoreRecreated : 1;
 };
 
+#ifndef QT_NO_OPENGL
 class QPlatformTextureListWatcher : public QObject
 {
     Q_OBJECT
@@ -86,6 +88,7 @@ private:
      bool m_locked;
      QWidgetBackingStore *m_backingStore;
 };
+#endif
 
 class Q_AUTOTEST_EXPORT QWidgetBackingStore
 {
@@ -135,6 +138,9 @@ private:
 
     static bool flushPaint(QWidget *widget, const QRegion &rgn);
     static void unflushPaint(QWidget *widget, const QRegion &rgn);
+    static void qt_flush(QWidget *widget, const QRegion &region, QBackingStore *backingStore,
+                         QWidget *tlw, const QPoint &tlwOffset,
+                         QPlatformTextureList *widgetTextures = 0);
 
     void doSync();
     bool bltRect(const QRect &rect, int dx, int dy, QWidget *widget);

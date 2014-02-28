@@ -24,6 +24,7 @@
 %classnames = (
     "qglobal.h" => "QtGlobal",
     "qendian.h" => "QtEndian",
+    "qconfig.h" => "QtConfig",
     "qplugin.h" => "QtPlugin",
     "qalgorithms.h" => "QtAlgorithms",
     "qcontainerfwd.h" => "QtContainerFwd",
@@ -31,6 +32,7 @@
     "qevent.h" => "QtEvents",
     "qnamespace.h" => "Qt",
     "qnumeric.h" => "QtNumeric",
+    "qvariant.h" => "QVariantHash,QVariantList,QVariantMap",
     "qsql.h" => "QSql",
     "qssl.h" => "QSsl",
     "qtest.h" => "QTest",
@@ -42,13 +44,6 @@
     "QtGui" =>  {
         "QGenericPlugin" => "QtGui/QGenericPlugin",
         "QGenericPluginFactory" => "QtGui/QGenericPluginFactory"
-    }
-);
-%explicitheaders = (
-    "QtCore" => {
-        "QVariantHash" => "qvariant.h",
-        "QVariantList" => "qvariant.h",
-        "QVariantMap" => "qvariant.h",
     }
 );
 

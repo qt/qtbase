@@ -11,35 +11,26 @@
 #include "libGLESv2/main.h"
 #include "libGLESv2/Program.h"
 #include "libGLESv2/renderer/Renderer.h"
-#ifndef ANGLE_ENABLE_D3D11
-#include "libGLESv2/renderer/Renderer9.h"
-#else
-#include "libGLESv2/renderer/Renderer11.h"
+#if defined(ANGLE_ENABLE_D3D9)
+#  include "libGLESv2/renderer/d3d9/Renderer9.h"
+#endif
+#if defined(ANGLE_ENABLE_D3D11)
+#  include "libGLESv2/renderer/d3d11/Renderer11.h"
 #endif
 #include "libGLESv2/utilities.h"
 #include "third_party/trace_event/trace_event.h"
-
-#if !defined(ANGLE_ENABLE_D3D11)
-// Enables use of the Direct3D 11 API for a default display, when available
-#define ANGLE_ENABLE_D3D11 0
-#endif
 
 #ifndef D3DERR_OUTOFVIDEOMEMORY
 #define D3DERR_OUTOFVIDEOMEMORY MAKE_HRESULT(1, 0x876, 380)
 #endif
 
-#ifndef D3DCOMPILER_DLL
-#define D3DCOMPILER_DLL L"d3dcompiler_43.dll" // Lowest common denominator
-#endif
-
-#ifndef QT_D3DCOMPILER_DLL
-#define QT_D3DCOMPILER_DLL D3DCOMPILER_DLL
-#endif
-
 #if defined(__MINGW32__) || defined(ANGLE_OS_WINPHONE)
 
-//Add define + typedefs for older MinGW-w64 headers (pre 5783)
-//Also define these on Windows Phone, which doesn't have a shader compiler
+#ifndef D3DCOMPILER_DLL
+
+// Add define + typedefs for older MinGW-w64 headers (pre 5783)
+
+#define D3DCOMPILER_DLL L"d3dcompiler_43.dll"
 
 HRESULT WINAPI D3DCompile(const void *data, SIZE_T data_size, const char *filename,
         const D3D_SHADER_MACRO *defines, ID3DInclude *include, const char *entrypoint,
@@ -48,7 +39,13 @@ typedef HRESULT (WINAPI *pD3DCompile)(const void *data, SIZE_T data_size, const 
         const D3D_SHADER_MACRO *defines, ID3DInclude *include, const char *entrypoint,
         const char *target, UINT sflags, UINT eflags, ID3DBlob **shader, ID3DBlob **error_messages);
 
+#endif // D3DCOMPILER_DLL
+
 #endif // __MINGW32__ || ANGLE_OS_WINPHONE
+
+#ifndef QT_D3DCOMPILER_DLL
+#define QT_D3DCOMPILER_DLL D3DCOMPILER_DLL
+#endif
 
 namespace rx
 {
@@ -82,7 +79,8 @@ bool Renderer::initializeCompiler()
             break;
         }
     }
-#else
+#endif  // ANGLE_PRELOADED_D3DCOMPILER_MODULE_NAMES
+
     // Load the compiler DLL specified by the environment, or default to QT_D3DCOMPILER_DLL
 #if !defined(ANGLE_OS_WINRT)
     const wchar_t *defaultCompiler = _wgetenv(L"QT_D3DCOMPILER_DLL");
@@ -109,15 +107,11 @@ bool Renderer::initializeCompiler()
     // Load the first available known compiler DLL
     for (int i = 0; compilerDlls[i]; ++i)
     {
-#if !defined(ANGLE_OS_WINRT)
+        // Load the version of the D3DCompiler DLL associated with the Direct3D version ANGLE was built with.
         mD3dCompilerModule = LoadLibrary(compilerDlls[i]);
-#else
-        mD3dCompilerModule = LoadPackagedLibrary(compilerDlls[i], NULL);
-#endif
         if (mD3dCompilerModule)
             break;
     }
-#endif  // ANGLE_PRELOADED_D3DCOMPILER_MODULE_NAMES
 
     if (!mD3dCompilerModule)
     {
@@ -230,17 +224,45 @@ ShaderBlob *Renderer::compileToBinary(gl::InfoLog &infoLog, const char *hlsl, co
 extern "C"
 {
 
-rx::Renderer *glCreateRenderer(egl::Display *display, HDC hDc, EGLNativeDisplayType displayId)
+rx::Renderer *glCreateRenderer(egl::Display *display, EGLNativeDisplayType displayId)
 {
     rx::Renderer *renderer = NULL;
     EGLint status = EGL_BAD_ALLOC;
 
-#if ANGLE_ENABLE_D3D11
-    renderer = new rx::Renderer11(display, hDc);
-#else
-    bool softwareDevice = (displayId == EGL_SOFTWARE_DISPLAY_ANGLE);
-    renderer = new rx::Renderer9(display, hDc, softwareDevice);
+#if defined(ANGLE_OS_WINRT)
+    if (displayId == EGL_DEFAULT_DISPLAY)
+        displayId = EGL_D3D11_ONLY_DISPLAY_ANGLE;
 #endif
+
+#if defined(ANGLE_ENABLE_D3D11)
+    if (displayId == EGL_DEFAULT_DISPLAY ||
+        displayId == EGL_D3D11_ELSE_D3D9_DISPLAY_ANGLE ||
+        displayId == EGL_D3D11_ONLY_DISPLAY_ANGLE)
+    {
+        renderer = new rx::Renderer11(display);
+
+        if (renderer)
+        {
+            status = renderer->initialize();
+        }
+
+        if (status == EGL_SUCCESS)
+        {
+            return renderer;
+        }
+        else if (displayId == EGL_D3D11_ONLY_DISPLAY_ANGLE)
+        {
+            return NULL;
+        }
+
+        // Failed to create a D3D11 renderer, try creating a D3D9 renderer
+        delete renderer;
+    }
+#endif // ANGLE_ENABLE_D3D11
+
+#if defined(ANGLE_ENABLE_D3D9)
+    bool softwareDevice = (displayId == EGL_SOFTWARE_DISPLAY_ANGLE);
+    renderer = new rx::Renderer9(display, displayId, softwareDevice);
 
     if (renderer)
     {
@@ -251,6 +273,7 @@ rx::Renderer *glCreateRenderer(egl::Display *display, HDC hDc, EGLNativeDisplayT
     {
         return renderer;
     }
+#endif // ANGLE_ENABLE_D3D9
 
     return NULL;
 }

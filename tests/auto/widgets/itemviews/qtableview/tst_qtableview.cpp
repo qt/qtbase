@@ -46,6 +46,8 @@
 #include <QtTest/QtTest>
 #include "private/qapplication_p.h"
 
+#include <algorithm>
+
 #ifdef QT_BUILD_INTERNAL
 #define VERIFY_SPANS_CONSISTENCY(TEST_VIEW_) \
     QVERIFY(static_cast<QTableViewPrivate*>(QObjectPrivate::get(TEST_VIEW_))->spans.checkConsistency())
@@ -3921,8 +3923,8 @@ void tst_QTableView::task234926_setHeaderSorting()
     data << "orange" << "apple" << "banana" << "lemon" << "pumpkin";
     QStringList sortedDataA = data;
     QStringList sortedDataD = data;
-    qSort(sortedDataA);
-    qSort(sortedDataD.begin(), sortedDataD.end(), qGreater<QString>());
+    std::sort(sortedDataA.begin(), sortedDataA.end());
+    std::sort(sortedDataD.begin(), sortedDataD.end(), qGreater<QString>());
     model.setStringList(data);
     QTableView view;
     view.setModel(&model);

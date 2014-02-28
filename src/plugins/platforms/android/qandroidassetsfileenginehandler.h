@@ -58,9 +58,12 @@ public:
     QAbstractFileEngine *create(const QString &fileName) const;
 
 private:
+    void prepopulateCache();
+
     AAssetManager *m_assetManager;
     mutable QCache<QByteArray, QSharedPointer<AndroidAssetDir>> m_assetsCache;
     mutable QMutex m_assetsCacheMutext;
+    bool m_hasPrepopulatedCache;
 };
 
 #endif // QANDROIDASSETSFILEENGINEHANDLER_H

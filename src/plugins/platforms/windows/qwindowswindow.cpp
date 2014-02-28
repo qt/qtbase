@@ -924,11 +924,23 @@ void QWindowsWindow::fireExpose(const QRegion &region, bool force)
     QWindowSystemInterface::handleExposeEvent(window(), region);
 }
 
+static inline QWindow *findTransientChild(const QWindow *parent)
+{
+    foreach (QWindow *w, QGuiApplication::topLevelWindows())
+        if (w->transientParent() == parent)
+            return w;
+    return 0;
+}
+
 void QWindowsWindow::destroyWindow()
 {
     qCDebug(lcQpaWindows) << __FUNCTION__ << this << window() << m_data.hwnd;
     if (m_data.hwnd) { // Stop event dispatching before Window is destroyed.
         setFlag(WithinDestroy);
+        // Clear any transient child relationships as Windows will otherwise destroy them (QTBUG-35499, QTBUG-36666)
+        if (QWindow *transientChild = findTransientChild(window()))
+            if (QWindowsWindow *tw = QWindowsWindow::baseWindowOf(transientChild))
+                tw->updateTransientParent();
         QWindowsContext *context = QWindowsContext::instance();
         if (context->windowUnderMouse() == window())
             context->clearWindowUnderMouse();
@@ -1065,7 +1077,7 @@ bool QWindowsWindow::isVisible() const
 bool QWindowsWindow::isActive() const
 {
     // Check for native windows or children of the active native window.
-    if (const HWND activeHwnd = GetActiveWindow())
+    if (const HWND activeHwnd = GetForegroundWindow())
         if (m_data.hwnd == activeHwnd || IsChild(activeHwnd, m_data.hwnd))
             return true;
     return false;
@@ -1102,6 +1114,18 @@ QPoint QWindowsWindow::mapFromGlobal(const QPoint &pos) const
         return pos;
 }
 
+#ifndef Q_OS_WINCE
+static inline HWND transientParentHwnd(HWND hwnd)
+{
+    if (GetAncestor(hwnd, GA_PARENT) == GetDesktopWindow()) {
+        const HWND rootOwnerHwnd = GetAncestor(hwnd, GA_ROOTOWNER);
+        if (rootOwnerHwnd != hwnd) // May return itself for toplevels.
+            return rootOwnerHwnd;
+    }
+    return 0;
+}
+#endif // !Q_OS_WINCE
+
 // Update the transient parent for a toplevel window. The concept does not
 // really exist on Windows, the relationship is set by passing a parent along with !WS_CHILD
 // to window creation or by setting the parent using  GWL_HWNDPARENT (as opposed to
@@ -1112,12 +1136,13 @@ void QWindowsWindow::updateTransientParent() const
     if (window()->type() == Qt::Popup)
         return; // QTBUG-34503, // a popup stays on top, no parent, see also WindowCreationData::fromWindow().
     // Update transient parent.
-    const HWND oldTransientParent =
-        GetAncestor(m_data.hwnd, GA_PARENT) == GetDesktopWindow() ? GetAncestor(m_data.hwnd, GA_ROOTOWNER) : HWND(0);
+    const HWND oldTransientParent = transientParentHwnd(m_data.hwnd);
     HWND newTransientParent = 0;
     if (const QWindow *tp = window()->transientParent())
-        newTransientParent = QWindowsWindow::handleOf(tp);
-    if (newTransientParent && newTransientParent != oldTransientParent)
+        if (const QWindowsWindow *tw = QWindowsWindow::baseWindowOf(tp))
+            if (!tw->testFlag(WithinDestroy)) // Prevent destruction by parent window (QTBUG-35499, QTBUG-36666)
+                newTransientParent = tw->handle();
+    if (newTransientParent != oldTransientParent)
         SetWindowLongPtr(m_data.hwnd, GWL_HWNDPARENT, (LONG_PTR)newTransientParent);
 #endif // !Q_OS_WINCE
 }

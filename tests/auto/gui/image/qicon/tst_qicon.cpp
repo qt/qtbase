@@ -45,6 +45,8 @@
 #include <qicon.h>
 #include <qiconengine.h>
 
+#include <algorithm>
+
 
 class tst_QIcon : public QObject
 {
@@ -421,7 +423,7 @@ void tst_QIcon::availableSizes()
 
         QList<QSize> availableSizes = icon.availableSizes();
         QCOMPARE(availableSizes.size(), 3);
-        qSort(availableSizes.begin(), availableSizes.end(), sizeLess);
+        std::sort(availableSizes.begin(), availableSizes.end(), sizeLess);
         QCOMPARE(availableSizes.at(0), QSize(32,32));
         QCOMPARE(availableSizes.at(1), QSize(64,64));
         QCOMPARE(availableSizes.at(2), QSize(128,128));

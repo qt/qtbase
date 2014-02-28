@@ -130,6 +130,8 @@ public:
     bool bind();
     void release();
 
+    bool create();
+
     GLuint programId() const;
 
     int maxGeometryOutputVertices() const;

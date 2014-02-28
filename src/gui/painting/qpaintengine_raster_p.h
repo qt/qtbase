@@ -336,7 +336,7 @@ public:
     QSpanData solid_color_filler;
 
 
-    QFontEngineGlyphCache::Type glyphCacheType;
+    QFontEngine::GlyphFormat glyphCacheFormat;
 
     QScopedPointer<QClipData> baseClip;
 

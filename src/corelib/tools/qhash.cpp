@@ -337,19 +337,28 @@ uint qt_hash(const QStringRef &key) Q_DECL_NOTHROW
 }
 
 /*
-    The prime_deltas array is a table of selected prime values, even
-    though it doesn't look like one. The primes we are using are 1,
-    2, 5, 11, 17, 37, 67, 131, 257, ..., i.e. primes in the immediate
-    surrounding of a power of two.
+    The prime_deltas array contains the difference between a power
+    of two and the next prime number:
 
-    The primeForNumBits() function returns the prime associated to a
-    power of two. For example, primeForNumBits(8) returns 257.
+    prime_deltas[i] = nextprime(2^i) - 2^i
+
+    Basically, it's sequence A092131 from OEIS, assuming:
+    - nextprime(1) = 1
+    - nextprime(2) = 2
+    and
+    - left-extending it for the offset 0 (A092131 starts at i=1)
+    - stopping the sequence at i = 28 (the table is big enough...)
 */
 
 static const uchar prime_deltas[] = {
-    0,  0,  1,  3,  1,  5,  3,  3,  1,  9,  7,  5,  3,  9, 25,  3,
-    1, 21,  3, 21,  7, 15,  9,  5,  3, 29, 15,  0,  0,  0,  0,  0
+    0,  0,  1,  3,  1,  5,  3,  3,  1,  9,  7,  5,  3, 17, 27,  3,
+    1, 29,  3, 21,  7, 17, 15,  9, 43, 35, 15,  0,  0,  0,  0,  0
 };
+
+/*
+    The primeForNumBits() function returns the prime associated to a
+    power of two. For example, primeForNumBits(8) returns 257.
+*/
 
 static inline int primeForNumBits(int numBits)
 {

@@ -51,13 +51,14 @@ QT_BEGIN_NAMESPACE
 
 QBasicAtomicInt qopengltextureglyphcache_serial_number = Q_BASIC_ATOMIC_INITIALIZER(1);
 
-QOpenGLTextureGlyphCache::QOpenGLTextureGlyphCache(QFontEngineGlyphCache::Type type, const QTransform &matrix)
-    : QImageTextureGlyphCache(type, matrix)
+QOpenGLTextureGlyphCache::QOpenGLTextureGlyphCache(QFontEngine::GlyphFormat format, const QTransform &matrix)
+    : QImageTextureGlyphCache(format, matrix)
     , m_textureResource(0)
     , pex(0)
     , m_blitProgram(0)
     , m_filterMode(Nearest)
     , m_serialNumber(qopengltextureglyphcache_serial_number.fetchAndAddRelaxed(1))
+    , m_buffer(QOpenGLBuffer::VertexBuffer)
 {
 #ifdef QT_GL_TEXTURE_GLYPH_CACHE_DEBUG
     qDebug(" -> QOpenGLTextureGlyphCache() %p for context %p.", this, QOpenGLContext::currentContext());
@@ -86,6 +87,11 @@ QOpenGLTextureGlyphCache::~QOpenGLTextureGlyphCache()
 #ifdef QT_GL_TEXTURE_GLYPH_CACHE_DEBUG
     qDebug(" -> ~QOpenGLTextureGlyphCache() %p.", this);
 #endif
+}
+
+static inline bool isCoreProfile()
+{
+    return QOpenGLContext::currentContext()->format().profile() == QSurfaceFormat::CoreProfile;
 }
 
 void QOpenGLTextureGlyphCache::createTextureData(int width, int height)
@@ -122,7 +128,7 @@ void QOpenGLTextureGlyphCache::createTextureData(int width, int height)
     m_textureResource->m_width = width;
     m_textureResource->m_height = height;
 
-    if (m_type == QFontEngineGlyphCache::Raster_RGBMask || m_type == QFontEngineGlyphCache::Raster_ARGB) {
+    if (m_format == QFontEngine::Format_A32 || m_format == QFontEngine::Format_ARGB) {
         QVarLengthArray<uchar> data(width * height * 4);
         for (int i = 0; i < data.size(); ++i)
             data[i] = 0;
@@ -131,7 +137,14 @@ void QOpenGLTextureGlyphCache::createTextureData(int width, int height)
         QVarLengthArray<uchar> data(width * height);
         for (int i = 0; i < data.size(); ++i)
             data[i] = 0;
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, width, height, 0, GL_ALPHA, GL_UNSIGNED_BYTE, &data[0]);
+#if !defined(QT_OPENGL_ES_2)
+        const GLint internalFormat = isCoreProfile() ? GL_R8 : GL_ALPHA;
+        const GLenum format = isCoreProfile() ? GL_RED : GL_ALPHA;
+#else
+        const GLint internalFormat = GL_ALPHA;
+        const GLenum format = GL_ALPHA;
+#endif
+        glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, GL_UNSIGNED_BYTE, &data[0]);
     }
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -139,6 +152,31 @@ void QOpenGLTextureGlyphCache::createTextureData(int width, int height)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     m_filterMode = Nearest;
+
+    if (!m_buffer.isCreated()) {
+        m_buffer.create();
+        m_buffer.bind();
+        static GLfloat buf[sizeof(m_vertexCoordinateArray) + sizeof(m_textureCoordinateArray)];
+        memcpy(buf, m_vertexCoordinateArray, sizeof(m_vertexCoordinateArray));
+        memcpy(buf + (sizeof(m_vertexCoordinateArray) / sizeof(GLfloat)),
+               m_textureCoordinateArray,
+               sizeof(m_textureCoordinateArray));
+        m_buffer.allocate(buf, sizeof(buf));
+        m_buffer.release();
+    }
+
+    if (!m_vao.isCreated())
+        m_vao.create();
+}
+
+void QOpenGLTextureGlyphCache::setupVertexAttribs()
+{
+    m_buffer.bind();
+    m_blitProgram->setAttributeBuffer(int(QT_VERTEX_COORDS_ATTR), GL_FLOAT, 0, 2);
+    m_blitProgram->setAttributeBuffer(int(QT_TEXTURE_COORDS_ATTR), GL_FLOAT, sizeof(m_vertexCoordinateArray), 2);
+    m_blitProgram->enableAttributeArray(int(QT_VERTEX_COORDS_ATTR));
+    m_blitProgram->enableAttributeArray(int(QT_TEXTURE_COORDS_ATTR));
+    m_buffer.release();
 }
 
 void QOpenGLTextureGlyphCache::resizeTextureData(int width, int height)
@@ -237,16 +275,19 @@ void QOpenGLTextureGlyphCache::resizeTextureData(int width, int height)
             m_blitProgram->bindAttributeLocation("textureCoordArray", QT_TEXTURE_COORDS_ATTR);
 
             m_blitProgram->link();
+
+            if (m_vao.isCreated()) {
+                m_vao.bind();
+                setupVertexAttribs();
+            }
         }
 
-        funcs.glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, m_vertexCoordinateArray);
-        funcs.glVertexAttribPointer(QT_TEXTURE_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, m_textureCoordinateArray);
+        if (m_vao.isCreated())
+            m_vao.bind();
+        else
+            setupVertexAttribs();
 
         m_blitProgram->bind();
-        m_blitProgram->enableAttributeArray(int(QT_VERTEX_COORDS_ATTR));
-        m_blitProgram->enableAttributeArray(int(QT_TEXTURE_COORDS_ATTR));
-        m_blitProgram->disableAttributeArray(int(QT_OPACITY_ATTR));
-
         blitProgram = m_blitProgram;
 
     } else {
@@ -276,8 +317,12 @@ void QOpenGLTextureGlyphCache::resizeTextureData(int width, int height)
         glViewport(0, 0, pex->width, pex->height);
         pex->updateClipScissorTest();
     } else {
-        m_blitProgram->disableAttributeArray(int(QT_VERTEX_COORDS_ATTR));
-        m_blitProgram->disableAttributeArray(int(QT_TEXTURE_COORDS_ATTR));
+        if (m_vao.isCreated()) {
+            m_vao.release();
+        } else {
+            m_blitProgram->disableAttributeArray(int(QT_VERTEX_COORDS_ATTR));
+            m_blitProgram->disableAttributeArray(int(QT_TEXTURE_COORDS_ATTR));
+        }
     }
 }
 
@@ -395,7 +440,14 @@ void QOpenGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph, QFixed
                 glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y + i, maskWidth, 1, GL_ALPHA, GL_UNSIGNED_BYTE, mask.scanLine(i));
         } else {
 #endif
-            glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y, maskWidth, maskHeight, GL_ALPHA, GL_UNSIGNED_BYTE, mask.bits());
+
+#if !defined(QT_OPENGL_ES_2)
+        const GLenum format = isCoreProfile() ? GL_RED : GL_ALPHA;
+#else
+        const GLenum format = GL_ALPHA;
+#endif
+        glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y, maskWidth, maskHeight, format, GL_UNSIGNED_BYTE, mask.bits());
+
 #if 0
         }
 #endif

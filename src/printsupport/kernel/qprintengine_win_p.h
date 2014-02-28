@@ -107,7 +107,13 @@ public:
 
     static QList<QPrinter::PaperSize> supportedPaperSizes(const QPrinterInfo &printerInfo);
     static QList<QPair<QString, QSizeF> > supportedSizesWithNames(const QPrinterInfo &printerInfo);
-    static void queryDefaultPrinter(QString &name, QString &program, QString &port);
+
+    /* Used by print/page setup dialogs */
+    void setGlobalDevMode(HGLOBAL globalDevNames, HGLOBAL globalDevMode);
+    HGLOBAL *createGlobalDevNames();
+    HGLOBAL globalDevMode();
+
+    static void queryDefaultPrinter(QString &name);
 
 private:
     friend class QPrintDialog;
@@ -166,12 +172,6 @@ public:
        is handled in the next begin or newpage. */
     void doReinit();
 
-    /* Used by print/page setup dialogs */
-    HGLOBAL *createDevNames();
-
-    void readDevmode(HGLOBAL globalDevmode);
-    void readDevnames(HGLOBAL globalDevnames);
-
     inline bool resetDC() {
         hdc = ResetDC(hdc, devMode);
         return hdc != 0;
@@ -205,8 +205,6 @@ public:
 
     // Printer info
     QString name;
-    QString program;
-    QString port;
 
     // Document info
     QString docName;

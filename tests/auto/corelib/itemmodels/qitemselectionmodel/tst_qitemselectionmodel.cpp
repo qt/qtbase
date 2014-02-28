@@ -43,6 +43,8 @@
 
 #include <QtGui/QtGui>
 
+#include <algorithm>
+
 class tst_QItemSelectionModel : public QObject
 {
     Q_OBJECT
@@ -1833,7 +1835,7 @@ void tst_QItemSelectionModel::selectedRows()
 
     QModelIndexList selectedRowIndexes = selectionModel.selectedRows(column);
     QCOMPARE(selectedRowIndexes.count(), expectedRows.count());
-    qSort(selectedRowIndexes);
+    std::sort(selectedRowIndexes.begin(), selectedRowIndexes.end());
     for (int l = 0; l < selectedRowIndexes.count(); ++l) {
         QCOMPARE(selectedRowIndexes.at(l).row(), expectedRows.at(l));
         QCOMPARE(selectedRowIndexes.at(l).column(), column);
@@ -1893,7 +1895,7 @@ void tst_QItemSelectionModel::selectedColumns()
 
     QModelIndexList selectedColumnIndexes = selectionModel.selectedColumns(row);
     QCOMPARE(selectedColumnIndexes.count(), expectedColumns.count());
-    qSort(selectedColumnIndexes);
+    std::sort(selectedColumnIndexes.begin(), selectedColumnIndexes.end());
     for (int l = 0; l < selectedColumnIndexes.count(); ++l) {
         QCOMPARE(selectedColumnIndexes.at(l).column(), expectedColumns.at(l));
         QCOMPARE(selectedColumnIndexes.at(l).row(), row);

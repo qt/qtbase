@@ -184,7 +184,7 @@ const char *__stdcall eglQueryString(EGLDisplay dpy, EGLint name)
           case EGL_VENDOR:
             return egl::success(display->getVendorString());
           case EGL_VERSION:
-            return egl::success("1.4 (ANGLE " VERSION_STRING ")");
+            return egl::success("1.4 (ANGLE " ANGLE_VERSION_STRING ")");
         }
 
         return egl::error(EGL_BAD_PARAMETER, (const char*)NULL);
@@ -821,12 +821,20 @@ EGLContext __stdcall eglCreateContext(EGLDisplay dpy, EGLConfig config, EGLConte
             return egl::error(EGL_BAD_CONFIG, EGL_NO_CONTEXT);
         }
 
-        if (share_context && static_cast<gl::Context*>(share_context)->isResetNotificationEnabled() != reset_notification)
+        gl::Context *sharedContextPtr = (share_context != EGL_NO_CONTEXT ? static_cast<gl::Context*>(share_context) : NULL);
+
+        if (sharedContextPtr != NULL && sharedContextPtr->isResetNotificationEnabled() != reset_notification)
         {
             return egl::error(EGL_BAD_MATCH, EGL_NO_CONTEXT);
         }
 
         egl::Display *display = static_cast<egl::Display*>(dpy);
+
+        // Can not share contexts between displays
+        if (sharedContextPtr != NULL && sharedContextPtr->getRenderer() != display->getRenderer())
+        {
+            return egl::error(EGL_BAD_MATCH, EGL_NO_CONTEXT);
+        }
 
         if (!validateConfig(display, config))
         {

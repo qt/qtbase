@@ -177,7 +177,7 @@ public:
     {
         jobject jobj = static_cast<jobject>(o);
         if (!isSameObject(jobj)) {
-            d = QSharedPointer<QJNIObjectData>(new QJNIObjectData());
+            d = QSharedPointer<QJNIObjectData>::create();
             if (jobj) {
                 QJNIEnvironmentPrivate env;
                 d->m_jobject = env->NewGlobalRef(jobj);

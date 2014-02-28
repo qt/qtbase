@@ -86,6 +86,8 @@ public:
         DownloadBufferAttribute, // internal
         SynchronousRequestAttribute, // internal
         BackgroundRequestAttribute,
+        SpdyAllowedAttribute,
+        SpdyWasUsedAttribute,
 
         User = 1000,
         UserMax = 32767

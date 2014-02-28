@@ -220,8 +220,11 @@ QDBusMetaObjectGenerator::findType(const QByteArray &signature,
         } else if (signature == "a{sv}") {
             result.name = "QVariantMap";
             type = QVariant::Map;
+        } else if (signature == "a{ss}") {
+            result.name = "QMap<QString,QString>";
+            type = qMetaTypeId<QMap<QString, QString> >();
         } else {
-            result.name = "QDBusRawType::" + signature;
+            result.name = "{D-Bus type \"" + signature + "\"}";
             type = registerComplexDBusType(result.name);
         }
     } else {

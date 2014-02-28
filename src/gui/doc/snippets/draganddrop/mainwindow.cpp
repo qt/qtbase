@@ -54,10 +54,10 @@ MainWindow::MainWindow(QWidget *parent)
     QLabel *dataLabel = new QLabel(tr("Amount of data (bytes):"), centralWidget);
     dragWidget = new DragWidget(centralWidget);
 
-    connect(dragWidget, SIGNAL(mimeTypes(const QStringList &)),
-            this, SLOT(setMimeTypes(const QStringList &)));
-    connect(dragWidget, SIGNAL(dragResult(const QString &)),
-            this, SLOT(setDragResult(const QString &)));
+    connect(dragWidget, SIGNAL(mimeTypes(QStringList)),
+            this, SLOT(setMimeTypes(QStringList)));
+    connect(dragWidget, SIGNAL(dragResult(QString)),
+            this, SLOT(setDragResult(QString)));
 
     QVBoxLayout *mainLayout = new QVBoxLayout(centralWidget);
     mainLayout->addWidget(mimeTypeLabel);

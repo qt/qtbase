@@ -6,20 +6,20 @@
 #ifndef _COMPILER_INTERFACE_INCLUDED_
 #define _COMPILER_INTERFACE_INCLUDED_
 
-#if defined(COMPONENT_BUILD)
+#if defined(COMPONENT_BUILD) && !defined(ANGLE_TRANSLATOR_STATIC)
 #if defined(_WIN32) || defined(_WIN64)
 
-#if defined(COMPILER_IMPLEMENTATION)
+#if defined(ANGLE_TRANSLATOR_IMPLEMENTATION)
 #define COMPILER_EXPORT __declspec(dllexport)
 #else
 #define COMPILER_EXPORT __declspec(dllimport)
-#endif  // defined(COMPILER_IMPLEMENTATION)
+#endif  // defined(ANGLE_TRANSLATOR_IMPLEMENTATION)
 
-#else  // defined(WIN32)
+#else  // defined(_WIN32) || defined(_WIN64)
 #define COMPILER_EXPORT __attribute__((visibility("default")))
 #endif
 
-#else  // defined(COMPONENT_BUILD)
+#else  // defined(COMPONENT_BUILD) && !defined(ANGLE_TRANSLATOR_STATIC)
 #define COMPILER_EXPORT
 #endif
 
@@ -146,14 +146,14 @@ typedef enum {
   // This is needed only as a workaround for certain OpenGL driver bugs.
   SH_EMULATE_BUILT_IN_FUNCTIONS = 0x0100,
 
-  // This is an experimental flag to enforce restrictions that aim to prevent 
+  // This is an experimental flag to enforce restrictions that aim to prevent
   // timing attacks.
   // It generates compilation errors for shaders that could expose sensitive
   // texture information via the timing channel.
   // To use this flag, you must compile the shader under the WebGL spec
   // (using the SH_WEBGL_SPEC flag).
   SH_TIMING_RESTRICTIONS = 0x0200,
-    
+
   // This flag prints the dependency graph that is used to enforce timing
   // restrictions on fragment shaders.
   // This flag only has an effect if all of the following are true:
@@ -184,11 +184,24 @@ typedef enum {
   // This flag limits the depth of the call stack.
   SH_LIMIT_CALL_STACK_DEPTH = 0x4000,
 
-  // This flag initializes gl_Position to vec4(0.0, 0.0, 0.0, 1.0) at
-  // the beginning of the vertex shader, and has no effect in the
+  // This flag initializes gl_Position to vec4(0,0,0,0) at the
+  // beginning of the vertex shader's main(), and has no effect in the
   // fragment shader. It is intended as a workaround for drivers which
   // incorrectly fail to link programs if gl_Position is not written.
   SH_INIT_GL_POSITION = 0x8000,
+
+  // This flag replaces
+  //   "a && b" with "a ? b : false",
+  //   "a || b" with "a ? true : b".
+  // This is to work around a MacOSX driver bug that |b| is executed
+  // independent of |a|'s value.
+  SH_UNFOLD_SHORT_CIRCUIT = 0x10000,
+
+  // This flag initializes varyings without static use in vertex shader
+  // at the beginning of main(), and has no effects in the fragment shader.
+  // It is intended as a workaround for drivers which incorrectly optimize
+  // out such varyings and cause a link failure.
+  SH_INIT_VARYINGS_WITHOUT_STATIC_USE = 0x20000,
 } ShCompileOptions;
 
 // Defines alternate strategies for implementing array index clamping.
@@ -267,7 +280,7 @@ COMPILER_EXPORT void ShInitBuiltInResources(ShBuiltInResources* resources);
 
 //
 // ShHandle held by but opaque to the driver.  It is allocated,
-// managed, and de-allocated by the compiler. It's contents 
+// managed, and de-allocated by the compiler. It's contents
 // are defined by and used by the compiler.
 //
 // If handle creation fails, 0 will be returned.

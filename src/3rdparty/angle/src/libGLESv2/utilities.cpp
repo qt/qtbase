@@ -9,13 +9,13 @@
 
 #include "libGLESv2/utilities.h"
 #include "libGLESv2/mathutil.h"
-
 #if defined(ANGLE_OS_WINRT)
-#include <locale>
-#include <codecvt>
-#include <wrl.h>
-#include <windows.storage.h>
-using namespace ABI::Windows::Storage;
+#  include <locale>
+#  include <codecvt>
+#  include <wrl.h>
+#  include <windows.storage.h>
+   using namespace Microsoft::WRL;
+   using namespace ABI::Windows::Storage;
 #endif
 
 namespace gl
@@ -745,29 +745,43 @@ bool IsTriangleMode(GLenum drawMode)
 
 std::string getTempPath()
 {
-#if defined(ANGLE_OS_WINRT)
+#if !defined(ANGLE_OS_WINRT)
+    char path[MAX_PATH];
+    DWORD pathLen = GetTempPathA(sizeof(path) / sizeof(path[0]), path);
+    if (pathLen == 0)
+    {
+        UNREACHABLE();
+        return std::string();
+    }
 
+    UINT unique = GetTempFileNameA(path, "sh", 0, path);
+    if (unique == 0)
+    {
+        UNREACHABLE();
+        return std::string();
+    }
+#else
     static std::string path;
 
     while (path.empty()) {
-        IApplicationDataStatics *applicationDataFactory;
-        HRESULT result = RoGetActivationFactory(Microsoft::WRL::Wrappers::HStringReference(RuntimeClass_Windows_Storage_ApplicationData).Get(),
-                                                IID_PPV_ARGS(&applicationDataFactory));
+        ComPtr<IApplicationDataStatics> factory;
+        Wrappers::HStringReference classId(RuntimeClass_Windows_Storage_ApplicationData);
+        HRESULT result = RoGetActivationFactory(classId.Get(), IID_PPV_ARGS(&factory));
         if (FAILED(result))
             break;
 
-        IApplicationData *applicationData;
-        result = applicationDataFactory->get_Current(&applicationData);
+        ComPtr<IApplicationData> applicationData;
+        result = factory->get_Current(&applicationData);
         if (FAILED(result))
             break;
 
-        IStorageFolder *storageFolder;
+        ComPtr<IStorageFolder> storageFolder;
         result = applicationData->get_LocalFolder(&storageFolder);
         if (FAILED(result))
             break;
 
-        IStorageItem *localFolder;
-        result = storageFolder->QueryInterface(IID_PPV_ARGS(&localFolder));
+        ComPtr<IStorageItem> localFolder;
+        result = storageFolder.As(&localFolder);
         if (FAILED(result))
             break;
 
@@ -784,25 +798,6 @@ std::string getTempPath()
             break;
         }
     }
-
-#else
-
-    char path[MAX_PATH];
-
-    DWORD pathLen = GetTempPathA(sizeof(path) / sizeof(path[0]), path);
-    if (pathLen == 0)
-    {
-        UNREACHABLE();
-        return std::string();
-    }
-
-    UINT unique = GetTempFileNameA(path, "sh", 0, path);
-    if (unique == 0)
-    {
-        UNREACHABLE();
-        return std::string();
-    }
-
 #endif
     
     return path;

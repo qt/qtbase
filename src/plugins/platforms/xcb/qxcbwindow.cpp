@@ -1859,6 +1859,7 @@ void QXcbWindow::handlePropertyNotifyEvent(const xcb_property_notify_event_t *ev
         if (m_lastWindowStateEvent != newState) {
             QWindowSystemInterface::handleWindowStateChanged(window(), newState);
             m_lastWindowStateEvent = newState;
+            m_windowState = newState;
         }
         return;
     }

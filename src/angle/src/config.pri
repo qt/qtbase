@@ -38,14 +38,13 @@ DEFINES +=  _WINDOWS \
             WIN32_LEAN_AND_MEAN=1
 
 # Defines specifying the API version (0x0600 = Vista, 0x0602 = Win8))
-winrt: DEFINES += _WIN32_WINNT=0x0602 WINVER=0x0602
-else: DEFINES += _WIN32_WINNT=0x0600 WINVER=0x0600
-
-# ANGLE specific defines
-DEFINES +=  ANGLE_DISABLE_TRACE \
-            ANGLE_DISABLE_PERF \
-            ANGLE_COMPILE_OPTIMIZATION_LEVEL=D3DCOMPILE_OPTIMIZATION_LEVEL0 \
-            ANGLE_USE_NEW_PREPROCESSOR=1
+winrt {
+    DEFINES += _WIN32_WINNT=0x0602 WINVER=0x0602
+    DEFINES += ANGLE_ENABLE_UNIVERSAL_BINARY
+} else {
+    DEFINES += _WIN32_WINNT=0x0600 WINVER=0x0600
+    DEFINES += ANGLE_ENABLE_D3D9
+}
 
 angle_d3d11 {
     DEFINES += ANGLE_ENABLE_D3D11
@@ -55,7 +54,7 @@ angle_d3d11 {
 CONFIG(debug, debug|release) {
     DEFINES += _DEBUG
 } else {
-    CONFIG += rtti_off
+    !static: CONFIG += rtti_off
     DEFINES += NDEBUG
 }
 

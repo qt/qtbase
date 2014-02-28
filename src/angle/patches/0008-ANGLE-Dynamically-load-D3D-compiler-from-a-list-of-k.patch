@@ -1,0 +1,73 @@
+From 0fede57f6fc052942b910995fdfa4cd76a32f586 Mon Sep 17 00:00:00 2001
+From: Andrew Knight <andrew.knight@digia.com>
+Date: Tue, 18 Feb 2014 12:11:45 +0200
+Subject: [PATCH] ANGLE: Dynamically load D3D compiler from a list or the
+ environment
+
+If the default compiler cannot be found, load it from a list of DLL names,
+including a non-versioned proxy DLL provided by Qt. On Desktop Windows,
+the default compiler can also be specified by an environment variable,
+QT_D3DCOMPILER_DLL.
+
+Change-Id: I0d7a8a8a36cc571836f8fa59ea14513b9b19c19b
+---
+ .../angle/src/libGLESv2/renderer/Renderer.cpp      | 34 ++++++++++++++++++++--
+ 1 file changed, 32 insertions(+), 2 deletions(-)
+
+diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/Renderer.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/Renderer.cpp
+index e74120d..94cbc0e 100644
+--- a/src/3rdparty/angle/src/libGLESv2/renderer/Renderer.cpp
++++ b/src/3rdparty/angle/src/libGLESv2/renderer/Renderer.cpp
+@@ -43,6 +43,10 @@ typedef HRESULT (WINAPI *pD3DCompile)(const void *data, SIZE_T data_size, const
+ 
+ #endif // __MINGW32__
+ 
++#ifndef QT_D3DCOMPILER_DLL
++#define QT_D3DCOMPILER_DLL D3DCOMPILER_DLL
++#endif
++
+ namespace rx
+ {
+ 
+@@ -77,10 +81,36 @@ bool Renderer::initializeCompiler()
+     }
+ #endif  // ANGLE_PRELOADED_D3DCOMPILER_MODULE_NAMES
+ 
+-    if (!mD3dCompilerModule)
++    // Load the compiler DLL specified by the environment, or default to QT_D3DCOMPILER_DLL
++#if !defined(ANGLE_OS_WINRT)
++    const wchar_t *defaultCompiler = _wgetenv(L"QT_D3DCOMPILER_DLL");
++    if (!defaultCompiler)
++        defaultCompiler = QT_D3DCOMPILER_DLL;
++#else // !ANGLE_OS_WINRT
++#  ifdef _DEBUG
++    const wchar_t *defaultCompiler = L"d3dcompiler_qtd.dll";
++#  else
++    const wchar_t *defaultCompiler = L"d3dcompiler_qt.dll";
++#  endif
++#endif // ANGLE_OS_WINRT
++
++    const wchar_t *compilerDlls[] = {
++        defaultCompiler,
++        L"d3dcompiler_47.dll",
++        L"d3dcompiler_46.dll",
++        L"d3dcompiler_45.dll",
++        L"d3dcompiler_44.dll",
++        L"d3dcompiler_43.dll",
++        0
++    };
++
++    // Load the first available known compiler DLL
++    for (int i = 0; compilerDlls[i]; ++i)
+     {
+         // Load the version of the D3DCompiler DLL associated with the Direct3D version ANGLE was built with.
+-        mD3dCompilerModule = LoadLibrary(D3DCOMPILER_DLL);
++        mD3dCompilerModule = LoadLibrary(compilerDlls[i]);
++        if (mD3dCompilerModule)
++            break;
+     }
+ 
+     if (!mD3dCompilerModule)
+-- 
+1.8.4.msysgit.0
+

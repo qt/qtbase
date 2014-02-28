@@ -49,8 +49,6 @@
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 
-#include <dxgi.h>
-
 // Generated shader headers
 #include "blitps.h"
 #include "blitvs.h"
@@ -60,10 +58,7 @@ namespace { // Utility namespace for writing out an ANGLE-compatible binary blob
 // Must match packaged ANGLE
 enum : quint32 {
     AngleMajorVersion = 1,
-    AngleMinorVersion = 2,
-    AngleBuildRevision = 2446,
-    AngleVersion = ((AngleMajorVersion << 24) | (AngleMinorVersion << 16) | AngleBuildRevision),
-    AngleOptimizationLevel = (1 << 14)
+    AngleMinorVersion = 3
 };
 
 struct ShaderString
@@ -145,8 +140,8 @@ static const QByteArray createAngleBinary(
     stream.setByteOrder(QDataStream::LittleEndian);
 
     stream << quint32(GL_PROGRAM_BINARY_ANGLE)
-           << quint32(AngleVersion)
-           << quint32(AngleOptimizationLevel);
+           << qint32(AngleMajorVersion)
+           << qint32(AngleMinorVersion);
 
     // Vertex attributes
     for (int i = 0; i < 16; ++i) {
@@ -190,25 +185,6 @@ static const QByteArray createAngleBinary(
            << quint32(vertexShader.size())
            << quint32(geometryShader.size());
 
-    // ANGLE requires that we query the adapter for its LUID. Later on, it may be useful
-    // for checking feature level support, picking the best adapter on the system, etc.
-    IDXGIFactory1 *dxgiFactory;
-    if (FAILED(CreateDXGIFactory1(IID_PPV_ARGS(&dxgiFactory)))) {
-        qCritical("QWinRTBackingStore: failed to create DXGI factory.");
-        return QByteArray();
-    }
-    IDXGIAdapter *dxgiAdapter;
-    if (FAILED(dxgiFactory->EnumAdapters(0, &dxgiAdapter))) {
-        qCritical("QWinRTBackingStore:: failed to enumerate adapter.");
-        dxgiFactory->Release();
-        return QByteArray();
-    }
-    DXGI_ADAPTER_DESC desc;
-    dxgiAdapter->GetDesc(&desc);
-    dxgiAdapter->Release();
-    QByteArray guid(sizeof(GUID), '\0');
-    memcpy(guid.data(), &desc.AdapterLuid, sizeof(LUID));
-    stream.writeRawData(guid.constData(), guid.size());
     stream.writeRawData(pixelShader.constData(), pixelShader.size());
     stream.writeRawData(vertexShader.constData(), vertexShader.size());
     if (!geometryShader.isEmpty())

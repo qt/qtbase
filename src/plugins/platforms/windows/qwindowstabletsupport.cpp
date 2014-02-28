@@ -159,6 +159,7 @@ bool QWindowsWinTab32DLL::init()
 QWindowsTabletSupport::QWindowsTabletSupport(HWND window, HCTX context)
     : m_window(window)
     , m_context(context)
+    , m_absoluteRange(20)
     , m_tiltSupport(false)
     , m_currentDevice(-1)
 {
@@ -402,7 +403,6 @@ bool QWindowsTabletSupport::translateTabletPacketEvent()
     //    in which case we snap the position to the mouse position.
     // It seems there is no way to find out the mode programmatically, the LOGCONTEXT orgX/Y/Ext
     // area is always the virtual desktop.
-    enum { absoluteRange = 20 };
     const QRect virtualDesktopArea = QGuiApplication::primaryScreen()->virtualGeometry();
 
     qCDebug(lcQpaTablet) << __FUNCTION__ << "processing " << packetCount
@@ -427,7 +427,7 @@ bool QWindowsTabletSupport::translateTabletPacketEvent()
 
         // Positions should be almost the same if we are in absolute
         // mode. If they are not, use the mouse location.
-        if ((mouseLocation - globalPos).manhattanLength() > absoluteRange) {
+        if ((mouseLocation - globalPos).manhattanLength() > m_absoluteRange) {
             globalPos = mouseLocation;
             globalPosF = globalPos;
         }

@@ -85,7 +85,7 @@ static inline bool simdEncodeAscii(uchar *&dst, const ushort *&nextAscii, const 
             // we don't want to load 32 bytes again in this loop if we know there are non-ASCII
             // characters still coming
             n = _bit_scan_reverse(n);
-            nextAscii = src + n;
+            nextAscii = src + n + 1;
             return false;
         }
 
@@ -115,7 +115,7 @@ static inline bool simdDecodeAscii(ushort *&dst, const uchar *&nextAscii, const 
             // we don't want to load 16 bytes again in this loop if we know there are non-ASCII
             // characters still coming
             n = _bit_scan_reverse(n);
-            nextAscii = src + n;
+            nextAscii = src + n + 1;
             return false;
         }
 

@@ -244,7 +244,7 @@ class Q_GUI_EXPORT QPainterPathStroker
     Q_DECLARE_PRIVATE(QPainterPathStroker)
 public:
     QPainterPathStroker();
-    QPainterPathStroker(const QPen &pen);
+    explicit QPainterPathStroker(const QPen &pen);
     ~QPainterPathStroker();
 
     void setWidth(qreal width);

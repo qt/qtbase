@@ -115,7 +115,11 @@ static QTextLine currentTextLine(const QTextCursor &cursor)
 
 QWidgetTextControlPrivate::QWidgetTextControlPrivate()
     : doc(0), cursorOn(false), cursorIsFocusIndicator(false),
+#ifndef Q_OS_ANDROID
       interactionFlags(Qt::TextEditorInteraction),
+#else
+      interactionFlags(Qt::TextEditable),
+#endif
       dragEnabled(true),
 #ifndef QT_NO_DRAGANDDROP
       mousePressed(false), mightStartDrag(false),

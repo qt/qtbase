@@ -57,6 +57,8 @@
 #include <private/qopenglcontext_p.h>
 #include <qopenglshaderprogram.h>
 #include <qopenglfunctions.h>
+#include <qopenglbuffer.h>
+#include <qopenglvertexarrayobject.h>
 
 // #define QT_GL_TEXTURE_GLYPH_CACHE_DEBUG
 
@@ -109,7 +111,7 @@ public:
 class Q_GUI_EXPORT QOpenGLTextureGlyphCache : public QImageTextureGlyphCache
 {
 public:
-    QOpenGLTextureGlyphCache(QFontEngineGlyphCache::Type type, const QTransform &matrix);
+    QOpenGLTextureGlyphCache(QFontEngine::GlyphFormat glyphFormat, const QTransform &matrix);
     ~QOpenGLTextureGlyphCache();
 
     virtual void createTextureData(int width, int height);
@@ -152,6 +154,8 @@ public:
     void clear();
 
 private:
+    void setupVertexAttribs();
+
     QOpenGLGlyphTexture *m_textureResource;
 
     QOpenGL2PaintEngineExPrivate *pex;
@@ -162,6 +166,9 @@ private:
     GLfloat m_textureCoordinateArray[8];
 
     int m_serialNumber;
+
+    QOpenGLBuffer m_buffer;
+    QOpenGLVertexArrayObject m_vao;
 };
 
 QT_END_NAMESPACE
