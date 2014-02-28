@@ -74,8 +74,6 @@ public:
     QStringList themeNames() const;
     QPlatformTheme *createPlatformTheme(const QString &name) const;
 
-    QPlatformDrag *drag() const Q_DECL_OVERRIDE { return 0; }
-
     QAbstractEventDispatcher *createEventDispatcher() const;
     QPlatformNativeInterface *nativeInterface() const;
 
