@@ -45,6 +45,13 @@
 #include <QtCore/qfile.h>
 #include <QtCore/qstandardpaths.h>
 #include <QtCore/qtextstream.h>
+#include <QtCore/qdir.h>
+
+// We can't use the default macros because this would lead to recursion.
+// Instead let's define our own one that unconditionally logs...
+#define debugMsg QMessageLogger(__FILE__, __LINE__, __FUNCTION__, "qt.core.logging").debug
+#define warnMsg QMessageLogger(__FILE__, __LINE__, __FUNCTION__, "qt.core.logging").warning
+
 
 QT_BEGIN_NAMESPACE
 
@@ -232,6 +239,12 @@ QLoggingRegistry::QLoggingRegistry()
 {
 }
 
+static bool qtLoggingDebug()
+{
+    static const bool debugEnv = qEnvironmentVariableIsSet("QT_LOGGING_DEBUG");
+    return debugEnv;
+}
+
 /*!
     \internal
     Initializes the rules database by loading
@@ -247,6 +260,9 @@ void QLoggingRegistry::init()
             QTextStream stream(&file);
             QLoggingSettingsParser parser;
             parser.setContent(stream);
+            if (qtLoggingDebug())
+                debugMsg("Loading \"%s\" ...",
+                         QDir::toNativeSeparators(file.fileName()).toUtf8().constData());
             envRules = parser.rules();
         }
     }
@@ -260,6 +276,9 @@ void QLoggingRegistry::init()
             QTextStream stream(&file);
             QLoggingSettingsParser parser;
             parser.setContent(stream);
+            if (qtLoggingDebug())
+                debugMsg("Loading \"%s\" ...",
+                         QDir::toNativeSeparators(envPath).toUtf8().constData());
             configRules = parser.rules();
         }
     }
@@ -308,6 +327,10 @@ void QLoggingRegistry::setApiRules(const QString &content)
     parser.setContent(content);
 
     QMutexLocker locker(&registryMutex);
+
+    if (qtLoggingDebug())
+        debugMsg("Loading logging rules set by Qt API ...");
+
     apiRules = parser.rules();
 
     updateRules();

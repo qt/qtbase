@@ -137,6 +137,9 @@ Q_GLOBAL_STATIC_WITH_ARGS(QLoggingCategory, qtDefaultCategory,
         QCoreApplication::applicationDirPath() + \c "/data"
     \endlist
 
+    Set the \c QT_LOGGING_DEBUG environment variable to see from where
+    logging rules are loaded.
+
     \section2 Installing a Custom Filter
 
     As a lower-level alternative to the text rules you can also implement a
