@@ -143,6 +143,11 @@ void QApplicationPrivate::notifyActiveWindowChange(QWindow *previous)
         return;
     QWidget *tlw = qt_tlw_for_window(wnd);
     QApplication::setActiveWindow(tlw);
+    // QTBUG-37126, Active X controls may set the focus on native child widgets.
+    if (wnd && tlw && wnd != tlw->windowHandle()) {
+        if (QWidgetWindow *widgetWindow = qobject_cast<QWidgetWindow *>(wnd))
+            widgetWindow->widget()->setFocus(Qt::ActiveWindowFocusReason);
+    }
 }
 
 static void ungrabKeyboardForPopup(QWidget *popup)
