@@ -324,9 +324,10 @@ void QSimpleDrag::startDrag()
 void QSimpleDrag::cancel()
 {
     QBasicDrag::cancel();
-    if (drag())
+    if (drag() && m_current_window) {
         QWindowSystemInterface::handleDrag(m_current_window, 0, QPoint(), Qt::IgnoreAction);
-    m_current_window = 0;
+        m_current_window = 0;
+    }
 }
 
 void QSimpleDrag::move(const QMouseEvent *me)
