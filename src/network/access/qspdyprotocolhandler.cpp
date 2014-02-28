@@ -276,6 +276,7 @@ QSpdyProtocolHandler::QSpdyProtocolHandler(QHttpNetworkConnectionChannel *channe
     // when sending the headers because of the CRIME attack
     zlibRet = deflateInit(&m_deflateStream, /* compression level = */ 0);
     Q_ASSERT(zlibRet == Z_OK);
+    Q_UNUSED(zlibRet); // silence -Wunused-variable
 }
 
 QSpdyProtocolHandler::~QSpdyProtocolHandler()
@@ -619,6 +620,7 @@ void QSpdyProtocolHandler::sendControlFrame(FrameType type,
     Q_ASSERT(written == 8);
     written = m_socket->write(data, length);
     Q_ASSERT(written == length);
+    Q_UNUSED(written); // silence -Wunused-variable
 }
 
 void QSpdyProtocolHandler::sendSYN_STREAM(HttpMessagePair messagePair,
