@@ -201,11 +201,17 @@ inline bool qCompare(QList<T> const &t1, QList<T> const &t2, const char *actual,
     }
     for (int i = 0; isOk && i < actualSize; ++i) {
         if (!(t1.at(i) == t2.at(i))) {
+            char *val1 = toString(t1.at(i));
+            char *val2 = toString(t2.at(i));
+
             qsnprintf(msg, sizeof(msg), "Compared lists differ at index %d.\n"
                       "   Actual   (%s): %s\n"
-                      "   Expected (%s): %s", i, actual, toString(t1.at(i)),
-                      expected, toString(t2.at(i)));
+                      "   Expected (%s): %s", i, actual, val1 ? val1 : "<null>",
+                      expected, val2 ? val2 : "<null>");
             isOk = false;
+
+            delete [] val1;
+            delete [] val2;
         }
     }
     return compare_helper(isOk, msg, 0, 0, actual, expected, file, line);
