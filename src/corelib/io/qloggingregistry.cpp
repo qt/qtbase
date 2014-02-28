@@ -224,7 +224,11 @@ void QLoggingSettingsParser::setContent(QTextStream &stream)
                 const QStringRef value = line.midRef(equalPos + 1);
                 bool enabled = (value.compare(QLatin1String("true"),
                                               Qt::CaseInsensitive) == 0);
-                _rules.append(QLoggingRule(pattern, enabled));
+                QLoggingRule rule(pattern, enabled);
+                if (rule.flags != QLoggingRule::Invalid)
+                    _rules.append(rule);
+                else
+                    warnMsg("Ignoring malformed logging rule: '%s'", line.toUtf8().constData());
             }
         }
     }

@@ -302,6 +302,16 @@ private slots:
         QVERIFY(!cat.isWarningEnabled());
     }
 
+
+    void QLoggingRegistry_checkErrors()
+    {
+        QLoggingSettingsParser parser;
+        QString warnMsg = QString("Ignoring malformed logging rule: '***=false'");
+        QTest::ignoreMessage(QtWarningMsg, warnMsg.toLocal8Bit().constData());
+        parser.setContent("[Rules]\n"
+                          "***=false\n");
+        QVERIFY(parser.rules().isEmpty());
+    }
 };
 
 QTEST_MAIN(tst_QLoggingRegistry)
