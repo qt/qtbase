@@ -93,6 +93,16 @@ private:
 class Q_AUTOTEST_EXPORT QWidgetBackingStore
 {
 public:
+    enum UpdateTime {
+        UpdateNow,
+        UpdateLater
+    };
+
+    enum BufferState{
+        BufferValid,
+        BufferInvalid
+    };
+
     QWidgetBackingStore(QWidget *t);
     ~QWidgetBackingStore();
 
@@ -112,10 +122,10 @@ public:
     }
 
     // ### Qt 4.6: Merge into a template function (after MSVC isn't supported anymore).
-    void markDirty(const QRegion &rgn, QWidget *widget, bool updateImmediately = false,
-                   bool invalidateBuffer = false);
-    void markDirty(const QRect &rect, QWidget *widget, bool updateImmediately = false,
-                   bool invalidateBuffer = false);
+    void markDirty(const QRegion &rgn, QWidget *widget, UpdateTime updateTime = UpdateLater,
+                   BufferState bufferState = BufferValid);
+    void markDirty(const QRect &rect, QWidget *widget, UpdateTime updateTime = UpdateLater,
+                   BufferState bufferState = BufferValid);
 
 private:
     QWidget *tlw;
@@ -134,7 +144,7 @@ private:
 
     QPlatformTextureListWatcher *textureListWatcher;
 
-    void sendUpdateRequest(QWidget *widget, bool updateImmediately);
+    void sendUpdateRequest(QWidget *widget, UpdateTime updateTime);
 
     static bool flushPaint(QWidget *widget, const QRegion &rgn);
     static void unflushPaint(QWidget *widget, const QRegion &rgn);

@@ -9888,7 +9888,7 @@ void QWidget::repaint(const QRect &rect)
         QTLWExtra *tlwExtra = window()->d_func()->maybeTopData();
         if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore) {
             tlwExtra->inRepaint = true;
-            tlwExtra->backingStoreTracker->markDirty(rect, this, true);
+            tlwExtra->backingStoreTracker->markDirty(rect, this, QWidgetBackingStore::UpdateNow);
             tlwExtra->inRepaint = false;
         }
     } else {
@@ -9917,7 +9917,7 @@ void QWidget::repaint(const QRegion &rgn)
         QTLWExtra *tlwExtra = window()->d_func()->maybeTopData();
         if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore) {
             tlwExtra->inRepaint = true;
-            tlwExtra->backingStoreTracker->markDirty(rgn, this, true);
+            tlwExtra->backingStoreTracker->markDirty(rgn, this, QWidgetBackingStore::UpdateNow);
             tlwExtra->inRepaint = false;
         }
     } else {
