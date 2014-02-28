@@ -192,6 +192,18 @@ public:
     QSet<QByteArray> extensions() const;
     bool hasExtension(const QByteArray &extension) const;
 
+    static void *openGLModuleHandle();
+
+    enum OpenGLModuleType {
+        DesktopGL,
+        GLES2,
+        GLES1
+    };
+
+    static OpenGLModuleType openGLModuleType();
+
+    bool isES() const;
+
 Q_SIGNALS:
     void aboutToBeDestroyed();
 

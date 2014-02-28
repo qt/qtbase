@@ -43,7 +43,6 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qvarlengtharray.h>
 #include <QtGui/qopengl.h>
-#include <QtGui/qopenglfunctions.h>
 
 #include "qopengldebug.h"
 
@@ -1370,7 +1369,7 @@ bool QOpenGLDebugLogger::initialize()
     // through wglGetProcAddress
 #if defined(Q_OS_WIN) && !defined(QT_OPENGL_ES_2)
     {
-        HMODULE handle = static_cast<HMODULE>(QOpenGLFunctions::platformGLHandle());
+        HMODULE handle = static_cast<HMODULE>(QOpenGLContext::openGLModuleHandle());
         if (!handle)
             handle = GetModuleHandleA("opengl32.dll");
         d->glGetPointerv = reinterpret_cast<qt_glGetPointerv_t>(GetProcAddress(handle, QByteArrayLiteral("glGetPointerv")));

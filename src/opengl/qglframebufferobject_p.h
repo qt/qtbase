@@ -71,7 +71,9 @@ public:
           mipmap(false)
     {
 #ifndef QT_OPENGL_ES_2
-        internal_format = QOpenGLFunctions::isES() ? GL_RGBA : GL_RGBA8;
+        QOpenGLContext *ctx = QOpenGLContext::currentContext();
+        const bool isES = ctx ? ctx->isES() : QOpenGLContext::openGLModuleType() != QOpenGLContext::DesktopGL;
+        internal_format = isES ? GL_RGBA : GL_RGBA8;
 #else
         internal_format = GL_RGBA;
 #endif

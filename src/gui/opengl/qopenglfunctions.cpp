@@ -249,7 +249,9 @@ QOpenGLExtensions::QOpenGLExtensions(QOpenGLContext *context)
 
 static int qt_gl_resolve_features()
 {
-    if (QOpenGLFunctions::platformGLType() == QOpenGLFunctions::GLES2) {
+    QOpenGLContext *ctx = QOpenGLContext::currentContext();
+    if (ctx->isES() && QOpenGLContext::openGLModuleType() != QOpenGLContext::GLES1) {
+        // OpenGL ES 2
         int features = QOpenGLFunctions::Multitexture |
             QOpenGLFunctions::Shaders |
             QOpenGLFunctions::Buffers |
@@ -269,7 +271,8 @@ static int qt_gl_resolve_features()
             features |= QOpenGLFunctions::NPOTTextures |
                 QOpenGLFunctions::NPOTTextureRepeat;
         return features;
-    } else if (QOpenGLFunctions::platformGLType() == QOpenGLFunctions::GLES1) {
+    } else if (ctx->isES()) {
+        // OpenGL ES 1
         int features = QOpenGLFunctions::Multitexture |
             QOpenGLFunctions::Buffers |
             QOpenGLFunctions::CompressedTextures |
@@ -289,6 +292,7 @@ static int qt_gl_resolve_features()
             features |= QOpenGLFunctions::NPOTTextures;
         return features;
     } else {
+        // OpenGL
         int features = 0;
         QSurfaceFormat format = QOpenGLContext::currentContext()->format();
         QOpenGLExtensionMatcher extensions;
@@ -352,7 +356,7 @@ static int qt_gl_resolve_extensions()
     if (extensionMatcher.match("GL_EXT_bgra"))
         extensions |= QOpenGLExtensions::BGRATextureFormat;
 
-    if (QOpenGLFunctions::isES()) {
+    if (QOpenGLContext::currentContext()->isES()) {
         if (extensionMatcher.match("GL_OES_mapbuffer"))
             extensions |= QOpenGLExtensions::MapBuffer;
         if (extensionMatcher.match("GL_OES_packed_depth_stencil"))
@@ -2509,90 +2513,6 @@ QOpenGLExtensionsPrivate::QOpenGLExtensionsPrivate(QOpenGLContext *ctx)
     BlitFramebuffer = qopenglfResolveBlitFramebuffer;
     RenderbufferStorageMultisample = qopenglfResolveRenderbufferStorageMultisample;
     GetBufferSubData = qopenglfResolveGetBufferSubData;
-}
-
-#if defined(QT_OPENGL_DYNAMIC)
-extern int qgl_proxyLibraryType(void);
-extern HMODULE qgl_glHandle(void);
-#endif
-
-/*!
-    \enum QOpenGLFunctions::PlatformGLType
-    This enum defines the type of the underlying GL implementation.
-
-    \value DesktopGL Desktop OpenGL
-    \value GLES2 OpenGL ES 2.0 or higher
-    \value GLES1 OpenGL ES 1.x
-
-    \since 5.3
- */
-
-/*!
-  \fn QOpenGLFunctions::isES()
-
-  On platforms where the OpenGL implementation is dynamically loaded
-  this function returns true if the underlying GL implementation is
-  Open GL ES.
-
-  On platforms that do not use runtime loading of the GL the return
-  value is based on Qt's compile-time configuration and will never
-  change during runtime.
-
-  \sa platformGLType()
-
-  \since 5.3
-  */
-
-/*!
-  Returns the underlying GL implementation type.
-
-  On platforms where the OpenGL implementation is not dynamically
-  loaded, the return value is determined during compile time and never
-  changes.
-
-  Platforms that use dynamic GL loading (e.g. Windows) cannot rely on
-  compile-time defines for differentiating between desktop and ES
-  OpenGL code. Instead, they rely on this function to query, during
-  runtime, the type of the loaded graphics library.
-
-  \since 5.3
- */
-QOpenGLFunctions::PlatformGLType QOpenGLFunctions::platformGLType()
-{
-#if defined(QT_OPENGL_DYNAMIC)
-    return PlatformGLType(qgl_proxyLibraryType());
-#elif defined(QT_OPENGL_ES_2)
-    return GLES2;
-#elif defined(QT_OPENGL_ES)
-    return GLES1;
-#else
-    return DesktopGL;
-#endif
-}
-
-/*!
-  Returns the platform-specific handle for the OpenGL implementation that
-  is currently in use. (for example, a HMODULE on Windows)
-
-  On platforms that do not use dynamic GL switch the return value is null.
-
-  The library might be GL-only, meaning that windowing system interface
-  functions (for example EGL) may live in another, separate library.
-
-  Always use platformGLType() before resolving any functions to check if the
-  library implements desktop OpenGL or OpenGL ES.
-
-  \sa platformGLType()
-
-  \since 5.3
- */
-void *QOpenGLFunctions::platformGLHandle()
-{
-#if defined(QT_OPENGL_DYNAMIC)
-    return qgl_glHandle();
-#else
-    return 0;
-#endif
 }
 
 QT_END_NAMESPACE

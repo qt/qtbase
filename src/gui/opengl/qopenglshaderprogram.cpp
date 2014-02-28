@@ -176,7 +176,7 @@ public:
 #endif
     {
 #ifndef QT_OPENGL_ES_2
-        if (!QOpenGLFunctions::isES()) {
+        if (!ctx->isES()) {
             QSurfaceFormat f = ctx->format();
 
             // Geometry shaders require OpenGL >= 3.2
@@ -445,7 +445,7 @@ bool QOpenGLShader::compileSourceCode(const char *source)
 
 #ifdef QOpenGL_REDEFINE_HIGHP
         if (d->shaderType == Fragment && !ctx_d->workaround_missingPrecisionQualifiers
-            && QOpenGLFunctions::isES()) {
+            && QOpenGLContext::currentContext()->isES()) {
             src.append(redefineHighp);
             srclen.append(GLint(sizeof(redefineHighp) - 1));
         }
@@ -674,7 +674,7 @@ bool QOpenGLShaderProgram::init()
 #ifndef QT_OPENGL_ES_2
     // Resolve OpenGL 4 functions for tessellation shader support
     QSurfaceFormat format = context->format();
-    if (!QOpenGLFunctions::isES()
+    if (!context->isES()
         && format.version() >= qMakePair<int, int>(4, 0)) {
         d->tessellationFuncs = context->versionFunctions<QOpenGLFunctions_4_0_Core>();
         d->tessellationFuncs->initializeOpenGLFunctions();
@@ -3273,7 +3273,7 @@ bool QOpenGLShader::hasOpenGLShaders(ShaderType type, QOpenGLContext *context)
 #ifndef QT_OPENGL_ES_2
         // Geometry shaders require OpenGL 3.2 or newer
         QSurfaceFormat format = context->format();
-        return (!QOpenGLFunctions::isES())
+        return (!context->isES())
             && (format.version() >= qMakePair<int, int>(3, 2));
 #else
         // No geometry shader support in OpenGL ES2
@@ -3281,7 +3281,7 @@ bool QOpenGLShader::hasOpenGLShaders(ShaderType type, QOpenGLContext *context)
 #endif
     } else if (type == TessellationControl || type == TessellationEvaluation) {
 #if !defined(QT_OPENGL_ES_2)
-        return (!QOpenGLFunctions::isES())
+        return (!context->isES())
             && (format.version() >= qMakePair<int, int>(4, 0));
 #else
         // No tessellation shader support in OpenGL ES2

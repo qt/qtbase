@@ -337,9 +337,9 @@ void Widget::renderWindowReady()
 
     const char *gltype[] = { "Desktop", "GLES 2", "GLES 1" };
     m_output->append(tr("\nQt OpenGL configuration: %1")
-                     .arg(QString::fromLatin1(gltype[QOpenGLFunctions::platformGLType()])));
+                     .arg(QString::fromLatin1(gltype[QOpenGLContext::openGLModuleType()])));
     m_output->append(tr("Qt OpenGL library handle: %1")
-                     .arg(QString::number(qintptr(QOpenGLFunctions::platformGLHandle()), 16)));
+                     .arg(QString::number(qintptr(QOpenGLContext::openGLModuleHandle()), 16)));
 
     QList<QByteArray> extensionList = context->extensions().toList();
     std::sort(extensionList.begin(), extensionList.end());

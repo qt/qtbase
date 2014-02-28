@@ -338,7 +338,8 @@ int QOpenGLContextPrivate::maxTextureSize()
     glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
 
 #ifndef QT_OPENGL_ES
-    if (!QOpenGLFunctions::isES()) {
+    Q_Q(QOpenGLContext);
+    if (!q->isES()) {
         GLenum proxy = GL_PROXY_TEXTURE_2D;
 
         GLint size;
@@ -643,8 +644,8 @@ QOpenGLFunctions *QOpenGLContext::functions() const
 QAbstractOpenGLFunctions *QOpenGLContext::versionFunctions(const QOpenGLVersionProfile &versionProfile) const
 {
 #ifndef QT_OPENGL_ES_2
-    if (QOpenGLFunctions::isES()) {
-        qWarning("versionFunctions: Not supported on dynamic GL ES");
+    if (isES()) {
+        qWarning("versionFunctions: Not supported on OpenGL ES");
         return 0;
     }
 #endif // QT_OPENGL_ES_2
@@ -957,6 +958,75 @@ void QOpenGLContext::deleteQGLContext()
         d->qGLContextDeleteFunction = 0;
         d->qGLContextHandle = 0;
     }
+}
+
+/*!
+  Returns the platform-specific handle for the OpenGL implementation that
+  is currently in use. (for example, a HMODULE on Windows)
+
+  On platforms that do not use dynamic GL switch the return value is null.
+
+  The library might be GL-only, meaning that windowing system interface
+  functions (for example EGL) may live in another, separate library.
+
+  \sa openGLModuleType()
+
+  \since 5.3
+ */
+void *QOpenGLContext::openGLModuleHandle()
+{
+    return 0;
+}
+
+/*!
+  \enum QOpenGLContext::OpenGLModuleType
+  This enum defines the type of the underlying OpenGL implementation.
+
+  \value DesktopGL Desktop OpenGL
+  \value GLES2 OpenGL ES 2.0 or higher
+  \value GLES1 OpenGL ES 1.x
+
+  \since 5.3
+*/
+
+/*!
+  Returns the underlying OpenGL implementation type.
+
+  On platforms where the OpenGL implementation is not dynamically
+  loaded, the return value is determined during compile time and never
+  changes.
+
+  \note A desktop OpenGL implementation may be capable of creating
+  ES-compatible contexts too. Therefore in most cases it is more
+  appropriate to check QSurfaceFormat::renderableType() or using the
+  the convenience function isES().
+
+  \since 5.3
+ */
+QOpenGLContext::OpenGLModuleType QOpenGLContext::openGLModuleType()
+{
+#if defined(QT_OPENGL_ES_2)
+    return GLES2;
+#elif defined(QT_OPENGL_ES)
+    return GLES1;
+#else
+    return DesktopGL;
+#endif
+}
+
+/*!
+  Returns true if the context is an OpenGL ES context.
+
+  If the context has not yet been created, the result is based on the
+  requested format set via setFormat().
+
+  \sa create(), format(), setFormat()
+
+  \since 5.3
+  */
+bool QOpenGLContext::isES() const
+{
+    return format().renderableType() == QSurfaceFormat::OpenGLES;
 }
 
 /*!

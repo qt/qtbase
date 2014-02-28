@@ -752,7 +752,7 @@ void tst_QGL::openGLVersionCheck()
 #elif defined(QT_OPENGL_ES_2)
     QVERIFY(QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_ES_Version_2_0);
 #else
-    if (QOpenGLFunctions::isES())
+    if (QOpenGLContext::currentContext()->isES())
         QVERIFY(QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_ES_Version_2_0);
     else
         QVERIFY(QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_1_1);
@@ -1534,7 +1534,7 @@ void tst_QGL::fboFormat()
 #ifdef QT_OPENGL_ES_2
         GL_RGBA;
 #else
-        QOpenGLFunctions::isES() ? GL_RGBA : GL_RGBA8;
+        QOpenGLContext::openGLModuleType() != QOpenGLContext::DesktopGL ? GL_RGBA : GL_RGBA8;
 #endif
     QCOMPARE(int(format1.internalTextureFormat()), expectedFormat);
 
@@ -1611,7 +1611,7 @@ void tst_QGL::fboFormat()
 #ifdef QT_OPENGL_ES_2
         GL_RGBA
 #else
-        QOpenGLFunctions::isES() ? GL_RGBA : GL_RGBA8
+        QOpenGLContext::openGLModuleType() != QOpenGLContext::DesktopGL ? GL_RGBA : GL_RGBA8
 #endif
         );
     QVERIFY(!(format1c == format3c));
@@ -1624,7 +1624,7 @@ void tst_QGL::fboFormat()
 #ifdef QT_OPENGL_ES_2
         GL_RGBA
 #else
-        QOpenGLFunctions::isES() ? GL_RGBA : GL_RGBA8
+        QOpenGLContext::openGLModuleType() != QOpenGLContext::DesktopGL ? GL_RGBA : GL_RGBA8
 #endif
         );
     QVERIFY(!(format1c == format4c));

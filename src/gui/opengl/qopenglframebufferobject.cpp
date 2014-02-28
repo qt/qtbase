@@ -590,7 +590,7 @@ void QOpenGLFramebufferObjectPrivate::initAttachments(QOpenGLContext *ctx, QOpen
         funcs.glBindRenderbuffer(GL_RENDERBUFFER, depth_buffer);
         Q_ASSERT(funcs.glIsRenderbuffer(depth_buffer));
         if (samples != 0 && funcs.hasOpenGLExtension(QOpenGLExtensions::FramebufferMultisample)) {
-            if (QOpenGLFunctions::isES()) {
+            if (ctx->isES()) {
                 if (funcs.hasOpenGLExtension(QOpenGLExtensions::Depth24))
                     funcs.glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples,
                                                            GL_DEPTH_COMPONENT24, size.width(), size.height());
@@ -602,7 +602,7 @@ void QOpenGLFramebufferObjectPrivate::initAttachments(QOpenGLContext *ctx, QOpen
                                                        GL_DEPTH_COMPONENT, size.width(), size.height());
             }
         } else {
-            if (QOpenGLFunctions::isES()) {
+            if (ctx->isES()) {
                 if (funcs.hasOpenGLExtension(QOpenGLExtensions::Depth24)) {
                     funcs.glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24,
                                                 size.width(), size.height());
@@ -631,7 +631,7 @@ void QOpenGLFramebufferObjectPrivate::initAttachments(QOpenGLContext *ctx, QOpen
 #ifdef QT_OPENGL_ES
         GLenum storage = GL_STENCIL_INDEX8;
 #else
-        GLenum storage = QOpenGLFunctions::isES() ? GL_STENCIL_INDEX8 : GL_STENCIL_INDEX;
+        GLenum storage = ctx->isES() ? GL_STENCIL_INDEX8 : GL_STENCIL_INDEX;
 #endif
 
         if (samples != 0 && funcs.hasOpenGLExtension(QOpenGLExtensions::FramebufferMultisample))
@@ -773,7 +773,7 @@ QOpenGLFramebufferObject::QOpenGLFramebufferObject(const QSize &size, GLenum tar
     Q_D(QOpenGLFramebufferObject);
     d->init(this, size, NoAttachment, target,
 #ifndef QT_OPENGL_ES_2
-            QOpenGLFunctions::isES() ? GL_RGBA : GL_RGBA8
+            QOpenGLContext::currentContext()->isES() ? GL_RGBA : GL_RGBA8
 #else
             GL_RGBA
 #endif
@@ -793,7 +793,7 @@ QOpenGLFramebufferObject::QOpenGLFramebufferObject(int width, int height, GLenum
     Q_D(QOpenGLFramebufferObject);
     d->init(this, QSize(width, height), NoAttachment, target,
 #ifndef QT_OPENGL_ES_2
-            QOpenGLFunctions::isES() ? GL_RGBA : GL_RGBA8
+            QOpenGLContext::currentContext()->isES() ? GL_RGBA : GL_RGBA8
 #else
             GL_RGBA
 #endif
@@ -850,7 +850,7 @@ QOpenGLFramebufferObject::QOpenGLFramebufferObject(int width, int height, Attach
 #ifdef QT_OPENGL_ES_2
         internal_format = GL_RGBA;
 #else
-        internal_format = QOpenGLFunctions::isES() ? GL_RGBA : GL_RGBA8;
+        internal_format = QOpenGLContext::currentContext()->isES() ? GL_RGBA : GL_RGBA8;
 #endif
     d->init(this, QSize(width, height), attachment, target, internal_format);
 }
@@ -877,7 +877,7 @@ QOpenGLFramebufferObject::QOpenGLFramebufferObject(const QSize &size, Attachment
 #ifdef QT_OPENGL_ES_2
         internal_format = GL_RGBA;
 #else
-        internal_format = QOpenGLFunctions::isES() ? GL_RGBA : GL_RGBA8;
+        internal_format = QOpenGLContext::currentContext()->isES() ? GL_RGBA : GL_RGBA8;
 #endif
     d->init(this, size, attachment, target, internal_format);
 }

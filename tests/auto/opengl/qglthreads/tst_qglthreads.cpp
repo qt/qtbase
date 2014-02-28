@@ -333,7 +333,7 @@ static inline float qrandom() { return (rand() % 100) / 100.f; }
 
 void renderAScene(int w, int h)
 {
-    if (QOpenGLFunctions::isES()) {
+    if (QOpenGLContext::currentContext()->isES()) {
         QGLFunctions funcs(QGLContext::currentContext());
         Q_UNUSED(w);
         Q_UNUSED(h);

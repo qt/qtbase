@@ -378,7 +378,7 @@ void QOpenGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph, QFixed
             || mask.format() == QImage::Format_ARGB32_Premultiplied
 #else
             || (mask.format() == QImage::Format_ARGB32_Premultiplied
-                && QOpenGLFunctions::isES())
+                && ctx->isES())
 #endif
             ) {
             for (int y = 0; y < maskHeight; ++y) {
@@ -396,7 +396,7 @@ void QOpenGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph, QFixed
                     src[x] = qRgba(r, g, b, avg);
                     // swizzle the bits to accommodate for the GL_RGBA upload.
 #if Q_BYTE_ORDER != Q_BIG_ENDIAN
-                    if (QOpenGLFunctions::isES())
+                    if (ctx->isES())
 #endif
                         src[x] = ARGB2RGBA(src[x]);
                 }
@@ -409,7 +409,7 @@ void QOpenGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph, QFixed
 #ifdef QT_OPENGL_ES_2
         GLenum fmt = GL_RGBA;
 #else
-        GLenum fmt = QOpenGLFunctions::isES() ? GL_RGBA : GL_BGRA;
+        GLenum fmt = ctx->isES() ? GL_RGBA : GL_BGRA;
 #endif // QT_OPENGL_ES_2
 
 #if Q_BYTE_ORDER == Q_BIG_ENDIAN

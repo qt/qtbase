@@ -248,7 +248,7 @@ bool QGLShaderPrivate::create()
             shader = glfuncs->glCreateShader(GL_VERTEX_SHADER);
 #if !defined(QT_OPENGL_ES_2)
         else if (shaderType == QGLShader::Geometry
-                 && !QOpenGLFunctions::isES())
+                 && !context->contextHandle()->isES())
             shader = glfuncs->glCreateShader(GL_GEOMETRY_SHADER_EXT);
 #endif
         else
@@ -430,14 +430,14 @@ bool QGLShader::compileSourceCode(const char *source)
             srclen.append(GLint(headerLen));
         }
 #ifdef QGL_DEFINE_QUALIFIERS
-        if (!QOpenGLFunctions::isES()) {
+        if (!QOpenGLContext::currentContext()->isES()) {
             src.append(qualifierDefines);
             srclen.append(GLint(sizeof(qualifierDefines) - 1));
         }
 #endif
 #ifdef QGL_REDEFINE_HIGHP
         if (d->shaderType == Fragment
-            && QOpenGLFunctions::isES()) {
+            && QOpenGLContext::currentContext()->isES()) {
             src.append(redefineHighp);
             srclen.append(GLint(sizeof(redefineHighp) - 1));
         }
@@ -567,8 +567,8 @@ public:
 
     void initializeGeometryShaderFunctions()
     {
-        if (!QOpenGLFunctions::isES()) {
-            QOpenGLContext *context = QOpenGLContext::currentContext();
+        QOpenGLContext *context = QOpenGLContext::currentContext();
+        if (!context->isES()) {
             glProgramParameteri = (type_glProgramParameteri)
                 context->getProcAddress("glProgramParameteri");
 
@@ -936,7 +936,7 @@ bool QGLShaderProgram::link()
 
 #if !defined(QT_OPENGL_ES_2)
     // Set up the geometry shader parameters
-    if (!QOpenGLFunctions::isES()
+    if (!QOpenGLContext::currentContext()->isES()
         && d->glfuncs->glProgramParameteri) {
         foreach (QGLShader *shader, d->shaders) {
             if (shader->shaderType() & QGLShader::Geometry) {
@@ -3068,7 +3068,7 @@ int QGLShaderProgram::maxGeometryOutputVertices() const
 {
     GLint n = 0;
 #if !defined(QT_OPENGL_ES_2)
-    if (!QOpenGLFunctions::isES())
+    if (!QOpenGLContext::currentContext()->isES())
         glGetIntegerv(GL_MAX_GEOMETRY_OUTPUT_VERTICES_EXT, &n);
 #endif
     return n;

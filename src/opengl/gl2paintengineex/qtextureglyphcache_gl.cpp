@@ -319,7 +319,7 @@ void QGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph, QFixed sub
                 uchar g = src[x] >> 8;
                 uchar b = src[x];
                 quint32 avg = (quint32(r) + quint32(g) + quint32(b) + 1) / 3; // "+1" for rounding.
-                if (QOpenGLFunctions::isES()) {
+                if (ctx->contextHandle()->isES()) {
                     // swizzle the bits to accommodate for the GL_RGBA upload.
                     src[x] = (avg << 24) | (quint32(r) << 0) | (quint32(g) << 8) | (quint32(b) << 16);
                 } else {
@@ -333,7 +333,7 @@ void QGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph, QFixed sub
     if (mask.format() == QImage::Format_RGB32) {
         GLenum format = GL_RGBA;
 #if !defined(QT_OPENGL_ES_2)
-        if (!QOpenGLFunctions::isES())
+        if (!ctx->contextHandle()->isES())
             format = GL_BGRA;
 #endif
         glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y, maskWidth, maskHeight, format, GL_UNSIGNED_BYTE, mask.bits());

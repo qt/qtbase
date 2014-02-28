@@ -311,15 +311,6 @@ public:
     void glVertexAttrib4fv(GLuint indx, const GLfloat* values);
     void glVertexAttribPointer(GLuint indx, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void* ptr);
 
-    enum PlatformGLType {
-        DesktopGL = 0,
-        GLES2,
-        GLES1
-    };
-    static PlatformGLType platformGLType();
-    static void *platformGLHandle();
-    static bool isES() { return platformGLType() != DesktopGL; }
-
 protected:
     QOpenGLFunctionsPrivate *d_ptr;
     static bool isInitialized(const QOpenGLFunctionsPrivate *d) { return d != 0; }

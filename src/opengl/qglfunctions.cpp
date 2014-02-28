@@ -213,7 +213,9 @@ QGLFunctions::QGLFunctions(const QGLContext *context)
 
 static int qt_gl_resolve_features()
 {
-    if (QOpenGLFunctions::platformGLType() == QOpenGLFunctions::GLES2) {
+    QOpenGLContext *ctx = QOpenGLContext::currentContext();
+    if (ctx->isES() && QOpenGLContext::openGLModuleType() != QOpenGLContext::GLES1) {
+        // OpenGL ES 2
         int features = QGLFunctions::Multitexture |
             QGLFunctions::Shaders |
             QGLFunctions::Buffers |
@@ -232,7 +234,8 @@ static int qt_gl_resolve_features()
         if (extensions.match("GL_IMG_texture_npot"))
             features |= QGLFunctions::NPOTTextures;
         return features;
-    } if (QOpenGLFunctions::platformGLType() == QOpenGLFunctions::GLES1) {
+    } else if (ctx->isES()) {
+        // OpenGL ES 1
         int features = QGLFunctions::Multitexture |
             QGLFunctions::Buffers |
             QGLFunctions::CompressedTextures |
@@ -252,6 +255,7 @@ static int qt_gl_resolve_features()
             features |= QGLFunctions::NPOTTextures;
         return features;
     } else {
+        // OpenGL
         int features = 0;
         QGLFormat::OpenGLVersionFlags versions = QGLFormat::openGLVersionFlags();
         QOpenGLExtensionMatcher extensions;

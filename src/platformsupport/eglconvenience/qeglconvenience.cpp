@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include <QByteArray>
-#include <QOpenGLFunctions>
+#include <QOpenGLContext>
 
 #ifdef Q_OS_LINUX
 #include <sys/ioctl.h>
@@ -245,9 +245,11 @@ EGLConfig QEglConfigChooser::chooseConfig()
         break;
 #ifdef EGL_VERSION_1_4
     case QSurfaceFormat::DefaultRenderableType:
-        if (!QOpenGLFunctions::isES())
+#ifndef QT_NO_OPENGL
+        if (QOpenGLContext::openGLModuleType() == QOpenGLContext::DesktopGL)
             configureAttributes.append(EGL_OPENGL_BIT);
         else
+#endif // QT_NO_OPENGL
             configureAttributes.append(EGL_OPENGL_ES2_BIT);
         break;
     case QSurfaceFormat::OpenGL:
@@ -361,7 +363,9 @@ QSurfaceFormat q_glFormatFromConfig(EGLDisplay display, const EGLConfig config, 
              && (renderableType & EGL_OPENGL_BIT))
         format.setRenderableType(QSurfaceFormat::OpenGL);
     else if (referenceFormat.renderableType() == QSurfaceFormat::DefaultRenderableType
-             && !QOpenGLFunctions::isES()
+#ifndef QT_NO_OPENGL
+             && QOpenGLContext::openGLModuleType() == QOpenGLContext::DesktopGL
+#endif
              && (renderableType & EGL_OPENGL_BIT))
         format.setRenderableType(QSurfaceFormat::OpenGL);
 #endif
