@@ -69,13 +69,18 @@ void *QWindowsNativeInterface::nativeResourceForWindow(const QByteArray &resourc
     QWindowsWindow *bw = static_cast<QWindowsWindow *>(window->handle());
     if (resource == "handle")
         return bw->handle();
-    if (window->surfaceType() == QWindow::RasterSurface) {
+    switch (window->surfaceType()) {
+    case QWindow::RasterSurface:
+    case QWindow::RasterGLSurface:
         if (resource == "getDC")
             return bw->getDC();
         if (resource == "releaseDC") {
             bw->releaseDC();
             return 0;
         }
+        break;
+    case QWindow::OpenGLSurface:
+        break;
     }
     qWarning("%s: Invalid key '%s' requested.", __FUNCTION__, resource.constData());
     return 0;

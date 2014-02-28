@@ -245,6 +245,8 @@ bool QWindowsIntegration::hasCapability(QPlatformIntegration::Capability cap) co
         return true;
     case ForeignWindows:
         return true;
+    case RasterGLSurface:
+        return true;
     default:
         return QPlatformIntegration::hasCapability(cap);
     }
