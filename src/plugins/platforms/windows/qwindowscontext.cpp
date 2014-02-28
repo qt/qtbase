@@ -971,8 +971,10 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
 #if !defined(Q_OS_WINCE) && !defined(QT_NO_SESSIONMANAGER)
     case QtWindows::QueryEndSessionApplicationEvent: {
         QWindowsSessionManager *sessionManager = platformSessionManager();
-        if (sessionManager->isActive()) // bogus message from windows
+        if (sessionManager->isActive()) { // bogus message from windows
+            *result = sessionManager->wasCanceled() ? 0 : 1;
             return true;
+        }
 
         sessionManager->setActive(true);
         sessionManager->blocksInteraction();
