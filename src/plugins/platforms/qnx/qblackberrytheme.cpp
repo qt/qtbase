@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qqnxtheme.h"
+#include "qblackberrytheme.h"
 
 #include "qqnxfiledialoghelper.h"
 #include "qqnxsystemsettings.h"
@@ -47,7 +47,7 @@
 
 QT_BEGIN_NAMESPACE
 
-QQnxTheme::QQnxTheme(const QQnxIntegration *integration) : m_integration(integration)
+QBlackberryTheme::QBlackberryTheme(const QQnxIntegration *integration) : m_integration(integration)
 {
     // Set the dark theme as default palette
     QColor color = QColor(211, 211, 211);
@@ -68,12 +68,12 @@ QQnxTheme::QQnxTheme(const QQnxIntegration *integration) : m_integration(integra
     m_defaultPalette.setBrush(QPalette::HighlightedText, QColor(250, 250,250));
 }
 
-QQnxTheme::~QQnxTheme()
+QBlackberryTheme::~QBlackberryTheme()
 {
     qDeleteAll(m_fonts);
 }
 
-bool QQnxTheme::usePlatformNativeDialog(DialogType type) const
+bool QBlackberryTheme::usePlatformNativeDialog(DialogType type) const
 {
     if (type == QPlatformTheme::FileDialog)
         return true;
@@ -88,7 +88,7 @@ bool QQnxTheme::usePlatformNativeDialog(DialogType type) const
     return false;
 }
 
-QPlatformDialogHelper *QQnxTheme::createPlatformDialogHelper(DialogType type) const
+QPlatformDialogHelper *QBlackberryTheme::createPlatformDialogHelper(DialogType type) const
 {
     switch (type) {
     case QPlatformTheme::FileDialog:
@@ -104,7 +104,7 @@ QPlatformDialogHelper *QQnxTheme::createPlatformDialogHelper(DialogType type) co
     }
 }
 
-const QFont *QQnxTheme::font(Font type) const
+const QFont *QBlackberryTheme::font(Font type) const
 {
     QPlatformFontDatabase *fontDatabase = m_integration->fontDatabase();
 
@@ -113,7 +113,7 @@ const QFont *QQnxTheme::font(Font type) const
     return m_fonts.value(type, 0);
 }
 
-const QPalette *QQnxTheme::palette(Palette type) const
+const QPalette *QBlackberryTheme::palette(Palette type) const
 {
     // Return the default palette
     if (type == SystemPalette)

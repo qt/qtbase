@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QQNXTHEME_H
-#define QQNXTHEME_H
+#ifndef QBLACKBERRYTHEME_H
+#define QBLACKBERRYTHEME_H
 
 #include <qpa/qplatformtheme.h>
 
@@ -55,11 +55,11 @@ QT_BEGIN_NAMESPACE
 
 class QQnxIntegration;
 
-class QQnxTheme : public QPlatformTheme
+class QBlackberryTheme : public QPlatformTheme
 {
 public:
-    explicit QQnxTheme(const QQnxIntegration *);
-    ~QQnxTheme();
+    explicit QBlackberryTheme(const QQnxIntegration *);
+    ~QBlackberryTheme();
 
     static QString name() { return QStringLiteral("blackberry"); }
 
@@ -78,4 +78,4 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // QQNXTHEME_H
+#endif // QBLACKBERRYTHEME_H
