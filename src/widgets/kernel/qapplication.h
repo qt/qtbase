@@ -112,7 +112,7 @@ public:
     QT_DEPRECATED static inline void setGraphicsSystem(const QString &) {}
 #endif
 
-#ifdef Q_NO_USING_KEYWORD
+#if defined(Q_NO_USING_KEYWORD) && !defined(Q_QDOC)
     static QPalette palette() { return QGuiApplication::palette(); }
 #else
     using QGuiApplication::palette;
