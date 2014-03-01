@@ -384,7 +384,7 @@ public:
     QT_DEPRECATED inline char toAscii() const { return toLatin1(); }
 #endif
     inline char toLatin1() const;
-    inline ushort unicode() const { return ucs; }
+    Q_DECL_CONSTEXPR inline ushort unicode() const { return ucs; }
     inline ushort &unicode() { return ucs; }
 
 #if QT_DEPRECATED_SINCE(5, 0)
