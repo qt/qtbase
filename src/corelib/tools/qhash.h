@@ -78,15 +78,11 @@ Q_DECL_CONST_FUNCTION inline uint qHash(ulong key, uint seed = 0) Q_DECL_NOTHROW
     }
 }
 Q_DECL_CONST_FUNCTION inline uint qHash(long key, uint seed = 0) Q_DECL_NOTHROW { return qHash(ulong(key), seed); }
-Q_DECL_CONST_FUNCTION inline uint qHash(quint64 key, uint seed = 0) Q_DECL_NOTHROW
+Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qHash(quint64 key, uint seed = 0) Q_DECL_NOTHROW
 {
-    if (sizeof(quint64) > sizeof(uint)) {
-        return uint(((key >> (8 * sizeof(uint) - 1)) ^ key) & (~0U)) ^ seed;
-    } else {
-        return uint(key & (~0U)) ^ seed;
-    }
+    return uint(((key >> (8 * sizeof(uint) - 1)) ^ key) & (~0U)) ^ seed;
 }
-Q_DECL_CONST_FUNCTION inline uint qHash(qint64 key, uint seed = 0) Q_DECL_NOTHROW { return qHash(quint64(key), seed); }
+Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qHash(qint64 key, uint seed = 0) Q_DECL_NOTHROW { return qHash(quint64(key), seed); }
 Q_CORE_EXPORT Q_DECL_CONST_FUNCTION uint qHash(float key, uint seed = 0) Q_DECL_NOTHROW;
 Q_CORE_EXPORT Q_DECL_CONST_FUNCTION uint qHash(double key, uint seed = 0) Q_DECL_NOTHROW;
 #ifndef Q_OS_DARWIN
