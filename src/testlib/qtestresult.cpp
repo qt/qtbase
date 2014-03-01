@@ -51,6 +51,8 @@
 #include <string.h>
 #include <wchar.h>
 
+static const char *currentAppName = 0;
+
 QT_BEGIN_NAMESPACE
 
 namespace QTest
@@ -64,8 +66,6 @@ namespace QTest
 
     static const char *expectFailComment = 0;
     static int expectFailMode = 0;
-
-    static const char *currentAppName = 0;
 }
 
 void QTestResult::reset()
@@ -322,12 +322,12 @@ bool QTestResult::skipCurrentTest()
 
 void QTestResult::setCurrentAppName(const char *appName)
 {
-    QTest::currentAppName = appName;
+    ::currentAppName = appName;
 }
 
 const char *QTestResult::currentAppName()
 {
-    return QTest::currentAppName;
+    return ::currentAppName;
 }
 
 QT_END_NAMESPACE
