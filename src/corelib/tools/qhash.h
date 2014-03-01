@@ -60,16 +60,16 @@ class QString;
 class QStringRef;
 class QLatin1String;
 
-Q_CORE_EXPORT uint qHashBits(const void *p, size_t size, uint seed = 0) Q_DECL_NOTHROW;
+Q_CORE_EXPORT Q_DECL_PURE_FUNCTION uint qHashBits(const void *p, size_t size, uint seed = 0) Q_DECL_NOTHROW;
 
-inline uint qHash(char key, uint seed = 0) Q_DECL_NOTHROW { return uint(key) ^ seed; }
-inline uint qHash(uchar key, uint seed = 0) Q_DECL_NOTHROW { return uint(key) ^ seed; }
-inline uint qHash(signed char key, uint seed = 0) Q_DECL_NOTHROW { return uint(key) ^ seed; }
-inline uint qHash(ushort key, uint seed = 0) Q_DECL_NOTHROW { return uint(key) ^ seed; }
-inline uint qHash(short key, uint seed = 0) Q_DECL_NOTHROW { return uint(key) ^ seed; }
-inline uint qHash(uint key, uint seed = 0) Q_DECL_NOTHROW { return key ^ seed; }
-inline uint qHash(int key, uint seed = 0) Q_DECL_NOTHROW { return uint(key) ^ seed; }
-inline uint qHash(ulong key, uint seed = 0) Q_DECL_NOTHROW
+Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qHash(char key, uint seed = 0) Q_DECL_NOTHROW { return uint(key) ^ seed; }
+Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qHash(uchar key, uint seed = 0) Q_DECL_NOTHROW { return uint(key) ^ seed; }
+Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qHash(signed char key, uint seed = 0) Q_DECL_NOTHROW { return uint(key) ^ seed; }
+Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qHash(ushort key, uint seed = 0) Q_DECL_NOTHROW { return uint(key) ^ seed; }
+Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qHash(short key, uint seed = 0) Q_DECL_NOTHROW { return uint(key) ^ seed; }
+Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qHash(uint key, uint seed = 0) Q_DECL_NOTHROW { return key ^ seed; }
+Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qHash(int key, uint seed = 0) Q_DECL_NOTHROW { return uint(key) ^ seed; }
+Q_DECL_CONST_FUNCTION inline uint qHash(ulong key, uint seed = 0) Q_DECL_NOTHROW
 {
     if (sizeof(ulong) > sizeof(uint)) {
         return uint(((key >> (8 * sizeof(uint) - 1)) ^ key) & (~0U)) ^ seed;
@@ -77,8 +77,8 @@ inline uint qHash(ulong key, uint seed = 0) Q_DECL_NOTHROW
         return uint(key & (~0U)) ^ seed;
     }
 }
-inline uint qHash(long key, uint seed = 0) Q_DECL_NOTHROW { return qHash(ulong(key), seed); }
-inline uint qHash(quint64 key, uint seed = 0) Q_DECL_NOTHROW
+Q_DECL_CONST_FUNCTION inline uint qHash(long key, uint seed = 0) Q_DECL_NOTHROW { return qHash(ulong(key), seed); }
+Q_DECL_CONST_FUNCTION inline uint qHash(quint64 key, uint seed = 0) Q_DECL_NOTHROW
 {
     if (sizeof(quint64) > sizeof(uint)) {
         return uint(((key >> (8 * sizeof(uint) - 1)) ^ key) & (~0U)) ^ seed;
@@ -86,20 +86,20 @@ inline uint qHash(quint64 key, uint seed = 0) Q_DECL_NOTHROW
         return uint(key & (~0U)) ^ seed;
     }
 }
-inline uint qHash(qint64 key, uint seed = 0) Q_DECL_NOTHROW { return qHash(quint64(key), seed); }
-Q_CORE_EXPORT uint qHash(float key, uint seed = 0) Q_DECL_NOTHROW;
-Q_CORE_EXPORT uint qHash(double key, uint seed = 0) Q_DECL_NOTHROW;
+Q_DECL_CONST_FUNCTION inline uint qHash(qint64 key, uint seed = 0) Q_DECL_NOTHROW { return qHash(quint64(key), seed); }
+Q_CORE_EXPORT Q_DECL_CONST_FUNCTION uint qHash(float key, uint seed = 0) Q_DECL_NOTHROW;
+Q_CORE_EXPORT Q_DECL_CONST_FUNCTION uint qHash(double key, uint seed = 0) Q_DECL_NOTHROW;
 #ifndef Q_OS_DARWIN
-Q_CORE_EXPORT uint qHash(long double key, uint seed = 0) Q_DECL_NOTHROW;
+Q_CORE_EXPORT Q_DECL_CONST_FUNCTION uint qHash(long double key, uint seed = 0) Q_DECL_NOTHROW;
 #endif
-inline uint qHash(QChar key, uint seed = 0) Q_DECL_NOTHROW { return qHash(key.unicode(), seed); }
-Q_CORE_EXPORT uint qHash(const QByteArray &key, uint seed = 0) Q_DECL_NOTHROW;
-Q_CORE_EXPORT uint qHash(const QString &key, uint seed = 0) Q_DECL_NOTHROW;
-Q_CORE_EXPORT uint qHash(const QStringRef &key, uint seed = 0) Q_DECL_NOTHROW;
-Q_CORE_EXPORT uint qHash(const QBitArray &key, uint seed = 0) Q_DECL_NOTHROW;
-Q_CORE_EXPORT uint qHash(QLatin1String key, uint seed = 0) Q_DECL_NOTHROW;
-Q_CORE_EXPORT uint qt_hash(const QString &key) Q_DECL_NOTHROW;
-Q_CORE_EXPORT uint qt_hash(const QStringRef &key) Q_DECL_NOTHROW;
+Q_DECL_CONST_FUNCTION inline uint qHash(QChar key, uint seed = 0) Q_DECL_NOTHROW { return qHash(key.unicode(), seed); }
+Q_CORE_EXPORT Q_DECL_PURE_FUNCTION uint qHash(const QByteArray &key, uint seed = 0) Q_DECL_NOTHROW;
+Q_CORE_EXPORT Q_DECL_PURE_FUNCTION uint qHash(const QString &key, uint seed = 0) Q_DECL_NOTHROW;
+Q_CORE_EXPORT Q_DECL_PURE_FUNCTION uint qHash(const QStringRef &key, uint seed = 0) Q_DECL_NOTHROW;
+Q_CORE_EXPORT Q_DECL_PURE_FUNCTION uint qHash(const QBitArray &key, uint seed = 0) Q_DECL_NOTHROW;
+Q_CORE_EXPORT Q_DECL_PURE_FUNCTION uint qHash(QLatin1String key, uint seed = 0) Q_DECL_NOTHROW;
+Q_CORE_EXPORT Q_DECL_PURE_FUNCTION uint qt_hash(const QString &key) Q_DECL_NOTHROW;
+Q_CORE_EXPORT Q_DECL_PURE_FUNCTION uint qt_hash(const QStringRef &key) Q_DECL_NOTHROW;
 
 #if defined(Q_CC_MSVC)
 #pragma warning( push )
