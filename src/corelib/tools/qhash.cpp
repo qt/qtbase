@@ -802,7 +802,7 @@ uint qHash(long double key, uint seed) Q_DECL_NOTHROW
 }
 #endif
 
-/*! \fn uint qHash(QChar key, uint seed = 0)
+/*! \fn uint qHash(const QChar key, uint seed = 0)
     \relates QHash
     \since 5.0
 

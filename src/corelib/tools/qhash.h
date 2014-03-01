@@ -86,7 +86,7 @@ Q_CORE_EXPORT Q_DECL_CONST_FUNCTION uint qHash(double key, uint seed = 0) Q_DECL
 #ifndef Q_OS_DARWIN
 Q_CORE_EXPORT Q_DECL_CONST_FUNCTION uint qHash(long double key, uint seed = 0) Q_DECL_NOTHROW;
 #endif
-Q_DECL_CONST_FUNCTION inline uint qHash(QChar key, uint seed = 0) Q_DECL_NOTHROW { return qHash(key.unicode(), seed); }
+Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline uint qHash(const QChar key, uint seed = 0) Q_DECL_NOTHROW { return qHash(key.unicode(), seed); }
 Q_CORE_EXPORT Q_DECL_PURE_FUNCTION uint qHash(const QByteArray &key, uint seed = 0) Q_DECL_NOTHROW;
 Q_CORE_EXPORT Q_DECL_PURE_FUNCTION uint qHash(const QString &key, uint seed = 0) Q_DECL_NOTHROW;
 Q_CORE_EXPORT Q_DECL_PURE_FUNCTION uint qHash(const QStringRef &key, uint seed = 0) Q_DECL_NOTHROW;
