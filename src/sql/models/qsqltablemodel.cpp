@@ -737,7 +737,7 @@ bool QSqlTableModel::submitAll()
     bool success = true;
 
     foreach (int row, d->cache.keys()) {
-        // be sure cache *still* contains the row since overriden selectRow() could have called select()
+        // be sure cache *still* contains the row since overridden selectRow() could have called select()
         QSqlTableModelPrivate::CacheMap::iterator it = d->cache.find(row);
         if (it == d->cache.end())
             continue;

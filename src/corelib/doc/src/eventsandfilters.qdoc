@@ -208,7 +208,7 @@
     \l{QCoreApplication::}{postEvent()} is also used during object
     initialization, since the posted event will typically be dispatched
     very soon after the initialization of the object is complete.
-    When implementing a widget, it is important to realise that events
+    When implementing a widget, it is important to realize that events
     can be delivered very early in its lifetime so, in its constructor,
     be sure to initialize member variables early on, before there's any
     chance that it might receive an event.

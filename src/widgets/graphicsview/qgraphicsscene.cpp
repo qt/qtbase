@@ -5457,7 +5457,7 @@ bool QGraphicsScene::focusNextPrevChild(bool next)
     scene (i.e., when an item gains or loses input focus, or when focus
     passes from one item to another). You can connect to this signal if you
     need to keep track of when other items gain input focus. It is
-    particularily useful for implementing virtual keyboards, input methods,
+    particularly useful for implementing virtual keyboards, input methods,
     and cursor items.
 
     \a oldFocusItem is a pointer to the item that previously had focus, or

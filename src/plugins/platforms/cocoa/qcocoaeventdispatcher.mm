@@ -681,7 +681,7 @@ void QCocoaEventDispatcherPrivate::cleanupModalSessions()
 {
     // Go through the list of modal sessions, and end those
     // that no longer has a window assosiated; no window means
-    // the the session has logically ended. The reason we wait like
+    // the session has logically ended. The reason we wait like
     // this to actually end the sessions for real (rather than at the
     // point they were marked as stopped), is that ending a session
     // when no other session runs below it on the stack will make cocoa

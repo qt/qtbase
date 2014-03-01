@@ -349,7 +349,7 @@ SSL* QSslContext::createSsl()
 // We cache exactly one session here
 bool QSslContext::cacheSession(SSL* ssl)
 {
-    // dont cache the same session again
+    // don't cache the same session again
     if (session && session == q_SSL_get_session(ssl))
         return true;
 

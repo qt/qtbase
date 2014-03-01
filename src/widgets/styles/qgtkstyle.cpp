@@ -1032,7 +1032,7 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
     case PE_FrameFocusRect: {
             QRect frameRect = option->rect.adjusted(1, 1, -2, -2); // ### this mess should move to subcontrolrect
             if (qobject_cast<const QAbstractItemView*>(widget)) {
-                // Dont draw anything
+                // Don't draw anything
             } else if (qobject_cast<const QTabBar*>(widget)) {
                 GtkWidget *gtkNotebook = d->gtkWidget("GtkNotebook");
                 style = d->gtk_widget_get_style(gtkNotebook);

@@ -76,6 +76,6 @@ int main(int argc, char *argv[])
     gv.show();
     MyObject o(rect);
     QMessageBox::information(0, "What you should see",
-                             "The red rectangle should toggle visiblity, so you should see it flash on and off");
+                             "The red rectangle should toggle visibility, so you should see it flash on and off");
     return a.exec();
 }

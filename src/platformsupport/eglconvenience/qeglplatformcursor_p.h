@@ -117,7 +117,7 @@ private:
         CursorAtlas() : cursorsPerRow(0), texture(0), cursorWidth(0), cursorHeight(0) { }
         int cursorsPerRow;
         uint texture;
-        int width, height; // width and height of the the atlas
+        int width, height; // width and height of the atlas
         int cursorWidth, cursorHeight; // width and height of cursors inside the atlas
         QList<QPoint> hotSpots;
         QImage image; // valid until it's uploaded

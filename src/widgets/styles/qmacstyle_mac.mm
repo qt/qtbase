@@ -5024,7 +5024,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                     int oldState = styleObject->property("_q_stylestate").toInt();
                     uint oldActiveControls = styleObject->property("_q_stylecontrols").toUInt();
 
-                    // a scrollbar is transient when the the scrollbar itself and
+                    // a scrollbar is transient when the scrollbar itself and
                     // its sibling are both inactive (ie. not pressed/hovered/moved)
                     bool transient = !opt->activeSubControls && !(slider->state & State_On);
 
