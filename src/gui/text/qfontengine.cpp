@@ -937,13 +937,30 @@ void QFontEngine::getUnscaledGlyph(glyph_t glyph, QPainterPath *path, glyph_metr
     addGlyphsToPath(&glyph, &p, 1, path, QFlag(0));
 }
 
+/*!
+    Returns \c true if the font table idetified by \a tag exists in the font;
+    returns \c false otherwise.
+
+    If \a buffer is NULL, stores the size of the buffer required for the font table data,
+    in bytes, in \a length. If \a buffer is not NULL and the capacity
+    of the buffer, passed in \a length, is sufficient to store the font table data,
+    also copies the font table data to \a buffer.
+
+    Note: returning \c false when the font table exists could lead to an undefined behavior.
+*/
+bool QFontEngine::getSfntTableData(uint tag, uchar *buffer, uint *length) const
+{
+    Q_UNUSED(tag)
+    Q_UNUSED(buffer)
+    Q_UNUSED(length)
+    return false;
+}
+
 QByteArray QFontEngine::getSfntTable(uint tag) const
 {
     QByteArray table;
     uint len = 0;
     if (!getSfntTableData(tag, 0, &len))
-        return table;
-    if (!len)
         return table;
     table.resize(len);
     if (!getSfntTableData(tag, reinterpret_cast<uchar *>(table.data()), &len))

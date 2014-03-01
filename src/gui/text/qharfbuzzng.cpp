@@ -625,7 +625,7 @@ _hb_qt_reference_table(hb_face_t * /*face*/, hb_tag_t tag, void *user_data)
     Q_ASSERT(get_font_table);
 
     uint length = 0;
-    if (Q_UNLIKELY(!get_font_table(data->user_data, tag, 0, &length) || length == 0))
+    if (Q_UNLIKELY(!get_font_table(data->user_data, tag, 0, &length)))
         return hb_blob_get_empty();
 
     char *buffer = (char *)malloc(length);

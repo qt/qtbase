@@ -659,16 +659,13 @@ bool QCoreTextFontEngine::canRender(const QChar *string, int len)
 bool QCoreTextFontEngine::getSfntTableData(uint tag, uchar *buffer, uint *length) const
 {
     QCFType<CFDataRef> table = CTFontCopyTable(ctfont, tag, 0);
-    if (!table || !length)
+    if (!table)
         return false;
     CFIndex tableLength = CFDataGetLength(table);
-    int availableLength = *length;
-    *length = tableLength;
-    if (buffer) {
-        if (tableLength > availableLength)
-            return false;
+    if (buffer && int(*length) >= tableLength)
         CFDataGetBytes(table, CFRangeMake(0, tableLength), buffer);
-    }
+    *length = tableLength;
+    Q_ASSERT(int(*length) > 0);
     return true;
 }
 

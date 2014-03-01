@@ -1032,6 +1032,7 @@ bool QWindowsFontEngine::getSfntTableData(uint tag, uchar *buffer, uint *length)
     SelectObject(hdc, hfont);
     DWORD t = qbswap<quint32>(tag);
     *length = GetFontData(hdc, t, 0, buffer, *length);
+    Q_ASSERT(*length == GDI_ERROR || int(*length) > 0);
     return *length != GDI_ERROR;
 }
 
