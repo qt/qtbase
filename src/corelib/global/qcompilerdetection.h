@@ -200,6 +200,8 @@
 #  define Q_UNLIKELY(expr)  __builtin_expect(!!(expr), false)
 #  define Q_NORETURN        __attribute__((__noreturn__))
 #  define Q_REQUIRED_RESULT __attribute__ ((__warn_unused_result__))
+#  define Q_DECL_PURE_FUNCTION __attribute__((pure))
+#  define Q_DECL_CONST_FUNCTION __attribute__((const))
 #  if !defined(QT_MOC_CPP)
 #    define Q_PACKED __attribute__ ((__packed__))
 #    ifndef __ARM_EABI__
@@ -974,6 +976,12 @@
 #endif
 #ifndef Q_DECL_NS_RETURNS_AUTORELEASED
 #  define Q_DECL_NS_RETURNS_AUTORELEASED
+#endif
+#ifndef Q_DECL_PURE_FUNCTION
+#  define Q_DECL_PURE_FUNCTION
+#endif
+#ifndef Q_DECL_CONST_FUNCTION
+#  define Q_DECL_CONST_FUNCTION Q_DECL_PURE_FUNCTION
 #endif
 
 /*
