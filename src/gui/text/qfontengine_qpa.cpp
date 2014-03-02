@@ -563,11 +563,9 @@ void QPAGenerator::writeHeader()
     writeTaggedUInt32(QFontEngineQPA::Tag_FileIndex, face.index);
 
     {
-        uchar data[4];
-        uint len = 4;
-        bool ok = fe->getSfntTableData(MAKE_TAG('h', 'e', 'a', 'd'), data, &len);
-        if (ok) {
-            const quint32 revision = qFromBigEndian<quint32>(data);
+        const QByteArray head = fe->getSfntTable(MAKE_TAG('h', 'e', 'a', 'd'));
+        if (head.size() >= 4) {
+            const quint32 revision = qFromBigEndian<quint32>(reinterpret_cast<const uchar *>(head.constData()));
             writeTaggedUInt32(QFontEngineQPA::Tag_FontRevision, revision);
         }
     }
