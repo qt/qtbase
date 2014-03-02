@@ -359,6 +359,15 @@ bool QFontEngine::supportsScript(QChar::Script script) const
         return true;
     }
 
+#ifdef Q_OS_MAC
+    {
+        // in AAT fonts, 'gsub' table is effectively replaced by 'mort'/'morx' table
+        uint len;
+        if (getSfntTableData(MAKE_TAG('m','o','r','t'), 0, &len) || getSfntTableData(MAKE_TAG('m','o','r','x'), 0, &len))
+            return true;
+    }
+#endif
+
 #ifdef QT_ENABLE_HARFBUZZ_NG
     if (useHarfbuzzNG) {
         bool ret = false;
