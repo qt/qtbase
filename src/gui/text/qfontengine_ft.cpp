@@ -1528,6 +1528,7 @@ void QFontEngineFT::addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions, int
 bool QFontEngineFT::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs,
                                  QFontEngine::ShaperFlags flags) const
 {
+    Q_ASSERT(glyphs->numGlyphs >= *nglyphs);
     if (*nglyphs < len) {
         *nglyphs = len;
         return false;

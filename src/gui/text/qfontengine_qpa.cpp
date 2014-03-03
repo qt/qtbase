@@ -342,6 +342,7 @@ bool QFontEngineQPA::getSfntTableData(uint tag, uchar *buffer, uint *length) con
 
 bool QFontEngineQPA::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, QFontEngine::ShaperFlags flags) const
 {
+    Q_ASSERT(glyphs->numGlyphs >= *nglyphs);
     if (*nglyphs < len) {
         *nglyphs = len;
         return false;

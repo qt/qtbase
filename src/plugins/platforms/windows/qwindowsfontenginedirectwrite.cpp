@@ -318,6 +318,7 @@ inline unsigned int getChar(const QChar *str, int &i, const int len)
 bool QWindowsFontEngineDirectWrite::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs,
                                                  int *nglyphs, QFontEngine::ShaperFlags flags) const
 {
+    Q_ASSERT(glyphs->numGlyphs >= *nglyphs);
     if (*nglyphs < len) {
         *nglyphs = len;
         return false;
