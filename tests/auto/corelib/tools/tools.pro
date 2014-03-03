@@ -5,7 +5,6 @@ SUBDIRS=\
     qarraydata_strictiterators \
     qbitarray \
     qbytearray \
-    qbytearraylist \
     qbytearraymatcher \
     qbytedatabuffer \
     qcache \

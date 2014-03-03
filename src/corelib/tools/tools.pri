@@ -9,7 +9,6 @@ HEADERS +=  \
         tools/qarraydatapointer.h \
         tools/qbitarray.h \
         tools/qbytearray.h \
-        tools/qbytearraylist.h \
         tools/qbytearraymatcher.h \
         tools/qbytedata_p.h \
         tools/qcache.h \
@@ -78,7 +77,6 @@ SOURCES += \
         tools/qarraydata.cpp \
         tools/qbitarray.cpp \
         tools/qbytearray.cpp \
-        tools/qbytearraylist.cpp \
         tools/qbytearraymatcher.cpp \
         tools/qcollator.cpp \
         tools/qcommandlineoption.cpp \
