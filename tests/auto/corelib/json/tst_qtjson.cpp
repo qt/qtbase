@@ -200,20 +200,6 @@ void tst_QtJson::testValueSimple()
     QCOMPARE(value.toBool(), false);
     QCOMPARE(value.toObject(), QJsonObject());
     QCOMPARE(value.toArray(), QJsonArray());
-
-    value = true;
-    QCOMPARE(value.toDouble(), 0.);
-    QCOMPARE(value.toString(), QString());
-    QCOMPARE(value.toBool(), true);
-    QCOMPARE(value.toObject(), QJsonObject());
-    QCOMPARE(value.toArray(), QJsonArray());
-
-    value = 999.;
-    QCOMPARE(value.toDouble(), 999.);
-    QCOMPARE(value.toString(), QString());
-    QCOMPARE(value.toBool(), false);
-    QCOMPARE(value.toObject(), QJsonObject());
-    QCOMPARE(value.toArray(), QJsonArray());
 }
 
 void tst_QtJson::testNumbers()
