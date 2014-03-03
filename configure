@@ -671,7 +671,6 @@ CFG_LARGEFILE=auto
 CFG_OPENSSL=auto
 CFG_PRECOMPILE=auto
 CFG_SEPARATE_DEBUG_INFO=no
-CFG_SEPARATE_DEBUG_INFO_NOCOPY=no
 CFG_REDUCE_EXPORTS=auto
 CFG_SSE2=auto
 CFG_SSE3=auto
@@ -1493,9 +1492,6 @@ while [ "$#" -gt 0 ]; do
     separate-debug-info)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_SEPARATE_DEBUG_INFO="$VAL"
-        elif [ "$VAL" = "nocopy" ] ; then
-            CFG_SEPARATE_DEBUG_INFO="yes"
-            CFG_SEPARATE_DEBUG_INFO_NOCOPY="yes"
         else
             UNKNOWN_OPT=yes
         fi
@@ -5838,9 +5834,6 @@ if [ "$CFG_SEPARATE_DEBUG_INFO" = "yes" ]; then
     QMakeVar add QMAKE_CFLAGS -g
     QMakeVar add QMAKE_CXXFLAGS -g
     QT_CONFIG="$QT_CONFIG separate_debug_info"
-fi
-if [ "$CFG_SEPARATE_DEBUG_INFO_NOCOPY" = "yes" ] ; then
-    QT_CONFIG="$QT_CONFIG separate_debug_info_nocopy"
 fi
 [ "$CFG_SSE2" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG sse2"
 [ "$CFG_SSE3" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG sse3"

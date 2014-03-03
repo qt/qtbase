@@ -19,7 +19,6 @@ contains(TEMPLATE, .*lib) {
     unix:contains(QT_CONFIG, reduce_relocations): CONFIG += bsymbolic_functions
     contains(QT_CONFIG, largefile): CONFIG += largefile
     contains(QT_CONFIG, separate_debug_info): CONFIG += separate_debug_info
-    contains(QT_CONFIG, separate_debug_info_nocopy): CONFIG += separate_debug_info_nocopy
 }
 
 warnings_are_errors:warning_clean {
