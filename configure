@@ -3449,17 +3449,9 @@ if [ "$CFG_SEPARATE_DEBUG_INFO" = "yes" ]; then
     TEST_OBJCOPY=`getXQMakeConf QMAKE_OBJCOPY`
     COMPILER_WITH_FLAGS="$TEST_COMPILER $TEST_COMPILER_CXXFLAGS"
     if "$unixtests/objcopy.test" "$COMPILER_WITH_FLAGS" "$TEST_OBJCOPY" "$OPT_VERBOSE"; then
-       CFG_SEPARATE_DEBUG_INFO=no
-    else
-       case "$PLATFORM" in
-       hpux-*)
-           # binutils on HP-UX is buggy; default to no.
-           CFG_SEPARATE_DEBUG_INFO=no
-           ;;
-       *)
-           CFG_SEPARATE_DEBUG_INFO=yes
-           ;;
-       esac
+        echo "ERROR: -separate-debug-info was requested but this binutils does not support it."
+        echo "Re-run configure with -v for more information"
+        exit 1
     fi
 fi
 
