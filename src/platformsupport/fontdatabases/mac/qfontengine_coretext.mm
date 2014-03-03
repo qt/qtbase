@@ -195,8 +195,6 @@ void QCoreTextFontEngine::init()
 bool QCoreTextFontEngine::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs,
                                        int *nglyphs, QFontEngine::ShaperFlags flags) const
 {
-    QCFType<CFStringRef> cfstring;
-
     QVarLengthArray<CGGlyph> cgGlyphs(len);
     CTFontGetGlyphsForCharacters(ctfont, (const UniChar*)str, cgGlyphs.data(), len);
 
