@@ -229,6 +229,16 @@ QPlatformServices *QPlatformIntegration::services() const
     management.  This includes the typical desktop platforms. Can be set to false on
     platforms where no window management is available, meaning for example that windows
     are never repositioned by the window manager. The default implementation returns \c true.
+
+    \value AllGLFunctionsQueryable The QOpenGLContext backend provided by the platform is
+    able to return function pointers from getProcAddress() even for standard OpenGL
+    functions, for example OpenGL 1 functions like glClear() or glDrawArrays(). This is
+    important because the OpenGL specifications do not require this ability from the
+    getProcAddress implementations of the windowing system interfaces (EGL, WGL, GLX). The
+    platform plugins may however choose to enhance the behavior in the backend
+    implementation for QOpenGLContext::getProcAddress() and support returning a function
+    pointer also for the standard, non-extension functions. This capability is a
+    prerequisite for dynamic OpenGL loading.
  */
 
 /*!

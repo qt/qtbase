@@ -42,8 +42,10 @@
 #include "qopenglfunctions.h"
 #include "qopenglextensions_p.h"
 #include "qdebug.h"
-#include "QtGui/private/qopenglcontext_p.h"
-#include "QtGui/private/qopengl_p.h"
+#include <QtGui/private/qopenglcontext_p.h>
+#include <QtGui/private/qopengl_p.h>
+#include <QtGui/private/qguiapplication_p.h>
+#include <qpa/qplatformintegration.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -2369,6 +2371,236 @@ Resolver<Base, FuncType, Policy, ReturnType> functionResolver(FuncType Base::*fu
 
 #ifndef QT_OPENGL_ES_2
 
+// GLES2 + OpenGL1 common subset. These are normally not resolvable,
+// but the underlying platform code may hide this limitation.
+
+static void QOPENGLF_APIENTRY qopenglfResolveBindTexture(GLenum target, GLuint texture)
+{
+    RESOLVE_FUNC_VOID(0, BindTexture)(target, texture);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveBlendFunc(GLenum sfactor, GLenum dfactor)
+{
+    RESOLVE_FUNC_VOID(0, BlendFunc)(sfactor, dfactor);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveClear(GLbitfield mask)
+{
+    RESOLVE_FUNC_VOID(0, Clear)(mask);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveClearColor(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha)
+{
+    RESOLVE_FUNC_VOID(0, ClearColor)(red, green, blue, alpha);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveClearStencil(GLint s)
+{
+    RESOLVE_FUNC_VOID(0, ClearStencil)(s);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveColorMask(GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha)
+{
+    RESOLVE_FUNC_VOID(0, ColorMask)(red, green, blue, alpha);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveCopyTexImage2D(GLenum target, GLint level, GLenum internalformat, GLint x, GLint y, GLsizei width, GLsizei height, GLint border)
+{
+    RESOLVE_FUNC_VOID(0, CopyTexImage2D)(target, level, internalformat, x, y, width, height, border);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveCopyTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height)
+{
+    RESOLVE_FUNC_VOID(0, CopyTexSubImage2D)(target, level, xoffset, yoffset, x, y, width, height);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveCullFace(GLenum mode)
+{
+    RESOLVE_FUNC_VOID(0, CullFace)(mode);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveDeleteTextures(GLsizei n, const GLuint* textures)
+{
+    RESOLVE_FUNC_VOID(0, DeleteTextures)(n, textures);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveDepthFunc(GLenum func)
+{
+    RESOLVE_FUNC_VOID(0, DepthFunc)(func);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveDepthMask(GLboolean flag)
+{
+    RESOLVE_FUNC_VOID(0, DepthMask)(flag);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveDisable(GLenum cap)
+{
+    RESOLVE_FUNC_VOID(0, Disable)(cap);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveDrawArrays(GLenum mode, GLint first, GLsizei count)
+{
+    RESOLVE_FUNC_VOID(0, DrawArrays)(mode, first, count);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveDrawElements(GLenum mode, GLsizei count, GLenum type, const GLvoid* indices)
+{
+    RESOLVE_FUNC_VOID(0, DrawElements)(mode, count, type, indices);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveEnable(GLenum cap)
+{
+    RESOLVE_FUNC_VOID(0, Enable)(cap);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveFinish()
+{
+    RESOLVE_FUNC_VOID(0, Finish)();
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveFlush()
+{
+    RESOLVE_FUNC_VOID(0, Flush)();
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveFrontFace(GLenum mode)
+{
+    RESOLVE_FUNC_VOID(0, FrontFace)(mode);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveGenTextures(GLsizei n, GLuint* textures)
+{
+    RESOLVE_FUNC_VOID(0, GenTextures)(n, textures);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveGetBooleanv(GLenum pname, GLboolean* params)
+{
+    RESOLVE_FUNC_VOID(0, GetBooleanv)(pname, params);
+}
+
+static GLenum QOPENGLF_APIENTRY qopenglfResolveGetError()
+{
+    RESOLVE_FUNC(GLenum, 0, GetError)();
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveGetFloatv(GLenum pname, GLfloat* params)
+{
+    RESOLVE_FUNC_VOID(0, GetFloatv)(pname, params);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveGetIntegerv(GLenum pname, GLint* params)
+{
+    RESOLVE_FUNC_VOID(0, GetIntegerv)(pname, params);
+}
+
+static const GLubyte * QOPENGLF_APIENTRY qopenglfResolveGetString(GLenum name)
+{
+    RESOLVE_FUNC(const GLubyte *, 0, GetString)(name);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveGetTexParameterfv(GLenum target, GLenum pname, GLfloat* params)
+{
+    RESOLVE_FUNC_VOID(0, GetTexParameterfv)(target, pname, params);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveGetTexParameteriv(GLenum target, GLenum pname, GLint* params)
+{
+    RESOLVE_FUNC_VOID(0, GetTexParameteriv)(target, pname, params);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveHint(GLenum target, GLenum mode)
+{
+    RESOLVE_FUNC_VOID(0, Hint)(target, mode);
+}
+
+static GLboolean QOPENGLF_APIENTRY qopenglfResolveIsEnabled(GLenum cap)
+{
+    RESOLVE_FUNC(GLboolean, 0, IsEnabled)(cap);
+}
+
+static GLboolean QOPENGLF_APIENTRY qopenglfResolveIsTexture(GLuint texture)
+{
+    RESOLVE_FUNC(GLboolean, 0, IsTexture)(texture);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveLineWidth(GLfloat width)
+{
+    RESOLVE_FUNC_VOID(0, LineWidth)(width);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolvePixelStorei(GLenum pname, GLint param)
+{
+    RESOLVE_FUNC_VOID(0, PixelStorei)(pname, param);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolvePolygonOffset(GLfloat factor, GLfloat units)
+{
+    RESOLVE_FUNC_VOID(0, PolygonOffset)(factor, units);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveReadPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLvoid* pixels)
+{
+    RESOLVE_FUNC_VOID(0, ReadPixels)(x, y, width, height, format, type, pixels);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveScissor(GLint x, GLint y, GLsizei width, GLsizei height)
+{
+    RESOLVE_FUNC_VOID(0, Scissor)(x, y, width, height);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveStencilFunc(GLenum func, GLint ref, GLuint mask)
+{
+    RESOLVE_FUNC_VOID(0, StencilFunc)(func, ref, mask);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveStencilMask(GLuint mask)
+{
+    RESOLVE_FUNC_VOID(0, StencilMask)(mask);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveStencilOp(GLenum fail, GLenum zfail, GLenum zpass)
+{
+    RESOLVE_FUNC_VOID(0, StencilOp)(fail, zfail, zpass);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveTexImage2D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid* pixels)
+{
+    RESOLVE_FUNC_VOID(0, TexImage2D)(target, level, internalformat, width, height, border, format, type, pixels);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveTexParameterf(GLenum target, GLenum pname, GLfloat param)
+{
+    RESOLVE_FUNC_VOID(0, TexParameterf)(target, pname, param);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveTexParameterfv(GLenum target, GLenum pname, const GLfloat* params)
+{
+    RESOLVE_FUNC_VOID(0, TexParameterfv)(target, pname, params);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveTexParameteri(GLenum target, GLenum pname, GLint param)
+{
+    RESOLVE_FUNC_VOID(0, TexParameteri)(target, pname, param);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveTexParameteriv(GLenum target, GLenum pname, const GLint* params)
+{
+    RESOLVE_FUNC_VOID(0, TexParameteriv)(target, pname, params);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid* pixels)
+{
+    RESOLVE_FUNC_VOID(0, TexSubImage2D)(target, level, xoffset, yoffset, width, height, format, type, pixels);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveViewport(GLint x, GLint y, GLsizei width, GLsizei height)
+{
+    RESOLVE_FUNC_VOID(0, Viewport)(x, y, width, height);
+}
+
+// GL(ES)2
+
 static void QOPENGLF_APIENTRY qopenglfResolveActiveTexture(GLenum texture)
 {
     RESOLVE_FUNC_VOID(0, ActiveTexture)(texture);
@@ -2906,52 +3138,107 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
      * context, assigns it to the member variable and executes it
      * (see Resolver template) */
 #ifndef QT_OPENGL_ES_2
-    // OpenGL1 functions do not need resolving for now since QtGui links to libGL, libGLESv2 or opengl32.
-    BindTexture = ::glBindTexture;
-    BlendFunc = ::glBlendFunc;
-    Clear = ::glClear;
-    ClearColor = ::glClearColor;
-    ClearStencil = ::glClearStencil;
-    ColorMask = ::glColorMask;
-    CopyTexImage2D = ::glCopyTexImage2D;
-    CopyTexSubImage2D = ::glCopyTexSubImage2D;
-    CullFace = ::glCullFace;
-    DeleteTextures = ::glDeleteTextures;
-    DepthFunc = ::glDepthFunc;
-    DepthMask = ::glDepthMask;
-    Disable = ::glDisable;
-    DrawArrays = ::glDrawArrays;
-    DrawElements = ::glDrawElements;
-    Enable = ::glEnable;
-    Finish = ::glFinish;
-    Flush = ::glFlush;
-    FrontFace = ::glFrontFace;
-    GenTextures = ::glGenTextures;
-    GetBooleanv = ::glGetBooleanv;
-    GetError = ::glGetError;
-    GetFloatv = ::glGetFloatv;
-    GetIntegerv = ::glGetIntegerv;
-    GetString = ::glGetString;
-    GetTexParameterfv = ::glGetTexParameterfv;
-    GetTexParameteriv = ::glGetTexParameteriv;
-    Hint = ::glHint;
-    IsEnabled = ::glIsEnabled;
-    IsTexture = ::glIsTexture;
-    LineWidth = ::glLineWidth;
-    PixelStorei = ::glPixelStorei;
-    PolygonOffset = ::glPolygonOffset;
-    ReadPixels = ::glReadPixels;
-    Scissor = ::glScissor;
-    StencilFunc = ::glStencilFunc;
-    StencilMask = ::glStencilMask;
-    StencilOp = ::glStencilOp;
-    TexImage2D = ::glTexImage2D;
-    TexParameterf = ::glTexParameterf;
-    TexParameterfv = ::glTexParameterfv;
-    TexParameteri = ::glTexParameteri;
-    TexParameteriv = ::glTexParameteriv;
-    TexSubImage2D = ::glTexSubImage2D;
-    Viewport = ::glViewport;
+    // The GL1 functions may not be queriable via getProcAddress().
+    if (QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::AllGLFunctionsQueryable)) {
+        // The platform plugin supports resolving these.
+        BindTexture = qopenglfResolveBindTexture;
+        BlendFunc = qopenglfResolveBlendFunc;
+        Clear = qopenglfResolveClear;
+        ClearColor = qopenglfResolveClearColor;
+        ClearStencil = qopenglfResolveClearStencil;
+        ColorMask = qopenglfResolveColorMask;
+        CopyTexImage2D = qopenglfResolveCopyTexImage2D;
+        CopyTexSubImage2D = qopenglfResolveCopyTexSubImage2D;
+        CullFace = qopenglfResolveCullFace;
+        DeleteTextures = qopenglfResolveDeleteTextures;
+        DepthFunc = qopenglfResolveDepthFunc;
+        DepthMask = qopenglfResolveDepthMask;
+        Disable = qopenglfResolveDisable;
+        DrawArrays = qopenglfResolveDrawArrays;
+        DrawElements = qopenglfResolveDrawElements;
+        Enable = qopenglfResolveEnable;
+        Finish = qopenglfResolveFinish;
+        Flush = qopenglfResolveFlush;
+        FrontFace = qopenglfResolveFrontFace;
+        GenTextures = qopenglfResolveGenTextures;
+        GetBooleanv = qopenglfResolveGetBooleanv;
+        GetError = qopenglfResolveGetError;
+        GetFloatv = qopenglfResolveGetFloatv;
+        GetIntegerv = qopenglfResolveGetIntegerv;
+        GetString = qopenglfResolveGetString;
+        GetTexParameterfv = qopenglfResolveGetTexParameterfv;
+        GetTexParameteriv = qopenglfResolveGetTexParameteriv;
+        Hint = qopenglfResolveHint;
+        IsEnabled = qopenglfResolveIsEnabled;
+        IsTexture = qopenglfResolveIsTexture;
+        LineWidth = qopenglfResolveLineWidth;
+        PixelStorei = qopenglfResolvePixelStorei;
+        PolygonOffset = qopenglfResolvePolygonOffset;
+        ReadPixels = qopenglfResolveReadPixels;
+        Scissor = qopenglfResolveScissor;
+        StencilFunc = qopenglfResolveStencilFunc;
+        StencilMask = qopenglfResolveStencilMask;
+        StencilOp = qopenglfResolveStencilOp;
+        TexImage2D = qopenglfResolveTexImage2D;
+        TexParameterf = qopenglfResolveTexParameterf;
+        TexParameterfv = qopenglfResolveTexParameterfv;
+        TexParameteri = qopenglfResolveTexParameteri;
+        TexParameteriv = qopenglfResolveTexParameteriv;
+        TexSubImage2D = qopenglfResolveTexSubImage2D;
+        Viewport = qopenglfResolveViewport;
+    } else {
+#ifndef QT_OPENGL_DYNAMIC
+        // Use the functions directly. This requires linking QtGui to an OpenGL implementation.
+        BindTexture = ::glBindTexture;
+        BlendFunc = ::glBlendFunc;
+        Clear = ::glClear;
+        ClearColor = ::glClearColor;
+        ClearStencil = ::glClearStencil;
+        ColorMask = ::glColorMask;
+        CopyTexImage2D = ::glCopyTexImage2D;
+        CopyTexSubImage2D = ::glCopyTexSubImage2D;
+        CullFace = ::glCullFace;
+        DeleteTextures = ::glDeleteTextures;
+        DepthFunc = ::glDepthFunc;
+        DepthMask = ::glDepthMask;
+        Disable = ::glDisable;
+        DrawArrays = ::glDrawArrays;
+        DrawElements = ::glDrawElements;
+        Enable = ::glEnable;
+        Finish = ::glFinish;
+        Flush = ::glFlush;
+        FrontFace = ::glFrontFace;
+        GenTextures = ::glGenTextures;
+        GetBooleanv = ::glGetBooleanv;
+        GetError = ::glGetError;
+        GetFloatv = ::glGetFloatv;
+        GetIntegerv = ::glGetIntegerv;
+        GetString = ::glGetString;
+        GetTexParameterfv = ::glGetTexParameterfv;
+        GetTexParameteriv = ::glGetTexParameteriv;
+        Hint = ::glHint;
+        IsEnabled = ::glIsEnabled;
+        IsTexture = ::glIsTexture;
+        LineWidth = ::glLineWidth;
+        PixelStorei = ::glPixelStorei;
+        PolygonOffset = ::glPolygonOffset;
+        ReadPixels = ::glReadPixels;
+        Scissor = ::glScissor;
+        StencilFunc = ::glStencilFunc;
+        StencilMask = ::glStencilMask;
+        StencilOp = ::glStencilOp;
+        TexImage2D = ::glTexImage2D;
+        TexParameterf = ::glTexParameterf;
+        TexParameterfv = ::glTexParameterfv;
+        TexParameteri = ::glTexParameteri;
+        TexParameteriv = ::glTexParameteriv;
+        TexSubImage2D = ::glTexSubImage2D;
+        Viewport = ::glViewport;
+#else // QT_OPENGL_DYNAMIC
+        // This should not happen.
+        qFatal("QOpenGLFunctions: Dynamic OpenGL builds do not support platforms with insufficient function resolving capabilities");
+#endif
+    }
 
     ActiveTexture = qopenglfResolveActiveTexture;
     AttachShader = qopenglfResolveAttachShader;

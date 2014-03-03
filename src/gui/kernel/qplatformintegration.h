@@ -97,7 +97,8 @@ public:
         NativeWidgets,
         WindowManagement,
         SyncState,
-        RasterGLSurface
+        RasterGLSurface,
+        AllGLFunctionsQueryable
     };
 
     virtual ~QPlatformIntegration() { }

@@ -170,6 +170,7 @@ int main(int argc, char **argv)
     DUMP_CAPABILITY(platformIntegration, MultipleWindows)
     DUMP_CAPABILITY(platformIntegration, ApplicationState)
     DUMP_CAPABILITY(platformIntegration, ForeignWindows)
+    DUMP_CAPABILITY(platformIntegration, AllGLFunctionsQueryable)
     std::cout << '\n';
 
     const QStyleHints *styleHints = QGuiApplication::styleHints();
