@@ -3442,6 +3442,10 @@ if [ "$CFG_SEPARATE_DEBUG_INFO" = "yes" ]; then
         echo "ERROR: -separate-debug-info is incompatible with -static"
         exit 1
     fi
+    if [ "$CFG_DEBUG" = "no" -a "$CFG_DEBUG_RELEASE" = "no" -a "$CFG_FORCEDEBUGINFO" = "no" ]; then
+        echo "ERROR: -separate-debug-info needs -debug, -debug-and-release, or -force-debug-info"
+        exit 1
+    fi
     TEST_OBJCOPY=`getXQMakeConf QMAKE_OBJCOPY`
     COMPILER_WITH_FLAGS="$TEST_COMPILER $TEST_COMPILER_CXXFLAGS"
     if "$unixtests/objcopy.test" "$COMPILER_WITH_FLAGS" "$TEST_OBJCOPY" "$OPT_VERBOSE"; then
@@ -5831,8 +5835,6 @@ fi
 [ "$CFG_STRIP" = "no" ] && QMAKE_CONFIG="$QMAKE_CONFIG nostrip"
 [ "$CFG_PRECOMPILE" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG precompile_header"
 if [ "$CFG_SEPARATE_DEBUG_INFO" = "yes" ]; then
-    QMakeVar add QMAKE_CFLAGS -g
-    QMakeVar add QMAKE_CXXFLAGS -g
     QT_CONFIG="$QT_CONFIG separate_debug_info"
 fi
 [ "$CFG_SSE2" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG sse2"
