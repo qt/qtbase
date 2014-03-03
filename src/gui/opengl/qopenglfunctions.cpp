@@ -124,9 +124,13 @@ QT_BEGIN_NAMESPACE
     glFuncs.glActiveTexture(GL_TEXTURE1);
     \endcode
 
-    QOpenGLFunctions provides wrappers for all OpenGL/ES 2.0 functions,
-    except those like \c{glDrawArrays()}, \c{glViewport()}, and
-    \c{glBindTexture()} that don't have portability issues.
+    QOpenGLFunctions provides wrappers for all OpenGL/ES 2.0
+    functions, including the common subset of OpenGL 1.x and ES
+    2.0. While such functions, for example glClear() or
+    glDrawArrays(), can be called also directly, as long as the
+    application links to the platform-specific OpenGL library, calling
+    them via QOpenGLFunctions enables the possibility of dynamically
+    loading the OpenGL implementation.
 
     The hasOpenGLFeature() and openGLFeatures() functions can be used
     to determine if the OpenGL implementation has a major OpenGL/ES 2.0
@@ -486,6 +490,501 @@ void QOpenGLFunctions::initializeOpenGLFunctions()
 {
     d_ptr = qt_gl_functions();
 }
+
+/*!
+    \fn void QOpenGLFunctions::glBindTexture(GLenum target, GLuint texture)
+
+    Convenience function that calls glBindTexture(\a target, \a texture).
+
+    For more information, see the OpenGL/ES 2.0 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man/glBindTexture.xml}{glBindTexture()}.
+
+    \since 5.3
+*/
+
+/*!
+    \fn void QOpenGLFunctions::glBlendFunc(GLenum sfactor, GLenum dfactor)
+
+    Convenience function that calls glBlendFunc(\a sfactor, \a dfactor).
+
+    For more information, see the OpenGL/ES 2.0 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man/glBlendFunc.xml}{glBlendFunc()}.
+
+    \since 5.3
+*/
+
+/*!
+    \fn void QOpenGLFunctions::glClear(GLbitfield mask)
+
+    Convenience function that calls glClear(\a mask).
+
+    For more information, see the OpenGL/ES 2.0 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man/glClear.xml}{glClear()}.
+
+    \since 5.3
+*/
+
+/*!
+    \fn void QOpenGLFunctions::glClearColor(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha)
+
+    Convenience function that calls glClearColor(\a red, \a green, \a blue, \a alpha).
+
+    For more information, see the OpenGL/ES 2.0 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man/glClearColor.xml}{glClearColor()}.
+
+    \since 5.3
+*/
+
+/*!
+    \fn void QOpenGLFunctions::glClearStencil(GLint s)
+
+    Convenience function that calls glClearStencil(\a s).
+
+    For more information, see the OpenGL/ES 2.0 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man/glClearStencil.xml}{glClearStencil()}.
+
+    \since 5.3
+*/
+
+/*!
+    \fn void QOpenGLFunctions::glColorMask(GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha)
+
+    Convenience function that calls glColorMask(\a red, \a green, \a blue, \a alpha).
+
+    For more information, see the OpenGL/ES 2.0 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man/glColorMask.xml}{glColorMask()}.
+
+    \since 5.3
+*/
+
+/*!
+    \fn void QOpenGLFunctions::glCopyTexImage2D(GLenum target, GLint level, GLenum internalformat, GLint x, GLint y, GLsizei width, GLsizei height, GLint border)
+
+    Convenience function that calls glCopyTexImage2D(\a target, \a level, \a internalformat, \a x, \a y, \a width, \a height, \a border).
+
+    For more information, see the OpenGL/ES 2.0 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man/glCopyTexImage2D.xml}{glCopyTexImage2D()}.
+
+    \since 5.3
+*/
+
+/*!
+    \fn void QOpenGLFunctions::glCopyTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height)
+
+    Convenience function that calls glCopyTexSubImage2D(\a target, \a level, \a xoffset, \a yoffset, \a x, \a y, \a width, \a height).
+
+    For more information, see the OpenGL/ES 2.0 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man/glCopyTexSubImage2D.xml}{glCopyTexSubImage2D()}.
+
+    \since 5.3
+*/
+
+/*!
+    \fn void QOpenGLFunctions::glCullFace(GLenum mode)
+
+    Convenience function that calls glCullFace(\a mode).
+
+    For more information, see the OpenGL/ES 2.0 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man/glCullFace.xml}{glCullFace()}.
+
+    \since 5.3
+*/
+
+/*!
+    \fn void QOpenGLFunctions::glDeleteTextures(GLsizei n, const GLuint* textures)
+
+    Convenience function that calls glDeleteTextures(\a n, \a textures).
+
+    For more information, see the OpenGL/ES 2.0 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man/glDeleteTextures.xml}{glDeleteTextures()}.
+
+    \since 5.3
+*/
+
+/*!
+    \fn void QOpenGLFunctions::glDepthFunc(GLenum func)
+
+    Convenience function that calls glDepthFunc(\a func).
+
+    For more information, see the OpenGL/ES 2.0 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man/glDepthFunc.xml}{glDepthFunc()}.
+
+    \since 5.3
+*/
+
+/*!
+    \fn void QOpenGLFunctions::glDepthMask(GLboolean flag)
+
+    Convenience function that calls glDepthMask(\a flag).
+
+    For more information, see the OpenGL/ES 2.0 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man/glDepthMask.xml}{glDepthMask()}.
+
+    \since 5.3
+*/
+
+/*!
+    \fn void QOpenGLFunctions::glDisable(GLenum cap)
+
+    Convenience function that calls glDisable(\a cap).
+
+    For more information, see the OpenGL/ES 2.0 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man/glDisable.xml}{glDisable()}.
+
+    \since 5.3
+*/
+
+/*!
+    \fn void QOpenGLFunctions::glDrawArrays(GLenum mode, GLint first, GLsizei count)
+
+    Convenience function that calls glDrawArrays(\a mode, \a first, \a count).
+
+    For more information, see the OpenGL/ES 2.0 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man/glDrawArrays.xml}{glDrawArrays()}.
+
+    \since 5.3
+*/
+
+/*!
+    \fn void QOpenGLFunctions::glDrawElements(GLenum mode, GLsizei count, GLenum type, const GLvoid* indices)
+
+    Convenience function that calls glDrawElements(\a mode, \a count, \a type, \a indices).
+
+    For more information, see the OpenGL/ES 2.0 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man/glDrawElements.xml}{glDrawElements()}.
+
+    \since 5.3
+*/
+
+/*!
+    \fn void QOpenGLFunctions::glEnable(GLenum cap)
+
+    Convenience function that calls glEnable(\a cap).
+
+    For more information, see the OpenGL/ES 2.0 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man/glEnable.xml}{glEnable()}.
+
+    \since 5.3
+*/
+
+/*!
+    \fn void QOpenGLFunctions::glFinish()
+
+    Convenience function that calls glFinish().
+
+    For more information, see the OpenGL/ES 2.0 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man/glFinish.xml}{glFinish()}.
+
+    \since 5.3
+*/
+
+/*!
+    \fn void QOpenGLFunctions::glFlush()
+
+    Convenience function that calls glFlush().
+
+    For more information, see the OpenGL/ES 2.0 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man/glFlush.xml}{glFlush()}.
+
+    \since 5.3
+*/
+
+/*!
+    \fn void QOpenGLFunctions::glFrontFace(GLenum mode)
+
+    Convenience function that calls glFrontFace(\a mode).
+
+    For more information, see the OpenGL/ES 2.0 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man/glFrontFace.xml}{glFrontFace()}.
+
+    \since 5.3
+*/
+
+/*!
+    \fn void QOpenGLFunctions::glGenTextures(GLsizei n, GLuint* textures)
+
+    Convenience function that calls glGenTextures(\a n, \a textures).
+
+    For more information, see the OpenGL/ES 2.0 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man/glGenTextures.xml}{glGenTextures()}.
+
+    \since 5.3
+*/
+
+/*!
+    \fn void QOpenGLFunctions::glGetBooleanv(GLenum pname, GLboolean* params)
+
+    Convenience function that calls glGetBooleanv(\a pname, \a params).
+
+    For more information, see the OpenGL/ES 2.0 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man/glGetBooleanv.xml}{glGetBooleanv()}.
+
+    \since 5.3
+*/
+
+/*!
+    \fn GLenum QOpenGLFunctions::glGetError()
+
+    Convenience function that calls glGetError().
+
+    For more information, see the OpenGL/ES 2.0 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man/glGetError.xml}{glGetError()}.
+
+    \since 5.3
+*/
+
+/*!
+    \fn void QOpenGLFunctions::glGetFloatv(GLenum pname, GLfloat* params)
+
+    Convenience function that calls glGetFloatv(\a pname, \a params).
+
+    For more information, see the OpenGL/ES 2.0 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man/glGetFloatv.xml}{glGetFloatv()}.
+
+    \since 5.3
+*/
+
+/*!
+    \fn void QOpenGLFunctions::glGetIntegerv(GLenum pname, GLint* params)
+
+    Convenience function that calls glGetIntegerv(\a pname, \a params).
+
+    For more information, see the OpenGL/ES 2.0 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man/glGetIntegerv.xml}{glGetIntegerv()}.
+
+    \since 5.3
+*/
+
+/*!
+    \fn const GLubyte *QOpenGLFunctions::glGetString(GLenum name)
+
+    Convenience function that calls glGetString(\a name).
+
+    For more information, see the OpenGL/ES 2.0 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man/glGetString.xml}{glGetString()}.
+
+    \since 5.3
+*/
+
+/*!
+    \fn void QOpenGLFunctions::glGetTexParameterfv(GLenum target, GLenum pname, GLfloat* params)
+
+    Convenience function that calls glGetTexParameterfv(\a target, \a pname, \a params).
+
+    For more information, see the OpenGL/ES 2.0 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man/glGetTexParameterfv.xml}{glGetTexParameterfv()}.
+
+    \since 5.3
+*/
+
+/*!
+    \fn void QOpenGLFunctions::glGetTexParameteriv(GLenum target, GLenum pname, GLint* params)
+
+    Convenience function that calls glGetTexParameteriv(\a target, \a pname, \a params).
+
+    For more information, see the OpenGL/ES 2.0 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man/glGetTexParameteriv.xml}{glGetTexParameteriv()}.
+
+    \since 5.3
+*/
+
+/*!
+    \fn void QOpenGLFunctions::glHint(GLenum target, GLenum mode)
+
+    Convenience function that calls glHint(\a target, \a mode).
+
+    For more information, see the OpenGL/ES 2.0 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man/glHint.xml}{glHint()}.
+
+    \since 5.3
+*/
+
+/*!
+    \fn GLboolean QOpenGLFunctions::glIsEnabled(GLenum cap)
+
+    Convenience function that calls glIsEnabled(\a cap).
+
+    For more information, see the OpenGL/ES 2.0 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man/glIsEnabled.xml}{glIsEnabled()}.
+
+    \since 5.3
+*/
+
+/*!
+    \fn GLboolean QOpenGLFunctions::glIsTexture(GLuint texture)
+
+    Convenience function that calls glIsTexture(\a texture).
+
+    For more information, see the OpenGL/ES 2.0 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man/glIsTexture.xml}{glIsTexture()}.
+
+    \since 5.3
+*/
+
+/*!
+    \fn void QOpenGLFunctions::glLineWidth(GLfloat width)
+
+    Convenience function that calls glLineWidth(\a width).
+
+    For more information, see the OpenGL/ES 2.0 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man/glLineWidth.xml}{glLineWidth()}.
+
+    \since 5.3
+*/
+
+/*!
+    \fn void QOpenGLFunctions::glPixelStorei(GLenum pname, GLint param)
+
+    Convenience function that calls glPixelStorei(\a pname, \a param).
+
+    For more information, see the OpenGL/ES 2.0 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man/glPixelStorei.xml}{glPixelStorei()}.
+
+    \since 5.3
+*/
+
+/*!
+    \fn void QOpenGLFunctions::glPolygonOffset(GLfloat factor, GLfloat units)
+
+    Convenience function that calls glPolygonOffset(\a factor, \a units).
+
+    For more information, see the OpenGL/ES 2.0 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man/glPolygonOffset.xml}{glPolygonOffset()}.
+
+    \since 5.3
+*/
+
+/*!
+    \fn void QOpenGLFunctions::glReadPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLvoid* pixels)
+
+    Convenience function that calls glReadPixels(\a x, \a y, \a width, \a height, \a format, \a type, \a pixels).
+
+    For more information, see the OpenGL/ES 2.0 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man/glReadPixels.xml}{glReadPixels()}.
+
+    \since 5.3
+*/
+
+/*!
+    \fn void QOpenGLFunctions::glScissor(GLint x, GLint y, GLsizei width, GLsizei height)
+
+    Convenience function that calls glScissor(\a x, \a y, \a width, \a height).
+
+    For more information, see the OpenGL/ES 2.0 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man/glScissor.xml}{glScissor()}.
+
+    \since 5.3
+*/
+
+/*!
+    \fn void QOpenGLFunctions::glStencilFunc(GLenum func, GLint ref, GLuint mask)
+
+    Convenience function that calls glStencilFunc(\a func, \a ref, \a mask).
+
+    For more information, see the OpenGL/ES 2.0 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man/glStencilFunc.xml}{glStencilFunc()}.
+
+    \since 5.3
+*/
+
+/*!
+    \fn void QOpenGLFunctions::glStencilMask(GLuint mask)
+
+    Convenience function that calls glStencilMask(\a mask).
+
+    For more information, see the OpenGL/ES 2.0 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man/glStencilMask.xml}{glStencilMask()}.
+
+    \since 5.3
+*/
+
+/*!
+    \fn void QOpenGLFunctions::glStencilOp(GLenum fail, GLenum zfail, GLenum zpass)
+
+    Convenience function that calls glStencilOp(\a fail, \a zfail, \a zpass).
+
+    For more information, see the OpenGL/ES 2.0 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man/glStencilOp.xml}{glStencilOp()}.
+
+    \since 5.3
+*/
+
+/*!
+    \fn void QOpenGLFunctions::glTexImage2D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid* pixels)
+
+    Convenience function that calls glTexImage2D(\a target, \a level, \a internalformat, \a width, \a height, \a border, \a format, \a type, \a pixels).
+
+    For more information, see the OpenGL/ES 2.0 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man/glTexImage2D.xml}{glTexImage2D()}.
+
+    \since 5.3
+*/
+
+/*!
+    \fn void QOpenGLFunctions::glTexParameterf(GLenum target, GLenum pname, GLfloat param)
+
+    Convenience function that calls glTexParameterf(\a target, \a pname, \a param).
+
+    For more information, see the OpenGL/ES 2.0 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man/glTexParameterf.xml}{glTexParameterf()}.
+
+    \since 5.3
+*/
+
+/*!
+    \fn void QOpenGLFunctions::glTexParameterfv(GLenum target, GLenum pname, const GLfloat* params)
+
+    Convenience function that calls glTexParameterfv(\a target, \a pname, \a params).
+
+    For more information, see the OpenGL/ES 2.0 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man/glTexParameterfv.xml}{glTexParameterfv()}.
+
+    \since 5.3
+*/
+
+/*!
+    \fn void QOpenGLFunctions::glTexParameteri(GLenum target, GLenum pname, GLint param)
+
+    Convenience function that calls glTexParameteri(\a target, \a pname, \a param).
+
+    For more information, see the OpenGL/ES 2.0 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man/glTexParameteri.xml}{glTexParameteri()}.
+
+    \since 5.3
+*/
+
+/*!
+    \fn void QOpenGLFunctions::glTexParameteriv(GLenum target, GLenum pname, const GLint* params)
+
+    Convenience function that calls glTexParameteriv(\a target, \a pname, \a params).
+
+    For more information, see the OpenGL/ES 2.0 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man/glTexParameteriv.xml}{glTexParameteriv()}.
+
+    \since 5.3
+*/
+
+/*!
+    \fn void QOpenGLFunctions::glTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid* pixels)
+
+    Convenience function that calls glTexSubImage2D(\a target, \a level, \a xoffset, \a yoffset, \a width, \a height, \a format, \a type, \a pixels).
+
+    For more information, see the OpenGL/ES 2.0 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man/glTexSubImage2D.xml}{glTexSubImage2D()}.
+
+    \since 5.3
+*/
+
+/*!
+    \fn void QOpenGLFunctions::glViewport(GLint x, GLint y, GLsizei width, GLsizei height)
+
+    Convenience function that calls glViewport(\a x, \a y, \a width, \a height).
+
+    For more information, see the OpenGL/ES 2.0 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man/glViewport.xml}{glViewport()}.
+
+    \since 5.3
+*/
 
 /*!
     \fn void QOpenGLFunctions::glActiveTexture(GLenum texture)
@@ -2407,6 +2906,53 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
      * context, assigns it to the member variable and executes it
      * (see Resolver template) */
 #ifndef QT_OPENGL_ES_2
+    // OpenGL1 functions do not need resolving for now since QtGui links to libGL, libGLESv2 or opengl32.
+    BindTexture = ::glBindTexture;
+    BlendFunc = ::glBlendFunc;
+    Clear = ::glClear;
+    ClearColor = ::glClearColor;
+    ClearStencil = ::glClearStencil;
+    ColorMask = ::glColorMask;
+    CopyTexImage2D = ::glCopyTexImage2D;
+    CopyTexSubImage2D = ::glCopyTexSubImage2D;
+    CullFace = ::glCullFace;
+    DeleteTextures = ::glDeleteTextures;
+    DepthFunc = ::glDepthFunc;
+    DepthMask = ::glDepthMask;
+    Disable = ::glDisable;
+    DrawArrays = ::glDrawArrays;
+    DrawElements = ::glDrawElements;
+    Enable = ::glEnable;
+    Finish = ::glFinish;
+    Flush = ::glFlush;
+    FrontFace = ::glFrontFace;
+    GenTextures = ::glGenTextures;
+    GetBooleanv = ::glGetBooleanv;
+    GetError = ::glGetError;
+    GetFloatv = ::glGetFloatv;
+    GetIntegerv = ::glGetIntegerv;
+    GetString = ::glGetString;
+    GetTexParameterfv = ::glGetTexParameterfv;
+    GetTexParameteriv = ::glGetTexParameteriv;
+    Hint = ::glHint;
+    IsEnabled = ::glIsEnabled;
+    IsTexture = ::glIsTexture;
+    LineWidth = ::glLineWidth;
+    PixelStorei = ::glPixelStorei;
+    PolygonOffset = ::glPolygonOffset;
+    ReadPixels = ::glReadPixels;
+    Scissor = ::glScissor;
+    StencilFunc = ::glStencilFunc;
+    StencilMask = ::glStencilMask;
+    StencilOp = ::glStencilOp;
+    TexImage2D = ::glTexImage2D;
+    TexParameterf = ::glTexParameterf;
+    TexParameterfv = ::glTexParameterfv;
+    TexParameteri = ::glTexParameteri;
+    TexParameteriv = ::glTexParameteriv;
+    TexSubImage2D = ::glTexSubImage2D;
+    Viewport = ::glViewport;
+
     ActiveTexture = qopenglfResolveActiveTexture;
     AttachShader = qopenglfResolveAttachShader;
     BindAttribLocation = qopenglfResolveBindAttribLocation;

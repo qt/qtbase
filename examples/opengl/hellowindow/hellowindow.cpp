@@ -41,6 +41,7 @@
 #include "hellowindow.h"
 
 #include <QOpenGLContext>
+#include <QOpenGLFunctions>
 #include <qmath.h>
 
 Renderer::Renderer(const QSurfaceFormat &format, Renderer *share, QScreen *screen)
@@ -142,15 +143,16 @@ void Renderer::render()
         m_initialized = true;
     }
 
-    glViewport(0, 0, viewSize.width() * surface->devicePixelRatio(), viewSize.height() * surface->devicePixelRatio());
+    QOpenGLFunctions *f = m_context->functions();
+    f->glViewport(0, 0, viewSize.width() * surface->devicePixelRatio(), viewSize.height() * surface->devicePixelRatio());
 
-    glClearColor(0.1f, 0.1f, 0.2f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    f->glClearColor(0.1f, 0.1f, 0.2f, 1.0f);
+    f->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    glFrontFace(GL_CW);
-    glCullFace(GL_FRONT);
-    glEnable(GL_CULL_FACE);
-    glEnable(GL_DEPTH_TEST);
+    f->glFrontFace(GL_CW);
+    f->glCullFace(GL_FRONT);
+    f->glEnable(GL_CULL_FACE);
+    f->glEnable(GL_DEPTH_TEST);
 
     QMatrix4x4 modelview;
     modelview.rotate(m_fAngle, 0.0f, 1.0f, 0.0f);
@@ -164,8 +166,8 @@ void Renderer::render()
     paintQtLogo();
     m_program->release();
 
-    glDisable(GL_DEPTH_TEST);
-    glDisable(GL_CULL_FACE);
+    f->glDisable(GL_DEPTH_TEST);
+    f->glDisable(GL_CULL_FACE);
 
     m_context->swapBuffers(surface);
 
@@ -187,8 +189,6 @@ void Renderer::paintQtLogo()
 
 void Renderer::initialize()
 {
-    glClearColor(0.1f, 0.1f, 0.2f, 1.0f);
-
     QOpenGLShader *vshader = new QOpenGLShader(QOpenGLShader::Vertex, this);
     vshader->compileSourceCode(
         "attribute highp vec4 vertex;"

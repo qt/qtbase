@@ -312,13 +312,14 @@ void Widget::renderWindowReady()
 
     QString vendor, renderer, version, glslVersion;
     const GLubyte *p;
-    if ((p = glGetString(GL_VENDOR)))
+    QOpenGLFunctions *f = context->functions();
+    if ((p = f->glGetString(GL_VENDOR)))
         vendor = QString::fromLatin1(reinterpret_cast<const char *>(p));
-    if ((p = glGetString(GL_RENDERER)))
+    if ((p = f->glGetString(GL_RENDERER)))
         renderer = QString::fromLatin1(reinterpret_cast<const char *>(p));
-    if ((p = glGetString(GL_VERSION)))
+    if ((p = f->glGetString(GL_VERSION)))
         version = QString::fromLatin1(reinterpret_cast<const char *>(p));
-    if ((p = glGetString(GL_SHADING_LANGUAGE_VERSION)))
+    if ((p = f->glGetString(GL_SHADING_LANGUAGE_VERSION)))
         glslVersion = QString::fromLatin1(reinterpret_cast<const char *>(p));
 
     m_output->append(tr("\nVendor: %1").arg(vendor));

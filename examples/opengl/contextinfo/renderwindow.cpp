@@ -43,6 +43,7 @@
 #include <QMatrix4x4>
 #include <QOpenGLContext>
 #include <QOpenGLShaderProgram>
+#include <QOpenGLFunctions>
 
 RenderWindow::RenderWindow(const QSurfaceFormat &format)
     : m_context(0),
@@ -177,10 +178,11 @@ void RenderWindow::render()
         return;
     }
 
+    QOpenGLFunctions *f = m_context->functions();
     if (!m_initialized) {
         m_initialized = true;
-        glEnable(GL_DEPTH_TEST);
-        glClearColor(0, 0, 0, 1);
+        f->glEnable(GL_DEPTH_TEST);
+        f->glClearColor(0, 0, 0, 1);
         init();
         emit ready();
     }
@@ -189,8 +191,8 @@ void RenderWindow::render()
         return;
 
     const qreal retinaScale = devicePixelRatio();
-    glViewport(0, 0, width() * retinaScale, height() * retinaScale);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    f->glViewport(0, 0, width() * retinaScale, height() * retinaScale);
+    f->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     m_program->bind();
     QMatrix4x4 matrix;
@@ -204,7 +206,7 @@ void RenderWindow::render()
     else // no VAO support, set the vertex attribute arrays now
         setupVertexAttribs();
 
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    f->glDrawArrays(GL_TRIANGLES, 0, 3);
 
     m_vao.release();
     m_program->release();
