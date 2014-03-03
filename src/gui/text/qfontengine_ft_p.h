@@ -225,6 +225,7 @@ private:
     virtual QFixed lineThickness() const;
     virtual QFixed underlinePosition() const;
 
+    virtual glyph_t glyphIndex(uint ucs4) const;
     void doKerning(QGlyphLayout *, ShaperFlags) const;
 
     inline virtual Type type() const

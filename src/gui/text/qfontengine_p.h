@@ -167,6 +167,7 @@ public:
     virtual QFixed emSquareSize() const { return ascent(); }
 
     /* returns 0 as glyph index for non existent glyphs */
+    virtual glyph_t glyphIndex(uint ucs4) const = 0;
     virtual bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, ShaperFlags flags) const = 0;
     virtual void recalcAdvances(QGlyphLayout *, ShaperFlags) const {}
     virtual void doKerning(QGlyphLayout *, ShaperFlags) const;
@@ -352,6 +353,7 @@ public:
     QFontEngineBox(int size);
     ~QFontEngineBox();
 
+    virtual glyph_t glyphIndex(uint ucs4) const;
     virtual bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, ShaperFlags flags) const;
     virtual void recalcAdvances(QGlyphLayout *, ShaperFlags) const;
 
@@ -388,6 +390,7 @@ public:
     explicit QFontEngineMulti(int engineCount);
     ~QFontEngineMulti();
 
+    virtual glyph_t glyphIndex(uint ucs4) const;
     virtual bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, ShaperFlags flags) const;
 
     virtual glyph_metrics_t boundingBox(const QGlyphLayout &glyphs);

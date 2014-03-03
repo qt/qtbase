@@ -340,6 +340,19 @@ bool QFontEngineQPA::getSfntTableData(uint tag, uchar *buffer, uint *length) con
     return false;
 }
 
+glyph_t QFontEngineQPA::glyphIndex(uint ucs4) const
+{
+    const uchar *cmap = externalCMap ? externalCMap : (fontData + cmapOffset);
+
+    glyph_t glyph = getTrueTypeGlyphIndex(cmap, ucs4);
+    if (glyph == 0 && symbol && ucs4 < 0x100)
+        glyph = getTrueTypeGlyphIndex(cmap, ucs4 + 0xf000);
+    if (!findGlyph(glyph))
+        glyph = 0;
+
+    return glyph;
+}
+
 bool QFontEngineQPA::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, QFontEngine::ShaperFlags flags) const
 {
     Q_ASSERT(glyphs->numGlyphs >= *nglyphs);

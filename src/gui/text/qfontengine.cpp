@@ -1408,6 +1408,12 @@ QFontEngineBox::~QFontEngineBox()
 {
 }
 
+glyph_t QFontEngineBox::glyphIndex(uint ucs4) const
+{
+    Q_UNUSED(ucs4)
+    return 0;
+}
+
 bool QFontEngineBox::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, QFontEngine::ShaperFlags flags) const
 {
     Q_ASSERT(glyphs->numGlyphs >= *nglyphs);
@@ -1580,6 +1586,35 @@ QFontEngineMulti::~QFontEngineMulti()
         if (fontEngine && !fontEngine->ref.deref())
             delete fontEngine;
     }
+}
+
+glyph_t QFontEngineMulti::glyphIndex(uint ucs4) const
+{
+    glyph_t glyph = engine(0)->glyphIndex(ucs4);
+    if (glyph == 0 && ucs4 != QChar::LineSeparator) {
+        const_cast<QFontEngineMulti *>(this)->ensureFallbackFamiliesQueried();
+        for (int x = 1, n = qMin(engines.size(), 256); x < n; ++x) {
+            QFontEngine *engine = engines.at(x);
+            if (!engine) {
+                if (!shouldLoadFontEngineForCharacter(x, ucs4))
+                    continue;
+                const_cast<QFontEngineMulti *>(this)->loadEngine(x);
+                engine = engines.at(x);
+            }
+            Q_ASSERT(engine != 0);
+            if (engine->type() == Box)
+                continue;
+
+            glyph = engine->glyphIndex(ucs4);
+            if (glyph != 0) {
+                // set the high byte to indicate which engine the glyph came from
+                glyph |= (x << 24);
+                break;
+            }
+        }
+    }
+
+    return glyph;
 }
 
 bool QFontEngineMulti::stringToCMap(const QChar *str, int len,

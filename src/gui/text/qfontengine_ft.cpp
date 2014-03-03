@@ -1525,6 +1525,36 @@ void QFontEngineFT::addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions, int
     unlockFace();
 }
 
+glyph_t QFontEngineFT::glyphIndex(uint ucs4) const
+{
+    glyph_t glyph = ucs4 < QFreetypeFace::cmapCacheSize ? freetype->cmapCache[ucs4] : 0;
+    if (glyph == 0) {
+        FT_Face face = freetype->face;
+        glyph = FT_Get_Char_Index(face, ucs4);
+        if (glyph == 0) {
+            // Certain fonts don't have no-break space and tab,
+            // while we usually want to render them as space
+            if (ucs4 == QChar::Nbsp || ucs4 == QChar::Tabulation) {
+                glyph = FT_Get_Char_Index(face, QChar::Space);
+            } else if (freetype->symbol_map) {
+                // Symbol fonts can have more than one CMAPs, FreeType should take the
+                // correct one for us by default, so we always try FT_Get_Char_Index
+                // first. If it didn't work (returns 0), we will explicitly set the
+                // CMAP to symbol font one and try again. symbol_map is not always the
+                // correct one because in certain fonts like Wingdings symbol_map only
+                // contains PUA codepoints instead of the common ones.
+                FT_Set_Charmap(face, freetype->symbol_map);
+                glyph = FT_Get_Char_Index(face, ucs4);
+                FT_Set_Charmap(face, freetype->unicode_map);
+            }
+        }
+        if (ucs4 < QFreetypeFace::cmapCacheSize)
+            freetype->cmapCache[ucs4] = glyph;
+    }
+
+    return glyph;
+}
+
 bool QFontEngineFT::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs,
                                  QFontEngine::ShaperFlags flags) const
 {

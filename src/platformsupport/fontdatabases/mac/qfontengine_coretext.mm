@@ -192,6 +192,25 @@ void QCoreTextFontEngine::init()
     setUserData(QVariant::fromValue((void *)cgFont));
 }
 
+glyph_t QCoreTextFontEngine::glyphIndex(uint ucs4) const
+{
+    int len = 0;
+
+    QChar str[2];
+    if (Q_UNLIKELY(QChar::requiresSurrogates(ucs4))) {
+        str[len++] = QChar(QChar::highSurrogate(ucs4));
+        str[len++] = QChar(QChar::lowSurrogate(ucs4));
+    } else {
+        str[len++] = QChar(ucs4);
+    }
+
+    CGGlyph glyphIndices[2];
+
+    CTFontGetGlyphsForCharacters(ctfont, (const UniChar *)str, glyphIndices, len);
+
+    return glyphIndices[0];
+}
+
 bool QCoreTextFontEngine::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs,
                                        int *nglyphs, QFontEngine::ShaperFlags flags) const
 {

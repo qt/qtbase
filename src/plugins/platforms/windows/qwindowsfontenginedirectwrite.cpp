@@ -301,6 +301,19 @@ QFixed QWindowsFontEngineDirectWrite::emSquareSize() const
         return QFontEngine::emSquareSize();
 }
 
+glyph_t QWindowsFontEngineDirectWrite::glyphIndex(uint ucs4) const
+{
+    UINT16 glyphIndex;
+
+    HRESULT hr = m_directWriteFontFace->GetGlyphIndicesW(&ucs4, 1, &glyphIndex);
+    if (FAILED(hr)) {
+        qErrnoWarning("%s: glyphIndex failed", __FUNCTION__);
+        glyphIndex = 0;
+    }
+
+    return glyphIndex;
+}
+
 // ### Qt 5.1: replace with QStringIterator
 inline unsigned int getChar(const QChar *str, int &i, const int len)
 {

@@ -163,6 +163,7 @@ public:
     FaceId faceId() const { return face_id; }
     bool getSfntTableData(uint tag, uchar *buffer, uint *length) const;
 
+    virtual glyph_t glyphIndex(uint ucs4) const;
     bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, ShaperFlags flags) const;
     void recalcAdvances(QGlyphLayout *, ShaperFlags) const;
 

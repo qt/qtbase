@@ -340,6 +340,30 @@ QWindowsFontEngine::~QWindowsFontEngine()
     }
 }
 
+glyph_t QWindowsFontEngine::glyphIndex(uint ucs4) const
+{
+    glyph_t glyph;
+
+#if !defined(Q_OS_WINCE)
+    if (symbol) {
+        glyph = getTrueTypeGlyphIndex(cmap, ucs4);
+        if (glyph == 0 && ucs4 < 0x100)
+            glyph = getTrueTypeGlyphIndex(cmap, ucs4 + 0xf000);
+    } else if (ttf) {
+        glyph = getTrueTypeGlyphIndex(cmap, ucs4);
+#else
+    if (tm.tmFirstChar > 60000) {
+        glyph = ucs4;
+#endif
+    } else if (ucs4 >= tm.tmFirstChar && ucs4 <= tm.tmLastChar) {
+        glyph = ucs4;
+    } else {
+        glyph = 0;
+    }
+
+    return glyph;
+}
+
 HGDIOBJ QWindowsFontEngine::selectDesignFont() const
 {
     LOGFONT f = m_logfont;

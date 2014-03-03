@@ -86,6 +86,7 @@ public:
     virtual int synthesized() const;
     virtual QFixed emSquareSize() const;
 
+    virtual glyph_t glyphIndex(uint ucs4) const;
     virtual bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, ShaperFlags flags) const;
     virtual void recalcAdvances(QGlyphLayout *glyphs, ShaperFlags) const;
 

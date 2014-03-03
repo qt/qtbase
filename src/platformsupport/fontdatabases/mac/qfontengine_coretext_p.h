@@ -62,6 +62,7 @@ public:
     QCoreTextFontEngine(CGFontRef font, const QFontDef &def);
     ~QCoreTextFontEngine();
 
+    virtual glyph_t glyphIndex(uint ucs4) const;
     virtual bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, ShaperFlags flags) const;
     virtual void recalcAdvances(QGlyphLayout *, ShaperFlags) const;
 
