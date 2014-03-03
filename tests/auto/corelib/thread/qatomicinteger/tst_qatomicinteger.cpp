@@ -181,12 +181,12 @@ private Q_SLOTS:
 };
 
 template <bool> inline void booleanHelper() { }
-template <typename T> struct TypeInStruct { T type; };
+struct TypeInStruct { TEST_TYPE type; };
 
 void tst_QAtomicIntegerXX::static_checks()
 {
     Q_STATIC_ASSERT(sizeof(QAtomicInteger<T>) == sizeof(T));
-    Q_STATIC_ASSERT(Q_ALIGNOF(QAtomicInteger<T>) == Q_ALIGNOF(TypeInStruct<T>));
+    Q_STATIC_ASSERT(Q_ALIGNOF(QAtomicInteger<T>) == Q_ALIGNOF(TypeInStruct));
 
     // statements with no effect
     (void) QAtomicInteger<T>::isReferenceCountingNative();
