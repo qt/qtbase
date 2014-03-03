@@ -36,3 +36,17 @@
     The Qt Concurrent module extends the basic threading support found in \l{Qt Core} module and
     simplifies the development of code that can be executed in parallel on all available CPU cores.
 */
+
+/*!
+   \typedef QtConcurrent::Exception
+   \obsolete
+
+   Use QException from \l{Qt Core} instead.
+*/
+
+/*!
+   \typedef QtConcurrent::UnhandledException
+   \obsolete
+
+   Use QUnhandledException from \l{Qt Core} instead.
+*/
