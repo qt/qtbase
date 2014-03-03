@@ -117,7 +117,7 @@ QT_CPU_FEATURES = $$eval(QT_CPU_FEATURES.$$QT_ARCH)
         silent:avx2_compiler.commands = @echo compiling[avx2] ${QMAKE_FILE_IN} && $$avx2_compiler.commands
         QMAKE_EXTRA_COMPILERS += avx2_compiler
     }
-    neon {
+    contains(QT_CPU_FEATURES.$$QT_ARCH, neon) {
         HEADERS += $$NEON_HEADERS
 
         neon_compiler.commands = $$QMAKE_CXX -c $(CXXFLAGS)
