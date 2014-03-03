@@ -1206,11 +1206,13 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
             if (!proxy()->styleHint(SH_UnderlineShortcut, mbi, widget))
                 alignment |= Qt::TextHideMnemonic;
 
-            //The rect adjustment is a workaround for the menu not really filling its background.
-            XPThemeData theme(widget, painter,
-                              QWindowsXPStylePrivate::MenuTheme,
-                              MENU_BARBACKGROUND, 0, option->rect.adjusted(-1, 0, 2, 1));
-            d->drawBackground(theme);
+            if (widget) { // Not needed for QtQuick Controls
+                //The rect adjustment is a workaround for the menu not really filling its background.
+                XPThemeData theme(widget, painter,
+                                  QWindowsXPStylePrivate::MenuTheme,
+                                  MENU_BARBACKGROUND, 0, option->rect.adjusted(-1, 0, 2, 1));
+                d->drawBackground(theme);
+            }
 
             int stateId = MBI_NORMAL;
             if (disabled)
