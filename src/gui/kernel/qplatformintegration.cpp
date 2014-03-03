@@ -465,7 +465,31 @@ QPlatformSessionManager *QPlatformIntegration::createPlatformSessionManager(cons
 */
 void QPlatformIntegration::sync()
 {
-
 }
+
+#ifndef QT_NO_OPENGL
+/*!
+  Platform integration function for querying the OpenGL implementation type.
+
+  Used only when dynamic OpenGL implementation loading is enabled.
+
+  Subclasses should reimplement this function and return a value based on
+  the OpenGL implementation they have chosen to load.
+
+  \note The return value does not indicate or limit the types of
+  contexts that can be created by a given implementation. For example
+  a desktop OpenGL implementation may be capable of creating OpenGL
+  ES-compatible contexts too.
+
+  \sa QOpenGLContext::openGLModuleType(), QOpenGLContext::isES()
+
+  \since 5.3
+ */
+QOpenGLContext::OpenGLModuleType QPlatformIntegration::openGLModuleType()
+{
+    qWarning("This plugin does not support dynamic OpenGL loading!");
+    return QOpenGLContext::DesktopGL;
+}
+#endif
 
 QT_END_NAMESPACE

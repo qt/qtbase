@@ -52,6 +52,7 @@
 #include <QtGui/private/qopengl_p.h>
 #include <QtGui/private/qwindow_p.h>
 #include <QtGui/QScreen>
+#include <qpa/qplatformnativeinterface.h>
 
 #include <private/qopenglextensions_p.h>
 #include <private/qopenglversionfunctionsfactory_p.h>
@@ -969,13 +970,21 @@ void QOpenGLContext::deleteQGLContext()
   The library might be GL-only, meaning that windowing system interface
   functions (for example EGL) may live in another, separate library.
 
+  \note This function requires that the QGuiApplication instance is already created.
+
   \sa openGLModuleType()
 
   \since 5.3
  */
 void *QOpenGLContext::openGLModuleHandle()
 {
+#ifdef QT_OPENGL_DYNAMIC
+    QGuiApplication *app = qGuiApp;
+    Q_ASSERT(app);
+    return app->platformNativeInterface()->nativeResourceForIntegration(QByteArrayLiteral("glhandle"));
+#else
     return 0;
+#endif
 }
 
 /*!
@@ -1001,11 +1010,16 @@ void *QOpenGLContext::openGLModuleHandle()
   appropriate to check QSurfaceFormat::renderableType() or using the
   the convenience function isES().
 
+  \note This function requires that the QGuiApplication instance is already created.
+
   \since 5.3
  */
 QOpenGLContext::OpenGLModuleType QOpenGLContext::openGLModuleType()
 {
-#if defined(QT_OPENGL_ES_2)
+#if defined(QT_OPENGL_DYNAMIC)
+    Q_ASSERT(qGuiApp);
+    return QGuiApplicationPrivate::instance()->platformIntegration()->openGLModuleType();
+#elif defined(QT_OPENGL_ES_2)
     return GLES2;
 #elif defined(QT_OPENGL_ES)
     return GLES1;
