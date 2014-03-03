@@ -390,10 +390,8 @@ void QFontEngineQPA::recalcAdvances(QGlyphLayout *glyphs, QFontEngine::ShaperFla
 {
     for (int i = 0; i < glyphs->numGlyphs; ++i) {
         const Glyph *g = findGlyph(glyphs->glyphs[i]);
-        if (!g) {
-            glyphs->glyphs[i] = 0;
+        if (!g)
             continue;
-        }
         glyphs->advances[i] = g->advance;
     }
 }
