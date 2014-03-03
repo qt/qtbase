@@ -673,7 +673,7 @@ QFontEngine::FaceId QCoreTextFontEngine::faceId() const
     return QFontEngine::FaceId();
 }
 
-bool QCoreTextFontEngine::canRender(const QChar *string, int len)
+bool QCoreTextFontEngine::canRender(const QChar *string, int len) const
 {
     QVarLengthArray<CGGlyph> cgGlyphs(len);
     return CTFontGetGlyphsForCharacters(ctfont, (const UniChar *) string, cgGlyphs.data(), len);

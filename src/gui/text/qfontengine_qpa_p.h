@@ -184,7 +184,6 @@ public:
 
     Type type() const;
 
-    bool canRender(const QChar *string, int len);
     inline const char *name() const { return "QPF2"; }
 
     virtual int glyphCount() const { return glyphMapEntries; }

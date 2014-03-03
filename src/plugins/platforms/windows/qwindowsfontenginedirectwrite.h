@@ -99,7 +99,6 @@ public:
 
     QFontEngine *cloneWithSize(qreal pixelSize) const;
 
-    bool canRender(const QChar *string, int len);
     Type type() const;
 
     const QSharedPointer<QWindowsFontEngineData> &fontEngineData() const { return m_fontEngineData; }

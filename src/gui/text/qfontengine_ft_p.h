@@ -237,8 +237,6 @@ private:
 
     virtual bool supportsTransformation(const QTransform &transform) const;
 
-    virtual bool canRender(const QChar *string, int len);
-
     virtual void addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions, int nglyphs,
                          QPainterPath *path, QTextItem::RenderFlags flags);
     virtual void addOutlineToPath(qreal x, qreal y, const QGlyphLayout &glyphs,

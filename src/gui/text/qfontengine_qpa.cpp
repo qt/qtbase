@@ -515,29 +515,6 @@ QFontEngine::Type QFontEngineQPA::type() const
     return QFontEngine::QPF2;
 }
 
-bool QFontEngineQPA::canRender(const QChar *string, int len)
-{
-    const uchar *cmap = externalCMap ? externalCMap : (fontData + cmapOffset);
-
-    if (symbol) {
-        for (int i = 0; i < len; ++i) {
-            unsigned int uc = getChar(string, i, len);
-            glyph_t g = getTrueTypeGlyphIndex(cmap, uc);
-            if(!g && uc < 0x100)
-                g = getTrueTypeGlyphIndex(cmap, uc + 0xf000);
-            if (!g)
-                return false;
-        }
-    } else {
-        for (int i = 0; i < len; ++i) {
-            unsigned int uc = getChar(string, i, len);
-            if (!getTrueTypeGlyphIndex(cmap, uc))
-                return false;
-        }
-    }
-    return true;
-}
-
 bool QFontEngineQPA::isValid() const
 {
     return fontData && dataSize && (cmapOffset || externalCMap)

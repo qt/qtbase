@@ -647,29 +647,6 @@ const char *QWindowsFontEngineDirectWrite::name() const
     return 0;
 }
 
-bool QWindowsFontEngineDirectWrite::canRender(const QChar *string, int len)
-{
-    QVarLengthArray<UINT32> codePoints(len);
-    int actualLength = 0;
-    for (int i=0; i<len; ++i, actualLength++)
-        codePoints[actualLength] = getChar(string, i, len);
-
-    QVarLengthArray<UINT16> glyphIndices(actualLength);
-    HRESULT hr = m_directWriteFontFace->GetGlyphIndices(codePoints.data(), actualLength,
-                                                        glyphIndices.data());
-    if (FAILED(hr)) {
-        qErrnoWarning("%s: GetGlyphIndices failed", __FUNCTION__);
-        return false;
-    }
-
-    for (int i = 0; i < actualLength; ++i) {
-        if (glyphIndices.at(i) == 0)
-            return false;
-    }
-
-    return true;
-}
-
 QFontEngine::Type QWindowsFontEngineDirectWrite::type() const
 {
     return QFontEngine::DirectWrite;

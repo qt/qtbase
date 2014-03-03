@@ -227,19 +227,8 @@ public:
 
     virtual const char *name() const = 0;
 
-    virtual bool canRender(const QChar *string, int len) = 0;
-    inline bool canRender(uint ucs4) {
-        QChar utf16[2];
-        int utf16len = 1;
-        if (QChar::requiresSurrogates(ucs4)) {
-            utf16[0] = QChar::highSurrogate(ucs4);
-            utf16[1] = QChar::lowSurrogate(ucs4);
-            ++utf16len;
-        } else {
-            utf16[0] = QChar(ucs4);
-        }
-        return canRender(utf16, utf16len);
-    }
+    inline bool canRender(uint ucs4) const { return glyphIndex(ucs4) != 0; }
+    virtual bool canRender(const QChar *str, int len) const;
 
     virtual bool supportsTransformation(const QTransform &transform) const;
 
@@ -374,7 +363,7 @@ public:
 
     virtual const char *name() const;
 
-    virtual bool canRender(const QChar *string, int len);
+    virtual bool canRender(const QChar *string, int len) const;
 
     virtual Type type() const;
     inline int size() const { return _size; }
@@ -421,7 +410,7 @@ public:
     virtual inline Type type() const
     { return QFontEngine::Multi; }
 
-    virtual bool canRender(const QChar *string, int len);
+    virtual bool canRender(const QChar *string, int len) const;
     inline virtual const char *name() const
     { return "Multi"; }
 

@@ -777,35 +777,6 @@ const char *QWindowsFontEngine::name() const
     return 0;
 }
 
-bool QWindowsFontEngine::canRender(const QChar *string,  int len)
-{
-    if (symbol) {
-        for (int i = 0; i < len; ++i) {
-            unsigned int uc = getChar(string, i, len);
-            if (getTrueTypeGlyphIndex(cmap, uc) == 0) {
-                if (uc < 0x100) {
-                    if (getTrueTypeGlyphIndex(cmap, uc + 0xf000) == 0)
-                        return false;
-                } else {
-                    return false;
-                }
-            }
-        }
-    } else if (ttf) {
-        for (int i = 0; i < len; ++i) {
-            unsigned int uc = getChar(string, i, len);
-            if (getTrueTypeGlyphIndex(cmap, uc) == 0)
-                return false;
-        }
-    } else {
-        while(len--) {
-            if (tm.tmFirstChar > string->unicode() || tm.tmLastChar < string->unicode())
-                return false;
-        }
-    }
-    return true;
-}
-
 QFontEngine::Type QWindowsFontEngine::type() const
 {
     return QFontEngine::Win;

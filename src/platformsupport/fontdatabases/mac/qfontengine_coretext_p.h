@@ -81,7 +81,7 @@ public:
 
     virtual const char *name() const { return "QCoreTextFontEngine"; }
 
-    virtual bool canRender(const QChar *string, int len);
+    virtual bool canRender(const QChar *string, int len) const;
 
     virtual int synthesized() const { return synthesisFlags; }
     virtual bool supportsSubPixelPositions() const { return true; }

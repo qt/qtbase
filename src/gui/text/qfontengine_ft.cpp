@@ -1468,19 +1468,6 @@ static inline unsigned int getChar(const QChar *str, int &i, const int len)
     return ucs4;
 }
 
-bool QFontEngineFT::canRender(const QChar *string, int len)
-{
-    FT_Face face = freetype->face;
-    {
-        for ( int i = 0; i < len; i++ ) {
-            unsigned int uc = getChar(string, i, len);
-            if (!FT_Get_Char_Index(face, uc))
-                    return false;
-        }
-    }
-    return true;
-}
-
 void QFontEngineFT::addOutlineToPath(qreal x, qreal y, const QGlyphLayout &glyphs, QPainterPath *path, QTextItem::RenderFlags flags)
 {
     if (!glyphs.numGlyphs)

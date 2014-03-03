@@ -112,8 +112,6 @@ public:
 
     virtual const char *name() const;
 
-    bool canRender(const QChar *string, int len);
-
     Type type() const;
 
     virtual QImage alphaMapForGlyph(glyph_t t) { return alphaMapForGlyph(t, QTransform()); }

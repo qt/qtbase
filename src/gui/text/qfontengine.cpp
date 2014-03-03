@@ -385,6 +385,17 @@ bool QFontEngine::supportsScript(QChar::Script script) const
     return hbFace->supported_scripts[script_to_hbscript(script)];
 }
 
+bool QFontEngine::canRender(const QChar *str, int len) const
+{
+    QStringIterator it(str, str + len);
+    while (it.hasNext()) {
+        if (glyphIndex(it.next()) == 0)
+            return false;
+    }
+
+    return true;
+}
+
 glyph_metrics_t QFontEngine::boundingBox(glyph_t glyph, const QTransform &matrix)
 {
     glyph_metrics_t metrics = boundingBox(glyph);
@@ -1533,7 +1544,7 @@ const char *QFontEngineBox::name() const
     return "null";
 }
 
-bool QFontEngineBox::canRender(const QChar *, int)
+bool QFontEngineBox::canRender(const QChar *, int) const
 {
     return true;
 }
@@ -1951,7 +1962,7 @@ qreal QFontEngineMulti::minRightBearing() const
     return engine(0)->minRightBearing();
 }
 
-bool QFontEngineMulti::canRender(const QChar *string, int len)
+bool QFontEngineMulti::canRender(const QChar *string, int len) const
 {
     if (engine(0)->canRender(string, len))
         return true;
