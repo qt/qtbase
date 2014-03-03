@@ -1030,7 +1030,6 @@ void *QOpenGLContext::openGLModuleHandle()
 
   \value DesktopGL Desktop OpenGL
   \value GLES2 OpenGL ES 2.0 or higher
-  \value GLES1 OpenGL ES 1.x
 
   \since 5.3
 */
@@ -1058,8 +1057,6 @@ QOpenGLContext::OpenGLModuleType QOpenGLContext::openGLModuleType()
     return QGuiApplicationPrivate::instance()->platformIntegration()->openGLModuleType();
 #elif defined(QT_OPENGL_ES_2)
     return GLES2;
-#elif defined(QT_OPENGL_ES)
-    return GLES1;
 #else
     return DesktopGL;
 #endif

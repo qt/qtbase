@@ -676,9 +676,6 @@ void Configure::parseCmdLine()
         else if (configCmdLine.at(i) == "-no-opengl") {
             dictionary[ "OPENGL" ]    = "no";
             dictionary[ "OPENGL_ES_2" ]     = "no";
-        } else if (configCmdLine.at(i) == "-opengl-es-cm") {
-            dictionary[ "OPENGL" ]          = "yes";
-            dictionary[ "OPENGL_ES_CM" ]    = "yes";
         } else if (configCmdLine.at(i) == "-opengl-es-2") {
             dictionary[ "OPENGL" ]          = "yes";
             dictionary[ "OPENGL_ES_2" ]     = "yes";
@@ -689,9 +686,7 @@ void Configure::parseCmdLine()
                 break;
 
             dictionary[ "OPENGL_ES_2" ]         = "no";
-            if (configCmdLine.at(i) == "es1") {
-                dictionary[ "OPENGL_ES_CM" ]    = "yes";
-            } else if ( configCmdLine.at(i) == "es2" ) {
+            if ( configCmdLine.at(i) == "es2" ) {
                 dictionary[ "OPENGL_ES_2" ]     = "yes";
             } else if ( configCmdLine.at(i) == "desktop" ) {
                 // OPENGL=yes suffices
@@ -1819,7 +1814,6 @@ bool Configure::displayHelp()
                                                         "Available values for <api>:");
         desc("", "no", "",                              "  desktop - Enable support for Desktop OpenGL", ' ');
         desc("", "no", "",                              "  dynamic - Enable support for dynamically loaded OpenGL (either desktop or ES)", ' ');
-        desc("OPENGL_ES_CM", "no", "",                  "  es1 - Enable support for OpenGL ES Common Profile", ' ');
         desc("OPENGL_ES_2",  "yes", "",                 "  es2 - Enable support for OpenGL ES 2.0\n", ' ');
 
         desc("OPENVG", "no","-no-openvg",               "Disables OpenVG functionality.");
@@ -2212,8 +2206,6 @@ bool Configure::checkAvailability(const QString &part)
     else if (part == "SQL_IBASE")
         available = findFile("ibase.h") && (findFile("gds32_ms.lib") || findFile("gds32.lib"));
     else if (part == "IWMMXT")
-        available = (dictionary.value("XQMAKESPEC").startsWith("wince"));
-    else if (part == "OPENGL_ES_CM")
         available = (dictionary.value("XQMAKESPEC").startsWith("wince"));
     else if (part == "OPENGL_ES_2")
         available = (dictionary.value("XQMAKESPEC").startsWith("wince"));
@@ -2783,11 +2775,6 @@ void Configure::generateOutputVars()
 
     if (dictionary[ "OPENGL" ] == "yes")
         qtConfig += "opengl";
-
-    if (dictionary["OPENGL_ES_CM"] == "yes") {
-        qtConfig += "opengles1";
-        qtConfig += "egl";
-    }
 
     if (dictionary["OPENGL_ES_2"] == "yes") {
         qtConfig += "opengles2";
@@ -3500,10 +3487,7 @@ void Configure::generateConfigfiles()
         if (dictionary["HARFBUZZ"] == "no")          qconfigList += "QT_NO_HARFBUZZ";
         if (dictionary["NATIVE_GESTURES"] == "no")   qconfigList += "QT_NO_NATIVE_GESTURES";
 
-        if (dictionary["OPENGL_ES_CM"] == "yes" ||
-           dictionary["OPENGL_ES_2"]  == "yes")     qconfigList += "QT_OPENGL_ES";
-
-        if (dictionary["OPENGL_ES_CM"] == "yes")     qconfigList += "QT_OPENGL_ES_1";
+        if (dictionary["OPENGL_ES_2"]  == "yes")     qconfigList += "QT_OPENGL_ES";
         if (dictionary["OPENGL_ES_2"]  == "yes")     qconfigList += "QT_OPENGL_ES_2";
         if (dictionary["DYNAMICGL"] == "yes")        qconfigList += "QT_OPENGL_DYNAMIC";
         if (dictionary["SQL_MYSQL"] == "yes")        qconfigList += "QT_SQL_MYSQL";
