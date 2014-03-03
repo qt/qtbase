@@ -18,8 +18,6 @@ win32:contains(QT_CONFIG, angle)|contains(QT_CONFIG, dynamicgl) {
         \$\$QT_MODULE_INCLUDE_BASE/QtANGLE
 }
 
-contains(QT_CONFIG, dynamicgl): DEFINES += QT_OPENGL_DYNAMIC_IN_GUI
-
 load(qt_module)
 
 # Code coverage with TestCocoon
