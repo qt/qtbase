@@ -38,20 +38,22 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
 #include "qxcbkeyboard.h"
 #include "qxcbwindow.h"
 #include "qxcbscreen.h"
-#include <X11/keysym.h>
-#include <qpa/qwindowsysteminterface.h>
-#include <QtCore/QTextCodec>
-#include <QtCore/QMetaMethod>
-#include <private/qguiapplication_p.h>
-#include <stdio.h>
 
+#include <qpa/qwindowsysteminterface.h>
 #include <qpa/qplatforminputcontext.h>
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformcursor.h>
+
+#include <QtCore/QTextCodec>
+#include <QtCore/QMetaMethod>
+#include <QtCore/QDir>
+#include <private/qguiapplication_p.h>
+
+#include <stdio.h>
+#include <X11/keysym.h>
 
 #ifndef XK_ISO_Left_Tab
 #define XK_ISO_Left_Tab         0xFE20
@@ -619,6 +621,12 @@ void QXcbKeyboard::readXKBConfig()
     char *xkb_config = (char *)xcb_get_property_value(config_reply);
     int length = xcb_get_property_value_length(config_reply);
 
+    // on old X servers xkb_config can be 0 even if config_reply indicates a succesfull read
+    if (!xkb_config || length == 0)
+        return;
+    // ### TODO some X servers don't set _XKB_RULES_NAMES at all, in these cases it is filled
+    // with gibberish, we would need to do some kind of sanity check
+
     char *names[5] = { 0, 0, 0, 0, 0 };
     char *p = xkb_config, *end = p + length;
     int i = 0;
@@ -655,17 +663,45 @@ void QXcbKeyboard::clearXKBConfig()
     memset(&xkb_names, 0, sizeof(xkb_names));
 }
 
+void QXcbKeyboard::printKeymapError(const QString &error) const
+{
+    qWarning() << "Qt: " << error;
+    // check if XKB config root is a valid path
+    const QDir xkbRoot = qEnvironmentVariableIsSet("QT_XKB_CONFIG_ROOT")
+        ? QString::fromLocal8Bit(qgetenv("QT_XKB_CONFIG_ROOT"))
+        : DFLT_XKB_CONFIG_ROOT;
+    if (!xkbRoot.exists() || xkbRoot.dirName() != "xkb") {
+        qWarning() << "Set QT_XKB_CONFIG_ROOT to provide a valid XKB configuration data path, current search paths: "
+                   << xkbRoot.path() << ". Use ':' as separator to provide several search paths.";
+        return;
+    }
+    qWarning() << "_XKB_RULES_NAMES property contains:"  << "\nrules : " << xkb_names.rules <<
+                  "\nmodel : " << xkb_names.model << "\nlayout : " << xkb_names.layout <<
+                  "\nvariant : " << xkb_names.variant << "\noptions : " << xkb_names.options <<
+                  "\nIf this looks like a valid keyboard layout information then you might need to "
+                  "update XKB configuration data on the system (http://cgit.freedesktop.org/xkeyboard-config/).";
+}
+
 void QXcbKeyboard::updateKeymap()
 {
     m_config = true;
     // set xkb context object
     if (!xkb_context) {
-        xkb_context = xkb_context_new((xkb_context_flags)0);
+        if (qEnvironmentVariableIsSet("QT_XKB_CONFIG_ROOT")) {
+            xkb_context = xkb_context_new((xkb_context_flags)XKB_CONTEXT_NO_DEFAULT_INCLUDES);
+            QList<QByteArray> xkbRootList = QByteArray(qgetenv("QT_XKB_CONFIG_ROOT")).split(':');
+            foreach (QByteArray xkbRoot, xkbRootList)
+                xkb_context_include_path_append(xkb_context, xkbRoot.constData());
+        } else {
+            xkb_context = xkb_context_new((xkb_context_flags)0);
+        }
         if (!xkb_context) {
-            qWarning("Qt: Failed to create XKB context");
+            printKeymapError("Failed to create XKB context!");
             m_config = false;
             return;
         }
+        // log only critical errors, we do our own error logging from printKeymapError()
+        xkb_context_set_log_level(xkb_context, (xkb_log_level)XKB_LOG_LEVEL_CRITICAL);
     }
     // update xkb keymap object
     xkb_keymap_unref(xkb_keymap);
@@ -685,21 +721,28 @@ void QXcbKeyboard::updateKeymap()
         // Compile a keymap from RMLVO (rules, models, layouts, variants and options) names
         readXKBConfig();
         xkb_keymap = xkb_keymap_new_from_names(xkb_context, &xkb_names, (xkb_keymap_compile_flags)0);
-        if (xkb_keymap)
+        if (!xkb_keymap) {
+            // last fallback is to used hard-coded keymap name, see DEFAULT_XKB_* in xkbcommon.pri
+            qWarning() << "Qt: Could not determine keyboard configuration data"
+                          " from X server, will use hard-coded keymap configuration.";
+            clearXKBConfig();
+            xkb_keymap = xkb_keymap_new_from_names(xkb_context, &xkb_names, (xkb_keymap_compile_flags)0);
+        }
+        if (xkb_keymap) {
             new_state = xkb_state_new(xkb_keymap);
-    }
+        } else {
+            // failed to compile from RMLVO, give a verbose error message
+            printKeymapError("Qt: Failed to compile a keymap!");
+            m_config = false;
+            return;
+        }
 
-    if (!xkb_keymap) {
-        qWarning("Qt: Failed to compile a keymap");
-        m_config = false;
     }
     if (!new_state) {
-        qWarning("Qt: Failed to create xkb state");
+        qWarning("Qt: Failed to create xkb state!");
         m_config = false;
-    }
-    if (!m_config)
         return;
-
+    }
     // update xkb state object
     xkb_state_unref(xkb_state);
     xkb_state = new_state;
