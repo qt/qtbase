@@ -2517,12 +2517,12 @@ int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
         ret = 100;
         break;
     case SH_ScrollBar_LeftClickAbsolutePosition: {
+        NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+        bool result = [defaults boolForKey:@"AppleScrollerPagingBehavior"];
         if(QApplication::keyboardModifiers() & Qt::AltModifier)
-            ret = false;
-            //ret = !qt_scrollbar_jump_to_pos;
+            ret = !result;
         else
-            ret = true;
-            //ret = qt_scrollbar_jump_to_pos;
+            ret = result;
         break; }
     case SH_TabBar_PreferNoArrows:
         ret = true;

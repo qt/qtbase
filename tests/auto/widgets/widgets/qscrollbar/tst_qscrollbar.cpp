@@ -147,6 +147,10 @@ void tst_QScrollBar::task_209492()
     QApplication::sendEvent(verticalScrollBar, &mouseReleaseEvent);
 
     // Check that the action was triggered once.
+
+#ifdef Q_OS_MAC
+    QSKIP("The result depends on system setting and is not relevant on Mac");
+#endif
     QCOMPARE(scrollArea.scrollCount, 1);
     QCOMPARE(spy.count(), 1);
 }
