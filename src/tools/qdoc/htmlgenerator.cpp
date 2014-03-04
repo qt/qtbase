@@ -1439,11 +1439,7 @@ void HtmlGenerator::generateDocNode(DocNode* dn, CodeMarker* marker)
     QString fullTitle = dn->fullTitle();
     QString htmlTitle = fullTitle;
 
-    if (dn->subType() == Node::File && !dn->subTitle().isEmpty()) {
-        subTitleSize = SmallSubTitle;
-        htmlTitle += " (" + dn->subTitle() + QLatin1Char(')');
-    }
-    else if (dn->subType() == Node::QmlBasicType) {
+    if (dn->subType() == Node::QmlBasicType) {
         fullTitle = "QML Basic Type: " + fullTitle;
         htmlTitle = fullTitle;
 
@@ -1668,10 +1664,11 @@ void HtmlGenerator::generateNavigationBar(const QString &title,
 
         if (!cn->name().isEmpty())
             navigationbar << Atom(Atom::ListItemLeft)
-                        << Atom(Atom::String, protectEnc(cn->name()))
+                        << Atom(Atom::String, cn->name())
                         << Atom(Atom::ListItemRight);
     }
     else if (node->type() == Node::Document) {
+        const DocNode *dn = static_cast<const DocNode *>(node);
         if (node->subType() == Node::QmlClass || node->subType() == Node::QmlBasicType) {
             if (!qmltypespage.isEmpty())
                 navigationbar << Atom(Atom::ListItemLeft)
@@ -1680,16 +1677,19 @@ void HtmlGenerator::generateNavigationBar(const QString &title,
                         << Atom(Atom::String, QLatin1String("QML Types"))
                         << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK)
                         << Atom(Atom::ListItemRight);
+        }
+        else if (dn && dn->isExampleFile()) {
+            navigationbar << Atom(Atom::ListItemLeft)
+                          << Atom(Atom::Link, dn->parent()->name())
+                          << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
+                          << Atom(Atom::String, dn->parent()->title())
+                          << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK)
+                          << Atom(Atom::ListItemRight);
 
-            navigationbar << Atom(Atom::ListItemLeft)
-                        << Atom(Atom::String, protectEnc(title))
-                        << Atom(Atom::ListItemRight);
         }
-        else {
-            navigationbar << Atom(Atom::ListItemLeft)
-                      << Atom(Atom::String, protectEnc(title))
+        navigationbar << Atom(Atom::ListItemLeft)
+                      << Atom(Atom::String, title)
                       << Atom(Atom::ListItemRight);
-        }
     }
 
     generateText(navigationbar, node, marker);
