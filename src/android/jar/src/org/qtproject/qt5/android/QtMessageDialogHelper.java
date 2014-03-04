@@ -51,6 +51,8 @@ import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.text.ClipboardManager;
+import android.text.Html;
+import android.text.Spanned;
 import android.util.TypedValue;
 import android.view.View;
 import android.widget.Button;
@@ -74,11 +76,11 @@ class ButtonStruct implements View.OnClickListener
     {
         m_dialog = dialog;
         m_id = id;
-        m_text = text;
+        m_text = Html.fromHtml(text);
     }
     QtMessageDialogHelper m_dialog;
     private int m_id;
-    String m_text;
+    Spanned m_text;
 
     @Override
     public void onClick(View view) {
@@ -153,22 +155,22 @@ public class QtMessageDialogHelper
 
     public void setTile(String title)
     {
-        m_title = title;
+        m_title = Html.fromHtml(title);
     }
 
     public void setText(String text)
     {
-        m_text = text;
+        m_text = Html.fromHtml(text);
     }
 
     public void setInformativeText(String informativeText)
     {
-        m_informativeText = informativeText;
+        m_informativeText = Html.fromHtml(informativeText);
     }
 
     public void setDetailedText(String text)
     {
-        m_detailedText = text;
+        m_detailedText = Html.fromHtml(text);
     }
 
     public void addButton(int id, String text)
@@ -417,7 +419,7 @@ public class QtMessageDialogHelper
 
     private Activity m_activity;
     private int m_icon = 0;
-    private String m_title, m_text, m_informativeText, m_detailedText;
+    private Spanned m_title, m_text, m_informativeText, m_detailedText;
     private ArrayList<ButtonStruct> m_buttonsList;
     private AlertDialog m_dialog;
     private long m_handler = 0;
