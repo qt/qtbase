@@ -1993,6 +1993,12 @@ void QOpenGLFunctions::initializeOpenGLFunctions()
 */
 
 /*!
+    \fn void QOpenGLFunctions::glGetTexLevelParameteriv(GLenum target, GLint level, GLenum pname, GLint *params)
+
+    \internal
+*/
+
+/*!
     \fn bool QOpenGLFunctions::isInitialized(const QOpenGLFunctionsPrivate *d)
     \internal
 */
@@ -2394,6 +2400,15 @@ static void QOPENGLF_APIENTRY qopenglfResolveClearColor(GLclampf red, GLclampf g
     RESOLVE_FUNC_VOID(0, ClearColor)(red, green, blue, alpha);
 }
 
+static void QOPENGLF_APIENTRY qopenglfResolveClearDepthf(GLclampf depth)
+{
+    if (QOpenGLContext::currentContext()->isES()) {
+        RESOLVE_FUNC_VOID(0, ClearDepthf)(depth);
+    } else {
+        RESOLVE_FUNC_VOID(0, ClearDepth)((GLdouble) depth);
+    }
+}
+
 static void QOPENGLF_APIENTRY qopenglfResolveClearStencil(GLint s)
 {
     RESOLVE_FUNC_VOID(0, ClearStencil)(s);
@@ -2432,6 +2447,15 @@ static void QOPENGLF_APIENTRY qopenglfResolveDepthFunc(GLenum func)
 static void QOPENGLF_APIENTRY qopenglfResolveDepthMask(GLboolean flag)
 {
     RESOLVE_FUNC_VOID(0, DepthMask)(flag);
+}
+
+static void QOPENGLF_APIENTRY qopenglfResolveDepthRangef(GLclampf zNear, GLclampf zFar)
+{
+    if (QOpenGLContext::currentContext()->isES()) {
+        RESOLVE_FUNC_VOID(0, DepthRangef)(zNear, zFar);
+    } else {
+        RESOLVE_FUNC_VOID(0, DepthRange)((GLdouble) zNear, (GLdouble) zFar);
+    }
 }
 
 static void QOPENGLF_APIENTRY qopenglfResolveDisable(GLenum cap)
@@ -3131,6 +3155,29 @@ static void QOPENGLF_APIENTRY qopenglfResolveGetBufferSubData(GLenum target, qop
         (target, offset, size, data);
 }
 
+#if !defined(QT_OPENGL_ES_2) && !defined(QT_OPENGL_DYNAMIC)
+
+// Desktop only
+
+static void QOPENGLF_APIENTRY qopenglfResolveGetTexLevelParameteriv(GLenum target, GLint level, GLenum pname, GLint *params)
+{
+    RESOLVE_FUNC_VOID(0, GetTexLevelParameteriv)(target, level, pname, params);
+}
+
+// Special translation functions for ES-specific calls on desktop GL
+
+static void QOPENGLF_APIENTRY qopenglfTranslateClearDepthf(GLclampf depth)
+{
+    ::glClearDepth(depth);
+}
+
+static void QOPENGLF_APIENTRY qopenglfTranslateDepthRangef(GLclampf zNear, GLclampf zFar)
+{
+    ::glDepthRange(zNear, zFar);
+}
+
+#endif // !ES2 && !DYNAMIC
+
 QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 {
     /* Assign a pointer to an above defined static function
@@ -3145,6 +3192,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
         BlendFunc = qopenglfResolveBlendFunc;
         Clear = qopenglfResolveClear;
         ClearColor = qopenglfResolveClearColor;
+        ClearDepthf = qopenglfResolveClearDepthf;
         ClearStencil = qopenglfResolveClearStencil;
         ColorMask = qopenglfResolveColorMask;
         CopyTexImage2D = qopenglfResolveCopyTexImage2D;
@@ -3153,6 +3201,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
         DeleteTextures = qopenglfResolveDeleteTextures;
         DepthFunc = qopenglfResolveDepthFunc;
         DepthMask = qopenglfResolveDepthMask;
+        DepthRangef = qopenglfResolveDepthRangef;
         Disable = qopenglfResolveDisable;
         DrawArrays = qopenglfResolveDrawArrays;
         DrawElements = qopenglfResolveDrawElements;
@@ -3186,6 +3235,8 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
         TexParameteriv = qopenglfResolveTexParameteriv;
         TexSubImage2D = qopenglfResolveTexSubImage2D;
         Viewport = qopenglfResolveViewport;
+
+        GetTexLevelParameteriv = qopenglfResolveGetTexLevelParameteriv;
     } else {
 #ifndef QT_OPENGL_DYNAMIC
         // Use the functions directly. This requires linking QtGui to an OpenGL implementation.
@@ -3193,6 +3244,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
         BlendFunc = ::glBlendFunc;
         Clear = ::glClear;
         ClearColor = ::glClearColor;
+        ClearDepthf = qopenglfTranslateClearDepthf;
         ClearStencil = ::glClearStencil;
         ColorMask = ::glColorMask;
         CopyTexImage2D = ::glCopyTexImage2D;
@@ -3201,6 +3253,7 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
         DeleteTextures = ::glDeleteTextures;
         DepthFunc = ::glDepthFunc;
         DepthMask = ::glDepthMask;
+        DepthRangef = qopenglfTranslateDepthRangef;
         Disable = ::glDisable;
         DrawArrays = ::glDrawArrays;
         DrawElements = ::glDrawElements;
@@ -3234,6 +3287,8 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
         TexParameteriv = ::glTexParameteriv;
         TexSubImage2D = ::glTexSubImage2D;
         Viewport = ::glViewport;
+
+        GetTexLevelParameteriv = ::glGetTexLevelParameteriv;
 #else // QT_OPENGL_DYNAMIC
         // This should not happen.
         qFatal("QOpenGLFunctions: Dynamic OpenGL builds do not support platforms with insufficient function resolving capabilities");

@@ -43,6 +43,7 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qvarlengtharray.h>
 #include <QtGui/qopengl.h>
+#include <QtGui/qopenglfunctions.h>
 
 #include "qopengldebug.h"
 
@@ -1380,7 +1381,7 @@ bool QOpenGLDebugLogger::initialize()
 
 #undef GET_DEBUG_PROC_ADDRESS
 
-    glGetIntegerv(GL_MAX_DEBUG_MESSAGE_LENGTH, &d->maxMessageLength);
+    QOpenGLContext::currentContext()->functions()->glGetIntegerv(GL_MAX_DEBUG_MESSAGE_LENGTH, &d->maxMessageLength);
 
 #ifndef QT_NO_DEBUG
     if (!d->context->format().testOption(QSurfaceFormat::DebugContext)) {
@@ -1448,15 +1449,16 @@ void QOpenGLDebugLogger::startLogging(QOpenGLDebugLogger::LoggingMode loggingMod
 
     d->glDebugMessageCallback(&qt_opengl_debug_callback, d);
 
-    d->debugWasEnabled = glIsEnabled(GL_DEBUG_OUTPUT);
-    d->syncDebugWasEnabled = glIsEnabled(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+    QOpenGLFunctions *funcs = QOpenGLContext::currentContext()->functions();
+    d->debugWasEnabled = funcs->glIsEnabled(GL_DEBUG_OUTPUT);
+    d->syncDebugWasEnabled = funcs->glIsEnabled(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 
     if (d->loggingMode == SynchronousLogging)
-        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+        funcs->glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
     else
-        glDisable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+        funcs->glDisable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 
-    glEnable(GL_DEBUG_OUTPUT);
+    funcs->glEnable(GL_DEBUG_OUTPUT);
 }
 
 /*!
@@ -1485,13 +1487,14 @@ void QOpenGLDebugLogger::stopLogging()
 
     d->glDebugMessageCallback(d->oldDebugCallbackFunction, d->oldDebugCallbackParameter);
 
+    QOpenGLFunctions *funcs = QOpenGLContext::currentContext()->functions();
     if (!d->debugWasEnabled)
-        glDisable(GL_DEBUG_OUTPUT);
+        funcs->glDisable(GL_DEBUG_OUTPUT);
 
     if (d->syncDebugWasEnabled)
-        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+        funcs->glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
     else
-        glDisable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+        funcs->glDisable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 }
 
 /*!

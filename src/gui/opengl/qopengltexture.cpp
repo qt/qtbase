@@ -1633,7 +1633,7 @@ GLuint QOpenGLTexture::boundTextureId(BindingTarget target)
     }
 
     GLint textureId = 0;
-    glGetIntegerv(target, &textureId);
+    ctx->functions()->glGetIntegerv(target, &textureId);
     return static_cast<GLuint>(textureId);
 }
 
@@ -1653,11 +1653,11 @@ GLuint QOpenGLTexture::boundTextureId(uint unit, BindingTarget target)
     funcs->initializeOpenGLFunctions();
 
     GLint oldTextureUnit = 0;
-    glGetIntegerv(GL_ACTIVE_TEXTURE, &oldTextureUnit);
+    funcs->glGetIntegerv(GL_ACTIVE_TEXTURE, &oldTextureUnit);
 
     funcs->glActiveTexture(unit);
     GLint textureId = 0;
-    glGetIntegerv(target, &textureId);
+    funcs->glGetIntegerv(target, &textureId);
     funcs->glActiveTexture(oldTextureUnit);
 
     return static_cast<GLuint>(textureId);

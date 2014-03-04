@@ -223,6 +223,8 @@ struct QOpenGLFunctionsPrivate;
 #undef glVertexAttrib4fv
 #undef glVertexAttribPointer
 
+#undef glTexLevelParameteriv
+
 class Q_GUI_EXPORT QOpenGLFunctions
 {
 public:
@@ -405,6 +407,9 @@ public:
     void glVertexAttrib4fv(GLuint indx, const GLfloat* values);
     void glVertexAttribPointer(GLuint indx, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void* ptr);
 
+    // OpenGL1, not GLES2
+    void glGetTexLevelParameteriv(GLenum target, GLint level, GLenum pname, GLint *params);
+
 protected:
     QOpenGLFunctionsPrivate *d_ptr;
     static bool isInitialized(const QOpenGLFunctionsPrivate *d) { return d != 0; }
@@ -420,6 +425,7 @@ struct QOpenGLFunctionsPrivate
     void (QOPENGLF_APIENTRYP BlendFunc)(GLenum sfactor, GLenum dfactor);
     void (QOPENGLF_APIENTRYP Clear)(GLbitfield mask);
     void (QOPENGLF_APIENTRYP ClearColor)(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha);
+    void (QOPENGLF_APIENTRYP ClearDepthf)(GLclampf depth);
     void (QOPENGLF_APIENTRYP ClearStencil)(GLint s);
     void (QOPENGLF_APIENTRYP ColorMask)(GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha);
     void (QOPENGLF_APIENTRYP CopyTexImage2D)(GLenum target, GLint level, GLenum internalformat, GLint x, GLint y, GLsizei width, GLsizei height, GLint border);
@@ -428,6 +434,7 @@ struct QOpenGLFunctionsPrivate
     void (QOPENGLF_APIENTRYP DeleteTextures)(GLsizei n, const GLuint* textures);
     void (QOPENGLF_APIENTRYP DepthFunc)(GLenum func);
     void (QOPENGLF_APIENTRYP DepthMask)(GLboolean flag);
+    void (QOPENGLF_APIENTRYP DepthRangef)(GLclampf nearVal, GLclampf farVal);
     void (QOPENGLF_APIENTRYP Disable)(GLenum cap);
     void (QOPENGLF_APIENTRYP DrawArrays)(GLenum mode, GLint first, GLsizei count);
     void (QOPENGLF_APIENTRYP DrawElements)(GLenum mode, GLsizei count, GLenum type, const GLvoid* indices);
@@ -557,6 +564,13 @@ struct QOpenGLFunctionsPrivate
     void (QOPENGLF_APIENTRYP VertexAttrib4f)(GLuint indx, GLfloat x, GLfloat y, GLfloat z, GLfloat w);
     void (QOPENGLF_APIENTRYP VertexAttrib4fv)(GLuint indx, const GLfloat* values);
     void (QOPENGLF_APIENTRYP VertexAttribPointer)(GLuint indx, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void* ptr);
+
+    // OpenGL1 only, not GLES2
+    void (QOPENGLF_APIENTRYP GetTexLevelParameteriv)(GLenum target, GLint level, GLenum pname, GLint *params);
+
+    // Special non-ES OpenGL variants, not to be called directly
+    void (QOPENGLF_APIENTRYP ClearDepth)(GLdouble depth);
+    void (QOPENGLF_APIENTRYP DepthRange)(GLdouble zNear, GLdouble zFar);
 };
 
 // GLES2 + OpenGL1 common subset
@@ -1210,7 +1224,8 @@ inline GLenum QOpenGLFunctions::glCheckFramebufferStatus(GLenum target)
 inline void QOpenGLFunctions::glClearDepthf(GLclampf depth)
 {
 #ifndef QT_OPENGL_ES
-    ::glClearDepth(depth);
+    Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
+    d_ptr->ClearDepthf(depth);
 #else
     ::glClearDepthf(depth);
 #endif
@@ -1332,7 +1347,8 @@ inline void QOpenGLFunctions::glDeleteShader(GLuint shader)
 inline void QOpenGLFunctions::glDepthRangef(GLclampf zNear, GLclampf zFar)
 {
 #ifndef QT_OPENGL_ES
-    ::glDepthRange(zNear, zFar);
+    Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
+    d_ptr->DepthRangef(zNear, zFar);
 #else
     ::glDepthRangef(zNear, zFar);
 #endif
@@ -2134,6 +2150,24 @@ inline void QOpenGLFunctions::glVertexAttribPointer(GLuint indx, GLint size, GLe
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->VertexAttribPointer(indx, size, type, normalized, stride, ptr);
+#endif
+    Q_OPENGL_FUNCTIONS_DEBUG
+}
+
+// OpenGL1, not GLES2
+
+inline void QOpenGLFunctions::glGetTexLevelParameteriv(GLenum target, GLint level, GLenum pname, GLint *params)
+{
+#ifdef QT_OPENGL_ES_2
+    Q_UNUSED(target);
+    Q_UNUSED(level);
+    Q_UNUSED(pname);
+    Q_UNUSED(params);
+    // Cannot get here.
+    qFatal("QOpenGLFunctions: glGetTexLevelParameteriv not available with OpenGL ES");
+#else
+    Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
+    d_ptr->GetTexLevelParameteriv(target, level, pname, params);
 #endif
     Q_OPENGL_FUNCTIONS_DEBUG
 }

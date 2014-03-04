@@ -53,7 +53,9 @@ typedef const GLubyte * (QOPENGLF_APIENTRYP qt_glGetStringi)(GLenum, GLuint);
 
 QOpenGLExtensionMatcher::QOpenGLExtensionMatcher()
 {
-    const char *extensionStr = reinterpret_cast<const char *>(glGetString(GL_EXTENSIONS));
+    QOpenGLContext *ctx = QOpenGLContext::currentContext();
+    QOpenGLFunctions *funcs = ctx->functions();
+    const char *extensionStr = reinterpret_cast<const char *>(funcs->glGetString(GL_EXTENSIONS));
 
     if (extensionStr) {
         QByteArray ba(extensionStr);
@@ -64,9 +66,8 @@ QOpenGLExtensionMatcher::QOpenGLExtensionMatcher()
 #else
     } else {
         // clear error state
-        while (glGetError()) {}
+        while (funcs->glGetError()) {}
 
-        QOpenGLContext *ctx = QOpenGLContext::currentContext();
         if (ctx) {
             qt_glGetStringi glGetStringi = (qt_glGetStringi)ctx->getProcAddress("glGetStringi");
 
@@ -74,7 +75,7 @@ QOpenGLExtensionMatcher::QOpenGLExtensionMatcher()
                 return;
 
             GLint numExtensions;
-            glGetIntegerv(GL_NUM_EXTENSIONS, &numExtensions);
+            funcs->glGetIntegerv(GL_NUM_EXTENSIONS, &numExtensions);
 
             for (int i = 0; i < numExtensions; ++i) {
                 const char *str = reinterpret_cast<const char *>(glGetStringi(GL_EXTENSIONS, i));

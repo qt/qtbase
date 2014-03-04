@@ -44,6 +44,7 @@
 #include <QtWidgets/private/qwidget_p.h>
 
 #include <QOpenGLFramebufferObject>
+#include <QOpenGLFunctions>
 #include <QWindow>
 #include <qpa/qplatformwindow.h>
 #include <QDebug>
@@ -144,9 +145,10 @@ void QOpenGLWidget::paintGL()
 
 void QOpenGLWidget::updateGL()
 {
+    Q_D(QOpenGLWidget);
     makeCurrent();
     paintGL();
-    glFlush();
+    d->context.functions()->glFlush();
     doneCurrent();
     update();
 }
@@ -163,15 +165,16 @@ void QOpenGLWidget::resizeEvent(QResizeEvent *)
     delete d->fbo; // recreate when resized
     d->fbo = new QOpenGLFramebufferObject(size());
     d->fbo->bind();
-    glBindTexture(GL_TEXTURE_2D, d->fbo->texture());
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    QOpenGLFunctions *funcs = d->context.functions();
+    funcs->glBindTexture(GL_TEXTURE_2D, d->fbo->texture());
+    funcs->glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    funcs->glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    funcs->glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    funcs->glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
     resizeGL(width(), height());
     paintGL();
-    glFlush();
+    funcs->glFlush();
 }
 
 void QOpenGLWidget::paintEvent(QPaintEvent *)

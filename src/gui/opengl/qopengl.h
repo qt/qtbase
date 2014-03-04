@@ -66,7 +66,7 @@
 // which the system headers do not.
 
 #if defined(QT_OPENGL_ES_2)
-# if defined(Q_OS_MAC)
+# if defined(Q_OS_MAC) // iOS
 #  include <OpenGLES/ES2/gl.h>
 #  include <OpenGLES/ES2/glext.h>
 
@@ -78,7 +78,7 @@
 */
 typedef void* GLeglImageOES;
 
-# else // "uncontrolled" platforms
+# else // "uncontrolled" ES2 platforms
 #  include <GLES2/gl2.h>
 
 /*
@@ -90,14 +90,14 @@ typedef void* GLeglImageOES;
 typedef char GLchar;
 
 #  include <QtGui/qopengles2ext.h>
-#  ifndef GL_DOUBLE
-#   define GL_DOUBLE GL_FLOAT
-#  endif
-#  ifndef GLdouble
-typedef GLfloat GLdouble;
-#  endif
 # endif // Q_OS_MAC
-#else
+# ifndef GL_DOUBLE
+#  define GL_DOUBLE GL_FLOAT
+# endif
+# ifndef GLdouble
+typedef GLfloat GLdouble;
+# endif
+#else // non-ES2 platforms
 # if defined(Q_OS_MAC)
 #  include <OpenGL/gl.h>
 #  if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
@@ -110,7 +110,7 @@ typedef GLfloat GLdouble;
 #  include <GL/gl.h>
 #  include <QtGui/qopenglext.h>
 # endif // Q_OS_MAC
-#endif
+#endif // QT_OPENGL_ES_2
 
 // Desktops, apart from Mac OS X prior to 10.7 can support OpenGL 3
 // and desktops apart from Mac can support OpenGL 4

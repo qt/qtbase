@@ -3035,7 +3035,8 @@ int QOpenGLShaderProgram::maxGeometryOutputVertices() const
 {
     GLint n = 0;
 #if defined(QT_OPENGL_3_2)
-    glGetIntegerv(GL_MAX_GEOMETRY_OUTPUT_VERTICES, &n);
+    Q_D(const QOpenGLShaderProgram);
+    d->glfuncs->glGetIntegerv(GL_MAX_GEOMETRY_OUTPUT_VERTICES, &n);
 #endif
     return n;
 }

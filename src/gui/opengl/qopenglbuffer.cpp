@@ -337,9 +337,9 @@ bool QOpenGLBuffer::read(int offset, void *data, int count)
         Q_D(QOpenGLBuffer);
         if (!d->funcs->hasOpenGLFeature(QOpenGLFunctions::Buffers) || !d->guard->id())
             return false;
-        while (glGetError() != GL_NO_ERROR) ; // Clear error state.
+        while (d->funcs->glGetError() != GL_NO_ERROR) ; // Clear error state.
         d->funcs->glGetBufferSubData(d->type, offset, count, data);
-        return glGetError() == GL_NO_ERROR;
+        return d->funcs->glGetError() == GL_NO_ERROR;
     }
 #else
     Q_UNUSED(offset);

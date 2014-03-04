@@ -334,17 +334,18 @@ int QOpenGLContextPrivate::maxTextureSize()
     if (max_texture_size != -1)
         return max_texture_size;
 
-    glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
+    Q_Q(QOpenGLContext);
+    QOpenGLFunctions *funcs = q->functions();
+    funcs->glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
 
 #ifndef QT_OPENGL_ES
-    Q_Q(QOpenGLContext);
     if (!q->isES()) {
         GLenum proxy = GL_PROXY_TEXTURE_2D;
 
         GLint size;
         GLint next = 64;
-        glTexImage2D(proxy, 0, GL_RGBA, next, next, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-        glGetTexLevelParameteriv(proxy, 0, GL_TEXTURE_WIDTH, &size);
+        funcs->glTexImage2D(proxy, 0, GL_RGBA, next, next, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+        funcs->glGetTexLevelParameteriv(proxy, 0, GL_TEXTURE_WIDTH, &size);
         if (size == 0) {
             return max_texture_size;
         }
@@ -354,8 +355,8 @@ int QOpenGLContextPrivate::maxTextureSize()
 
             if (next > max_texture_size)
                 break;
-            glTexImage2D(proxy, 0, GL_RGBA, next, next, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-            glGetTexLevelParameteriv(proxy, 0, GL_TEXTURE_WIDTH, &next);
+            funcs->glTexImage2D(proxy, 0, GL_RGBA, next, next, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+            funcs->glGetTexLevelParameteriv(proxy, 0, GL_TEXTURE_WIDTH, &next);
         } while (next > size);
 
         max_texture_size = size;
@@ -864,7 +865,7 @@ void QOpenGLContext::swapBuffers(QSurface *surface)
         qWarning() << "QOpenGLContext::swapBuffers() called without corresponding makeCurrent()";
 #endif
     if (surface->format().swapBehavior() == QSurfaceFormat::SingleBuffer)
-        glFlush();
+        functions()->glFlush();
     d->platformGLContext->swapBuffers(surfaceHandle);
 }
 

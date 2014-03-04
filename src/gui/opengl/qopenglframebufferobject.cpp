@@ -57,11 +57,11 @@ QT_BEGIN_NAMESPACE
 #ifndef QT_NO_DEBUG
 #define QT_RESET_GLERROR()                                \
 {                                                         \
-    while (glGetError() != GL_NO_ERROR) {}                \
+    while (QOpenGLContext::currentContext()->functions()->glGetError() != GL_NO_ERROR) {} \
 }
 #define QT_CHECK_GLERROR()                                \
 {                                                         \
-    GLenum err = glGetError();                            \
+    GLenum err = QOpenGLContext::currentContext()->functions()->glGetError(); \
     if (err != GL_NO_ERROR) {                             \
         qDebug("[%s line %d] OpenGL Error: %d",           \
                __FILE__, __LINE__, (int)err);             \
@@ -405,9 +405,9 @@ namespace
         funcs->glDeleteRenderbuffers(1, &id);
     }
 
-    void freeTextureFunc(QOpenGLFunctions *, GLuint id)
+    void freeTextureFunc(QOpenGLFunctions *funcs, GLuint id)
     {
-        glDeleteTextures(1, &id);
+        funcs->glDeleteTextures(1, &id);
     }
 }
 
@@ -432,7 +432,7 @@ void QOpenGLFramebufferObjectPrivate::init(QOpenGLFramebufferObject *, const QSi
 
 #ifndef QT_OPENGL_ES_2
     GLint maxSamples;
-    glGetIntegerv(GL_MAX_SAMPLES, &maxSamples);
+    funcs.glGetIntegerv(GL_MAX_SAMPLES, &maxSamples);
     samples = qBound(0, int(samples), int(maxSamples));
 #endif
 
@@ -497,16 +497,16 @@ void QOpenGLFramebufferObjectPrivate::initTexture(GLenum target, GLenum internal
     QOpenGLContext *ctx = QOpenGLContext::currentContext();
     GLuint texture = 0;
 
-    glGenTextures(1, &texture);
-    glBindTexture(target, texture);
+    funcs.glGenTextures(1, &texture);
+    funcs.glBindTexture(target, texture);
 
-    glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    funcs.glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    funcs.glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    funcs.glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    funcs.glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    glTexImage2D(target, 0, internal_format, size.width(), size.height(), 0,
-                 GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    funcs.glTexImage2D(target, 0, internal_format, size.width(), size.height(), 0,
+                       GL_RGBA, GL_UNSIGNED_BYTE, NULL);
     if (mipmap) {
         int width = size.width();
         int height = size.height();
@@ -515,20 +515,20 @@ void QOpenGLFramebufferObjectPrivate::initTexture(GLenum target, GLenum internal
             width = qMax(1, width >> 1);
             height = qMax(1, height >> 1);
             ++level;
-            glTexImage2D(target, level, internal_format, width, height, 0,
-                         GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+            funcs.glTexImage2D(target, level, internal_format, width, height, 0,
+                               GL_RGBA, GL_UNSIGNED_BYTE, NULL);
         }
     }
     funcs.glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                                  target, texture, 0);
 
     QT_CHECK_GLERROR();
-    glBindTexture(target, 0);
+    funcs.glBindTexture(target, 0);
     valid = checkFramebufferStatus(ctx);
     if (valid)
         texture_guard = new QOpenGLSharedResourceGuard(ctx, texture, freeTextureFunc);
     else
-        glDeleteTextures(1, &texture);
+        funcs.glDeleteTextures(1, &texture);
 }
 
 void QOpenGLFramebufferObjectPrivate::initAttachments(QOpenGLContext *ctx, QOpenGLFramebufferObject::Attachment attachment)
@@ -1084,7 +1084,8 @@ Q_GUI_EXPORT QImage qt_gl_read_framebuffer(const QSize &size, bool alpha_format,
     int w = size.width();
     int h = size.height();
 
-    while (glGetError());
+    QOpenGLFunctions *funcs = QOpenGLContext::currentContext()->functions();
+    while (funcs->glGetError());
 
 #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
     QImage img(size, (alpha_format && include_alpha) ? QImage::Format_ARGB32_Premultiplied
@@ -1094,14 +1095,14 @@ Q_GUI_EXPORT QImage qt_gl_read_framebuffer(const QSize &size, bool alpha_format,
 #else
     GLint fmt = GL_BGRA;
 #endif
-    glReadPixels(0, 0, w, h, fmt, GL_UNSIGNED_BYTE, img.bits());
-    if (!glGetError())
+    funcs->glReadPixels(0, 0, w, h, fmt, GL_UNSIGNED_BYTE, img.bits());
+    if (!funcs->glGetError())
         return img.mirrored();
 #endif
 
     QImage rgbaImage(size, (alpha_format && include_alpha) ? QImage::Format_RGBA8888_Premultiplied
                                                            : QImage::Format_RGBX8888);
-    glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, rgbaImage.bits());
+    funcs->glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, rgbaImage.bits());
     return rgbaImage.mirrored();
 }
 

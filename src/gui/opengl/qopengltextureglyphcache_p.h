@@ -89,9 +89,9 @@ public:
         qDebug("~QOpenGLGlyphTexture() %p for context %p.", this, ctx);
 #endif
         if (!ctx->d_func()->workaround_brokenFBOReadBack)
-            QOpenGLFunctions(ctx).glDeleteFramebuffers(1, &m_fbo);
+            ctx->functions()->glDeleteFramebuffers(1, &m_fbo);
         if (m_width || m_height)
-            glDeleteTextures(1, &m_texture);
+            ctx->functions()->glDeleteTextures(1, &m_texture);
     }
 
     void invalidateResource()
