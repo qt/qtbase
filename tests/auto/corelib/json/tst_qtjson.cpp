@@ -95,6 +95,7 @@ private Q_SLOTS:
 
     void undefinedValues();
 
+    void fromVariant();
     void fromVariantMap();
     void toVariantMap();
     void toVariantList();
@@ -1040,6 +1041,62 @@ void tst_QtJson::undefinedValues()
     QCOMPARE(array.at(-1).type(), QJsonValue::Undefined);
 }
 
+void tst_QtJson::fromVariant()
+{
+    bool boolValue = true;
+    int intValue = -1;
+    uint uintValue = 1;
+    long long longlongValue = -2;
+    unsigned long long ulonglongValue = 2;
+    float floatValue = 3.3f;
+    double doubleValue = 4.4;
+    QString stringValue("str");
+
+    QStringList stringList;
+    stringList.append(stringValue);
+    stringList.append("str2");
+    QJsonArray jsonArray_string;
+    jsonArray_string.append(stringValue);
+    jsonArray_string.append("str2");
+
+    QVariantList variantList;
+    variantList.append(boolValue);
+    variantList.append(floatValue);
+    variantList.append(doubleValue);
+    variantList.append(stringValue);
+    variantList.append(stringList);
+    variantList.append(QVariant());
+    QJsonArray jsonArray_variant;
+    jsonArray_variant.append(boolValue);
+    jsonArray_variant.append(floatValue);
+    jsonArray_variant.append(doubleValue);
+    jsonArray_variant.append(stringValue);
+    jsonArray_variant.append(jsonArray_string);
+    jsonArray_variant.append(QJsonValue());
+
+    QVariantMap variantMap;
+    variantMap["bool"] = boolValue;
+    variantMap["float"] = floatValue;
+    variantMap["string"] = stringValue;
+    variantMap["array"] = variantList;
+    QJsonObject jsonObject;
+    jsonObject["bool"] = boolValue;
+    jsonObject["float"] = floatValue;
+    jsonObject["string"] = stringValue;
+    jsonObject["array"] = jsonArray_variant;
+
+    QCOMPARE(QJsonValue::fromVariant(QVariant(boolValue)), QJsonValue(boolValue));
+    QCOMPARE(QJsonValue::fromVariant(QVariant(intValue)), QJsonValue(intValue));
+    QCOMPARE(QJsonValue::fromVariant(QVariant(uintValue)), QJsonValue(static_cast<double>(uintValue)));
+    QCOMPARE(QJsonValue::fromVariant(QVariant(longlongValue)), QJsonValue(longlongValue));
+    QCOMPARE(QJsonValue::fromVariant(QVariant(ulonglongValue)), QJsonValue(static_cast<double>(ulonglongValue)));
+    QCOMPARE(QJsonValue::fromVariant(QVariant(floatValue)), QJsonValue(static_cast<double>(floatValue)));
+    QCOMPARE(QJsonValue::fromVariant(QVariant(doubleValue)), QJsonValue(doubleValue));
+    QCOMPARE(QJsonValue::fromVariant(QVariant(stringValue)), QJsonValue(stringValue));
+    QCOMPARE(QJsonValue::fromVariant(QVariant(stringList)), QJsonValue(jsonArray_string));
+    QCOMPARE(QJsonValue::fromVariant(QVariant(variantList)), QJsonValue(jsonArray_variant));
+    QCOMPARE(QJsonValue::fromVariant(QVariant(variantMap)), QJsonValue(jsonObject));
+}
 
 void tst_QtJson::fromVariantMap()
 {

@@ -360,6 +360,7 @@ QJsonValue &QJsonValue::operator =(const QJsonValue &other)
                 \li QMetaType::UInt
                 \li QMetaType::LongLong
                 \li QMetaType::ULongLong
+                \li QMetaType::Float
                 \li QMetaType::Double
             \endlist
         \li QJsonValue::Double
@@ -391,10 +392,11 @@ QJsonValue &QJsonValue::operator =(const QJsonValue &other)
  */
 QJsonValue QJsonValue::fromVariant(const QVariant &variant)
 {
-    switch (variant.type()) {
+    switch (variant.userType()) {
     case QVariant::Bool:
         return QJsonValue(variant.toBool());
     case QVariant::Int:
+    case QMetaType::Float:
     case QVariant::Double:
     case QVariant::LongLong:
     case QVariant::ULongLong:
