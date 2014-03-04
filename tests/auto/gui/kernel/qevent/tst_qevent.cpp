@@ -72,8 +72,10 @@ void tst_QEvent::registerEventType_data()
     QTest::newRow("default") << -1 << int(QEvent::MaxUser);
     // hint not valid
     QTest::newRow("User-1") << int(QEvent::User - 1) << int(QEvent::MaxUser - 1);
+    // hint not valid II
+    QTest::newRow("MaxUser+1") << int(QEvent::MaxUser + 1) << int(QEvent::MaxUser - 2);
     // hint valid, but already taken
-    QTest::newRow("MaxUser-1") << int(QEvent::MaxUser - 1) << int(QEvent::MaxUser - 2);
+    QTest::newRow("MaxUser-1") << int(QEvent::MaxUser - 1) << int(QEvent::MaxUser - 3);
     // hint valid, but not taken
     QTest::newRow("User + 1000") << int(QEvent::User + 1000) << int(QEvent::User + 1000);
 }
