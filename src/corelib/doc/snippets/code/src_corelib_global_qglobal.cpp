@@ -195,7 +195,7 @@ int divide(int a, int b)
 
 
 //! [18]
-ASSERT: "b == 0" in file div.cpp, line 7
+ASSERT: "b != 0" in file div.cpp, line 7
 //! [18]
 
 
