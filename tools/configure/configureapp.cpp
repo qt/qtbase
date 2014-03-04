@@ -4215,7 +4215,7 @@ bool Configure::showLicense(QString orgLicenseFile)
     QString licenseFile = orgLicenseFile;
     QString theLicense;
     if (dictionary["EDITION"] == "OpenSource" || dictionary["EDITION"] == "Snapshot") {
-        haveGpl3 = QFile::exists(orgLicenseFile + "/LICENSE.GPL3");
+        haveGpl3 = QFile::exists(orgLicenseFile + "/LICENSE.GPL");
         theLicense = "GNU Lesser General Public License (LGPL) version 2.1";
         if (haveGpl3)
             theLicense += "\nor the GNU General Public License (GPL) version 3";
@@ -4255,7 +4255,7 @@ bool Configure::showLicense(QString orgLicenseFile)
         } else {
             if (dictionary["EDITION"] == "OpenSource" || dictionary["EDITION"] == "Snapshot") {
                 if (accept == '3')
-                    licenseFile = orgLicenseFile + "/LICENSE.GPL3";
+                    licenseFile = orgLicenseFile + "/LICENSE.GPL";
                 else
                     licenseFile = orgLicenseFile + "/LICENSE.LGPL";
             }
@@ -4292,7 +4292,7 @@ void Configure::readLicense()
     dictionary["LICENSE FILE"] = sourcePath;
 
     bool openSource = false;
-    bool hasOpenSource = QFile::exists(dictionary["LICENSE FILE"] + "/LICENSE.GPL3") || QFile::exists(dictionary["LICENSE FILE"] + "/LICENSE.LGPL");
+    bool hasOpenSource = QFile::exists(dictionary["LICENSE FILE"] + "/LICENSE.GPL") || QFile::exists(dictionary["LICENSE FILE"] + "/LICENSE.LGPL");
     if (dictionary["BUILDTYPE"] == "commercial") {
         openSource = false;
     } else if (dictionary["BUILDTYPE"] == "opensource") {
