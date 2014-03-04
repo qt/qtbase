@@ -96,8 +96,8 @@ inline QPixmap styleCachePixmap(const QSize &size)
     QPainter *p = painter; \
     QString unique = QStyleHelper::uniqueName((a), option, option->rect.size()); \
     int txType = painter->deviceTransform().type() | painter->worldTransform().type(); \
-    bool doPixmapCache = (txType <= QTransform::TxTranslate) \
-            || (painter->deviceTransform().type() == QTransform::TxScale); \
+    bool doPixmapCache = (!option->rect.isEmpty()) \
+            && ((txType <= QTransform::TxTranslate) || (painter->deviceTransform().type() == QTransform::TxScale)); \
     if (doPixmapCache && QPixmapCache::find(unique, internalPixmapCache)) { \
         painter->drawPixmap(option->rect.topLeft(), internalPixmapCache); \
     } else { \
