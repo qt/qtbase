@@ -649,6 +649,7 @@ CFG_XINPUT2=auto
 CFG_XINPUT=runtime
 CFG_XKB=auto
 CFG_XKBCOMMON=auto
+CFG_XKB_CONFIG_ROOT=auto
 CFG_XCB=auto
 CFG_XCB_XLIB=auto
 CFG_XCB_GLX=no
@@ -898,6 +899,7 @@ while [ "$#" -gt 0 ]; do
     -qpa| \
     -qconfig| \
     -qreal| \
+    -xkb-config-root| \
     -android-sdk| \
     -android-ndk| \
     -android-ndk-platform| \
@@ -2109,6 +2111,9 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
+    xkb-config-root)
+        CFG_XKB_CONFIG_ROOT="$VAL"
+        ;;
     android-sdk)
         CFG_DEFAULT_ANDROID_SDK_ROOT="$VAL"
         ;;
@@ -2358,6 +2363,7 @@ Third Party Libraries:
                          (libxcb.so will still be used from operating system).
  +  -system-xcb ........ Use xcb- libraries from the operating system.
 
+    -xkb-config-root ... Set default XKB config root. This option is used only together with -qt-xkbcommon.
     -qt-xkbcommon ...... Use the xkbcommon library bundled with Qt.
  +  -system-xkbcommon .. Use the xkbcommon library from the operating system.
 
@@ -5360,6 +5366,25 @@ fi
 
 if [ "$CFG_XKBCOMMON" = "qt" ]; then
     QT_CONFIG="$QT_CONFIG xkbcommon-qt"
+    # detect XKB config root
+    if [ "$CFG_XKB_CONFIG_ROOT" = "auto" ]; then
+        if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists "xkeyboard-config" 2> /dev/null; then
+            CFG_XKB_CONFIG_ROOT="`$PKG_CONFIG --variable=xkb_base xkeyboard-config`"
+        else
+            # search for xkb configs in most probable locations
+            if [ -d "/usr/share/X11/xkb" ]; then
+                # Linux
+                CFG_XKB_CONFIG_ROOT="/usr/share/X11/xkb"
+            elif [ -d "/usr/local/share/X11/xkb" ]; then
+                # BSD UNIX
+                CFG_XKB_CONFIG_ROOT="/usr/local/share/X11/xkb"
+            fi
+        fi
+    fi
+    QMakeVar set QMAKE_XKB_CONFIG_ROOT "$CFG_XKB_CONFIG_ROOT"
+    if [ "$CFG_XKB_CONFIG_ROOT" = "auto" ]; then
+        CFG_XKB_CONFIG_ROOT="not found"
+    fi
 elif [ "$CFG_XKBCOMMON" = "no" ]; then
     QMakeVar add DEFINES QT_NO_XKBCOMMON
 fi
@@ -6827,7 +6852,7 @@ report_support "    SQLite 2 ............." "$CFG_SQL_sqlite2" plugin "plugin" y
 report_support_plugin "    SQLite ..............." "$CFG_SQL_sqlite" "$CFG_SQLITE" QtSql
 report_support "    TDS .................." "$CFG_SQL_tds" plugin "plugin" yes "built into QtSql"
 report_support "  udev ..................." "$CFG_LIBUDEV"
-report_support "  xkbcommon .............." "$CFG_XKBCOMMON" system "system library" qt "bundled copy"
+report_support "  xkbcommon .............." "$CFG_XKBCOMMON" system "system library" qt "bundled copy, XKB config root: $CFG_XKB_CONFIG_ROOT"
 report_support "  zlib ..................." "$CFG_ZLIB" system "system library" yes "bundled copy"
 
 echo
@@ -6851,6 +6876,10 @@ fi
 if [ "$ORIG_CFG_XKBCOMMON" != qt ] && [ "$CFG_XKBCOMMON" = qt ]; then
     echo "NOTE: libxkbcommon 0.2.0 (or higher) not found on the system, will use "
     echo "the bundled version from 3rd party directory."
+fi
+if [ "$CFG_XKBCOMMON" = "qt" ] && [ "$CFG_XKB_CONFIG_ROOT" = "not found" ]; then
+    echo "WARNING: Could not find XKB config root, use -xkb-config-root to set a path to "
+    echo "XKB configuration data. This is required for keyboard input support."
 fi
 if [ "$CFG_QREAL" = double ] && [ "$CFG_ARCH" = arm ]; then
     echo "NOTE: Qt is using double for qreal on this system. This is binary incompatible against Qt 5.1."
