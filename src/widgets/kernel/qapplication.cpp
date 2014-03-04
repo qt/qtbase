@@ -336,6 +336,15 @@ QApplicationPrivate::~QApplicationPrivate()
 */
 
 /*!
+    \fn QApplication::setGraphicsSystem(const QString &)
+    \obsolete
+
+    This call has no effect.
+
+    Use the QPA framework instead.
+*/
+
+/*!
     \fn QWidget *QApplication::topLevelAt(const QPoint &point)
 
     Returns the top-level widget at the given \a point; returns 0 if
