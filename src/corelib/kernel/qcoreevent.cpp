@@ -274,6 +274,7 @@ QT_BEGIN_NAMESPACE
     \omitvalue NetworkReplyUpdated
     \omitvalue FutureCallOut
     \omitvalue NativeGesture
+    \omitvalue WindowChangeInternal
 */
 
 /*!
