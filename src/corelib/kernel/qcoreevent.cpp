@@ -43,8 +43,9 @@
 #include "qcoreapplication.h"
 #include "qcoreapplication_p.h"
 
-#include "qmutex.h"
-#include "qset.h"
+#include "qbasicatomic.h"
+
+#include <limits>
 
 QT_BEGIN_NAMESPACE
 
@@ -390,13 +391,72 @@ QEvent::~QEvent()
     The return value of this function is not defined for paint events.
 */
 
-class QEventUserEventRegistration
-{
-public:
-    QMutex mutex;
-    QSet<int> set;
+namespace {
+template <size_t N>
+struct QBasicAtomicBitField {
+    enum {
+        BitsPerInt = std::numeric_limits<uint>::digits,
+        NumInts = (N + BitsPerInt - 1) / BitsPerInt,
+        NumBits = N
+    };
+
+    // This atomic int points to the next (possibly) free ID saving
+    // the otherwise necessary scan through 'data':
+    QBasicAtomicInteger<uint> next;
+    QBasicAtomicInteger<uint> data[NumInts];
+
+    bool allocateSpecific(int which) Q_DECL_NOTHROW
+    {
+        QBasicAtomicInteger<uint> &entry = data[which / BitsPerInt];
+        const uint old = entry.load();
+        const uint bit = 1U << (which % BitsPerInt);
+        return !(old & bit) // wasn't taken
+            && entry.testAndSetRelaxed(old, old | bit); // still wasn't taken
+
+        // don't update 'next' here - it's unlikely that it will need
+        // to be updated, in the general case, and having 'next'
+        // trailing a bit is not a problem, as it is just a starting
+        // hint for allocateNext(), which, when wrong, will just
+        // result in a few more rounds through the allocateNext()
+        // loop.
+    }
+
+    int allocateNext() Q_DECL_NOTHROW
+    {
+        // Unroll loop to iterate over ints, then bits? Would save
+        // potentially a lot of cmpxchgs, because we can scan the
+        // whole int before having to load it again.
+
+        // Then again, this should never execute many iterations, so
+        // leave like this for now:
+        for (uint i = next.load(); i < NumBits; ++i) {
+            if (allocateSpecific(i)) {
+                // remember next (possibly) free id:
+                const uint oldNext = next.load();
+                next.testAndSetRelaxed(oldNext, qMax(i + 1, oldNext));
+                return i;
+            }
+        }
+        return -1;
+    }
 };
-Q_GLOBAL_STATIC(QEventUserEventRegistration, userEventRegistrationHelper)
+
+} // unnamed namespace
+
+static const int UserEventRegistrationBitFieldSize = QEvent::MaxUser - QEvent::User + 1;
+typedef QBasicAtomicBitField<QEvent::MaxUser - QEvent::User + 1> UserEventTypeRegistry;
+
+static UserEventTypeRegistry userEventTypeRegistry;
+
+static inline int registerEventTypeZeroBased(int id) Q_DECL_NOTHROW
+{
+    // if the type hint hasn't been registered yet, take it:
+    if (id < UserEventTypeRegistry::NumBits && id >= 0 && userEventTypeRegistry.allocateSpecific(id))
+        return id;
+
+    // otherwise, ignore hint:
+    return userEventTypeRegistry.allocateNext();
+}
 
 /*!
     \since 4.4
@@ -413,28 +473,8 @@ Q_GLOBAL_STATIC(QEventUserEventRegistration, userEventRegistrationHelper)
 */
 int QEvent::registerEventType(int hint)
 {
-    QEventUserEventRegistration *userEventRegistration
-        = userEventRegistrationHelper();
-    if (!userEventRegistration)
-        return -1;
-
-    QMutexLocker locker(&userEventRegistration->mutex);
-
-    // if the type hint hasn't been registered yet, take it
-    if (hint >= QEvent::User && hint <= QEvent::MaxUser && !userEventRegistration->set.contains(hint)) {
-        userEventRegistration->set.insert(hint);
-        return hint;
-    }
-
-    // find a free event type, starting at MaxUser and decreasing
-    int id = QEvent::MaxUser;
-    while (userEventRegistration->set.contains(id) && id >= QEvent::User)
-        --id;
-    if (id >= QEvent::User) {
-        userEventRegistration->set.insert(id);
-        return id;
-    }
-    return -1;
+    const int result = registerEventTypeZeroBased(QEvent::MaxUser - hint);
+    return result < 0 ? -1 : QEvent::MaxUser - result ;
 }
 
 /*!
