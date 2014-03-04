@@ -8,7 +8,6 @@ SUBDIRS=\
     qmetaobjectbuilder \
     qmetamethod \
     qmetaproperty \
-    qmetatype \
     qmimedata \
     qobject \
     qpointer \
@@ -21,6 +20,10 @@ SUBDIRS=\
     qtranslator \
     qvariant \
     qwineventnotifier
+
+# Building the qmetatype test with Clang on ARM takes forever (QTBUG-37237)
+!clang|!contains(QT_ARCH, arm): \
+    SUBDIRS += qmetatype
 
 !qtHaveModule(gui): SUBDIRS -= \
     qmimedata
