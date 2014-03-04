@@ -1283,7 +1283,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
             }
 
             QRect vCheckRect = visualRect(option->direction, menuitem->rect, QRect(menuitem->rect.x(),
-                                          menuitem->rect.y(), checkcol - 6, menuitem->rect.height()));
+                                          menuitem->rect.y(), checkcol - (3 + menuitem->rect.x()), menuitem->rect.height()));
 
             if (act) {
                 stateId = dis ? MBI_DISABLED : MBI_HOT;
