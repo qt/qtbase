@@ -634,11 +634,15 @@ public class QtActivity extends Activity
                                                                   + "\tQML_IMPORT_PATH=" + pluginsPrefix + "/imports"
                                                                   + "\tQT_PLUGIN_PATH=" + pluginsPrefix + "/plugins");
 
-                Intent intent = getIntent();
-                if (intent != null) {
-                    String parameters = intent.getStringExtra("applicationArguments");
-                    if (parameters != null)
-                        loaderParams.putString(APPLICATION_PARAMETERS_KEY, parameters.replace(' ', '\t'));
+                if (APPLICATION_PARAMETERS != null) {
+                    loaderParams.putString(APPLICATION_PARAMETERS_KEY, APPLICATION_PARAMETERS);
+                } else {
+                    Intent intent = getIntent();
+                    if (intent != null) {
+                        String parameters = intent.getStringExtra("applicationArguments");
+                        if (parameters != null)
+                            loaderParams.putString(APPLICATION_PARAMETERS_KEY, parameters.replace(' ', '\t'));
+                    }
                 }
 
                 loadApplication(loaderParams);
