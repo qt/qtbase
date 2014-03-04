@@ -420,6 +420,7 @@ void QFontDatabasePrivate::invalidate()
 {
     QFontCache::instance()->clear();
     free();
+    QGuiApplicationPrivate::platformIntegration()->fontDatabase()->invalidate();
     emit static_cast<QGuiApplication *>(QCoreApplication::instance())->fontDatabaseChanged();
 }
 

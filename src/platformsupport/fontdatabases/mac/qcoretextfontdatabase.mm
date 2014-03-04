@@ -199,6 +199,12 @@ void QCoreTextFontDatabase::populateFontDatabase()
     [pool release];
 }
 
+void QCoreTextFontDatabase::invalidate()
+{
+    psNameToFamily.clear();
+    familyNameToPsName.clear();
+}
+
 void QCoreTextFontDatabase::populateFromDescriptor(CTFontDescriptorRef font)
 {
     QString foundryName = QStringLiteral("CoreText");
@@ -389,29 +395,31 @@ QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family, QFo
             if (fallbackLists.contains(family))
                 return fallbackLists.value(family);
 
-            if (!familyNameToPsName.contains(family))
+            if (familyNameToPsName.isEmpty())
                 const_cast<QCoreTextFontDatabase*>(this)->populateFontDatabase();
 
-            QCFType<CTFontRef> font = CTFontCreateWithName(QCFString(familyNameToPsName[family]), 12.0, NULL);
-            if (font) {
-                NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-                NSArray *languages = [defaults stringArrayForKey: @"AppleLanguages"];
+            if (familyNameToPsName.contains(family)) {
+                QCFType<CTFontRef> font = CTFontCreateWithName(QCFString(familyNameToPsName[family]), 12.0, NULL);
+                if (font) {
+                    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+                    NSArray *languages = [defaults stringArrayForKey: @"AppleLanguages"];
 
-                QCFType<CFArrayRef> cascadeList = (CFArrayRef) CTFontCopyDefaultCascadeListForLanguages(font, (CFArrayRef) languages);
-                if (cascadeList) {
-                    QStringList fallbackList;
-                    const int numCascades = CFArrayGetCount(cascadeList);
-                    for (int i = 0; i < numCascades; ++i) {
-                        CTFontDescriptorRef fontFallback = (CTFontDescriptorRef) CFArrayGetValueAtIndex(cascadeList, i);
-                        QCFString fallbackFamilyName = (CFStringRef) CTFontDescriptorCopyLocalizedAttribute(fontFallback, kCTFontFamilyNameAttribute, NULL);
-                        fallbackList.append(QCFString::toQString(fallbackFamilyName));
+                    QCFType<CFArrayRef> cascadeList = (CFArrayRef) CTFontCopyDefaultCascadeListForLanguages(font, (CFArrayRef) languages);
+                    if (cascadeList) {
+                        QStringList fallbackList;
+                        const int numCascades = CFArrayGetCount(cascadeList);
+                        for (int i = 0; i < numCascades; ++i) {
+                            CTFontDescriptorRef fontFallback = (CTFontDescriptorRef) CFArrayGetValueAtIndex(cascadeList, i);
+                            QCFString fallbackFamilyName = (CFStringRef) CTFontDescriptorCopyLocalizedAttribute(fontFallback, kCTFontFamilyNameAttribute, NULL);
+                            fallbackList.append(QCFString::toQString(fallbackFamilyName));
+                        }
+                        fallbackLists[family] = fallbackList;
                     }
-                    fallbackLists[family] = fallbackList;
                 }
-            }
 
-            if (fallbackLists.contains(family))
-                return fallbackLists.value(family);
+                if (fallbackLists.contains(family))
+                    return fallbackLists.value(family);
+            }
         }
 #endif
     }
@@ -425,7 +433,8 @@ QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family, QFo
     if (!didPopulateStyleFallbacks) {
 #if defined(Q_OS_MACX)
         // Ensure we have the psNameToFamily mapping set up
-        const_cast<QCoreTextFontDatabase*>(this)->populateFontDatabase();
+        if (psNameToFamily.isEmpty())
+            const_cast<QCoreTextFontDatabase*>(this)->populateFontDatabase();
 
         NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
         NSArray *languages = [defaults stringArrayForKey: @"AppleLanguages"];
