@@ -49,7 +49,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QTouchDevice
-    \brief The QTouchDevice class describes the device from with touch events originate.
+    \brief The QTouchDevice class describes the device from which touch events originate.
     \since 5.0
     \ingroup touch
     \inmodule QtGui
