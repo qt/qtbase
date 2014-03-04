@@ -73,13 +73,19 @@ TableGenerator::TableGenerator() : m_state(NoErrors),
 
 void TableGenerator::initPossibleLocations()
 {
-    // To add an extra system path use the QTCOMPOSE environment variable
-    if (qEnvironmentVariableIsSet("QTCOMPOSE")) {
-        m_possibleLocations.append(QString(qgetenv("QTCOMPOSE")));
-    }
-
-    m_possibleLocations.append(QStringLiteral(COMPOSE_X11_PREFIX "/share/X11/locale"));
-    m_possibleLocations.append(QStringLiteral(COMPOSE_X11_PREFIX "/lib/X11/locale"));
+    // Compose files come as a part of Xlib library. Xlib doesn't provide
+    // a mechanism how to retrieve the location of these files reliably, since it was
+    // never meant for external software to parse compose tables directly. Best we
+    // can do is to hardcode search paths. To add an extra system path use
+    // the QTCOMPOSE environment variable
+    if (qEnvironmentVariableIsSet("QTCOMPOSE"))
+        m_possibleLocations.append(QString::fromLocal8Bit(qgetenv("QTCOMPOSE")));
+    m_possibleLocations.append(QStringLiteral("/usr/share/X11/locale"));
+    m_possibleLocations.append(QStringLiteral("/usr/local/share/X11/locale"));
+    m_possibleLocations.append(QStringLiteral("/usr/lib/X11/locale"));
+    m_possibleLocations.append(QStringLiteral("/usr/local/lib/X11/locale"));
+    m_possibleLocations.append(QStringLiteral(X11_PREFIX "/share/X11/locale"));
+    m_possibleLocations.append(QStringLiteral(X11_PREFIX "/lib/X11/locale"));
 }
 
 void TableGenerator::findComposeFile()
