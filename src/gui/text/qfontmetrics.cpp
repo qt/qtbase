@@ -410,12 +410,7 @@ int QFontMetrics::averageCharWidth() const
 */
 bool QFontMetrics::inFont(QChar ch) const
 {
-    const int script = ch.script();
-    QFontEngine *engine = d->engineForScript(script);
-    Q_ASSERT(engine != 0);
-    if (engine->type() == QFontEngine::Box)
-        return false;
-    return engine->canRender(&ch, 1);
+    return inFontUcs4(ch.unicode());
 }
 
 /*!
@@ -458,16 +453,7 @@ int QFontMetrics::leftBearing(QChar ch) const
 
     d->alterCharForCapitalization(ch);
 
-    glyph_t glyph;
-
-    QGlyphLayout glyphs;
-    glyphs.numGlyphs = 1;
-    glyphs.glyphs = &glyph;
-
-    int nglyphs = 1;
-    if (!engine->stringToCMap(&ch, 1, &glyphs, &nglyphs, QFontEngine::GlyphIndicesOnly))
-        Q_UNREACHABLE();
-    Q_ASSERT(nglyphs == 1);
+    glyph_t glyph = engine->glyphIndex(ch.unicode());
 
     qreal lb;
     engine->getGlyphBearings(glyph, &lb);
@@ -500,16 +486,7 @@ int QFontMetrics::rightBearing(QChar ch) const
 
     d->alterCharForCapitalization(ch);
 
-    glyph_t glyph;
-
-    QGlyphLayout glyphs;
-    glyphs.numGlyphs = 1;
-    glyphs.glyphs = &glyph;
-
-    int nglyphs = 1;
-    if (!engine->stringToCMap(&ch, 1, &glyphs, &nglyphs, QFontEngine::GlyphIndicesOnly))
-        Q_UNREACHABLE();
-    Q_ASSERT(nglyphs == 1);
+    glyph_t glyph = engine->glyphIndex(ch.unicode());
 
     qreal rb;
     engine->getGlyphBearings(glyph, 0, &rb);
@@ -605,18 +582,14 @@ int QFontMetrics::width(QChar ch) const
 
     d->alterCharForCapitalization(ch);
 
+    glyph_t glyph = engine->glyphIndex(ch.unicode());
     QFixed advance;
 
     QGlyphLayout glyphs;
     glyphs.numGlyphs = 1;
-    glyph_t glyph;
     glyphs.glyphs = &glyph;
     glyphs.advances = &advance;
-
-    int nglyphs = 1;
-    if (!engine->stringToCMap(&ch, 1, &glyphs, &nglyphs, 0))
-        Q_UNREACHABLE();
-    Q_ASSERT(nglyphs == 1);
+    engine->recalcAdvances(&glyphs, 0);
 
     return qRound(advance);
 }
@@ -660,18 +633,14 @@ int QFontMetrics::charWidth(const QString &text, int pos) const
 
         d->alterCharForCapitalization(ch);
 
+        glyph_t glyph = engine->glyphIndex(ch.unicode());
         QFixed advance;
 
         QGlyphLayout glyphs;
         glyphs.numGlyphs = 1;
-        glyph_t glyph;
         glyphs.glyphs = &glyph;
         glyphs.advances = &advance;
-
-        int nglyphs = 1;
-        if (!engine->stringToCMap(&ch, 1, &glyphs, &nglyphs, 0))
-            Q_UNREACHABLE();
-        Q_ASSERT(nglyphs == 1);
+        engine->recalcAdvances(&glyphs, 0);
 
         width = qRound(advance);
     }
@@ -739,16 +708,7 @@ QRect QFontMetrics::boundingRect(QChar ch) const
 
     d->alterCharForCapitalization(ch);
 
-    glyph_t glyph;
-
-    QGlyphLayout glyphs;
-    glyphs.numGlyphs = 1;
-    glyphs.glyphs = &glyph;
-
-    int nglyphs = 1;
-    if (!engine->stringToCMap(&ch, 1, &glyphs, &nglyphs, QFontEngine::GlyphIndicesOnly))
-        Q_UNREACHABLE();
-    Q_ASSERT(nglyphs == 1);
+    glyph_t glyph = engine->glyphIndex(ch.unicode());
 
     glyph_metrics_t gm = engine->boundingBox(glyph);
     return QRect(qRound(gm.x), qRound(gm.y), qRound(gm.width), qRound(gm.height));
@@ -1315,12 +1275,7 @@ qreal QFontMetricsF::averageCharWidth() const
 */
 bool QFontMetricsF::inFont(QChar ch) const
 {
-    const int script = ch.script();
-    QFontEngine *engine = d->engineForScript(script);
-    Q_ASSERT(engine != 0);
-    if (engine->type() == QFontEngine::Box)
-        return false;
-    return engine->canRender(&ch, 1);
+    return inFontUcs4(ch.unicode());
 }
 
 /*!
@@ -1365,16 +1320,7 @@ qreal QFontMetricsF::leftBearing(QChar ch) const
 
     d->alterCharForCapitalization(ch);
 
-    glyph_t glyph;
-
-    QGlyphLayout glyphs;
-    glyphs.numGlyphs = 1;
-    glyphs.glyphs = &glyph;
-
-    int nglyphs = 1;
-    if (!engine->stringToCMap(&ch, 1, &glyphs, &nglyphs, QFontEngine::GlyphIndicesOnly))
-        Q_UNREACHABLE();
-    Q_ASSERT(nglyphs == 1);
+    glyph_t glyph = engine->glyphIndex(ch.unicode());
 
     qreal lb;
     engine->getGlyphBearings(glyph, &lb);
@@ -1407,16 +1353,7 @@ qreal QFontMetricsF::rightBearing(QChar ch) const
 
     d->alterCharForCapitalization(ch);
 
-    glyph_t glyph;
-
-    QGlyphLayout glyphs;
-    glyphs.numGlyphs = 1;
-    glyphs.glyphs = &glyph;
-
-    int nglyphs = 1;
-    if (!engine->stringToCMap(&ch, 1, &glyphs, &nglyphs, QFontEngine::GlyphIndicesOnly))
-        Q_UNREACHABLE();
-    Q_ASSERT(nglyphs == 1);
+    glyph_t glyph = engine->glyphIndex(ch.unicode());
 
     qreal rb;
     engine->getGlyphBearings(glyph, 0, &rb);
@@ -1484,18 +1421,14 @@ qreal QFontMetricsF::width(QChar ch) const
 
     d->alterCharForCapitalization(ch);
 
+    glyph_t glyph = engine->glyphIndex(ch.unicode());
     QFixed advance;
 
     QGlyphLayout glyphs;
     glyphs.numGlyphs = 1;
-    glyph_t glyph;
     glyphs.glyphs = &glyph;
     glyphs.advances = &advance;
-
-    int nglyphs = 1;
-    if (!engine->stringToCMap(&ch, 1, &glyphs, &nglyphs, 0))
-        Q_UNREACHABLE();
-    Q_ASSERT(nglyphs == 1);
+    engine->recalcAdvances(&glyphs, 0);
 
     return advance.toReal();
 }
@@ -1559,16 +1492,7 @@ QRectF QFontMetricsF::boundingRect(QChar ch) const
 
     d->alterCharForCapitalization(ch);
 
-    glyph_t glyph;
-
-    QGlyphLayout glyphs;
-    glyphs.numGlyphs = 1;
-    glyphs.glyphs = &glyph;
-
-    int nglyphs = 1;
-    if (!engine->stringToCMap(&ch, 1, &glyphs, &nglyphs, QFontEngine::GlyphIndicesOnly))
-        Q_UNREACHABLE();
-    Q_ASSERT(nglyphs == 1);
+    glyph_t glyph = engine->glyphIndex(ch.unicode());
 
     glyph_metrics_t gm = engine->boundingBox(glyph);
     return QRectF(gm.x.toReal(), gm.y.toReal(), gm.width.toReal(), gm.height.toReal());

@@ -397,33 +397,7 @@ _hb_qt_font_get_glyph(hb_font_t * /*font*/, void *font_data,
     QFontEngine *fe = (QFontEngine *)font_data;
     Q_ASSERT(fe);
 
-    QChar chars[2];
-    int numChars = 0;
-    if (Q_UNLIKELY(QChar::requiresSurrogates(unicode))) {
-        chars[numChars++] = QChar(QChar::highSurrogate(unicode));
-        chars[numChars++] = QChar(QChar::lowSurrogate(unicode));
-    } else {
-        chars[numChars++] = QChar(unicode);
-    }
-#if 0
-    if (Q_UNLIKELY(variation_selector != 0)) {
-        if (Q_UNLIKELY(QChar::requiresSurrogates(variation_selector))) {
-            chars[numChars++] = QChar(QChar::highSurrogate(variation_selector));
-            chars[numChars++] = QChar(QChar::lowSurrogate(variation_selector));
-        } else {
-            chars[numChars++] = QChar(variation_selector);
-        }
-    }
-#endif
-
-    QGlyphLayout g;
-    g.numGlyphs = numChars;
-    g.glyphs = glyph;
-
-    int numGlyphs = numChars;
-    if (!fe->stringToCMap(chars, numChars, &g, &numGlyphs, QFontEngine::GlyphIndicesOnly))
-        Q_UNREACHABLE();
-    Q_ASSERT(numGlyphs == 1);
+    *glyph = fe->glyphIndex(unicode);
 
     return true;
 }

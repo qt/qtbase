@@ -101,35 +101,13 @@ static HB_Bool hb_stringToGlyphs(HB_Font font, const HB_UChar16 *string, hb_uint
     *numGlyphs = nGlyphs;
 
     if (rightToLeft && result && !fe->symbol) {
-        uint glyph_pos = 0;
-        for (uint i = 0; i < length; ++i, ++glyph_pos) {
-            uint ucs4 = str[i].unicode();
-            if (Q_UNLIKELY(QChar::isHighSurrogate(ucs4) && i + 1 < length)) {
-                uint low = str[i + 1].unicode();
-                if (Q_LIKELY(QChar::isLowSurrogate(low))) {
-                    ucs4 = QChar::surrogateToUcs4(ucs4, low);
-                    ++i;
-                }
-            }
-
-            uint mirrored = QChar::mirroredChar(ucs4);
-            if (Q_UNLIKELY(mirrored != ucs4)) {
-                QChar chars[2];
-                uint numChars = 0;
-                if (Q_UNLIKELY(QChar::requiresSurrogates(mirrored))) {
-                    chars[numChars++] = QChar(QChar::highSurrogate(mirrored));
-                    chars[numChars++] = QChar(QChar::lowSurrogate(mirrored));
-                } else {
-                    chars[numChars++] = QChar(mirrored);
-                }
-
-                qglyphs.numGlyphs = numChars;
-                qglyphs.glyphs = glyphs + glyph_pos;
-                nGlyphs = numChars;
-                if (!fe->stringToCMap(chars, numChars, &qglyphs, &nGlyphs, QFontEngine::GlyphIndicesOnly))
-                    Q_UNREACHABLE();
-                Q_ASSERT(nGlyphs == 1);
-            }
+        QStringIterator it(str, str + length);
+        while (it.hasNext()) {
+            const uint ucs4 = it.next();
+            const uint mirrored = QChar::mirroredChar(ucs4);
+            if (Q_UNLIKELY(mirrored != ucs4))
+                *glyphs = fe->glyphIndex(mirrored);
+            ++glyphs;
         }
     }
 
@@ -417,38 +395,14 @@ glyph_metrics_t QFontEngine::boundingBox(glyph_t glyph, const QTransform &matrix
 
 QFixed QFontEngine::xHeight() const
 {
-    QChar x((ushort)'x');
-
-    glyph_t glyph;
-
-    QGlyphLayout glyphs;
-    glyphs.numGlyphs = 1;
-    glyphs.glyphs = &glyph;
-
-    int nglyphs = 1;
-    if (!stringToCMap(&x, 1, &glyphs, &nglyphs, GlyphIndicesOnly))
-        Q_UNREACHABLE();
-    Q_ASSERT(nglyphs == 1);
-
+    const glyph_t glyph = glyphIndex('x');
     glyph_metrics_t bb = const_cast<QFontEngine *>(this)->boundingBox(glyph);
     return bb.height;
 }
 
 QFixed QFontEngine::averageCharWidth() const
 {
-    QChar x((ushort)'x');
-
-    glyph_t glyph;
-
-    QGlyphLayout glyphs;
-    glyphs.numGlyphs = 1;
-    glyphs.glyphs = &glyph;
-
-    int nglyphs = 1;
-    if (!stringToCMap(&x, 1, &glyphs, &nglyphs, GlyphIndicesOnly))
-        Q_UNREACHABLE();
-    Q_ASSERT(nglyphs == 1);
-
+    const glyph_t glyph = glyphIndex('x');
     glyph_metrics_t bb = const_cast<QFontEngine *>(this)->boundingBox(glyph);
     return bb.xoff;
 }
@@ -509,18 +463,14 @@ void QFontEngine::getGlyphPositions(const QGlyphLayout &glyphs, const QTransform
             if (glyphs.justifications[i].nKashidas) {
                 QChar ch(0x640); // Kashida character
 
-                glyph_t kashidaGlyph;
+                glyph_t kashidaGlyph = glyphIndex(ch.unicode());
                 QFixed kashidaWidth;
 
                 QGlyphLayout g;
                 g.numGlyphs = 1;
                 g.glyphs = &kashidaGlyph;
                 g.advances = &kashidaWidth;
-
-                int nglyphs = 1;
-                if (!stringToCMap(&ch, 1, &g, &nglyphs, 0))
-                    Q_UNREACHABLE();
-                Q_ASSERT(nglyphs == 1);
+                recalcAdvances(&g, 0);
 
                 for (uint k = 0; k < glyphs.justifications[i].nKashidas; ++k) {
                     xpos -= kashidaWidth;

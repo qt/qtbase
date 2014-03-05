@@ -2011,21 +2011,16 @@ static void set(QJustificationPoint *point, int type, const QGlyphLayout &glyph,
     if (type >= Justification_Arabic_Normal) {
         QChar ch(0x640); // Kashida character
 
-        glyph_t kashidaGlyph;
-        QFixed kashidaWidth;
+        glyph_t kashidaGlyph = fe->glyphIndex(ch.unicode());
+        if (kashidaGlyph != 0) {
+            QGlyphLayout g;
+            g.numGlyphs = 1;
+            g.glyphs = &kashidaGlyph;
+            g.advances = &point->kashidaWidth;
+            fe->recalcAdvances(&g, 0);
 
-        QGlyphLayout glyphs;
-        glyphs.numGlyphs = 1;
-        glyphs.glyphs = &kashidaGlyph;
-        glyphs.advances = &kashidaWidth;
-
-        int nglyphs = 1;
-        if (!fe->stringToCMap(&ch, 1, &glyphs, &nglyphs, 0))
-            Q_UNREACHABLE();
-        Q_ASSERT(nglyphs == 1);
-
-        if (kashidaGlyph != 0 && kashidaWidth != 0) {
-            point->kashidaWidth = kashidaWidth;
+            if (point->kashidaWidth == 0)
+                point->type = Justification_Prohibited;
         } else {
             point->type = Justification_Prohibited;
             point->kashidaWidth = 0;
@@ -2644,40 +2639,30 @@ QString QTextEngine::elidedText(Qt::TextElideMode mode, const QFixed &width, int
     QFixed ellipsisWidth;
     QString ellipsisText;
     {
+        QFontEngine *fe = fnt.d->engineForScript(QChar::Script_Common);
+        QFontEngine *engine = fe->type() == QFontEngine::Multi ? static_cast<QFontEngineMulti *>(fe)->engine(0) : fe;
+
         QChar ellipsisChar(0x2026);
 
-        QFontEngine *fe = fnt.d->engineForScript(QChar::Script_Common);
+        glyph_t glyph = engine->glyphIndex(ellipsisChar.unicode());
 
-        QGlyphLayoutArray<1> ellipsisGlyph;
-        {
-            QFontEngine *feForEllipsis = (fe->type() == QFontEngine::Multi)
-                ? static_cast<QFontEngineMulti *>(fe)->engine(0)
-                : fe;
+        QGlyphLayout glyphs;
+        glyphs.numGlyphs = 1;
+        glyphs.glyphs = &glyph;
+        glyphs.advances = &ellipsisWidth;
 
-            if (feForEllipsis->type() == QFontEngine::Mac)
-                feForEllipsis = fe;
+        if (glyph != 0) {
+            engine->recalcAdvances(&glyphs, 0);
 
-            int nGlyphs = 1;
-            if (!feForEllipsis->stringToCMap(&ellipsisChar, 1, &ellipsisGlyph, &nGlyphs, 0))
-                Q_UNREACHABLE();
-            Q_ASSERT(nGlyphs == 1);
-        }
-
-        if (ellipsisGlyph.glyphs[0]) {
-            ellipsisWidth = ellipsisGlyph.advances[0];
             ellipsisText = ellipsisChar;
         } else {
-            QString dotDotDot(QLatin1String("..."));
+            glyph = engine->glyphIndex('.');
+            if (glyph != 0) {
+                engine->recalcAdvances(&glyphs, 0);
 
-            QGlyphLayoutArray<3> glyphs;
-            int nGlyphs = 3;
-            if (!fe->stringToCMap(dotDotDot.constData(), 3, &glyphs, &nGlyphs, 0))
-                Q_UNREACHABLE();
-            Q_ASSERT(nGlyphs == 3);
-
-            for (int i = 0; i < nGlyphs; ++i)
-                ellipsisWidth += glyphs.advances[i];
-            ellipsisText = dotDotDot;
+                ellipsisWidth *= 3;
+                ellipsisText = QStringLiteral("...");
+            }
         }
     }
 
