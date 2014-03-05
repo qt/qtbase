@@ -2517,14 +2517,13 @@ QGLTexture *QGLContextPrivate::bindTexture(const QPixmap &pixmap, GLenum target,
 /*! \internal */
 int QGLContextPrivate::maxTextureSize()
 {
-    Q_Q(QGLContext);
-
     if (max_texture_size != -1)
         return max_texture_size;
 
     glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
 
 #ifndef QT_OPENGL_ES
+    Q_Q(QGLContext);
     if (!q->contextHandle()->isES()) {
         GLenum proxy = GL_PROXY_TEXTURE_2D;
 
