@@ -47,9 +47,9 @@
 #include <QtNetwork/QHttpMultiPart>
 #include <QtNetwork/QNetworkProxy>
 #include <QtNetwork/QAuthenticator>
-#ifdef QT_BUILD_INTERNAL
+#if defined(QT_BUILD_INTERNAL) && !defined(QT_NO_OPENSSL)
 #include <QtNetwork/private/qsslsocket_openssl_p.h>
-#endif // QT_BUILD_INTERNAL
+#endif // QT_BUILD_INTERNAL && !QT_NO_OPENSSL
 
 #include "../../../network-settings.h"
 
