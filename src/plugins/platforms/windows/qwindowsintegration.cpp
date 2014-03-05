@@ -382,7 +382,7 @@ QVariant QWindowsIntegration::styleHint(QPlatformIntegration::StyleHint hint) co
     switch (hint) {
     case QPlatformIntegration::CursorFlashTime:
         if (const unsigned timeMS = GetCaretBlinkTime())
-            return QVariant(int(timeMS));
+            return QVariant(int(timeMS) * 2);
         break;
 #ifdef SPI_GETKEYBOARDSPEED
     case KeyboardAutoRepeatRate:
