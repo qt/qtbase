@@ -67,13 +67,17 @@ private Q_SLOTS:
     void initTestCase();
     void settingsAndNegotiation_data();
     void settingsAndNegotiation();
+#ifndef QT_NO_NETWORKPROXY
     void download_data();
     void download();
+#endif // !QT_NO_NETWORKPROXY
     void headerFields();
+#ifndef QT_NO_NETWORKPROXY
     void upload_data();
     void upload();
     void errors_data();
     void errors();
+#endif // !QT_NO_NETWORKPROXY
     void multipleRequests_data();
     void multipleRequests();
 
@@ -202,6 +206,7 @@ void tst_Spdy::proxyAuthenticationRequired(const QNetworkProxy &/*proxy*/,
     authenticator->setPassword("password");
 }
 
+#ifndef QT_NO_NETWORKPROXY
 void tst_Spdy::download_data()
 {
     QTest::addColumn<QUrl>("url");
@@ -299,6 +304,7 @@ void tst_Spdy::download()
     reply->deleteLater();
     m_manager.setProxy(QNetworkProxy()); // reset
 }
+#endif // !QT_NO_NETWORKPROXY
 
 void tst_Spdy::headerFields()
 {
@@ -329,6 +335,7 @@ static inline QByteArray md5sum(const QByteArray &data)
     return QCryptographicHash::hash(data, QCryptographicHash::Md5).toHex().append('\n');
 }
 
+#ifndef QT_NO_NETWORKPROXY
 void tst_Spdy::upload_data()
 {
     QTest::addColumn<QUrl>("url");
@@ -602,6 +609,7 @@ void tst_Spdy::errors()
             this, SLOT(proxyAuthenticationRequired(const QNetworkProxy &, QAuthenticator *)),
             Qt::UniqueConnection); // reset
 }
+#endif // !QT_NO_NETWORKPROXY
 
 void tst_Spdy::multipleRequests_data()
 {
