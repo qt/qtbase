@@ -1600,9 +1600,6 @@ bool QFontEngineMulti::stringToCMap(const QChar *str, int len,
         bool surrogate = (str[i].isHighSurrogate() && i < len-1 && str[i+1].isLowSurrogate());
         uint ucs4 = surrogate ? QChar::surrogateToUcs4(str[i], str[i+1]) : str[i].unicode();
         if (glyphs->glyphs[glyph_pos] == 0 && str[i].category() != QChar::Separator_Line) {
-            QFixed tmpAdvance;
-            if (!(flags & GlyphIndicesOnly))
-                tmpAdvance = glyphs->advances[glyph_pos];
             for (int x = 1, n = qMin(engines.size(), 256); x < n; ++x) {
                 if (engines.at(x) == 0 && !shouldLoadFontEngineForCharacter(x, ucs4))
                     continue;
@@ -1616,23 +1613,18 @@ bool QFontEngineMulti::stringToCMap(const QChar *str, int len,
                 if (engine->type() == Box)
                     continue;
 
-                if (!(flags & GlyphIndicesOnly))
-                    glyphs->advances[glyph_pos] = QFixed();
-                int num = 2;
-                QGlyphLayout g = glyphs->mid(glyph_pos, num);
-                if (!engine->stringToCMap(str + i, surrogate ? 2 : 1, &g, &num, flags))
-                    Q_UNREACHABLE();
-                Q_ASSERT(num == 1);
-                if (glyphs->glyphs[glyph_pos]) {
+                glyph_t glyph = engine->glyphIndex(ucs4);
+                if (glyph != 0) {
+                    glyphs->glyphs[glyph_pos] = glyph;
+                    if (!(flags & GlyphIndicesOnly)) {
+                        QGlyphLayout g = glyphs->mid(glyph_pos, 1);
+                        engine->recalcAdvances(&g, flags);
+                    }
                     // set the high byte to indicate which engine the glyph came from
                     glyphs->glyphs[glyph_pos] |= (x << 24);
                     break;
                 }
             }
-
-            // ensure we use metrics from the 1st font when we use the fallback image.
-            if (!(flags & GlyphIndicesOnly) && glyphs->glyphs[glyph_pos] == 0)
-                glyphs->advances[glyph_pos] = tmpAdvance;
         }
 
         if (surrogate)
