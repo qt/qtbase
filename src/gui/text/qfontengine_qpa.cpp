@@ -335,10 +335,14 @@ QFontEngineQPA::~QFontEngineQPA()
 
 bool QFontEngineQPA::getSfntTableData(uint tag, uchar *buffer, uint *length) const
 {
-    Q_UNUSED(tag);
-    Q_UNUSED(buffer);
-    *length = 0;
-    return false;
+    if (tag != MAKE_TAG('c', 'm', 'a', 'p') || !cmap)
+        return false;
+
+    if (buffer && int(*length) >= cmapSize)
+        memcpy(buffer, cmap, cmapSize);
+    *length = cmapSize;
+    Q_ASSERT(int(*length) > 0);
+    return true;
 }
 
 glyph_t QFontEngineQPA::glyphIndex(uint ucs4) const
