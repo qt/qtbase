@@ -225,8 +225,6 @@ public:
 
     virtual void getGlyphBearings(glyph_t glyph, qreal *leftBearing = 0, qreal *rightBearing = 0);
 
-    virtual const char *name() const = 0;
-
     inline bool canRender(uint ucs4) const { return glyphIndex(ucs4) != 0; }
     virtual bool canRender(const QChar *str, int len) const;
 
@@ -361,8 +359,6 @@ public:
     virtual qreal minRightBearing() const { return 0; }
     virtual QImage alphaMapForGlyph(glyph_t);
 
-    virtual const char *name() const;
-
     virtual bool canRender(const QChar *string, int len) const;
 
     virtual Type type() const;
@@ -411,8 +407,6 @@ public:
     { return QFontEngine::Multi; }
 
     virtual bool canRender(const QChar *string, int len) const;
-    inline virtual const char *name() const
-    { return "Multi"; }
 
     QFontEngine *engine(int at) const
     {Q_ASSERT(at < engines.size()); return engines.at(at); }

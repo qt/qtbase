@@ -79,8 +79,6 @@ public:
     virtual void addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions, int numGlyphs,
                                  QPainterPath *path, QTextItem::RenderFlags);
 
-    virtual const char *name() const { return "QCoreTextFontEngine"; }
-
     virtual bool canRender(const QChar *string, int len) const;
 
     virtual int synthesized() const { return synthesisFlags; }

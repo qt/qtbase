@@ -230,8 +230,6 @@ private:
 
     inline virtual Type type() const
     { return QFontEngine::Freetype; }
-    inline virtual const char *name() const
-    { return "freetype"; }
 
     virtual void getUnscaledGlyph(glyph_t glyph, QPainterPath *path, glyph_metrics_t *metrics);
 

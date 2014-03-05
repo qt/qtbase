@@ -642,11 +642,6 @@ QImage QWindowsFontEngineDirectWrite::alphaRGBMapForGlyph(glyph_t t,
            : mask.convertToFormat(QImage::Format_RGB32);
 }
 
-const char *QWindowsFontEngineDirectWrite::name() const
-{
-    return 0;
-}
-
 QFontEngine::Type QWindowsFontEngineDirectWrite::type() const
 {
     return QFontEngine::DirectWrite;

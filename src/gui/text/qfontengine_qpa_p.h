@@ -184,8 +184,6 @@ public:
 
     Type type() const;
 
-    inline const char *name() const { return "QPF2"; }
-
     virtual int glyphCount() const { return glyphMapEntries; }
 
     bool isValid() const;

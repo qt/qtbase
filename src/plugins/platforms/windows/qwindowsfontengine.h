@@ -110,8 +110,6 @@ public:
     virtual qreal minLeftBearing() const;
     virtual qreal minRightBearing() const;
 
-    virtual const char *name() const;
-
     Type type() const;
 
     virtual QImage alphaMapForGlyph(glyph_t t) { return alphaMapForGlyph(t, QTransform()); }

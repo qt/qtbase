@@ -1497,12 +1497,6 @@ qreal QFontEngineBox::maxCharWidth() const
     return _size;
 }
 
-
-const char *QFontEngineBox::name() const
-{
-    return "null";
-}
-
 bool QFontEngineBox::canRender(const QChar *, int) const
 {
     return true;

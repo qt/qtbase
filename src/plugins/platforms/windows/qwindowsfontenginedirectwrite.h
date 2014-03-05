@@ -90,8 +90,6 @@ public:
     QFixed xHeight() const;
     qreal maxCharWidth() const;
 
-    const char *name() const;
-
     bool supportsSubPixelPositions() const;
 
     QImage alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition);

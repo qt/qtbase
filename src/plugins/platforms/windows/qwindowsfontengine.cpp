@@ -771,12 +771,6 @@ qreal QWindowsFontEngine::minRightBearing() const
 #endif // Q_OS_WINCE
 }
 
-
-const char *QWindowsFontEngine::name() const
-{
-    return 0;
-}
-
 QFontEngine::Type QWindowsFontEngine::type() const
 {
     return QFontEngine::Win;
