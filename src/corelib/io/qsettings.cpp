@@ -2369,6 +2369,10 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     stored in the following registry path:
     \c{HKEY_LOCAL_MACHINE\Software\WOW6432node}.
 
+    On BlackBerry only a single file is used (see \l{Platform Limitations}).
+    If the file format is NativeFormat, this is "Settings/MySoft/Star Runner.conf"
+    in the application's home directory.
+
     If the file format is IniFormat, the following files are
     used on Unix and Mac OS X:
 
@@ -2393,8 +2397,12 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     %COMMON_APPDATA% path is usually \tt{C:\\Documents and
     Settings\\All Users\\Application Data}.
 
+    On BlackBerry only a single file is used (see \l{Platform Limitations}).
+    If the file format is IniFormat, this is "Settings/MySoft/Star Runner.ini"
+    in the application's home directory.
+
     The paths for the \c .ini and \c .conf files can be changed using
-    setPath(). On Unix and Mac OS X, the user can override them by by
+    setPath(). On Unix and Mac OS X, the user can override them by
     setting the \c XDG_CONFIG_HOME environment variable; see
     setPath() for details.
 
@@ -2498,7 +2506,8 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
        allowed to read or write outside of this sandbox. This involves the
        following limitations:
        \list
-       \li As there is only a single scope the scope is simply ignored.
+       \li As there is only a single scope the scope is simply ignored,
+           i.e. there is no difference between SystemScope and UserScope.
        \li The \l{Fallback Mechanism} is not applied, i.e. only a single
           location is considered.
        \li It is advised against setting and using custom file paths.
