@@ -109,7 +109,7 @@ void QQnxNativeInterface::setWindowProperty(QPlatformWindow *window, const QStri
 
     if (name == QStringLiteral("mmRendererWindowName")) {
         qnxWindow->setMMRendererWindowName(value.toString());
-    } else if (name == QStringLiteral("windowGroup")) {
+    } else if (name == QStringLiteral("qnxWindowGroup")) {
         if (value.isNull())
             qnxWindow->joinWindowGroup(QByteArray());
         else if (value.canConvert<QByteArray>())
@@ -124,6 +124,8 @@ QPlatformNativeInterface::NativeResourceForIntegrationFunction QQnxNativeInterfa
         return reinterpret_cast<NativeResourceForIntegrationFunction>(QQnxInputContext::setHighlightColor);
     if (resource == "blackberryIMFCheckSpelling")
         return reinterpret_cast<NativeResourceForIntegrationFunction>(QQnxInputContext::checkSpelling);
+#else
+    Q_UNUSED(resource)
 #endif
     return 0;
 }
