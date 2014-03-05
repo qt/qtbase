@@ -195,7 +195,7 @@ private:
 
     const uchar *fontData;
     int dataSize;
-    const uchar *externalCMap;
+    const uchar *cmap;
     quint32 cmapOffset;
     int cmapSize;
     quint32 glyphMapOffset;

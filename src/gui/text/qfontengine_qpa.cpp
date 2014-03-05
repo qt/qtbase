@@ -242,7 +242,7 @@ QFontEngineQPA::QFontEngineQPA(const QFontDef &def, const QByteArray &data)
 {
     fontDef = def;
     cache_cost = 100;
-    externalCMap = 0;
+    cmap = 0;
     cmapOffset = 0;
     cmapSize = 0;
     glyphMapOffset = 0;
@@ -293,15 +293,8 @@ QFontEngineQPA::QFontEngineQPA(const QFontDef &def, const QByteArray &data)
 
     // get the real cmap
     if (cmapOffset) {
-        int tableSize = cmapSize;
-        const uchar *cmapPtr = getCMap(fontData + cmapOffset, tableSize, &symbol, &cmapSize);
-        if (cmapPtr)
-            cmapOffset = cmapPtr - fontData;
-        else
-            cmapOffset = 0;
-    } else if (externalCMap) {
-        int tableSize = cmapSize;
-        externalCMap = getCMap(externalCMap, tableSize, &symbol, &cmapSize);
+        cmap = QFontEngine::getCMap(fontData + cmapOffset, cmapSize, &symbol, &cmapSize);
+        cmapOffset = cmap ? cmap - fontData : 0;
     }
 
     // verify all the positions in the glyphMap
@@ -323,7 +316,7 @@ QFontEngineQPA::QFontEngineQPA(const QFontDef &def, const QByteArray &data)
 #if defined(DEBUG_FONTENGINE)
     if (!isValid())
         qDebug() << "fontData" <<  fontData << "dataSize" << dataSize
-                 << "externalCMap" << externalCMap << "cmapOffset" << cmapOffset
+                 << "cmap" << cmap << "cmapOffset" << cmapOffset
                  << "glyphMapOffset" << glyphMapOffset << "glyphDataOffset" << glyphDataOffset
                  << "fd" << fd << "glyphDataSize" << glyphDataSize;
 #endif
@@ -347,8 +340,6 @@ bool QFontEngineQPA::getSfntTableData(uint tag, uchar *buffer, uint *length) con
 
 glyph_t QFontEngineQPA::glyphIndex(uint ucs4) const
 {
-    const uchar *cmap = externalCMap ? externalCMap : (fontData + cmapOffset);
-
     glyph_t glyph = getTrueTypeGlyphIndex(cmap, ucs4);
     if (glyph == 0 && symbol && ucs4 < 0x100)
         glyph = getTrueTypeGlyphIndex(cmap, ucs4 + 0xf000);
@@ -369,8 +360,6 @@ bool QFontEngineQPA::stringToCMap(const QChar *str, int len, QGlyphLayout *glyph
 #if defined(DEBUG_FONTENGINE)
     QSet<QChar> seenGlyphs;
 #endif
-
-    const uchar *cmap = externalCMap ? externalCMap : (fontData + cmapOffset);
 
     int glyph_pos = 0;
     if (symbol) {
@@ -517,7 +506,7 @@ QFixed QFontEngineQPA::lineThickness() const
 
 bool QFontEngineQPA::isValid() const
 {
-    return fontData && dataSize && (cmapOffset || externalCMap)
+    return fontData && dataSize && cmapOffset
            && glyphMapOffset && glyphDataOffset && glyphDataSize > 0;
 }
 
