@@ -182,8 +182,6 @@ public:
     QFixed underlinePosition() const;
     QFixed lineThickness() const;
 
-    Type type() const;
-
     virtual int glyphCount() const { return glyphMapEntries; }
 
     bool isValid() const;

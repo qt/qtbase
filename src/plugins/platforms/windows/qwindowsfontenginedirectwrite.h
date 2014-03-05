@@ -97,8 +97,6 @@ public:
 
     QFontEngine *cloneWithSize(qreal pixelSize) const;
 
-    Type type() const;
-
     const QSharedPointer<QWindowsFontEngineData> &fontEngineData() const { return m_fontEngineData; }
 
     static QString fontNameSubstitute(const QString &familyName);

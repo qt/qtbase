@@ -228,9 +228,6 @@ private:
     virtual glyph_t glyphIndex(uint ucs4) const;
     void doKerning(QGlyphLayout *, ShaperFlags) const;
 
-    inline virtual Type type() const
-    { return QFontEngine::Freetype; }
-
     virtual void getUnscaledGlyph(glyph_t glyph, QPainterPath *path, glyph_metrics_t *metrics);
 
     virtual bool supportsTransformation(const QTransform &transform) const;

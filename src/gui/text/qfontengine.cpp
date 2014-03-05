@@ -220,8 +220,8 @@ Q_AUTOTEST_EXPORT QList<QFontEngine *> QFontEngine_stopCollectingEngines()
 
 // QFontEngine
 
-QFontEngine::QFontEngine()
-    : ref(0),
+QFontEngine::QFontEngine(Type type)
+    : m_type(type), ref(0),
       font_(0), font_destroy_func(0),
       face_(0), face_destroy_func(0)
 {
@@ -1369,7 +1369,15 @@ QFontEngine::GlyphCacheEntry &QFontEngine::GlyphCacheEntry::operator=(const Glyp
 // ------------------------------------------------------------------
 
 QFontEngineBox::QFontEngineBox(int size)
-    : _size(size)
+    : QFontEngine(Box),
+      _size(size)
+{
+    cache_cost = sizeof(QFontEngineBox);
+}
+
+QFontEngineBox::QFontEngineBox(Type type, int size)
+    : QFontEngine(type),
+      _size(size)
 {
     cache_cost = sizeof(QFontEngineBox);
 }
@@ -1502,11 +1510,6 @@ bool QFontEngineBox::canRender(const QChar *, int) const
     return true;
 }
 
-QFontEngine::Type QFontEngineBox::type() const
-{
-    return Box;
-}
-
 QImage QFontEngineBox::alphaMapForGlyph(glyph_t)
 {
     QImage image(_size, _size, QImage::Format_Indexed8);
@@ -1538,6 +1541,7 @@ static inline glyph_t stripped(glyph_t glyph)
 { return glyph & 0x00ffffff; }
 
 QFontEngineMulti::QFontEngineMulti(int engineCount)
+    : QFontEngine(Multi)
 {
     engines.fill(0, engineCount);
     cache_cost = 0;
@@ -1966,15 +1970,6 @@ QImage QFontEngineMulti::alphaRGBMapForGlyph(glyph_t glyph, QFixed subPixelPosit
     const int which = highByte(glyph);
     Q_ASSERT(which < engines.size());
     return engine(which)->alphaRGBMapForGlyph(stripped(glyph), subPixelPosition, t);
-}
-
-QTestFontEngine::QTestFontEngine(int size)
-    : QFontEngineBox(size)
-{}
-
-QFontEngine::Type QTestFontEngine::type() const
-{
-    return TestFontEngine;
 }
 
 QT_END_NAMESPACE

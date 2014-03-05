@@ -201,8 +201,8 @@ namespace {
 QWindowsFontEngineDirectWrite::QWindowsFontEngineDirectWrite(IDWriteFontFace *directWriteFontFace,
                                                qreal pixelSize,
                                                const QSharedPointer<QWindowsFontEngineData> &d)
-
-    : m_fontEngineData(d)
+    : QFontEngine(DirectWrite)
+    , m_fontEngineData(d)
     , m_directWriteFontFace(directWriteFontFace)
     , m_directWriteBitmapRenderTarget(0)
     , m_lineThickness(-1)
@@ -640,11 +640,6 @@ QImage QWindowsFontEngineDirectWrite::alphaRGBMapForGlyph(glyph_t t,
     return mask.depth() == 32
            ? mask
            : mask.convertToFormat(QImage::Format_RGB32);
-}
-
-QFontEngine::Type QWindowsFontEngineDirectWrite::type() const
-{
-    return QFontEngine::DirectWrite;
 }
 
 QFontEngine *QWindowsFontEngineDirectWrite::cloneWithSize(qreal pixelSize) const

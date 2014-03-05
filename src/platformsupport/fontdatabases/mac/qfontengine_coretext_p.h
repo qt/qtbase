@@ -84,8 +84,6 @@ public:
     virtual int synthesized() const { return synthesisFlags; }
     virtual bool supportsSubPixelPositions() const { return true; }
 
-    virtual Type type() const { return QFontEngine::Mac; }
-
     void draw(CGContextRef ctx, qreal x, qreal y, const QTextItemInt &ti, int paintDeviceHeight);
 
     virtual FaceId faceId() const;

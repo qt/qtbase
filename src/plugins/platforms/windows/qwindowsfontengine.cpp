@@ -272,7 +272,8 @@ int QWindowsFontEngine::getGlyphIndexes(const QChar *str, int numChars, QGlyphLa
 
 QWindowsFontEngine::QWindowsFontEngine(const QString &name,
                                HFONT _hfont, bool stockFontIn, LOGFONT lf,
-                               const QSharedPointer<QWindowsFontEngineData> &fontEngineData) :
+                               const QSharedPointer<QWindowsFontEngineData> &fontEngineData)
+    : QFontEngine(Win),
     m_fontEngineData(fontEngineData),
     _name(name),
     hfont(_hfont),
@@ -769,11 +770,6 @@ qreal QWindowsFontEngine::minRightBearing() const
 
     return rbearing;
 #endif // Q_OS_WINCE
-}
-
-QFontEngine::Type QWindowsFontEngine::type() const
-{
-    return QFontEngine::Win;
 }
 
 static inline double qt_fixed_to_double(const FIXED &p) {

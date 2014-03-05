@@ -237,7 +237,8 @@ static inline unsigned int getChar(const QChar *str, int &i, const int len)
 }
 
 QFontEngineQPA::QFontEngineQPA(const QFontDef &def, const QByteArray &data)
-    : fontData(reinterpret_cast<const uchar *>(data.constData())), dataSize(data.size())
+    : QFontEngine(QPF2),
+      fontData(reinterpret_cast<const uchar *>(data.constData())), dataSize(data.size())
 {
     fontDef = def;
     cache_cost = 100;
@@ -508,11 +509,6 @@ QFixed QFontEngineQPA::underlinePosition() const
 QFixed QFontEngineQPA::lineThickness() const
 {
     return QFixed::fromReal(extractHeaderField(fontData, Tag_LineThickness).value<qreal>());
-}
-
-QFontEngine::Type QFontEngineQPA::type() const
-{
-    return QFontEngine::QPF2;
 }
 
 bool QFontEngineQPA::isValid() const

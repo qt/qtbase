@@ -85,6 +85,7 @@ CGAffineTransform qt_transform_from_fontdef(const QFontDef &fontDef)
 }
 
 QCoreTextFontEngine::QCoreTextFontEngine(CTFontRef font, const QFontDef &def)
+    : QFontEngine(Mac)
 {
     fontDef = def;
     transform = qt_transform_from_fontdef(fontDef);
@@ -95,6 +96,7 @@ QCoreTextFontEngine::QCoreTextFontEngine(CTFontRef font, const QFontDef &def)
 }
 
 QCoreTextFontEngine::QCoreTextFontEngine(CGFontRef font, const QFontDef &def)
+    : QFontEngine(Mac)
 {
     fontDef = def;
     transform = qt_transform_from_fontdef(fontDef);

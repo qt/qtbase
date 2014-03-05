@@ -635,6 +635,7 @@ static void convoluteBitmap(const uchar *src, uchar *dst, int width, int height,
 }
 
 QFontEngineFT::QFontEngineFT(const QFontDef &fd)
+    : QFontEngine(Freetype)
 {
     fontDef = fd;
     matrix.xx = 0x10000;

@@ -125,8 +125,9 @@ public:
     };
     Q_DECLARE_FLAGS(ShaperFlags, ShaperFlag)
 
-    QFontEngine();
     virtual ~QFontEngine();
+
+    inline Type type() const { return m_type; }
 
     // all of these are in unscaled metrics if the engine supports uncsaled metrics,
     // otherwise in design metrics
@@ -230,8 +231,6 @@ public:
 
     virtual bool supportsTransformation(const QTransform &transform) const;
 
-    virtual Type type() const = 0;
-
     virtual int glyphCount() const;
     virtual int glyphMargin(GlyphFormat format) { return format == Format_A32 ? 2 : 0; }
 
@@ -260,6 +259,10 @@ public:
     };
     virtual void setDefaultHintStyle(HintStyle) { }
 
+private:
+    const Type m_type;
+
+public:
     QAtomicInt ref;
     QFontDef fontDef;
 
@@ -294,6 +297,8 @@ public:
     inline QVariant userData() const { return m_userData; }
 
 protected:
+    explicit QFontEngine(Type type);
+
     QFixed lastRightBearing(const QGlyphLayout &glyphs, bool round = false);
 
     inline void setUserData(const QVariant &userData) { m_userData = userData; }
@@ -361,8 +366,10 @@ public:
 
     virtual bool canRender(const QChar *string, int len) const;
 
-    virtual Type type() const;
     inline int size() const { return _size; }
+
+protected:
+    explicit QFontEngineBox(Type type, int size);
 
 private:
     friend class QFontPrivate;
@@ -403,9 +410,6 @@ public:
     virtual qreal minLeftBearing() const;
     virtual qreal minRightBearing() const;
 
-    virtual inline Type type() const
-    { return QFontEngine::Multi; }
-
     virtual bool canRender(const QChar *string, int len) const;
 
     QFontEngine *engine(int at) const
@@ -430,8 +434,7 @@ protected:
 class QTestFontEngine : public QFontEngineBox
 {
 public:
-    QTestFontEngine(int size);
-    virtual Type type() const;
+    inline QTestFontEngine(int size) : QFontEngineBox(TestFontEngine, size) {}
 };
 
 QT_END_NAMESPACE
