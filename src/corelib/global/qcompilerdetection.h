@@ -483,6 +483,8 @@
  *  N3652           Q_COMPILER_RELAXED_CONSTEXPR_FUNCTIONS
  *  N3386 N3638     Q_COMPILER_RETURN_TYPE_DEDUCTION
  *  N3651           Q_COMPILER_VARIABLE_TEMPLATES
+ *
+ * C++14 Technical Specifications / C++17:
  *  N3639           Q_COMPILER_VLA  (see also Q_COMPILER_RESTRICTED_VLA)
  *
  */
@@ -774,7 +776,6 @@
 //#    define Q_COMPILER_BINARY_LITERALS   // already supported since GCC 4.3 as an extension
 #      define Q_COMPILER_LAMBDA_CAPTURES
 #      define Q_COMPILER_RETURN_TYPE_DEDUCTION
-#      define Q_COMPILER_VLA
 #    endif
 #  endif
 #endif
