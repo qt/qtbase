@@ -1504,15 +1504,11 @@ void tst_QMetaType::automaticTemplateRegistration()
     #define FOR_EACH_STATIC_PRIMITIVE_TYPE(F) \
         F(bool) \
         F(int) \
-        F(uint) \
-        F(qlonglong) \
         F(qulonglong) \
         F(double) \
-        F(long) \
         F(short) \
         F(char) \
         F(ulong) \
-        F(ushort) \
         F(uchar) \
         F(float) \
         F(QObject*) \
@@ -1520,19 +1516,11 @@ void tst_QMetaType::automaticTemplateRegistration()
         F(CustomMovable)
 
     #define FOR_EACH_STATIC_PRIMITIVE_TYPE2(F, SecondaryRealName) \
-        F(bool, SecondaryRealName) \
-        F(int, SecondaryRealName) \
         F(uint, SecondaryRealName) \
         F(qlonglong, SecondaryRealName) \
-        F(qulonglong, SecondaryRealName) \
-        F(long, SecondaryRealName) \
-        F(short, SecondaryRealName) \
         F(char, SecondaryRealName) \
-        F(ulong, SecondaryRealName) \
-        F(ushort, SecondaryRealName) \
         F(uchar, SecondaryRealName) \
-        F(QObject*, SecondaryRealName) \
-        F(QString, SecondaryRealName)
+        F(QObject*, SecondaryRealName)
 
     #define CREATE_AND_VERIFY_CONTAINER(CONTAINER, ...) \
         { \
