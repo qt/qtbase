@@ -5287,9 +5287,6 @@ if [ "$CFG_XCB" != "no" ]; then
         CFG_XCB=no
     fi
 fi
-if [ "$CFG_XCB" = "no" ]; then
-    QMakeVar add DEFINES QT_NO_XCB
-fi
 
 if [ "$CFG_DIRECTFB" != "no" ]; then
     if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists directfb 2>/dev/null; then
