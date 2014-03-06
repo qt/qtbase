@@ -70,7 +70,8 @@ public:
         StartupId,
         TrayWindow,
         GetTimestamp,
-        X11Screen
+        X11Screen,
+        RootWindow
     };
 
     QXcbNativeInterface();
@@ -94,6 +95,7 @@ public:
     void *getTimestamp(const QXcbScreen *screen);
     void *startupId();
     void *x11Screen();
+    void *rootWindow();
     static void setAppTime(QScreen *screen, xcb_timestamp_t time);
     static void setAppUserTime(QScreen *screen, xcb_timestamp_t time);
     static void *eglContextForContext(QOpenGLContext *context);
