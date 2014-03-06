@@ -45,6 +45,8 @@
 #include <qstring.h>
 #include <qvector.h>
 
+#include <private/qstringiterator_p.h>
+
 #include "qfontengine_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -341,16 +343,10 @@ _hb_qt_unicode_decompose_compatibility(hb_unicode_funcs_t * /*ufuncs*/,
     const QString normalized = QChar::decomposition(u);
 
     uint outlen = 0;
-
-    // ### replace with QCharIterator
-    const ushort *p = reinterpret_cast<const ushort *>(normalized.unicode());
-    const ushort *const e = p + normalized.size();
-    for ( ; p != e; ++p) {
-        uint ucs4 = *p;
-        if (QChar::isHighSurrogate(ucs4) && p + 1 != e && QChar::isLowSurrogate(p[1]))
-            ucs4 = QChar::surrogateToUcs4(ucs4, *++p);
+    QStringIterator it(normalized);
+    while (it.hasNext()) {
         Q_ASSERT(outlen < HB_UNICODE_MAX_DECOMPOSITION_LEN);
-        decomposed[outlen++] = ucs4;
+        decomposed[outlen++] = it.next();
     }
 
     return outlen;

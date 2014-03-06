@@ -1594,10 +1594,10 @@ bool QFontEngineMulti::stringToCMap(const QChar *str, int len,
 
     const_cast<QFontEngineMulti *>(this)->ensureFallbackFamiliesQueried();
     int glyph_pos = 0;
-    for (int i = 0; i < len; ++i) {
-        bool surrogate = (str[i].isHighSurrogate() && i < len-1 && str[i+1].isLowSurrogate());
-        uint ucs4 = surrogate ? QChar::surrogateToUcs4(str[i], str[i+1]) : str[i].unicode();
-        if (glyphs->glyphs[glyph_pos] == 0 && str[i].category() != QChar::Separator_Line) {
+    QStringIterator it(str, str + len);
+    while (it.hasNext()) {
+        const uint ucs4 = it.peekNext();
+        if (glyphs->glyphs[glyph_pos] == 0 && ucs4 != QChar::LineSeparator) {
             for (int x = 1, n = qMin(engines.size(), 256); x < n; ++x) {
                 if (engines.at(x) == 0 && !shouldLoadFontEngineForCharacter(x, ucs4))
                     continue;
@@ -1625,8 +1625,7 @@ bool QFontEngineMulti::stringToCMap(const QChar *str, int len,
             }
         }
 
-        if (surrogate)
-            ++i;
+        it.advance();
         ++glyph_pos;
     }
 

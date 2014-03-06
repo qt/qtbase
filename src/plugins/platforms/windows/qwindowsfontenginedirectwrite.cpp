@@ -53,6 +53,7 @@
 #include <QtCore/QSettings>
 #include <QtCore/QtEndian>
 #include <QtCore/QVarLengthArray>
+#include <private/qstringiterator_p.h>
 
 #include <dwrite.h>
 #include <d2d1.h>
@@ -314,20 +315,6 @@ glyph_t QWindowsFontEngineDirectWrite::glyphIndex(uint ucs4) const
     return glyphIndex;
 }
 
-// ### Qt 5.1: replace with QStringIterator
-inline unsigned int getChar(const QChar *str, int &i, const int len)
-{
-    uint uc = str[i].unicode();
-    if (QChar::isHighSurrogate(uc) && i < len-1) {
-        uint low = str[i+1].unicode();
-        if (QChar::isLowSurrogate(low)) {
-            uc = QChar::surrogateToUcs4(uc, low);
-            ++i;
-        }
-    }
-    return uc;
-}
-
 bool QWindowsFontEngineDirectWrite::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs,
                                                  int *nglyphs, QFontEngine::ShaperFlags flags) const
 {
@@ -339,8 +326,9 @@ bool QWindowsFontEngineDirectWrite::stringToCMap(const QChar *str, int len, QGly
 
     QVarLengthArray<UINT32> codePoints(len);
     int actualLength = 0;
-    for (int i = 0; i < len; ++i)
-        codePoints[actualLength++] = getChar(str, i, len);
+    QStringIterator it(str, str + len);
+    while (it.hasNext())
+        codePoints[actualLength++] = it.next();
 
     QVarLengthArray<UINT16> glyphIndices(actualLength);
     HRESULT hr = m_directWriteFontFace->GetGlyphIndicesW(codePoints.data(), actualLength,

@@ -45,6 +45,7 @@
 #include "qvariant.h"
 #include "qfontengine_ft_p.h"
 #include "private/qimage_p.h"
+#include <private/qstringiterator_p.h>
 
 #ifndef QT_NO_FREETYPE
 
@@ -1447,16 +1448,6 @@ bool QFontEngineFT::supportsTransformation(const QTransform &transform) const
     return transform.type() <= QTransform::TxTranslate;
 }
 
-static inline unsigned int getChar(const QChar *str, int &i, const int len)
-{
-    uint ucs4 = str[i].unicode();
-    if (str[i].isHighSurrogate() && i < len-1 && str[i+1].isLowSurrogate()) {
-        ++i;
-        ucs4 = QChar::surrogateToUcs4(ucs4, str[i].unicode());
-    }
-    return ucs4;
-}
-
 void QFontEngineFT::addOutlineToPath(qreal x, qreal y, const QGlyphLayout &glyphs, QPainterPath *path, QTextItem::RenderFlags flags)
 {
     if (!glyphs.numGlyphs)
@@ -1543,8 +1534,9 @@ bool QFontEngineFT::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs
     int glyph_pos = 0;
     if (freetype->symbol_map) {
         FT_Face face = freetype->face;
-        for ( int i = 0; i < len; ++i ) {
-            unsigned int uc = getChar(str, i, len);
+        QStringIterator it(str, str + len);
+        while (it.hasNext()) {
+            uint uc = it.next();
             glyphs->glyphs[glyph_pos] = uc < QFreetypeFace::cmapCacheSize ? freetype->cmapCache[uc] : 0;
             if ( !glyphs->glyphs[glyph_pos] ) {
                 // Symbol fonts can have more than one CMAPs, FreeType should take the
@@ -1573,8 +1565,9 @@ bool QFontEngineFT::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs
         }
     } else {
         FT_Face face = freetype->face;
-        for (int i = 0; i < len; ++i) {
-            unsigned int uc = getChar(str, i, len);
+        QStringIterator it(str, str + len);
+        while (it.hasNext()) {
+            uint uc = it.next();
             glyphs->glyphs[glyph_pos] = uc < QFreetypeFace::cmapCacheSize ? freetype->cmapCache[uc] : 0;
             if (!glyphs->glyphs[glyph_pos]) {
                 {

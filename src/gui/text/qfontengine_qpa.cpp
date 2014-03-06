@@ -45,6 +45,7 @@
 #include <QtCore/QFileInfo>
 #include <QtCore/QDir>
 #include <QtCore/QBuffer>
+#include <QtCore/private/qstringiterator_p.h>
 
 #include <QtGui/private/qpaintengine_raster_p.h>
 #include <QtGui/private/qguiapplication_p.h>
@@ -225,17 +226,6 @@ QVariant QFontEngineQPA::extractHeaderField(const uchar *data, HeaderTag request
 }
 
 
-
-static inline unsigned int getChar(const QChar *str, int &i, const int len)
-{
-    uint ucs4 = str[i].unicode();
-    if (str[i].isHighSurrogate() && i < len-1 && str[i+1].isLowSurrogate()) {
-        ++i;
-        ucs4 = QChar::surrogateToUcs4(ucs4, str[i].unicode());
-    }
-    return ucs4;
-}
-
 QFontEngineQPA::QFontEngineQPA(const QFontDef &def, const QByteArray &data)
     : QFontEngine(QPF2),
       fontData(reinterpret_cast<const uchar *>(data.constData())), dataSize(data.size())
@@ -363,16 +353,18 @@ bool QFontEngineQPA::stringToCMap(const QChar *str, int len, QGlyphLayout *glyph
 
     int glyph_pos = 0;
     if (symbol) {
-        for (int i = 0; i < len; ++i) {
-            unsigned int uc = getChar(str, i, len);
+        QStringIterator it(str, str + len);
+        while (it.hasNext()) {
+            const uint uc = it.next();
             glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, uc);
             if(!glyphs->glyphs[glyph_pos] && uc < 0x100)
                 glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, uc + 0xf000);
             ++glyph_pos;
         }
     } else {
-        for (int i = 0; i < len; ++i) {
-            unsigned int uc = getChar(str, i, len);
+        QStringIterator it(str, str + len);
+        while (it.hasNext()) {
+            const uint uc = it.next();
             glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, uc);
 #if 0 && defined(DEBUG_FONTENGINE)
             QChar c(uc);

@@ -65,6 +65,7 @@
 #include <QtCore/qmath.h>
 #include <QtCore/QThreadStorage>
 #include <QtCore/private/qsystemlibrary_p.h>
+#include <QtCore/private/qstringiterator_p.h>
 
 #include <QtCore/QDebug>
 
@@ -205,47 +206,37 @@ void QWindowsFontEngine::getCMap()
     }
 }
 
-// ### Qt 5.1: replace with QStringIterator
-inline unsigned int getChar(const QChar *str, int &i, const int len)
-{
-    uint uc = str[i].unicode();
-    if (QChar::isHighSurrogate(uc) && i < len-1) {
-        uint low = str[i+1].unicode();
-        if (QChar::isLowSurrogate(low)) {
-            uc = QChar::surrogateToUcs4(uc, low);
-            ++i;
-        }
-    }
-    return uc;
-}
-
 int QWindowsFontEngine::getGlyphIndexes(const QChar *str, int numChars, QGlyphLayout *glyphs) const
 {
-    int i = 0;
     int glyph_pos = 0;
     {
 #if defined(Q_OS_WINCE)
         {
 #else
         if (symbol) {
-            for (; i < numChars; ++i, ++glyph_pos) {
-                unsigned int uc = getChar(str, i, numChars);
+            QStringIterator it(str, str + numChars);
+            while (it.hasNext()) {
+                const uint uc = it.next();
                 glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, uc);
                 if(!glyphs->glyphs[glyph_pos] && uc < 0x100)
                     glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, uc + 0xf000);
+                ++glyph_pos;
             }
         } else if (ttf) {
-            for (; i < numChars; ++i, ++glyph_pos) {
-                unsigned int uc = getChar(str, i, numChars);
+            QStringIterator it(str, str + numChars);
+            while (it.hasNext()) {
+                const uint uc = it.next();
                 glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, uc);
+                ++glyph_pos;
             }
         } else {
 #endif
             wchar_t first = tm.tmFirstChar;
             wchar_t last = tm.tmLastChar;
 
-            for (; i < numChars; ++i, ++glyph_pos) {
-                uint uc = getChar(str, i, numChars);
+            QStringIterator it(str, str + numChars);
+            while (it.hasNext()) {
+                const uint uc = it.next();
                 if (
 #ifdef Q_WS_WINCE
                     tm.tmFirstChar > 60000 ||
@@ -254,6 +245,7 @@ int QWindowsFontEngine::getGlyphIndexes(const QChar *str, int numChars, QGlyphLa
                     glyphs->glyphs[glyph_pos] = uc;
                 else
                     glyphs->glyphs[glyph_pos] = 0;
+                ++glyph_pos;
             }
         }
     }
