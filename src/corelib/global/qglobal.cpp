@@ -81,6 +81,10 @@
 #include <private/qjni_p.h>
 #endif
 
+#ifdef Q_OS_UNIX
+#include <sys/utsname.h>
+#endif
+
 #include "archdetect.cpp"
 
 QT_BEGIN_NAMESPACE
@@ -2061,6 +2065,74 @@ QString QSysInfo::fullCpuArchitecture()
 #else
     return QLatin1String(ARCH_FULL);
 #endif
+}
+
+/*!
+    \since 5.4
+
+    Returns the type of the operating system Qt was compiled for. It's also the
+    operating system the application is running on, unless the host operating
+    system is running a form of compatibility layer.
+
+    Values returned by this function are stable and will not change over time,
+    so applications can rely on the returned value as an identifier, except
+    that new OS types may be added over time.
+
+    \b{Android note}: this function returns "android" for Linux systems running
+    Android userspace, notably when using the Bionic library. For all other
+    Linux systems, regardless of C library being used, it returns "linux".
+
+    \b{BlackBerry note}: this function returns "blackberry" for QNX systems
+    running the BlackBerry userspace, but "qnx" for all other QNX-based
+    systems.
+
+    \b{Darwin, OS X and iOS note}: this function returns "osx" for OS X
+    systems, "ios" for iOS systems and "darwin" in case the system could not be
+    determined.
+
+    \b{FreeBSD note}: this function returns "freebsd" for systems running the
+    FreeBSD kernel, regardless of whether the userspace runs the traditional
+    BSD code or whether it's the GNU system (Debian GNU/kFreeBSD).
+
+    \sa QFileSelector
+*/
+QString QSysInfo::osType()
+{
+    // similar, but not identical to QFileSelectorPrivate::platformSelectors
+#if defined(Q_OS_WINPHONE)
+    return QStringLiteral("winphone");
+#elif defined(Q_OS_WINRT)
+    return QStringLiteral("winrt");
+#elif defined(Q_OS_WINCE)
+    return QStringLiteral("wince");
+#elif defined(Q_OS_WIN)
+    return QStringLiteral("windows");
+
+#elif defined(Q_OS_BLACKBERRY)
+    return QStringLiteral("blackberry");
+#elif defined(Q_OS_QNX)
+    return QStringLiteral("qnx");
+
+#elif defined(Q_OS_ANDROID)
+    return QStringLiteral("android");
+#elif defined(Q_OS_LINUX)
+    return QStringLiteral("linux");
+
+#elif defined(Q_OS_IOS)
+    return QStringLiteral("ios");
+#elif defined(Q_OS_OSX)
+    return QStringLiteral("osx");
+#elif defined(Q_OS_DARWIN)
+    return QStringLiteral("darwin");
+
+#elif defined(Q_OS_FREEBSD_KERNEL)
+    return QStringLiteral("freebsd");
+#elif defined(Q_OS_UNIX)
+    struct utsname u;
+    if (uname(&u) != -1)
+        return QString(u.sysname).toLower();
+#endif
+    return QStringLiteral("unknown");
 }
 
 /*!

@@ -51,10 +51,6 @@
 #include <QtCore/QLocale>
 #include <QtCore/QDebug>
 
-#ifdef Q_OS_UNIX
-#include <sys/utsname.h>
-#endif
-
 QT_BEGIN_NAMESPACE
 
 //Environment variable to allow tooling full control of file selectors
@@ -360,6 +356,7 @@ void QFileSelectorPrivate::updateSelectors()
 
 QStringList QFileSelectorPrivate::platformSelectors()
 {
+    // similar, but not identical to QSysInfo::osType
     QStringList ret;
 #if defined(Q_OS_WIN)
     ret << QStringLiteral("windows");
@@ -385,9 +382,7 @@ QStringList QFileSelectorPrivate::platformSelectors()
     ret << QStringLiteral("osx");
 #    endif
 #  else
-    struct utsname u;
-    if (uname(&u) != -1)
-        ret << QString::fromLatin1(u.sysname).toLower();
+    ret << QSysInfo::osType();
 #  endif
 #endif
     return ret;

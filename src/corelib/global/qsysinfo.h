@@ -165,6 +165,7 @@ public:
 
     static QString cpuArchitecture();
     static QString fullCpuArchitecture();
+    static QString osType();
 };
 
 QT_END_NAMESPACE
