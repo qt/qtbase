@@ -72,7 +72,6 @@ public:
     QCoreTextFontDatabase();
     ~QCoreTextFontDatabase();
     void populateFontDatabase();
-    void invalidate() Q_DECL_OVERRIDE;
 
     QFontEngine *fontEngine(const QFontDef &fontDef, void *handle);
     QFontEngine *fontEngine(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference);
@@ -86,8 +85,6 @@ private:
     void populateFromDescriptor(CTFontDescriptorRef font);
 
     mutable QString defaultFontName;
-    mutable QHash<QString, QString> psNameToFamily;
-    mutable QHash<QString, QString> familyNameToPsName;
 
     void removeApplicationFonts();
 
