@@ -504,22 +504,22 @@ void QThread::usleep(unsigned long usecs)
 
 void QThread::yieldCurrentThread()
 {
-    std::this_thread::yield();
+    msleep(1);
 }
 
 void QThread::sleep(unsigned long secs)
 {
-    std::this_thread::sleep_for(std::chrono::seconds(secs));
+    msleep(secs * 1000);
 }
 
 void QThread::msleep(unsigned long msecs)
 {
-    std::this_thread::sleep_for(std::chrono::milliseconds(msecs));
+    WaitForSingleObjectEx(GetCurrentThread(), msecs, FALSE);
 }
 
 void QThread::usleep(unsigned long usecs)
 {
-    std::this_thread::sleep_for(std::chrono::microseconds(usecs));
+    msleep((usecs / 1000) + 1);
 }
 #endif // Q_OS_WINRT
 
