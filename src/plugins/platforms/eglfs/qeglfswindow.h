@@ -65,6 +65,10 @@ public:
     void raise() Q_DECL_OVERRIDE;
     void lower() Q_DECL_OVERRIDE;
 
+    void propagateSizeHints() Q_DECL_OVERRIDE { }
+    bool setKeyboardGrabEnabled(bool) Q_DECL_OVERRIDE { return false; }
+    bool setMouseGrabEnabled(bool) Q_DECL_OVERRIDE { return false; }
+
     QSurfaceFormat format() const Q_DECL_OVERRIDE;
     EGLNativeWindowType eglWindow() const Q_DECL_OVERRIDE;
     EGLSurface surface() const;

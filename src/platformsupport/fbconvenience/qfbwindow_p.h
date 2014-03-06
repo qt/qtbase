@@ -55,17 +55,17 @@ public:
     QFbWindow(QWindow *window);
     ~QFbWindow();
 
-    virtual void raise();
-    virtual void lower();
+    void raise() Q_DECL_OVERRIDE;
+    void lower() Q_DECL_OVERRIDE;
 
-    virtual void setGeometry(const QRect &rect);
-    virtual void setVisible(bool visible);
+    void setGeometry(const QRect &rect) Q_DECL_OVERRIDE;
+    void setVisible(bool visible) Q_DECL_OVERRIDE;
 
-    virtual void setWindowState(Qt::WindowState state);
-    virtual void setWindowFlags(Qt::WindowFlags type);
-    virtual Qt::WindowFlags windowFlags() const;
+    void setWindowState(Qt::WindowState state) Q_DECL_OVERRIDE;
+    void setWindowFlags(Qt::WindowFlags type) Q_DECL_OVERRIDE;
+    Qt::WindowFlags windowFlags() const;
 
-    WId winId() const { return mWindowId; }
+    WId winId() const Q_DECL_OVERRIDE { return mWindowId; }
 
     void setBackingStore(QFbBackingStore *store) { mBackingStore = store; }
     QFbBackingStore *backingStore() const { return mBackingStore; }
@@ -73,6 +73,10 @@ public:
     QFbScreen *platformScreen() const;
 
     virtual void repaint(const QRegion&);
+
+    void propagateSizeHints() Q_DECL_OVERRIDE { }
+    bool setKeyboardGrabEnabled(bool) Q_DECL_OVERRIDE { return false; }
+    bool setMouseGrabEnabled(bool) Q_DECL_OVERRIDE { return false; }
 
 protected:
     friend class QFbScreen;
