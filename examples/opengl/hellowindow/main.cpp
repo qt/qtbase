@@ -51,8 +51,9 @@ int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
 
-    const bool multipleWindows =
-        QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::ThreadedOpenGL)
+    QPlatformIntegration *integ = QGuiApplicationPrivate::platformIntegration();
+    const bool multipleWindows = integ->hasCapability(QPlatformIntegration::ThreadedOpenGL)
+        && integ->hasCapability(QPlatformIntegration::WindowManagement)
         && !QGuiApplication::arguments().contains(QStringLiteral("--single"));
 
     QScreen *screen = QGuiApplication::primaryScreen();
