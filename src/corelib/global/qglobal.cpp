@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Intel Corporation
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -79,6 +80,8 @@
 #if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
 #include <private/qjni_p.h>
 #endif
+
+#include "archdetect.cpp"
 
 QT_BEGIN_NAMESPACE
 
@@ -1500,6 +1503,8 @@ bool qSharedBuild() Q_DECL_NOTHROW
     \relates <QtGlobal>
 
     Defined if the application is compiled for Alpha processors.
+
+    \sa QSysInfo::cpuArchitecture()
 */
 
 /*!
@@ -1509,6 +1514,8 @@ bool qSharedBuild() Q_DECL_NOTHROW
     Defined if the application is compiled for ARM processors. Qt currently
     supports three optional ARM revisions: \l Q_PROCESSOR_ARM_V5, \l
     Q_PROCESSOR_ARM_V6, and \l Q_PROCESSOR_ARM_V7.
+
+    \sa QSysInfo::cpuArchitecture()
 */
 /*!
     \macro Q_PROCESSOR_ARM_V5
@@ -1516,6 +1523,8 @@ bool qSharedBuild() Q_DECL_NOTHROW
 
     Defined if the application is compiled for ARMv5 processors. The \l
     Q_PROCESSOR_ARM macro is also defined when Q_PROCESSOR_ARM_V5 is defined.
+
+    \sa QSysInfo::cpuArchitecture()
 */
 /*!
     \macro Q_PROCESSOR_ARM_V6
@@ -1524,6 +1533,8 @@ bool qSharedBuild() Q_DECL_NOTHROW
     Defined if the application is compiled for ARMv6 processors. The \l
     Q_PROCESSOR_ARM and \l Q_PROCESSOR_ARM_V5 macros are also defined when
     Q_PROCESSOR_ARM_V6 is defined.
+
+    \sa QSysInfo::cpuArchitecture()
 */
 /*!
     \macro Q_PROCESSOR_ARM_V7
@@ -1532,6 +1543,8 @@ bool qSharedBuild() Q_DECL_NOTHROW
     Defined if the application is compiled for ARMv7 processors. The \l
     Q_PROCESSOR_ARM, \l Q_PROCESSOR_ARM_V5, and \l Q_PROCESSOR_ARM_V6 macros
     are also defined when Q_PROCESSOR_ARM_V7 is defined.
+
+    \sa QSysInfo::cpuArchitecture()
 */
 
 /*!
@@ -1539,6 +1552,8 @@ bool qSharedBuild() Q_DECL_NOTHROW
     \relates <QtGlobal>
 
     Defined if the application is compiled for AVR32 processors.
+
+    \sa QSysInfo::cpuArchitecture()
 */
 
 /*!
@@ -1546,6 +1561,8 @@ bool qSharedBuild() Q_DECL_NOTHROW
     \relates <QtGlobal>
 
     Defined if the application is compiled for Blackfin processors.
+
+    \sa QSysInfo::cpuArchitecture()
 */
 
 /*!
@@ -1554,6 +1571,8 @@ bool qSharedBuild() Q_DECL_NOTHROW
 
     Defined if the application is compiled for IA-64 processors. This includes
     all Itanium and Itanium 2 processors.
+
+    \sa QSysInfo::cpuArchitecture()
 */
 
 /*!
@@ -1564,6 +1583,8 @@ bool qSharedBuild() Q_DECL_NOTHROW
     supports seven MIPS revisions: \l Q_PROCESSOR_MIPS_I, \l
     Q_PROCESSOR_MIPS_II, \l Q_PROCESSOR_MIPS_III, \l Q_PROCESSOR_MIPS_IV, \l
     Q_PROCESSOR_MIPS_V, \l Q_PROCESSOR_MIPS_32, and \l Q_PROCESSOR_MIPS_64.
+
+    \sa QSysInfo::cpuArchitecture()
 */
 /*!
     \macro Q_PROCESSOR_MIPS_I
@@ -1571,6 +1592,8 @@ bool qSharedBuild() Q_DECL_NOTHROW
 
     Defined if the application is compiled for MIPS-I processors. The \l
     Q_PROCESSOR_MIPS macro is also defined when Q_PROCESSOR_MIPS_I is defined.
+
+    \sa QSysInfo::cpuArchitecture()
 */
 /*!
     \macro Q_PROCESSOR_MIPS_II
@@ -1579,6 +1602,8 @@ bool qSharedBuild() Q_DECL_NOTHROW
     Defined if the application is compiled for MIPS-II processors. The \l
     Q_PROCESSOR_MIPS and \l Q_PROCESSOR_MIPS_I macros are also defined when
     Q_PROCESSOR_MIPS_II is defined.
+
+    \sa QSysInfo::cpuArchitecture()
 */
 /*!
     \macro Q_PROCESSOR_MIPS_32
@@ -1587,6 +1612,8 @@ bool qSharedBuild() Q_DECL_NOTHROW
     Defined if the application is compiled for MIPS32 processors. The \l
     Q_PROCESSOR_MIPS, \l Q_PROCESSOR_MIPS_I, and \l Q_PROCESSOR_MIPS_II macros
     are also defined when Q_PROCESSOR_MIPS_32 is defined.
+
+    \sa QSysInfo::cpuArchitecture()
 */
 /*!
     \macro Q_PROCESSOR_MIPS_III
@@ -1595,6 +1622,8 @@ bool qSharedBuild() Q_DECL_NOTHROW
     Defined if the application is compiled for MIPS-III processors. The \l
     Q_PROCESSOR_MIPS, \l Q_PROCESSOR_MIPS_I, and \l Q_PROCESSOR_MIPS_II macros
     are also defined when Q_PROCESSOR_MIPS_III is defined.
+
+    \sa QSysInfo::cpuArchitecture()
 */
 /*!
     \macro Q_PROCESSOR_MIPS_IV
@@ -1604,6 +1633,8 @@ bool qSharedBuild() Q_DECL_NOTHROW
     Q_PROCESSOR_MIPS, \l Q_PROCESSOR_MIPS_I, \l Q_PROCESSOR_MIPS_II, and \l
     Q_PROCESSOR_MIPS_III macros are also defined when Q_PROCESSOR_MIPS_IV is
     defined.
+
+    \sa QSysInfo::cpuArchitecture()
 */
 /*!
     \macro Q_PROCESSOR_MIPS_V
@@ -1613,6 +1644,8 @@ bool qSharedBuild() Q_DECL_NOTHROW
     Q_PROCESSOR_MIPS, \l Q_PROCESSOR_MIPS_I, \l Q_PROCESSOR_MIPS_II, \l
     Q_PROCESSOR_MIPS_III, and \l Q_PROCESSOR_MIPS_IV macros are also defined
     when Q_PROCESSOR_MIPS_V is defined.
+
+    \sa QSysInfo::cpuArchitecture()
 */
 /*!
     \macro Q_PROCESSOR_MIPS_64
@@ -1622,6 +1655,8 @@ bool qSharedBuild() Q_DECL_NOTHROW
     Q_PROCESSOR_MIPS, \l Q_PROCESSOR_MIPS_I, \l Q_PROCESSOR_MIPS_II, \l
     Q_PROCESSOR_MIPS_III, \l Q_PROCESSOR_MIPS_IV, and \l Q_PROCESSOR_MIPS_V
     macros are also defined when Q_PROCESSOR_MIPS_64 is defined.
+
+    \sa QSysInfo::cpuArchitecture()
 */
 
 /*!
@@ -1631,6 +1666,8 @@ bool qSharedBuild() Q_DECL_NOTHROW
     Defined if the application is compiled for POWER processors. Qt currently
     supports two Power variants: \l Q_PROCESSOR_POWER_32 and \l
     Q_PROCESSOR_POWER_64.
+
+    \sa QSysInfo::cpuArchitecture()
 */
 /*!
     \macro Q_PROCESSOR_POWER_32
@@ -1639,6 +1676,8 @@ bool qSharedBuild() Q_DECL_NOTHROW
     Defined if the application is compiled for 32-bit Power processors. The \l
     Q_PROCESSOR_POWER macro is also defined when Q_PROCESSOR_POWER_32 is
     defined.
+
+    \sa QSysInfo::cpuArchitecture()
 */
 /*!
     \macro Q_PROCESSOR_POWER_64
@@ -1647,6 +1686,8 @@ bool qSharedBuild() Q_DECL_NOTHROW
     Defined if the application is compiled for 64-bit Power processors. The \l
     Q_PROCESSOR_POWER macro is also defined when Q_PROCESSOR_POWER_64 is
     defined.
+
+    \sa QSysInfo::cpuArchitecture()
 */
 
 /*!
@@ -1655,6 +1696,8 @@ bool qSharedBuild() Q_DECL_NOTHROW
 
     Defined if the application is compiled for S/390 processors. Qt supports
     one optional variant of S/390: Q_PROCESSOR_S390_X.
+
+    \sa QSysInfo::cpuArchitecture()
 */
 /*!
     \macro Q_PROCESSOR_S390_X
@@ -1662,6 +1705,8 @@ bool qSharedBuild() Q_DECL_NOTHROW
 
     Defined if the application is compiled for S/390x processors. The \l
     Q_PROCESSOR_S390 macro is also defined when Q_PROCESSOR_S390_X is defined.
+
+    \sa QSysInfo::cpuArchitecture()
 */
 
 /*!
@@ -1670,6 +1715,8 @@ bool qSharedBuild() Q_DECL_NOTHROW
 
     Defined if the application is compiled for SuperH processors. Qt currently
     supports one SuperH revision: \l Q_PROCESSOR_SH_4A.
+
+    \sa QSysInfo::cpuArchitecture()
 */
 /*!
     \macro Q_PROCESSOR_SH_4A
@@ -1677,6 +1724,8 @@ bool qSharedBuild() Q_DECL_NOTHROW
 
     Defined if the application is compiled for SuperH 4A processors. The \l
     Q_PROCESSOR_SH macro is also defined when Q_PROCESSOR_SH_4A is defined.
+
+    \sa QSysInfo::cpuArchitecture()
 */
 
 /*!
@@ -1685,6 +1734,8 @@ bool qSharedBuild() Q_DECL_NOTHROW
 
     Defined if the application is compiled for SPARC processors. Qt currently
     supports one optional SPARC revision: \l Q_PROCESSOR_SPARC_V9.
+
+    \sa QSysInfo::cpuArchitecture()
 */
 /*!
     \macro Q_PROCESSOR_SPARC_V9
@@ -1693,6 +1744,8 @@ bool qSharedBuild() Q_DECL_NOTHROW
     Defined if the application is compiled for SPARC V9 processors. The \l
     Q_PROCESSOR_SPARC macro is also defined when Q_PROCESSOR_SPARC_V9 is
     defined.
+
+    \sa QSysInfo::cpuArchitecture()
 */
 
 /*!
@@ -1701,6 +1754,8 @@ bool qSharedBuild() Q_DECL_NOTHROW
 
     Defined if the application is compiled for x86 processors. Qt currently
     supports two x86 variants: \l Q_PROCESSOR_X86_32 and \l Q_PROCESSOR_X86_64.
+
+    \sa QSysInfo::cpuArchitecture()
 */
 /*!
     \macro Q_PROCESSOR_X86_32
@@ -1709,6 +1764,8 @@ bool qSharedBuild() Q_DECL_NOTHROW
     Defined if the application is compiled for 32-bit x86 processors. This
     includes all i386, i486, i586, and i686 processors. The \l Q_PROCESSOR_X86
     macro is also defined when Q_PROCESSOR_X86_32 is defined.
+
+    \sa QSysInfo::cpuArchitecture()
 */
 /*!
     \macro Q_PROCESSOR_X86_64
@@ -1717,6 +1774,8 @@ bool qSharedBuild() Q_DECL_NOTHROW
     Defined if the application is compiled for 64-bit x86 processors. This
     includes all AMD64, Intel 64, and other x86_64/x64 processors. The \l
     Q_PROCESSOR_X86 macro is also defined when Q_PROCESSOR_X86_64 is defined.
+
+    \sa QSysInfo::cpuArchitecture()
 */
 
 /*!
@@ -1931,6 +1990,78 @@ QSysInfo::WinVersion QSysInfo::windowsVersion()
 const QSysInfo::WinVersion QSysInfo::WindowsVersion = QSysInfo::windowsVersion();
 
 #endif
+
+
+/*!
+    \since 5.4
+
+    Returns the architecture of the CPU that Qt was compiled for, in text
+    format. Note that this may not match the actual CPU that the application is
+    running on if there's an emulation layer or if the CPU supports multiple
+    architectures (like x86-64 processors supporting i386 applications).
+
+    Values returned by this function are stable and will not change over time,
+    so applications can rely on the returned value as an identifier, except
+    that new CPU types may be added over time.
+
+    Typical returned values are (note: list not exhaustive):
+    \list
+        \li "arm"
+        \li "i386"
+        \li "mips"
+        \li "x86_64"
+        \li "power"
+        \li "sparc"
+    \endlist
+
+    \sa QSysInfo::fullCpuArchitecture()
+*/
+QString QSysInfo::cpuArchitecture()
+{
+    return QStringLiteral(ARCH_PROCESSOR);
+}
+
+/*!
+    \since 5.4
+
+    Returns the full architecture string that Qt was compiled for. This string
+    is useful for identifying different, incompatible builds. For example, it
+    can be used as an identifier to request an upgrade package from a server.
+
+    The values returned from this function are kept stable as follows: the
+    mandatory components of the result will not change in future versions of
+    Qt, but optional suffixes may be added.
+
+    The returned value is composed of three or more parts, separated by dashes
+    ("-"). They are:
+
+    \table
+    \header \li Component           \li Value
+    \row    \li CPU Architecture    \li The same as QSysInfo::cpuArchitecture(), such as "arm", "i386", "mips" or "x86_64"
+    \row    \li Endianness          \li "little_endian" or "big_endian"
+    \row    \li Word size           \li Whether it's a 32- or 64-bit application. Possible values are:
+                                        "llp64" (Windows 64-bit), "lp64" (Unix 64-bit), "ilp32" (32-bit)
+    \row    \li (Optional) ABI      \li Zero or more components identifying different ABIs possible in this architecture.
+                                        Currently, Qt has optional ABI components for ARM and MIPS processors: one
+                                        component is the main ABI (such as "eabi", "o32", "n32", "o64"); another is
+                                        whether the calling convention is using hardware floating point registers ("hardfloat"
+                                        is present).
+    \endtable
+
+    \sa QSysInfo::cpuArchitecture()
+*/
+QString QSysInfo::fullCpuArchitecture()
+{
+#ifdef Q_COMPILER_UNICODE_STRINGS
+    // ARCH_FULL is a concatenation of strings (incl. ARCH_PROCESSOR), which breaks
+    // QStringLiteral on MSVC. Since the concatenation behavior we want is specified
+    // the same C++11 paper as the Unicode strings, we'll use that macro and hope
+    // that Microsoft implements the new behavior when they add support for Unicode strings.
+    return QStringLiteral(ARCH_FULL);
+#else
+    return QLatin1String(ARCH_FULL);
+#endif
+}
 
 /*!
     \macro void Q_ASSERT(bool test)

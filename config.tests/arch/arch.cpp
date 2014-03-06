@@ -41,40 +41,14 @@
 ****************************************************************************/
 
 #define QGLOBAL_H
-#include "../../src/corelib/global/qprocessordetection.h"
+#include "../../src/corelib/global/archdetect.cpp"
 #include <stdio.h>
 
 extern const char msg[];
-const char msg[] = "==Qt=magic=Qt== Architecture:"
+const char msg[] = "==Qt=magic=Qt== Architecture:" ARCH_PROCESSOR;
 
-#if defined(Q_PROCESSOR_ALPHA)
-"alpha"
-#elif defined(Q_PROCESSOR_ARM)
-"arm"
-#elif defined(Q_PROCESSOR_AVR32)
-"avr32"
-#elif defined(Q_PROCESSOR_BLACKFIN)
-"bfin"
-#elif defined(Q_PROCESSOR_X86_32)
-"i386"
-#elif defined(Q_PROCESSOR_X86_64)
-"x86_64"
-#elif defined(Q_PROCESSOR_IA64)
-"ia64"
-#elif defined(Q_PROCESSOR_MIPS)
-"mips"
-#elif defined(Q_PROCESSOR_POWER)
-"power"
-#elif defined(Q_PROCESSOR_S390)
-"s390"
-#elif defined(Q_PROCESSOR_SH)
-"sh"
-#elif defined(Q_PROCESSOR_SPARC)
-"sparc"
-#else
-"unknown"
-#endif
-                   ;
+extern const char msgfull[];
+const char msgfull[] = "==Qt=magic=Qt== Full Architecture:" ARCH_FULL;
 
 extern const char msg2[];
 const char msg2[] = "==Qt=magic=Qt== Sub-architecture:"
@@ -265,5 +239,6 @@ const char msg2[] = "==Qt=magic=Qt== Sub-architecture:"
 int main()
 {
     puts(msg);
+    puts(msgfull);
     puts(msg2);
 }

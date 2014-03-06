@@ -20,6 +20,7 @@ HEADERS +=  \
         global/qhooks_p.h
 
 SOURCES += \
+        global/archdetect.cpp \
 	global/qglobal.cpp \
         global/qglobalstatic.cpp \
         global/qlibraryinfo.cpp \

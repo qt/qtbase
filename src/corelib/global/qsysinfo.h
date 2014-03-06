@@ -162,6 +162,9 @@ public:
     static const MacVersion MacintoshVersion;
     static MacVersion macVersion();
 #endif
+
+    static QString cpuArchitecture();
+    static QString fullCpuArchitecture();
 };
 
 QT_END_NAMESPACE
