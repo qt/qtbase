@@ -118,7 +118,7 @@ private:
 {
 public:
     KeyLaunchTransition(Boat *boat, QEvent::Type type, int key)
-    : QKeyEventTransition(boat, type, key), boat(boat), key(key)
+    : QKeyEventTransition(boat, type, key), boat(boat)
     {
     }
 protected:
@@ -131,7 +131,6 @@ protected:
     }
 private:
     Boat * boat;
-    int key;
 };
 
 //This state is describing when the boat is moving right
