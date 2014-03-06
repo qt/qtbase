@@ -257,12 +257,10 @@ QMutex QOpenGLContextPrivate::makeCurrentTrackerMutex;
     rendering a new frame, after calling swapBuffers().
 
     If the context is temporarily not needed, such as when the application is
-    not rendering, it can be useful to call destroy() to free resources.
-    However, if you do so you will need to call create() again before the
-    context can be used, and you might need to recreate any OpenGL resources
-    and reinitialize the OpenGL state. You can connect to the
-    aboutToBeDestroyed() signal to clean up any resources that have been
-    allocated with different ownership from the QOpenGLContext itself.
+    not rendering, it can be useful to delete it in order to free resources.
+    You can connect to the aboutToBeDestroyed() signal to clean up any
+    resources that have been allocated with different ownership from the
+    QOpenGLContext itself.
 
     Once a QOpenGLContext has been made current, you can render to it in a
     platform independent way by using Qt's OpenGL enablers such as
