@@ -83,6 +83,7 @@
 
 #ifdef Q_OS_UNIX
 #include <sys/utsname.h>
+#include <private/qcore_unix_p.h>
 #endif
 
 #include "archdetect.cpp"
@@ -1991,8 +1992,144 @@ QSysInfo::WinVersion QSysInfo::windowsVersion()
     return winver;
 }
 
+static const char *winVer_helper()
+{
+    switch (int(QSysInfo::WindowsVersion)) {
+    case QSysInfo::WV_NT:
+        return "NT";
+    case QSysInfo::WV_2000:
+        return "2000";
+    case QSysInfo::WV_XP:
+        return "XP";
+    case QSysInfo::WV_2003:
+        return "2003";
+    case QSysInfo::WV_VISTA:
+        return "Vista";
+    case QSysInfo::WV_WINDOWS7:
+        return "7";
+    case QSysInfo::WV_WINDOWS8:
+        return "8";
+    case QSysInfo::WV_WINDOWS8_1:
+        return "8.1";
+
+    case QSysInfo::WV_CE:
+        return "CE";
+    case QSysInfo::WV_CENET:
+        return "CENET";
+    case QSysInfo::WV_CE_5:
+        return "CE5";
+    case QSysInfo::WV_CE_6:
+        return "CE6";
+    }
+    // unknown, future version
+    return 0;
+}
+
 const QSysInfo::WinVersion QSysInfo::WindowsVersion = QSysInfo::windowsVersion();
 
+#endif
+#if defined(Q_OS_UNIX) && !defined(Q_OS_ANDROID) && !defined(Q_OS_BLACKBERRY) && !defined(Q_OS_MAC)
+struct QUnixOSVersion
+{
+    // from uname(2)
+    QString sysName;
+    QString sysNameLower;
+
+    // from /etc/os-release:
+    QString versionIdentifier;      // ${ID}_$VERSION_ID
+    QString versionText;            // $PRETTY_NAME
+};
+
+#  if !defined(Q_OS_ANDROID) && !defined(Q_OS_BLACKBERRY) && !defined(Q_OS_MAC)
+static QString unquote(const char *begin, const char *end)
+{
+    if (*begin == '"') {
+        Q_ASSERT(end[-1] == '"');
+        return QString::fromLatin1(begin + 1, end - begin - 2);
+    }
+    return QString::fromLatin1(begin, end - begin);
+}
+#  endif
+
+static QUnixOSVersion detectUnixVersion()
+{
+    QUnixOSVersion v;
+    struct utsname u;
+    if (uname(&u) != -1) {
+        v.sysName = QString::fromLatin1(u.sysname);
+        v.sysNameLower = v.sysName.toLower();
+    } else {
+        v.sysName = QLatin1String("Detection failed");
+        // leave sysNameLower unset
+    }
+
+    // we're avoiding QFile here
+    int fd = qt_safe_open("/etc/os-release", O_RDONLY);
+    if (fd == -1)
+        return v;
+
+    QT_STATBUF sbuf;
+    if (QT_FSTAT(fd, &sbuf) == -1) {
+        qt_safe_close(fd);
+        return v;
+    }
+
+    QString partialIdentifier;
+    QByteArray buffer(sbuf.st_size, Qt::Uninitialized);
+    buffer.resize(qt_safe_read(fd, buffer.data(), sbuf.st_size));
+    qt_safe_close(fd);
+
+    const char *ptr = buffer.constData();
+    const char *end = buffer.constEnd();
+    const char *eol;
+    for ( ; ptr != end; ptr = eol + 1) {
+        static const char idString[] = "ID=";
+        static const char prettyNameString[] = "PRETTY_NAME=";
+        static const char versionIdString[] = "VERSION_ID=";
+
+        // find the end of the line after ptr
+        eol = static_cast<const char *>(memchr(ptr, '\n', end - ptr));
+        if (!eol)
+            eol = end - 1;
+
+        int cmp = strncmp(ptr, idString, strlen(idString));
+        if (cmp < 0)
+            continue;
+        if (cmp == 0) {
+            ptr += strlen(idString);
+            QString id = unquote(ptr, eol);
+            if (partialIdentifier.isNull())
+                partialIdentifier = id;
+            else
+                v.versionIdentifier = id + QLatin1Char('_') + partialIdentifier;
+            continue;
+        }
+
+        cmp = strncmp(ptr, prettyNameString, strlen(prettyNameString));
+        if (cmp < 0)
+            continue;
+        if (cmp == 0) {
+            ptr += strlen(prettyNameString);
+            v.versionText = unquote(ptr, eol);
+            continue;
+        }
+
+        cmp = strncmp(ptr, versionIdString, strlen(versionIdString));
+        if (cmp < 0)
+            continue;
+        if (cmp == 0) {
+            ptr += strlen(versionIdString);
+            QString id = unquote(ptr, eol);
+            if (partialIdentifier.isNull())
+                partialIdentifier = id;
+            else
+                v.versionIdentifier = partialIdentifier + QLatin1Char('_') + id;
+            continue;
+        }
+    }
+
+    return v;
+}
 #endif
 
 
@@ -2067,6 +2204,11 @@ QString QSysInfo::fullCpuArchitecture()
 #endif
 }
 
+static QString unknownText()
+{
+    return QStringLiteral("unknown");
+}
+
 /*!
     \since 5.4
 
@@ -2094,7 +2236,7 @@ QString QSysInfo::fullCpuArchitecture()
     FreeBSD kernel, regardless of whether the userspace runs the traditional
     BSD code or whether it's the GNU system (Debian GNU/kFreeBSD).
 
-    \sa QFileSelector
+    \sa QFileSelector, prettyOsName()
 */
 QString QSysInfo::osType()
 {
@@ -2128,12 +2270,136 @@ QString QSysInfo::osType()
 #elif defined(Q_OS_FREEBSD_KERNEL)
     return QStringLiteral("freebsd");
 #elif defined(Q_OS_UNIX)
-    struct utsname u;
-    if (uname(&u) != -1)
-        return QString(u.sysname).toLower();
+    QUnixOSVersion unixOsVersion = detectUnixVersion();
+    if (!unixOsVersion.sysNameLower.isEmpty())
+        return unixOsVersion.sysNameLower;
 #endif
-    return QStringLiteral("unknown");
+    return unknownText();
 }
+
+/*!
+    \since 5.4
+
+    Returns the version of the host operating system in string form. For both
+    OS X and iOS systems, this returns just the main OS version, such as "7.1",
+    "10.6" and "10.7". For Windows systems, this returns the same types
+    detected by winVersion(), without the word "Windows". For Linux-based
+    systems, it will try to determine the Linux distribution and version.
+
+    If the version could not be determined, this function returns "unknown".
+
+    \sa prettyOsName()
+*/
+QString QSysInfo::osVersion()
+{
+#if defined(Q_OS_IOS)
+    int major = (int(MacintoshVersion) >> 4) & 0xf;
+    int minor = int(MacintoshVersion) & 0xf;
+    if (Q_LIKELY(major < 10 && minor < 10)) {
+        char buf[4] = { char(major + '0'), '.', char(minor + '0'), '\0' };
+        return QString::fromLatin1(buf, 3);
+    }
+    return QString::number(major) + QLatin1Char('.') + QString::number(minor);
+#elif defined(Q_OS_OSX)
+    int minor = int(MacintoshVersion) - 2;  // we're not running on Mac OS 9
+    Q_ASSERT(minor < 100);
+    char buf[] = "10.0\0";
+    if (Q_LIKELY(minor < 10)) {
+        buf[3] += minor;
+    } else {
+        buf[3] += minor / 10;
+        buf[4] = '0' + minor % 10;
+    }
+    return QString::fromLatin1(buf);
+#elif defined(Q_OS_WIN)
+    const char *version = winVer_helper();
+    if (version)
+        return QString::fromLatin1(version).toLower();
+    // fall through
+
+// Android and Blackberry should not fall through to the Unix code
+#elif defined(Q_OS_ANDROID)
+    // TBD
+#elif defined(Q_OS_BLACKBERRY)
+    // TBD
+
+#elif defined(Q_OS_UNIX)
+    QUnixOSVersion unixOsVersion = detectUnixVersion();
+    if (!unixOsVersion.versionIdentifier.isEmpty())
+        return unixOsVersion.versionIdentifier;
+#endif
+
+    // fallback
+    return unknownText();
+}
+
+/*!
+    \since 5.4
+
+    Returns a prettier form of osVersion(), containing other information like
+    the operating system type, codenames and other information. The result of
+    this function is suitable for displaying to the user, but not for long-term
+    storage, as the string may change with updates to Qt.
+
+    \sa osType(), osVersion()
+*/
+QString QSysInfo::prettyOsName()
+{
+#if defined(Q_OS_IOS)
+    return QLatin1String("iOS ") + osVersion();
+#elif defined(Q_OS_OSX)
+    // get the known codenames
+    const char *basename = 0;
+    switch (int(MacintoshVersion)) {
+    case MV_CHEETAH:
+    case MV_PUMA:
+    case MV_JAGUAR:
+    case MV_PANTHER:
+    case MV_TIGER:
+        // This version of Qt does not run on those versions of OS X
+        // so this case label will never be reached
+        Q_UNREACHABLE();
+        break;
+    case MV_LEOPARD:
+        basename = "Mac OS X Leopard (";
+        break;
+    case MV_SNOWLEOPARD:
+        basename = "Mac OS X Snow Leopard (";
+        break;
+    case MV_LION:
+        basename = "Mac OS X Lion (";
+        break;
+    case MV_MOUNTAINLION:
+        basename = "OS X Mountain Lion (";
+        break;
+    case MV_MAVERICKS:
+        basename = "OS X Mavericks (";
+        break;
+    }
+    if (basename)
+        return QLatin1String(basename) + osVersion() + QLatin1Char(')');
+
+    // a future version of OS X
+    return QLatin1String("OS X ") + osVersion();
+#elif defined(Q_OS_WINPHONE)
+    return QLatin1String("Windows Phone ") + QLatin1String(winVer_helper());
+#elif defined(Q_OS_WIN)
+    return QLatin1String("Windows ") + QLatin1String(winVer_helper());
+#elif defined(Q_OS_ANDROID)
+    return QLatin1String("Android ") + osVersion();
+#elif defined(Q_OS_BLACKBERRY)
+    return QStringLiteral("BlackBerry 10");
+#elif defined(Q_OS_UNIX)
+    QUnixOSVersion unixOsVersion = detectUnixVersion();
+    if (unixOsVersion.versionText.isEmpty())
+        return unixOsVersion.sysName;
+    else
+        return unixOsVersion.sysName + QLatin1String(" (") + unixOsVersion.versionText + QLatin1Char(')');
+#else
+    return unknownText();
+#endif
+}
+
 
 /*!
     \macro void Q_ASSERT(bool test)
