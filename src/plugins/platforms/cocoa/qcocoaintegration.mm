@@ -464,6 +464,11 @@ QVariant QCocoaIntegration::styleHint(StyleHint hint) const
     return QPlatformIntegration::styleHint(hint);
 }
 
+Qt::KeyboardModifiers QCocoaIntegration::queryKeyboardModifiers() const
+{
+    return QCocoaKeyMapper::queryKeyboardModifiers();
+}
+
 QList<int> QCocoaIntegration::possibleKeys(const QKeyEvent *event) const
 {
     return mKeyboardMapper->possibleKeys(event);
