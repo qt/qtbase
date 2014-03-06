@@ -305,7 +305,7 @@ void load(const QString &fileName)
 {
     QFile file(fileName);
     if (!file.exists())
-        qCritical("File '%s' does not exist!", qPrintable(fileName));
+        qCritical("File '%s' does not exist!", qUtf8Printable(fileName));
 }
 //! [28]
 
@@ -424,7 +424,7 @@ void TheClass::addLabels()
 
 
 //! [37]
-qWarning("%s: %s", qPrintable(key), qPrintable(value));
+qWarning("%s: %s", qUtf8Printable(key), qUtf8Printable(value));
 //! [37]
 
 

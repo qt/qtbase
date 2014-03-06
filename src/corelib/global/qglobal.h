@@ -645,6 +645,10 @@ inline void qUnused(T &x) { (void)x; }
 #  define qPrintable(string) QString(string).toLocal8Bit().constData()
 #endif
 
+#ifndef qUtf8Printable
+#  define qUtf8Printable(string) QString(string).toUtf8().constData()
+#endif
+
 class QString;
 Q_CORE_EXPORT QString qt_error_string(int errorCode = -1);
 
