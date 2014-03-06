@@ -731,10 +731,9 @@ QFontEngine* QFontEngineMultiQPA::createMultiFontEngine(QFontEngine *fe, int scr
     QFontCache::EngineCache::Iterator it = fc->engineCache.find(key),
             end = fc->engineCache.end();
     while (it != end && it.key() == key) {
-        QFontEngineMulti *cachedEngine = 0;
-        if (it.value().data->type() == QFontEngine::Multi)
-            cachedEngine = static_cast<QFontEngineMulti *>(it.value().data);
-        if (faceIsLocal || (cachedEngine && fe == cachedEngine->engine(0))) {
+        Q_ASSERT(it.value().data->type() == QFontEngine::Multi);
+        QFontEngineMulti *cachedEngine = static_cast<QFontEngineMulti *>(it.value().data);
+        if (faceIsLocal || fe == cachedEngine->engine(0)) {
             engine = cachedEngine;
             fc->updateHitCountAndTimeStamp(it.value());
             break;
