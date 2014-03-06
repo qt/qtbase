@@ -166,6 +166,7 @@ public:
     static QString cpuArchitecture();
     static QString fullCpuArchitecture();
     static QString osType();
+    static QString osKernelVersion();
     static QString osVersion();
     static QString prettyOsName();
 };

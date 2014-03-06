@@ -2028,16 +2028,19 @@ static const char *winVer_helper()
 const QSysInfo::WinVersion QSysInfo::WindowsVersion = QSysInfo::windowsVersion();
 
 #endif
-#if defined(Q_OS_UNIX) && !defined(Q_OS_ANDROID) && !defined(Q_OS_BLACKBERRY) && !defined(Q_OS_MAC)
+#if defined(Q_OS_UNIX)
 struct QUnixOSVersion
 {
     // from uname(2)
     QString sysName;
     QString sysNameLower;
+    QString sysRelease;
 
+#  if !defined(Q_OS_ANDROID) && !defined(Q_OS_BLACKBERRY) && !defined(Q_OS_MAC)
     // from /etc/os-release:
     QString versionIdentifier;      // ${ID}_$VERSION_ID
     QString versionText;            // $PRETTY_NAME
+#  endif
 };
 
 #  if !defined(Q_OS_ANDROID) && !defined(Q_OS_BLACKBERRY) && !defined(Q_OS_MAC)
@@ -2058,15 +2061,22 @@ static QUnixOSVersion detectUnixVersion()
     if (uname(&u) != -1) {
         v.sysName = QString::fromLatin1(u.sysname);
         v.sysNameLower = v.sysName.toLower();
+        v.sysRelease = QString::fromLatin1(u.release);
     } else {
         v.sysName = QLatin1String("Detection failed");
-        // leave sysNameLower unset
+        // leave sysNameLower & sysRelease unset
     }
 
+#  if !defined(Q_OS_ANDROID) && !defined(Q_OS_BLACKBERRY) && !defined(Q_OS_MAC)
     // we're avoiding QFile here
     int fd = qt_safe_open("/etc/os-release", O_RDONLY);
-    if (fd == -1)
+    if (fd == -1) {
+        if (!v.sysNameLower.isEmpty()) {
+            // will produce "qnx_6.5" or "sunos_5.9"
+            v.versionIdentifier = v.sysNameLower + QLatin1Char('_') + v.sysRelease;
+        }
         return v;
+    }
 
     QT_STATBUF sbuf;
     if (QT_FSTAT(fd, &sbuf) == -1) {
@@ -2127,7 +2137,7 @@ static QUnixOSVersion detectUnixVersion()
             continue;
         }
     }
-
+#  endif
     return v;
 }
 #endif
@@ -2286,9 +2296,11 @@ QString QSysInfo::osType()
     detected by winVersion(), without the word "Windows". For Linux-based
     systems, it will try to determine the Linux distribution and version.
 
-    If the version could not be determined, this function returns "unknown".
+    If the version could not be determined, this function returns "unknown" for
+    Windows and a combination of the osType() and osKernelVersion() for Unix
+    systems.
 
-    \sa prettyOsName()
+    \sa prettyOsName(), osKernelVersion()
 */
 QString QSysInfo::osVersion()
 {
@@ -2400,6 +2412,33 @@ QString QSysInfo::prettyOsName()
 #endif
 }
 
+/*!
+    \since 5.4
+
+    Returns the release version of the operating system. On Windows, it returns
+    the version of the kernel, which does not match the version number of the
+    OS (e.g., Windows 8 has NT kernel version 6.2). On Unix systems, including
+    Android, BlackBerry and OS X, it returns the same as the \c{uname -r}
+    command would return.
+
+    If the version could not be determined, this function may return an empty
+    string.
+
+    \sa osVersion(), prettyOsName()
+*/
+QString QSysInfo::osKernelVersion()
+{
+#ifdef Q_OS_WINRT
+    // TBD
+    return QString();
+#elif defined(Q_OS_WIN)
+    const OSVERSIONINFO osver = winOsVersion();
+    return QString::number(int(osver.dwMajorVersion)) + QLatin1Char('.') + QString::number(int(osver.dwMinorVersion))
+            + QLatin1Char('.') + QString::number(int(osver.dwBuildNumber));
+#else
+    return detectUnixVersion().sysRelease;
+#endif
+}
 
 /*!
     \macro void Q_ASSERT(bool test)
