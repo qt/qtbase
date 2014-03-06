@@ -134,6 +134,7 @@ public:
         return (!d->isMutable() || d->ref.isShared());
     }
 
+#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
     void setSharable(bool sharable)
     {
         if (needsDetach()) {
@@ -146,6 +147,9 @@ public:
             d->ref.setSharable(sharable);
         }
     }
+
+    bool isSharable() const { return d->isSharable(); }
+#endif
 
     void swap(QArrayDataPointer &other)
     {
