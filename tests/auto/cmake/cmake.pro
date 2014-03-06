@@ -13,3 +13,4 @@ qtHaveModule(opengl): CMAKE_QT_MODULES_UNDER_TEST += opengl
 qtHaveModule(concurrent): CMAKE_QT_MODULES_UNDER_TEST += concurrent
 
 CONFIG += ctest_testcase
+win32:testcase.timeout = 1000 # this test is slow on Windows
