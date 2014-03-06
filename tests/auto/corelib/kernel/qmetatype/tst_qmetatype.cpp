@@ -1341,6 +1341,8 @@ static QByteArray createTypeName(const char *begin, const char *va)
 }
 #endif
 
+Q_DECLARE_METATYPE(const void*)
+
 void tst_QMetaType::automaticTemplateRegistration()
 {
 #define TEST_SEQUENTIAL_CONTAINER(CONTAINER, VALUE_TYPE) \
@@ -1577,6 +1579,12 @@ void tst_QMetaType::automaticTemplateRegistration()
     )
 
     CREATE_AND_VERIFY_CONTAINER(QList, QList<QMap<int, QHash<char, QVariantList> > >)
+    CREATE_AND_VERIFY_CONTAINER(QVector, void*)
+    CREATE_AND_VERIFY_CONTAINER(QVector, const void*)
+    CREATE_AND_VERIFY_CONTAINER(QList, void*)
+    CREATE_AND_VERIFY_CONTAINER(QPair, void*, void*)
+    CREATE_AND_VERIFY_CONTAINER(QHash, void*, void*)
+    CREATE_AND_VERIFY_CONTAINER(QHash, const void*, const void*)
 
 #endif // Q_COMPILER_VARIADIC_MACROS
 

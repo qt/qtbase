@@ -821,7 +821,14 @@ struct IteratorOwner
 template<typename value_type>
 struct IteratorOwner<const value_type*>
 {
-    static void assign(void **ptr, const value_type *iterator )
+private:
+    // We need to disable typed overloads of assign() and getData() if the value_type
+    // is void* to avoid overloads conflicts. We do it by injecting unaccessible Dummy
+    // type as part of the overload signature.
+    struct Dummy {};
+    typedef typename QtPrivate::if_<QtPrivate::is_same<value_type, void*>::value, Dummy, value_type>::type value_type_OR_Dummy;
+public:
+    static void assign(void **ptr, const value_type_OR_Dummy *iterator )
     {
         *ptr = const_cast<value_type*>(iterator);
     }
@@ -846,7 +853,7 @@ struct IteratorOwner<const value_type*>
         return *iterator;
     }
 
-    static const void *getData(const value_type *it)
+    static const void *getData(const value_type_OR_Dummy *it)
     {
         return it;
     }
