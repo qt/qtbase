@@ -824,9 +824,11 @@ QFontEngine *loadEngine(int script, const QFontDef &request,
             family->askedForFallback = true;
         }
 
-        QStringList fallbacks = privateDb()->fallbackFamilies;
+        QStringList fallbacks = request.fallBackFamilies;
         if (family && !family->fallbackFamilies.isEmpty())
-            fallbacks = family->fallbackFamilies;
+            fallbacks += family->fallbackFamilies;
+        else
+            fallbacks += privateDb()->fallbackFamilies;
 
         QPlatformFontDatabase *pfdb = QGuiApplicationPrivate::platformIntegration()->fontDatabase();
         QFontEngineMulti *pfMultiEngine = pfdb->fontEngineMulti(engine, QChar::Script(script));
