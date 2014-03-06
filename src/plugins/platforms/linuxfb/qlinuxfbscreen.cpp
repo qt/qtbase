@@ -148,7 +148,7 @@ static QSizeF determinePhysicalSize(const fb_var_screeninfo &vinfo, const QSize 
             mmWidth = vinfo.width;
             mmHeight = vinfo.height;
         } else {
-            const int dpi = 72;
+            const int dpi = 100;
             mmWidth = qRound(res.width() * 25.4 / dpi);
             mmHeight = qRound(res.height() * 25.4 / dpi);
         }
