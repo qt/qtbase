@@ -984,6 +984,8 @@ HRESULT QWinRTScreen::onVisibilityChanged(ICoreWindow *window, IVisibilityChange
     boolean visible;
     args->get_Visible(&visible);
     QWindowSystemInterface::handleApplicationStateChanged(visible ? Qt::ApplicationActive : Qt::ApplicationHidden);
+    if (visible)
+        handleExpose();
     return S_OK;
 }
 
