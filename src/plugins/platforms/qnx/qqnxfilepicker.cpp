@@ -49,6 +49,7 @@
 #include <QJsonArray>
 #include <QJsonParseError>
 #include <QUrl>
+#include <private/qppsobject_p.h>
 
 #include <bps/navigator.h>
 #include <bps/navigator_invoke.h>
@@ -132,11 +133,16 @@ void QQnxFilePicker::open()
     if (!m_filters.isEmpty())
         map[QStringLiteral("Filter")] = m_filters.join(";");
 
+    QByteArray ppsData;
+#if defined(Q_OS_BLACKBERRY_TABLET)
     QJsonDocument document;
     document.setObject(QJsonObject::fromVariantMap(map));
-    const QByteArray jsonData = document.toJson(QJsonDocument::Compact);
+    ppsData = document.toJson(QJsonDocument::Compact);
+#else
+    ppsData = QPpsObject::encode(map);
+#endif
 
-    errorCode = navigator_invoke_invocation_set_data(m_invocationHandle, jsonData.constData(), jsonData.size());
+    errorCode = navigator_invoke_invocation_set_data(m_invocationHandle, ppsData.constData(), ppsData.size());
     if (errorCode != BPS_SUCCESS) {
         cleanup();
         qWarning() << "QQnxFilePicker: unable to set data:" << strerror(errno);
