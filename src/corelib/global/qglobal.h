@@ -881,8 +881,11 @@ struct QForeachContainerBase {};
 
 template <typename T>
 class QForeachContainer : public QForeachContainerBase {
+    QForeachContainer &operator=(const QForeachContainer &) Q_DECL_EQ_DELETE;
 public:
     inline QForeachContainer(const T& t): c(t), brk(0), i(c.begin()), e(c.end()){}
+    QForeachContainer(const QForeachContainer &other)
+        : c(other.c), brk(other.brk), i(other.i), e(other.e) {}
     const T c;
     mutable int brk;
     mutable typename T::const_iterator i, e;

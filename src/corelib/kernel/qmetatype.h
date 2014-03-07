@@ -771,9 +771,13 @@ struct VariantData
       , flags(flags_)
     {
     }
+    VariantData(const VariantData &other)
+        : metaTypeId(other.metaTypeId), data(other.data), flags(other.flags){}
     const int metaTypeId;
     const void *data;
     const uint flags;
+private:
+    VariantData &operator=(const VariantData &) Q_DECL_EQ_DELETE;
 };
 
 template<typename const_iterator>
