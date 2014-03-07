@@ -80,6 +80,15 @@ namespace ABI {
                 struct IDisplayPropertiesStatics;
             }
         }
+#ifdef Q_OS_WINPHONE
+        namespace Phone {
+            namespace UI {
+                namespace Input {
+                    struct IBackPressedEventArgs;
+                }
+            }
+        }
+#endif
     }
 }
 struct IInspectable;
@@ -148,6 +157,10 @@ private:
     HRESULT onAutomationProviderRequested(ABI::Windows::UI::Core::ICoreWindow *, ABI::Windows::UI::Core::IAutomationProviderRequestedEventArgs *args);
 
     HRESULT onOrientationChanged(IInspectable *);
+
+#ifdef Q_OS_WINPHONE
+    HRESULT onBackButtonPressed(IInspectable *, ABI::Windows::Phone::UI::Input::IBackPressedEventArgs *args);
+#endif
 
     ABI::Windows::UI::Core::ICoreWindow *m_coreWindow;
     ABI::Windows::UI::ViewManagement::IApplicationViewStatics *m_applicationView;
