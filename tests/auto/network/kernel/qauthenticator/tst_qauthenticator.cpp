@@ -146,7 +146,7 @@ void tst_QAuthenticator::ntlmAuth()
     if (sso)
         QVERIFY(priv->calculateResponse("GET", "/").startsWith("NTLM "));
     else
-        QCOMPARE(priv->calculateResponse("GET", "/").constData(), "NTLM TlRMTVNTUAABAAAABQIAAAAAAAAAAAAAAAAAAAAAAAA=");
+        QCOMPARE(priv->calculateResponse("GET", "/").constData(), "NTLM TlRMTVNTUAABAAAABYIIAAAAAAAAAAAAAAAAAAAAAAA=");
 
     // NTLM phase 2: challenge
     headers.clear();
