@@ -207,14 +207,24 @@ QWinRTBackingStore::QWinRTBackingStore(QWindow *window)
     , m_fbo(0)
     , m_texture(0)
     , m_screen(static_cast<QWinRTScreen*>(window->screen()->handle()))
+    , m_initialized(false)
 {
     window->setSurfaceType(QSurface::OpenGLSurface); // Required for flipping, but could be done in the swap
+}
 
-    m_context->setFormat(window->requestedFormat());
-    m_context->setScreen(window->screen());
-    m_context->create();
+bool QWinRTBackingStore::initialize()
+{
+    if (m_initialized)
+        return true;
 
-    m_context->makeCurrent(window);
+    m_context->setFormat(window()->requestedFormat());
+    m_context->setScreen(window()->screen());
+    if (!m_context->create())
+        return false;
+
+    if (!m_context->makeCurrent(window()))
+        return false;
+
     glGenFramebuffers(1, &m_fbo);
     glGenRenderbuffers(1, &m_rbo);
     glGenTextures(1, &m_texture);
@@ -258,11 +268,14 @@ QWinRTBackingStore::QWinRTBackingStore(QWindow *window)
     glProgramBinaryOES(m_shaderProgram, GL_PROGRAM_BINARY_ANGLE, binary.constData(), binary.size());
 #endif
     m_context->doneCurrent();
-    resize(window->size(), QRegion());
+    m_initialized = true;
+    return true;
 }
 
 QWinRTBackingStore::~QWinRTBackingStore()
 {
+    if (!m_initialized)
+        return;
     glDeleteBuffers(1, &m_fbo);
     glDeleteRenderbuffers(1, &m_rbo);
     glDeleteTextures(1, &m_texture);
@@ -277,6 +290,8 @@ QPaintDevice *QWinRTBackingStore::paintDevice()
 void QWinRTBackingStore::flush(QWindow *window, const QRegion &region, const QPoint &offset)
 {
     Q_UNUSED(offset)
+    if (m_size.isEmpty())
+        return;
 
     const QImage *image = static_cast<QImage *>(m_paintDevice.data());
 
@@ -334,10 +349,16 @@ void QWinRTBackingStore::flush(QWindow *window, const QRegion &region, const QPo
 void QWinRTBackingStore::resize(const QSize &size, const QRegion &staticContents)
 {
     Q_UNUSED(staticContents)
+    if (!initialize())
+        return;
+
     if (m_size == size)
         return;
 
     m_size = size;
+    if (m_size.isEmpty())
+        return;
+
     m_paintDevice.reset(new QImage(m_size, QImage::Format_ARGB32_Premultiplied));
 
     m_context->makeCurrent(window());
@@ -360,6 +381,7 @@ void QWinRTBackingStore::resize(const QSize &size, const QRegion &staticContents
 void QWinRTBackingStore::beginPaint(const QRegion &region)
 {
     Q_UNUSED(region)
+    resize(window()->size(), QRegion());
 }
 
 void QWinRTBackingStore::endPaint()
