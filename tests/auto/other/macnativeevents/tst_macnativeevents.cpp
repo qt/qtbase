@@ -272,7 +272,7 @@ void tst_MacNativeEvents::testDragWindow()
 void tst_MacNativeEvents::testMouseEnter()
 {
     // When a mouse enters a widget, both a mouse enter events and a
-    // mouse move event should be sendt. Lets test this:
+    // mouse move event should be sent. Let's test this:
     QWidget w;
     w.setMouseTracking(true);
     w.show();

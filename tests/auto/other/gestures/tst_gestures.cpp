@@ -1545,7 +1545,7 @@ void tst_Gestures::autoCancelGestures()
     QVERIFY(QTest::qWaitForWindowExposed(&parent));
 
     /*
-      An event is send to both the child and the parent, when the child gets it a gesture is triggered
+      An event is sent to both the child and the parent, when the child gets it a gesture is triggered
       and send to the child.
       When the parent gets the event a new gesture is triggered and delivered to the parent. When the
       parent gets it he accepts it and that causes the cancel policy to activate.

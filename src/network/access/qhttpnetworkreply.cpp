@@ -363,7 +363,7 @@ bool QHttpNetworkReplyPrivate::isCompressed()
 void QHttpNetworkReplyPrivate::removeAutoDecompressHeader()
 {
     // The header "Content-Encoding  = gzip" is retained.
-    // Content-Length is removed since the actual one send by the server is for compressed data
+    // Content-Length is removed since the actual one sent by the server is for compressed data
     QByteArray name("content-length");
     QList<QPair<QByteArray, QByteArray> >::Iterator it = fields.begin(),
                                                    end = fields.end();
@@ -921,7 +921,7 @@ qint64 QHttpNetworkReplyPrivate::getChunkSize(QAbstractSocket *socket, qint64 *c
 bool QHttpNetworkReplyPrivate::shouldEmitSignals()
 {
     // for 401 & 407 don't emit the data signals. Content along with these
-    // responses are send only if the authentication fails.
+    // responses are sent only if the authentication fails.
     return (statusCode != 401 && statusCode != 407);
 }
 

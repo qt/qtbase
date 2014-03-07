@@ -120,7 +120,7 @@ QByteArray QHttpNetworkRequest::uri(bool throughProxy) const
 {
     QUrl::FormattingOptions format(QUrl::RemoveFragment | QUrl::RemoveUserInfo | QUrl::FullyEncoded);
 
-    // for POST, query data is send as content
+    // for POST, query data is sent as content
     if (d->operation == QHttpNetworkRequest::Post && !d->uploadByteDevice)
         format |= QUrl::RemoveQuery;
     // for requests through proxy, the Request-URI contains full url
