@@ -39,9 +39,13 @@ contains(TEMPLATE, ".*app"):!build_pass:!android-no-sdk {
     isEmpty(ANDROID_TARGET_ARCH): ANDROID_TARGET_ARCH = $$DEFAULT_ANDROID_TARGET_ARCH
     FILE_CONTENT += "   \"target-architecture\": $$emitString($$ANDROID_TARGET_ARCH),"
 
-    # Explicitly set dependencies of application for deployment
+    # Explicitly set qt dependencies of application for deployment
     !isEmpty(ANDROID_DEPLOYMENT_DEPENDENCIES): \
         FILE_CONTENT += "   \"deployment-dependencies\": $$emitString($$join(ANDROID_DEPLOYMENT_DEPENDENCIES, ",")),"
+
+    # Explicitly set external dependencies of application for deployment
+    !isEmpty(ANDROID_EXTRA_PLUGINS): \
+        FILE_CONTENT += "   \"android-extra-plugins\": $$emitString($$join(ANDROID_EXTRA_PLUGINS, ",")),"
 
     # Android-specific settings of Project
     !isEmpty(ANDROID_PACKAGE_SOURCE_DIR): \
