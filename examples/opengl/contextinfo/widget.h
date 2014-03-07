@@ -46,6 +46,8 @@
 QT_FORWARD_DECLARE_CLASS(QComboBox)
 QT_FORWARD_DECLARE_CLASS(QTextEdit)
 QT_FORWARD_DECLARE_CLASS(QVBoxLayout)
+QT_FORWARD_DECLARE_CLASS(QSurfaceFormat)
+QT_FORWARD_DECLARE_CLASS(QSurface)
 
 class Widget : public QWidget
 {
@@ -65,6 +67,7 @@ private:
     void addOptions(QLayout *layout);
     void addRenderableTypes(QLayout *layout);
     void addRenderWindow();
+    void printFormat(const QSurfaceFormat &format);
 
     QComboBox *m_version;
     QLayout *m_profiles;
@@ -74,6 +77,7 @@ private:
     QTextEdit *m_extensions;
     QVBoxLayout *m_renderWindowLayout;
     QWidget *m_renderWindowContainer;
+    QSurface *m_surface;
 };
 
 #endif // WIDGET_H
