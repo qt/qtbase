@@ -102,7 +102,7 @@ public:
     QVector4D &operator*=(const QVector4D &vector);
     QVector4D &operator/=(float divisor);
 
-#ifdef QT_BUILD_GUI_LIB
+#if defined(QT_BUILD_GUI_LIB) && !defined(QT_STATIC)
     static float dotProduct(const QVector4D& v1, const QVector4D& v2);
 #else
     static float dotProduct(const QVector4D& v1, const QVector4D& v2)

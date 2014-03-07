@@ -99,7 +99,7 @@ public:
     QVector2D &operator*=(const QVector2D &vector);
     QVector2D &operator/=(float divisor);
 
-#ifdef QT_BUILD_GUI_LIB
+#if defined(QT_BUILD_GUI_LIB) && !defined(QT_STATIC)
     static float dotProduct(const QVector2D& v1, const QVector2D& v2);
 #else
     Q_DECL_CONSTEXPR inline static float dotProduct(const QVector2D& v1, const QVector2D& v2)

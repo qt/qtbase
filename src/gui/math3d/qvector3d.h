@@ -95,7 +95,7 @@ public:
     QVector3D &operator*=(const QVector3D& vector);
     QVector3D &operator/=(float divisor);
 
-#ifdef QT_BUILD_GUI_LIB
+#if defined(QT_BUILD_GUI_LIB) && !defined(QT_STATIC)
     static float dotProduct(const QVector3D& v1, const QVector3D& v2);
     static QVector3D crossProduct(const QVector3D& v1, const QVector3D& v2);
 #else
