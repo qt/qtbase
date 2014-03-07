@@ -939,6 +939,12 @@ void QWidgetPrivate::createTLSysExtra()
 void QWidgetPrivate::deleteTLSysExtra()
 {
     if (extra && extra->topextra) {
+        //the qplatformbackingstore may hold a reference to the window, so the backingstore
+        //needs to be deleted first
+        extra->topextra->backingStoreTracker.destroy();
+        delete extra->topextra->backingStore;
+        extra->topextra->backingStore = 0;
+
         //the toplevel might have a context with a "qglcontext associated with it. We need to
         //delete the qglcontext before we delete the qplatformopenglcontext.
         //One unfortunate thing about this is that we potentially create a glContext just to
@@ -949,10 +955,6 @@ void QWidgetPrivate::deleteTLSysExtra()
         setWinId(0);
         delete extra->topextra->window;
         extra->topextra->window = 0;
-
-        extra->topextra->backingStoreTracker.destroy();
-        delete extra->topextra->backingStore;
-        extra->topextra->backingStore = 0;
 
 #ifndef QT_NO_OPENGL
         delete extra->topextra->shareContext;
