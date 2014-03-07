@@ -174,7 +174,7 @@ void RenderWindow::setupVertexAttribs()
 void RenderWindow::render()
 {
     if (!m_context->makeCurrent(this)) {
-        qWarning("makeCurrent() failed");
+        emit error(tr("makeCurrent() failed"));
         return;
     }
 
@@ -216,5 +216,10 @@ void RenderWindow::render()
     m_context->swapBuffers(this);
 
     m_angle += 1.0f;
-    QTimer::singleShot(0, this, SLOT(render()));
+
+    // Instead of 0 wait a few more milliseconds before rendering again. This is
+    // only here to make the UI widgets more responsive on slower machines. We
+    // can afford it since our rendering is so lightweight.
+    const int interval = 5;
+    QTimer::singleShot(interval, this, SLOT(render()));
 }
