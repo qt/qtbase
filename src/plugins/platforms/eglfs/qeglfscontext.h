@@ -49,8 +49,7 @@ QT_BEGIN_NAMESPACE
 class QEglFSContext : public QEGLPlatformContext
 {
 public:
-    QEglFSContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display,
-                  EGLenum eglApi = EGL_OPENGL_ES_API);
+    QEglFSContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display);
     EGLSurface eglSurfaceForPlatformSurface(QPlatformSurface *surface) Q_DECL_OVERRIDE;
     void swapBuffers(QPlatformSurface *surface) Q_DECL_OVERRIDE;
 };

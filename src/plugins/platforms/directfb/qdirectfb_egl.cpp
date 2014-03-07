@@ -223,8 +223,7 @@ QSurfaceFormat QDirectFbWindowEGL::format() const
 
 
 QDirectFbEGLContext::QDirectFbEGLContext(QDirectFbScreenEGL *screen, QOpenGLContext *context)
-    : QEGLPlatformContext(context->format(), context->shareHandle(),
-                          screen->eglDisplay(), EGL_OPENGL_ES_API)
+    : QEGLPlatformContext(context->format(), context->shareHandle(), screen->eglDisplay())
     , m_screen(screen)
 {}
 

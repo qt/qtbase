@@ -124,7 +124,7 @@ QWindowsEGLStaticContext::~QWindowsEGLStaticContext()
 QWindowsEGLContext::QWindowsEGLContext(const QWindowsEGLStaticContextPtr &staticContext,
                                        const QSurfaceFormat &format,
                                        QPlatformOpenGLContext *share)
-    : QEGLPlatformContext(format, share, staticContext->display(), EGL_OPENGL_ES_API)
+    : QEGLPlatformContext(format, share, staticContext->display())
     , m_staticContext(staticContext)
 {
 }

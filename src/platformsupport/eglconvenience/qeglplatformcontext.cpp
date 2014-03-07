@@ -89,8 +89,7 @@ static inline void bindApi(const QSurfaceFormat &format)
     }
 }
 
-QEGLPlatformContext::QEGLPlatformContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display,
-                                         EGLenum eglApi)
+QEGLPlatformContext::QEGLPlatformContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display)
     : m_eglDisplay(display)
     , m_eglConfig(q_configFromGLFormat(display, format))
     , m_swapInterval(-1)
@@ -98,11 +97,10 @@ QEGLPlatformContext::QEGLPlatformContext(const QSurfaceFormat &format, QPlatform
     , m_swapIntervalFromEnv(-1)
 {
     init(format, share);
-    Q_UNUSED(eglApi);
 }
 
 QEGLPlatformContext::QEGLPlatformContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display,
-                                         EGLConfig config, EGLenum eglApi)
+                                         EGLConfig config)
     : m_eglDisplay(display)
     , m_eglConfig(config)
     , m_swapInterval(-1)
@@ -110,7 +108,6 @@ QEGLPlatformContext::QEGLPlatformContext(const QSurfaceFormat &format, QPlatform
     , m_swapIntervalFromEnv(-1)
 {
     init(format, share);
-    Q_UNUSED(eglApi);
 }
 
 void QEGLPlatformContext::init(const QSurfaceFormat &format, QPlatformOpenGLContext *share)
