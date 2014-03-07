@@ -48,6 +48,7 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QJsonParseError>
+#include <QMimeDatabase>
 #include <QUrl>
 #include <private/qppsobject_p.h>
 
@@ -119,7 +120,7 @@ void QQnxFilePicker::open()
     }
 
     QVariantMap map;
-    map[QStringLiteral("Type")] = QStringLiteral("Other");
+    map[QStringLiteral("Type")] = filePickerType();
     map[QStringLiteral("Mode")] = modeToString(m_mode);
     map[QStringLiteral("Title")] = m_title;
     map[QStringLiteral("ViewMode")] = QStringLiteral("Default");
@@ -279,6 +280,39 @@ void QQnxFilePicker::handleFilePickerResponse(const char *data)
 
     Q_EMIT closed();
     cleanup();
+}
+
+QString QQnxFilePicker::filePickerType() const
+{
+    bool images = false;
+    bool video = false;
+    bool music = false;
+    QMimeDatabase mimeDb;
+    for (int i = 0; i < filters().count(); i++) {
+        QList<QMimeType> mimeTypes = mimeDb.mimeTypesForFileName(filters().at(i));
+        if (mimeTypes.isEmpty())
+            return QStringLiteral("Other");
+
+        if (mimeTypes.first().name().startsWith(QLatin1String("image")))
+            images = true;
+        else if (mimeTypes.first().name().startsWith(QLatin1String("audio")))
+            music = true;
+        else if (mimeTypes.first().name().startsWith(QLatin1String("video")))
+            video = true;
+        else
+            return QStringLiteral("Other");
+    }
+
+    if (!video && !music)
+        return QStringLiteral("Picture");
+
+    if (!images && !music)
+        return QStringLiteral("Video");
+
+    if (!images && !video)
+        return QStringLiteral("Music");
+
+    return QStringLiteral("Other");
 }
 
 QString QQnxFilePicker::modeToString(QQnxFilePicker::Mode mode) const

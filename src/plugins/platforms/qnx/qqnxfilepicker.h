@@ -92,6 +92,7 @@ public Q_SLOTS:
 private:
     void cleanup();
     void handleFilePickerResponse(const char *data);
+    QString filePickerType() const;
 
     QString modeToString(Mode mode) const;
 
