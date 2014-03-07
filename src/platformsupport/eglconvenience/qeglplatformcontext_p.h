@@ -80,6 +80,7 @@ private:
     EGLDisplay m_eglDisplay;
     EGLConfig m_eglConfig;
     QSurfaceFormat m_format;
+    EGLenum m_api;
     int m_swapInterval;
     bool m_swapIntervalEnvChecked;
     int m_swapIntervalFromEnv;
