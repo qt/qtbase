@@ -14,7 +14,6 @@ contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles2){
     }
 } else {
     SUBDIRS   = 2dpainting \
-                cube \
                 grabber \
                 hellogl \
                 overpainting \
@@ -26,6 +25,7 @@ contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles2){
 
 SUBDIRS += hellowindow \
            paintedwindow \
-           contextinfo
+           contextinfo \
+           cube
 
 EXAMPLE_FILES = shared
