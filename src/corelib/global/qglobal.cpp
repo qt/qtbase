@@ -3291,6 +3291,8 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
     stderr. Under Windows, the message is sent to the debugger.
     On Blackberry the message is sent to slogger2.
 
+    It exits if the environment variable QT_FATAL_CRITICALS is not empty.
+
     This function takes a format string and a list of arguments,
     similar to the C printf() function. The format should be a Latin-1
     string.
