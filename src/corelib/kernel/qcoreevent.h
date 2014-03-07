@@ -150,6 +150,8 @@ public:
         WindowUnblocked = 104,                  // windows modal blocking has ended
         WindowStateChange = 105,
 
+        ReadOnlyChange = 106,                   // readonly state has changed
+
         ToolTip = 110,
         WhatsThis = 111,
         StatusTip = 112,

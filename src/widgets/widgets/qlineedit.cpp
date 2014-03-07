@@ -1348,6 +1348,8 @@ void QLineEdit::setReadOnly(bool enable)
 #ifndef QT_NO_CURSOR
         setCursor(enable ? Qt::ArrowCursor : Qt::IBeamCursor);
 #endif
+        QEvent event(QEvent::ReadOnlyChange);
+        QCoreApplication::sendEvent(this, &event);
         update();
     }
 }

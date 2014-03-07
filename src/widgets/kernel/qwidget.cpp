@@ -8224,6 +8224,7 @@ bool QWidget::event(QEvent *event)
     case QEvent::MacSizeChange:
     case QEvent::ContentsRectChange:
     case QEvent::ThemeChange:
+    case QEvent::ReadOnlyChange:
         changeEvent(event);
         break;
 
@@ -8395,7 +8396,7 @@ bool QWidget::event(QEvent *event)
   QEvent::ModifiedChange, QEvent::MouseTrackingChange,
   QEvent::ParentChange, QEvent::WindowStateChange,
   QEvent::LanguageChange, QEvent::LocaleChange,
-  QEvent::LayoutDirectionChange.
+  QEvent::LayoutDirectionChange, QEvent::ReadOnlyChange.
 
 */
 void QWidget::changeEvent(QEvent * event)

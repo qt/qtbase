@@ -393,18 +393,31 @@ void tst_QSpinBox::valueChangedHelper(int value)
     actualValues << value;
 }
 
+class MySpinBox: public QSpinBox
+{
+public:
+    MySpinBox(QWidget *parent = 0) : QSpinBox(parent) {}
+
+    void changeEvent(QEvent *ev) {
+        eventsReceived.append(ev->type());
+    }
+    QList<QEvent::Type> eventsReceived;
+};
+
 void tst_QSpinBox::setReadOnly()
 {
-    QSpinBox spin(0);
+    MySpinBox spin(0);
     spin.show();
     QTest::keyClick(&spin, Qt::Key_Up);
     QCOMPARE(spin.value(), 1);
     spin.setReadOnly(true);
+    QCOMPARE(spin.eventsReceived, QList<QEvent::Type>() << QEvent::ReadOnlyChange);
     QTest::keyClick(&spin, Qt::Key_Up);
     QCOMPARE(spin.value(), 1);
     spin.stepBy(1);
     QCOMPARE(spin.value(), 2);
     spin.setReadOnly(false);
+    QCOMPARE(spin.eventsReceived, QList<QEvent::Type>() << QEvent::ReadOnlyChange << QEvent::ReadOnlyChange);
     QTest::keyClick(&spin, Qt::Key_Up);
     QCOMPARE(spin.value(), 3);
 }

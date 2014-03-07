@@ -315,6 +315,8 @@ void QAbstractSpinBox::setReadOnly(bool enable)
     Q_D(QAbstractSpinBox);
     d->readOnly = enable;
     d->edit->setReadOnly(enable);
+    QEvent event(QEvent::ReadOnlyChange);
+    QApplication::sendEvent(this, &event);
     update();
 }
 
