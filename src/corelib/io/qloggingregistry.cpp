@@ -62,7 +62,6 @@ Q_GLOBAL_STATIC(QLoggingRegistry, qtLoggingRegistry)
     Constructs a logging rule with default values.
 */
 QLoggingRule::QLoggingRule() :
-    flags(Invalid),
     enabled(false)
 {
 }
@@ -73,7 +72,6 @@ QLoggingRule::QLoggingRule() :
 */
 QLoggingRule::QLoggingRule(const QStringRef &pattern, bool enabled) :
     messageType(-1),
-    flags(Invalid),
     enabled(enabled)
 {
     parse(pattern);
@@ -147,7 +145,6 @@ void QLoggingRule::parse(const QStringRef &pattern)
         p = pattern;
     }
 
-    flags = Invalid;
     if (!p.contains(QLatin1Char('*'))) {
         flags = FullText;
     } else {
@@ -160,7 +157,7 @@ void QLoggingRule::parse(const QStringRef &pattern)
             p = QStringRef(p.string(), p.position() + 1, p.length() - 1);
         }
         if (p.contains(QLatin1Char('*'))) // '*' only supported at start/end
-            flags = Invalid;
+            flags = 0;
     }
 
     category = p.toString();
@@ -225,7 +222,7 @@ void QLoggingSettingsParser::setContent(QTextStream &stream)
                 bool enabled = (value.compare(QLatin1String("true"),
                                               Qt::CaseInsensitive) == 0);
                 QLoggingRule rule(pattern, enabled);
-                if (rule.flags != QLoggingRule::Invalid)
+                if (rule.flags != 0)
                     _rules.append(rule);
                 else
                     warnMsg("Ignoring malformed logging rule: '%s'", line.toUtf8().constData());

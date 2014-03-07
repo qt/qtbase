@@ -172,7 +172,7 @@ private slots:
 
         QLoggingRule rule(QStringRef(&pattern), true);
         LoggingRuleState state = Invalid;
-        if (rule.flags != QLoggingRule::Invalid) {
+        if (rule.flags != 0) {
             switch (rule.pass(category, msgType)) {
             case -1: QFAIL("Shoudn't happen, we set pattern to true"); break;
             case 0: state = NoMatch; break;
