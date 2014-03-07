@@ -50,6 +50,10 @@
 
 #include "qeglconvenience_p.h"
 
+#ifndef EGL_OPENGL_ES3_BIT_KHR
+#define EGL_OPENGL_ES3_BIT_KHR 0x0040
+#endif
+
 QT_BEGIN_NAMESPACE
 
 QVector<EGLint> q_createConfigAttributesFromFormat(const QSurfaceFormat &format)
@@ -239,6 +243,7 @@ EGLConfig QEglConfigChooser::chooseConfig()
     configureAttributes.append(surfaceType());
 
     configureAttributes.append(EGL_RENDERABLE_TYPE);
+    bool needsES2Plus = false;
     switch (m_format.renderableType()) {
     case QSurfaceFormat::OpenVG:
         configureAttributes.append(EGL_OPENVG_BIT);
@@ -250,7 +255,7 @@ EGLConfig QEglConfigChooser::chooseConfig()
             configureAttributes.append(EGL_OPENGL_BIT);
         else
 #endif // QT_NO_OPENGL
-            configureAttributes.append(EGL_OPENGL_ES2_BIT);
+            needsES2Plus = true;
         break;
     case QSurfaceFormat::OpenGL:
          configureAttributes.append(EGL_OPENGL_BIT);
@@ -263,8 +268,14 @@ EGLConfig QEglConfigChooser::chooseConfig()
         }
         // fall through
     default:
-        configureAttributes.append(EGL_OPENGL_ES2_BIT);
+        needsES2Plus = true;
         break;
+    }
+    if (needsES2Plus) {
+        if (m_format.majorVersion() >= 3 && q_hasEglExtension(display(), "EGL_KHR_create_context"))
+            configureAttributes.append(EGL_OPENGL_ES3_BIT_KHR);
+        else
+            configureAttributes.append(EGL_OPENGL_ES2_BIT);
     }
     configureAttributes.append(EGL_NONE);
 
