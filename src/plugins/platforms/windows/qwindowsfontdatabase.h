@@ -78,6 +78,7 @@ public:
     ~QWindowsFontDatabase();
 
     virtual void populateFontDatabase();
+    virtual QFontEngineMulti *fontEngineMulti(QFontEngine *fontEngine, QChar::Script script);
     virtual QFontEngine *fontEngine(const QFontDef &fontDef, void *handle);
     virtual QFontEngine *fontEngine(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference);
     virtual QStringList fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const;
@@ -92,9 +93,8 @@ public:
 
     static QFont systemDefaultFont();
 
-    static QFontEngine *createEngine(int script, const QFontDef &request,
+    static QFontEngine *createEngine(const QFontDef &request,
                                      HDC fontHdc, int dpi, bool rawMode,
-                                     const QStringList &family_list,
                                      const QSharedPointer<QWindowsFontEngineData> &data);
 
     static HFONT systemFont();

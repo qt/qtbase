@@ -1038,11 +1038,17 @@ QWindowsFontDatabase::~QWindowsFontDatabase()
     removeApplicationFonts();
 }
 
+QFontEngineMulti *QWindowsFontDatabase::fontEngineMulti(QFontEngine *fontEngine, QChar::Script script)
+{
+    Q_UNUSED(script)
+    return new QWindowsMultiFontEngine(fontEngine, QStringList());
+}
+
 QFontEngine * QWindowsFontDatabase::fontEngine(const QFontDef &fontDef, void *handle)
 {
-    QFontEngine *fe = QWindowsFontDatabase::createEngine(QChar::Script_Common, fontDef,
-                                              0, QWindowsContext::instance()->defaultDPI(), false,
-                                              QStringList(), sharedFontData());
+    QFontEngine *fe = QWindowsFontDatabase::createEngine(fontDef, 0,
+                                                         QWindowsContext::instance()->defaultDPI(),
+                                                         false, sharedFontData());
     qCDebug(lcQpaFonts) << __FUNCTION__ << "FONTDEF" << fontDef << fe << handle;
     return fe;
 }
@@ -1087,12 +1093,12 @@ QFontEngine *QWindowsFontDatabase::fontEngine(const QByteArray &fontData, qreal 
             QFontDef request;
             request.family = uniqueFamilyName;
             request.pixelSize = pixelSize;
-            request.styleStrategy = QFont::NoFontMerging | QFont::PreferMatch;
+            request.styleStrategy = QFont::PreferMatch;
             request.hintingPreference = hintingPreference;
 
-            fontEngine = QWindowsFontDatabase::createEngine(QChar::Script_Common, request, 0,
-                    QWindowsContext::instance()->defaultDPI(), false, QStringList(),
-                    sharedFontData());
+            fontEngine = QWindowsFontDatabase::createEngine(request, 0,
+                                                            QWindowsContext::instance()->defaultDPI(),
+                                                            false, sharedFontData());
 
             if (fontEngine) {
                 if (request.family != fontEngine->fontDef.family) {
@@ -1623,9 +1629,8 @@ QStringList QWindowsFontDatabase::fallbacksForFamily(const QString &family, QFon
 }
 
 
-QFontEngine *QWindowsFontDatabase::createEngine(int script, const QFontDef &request,
+QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request,
                                                 HDC fontHdc, int dpi, bool rawMode,
-                                                const QStringList &family_list,
                                                 const QSharedPointer<QWindowsFontEngineData> &data)
 {
     LOGFONT lf;
@@ -1769,17 +1774,6 @@ QFontEngine *QWindowsFontDatabase::createEngine(int script, const QFontDef &requ
         directWriteFont->Release();
 #endif
 
-    if ((script == QChar::Script_Common || script == QChar::Script_Han)
-            && !(request.styleStrategy & QFont::NoFontMerging)) {
-        const QStringList extraFonts = QWindowsFontDatabase::extraTryFontsForFamily(request.family);
-        if (extraFonts.size()) {
-            QStringList list = family_list;
-            list.append(extraFonts);
-            QFontEngine *mfe = new QWindowsMultiFontEngine(fe, list);
-            mfe->fontDef = fe->fontDef;
-            fe = mfe;
-        }
-    }
     return fe;
 }
 

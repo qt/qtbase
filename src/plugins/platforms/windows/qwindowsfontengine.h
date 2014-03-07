@@ -170,10 +170,11 @@ class QWindowsMultiFontEngine : public QFontEngineMulti
 {
 public:
     QWindowsMultiFontEngine(QFontEngine *first, const QStringList &fallbacks);
-    virtual ~QWindowsMultiFontEngine();
+
+    void setFallbackFamiliesList(const QStringList &fallbacks);
     void loadEngine(int at);
 
-    QStringList fallbacks;
+    QStringList fallbackFamilies;
 };
 
 QT_END_NAMESPACE

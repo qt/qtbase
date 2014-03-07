@@ -1233,15 +1233,11 @@ QFontEngine *QWindowsFontEngine::cloneWithSize(qreal pixelSize) const
     if (!uniqueFamilyName.isEmpty())
         request.family = uniqueFamilyName;
     request.pixelSize = pixelSize;
-    // Disable font merging, as otherwise createEngine will return a multi-engine
-    // instance instead of the specific engine we wish to clone.
-    request.styleStrategy |= QFont::NoFontMerging;
 
     QFontEngine *fontEngine =
-        QWindowsFontDatabase::createEngine(QChar::Script_Common, request, 0,
+        QWindowsFontDatabase::createEngine(request, 0,
                                            QWindowsContext::instance()->defaultDPI(),
-                                           false,
-                                           QStringList(), m_fontEngineData);
+                                           false, m_fontEngineData);
     if (fontEngine) {
         fontEngine->fontDef.family = actualFontName;
         if (!uniqueFamilyName.isEmpty()) {
@@ -1284,19 +1280,29 @@ void QWindowsFontEngine::initFontInfo(const QFontDef &request,
 */
 
 QWindowsMultiFontEngine::QWindowsMultiFontEngine(QFontEngine *first, const QStringList &fallbacks)
-        : QFontEngineMulti(fallbacks.size()+1),
-          fallbacks(fallbacks)
+    : QFontEngineMulti(fallbacks.size() + 1),
+      fallbackFamilies(fallbacks)
 {
-    qCDebug(lcQpaFonts) << __FUNCTION__ << engines.size() << first << first->fontDef.family << fallbacks;
     engines[0] = first;
     first->ref.ref();
     fontDef = engines[0]->fontDef;
     cache_cost = first->cache_cost;
 }
 
-QWindowsMultiFontEngine::~QWindowsMultiFontEngine()
+void QWindowsMultiFontEngine::setFallbackFamiliesList(const QStringList &fallbacks)
 {
-    qCDebug(lcQpaFonts) << __FUNCTION__;
+    // Original FontEngine to restore after the fill.
+    QFontEngine *fe = engines[0];
+    fallbackFamilies = fallbacks;
+    if (!fallbackFamilies.isEmpty()) {
+        engines.fill(0, fallbackFamilies.size() + 1);
+        engines[0] = fe;
+    } else {
+        // Turns out we lied about having any fallback at all.
+        fallbackFamilies << fe->fontDef.family;
+        engines[1] = fe;
+        fe->ref.ref();
+    }
 }
 
 void QWindowsMultiFontEngine::loadEngine(int at)
@@ -1323,7 +1329,7 @@ void QWindowsMultiFontEngine::loadEngine(int at)
         data = fe->fontEngineData();
     }
 
-    const QString fam = fallbacks.at(at-1);
+    const QString fam = fallbackFamilies.at(at-1);
     memcpy(lf.lfFaceName, fam.utf16(), sizeof(wchar_t) * qMin(fam.length() + 1, 32));  // 32 = Windows hard-coded
 
 #ifndef QT_NO_DIRECTWRITE

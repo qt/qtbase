@@ -790,6 +790,7 @@ QFontEngine *loadSingleEngine(int script,
     if (!engine) {
         engine = pfdb->fontEngine(def, size->handle);
         if (engine) {
+            Q_ASSERT(engine->type() != QFontEngine::Multi);
             // Also check for OpenType tables when using complex scripts
             if (!engine->supportsScript(QChar::Script(script))) {
                 qWarning("  OpenType support missing for script %d", script);
@@ -809,12 +810,10 @@ QFontEngine *loadEngine(int script, const QFontDef &request,
                         QtFontFamily *family, QtFontFoundry *foundry,
                         QtFontStyle *style, QtFontSize *size)
 {
-
     QFontEngine *engine = loadSingleEngine(script, request, foundry, style, size);
-    //make sure that the db has all fallback families
-    if (engine && engine->type() != QFontEngine::Multi
-        && !(request.styleStrategy & QFont::NoFontMerging) && !engine->symbol ) {
-
+    Q_ASSERT(!engine || engine->type() != QFontEngine::Multi);
+    if (engine && !(request.styleStrategy & QFont::NoFontMerging) && !engine->symbol) {
+        // make sure that the db has all fallback families
         if (family && !family->askedForFallback) {
             QFont::Style fontStyle = QFont::Style(style->key.style);
             QFont::StyleHint styleHint = QFont::StyleHint(request.styleHint);
