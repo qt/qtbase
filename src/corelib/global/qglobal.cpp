@@ -3258,7 +3258,7 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
     On Blackberry the message is sent to slogger2. This
     function does nothing if \c QT_NO_WARNING_OUTPUT was defined
     during compilation; it exits if the environment variable \c
-    QT_FATAL_WARNINGS is defined.
+    QT_FATAL_WARNINGS is not empty.
 
     This function takes a format string and a list of arguments,
     similar to the C printf() function. The format should be a Latin-1
