@@ -41,6 +41,7 @@
 
 #include "qeglplatformcontext_p.h"
 #include "qeglconvenience_p.h"
+#include "qeglpbuffer_p.h"
 #include <qpa/qplatformwindow.h>
 #include <QOpenGLContext>
 
@@ -126,6 +127,36 @@ void QEGLPlatformContext::init(const QSurfaceFormat &format, QPlatformOpenGLCont
         m_shareContext = 0;
         m_eglContext = eglCreateContext(m_eglDisplay, m_eglConfig, 0, contextAttrs.constData());
     }
+
+    if (m_eglContext == EGL_NO_CONTEXT) {
+        qWarning("QEGLPlatformContext::init: eglError: %x, this: %p \n", eglGetError(), this);
+        return;
+    }
+
+    // Make the context current to ensure the GL version query works. This needs a surface too.
+    const EGLint pbufferAttributes[] = {
+        EGL_WIDTH, 1,
+        EGL_HEIGHT, 1,
+        EGL_LARGEST_PBUFFER, EGL_FALSE,
+        EGL_NONE
+    };
+    EGLSurface pbuffer = eglCreatePbufferSurface(m_eglDisplay, m_eglConfig, pbufferAttributes);
+    if (pbuffer == EGL_NO_SURFACE)
+        return;
+
+    if (eglMakeCurrent(m_eglDisplay, pbuffer, pbuffer, m_eglContext)) {
+        const GLubyte *s = glGetString(GL_VERSION);
+        if (s) {
+            QByteArray version = QByteArray(reinterpret_cast<const char *>(s));
+            int major, minor;
+            if (QPlatformOpenGLContext::parseOpenGLVersion(version, major, minor)) {
+                m_format.setMajorVersion(major);
+                m_format.setMinorVersion(minor);
+            }
+        }
+        eglMakeCurrent(m_eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+    }
+    eglDestroySurface(m_eglDisplay, pbuffer);
 }
 
 bool QEGLPlatformContext::makeCurrent(QPlatformSurface *surface)
