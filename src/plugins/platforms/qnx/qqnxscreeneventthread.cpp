@@ -103,10 +103,10 @@ void QQnxScreenEventThread::run()
         Q_SCREEN_CHECKERROR(screen_create_event(&event), "Failed to create screen event");
 
         // block until screen event is available
-        const int result = screen_get_event(m_screenContext, event, -1);
-        Q_SCREEN_CRITICALERROR(result, "Failed to get screen event");
+        const int error = screen_get_event(m_screenContext, event, -1);
+        Q_SCREEN_CRITICALERROR(error, "Failed to get screen event");
         // Only allow 50 consecutive errors before we exit the thread
-        if (!result) {
+        if (error) {
             errorCounter++;
             if (errorCounter > 50)
                 m_quit = true;
