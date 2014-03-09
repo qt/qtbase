@@ -74,6 +74,7 @@ private slots:
     void useOfForwardDeclared();
     void memoryManagement();
     void dropLastReferenceOfForwardDeclared();
+    void lock();
     void downCast();
     void functionCallDownCast();
     void upCast();
@@ -494,6 +495,22 @@ void tst_QSharedPointer::dropLastReferenceOfForwardDeclared()
     QCOMPARE(forwardDeclaredDestructorRunCount, 1);
 }
 
+void tst_QSharedPointer::lock()
+{
+    QSharedPointer<int> sp = QSharedPointer<int>::create();
+    QVERIFY(sp);
+    QWeakPointer<int> wp = sp;
+    QVERIFY(sp == wp);
+    QVERIFY(sp == wp.lock());
+    QVERIFY(sp == wp.toStrongRef());
+
+    sp.reset();
+    QVERIFY(!wp);
+    QVERIFY(sp != wp); // this is why op(shared_ptr, weak_ptr) is a bad idea (apart from MT races)...
+    QVERIFY(sp == wp.lock());
+    QVERIFY(sp == wp.toStrongRef());
+}
+
 class DerivedData: public Data
 {
 public:
@@ -866,6 +883,7 @@ void tst_QSharedPointer::objectCast()
         ptr.clear();
         QVERIFY(ptr.isNull());
         QVERIFY(weakptr.toStrongRef().isNull());
+        QVERIFY(weakptr.lock().isNull());
 
         // verify that the object casts fail without crash
         QSharedPointer<OtherObject> otherptr = qSharedPointerObjectCast<OtherObject>(weakptr);

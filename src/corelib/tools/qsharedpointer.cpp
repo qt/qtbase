@@ -894,6 +894,15 @@
 */
 
 /*!
+    \fn QSharedPointer<T> QWeakPointer::lock() const
+    \since 5.4
+
+    Same as toStrongRef().
+
+    This function is provided for API compatibility with std::weak_ptr.
+*/
+
+/*!
     \fn void QWeakPointer::clear()
 
     Clears this QWeakPointer object, dropping the reference that it

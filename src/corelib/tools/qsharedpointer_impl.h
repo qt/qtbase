@@ -639,6 +639,8 @@ public:
     inline void clear() { *this = QWeakPointer(); }
 
     inline QSharedPointer<T> toStrongRef() const { return QSharedPointer<T>(*this); }
+    // std::weak_ptr compatibility:
+    inline QSharedPointer<T> lock() const { return toStrongRef(); }
 
 #if defined(QWEAKPOINTER_ENABLE_ARROW)
     inline T *operator->() const { return data(); }

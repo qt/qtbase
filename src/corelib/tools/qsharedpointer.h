@@ -126,6 +126,7 @@ public:
     void clear();
 
     QSharedPointer<T> toStrongRef() const;
+    QSharedPointer<T> lock() const;
 };
 
 template<class T, class X> bool operator==(const QSharedPointer<T> &ptr1, const QSharedPointer<X> &ptr2);
