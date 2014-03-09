@@ -397,6 +397,26 @@ void tst_QSharedPointer::useOfForwardDeclared()
 {
     // this just a compile test: use the forward-declared class
     QSharedPointer<ForwardDeclared> sp;
+
+    // copying should work, too:
+    QSharedPointer<ForwardDeclared> sp2 = sp;
+
+    // and assignment:
+    QSharedPointer<ForwardDeclared> sp3;
+    sp3 = sp;
+
+    // move assignment:
+    QSharedPointer<ForwardDeclared> sp4;
+    sp4 = qMove(sp);
+
+    // and move constuction:
+    QSharedPointer<ForwardDeclared> sp5 = qMove(sp2);
+
+    // swapping:
+    sp4.swap(sp3);
+    qSwap(sp4, sp3);
+
+    // and, of course, destruction
 }
 
 
