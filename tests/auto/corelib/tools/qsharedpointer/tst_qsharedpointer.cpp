@@ -392,6 +392,30 @@ void tst_QSharedPointer::swap()
     QVERIFY(p2 != control);
     QVERIFY(p2.isNull());
     QVERIFY(*p1 == 42);
+
+    QWeakPointer<int> w1, w2 = control;
+
+    QVERIFY(w1.isNull());
+    QVERIFY(!w2.isNull());
+    QVERIFY(w2.lock() == control);
+    QVERIFY(!w1.lock());
+
+    w1.swap(w2);
+    QVERIFY(w2.isNull());
+    QVERIFY(!w1.isNull());
+    QVERIFY(w1.lock() == control);
+    QVERIFY(!w2.lock());
+
+    qSwap(w1, w2);
+    QVERIFY(w1.isNull());
+    QVERIFY(w2.lock() == control);
+
+    p1.reset();
+    p2.reset();
+    control.reset();
+
+    QVERIFY(w1.isNull());
+    QVERIFY(w2.isNull());
 }
 
 void tst_QSharedPointer::useOfForwardDeclared()

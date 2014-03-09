@@ -122,6 +122,8 @@ public:
     QWeakPointer(const QObject *other);
     QWeakPointer<T> operator=(const QObject *other);
 
+    void swap(QWeakPointer<T> &other);
+
     T *data() const;
     void clear();
 

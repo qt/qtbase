@@ -587,6 +587,12 @@ public:
         return *this;
     }
 
+    inline void swap(QWeakPointer &other)
+    {
+        qSwap(this->d, other.d);
+        qSwap(this->value, other.value);
+    }
+
     inline QWeakPointer(const QSharedPointer<T> &o) : d(o.d), value(o.data())
     { if (d) d->weakref.ref();}
     inline QWeakPointer &operator=(const QSharedPointer<T> &o)

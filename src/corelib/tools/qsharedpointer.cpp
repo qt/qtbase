@@ -771,6 +771,14 @@
 */
 
 /*!
+    \fn void QWeakPointer::swap(QWeakPointer<T> &other)
+    \since 5.4
+
+    Swaps this weak pointer instance with \a other. This function is
+    very fast and never fails.
+*/
+
+/*!
     \fn bool QWeakPointer::isNull() const
 
     Returns \c true if this object is holding a reference to a null
