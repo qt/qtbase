@@ -283,7 +283,7 @@
     \a errors contains one or more errors that prevent QSslSocket from
     verifying the identity of the peer.
 
-    Note: You cannot use Qt::QueuedConnection when connecting to this signal,
+    \note You cannot use Qt::QueuedConnection when connecting to this signal,
     or calling QSslSocket::ignoreSslErrors() will have no effect.
 
     \sa peerVerifyError()
@@ -400,7 +400,7 @@ void QSslSocket::resume()
 
     \snippet code/src_network_ssl_qsslsocket.cpp 3
 
-    \b{Note:} The example above shows that text can be written to
+    \note The example above shows that text can be written to
     the socket immediately after requesting the encrypted connection,
     before the encrypted() signal has been emitted. In such cases, the
     text is queued in the object and written to the socket \e after
@@ -470,7 +470,7 @@ void QSslSocket::connectToHostEncrypted(const QString &hostName, quint16 port,
     The socket is opened in the mode specified by \a openMode, and
     enters the socket state specified by \a state.
 
-    \b{Note:} It is not possible to initialize two sockets with the same
+    \note It is not possible to initialize two sockets with the same
     native socket descriptor.
 
     \sa socketDescriptor()

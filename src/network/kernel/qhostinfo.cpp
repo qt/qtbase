@@ -433,7 +433,7 @@ void QHostInfo::setErrorString(const QString &str)
 
     Returns the DNS domain of this machine.
 
-    Note: DNS domains are not related to domain names found in
+    \note DNS domains are not related to domain names found in
     Windows networks.
 
     \sa hostName()

@@ -129,7 +129,7 @@ QT_BEGIN_NAMESPACE
     \value SecureProtocols The default option, using protocols known to be secure;
     currently behaves like TlsV1SslV3.
 
-    Note: most servers using SSL understand both versions (2 and 3),
+    \note most servers using SSL understand both versions (2 and 3),
     but it is recommended to use the latest version only for security
     reasons. However, SSL and TLS are not compatible with each other:
     if you get unexpected handshake failures, verify that you chose
@@ -176,7 +176,7 @@ QT_BEGIN_NAMESPACE
     SslOptionDisableSessionPersistence is turned on to optimize memory usage.
     The other options are turned off.
 
-    Note: Availability of above options depends on the version of the SSL
+    \note Availability of above options depends on the version of the SSL
     backend in use.
 */
 

@@ -753,7 +753,7 @@ qint64 QNetworkReply::writeData(const char *, qint64)
     Sets the associated operation for this object to be \a
     operation. This value will be returned by operation().
 
-    Note: the operation should be set when this object is created and
+    \note The operation should be set when this object is created and
     not changed again.
 
     \sa operation(), setRequest()
@@ -768,7 +768,7 @@ void QNetworkReply::setOperation(QNetworkAccessManager::Operation operation)
     Sets the associated request for this object to be \a request. This
     value will be returned by request().
 
-    Note: the request should be set when this object is created and
+    \note The request should be set when this object is created and
     not changed again.
 
     \sa request(), setOperation()

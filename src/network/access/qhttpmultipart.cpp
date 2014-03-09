@@ -169,7 +169,7 @@ void QHttpPart::setHeader(QNetworkRequest::KnownHeaders header, const QVariant &
     QNetworkRequest::KnownHeaders), the raw format will be parsed and
     the corresponding "cooked" header will be set as well.
 
-    Note: setting the same header twice overrides the previous
+    \note Setting the same header twice overrides the previous
     setting. To accomplish the behaviour of multiple HTTP headers of
     the same name, you should concatenate the two values, separating
     them with a comma (",") and set one single raw header.

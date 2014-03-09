@@ -644,7 +644,7 @@ bool QSslConfiguration::testSslOption(QSsl::SslOption option) const
   used or QSsl::SslOptionDisableSessionPersistence was not turned off,
   this function returns an empty QByteArray.
 
-  \b{Note:} When persisting the session ticket to disk or similar, be
+  \note When persisting the session ticket to disk or similar, be
   careful not to expose the session to a potential attacker, as
   knowledge of the session allows for eavesdropping on data
   encrypted with the session parameters.

@@ -1552,7 +1552,7 @@ bool QAbstractSocket::bind(quint16 port, BindMode mode)
     Returns \c true if the socket is valid and ready for use; otherwise
     returns \c false.
 
-    \b{Note:} The socket's state must be ConnectedState before reading and
+    \note The socket's state must be ConnectedState before reading and
     writing can occur.
 
     \sa state()

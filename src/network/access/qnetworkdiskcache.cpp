@@ -518,7 +518,7 @@ void QNetworkDiskCache::setMaximumCacheSize(qint64 size)
     knows about that QNetworkDiskCache does not, for example the number of times
     a cache is accessed.
 
-    Note: cacheSize() calls expire if the current cache size is unknown.
+    \note cacheSize() calls expire if the current cache size is unknown.
 
     \sa maximumCacheSize(), fileMetaData()
  */
