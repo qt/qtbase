@@ -41,9 +41,11 @@
 
 #include "qglobal.h"
 
-#ifdef Q_OS_MACX
+#if defined(Q_OS_MACX)
 #import <Cocoa/Cocoa.h>
 #import <IOKit/graphics/IOGraphicsLib.h>
+#elif defined(Q_OS_IOS)
+#import <UIKit/UIFont.h>
 #endif
 
 #include "qcoretextfontdatabase_p.h"
@@ -176,29 +178,50 @@ QCoreTextFontDatabase::~QCoreTextFontDatabase()
 {
 }
 
+static CFArrayRef availableFamilyNames()
+{
+#if defined(Q_OS_OSX)
+    return CTFontManagerCopyAvailableFontFamilyNames();
+#elif defined(Q_OS_IOS)
+    return (CFArrayRef) [[UIFont familyNames] retain];
+#endif
+}
+
 void QCoreTextFontDatabase::populateFontDatabase()
 {
     // The caller (QFontDB) expects the db to be populate only with system fonts, so we need
     // to make sure that any previously registered app fonts become invisible.
     removeApplicationFonts();
 
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+    QCFType<CFArrayRef> familyNames = availableFamilyNames();
+    const int numberOfFamilies = CFArrayGetCount(familyNames);
+    for (int i = 0; i < numberOfFamilies; ++i) {
+        QString familyName = QCFString::toQString((CFStringRef) CFArrayGetValueAtIndex(familyNames, i));
 
-    QCFType<CTFontCollectionRef> collection = CTFontCollectionCreateFromAvailableFonts(0);
-    if (! collection)
+        // Don't populate internal fonts
+        if (familyName.startsWith(QLatin1Char('.')) || familyName == QStringLiteral("LastResort"))
+            continue;
+
+        QPlatformFontDatabase::registerFontFamily(familyName);
+    }
+}
+
+void QCoreTextFontDatabase::populateFamily(const QString &familyName)
+{
+    CFMutableDictionaryRef attributes = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+    CFDictionaryAddValue(attributes, kCTFontFamilyNameAttribute, QCFString(familyName));
+    CTFontDescriptorRef nameOnlyDescriptor = CTFontDescriptorCreateWithAttributes(attributes);
+
+    // A single family might match several different fonts with different styles eg.
+    QCFType<CFArrayRef> matchingFonts = (CFArrayRef) CTFontDescriptorCreateMatchingFontDescriptors(nameOnlyDescriptor, 0);
+    if (!matchingFonts) {
+        qWarning() << "QCoreTextFontDatabase: Found no matching fonts for family" << familyName;
         return;
-
-    QCFType<CFArrayRef> fonts = CTFontCollectionCreateMatchingFontDescriptors(collection);
-    if (! fonts)
-        return;
-
-    const int numFonts = CFArrayGetCount(fonts);
-    for (int i = 0; i < numFonts; ++i) {
-        CTFontDescriptorRef font = (CTFontDescriptorRef) CFArrayGetValueAtIndex(fonts, i);
-        populateFromDescriptor(font);
     }
 
-    [pool release];
+    const int numFonts = CFArrayGetCount(matchingFonts);
+    for (int i = 0; i < numFonts; ++i)
+        populateFromDescriptor(CTFontDescriptorRef(CFArrayGetValueAtIndex(matchingFonts, i)));
 }
 
 void QCoreTextFontDatabase::populateFromDescriptor(CTFontDescriptorRef font)

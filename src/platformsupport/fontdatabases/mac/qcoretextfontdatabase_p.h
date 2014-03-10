@@ -72,6 +72,7 @@ public:
     QCoreTextFontDatabase();
     ~QCoreTextFontDatabase();
     void populateFontDatabase();
+    void populateFamily(const QString &familyName) Q_DECL_OVERRIDE;
 
     QFontEngine *fontEngine(const QFontDef &fontDef, void *handle);
     QFontEngine *fontEngine(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference);
