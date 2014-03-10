@@ -471,15 +471,8 @@ void QGtkStyle::polish(QApplication *app)
         QApplicationPrivate::setSystemPalette(standardPalette());
         QApplicationPrivate::setSystemFont(d->getThemeFont());
         d->applyCustomPaletteHash();
-        if (!d->isKDE4Session()) {
-#ifndef QT_NO_FILEDIALOG
-            qt_filedialog_open_filename_hook = &QGtkStylePrivate::openFilename;
-            qt_filedialog_save_filename_hook = &QGtkStylePrivate::saveFilename;
-            qt_filedialog_open_filenames_hook = &QGtkStylePrivate::openFilenames;
-            qt_filedialog_existing_directory_hook = &QGtkStylePrivate::openDirectory;
-#endif
+        if (!d->isKDE4Session())
             qApp->installEventFilter(&d->filter);
-        }
     }
 }
 
@@ -493,16 +486,8 @@ void QGtkStyle::unpolish(QApplication *app)
     QCommonStyle::unpolish(app);
     QPixmapCache::clear();
 
-    if (app->desktopSettingsAware() && d->isThemeAvailable()
-        && !d->isKDE4Session()) {
-#ifndef QT_NO_FILEDIALOG
-        qt_filedialog_open_filename_hook = 0;
-        qt_filedialog_save_filename_hook = 0;
-        qt_filedialog_open_filenames_hook = 0;
-        qt_filedialog_existing_directory_hook = 0;
-#endif
+    if (app->desktopSettingsAware() && d->isThemeAvailable() && !d->isKDE4Session())
         qApp->removeEventFilter(&d->filter);
-    }
 }
 
 /*!
