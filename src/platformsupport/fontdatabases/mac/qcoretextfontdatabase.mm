@@ -93,6 +93,7 @@ static const char *languageForWritingSystem[] = {
 };
 enum { LanguageCount = sizeof(languageForWritingSystem) / sizeof(const char *) };
 
+#ifdef Q_OS_OSX
 static NSInteger languageMapSort(id obj1, id obj2, void *context)
 {
     NSArray *map1 = (NSArray *) obj1;
@@ -104,6 +105,7 @@ static NSInteger languageMapSort(id obj1, id obj2, void *context)
 
     return [languages indexOfObject: lang1] - [languages indexOfObject: lang2];
 }
+#endif
 
 QCoreTextFontDatabase::QCoreTextFontDatabase()
 {
@@ -344,6 +346,7 @@ QFont::StyleHint styleHintFromNSString(NSString *style)
         return QFont::AnyStyle;
 }
 
+#ifdef Q_OS_OSX
 static QString familyNameFromPostScriptName(NSString *psName)
 {
     QCFType<CTFontDescriptorRef> fontDescriptor = (CTFontDescriptorRef) CTFontDescriptorCreateWithNameAndSize((CFStringRef)psName, 12.0);
@@ -354,6 +357,7 @@ static QString familyNameFromPostScriptName(NSString *psName)
 
     return name;
 }
+#endif
 
 QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const
 {
