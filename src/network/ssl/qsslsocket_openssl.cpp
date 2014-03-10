@@ -584,6 +584,16 @@ QString QSslSocketPrivate::sslLibraryVersionString()
     return QString::fromLatin1(versionString);
 }
 
+long QSslSocketPrivate::sslLibraryBuildVersionNumber()
+{
+    return OPENSSL_VERSION_NUMBER;
+}
+
+QString QSslSocketPrivate::sslLibraryBuildVersionString()
+{
+    return QLatin1String(OPENSSL_VERSION_TEXT);
+}
+
 /*!
     \internal
 

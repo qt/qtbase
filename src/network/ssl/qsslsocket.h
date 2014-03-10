@@ -183,6 +183,8 @@ public:
     static bool supportsSsl();
     static long sslLibraryVersionNumber();
     static QString sslLibraryVersionString();
+    static long sslLibraryBuildVersionNumber();
+    static QString sslLibraryBuildVersionString();
 
     void ignoreSslErrors(const QList<QSslError> &errors);
 

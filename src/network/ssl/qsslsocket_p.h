@@ -129,6 +129,8 @@ public:
     static bool supportsSsl();
     static long sslLibraryVersionNumber();
     static QString sslLibraryVersionString();
+    static long sslLibraryBuildVersionNumber();
+    static QString sslLibraryBuildVersionString();
     static void ensureInitialized();
     static void deinitialize();
     static QList<QSslCipher> defaultCiphers();
