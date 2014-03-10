@@ -1382,6 +1382,7 @@ void tst_QFtp::abort_data()
 
 void tst_QFtp::abort()
 {
+    QSKIP("This test takes too long.");
     // In case you wonder where the abort() actually happens, look into
     // tst_QFtp::dataTransferProgress
     //
