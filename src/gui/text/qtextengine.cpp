@@ -1506,18 +1506,8 @@ void QTextEngine::itemize() const
     {
         QVarLengthArray<uchar> scripts(length);
         QUnicodeTools::initScripts(string, length, scripts.data());
-        for (int i = 0; i < length; ++i) {
-            ushort script = scripts.at(i);
-            switch (script) {
-            case QChar::Script_Hiragana:
-            case QChar::Script_Katakana:
-                script = QChar::Script_Han;
-                break;
-            default:
-                break;
-            }
-            analysis[i].script = script;
-        }
+        for (int i = 0; i < length; ++i)
+            analysis[i].script = scripts.at(i);
     }
 
     const ushort *uc = string;
@@ -1564,8 +1554,21 @@ void QTextEngine::itemize() const
         (analysis-1)->flags = QScriptAnalysis::LineOrParagraphSeparator; // to exclude it from width
     }
 #ifdef QT_ENABLE_HARFBUZZ_NG
-    if (!useHarfbuzzNG) {
-        analysis = scriptAnalysis.data();
+    analysis = scriptAnalysis.data();
+    if (useHarfbuzzNG) {
+        for (int i = 0; i < length; ++i) {
+            switch (analysis[i].script) {
+            case QChar::Script_Han:
+            case QChar::Script_Hiragana:
+            case QChar::Script_Katakana:
+            case QChar::Script_Bopomofo:
+                analysis[i].script = QChar::Script_Common;
+                break;
+            default:
+                break;
+            }
+        }
+    } else {
         for (int i = 0; i < length; ++i)
             analysis[i].script = hbscript_to_script(script_to_hbscript(analysis[i].script));
     }
