@@ -2691,7 +2691,8 @@ void QApplication::setStartDragDistance(int l)
 
     Qt uses this value internally, e.g. in QFileDialog.
 
-    The default value is 4 pixels.
+    The default value (if the platform doesn't provide a different default)
+    is 10 pixels.
 
     \sa startDragTime(), QPoint::manhattanLength(), {Drag and Drop}
 */
