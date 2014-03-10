@@ -80,7 +80,7 @@ qt_module_deps = $$resolve_depends(qt_module_deps, "QT.")
 contains(qt_module_deps, qml): \
         contains(QT_CONFIG, static):contains(TEMPLATE, .*app):!host_build:!no_import_scan {
     # run qmlimportscanner
-    qtPrepareTool(QMLIMPORTSCANNER, qmlimportscanner)
+    qtPrepareTool(QMLIMPORTSCANNER, qmlimportscanner, _SYS)
     for (MODULE, QT_MODULES) {
         PATH = $$eval(QT.$${MODULE}.qml)
         !isEmpty(PATH):exists($$PATH): QMLPATHS += $$PATH
@@ -89,8 +89,8 @@ contains(qt_module_deps, qml): \
     for (QMLPATH, QMLPATHS): \
         IMPORTPATHS += -importPath $$QMLPATH
 
-    #message(run $$QMLIMPORTSCANNER $$_PRO_FILE_PWD_  $$IMPORTPATHS)
-    JSON = $$system($$QMLIMPORTSCANNER $$_PRO_FILE_PWD_ $$IMPORTPATHS)
+    #message(run $$QMLIMPORTSCANNER_SYS $$_PRO_FILE_PWD_  $$IMPORTPATHS)
+    JSON = $$system($$QMLIMPORTSCANNER_SYS $$_PRO_FILE_PWD_ $$IMPORTPATHS)
 
     parseJson(JSON, IMPORTS)| error("Failed to parse qmlimportscanner output.")
 
