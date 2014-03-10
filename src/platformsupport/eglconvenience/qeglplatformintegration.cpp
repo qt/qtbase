@@ -189,7 +189,8 @@ QPlatformNativeInterface *QEGLPlatformIntegration::nativeInterface() const
 enum ResourceType {
     EglDisplay,
     EglWindow,
-    EglContext
+    EglContext,
+    NativeDisplay
 };
 
 static int resourceType(const QByteArray &key)
@@ -197,7 +198,8 @@ static int resourceType(const QByteArray &key)
     static const QByteArray names[] = { // match ResourceType
         QByteArrayLiteral("egldisplay"),
         QByteArrayLiteral("eglwindow"),
-        QByteArrayLiteral("eglcontext")
+        QByteArrayLiteral("eglcontext"),
+        QByteArrayLiteral("nativedisplay")
     };
     const QByteArray *end = names + sizeof(names) / sizeof(names[0]);
     const QByteArray *result = std::find(names, end, key);
@@ -213,6 +215,9 @@ void *QEGLPlatformIntegration::nativeResourceForIntegration(const QByteArray &re
     switch (resourceType(resource)) {
     case EglDisplay:
         result = m_screen->display();
+        break;
+    case NativeDisplay:
+        result = reinterpret_cast<void*>(nativeDisplay());
         break;
     default:
         break;
