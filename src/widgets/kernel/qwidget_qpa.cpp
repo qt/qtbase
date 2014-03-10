@@ -762,10 +762,15 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
             }
 
             if (!q->isWindow()) {
-                if (isMove && !isResize)
+                if (renderToTexture) {
+                    QRegion updateRegion(q->geometry());
+                    updateRegion += QRect(oldPos, olds);
+                    q->parentWidget()->d_func()->invalidateBuffer(updateRegion);
+                } else if (isMove && !isResize) {
                     moveRect(QRect(oldPos, olds), x - oldPos.x(), y - oldPos.y());
-                else
+                } else {
                     invalidateBuffer_resizeHelper(oldPos, olds);
+                }
             }
         }
 
