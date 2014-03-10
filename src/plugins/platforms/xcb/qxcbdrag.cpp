@@ -872,7 +872,6 @@ void QXcbDrag::handleLeave(QWindow *w, const xcb_client_message_event_t *event)
     }
 
     QWindowSystemInterface::handleDrag(w,0,QPoint(),Qt::IgnoreAction);
-    updateAction(Qt::IgnoreAction);
 
     xdnd_dragsource = 0;
     xdnd_types.clear();
