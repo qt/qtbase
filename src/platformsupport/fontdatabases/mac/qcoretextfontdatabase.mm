@@ -204,8 +204,8 @@ void QCoreTextFontDatabase::populateFontDatabase()
 void QCoreTextFontDatabase::populateFromDescriptor(CTFontDescriptorRef font)
 {
     QString foundryName = QStringLiteral("CoreText");
-    QCFString familyName = (CFStringRef) CTFontDescriptorCopyLocalizedAttribute(font, kCTFontFamilyNameAttribute, NULL);
-    QCFString styleName = (CFStringRef)CTFontDescriptorCopyLocalizedAttribute(font, kCTFontStyleNameAttribute, NULL);
+    QCFString familyName = (CFStringRef) CTFontDescriptorCopyAttribute(font, kCTFontFamilyNameAttribute);
+    QCFString styleName = (CFStringRef)CTFontDescriptorCopyAttribute(font, kCTFontStyleNameAttribute);
     QCFType<CFDictionaryRef> styles = (CFDictionaryRef) CTFontDescriptorCopyAttribute(font, kCTFontTraitsAttribute);
     QFont::Weight weight = QFont::Normal;
     QFont::Style style = QFont::StyleNormal;
@@ -350,7 +350,7 @@ QFont::StyleHint styleHintFromNSString(NSString *style)
 static QString familyNameFromPostScriptName(NSString *psName)
 {
     QCFType<CTFontDescriptorRef> fontDescriptor = (CTFontDescriptorRef) CTFontDescriptorCreateWithNameAndSize((CFStringRef)psName, 12.0);
-    QCFString familyName = (CFStringRef) CTFontDescriptorCopyLocalizedAttribute(fontDescriptor, kCTFontFamilyNameAttribute, 0);
+    QCFString familyName = (CFStringRef) CTFontDescriptorCopyAttribute(fontDescriptor, kCTFontFamilyNameAttribute);
     QString name = QCFString::toQString(familyName);
     if (name.isEmpty())
         qWarning() << "QCoreTextFontDatabase: Failed to resolve family name for PostScript name " << QCFString::toQString((CFStringRef)psName);
@@ -390,7 +390,7 @@ QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family, QFo
                         const int numCascades = CFArrayGetCount(cascadeList);
                         for (int i = 0; i < numCascades; ++i) {
                             CTFontDescriptorRef fontFallback = (CTFontDescriptorRef) CFArrayGetValueAtIndex(cascadeList, i);
-                            QCFString fallbackFamilyName = (CFStringRef) CTFontDescriptorCopyLocalizedAttribute(fontFallback, kCTFontFamilyNameAttribute, NULL);
+                            QCFString fallbackFamilyName = (CFStringRef) CTFontDescriptorCopyAttribute(fontFallback, kCTFontFamilyNameAttribute);
                             fallbackList.append(QCFString::toQString(fallbackFamilyName));
                         }
                         fallbackLists[family] = fallbackList;
@@ -564,7 +564,7 @@ QStringList QCoreTextFontDatabase::addApplicationFont(const QByteArray &fontData
         for (int i = 0; i < numFonts; ++i) {
             CTFontDescriptorRef fontDescriptor = CTFontDescriptorRef(CFArrayGetValueAtIndex(fonts, i));
             populateFromDescriptor(fontDescriptor);
-            QCFType<CFStringRef> familyName = CFStringRef(CTFontDescriptorCopyLocalizedAttribute(fontDescriptor, kCTFontFamilyNameAttribute, NULL));
+            QCFType<CFStringRef> familyName = CFStringRef(CTFontDescriptorCopyAttribute(fontDescriptor, kCTFontFamilyNameAttribute));
             families.append(QCFString(familyName));
         }
     }
