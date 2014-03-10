@@ -208,6 +208,7 @@ bool QSslConfiguration::operator==(const QSslConfiguration &other) const
         d->localCertificateChain == other.d->localCertificateChain &&
         d->privateKey == other.d->privateKey &&
         d->sessionCipher == other.d->sessionCipher &&
+        d->sessionProtocol == other.d->sessionProtocol &&
         d->ciphers == other.d->ciphers &&
         d->caCertificates == other.d->caCertificates &&
         d->protocol == other.d->protocol &&
@@ -509,6 +510,18 @@ QList<QSslCertificate> QSslConfiguration::peerCertificateChain() const
 QSslCipher QSslConfiguration::sessionCipher() const
 {
     return d->sessionCipher;
+}
+
+/*!
+    Returns the socket's SSL/TLS protocol or UnknownProtocol if the
+    connection isn't encrypted. The socket's protocol for the session
+    is set during the handshake phase.
+
+    \sa protocol(), setProtocol()
+*/
+QSsl::SslProtocol QSslConfiguration::sessionProtocol() const
+{
+    return d->sessionProtocol;
 }
 
 /*!

@@ -131,6 +131,7 @@ public:
     void disconnectFromHost();
     void disconnected();
     QSslCipher sessionCipher() const;
+    QSsl::SslProtocol sessionProtocol() const;
     void continueHandshake();
     bool checkSslErrors();
 #ifdef Q_OS_WIN

@@ -1428,6 +1428,28 @@ QSslCipher QSslSocketBackendPrivate::sessionCipher() const
     return sessionCipher ? QSslCipher_from_SSL_CIPHER(sessionCipher) : QSslCipher();
 }
 
+QSsl::SslProtocol QSslSocketBackendPrivate::sessionProtocol() const
+{
+    if (!ssl)
+        return QSsl::UnknownProtocol;
+    int ver = q_SSL_version(ssl);
+
+    switch (ver) {
+    case 0x2:
+        return QSsl::SslV2;
+    case 0x300:
+        return QSsl::SslV3;
+    case 0x301:
+        return QSsl::TlsV1_0;
+    case 0x302:
+        return QSsl::TlsV1_1;
+    case 0x303:
+        return QSsl::TlsV1_2;
+    }
+
+    return QSsl::UnknownProtocol;
+}
+
 void QSslSocketBackendPrivate::continueHandshake()
 {
     Q_Q(QSslSocket);

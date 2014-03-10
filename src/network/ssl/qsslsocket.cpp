@@ -878,6 +878,7 @@ QSslConfiguration QSslSocket::sslConfiguration() const
     QSslConfigurationPrivate *copy = new QSslConfigurationPrivate(d->configuration);
     copy->ref.store(0);              // the QSslConfiguration constructor refs up
     copy->sessionCipher = d->sessionCipher();
+    copy->sessionProtocol = d->sessionProtocol();
 
     return QSslConfiguration(copy);
 }
@@ -1071,6 +1072,20 @@ QSslCipher QSslSocket::sessionCipher() const
     Q_D(const QSslSocket);
     return d->sessionCipher();
 }
+
+/*!
+    Returns the socket's SSL/TLS protocol or UnknownProtocol if the
+    connection isn't encrypted. The socket's protocol for the session
+    is set during the handshake phase.
+
+    \sa protocol(), setProtocol()
+*/
+QSsl::SslProtocol QSslSocket::sessionProtocol() const
+{
+    Q_D(const QSslSocket);
+    return d->sessionProtocol();
+}
+
 
 /*!
     Sets the socket's private \l {QSslKey} {key} to \a key. The
@@ -2095,6 +2110,7 @@ void QSslConfigurationPrivate::deepCopyDefaultConfiguration(QSslConfigurationPri
     ptr->localCertificateChain = global->localCertificateChain;
     ptr->privateKey = global->privateKey;
     ptr->sessionCipher = global->sessionCipher;
+    ptr->sessionProtocol = global->sessionProtocol;
     ptr->ciphers = global->ciphers;
     ptr->caCertificates = global->caCertificates;
     ptr->protocol = global->protocol;

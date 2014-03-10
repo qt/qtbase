@@ -140,6 +140,7 @@ public:
     QSslCertificate peerCertificate() const;
     QList<QSslCertificate> peerCertificateChain() const;
     QSslCipher sessionCipher() const;
+    QSsl::SslProtocol sessionProtocol() const;
 
     // Private keys, for server sockets.
     void setPrivateKey(const QSslKey &key);

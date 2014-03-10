@@ -81,7 +81,8 @@ class QSslConfigurationPrivate: public QSharedData
 {
 public:
     QSslConfigurationPrivate()
-        : protocol(QSsl::SecureProtocols),
+        : sessionProtocol(QSsl::UnknownProtocol),
+          protocol(QSsl::SecureProtocols),
           peerVerifyMode(QSslSocket::AutoVerifyPeer),
           peerVerifyDepth(0),
           allowRootCertOnDemandLoading(true),
@@ -98,6 +99,7 @@ public:
 
     QSslKey privateKey;
     QSslCipher sessionCipher;
+    QSsl::SslProtocol sessionProtocol;
     QList<QSslCipher> ciphers;
     QList<QSslCertificate> caCertificates;
 

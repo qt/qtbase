@@ -190,6 +190,7 @@ public:
     virtual void disconnectFromHost() = 0;
     virtual void disconnected() = 0;
     virtual QSslCipher sessionCipher() const = 0;
+    virtual QSsl::SslProtocol sessionProtocol() const = 0;
     virtual void continueHandshake() = 0;
 
     Q_AUTOTEST_EXPORT static bool rootCertOnDemandLoadingSupported();

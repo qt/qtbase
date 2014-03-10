@@ -329,6 +329,7 @@ const SSL_CIPHER *q_SSL_get_current_cipher(SSL *a);
 #else
 SSL_CIPHER *q_SSL_get_current_cipher(SSL *a);
 #endif
+int q_SSL_version(const SSL *a);
 int q_SSL_get_error(SSL *a, int b);
 STACK_OF(X509) *q_SSL_get_peer_cert_chain(SSL *a);
 X509 *q_SSL_get_peer_certificate(SSL *a);

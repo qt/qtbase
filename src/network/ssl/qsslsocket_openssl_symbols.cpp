@@ -238,6 +238,7 @@ DEFINEFUNC(const SSL_CIPHER *, SSL_get_current_cipher, SSL *a, a, return 0, retu
 #else
 DEFINEFUNC(SSL_CIPHER *, SSL_get_current_cipher, SSL *a, a, return 0, return)
 #endif
+DEFINEFUNC(int, SSL_version, const SSL *a, a, return 0, return)
 DEFINEFUNC2(int, SSL_get_error, SSL *a, a, int b, b, return -1, return)
 DEFINEFUNC(STACK_OF(X509) *, SSL_get_peer_cert_chain, SSL *a, a, return 0, return)
 DEFINEFUNC(X509 *, SSL_get_peer_certificate, SSL *a, a, return 0, return)
@@ -739,6 +740,7 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(SSL_free)
     RESOLVEFUNC(SSL_get_ciphers)
     RESOLVEFUNC(SSL_get_current_cipher)
+    RESOLVEFUNC(SSL_version)
     RESOLVEFUNC(SSL_get_error)
     RESOLVEFUNC(SSL_get_peer_cert_chain)
     RESOLVEFUNC(SSL_get_peer_certificate)
