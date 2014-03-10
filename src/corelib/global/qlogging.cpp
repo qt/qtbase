@@ -1225,7 +1225,7 @@ static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &con
         logMessage.chop(1);
         systemd_default_message_handler(type, context, logMessage);
     } else {
-        fprintf(stderr, "%s", logMessage.toUtf8().constData());
+        fprintf(stderr, "%s", logMessage.toLocal8Bit().constData());
         fflush(stderr);
     }
 #elif defined(Q_OS_ANDROID)
