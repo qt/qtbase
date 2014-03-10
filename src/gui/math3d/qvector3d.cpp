@@ -316,12 +316,10 @@ void QVector3D::normalize()
 /*!
     Returns the dot product of \a v1 and \a v2.
 */
-#if defined(QT_BUILD_GUI_LIB) && !defined(QT_STATIC)
 float QVector3D::dotProduct(const QVector3D& v1, const QVector3D& v2)
 {
     return v1.xp * v2.xp + v1.yp * v2.yp + v1.zp * v2.zp;
 }
-#endif
 
 /*!
     Returns the cross-product of vectors \a v1 and \a v2, which corresponds
@@ -329,14 +327,12 @@ float QVector3D::dotProduct(const QVector3D& v1, const QVector3D& v2)
 
     \sa normal()
 */
-#if defined(QT_BUILD_GUI_LIB) && !defined(QT_STATIC)
 QVector3D QVector3D::crossProduct(const QVector3D& v1, const QVector3D& v2)
 {
     return QVector3D(v1.yp * v2.zp - v1.zp * v2.yp,
                      v1.zp * v2.xp - v1.xp * v2.zp,
                      v1.xp * v2.yp - v1.yp * v2.xp);
 }
-#endif
 
 /*!
     Returns the normal vector of a plane defined by vectors \a v1 and \a v2,

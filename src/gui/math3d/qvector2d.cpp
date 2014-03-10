@@ -326,12 +326,10 @@ float QVector2D::distanceToLine
 /*!
     Returns the dot product of \a v1 and \a v2.
 */
-#if defined(QT_BUILD_GUI_LIB) && !defined(QT_STATIC)
 float QVector2D::dotProduct(const QVector2D& v1, const QVector2D& v2)
 {
     return v1.xp * v2.xp + v1.yp * v2.yp;
 }
-#endif
 
 /*!
     \fn bool operator==(const QVector2D &v1, const QVector2D &v2)
