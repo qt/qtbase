@@ -945,10 +945,21 @@ void QWidgetPrivate::deleteTLSysExtra()
 {
     if (extra && extra->topextra) {
         //the qplatformbackingstore may hold a reference to the window, so the backingstore
-        //needs to be deleted first
+        //needs to be deleted first. If the backingstore holds GL resources, we need to
+        // make the context current here, since the platform bs does not have a reference
+        // to the widget.
+
+#ifndef QT_NO_OPENGL
+        if (textureChildSeen && extra->topextra->shareContext)
+            extra->topextra->shareContext->makeCurrent(extra->topextra->window);
+#endif
         extra->topextra->backingStoreTracker.destroy();
         delete extra->topextra->backingStore;
         extra->topextra->backingStore = 0;
+#ifndef QT_NO_OPENGL
+        if (textureChildSeen && extra->topextra->shareContext)
+            extra->topextra->shareContext->doneCurrent();
+#endif
 
         //the toplevel might have a context with a "qglcontext associated with it. We need to
         //delete the qglcontext before we delete the qplatformopenglcontext.
