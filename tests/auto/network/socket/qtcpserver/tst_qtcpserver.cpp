@@ -660,7 +660,7 @@ void tst_QTcpServer::invalidProxy_data()
                                 << int(QAbstractSocket::UnsupportedSocketOperationError);
 
     QTest::newRow("no-such-host") << int(QNetworkProxy::Socks5Proxy)
-                                  << "this-host-will-never-exist.troll.no" << 1080
+                                  << "invalid.test.qt-project.org" << 1080
                                   << int(QAbstractSocket::ProxyNotFoundError);
     QTest::newRow("socks5-on-http") << int(QNetworkProxy::Socks5Proxy) << fluke << 3128
                                     << int(QAbstractSocket::SocketTimeoutError);

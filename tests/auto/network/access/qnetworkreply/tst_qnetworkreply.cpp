@@ -1835,7 +1835,7 @@ void tst_QNetworkReply::getErrors_data()
             << int(QNetworkReply::ProtocolUnknownError) << 0 << true;
 
     // file: errors
-    QTest::newRow("file-host") << "file://this-host-doesnt-exist.troll.no/foo.txt"
+    QTest::newRow("file-host") << "file://invalid.test.qt-project.org/foo.txt"
 #if !defined Q_OS_WIN
                                << int(QNetworkReply::ProtocolInvalidOperationError) << 0 << true;
 #else
@@ -1856,7 +1856,7 @@ void tst_QNetworkReply::getErrors_data()
                                           << int(QNetworkReply::ContentAccessDenied) << 0 << true;
 
     // ftp: errors
-    QTest::newRow("ftp-host") << "ftp://this-host-doesnt-exist.troll.no/foo.txt"
+    QTest::newRow("ftp-host") << "ftp://invalid.test.qt-project.org/foo.txt"
                               << int(QNetworkReply::HostNotFoundError) << 0 << true;
     QTest::newRow("ftp-no-path") << "ftp://" + QtNetworkSettings::serverName()
                                  << int(QNetworkReply::ContentOperationNotPermittedError) << 0 << true;
@@ -1870,7 +1870,7 @@ void tst_QNetworkReply::getErrors_data()
                                << int(QNetworkReply::ContentNotFoundError) << 0 << true;
 
     // http: errors
-    QTest::newRow("http-host") << "http://this-host-will-never-exist.troll.no/"
+    QTest::newRow("http-host") << "http://invalid.test.qt-project.org/"
                                << int(QNetworkReply::HostNotFoundError) << 0 << true;
     QTest::newRow("http-exist") << "http://" + QtNetworkSettings::serverName() + "/this-file-doesnt-exist.txt"
                                 << int(QNetworkReply::ContentNotFoundError) << 404 << false;
