@@ -1825,6 +1825,7 @@ void QXcbWindow::handlePropertyNotifyEvent(const xcb_property_notify_event_t *ev
     const bool propertyDeleted = event->state == XCB_PROPERTY_DELETE;
     const xcb_atom_t netWmStateAtom = atom(QXcbAtom::_NET_WM_STATE);
     const xcb_atom_t wmStateAtom = atom(QXcbAtom::WM_STATE);
+    const xcb_atom_t netWorkAreaAtom = atom(QXcbAtom::_NET_WORKAREA);
 
     if (event->atom == netWmStateAtom || event->atom == wmStateAtom) {
         if (propertyDeleted)
@@ -1860,6 +1861,8 @@ void QXcbWindow::handlePropertyNotifyEvent(const xcb_property_notify_event_t *ev
             m_windowState = newState;
         }
         return;
+    } else if (event->atom == netWorkAreaAtom && event->window == m_screen->root()) {
+        m_screen->updateGeometry(event->time);
     }
 }
 
