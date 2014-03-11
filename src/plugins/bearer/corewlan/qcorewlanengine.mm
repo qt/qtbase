@@ -573,6 +573,8 @@ void QCoreWlanEngine::doRequestUpdate()
             scanThread->start();
     }
     locker.unlock();
+    if ([wifiInterfaces count] == 0)
+        networksChanged();
     [autoreleasepool release];
 }
 
