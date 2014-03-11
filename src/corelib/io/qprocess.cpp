@@ -2227,6 +2227,8 @@ void QProcess::start(const QString &command, OpenMode mode)
 }
 
 /*!
+    \since 5.0
+
     Returns the program the process was last started with.
 
     \sa start()
@@ -2256,6 +2258,8 @@ void QProcess::setProgram(const QString &program)
 }
 
 /*!
+    \since 5.0
+
     Returns the command line arguments the process was last started with.
 
     \sa start()
