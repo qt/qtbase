@@ -71,6 +71,7 @@ private slots:
     void mouseToTouchLoop();
     void touchCancel();
     void touchCancelWithTouchToMouse();
+    void touchInterruptedByPopup();
     void orientation();
     void sizes();
     void close();
@@ -770,6 +771,56 @@ void tst_QWindow::touchCancelWithTouchToMouse()
     QWindowSystemInterface::handleTouchCancelEvent(0, touchDevice);
     QCoreApplication::processEvents();
     QTRY_COMPARE(window.mouseReleaseButton, 0);
+}
+
+void tst_QWindow::touchInterruptedByPopup()
+{
+    InputTestWindow window;
+    window.setGeometry(80, 80, 200, 200);
+    window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+
+    QList<QWindowSystemInterface::TouchPoint> points;
+    QWindowSystemInterface::TouchPoint tp1;
+    tp1.id = 1;
+
+    // Start a touch.
+    tp1.state = Qt::TouchPointPressed;
+    tp1.area = QRect(10, 10, 4, 4);
+    points << tp1;
+    QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
+    QCoreApplication::processEvents();
+    QTRY_COMPARE(window.touchEventType, QEvent::TouchBegin);
+    QTRY_COMPARE(window.touchPressedCount, 1);
+
+    // Launch a popup window
+    InputTestWindow popup;
+    popup.setFlags(Qt::Popup);
+    popup.setModality(Qt::WindowModal);
+    popup.setWidth(160);
+    popup.setHeight(160);
+    popup.setTransientParent(&window);
+    popup.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&popup));
+
+    // Send a move -> will not be delivered to the original window
+    // (TODO verify where it is forwarded, after we've defined that)
+    QTRY_COMPARE(window.touchMovedCount, 0);
+    points[0].state = Qt::TouchPointMoved;
+    tp1.area.adjust(2, 2, 2, 2);
+    QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
+    QCoreApplication::processEvents();
+    QTRY_COMPARE(window.touchMovedCount, 0);
+
+    // Send a touch end -> will not be delivered to the original window
+    QTRY_COMPARE(window.touchReleasedCount, 0);
+    points[0].state = Qt::TouchPointReleased;
+    QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
+    QCoreApplication::processEvents();
+    QTRY_COMPARE(window.touchReleasedCount, 0);
+
+    // Due to temporary fix for QTBUG-37371: the original window should receive a TouchCancel
+    QTRY_COMPARE(window.touchEventType, QEvent::TouchCancel);
 }
 
 void tst_QWindow::orientation()
