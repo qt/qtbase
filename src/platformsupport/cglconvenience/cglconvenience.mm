@@ -114,6 +114,14 @@ void *qcgl_createNSOpenGLPixelFormat(const QSurfaceFormat &format)
         attrs << NSOpenGLPFAStencilSize << format.stencilBufferSize();
     if (format.alphaBufferSize() > 0)
         attrs << NSOpenGLPFAAlphaSize << format.alphaBufferSize();
+    if ((format.redBufferSize() > 0) &&
+        (format.greenBufferSize() > 0) &&
+        (format.blueBufferSize() > 0)) {
+        const int colorSize = format.redBufferSize() +
+                              format.greenBufferSize() +
+                              format.blueBufferSize();
+        attrs << NSOpenGLPFAColorSize << colorSize << NSOpenGLPFAMinimumPolicy;
+    }
 
     if (format.samples() > 0) {
         attrs << NSOpenGLPFAMultisample
