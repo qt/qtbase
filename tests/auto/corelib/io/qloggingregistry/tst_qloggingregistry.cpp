@@ -64,6 +64,7 @@ private slots:
         // ensure a clean environment
         QStandardPaths::setTestModeEnabled(true);
         qunsetenv("QT_LOGGING_CONF");
+        qunsetenv("QT_LOGGING_RULES");
     }
 
     void QLoggingRule_parse_data()
@@ -219,6 +220,13 @@ private slots:
         QCOMPARE(registry.envRules.size(), 1);
 
         QCOMPARE(registry.rules.size(), 1);
+
+        // check that QT_LOGGING_RULES take precedence
+        qputenv("QT_LOGGING_RULES", "Digia.*=true");
+        registry.init();
+        QCOMPARE(registry.envRules.size(), 2);
+        QCOMPARE(registry.envRules.at(1).enabled, true);
+        QCOMPARE(registry.rules.size(), 2);
     }
 
     void QLoggingRegistry_config()

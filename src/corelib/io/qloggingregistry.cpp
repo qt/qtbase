@@ -248,7 +248,7 @@ static bool qtLoggingDebug()
 /*!
     \internal
     Initializes the rules database by loading
-    .config/QtProject/qtlogging.ini and $QT_LOGGING_CONF.
+    $QT_LOGGING_CONF, $QT_LOGGING_RULES, and .config/QtProject/qtlogging.ini.
  */
 void QLoggingRegistry::init()
 {
@@ -265,6 +265,14 @@ void QLoggingRegistry::init()
                          QDir::toNativeSeparators(file.fileName()).toUtf8().constData());
             envRules = parser.rules();
         }
+    }
+    const QByteArray rulesSrc = qgetenv("QT_LOGGING_RULES");
+    if (!rulesSrc.isEmpty()) {
+         QTextStream stream(rulesSrc);
+         QLoggingSettingsParser parser;
+         parser.setSection(QStringLiteral("Rules"));
+         parser.setContent(stream);
+         envRules += parser.rules();
     }
 
     // get rules from qt configuration
