@@ -440,8 +440,8 @@ QNetworkReplyHttpImplPrivate::QNetworkReplyHttpImplPrivate()
     , downloadBufferReadPosition(0)
     , downloadBufferCurrentSize(0)
     , downloadZerocopyBuffer(0)
-    , pendingDownloadDataEmissions(new QAtomicInt())
-    , pendingDownloadProgressEmissions(new QAtomicInt())
+    , pendingDownloadDataEmissions(QSharedPointer<QAtomicInt>::create())
+    , pendingDownloadProgressEmissions(QSharedPointer<QAtomicInt>::create())
     #ifndef QT_NO_SSL
     , pendingIgnoreAllSslErrors(false)
     #endif
