@@ -562,9 +562,11 @@ static QTouchDevice *touchDevice = 0;
     QPointF qtWindowPoint;
     QPointF qtScreenPoint;
     QNSView *targetView = self;
-    if (m_platformWindow && m_platformWindow->m_forwardWindow
-        && (theEvent.type == NSLeftMouseDragged || theEvent.type == NSLeftMouseUp)) {
-        targetView = m_platformWindow->m_forwardWindow->m_qtView;
+    if (m_platformWindow && m_platformWindow->m_forwardWindow) {
+        if (theEvent.type == NSLeftMouseDragged || theEvent.type == NSLeftMouseUp)
+            targetView = m_platformWindow->m_forwardWindow->m_qtView;
+        else
+            m_platformWindow->m_forwardWindow = 0;
     }
 
     [targetView convertFromScreen:[NSEvent mouseLocation] toWindowPoint:&qtWindowPoint andScreenPoint:&qtScreenPoint];
