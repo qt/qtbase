@@ -92,7 +92,7 @@ public:
           initializeSession(true),
 #endif
           cookieJarCreated(false),
-          authenticationManager(new QNetworkAccessAuthenticationManager)
+          authenticationManager(QSharedPointer<QNetworkAccessAuthenticationManager>::create())
     { }
     ~QNetworkAccessManagerPrivate();
 
