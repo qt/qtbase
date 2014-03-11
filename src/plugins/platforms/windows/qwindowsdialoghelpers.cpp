@@ -1559,7 +1559,7 @@ public:
     QWindowsFileDialogHelper() {}
     virtual bool supportsNonModalDialog(const QWindow * /* parent */ = 0) const { return false; }
     virtual bool defaultNameFilterDisables() const
-        { return true; }
+        { return false; }
     virtual void setDirectory(const QUrl &directory) Q_DECL_OVERRIDE;
     virtual QUrl directory() const Q_DECL_OVERRIDE;
     virtual void selectFile(const QUrl &filename) Q_DECL_OVERRIDE;
