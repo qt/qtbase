@@ -1313,13 +1313,13 @@ QStringList qt_make_filter_list(const QString &filter)
     Sets the filter used in the file dialog to the given \a filter.
 
     If \a filter contains a pair of parentheses containing one or more
-    of \b{anything*something}, separated by spaces, then only the
+    filename-wildcard patterns, separated by spaces, then only the
     text contained in the parentheses is used as the filter. This means
     that these calls are all equivalent:
 
     \snippet code/src_gui_dialogs_qfiledialog.cpp 6
 
-    \sa setNameFilters()
+    \sa setMimeTypeFilters(), setNameFilters()
 */
 void QFileDialog::setNameFilter(const QString &filter)
 {
@@ -1373,7 +1373,19 @@ QStringList qt_strip_filters(const QStringList &filters)
 
     Sets the \a filters used in the file dialog.
 
+    Note that the filter \b{*.*} is not portable, because the historical
+    assumption that the file extension determines the file type is not
+    consistent on every operating system. It is possible to have a file with no
+    dot in its name (for example, \c Makefile). In a native Windows file
+    dialog, \b{*.*} will match such files, while in other types of file dialogs
+    it may not. So it is better to use \b{*} if you mean to select any file.
+
     \snippet code/src_gui_dialogs_qfiledialog.cpp 7
+
+    \l setMimeTypeFilters() has the advantage of providing all possible name
+    filters for each file type. For example, JPEG images have three possible
+    extensions; if your application can open such files, selecting the
+    \c image/jpeg mime type as a filter will allow you to open all of them.
 */
 void QFileDialog::setNameFilters(const QStringList &filters)
 {
