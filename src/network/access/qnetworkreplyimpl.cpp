@@ -248,7 +248,7 @@ void QNetworkReplyImplPrivate::_q_bufferOutgoingData()
 
     if (!outgoingDataBuffer) {
         // first call, create our buffer
-        outgoingDataBuffer = QSharedPointer<QRingBuffer>(new QRingBuffer());
+        outgoingDataBuffer = QSharedPointer<QRingBuffer>::create();
 
         QObject::connect(outgoingData, SIGNAL(readyRead()), q, SLOT(_q_bufferOutgoingData()));
         QObject::connect(outgoingData, SIGNAL(readChannelFinished()), q, SLOT(_q_bufferOutgoingDataFinished()));
@@ -367,7 +367,7 @@ void QNetworkReplyImplPrivate::setup(QNetworkAccessManager::Operation op, const 
     // The synchronous HTTP is a corner case, we will put all upload data in one big QByteArray in the outgoingDataBuffer.
     // Yes, this is not the most efficient thing to do, but on the other hand synchronous XHR needs to die anyway.
     if (synchronousHttpAttribute.toBool() && outgoingData) {
-        outgoingDataBuffer = QSharedPointer<QRingBuffer>(new QRingBuffer());
+        outgoingDataBuffer = QSharedPointer<QRingBuffer>::create();
         qint64 previousDataSize = 0;
         do {
             previousDataSize = outgoingDataBuffer->size();
