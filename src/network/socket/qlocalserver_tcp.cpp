@@ -80,8 +80,6 @@ bool QLocalServerPrivate::listen(const QString &requestedServerName)
 
 bool QLocalServerPrivate::listen(qintptr socketDescriptor)
 {
-    Q_Q(QLocalServer);
-
     return tcpServer.setSocketDescriptor(socketDescriptor);
 }
 
