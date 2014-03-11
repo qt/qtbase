@@ -645,6 +645,7 @@ static const char *knownStyleHints[] = {
     "icon-size",
     "leftarrow-icon",
     "lineedit-password-character",
+    "lineedit-password-mask-delay",
     "mdi-fill-space-on-maximize",
     "menu-scrollable",
     "menubar-altkey-navigation",
@@ -5134,6 +5135,7 @@ int QStyleSheetStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWi
     QString s;
     switch (sh) {
         case SH_LineEdit_PasswordCharacter: s = QLatin1String("lineedit-password-character"); break;
+        case SH_LineEdit_PasswordMaskDelay: s = QLatin1String("lineedit-password-mask-delay"); break;
         case SH_DitherDisabledText: s = QLatin1String("dither-disabled-text"); break;
         case SH_EtchDisabledText: s = QLatin1String("etch-disabled-text"); break;
         case SH_ItemView_ActivateItemOnSingleClick: s = QLatin1String("activate-on-singleclick"); break;

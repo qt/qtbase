@@ -4917,6 +4917,9 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
         ret = hint.toChar().unicode();
         break;
     }
+    case SH_LineEdit_PasswordMaskDelay:
+        ret = QGuiApplicationPrivate::platformTheme()->themeHint(QPlatformTheme::PasswordMaskDelay).toInt();
+        break;
     case SH_ToolBox_SelectedPageTitleBold:
         ret = 1;
         break;

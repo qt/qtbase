@@ -355,8 +355,10 @@ void QWidgetLineControl::init(const QString &txt)
     m_text = txt;
     updateDisplayText();
     m_cursor = m_text.length();
-    if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme())
+    if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme()) {
         m_keyboardScheme = theme->themeHint(QPlatformTheme::KeyboardScheme).toInt();
+        m_passwordMaskDelay = theme->themeHint(QPlatformTheme::PasswordMaskDelay).toInt();
+    }
     // Generalize for X11
     if (m_keyboardScheme == QPlatformTheme::KdeKeyboardScheme
         || m_keyboardScheme == QPlatformTheme::GnomeKeyboardScheme
@@ -787,7 +789,7 @@ void QWidgetLineControl::internalInsert(const QString &s)
     if (m_echoMode == QLineEdit::Password) {
         if (m_passwordEchoTimer != 0)
             killTimer(m_passwordEchoTimer);
-        int delay = qGuiApp->styleHints()->passwordMaskDelay();
+        int delay = m_passwordMaskDelay;
 #ifdef QT_BUILD_INTERNAL
         if (m_passwordMaskDelayOverride >= 0)
             delay = m_passwordMaskDelayOverride;

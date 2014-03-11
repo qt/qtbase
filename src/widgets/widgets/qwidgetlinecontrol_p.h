@@ -90,6 +90,7 @@ public:
         m_tripleClickTimer(0), m_maskData(0), m_modifiedState(0), m_undoState(0),
         m_selstart(0), m_selend(0), m_passwordEchoEditing(false)
         , m_passwordEchoTimer(0)
+        , m_passwordMaskDelay(-1)
 #if defined(Q_WS_MAC)
         , m_threadChecks(false)
         , m_textLayoutThread(0)
@@ -313,6 +314,9 @@ public:
     QChar passwordCharacter() const { return m_passwordCharacter; }
     void setPasswordCharacter(QChar character) { m_passwordCharacter = character; updateDisplayText(); }
 
+    int passwordMaskDelay() const { return m_passwordMaskDelay; }
+    void setPasswordMaskDelay(int delay) { m_passwordMaskDelay = delay; }
+
     Qt::LayoutDirection layoutDirection() const {
         if (m_layoutDirection == Qt::LayoutDirectionAuto) {
             if (m_text.isEmpty())
@@ -481,6 +485,7 @@ private:
     bool m_passwordEchoEditing;
     QChar m_passwordCharacter;
     int m_passwordEchoTimer;
+    int m_passwordMaskDelay;
     void cancelPasswordEchoTimer()
     {
         if (m_passwordEchoTimer != 0) {
