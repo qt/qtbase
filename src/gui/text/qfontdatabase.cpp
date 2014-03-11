@@ -1227,6 +1227,9 @@ QString QFontDatabase::styleString(const QFontInfo &fontInfo)
 */
 QFontDatabase::QFontDatabase()
 {
+    if (!qApp || !QGuiApplicationPrivate::platformIntegration())
+        qFatal("QFontDatabase: Must construct a QGuiApplication before accessing QFontDatabase");
+
     QMutexLocker locker(fontDatabaseMutex());
     createDatabase();
     d = privateDb();
