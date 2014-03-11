@@ -38,11 +38,21 @@
 **
 ****************************************************************************/
 
-#include <QObject>
+#include <QDnsLookup>
+#include <QHostAddress>
 
-QT_BEGIN_NAMESPACE
-class QDnsLookup;
-QT_END_NAMESPACE
+//! [0]
+
+struct DnsQuery
+{
+    DnsQuery() : type(QDnsLookup::A) {}
+
+    QDnsLookup::Type type;
+    QHostAddress nameServer;
+    QString name;
+};
+
+//! [0]
 
 class DnsManager : public QObject
 {
@@ -50,6 +60,7 @@ class DnsManager : public QObject
 
 public:
     DnsManager();
+    void setQuery(const DnsQuery &q) { query = q; }
 
 public slots:
     void execute();
@@ -57,5 +68,6 @@ public slots:
 
 private:
     QDnsLookup *dns;
+    DnsQuery query;
 };
 

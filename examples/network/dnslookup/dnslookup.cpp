@@ -45,13 +45,100 @@
 #include <QHostAddress>
 #include <QStringList>
 #include <QTimer>
+#include <QCommandLineParser>
+#include <QCommandLineOption>
 
 #include <stdio.h>
 
-static void usage() {
-    printf("Qt DNS example - performs DNS lookups\n"
-           "Usage: dnslookup [-t <type>] [-s nameserver] name\n\n");
+static int typeFromParameter(const QString &type)
+{
+    if (type == "a")
+        return QDnsLookup::A;
+    if (type == "aaaa")
+        return QDnsLookup::AAAA;
+    if (type == "any")
+        return QDnsLookup::ANY;
+    if (type == "cname")
+        return QDnsLookup::CNAME;
+    if (type == "mx")
+        return QDnsLookup::MX;
+    if (type == "ns")
+        return QDnsLookup::NS;
+    if (type == "ptr")
+        return QDnsLookup::PTR;
+    if (type == "srv")
+        return QDnsLookup::SRV;
+    if (type == "txt")
+        return QDnsLookup::TXT;
+    return -1;
 }
+
+//! [0]
+
+enum CommandLineParseResult
+{
+    CommandLineOk,
+    CommandLineError,
+    CommandLineVersionRequested,
+    CommandLineHelpRequested
+};
+
+CommandLineParseResult parseCommandLine(QCommandLineParser &parser, DnsQuery *query, QString *errorMessage)
+{
+    parser.setSingleDashWordOptionMode(QCommandLineParser::ParseAsLongOptions);
+    const QCommandLineOption nameServerOption("n", "The name server to use.", "nameserver");
+    parser.addOption(nameServerOption);
+    const QCommandLineOption typeOption("t", "The lookup type.", "type");
+    parser.addOption(typeOption);
+    parser.addPositionalArgument("name", "The name to look up.");
+    const QCommandLineOption helpOption = parser.addHelpOption();
+    const QCommandLineOption versionOption = parser.addVersionOption();
+
+    if (!parser.parse(QCoreApplication::arguments())) {
+        *errorMessage = parser.errorText();
+        return CommandLineError;
+    }
+
+    if (parser.isSet(versionOption))
+        return CommandLineVersionRequested;
+
+    if (parser.isSet(helpOption))
+        return CommandLineHelpRequested;
+
+    if (parser.isSet(nameServerOption)) {
+        const QString nameserver = parser.value(nameServerOption);
+        query->nameServer = QHostAddress(nameserver);
+        if (query->nameServer.isNull() || query->nameServer.protocol() == QAbstractSocket::UnknownNetworkLayerProtocol) {
+            *errorMessage = "Bad nameserver address: " + nameserver;
+            return CommandLineError;
+        }
+    }
+
+    if (parser.isSet(typeOption)) {
+        const QString typeParameter = parser.value(typeOption);
+        const int type = typeFromParameter(typeParameter.toLower());
+        if (type < 0) {
+            *errorMessage = "Bad record type: " + typeParameter;
+            return CommandLineError;
+        }
+        query->type = static_cast<QDnsLookup::Type>(type);
+    }
+
+    const QStringList positionalArguments = parser.positionalArguments();
+    if (positionalArguments.isEmpty()) {
+        *errorMessage = "Argument 'name' missing.";
+        return CommandLineError;
+    }
+    if (positionalArguments.size() > 1) {
+        *errorMessage = "Several 'name' arguments specified.";
+        return CommandLineError;
+    }
+    query->name = positionalArguments.first();
+
+    return CommandLineOk;
+}
+
+//! [0]
 
 DnsManager::DnsManager()
 {
@@ -61,55 +148,11 @@ DnsManager::DnsManager()
 
 void DnsManager::execute()
 {
-    QStringList args = QCoreApplication::instance()->arguments();
-    args.takeFirst();
-
     // lookup type
-    dns->setType(QDnsLookup::A);
-    if (args.size() > 1 && args.first() == "-t") {
-        args.takeFirst();
-        const QString type = args.takeFirst().toLower();
-        if (type == "a")
-            dns->setType(QDnsLookup::A);
-        else if (type == "aaaa")
-            dns->setType(QDnsLookup::AAAA);
-        else if (type == "any")
-            dns->setType(QDnsLookup::ANY);
-        else if (type == "cname")
-            dns->setType(QDnsLookup::CNAME);
-        else if (type == "mx")
-            dns->setType(QDnsLookup::MX);
-        else if (type == "ns")
-            dns->setType(QDnsLookup::NS);
-        else if (type == "ptr")
-            dns->setType(QDnsLookup::PTR);
-        else if (type == "srv")
-            dns->setType(QDnsLookup::SRV);
-        else if (type == "txt")
-            dns->setType(QDnsLookup::TXT);
-        else {
-            printf("Bad record type: %s\n", qPrintable(type));
-            QCoreApplication::instance()->quit();
-            return;
-        }
-    }
-    if (args.size() > 1 && args.first() == "-s") {
-        args.takeFirst();
-        const QString ns = args.takeFirst();
-        QHostAddress nameserver(ns);
-        if (nameserver.isNull() || nameserver.protocol() == QAbstractSocket::UnknownNetworkLayerProtocol) {
-            printf("Bad nameserver address: %s\n", qPrintable(ns));
-            QCoreApplication::instance()->quit();
-            return;
-        }
-        dns->setNameserver(nameserver);
-    }
-    if (args.isEmpty()) {
-        usage();
-        QCoreApplication::instance()->quit();
-        return;
-    }
-    dns->setName(args.takeFirst());
+    dns->setType(query.type);
+    if (!query.nameServer.isNull())
+        dns->setNameserver(query.nameServer);
+    dns->setName(query.name);
     dns->lookup();
 }
 
@@ -159,7 +202,33 @@ int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
 
+//! [1]
+    QCoreApplication::setApplicationVersion(QT_VERSION_STR);
+    QCoreApplication::setApplicationName(QCoreApplication::translate("QDnsLookupExample", "DNS Lookup Example"));
+    QCommandLineParser parser;
+    parser.setApplicationDescription(QCoreApplication::translate("QDnsLookupExample", "An example demonstrating the class QDnsLookup."));
+    DnsQuery query;
+    QString errorMessage;
+    switch (parseCommandLine(parser, &query, &errorMessage)) {
+    case CommandLineOk:
+        break;
+    case CommandLineError:
+        fputs(qPrintable(errorMessage), stderr);
+        fputs("\n\n", stderr);
+        fputs(qPrintable(parser.helpText()), stderr);
+        return 1;
+    case CommandLineVersionRequested:
+        printf("%s %s\n", qPrintable(QCoreApplication::applicationName()),
+               qPrintable(QCoreApplication::applicationVersion()));
+        return 0;
+    case CommandLineHelpRequested:
+        parser.showHelp();
+        Q_UNREACHABLE();
+    }
+//! [1]
+
     DnsManager manager;
+    manager.setQuery(query);
     QTimer::singleShot(0, &manager, SLOT(execute()));
 
     return app.exec();

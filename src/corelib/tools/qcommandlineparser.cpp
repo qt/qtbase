@@ -187,6 +187,78 @@ QStringList QCommandLineParserPrivate::aliases(const QString &optionName) const
     QCoreApplication::arguments() before QCommandLineParser defines the \c{profile}
     option and parses the command line.
 
+    \section2 How to Use QCommandLineParser in Complex Applications
+
+    In practice, additional error checking needs to be performed on the positional
+    arguments and option values. For example, ranges of numbers should be checked.
+
+    It is then advisable to introduce a function to do the command line parsing
+    which takes a struct or class receiving the option values returning an
+    enumeration representing the result. The dnslookup example of the QtNetwork
+    module illustrates this:
+
+    \snippet dnslookup.h 0
+
+    \snippet dnslookup.cpp 0
+
+    In the main function, help should be printed to the standard output if the help option
+    was passed and the application should return the exit code 0.
+
+    If an error was detected, the error message should be printed to the standard
+    error output and the application should return an exit code other than 0.
+
+    \snippet dnslookup.cpp 1
+
+    A special case to consider here are GUI applications on Windows and mobile
+    platforms. These applications may not use the standard output or error channels
+    since the output is either discarded or not accessible.
+
+    For such GUI applications, it is recommended to display help texts and error messages
+    using a QMessageBox. To preserve the formatting of the help text, rich text
+    with \c <pre> elements should be used:
+
+    \code
+
+    switch (parseCommandLine(parser, &query, &errorMessage)) {
+    case CommandLineOk:
+        break;
+    case CommandLineError:
+#ifdef Q_OS_WIN
+        QMessageBox::warning(0, QGuiApplication::applicationDisplayName(),
+                             "<html><head/><body><h2>" + errorMessage + "</h2><pre>"
+                             + parser.helpText() + "</pre></body></html>");
+#else
+        fputs(qPrintable(errorMessage), stderr);
+        fputs("\n\n", stderr);
+        fputs(qPrintable(parser.helpText()), stderr);
+#endif
+        return 1;
+    case CommandLineVersionRequested:
+#ifdef Q_OS_WIN
+        QMessageBox::information(0, QGuiApplication::applicationDisplayName(),
+                                 QGuiApplication::applicationDisplayName() + ' '
+                                 + QCoreApplication::applicationVersion());
+#else
+        printf("%s %s\n", QGuiApplication::applicationDisplayName(),
+               qPrintable(QCoreApplication::applicationVersion()));
+#endif
+        return 0;
+    case CommandLineHelpRequested:
+#ifdef Q_OS_WIN
+        QMessageBox::warning(0, QGuiApplication::applicationDisplayName(),
+                             "<html><head/><body><pre>"
+                             + parser.helpText() + "</pre></body></html>");
+        return 0;
+#else
+        parser.showHelp();
+        Q_UNREACHABLE();
+#endif
+    }
+    \endcode
+
+    However, this does not apply to the dnslookup example, because it is a
+    console application.
+
     \sa QCommandLineOption, QCoreApplication
 */
 
