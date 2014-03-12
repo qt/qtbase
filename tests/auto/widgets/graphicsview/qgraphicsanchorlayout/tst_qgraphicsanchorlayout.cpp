@@ -1365,14 +1365,22 @@ void tst_QGraphicsAnchorLayout::hardComplexS60()
     delete p;
 }
 
+static inline QByteArray msgStability(const QRectF &actual, const QRectF &expected, int pass, int item)
+{
+    QString result;
+    QDebug(&result)
+        << "The layout has several solutions, but which solution it picks is not stable ("
+        << actual << "!=" << expected << ", iteration" << pass << ", item" << item << ')';
+    return result.toLocal8Bit();
+}
+
 void tst_QGraphicsAnchorLayout::stability()
 {
     QVector<QRectF> geometries;
     geometries.resize(7);
-    QGraphicsWidget *p = new QGraphicsWidget(0, Qt::Window);
-    bool sameAsPreviousArrangement = true;
+    QGraphicsWidget p(0, Qt::Window);
     // it usually fails after 3-4 iterations
-    for (int pass = 0; pass < 20 && sameAsPreviousArrangement; ++pass) {
+    for (int pass = 0; pass < 20; ++pass) {
         // In case we need to "scramble" the heap allocator to provoke this bug.
         //static const int primes[] = {2, 3, 5, 13, 89, 233, 1597, 28657, 514229}; // fibo primes
         //const int primeCount = sizeof(primes)/sizeof(int);
@@ -1380,23 +1388,22 @@ void tst_QGraphicsAnchorLayout::stability()
         //void *mem = malloc(alloc);
         //free(mem);
         QGraphicsAnchorLayout *l = createAmbiguousS60Layout();
-        p->setLayout(l);
+        p.setLayout(l);
         QSizeF layoutMinimumSize = l->effectiveSizeHint(Qt::MinimumSize);
         l->setGeometry(QRectF(QPointF(0,0), layoutMinimumSize));
         QApplication::processEvents();
-        for (int i = l->count() - 1; i >=0 && sameAsPreviousArrangement; --i) {
-            QRectF geom = l->itemAt(i)->geometry();
+        for (int i = l->count() - 1; i >=0; --i) {
+            const QRectF actualGeom = l->itemAt(i)->geometry();
             if (pass != 0) {
-                sameAsPreviousArrangement = (geometries[i] == geom);
+                if (actualGeom != geometries[i])
+                    QEXPECT_FAIL("", msgStability(actualGeom, geometries[i], pass, i).constData(), Abort);
+                QCOMPARE(actualGeom, geometries[i]);
             }
-            geometries[i] = geom;
+            geometries[i] = actualGeom;
         }
-        p->setLayout(0);    // uninstalls and deletes the layout
+        p.setLayout(0);    // uninstalls and deletes the layout
         QApplication::processEvents();
     }
-    delete p;
-    QEXPECT_FAIL("", "The layout have several solutions, but which solution it picks is not stable", Continue);
-    QCOMPARE(sameAsPreviousArrangement, true);
 }
 
 void tst_QGraphicsAnchorLayout::delete_anchor()
