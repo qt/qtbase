@@ -517,6 +517,12 @@ namespace QtAndroidInput
         }
     }
 
+    // maps 0 to the empty string, and anything else to a single-character string
+    static inline QString toString(jint unicode)
+    {
+        return unicode ? QString(QChar(unicode)) : QString();
+    }
+
     static void keyDown(JNIEnv */*env*/, jobject /*thiz*/, jint key, jint unicode, jint modifier)
     {
         Qt::KeyboardModifiers modifiers;
@@ -533,7 +539,7 @@ namespace QtAndroidInput
                                                QEvent::KeyPress,
                                                mapAndroidKey(key),
                                                modifiers,
-                                               QChar(unicode),
+                                               toString(unicode),
                                                false);
     }
 
@@ -553,7 +559,7 @@ namespace QtAndroidInput
                                                QEvent::KeyRelease,
                                                mapAndroidKey(key),
                                                modifiers,
-                                               QChar(unicode),
+                                               toString(unicode),
                                                false);
     }
 
