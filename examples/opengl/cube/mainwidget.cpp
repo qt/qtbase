@@ -43,7 +43,6 @@
 #include <QMouseEvent>
 
 #include <math.h>
-#include <locale.h>
 
 MainWidget::MainWidget(QWidget *parent) :
     QGLWidget(parent),
@@ -126,9 +125,6 @@ void MainWidget::initializeGL()
 //! [3]
 void MainWidget::initShaders()
 {
-    // Override system locale until shaders are compiled
-    setlocale(LC_NUMERIC, "C");
-
     // Compile vertex shader
     if (!program.addShaderFromSourceFile(QGLShader::Vertex, ":/vshader.glsl"))
         close();
@@ -144,9 +140,6 @@ void MainWidget::initShaders()
     // Bind shader pipeline for use
     if (!program.bind())
         close();
-
-    // Restore system locale
-    setlocale(LC_ALL, "");
 }
 //! [3]
 
