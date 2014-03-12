@@ -121,6 +121,9 @@ void *qcgl_createNSOpenGLPixelFormat(const QSurfaceFormat &format)
               << NSOpenGLPFASamples << (NSOpenGLPixelFormatAttribute) format.samples();
     }
 
+    if (format.stereo())
+        attrs << NSOpenGLPFAStereo;
+
     attrs << NSOpenGLPFAAllowOfflineRenderers;
     attrs << 0;
 
