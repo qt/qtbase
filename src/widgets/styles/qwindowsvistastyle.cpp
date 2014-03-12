@@ -1273,7 +1273,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
                 QPoint p1 = QPoint(x + checkcol, yoff);
                 QPoint p2 = QPoint(x + w + 6 , yoff);
                 stateId = MBI_HOT;
-                QRect subRect(p1.x(), p1.y(), p2.x() - p1.x(), 6);
+                QRect subRect(p1.x() + (3 - menuitem->rect.x()), p1.y(), p2.x() - p1.x(), 6);
                 subRect  = QStyle::visualRect(option->direction, option->rect, subRect );
                 XPThemeData theme2(widget, painter,
                                    QWindowsXPStylePrivate::MenuTheme,
@@ -1348,7 +1348,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
             if (dis)
                 painter->setPen(textColor);
 
-            int xm = windowsItemFrame + checkcol + windowsItemHMargin;
+            int xm = windowsItemFrame + checkcol + windowsItemHMargin + (3 - menuitem->rect.x()) - 1;
             int xpos = menuitem->rect.x() + xm;
             QRect textRect(xpos, y + windowsItemVMargin, w - xm - windowsRightBorder - tab + 1, h - 2 * windowsItemVMargin);
             QRect vTextRect = visualRect(option->direction, menuitem->rect, textRect);
