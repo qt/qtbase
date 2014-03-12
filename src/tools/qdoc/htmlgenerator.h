@@ -153,8 +153,7 @@ private:
                                  QList<Section>* sections = 0);
     QString generateListOfAllMemberFile(const InnerNode *inner,
                                         CodeMarker *marker);
-    QString generateAllQmlMembersFile(const QmlClassNode* qml_cn,
-                                      CodeMarker* marker);
+    QString generateAllQmlMembersFile(QmlClassNode* qml_cn, CodeMarker* marker);
     QString generateLowStatusMemberFile(InnerNode *inner,
                                         CodeMarker *marker,
                                         CodeMarker::Status status);
@@ -183,7 +182,7 @@ private:
     void generateDetailedQmlMember(Node *node,
                                    const InnerNode *relative,
                                    CodeMarker *marker);
-    void generateQmlInherits(const QmlClassNode* qcn, CodeMarker* marker);
+    void generateQmlInherits(QmlClassNode* qcn, CodeMarker* marker);
     void generateQmlInstantiates(QmlClassNode* qcn, CodeMarker* marker);
     void generateInstantiatedBy(ClassNode* cn, CodeMarker* marker);
 

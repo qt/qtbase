@@ -754,6 +754,18 @@ void QDocDatabase::initializeDB()
  */
 
 /*!
+  Looks up the QML type node identified by the qualified Qml
+  type \a name and returns a pointer to the QML type node.
+ */
+QmlClassNode* QDocDatabase::findQmlType(const QString& name)
+{
+    QmlClassNode* qcn = forest_.lookupQmlType(name);
+    if (qcn)
+        return qcn;
+    return 0;
+}
+
+/*!
   Looks up the QML type node identified by the Qml module id
   \a qmid and QML type \a name and returns a pointer to the
   QML type node. The key is \a qmid + "::" + \a name.
@@ -1358,35 +1370,38 @@ const Node* QDocDatabase::findNodeForTarget(const QString& target, const Node* r
  */
 void QDocDatabase::resolveQmlInheritance(InnerNode* root)
 {
+    NodeMap previousSearches;
     // Do we need recursion?
     foreach (Node* child, root->childNodes()) {
         if (child->type() == Node::Document && child->subType() == Node::QmlClass) {
             QmlClassNode* qcn = static_cast<QmlClassNode*>(child);
-            if ((qcn->qmlBaseNode() == 0) && !qcn->qmlBaseName().isEmpty()) {
-                QmlClassNode* bqcn = 0;
-                if (qcn->qmlBaseName().contains("::")) {
-                    bqcn =  forest_.lookupQmlType(qcn->qmlBaseName());
-                }
-                else {
-                    const ImportList& imports = qcn->importList();
-                    for (int i=0; i<imports.size(); ++i) {
-                        bqcn = findQmlType(imports[i], qcn->qmlBaseName());
-                        if (bqcn)
-                            break;
-                    }
-                }
-                if (bqcn == 0) {
-                    bqcn = findQmlType(QString(), qcn->qmlBaseName());
-                }
-                if (bqcn) {
+            if (qcn->qmlBaseNodeNotSet() && !qcn->qmlBaseName().isEmpty()) {
+                QmlClassNode* bqcn = static_cast<QmlClassNode*>(previousSearches.value(qcn->qmlBaseName()));
+                if (bqcn)
                     qcn->setQmlBaseNode(bqcn);
-                }
-#if 0
                 else {
-                    qDebug() << "Temporary error message (ignore): UNABLE to resolve QML base type:"
-                             << qcn->qmlBaseName() << "for QML type:" << qcn->name();
-                }
+                    if (!qcn->importList().isEmpty()) {
+                        const ImportList& imports = qcn->importList();
+                        for (int i=0; i<imports.size(); ++i) {
+                            bqcn = findQmlType(imports[i], qcn->qmlBaseName());
+                            if (bqcn)
+                                break;
+                        }
+                    }
+                    if (bqcn == 0) {
+                        bqcn = findQmlType(QString(), qcn->qmlBaseName());
+                    }
+                    if (bqcn) {
+                        qcn->setQmlBaseNode(bqcn);
+                        previousSearches.insert(qcn->qmlBaseName(), bqcn);
+                    }
+#if 0
+                    else {
+                        qDebug() << "Temporary error message (ignore): UNABLE to resolve QML base type:"
+                                 << qcn->qmlBaseName() << "for QML type:" << qcn->name();
+                    }
 #endif
+                }
             }
         }
     }

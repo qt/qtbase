@@ -84,7 +84,6 @@ class QDocIndexFiles
     QString project_;
     QList<QPair<ClassNode*,QString> > basesList_;
     QList<QPair<FunctionNode*,QString> > relatedList_;
-
 };
 
 QT_END_NAMESPACE

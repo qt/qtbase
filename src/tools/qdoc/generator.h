@@ -120,7 +120,7 @@ protected:
     virtual void generateInnerNode(InnerNode* node);
     virtual void generateMaintainerList(const InnerNode* node, CodeMarker* marker);
     virtual void generateQmlInheritedBy(const QmlClassNode* qcn, CodeMarker* marker);
-    virtual void generateQmlInherits(const QmlClassNode* qcn, CodeMarker* marker);
+    virtual void generateQmlInherits(QmlClassNode* qcn, CodeMarker* marker);
     virtual bool generateQmlText(const Text& text,
                                  const Node *relative,
                                  CodeMarker *marker,

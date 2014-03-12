@@ -402,7 +402,7 @@ private:
     void generateDetailedQmlMember(Node* node,
                                    const InnerNode* relative,
                                    CodeMarker* marker);
-    void generateQmlInherits(const QmlClassNode* qcn, CodeMarker* marker);
+    void generateQmlInherits(QmlClassNode* qcn, CodeMarker* marker);
     void generateQmlInheritedBy(const QmlClassNode* qcn, CodeMarker* marker);
     void generateQmlInstantiates(QmlClassNode* qcn, CodeMarker* marker);
     void generateInstantiatedBy(ClassNode* cn, CodeMarker* marker);

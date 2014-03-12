@@ -2062,7 +2062,7 @@ QmlClassNode::QmlClassNode(InnerNode *parent, const QString& name)
       wrapper_(false),
       cnode_(0),
       qmlModule_(0),
-      baseNode_(0)
+      qmlBaseNode_(0)
 {
     int i = 0;
     if (name.startsWith("QML:")) {
@@ -2134,6 +2134,14 @@ void QmlModuleNode::setQmlModuleInfo(const QString& arg)
     }
 }
 
+QmlClassNode* QmlClassNode::qmlBaseNode()
+{
+    if (!qmlBaseNode_ && !qmlBaseName_.isEmpty()) {
+        qmlBaseNode_ = QDocDatabase::qdocDB()->findQmlType(qmlBaseName_);
+    }
+    return qmlBaseNode_;
+}
+
 /*!
   If this QML type node has a base type node,
   return the fully qualified name of that QML
@@ -2142,8 +2150,8 @@ void QmlModuleNode::setQmlModuleInfo(const QString& arg)
 QString QmlClassNode::qmlFullBaseName() const
 {
     QString result;
-    if (baseNode_) {
-        result = baseNode_->qmlModuleName() + "::" + baseNode_->name();
+    if (qmlBaseNode_) {
+        result = qmlBaseNode_->qmlModuleName() + "::" + qmlBaseNode_->name();
     }
     return result;
 }
@@ -2249,7 +2257,7 @@ QmlPropertyNode::QmlPropertyNode(InnerNode* parent,
 
   ...because the tokenizer gets confused on \e{explicit}.
  */
-bool QmlPropertyNode::isWritable(QDocDatabase* qdb)
+bool QmlPropertyNode::isWritable()
 {
     if (readOnly_ != FlagValueDefault)
         return !fromFlagValue(readOnly_, false);
@@ -2258,7 +2266,7 @@ bool QmlPropertyNode::isWritable(QDocDatabase* qdb)
     if (qcn) {
         if (qcn->cppClassRequired()) {
             if (qcn->classNode()) {
-                PropertyNode* pn = findCorrespondingCppProperty(qdb);
+                PropertyNode* pn = findCorrespondingCppProperty();
                 if (pn)
                     return pn->isWritable();
                 else
@@ -2281,7 +2289,7 @@ bool QmlPropertyNode::isWritable(QDocDatabase* qdb)
   Returns a pointer this QML property's corresponding C++
   property, if it has one.
  */
-PropertyNode* QmlPropertyNode::findCorrespondingCppProperty(QDocDatabase* qdb)
+PropertyNode* QmlPropertyNode::findCorrespondingCppProperty()
 {
     PropertyNode* pn;
     Node* n = parent();
@@ -2306,7 +2314,7 @@ PropertyNode* QmlPropertyNode::findCorrespondingCppProperty(QDocDatabase* qdb)
                 */
                 if (dotSplit.size() > 1) {
                     QStringList path(extractClassName(pn->qualifiedDataType()));
-                    Node* nn = qdb->findClassNode(path);
+                    Node* nn = QDocDatabase::qdocDB()->findClassNode(path);
                     if (nn) {
                         ClassNode* cn = static_cast<ClassNode*>(nn);
                         PropertyNode *pn2 = cn->findPropertyNode(dotSplit[1]);

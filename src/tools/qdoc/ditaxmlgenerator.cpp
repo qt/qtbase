@@ -4026,7 +4026,7 @@ void DitaXmlGenerator::startQmlProperty(QmlPropertyNode* qpn,
     writeStartTag(DT_qmlPropertyDetail);
     writeStartTag(DT_qmlPropertyDef);
     if (!qpn->isReadOnlySet())
-        qpn->setReadOnly(!qpn->isWritable(qdb_));
+        qpn->setReadOnly(!qpn->isWritable());
     if (qpn->isReadOnly()) {
         writeStartTag(DT_qmlQualifier);
         xmlWriter().writeAttribute("name","read-only");
@@ -4163,11 +4163,11 @@ void DitaXmlGenerator::generateQmlModuleDef(QmlClassNode* qcn)
   Output the "Inherits" line for the QML element,
   if there should be one.
  */
-void DitaXmlGenerator::generateQmlInherits(const QmlClassNode* qcn, CodeMarker* marker)
+void DitaXmlGenerator::generateQmlInherits(QmlClassNode* qcn, CodeMarker* marker)
 {
     if (!qcn)
         return;
-    const QmlClassNode* base = qcn->qmlBaseNode();
+    QmlClassNode* base = qcn->qmlBaseNode();
     while (base && base->isInternal()) {
         base = base->qmlBaseNode();
     }

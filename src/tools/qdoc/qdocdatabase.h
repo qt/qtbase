@@ -256,6 +256,7 @@ class QDocDatabase
     void addExampleNode(ExampleNode* n) { primaryTree()->addExampleNode(n); }
     ExampleNodeMap& exampleNodeMap() { return primaryTree()->exampleNodeMap(); }
 
+    QmlClassNode* findQmlType(const QString& name);
     QmlClassNode* findQmlType(const QString& qmid, const QString& name);
     QmlClassNode* findQmlType(const ImportRec& import, const QString& name);
 

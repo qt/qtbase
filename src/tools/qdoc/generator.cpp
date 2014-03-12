@@ -312,8 +312,8 @@ QString Generator::fileBase(const Node *node) const
         node = node->parent();
     }
 
-    if (node->hasBaseName())
-        return node->baseName();
+    if (node->hasFileNameBase())
+        return node->fileNameBase();
 
     QString base;
     if (node->isDocNode()) {
@@ -402,7 +402,7 @@ QString Generator::fileBase(const Node *node) const
     while (res.endsWith(QLatin1Char('-')))
         res.chop(1);
     Node* n = const_cast<Node*>(node);
-    n->setBaseName(res);
+    n->setFileNameBase(res);
     return res;
 }
 
@@ -1103,7 +1103,7 @@ void Generator::generateQmlInheritedBy(const QmlClassNode* qcn,
 
 /*!
  */
-void Generator::generateQmlInherits(const QmlClassNode* , CodeMarker* )
+void Generator::generateQmlInherits(QmlClassNode* , CodeMarker* )
 {
     // stub.
 }

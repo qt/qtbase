@@ -174,10 +174,11 @@ public:
     QString plainName() const;
     QString plainFullName(const Node* relative = 0) const;
     QString fullName(const Node* relative=0) const;
-    const QString& baseName() const { return baseName_; }
-    bool hasBaseName() const { return !baseName_.isEmpty(); }
 
-    void setBaseName(const QString& bn) { baseName_ = bn; }
+    const QString& fileNameBase() const { return fileNameBase_; }
+    bool hasFileNameBase() const { return !fileNameBase_.isEmpty(); }
+    void setFileNameBase(const QString& t) { fileNameBase_ = t; }
+
     void setAccess(Access access) { access_ = access; }
     void setLocation(const Location& location) { loc_ = location; }
     void setDoc(const Doc& doc, bool replace = false);
@@ -334,7 +335,7 @@ private:
     Location loc_;
     Doc doc_;
     QMap<LinkType, QPair<QString, QString> > linkMap_;
-    QString baseName_;
+    QString fileNameBase_;
     QString moduleName_;
     QString url_;
     QString since_;
@@ -605,10 +606,11 @@ public:
     virtual void setQmlModule(QmlModuleNode* t) { qmlModule_ = t; }
     const ImportList& importList() const { return importList_; }
     void setImportList(const ImportList& il) { importList_ = il; }
-    const QString& qmlBaseName() const { return baseName_; }
-    void setQmlBaseName(const QString& name) { baseName_ = name; }
-    const QmlClassNode* qmlBaseNode() const { return baseNode_; }
-    void setQmlBaseNode(QmlClassNode* b) { baseNode_ = b; }
+    const QString& qmlBaseName() const { return qmlBaseName_; }
+    void setQmlBaseName(const QString& name) { qmlBaseName_ = name; }
+    bool qmlBaseNodeNotSet() const { return (qmlBaseNode_ == 0); }
+    QmlClassNode* qmlBaseNode();
+    void setQmlBaseNode(QmlClassNode* b) { qmlBaseNode_ = b; }
     void requireCppClass() { cnodeRequired_ = true; }
     bool cppClassRequired() const { return cnodeRequired_; }
     static void addInheritedBy(const QString& base, Node* sub);
@@ -624,10 +626,10 @@ private:
     bool cnodeRequired_;
     bool wrapper_;
     ClassNode*    cnode_;
-    QString      baseName_;
+    QString             qmlBaseName_;
     QString             obsoleteLink_;
     QmlModuleNode*      qmlModule_;
-    QmlClassNode*       baseNode_;
+    QmlClassNode*       qmlBaseNode_;
     ImportList          importList_;
 };
 
@@ -682,7 +684,7 @@ public:
     bool isReadOnlySet() const { return (readOnly_ != FlagValueDefault); }
     bool isStored() const { return fromFlagValue(stored_,true); }
     bool isDesignable() const { return fromFlagValue(designable_,false); }
-    bool isWritable(QDocDatabase* qdb);
+    bool isWritable();
     virtual bool isDefault() const { return isdefault_; }
     virtual bool isReadOnly() const { return fromFlagValue(readOnly_,false); }
     virtual bool isAlias() const { return isAlias_; }
@@ -697,7 +699,7 @@ public:
     const QString& element() const { return static_cast<QmlPropertyGroupNode*>(parent())->element(); }
 
  private:
-    PropertyNode* findCorrespondingCppProperty(QDocDatabase* qdb);
+    PropertyNode* findCorrespondingCppProperty();
 
 private:
     QString type_;

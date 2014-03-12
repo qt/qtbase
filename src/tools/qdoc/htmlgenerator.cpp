@@ -2104,7 +2104,7 @@ void HtmlGenerator::generateQmlRequisites(QmlClassNode *qcn, CodeMarker *marker)
     }
 
     //add the inherits to the map
-    const QmlClassNode* base = qcn->qmlBaseNode();
+    QmlClassNode* base = qcn->qmlBaseNode();
     while (base && base->isInternal()) {
         base = base->qmlBaseNode();
     }
@@ -2336,8 +2336,7 @@ QString HtmlGenerator::generateListOfAllMemberFile(const InnerNode *inner,
   the members of QML class \a qml_cn, including the inherited
   members. The \a marker is used for formatting stuff.
  */
-QString HtmlGenerator::generateAllQmlMembersFile(const QmlClassNode* qml_cn,
-                                                 CodeMarker* marker)
+QString HtmlGenerator::generateAllQmlMembersFile(QmlClassNode* qml_cn, CodeMarker* marker)
 {
     QList<Section> sections;
     QList<Section>::ConstIterator s;
@@ -4055,7 +4054,7 @@ void HtmlGenerator::generateDetailedQmlMember(Node *node,
                 out() << "<td class=\"tblQmlPropNode\"><p>";
                 out() << "<a name=\"" + refForNode(qpn) + "\"></a>";
 
-                if (!qpn->isWritable(qdb_))
+                if (!qpn->isWritable())
                     out() << "<span class=\"qmlreadonly\">read-only</span>";
                 if (qpn->isDefault())
                     out() << "<span class=\"qmldefault\">default</span>";
@@ -4076,7 +4075,7 @@ void HtmlGenerator::generateDetailedQmlMember(Node *node,
         out() << "<a name=\"" + refForNode(qpn) + "\"></a>";
         if (!qpn->isReadOnlySet()) {
             if (qpn->declarativeCppNode())
-                qpn->setReadOnly(!qpn->isWritable(qdb_));
+                qpn->setReadOnly(!qpn->isWritable());
         }
         if (qpn->isReadOnly())
             out() << "<span class=\"qmlreadonly\">read-only</span>";
@@ -4138,11 +4137,11 @@ void HtmlGenerator::generateDetailedQmlMember(Node *node,
   Output the "Inherits" line for the QML element,
   if there should be one.
  */
-void HtmlGenerator::generateQmlInherits(const QmlClassNode* qcn, CodeMarker* marker)
+void HtmlGenerator::generateQmlInherits(QmlClassNode* qcn, CodeMarker* marker)
 {
     if (!qcn)
         return;
-    const QmlClassNode* base = qcn->qmlBaseNode();
+    QmlClassNode* base = qcn->qmlBaseNode();
     while (base && base->isInternal()) {
         base = base->qmlBaseNode();
     }

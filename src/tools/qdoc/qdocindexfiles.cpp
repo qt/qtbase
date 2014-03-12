@@ -218,8 +218,9 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
             abstract = true;
         qcn->setAbstract(abstract);
         QString qmlFullBaseName = element.attribute("qml-base-type");
-        if (!qmlFullBaseName.isEmpty())
+        if (!qmlFullBaseName.isEmpty()) {
             qcn->setQmlBaseName(qmlFullBaseName);
+        }
         if (element.hasAttribute("location"))
             name = element.attribute("location", QString());
         if (!indexUrl.isEmpty())
@@ -628,6 +629,10 @@ void QDocIndexFiles::resolveIndex()
         if (n)
             relatedPair.first->setRelates(static_cast<ClassNode*>(n));
     }
+
+    // No longer needed.
+    basesList_.clear();
+    relatedList_.clear();
 }
 
 /*!
@@ -1080,7 +1085,7 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
             QmlPropertyNode* qpn = static_cast<QmlPropertyNode*>(node);
             writer.writeAttribute("type", qpn->dataType());
             writer.writeAttribute("attached", qpn->isAttached() ? "true" : "false");
-            writer.writeAttribute("writable", qpn->isWritable(qdb_) ? "true" : "false");
+            writer.writeAttribute("writable", qpn->isWritable() ? "true" : "false");
             if (!brief.isEmpty())
                 writer.writeAttribute("brief", brief);
         }
