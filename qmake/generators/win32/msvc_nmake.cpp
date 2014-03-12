@@ -514,18 +514,23 @@ void NmakeMakefileGenerator::writeBuildRulesPart(QTextStream &t)
             const QString target = var("DEST_TARGET");
             QString manifest = project->first("QMAKE_MANIFEST").toQString();
             QString extraLFlags;
+            const bool linkerSupportsEmbedding = (msvcVersion() >= 1200);
             if (manifest.isEmpty()) {
                 generateManifest = true;
-                manifest = escapeFilePath(target + ".embed.manifest");
-                extraLFlags = "/MANIFEST /MANIFESTFILE:" + manifest;
-                project->values("QMAKE_CLEAN") << manifest;
+                if (linkerSupportsEmbedding) {
+                    extraLFlags = "/MANIFEST:embed";
+                } else {
+                    manifest = escapeFilePath(target + ".embed.manifest");
+                    extraLFlags += "/MANIFEST /MANIFESTFILE:" + manifest;
+                    project->values("QMAKE_CLEAN") << manifest;
+                }
             } else {
                 manifest = escapeFilePath(fileFixify(manifest));
             }
 
             const QString resourceId = (templateName == "app") ? "1" : "2";
             const bool incrementalLinking = project->values("QMAKE_LFLAGS").toQStringList().filter(QRegExp("(/|-)INCREMENTAL:NO")).isEmpty();
-            if (incrementalLinking) {
+            if (incrementalLinking && !linkerSupportsEmbedding) {
                 // Link a resource that contains the manifest without modifying the exe/dll after linking.
 
                 QString manifest_rc = escapeFilePath(target +  "_manifest.rc");
@@ -558,8 +563,10 @@ void NmakeMakefileGenerator::writeBuildRulesPart(QTextStream &t)
                 // directly embed the manifest in the executable after linking
                 t << "\n\t";
                 writeLinkCommand(t, extraLFlags);
-                t << "\n\tmt.exe /nologo /manifest " << manifest
-                  << " /outputresource:$(DESTDIR_TARGET);" << resourceId;
+                if (!linkerSupportsEmbedding) {
+                    t << "\n\tmt.exe /nologo /manifest " << manifest
+                      << " /outputresource:$(DESTDIR_TARGET);" << resourceId;
+                }
             }
         }  else {
             t << "\n\t";
@@ -588,6 +595,15 @@ void NmakeMakefileGenerator::writeLinkCommand(QTextStream &t, const QString &ext
     if (!extraInlineFileContent.isEmpty())
         t << ' ' << extraInlineFileContent;
     t << "\n<<";
+}
+
+int NmakeMakefileGenerator::msvcVersion() const
+{
+    const int fallbackVersion = 800;    // Visual Studio 2005
+    const QString ver = project->first(ProKey("MSVC_VER")).toQString();
+    bool ok;
+    float f = ver.toFloat(&ok);
+    return ok ? int(f * 100) : fallbackVersion;
 }
 
 QT_END_NAMESPACE

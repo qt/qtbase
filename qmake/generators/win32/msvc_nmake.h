@@ -54,6 +54,7 @@ class NmakeMakefileGenerator : public Win32MakefileGenerator
     void writeImplicitRulesPart(QTextStream &t);
     void writeBuildRulesPart(QTextStream &t);
     void writeLinkCommand(QTextStream &t, const QString &extraFlags = QString(), const QString &extraInlineFileContent = QString());
+    int msvcVersion() const;
     void init();
 
 protected:
