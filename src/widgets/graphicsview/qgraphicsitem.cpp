@@ -9592,9 +9592,9 @@ QRectF QGraphicsPixmapItem::boundingRect() const
         return QRectF();
     if (d->flags & ItemIsSelectable) {
         qreal pw = 1.0;
-        return QRectF(d->offset, d->pixmap.size()).adjusted(-pw/2, -pw/2, pw/2, pw/2);
+        return QRectF(d->offset, d->pixmap.size() / d->pixmap.devicePixelRatio()).adjusted(-pw/2, -pw/2, pw/2, pw/2);
     } else {
-        return QRectF(d->offset, d->pixmap.size());
+        return QRectF(d->offset, d->pixmap.size() / d->pixmap.devicePixelRatio());
     }
 }
 
