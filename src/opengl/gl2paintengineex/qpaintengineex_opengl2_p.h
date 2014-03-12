@@ -158,6 +158,9 @@ public:
     bool isNativePaintingActive() const;
     bool requiresPretransformedGlyphPositions(QFontEngine *, const QTransform &) const { return false; }
     bool shouldDrawCachedGlyphs(QFontEngine *, const QTransform &) const;
+
+    void setTranslateZ(GLfloat z);
+
 private:
     Q_DISABLE_COPY(QGL2PaintEngineEx)
 };
@@ -183,7 +186,8 @@ public:
             snapToPixelGrid(false),
             nativePaintingActive(false),
             inverseScale(1),
-            lastMaskTextureUsed(0)
+            lastMaskTextureUsed(0),
+            translateZ(0)
     { }
 
     ~QGL2PaintEngineExPrivate();
@@ -266,6 +270,7 @@ public:
     bool brushUniformsDirty;
     bool opacityUniformDirty;
     bool matrixUniformDirty;
+    bool translateZUniformDirty;
 
     bool stencilClean; // Has the stencil not been used for clipping so far?
     bool useSystemClip;
@@ -309,6 +314,8 @@ public:
     QVector<GLuint> unusedIBOSToClean;
 
     const GLfloat *vertexAttribPointers[3];
+
+    GLfloat translateZ;
 };
 
 
