@@ -112,6 +112,8 @@ public:
     QByteArray groupName() const { return m_windowGroupName; }
     void joinWindowGroup(const QByteArray &groupName);
 
+    bool shouldMakeFullScreen() const;
+
 protected:
     virtual int pixelFormat() const = 0;
     virtual void resetBuffers() = 0;
