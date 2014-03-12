@@ -107,6 +107,7 @@ class Q_WIDGETS_EXPORT QGraphicsScene : public QObject
     Q_PROPERTY(QFont font READ font WRITE setFont)
     Q_PROPERTY(bool sortCacheEnabled READ isSortCacheEnabled WRITE setSortCacheEnabled)
     Q_PROPERTY(bool stickyFocus READ stickyFocus WRITE setStickyFocus)
+    Q_PROPERTY(qreal minimumRenderSize READ minimumRenderSize WRITE setMinimumRenderSize)
 
 public:
     enum ItemIndexMethod {
@@ -248,6 +249,9 @@ public:
     void setActiveWindow(QGraphicsWidget *widget);
 
     bool sendEvent(QGraphicsItem *item, QEvent *event);
+
+    qreal minimumRenderSize() const;
+    void setMinimumRenderSize(qreal minSize);
 
 public Q_SLOTS:
     void update(const QRectF &rect = QRectF());

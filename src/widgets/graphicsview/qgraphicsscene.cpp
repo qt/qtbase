@@ -299,6 +299,7 @@ QGraphicsScenePrivate::QGraphicsScenePrivate()
       painterStateProtection(true),
       sortCacheEnabled(false),
       allItemsIgnoreTouchEvents(true),
+      minimumRenderSize(0.0),
       selectionChanging(0),
       rectAdjust(2),
       focusItem(0),
@@ -4718,17 +4719,37 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
 
     const bool itemClipsChildrenToShape = (item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape);
     bool drawItem = itemHasContents && !itemIsFullyTransparent;
-    if (drawItem) {
+    if (drawItem || minimumRenderSize > 0.0) {
         const QRectF brect = adjustedItemEffectiveBoundingRect(item);
         ENSURE_TRANSFORM_PTR
-        QRect viewBoundingRect = translateOnlyTransform ? brect.translated(transformPtr->dx(), transformPtr->dy()).toAlignedRect()
-                                                        : transformPtr->mapRect(brect).toAlignedRect();
-        viewBoundingRect.adjust(-int(rectAdjust), -int(rectAdjust), rectAdjust, rectAdjust);
-        if (widget)
-            item->d_ptr->paintedViewBoundingRects.insert(widget, viewBoundingRect);
-        drawItem = exposedRegion ? exposedRegion->intersects(viewBoundingRect)
-                                 : !viewBoundingRect.normalized().isEmpty();
-        if (!drawItem) {
+        QRectF preciseViewBoundingRect = translateOnlyTransform ? brect.translated(transformPtr->dx(), transformPtr->dy())
+                                                                : transformPtr->mapRect(brect);
+
+        bool itemIsTooSmallToRender = false;
+        if (minimumRenderSize > 0.0
+            && (preciseViewBoundingRect.width() < minimumRenderSize
+                || preciseViewBoundingRect.height() < minimumRenderSize)) {
+           itemIsTooSmallToRender = true;
+           drawItem = false;
+        }
+
+        bool itemIsOutsideVisibleRect = false;
+        if (drawItem) {
+            QRect viewBoundingRect = preciseViewBoundingRect.toAlignedRect();
+            viewBoundingRect.adjust(-int(rectAdjust), -int(rectAdjust), rectAdjust, rectAdjust);
+            if (widget)
+                item->d_ptr->paintedViewBoundingRects.insert(widget, viewBoundingRect);
+            drawItem = exposedRegion ? exposedRegion->intersects(viewBoundingRect)
+                                     : !viewBoundingRect.normalized().isEmpty();
+            itemIsOutsideVisibleRect = !drawItem;
+        }
+
+        if (itemIsTooSmallToRender || itemIsOutsideVisibleRect) {
+            // We cannot simply use !drawItem here. If we did it is possible
+            // to enter the outter if statement with drawItem == false and minimumRenderSize > 0
+            // and finally end up inside this inner if, even though none of the above two
+            // conditions are met. In that case we should not return from this function
+            // but call draw() instead.
             if (!itemHasChildren)
                 return;
             if (itemClipsChildrenToShape) {
@@ -5727,6 +5748,49 @@ bool QGraphicsScene::sendEvent(QGraphicsItem *item, QEvent *event)
         return false;
     }
     return d->sendEvent(item, event);
+}
+
+/*!
+    \property QGraphicsScene::minimumRenderSize
+    \since 5.4
+    \brief the minimal view-transformed size an item must have to be drawn
+
+    When the scene is rendered, any item whose width or height, transformed
+    to the target view, is smaller that minimumRenderSize(), will not be
+    rendered. If an item is not rendered and it clips its children items
+    they will also not be rendered. Set this value to speed up rendering
+    of scenes with many objects rendered on a zoomed out view.
+
+    The default value is 0. If unset, or if set to 0 or a negative value,
+    all items will always be rendered.
+
+    For example, setting this property can be especially useful if a scene
+    is rendered by multiple views, one of which serves as an overview which
+    always displays all items. In scenes with many items, such a view will
+    use a high scaling factor so that all items can be shown. Due to the
+    scaling, smaller items will only make an insignificant contribution to
+    the final rendered scene. To avoid drawing these items and reduce the
+    time necessary to render the scene, you can call setMinimumRenderSize()
+    with a non-negative value.
+
+    \note Items that are not drawn as a result of being too small, are still
+    returned by methods such as items() and itemAt(), and participate in
+    collision detection and interactions. It is recommended that you set
+    minimumRenderSize() to a value less than or equal to 1 in order to
+    avoid large unrendered items that are interactive.
+
+    \sa QStyleOptionGraphicsItem::levelOfDetailFromTransform()
+*/
+qreal QGraphicsScene::minimumRenderSize() const
+{
+    Q_D(const QGraphicsScene);
+    return d->minimumRenderSize;
+}
+void QGraphicsScene::setMinimumRenderSize(qreal minSize)
+{
+    Q_D(QGraphicsScene);
+    d->minimumRenderSize = minSize;
+    update();
 }
 
 void QGraphicsScenePrivate::addView(QGraphicsView *view)

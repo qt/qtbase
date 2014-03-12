@@ -3702,6 +3702,8 @@ QStyleOptionGraphicsItem::QStyleOptionGraphicsItem(int version)
     of the painter used to draw the item. By default, if no
     transformations are applied, its value is 1. If zoomed out 1:2, the level
     of detail will be 0.5, and if zoomed in 2:1, its value is 2.
+
+    \sa QGraphicsScene::minimumRenderSize()
 */
 qreal QStyleOptionGraphicsItem::levelOfDetailFromTransform(const QTransform &worldTransform)
 {

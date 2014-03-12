@@ -267,6 +267,7 @@ private slots:
     void removeFullyTransparentItem();
     void zeroScale();
     void focusItemChangedSignal();
+    void minimumRenderSize();
 
     // task specific tests below me
     void task139710_bspTreeCrash();
@@ -4676,6 +4677,78 @@ void tst_QGraphicsScene::focusItemChangedSignal()
         QCOMPARE(qVariantValue<Qt::FocusReason>(arguments.at(2)), Qt::ActiveWindowFocusReason);
     }
 
+}
+
+class ItemCountsPaintCalls : public QGraphicsRectItem
+{
+public:
+    ItemCountsPaintCalls(const QRectF & rect, QGraphicsItem *parent = 0)
+        : QGraphicsRectItem(rect, parent), repaints(0) {}
+    void paint ( QPainter * painter, const QStyleOptionGraphicsItem * option, QWidget * widget = 0 )
+    {
+        QGraphicsRectItem::paint(painter, option, widget);
+        ++repaints;
+    }
+    int repaints;
+};
+
+void tst_QGraphicsScene::minimumRenderSize()
+{
+    Q_CHECK_PAINTEVENTS
+
+    ItemCountsPaintCalls *bigParent = new ItemCountsPaintCalls(QRectF(0,0,100,100));
+    ItemCountsPaintCalls *smallChild = new ItemCountsPaintCalls(QRectF(0,0,10,10), bigParent);
+    ItemCountsPaintCalls *smallerGrandChild = new ItemCountsPaintCalls(QRectF(0,0,1,1), smallChild);
+    QGraphicsScene scene;
+    scene.addItem(bigParent);
+
+    CustomView view;
+    view.setScene(&scene);
+    view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+    qApp->processEvents();
+
+    // Initially, everything should be repainted the same number of times
+    int viewRepaints = 0;
+    QTRY_VERIFY(view.repaints > viewRepaints);
+    viewRepaints = view.repaints;
+
+    QVERIFY(viewRepaints == bigParent->repaints);
+    QVERIFY(viewRepaints == smallChild->repaints);
+    QVERIFY(viewRepaints == smallerGrandChild->repaints);
+
+    // Setting a minimum render size should cause a repaint
+    scene.setMinimumRenderSize(0.5);
+    qApp->processEvents();
+
+    QTRY_VERIFY(view.repaints > viewRepaints);
+    viewRepaints = view.repaints;
+
+    QVERIFY(viewRepaints == bigParent->repaints);
+    QVERIFY(viewRepaints == smallChild->repaints);
+    QVERIFY(viewRepaints == smallerGrandChild->repaints);
+
+    // Scaling should cause a repaint of big items only.
+    view.scale(0.1, 0.1);
+    qApp->processEvents();
+
+    QTRY_VERIFY(view.repaints > viewRepaints);
+    viewRepaints = view.repaints;
+
+    QVERIFY(viewRepaints == bigParent->repaints);
+    QVERIFY(viewRepaints == smallChild->repaints);
+    QVERIFY(smallChild->repaints > smallerGrandChild->repaints);
+
+    // Scaling further should cause even fewer items to be repainted
+    view.scale(0.1, 0.1); // Stacks with previous scale
+    qApp->processEvents();
+
+    QTRY_VERIFY(view.repaints > viewRepaints);
+    viewRepaints = view.repaints;
+
+    QVERIFY(viewRepaints == bigParent->repaints);
+    QVERIFY(bigParent->repaints > smallChild->repaints);
+    QVERIFY(smallChild->repaints > smallerGrandChild->repaints);
 }
 
 void tst_QGraphicsScene::taskQTBUG_15977_renderWithDeviceCoordinateCache()

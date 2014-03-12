@@ -117,6 +117,8 @@ public:
     quint32 allItemsIgnoreTouchEvents : 1;
     quint32 padding : 15;
 
+    qreal minimumRenderSize;
+
     QRectF growingItemsBoundingRect;
 
     void _q_emitUpdated();
