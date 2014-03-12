@@ -365,7 +365,7 @@ void QPrinterPrivate::setProperty(QPrintEngine::PrintEnginePropertyKey key, cons
     \value PageRange The specified page range should be printed.
     \value CurrentPage Only the current page should be printed.
 
-    \sa QAbstractPrintDialog::PrintRange
+    \sa setPrintRange(), printRange(), QAbstractPrintDialog::PrintRange
 */
 
 /*!
@@ -592,21 +592,6 @@ void QPrinterPrivate::setProperty(QPrintEngine::PrintEnginePropertyKey key, cons
   defined to be 1/72th of an inch, while the DevicePixel unit is
   resolution dependant and is based on the actual pixels, or dots, on
   the printer.
-*/
-
-
-/*
-  \enum QPrinter::PrintRange
-
-  This enum is used to specify which print range the application
-  should use to print.
-
-  \value AllPages All the pages should be printed.
-  \value Selection Only the selection should be printed.
-  \value PageRange Print according to the from page and to page options.
-  \value CurrentPage Only the current page should be printed.
-
-  \sa setPrintRange(), printRange()
 */
 
 /*!
