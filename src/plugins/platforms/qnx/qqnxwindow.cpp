@@ -247,14 +247,8 @@ void QQnxWindow::setGeometry(const QRect &rect)
 
     setGeometryHelper(newGeometry);
 
-    // Send a geometry change event to Qt (triggers resizeEvent() in QWindow/QWidget).
-
-    // Calling flushWindowSystemEvents() here would flush input events which
-    // could result in re-entering QQnxWindow::setGeometry() again.
-    QWindowSystemInterface::setSynchronousWindowsSystemEvents(true);
     QWindowSystemInterface::handleGeometryChange(window(), newGeometry);
     QWindowSystemInterface::handleExposeEvent(window(), newGeometry);
-    QWindowSystemInterface::setSynchronousWindowsSystemEvents(false);
 }
 
 void QQnxWindow::setGeometryHelper(const QRect &rect)
