@@ -5411,7 +5411,7 @@ if [ "$CFG_EGL" != "no" ]; then
 fi
 
 if [ "$CFG_EGLFS" != "no" ]; then
-    if [ "$XPLATFORM_QNX" = "no" ]; then
+    if [ "$XPLATFORM_QNX" = "no" ] && [ "$CFG_OPENGL" != "no" ]; then
         CFG_EGLFS="$CFG_EGL"
     else
         CFG_EGLFS="no"
