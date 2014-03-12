@@ -1044,7 +1044,8 @@ void QXcbDrag::timerEvent(QTimerEvent* e)
                  - showing dialog box on drop event where user's response takes more time than XdndDropTransactionTimeout (QTBUG-14493)
                  - dnd takes unusually long time to process data
                  */
-                t.drag->deleteLater();
+                if (t.drag)
+                    t.drag->deleteLater();
                 transactions.removeAt(i--);
             } else {
                 stopTimer = false;
