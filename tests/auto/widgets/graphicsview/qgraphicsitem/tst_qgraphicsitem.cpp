@@ -377,6 +377,8 @@ private slots:
     void itemClipsChildrenToShape5();
     void itemClipsTextChildToShape();
     void itemClippingDiscovery();
+    void itemContainsChildrenInShape();
+    void itemContainsChildrenInShape2();
     void ancestorFlags();
     void untransformable();
     void contextMenuEventPropagation();
@@ -5845,6 +5847,102 @@ void tst_QGraphicsItem::itemClippingDiscovery()
     QCOMPARE(scene.itemAt(90, 90), (QGraphicsItem *)0);
 }
 
+class ItemCountsBoundingRectCalls : public QGraphicsRectItem
+{
+public:
+    ItemCountsBoundingRectCalls(const QRectF & rect, QGraphicsItem *parent = 0)
+        : QGraphicsRectItem(rect, parent), boundingRectCalls(0) {}
+    QRectF boundingRect () const {
+        ++boundingRectCalls;
+        return QGraphicsRectItem::boundingRect();
+    }
+    mutable int boundingRectCalls;
+};
+
+void tst_QGraphicsItem::itemContainsChildrenInShape()
+{
+    ItemCountsBoundingRectCalls *parent = new ItemCountsBoundingRectCalls(QRectF(0,0, 10, 10));
+    ItemCountsBoundingRectCalls *childOutsideShape = new ItemCountsBoundingRectCalls(QRectF(0,0, 10, 10), parent);
+    childOutsideShape->setPos(20,0);
+
+    QGraphicsScene scene;
+    scene.setItemIndexMethod(QGraphicsScene::NoIndex);
+    scene.addItem(parent);
+
+    QVERIFY(parent->boundingRectCalls == childOutsideShape->boundingRectCalls);
+
+    int oldParentBoundingRectCalls = parent->boundingRectCalls;
+    int oldChildBoundingRectCalls = childOutsideShape->boundingRectCalls;
+
+    // First test that both items are searched if no optimization flags are set
+    QGraphicsItem* item = scene.itemAt(25,5);
+
+    QVERIFY(item == childOutsideShape);
+    QVERIFY(parent->boundingRectCalls > oldParentBoundingRectCalls);
+    QVERIFY(childOutsideShape->boundingRectCalls > oldChildBoundingRectCalls);
+    QVERIFY(parent->boundingRectCalls == childOutsideShape->boundingRectCalls);
+
+    oldParentBoundingRectCalls = parent->boundingRectCalls;
+    oldChildBoundingRectCalls = childOutsideShape->boundingRectCalls;
+
+    // Repeat the test to make sure that no caching/indexing is in effect
+    item = scene.itemAt(25,5);
+
+    QVERIFY(item == childOutsideShape);
+    QVERIFY(parent->boundingRectCalls > oldParentBoundingRectCalls);
+    QVERIFY(childOutsideShape->boundingRectCalls > oldChildBoundingRectCalls);
+    QVERIFY(parent->boundingRectCalls == childOutsideShape->boundingRectCalls);
+
+    oldParentBoundingRectCalls = parent->boundingRectCalls;
+    oldChildBoundingRectCalls = childOutsideShape->boundingRectCalls;
+
+    // Set the optimization flag and make sure that the child is not returned
+    // and that the child's boundingRect() method is never called.
+    parent->setFlag(QGraphicsItem::ItemContainsChildrenInShape);
+    item = scene.itemAt(25,5);
+
+    QVERIFY(!(item));
+    QVERIFY(parent->boundingRectCalls > oldParentBoundingRectCalls);
+    QVERIFY(childOutsideShape->boundingRectCalls == oldChildBoundingRectCalls);
+    QVERIFY(parent->boundingRectCalls > childOutsideShape->boundingRectCalls);
+}
+
+void tst_QGraphicsItem::itemContainsChildrenInShape2()
+{
+    //The tested flag behaves almost identically to ItemClipsChildrenToShape
+    //in terms of optimizations but does not enforce the clip.
+    //This test makes sure there is no clip.
+    QGraphicsScene scene;
+    QGraphicsItem *rect = scene.addRect(0, 0, 50, 50, QPen(Qt::NoPen), QBrush(Qt::yellow));
+
+    QGraphicsItem *ellipse = scene.addEllipse(0, 0, 100, 100, QPen(Qt::NoPen), QBrush(Qt::green));
+    ellipse->setParentItem(rect);
+
+    QGraphicsItem *clippedEllipse = scene.addEllipse(0, 0, 50, 50, QPen(Qt::NoPen), QBrush(Qt::blue));
+    clippedEllipse->setParentItem(ellipse);
+
+    QGraphicsItem *clippedEllipse2 = scene.addEllipse(0, 0, 25, 25, QPen(Qt::NoPen), QBrush(Qt::red));
+    clippedEllipse2->setParentItem(clippedEllipse);
+
+    QVERIFY(!(ellipse->flags() & QGraphicsItem::ItemClipsChildrenToShape));
+    QVERIFY(!(ellipse->flags() & QGraphicsItem::ItemContainsChildrenInShape));
+    ellipse->setFlags(QGraphicsItem::ItemContainsChildrenInShape);
+    QVERIFY(!(ellipse->flags() & QGraphicsItem::ItemClipsChildrenToShape));
+    QVERIFY((ellipse->flags() & QGraphicsItem::ItemContainsChildrenInShape));
+
+    QImage image(100, 100, QImage::Format_ARGB32_Premultiplied);
+    image.fill(0);
+    QPainter painter(&image);
+    painter.setRenderHint(QPainter::Antialiasing);
+    scene.render(&painter);
+    painter.end();
+
+    QCOMPARE(image.pixel(2, 2), QColor(Qt::yellow).rgba());
+    QCOMPARE(image.pixel(12, 12), QColor(Qt::red).rgba());
+    QCOMPARE(image.pixel(2, 25), QColor(Qt::blue).rgba());
+    QCOMPARE(image.pixel(2, 50), QColor(Qt::green).rgba());
+}
+
 void tst_QGraphicsItem::ancestorFlags()
 {
     QGraphicsItem *level1 = new QGraphicsRectItem;
@@ -5965,11 +6063,27 @@ void tst_QGraphicsItem::ancestorFlags()
     // Nobody handles child events
     level21->setHandlesChildEvents(false);
 
-    for (int i = 0; i < 2; ++i) {
-        QGraphicsItem::GraphicsItemFlag flag = !i ? QGraphicsItem::ItemClipsChildrenToShape
-                                               : QGraphicsItem::ItemIgnoresTransformations;
-        int ancestorFlag = !i ? QGraphicsItemPrivate::AncestorClipsChildren
-                           : QGraphicsItemPrivate::AncestorIgnoresTransformations;
+    for (int i = 0; i < 3; ++i) {
+        QGraphicsItem::GraphicsItemFlag flag;
+        int ancestorFlag;
+
+        switch (i) {
+        case(0):
+            flag = QGraphicsItem::ItemClipsChildrenToShape;
+            ancestorFlag = QGraphicsItemPrivate::AncestorClipsChildren;
+            break;
+        case(1):
+            flag = QGraphicsItem::ItemIgnoresTransformations;
+            ancestorFlag = QGraphicsItemPrivate::AncestorIgnoresTransformations;
+            break;
+        case(2):
+            flag = QGraphicsItem::ItemContainsChildrenInShape;
+            ancestorFlag = QGraphicsItemPrivate::AncestorContainsChildren;
+            break;
+        default:
+            qFatal("Unknown ancestor flag, please fix!");
+            break;
+        }
 
         QCOMPARE(int(level1->d_ptr->ancestorFlags), 0);
         QCOMPARE(int(level21->d_ptr->ancestorFlags), 0);

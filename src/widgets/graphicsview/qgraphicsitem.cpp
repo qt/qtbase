@@ -332,6 +332,8 @@
     this flag is disabled; children can draw anywhere. This behavior is
     enforced by QGraphicsView::drawItems() or
     QGraphicsScene::drawItems(). This flag was introduced in Qt 4.3.
+    \note This flag is similar to ItemContainsChildrenInShape but in addition
+    enforces the containment by clipping the children.
 
     \value ItemIgnoresTransformations The item ignores inherited
     transformations (i.e., its position is still anchored to its parent, but
@@ -423,6 +425,19 @@
     ItemStopsClickFocusPropagation, but also suppresses focus-out. This flag
     allows you to completely take over focus handling.
     This flag was introduced in Qt 4.7. \endomit
+
+    \value ItemContainsChildrenInShape This flag indicates that all of the
+    item's direct or indirect children only draw within the item's shape.
+    Unlike ItemClipsChildrenToShape, this restriction is not enforced. Set
+    ItemContainsChildrenInShape when you manually assure that drawing
+    is bound to the item's shape and want to avoid the cost associated with
+    enforcing the clip. Setting this flag enables more efficient drawing and
+    collision detection. The flag is disabled by default.
+    \note If both this flag and ItemClipsChildrenToShape are set, the clip
+    will be enforced. This is equivalent to just setting
+    ItemClipsChildrenToShape.
+    .
+    This flag was introduced in Qt 5.4.
 */
 
 /*!
@@ -836,6 +851,10 @@ void QGraphicsItemPrivate::updateAncestorFlag(QGraphicsItem::GraphicsItemFlag ch
             flag = AncestorIgnoresTransformations;
             enabled = flags & QGraphicsItem::ItemIgnoresTransformations;
             break;
+        case QGraphicsItem::ItemContainsChildrenInShape:
+            flag = AncestorContainsChildren;
+            enabled = flags & QGraphicsItem::ItemContainsChildrenInShape;
+            break;
         default:
             return;
         }
@@ -895,6 +914,8 @@ void QGraphicsItemPrivate::updateAncestorFlags()
             flags |= AncestorClipsChildren;
         if (pd->flags & QGraphicsItem::ItemIgnoresTransformations)
             flags |= AncestorIgnoresTransformations;
+        if (pd->flags & QGraphicsItem::ItemContainsChildrenInShape)
+            flags |= AncestorContainsChildren;
     }
 
     if (ancestorFlags == flags)
@@ -1831,6 +1852,11 @@ void QGraphicsItem::setFlags(GraphicsItemFlags flags)
         d_ptr->markParentDirty(true);
     }
 
+    if ((flags & ItemContainsChildrenInShape) != (oldFlags & ItemContainsChildrenInShape)) {
+        // Item children containtment changes. Propagate the ancestor flag to all children.
+        d_ptr->updateAncestorFlag(ItemContainsChildrenInShape);
+    }
+
     if ((flags & ItemIgnoresTransformations) != (oldFlags & ItemIgnoresTransformations)) {
         // Item children clipping changes. Propagate the ancestor flag to
         // all children.
@@ -2322,7 +2348,8 @@ void QGraphicsItemPrivate::setVisibleHelper(bool newVisible, bool explicitly,
     }
 
     // Update children with explicitly = false.
-    const bool updateChildren = update && !((flags & QGraphicsItem::ItemClipsChildrenToShape)
+    const bool updateChildren = update && !((flags & QGraphicsItem::ItemClipsChildrenToShape
+                                             || flags & QGraphicsItem::ItemContainsChildrenInShape)
                                             && !(flags & QGraphicsItem::ItemHasNoContents));
     foreach (QGraphicsItem *child, children) {
         if (!newVisible || !child->d_ptr->explicitlyHidden)
@@ -2835,7 +2862,9 @@ QRectF QGraphicsItemPrivate::effectiveBoundingRect(QGraphicsItem *topMostEffectI
 #ifndef QT_NO_GRAPHICSEFFECT
     Q_Q(const QGraphicsItem);
     QRectF brect = effectiveBoundingRect(q_ptr->boundingRect());
-    if (ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren || topMostEffectItem == q)
+    if (ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren
+        || ancestorFlags & QGraphicsItemPrivate::AncestorContainsChildren
+        || topMostEffectItem == q)
         return brect;
 
     const QGraphicsItem *effectParent = parent;
@@ -2847,6 +2876,7 @@ QRectF QGraphicsItemPrivate::effectiveBoundingRect(QGraphicsItem *topMostEffectI
             brect = effectParent->mapRectToItem(q, effectRectInParentSpace);
         }
         if (effectParent->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren
+            || effectParent->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorContainsChildren
             || topMostEffectItem == effectParent) {
             return brect;
         }
@@ -7442,7 +7472,8 @@ QVariant QGraphicsItem::extension(const QVariant &variant) const
 */
 void QGraphicsItem::addToIndex()
 {
-    if (d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren) {
+    if (d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren
+        || d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorContainsChildren) {
         // ### add to child index only if applicable
         return;
     }
@@ -7459,7 +7490,8 @@ void QGraphicsItem::addToIndex()
 */
 void QGraphicsItem::removeFromIndex()
 {
-    if (d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren) {
+    if (d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren
+        || d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorContainsChildren) {
         // ### remove from child index only if applicable
         return;
     }
@@ -11450,6 +11482,9 @@ QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemFlag flag)
         break;
     case QGraphicsItem::ItemStopsFocusHandling:
         str = "ItemStopsFocusHandling";
+        break;
+    case QGraphicsItem::ItemContainsChildrenInShape:
+        str = "ItemContainsChildrenInShape";
         break;
     }
     debug << str;

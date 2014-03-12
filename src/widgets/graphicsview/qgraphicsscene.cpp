@@ -4717,7 +4717,8 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
         wasDirtyParentSceneTransform = true;
     }
 
-    const bool itemClipsChildrenToShape = (item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape);
+    const bool itemClipsChildrenToShape = (item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape
+                                           || item->d_ptr->flags & QGraphicsItem::ItemContainsChildrenInShape);
     bool drawItem = itemHasContents && !itemIsFullyTransparent;
     if (drawItem || minimumRenderSize > 0.0) {
         const QRectF brect = adjustedItemEffectiveBoundingRect(item);
@@ -5221,7 +5222,8 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
 
     // Process children.
     if (itemHasChildren && item->d_ptr->dirtyChildren) {
-        const bool itemClipsChildrenToShape = item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape;
+        const bool itemClipsChildrenToShape = item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape
+                                              || item->d_ptr->flags & QGraphicsItem::ItemContainsChildrenInShape;
         // Items with no content are threated as 'dummy' items which means they are never drawn and
         // 'processed', so the painted view bounding rect is never up-to-date. This means that whenever
         // such an item changes geometry, its children have to take care of the update regardless

@@ -172,7 +172,8 @@ public:
         AncestorHandlesChildEvents = 0x1,
         AncestorClipsChildren = 0x2,
         AncestorIgnoresTransformations = 0x4,
-        AncestorFiltersChildEvents = 0x8
+        AncestorFiltersChildEvents = 0x8,
+        AncestorContainsChildren = 0x10
     };
 
     inline QGraphicsItemPrivate()
@@ -213,7 +214,6 @@ public:
         needSortChildren(0),
         allChildrenDirty(0),
         fullUpdatePending(0),
-        dirtyChildrenBoundingRect(1),
         flags(0),
         paintedViewBoundingRectsNeedRepaint(0),
         dirtySceneTransform(1),
@@ -239,6 +239,7 @@ public:
         mayHaveChildWithGraphicsEffect(0),
         isDeclarativeItem(0),
         sendParentChangeNotification(0),
+        dirtyChildrenBoundingRect(1),
         globalStackingOrder(-1),
         q_ptr(0)
     {
@@ -544,7 +545,7 @@ public:
     quint32 handlesChildEvents : 1;
     quint32 itemDiscovered : 1;
     quint32 hasCursor : 1;
-    quint32 ancestorFlags : 4;
+    quint32 ancestorFlags : 5;
     quint32 cacheMode : 2;
     quint32 hasBoundingRegionGranularity : 1;
     quint32 isWidget : 1;
@@ -555,10 +556,9 @@ public:
     quint32 needSortChildren : 1;
     quint32 allChildrenDirty : 1;
     quint32 fullUpdatePending : 1;
-    quint32 dirtyChildrenBoundingRect : 1;
 
     // Packed 32 bits
-    quint32 flags : 19;
+    quint32 flags : 20;
     quint32 paintedViewBoundingRectsNeedRepaint : 1;
     quint32 dirtySceneTransform : 1;
     quint32 geometryChanged : 1;
@@ -571,9 +571,9 @@ public:
     quint32 filtersDescendantEvents : 1;
     quint32 sceneTransformTranslateOnly : 1;
     quint32 notifyBoundingRectChanged : 1;
-    quint32 notifyInvalidated : 1;
 
     // New 32 bits
+    quint32 notifyInvalidated : 1;
     quint32 mouseSetsFocus : 1;
     quint32 explicitActivate : 1;
     quint32 wantsActive : 1;
@@ -585,7 +585,8 @@ public:
     quint32 mayHaveChildWithGraphicsEffect : 1;
     quint32 isDeclarativeItem : 1;
     quint32 sendParentChangeNotification : 1;
-    quint32 padding : 21;
+    quint32 dirtyChildrenBoundingRect : 1;
+    quint32 padding : 19;
 
     // Optional stacking order
     int globalStackingOrder;

@@ -169,7 +169,8 @@ void QGraphicsSceneBspTreeIndexPrivate::_q_updateIndex()
                 untransformableItems << item;
                 continue;
             }
-            if (item->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren)
+            if (item->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren
+                || item->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorContainsChildren)
                 continue;
 
             bsp.insertItem(item, item->d_ptr->sceneEffectiveBoundingRect());
@@ -351,7 +352,8 @@ void QGraphicsSceneBspTreeIndexPrivate::removeItem(QGraphicsItem *item, bool rec
             // Avoid virtual function calls from the destructor.
             purgePending = true;
             removedItems << item;
-        } else if (!(item->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren)) {
+        } else if (!(item->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren
+                     || item->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorContainsChildren)) {
             bsp.removeItem(item, item->d_ptr->sceneEffectiveBoundingRect());
         }
     } else {
@@ -510,7 +512,8 @@ void QGraphicsSceneBspTreeIndex::prepareBoundingRectChange(const QGraphicsItem *
         return;
 
     if (item->d_ptr->index == -1 || item->d_ptr->itemIsUntransformable()
-        || (item->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren)) {
+        || (item->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren
+            || item->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorContainsChildren)) {
         return; // Item is not in BSP tree; nothing to do.
     }
 
@@ -641,8 +644,10 @@ void QGraphicsSceneBspTreeIndex::itemChange(const QGraphicsItem *item, QGraphics
         QGraphicsItem::GraphicsItemFlags newFlags = *static_cast<const QGraphicsItem::GraphicsItemFlags *>(value);
         bool ignoredTransform = item->d_ptr->flags & QGraphicsItem::ItemIgnoresTransformations;
         bool willIgnoreTransform = newFlags & QGraphicsItem::ItemIgnoresTransformations;
-        bool clipsChildren = item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape;
-        bool willClipChildren = newFlags & QGraphicsItem::ItemClipsChildrenToShape;
+        bool clipsChildren = item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape
+                             || item->d_ptr->flags & QGraphicsItem::ItemContainsChildrenInShape;
+        bool willClipChildren = newFlags & QGraphicsItem::ItemClipsChildrenToShape
+                                || newFlags & QGraphicsItem::ItemContainsChildrenInShape;
         if ((ignoredTransform != willIgnoreTransform) || (clipsChildren != willClipChildren)) {
             QGraphicsItem *thatItem = const_cast<QGraphicsItem *>(item);
             // Remove item and its descendants from the index and append
@@ -663,10 +668,13 @@ void QGraphicsSceneBspTreeIndex::itemChange(const QGraphicsItem *item, QGraphics
         bool ignoredTransform = item->d_ptr->itemIsUntransformable();
         bool willIgnoreTransform = (item->d_ptr->flags & QGraphicsItem::ItemIgnoresTransformations)
                                    || (newParent && newParent->d_ptr->itemIsUntransformable());
-        bool ancestorClippedChildren = item->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren;
+        bool ancestorClippedChildren = item->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren
+                                       || item->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorContainsChildren;
         bool ancestorWillClipChildren = newParent
-                            && ((newParent->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape)
-                                || (newParent->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren));
+                            && ((newParent->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape
+                                 || newParent->d_ptr->flags & QGraphicsItem::ItemContainsChildrenInShape)
+                                || (newParent->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren
+                                    || newParent->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorContainsChildren));
         if ((ignoredTransform != willIgnoreTransform) || (ancestorClippedChildren != ancestorWillClipChildren)) {
             QGraphicsItem *thatItem = const_cast<QGraphicsItem *>(item);
             // Remove item and its descendants from the index and append

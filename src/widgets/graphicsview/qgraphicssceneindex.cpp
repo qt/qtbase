@@ -278,7 +278,8 @@ void QGraphicsSceneIndexPrivate::recursive_items_helper(QGraphicsItem *item, QRe
         Q_ASSERT(!item->d_ptr->dirtySceneTransform);
     }
 
-    const bool itemClipsChildrenToShape = (item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape);
+    const bool itemClipsChildrenToShape = (item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape
+                                           || item->d_ptr->flags & QGraphicsItem::ItemContainsChildrenInShape);
     bool processItem = !itemIsFullyTransparent;
     if (processItem) {
         processItem = intersect(item, exposeRect, mode, viewTransform, intersectData);
