@@ -54,6 +54,11 @@
 #include <QLibraryInfo>
 #include <QStandardPaths>
 #include <QDir>
+#ifndef QT_NO_OPENGL
+#  include <QOpenGLContext>
+#  include <QOpenGLFunctions>
+#endif // QT_NO_OPENGL
+#include <QWindow>
 
 #include <iostream>
 #include <string>
@@ -91,6 +96,66 @@ std::ostream &operator<<(std::ostream &str, const QFont &f)
     std::cout << '"' << f.family().toStdString() << "\" "  << f.pointSize();
     return str;
 }
+
+#ifndef QT_NO_OPENGL
+
+std::ostream &operator<<(std::ostream &str, const QSurfaceFormat &format)
+{
+    str << "Version: " << format.majorVersion() << '.'
+        << format.minorVersion() << " Profile: " << format.profile()
+        << " Swap behavior: " << format.swapBehavior()
+        << " Buffer size (RGB";
+    if (format.hasAlpha())
+        str << 'A';
+    str << "): " << format.redBufferSize() << ',' << format.greenBufferSize()
+        << ',' << format.blueBufferSize();
+    if (format.hasAlpha())
+        str << ',' << format.alphaBufferSize();
+    if (const int dbs = format.depthBufferSize())
+        str << " Depth buffer: " << dbs;
+    if (const int sbs = format.stencilBufferSize())
+        str << " Stencil buffer: " << sbs;
+    const int samples = format.samples();
+    if (samples > 0)
+        str << " Samples: " << samples;
+    return str;
+}
+
+void dumpGlInfo(std::ostream &str)
+{
+    QOpenGLContext context;
+    if (context.create()) {
+#  ifdef QT_OPENGL_DYNAMIC
+        str << "Dynamic GL ";
+#  endif
+        switch (context.openGLModuleType()) {
+        case QOpenGLContext::DesktopGL:
+            str << "DesktopGL";
+            break;
+        case QOpenGLContext::GLES2:
+            str << "GLES2";
+            break;
+        case QOpenGLContext::GLES1:
+            str << "GLES1";
+            break;
+        }
+        QWindow window;
+        window.setSurfaceType(QSurface::OpenGLSurface);
+        window.create();
+        context.makeCurrent(&window);
+        QOpenGLFunctions functions(&context);
+
+        str << " Vendor: " << functions.glGetString(GL_VENDOR)
+            << "\nRenderer: " << functions.glGetString(GL_RENDERER)
+            << "\nVersion: " << functions.glGetString(GL_VERSION)
+            << "\nShading language: " << functions.glGetString(GL_SHADING_LANGUAGE_VERSION)
+            <<  "\nFormat: " << context.format();
+    } else {
+        str << "Unable to create an Open GL context.\n";
+    }
+}
+
+#endif // !QT_NO_OPENGL
 
 static QStringList toNativeSeparators(QStringList in)
 {
@@ -211,6 +276,7 @@ int main(int argc, char **argv)
         const QScreen *screen = screens.at(s);
         std::cout << (screen == QGuiApplication::primaryScreen() ? '*' : ' ')
                   << '#' << ' ' << s << " \"" << screen->name().toStdString() << '"'
+                  << " Depth: " << screen->depth()
             << "\n  Geometry: " << screen->geometry() << " Available: " << screen->availableGeometry();
         if (screen->geometry() != screen->virtualGeometry())
             std::cout << "\n  Virtual geometry: " << screen->virtualGeometry() << " Available: " << screen->availableVirtualGeometry();
@@ -228,5 +294,11 @@ int main(int argc, char **argv)
             << " OrientationUpdateMask: " << screen->orientationUpdateMask()
             << "\n\n";
     }
+
+#ifndef QT_NO_OPENGL
+    dumpGlInfo(std::cout);
+    std::cout << "\n\n";
+#endif // !QT_NO_OPENGL
+
     return 0;
 }
