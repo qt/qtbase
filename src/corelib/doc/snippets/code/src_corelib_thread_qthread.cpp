@@ -47,7 +47,7 @@ class WorkerThread : public QThread
     Q_OBJECT
     void run() Q_DECL_OVERRIDE {
         QString result;
-        /* expensive or blocking operation  */
+        /* ... here is the expensive or blocking operation ... */
         emit resultReady(result);
     }
 signals:
@@ -71,7 +71,8 @@ class Worker : public QObject
 
 public slots:
     void doWork(const QString &parameter) {
-        // ...
+        QString result;
+        /* ... here is the expensive or blocking operation ... */
         emit resultReady(result);
     }
 
