@@ -75,8 +75,8 @@ public:
     inline void translate(const QPoint &p);
     inline void translate(int dx, int dy);
 
-    Q_DECL_CONSTEXPR inline QLine translated(const QPoint &p) const;
-    Q_DECL_CONSTEXPR inline QLine translated(int dx, int dy) const;
+    Q_DECL_CONSTEXPR inline QLine translated(const QPoint &p) const Q_REQUIRED_RESULT;
+    Q_DECL_CONSTEXPR inline QLine translated(int dx, int dy) const Q_REQUIRED_RESULT;
 
     inline void setP1(const QPoint &p1);
     inline void setP2(const QPoint &p2);
@@ -216,7 +216,7 @@ public:
     Q_DECL_CONSTEXPR inline QLineF(qreal x1, qreal y1, qreal x2, qreal y2);
     Q_DECL_CONSTEXPR inline QLineF(const QLine &line) : pt1(line.p1()), pt2(line.p2()) { }
 
-    static QLineF fromPolar(qreal length, qreal angle);
+    static QLineF fromPolar(qreal length, qreal angle) Q_REQUIRED_RESULT;
 
     Q_DECL_CONSTEXPR bool isNull() const;
 
@@ -240,8 +240,8 @@ public:
 
     qreal angleTo(const QLineF &l) const;
 
-    QLineF unitVector() const;
-    Q_DECL_CONSTEXPR inline QLineF normalVector() const;
+    QLineF unitVector() const Q_REQUIRED_RESULT;
+    Q_DECL_CONSTEXPR inline QLineF normalVector() const Q_REQUIRED_RESULT;
 
     // ### Qt 6: rename intersects() or intersection() and rename IntersectType IntersectionType
     IntersectType intersect(const QLineF &l, QPointF *intersectionPoint) const;
@@ -252,8 +252,8 @@ public:
     inline void translate(const QPointF &p);
     inline void translate(qreal dx, qreal dy);
 
-    Q_DECL_CONSTEXPR inline QLineF translated(const QPointF &p) const;
-    Q_DECL_CONSTEXPR inline QLineF translated(qreal dx, qreal dy) const;
+    Q_DECL_CONSTEXPR inline QLineF translated(const QPointF &p) const Q_REQUIRED_RESULT;
+    Q_DECL_CONSTEXPR inline QLineF translated(qreal dx, qreal dy) const Q_REQUIRED_RESULT;
 
     inline void setP1(const QPointF &p1);
     inline void setP2(const QPointF &p2);

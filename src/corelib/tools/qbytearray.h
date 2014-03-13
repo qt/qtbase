@@ -247,9 +247,9 @@ public:
     int count(const char *a) const;
     int count(const QByteArray &a) const;
 
-    QByteArray left(int len) const;
-    QByteArray right(int len) const;
-    QByteArray mid(int index, int len = -1) const;
+    QByteArray left(int len) const Q_REQUIRED_RESULT;
+    QByteArray right(int len) const Q_REQUIRED_RESULT;
+    QByteArray mid(int index, int len = -1) const Q_REQUIRED_RESULT;
 
     bool startsWith(const QByteArray &a) const;
     bool startsWith(char c) const;
@@ -262,13 +262,13 @@ public:
     void truncate(int pos);
     void chop(int n);
 
-    QByteArray toLower() const;
-    QByteArray toUpper() const;
+    QByteArray toLower() const Q_REQUIRED_RESULT;
+    QByteArray toUpper() const Q_REQUIRED_RESULT;
 
-    QByteArray trimmed() const;
-    QByteArray simplified() const;
-    QByteArray leftJustified(int width, char fill = ' ', bool truncate = false) const;
-    QByteArray rightJustified(int width, char fill = ' ', bool truncate = false) const;
+    QByteArray trimmed() const Q_REQUIRED_RESULT;
+    QByteArray simplified() const Q_REQUIRED_RESULT;
+    QByteArray leftJustified(int width, char fill = ' ', bool truncate = false) const Q_REQUIRED_RESULT;
+    QByteArray rightJustified(int width, char fill = ' ', bool truncate = false) const Q_REQUIRED_RESULT;
 
     QByteArray &prepend(char c);
     QByteArray &prepend(const char *s);
@@ -300,7 +300,7 @@ public:
 
     QList<QByteArray> split(char sep) const;
 
-    QByteArray repeated(int times) const;
+    QByteArray repeated(int times) const Q_REQUIRED_RESULT;
 
 #ifndef QT_NO_CAST_TO_ASCII
     QT_ASCII_CAST_WARN QByteArray &append(const QString &s);
@@ -349,16 +349,16 @@ public:
     QByteArray &setNum(double, char f = 'g', int prec = 6);
     QByteArray &setRawData(const char *a, uint n); // ### Qt 6: use an int
 
-    static QByteArray number(int, int base = 10);
-    static QByteArray number(uint, int base = 10);
-    static QByteArray number(qlonglong, int base = 10);
-    static QByteArray number(qulonglong, int base = 10);
-    static QByteArray number(double, char f = 'g', int prec = 6);
-    static QByteArray fromRawData(const char *, int size);
-    static QByteArray fromBase64(const QByteArray &base64, Base64Options options);
-    static QByteArray fromBase64(const QByteArray &base64); // ### Qt6 merge with previous
-    static QByteArray fromHex(const QByteArray &hexEncoded);
-    static QByteArray fromPercentEncoding(const QByteArray &pctEncoded, char percent = '%');
+    static QByteArray number(int, int base = 10) Q_REQUIRED_RESULT;
+    static QByteArray number(uint, int base = 10) Q_REQUIRED_RESULT;
+    static QByteArray number(qlonglong, int base = 10) Q_REQUIRED_RESULT;
+    static QByteArray number(qulonglong, int base = 10) Q_REQUIRED_RESULT;
+    static QByteArray number(double, char f = 'g', int prec = 6) Q_REQUIRED_RESULT;
+    static QByteArray fromRawData(const char *, int size) Q_REQUIRED_RESULT;
+    static QByteArray fromBase64(const QByteArray &base64, Base64Options options) Q_REQUIRED_RESULT;
+    static QByteArray fromBase64(const QByteArray &base64) Q_REQUIRED_RESULT; // ### Qt6 merge with previous
+    static QByteArray fromHex(const QByteArray &hexEncoded) Q_REQUIRED_RESULT;
+    static QByteArray fromPercentEncoding(const QByteArray &pctEncoded, char percent = '%') Q_REQUIRED_RESULT;
 
 #if defined(Q_OS_MAC) || defined(Q_QDOC)
     static QByteArray fromCFData(CFDataRef data);

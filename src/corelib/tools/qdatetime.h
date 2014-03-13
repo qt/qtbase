@@ -94,9 +94,9 @@ QT_DEPRECATED inline bool setYMD(int y, int m, int d)
 
     void getDate(int *year, int *month, int *day);
 
-    QDate addDays(qint64 days) const;
-    QDate addMonths(int months) const;
-    QDate addYears(int years) const;
+    QDate addDays(qint64 days) const Q_REQUIRED_RESULT;
+    QDate addMonths(int months) const Q_REQUIRED_RESULT;
+    QDate addYears(int years) const Q_REQUIRED_RESULT;
     qint64 daysTo(const QDate &) const;
 
     bool operator==(const QDate &other) const { return jd == other.jd; }
@@ -157,9 +157,9 @@ public:
 #endif
     bool setHMS(int h, int m, int s, int ms = 0);
 
-    QTime addSecs(int secs) const;
+    QTime addSecs(int secs) const Q_REQUIRED_RESULT;
     int secsTo(const QTime &) const;
-    QTime addMSecs(int ms) const;
+    QTime addMSecs(int ms) const Q_REQUIRED_RESULT;
     int msecsTo(const QTime &) const;
 
     bool operator==(const QTime &other) const { return mds == other.mds; }
@@ -251,11 +251,11 @@ public:
     QString toString(Qt::DateFormat f = Qt::TextDate) const;
     QString toString(const QString &format) const;
 #endif
-    QDateTime addDays(qint64 days) const;
-    QDateTime addMonths(int months) const;
-    QDateTime addYears(int years) const;
-    QDateTime addSecs(qint64 secs) const;
-    QDateTime addMSecs(qint64 msecs) const;
+    QDateTime addDays(qint64 days) const Q_REQUIRED_RESULT;
+    QDateTime addMonths(int months) const Q_REQUIRED_RESULT;
+    QDateTime addYears(int years) const Q_REQUIRED_RESULT;
+    QDateTime addSecs(qint64 secs) const Q_REQUIRED_RESULT;
+    QDateTime addMSecs(qint64 msecs) const Q_REQUIRED_RESULT;
 
     QDateTime toTimeSpec(Qt::TimeSpec spec) const;
     inline QDateTime toLocalTime() const { return toTimeSpec(Qt::LocalTime); }
