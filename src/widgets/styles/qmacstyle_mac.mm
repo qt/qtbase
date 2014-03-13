@@ -2532,9 +2532,6 @@ int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
         ret = QDialogButtons::Reject;
         break;
         */
-    case SH_Menu_SloppySubMenus:
-        ret = true;
-        break;
     case SH_GroupBox_TextLabelVerticalAlignment:
         ret = Qt::AlignTop;
         break;
