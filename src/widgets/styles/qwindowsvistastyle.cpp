@@ -626,14 +626,7 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
             anim->paint(painter, option);
         } else {
             QPainter *p = painter;
-            QWidget *parentWidget = 0;
-            if (widget) {
-                parentWidget = widget->parentWidget();
-                if (parentWidget)
-                    parentWidget = parentWidget->parentWidget();
-            }
-            if (widget && widget->inherits("QLineEdit")
-                && parentWidget && parentWidget->inherits("QAbstractItemView")) {
+            if (QWindowsXPStylePrivate::isItemViewDelegateLineEdit(widget)) {
                 // we try to check if this lineedit is a delegate on a QAbstractItemView-derived class.
                 QPen oldPen = p->pen();
                 // Inner white border
