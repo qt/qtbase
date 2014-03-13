@@ -248,7 +248,8 @@ void QQnxWindow::setGeometry(const QRect &rect)
     setGeometryHelper(newGeometry);
 
     QWindowSystemInterface::handleGeometryChange(window(), newGeometry);
-    QWindowSystemInterface::handleExposeEvent(window(), newGeometry);
+    if (isExposed())
+        QWindowSystemInterface::handleExposeEvent(window(), newGeometry);
 }
 
 void QQnxWindow::setGeometryHelper(const QRect &rect)
