@@ -534,8 +534,8 @@ Q_DECL_CONSTEXPR inline const T &qBound(const T &min, const T &val, const T &max
 
 #ifdef Q_OS_DARWIN
 #  define QT_MAC_PLATFORM_SDK_EQUAL_OR_ABOVE(osx, ios) \
-    ((defined(__MAC_OS_X_VERSION_MAX_ALLOWED) && __MAC_OS_X_VERSION_MAX_ALLOWED >= osx) || \
-     (defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= ios))
+    ((defined(__MAC_OS_X_VERSION_MAX_ALLOWED) && osx != __MAC_NA && __MAC_OS_X_VERSION_MAX_ALLOWED >= osx) || \
+     (defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && ios != __IPHONE_NA && __IPHONE_OS_VERSION_MAX_ALLOWED >= ios))
 
 #  define QT_MAC_DEPLOYMENT_TARGET_BELOW(osx, ios) \
     ((defined(__MAC_OS_X_VERSION_MIN_REQUIRED) && osx != __MAC_NA && __MAC_OS_X_VERSION_MIN_REQUIRED < osx) || \
