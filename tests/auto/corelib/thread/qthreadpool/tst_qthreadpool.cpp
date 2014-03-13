@@ -381,6 +381,7 @@ void tst_QThreadPool::expiryTimeoutRace() // QTBUG-3786
         threadPool.start(&task);
         QThread::msleep(50); // exactly the same as the expiry timeout
     }
+    QVERIFY(task.semaphore.tryAcquire(numTasks, 10000));
     QCOMPARE(task.runCount.load(), numTasks);
     QVERIFY(threadPool.waitForDone(2000));
 }
