@@ -48,6 +48,8 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_PRINTER
+
 QPlatformPrintDevice::QPlatformPrintDevice()
     : m_isRemote(false),
       m_supportsMultipleCopies(false),
@@ -385,5 +387,7 @@ QPageSize QPlatformPrintDevice::createPageSize(int windowsId, const QSize &size,
 {
     return QPageSize(windowsId, size, localizedName);
 }
+
+#endif // QT_NO_PRINTER
 
 QT_END_NAMESPACE

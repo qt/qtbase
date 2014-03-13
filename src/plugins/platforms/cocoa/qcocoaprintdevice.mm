@@ -46,6 +46,8 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_PRINTER
+
 static QPrint::DuplexMode macToDuplexMode(const PMDuplexMode &mode)
 {
     if (mode == kPMDuplexTumble)
@@ -494,5 +496,7 @@ PMPaper QCocoaPrintDevice::macPaper(const QPageSize &pageSize) const
     m_macPapers.insert(pageSize.key(), paper);
     return paper;
 }
+
+#endif // QT_NO_PRINTER
 
 QT_END_NAMESPACE

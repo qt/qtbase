@@ -43,10 +43,9 @@
 #ifndef QCUPSPRINTERSUPPORT_H
 #define QCUPSPRINTERSUPPORT_H
 
-#include <QtCore/qfeatures.h> // Some feature dependencies might define QT_NO_PRINTER
-#ifndef QT_NO_PRINTER
-
 #include <qpa/qplatformprintersupport.h>
+
+#ifndef QT_NO_PRINTER
 
 #include <QtCore/qstringlist.h>
 

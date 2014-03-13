@@ -53,8 +53,6 @@
 // We mean it.
 //
 
-#include "qplatformprintdevice.h"
-
 #include <private/qprint_p.h>
 
 #include <QtCore/qvector.h>
@@ -62,6 +60,8 @@
 #include <QtGui/qpagelayout.h>
 
 QT_BEGIN_NAMESPACE
+
+#ifndef QT_NO_PRINTER
 
 class Q_PRINTSUPPORT_EXPORT QPlatformPrintDevice : public QSharedData
 {
@@ -176,5 +176,7 @@ protected:
 };
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_PRINTER
 
 #endif // QPLATFORMPRINTDEVICE_H

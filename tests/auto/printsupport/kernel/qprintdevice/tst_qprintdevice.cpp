@@ -56,6 +56,7 @@ private slots:
 
 void tst_QPrintDevice::basics()
 {
+#ifndef QT_NO_PRINTER
     QPlatformPrinterSupport *ps = QPlatformPrinterSupportPlugin::get();
     if (!ps)
         QSKIP("Could not load platform plugin");
@@ -102,6 +103,7 @@ void tst_QPrintDevice::basics()
         printDevice.supportedColorModes();
         printDevice.supportedMimeTypes();
     }
+#endif // QT_NO_PRINTER
 }
 
 QTEST_MAIN(tst_QPrintDevice)

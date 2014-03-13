@@ -44,6 +44,8 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_PRINTER
+
 QPrintDevice::QPrintDevice()
     : d(new QPlatformPrintDevice())
 {
@@ -247,5 +249,7 @@ QList<QMimeType> QPrintDevice::supportedMimeTypes() const
 {
     return isValid() ? d->supportedMimeTypes() : QList<QMimeType>();
 }
+
+#endif // QT_NO_PRINTER
 
 QT_END_NAMESPACE

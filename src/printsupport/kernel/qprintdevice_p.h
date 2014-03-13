@@ -60,6 +60,8 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_PRINTER
+
 class QPlatformPrintDevice;
 class QMarginsF;
 class QMimeType;
@@ -141,5 +143,7 @@ private:
 Q_DECLARE_SHARED(QPrintDevice)
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_PRINTER
 
 #endif // QPLATFORMPRINTDEVICE_H

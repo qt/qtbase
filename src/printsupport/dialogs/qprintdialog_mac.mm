@@ -53,9 +53,9 @@
 
 #ifndef QT_NO_PRINTDIALOG
 
-extern qreal qt_pointMultiplier(QPageLayout::Unit unit);
-
 QT_BEGIN_NAMESPACE
+
+extern qreal qt_pointMultiplier(QPageLayout::Unit unit);
 
 class QPrintDialogPrivate : public QAbstractPrintDialogPrivate
 {

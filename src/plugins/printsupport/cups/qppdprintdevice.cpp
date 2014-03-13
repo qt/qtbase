@@ -50,6 +50,8 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_PRINTER
+
 QPpdPrintDevice::QPpdPrintDevice()
     : QPlatformPrintDevice(),
       m_cupsDest(0),
@@ -495,5 +497,7 @@ cups_ptype_e QPpdPrintDevice::printerTypeFlags() const
 {
     return static_cast<cups_ptype_e>(printerOption("printer-type").toUInt());
 }
+
+#endif // QT_NO_PRINTER
 
 QT_END_NAMESPACE

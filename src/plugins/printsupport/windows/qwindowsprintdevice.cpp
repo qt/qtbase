@@ -45,6 +45,8 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_PRINTER
+
 extern qreal qt_pointMultiplier(QPageLayout::Unit unit);
 
 static inline uint qwcsnlen(const wchar_t *str, uint maxlen)
@@ -468,5 +470,7 @@ QString QWindowsPrintDevice::defaultPrintDeviceId()
     GetDefaultPrinter(name.data(), &size);
     return QString::fromWCharArray(name.data());
 }
+
+#endif // QT_NO_PRINTER
 
 QT_END_NAMESPACE

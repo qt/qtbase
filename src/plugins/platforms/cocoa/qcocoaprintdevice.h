@@ -53,10 +53,9 @@
 // We mean it.
 //
 
-#include <QtCore/qfeatures.h> // Some feature dependencies might define QT_NO_PRINTER
-#ifndef QT_NO_PRINTER
-
 #include <qpa/qplatformprintdevice.h>
+
+#ifndef QT_NO_PRINTER
 
 #include "qt_mac_p.h"
 
