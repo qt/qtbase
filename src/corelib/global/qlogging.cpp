@@ -1484,12 +1484,15 @@ void qErrnoWarning(int code, const char *msg, ...)
     \c %{if-warning}, \c %{if-critical} or \c %{if-fatal} followed by an \c %{endif}.
     What is inside the \c %{if-*} and \c %{endif} will only be printed if the type matches.
 
+    Finally, text inside \c %{if-category} ... \c %{endif} is only printed if the category
+    is not the default one.
+
     Example:
     \code
     QT_MESSAGE_PATTERN="[%{if-debug}D%{endif}%{if-warning}W%{endif}%{if-critical}C%{endif}%{if-fatal}F%{endif}] %{file}:%{line} - %{message}"
     \endcode
 
-    The default \a pattern is "%{message}".
+    The default \a pattern is "%{if-category}%{category}: %{endif}%{message}".
 
     The \a pattern can also be changed at runtime by setting the QT_MESSAGE_PATTERN
     environment variable; if both qSetMessagePattern() is called and QT_MESSAGE_PATTERN is
