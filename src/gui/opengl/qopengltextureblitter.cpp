@@ -68,11 +68,8 @@ static const char fragment_shader150[] =
     "uniform sampler2D textureSampler;"
     "uniform bool swizzle;"
     "void main() {"
-    "   if (swizzle) {"
-    "       fragcolor = texture(textureSampler, uv).bgra;"
-    "   } else {"
-    "       fragcolor = texture(textureSampler,uv);"
-    "   }"
+    "   vec4 tmpFragColor = texture(textureSampler, uv);"
+    "   fragcolor = swizzle ? tmpFragColor.bgra : tmpFragColor;"
     "}";
 
 static const char vertex_shader[] =
@@ -91,11 +88,8 @@ static const char fragment_shader[] =
     "uniform sampler2D textureSampler;"
     "uniform bool swizzle;"
     "void main() {"
-    "   if (swizzle) {"
-    "       gl_FragColor = texture2D(textureSampler, uv).bgra;"
-    "   } else {"
-    "       gl_FragColor = texture2D(textureSampler,uv);"
-    "   }"
+    "   highp vec4 tmpFragColor = texture2D(textureSampler,uv);"
+    "   gl_FragColor = swizzle ? tmpFragColor.bgra : tmpFragColor;"
     "}";
 
 static const GLfloat vertex_buffer_data[] = {
