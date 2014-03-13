@@ -37,6 +37,13 @@ qt:!isEmpty(QT_CONFIG) {
     }
 }
 
+macx-xcode:!isEmpty(QMAKE_XCODE_DEBUG_INFORMATION_FORMAT) {
+    debug_information_format.name = DEBUG_INFORMATION_FORMAT
+    debug_information_format.value = $$QMAKE_XCODE_DEBUG_INFORMATION_FORMAT
+    debug_information_format.build = debug
+    QMAKE_MAC_XCODE_SETTINGS += debug_information_format
+}
+
 cache(QMAKE_XCODE_DEVELOPER_PATH, stash)
 cache(QMAKE_XCODE_VERSION, stash)
 

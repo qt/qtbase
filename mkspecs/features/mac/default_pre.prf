@@ -33,6 +33,16 @@ isEmpty(QMAKE_TARGET_BUNDLE_PREFIX) {
         cache(QMAKE_TARGET_BUNDLE_PREFIX)
 }
 
+# Make the default debug info format for static debug builds
+# DWARF instead of DWARF with dSYM. This cuts down build times
+# for application debug builds significantly, as Xcode doesn't
+# have to pull out all the DWARF info from the Qt static libs
+# and put it into a dSYM file. We don't need that dSYM file in
+# the first place, since the information is available in the
+# object files inside the archives (static libraries).
+contains(QT_CONFIG, static): \
+    QMAKE_XCODE_DEBUG_INFORMATION_FORMAT = dwarf
+
 # This variable is used by the xcode_dynamic_library_suffix
 # feature, which allows Xcode to choose the Qt libraries to link to
 # at build time, depending on the current Xcode SDK and configuration.
