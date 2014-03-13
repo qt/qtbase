@@ -3155,8 +3155,7 @@ static void QOPENGLF_APIENTRY qopenglfResolveGetBufferSubData(GLenum target, qop
         (target, offset, size, data);
 }
 
-#if !defined(QT_OPENGL_ES_2) && !defined(QT_OPENGL_DYNAMIC)
-
+#ifndef QT_OPENGL_ES_2
 // Desktop only
 
 static void QOPENGLF_APIENTRY qopenglfResolveGetTexLevelParameteriv(GLenum target, GLint level, GLenum pname, GLint *params)
@@ -3164,6 +3163,7 @@ static void QOPENGLF_APIENTRY qopenglfResolveGetTexLevelParameteriv(GLenum targe
     RESOLVE_FUNC_VOID(0, GetTexLevelParameteriv)(target, level, pname, params);
 }
 
+#ifndef QT_OPENGL_DYNAMIC
 // Special translation functions for ES-specific calls on desktop GL
 
 static void QOPENGLF_APIENTRY qopenglfTranslateClearDepthf(GLclampf depth)
@@ -3176,7 +3176,9 @@ static void QOPENGLF_APIENTRY qopenglfTranslateDepthRangef(GLclampf zNear, GLcla
     ::glDepthRange(zNear, zFar);
 }
 
-#endif // !ES2 && !DYNAMIC
+#endif // QT_OPENGL_DYNAMIC
+
+#endif // QT_OPENGL_ES2
 
 QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 {
