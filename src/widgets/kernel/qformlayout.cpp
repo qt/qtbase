@@ -1683,7 +1683,7 @@ QWidget *QFormLayout::labelForField(QWidget *field) const
     Q_D(const QFormLayout);
 
     int row;
-    ItemRole role;
+    ItemRole role = LabelRole;
 
     getWidgetPosition(field, &row, &role);
 

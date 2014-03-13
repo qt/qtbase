@@ -1026,7 +1026,7 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
         break;
     case CE_Splitter:
     {
-        // Dont draw handle for single pixel splitters
+        // Don't draw handle for single pixel splitters
         if (option->rect.width() > 1 && option->rect.height() > 1) {
             //draw grips
             if (option->state & State_Horizontal) {

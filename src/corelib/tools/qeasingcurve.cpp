@@ -1232,6 +1232,8 @@ void QEasingCurve::setOvershoot(qreal overshoot)
     It is only applicable if type() is QEasingCurve::BezierSpline.
     Note that the spline implicitly starts at (0.0, 0.0) and has to end at (1.0, 1.0) to
     be a valid easing curve.
+    \a c1 and \a c2 are the control points used for drawing the curve.
+    \a endPoint is the endpoint of the curve.
  */
 void QEasingCurve::addCubicBezierSegment(const QPointF & c1, const QPointF & c2, const QPointF & endPoint)
 {
@@ -1290,8 +1292,12 @@ QVector<QPointF> static inline tcbToBezier(const TCBPoints &tcbPoints)
     It is only applicable if type() is QEasingCurve::TCBSpline.
     The spline has to start explitly at (0.0, 0.0) and has to end at (1.0, 1.0) to
     be a valid easing curve.
-    The three parameters are called tension, continuity and bias. All three parameters are
-    valid between -1 and 1 and define the tangent of the control point.
+    The tension \a t changes the length of the tangent vector.
+    The continuity \a c changes the sharpness in change between the tangents.
+    The bias \a b changes the direction of the tangent vector.
+    \a nextPoint is the sample position.
+    All three parameters are valid between -1 and 1 and define the
+    tangent of the control point.
     If all three parameters are 0 the resulting spline is a Catmull-Rom spline.
     The begin and endpoint always have a bias of -1 and 1, since the outer tangent is not defined.
  */
@@ -1390,7 +1396,7 @@ void QEasingCurve::setType(Type type)
 /*!
     Sets a custom easing curve that is defined by the user in the function \a func.
     The signature of the function is qreal myEasingFunction(qreal progress),
-    where \e progress and the return value is considered to be normalized between 0 and 1.
+    where \e progress and the return value are considered to be normalized between 0 and 1.
     (In some cases the return value can be outside that range)
     After calling this function type() will return QEasingCurve::Custom.
     \a func cannot be zero.
@@ -1420,8 +1426,8 @@ QEasingCurve::EasingFunction QEasingCurve::customType() const
 
 /*!
     Return the effective progress for the easing curve at \a progress.
-    While  \a progress must be between 0 and 1, the returned effective progress
-    can be outside those bounds. For instance, QEasingCurve::InBack will
+    Whereas \a progress must be between 0 and 1, the returned effective progress
+    can be outside those bounds. For example, QEasingCurve::InBack will
     return negative values in the beginning of the function.
  */
 qreal QEasingCurve::valueForProgress(qreal progress) const

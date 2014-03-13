@@ -91,14 +91,14 @@ CONFIG(blackberry) {
                qqnxeventdispatcher_blackberry.cpp \
                qqnxbpseventfilter.cpp \
                qqnxvirtualkeyboardbps.cpp \
-               qqnxtheme.cpp \
+               qblackberrytheme.cpp \
                qqnxsystemsettings.cpp
 
     HEADERS += qqnxnavigatorbps.h \
                qqnxeventdispatcher_blackberry.h \
                qqnxbpseventfilter.h \
                qqnxvirtualkeyboardbps.h  \
-               qqnxtheme.h \
+               qblackberrytheme.h \
                qqnxsystemsettings.h \
                qqnxfiledialoghelper.h
 

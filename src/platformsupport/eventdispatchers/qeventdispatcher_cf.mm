@@ -469,7 +469,7 @@ bool QEventDispatcherCoreFoundation::hasPendingEvents()
     // assume that if the run-loop is currently blocking and waiting for a
     // source to signal then there are no system-events pending. If this
     // function is called from the main thread then the second clause
-    // of the condition will always be true, as the the run loop is
+    // of the condition will always be true, as the run loop is
     // never waiting in that case. The function would be more aptly named
     // 'maybeHasPendingEvents' in our case.
 

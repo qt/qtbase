@@ -860,7 +860,7 @@
 #ifdef Q_COMPILER_NULLPTR
 # define Q_NULLPTR         nullptr
 #else
-# define Q_NULLPTR         0
+# define Q_NULLPTR         NULL
 #endif
 
 #ifdef Q_COMPILER_DEFAULT_MEMBERS

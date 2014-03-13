@@ -9600,6 +9600,23 @@ void QWidget::setParent(QWidget *parent)
     setParent((QWidget*)parent, windowFlags() & ~Qt::WindowType_Mask);
 }
 
+#ifndef QT_NO_OPENGL
+static void sendWindowChangeToTextureChildrenRecursively(QWidget *widget)
+{
+    QWidgetPrivate *d = QWidgetPrivate::get(widget);
+    if (d->renderToTexture) {
+        QEvent e(QEvent::WindowChangeInternal);
+        QApplication::sendEvent(widget, &e);
+    }
+
+    for (int i = 0; i < d->children.size(); ++i) {
+        QWidget *w = qobject_cast<QWidget *>(d->children.at(i));
+        if (w && !w->isWindow() && !w->isHidden() && QWidgetPrivate::get(w)->textureChildSeen)
+            sendWindowChangeToTextureChildrenRecursively(w);
+    }
+}
+#endif
+
 /*!
     \overload
 
@@ -9724,6 +9741,12 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
         QEvent e(QEvent::ParentChange);
         QApplication::sendEvent(this, &e);
     }
+#ifndef QT_NO_OPENGL
+    //renderToTexture widgets also need to know when their top-level window changes
+    if (d->textureChildSeen && oldtlw != window()) {
+        sendWindowChangeToTextureChildrenRecursively(this);
+    }
+#endif
 
     if (!wasCreated) {
         if (isWindow() || parentWidget()->isVisible())
@@ -9892,7 +9915,7 @@ void QWidget::repaint(const QRect &rect)
         QTLWExtra *tlwExtra = window()->d_func()->maybeTopData();
         if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore) {
             tlwExtra->inRepaint = true;
-            tlwExtra->backingStoreTracker->markDirty(rect, this, true);
+            tlwExtra->backingStoreTracker->markDirty(rect, this, QWidgetBackingStore::UpdateNow);
             tlwExtra->inRepaint = false;
         }
     } else {
@@ -9921,7 +9944,7 @@ void QWidget::repaint(const QRegion &rgn)
         QTLWExtra *tlwExtra = window()->d_func()->maybeTopData();
         if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore) {
             tlwExtra->inRepaint = true;
-            tlwExtra->backingStoreTracker->markDirty(rgn, this, true);
+            tlwExtra->backingStoreTracker->markDirty(rgn, this, QWidgetBackingStore::UpdateNow);
             tlwExtra->inRepaint = false;
         }
     } else {

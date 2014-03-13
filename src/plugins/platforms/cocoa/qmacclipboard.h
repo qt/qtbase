@@ -43,7 +43,7 @@
 #define QMACCLIPBOARD_H
 
 #include <QtGui>
-#include "qmacmime.h"
+#include <QtPlatformSupport/private/qmacmime_p.h>
 
 #undef slots
 

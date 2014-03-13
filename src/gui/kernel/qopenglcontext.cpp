@@ -52,6 +52,7 @@
 #include <QtGui/private/qopengl_p.h>
 #include <QtGui/private/qwindow_p.h>
 #include <QtGui/QScreen>
+#include <qpa/qplatformnativeinterface.h>
 
 #include <private/qopenglextensions_p.h>
 #include <private/qopenglversionfunctionsfactory_p.h>
@@ -162,7 +163,7 @@ void QOpenGLVersionProfile::setVersion(int majorVersion, int minorVersion)
 }
 
 /*!
-    Returns the OpenGL profile. Only make sense if profiles are supported by this version.
+    Returns the OpenGL profile. Only makes sense if profiles are supported by this version.
 
     \sa setProfile(), supportsProfiles()
 */
@@ -172,7 +173,8 @@ QSurfaceFormat::OpenGLContextProfile QOpenGLVersionProfile::profile() const
 }
 
 /*!
-    Sets the profile.  Only make sense if profiles are supported by this version.
+    Sets the OpenGL profile \a profile. Only makes sense if profiles are supported by
+    this version.
 
     \sa profile(), supportsProfiles()
 */
@@ -204,7 +206,7 @@ bool QOpenGLVersionProfile::isLegacyVersion() const
 
 /*!
     Returns \c true if the version number is valid. Note that for a default constructed
-    QOpenGLVersionProfile object this function will return false.
+    QOpenGLVersionProfile object this function will return \c false.
 
     \sa setVersion(), version()
 */
@@ -256,12 +258,10 @@ QMutex QOpenGLContextPrivate::makeCurrentTrackerMutex;
     rendering a new frame, after calling swapBuffers().
 
     If the context is temporarily not needed, such as when the application is
-    not rendering, it can be useful to call destroy() to free resources.
-    However, if you do so you will need to call create() again before the
-    context can be used, and you might need to recreate any OpenGL resources
-    and reinitialize the OpenGL state. You can connect to the
-    aboutToBeDestroyed() signal to clean up any resources that have been
-    allocated with different ownership from the QOpenGLContext itself.
+    not rendering, it can be useful to delete it in order to free resources.
+    You can connect to the aboutToBeDestroyed() signal to clean up any
+    resources that have been allocated with different ownership from the
+    QOpenGLContext itself.
 
     Once a QOpenGLContext has been made current, you can render to it in a
     platform independent way by using Qt's OpenGL enablers such as
@@ -335,16 +335,18 @@ int QOpenGLContextPrivate::maxTextureSize()
     if (max_texture_size != -1)
         return max_texture_size;
 
-    glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
+    Q_Q(QOpenGLContext);
+    QOpenGLFunctions *funcs = q->functions();
+    funcs->glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
 
 #ifndef QT_OPENGL_ES
-    if (!QOpenGLFunctions::isES()) {
+    if (!q->isES()) {
         GLenum proxy = GL_PROXY_TEXTURE_2D;
 
         GLint size;
         GLint next = 64;
-        glTexImage2D(proxy, 0, GL_RGBA, next, next, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-        glGetTexLevelParameteriv(proxy, 0, GL_TEXTURE_WIDTH, &size);
+        funcs->glTexImage2D(proxy, 0, GL_RGBA, next, next, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+        funcs->glGetTexLevelParameteriv(proxy, 0, GL_TEXTURE_WIDTH, &size);
         if (size == 0) {
             return max_texture_size;
         }
@@ -354,8 +356,8 @@ int QOpenGLContextPrivate::maxTextureSize()
 
             if (next > max_texture_size)
                 break;
-            glTexImage2D(proxy, 0, GL_RGBA, next, next, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-            glGetTexLevelParameteriv(proxy, 0, GL_TEXTURE_WIDTH, &next);
+            funcs->glTexImage2D(proxy, 0, GL_RGBA, next, next, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+            funcs->glGetTexLevelParameteriv(proxy, 0, GL_TEXTURE_WIDTH, &next);
         } while (next > size);
 
         max_texture_size = size;
@@ -633,9 +635,9 @@ QOpenGLFunctions *QOpenGLContext::functions() const
 */
 
 /*!
-    Returns a pointer to an object that provides access to all functions for
-    the version of the current context. Before using any of the functions
-    they must be initialized by calling QAbstractOpenGLFunctions::initializeOpenGLFunctions().
+    Returns a pointer to an object that provides access to all functions for the
+    \a versionProfile of the current context. Before using any of the functions they must
+    be initialized by calling QAbstractOpenGLFunctions::initializeOpenGLFunctions().
 
     Usually one would use the template version of this function to automatically
     have the result cast to the correct type.
@@ -643,8 +645,8 @@ QOpenGLFunctions *QOpenGLContext::functions() const
 QAbstractOpenGLFunctions *QOpenGLContext::versionFunctions(const QOpenGLVersionProfile &versionProfile) const
 {
 #ifndef QT_OPENGL_ES_2
-    if (QOpenGLFunctions::isES()) {
-        qWarning("versionFunctions: Not supported on dynamic GL ES");
+    if (isES()) {
+        qWarning("versionFunctions: Not supported on OpenGL ES");
         return 0;
     }
 #endif // QT_OPENGL_ES_2
@@ -703,7 +705,7 @@ QSet<QByteArray> QOpenGLContext::extensions() const
 
 /*!
     Returns \c true if this OpenGL context supports the specified OpenGL
-    \a extension, false otherwise.
+    \a extension, \c false otherwise.
 
     The context or a sharing context must be current.
 
@@ -864,7 +866,7 @@ void QOpenGLContext::swapBuffers(QSurface *surface)
         qWarning() << "QOpenGLContext::swapBuffers() called without corresponding makeCurrent()";
 #endif
     if (surface->format().swapBehavior() == QSurfaceFormat::SingleBuffer)
-        glFlush();
+        functions()->glFlush();
     d->platformGLContext->swapBuffers(surfaceHandle);
 }
 
@@ -885,6 +887,20 @@ QFunctionPointer QOpenGLContext::getProcAddress(const QByteArray &procName) cons
     Returns the format of the underlying platform context, if create() has been called.
 
     Otherwise, returns the requested format.
+
+    The requested and the actual format may differ. Requesting a given OpenGL version does
+    not mean the resulting context will target exactly the requested version. It is only
+    guaranteed that the version/profile/options combination for the created context is
+    compatible with the request, as long as the driver is able to provide such a context.
+
+    For example, requesting an OpenGL version 3.x core profile context may result in an
+    OpenGL 4.x core profile context. Similarly, a request for OpenGL 2.1 may result in an
+    OpenGL 3.0 context with deprecated functions enabled. Finally, depending on the
+    driver, unsupported versions may result in either a context creation failure or in a
+    context for the highest supported version.
+
+    Similar differences are possible in the buffer sizes, for example, the resulting
+    context may have a larger depth buffer than requested. This is perfectly normal.
 */
 QSurfaceFormat QOpenGLContext::format() const
 {
@@ -957,6 +973,88 @@ void QOpenGLContext::deleteQGLContext()
         d->qGLContextDeleteFunction = 0;
         d->qGLContextHandle = 0;
     }
+}
+
+/*!
+  Returns the platform-specific handle for the OpenGL implementation that
+  is currently in use. (for example, a HMODULE on Windows)
+
+  On platforms that do not use dynamic GL switch the return value is null.
+
+  The library might be GL-only, meaning that windowing system interface
+  functions (for example EGL) may live in another, separate library.
+
+  \note This function requires that the QGuiApplication instance is already created.
+
+  \sa openGLModuleType()
+
+  \since 5.3
+ */
+void *QOpenGLContext::openGLModuleHandle()
+{
+#ifdef QT_OPENGL_DYNAMIC
+    QGuiApplication *app = qGuiApp;
+    Q_ASSERT(app);
+    return app->platformNativeInterface()->nativeResourceForIntegration(QByteArrayLiteral("glhandle"));
+#else
+    return 0;
+#endif
+}
+
+/*!
+  \enum QOpenGLContext::OpenGLModuleType
+  This enum defines the type of the underlying OpenGL implementation.
+
+  \value DesktopGL Desktop OpenGL
+  \value GLES2 OpenGL ES 2.0 or higher
+  \value GLES1 OpenGL ES 1.x
+
+  \since 5.3
+*/
+
+/*!
+  Returns the underlying OpenGL implementation type.
+
+  On platforms where the OpenGL implementation is not dynamically
+  loaded, the return value is determined during compile time and never
+  changes.
+
+  \note A desktop OpenGL implementation may be capable of creating
+  ES-compatible contexts too. Therefore in most cases it is more
+  appropriate to check QSurfaceFormat::renderableType() or using the
+  the convenience function isES().
+
+  \note This function requires that the QGuiApplication instance is already created.
+
+  \since 5.3
+ */
+QOpenGLContext::OpenGLModuleType QOpenGLContext::openGLModuleType()
+{
+#if defined(QT_OPENGL_DYNAMIC)
+    Q_ASSERT(qGuiApp);
+    return QGuiApplicationPrivate::instance()->platformIntegration()->openGLModuleType();
+#elif defined(QT_OPENGL_ES_2)
+    return GLES2;
+#elif defined(QT_OPENGL_ES)
+    return GLES1;
+#else
+    return DesktopGL;
+#endif
+}
+
+/*!
+  Returns true if the context is an OpenGL ES context.
+
+  If the context has not yet been created, the result is based on the
+  requested format set via setFormat().
+
+  \sa create(), format(), setFormat()
+
+  \since 5.3
+  */
+bool QOpenGLContext::isES() const
+{
+    return format().renderableType() == QSurfaceFormat::OpenGLES;
 }
 
 /*!

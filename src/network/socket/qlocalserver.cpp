@@ -278,8 +278,7 @@ bool QLocalServer::isListening() const
     could also be a path such as "/tmp/foo" and on Windows this could
     be a pipe path such as "\\\\.\\pipe\\foo"
 
-    Note:
-    On Unix if the server crashes without closing listen will fail
+    \note On Unix if the server crashes without closing listen will fail
     with AddressInUseError.  To create a new server the file should be removed.
     On Windows two local servers can listen to the same pipe at the same
     time, but any connections will go to one of the server.

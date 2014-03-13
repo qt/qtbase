@@ -24,7 +24,9 @@ wince* {
         contains(QT_CONFIG, static): DEFINES += QT_OPENGL_ES_2_ANGLE_STATIC
         QT_CONFIG -= opengl
     } else {
-        QMAKE_LIBS += $$QMAKE_LIBS_OPENGL
-        QMAKE_LFLAGS += $$QMAKE_LFLAGS_OPENGL
+        !contains(QT_CONFIG, dynamicgl) {
+            QMAKE_LIBS += $$QMAKE_LIBS_OPENGL
+            QMAKE_LFLAGS += $$QMAKE_LFLAGS_OPENGL
+        }
     }
 }

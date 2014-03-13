@@ -45,6 +45,13 @@
 #include <QtCore/qfile.h>
 #include <QtCore/qstandardpaths.h>
 #include <QtCore/qtextstream.h>
+#include <QtCore/qdir.h>
+
+// We can't use the default macros because this would lead to recursion.
+// Instead let's define our own one that unconditionally logs...
+#define debugMsg QMessageLogger(__FILE__, __LINE__, __FUNCTION__, "qt.core.logging").debug
+#define warnMsg QMessageLogger(__FILE__, __LINE__, __FUNCTION__, "qt.core.logging").warning
+
 
 QT_BEGIN_NAMESPACE
 
@@ -64,12 +71,12 @@ QLoggingRule::QLoggingRule() :
     \internal
     Constructs a logging rule.
 */
-QLoggingRule::QLoggingRule(const QString &pattern, bool enabled) :
-    pattern(pattern),
+QLoggingRule::QLoggingRule(const QStringRef &pattern, bool enabled) :
+    messageType(-1),
     flags(Invalid),
     enabled(enabled)
 {
-    parse();
+    parse(pattern);
 }
 
 /*!
@@ -77,48 +84,33 @@ QLoggingRule::QLoggingRule(const QString &pattern, bool enabled) :
     Return value 1 means filter passed, 0 means filter doesn't influence this
     category, -1 means category doesn't pass this filter.
  */
-int QLoggingRule::pass(const QString &categoryName, QtMsgType msgType) const
+int QLoggingRule::pass(const QString &cat, QtMsgType msgType) const
 {
-    QString fullCategory = categoryName;
-    switch (msgType) {
-    case QtDebugMsg:
-        fullCategory += QLatin1String(".debug");
-        break;
-    case QtWarningMsg:
-        fullCategory += QLatin1String(".warning");
-        break;
-    case QtCriticalMsg:
-        fullCategory += QLatin1String(".critical");
-        break;
-    default:
-        break;
-    }
+    // check message type
+    if (messageType > -1 && messageType != msgType)
+        return 0;
 
     if (flags == FullText) {
-        // can be
-        //   qtproject.org.debug = true
-        // or
-        //   qtproject.org = true
-        if (pattern == categoryName
-                || pattern == fullCategory)
+        // full match
+        if (category == cat)
             return (enabled ? 1 : -1);
+        else
+            return 0;
     }
 
-    int idx = 0;
-    if (flags == MidFilter) {
-        // e.g. *.qtproject*
-        idx = fullCategory.indexOf(pattern);
-        if (idx >= 0)
-            return (enabled ? 1 : -1);
-    } else {
-        idx = fullCategory.indexOf(pattern);
-        if (flags == LeftFilter) {
-            // e.g. org.qtproject.*
+    const int idx = cat.indexOf(category);
+    if (idx >= 0) {
+        if (flags == MidFilter) {
+            // matches somewhere
+            if (idx >= 0)
+                return (enabled ? 1 : -1);
+        } else if (flags == LeftFilter) {
+            // matches left
             if (idx == 0)
                 return (enabled ? 1 : -1);
         } else if (flags == RightFilter) {
-            // e.g. *.qtproject
-            if (idx == (fullCategory.count() - pattern.count()))
+            // matches right
+            if (idx == (cat.count() - category.count()))
                 return (enabled ? 1 : -1);
         }
     }
@@ -127,30 +119,51 @@ int QLoggingRule::pass(const QString &categoryName, QtMsgType msgType) const
 
 /*!
     \internal
-    Parses the category and checks which kind of wildcard the filter can contain.
+    Parses \a pattern.
     Allowed is f.ex.:
-             org.qtproject.logging FullText
-             org.qtproject.*       LeftFilter
-             *.qtproject           RightFilter
-             *.qtproject*          MidFilter
+             qt.core.io.debug      FullText, QtDebugMsg
+             qt.core.*             LeftFilter, all types
+             *.io.warning          RightFilter, QtWarningMsg
+             *.core.*              MidFilter
  */
-void QLoggingRule::parse()
+void QLoggingRule::parse(const QStringRef &pattern)
 {
-    int index = pattern.indexOf(QLatin1Char('*'));
-    if (index < 0) {
+    QStringRef p;
+
+    // strip trailing ".messagetype"
+    if (pattern.endsWith(QLatin1String(".debug"))) {
+        p = QStringRef(pattern.string(), pattern.position(),
+                       pattern.length() - strlen(".debug"));
+        messageType = QtDebugMsg;
+    } else if (pattern.endsWith(QLatin1String(".warning"))) {
+        p = QStringRef(pattern.string(), pattern.position(),
+                       pattern.length() - strlen(".warning"));
+        messageType = QtWarningMsg;
+    } else if (pattern.endsWith(QLatin1String(".critical"))) {
+        p = QStringRef(pattern.string(), pattern.position(),
+                       pattern.length() - strlen(".critical"));
+        messageType = QtCriticalMsg;
+    } else {
+        p = pattern;
+    }
+
+    flags = Invalid;
+    if (!p.contains(QLatin1Char('*'))) {
         flags = FullText;
     } else {
-        flags = Invalid;
-        if (index == 0) {
-            flags |= RightFilter;
-            pattern = pattern.remove(0, 1);
-            index = pattern.indexOf(QLatin1Char('*'));
-        }
-        if (index == (pattern.length() - 1)) {
+        if (p.endsWith(QLatin1Char('*'))) {
             flags |= LeftFilter;
-            pattern = pattern.remove(pattern.length() - 1, 1);
+            p = QStringRef(p.string(), p.position(), p.length() - 1);
         }
+        if (p.startsWith(QLatin1Char('*'))) {
+            flags |= RightFilter;
+            p = QStringRef(p.string(), p.position() + 1, p.length() - 1);
+        }
+        if (p.contains(QLatin1Char('*'))) // '*' only supported at start/end
+            flags = Invalid;
     }
+
+    category = p.toString();
 }
 
 /*!
@@ -207,7 +220,7 @@ void QLoggingSettingsParser::setContent(QTextStream &stream)
             int equalPos = line.indexOf(QLatin1Char('='));
             if ((equalPos != -1)
                     && (line.lastIndexOf(QLatin1Char('=')) == equalPos)) {
-                const QString pattern = line.left(equalPos);
+                const QStringRef pattern = line.leftRef(equalPos);
                 const QStringRef value = line.midRef(equalPos + 1);
                 bool enabled = (value.compare(QLatin1String("true"),
                                               Qt::CaseInsensitive) == 0);
@@ -226,10 +239,16 @@ QLoggingRegistry::QLoggingRegistry()
 {
 }
 
+static bool qtLoggingDebug()
+{
+    static const bool debugEnv = qEnvironmentVariableIsSet("QT_LOGGING_DEBUG");
+    return debugEnv;
+}
+
 /*!
     \internal
     Initializes the rules database by loading
-    .config/QtProject/qtlogging.ini and $QT_LOGGING_CONF.
+    $QT_LOGGING_CONF, $QT_LOGGING_RULES, and .config/QtProject/qtlogging.ini.
  */
 void QLoggingRegistry::init()
 {
@@ -241,8 +260,19 @@ void QLoggingRegistry::init()
             QTextStream stream(&file);
             QLoggingSettingsParser parser;
             parser.setContent(stream);
+            if (qtLoggingDebug())
+                debugMsg("Loading \"%s\" ...",
+                         QDir::toNativeSeparators(file.fileName()).toUtf8().constData());
             envRules = parser.rules();
         }
+    }
+    const QByteArray rulesSrc = qgetenv("QT_LOGGING_RULES");
+    if (!rulesSrc.isEmpty()) {
+         QTextStream stream(rulesSrc);
+         QLoggingSettingsParser parser;
+         parser.setSection(QStringLiteral("Rules"));
+         parser.setContent(stream);
+         envRules += parser.rules();
     }
 
     // get rules from qt configuration
@@ -254,6 +284,9 @@ void QLoggingRegistry::init()
             QTextStream stream(&file);
             QLoggingSettingsParser parser;
             parser.setContent(stream);
+            if (qtLoggingDebug())
+                debugMsg("Loading \"%s\" ...",
+                         QDir::toNativeSeparators(envPath).toUtf8().constData());
             configRules = parser.rules();
         }
     }
@@ -302,6 +335,10 @@ void QLoggingRegistry::setApiRules(const QString &content)
     parser.setContent(content);
 
     QMutexLocker locker(&registryMutex);
+
+    if (qtLoggingDebug())
+        debugMsg("Loading logging rules set by Qt API ...");
+
     apiRules = parser.rules();
 
     updateRules();

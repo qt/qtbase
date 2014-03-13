@@ -45,6 +45,7 @@
 #include <QtGui/QOpenGLShaderProgram>
 #include <QtGui/QOpenGLVertexArrayObject>
 #include <QtGui/QOpenGLContext>
+#include <QtGui/QOpenGLFunctions>
 
 QT_BEGIN_NAMESPACE
 
@@ -120,11 +121,11 @@ class TextureBinder
 public:
     TextureBinder(GLuint textureId)
     {
-        glBindTexture(GL_TEXTURE_2D, textureId);
+        QOpenGLContext::currentContext()->functions()->glBindTexture(GL_TEXTURE_2D, textureId);
     }
     ~TextureBinder()
     {
-        glBindTexture(GL_TEXTURE_2D, 0);
+        QOpenGLContext::currentContext()->functions()->glBindTexture(GL_TEXTURE_2D, 0);
     }
 };
 
@@ -196,7 +197,7 @@ void QOpenGLTextureBlitterPrivate::blit(GLuint texture,
     program->setUniformValue(textureTransformUniformPos, textureTransform);
     textureMatrixUniformState = User;
 
-    glDrawArrays(GL_TRIANGLES, 0, 6);
+    QOpenGLContext::currentContext()->functions()->glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
 void QOpenGLTextureBlitterPrivate::blit(GLuint texture,
@@ -219,7 +220,7 @@ void QOpenGLTextureBlitterPrivate::blit(GLuint texture,
         textureMatrixUniformState = Identity;
     }
 
-    glDrawArrays(GL_TRIANGLES, 0, 6);
+    QOpenGLContext::currentContext()->functions()->glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
 QOpenGLTextureBlitter::QOpenGLTextureBlitter()

@@ -225,18 +225,12 @@ private:
     virtual QFixed lineThickness() const;
     virtual QFixed underlinePosition() const;
 
+    virtual glyph_t glyphIndex(uint ucs4) const;
     void doKerning(QGlyphLayout *, ShaperFlags) const;
-
-    inline virtual Type type() const
-    { return QFontEngine::Freetype; }
-    inline virtual const char *name() const
-    { return "freetype"; }
 
     virtual void getUnscaledGlyph(glyph_t glyph, QPainterPath *path, glyph_metrics_t *metrics);
 
     virtual bool supportsTransformation(const QTransform &transform) const;
-
-    virtual bool canRender(const QChar *string, int len);
 
     virtual void addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions, int nglyphs,
                          QPainterPath *path, QTextItem::RenderFlags flags);

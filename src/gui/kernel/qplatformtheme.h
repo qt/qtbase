@@ -108,7 +108,8 @@ public:
         PasswordMaskCharacter,
         DialogSnapToDefaultButton,
         ContextMenuOnMouseRelease,
-        MousePressAndHoldInterval
+        MousePressAndHoldInterval,
+        MouseDoubleClickDistance
     };
 
     enum DialogType {

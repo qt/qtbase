@@ -839,6 +839,22 @@ void QTextEngine::bidiReorder(int numItems, const quint8 *levels, int *visualOrd
 #endif
 }
 
+
+enum JustificationClass {
+    Justification_Prohibited      = 0,   // Justification can not be applied after this glyph
+    Justification_Arabic_Space    = 1,   // This glyph represents a space inside arabic text
+    Justification_Character       = 2,   // Inter-character justification point follows this glyph
+    Justification_Space           = 4,   // This glyph represents a blank outside an Arabic run
+    Justification_Arabic_Normal   = 7,   // Normal Middle-Of-Word glyph that connects to the right (begin)
+    Justification_Arabic_Waw      = 8,   // Next character is final form of Waw/Ain/Qaf/Feh
+    Justification_Arabic_BaRa     = 9,   // Next two characters are Ba + Ra/Ya/AlefMaksura
+    Justification_Arabic_Alef     = 10,  // Next character is final form of Alef/Tah/Lam/Kaf/Gaf
+    Justification_Arabic_HahDal   = 11,  // Next character is final form of Hah/Dal/Teh Marbuta
+    Justification_Arabic_Seen     = 12,  // Initial or medial form of Seen/Sad
+    Justification_Arabic_Kashida  = 13   // User-inserted Kashida(U+0640)
+};
+
+
 // shape all the items that intersect with the line, taking tab widths into account to find out what text actually fits in the line.
 void QTextEngine::shapeLine(const QScriptLine &line)
 {
@@ -1018,12 +1034,12 @@ void QTextEngine::shapeText(int item) const
     }
     if (wordSpacing != 0) {
         for (int i = 0; i < si.num_glyphs; ++i) {
-            if (glyphs.attributes[i].justification == QGlyphAttributes::Space
-                || glyphs.attributes[i].justification == QGlyphAttributes::Arabic_Space) {
+            if (glyphs.attributes[i].justification == Justification_Space
+                || glyphs.attributes[i].justification == Justification_Arabic_Space) {
                 // word spacing only gets added once to a consecutive run of spaces (see CSS spec)
                 if (i + 1 == si.num_glyphs
-                    ||(glyphs.attributes[i+1].justification != QGlyphAttributes::Space
-                       && glyphs.attributes[i+1].justification != QGlyphAttributes::Arabic_Space))
+                    ||(glyphs.attributes[i+1].justification != Justification_Space
+                       && glyphs.attributes[i+1].justification != Justification_Arabic_Space))
                     glyphs.advances[i] += wordSpacing;
             }
         }
@@ -1190,7 +1206,6 @@ QT_BEGIN_INCLUDE_NAMESPACE
 QT_END_INCLUDE_NAMESPACE
 
 Q_STATIC_ASSERT(sizeof(HB_Glyph) == sizeof(glyph_t));
-Q_STATIC_ASSERT(sizeof(HB_GlyphAttributes) == sizeof(QGlyphAttributes));
 Q_STATIC_ASSERT(sizeof(HB_Fixed) == sizeof(QFixed));
 Q_STATIC_ASSERT(sizeof(HB_FixedPoint) == sizeof(QFixedPoint));
 
@@ -1256,18 +1271,23 @@ int QTextEngine::shapeTextWithHarfbuzz(const QScriptItem &si, const ushort *stri
 
         remaining_glyphs -= shaper_item.initialGlyphCount;
 
+        QVarLengthArray<HB_GlyphAttributes, 128> hbGlyphAttributes;
         do {
             if (!ensureSpace(glyph_pos + shaper_item.num_glyphs + remaining_glyphs))
                 return 0;
+            if (hbGlyphAttributes.size() < int(shaper_item.num_glyphs)) {
+                hbGlyphAttributes.resize(shaper_item.num_glyphs);
+                memset(hbGlyphAttributes.data(), 0, hbGlyphAttributes.size() * sizeof(HB_GlyphAttributes));
+            }
 
             const QGlyphLayout g = availableGlyphs(&si).mid(glyph_pos);
             if (fontEngine->type() == QFontEngine::Multi && shaper_item.num_glyphs > shaper_item.item.length)
                 moveGlyphData(g.mid(shaper_item.num_glyphs), g.mid(shaper_item.initialGlyphCount), remaining_glyphs);
 
             shaper_item.glyphs = reinterpret_cast<HB_Glyph *>(g.glyphs);
-            shaper_item.attributes = reinterpret_cast<HB_GlyphAttributes *>(g.attributes);
             shaper_item.advances = reinterpret_cast<HB_Fixed *>(g.advances);
             shaper_item.offsets = reinterpret_cast<HB_FixedPoint *>(g.offsets);
+            shaper_item.attributes = hbGlyphAttributes.data();
 
             if (engineIdx != 0 && shaper_item.glyphIndicesPresent) {
                 for (quint32 i = 0; i < shaper_item.initialGlyphCount; ++i)
@@ -1280,6 +1300,14 @@ int QTextEngine::shapeTextWithHarfbuzz(const QScriptItem &si, const ushort *stri
         QGlyphLayout g = availableGlyphs(&si).mid(glyph_pos, shaper_item.num_glyphs);
         if (fontEngine->type() == QFontEngine::Multi)
             moveGlyphData(g.mid(shaper_item.num_glyphs), g.mid(shaper_item.initialGlyphCount), remaining_glyphs);
+
+        for (quint32 i = 0; i < shaper_item.num_glyphs; ++i) {
+            HB_GlyphAttributes hbAttrs = hbGlyphAttributes.at(i);
+            QGlyphAttributes &attrs = g.attributes[i];
+            attrs.clusterStart = hbAttrs.clusterStart;
+            attrs.dontPrint = hbAttrs.dontPrint;
+            attrs.justification = hbAttrs.justification;
+        }
 
         for (quint32 i = 0; i < shaper_item.item.length; ++i)
             shaper_item.log_clusters[i] += glyph_pos;
@@ -1478,18 +1506,8 @@ void QTextEngine::itemize() const
     {
         QVarLengthArray<uchar> scripts(length);
         QUnicodeTools::initScripts(string, length, scripts.data());
-        for (int i = 0; i < length; ++i) {
-            ushort script = scripts.at(i);
-            switch (script) {
-            case QChar::Script_Hiragana:
-            case QChar::Script_Katakana:
-                script = QChar::Script_Han;
-                break;
-            default:
-                break;
-            }
-            analysis[i].script = script;
-        }
+        for (int i = 0; i < length; ++i)
+            analysis[i].script = scripts.at(i);
     }
 
     const ushort *uc = string;
@@ -1536,8 +1554,21 @@ void QTextEngine::itemize() const
         (analysis-1)->flags = QScriptAnalysis::LineOrParagraphSeparator; // to exclude it from width
     }
 #ifdef QT_ENABLE_HARFBUZZ_NG
-    if (!useHarfbuzzNG) {
-        analysis = scriptAnalysis.data();
+    analysis = scriptAnalysis.data();
+    if (useHarfbuzzNG) {
+        for (int i = 0; i < length; ++i) {
+            switch (analysis[i].script) {
+            case QChar::Script_Han:
+            case QChar::Script_Hiragana:
+            case QChar::Script_Katakana:
+            case QChar::Script_Bopomofo:
+                analysis[i].script = QChar::Script_Common;
+                break;
+            default:
+                break;
+            }
+        }
+    } else {
         for (int i = 0; i < length; ++i)
             analysis[i].script = hbscript_to_script(script_to_hbscript(analysis[i].script));
     }
@@ -1980,26 +2011,21 @@ static void set(QJustificationPoint *point, int type, const QGlyphLayout &glyph,
     point->type = type;
     point->glyph = glyph;
 
-    if (type >= QGlyphAttributes::Arabic_Normal) {
+    if (type >= Justification_Arabic_Normal) {
         QChar ch(0x640); // Kashida character
 
-        glyph_t kashidaGlyph;
-        QFixed kashidaWidth;
+        glyph_t kashidaGlyph = fe->glyphIndex(ch.unicode());
+        if (kashidaGlyph != 0) {
+            QGlyphLayout g;
+            g.numGlyphs = 1;
+            g.glyphs = &kashidaGlyph;
+            g.advances = &point->kashidaWidth;
+            fe->recalcAdvances(&g, 0);
 
-        QGlyphLayout glyphs;
-        glyphs.numGlyphs = 1;
-        glyphs.glyphs = &kashidaGlyph;
-        glyphs.advances = &kashidaWidth;
-
-        int nglyphs = 1;
-        if (!fe->stringToCMap(&ch, 1, &glyphs, &nglyphs, 0))
-            Q_UNREACHABLE();
-        Q_ASSERT(nglyphs == 1);
-
-        if (kashidaGlyph != 0 && kashidaWidth != 0) {
-            point->kashidaWidth = kashidaWidth;
+            if (point->kashidaWidth == 0)
+                point->type = Justification_Prohibited;
         } else {
-            point->type = QGlyphAttributes::NoJustification;
+            point->type = Justification_Prohibited;
             point->kashidaWidth = 0;
         }
     }
@@ -2067,7 +2093,7 @@ void QTextEngine::justify(const QScriptLine &line)
     for (int i = 0; i < nItems; ++i) {
         QScriptItem &si = layoutData->items[firstItem + i];
 
-        int kashida_type = QGlyphAttributes::Arabic_Normal;
+        int kashida_type = Justification_Arabic_Normal;
         int kashida_pos = -1;
 
         int start = qMax(line.from - si.position, 0);
@@ -2091,11 +2117,11 @@ void QTextEngine::justify(const QScriptLine &line)
             int justification = g.attributes[i].justification;
 
             switch(justification) {
-            case QGlyphAttributes::NoJustification:
+            case Justification_Prohibited:
                 break;
-            case QGlyphAttributes::Space          :
+            case Justification_Space:
                 // fall through
-            case QGlyphAttributes::Arabic_Space   :
+            case Justification_Arabic_Space:
                 if (kashida_pos >= 0) {
 //                     qDebug("kashida position at %d in word", kashida_pos);
                     set(&justificationPoints[nPoints], kashida_type, g.mid(kashida_pos), fontEngine(si));
@@ -2106,19 +2132,19 @@ void QTextEngine::justify(const QScriptLine &line)
                     }
                 }
                 kashida_pos = -1;
-                kashida_type = QGlyphAttributes::Arabic_Normal;
+                kashida_type = Justification_Arabic_Normal;
                 // fall through
-            case QGlyphAttributes::Character      :
+            case Justification_Character:
                 set(&justificationPoints[nPoints++], justification, g.mid(i), fontEngine(si));
                 maxJustify = qMax(maxJustify, justification);
                 break;
-            case QGlyphAttributes::Arabic_Normal  :
-            case QGlyphAttributes::Arabic_Waw     :
-            case QGlyphAttributes::Arabic_BaRa    :
-            case QGlyphAttributes::Arabic_Alef    :
-            case QGlyphAttributes::Arabic_HaaDal  :
-            case QGlyphAttributes::Arabic_Seen    :
-            case QGlyphAttributes::Arabic_Kashida :
+            case Justification_Arabic_Normal:
+            case Justification_Arabic_Waw:
+            case Justification_Arabic_BaRa:
+            case Justification_Arabic_Alef:
+            case Justification_Arabic_HahDal:
+            case Justification_Arabic_Seen:
+            case Justification_Arabic_Kashida:
                 if (justification >= kashida_type) {
                     kashida_pos = i;
                     kashida_type = justification;
@@ -2147,9 +2173,9 @@ void QTextEngine::justify(const QScriptLine &line)
 //     qDebug("     minKashida=%f, need=%f", minKashida.toReal(), need.toReal());
 
     // distribute in priority order
-    if (maxJustify >= QGlyphAttributes::Arabic_Normal) {
+    if (maxJustify >= Justification_Arabic_Normal) {
         while (need >= minKashida) {
-            for (int type = maxJustify; need >= minKashida && type >= QGlyphAttributes::Arabic_Normal; --type) {
+            for (int type = maxJustify; need >= minKashida && type >= Justification_Arabic_Normal; --type) {
                 for (int i = 0; need >= minKashida && i < nPoints; ++i) {
                     if (justificationPoints[i].type == type && justificationPoints[i].kashidaWidth <= need) {
                         justificationPoints[i].glyph.justifications->nKashidas++;
@@ -2166,7 +2192,7 @@ void QTextEngine::justify(const QScriptLine &line)
     if (!need)
         goto end;
 
-    maxJustify = qMin(maxJustify, int(QGlyphAttributes::Space));
+    maxJustify = qMin(maxJustify, int(Justification_Space));
     for (int type = maxJustify; need != 0 && type > 0; --type) {
         int n = 0;
         for (int i = 0; i < nPoints; ++i) {
@@ -2616,40 +2642,30 @@ QString QTextEngine::elidedText(Qt::TextElideMode mode, const QFixed &width, int
     QFixed ellipsisWidth;
     QString ellipsisText;
     {
+        QFontEngine *fe = fnt.d->engineForScript(QChar::Script_Common);
+        QFontEngine *engine = fe->type() == QFontEngine::Multi ? static_cast<QFontEngineMulti *>(fe)->engine(0) : fe;
+
         QChar ellipsisChar(0x2026);
 
-        QFontEngine *fe = fnt.d->engineForScript(QChar::Script_Common);
+        glyph_t glyph = engine->glyphIndex(ellipsisChar.unicode());
 
-        QGlyphLayoutArray<1> ellipsisGlyph;
-        {
-            QFontEngine *feForEllipsis = (fe->type() == QFontEngine::Multi)
-                ? static_cast<QFontEngineMulti *>(fe)->engine(0)
-                : fe;
+        QGlyphLayout glyphs;
+        glyphs.numGlyphs = 1;
+        glyphs.glyphs = &glyph;
+        glyphs.advances = &ellipsisWidth;
 
-            if (feForEllipsis->type() == QFontEngine::Mac)
-                feForEllipsis = fe;
+        if (glyph != 0) {
+            engine->recalcAdvances(&glyphs, 0);
 
-            int nGlyphs = 1;
-            if (!feForEllipsis->stringToCMap(&ellipsisChar, 1, &ellipsisGlyph, &nGlyphs, 0))
-                Q_UNREACHABLE();
-            Q_ASSERT(nGlyphs == 1);
-        }
-
-        if (ellipsisGlyph.glyphs[0]) {
-            ellipsisWidth = ellipsisGlyph.advances[0];
             ellipsisText = ellipsisChar;
         } else {
-            QString dotDotDot(QLatin1String("..."));
+            glyph = engine->glyphIndex('.');
+            if (glyph != 0) {
+                engine->recalcAdvances(&glyphs, 0);
 
-            QGlyphLayoutArray<3> glyphs;
-            int nGlyphs = 3;
-            if (!fe->stringToCMap(dotDotDot.constData(), 3, &glyphs, &nGlyphs, 0))
-                Q_UNREACHABLE();
-            Q_ASSERT(nGlyphs == 3);
-
-            for (int i = 0; i < nGlyphs; ++i)
-                ellipsisWidth += glyphs.advances[i];
-            ellipsisText = dotDotDot;
+                ellipsisWidth *= 3;
+                ellipsisText = QStringLiteral("...");
+            }
         }
     }
 

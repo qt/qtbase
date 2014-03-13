@@ -530,7 +530,7 @@ class MiniHttpServer: public QTcpServer
 {
     Q_OBJECT
 public:
-    QTcpSocket *client; // always the last one that was received
+    QPointer<QTcpSocket> client; // always the last one that was received
     QByteArray dataToTransmit;
     QByteArray receivedData;
     QSemaphore ready;
@@ -541,7 +541,7 @@ public:
     int totalConnections;
 
     MiniHttpServer(const QByteArray &data, bool ssl = false, QThread *thread = 0, bool useipv6 = false)
-        : client(0), dataToTransmit(data), doClose(true), doSsl(ssl), ipv6(useipv6),
+        : dataToTransmit(data), doClose(true), doSsl(ssl), ipv6(useipv6),
           multiple(false), totalConnections(0)
     {
         if (useipv6) {
@@ -591,6 +591,7 @@ protected:
     }
 
     virtual void reply() {
+        Q_ASSERT(!client.isNull());
         // we need to emulate the bytesWrittenSlot call if the data is empty.
         if (dataToTransmit.size() == 0)
             QMetaObject::invokeMethod(this, "bytesWrittenSlot", Qt::QueuedConnection);
@@ -600,10 +601,11 @@ protected:
 private:
     void connectSocketSignals()
     {
+        Q_ASSERT(!client.isNull());
         //qDebug() << "connectSocketSignals" << client;
-        connect(client, SIGNAL(readyRead()), this, SLOT(readyReadSlot()));
-        connect(client, SIGNAL(bytesWritten(qint64)), this, SLOT(bytesWrittenSlot()));
-        connect(client, SIGNAL(error(QAbstractSocket::SocketError)),
+        connect(client.data(), SIGNAL(readyRead()), this, SLOT(readyReadSlot()));
+        connect(client.data(), SIGNAL(bytesWritten(qint64)), this, SLOT(bytesWrittenSlot()));
+        connect(client.data(), SIGNAL(error(QAbstractSocket::SocketError)),
                 this, SLOT(slotError(QAbstractSocket::SocketError)));
     }
 
@@ -611,17 +613,20 @@ private slots:
 #ifndef QT_NO_SSL
     void slotSslErrors(const QList<QSslError>& errors)
     {
+        Q_ASSERT(!client.isNull());
         qDebug() << "slotSslErrors" << client->errorString() << errors;
     }
 #endif
     void slotError(QAbstractSocket::SocketError err)
     {
+        Q_ASSERT(!client.isNull());
         qDebug() << "slotError" << err << client->errorString();
     }
 
 public slots:
     void readyReadSlot()
     {
+        Q_ASSERT(!client.isNull());
         receivedData += client->readAll();
         int doubleEndlPos = receivedData.indexOf("\r\n\r\n");
 
@@ -635,9 +640,11 @@ public slots:
     }
 
     void bytesWrittenSlot() {
+        Q_ASSERT(!client.isNull());
+        // Disconnect and delete in next cycle (else Windows clients will fail with RemoteHostClosedError).
         if (doClose && client->bytesToWrite() == 0) {
-            client->disconnectFromHost();
             disconnect(client, 0, this, 0);
+            client->deleteLater();
         }
     }
 
@@ -1835,7 +1842,7 @@ void tst_QNetworkReply::getErrors_data()
             << int(QNetworkReply::ProtocolUnknownError) << 0 << true;
 
     // file: errors
-    QTest::newRow("file-host") << "file://this-host-doesnt-exist.troll.no/foo.txt"
+    QTest::newRow("file-host") << "file://invalid.test.qt-project.org/foo.txt"
 #if !defined Q_OS_WIN
                                << int(QNetworkReply::ProtocolInvalidOperationError) << 0 << true;
 #else
@@ -1856,7 +1863,7 @@ void tst_QNetworkReply::getErrors_data()
                                           << int(QNetworkReply::ContentAccessDenied) << 0 << true;
 
     // ftp: errors
-    QTest::newRow("ftp-host") << "ftp://this-host-doesnt-exist.troll.no/foo.txt"
+    QTest::newRow("ftp-host") << "ftp://invalid.test.qt-project.org/foo.txt"
                               << int(QNetworkReply::HostNotFoundError) << 0 << true;
     QTest::newRow("ftp-no-path") << "ftp://" + QtNetworkSettings::serverName()
                                  << int(QNetworkReply::ContentOperationNotPermittedError) << 0 << true;
@@ -1870,7 +1877,7 @@ void tst_QNetworkReply::getErrors_data()
                                << int(QNetworkReply::ContentNotFoundError) << 0 << true;
 
     // http: errors
-    QTest::newRow("http-host") << "http://this-host-will-never-exist.troll.no/"
+    QTest::newRow("http-host") << "http://invalid.test.qt-project.org/"
                                << int(QNetworkReply::HostNotFoundError) << 0 << true;
     QTest::newRow("http-exist") << "http://" + QtNetworkSettings::serverName() + "/this-file-doesnt-exist.txt"
                                 << int(QNetworkReply::ContentNotFoundError) << 404 << false;

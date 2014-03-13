@@ -120,7 +120,7 @@
     // For Qt applications we rotate the keyboard rect to align with the screen
     // orientation (which is the interface orientation of the root view controller).
     // For hybrid apps we follow native behavior, and return the rect unmodified:
-    CGRect keyboardFrame = [[notification userInfo][UIKeyboardFrameEndUserInfoKey] CGRectValue];
+    CGRect keyboardFrame = [[[notification userInfo] objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
     if (isQtApplication()) {
         UIView *view = m_viewController.view;
         return fromCGRect(CGRectOffset([view convertRect:keyboardFrame fromView:view.window], 0, -view.bounds.origin.y));
@@ -156,8 +156,8 @@
     m_keyboardVisibleAndDocked = YES;
     m_keyboardEndRect = [self getKeyboardRect:notification];
     if (!m_duration) {
-        m_duration = [notification.userInfo[UIKeyboardAnimationDurationUserInfoKey] doubleValue];
-        m_curve = UIViewAnimationCurve([notification.userInfo[UIKeyboardAnimationCurveUserInfoKey] integerValue] << 16);
+        m_duration = [[notification.userInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey] doubleValue];
+        m_curve = UIViewAnimationCurve([[notification.userInfo objectForKey:UIKeyboardAnimationCurveUserInfoKey] integerValue] << 16);
     }
     m_context->scrollToCursor();
 }

@@ -8,7 +8,6 @@ SUBDIRS=\
     qmetaobjectbuilder \
     qmetamethod \
     qmetaproperty \
-    qmetatype \
     qmimedata \
     qobject \
     qpointer \

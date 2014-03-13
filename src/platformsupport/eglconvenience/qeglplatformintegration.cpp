@@ -106,9 +106,6 @@ QEGLPlatformIntegration::~QEGLPlatformIntegration()
 
 void QEGLPlatformIntegration::initialize()
 {
-    if (!eglBindAPI(EGL_OPENGL_ES_API))
-        qFatal("Could not bind GL_ES API");
-
     m_display = eglGetDisplay(nativeDisplay());
     if (m_display == EGL_NO_DISPLAY)
         qFatal("Could not open egl display");

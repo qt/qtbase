@@ -81,15 +81,10 @@ static bool isMouseEvent(NSEvent *ev)
 }
 
 @interface NSWindow (CocoaWindowCategory)
-- (void) clearPlatformWindow;
 - (NSRect) legacyConvertRectFromScreen:(NSRect) rect;
 @end
 
 @implementation NSWindow (CocoaWindowCategory)
-- (void) clearPlatformWindow
-{
-}
-
 - (NSRect) legacyConvertRectFromScreen:(NSRect) rect
 {
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
@@ -103,7 +98,99 @@ static bool isMouseEvent(NSEvent *ev)
 }
 @end
 
+
+@implementation QNSWindowHelper
+
+@synthesize window = _window;
+@synthesize platformWindow = _platformWindow;
+@synthesize grabbingMouse = _grabbingMouse;
+@synthesize releaseOnMouseUp = _releaseOnMouseUp;
+
+- (id)initWithNSWindow:(QCocoaNSWindow *)window platformWindow:(QCocoaWindow *)platformWindow
+{
+    self = [super init];
+    if (self) {
+        _window = window;
+        _platformWindow = platformWindow;
+
+        _window.delegate = [[QNSWindowDelegate alloc] initWithQCocoaWindow:_platformWindow];
+
+        // Prevent Cocoa from releasing the window on close. Qt
+        // handles the close event asynchronously and we want to
+        // make sure that m_nsWindow stays valid until the
+        // QCocoaWindow is deleted by Qt.
+        [_window setReleasedWhenClosed:NO];
+    }
+
+    return self;
+}
+
+- (void)handleWindowEvent:(NSEvent *)theEvent
+{
+    QCocoaWindow *pw = self.platformWindow;
+    if (pw && pw->m_forwardWindow) {
+        if (theEvent.type == NSLeftMouseUp || theEvent.type == NSLeftMouseDragged) {
+            QNSView *forwardView = pw->m_qtView;
+            if (theEvent.type == NSLeftMouseUp) {
+                [forwardView mouseUp:theEvent];
+                pw->m_forwardWindow = 0;
+            } else {
+                [forwardView mouseDragged:theEvent];
+            }
+        }
+
+        if (!pw->m_isNSWindowChild && theEvent.type == NSLeftMouseDown) {
+            pw->m_forwardWindow = 0;
+        }
+    }
+
+    if (theEvent.type == NSLeftMouseDown) {
+        self.grabbingMouse = YES;
+    } else if (theEvent.type == NSLeftMouseUp) {
+        self.grabbingMouse = NO;
+        if (self.releaseOnMouseUp) {
+            [self detachFromPlatformWindow];
+            [self.window release];
+            return;
+        }
+    }
+
+    [self.window superSendEvent:theEvent];
+
+    if (!self.window.delegate)
+        return; // Already detached, pending NSAppKitDefined event
+
+    if (pw && pw->frameStrutEventsEnabled() && isMouseEvent(theEvent)) {
+        NSPoint loc = [theEvent locationInWindow];
+        NSRect windowFrame = [self.window legacyConvertRectFromScreen:[self.window frame]];
+        NSRect contentFrame = [[self.window contentView] frame];
+        if (NSMouseInRect(loc, windowFrame, NO) &&
+            !NSMouseInRect(loc, contentFrame, NO))
+        {
+            QNSView *contentView = (QNSView *)pw->contentView();
+            [contentView handleFrameStrutMouseEvent: theEvent];
+        }
+    }
+}
+
+- (void)detachFromPlatformWindow
+{
+    [self.window.delegate release];
+    self.window.delegate = nil;
+}
+
+- (void)dealloc
+{
+    _window = nil;
+    _platformWindow = 0;
+    [super dealloc];
+}
+
+@end
+
 @implementation QNSWindow
+
+@synthesize helper = _helper;
 
 - (id)initWithContentRect:(NSRect)contentRect
       styleMask:(NSUInteger)windowStyle
@@ -116,7 +203,7 @@ static bool isMouseEvent(NSEvent *ev)
                        // set up before the window is shown and needs a proper window)
 
     if (self) {
-        m_cocoaPlatformWindow = qpw;
+        _helper = [[QNSWindowHelper alloc] initWithNSWindow:self platformWindow:qpw];
     }
     return self;
 }
@@ -125,7 +212,8 @@ static bool isMouseEvent(NSEvent *ev)
 {
     // Prevent child NSWindows from becoming the key window in
     // order keep the active apperance of the top-level window.
-    if (!m_cocoaPlatformWindow || m_cocoaPlatformWindow->m_isNSWindowChild)
+    QCocoaWindow *pw = self.helper.platformWindow;
+    if (!pw || pw->m_isNSWindowChild)
         return NO;
 
     // The default implementation returns NO for title-bar less windows,
@@ -140,8 +228,8 @@ static bool isMouseEvent(NSEvent *ev)
 
     // Windows with a transient parent (such as combobox popup windows)
     // cannot become the main window:
-    if (!m_cocoaPlatformWindow || m_cocoaPlatformWindow->m_isNSWindowChild
-        || m_cocoaPlatformWindow->window()->transientParent())
+    QCocoaWindow *pw = self.helper.platformWindow;
+    if (!pw || pw->m_isNSWindowChild || pw->window()->transientParent())
         canBecomeMain = NO;
 
     return canBecomeMain;
@@ -149,50 +237,38 @@ static bool isMouseEvent(NSEvent *ev)
 
 - (void) sendEvent: (NSEvent*) theEvent
 {
-    if (m_cocoaPlatformWindow && m_cocoaPlatformWindow->m_forwardWindow) {
-        if (theEvent.type == NSLeftMouseUp || theEvent.type == NSLeftMouseDragged) {
-            QNSView *forwardView = m_cocoaPlatformWindow->m_qtView;
-            if (theEvent.type == NSLeftMouseUp) {
-                [forwardView mouseUp:theEvent];
-                m_cocoaPlatformWindow->m_forwardWindow = 0;
-            } else {
-                [forwardView mouseDragged:theEvent];
-            }
+    [self.helper handleWindowEvent:theEvent];
+}
 
-            return;
-        }
+- (void)superSendEvent:(NSEvent *)theEvent
+{
+    [super sendEvent:theEvent];
+}
 
-        if (theEvent.type == NSLeftMouseDown) {
-            m_cocoaPlatformWindow->m_forwardWindow = 0;
-        }
-    }
+- (void)closeAndRelease
+{
+    [self close];
 
-    [super sendEvent: theEvent];
-
-    if (!m_cocoaPlatformWindow)
-        return;
-
-    if (m_cocoaPlatformWindow->frameStrutEventsEnabled() && isMouseEvent(theEvent)) {
-        NSPoint loc = [theEvent locationInWindow];
-        NSRect windowFrame = [self legacyConvertRectFromScreen:[self frame]];
-        NSRect contentFrame = [[self contentView] frame];
-        if (NSMouseInRect(loc, windowFrame, NO) &&
-            !NSMouseInRect(loc, contentFrame, NO))
-        {
-            QNSView *contentView = (QNSView *) m_cocoaPlatformWindow->contentView();
-            [contentView handleFrameStrutMouseEvent: theEvent];
-        }
+    if (self.helper.grabbingMouse) {
+        self.helper.releaseOnMouseUp = YES;
+    } else {
+        [self.helper detachFromPlatformWindow];
+        [self release];
     }
 }
 
-- (void)clearPlatformWindow
+- (void)dealloc
 {
-    m_cocoaPlatformWindow = 0;
+    [_helper release];
+    _helper = nil;
+    [super dealloc];
 }
 
 @end
 
 @implementation QNSPanel
+
+@synthesize helper = _helper;
 
 - (id)initWithContentRect:(NSRect)contentRect
       styleMask:(NSUInteger)windowStyle
@@ -205,47 +281,47 @@ static bool isMouseEvent(NSEvent *ev)
                        // set up before the window is shown and needs a proper window)
 
     if (self) {
-        m_cocoaPlatformWindow = qpw;
+        _helper = [[QNSWindowHelper alloc] initWithNSWindow:self platformWindow:qpw];
     }
     return self;
 }
 
 - (BOOL)canBecomeKeyWindow
 {
-    if (!m_cocoaPlatformWindow)
+    QCocoaWindow *pw = self.helper.platformWindow;
+    if (!pw)
         return NO;
 
     // Only tool or dialog windows should become key:
-    if (m_cocoaPlatformWindow
-        && (m_cocoaPlatformWindow->window()->type() == Qt::Tool ||
-            m_cocoaPlatformWindow->window()->type() == Qt::Dialog))
+    Qt::WindowType type = pw->window()->type();
+    if (type == Qt::Tool || type == Qt::Dialog)
         return YES;
+
     return NO;
 }
 
 - (void) sendEvent: (NSEvent*) theEvent
 {
-    [super sendEvent: theEvent];
-
-    if (!m_cocoaPlatformWindow)
-        return;
-
-    if (m_cocoaPlatformWindow->frameStrutEventsEnabled() && isMouseEvent(theEvent)) {
-        NSPoint loc = [theEvent locationInWindow];
-        NSRect windowFrame = [self legacyConvertRectFromScreen:[self frame]];
-        NSRect contentFrame = [[self contentView] frame];
-        if (NSMouseInRect(loc, windowFrame, NO) &&
-            !NSMouseInRect(loc, contentFrame, NO))
-        {
-            QNSView *contentView = (QNSView *) m_cocoaPlatformWindow->contentView();
-            [contentView handleFrameStrutMouseEvent: theEvent];
-        }
-    }
+    [self.helper handleWindowEvent:theEvent];
 }
 
-- (void)clearPlatformWindow
+- (void)superSendEvent:(NSEvent *)theEvent
 {
-    m_cocoaPlatformWindow = 0;
+    [super sendEvent:theEvent];
+}
+
+- (void)closeAndRelease
+{
+    [self.helper detachFromPlatformWindow];
+    [self close];
+    [self release];
+}
+
+- (void)dealloc
+{
+    [_helper release];
+    _helper = nil;
+    [super dealloc];
 }
 
 @end
@@ -262,7 +338,6 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
     , m_contentViewIsToBeEmbedded(false)
     , m_parentCocoaWindow(0)
     , m_isNSWindowChild(false)
-    , m_nsWindowDelegate(0)
     , m_synchedWindowState(Qt::WindowActive)
     , m_windowModality(Qt::NonModal)
     , m_windowUnderMouse(false)
@@ -328,7 +403,8 @@ QCocoaWindow::~QCocoaWindow()
 #endif
 
     QCocoaAutoReleasePool pool;
-    clearNSWindow(m_nsWindow);
+    [m_nsWindow setContentView:nil];
+    [m_nsWindow.helper detachFromPlatformWindow];
     if (m_isNSWindowChild) {
         if (m_parentCocoaWindow)
             m_parentCocoaWindow->removeChildWindow(this);
@@ -346,7 +422,6 @@ QCocoaWindow::~QCocoaWindow()
 
     [m_contentView release];
     [m_nsWindow release];
-    [m_nsWindowDelegate release];
     [m_windowCursor release];
 }
 
@@ -1090,12 +1165,10 @@ void QCocoaWindow::recreateWindow(const QPlatformWindow *parentWindow)
 
     // Remove current window (if any)
     if ((m_nsWindow && !needsNSWindow) || (usesNSPanel != shouldUseNSPanel())) {
-        clearNSWindow(m_nsWindow);
-        [m_nsWindow close];
-        [m_nsWindow release];
+        [m_nsWindow closeAndRelease];
+        if (wasNSWindowChild && oldParentCocoaWindow)
+            oldParentCocoaWindow->removeChildWindow(this);
         m_nsWindow = 0;
-        [m_nsWindowDelegate release];
-        m_nsWindowDelegate = 0;
     }
 
     if (needsNSWindow) {
@@ -1203,7 +1276,7 @@ bool QCocoaWindow::shouldUseNSPanel()
            ((type & Qt::Popup) == Qt::Popup || (type & Qt::Dialog) == Qt::Dialog);
 }
 
-NSWindow * QCocoaWindow::createNSWindow()
+QCocoaNSWindow * QCocoaWindow::createNSWindow()
 {
     QCocoaAutoReleasePool pool;
 
@@ -1219,7 +1292,7 @@ NSWindow * QCocoaWindow::createNSWindow()
     } else {
         styleMask = windowStyleMask(flags);
     }
-    NSWindow *createdWindow = 0;
+    QCocoaNSWindow *createdWindow = 0;
 
     // Use NSPanel for popup-type windows. (Popup, Tool, ToolTip, SplashScreen)
     // and dialogs
@@ -1270,32 +1343,12 @@ NSWindow * QCocoaWindow::createNSWindow()
     return createdWindow;
 }
 
-void QCocoaWindow::setNSWindow(NSWindow *window)
+void QCocoaWindow::setNSWindow(QCocoaNSWindow *window)
 {
-    m_nsWindowDelegate = [[QNSWindowDelegate alloc] initWithQCocoaWindow:this];
-    [window setDelegate:m_nsWindowDelegate];
-
-    // Prevent Cocoa from releasing the window on close. Qt
-    // handles the close event asynchronously and we want to
-    // make sure that m_nsWindow stays valid until the
-    // QCocoaWindow is deleted by Qt.
-    [window setReleasedWhenClosed : NO];
-
     if (window.contentView != m_contentView) {
         [m_contentView setPostsFrameChangedNotifications: NO];
         [window setContentView:m_contentView];
         [m_contentView setPostsFrameChangedNotifications: YES];
-    }
-}
-
-void QCocoaWindow::clearNSWindow(NSWindow *window)
-{
-    [window setContentView:nil];
-    [window setDelegate:nil];
-    [window clearPlatformWindow];
-
-    if (m_isNSWindowChild) {
-        m_parentCocoaWindow->removeChildWindow(this);
     }
 }
 

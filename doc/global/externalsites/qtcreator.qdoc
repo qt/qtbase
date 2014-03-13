@@ -475,3 +475,11 @@
     \externalpage http://qt-project.org/doc/qtcreator/creator-diff-editor.html
     \title Qt Creator: Comparing Files
 */
+/*!
+    \externalpage http://qt-project.org/doc/qtcreator/creator-beautifier.html
+    \title Qt Creator: Beautifying Source Code
+*/
+/*!
+    \externalpage http://qt-project.org/doc/qtcreator/creator-developing-winrt.html
+    \title Qt Creator: Connecting Windows Runtime Devices
+*/

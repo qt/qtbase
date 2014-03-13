@@ -95,17 +95,9 @@ public:
     QVector3D &operator*=(const QVector3D& vector);
     QVector3D &operator/=(float divisor);
 
-#ifdef QT_BUILD_GUI_LIB
-    static float dotProduct(const QVector3D& v1, const QVector3D& v2);
-    static QVector3D crossProduct(const QVector3D& v1, const QVector3D& v2);
-#else
-    Q_DECL_CONSTEXPR inline static float dotProduct(const QVector3D& v1, const QVector3D& v2)
-    { return v1.xp * v2.xp + v1.yp * v2.yp + v1.zp * v2.zp; }
-    Q_DECL_CONSTEXPR inline static QVector3D crossProduct(const QVector3D& v1, const QVector3D& v2)
-    { return QVector3D(v1.yp * v2.zp - v1.zp * v2.yp,
-                       v1.zp * v2.xp - v1.xp * v2.zp,
-                       v1.xp * v2.yp - v1.yp * v2.xp); }
-#endif
+    static float dotProduct(const QVector3D& v1, const QVector3D& v2); //In Qt 6 convert to inline and constexpr
+    static QVector3D crossProduct(const QVector3D& v1, const QVector3D& v2); //in Qt 6 convert to inline and constexpr
+
     static QVector3D normal(const QVector3D& v1, const QVector3D& v2);
     static QVector3D normal
         (const QVector3D& v1, const QVector3D& v2, const QVector3D& v3);

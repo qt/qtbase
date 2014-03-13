@@ -1,7 +1,7 @@
 QMAKE_CFLAGS += -std=gnu99 -w
 INCLUDEPATH += $$PWD/xkbcommon $$PWD/xkbcommon/src $$PWD/xkbcommon/src/xkbcomp
 
-DEFINES += DFLT_XKB_CONFIG_ROOT='\\"$$QMAKE_X11_PREFIX/share/X11/xkb\\"'
+DEFINES += DFLT_XKB_CONFIG_ROOT='\\"$$QMAKE_XKB_CONFIG_ROOT\\"'
 
 ### RMLVO names can be overwritten with environmental variables (See libxkbcommon documentation)
 DEFINES += DEFAULT_XKB_RULES='\\"evdev\\"'

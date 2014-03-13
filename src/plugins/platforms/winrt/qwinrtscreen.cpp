@@ -63,6 +63,9 @@
 #include <windows.ui.viewmanagement.h>
 #include <windows.graphics.display.h>
 #include <windows.foundation.h>
+#ifdef Q_OS_WINPHONE
+#include <windows.phone.ui.input.h>
+#endif
 
 using namespace Microsoft::WRL;
 using namespace Microsoft::WRL::Wrappers;
@@ -75,6 +78,9 @@ using namespace ABI::Windows::UI::Input;
 using namespace ABI::Windows::UI::ViewManagement;
 using namespace ABI::Windows::Devices::Input;
 using namespace ABI::Windows::Graphics::Display;
+#ifdef Q_OS_WINPHONE
+using namespace ABI::Windows::Phone::UI::Input;
+#endif
 
 typedef IEventHandler<IInspectable*> ResumeHandler;
 typedef IEventHandler<SuspendingEventArgs*> SuspendHandler;
@@ -87,6 +93,9 @@ typedef ITypedEventHandler<CoreWindow*, PointerEventArgs*> PointerHandler;
 typedef ITypedEventHandler<CoreWindow*, WindowSizeChangedEventArgs*> SizeChangedHandler;
 typedef ITypedEventHandler<CoreWindow*, VisibilityChangedEventArgs*> VisibilityChangedHandler;
 typedef ITypedEventHandler<CoreWindow*, AutomationProviderRequestedEventArgs*> AutomationProviderRequestedHandler;
+#ifdef Q_OS_WINPHONE
+typedef IEventHandler<BackPressedEventArgs*> BackPressedHandler;
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -465,6 +474,11 @@ QWinRTScreen::QWinRTScreen(ICoreWindow *window)
     m_coreWindow->add_PointerReleased(Callback<PointerHandler>(this, &QWinRTScreen::onPointerUpdated).Get(), &m_tokens[QEvent::MouseButtonRelease]);
     m_coreWindow->add_PointerWheelChanged(Callback<PointerHandler>(this, &QWinRTScreen::onPointerUpdated).Get(), &m_tokens[QEvent::Wheel]);
     m_coreWindow->add_SizeChanged(Callback<SizeChangedHandler>(this, &QWinRTScreen::onSizeChanged).Get(), &m_tokens[QEvent::Resize]);
+#ifdef Q_OS_WINPHONE
+    ComPtr<IHardwareButtonsStatics> hardwareButtons;
+    if (SUCCEEDED(GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Phone_UI_Input_HardwareButtons).Get(), &hardwareButtons)))
+        hardwareButtons->add_BackPressed(Callback<BackPressedHandler>(this, &QWinRTScreen::onBackButtonPressed).Get(), &m_tokens[QEvent::User]);
+#endif // Q_OS_WINPHONE
 
     // Window event handlers
     m_coreWindow->add_Activated(Callback<ActivatedHandler>(this, &QWinRTScreen::onActivated).Get(), &m_tokens[QEvent::WindowActivate]);
@@ -984,6 +998,8 @@ HRESULT QWinRTScreen::onVisibilityChanged(ICoreWindow *window, IVisibilityChange
     boolean visible;
     args->get_Visible(&visible);
     QWindowSystemInterface::handleApplicationStateChanged(visible ? Qt::ApplicationActive : Qt::ApplicationHidden);
+    if (visible)
+        handleExpose();
     return S_OK;
 }
 
@@ -999,5 +1015,28 @@ HRESULT QWinRTScreen::onOrientationChanged(IInspectable *)
 
     return S_OK;
 }
+
+#ifdef Q_OS_WINPHONE
+HRESULT QWinRTScreen::onBackButtonPressed(IInspectable *, IBackPressedEventArgs *args)
+{
+    QKeyEvent backPress(QEvent::KeyPress, Qt::Key_Back, Qt::NoModifier);
+    backPress.setAccepted(false);
+
+    QObject *receiver = m_visibleWindows.isEmpty()
+            ? static_cast<QObject *>(QGuiApplication::instance())
+            : static_cast<QObject *>(m_visibleWindows.first());
+
+    // If the event is ignored, the app will suspend
+    QGuiApplication::sendEvent(receiver, &backPress);
+    if (backPress.isAccepted()) {
+        args->put_Handled(true);
+        // If the app accepts the event, send the release for symmetry
+        QKeyEvent backRelease(QEvent::KeyRelease, Qt::Key_Back, Qt::NoModifier);
+        QGuiApplication::sendEvent(receiver, &backRelease);
+    }
+
+    return S_OK;
+}
+#endif // Q_OS_WINPHONE
 
 QT_END_NAMESPACE

@@ -5024,7 +5024,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                     int oldState = styleObject->property("_q_stylestate").toInt();
                     uint oldActiveControls = styleObject->property("_q_stylecontrols").toUInt();
 
-                    // a scrollbar is transient when the the scrollbar itself and
+                    // a scrollbar is transient when the scrollbar itself and
                     // its sibling are both inactive (ie. not pressed/hovered/moved)
                     bool transient = !opt->activeSubControls && !(slider->state & State_On);
 
@@ -5827,12 +5827,6 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
             switch (sc) {
             case SC_ComboBoxEditField:{
                 ret = QMacStylePrivate::comboboxEditBounds(combo->rect, bdi);
-                    // hack to posistion the edit feld correctly for QDateTimeEdits
-                    // in calendarPopup mode.
-                    if (qobject_cast<const QDateTimeEdit *>(widget)) {
-                       ret.moveTop(ret.top() - 2);
-                       ret.setHeight(ret.height() +1);
-                    }
                 break; }
             case SC_ComboBoxArrow:{
                 ret = QMacStylePrivate::comboboxEditBounds(combo->rect, bdi);

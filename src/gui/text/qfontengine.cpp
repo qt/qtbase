@@ -101,35 +101,13 @@ static HB_Bool hb_stringToGlyphs(HB_Font font, const HB_UChar16 *string, hb_uint
     *numGlyphs = nGlyphs;
 
     if (rightToLeft && result && !fe->symbol) {
-        uint glyph_pos = 0;
-        for (uint i = 0; i < length; ++i, ++glyph_pos) {
-            uint ucs4 = str[i].unicode();
-            if (Q_UNLIKELY(QChar::isHighSurrogate(ucs4) && i + 1 < length)) {
-                uint low = str[i + 1].unicode();
-                if (Q_LIKELY(QChar::isLowSurrogate(low))) {
-                    ucs4 = QChar::surrogateToUcs4(ucs4, low);
-                    ++i;
-                }
-            }
-
-            uint mirrored = QChar::mirroredChar(ucs4);
-            if (Q_UNLIKELY(mirrored != ucs4)) {
-                QChar chars[2];
-                uint numChars = 0;
-                if (Q_UNLIKELY(QChar::requiresSurrogates(mirrored))) {
-                    chars[numChars++] = QChar(QChar::highSurrogate(mirrored));
-                    chars[numChars++] = QChar(QChar::lowSurrogate(mirrored));
-                } else {
-                    chars[numChars++] = QChar(mirrored);
-                }
-
-                qglyphs.numGlyphs = numChars;
-                qglyphs.glyphs = glyphs + glyph_pos;
-                nGlyphs = numChars;
-                if (!fe->stringToCMap(chars, numChars, &qglyphs, &nGlyphs, QFontEngine::GlyphIndicesOnly))
-                    Q_UNREACHABLE();
-                Q_ASSERT(nGlyphs == 1);
-            }
+        QStringIterator it(str, str + length);
+        while (it.hasNext()) {
+            const uint ucs4 = it.next();
+            const uint mirrored = QChar::mirroredChar(ucs4);
+            if (Q_UNLIKELY(mirrored != ucs4))
+                *glyphs = fe->glyphIndex(mirrored);
+            ++glyphs;
         }
     }
 
@@ -242,8 +220,8 @@ Q_AUTOTEST_EXPORT QList<QFontEngine *> QFontEngine_stopCollectingEngines()
 
 // QFontEngine
 
-QFontEngine::QFontEngine()
-    : ref(0),
+QFontEngine::QFontEngine(Type type)
+    : m_type(type), ref(0),
       font_(0), font_destroy_func(0),
       face_(0), face_destroy_func(0)
 {
@@ -359,6 +337,15 @@ bool QFontEngine::supportsScript(QChar::Script script) const
         return true;
     }
 
+#ifdef Q_OS_MAC
+    {
+        // in AAT fonts, 'gsub' table is effectively replaced by 'mort'/'morx' table
+        uint len;
+        if (getSfntTableData(MAKE_TAG('m','o','r','t'), 0, &len) || getSfntTableData(MAKE_TAG('m','o','r','x'), 0, &len))
+            return true;
+    }
+#endif
+
 #ifdef QT_ENABLE_HARFBUZZ_NG
     if (useHarfbuzzNG) {
         bool ret = false;
@@ -385,6 +372,17 @@ bool QFontEngine::supportsScript(QChar::Script script) const
     return hbFace->supported_scripts[script_to_hbscript(script)];
 }
 
+bool QFontEngine::canRender(const QChar *str, int len) const
+{
+    QStringIterator it(str, str + len);
+    while (it.hasNext()) {
+        if (glyphIndex(it.next()) == 0)
+            return false;
+    }
+
+    return true;
+}
+
 glyph_metrics_t QFontEngine::boundingBox(glyph_t glyph, const QTransform &matrix)
 {
     glyph_metrics_t metrics = boundingBox(glyph);
@@ -397,38 +395,14 @@ glyph_metrics_t QFontEngine::boundingBox(glyph_t glyph, const QTransform &matrix
 
 QFixed QFontEngine::xHeight() const
 {
-    QChar x((ushort)'x');
-
-    glyph_t glyph;
-
-    QGlyphLayout glyphs;
-    glyphs.numGlyphs = 1;
-    glyphs.glyphs = &glyph;
-
-    int nglyphs = 1;
-    if (!stringToCMap(&x, 1, &glyphs, &nglyphs, GlyphIndicesOnly))
-        Q_UNREACHABLE();
-    Q_ASSERT(nglyphs == 1);
-
+    const glyph_t glyph = glyphIndex('x');
     glyph_metrics_t bb = const_cast<QFontEngine *>(this)->boundingBox(glyph);
     return bb.height;
 }
 
 QFixed QFontEngine::averageCharWidth() const
 {
-    QChar x((ushort)'x');
-
-    glyph_t glyph;
-
-    QGlyphLayout glyphs;
-    glyphs.numGlyphs = 1;
-    glyphs.glyphs = &glyph;
-
-    int nglyphs = 1;
-    if (!stringToCMap(&x, 1, &glyphs, &nglyphs, GlyphIndicesOnly))
-        Q_UNREACHABLE();
-    Q_ASSERT(nglyphs == 1);
-
+    const glyph_t glyph = glyphIndex('x');
     glyph_metrics_t bb = const_cast<QFontEngine *>(this)->boundingBox(glyph);
     return bb.xoff;
 }
@@ -489,18 +463,14 @@ void QFontEngine::getGlyphPositions(const QGlyphLayout &glyphs, const QTransform
             if (glyphs.justifications[i].nKashidas) {
                 QChar ch(0x640); // Kashida character
 
-                glyph_t kashidaGlyph;
+                glyph_t kashidaGlyph = glyphIndex(ch.unicode());
                 QFixed kashidaWidth;
 
                 QGlyphLayout g;
                 g.numGlyphs = 1;
                 g.glyphs = &kashidaGlyph;
                 g.advances = &kashidaWidth;
-
-                int nglyphs = 1;
-                if (!stringToCMap(&ch, 1, &g, &nglyphs, 0))
-                    Q_UNREACHABLE();
-                Q_ASSERT(nglyphs == 1);
+                recalcAdvances(&g, 0);
 
                 for (uint k = 0; k < glyphs.justifications[i].nKashidas; ++k) {
                     xpos -= kashidaWidth;
@@ -937,13 +907,30 @@ void QFontEngine::getUnscaledGlyph(glyph_t glyph, QPainterPath *path, glyph_metr
     addGlyphsToPath(&glyph, &p, 1, path, QFlag(0));
 }
 
+/*!
+    Returns \c true if the font table idetified by \a tag exists in the font;
+    returns \c false otherwise.
+
+    If \a buffer is NULL, stores the size of the buffer required for the font table data,
+    in bytes, in \a length. If \a buffer is not NULL and the capacity
+    of the buffer, passed in \a length, is sufficient to store the font table data,
+    also copies the font table data to \a buffer.
+
+    Note: returning \c false when the font table exists could lead to an undefined behavior.
+*/
+bool QFontEngine::getSfntTableData(uint tag, uchar *buffer, uint *length) const
+{
+    Q_UNUSED(tag)
+    Q_UNUSED(buffer)
+    Q_UNUSED(length)
+    return false;
+}
+
 QByteArray QFontEngine::getSfntTable(uint tag) const
 {
     QByteArray table;
     uint len = 0;
     if (!getSfntTableData(tag, 0, &len))
-        return table;
-    if (!len)
         return table;
     table.resize(len);
     if (!getSfntTableData(tag, reinterpret_cast<uchar *>(table.data()), &len))
@@ -1382,7 +1369,15 @@ QFontEngine::GlyphCacheEntry &QFontEngine::GlyphCacheEntry::operator=(const Glyp
 // ------------------------------------------------------------------
 
 QFontEngineBox::QFontEngineBox(int size)
-    : _size(size)
+    : QFontEngine(Box),
+      _size(size)
+{
+    cache_cost = sizeof(QFontEngineBox);
+}
+
+QFontEngineBox::QFontEngineBox(Type type, int size)
+    : QFontEngine(type),
+      _size(size)
 {
     cache_cost = sizeof(QFontEngineBox);
 }
@@ -1391,8 +1386,15 @@ QFontEngineBox::~QFontEngineBox()
 {
 }
 
+glyph_t QFontEngineBox::glyphIndex(uint ucs4) const
+{
+    Q_UNUSED(ucs4)
+    return 0;
+}
+
 bool QFontEngineBox::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, QFontEngine::ShaperFlags flags) const
 {
+    Q_ASSERT(glyphs->numGlyphs >= *nglyphs);
     if (*nglyphs < len) {
         *nglyphs = len;
         return false;
@@ -1503,20 +1505,9 @@ qreal QFontEngineBox::maxCharWidth() const
     return _size;
 }
 
-
-const char *QFontEngineBox::name() const
-{
-    return "null";
-}
-
-bool QFontEngineBox::canRender(const QChar *, int)
+bool QFontEngineBox::canRender(const QChar *, int) const
 {
     return true;
-}
-
-QFontEngine::Type QFontEngineBox::type() const
-{
-    return Box;
 }
 
 QImage QFontEngineBox::alphaMapForGlyph(glyph_t)
@@ -1550,6 +1541,7 @@ static inline glyph_t stripped(glyph_t glyph)
 { return glyph & 0x00ffffff; }
 
 QFontEngineMulti::QFontEngineMulti(int engineCount)
+    : QFontEngine(Multi)
 {
     engines.fill(0, engineCount);
     cache_cost = 0;
@@ -1564,6 +1556,35 @@ QFontEngineMulti::~QFontEngineMulti()
     }
 }
 
+glyph_t QFontEngineMulti::glyphIndex(uint ucs4) const
+{
+    glyph_t glyph = engine(0)->glyphIndex(ucs4);
+    if (glyph == 0 && ucs4 != QChar::LineSeparator) {
+        const_cast<QFontEngineMulti *>(this)->ensureFallbackFamiliesQueried();
+        for (int x = 1, n = qMin(engines.size(), 256); x < n; ++x) {
+            QFontEngine *engine = engines.at(x);
+            if (!engine) {
+                if (!shouldLoadFontEngineForCharacter(x, ucs4))
+                    continue;
+                const_cast<QFontEngineMulti *>(this)->loadEngine(x);
+                engine = engines.at(x);
+            }
+            Q_ASSERT(engine != 0);
+            if (engine->type() == Box)
+                continue;
+
+            glyph = engine->glyphIndex(ucs4);
+            if (glyph != 0) {
+                // set the high byte to indicate which engine the glyph came from
+                glyph |= (x << 24);
+                break;
+            }
+        }
+    }
+
+    return glyph;
+}
+
 bool QFontEngineMulti::stringToCMap(const QChar *str, int len,
                                     QGlyphLayout *glyphs, int *nglyphs,
                                     QFontEngine::ShaperFlags flags) const
@@ -1573,13 +1594,10 @@ bool QFontEngineMulti::stringToCMap(const QChar *str, int len,
 
     const_cast<QFontEngineMulti *>(this)->ensureFallbackFamiliesQueried();
     int glyph_pos = 0;
-    for (int i = 0; i < len; ++i) {
-        bool surrogate = (str[i].isHighSurrogate() && i < len-1 && str[i+1].isLowSurrogate());
-        uint ucs4 = surrogate ? QChar::surrogateToUcs4(str[i], str[i+1]) : str[i].unicode();
-        if (glyphs->glyphs[glyph_pos] == 0 && str[i].category() != QChar::Separator_Line) {
-            QFixed tmpAdvance;
-            if (!(flags & GlyphIndicesOnly))
-                tmpAdvance = glyphs->advances[glyph_pos];
+    QStringIterator it(str, str + len);
+    while (it.hasNext()) {
+        const uint ucs4 = it.peekNext();
+        if (glyphs->glyphs[glyph_pos] == 0 && ucs4 != QChar::LineSeparator) {
             for (int x = 1, n = qMin(engines.size(), 256); x < n; ++x) {
                 if (engines.at(x) == 0 && !shouldLoadFontEngineForCharacter(x, ucs4))
                     continue;
@@ -1593,27 +1611,21 @@ bool QFontEngineMulti::stringToCMap(const QChar *str, int len,
                 if (engine->type() == Box)
                     continue;
 
-                if (!(flags & GlyphIndicesOnly))
-                    glyphs->advances[glyph_pos] = QFixed();
-                int num = 2;
-                QGlyphLayout g = glyphs->mid(glyph_pos, num);
-                if (!engine->stringToCMap(str + i, surrogate ? 2 : 1, &g, &num, flags))
-                    Q_UNREACHABLE();
-                Q_ASSERT(num == 1);
-                if (glyphs->glyphs[glyph_pos]) {
+                glyph_t glyph = engine->glyphIndex(ucs4);
+                if (glyph != 0) {
+                    glyphs->glyphs[glyph_pos] = glyph;
+                    if (!(flags & GlyphIndicesOnly)) {
+                        QGlyphLayout g = glyphs->mid(glyph_pos, 1);
+                        engine->recalcAdvances(&g, flags);
+                    }
                     // set the high byte to indicate which engine the glyph came from
                     glyphs->glyphs[glyph_pos] |= (x << 24);
                     break;
                 }
             }
-
-            // ensure we use metrics from the 1st font when we use the fallback image.
-            if (!(flags & GlyphIndicesOnly) && glyphs->glyphs[glyph_pos] == 0)
-                glyphs->advances[glyph_pos] = tmpAdvance;
         }
 
-        if (surrogate)
-            ++i;
+        it.advance();
         ++glyph_pos;
     }
 
@@ -1898,7 +1910,7 @@ qreal QFontEngineMulti::minRightBearing() const
     return engine(0)->minRightBearing();
 }
 
-bool QFontEngineMulti::canRender(const QChar *string, int len)
+bool QFontEngineMulti::canRender(const QChar *string, int len) const
 {
     if (engine(0)->canRender(string, len))
         return true;
@@ -1957,15 +1969,6 @@ QImage QFontEngineMulti::alphaRGBMapForGlyph(glyph_t glyph, QFixed subPixelPosit
     const int which = highByte(glyph);
     Q_ASSERT(which < engines.size());
     return engine(which)->alphaRGBMapForGlyph(stripped(glyph), subPixelPosition, t);
-}
-
-QTestFontEngine::QTestFontEngine(int size)
-    : QFontEngineBox(size)
-{}
-
-QFontEngine::Type QTestFontEngine::type() const
-{
-    return TestFontEngine;
 }
 
 QT_END_NAMESPACE

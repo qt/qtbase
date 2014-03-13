@@ -9,9 +9,6 @@ wince*: {
    addFiles.files = rfc3252.txt
    addFiles.path = .
    DEPLOYMENT += addFiles
-   DEFINES += SRCDIR=\\\"\\\"
-} else {
-   DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }
 
 CONFIG+=insignificant_test  # QTBUG-15111: uses live qt-test-server, inherently unstable

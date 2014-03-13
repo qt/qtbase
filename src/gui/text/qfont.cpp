@@ -2770,10 +2770,10 @@ void QFontCache::updateHitCountAndTimeStamp(Engine &value)
     value.timestamp = ++current_timestamp;
 
     FC_DEBUG("QFontCache: found font engine\n"
-             "  %p: timestamp %4u hits %3u ref %2d/%2d, type '%s'",
+             "  %p: timestamp %4u hits %3u ref %2d/%2d, type %d",
              value.data, value.timestamp, value.hits,
              value.data->ref.load(), engineCacheCount.value(value.data),
-             value.data->name());
+             value.data->type());
 }
 
 void QFontCache::insertEngine(const Key &key, QFontEngine *engine, bool insertMulti)
@@ -2969,10 +2969,10 @@ void QFontCache::timerEvent(QTimerEvent *)
 
         it = jt;
         if (it != end) {
-            FC_DEBUG("    %p: timestamp %4u hits %2u ref %2d/%2d, type '%s'",
+            FC_DEBUG("    %p: timestamp %4u hits %2u ref %2d/%2d, type %d",
                      it.value().data, it.value().timestamp, it.value().hits,
                      it.value().data->ref.load(), engineCacheCount.value(it.value().data),
-                     it.value().data->name());
+                     it.value().data->type());
 
             QFontEngine *fontEngine = it.value().data;
             // get rid of all occurrences

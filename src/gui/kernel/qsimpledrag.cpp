@@ -116,6 +116,8 @@ void QBasicDrag::disableEventFilter()
 
 bool QBasicDrag::eventFilter(QObject *o, QEvent *e)
 {
+    Q_UNUSED(o);
+
     if (!m_drag) {
         if (e->type() == QEvent::KeyRelease && static_cast<QKeyEvent*>(e)->key() == Qt::Key_Escape) {
             disableEventFilter();
@@ -124,9 +126,6 @@ bool QBasicDrag::eventFilter(QObject *o, QEvent *e)
         }
         return false;
     }
-
-    if (!qobject_cast<QWindow *>(o))
-        return false;
 
     switch (e->type()) {
         case QEvent::ShortcutOverride:
@@ -324,9 +323,10 @@ void QSimpleDrag::startDrag()
 void QSimpleDrag::cancel()
 {
     QBasicDrag::cancel();
-    if (drag())
+    if (drag() && m_current_window) {
         QWindowSystemInterface::handleDrag(m_current_window, 0, QPoint(), Qt::IgnoreAction);
-    m_current_window = 0;
+        m_current_window = 0;
+    }
 }
 
 void QSimpleDrag::move(const QMouseEvent *me)

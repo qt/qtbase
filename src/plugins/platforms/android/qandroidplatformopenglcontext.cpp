@@ -50,7 +50,7 @@
 QT_BEGIN_NAMESPACE
 
 QAndroidPlatformOpenGLContext::QAndroidPlatformOpenGLContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display)
-    :QEGLPlatformContext(format, share, display, EGL_OPENGL_ES_API)
+    :QEGLPlatformContext(format, share, display)
 {
 }
 

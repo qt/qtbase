@@ -1,6 +1,6 @@
-/***************************************************************************
+/****************************************************************************
 **
-** Copyright (C) 2012 Research In Motion
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -39,61 +39,27 @@
 **
 ****************************************************************************/
 
-#include "qqnxtheme.h"
-
-#include "qqnxfiledialoghelper.h"
-#include "qqnxsystemsettings.h"
-#include "qqnxintegration.h"
+#include <qpa/qplatformintegrationplugin.h>
+#include "qxcbintegration.h"
 
 QT_BEGIN_NAMESPACE
 
-QQnxTheme::QQnxTheme(const QQnxIntegration *integration) : m_integration(integration)
+class QXcbIntegrationPlugin : public QPlatformIntegrationPlugin
 {
-}
+   Q_OBJECT
+   Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QPA.QPlatformIntegrationFactoryInterface.5.2" FILE "xcb.json")
+public:
+    QPlatformIntegration *create(const QString&, const QStringList&, int &, char **);
+};
 
-QQnxTheme::~QQnxTheme()
+QPlatformIntegration* QXcbIntegrationPlugin::create(const QString& system, const QStringList& parameters, int &argc, char **argv)
 {
-    qDeleteAll(m_fonts);
-}
+    if (!system.compare(QLatin1String("xcb"), Qt::CaseInsensitive))
+        return new QXcbIntegration(parameters, argc, argv);
 
-bool QQnxTheme::usePlatformNativeDialog(DialogType type) const
-{
-    if (type == QPlatformTheme::FileDialog)
-        return true;
-#if !defined(QT_NO_COLORDIALOG)
-    if (type == QPlatformTheme::ColorDialog)
-        return false;
-#endif
-#if !defined(QT_NO_FONTDIALOG)
-    if (type == QPlatformTheme::FontDialog)
-        return false;
-#endif
-    return false;
-}
-
-QPlatformDialogHelper *QQnxTheme::createPlatformDialogHelper(DialogType type) const
-{
-    switch (type) {
-    case QPlatformTheme::FileDialog:
-        return new QQnxFileDialogHelper(m_integration);
-#if !defined(QT_NO_COLORDIALOG)
-    case QPlatformTheme::ColorDialog:
-#endif
-#if !defined(QT_NO_FONTDIALOG)
-    case QPlatformTheme::FontDialog:
-#endif
-    default:
-        return 0;
-    }
-}
-
-const QFont *QQnxTheme::font(Font type) const
-{
-    QPlatformFontDatabase *fontDatabase = m_integration->fontDatabase();
-
-    if (fontDatabase && m_fonts.isEmpty())
-        m_fonts = qt_qnx_createRoleFonts(fontDatabase);
-    return m_fonts.value(type, 0);
+    return 0;
 }
 
 QT_END_NAMESPACE
+
+#include "qxcbmain.moc"

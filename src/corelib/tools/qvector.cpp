@@ -565,6 +565,7 @@
 /*! \fn void QVector::removeAt(int i)
     \since 5.2
 
+    Removes the element at index position \a i.
     Equivalent to
     \code
     remove(i);
@@ -587,6 +588,8 @@
 
 /*! \fn T QVector::takeAt(int i)
     \since 5.2
+
+    Removes the element at index position \a i and returns it.
 
     Equivalent to
     \code
@@ -907,7 +910,7 @@
 /*! \fn bool QVector::empty() const
 
     This function is provided for STL compatibility. It is equivalent
-    to isEmpty(), returning true if the vector is empty; otherwise
+    to isEmpty(), returning \c true if the vector is empty; otherwise
     returns \c false.
 */
 

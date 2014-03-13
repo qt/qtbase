@@ -203,4 +203,17 @@ HDC QWindowsBackingStore::getDC() const
     return 0;
 }
 
+#ifndef QT_NO_OPENGL
+
+QImage QWindowsBackingStore::toImage() const
+{
+    if (m_image.isNull()) {
+        qCWarning(lcQpaBackingStore) <<__FUNCTION__ << "Image is null.";
+        return QImage();
+    }
+    return m_image.data()->image();
+}
+
+#endif // !QT_NO_OPENGL
+
 QT_END_NAMESPACE

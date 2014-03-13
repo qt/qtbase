@@ -52,7 +52,7 @@
 #include "qcocoafiledialoghelper.h"
 #include "qcocoatheme.h"
 #include "qcocoainputcontext.h"
-#include "qmacmime.h"
+#include "qcocoamimetypes.h"
 #include "qcocoaaccessibility.h"
 
 #include <qpa/qplatformaccessibility.h>
@@ -274,6 +274,7 @@ QCocoaIntegration::QCocoaIntegration()
     updateScreens();
 
     QMacInternalPasteboardMime::initializeMimeTypes();
+    QCocoaMimeTypes::initializeMimeTypes();
 }
 
 QCocoaIntegration::~QCocoaIntegration()

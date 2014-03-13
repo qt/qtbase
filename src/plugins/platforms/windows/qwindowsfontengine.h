@@ -86,6 +86,7 @@ public:
     virtual int synthesized() const;
     virtual QFixed emSquareSize() const;
 
+    virtual glyph_t glyphIndex(uint ucs4) const;
     virtual bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, ShaperFlags flags) const;
     virtual void recalcAdvances(QGlyphLayout *glyphs, ShaperFlags) const;
 
@@ -108,12 +109,6 @@ public:
     virtual qreal maxCharWidth() const;
     virtual qreal minLeftBearing() const;
     virtual qreal minRightBearing() const;
-
-    virtual const char *name() const;
-
-    bool canRender(const QChar *string, int len);
-
-    Type type() const;
 
     virtual QImage alphaMapForGlyph(glyph_t t) { return alphaMapForGlyph(t, QTransform()); }
     virtual QImage alphaMapForGlyph(glyph_t, const QTransform &xform);
@@ -175,10 +170,11 @@ class QWindowsMultiFontEngine : public QFontEngineMulti
 {
 public:
     QWindowsMultiFontEngine(QFontEngine *first, const QStringList &fallbacks);
-    virtual ~QWindowsMultiFontEngine();
+
+    void setFallbackFamiliesList(const QStringList &fallbacks);
     void loadEngine(int at);
 
-    QStringList fallbacks;
+    QStringList fallbackFamilies;
 };
 
 QT_END_NAMESPACE

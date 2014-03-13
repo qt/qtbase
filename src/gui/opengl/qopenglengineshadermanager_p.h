@@ -90,7 +90,7 @@
         qopenglslMainVertexShader
         qopenglslMainWithTexCoordsVertexShader
 
-    And the the following position vertex shaders:
+    And the following position vertex shaders:
         qopenglslPositionOnlyVertexShader
         qopenglslPositionWithTextureBrushVertexShader
         qopenglslPositionWithPatternBrushVertexShader

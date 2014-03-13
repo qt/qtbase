@@ -880,18 +880,18 @@ void QProcessPrivate::execChild(const char *workingDir, char **path, char **argv
 
     // copy the stdin socket if asked to (without closing on exec)
     if (inputChannelMode != QProcess::ForwardedInputChannel)
-        qt_safe_dup2(stdinChannel.pipe[0], fileno(stdin), 0);
+        qt_safe_dup2(stdinChannel.pipe[0], STDIN_FILENO, 0);
 
     // copy the stdout and stderr if asked to
     if (processChannelMode != QProcess::ForwardedChannels) {
         if (processChannelMode != QProcess::ForwardedOutputChannel)
-            qt_safe_dup2(stdoutChannel.pipe[1], fileno(stdout), 0);
+            qt_safe_dup2(stdoutChannel.pipe[1], STDOUT_FILENO, 0);
 
         // merge stdout and stderr if asked to
         if (processChannelMode == QProcess::MergedChannels) {
-            qt_safe_dup2(fileno(stdout), fileno(stderr), 0);
+            qt_safe_dup2(STDOUT_FILENO, STDERR_FILENO, 0);
         } else if (processChannelMode != QProcess::ForwardedErrorChannel) {
-            qt_safe_dup2(stderrChannel.pipe[1], fileno(stderr), 0);
+            qt_safe_dup2(stderrChannel.pipe[1], STDERR_FILENO, 0);
         }
     }
 

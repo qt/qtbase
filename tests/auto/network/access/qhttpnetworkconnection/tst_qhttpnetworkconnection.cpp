@@ -303,7 +303,7 @@ void tst_QHttpNetworkConnection::put_data()
 
     QTest::newRow("success-internal") << "http://" << QtNetworkSettings::serverName() << "/dav/file1.txt" << ushort(80) << false << "Hello World\nEnd of file\n"<<true;
     QTest::newRow("fail-internal") << "http://" << QtNetworkSettings::serverName() << "/dav2/file1.txt" << ushort(80) << false << "Hello World\nEnd of file\n"<<false;
-    QTest::newRow("fail-host") << "http://" << "fluke-nosuchhost.troll.no" << "/dav2/file1.txt" << ushort(80) << false << "Hello World\nEnd of file\n"<<false;
+    QTest::newRow("fail-host") << "http://" << "invalid.test.qt-project.org" << "/dav2/file1.txt" << ushort(80) << false << "Hello World\nEnd of file\n"<<false;
 }
 
 void tst_QHttpNetworkConnection::put()

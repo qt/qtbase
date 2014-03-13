@@ -216,6 +216,11 @@ public:
     {
         m_gl = new QGLWidget(0, shareWidget);
         moveToThread(this);
+
+    }
+
+    void moveContextToThread()
+    {
         m_gl->context()->moveToThread(this);
     }
 
@@ -307,6 +312,7 @@ void tst_QGLThreads::textureUploadInThread()
     display.show();
     QVERIFY(QTest::qWaitForWindowActive(&display));
 
+    thread.moveContextToThread();
     thread.start();
 
     while (thread.isRunning()) {
@@ -333,7 +339,7 @@ static inline float qrandom() { return (rand() % 100) / 100.f; }
 
 void renderAScene(int w, int h)
 {
-    if (QOpenGLFunctions::isES()) {
+    if (QOpenGLContext::currentContext()->isES()) {
         QGLFunctions funcs(QGLContext::currentContext());
         Q_UNUSED(w);
         Q_UNUSED(h);
@@ -630,6 +636,12 @@ class PaintThreadManager
 public:
     PaintThreadManager(int count) : numThreads(count)
     {
+        for (int i=0; i<numThreads; ++i)
+            devices.append(new T);
+        // Wait until resize events are processed on the internal
+        // QGLWidgets of the buffers to suppress errors
+        // about makeCurrent() from the wrong thread.
+        QCoreApplication::processEvents();
         for (int i=0; i<numThreads; ++i) {
             devices.append(new T);
             threads.append(new QThread);

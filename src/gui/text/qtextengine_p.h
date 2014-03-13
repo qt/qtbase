@@ -89,35 +89,6 @@ class QAbstractTextDocumentLayout;
 
 typedef quint32 glyph_t;
 
-#ifdef  __xlC__
-typedef unsigned q_hb_bitfield;
-#else
-typedef quint8 q_hb_bitfield;
-#endif
-
-typedef struct {
-    typedef enum {
-        NoJustification= 0,   /* Justification can't be applied after this glyph */
-        Arabic_Space   = 1,   /* This glyph represents a space inside arabic text */
-        Character      = 2,   /* Inter-character justification point follows this glyph */
-        Space          = 4,   /* This glyph represents a blank outside an Arabic run */
-        Arabic_Normal  = 7,   /* Normal Middle-Of-Word glyph that connects to the right (begin) */
-        Arabic_Waw     = 8,   /* Next character is final form of Waw/Ain/Qaf/Fa */
-        Arabic_BaRa    = 9,   /* Next two chars are Ba + Ra/Ya/AlefMaksura */
-        Arabic_Alef    = 10,  /* Next character is final form of Alef/Tah/Lam/Kaf/Gaf */
-        Arabic_HaaDal  = 11,  /* Next character is final form of Haa/Dal/Taa Marbutah */
-        Arabic_Seen    = 12,  /* Initial or Medial form Of Seen/Sad */
-        Arabic_Kashida = 13   /* Kashida(U+640) in middle of word */
-    } JustificationClass;
-
-    q_hb_bitfield justification   :4;  /* Justification class */
-    q_hb_bitfield clusterStart    :1;  /* First glyph of representation of cluster */
-    q_hb_bitfield mark            :1;  /* needs to be positioned around base char */
-    q_hb_bitfield zeroWidth       :1;  /* ZWJ, ZWNJ etc, with no width */
-    q_hb_bitfield dontPrint       :1;
-    q_hb_bitfield combiningClass  :8;
-} QGlyphAttributes;
-
 // this uses the same coordinate system as Qt, but a different one to freetype.
 // * y is usually negative, and is equal to the ascent.
 // * negative yoff means the following stuff is drawn higher up.
@@ -188,6 +159,14 @@ struct QGlyphJustification
 };
 Q_DECLARE_TYPEINFO(QGlyphJustification, Q_PRIMITIVE_TYPE);
 
+struct QGlyphAttributes {
+    uchar clusterStart  : 1;
+    uchar dontPrint     : 1;
+    uchar justification : 4;
+    uchar reserved      : 2;
+};
+Q_STATIC_ASSERT(sizeof(QGlyphAttributes) == 1);
+
 struct QGlyphLayout
 {
     enum {
@@ -200,7 +179,7 @@ struct QGlyphLayout
     glyph_t *glyphs; // 4 bytes per element
     QFixed *advances; // 4 bytes per element
     QGlyphJustification *justifications; // 4 bytes per element
-    QGlyphAttributes *attributes; // 2 bytes per element
+    QGlyphAttributes *attributes; // 1 byte per element
 
     int numGlyphs;
 

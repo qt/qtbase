@@ -163,6 +163,7 @@ public:
     FaceId faceId() const { return face_id; }
     bool getSfntTableData(uint tag, uchar *buffer, uint *length) const;
 
+    virtual glyph_t glyphIndex(uint ucs4) const;
     bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, ShaperFlags flags) const;
     void recalcAdvances(QGlyphLayout *, ShaperFlags) const;
 
@@ -181,11 +182,6 @@ public:
     QFixed underlinePosition() const;
     QFixed lineThickness() const;
 
-    Type type() const;
-
-    bool canRender(const QChar *string, int len);
-    inline const char *name() const { return "QPF2"; }
-
     virtual int glyphCount() const { return glyphMapEntries; }
 
     bool isValid() const;
@@ -199,7 +195,7 @@ private:
 
     const uchar *fontData;
     int dataSize;
-    const uchar *externalCMap;
+    const uchar *cmap;
     quint32 cmapOffset;
     int cmapSize;
     quint32 glyphMapOffset;

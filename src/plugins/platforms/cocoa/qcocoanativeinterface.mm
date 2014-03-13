@@ -44,7 +44,6 @@
 #include "qcocoawindow.h"
 #include "qcocoamenu.h"
 #include "qcocoamenubar.h"
-#include "qmacmime.h"
 #include "qcocoahelpers.h"
 #include "qcocoaapplication.h"
 #include "qcocoaintegration.h"

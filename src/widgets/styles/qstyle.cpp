@@ -1585,14 +1585,28 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
 
     \table
     \header \li Contents Type    \li QStyleOption Subclass
-    \row \li \l CT_PushButton   \li \l QStyleOptionButton
-    \row \li \l CT_CheckBox     \li \l QStyleOptionButton
-    \row \li \l CT_RadioButton  \li \l QStyleOptionButton
-    \row \li \l CT_ToolButton   \li \l QStyleOptionToolButton
-    \row \li \l CT_ComboBox     \li \l QStyleOptionComboBox
-    \row \li \l CT_Splitter     \li \l QStyleOption
-    \row \li \l CT_ProgressBar  \li \l QStyleOptionProgressBar
-    \row \li \l CT_MenuItem     \li \l QStyleOptionMenuItem
+    \row \li \l CT_CheckBox      \li \l QStyleOptionButton
+    \row \li \l CT_ComboBox      \li \l QStyleOptionComboBox
+    \row \li \l CT_GroupBox      \li \l QStyleOptionGroupBox
+    \row \li \l CT_HeaderSection \li \l QStyleOptionHeader
+    \row \li \l CT_ItemViewItem  \li \l QStyleOptionViewItem
+    \row \li \l CT_LineEdit      \li \l QStyleOptionFrame
+    \row \li \l CT_MdiControls   \li \l QStyleOptionComplex
+    \row \li \l CT_Menu          \li \l QStyleOption
+    \row \li \l CT_MenuItem      \li \l QStyleOptionMenuItem
+    \row \li \l CT_MenuBar       \li \l QStyleOptionMenuItem
+    \row \li \l CT_MenuBarItem   \li \l QStyleOptionMenuItem
+    \row \li \l CT_ProgressBar   \li \l QStyleOptionProgressBar
+    \row \li \l CT_PushButton    \li \l QStyleOptionButton
+    \row \li \l CT_RadioButton   \li \l QStyleOptionButton
+    \row \li \l CT_ScrollBar     \li \l QStyleOptionSlider
+    \row \li \l CT_SizeGrip      \li \l QStyleOption
+    \row \li \l CT_Slider        \li \l QStyleOptionSlider
+    \row \li \l CT_SpinBox       \li \l QStyleOptionSpinBox
+    \row \li \l CT_Splitter      \li \l QStyleOption
+    \row \li \l CT_TabBarTab     \li \l QStyleOptionTab
+    \row \li \l CT_TabWidget     \li \l QStyleOptionTabWidgetFrame
+    \row \li \l CT_ToolButton    \li \l QStyleOptionToolButton
     \endtable
 
     \sa ContentsType, QStyleOption

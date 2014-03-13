@@ -124,11 +124,6 @@ public:
 
 bool QOpenGLTimerQueryPrivate::create()
 {
-    if (QOpenGLFunctions::isES()) {
-        qWarning("QOpenGLTimerQuery: Not supported on dynamic GL ES");
-        return false;
-    }
-
     QOpenGLContext *ctx = QOpenGLContext::currentContext();
 
     if (timer && context == ctx)
@@ -137,6 +132,11 @@ bool QOpenGLTimerQueryPrivate::create()
     context = ctx;
     if (!context) {
         qWarning("A current OpenGL context is required to create timer query objects");
+        return false;
+    }
+
+    if (context->isES()) {
+        qWarning("QOpenGLTimerQuery: Not supported on OpenGL ES");
         return false;
     }
 
@@ -283,7 +283,7 @@ GLuint64 QOpenGLTimerQueryPrivate::result() const
     As this function's name implies, it blocks CPU execution until OpenGL notifies
     that the timer query result is available. To avoid blocking, you can check
     if the query result is available by calling isResultAvailable(). Note that
-    modern GPUs are deeply pipelined and query results may not become availble for
+    modern GPUs are deeply pipelined and query results may not become available for
     between 1-5 frames after they were issued.
 
     Note that OpenGL does not permit nesting or interleaving of multiple timer queries

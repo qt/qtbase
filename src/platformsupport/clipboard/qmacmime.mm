@@ -39,28 +39,10 @@
 **
 ****************************************************************************/
 
-#include "qmacmime.h"
-#include "qcocoahelpers.h"
-#include "qmacclipboard.h"
-
-#include "qdebug.h"
-#include "qpixmap.h"
-#include "qimagewriter.h"
-#include "qimagereader.h"
-#include "qdatastream.h"
-#include "qbuffer.h"
-#include "qdatetime.h"
+#include "qmacmime_p.h"
 #include "qguiapplication.h"
-#include "qtextcodec.h"
-#include "qregexp.h"
-#include "qurl.h"
-#include "qmap.h"
-
-#include <Cocoa/Cocoa.h>
 
 QT_BEGIN_NAMESPACE
-
-extern CGImageRef qt_mac_createCGImageFromQImage(const QImage &img, const QImage **imagePtr = 0); // qpaintengine_mac.cpp
 
 typedef QList<QMacInternalPasteboardMime*> MimeList;
 Q_GLOBAL_STATIC(MimeList, globalMimeList)
@@ -107,13 +89,6 @@ const QStringList& qt_mac_enabledDraggedTypes()
   QDnD debug facilities
  *****************************************************************************/
 //#define DEBUG_MIME_MAPS
-
-//functions
-extern QString qt_mac_from_pascal_string(const Str255);  //qglobal.cpp
-extern void qt_mac_from_pascal_string(QString, Str255, TextEncoding encoding=0, int len=-1);  //qglobal.cpp
-
-ScrapFlavorType qt_mac_mime_type = 'CUTE';
-CFStringRef qt_mac_mime_typeUTI = CFSTR("com.pasteboard.trolltech.marker");
 
 /*!
   \class QMacPasteboardMime
@@ -303,7 +278,7 @@ QVariant QMacPasteboardMimeTypeName::convertToMime(const QString &, QList<QByteA
 QList<QByteArray> QMacPasteboardMimeTypeName::convertFromMime(const QString &, QVariant, QString)
 {
     QList<QByteArray> ret;
-    ret.append(QString("x-qt-mime-type-name").toUtf8());
+    ret.append(QString(QLatin1String("x-qt-mime-type-name")).toUtf8());
     return ret;
 }
 
@@ -349,11 +324,10 @@ QVariant QMacPasteboardMimePlainText::convertToMime(const QString &mimetype, QLi
         qWarning("QMacPasteboardMimePlainText: Cannot handle multiple member data");
     const QByteArray &firstData = data.first();
     QVariant ret;
-    if (flavor == QCFString(QLatin1String("com.apple.traditional-mac-plain-text"))) {
-        QCFString str(CFStringCreateWithBytes(kCFAllocatorDefault,
+    if (flavor == QLatin1String("com.apple.traditional-mac-plain-text")) {
+        return QString::fromCFString(CFStringCreateWithBytes(kCFAllocatorDefault,
                                              reinterpret_cast<const UInt8 *>(firstData.constData()),
                                              firstData.size(), CFStringGetSystemEncoding(), false));
-        ret = QString(str);
     } else {
         qWarning("QMime::convertToMime: unhandled mimetype: %s", qPrintable(mimetype));
     }
@@ -364,7 +338,7 @@ QList<QByteArray> QMacPasteboardMimePlainText::convertFromMime(const QString &, 
 {
     QList<QByteArray> ret;
     QString string = data.toString();
-    if (flavor == QCFString(QLatin1String("com.apple.traditional-mac-plain-text")))
+    if (flavor == QLatin1String("com.apple.traditional-mac-plain-text"))
         ret.append(string.toLatin1());
     return ret;
 }
@@ -414,7 +388,8 @@ QString QMacPasteboardMimeUnicodeText::mimeFor(QString flav)
 
 bool QMacPasteboardMimeUnicodeText::canConvert(const QString &mime, QString flav)
 {
-    return flavorFor(mime) == flav;
+    return (mime == QLatin1String("text/plain")
+            && (flav == QLatin1String("public.utf8-plain-text") || (flav == QLatin1String("public.utf16-plain-text"))));
 }
 
 QVariant QMacPasteboardMimeUnicodeText::convertToMime(const QString &mimetype, QList<QByteArray> data, QString flavor)
@@ -425,10 +400,9 @@ QVariant QMacPasteboardMimeUnicodeText::convertToMime(const QString &mimetype, Q
     // I can only handle two types (system and unicode) so deal with them that way
     QVariant ret;
     if (flavor == QLatin1String("public.utf8-plain-text")) {
-        QCFString str(CFStringCreateWithBytes(kCFAllocatorDefault,
+        ret = QString::fromCFString(CFStringCreateWithBytes(kCFAllocatorDefault,
                                              reinterpret_cast<const UInt8 *>(firstData.constData()),
                                              firstData.size(), CFStringGetSystemEncoding(), false));
-        ret = QString(str);
     } else if (flavor == QLatin1String("public.utf16-plain-text")) {
         ret = QString(reinterpret_cast<const QChar *>(firstData.constData()),
                       firstData.size() / sizeof(QChar));
@@ -503,98 +477,6 @@ QList<QByteArray> QMacPasteboardMimeHTMLText::convertFromMime(const QString &mim
     return ret;
 }
 
-class QMacPasteboardMimeTiff : public QMacInternalPasteboardMime {
-public:
-    QMacPasteboardMimeTiff() : QMacInternalPasteboardMime(MIME_ALL) { }
-    QString convertorName();
-
-    QString flavorFor(const QString &mime);
-    QString mimeFor(QString flav);
-    bool canConvert(const QString &mime, QString flav);
-    QVariant convertToMime(const QString &mime, QList<QByteArray> data, QString flav);
-    QList<QByteArray> convertFromMime(const QString &mime, QVariant data, QString flav);
-};
-
-QString QMacPasteboardMimeTiff::convertorName()
-{
-    return QLatin1String("Tiff");
-}
-
-QString QMacPasteboardMimeTiff::flavorFor(const QString &mime)
-{
-    if (mime.startsWith(QLatin1String("application/x-qt-image")))
-        return QLatin1String("public.tiff");
-    return QString();
-}
-
-QString QMacPasteboardMimeTiff::mimeFor(QString flav)
-{
-    if (flav == QLatin1String("public.tiff"))
-        return QLatin1String("application/x-qt-image");
-    return QString();
-}
-
-bool QMacPasteboardMimeTiff::canConvert(const QString &mime, QString flav)
-{
-    return flav == QLatin1String("public.tiff") && mime == QLatin1String("application/x-qt-image");
-}
-
-QVariant QMacPasteboardMimeTiff::convertToMime(const QString &mime, QList<QByteArray> data, QString flav)
-{
-    if (data.count() > 1)
-        qWarning("QMacPasteboardMimeTiff: Cannot handle multiple member data");
-    QVariant ret;
-    if (!canConvert(mime, flav))
-        return ret;
-    const QByteArray &a = data.first();
-    QCFType<CGImageRef> image;
-    QCFType<CFDataRef> tiffData = CFDataCreateWithBytesNoCopy(0,
-                                                reinterpret_cast<const UInt8 *>(a.constData()),
-                                                a.size(), kCFAllocatorNull);
-    QCFType<CGImageSourceRef> imageSource = CGImageSourceCreateWithData(tiffData, 0);
-    image = CGImageSourceCreateImageAtIndex(imageSource, 0, 0);
-    if (image != 0)
-        ret = QVariant(qt_mac_toQImage(image));
-    return ret;
-}
-
-QList<QByteArray> QMacPasteboardMimeTiff::convertFromMime(const QString &mime, QVariant variant, QString flav)
-{
-    QList<QByteArray> ret;
-    if (!canConvert(mime, flav))
-        return ret;
-
-    QImage img = qvariant_cast<QImage>(variant);
-    QCFType<CGImageRef> cgimage = qt_mac_toCGImage(img);
-
-    QCFType<CFMutableDataRef> data = CFDataCreateMutable(0, 0);
-    QCFType<CGImageDestinationRef> imageDestination = CGImageDestinationCreateWithData(data, kUTTypeTIFF, 1, 0);
-    if (imageDestination != 0) {
-        CFTypeRef keys[2];
-        QCFType<CFTypeRef> values[2];
-        QCFType<CFDictionaryRef> options;
-        keys[0] = kCGImagePropertyPixelWidth;
-        keys[1] = kCGImagePropertyPixelHeight;
-        int width = img.width();
-        int height = img.height();
-        values[0] = CFNumberCreate(0, kCFNumberIntType, &width);
-        values[1] = CFNumberCreate(0, kCFNumberIntType, &height);
-        options = CFDictionaryCreate(0, reinterpret_cast<const void **>(keys),
-                                     reinterpret_cast<const void **>(values), 2,
-                                     &kCFTypeDictionaryKeyCallBacks,
-                                     &kCFTypeDictionaryValueCallBacks);
-        CGImageDestinationAddImage(imageDestination, cgimage, options);
-        CGImageDestinationFinalize(imageDestination);
-    }
-    QByteArray ar(CFDataGetLength(data), 0);
-    CFDataGetBytes(data,
-            CFRangeMake(0, ar.size()),
-            reinterpret_cast<UInt8 *>(ar.data()));
-    ret.append(ar);
-    return ret;
-}
-
-
 class QMacPasteboardMimeFileUri : public QMacInternalPasteboardMime {
 public:
     QMacPasteboardMimeFileUri() : QMacInternalPasteboardMime(MIME_ALL) { }
@@ -616,21 +498,20 @@ QString QMacPasteboardMimeFileUri::convertorName()
 QString QMacPasteboardMimeFileUri::flavorFor(const QString &mime)
 {
     if (mime == QLatin1String("text/uri-list"))
-        return QCFString(UTTypeCreatePreferredIdentifierForTag(kUTTagClassOSType, CFSTR("furl"), 0));
+        return QLatin1String("public.file-url");
     return QString();
 }
 
 QString QMacPasteboardMimeFileUri::mimeFor(QString flav)
 {
-    if (flav == QCFString(UTTypeCreatePreferredIdentifierForTag(kUTTagClassOSType, CFSTR("furl"), 0)))
+    if (flav == QLatin1String("public.file-url"))
         return QLatin1String("text/uri-list");
     return QString();
 }
 
 bool QMacPasteboardMimeFileUri::canConvert(const QString &mime, QString flav)
 {
-    return mime == QLatin1String("text/uri-list")
-            && flav == QCFString(UTTypeCreatePreferredIdentifierForTag(kUTTagClassOSType, CFSTR("furl"), 0));
+    return mime == QLatin1String("text/uri-list") && flav == QLatin1String("public.file-url");
 }
 
 QVariant QMacPasteboardMimeFileUri::convertToMime(const QString &mime, QList<QByteArray> data, QString flav)
@@ -762,7 +643,7 @@ public:
 
 QString QMacPasteboardMimeVCard::convertorName()
 {
-    return QString("VCard");
+    return QLatin1String("VCard");
 }
 
 bool QMacPasteboardMimeVCard::canConvert(const QString &mime, QString flav)
@@ -802,7 +683,6 @@ QList<QByteArray> QMacPasteboardMimeVCard::convertFromMime(const QString &mime, 
     return ret;
 }
 
-
 /*!
   \internal
 
@@ -816,7 +696,6 @@ void QMacInternalPasteboardMime::initializeMimeTypes()
         new QMacPasteboardMimeAny;
 
         //standard types that we wrap
-        new QMacPasteboardMimeTiff;
         new QMacPasteboardMimeUnicodeText;
         new QMacPasteboardMimePlainText;
         new QMacPasteboardMimeHTMLText;

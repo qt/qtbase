@@ -51,11 +51,8 @@ load(cmake_functions)
 
 CMAKE_BUILD_TYPE = Debug
 CONFIG(release, debug|release):CMAKE_BUILD_TYPE = Release
+win32: CMAKE_GENERATOR = -G \"NMake Makefiles\"
 mingw:isEmpty(CROSS_COMPILE):CMAKE_GENERATOR = -G \"MinGW Makefiles\"
-win32:equals(QT_ARCH, x86_64) {
-    win32-msvc2010:CMAKE_GENERATOR = -G \"Visual Studio 10 Win64\"
-    win32-msvc2012:CMAKE_GENERATOR = -G \"Visual Studio 11 Win64\"
-}
 
 BUILD_DIR = $$replace($$list($$OUT_PWD/build), /, $$QMAKE_DIR_SEP)
 

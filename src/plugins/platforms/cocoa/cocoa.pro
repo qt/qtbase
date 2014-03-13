@@ -33,13 +33,13 @@ OBJECTIVE_SOURCES += main.mm \
     qcocoaclipboard.mm \
     qcocoadrag.mm \
     qmacclipboard.mm \
-    qmacmime.mm \
     qcocoasystemsettings.mm \
     qcocoainputcontext.mm \
     qcocoaservices.mm \
     qcocoasystemtrayicon.mm \
     qcocoaintrospection.mm \
     qcocoakeymapper.mm \
+    qcocoamimetypes.mm
 
 SOURCES += messages.cpp
 
@@ -70,14 +70,14 @@ HEADERS += qcocoaintegration.h \
     qcocoaclipboard.h \
     qcocoadrag.h \
     qmacclipboard.h \
-    qmacmime.h \
     qcocoasystemsettings.h \
     qcocoainputcontext.h \
     qcocoaservices.h \
     qcocoasystemtrayicon.h \
     qcocoaintrospection.h \
     qcocoakeymapper.h \
-    messages.h
+    messages.h \
+    qcocoamimetypes.h
 
 RESOURCES += qcocoaresources.qrc
 

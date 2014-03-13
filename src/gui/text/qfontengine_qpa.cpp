@@ -45,6 +45,7 @@
 #include <QtCore/QFileInfo>
 #include <QtCore/QDir>
 #include <QtCore/QBuffer>
+#include <QtCore/private/qstringiterator_p.h>
 
 #include <QtGui/private/qpaintengine_raster_p.h>
 #include <QtGui/private/qguiapplication_p.h>
@@ -225,23 +226,13 @@ QVariant QFontEngineQPA::extractHeaderField(const uchar *data, HeaderTag request
 }
 
 
-
-static inline unsigned int getChar(const QChar *str, int &i, const int len)
-{
-    uint ucs4 = str[i].unicode();
-    if (str[i].isHighSurrogate() && i < len-1 && str[i+1].isLowSurrogate()) {
-        ++i;
-        ucs4 = QChar::surrogateToUcs4(ucs4, str[i].unicode());
-    }
-    return ucs4;
-}
-
 QFontEngineQPA::QFontEngineQPA(const QFontDef &def, const QByteArray &data)
-    : fontData(reinterpret_cast<const uchar *>(data.constData())), dataSize(data.size())
+    : QFontEngine(QPF2),
+      fontData(reinterpret_cast<const uchar *>(data.constData())), dataSize(data.size())
 {
     fontDef = def;
     cache_cost = 100;
-    externalCMap = 0;
+    cmap = 0;
     cmapOffset = 0;
     cmapSize = 0;
     glyphMapOffset = 0;
@@ -292,15 +283,8 @@ QFontEngineQPA::QFontEngineQPA(const QFontDef &def, const QByteArray &data)
 
     // get the real cmap
     if (cmapOffset) {
-        int tableSize = cmapSize;
-        const uchar *cmapPtr = getCMap(fontData + cmapOffset, tableSize, &symbol, &cmapSize);
-        if (cmapPtr)
-            cmapOffset = cmapPtr - fontData;
-        else
-            cmapOffset = 0;
-    } else if (externalCMap) {
-        int tableSize = cmapSize;
-        externalCMap = getCMap(externalCMap, tableSize, &symbol, &cmapSize);
+        cmap = QFontEngine::getCMap(fontData + cmapOffset, cmapSize, &symbol, &cmapSize);
+        cmapOffset = cmap ? cmap - fontData : 0;
     }
 
     // verify all the positions in the glyphMap
@@ -322,7 +306,7 @@ QFontEngineQPA::QFontEngineQPA(const QFontDef &def, const QByteArray &data)
 #if defined(DEBUG_FONTENGINE)
     if (!isValid())
         qDebug() << "fontData" <<  fontData << "dataSize" << dataSize
-                 << "externalCMap" << externalCMap << "cmapOffset" << cmapOffset
+                 << "cmap" << cmap << "cmapOffset" << cmapOffset
                  << "glyphMapOffset" << glyphMapOffset << "glyphDataOffset" << glyphDataOffset
                  << "fd" << fd << "glyphDataSize" << glyphDataSize;
 #endif
@@ -334,14 +318,30 @@ QFontEngineQPA::~QFontEngineQPA()
 
 bool QFontEngineQPA::getSfntTableData(uint tag, uchar *buffer, uint *length) const
 {
-    Q_UNUSED(tag);
-    Q_UNUSED(buffer);
-    *length = 0;
-    return false;
+    if (tag != MAKE_TAG('c', 'm', 'a', 'p') || !cmap)
+        return false;
+
+    if (buffer && int(*length) >= cmapSize)
+        memcpy(buffer, cmap, cmapSize);
+    *length = cmapSize;
+    Q_ASSERT(int(*length) > 0);
+    return true;
+}
+
+glyph_t QFontEngineQPA::glyphIndex(uint ucs4) const
+{
+    glyph_t glyph = getTrueTypeGlyphIndex(cmap, ucs4);
+    if (glyph == 0 && symbol && ucs4 < 0x100)
+        glyph = getTrueTypeGlyphIndex(cmap, ucs4 + 0xf000);
+    if (!findGlyph(glyph))
+        glyph = 0;
+
+    return glyph;
 }
 
 bool QFontEngineQPA::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, QFontEngine::ShaperFlags flags) const
 {
+    Q_ASSERT(glyphs->numGlyphs >= *nglyphs);
     if (*nglyphs < len) {
         *nglyphs = len;
         return false;
@@ -351,20 +351,20 @@ bool QFontEngineQPA::stringToCMap(const QChar *str, int len, QGlyphLayout *glyph
     QSet<QChar> seenGlyphs;
 #endif
 
-    const uchar *cmap = externalCMap ? externalCMap : (fontData + cmapOffset);
-
     int glyph_pos = 0;
     if (symbol) {
-        for (int i = 0; i < len; ++i) {
-            unsigned int uc = getChar(str, i, len);
+        QStringIterator it(str, str + len);
+        while (it.hasNext()) {
+            const uint uc = it.next();
             glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, uc);
             if(!glyphs->glyphs[glyph_pos] && uc < 0x100)
                 glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, uc + 0xf000);
             ++glyph_pos;
         }
     } else {
-        for (int i = 0; i < len; ++i) {
-            unsigned int uc = getChar(str, i, len);
+        QStringIterator it(str, str + len);
+        while (it.hasNext()) {
+            const uint uc = it.next();
             glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, uc);
 #if 0 && defined(DEBUG_FONTENGINE)
             QChar c(uc);
@@ -390,10 +390,8 @@ void QFontEngineQPA::recalcAdvances(QGlyphLayout *glyphs, QFontEngine::ShaperFla
 {
     for (int i = 0; i < glyphs->numGlyphs; ++i) {
         const Glyph *g = findGlyph(glyphs->glyphs[i]);
-        if (!g) {
-            glyphs->glyphs[i] = 0;
+        if (!g)
             continue;
-        }
         glyphs->advances[i] = g->advance;
     }
 }
@@ -498,37 +496,9 @@ QFixed QFontEngineQPA::lineThickness() const
     return QFixed::fromReal(extractHeaderField(fontData, Tag_LineThickness).value<qreal>());
 }
 
-QFontEngine::Type QFontEngineQPA::type() const
-{
-    return QFontEngine::QPF2;
-}
-
-bool QFontEngineQPA::canRender(const QChar *string, int len)
-{
-    const uchar *cmap = externalCMap ? externalCMap : (fontData + cmapOffset);
-
-    if (symbol) {
-        for (int i = 0; i < len; ++i) {
-            unsigned int uc = getChar(string, i, len);
-            glyph_t g = getTrueTypeGlyphIndex(cmap, uc);
-            if(!g && uc < 0x100)
-                g = getTrueTypeGlyphIndex(cmap, uc + 0xf000);
-            if (!g)
-                return false;
-        }
-    } else {
-        for (int i = 0; i < len; ++i) {
-            unsigned int uc = getChar(string, i, len);
-            if (!getTrueTypeGlyphIndex(cmap, uc))
-                return false;
-        }
-    }
-    return true;
-}
-
 bool QFontEngineQPA::isValid() const
 {
-    return fontData && dataSize && (cmapOffset || externalCMap)
+    return fontData && dataSize && cmapOffset
            && glyphMapOffset && glyphDataOffset && glyphDataSize > 0;
 }
 
@@ -563,11 +533,9 @@ void QPAGenerator::writeHeader()
     writeTaggedUInt32(QFontEngineQPA::Tag_FileIndex, face.index);
 
     {
-        uchar data[4];
-        uint len = 4;
-        bool ok = fe->getSfntTableData(MAKE_TAG('h', 'e', 'a', 'd'), data, &len);
-        if (ok) {
-            const quint32 revision = qFromBigEndian<quint32>(data);
+        const QByteArray head = fe->getSfntTable(MAKE_TAG('h', 'e', 'a', 'd'));
+        if (head.size() >= 4) {
+            const quint32 revision = qFromBigEndian<quint32>(reinterpret_cast<const uchar *>(head.constData()));
             writeTaggedUInt32(QFontEngineQPA::Tag_FontRevision, revision);
         }
     }
@@ -748,10 +716,9 @@ QFontEngine* QFontEngineMultiQPA::createMultiFontEngine(QFontEngine *fe, int scr
     QFontCache::EngineCache::Iterator it = fc->engineCache.find(key),
             end = fc->engineCache.end();
     while (it != end && it.key() == key) {
-        QFontEngineMulti *cachedEngine = 0;
-        if (it.value().data->type() == QFontEngine::Multi)
-            cachedEngine = static_cast<QFontEngineMulti *>(it.value().data);
-        if (faceIsLocal || (cachedEngine && fe == cachedEngine->engine(0))) {
+        Q_ASSERT(it.value().data->type() == QFontEngine::Multi);
+        QFontEngineMulti *cachedEngine = static_cast<QFontEngineMulti *>(it.value().data);
+        if (faceIsLocal || fe == cachedEngine->engine(0)) {
             engine = cachedEngine;
             fc->updateHitCountAndTimeStamp(it.value());
             break;

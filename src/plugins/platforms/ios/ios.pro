@@ -21,7 +21,8 @@ OBJECTIVE_SOURCES = \
     qiosinputcontext.mm \
     qiostheme.mm \
     qiosglobal.mm \
-    qiosservices.mm
+    qiosservices.mm \
+    qiosclipboard.mm
 
 HEADERS = \
     qiosintegration.h \
@@ -37,7 +38,8 @@ HEADERS = \
     qiostheme.h \
     qiosglobal.h \
     qiosservices.h \
-    quiview.h
+    quiview.h \
+    qiosclipboard.h
 
 OTHER_FILES = \
     quiview_textinput.mm

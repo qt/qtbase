@@ -117,7 +117,7 @@ GLuint QOpenGLTextureCache::bindTexture(QOpenGLContext *context, const QPixmap &
     if (!pixmap.paintingActive()) {
         QOpenGLCachedTexture *entry = m_cache.object(key);
         if (entry) {
-            glBindTexture(GL_TEXTURE_2D, entry->id());
+            context->functions()->glBindTexture(GL_TEXTURE_2D, entry->id());
             return entry->id();
         }
     }
@@ -154,7 +154,7 @@ GLuint QOpenGLTextureCache::bindTexture(QOpenGLContext *context, const QImage &i
     if (!image.paintingActive()) {
         QOpenGLCachedTexture *entry = m_cache.object(key);
         if (entry) {
-            glBindTexture(GL_TEXTURE_2D, entry->id());
+            context->functions()->glBindTexture(GL_TEXTURE_2D, entry->id());
             return entry->id();
         }
     }
@@ -181,12 +181,13 @@ GLuint QOpenGLTextureCache::bindTexture(QOpenGLContext *context, const QImage &i
 GLuint QOpenGLTextureCache::bindTexture(QOpenGLContext *context, qint64 key, const QImage &image)
 {
     GLuint id;
-    glGenTextures(1, &id);
-    glBindTexture(GL_TEXTURE_2D, id);
+    QOpenGLFunctions *funcs = context->functions();
+    funcs->glGenTextures(1, &id);
+    funcs->glBindTexture(GL_TEXTURE_2D, id);
 
     QImage tx = image.convertToFormat(QImage::Format_RGBA8888_Premultiplied);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tx.width(), tx.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, const_cast<const QImage &>(tx).bits());
+    funcs->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tx.width(), tx.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, const_cast<const QImage &>(tx).bits());
 
     int cost = tx.width() * tx.height() * 4 / 1024;
     m_cache.insert(key, new QOpenGLCachedTexture(id, context), cost);
@@ -210,9 +211,9 @@ void QOpenGLTextureCache::freeResource(QOpenGLContext *)
     Q_ASSERT(false); // the texture cache lives until the context group disappears
 }
 
-static void freeTexture(QOpenGLFunctions *, GLuint id)
+static void freeTexture(QOpenGLFunctions *funcs, GLuint id)
 {
-    glDeleteTextures(1, &id);
+    funcs->glDeleteTextures(1, &id);
 }
 
 QOpenGLCachedTexture::QOpenGLCachedTexture(GLuint id, QOpenGLContext *context)

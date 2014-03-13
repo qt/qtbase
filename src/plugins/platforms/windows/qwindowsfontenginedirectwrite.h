@@ -74,6 +74,7 @@ public:
     bool getSfntTableData(uint tag, uchar *buffer, uint *length) const;
     QFixed emSquareSize() const;
 
+    virtual glyph_t glyphIndex(uint ucs4) const;
     bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, ShaperFlags flags) const;
     void recalcAdvances(QGlyphLayout *glyphs, ShaperFlags) const;
 
@@ -89,17 +90,12 @@ public:
     QFixed xHeight() const;
     qreal maxCharWidth() const;
 
-    const char *name() const;
-
     bool supportsSubPixelPositions() const;
 
     QImage alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition);
     QImage alphaRGBMapForGlyph(glyph_t t, QFixed subPixelPosition, const QTransform &xform);
 
     QFontEngine *cloneWithSize(qreal pixelSize) const;
-
-    bool canRender(const QChar *string, int len);
-    Type type() const;
 
     const QSharedPointer<QWindowsFontEngineData> &fontEngineData() const { return m_fontEngineData; }
 

@@ -164,7 +164,7 @@ NSView *QMacCocoaViewContainer::cocoaView() const
 }
 
 /*!
-    Sets the NSView to contain to be \a cocoaViewToWrap and retains it. If this
+    Sets \a view as the NSView to contain and retains it. If this
     container already had a view set, it will release the previously set view.
 */
 void QMacCocoaViewContainer::setCocoaView(NSView *view)

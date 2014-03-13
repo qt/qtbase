@@ -83,6 +83,8 @@ void GLWidget::setClearColor(const QColor &color)
 
 void GLWidget::initializeGL()
 {
+    initializeOpenGLFunctions();
+
     makeObject();
 
     glEnable(GL_DEPTH_TEST);

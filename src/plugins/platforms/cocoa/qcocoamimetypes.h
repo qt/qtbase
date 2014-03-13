@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 by Southwest Research Institute (R)
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtCore module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -39,13 +39,19 @@
 **
 ****************************************************************************/
 
+#ifndef QCOCOAMIMETYPES_H
+#define QCOCOAMIMETYPES_H
 
-#include <QByteArrayList>
+#include <QtCore/QtCore>
 
-int main(int, char **)
+QT_BEGIN_NAMESPACE
+
+class QCocoaMimeTypes
 {
-    QByteArray ba1, ba2, ba3;
-//! [0]
-    QByteArrayList longerList = (QByteArrayList() << ba1 << ba2 << ba3);
-//! [0]
-}
+public:
+    static void initializeMimeTypes();
+};
+
+QT_END_NAMESPACE
+
+#endif

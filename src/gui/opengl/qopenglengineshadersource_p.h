@@ -517,6 +517,41 @@ static const char* const qopenglslRgbMaskFragmentShaderPass2 = "\n\
         ExclusionCompositionModeFragmentShader,
 */
 
+// OpenGL 3.2 core profile versions of shaders that are used by QOpenGLTextureGlyphCache
+
+static const char* const qopenglslMainWithTexCoordsVertexShader_core = "#version 150 core \n\
+        in vec2 textureCoordArray; \n\
+        out vec2 textureCoords; \n\
+        void setPosition(); \n\
+        void main(void) \n\
+        { \n\
+            setPosition(); \n\
+            textureCoords = textureCoordArray; \n\
+        }\n";
+
+static const char* const qopenglslUntransformedPositionVertexShader_core = "\n\
+        in vec4 vertexCoordsArray; \n\
+        void setPosition(void) \n\
+        { \n\
+            gl_Position = vertexCoordsArray; \n\
+        }\n";
+
+static const char* const qopenglslMainFragmentShader_core = "#version 150 core \n\
+        vec4 srcPixel(); \n\
+        out vec4 fragColor; \n\
+        void main() \n\
+        { \n\
+            fragColor = srcPixel(); \n\
+        }\n";
+
+static const char* const qopenglslImageSrcFragmentShader_core = "\n\
+        in vec2 textureCoords; \n\
+        uniform sampler2D imageTexture; \n\
+        vec4 srcPixel() \n\
+        { \n"
+             "return texture(imageTexture, textureCoords); \n"
+        "}\n";
+
 QT_END_NAMESPACE
 
 #endif // GLGC_SHADER_SOURCE_H

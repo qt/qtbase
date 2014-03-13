@@ -86,12 +86,7 @@ public:
     float operator[](int i) const;
 
     float length() const;
-#ifdef QT_BUILD_GUI_LIB
-    float lengthSquared() const;
-#else
-    Q_DECL_CONSTEXPR inline float lengthSquared() const
-    { return xp * xp + yp * yp + zp * zp + wp * wp; }
-#endif
+    float lengthSquared() const; //In Qt 6 convert to inline and constexpr
 
     QVector4D normalized() const;
     void normalize();
@@ -102,12 +97,7 @@ public:
     QVector4D &operator*=(const QVector4D &vector);
     QVector4D &operator/=(float divisor);
 
-#ifdef QT_BUILD_GUI_LIB
-    static float dotProduct(const QVector4D& v1, const QVector4D& v2);
-#else
-    static float dotProduct(const QVector4D& v1, const QVector4D& v2)
-    { return v1.xp * v2.xp + v1.yp * v2.yp + v1.zp * v2.zp + v1.wp * v2.wp; }
-#endif
+    static float dotProduct(const QVector4D& v1, const QVector4D& v2); //In Qt 6 convert to inline and constexpr
 
     Q_DECL_CONSTEXPR friend inline bool operator==(const QVector4D &v1, const QVector4D &v2);
     Q_DECL_CONSTEXPR friend inline bool operator!=(const QVector4D &v1, const QVector4D &v2);

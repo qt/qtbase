@@ -57,9 +57,8 @@ QT_BEGIN_NAMESPACE
 class QMinimalEglContext : public QEGLPlatformContext
 {
 public:
-    QMinimalEglContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display,
-                  EGLenum eglApi = EGL_OPENGL_ES_API)
-        : QEGLPlatformContext(format, share, display, eglApi)
+    QMinimalEglContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display)
+        : QEGLPlatformContext(format, share, display)
     {
     }
 

@@ -241,7 +241,7 @@ public:
         3. User increments month: 31/03/2000
 
         At step 1, cachedDay stores 31. At step 2, the 31 is invalid for February, so the cachedDay is not updated.
-        At step 3, the the month is changed to March, for which 31 is a valid day. Since 29 < 31, the day is set to cachedDay.
+        At step 3, the month is changed to March, for which 31 is a valid day. Since 29 < 31, the day is set to cachedDay.
         This is good for when users have selected their desired day and are scrolling up or down in the month or year section
         and do not want smaller months (or non-leap years) to alter the day that they chose.
     */

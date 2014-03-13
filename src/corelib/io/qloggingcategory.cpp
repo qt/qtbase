@@ -108,8 +108,9 @@ Q_GLOBAL_STATIC_WITH_ARGS(QLoggingCategory, qtDefaultCategory,
     Rules are evaluated in text order, from first to last. That is, if two rules
     apply to a category/type, the rule that comes later is applied.
 
-    Rules can be set via \l setFilterRules(). Since Qt 5.3 logging rules
-    are also automatically loaded from the \c [Rules] section of a logging
+    Rules can be set via \l setFilterRules(). Since Qt 5.3 logging rules can also
+    be set in the \c QT_LOGGING_RULES environment variable, and
+    are automatically loaded from the \c [Rules] section of a logging
     configuration file. Such configuration files are looked up in the QtProject
     configuration directory, or explicitly set in a \c QT_LOGGING_CONF
     environment variable.
@@ -117,13 +118,15 @@ Q_GLOBAL_STATIC_WITH_ARGS(QLoggingCategory, qtDefaultCategory,
     Rules set by \l setFilterRules() take precedence over rules specified
     in the QtProject configuration directory, and can, in turn, be
     overwritten by rules from the configuration file specified by
-    \c QT_LOGGING_CONF.
+    \c QT_LOGGING_CONF, and rules set by \c QT_LOGGING_RULES.
+
 
     Order of evaluation:
     \list
     \li Rules from QtProject/qlogging.ini
     \li Rules set by \l setFilterRules()
     \li Rules from file in \c QT_LOGGING_CONF
+    \li Rules from environment variable QT_LOGGING_RULES
     \endlist
 
     The \c QtProject/qlogging.ini file is looked up in all directories returned
@@ -136,6 +139,9 @@ Q_GLOBAL_STATIC_WITH_ARGS(QLoggingCategory, qtDefaultCategory,
         \l QCoreApplication::applicationDirPath(),
         QCoreApplication::applicationDirPath() + \c "/data"
     \endlist
+
+    Set the \c QT_LOGGING_DEBUG environment variable to see from where
+    logging rules are loaded.
 
     \section2 Installing a Custom Filter
 
@@ -341,9 +347,8 @@ QLoggingCategory::installFilter(QLoggingCategory::CategoryFilter filter)
     \snippet qloggingcategory/main.cpp 2
 
     \note The rules might be ignored if a custom category filter is installed
-    with \l installFilter(), or if the user defined a custom logging
-    configuration file in the \c QT_LOGGING_CONF environment variable.
-
+    with \l installFilter(), or if the user defined \c QT_LOGGING_CONF or \c QT_LOGGING_RULES
+    environment variable.
 */
 void QLoggingCategory::setFilterRules(const QString &rules)
 {

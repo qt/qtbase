@@ -1,9 +1,10 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Samuel Gaist <samuel.gaist@edeltech.ch>
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -39,27 +40,62 @@
 **
 ****************************************************************************/
 
-#include <qpa/qplatformintegrationplugin.h>
-#include "qxcbintegration.h"
+#include "qbytearray.h"
+
+#import <Foundation/Foundation.h>
 
 QT_BEGIN_NAMESPACE
 
-class QXcbIntegrationPlugin : public QPlatformIntegrationPlugin
+QByteArray QByteArray::fromCFData(CFDataRef data)
 {
-   Q_OBJECT
-   Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QPA.QPlatformIntegrationFactoryInterface.5.2" FILE "xcb.json")
-public:
-    QPlatformIntegration *create(const QString&, const QStringList&, int &, char **);
-};
+    if (!data)
+        return QByteArray();
 
-QPlatformIntegration* QXcbIntegrationPlugin::create(const QString& system, const QStringList& parameters, int &argc, char **argv)
+    return QByteArray(reinterpret_cast<const char *>(CFDataGetBytePtr(data)), CFDataGetLength(data));
+}
+
+QByteArray QByteArray::fromRawCFData(CFDataRef data)
 {
-    if (!system.compare(QLatin1String("xcb"), Qt::CaseInsensitive))
-        return new QXcbIntegration(parameters, argc, argv);
+    if (!data)
+        return QByteArray();
 
-    return 0;
+    return QByteArray::fromRawData(reinterpret_cast<const char *>(CFDataGetBytePtr(data)), CFDataGetLength(data));
+}
+
+CFDataRef QByteArray::toCFData() const
+{
+    return CFDataCreate(kCFAllocatorDefault, reinterpret_cast<const UInt8 *>(data()), length());
+}
+
+CFDataRef QByteArray::toRawCFData() const
+{
+    return CFDataCreateWithBytesNoCopy(kCFAllocatorDefault, reinterpret_cast<const UInt8 *>(data()),
+                    length(), kCFAllocatorNull);
+}
+
+QByteArray QByteArray::fromNSData(const NSData *data)
+{
+    if (!data)
+        return QByteArray();
+    return QByteArray(reinterpret_cast<const char *>([data bytes]), [data length]);
+}
+
+QByteArray QByteArray::fromRawNSData(const NSData *data)
+{
+    if (!data)
+        return QByteArray();
+    return QByteArray::fromRawData(reinterpret_cast<const char *>([data bytes]), [data length]);
+}
+
+NSData *QByteArray::toNSData() const
+{
+    return [NSData dataWithBytes:constData() length:size()];
+}
+
+NSData *QByteArray::toRawNSData() const
+{
+    // const_cast is fine here because NSData is immutable thus will never modify bytes we're giving it
+    return [NSData dataWithBytesNoCopy:const_cast<char *>(constData()) length:size() freeWhenDone:NO];
 }
 
 QT_END_NAMESPACE
-
-#include "main.moc"

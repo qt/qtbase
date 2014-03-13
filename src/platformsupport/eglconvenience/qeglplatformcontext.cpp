@@ -41,8 +41,9 @@
 
 #include "qeglplatformcontext_p.h"
 #include "qeglconvenience_p.h"
+#include "qeglpbuffer_p.h"
 #include <qpa/qplatformwindow.h>
-#include <QtGui/QOpenGLFunctions>
+#include <QOpenGLContext>
 
 QT_BEGIN_NAMESPACE
 
@@ -63,32 +64,50 @@ QT_BEGIN_NAMESPACE
     surface). Other than that, no further customization is necessary.
  */
 
-static inline void bindApi(const QSurfaceFormat &format)
-{
-    switch (format.renderableType()) {
-    case QSurfaceFormat::OpenVG:
-        eglBindAPI(EGL_OPENVG_API);
-        break;
-#ifdef EGL_VERSION_1_4
-    case QSurfaceFormat::DefaultRenderableType:
-        if (!QOpenGLFunctions::isES())
-            eglBindAPI(EGL_OPENGL_API);
-        else
-            eglBindAPI(EGL_OPENGL_ES_API);
-        break;
-    case QSurfaceFormat::OpenGL:
-        eglBindAPI(EGL_OPENGL_API);
-        break;
+// Constants from EGL_KHR_create_context
+#ifndef EGL_CONTEXT_MINOR_VERSION_KHR
+#define EGL_CONTEXT_MINOR_VERSION_KHR 0x30FB
 #endif
-    case QSurfaceFormat::OpenGLES:
-    default:
-        eglBindAPI(EGL_OPENGL_ES_API);
-        break;
-    }
-}
+#ifndef EGL_CONTEXT_FLAGS_KHR
+#define EGL_CONTEXT_FLAGS_KHR 0x30FC
+#endif
+#ifndef EGL_CONTEXT_OPENGL_PROFILE_MASK_KHR
+#define EGL_CONTEXT_OPENGL_PROFILE_MASK_KHR 0x30FD
+#endif
+#ifndef EGL_CONTEXT_OPENGL_DEBUG_BIT_KHR
+#define EGL_CONTEXT_OPENGL_DEBUG_BIT_KHR 0x00000001
+#endif
+#ifndef EGL_CONTEXT_OPENGL_FORWARD_COMPATIBLE_BIT_KHR
+#define EGL_CONTEXT_OPENGL_FORWARD_COMPATIBLE_BIT_KHR 0x00000002
+#endif
+#ifndef EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT_KHR
+#define EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT_KHR 0x00000001
+#endif
+#ifndef EGL_CONTEXT_OPENGL_COMPATIBILITY_PROFILE_BIT_KHR
+#define EGL_CONTEXT_OPENGL_COMPATIBILITY_PROFILE_BIT_KHR 0x00000002
+#endif
 
-QEGLPlatformContext::QEGLPlatformContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display,
-                                         EGLenum eglApi)
+// Constants for OpenGL which are not available in the ES headers.
+#ifndef GL_CONTEXT_FLAGS
+#define GL_CONTEXT_FLAGS 0x821E
+#endif
+#ifndef GL_CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT
+#define GL_CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT 0x0001
+#endif
+#ifndef GL_CONTEXT_FLAG_DEBUG_BIT
+#define GL_CONTEXT_FLAG_DEBUG_BIT 0x00000002
+#endif
+#ifndef GL_CONTEXT_PROFILE_MASK
+#define GL_CONTEXT_PROFILE_MASK 0x9126
+#endif
+#ifndef GL_CONTEXT_CORE_PROFILE_BIT
+#define GL_CONTEXT_CORE_PROFILE_BIT 0x00000001
+#endif
+#ifndef GL_CONTEXT_COMPATIBILITY_PROFILE_BIT
+#define GL_CONTEXT_COMPATIBILITY_PROFILE_BIT 0x00000002
+#endif
+
+QEGLPlatformContext::QEGLPlatformContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display)
     : m_eglDisplay(display)
     , m_eglConfig(q_configFromGLFormat(display, format))
     , m_swapInterval(-1)
@@ -96,11 +115,10 @@ QEGLPlatformContext::QEGLPlatformContext(const QSurfaceFormat &format, QPlatform
     , m_swapIntervalFromEnv(-1)
 {
     init(format, share);
-    Q_UNUSED(eglApi);
 }
 
 QEGLPlatformContext::QEGLPlatformContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display,
-                                         EGLConfig config, EGLenum eglApi)
+                                         EGLConfig config)
     : m_eglDisplay(display)
     , m_eglConfig(config)
     , m_swapInterval(-1)
@@ -108,32 +126,130 @@ QEGLPlatformContext::QEGLPlatformContext(const QSurfaceFormat &format, QPlatform
     , m_swapIntervalFromEnv(-1)
 {
     init(format, share);
-    Q_UNUSED(eglApi);
 }
 
 void QEGLPlatformContext::init(const QSurfaceFormat &format, QPlatformOpenGLContext *share)
 {
     m_format = q_glFormatFromConfig(m_eglDisplay, m_eglConfig);
+    // m_format now has the renderableType() resolved (it cannot be Default anymore)
+    // but does not yet contain version, profile, options.
     m_shareContext = share ? static_cast<QEGLPlatformContext *>(share)->m_eglContext : 0;
 
     QVector<EGLint> contextAttrs;
     contextAttrs.append(EGL_CONTEXT_CLIENT_VERSION);
     contextAttrs.append(format.majorVersion());
+    const bool hasKHRCreateContext = q_hasEglExtension(m_eglDisplay, "EGL_KHR_create_context");
+    if (hasKHRCreateContext) {
+        contextAttrs.append(EGL_CONTEXT_MINOR_VERSION_KHR);
+        contextAttrs.append(format.minorVersion());
+        int flags = 0;
+        // The debug bit is supported both for OpenGL and OpenGL ES.
+        if (format.testOption(QSurfaceFormat::DebugContext))
+            flags |= EGL_CONTEXT_OPENGL_DEBUG_BIT_KHR;
+        // The fwdcompat bit is only for OpenGL 3.0+.
+        if (m_format.renderableType() == QSurfaceFormat::OpenGL
+            && format.majorVersion() >= 3
+            && !format.testOption(QSurfaceFormat::DeprecatedFunctions))
+            flags |= EGL_CONTEXT_OPENGL_FORWARD_COMPATIBLE_BIT_KHR;
+        if (flags) {
+            contextAttrs.append(EGL_CONTEXT_FLAGS_KHR);
+            contextAttrs.append(flags);
+        }
+        // Profiles are OpenGL only and mandatory in 3.2+. The value is silently ignored for < 3.2.
+        if (m_format.renderableType() == QSurfaceFormat::OpenGL) {
+            contextAttrs.append(EGL_CONTEXT_OPENGL_PROFILE_MASK_KHR);
+            contextAttrs.append(format.profile() == QSurfaceFormat::CoreProfile
+                                ? EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT_KHR
+                                : EGL_CONTEXT_OPENGL_COMPATIBILITY_PROFILE_BIT_KHR);
+        }
+    }
     contextAttrs.append(EGL_NONE);
 
-    bindApi(m_format);
+    switch (m_format.renderableType()) {
+    case QSurfaceFormat::OpenVG:
+        m_api = EGL_OPENVG_API;
+        break;
+#ifdef EGL_VERSION_1_4
+    case QSurfaceFormat::OpenGL:
+        m_api = EGL_OPENGL_API;
+        break;
+#endif // EGL_VERSION_1_4
+    default:
+        m_api = EGL_OPENGL_ES_API;
+        break;
+    }
+
+    eglBindAPI(m_api);
     m_eglContext = eglCreateContext(m_eglDisplay, m_eglConfig, m_shareContext, contextAttrs.constData());
     if (m_eglContext == EGL_NO_CONTEXT && m_shareContext != EGL_NO_CONTEXT) {
         m_shareContext = 0;
         m_eglContext = eglCreateContext(m_eglDisplay, m_eglConfig, 0, contextAttrs.constData());
     }
+
+    if (m_eglContext == EGL_NO_CONTEXT) {
+        qWarning("QEGLPlatformContext::init: eglError: %x, this: %p \n", eglGetError(), this);
+        return;
+    }
+
+#ifndef QT_NO_OPENGL
+    // Make the context current to ensure the GL version query works. This needs a surface too.
+    const EGLint pbufferAttributes[] = {
+        EGL_WIDTH, 1,
+        EGL_HEIGHT, 1,
+        EGL_LARGEST_PBUFFER, EGL_FALSE,
+        EGL_NONE
+    };
+    EGLSurface pbuffer = eglCreatePbufferSurface(m_eglDisplay, m_eglConfig, pbufferAttributes);
+    if (pbuffer == EGL_NO_SURFACE)
+        return;
+
+    if (eglMakeCurrent(m_eglDisplay, pbuffer, pbuffer, m_eglContext)) {
+        if (m_format.renderableType() == QSurfaceFormat::OpenGL
+            || m_format.renderableType() == QSurfaceFormat::OpenGLES) {
+            const GLubyte *s = glGetString(GL_VERSION);
+            if (s) {
+                QByteArray version = QByteArray(reinterpret_cast<const char *>(s));
+                int major, minor;
+                if (QPlatformOpenGLContext::parseOpenGLVersion(version, major, minor)) {
+                    m_format.setMajorVersion(major);
+                    m_format.setMinorVersion(minor);
+                }
+            }
+            m_format.setProfile(QSurfaceFormat::NoProfile);
+            m_format.setOptions(QSurfaceFormat::FormatOptions());
+            if (m_format.renderableType() == QSurfaceFormat::OpenGL) {
+                // Check profile and options.
+                if (m_format.majorVersion() < 3) {
+                    m_format.setOption(QSurfaceFormat::DeprecatedFunctions);
+                } else {
+                    GLint value = 0;
+                    glGetIntegerv(GL_CONTEXT_FLAGS, &value);
+                    if (!(value & GL_CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT))
+                        m_format.setOption(QSurfaceFormat::DeprecatedFunctions);
+                    if (value & GL_CONTEXT_FLAG_DEBUG_BIT)
+                        m_format.setOption(QSurfaceFormat::DebugContext);
+                    if (m_format.version() >= qMakePair(3, 2)) {
+                        value = 0;
+                        glGetIntegerv(GL_CONTEXT_PROFILE_MASK, &value);
+                        if (value & GL_CONTEXT_CORE_PROFILE_BIT)
+                            m_format.setProfile(QSurfaceFormat::CoreProfile);
+                        else if (value & GL_CONTEXT_COMPATIBILITY_PROFILE_BIT)
+                            m_format.setProfile(QSurfaceFormat::CompatibilityProfile);
+                    }
+                }
+            }
+        }
+        eglMakeCurrent(m_eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+    }
+    eglDestroySurface(m_eglDisplay, pbuffer);
+#endif // QT_NO_OPENGL
 }
 
 bool QEGLPlatformContext::makeCurrent(QPlatformSurface *surface)
 {
     Q_ASSERT(surface->surface()->supportsOpenGL());
 
-    bindApi(m_format);
+    eglBindAPI(m_api);
 
     EGLSurface eglSurface = eglSurfaceForPlatformSurface(surface);
 
@@ -201,7 +317,7 @@ QEGLPlatformContext::~QEGLPlatformContext()
 
 void QEGLPlatformContext::doneCurrent()
 {
-    bindApi(m_format);
+    eglBindAPI(m_api);
     bool ok = eglMakeCurrent(m_eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
     if (!ok)
         qWarning("QEGLPlatformContext::doneCurrent(): eglError: %d, this: %p \n", eglGetError(), this);
@@ -209,7 +325,7 @@ void QEGLPlatformContext::doneCurrent()
 
 void QEGLPlatformContext::swapBuffers(QPlatformSurface *surface)
 {
-    bindApi(m_format);
+    eglBindAPI(m_api);
     EGLSurface eglSurface = eglSurfaceForPlatformSurface(surface);
     bool ok = eglSwapBuffers(m_eglDisplay, eglSurface);
     if (!ok)
@@ -218,7 +334,7 @@ void QEGLPlatformContext::swapBuffers(QPlatformSurface *surface)
 
 void (*QEGLPlatformContext::getProcAddress(const QByteArray &procName)) ()
 {
-    bindApi(m_format);
+    eglBindAPI(m_api);
     return eglGetProcAddress(procName.constData());
 }
 

@@ -537,7 +537,7 @@ QGLXPbuffer::QGLXPbuffer(QOffscreenSurface *offscreenSurface)
             GLX_PBUFFER_HEIGHT, offscreenSurface->size().height(),
             GLX_LARGEST_PBUFFER, False,
             GLX_PRESERVED_CONTENTS, False,
-            GLX_NONE
+            None
         };
 
         m_pbuffer = glXCreatePbuffer(DISPLAY_FROM_XCB(m_screen), config, attributes);

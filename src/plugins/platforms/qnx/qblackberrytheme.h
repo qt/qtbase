@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QQNXTHEME_H
-#define QQNXTHEME_H
+#ifndef QBLACKBERRYTHEME_H
+#define QBLACKBERRYTHEME_H
 
 #include <qpa/qplatformtheme.h>
 
@@ -49,15 +49,17 @@
 #include <QtCore/qhash.h>
 #include <QtCore/qstring.h>
 
+#include <QtGui/QPalette>
+
 QT_BEGIN_NAMESPACE
 
 class QQnxIntegration;
 
-class QQnxTheme : public QPlatformTheme
+class QBlackberryTheme : public QPlatformTheme
 {
 public:
-    explicit QQnxTheme(const QQnxIntegration *);
-    ~QQnxTheme();
+    explicit QBlackberryTheme(const QQnxIntegration *);
+    ~QBlackberryTheme();
 
     static QString name() { return QStringLiteral("blackberry"); }
 
@@ -66,11 +68,14 @@ public:
 
     const QFont *font(Font type = SystemFont) const;
 
+    const QPalette *palette(Palette type = SystemPalette) const;
+
 private:
     mutable QHash<QPlatformTheme::Font, QFont*> m_fonts;
     const QQnxIntegration *m_integration;
+    QPalette m_defaultPalette;
 };
 
 QT_END_NAMESPACE
 
-#endif // QQNXTHEME_H
+#endif // QBLACKBERRYTHEME_H

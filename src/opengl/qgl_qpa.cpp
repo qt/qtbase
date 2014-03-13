@@ -321,7 +321,7 @@ QGLTemporaryContext::QGLTemporaryContext(bool, QWidget *)
 
     d->context = new QOpenGLContext;
 #if !defined(QT_OPENGL_ES)
-    if (!QOpenGLFunctions::isES()) {
+    if (QOpenGLContext::openGLModuleType() == QOpenGLContext::DesktopGL) {
         // On desktop, request latest released version
         QSurfaceFormat format;
 #if defined(Q_OS_MAC)

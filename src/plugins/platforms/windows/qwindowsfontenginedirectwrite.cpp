@@ -53,6 +53,7 @@
 #include <QtCore/QSettings>
 #include <QtCore/QtEndian>
 #include <QtCore/QVarLengthArray>
+#include <private/qstringiterator_p.h>
 
 #include <dwrite.h>
 #include <d2d1.h>
@@ -201,8 +202,8 @@ namespace {
 QWindowsFontEngineDirectWrite::QWindowsFontEngineDirectWrite(IDWriteFontFace *directWriteFontFace,
                                                qreal pixelSize,
                                                const QSharedPointer<QWindowsFontEngineData> &d)
-
-    : m_fontEngineData(d)
+    : QFontEngine(DirectWrite)
+    , m_fontEngineData(d)
     , m_directWriteFontFace(directWriteFontFace)
     , m_directWriteBitmapRenderTarget(0)
     , m_lineThickness(-1)
@@ -282,8 +283,8 @@ bool QWindowsFontEngineDirectWrite::getSfntTableData(uint tag, uchar *buffer, ui
             ret = true;
             if (buffer && *length >= tableSize)
                 memcpy(buffer, tableData, tableSize);
-            else
-                *length = tableSize;
+            *length = tableSize;
+            Q_ASSERT(int(*length) > 0);
         }
         m_directWriteFontFace->ReleaseFontTable(tableContext);
     } else {
@@ -301,23 +302,23 @@ QFixed QWindowsFontEngineDirectWrite::emSquareSize() const
         return QFontEngine::emSquareSize();
 }
 
-// ### Qt 5.1: replace with QStringIterator
-inline unsigned int getChar(const QChar *str, int &i, const int len)
+glyph_t QWindowsFontEngineDirectWrite::glyphIndex(uint ucs4) const
 {
-    uint uc = str[i].unicode();
-    if (QChar::isHighSurrogate(uc) && i < len-1) {
-        uint low = str[i+1].unicode();
-        if (QChar::isLowSurrogate(low)) {
-            uc = QChar::surrogateToUcs4(uc, low);
-            ++i;
-        }
+    UINT16 glyphIndex;
+
+    HRESULT hr = m_directWriteFontFace->GetGlyphIndicesW(&ucs4, 1, &glyphIndex);
+    if (FAILED(hr)) {
+        qErrnoWarning("%s: glyphIndex failed", __FUNCTION__);
+        glyphIndex = 0;
     }
-    return uc;
+
+    return glyphIndex;
 }
 
 bool QWindowsFontEngineDirectWrite::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs,
                                                  int *nglyphs, QFontEngine::ShaperFlags flags) const
 {
+    Q_ASSERT(glyphs->numGlyphs >= *nglyphs);
     if (*nglyphs < len) {
         *nglyphs = len;
         return false;
@@ -325,8 +326,9 @@ bool QWindowsFontEngineDirectWrite::stringToCMap(const QChar *str, int len, QGly
 
     QVarLengthArray<UINT32> codePoints(len);
     int actualLength = 0;
-    for (int i = 0; i < len; ++i)
-        codePoints[actualLength++] = getChar(str, i, len);
+    QStringIterator it(str, str + len);
+    while (it.hasNext())
+        codePoints[actualLength++] = it.next();
 
     QVarLengthArray<UINT16> glyphIndices(actualLength);
     HRESULT hr = m_directWriteFontFace->GetGlyphIndicesW(codePoints.data(), actualLength,
@@ -626,39 +628,6 @@ QImage QWindowsFontEngineDirectWrite::alphaRGBMapForGlyph(glyph_t t,
     return mask.depth() == 32
            ? mask
            : mask.convertToFormat(QImage::Format_RGB32);
-}
-
-const char *QWindowsFontEngineDirectWrite::name() const
-{
-    return 0;
-}
-
-bool QWindowsFontEngineDirectWrite::canRender(const QChar *string, int len)
-{
-    QVarLengthArray<UINT32> codePoints(len);
-    int actualLength = 0;
-    for (int i=0; i<len; ++i, actualLength++)
-        codePoints[actualLength] = getChar(string, i, len);
-
-    QVarLengthArray<UINT16> glyphIndices(actualLength);
-    HRESULT hr = m_directWriteFontFace->GetGlyphIndices(codePoints.data(), actualLength,
-                                                        glyphIndices.data());
-    if (FAILED(hr)) {
-        qErrnoWarning("%s: GetGlyphIndices failed", __FUNCTION__);
-        return false;
-    }
-
-    for (int i = 0; i < actualLength; ++i) {
-        if (glyphIndices.at(i) == 0)
-            return false;
-    }
-
-    return true;
-}
-
-QFontEngine::Type QWindowsFontEngineDirectWrite::type() const
-{
-    return QFontEngine::DirectWrite;
 }
 
 QFontEngine *QWindowsFontEngineDirectWrite::cloneWithSize(qreal pixelSize) const

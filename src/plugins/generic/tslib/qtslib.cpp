@@ -110,12 +110,17 @@ static bool get_sample(struct tsdev *dev, struct ts_sample *sample, bool rawMode
 void QTsLibMouseHandler::readMouseData()
 {
     ts_sample sample;
-    while (get_sample(m_dev, &sample, m_rawMode)) {
 
+    while (get_sample(m_dev, &sample, m_rawMode)) {
         bool pressed = sample.pressure;
         int x = sample.x;
         int y = sample.y;
 
+        // work around missing coordinates on mouse release
+        if (sample.pressure == 0 && sample.x == 0 && sample.y == 0) {
+            x = m_x;
+            y = m_y;
+        }
 
         if (!m_rawMode) {
             //filtering: ignore movements of 2 pixels or less
@@ -123,12 +128,6 @@ void QTsLibMouseHandler::readMouseData()
             int dy = y - m_y;
             if (dx*dx <= 4 && dy*dy <= 4 && pressed == m_pressed)
                 continue;
-        } else {
-            // work around missing coordinates on mouse release in raw mode
-            if (sample.pressure == 0 && sample.x == 0 && sample.y == 0) {
-                x = m_x;
-                y = m_y;
-            }
         }
         QPoint pos(x, y);
 

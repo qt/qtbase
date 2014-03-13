@@ -151,6 +151,8 @@ private slots:
 #if defined(Q_COMPILER_LAMBDA)
     void literals();
 #endif
+
+    void macTypes();
 };
 
 static const struct StaticByteArrays {
@@ -1979,6 +1981,16 @@ void tst_QByteArray::literals()
     QVERIFY(str2.data() != s);
 }
 #endif
+
+void tst_QByteArray::macTypes()
+{
+#ifndef Q_OS_MAC
+    QSKIP("This is a Apple-only test");
+#else
+    extern void tst_QByteArray_macTypes(); // in qbytearray_mac.mm
+    tst_QByteArray_macTypes();
+#endif
+}
 
 const char globalChar = '1';
 

@@ -51,7 +51,10 @@ QAndroidPlatformBackingStore::QAndroidPlatformBackingStore(QWindow *window)
     : QPlatformBackingStore(window)
 {
     Q_ASSERT(window->handle());
-    (static_cast<QAndroidPlatformRasterWindow *>(window->handle()))->setBackingStore(this);
+    if (window->surfaceType() == QSurface::RasterSurface)
+        (static_cast<QAndroidPlatformRasterWindow *>(window->handle()))->setBackingStore(this);
+    else
+        qWarning("QAndroidPlatformBackingStore does not support GL windows.");
 }
 
 QPaintDevice *QAndroidPlatformBackingStore::paintDevice()

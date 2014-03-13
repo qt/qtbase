@@ -841,7 +841,7 @@ QList<QByteArray> QNetworkProxy::rawHeaderList() const
     will also set the known header LastModifiedHeader to be the
     QDateTime object of the parsed date.
 
-    Note: setting the same header twice overrides the previous
+    \note Setting the same header twice overrides the previous
     setting. To accomplish the behaviour of multiple HTTP headers of
     the same name, you should concatenate the two values, separating
     them with a comma (",") and set one single raw header.

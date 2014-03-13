@@ -9,7 +9,6 @@ HEADERS +=  \
         tools/qarraydatapointer.h \
         tools/qbitarray.h \
         tools/qbytearray.h \
-        tools/qbytearraylist.h \
         tools/qbytearraymatcher.h \
         tools/qbytedata_p.h \
         tools/qcache.h \
@@ -78,7 +77,6 @@ SOURCES += \
         tools/qarraydata.cpp \
         tools/qbitarray.cpp \
         tools/qbytearray.cpp \
-        tools/qbytearraylist.cpp \
         tools/qbytearraymatcher.cpp \
         tools/qcollator.cpp \
         tools/qcommandlineoption.cpp \
@@ -127,7 +125,8 @@ false: SOURCES += $$NO_PCH_SOURCES # Hack for QtCreator
     SOURCES += tools/qelapsedtimer_mac.cpp
     OBJECTIVE_SOURCES += tools/qlocale_mac.mm \
                          tools/qtimezoneprivate_mac.mm \
-                         tools/qstring_mac.mm
+                         tools/qstring_mac.mm \
+                         tools/qbytearray_mac.mm
 }
 else:blackberry {
     SOURCES += tools/qelapsedtimer_unix.cpp tools/qlocale_blackberry.cpp tools/qtimezoneprivate_tz.cpp

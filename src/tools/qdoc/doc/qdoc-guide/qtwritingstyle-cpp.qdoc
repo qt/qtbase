@@ -160,7 +160,7 @@ a signal should be documented.
 \endlist
 
 For properties that have overloaded signals, QDoc groups the overloaded
-notifiers together. To refer to a specifc version of a notifier or signal,
+notifiers together. To refer to a specific version of a notifier or signal,
 simply refer to the property and mention that there are different versions of
 the notifier.
 

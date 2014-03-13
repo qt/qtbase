@@ -1314,6 +1314,27 @@ public:
 typedef MyObject* MyObjectPtr;
 Q_DECLARE_METATYPE(MyObjectPtr)
 
+#if defined(Q_COMPILER_VARIADIC_MACROS) && !defined(TST_QMETATYPE_BROKEN_COMPILER)
+static QByteArray createTypeName(const char *begin, const char *va)
+{
+    QByteArray tn(begin);
+    const QList<QByteArray> args = QByteArray(va).split(',');
+    tn += args.first().trimmed();
+    if (args.size() > 1) {
+        QList<QByteArray>::const_iterator it = args.constBegin() + 1;
+        const QList<QByteArray>::const_iterator end = args.constEnd();
+        for (; it != end; ++it) {
+            tn += ",";
+            tn += it->trimmed();
+        }
+    }
+    if (tn.endsWith('>'))
+        tn += ' ';
+        tn += ">";
+    return tn;
+}
+#endif
+
 void tst_QMetaType::automaticTemplateRegistration()
 {
 #define TEST_SEQUENTIAL_CONTAINER(CONTAINER, VALUE_TYPE) \
@@ -1480,58 +1501,32 @@ void tst_QMetaType::automaticTemplateRegistration()
 
 #if defined(Q_COMPILER_VARIADIC_MACROS) && !defined(TST_QMETATYPE_BROKEN_COMPILER)
 
-    #define FOR_EACH_STATIC_PRIMITIVE_TYPE(F, ...) \
-        F(bool, __VA_ARGS__) \
-        F(int, __VA_ARGS__) \
-        F(uint, __VA_ARGS__) \
-        F(qlonglong, __VA_ARGS__) \
-        F(qulonglong, __VA_ARGS__) \
-        F(double, __VA_ARGS__) \
-        F(long, __VA_ARGS__) \
-        F(short, __VA_ARGS__) \
-        F(char, __VA_ARGS__) \
-        F(ulong, __VA_ARGS__) \
-        F(ushort, __VA_ARGS__) \
-        F(uchar, __VA_ARGS__) \
-        F(float, __VA_ARGS__) \
-        F(QObject*, __VA_ARGS__) \
-        F(QString, __VA_ARGS__) \
-        F(CustomMovable, __VA_ARGS__)
+    #define FOR_EACH_STATIC_PRIMITIVE_TYPE(F) \
+        F(bool) \
+        F(int) \
+        F(qulonglong) \
+        F(double) \
+        F(short) \
+        F(char) \
+        F(ulong) \
+        F(uchar) \
+        F(float) \
+        F(QObject*) \
+        F(QString) \
+        F(CustomMovable)
 
-    #define FOR_EACH_STATIC_PRIMITIVE_TYPE2(F, ...) \
-        F(bool, __VA_ARGS__) \
-        F(int, __VA_ARGS__) \
-        F(uint, __VA_ARGS__) \
-        F(qlonglong, __VA_ARGS__) \
-        F(qulonglong, __VA_ARGS__) \
-        F(long, __VA_ARGS__) \
-        F(short, __VA_ARGS__) \
-        F(char, __VA_ARGS__) \
-        F(ulong, __VA_ARGS__) \
-        F(ushort, __VA_ARGS__) \
-        F(uchar, __VA_ARGS__) \
-        F(QObject*, __VA_ARGS__) \
-        F(QString, __VA_ARGS__)
-
+    #define FOR_EACH_STATIC_PRIMITIVE_TYPE2(F, SecondaryRealName) \
+        F(uint, SecondaryRealName) \
+        F(qlonglong, SecondaryRealName) \
+        F(char, SecondaryRealName) \
+        F(uchar, SecondaryRealName) \
+        F(QObject*, SecondaryRealName)
 
     #define CREATE_AND_VERIFY_CONTAINER(CONTAINER, ...) \
         { \
             CONTAINER< __VA_ARGS__ > t; \
             const QVariant v = QVariant::fromValue(t); \
-            QByteArray tn = #CONTAINER + QByteArray("<"); \
-            const QList<QByteArray> args = QByteArray(#__VA_ARGS__).split(','); \
-            tn += args.first().trimmed(); \
-            if (args.size() > 1) { \
-              QList<QByteArray>::const_iterator it = args.constBegin() + 1; \
-              const QList<QByteArray>::const_iterator end = args.constEnd(); \
-              for (; it != end; ++it) { \
-                tn += ","; \
-                tn += it->trimmed(); \
-              } \
-            } \
-            if (tn.endsWith('>')) \
-                tn += ' '; \
-            tn += ">"; \
+            QByteArray tn = createTypeName(#CONTAINER "<", #__VA_ARGS__); \
             const int type = QMetaType::type(tn); \
             const int expectedType = ::qMetaTypeId<CONTAINER< __VA_ARGS__ > >(); \
             QCOMPARE(type, expectedType); \
@@ -1547,18 +1542,18 @@ void tst_QMetaType::automaticTemplateRegistration()
         F(QStack, TYPE) \
         F(QSet, TYPE)
 
-    #define PRINT_1ARG_TEMPLATE(RealName, ...) \
+    #define PRINT_1ARG_TEMPLATE(RealName) \
         FOR_EACH_1ARG_TEMPLATE_TYPE(CREATE_AND_VERIFY_CONTAINER, RealName)
 
-    #define FOR_EACH_2ARG_TEMPLATE_TYPE(F, RealName, ...) \
-        F(QHash, __VA_ARGS__) \
-        F(QMap, __VA_ARGS__) \
-        F(QPair, __VA_ARGS__)
+    #define FOR_EACH_2ARG_TEMPLATE_TYPE(F, RealName1, RealName2) \
+        F(QHash, RealName1, RealName2) \
+        F(QMap, RealName1, RealName2) \
+        F(QPair, RealName1, RealName2)
 
-    #define PRINT_2ARG_TEMPLATE_INTERNAL(RealName, ...) \
-        FOR_EACH_2ARG_TEMPLATE_TYPE(CREATE_AND_VERIFY_CONTAINER, 0, RealName, __VA_ARGS__)
+    #define PRINT_2ARG_TEMPLATE_INTERNAL(RealName1, RealName2) \
+        FOR_EACH_2ARG_TEMPLATE_TYPE(CREATE_AND_VERIFY_CONTAINER, RealName1, RealName2)
 
-    #define PRINT_2ARG_TEMPLATE(RealName, ...) \
+    #define PRINT_2ARG_TEMPLATE(RealName) \
         FOR_EACH_STATIC_PRIMITIVE_TYPE2(PRINT_2ARG_TEMPLATE_INTERNAL, RealName)
 
     #define REGISTER_TYPEDEF(TYPE, ARG1, ARG2) \

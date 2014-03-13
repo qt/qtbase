@@ -85,6 +85,7 @@ CGAffineTransform qt_transform_from_fontdef(const QFontDef &fontDef)
 }
 
 QCoreTextFontEngine::QCoreTextFontEngine(CTFontRef font, const QFontDef &def)
+    : QFontEngine(Mac)
 {
     fontDef = def;
     transform = qt_transform_from_fontdef(fontDef);
@@ -95,6 +96,7 @@ QCoreTextFontEngine::QCoreTextFontEngine(CTFontRef font, const QFontDef &def)
 }
 
 QCoreTextFontEngine::QCoreTextFontEngine(CGFontRef font, const QFontDef &def)
+    : QFontEngine(Mac)
 {
     fontDef = def;
     transform = qt_transform_from_fontdef(fontDef);
@@ -192,10 +194,33 @@ void QCoreTextFontEngine::init()
     setUserData(QVariant::fromValue((void *)cgFont));
 }
 
+glyph_t QCoreTextFontEngine::glyphIndex(uint ucs4) const
+{
+    int len = 0;
+
+    QChar str[2];
+    if (Q_UNLIKELY(QChar::requiresSurrogates(ucs4))) {
+        str[len++] = QChar(QChar::highSurrogate(ucs4));
+        str[len++] = QChar(QChar::lowSurrogate(ucs4));
+    } else {
+        str[len++] = QChar(ucs4);
+    }
+
+    CGGlyph glyphIndices[2];
+
+    CTFontGetGlyphsForCharacters(ctfont, (const UniChar *)str, glyphIndices, len);
+
+    return glyphIndices[0];
+}
+
 bool QCoreTextFontEngine::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs,
                                        int *nglyphs, QFontEngine::ShaperFlags flags) const
 {
-    QCFType<CFStringRef> cfstring;
+    Q_ASSERT(glyphs->numGlyphs >= *nglyphs);
+    if (*nglyphs < len) {
+        *nglyphs = len;
+        return false;
+    }
 
     QVarLengthArray<CGGlyph> cgGlyphs(len);
     CTFontGetGlyphsForCharacters(ctfont, (const UniChar*)str, cgGlyphs.data(), len);
@@ -650,7 +675,7 @@ QFontEngine::FaceId QCoreTextFontEngine::faceId() const
     return QFontEngine::FaceId();
 }
 
-bool QCoreTextFontEngine::canRender(const QChar *string, int len)
+bool QCoreTextFontEngine::canRender(const QChar *string, int len) const
 {
     QVarLengthArray<CGGlyph> cgGlyphs(len);
     return CTFontGetGlyphsForCharacters(ctfont, (const UniChar *) string, cgGlyphs.data(), len);
@@ -659,16 +684,13 @@ bool QCoreTextFontEngine::canRender(const QChar *string, int len)
 bool QCoreTextFontEngine::getSfntTableData(uint tag, uchar *buffer, uint *length) const
 {
     QCFType<CFDataRef> table = CTFontCopyTable(ctfont, tag, 0);
-    if (!table || !length)
+    if (!table)
         return false;
     CFIndex tableLength = CFDataGetLength(table);
-    int availableLength = *length;
-    *length = tableLength;
-    if (buffer) {
-        if (tableLength > availableLength)
-            return false;
+    if (buffer && int(*length) >= tableLength)
         CFDataGetBytes(table, CFRangeMake(0, tableLength), buffer);
-    }
+    *length = tableLength;
+    Q_ASSERT(int(*length) > 0);
     return true;
 }
 

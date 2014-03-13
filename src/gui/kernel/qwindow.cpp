@@ -642,7 +642,7 @@ void QWindow::setFormat(const QSurfaceFormat &format)
 }
 
 /*!
-    Returns the requested surfaceformat of this window.
+    Returns the requested surface format of this window.
 
     If the requested format was not supported by the platform implementation,
     the requestedFormat will differ from the actual window format.
@@ -662,9 +662,17 @@ QSurfaceFormat QWindow::requestedFormat() const
 
     After the window has been created, this function will return the actual surface format
     of the window. It might differ from the requested format if the requested format could
-    not be fulfilled by the platform.
+    not be fulfilled by the platform. It might also be a superset, for example certain
+    buffer sizes may be larger than requested.
 
-    \sa create(), requestedFormat()
+    \note Depending on the platform, certain values in this surface format may still
+    contain the requested values, that is, the values that have been passed to
+    setFormat(). Typical examples are the OpenGL version, profile and options. These may
+    not get updated during create() since these are context specific and a single window
+    may be used together with multiple contexts over its lifetime. Use the
+    QOpenGLContext's format() instead to query such values.
+
+    \sa create(), requestedFormat(), QOpenGLContext::format()
 */
 QSurfaceFormat QWindow::format() const
 {

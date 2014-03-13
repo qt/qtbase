@@ -114,10 +114,7 @@ public:
     bool startSystemResize(const QPoint &pos, Qt::Corner corner);
 
     void setOpacity(qreal level);
-
-#if !defined(QT_NO_SHAPE)
     void setMask(const QRegion &region);
-#endif // !QT_NO_SHAPE
 
     void setAlertState(bool enabled);
     bool isAlertState() const { return m_alertState; }

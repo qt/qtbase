@@ -81,7 +81,9 @@ FilterWidget::FilterWidget(QWidget *parent)
 
     const QIcon icon = QIcon(QPixmap(":/images/find.png"));
     QToolButton *optionsButton = new QToolButton;
+#ifndef QT_NO_CURSOR
     optionsButton->setCursor(Qt::ArrowCursor);
+#endif
     optionsButton->setFocusPolicy(Qt::NoFocus);
     optionsButton->setStyleSheet("* { border: none; }");
     optionsButton->setIcon(icon);

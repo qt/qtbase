@@ -10,5 +10,5 @@ SOURCES += tst_qaccessibilitylinux.cpp
 
 CONFIG += gui
 
-QT += gui gui-private widgets dbus testlib
+QT += gui-private widgets dbus testlib
 

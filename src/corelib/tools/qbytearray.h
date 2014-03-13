@@ -65,6 +65,12 @@
 
 #endif
 
+#ifdef Q_OS_MAC
+Q_FORWARD_DECLARE_CF_TYPE(CFData);
+#  ifdef __OBJC__
+Q_FORWARD_DECLARE_OBJC_CLASS(NSData);
+#  endif
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -354,6 +360,18 @@ public:
     static QByteArray fromHex(const QByteArray &hexEncoded);
     static QByteArray fromPercentEncoding(const QByteArray &pctEncoded, char percent = '%');
 
+#if defined(Q_OS_MAC) || defined(Q_QDOC)
+    static QByteArray fromCFData(CFDataRef data);
+    static QByteArray fromRawCFData(CFDataRef data);
+    CFDataRef toCFData() const Q_DECL_CF_RETURNS_RETAINED;
+    CFDataRef toRawCFData() const Q_DECL_CF_RETURNS_RETAINED;
+#  if defined(__OBJC__) || defined(Q_QDOC)
+    static QByteArray fromNSData(const NSData *data);
+    static QByteArray fromRawNSData(const NSData *data);
+    NSData *toNSData() const Q_DECL_NS_RETURNS_AUTORELEASED;
+    NSData *toRawNSData() const Q_DECL_NS_RETURNS_AUTORELEASED;
+#  endif
+#endif
 
     typedef char *iterator;
     typedef const char *const_iterator;

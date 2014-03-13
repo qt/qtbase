@@ -64,7 +64,7 @@ QT_BEGIN_NAMESPACE
     waitForReadyRead(), waitForBytesWritten(), and waitForDisconnected()
     which blocks until the operation is complete or the timeout expires.
 
-    Note that this feature is not supported on versions of Windows earlier than
+    \note This feature is not supported on versions of Windows earlier than
     Windows XP.
 
     \sa QLocalServer

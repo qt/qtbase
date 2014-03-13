@@ -51,7 +51,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "qcocoahelpers.h"
-#include "qmacmime.h"
 #include "qcocoaautoreleasepool.h"
 
 QT_BEGIN_NAMESPACE

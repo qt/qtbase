@@ -43,6 +43,7 @@
 #define QANDROIDPLATFORMCLIPBOARD_H
 
 #include <qpa/qplatformclipboard.h>
+#include <QMimeData>
 
 #ifndef QT_NO_CLIPBOARD
 QT_BEGIN_NAMESPACE
@@ -55,6 +56,9 @@ public:
     virtual QMimeData *mimeData(QClipboard::Mode mode = QClipboard::Clipboard);
     virtual void setMimeData(QMimeData *data, QClipboard::Mode mode = QClipboard::Clipboard);
     virtual bool supportsMode(QClipboard::Mode mode) const;
+
+private:
+    QMimeData m_mimeData;
 };
 
 QT_END_NAMESPACE

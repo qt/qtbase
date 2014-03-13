@@ -649,6 +649,7 @@ CFG_XINPUT2=auto
 CFG_XINPUT=runtime
 CFG_XKB=auto
 CFG_XKBCOMMON=auto
+CFG_XKB_CONFIG_ROOT=auto
 CFG_XCB=auto
 CFG_XCB_XLIB=auto
 CFG_XCB_GLX=no
@@ -898,6 +899,7 @@ while [ "$#" -gt 0 ]; do
     -qpa| \
     -qconfig| \
     -qreal| \
+    -xkb-config-root| \
     -android-sdk| \
     -android-ndk| \
     -android-ndk-platform| \
@@ -2109,6 +2111,9 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
+    xkb-config-root)
+        CFG_XKB_CONFIG_ROOT="$VAL"
+        ;;
     android-sdk)
         CFG_DEFAULT_ANDROID_SDK_ROOT="$VAL"
         ;;
@@ -2358,6 +2363,7 @@ Third Party Libraries:
                          (libxcb.so will still be used from operating system).
  +  -system-xcb ........ Use xcb- libraries from the operating system.
 
+    -xkb-config-root ... Set default XKB config root. This option is used only together with -qt-xkbcommon.
     -qt-xkbcommon ...... Use the xkbcommon library bundled with Qt.
  +  -system-xkbcommon .. Use the xkbcommon library from the operating system.
 
@@ -2770,7 +2776,6 @@ if [ -f "$relpath"/LICENSE.PREVIEW.COMMERCIAL ] && [ $COMMERCIAL_USER = "yes" ];
     # Commercial preview release
     Licensee="Preview"
     Edition="Preview"
-    QT_EDITION="QT_EDITION_DESKTOP"
     LicenseType="Technology Preview"
 elif [ $COMMERCIAL_USER = "yes" ]; then
     # one of commercial editions
@@ -2826,17 +2831,14 @@ elif [ $COMMERCIAL_USER = "yes" ]; then
         case $ProductCode in
         F)
             Edition="Universal"
-            QT_EDITION="QT_EDITION_UNIVERSAL"
             ;;
         B)
             Edition="FullFramework"
             EditionString="Full Framework"
-            QT_EDITION="QT_EDITION_DESKTOP"
             ;;
         L)
             Edition="GUIFramework"
             EditionString="GUI Framework"
-            QT_EDITION="QT_EDITION_DESKTOPLIGHT"
             ;;
         esac
         ;;
@@ -2846,12 +2848,11 @@ elif [ $COMMERCIAL_USER = "yes" ]; then
         case $ProductCode in
         B)
             Edition="Evaluation"
-            QT_EDITION="QT_EDITION_EVALUATION"
             ;;
         esac
         ;;
     esac
-    if [ -z "$LicenseType" -o -z "$Edition" -o -z "$QT_EDITION" ]; then
+    if [ -z "$LicenseType" -o -z "$Edition" ]; then
         echo
         echo "Invalid license key. Please check the license key."
         exit 1
@@ -2921,7 +2922,6 @@ elif [ $COMMERCIAL_USER = "yes" ]; then
         esac
         Licensee="$Edition"
         EditionString="$Edition"
-        QT_EDITION="QT_EDITION_DESKTOP"
     fi
 
     case "$LicenseFeatureCode" in
@@ -2962,7 +2962,7 @@ elif [ $COMMERCIAL_USER = "yes" ]; then
         ;;
     esac
     if [ '!' -f "$outpath/LICENSE" ]; then
-        echo "The LICENSE, LICENSE.GPL3 LICENSE.LGPL file shipped with"
+        echo "The LICENSE, LICENSE.GPL LICENSE.LGPL file shipped with"
         echo "this software has disappeared."
         echo
         echo "Sorry, you are not licensed to use this software."
@@ -2975,7 +2975,6 @@ elif [ $COMMERCIAL_USER = "no" ]; then
     Licensee="Open Source"
     Edition="OpenSource"
     EditionString="Open Source"
-    QT_EDITION="QT_EDITION_OPENSOURCE"
 fi
 echo
 echo "This is the Qt ${EditionString} Edition."
@@ -2999,7 +2998,7 @@ if [ "$Edition" = "OpenSource" ]; then
     while true; do
         echo "You are licensed to use this software under the terms of"
         echo "the Lesser GNU General Public License (LGPL) versions 2.1."
-        if [ -f "$relpath/LICENSE.GPL3" ]; then
+        if [ -f "$relpath/LICENSE.GPL" ]; then
             echo "You are also licensed to use this software under the terms of"
             echo "the GNU General Public License (GPL) versions 3."
             affix="either"
@@ -3011,7 +3010,7 @@ if [ "$Edition" = "OpenSource" ]; then
             echo "You have already accepted the terms of the $LicenseType license."
             acceptance=yes
         else
-            if [ -f "$relpath/LICENSE.GPL3" ]; then
+            if [ -f "$relpath/LICENSE.GPL" ]; then
                 echo "Type '3' to view the GNU General Public License version 3."
             fi
             echo "Type 'L' to view the Lesser GNU General Public License version 2.1."
@@ -3029,7 +3028,7 @@ if [ "$Edition" = "OpenSource" ]; then
             echo
             exit 1
         elif [ "$acceptance" = "3" ]; then
-            more "$relpath/LICENSE.GPL3"
+            more "$relpath/LICENSE.GPL"
         elif [ "$acceptance" = "L" ]; then
             more "$relpath/LICENSE.LGPL"
         fi
@@ -4028,9 +4027,6 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
         echo "EXEEXT = $EXEEXT" >> "$mkfile"
         echo "RM_F = rm -f" >> "$mkfile"
         echo "RM_RF = rm -rf" >> "$mkfile"
-        if [ $QT_EDITION = "QT_EDITION_OPENSOURCE" ]; then
-            echo "EXTRA_CPPFLAGS = -DQMAKE_OPENSOURCE_EDITION" >> "$mkfile"
-        fi
 
         if [ "$BUILD_ON_MAC" = "yes" ]; then
             echo "EXTRA_CXXFLAGS += -MMD" >> "$mkfile"
@@ -5225,7 +5221,7 @@ if [ "$CFG_XCB" != "no" ]; then
             CFG_XCB="system"
 
             if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists "xcb >= 1.5" 2>/dev/null; then
-                XCB_PACKAGES="xcb xcb-shm xcb-sync xcb-xfixes xcb-randr xcb-image xcb-keysyms xcb-icccm"
+                XCB_PACKAGES="xcb xcb-shm xcb-sync xcb-xfixes xcb-randr xcb-image xcb-keysyms xcb-icccm xcb-shape"
                 QMAKE_CFLAGS_XCB="`$PKG_CONFIG --cflags $XCB_PACKAGES 2>/dev/null`"
                 QMAKE_LIBS_XCB="`$PKG_CONFIG --libs $XCB_PACKAGES 2>/dev/null`"
                 # for xcb-xkb tests
@@ -5280,9 +5276,6 @@ if [ "$CFG_XCB" != "no" ]; then
         fi
         CFG_XCB=no
     fi
-fi
-if [ "$CFG_XCB" = "no" ]; then
-    QMakeVar add DEFINES QT_NO_XCB
 fi
 
 if [ "$CFG_DIRECTFB" != "no" ]; then
@@ -5360,6 +5353,25 @@ fi
 
 if [ "$CFG_XKBCOMMON" = "qt" ]; then
     QT_CONFIG="$QT_CONFIG xkbcommon-qt"
+    # detect XKB config root
+    if [ "$CFG_XKB_CONFIG_ROOT" = "auto" ]; then
+        if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists "xkeyboard-config" 2> /dev/null; then
+            CFG_XKB_CONFIG_ROOT="`$PKG_CONFIG --variable=xkb_base xkeyboard-config`"
+        else
+            # search for xkb configs in most probable locations
+            if [ -d "/usr/share/X11/xkb" ]; then
+                # Linux
+                CFG_XKB_CONFIG_ROOT="/usr/share/X11/xkb"
+            elif [ -d "/usr/local/share/X11/xkb" ]; then
+                # BSD UNIX
+                CFG_XKB_CONFIG_ROOT="/usr/local/share/X11/xkb"
+            fi
+        fi
+    fi
+    QMakeVar set QMAKE_XKB_CONFIG_ROOT "$CFG_XKB_CONFIG_ROOT"
+    if [ "$CFG_XKB_CONFIG_ROOT" = "auto" ]; then
+        CFG_XKB_CONFIG_ROOT="not found"
+    fi
 elif [ "$CFG_XKBCOMMON" = "no" ]; then
     QMakeVar add DEFINES QT_NO_XKBCOMMON
 fi
@@ -6225,10 +6237,6 @@ esac
 
 cat >>"$outpath/src/corelib/global/qconfig.h.new" <<EOF
 
-/* Qt Edition */
-#ifndef QT_EDITION
-#  define QT_EDITION $QT_EDITION
-#endif
 EOF
 
 echo '/* Compile time features */' >>"$outpath/src/corelib/global/qconfig.h.new"
@@ -6483,7 +6491,6 @@ host_build {
     QMAKE_DEFAULT_LIBDIRS = `shellQuoteLines "$DEFAULT_LIBDIRS"`
     QMAKE_DEFAULT_INCDIRS = `shellQuoteLines "$DEFAULT_INCDIRS"`
 }
-QT_EDITION = $Edition
 QT_CONFIG += $QT_CONFIG
 
 #versioning
@@ -6608,10 +6615,6 @@ if [ -n "$QT_LFLAGS_ODBC" ]; then
 fi
 if [ -n "$QT_LFLAGS_TDS" ]; then
     echo "QT_LFLAGS_TDS   = $QT_LFLAGS_TDS" >> "$QTMODULE.tmp"
-fi
-
-if [ "$QT_EDITION" != "QT_EDITION_OPENSOURCE" ]; then
-    echo "DEFINES *= QT_EDITION=QT_EDITION_DESKTOP" >> "$QTMODULE.tmp"
 fi
 
 #dump in the OPENSSL_LIBS info
@@ -6827,7 +6830,7 @@ report_support "    SQLite 2 ............." "$CFG_SQL_sqlite2" plugin "plugin" y
 report_support_plugin "    SQLite ..............." "$CFG_SQL_sqlite" "$CFG_SQLITE" QtSql
 report_support "    TDS .................." "$CFG_SQL_tds" plugin "plugin" yes "built into QtSql"
 report_support "  udev ..................." "$CFG_LIBUDEV"
-report_support "  xkbcommon .............." "$CFG_XKBCOMMON" system "system library" qt "bundled copy"
+report_support "  xkbcommon .............." "$CFG_XKBCOMMON" system "system library" qt "bundled copy, XKB config root: $CFG_XKB_CONFIG_ROOT"
 report_support "  zlib ..................." "$CFG_ZLIB" system "system library" yes "bundled copy"
 
 echo
@@ -6851,6 +6854,10 @@ fi
 if [ "$ORIG_CFG_XKBCOMMON" != qt ] && [ "$CFG_XKBCOMMON" = qt ]; then
     echo "NOTE: libxkbcommon 0.2.0 (or higher) not found on the system, will use "
     echo "the bundled version from 3rd party directory."
+fi
+if [ "$CFG_XKBCOMMON" = "qt" ] && [ "$CFG_XKB_CONFIG_ROOT" = "not found" ]; then
+    echo "WARNING: Could not find XKB config root, use -xkb-config-root to set a path to "
+    echo "XKB configuration data. This is required for keyboard input support."
 fi
 if [ "$CFG_QREAL" = double ] && [ "$CFG_ARCH" = arm ]; then
     echo "NOTE: Qt is using double for qreal on this system. This is binary incompatible against Qt 5.1."

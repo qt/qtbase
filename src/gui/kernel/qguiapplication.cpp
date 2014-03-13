@@ -145,7 +145,7 @@ ulong QGuiApplicationPrivate::mousePressTime = 0;
 Qt::MouseButton QGuiApplicationPrivate::mousePressButton = Qt::NoButton;
 int QGuiApplicationPrivate::mousePressX = 0;
 int QGuiApplicationPrivate::mousePressY = 0;
-int QGuiApplicationPrivate::mouse_double_click_distance = 5;
+int QGuiApplicationPrivate::mouse_double_click_distance = -1;
 
 static Qt::LayoutDirection layout_direction = Qt::LeftToRight;
 static bool force_reverse = false;
@@ -910,7 +910,7 @@ qreal QGuiApplication::devicePixelRatio() const
 }
 
 /*!
-    Returns the top level window at the given position, if any.
+    Returns the top level window at the given position \a pos, if any.
 */
 QWindow *QGuiApplication::topLevelAt(const QPoint &pos)
 {
@@ -1007,16 +1007,17 @@ static void init_platform(const QString &pluginArgument, const QString &platform
     if (!platformThemeName.isEmpty())
         themeNames.append(platformThemeName);
 
-    // 2) Ask the platform integration for a list of names and try loading them.
+    // 2) Ask the platform integration for a list of theme names
     themeNames += QGuiApplicationPrivate::platform_integration->themeNames();
+    // 3) Look for a theme plugin.
     foreach (const QString &themeName, themeNames) {
         QGuiApplicationPrivate::platform_theme = QPlatformThemeFactory::create(themeName, platformPluginPath);
         if (QGuiApplicationPrivate::platform_theme)
             break;
     }
 
-    // 3) If none found, look for a theme plugin. Theme plugins are located in the
-    // same directory as platform plugins.
+    // 4) If no theme plugin was found ask the platform integration to
+    // create a theme
     if (!QGuiApplicationPrivate::platform_theme) {
         foreach (const QString &themeName, themeNames) {
             QGuiApplicationPrivate::platform_theme = QGuiApplicationPrivate::platform_integration->createPlatformTheme(themeName);
@@ -1026,7 +1027,7 @@ static void init_platform(const QString &pluginArgument, const QString &platform
         // No error message; not having a theme plugin is allowed.
     }
 
-    // 4) Fall back on the built-in "null" platform theme.
+    // 5) Fall back on the built-in "null" platform theme.
     if (!QGuiApplicationPrivate::platform_theme)
         QGuiApplicationPrivate::platform_theme = new QPlatformTheme;
 
@@ -1253,6 +1254,8 @@ void QGuiApplicationPrivate::init()
 
     initPalette();
     QFont::initialize();
+
+    mouse_double_click_distance = platformTheme()->themeHint(QPlatformTheme::MouseDoubleClickDistance).toInt();
 
 #ifndef QT_NO_CURSOR
     QCursorData::initialize();
@@ -2708,7 +2711,7 @@ void QGuiApplicationPrivate::notifyWindowIconChanged()
     \brief whether the application implicitly quits when the last window is
     closed.
 
-    The default is true.
+    The default is \c true.
 
     If this property is \c true, the applications quits when the last visible
     primary window (i.e. window with no parent) is closed.
@@ -2736,7 +2739,7 @@ bool QGuiApplication::quitOnLastWindowClosed()
     primary window (i.e. window with no parent) is closed.
 
     By default, QGuiApplication quits after this signal is emitted. This feature
-    can be turned off by setting \l quitOnLastWindowClosed to false.
+    can be turned off by setting \l quitOnLastWindowClosed to \c false.
 
     \sa QWindow::close(), QWindow::isTopLevel()
 */
@@ -2912,7 +2915,7 @@ void QGuiApplicationPrivate::setApplicationState(Qt::ApplicationState state)
     Returns \c true if the application is currently saving the
     \l{Session Management}{session}; otherwise returns \c false.
 
-    This is true when commitDataRequest() and saveStateRequest() are emitted,
+    This is \c true when commitDataRequest() and saveStateRequest() are emitted,
     but also when the windows are closed afterwards by session management.
 
     \sa sessionId(), commitDataRequest(), saveStateRequest()
@@ -3183,7 +3186,7 @@ QStyleHints *QGuiApplication::styleHints()
 
 /*!
     Sets whether Qt should use the system's standard colors, fonts, etc., to
-    \a on. By default, this is true.
+    \a on. By default, this is \c true.
 
     This function must be called before creating the QGuiApplication object, like
     this:
@@ -3199,7 +3202,7 @@ void QGuiApplication::setDesktopSettingsAware(bool on)
 
 /*!
     Returns \c true if Qt is set to use the system's standard colors, fonts, etc.;
-    otherwise returns \c false. The default is true.
+    otherwise returns \c false. The default is \c true.
 
     \sa setDesktopSettingsAware()
 */

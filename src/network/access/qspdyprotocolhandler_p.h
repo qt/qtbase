@@ -108,6 +108,7 @@ public:
 
 private slots:
     void _q_uploadDataReadyRead();
+    void _q_replyDestroyed(QObject*);
 
 private:
 

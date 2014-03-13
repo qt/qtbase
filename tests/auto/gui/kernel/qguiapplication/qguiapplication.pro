@@ -5,5 +5,5 @@ include($${CORE_TEST_PATH}/qcoreapplication.pro)
 INCLUDEPATH += $$CORE_TEST_PATH
 
 TARGET = tst_qguiapplication
-QT += gui gui-private
+QT += gui-private
 SOURCES += tst_qguiapplication.cpp

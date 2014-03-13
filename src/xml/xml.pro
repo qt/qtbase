@@ -10,7 +10,7 @@ load(qt_module)
 
 HEADERS += qtxmlglobal.h
 
-PRECOMPILED_HEADER = ../corelib/global/qt_pch.h
+PRECOMPILED_HEADER =
 
 include(dom/dom.pri)
 include(sax/sax.pri)

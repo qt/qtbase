@@ -201,22 +201,8 @@ static void checkRanges(QPdf::ByteStream &ts, QByteArray &ranges, int &nranges)
 QVector<int> QFontSubset::getReverseMap() const
 {
     QVector<int> reverseMap(0x10000, 0);
-
-    glyph_t glyph;
-
-    QGlyphLayout glyphs;
-    glyphs.glyphs = &glyph;
-    glyphs.numGlyphs = 1;
-
     for (uint uc = 0; uc < 0x10000; ++uc) {
-        QChar ch(uc);
-
-        int nglyphs = 1;
-        if (!fontEngine->stringToCMap(&ch, 1, &glyphs, &nglyphs, QFontEngine::GlyphIndicesOnly))
-            Q_UNREACHABLE();
-        Q_ASSERT(nglyphs == 1);
-
-        int idx = glyph_indices.indexOf(glyph);
+        int idx = glyph_indices.indexOf(fontEngine->glyphIndex(uc));
         if (idx >= 0 && !reverseMap.at(idx))
             reverseMap[idx] = uc;
     }

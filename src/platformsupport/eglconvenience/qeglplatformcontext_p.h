@@ -51,10 +51,9 @@ QT_BEGIN_NAMESPACE
 class QEGLPlatformContext : public QPlatformOpenGLContext
 {
 public:
+    QEGLPlatformContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display);
     QEGLPlatformContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display,
-                        EGLenum eglApi = EGL_OPENGL_ES_API);
-    QEGLPlatformContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display,
-                        EGLConfig config, EGLenum eglApi = EGL_OPENGL_ES_API);
+                        EGLConfig config);
     ~QEGLPlatformContext();
 
     bool makeCurrent(QPlatformSurface *surface);
@@ -81,6 +80,7 @@ private:
     EGLDisplay m_eglDisplay;
     EGLConfig m_eglConfig;
     QSurfaceFormat m_format;
+    EGLenum m_api;
     int m_swapInterval;
     bool m_swapIntervalEnvChecked;
     int m_swapIntervalFromEnv;

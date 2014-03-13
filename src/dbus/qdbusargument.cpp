@@ -605,6 +605,8 @@ const QDBusArgument &QDBusArgument::operator>>(uchar &arg) const
 {
     if (QDBusArgumentPrivate::checkReadAndDetach(d))
         arg = d->demarshaller()->toByte();
+    else
+        arg = 0;
     return *this;
 }
 
@@ -617,6 +619,8 @@ const QDBusArgument &QDBusArgument::operator>>(bool &arg) const
 {
     if (QDBusArgumentPrivate::checkReadAndDetach(d))
         arg = d->demarshaller()->toBool();
+    else
+        arg = false;
     return *this;
 }
 
@@ -629,6 +633,8 @@ const QDBusArgument &QDBusArgument::operator>>(ushort &arg) const
 {
     if (QDBusArgumentPrivate::checkReadAndDetach(d))
         arg = d->demarshaller()->toUShort();
+    else
+        arg = 0;
     return *this;
 }
 
@@ -641,6 +647,8 @@ const QDBusArgument &QDBusArgument::operator>>(short &arg) const
 {
     if (QDBusArgumentPrivate::checkReadAndDetach(d))
         arg = d->demarshaller()->toShort();
+    else
+        arg = 0;
     return *this;
 }
 
@@ -653,6 +661,8 @@ const QDBusArgument &QDBusArgument::operator>>(int &arg) const
 {
     if (QDBusArgumentPrivate::checkReadAndDetach(d))
         arg = d->demarshaller()->toInt();
+    else
+        arg = 0;
     return *this;
 }
 
@@ -665,6 +675,8 @@ const QDBusArgument &QDBusArgument::operator>>(uint &arg) const
 {
     if (QDBusArgumentPrivate::checkReadAndDetach(d))
         arg = d->demarshaller()->toUInt();
+    else
+        arg = 0;
     return *this;
 }
 
@@ -677,6 +689,8 @@ const QDBusArgument &QDBusArgument::operator>>(qlonglong &arg) const
 {
     if (QDBusArgumentPrivate::checkReadAndDetach(d))
         arg = d->demarshaller()->toLongLong();
+    else
+        arg = 0;
     return *this;
 }
 
@@ -689,6 +703,8 @@ const QDBusArgument &QDBusArgument::operator>>(qulonglong &arg) const
 {
     if (QDBusArgumentPrivate::checkReadAndDetach(d))
         arg = d->demarshaller()->toULongLong();
+    else
+        arg = 0;
     return *this;
 }
 
@@ -701,6 +717,8 @@ const QDBusArgument &QDBusArgument::operator>>(double &arg) const
 {
     if (QDBusArgumentPrivate::checkReadAndDetach(d))
         arg = d->demarshaller()->toDouble();
+    else
+        arg = 0;
     return *this;
 }
 

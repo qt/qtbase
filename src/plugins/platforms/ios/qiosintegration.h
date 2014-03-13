@@ -66,6 +66,7 @@ public:
     QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
 
     QPlatformFontDatabase *fontDatabase() const;
+    QPlatformClipboard *clipboard() const;
     QPlatformInputContext *inputContext() const;
     QPlatformServices *services() const Q_DECL_OVERRIDE;
 
@@ -73,8 +74,6 @@ public:
 
     QStringList themeNames() const;
     QPlatformTheme *createPlatformTheme(const QString &name) const;
-
-    QPlatformDrag *drag() const Q_DECL_OVERRIDE { return 0; }
 
     QAbstractEventDispatcher *createEventDispatcher() const;
     QPlatformNativeInterface *nativeInterface() const;
@@ -84,6 +83,7 @@ public:
     QTouchDevice *touchDevice();
 private:
     QPlatformFontDatabase *m_fontDatabase;
+    QPlatformClipboard *m_clipboard;
     QPlatformInputContext *m_inputContext;
     QPlatformScreen *m_screen;
     QTouchDevice *m_touchDevice;

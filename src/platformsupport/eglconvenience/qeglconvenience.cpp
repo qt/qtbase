@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include <QByteArray>
-#include <QOpenGLFunctions>
+#include <QOpenGLContext>
 
 #ifdef Q_OS_LINUX
 #include <sys/ioctl.h>
@@ -49,6 +49,10 @@
 #endif
 
 #include "qeglconvenience_p.h"
+
+#ifndef EGL_OPENGL_ES3_BIT_KHR
+#define EGL_OPENGL_ES3_BIT_KHR 0x0040
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -239,16 +243,19 @@ EGLConfig QEglConfigChooser::chooseConfig()
     configureAttributes.append(surfaceType());
 
     configureAttributes.append(EGL_RENDERABLE_TYPE);
+    bool needsES2Plus = false;
     switch (m_format.renderableType()) {
     case QSurfaceFormat::OpenVG:
         configureAttributes.append(EGL_OPENVG_BIT);
         break;
 #ifdef EGL_VERSION_1_4
     case QSurfaceFormat::DefaultRenderableType:
-        if (!QOpenGLFunctions::isES())
+#ifndef QT_NO_OPENGL
+        if (QOpenGLContext::openGLModuleType() == QOpenGLContext::DesktopGL)
             configureAttributes.append(EGL_OPENGL_BIT);
         else
-            configureAttributes.append(EGL_OPENGL_ES2_BIT);
+#endif // QT_NO_OPENGL
+            needsES2Plus = true;
         break;
     case QSurfaceFormat::OpenGL:
          configureAttributes.append(EGL_OPENGL_BIT);
@@ -261,8 +268,14 @@ EGLConfig QEglConfigChooser::chooseConfig()
         }
         // fall through
     default:
-        configureAttributes.append(EGL_OPENGL_ES2_BIT);
+        needsES2Plus = true;
         break;
+    }
+    if (needsES2Plus) {
+        if (m_format.majorVersion() >= 3 && q_hasEglExtension(display(), "EGL_KHR_create_context"))
+            configureAttributes.append(EGL_OPENGL_ES3_BIT_KHR);
+        else
+            configureAttributes.append(EGL_OPENGL_ES2_BIT);
     }
     configureAttributes.append(EGL_NONE);
 
@@ -361,7 +374,9 @@ QSurfaceFormat q_glFormatFromConfig(EGLDisplay display, const EGLConfig config, 
              && (renderableType & EGL_OPENGL_BIT))
         format.setRenderableType(QSurfaceFormat::OpenGL);
     else if (referenceFormat.renderableType() == QSurfaceFormat::DefaultRenderableType
-             && !QOpenGLFunctions::isES()
+#ifndef QT_NO_OPENGL
+             && QOpenGLContext::openGLModuleType() == QOpenGLContext::DesktopGL
+#endif
              && (renderableType & EGL_OPENGL_BIT))
         format.setRenderableType(QSurfaceFormat::OpenGL);
 #endif

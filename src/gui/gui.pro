@@ -18,8 +18,6 @@ win32:contains(QT_CONFIG, angle)|contains(QT_CONFIG, dynamicgl) {
         \$\$QT_MODULE_INCLUDE_BASE/QtANGLE
 }
 
-contains(QT_CONFIG, dynamicgl): DEFINES += QT_OPENGL_DYNAMIC_IN_GUI
-
 load(qt_module)
 
 # Code coverage with TestCocoon
@@ -32,7 +30,7 @@ testcocoon {
 
 mac:!ios: LIBS_PRIVATE += -framework Cocoa
 
-CONFIG += simd
+CONFIG += simd optimize_full
 
 include(accessible/accessible.pri)
 include(kernel/kernel.pri)
@@ -86,7 +84,7 @@ contains(QT_CONFIG, angle) {
     } else:contains(QT_CONFIG, opengl) {
         !isEmpty(QMAKE_INCDIR_OPENGL): CMAKE_GL_INCDIRS = $$cmakeTargetPaths($$QMAKE_INCDIR_OPENGL)
         CMAKE_OPENGL_INCDIRS = $$cmakePortablePaths($$QMAKE_INCDIR_OPENGL)
-        CMAKE_OPENGL_LIBS = $$cmakeProcessLibs($$QMAKE_LIBS_OPENGL)
+        !contains(QT_CONFIG, dynamicgl): CMAKE_OPENGL_LIBS = $$cmakeProcessLibs($$QMAKE_LIBS_OPENGL)
         !isEmpty(QMAKE_LIBDIR_OPENGL): CMAKE_OPENGL_LIBDIR = $$cmakePortablePaths($$QMAKE_LIBDIR_OPENGL)
         CMAKE_GL_HEADER_NAME = GL/gl.h
         mac: CMAKE_GL_HEADER_NAME = gl.h

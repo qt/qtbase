@@ -96,7 +96,7 @@ void tst_QGLFunctions::features()
     funcs.initializeGLFunctions();
 
     // Validate the features against what we expect for this platform.
-    if (QOpenGLFunctions::isES()) {
+    if (QOpenGLContext::currentContext()->isES()) {
 #if !defined(QT_OPENGL_ES) || defined(QT_OPENGL_ES_2)
         QGLFunctions::OpenGLFeatures allFeatures =
             (QGLFunctions::Multitexture |

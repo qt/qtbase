@@ -229,6 +229,16 @@ QPlatformServices *QPlatformIntegration::services() const
     management.  This includes the typical desktop platforms. Can be set to false on
     platforms where no window management is available, meaning for example that windows
     are never repositioned by the window manager. The default implementation returns \c true.
+
+    \value AllGLFunctionsQueryable The QOpenGLContext backend provided by the platform is
+    able to return function pointers from getProcAddress() even for standard OpenGL
+    functions, for example OpenGL 1 functions like glClear() or glDrawArrays(). This is
+    important because the OpenGL specifications do not require this ability from the
+    getProcAddress implementations of the windowing system interfaces (EGL, WGL, GLX). The
+    platform plugins may however choose to enhance the behavior in the backend
+    implementation for QOpenGLContext::getProcAddress() and support returning a function
+    pointer also for the standard, non-extension functions. This capability is a
+    prerequisite for dynamic OpenGL loading.
  */
 
 /*!
@@ -465,7 +475,31 @@ QPlatformSessionManager *QPlatformIntegration::createPlatformSessionManager(cons
 */
 void QPlatformIntegration::sync()
 {
-
 }
+
+#ifndef QT_NO_OPENGL
+/*!
+  Platform integration function for querying the OpenGL implementation type.
+
+  Used only when dynamic OpenGL implementation loading is enabled.
+
+  Subclasses should reimplement this function and return a value based on
+  the OpenGL implementation they have chosen to load.
+
+  \note The return value does not indicate or limit the types of
+  contexts that can be created by a given implementation. For example
+  a desktop OpenGL implementation may be capable of creating OpenGL
+  ES-compatible contexts too.
+
+  \sa QOpenGLContext::openGLModuleType(), QOpenGLContext::isES()
+
+  \since 5.3
+ */
+QOpenGLContext::OpenGLModuleType QPlatformIntegration::openGLModuleType()
+{
+    qWarning("This plugin does not support dynamic OpenGL loading!");
+    return QOpenGLContext::DesktopGL;
+}
+#endif
 
 QT_END_NAMESPACE

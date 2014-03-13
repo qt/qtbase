@@ -93,6 +93,7 @@ static const char *languageForWritingSystem[] = {
 };
 enum { LanguageCount = sizeof(languageForWritingSystem) / sizeof(const char *) };
 
+#ifdef Q_OS_OSX
 static NSInteger languageMapSort(id obj1, id obj2, void *context)
 {
     NSArray *map1 = (NSArray *) obj1;
@@ -104,6 +105,7 @@ static NSInteger languageMapSort(id obj1, id obj2, void *context)
 
     return [languages indexOfObject: lang1] - [languages indexOfObject: lang2];
 }
+#endif
 
 QCoreTextFontDatabase::QCoreTextFontDatabase()
 {
@@ -202,8 +204,8 @@ void QCoreTextFontDatabase::populateFontDatabase()
 void QCoreTextFontDatabase::populateFromDescriptor(CTFontDescriptorRef font)
 {
     QString foundryName = QStringLiteral("CoreText");
-    QCFString familyName = (CFStringRef) CTFontDescriptorCopyLocalizedAttribute(font, kCTFontFamilyNameAttribute, NULL);
-    QCFString styleName = (CFStringRef)CTFontDescriptorCopyLocalizedAttribute(font, kCTFontStyleNameAttribute, NULL);
+    QCFString familyName = (CFStringRef) CTFontDescriptorCopyAttribute(font, kCTFontFamilyNameAttribute);
+    QCFString styleName = (CFStringRef)CTFontDescriptorCopyAttribute(font, kCTFontStyleNameAttribute);
     QCFType<CFDictionaryRef> styles = (CFDictionaryRef) CTFontDescriptorCopyAttribute(font, kCTFontTraitsAttribute);
     QFont::Weight weight = QFont::Normal;
     QFont::Style style = QFont::StyleNormal;
@@ -265,12 +267,6 @@ void QCoreTextFontDatabase::populateFromDescriptor(CTFontDescriptorRef font)
     QPlatformFontDatabase::registerFont(familyName, styleName, foundryName, weight, style, stretch,
             true /* antialiased */, true /* scalable */,
             pixelSize, fixedPitch, writingSystems, (void *) font);
-
-    // We need to map back and forth between PostScript-names and family-names for fallback list construction
-    CFStringRef psName = (CFStringRef) CTFontDescriptorCopyAttribute(font, kCTFontNameAttribute);
-    psNameToFamily[QCFString::toQString((NSString *) psName)] = familyName;
-    familyNameToPsName[familyName] = QCFString::toQString((NSString *) psName);
-    CFRelease(psName);
 }
 
 void QCoreTextFontDatabase::releaseHandle(void *handle)
@@ -350,26 +346,18 @@ QFont::StyleHint styleHintFromNSString(NSString *style)
         return QFont::AnyStyle;
 }
 
-static QString familyNameFromPostScriptName(QHash<QString, QString> &psNameToFamily,
-                                            NSString *psName)
+#ifdef Q_OS_OSX
+static QString familyNameFromPostScriptName(NSString *psName)
 {
-    QString name = QCFString::toQString(psName);
-    if (psNameToFamily.contains(name))
-        return psNameToFamily[name];
-    else {
-        // Some of the font name in DefaultFontFallbacks.plist are hidden fonts like AquaHiraKaku,
-        // their family name begins with a dot, like ".AquaHiraKaku" or ".Apple Symbols Fallback",
-        // the only way (I've found) to get it are actually creating a CTFont with them. We only
-        // need to do it once though.
-        QCFType<CTFontRef> font = CTFontCreateWithName((CFStringRef) psName, 12.0, NULL);
-        if (font) {
-            QCFString family = CTFontCopyFamilyName(font);
-            psNameToFamily[name] = family;
-            return family;
-        }
-        return name;
-    }
+    QCFType<CTFontDescriptorRef> fontDescriptor = (CTFontDescriptorRef) CTFontDescriptorCreateWithNameAndSize((CFStringRef)psName, 12.0);
+    QCFString familyName = (CFStringRef) CTFontDescriptorCopyAttribute(fontDescriptor, kCTFontFamilyNameAttribute);
+    QString name = QCFString::toQString(familyName);
+    if (name.isEmpty())
+        qWarning() << "QCoreTextFontDatabase: Failed to resolve family name for PostScript name " << QCFString::toQString((CFStringRef)psName);
+
+    return name;
 }
+#endif
 
 QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const
 {
@@ -389,29 +377,29 @@ QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family, QFo
             if (fallbackLists.contains(family))
                 return fallbackLists.value(family);
 
-            if (!familyNameToPsName.contains(family))
-                const_cast<QCoreTextFontDatabase*>(this)->populateFontDatabase();
+            QCFType<CFMutableDictionaryRef> attributes = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+            CFDictionaryAddValue(attributes, kCTFontFamilyNameAttribute, QCFString(family));
+            if (QCFType<CTFontDescriptorRef> fontDescriptor = CTFontDescriptorCreateWithAttributes(attributes)) {
+                if (QCFType<CTFontRef> font = CTFontCreateWithFontDescriptor(fontDescriptor, 12.0, 0)) {
+                    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+                    NSArray *languages = [defaults stringArrayForKey: @"AppleLanguages"];
 
-            QCFType<CTFontRef> font = CTFontCreateWithName(QCFString(familyNameToPsName[family]), 12.0, NULL);
-            if (font) {
-                NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-                NSArray *languages = [defaults stringArrayForKey: @"AppleLanguages"];
-
-                QCFType<CFArrayRef> cascadeList = (CFArrayRef) CTFontCopyDefaultCascadeListForLanguages(font, (CFArrayRef) languages);
-                if (cascadeList) {
-                    QStringList fallbackList;
-                    const int numCascades = CFArrayGetCount(cascadeList);
-                    for (int i = 0; i < numCascades; ++i) {
-                        CTFontDescriptorRef fontFallback = (CTFontDescriptorRef) CFArrayGetValueAtIndex(cascadeList, i);
-                        QCFString fallbackFamilyName = (CFStringRef) CTFontDescriptorCopyLocalizedAttribute(fontFallback, kCTFontFamilyNameAttribute, NULL);
-                        fallbackList.append(QCFString::toQString(fallbackFamilyName));
+                    QCFType<CFArrayRef> cascadeList = (CFArrayRef) CTFontCopyDefaultCascadeListForLanguages(font, (CFArrayRef) languages);
+                    if (cascadeList) {
+                        QStringList fallbackList;
+                        const int numCascades = CFArrayGetCount(cascadeList);
+                        for (int i = 0; i < numCascades; ++i) {
+                            CTFontDescriptorRef fontFallback = (CTFontDescriptorRef) CFArrayGetValueAtIndex(cascadeList, i);
+                            QCFString fallbackFamilyName = (CFStringRef) CTFontDescriptorCopyAttribute(fontFallback, kCTFontFamilyNameAttribute);
+                            fallbackList.append(QCFString::toQString(fallbackFamilyName));
+                        }
+                        fallbackLists[family] = fallbackList;
                     }
-                    fallbackLists[family] = fallbackList;
                 }
-            }
 
-            if (fallbackLists.contains(family))
-                return fallbackLists.value(family);
+                if (fallbackLists.contains(family))
+                    return fallbackLists.value(family);
+            }
         }
 #endif
     }
@@ -424,9 +412,6 @@ QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family, QFo
     static bool didPopulateStyleFallbacks = false;
     if (!didPopulateStyleFallbacks) {
 #if defined(Q_OS_MACX)
-        // Ensure we have the psNameToFamily mapping set up
-        const_cast<QCoreTextFontDatabase*>(this)->populateFontDatabase();
-
         NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
         NSArray *languages = [defaults stringArrayForKey: @"AppleLanguages"];
 
@@ -442,10 +427,10 @@ QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family, QFo
                     NSArray *langs = [(NSArray *) item sortedArrayUsingFunction: languageMapSort
                                                                         context: languages];
                     for (NSArray *map in langs)
-                        fallbackList.append(familyNameFromPostScriptName(psNameToFamily, [map objectAtIndex: 1]));
+                        fallbackList.append(familyNameFromPostScriptName([map objectAtIndex: 1]));
                 }
                 else if ([item isKindOfClass: [NSString class]])
-                    fallbackList.append(familyNameFromPostScriptName(psNameToFamily, item));
+                    fallbackList.append(familyNameFromPostScriptName(item));
             }
 
             if (QCoreTextFontEngine::supportsColorGlyphs())
@@ -579,7 +564,7 @@ QStringList QCoreTextFontDatabase::addApplicationFont(const QByteArray &fontData
         for (int i = 0; i < numFonts; ++i) {
             CTFontDescriptorRef fontDescriptor = CTFontDescriptorRef(CFArrayGetValueAtIndex(fonts, i));
             populateFromDescriptor(fontDescriptor);
-            QCFType<CFStringRef> familyName = CFStringRef(CTFontDescriptorCopyLocalizedAttribute(fontDescriptor, kCTFontFamilyNameAttribute, NULL));
+            QCFType<CFStringRef> familyName = CFStringRef(CTFontDescriptorCopyAttribute(fontDescriptor, kCTFontFamilyNameAttribute));
             families.append(QCFString(familyName));
         }
     }

@@ -170,7 +170,9 @@ static QString prettyByteArray(const QByteArray &array)
     return result;
 }
 
-static bool doSocketRead(QTcpSocket *socket, int minBytesAvailable, int timeout = 4000)
+enum { defaultReadTimeoutMS = 4000 };
+
+static bool doSocketRead(QTcpSocket *socket, int minBytesAvailable, int timeout = defaultReadTimeoutMS)
 {
     QElapsedTimer timer;
     timer.start();
@@ -183,6 +185,15 @@ static bool doSocketRead(QTcpSocket *socket, int minBytesAvailable, int timeout 
         if (!socket->waitForReadyRead(timeout - timer.elapsed()))
             return false;
     }
+}
+
+static QByteArray msgDoSocketReadFailed(const QString &host, quint16 port,
+                                        int step, int minBytesAvailable)
+{
+    return "Failed to receive "
+        + QByteArray::number(minBytesAvailable) + " bytes from "
+        + host.toLatin1() + ':' + QByteArray::number(port)
+        + " in step " + QByteArray::number(step) + ": timeout";
 }
 
 static bool doSocketFlush(QTcpSocket *socket, int timeout = 4000)
@@ -226,8 +237,8 @@ static void netChat(int port, const QList<Chat> &chat)
         switch (it->type) {
             case Chat::Expect: {
                     qDebug() << i << "Expecting" << prettyByteArray(it->data);
-                    if (!doSocketRead(&socket, it->data.length()))
-                        QFAIL(QString("Failed to receive data in step %1: timeout").arg(i).toLocal8Bit());
+                    if (!doSocketRead(&socket, it->data.length(), 3 * defaultReadTimeoutMS))
+                        QFAIL(msgDoSocketReadFailed(QtNetworkSettings::serverName(), port, i, it->data.length()));
 
                     // pop that many bytes off the socket
                     QByteArray received = socket.read(it->data.length());
@@ -245,7 +256,7 @@ static void netChat(int port, const QList<Chat> &chat)
                 while (true) {
                     // scan the buffer until we have our string
                     if (!doSocketRead(&socket, it->data.length()))
-                        QFAIL(QString("Failed to receive data in step %1: timeout").arg(i).toLocal8Bit());
+                        QFAIL(msgDoSocketReadFailed(QtNetworkSettings::serverName(), port, i, it->data.length()));
 
                     QByteArray buffer;
                     buffer.resize(socket.bytesAvailable());
@@ -266,7 +277,7 @@ static void netChat(int port, const QList<Chat> &chat)
             case Chat::SkipBytes: {
                     qDebug() << i << "Skipping" << it->value << "bytes";
                     if (!doSocketRead(&socket, it->value))
-                        QFAIL(QString("Failed to receive data in step %1: timeout").arg(i).toLocal8Bit());
+                        QFAIL(msgDoSocketReadFailed(QtNetworkSettings::serverName(), port, i, it->value));
 
                     // now discard the bytes
                     QByteArray buffer = socket.read(it->value);

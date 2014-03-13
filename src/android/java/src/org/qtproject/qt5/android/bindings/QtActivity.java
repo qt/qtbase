@@ -2,6 +2,16 @@
     Copyright (c) 2012-2013, BogDan Vatra <bogdan@kde.org>
     Contact: http://www.qt-project.org/legal
 
+    Commercial License Usage
+    Licensees holding valid commercial Qt licenses may use this file in
+    accordance with the commercial license agreement provided with the
+    Software or, alternatively, in accordance with the terms contained in
+    a written agreement between you and Digia.  For licensing terms and
+    conditions see http://qt.digia.com/licensing.  For further information
+    use the contact form at http://qt.digia.com/contact-us.
+
+    BSD License Usage
+    Alternatively, this file may be used under the BSD license as follows:
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
     are met:
@@ -624,11 +634,15 @@ public class QtActivity extends Activity
                                                                   + "\tQML_IMPORT_PATH=" + pluginsPrefix + "/imports"
                                                                   + "\tQT_PLUGIN_PATH=" + pluginsPrefix + "/plugins");
 
-                Intent intent = getIntent();
-                if (intent != null) {
-                    String parameters = intent.getStringExtra("applicationArguments");
-                    if (parameters != null)
-                        loaderParams.putString(APPLICATION_PARAMETERS_KEY, parameters.replace(' ', '\t'));
+                if (APPLICATION_PARAMETERS != null) {
+                    loaderParams.putString(APPLICATION_PARAMETERS_KEY, APPLICATION_PARAMETERS);
+                } else {
+                    Intent intent = getIntent();
+                    if (intent != null) {
+                        String parameters = intent.getStringExtra("applicationArguments");
+                        if (parameters != null)
+                            loaderParams.putString(APPLICATION_PARAMETERS_KEY, parameters.replace(' ', '\t'));
+                    }
                 }
 
                 loadApplication(loaderParams);

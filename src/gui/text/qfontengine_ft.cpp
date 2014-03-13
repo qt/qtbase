@@ -45,6 +45,7 @@
 #include "qvariant.h"
 #include "qfontengine_ft_p.h"
 #include "private/qimage_p.h"
+#include <private/qstringiterator_p.h>
 
 #ifndef QT_NO_FREETYPE
 
@@ -125,6 +126,7 @@ static bool ft_getSfntTable(void *user_data, uint tag, uchar *buffer, uint *leng
         FT_ULong len = *length;
         result = FT_Load_Sfnt_Table(face, tag, 0, buffer, &len) == FT_Err_Ok;
         *length = len;
+        Q_ASSERT(!result || int(*length) > 0);
     }
 
     return result;
@@ -634,6 +636,7 @@ static void convoluteBitmap(const uchar *src, uchar *dst, int width, int height,
 }
 
 QFontEngineFT::QFontEngineFT(const QFontDef &fd)
+    : QFontEngine(Freetype)
 {
     fontDef = fd;
     matrix.xx = 0x10000;
@@ -1281,22 +1284,10 @@ qreal QFontEngineFT::minRightBearing() const
 {
     if (rbearing == SHRT_MIN) {
         lbearing = rbearing = 0;
-
-        const QChar *ch = reinterpret_cast<const QChar *>(char_table);
-
-        glyph_t glyphs[char_table_entries];
-
-        QGlyphLayout g;
-        g.glyphs = glyphs;
-        g.numGlyphs = char_table_entries;
-        int ng = char_table_entries;
-        if (!stringToCMap(ch, char_table_entries, &g, &ng, GlyphIndicesOnly))
-            Q_UNREACHABLE();
-        Q_ASSERT(ng == char_table_entries);
-
-        while (--ng) {
-            if (glyphs[ng]) {
-                glyph_metrics_t gi = const_cast<QFontEngineFT *>(this)->boundingBox(glyphs[ng]);
+        for (int i = 0; i < char_table_entries; ++i) {
+            const glyph_t glyph = glyphIndex(char_table[i]);
+            if (glyph != 0) {
+                glyph_metrics_t gi = const_cast<QFontEngineFT *>(this)->boundingBox(glyph);
                 lbearing = qMin(lbearing, gi.x);
                 rbearing = qMin(rbearing, (gi.xoff - gi.x - gi.width));
             }
@@ -1457,29 +1448,6 @@ bool QFontEngineFT::supportsTransformation(const QTransform &transform) const
     return transform.type() <= QTransform::TxTranslate;
 }
 
-static inline unsigned int getChar(const QChar *str, int &i, const int len)
-{
-    uint ucs4 = str[i].unicode();
-    if (str[i].isHighSurrogate() && i < len-1 && str[i+1].isLowSurrogate()) {
-        ++i;
-        ucs4 = QChar::surrogateToUcs4(ucs4, str[i].unicode());
-    }
-    return ucs4;
-}
-
-bool QFontEngineFT::canRender(const QChar *string, int len)
-{
-    FT_Face face = freetype->face;
-    {
-        for ( int i = 0; i < len; i++ ) {
-            unsigned int uc = getChar(string, i, len);
-            if (!FT_Get_Char_Index(face, uc))
-                    return false;
-        }
-    }
-    return true;
-}
-
 void QFontEngineFT::addOutlineToPath(qreal x, qreal y, const QGlyphLayout &glyphs, QPainterPath *path, QTextItem::RenderFlags flags)
 {
     if (!glyphs.numGlyphs)
@@ -1524,9 +1492,40 @@ void QFontEngineFT::addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions, int
     unlockFace();
 }
 
+glyph_t QFontEngineFT::glyphIndex(uint ucs4) const
+{
+    glyph_t glyph = ucs4 < QFreetypeFace::cmapCacheSize ? freetype->cmapCache[ucs4] : 0;
+    if (glyph == 0) {
+        FT_Face face = freetype->face;
+        glyph = FT_Get_Char_Index(face, ucs4);
+        if (glyph == 0) {
+            // Certain fonts don't have no-break space and tab,
+            // while we usually want to render them as space
+            if (ucs4 == QChar::Nbsp || ucs4 == QChar::Tabulation) {
+                glyph = FT_Get_Char_Index(face, QChar::Space);
+            } else if (freetype->symbol_map) {
+                // Symbol fonts can have more than one CMAPs, FreeType should take the
+                // correct one for us by default, so we always try FT_Get_Char_Index
+                // first. If it didn't work (returns 0), we will explicitly set the
+                // CMAP to symbol font one and try again. symbol_map is not always the
+                // correct one because in certain fonts like Wingdings symbol_map only
+                // contains PUA codepoints instead of the common ones.
+                FT_Set_Charmap(face, freetype->symbol_map);
+                glyph = FT_Get_Char_Index(face, ucs4);
+                FT_Set_Charmap(face, freetype->unicode_map);
+            }
+        }
+        if (ucs4 < QFreetypeFace::cmapCacheSize)
+            freetype->cmapCache[ucs4] = glyph;
+    }
+
+    return glyph;
+}
+
 bool QFontEngineFT::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs,
                                  QFontEngine::ShaperFlags flags) const
 {
+    Q_ASSERT(glyphs->numGlyphs >= *nglyphs);
     if (*nglyphs < len) {
         *nglyphs = len;
         return false;
@@ -1535,8 +1534,9 @@ bool QFontEngineFT::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs
     int glyph_pos = 0;
     if (freetype->symbol_map) {
         FT_Face face = freetype->face;
-        for ( int i = 0; i < len; ++i ) {
-            unsigned int uc = getChar(str, i, len);
+        QStringIterator it(str, str + len);
+        while (it.hasNext()) {
+            uint uc = it.next();
             glyphs->glyphs[glyph_pos] = uc < QFreetypeFace::cmapCacheSize ? freetype->cmapCache[uc] : 0;
             if ( !glyphs->glyphs[glyph_pos] ) {
                 // Symbol fonts can have more than one CMAPs, FreeType should take the
@@ -1565,8 +1565,9 @@ bool QFontEngineFT::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs
         }
     } else {
         FT_Face face = freetype->face;
-        for (int i = 0; i < len; ++i) {
-            unsigned int uc = getChar(str, i, len);
+        QStringIterator it(str, str + len);
+        while (it.hasNext()) {
+            uint uc = it.next();
             glyphs->glyphs[glyph_pos] = uc < QFreetypeFace::cmapCacheSize ? freetype->cmapCache[uc] : 0;
             if (!glyphs->glyphs[glyph_pos]) {
                 {

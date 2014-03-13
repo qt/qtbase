@@ -2,7 +2,7 @@ CONFIG += testcase
 CONFIG += parallel_test
 TARGET = tst_qsortfilterproxymodel
 
-QT += gui widgets testlib
+QT += widgets testlib
 mtdir = ../../../other/modeltest
 
 INCLUDEPATH += $$PWD/$${mtdir}

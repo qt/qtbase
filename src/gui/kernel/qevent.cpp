@@ -3295,11 +3295,14 @@ QDebug operator<<(QDebug dbg, const QEvent *e) {
             n = "MouseButtonDblClick";
             break;
         }
-        dbg.nospace() << "QMouseEvent("  << n
+        QDebug nsp = dbg.nospace();
+        nsp << "QMouseEvent("  << n
                       << ", " << me->button()
                       << ", " << hex << (int)me->buttons()
-                      << ", " << hex << (int)me->modifiers()
-                      << ')';
+                      << ", " << hex << (int)me->modifiers() << dec;
+        if (const Qt::MouseEventSource source = me->source())
+            nsp << ", source = " << source;
+        nsp << ')';
     }
     return dbg.space();
 

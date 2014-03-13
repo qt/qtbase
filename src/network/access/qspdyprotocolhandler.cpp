@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2014 BlackBerry Limited. All rights reserved.
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -275,6 +276,7 @@ QSpdyProtocolHandler::QSpdyProtocolHandler(QHttpNetworkConnectionChannel *channe
     // when sending the headers because of the CRIME attack
     zlibRet = deflateInit(&m_deflateStream, /* compression level = */ 0);
     Q_ASSERT(zlibRet == Z_OK);
+    Q_UNUSED(zlibRet); // silence -Wunused-variable
 }
 
 QSpdyProtocolHandler::~QSpdyProtocolHandler()
@@ -307,11 +309,13 @@ bool QSpdyProtocolHandler::sendRequest()
 
         currentReply->setSpdyWasUsed(true);
         qint32 streamID = generateNextStreamID();
+        currentReply->setProperty("SPDYStreamID", streamID);
 
         currentReply->setRequest(currentRequest);
         currentReply->d_func()->connection = m_connection;
         currentReply->d_func()->connectionChannel = m_channel;
         m_inFlightStreams.insert(streamID, currentPair);
+        connect(currentReply, SIGNAL(destroyed(QObject*)), this, SLOT(_q_replyDestroyed(QObject*)));
 
         sendSYN_STREAM(currentPair, streamID, /* associatedToStreamID = */ 0);
         int requestsRemoved = m_channel->spdyRequestsToSend.remove(
@@ -321,6 +325,13 @@ bool QSpdyProtocolHandler::sendRequest()
     }
     m_channel->state = QHttpNetworkConnectionChannel::IdleState;
     return true;
+}
+
+void QSpdyProtocolHandler::_q_replyDestroyed(QObject* reply)
+{
+    qint32 streamID = reply->property("SPDYStreamID").toInt();
+    if (m_inFlightStreams.remove(streamID))
+        sendRST_STREAM(streamID, RST_STREAM_CANCEL);
 }
 
 void QSpdyProtocolHandler::_q_receiveReply()
@@ -618,6 +629,7 @@ void QSpdyProtocolHandler::sendControlFrame(FrameType type,
     Q_ASSERT(written == 8);
     written = m_socket->write(data, length);
     Q_ASSERT(written == length);
+    Q_UNUSED(written); // silence -Wunused-variable
 }
 
 void QSpdyProtocolHandler::sendSYN_STREAM(HttpMessagePair messagePair,
@@ -694,6 +706,10 @@ void QSpdyProtocolHandler::sendPING(quint32 pingID)
 bool QSpdyProtocolHandler::uploadData(qint32 streamID)
 {
     // we only rely on SPDY flow control here and don't care about TCP buffers
+    if (!m_inFlightStreams.contains(streamID)) {
+        sendRST_STREAM(streamID, RST_STREAM_INVALID_STREAM);
+        return false;
+    }
 
     HttpMessagePair messagePair = m_inFlightStreams.value(streamID);
     QHttpNetworkRequest request = messagePair.first;
@@ -701,6 +717,11 @@ bool QSpdyProtocolHandler::uploadData(qint32 streamID)
     Q_ASSERT(reply);
     QHttpNetworkReplyPrivate *replyPrivate = reply->d_func();
     Q_ASSERT(replyPrivate);
+
+    if (reply->d_func()->state == QHttpNetworkReplyPrivate::SPDYHalfClosed || reply->d_func()->state == QHttpNetworkReplyPrivate::SPDYClosed) {
+        qWarning() << Q_FUNC_INFO << "Trying to upload to closed stream";
+        return false;
+    }
 
     qint32 dataLeftInWindow = replyPrivate->windowSizeUpload
             - replyPrivate->currentlyUploadedDataInWindow;
@@ -747,6 +768,8 @@ bool QSpdyProtocolHandler::uploadData(qint32 streamID)
         Q_ASSERT(writeSize == 0);
         Q_UNUSED(writeSize); // silence -Wunused-variable
         replyPrivate->state = QHttpNetworkReplyPrivate::SPDYHalfClosed;
+        if (reply->request().uploadByteDevice())
+            reply->request().uploadByteDevice()->disconnect(this);
         // ### this will not work if the content length is not known, but
         // then again many servers will fail in this case anyhow according
         // to the SPDY RFC
@@ -874,6 +897,10 @@ void QSpdyProtocolHandler::handleSYN_REPLY(char flags, quint32 /*length*/, const
 void QSpdyProtocolHandler::parseHttpHeaders(char flags, const QByteArray &frameData)
 {
     qint32 streamID = getStreamID(frameData.constData());
+    if (!m_inFlightStreams.contains(streamID)) {
+        sendRST_STREAM(streamID, RST_STREAM_INVALID_STREAM);
+        return;
+    }
 
     flags &= 0x3f;
     bool flag_fin = flags & 0x01;
@@ -884,6 +911,11 @@ void QSpdyProtocolHandler::parseHttpHeaders(char flags, const QByteArray &frameD
     QHttpNetworkReply *httpReply = pair.second;
     Q_ASSERT(httpReply != 0);
 
+    if (httpReply->d_func()->state == QHttpNetworkReplyPrivate::SPDYClosed) {
+        sendRST_STREAM(streamID, RST_STREAM_STREAM_ALREADY_CLOSED);
+        return;
+    }
+
     QByteArray uncompressedHeader;
     if (!uncompressHeader(headerValuePairs, &uncompressedHeader)) {
         qWarning() << Q_FUNC_INFO << "error reading header from SYN_REPLY message";
@@ -891,16 +923,31 @@ void QSpdyProtocolHandler::parseHttpHeaders(char flags, const QByteArray &frameD
     }
 
     qint32 headerCount = fourBytesToInt(uncompressedHeader.constData());
+    if (headerCount * 8 > uncompressedHeader.size()) {
+        qWarning() << Q_FUNC_INFO << "error parsing header from SYN_REPLY message";
+        sendRST_STREAM(streamID, RST_STREAM_PROTOCOL_ERROR);
+        return;
+    }
     qint32 readPointer = 4;
     for (qint32 a = 0; a < headerCount; ++a) {
         qint32 count = fourBytesToInt(uncompressedHeader.constData() + readPointer);
         readPointer += 4;
         QByteArray name = uncompressedHeader.mid(readPointer, count);
         readPointer += count;
+        if (readPointer > uncompressedHeader.size()) {
+            qWarning() << Q_FUNC_INFO << "error parsing header from SYN_REPLY message";
+            sendRST_STREAM(streamID, RST_STREAM_PROTOCOL_ERROR);
+            return;
+        }
         count = fourBytesToInt(uncompressedHeader.constData() + readPointer);
         readPointer += 4;
         QByteArray value = uncompressedHeader.mid(readPointer, count);
         readPointer += count;
+        if (readPointer > uncompressedHeader.size()) {
+            qWarning() << Q_FUNC_INFO << "error parsing header from SYN_REPLY message";
+            sendRST_STREAM(streamID, RST_STREAM_PROTOCOL_ERROR);
+            return;
+        }
         if (name == ":status") {
             httpReply->setStatusCode(value.left(3).toInt());
             httpReply->d_func()->reasonPhrase = QString::fromLatin1(value.mid(4));
@@ -931,22 +978,9 @@ void QSpdyProtocolHandler::parseHttpHeaders(char flags, const QByteArray &frameD
     emit httpReply->headerChanged();
 
     if (flag_fin) {
-        switch (httpReply->d_func()->state) {
-        case QHttpNetworkReplyPrivate::SPDYSYNSent:
-            httpReply->d_func()->state = QHttpNetworkReplyPrivate::SPDYHalfClosed;
-            break;
-        case QHttpNetworkReplyPrivate::SPDYHalfClosed:
-            replyFinished(httpReply, streamID);
-            break;
-        case QHttpNetworkReplyPrivate::SPDYClosed: {
-            sendRST_STREAM(streamID, RST_STREAM_PROTOCOL_ERROR);
-            replyFinishedWithError(httpReply, streamID, QNetworkReply::ProtocolFailure,
-                                   "server sent SYN_REPLY on an already closed stream");
-            break;
-        }
-        default:
-            qWarning() << Q_FUNC_INFO << "got data frame in unknown state";
-        }
+        if (httpReply->d_func()->state != QHttpNetworkReplyPrivate::SPDYHalfClosed)
+            sendDataFrame(streamID, DataFrame_FLAG_FIN, 0, 0);
+        replyFinished(httpReply, streamID);
     }
 }
 
@@ -1143,10 +1177,19 @@ void QSpdyProtocolHandler::handleWINDOW_UPDATE(char /*flags*/, quint32 /*length*
     qint32 streamID = getStreamID(frameData.constData());
     qint32 deltaWindowSize = fourBytesToInt(frameData.constData() + 4);
 
+    if (!m_inFlightStreams.contains(streamID)) {
+        sendRST_STREAM(streamID, RST_STREAM_INVALID_STREAM);
+        return;
+    }
+
     QHttpNetworkReply *reply = m_inFlightStreams.value(streamID).second;
     Q_ASSERT(reply);
     QHttpNetworkReplyPrivate *replyPrivate = reply->d_func();
     Q_ASSERT(replyPrivate);
+
+    // Ignore WINDOW_UPDATE if we are already done.
+    if (replyPrivate->state == QHttpNetworkReplyPrivate::SPDYHalfClosed || replyPrivate->state == QHttpNetworkReplyPrivate::SPDYClosed)
+        return;
 
     replyPrivate->currentlyUploadedDataInWindow = replyPrivate->windowSizeUpload - deltaWindowSize;
     uploadData(streamID); // we hopefully can continue to upload
@@ -1158,6 +1201,11 @@ void QSpdyProtocolHandler::handleDataFrame(const QByteArray &frameHeaders)
     Q_ASSERT(frameHeaders.count() >= 8);
 
     qint32 streamID = getStreamID(frameHeaders.constData());
+    if (!m_inFlightStreams.contains(streamID)) {
+        sendRST_STREAM(streamID, RST_STREAM_INVALID_STREAM);
+        return;
+    }
+
     unsigned char flags = static_cast<unsigned char>(frameHeaders.at(4));
     flags &= 0x3f;
     bool flag_fin = flags & 0x01;
@@ -1181,6 +1229,11 @@ void QSpdyProtocolHandler::handleDataFrame(const QByteArray &frameHeaders)
     Q_ASSERT(httpReply != 0);
 
     QHttpNetworkReplyPrivate *replyPrivate = httpReply->d_func();
+
+    if (replyPrivate->state == QHttpNetworkReplyPrivate::SPDYClosed) {
+        sendRST_STREAM(streamID, RST_STREAM_STREAM_ALREADY_CLOSED);
+        return;
+    }
 
     // check whether we need to send WINDOW_UPDATE (i.e. tell the sender it can send more)
     replyPrivate->currentlyReceivedDataInWindow += length;
@@ -1234,29 +1287,18 @@ void QSpdyProtocolHandler::handleDataFrame(const QByteArray &frameHeaders)
     }
 
     if (flag_fin) {
-        switch (httpReply->d_func()->state) {
-        case QHttpNetworkReplyPrivate::SPDYSYNSent:
-            httpReply->d_func()->state = QHttpNetworkReplyPrivate::SPDYHalfClosed;
-            // ### send FIN ourselves?
-            break;
-        case QHttpNetworkReplyPrivate::SPDYHalfClosed:
-            replyFinished(httpReply, streamID);
-            break;
-        case QHttpNetworkReplyPrivate::SPDYClosed: {
-            sendRST_STREAM(streamID, RST_STREAM_PROTOCOL_ERROR);
-            replyFinishedWithError(httpReply, streamID, QNetworkReply::ProtocolFailure,
-                                   "server sent data on an already closed stream");
-            break;
-        }
-        default:
-            qWarning() << Q_FUNC_INFO << "got data frame in unknown state";
-        }
+        if (httpReply->d_func()->state != QHttpNetworkReplyPrivate::SPDYHalfClosed)
+            sendDataFrame(streamID, DataFrame_FLAG_FIN, 0, 0);
+        replyFinished(httpReply, streamID);
     }
 }
 
 void QSpdyProtocolHandler::replyFinished(QHttpNetworkReply *httpReply, qint32 streamID)
 {
     httpReply->d_func()->state = QHttpNetworkReplyPrivate::SPDYClosed;
+    httpReply->disconnect(this);
+    if (httpReply->request().uploadByteDevice())
+        httpReply->request().uploadByteDevice()->disconnect(this);
     int streamsRemoved = m_inFlightStreams.remove(streamID);
     Q_ASSERT(streamsRemoved == 1);
     Q_UNUSED(streamsRemoved); // silence -Wunused-variable
@@ -1268,6 +1310,9 @@ void QSpdyProtocolHandler::replyFinishedWithError(QHttpNetworkReply *httpReply, 
 {
     Q_ASSERT(httpReply);
     httpReply->d_func()->state = QHttpNetworkReplyPrivate::SPDYClosed;
+    httpReply->disconnect(this);
+    if (httpReply->request().uploadByteDevice())
+        httpReply->request().uploadByteDevice()->disconnect(this);
     int streamsRemoved = m_inFlightStreams.remove(streamID);
     Q_ASSERT(streamsRemoved == 1);
     Q_UNUSED(streamsRemoved); // silence -Wunused-variable

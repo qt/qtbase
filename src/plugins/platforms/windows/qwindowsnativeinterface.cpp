@@ -69,13 +69,18 @@ void *QWindowsNativeInterface::nativeResourceForWindow(const QByteArray &resourc
     QWindowsWindow *bw = static_cast<QWindowsWindow *>(window->handle());
     if (resource == "handle")
         return bw->handle();
-    if (window->surfaceType() == QWindow::RasterSurface) {
+    switch (window->surfaceType()) {
+    case QWindow::RasterSurface:
+    case QWindow::RasterGLSurface:
         if (resource == "getDC")
             return bw->getDC();
         if (resource == "releaseDC") {
             bw->releaseDC();
             return 0;
         }
+        break;
+    case QWindow::OpenGLSurface:
+        break;
     }
     qWarning("%s: Invalid key '%s' requested.", __FUNCTION__, resource.constData());
     return 0;
@@ -120,7 +125,7 @@ void *QWindowsNativeInterface::nativeResourceForContext(const QByteArray &resour
         return 0;
     }
 #if defined(QT_OPENGL_ES_2) || defined(QT_OPENGL_DYNAMIC)
-    if (QOpenGLFunctions::isES()) {
+    if (QOpenGLContext::openGLModuleType() != QOpenGLContext::DesktopGL) {
         QWindowsEGLContext *windowsEglContext = static_cast<QWindowsEGLContext *>(context->handle());
         if (resource == QByteArrayLiteral("eglDisplay"))
             return windowsEglContext->eglDisplay();
@@ -131,7 +136,7 @@ void *QWindowsNativeInterface::nativeResourceForContext(const QByteArray &resour
     }
 #endif // QT_OPENGL_ES_2 || QT_OPENGL_DYNAMIC
 #if !defined(QT_OPENGL_ES_2)
-    if (!QOpenGLFunctions::isES()) {
+    if (QOpenGLContext::openGLModuleType() == QOpenGLContext::DesktopGL) {
         QWindowsGLContext *windowsContext = static_cast<QWindowsGLContext *>(context->handle());
         if (resource == QByteArrayLiteral("renderingContext"))
             return windowsContext->renderingContext();

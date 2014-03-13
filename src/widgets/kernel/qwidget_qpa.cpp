@@ -524,7 +524,10 @@ void QWidgetPrivate::show_sys()
         return;
     }
 
-    QApplication::postEvent(q, new QUpdateLaterEvent(q->rect()));
+    if (renderToTexture && !q->isWindow())
+        QApplication::postEvent(q->parentWidget(), new QUpdateLaterEvent(q->geometry()));
+    else
+        QApplication::postEvent(q, new QUpdateLaterEvent(q->rect()));
 
     if (!q->isWindow() && !q->testAttribute(Qt::WA_NativeWindow))
         return;
@@ -544,12 +547,6 @@ void QWidgetPrivate::show_sys()
                 window->setGeometry(geomRect);
             else
                 window->resize(geomRect.size());
-        }
-
-        if (QBackingStore *store = q->backingStore()) {
-            if (store->size() != geomRect.size()) {
-                store->resize(geomRect.size());
-            }
         }
 
 #ifndef QT_NO_CURSOR
@@ -588,7 +585,10 @@ void QWidgetPrivate::hide_sys()
     if (!q->isWindow()) {
         QWidget *p = q->parentWidget();
         if (p &&p->isVisible()) {
-            invalidateBuffer(q->rect());
+            if (renderToTexture)
+                p->d_func()->invalidateBuffer(q->geometry());
+            else
+                invalidateBuffer(q->rect());
         }
     } else {
         invalidateBuffer(q->rect());
@@ -663,6 +663,11 @@ void QWidgetPrivate::raise_sys()
     Q_Q(QWidget);
     if (q->isWindow() || q->testAttribute(Qt::WA_NativeWindow)) {
         q->windowHandle()->raise();
+    } else if (renderToTexture) {
+        if (QWidget *p = q->parentWidget()) {
+            setDirtyOpaqueRegion();
+            p->d_func()->invalidateBuffer(effectiveRectFor(q->geometry()));
+        }
     }
 }
 
@@ -751,21 +756,21 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
                     QPoint posInNativeParent =  q->mapTo(q->nativeParentWidget(),QPoint());
                     q->windowHandle()->setGeometry(QRect(posInNativeParent,r.size()));
                 }
-                const QWidgetBackingStore *bs = maybeBackingStore();
-                if (bs && bs->store) {
-                    if (isResize)
-                        bs->store->resize(r.size());
-                }
 
                 if (needsShow)
                     show_sys();
             }
 
             if (!q->isWindow()) {
-                if (isMove && !isResize)
+                if (renderToTexture) {
+                    QRegion updateRegion(q->geometry());
+                    updateRegion += QRect(oldPos, olds);
+                    q->parentWidget()->d_func()->invalidateBuffer(updateRegion);
+                } else if (isMove && !isResize) {
                     moveRect(QRect(oldPos, olds), x - oldPos.x(), y - oldPos.y());
-                else
+                } else {
                     invalidateBuffer_resizeHelper(oldPos, olds);
+                }
             }
         }
 
@@ -939,6 +944,23 @@ void QWidgetPrivate::createTLSysExtra()
 void QWidgetPrivate::deleteTLSysExtra()
 {
     if (extra && extra->topextra) {
+        //the qplatformbackingstore may hold a reference to the window, so the backingstore
+        //needs to be deleted first. If the backingstore holds GL resources, we need to
+        // make the context current here, since the platform bs does not have a reference
+        // to the widget.
+
+#ifndef QT_NO_OPENGL
+        if (textureChildSeen && extra->topextra->shareContext)
+            extra->topextra->shareContext->makeCurrent(extra->topextra->window);
+#endif
+        extra->topextra->backingStoreTracker.destroy();
+        delete extra->topextra->backingStore;
+        extra->topextra->backingStore = 0;
+#ifndef QT_NO_OPENGL
+        if (textureChildSeen && extra->topextra->shareContext)
+            extra->topextra->shareContext->doneCurrent();
+#endif
+
         //the toplevel might have a context with a "qglcontext associated with it. We need to
         //delete the qglcontext before we delete the qplatformopenglcontext.
         //One unfortunate thing about this is that we potentially create a glContext just to
@@ -949,10 +971,6 @@ void QWidgetPrivate::deleteTLSysExtra()
         setWinId(0);
         delete extra->topextra->window;
         extra->topextra->window = 0;
-
-        extra->topextra->backingStoreTracker.destroy();
-        delete extra->topextra->backingStore;
-        extra->topextra->backingStore = 0;
 
 #ifndef QT_NO_OPENGL
         delete extra->topextra->shareContext;

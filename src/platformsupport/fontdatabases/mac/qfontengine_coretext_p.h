@@ -62,6 +62,7 @@ public:
     QCoreTextFontEngine(CGFontRef font, const QFontDef &def);
     ~QCoreTextFontEngine();
 
+    virtual glyph_t glyphIndex(uint ucs4) const;
     virtual bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, ShaperFlags flags) const;
     virtual void recalcAdvances(QGlyphLayout *, ShaperFlags) const;
 
@@ -78,14 +79,10 @@ public:
     virtual void addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions, int numGlyphs,
                                  QPainterPath *path, QTextItem::RenderFlags);
 
-    virtual const char *name() const { return "QCoreTextFontEngine"; }
-
-    virtual bool canRender(const QChar *string, int len);
+    virtual bool canRender(const QChar *string, int len) const;
 
     virtual int synthesized() const { return synthesisFlags; }
     virtual bool supportsSubPixelPositions() const { return true; }
-
-    virtual Type type() const { return QFontEngine::Mac; }
 
     void draw(CGContextRef ctx, qreal x, qreal y, const QTextItemInt &ti, int paintDeviceHeight);
 

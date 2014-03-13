@@ -4,7 +4,7 @@ win32:testcase.timeout = 900
 macx:testcase.timeout = 900
 
 QT += widgets widgets-private
-QT += core-private gui testlib
+QT += core-private testlib
 
 SOURCES		+= tst_qfilesystemmodel.cpp
 TARGET		= tst_qfilesystemmodel

@@ -1461,7 +1461,7 @@ QOpenGLTexture::QOpenGLTexture(Target target)
 /*!
     Creates a QOpenGLTexture object that can later be bound to the 2D texture
     target and contains the pixel data contained in \a image. If you wish
-    to have a chain of mipmaps generated then set \a useMipMaps to true (this
+    to have a chain of mipmaps generated then set \a genMipMaps to \c true (this
     is the default).
 
     This does create the underlying OpenGL texture object. Therefore,
@@ -1490,6 +1490,8 @@ QOpenGLTexture::~QOpenGLTexture()
     Normally it should not be necessary to call this function directly as all
     functions that set properties of the texture object implicitly call create()
     on your behalf.
+
+    Returns \c true if the creation succeeded, otherwise returns \c false.
 
     \sa destroy(), isCreated(), textureId()
 */
@@ -1557,9 +1559,8 @@ void QOpenGLTexture::bind()
     EXT_direct_state_access extension where available and simulates it
     where it is not.
 
-    If \a restoreTextureUnit is true then this function
-    will restore the active unit to the texture unit that was active
-    upon entry.
+    If parameter \a reset is \c true then this function will restore
+    the active unit to the texture unit that was active upon entry.
 
     \sa release()
 */
@@ -1584,7 +1585,7 @@ void QOpenGLTexture::release()
 /*!
     Unbinds this texture from texture unit \a unit.
 
-    If \a restoreTextureUnit is true then this function
+    If parameter \a reset is \c true then this function
     will restore the active unit to the texture unit that was active
     upon entry.
 */
@@ -1633,7 +1634,7 @@ GLuint QOpenGLTexture::boundTextureId(BindingTarget target)
     }
 
     GLint textureId = 0;
-    glGetIntegerv(target, &textureId);
+    ctx->functions()->glGetIntegerv(target, &textureId);
     return static_cast<GLuint>(textureId);
 }
 
@@ -1653,11 +1654,11 @@ GLuint QOpenGLTexture::boundTextureId(uint unit, BindingTarget target)
     funcs->initializeOpenGLFunctions();
 
     GLint oldTextureUnit = 0;
-    glGetIntegerv(GL_ACTIVE_TEXTURE, &oldTextureUnit);
+    funcs->glGetIntegerv(GL_ACTIVE_TEXTURE, &oldTextureUnit);
 
     funcs->glActiveTexture(unit);
     GLint textureId = 0;
-    glGetIntegerv(target, &textureId);
+    funcs->glGetIntegerv(target, &textureId);
     funcs->glActiveTexture(oldTextureUnit);
 
     return static_cast<GLuint>(textureId);
@@ -1838,11 +1839,11 @@ QOpenGLTexture::TextureFormat QOpenGLTexture::format() const
 }
 
 /*!
-    Sets the dimensions of this texture object. The default
-    for each dimension is 1. The maximum allowable texture size
-    is dependent upon your OpenGL implementation. Allocating
-    storage for a texture less than the maximum size can still
-    fail if your system is low on resources.
+    Sets the dimensions of this texture object to \a width,
+    \a height, and \a depth. The default for each dimension is 1.
+    The maximum allowable texture size is dependent upon your OpenGL
+    implementation. Allocating storage for a texture less than the
+    maximum size can still fail if your system is low on resources.
 
     \sa width(), height(), depth()
 */
@@ -1925,8 +1926,8 @@ int QOpenGLTexture::depth() const
 }
 
 /*!
-    For texture targets that support mipmaps this function
-    sets the requested number of mipmap levels to allocate storage
+    For texture targets that support mipmaps, this function
+    sets the requested number of mipmap \a levels to allocate storage
     for. This function should be called before storage is allocated
     for the texture.
 
@@ -1991,11 +1992,10 @@ int QOpenGLTexture::maximumMipLevels() const
 }
 
 /*!
-    For those texture targets that support array layers this function
-    sets the number of array layers to allocate storage for. This
-    function should be called before storage is allocated for the tecture.
+    Sets the number of array \a layers to allocate storage for. This
+    function should be called before storage is allocated for the texture.
 
-    For tarets that do not support array layers this function has
+    For targets that do not support array layers this function has
     no effect.
 
     \sa layers(), isStorageAllocated()
@@ -2116,13 +2116,13 @@ bool QOpenGLTexture::isStorageAllocated() const
     Simpliar constraints apply for the \a viewFormat. See the above link
     and the specification for more details.
 
-    The \a minimumMipmapLevel, \a maximumMipmapLevel, \a mimimumLayer,
+    The \a minimumMipmapLevel, \a maximumMipmapLevel, \a minimumLayer,
     and \a maximumLayer arguments serve to restrict the parts of the
     texture accessible by the texture view.
 
     If creation of the texture view fails this function will return
     0. If the function succeeds it will return a pointer to a new
-    QOpenGLTexture object that will return true from its isTextureView()
+    QOpenGLTexture object that will return \c true from its isTextureView()
     function.
 
     \sa isTextureView()
@@ -2158,7 +2158,7 @@ bool QOpenGLTexture::isTextureView() const
 }
 
 /*!
-    Uploads pixel \a data for this texture object \a mipLevel, array \a layer and \acubeFace.
+    Uploads pixel \a data for this texture object \a mipLevel, array \a layer, and \a cubeFace.
     Storage must have been allocated before uploading pixel data. Some overloads of setData()
     will set appropriate dimensions, mipmap levels, and array layers and then allocate storage
     for you if they have enough information to do so. This will be noted in the function
@@ -2285,6 +2285,8 @@ void QOpenGLTexture::setData(PixelFormat sourceFormat, PixelType sourceType,
 
 /*!
     This overload of setData() will allocate storage for you.
+    The pixel data is contained in \a image. Mipmaps are generated by default.
+    Set \a genMipMaps to \l DontGenerateMipMaps to turn off mipmap generation.
 
     \overload
 */
@@ -2303,7 +2305,7 @@ void QOpenGLTexture::setData(const QImage& image, MipMapGeneration genMipMaps)
 }
 
 /*!
-    Uploads compressed pixel \a data to \a mipLevel, array \a layer and \a cubeFace.
+    Uploads compressed pixel \a data to \a mipLevel, array \a layer, and \a cubeFace.
     The pixel transfer can optionally be controlled with \a options. The \a dataSize
     argument should specify the size of the data pointed to by \a data.
 
@@ -2430,7 +2432,7 @@ bool QOpenGLTexture::hasFeature(Feature feature)
     bool supported = false;
 
 #if !defined(QT_OPENGL_ES_2)
-    if (!QOpenGLFunctions::isES()) {
+    if (!ctx->isES()) {
         switch (feature) {
         case ImmutableMultisampleStorage:
         case TextureBuffer:
@@ -2487,7 +2489,7 @@ bool QOpenGLTexture::hasFeature(Feature feature)
         }
     }
 
-    if (QOpenGLFunctions::isES())
+    if (ctx->isES())
 #endif
     {
         switch (feature) {
@@ -2522,7 +2524,7 @@ bool QOpenGLTexture::hasFeature(Feature feature)
 void QOpenGLTexture::setMipBaseLevel(int baseLevel)
 {
 #if !defined(QT_OPENGL_ES_2)
-    if (!QOpenGLFunctions::isES()) {
+    if (!QOpenGLContext::currentContext()->isES()) {
         Q_D(QOpenGLTexture);
         d->create();
         Q_ASSERT(d->textureId);
@@ -2559,7 +2561,7 @@ int QOpenGLTexture::mipBaseLevel() const
 void QOpenGLTexture::setMipMaxLevel(int maxLevel)
 {
 #if !defined(QT_OPENGL_ES_2)
-    if (!QOpenGLFunctions::isES()) {
+    if (!QOpenGLContext::currentContext()->isES()) {
         Q_D(QOpenGLTexture);
         d->create();
         Q_ASSERT(d->textureId);
@@ -2596,7 +2598,7 @@ int QOpenGLTexture::mipMaxLevel() const
 void QOpenGLTexture::setMipLevelRange(int baseLevel, int maxLevel)
 {
 #if !defined(QT_OPENGL_ES_2)
-    if (!QOpenGLFunctions::isES()) {
+    if (!QOpenGLContext::currentContext()->isES()) {
         Q_D(QOpenGLTexture);
         d->create();
         Q_ASSERT(d->textureId);
@@ -2625,7 +2627,7 @@ QPair<int, int> QOpenGLTexture::mipLevelRange() const
 }
 
 /*!
-    If \a enabled is true, enables automatic mipmap generation for this texture object
+    If \a enabled is \c true, enables automatic mipmap generation for this texture object
     to occur whenever the level 0 mipmap data is set via setData().
 
     The automatic mipmap generation is enabled by default.
@@ -2673,7 +2675,7 @@ void QOpenGLTexture::generateMipMaps()
 
     The generation of mipmaps to above \baseLevel is achieved by setting the mipmap
     base level to \a baseLevel and then generating the mipmap chain. If \a resetBaseLevel
-    is true, then the baseLevel of the texture will be reset to its previous value.
+    is \c true, then the baseLevel of the texture will be reset to its previous value.
 
     \sa setAutoMipMapGenerationEnabled(), setMipLevels(), mipLevels()
 */
@@ -2706,7 +2708,7 @@ void QOpenGLTexture::generateMipMaps(int baseLevel, bool resetBaseLevel)
 void QOpenGLTexture::setSwizzleMask(SwizzleComponent component, SwizzleValue value)
 {
 #if !defined(Q_OS_MAC) && !defined(QT_OPENGL_ES_2)
-    if (!QOpenGLFunctions::isES()) {
+    if (!QOpenGLContext::currentContext()->isES()) {
         Q_D(QOpenGLTexture);
         d->create();
         Q_ASSERT(d->texFuncs);
@@ -2727,13 +2729,15 @@ void QOpenGLTexture::setSwizzleMask(SwizzleComponent component, SwizzleValue val
 }
 
 /*!
+    Parameters \a {r}, \a {g}, \a {b}, and \a {a}  are values used for setting
+    the colors red, green, blue, and the alpha value.
     \overload
 */
 void QOpenGLTexture::setSwizzleMask(SwizzleValue r, SwizzleValue g,
                                     SwizzleValue b, SwizzleValue a)
 {
 #if !defined(Q_OS_MAC) && !defined(QT_OPENGL_ES_2)
-    if (!QOpenGLFunctions::isES()) {
+    if (!QOpenGLContext::currentContext()->isES()) {
         Q_D(QOpenGLTexture);
         d->create();
         Q_ASSERT(d->texFuncs);
@@ -2782,7 +2786,7 @@ QOpenGLTexture::SwizzleValue QOpenGLTexture::swizzleMask(SwizzleComponent compon
 void QOpenGLTexture::setDepthStencilMode(QOpenGLTexture::DepthStencilMode mode)
 {
 #if !defined(Q_OS_MAC) && !defined(QT_OPENGL_ES_2)
-    if (!QOpenGLFunctions::isES()) {
+    if (!QOpenGLContext::currentContext()->isES()) {
         Q_D(QOpenGLTexture);
         d->create();
         Q_ASSERT(d->texFuncs);
@@ -2941,6 +2945,7 @@ void QOpenGLTexture::setWrapMode(QOpenGLTexture::WrapMode mode)
 }
 
 /*!
+    Holds the texture dimension \a direction.
     \overload
 */
 void QOpenGLTexture::setWrapMode(QOpenGLTexture::CoordinateDirection direction, QOpenGLTexture::WrapMode mode)
@@ -2972,7 +2977,7 @@ QOpenGLTexture::WrapMode QOpenGLTexture::wrapMode(QOpenGLTexture::CoordinateDire
 void QOpenGLTexture::setBorderColor(QColor color)
 {
 #if !defined(QT_OPENGL_ES_2)
-    if (!QOpenGLFunctions::isES()) {
+    if (!QOpenGLContext::currentContext()->isES()) {
         Q_D(QOpenGLTexture);
         d->create();
         Q_ASSERT(d->texFuncs);
@@ -2995,12 +3000,14 @@ void QOpenGLTexture::setBorderColor(QColor color)
 }
 
 /*!
+    Sets the color red to \a {r}, green to \a {g}, blue to \{b}, and \a {a} to the
+    alpha value.
     \overload
 */
 void QOpenGLTexture::setBorderColor(float r, float g, float b, float a)
 {
 #if !defined(QT_OPENGL_ES_2)
-    if (!QOpenGLFunctions::isES()) {
+    if (!QOpenGLContext::currentContext()->isES()) {
         Q_D(QOpenGLTexture);
         d->create();
         Q_ASSERT(d->texFuncs);
@@ -3026,12 +3033,14 @@ void QOpenGLTexture::setBorderColor(float r, float g, float b, float a)
 }
 
 /*!
+    Sets the color red to \a {r}, green to \a {g}, blue to \a {b}, and \a the alpha
+    value to {a}.
     \overload
 */
 void QOpenGLTexture::setBorderColor(int r, int g, int b, int a)
 {
 #if !defined(QT_OPENGL_ES_2)
-    if (!QOpenGLFunctions::isES()) {
+    if (!QOpenGLContext::currentContext()->isES()) {
         Q_D(QOpenGLTexture);
         d->create();
         Q_ASSERT(d->texFuncs);
@@ -3059,12 +3068,14 @@ void QOpenGLTexture::setBorderColor(int r, int g, int b, int a)
 }
 
 /*!
+    Sets the color red to \a {r}, green to \a {g}, blue to \a {b}, and \a the alpha
+    value to {a}.
     \overload
 */
 void QOpenGLTexture::setBorderColor(uint r, uint g, uint b, uint a)
 {
 #if !defined(QT_OPENGL_ES_2)
-    if (!QOpenGLFunctions::isES()) {
+    if (!QOpenGLContext::currentContext()->isES()) {
         Q_D(QOpenGLTexture);
         d->create();
         Q_ASSERT(d->texFuncs);
@@ -3110,7 +3121,7 @@ QColor QOpenGLTexture::borderColor() const
 }
 
 /*!
-    Writes the texture border color into the first 4 elements
+    Writes the texture border color into the first four elements
     of the array pointed to by \a border.
 
     \sa setBorderColor()
@@ -3129,6 +3140,9 @@ void QOpenGLTexture::borderColor(float *border) const
 }
 
 /*!
+    Writes the texture border color into the first four elements
+    of the array pointed to by \a border.
+
     \overload
 */
 void QOpenGLTexture::borderColor(int *border) const
@@ -3145,6 +3159,9 @@ void QOpenGLTexture::borderColor(int *border) const
 }
 
 /*!
+    Writes the texture border color into the first four elements
+    of the array pointed to by \a border.
+
     \overload
 */
 void QOpenGLTexture::borderColor(unsigned int *border) const
@@ -3170,7 +3187,7 @@ void QOpenGLTexture::borderColor(unsigned int *border) const
 void QOpenGLTexture::setMinimumLevelOfDetail(float value)
 {
 #if !defined(QT_OPENGL_ES_2)
-    if (!QOpenGLFunctions::isES()) {
+    if (!QOpenGLContext::currentContext()->isES()) {
         Q_D(QOpenGLTexture);
         d->create();
         Q_ASSERT(d->texFuncs);
@@ -3207,7 +3224,7 @@ float QOpenGLTexture::minimumLevelOfDetail() const
 void QOpenGLTexture::setMaximumLevelOfDetail(float value)
 {
 #if !defined(QT_OPENGL_ES_2)
-    if (!QOpenGLFunctions::isES()) {
+    if (!QOpenGLContext::currentContext()->isES()) {
         Q_D(QOpenGLTexture);
         d->create();
         Q_ASSERT(d->texFuncs);
@@ -3235,15 +3252,15 @@ float QOpenGLTexture::maximumLevelOfDetail() const
 }
 
 /*!
-    Sets the minimum and maximum level of detail parameters.
-
+    Sets the minimum level of detail parameters to \a min and the maximum level
+    to \a max.
     \note This function has no effect on Qt built for OpenGL ES 2.
     \sa levelOfDetailRange(), setMinimumLevelOfDetail(), setMaximumLevelOfDetail()
 */
 void QOpenGLTexture::setLevelOfDetailRange(float min, float max)
 {
 #if !defined(QT_OPENGL_ES_2)
-    if (!QOpenGLFunctions::isES()) {
+    if (!QOpenGLContext::currentContext()->isES()) {
         Q_D(QOpenGLTexture);
         d->create();
         Q_ASSERT(d->texFuncs);
@@ -3274,7 +3291,10 @@ QPair<float, float> QOpenGLTexture::levelOfDetailRange() const
 }
 
 /*!
-    Sets the level of detail bias parameter.
+    Sets the level of detail bias to \a bias.
+    Level of detail bias affects the point at which mipmapping levels change.
+    Increasing values for level of detail bias makes the overall images blurrier
+    or smoother. Decreasing values make the overall images sharper.
 
     \note This function has no effect on Qt built for OpenGL ES 2.
     \sa levelofDetailBias()
@@ -3282,7 +3302,7 @@ QPair<float, float> QOpenGLTexture::levelOfDetailRange() const
 void QOpenGLTexture::setLevelofDetailBias(float bias)
 {
 #if !defined(QT_OPENGL_ES_2)
-    if (!QOpenGLFunctions::isES()) {
+    if (!QOpenGLContext::currentContext()->isES()) {
         Q_D(QOpenGLTexture);
         d->create();
         Q_ASSERT(d->texFuncs);

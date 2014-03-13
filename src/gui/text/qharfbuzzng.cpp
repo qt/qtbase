@@ -45,6 +45,8 @@
 #include <qstring.h>
 #include <qvector.h>
 
+#include <private/qstringiterator_p.h>
+
 #include "qfontengine_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -341,16 +343,10 @@ _hb_qt_unicode_decompose_compatibility(hb_unicode_funcs_t * /*ufuncs*/,
     const QString normalized = QChar::decomposition(u);
 
     uint outlen = 0;
-
-    // ### replace with QCharIterator
-    const ushort *p = reinterpret_cast<const ushort *>(normalized.unicode());
-    const ushort *const e = p + normalized.size();
-    for ( ; p != e; ++p) {
-        uint ucs4 = *p;
-        if (QChar::isHighSurrogate(ucs4) && p + 1 != e && QChar::isLowSurrogate(p[1]))
-            ucs4 = QChar::surrogateToUcs4(ucs4, *++p);
+    QStringIterator it(normalized);
+    while (it.hasNext()) {
         Q_ASSERT(outlen < HB_UNICODE_MAX_DECOMPOSITION_LEN);
-        decomposed[outlen++] = ucs4;
+        decomposed[outlen++] = it.next();
     }
 
     return outlen;
@@ -397,33 +393,7 @@ _hb_qt_font_get_glyph(hb_font_t * /*font*/, void *font_data,
     QFontEngine *fe = (QFontEngine *)font_data;
     Q_ASSERT(fe);
 
-    QChar chars[2];
-    int numChars = 0;
-    if (Q_UNLIKELY(QChar::requiresSurrogates(unicode))) {
-        chars[numChars++] = QChar(QChar::highSurrogate(unicode));
-        chars[numChars++] = QChar(QChar::lowSurrogate(unicode));
-    } else {
-        chars[numChars++] = QChar(unicode);
-    }
-#if 0
-    if (Q_UNLIKELY(variation_selector != 0)) {
-        if (Q_UNLIKELY(QChar::requiresSurrogates(variation_selector))) {
-            chars[numChars++] = QChar(QChar::highSurrogate(variation_selector));
-            chars[numChars++] = QChar(QChar::lowSurrogate(variation_selector));
-        } else {
-            chars[numChars++] = QChar(variation_selector);
-        }
-    }
-#endif
-
-    QGlyphLayout g;
-    g.numGlyphs = numChars;
-    g.glyphs = glyph;
-
-    int numGlyphs = numChars;
-    if (!fe->stringToCMap(chars, numChars, &g, &numGlyphs, QFontEngine::GlyphIndicesOnly))
-        Q_UNREACHABLE();
-    Q_ASSERT(numGlyphs == 1);
+    *glyph = fe->glyphIndex(unicode);
 
     return true;
 }
@@ -625,7 +595,7 @@ _hb_qt_reference_table(hb_face_t * /*face*/, hb_tag_t tag, void *user_data)
     Q_ASSERT(get_font_table);
 
     uint length = 0;
-    if (Q_UNLIKELY(!get_font_table(data->user_data, tag, 0, &length) || length == 0))
+    if (Q_UNLIKELY(!get_font_table(data->user_data, tag, 0, &length)))
         return hb_blob_get_empty();
 
     char *buffer = (char *)malloc(length);

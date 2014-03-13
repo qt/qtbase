@@ -44,7 +44,7 @@
 QT_BEGIN_NAMESPACE
 
 QWinRTEGLContext::QWinRTEGLContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display, EGLSurface surface)
-    : QEGLPlatformContext(format, share, display, EGL_OPENGL_ES_API), m_eglSurface(surface)
+    : QEGLPlatformContext(format, share, display), m_eglSurface(surface)
 {
 }
 

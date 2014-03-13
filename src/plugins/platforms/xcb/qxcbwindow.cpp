@@ -64,9 +64,7 @@
 #include <xcb/xcb_icccm.h>
 #undef class
 #include <xcb/xfixes.h>
-#ifndef QT_NO_SHAPE
-#  include <xcb/shape.h>
-#endif // QT_NO_SHAPE
+#include <xcb/shape.h>
 
 // xcb-icccm 3.8 support
 #ifdef XCB_ICCCM_NUM_WM_SIZE_HINTS_ELEMENTS
@@ -2077,8 +2075,6 @@ void QXcbWindow::handleXEmbedMessage(const xcb_client_message_event_t *event)
     }
 }
 
-#if !defined(QT_NO_SHAPE)
-
 static inline xcb_rectangle_t qRectToXCBRectangle(const QRect &r)
 {
     xcb_rectangle_t result;
@@ -2122,8 +2118,6 @@ void QXcbWindow::setMask(const QRegion &region)
                              xcb_window(), 0, 0, rects.size(), &rects[0]);
     }
 }
-
-#endif // !QT_NO_SHAPE
 
 void QXcbWindow::setAlertState(bool enabled)
 {

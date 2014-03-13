@@ -5451,13 +5451,13 @@ bool QGraphicsScene::focusNextPrevChild(bool next)
 */
 
 /*!
-    \fn QGraphicsScene::focusChanged(QGraphicsItem *newFocusItem, QGraphicsItem *oldFocusItem, Qt::FocusReason reason)
+    \fn QGraphicsScene::focusItemChanged(QGraphicsItem *newFocusItem, QGraphicsItem *oldFocusItem, Qt::FocusReason reason)
 
     This signal is emitted by QGraphicsScene whenever focus changes in the
     scene (i.e., when an item gains or loses input focus, or when focus
     passes from one item to another). You can connect to this signal if you
     need to keep track of when other items gain input focus. It is
-    particularily useful for implementing virtual keyboards, input methods,
+    particularly useful for implementing virtual keyboards, input methods,
     and cursor items.
 
     \a oldFocusItem is a pointer to the item that previously had focus, or
