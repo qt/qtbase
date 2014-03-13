@@ -286,7 +286,7 @@ private:
 class QFileDialogLineEdit : public QLineEdit
 {
 public:
-    QFileDialogLineEdit(QWidget *parent = 0) : QLineEdit(parent), hideOnEsc(false), d_ptr(0){}
+    QFileDialogLineEdit(QWidget *parent = 0) : QLineEdit(parent), d_ptr(0){}
     void setFileDialogPrivate(QFileDialogPrivate *d_pointer) {d_ptr = d_pointer; }
     void keyPressEvent(QKeyEvent *e);
     bool hideOnEsc;

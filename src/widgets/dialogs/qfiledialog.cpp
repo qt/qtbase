@@ -3904,13 +3904,8 @@ void QFileDialogLineEdit::keyPressEvent(QKeyEvent *e)
 
     int key = e->key();
     QLineEdit::keyPressEvent(e);
-    if (key != Qt::Key_Escape)
+    if (key != Qt::Key_Escape && key != Qt::Key_Back)
         e->accept();
-    if (hideOnEsc && (key == Qt::Key_Escape || key == Qt::Key_Return || key == Qt::Key_Enter)) {
-        e->accept();
-        hide();
-        d_ptr->currentView()->setFocus(Qt::ShortcutFocusReason);
-    }
 }
 
 #ifndef QT_NO_FSCOMPLETER
