@@ -138,6 +138,11 @@
 # define __NR_inotify_add_watch 285
 # define __NR_inotify_rm_watch  286
 # define __NR_inotify_init1     328
+#elif defined (__aarch64__)
+# define __NR_inotify_init1     26
+# define __NR_inotify_add_watch 27
+# define __NR_inotify_rm_watch  28
+// no inotify_init for aarch64
 #else
 # error "This architecture is not supported. Please see http://www.qt-project.org/"
 #endif
@@ -155,7 +160,11 @@ static inline int syscall(...) { return -1; }
 
 static inline int inotify_init()
 {
+#ifdef __NR_inotify_init
     return syscall(__NR_inotify_init);
+#else
+    return syscall(__NR_inotify_init1, 0);
+#endif
 }
 
 static inline int inotify_add_watch(int fd, const char *name, __u32 mask)
