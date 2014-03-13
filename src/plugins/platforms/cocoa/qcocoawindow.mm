@@ -935,6 +935,9 @@ void QCocoaWindow::raise()
             [parentNSWindow addChildWindow:m_nsWindow ordered:NSWindowAbove];
         } else {
             [m_nsWindow orderFront: m_nsWindow];
+            ProcessSerialNumber psn;
+            GetCurrentProcess(&psn);
+            SetFrontProcessWithOptions(&psn, kSetFrontProcessFrontWindowOnly);
         }
     }
 }
