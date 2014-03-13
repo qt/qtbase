@@ -423,10 +423,8 @@ void QCommandLineParser::process(const QStringList &arguments)
         ::exit(EXIT_FAILURE);
     }
 
-    if (d->builtinVersionOption && isSet(QStringLiteral("version"))) {
-        printf("%s %s\n", qPrintable(QCoreApplication::applicationName()), qPrintable(QCoreApplication::applicationVersion()));
-        ::exit(EXIT_SUCCESS);
-    }
+    if (d->builtinVersionOption && isSet(QStringLiteral("version")))
+        showVersion();
 
     if (d->builtinHelpOption && isSet(QStringLiteral("help")))
         showHelp(EXIT_SUCCESS);
@@ -813,6 +811,22 @@ QStringList QCommandLineParser::unknownOptionNames() const
 {
     d->checkParsed("unknownOptionNames");
     return d->unknownOptionNames;
+}
+
+/*!
+    Displays the version information from QCoreApplication::applicationVersion(),
+    and exits the application.
+    This is automatically triggered by the --version option, but can also
+    be used to display the version when not using process().
+    The exit code is set to EXIT_SUCCESS (0).
+
+    \sa addVersionOption()
+    \since 5.4
+*/
+Q_NORETURN void QCommandLineParser::showVersion()
+{
+    fprintf(stdout, "%s %s\n", qPrintable(QCoreApplication::applicationName()), qPrintable(QCoreApplication::applicationVersion()));
+    ::exit(EXIT_SUCCESS);
 }
 
 /*!

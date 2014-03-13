@@ -92,6 +92,7 @@ public:
     QStringList optionNames() const;
     QStringList unknownOptionNames() const;
 
+    Q_NORETURN void showVersion();
     Q_NORETURN void showHelp(int exitCode = 0);
     QString helpText() const;
 
