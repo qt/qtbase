@@ -33,6 +33,7 @@
 #include <QMetaObject>
 
 #include <private/qstylesheetstyle_p.h>
+#include <private/qhighdpiscaling_p.h>
 #include <QtTest/private/qtesthelpers_p.h>
 
 using namespace QTestPrivate;
@@ -100,6 +101,9 @@ private slots:
     void QTBUG11658_cachecrash();
     void styleSheetTargetAttribute();
     void unpolish();
+
+    void highdpiImages_data();
+    void highdpiImages();
 
 private:
     QColor COLOR(const QWidget& w) {
@@ -2064,6 +2068,35 @@ void tst_QStyleSheetStyle::unpolish()
     QCOMPARE(w.minimumWidth(), 100);
     w.setStyleSheet("");
     QCOMPARE(w.minimumWidth(), 0);
+}
+
+void tst_QStyleSheetStyle::highdpiImages_data()
+{
+    QTest::addColumn<qreal>("screenFactor");
+    QTest::addColumn<QColor>("color");
+
+    QTest::newRow("highdpi") << 2.0 << QColor(0x00, 0xFF, 0x00);
+    QTest::newRow("lowdpi")  << 1.0 << QColor(0xFF, 0x00, 0x00);
+}
+
+void tst_QStyleSheetStyle::highdpiImages()
+{
+    QFETCH(qreal, screenFactor);
+    QFETCH(QColor, color);
+
+    QWidget w;
+    QScreen *screen = QGuiApplication::screenAt(w.pos());
+    QHighDpiScaling::setScreenFactor(screen, screenFactor);
+    w.setStyleSheet("QWidget { background-image: url(\":/images/testimage.png\"); }");
+    w.show();
+
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    QImage image(w.size(), QImage::Format_ARGB32);
+    w.render(&image);
+    QVERIFY(testForColors(image, color));
+
+    QHighDpiScaling::setScreenFactor(screen, 1.0);
+    QHighDpiScaling::updateHighDpiScaling(); // reset to normal
 }
 
 QTEST_MAIN(tst_QStyleSheetStyle)

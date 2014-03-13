@@ -167,6 +167,7 @@ private:
 
     static Qt::Alignment resolveAlignment(Qt::LayoutDirection, Qt::Alignment);
     static bool isNaturalChild(const QObject *obj);
+    static QPixmap loadPixmap(const QString &fileName, const QObject *context);
     bool initObject(const QObject *obj) const;
 public:
     static int numinstances;
