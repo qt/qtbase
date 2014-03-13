@@ -805,6 +805,18 @@ void QCocoaWindow::setWindowShadow(Qt::WindowFlags flags)
     [m_nsWindow setHasShadow:(keepShadow ? YES : NO)];
 }
 
+void QCocoaWindow::setWindowZoomButton(Qt::WindowFlags flags)
+{
+    // Disable the zoom (maximize) button for fixed-sized windows and customized
+    // no-WindowMaximizeButtonHint windows. From a Qt perspective it migth be expected
+    // that the button would be removed in the latter case, but disabling it is more
+    // in line with the platform style guidelines.
+    bool fixedSizeNoZoom = (window()->minimumSize().isValid() && window()->maximumSize().isValid()
+                            && window()->minimumSize() == window()->maximumSize());
+    bool customizeNoZoom = ((flags & Qt::CustomizeWindowHint) && !(flags & Qt::WindowMaximizeButtonHint));
+    [[m_nsWindow standardWindowButton:NSWindowZoomButton] setEnabled:!(fixedSizeNoZoom || customizeNoZoom)];
+}
+
 void QCocoaWindow::setWindowFlags(Qt::WindowFlags flags)
 {
     if (m_nsWindow && !m_isNSWindowChild) {
@@ -830,6 +842,7 @@ void QCocoaWindow::setWindowFlags(Qt::WindowFlags flags)
             }
         }
 #endif
+        setWindowZoomButton(flags);
     }
 
     m_windowFlags = flags;
@@ -992,6 +1005,9 @@ void QCocoaWindow::propagateSizeHints()
     // Set the maximum content size.
     const QSize maximumSize = window()->maximumSize();
     [m_nsWindow setContentMaxSize : NSMakeSize(maximumSize.width(), maximumSize.height())];
+
+    // The window may end up with a fixed size; in this case the zoom button should be disabled.
+    setWindowZoomButton(m_windowFlags);
 
     // sizeIncrement is observed to take values of (-1, -1) and (0, 0) for windows that should be
     // resizable and that have no specific size increment set. Cocoa expects (1.0, 1.0) in this case.
