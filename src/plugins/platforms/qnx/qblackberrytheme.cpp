@@ -60,9 +60,11 @@ QBlackberryTheme::QBlackberryTheme(const QQnxIntegration *integration) : m_integ
     m_defaultPalette.setBrush(QPalette::Disabled, QPalette::WindowText, color);
     m_defaultPalette.setBrush(QPalette::Disabled, QPalette::Text, color);
 
-    m_defaultPalette.setColor(QPalette::Window, QColor(18, 18, 18));
-    m_defaultPalette.setColor(QPalette::Base, QColor(18, 18, 18));
+    color.setRgb(18, 18, 18);
+    m_defaultPalette.setColor(QPalette::Window, color);
+    m_defaultPalette.setColor(QPalette::Base, color);
     m_defaultPalette.setColor(QPalette::AlternateBase, QColor(50, 50, 50));
+    m_defaultPalette.setColor(QPalette::Button, color);
 
     m_defaultPalette.setBrush(QPalette::Highlight, QColor(0, 168, 223));
     m_defaultPalette.setBrush(QPalette::HighlightedText, QColor(250, 250,250));
