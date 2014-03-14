@@ -133,8 +133,8 @@ int qFindString(const QChar *haystack, int haystackLen, int from,
     or \b{5}. An expression can also be a set of characters
     enclosed in square brackets. \b{[ABCD]} will match an \b{A}
     or a \b{B} or a \b{C} or a \b{D}. We can write this same
-    expression as \b{[A-D]}, and an experession to match any
-    captital letter in the English alphabet is written as
+    expression as \b{[A-D]}, and an expression to match any
+    capital letter in the English alphabet is written as
     \b{[A-Z]}.
 
     A quantifier specifies the number of occurrences of an expression
