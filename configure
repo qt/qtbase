@@ -2389,6 +2389,9 @@ Third Party Libraries:
     -no-alsa ........... Do not compile ALSA support.
  +  -alsa .............. Compile ALSA support.
 
+    -no-gtkstyle ....... Do not compile GTK theme support.
+ +  -gtkstyle .......... Compile GTK theme support.
+
 Additional options:
 
     -make <part> ....... Add part to the list of parts to be built at make time.
@@ -4639,7 +4642,7 @@ if [ "$CFG_GLIB" = "yes" -a "$CFG_QGTKSTYLE" != "no" ]; then
         QMakeVar set QT_LIBS_QGTK2 "$QT_LIBS_QGTK2"
     else
         if [ "$CFG_QGTKSTYLE" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
-            echo "Gtk theme support cannot be enabled due to functionality tests!"
+            echo "GTK theme support cannot be enabled due to functionality tests!"
             echo " Turn on verbose messaging (-v) to $0 to see the fin  al report."
             echo " If you believe this message is in error you may use the continue"
             echo " switch (-continue) to $0 to continue."
