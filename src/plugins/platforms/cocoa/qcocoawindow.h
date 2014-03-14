@@ -142,6 +142,7 @@ public:
     ~QCocoaWindow();
 
     void setGeometry(const QRect &rect);
+    QRect geometry() const;
     void setCocoaGeometry(const QRect &rect);
     void clipChildWindows();
     void clipWindow(const NSRect &clipRect);

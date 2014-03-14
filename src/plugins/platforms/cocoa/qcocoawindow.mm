@@ -462,6 +462,22 @@ void QCocoaWindow::setGeometry(const QRect &rectIn)
     setCocoaGeometry(rect);
 }
 
+QRect QCocoaWindow::geometry() const
+{
+    // QWindows that are embedded in a NSView hiearchy may be considered
+    // top-level from Qt's point of view but are not from Cocoa's point
+    // of view. Embedded QWindows get global (screen) geometry.
+    if (m_contentViewIsEmbedded) {
+        NSPoint windowPoint = [m_contentView convertPoint:NSMakePoint(0, 0) toView:nil];
+        NSPoint screenPoint = [[m_contentView window] convertBaseToScreen:windowPoint]; // ### use convertRectToScreen after 10.6 removal
+        QPoint position = qt_mac_flipPoint(screenPoint).toPoint();
+        QSize size = qt_mac_toQRect([m_contentView bounds]).size();
+        return QRect(position, size);
+    }
+
+    return QPlatformWindow::geometry();
+}
+
 void QCocoaWindow::setCocoaGeometry(const QRect &rect)
 {
     QCocoaAutoReleasePool pool;
