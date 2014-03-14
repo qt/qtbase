@@ -1113,7 +1113,9 @@ NSWindow *QCocoaWindow::nativeWindow() const
 void QCocoaWindow::setEmbeddedInForeignView(bool embedded)
 {
     m_contentViewIsToBeEmbedded = embedded;
-    recreateWindow(0); // destroy what was already created
+    // Release any previosly created NSWindow.
+    [m_nsWindow closeAndRelease];
+    m_nsWindow = 0;
 }
 
 void QCocoaWindow::windowWillMove()
