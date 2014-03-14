@@ -10778,7 +10778,6 @@ void QGraphicsSimpleTextItem::paint(QPainter *painter, const QStyleOptionGraphic
     tmp.replace(QLatin1Char('\n'), QChar::LineSeparator);
     QStackTextEngine engine(tmp, d->font);
     QTextLayout layout(&engine);
-    setupTextLayout(&layout);
 
     QPen p;
     p.setBrush(d->brush);
@@ -10795,6 +10794,7 @@ void QGraphicsSimpleTextItem::paint(QPainter *painter, const QStyleOptionGraphic
         layout.setAdditionalFormats(formats);
     }
 
+    setupTextLayout(&layout);
     layout.draw(painter, QPointF(0, 0));
 
     if (option->state & (QStyle::State_Selected | QStyle::State_HasFocus))
