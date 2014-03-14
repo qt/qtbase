@@ -1810,7 +1810,7 @@ void QPlainTextEdit::keyReleaseEvent(QKeyEvent *e)
         }
     }
 #else
-    Q_UNUSED(e);
+    QWidget::keyReleaseEvent(e);
 #endif
 }
 
