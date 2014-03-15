@@ -23,6 +23,7 @@ SUBDIRS=\
     qfreelist \
     qhash \
     qhash_strictiterators \
+    qhashfunctions \
     qline \
     qlinkedlist \
     qlist \
