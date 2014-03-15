@@ -191,7 +191,7 @@ void QIBusPlatformInputContext::commitText(const QDBusVariant &text)
     QIBusText t;
     if (debug)
         qDebug() << arg.currentSignature();
-    t.fromDBusArgument(arg);
+    arg >> t;
     if (debug)
         qDebug() << "commit text:" << t.text;
 
@@ -211,7 +211,7 @@ void QIBusPlatformInputContext::updatePreeditText(const QDBusVariant &text, uint
     const QDBusArgument arg = text.variant().value<QDBusArgument>();
 
     QIBusText t;
-    t.fromDBusArgument(arg);
+    arg >> t;
     if (debug)
         qDebug() << "preedit text:" << t.text;
 

@@ -43,18 +43,15 @@
 
 #include <qvector.h>
 #include <qevent.h>
+#include <QDBusArgument>
 
 QT_BEGIN_NAMESPACE
-
-class QDBusArgument;
 
 class QIBusSerializable
 {
 public:
     QIBusSerializable();
     virtual ~QIBusSerializable();
-
-    virtual void fromDBusArgument(const QDBusArgument &arg);
 
     QString name;
     QHash<QString, QDBusArgument>  attachments;
@@ -81,7 +78,6 @@ public:
     QIBusAttribute();
     ~QIBusAttribute();
 
-    void fromDBusArgument(const QDBusArgument &arg);
     QTextFormat format() const;
 
     Type type;
@@ -96,8 +92,6 @@ public:
     QIBusAttributeList();
     ~QIBusAttributeList();
 
-    void fromDBusArgument(const QDBusArgument &arg);
-
     QList<QInputMethodEvent::Attribute> imAttributes() const;
 
     QVector<QIBusAttribute> attributes;
@@ -109,12 +103,27 @@ public:
     QIBusText();
     ~QIBusText();
 
-    void fromDBusArgument(const QDBusArgument &arg);
-
     QString text;
     QIBusAttributeList attributes;
 };
 
+QDBusArgument &operator<<(QDBusArgument &argument, const QIBusSerializable &object);
+const QDBusArgument &operator>>(const QDBusArgument &argument, QIBusSerializable &object);
+
+QDBusArgument &operator<<(QDBusArgument &argument, const QIBusAttribute &attribute);
+const QDBusArgument &operator>>(const QDBusArgument &argument, QIBusAttribute &attribute);
+
+QDBusArgument &operator<<(QDBusArgument &argument, const QIBusAttributeList &attributeList);
+const QDBusArgument &operator>>(const QDBusArgument &arg, QIBusAttributeList &attrList);
+
+QDBusArgument &operator<<(QDBusArgument &argument, const QIBusText &text);
+const QDBusArgument &operator>>(const QDBusArgument &argument, QIBusText &text);
+
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(QIBusSerializable)
+Q_DECLARE_METATYPE(QIBusAttribute)
+Q_DECLARE_METATYPE(QIBusAttributeList)
+Q_DECLARE_METATYPE(QIBusText)
 
 #endif

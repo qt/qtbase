@@ -41,7 +41,9 @@
 
 #include <qpa/qplatforminputcontextplugin_p.h>
 #include <QtCore/QStringList>
+#include <QDBusMetaType>
 #include "qibusplatforminputcontext.h"
+#include "qibustypes.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -58,8 +60,13 @@ QIBusPlatformInputContext *QIbusPlatformInputContextPlugin::create(const QString
 {
     Q_UNUSED(paramList);
 
-    if (system.compare(system, QStringLiteral("ibus"), Qt::CaseInsensitive) == 0)
+    if (system.compare(system, QStringLiteral("ibus"), Qt::CaseInsensitive) == 0) {
+        qDBusRegisterMetaType<QIBusSerializable>();
+        qDBusRegisterMetaType<QIBusAttribute>();
+        qDBusRegisterMetaType<QIBusAttributeList>();
+        qDBusRegisterMetaType<QIBusText>();
         return new QIBusPlatformInputContext;
+    }
     return 0;
 }
 

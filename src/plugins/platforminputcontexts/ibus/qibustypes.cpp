@@ -42,6 +42,7 @@
 #include "qibustypes.h"
 #include <qtextformat.h>
 #include <QtDBus>
+#include <QHash>
 
 QT_BEGIN_NAMESPACE
 
@@ -53,23 +54,45 @@ QIBusSerializable::~QIBusSerializable()
 {
 }
 
-void QIBusSerializable::fromDBusArgument(const QDBusArgument &arg)
+const QDBusArgument &operator>>(const QDBusArgument &argument, QIBusSerializable &object)
 {
-    arg >> name;
-    arg.beginMap();
-    while (!arg.atEnd()) {
-        arg.beginMapEntry();
+    argument >> object.name;
+
+    argument.beginMap();
+    while (!argument.atEnd()) {
+        argument.beginMapEntry();
         QString key;
         QDBusVariant value;
-        arg >> key;
-        arg >> value;
-        arg.endMapEntry();
-        attachments[key] = value.variant().value<QDBusArgument>();
+        argument >> key;
+        argument >> value;
+        argument.endMapEntry();
+        object.attachments[key] = value.variant().value<QDBusArgument>();
     }
-    arg.endMap();
+    argument.endMap();
+    return argument;
 }
 
+QDBusArgument &operator<<(QDBusArgument &argument, const QIBusSerializable &object)
+{
+    argument << object.name;
 
+    argument.beginMap(qMetaTypeId<QString>(), qMetaTypeId<QDBusVariant>());
+
+    QHashIterator<QString, QDBusArgument> i(object.attachments);
+    while (i.hasNext()) {
+        i.next();
+
+        argument.beginMapEntry();
+        argument << i.key();
+
+        QDBusVariant variant(i.value().asVariant());
+
+        argument << variant;
+        argument.endMapEntry();
+    }
+    argument.endMap();
+    return argument;
+}
 
 QIBusAttribute::QIBusAttribute()
     : type(Invalid),
@@ -77,28 +100,46 @@ QIBusAttribute::QIBusAttribute()
       start(0),
       end(0)
 {
+    name = "IBusAttribute";
 }
 
 QIBusAttribute::~QIBusAttribute()
 {
-
 }
 
-void QIBusAttribute::fromDBusArgument(const QDBusArgument &arg)
+QDBusArgument &operator<<(QDBusArgument &argument, const QIBusAttribute &attribute)
 {
-//    qDebug() << "QIBusAttribute::fromDBusArgument()" << arg.currentSignature();
-    arg.beginStructure();
+    argument.beginStructure();
 
-    QIBusSerializable::fromDBusArgument(arg);
+    argument << static_cast<const QIBusSerializable &>(attribute);
+
+    quint32 t = (quint32) attribute.type;
+    argument << t;
+    argument << attribute.value;
+    argument << attribute.start;
+    argument << attribute.end;
+
+    argument.endStructure();
+
+    return argument;
+}
+
+const QDBusArgument &operator>>(const QDBusArgument &argument, QIBusAttribute &attribute)
+{
+    argument.beginStructure();
+
+    argument >> static_cast<QIBusSerializable &>(attribute);
 
     quint32 t;
-    arg >> t;
-    type = (Type)t;
-    arg >> value;
-    arg >> start;
-    arg >> end;
+    argument >> t;
+    attribute.type = (QIBusAttribute::Type) t;
+    argument >> attribute.value;
+    argument >> attribute.start;
+    argument >> attribute.end;
 
-    arg.endStructure();
+    argument.endStructure();
+
+    return argument;
 }
 
 QTextFormat QIBusAttribute::format() const
@@ -141,36 +182,53 @@ QTextFormat QIBusAttribute::format() const
     return fmt;
 }
 
-
 QIBusAttributeList::QIBusAttributeList()
 {
-
+    name = "IBusAttrList";
 }
 
 QIBusAttributeList::~QIBusAttributeList()
 {
-
 }
 
-void QIBusAttributeList::fromDBusArgument(const QDBusArgument &arg)
+QDBusArgument &operator<<(QDBusArgument &argument, const QIBusAttributeList &attrList)
+{
+    argument.beginStructure();
+
+    argument << static_cast<const QIBusSerializable &>(attrList);
+
+    argument.beginArray(qMetaTypeId<QDBusVariant>());
+    for (int i = 0; i < attrList.attributes.size(); ++i) {
+        QVariant variant;
+        variant.setValue(attrList.attributes.at(i));
+        argument << QDBusVariant (variant);
+    }
+    argument.endArray();
+
+    argument.endStructure();
+    return argument;
+}
+
+const QDBusArgument &operator>>(const QDBusArgument &arg, QIBusAttributeList &attrList)
 {
 //    qDebug() << "QIBusAttributeList::fromDBusArgument()" << arg.currentSignature();
     arg.beginStructure();
 
-    QIBusSerializable::fromDBusArgument(arg);
+    arg >> static_cast<QIBusSerializable &>(attrList);
 
     arg.beginArray();
-    while(!arg.atEnd()) {
+    while (!arg.atEnd()) {
         QDBusVariant var;
         arg >> var;
 
         QIBusAttribute attr;
-        attr.fromDBusArgument(var.variant().value<QDBusArgument>());
-        attributes.append(attr);
+        var.variant().value<QDBusArgument>() >> attr;
+        attrList.attributes.append(attr);
     }
     arg.endArray();
 
     arg.endStructure();
+    return arg;
 }
 
 QList<QInputMethodEvent::Attribute> QIBusAttributeList::imAttributes() const
@@ -183,30 +241,40 @@ QList<QInputMethodEvent::Attribute> QIBusAttributeList::imAttributes() const
     return imAttrs;
 }
 
-
 QIBusText::QIBusText()
 {
-
+    name = "IBusText";
 }
 
 QIBusText::~QIBusText()
 {
-
 }
 
-void QIBusText::fromDBusArgument(const QDBusArgument &arg)
+QDBusArgument &operator<<(QDBusArgument &argument, const QIBusText &text)
+{
+    argument.beginStructure();
+
+    argument << static_cast<const QIBusSerializable &>(text);
+
+    argument << text.text << text.attributes;
+    argument.endStructure();
+    return argument;
+}
+
+const QDBusArgument &operator>>(const QDBusArgument &argument, QIBusText &text)
 {
 //    qDebug() << "QIBusText::fromDBusArgument()" << arg.currentSignature();
-    arg.beginStructure();
+    argument.beginStructure();
 
-    QIBusSerializable::fromDBusArgument(arg);
+    argument >> static_cast<QIBusSerializable &>(text);
 
-    arg >> text;
+    argument >> text.text;
     QDBusVariant variant;
-    arg >> variant;
-    attributes.fromDBusArgument(variant.variant().value<QDBusArgument>());
+    argument >> variant;
+    variant.variant().value<QDBusArgument>() >> text.attributes;
 
-    arg.endStructure();
+    argument.endStructure();
+    return argument;
 }
 
 QT_END_NAMESPACE
