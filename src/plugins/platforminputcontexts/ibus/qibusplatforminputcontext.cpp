@@ -43,6 +43,7 @@
 #include <QtDebug>
 #include <QTextCharFormat>
 #include <QGuiApplication>
+#include <QDBusVariant>
 #include <qwindow.h>
 #include <qevent.h>
 
@@ -78,6 +79,7 @@ public:
 
     bool valid;
     QString predit;
+    bool needsSurroundingText;
 };
 
 
@@ -87,6 +89,8 @@ QIBusPlatformInputContext::QIBusPlatformInputContext ()
     if (d->context) {
         connect(d->context, SIGNAL(CommitText(QDBusVariant)), SLOT(commitText(QDBusVariant)));
         connect(d->context, SIGNAL(UpdatePreeditText(QDBusVariant,uint,bool)), this, SLOT(updatePreeditText(QDBusVariant,uint,bool)));
+        connect(d->context, SIGNAL(DeleteSurroundingText(int,uint)), this, SLOT(deleteSurroundingText(int,uint)));
+        connect(d->context, SIGNAL(RequireSurroundingText()), this, SLOT(surroundingTextRequired()));
     }
     QInputMethod *p = qApp->inputMethod();
     connect(p, SIGNAL(cursorRectangleChanged()), this, SLOT(cursorRectChanged()));
@@ -146,6 +150,33 @@ void QIBusPlatformInputContext::commit()
 
 void QIBusPlatformInputContext::update(Qt::InputMethodQueries q)
 {
+    QObject *input = qApp->focusObject();
+
+    if (d->needsSurroundingText && input
+            && (q.testFlag(Qt::ImSurroundingText)
+                || q.testFlag(Qt::ImCursorPosition)
+                || q.testFlag(Qt::ImAnchorPosition))) {
+        QInputMethodQueryEvent srrndTextQuery(Qt::ImSurroundingText);
+        QInputMethodQueryEvent cursorPosQuery(Qt::ImCursorPosition);
+        QInputMethodQueryEvent anchorPosQuery(Qt::ImAnchorPosition);
+
+        QCoreApplication::sendEvent(input, &srrndTextQuery);
+        QCoreApplication::sendEvent(input, &cursorPosQuery);
+        QCoreApplication::sendEvent(input, &anchorPosQuery);
+
+        QString surroundingText = srrndTextQuery.value(Qt::ImSurroundingText).toString();
+        uint cursorPosition = cursorPosQuery.value(Qt::ImCursorPosition).toUInt();
+        uint anchorPosition = anchorPosQuery.value(Qt::ImAnchorPosition).toUInt();
+
+        QIBusText text;
+        text.text = surroundingText;
+
+        QVariant variant;
+        variant.setValue(text);
+        QDBusVariant dbusText(variant);
+
+        d->context->SetSurroundingText(dbusText, cursorPosition, anchorPosition);
+    }
     QPlatformInputContext::update(q);
 }
 
@@ -225,6 +256,27 @@ void QIBusPlatformInputContext::updatePreeditText(const QDBusVariant &text, uint
     d->predit = t.text;
 }
 
+void QIBusPlatformInputContext::surroundingTextRequired()
+{
+    if (debug)
+        qDebug() << "surroundingTextRequired";
+    d->needsSurroundingText = true;
+    update(Qt::ImSurroundingText);
+}
+
+void QIBusPlatformInputContext::deleteSurroundingText(int offset, uint n_chars)
+{
+    QObject *input = qApp->focusObject();
+    if (!input)
+        return;
+
+    if (debug)
+        qDebug() << "deleteSurroundingText" << offset << n_chars;
+
+    QInputMethodEvent event;
+    event.setCommitString("", offset, n_chars);
+    QCoreApplication::sendEvent(input, &event);
+}
 
 bool
 QIBusPlatformInputContext::x11FilterEvent(uint keyval, uint keycode, uint state, bool press)
@@ -250,7 +302,8 @@ QIBusPlatformInputContextPrivate::QIBusPlatformInputContextPrivate()
     : connection(createConnection()),
       bus(0),
       context(0),
-      valid(false)
+      valid(false),
+      needsSurroundingText(false)
 {
     if (!connection || !connection->isConnected())
         return;
@@ -284,7 +337,7 @@ QIBusPlatformInputContextPrivate::QIBusPlatformInputContextPrivate()
         IBUS_CAP_PROPERTY           = 1 << 4,
         IBUS_CAP_SURROUNDING_TEXT   = 1 << 5
     };
-    context->SetCapabilities(IBUS_CAP_PREEDIT_TEXT|IBUS_CAP_FOCUS);
+    context->SetCapabilities(IBUS_CAP_PREEDIT_TEXT|IBUS_CAP_FOCUS|IBUS_CAP_SURROUNDING_TEXT);
 
     if (debug)
         qDebug(">>>> valid!");
