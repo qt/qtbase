@@ -61,14 +61,20 @@ const char msg[] = "==Qt=magic=Qt== Architecture:"
 "x86_64"
 #elif defined(Q_PROCESSOR_IA64)
 "ia64"
+#elif defined(Q_PROCESSOR_MIPS_64)
+"mips64"
 #elif defined(Q_PROCESSOR_MIPS)
 "mips"
 #elif defined(Q_PROCESSOR_POWER)
 "power"
+#elif defined(Q_PROCESSOR_S390_X)
+"s390x"
 #elif defined(Q_PROCESSOR_S390)
 "s390"
 #elif defined(Q_PROCESSOR_SH)
 "sh"
+#elif defined(Q_PROCESSORS_SPARC_64)
+"sparc64"
 #elif defined(Q_PROCESSOR_SPARC)
 "sparc"
 #else
