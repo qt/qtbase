@@ -121,6 +121,19 @@
         [attributes addObject : NSAccessibilityValueAttribute];
     }
 
+    if (iface->textInterface()) {
+        [attributes addObjectsFromArray: [[NSArray alloc] initWithObjects:
+            NSAccessibilityNumberOfCharactersAttribute,
+            NSAccessibilitySelectedTextAttribute,
+            NSAccessibilitySelectedTextRangeAttribute,
+            NSAccessibilityVisibleCharacterRangeAttribute,
+            NSAccessibilityInsertionPointLineNumberAttribute,
+            nil
+        ]];
+
+// TODO: multi-selection: NSAccessibilitySelectedTextRangesAttribute,
+    }
+
     return [attributes autorelease];
 }
 
@@ -167,6 +180,87 @@
             return nil;
 
         return QCocoaAccessible::getValueAttribute(iface);
+
+    } else if ([attribute isEqualToString:NSAccessibilityNumberOfCharactersAttribute]) {
+        if (QAccessibleTextInterface *text = iface->textInterface())
+            return [NSNumber numberWithInt: text->characterCount()];
+        return nil;
+    } else if ([attribute isEqualToString:NSAccessibilitySelectedTextAttribute]) {
+        if (QAccessibleTextInterface *text = iface->textInterface()) {
+            int start = 0;
+            int end = 0;
+            text->selection(0, &start, &end);
+            return text->text(start, end).toNSString();
+        }
+        return nil;
+    } else if ([attribute isEqualToString:NSAccessibilitySelectedTextRangeAttribute]) {
+        if (QAccessibleTextInterface *text = iface->textInterface()) {
+            int start = 0;
+            int end = 0;
+            if (text->selectionCount() > 0) {
+                text->selection(0, &start, &end);
+            } else {
+                start = text->cursorPosition();
+                end = start;
+            }
+            return [NSValue valueWithRange:NSMakeRange(quint32(start), quint32(end - start))];
+        }
+        return [NSValue valueWithRange: NSMakeRange(0, 0)];
+    } else if ([attribute isEqualToString:NSAccessibilityVisibleCharacterRangeAttribute]) {
+        // FIXME This is not correct and may mostly impact performance for big texts
+        return [NSValue valueWithRange: NSMakeRange(0, iface->textInterface()->characterCount())];
+
+    } else if ([attribute isEqualToString:NSAccessibilityInsertionPointLineNumberAttribute]) {
+        // FIXME
+        return nil;
+    } else if ([attribute isEqualToString:NSAccessibilitySelectedTextRangesAttribute]) {
+        // FIXME for multi-selection support
+        return nil;
+    }
+
+    return nil;
+}
+
+- (NSArray *)accessibilityParameterizedAttributeNames {
+
+    QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
+    if (!iface) {
+        qWarning() << "Called attribute on invalid object: " << axid;
+        return nil;
+    }
+
+    if (iface->textInterface()) {
+            return [[NSArray alloc] initWithObjects:
+                    NSAccessibilityStringForRangeParameterizedAttribute,
+//                    NSAccessibilityLineForIndexParameterizedAttribute,
+//                    NSAccessibilityRangeForLineParameterizedAttribute,
+//                    NSAccessibilityRangeForPositionParameterizedAttribute,
+//                    NSAccessibilityRangeForIndexParameterizedAttribute,
+//                    NSAccessibilityBoundsForRangeParameterizedAttribute,
+//                    NSAccessibilityRTFForRangeParameterizedAttribute,
+//                    NSAccessibilityStyleRangeForIndexParameterizedAttribute,
+//                    NSAccessibilityAttributedStringForRangeParameterizedAttribute,
+                    nil
+                ];
+    }
+
+    return nil;
+}
+
+- (id)accessibilityAttributeValue:(NSString *)attribute forParameter:(id)parameter {
+    QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
+    if (!iface) {
+        qWarning() << "Called attribute on invalid object: " << axid;
+        return nil;
+    }
+
+    if (!iface->textInterface())
+        return nil;
+
+    if ([attribute isEqualToString: NSAccessibilityStringForRangeParameterizedAttribute]) {
+        NSRange range = [parameter rangeValue];
+        QString text = iface->textInterface()->text(range.location, range.location + range.length);
+        return text.toNSString();
     }
 
     return nil;
