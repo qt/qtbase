@@ -16,6 +16,14 @@ Each of these identifiers can be entered in the bug tracker to obtain more
 information about a particular change.
 
 ****************************************************************************
+*                   Platform deprecation notice                            *
+****************************************************************************
+
+ - The support for deployment on OS X 10.6 (Snow Leopard) is deprecated
+   in Qt 5.3, and will be removed in Qt 5.4. The platform is currently
+   not tested, and most likely has issues that are not fully documented.
+
+****************************************************************************
 *                          Library                                         *
 ****************************************************************************
 
