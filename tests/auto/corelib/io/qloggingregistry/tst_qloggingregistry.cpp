@@ -306,10 +306,13 @@ private slots:
     void QLoggingRegistry_checkErrors()
     {
         QLoggingSettingsParser parser;
-        QString warnMsg = QString("Ignoring malformed logging rule: '***=false'");
-        QTest::ignoreMessage(QtWarningMsg, warnMsg.toLocal8Bit().constData());
+        QTest::ignoreMessage(QtWarningMsg, "Ignoring malformed logging rule: '***=false'");
+        QTest::ignoreMessage(QtWarningMsg, "Ignoring malformed logging rule: '*=0'");
+        QTest::ignoreMessage(QtWarningMsg, "Ignoring malformed logging rule: '*=TRUE'");
         parser.setContent("[Rules]\n"
-                          "***=false\n");
+                          "***=false\n"
+                          "*=0\n"
+                          "*=TRUE\n");
         QVERIFY(parser.rules().isEmpty());
     }
 };
