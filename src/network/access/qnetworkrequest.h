@@ -81,6 +81,7 @@ public:
         SpdyAllowedAttribute,
         SpdyWasUsedAttribute,
         EmitAllUploadProgressSignalsAttribute,
+        FollowRedirectsAttribute,
 
         User = 1000,
         UserMax = 32767
@@ -140,6 +141,10 @@ public:
 
     Priority priority() const;
     void setPriority(Priority priority);
+
+    // HTTP redirect related
+    int maximumRedirectsAllowed() const;
+    void setMaximumRedirectsAllowed(int maximumRedirectsAllowed);
 
 private:
     QSharedDataPointer<QNetworkRequestPrivate> d;

@@ -78,6 +78,23 @@ void QHttpNetworkReply::setUrl(const QUrl &url)
     d->url = url;
 }
 
+QUrl QHttpNetworkReply::redirectUrl() const
+{
+    return d_func()->redirectUrl;
+}
+
+void QHttpNetworkReply::setRedirectUrl(const QUrl &url)
+{
+    Q_D(QHttpNetworkReply);
+    d->redirectUrl = url;
+}
+
+bool QHttpNetworkReply::isHttpRedirect(int statusCode)
+{
+    return (statusCode == 301 || statusCode == 302 || statusCode == 303
+            || statusCode == 305 || statusCode == 307);
+}
+
 qint64 QHttpNetworkReply::contentLength() const
 {
     return d_func()->contentLength();
@@ -265,6 +282,11 @@ bool QHttpNetworkReply::isSpdyUsed() const
 void QHttpNetworkReply::setSpdyWasUsed(bool spdy)
 {
     d_func()->spdyUsed = spdy;
+}
+
+bool QHttpNetworkReply::isRedirecting() const
+{
+    return d_func()->isRedirecting();
 }
 
 QHttpNetworkConnection* QHttpNetworkReply::connection()
@@ -908,6 +930,14 @@ qint64 QHttpNetworkReplyPrivate::getChunkSize(QAbstractSocket *socket, qint64 *c
     }
 
     return bytes;
+}
+
+bool QHttpNetworkReplyPrivate::isRedirecting() const
+{
+    // We're in the process of redirecting - if the HTTP status code says so and
+    // followRedirect is switched on
+    return (QHttpNetworkReply::isHttpRedirect(statusCode)
+            && request.isFollowRedirects());
 }
 
 bool QHttpNetworkReplyPrivate::shouldEmitSignals()

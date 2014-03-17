@@ -496,6 +496,9 @@ void QHttpThreadDelegate::finishedSlot()
             emit error(statusCodeFromHttp(httpReply->statusCode(), httpRequest.url()), msg);
         }
 
+    if (httpRequest.isFollowRedirects() && httpReply->isRedirecting())
+        emit redirected(httpReply->redirectUrl(), httpReply->statusCode(), httpReply->request().redirectCount() - 1);
+
     emit downloadFinished();
 
     QMetaObject::invokeMethod(httpReply, "deleteLater", Qt::QueuedConnection);

@@ -140,7 +140,9 @@ QT_BEGIN_NAMESPACE
         request to a different URL. The Network Access API does not by
         default follow redirections: it's up to the application to
         determine if the requested redirection should be allowed,
-        according to its security policies.
+        according to its security policies. However, if
+        QNetworkRequest::FollowRedirectsAttribute is set, then this attribute
+        will not be present in the reply.
         The returned URL might be relative. Use QUrl::resolved()
         to create an absolute URL out of it.
 
@@ -256,6 +258,12 @@ QT_BEGIN_NAMESPACE
         in 100 millisecond intervals.
         (This value was introduced in 5.5.)
 
+    \value FollowRedirectsAttribute
+        Requests only, type: QMetaType::Bool (default: false)
+        Indicates whether the Network Access API should automatically follow a
+        HTTP redirect response or not. Currently redirects that are insecure,
+        that is redirecting from "https" to "http" protocol, are not allowed.
+
     \value User
         Special type. Additional information can be passed in
         QVariants with types ranging from User to UserMax. The default
@@ -306,11 +314,13 @@ QT_BEGIN_NAMESPACE
 class QNetworkRequestPrivate: public QSharedData, public QNetworkHeadersPrivate
 {
 public:
+    static const int maxRedirectCount = 50;
     inline QNetworkRequestPrivate()
         : priority(QNetworkRequest::NormalPriority)
 #ifndef QT_NO_SSL
         , sslConfiguration(0)
 #endif
+        , maxRedirectsAllowed(maxRedirectCount)
     { qRegisterMetaType<QNetworkRequest>(); }
     ~QNetworkRequestPrivate()
     {
@@ -325,7 +335,7 @@ public:
     {
         url = other.url;
         priority = other.priority;
-
+        maxRedirectsAllowed = other.maxRedirectsAllowed;
 #ifndef QT_NO_SSL
         sslConfiguration = 0;
         if (other.sslConfiguration)
@@ -338,7 +348,8 @@ public:
         return url == other.url &&
             priority == other.priority &&
             rawHeaders == other.rawHeaders &&
-            attributes == other.attributes;
+            attributes == other.attributes &&
+            maxRedirectsAllowed == other.maxRedirectsAllowed;
         // don't compare cookedHeaders
     }
 
@@ -347,6 +358,7 @@ public:
 #ifndef QT_NO_SSL
     mutable QSslConfiguration *sslConfiguration;
 #endif
+    int maxRedirectsAllowed;
 };
 
 /*!
@@ -655,6 +667,32 @@ QNetworkRequest::Priority QNetworkRequest::priority() const
 void QNetworkRequest::setPriority(Priority priority)
 {
     d->priority = priority;
+}
+
+/*!
+    \since 5.6
+
+    Returns the maximum number of redirects allowed to be followed for this
+    request.
+
+    \sa setMaximumRedirectsAllowed()
+*/
+int QNetworkRequest::maximumRedirectsAllowed() const
+{
+    return d->maxRedirectsAllowed;
+}
+
+/*!
+    \since 5.6
+
+    Sets the maximum number of redirects allowed to be followed for this
+    request to \a maxRedirectsAllowed.
+
+    \sa maximumRedirectsAllowed()
+*/
+void QNetworkRequest::setMaximumRedirectsAllowed(int maxRedirectsAllowed)
+{
+    d->maxRedirectsAllowed = maxRedirectsAllowed;
 }
 
 static QByteArray headerName(QNetworkRequest::KnownHeaders header)

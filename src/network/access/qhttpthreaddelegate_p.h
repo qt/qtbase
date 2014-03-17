@@ -139,6 +139,8 @@ signals:
     void downloadData(QByteArray);
     void error(QNetworkReply::NetworkError, const QString);
     void downloadFinished();
+    void redirected(const QUrl &url, int httpStatus, int maxRedirectsRemainig);
+
 public slots:
     // This are called via QueuedConnection from user thread
     void startRequest();

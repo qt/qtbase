@@ -506,6 +506,55 @@ bool QHttpNetworkConnectionPrivate::handleAuthenticateChallenge(QAbstractSocket 
     return false;
 }
 
+bool QHttpNetworkConnectionPrivate::parseRedirectResponse(QAbstractSocket *socket, QHttpNetworkReply *reply, QUrl *redirectUrl)
+{
+    if (!reply->request().isFollowRedirects())
+        return false;
+
+    QUrl rUrl;
+    QList<QPair<QByteArray, QByteArray> > fields = reply->header();
+    foreach (const QNetworkReply::RawHeaderPair &header, fields) {
+        if (header.first.toLower() == "location") {
+            rUrl = QUrl::fromEncoded(header.second);
+            break;
+        }
+    }
+
+    // If the location url is invalid/empty, we emit ProtocolUnknownError
+    if (!rUrl.isValid()) {
+        emitReplyError(socket, reply, QNetworkReply::ProtocolUnknownError);
+        return false;
+    }
+
+    // Check if we have exceeded max redirects allowed
+    if (reply->request().redirectCount() <= 0) {
+        emitReplyError(socket, reply, QNetworkReply::TooManyRedirectsError);
+        return false;
+    }
+
+    // Resolve the URL if it's relative
+    if (rUrl.isRelative())
+        rUrl = reply->request().url().resolved(rUrl);
+
+    // Check redirect url protocol
+    QString scheme = rUrl.scheme();
+    if (scheme == QLatin1String("http") || scheme == QLatin1String("https")) {
+        QString previousUrlScheme = reply->request().url().scheme();
+        // Check if we're doing an unsecure redirect (https -> http)
+        if (previousUrlScheme == QLatin1String("https")
+            && scheme == QLatin1String("http")) {
+            emitReplyError(socket, reply, QNetworkReply::InsecureRedirectError);
+            return false;
+        }
+    } else {
+        emitReplyError(socket, reply, QNetworkReply::ProtocolUnknownError);
+        return false;
+    }
+    redirectUrl->setUrl(QString(rUrl.toEncoded()));
+
+    return true;
+}
+
 void QHttpNetworkConnectionPrivate::createAuthorization(QAbstractSocket *socket, QHttpNetworkRequest &request)
 {
     Q_ASSERT(socket);
@@ -801,6 +850,12 @@ QString QHttpNetworkConnectionPrivate::errorDetail(QNetworkReply::NetworkError e
         break;
     case QNetworkReply::SslHandshakeFailedError:
         errorString = QCoreApplication::translate("QHttp", "SSL handshake failed");
+        break;
+    case QNetworkReply::TooManyRedirectsError:
+        errorString = QCoreApplication::translate("QHttp", "Too many redirects");
+        break;
+    case QNetworkReply::InsecureRedirectError:
+        errorString = QCoreApplication::translate("QHttp", "Insecure redirect");
         break;
     default:
         // all other errors are treated as QNetworkReply::UnknownNetworkError

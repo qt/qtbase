@@ -250,6 +250,7 @@ public:
 
     void emitReplyError(QAbstractSocket *socket, QHttpNetworkReply *reply, QNetworkReply::NetworkError errorCode);
     bool handleAuthenticateChallenge(QAbstractSocket *socket, QHttpNetworkReply *reply, bool isProxy, bool &resend);
+    bool parseRedirectResponse(QAbstractSocket *socket, QHttpNetworkReply *reply, QUrl *redirectUrl);
 
 #ifndef QT_NO_NETWORKPROXY
     QNetworkProxy networkProxy;

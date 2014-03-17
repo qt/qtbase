@@ -69,6 +69,7 @@ public:
 
     QNetworkReplyPrivate();
     QNetworkRequest request;
+    QNetworkRequest originalRequest;
     QUrl url;
     QPointer<QNetworkAccessManager> manager;
     qint64 readBufferMaxSize;

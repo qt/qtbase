@@ -42,7 +42,7 @@ QHttpNetworkRequestPrivate::QHttpNetworkRequestPrivate(QHttpNetworkRequest::Oper
         QHttpNetworkRequest::Priority pri, const QUrl &newUrl)
     : QHttpNetworkHeaderPrivate(newUrl), operation(op), priority(pri), uploadByteDevice(0),
       autoDecompress(false), pipeliningAllowed(false), spdyAllowed(false),
-      withCredentials(true), preConnect(false)
+      withCredentials(true), preConnect(false), followRedirect(false), redirectCount(0)
 {
 }
 
@@ -59,6 +59,8 @@ QHttpNetworkRequestPrivate::QHttpNetworkRequestPrivate(const QHttpNetworkRequest
     withCredentials = other.withCredentials;
     ssl = other.ssl;
     preConnect = other.preConnect;
+    followRedirect = other.followRedirect;
+    redirectCount = other.redirectCount;
 }
 
 QHttpNetworkRequestPrivate::~QHttpNetworkRequestPrivate()
@@ -215,6 +217,26 @@ bool QHttpNetworkRequest::isPreConnect() const
 void QHttpNetworkRequest::setPreConnect(bool preConnect)
 {
     d->preConnect = preConnect;
+}
+
+bool QHttpNetworkRequest::isFollowRedirects() const
+{
+    return d->followRedirect;
+}
+
+void QHttpNetworkRequest::setFollowRedirects(bool followRedirect)
+{
+    d->followRedirect = followRedirect;
+}
+
+int QHttpNetworkRequest::redirectCount() const
+{
+    return d->redirectCount;
+}
+
+void QHttpNetworkRequest::setRedirectCount(int count)
+{
+    d->redirectCount = count;
 }
 
 qint64 QHttpNetworkRequest::contentLength() const

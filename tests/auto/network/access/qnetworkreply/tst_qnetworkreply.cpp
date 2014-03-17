@@ -121,6 +121,14 @@ class tst_QNetworkReply: public QObject
         return s;
     };
 
+    static QString tempRedirectReplyStr() {
+        QString s = "HTTP/1.1 307 Temporary Redirect\r\n"
+                    "Content-Type: text/plain\r\n"
+                    "location: %1\r\n"
+                    "\r\n";
+        return s;
+    };
+
     QEventLoop *loop;
     enum RunSimpleRequestReturn { Timeout = 0, Success, Failure };
     int returnCode;
@@ -458,6 +466,11 @@ private Q_SLOTS:
 
     void putWithRateLimiting();
 
+    void ioHttpSingleRedirect();
+    void ioHttpChangeMaxRedirects();
+    void ioHttpRedirectErrors_data();
+    void ioHttpRedirectErrors();
+
     // NOTE: This test must be last!
     void parentingRepliesToTheApp();
 private:
@@ -595,10 +608,16 @@ protected:
     virtual void reply() {
         Q_ASSERT(!client.isNull());
         // we need to emulate the bytesWrittenSlot call if the data is empty.
-        if (dataToTransmit.size() == 0)
+        if (dataToTransmit.size() == 0) {
             QMetaObject::invokeMethod(this, "bytesWrittenSlot", Qt::QueuedConnection);
-        else
+        } else {
             client->write(dataToTransmit);
+            // FIXME: For SSL connections, if we don't flush the socket, the
+            // client never receives the data and since we're doing a disconnect
+            // immediately afterwards, it causes a RemoteHostClosedError for the
+            // client
+            client->flush();
+        }
     }
 private:
     void connectSocketSignals()
@@ -7958,7 +7977,142 @@ void tst_QNetworkReply::putWithRateLimiting()
     QCOMPARE(uploadedData, data);
 }
 
+void tst_QNetworkReply::ioHttpSingleRedirect()
+{
+    QUrl localhost = QUrl("http://localhost");
+    QByteArray http200Reply = "HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n";
 
+    // Setup server to which the second server will redirect to
+    MiniHttpServer server2(http200Reply);
+
+    QUrl redirectUrl = QUrl(localhost);
+    redirectUrl.setPort(server2.serverPort());
+
+    QByteArray tempRedirectReply =
+            tempRedirectReplyStr().arg(QString(redirectUrl.toEncoded())).toLatin1();
+
+
+    // Setup redirect server
+    MiniHttpServer server(tempRedirectReply);
+
+    localhost.setPort(server.serverPort());
+    QNetworkRequest request(localhost);
+    request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
+
+    QNetworkReplyPtr reply(manager.get(request));
+    QSignalSpy redSpy(reply.data(), SIGNAL(redirected(QUrl)));
+    QSignalSpy finSpy(reply.data(), SIGNAL(finished()));
+
+    QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
+
+    // Redirected and finished should be emitted exactly once
+    QCOMPARE(redSpy.count(), 1);
+    QCOMPARE(finSpy.count(), 1);
+
+    // Original URL should not be changed after redirect
+    QCOMPARE(request.url(), localhost);
+
+    // Verify Redirect url
+    QList<QVariant> args = redSpy.takeFirst();
+    QCOMPARE(args.at(0).toUrl(), redirectUrl);
+
+    // Reply url is set to the redirect url
+    QCOMPARE(reply->url(), redirectUrl);
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+}
+
+void tst_QNetworkReply::ioHttpChangeMaxRedirects()
+{
+    QUrl localhost = QUrl("http://localhost");
+
+    QByteArray http200Reply = "HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n";
+
+    MiniHttpServer server1("");
+    MiniHttpServer server2("");
+    MiniHttpServer server3(http200Reply);
+
+    QUrl server2Url(localhost);
+    server2Url.setPort(server2.serverPort());
+    server1.setDataToTransmit(tempRedirectReplyStr().arg(
+                              QString(server2Url.toEncoded())).toLatin1());
+
+    QUrl server3Url(localhost);
+    server3Url.setPort(server3.serverPort());
+    server2.setDataToTransmit(tempRedirectReplyStr().arg(
+                              QString(server3Url.toEncoded())).toLatin1());
+
+    localhost.setPort(server1.serverPort());
+    QNetworkRequest request(localhost);
+    request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
+
+    // Set Max redirects to 1. This will cause TooManyRedirectsError
+    request.setMaximumRedirectsAllowed(1);
+
+    QNetworkReplyPtr reply(manager.get(request));
+    QSignalSpy redSpy(reply.data(), SIGNAL(redirected(QUrl)));
+    QSignalSpy spy(reply.data(), SIGNAL(error(QNetworkReply::NetworkError)));
+
+    QVERIFY(waitForFinish(reply) == Failure);
+
+    QCOMPARE(redSpy.count(), request.maximumRedirectsAllowed());
+    QCOMPARE(spy.count(), 1);
+    QVERIFY(reply->error() == QNetworkReply::TooManyRedirectsError);
+
+    // Increase max redirects to allow successful completion
+    request.setMaximumRedirectsAllowed(3);
+
+    QNetworkReplyPtr reply2(manager.get(request));
+    QSignalSpy redSpy2(reply2.data(), SIGNAL(redirected(QUrl)));
+
+    QVERIFY2(waitForFinish(reply2) == Success, msgWaitForFinished(reply2));
+
+    QCOMPARE(redSpy2.count(), 2);
+    QCOMPARE(reply2->url(), server3Url);
+    QVERIFY(reply2->error() == QNetworkReply::NoError);
+}
+
+void tst_QNetworkReply::ioHttpRedirectErrors_data()
+{
+    QTest::addColumn<QString>("url");
+    QTest::addColumn<QString>("dataToSend");
+    QTest::addColumn<QNetworkReply::NetworkError>("error");
+
+    QString tempRedirectReply = QString("HTTP/1.1 307 Temporary Redirect\r\n"
+                                        "Content-Type: text/plain\r\n"
+                                        "location: http://localhost:%1\r\n\r\n");
+
+    QTest::newRow("too-many-redirects") << "http://localhost" << tempRedirectReply << QNetworkReply::TooManyRedirectsError;
+    QTest::newRow("insecure-redirect") << "https://localhost" << tempRedirectReply << QNetworkReply::InsecureRedirectError;
+    QTest::newRow("unknown-redirect") << "http://localhost"<< tempRedirectReply.replace("http", "bad_protocol") << QNetworkReply::ProtocolUnknownError;
+}
+
+void tst_QNetworkReply::ioHttpRedirectErrors()
+{
+    QFETCH(QString, url);
+    QFETCH(QString, dataToSend);
+    QFETCH(QNetworkReply::NetworkError, error);
+
+    QUrl localhost(url);
+    MiniHttpServer server("", localhost.scheme() == "https");
+
+    localhost.setPort(server.serverPort());
+
+    QByteArray d2s = dataToSend.arg(
+                QString::number(server.serverPort())).toLatin1();
+    server.setDataToTransmit(d2s);
+
+    QNetworkRequest request(localhost);
+    request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
+    QNetworkReplyPtr reply(manager.get(request));
+    if (localhost.scheme() == "https")
+        reply.data()->ignoreSslErrors();
+    QSignalSpy spy(reply.data(), SIGNAL(error(QNetworkReply::NetworkError)));
+
+    QVERIFY(waitForFinish(reply) == Failure);
+
+    QCOMPARE(spy.count(), 1);
+    QVERIFY(reply->error() == error);
+}
 
 // NOTE: This test must be last testcase in tst_qnetworkreply!
 void tst_QNetworkReply::parentingRepliesToTheApp()

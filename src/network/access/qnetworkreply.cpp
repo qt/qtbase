@@ -132,6 +132,14 @@ QNetworkReplyPrivate::QNetworkReplyPrivate()
     \value BackgroundRequestNotAllowedError the background request
     is not currently allowed due to platform policy.
 
+    \value TooManyRedirectsError       while following redirects, the maximum
+    limit was reached. The limit is by default set to 50 or as set by
+    QNetworkRequest::setMaxRedirectsAllowed().
+
+    \value InsecureRedirectError       while following redirects, the network
+    access API detected a redirect from a encrypted protocol (https) to an
+    unencrypted one (http).
+
     \value ProxyConnectionRefusedError the connection to the proxy
     server was refused (the proxy server is not accepting requests)
 
@@ -273,6 +281,19 @@ QNetworkReplyPrivate::QNetworkReplyPrivate()
     deleted by the application.
 
     \sa QSslPreSharedKeyAuthenticator
+*/
+
+/*!
+    \fn void QNetworkReply::redirected(const QUrl &url)
+    \since 5.6
+
+    This signal is emitted if the QNetworkRequest::FollowRedirectsAttribute was
+    set in the request and the server responded with a 3xx status (specifically
+    301, 302, 303, 305 or 307 status code) with a valid url in the location
+    header, indicating a HTTP redirect. The \a url parameter contains the new
+    redirect url as returned by the server in the location header.
+
+    \sa QNetworkRequest::FollowRedirectsAttribute
 */
 
 /*!
@@ -498,7 +519,7 @@ QNetworkAccessManager *QNetworkReply::manager() const
 */
 QNetworkRequest QNetworkReply::request() const
 {
-    return d_func()->request;
+    return d_func()->originalRequest;
 }
 
 /*!
@@ -549,9 +570,12 @@ bool QNetworkReply::isRunning() const
 
 /*!
     Returns the URL of the content downloaded or uploaded. Note that
-    the URL may be different from that of the original request.
+    the URL may be different from that of the original request. If the
+    QNetworkRequest::FollowRedirectsAttribute was set in the request, then this
+    function returns the current url that the network API is accessing, i.e the
+    url emitted in the QNetworkReply::redirected signal.
 
-    \sa request(), setUrl(), QNetworkRequest::url()
+    \sa request(), setUrl(), QNetworkRequest::url(), redirected()
 */
 QUrl QNetworkReply::url() const
 {
@@ -794,7 +818,7 @@ void QNetworkReply::setOperation(QNetworkAccessManager::Operation operation)
 void QNetworkReply::setRequest(const QNetworkRequest &request)
 {
     Q_D(QNetworkReply);
-    d->request = request;
+    d->originalRequest = request;
 }
 
 /*!

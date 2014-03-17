@@ -492,6 +492,20 @@ void QHttpNetworkConnectionChannel::handleStatus()
     bool resend = false;
 
     switch (statusCode) {
+    case 301:
+    case 302:
+    case 303:
+    case 305:
+    case 307: {
+        // Parse the response headers and get the "location" url
+        QUrl redirectUrl;
+        if (connection->d_func()->parseRedirectResponse(socket, reply, &redirectUrl))
+            reply->setRedirectUrl(redirectUrl);
+
+        if (qobject_cast<QHttpNetworkConnection *>(connection))
+            QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
+        break;
+    }
     case 401: // auth required
     case 407: // proxy auth required
         if (connection->d_func()->handleAuthenticateChallenge(socket, reply, (statusCode == 407), resend)) {
