@@ -83,6 +83,7 @@
 #  include "qwindowssessionmanager.h"
 #endif
 #include <QtGui/private/qguiapplication_p.h>
+#include <QtGui/qpa/qplatforminputcontextfactory_p.h>
 
 #include <QtCore/private/qeventdispatcher_win_p.h>
 #include <QtCore/QDebug>
@@ -158,7 +159,7 @@ struct QWindowsIntegrationPrivate
 #if !defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)
     QOpenGLStaticContextPtr m_staticOpenGLContext;
 #endif
-    QWindowsInputContext m_inputContext;
+    QScopedPointer<QPlatformInputContext> m_inputContext;
 #ifndef QT_NO_ACCESSIBILITY
     QWindowsAccessibility m_accessibility;
 #endif
@@ -222,6 +223,14 @@ QWindowsIntegration::QWindowsIntegration(const QStringList &paramList) :
 
 QWindowsIntegration::~QWindowsIntegration()
 {
+}
+
+void QWindowsIntegration::initialize()
+{
+    if (QPlatformInputContext *pluginContext = QPlatformInputContextFactory::create())
+        d->m_inputContext.reset(pluginContext);
+    else
+        d->m_inputContext.reset(new QWindowsInputContext);
 }
 
 bool QWindowsIntegration::hasCapability(QPlatformIntegration::Capability cap) const
@@ -441,7 +450,7 @@ QPlatformDrag *QWindowsIntegration::drag() const
 
 QPlatformInputContext * QWindowsIntegration::inputContext() const
 {
-    return &d->m_inputContext;
+    return d->m_inputContext.data();
 }
 
 #ifndef QT_NO_ACCESSIBILITY
