@@ -128,6 +128,8 @@ Cpp.ignoredirectives    += \
                           Q_DECLARE_SHARED \
                           Q_DECLARE_TR_FUNCTIONS \
                           Q_DECLARE_TYPEINFO \
+                          Q_DECL_NOEXCEPT_EXPR \
+                          QT_DEPRECATED_X \
                           Q_DISABLE_COPY \
                           Q_DUMMY_COMPARISON_OPERATOR \
                           Q_ENUMS \
