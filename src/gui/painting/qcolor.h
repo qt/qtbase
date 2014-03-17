@@ -173,7 +173,7 @@ public:
     QColor toCmyk() const;
     QColor toHsl() const;
 
-    QColor convertTo(Spec colorSpec) const;
+    QColor convertTo(Spec colorSpec) const Q_REQUIRED_RESULT;
 
     static QColor fromRgb(QRgb rgb);
     static QColor fromRgba(QRgb rgba);
@@ -190,10 +190,10 @@ public:
     static QColor fromHsl(int h, int s, int l, int a = 255);
     static QColor fromHslF(qreal h, qreal s, qreal l, qreal a = 1.0);
 
-    QColor light(int f = 150) const;
-    QColor lighter(int f = 150) const;
-    QColor dark(int f = 200) const;
-    QColor darker(int f = 200) const;
+    QColor light(int f = 150) const Q_REQUIRED_RESULT;
+    QColor lighter(int f = 150) const Q_REQUIRED_RESULT;
+    QColor dark(int f = 200) const Q_REQUIRED_RESULT;
+    QColor darker(int f = 200) const Q_REQUIRED_RESULT;
 
     QColor &operator=(const QColor &);
     QColor &operator=(Qt::GlobalColor color);

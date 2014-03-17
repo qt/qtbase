@@ -86,23 +86,23 @@ public:
 
     void translate(int dx, int dy);
     inline void translate(const QPoint &p) { translate(p.x(), p.y()); }
-    QRegion translated(int dx, int dy) const;
-    inline QRegion translated(const QPoint &p) const { return translated(p.x(), p.y()); }
+    QRegion translated(int dx, int dy) const Q_REQUIRED_RESULT;
+    inline QRegion translated(const QPoint &p) const Q_REQUIRED_RESULT { return translated(p.x(), p.y()); }
 
-    QRegion united(const QRegion &r) const;
-    QRegion united(const QRect &r) const;
-    QRegion intersected(const QRegion &r) const;
-    QRegion intersected(const QRect &r) const;
-    QRegion subtracted(const QRegion &r) const;
-    QRegion xored(const QRegion &r) const;
+    QRegion united(const QRegion &r) const Q_REQUIRED_RESULT;
+    QRegion united(const QRect &r) const Q_REQUIRED_RESULT;
+    QRegion intersected(const QRegion &r) const Q_REQUIRED_RESULT;
+    QRegion intersected(const QRect &r) const Q_REQUIRED_RESULT;
+    QRegion subtracted(const QRegion &r) const Q_REQUIRED_RESULT;
+    QRegion xored(const QRegion &r) const Q_REQUIRED_RESULT;
 
 #if QT_DEPRECATED_SINCE(5, 0)
-    inline QT_DEPRECATED QRegion unite(const QRegion &r) const { return united(r); }
-    inline QT_DEPRECATED QRegion unite(const QRect &r) const { return united(r); }
-    inline QT_DEPRECATED QRegion intersect(const QRegion &r) const { return intersected(r); }
-    inline QT_DEPRECATED QRegion intersect(const QRect &r) const { return intersected(r); }
-    inline QT_DEPRECATED QRegion subtract(const QRegion &r) const { return subtracted(r); }
-    inline QT_DEPRECATED QRegion eor(const QRegion &r) const { return xored(r); }
+    inline QT_DEPRECATED QRegion unite(const QRegion &r) const Q_REQUIRED_RESULT { return united(r); }
+    inline QT_DEPRECATED QRegion unite(const QRect &r) const Q_REQUIRED_RESULT { return united(r); }
+    inline QT_DEPRECATED QRegion intersect(const QRegion &r) const Q_REQUIRED_RESULT { return intersected(r); }
+    inline QT_DEPRECATED QRegion intersect(const QRect &r) const Q_REQUIRED_RESULT { return intersected(r); }
+    inline QT_DEPRECATED QRegion subtract(const QRegion &r) const Q_REQUIRED_RESULT { return subtracted(r); }
+    inline QT_DEPRECATED QRegion eor(const QRegion &r) const Q_REQUIRED_RESULT { return xored(r); }
 #endif
 
     bool intersects(const QRegion &r) const;

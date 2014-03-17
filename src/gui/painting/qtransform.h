@@ -104,9 +104,9 @@ public:
                    qreal m21, qreal m22, qreal m23,
                    qreal m31, qreal m32, qreal m33);
 
-    QTransform inverted(bool *invertible = 0) const;
-    QTransform adjoint() const;
-    QTransform transposed() const;
+    QTransform inverted(bool *invertible = 0) const Q_REQUIRED_RESULT;
+    QTransform adjoint() const Q_REQUIRED_RESULT;
+    QTransform transposed() const Q_REQUIRED_RESULT;
 
     QTransform &translate(qreal dx, qreal dy);
     QTransform &scale(qreal sx, qreal sy);
