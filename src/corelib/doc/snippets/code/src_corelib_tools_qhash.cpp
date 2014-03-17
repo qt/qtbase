@@ -307,3 +307,17 @@ inline uint qHash(const std::vector<int> &key, uint seed = 0)
         return qHashBits(&key.front(), key.size() * sizeof(int), seed);
 }
 //! [qhashbits]
+
+//! [qhashrange]
+inline uint qHash(const std::vector<int> &key, uint seed = 0)
+{
+    return qHashRange(key.begin(), key.end(), seed);
+}
+//! [qhashrange]
+
+//! [qhashrangecommutative]
+inline uint qHash(const std::unordered_set<int> &key, uint seed = 0)
+{
+    return qHashRangeCommutative(key.begin(), key.end(), seed);
+}
+//! [qhashrangecommutative]

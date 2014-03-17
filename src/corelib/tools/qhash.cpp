@@ -665,6 +665,85 @@ void QHashData::checkSanity()
     Types \c T1 and \c T2 must be supported by qHash().
 */
 
+/*! \fn uint qHashRange(InputIterator first, InputIterator last, uint seed = 0)
+    \relates QHash
+    \since 5.5
+
+    Returns the hash value for the range [\a{first},\a{last}), using \a seed
+    to seed the calculation, by successively applying qHash() to each
+    element and combining the hash values into a single one.
+
+    The return value of this function depends on the order of elements
+    in the range. That means that
+
+    \code
+    {0, 1, 2}
+    \endcode
+
+    and
+    \code
+    {1, 2, 0}
+    \endcode
+
+    hash to \b{different} values. If order does not matter, for example for hash
+    tables, use qHashRangeCommutative() instead. If you are hashing raw
+    memory, use qHashBits().
+
+    Use this function only to implement qHash() for your own custom
+    types. For example, here's how you could implement a qHash() overload for
+    std::vector<int>:
+
+    \snippet code/src_corelib_tools_qhash.cpp qhashrange
+
+    It bears repeating that the implementation of qHashRange() - like
+    the qHash() overloads offered by Qt - may change at any time. You
+    \b{must not} rely on the fact that qHashRange() will give the same
+    results (for the same inputs) across different Qt versions, even
+    if qHash() for the element type would.
+
+    \sa qHashBits(), qHashRangeCommutative()
+*/
+
+/*! \fn uint qHashRangeCommutative(InputIterator first, InputIterator last, uint seed = 0)
+    \relates QHash
+    \since 5.5
+
+    Returns the hash value for the range [\a{first},\a{last}), using \a seed
+    to seed the calculation, by successively applying qHash() to each
+    element and combining the hash values into a single one.
+
+    The return value of this function does not depend on the order of
+    elements in the range. That means that
+
+    \code
+    {0, 1, 2}
+    \endcode
+
+    and
+    \code
+    {1, 2, 0}
+    \endcode
+
+    hash to the \b{same} values. If order matters, for example, for vectors
+    and arrays, use qHashRange() instead. If you are hashing raw
+    memory, use qHashBits().
+
+    Use this function only to implement qHash() for your own custom
+    types. For example, here's how you could implement a qHash() overload for
+    std::unordered_set<int>:
+
+    \snippet code/src_corelib_tools_qhash.cpp qhashrangecommutative
+
+    It bears repeating that the implementation of
+    qHashRangeCommutative() - like the qHash() overloads offered by Qt
+    - may change at any time. You \b{must not} rely on the fact that
+    qHashRangeCommutative() will give the same results (for the same
+    inputs) across different Qt versions, even if qHash() for the
+    element type would.
+
+    \sa qHashBits(), qHashRange()
+*/
+
 /*! \fn uint qHashBits(const void *p, size_t len, uint seed = 0)
     \relates QHash
     \since 5.4
@@ -678,10 +757,16 @@ void QHashData::checkSanity()
 
     \snippet code/src_corelib_tools_qhash.cpp qhashbits
 
+    This takes advantage of the fact that std::vector lays out its data
+    contiguously. If that is not the case, or the contained type has
+    padding, you should use qHashRange() instead.
+
     It bears repeating that the implementation of qHashBits() - like
     the qHash() overloads offered by Qt - may change at any time. You
     \b{must not} rely on the fact that qHashBits() will give the same
     results (for the same inputs) across different Qt versions.
+
+    \sa qHashRange(), qHashRangeCommutative()
 */
 
 /*! \fn uint qHash(char key, uint seed = 0)

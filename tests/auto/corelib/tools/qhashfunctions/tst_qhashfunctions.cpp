@@ -42,6 +42,11 @@
 #include <QtTest/QtTest>
 
 #include <qhash.h>
+#include <qtypetraits.h>
+
+#include <iterator>
+#include <sstream>
+#include <algorithm>
 
 class tst_QHashFunctions : public QObject
 {
@@ -51,6 +56,8 @@ private Q_SLOTS:
     void fp_qhash_of_zero_is_zero();
     void qthash_data();
     void qthash();
+    void range();
+    void rangeCommutative();
 };
 
 void tst_QHashFunctions::qhash()
@@ -147,6 +154,65 @@ void tst_QHashFunctions::qthash()
     QFETCH(QString, key);
     const uint result = qt_hash(key);
     QTEST(result, "hash");
+}
+
+namespace SomeNamespace {
+    struct Hashable { int i; };
+    inline uint qHash(Hashable h, uint seed = 0)
+    { return QT_PREPEND_NAMESPACE(qHash)(h.i, seed); }
+}
+
+void tst_QHashFunctions::range()
+{
+    static const int ints[] = {0, 1, 2, 3, 4, 5};
+    static const size_t numInts = sizeof ints / sizeof *ints;
+
+    // empty range just gives the seed:
+    QCOMPARE(qHashRange(ints, ints, 0xdeadbeefU), 0xdeadbeefU);
+    // verify that order matters:
+    QVERIFY(qHashRange(ints, ints + numInts) !=
+            qHashRange(std::reverse_iterator<const int*>(ints + numInts), std::reverse_iterator<const int*>(ints)));
+
+    {
+        // verify that the input iterator category suffices:
+        std::stringstream sstream;
+        Q_STATIC_ASSERT((QtPrivate::is_same<std::input_iterator_tag, std::istream_iterator<int>::iterator_category>::value));
+        std::copy(ints, ints + numInts, std::ostream_iterator<int>(sstream, " "));
+        sstream.seekg(0);
+        std::istream_iterator<int> it(sstream), end;
+        QCOMPARE(qHashRange(ints, ints + numInts), qHashRange(it, end));
+    }
+
+    SomeNamespace::Hashable hashables[] = {{0}, {1}, {2}, {3}, {4}, {5}};
+    static const size_t numHashables = sizeof hashables / sizeof *hashables;
+    // compile check: is qHash() found using ADL?
+    (void)qHashRange(hashables, hashables + numHashables);
+}
+
+void tst_QHashFunctions::rangeCommutative()
+{
+    int ints[] = {0, 1, 2, 3, 4, 5};
+    static const size_t numInts = sizeof ints / sizeof *ints;
+
+    // empty range just gives the seed:
+    QCOMPARE(qHashRangeCommutative(ints, ints, 0xdeadbeefU), 0xdeadbeefU);
+    // verify that order doesn't matter:
+    QCOMPARE(qHashRangeCommutative(ints, ints + numInts),
+             qHashRangeCommutative(std::reverse_iterator<int*>(ints + numInts), std::reverse_iterator<int*>(ints)));
+
+    {
+        // verify that the input iterator category suffices:
+        std::stringstream sstream;
+        std::copy(ints, ints + numInts, std::ostream_iterator<int>(sstream, " "));
+        sstream.seekg(0);
+        std::istream_iterator<int> it(sstream), end;
+        QCOMPARE(qHashRangeCommutative(ints, ints + numInts), qHashRangeCommutative(it, end));
+    }
+
+    SomeNamespace::Hashable hashables[] = {{0}, {1}, {2}, {3}, {4}, {5}};
+    static const size_t numHashables = sizeof hashables / sizeof *hashables;
+    // compile check: is qHash() found using ADL?
+    (void)qHashRangeCommutative(hashables, hashables + numHashables);
 }
 
 QTEST_APPLESS_MAIN(tst_QHashFunctions)

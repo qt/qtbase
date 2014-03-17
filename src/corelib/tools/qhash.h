@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2015 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Marc Mutz <marc.mutz@kdab.com>
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -40,6 +41,7 @@
 #include <QtCore/qpair.h>
 #include <QtCore/qrefcount.h>
 
+#include <numeric> // for std::accumulate
 #ifdef Q_COMPILER_INITIALIZER_LISTS
 #include <initializer_list>
 #endif
@@ -100,6 +102,44 @@ template <class T> inline uint qHash(const T *key, uint seed = 0) Q_DECL_NOTHROW
 template<typename T> inline uint qHash(const T &t, uint seed)
     Q_DECL_NOEXCEPT_EXPR(noexcept(qHash(t)))
 { return (qHash(t) ^ seed); }
+
+namespace QtPrivate {
+
+struct QHashCombine {
+    typedef uint result_type;
+    template <typename T>
+    Q_DECL_CONSTEXPR result_type operator()(uint seed, const T &t) const Q_DECL_NOEXCEPT_EXPR(noexcept(qHash(t)))
+    // combiner taken from N3876 / boost::hash_combine
+    { return seed ^ (qHash(t) + 0x9e3779b9 + (seed << 6) + (seed >> 2)) ; }
+};
+
+struct QHashCombineCommutative {
+    // QHashCombine is a good hash combiner, but is not commutative,
+    // ie. it depends on the order of the input elements. That is
+    // usually what we want: {0,1,3} should hash differently than
+    // {1,3,0}. Except when it isn't (e.g. for QSet and
+    // QHash). Therefore, provide a commutative combiner, too.
+    typedef uint result_type;
+    template <typename T>
+    Q_DECL_CONSTEXPR result_type operator()(uint seed, const T &t) const Q_DECL_NOEXCEPT_EXPR(noexcept(qHash(t)))
+    { return seed + qHash(t); } // don't use xor!
+};
+
+} // namespace QtPrivate
+
+template <typename InputIterator>
+inline uint qHashRange(InputIterator first, InputIterator last, uint seed = 0)
+    Q_DECL_NOEXCEPT_EXPR(noexcept(qHash(*first))) // assume iterator operations don't throw
+{
+    return std::accumulate(first, last, seed, QtPrivate::QHashCombine());
+}
+
+template <typename InputIterator>
+inline uint qHashRangeCommutative(InputIterator first, InputIterator last, uint seed = 0)
+    Q_DECL_NOEXCEPT_EXPR(noexcept(qHash(*first))) // assume iterator operations don't throw
+{
+    return std::accumulate(first, last, seed, QtPrivate::QHashCombineCommutative());
+}
 
 template <typename T1, typename T2> inline uint qHash(const QPair<T1, T2> &key, uint seed = 0)
     Q_DECL_NOEXCEPT_EXPR(noexcept(qHash(key.first, seed)) && noexcept(qHash(key.second, seed)))
