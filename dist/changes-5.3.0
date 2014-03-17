@@ -42,3 +42,12 @@ QtGui
  - Added setSwapInterval() to QSurfaceFormat. Platforms that support
    setting the swap interval are now defaulting to the value of 1,
    meaning vsync is enabled.
+
+QtSql
+-----
+
+ - QSqlQuery::isNull(field) now correctly returns true for "no such field".
+ - QSqlQuery::isNull(fieldname) is a new overload.
+ - QSQLITE: Empty database name now opens in-memory database.
+ - QSqlError: Now handles alphanumeric error codes. Used by QPSQL.
+              Old numeric code is deprecated.
