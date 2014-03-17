@@ -480,6 +480,64 @@ void QOpenGLContext::setScreen(QScreen *screen)
 }
 
 /*!
+    Set the native handles for this context. When create() is called and a
+    native handle is set, configuration settings, like format(), are ignored
+    since this QOpenGLContext will wrap an already created native context
+    instead of creating a new one from scratch.
+
+    On some platforms the native context handle is not sufficient and other
+    related handles (for example, for a window or display) have to be provided
+    in addition. Therefore \a handle is variant containing a platform-specific
+    value type. These classes can be found in the QtPlatformHeaders module.
+
+    When create() is called with native handles set, the handles' ownership are
+    not taken, meaning that destroy() will not destroy the native context.
+
+    \note Some frameworks track the current context and surfaces internally.
+    Making the adopted QOpenGLContext current via Qt will have no effect on such
+    other frameworks' internal state. Therefore a subsequent makeCurrent done
+    via the other framework may have no effect. It is therefore advisable to
+    make explicit calls to make no context and surface current to reset the
+    other frameworks' internal state after performing OpenGL operations via Qt.
+
+    \note Using foreign contexts with Qt windows and Qt contexts with windows
+    and surfaces created by other frameworks may give unexpected results,
+    depending on the platform, due to potential mismatches in context and window
+    pixel formats. To make sure this does not happen, avoid making contexts and
+    surfaces from different frameworks current together. Instead, prefer
+    approaches based on context sharing where OpenGL resources like textures are
+    accessible both from Qt's and the foreign framework's contexts.
+
+    \since 5.4
+    \sa nativeHandle()
+*/
+void QOpenGLContext::setNativeHandle(const QVariant &handle)
+{
+    Q_D(QOpenGLContext);
+    d->nativeHandle = handle;
+}
+
+/*!
+    Returns the native handle for the context.
+
+    This function provides access to the QOpenGLContext's underlying native
+    context. The returned variant contains a platform-specific value type. These
+    classes can be found in the module QtPlatformHeaders.
+
+    On platforms where retrieving the native handle is not supported, or if
+    neither create() nor setNativeHandle() was called, a null variant is
+    returned.
+
+    \since 5.4
+    \sa setNativeHandle()
+ */
+QVariant QOpenGLContext::nativeHandle() const
+{
+    Q_D(const QOpenGLContext);
+    return d->nativeHandle;
+}
+
+/*!
     Attempts to create the OpenGL context with the current configuration.
 
     The current configuration includes the format, the share context, and the
@@ -500,7 +558,8 @@ void QOpenGLContext::setScreen(QScreen *screen)
 */
 bool QOpenGLContext::create()
 {
-    destroy();
+    if (isValid())
+        destroy();
 
     Q_D(QOpenGLContext);
     d->platformGLContext = QGuiApplicationPrivate::platformIntegration()->createPlatformOpenGLContext(this);
@@ -550,6 +609,7 @@ void QOpenGLContext::destroy()
     d->versionFunctionsBackend.clear();
     delete d->textureFunctions;
     d->textureFunctions = 0;
+    d->nativeHandle = QVariant();
 }
 
 /*!

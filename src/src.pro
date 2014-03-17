@@ -95,6 +95,10 @@ src_platformsupport.subdir = $$PWD/platformsupport
 src_platformsupport.target = sub-platformsupport
 src_platformsupport.depends = src_corelib src_gui src_network
 
+src_platformheaders.subdir = $$PWD/platformheaders
+src_platformheaders.target = sub-platformheaders
+src_platformheaders.depends = src_corelib src_gui
+
 src_widgets.subdir = $$PWD/widgets
 src_widgets.target = sub-widgets
 src_widgets.depends = src_corelib src_gui src_tools_uic
@@ -141,9 +145,9 @@ contains(QT_CONFIG, concurrent):SUBDIRS += src_concurrent
         SUBDIRS += src_angle
         src_gui.depends += src_angle
     }
-    SUBDIRS += src_gui src_platformsupport
+    SUBDIRS += src_gui src_platformsupport src_platformheaders
     contains(QT_CONFIG, opengl(es2)?):SUBDIRS += src_openglextensions
-    src_plugins.depends += src_gui src_platformsupport
+    src_plugins.depends += src_gui src_platformsupport src_platformheaders
     !contains(QT_CONFIG, no-widgets) {
         SUBDIRS += src_tools_uic src_widgets
         TOOLS += src_tools_uic

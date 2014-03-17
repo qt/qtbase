@@ -58,7 +58,8 @@ QT_BEGIN_NAMESPACE
 class QGLXContext : public QPlatformOpenGLContext
 {
 public:
-    QGLXContext(QXcbScreen *xd, const QSurfaceFormat &format, QPlatformOpenGLContext *share);
+    QGLXContext(QXcbScreen *screen, const QSurfaceFormat &format, QPlatformOpenGLContext *share,
+                const QVariant &nativeHandle);
     ~QGLXContext();
 
     bool makeCurrent(QPlatformSurface *surface);
@@ -72,16 +73,22 @@ public:
 
     GLXContext glxContext() const { return m_context; }
 
+    QVariant nativeHandle() const;
+
     static bool supportsThreading();
     static void queryDummyContext();
 
 private:
+    void init(QXcbScreen *screen, QPlatformOpenGLContext *share);
+    void init(QXcbScreen *screen, QPlatformOpenGLContext *share, const QVariant &nativeHandle);
+
     QXcbScreen *m_screen;
     GLXContext m_context;
     GLXContext m_shareContext;
     QSurfaceFormat m_format;
     bool m_isPBufferCurrent;
     int m_swapInterval;
+    bool m_ownsContext;
     static bool m_queriedDummyContext;
     static bool m_supportsThreading;
 };

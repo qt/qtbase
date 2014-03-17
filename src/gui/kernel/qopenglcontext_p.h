@@ -242,6 +242,8 @@ public:
 
     QPaintEngineEx *active_engine;
 
+    QVariant nativeHandle;
+
     static QOpenGLContext *setCurrentContext(QOpenGLContext *context);
 
     static void setGlobalShareContext(QOpenGLContext *context);

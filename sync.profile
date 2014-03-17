@@ -11,6 +11,7 @@
     "QtDBus" => "$basedir/src/dbus",
     "QtConcurrent" => "$basedir/src/concurrent",
     "QtPlatformSupport" => "$basedir/src/platformsupport",
+    "QtPlatformHeaders" => "$basedir/src/platformheaders",
     "QtANGLE/KHR" => "!$basedir/src/3rdparty/angle/include/KHR",
     "QtANGLE/GLES2" => "!$basedir/src/3rdparty/angle/include/GLES2",
     "QtANGLE/EGL" => "!$basedir/src/3rdparty/angle/include/EGL",

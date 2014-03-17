@@ -51,11 +51,18 @@
 #include <QtGui/QGenericMatrix>
 #include <QtGui/QMatrix4x4>
 #include <QtGui/private/qopengltextureblitter_p.h>
-
+#include <QtGui/private/qguiapplication_p.h>
+#include <qpa/qplatformintegration.h>
+#include <qpa/qplatformnativeinterface.h>
 
 #include <QtTest/QtTest>
 
 #include <QSignalSpy>
+
+#ifdef USE_GLX
+// Must be included last due to the X11 types
+#include <QtPlatformHeaders/QGLXNativeContext>
+#endif
 
 class tst_QOpenGL : public QObject
 {
@@ -85,6 +92,10 @@ private slots:
     void textureblitterPartOriginTopLeftSourceRectTransform();
     void textureblitterFullTargetRectTransform();
     void textureblitterPartTargetRectTransform();
+
+#ifdef USE_GLX
+    void glxContextWrap();
+#endif
 };
 
 struct SharedResourceTracker
@@ -969,6 +980,45 @@ void tst_QOpenGL::textureblitterPartTargetRectTransform()
     QVector4D expectedBottomRight(-1 + x_point_ratio + width_ratio, 1 - y_point_ratio - height_ratio, 0.0, 1.0);
     QCOMPARE(targetBottomRight, expectedBottomRight);
 }
+
+#ifdef USE_GLX
+void tst_QOpenGL::glxContextWrap()
+{
+    QWindow *window = new QWindow;
+    window->setSurfaceType(QWindow::OpenGLSurface);
+    window->setGeometry(0, 0, 10, 10);
+    window->show();
+    QTest::qWaitForWindowExposed(window);
+
+    QPlatformNativeInterface *nativeIf = QGuiApplicationPrivate::instance()->platformIntegration()->nativeInterface();
+    QVERIFY(nativeIf);
+
+    // Fetch a GLXContext.
+    QOpenGLContext *ctx0 = new QOpenGLContext;
+    ctx0->setFormat(window->format());
+    QVERIFY(ctx0->create());
+    QVariant v = ctx0->nativeHandle();
+    QVERIFY(!v.isNull());
+    QVERIFY(v.canConvert<QGLXNativeContext>());
+    GLXContext context = v.value<QGLXNativeContext>().context();
+    QVERIFY(context);
+
+    // Then create another QOpenGLContext wrapping it.
+    QOpenGLContext *ctx = new QOpenGLContext;
+    ctx->setNativeHandle(QVariant::fromValue<QGLXNativeContext>(QGLXNativeContext(context)));
+    QVERIFY(ctx->create());
+    QVERIFY(ctx->nativeHandle().value<QGLXNativeContext>().context() == context);
+    QVERIFY(nativeIf->nativeResourceForContext(QByteArrayLiteral("glxcontext"), ctx) == (void *) context);
+
+    QVERIFY(ctx->makeCurrent(window));
+    ctx->doneCurrent();
+
+    delete ctx;
+    delete ctx0;
+
+    delete window;
+}
+#endif // USE_GLX
 
 QTEST_MAIN(tst_QOpenGL)
 

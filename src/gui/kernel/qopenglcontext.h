@@ -64,6 +64,7 @@
 
 #include <QtCore/qhash.h>
 #include <QtCore/qpair.h>
+#include <QtCore/qvariant.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -153,6 +154,7 @@ public:
     void setFormat(const QSurfaceFormat &format);
     void setShareContext(QOpenGLContext *shareContext);
     void setScreen(QScreen *screen);
+    void setNativeHandle(const QVariant &handle);
 
     bool create();
     bool isValid() const;
@@ -161,6 +163,7 @@ public:
     QOpenGLContext *shareContext() const;
     QOpenGLContextGroup *shareGroup() const;
     QScreen *screen() const;
+    QVariant nativeHandle() const;
 
     GLuint defaultFramebufferObject() const;
 
@@ -242,4 +245,4 @@ QT_END_NAMESPACE
 
 #endif // QT_NO_OPENGL
 
-#endif // QGUIGLCONTEXT_H
+#endif // QOPENGLCONTEXT_H

@@ -250,7 +250,7 @@ XVisualInfo *qglx_findVisualInfo(Display *display, int screen, QSurfaceFormat *f
     return visualInfo;
 }
 
-void qglx_surfaceFormatFromGLXFBConfig(QSurfaceFormat *format, Display *display, GLXFBConfig config, GLXContext)
+void qglx_surfaceFormatFromGLXFBConfig(QSurfaceFormat *format, Display *display, GLXFBConfig config)
 {
     int redSize     = 0;
     int greenSize   = 0;
@@ -262,8 +262,6 @@ void qglx_surfaceFormatFromGLXFBConfig(QSurfaceFormat *format, Display *display,
     int sampleCount = 0;
     int stereo      = 0;
 
-    XVisualInfo *vi = glXGetVisualFromFBConfig(display,config);
-    XFree(vi);
     glXGetFBConfigAttrib(display, config, GLX_RED_SIZE,     &redSize);
     glXGetFBConfigAttrib(display, config, GLX_GREEN_SIZE,   &greenSize);
     glXGetFBConfigAttrib(display, config, GLX_BLUE_SIZE,    &blueSize);
@@ -281,6 +279,41 @@ void qglx_surfaceFormatFromGLXFBConfig(QSurfaceFormat *format, Display *display,
     format->setStencilBufferSize(stencilSize);
     if (sampleBuffers) {
         glXGetFBConfigAttrib(display, config, GLX_SAMPLES_ARB, &sampleCount);
+        format->setSamples(sampleCount);
+    }
+
+    format->setStereo(stereo);
+}
+
+void qglx_surfaceFormatFromVisualInfo(QSurfaceFormat *format, Display *display, XVisualInfo *visualInfo)
+{
+    int redSize     = 0;
+    int greenSize   = 0;
+    int blueSize    = 0;
+    int alphaSize   = 0;
+    int depthSize   = 0;
+    int stencilSize = 0;
+    int sampleBuffers = 0;
+    int sampleCount = 0;
+    int stereo      = 0;
+
+    glXGetConfig(display, visualInfo, GLX_RED_SIZE,     &redSize);
+    glXGetConfig(display, visualInfo, GLX_GREEN_SIZE,   &greenSize);
+    glXGetConfig(display, visualInfo, GLX_BLUE_SIZE,    &blueSize);
+    glXGetConfig(display, visualInfo, GLX_ALPHA_SIZE,   &alphaSize);
+    glXGetConfig(display, visualInfo, GLX_DEPTH_SIZE,   &depthSize);
+    glXGetConfig(display, visualInfo, GLX_STENCIL_SIZE, &stencilSize);
+    glXGetConfig(display, visualInfo, GLX_SAMPLES_ARB,  &sampleBuffers);
+    glXGetConfig(display, visualInfo, GLX_STEREO,       &stereo);
+
+    format->setRedBufferSize(redSize);
+    format->setGreenBufferSize(greenSize);
+    format->setBlueBufferSize(blueSize);
+    format->setAlphaBufferSize(alphaSize);
+    format->setDepthBufferSize(depthSize);
+    format->setStencilBufferSize(stencilSize);
+    if (sampleBuffers) {
+        glXGetConfig(display, visualInfo, GLX_SAMPLES_ARB, &sampleCount);
         format->setSamples(sampleCount);
     }
 

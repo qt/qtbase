@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -39,20 +39,44 @@
 **
 ****************************************************************************/
 
-#ifndef QGLXCONVENIENCE_H
-#define QGLXCONVENIENCE_H
-
-#include <QSurfaceFormat>
-#include <QVector>
+#ifndef QGLXNATIVECONTEXT_H
+#define QGLXNATIVECONTEXT_H
 
 #include <X11/Xlib.h>
 #include <GL/glx.h>
 
-XVisualInfo *qglx_findVisualInfo(Display *display, int screen, QSurfaceFormat *format);
-GLXFBConfig qglx_findConfig(Display *display, int screen, const QSurfaceFormat &format, int drawableBit = GLX_WINDOW_BIT);
-void qglx_surfaceFormatFromGLXFBConfig(QSurfaceFormat *format, Display *display, GLXFBConfig config);
-void qglx_surfaceFormatFromVisualInfo(QSurfaceFormat *format, Display *display, XVisualInfo *visualInfo);
-QVector<int> qglx_buildSpec(const QSurfaceFormat &format, int drawableBit = GLX_WINDOW_BIT);
-QSurfaceFormat qglx_reduceSurfaceFormat(const QSurfaceFormat &format, bool *reduced);
+QT_BEGIN_NAMESPACE
 
-#endif // QGLXCONVENIENCE_H
+struct QGLXNativeContext
+{
+    QGLXNativeContext()
+        : m_context(0),
+          m_display(0),
+          m_window(0),
+          m_visualId(0)
+    { }
+
+    QGLXNativeContext(GLXContext ctx, Display *dpy = 0, Window wnd = 0, VisualID vid = 0)
+        : m_context(ctx),
+          m_display(dpy),
+          m_window(wnd),
+          m_visualId(vid)
+    { }
+
+    GLXContext context() const { return m_context; }
+    Display *display() const { return m_display; }
+    Window window() const { return m_window; }
+    VisualID visualId() const { return m_visualId; }
+
+private:
+    GLXContext m_context;
+    Display *m_display;
+    Window m_window;
+    VisualID m_visualId;
+};
+
+QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(QGLXNativeContext)
+
+#endif // QGLXNATIVECONTEXT_H
