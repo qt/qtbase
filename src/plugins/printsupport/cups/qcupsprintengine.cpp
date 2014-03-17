@@ -85,6 +85,12 @@ void QCupsPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &v
         // Get the named page size from the printer if supported
         d->setPageSize(d->m_printDevice.supportedPageSize(value.toString()));
         break;
+    case PPK_Duplex: {
+        QPrint::DuplexMode mode = QPrint::DuplexMode(value.toInt());
+        if (mode != d->duplex && d->m_printDevice.supportedDuplexModes().contains(mode))
+            d->duplex = mode;
+        break;
+    }
     case PPK_PrinterName:
         d->changePrinter(value.toString());
         break;

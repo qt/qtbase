@@ -298,6 +298,8 @@ void tst_QPrinterInfo::testConstructors()
         QCOMPARE(copy1.supportedPaperSizes(),     printers.at(i).supportedPaperSizes());
         QCOMPARE(copy1.supportedSizesWithNames(), printers.at(i).supportedSizesWithNames());
         QCOMPARE(copy1.supportedResolutions(),    printers.at(i).supportedResolutions());
+        QCOMPARE(copy1.defaultDuplexMode(),       printers.at(i).defaultDuplexMode());
+        QCOMPARE(copy1.supportedDuplexModes(),    printers.at(i).supportedDuplexModes());
 
         QPrinter printer(printers.at(i));
         QPrinterInfo copy2(printer);
@@ -317,6 +319,8 @@ void tst_QPrinterInfo::testConstructors()
         QCOMPARE(copy2.supportedPaperSizes(),     printers.at(i).supportedPaperSizes());
         QCOMPARE(copy2.supportedSizesWithNames(), printers.at(i).supportedSizesWithNames());
         QCOMPARE(copy2.supportedResolutions(),    printers.at(i).supportedResolutions());
+        QCOMPARE(copy2.defaultDuplexMode(),       printers.at(i).defaultDuplexMode());
+        QCOMPARE(copy2.supportedDuplexModes(),    printers.at(i).supportedDuplexModes());
     }
 }
 
@@ -347,6 +351,8 @@ void tst_QPrinterInfo::testAssignment()
         QCOMPARE(copy.minimumPhysicalPageSize(), printers.at(i).minimumPhysicalPageSize());
         QCOMPARE(copy.maximumPhysicalPageSize(), printers.at(i).maximumPhysicalPageSize());
         QCOMPARE(copy.supportedResolutions(),    printers.at(i).supportedResolutions());
+        QCOMPARE(copy.defaultDuplexMode(),       printers.at(i).defaultDuplexMode());
+        QCOMPARE(copy.supportedDuplexModes(),    printers.at(i).supportedDuplexModes());
     }
 }
 
@@ -371,6 +377,8 @@ void tst_QPrinterInfo::namedPrinter()
         QCOMPARE(pi2.minimumPhysicalPageSize(), pi.minimumPhysicalPageSize());
         QCOMPARE(pi2.maximumPhysicalPageSize(), pi.maximumPhysicalPageSize());
         QCOMPARE(pi2.supportedResolutions(),    pi.supportedResolutions());
+        QCOMPARE(pi2.defaultDuplexMode(),       pi.defaultDuplexMode());
+        QCOMPARE(pi2.supportedDuplexModes(),    pi.supportedDuplexModes());
     }
 }
 #endif // QT_NO_PRINTER

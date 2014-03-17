@@ -378,6 +378,7 @@ void QWindowsPrintDevice::loadDuplexModes() const
     DWORD duplex = DeviceCapabilities((LPWSTR)m_id.utf16(), NULL, DC_DUPLEX, NULL, NULL);
     if (int(duplex) == 1) {
         // TODO Assume if duplex flag supports both modes
+        m_duplexModes.append(QPrint::DuplexAuto);
         m_duplexModes.append(QPrint::DuplexLongSide);
         m_duplexModes.append(QPrint::DuplexShortSide);
     }

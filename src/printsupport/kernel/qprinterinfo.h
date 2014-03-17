@@ -82,6 +82,9 @@ public:
 
     QList<int> supportedResolutions() const;
 
+    QPrinter::DuplexMode defaultDuplexMode() const;
+    QList<QPrinter::DuplexMode> supportedDuplexModes() const;
+
     static QStringList availablePrinterNames();
     static QList<QPrinterInfo> availablePrinters();
 

@@ -457,9 +457,6 @@ void QMacPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
         break;
     case PPK_CustomBase:
         break;
-    case PPK_Duplex:
-        // TODO Add support using PMSetDuplex / PMGetDuplex
-        break;
     case PPK_FontEmbedding:
         break;
     case PPK_PageOrder:
@@ -503,6 +500,29 @@ void QMacPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
     case PPK_DocumentName:
         PMPrintSettingsSetJobName(d->settings(), QCFString(value.toString()));
         break;
+    case PPK_Duplex: {
+        QPrint::DuplexMode mode = QPrint::DuplexMode(value.toInt());
+        if (mode == property(PPK_Duplex).toInt() || !d->m_printDevice->supportedDuplexModes().contains(mode))
+            break;
+        switch (mode) {
+        case QPrinter::DuplexNone:
+            PMSetDuplex(d->settings(), kPMDuplexNone);
+            break;
+        case QPrinter::DuplexAuto:
+            PMSetDuplex(d->settings(), d->m_pageLayout.orientation() == QPageLayout::Landscape ? kPMDuplexTumble : kPMDuplexNoTumble);
+            break;
+        case QPrinter::DuplexLongSide:
+            PMSetDuplex(d->settings(), kPMDuplexNoTumble);
+            break;
+        case QPrinter::DuplexShortSide:
+            PMSetDuplex(d->settings(), kPMDuplexTumble);
+            break;
+        default:
+            // Don't change
+            break;
+        }
+        break;
+    }
     case PPK_FullPage:
         if (value.toBool())
             d->m_pageLayout.setMode(QPageLayout::FullPageMode);
@@ -602,10 +622,6 @@ QVariant QMacPrintEngine::property(PrintEnginePropertyKey key) const
     case PPK_CustomBase:
         // Special case, leave null
         break;
-    case PPK_Duplex:
-        // TODO Add support using PMSetDuplex / PMGetDuplex
-        ret = QPrinter::DuplexNone;
-        break;
     case PPK_FontEmbedding:
         ret = false;
         break;
@@ -645,6 +661,23 @@ QVariant QMacPrintEngine::property(PrintEnginePropertyKey key) const
         CFStringRef name;
         PMPrintSettingsGetJobName(d->settings(), &name);
         ret = QCFString::toQString(name);
+        break;
+    }
+    case PPK_Duplex: {
+        PMDuplexMode mode = kPMDuplexNone;
+        PMGetDuplex(d->settings(), &mode);
+        switch (mode) {
+        case kPMDuplexNoTumble:
+            ret = QPrinter::DuplexLongSide;
+            break;
+        case kPMDuplexTumble:
+            ret = QPrinter::DuplexShortSide;
+            break;
+        case kPMDuplexNone:
+        default:
+            ret = QPrinter::DuplexNone;
+            break;
+        }
         break;
     }
     case PPK_FullPage:

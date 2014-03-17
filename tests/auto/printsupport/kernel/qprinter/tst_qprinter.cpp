@@ -1022,9 +1022,9 @@ void tst_QPrinter::duplex()
 {
     // duplex()) / setDuplex() / PPK_Duplex
     // PdfFormat: Supported, default QPrinter::DuplexNone
-    // NativeFormat, Cups: Supported, default QPrinter::DuplexNone
-    // NativeFormat, Win: Unsupported, always QPrinter::DuplexNone
-    // NativeFormat, Mac: Unsupported, always QPrinter::DuplexNone
+    // NativeFormat, Cups: Supported, default to printer default
+    // NativeFormat, Win: Supported, default to printer default
+    // NativeFormat, Mac: Supported, default to printer default
 
     QPrinter pdf;
     pdf.setOutputFormat(QPrinter::PdfFormat);
@@ -1035,15 +1035,17 @@ void tst_QPrinter::duplex()
     QPrinter native;
     if (native.outputFormat() == QPrinter::NativeFormat) {
         // Test default
-        // TODO Printer specific, need QPrinterInfo::duplex()
-        //QCOMPARE(native.duplex(), QPrinter::DuplexNone);
-
-        // Test set/get
-        QPrinter::DuplexMode expected = QPrinter::DuplexAuto;
+        QPrinterInfo printerInfo = QPrinterInfo::defaultPrinter();
+        QPrinter::DuplexMode expected = printerInfo.defaultDuplexMode();
+        QCOMPARE(native.duplex(), expected);
+        // Test set/get (skipping Auto as that will return something different)
+        foreach (QPrinter::DuplexMode mode, printerInfo.supportedDuplexModes()) {
+            if (mode != expected && mode != QPrinter::DuplexAuto) {
+                expected = mode;
+                break;
+            }
+        }
         native.setDuplex(expected);
-#if defined Q_OS_MAC || defined Q_OS_WIN
-        expected = QPrinter::DuplexNone;
-#endif // Q_OS_MAC || Q_OS_WIN
         QCOMPARE(native.duplex(), expected);
 
         // Test value preservation
@@ -1051,6 +1053,12 @@ void tst_QPrinter::duplex()
         QCOMPARE(native.duplex(), expected);
         native.setOutputFormat(QPrinter::NativeFormat);
         QCOMPARE(native.duplex(), expected);
+
+        // Test setting invalid option
+        if (!printerInfo.supportedDuplexModes().contains(QPrinter::DuplexLongSide)) {
+            native.setDuplex(QPrinter::DuplexLongSide);
+            QCOMPARE(native.duplex(), expected);
+        }
     } else {
         QSKIP("No printers installed, cannot test NativeFormat, please install printers to test");
     }
@@ -1059,9 +1067,9 @@ void tst_QPrinter::duplex()
 void tst_QPrinter::doubleSidedPrinting()
 {
     // PdfFormat: Supported, default false
-    // NativeFormat, Cups: Supported, default false
-    // NativeFormat, Win: Unsupported, always false
-    // NativeFormat, Mac: Unsupported, always false
+    // NativeFormat, Cups: Supported, default to printer default
+    // NativeFormat, Win: Supported, default to printer default
+    // NativeFormat, Mac: Supported, default to printer default
 
     QPrinter pdf;
     pdf.setOutputFormat(QPrinter::PdfFormat);
@@ -1072,15 +1080,13 @@ void tst_QPrinter::doubleSidedPrinting()
     QPrinter native;
     if (native.outputFormat() == QPrinter::NativeFormat) {
         // Test default
-        // TODO Printer specific, need QPrinterInfo::duplex()
-        //QCOMPARE(native.doubleSidedPrinting(), false);
+        QPrinterInfo printerInfo;
+        bool expected = (printerInfo.defaultDuplexMode() != QPrinter::DuplexNone);
+        QCOMPARE(native.doubleSidedPrinting(), false);
 
         // Test set/get
-        bool expected = true;
+        expected = (printerInfo.supportedDuplexModes().count() > 1);
         native.setDoubleSidedPrinting(expected);
-#if defined Q_OS_MAC || defined Q_OS_WIN
-        expected = false;
-#endif // Q_OS_MAC || Q_OS_WIN
         QCOMPARE(native.doubleSidedPrinting(), expected);
 
         // Test value preservation
