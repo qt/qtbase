@@ -6,6 +6,10 @@ VERBOSE=$2
 
 
 cat >>bsymbolic_functions.c << EOF
+#if !(defined(__i386) || defined(__i386__) || defined(__x86_64) || defined(__x86_64__) || defined(__amd64))
+#error "Symbolic function binding on this architecture may be broken, disabling it (see QTBUG-36129)."
+#endif
+
 int main() { return 0; }
 EOF
 
