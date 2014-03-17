@@ -43,6 +43,10 @@
 
 #include <qdebug.h>
 
+#ifndef DC_COLLATE
+#  define DC_COLLATE 22
+#endif
+
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_PRINTER
