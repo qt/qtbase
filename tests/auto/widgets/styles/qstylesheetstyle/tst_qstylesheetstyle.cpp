@@ -99,6 +99,7 @@ private slots:
     void task232085_spinBoxLineEditBg();
     void changeStyleInChangeEvent();
     void QTBUG15910_crashNullWidget();
+    void QTBUG36933_brokenPseudoClassLookup();
 
     //at the end because it mess with the style.
     void widgetStyle();
@@ -1654,6 +1655,37 @@ void tst_QStyleSheetStyle::QTBUG15910_crashNullWidget()
     w.setStyleSheet("* { background-color: white; color:black; border 3px solid yellow }");
     w.show();
     QVERIFY(QTest::qWaitForWindowExposed(&w));
+}
+
+void tst_QStyleSheetStyle::QTBUG36933_brokenPseudoClassLookup()
+{
+    const int rowCount = 10;
+    const int columnCount = 10;
+
+    QTableWidget widget(rowCount, columnCount);
+
+    for (int row = 0; row < rowCount; ++row) {
+        for (int column = 0; column < columnCount; ++column)
+            widget.setItem(row, column, new QTableWidgetItem(QStringLiteral("row %1 column %2").arg(row + 1).arg(column + 1)));
+
+        // put no visible text for the vertical headers, but still put some text or they will collapse
+        widget.setVerticalHeaderItem(row, new QTableWidgetItem(QStringLiteral("    ")));
+    }
+
+    // parsing of this stylesheet must not crash, and it must be correctly applied
+    widget.setStyleSheet(QStringLiteral("QHeaderView::section:vertical { background-color: #FF0000 }"));
+
+    widget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
+
+    widget.activateWindow();
+    QApplication::setActiveWindow(&widget);
+    QVERIFY(QTest::qWaitForWindowActive(&widget));
+
+    QHeaderView *verticalHeader = widget.verticalHeader();
+    QImage image(verticalHeader->size(), QImage::Format_ARGB32);
+    verticalHeader->render(&image);
+    QVERIFY(testForColors(image, QColor(0xFF, 0x00, 0x00)));
 }
 
 
