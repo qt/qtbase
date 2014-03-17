@@ -278,15 +278,21 @@ void tst_QMetaType::threadSafety()
 namespace TestSpace
 {
     struct Foo { double d; };
-
+    struct QungTfu {};
 }
 Q_DECLARE_METATYPE(TestSpace::Foo)
+
+#define ADD_TESTSPACE(F) TestSpace::F
+Q_DECLARE_METATYPE(ADD_TESTSPACE(QungTfu))
 
 void tst_QMetaType::namespaces()
 {
     TestSpace::Foo nf = { 11.12 };
     QVariant v = QVariant::fromValue(nf);
     QCOMPARE(qvariant_cast<TestSpace::Foo>(v).d, 11.12);
+
+    int qungTfuId = qRegisterMetaType<ADD_TESTSPACE(QungTfu)>();
+    QCOMPARE(QMetaType::typeName(qungTfuId), "TestSpace::QungTfu");
 }
 
 void tst_QMetaType::qMetaTypeId()

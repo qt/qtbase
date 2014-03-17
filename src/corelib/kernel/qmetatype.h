@@ -1706,7 +1706,8 @@ inline int qRegisterMetaTypeStreamOperators()
     } QT_END_NAMESPACE                                                  \
     /**/
 
-#define Q_DECLARE_METATYPE(TYPE)                                        \
+#define Q_DECLARE_METATYPE(TYPE) Q_DECLARE_METATYPE_IMPL(TYPE)
+#define Q_DECLARE_METATYPE_IMPL(TYPE)                                   \
     QT_BEGIN_NAMESPACE                                                  \
     template <>                                                         \
     struct QMetaTypeId< TYPE >                                          \
