@@ -63,6 +63,9 @@ void qt_memfill16(quint16 *dest, quint16 value, int count);
 void qt_bitmapblit32_sse2(QRasterBuffer *rasterBuffer, int x, int y,
                           quint32 color,
                           const uchar *src, int width, int height, int stride);
+void qt_bitmapblit8888_sse2(QRasterBuffer *rasterBuffer, int x, int y,
+                            quint32 color,
+                            const uchar *src, int width, int height, int stride);
 void qt_bitmapblit16_sse2(QRasterBuffer *rasterBuffer, int x, int y,
                           quint32 color,
                           const uchar *src, int width, int height, int stride);

@@ -476,6 +476,13 @@ void qt_bitmapblit32_sse2(QRasterBuffer *rasterBuffer, int x, int y,
     }
 }
 
+void qt_bitmapblit8888_sse2(QRasterBuffer *rasterBuffer, int x, int y,
+                            quint32 color,
+                            const uchar *src, int width, int height, int stride)
+{
+    qt_bitmapblit32_sse2(rasterBuffer, x, y, ARGB2RGBA(color), src, width, height, stride);
+}
+
 void qt_bitmapblit16_sse2(QRasterBuffer *rasterBuffer, int x, int y,
                           quint32 color,
                           const uchar *src, int width, int height, int stride)
