@@ -96,6 +96,11 @@ void QCocoaBackingStore::flush(QWindow *win, const QRegion &region, const QPoint
     }
 }
 
+QImage QCocoaBackingStore::toImage() const
+{
+    return m_qImage;
+}
+
 void QCocoaBackingStore::resize(const QSize &size, const QRegion &)
 {
     m_requestedSize = size;

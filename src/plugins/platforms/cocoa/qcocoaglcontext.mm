@@ -194,7 +194,7 @@ void QCocoaGLContext::swapBuffers(QPlatformSurface *surface)
 
 bool QCocoaGLContext::makeCurrent(QPlatformSurface *surface)
 {
-    Q_ASSERT(surface->surface()->surfaceType() == QSurface::OpenGLSurface);
+    Q_ASSERT(surface->surface()->supportsOpenGL());
 
     QCocoaAutoReleasePool pool;
 

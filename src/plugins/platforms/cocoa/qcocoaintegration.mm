@@ -375,6 +375,7 @@ bool QCocoaIntegration::hasCapability(QPlatformIntegration::Capability cap) cons
     case WindowMasks:
     case MultipleWindows:
     case ForeignWindows:
+    case RasterGLSurface:
         return true;
     default:
         return QPlatformIntegration::hasCapability(cap);
