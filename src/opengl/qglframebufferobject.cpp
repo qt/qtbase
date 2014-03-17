@@ -1114,6 +1114,9 @@ QGLFramebufferObjectFormat QGLFramebufferObject::format() const
     \fn QImage QGLFramebufferObject::toImage() const
 
     Returns the contents of this framebuffer object as a QImage.
+
+    On QNX the back buffer is not preserved when a buffer swap occures. So this function
+    might return old content.
 */
 QImage QGLFramebufferObject::toImage() const
 {
