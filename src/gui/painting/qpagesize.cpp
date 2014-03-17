@@ -1484,6 +1484,12 @@ QString QPageSize::key(QPageSize::PageSizeId pageSizeId)
     return QString::fromUtf8(qt_pageSizes[pageSizeId].mediaOption);
 }
 
+static QString msgImperialPageSizeInch(int width, int height)
+{
+    //: Page size in 'Inch'.
+    return QCoreApplication::translate("QPageSize", "%1 x %2 in").arg(width).arg(height);
+}
+
 /*!
     Returns the localized name of the standard \a pageSizeId.
 
@@ -1605,7 +1611,7 @@ QString QPageSize::name(QPageSize::PageSizeId pageSizeId)
     case QPageSize::LetterSmall:
         return QCoreApplication::translate("QPageSize", "Letter Small");
     case QPageSize::TabloidExtra:
-        return QCoreApplication::translate("QPageSize", "Tabliod Extra");
+        return QCoreApplication::translate("QPageSize", "Tabloid Extra");
     case QPageSize::ArchA:
         return QCoreApplication::translate("QPageSize", "Architect A");
     case QPageSize::ArchB:
@@ -1617,23 +1623,23 @@ QString QPageSize::name(QPageSize::PageSizeId pageSizeId)
     case QPageSize::ArchE:
         return QCoreApplication::translate("QPageSize", "Architect E");
     case QPageSize::Imperial7x9:
-        return QCoreApplication::translate("QPageSize", "7 x 9 in");
+        return msgImperialPageSizeInch(7, 9);
     case QPageSize::Imperial8x10:
-        return QCoreApplication::translate("QPageSize", "8 x 10 in");
+        return msgImperialPageSizeInch(8, 10);
     case QPageSize::Imperial9x11:
-        return QCoreApplication::translate("QPageSize", "9 x 11 in");
+        return msgImperialPageSizeInch(9, 11);
     case QPageSize::Imperial9x12:
-        return QCoreApplication::translate("QPageSize", "9 x 12 in");
+        return msgImperialPageSizeInch(9, 12);
     case QPageSize::Imperial10x11:
-        return QCoreApplication::translate("QPageSize", "10 x 11 in");
+        return msgImperialPageSizeInch(10, 11);
     case QPageSize::Imperial10x13:
-        return QCoreApplication::translate("QPageSize", "10 x 13 in");
+        return msgImperialPageSizeInch(10, 13);
     case QPageSize::Imperial10x14:
-        return QCoreApplication::translate("QPageSize", "10 x 14 in");
+        return msgImperialPageSizeInch(10, 14);
     case QPageSize::Imperial12x11:
-        return QCoreApplication::translate("QPageSize", "12 x 11 in");
+        return msgImperialPageSizeInch(12, 11);
     case QPageSize::Imperial15x11:
-        return QCoreApplication::translate("QPageSize", "15 x 11 in");
+        return msgImperialPageSizeInch(15, 11);
     case QPageSize::Note:
         return QCoreApplication::translate("QPageSize", "Note");
     case QPageSize::Quarto:

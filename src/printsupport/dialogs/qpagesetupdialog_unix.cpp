@@ -412,21 +412,27 @@ void QPageSetupWidget::updateWidget()
     QString suffix;
     switch (m_units) {
     case QPageLayout::Millimeter:
+        //: Unit 'Millimeter'
         suffix = tr("mm");
         break;
     case QPageLayout::Point:
+        //: Unit 'Points'
         suffix = tr("pt");
         break;
     case QPageLayout::Inch:
+        //: Unit 'Inch'
         suffix = tr("in");
         break;
     case QPageLayout::Pica:
+        //: Unit 'Pica'
         suffix = tr("P̸");
         break;
     case QPageLayout::Didot:
+        //: Unit 'Didot'
         suffix = tr("DD");
         break;
     case QPageLayout::Cicero:
+        //: Unit 'Cicero'
         suffix = tr("CC");
         break;
     }
