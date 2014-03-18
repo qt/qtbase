@@ -145,9 +145,6 @@
 - (void) keyboardDidChangeFrame:(NSNotification *)notification
 {
     Q_UNUSED(notification);
-    if (m_ignoreKeyboardChanges)
-        return;
-
     [self handleKeyboardRectChanged];
 
     // If the keyboard was visible and docked from before, this is just a geometry
