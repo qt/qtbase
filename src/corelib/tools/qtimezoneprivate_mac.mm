@@ -272,7 +272,6 @@ QSet<QByteArray> QMacTimeZonePrivate::availableTimeZoneIds() const
         tzid = QCFString::toQString([enumerator nextObject]).toUtf8();
     }
 
-    [enumerator release];
     return set;
 }
 
