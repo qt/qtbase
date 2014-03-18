@@ -426,11 +426,8 @@ QVariant QPSQLResult::data(int i)
 #ifndef QT_NO_DATESTRING
         if (str.isEmpty())
             return QVariant(QTime());
-        if (str.at(str.length() - 3) == QLatin1Char('+') || str.at(str.length() - 3) == QLatin1Char('-'))
-            // strip the timezone
-            // TODO: fix this when timestamp support comes into QDateTime
-            return QVariant(QTime::fromString(str.left(str.length() - 3), Qt::ISODate));
-        return QVariant(QTime::fromString(str, Qt::ISODate));
+        else
+            return QVariant(QTime::fromString(str, Qt::ISODate));
 #else
         return QVariant(str);
 #endif
@@ -438,19 +435,13 @@ QVariant QPSQLResult::data(int i)
     case QVariant::DateTime: {
         QString dtval = QString::fromLatin1(val);
 #ifndef QT_NO_DATESTRING
-        if (dtval.length() < 10)
+        if (dtval.length() < 10) {
             return QVariant(QDateTime());
-        // remove the timezone
-        // TODO: fix this when timestamp support comes into QDateTime
-        if (dtval.at(dtval.length() - 3) == QLatin1Char('+') || dtval.at(dtval.length() - 3) == QLatin1Char('-'))
-            dtval.chop(3);
-        // milliseconds are sometimes returned with 2 digits only
-        if (dtval.at(dtval.length() - 3).isPunct())
-            dtval += QLatin1Char('0');
-        if (dtval.isEmpty())
-            return QVariant(QDateTime());
-        else
-            return QVariant(QDateTime::fromString(dtval, Qt::ISODate));
+       } else {
+            QChar sign = dtval[dtval.size() - 3];
+            if (sign == QLatin1Char('-') || sign == QLatin1Char('+')) dtval += QLatin1String(":00");
+            return QVariant(QDateTime::fromString(dtval, Qt::ISODate).toLocalTime());
+        }
 #else
         return QVariant(dtval);
 #endif
@@ -536,6 +527,11 @@ QSqlRecord QPSQLResult::record() const
         int precision = PQfmod(d->result, i);
 
         switch (ptype) {
+        case QTIMESTAMPOID:
+        case QTIMESTAMPTZOID:
+            precision = 3;
+            break;
+
         case QNUMERICOID:
             if (precision != -1) {
                 len = (precision >> 16);
@@ -1263,15 +1259,10 @@ QString QPSQLDriver::formatValue(const QSqlField &field, bool trimStrings) const
         case QVariant::DateTime:
 #ifndef QT_NO_DATESTRING
             if (field.value().toDateTime().isValid()) {
-                QDate dt = field.value().toDateTime().date();
-                QTime tm = field.value().toDateTime().time();
-                // msecs need to be right aligned otherwise psql interprets them wrong
-                r = QLatin1Char('\'') + QString::number(dt.year()) + QLatin1Char('-')
-                          + QString::number(dt.month()).rightJustified(2, QLatin1Char('0')) + QLatin1Char('-')
-                          + QString::number(dt.day()).rightJustified(2, QLatin1Char('0')) + QLatin1Char(' ')
-                          + tm.toString() + QLatin1Char('.')
-                          + QString::number(tm.msec()).rightJustified(3, QLatin1Char('0'))
-                          + QLatin1Char('\'');
+                // we force the value to be considered with a timezone information, and we force it to be UTC
+                // this is safe since postgresql stores only the UTC value and not the timezone offset (only used
+                // while parsing), so we have correct behavior in both case of with timezone and without tz
+                r = QLatin1String("TIMESTAMP WITH TIME ZONE ") + QLatin1Char('\'') + field.value().toDateTime().toUTC().toString(QLatin1String("yyyy-MM-ddThh:mm:ss.zzz")) + QLatin1Char('Z') + QLatin1Char('\'');
             } else {
                 r = QLatin1String("NULL");
             }

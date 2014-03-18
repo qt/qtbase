@@ -224,6 +224,9 @@ private slots:
     void QTBUG_2192_data() { generic_data(); }
     void QTBUG_2192();
 
+    void QTBUG_36211_data() { generic_data("QPSQL"); }
+    void QTBUG_36211();
+
     void sqlite_constraint_data() { generic_data("QSQLITE"); }
     void sqlite_constraint();
 
@@ -3555,6 +3558,45 @@ void tst_QSqlQuery::QTBUG_2192()
         int diff = qAbs(q.value(0).toDateTime().msecsTo(dt));
         int keep = qMin(1000, (int)qPow(10.0, precision));
         QVERIFY(diff <= 1000 - keep);
+    }
+}
+
+void tst_QSqlQuery::QTBUG_36211()
+{
+    QFETCH( QString, dbName );
+    QSqlDatabase db = QSqlDatabase::database( dbName );
+    CHECK_DATABASE( db );
+    if (tst_Databases::getDatabaseType(db) == QSqlDriver::PostgreSQL) {
+        const QString tableName(qTableName("bug36211", __FILE__, db));
+        tst_Databases::safeDropTable( db, tableName );
+
+        QSqlQuery q(db);
+        QVERIFY_SQL(q, exec(QString("CREATE TABLE %1 (dtwtz timestamptz, dtwotz timestamp)").arg(tableName)));
+
+        QTimeZone l_tzBrazil("BRT");
+        QTimeZone l_tzChina("CST");
+        QDateTime dt = QDateTime(QDate(2014, 10, 30), QTime(14, 12, 02, 357));
+        QVERIFY_SQL(q, prepare("INSERT INTO " + tableName + " (dtwtz, dtwotz) VALUES (:dt, :dt)"));
+        q.bindValue(":dt", dt);
+        QVERIFY_SQL(q, exec());
+        q.bindValue(":dt", dt.toTimeZone(l_tzBrazil));
+        QVERIFY_SQL(q, exec());
+        q.bindValue(":dt", dt.toTimeZone(l_tzChina));
+        QVERIFY_SQL(q, exec());
+
+        QVERIFY_SQL(q, exec("SELECT dtwtz, dtwotz FROM " + tableName));
+
+        for (int i = 0; i < 3; ++i) {
+            QVERIFY_SQL(q, next());
+
+            for (int j = 0; j < 2; ++j) {
+                // Check if retrieved value preserves reported precision
+                int precision = qMax(0, q.record().field(j).precision());
+                int diff = qAbs(q.value(j).toDateTime().msecsTo(dt));
+                int keep = qMin(1000, (int)qPow(10.0, precision));
+                QVERIFY(diff <= 1000 - keep);
+            }
+        }
     }
 }
 
