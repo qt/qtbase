@@ -186,6 +186,28 @@ void QPlatformTextureList::clear()
 */
 
 #ifndef QT_NO_OPENGL
+
+static QRect deviceRect(const QRect &rect, QWindow *window)
+{
+    QRect deviceRect(rect.topLeft() * window->devicePixelRatio(),
+                     rect.size() * window->devicePixelRatio());
+    return deviceRect;
+}
+
+static QRegion deviceRegion(const QRegion &region, QWindow *window)
+{
+    if (!(window->devicePixelRatio() > 1))
+        return region;
+
+    QVector<QRect> rects;
+    foreach (QRect rect, region.rects())
+        rects.append(deviceRect(rect, window));
+
+    QRegion deviceRegion;
+    deviceRegion.setRects(rects.constData(), rects.count());
+    return deviceRegion;
+}
+
 /*!
     Flushes the given \a region from the specified \a window onto the
     screen, and composes it with the specified \a textures.
@@ -205,7 +227,7 @@ void QPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &regi
 
     context->makeCurrent(window);
     QOpenGLFunctions *funcs = context->functions();
-    funcs->glViewport(0, 0, window->width(), window->height());
+    funcs->glViewport(0, 0, window->width() * window->devicePixelRatio(), window->height() * window->devicePixelRatio());
 
     if (!d_ptr->blitter) {
         d_ptr->blitter = new QOpenGLTextureBlitter;
@@ -214,16 +236,18 @@ void QPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &regi
 
     d_ptr->blitter->bind();
 
-    QRect windowRect(QPoint(), window->size());
+    QRect windowRect(QPoint(), window->size() * window->devicePixelRatio());
+
     for (int i = 0; i < textures->count(); ++i) {
         GLuint textureId = textures->textureId(i);
         funcs->glBindTexture(GL_TEXTURE_2D, textureId);
 
-        QMatrix4x4 target = QOpenGLTextureBlitter::targetTransform(textures->geometry(i), windowRect);
+        QRect targetRect = deviceRect(textures->geometry(i), window);
+        QMatrix4x4 target = QOpenGLTextureBlitter::targetTransform(targetRect, windowRect);
         d_ptr->blitter->blit(textureId, target, QOpenGLTextureBlitter::OriginBottomLeft);
     }
 
-    GLuint textureId = toTexture(region);
+    GLuint textureId = toTexture(deviceRegion(region, window));
     if (!textureId)
         return;
 

@@ -61,8 +61,8 @@
 class OpenGLWidgetPrivate
 {
 public:
-    OpenGLWidgetPrivate()
-        : m_program(0), m_frame(0)
+    OpenGLWidgetPrivate(QWidget *q)
+        : m_program(0), m_frame(0), q(q)
     {
 
     }
@@ -82,13 +82,14 @@ public:
     int m_frame;
 
     int w,h;
+    QWidget *q;
 };
 
 
 OpenGLWidget::OpenGLWidget(QWidget *parent)
     : QOpenGLWidget(parent)
 {
-    d = new OpenGLWidgetPrivate;
+    d = new OpenGLWidgetPrivate(this);
     QTimer *timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(updateGL()));
     timer->start(30);
@@ -147,7 +148,7 @@ void OpenGLWidgetPrivate::initialize()
 
 void OpenGLWidgetPrivate::render()
 {
-    const qreal retinaScale = 1.0;//devicePixelRatio();
+    const qreal retinaScale = q->devicePixelRatio();
     glViewport(0, 0, width() * retinaScale, height() * retinaScale);
 
     glClearColor(0.0, 0.0, 0.0, 1.0);
