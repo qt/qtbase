@@ -959,6 +959,8 @@ void QWidgetPrivate::deleteTLSysExtra()
 #ifndef QT_NO_OPENGL
         if (textureChildSeen && extra->topextra->shareContext)
             extra->topextra->shareContext->doneCurrent();
+        delete extra->topextra->shareContext;
+        extra->topextra->shareContext = 0;
 #endif
 
         //the toplevel might have a context with a "qglcontext associated with it. We need to
@@ -972,10 +974,6 @@ void QWidgetPrivate::deleteTLSysExtra()
         delete extra->topextra->window;
         extra->topextra->window = 0;
 
-#ifndef QT_NO_OPENGL
-        delete extra->topextra->shareContext;
-        extra->topextra->shareContext = 0;
-#endif
     }
 }
 
