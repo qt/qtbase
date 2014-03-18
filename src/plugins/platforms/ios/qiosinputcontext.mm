@@ -329,7 +329,7 @@ void QIOSInputContext::scroll(int y)
     newBounds.origin.y = y;
     QPointer<QIOSInputContext> self = this;
     [UIView animateWithDuration:m_keyboardListener->m_duration delay:0
-        options:m_keyboardListener->m_curve
+        options:m_keyboardListener->m_curve | UIViewAnimationOptionBeginFromCurrentState
         animations:^{ view.bounds = newBounds; }
         completion:^(BOOL){
             if (self)
