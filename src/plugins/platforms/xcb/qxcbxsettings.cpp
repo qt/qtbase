@@ -42,6 +42,7 @@
 #include "qxcbxsettings.h"
 
 #include <QtCore/QByteArray>
+#include <QtCore/QtEndian>
 
 #include <X11/extensions/XIproto.h>
 
@@ -149,47 +150,67 @@ public:
     {
         if (xSettings.length() < 12)
             return;
-        // we ignore byteorder for now
         char byteOrder = xSettings.at(1);
-        Q_UNUSED(byteOrder);
-        uint number_of_settings = *reinterpret_cast<const uint *>(xSettings.mid(8,4).constData());
+        if (byteOrder != LSBFirst && byteOrder != MSBFirst) {
+            qWarning("%s ByteOrder byte %d not 0 or 1", Q_FUNC_INFO , byteOrder);
+            return;
+        }
 
+#define ADJUST_BO(b, t, x) \
+        ((b == LSBFirst) ?                          \
+         qFromLittleEndian<t>((const uchar *)(x)) : \
+         qFromBigEndian<t>((const uchar *)(x)))
+#define VALIDATE_LENGTH(x)    \
+        if ((size_t)xSettings.length() < (offset + local_offset + 12 + x)) { \
+            qWarning("%s Length %d runs past end of data", Q_FUNC_INFO , x); \
+            return;                                                     \
+        }
+
+        uint number_of_settings = ADJUST_BO(byteOrder, quint32, xSettings.mid(8,4).constData());
         const char *data = xSettings.constData() + 12;
         size_t offset = 0;
         for (uint i = 0; i < number_of_settings; i++) {
             int local_offset = 0;
+            VALIDATE_LENGTH(2);
             XSettingsType type = static_cast<XSettingsType>(*reinterpret_cast<const quint8 *>(data + offset));
             local_offset += 2;
 
-            quint16 name_len = *reinterpret_cast<const quint16 *>(data + offset + local_offset);
+            VALIDATE_LENGTH(2);
+            quint16 name_len = ADJUST_BO(byteOrder, quint16, data + offset + local_offset);
             local_offset += 2;
 
+            VALIDATE_LENGTH(name_len);
             QByteArray name(data + offset + local_offset, name_len);
             local_offset += round_to_nearest_multiple_of_4(name_len);
 
-            int last_change_serial = *reinterpret_cast<const int *>(data + offset + local_offset);
+            VALIDATE_LENGTH(4);
+            int last_change_serial = ADJUST_BO(byteOrder, qint32, data + offset + local_offset);
             Q_UNUSED(last_change_serial);
             local_offset += 4;
 
             QVariant value;
             if (type == XSettingsTypeString) {
-                int value_length = *reinterpret_cast<const int *>(data + offset + local_offset);
+                VALIDATE_LENGTH(4);
+                int value_length = ADJUST_BO(byteOrder, qint32, data + offset + local_offset);
                 local_offset+=4;
+                VALIDATE_LENGTH(value_length);
                 QByteArray value_string(data + offset + local_offset, value_length);
                 value.setValue(value_string);
                 local_offset += round_to_nearest_multiple_of_4(value_length);
             } else if (type == XSettingsTypeInteger) {
-                int value_length = *reinterpret_cast<const int *>(data + offset + local_offset);
+                VALIDATE_LENGTH(4);
+                int value_length = ADJUST_BO(byteOrder, qint32, data + offset + local_offset);
                 local_offset += 4;
                 value.setValue(value_length);
             } else if (type == XSettingsTypeColor) {
-                quint16 red = *reinterpret_cast<const quint16 *>(data + offset + local_offset);
+                VALIDATE_LENGTH(2*4);
+                quint16 red = ADJUST_BO(byteOrder, quint16, data + offset + local_offset);
                 local_offset += 2;
-                quint16 green = *reinterpret_cast<const quint16 *>(data + offset + local_offset);
+                quint16 green = ADJUST_BO(byteOrder, quint16, data + offset + local_offset);
                 local_offset += 2;
-                quint16 blue = *reinterpret_cast<const quint16 *>(data + offset + local_offset);
+                quint16 blue = ADJUST_BO(byteOrder, quint16, data + offset + local_offset);
                 local_offset += 2;
-                quint16 alpha= *reinterpret_cast<const quint16 *>(data + offset + local_offset);
+                quint16 alpha= ADJUST_BO(byteOrder, quint16, data + offset + local_offset);
                 local_offset += 2;
                 QColor color_value(red,green,blue,alpha);
                 value.setValue(color_value);
