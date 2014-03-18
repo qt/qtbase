@@ -81,12 +81,16 @@ QCocoaScreen::~QCocoaScreen()
 
 NSScreen *QCocoaScreen::osScreen() const
 {
-    return [[NSScreen screens] objectAtIndex:m_screenIndex];
+    NSArray *screens = [NSScreen screens];
+    return ((NSUInteger)m_screenIndex < [screens count]) ? [screens objectAtIndex:m_screenIndex] : nil;
 }
 
 void QCocoaScreen::updateGeometry()
 {
     NSScreen *nsScreen = osScreen();
+    if (!nsScreen)
+        return;
+
     NSRect frameRect = [nsScreen frame];
 
     if (m_screenIndex == 0) {
@@ -143,7 +147,8 @@ qreal QCocoaScreen::devicePixelRatio() const
 {
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
     if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7) {
-        return qreal([osScreen() backingScaleFactor]);
+        NSScreen * screen = osScreen();
+        return qreal(screen ? [screen backingScaleFactor] : 1.0);
     } else
 #endif
     {
