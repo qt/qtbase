@@ -91,6 +91,13 @@
 
 // attributes
 
++ (id) lineNumberForIndex: (int)index forText:(const QString &)text
+{
+    QStringRef textBefore = QStringRef(&text, 0, index);
+    int newlines = textBefore.count(QLatin1Char('\n'));
+    return [NSNumber numberWithInt: newlines];
+}
+
 - (NSArray *)accessibilityAttributeNames {
     static NSArray *defaultAttributes = nil;
 
@@ -207,14 +214,14 @@
         }
         return [NSValue valueWithRange: NSMakeRange(0, 0)];
     } else if ([attribute isEqualToString:NSAccessibilityVisibleCharacterRangeAttribute]) {
-        // FIXME This is not correct and may mostly impact performance for big texts
+        // FIXME This is not correct and may impact performance for big texts
         return [NSValue valueWithRange: NSMakeRange(0, iface->textInterface()->characterCount())];
 
     } else if ([attribute isEqualToString:NSAccessibilityInsertionPointLineNumberAttribute]) {
-        // FIXME
-        return nil;
-    } else if ([attribute isEqualToString:NSAccessibilitySelectedTextRangesAttribute]) {
-        // FIXME for multi-selection support
+        if (QAccessibleTextInterface *text = iface->textInterface()) {
+            QString textBeforeCursor = text->text(0, text->cursorPosition());
+            return [NSNumber numberWithInt: textBeforeCursor.count(QLatin1Char('\n'))];
+        }
         return nil;
     }
 
@@ -232,14 +239,14 @@
     if (iface->textInterface()) {
             return [[NSArray alloc] initWithObjects:
                     NSAccessibilityStringForRangeParameterizedAttribute,
-//                    NSAccessibilityLineForIndexParameterizedAttribute,
-//                    NSAccessibilityRangeForLineParameterizedAttribute,
-//                    NSAccessibilityRangeForPositionParameterizedAttribute,
+                    NSAccessibilityLineForIndexParameterizedAttribute,
+                    NSAccessibilityRangeForLineParameterizedAttribute,
+                    NSAccessibilityRangeForPositionParameterizedAttribute,
 //                    NSAccessibilityRangeForIndexParameterizedAttribute,
-//                    NSAccessibilityBoundsForRangeParameterizedAttribute,
+                    NSAccessibilityBoundsForRangeParameterizedAttribute,
 //                    NSAccessibilityRTFForRangeParameterizedAttribute,
 //                    NSAccessibilityStyleRangeForIndexParameterizedAttribute,
-//                    NSAccessibilityAttributedStringForRangeParameterizedAttribute,
+                    NSAccessibilityAttributedStringForRangeParameterizedAttribute,
                     nil
                 ];
     }
@@ -262,28 +269,68 @@
         QString text = iface->textInterface()->text(range.location, range.location + range.length);
         return text.toNSString();
     }
-
+    if ([attribute isEqualToString: NSAccessibilityLineForIndexParameterizedAttribute]) {
+        int index = [parameter intValue];
+        NSNumber *ln = [QCocoaAccessibleElement lineNumberForIndex: index forText: iface->text(QAccessible::Value)];
+        return ln;
+    }
+    if ([attribute isEqualToString: NSAccessibilityRangeForLineParameterizedAttribute]) {
+        int lineNumber = [parameter intValue];
+        QString text = iface->text(QAccessible::Value);
+        int startOffset = 0;
+        // skip newlines until we have the one we look for
+        for (int i = 0; i < lineNumber; ++i)
+            startOffset = text.indexOf(QLatin1Char('\n'), startOffset) + 1;
+        if (startOffset < 0) // invalid line number, return the first line
+            startOffset = 0;
+        int endOffset = text.indexOf(QLatin1Char('\n'), startOffset + 1);
+        if (endOffset == -1)
+            endOffset = text.length();
+        return [NSValue valueWithRange:NSMakeRange(quint32(startOffset), quint32(endOffset - startOffset))];
+    }
+    if ([attribute isEqualToString: NSAccessibilityBoundsForRangeParameterizedAttribute]) {
+        NSRange range = [parameter rangeValue];
+        QRect firstRect = iface->textInterface()->characterRect(range.location);
+        QRect lastRect = iface->textInterface()->characterRect(range.location + range.length);
+        QRect rect = firstRect.united(lastRect); // This is off quite often, but at least a rough approximation
+        return [NSValue valueWithRect: NSMakeRect((CGFloat) rect.x(),(CGFloat) qt_mac_flipYCoordinate(rect.y() + rect.height()), rect.width(), rect.height())];
+    }
+    if ([attribute isEqualToString: NSAccessibilityAttributedStringForRangeParameterizedAttribute]) {
+        NSRange range = [parameter rangeValue];
+        QString text = iface->textInterface()->text(range.location, range.location + range.length);
+        return [[NSAttributedString alloc] initWithString: text.toNSString()];
+    }
     return nil;
 }
 
 - (BOOL)accessibilityIsAttributeSettable:(NSString *)attribute {
+    QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
+    if (!iface)
+        return nil;
+
     if ([attribute isEqualToString:NSAccessibilityFocusedAttribute]) {
-        QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
-        if (!iface)
-            return nil;
         return iface->state().focusable ? YES : NO;
-    } else {
-        return NO;
+    } else if ([attribute isEqualToString:NSAccessibilitySelectedTextRangeAttribute]) {
+        return iface->textInterface() ? YES : NO;
     }
+    return NO;
 }
 
 - (void)accessibilitySetValue:(id)value forAttribute:(NSString *)attribute {
-    Q_UNUSED(value);
+    QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
+    if (!iface)
+        return;
     if ([attribute isEqualToString:NSAccessibilityFocusedAttribute]) {
-        QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
-        if (!iface || !iface->actionInterface())
-            return;
-        iface->actionInterface()->doAction(QAccessibleActionInterface::setFocusAction());
+        if (QAccessibleActionInterface *action = iface->actionInterface())
+            action->doAction(QAccessibleActionInterface::setFocusAction());
+    } else if ([attribute isEqualToString:NSAccessibilitySelectedTextRangeAttribute]) {
+        if (QAccessibleTextInterface *text = iface->textInterface()) {
+            NSRange range = [value rangeValue];
+            if (range.length > 0)
+                text->setSelection(0, range.location, range.location + range.length);
+            else
+                text->setCursorPosition(range.location);
+        }
     }
 }
 
