@@ -3939,7 +3939,9 @@ QRect QCommonStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex 
     case CC_ScrollBar:
         if (const QStyleOptionSlider *scrollbar = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
             const QRect scrollBarRect = scrollbar->rect;
-            int sbextent = proxy()->pixelMetric(PM_ScrollBarExtent, scrollbar, widget);
+            int sbextent = 0;
+            if (!proxy()->styleHint(SH_ScrollBar_Transient, scrollbar, widget))
+                sbextent = proxy()->pixelMetric(PM_ScrollBarExtent, scrollbar, widget);
             int maxlen = ((scrollbar->orientation == Qt::Horizontal) ?
                           scrollBarRect.width() : scrollBarRect.height()) - (sbextent * 2);
             int sliderlen;
