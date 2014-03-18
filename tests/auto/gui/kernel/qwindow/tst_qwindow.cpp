@@ -49,6 +49,10 @@
 #include <QEvent>
 #include <QStyleHints>
 
+#if defined(Q_OS_QNX)
+#include <QOpenGLContext>
+#endif
+
 // For QSignalSpy slot connections.
 Q_DECLARE_METATYPE(Qt::ScreenOrientation)
 Q_DECLARE_METATYPE(QWindow::Visibility)
@@ -122,6 +126,9 @@ public:
     {
         reset();
         setFlags(flags);
+#if defined(Q_OS_QNX)
+        setSurfaceType(QSurface::OpenGLSurface);
+#endif
     }
 
     void reset()
@@ -187,7 +194,12 @@ void tst_QWindow::resizeEventAfterResize()
     // Make sure we get a resizeEvent after calling resize
     window.resize(400, 100);
 
+#if defined(Q_OS_BLACKBERRY) // "window" is the "root" window and will always be shown fullscreen
+                              // so we only expect one resize event
+    QTRY_COMPARE(window.received(QEvent::Resize), 1);
+#else
     QTRY_COMPARE(window.received(QEvent::Resize), 2);
+#endif
 }
 
 void tst_QWindow::positioning_data()
@@ -244,13 +256,24 @@ void tst_QWindow::positioning()
 
     window.setWindowState(Qt::WindowFullScreen);
     QCoreApplication::processEvents();
+#if defined(Q_OS_BLACKBERRY) // "window" is the "root" window and will always be shown fullscreen
+                              // so we only expect one resize event
+    Q_UNUSED(resizecount);
+    QTRY_COMPARE(window.received(QEvent::Resize), 1);
+#else
     QTRY_COMPARE(window.received(QEvent::Resize), 2);
+#endif
 
     QTest::qWait(2000);
 
     window.setWindowState(Qt::WindowNoState);
     QCoreApplication::processEvents();
+#if defined(Q_OS_BLACKBERRY) // "window" is the "root" window and will always be shown fullscreen
+                              // so we only expect one resize event
+    QTRY_COMPARE(window.received(QEvent::Resize), 1);
+#else
     QTRY_COMPARE(window.received(QEvent::Resize), resizecount);
+#endif
 
     QTRY_COMPARE(originalPos, window.position());
     QTRY_COMPARE(originalFramePos, window.framePosition());
@@ -309,6 +332,13 @@ void tst_QWindow::isActive()
     QCoreApplication::processEvents();
 
     QTRY_VERIFY(window.isExposed());
+#if defined(Q_OS_QNX) // We either need to create a eglSurface or a create a backing store
+                      // and then post the window in order for screen to show the window
+    QOpenGLContext context;
+    context.create();
+    context.makeCurrent(&window);
+    context.swapBuffers(&window);
+#endif
     QTRY_COMPARE(window.received(QEvent::Resize), 1);
     QTRY_VERIFY(QGuiApplication::focusWindow() == &window);
     QVERIFY(window.isActive());
@@ -511,7 +541,7 @@ void tst_QWindow::testInputEvents()
     // Now with null pointer as window. local param should not be utilized:
     // handleMouseEvent() with tlw == 0 means the event is in global coords only.
     window.mousePressButton = window.mouseReleaseButton = 0;
-    QPointF nonWindowGlobal(500, 500); // not inside the window
+    QPointF nonWindowGlobal(2000, 500); // not inside the window
     QWindowSystemInterface::handleMouseEvent(0, nonWindowGlobal, nonWindowGlobal, Qt::LeftButton);
     QWindowSystemInterface::handleMouseEvent(0, nonWindowGlobal, nonWindowGlobal, Qt::NoButton);
     QCoreApplication::processEvents();
@@ -913,10 +943,21 @@ void tst_QWindow::activateAndClose()
 {
     for (int i = 0; i < 10; ++i)  {
        QWindow window;
+#if defined(Q_OS_QNX)
+       window.setSurfaceType(QSurface::OpenGLSurface);
+#endif
        // qWaitForWindowActive will block for the duration of
        // of the timeout if the window is at 0,0
        window.setGeometry(QGuiApplication::primaryScreen()->availableGeometry().adjusted(1, 1, -1, -1));
        window.showNormal();
+#if defined(Q_OS_QNX) // We either need to create a eglSurface or a create a backing store
+                      // and then post the window in order for screen to show the window
+       QTest::qWaitForWindowExposed(&window);
+       QOpenGLContext context;
+       context.create();
+       context.makeCurrent(&window);
+       context.swapBuffers(&window);
+#endif
        window.requestActivate();
        QVERIFY(QTest::qWaitForWindowActive(&window));
        QCOMPARE(qGuiApp->focusWindow(), &window);
@@ -1252,15 +1293,26 @@ void tst_QWindow::initialSize()
     Window w;
     w.setWidth(200);
     w.show();
+#if defined(Q_OS_BLACKBERRY) // "window" is the "root" window and will always be shown fullscreen
+                              // so we only expect one resize event
+    QTRY_COMPARE(w.width(), qGuiApp->primaryScreen()->availableGeometry().width());
+#else
     QTRY_COMPARE(w.width(), 200);
+#endif
     QTRY_VERIFY(w.height() > 0);
     }
     {
     Window w;
     w.resize(200, 42);
     w.show();
+#if defined(Q_OS_BLACKBERRY) // "window" is the "root" window and will always be shown fullscreen
+                              // so we only expect one resize event
+    QTRY_COMPARE(w.width(), qGuiApp->primaryScreen()->availableGeometry().width());
+    QTRY_COMPARE(w.height(), qGuiApp->primaryScreen()->availableGeometry().height());
+#else
     QTRY_COMPARE(w.width(), 200);
     QTRY_COMPARE(w.height(), 42);
+#endif
     }
 }
 
