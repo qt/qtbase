@@ -268,7 +268,10 @@
 
 - (BOOL)accessibilityIsAttributeSettable:(NSString *)attribute {
     if ([attribute isEqualToString:NSAccessibilityFocusedAttribute]) {
-        return NO; // YES to handle keyboard input
+        QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
+        if (!iface)
+            return nil;
+        return iface->state().focusable ? YES : NO;
     } else {
         return NO;
     }
@@ -277,7 +280,10 @@
 - (void)accessibilitySetValue:(id)value forAttribute:(NSString *)attribute {
     Q_UNUSED(value);
     if ([attribute isEqualToString:NSAccessibilityFocusedAttribute]) {
-
+        QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
+        if (!iface || !iface->actionInterface())
+            return;
+        iface->actionInterface()->doAction(QAccessibleActionInterface::setFocusAction());
     }
 }
 
