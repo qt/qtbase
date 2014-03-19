@@ -1113,27 +1113,24 @@
     \section1 \\qmlattachedsignal
 
     The \\qmlattachedsignal command is for documenting an attachable
-    \l{http://qt-project.org/doc/qt-4.7/qdeclarativeintroduction.html#signal-handlers}
-    {signal handler}. The \\qmlattachedsignal command is used just like
-    the \l{qmlsignal-command} {\\qmlsignal} command.
+    \l{Signal and Handler Event System}{signal}. The \\qmlattachedsignal
+    command is used just like the \l{qmlsignal-command} {\\qmlsignal} command.
 
     The argument is the rest of the line. It should be the name of the
-    QML type where the signal handler is declared, the \c{::}
-    qualifier, and finally the signal handler name. If we have a QML
-    attached signal handler named \c onAdd() in the \c GridView
-    element, the \\qmlattachedsignal for it would look like this:
+    QML type where the signal is declared, the \c{::}
+    qualifier, and finally the signal name. For example, a QML
+    attached signal named \c add() in the \c GridView
+    element is documented like this:
 
     \code
     / *!
-        \qmlattachedsignal GridView::onAdd()
-        This attached handler is called immediately after an item is
-    added to the view.
+        \qmlattachedsignal GridView::add()
+        This attached signal is emitted immediately after an item is added to the view.
     * /
     \endcode
 
     QDoc includes this documentation on the QML reference page for the
-    \l{http://qt-project.org/doc/qt-4.7/qml-gridview.html#onAdd-signal}
-    {GridView} element.
+    \l GridView element.
 
     \target qmlbasictype-command
     \section1 \\qmlbasictype
