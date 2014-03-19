@@ -320,6 +320,7 @@ int HtmlGenerator::generateAtom(const Atom *atom, const Node *relative, CodeMark
         if (!inLink_ && !inContents_ && !inSectionHeading_) {
             const Node *node = 0;
             QString link = getLink(atom, relative, &node);
+            QDocDatabase::debug = false;
             if (!link.isEmpty()) {
                 beginLink(link, node, relative);
                 generateLink(atom, marker);
@@ -3188,7 +3189,7 @@ QString HtmlGenerator::highlightedCode(const QString& markedCode,
         if (src.at(i) == charLangle && src.at(i + 1) == charAt) {
             i += 2;
             if (parseArg(src, funcTag, &i, srcSize, &arg, &par1)) {
-                const Node* n = qdb_->resolveTarget(par1.toString(), relative);
+                const Node* n = qdb_->resolveFunctionTarget(par1.toString(), relative);
                 QString link = linkForNode(n, relative);
                 addLink(link, arg, &html);
                 par1 = QStringRef();
@@ -3228,20 +3229,18 @@ QString HtmlGenerator::highlightedCode(const QString& markedCode,
             }
             else if (parseArg(src, headerTag, &i, srcSize, &arg, &par1)) {
                 par1 = QStringRef();
-                const Node* n = qdb_->resolveTarget(arg.toString(), relative);
-                addLink(linkForNode(n,relative), arg, &html);
+                if (arg.at(0) == QChar('&'))
+                    html += arg.toString();
+                else {
+                    // zzz resolveClassTarget()
+                    const Node* n = qdb_->resolveTarget(arg.toString(), relative);
+                    if (n)
+                        addLink(linkForNode(n,relative), arg, &html);
+                    else
+                        html += arg.toString();
+                }
                 handled = true;
             }
-#if 0
-            // Apparently, this clause was never used.
-            // <@func> is taken out above.
-            else if (parseArg(src, funcTag, &i, srcSize, &arg, &par1)) {
-                par1 = QStringRef();
-                const Node* n = qdb_->resolveTarget(arg.toString(), relative);
-                addLink(linkForNode(n,relative), arg, &html);
-                handled = true;
-            }
-#endif
             if (!handled) {
                 html += charLangle;
                 html += charAt;
@@ -3763,45 +3762,35 @@ QString HtmlGenerator::getLink(const Atom *atom, const Node *relative, const Nod
     *node = 0;
     inObsoleteLink = false;
 
-    if (atom->string().contains(QLatin1Char(':')) &&
-            (atom->string().startsWith("file:")
-             || atom->string().startsWith("http:")
-             || atom->string().startsWith("https:")
-             || atom->string().startsWith("ftp:")
-             || atom->string().startsWith("mailto:"))) {
-
-        link = atom->string();
+    if (atom->string().contains(QLatin1Char(':')) && (atom->string().startsWith("file:") ||
+                                                      atom->string().startsWith("http:") ||
+                                                      atom->string().startsWith("https:") ||
+                                                      atom->string().startsWith("ftp:") ||
+                                                      atom->string().startsWith("mailto:"))) {
+        link = atom->string(); // It's some kind of protocol.
     }
     else {
         QStringList path;
-        if (atom->string().contains('#')) {
-            path = atom->string().split('#');
-        }
-        else {
-            path.append(atom->string());
-        }
+        if (atom->string().contains('#'))
+            path = atom->string().split('#'); // The target is in the html file.
+        else
+            path.append(atom->string()); // It's a general case target.
 
         QString ref;
         QString first = path.first().trimmed();
-        if (first.isEmpty()) {
+        if (first.isEmpty())
             *node = relative;
-        }
-        else if (first.endsWith(".html")) {
-            /*
-              This is not a recursive search. That's ok in
-              this case, because we are searching for a page
-              node, which must be a direct child of the tree
-              root.
-            */
+        else if (first.endsWith(".html")) // The target is an html file.
             *node = qdb_->findNodeByNameAndType(QStringList(first), Node::Document, Node::NoSubType);
+        else if (first.endsWith("()")) { // The target is a C++ function or QML method.
+            *node = qdb_->resolveFunctionTarget(first, relative);
         }
         else {
+            *node = qdb_->resolveTarget(first, relative);
             if (!(*node))
-                *node = qdb_->resolveTarget(first, relative);
-            if (!(*node))
-                *node = qdb_->findDocNodeByTitle(first, relative);
+                *node = qdb_->findDocNodeByTitle(first);
             if (!(*node)) {
-                *node = qdb_->findUnambiguousTarget(first, ref, relative);
+                *node = qdb_->findUnambiguousTarget(first, ref);
                 if (*node && !(*node)->url().isEmpty() && !ref.isEmpty()) {
                     QString final = (*node)->url() + "#" + ref;
                     return final;

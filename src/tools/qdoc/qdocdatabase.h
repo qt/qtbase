@@ -89,11 +89,11 @@ class QDocForest
     const Node* findNode(const QStringList& path, const Node* relative, int findFlags) {
         foreach (Tree* t, searchOrder()) {
             const Node* n = t->findNode(path, relative, findFlags);
-            if (n) return n;
+            if (n)
+                return n;
             relative = 0;
         }
-        if (Config::debug_)
-            qDebug() << "FAILED SEARCH 1" << path;
+        //qDebug() << "FAILED SEARCH 1" << path;
         return 0;
     }
 
@@ -103,55 +103,53 @@ class QDocForest
                                 bool acceptCollision = false) {
         foreach (Tree* t, searchOrder()) {
             Node* n = t->findNodeByNameAndType(path, type, subtype, acceptCollision);
-            if (n) return n;
+            if (n)
+                return n;
         }
-        if (Config::debug_)
-            qDebug() << "FAILED SEARCH 2" << path << type << subtype;
+        //qDebug() << "FAILED SEARCH 2" << path << type << subtype;
         return 0;
     }
 
     ClassNode* findClassNode(const QStringList& path) {
         foreach (Tree* t, searchOrder()) {
             ClassNode* n = t->findClassNode(path);
-            if (n) return n;
+            if (n)
+                return n;
         }
-        if (Config::debug_)
-            qDebug() << "FAILED SEARCH 3" << path;
+        //qDebug() << "FAILED SEARCH 3" << path;
         return 0;
     }
 
     InnerNode* findRelatesNode(const QStringList& path) {
         foreach (Tree* t, searchOrder()) {
             InnerNode* n = t->findRelatesNode(path);
-            if (n) return n;
+            if (n)
+                return n;
         }
-        if (Config::debug_)
-            qDebug() << "FAILED SEARCH 4" << path;
+        //qDebug() << "FAILED SEARCH 4" << path;
         return 0;
     }
 
-    const Node* resolveTarget(const QString& target, const Node* relative) {
-        const Node* r = relative;
+    const Node* resolveFunctionTarget(const QString& target, const Node* relative) {
         foreach (Tree* t, searchOrder()) {
-            const Node* n = resolveTargetHelper(target, relative, t);
-            if (n) return n;
+            const Node* n = t->resolveFunctionTarget(target, relative);
+            if (n)
+                return n;
             relative = 0;
-        }
-        if (Config::debug_) {
-            qDebug() << "FAILED SEARCH 6" << target << r;
         }
         return 0;
     }
+    const Node* resolveTarget(const QString& target, const Node* relative);
 
     const Node* resolveType(const QStringList& path, const Node* relative)
     {
         foreach (Tree* t, searchOrder()) {
             const Node* n = resolveTypeHelper(path, relative, t);
-            if (n) return n;
+            if (n)
+                return n;
             relative = 0;
         }
-        if (Config::debug_)
-            qDebug() << "FAILED SEARCH 5" << path;
+        //qDebug() << "FAILED SEARCH 5" << path;
         return 0;
     }
 
@@ -159,32 +157,32 @@ class QDocForest
     {
         foreach (Tree* t, searchOrder()) {
             QString ref = t->findTarget(target, node);
-            if (!ref.isEmpty()) return ref;
+            if (!ref.isEmpty())
+                return ref;
         }
-        if (Config::debug_)
-            qDebug() << "FAILED SEARCH 7" << target;
+        //qDebug() << "FAILED SEARCH 7" << target;
         return QString();
     }
 
-    const Node* findUnambiguousTarget(const QString& target, QString& ref, const Node* relative)
+    const Node* findUnambiguousTarget(const QString& target, QString& ref)
     {
         foreach (Tree* t, searchOrder()) {
-            const Node* n = t->findUnambiguousTarget(target, ref, relative);
-            if (n) return n;
+            const Node* n = t->findUnambiguousTarget(target, ref);
+            if (n)
+                return n;
         }
-        if (Config::debug_)
-            qDebug() << "FAILED SEARCH 8" << target;
+        //qDebug() << "FAILED SEARCH 8" << target;
         return 0;
     }
 
-    const DocNode* findDocNodeByTitle(const QString& title, const Node* relative)
+    const DocNode* findDocNodeByTitle(const QString& title)
     {
         foreach (Tree* t, searchOrder()) {
-            const DocNode* n = t->findDocNodeByTitle(title, relative);
-            if (n) return n;
+            const DocNode* n = t->findDocNodeByTitle(title);
+            if (n)
+                return n;
         }
-        if (Config::debug_)
-            qDebug() << "FAILED SEARCH 9" << title;
+        //qDebug() << "FAILED SEARCH 9" << title;
         return 0;
     }
 
@@ -192,7 +190,8 @@ class QDocForest
     {
         foreach (Tree* t, searchOrder()) {
             QmlClassNode* qcn = t->lookupQmlType(name);
-            if (qcn) return qcn;
+            if (qcn)
+                return qcn;
         }
         return 0;
     }
@@ -209,7 +208,6 @@ class QDocForest
   private:
     void newPrimaryTree(const QString& module);
     NamespaceNode* newIndexTree(const QString& module);
-    const Node* resolveTargetHelper(const QString& target, const Node* relative, Tree* t);
     const Node* resolveTypeHelper(const QStringList& path, const Node* relative, Tree* t);
 
   private:
@@ -329,13 +327,16 @@ class QDocDatabase
     const Node* resolveTarget(const QString& target, const Node* relative) {
         return forest_.resolveTarget(target, relative);
     }
+    const Node* resolveFunctionTarget(const QString& target, const Node* relative) {
+        return forest_.resolveFunctionTarget(target, relative);
+    }
     const Node* resolveType(const QString& type, const Node* relative);
     const Node* findNodeForTarget(const QString& target, const Node* relative);
-    const DocNode* findDocNodeByTitle(const QString& title, const Node* relative = 0) {
-        return forest_.findDocNodeByTitle(title, relative);
+    const DocNode* findDocNodeByTitle(const QString& title) {
+        return forest_.findDocNodeByTitle(title);
     }
-    const Node* findUnambiguousTarget(const QString& target, QString& ref, const Node* relative) {
-        return forest_.findUnambiguousTarget(target, ref, relative);
+    const Node* findUnambiguousTarget(const QString& target, QString& ref) {
+        return forest_.findUnambiguousTarget(target, ref);
     }
     Node* findNodeByNameAndType(const QStringList& path, Node::Type type, Node::SubType subtype){
         return forest_.findNodeByNameAndType(path, type, subtype, false);
@@ -388,6 +389,9 @@ class QDocDatabase
     QDocDatabase(QDocDatabase const& ) : showInternal_(false), forest_(this) { }
     QDocDatabase& operator=(QDocDatabase const& );
     Tree* primaryTree() { return forest_.primaryTree(); }
+
+ public:
+    static bool             debug;
 
  private:
     static QDocDatabase*    qdocDB_;

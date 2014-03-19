@@ -86,10 +86,11 @@ class Tree
     ClassNode* findClassNode(const QStringList& path, Node* start = 0) const;
     NamespaceNode* findNamespaceNode(const QStringList& path) const;
     FunctionNode* findFunctionNode(const QStringList& parentPath, const FunctionNode* clone);
+    const Node* resolveFunctionTarget(const QString& target, const Node* relative);
 
     Node* findNodeRecursive(const QStringList& path,
                             int pathIndex,
-                            Node* start,
+                            const Node* start,
                             Node::Type type,
                             Node::SubType subtype,
                             bool acceptCollision = false) const;
@@ -112,7 +113,7 @@ class Tree
     Node* findNodeByNameAndType(const QStringList& path,
                                 Node::Type type,
                                 Node::SubType subtype,
-                                bool acceptCollision = false);
+                                bool acceptCollision = false) const;
 
 
     InnerNode* findRelatesNode(const QStringList& path);
@@ -121,8 +122,8 @@ class Tree
     QString findTarget(const QString& target, const Node* node) const;
     void insertTarget(const QString& name, TargetRec::Type type, Node* node, int priority);
     void resolveTargets(InnerNode* root);
-    const Node* findUnambiguousTarget(const QString& target, QString& ref, const Node* relative);
-    const DocNode* findDocNodeByTitle(const QString& title, const Node* relative = 0) const;
+    const Node* findUnambiguousTarget(const QString& target, QString& ref);
+    const DocNode* findDocNodeByTitle(const QString& title) const;
 
     void addPropertyFunction(PropertyNode *property,
                              const QString &funcName,
@@ -173,7 +174,7 @@ class Tree
     ModuleNode* addToModule(const QString& name, Node* node);
     QmlModuleNode* addToQmlModule(const QString& name, Node* node);
 
-    QmlClassNode* lookupQmlType(const QString& name) { return qmlTypeMap_.value(name); }
+    QmlClassNode* lookupQmlType(const QString& name) const { return qmlTypeMap_.value(name); }
     void insertQmlType(const QString& key, QmlClassNode* n);
     void addExampleNode(ExampleNode* n) { exampleNodeMap_.insert(n->title(), n); }
     ExampleNodeMap& exampleNodeMap() { return exampleNodeMap_; }

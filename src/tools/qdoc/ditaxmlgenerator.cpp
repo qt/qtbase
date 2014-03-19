@@ -3389,68 +3389,71 @@ void DitaXmlGenerator::writeText(const QString& markedCode, const Node* relative
             for (int k = 0; k != 6; ++k) {
                 if (parseArg(src, markTags[k], &i, n, &arg, &par1)) {
                     const Node* n = 0;
-                    if (k == 0) { // <@link>
-                        if (!text.isEmpty()) {
-                            writeCharacters(text);
-                            text.clear();
-                        }
-                        n = CodeMarker::nodeForString(par1.toString());
-                        QString link = linkForNode(n, relative);
-                        addLink(link, arg);
-                    }
-                    else if (k == 4) { // <@param>
-                        if (!text.isEmpty()) {
-                            writeCharacters(text);
-                            text.clear();
-                        }
-                        writeStartTag(DT_i);
-                        //writeCharacters(" " + arg.toString());
-                        writeCharacters(arg.toString());
-                        writeEndTag(); // </i>
-                    }
-                    else if (k == 5) { // <@extra>
-                        if (!text.isEmpty()) {
-                            writeCharacters(text);
-                            text.clear();
-                        }
-                        writeStartTag(DT_tt);
-                        writeCharacters(arg.toString());
-                        writeEndTag(); // </tt>
-                    }
-                    else {
-                        if (!text.isEmpty()) {
-                            writeCharacters(text);
-                            text.clear();
-                        }
-                        par1 = QStringRef();
-                        QString link;
-                        n = qdb_->resolveTarget(arg.toString(), relative);
-                        if (n && n->subType() == Node::QmlBasicType) {
-                            if (relative && relative->subType() == Node::QmlClass) {
-                                link = linkForNode(n,relative);
-                                addLink(link, arg);
+                    switch (k) {
+                        case 0: // <@link>
+                            if (!text.isEmpty()) {
+                                writeCharacters(text);
+                                text.clear();
                             }
-                            else {
-                                writeCharacters(arg.toString());
+                            n = CodeMarker::nodeForString(par1.toString());
+                            addLink(linkForNode(n, relative), arg);
+                            break;
+                        case 4: // <@param>
+                            if (!text.isEmpty()) {
+                                writeCharacters(text);
+                                text.clear();
                             }
-                        }
-                        else {
-                            // (zzz) Is this correct for all cases?
-                            link = linkForNode(n,relative);
-                            addLink(link, arg);
-                        }
-                    }
+                            writeStartTag(DT_i);
+                            //writeCharacters(" " + arg.toString());
+                            writeCharacters(arg.toString());
+                            writeEndTag(); // </i>
+                            break;
+                        case 5: // <@extra>
+                            if (!text.isEmpty()) {
+                                writeCharacters(text);
+                                text.clear();
+                            }
+                            writeStartTag(DT_tt);
+                            writeCharacters(arg.toString());
+                            writeEndTag(); // </tt>
+                            break;
+                        case 3:
+                            if (!text.isEmpty()) {
+                                writeCharacters(text);
+                                text.clear();
+                            }
+                            par1 = QStringRef();
+                            n = qdb_->resolveFunctionTarget(arg.toString(), relative);
+                            addLink(linkForNode(n, relative), arg);
+                            break;
+                        case 1:
+                        case 2:
+                        default:
+                            if (!text.isEmpty()) {
+                                writeCharacters(text);
+                                text.clear();
+                            }
+                            par1 = QStringRef();
+                            n = qdb_->resolveType(arg.toString(), relative);
+                            if (n && n->subType() == Node::QmlBasicType) {
+                                if (relative && relative->subType() == Node::QmlClass)
+                                    addLink(linkForNode(n, relative), arg);
+                                else
+                                    writeCharacters(arg.toString());
+                            }
+                            else
+                                addLink(linkForNode(n, relative), arg); // (zzz) Is this correct for all cases?
+                            break;
+                    } // switch
                     break;
                 }
             }
         }
-        else {
+        else
             text += src.at(i++);
-        }
     }
-    if (!text.isEmpty()) {
+    if (!text.isEmpty())
         writeCharacters(text);
-    }
 }
 
 void DitaXmlGenerator::generateLink(const Atom* atom, CodeMarker* marker)
@@ -3830,18 +3833,18 @@ QString DitaXmlGenerator::getLink(const Atom* atom, const Node* relative, const 
         QString ref;
         QString first = path.first().trimmed();
 
-        if (first.isEmpty()) {
+        if (first.isEmpty())
             *node = relative;
-        }
-        else if (first.endsWith(".html")) {
+        else if (first.endsWith(".html"))
             *node = qdb_->findNodeByNameAndType(QStringList(first), Node::Document, Node::NoSubType);
-        }
+        else if (first.endsWith("()")) // The target is a C++ function or QML method.
+            *node = qdb_->resolveFunctionTarget(first, relative);
         else {
             *node = qdb_->resolveTarget(first, relative);
+            if (!(*node))
+                *node = qdb_->findDocNodeByTitle(first);
             if (!*node)
-                *node = qdb_->findDocNodeByTitle(first, relative);
-            if (!*node)
-                *node = qdb_->findUnambiguousTarget(first, ref, relative);
+                *node = qdb_->findUnambiguousTarget(first, ref);
         }
 
         if (*node) {
@@ -4601,7 +4604,7 @@ void DitaXmlGenerator::replaceTypesWithLinks(const Node* n, const InnerNode* par
             }
             i += 2;
             if (parseArg(src, typeTag, &i, srcSize, &arg, &par1)) {
-                const Node* tn = qdb_->resolveTarget(arg.toString(), parent);
+                const Node* tn = qdb_->resolveType(arg.toString(), parent);
                 if (tn) {
                     //Do not generate a link from a C++ function to a QML Basic Type (such as int)
                     if (n->type() == Node::Function && tn->subType() == Node::QmlBasicType)

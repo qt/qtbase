@@ -51,6 +51,7 @@ QT_BEGIN_NAMESPACE
 
 static NodeMap emptyNodeMap_;
 static NodeMultiMap emptyNodeMultiMap_;
+bool QDocDatabase::debug = false;
 
 /*! \class QDocForest
   This class manages a collection of trees. Each tree is an
@@ -368,38 +369,30 @@ void QDocForest::newPrimaryTree(const QString& module)
 }
 
 /*!
-  Searches the Tree \a t for a node named \a target and returns
+  Searches the trees for a node named \a target and returns
   a pointer to it if found. The \a relative node is the starting
-  point, but it only makes sense in the primary tree. Therefore,
-  when this function is called with \a t being an index tree,
-  \a relative is 0. When relative is 0, the root node of \a t is
-  the starting point.
+  point, but it only makes sense in the primary tree, which is
+  searched first. After the primary tree is searched, \a relative
+  is set to 0 for searching the index trees. When relative is 0,
+  the root node of the index tree is the starting point.
  */
-const Node* QDocForest::resolveTargetHelper(const QString& target,
-                                            const Node* relative,
-                                            Tree* t)
+const Node* QDocForest::resolveTarget(const QString& target, const Node* relative)
 {
-    const Node* node = 0;
-    if (target.endsWith("()")) {
-        QString funcName = target;
-        funcName.chop(2);
-        QStringList path = funcName.split("::");
-        const FunctionNode* fn = t->findFunctionNode(path, relative, SearchBaseClasses);
-        if (fn && fn->metaness() != FunctionNode::MacroWithoutParams)
-            node = fn;
+    QStringList path = target.split("::");
+    int flags = SearchBaseClasses | SearchEnumValues | NonFunction;
+
+    foreach (Tree* t, searchOrder()) {
+        const Node* n = t->findNode(path, relative, flags);
+        if (n)
+            return n;
+#if 0
+        n = t->findDocNodeByTitle(target);
+        if (n)
+            return n;
+#endif
+        relative = 0;
     }
-    else {
-        QStringList path = target.split("::");
-        int flags = SearchBaseClasses | SearchEnumValues | NonFunction;
-        node = t->findNode(path, relative, flags);
-        if (!node) {
-            QStringList path = target.split("::");
-            const FunctionNode* fn = t->findFunctionNode(path, relative, SearchBaseClasses);
-            if (fn && fn->metaness() != FunctionNode::MacroWithoutParams)
-                node = fn;
-        }
-    }
-    return node;
+    return 0;
 }
 
 /*!
@@ -1356,7 +1349,7 @@ const Node* QDocDatabase::findNodeForTarget(const QString& target, const Node* r
     else {
         node = resolveTarget(target, relative);
         if (!node)
-            node = findDocNodeByTitle(target, relative);
+            node = findDocNodeByTitle(target);
     }
     return node;
 }
