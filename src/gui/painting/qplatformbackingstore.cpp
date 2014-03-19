@@ -330,6 +330,13 @@ GLuint QPlatformBackingStore::toTexture(const QRegion &dirtyRegion) const
         funcs->glBindTexture(GL_TEXTURE_2D, d_ptr->textureId);
         QRect imageRect = image.rect();
         QRect rect = dirtyRegion.boundingRect() & imageRect;
+
+#ifndef QT_OPENGL_ES_2
+        funcs->glPixelStorei(GL_UNPACK_ROW_LENGTH, image.width());
+        funcs->glTexSubImage2D(GL_TEXTURE_2D, 0, rect.x(), rect.y(), rect.width(), rect.height(), GL_RGBA, GL_UNSIGNED_BYTE,
+                               image.constScanLine(rect.y()) + rect.x() * 4);
+        funcs->glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+#else
         // if the rect is wide enough it's cheaper to just
         // extend it instead of doing an image copy
         if (rect.width() >= imageRect.width() / 2) {
@@ -347,6 +354,7 @@ GLuint QPlatformBackingStore::toTexture(const QRegion &dirtyRegion) const
             funcs->glTexSubImage2D(GL_TEXTURE_2D, 0, rect.x(), rect.y(), rect.width(), rect.height(), GL_RGBA, GL_UNSIGNED_BYTE,
                                    image.copy(rect).constBits());
         }
+#endif
     }
 
     return d_ptr->textureId;
