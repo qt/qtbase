@@ -509,6 +509,74 @@ QFontEngineMulti *QFontconfigDatabase::fontEngineMulti(QFontEngine *fontEngine, 
     return new QFontEngineMultiFontConfig(fontEngine, script);
 }
 
+namespace {
+QFontEngineFT::HintStyle defaultHintStyleFromMatch(QFont::HintingPreference hintingPreference, FcPattern *match)
+{
+    switch (hintingPreference) {
+    case QFont::PreferNoHinting:
+        return QFontEngineFT::HintNone;
+    case QFont::PreferVerticalHinting:
+        return QFontEngineFT::HintLight;
+    case QFont::PreferFullHinting:
+        return QFontEngineFT::HintFull;
+    case QFont::PreferDefaultHinting:
+        break;
+    }
+
+    const QPlatformServices *services = QGuiApplicationPrivate::platformIntegration()->services();
+    if (services && (services->desktopEnvironment() == "GNOME" || services->desktopEnvironment() == "UNITY")) {
+        void *hintStyleResource =
+                QGuiApplication::platformNativeInterface()->nativeResourceForScreen("hintstyle",
+                                                                                    QGuiApplication::primaryScreen());
+        int hintStyle = int(reinterpret_cast<qintptr>(hintStyleResource));
+        if (hintStyle > 0)
+            return QFontEngine::HintStyle(hintStyle - 1);
+    }
+
+    int hint_style = 0;
+    if (FcPatternGetInteger (match, FC_HINT_STYLE, 0, &hint_style) == FcResultNoMatch)
+        hint_style = FC_HINT_FULL;
+    switch (hint_style) {
+    case FC_HINT_NONE:
+        return QFontEngineFT::HintNone;
+    case FC_HINT_SLIGHT:
+        return QFontEngineFT::HintLight;
+    case FC_HINT_MEDIUM:
+        return QFontEngineFT::HintMedium;
+    case FC_HINT_FULL:
+        return QFontEngineFT::HintFull;
+    default:
+        Q_UNREACHABLE();
+        break;
+    }
+    return QFontEngineFT::HintFull;
+}
+
+QFontEngineFT::SubpixelAntialiasingType subpixelTypeFromMatch(FcPattern *match)
+{
+    int subpixel = FC_RGBA_UNKNOWN;
+    FcPatternGetInteger(match, FC_RGBA, 0, &subpixel);
+
+    switch (subpixel) {
+    case FC_RGBA_UNKNOWN:
+    case FC_RGBA_NONE:
+        return QFontEngineFT::Subpixel_None;
+    case FC_RGBA_RGB:
+        return QFontEngineFT::Subpixel_RGB;
+    case FC_RGBA_BGR:
+        return QFontEngineFT::Subpixel_BGR;
+    case FC_RGBA_VRGB:
+        return QFontEngineFT::Subpixel_VRGB;
+    case FC_RGBA_VBGR:
+        return QFontEngineFT::Subpixel_VBGR;
+    default:
+        Q_UNREACHABLE();
+        break;
+    }
+    return QFontEngineFT::Subpixel_None;
+}
+} // namespace
+
 QFontEngine *QFontconfigDatabase::fontEngine(const QFontDef &f, void *usrPtr)
 {
     if (!usrPtr)
@@ -548,39 +616,7 @@ QFontEngine *QFontconfigDatabase::fontEngine(const QFontDef &f, void *usrPtr)
 
     FcPattern *match = FcFontMatch(0, pattern, &result);
     if (match) {
-        QFontEngineFT::HintStyle default_hint_style;
-        if (f.hintingPreference != QFont::PreferDefaultHinting) {
-            switch (f.hintingPreference) {
-            case QFont::PreferNoHinting:
-                default_hint_style = QFontEngineFT::HintNone;
-                break;
-            case QFont::PreferVerticalHinting:
-                default_hint_style = QFontEngineFT::HintLight;
-                break;
-            case QFont::PreferFullHinting:
-            default:
-                default_hint_style = QFontEngineFT::HintFull;
-                break;
-            }
-        } else {
-            int hint_style = 0;
-            if (FcPatternGetInteger (match, FC_HINT_STYLE, 0, &hint_style) == FcResultNoMatch)
-                hint_style = QFontEngineFT::HintFull;
-            switch (hint_style) {
-            case FC_HINT_NONE:
-                default_hint_style = QFontEngineFT::HintNone;
-                break;
-            case FC_HINT_SLIGHT:
-                default_hint_style = QFontEngineFT::HintLight;
-                break;
-            case FC_HINT_MEDIUM:
-                default_hint_style = QFontEngineFT::HintMedium;
-                break;
-            default:
-                default_hint_style = QFontEngineFT::HintFull;
-                break;
-            }
-        }
+        engine->setDefaultHintStyle(defaultHintStyleFromMatch((QFont::HintingPreference)f.hintingPreference, match));
 
         if (antialias) {
             // If antialiasing is not fully disabled, fontconfig may still disable it on a font match basis.
@@ -590,40 +626,13 @@ QFontEngine *QFontconfigDatabase::fontEngine(const QFontDef &f, void *usrPtr)
             antialias = fc_antialias;
         }
 
-        if (f.hintingPreference == QFont::PreferDefaultHinting) {
-            const QPlatformServices *services = QGuiApplicationPrivate::platformIntegration()->services();
-            if (services && (services->desktopEnvironment() == "GNOME" || services->desktopEnvironment() == "UNITY")) {
-                void *hintStyleResource =
-                        QGuiApplication::platformNativeInterface()->nativeResourceForScreen("hintstyle",
-                                                                                            QGuiApplication::primaryScreen());
-                int hintStyle = int(reinterpret_cast<qintptr>(hintStyleResource));
-                if (hintStyle > 0)
-                    default_hint_style = QFontEngine::HintStyle(hintStyle - 1);
-            }
-        }
-
-        engine->setDefaultHintStyle(default_hint_style);
-
         if (antialias) {
-            QFontEngineFT::SubpixelAntialiasingType subpixelType = QFontEngineFT::Subpixel_None;
-            int subpixel = FC_RGBA_NONE;
-
-            FcPatternGetInteger(match, FC_RGBA, 0, &subpixel);
-            if (subpixel == FC_RGBA_UNKNOWN)
-                subpixel = FC_RGBA_NONE;
-
-            switch (subpixel) {
-                case FC_RGBA_NONE: subpixelType = QFontEngineFT::Subpixel_None; break;
-                case FC_RGBA_RGB: subpixelType = QFontEngineFT::Subpixel_RGB; break;
-                case FC_RGBA_BGR: subpixelType = QFontEngineFT::Subpixel_BGR; break;
-                case FC_RGBA_VRGB: subpixelType = QFontEngineFT::Subpixel_VRGB; break;
-                case FC_RGBA_VBGR: subpixelType = QFontEngineFT::Subpixel_VBGR; break;
-                default: break;
-            }
-
-            format = subpixelType == QFontEngineFT::Subpixel_None
-                        ? QFontEngineFT::Format_A8 : QFontEngineFT::Format_A32;
+            QFontEngineFT::SubpixelAntialiasingType subpixelType = subpixelTypeFromMatch(match);
             engine->subpixelType = subpixelType;
+
+            format = (subpixelType == QFontEngineFT::Subpixel_None)
+                    ? QFontEngineFT::Format_A8
+                    : QFontEngineFT::Format_A32;
         } else
             format = QFontEngineFT::Format_Mono;
 
