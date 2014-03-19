@@ -652,7 +652,7 @@ static QTouchDevice *touchDevice = 0;
 {
     if (m_window->flags() & Qt::WindowTransparentForInput)
         return [super mouseDragged:theEvent];
-    if (!(m_buttons & Qt::LeftButton))
+    if (!(m_buttons & (m_sendUpAsRightButton ? Qt::RightButton : Qt::LeftButton)))
         qWarning("QNSView mouseDragged: Internal mouse button tracking invalid (missing Qt::LeftButton)");
     [self handleMouseEvent:theEvent];
 }
@@ -1721,7 +1721,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 
 // keep our state, and QGuiApplication state (buttons member) in-sync,
 // or future mouse events will be processed incorrectly
-    m_buttons &= ~Qt::LeftButton;
+    m_buttons &= ~(m_sendUpAsRightButton ? Qt::RightButton : Qt::LeftButton);
 
     NSPoint windowPoint = [self convertPoint: point fromView: nil];
     QPoint qtWindowPoint(windowPoint.x, windowPoint.y);
