@@ -121,6 +121,14 @@ mac {
 
     HEADERS += \
         $$PWD/src/hb-coretext.h
+
+    ios: \
+        # On iOS CoreText and CoreGraphics are stand-alone frameworks
+        LIBS_PRIVATE += -framework CoreText -framework CoreGraphics
+    else: \
+        # On Mac OS they are part of the ApplicationServices umbrella framework,
+        # even in 10.8 where they were also made available stand-alone.
+        LIBS_PRIVATE += -framework ApplicationServices
 }
 
 TARGET = $$TARGET$$qtPlatformTargetSuffix()
