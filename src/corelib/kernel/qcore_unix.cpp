@@ -131,10 +131,10 @@ int bb_select(QList<QSocketNotifier *> socketNotifiers, int nfds, fd_set *fdread
     socketNotifiersEnabled.reserve(socketNotifiers.count());
     for (int a = 0; a < socketNotifiers.count(); ++a) {
         if (socketNotifiers.at(a) && socketNotifiers.at(a)->isEnabled()) {
-            socketNotifiersEnabled[a] = true;
+            socketNotifiersEnabled.append(true);
             socketNotifiers.at(a)->setEnabled(false);
         } else {
-            socketNotifiersEnabled[a] = false;
+            socketNotifiersEnabled.append(false);
         }
     }
 
