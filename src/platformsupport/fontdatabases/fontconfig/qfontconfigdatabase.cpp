@@ -650,6 +650,56 @@ QFontEngine *QFontconfigDatabase::fontEngine(const QFontDef &f, void *usrPtr)
     return engine;
 }
 
+QFontEngine *QFontconfigDatabase::fontEngine(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference)
+{
+    QFontEngineFT *engine = static_cast<QFontEngineFT*>(QBasicFontDatabase::fontEngine(fontData, pixelSize, hintingPreference));
+    QFontDef fontDef = engine->fontDef;
+
+    QFontEngineFT::GlyphFormat format;
+    // try and get the pattern
+    FcPattern *pattern = FcPatternCreate();
+
+    FcValue value;
+    value.type = FcTypeString;
+    QByteArray cs = fontDef.family.toUtf8();
+    value.u.s = (const FcChar8 *)cs.data();
+    FcPatternAdd(pattern,FC_FAMILY,value,true);
+
+    FcResult result;
+
+    FcConfigSubstitute(0, pattern, FcMatchPattern);
+    FcDefaultSubstitute(pattern);
+
+    FcPattern *match = FcFontMatch(0, pattern, &result);
+    if (match) {
+        engine->setDefaultHintStyle(defaultHintStyleFromMatch(hintingPreference, match));
+
+        FcBool fc_antialias;
+        if (FcPatternGetBool(match, FC_ANTIALIAS,0, &fc_antialias) != FcResultMatch)
+            fc_antialias = true;
+        engine->antialias = fc_antialias;
+
+        if (engine->antialias) {
+            QFontEngineFT::SubpixelAntialiasingType subpixelType = subpixelTypeFromMatch(match);
+            engine->subpixelType = subpixelType;
+
+            format = subpixelType == QFontEngineFT::Subpixel_None
+                    ? QFontEngineFT::Format_A8
+                    : QFontEngineFT::Format_A32;
+        } else
+            format = QFontEngineFT::Format_Mono;
+        FcPatternDestroy(match);
+    } else
+        format = QFontEngineFT::Format_A8;
+
+    FcPatternDestroy(pattern);
+
+    engine->defaultFormat = format;
+    engine->glyphFormat = format;
+
+    return engine;
+}
+
 QStringList QFontconfigDatabase::fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const
 {
     QStringList fallbackFamilies;
