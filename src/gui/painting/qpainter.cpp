@@ -3828,7 +3828,7 @@ Qt::BGMode QPainter::backgroundMode() const
 /*!
     \overload
 
-    Sets the painter's pen to have style Qt::SolidLine, width 0 and the
+    Sets the painter's pen to have style Qt::SolidLine, width 1 and the
     specified \a color.
 */
 
