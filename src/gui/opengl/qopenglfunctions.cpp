@@ -359,10 +359,37 @@ static int qt_gl_resolve_extensions()
 {
     int extensions = 0;
     QOpenGLExtensionMatcher extensionMatcher;
+    QOpenGLContext *ctx = QOpenGLContext::currentContext();
+    QSurfaceFormat format = ctx->format();
+
     if (extensionMatcher.match("GL_EXT_bgra"))
         extensions |= QOpenGLExtensions::BGRATextureFormat;
+    if (extensionMatcher.match("GL_ARB_texture_rectangle"))
+        extensions |= QOpenGLExtensions::TextureRectangle;
+    if (extensionMatcher.match("GL_SGIS_generate_mipmap"))
+        extensions |= QOpenGLExtensions::GenerateMipmap;
+    if (extensionMatcher.match("GL_ARB_texture_compression"))
+        extensions |= QOpenGLExtensions::TextureCompression;
+    if (extensionMatcher.match("GL_EXT_texture_compression_s3tc"))
+        extensions |= QOpenGLExtensions::DDSTextureCompression;
+    if (extensionMatcher.match("GL_OES_compressed_ETC1_RGB8_texture"))
+        extensions |= QOpenGLExtensions::ETC1TextureCompression;
+    if (extensionMatcher.match("GL_IMG_texture_compression_pvrtc"))
+        extensions |= QOpenGLExtensions::PVRTCTextureCompression;
+    if (extensionMatcher.match("GL_ARB_texture_mirrored_repeat"))
+        extensions |= QOpenGLExtensions::MirroredRepeat;
+    if (extensionMatcher.match("GL_EXT_stencil_two_side"))
+        extensions |= QOpenGLExtensions::StencilTwoSide;
+    if (extensionMatcher.match("GL_EXT_stencil_wrap"))
+        extensions |= QOpenGLExtensions::StencilWrap;
+    if (extensionMatcher.match("GL_NV_float_buffer"))
+        extensions |= QOpenGLExtensions::NVFloatBuffer;
+    if (extensionMatcher.match("GL_ARB_pixel_buffer_object"))
+        extensions |= QOpenGLExtensions::PixelBufferObject;
 
-    if (QOpenGLContext::currentContext()->isES()) {
+    if (ctx->isES()) {
+        if (format.majorVersion() >= 2)
+            extensions |= QOpenGLExtensions::GenerateMipmap;
         if (extensionMatcher.match("GL_OES_mapbuffer"))
             extensions |= QOpenGLExtensions::MapBuffer;
         if (extensionMatcher.match("GL_OES_packed_depth_stencil"))
@@ -375,7 +402,6 @@ static int qt_gl_resolve_extensions()
         if (extensionMatcher.match("GL_IMG_texture_format_BGRA8888") || extensionMatcher.match("GL_EXT_texture_format_BGRA8888"))
             extensions |= QOpenGLExtensions::BGRATextureFormat;
     } else {
-        QSurfaceFormat format = QOpenGLContext::currentContext()->format();
         extensions |= QOpenGLExtensions::ElementIndexUint | QOpenGLExtensions::MapBuffer;
 
         // Recognize features by extension name.
@@ -394,6 +420,19 @@ static int qt_gl_resolve_extensions()
                 extensions |= QOpenGLExtensions::PackedDepthStencil;
         }
     }
+
+    if (format.renderableType() == QSurfaceFormat::OpenGL && format.version() >= qMakePair(3, 2))
+        extensions |= QOpenGLExtensions::GeometryShaders;
+
+#ifndef QT_OPENGL_ES
+    if (extensionMatcher.match("GL_EXT_framebuffer_sRGB")) {
+        GLboolean srgbCapableFramebuffers = false;
+        ctx->functions()->glGetBooleanv(GL_FRAMEBUFFER_SRGB_CAPABLE_EXT, &srgbCapableFramebuffers);
+        if (srgbCapableFramebuffers)
+            extensions |= QOpenGLExtensions::SRGBFrameBuffer;
+    }
+#endif
+
     return extensions;
 }
 
