@@ -3382,6 +3382,11 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
         if (const QStyleOptionButton *button = qstyleoption_cast<const QStyleOptionButton *>(opt)) {
             QStyleOptionButton butOpt(*button);
             rule.configurePalette(&butOpt.palette, QPalette::ButtonText, QPalette::Button);
+
+            const QFont oldFont = p->font();
+            if (rule.hasFont)
+                p->setFont(rule.font);
+
             if (rule.hasPosition() && rule.position()->textAlignment != 0) {
                 Qt::Alignment textAlignment = rule.position()->textAlignment;
                 QRect textRect = button->rect;
@@ -3454,6 +3459,9 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
             } else {
                 ParentStyle::drawControl(ce, &butOpt, p, w);
             }
+
+            if (rule.hasFont)
+                p->setFont(oldFont);
         }
         return;
 
