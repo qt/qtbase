@@ -207,6 +207,7 @@ public:
     virtual bool isModule() const { return false; }
     virtual bool isQmlModule() const { return false; }
     virtual bool isQmlType() const { return false; }
+    virtual bool isQmlBasicType() const { return false; }
     virtual bool isExample() const { return false; }
     virtual bool isExampleFile() const { return false; }
     virtual bool isHeaderFile() const { return false; }
@@ -640,6 +641,7 @@ public:
                      const QString& name);
     virtual ~QmlBasicTypeNode() { }
     virtual bool isQmlNode() const { return true; }
+    virtual bool isQmlBasicType() const { return true; }
 };
 
 class QmlPropertyGroupNode : public InnerNode

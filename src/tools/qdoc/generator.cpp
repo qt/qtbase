@@ -456,7 +456,7 @@ QString Generator::fullDocumentLocation(const Node *node, bool useSubdir)
         if (!fdl.isEmpty())
             fdl.append(QLatin1Char('/'));
     }
-    if (node->type() == Node::Namespace) {
+    if (node->isNamespace()) {
 
         // The root namespace has no name - check for this before creating
         // an attribute containing the location of any documentation.
@@ -466,9 +466,8 @@ QString Generator::fullDocumentLocation(const Node *node, bool useSubdir)
         else
             return QString();
     }
-    else if (node->type() == Node::Document) {
-        if ((node->subType() == Node::QmlClass) ||
-                (node->subType() == Node::QmlBasicType)) {
+    else if (node->isDocNode() || node->isCollectionNode()) {
+        if (node->isQmlType() || node->isQmlBasicType()) {
             QString fb = fileBase(node);
             if (fb.startsWith(Generator::outputPrefix(QLatin1String("QML"))))
                 return fb + QLatin1Char('.') + currentGenerator()->fileExtension();
@@ -563,6 +562,9 @@ QString Generator::fullDocumentLocation(const Node *node, bool useSubdir)
         anchorRef = QLatin1Char('#') + node->name() + "-var";
         break;
     case Node::Document:
+    case Node::Group:
+    case Node::Module:
+    case Node::QmlModule:
     {
         parentName = fileBase(node);
         parentName.replace(QLatin1Char('/'), QLatin1Char('-')).replace(QLatin1Char('.'), QLatin1Char('-'));
