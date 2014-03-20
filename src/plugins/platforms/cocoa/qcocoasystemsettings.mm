@@ -191,6 +191,8 @@ QHash<QPlatformTheme::Palette, QPalette*> qt_mac_createRolePalettes()
             pal.setColor(QPalette::Disabled, QPalette::HighlightedText, qc);
         }
         if (mac_widget_colors[i].paletteRole == QPlatformTheme::MenuPalette) {
+            qc = qt_mac_colorForTheme(kThemeBrushMenuBackground);
+            pal.setBrush(QPalette::Background, qc);
             qc = qt_mac_colorForThemeTextColor(kThemeTextColorMenuItemActive);
             pal.setBrush(QPalette::ButtonText, qc);
             qc = qt_mac_colorForThemeTextColor(kThemeTextColorMenuItemSelected);

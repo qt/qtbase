@@ -1917,11 +1917,6 @@ void QMacStyle::polish(QPalette &pal)
         qt_mac_backgroundPattern = new QPixmap(d->generateBackgroundPattern());
     }
 
-    QColor pc(Qt::black);
-    pc = qcolorForTheme(kThemeBrushDialogBackgroundActive);
-    QBrush background(pc, *qt_mac_backgroundPattern);
-    pal.setBrush(QPalette::All, QPalette::Window, background);
-    pal.setBrush(QPalette::All, QPalette::Button, background);
 
     QCFString theme;
     const OSErr err = CopyThemeIdentifier(&theme);
