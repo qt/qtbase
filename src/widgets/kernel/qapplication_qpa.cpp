@@ -283,7 +283,7 @@ void QApplicationPrivate::initializeWidgetPaletteHash()
     setPossiblePalette(platformTheme->palette(QPlatformTheme::RadioButtonPalette), "QRadioButton");
     setPossiblePalette(platformTheme->palette(QPlatformTheme::HeaderPalette), "QHeaderView");
     setPossiblePalette(platformTheme->palette(QPlatformTheme::ItemViewPalette), "QAbstractItemView");
-    setPossiblePalette(platformTheme->palette(QPlatformTheme::MessageBoxLabelPelette), "QMessageBoxLabel");
+    setPossiblePalette(platformTheme->palette(QPlatformTheme::MessageBoxLabelPalette), "QMessageBoxLabel");
     setPossiblePalette(platformTheme->palette(QPlatformTheme::TabBarPalette), "QTabBar");
     setPossiblePalette(platformTheme->palette(QPlatformTheme::LabelPalette), "QLabel");
     setPossiblePalette(platformTheme->palette(QPlatformTheme::GroupBoxPalette), "QGroupBox");

@@ -161,7 +161,7 @@ static QMacPaletteMap mac_widget_colors[] = {
     QMacPaletteMap(QPlatformTheme::HeaderPalette, kThemeTextColorPushButtonActive, kThemeTextColorPushButtonInactive),
     QMacPaletteMap(QPlatformTheme::ComboBoxPalette, kThemeTextColorPopupButtonActive, kThemeTextColorPopupButtonInactive),
     QMacPaletteMap(QPlatformTheme::ItemViewPalette, kThemeTextColorListView, kThemeTextColorDialogInactive),
-    QMacPaletteMap(QPlatformTheme::MessageBoxLabelPelette, kThemeTextColorAlertActive, kThemeTextColorAlertInactive),
+    QMacPaletteMap(QPlatformTheme::MessageBoxLabelPalette, kThemeTextColorAlertActive, kThemeTextColorAlertInactive),
     QMacPaletteMap(QPlatformTheme::TabBarPalette, kThemeTextColorTabFrontActive, kThemeTextColorTabFrontInactive),
     QMacPaletteMap(QPlatformTheme::LabelPalette, kThemeTextColorPlacardActive, kThemeTextColorPlacardInactive),
     QMacPaletteMap(QPlatformTheme::GroupBoxPalette, kThemeTextColorPlacardActive, kThemeTextColorPlacardInactive),
