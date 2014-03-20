@@ -69,7 +69,9 @@ HEADERS += \
         kernel/qplatformscreenpageflipper.h \
         kernel/qplatformsystemtrayicon.h \
         kernel/qplatformsessionmanager.h \
-        kernel/qpixelformat.h
+        kernel/qpixelformat.h \
+        kernel/qpaintdevicewindow.h \
+        kernel/qpaintdevicewindow_p.h
 
 SOURCES += \
         kernel/qgenericpluginfactory.cpp \
@@ -121,17 +123,20 @@ SOURCES += \
         kernel/qplatformsystemtrayicon.cpp \
         kernel/qplatformsessionmanager.cpp \
         kernel/qplatformmenu.cpp \
-        kernel/qpixelformat.cpp
+        kernel/qpixelformat.cpp \
+        kernel/qpaintdevicewindow.cpp
 
 contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles2) {
     HEADERS += \
             kernel/qplatformopenglcontext.h \
             kernel/qopenglcontext.h \
-            kernel/qopenglcontext_p.h
+            kernel/qopenglcontext_p.h \
+            kernel/qopenglwindow.h
 
     SOURCES += \
             kernel/qplatformopenglcontext.cpp \
-            kernel/qopenglcontext.cpp
+            kernel/qopenglcontext.cpp \
+            kernel/qopenglwindow.cpp
 }
 
 win32:HEADERS+=kernel/qwindowdefs_win.h

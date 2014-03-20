@@ -21,6 +21,7 @@ SUBDIRS=\
    qwindow \
    qguiapplication \
    qpixelformat \
+   qopenglwindow
 
 !qtHaveModule(widgets): SUBDIRS -= \
    qmouseevent_modal \
@@ -28,3 +29,5 @@ SUBDIRS=\
 
 !qtHaveModule(network): SUBDIRS -= \
    qguieventloop
+
+!contains(QT_CONFIG, opengl(es2)?): SUBDIRS -= qopenglwindow
