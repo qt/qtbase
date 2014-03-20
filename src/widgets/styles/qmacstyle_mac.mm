@@ -526,18 +526,6 @@ static QColor qcolorFromCGColor(CGColorRef cgcolor)
     return pc;
 }
 
-static inline QColor leopardBrush(ThemeBrush brush)
-{
-    QCFType<CGColorRef> cgClr = 0;
-    HIThemeBrushCreateCGColor(brush, &cgClr);
-    return qcolorFromCGColor(cgClr);
-}
-
-QColor qcolorForTheme(ThemeBrush brush)
-{
-    return leopardBrush(brush);
-}
-
 OSStatus qt_mac_shape2QRegionHelper(int inMessage, HIShapeRef, const CGRect *inRect, void *inRefcon)
 {
     QRegion *region = static_cast<QRegion *>(inRefcon);
