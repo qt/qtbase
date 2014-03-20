@@ -128,7 +128,7 @@ public class QtInputConnection extends BaseInputConnection
         if (closing && m_inputState == InputStates.Hiding)
             return;
 
-        if (closing && m_inputState == InputStates.FinishComposing && m_view.getActivityDelegate().isSoftwareKeyboardVisible()) {
+        if (closing && m_view.getActivityDelegate().isSoftwareKeyboardVisible()) {
             m_view.postDelayed(new HideKeyboardRunnable(this), 100);
             m_inputState = InputStates.Hiding;
         } else {
