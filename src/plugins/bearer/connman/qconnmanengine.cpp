@@ -189,7 +189,20 @@ void QConnmanEngine::connectToId(const QString &id)
     if (!serv->isValid()) {
         emit connectionError(id, QBearerEngineImpl::InterfaceLookupError);
     } else {
-        serv->connect();
+        if (serv->type() == QLatin1String("cellular")) {
+            if (serv->roaming()) {
+                if (!isRoamingAllowed(serv->path())) {
+                    emit connectionError(id, QBearerEngineImpl::OperationNotSupported);
+                    return;
+                }
+                if (isAlwaysAskRoaming()) {
+                    emit connectionError(id, QBearerEngineImpl::OperationNotSupported);
+                    return;
+                }
+            }
+        }
+        if (serv->autoConnect())
+            serv->connect();
     }
 }
 
