@@ -16,4 +16,6 @@ contains(QT_CONFIG, accessibility) {
 
     HEADERS += accessible/qaccessiblebridge.h
     SOURCES += accessible/qaccessiblebridge.cpp
+
+    OBJECTIVE_SOURCES += accessible/qaccessiblecache_mac.mm
 }

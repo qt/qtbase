@@ -39,62 +39,28 @@
 **
 ****************************************************************************/
 
-#ifndef QACCESSIBLECACHE_P
-#define QACCESSIBLECACHE_P
+#include "qaccessiblecache_p.h"
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include <QtCore/qglobal.h>
-#include <QtCore/qobject.h>
-#include <QtCore/qhash.h>
-
-#include "qaccessible.h"
-
-Q_FORWARD_DECLARE_OBJC_CLASS(QCocoaAccessibleElement);
+#ifdef Q_OS_OSX
 
 QT_BEGIN_NAMESPACE
 
-class Q_GUI_EXPORT QAccessibleCache  :public QObject
+void QAccessibleCache::insertElement(QAccessible::Id axid, QCocoaAccessibleElement *element) const
 {
-    Q_OBJECT
+    cocoaElements[axid] = element;
+}
 
-public:
-    static QAccessibleCache *instance();
-    QAccessibleInterface *interfaceForId(QAccessible::Id id) const;
-    QAccessible::Id insert(QObject *object, QAccessibleInterface *iface) const;
-    void deleteInterface(QAccessible::Id id, QObject *obj = 0);
+void QAccessibleCache::removeCocoaElement(QAccessible::Id axid)
+{
+    QCocoaAccessibleElement *element = elementForId(axid);
+    [element invalidate];
+    cocoaElements.remove(axid);
+}
 
-#ifdef Q_OS_OSX
-    QCocoaAccessibleElement *elementForId(QAccessible::Id axid) const;
-    void insertElement(QAccessible::Id axid, QCocoaAccessibleElement *element) const;
-#endif
-
-private Q_SLOTS:
-    void objectDestroyed(QObject *obj);
-
-private:
-    QAccessible::Id acquireId() const;
-
-    mutable QHash<QAccessible::Id, QAccessibleInterface *> idToInterface;
-    mutable QHash<QObject *, QAccessible::Id> objectToId;
-
-#ifdef Q_OS_OSX
-    void removeCocoaElement(QAccessible::Id axid);
-    mutable QHash<QAccessible::Id, QCocoaAccessibleElement *> cocoaElements;
-#endif
-
-    friend class QAccessible;
-    friend class QAccessibleInterface;
-};
+QCocoaAccessibleElement *QAccessibleCache::elementForId(QAccessible::Id axid) const
+{
+    return cocoaElements.value(axid);
+}
 
 QT_END_NAMESPACE
 

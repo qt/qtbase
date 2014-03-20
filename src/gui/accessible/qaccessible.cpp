@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -591,8 +591,6 @@ QAccessible::RootObjectHandler QAccessible::installRootObjectHandler(RootObjectH
     return old;
 }
 
-Q_GLOBAL_STATIC(QAccessibleCache, qAccessibleCache)
-
 /*!
     If a QAccessibleInterface implementation exists for the given \a object,
     this function returns a pointer to the implementation; otherwise it
@@ -616,8 +614,8 @@ QAccessibleInterface *QAccessible::queryAccessibleInterface(QObject *object)
     if (!object)
         return 0;
 
-    if (Id id = qAccessibleCache->objectToId.value(object))
-        return qAccessibleCache->interfaceForId(id);
+    if (Id id = QAccessibleCache::instance()->objectToId.value(object))
+        return QAccessibleCache::instance()->interfaceForId(id);
 
     // Create a QAccessibleInterface for the object class. Start by the most
     // derived class and walk up the class hierarchy.
@@ -629,8 +627,8 @@ QAccessibleInterface *QAccessible::queryAccessibleInterface(QObject *object)
         for (int i = qAccessibleFactories()->count(); i > 0; --i) {
             InterfaceFactory factory = qAccessibleFactories()->at(i - 1);
             if (QAccessibleInterface *iface = factory(cn, object)) {
-                qAccessibleCache->insert(object, iface);
-                Q_ASSERT(qAccessibleCache->objectToId.contains(object));
+                QAccessibleCache::instance()->insert(object, iface);
+                Q_ASSERT(QAccessibleCache::instance()->objectToId.contains(object));
                 return iface;
             }
         }
@@ -652,8 +650,8 @@ QAccessibleInterface *QAccessible::queryAccessibleInterface(QObject *object)
         if (factory) {
             QAccessibleInterface *result = factory->create(cn, object);
             if (result) {   // Need this condition because of QDesktopScreenWidget
-                qAccessibleCache->insert(object, result);
-                Q_ASSERT(qAccessibleCache->objectToId.contains(object));
+                QAccessibleCache::instance()->insert(object, result);
+                Q_ASSERT(QAccessibleCache::instance()->objectToId.contains(object));
             }
             return result;
         }
@@ -665,8 +663,8 @@ QAccessibleInterface *QAccessible::queryAccessibleInterface(QObject *object)
 #ifndef QT_NO_ACCESSIBILITY
     if (object == qApp) {
         QAccessibleInterface *appInterface = new QAccessibleApplication;
-        qAccessibleCache->insert(object, appInterface);
-        Q_ASSERT(qAccessibleCache->objectToId.contains(qApp));
+        QAccessibleCache::instance()->insert(object, appInterface);
+        Q_ASSERT(QAccessibleCache::instance()->objectToId.contains(qApp));
         return appInterface;
     }
 #endif
@@ -691,7 +689,7 @@ QAccessibleInterface *QAccessible::queryAccessibleInterface(QObject *object)
 QAccessible::Id QAccessible::registerAccessibleInterface(QAccessibleInterface *iface)
 {
     Q_ASSERT(iface);
-    return qAccessibleCache->insert(iface->object(), iface);
+    return QAccessibleCache::instance()->insert(iface->object(), iface);
 }
 
 /*!
@@ -701,7 +699,7 @@ QAccessible::Id QAccessible::registerAccessibleInterface(QAccessibleInterface *i
 */
 void QAccessible::deleteAccessibleInterface(Id id)
 {
-    qAccessibleCache->deleteInterface(id);
+    QAccessibleCache::instance()->deleteInterface(id);
 }
 
 /*!
@@ -709,7 +707,7 @@ void QAccessible::deleteAccessibleInterface(Id id)
 */
 QAccessible::Id QAccessible::uniqueId(QAccessibleInterface *iface)
 {
-    Id id = qAccessibleCache->idToInterface.key(iface);
+    Id id = QAccessibleCache::instance()->idToInterface.key(iface);
     if (!id)
         id = registerAccessibleInterface(iface);
     return id;
@@ -722,7 +720,7 @@ QAccessible::Id QAccessible::uniqueId(QAccessibleInterface *iface)
 */
 QAccessibleInterface *QAccessible::accessibleInterface(Id id)
 {
-    return qAccessibleCache->idToInterface.value(id);
+    return QAccessibleCache::instance()->idToInterface.value(id);
 }
 
 

@@ -79,7 +79,7 @@ namespace QCocoaAccessible {
 
 NSString *macRole(QAccessibleInterface *interface);
 bool shouldBeIgnored(QAccessibleInterface *interface);
-NSArray *unignoredChildren(id parentObject, QAccessibleInterface *interface);
+NSArray *unignoredChildren(QAccessibleInterface *interface);
 NSString *getTranslatedAction(const QString &qtAction);
 NSMutableArray *createTranslatedActionsList(const QStringList &qtActions);
 QString translateAction(NSString *nsAction);

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -42,11 +42,13 @@
 #include <QtCore/QPair>
 #include <QtWidgets/QWidget>
 
-
 #pragma once // Yeah, it's deprecated in general, but it's standard practice for Mac OS X.
+
+QT_USE_NAMESPACE
 
 bool macNativeAccessibilityEnabled();
 bool trusted();
 bool testLineEdit();
 bool testHierarchy(QWidget *w);
 bool singleWidget();
+bool notifications(QWidget *w);

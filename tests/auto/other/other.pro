@@ -16,6 +16,7 @@ SUBDIRS=\
    networkselftest \
    qaccessibility \
    qaccessibilitylinux \
+   qaccessibilitymac \
    qcomplextext \
    qfocusevent \
    qnetworkaccessmanager_and_qprogressdialog \

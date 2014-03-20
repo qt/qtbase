@@ -41,6 +41,8 @@
 #include "qcocoaaccessibilityelement.h"
 #include "qcocoaaccessibility.h"
 #include "qcocoahelpers.h"
+#include "qcocoawindow.h"
+#include "private/qaccessiblecache_p.h"
 
 #include <QtGui/qaccessible.h>
 
@@ -48,7 +50,7 @@
 
 @implementation QCocoaAccessibleElement
 
-- (id)initWithId:(QAccessible::Id)anId parent:(id)aParent
+- (id)initWithId:(QAccessible::Id)anId
 {
     Q_ASSERT((int)anId < 0);
     self = [super init];
@@ -57,15 +59,35 @@
         QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
         Q_ASSERT(iface);
         role = QCocoaAccessible::macRole(iface);
-        parent = aParent;
     }
 
     return self;
 }
 
-+ (QCocoaAccessibleElement *)createElementWithId:(QAccessible::Id)anId parent:(id)aParent
++ (id)elementWithId:(QAccessible::Id)anId
 {
-    return [[self alloc] initWithId:anId parent:aParent];
+    Q_ASSERT(anId);
+    if (!anId)
+        return nil;
+
+    QAccessibleCache *cache = QAccessibleCache::instance();
+
+    QCocoaAccessibleElement *element = cache->elementForId(anId);
+    if (!element) {
+        QAccessibleInterface *iface = QAccessible::accessibleInterface(anId);
+        Q_ASSERT(iface);
+        if (!iface)
+            return nil;
+        element = [[self alloc] initWithId:anId];
+        cache->insertElement(anId, element);
+    }
+    return element;
+}
+
+- (void)invalidate {
+    axid = 0;
+    NSAccessibilityPostNotification(self, NSAccessibilityUIElementDestroyedNotification);
+    [self release];
 }
 
 - (void)dealloc {
@@ -96,6 +118,10 @@
     QStringRef textBefore = QStringRef(&text, 0, index);
     int newlines = textBefore.count(QLatin1Char('\n'));
     return [NSNumber numberWithInt: newlines];
+}
+
+- (BOOL) accessibilityNotifiesWhenDestroyed {
+    return YES;
 }
 
 - (NSArray *)accessibilityAttributeNames {
@@ -145,6 +171,26 @@
     return [attributes autorelease];
 }
 
+- (id)parentElement {
+    QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
+    if (!iface)
+        return nil;
+
+    if (QWindow *window = iface->window()) {
+        QCocoaWindow *win = static_cast<QCocoaWindow*>(window->handle());
+        return win->qtView();
+    }
+
+    QAccessibleInterface *parent = iface->parent();
+    if (!parent) {
+        qWarning() << "INVALID PARENT FOR INTERFACE: " << iface;
+        return nil;
+    }
+
+    QAccessible::Id parentId = QAccessible::uniqueId(parent);
+    return [QCocoaAccessibleElement elementWithId: parentId];
+}
+
 - (id)accessibilityAttributeValue:(NSString *)attribute {
     QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
     if (!iface) {
@@ -157,19 +203,19 @@
     } else if ([attribute isEqualToString:NSAccessibilityRoleDescriptionAttribute]) {
         return NSAccessibilityRoleDescription(role, nil);
     } else if ([attribute isEqualToString:NSAccessibilityChildrenAttribute]) {
-        return QCocoaAccessible::unignoredChildren(self, iface);
+        return QCocoaAccessible::unignoredChildren(iface);
     } else if ([attribute isEqualToString:NSAccessibilityFocusedAttribute]) {
         // Just check if the app thinks we're focused.
         id focusedElement = [NSApp accessibilityAttributeValue:NSAccessibilityFocusedUIElementAttribute];
         return [NSNumber numberWithBool:[focusedElement isEqual:self]];
     } else if ([attribute isEqualToString:NSAccessibilityParentAttribute]) {
-        return NSAccessibilityUnignoredAncestor(parent);
+        return NSAccessibilityUnignoredAncestor([self parentElement]);
     } else if ([attribute isEqualToString:NSAccessibilityWindowAttribute]) {
         // We're in the same window as our parent.
-        return [parent accessibilityAttributeValue:NSAccessibilityWindowAttribute];
+        return [[self parentElement] accessibilityAttributeValue:NSAccessibilityWindowAttribute];
     } else if ([attribute isEqualToString:NSAccessibilityTopLevelUIElementAttribute]) {
         // We're in the same top level element as our parent.
-        return [parent accessibilityAttributeValue:NSAccessibilityTopLevelUIElementAttribute];
+        return [[self parentElement] accessibilityAttributeValue:NSAccessibilityTopLevelUIElementAttribute];
     } else if ([attribute isEqualToString:NSAccessibilityPositionAttribute]) {
         QPoint qtPosition = iface->rect().topLeft();
         QSize qtSize = iface->rect().size();
@@ -403,20 +449,26 @@
         return NSAccessibilityUnignoredAncestor(self);
     }
 
-    QAccessibleInterface *childInterface = iface->childAt(point.x, qt_mac_flipYCoordinate(point.y));
-
+    int y = qt_mac_flipYCoordinate(point.y);
+    QAccessibleInterface *childInterface = iface->childAt(point.x, y);
     // No child found, meaning we hit this element.
-    if (!childInterface) {
-//        qDebug() << "Hit test returns: " << id << iface;
+    if (!childInterface)
         return NSAccessibilityUnignoredAncestor(self);
-    }
+
+    // find the deepest child at the point
+    QAccessibleInterface *childOfChildInterface = 0;
+    do {
+        childOfChildInterface = childInterface->childAt(point.x, y);
+        if (childOfChildInterface)
+            childInterface = childOfChildInterface;
+    } while (childOfChildInterface);
 
     QAccessible::Id childId = QAccessible::uniqueId(childInterface);
     // hit a child, forward to child accessible interface.
-    QCocoaAccessibleElement *accessibleElement = [QCocoaAccessibleElement createElementWithId:childId parent:self];
-    [accessibleElement autorelease];
-
-    return [accessibleElement accessibilityHitTest:point];
+    QCocoaAccessibleElement *accessibleElement = [QCocoaAccessibleElement elementWithId:childId];
+    if (accessibleElement)
+        return NSAccessibilityUnignoredAncestor(accessibleElement);
+    return NSAccessibilityUnignoredAncestor(self);
 }
 
 - (id)accessibilityFocusedUIElement {
@@ -426,17 +478,15 @@
         qWarning() << "FocusedUIElement for INVALID";
         return nil;
     }
+
     QAccessibleInterface *childInterface = iface->focusChild();
     if (childInterface) {
         QAccessible::Id childAxid = QAccessible::uniqueId(childInterface);
-        // FIXME: parent could be wrong
-        QCocoaAccessibleElement *accessibleElement = [QCocoaAccessibleElement createElementWithId:childAxid parent:self];
-        [accessibleElement autorelease];
-        return accessibleElement;
+        QCocoaAccessibleElement *accessibleElement = [QCocoaAccessibleElement elementWithId:childAxid];
+        return NSAccessibilityUnignoredAncestor(accessibleElement);
     }
 
-    // no focus found
-    return nil;
+    return NSAccessibilityUnignoredAncestor(self);
 }
 
 @end
