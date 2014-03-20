@@ -276,7 +276,6 @@ void AndroidAssetsFileEngineHandler::prepopulateCache() const
     Q_ASSERT(!m_hasTriedPrepopulatingCache);
     m_hasTriedPrepopulatingCache = true;
 
-    QMutexLocker locker(&m_assetsCacheMutext);
     Q_ASSERT(m_assetsCache.isEmpty());
 
     // Failsafe: Don't read cache files that are larger than 1MB
