@@ -55,6 +55,7 @@
     BOOL m_keyboardVisible;
     BOOL m_keyboardVisibleAndDocked;
     BOOL m_ignoreKeyboardChanges;
+    BOOL m_touchPressWhileKeyboardVisible;
     BOOL m_keyboardHiddenByGesture;
     QRectF m_keyboardRect;
     QRectF m_keyboardEndRect;
@@ -74,6 +75,7 @@
         m_keyboardVisible = NO;
         m_keyboardVisibleAndDocked = NO;
         m_ignoreKeyboardChanges = NO;
+        m_touchPressWhileKeyboardVisible = NO;
         m_keyboardHiddenByGesture = NO;
         m_duration = 0;
         m_curve = UIViewAnimationCurveEaseOut;
@@ -213,8 +215,16 @@
     [super touchesMoved:touches withEvent:event];
 }
 
+- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    Q_ASSERT(m_keyboardVisibleAndDocked);
+    m_touchPressWhileKeyboardVisible = YES;
+    [super touchesBegan:touches withEvent:event];
+}
+
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
 {
+    m_touchPressWhileKeyboardVisible = NO;
     [self performSelectorOnMainThread:@selector(touchesEndedPostDelivery) withObject:nil waitUntilDone:NO];
     [super touchesEnded:touches withEvent:event];
 }
@@ -231,6 +241,8 @@
             // the gesture, so we clear focus once more as a work-around.
             static_cast<QWindowPrivate *>(QObjectPrivate::get(qApp->focusWindow()))->clearFocusObject();
         }
+    } else {
+        m_context->scrollToCursor();
     }
 }
 
@@ -338,6 +350,13 @@ void QIOSInputContext::scrollToCursor()
 {
     if (!isQtApplication() || !m_focusView)
         return;
+
+    if (m_keyboardListener->m_touchPressWhileKeyboardVisible) {
+        // Don't scroll to the cursor if the user is touching the screen. This
+        // interferes with selection and the 'hide keyboard' gesture. Instead
+        // we update scrolling upon touchEnd.
+        return;
+    }
 
     UIView *view = m_keyboardListener->m_viewController.view;
     if (view.window != m_focusView.window)
