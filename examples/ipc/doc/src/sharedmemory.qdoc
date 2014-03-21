@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-  \example ipc/sharedmemory
+  \example sharedmemory
   \title Shared Memory Example
   \ingroup examples-ipc
   \brief Demonstrates doing inter-process communication using shared memory with
@@ -40,7 +40,7 @@
   dialog is displayed and then control is passed to the application in
   the standard way.
 
-  \snippet examples/ipc/sharedmemory/main.cpp 0
+  \snippet sharedmemory/main.cpp 0
 
   Two instances of class Dialog appear.
 
@@ -51,12 +51,12 @@
   loadFromFile() and loadFromMemory() that correspond to the two
   buttons on the dialog.
 
-  \snippet examples/ipc/sharedmemory/dialog.h 0
+  \snippet sharedmemory/dialog.h 0
 
   The constructor builds the user interface widgets and connects the
   clicked() signal of each button to the corresponding slot function.
 
-  \snippet examples/ipc/sharedmemory/dialog.cpp 0
+  \snippet sharedmemory/dialog.cpp 0
 
   Note that "QSharedMemoryExample" is passed to the \l {QSharedMemory}
   {QSharedMemory()} constructor to be used as the key. This will be
@@ -69,7 +69,7 @@
   that segment is detached from the process, so we can be assured of
   starting off the example correctly.
 
-  \snippet examples/ipc/sharedmemory/dialog.cpp 1
+  \snippet sharedmemory/dialog.cpp 1
 
   The user is then asked to select an image file using
   QFileDialog::getOpenFileName(). The selected file is loaded into a
@@ -85,7 +85,7 @@
   to the image data, which we then use to do a memcopy() from the
   QBuffer into the shared memory segment.
 
-  \snippet examples/ipc/sharedmemory/dialog.cpp 2
+  \snippet sharedmemory/dialog.cpp 2
 
   Note that we \l {QSharedMemory::} {lock()} the shared memory segment
   before we copy into it, and we \l {QSharedMemory::} {unlock()} it
@@ -117,7 +117,7 @@
   then streams the data into a QImage and \l {QSharedMemory::unlock()}
   {unlocks} the segment.
 
-  \snippet examples/ipc/sharedmemory/dialog.cpp 3
+  \snippet sharedmemory/dialog.cpp 3
 
   In this case, the function does \l {QSharedMemory::} {detach()} from
   the segment, because now we are effectively finished using
