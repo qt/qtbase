@@ -3372,9 +3372,10 @@ if [ "$XPLATFORM_IOS" = "yes" ]; then
     fi
 fi
 
-# disable GTK style support auto-detection on Mac
-if [ "$XPLATFORM_MAC" = "yes" ] && [ "$CFG_QGTKSTYLE" = "auto" ]; then
-    CFG_QGTKSTYLE=no
+# disable XCB and GTK support auto-detection on Mac
+if [ "$XPLATFORM_MAC" = "yes" ]; then
+    [ "$CFG_XCB" = "auto" ] && CFG_XCB=no
+    [ "$CFG_QGTKSTYLE" = "auto" ] && CFG_QGTKSTYLE=no
 fi
 
 QMAKE_CONF_COMPILER=`getXQMakeConf QMAKE_CXX`
