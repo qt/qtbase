@@ -74,7 +74,7 @@ void *qt_mac_QStringListToNSMutableArrayVoid(const QStringList &list)
 {
     NSMutableArray *result = [NSMutableArray arrayWithCapacity:list.size()];
     for (int i=0; i<list.size(); ++i){
-        [result addObject:reinterpret_cast<const NSString *>(QCFString::toCFStringRef(list[i]))];
+        [result addObject:list[i].toNSString()];
     }
     return result;
 }

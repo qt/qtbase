@@ -478,7 +478,7 @@ bool QFseventsFileSystemWatcherEngine::startStream()
 
     NSMutableArray *pathsToWatch = [NSMutableArray arrayWithCapacity:watchedPaths.size()];
     for (PathRefCounts::const_iterator i = watchedPaths.begin(), ei = watchedPaths.end(); i != ei; ++i)
-        [pathsToWatch addObject:reinterpret_cast<const NSString *>(QCFString::toCFStringRef(i.key()))];
+        [pathsToWatch addObject:i.key().toNSString()];
 
     struct FSEventStreamContext callBackInfo = {
         0,
