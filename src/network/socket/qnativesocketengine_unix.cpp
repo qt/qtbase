@@ -403,6 +403,9 @@ bool QNativeSocketEnginePrivate::nativeConnect(const QHostAddress &addr, quint16
     }
 
     int connectResult = qt_safe_connect(socketDescriptor, sockAddrPtr, sockAddrSize);
+#if defined (QNATIVESOCKETENGINE_DEBUG)
+    int ecopy = errno;
+#endif
     if (connectResult == -1) {
         switch (errno) {
         case EISCONN:
@@ -454,7 +457,7 @@ bool QNativeSocketEnginePrivate::nativeConnect(const QHostAddress &addr, quint16
             qDebug("QNativeSocketEnginePrivate::nativeConnect(%s, %i) == false (%s)",
                    addr.toString().toLatin1().constData(), port,
                    socketState == QAbstractSocket::ConnectingState
-                   ? "Connection in progress" : socketErrorString.toLatin1().constData());
+                   ? "Connection in progress" : strerror(ecopy));
 #endif
             return false;
         }
@@ -522,6 +525,9 @@ bool QNativeSocketEnginePrivate::nativeBind(const QHostAddress &address, quint16
     }
 
     if (bindResult < 0) {
+#if defined (QNATIVESOCKETENGINE_DEBUG)
+        int ecopy = errno;
+#endif
         switch(errno) {
         case EADDRINUSE:
             setError(QAbstractSocket::AddressInUseError, AddressInuseErrorString);
@@ -541,7 +547,7 @@ bool QNativeSocketEnginePrivate::nativeBind(const QHostAddress &address, quint16
 
 #if defined (QNATIVESOCKETENGINE_DEBUG)
         qDebug("QNativeSocketEnginePrivate::nativeBind(%s, %i) == false (%s)",
-               address.toString().toLatin1().constData(), port, socketErrorString.toLatin1().constData());
+               address.toString().toLatin1().constData(), port, strerror(ecopy));
 #endif
 
         return false;
@@ -561,6 +567,9 @@ bool QNativeSocketEnginePrivate::nativeBind(const QHostAddress &address, quint16
 bool QNativeSocketEnginePrivate::nativeListen(int backlog)
 {
     if (qt_safe_listen(socketDescriptor, backlog) < 0) {
+#if defined (QNATIVESOCKETENGINE_DEBUG)
+        int ecopy = errno;
+#endif
         switch (errno) {
         case EADDRINUSE:
             setError(QAbstractSocket::AddressInUseError,
@@ -572,7 +581,7 @@ bool QNativeSocketEnginePrivate::nativeListen(int backlog)
 
 #if defined (QNATIVESOCKETENGINE_DEBUG)
         qDebug("QNativeSocketEnginePrivate::nativeListen(%i) == false (%s)",
-               backlog, socketErrorString.toLatin1().constData());
+               backlog, strerror(ecopy));
 #endif
         return false;
     }
