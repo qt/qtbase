@@ -20,6 +20,7 @@ SUBDIRS=\
    qtouchevent \
    qwindow \
    qguiapplication \
+   qpixelformat \
 
 !qtHaveModule(widgets): SUBDIRS -= \
    qmouseevent_modal \

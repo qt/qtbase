@@ -45,6 +45,7 @@
 #include <QtGui/qtransform.h>
 #include <QtGui/qpaintdevice.h>
 #include <QtGui/qrgb.h>
+#include <QtGui/qpixelformat.h>
 #include <QtCore/qbytearray.h>
 #include <QtCore/qrect.h>
 #include <QtCore/qstring.h>
@@ -304,6 +305,10 @@ public:
     QStringList textKeys() const;
     QString text(const QString &key = QString()) const;
     void setText(const QString &key, const QString &value);
+
+    QPixelFormat pixelFormat() const Q_DECL_NOTHROW;
+    static QPixelFormat toPixelFormat(QImage::Format format) Q_DECL_NOTHROW;
+    static QImage::Format toImageFormat(const QPixelFormat &format) Q_DECL_NOTHROW;
 
 #if QT_DEPRECATED_SINCE(5, 0)
     QT_DEPRECATED inline QString text(const char* key, const char* lang=0) const;

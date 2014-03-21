@@ -4508,4 +4508,273 @@ QDebug operator<<(QDebug dbg, const QImage &i)
     \sa textKeys()
  */
 
+static const QPixelFormat pixelformats[] = {
+        //QImage::Format_Invalid:
+        QPixelFormat(),
+        //QImage::Format_Mono:
+        QPixelFormat(QPixelFormat::GrayScale,
+                        /*RED*/            1,
+                        /*GREEN*/          0,
+                        /*BLUE*/           0,
+                        /*FOURTH*/         0,
+                        /*FIFTH*/          0,
+                        /*ALPHA*/          0,
+                        /*ALPHA USAGE*/    QPixelFormat::IgnoresAlpha,
+                        /*ALPHA POSITION*/ QPixelFormat::AtBeginning,
+                        /*PREMULTIPLIED*/  QPixelFormat::NotPremultiplied,
+                        /*INTERPRETATION*/ QPixelFormat::UnsignedByte,
+                        /*BYTE ORDER*/     QPixelFormat::CurrentSystemEndian),
+        //QImage::Format_MonoLSB:
+        QPixelFormat(QPixelFormat::GrayScale,
+                        /*RED*/            1,
+                        /*GREEN*/          0,
+                        /*BLUE*/           0,
+                        /*FOURTH*/         0,
+                        /*FIFTH*/          0,
+                        /*ALPHA*/          0,
+                        /*ALPHA USAGE*/    QPixelFormat::IgnoresAlpha,
+                        /*ALPHA POSITION*/ QPixelFormat::AtBeginning,
+                        /*PREMULTIPLIED*/  QPixelFormat::NotPremultiplied,
+                        /*INTERPRETATION*/ QPixelFormat::UnsignedByte,
+                        /*BYTE ORDER*/     QPixelFormat::CurrentSystemEndian),
+        //QImage::Format_Indexed8:
+         QPixelFormat(QPixelFormat::Indexed,
+                        /*RED*/            8,
+                        /*GREEN*/          0,
+                        /*BLUE*/           0,
+                        /*FOURTH*/         0,
+                        /*FIFTH*/          0,
+                        /*ALPHA*/          0,
+                        /*ALPHA USAGE*/    QPixelFormat::IgnoresAlpha,
+                        /*ALPHA POSITION*/ QPixelFormat::AtBeginning,
+                        /*PREMULTIPLIED*/  QPixelFormat::NotPremultiplied,
+                        /*INTERPRETATION*/ QPixelFormat::UnsignedByte,
+                        /*BYTE ORDER*/     QPixelFormat::CurrentSystemEndian),
+        //QImage::Format_RGB32:
+         QPixelFormat(QPixelFormat::RGB,
+                     /*RED*/                8,
+                     /*GREEN*/              8,
+                     /*BLUE*/               8,
+                     /*FOURTH*/             0,
+                     /*FIFTH*/              0,
+                     /*ALPHA*/              8,
+                     /*ALPHA USAGE*/       QPixelFormat::IgnoresAlpha,
+                     /*ALPHA POSITION*/    QPixelFormat::AtBeginning,
+                     /*PREMULTIPLIED*/     QPixelFormat::NotPremultiplied,
+                     /*INTERPRETATION*/    QPixelFormat::UnsignedInteger,
+                     /*BYTE ORDER*/        QPixelFormat::CurrentSystemEndian),
+        //QImage::Format_ARGB32:
+         QPixelFormat(QPixelFormat::RGB,
+                     /*RED*/                8,
+                     /*GREEN*/              8,
+                     /*BLUE*/               8,
+                     /*FOURTH*/             0,
+                     /*FIFTH*/              0,
+                     /*ALPHA*/              8,
+                     /*ALPHA USAGE*/       QPixelFormat::UsesAlpha,
+                     /*ALPHA POSITION*/    QPixelFormat::AtBeginning,
+                     /*PREMULTIPLIED*/     QPixelFormat::NotPremultiplied,
+                     /*INTERPRETATION*/    QPixelFormat::UnsignedInteger,
+                     /*BYTE ORDER*/        QPixelFormat::CurrentSystemEndian),
+        //QImage::Format_ARGB32_Premultiplied:
+         QPixelFormat(QPixelFormat::RGB,
+                     /*RED*/                8,
+                     /*GREEN*/              8,
+                     /*BLUE*/               8,
+                     /*FOURTH*/             0,
+                     /*FIFTH*/              0,
+                     /*ALPHA*/              8,
+                     /*ALPHA USAGE*/       QPixelFormat::UsesAlpha,
+                     /*ALPHA POSITION*/    QPixelFormat::AtBeginning,
+                     /*PREMULTIPLIED*/     QPixelFormat::Premultiplied,
+                     /*INTERPRETATION*/    QPixelFormat::UnsignedInteger,
+                     /*BYTE ORDER*/        QPixelFormat::CurrentSystemEndian),
+        //QImage::Format_RGB16:
+         QPixelFormat(QPixelFormat::RGB,
+                     /*RED*/                5,
+                     /*GREEN*/              6,
+                     /*BLUE*/               5,
+                     /*FOURTH*/             0,
+                     /*FIFTH*/              0,
+                     /*ALPHA*/              0,
+                     /*ALPHA USAGE*/       QPixelFormat::IgnoresAlpha,
+                     /*ALPHA POSITION*/    QPixelFormat::AtBeginning,
+                     /*PREMULTIPLIED*/     QPixelFormat::NotPremultiplied,
+                     /*INTERPRETATION*/    QPixelFormat::UnsignedShort,
+                     /*BYTE ORDER*/        QPixelFormat::CurrentSystemEndian),
+        //QImage::Format_ARGB8565_Premultiplied:
+         QPixelFormat(QPixelFormat::RGB,
+                     /*RED*/                5,
+                     /*GREEN*/              6,
+                     /*BLUE*/               5,
+                     /*FOURTH*/             0,
+                     /*FIFTH*/              0,
+                     /*ALPHA*/              8,
+                     /*ALPHA USAGE*/       QPixelFormat::UsesAlpha,
+                     /*ALPHA POSITION*/    QPixelFormat::AtBeginning,
+                     /*PREMULTIPLIED*/     QPixelFormat::Premultiplied,
+                     /*INTERPRETATION*/    QPixelFormat::UnsignedInteger,
+                     /*BYTE ORDER*/        QPixelFormat::CurrentSystemEndian),
+        //QImage::Format_RGB666:
+         QPixelFormat(QPixelFormat::RGB,
+                     /*RED*/                6,
+                     /*GREEN*/              6,
+                     /*BLUE*/               6,
+                     /*FOURTH*/             0,
+                     /*FIFTH*/              0,
+                     /*ALPHA*/              0,
+                     /*ALPHA USAGE*/       QPixelFormat::IgnoresAlpha,
+                     /*ALPHA POSITION*/    QPixelFormat::AtBeginning,
+                     /*PREMULTIPLIED*/     QPixelFormat::NotPremultiplied,
+                     /*INTERPRETATION*/    QPixelFormat::UnsignedInteger,
+                     /*BYTE ORDER*/        QPixelFormat::CurrentSystemEndian),
+        //QImage::Format_ARGB6666_Premultiplied:
+         QPixelFormat(QPixelFormat::RGB,
+                     /*RED*/                6,
+                     /*GREEN*/              6,
+                     /*BLUE*/               6,
+                     /*FOURTH*/             0,
+                     /*FIFTH*/              0,
+                     /*ALPHA*/              6,
+                     /*ALPHA USAGE*/       QPixelFormat::UsesAlpha,
+                     /*ALPHA POSITION*/    QPixelFormat::AtBeginning,
+                     /*PREMULTIPLIED*/     QPixelFormat::Premultiplied,
+                     /*INTERPRETATION*/    QPixelFormat::UnsignedInteger,
+                     /*BYTE ORDER*/        QPixelFormat::CurrentSystemEndian),
+        //QImage::Format_RGB555:
+         QPixelFormat(QPixelFormat::RGB,
+                     /*RED*/                5,
+                     /*GREEN*/              5,
+                     /*BLUE*/               5,
+                     /*FOURTH*/             0,
+                     /*FIFTH*/              0,
+                     /*ALPHA*/              0,
+                     /*ALPHA USAGE*/       QPixelFormat::IgnoresAlpha,
+                     /*ALPHA POSITION*/    QPixelFormat::AtBeginning,
+                     /*PREMULTIPLIED*/     QPixelFormat::NotPremultiplied,
+                     /*INTERPRETATION*/    QPixelFormat::UnsignedShort,
+                     /*BYTE ORDER*/        QPixelFormat::CurrentSystemEndian),
+        //QImage::Format_ARGB8555_Premultiplied:
+         QPixelFormat(QPixelFormat::RGB,
+                     /*RED*/                5,
+                     /*GREEN*/              5,
+                     /*BLUE*/               5,
+                     /*FOURTH*/             0,
+                     /*FIFTH*/              0,
+                     /*ALPHA*/              8,
+                     /*ALPHA USAGE*/       QPixelFormat::UsesAlpha,
+                     /*ALPHA POSITION*/    QPixelFormat::AtBeginning,
+                     /*PREMULTIPLIED*/     QPixelFormat::Premultiplied,
+                     /*INTERPRETATION*/    QPixelFormat::UnsignedInteger,
+                     /*BYTE ORDER*/        QPixelFormat::CurrentSystemEndian),
+        //QImage::Format_RGB888:
+         QPixelFormat(QPixelFormat::RGB,
+                     /*RED*/                8,
+                     /*GREEN*/              8,
+                     /*BLUE*/               8,
+                     /*FOURTH*/             0,
+                     /*FIFTH*/              0,
+                     /*ALPHA*/              0,
+                     /*ALPHA USAGE*/       QPixelFormat::IgnoresAlpha,
+                     /*ALPHA POSITION*/    QPixelFormat::AtBeginning,
+                     /*PREMULTIPLIED*/     QPixelFormat::NotPremultiplied,
+                     /*INTERPRETATION*/    QPixelFormat::UnsignedInteger,
+                     /*BYTE ORDER*/        QPixelFormat::CurrentSystemEndian),
+        //QImage::Format_RGB444:
+         QPixelFormat(QPixelFormat::RGB,
+                     /*RED*/                4,
+                     /*GREEN*/              4,
+                     /*BLUE*/               4,
+                     /*FOURTH*/             0,
+                     /*FIFTH*/              0,
+                     /*ALPHA*/              0,
+                     /*ALPHA USAGE*/       QPixelFormat::IgnoresAlpha,
+                     /*ALPHA POSITION*/    QPixelFormat::AtBeginning,
+                     /*PREMULTIPLIED*/     QPixelFormat::NotPremultiplied,
+                     /*INTERPRETATION*/    QPixelFormat::UnsignedShort,
+                     /*BYTE ORDER*/        QPixelFormat::CurrentSystemEndian),
+        //QImage::Format_ARGB4444_Premultiplied:
+         QPixelFormat(QPixelFormat::RGB,
+                     /*RED*/                4,
+                     /*GREEN*/              4,
+                     /*BLUE*/               4,
+                     /*FOURTH*/             0,
+                     /*FIFTH*/              0,
+                     /*ALPHA*/              4,
+                     /*ALPHA USAGE*/       QPixelFormat::UsesAlpha,
+                     /*ALPHA POSITION*/    QPixelFormat::AtBeginning,
+                     /*PREMULTIPLIED*/     QPixelFormat::Premultiplied,
+                     /*INTERPRETATION*/    QPixelFormat::UnsignedShort,
+                     /*BYTE ORDER*/        QPixelFormat::CurrentSystemEndian),
+        //QImage::Format_RGBX8888:
+         QPixelFormat(QPixelFormat::RGB,
+                     /*RED*/                8,
+                     /*GREEN*/              8,
+                     /*BLUE*/               8,
+                     /*FOURTH*/             0,
+                     /*FIFTH*/              0,
+                     /*ALPHA*/              8,
+                     /*ALPHA USAGE*/       QPixelFormat::IgnoresAlpha,
+                     /*ALPHA POSITION*/    QPixelFormat::AtEnd,
+                     /*PREMULTIPLIED*/     QPixelFormat::NotPremultiplied,
+                     /*INTERPRETATION*/    QPixelFormat::UnsignedByte,
+                     /*BYTE ORDER*/        QPixelFormat::CurrentSystemEndian),
+        //QImage::Format_RGBA8888:
+         QPixelFormat(QPixelFormat::RGB,
+                     /*RED*/                8,
+                     /*GREEN*/              8,
+                     /*BLUE*/               8,
+                     /*FOURTH*/             0,
+                     /*FIFTH*/              0,
+                     /*ALPHA*/              8,
+                     /*ALPHA USAGE*/       QPixelFormat::UsesAlpha,
+                     /*ALPHA POSITION*/    QPixelFormat::AtEnd,
+                     /*PREMULTIPLIED*/     QPixelFormat::NotPremultiplied,
+                     /*INTERPRETATION*/    QPixelFormat::UnsignedByte,
+                     /*BYTE ORDER*/        QPixelFormat::CurrentSystemEndian),
+        //QImage::Format_RGBA8888_Premultiplied:
+         QPixelFormat(QPixelFormat::RGB,
+                     /*RED*/                8,
+                     /*GREEN*/              8,
+                     /*BLUE*/               8,
+                     /*FOURTH*/             0,
+                     /*FIFTH*/              0,
+                     /*ALPHA*/              8,
+                     /*ALPHA USAGE*/       QPixelFormat::UsesAlpha,
+                     /*ALPHA POSITION*/    QPixelFormat::AtEnd,
+                     /*PREMULTIPLIED*/     QPixelFormat::Premultiplied,
+                     /*INTERPRETATION*/    QPixelFormat::UnsignedByte,
+                     /*BYTE ORDER*/        QPixelFormat::CurrentSystemEndian),
+};
+Q_STATIC_ASSERT(sizeof(pixelformats) / sizeof(*pixelformats) == QImage::NImageFormats);
+
+/*!
+    Returns the QImage::Format as a QPixelFormat
+*/
+QPixelFormat QImage::pixelFormat() const Q_DECL_NOTHROW
+{
+    return toPixelFormat(format());
+}
+
+/*!
+    Converts \a format into a QPixelFormat
+*/
+QPixelFormat QImage::toPixelFormat(QImage::Format format) Q_DECL_NOTHROW
+{
+    Q_ASSERT(static_cast<int>(format) < NImageFormats);
+    return pixelformats[format];
+}
+
+/*!
+    Converts \a format into a QImage::Format
+*/
+QImage::Format QImage::toImageFormat(const QPixelFormat &format) Q_DECL_NOTHROW
+{
+    for (int i = 0; i < NImageFormats; i++) {
+        if (format == pixelformats[i])
+            return Format(i);
+    }
+    return Format_Invalid;
+}
+
 QT_END_NAMESPACE

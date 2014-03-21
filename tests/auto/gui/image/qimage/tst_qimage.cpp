@@ -170,6 +170,10 @@ private slots:
 
     void scaled_QTBUG35972();
 
+    void convertToPixelFormat();
+    void convertToImageFormat_data();
+    void convertToImageFormat();
+
     void cleanupFunctions();
 };
 
@@ -2458,6 +2462,46 @@ void tst_QImage::scaled_QTBUG35972()
     int size = dest.width()*dest.height();
     for (int i = 0; i < size; ++i)
         QCOMPARE(pixels[i], 0xffffffff);
+}
+
+void tst_QImage::convertToPixelFormat()
+{
+    QPixelFormat rgb565 = QPixelFormatRgb(5,6,5,0,QPixelFormat::IgnoresAlpha, QPixelFormat::AtBeginning, QPixelFormat::NotPremultiplied, QPixelFormat::UnsignedShort);
+    QPixelFormat rgb565ImageFormat = QImage::toPixelFormat(QImage::Format_RGB16);
+    QCOMPARE(rgb565, rgb565ImageFormat);
+}
+
+void tst_QImage::convertToImageFormat_data()
+{
+    QTest::addColumn<QImage::Format>("image_format");
+    QTest::newRow("Convert Format_Invalid") << QImage::Format_Invalid;
+    QTest::newRow("Convert Format_Mono") << QImage::Format_Mono;
+    //This ends up being a QImage::Format_Mono since we cant specify LSB in QPixelFormat
+    //QTest::newRow("Convert Format_MonoLSB") << QImage::Format_MonoLSB;
+    QTest::newRow("Convert Format_Indexed8") << QImage::Format_Indexed8;
+    QTest::newRow("Convert Format_RGB32") << QImage::Format_RGB32;
+    QTest::newRow("Convert Format_ARGB32") << QImage::Format_ARGB32;
+    QTest::newRow("Convert Format_ARGB32_Premultiplied") << QImage::Format_ARGB32_Premultiplied;
+    QTest::newRow("Convert Format_RGB16") << QImage::Format_RGB16;
+    QTest::newRow("Convert Format_ARGB8565_Premultiplied") << QImage::Format_ARGB8565_Premultiplied;
+    QTest::newRow("Convert Format_RGB666") << QImage::Format_RGB666;
+    QTest::newRow("Convert Format_ARGB6666_Premultiplied") << QImage::Format_ARGB6666_Premultiplied;
+    QTest::newRow("Convert Format_RGB555") << QImage::Format_RGB555;
+    QTest::newRow("Convert Format_ARGB8555_Premultiplied") << QImage::Format_ARGB8555_Premultiplied;
+    QTest::newRow("Convert Format_RGB888") << QImage::Format_RGB888;
+    QTest::newRow("Convert Format_RGB444") << QImage::Format_RGB444;
+    QTest::newRow("Convert Format_ARGB4444_Premultiplied") << QImage::Format_ARGB4444_Premultiplied;
+    QTest::newRow("Convert Format_RGBX8888") << QImage::Format_RGBX8888;
+    QTest::newRow("Convert Format_RGBA8888") << QImage::Format_RGBA8888;
+    QTest::newRow("Convert Format_RGBA8888_Premultiplied") << QImage::Format_RGBA8888_Premultiplied;
+}
+void tst_QImage::convertToImageFormat()
+{
+    QFETCH(QImage::Format, image_format);
+
+    QPixelFormat pixel_format = QImage::toPixelFormat(image_format);
+    QImage::Format format = QImage::toImageFormat(pixel_format);
+    QCOMPARE(format, image_format);
 }
 
 static void cleanupFunction(void* info)
