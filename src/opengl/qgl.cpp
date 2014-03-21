@@ -2441,7 +2441,7 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
     glTexImage2D(target, 0, internalFormat, img.width(), img.height(), 0, externalFormat,
                  pixel_type, constRef.bits());
     if (genMipmap && ctx->isES())
-        functions->glGenerateMipmap(target);
+        q->functions()->glGenerateMipmap(target);
 #ifndef QT_NO_DEBUG
     GLenum error = glGetError();
     if (error != GL_NO_ERROR) {
