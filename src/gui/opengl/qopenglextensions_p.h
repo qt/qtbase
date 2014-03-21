@@ -106,8 +106,6 @@ public:
     OpenGLExtensions openGLExtensions();
     bool hasOpenGLExtension(QOpenGLExtensions::OpenGLExtension extension) const;
 
-    void initializeGLExtensions();
-
     GLvoid *glMapBuffer(GLenum target, GLenum access);
     GLboolean glUnmapBuffer(GLenum target);
 
