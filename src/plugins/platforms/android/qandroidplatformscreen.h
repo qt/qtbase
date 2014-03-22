@@ -82,6 +82,7 @@ public:
 
     void scheduleUpdate();
     void topWindowChanged(QWindow *w);
+    int rasterSurfaces();
 
 public slots:
     void setDirty(const QRect &rect);
@@ -110,6 +111,7 @@ private slots:
 
 private:
     int m_id = -1;
+    QAtomicInt m_rasterSurfaces = 0;
     ANativeWindow* m_nativeSurface = nullptr;
     QWaitCondition m_surfaceWaitCondition;
 };
