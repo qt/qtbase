@@ -82,18 +82,11 @@ class QtNativeInputConnection
 }
 
 class HideKeyboardRunnable implements Runnable {
-    private QtInputConnection m_connection;
-    HideKeyboardRunnable(QtInputConnection connection)
-    {
-        m_connection = connection;
-    }
+    private long m_hideTimeStamp = System.nanoTime();
 
     @Override
     public void run() {
-        if (m_connection.getInputState() == QtInputConnection.InputStates.Hiding) {
-            QtNative.activityDelegate().setKeyboardVisibility(false);
-            m_connection.reset();
-        }
+        QtNative.activityDelegate().setKeyboardVisibility(false, m_hideTimeStamp);
     }
 }
 
@@ -107,34 +100,14 @@ public class QtInputConnection extends BaseInputConnection
     private static final int ID_SWITCH_INPUT_METHOD = android.R.id.switchInputMethod;
     private static final int ID_ADD_TO_DICTIONARY = android.R.id.addToDictionary;
 
-
-    enum InputStates { Visible, FinishComposing, Hiding };
-
     private QtEditText m_view = null;
-    private InputStates m_inputState = InputStates.Visible;
-
-    public void reset()
-    {
-        m_inputState = InputStates.Visible;
-    }
-
-    public InputStates getInputState()
-    {
-        return m_inputState;
-    }
 
     private void setClosing(boolean closing)
     {
-        if (closing && m_inputState == InputStates.Hiding)
-            return;
-
-        if (closing && m_view.getActivityDelegate().isSoftwareKeyboardVisible()) {
-            m_view.postDelayed(new HideKeyboardRunnable(this), 100);
-            m_inputState = InputStates.Hiding;
+        if (closing) {
+            m_view.postDelayed(new HideKeyboardRunnable(), 100);
         } else {
-            if (m_inputState == InputStates.Hiding)
-                QtNative.activityDelegate().setKeyboardVisibility(true);
-            m_inputState = closing ? InputStates.FinishComposing : InputStates.Visible;
+            QtNative.activityDelegate().setKeyboardVisibility(true, System.nanoTime());
         }
     }
 
@@ -154,7 +127,7 @@ public class QtInputConnection extends BaseInputConnection
     @Override
     public boolean endBatchEdit()
     {
-//        setClosing(false);
+        setClosing(false);
         return true;
     }
 
