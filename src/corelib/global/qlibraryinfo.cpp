@@ -255,7 +255,9 @@ QLibraryInfo::buildDate()
 }
 #endif //QT_NO_DATESTRING
 
-#if defined(Q_CC_CLANG) // must be before GNU, because clang claims to be GNU too
+#if defined(Q_CC_INTEL) // must be before GNU, Clang and MSVC because ICC/ICL claim to be them
+#  define COMPILER_STRING __VERSION__       /* __VERSION__ starts with "Intel(R) C++" */
+#elif defined(Q_CC_CLANG) // must be before GNU, because clang claims to be GNU too
 #  ifdef __apple_build_version__ // Apple clang has other version numbers
 #    define COMPILER_STRING "Clang " __clang_version__ " (Apple)"
 #  else
