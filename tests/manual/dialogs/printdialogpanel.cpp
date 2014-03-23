@@ -65,7 +65,7 @@
 #include <QDebug>
 #include <QTextStream>
 
-const FlagData modeComboData[] =
+const FlagData printerModeComboData[] =
 {
     {"ScreenResolution", QPrinter::ScreenResolution},
     {"PrinterResolution", QPrinter::PrinterResolution},
@@ -260,91 +260,30 @@ public slots:
     void slotPaintRequested(QPrinter *p) { print(p); }
 };
 
-class PageSizeControl : public QWidget {
-public:
-    explicit PageSizeControl(QWidget *parent = 0);
-    QSizeF pageSize() const { return QSizeF(m_width->value(), m_height->value()); }
-    void setPageSize(const QSizeF &s) { m_width->setValue(s.width()); m_height->setValue(s.height()); }
-
-private:
-    QDoubleSpinBox *m_width;
-    QDoubleSpinBox *m_height;
-};
-
-PageSizeControl::PageSizeControl(QWidget *parent)
-    : QWidget(parent)
-    , m_width(new QDoubleSpinBox(this))
-    , m_height(new QDoubleSpinBox(this))
-{
-    m_width->setRange(1, 1000);
-    m_width->setSingleStep(10);
-    m_height->setRange(1, 1000);
-    m_height->setSingleStep(10);
-    QHBoxLayout *hBoxLayout = new QHBoxLayout(this);
-    hBoxLayout->addWidget(m_width);
-    hBoxLayout->addWidget(new QLabel("x", this));
-    hBoxLayout->addWidget(m_height);
-    hBoxLayout->addWidget(new QLabel("mm", this));
-}
-
 PrintDialogPanel::PrintDialogPanel(QWidget *parent)
     : QWidget(parent)
-    , m_creationGroupBox(new QGroupBox(tr("Create"), this))
-    , m_settingsGroupBox(new QGroupBox(tr("Settings"), this))
-    , m_dialogsGroupBox(new QGroupBox(tr("Dialogs"), this))
-    , m_pageSizeCombo(new QComboBox)
 {
-    // Create with resolution
-    QHBoxLayout *hBoxLayout = new QHBoxLayout(m_creationGroupBox);
-    m_modeCombo = createCombo(m_creationGroupBox, modeComboData, sizeof(modeComboData)/sizeof(FlagData));
-    hBoxLayout->addWidget(m_modeCombo);
-    m_createButton = new QPushButton(tr("Create"), m_creationGroupBox);
-    connect(m_createButton, SIGNAL(clicked()), this, SLOT(createPrinter()));
-    hBoxLayout->addWidget(m_createButton);
-    m_deleteButton = new QPushButton(tr("Delete"), m_creationGroupBox);
-    connect(m_deleteButton, SIGNAL(clicked()), this, SLOT(deletePrinter()));
-    hBoxLayout->addWidget(m_deleteButton);
-    hBoxLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::MinimumExpanding, QSizePolicy::Ignored));
+    m_panel.setupUi(this);
 
-    QFormLayout *formLayout = new QFormLayout(m_settingsGroupBox);
-    m_pageSizeCombo = createCombo(m_settingsGroupBox, pageSizeComboData, sizeof(pageSizeComboData)/sizeof(FlagData));
-    connect(m_pageSizeCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(enableCustomSizeControl()));
-    formLayout->addRow(tr("Paper #:"), m_pageSizeCombo);
-    m_customPageSizeControl = new PageSizeControl;
-    formLayout->addRow(tr("Custom size:"), m_customPageSizeControl);
-    m_orientationCombo = createCombo(m_settingsGroupBox, orientationComboData, sizeof(orientationComboData)/sizeof(FlagData));
-    formLayout->addRow("Orientation:", m_orientationCombo);
-    m_fullPageCheckBox = new QCheckBox(tr("Full page"), m_settingsGroupBox);
-    formLayout->addRow(m_fullPageCheckBox);
+    // Setup the Create box
+    populateCombo(m_panel.m_printerModeCombo, printerModeComboData, sizeof(printerModeComboData)/sizeof(FlagData));
+    connect(m_panel.m_createButton, SIGNAL(clicked()), this, SLOT(createPrinter()));
+    connect(m_panel.m_deleteButton, SIGNAL(clicked()), this, SLOT(deletePrinter()));
 
-    QVBoxLayout *vBoxLayout = new QVBoxLayout(m_dialogsGroupBox);
+    // Setup the Settings box
+    populateCombo(m_panel.m_pageSizeCombo, pageSizeComboData, sizeof(pageSizeComboData)/sizeof(FlagData));
+    connect(m_panel.m_pageSizeCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(enableCustomSizeControl()));
+    populateCombo(m_panel.m_orientationCombo, orientationComboData, sizeof(orientationComboData)/sizeof(FlagData));
 
-    m_printDialogOptionsControl = new OptionsControl(tr("Options"), printDialogOptions, sizeof(printDialogOptions) / sizeof(FlagData), m_dialogsGroupBox);
-    vBoxLayout->addWidget(m_printDialogOptionsControl);
-    m_printDialogRangeCombo = createCombo(m_dialogsGroupBox, printRangeOptions, sizeof(printRangeOptions) / sizeof(FlagData));
-    vBoxLayout->addWidget(m_printDialogRangeCombo);
-
-    {
-        QPrintDialog dialog;
-        m_printDialogOptionsControl->setValue(dialog.options());
-        m_printDialogRangeCombo->setCurrentIndex(dialog.printRange());
-    }
-
-    QPushButton *button = new QPushButton(tr("Print..."), m_dialogsGroupBox);
-    connect(button, SIGNAL(clicked()), this, SLOT(showPrintDialog()));
-    vBoxLayout->addWidget(button);
-    button = new QPushButton(tr("Preview..."), m_dialogsGroupBox);
-    connect(button, SIGNAL(clicked()), this, SLOT(showPreviewDialog()));
-    vBoxLayout->addWidget(button);
-    button = new QPushButton(tr("Page Setup..."), m_dialogsGroupBox);
-    connect(button, SIGNAL(clicked()), this, SLOT(showPageSetupDialog()));
-    vBoxLayout->addWidget(button);
-
-    QGridLayout *gridLayout = new QGridLayout(this);
-    gridLayout->addWidget(m_creationGroupBox, 0, 0);
-    gridLayout->addWidget(m_settingsGroupBox, 1, 0);
-    gridLayout->addWidget(m_dialogsGroupBox, 0, 1, 2, 1);
-    gridLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::MinimumExpanding), 2, 0, 1, 2);
+    // Setup the Dialogs box
+    m_panel.m_dialogOptionsGroupBox->populateOptions(printDialogOptions, sizeof(printDialogOptions) / sizeof(FlagData));
+    populateCombo(m_panel.m_printDialogRangeCombo, printRangeOptions, sizeof(printRangeOptions) / sizeof(FlagData));
+    QPrintDialog dialog;
+    m_panel.m_dialogOptionsGroupBox->setValue(dialog.options());
+    m_panel.m_printDialogRangeCombo->setCurrentIndex(dialog.printRange());
+    connect(m_panel.m_printButton, SIGNAL(clicked()), this, SLOT(showPrintDialog()));
+    connect(m_panel.m_printPreviewButton, SIGNAL(clicked()), this, SLOT(showPreviewDialog()));
+    connect(m_panel.m_pageSetupButton, SIGNAL(clicked()), this, SLOT(showPageSetupDialog()));
 
     enablePanels();
 }
@@ -356,16 +295,16 @@ PrintDialogPanel::~PrintDialogPanel()
 void PrintDialogPanel::enablePanels()
 {
     const bool exists = !m_printer.isNull();
-    m_createButton->setEnabled(!exists);
-    m_modeCombo->setEnabled(!exists);
-    m_deleteButton->setEnabled(exists);
-    m_settingsGroupBox->setEnabled(exists);
-    m_dialogsGroupBox->setEnabled(exists);
+    m_panel.m_createButton->setEnabled(!exists);
+    m_panel.m_printerModeCombo->setEnabled(!exists);
+    m_panel.m_deleteButton->setEnabled(exists);
+    m_panel.m_settingsGroupBox->setEnabled(exists);
+    m_panel.m_dialogsGroupBox->setEnabled(exists);
 }
 
 void PrintDialogPanel::createPrinter()
 {
-    const QPrinter::PrinterMode mode = comboBoxValue<QPrinter::PrinterMode>(m_modeCombo);
+    const QPrinter::PrinterMode mode = comboBoxValue<QPrinter::PrinterMode>(m_panel.m_printerModeCombo);
     m_printer.reset(new QPrinter(mode)); // Can set only once.
     retrieveSettings(m_printer.data());
     enablePanels();
@@ -378,36 +317,49 @@ void PrintDialogPanel::deletePrinter()
     enablePanels();
 }
 
+QSizeF PrintDialogPanel::pageSize() const
+{
+    return QSizeF(m_panel.m_pageWidth->value(), m_panel.m_pageHeight->value());
+}
+
+void PrintDialogPanel::setPageSize(const QSizeF &sizef)
+{
+    m_panel.m_pageWidth->setValue(sizef.width());
+    m_panel.m_pageHeight->setValue(sizef.height());
+}
+
 void PrintDialogPanel::applySettings(QPrinter *printer) const
 {
-    const QPrinter::PageSize pageSize = comboBoxValue<QPrinter::PageSize>(m_pageSizeCombo);
-    if (pageSize == QPrinter::Custom)
-        printer->setPaperSize(m_customPageSizeControl->pageSize(), QPrinter::Millimeter);
+    const QPrinter::PageSize pageSizeId = comboBoxValue<QPrinter::PageSize>(m_panel.m_pageSizeCombo);
+    if (pageSizeId == QPrinter::Custom)
+        printer->setPaperSize(pageSize(), QPrinter::Millimeter);
     else
-        printer->setPageSize(pageSize);
-    printer->setOrientation(comboBoxValue<QPrinter::Orientation>(m_orientationCombo));
-    printer->setFullPage(m_fullPageCheckBox->isChecked());
+        printer->setPageSize(pageSizeId);
+    printer->setOrientation(comboBoxValue<QPrinter::Orientation>(m_panel.m_orientationCombo));
+    printer->setFullPage(m_panel.m_fullPageCheckBox->isChecked());
 }
 
 void PrintDialogPanel::retrieveSettings(const QPrinter *printer)
 {
-    setComboBoxValue(m_pageSizeCombo, printer->pageSize());
-    setComboBoxValue(m_orientationCombo, printer->orientation());
-    m_fullPageCheckBox->setChecked(printer->fullPage());
-    m_customPageSizeControl->setPageSize(m_printer->paperSize(QPrinter::Millimeter));
+    setComboBoxValue(m_panel.m_pageSizeCombo, printer->pageSize());
+    setComboBoxValue(m_panel.m_orientationCombo, printer->orientation());
+    m_panel.m_fullPageCheckBox->setChecked(printer->fullPage());
+    setPageSize(m_printer->paperSize(QPrinter::Millimeter));
 }
 
 void PrintDialogPanel::enableCustomSizeControl()
 {
-    m_customPageSizeControl->setEnabled(m_pageSizeCombo->currentIndex() == QPrinter::Custom);
+    bool custom = (m_panel.m_pageSizeCombo->currentIndex() == QPrinter::Custom);
+    m_panel.m_pageWidth->setEnabled(custom);
+    m_panel.m_pageHeight->setEnabled(custom);
 }
 
 void PrintDialogPanel::showPrintDialog()
 {
     applySettings(m_printer.data());
     QPrintDialog dialog(m_printer.data(), this);
-    dialog.setOptions(m_printDialogOptionsControl->value<QPrintDialog::PrintDialogOptions>());
-    dialog.setPrintRange(comboBoxValue<QPrintDialog::PrintRange>(m_printDialogRangeCombo));
+    dialog.setOptions(m_panel.m_dialogOptionsGroupBox->value<QPrintDialog::PrintDialogOptions>());
+    dialog.setPrintRange(comboBoxValue<QPrintDialog::PrintRange>(m_panel.m_printDialogRangeCombo));
     if (dialog.exec() == QDialog::Accepted) {
         retrieveSettings(m_printer.data());
         print(m_printer.data());
@@ -431,6 +383,7 @@ void PrintDialogPanel::showPageSetupDialog()
         retrieveSettings(m_printer.data());
 }
 
+#include "moc_printdialogpanel.cpp"
 #include "printdialogpanel.moc"
 
 #endif // !QT_NO_PRINTER

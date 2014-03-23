@@ -44,6 +44,8 @@
 
 #ifndef QT_NO_PRINTER
 
+#include "ui_printdialogpanel.h"
+
 #include <QWidget>
 
 QT_BEGIN_NAMESPACE
@@ -73,22 +75,14 @@ private slots:
     void enableCustomSizeControl();
 
 private:
+    QSizeF pageSize() const;
+    void setPageSize(const QSizeF &sizef);
     void applySettings(QPrinter *printer) const;
     void retrieveSettings(const QPrinter *printer);
     void enablePanels();
 
-    QGroupBox *m_creationGroupBox;
-    QPushButton *m_createButton;
-    QPushButton *m_deleteButton;
-    QGroupBox *m_settingsGroupBox;
-    QCheckBox *m_fullPageCheckBox;
-    QGroupBox *m_dialogsGroupBox;
-    OptionsControl *m_printDialogOptionsControl;
-    QComboBox *m_printDialogRangeCombo;
-    QComboBox *m_modeCombo;
-    QComboBox *m_orientationCombo;
-    QComboBox *m_pageSizeCombo;
-    PageSizeControl *m_customPageSizeControl;
+    Ui::PrintDialogPanel m_panel;
+
     QScopedPointer<QPrinter> m_printer;
 };
 
