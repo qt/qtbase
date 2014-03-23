@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Intel Corporation
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -67,6 +68,7 @@ QString qt_libraryInfoFile()
 #endif
 
 #include "qconfig.cpp"
+#include "archdetect.cpp"
 
 QT_BEGIN_NAMESPACE
 
@@ -280,6 +282,12 @@ QLibraryInfo::buildDate()
 #else
 #  define COMPILER_STRING "<unknown compiler>"
 #endif
+#ifdef QT_NO_DEBUG
+#  define DEBUG_STRING " release"
+#else
+#  define DEBUG_STRING " debug"
+#endif
+#define QT_BUILD_STR "Qt " QT_VERSION_STR " (" __DATE__ "; " ARCH_FULL DEBUG_STRING " build; by " COMPILER_STRING ")"
 
 /*!
   Returns a string describing how this version of Qt was built.
@@ -291,21 +299,7 @@ QLibraryInfo::buildDate()
 
 const char *QLibraryInfo::build() Q_DECL_NOTHROW
 {
-   static const char data[] = "Qt " QT_VERSION_STR " (" __DATE__ ", "
-        COMPILER_STRING ", "
-#if QT_POINTER_SIZE == 4
-        "32"
-#else
-        "64"
-#endif
-        " bit, "
-#ifdef QT_NO_DEBUG
-        "release"
-#else
-        "debug"
-#endif
-        " build)";
-    return data;
+    return QT_BUILD_STR;
 }
 
 /*!
@@ -592,7 +586,7 @@ extern const char qt_core_interpreter[] __attribute__((section(".interp")))
 extern "C" void qt_core_boilerplate();
 void qt_core_boilerplate()
 {
-    printf("This is the QtCore library version " QT_VERSION_STR "\n"
+    printf("This is the QtCore library version " QT_BUILD_STR "\n"
            "Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).\n"
            "Contact: http://www.qt-project.org/legal\n"
            "\n"
