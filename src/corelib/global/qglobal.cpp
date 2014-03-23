@@ -81,6 +81,10 @@
 #include <private/qjni_p.h>
 #endif
 
+#if defined(Q_OS_BLACKBERRY)
+#  include <bps/deviceinfo.h>
+#endif
+
 #ifdef Q_OS_UNIX
 #include <sys/utsname.h>
 #include <private/qcore_unix_p.h>
@@ -2333,8 +2337,12 @@ QString QSysInfo::osVersion()
 #elif defined(Q_OS_ANDROID)
     // TBD
 #elif defined(Q_OS_BLACKBERRY)
-    // TBD
-
+    deviceinfo_details_t *deviceInfo;
+    if (deviceinfo_get_details(&deviceInfo) == BPS_SUCCESS) {
+        QString bbVersion = QString::fromLatin1(deviceinfo_details_get_device_os_version(deviceInfo));
+        deviceinfo_free_details(&deviceInfo);
+        return bbVersion;
+    }
 #elif defined(Q_OS_UNIX)
     QUnixOSVersion unixOsVersion = detectUnixVersion();
     if (!unixOsVersion.versionIdentifier.isEmpty())
@@ -2400,7 +2408,7 @@ QString QSysInfo::prettyOsName()
 #elif defined(Q_OS_ANDROID)
     return QLatin1String("Android ") + osVersion();
 #elif defined(Q_OS_BLACKBERRY)
-    return QStringLiteral("BlackBerry 10");
+    return QLatin1String("BlackBerry ") + osVersion();
 #elif defined(Q_OS_UNIX)
     QUnixOSVersion unixOsVersion = detectUnixVersion();
     if (unixOsVersion.versionText.isEmpty())
