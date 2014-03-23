@@ -287,7 +287,12 @@ QLibraryInfo::buildDate()
 #else
 #  define DEBUG_STRING " debug"
 #endif
-#define QT_BUILD_STR "Qt " QT_VERSION_STR " (" ARCH_FULL DEBUG_STRING " build; by " COMPILER_STRING ")"
+#ifdef QT_SHARED
+#  define SHARED_STRING " shared (dynamic)"
+#else
+#  define SHARED_STRING " static"
+#endif
+#define QT_BUILD_STR "Qt " QT_VERSION_STR " (" ARCH_FULL SHARED_STRING DEBUG_STRING " build; by " COMPILER_STRING ")"
 
 /*!
   Returns a string describing how this version of Qt was built.
