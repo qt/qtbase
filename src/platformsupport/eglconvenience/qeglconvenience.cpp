@@ -446,11 +446,9 @@ void q_printEglConfig(EGLDisplay display, EGLConfig config)
     for (index = 0; attrs[index].attr != -1; ++index) {
         EGLint value;
         if (eglGetConfigAttrib(display, config, attrs[index].attr, &value)) {
-            qWarning("\t%s: %d\n", attrs[index].name, (int)value);
+            qDebug("\t%s: %d", attrs[index].name, (int)value);
         }
     }
-
-    qWarning("\n");
 }
 
 #ifdef Q_OS_LINUX
