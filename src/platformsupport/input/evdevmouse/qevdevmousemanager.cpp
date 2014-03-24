@@ -111,11 +111,16 @@ QEvdevMouseManager::~QEvdevMouseManager()
     m_mice.clear();
 }
 
-void QEvdevMouseManager::handleMouseEvent(int x, int y, Qt::MouseButtons buttons)
+void QEvdevMouseManager::handleMouseEvent(int x, int y, bool abs, Qt::MouseButtons buttons)
 {
     // update current absolute coordinates
-    m_x += x;
-    m_y += y;
+    if (!abs) {
+        m_x += x;
+        m_y += y;
+    } else {
+        m_x = x;
+        m_y = y;
+    }
 
     // clamp to screen geometry
     QRect g = QGuiApplication::primaryScreen()->virtualGeometry();
@@ -156,7 +161,7 @@ void QEvdevMouseManager::addMouse(const QString &deviceNode)
     QEvdevMouseHandler *handler;
     handler = QEvdevMouseHandler::create(deviceNode, m_spec);
     if (handler) {
-        connect(handler, SIGNAL(handleMouseEvent(int,int,Qt::MouseButtons)), this, SLOT(handleMouseEvent(int,int,Qt::MouseButtons)));
+        connect(handler, SIGNAL(handleMouseEvent(int,int,bool,Qt::MouseButtons)), this, SLOT(handleMouseEvent(int,int,bool,Qt::MouseButtons)));
         connect(handler, SIGNAL(handleWheelEvent(int,Qt::Orientation)), this, SLOT(handleWheelEvent(int,Qt::Orientation)));
         m_mice.insert(deviceNode, handler);
     } else {

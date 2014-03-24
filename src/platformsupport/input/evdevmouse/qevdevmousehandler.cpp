@@ -60,6 +60,8 @@
 
 //#define QT_QPA_MOUSE_HANDLER_DEBUG
 
+#define TEST_BIT(array, bit)    (array[bit/8] & (1<<(bit%8)))
+
 QT_BEGIN_NAMESPACE
 
 QEvdevMouseHandler *QEvdevMouseHandler::create(const QString &device, const QString &specification)
@@ -71,6 +73,7 @@ QEvdevMouseHandler *QEvdevMouseHandler::create(const QString &device, const QStr
     bool compression = true;
     int jitterLimit = 0;
     int grab = 0;
+    bool abs = false;
 
     QStringList args = specification.split(QLatin1Char(':'));
     foreach (const QString &arg, args) {
@@ -80,26 +83,36 @@ QEvdevMouseHandler *QEvdevMouseHandler::create(const QString &device, const QStr
             jitterLimit = arg.mid(9).toInt();
         else if (arg.startsWith(QLatin1String("grab=")))
             grab = arg.mid(5).toInt();
+        else if (arg == QLatin1String("abs"))
+            abs = true;
     }
 
     int fd;
     fd = qt_safe_open(device.toLocal8Bit().constData(), O_RDONLY | O_NDELAY, 0);
     if (fd >= 0) {
         ::ioctl(fd, EVIOCGRAB, grab);
-        return new QEvdevMouseHandler(device, fd, compression, jitterLimit);
+        return new QEvdevMouseHandler(device, fd, abs, compression, jitterLimit);
     } else {
         qWarning("Cannot open mouse input device '%s': %s", qPrintable(device), strerror(errno));
         return 0;
     }
 }
 
-QEvdevMouseHandler::QEvdevMouseHandler(const QString &device, int fd, bool compression, int jitterLimit)
+QEvdevMouseHandler::QEvdevMouseHandler(const QString &device, int fd, bool abs, bool compression, int jitterLimit)
     : m_device(device), m_fd(fd), m_notify(0), m_x(0), m_y(0), m_prevx(0), m_prevy(0),
-      m_compression(compression), m_buttons(0), m_prevInvalid(true)
+      m_abs(abs), m_compression(compression), m_buttons(0), m_prevInvalid(true)
 {
     setObjectName(QLatin1String("Evdev Mouse Handler"));
 
     m_jitterLimitSquared = jitterLimit * jitterLimit;
+
+    // Some touch screens present as mice with absolute coordinates.
+    // These can not be differentiated from touchpads, so supplying abs to QT_QPA_EVDEV_MOUSE_PARAMETERS
+    // will force qevdevmousehandler to treat the coordinates as absolute, scaled to the hardware maximums.
+    // Turning this on will not affect mice as these do not report in absolute coordinates
+    // but will make touchpads act like touch screens
+    if (m_abs)
+        m_abs = getHardwareMaximum();
 
     // socket notifier for events on the mouse device
     QSocketNotifier *notifier;
@@ -113,16 +126,66 @@ QEvdevMouseHandler::~QEvdevMouseHandler()
         qt_safe_close(m_fd);
 }
 
+// Ask touch screen hardware for information on coordinate maximums
+// If any ioctls fail, revert to non abs mode
+bool QEvdevMouseHandler::getHardwareMaximum()
+{
+    unsigned char absFeatures[(ABS_MAX / 8) + 1];
+    memset(absFeatures, '\0', sizeof (absFeatures));
+
+    // test if ABS_X, ABS_Y are available
+    if (ioctl(m_fd, EVIOCGBIT(EV_ABS, sizeof (absFeatures)), absFeatures) == -1)
+        return false;
+
+    if ((!TEST_BIT(absFeatures, ABS_X)) || (!TEST_BIT(absFeatures, ABS_Y)))
+        return false;
+
+    // ask hardware for minimum and maximum values
+    struct input_absinfo absInfo;
+    if (ioctl(m_fd, EVIOCGABS(ABS_X), &absInfo) == -1)
+        return false;
+
+    m_hardwareWidth = absInfo.maximum - absInfo.minimum;
+
+    if (ioctl(m_fd, EVIOCGABS(ABS_Y), &absInfo) == -1)
+        return false;
+
+    m_hardwareHeight = absInfo.maximum - absInfo.minimum;
+
+    QRect g = QGuiApplication::primaryScreen()->virtualGeometry();
+    m_hardwareScalerX = static_cast<qreal>(m_hardwareWidth) / (g.right() - g.left());
+    m_hardwareScalerY = static_cast<qreal>(m_hardwareHeight) / (g.bottom() - g.top());
+
+#ifdef QT_QPA_MOUSE_HANDLER_DEBUG
+    qDebug() << "Absolute pointing device";
+    qDebug() << "hardware max x" << m_hardwareWidth;
+    qDebug() << "hardware max y" << m_hardwareHeight;
+    qDebug() << "hardware scalers x" << m_hardwareScalerX << "y" << m_hardwareScalerY;
+#endif
+
+    return true;
+}
+
 void QEvdevMouseHandler::sendMouseEvent()
 {
-    int x = m_x - m_prevx;
-    int y = m_y - m_prevy;
+    int x;
+    int y;
+
+    if (!m_abs) {
+        x = m_x - m_prevx;
+        y = m_y - m_prevy;
+    }
+    else {
+        x = m_x / m_hardwareScalerX;
+        y = m_y / m_hardwareScalerY;
+    }
+
     if (m_prevInvalid) {
         x = y = 0;
         m_prevInvalid = false;
     }
 
-    emit handleMouseEvent(x, y, m_buttons);
+    emit handleMouseEvent(x, y, m_abs, m_buttons);
 
     m_prevx = m_x;
     m_prevy = m_y;

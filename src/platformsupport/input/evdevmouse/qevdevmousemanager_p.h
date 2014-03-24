@@ -62,7 +62,7 @@ public:
     QDeviceDiscovery *deviceDiscovery() { return m_deviceDiscovery; }
 
 public slots:
-    void handleMouseEvent(int x, int y, Qt::MouseButtons buttons);
+    void handleMouseEvent(int x, int y, bool abs, Qt::MouseButtons buttons);
     void handleWheelEvent(int delta, Qt::Orientation orientation);
 
 private slots:

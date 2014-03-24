@@ -57,26 +57,32 @@ public:
     ~QEvdevMouseHandler();
 
 signals:
-    void handleMouseEvent(int x, int y, Qt::MouseButtons buttons);
+    void handleMouseEvent(int x, int y, bool abs, Qt::MouseButtons buttons);
     void handleWheelEvent(int delta, Qt::Orientation orientation);
 
 private slots:
     void readMouseData();
 
 private:
-    QEvdevMouseHandler(const QString &device, int fd, bool compression, int jitterLimit);
+    QEvdevMouseHandler(const QString &device, int fd, bool abs, bool compression, int jitterLimit);
 
     void sendMouseEvent();
+    bool getHardwareMaximum();
 
     QString m_device;
     int m_fd;
     QSocketNotifier *m_notify;
     int m_x, m_y;
     int m_prevx, m_prevy;
+    bool m_abs;
     bool m_compression;
     Qt::MouseButtons m_buttons;
     int m_jitterLimitSquared;
     bool m_prevInvalid;
+    int m_hardwareWidth;
+    int m_hardwareHeight;
+    qreal m_hardwareScalerY;
+    qreal m_hardwareScalerX;
 };
 
 QT_END_NAMESPACE
