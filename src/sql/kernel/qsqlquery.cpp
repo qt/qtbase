@@ -311,7 +311,7 @@ QSqlQuery& QSqlQuery::operator=(const QSqlQuery& other)
 /*!
     Returns \c true if the query is not \l{isActive()}{active},
     the query is not positioned on a valid record,
-    there is no such field, or the field is null; otherwise \c false.
+    there is no such \a field, or the \a field is null; otherwise \c false.
     Note that for some drivers, isNull() will not return accurate
     information until after an attempt is made to retrieve data.
 

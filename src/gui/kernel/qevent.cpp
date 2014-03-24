@@ -628,7 +628,7 @@ QHoverEvent::~QHoverEvent()
     \a modifiers holds the keyboard modifier flags at the time of the
     event, and \a orient holds the wheel's orientation.
 
-    \sa pos(), pixelDelta(), angleDelta(), state()
+    \sa pos(), pixelDelta(), angleDelta()
 */
 #ifndef QT_NO_WHEELEVENT
 QWheelEvent::QWheelEvent(const QPointF &pos, int delta,
@@ -659,7 +659,7 @@ QWheelEvent::~QWheelEvent()
     \a orient holds the wheel's orientation.
 
 
-    \sa pos(), pixelDelta(), angleDelta(), state()
+    \sa pos(), pixelDelta(), angleDelta()
 */
 QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos, int delta,
                          Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers,

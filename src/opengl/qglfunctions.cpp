@@ -466,7 +466,7 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 */
 
 /*!
-    \fn void QGLFunctions::glBufferData(GLenum target, qgl_GLsizeiptr size, const void* data, GLenum usage)
+    \fn void QGLFunctions::glBufferData(GLenum target, qopengl_GLsizeiptr size, const void* data, GLenum usage)
 
     Convenience function that calls glBufferData(\a target, \a size, \a data, \a usage).
 
@@ -475,7 +475,7 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 */
 
 /*!
-    \fn void QGLFunctions::glBufferSubData(GLenum target, qgl_GLintptr offset, qgl_GLsizeiptr size, const void* data)
+    \fn void QGLFunctions::glBufferSubData(GLenum target, qopengl_GLintptr offset, qopengl_GLsizeiptr size, const void* data)
 
     Convenience function that calls glBufferSubData(\a target, \a offset, \a size, \a data).
 

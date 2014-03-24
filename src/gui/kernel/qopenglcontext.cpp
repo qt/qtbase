@@ -165,7 +165,7 @@ void QOpenGLVersionProfile::setVersion(int majorVersion, int minorVersion)
 /*!
     Returns the OpenGL profile. Only makes sense if profiles are supported by this version.
 
-    \sa setProfile(), supportsProfiles()
+    \sa setProfile()
 */
 QSurfaceFormat::OpenGLContextProfile QOpenGLVersionProfile::profile() const
 {
@@ -176,7 +176,7 @@ QSurfaceFormat::OpenGLContextProfile QOpenGLVersionProfile::profile() const
     Sets the OpenGL profile \a profile. Only makes sense if profiles are supported by
     this version.
 
-    \sa profile(), supportsProfiles()
+    \sa profile()
 */
 void QOpenGLVersionProfile::setProfile(QSurfaceFormat::OpenGLContextProfile profile)
 {

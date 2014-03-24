@@ -6168,7 +6168,7 @@ qulonglong QString::toIntegral_helper(const QChar *data, uint len, bool *ok, int
 
     \snippet qstring/main.cpp 73
 
-    \sa number(), toULong(), toInt(), QLocale::toLong()
+    \sa number(), toULong(), toInt(), QLocale::toInt()
 */
 
 long QString::toLong(bool *ok, int base) const
@@ -6197,7 +6197,7 @@ long QString::toLong(bool *ok, int base) const
 
     \snippet qstring/main.cpp 78
 
-    \sa number(), QLocale::toULong()
+    \sa number(), QLocale::toUInt()
 */
 
 ulong QString::toULong(bool *ok, int base) const
