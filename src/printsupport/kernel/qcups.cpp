@@ -67,61 +67,49 @@ void QCUPSSupport::setCupsOption(QStringList &cupsOptions, const QString &option
     }
 }
 
+static inline QString jobHoldToString(const QCUPSSupport::JobHoldUntil jobHold, const QTime holdUntilTime)
+{
+    switch (jobHold) {
+    case QCUPSSupport::Indefinite:
+        return QStringLiteral("indefinite");
+    case QCUPSSupport::DayTime:
+        return QStringLiteral("day-time");
+    case QCUPSSupport::Night:
+        return QStringLiteral("night");
+    case QCUPSSupport::SecondShift:
+        return QStringLiteral("second-shift");
+    case QCUPSSupport::ThirdShift:
+        return QStringLiteral("third-shift");
+    case QCUPSSupport::Weekend:
+        return QStringLiteral("weekend");
+    case QCUPSSupport::SpecificTime:
+        if (!holdUntilTime.isNull()) {
+            // CUPS expects the time in UTC, user has entered in local time, so get the UTS equivalent
+            QDateTime localDateTime = QDateTime::currentDateTime();
+            // Check if time is for tomorrow in case of DST change overnight
+            if (holdUntilTime < localDateTime.time())
+                localDateTime.addDays(1);
+            localDateTime.setTime(holdUntilTime);
+            return localDateTime.toUTC().time().toString(QStringLiteral("HH:mm"));
+        }
+        // else fall through:
+    case QCUPSSupport::NoHold:
+        return QString();
+    }
+    Q_UNREACHABLE();
+    return QString();
+}
+
 void QCUPSSupport::setJobHold(QPrinter *printer, const JobHoldUntil jobHold, const QTime &holdUntilTime)
 {
-    QStringList cupsOptions = cupsOptionsList(printer);
-
-    switch (jobHold) {
-    case NoHold: //default
-        break;
-    case Indefinite:
+    const QString jobHoldUntilArgument = jobHoldToString(jobHold, holdUntilTime);
+    if (!jobHoldUntilArgument.isEmpty()) {
+        QStringList cupsOptions = cupsOptionsList(printer);
         setCupsOption(cupsOptions,
                       QStringLiteral("job-hold-until"),
-                      QStringLiteral("indefinite"));
-        break;
-    case DayTime:
-        setCupsOption(cupsOptions,
-                      QStringLiteral("job-hold-until"),
-                      QStringLiteral("day-time"));
-        break;
-    case Night:
-        setCupsOption(cupsOptions,
-                      QStringLiteral("job-hold-until"),
-                      QStringLiteral("night"));
-        break;
-    case SecondShift:
-        setCupsOption(cupsOptions,
-                      QStringLiteral("job-hold-until"),
-                      QStringLiteral("second-shift"));
-        break;
-    case ThirdShift:
-        setCupsOption(cupsOptions,
-                      QStringLiteral("job-hold-until"),
-                      QStringLiteral("third-shift"));
-        break;
-    case Weekend:
-        setCupsOption(cupsOptions,
-                      QStringLiteral("job-hold-until"),
-                      QStringLiteral("weekend"));
-        break;
-    case SpecificTime:
-        if (holdUntilTime.isNull()) {
-            setJobHold(printer, NoHold);
-            return;
-        }
-        // CUPS expects the time in UTC, user has entered in local time, so get the UTS equivalent
-        QDateTime localDateTime = QDateTime::currentDateTime();
-        // Check if time is for tomorrow in case of DST change overnight
-        if (holdUntilTime < localDateTime.time())
-            localDateTime.addDays(1);
-        localDateTime.setTime(holdUntilTime);
-        setCupsOption(cupsOptions,
-                      QStringLiteral("job-hold-until"),
-                      localDateTime.toUTC().time().toString(QStringLiteral("HH:mm")));
-        break;
+                      jobHoldUntilArgument);
+        setCupsOptions(printer, cupsOptions);
     }
-
-    setCupsOptions(printer, cupsOptions);
 }
 
 void QCUPSSupport::setJobBilling(QPrinter *printer, const QString &jobBilling)
