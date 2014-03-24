@@ -1,6 +1,15 @@
 TARGET = qwinrt
 CONFIG -= precompile_header
 
+# For Windows Phone 8 we have to deploy fonts together with the application as DirectWrite
+# is not supported here.
+# TODO: Add a condition/remove this block if Windows Phone 8.1 supports DirectWrite
+winphone {
+    fonts.path = $$[QT_INSTALL_LIBS]/fonts
+    fonts.files = $$QT_SOURCE_TREE/lib/fonts/DejaVu*.ttf
+    INSTALLS += fonts
+}
+
 PLUGIN_TYPE = platforms
 PLUGIN_CLASS_NAME = QWinRTIntegrationPlugin
 load(qt_plugin)
