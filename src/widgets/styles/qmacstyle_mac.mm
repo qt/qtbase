@@ -4414,7 +4414,9 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                     QPen pen(strokeColor);
                     p->setPen(pen);
                     p->setBrush(fillColor);
-                    p->drawRect(opt->rect.adjusted(0, 0, -1, -1));
+                    QRect adjusted = opt->rect.adjusted(1, 1, -1, -1);
+                    if (adjusted.isValid())
+                        p->drawRect(adjusted);
                     p->setPen(oldPen);
                     p->setBrush(oldBrush);
                 }
