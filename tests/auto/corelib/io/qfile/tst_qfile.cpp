@@ -181,7 +181,7 @@ private slots:
     void writeTextFile_data();
     void writeTextFile();
     /* void largeFileSupport(); */
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
     void largeUncFileSupport();
 #endif
     void flush();
@@ -480,7 +480,7 @@ void tst_QFile::exists()
     file.remove();
     QVERIFY(!file.exists());
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
     QFile unc("//" + QtNetworkSettings::winServerName() + "/testshare/readme.txt");
     QVERIFY(unc.exists());
 #endif
@@ -605,7 +605,7 @@ void tst_QFile::size_data()
     QTest::addColumn<qint64>("size");
 
     QTest::newRow( "exist01" ) << m_testFile << (qint64)245;
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
     // Only test UNC on Windows./
     QTest::newRow("unc") << "//" + QString(QtNetworkSettings::winServerName() + "/testshare/test.pri") << (qint64)34;
 #endif
@@ -1539,7 +1539,7 @@ void tst_QFile::writeTextFile()
     QCOMPARE(file.readAll(), out);
 }
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
 void tst_QFile::largeUncFileSupport()
 {
     qint64 size = Q_INT64_C(8589934592);
@@ -2245,7 +2245,7 @@ void tst_QFile::writeLargeDataBlock_data()
     QTest::newRow("localfile-Fd")     << "./largeblockfile.txt" << (int)OpenFd;
     QTest::newRow("localfile-Stream") << "./largeblockfile.txt" << (int)OpenStream;
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(QT_NO_NETWORK)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT) && !defined(QT_NO_NETWORK)
     // Some semi-randomness to avoid collisions.
     QTest::newRow("unc file")
         << QString("//" + QtNetworkSettings::winServerName() + "/TESTSHAREWRITABLE/largefile-%1-%2.txt")
@@ -2605,7 +2605,7 @@ void tst_QFile::appendAndRead()
 
 void tst_QFile::miscWithUncPathAsCurrentDir()
 {
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
     QString current = QDir::currentPath();
     QVERIFY(QDir::setCurrent("//" + QtNetworkSettings::winServerName() + "/testshare"));
     QFile file("test.pri");

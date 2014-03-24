@@ -25,27 +25,17 @@ API
 
 While xkbcommon's API is somewhat derived from the classic XKB API as found
 in <X11/extensions/XKB.h> and friends, it has been substantially reworked to
-expose fewer internal details to clients.  The only supported API is available
-in <xkbcommon/xkbcommon.h>.  Any definition not in this header (including
-accessing internal structures through the old macros previously available)
-should be regarded as an implementation detail and is liable to change at any
-time.
+expose fewer internal details to clients.  The supported API is available
+in the <xkbcommon/xkbcommon-*.h> files. Additional support is provided for
+X11 (XCB) clients, in the xkbcommon-x11 library, <xkbcommon/xkbcommon-x11.h>.
 
-During its early development, xkbcommon does not promise API or ABI stability.
-Regardless, we will attempt to not break ABI during a minor release series,
-so applications written against 0.1.0 should be completely compatible with
-0.1.3, but not necessarily with 0.2.0.  However, new symbols may be introduced
-in any release.  Thus, anyone packaging xkbcommon should make sure any package
-depending on it depends on a release greater than or equal to the version it
-was built against (or earlier, if it doesn't use any newly-introduced
-symbols), but less than the next major release.
-
-xkbcommon 1.x will offer full API and ABI stability for its lifetime, with a
-soname of libxkbcommon.so.1.  Any ABI breaks will wait until xkbcommon 2.0,
-which will be libxkbcommon.so.2.
-
-The xkbcomp command-line tool has also been removed, although this will
-likely reappear in a later release.
+The xkbcommon API and ABI are stable. We will attempt to not break ABI during
+a minor release series, so applications written against 0.1.0 should be
+completely compatible with 0.5.3, but not necessarily with 1.0.0.  However, new
+symbols may be introduced in any release.  Thus, anyone packaging xkbcommon
+should make sure any package depending on it depends on a release greater than
+or equal to the version it was built against (or earlier, if it doesn't use
+any newly-introduced symbols), but less than the next major release.
 
 
 Relation to X11
@@ -101,19 +91,24 @@ Development
 An extremely rudimentary homepage can be found at:
     http://xkbcommon.org
 
-xkbcommon is maintained in git at freedesktop.org:
-    git://anongit.freedesktop.org/git/libxkbcommon
+xkbcommon is maintained in git at github.com:
+    https://github.com/xkbcommon/libxkbcommon
 
 Patches are always welcome, and may be sent to either xorg-devel@lists.x.org,
-or wayland-devel@lists.freedesktop.org.  Bugs are tracked in Bugzilla at:
-    http://bugs.freedesktop.org
+or wayland-devel@lists.freedesktop.org.
 
-The maintainer is Daniel Stone, who can be reached at:
+Bugs are tracked in Bugzilla at:
+    https://bugs.freedesktop.org/describecomponents.cgi?product=libxkbcommon
+Or in github at:
+    https://github.com/xkbcommon/libxkbcommon/issues
+
+The maintainers are Daniel Stone and Ran Benita, who can be reached at:
     <daniel@fooishbar.org>
+    <ran234@gmail.com>
 
 
 Credits
 =======
 
 Many thanks are due to Dan Nicholson for his heroic work in getting xkbcommon
-off the ground initially, as well as to Ran Benita for subsequent development.
+off the ground initially.

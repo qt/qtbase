@@ -118,11 +118,16 @@ bool MainWindow::save()
 bool MainWindow::saveAs()
 //! [11] //! [12]
 {
-    QString fileName = QFileDialog::getSaveFileName(this);
-    if (fileName.isEmpty())
+    QFileDialog dialog(this);
+    dialog.setWindowModality(Qt::WindowModal);
+    dialog.setAcceptMode(QFileDialog::AcceptSave);
+    dialog.exec();
+    QStringList files = dialog.selectedFiles();
+
+    if (files.isEmpty())
         return false;
 
-    return saveFile(fileName);
+    return saveFile(files.at(0));
 }
 //! [12]
 

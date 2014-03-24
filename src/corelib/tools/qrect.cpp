@@ -1201,7 +1201,7 @@ bool QRect::intersects(const QRect &r) const
 */
 
 /*!
-    \fn QRect QRect::operator+=(const QMargins &margins) const
+    \fn QRect QRect::operator+=(const QMargins &margins)
 
     Adds the \a margins to the rectangle, growing it.
 
@@ -1221,7 +1221,7 @@ bool QRect::intersects(const QRect &r) const
 */
 
 /*!
-    \fn QRect QRect::operator -=(const QMargins &margins) const
+    \fn QRect QRect::operator -=(const QMargins &margins)
 
     Returns a rectangle shrunk by the \a margins.
 

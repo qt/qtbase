@@ -87,6 +87,7 @@ private slots:
 
     void plainTextVsRichText();
 
+    void setPenPlainText_data();
     void setPenPlainText();
     void setPenRichText();
     void richTextOverridesPen();
@@ -105,6 +106,8 @@ private:
 
     QImage const    m_whiteSquare;
 };
+
+Q_DECLARE_METATYPE(QImage::Format);
 
 void tst_QStaticText::initTestCase()
 {
@@ -615,30 +618,41 @@ void tst_QStaticText::plainTextVsRichText()
     QCOMPARE(imagePlainText, imageRichText);
 }
 
+void tst_QStaticText::setPenPlainText_data()
+{
+    QTest::addColumn<QImage::Format>("format");
+
+    QTest::newRow("argb32pm") << QImage::Format_ARGB32_Premultiplied;
+    QTest::newRow("rgb32") << QImage::Format_RGB32;
+    QTest::newRow("rgba8888pm") << QImage::Format_RGBA8888_Premultiplied;
+    QTest::newRow("rgbx8888") << QImage::Format_RGBX8888;
+}
+
 void tst_QStaticText::setPenPlainText()
 {
+    QFETCH(QImage::Format, format);
+
     QFont font = QGuiApplication::font();
     font.setStyleStrategy(QFont::NoAntialias);
 
     QFontMetricsF fm(font);
-    QPixmap image(qCeil(fm.width("XXXXX")), qCeil(fm.height()));
+    QImage image(qCeil(fm.width("XXXXX")), qCeil(fm.height()), format);
     image.fill(Qt::white);
     {
         QPainter p(&image);
         p.setFont(font);
-        p.setPen(Qt::green);
+        p.setPen(Qt::yellow);
 
         QStaticText staticText("XXXXX");
         staticText.setTextFormat(Qt::PlainText);
         p.drawStaticText(0, 0, staticText);
     }
 
-    QImage img = image.toImage();
-    for (int x=0; x<img.width(); ++x) {
-        for (int y=0; y<img.height(); ++y) {
-            QRgb pixel = img.pixel(x, y);
+    for (int x=0; x<image.width(); ++x) {
+        for (int y=0; y<image.height(); ++y) {
+            QRgb pixel = image.pixel(x, y);
             QVERIFY(pixel == QColor(Qt::white).rgba()
-                    || pixel == QColor(Qt::green).rgba());
+                    || pixel == QColor(Qt::yellow).rgba());
         }
     }
 }

@@ -418,6 +418,12 @@ SOFTWARE.
 #define XKB_KEY_dead_belowcomma               0xfe6e
 #define XKB_KEY_dead_currency                 0xfe6f
 
+/* extra dead elements for German T3 layout */
+#define XKB_KEY_dead_lowline                  0xfe90
+#define XKB_KEY_dead_aboveverticalline        0xfe91
+#define XKB_KEY_dead_belowverticalline        0xfe92
+#define XKB_KEY_dead_longsolidusoverlay       0xfe93
+
 /* dead vowels for universal syllable entry */
 #define XKB_KEY_dead_a                        0xfe80
 #define XKB_KEY_dead_A                        0xfe81
@@ -2651,6 +2657,8 @@ SOFTWARE.
 #define XKB_KEY_XF86TouchpadToggle	0x1008FFA9   /* Toggle between touchpad/trackstick */
 #define XKB_KEY_XF86TouchpadOn	0x1008FFB0   /* The touchpad got switched on */
 #define XKB_KEY_XF86TouchpadOff	0x1008FFB1   /* The touchpad got switched off */
+
+#define XKB_KEY_XF86AudioMicMute	0x1008FFB2   /* Mute the Mic from the system */
 
 /* Keys for special action keys (hot keys) */
 /* Virtual terminals on some operating systems */

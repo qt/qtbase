@@ -534,7 +534,8 @@ GLuint QGLEngineShaderManager::getUniformLocation(Uniform id)
         "invertedTextureSize",
         "brushTransform",
         "brushTexture",
-        "matrix"
+        "matrix",
+        "translateZ"
     };
 
     if (uniformLocations.at(id) == GLuint(-1))

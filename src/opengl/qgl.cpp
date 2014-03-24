@@ -2441,7 +2441,7 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
     glTexImage2D(target, 0, internalFormat, img.width(), img.height(), 0, externalFormat,
                  pixel_type, constRef.bits());
     if (genMipmap && ctx->isES())
-        functions->glGenerateMipmap(target);
+        q->functions()->glGenerateMipmap(target);
 #ifndef QT_NO_DEBUG
     GLenum error = glGetError();
     if (error != GL_NO_ERROR) {
@@ -4451,12 +4451,6 @@ void QGLWidget::renderText(int x, int y, const QString &str, const QFont &font)
 
             glDisable(GL_DEPTH_TEST);
             glViewport(0, 0, width, height);
-            glMatrixMode(GL_PROJECTION);
-            glLoadIdentity();
-            glOrtho(0, width, height, 0, 0, 1);
-            glMatrixMode(GL_MODELVIEW);
-
-            glLoadIdentity();
         } else {
             setAutoBufferSwap(false);
             // disable glClear() as a result of QPainter::begin()
@@ -4567,18 +4561,20 @@ void QGLWidget::renderText(double x, double y, double z, const QString &str, con
         } else if (use_scissor_testing) {
             glEnable(GL_SCISSOR_TEST);
         }
-        glMatrixMode(GL_PROJECTION);
-        glLoadIdentity();
         glViewport(0, 0, width, height);
-        glOrtho(0, width, height, 0, 0, 1);
-        glMatrixMode(GL_MODELVIEW);
-        glLoadIdentity();
         glAlphaFunc(GL_GREATER, 0.0);
         glEnable(GL_ALPHA_TEST);
         if (use_depth_testing)
             glEnable(GL_DEPTH_TEST);
-        glTranslated(0, 0, -win_z);
+
+        // The only option in Qt 5 is the shader-based OpenGL 2 paint engine.
+        // Setting fixed pipeline transformations is futile. Instead, pass the
+        // extra values directly and let the engine figure the matrices out.
+        static_cast<QGL2PaintEngineEx *>(p->paintEngine())->setTranslateZ(-win_z);
+
         qt_gl_draw_text(p, qRound(win_x), qRound(win_y), str, font);
+
+        static_cast<QGL2PaintEngineEx *>(p->paintEngine())->setTranslateZ(0);
 
         if (!reuse_painter) {
             p->end();

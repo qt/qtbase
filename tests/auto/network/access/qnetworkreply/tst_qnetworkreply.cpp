@@ -545,9 +545,11 @@ public:
           multiple(false), totalConnections(0)
     {
         if (useipv6) {
-            listen(QHostAddress::AnyIPv6);
+            if (!listen(QHostAddress::AnyIPv6))
+                qWarning() << "listen() IPv6 failed" << errorString();
         } else {
-            listen(QHostAddress::AnyIPv4);
+            if (!listen(QHostAddress::AnyIPv4))
+                qWarning() << "listen() IPv4 failed" << errorString();
         }
         if (thread) {
             connect(thread, SIGNAL(started()), this, SLOT(threadStartedSlot()));
@@ -1375,6 +1377,22 @@ QString tst_QNetworkReply::runCustomRequest(const QNetworkRequest &request,
         return "Network timeout";
     }
     return QString();
+}
+
+static QByteArray msgWaitForFinished(QNetworkReplyPtr &reply)
+{
+    QString result;
+    QDebug debug(&result);
+    debug << reply->url();
+    if (reply->isFinished()) {
+        if (reply->error() == QNetworkReply::NoError)
+            debug << "finished.";
+        else
+            debug << "failed: #" << reply->error() << reply->errorString();
+    } else {
+        debug << "timed out.";
+    }
+    return result.toLocal8Bit();
 }
 
 int tst_QNetworkReply::waitForFinish(QNetworkReplyPtr &reply)
@@ -2839,7 +2857,7 @@ void tst_QNetworkReply::connectToIPv6Address()
     QNetworkRequest request(url);
 
     QNetworkReplyPtr reply(manager.get(request));
-    QVERIFY(waitForFinish(reply) == Success);
+    QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
     QByteArray content = reply->readAll();
     //qDebug() << server.receivedData;
     QByteArray hostinfo = "\r\nHost: " + hostfield + ":" + QByteArray::number(server.serverPort()) + "\r\n";
@@ -3020,7 +3038,7 @@ void tst_QNetworkReply::ioGetFromFtp()
     QNetworkReplyPtr reply(manager.get(request));
     DataReader reader(reply);
 
-    QVERIFY(waitForFinish(reply) == Success);
+    QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
 
     QCOMPARE(reply->url(), request.url());
     QCOMPARE(reply->error(), QNetworkReply::NoError);
@@ -3075,7 +3093,7 @@ void tst_QNetworkReply::ioGetFromHttp()
     QNetworkReplyPtr reply(manager.get(request));
     DataReader reader(reply);
 
-    QVERIFY(waitForFinish(reply) == Success);
+    QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
 
     QCOMPARE(reply->url(), request.url());
     QCOMPARE(reply->error(), QNetworkReply::NoError);
@@ -3129,7 +3147,7 @@ void tst_QNetworkReply::ioGetFromHttpWithReuseSequential()
         QNetworkReplyPtr reply(manager.get(request));
         DataReader reader(reply);
 
-        QVERIFY(waitForFinish(reply) == Success);
+        QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
 
         QCOMPARE(reply->url(), request.url());
         QCOMPARE(reply->error(), QNetworkReply::NoError);
@@ -3147,7 +3165,7 @@ void tst_QNetworkReply::ioGetFromHttpWithReuseSequential()
         QNetworkReplyPtr reply(manager.get(request));
         DataReader reader(reply);
 
-        QVERIFY(waitForFinish(reply) == Success);
+        QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
 
         QCOMPARE(reply->url(), request.url());
         QCOMPARE(reply->error(), QNetworkReply::NoError);
@@ -3226,7 +3244,7 @@ void tst_QNetworkReply::ioGetFromHttpWithAuth()
         connect(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
                 SLOT(authenticationRequired(QNetworkReply*,QAuthenticator*)));
 
-        QVERIFY(waitForFinish(reply) == Success);
+        QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
 
         manager.disconnect(SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
                            this, SLOT(authenticationRequired(QNetworkReply*,QAuthenticator*)));
@@ -3359,7 +3377,7 @@ void tst_QNetworkReply::ioGetFromHttpWithProxyAuth()
         connect(&manager, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
                 SLOT(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
 
-        QVERIFY(waitForFinish(reply) == Success);
+        QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
 
         manager.disconnect(SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
                            this, SLOT(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
@@ -3432,7 +3450,7 @@ void tst_QNetworkReply::ioGetFromHttpWithSocksProxy()
         connect(&manager, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
                 SLOT(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
 
-        QVERIFY(waitForFinish(reply) == Success);
+        QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
 
         manager.disconnect(SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
                            this, SLOT(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
@@ -3487,7 +3505,7 @@ void tst_QNetworkReply::ioGetFromHttpsWithSslErrors()
             SLOT(sslErrors(QNetworkReply*,QList<QSslError>)));
     connect(reply, SIGNAL(metaDataChanged()), SLOT(storeSslConfiguration()));
 
-    QVERIFY(waitForFinish(reply) == Success);
+    QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
 
     manager.disconnect(SIGNAL(sslErrors(QNetworkReply*,QList<QSslError>)),
                        this, SLOT(sslErrors(QNetworkReply*,QList<QSslError>)));
@@ -3518,7 +3536,7 @@ void tst_QNetworkReply::ioGetFromHttpsWithIgnoreSslErrors()
     QSignalSpy sslspy(&manager, SIGNAL(sslErrors(QNetworkReply*,QList<QSslError>)));
     connect(reply, SIGNAL(metaDataChanged()), SLOT(storeSslConfiguration()));
 
-    QVERIFY(waitForFinish(reply) == Success);
+    QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
 
     QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200);
     QCOMPARE(reader.data, reference.readAll());
@@ -3631,7 +3649,7 @@ void tst_QNetworkReply::ioGetFromHttpStatus100()
     QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
     QNetworkReplyPtr reply(manager.get(request));
 
-    QVERIFY(waitForFinish(reply) == Success);
+    QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
 
     QCOMPARE(reply->url(), request.url());
     QCOMPARE(reply->error(), QNetworkReply::NoError);
@@ -3654,7 +3672,7 @@ void tst_QNetworkReply::ioGetFromHttpNoHeaders()
     QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
     QNetworkReplyPtr reply(manager.get(request));
 
-    QVERIFY(waitForFinish(reply) == Success);
+    QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
 
     QCOMPARE(reply->url(), request.url());
     QCOMPARE(reply->error(), QNetworkReply::NoError);
@@ -4118,7 +4136,7 @@ void tst_QNetworkReply::ioPutToFileFromFile()
     QNetworkRequest request(url);
     QNetworkReplyPtr reply(manager.put(request, &sourceFile));
 
-    QVERIFY(waitForFinish(reply) == Success);
+    QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
 
     QCOMPARE(reply->url(), url);
     QCOMPARE(reply->error(), QNetworkReply::NoError);
@@ -4153,7 +4171,7 @@ void tst_QNetworkReply::ioPutToFileFromSocket()
     QNetworkReplyPtr reply(manager.put(QNetworkRequest(url), socketpair.endPoints[1]));
     socketpair.endPoints[0]->close();
 
-    QVERIFY(waitForFinish(reply) == Success);
+    QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
     QCOMPARE(reply->error(), QNetworkReply::NoError);
 
     QCOMPARE(reply->url(), url);
@@ -4201,7 +4219,7 @@ void tst_QNetworkReply::ioPutToFileFromLocalSocket()
     if (!data.isEmpty())
         QEXPECT_FAIL("", "QTBUG-18385", Abort);
 #endif
-    QVERIFY(waitForFinish(reply) == Success);
+    QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
     QCOMPARE(reply->error(), QNetworkReply::NoError);
 
     QCOMPARE(reply->url(), url);
@@ -4249,7 +4267,7 @@ void tst_QNetworkReply::ioPutToFileFromProcess()
 
     QNetworkReplyPtr reply(manager.put(QNetworkRequest(url), &process));
 
-    QVERIFY(waitForFinish(reply) == Success);
+    QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
 
     QCOMPARE(reply->url(), url);
     QCOMPARE(reply->error(), QNetworkReply::NoError);
@@ -4283,7 +4301,7 @@ void tst_QNetworkReply::ioPutToFtpFromFile()
     QNetworkRequest request(url);
     QNetworkReplyPtr reply(manager.put(request, &sourceFile));
 
-    QVERIFY(waitForFinish(reply) == Success);
+    QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
 
     QCOMPARE(reply->url(), url);
     QCOMPARE(reply->error(), QNetworkReply::NoError);
@@ -4332,7 +4350,7 @@ void tst_QNetworkReply::ioPutToHttpFromFile()
     QNetworkRequest request(url);
     QNetworkReplyPtr reply(manager.put(request, &sourceFile));
 
-    QVERIFY(waitForFinish(reply) == Success);
+    QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
 
     QCOMPARE(reply->url(), url);
     QCOMPARE(reply->error(), QNetworkReply::NoError);
@@ -4347,7 +4365,7 @@ void tst_QNetworkReply::ioPutToHttpFromFile()
     // correctly
     reply.reset(manager.get(request));
 
-    QVERIFY(waitForFinish(reply) == Success);
+    QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
 
     QCOMPARE(reply->url(), url);
     QCOMPARE(reply->error(), QNetworkReply::NoError);
@@ -4373,7 +4391,7 @@ void tst_QNetworkReply::ioPostToHttpFromFile()
 
     QNetworkReplyPtr reply(manager.post(request, &sourceFile));
 
-    QVERIFY(waitForFinish(reply) == Success);
+    QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
 
     QCOMPARE(reply->url(), url);
     QCOMPARE(reply->error(), QNetworkReply::NoError);
@@ -4460,7 +4478,7 @@ void tst_QNetworkReply::ioPostToHttpFromSocket()
     QSignalSpy authenticationRequiredSpy(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)));
     QSignalSpy proxyAuthenticationRequiredSpy(&manager, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
 
-    QVERIFY(waitForFinish(reply) == Success);
+    QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
 
     disconnect(&manager, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
                this, SLOT(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
@@ -4557,7 +4575,7 @@ void tst_QNetworkReply::ioPostToHttpFromMiddleOfFileToEnd()
     connect(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
             SLOT(authenticationRequired(QNetworkReply*,QAuthenticator*)));
 
-    QVERIFY(waitForFinish(reply) == Success);
+    QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
 
     disconnect(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
                this, SLOT(authenticationRequired(QNetworkReply*,QAuthenticator*)));
@@ -4586,7 +4604,7 @@ void tst_QNetworkReply::ioPostToHttpFromMiddleOfFileFiveBytes()
     connect(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
             SLOT(authenticationRequired(QNetworkReply*,QAuthenticator*)));
 
-    QVERIFY(waitForFinish(reply) == Success);
+    QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
 
     disconnect(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
                this, SLOT(authenticationRequired(QNetworkReply*,QAuthenticator*)));
@@ -4614,7 +4632,7 @@ void tst_QNetworkReply::ioPostToHttpFromMiddleOfQBufferFiveBytes()
     connect(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
             SLOT(authenticationRequired(QNetworkReply*,QAuthenticator*)));
 
-    QVERIFY(waitForFinish(reply) == Success);
+    QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
 
     disconnect(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
                this, SLOT(authenticationRequired(QNetworkReply*,QAuthenticator*)));
@@ -4754,7 +4772,7 @@ void tst_QNetworkReply::ioPostToHttpsUploadProgress()
     incomingSocket->write("Content-Length: 0\r\n");
     incomingSocket->write("\r\n");
 
-    QVERIFY(waitForFinish(reply) == Success);
+    QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
 
     incomingSocket->close();
     server.close();
@@ -4813,7 +4831,7 @@ void tst_QNetworkReply::ioGetFromBuiltinHttp()
     QTime loopTime;
     loopTime.start();
 
-    QVERIFY(waitForFinish(reply) == Success);
+    QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
 
     const int elapsedTime = loopTime.elapsed();
     server.wait();
@@ -4968,7 +4986,7 @@ void tst_QNetworkReply::lastModifiedHeaderForFile()
     QNetworkRequest request(url);
     QNetworkReplyPtr reply(manager.head(request));
 
-    QVERIFY(waitForFinish(reply) == Success);
+    QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
 
     QDateTime header = reply->header(QNetworkRequest::LastModifiedHeader).toDateTime();
     QCOMPARE(header, fileInfo.lastModified());
@@ -4982,7 +5000,7 @@ void tst_QNetworkReply::lastModifiedHeaderForHttp()
     QNetworkRequest request(url);
     QNetworkReplyPtr reply(manager.head(request));
 
-    QVERIFY(waitForFinish(reply) == Success);
+    QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
 
     QDateTime header = reply->header(QNetworkRequest::LastModifiedHeader).toDateTime();
     QDateTime realDate = QDateTime::fromString("2007-05-22T12:04:57", Qt::ISODate);
@@ -4996,7 +5014,7 @@ void tst_QNetworkReply::httpCanReadLine()
     QNetworkRequest request(QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/rfc3252.txt"));
     QNetworkReplyPtr reply(manager.get(request));
 
-    QVERIFY(waitForFinish(reply) == Success);
+    QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
 
     QCOMPARE(reply->error(), QNetworkReply::NoError);
 
@@ -5042,7 +5060,7 @@ void tst_QNetworkReply::rateControl()
     QTime loopTime;
     loopTime.start();
 
-    QVERIFY(waitForFinish(reply) == Success);
+    QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
 
     int elapsedTime = loopTime.elapsed();
 
@@ -5167,7 +5185,7 @@ void tst_QNetworkReply::uploadProgress()
     QTcpSocket *receiver = server.nextPendingConnection();
     if (finished.count() == 0) {
         // it's not finished yet, so wait for it to be
-        QVERIFY(waitForFinish(reply) == Success);
+        QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
     }
     delete receiver;
 
@@ -6412,7 +6430,7 @@ void tst_QNetworkReply::getFromHttpIntoBufferCanReadLine()
     request.setAttribute(QNetworkRequest::MaximumDownloadBufferSizeAttribute, 1024*1024*128); // 128 MB is max allowed
     QNetworkReplyPtr reply(manager.get(request));
 
-    QVERIFY(waitForFinish(reply) == Success);
+    QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
 
     QCOMPARE(reply->error(), QNetworkReply::NoError);
     QVERIFY(reply->canReadLine());
@@ -6436,7 +6454,7 @@ void tst_QNetworkReply::ioGetFromHttpWithoutContentLength()
     QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
     QNetworkReplyPtr reply(manager.get(request));
 
-    QVERIFY(waitForFinish(reply) == Success);
+    QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
 
     QCOMPARE(reply->url(), request.url());
     QVERIFY(reply->isFinished());
@@ -6484,7 +6502,7 @@ void tst_QNetworkReply::qtbug12908compressedHttpReply()
     QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
     QNetworkReplyPtr reply(manager.get(request));
 
-    QVERIFY(waitForFinish(reply) == Success);
+    QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
 
     QCOMPARE(reply->error(), QNetworkReply::NoError);
     QCOMPARE(reply->size(), qint64(16384));
@@ -6826,7 +6844,7 @@ void tst_QNetworkReply::httpWithNoCredentialUsage()
     {
         QNetworkRequest request(QUrl("http://httptest:httptest@" + QtNetworkSettings::serverName() + "/qtest/protected/cgi-bin/md5sum.cgi"));
         QNetworkReplyPtr reply(manager.get(request));
-        QVERIFY(waitForFinish(reply) == Success);
+        QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
         // credentials in URL, so don't expect authentication signal
         QCOMPARE(authSpy.count(), 0);
         QCOMPARE(finishedSpy.count(), 1);
@@ -6837,7 +6855,7 @@ void tst_QNetworkReply::httpWithNoCredentialUsage()
     {
         QNetworkRequest request(QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/protected/cgi-bin/md5sum.cgi"));
         QNetworkReplyPtr reply(manager.get(request));
-        QVERIFY(waitForFinish(reply) == Success);
+        QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
         // credentials in cache, so don't expect authentication signal
         QCOMPARE(authSpy.count(), 0);
         QCOMPARE(finishedSpy.count(), 1);
@@ -6874,7 +6892,7 @@ void tst_QNetworkReply::qtbug15311doubleContentLength()
     QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
     QNetworkReplyPtr reply(manager.get(request));
 
-    QVERIFY(waitForFinish(reply) == Success);
+    QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
 
     QVERIFY(reply->isFinished());
     QCOMPARE(reply->error(), QNetworkReply::NoError);
@@ -6893,7 +6911,7 @@ void tst_QNetworkReply::qtbug18232gzipContentLengthZero()
     QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
     QNetworkReplyPtr reply(manager.get(request));
 
-    QVERIFY(waitForFinish(reply) == Success);
+    QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
 
     QVERIFY(reply->isFinished());
     QCOMPARE(reply->error(), QNetworkReply::NoError);
@@ -6914,7 +6932,7 @@ void tst_QNetworkReply::qtbug22660gzipNoContentLengthEmptyContent()
     QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
     QNetworkReplyPtr reply(manager.get(request));
 
-    QVERIFY(waitForFinish(reply) == Success);
+    QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
 
     QVERIFY(reply->isFinished());
     QCOMPARE(reply->error(), QNetworkReply::NoError);
@@ -6983,7 +7001,7 @@ void tst_QNetworkReply::qtbug27161httpHeaderMayBeDamaged(){
     QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
     QNetworkReplyPtr reply(manager.get(request));
 
-    QVERIFY(waitForFinish(reply) == Success);
+    QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
 
     QVERIFY(reply->isFinished());
     QCOMPARE(reply->error(), QNetworkReply::NoError);
@@ -7033,7 +7051,7 @@ void tst_QNetworkReply::qtbug28035browserDoesNotLoadQtProjectOrgCorrectly() {
     QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
     QNetworkReplyPtr reply(manager.get(request));
 
-    QVERIFY(waitForFinish(reply) == Success);
+    QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
 
     QVERIFY(reply->isFinished());
     QCOMPARE(reply->error(), QNetworkReply::NoError);
@@ -7042,7 +7060,7 @@ void tst_QNetworkReply::qtbug28035browserDoesNotLoadQtProjectOrgCorrectly() {
 
     server.setDataToTransmit(getReply);
     reply.reset(manager.get(request));
-    QVERIFY(waitForFinish(reply) == Success);
+    QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
 
     QVERIFY(reply->isFinished());
     QCOMPARE(reply->error(), QNetworkReply::NoError);
@@ -7053,7 +7071,7 @@ void tst_QNetworkReply::qtbug28035browserDoesNotLoadQtProjectOrgCorrectly() {
     request.setRawHeader("Content-Type", "text/plain");
     reply.reset(manager.post(request, postData));
 
-    QVERIFY(waitForFinish(reply) == Success);
+    QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
 
     QVERIFY(reply->isFinished());
     QCOMPARE(reply->error(), QNetworkReply::NoError);
@@ -7064,7 +7082,7 @@ void tst_QNetworkReply::qtbug28035browserDoesNotLoadQtProjectOrgCorrectly() {
     server.setDataToTransmit(getReply);
     reply.reset(manager.get(request));
 
-    QVERIFY(waitForFinish(reply) == Success);
+    QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
 
     QVERIFY(reply->isFinished());
     QCOMPARE(reply->error(), QNetworkReply::NoError);
@@ -7074,7 +7092,7 @@ void tst_QNetworkReply::qtbug28035browserDoesNotLoadQtProjectOrgCorrectly() {
     server.setDataToTransmit(getReply);
     reply.reset(manager.get(request));
 
-    QVERIFY(waitForFinish(reply) == Success);
+    QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
 
     QVERIFY(reply->isFinished());
     QCOMPARE(reply->error(), QNetworkReply::NoError);
@@ -7084,7 +7102,7 @@ void tst_QNetworkReply::qtbug28035browserDoesNotLoadQtProjectOrgCorrectly() {
     server.setDataToTransmit(putReply);
     reply.reset(manager.put(request, postData));
 
-    QVERIFY(waitForFinish(reply) == Success);
+    QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
 
     QVERIFY(reply->isFinished());
     QCOMPARE(reply->error(), QNetworkReply::NoError);
@@ -7093,7 +7111,7 @@ void tst_QNetworkReply::qtbug28035browserDoesNotLoadQtProjectOrgCorrectly() {
     server.setDataToTransmit(getReply);
     reply.reset(manager.get(request));
 
-    QVERIFY(waitForFinish(reply) == Success);
+    QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
 
     QVERIFY(reply->isFinished());
     QCOMPARE(reply->error(), QNetworkReply::NoError);
@@ -7103,7 +7121,7 @@ void tst_QNetworkReply::qtbug28035browserDoesNotLoadQtProjectOrgCorrectly() {
     server.setDataToTransmit(getReply);
     reply.reset(manager.get(request));
 
-    QVERIFY(waitForFinish(reply) == Success);
+    QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
 
     QVERIFY(reply->isFinished());
     QCOMPARE(reply->error(), QNetworkReply::NoError);
@@ -7312,7 +7330,7 @@ void tst_QNetworkReply::dontInsertPartialContentIntoTheCache()
 
     QNetworkReplyPtr reply(manager.get(request));
 
-    QVERIFY(waitForFinish(reply) == Success);
+    QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
 
     QVERIFY(server.totalConnections > 0);
     QCOMPARE(reply->readAll().constData(), "load");
@@ -7329,7 +7347,7 @@ void tst_QNetworkReply::httpUserAgent()
     request.setHeader(QNetworkRequest::UserAgentHeader, "abcDEFghi");
     QNetworkReplyPtr reply(manager.get(request));
 
-    QVERIFY(waitForFinish(reply) == Success);
+    QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
 
     QVERIFY(reply->isFinished());
     QCOMPARE(reply->error(), QNetworkReply::NoError);

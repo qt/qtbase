@@ -207,7 +207,7 @@ QRectF source(0.0, 0.0, 70.0, 40.0);
 QPixmap pixmap(":myPixmap.png");
 
 QPainter(this);
-painter.drawPixmap(target, image, source);
+painter.drawPixmap(target, pixmap, source);
 //! [16]
 
 

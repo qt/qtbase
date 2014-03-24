@@ -80,6 +80,9 @@ src_testlib.subdir = $$PWD/testlib
 src_testlib.target = sub-testlib
 src_testlib.depends = src_corelib   # src_gui & src_widgets are not build-depends
 
+src_3rdparty_harfbuzzng.subdir = $$PWD/3rdparty/harfbuzz-ng
+src_3rdparty_harfbuzzng.target = sub-3rdparty-harfbuzzng
+
 src_angle.subdir = $$PWD/angle
 src_angle.target = sub-angle
 angle_d3d11: src_angle.depends = src_corelib
@@ -130,6 +133,10 @@ contains(QT_CONFIG, dbus) {
 }
 contains(QT_CONFIG, concurrent):SUBDIRS += src_concurrent
 !contains(QT_CONFIG, no-gui) {
+    contains(QT_CONFIG, harfbuzz) {
+        SUBDIRS += src_3rdparty_harfbuzzng
+        src_gui.depends += src_3rdparty_harfbuzzng
+    }
     win32:contains(QT_CONFIG, angle)|contains(QT_CONFIG, dynamicgl) {
         SUBDIRS += src_angle
         src_gui.depends += src_angle
@@ -141,7 +148,7 @@ contains(QT_CONFIG, concurrent):SUBDIRS += src_concurrent
         SUBDIRS += src_tools_uic src_widgets
         TOOLS += src_tools_uic
         src_plugins.depends += src_widgets
-        contains(QT_CONFIG, opengl(es1|es2)?) {
+        contains(QT_CONFIG, opengl(es1|es2)?):!contains(QT_CONFIG, dynamicgl) {
             SUBDIRS += src_opengl
             src_plugins.depends += src_opengl
         }
@@ -159,7 +166,8 @@ android:!android-no-sdk: SUBDIRS += src_android
 
 TR_EXCLUDE = \
     src_tools_bootstrap src_tools_moc src_tools_rcc src_tools_uic src_tools_qlalr \
-    src_tools_bootstrap_dbus src_tools_qdbusxml2cpp src_tools_qdbuscpp2xml
+    src_tools_bootstrap_dbus src_tools_qdbusxml2cpp src_tools_qdbuscpp2xml \
+    src_3rdparty_harfbuzzng
 
 sub-tools.depends = $$TOOLS
 QMAKE_EXTRA_TARGETS = sub-tools

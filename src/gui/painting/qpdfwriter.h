@@ -48,6 +48,7 @@
 
 #include <QtCore/qobject.h>
 #include <QtGui/qpagedpaintdevice.h>
+#include <QtGui/qpagelayout.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -69,6 +70,17 @@ public:
     void setCreator(const QString &creator);
 
     bool newPage();
+
+    void setResolution(int resolution);
+    int resolution() const;
+
+    bool setPageLayout(const QPageLayout &pageLayout);
+    bool setPageSize(const QPageSize &pageSize);
+    bool setPageOrientation(QPageLayout::Orientation orientation);
+    bool setPageMargins(const QMarginsF &margins);
+    bool setPageMargins(const QMarginsF &margins, QPageLayout::Unit units);
+
+    QPageLayout pageLayout() const;
 
     void setPageSize(PageSize size);
     void setPageSizeMM(const QSizeF &size);

@@ -60,6 +60,7 @@
 #include <QtOpenGL/private/qgl_p.h>
 #include <QtGui/private/qimage_p.h>
 #include <QtGui/private/qimagepixmapcleanuphooks_p.h>
+#include <QtGui/private/qopenglextensions_p.h>
 #endif
 
 class tst_QGL : public QObject
@@ -99,6 +100,7 @@ private slots:
     void threadImages();
     void nullRectCrash();
     void graphicsViewClipping();
+    void extensions();
 };
 
 tst_QGL::tst_QGL()
@@ -2359,6 +2361,44 @@ void tst_QGL::nullRectCrash()
     fboPainter.drawRect(QRectF());
 
     fboPainter.end();
+}
+
+void tst_QGL::extensions()
+{
+    QGLWidget glw;
+    glw.makeCurrent();
+
+    QOpenGLContext *ctx = QOpenGLContext::currentContext();
+    QVERIFY(ctx);
+    QOpenGLFunctions *funcs = ctx->functions();
+    QVERIFY(funcs);
+    QSurfaceFormat format = ctx->format();
+
+#ifdef QT_BUILD_INTERNAL
+    QOpenGLExtensions *exts = static_cast<QOpenGLExtensions *>(funcs);
+    QOpenGLExtensions::OpenGLExtensions allExts = exts->openGLExtensions();
+    // Mipmapping is always available in GL2/GLES2+. Verify this.
+    if (format.majorVersion() >= 2)
+        QVERIFY(allExts.testFlag(QOpenGLExtensions::GenerateMipmap));
+#endif
+
+    // Now look for some features should always be available in a given version.
+    QOpenGLFunctions::OpenGLFeatures allFeatures = funcs->openGLFeatures();
+    QVERIFY(allFeatures.testFlag(QOpenGLFunctions::Multitexture));
+    if (format.majorVersion() >= 2) {
+        QVERIFY(allFeatures.testFlag(QOpenGLFunctions::Shaders));
+        QVERIFY(allFeatures.testFlag(QOpenGLFunctions::Buffers));
+        QVERIFY(allFeatures.testFlag(QOpenGLFunctions::Multisample));
+        QVERIFY(!ctx->isES() || allFeatures.testFlag(QOpenGLFunctions::Framebuffers));
+        QVERIFY(allFeatures.testFlag(QOpenGLFunctions::NPOTTextures)
+                && allFeatures.testFlag(QOpenGLFunctions::NPOTTextureRepeat));
+        if (ctx->isES()) {
+            QVERIFY(!allFeatures.testFlag(QOpenGLFunctions::FixedFunctionPipeline));
+            QVERIFY(allFeatures.testFlag(QOpenGLFunctions::Framebuffers));
+        }
+    }
+    if (format.majorVersion() >= 3)
+        QVERIFY(allFeatures.testFlag(QOpenGLFunctions::Framebuffers));
 }
 
 QTEST_MAIN(tst_QGL)

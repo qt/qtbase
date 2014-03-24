@@ -59,25 +59,20 @@ QCocoaBackingStore::~QCocoaBackingStore()
 
 QPaintDevice *QCocoaBackingStore::paintDevice()
 {
-    if (m_qImage.size() / m_qImage.devicePixelRatio() != m_requestedSize) {
+    QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(window()->handle());
+    int windowDevicePixelRatio = int(cocoaWindow->devicePixelRatio());
+
+    // Receate the backing store buffer if the effective buffer size has changed,
+    // either due to a window resize or devicePixelRatio change.
+    QSize effectiveBufferSize = m_requestedSize * windowDevicePixelRatio;
+    if (m_qImage.size() != effectiveBufferSize) {
         CGImageRelease(m_cgImage);
         m_cgImage = 0;
 
-        int scaleFactor = 1;
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
-        if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7) {
-            QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(window()->handle());
-            if (cocoaWindow && cocoaWindow->m_contentView && [cocoaWindow->m_contentView window]) {
-                scaleFactor = int([[cocoaWindow->m_contentView window] backingScaleFactor]);
-            }
-        }
-#endif
-
-        QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(window()->handle());
         QImage::Format format = (window()->format().hasAlpha() || cocoaWindow->m_drawContentBorderGradient)
                 ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32;
-        m_qImage = QImage(m_requestedSize * scaleFactor, format);
-        m_qImage.setDevicePixelRatio(scaleFactor);
+        m_qImage = QImage(effectiveBufferSize, format);
+        m_qImage.setDevicePixelRatio(windowDevicePixelRatio);
         if (format == QImage::Format_ARGB32_Premultiplied)
             m_qImage.fill(Qt::transparent);
     }
@@ -99,6 +94,11 @@ void QCocoaBackingStore::flush(QWindow *win, const QRegion &region, const QPoint
         if (QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(win->handle()))
             [cocoaWindow->m_qtView flushBackingStore:this region:region offset:offset];
     }
+}
+
+QImage QCocoaBackingStore::toImage() const
+{
+    return m_qImage;
 }
 
 void QCocoaBackingStore::resize(const QSize &size, const QRegion &)

@@ -1516,6 +1516,9 @@ void QOpenGLShaderProgram::setAttributeArray
     The setAttributeBuffer() function can be used to set the attribute
     array to an offset within a vertex buffer.
 
+    \note Normalization will be enabled. If this is not desired, call
+    glVertexAttribPointer directly through QOpenGLFunctions.
+
     \sa setAttributeValue(), setUniformValue(), enableAttributeArray()
     \sa disableAttributeArray(), setAttributeBuffer()
 */
@@ -1658,6 +1661,9 @@ void QOpenGLShaderProgram::setAttributeArray
     The array will become active when enableAttributeArray() is called
     on the \a location.  Otherwise the value specified with
     setAttributeValue() for \a location will be used.
+
+    \note Normalization will be enabled. If this is not desired, call
+    glVertexAttribPointer directly through QOpenGLFunctions.
 
     \sa setAttributeArray()
 */

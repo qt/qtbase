@@ -329,19 +329,21 @@ void QAbstractScrollAreaPrivate::setSingleFingerPanEnabled(bool on)
 void QAbstractScrollAreaPrivate::layoutChildren()
 {
     Q_Q(QAbstractScrollArea);
-    bool transient = q->style()->styleHint(QStyle::SH_ScrollBar_Transient, 0, vbar ? vbar : hbar);
-    bool needh = (hbarpolicy != Qt::ScrollBarAlwaysOff) && ((hbarpolicy == Qt::ScrollBarAlwaysOn && !transient)
-                 || ((hbarpolicy == Qt::ScrollBarAsNeeded || transient)
+    bool htransient = hbar->style()->styleHint(QStyle::SH_ScrollBar_Transient, 0, hbar);
+    bool needh = (hbarpolicy != Qt::ScrollBarAlwaysOff) && ((hbarpolicy == Qt::ScrollBarAlwaysOn && !htransient)
+                 || ((hbarpolicy == Qt::ScrollBarAsNeeded || htransient)
                      && hbar->minimum() < hbar->maximum() && !hbar->sizeHint().isEmpty()));
 
-    bool needv = (vbarpolicy != Qt::ScrollBarAlwaysOff) && ((vbarpolicy == Qt::ScrollBarAlwaysOn && !transient)
-                 || ((vbarpolicy == Qt::ScrollBarAsNeeded || transient)
+    bool vtransient = vbar->style()->styleHint(QStyle::SH_ScrollBar_Transient, 0, vbar);
+    bool needv = (vbarpolicy != Qt::ScrollBarAlwaysOff) && ((vbarpolicy == Qt::ScrollBarAlwaysOn && !vtransient)
+                 || ((vbarpolicy == Qt::ScrollBarAsNeeded || vtransient)
                      && vbar->minimum() < vbar->maximum() && !vbar->sizeHint().isEmpty()));
 
     QStyleOption opt(0);
     opt.init(q);
-    const int scrollOverlap = q->style()->pixelMetric(QStyle::PM_ScrollView_ScrollBarOverlap,
-                                                      &opt, q);
+
+    const int hscrollOverlap = hbar->style()->pixelMetric(QStyle::PM_ScrollView_ScrollBarOverlap, &opt, hbar);
+    const int vscrollOverlap = vbar->style()->pixelMetric(QStyle::PM_ScrollView_ScrollBarOverlap, &opt, vbar);
 
 #ifdef Q_WS_MAC
     QWidget * const window = q->window();
@@ -408,7 +410,7 @@ void QAbstractScrollAreaPrivate::layoutChildren()
     }
 #endif
 
-    QPoint cornerOffset((needv && scrollOverlap == 0) ? vsbExt : 0, (needh && scrollOverlap == 0) ? hsbExt : 0);
+    QPoint cornerOffset((needv && vscrollOverlap == 0) ? vsbExt : 0, (needh && hscrollOverlap == 0) ? hsbExt : 0);
     QRect controlsRect;
     QRect viewportRect;
 
@@ -417,8 +419,8 @@ void QAbstractScrollAreaPrivate::layoutChildren()
     if ((frameStyle != QFrame::NoFrame) &&
         q->style()->styleHint(QStyle::SH_ScrollView_FrameOnlyAroundContents, &opt, q)) {
         controlsRect = widgetRect;
-        const int extra = scrollOverlap + q->style()->pixelMetric(QStyle::PM_ScrollView_ScrollBarSpacing, &opt, q);
-        const QPoint cornerExtra(needv ? extra : 0, needh ? extra : 0);
+        const int spacing = q->style()->pixelMetric(QStyle::PM_ScrollView_ScrollBarSpacing, &opt, q);
+        const QPoint cornerExtra(needv ? spacing + vscrollOverlap : 0, needh ? spacing + hscrollOverlap : 0);
         QRect frameRect = widgetRect;
         frameRect.adjust(0, 0, -cornerOffset.x() - cornerExtra.x(), -cornerOffset.y() - cornerExtra.y());
         q->setFrameRect(QStyle::visualRect(opt.direction, opt.rect, frameRect));
@@ -436,7 +438,7 @@ void QAbstractScrollAreaPrivate::layoutChildren()
 
     // If we have a corner widget and are only showing one scroll bar, we need to move it
     // to make room for the corner widget.
-    if (hasCornerWidget && (needv || needh) && scrollOverlap == 0)
+    if (hasCornerWidget && ((needv && vscrollOverlap == 0) || (needh && hscrollOverlap == 0)))
         cornerOffset =  extPoint;
 
 #ifdef Q_WS_MAC
@@ -452,7 +454,7 @@ void QAbstractScrollAreaPrivate::layoutChildren()
     // Some styles paints the corner if both scorllbars are showing and there is
     // no corner widget. Also, on the Mac we paint if there is a native
     // (transparent) sizegrip in the area where a corner widget would be.
-    if ((needv && needh && hasCornerWidget == false && scrollOverlap == 0)
+    if ((needv && needh && hasCornerWidget == false && hscrollOverlap == 0 && vscrollOverlap == 0)
         || ((needv || needh)
 #ifdef Q_WS_MAC
         && hasMacSizeGrip
@@ -474,7 +476,7 @@ void QAbstractScrollAreaPrivate::layoutChildren()
     // move the scrollbars away from top/left headers
     int vHeaderRight = 0;
     int hHeaderBottom = 0;
-    if (scrollOverlap > 0 && (needv || needh)) {
+    if ((vscrollOverlap > 0 && needv) || (hscrollOverlap > 0 && needh)) {
         const QList<QHeaderView *> headers = q->findChildren<QHeaderView*>();
         if (headers.count() <= 2) {
             Q_FOREACH (const QHeaderView *header, headers) {
@@ -493,20 +495,22 @@ void QAbstractScrollAreaPrivate::layoutChildren()
         if (hasMacReverseSizeGrip)
             horizontalScrollBarRect.adjust(vsbExt, 0, 0, 0);
 #endif
+        if (!hasCornerWidget && htransient)
 #ifdef Q_OS_MAC
-        if (!hasCornerWidget && QSysInfo::macVersion() >= QSysInfo::MV_10_8 && transient)
-            horizontalScrollBarRect.adjust(0, 0, cornerOffset.x(), 0);
+            if (QSysInfo::macVersion() >= QSysInfo::MV_10_8)
 #endif
+            horizontalScrollBarRect.adjust(0, 0, cornerOffset.x(), 0);
         scrollBarContainers[Qt::Horizontal]->setGeometry(QStyle::visualRect(opt.direction, opt.rect, horizontalScrollBarRect));
         scrollBarContainers[Qt::Horizontal]->raise();
     }
 
     if (needv) {
         QRect verticalScrollBarRect  (QPoint(cornerPoint.x(), controlsRect.top() + hHeaderBottom),  QPoint(controlsRect.right(), cornerPoint.y() - 1));
+        if (!hasCornerWidget && vtransient)
 #ifdef Q_OS_MAC
-        if (!hasCornerWidget && QSysInfo::macVersion() >= QSysInfo::MV_10_8 && transient)
-            verticalScrollBarRect.adjust(0, 0, 0, cornerOffset.y());
+            if (QSysInfo::macVersion() >= QSysInfo::MV_10_8)
 #endif
+            verticalScrollBarRect.adjust(0, 0, 0, cornerOffset.y());
         scrollBarContainers[Qt::Vertical]->setGeometry(QStyle::visualRect(opt.direction, opt.rect, verticalScrollBarRect));
         scrollBarContainers[Qt::Vertical]->raise();
     }
@@ -957,10 +961,12 @@ bool QAbstractScrollArea::eventFilter(QObject *o, QEvent *e)
 {
     Q_D(QAbstractScrollArea);
     if ((o == d->hbar || o == d->vbar) && (e->type() == QEvent::HoverEnter || e->type() == QEvent::HoverLeave)) {
-        Qt::ScrollBarPolicy policy = o == d->hbar ? d->vbarpolicy : d->hbarpolicy;
-        if (policy == Qt::ScrollBarAsNeeded || style()->styleHint(QStyle::SH_ScrollBar_Transient, 0, d->vbar ? d->vbar : d->hbar)) {
-            QScrollBar *sibling = o == d->hbar ? d->vbar : d->hbar;
-            d->setScrollBarTransient(sibling, e->type() == QEvent::HoverLeave);
+        if (d->hbarpolicy == Qt::ScrollBarAsNeeded && d->vbarpolicy == Qt::ScrollBarAsNeeded) {
+            QScrollBar *sbar = static_cast<QScrollBar*>(o);
+            QScrollBar *sibling = sbar == d->hbar ? d->vbar : d->hbar;
+            if (sbar->style()->styleHint(QStyle::SH_ScrollBar_Transient, 0, sbar) &&
+                    sibling->style()->styleHint(QStyle::SH_ScrollBar_Transient, 0, sibling))
+                d->setScrollBarTransient(sibling, e->type() == QEvent::HoverLeave);
         }
     }
     return QFrame::eventFilter(o, e);
@@ -1479,11 +1485,11 @@ bool QAbstractScrollAreaPrivate::canStartScrollingAt( const QPoint &startPos )
 
 void QAbstractScrollAreaPrivate::flashScrollBars()
 {
-    Q_Q(QAbstractScrollArea);
-    bool transient =  q->style()->styleHint(QStyle::SH_ScrollBar_Transient, 0, vbar ? vbar : hbar);
-    if ((hbarpolicy != Qt::ScrollBarAlwaysOff) && (hbarpolicy == Qt::ScrollBarAsNeeded || transient))
+    bool htransient = hbar->style()->styleHint(QStyle::SH_ScrollBar_Transient, 0, hbar);
+    if ((hbarpolicy != Qt::ScrollBarAlwaysOff) && (hbarpolicy == Qt::ScrollBarAsNeeded || htransient))
         hbar->d_func()->flash();
-    if ((vbarpolicy != Qt::ScrollBarAlwaysOff) && (vbarpolicy == Qt::ScrollBarAsNeeded || transient))
+    bool vtransient = vbar->style()->styleHint(QStyle::SH_ScrollBar_Transient, 0, vbar);
+    if ((vbarpolicy != Qt::ScrollBarAlwaysOff) && (vbarpolicy == Qt::ScrollBarAsNeeded || vtransient))
         vbar->d_func()->flash();
 }
 

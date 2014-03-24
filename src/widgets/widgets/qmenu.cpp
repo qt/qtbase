@@ -75,7 +75,6 @@
 QT_BEGIN_NAMESPACE
 
 QMenu *QMenuPrivate::mouseDown = 0;
-int QMenuPrivate::sloppyDelayTimer = 0;
 
 /* QMenu code */
 // internal class used for the torn off popup
@@ -432,10 +431,6 @@ QRect QMenuPrivate::actionRect(QAction *act) const
     //we found the action
     return actionRects.at(index);
 }
-
-#if defined(Q_OS_MAC)
-static const qreal MenuFadeTimeInSec = 0.150;
-#endif
 
 void QMenuPrivate::hideUpToMenuBar()
 {
@@ -2891,6 +2886,7 @@ void QMenu::mouseMoveEvent(QMouseEvent *e)
     QAction *action = d->actionAt(e->pos());
     if (!action || action->isSeparator()) {
         if (d->hasHadMouse
+            && d->sloppyDelayTimer == 0 // Keep things as they are while we're moving to the submenu
             && (!d->currentAction || (action && action->isSeparator())
                 || !(d->currentAction->menu() && d->currentAction->menu()->isVisible())))
             d->setCurrentAction(0);
@@ -2900,13 +2896,13 @@ void QMenu::mouseMoveEvent(QMouseEvent *e)
     }
     if (d->sloppyRegion.contains(e->pos())) {
         // If the timer is already running then don't start a new one unless the action is the same
-        if (d->sloppyAction != action && QMenuPrivate::sloppyDelayTimer != 0) {
-            killTimer(QMenuPrivate::sloppyDelayTimer);
-            QMenuPrivate::sloppyDelayTimer = 0;
+        if (d->sloppyAction != action && d->sloppyDelayTimer != 0) {
+            killTimer(d->sloppyDelayTimer);
+            d->sloppyDelayTimer = 0;
         }
-        if (QMenuPrivate::sloppyDelayTimer == 0) {
+        if (d->sloppyDelayTimer == 0) {
             d->sloppyAction = action;
-            QMenuPrivate::sloppyDelayTimer = startTimer(style()->styleHint(QStyle::SH_Menu_SubMenuPopupDelay, 0, this) * 6);
+            d->sloppyDelayTimer = startTimer(style()->styleHint(QStyle::SH_Menu_SubMenuPopupDelay, 0, this) * 6);
         }
     } else if (action != d->currentAction) {
         d->setCurrentAction(action, style()->styleHint(QStyle::SH_Menu_SubMenuPopupDelay, 0, this));
@@ -2948,9 +2944,9 @@ QMenu::timerEvent(QTimerEvent *e)
     } else if(d->menuDelayTimer.timerId() == e->timerId()) {
         d->menuDelayTimer.stop();
         internalDelayedPopup();
-    } else if(QMenuPrivate::sloppyDelayTimer == e->timerId()) {
-        killTimer(QMenuPrivate::sloppyDelayTimer);
-        QMenuPrivate::sloppyDelayTimer = 0;
+    } else if (d->sloppyDelayTimer == e->timerId()) {
+        killTimer(d->sloppyDelayTimer);
+        d->sloppyDelayTimer = 0;
         internalSetSloppyAction();
     } else if(d->searchBufferTimer.timerId() == e->timerId()) {
         d->searchBuffer.clear();

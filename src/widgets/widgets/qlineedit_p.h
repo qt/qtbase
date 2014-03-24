@@ -89,6 +89,9 @@ public:
 protected:
     void paintEvent(QPaintEvent *event);
 
+private slots:
+    void updateCursor();
+
 private:
     void startOpacityAnimation(qreal endValue);
 

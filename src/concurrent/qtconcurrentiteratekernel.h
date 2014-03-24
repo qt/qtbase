@@ -86,6 +86,8 @@ private:
     Median<double> controlPartElapsed;
     Median<double> userPartElapsed;
     int m_blockSize;
+
+    Q_DISABLE_COPY(BlockSizeManager)
 };
 
 template <typename T>

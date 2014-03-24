@@ -157,17 +157,24 @@ write_keycodes(struct xkb_keymap *keymap, struct buf *buf)
     else
         write_buf(buf, "xkb_keycodes {\n");
 
+    /* xkbcomp and X11 really want to see keymaps with a minimum of 8, and
+     * a maximum of at least 255, else XWayland really starts hating life.
+     * If this is a problem and people really need strictly bounded keymaps,
+     * we should probably control this with a flag. */
+    write_buf(buf, "\tminimum = %u;\n", min(keymap->min_key_code, 8));
+    write_buf(buf, "\tmaximum = %u;\n", max(keymap->max_key_code, 255));
+
     xkb_foreach_key(key, keymap) {
         if (key->name == XKB_ATOM_NONE)
             continue;
 
-        write_buf(buf, "\t%-20s = %d;\n",
+        write_buf(buf, "\t%-20s = %u;\n",
                   KeyNameText(keymap->ctx, key->name), key->keycode);
     }
 
     darray_enumerate(idx, led, keymap->leds)
         if (led->name != XKB_ATOM_NONE)
-            write_buf(buf, "\tindicator %d = \"%s\";\n",
+            write_buf(buf, "\tindicator %u = \"%s\";\n",
                       idx + 1, xkb_atom_text(keymap->ctx, led->name));
 
 
@@ -212,7 +219,7 @@ write_types(struct xkb_keymap *keymap, struct buf *buf)
                 continue;
 
             str = ModMaskText(keymap, entry->mods.mods);
-            write_buf(buf, "\t\tmap[%s]= Level%d;\n",
+            write_buf(buf, "\t\tmap[%s]= Level%u;\n",
                       str, entry->level + 1);
 
             if (entry->preserve.mods)
@@ -222,7 +229,7 @@ write_types(struct xkb_keymap *keymap, struct buf *buf)
 
         for (xkb_level_index_t n = 0; n < type->num_levels; n++)
             if (type->level_names[n])
-                write_buf(buf, "\t\tlevel_name[Level%d]= \"%s\";\n", n + 1,
+                write_buf(buf, "\t\tlevel_name[Level%u]= \"%s\";\n", n + 1,
                           xkb_atom_text(keymap->ctx, type->level_names[n]));
 
         write_buf(buf, "\t};\n");
@@ -409,7 +416,6 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
 static bool
 write_compat(struct xkb_keymap *keymap, struct buf *buf)
 {
-    const struct xkb_sym_interpret *si;
     const struct xkb_led *led;
 
     if (keymap->compat_section_name)
@@ -423,7 +429,9 @@ write_compat(struct xkb_keymap *keymap, struct buf *buf)
     write_buf(buf, "\tinterpret.useModMapMods= AnyLevel;\n");
     write_buf(buf, "\tinterpret.repeat= False;\n");
 
-    darray_foreach(si, keymap->sym_interprets) {
+    for (int i = 0; i < keymap->num_sym_interprets; i++) {
+        const struct xkb_sym_interpret *si = &keymap->sym_interprets[i];
+
         write_buf(buf, "\tinterpret %s+%s(%s) {\n",
                   si->sym ? KeysymText(keymap->ctx, si->sym) : "Any",
                   SIMatchText(si->match),
@@ -610,7 +618,7 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
     for (group = 0; group < keymap->num_group_names; group++)
         if (keymap->group_names[group])
             write_buf(buf,
-                      "\tname[group%d]=\"%s\";\n", group + 1,
+                      "\tname[group%u]=\"%s\";\n", group + 1,
                       xkb_atom_text(keymap->ctx, keymap->group_names[group]));
     if (group > 0)
         write_buf(buf, "\n");

@@ -363,7 +363,7 @@ bool QNativeSocketEnginePrivate::setOption(QNativeSocketEngine::SocketOption opt
 bool QNativeSocketEnginePrivate::nativeConnect(const QHostAddress &addr, quint16 port)
 {
 #ifdef QNATIVESOCKETENGINE_DEBUG
-    qDebug("QNativeSocketEnginePrivate::nativeConnect() : %d ", socketDescriptor);
+    qDebug("QNativeSocketEnginePrivate::nativeConnect() : %lli", socketDescriptor);
 #endif
 
     struct sockaddr_in sockAddrIPv4;
@@ -856,7 +856,7 @@ qint64 QNativeSocketEnginePrivate::nativePendingDatagramSize() const
     }
 
 #if defined (QNATIVESOCKETENGINE_DEBUG)
-    qDebug("QNativeSocketEnginePrivate::nativePendingDatagramSize() == %i", recvResult);
+    qDebug("QNativeSocketEnginePrivate::nativePendingDatagramSize() == %zd", recvResult);
 #endif
 
     return qint64(recvResult);
@@ -1021,13 +1021,13 @@ bool QNativeSocketEnginePrivate::fetchConnectionParameters()
             socketType = QAbstractSocket::UnknownSocketType;
     }
 #if defined (QNATIVESOCKETENGINE_DEBUG)
-    QString socketProtocolStr = "UnknownProtocol";
-    if (socketProtocol == QAbstractSocket::IPv4Protocol) socketProtocolStr = "IPv4Protocol";
-    else if (socketProtocol == QAbstractSocket::IPv6Protocol) socketProtocolStr = "IPv6Protocol";
+    QString socketProtocolStr = QStringLiteral("UnknownProtocol");
+    if (socketProtocol == QAbstractSocket::IPv4Protocol) socketProtocolStr = QStringLiteral("IPv4Protocol");
+    else if (socketProtocol == QAbstractSocket::IPv6Protocol) socketProtocolStr = QStringLiteral("IPv6Protocol");
 
-    QString socketTypeStr = "UnknownSocketType";
-    if (socketType == QAbstractSocket::TcpSocket) socketTypeStr = "TcpSocket";
-    else if (socketType == QAbstractSocket::UdpSocket) socketTypeStr = "UdpSocket";
+    QString socketTypeStr = QStringLiteral("UnknownSocketType");
+    if (socketType == QAbstractSocket::TcpSocket) socketTypeStr = QStringLiteral("TcpSocket");
+    else if (socketType == QAbstractSocket::UdpSocket) socketTypeStr = QStringLiteral("UdpSocket");
 
     qDebug("QNativeSocketEnginePrivate::fetchConnectionParameters() local == %s:%i,"
            " peer == %s:%i, socket == %s - %s",
@@ -1121,13 +1121,60 @@ qint64 QNativeSocketEnginePrivate::nativeRead(char *data, qint64 maxSize)
     }
 
 #if defined (QNATIVESOCKETENGINE_DEBUG)
-    qDebug("QNativeSocketEnginePrivate::nativeRead(%p \"%s\", %llu) == %i",
+    qDebug("QNativeSocketEnginePrivate::nativeRead(%p \"%s\", %llu) == %zd",
            data, qt_prettyDebug(data, qMin(r, ssize_t(16)), r).data(),
            maxSize, r);
 #endif
 
     return qint64(r);
 }
+
+#ifdef Q_OS_BLACKBERRY
+int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool selectForRead) const
+{
+    fd_set fds;
+    FD_ZERO(&fds);
+    FD_SET(socketDescriptor, &fds);
+
+    int retval;
+    QList<QSocketNotifier *> notifiers;
+    if (selectForRead) {
+        notifiers << readNotifier;
+        retval = bb_select(notifiers, socketDescriptor + 1, &fds, 0, timeout);
+    } else {
+        notifiers << writeNotifier;
+        retval = bb_select(notifiers, socketDescriptor + 1, 0, &fds, timeout);
+    }
+
+    return retval;
+}
+
+int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool checkRead, bool checkWrite,
+                       bool *selectForRead, bool *selectForWrite) const
+{
+    fd_set fdread;
+    FD_ZERO(&fdread);
+    if (checkRead)
+        FD_SET(socketDescriptor, &fdread);
+
+    fd_set fdwrite;
+    FD_ZERO(&fdwrite);
+    if (checkWrite)
+        FD_SET(socketDescriptor, &fdwrite);
+
+    QList<QSocketNotifier *> notifiers;
+    notifiers << readNotifier << writeNotifier;
+    int ret = bb_select(notifiers, socketDescriptor + 1, &fdread, &fdwrite, timeout);
+
+    if (ret <= 0)
+        return ret;
+    *selectForRead = FD_ISSET(socketDescriptor, &fdread);
+    *selectForWrite = FD_ISSET(socketDescriptor, &fdwrite);
+
+    return ret;
+}
+
+#else // not Q_OS_BLACKBERRY:
 
 int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool selectForRead) const
 {
@@ -1175,5 +1222,6 @@ int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool checkRead, bool c
 
     return ret;
 }
+#endif // Q_OS_BLACKBERRY
 
 QT_END_NAMESPACE

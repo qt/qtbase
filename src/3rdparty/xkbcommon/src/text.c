@@ -175,10 +175,10 @@ const LookupEntry actionTypeNames[] = {
     { "SwitchScreen", ACTION_TYPE_SWITCH_VT },
     { "SetControls", ACTION_TYPE_CTRL_SET },
     { "LockControls", ACTION_TYPE_CTRL_LOCK },
-    { "RedirectKey", ACTION_TYPE_KEY_REDIRECT },
-    { "Redirect", ACTION_TYPE_KEY_REDIRECT },
     { "Private", ACTION_TYPE_PRIVATE },
     /* deprecated actions below here - unused */
+    { "RedirectKey", ACTION_TYPE_NONE },
+    { "Redirect", ACTION_TYPE_NONE },
     { "ISOLock", ACTION_TYPE_NONE },
     { "ActionMessage", ACTION_TYPE_NONE },
     { "MessageAction", ACTION_TYPE_NONE },
@@ -251,9 +251,9 @@ const char *
 KeyNameText(struct xkb_context *ctx, xkb_atom_t name)
 {
     const char *sname = xkb_atom_text(ctx, name);
-    size_t len = strlen(sname) + 3;
+    size_t len = strlen_safe(sname) + 3;
     char *buf = xkb_context_get_buffer(ctx, len);
-    snprintf(buf, len, "<%s>", sname);
+    snprintf(buf, len, "<%s>", strempty(sname));
     return buf;
 }
 

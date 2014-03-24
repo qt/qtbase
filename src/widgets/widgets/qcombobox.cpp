@@ -3057,6 +3057,8 @@ void QComboBox::keyReleaseEvent(QKeyEvent *e)
     Q_D(QComboBox);
     if (d->lineEdit)
         d->lineEdit->event(e);
+    else
+        QWidget::keyReleaseEvent(e);
 }
 
 /*!

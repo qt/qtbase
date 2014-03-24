@@ -136,10 +136,19 @@ private:
     // Request a unified title and toolbar look for the window.
     static void setContentBorderThickness(QWindow *window, int topThickness, int bottomThickness);
 
+    // Request a unified title and toolbar look for the window by registering
+    // an area. Multiple callers can register areas and the platform plugin
+    // will extend the "unified" area to cover them.
+    static void registerContentBorderArea(QWindow *window, quintptr identifer, int upper, int lower);
+
+    // Enable the unified title and toolbar area.
+    static void enableContentBorderArea(QWindow *window, bool enable);
+
     // Sets a NSToolbar instance for the given QWindow. The
     // toolbar will be attached to the native NSWindow when
     // that is created;
    static void setNSToolbar(QWindow *window, void *nsToolbar);
+
 };
 
 QT_END_NAMESPACE

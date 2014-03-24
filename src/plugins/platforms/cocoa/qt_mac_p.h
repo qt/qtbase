@@ -194,8 +194,6 @@ extern QPoint qt_mac_nativeMapFromParent(const QWidget *child, const QPoint &pt)
 
 QFont qfontForThemeFont(ThemeFontID themeID);
 
-QColor qcolorForTheme(ThemeBrush brush);
-
 QColor qcolorForThemeTextColor(ThemeTextColor themeColor);
 
 struct QMacDndAnswerRecord {

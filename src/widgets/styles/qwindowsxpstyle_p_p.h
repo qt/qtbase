@@ -350,6 +350,7 @@ public:
     static HTHEME createTheme(int theme, HWND hwnd);
     static QString themeName(int theme);
     static inline bool hasTheme(int theme) { return theme >= 0 && theme < NThemes && m_themes[theme]; }
+    static bool isItemViewDelegateLineEdit(const QWidget *widget);
 
     QIcon dockFloat, dockClose;
 

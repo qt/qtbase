@@ -48,6 +48,7 @@
 #include <qdebug.h>
 #include <qbuffer.h>
 #include "qprinterinfo.h"
+#include <QtGui/qpagelayout.h>
 
 #include <limits.h>
 #include <math.h>
@@ -62,34 +63,6 @@
 #endif
 
 QT_BEGIN_NAMESPACE
-
-//#define FONT_DUMP
-
-extern QSizeF qt_paperSizeToQSizeF(QPrinter::PaperSize size);
-
-#define Q_MM(n) int((n * 720 + 127) / 254)
-#define Q_IN(n) int(n * 72)
-
-static const char * const psToStr[QPrinter::NPageSize+1] =
-{
-    "A4", "B5", "Letter", "Legal", "Executive",
-    "A0", "A1", "A2", "A3", "A5", "A6", "A7", "A8", "A9", "B0", "B1",
-    "B10", "B2", "B3", "B4", "B6", "B7", "B8", "B9", "C5E", "Comm10E",
-    "DLE", "Folio", "Ledger", "Tabloid", 0
-};
-
-QPdf::PaperSize QPdf::paperSize(QPrinter::PaperSize paperSize)
-{
-    QSizeF s = qt_paperSizeToQSizeF(paperSize);
-    PaperSize p = { Q_MM(s.width()), Q_MM(s.height()) };
-    return p;
-}
-
-const char *QPdf::paperSizeToString(QPrinter::PaperSize paperSize)
-{
-    return psToStr[paperSize];
-}
-
 
 QPdfPrintEngine::QPdfPrintEngine(QPrinter::PrinterMode m)
     : QPdfEngine(*new QPdfPrintEnginePrivate(m))
@@ -163,10 +136,6 @@ void QPdfPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
     // The following keys are settings that are unsupported by the PDF PrintEngine
     case PPK_CustomBase:
         break;
-    case PPK_PaperName:
-        break;
-    case PPK_WindowsPageSize:
-        break;
 
     // The following keys are properties and settings that are supported by the PDF PrintEngine
     case PPK_CollateCopies:
@@ -182,14 +151,17 @@ void QPdfPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
         d->title = value.toString();
         break;
     case PPK_FullPage:
-        d->fullPage = value.toBool();
+        if (value.toBool())
+            d->m_pageLayout.setMode(QPageLayout::FullPageMode);
+        else
+            d->m_pageLayout.setMode(QPageLayout::StandardMode);
         break;
     case PPK_CopyCount: // fallthrough
     case PPK_NumberOfCopies:
         d->copies = value.toInt();
         break;
     case PPK_Orientation:
-        d->landscape = (QPrinter::Orientation(value.toInt()) == QPrinter::Landscape);
+        d->m_pageLayout.setOrientation(QPageLayout::Orientation(value.toInt()));
         break;
     case PPK_OutputFileName:
         d->outputFileName = value.toString();
@@ -197,9 +169,25 @@ void QPdfPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
     case PPK_PageOrder:
         d->pageOrder = QPrinter::PageOrder(value.toInt());
         break;
-    case PPK_PaperSize:
-        d->printerPaperSize = QPrinter::PaperSize(value.toInt());
-        d->updatePaperSize();
+    case PPK_PageSize: {
+        QPageSize pageSize = QPageSize(QPageSize::PageSizeId(value.toInt()));
+        if (pageSize.isValid())
+            d->m_pageLayout.setPageSize(pageSize);
+        break;
+    }
+    case PPK_PaperName: {
+        QString name = value.toString();
+        for (int i = 0; i <= QPageSize::LastPageSize; ++i) {
+            QPageSize pageSize = QPageSize(QPageSize::PageSizeId(i));
+            if (name == pageSize.name()) {
+                d->m_pageLayout.setPageSize(pageSize);
+                break;
+            }
+        }
+        break;
+    }
+    case PPK_WindowsPageSize:
+        d->m_pageLayout.setPageSize(QPageSize(QPageSize::id(value.toInt())));
         break;
     case PPK_PaperSource:
         d->paperSource = QPrinter::PaperSource(value.toInt());
@@ -220,22 +208,35 @@ void QPdfPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
         d->embedFonts = value.toBool();
         break;
     case PPK_Duplex:
-        d->duplex = static_cast<QPrinter::DuplexMode> (value.toInt());
+        d->duplex = static_cast<QPrint::DuplexMode>(value.toInt());
         break;
     case PPK_CustomPaperSize:
-        d->printerPaperSize = QPrinter::Custom;
-        d->customPaperSize = value.toSizeF();
-        d->updatePaperSize();
+        d->m_pageLayout.setPageSize(QPageSize(value.toSizeF(), QPageSize::Point));
         break;
-    case PPK_PageMargins:
-    {
+    case PPK_PageMargins: {
         QList<QVariant> margins(value.toList());
         Q_ASSERT(margins.size() == 4);
-        d->leftMargin = margins.at(0).toReal();
-        d->topMargin = margins.at(1).toReal();
-        d->rightMargin = margins.at(2).toReal();
-        d->bottomMargin = margins.at(3).toReal();
-        d->pageMarginsSet = true;
+        d->m_pageLayout.setUnits(QPageLayout::Point);
+        d->m_pageLayout.setMargins(QMarginsF(margins.at(0).toReal(), margins.at(1).toReal(),
+                                             margins.at(2).toReal(), margins.at(3).toReal()));
+        break;
+    }
+    case PPK_QPageSize: {
+        QPageSize pageSize = value.value<QPageSize>();
+        if (pageSize.isValid())
+            d->m_pageLayout.setPageSize(pageSize);
+        break;
+    }
+    case PPK_QPageMargins: {
+        QPair<QMarginsF, QPageLayout::Unit> pair = value.value<QPair<QMarginsF, QPageLayout::Unit> >();
+        d->m_pageLayout.setUnits(pair.second);
+        d->m_pageLayout.setMargins(pair.first);
+        break;
+    }
+    case PPK_QPageLayout: {
+        QPageLayout pageLayout = value.value<QPageLayout>();
+        if (pageLayout.isValid())
+            d->m_pageLayout = pageLayout;
         break;
     }
     // No default so that compiler will complain if new keys added and not handled in this engine
@@ -254,12 +255,6 @@ QVariant QPdfPrintEngine::property(PrintEnginePropertyKey key) const
     case PPK_CustomBase:
         // Special case, leave null
         break;
-    case PPK_PaperName:
-        ret = QString();
-        break;
-    case PPK_WindowsPageSize:
-        // Special case, leave null
-        break;
 
     // The following keys are properties and settings that are supported by the PDF PrintEngine
     case PPK_CollateCopies:
@@ -275,7 +270,7 @@ QVariant QPdfPrintEngine::property(PrintEnginePropertyKey key) const
         ret = d->title;
         break;
     case PPK_FullPage:
-        ret = d->fullPage;
+        ret = d->m_pageLayout.mode() == QPageLayout::FullPageMode;
         break;
     case PPK_CopyCount:
         ret = d->copies;
@@ -287,7 +282,7 @@ QVariant QPdfPrintEngine::property(PrintEnginePropertyKey key) const
         ret = d->copies;
         break;
     case PPK_Orientation:
-        ret = d->landscape ? QPrinter::Landscape : QPrinter::Portrait;
+        ret = d->m_pageLayout.orientation();
         break;
     case PPK_OutputFileName:
         ret = d->outputFileName;
@@ -295,8 +290,14 @@ QVariant QPdfPrintEngine::property(PrintEnginePropertyKey key) const
     case PPK_PageOrder:
         ret = d->pageOrder;
         break;
-    case PPK_PaperSize:
-        ret = d->printerPaperSize;
+    case PPK_PageSize:
+        ret = d->m_pageLayout.pageSize().id();
+        break;
+    case PPK_PaperName:
+        ret = d->m_pageLayout.pageSize().name();
+        break;
+    case PPK_WindowsPageSize:
+        ret = d->m_pageLayout.pageSize().windowsId();
         break;
     case PPK_PaperSource:
         ret = d->paperSource;
@@ -314,10 +315,10 @@ QVariant QPdfPrintEngine::property(PrintEnginePropertyKey key) const
         ret = QList<QVariant>() << 72;
         break;
     case PPK_PaperRect:
-        ret = d->paperRect();
+        ret = d->m_pageLayout.fullRectPixels(d->resolution);
         break;
     case PPK_PageRect:
-        ret = d->pageRect();
+        ret = d->m_pageLayout.paintRectPixels(d->resolution);
         break;
     case PPK_SelectionOption:
         ret = d->selectionOption;
@@ -329,19 +330,26 @@ QVariant QPdfPrintEngine::property(PrintEnginePropertyKey key) const
         ret = d->duplex;
         break;
     case PPK_CustomPaperSize:
-        ret = d->customPaperSize;
+        ret = d->m_pageLayout.fullRectPoints().size();
         break;
-    case PPK_PageMargins:
-    {
-        QList<QVariant> margins;
-        if (d->printerPaperSize == QPrinter::Custom && !d->pageMarginsSet)
-            margins << 0 << 0 << 0 << 0;
-        else
-            margins << d->leftMargin << d->topMargin
-                    << d->rightMargin << d->bottomMargin;
-        ret = margins;
+    case PPK_PageMargins: {
+        QList<QVariant> list;
+        QMarginsF margins = d->m_pageLayout.margins(QPageLayout::Point);
+        list << margins.left() << margins.top() << margins.right() << margins.bottom();
+        ret = list;
         break;
     }
+    case PPK_QPageSize:
+        ret.setValue(d->m_pageLayout.pageSize());
+        break;
+    case PPK_QPageMargins: {
+        QPair<QMarginsF, QPageLayout::Unit> pair = qMakePair(d->m_pageLayout.margins(), d->m_pageLayout.units());
+        ret.setValue(pair);
+        break;
+    }
+    case PPK_QPageLayout:
+        ret.setValue(d->m_pageLayout);
+        break;
     // No default so that compiler will complain if new keys added and not handled in this engine
     }
     return ret;
@@ -385,13 +393,11 @@ void QPdfPrintEnginePrivate::closePrintDevice()
 
 QPdfPrintEnginePrivate::QPdfPrintEnginePrivate(QPrinter::PrinterMode m)
     : QPdfEnginePrivate(),
-      duplex(QPrinter::DuplexNone),
+      duplex(QPrint::DuplexNone),
       collate(true),
       copies(1),
       pageOrder(QPrinter::FirstPageFirst),
       paperSource(QPrinter::Auto),
-      printerPaperSize(QPrinter::A4),
-      pageMarginsSet(false),
       fd(-1)
 {
     resolution = 72;
@@ -404,18 +410,6 @@ QPdfPrintEnginePrivate::QPdfPrintEnginePrivate(QPrinter::PrinterMode m)
 QPdfPrintEnginePrivate::~QPdfPrintEnginePrivate()
 {
 }
-
-
-void QPdfPrintEnginePrivate::updatePaperSize()
-{
-    if (printerPaperSize == QPrinter::Custom) {
-        paperSize = customPaperSize;
-    } else {
-        QPdf::PaperSize s = QPdf::paperSize(printerPaperSize);
-        paperSize = QSize(s.width, s.height);
-    }
-}
-
 
 QT_END_NAMESPACE
 

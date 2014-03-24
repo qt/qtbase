@@ -2559,6 +2559,13 @@
 
     See also \l{infile(filename, var, val)}{infile()}.
 
+    \section2 getenv(variablename)
+
+    Returns the value of the environment variable \c variablename.
+    This is mostly equivalent to the \c $$(variablename) syntax.
+    The \c getenv function, however, supports environment variables with
+    parentheses in their name.
+
     \section2 join(variablename, glue, before, after)
 
     Joins the value of \c variablename with \c glue. If this value is

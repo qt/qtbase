@@ -52,6 +52,12 @@
 #include <initializer_list>
 #endif
 
+#if defined(Q_CC_MSVC)
+#pragma warning( push )
+#pragma warning( disable : 4311 ) // disable pointer truncation warning
+#pragma warning( disable : 4127 ) // conditional expression is constant
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QBitArray;
@@ -95,18 +101,10 @@ Q_CORE_EXPORT Q_DECL_PURE_FUNCTION uint qHash(QLatin1String key, uint seed = 0) 
 Q_CORE_EXPORT Q_DECL_PURE_FUNCTION uint qt_hash(const QString &key) Q_DECL_NOTHROW;
 Q_CORE_EXPORT Q_DECL_PURE_FUNCTION uint qt_hash(const QStringRef &key) Q_DECL_NOTHROW;
 
-#if defined(Q_CC_MSVC)
-#pragma warning( push )
-#pragma warning( disable : 4311 ) // disable pointer truncation warning
-#endif
 template <class T> inline uint qHash(const T *key, uint seed = 0) Q_DECL_NOTHROW
 {
     return qHash(reinterpret_cast<quintptr>(key), seed);
 }
-#if defined(Q_CC_MSVC)
-#pragma warning( pop )
-#endif
-
 template<typename T> inline uint qHash(const T &t, uint seed)
     Q_DECL_NOEXCEPT_EXPR(noexcept(qHash(t)))
 { return (qHash(t) ^ seed); }
@@ -214,6 +212,9 @@ struct QHashNode
     inline QHashNode(const Key &key0, const T &value0, uint hash, QHashNode *n)
         : next(n), h(hash), key(key0), value(value0) {}
     inline bool same_key(uint h0, const Key &key0) const { return h0 == h && key0 == key; }
+
+private:
+    Q_DISABLE_COPY(QHashNode)
 };
 
 template <class Key, class T>
@@ -224,6 +225,9 @@ struct QHashDummyNode
     const Key key;
 
     inline QHashDummyNode(const Key &key0, uint hash, QHashNode<Key, T> *n) : next(n), h(hash), key(key0) {}
+
+private:
+    Q_DISABLE_COPY(QHashDummyNode)
 };
 
 
@@ -1086,5 +1090,9 @@ Q_DECLARE_ASSOCIATIVE_ITERATOR(Hash)
 Q_DECLARE_MUTABLE_ASSOCIATIVE_ITERATOR(Hash)
 
 QT_END_NAMESPACE
+
+#if defined(Q_CC_MSVC)
+#pragma warning( pop )
+#endif
 
 #endif // QHASH_H

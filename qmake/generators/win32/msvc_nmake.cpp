@@ -416,8 +416,9 @@ void NmakeMakefileGenerator::init()
     }
     if (project->isActiveConfig("debug_info")) {
         QString pdbfile = project->first("DESTDIR") + project->first("TARGET") + version + ".pdb";
-        project->values("QMAKE_CFLAGS").append("/Fd" + pdbfile);
-        project->values("QMAKE_CXXFLAGS").append("/Fd" + pdbfile);
+        QString escapedPdbFile = escapeFilePath(pdbfile);
+        project->values("QMAKE_CFLAGS").append("/Fd" + escapedPdbFile);
+        project->values("QMAKE_CXXFLAGS").append("/Fd" + escapedPdbFile);
         project->values("QMAKE_DISTCLEAN").append(pdbfile);
     }
     if (project->isActiveConfig("debug")) {

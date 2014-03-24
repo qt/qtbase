@@ -170,6 +170,7 @@ void tst_d3dcompiler::init()
 {
     qunsetenv("QT_D3DCOMPILER_DIR");
     qunsetenv("QT_D3DCOMPILER_TIMEOUT");
+    qunsetenv("QT_D3DCOMPILER_DISABLE_DLL");
 }
 
 void tst_d3dcompiler::cleanup()
@@ -195,8 +196,8 @@ void tst_d3dcompiler::service_data()
     // Don't test the default case, as it would clutter the AppData directory
     //QTest::newRow("default") << QByteArrayLiteral("") << true << E_ABORT;
     QTest::newRow("temporary") << QFile::encodeName(tempDir.path()) << true << E_ABORT;
-    QTest::newRow("invalid") << QByteArrayLiteral("ZZ:\\") << false << S_OK;
-    QTest::newRow("empty") << QByteArrayLiteral("") << false << S_OK;
+    QTest::newRow("invalid") << QByteArrayLiteral("ZZ:\\") << false << E_FAIL;
+    QTest::newRow("empty") << QByteArrayLiteral("") << false << E_FAIL;
 }
 
 void tst_d3dcompiler::service()
@@ -205,16 +206,12 @@ void tst_d3dcompiler::service()
     QFETCH(bool, exists);
     QFETCH(HRESULT, result);
     qputenv("QT_D3DCOMPILER_DIR", compilerDir);
+    qputenv("QT_D3DCOMPILER_DISABLE_DLL", QByteArrayLiteral("1"));
     const QDir path = blobPath();
 
     if (exists) {
         // Activate service
         QVERIFY(path.exists());
-
-        QFile control(path.absoluteFilePath(QStringLiteral("control")));
-        QVERIFY(control.open(QFile::WriteOnly));
-        control.close();
-        QVERIFY(control.exists());
     } else {
         QVERIFY(!path.exists());
     }
@@ -262,6 +259,7 @@ void tst_d3dcompiler::service()
 void tst_d3dcompiler::offlineCompile()
 {
     qputenv("QT_D3DCOMPILER_DIR", QFile::encodeName(tempDir.path()));
+    qputenv("QT_D3DCOMPILER_DISABLE_DLL", QByteArrayLiteral("1"));
 
     for (int i = 0; compilerDlls[i]; ++i) {
         d3dcompiler_win = loadLibrary(compilerDlls[i]);
@@ -302,6 +300,8 @@ void tst_d3dcompiler::offlineCompile()
 void tst_d3dcompiler::onlineCompile()
 {
     qputenv("QT_D3DCOMPILER_DIR", QFile::encodeName(tempDir.path()));
+    qputenv("QT_D3DCOMPILER_TIMEOUT", QByteArray::number(3000));
+    qputenv("QT_D3DCOMPILER_DISABLE_DLL", QByteArrayLiteral("1"));
 
     QByteArray data(hlsl);
 
@@ -309,10 +309,6 @@ void tst_d3dcompiler::onlineCompile()
 
     // Activate service
     QVERIFY(path.exists());
-    QFile control(path.absoluteFilePath(QStringLiteral("control")));
-    QVERIFY(control.open(QFile::WriteOnly));
-    control.close();
-    QVERIFY(control.exists());
 
     d3dcompiler_qt = loadLibrary(D3DCOMPILER_DLL);
     QVERIFY(d3dcompiler_qt);

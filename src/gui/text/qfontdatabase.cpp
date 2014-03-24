@@ -317,6 +317,7 @@ struct  QtFontFamily
 
     QtFontFamily(const QString &n)
         :
+        populated(false),
         fixedPitch(false),
         name(n), count(0), foundries(0)
         , bogusWritingSystems(false)
@@ -330,6 +331,7 @@ struct  QtFontFamily
         free(foundries);
     }
 
+    bool populated : 1;
     bool fixedPitch : 1;
 
     QString name;
@@ -344,6 +346,8 @@ struct  QtFontFamily
 
     bool matchesFamilyName(const QString &familyName) const;
     QtFontFoundry *foundry(const QString &f, bool = false);
+
+    void ensurePopulated();
 };
 
 QtFontFoundry *QtFontFamily::foundry(const QString &f, bool create)
@@ -375,6 +379,14 @@ bool QtFontFamily::matchesFamilyName(const QString &familyName) const
     return name.compare(familyName, Qt::CaseInsensitive) == 0 || aliases.contains(familyName, Qt::CaseInsensitive);
 }
 
+void QtFontFamily::ensurePopulated()
+{
+    if (populated)
+        return;
+
+    QGuiApplicationPrivate::platformIntegration()->fontDatabase()->populateFamily(name);
+    Q_ASSERT(populated);
+}
 
 class QFontDatabasePrivate
 {
@@ -386,7 +398,14 @@ public:
     ~QFontDatabasePrivate() {
         free();
     }
-    QtFontFamily *family(const QString &f, bool = false);
+
+    enum FamilyRequestFlags {
+        RequestFamily = 0,
+        EnsureCreated,
+        EnsurePopulated
+    };
+
+    QtFontFamily *family(const QString &f, FamilyRequestFlags flags = EnsurePopulated);
     void free() {
         while (count--)
             delete families[count];
@@ -424,8 +443,10 @@ void QFontDatabasePrivate::invalidate()
     emit static_cast<QGuiApplication *>(QCoreApplication::instance())->fontDatabaseChanged();
 }
 
-QtFontFamily *QFontDatabasePrivate::family(const QString &f, bool create)
+QtFontFamily *QFontDatabasePrivate::family(const QString &f, FamilyRequestFlags flags)
 {
+    QtFontFamily *fam = 0;
+
     int low = 0;
     int high = count;
     int pos = count / 2;
@@ -439,28 +460,34 @@ QtFontFamily *QFontDatabasePrivate::family(const QString &f, bool create)
             pos = (high + low) / 2;
         }
         if (!res)
-            return families[pos];
-    }
-    if (!create)
-        return 0;
-
-    if (res < 0)
-        pos++;
-
-    // qDebug() << "adding family " << f.toLatin1() << " at " << pos << " total=" << count;
-    if (!(count % 8)) {
-        QtFontFamily **newFamilies = (QtFontFamily **)
-                   realloc(families,
-                            (((count+8) >> 3) << 3) * sizeof(QtFontFamily *));
-        Q_CHECK_PTR(newFamilies);
-        families = newFamilies;
+            fam = families[pos];
     }
 
-    QtFontFamily *family = new QtFontFamily(f);
-    memmove(families + pos + 1, families + pos, (count-pos)*sizeof(QtFontFamily *));
-    families[pos] = family;
-    count++;
-    return families[pos];
+    if (!fam && (flags & EnsureCreated)) {
+        if (res < 0)
+            pos++;
+
+        // qDebug() << "adding family " << f.toLatin1() << " at " << pos << " total=" << count;
+        if (!(count % 8)) {
+            QtFontFamily **newFamilies = (QtFontFamily **)
+                       realloc(families,
+                                (((count+8) >> 3) << 3) * sizeof(QtFontFamily *));
+            Q_CHECK_PTR(newFamilies);
+            families = newFamilies;
+        }
+
+        QtFontFamily *family = new QtFontFamily(f);
+        memmove(families + pos + 1, families + pos, (count-pos)*sizeof(QtFontFamily *));
+        families[pos] = family;
+        count++;
+
+        fam = families[pos];
+    }
+
+    if (fam && (flags & EnsurePopulated))
+        fam->ensurePopulated();
+
+    return fam;
 }
 
 
@@ -670,7 +697,7 @@ void qt_registerFont(const QString &familyName, const QString &stylename,
     styleKey.style = style;
     styleKey.weight = weight;
     styleKey.stretch = stretch;
-    QtFontFamily *f = d->family(familyName, true);
+    QtFontFamily *f = d->family(familyName, QFontDatabasePrivate::EnsureCreated);
     f->fixedPitch = fixedPitch;
 
     for (int i = 0; i < QFontDatabase::WritingSystemsCount; ++i) {
@@ -689,6 +716,13 @@ void qt_registerFont(const QString &familyName, const QString &stylename,
             integration->fontDatabase()->releaseHandle(size->handle);
     }
     size->handle = handle;
+    f->populated = true;
+}
+
+void qt_registerFontFamily(const QString &familyName)
+{
+    // Create uninitialized/unpopulated family
+    privateDb()->family(familyName, QFontDatabasePrivate::EnsureCreated);
 }
 
 void qt_registerAliasToFontFamily(const QString &familyName, const QString &alias)
@@ -697,7 +731,7 @@ void qt_registerAliasToFontFamily(const QString &familyName, const QString &alia
         return;
 
     QFontDatabasePrivate *d = privateDb();
-    QtFontFamily *f = d->family(familyName, false);
+    QtFontFamily *f = d->family(familyName, QFontDatabasePrivate::RequestFamily);
     if (!f)
         return;
 
@@ -1092,6 +1126,8 @@ static int match(int script, const QFontDef &request,
         if (!matchFamilyName(family_name, test.family))
             continue;
 
+        test.family->ensurePopulated();
+
         if (family_name.isEmpty())
             load(test.family->name, script);
 
@@ -1304,6 +1340,8 @@ QList<QFontDatabase::WritingSystem> QFontDatabase::writingSystems() const
     QList<WritingSystem> list;
     for (int i = 0; i < d->count; ++i) {
         QtFontFamily *family = d->families[i];
+        family->ensurePopulated();
+
         if (family->count == 0)
             continue;
         for (int x = Latin; x < WritingSystemsCount; ++x) {
@@ -1367,11 +1405,14 @@ QStringList QFontDatabase::families(WritingSystem writingSystem) const
     QStringList flist;
     for (int i = 0; i < d->count; i++) {
         QtFontFamily *f = d->families[i];
-        if (f->count == 0)
+        if (f->populated && f->count == 0)
             continue;
-        if (writingSystem != Any && (f->writingSystems[writingSystem] != QtFontFamily::Supported))
-            continue;
-        if (f->count == 1) {
+        if (writingSystem != Any) {
+            f->ensurePopulated();
+            if (f->writingSystems[writingSystem] != QtFontFamily::Supported)
+                continue;
+        }
+        if (!f->populated || f->count == 1) {
             flist.append(f->name);
         } else {
             for (int j = 0; j < f->count; j++) {

@@ -70,8 +70,7 @@ QQnxEglWindow::QQnxEglWindow(QWindow *window, screen_context_t context, bool nee
     if (result != 0)
         qFatal("QQnxEglWindow: failed to set window alpha usage, errno=%d", errno);
 
-    m_requestedBufferSize = screen()->rootWindow() == this ?
-                            screen()->geometry().size() : window->geometry().size();
+    m_requestedBufferSize = shouldMakeFullScreen() ? screen()->geometry().size() : window->geometry().size();
 }
 
 QQnxEglWindow::~QQnxEglWindow()
@@ -156,7 +155,7 @@ EGLSurface QQnxEglWindow::getSurface()
 void QQnxEglWindow::setGeometry(const QRect &rect)
 {
     //If this is the root window, it has to be shown fullscreen
-    const QRect &newGeometry = screen()->rootWindow() == this ? screen()->geometry() : rect;
+    const QRect &newGeometry = shouldMakeFullScreen() ? screen()->geometry() : rect;
 
     //We need to request that the GL context updates
     // the EGLsurface on which it is rendering.

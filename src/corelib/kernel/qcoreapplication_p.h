@@ -116,9 +116,7 @@ public:
     static QThread *mainThread();
     static void sendPostedEvents(QObject *receiver, int event_type, QThreadData *data);
 
-#if !defined (QT_NO_DEBUG) || defined (QT_MAC_FRAMEWORK_BUILD)
     void checkReceiverThread(QObject *receiver);
-#endif
     void cleanupThreadData();
 #endif // QT_NO_QOBJECT
 

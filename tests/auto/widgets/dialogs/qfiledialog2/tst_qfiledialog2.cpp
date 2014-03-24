@@ -294,7 +294,7 @@ void tst_QFileDialog2::showNameFilterDetails()
 
 void tst_QFileDialog2::unc()
 {
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
     // Only test UNC on Windows./
     QString dir("\\\\"  + QtNetworkSettings::winServerName() + "\\testsharewritable");
 #else

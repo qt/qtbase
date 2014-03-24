@@ -132,6 +132,8 @@ namespace QtPrivate {
         inline void call(QObject *r, void **a)  { m_impl(Call,    this, r, a, 0); }
     protected:
         ~QSlotObjectBase() {}
+    private:
+        Q_DISABLE_COPY(QSlotObjectBase)
     };
     // implementation of QSlotObjectBase for which the slot is a pointer to member function of a QObject
     // Args and R are the List of arguments and the returntype of the signal to which the slot is connected.

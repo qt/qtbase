@@ -493,8 +493,7 @@
            text; otherwise this width is excluded.
     \value TextJustificationForced Ensures that text lines are justified.
 
-    \omitvalue TextLongestVariant Ensures that the longest variant is always used
-           when computing the size of a multi-variant string. (Internal)
+    \omitvalue TextLongestVariant
     \omitvalue TextBypassShaping
     \omitvalue TextForceLeftToRight
     \omitvalue TextForceRightToLeft

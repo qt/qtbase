@@ -3660,7 +3660,7 @@ void tst_QGraphicsItem::setGroup2()
 
     oldSceneTransform = rect->sceneTransform();
     rect->setGroup(0);
-    QCOMPARE(rect->sceneTransform(), oldSceneTransform);
+    qFuzzyCompare(rect->sceneTransform(), oldSceneTransform);
 }
 
 void tst_QGraphicsItem::nestedGroups()

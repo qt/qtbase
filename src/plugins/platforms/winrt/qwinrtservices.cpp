@@ -106,8 +106,7 @@ bool QWinRTServices::openDocument(const QUrl &url)
     if (!(m_fileFactory && m_launcher))
         return QPlatformServices::openDocument(url);
 
-    QString pathString = QDir::toNativeSeparators(
-                QDir::cleanPath(qApp->applicationDirPath().append(url.toString(QUrl::RemoveScheme))));
+    const QString pathString = QDir::toNativeSeparators(url.toLocalFile());
     HSTRING_HEADER header; HSTRING path;
     WindowsCreateStringReference((const wchar_t*)pathString.utf16(), pathString.length(), &header, &path);
     IAsyncOperation<StorageFile*> *fileOp;

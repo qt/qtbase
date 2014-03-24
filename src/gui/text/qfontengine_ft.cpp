@@ -1934,8 +1934,6 @@ QImage QFontEngineFT::alphaMapForGlyph(glyph_t g, QFixed subPixelPosition)
     lockFace();
 
     QScopedPointer<Glyph> glyph(loadGlyphFor(g, subPixelPosition, antialias ? Format_A8 : Format_Mono));
-    if (cacheEnabled)
-        glyph.take();
     if (!glyph || !glyph->data) {
         unlockFace();
         return QFontEngine::alphaMapForGlyph(g);
@@ -1960,6 +1958,8 @@ QImage QFontEngineFT::alphaMapForGlyph(glyph_t g, QFixed subPixelPosition)
         for (int y = 0; y < glyph->height; ++y)
             memcpy(img.scanLine(y), &glyph->data[y * pitch], pitch);
     }
+    if (cacheEnabled)
+        glyph.take();
     unlockFace();
 
     return img;
@@ -1973,8 +1973,6 @@ QImage QFontEngineFT::alphaRGBMapForGlyph(glyph_t g, QFixed subPixelPosition, co
     lockFace();
 
     QScopedPointer<Glyph> glyph(loadGlyphFor(g, subPixelPosition, Format_A32));
-    if (cacheEnabled)
-        glyph.take();
     if (!glyph || !glyph->data) {
         unlockFace();
         return QFontEngine::alphaRGBMapForGlyph(g, subPixelPosition, t);
@@ -1982,6 +1980,9 @@ QImage QFontEngineFT::alphaRGBMapForGlyph(glyph_t g, QFixed subPixelPosition, co
 
     QImage img(glyph->width, glyph->height, QImage::Format_RGB32);
     memcpy(img.bits(), glyph->data, 4 * glyph->width * glyph->height);
+
+    if (cacheEnabled)
+        glyph.take();
     unlockFace();
 
     return img;

@@ -2374,6 +2374,7 @@ void QTextEngine::freeMemory()
         layoutData->hasBidi = false;
         layoutData->layoutState = LayoutEmpty;
         layoutData->haveCharAttributes = false;
+        layoutData->items.clear();
     }
     for (int i = 0; i < lines.size(); ++i) {
         lines[i].justified = 0;
@@ -2520,7 +2521,8 @@ void QTextEngine::setAdditionalFormats(const QList<QTextLayout::FormatRange> &fo
         specialData->addFormats = formatList;
         indexAdditionalFormats();
     }
-    resetFontEngineCache();
+    invalidate();
+    clearLineData();
 }
 
 void QTextEngine::indexAdditionalFormats()

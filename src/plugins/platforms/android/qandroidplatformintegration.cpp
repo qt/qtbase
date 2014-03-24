@@ -152,7 +152,8 @@ bool QAndroidPlatformIntegration::hasCapability(Capability cap) const
         case ThreadedOpenGL:
             if (needsWorkaround())
                 return false;
-        // fall through
+            else
+                return true;
         default:
             return QPlatformIntegration::hasCapability(cap);
     }

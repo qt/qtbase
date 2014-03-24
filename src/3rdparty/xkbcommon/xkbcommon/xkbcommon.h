@@ -197,7 +197,7 @@ typedef uint32_t xkb_keysym_t;
  * layout</em> is active.  These may be different alphabets, different key
  * arrangements, etc.
  *
- * Layout indexes are consecutive.  The first layout has index 0.
+ * Layout indices are consecutive.  The first layout has index 0.
  *
  * Each layout is not required to have a name, and the names are not
  * guaranteed to be unique (though they are usually provided and unique).
@@ -209,13 +209,20 @@ typedef uint32_t xkb_keysym_t;
  * @sa xkb_keymap_num_layouts() xkb_keymap_num_layouts_for_key()
  */
 typedef uint32_t xkb_layout_index_t;
-/** A mask of layout indexes. */
+/** A mask of layout indices. */
 typedef uint32_t xkb_layout_mask_t;
 
 /**
  * Index of a shift level.
  *
- * @todo Explain what are shift levels.
+ * Any key, in any layout, can have several <em>shift levels</em>.  Each
+ * shift level can assign different keysyms to the key.  The shift level
+ * to use is chosen according to the current keyboard state; for example,
+ * if no keys are pressed, the first level may be used; if the Left Shift
+ * key is pressed, the second; if Num Lock is pressed, the third; and
+ * many such combinations are possible (see xkb_mod_index_t).
+ *
+ * Level indices are consecutive.  The first level has index 0.
  */
 typedef uint32_t xkb_level_index_t;
 
@@ -233,7 +240,7 @@ typedef uint32_t xkb_level_index_t;
  * consulted; this detemines the correct shift level to use within the
  * currently active layout (see xkb_level_index_t).
  *
- * Modifier indexes are consecutive.  The first modifier has index 0.
+ * Modifier indices are consecutive.  The first modifier has index 0.
  *
  * Each modifier must have a name, and the names are unique.  Therefore, it
  * is safe to use the name as a unique identifier for a modifier.  The names
@@ -243,15 +250,17 @@ typedef uint32_t xkb_level_index_t;
  * @sa xkb_keymap_num_mods()
  */
 typedef uint32_t xkb_mod_index_t;
-/** A mask of modifier indexes. */
+/** A mask of modifier indices. */
 typedef uint32_t xkb_mod_mask_t;
 
 /**
  * Index of a keyboard LED.
  *
- * @todo Explain what are LEDs.
+ * LEDs are logical objects which may be @e active or @e inactive.  They
+ * typically correspond to the lights on the keyboard. Their state is
+ * determined by the current keyboard state.
  *
- * LED indexes are non-consecutive.  The first LED has index 0.
+ * LED indices are non-consecutive.  The first LED has index 0.
  *
  * Each LED must have a name, and the names are unique. Therefore,
  * it is safe to use the name as a unique identifier for a LED.  The names
@@ -261,7 +270,7 @@ typedef uint32_t xkb_mod_mask_t;
  * @warning A given keymap may specify an exact index for a given LED.
  * Therefore, LED indexing is not necessarily sequential, as opposed to
  * modifiers and layouts.  This means that when iterating over the LEDs
- * in a keymap using e.g. xkb_keymap_num_leds(), some indexes might be
+ * in a keymap using e.g. xkb_keymap_num_leds(), some indices might be
  * invalid.  Given such an index, functions like xkb_keymap_led_get_name()
  * will return NULL, and xkb_state_led_index_is_active() will return -1.
  *
@@ -270,7 +279,7 @@ typedef uint32_t xkb_mod_mask_t;
  * @sa xkb_keymap_num_leds()
  */
 typedef uint32_t xkb_led_index_t;
-/** A mask of LED indexes. */
+/** A mask of LED indices. */
 typedef uint32_t xkb_led_mask_t;
 
 #define XKB_KEYCODE_INVALID (0xffffffff)
@@ -351,6 +360,8 @@ xkb_keysym_get_name(xkb_keysym_t keysym, char *buffer, size_t size);
 
 /** Flags for xkb_keysym_from_name(). */
 enum xkb_keysym_flags {
+    /** Do not apply any flags. */
+    XKB_KEYSYM_NO_FLAGS = 0,
     /** Find keysym by case-insensitive search. */
     XKB_KEYSYM_CASE_INSENSITIVE = (1 << 0)
 };
@@ -416,6 +427,8 @@ xkb_keysym_to_utf32(xkb_keysym_t keysym);
 
 /** Flags for context creation. */
 enum xkb_context_flags {
+    /** Do not apply any context flags. */
+    XKB_CONTEXT_NO_FLAGS = 0,
     /** Create this context with an empty include path. */
     XKB_CONTEXT_NO_DEFAULT_INCLUDES = (1 << 0),
     /** Don't take RMLVO names from the environment. */
@@ -667,6 +680,8 @@ xkb_context_set_log_fn(struct xkb_context *context,
 
 /** Flags for keymap compilation. */
 enum xkb_keymap_compile_flags {
+    /** Do not apply any flags. */
+    XKB_MAP_COMPILE_NO_FLAGS = 0,
     /** Apparently you can't have empty enums.  What a drag. */
     XKB_MAP_COMPILE_PLACEHOLDER = 0
 };
@@ -810,6 +825,46 @@ xkb_keymap_get_as_string(struct xkb_keymap *keymap,
  *
  * @{
  */
+
+/**
+ * Get the minimum keycode in the keymap.
+ *
+ * @sa xkb_keycode_t
+ * @memberof xkb_keymap
+ */
+xkb_keycode_t
+xkb_keymap_min_keycode(struct xkb_keymap *keymap);
+
+/**
+ * Get the maximum keycode in the keymap.
+ *
+ * @sa xkb_keycode_t
+ * @memberof xkb_keymap
+ */
+xkb_keycode_t
+xkb_keymap_max_keycode(struct xkb_keymap *keymap);
+
+/**
+ * The iterator used by xkb_keymap_key_for_each().
+ *
+ * @sa xkb_keymap_key_for_each
+ * @memberof xkb_keymap
+ */
+typedef void
+(*xkb_keymap_key_iter_t)(struct xkb_keymap *keymap, xkb_keycode_t key,
+                         void *data);
+
+/**
+ * Run a specified function for every valid keycode in the keymap.  If a
+ * keymap is sparse, this function may be called fewer than
+ * (max_keycode - min_keycode + 1) times.
+ *
+ * @sa xkb_keymap_min_keycode() xkb_keymap_max_keycode() xkb_keycode_t
+ * @memberof xkb_keymap
+ */
+void
+xkb_keymap_key_for_each(struct xkb_keymap *keymap, xkb_keymap_key_iter_t iter,
+                        void *data);
 
 /**
  * Get the number of modifiers in the keymap.
@@ -1001,9 +1056,9 @@ xkb_keymap_key_repeats(struct xkb_keymap *keymap, xkb_keycode_t key);
  */
 
 /**
- * Create a new keyboard state object for a keymap.
+ * Create a new keyboard state object.
  *
- * @param keymap The keymap for which to create the state.
+ * @param keymap The keymap which the state will use.
  *
  * @returns A new keyboard state object, or NULL on failure.
  *
@@ -1033,10 +1088,10 @@ void
 xkb_state_unref(struct xkb_state *state);
 
 /**
- * Get the keymap from which a keyboard state object was created.
+ * Get the keymap which a keyboard state object is using.
  *
- * @returns The keymap which was used in xkb_state_new() to create this
- * state object.
+ * @returns The keymap which was passed to xkb_state_new() when creating
+ * this state object.
  *
  * This function does not take a new reference on the keymap; you must
  * explicitly reference it yourself if you plan to use it beyond the
@@ -1070,7 +1125,8 @@ enum xkb_state_component {
      *  lock has been pressed again. */
     XKB_STATE_MODS_LOCKED = (1 << 2),
     /** Effective modifiers, i.e. currently active and affect key
-     *  processing (derived from the other state components). */
+     *  processing (derived from the other state components).
+     *  Use this unless you explictly care how the state came about. */
     XKB_STATE_MODS_EFFECTIVE = (1 << 3),
     /** Depressed layout, i.e. a key is physically holding it. */
     XKB_STATE_LAYOUT_DEPRESSED = (1 << 4),
@@ -1081,7 +1137,8 @@ enum xkb_state_component {
      *  has been pressed again. */
     XKB_STATE_LAYOUT_LOCKED = (1 << 6),
     /** Effective layout, i.e. currently active and affects key processing
-     *  (derived from the other state components). */
+     *  (derived from the other state components).
+     *  Use this unless you explictly care how the state came about. */
     XKB_STATE_LAYOUT_EFFECTIVE = (1 << 7),
     /** LEDs (derived from the other state components). */
     XKB_STATE_LEDS = (1 << 8)
@@ -1091,14 +1148,63 @@ enum xkb_state_component {
  * Update the keyboard state to reflect a given key being pressed or
  * released.
  *
+ * This entry point is intended for programs which track the keyboard state
+ * explictly (like an evdev client).  If the state is serialized to you by
+ * a master process (like a Wayland compositor) using functions like
+ * xkb_state_serialize_mods(), you should use xkb_state_update_mask() instead.
+ * The two functins should not generally be used together.
+ *
+ * A series of calls to this function should be consistent; that is, a call
+ * with XKB_KEY_DOWN for a key should be matched by an XKB_KEY_UP; if a key
+ * is pressed twice, it should be released twice; etc. Otherwise (e.g. due
+ * to missed input events), situations like "stuck modifiers" may occur.
+ *
  * @returns A mask of state components that have changed as a result of
  * the update.  If nothing in the state has changed, returns 0.
  *
  * @memberof xkb_state
+ *
+ * @sa xkb_state_update_mask()
  */
 enum xkb_state_component
 xkb_state_update_key(struct xkb_state *state, xkb_keycode_t key,
                      enum xkb_key_direction direction);
+
+/**
+ * Update a keyboard state from a set of explicit masks.
+ *
+ * This entry point is intended for window systems and the like, where a
+ * master process holds an xkb_state, then serializes it over a wire
+ * protocol, and clients then use the serialization to feed in to their own
+ * xkb_state.
+ *
+ * All parameters must always be passed, or the resulting state may be
+ * incoherent.
+ *
+ * The serialization is lossy and will not survive round trips; it must only
+ * be used to feed slave state objects, and must not be used to update the
+ * master state.
+ *
+ * If you do not fit the description above, you should use
+ * xkb_state_update_key() instead.  The two functions should not generally be
+ * used together.
+ *
+ * @returns A mask of state components that have changed as a result of
+ * the update.  If nothing in the state has changed, returns 0.
+ *
+ * @memberof xkb_state
+ *
+ * @sa xkb_state_component
+ * @sa xkb_state_update_key
+ */
+enum xkb_state_component
+xkb_state_update_mask(struct xkb_state *state,
+                      xkb_mod_mask_t depressed_mods,
+                      xkb_mod_mask_t latched_mods,
+                      xkb_mod_mask_t locked_mods,
+                      xkb_layout_index_t depressed_layout,
+                      xkb_layout_index_t latched_layout,
+                      xkb_layout_index_t locked_layout);
 
 /**
  * Get the keysyms obtained from pressing a particular key in a given
@@ -1114,8 +1220,9 @@ xkb_state_update_key(struct xkb_state *state, xkb_keycode_t key,
  * key in the given keyboard state.
  *
  * As an extension to XKB, this function can return more than one keysym.
- * If you do not want to handle this case, you can use
- * xkb_state_key_get_one_sym().
+ * If you do not want to handle this case, you should use
+ * xkb_state_key_get_one_sym(), which additionally performs transformations
+ * which are specific to the one-keysym case.
  *
  * @returns The number of keysyms in the syms_out array.  If no keysyms
  * are produced by the key in the given keyboard state, returns 0 and sets
@@ -1131,9 +1238,10 @@ xkb_state_key_get_syms(struct xkb_state *state, xkb_keycode_t key,
  * Get the single keysym obtained from pressing a particular key in a
  * given keyboard state.
  *
- * This function is similar to xkb_state_key_get_syms(), but with a
- * simplified interface for users which cannot or do not want to handle
- * the case where multiple keysyms are returned.
+ * This function is similar to xkb_state_key_get_syms(), but intended
+ * for users which cannot or do not want to handle the case where
+ * multiple keysyms are returned (in which case this function is
+ * preferred).
  *
  * @returns The keysym.  If the key does not have exactly one keysym,
  * returns XKB_KEY_NoSymbol
@@ -1202,39 +1310,6 @@ enum xkb_state_match {
      *  modifier not specified in the arguments is active. */
     XKB_STATE_MATCH_NON_EXCLUSIVE = (1 << 16)
 };
-
-/**
- * Update a keyboard state from a set of explicit masks.
- *
- * This entry point is really only for window systems and the like, where a
- * master process holds an xkb_state, then serializes it over a wire
- * protocol, and clients then use the serialization to feed in to their own
- * xkb_state.
- *
- * All parameters must always be passed, or the resulting state may be
- * incoherent.
- *
- * The serialization is lossy and will not survive round trips; it must only
- * be used to feed slave state objects, and must not be used to update the
- * master state.
- *
- * Please do not use this unless you fit the description above.
- *
- * @returns A mask of state components that have changed as a result of
- * the update.  If nothing in the state has changed, returns 0.
- *
- * @memberof xkb_state
- *
- * @sa xkb_state_component
- */
-enum xkb_state_component
-xkb_state_update_mask(struct xkb_state *state,
-                      xkb_mod_mask_t depressed_mods,
-                      xkb_mod_mask_t latched_mods,
-                      xkb_mod_mask_t locked_mods,
-                      xkb_layout_index_t depressed_layout,
-                      xkb_layout_index_t latched_layout,
-                      xkb_layout_index_t locked_layout);
 
 /**
  * The counterpart to xkb_state_update_mask for modifiers, to be used on
@@ -1336,11 +1411,11 @@ xkb_state_mod_index_is_active(struct xkb_state *state, xkb_mod_index_t idx,
  * given modifiers.
  * @param match The manner by which to match the state against the
  * given modifiers.
- * @param ...   The set of of modifier indexes to test, terminated by a
+ * @param ...   The set of of modifier indices to test, terminated by a
  * XKB_MOD_INVALID argument (sentinel).
  *
  * @returns 1 if the modifiers are active, 0 if they are not.  If any of
- * the modifier indexes are invalid in the keymap, returns -1.
+ * the modifier indices are invalid in the keymap, returns -1.
  *
  * @memberof xkb_state
  */

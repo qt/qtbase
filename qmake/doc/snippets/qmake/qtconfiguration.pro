@@ -10,7 +10,7 @@ message(Binary files (executables): $$[QT_INSTALL_BINS])
 message(Plugins: $$[QT_INSTALL_PLUGINS])
 message(Data files: $$[QT_INSTALL_DATA])
 message(Translation files: $$[QT_INSTALL_TRANSLATIONS])
-message(Settings: $$[QT_INSTALL_SETTINGS])
+message(Settings: $$[QT_INSTALL_CONFIGURATION])
 message(Examples: $$[QT_INSTALL_EXAMPLES])
 #! [0]
 

@@ -64,6 +64,7 @@
 #include "private/qpaintengine_p.h"
 #include "private/qfontengine_p.h"
 #include "private/qfontsubset_p.h"
+#include "qpagelayout.h"
 
 // #define USE_NATIVE_GRADIENTS
 
@@ -179,7 +180,9 @@ public:
     ~QPdfEngine() {}
 
     void setOutputFilename(const QString &filename);
-    inline void setResolution(int resolution);
+
+    void setResolution(int resolution);
+    int resolution() const;
 
     // reimplementations QPaintEngine
     bool begin(QPaintDevice *pdev);
@@ -207,6 +210,14 @@ public:
     // Printer stuff...
     bool newPage();
 
+    // Page layout stuff
+    void setPageLayout(const QPageLayout &pageLayout);
+    void setPageSize(const QPageSize &pageSize);
+    void setPageOrientation(QPageLayout::Orientation orientation);
+    void setPageMargins(const QMarginsF &margins, QPageLayout::Unit units = QPageLayout::Point);
+
+    QPageLayout pageLayout() const;
+
     void setPen();
     void setBrush();
     void setupGraphicsState(QPaintEngine::DirtyFlags flags);
@@ -223,19 +234,6 @@ public:
     ~QPdfEnginePrivate();
 
     inline uint requestObject() { return currentObject++; }
-
-    QRect paperRect() const;
-    QRect pageRect() const;
-    void setPaperSize(const QSizeF &pageSizeMM);
-
-    int width() const {
-        QRect r = paperRect();
-        return qRound(r.width()*72./resolution);
-    }
-    int height() const {
-        QRect r = paperRect();
-        return qRound(r.height()*72./resolution);
-    }
 
     void writeHeader();
     void writeTail();
@@ -278,15 +276,12 @@ public:
     QString outputFileName;
     QString title;
     QString creator;
-    bool fullPage;
     bool embedFonts;
     int resolution;
-    bool landscape;
     bool grayscale;
 
-    // in postscript points
-    QSizeF paperSize;
-    qreal leftMargin, topMargin, rightMargin, bottomMargin;
+    // Page layout: size, orientation and margins
+    QPageLayout m_pageLayout;
 
 private:
 #ifdef USE_NATIVE_GRADIENTS
@@ -324,12 +319,6 @@ private:
     QHash<qint64, uint> imageCache;
     QHash<QPair<uint, uint>, uint > alphaCache;
 };
-
-void QPdfEngine::setResolution(int resolution)
-{
-    Q_D(QPdfEngine);
-    d->resolution = resolution;
-}
 
 QT_END_NAMESPACE
 

@@ -16,6 +16,14 @@ Each of these identifiers can be entered in the bug tracker to obtain more
 information about a particular change.
 
 ****************************************************************************
+*                   Platform deprecation notice                            *
+****************************************************************************
+
+ - The support for deployment on OS X 10.6 (Snow Leopard) is deprecated
+   in Qt 5.3, and will be removed in Qt 5.4. The platform is currently
+   not tested, and most likely has issues that are not fully documented.
+
+****************************************************************************
 *                          Library                                         *
 ****************************************************************************
 
@@ -34,3 +42,12 @@ QtGui
  - Added setSwapInterval() to QSurfaceFormat. Platforms that support
    setting the swap interval are now defaulting to the value of 1,
    meaning vsync is enabled.
+
+QtSql
+-----
+
+ - QSqlQuery::isNull(field) now correctly returns true for "no such field".
+ - QSqlQuery::isNull(fieldname) is a new overload.
+ - QSQLITE: Empty database name now opens in-memory database.
+ - QSqlError: Now handles alphanumeric error codes. Used by QPSQL.
+              Old numeric code is deprecated.

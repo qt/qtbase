@@ -2294,6 +2294,18 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
 
         if (w->d_func()->blockedByModalWindow) {
             // a modal window is blocking this window, don't allow touch events through
+
+            // QTBUG-37371 temporary fix; TODO: revisit in 5.4 when we have a forwarding solution
+            if (eventType == QEvent::TouchEnd) {
+                // but don't leave dangling state: e.g.
+                // QQuickWindowPrivate::itemForTouchPointId needs to be cleared.
+                QTouchEvent touchEvent(QEvent::TouchCancel,
+                                       e->device,
+                                       e->modifiers);
+                touchEvent.setTimestamp(e->timestamp);
+                touchEvent.setWindow(w);
+                QGuiApplication::sendSpontaneousEvent(w, &touchEvent);
+            }
             continue;
         }
 

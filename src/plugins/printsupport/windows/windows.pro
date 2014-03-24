@@ -12,10 +12,12 @@ INCLUDEPATH *= $$QT_SOURCE_TREE/src/printsupport/kernel
 
 SOURCES += \
     main.cpp \
-    qwindowsprintersupport.cpp
+    qwindowsprintersupport.cpp \
+    qwindowsprintdevice.cpp \
 
 HEADERS += \
-    qwindowsprintersupport.h
+    qwindowsprintersupport.h \
+    qwindowsprintdevice.h \
 
 OTHER_FILES += windows.json
 

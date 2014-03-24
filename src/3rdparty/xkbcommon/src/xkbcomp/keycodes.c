@@ -231,7 +231,10 @@ InitKeyNamesInfo(KeyNamesInfo *info, struct xkb_context *ctx)
 {
     memset(info, 0, sizeof(*info));
     info->ctx = ctx;
-    info->min_key_code = XKB_KEYCODE_MAX;
+    info->min_key_code = XKB_KEYCODE_INVALID;
+#if XKB_KEYCODE_INVALID < XKB_KEYCODE_MAX
+#error "Hey, you can't be changing stuff like that."
+#endif
 }
 
 static xkb_keycode_t
@@ -604,16 +607,28 @@ CopyKeyNamesToKeymap(struct xkb_keymap *keymap, KeyNamesInfo *info)
     unsigned i;
 
     keymap->keycodes_section_name = strdup_safe(info->name);
+    XkbEscapeMapName(keymap->keycodes_section_name);
 
-    keymap->min_key_code = info->min_key_code;
-    keymap->max_key_code = info->max_key_code;
+    if (info->min_key_code != XKB_KEYCODE_INVALID) {
+        keymap->min_key_code = info->min_key_code;
+        keymap->max_key_code = info->max_key_code;
+    }
+    else {
+        /*
+         * If the keymap has no keys, let's just use the safest pair
+         * we know.
+         */
+        keymap->min_key_code = 8;
+        keymap->max_key_code = 255;
+    }
+
+    keymap->keys = calloc(keymap->max_key_code + 1, sizeof(*keymap->keys));
+    for (kc = keymap->min_key_code; kc <= keymap->max_key_code; kc++)
+        keymap->keys[kc].keycode = kc;
 
     /* Copy key names. */
-    keymap->keys = calloc(info->max_key_code + 1, sizeof(*keymap->keys));
-    for (kc = info->min_key_code; kc <= info->max_key_code; kc++) {
-        keymap->keys[kc].keycode = kc;
+    for (kc = info->min_key_code; kc <= info->max_key_code; kc++)
         keymap->keys[kc].name = darray_item(info->key_names, kc);
-    }
 
     /*
      * Do some sanity checking on the aliases. We can't do it before

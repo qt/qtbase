@@ -74,6 +74,8 @@
 #  define SECURITY_WIN32
 #  include <security.h>
 #else // !Q_OS_WINRT
+#  include "qstandardpaths.h"
+#  include "qthreadstorage.h"
 #  include <wrl.h>
 #  include <windows.foundation.h>
 #  include <windows.storage.h>
@@ -1151,6 +1153,18 @@ bool QFileSystemEngine::createDirectory(const QFileSystemEntry &entry, bool crea
                         bool existed = false;
                         if (isDirPath(chunk, &existed) && existed)
                             continue;
+#ifdef Q_OS_WINRT
+                        static QThreadStorage<QString> dataLocation;
+                        if (!dataLocation.hasLocalData())
+                            dataLocation.setLocalData(QDir::toNativeSeparators(QStandardPaths::writableLocation(QStandardPaths::DataLocation)));
+                        static QThreadStorage<QString> tempLocation;
+                        if (!tempLocation.hasLocalData())
+                            tempLocation.setLocalData(QDir::toNativeSeparators(QStandardPaths::writableLocation(QStandardPaths::TempLocation)));
+                        // We try to create something outside the sandbox, which is forbidden
+                        // However we could still try to pass into the sandbox
+                        if (dataLocation.localData().startsWith(chunk) || tempLocation.localData().startsWith(chunk))
+                            continue;
+#endif
                     }
                     return false;
                 }

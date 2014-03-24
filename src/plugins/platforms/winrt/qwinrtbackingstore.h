@@ -62,6 +62,8 @@ public:
     void resize(const QSize &size, const QRegion &staticContents);
 
 private:
+    bool initialize();
+    bool m_initialized;
     QSize m_size;
     QScopedPointer<QPaintDevice> m_paintDevice;
     QScopedPointer<QOpenGLContext> m_context;

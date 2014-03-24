@@ -872,7 +872,6 @@ void QXcbDrag::handleLeave(QWindow *w, const xcb_client_message_event_t *event)
     }
 
     QWindowSystemInterface::handleDrag(w,0,QPoint(),Qt::IgnoreAction);
-    updateAction(Qt::IgnoreAction);
 
     xdnd_dragsource = 0;
     xdnd_types.clear();
@@ -1045,7 +1044,8 @@ void QXcbDrag::timerEvent(QTimerEvent* e)
                  - showing dialog box on drop event where user's response takes more time than XdndDropTransactionTimeout (QTBUG-14493)
                  - dnd takes unusually long time to process data
                  */
-                t.drag->deleteLater();
+                if (t.drag)
+                    t.drag->deleteLater();
                 transactions.removeAt(i--);
             } else {
                 stopTimer = false;

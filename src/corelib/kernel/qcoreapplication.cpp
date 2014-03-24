@@ -506,7 +506,6 @@ QThread *QCoreApplicationPrivate::mainThread()
     return theMainThread;
 }
 
-#if !defined (QT_NO_DEBUG) || defined (QT_MAC_FRAMEWORK_BUILD)
 void QCoreApplicationPrivate::checkReceiverThread(QObject *receiver)
 {
     QThread *currentThread = QThread::currentThread();
@@ -523,7 +522,6 @@ void QCoreApplicationPrivate::checkReceiverThread(QObject *receiver)
     Q_UNUSED(currentThread);
     Q_UNUSED(thr);
 }
-#endif
 
 #endif // QT_NO_QOBJECT
 
@@ -2217,6 +2215,9 @@ QStringList QCoreApplication::arguments()
     organizationName(). On all other platforms, QSettings uses
     organizationName() as the organization.
 
+    On BlackBerry this property is read-only. It is obtained from the
+    BAR application descriptor file.
+
     \sa organizationDomain, applicationName
 */
 
@@ -2294,6 +2295,9 @@ QString QCoreApplication::organizationDomain()
 
     If not set, the application name defaults to the executable name (since 5.0).
 
+    On BlackBerry this property is read-only. It is obtained from the
+    BAR application descriptor file.
+
     \sa organizationName, organizationDomain, applicationVersion, applicationFilePath()
 */
 /*!
@@ -2334,6 +2338,9 @@ Q_CORE_EXPORT QString qt_applicationName_noFallback()
     \property QCoreApplication::applicationVersion
     \since 4.4
     \brief the version of this application
+
+    On BlackBerry this property is read-only. It is obtained from the
+    BAR application descriptor file.
 
     \sa applicationName, organizationName, organizationDomain
 */

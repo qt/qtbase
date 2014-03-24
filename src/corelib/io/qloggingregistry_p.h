@@ -72,7 +72,6 @@ public:
     int pass(const QString &categoryName, QtMsgType type) const;
 
     enum PatternFlag {
-        Invalid = 0x0,
         FullText = 0x1,
         LeftFilter = 0x2,
         RightFilter = 0x4,

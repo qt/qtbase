@@ -407,7 +407,7 @@ void tst_QScroller::scroll()
     // now we should be scrolling
     QTRY_COMPARE( s1->state(), QScroller::Scrolling );
 
-    // wait until finished, check that no further first scroll is send
+    // wait until finished, check that no further first scroll is sent
     sw->receivedFirst = false;
     sw->receivedScroll = false;
     while (s1->state() == QScroller::Scrolling)

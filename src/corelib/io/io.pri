@@ -148,7 +148,7 @@ win32 {
             }
         } else:blackberry {
             SOURCES += io/qstandardpaths_blackberry.cpp
-        } else:android {
+        } else:android:!android-no-sdk {
             SOURCES += io/qstandardpaths_android.cpp
         } else {
             SOURCES += io/qstandardpaths_unix.cpp

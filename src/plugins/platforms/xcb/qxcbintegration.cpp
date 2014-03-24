@@ -396,7 +396,6 @@ QVariant QXcbIntegration::styleHint(QPlatformIntegration::StyleHint hint) const
     case QPlatformIntegration::CursorFlashTime:
     case QPlatformIntegration::KeyboardInputInterval:
     case QPlatformIntegration::MouseDoubleClickInterval:
-    case QPlatformIntegration::StartDragDistance:
     case QPlatformIntegration::StartDragTime:
     case QPlatformIntegration::KeyboardAutoRepeatRate:
     case QPlatformIntegration::PasswordMaskDelay:
@@ -406,6 +405,20 @@ QVariant QXcbIntegration::styleHint(QPlatformIntegration::StyleHint hint) const
     case QPlatformIntegration::PasswordMaskCharacter:
         // TODO using various xcb, gnome or KDE settings
         break; // Not implemented, use defaults
+    case QPlatformIntegration::StartDragDistance: {
+        // The default (in QPlatformTheme::defaultThemeHint) is 10 pixels, but
+        // on a high-resolution screen it makes sense to increase it.
+        const QList<QXcbScreen *> &screens = defaultConnection()->screens();
+        qreal dpi = 100.0;
+        if (screens.length() > 0) {
+            const QXcbScreen *screen = screens.at(defaultConnection()->primaryScreen());
+            if (screen->logicalDpi().first > dpi)
+                dpi = screen->logicalDpi().first;
+            if (screen->logicalDpi().second > dpi)
+                dpi = screen->logicalDpi().second;
+        }
+        return 10.0 * dpi / 100.0;
+    }
     case QPlatformIntegration::ShowIsFullScreen:
         // X11 always has support for windows, but the
         // window manager could prevent it (e.g. matchbox)

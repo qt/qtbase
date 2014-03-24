@@ -526,18 +526,6 @@ static QColor qcolorFromCGColor(CGColorRef cgcolor)
     return pc;
 }
 
-static inline QColor leopardBrush(ThemeBrush brush)
-{
-    QCFType<CGColorRef> cgClr = 0;
-    HIThemeBrushCreateCGColor(brush, &cgClr);
-    return qcolorFromCGColor(cgClr);
-}
-
-QColor qcolorForTheme(ThemeBrush brush)
-{
-    return leopardBrush(brush);
-}
-
 OSStatus qt_mac_shape2QRegionHelper(int inMessage, HIShapeRef, const CGRect *inRect, void *inRefcon)
 {
     QRegion *region = static_cast<QRegion *>(inRefcon);
@@ -1917,11 +1905,6 @@ void QMacStyle::polish(QPalette &pal)
         qt_mac_backgroundPattern = new QPixmap(d->generateBackgroundPattern());
     }
 
-    QColor pc(Qt::black);
-    pc = qcolorForTheme(kThemeBrushDialogBackgroundActive);
-    QBrush background(pc, *qt_mac_backgroundPattern);
-    pal.setBrush(QPalette::All, QPalette::Window, background);
-    pal.setBrush(QPalette::All, QPalette::Button, background);
 
     QCFString theme;
     const OSErr err = CopyThemeIdentifier(&theme);
@@ -2517,12 +2500,12 @@ int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
         ret = 100;
         break;
     case SH_ScrollBar_LeftClickAbsolutePosition: {
+        NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+        bool result = [defaults boolForKey:@"AppleScrollerPagingBehavior"];
         if(QApplication::keyboardModifiers() & Qt::AltModifier)
-            ret = false;
-            //ret = !qt_scrollbar_jump_to_pos;
+            ret = !result;
         else
-            ret = true;
-            //ret = qt_scrollbar_jump_to_pos;
+            ret = result;
         break; }
     case SH_TabBar_PreferNoArrows:
         ret = true;
@@ -2532,9 +2515,6 @@ int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
         ret = QDialogButtons::Reject;
         break;
         */
-    case SH_Menu_SloppySubMenus:
-        ret = true;
-        break;
     case SH_GroupBox_TextLabelVerticalAlignment:
         ret = Qt::AlignTop;
         break;

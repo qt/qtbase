@@ -771,9 +771,13 @@ struct VariantData
       , flags(flags_)
     {
     }
+    VariantData(const VariantData &other)
+        : metaTypeId(other.metaTypeId), data(other.data), flags(other.flags){}
     const int metaTypeId;
     const void *data;
     const uint flags;
+private:
+    VariantData &operator=(const VariantData &) Q_DECL_EQ_DELETE;
 };
 
 template<typename const_iterator>
@@ -1702,7 +1706,8 @@ inline int qRegisterMetaTypeStreamOperators()
     } QT_END_NAMESPACE                                                  \
     /**/
 
-#define Q_DECLARE_METATYPE(TYPE)                                        \
+#define Q_DECLARE_METATYPE(TYPE) Q_DECLARE_METATYPE_IMPL(TYPE)
+#define Q_DECLARE_METATYPE_IMPL(TYPE)                                   \
     QT_BEGIN_NAMESPACE                                                  \
     template <>                                                         \
     struct QMetaTypeId< TYPE >                                          \

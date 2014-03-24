@@ -49,12 +49,12 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QGLFunctions
     \inmodule QtOpenGL
-    \brief The QGLFunctions class provides cross-platform access to the OpenGL/ES 2.0 API.
+    \brief The QGLFunctions class provides cross-platform access to the OpenGL ES 2.0 API.
     \since 4.8
     \obsolete
     \ingroup painting-3D
 
-    OpenGL/ES 2.0 defines a subset of the OpenGL specification that is
+    OpenGL ES 2.0 defines a subset of the OpenGL specification that is
     common across many desktop and embedded OpenGL implementations.
     However, it can be difficult to use the functions from that subset
     because they need to be resolved manually on desktop systems.
@@ -82,7 +82,7 @@ QT_BEGIN_NAMESPACE
     }
     \endcode
 
-    The \c{paintGL()} function can then use any of the OpenGL/ES 2.0
+    The \c{paintGL()} function can then use any of the OpenGL ES 2.0
     functions without explicit resolution, such as glActiveTexture()
     in the following example:
 
@@ -96,23 +96,23 @@ QT_BEGIN_NAMESPACE
     \endcode
 
     QGLFunctions can also be used directly for ad-hoc invocation
-    of OpenGL/ES 2.0 functions on all platforms:
+    of OpenGL ES 2.0 functions on all platforms:
 
     \code
     QGLFunctions glFuncs(QGLContext::currentContext());
     glFuncs.glActiveTexture(GL_TEXTURE1);
     \endcode
 
-    QGLFunctions provides wrappers for all OpenGL/ES 2.0 functions,
+    QGLFunctions provides wrappers for all OpenGL ES 2.0 functions,
     except those like \c{glDrawArrays()}, \c{glViewport()}, and
     \c{glBindTexture()} that don't have portability issues.
 
     Including the header for QGLFunctions will also define all of
-    the OpenGL/ES 2.0 macro constants that are not already defined by
+    the OpenGL ES 2.0 macro constants that are not already defined by
     the system's OpenGL headers, such as \c{GL_TEXTURE1} above.
 
     The hasOpenGLFeature() and openGLFeatures() functions can be used
-    to determine if the OpenGL implementation has a major OpenGL/ES 2.0
+    to determine if the OpenGL implementation has a major OpenGL ES 2.0
     feature.  For example, the following checks if non power of two
     textures are available:
 
@@ -126,7 +126,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \enum QGLFunctions::OpenGLFeature
-    This enum defines OpenGL/ES 2.0 features that may be optional
+    This enum defines OpenGL ES 2.0 features that may be optional
     on other platforms.
 
     \value Multitexture glActiveTexture() function is available.
@@ -373,7 +373,7 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glActiveTexture(\a texture).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glActiveTexture.xml}{glActiveTexture()}.
 */
 
@@ -382,10 +382,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glAttachShader(\a program, \a shader).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glAttachShader.xml}{glAttachShader()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -393,10 +393,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glBindAttribLocation(\a program, \a index, \a name).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glBindAttribLocation.xml}{glBindAttribLocation()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -404,7 +404,7 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glBindBuffer(\a target, \a buffer).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glBindBuffer.xml}{glBindBuffer()}.
 */
 
@@ -416,7 +416,7 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
     Note that Qt will translate a \a framebuffer argument of 0 to the currently
     bound QOpenGLContext's defaultFramebufferObject().
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glBindFramebuffer.xml}{glBindFramebuffer()}.
 */
 
@@ -425,7 +425,7 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glBindRenderbuffer(\a target, \a renderbuffer).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glBindRenderbuffer.xml}{glBindRenderbuffer()}.
 */
 
@@ -434,7 +434,7 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glBlendColor(\a red, \a green, \a blue, \a alpha).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glBlendColor.xml}{glBlendColor()}.
 */
 
@@ -443,7 +443,7 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glBlendEquation(\a mode).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glBlendEquation.xml}{glBlendEquation()}.
 */
 
@@ -452,7 +452,7 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glBlendEquationSeparate(\a modeRGB, \a modeAlpha).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glBlendEquationSeparate.xml}{glBlendEquationSeparate()}.
 */
 
@@ -461,7 +461,7 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glBlendFuncSeparate(\a srcRGB, \a dstRGB, \a srcAlpha, \a dstAlpha).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glBlendFuncSeparate.xml}{glBlendFuncSeparate()}.
 */
 
@@ -470,7 +470,7 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glBufferData(\a target, \a size, \a data, \a usage).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glBufferData.xml}{glBufferData()}.
 */
 
@@ -479,7 +479,7 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glBufferSubData(\a target, \a offset, \a size, \a data).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glBufferSubData.xml}{glBufferSubData()}.
 */
 
@@ -488,7 +488,7 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glCheckFramebufferStatus(\a target).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glCheckFramebufferStatus.xml}{glCheckFramebufferStatus()}.
 */
 
@@ -497,9 +497,9 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glClearDepth(\a depth) on
     desktop OpenGL systems and glClearDepthf(\a depth) on
-    embedded OpenGL/ES systems.
+    embedded OpenGL ES systems.
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glClearDepthf.xml}{glClearDepthf()}.
 */
 
@@ -508,10 +508,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glCompileShader(\a shader).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glCompileShader.xml}{glCompileShader()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -519,7 +519,7 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glCompressedTexImage2D(\a target, \a level, \a internalformat, \a width, \a height, \a border, \a imageSize, \a data).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glCompressedTexImage2D.xml}{glCompressedTexImage2D()}.
 */
 
@@ -528,7 +528,7 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glCompressedTexSubImage2D(\a target, \a level, \a xoffset, \a yoffset, \a width, \a height, \a format, \a imageSize, \a data).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glCompressedTexSubImage2D.xml}{glCompressedTexSubImage2D()}.
 */
 
@@ -537,10 +537,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glCreateProgram().
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glCreateProgram.xml}{glCreateProgram()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -548,10 +548,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glCreateShader(\a type).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glCreateShader.xml}{glCreateShader()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -559,7 +559,7 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glDeleteBuffers(\a n, \a buffers).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glDeleteBuffers.xml}{glDeleteBuffers()}.
 */
 
@@ -568,7 +568,7 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glDeleteFramebuffers(\a n, \a framebuffers).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glDeleteFramebuffers.xml}{glDeleteFramebuffers()}.
 */
 
@@ -577,10 +577,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glDeleteProgram(\a program).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glDeleteProgram.xml}{glDeleteProgram()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -588,7 +588,7 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glDeleteRenderbuffers(\a n, \a renderbuffers).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glDeleteRenderbuffers.xml}{glDeleteRenderbuffers()}.
 */
 
@@ -597,10 +597,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glDeleteShader(\a shader).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glDeleteShader.xml}{glDeleteShader()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -608,9 +608,9 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glDepthRange(\a zNear, \a zFar) on
     desktop OpenGL systems and glDepthRangef(\a zNear, \a zFar) on
-    embedded OpenGL/ES systems.
+    embedded OpenGL ES systems.
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glDepthRangef.xml}{glDepthRangef()}.
 */
 
@@ -619,10 +619,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glDetachShader(\a program, \a shader).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glDetachShader.xml}{glDetachShader()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -630,10 +630,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glDisableVertexAttribArray(\a index).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glDisableVertexAttribArray.xml}{glDisableVertexAttribArray()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -641,10 +641,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glEnableVertexAttribArray(\a index).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glEnableVertexAttribArray.xml}{glEnableVertexAttribArray()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -652,7 +652,7 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glFramebufferRenderbuffer(\a target, \a attachment, \a renderbuffertarget, \a renderbuffer).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glFramebufferRenderbuffer.xml}{glFramebufferRenderbuffer()}.
 */
 
@@ -661,7 +661,7 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glFramebufferTexture2D(\a target, \a attachment, \a textarget, \a texture, \a level).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glFramebufferTexture2D.xml}{glFramebufferTexture2D()}.
 */
 
@@ -670,7 +670,7 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glGenBuffers(\a n, \a buffers).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glGenBuffers.xml}{glGenBuffers()}.
 */
 
@@ -679,7 +679,7 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glGenerateMipmap(\a target).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glGenerateMipmap.xml}{glGenerateMipmap()}.
 */
 
@@ -688,7 +688,7 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glGenFramebuffers(\a n, \a framebuffers).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glGenFramebuffers.xml}{glGenFramebuffers()}.
 */
 
@@ -697,7 +697,7 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glGenRenderbuffers(\a n, \a renderbuffers).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glGenRenderbuffers.xml}{glGenRenderbuffers()}.
 */
 
@@ -706,10 +706,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glGetActiveAttrib(\a program, \a index, \a bufsize, \a length, \a size, \a type, \a name).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glGetActiveAttrib.xml}{glGetActiveAttrib()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -717,10 +717,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glGetActiveUniform(\a program, \a index, \a bufsize, \a length, \a size, \a type, \a name).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glGetActiveUniform.xml}{glGetActiveUniform()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -728,10 +728,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glGetAttachedShaders(\a program, \a maxcount, \a count, \a shaders).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glGetAttachedShaders.xml}{glGetAttachedShaders()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -739,10 +739,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glGetAttribLocation(\a program, \a name).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glGetAttribLocation.xml}{glGetAttribLocation()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -750,7 +750,7 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glGetBufferParameteriv(\a target, \a pname, \a params).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glGetBufferParameteriv.xml}{glGetBufferParameteriv()}.
 */
 
@@ -759,7 +759,7 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glGetFramebufferAttachmentParameteriv(\a target, \a attachment, \a pname, \a params).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glGetFramebufferAttachmentParameteriv.xml}{glGetFramebufferAttachmentParameteriv()}.
 */
 
@@ -768,10 +768,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glGetProgramiv(\a program, \a pname, \a params).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glGetProgramiv.xml}{glGetProgramiv()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -779,10 +779,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glGetProgramInfoLog(\a program, \a bufsize, \a length, \a infolog).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glGetProgramInfoLog.xml}{glGetProgramInfoLog()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -790,7 +790,7 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glGetRenderbufferParameteriv(\a target, \a pname, \a params).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glGetRenderbufferParameteriv.xml}{glGetRenderbufferParameteriv()}.
 */
 
@@ -799,10 +799,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glGetShaderiv(\a shader, \a pname, \a params).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glGetShaderiv.xml}{glGetShaderiv()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -810,10 +810,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glGetShaderInfoLog(\a shader, \a bufsize, \a length, \a infolog).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glGetShaderInfoLog.xml}{glGetShaderInfoLog()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -821,10 +821,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glGetShaderPrecisionFormat(\a shadertype, \a precisiontype, \a range, \a precision).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glGetShaderPrecisionFormat.xml}{glGetShaderPrecisionFormat()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -832,10 +832,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glGetShaderSource(\a shader, \a bufsize, \a length, \a source).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glGetShaderSource.xml}{glGetShaderSource()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -843,10 +843,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glGetUniformfv(\a program, \a location, \a params).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glGetUniformfv.xml}{glGetUniformfv()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -854,10 +854,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glGetUniformiv(\a program, \a location, \a params).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glGetUniformiv.xml}{glGetUniformiv()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -865,10 +865,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glGetUniformLocation(\a program, \a name).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glGetUniformLocation.xml}{glGetUniformLocation()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -876,10 +876,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glGetVertexAttribfv(\a index, \a pname, \a params).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glGetVertexAttribfv.xml}{glGetVertexAttribfv()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -887,10 +887,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glGetVertexAttribiv(\a index, \a pname, \a params).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glGetVertexAttribiv.xml}{glGetVertexAttribiv()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -898,10 +898,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glGetVertexAttribPointerv(\a index, \a pname, \a pointer).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glGetVertexAttribPointerv.xml}{glGetVertexAttribPointerv()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -909,7 +909,7 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glIsBuffer(\a buffer).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glIsBuffer.xml}{glIsBuffer()}.
 */
 
@@ -918,7 +918,7 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glIsFramebuffer(\a framebuffer).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glIsFramebuffer.xml}{glIsFramebuffer()}.
 */
 
@@ -927,10 +927,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glIsProgram(\a program).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glIsProgram.xml}{glIsProgram()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -938,7 +938,7 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glIsRenderbuffer(\a renderbuffer).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glIsRenderbuffer.xml}{glIsRenderbuffer()}.
 */
 
@@ -947,10 +947,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glIsShader(\a shader).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glIsShader.xml}{glIsShader()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -958,10 +958,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glLinkProgram(\a program).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glLinkProgram.xml}{glLinkProgram()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -969,10 +969,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glReleaseShaderCompiler().
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glReleaseShaderCompiler.xml}{glReleaseShaderCompiler()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -980,7 +980,7 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glRenderbufferStorage(\a target, \a internalformat, \a width, \a height).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glRenderbufferStorage.xml}{glRenderbufferStorage()}.
 */
 
@@ -989,7 +989,7 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glSampleCoverage(\a value, \a invert).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glSampleCoverage.xml}{glSampleCoverage()}.
 */
 
@@ -998,10 +998,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glShaderBinary(\a n, \a shaders, \a binaryformat, \a binary, \a length).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glShaderBinary.xml}{glShaderBinary()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -1009,10 +1009,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glShaderSource(\a shader, \a count, \a string, \a length).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glShaderSource.xml}{glShaderSource()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -1020,7 +1020,7 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glStencilFuncSeparate(\a face, \a func, \a ref, \a mask).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glStencilFuncSeparate.xml}{glStencilFuncSeparate()}.
 */
 
@@ -1029,7 +1029,7 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glStencilMaskSeparate(\a face, \a mask).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glStencilMaskSeparate.xml}{glStencilMaskSeparate()}.
 */
 
@@ -1038,7 +1038,7 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glStencilOpSeparate(\a face, \a fail, \a zfail, \a zpass).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glStencilOpSeparate.xml}{glStencilOpSeparate()}.
 */
 
@@ -1047,10 +1047,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glUniform1f(\a location, \a x).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glUniform1f.xml}{glUniform1f()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -1058,10 +1058,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glUniform1fv(\a location, \a count, \a v).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glUniform1fv.xml}{glUniform1fv()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -1069,10 +1069,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glUniform1i(\a location, \a x).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glUniform1i.xml}{glUniform1i()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -1080,10 +1080,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glUniform1iv(\a location, \a count, \a v).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glUniform1iv.xml}{glUniform1iv()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -1091,10 +1091,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glUniform2f(\a location, \a x, \a y).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glUniform2f.xml}{glUniform2f()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -1102,10 +1102,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glUniform2fv(\a location, \a count, \a v).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glUniform2fv.xml}{glUniform2fv()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -1113,10 +1113,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glUniform2i(\a location, \a x, \a y).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glUniform2i.xml}{glUniform2i()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -1124,10 +1124,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glUniform2iv(\a location, \a count, \a v).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glUniform2iv.xml}{glUniform2iv()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -1135,10 +1135,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glUniform3f(\a location, \a x, \a y, \a z).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glUniform3f.xml}{glUniform3f()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -1146,10 +1146,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glUniform3fv(\a location, \a count, \a v).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glUniform3fv.xml}{glUniform3fv()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -1157,10 +1157,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glUniform3i(\a location, \a x, \a y, \a z).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glUniform3i.xml}{glUniform3i()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -1168,10 +1168,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glUniform3iv(\a location, \a count, \a v).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glUniform3iv.xml}{glUniform3iv()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -1179,10 +1179,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glUniform4f(\a location, \a x, \a y, \a z, \a w).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glUniform4f.xml}{glUniform4f()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -1190,10 +1190,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glUniform4fv(\a location, \a count, \a v).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glUniform4fv.xml}{glUniform4fv()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -1201,10 +1201,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glUniform4i(\a location, \a x, \a y, \a z, \a w).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glUniform4i.xml}{glUniform4i()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -1212,10 +1212,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glUniform4iv(\a location, \a count, \a v).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glUniform4iv.xml}{glUniform4iv()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -1223,10 +1223,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glUniformMatrix2fv(\a location, \a count, \a transpose, \a value).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glUniformMatrix2fv.xml}{glUniformMatrix2fv()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -1234,10 +1234,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glUniformMatrix3fv(\a location, \a count, \a transpose, \a value).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glUniformMatrix3fv.xml}{glUniformMatrix3fv()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -1245,10 +1245,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glUniformMatrix4fv(\a location, \a count, \a transpose, \a value).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glUniformMatrix4fv.xml}{glUniformMatrix4fv()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -1256,10 +1256,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glUseProgram(\a program).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glUseProgram.xml}{glUseProgram()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -1267,10 +1267,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glValidateProgram(\a program).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glValidateProgram.xml}{glValidateProgram()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -1278,10 +1278,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glVertexAttrib1f(\a indx, \a x).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glVertexAttrib1f.xml}{glVertexAttrib1f()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -1289,10 +1289,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glVertexAttrib1fv(\a indx, \a values).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glVertexAttrib1fv.xml}{glVertexAttrib1fv()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -1300,10 +1300,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glVertexAttrib2f(\a indx, \a x, \a y).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glVertexAttrib2f.xml}{glVertexAttrib2f()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -1311,10 +1311,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glVertexAttrib2fv(\a indx, \a values).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glVertexAttrib2fv.xml}{glVertexAttrib2fv()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -1322,10 +1322,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glVertexAttrib3f(\a indx, \a x, \a y, \a z).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glVertexAttrib3f.xml}{glVertexAttrib3f()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -1333,10 +1333,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glVertexAttrib3fv(\a indx, \a values).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glVertexAttrib3fv.xml}{glVertexAttrib3fv()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -1344,10 +1344,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glVertexAttrib4f(\a indx, \a x, \a y, \a z, \a w).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glVertexAttrib4f.xml}{glVertexAttrib4f()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -1355,10 +1355,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glVertexAttrib4fv(\a indx, \a values).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glVertexAttrib4fv.xml}{glVertexAttrib4fv()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 /*!
@@ -1366,10 +1366,10 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glVertexAttribPointer(\a indx, \a size, \a type, \a normalized, \a stride, \a ptr).
 
-    For more information, see the OpenGL/ES 2.0 documentation for
+    For more information, see the OpenGL ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glVertexAttribPointer.xml}{glVertexAttribPointer()}.
 
-    This convenience function will do nothing on OpenGL/ES 1.x systems.
+    This convenience function will do nothing on OpenGL ES 1.x systems.
 */
 
 QGLFunctionsPrivate::QGLFunctionsPrivate(const QGLContext *)

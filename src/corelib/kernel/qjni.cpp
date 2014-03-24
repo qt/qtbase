@@ -1264,6 +1264,8 @@ QJNIObjectPrivate QJNIObjectPrivate::callObjectMethod(const char *methodName,
     jmethodID id = getCachedMethodID(env, d->m_jclass, methodName, sig);
     if (id) {
         res = env->CallObjectMethodV(d->m_jobject, id, args);
+        if (res && env->ExceptionCheck())
+            res = 0;
     }
 
     QJNIObjectPrivate obj(res);
@@ -1342,6 +1344,8 @@ QJNIObjectPrivate QJNIObjectPrivate::callStaticObjectMethod(const char *classNam
         jmethodID id = getCachedMethodID(env, clazz, methodName, sig, true);
         if (id) {
             res = env->CallStaticObjectMethodV(clazz, id, args);
+            if (res && env->ExceptionCheck())
+                res = 0;
         }
     }
 
@@ -1372,6 +1376,8 @@ QJNIObjectPrivate QJNIObjectPrivate::callStaticObjectMethod(jclass clazz,
     jmethodID id = getCachedMethodID(env, clazz, methodName, sig, true);
     if (id) {
         res = env->CallStaticObjectMethodV(clazz, id, args);
+        if (res && env->ExceptionCheck())
+            res = 0;
     }
 
     QJNIObjectPrivate obj(res);
@@ -1685,8 +1691,11 @@ QJNIObjectPrivate QJNIObjectPrivate::getObjectField(const char *fieldName,
     QJNIEnvironmentPrivate env;
     jobject res = 0;
     jfieldID id = getCachedFieldID(env, d->m_jclass, fieldName, sig);
-    if (id)
+    if (id) {
         res = env->GetObjectField(d->m_jobject, id);
+        if (res && env->ExceptionCheck())
+            res = 0;
+    }
 
     QJNIObjectPrivate obj(res);
     env->DeleteLocalRef(res);
@@ -1713,8 +1722,11 @@ QJNIObjectPrivate QJNIObjectPrivate::getStaticObjectField(jclass clazz,
     QJNIEnvironmentPrivate env;
     jobject res = 0;
     jfieldID id = getCachedFieldID(env, clazz, fieldName, sig, true);
-    if (id)
+    if (id) {
         res = env->GetStaticObjectField(clazz, id);
+        if (res && env->ExceptionCheck())
+            res = 0;
+    }
 
     QJNIObjectPrivate obj(res);
     env->DeleteLocalRef(res);

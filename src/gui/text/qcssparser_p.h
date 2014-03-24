@@ -508,7 +508,7 @@ const quint64 PseudoClass_EditFocus        = Q_UINT64_C(0x0000080000000000);
 const quint64 PseudoClass_Alternate        = Q_UINT64_C(0x0000100000000000);
 // The Any specifier is never generated, but can be used as a wildcard in searches.
 const quint64 PseudoClass_Any              = Q_UINT64_C(0x0000ffffffffffff);
-const int NumPseudos = 46;
+const int NumPseudos = 45;
 
 struct Pseudo
 {

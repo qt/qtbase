@@ -301,6 +301,8 @@ public class QtActivityDelegate
                     protected void onReceiveResult(int resultCode, Bundle resultData) {
                         switch (resultCode) {
                             case InputMethodManager.RESULT_SHOWN:
+                                QtNativeInputConnection.updateCursorPosition();
+                                //FALLTHROUGH
                             case InputMethodManager.RESULT_UNCHANGED_SHOWN:
                                 setKeyboardVisibility(true);
                                 break;

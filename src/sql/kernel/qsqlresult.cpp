@@ -64,15 +64,20 @@ QString QSqlResultPrivate::holderAt(int index) const
 // return a unique id for bound names
 QString QSqlResultPrivate::fieldSerial(int i) const
 {
-    ushort arr[] = { ':', 'f', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-    ushort *ptr = &arr[1];
+    ushort arr[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    ushort *end = &arr[(sizeof(arr)/sizeof(*arr))];
+    ushort *ptr = end;
 
     while (i > 0) {
-        *(++ptr) = 'a' + i % 16;
+        *(--ptr) = 'a' + i % 16;
         i >>= 4;
     }
 
-    return QString(reinterpret_cast<const QChar *>(arr), int(ptr - arr) + 1);
+    const int nb = end - ptr;
+    *(--ptr) = 'a' + nb;
+    *(--ptr) = ':';
+
+    return QString::fromUtf16(ptr, int(end - ptr));
 }
 
 static bool qIsAlnum(QChar ch)

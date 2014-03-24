@@ -346,6 +346,11 @@ QCocoaKeyMapper::~QCocoaKeyMapper()
     deleteLayouts();
 }
 
+Qt::KeyboardModifiers QCocoaKeyMapper::queryKeyboardModifiers()
+{
+    return qt_mac_get_modifiers(GetCurrentEventKeyModifiers());
+}
+
 bool QCocoaKeyMapper::updateKeyboard()
 {
     const UCKeyboardLayout *uchrData = 0;

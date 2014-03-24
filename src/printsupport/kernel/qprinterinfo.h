@@ -42,9 +42,11 @@
 #ifndef QPRINTERINFO_H
 #define QPRINTERINFO_H
 
+#include <QtPrintSupport/qprinter.h>
+
 #include <QtCore/QList>
 #include <QtCore/QPair>
-#include <QtPrintSupport/QPrinter>
+#include <QtGui/qpagesize.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -69,12 +71,31 @@ public:
 
     bool isNull() const;
     bool isDefault() const;
+    bool isRemote() const;
 
-    QList<QPrinter::PaperSize> supportedPaperSizes() const;
-    QList<QPair<QString, QSizeF> > supportedSizesWithNames() const;
+    QPrinter::PrinterState state() const;
 
+    QList<QPageSize> supportedPageSizes() const;
+    QPageSize defaultPageSize() const;
+
+    bool supportsCustomPageSizes() const;
+
+    QPageSize minimumPhysicalPageSize() const;
+    QPageSize maximumPhysicalPageSize() const;
+
+#if QT_DEPRECATED_SINCE(5,3)
+    QT_DEPRECATED QList<QPrinter::PaperSize> supportedPaperSizes() const;
+    QT_DEPRECATED QList<QPair<QString, QSizeF> > supportedSizesWithNames() const;
+#endif // QT_DEPRECATED_SINCE(5,3)
+
+    QList<int> supportedResolutions() const;
+
+    static QStringList availablePrinterNames();
     static QList<QPrinterInfo> availablePrinters();
+
+    static QString defaultPrinterName();
     static QPrinterInfo defaultPrinter();
+
     static QPrinterInfo printerInfo(const QString &printerName);
 
 private:

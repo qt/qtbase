@@ -19,6 +19,8 @@ HEADERS += \
         painting/qoutlinemapper_p.h \
         painting/qpagedpaintdevice.h \
         painting/qpagedpaintdevice_p.h \
+        painting/qpagelayout.h \
+        painting/qpagesize.h \
         painting/qpaintdevice.h \
         painting/qpaintengine.h \
         painting/qpaintengine_p.h \
@@ -66,6 +68,8 @@ SOURCES += \
         painting/qmemrotate.cpp \
         painting/qoutlinemapper.cpp \
         painting/qpagedpaintdevice.cpp \
+        painting/qpagelayout.cpp \
+        painting/qpagesize.cpp \
         painting/qpaintdevice.cpp \
         painting/qpaintengine.cpp \
         painting/qpaintengineex.cpp \

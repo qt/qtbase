@@ -156,7 +156,7 @@ private:
         xcb_window_t proxy_target;
         QWindow *targetWindow;
 //        QWidget *embedding_widget;
-        QDrag *drag;
+        QPointer<QDrag> drag;
         QTime time;
     };
     QVector<Transaction> transactions;

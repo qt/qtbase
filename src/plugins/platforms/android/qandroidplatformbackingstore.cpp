@@ -50,11 +50,8 @@ QT_BEGIN_NAMESPACE
 QAndroidPlatformBackingStore::QAndroidPlatformBackingStore(QWindow *window)
     : QPlatformBackingStore(window)
 {
-    Q_ASSERT(window->handle());
-    if (window->surfaceType() == QSurface::RasterSurface)
-        (static_cast<QAndroidPlatformRasterWindow *>(window->handle()))->setBackingStore(this);
-    else
-        qWarning("QAndroidPlatformBackingStore does not support GL windows.");
+    if (window->handle())
+        setBackingStore(window);
 }
 
 QPaintDevice *QAndroidPlatformBackingStore::paintDevice()
@@ -64,8 +61,10 @@ QPaintDevice *QAndroidPlatformBackingStore::paintDevice()
 
 void QAndroidPlatformBackingStore::flush(QWindow *window, const QRegion &region, const QPoint &offset)
 {
-    Q_UNUSED(window);
     Q_UNUSED(offset);
+
+    if (!m_backingStoreSet)
+        setBackingStore(window);
 
     (static_cast<QAndroidPlatformRasterWindow *>(window->handle()))->repaint(region);
 }
@@ -76,6 +75,16 @@ void QAndroidPlatformBackingStore::resize(const QSize &size, const QRegion &stat
 
     if (m_image.size() != size)
         m_image = QImage(size, window()->screen()->handle()->format());
+}
+
+void QAndroidPlatformBackingStore::setBackingStore(QWindow *window)
+{
+    if (window->surfaceType() == QSurface::RasterSurface) {
+        (static_cast<QAndroidPlatformRasterWindow *>(window->handle()))->setBackingStore(this);
+        m_backingStoreSet = true;
+    } else {
+        qWarning("QAndroidPlatformBackingStore does not support GL windows.");
+    }
 }
 
 QT_END_NAMESPACE

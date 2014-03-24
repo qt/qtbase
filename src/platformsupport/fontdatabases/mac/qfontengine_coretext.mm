@@ -50,6 +50,22 @@ QT_BEGIN_NAMESPACE
 
 static float SYNTHETIC_ITALIC_SKEW = tanf(14 * acosf(0) / 90);
 
+static bool ct_getSfntTable(void *user_data, uint tag, uchar *buffer, uint *length)
+{
+    CTFontRef ctfont = *(CTFontRef *)user_data;
+
+    QCFType<CFDataRef> table = CTFontCopyTable(ctfont, tag, 0);
+    if (!table)
+        return false;
+
+    CFIndex tableLength = CFDataGetLength(table);
+    if (buffer && int(*length) >= tableLength)
+        CFDataGetBytes(table, CFRangeMake(0, tableLength), buffer);
+    *length = tableLength;
+    Q_ASSERT(int(*length) > 0);
+    return true;
+}
+
 static void loadAdvancesForGlyphs(CTFontRef ctfont,
                                   QVarLengthArray<CGGlyph> &cgGlyphs,
                                   QGlyphLayout *glyphs, int len,
@@ -191,7 +207,10 @@ void QCoreTextFontEngine::init()
 
     cache_cost = (CTFontGetAscent(ctfont) + CTFontGetDescent(ctfont)) * avgCharWidth.toInt() * 2000;
 
-    setUserData(QVariant::fromValue((void *)cgFont));
+    // HACK hb_coretext requires both CTFont and CGFont but user_data is only void*
+    Q_ASSERT((void *)(&ctfont + 1) == (void *)&cgFont);
+    faceData.user_data = &ctfont;
+    faceData.get_font_table = ct_getSfntTable;
 }
 
 glyph_t QCoreTextFontEngine::glyphIndex(uint ucs4) const
@@ -683,15 +702,7 @@ bool QCoreTextFontEngine::canRender(const QChar *string, int len) const
 
 bool QCoreTextFontEngine::getSfntTableData(uint tag, uchar *buffer, uint *length) const
 {
-    QCFType<CFDataRef> table = CTFontCopyTable(ctfont, tag, 0);
-    if (!table)
-        return false;
-    CFIndex tableLength = CFDataGetLength(table);
-    if (buffer && int(*length) >= tableLength)
-        CFDataGetBytes(table, CFRangeMake(0, tableLength), buffer);
-    *length = tableLength;
-    Q_ASSERT(int(*length) > 0);
-    return true;
+    return ct_getSfntTable((void *)&ctfont, tag, buffer, length);
 }
 
 void QCoreTextFontEngine::getUnscaledGlyph(glyph_t, QPainterPath *, glyph_metrics_t *)

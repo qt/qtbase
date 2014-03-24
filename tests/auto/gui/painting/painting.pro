@@ -5,8 +5,11 @@ SUBDIRS=\
    qcolor \
    qbrush \
    qregion \
+   qpagelayout \
+   qpagesize \
    qpainter \
    qpathclipper \
+   qpdfwriter \
    qpen \
    qpaintengine \
    qtransform \

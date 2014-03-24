@@ -77,6 +77,12 @@ enum {
     D2DDebugDrawStaticTextItemTag,
     D2DDebugDrawTextItemTag
 };
+
+//Clipping flags
+enum {
+    UserClip = 0x1,
+    SimpleSystemClip = 0x2
+};
 #define D2D_TAG(tag) d->dc()->SetTags(tag, tag)
 
 Q_GUI_EXPORT QImage qt_imageForBrush(int brushStyle, bool invert);
@@ -286,7 +292,7 @@ class QWindowsDirect2DPaintEnginePrivate : public QPaintEngineExPrivate
 public:
     QWindowsDirect2DPaintEnginePrivate(QWindowsDirect2DBitmap *bm)
         : bitmap(bm)
-        , clipPushed(false)
+        , clipFlags(0)
     {
         pen.reset();
         brush.reset();
@@ -297,7 +303,7 @@ public:
     QWindowsDirect2DBitmap *bitmap;
 
     QPainterPath clipPath;
-    bool clipPushed;
+    unsigned int clipFlags;
 
     QPointF currentBrushOrigin;
 
@@ -381,14 +387,14 @@ public:
                                                NULL,
                                                D2D1_LAYER_OPTIONS1_INITIALIZE_FROM_BACKGROUND),
                         NULL);
-        clipPushed = true;
+        clipFlags |= UserClip;
     }
 
     void popClip()
     {
-        if (clipPushed) {
+        if (clipFlags & UserClip) {
             dc()->PopLayer();
-            clipPushed = false;
+            clipFlags &= ~UserClip;
         }
     }
 
@@ -397,7 +403,7 @@ public:
         Q_Q(const QWindowsDirect2DPaintEngine);
         if (!q->state()->clipEnabled)
             popClip();
-        else if (!clipPushed)
+        else if (!(clipFlags & UserClip))
             pushClip();
     }
 
@@ -729,11 +735,29 @@ bool QWindowsDirect2DPaintEngine::begin(QPaintDevice * pdev)
     d->bitmap->deviceContext()->begin();
     d->dc()->SetTransform(D2D1::Matrix3x2F::Identity());
 
-    QRect clip(0, 0, pdev->width(), pdev->height());
-    if (!systemClip().isEmpty())
-        clip &= systemClip().boundingRect();
+    if (systemClip().rectCount() > 1) {
+        QPainterPath p;
+        p.addRegion(systemClip());
 
-    d->dc()->PushAxisAlignedClip(to_d2d_rect_f(clip), D2D1_ANTIALIAS_MODE_ALIASED);
+        ComPtr<ID2D1PathGeometry1> geometry = painterPathToPathGeometry(p);
+        if (!geometry)
+            return false;
+
+        d->dc()->PushLayer(D2D1::LayerParameters1(D2D1::InfiniteRect(),
+                                               geometry.Get(),
+                                               d->antialiasMode(),
+                                               D2D1::IdentityMatrix(),
+                                               1.0,
+                                               NULL,
+                                               D2D1_LAYER_OPTIONS1_INITIALIZE_FROM_BACKGROUND),
+                        NULL);
+    } else {
+        QRect clip(0, 0, pdev->width(), pdev->height());
+        if (!systemClip().isEmpty())
+            clip &= systemClip().boundingRect();
+        d->dc()->PushAxisAlignedClip(to_d2d_rect_f(clip), D2D1_ANTIALIAS_MODE_ALIASED);
+        d->clipFlags |= SimpleSystemClip;
+    }
 
     D2D_TAG(D2DDebugDrawInitialStateTag);
 
@@ -746,7 +770,12 @@ bool QWindowsDirect2DPaintEngine::end()
     // First pop any user-applied clipping
     d->popClip();
     // Now the system clip from begin() above
-    d->dc()->PopAxisAlignedClip();
+    if (d->clipFlags & SimpleSystemClip) {
+        d->dc()->PopAxisAlignedClip();
+        d->clipFlags &= ~SimpleSystemClip;
+    } else {
+        d->dc()->PopLayer();
+    }
     return d->bitmap->deviceContext()->end();
 }
 

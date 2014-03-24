@@ -130,7 +130,7 @@ static void updateFormatFromContext(QSurfaceFormat &format)
     }
 
     format.setProfile(QSurfaceFormat::NoProfile);
-    format.setOption(QSurfaceFormat::FormatOptions());
+    format.setOptions(QSurfaceFormat::FormatOptions());
 
     if (format.renderableType() == QSurfaceFormat::OpenGL) {
         if (format.version() < qMakePair(3, 0)) {
@@ -211,7 +211,7 @@ QGLXContext::QGLXContext(QXcbScreen *screen, const QSurfaceFormat &format, QPlat
                 // Don't bother with versions below ES 2.0
                 glVersions << 30 << 20;
                 // ES does not support any format option
-                m_format.setOption(QSurfaceFormat::FormatOptions());
+                m_format.setOptions(QSurfaceFormat::FormatOptions());
             }
 
             Q_ASSERT(glVersions.count() > 0);

@@ -43,13 +43,17 @@
 
 #ifndef QT_NO_PRINTER
 
+#include <qpa/qplatformprintplugin.h>
+#include <qpa/qplatformprintersupport.h>
+
 #include <qiodevice.h>
 #include <qfile.h>
 #include <qdebug.h>
 #include <qbuffer.h>
-#include "private/qcups_p.h"
-#include "qprinterinfo.h"
+#include "private/qcups_p.h" // Only needed for PPK_CupsOptions
+#include <QtGui/qpagelayout.h>
 
+#include <cups/cups.h>
 #include <limits.h>
 #include <math.h>
 
@@ -57,26 +61,13 @@
 
 QT_BEGIN_NAMESPACE
 
+extern QMarginsF qt_convertMargins(const QMarginsF &margins, QPageLayout::Unit fromUnits, QPageLayout::Unit toUnits);
+
 QCupsPrintEngine::QCupsPrintEngine(QPrinter::PrinterMode m)
     : QPdfPrintEngine(*new QCupsPrintEnginePrivate(m))
 {
     Q_D(QCupsPrintEngine);
-
-    if (QCUPSSupport::isAvailable()) {
-        QCUPSSupport cups;
-        const cups_dest_t* printers = cups.availablePrinters();
-        int prnCount = cups.availablePrintersCount();
-
-        for (int i = 0; i <  prnCount; ++i) {
-            if (printers[i].is_default) {
-                d->printerName = QString::fromLocal8Bit(printers[i].name);
-                d->setCupsDefaults();
-                break;
-            }
-        }
-
-    }
-
+    d->setupDefaultPrinter();
     state = QPrinter::Idle;
 }
 
@@ -89,31 +80,37 @@ void QCupsPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &v
     Q_D(QCupsPrintEngine);
 
     switch (int(key)) {
-    case PPK_PaperSize:
-        d->printerPaperSize = QPrinter::PaperSize(value.toInt());
-        d->setPaperSize();
+    case PPK_PageSize:
+        d->setPageSize(QPageSize(QPageSize::PageSizeId(value.toInt())));
         break;
-    case PPK_CupsPageRect:
-        d->cupsPageRect = value.toRect();
+    case PPK_WindowsPageSize:
+        d->setPageSize(QPageSize(QPageSize::id(value.toInt())));
         break;
-    case PPK_CupsPaperRect:
-        d->cupsPaperRect = value.toRect();
+    case PPK_CustomPaperSize:
+        d->setPageSize(QPageSize(value.toSizeF(), QPageSize::Point));
+        break;
+    case PPK_PaperName:
+        // Get the named page size from the printer if supported
+        d->setPageSize(d->m_printDevice.supportedPageSize(value.toString()));
+        break;
+    case PPK_PrinterName:
+        d->changePrinter(value.toString());
         break;
     case PPK_CupsOptions:
         d->cupsOptions = value.toStringList();
         break;
-    case PPK_CupsStringPageSize:
-    case PPK_PaperName:
-        d->cupsStringPageSize = value.toString();
-        d->setPaperName();
+    case PPK_QPageSize:
+        d->setPageSize(value.value<QPageSize>());
         break;
-    case PPK_PrinterName:
-        // prevent setting the defaults again for the same printer
-        if (d->printerName != value.toString()) {
-            d->printerName = value.toString();
-            d->setCupsDefaults();
+    case PPK_QPageLayout: {
+        QPageLayout pageLayout = value.value<QPageLayout>();
+        if (pageLayout.isValid() && d->m_printDevice.isValidPageLayout(pageLayout, d->resolution)) {
+            d->m_pageLayout = pageLayout;
+            // Replace the page size with the CUPS page size
+            d->setPageSize(d->m_printDevice.supportedPageSize(pageLayout.pageSize()));
         }
         break;
+    }
     default:
         QPdfPrintEngine::setProperty(key, value);
         break;
@@ -127,23 +124,14 @@ QVariant QCupsPrintEngine::property(PrintEnginePropertyKey key) const
     QVariant ret;
     switch (int(key)) {
     case PPK_SupportsMultipleCopies:
+        // CUPS server always supports multiple copies, even if individual m_printDevice doesn't
         ret = true;
         break;
     case PPK_NumberOfCopies:
         ret = 1;
         break;
-    case PPK_CupsPageRect:
-        ret = d->cupsPageRect;
-        break;
-    case PPK_CupsPaperRect:
-        ret = d->cupsPaperRect;
-        break;
     case PPK_CupsOptions:
         ret = d->cupsOptions;
-        break;
-    case PPK_CupsStringPageSize:
-    case PPK_PaperName:
-        ret = d->cupsStringPageSize;
         break;
     default:
         ret = QPdfPrintEngine::property(key);
@@ -173,17 +161,16 @@ bool QCupsPrintEnginePrivate::openPrintDevice()
             return false;
         }
         outDevice = file;
-    } else if (QCUPSSupport::isAvailable()) {
-        QCUPSSupport cups;
-        QPair<int, QString> ret = cups.tempFd();
-        if (ret.first < 0) {
+    } else {
+        char filename[512];
+        fd = cupsTempFd(filename, 512);
+        if (fd < 0) {
             qWarning("QPdfPrinter: Could not open temporary file to print");
             return false;
         }
-        cupsTempFile = ret.second;
+        cupsTempFile = QString::fromLocal8Bit(filename);
         outDevice = new QFile();
-        static_cast<QFile *>(outDevice)->open(ret.first, QIODevice::WriteOnly);
-        fd = ret.first;
+        static_cast<QFile *>(outDevice)->open(fd, QIODevice::WriteOnly);
     }
 
     return true;
@@ -196,27 +183,19 @@ void QCupsPrintEnginePrivate::closePrintDevice()
     if (!cupsTempFile.isEmpty()) {
         QString tempFile = cupsTempFile;
         cupsTempFile.clear();
-        QCUPSSupport cups;
+
+        // Should never have got here without a printer, but check anyway
+        if (printerName.isEmpty()) {
+            qWarning("Could not determine printer to print to");
+            QFile::remove(tempFile);
+            return;
+        }
 
         // Set up print options.
-        QByteArray prnName;
         QList<QPair<QByteArray, QByteArray> > options;
         QVector<cups_option_t> cupsOptStruct;
 
-        if (!printerName.isEmpty()) {
-            prnName = printerName.toLocal8Bit();
-        } else {
-            QPrinterInfo def = QPrinterInfo::defaultPrinter();
-            if (def.isNull()) {
-                qWarning("Could not determine printer to print to");
-                QFile::remove(tempFile);
-                return;
-            }
-            prnName = def.printerName().toLocal8Bit();
-        }
-
-        if (!cupsStringPageSize.isEmpty())
-            options.append(QPair<QByteArray, QByteArray>("media", cupsStringPageSize.toLocal8Bit()));
+        options.append(QPair<QByteArray, QByteArray>("media", m_pageLayout.pageSize().key().toLocal8Bit()));
 
         if (copies > 1)
             options.append(QPair<QByteArray, QByteArray>("copies", QString::number(copies).toLocal8Bit()));
@@ -225,24 +204,24 @@ void QCupsPrintEnginePrivate::closePrintDevice()
             options.append(QPair<QByteArray, QByteArray>("Collate", "True"));
 
         switch (duplex) {
-        case QPrinter::DuplexNone:
+        case QPrint::DuplexNone:
             options.append(QPair<QByteArray, QByteArray>("sides", "one-sided"));
             break;
-        case QPrinter::DuplexAuto:
-            if (!landscape)
+        case QPrint::DuplexAuto:
+            if (m_pageLayout.orientation() == QPageLayout::Portrait)
                 options.append(QPair<QByteArray, QByteArray>("sides", "two-sided-long-edge"));
             else
                 options.append(QPair<QByteArray, QByteArray>("sides", "two-sided-short-edge"));
             break;
-        case QPrinter::DuplexLongSide:
+        case QPrint::DuplexLongSide:
             options.append(QPair<QByteArray, QByteArray>("sides", "two-sided-long-edge"));
             break;
-        case QPrinter::DuplexShortSide:
+        case QPrint::DuplexShortSide:
             options.append(QPair<QByteArray, QByteArray>("sides", "two-sided-short-edge"));
             break;
         }
 
-        if (QCUPSSupport::cupsVersion() >= 10300 && landscape)
+        if (m_pageLayout.orientation() == QPageLayout::Landscape)
             options.append(QPair<QByteArray, QByteArray>("landscape", ""));
 
         QStringList::const_iterator it = cupsOptions.constBegin();
@@ -260,163 +239,84 @@ void QCupsPrintEnginePrivate::closePrintDevice()
 
         // Print the file.
         cups_option_t* optPtr = cupsOptStruct.size() ? &cupsOptStruct.first() : 0;
-        cups.printFile(prnName.constData(), tempFile.toLocal8Bit().constData(),
-                title.toLocal8Bit().constData(), cupsOptStruct.size(), optPtr);
+        cupsPrintFile(printerName.toLocal8Bit().constData(), tempFile.toLocal8Bit().constData(),
+                      title.toLocal8Bit().constData(), cupsOptStruct.size(), optPtr);
 
         QFile::remove(tempFile);
     }
 }
 
-void QCupsPrintEnginePrivate::updatePaperSize()
+void QCupsPrintEnginePrivate::setupDefaultPrinter()
 {
-    if (printerPaperSize == QPrinter::Custom) {
-        paperSize = customPaperSize;
-    } else if (!cupsPaperRect.isNull()) {
-        QRect r = cupsPaperRect;
-        paperSize = r.size();
-    } else {
-        QPdf::PaperSize s = QPdf::paperSize(printerPaperSize);
-        paperSize = QSize(s.width, s.height);
+    // Should never have reached here if no plugin available, but check just in case
+    QPlatformPrinterSupport *ps = QPlatformPrinterSupportPlugin::get();
+    if (!ps)
+        return;
+
+    // Get default printer id, if no default then use the first available
+    // TODO Find way to remove printerName from base class?
+    printerName = ps->defaultPrintDeviceId();
+    if (printerName.isEmpty()) {
+        QStringList list = ps->availablePrintDeviceIds();
+        if (list.size() > 0)
+            printerName = list.at(0);
     }
+
+    // Should never have reached here if no printers available, but check just in case
+    if (printerName.isEmpty())
+        return;
+
+    m_printDevice = ps->createPrintDevice(printerName);
+    if (!m_printDevice.isValid())
+        return;
+
+    // Setup the printer defaults
+    duplex = m_printDevice.defaultDuplexMode();
+    grayscale = m_printDevice.defaultColorMode() == QPrint::GrayScale;
+    // CUPS server always supports collation, even if individual m_printDevice doesn't
+    collate = true;
+    setPageSize(m_printDevice.defaultPageSize());
 }
 
-void QCupsPrintEnginePrivate::setPaperSize()
+void QCupsPrintEnginePrivate::changePrinter(const QString &newPrinter)
 {
-    if (QCUPSSupport::isAvailable()) {
-        QCUPSSupport cups;
-        QPdf::PaperSize size = QPdf::paperSize(QPrinter::PaperSize(printerPaperSize));
+    // Don't waste time if same printer name
+    if (newPrinter == printerName)
+        return;
 
-        if (cups.currentPPD()) {
-            cupsStringPageSize = QLatin1String("Custom");
-            const ppd_option_t* pageSizes = cups.pageSizes();
-            for (int i = 0; i < pageSizes->num_choices; ++i) {
-                QByteArray cupsPageSize = pageSizes->choices[i].choice;
-                QRect tmpCupsPaperRect = cups.paperRect(cupsPageSize);
-                QRect tmpCupsPageRect = cups.pageRect(cupsPageSize);
+    // Should never have reached here if no plugin available, but check just in case
+    QPlatformPrinterSupport *ps = QPlatformPrinterSupportPlugin::get();
+    if (!ps)
+        return;
 
-                if (qAbs(size.width - tmpCupsPaperRect.width()) < 5  && qAbs(size.height - tmpCupsPaperRect.height()) < 5) {
-                    cupsPaperRect = tmpCupsPaperRect;
-                    cupsPageRect = tmpCupsPageRect;
-                    cupsStringPageSize = pageSizes->choices[i].text;
-                    leftMargin = cupsPageRect.x() - cupsPaperRect.x();
-                    topMargin = cupsPageRect.y() - cupsPaperRect.y();
-                    rightMargin = cupsPaperRect.right() - cupsPageRect.right();
-                    bottomMargin = cupsPaperRect.bottom() - cupsPageRect.bottom();
+    // Try create the printer, only use it if it returns valid
+    QPrintDevice printDevice = ps->createPrintDevice(newPrinter);
+    if (!m_printDevice.isValid())
+        return;
+    m_printDevice.swap(printDevice);
+    printerName = m_printDevice.id();
 
-                    updatePaperSize();
-                    break;
-                }
-            }
-        }
-    }
+    // Check if new printer supports current settings, otherwise us defaults
+    if (duplex != QPrint::DuplexAuto && !m_printDevice.supportedDuplexModes().contains(duplex))
+        duplex = m_printDevice.defaultDuplexMode();
+    QPrint::ColorMode colorMode = grayscale ? QPrint::GrayScale : QPrint::Color;
+    if (!m_printDevice.supportedColorModes().contains(colorMode))
+        grayscale = m_printDevice.defaultColorMode() == QPrint::GrayScale;
+
+    // Get the equivalent page size for this printer as supported names may be different
+    setPageSize(m_pageLayout.pageSize());
 }
 
-void QCupsPrintEnginePrivate::setPaperName()
+void QCupsPrintEnginePrivate::setPageSize(const QPageSize &pageSize)
 {
-    if (QCUPSSupport::isAvailable()) {
-        QCUPSSupport cups;
-        if (cups.currentPPD()) {
-            const ppd_option_t* pageSizes = cups.pageSizes();
-            bool foundPaperName = false;
-            for (int i = 0; i < pageSizes->num_choices; ++i) {
-                if (cupsStringPageSize == pageSizes->choices[i].text) {
-                    foundPaperName = true;
-                    QByteArray cupsPageSize = pageSizes->choices[i].choice;
-                    cupsPaperRect = cups.paperRect(cupsPageSize);
-                    cupsPageRect = cups.pageRect(cupsPageSize);
-                    leftMargin = cupsPageRect.x() - cupsPaperRect.x();
-                    topMargin = cupsPageRect.y() - cupsPaperRect.y();
-                    rightMargin = cupsPaperRect.right() - cupsPageRect.right();
-                    bottomMargin = cupsPaperRect.bottom() - cupsPageRect.bottom();
-                    printerPaperSize = QPrinter::Custom;
-                    customPaperSize = cupsPaperRect.size();
-                    for (int ps = 0; ps < QPrinter::NPageSize; ++ps) {
-                        QPdf::PaperSize size = QPdf::paperSize(QPrinter::PaperSize(ps));
-                        if (qAbs(size.width - cupsPaperRect.width()) < 5 && qAbs(size.height - cupsPaperRect.height()) < 5) {
-                            printerPaperSize = static_cast<QPrinter::PaperSize>(ps);
-                            customPaperSize = QSize();
-                            break;
-                        }
-                    }
-                    updatePaperSize();
-                    break;
-                }
-            }
-            if (!foundPaperName)
-                cupsStringPageSize = QString();
-        }
+    if (pageSize.isValid()) {
+        // Find if the requested page size has a matching printer page size, if so use its defined name instead
+        QPageSize printerPageSize = m_printDevice.supportedPageSize(pageSize);
+        QPageSize usePageSize = printerPageSize.isValid() ? printerPageSize : pageSize;
+        QMarginsF printable = m_printDevice.printableMargins(usePageSize, m_pageLayout.orientation(), resolution);
+        m_pageLayout.setPageSize(usePageSize, qt_convertMargins(printable, QPageLayout::Point, m_pageLayout.units()));
     }
 }
-
-void QCupsPrintEnginePrivate::setCupsDefaults()
-{
-    if (QCUPSSupport::isAvailable()) {
-        int cupsPrinterIndex = -1;
-        QCUPSSupport cups;
-
-        const cups_dest_t* printers = cups.availablePrinters();
-        int prnCount = cups.availablePrintersCount();
-        for (int i = 0; i <  prnCount; ++i) {
-            QString name = QString::fromLocal8Bit(printers[i].name);
-            if (name == printerName) {
-                cupsPrinterIndex = i;
-                break;
-            }
-        }
-
-        if (cupsPrinterIndex < 0)
-            return;
-
-        cups.setCurrentPrinter(cupsPrinterIndex);
-
-        if (cups.currentPPD()) {
-            const ppd_option_t *ppdDuplex = cups.ppdOption("Duplex");
-            if (ppdDuplex) {
-                if (qstrcmp(ppdDuplex->defchoice, "DuplexTumble") == 0)
-                    duplex = QPrinter::DuplexShortSide;
-                else if (qstrcmp(ppdDuplex->defchoice, "DuplexNoTumble") == 0)
-                    duplex = QPrinter::DuplexLongSide;
-                else
-                    duplex = QPrinter::DuplexNone;
-            }
-
-            grayscale = !cups.currentPPD()->color_device;
-
-            const ppd_option_t *ppdCollate = cups.ppdOption("Collate");
-            if (ppdCollate)
-                collate = qstrcmp(ppdCollate->defchoice, "True") == 0;
-
-            const ppd_option_t* pageSizes = cups.pageSizes();
-            QByteArray cupsPageSize;
-            for (int i = 0; i < pageSizes->num_choices; ++i) {
-                if (static_cast<int>(pageSizes->choices[i].marked) == 1) {
-                    cupsPageSize = pageSizes->choices[i].choice;
-                    cupsStringPageSize = pageSizes->choices[i].text;
-                }
-            }
-
-            cupsOptions = cups.options();
-            cupsPaperRect = cups.paperRect(cupsPageSize);
-            cupsPageRect = cups.pageRect(cupsPageSize);
-
-            for (int ps = 0; ps < QPrinter::NPageSize; ++ps) {
-                QPdf::PaperSize size = QPdf::paperSize(QPrinter::PaperSize(ps));
-                if (qAbs(size.width - cupsPaperRect.width()) < 5 && qAbs(size.height - cupsPaperRect.height()) < 5) {
-                    printerPaperSize = static_cast<QPrinter::PaperSize>(ps);
-
-                    leftMargin = cupsPageRect.x() - cupsPaperRect.x();
-                    topMargin = cupsPageRect.y() - cupsPaperRect.y();
-                    rightMargin = cupsPaperRect.right() - cupsPageRect.right();
-                    bottomMargin = cupsPaperRect.bottom() - cupsPageRect.bottom();
-
-                    updatePaperSize();
-                    break;
-                }
-            }
-        }
-    }
-}
-
 
 QT_END_NAMESPACE
 

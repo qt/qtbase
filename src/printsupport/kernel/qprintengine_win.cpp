@@ -50,6 +50,9 @@
 #include <private/qfontengine_p.h>
 #include <private/qpainter_p.h>
 
+#include <qpa/qplatformprintplugin.h>
+#include <qpa/qplatformprintersupport.h>
+
 #include <qbitmap.h>
 #include <qdebug.h>
 #include <qvector.h>
@@ -59,6 +62,7 @@
 #include <private/qpixmap_raster_p.h>
 #include <QtCore/QMetaType>
 #include <QtCore/qt_windows.h>
+#include <QtGui/qpagelayout.h>
 
 Q_DECLARE_METATYPE(HFONT)
 Q_DECLARE_METATYPE(LOGFONT)
@@ -67,163 +71,13 @@ QT_BEGIN_NAMESPACE
 
 Q_GUI_EXPORT HBITMAP qt_pixmapToWinHBITMAP(const QPixmap &p, int hbitmapFormat = 0);
 extern QPainterPath qt_regionToPath(const QRegion &region);
-Q_PRINTSUPPORT_EXPORT QSizeF qt_SizeFromUnitToMillimeter(const QSizeF &, QPrinter::Unit, double);
-Q_PRINTSUPPORT_EXPORT double qt_multiplierForUnit(QPrinter::Unit unit, int resolution);
+extern QMarginsF qt_convertMargins(const QMarginsF &margins, QPageLayout::Unit fromUnits, QPageLayout::Unit toUnits);
 
 // #define QT_DEBUG_DRAW
+// #define QT_DEBUG_METRICS
 
 static void draw_text_item_win(const QPointF &_pos, const QTextItemInt &ti, HDC hdc,
                                bool convertToText, const QTransform &xform, const QPointF &topLeft);
-
-static const struct {
-    int winSizeName;
-    QPrinter::PaperSize qtSizeName;
-} dmMapping[] = {
-    { DMPAPER_LETTER,             QPrinter::Letter },
-    { DMPAPER_LETTERSMALL,        QPrinter::Letter },
-    { DMPAPER_TABLOID,            QPrinter::Tabloid },
-    { DMPAPER_LEDGER,             QPrinter::Ledger },
-    { DMPAPER_LEGAL,              QPrinter::Legal },
-    { DMPAPER_EXECUTIVE,          QPrinter::Executive },
-    { DMPAPER_A3,                 QPrinter::A3 },
-    { DMPAPER_A4,                 QPrinter::A4 },
-    { DMPAPER_A4SMALL,            QPrinter::A4 },
-    { DMPAPER_A5,                 QPrinter::A5 },
-    { DMPAPER_B4,                 QPrinter::B4 },
-    { DMPAPER_B5,                 QPrinter::B5 },
-    { DMPAPER_A4_PLUS,            QPrinter::Folio },
-    { DMPAPER_ENV_10,             QPrinter::Comm10E },
-    { DMPAPER_ENV_DL,             QPrinter::DLE },
-    { DMPAPER_ENV_C3,             QPrinter::C5E },
-    { DMPAPER_LETTER_EXTRA,       QPrinter::Letter },
-    { DMPAPER_LEGAL_EXTRA,        QPrinter::Legal },
-    { DMPAPER_TABLOID_EXTRA,      QPrinter::Tabloid },
-    { DMPAPER_A4_EXTRA,           QPrinter::A4},
-    { DMPAPER_LETTER_TRANSVERSE,  QPrinter::Letter},
-    { DMPAPER_A4_TRANSVERSE,      QPrinter::A4},
-    { DMPAPER_LETTER_EXTRA_TRANSVERSE, QPrinter::Letter },
-    { DMPAPER_A_PLUS,             QPrinter::A4 },
-    { DMPAPER_B_PLUS,             QPrinter::A3 },
-    { DMPAPER_LETTER_PLUS,        QPrinter::Letter },
-    { DMPAPER_A5_TRANSVERSE,      QPrinter::A5 },
-    { DMPAPER_B5_TRANSVERSE,      QPrinter::B5 },
-    { DMPAPER_A3_EXTRA,           QPrinter::A3 },
-    { DMPAPER_A5_EXTRA,           QPrinter::A5 },
-    { DMPAPER_B5_EXTRA,           QPrinter::B5 },
-    { DMPAPER_A2,                 QPrinter::A2 },
-    { DMPAPER_A3_TRANSVERSE,      QPrinter::A3 },
-    { DMPAPER_A3_EXTRA_TRANSVERSE,QPrinter::A3 },
-    { 0, QPrinter::Custom }
-};
-
-// Return a list of printer paper sizes in millimeters with the corresponding dmPaperSize value
-static QList<QPair<QSizeF, int> > printerPaperSizes(const QString &printerName)
-{
-    QList<QPair<QSizeF, int> > result;
-    const wchar_t *name = reinterpret_cast<const wchar_t*>(printerName.utf16());
-    DWORD paperNameCount = DeviceCapabilities(name, NULL, DC_PAPERS, NULL, NULL);
-    if ((int)paperNameCount > 0) {
-        // If they are not equal, then there seems to be a problem with the driver
-        if (paperNameCount != DeviceCapabilities(name, NULL, DC_PAPERSIZE, NULL, NULL))
-            return result;
-        QScopedArrayPointer<wchar_t> papersNames(new wchar_t[paperNameCount]);
-        paperNameCount = DeviceCapabilities(name, NULL, DC_PAPERS, papersNames.data(), NULL);
-        result.reserve(paperNameCount);
-        QScopedArrayPointer<POINT> paperSizes(new POINT[paperNameCount]);
-        paperNameCount = DeviceCapabilities(name, NULL, DC_PAPERSIZE, (wchar_t *)paperSizes.data(), NULL);
-        for (int i=0; i <(int)paperNameCount; i++)
-            result.push_back(qMakePair(QSizeF(paperSizes[i].x / 10, paperSizes[i].y / 10), papersNames[i]));
-    }
-    return result;
-}
-
-// Find the best-matching printer paper for size in millimeters.
-static inline int findCustomPaperSize(const QSizeF &needlePt, const QString &printerName)
-{
-    const QList<QPair<QSizeF, int> > sizes = printerPaperSizes(printerName);
-    const qreal nw = needlePt.width();
-    const qreal nh = needlePt.height();
-    for (int i = 0; i < sizes.size(); ++i) {
-        if (qAbs(nw - sizes.at(i).first.width()) <= 1 && qAbs(nh - sizes.at(i).first.height()) <= 1)
-            return sizes.at(i).second;
-    }
-    return -1;
-}
-
-static inline void setDevModePaperFlags(DEVMODE *devMode, bool custom)
-{
-    if (custom) {
-        devMode->dmPaperSize = DMPAPER_USER;
-        devMode->dmFields |= DM_PAPERLENGTH | DM_PAPERWIDTH;
-    } else {
-        devMode->dmFields &= ~(DM_PAPERLENGTH | DM_PAPERWIDTH);
-        devMode->dmPaperLength = 0;
-        devMode->dmPaperWidth = 0;
-    }
-}
-
-QPrinter::PaperSize mapDevmodePaperSize(int s)
-{
-    int i = 0;
-    while ((dmMapping[i].winSizeName > 0) && (dmMapping[i].winSizeName != s))
-        i++;
-    return dmMapping[i].qtSizeName;
-}
-
-static int mapPaperSizeDevmode(QPrinter::PaperSize s)
-{
-    int i = 0;
- while ((dmMapping[i].winSizeName > 0) && (dmMapping[i].qtSizeName != s))
-        i++;
-    return dmMapping[i].winSizeName;
-}
-
-static const struct {
-    int winSourceName;
-    QPrinter::PaperSource qtSourceName;
-}  sources[] = {
-    { DMBIN_UPPER,          QPrinter::Upper },  // = DBMIN_ONLYONE
-    { DMBIN_LOWER,          QPrinter::Lower },
-    { DMBIN_MIDDLE,         QPrinter::Middle },
-    { DMBIN_MANUAL,         QPrinter::Manual },
-    { DMBIN_ENVELOPE,       QPrinter::Envelope },
-    { DMBIN_ENVMANUAL,      QPrinter::EnvelopeManual },
-    { DMBIN_AUTO,           QPrinter::Auto },
-    { DMBIN_TRACTOR,        QPrinter::Tractor },
-    { DMBIN_SMALLFMT,       QPrinter::SmallFormat },
-    { DMBIN_LARGEFMT,       QPrinter::LargeFormat },
-    { DMBIN_LARGECAPACITY,  QPrinter::LargeCapacity },
-    { DMBIN_CASSETTE,       QPrinter::Cassette },
-    { DMBIN_FORMSOURCE,     QPrinter::FormSource },
-    { DMBIN_USER,           QPrinter::CustomSource },
-    { 0, (QPrinter::PaperSource) -1 }
-};
-
-static QPrinter::PaperSource mapDevmodePaperSource(int s)
-{
-    int i = 0;
-    while ((sources[i].winSourceName > 0) && (sources[i].winSourceName != s))
-        i++;
-    return sources[i].winSourceName ? sources[i].qtSourceName : (QPrinter::PaperSource) s;
-}
-
-static int mapPaperSourceDevmode(QPrinter::PaperSource s)
-{
-    int i = 0;
-    while ((sources[i].qtSourceName >= 0) && (sources[i].qtSourceName != s))
-        i++;
-    return sources[i].winSourceName ? sources[i].winSourceName : s;
-}
-
-static inline uint qwcsnlen(const wchar_t *str, uint maxlen)
-{
-    uint length = 0;
-    if (str) {
-        while (length < maxlen && *str++)
-            length++;
-    }
-    return length;
-}
 
 QWin32PrintEngine::QWin32PrintEngine(QPrinter::PrinterMode mode)
     : QAlphaPaintEngine(*(new QWin32PrintEnginePrivate),
@@ -236,7 +90,10 @@ QWin32PrintEngine::QWin32PrintEngine(QPrinter::PrinterMode mode)
 {
     Q_D(QWin32PrintEngine);
     d->mode = mode;
-    d->queryDefault();
+    QPlatformPrinterSupport *ps = QPlatformPrinterSupportPlugin::get();
+    if (ps)
+        d->m_printDevice = ps->createDefaultPrintDevice();
+    d->m_pageLayout.setPageSize(d->m_printDevice.defaultPageSize());
     d->initialize();
 }
 
@@ -301,6 +158,11 @@ bool QWin32PrintEngine::begin(QPaintDevice *pdev)
     if (!ok)
         cleanUp();
 
+#ifdef QT_DEBUG_METRICS
+    qDebug() << "QWin32PrintEngine::begin()";
+    d->debugMetrics();
+#endif // QT_DEBUG_METRICS
+
     return ok;
 }
 
@@ -362,6 +224,11 @@ bool QWin32PrintEngine::newPage()
     SetTextAlign(d->hdc, TA_BASELINE);
     if (transparent)
         SetBkMode(d->hdc, TRANSPARENT);
+
+#ifdef QT_DEBUG_METRICS
+    qDebug() << "QWin32PrintEngine::newPage()";
+    d->debugMetrics();
+#endif // QT_DEBUG_METRICS
 
     // ###
     return true;
@@ -456,19 +323,9 @@ void QWin32PrintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem
     SelectObject(d->hdc, CreatePen(PS_SOLID, 1, cf));
     SetTextColor(d->hdc, cf);
 
-    draw_text_item_win(p, ti, d->hdc, convertToText, d->matrix, d->devPaperRect.topLeft());
+    draw_text_item_win(p, ti, d->hdc, convertToText, d->matrix, QPointF(0.0, 0.0));
     DeleteObject(SelectObject(d->hdc,GetStockObject(HOLLOW_BRUSH)));
     DeleteObject(SelectObject(d->hdc,GetStockObject(BLACK_PEN)));
-}
-
-static inline qreal mmToInches(double mm)
-{
-    return mm*0.039370147;
-}
-
-static inline qreal inchesToMM(double in)
-{
-    return in/0.039370147;
 }
 
 int QWin32PrintEngine::metric(QPaintDevice::PaintDeviceMetric m) const
@@ -483,40 +340,18 @@ int QWin32PrintEngine::metric(QPaintDevice::PaintDeviceMetric m) const
 
     switch (m) {
     case QPaintDevice::PdmWidth:
-        if (d->has_custom_paper_size) {
-            val =  qRound(d->paper_size.width() * res / 72.0);
-        } else {
-            int logPixelsX = GetDeviceCaps(d->hdc, LOGPIXELSX);
-            if (logPixelsX == 0) {
-                qWarning("QWin32PrintEngine::metric: GetDeviceCaps() failed, "
-                        "might be a driver problem");
-                logPixelsX = 600; // Reasonable default
-            }
-            val = res
-                  * GetDeviceCaps(d->hdc, d->fullPage ? PHYSICALWIDTH : HORZRES)
-                  / logPixelsX;
-        }
-        if (d->pageMarginsSet)
-            val -= int(mmToInches((d->previousDialogMargins.left() +
-                                   d->previousDialogMargins.width()) / 100.0) * res);
+        val = d->m_paintRectPixels.width();
+#ifdef QT_DEBUG_METRICS
+    qDebug() << "QWin32PrintEngine::metric(PdmWidth) = " << val;
+    d->debugMetrics();
+#endif // QT_DEBUG_METRICS
         break;
     case QPaintDevice::PdmHeight:
-        if (d->has_custom_paper_size) {
-            val = qRound(d->paper_size.height() * res / 72.0);
-        } else {
-            int logPixelsY = GetDeviceCaps(d->hdc, LOGPIXELSY);
-            if (logPixelsY == 0) {
-                qWarning("QWin32PrintEngine::metric: GetDeviceCaps() failed, "
-                        "might be a driver problem");
-                logPixelsY = 600; // Reasonable default
-            }
-            val = res
-                  * GetDeviceCaps(d->hdc, d->fullPage ? PHYSICALHEIGHT : VERTRES)
-                  / logPixelsY;
-        }
-        if (d->pageMarginsSet)
-            val -= int(mmToInches((d->previousDialogMargins.top() +
-                                   d->previousDialogMargins.height()) / 100.0) * res);
+        val = d->m_paintRectPixels.height();
+#ifdef QT_DEBUG_METRICS
+    qDebug() << "QWin32PrintEngine::metric(PdmHeight) = " << val;
+    d->debugMetrics();
+#endif // QT_DEBUG_METRICS
         break;
     case QPaintDevice::PdmDpiX:
         val = res;
@@ -531,46 +366,18 @@ int QWin32PrintEngine::metric(QPaintDevice::PaintDeviceMetric m) const
         val = GetDeviceCaps(d->hdc, LOGPIXELSY);
         break;
     case QPaintDevice::PdmWidthMM:
-        if (d->has_custom_paper_size) {
-            val = qRound(d->paper_size.width()*25.4/72);
-        } else {
-            if (!d->fullPage) {
-                val = GetDeviceCaps(d->hdc, HORZSIZE);
-            } else {
-                float wi = 25.4 * GetDeviceCaps(d->hdc, PHYSICALWIDTH);
-                int logPixelsX = GetDeviceCaps(d->hdc,  LOGPIXELSX);
-                if (logPixelsX == 0) {
-                    qWarning("QWin32PrintEngine::metric: GetDeviceCaps() failed, "
-                            "might be a driver problem");
-                    logPixelsX = 600; // Reasonable default
-                }
-                val = qRound(wi / logPixelsX);
-            }
-        }
-        if (d->pageMarginsSet)
-            val -= (d->previousDialogMargins.left() +
-                    d->previousDialogMargins.width()) / 100.0;
+        val = d->m_paintSizeMM.width();
+#ifdef QT_DEBUG_METRICS
+    qDebug() << "QWin32PrintEngine::metric(PdmWidthMM) = " << val;
+    d->debugMetrics();
+#endif // QT_DEBUG_METRICS
         break;
     case QPaintDevice::PdmHeightMM:
-        if (d->has_custom_paper_size) {
-            val = qRound(d->paper_size.height()*25.4/72);
-        } else {
-            if (!d->fullPage) {
-                val = GetDeviceCaps(d->hdc, VERTSIZE);
-            } else {
-                float hi = 25.4 * GetDeviceCaps(d->hdc, PHYSICALHEIGHT);
-                int logPixelsY = GetDeviceCaps(d->hdc,  LOGPIXELSY);
-                if (logPixelsY == 0) {
-                    qWarning("QWin32PrintEngine::metric: GetDeviceCaps() failed, "
-                            "might be a driver problem");
-                    logPixelsY = 600; // Reasonable default
-                }
-                val = qRound(hi / logPixelsY);
-            }
-        }
-        if (d->pageMarginsSet)
-            val -= (d->previousDialogMargins.top() +
-                    d->previousDialogMargins.height()) / 100.0;
+        val = d->m_paintSizeMM.height();
+#ifdef QT_DEBUG_METRICS
+    qDebug() << "QWin32PrintEngine::metric(PdmHeightMM) = " << val;
+    d->debugMetrics();
+#endif // QT_DEBUG_METRICS
         break;
     case QPaintDevice::PdmNumColors:
         {
@@ -1035,11 +842,6 @@ void QWin32PrintEngine::drawPolygon(const QPointF *points, int pointCount, Polyg
     d->has_brush = has_brush;
 }
 
-void QWin32PrintEnginePrivate::queryDefault()
-{
-    QWin32PrintEngine::queryDefaultPrinter(name);
-}
-
 QWin32PrintEnginePrivate::~QWin32PrintEnginePrivate()
 {
     if (hdc)
@@ -1055,12 +857,12 @@ void QWin32PrintEnginePrivate::initialize()
     Q_ASSERT(!devMode);
     Q_ASSERT(!pInfo);
 
-    if (name.isEmpty())
+    if (!m_printDevice.isValid())
         return;
 
     txop = QTransform::TxNone;
 
-    bool ok = OpenPrinter((LPWSTR)name.utf16(), (LPHANDLE)&hPrinter, 0);
+    bool ok = OpenPrinter((LPWSTR)m_printDevice.id().utf16(), (LPHANDLE)&hPrinter, 0);
     if (!ok) {
         qErrnoWarning("QWin32PrintEngine::initialize: OpenPrinter failed");
         return;
@@ -1086,7 +888,7 @@ void QWin32PrintEnginePrivate::initialize()
     }
 
     devMode = pInfo->pDevMode;
-    hdc = CreateDC(NULL, reinterpret_cast<const wchar_t *>(name.utf16()), 0, devMode);
+    hdc = CreateDC(NULL, reinterpret_cast<const wchar_t *>(m_printDevice.id().utf16()), 0, devMode);
 
     Q_ASSERT(hPrinter);
     Q_ASSERT(pInfo);
@@ -1094,19 +896,15 @@ void QWin32PrintEnginePrivate::initialize()
     if (devMode) {
         num_copies = devMode->dmCopies;
         devMode->dmCollate = DMCOLLATE_TRUE;
+        updatePageLayout();
     }
 
     initHDC();
 
-#ifdef QT_DEBUG_DRAW
-    qDebug() << "QWin32PrintEngine::initialize()" << endl
-             << " - paperRect" << devPaperRect << endl
-             << " - pageRect" << devPageRect << endl
-             << " - stretch_x" << stretch_x << endl
-             << " - stretch_y" << stretch_y << endl
-             << " - origin_x" << origin_x << endl
-             << " - origin_y" << origin_y << endl;
-#endif
+#if defined QT_DEBUG_DRAW || defined QT_DEBUG_METRICS
+    qDebug() << "QWin32PrintEngine::initialize()";
+    debugMetrics();
+#endif // QT_DEBUG_DRAW || QT_DEBUG_METRICS
 }
 
 void QWin32PrintEnginePrivate::initHDC()
@@ -1139,50 +937,6 @@ void QWin32PrintEnginePrivate::initHDC()
     default:
         break;
     }
-
-    initDevRects();
-}
-
-void QWin32PrintEnginePrivate::initDevRects()
-{
-    devPaperRect = QRect(0, 0,
-                         GetDeviceCaps(hdc, PHYSICALWIDTH),
-                         GetDeviceCaps(hdc, PHYSICALHEIGHT));
-    devPhysicalPageRect = QRect(GetDeviceCaps(hdc, PHYSICALOFFSETX),
-                                GetDeviceCaps(hdc, PHYSICALOFFSETY),
-                                GetDeviceCaps(hdc, HORZRES),
-                                GetDeviceCaps(hdc, VERTRES));
-    if (!pageMarginsSet)
-        devPageRect = devPhysicalPageRect;
-    else
-        devPageRect = devPaperRect.adjusted(qRound(mmToInches(previousDialogMargins.left() / 100.0) * dpi_x),
-                                            qRound(mmToInches(previousDialogMargins.top() / 100.0) * dpi_y),
-                                            -qRound(mmToInches(previousDialogMargins.width() / 100.0) * dpi_x),
-                                            -qRound(mmToInches(previousDialogMargins.height() / 100.0) * dpi_y));
-    updateOrigin();
-}
-
-void QWin32PrintEnginePrivate::setPageMargins(int marginLeft, int marginTop, int marginRight, int marginBottom)
-{
-    pageMarginsSet = true;
-    previousDialogMargins = QRect(marginLeft, marginTop, marginRight, marginBottom);
-
-    devPageRect = devPaperRect.adjusted(qRound(mmToInches(marginLeft / 100.0) * dpi_x),
-                                        qRound(mmToInches(marginTop / 100.0) * dpi_y),
-                                        - qRound(mmToInches(marginRight / 100.0) * dpi_x),
-                                        - qRound(mmToInches(marginBottom / 100.0) * dpi_y));
-    updateOrigin();
-}
-
-QRect QWin32PrintEnginePrivate::getPageMargins() const
-{
-    if (pageMarginsSet)
-        return previousDialogMargins;
-    else
-        return QRect(qRound(inchesToMM(devPhysicalPageRect.left()) * 100.0 / dpi_x),
-                     qRound(inchesToMM(devPhysicalPageRect.top()) * 100.0 / dpi_y),
-                     qRound(inchesToMM(devPaperRect.right() - devPhysicalPageRect.right()) * 100.0 / dpi_x),
-                     qRound(inchesToMM(devPaperRect.bottom() - devPhysicalPageRect.bottom()) * 100.0 / dpi_y));
 }
 
 void QWin32PrintEnginePrivate::release()
@@ -1208,60 +962,13 @@ void QWin32PrintEnginePrivate::release()
     devMode = 0;
 }
 
-QList<QVariant> QWin32PrintEnginePrivate::queryResolutions() const
-{
-    // Read the supported resolutions of the printer.
-    QList<QVariant> list;
-
-    DWORD numRes = DeviceCapabilities(reinterpret_cast<const wchar_t *>(name.utf16()), NULL,
-                                      DC_ENUMRESOLUTIONS, 0, 0);
-    if (numRes == (DWORD)-1)
-        return list;
-
-    LONG *enumRes = (LONG*)malloc(numRes * 2 * sizeof(LONG));
-    DWORD errRes = DeviceCapabilities(reinterpret_cast<const wchar_t *>(name.utf16()), NULL,
-                                      DC_ENUMRESOLUTIONS, (LPWSTR)enumRes, 0);
-
-    if (errRes == (DWORD)-1) {
-        qErrnoWarning("QWin32PrintEngine::queryResolutions: DeviceCapabilities failed");
-        return list;
-    }
-
-    for (uint i=0; i<numRes; ++i)
-        list.append(int(enumRes[i * 2]));
-
-    return list;
-}
-
 void QWin32PrintEnginePrivate::doReinit()
 {
     if (state == QPrinter::Active) {
         reinit = true;
     } else {
         resetDC();
-        initDevRects();
         reinit = false;
-    }
-}
-
-void QWin32PrintEnginePrivate::updateOrigin()
-{
-    if (fullPage) {
-        // subtract physical margins to make (0,0) absolute top corner of paper
-        // then add user defined margins
-        origin_x = -devPhysicalPageRect.x();
-        origin_y = -devPhysicalPageRect.y();
-        if (pageMarginsSet) {
-            origin_x += devPageRect.left();
-            origin_y += devPageRect.top();
-        }
-    } else {
-        origin_x = 0;
-        origin_y = 0;
-        if (pageMarginsSet) {
-            origin_x = devPageRect.left() - devPhysicalPageRect.x();
-            origin_y = devPageRect.top() - devPhysicalPageRect.y();
-        }
     }
 }
 
@@ -1329,8 +1036,15 @@ void QWin32PrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &
         break;
 
     case PPK_FullPage:
-        d->fullPage = value.toBool();
-        d->updateOrigin();
+        if (value.toBool())
+            d->m_pageLayout.setMode(QPageLayout::FullPageMode);
+        else
+            d->m_pageLayout.setMode(QPageLayout::StandardMode);
+        d->updateMetrics();
+#ifdef QT_DEBUG_METRICS
+        qDebug() << "QWin32PrintEngine::setProperty(PPK_FullPage," << value.toBool() << + ")";
+        d->debugMetrics();
+#endif // QT_DEBUG_METRICS
         break;
 
     case PPK_CopyCount: // fallthrough
@@ -1342,18 +1056,20 @@ void QWin32PrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &
         d->doReinit();
         break;
 
-    case PPK_Orientation:
-        {
-            if (!d->devMode)
-                break;
-            int orientation = value.toInt() == QPrinter::Landscape ? DMORIENT_LANDSCAPE : DMORIENT_PORTRAIT;
-            int old_orientation = d->devMode->dmOrientation;
-            d->devMode->dmOrientation = orientation;
-            if (d->has_custom_paper_size && old_orientation != orientation)
-                d->paper_size = QSizeF(d->paper_size.height(), d->paper_size.width());
-            d->doReinit();
-        }
+    case PPK_Orientation: {
+        if (!d->devMode)
+            break;
+        QPageLayout::Orientation orientation = QPageLayout::Orientation(value.toInt());
+        d->devMode->dmOrientation = orientation == QPageLayout::Landscape ? DMORIENT_LANDSCAPE : DMORIENT_PORTRAIT;
+        d->m_pageLayout.setOrientation(orientation);
+        d->updateMetrics();
+        d->doReinit();
+#ifdef QT_DEBUG_METRICS
+        qDebug() << "QWin32PrintEngine::setProperty(PPK_Orientation," << orientation << ")";
+        d->debugMetrics();
+#endif // QT_DEBUG_METRICS
         break;
+    }
 
     case PPK_OutputFileName:
         if (isActive()) {
@@ -1364,130 +1080,166 @@ void QWin32PrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &
         }
         break;
 
-    case PPK_PaperSize:
+    case PPK_PageSize: {
         if (!d->devMode)
             break;
-        d->devMode->dmPaperSize = mapPaperSizeDevmode(QPrinter::PaperSize(value.toInt()));
-        d->has_custom_paper_size = (QPrinter::PaperSize(value.toInt()) == QPrinter::Custom);
-        setDevModePaperFlags(d->devMode, d->has_custom_paper_size);
-        d->doReinit();
-        break;
-
-    case PPK_PaperName:
-        {
-            if (!d->devMode)
-                break;
-            const wchar_t *name = reinterpret_cast<const wchar_t*>(d->name.utf16());
-            DWORD size = DeviceCapabilities(name, NULL, DC_PAPERNAMES, NULL, NULL);
-            if ((int)size > 0) {
-                QScopedArrayPointer<wchar_t> paperNames(new wchar_t[size*64]);
-                if (size != DeviceCapabilities(name, NULL, DC_PAPERNAMES, paperNames.data(), NULL))
-                    break;
-                int paperPos = -1;
-                for (int i = 0; i < (int)size; ++i) {
-                    wchar_t *copyOfPaper = paperNames.data() + (i * 64);
-                    if (value.toString() == QString::fromWCharArray(copyOfPaper, qwcsnlen(copyOfPaper, 64))) {
-                        paperPos = i;
-                        break;
-                    }
-                }
-                size = DeviceCapabilities(name, NULL, DC_PAPERS, NULL, NULL);
-                if ((int)size > 0) {
-                    QScopedArrayPointer<wchar_t> papers(new wchar_t[size]);
-                    size = DeviceCapabilities(name, NULL, DC_PAPERS, papers.data(), NULL);
-                    QScopedArrayPointer<POINT> paperSizes(new POINT[size]);
-                    DWORD paperNameCount = DeviceCapabilities(name, NULL, DC_PAPERSIZE, (wchar_t *)paperSizes.data(), NULL);
-                    if (paperNameCount == size) {
-                        const double multiplier = qt_multiplierForUnit(QPrinter::Millimeter, d->resolution);
-                        d->paper_size = QSizeF((paperSizes[paperPos].x / 10.0) * multiplier, (paperSizes[paperPos].y / 10.0) * multiplier);
-                        // Our sizes may not match the paper name's size exactly
-                        // So we treat it as custom so we know the paper size is correct
-                        d->has_custom_paper_size = true;
-                        d->devMode->dmPaperSize = papers[paperPos];
-                        setDevModePaperFlags(d->devMode, false);
-                        d->doReinit();
-                    }
-                 }
-            }
-        }
-        break;
-    case PPK_PaperSource:
-        {
-            if (!d->devMode)
-                break;
-            int dmMapped = DMBIN_AUTO;
-
-            QList<QVariant> v = property(PPK_PaperSources).toList();
-            if (v.contains(value))
-                dmMapped = mapPaperSourceDevmode(QPrinter::PaperSource(value.toInt()));
-
-            d->devMode->dmDefaultSource = dmMapped;
+        const QPageSize pageSize = QPageSize(QPageSize::PageSizeId(value.toInt()));
+        if (pageSize.isValid()) {
+            d->setPageSize(pageSize);
             d->doReinit();
+#ifdef QT_DEBUG_METRICS
+            qDebug() << "QWin32PrintEngine::setProperty(PPK_PageSize," << value.toInt() << ")";
+            d->debugMetrics();
+#endif // QT_DEBUG_METRICS
         }
-        break;
-
-    case PPK_PrinterName:
-        d->name = value.toString();
-        if (d->name.isEmpty())
-            d->queryDefault();
-        d->initialize();
-        break;
-
-    case PPK_Resolution:
-        {
-            d->resolution = value.toInt();
-
-            d->stretch_x = d->dpi_x / double(d->resolution);
-            d->stretch_y = d->dpi_y / double(d->resolution);
-        }
-        break;
-
-    case PPK_WindowsPageSize:
-        if (!d->devMode)
-            break;
-        d->has_custom_paper_size = false;
-        d->devMode->dmPaperSize = value.toInt();
-        setDevModePaperFlags(d->devMode, d->has_custom_paper_size);
-        d->doReinit();
-        break;
-
-    case PPK_CustomPaperSize:
-    {
-        d->has_custom_paper_size = true;
-        d->paper_size = value.toSizeF();
-        if (!d->devMode)
-            break;
-        const QSizeF sizeMM = qt_SizeFromUnitToMillimeter(d->paper_size, QPrinter::Point, d->resolution);
-        const int match = findCustomPaperSize(sizeMM, d->name);
-        setDevModePaperFlags(d->devMode, (match >= 0) ? false : true);
-        if (match >= 0) {
-            d->devMode->dmPaperSize = match;
-            if (d->devMode->dmOrientation != DMORIENT_PORTRAIT)
-                qSwap(d->paper_size.rwidth(), d->paper_size.rheight());
-        } else {
-            d->devMode->dmPaperLength = qRound(sizeMM.height() * 10.0);
-            d->devMode->dmPaperWidth = qRound(sizeMM.width() * 10.0);
-        }
-        d->doReinit();
         break;
     }
 
-    case PPK_PageMargins:
-    {
+    case PPK_PaperName: {
+        if (!d->devMode)
+            break;
+        // Get the named page size from the printer if supported
+        const QPageSize pageSize = d->m_printDevice.supportedPageSize(value.toString());
+        if (pageSize.isValid()) {
+            d->setPageSize(pageSize);
+            d->doReinit();
+#ifdef QT_DEBUG_METRICS
+            qDebug() << "QWin32PrintEngine::setProperty(PPK_PaperName," << value.toString() << ")";
+            d->debugMetrics();
+#endif // QT_DEBUG_METRICS
+        }
+        break;
+    }
+
+    case PPK_PaperSource: {
+        if (!d->devMode)
+            break;
+        QPrint::InputSlotId inputSlotId = QPrint::InputSlotId(value.toInt());
+        foreach (const QPrint::InputSlot &inputSlot, d->m_printDevice.supportedInputSlots()) {
+            if (inputSlot.id == inputSlotId) {
+                d->devMode->dmDefaultSource = inputSlot.windowsId;
+                d->doReinit();
+                break;
+            }
+        }
+        break;
+    }
+
+    case PPK_PrinterName: {
+        QString id = value.toString();
+        QPlatformPrinterSupport *ps = QPlatformPrinterSupportPlugin::get();
+        if (!ps)
+            return;
+        QPrintDevice printDevice = ps->createPrintDevice(id.isEmpty() ? ps->defaultPrintDeviceId() : id);
+        if (printDevice.isValid()) {
+            d->m_printDevice = printDevice;
+            // TODO Do we need to check if the page size is valid on new printer?
+            d->initialize();
+        }
+        break;
+    }
+
+    case PPK_Resolution: {
+        d->resolution = value.toInt();
+        d->stretch_x = d->dpi_x / double(d->resolution);
+        d->stretch_y = d->dpi_y / double(d->resolution);
+        d->updateMetrics();
+#ifdef QT_DEBUG_METRICS
+        qDebug() << "QWin32PrintEngine::setProperty(PPK_Resolution," << value.toInt() << ")";
+        d->debugMetrics();
+#endif // QT_DEBUG_METRICS
+        break;
+    }
+
+    case PPK_WindowsPageSize: {
+        if (!d->devMode)
+            break;
+        const QPageSize pageSize = QPageSize(QPageSize::id(value.toInt()));
+        if (pageSize.isValid()) {
+            d->setPageSize(pageSize);
+            d->doReinit();
+#ifdef QT_DEBUG_METRICS
+            qDebug() << "QWin32PrintEngine::setProperty(PPK_WindowsPageSize," << value.toInt() << ")";
+            d->debugMetrics();
+#endif // QT_DEBUG_METRICS
+            break;
+        }
+        break;
+    }
+
+    case PPK_CustomPaperSize: {
+        if (!d->devMode)
+            break;
+        const QPageSize pageSize = QPageSize(value.toSizeF(), QPageSize::Point);
+        if (pageSize.isValid()) {
+            d->setPageSize(pageSize);
+            d->doReinit();
+#ifdef QT_DEBUG_METRICS
+            qDebug() << "QWin32PrintEngine::setProperty(PPK_CustomPaperSize," << value.toSizeF() << ")";
+            d->debugMetrics();
+#endif // QT_DEBUG_METRICS
+        }
+        break;
+    }
+
+    case PPK_PageMargins: {
         QList<QVariant> margins(value.toList());
         Q_ASSERT(margins.size() == 4);
-        int left, top, right, bottom;
-        // specified in 1/100 mm
-        left = (margins.at(0).toReal()*25.4/72.0) * 100;
-        top = (margins.at(1).toReal()*25.4/72.0) * 100;
-        right = (margins.at(2).toReal()*25.4/72.0) * 100;
-        bottom = (margins.at(3).toReal()*25.4/72.0) * 100;
-        d->setPageMargins(left, top, right, bottom);
+        d->m_pageLayout.setUnits(QPageLayout::Point);
+        d->m_pageLayout.setMargins(QMarginsF(margins.at(0).toReal(), margins.at(1).toReal(),
+                                             margins.at(2).toReal(), margins.at(3).toReal()));
+        d->updateMetrics();
+#ifdef QT_DEBUG_METRICS
+        qDebug() << "QWin32PrintEngine::setProperty(PPK_PageMargins," << margins << ")";
+        d->debugMetrics();
+#endif // QT_DEBUG_METRICS
+        break;
+    }
+
+    case PPK_QPageSize: {
+        // Get the page size from the printer if supported
+        const QPageSize pageSize = value.value<QPageSize>();
+        if (pageSize.isValid()) {
+            d->setPageSize(pageSize);
+            d->doReinit();
+#ifdef QT_DEBUG_METRICS
+            qDebug() << "QWin32PrintEngine::setProperty(PPK_QPageSize," << pageSize << ")";
+            d->debugMetrics();
+#endif // QT_DEBUG_METRICS
+        }
+        break;
+    }
+
+    case PPK_QPageMargins: {
+        QPair<QMarginsF, QPageLayout::Unit> pair = value.value<QPair<QMarginsF, QPageLayout::Unit> >();
+        d->m_pageLayout.setUnits(pair.second);
+        d->m_pageLayout.setMargins(pair.first);
+        d->updateMetrics();
+#ifdef QT_DEBUG_METRICS
+        qDebug() << "QWin32PrintEngine::setProperty(PPK_QPageMargins," << pair.first << pair.second << ")";
+        d->debugMetrics();
+#endif // QT_DEBUG_METRICS
+        break;
+    }
+
+    case PPK_QPageLayout: {
+        QPageLayout pageLayout = value.value<QPageLayout>();
+        if (pageLayout.isValid() && d->m_printDevice.isValidPageLayout(pageLayout, d->resolution)) {
+            setProperty(PPK_QPageSize, QVariant::fromValue(pageLayout.pageSize()));
+            setProperty(PPK_FullPage, pageLayout.mode() == QPageLayout::FullPageMode);
+            setProperty(PPK_Orientation, QVariant::fromValue(pageLayout.orientation()));
+            d->m_pageLayout.setUnits(pageLayout.units());
+            d->m_pageLayout.setMargins(pageLayout.margins());
+            d->updateMetrics();
+#ifdef QT_DEBUG_METRICS
+            qDebug() << "QWin32PrintEngine::setProperty(PPK_QPageLayout," << pageLayout << ")";
+            d->debugMetrics();
+#endif // QT_DEBUG_METRICS
+        }
         break;
     }
 
     // No default so that compiler will complain if new keys added and not handled in this engine
-
     }
 }
 
@@ -1540,7 +1292,7 @@ QVariant QWin32PrintEngine::property(PrintEnginePropertyKey key) const
         break;
 
     case PPK_FullPage:
-        value = d->fullPage;
+        value =  d->m_pageLayout.mode() == QPageLayout::FullPageMode;
         break;
 
     case PPK_CopyCount:
@@ -1556,13 +1308,7 @@ QVariant QWin32PrintEngine::property(PrintEnginePropertyKey key) const
         break;
 
     case PPK_Orientation:
-        {
-            if (!d->devMode) {
-                value = QPrinter::Portrait;
-            } else {
-                value = (d->devMode->dmOrientation == DMORIENT_LANDSCAPE) ? QPrinter::Landscape : QPrinter::Portrait;
-            }
-        }
+        value = d->m_pageLayout.orientation();
         break;
 
     case PPK_OutputFileName:
@@ -1570,150 +1316,93 @@ QVariant QWin32PrintEngine::property(PrintEnginePropertyKey key) const
         break;
 
     case PPK_PageRect:
-        if (d->has_custom_paper_size) {
-            QRect rect(0, 0,
-                       qRound(d->paper_size.width() * d->resolution / 72.0),
-                       qRound(d->paper_size.height() * d->resolution / 72.0));
-            if (d->pageMarginsSet) {
-                rect = rect.adjusted(qRound(mmToInches(d->previousDialogMargins.left()/100.0) * d->resolution),
-                                     qRound(mmToInches(d->previousDialogMargins.top()/100.0) * d->resolution),
-                                     -qRound(mmToInches(d->previousDialogMargins.width()/100.0) * d->resolution),
-                                     -qRound(mmToInches(d->previousDialogMargins.height()/100.0) * d->resolution));
-            }
-            value = rect;
-        } else {
-            value = QTransform(1/d->stretch_x, 0, 0, 1/d->stretch_y, 0, 0)
-                    .mapRect(d->fullPage ? d->devPhysicalPageRect : d->devPageRect);
-        }
+        // PageRect is returned in device pixels
+        value = d->m_pageLayout.paintRectPixels(d->resolution);
         break;
 
-    case PPK_PaperSize:
-        if (d->has_custom_paper_size) {
-            value = QPrinter::Custom;
-        } else {
-            if (!d->devMode) {
-                value = QPrinter::A4;
-            } else {
-                value = mapDevmodePaperSize(d->devMode->dmPaperSize);
-            }
-        }
+    case PPK_PageSize:
+        value = d->m_pageLayout.pageSize().id();
         break;
 
     case PPK_PaperRect:
-        if (d->has_custom_paper_size) {
-            value = QRect(0, 0,
-                          qRound(d->paper_size.width() * d->resolution / 72.0),
-                          qRound(d->paper_size.height() * d->resolution / 72.0));
-        } else {
-            value = QTransform(1/d->stretch_x, 0, 0, 1/d->stretch_y, 0, 0).mapRect(d->devPaperRect);
-        }
+        // PaperRect is returned in device pixels
+        value = d->m_pageLayout.fullRectPixels(d->resolution);
         break;
 
     case PPK_PaperName:
-        if (!d->devMode) {
-            value = QLatin1String("A4");
-        } else {
-            const wchar_t *name = reinterpret_cast<const wchar_t*>(d->name.utf16());
-            DWORD size = DeviceCapabilities(name, NULL, DC_PAPERS, NULL, NULL);
-            int paperSizePos = -1;
-            if ((int)size > 0) {
-                QScopedArrayPointer<wchar_t> papers(new wchar_t[size]);
-                if (size != DeviceCapabilities(name, NULL, DC_PAPERS, papers.data(), NULL))
-                    break;
-                for (int i=0;i<(int)size;i++) {
-                    if (papers[i] == d->devMode->dmPaperSize) {
-                        paperSizePos = i;
-                        break;
-                    }
-                }
-            }
-            if (paperSizePos != -1) {
-                size = DeviceCapabilities(name, NULL, DC_PAPERNAMES, NULL, NULL);
-                if ((int)size > 0) {
-                    QScopedArrayPointer<wchar_t> paperNames(new wchar_t[size*64]);
-                    size = DeviceCapabilities(name, NULL, DC_PAPERNAMES, paperNames.data(), NULL);
-                    wchar_t *copyOfPaper = paperNames.data() + (paperSizePos * 64);
-                    value = QString::fromWCharArray(copyOfPaper, qwcsnlen(copyOfPaper, 64));
-                }
-            }
-        }
+        value = d->m_pageLayout.pageSize().name();
         break;
 
     case PPK_PaperSource:
         if (!d->devMode) {
-            value = QPrinter::Auto;
+            value = d->m_printDevice.defaultInputSlot().id;
         } else {
-            value = mapDevmodePaperSource(d->devMode->dmDefaultSource);
+            value = QPrint::Auto;
+            foreach (const QPrint::InputSlot inputSlot, d->m_printDevice.supportedInputSlots()) {
+                if (inputSlot.windowsId == d->devMode->dmDefaultSource) {
+                    value = inputSlot.id;
+                    break;
+                }
+            }
         }
         break;
 
     case PPK_PrinterName:
-        value = d->name;
+        value = d->m_printDevice.id();
         break;
 
     case PPK_Resolution:
-        if (d->resolution || !d->name.isEmpty())
+        if (d->resolution || d->m_printDevice.isValid())
             value = d->resolution;
         break;
 
-    case PPK_SupportedResolutions:
-        value = d->queryResolutions();
-        break;
-
-    case PPK_WindowsPageSize:
-        if (!d->devMode) {
-            value = -1;
-        } else {
-            value = d->devMode->dmPaperSize;
-        }
-        break;
-
-    case PPK_PaperSources:
-        {
-            int available = DeviceCapabilities((const wchar_t *)d->name.utf16(), NULL, DC_BINS, 0, d->devMode);
-
-            if (available <= 0)
-                break;
-
-            wchar_t *data = new wchar_t[available];
-            int count = DeviceCapabilities((const wchar_t *)d->name.utf16(), NULL, DC_BINS, data, d->devMode);
-
-            QList<QVariant> out;
-            for (int i=0; i<count; ++i) {
-                QPrinter::PaperSource src = mapDevmodePaperSource(data[i]);
-                if (src != -1)
-                    out << (int) src;
-            }
-            value = out;
-
-            delete [] data;
-        }
-        break;
-
-    case PPK_CustomPaperSize:
-        value = d->paper_size;
-        break;
-
-    case PPK_PageMargins:
-    {
-        QList<QVariant> margins;
-        if (d->has_custom_paper_size && !d->pageMarginsSet) {
-            margins << 0 << 0 << 0 << 0;
-        } else {
-            QRect pageMargins(d->getPageMargins());
-
-            // specified in 1/100 mm
-            margins << (mmToInches(pageMargins.left()/100.0) * 72)
-                    << (mmToInches(pageMargins.top()/100.0) * 72)
-                    << (mmToInches(pageMargins.width()/100.0) * 72)
-                    << (mmToInches(pageMargins.height()/100.0) * 72);
-        }
-        value = margins;
+    case PPK_SupportedResolutions: {
+        QList<QVariant> list;
+        foreach (int resolution, d->m_printDevice.supportedResolutions())
+            list << resolution;
+        value = list;
         break;
     }
 
-    // No default so that compiler will complain if new keys added and not handled in this engine
+    case PPK_WindowsPageSize:
+        value = d->m_pageLayout.pageSize().windowsId();
+        break;
 
+    case PPK_PaperSources: {
+        QList<QVariant> out;
+        foreach (const QPrint::InputSlot inputSlot, d->m_printDevice.supportedInputSlots())
+            out << inputSlot.id;
+        value = out;
+        break;
+    }
+
+    case PPK_CustomPaperSize:
+        value = d->m_pageLayout.fullRectPoints().size();
+        break;
+
+    case PPK_PageMargins: {
+        QList<QVariant> list;
+        QMarginsF margins = d->m_pageLayout.margins(QPageLayout::Point);
+        list << margins.left() << margins.top() << margins.right() << margins.bottom();
+        value = list;
+        break;
+    }
+
+    case PPK_QPageSize:
+        value.setValue(d->m_pageLayout.pageSize());
+        break;
+
+    case PPK_QPageMargins: {
+        QPair<QMarginsF, QPageLayout::Unit> pair = qMakePair(d->m_pageLayout.margins(), d->m_pageLayout.units());
+        value.setValue(pair);
+        break;
+    }
+
+    case PPK_QPageLayout:
+        value.setValue(d->m_pageLayout);
+        break;
+
+    // No default so that compiler will complain if new keys added and not handled in this engine
     }
     return value;
 }
@@ -1733,76 +1422,11 @@ void QWin32PrintEngine::releaseDC(HDC) const
 
 }
 
-QList<QPrinter::PaperSize> QWin32PrintEngine::supportedPaperSizes(const QPrinterInfo &printerInfo)
-{
-    QList<QPrinter::PaperSize> returnList;
-
-    if (printerInfo.isNull())
-        return returnList;
-    const wchar_t *name = reinterpret_cast<const wchar_t*>(printerInfo.printerName().utf16());
-    DWORD size = DeviceCapabilities(name, NULL, DC_PAPERS, NULL, NULL);
-    if ((int)size != -1) {
-        QScopedArrayPointer<wchar_t> papers(new wchar_t[size]);
-        if (size != DeviceCapabilities(name, NULL, DC_PAPERS, papers.data(), NULL))
-            return returnList;
-        for (int c = 0; c < (int)size; ++c)
-            returnList.append(mapDevmodePaperSize(papers[c]));
-    }
-    return returnList;
-}
-
-QList<QPair<QString, QSizeF> > QWin32PrintEngine::supportedSizesWithNames(const QPrinterInfo &printerInfo)
-{
-    QList<QPair<QString, QSizeF> > paperSizes;
-    if (printerInfo.isNull())
-        return paperSizes;
-    const wchar_t *name = reinterpret_cast<const wchar_t*>(printerInfo.printerName().utf16());
-    DWORD size = DeviceCapabilities(name, NULL, DC_PAPERNAMES, NULL, NULL);
-    if ((int)size > 0) {
-        QScopedArrayPointer<wchar_t> papers(new wchar_t[size*64]);
-        if (size != DeviceCapabilities(name, NULL, DC_PAPERNAMES, papers.data(), NULL))
-            return paperSizes;
-        if (size != DeviceCapabilities(name, NULL, DC_PAPERSIZE, NULL, NULL))
-            return paperSizes;
-        QScopedArrayPointer<POINT> points(new POINT[size*sizeof(POINT)]);
-        if (size != DeviceCapabilities(name, NULL, DC_PAPERSIZE, (wchar_t *)points.data(), NULL))
-            return paperSizes;
-        for (int i = 0; i < (int)size; ++i) {
-            wchar_t *paper = papers.data() + (i * 64);
-            QString str = QString::fromWCharArray(paper, qwcsnlen(paper, 64));
-            paperSizes << qMakePair(str, QSizeF(points[i].x / 10.0, points[i].y / 10.0));
-        }
-    }
-    return paperSizes;
-}
-
-void QWin32PrintEngine::queryDefaultPrinter(QString &name)
-{
-    /* Read the default printer name, driver and port with the intuitive function
-     * Strings "windows" and "device" are specified in the MSDN under EnumPrinters()
-     */
-    QString noPrinters(QLatin1String("qt_no_printers"));
-    wchar_t buffer[256];
-    GetProfileString(L"windows", L"device",
-                     reinterpret_cast<const wchar_t *>(noPrinters.utf16()),
-                     buffer, 256);
-    QString output = QString::fromWCharArray(buffer);
-    if (output.isEmpty() || output == noPrinters) // no printers
-        return;
-
-    QStringList info = output.split(QLatin1Char(','));
-    int infoSize = info.size();
-    if (infoSize > 0) {
-        if (name.isEmpty())
-            name = info.at(0);
-    }
-}
-
 HGLOBAL *QWin32PrintEngine::createGlobalDevNames()
 {
     Q_D(QWin32PrintEngine);
 
-    int size = sizeof(DEVNAMES) + d->name.length() * 2 + 2;
+    int size = sizeof(DEVNAMES) + d->m_printDevice.id().length() * 2 + 2;
     HGLOBAL *hGlobal = (HGLOBAL *) GlobalAlloc(GMEM_MOVEABLE, size);
     DEVNAMES *dn = (DEVNAMES*) GlobalLock(hGlobal);
 
@@ -1810,7 +1434,7 @@ HGLOBAL *QWin32PrintEngine::createGlobalDevNames()
     dn->wDeviceOffset = sizeof(DEVNAMES) / sizeof(wchar_t);
     dn->wOutputOffset = 0;
 
-    memcpy((ushort*)dn + dn->wDeviceOffset, d->name.utf16(), d->name.length() * 2 + 2);
+    memcpy((ushort*)dn + dn->wDeviceOffset, d->m_printDevice.id().utf16(), d->m_printDevice.id().length() * 2 + 2);
     dn->wDefault = 0;
 
     GlobalUnlock(hGlobal);
@@ -1822,7 +1446,10 @@ void QWin32PrintEngine::setGlobalDevMode(HGLOBAL globalDevNames, HGLOBAL globalD
     Q_D(QWin32PrintEngine);
     if (globalDevNames) {
         DEVNAMES *dn = (DEVNAMES*) GlobalLock(globalDevNames);
-        d->name = QString::fromWCharArray((wchar_t*)(dn) + dn->wDeviceOffset);
+        QString id = QString::fromWCharArray((wchar_t*)(dn) + dn->wDeviceOffset);
+        QPlatformPrinterSupport *ps = QPlatformPrinterSupportPlugin::get();
+        if (ps)
+            d->m_printDevice = ps->createPrintDevice(id.isEmpty() ? ps->defaultPrintDeviceId() : id);
         GlobalUnlock(globalDevNames);
     }
 
@@ -1831,23 +1458,100 @@ void QWin32PrintEngine::setGlobalDevMode(HGLOBAL globalDevNames, HGLOBAL globalD
         d->release();
         d->globalDevMode = globalDevMode;
         d->devMode = dm;
-        d->hdc = CreateDC(NULL, reinterpret_cast<const wchar_t *>(d->name.utf16()), 0, dm);
+        d->hdc = CreateDC(NULL, reinterpret_cast<const wchar_t *>(d->m_printDevice.id().utf16()), 0, dm);
 
         d->num_copies = d->devMode->dmCopies;
-        d->updateCustomPaperSize();
+        d->updatePageLayout();
 
-        if (!OpenPrinter((wchar_t*)d->name.utf16(), &d->hPrinter, 0))
+        if (!OpenPrinter((wchar_t*)d->m_printDevice.id().utf16(), &d->hPrinter, 0))
             qWarning("QPrinter: OpenPrinter() failed after reading DEVMODE.");
     }
 
     if (d->hdc)
         d->initHDC();
+
+#if defined QT_DEBUG_DRAW || defined QT_DEBUG_METRICS
+    qDebug() << "QWin32PrintEngine::setGlobalDevMode()";
+    debugMetrics();
+#endif // QT_DEBUG_DRAW || QT_DEBUG_METRICS
 }
 
 HGLOBAL QWin32PrintEngine::globalDevMode()
 {
     Q_D(QWin32PrintEngine);
     return d->globalDevMode;
+}
+
+void QWin32PrintEnginePrivate::setPageSize(const QPageSize &pageSize)
+{
+    if (!pageSize.isValid())
+        return;
+
+    // Use the printer page size if supported
+    const QPageSize printerPageSize = m_printDevice.supportedPageSize(pageSize);
+    const QPageSize usePageSize = printerPageSize.isValid() ? printerPageSize : pageSize;
+
+    const QMarginsF printable = m_printDevice.printableMargins(usePageSize, m_pageLayout.orientation(), resolution);
+    m_pageLayout.setPageSize(usePageSize, qt_convertMargins(printable, QPageLayout::Point, m_pageLayout.units()));
+
+    // Setup if Windows custom size, i.e. not a known Windows ID
+    if (printerPageSize.isValid()) {
+        has_custom_paper_size = false;
+        devMode->dmPaperSize = m_pageLayout.pageSize().windowsId();
+        devMode->dmFields &= ~(DM_PAPERLENGTH | DM_PAPERWIDTH);
+        devMode->dmPaperWidth = 0;
+        devMode->dmPaperLength = 0;
+    } else {
+        devMode->dmPaperSize = DMPAPER_USER;
+        devMode->dmFields |= DM_PAPERLENGTH | DM_PAPERWIDTH;
+        // Size in tenths of a millimeter
+        const QSizeF sizeMM = m_pageLayout.pageSize().size(QPageSize::Millimeter);
+        devMode->dmPaperWidth = qRound(sizeMM.width() * 10.0);
+        devMode->dmPaperLength = qRound(sizeMM.height() * 10.0);
+    }
+    updateMetrics();
+}
+
+// Update the page layout after any changes made to devMode
+void QWin32PrintEnginePrivate::updatePageLayout()
+{
+    // Update orientation first as is needed to obtain printable margins when changing page size
+    m_pageLayout.setOrientation(devMode->dmOrientation == DMORIENT_LANDSCAPE ? QPageLayout::Landscape : QPageLayout::Portrait);
+    if (devMode->dmPaperSize >= DMPAPER_USER) {
+        // Is a custom size
+        QPageSize pageSize = QPageSize(QSizeF(devMode->dmPaperWidth / 10.0f, devMode->dmPaperLength / 10.0f),
+                                       QPageSize::Millimeter);
+        setPageSize(pageSize);
+    } else {
+        // Is a supported size
+        setPageSize(QPageSize(QPageSize::id(devMode->dmPaperSize)));
+    }
+    updateMetrics();
+}
+
+// Update the cached page paint metrics whenever page layout is changed
+void QWin32PrintEnginePrivate::updateMetrics()
+{
+    m_paintRectPixels = m_pageLayout.paintRectPixels(resolution);
+    QSizeF sizeMM = m_pageLayout.paintRect(QPageLayout::Millimeter).size();
+    m_paintSizeMM = QSize(qRound(sizeMM.width()), qRound(sizeMM.height()));
+    // Calculate the origin using the physical device pixels, not our paint pixels
+    // Origin is defined as User Margins - Device Margins
+    QMarginsF margins = m_pageLayout.margins(QPageLayout::Millimeter) / 25.4;
+    origin_x = qRound(margins.left() * dpi_x) - GetDeviceCaps(hdc, PHYSICALOFFSETX);
+    origin_y = qRound(margins.top() * dpi_y) - GetDeviceCaps(hdc, PHYSICALOFFSETY);
+}
+
+void QWin32PrintEnginePrivate::debugMetrics() const
+{
+    qDebug() << "    " << "m_pageLayout      = " << m_pageLayout;
+    qDebug() << "    " << "m_paintRectPixels = " << m_paintRectPixels;
+    qDebug() << "    " << "m_paintSizeMM     = " << m_paintSizeMM;
+    qDebug() << "    " << "resolution        = " << resolution;
+    qDebug() << "    " << "stretch           = " << stretch_x << stretch_y;
+    qDebug() << "    " << "origin            = " << origin_x << origin_y;
+    qDebug() << "    " << "dpi               = " << dpi_x << dpi_y;
+    qDebug() << "";
 }
 
 static void draw_text_item_win(const QPointF &pos, const QTextItemInt &ti, HDC hdc,
@@ -1963,27 +1667,6 @@ static void draw_text_item_win(const QPointF &pos, const QTextItemInt &ti, HDC h
 #endif
 
     SelectObject(hdc, old_font);
-}
-
-void QWin32PrintEnginePrivate::updateCustomPaperSize()
-{
-    const uint paperSize = devMode->dmPaperSize;
-    const double multiplier = qt_multiplierForUnit(QPrinter::Millimeter, resolution);
-    has_custom_paper_size = false;
-    if (paperSize == DMPAPER_USER) {
-        has_custom_paper_size = true;
-        paper_size = QSizeF((devMode->dmPaperWidth / 10.0) * multiplier, (devMode->dmPaperLength / 10.0) * multiplier);
-    } else if (mapDevmodePaperSize(paperSize) == QPrinter::Custom) {
-        has_custom_paper_size = true;
-        const QList<QPair<QSizeF, int> > paperSizes = printerPaperSizes(name);
-        for (int i=0; i<paperSizes.size(); i++) {
-            if ((uint)paperSizes.at(i).second == paperSize) {
-                paper_size = paperSizes.at(i).first * multiplier;
-                has_custom_paper_size = false;
-                break;
-            }
-        }
-    }
 }
 
 QT_END_NAMESPACE

@@ -32,7 +32,6 @@
 #include "hb-coretext.h"
 
 #include "hb-face-private.hh"
-#include <private/qfontengine_p.h>
 
 
 #ifndef HB_DEBUG_CORETEXT
@@ -42,6 +41,19 @@
 
 HB_SHAPER_DATA_ENSURE_DECLARE(coretext, face)
 HB_SHAPER_DATA_ENSURE_DECLARE(coretext, font)
+
+
+typedef bool (*qt_get_font_table_func_t) (void *user_data, unsigned int tag, unsigned char *buffer, unsigned int *length);
+
+struct FontEngineFaceData {
+  void *user_data;
+  qt_get_font_table_func_t get_font_table;
+};
+
+struct CoreTextFontEngineData {
+  CTFontRef ctFont;
+  CGFontRef cgFont;
+};
 
 
 /*
@@ -83,25 +95,11 @@ _hb_coretext_shaper_face_data_create (hb_face_t *face)
   if (unlikely (!data))
     return NULL;
 
-  QFontEngine *fe = (QFontEngine *) ((QFontEngine::FaceData *) face->user_data)->user_data;
-  if (fe->type () == QFontEngine::Mac)
-  {
-    data->cg_font = (CGFontRef) fe->userData ().value<void *> ();
-    if (likely (data->cg_font))
-      CFRetain (data->cg_font);
-  }
-  else
-  {
-  hb_blob_t *blob = hb_face_reference_blob (face);
-  unsigned int blob_length;
-  const char *blob_data = hb_blob_get_data (blob, &blob_length);
-  if (unlikely (!blob_length))
-    DEBUG_MSG (CORETEXT, face, "Face has empty blob");
-
-  CGDataProviderRef provider = CGDataProviderCreateWithData (blob, blob_data, blob_length, &release_data);
-  data->cg_font = CGFontCreateWithDataProvider (provider);
-  CGDataProviderRelease (provider);
-  }
+  FontEngineFaceData *fontEngineFaceData = (FontEngineFaceData *) face->user_data;
+  CoreTextFontEngineData *coreTextFontEngineData = (CoreTextFontEngineData *) fontEngineFaceData->user_data;
+  data->cg_font = coreTextFontEngineData->cgFont;
+  if (likely (data->cg_font))
+    CFRetain (data->cg_font);
 
   if (unlikely (!data->cg_font)) {
     DEBUG_MSG (CORETEXT, face, "Face CGFontCreateWithDataProvider() failed");
@@ -146,9 +144,13 @@ _hb_coretext_shaper_font_data_create (hb_font_t *font)
     return NULL;
 
   hb_face_t *face = font->face;
-  hb_coretext_shaper_face_data_t *face_data = HB_SHAPER_DATA_GET (face);
 
-  data->ct_font = CTFontCreateWithGraphicsFont (face_data->cg_font, font->y_scale / 64, NULL, NULL);
+  FontEngineFaceData *fontEngineFaceData = (FontEngineFaceData *) face->user_data;
+  CoreTextFontEngineData *coreTextFontEngineData = (CoreTextFontEngineData *) fontEngineFaceData->user_data;
+  data->ct_font = coreTextFontEngineData->ctFont;
+  if (likely (data->ct_font))
+    CFRetain (data->ct_font);
+
   if (unlikely (!data->ct_font)) {
     DEBUG_MSG (CORETEXT, font, "Font CTFontCreateWithGraphicsFont() failed");
     free (data);

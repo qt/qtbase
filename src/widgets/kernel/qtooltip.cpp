@@ -322,13 +322,32 @@ bool QTipLabel::eventFilter(QObject *o, QEvent *e)
     case QEvent::Leave:
         hideTip();
         break;
+
+
+#if defined (Q_OS_QNX) // On QNX the window activate and focus events are delayed and will appear
+                       // after the window is shown.
+    case QEvent::WindowActivate:
+    case QEvent::FocusIn:
+        return false;
+    case QEvent::WindowDeactivate:
+        if (o != this)
+            return false;
+        hideTipImmediately();
+        break;
+    case QEvent::FocusOut:
+        if (reinterpret_cast<QWindow*>(o) != windowHandle())
+            return false;
+        hideTipImmediately();
+        break;
+#else
     case QEvent::WindowActivate:
     case QEvent::WindowDeactivate:
+    case QEvent::FocusIn:
+    case QEvent::FocusOut:
+#endif
     case QEvent::MouseButtonPress:
     case QEvent::MouseButtonRelease:
     case QEvent::MouseButtonDblClick:
-    case QEvent::FocusIn:
-    case QEvent::FocusOut:
     case QEvent::Wheel:
         hideTipImmediately();
         break;

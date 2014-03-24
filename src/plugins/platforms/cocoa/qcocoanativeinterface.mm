@@ -125,6 +125,10 @@ QPlatformNativeInterface::NativeResourceForIntegrationFunction QCocoaNativeInter
         return NativeResourceForIntegrationFunction(QCocoaNativeInterface::setEmbeddedInForeignView);
     if (resource.toLower() == "setcontentborderthickness")
         return NativeResourceForIntegrationFunction(QCocoaNativeInterface::setContentBorderThickness);
+    if (resource.toLower() == "registercontentborderarea")
+        return NativeResourceForIntegrationFunction(QCocoaNativeInterface::registerContentBorderArea);
+    if (resource.toLower() == "enablecontentborderarea")
+        return NativeResourceForIntegrationFunction(QCocoaNativeInterface::enableContentBorderArea);
     if (resource.toLower() == "setnstoolbar")
         return NativeResourceForIntegrationFunction(QCocoaNativeInterface::setNSToolbar);
 
@@ -287,11 +291,28 @@ void QCocoaNativeInterface::setContentBorderThickness(QWindow *window, int topTh
         cocoaWindow->setContentBorderThickness(topThickness, bottomThickness);
 }
 
-void QCocoaNativeInterface::setNSToolbar(QWindow *window, void *nsToolbar)
+void QCocoaNativeInterface::registerContentBorderArea(QWindow *window, quintptr identifier, int upper, int lower)
 {
     if (!window)
         return;
 
+    QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(window->handle());
+    if (cocoaWindow)
+        cocoaWindow->registerContentBorderArea(identifier, upper, lower);
+}
+
+void QCocoaNativeInterface::enableContentBorderArea(QWindow *window, bool enable)
+{
+    if (!window)
+        return;
+
+    QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(window->handle());
+    if (cocoaWindow)
+        cocoaWindow->enableContentBorderArea(enable);
+}
+
+void QCocoaNativeInterface::setNSToolbar(QWindow *window, void *nsToolbar)
+{
     QCocoaIntegration::instance()->setToolbar(window, static_cast<NSToolbar *>(nsToolbar));
 
     QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(window->handle());

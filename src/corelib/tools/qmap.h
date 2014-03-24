@@ -260,6 +260,11 @@ QMapNode<Key, T> *QMapNode<Key, T>::copy(QMapData<Key, T> *d) const
     return n;
 }
 
+#if defined(Q_CC_MSVC)
+#pragma warning( push )
+#pragma warning( disable : 4127 ) // conditional expression is constant
+#endif
+
 template <class Key, class T>
 void QMapNode<Key, T>::destroySubTree()
 {
@@ -274,6 +279,10 @@ void QMapNode<Key, T>::destroySubTree()
             rightNode()->destroySubTree();
     }
 }
+
+#if defined(Q_CC_MSVC)
+#pragma warning( pop )
+#endif
 
 template <class Key, class T>
 void QMapData<Key, T>::deleteNode(QMapNode<Key, T> *z)

@@ -390,6 +390,11 @@ public:
     qint64 writeToStdin(const char *data, qint64 maxlen);
 
     void cleanup();
+
+#ifdef Q_OS_BLACKBERRY
+    QList<QSocketNotifier *> defaultNotifiers() const;
+#endif // Q_OS_BLACKBERRY
+
 #ifdef Q_OS_UNIX
     static void initializeProcessManager();
 #endif

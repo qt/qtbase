@@ -180,22 +180,32 @@ HRESULT WINAPI D3DCompile(
         const D3D_SHADER_MACRO *defines, ID3DInclude *include, const char *entrypoint,
         const char *target, UINT sflags, UINT eflags, ID3DBlob **shader, ID3DBlob **errorMsgs)
 {
+    // Shortcut to compile using the runtime compiler if it is available
+    static bool compilerAvailable =
+            !qgetenv("QT_D3DCOMPILER_DISABLE_DLL").toInt() && D3DCompiler::loadCompiler();
+    if (compilerAvailable) {
+        HRESULT hr = D3DCompiler::compile(data, data_size, filename, defines, include, entrypoint,
+                                          target, sflags, eflags, shader, errorMsgs);
+        return hr;
+    }
+
     static bool initialized = false;
-    static bool serviceAvailable = false;
     static QString binaryPath;
     static QString sourcePath;
     if (!initialized) {
         QString base;
-        if (qEnvironmentVariableIsSet("QT_D3DCOMPILER_DIR")) {
+        if (qEnvironmentVariableIsSet("QT_D3DCOMPILER_DIR"))
             base = QString::fromLocal8Bit(qgetenv("QT_D3DCOMPILER_DIR"));
-        } else {
+
+        if (base.isEmpty()) {
             const QString location = QStandardPaths::writableLocation(QStandardPaths::DataLocation);
             if (!location.isEmpty())
                 base = location + QStringLiteral("/d3dcompiler");
         }
 
+        // Unless the service has run, this directory won't exist.
         QDir baseDir(base);
-        if (!base.isEmpty() && baseDir.exists()) {
+        if (baseDir.exists()) {
             // Check if we have can read/write blobs
             if (baseDir.exists(QStringLiteral("binary"))) {
                 binaryPath = baseDir.absoluteFilePath(QStringLiteral("binary/"));
@@ -211,14 +221,10 @@ HRESULT WINAPI D3DCompile(
                 qCWarning(QT_D3DCOMPILER) << "D3D compiler base directory exists, but the source directory does not.\n"
                                              "Check the compiler service.";
             }
-
-            // Look for a file, "control", and check if it has been touched in the last 60 seconds
-            QFileInfo control(baseDir.absoluteFilePath(QStringLiteral("control")));
-            serviceAvailable = control.exists() && control.lastModified().secsTo(QDateTime::currentDateTime()) < 60;
         } else {
             qCWarning(QT_D3DCOMPILER) << "D3D compiler base directory does not exist:"
                                       << QDir::toNativeSeparators(base)
-                                      << "\nThe compiler service won't be used.";
+                                      << "\nCheck that the compiler service is running.";
         }
 
         initialized = true;
@@ -259,8 +265,8 @@ HRESULT WINAPI D3DCompile(
         }
     }
 
-    // Shader blob is not available, compile with compilation service if possible
-    if (!sourcePath.isEmpty() && serviceAvailable) {
+    // Shader blob is not available; write out shader source
+    if (!sourcePath.isEmpty()) {
         // Dump source to source path; wait for blob to appear
         QFile source(sourcePath + fileName);
         if (!source.open(QFile::WriteOnly)) {
@@ -292,24 +298,6 @@ HRESULT WINAPI D3DCompile(
         return E_ABORT;
     }
 
-    // Fall back to compiler DLL
-    if (D3DCompiler::loadCompiler()) {
-        HRESULT hr = D3DCompiler::compile(data, data_size, filename, defines, include, entrypoint,
-                                          target, sflags, eflags, shader, errorMsgs);
-        // Cache shader
-        if (SUCCEEDED(hr) && !binaryPath.isEmpty()) {
-            const QByteArray blobContents = QByteArray::fromRawData(
-                        reinterpret_cast<const char *>((*shader)->GetBufferPointer()), (*shader)->GetBufferSize());
-
-            QFile blob(binaryPath + fileName);
-            if (blob.open(QFile::WriteOnly) && blob.write(blobContents))
-                qCDebug(QT_D3DCOMPILER) << "Cached shader blob at" << blob.fileName();
-            else
-                qCDebug(QT_D3DCOMPILER) << "Unable to write shader blob at" << blob.fileName();
-        }
-        return hr;
-    }
-
-    *errorMsgs = new D3DCompiler::Blob("Unable to load D3D compiler DLL.");
+    *errorMsgs = new D3DCompiler::Blob("No shader compiler or service could be found.");
     return E_FAIL;
 }

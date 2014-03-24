@@ -671,7 +671,6 @@ CFG_LARGEFILE=auto
 CFG_OPENSSL=auto
 CFG_PRECOMPILE=auto
 CFG_SEPARATE_DEBUG_INFO=no
-CFG_SEPARATE_DEBUG_INFO_NOCOPY=no
 CFG_REDUCE_EXPORTS=auto
 CFG_SSE2=auto
 CFG_SSE3=auto
@@ -1493,9 +1492,6 @@ while [ "$#" -gt 0 ]; do
     separate-debug-info)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_SEPARATE_DEBUG_INFO="$VAL"
-        elif [ "$VAL" = "nocopy" ] ; then
-            CFG_SEPARATE_DEBUG_INFO="yes"
-            CFG_SEPARATE_DEBUG_INFO_NOCOPY="yes"
         else
             UNKNOWN_OPT=yes
         fi
@@ -3172,7 +3168,7 @@ if [ "$XPLATFORM_MAC" = "no" -a "$CFG_DEBUG_RELEASE" = "yes" ]; then
     echo
 fi
 
-if [ "$CFG_XCB" != "no" ] && [ "$CFG_XKBCOMMON" = "no" ]; then
+if ( [ "$CFG_XCB" = "system" ] || [ "$CFG_XCB" = "qt" ] ) && [ "$CFG_XKBCOMMON" = "no" ]; then
     echo "Error: -no-xkbcommon is not supported on XCB platform plugin."
     exit 101
 fi
@@ -3376,9 +3372,10 @@ if [ "$XPLATFORM_IOS" = "yes" ]; then
     fi
 fi
 
-# disable GTK style support auto-detection on Mac
-if [ "$XPLATFORM_MAC" = "yes" ] && [ "$CFG_QGTKSTYLE" = "auto" ]; then
-    CFG_QGTKSTYLE=no
+# disable XCB and GTK support auto-detection on Mac
+if [ "$XPLATFORM_MAC" = "yes" ]; then
+    [ "$CFG_XCB" = "auto" ] && CFG_XCB=no
+    [ "$CFG_QGTKSTYLE" = "auto" ] && CFG_QGTKSTYLE=no
 fi
 
 QMAKE_CONF_COMPILER=`getXQMakeConf QMAKE_CXX`
@@ -3441,21 +3438,21 @@ if [ "$CFG_PRECOMPILE" = "auto" ]; then
 fi
 
 # auto-detect support for separate debug info in objcopy
-if [ "$CFG_SEPARATE_DEBUG_INFO" != "no" ] && [ "$CFG_SHARED" = "yes" ]; then
+if [ "$CFG_SEPARATE_DEBUG_INFO" = "yes" ]; then
+    if [ "$CFG_SHARED" = "no" ]; then
+        echo "ERROR: -separate-debug-info is incompatible with -static"
+        exit 1
+    fi
+    if [ "$CFG_DEBUG" = "no" -a "$CFG_DEBUG_RELEASE" = "no" -a "$CFG_FORCEDEBUGINFO" = "no" ]; then
+        echo "ERROR: -separate-debug-info needs -debug, -debug-and-release, or -force-debug-info"
+        exit 1
+    fi
     TEST_OBJCOPY=`getXQMakeConf QMAKE_OBJCOPY`
     COMPILER_WITH_FLAGS="$TEST_COMPILER $TEST_COMPILER_CXXFLAGS"
     if "$unixtests/objcopy.test" "$COMPILER_WITH_FLAGS" "$TEST_OBJCOPY" "$OPT_VERBOSE"; then
-       CFG_SEPARATE_DEBUG_INFO=no
-    else
-       case "$PLATFORM" in
-       hpux-*)
-           # binutils on HP-UX is buggy; default to no.
-           CFG_SEPARATE_DEBUG_INFO=no
-           ;;
-       *)
-           CFG_SEPARATE_DEBUG_INFO=yes
-           ;;
-       esac
+        echo "ERROR: -separate-debug-info was requested but this binutils does not support it."
+        echo "Re-run configure with -v for more information"
+        exit 1
     fi
 fi
 
@@ -5213,26 +5210,30 @@ if [ "$CFG_XCB" != "no" ]; then
     fi
     QMakeVar set QMAKE_X11_PREFIX "$QMAKE_X11_PREFIX"
 
-    if compileTest qpa/xcb "xcb" $QMAKE_CFLAGS_XCB $QMAKE_LIBS_XCB; then
+    if [ "$CFG_XKBCOMMON" != no ] && compileTest qpa/xcb "xcb" $QMAKE_CFLAGS_XCB $QMAKE_LIBS_XCB; then
+        QT_CONFIG="$QT_CONFIG xcb-plugin"
 
         if [ "$CFG_XCB" = "qt" ]; then
             QT_CONFIG="$QT_CONFIG xcb-qt"
         else
             CFG_XCB="system"
-
             if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists "xcb >= 1.5" 2>/dev/null; then
                 XCB_PACKAGES="xcb xcb-shm xcb-sync xcb-xfixes xcb-randr xcb-image xcb-keysyms xcb-icccm xcb-shape"
                 QMAKE_CFLAGS_XCB="`$PKG_CONFIG --cflags $XCB_PACKAGES 2>/dev/null`"
                 QMAKE_LIBS_XCB="`$PKG_CONFIG --libs $XCB_PACKAGES 2>/dev/null`"
-                # for xcb-xkb tests
-                QMAKE_CFLAGS_XKB="`$PKG_CONFIG --cflags xcb xcb-xkb 2>/dev/null`"
-                QMAKE_LIBS_XKB="`$PKG_CONFIG --libs xcb xcb-xkb 2>/dev/null`"
             fi
 
-            if compileTest qpa/xcb-xkb "xcb-xkb" $QMAKE_CFLAGS_XKB $QMAKE_LIBS_XKB; then
-                CFG_XKB=yes
-            else
-                CFG_XKB=no
+            # libxcb version 1.10 was the first version that enables xcb-xkb by default,
+            # therefore the minimal xcb-xkb version we support is 1.10
+            CFG_XKB=no
+            if $PKG_CONFIG --exists "xcb-xkb >= 1.10" 2>/dev/null; then
+                QMAKE_CFLAGS_XKB="`$PKG_CONFIG --cflags xcb xcb-xkb 2>/dev/null`"
+                QMAKE_LIBS_XKB="`$PKG_CONFIG --libs xcb xcb-xkb 2>/dev/null`"
+                if compileTest qpa/xcb-xkb "xcb-xkb" $QMAKE_CFLAGS_XKB $QMAKE_LIBS_XKB; then
+                    CFG_XKB=yes
+                fi
+            fi
+            if [ "$CFG_XKB" = "no" ]; then
                 QMakeVar add DEFINES QT_NO_XKB
             fi
 
@@ -5328,52 +5329,45 @@ fi
 
 # Detect libxkbcommon
 ORIG_CFG_XKBCOMMON="$CFG_XKBCOMMON"
-if [ "$CFG_XKBCOMMON" != "qt" ]; then
-    # currently only xcb platform plugin requires xkbcommon, for other platforms it can be set to 'no'
-    if [ "$CFG_XKBCOMMON" != "no" ]; then
-        if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists "xkbcommon >= 0.2.0" 2>/dev/null; then
-            QMAKE_CFLAGS_XKBCOMMON="`$PKG_CONFIG --cflags xkbcommon 2>/dev/null`"
-            QMAKE_LIBS_XKBCOMMON="`$PKG_CONFIG --libs xkbcommon 2>/dev/null`"
-            QMAKE_VERSION_XKBCOMMON="`$PKG_CONFIG --modversion xkbcommon 2>/dev/null`"
+# currently only xcb platform plugin supports building xkbcommon
+if [ "$CFG_XCB" != "no" ]; then
+    if [ "$CFG_XKBCOMMON" = "auto" ] || [ "$CFG_XKBCOMMON" = "system" ]; then
+        if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists "xkbcommon xkbcommon-x11 >= 0.4.0" 2>/dev/null; then
+            QMAKE_CFLAGS_XKBCOMMON="`$PKG_CONFIG --cflags xkbcommon xkbcommon-x11 2>/dev/null`"
+            QMAKE_LIBS_XKBCOMMON="`$PKG_CONFIG --libs xkbcommon xkbcommon-x11 2>/dev/null`"
 
             QMakeVar set QMAKE_CFLAGS_XKBCOMMON "$QMAKE_CFLAGS_XKBCOMMON"
             QMakeVar set QMAKE_LIBS_XKBCOMMON "$QMAKE_LIBS_XKBCOMMON"
-            QMakeVar set QMAKE_VERSION_XKBCOMMON "$QMAKE_VERSION_XKBCOMMON"
             CFG_XKBCOMMON=system
         else
-            CFG_XKBCOMMON=no
-        fi
-
-        if [ "$CFG_XCB" != "no" ] && [ "$CFG_XKBCOMMON" = "no" ]; then
             # use the bundled version instead
             CFG_XKBCOMMON=qt
         fi
     fi
-fi
-
-if [ "$CFG_XKBCOMMON" = "qt" ]; then
-    QT_CONFIG="$QT_CONFIG xkbcommon-qt"
-    # detect XKB config root
-    if [ "$CFG_XKB_CONFIG_ROOT" = "auto" ]; then
-        if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists "xkeyboard-config" 2> /dev/null; then
-            CFG_XKB_CONFIG_ROOT="`$PKG_CONFIG --variable=xkb_base xkeyboard-config`"
-        else
-            # search for xkb configs in most probable locations
-            if [ -d "/usr/share/X11/xkb" ]; then
-                # Linux
-                CFG_XKB_CONFIG_ROOT="/usr/share/X11/xkb"
-            elif [ -d "/usr/local/share/X11/xkb" ]; then
-                # BSD UNIX
-                CFG_XKB_CONFIG_ROOT="/usr/local/share/X11/xkb"
+    if [ "$CFG_XKBCOMMON" = "qt" ]; then
+        QT_CONFIG="$QT_CONFIG xkbcommon-qt"
+        # detect XKB config root
+        if [ "$CFG_XKB_CONFIG_ROOT" = "auto" ]; then
+            if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists "xkeyboard-config" 2> /dev/null; then
+                CFG_XKB_CONFIG_ROOT="`$PKG_CONFIG --variable=xkb_base xkeyboard-config`"
+            else
+                # search for xkb configs in most probable locations
+                if [ -d "/usr/share/X11/xkb" ]; then
+                    # Linux
+                    CFG_XKB_CONFIG_ROOT="/usr/share/X11/xkb"
+                elif [ -d "/usr/local/share/X11/xkb" ]; then
+                    # BSD UNIX
+                    CFG_XKB_CONFIG_ROOT="/usr/local/share/X11/xkb"
+                fi
             fi
         fi
+        QMakeVar set QMAKE_XKB_CONFIG_ROOT "$CFG_XKB_CONFIG_ROOT"
+        if [ "$CFG_XKB_CONFIG_ROOT" = "auto" ]; then
+            CFG_XKB_CONFIG_ROOT="not found"
+        fi
     fi
-    QMakeVar set QMAKE_XKB_CONFIG_ROOT "$CFG_XKB_CONFIG_ROOT"
-    if [ "$CFG_XKB_CONFIG_ROOT" = "auto" ]; then
-        CFG_XKB_CONFIG_ROOT="not found"
-    fi
-elif [ "$CFG_XKBCOMMON" = "no" ]; then
-    QMakeVar add DEFINES QT_NO_XKBCOMMON
+else
+    CFG_XKBCOMMON=no
 fi
 
 # EGL Support
@@ -5411,7 +5405,7 @@ if [ "$CFG_EGL" != "no" ]; then
 fi
 
 if [ "$CFG_EGLFS" != "no" ]; then
-    if [ "$XPLATFORM_QNX" = "no" ]; then
+    if [ "$XPLATFORM_QNX" = "no" ] && [ "$CFG_OPENGL" != "no" ]; then
         CFG_EGLFS="$CFG_EGL"
     else
         CFG_EGLFS="no"
@@ -5842,12 +5836,7 @@ fi
 [ "$CFG_STRIP" = "no" ] && QMAKE_CONFIG="$QMAKE_CONFIG nostrip"
 [ "$CFG_PRECOMPILE" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG precompile_header"
 if [ "$CFG_SEPARATE_DEBUG_INFO" = "yes" ]; then
-    QMakeVar add QMAKE_CFLAGS -g
-    QMakeVar add QMAKE_CXXFLAGS -g
     QT_CONFIG="$QT_CONFIG separate_debug_info"
-fi
-if [ "$CFG_SEPARATE_DEBUG_INFO_NOCOPY" = "yes" ] ; then
-    QT_CONFIG="$QT_CONFIG separate_debug_info_nocopy"
 fi
 [ "$CFG_SSE2" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG sse2"
 [ "$CFG_SSE3" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG sse3"
@@ -6852,7 +6841,7 @@ if [ "$CFG_OPENSSL" = "linked" ] && [ "$OPENSSL_LIBS" = "" ]; then
     echo
 fi
 if [ "$ORIG_CFG_XKBCOMMON" != qt ] && [ "$CFG_XKBCOMMON" = qt ]; then
-    echo "NOTE: libxkbcommon 0.2.0 (or higher) not found on the system, will use "
+    echo "NOTE: libxkbcommon and libxkbcommon-x11 0.4.0 or higher not found on the system, will use "
     echo "the bundled version from 3rd party directory."
 fi
 if [ "$CFG_XKBCOMMON" = "qt" ] && [ "$CFG_XKB_CONFIG_ROOT" = "not found" ]; then
