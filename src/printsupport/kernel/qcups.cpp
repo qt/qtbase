@@ -126,58 +126,26 @@ void QCUPSSupport::setJobPriority(QPrinter *printer, int priority)
     setCupsOptions(printer, cupsOptions);
 }
 
+static inline QString bannerPageToString(const QCUPSSupport::BannerPage bannerPage)
+{
+    switch (bannerPage) {
+    case QCUPSSupport::NoBanner:     return QStringLiteral("none");
+    case QCUPSSupport::Standard:     return QStringLiteral("standard");
+    case QCUPSSupport::Unclassified: return QStringLiteral("unclassified");
+    case QCUPSSupport::Confidential: return QStringLiteral("confidential");
+    case QCUPSSupport::Classified:   return QStringLiteral("classified");
+    case QCUPSSupport::Secret:       return QStringLiteral("secret");
+    case QCUPSSupport::TopSecret:    return QStringLiteral("topsecret");
+    }
+    Q_UNREACHABLE();
+    return QString();
+};
+
 void QCUPSSupport::setBannerPages(QPrinter *printer, const BannerPage startBannerPage, const BannerPage endBannerPage)
 {
     QStringList cupsOptions = cupsOptionsList(printer);
-    QString startBanner, endBanner;
-
-    switch (startBannerPage) {
-    case NoBanner:
-        startBanner = QStringLiteral("none");
-        break;
-    case Standard:
-        startBanner = QStringLiteral("standard");
-        break;
-    case Unclassified:
-        startBanner = QStringLiteral("unclassified");
-        break;
-    case Confidential:
-        startBanner = QStringLiteral("confidential");
-        break;
-    case Classified:
-        startBanner = QStringLiteral("classified");
-        break;
-    case Secret:
-        startBanner = QStringLiteral("secret");
-        break;
-    case TopSecret:
-        startBanner = QStringLiteral("topsecret");
-        break;
-    }
-
-    switch (endBannerPage) {
-    case NoBanner:
-        endBanner = QStringLiteral("none");
-        break;
-    case Standard:
-        endBanner = QStringLiteral("standard");
-        break;
-    case Unclassified:
-        endBanner = QStringLiteral("unclassified");
-        break;
-    case Confidential:
-        endBanner = QStringLiteral("confidential");
-        break;
-    case Classified:
-        endBanner = QStringLiteral("classified");
-        break;
-    case Secret:
-        endBanner = QStringLiteral("secret");
-        break;
-    case TopSecret:
-        endBanner = QStringLiteral("topsecret");
-        break;
-    }
+    const QString startBanner = bannerPageToString(startBannerPage);
+    const QString endBanner   = bannerPageToString(endBannerPage);
 
     setCupsOption(cupsOptions, QStringLiteral("job-sheets"), startBanner + QLatin1Char(',') + endBanner);
     setCupsOptions(printer, cupsOptions);
