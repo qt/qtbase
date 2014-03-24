@@ -117,6 +117,7 @@ public:
     static QStringList cupsOptionsList(QPrinter *printer);
     static void setCupsOptions(QPrinter *printer, const QStringList &cupsOptions);
     static void setCupsOption(QStringList &cupsOptions, const QString &option, const QString &value);
+    static void clearCupsOption(QStringList &cupsOptions, const QString &option);
 
     static void setJobHold(QPrinter *printer, const JobHoldUntil jobHold = NoHold, const QTime &holdUntilTime = QTime());
     static void setJobBilling(QPrinter *printer, const QString &jobBilling = QString());
