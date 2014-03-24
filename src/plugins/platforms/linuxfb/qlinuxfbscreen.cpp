@@ -360,7 +360,7 @@ bool QLinuxFbScreen::initialize()
     // Open the device
     mFbFd = openFramebufferDevice(fbDevice);
     if (mFbFd == -1) {
-        qWarning("Failed to open framebuffer %s : %s", qPrintable(fbDevice), strerror(errno));
+        qErrnoWarning(errno, "Failed to open framebuffer %s", qPrintable(fbDevice));
         return false;
     }
 
@@ -371,12 +371,12 @@ bool QLinuxFbScreen::initialize()
     memset(&finfo, 0, sizeof(finfo));
 
     if (ioctl(mFbFd, FBIOGET_FSCREENINFO, &finfo) != 0) {
-        qWarning("Error reading fixed information: %s", strerror(errno));
+        qErrnoWarning(errno, "Error reading fixed information");
         return false;
     }
 
     if (ioctl(mFbFd, FBIOGET_VSCREENINFO, &vinfo)) {
-        qWarning("Error reading variable information: %s", strerror(errno));
+        qErrnoWarning(errno, "Error reading variable information");
         return false;
     }
 
@@ -391,7 +391,7 @@ bool QLinuxFbScreen::initialize()
     mMmap.size = finfo.smem_len;
     uchar *data = (unsigned char *)mmap(0, mMmap.size, PROT_READ | PROT_WRITE, MAP_SHARED, mFbFd, 0);
     if ((long)data == -1) {
-        qWarning("Failed to mmap framebuffer: %s", strerror(errno));
+        qErrnoWarning(errno, "Failed to mmap framebuffer");
         return false;
     }
 
@@ -420,10 +420,12 @@ bool QLinuxFbScreen::initialize()
 
     mTtyFd = openTtyDevice(ttyDevice);
     if (mTtyFd == -1)
-        qWarning() << "Failed to open tty" << strerror(errno);
+        qErrnoWarning(errno, "Failed to open tty");
 
-    if (doSwitchToGraphicsMode && !switchToGraphicsMode(mTtyFd, &mOldTtyMode))
-        qWarning() << "Failed to set graphics mode" << strerror(errno);
+    if (doSwitchToGraphicsMode)
+        switchToGraphicsMode(mTtyFd, &mOldTtyMode);
+        // Do not warn if the switch fails: the ioctl fails when launching from
+        // a remote console and there is nothing we can do about it.
 
     blankScreen(mFbFd, false);
 
