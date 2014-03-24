@@ -57,7 +57,7 @@ void QAndroidPlatformRasterWindow::repaint(const QRegion &region)
     if (QAndroidPlatformWindow::parent())
         return;
 
-    QRect currentGeometry = geometry().translated(mapToGlobal(QPoint(0,0)));
+    QRect currentGeometry = geometry();
 
     QRect dirtyClient = region.boundingRect();
     QRect dirtyRegion(currentGeometry.left() + dirtyClient.left(),
@@ -74,7 +74,7 @@ void QAndroidPlatformRasterWindow::repaint(const QRegion &region)
 
 void QAndroidPlatformRasterWindow::setGeometry(const QRect &rect)
 {
-    m_oldGeometry = geometry().translated(mapToGlobal(QPoint(0,0)));;
+    m_oldGeometry = geometry();
     QAndroidPlatformWindow::setGeometry(rect);
 }
 
