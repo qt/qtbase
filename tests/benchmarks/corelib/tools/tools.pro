@@ -4,6 +4,7 @@ SUBDIRS = \
         containers-sequential \
         qbytearray \
         qcontiguouscache \
+        qcryptographichash \
         qdatetime \
         qlist \
         qlocale \
