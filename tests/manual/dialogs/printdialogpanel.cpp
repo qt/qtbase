@@ -379,6 +379,7 @@ PrintDialogPanel::PrintDialogPanel(QWidget *parent)
     connect(m_panel.m_printButton, SIGNAL(clicked()), this, SLOT(showPrintDialog()));
     connect(m_panel.m_printPreviewButton, SIGNAL(clicked()), this, SLOT(showPreviewDialog()));
     connect(m_panel.m_pageSetupButton, SIGNAL(clicked()), this, SLOT(showPageSetupDialog()));
+    connect(m_panel.m_directPrintButton, SIGNAL(clicked()), this, SLOT(directPrint()));
 
     enablePanels();
     m_blockSignals = false;
@@ -684,6 +685,13 @@ void PrintDialogPanel::showPageSetupDialog()
     QPageSetupDialog dialog(m_printer.data(), this);
     if (dialog.exec() == QDialog::Accepted)
         retrieveSettings(m_printer.data());
+}
+
+void PrintDialogPanel::directPrint()
+{
+    applySettings(m_printer.data());
+    print(m_printer.data());
+    retrieveSettings(m_printer.data());
 }
 
 #include "moc_printdialogpanel.cpp"
