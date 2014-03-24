@@ -268,37 +268,15 @@ bool QEGLPlatformContext::makeCurrent(QPlatformSurface *surface)
         return true;
     }
 
-    bool ok = eglMakeCurrent(m_eglDisplay, eglSurface, eglSurface, m_eglContext);
-    if (!ok)
-        qWarning("QEGLPlatformContext::makeCurrent: eglError: %x, this: %p \n", eglGetError(), this);
-#ifdef QEGL_EXTRA_DEBUG
-    static bool showDebug = true;
-    if (showDebug) {
-        showDebug = false;
-        const char *str = (const char*)glGetString(GL_VENDOR);
-        qWarning("Vendor %s\n", str);
-        str = (const char*)glGetString(GL_RENDERER);
-        qWarning("Renderer %s\n", str);
-        str = (const char*)glGetString(GL_VERSION);
-        qWarning("Version %s\n", str);
-
-        str = (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION);
-        qWarning("Extensions %s\n",str);
-
-        str = (const char*)glGetString(GL_EXTENSIONS);
-        qWarning("Extensions %s\n", str);
-
-    }
-#endif
-
+    const bool ok = eglMakeCurrent(m_eglDisplay, eglSurface, eglSurface, m_eglContext);
     if (ok) {
         if (!m_swapIntervalEnvChecked) {
             m_swapIntervalEnvChecked = true;
             if (qEnvironmentVariableIsSet("QT_QPA_EGLFS_SWAPINTERVAL")) {
                 QByteArray swapIntervalString = qgetenv("QT_QPA_EGLFS_SWAPINTERVAL");
-                bool ok;
-                const int swapInterval = swapIntervalString.toInt(&ok);
-                if (ok)
+                bool intervalOk;
+                const int swapInterval = swapIntervalString.toInt(&intervalOk);
+                if (intervalOk)
                     m_swapIntervalFromEnv = swapInterval;
             }
         }
@@ -309,6 +287,8 @@ bool QEGLPlatformContext::makeCurrent(QPlatformSurface *surface)
             m_swapInterval = requestedSwapInterval;
             eglSwapInterval(eglDisplay(), m_swapInterval);
         }
+    } else {
+        qWarning("QEGLPlatformContext::makeCurrent: eglError: %x, this: %p \n", eglGetError(), this);
     }
 
     return ok;
