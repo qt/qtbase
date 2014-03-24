@@ -217,6 +217,10 @@ sub startTest
         print "Someone should kill $packageName\n";
         return 1;
     }
+
+    # Wait for three seconds to allow process to write all data
+    sleep(3);
+
     system("$adb_tool $device_serial pull /data/data/$packageName/output.xml $output_dir/$output_file.xml") if ($get_xml);
     system("$adb_tool $device_serial pull /data/data/$packageName/output.txt $output_dir/$output_file.txt") if ($get_txt);
     return 1;
