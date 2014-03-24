@@ -45,6 +45,7 @@
 #include "utils.h"
 
 #include <QPrinter>
+#include <QPrinterInfo>
 #include <QPrintDialog>
 #include <QPrintPreviewDialog>
 #include <QPageSetupDialog>
@@ -64,6 +65,7 @@
 #include <QDateTime>
 #include <QDebug>
 #include <QTextStream>
+#include <QDir>
 
 const FlagData printerModeComboData[] =
 {
@@ -72,12 +74,7 @@ const FlagData printerModeComboData[] =
     {"HighResolution", QPrinter::HighResolution}
 };
 
-const FlagData orientationComboData[] =
-{
-    {"Portrait", QPrinter::Portrait},
-    {"Landscape", QPrinter::Landscape},
-};
-
+#if QT_VERSION < 0x050300
 const FlagData pageSizeComboData[] =
 {
     {"A4", QPrinter::A4},
@@ -112,6 +109,76 @@ const FlagData pageSizeComboData[] =
     {"Tabloid", QPrinter::Tabloid},
     {"Custom", QPrinter::Custom}
 };
+#endif
+
+const FlagData printRangeComboData[] =
+{
+    {"AllPages", QPrinter::AllPages},
+    {"Selection", QPrinter::Selection},
+    {"PageRange", QPrinter::PageRange},
+    {"CurrentPage", QPrinter::CurrentPage}
+};
+
+const FlagData pageOrderComboData[] =
+{
+    {"FirstPageFirst", QPrinter::FirstPageFirst},
+    {"LastPageFirst", QPrinter::LastPageFirst},
+};
+
+const FlagData duplexModeComboData[] =
+{
+    {"DuplexNone", QPrinter::DuplexNone},
+    {"DuplexAuto", QPrinter::DuplexAuto},
+    {"DuplexLongSide", QPrinter::DuplexLongSide},
+    {"DuplexShortSide", QPrinter::DuplexShortSide},
+};
+
+const FlagData paperSourceComboData[] =
+{
+    {"OnlyOne", QPrinter::OnlyOne},
+    {"Lower", QPrinter::Lower},
+    {"Middle", QPrinter::Middle},
+    {"Manual", QPrinter::Manual},
+    {"Envelope", QPrinter::Envelope},
+    {"EnvelopeManual", QPrinter::EnvelopeManual},
+    {"Auto", QPrinter::Auto},
+    {"Tractor", QPrinter::Tractor},
+    {"SmallFormat", QPrinter::SmallFormat},
+    {"LargeFormat", QPrinter::LargeFormat},
+    {"LargeCapacity", QPrinter::LargeCapacity},
+    {"Cassette", QPrinter::Cassette},
+    {"FormSource", QPrinter::FormSource},
+    {"DuplexLongSide", QPrinter::DuplexLongSide},
+    {"DuplexShortSide", QPrinter::DuplexShortSide},
+};
+
+const FlagData colorModeComboData[] =
+{
+    {"GrayScale", QPrinter::GrayScale},
+    {"Color", QPrinter::Color},
+};
+
+const FlagData unitsComboData[] =
+{
+    {"Millimeter", QPageLayout::Millimeter},
+    {"Inch", QPageLayout::Inch},
+    {"Point", QPageLayout::Point},
+    {"Pica", QPageLayout::Pica},
+    {"Didot", QPageLayout::Didot},
+    {"Cicero", QPageLayout::Cicero},
+};
+
+const FlagData orientationComboData[] =
+{
+    {"Portrait", QPageLayout::Portrait},
+    {"Landscape", QPageLayout::Landscape},
+};
+
+const FlagData layoutModeComboData[] =
+{
+    {"StandardMode", QPageLayout::StandardMode},
+    {"FullPageMode", QPageLayout::FullPageMode},
+};
 
 const FlagData printDialogOptions[] =
 {
@@ -121,14 +188,6 @@ const FlagData printDialogOptions[] =
     {"PrintShowPageSize", QPrintDialog::PrintShowPageSize},
     {"PrintCollateCopies", QPrintDialog::PrintCollateCopies},
     {"PrintCurrentPage", QPrintDialog::PrintCurrentPage}
-};
-
-const FlagData printRangeOptions[] =
-{
-    {"AllPages", QPrintDialog::AllPages},
-    {"Selection", QPrintDialog::Selection},
-    {"PageRange", QPrintDialog::PageRange},
-    {"CurrentPage", QPrintDialog::CurrentPage}
 };
 
 QTextStream &operator<<(QTextStream &s, const QSizeF &size)
@@ -261,8 +320,12 @@ public slots:
 };
 
 PrintDialogPanel::PrintDialogPanel(QWidget *parent)
-    : QWidget(parent)
+    : QWidget(parent), m_blockSignals(true)
 {
+#if QT_VERSION < 0x050300
+    m_printerLayout.setOutputFormat(QPrinter::PdfFormat);
+#endif
+
     m_panel.setupUi(this);
 
     // Setup the Create box
@@ -270,22 +333,55 @@ PrintDialogPanel::PrintDialogPanel(QWidget *parent)
     connect(m_panel.m_createButton, SIGNAL(clicked()), this, SLOT(createPrinter()));
     connect(m_panel.m_deleteButton, SIGNAL(clicked()), this, SLOT(deletePrinter()));
 
-    // Setup the Settings box
+    // Setup the Page Layout box
+    populateCombo(m_panel.m_unitsCombo, unitsComboData, sizeof(unitsComboData)/sizeof(FlagData));
+    connect(m_panel.m_unitsCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(unitsChanged()));
+#if QT_VERSION >= 0x050300
+    for (int i = QPageSize::A4; i < QPageSize::LastPageSize; ++i) {
+        QPageSize::PageSizeId id = QPageSize::PageSizeId(i);
+        m_panel.m_pageSizeCombo->addItem(QPageSize::name(id), QVariant(id));
+    }
+#else
     populateCombo(m_panel.m_pageSizeCombo, pageSizeComboData, sizeof(pageSizeComboData)/sizeof(FlagData));
-    connect(m_panel.m_pageSizeCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(enableCustomSizeControl()));
+#endif
+    connect(m_panel.m_pageSizeCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(pageSizeChanged()));
+    connect(m_panel.m_pageWidth, SIGNAL(valueChanged(double)), this, SLOT(pageDimensionsChanged()));
+    connect(m_panel.m_pageHeight, SIGNAL(valueChanged(double)), this, SLOT(pageDimensionsChanged()));
     populateCombo(m_panel.m_orientationCombo, orientationComboData, sizeof(orientationComboData)/sizeof(FlagData));
+    connect(m_panel.m_orientationCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(orientationChanged()));
+    connect(m_panel.m_leftMargin, SIGNAL(valueChanged(double)), this, SLOT(marginsChanged()));
+    connect(m_panel.m_topMargin, SIGNAL(valueChanged(double)), this, SLOT(marginsChanged()));
+    connect(m_panel.m_rightMargin, SIGNAL(valueChanged(double)), this, SLOT(marginsChanged()));
+    connect(m_panel.m_bottomMargin, SIGNAL(valueChanged(double)), this, SLOT(marginsChanged()));
+    populateCombo(m_panel.m_layoutModeCombo, layoutModeComboData, sizeof(layoutModeComboData)/sizeof(FlagData));
+    connect(m_panel.m_layoutModeCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(layoutModeChanged()));
+
+    // Setup the Print Job box
+    m_panel.m_printerCombo->addItem(tr("Print to PDF"), QVariant("PdfFormat"));
+#if QT_VERSION >= 0x050300
+    foreach (const QString &name, QPrinterInfo::availablePrinterNames())
+        m_panel.m_printerCombo->addItem(name, QVariant(name));
+#else
+    foreach (const QPrinterInfo &printer, QPrinterInfo::availablePrinters())
+        m_panel.m_printerCombo->addItem(printer.printerName(), QVariant(printer.printerName()));
+#endif
+    connect(m_panel.m_printerCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(printerChanged()));
+    populateCombo(m_panel.m_printRangeCombo, printRangeComboData, sizeof(printRangeComboData)/sizeof(FlagData));
+    populateCombo(m_panel.m_pageOrderCombo, pageOrderComboData, sizeof(pageOrderComboData)/sizeof(FlagData));
+    populateCombo(m_panel.m_duplexModeCombo, duplexModeComboData, sizeof(duplexModeComboData)/sizeof(FlagData));
+    populateCombo(m_panel.m_paperSourceCombo, paperSourceComboData, sizeof(paperSourceComboData)/sizeof(FlagData));
+    populateCombo(m_panel.m_colorModeCombo, colorModeComboData, sizeof(colorModeComboData)/sizeof(FlagData));
 
     // Setup the Dialogs box
     m_panel.m_dialogOptionsGroupBox->populateOptions(printDialogOptions, sizeof(printDialogOptions) / sizeof(FlagData));
-    populateCombo(m_panel.m_printDialogRangeCombo, printRangeOptions, sizeof(printRangeOptions) / sizeof(FlagData));
     QPrintDialog dialog;
     m_panel.m_dialogOptionsGroupBox->setValue(dialog.options());
-    m_panel.m_printDialogRangeCombo->setCurrentIndex(dialog.printRange());
     connect(m_panel.m_printButton, SIGNAL(clicked()), this, SLOT(showPrintDialog()));
     connect(m_panel.m_printPreviewButton, SIGNAL(clicked()), this, SLOT(showPreviewDialog()));
     connect(m_panel.m_pageSetupButton, SIGNAL(clicked()), this, SLOT(showPageSetupDialog()));
 
     enablePanels();
+    m_blockSignals = false;
 }
 
 PrintDialogPanel::~PrintDialogPanel()
@@ -298,7 +394,8 @@ void PrintDialogPanel::enablePanels()
     m_panel.m_createButton->setEnabled(!exists);
     m_panel.m_printerModeCombo->setEnabled(!exists);
     m_panel.m_deleteButton->setEnabled(exists);
-    m_panel.m_settingsGroupBox->setEnabled(exists);
+    m_panel.m_pageLayoutGroupBox->setEnabled(exists);
+    m_panel.m_printJobGroupBox->setEnabled(exists);
     m_panel.m_dialogsGroupBox->setEnabled(exists);
 }
 
@@ -308,7 +405,6 @@ void PrintDialogPanel::createPrinter()
     m_printer.reset(new QPrinter(mode)); // Can set only once.
     retrieveSettings(m_printer.data());
     enablePanels();
-    enableCustomSizeControl();
 }
 
 void PrintDialogPanel::deletePrinter()
@@ -317,41 +413,249 @@ void PrintDialogPanel::deletePrinter()
     enablePanels();
 }
 
-QSizeF PrintDialogPanel::pageSize() const
+QSizeF PrintDialogPanel::customPageSize() const
 {
     return QSizeF(m_panel.m_pageWidth->value(), m_panel.m_pageHeight->value());
 }
 
-void PrintDialogPanel::setPageSize(const QSizeF &sizef)
-{
-    m_panel.m_pageWidth->setValue(sizef.width());
-    m_panel.m_pageHeight->setValue(sizef.height());
-}
-
+// Apply the settings to the QPrinter
 void PrintDialogPanel::applySettings(QPrinter *printer) const
 {
-    const QPrinter::PageSize pageSizeId = comboBoxValue<QPrinter::PageSize>(m_panel.m_pageSizeCombo);
-    if (pageSizeId == QPrinter::Custom)
-        printer->setPaperSize(pageSize(), QPrinter::Millimeter);
+    QString printerName = m_panel.m_printerCombo->currentData().toString();
+    if (printerName == QStringLiteral("PdfFormat"))
+        printer->setOutputFileName(m_panel.m_fileName->text());
     else
-        printer->setPageSize(pageSizeId);
-    printer->setOrientation(comboBoxValue<QPrinter::Orientation>(m_panel.m_orientationCombo));
-    printer->setFullPage(m_panel.m_fullPageCheckBox->isChecked());
+        printer->setPrinterName(printerName);
+    printer->setPrintRange(comboBoxValue<QPrinter::PrintRange>(m_panel.m_printRangeCombo));
+    printer->setFromTo(m_panel.m_fromPage->value(), m_panel.m_toPage->value());
+    printer->setPageOrder(comboBoxValue<QPrinter::PageOrder>(m_panel.m_pageOrderCombo));
+    printer->setCopyCount(m_panel.m_copyCount->value());
+    printer->setCollateCopies(m_panel.m_collateCopies->isChecked());
+    printer->setDuplex(comboBoxValue<QPrinter::DuplexMode>(m_panel.m_duplexModeCombo));
+    printer->setPaperSource(comboBoxValue<QPrinter::PaperSource>(m_panel.m_paperSourceCombo));
+    printer->setColorMode(comboBoxValue<QPrinter::ColorMode>(m_panel.m_colorModeCombo));
+    printer->setResolution(m_panel.m_resolution->value());
+
+#if QT_VERSION >= 0x050300
+    printer->setPageLayout(m_pageLayout);
+#else
+    if (m_printerLayout.pageSize() == QPrinter::Custom)
+        printer->setPaperSize(customPageSize(), m_units);
+    else
+        printer->setPageSize(m_printerLayout.pageSize());
+    printer->setOrientation(m_printerLayout.orientation());
+    printer->setFullPage(m_printerLayout.fullPage());
+    double left, top, right, bottom;
+    m_printerLayout.getPageMargins(&left, &top, &right, &bottom, m_units);
+    printer->setPageMargins(left, top, right, bottom, m_units);
+#endif
 }
 
+// Retrieve the settings from the QPrinter
 void PrintDialogPanel::retrieveSettings(const QPrinter *printer)
 {
-    setComboBoxValue(m_panel.m_pageSizeCombo, printer->pageSize());
-    setComboBoxValue(m_panel.m_orientationCombo, printer->orientation());
-    m_panel.m_fullPageCheckBox->setChecked(printer->fullPage());
-    setPageSize(m_printer->paperSize(QPrinter::Millimeter));
+    if (printer->outputFormat() == QPrinter::NativeFormat) {
+        m_panel.m_printerCombo->setCurrentIndex(m_panel.m_printerCombo->findData(QVariant(printer->printerName())));
+        m_panel.m_fileName->setEnabled(false);
+    } else {
+        m_panel.m_printerCombo->setCurrentIndex(m_panel.m_printerCombo->findData(QVariant(QStringLiteral("PdfFormat"))));
+        m_panel.m_fileName->setEnabled(true);
+    }
+    m_panel.m_fileName->setText(printer->outputFileName());
+    setComboBoxValue(m_panel.m_printRangeCombo, printer->printRange());
+    m_panel.m_fromPage->setValue(printer->fromPage());
+    m_panel.m_toPage->setValue(printer->toPage());
+    setComboBoxValue(m_panel.m_pageOrderCombo, printer->pageOrder());
+    m_panel.m_copyCount->setValue(printer->copyCount());
+    m_panel.m_collateCopies->setChecked(printer->collateCopies());
+    setComboBoxValue(m_panel.m_duplexModeCombo, printer->duplex());
+    setComboBoxValue(m_panel.m_paperSourceCombo, printer->paperSource());
+    setComboBoxValue(m_panel.m_colorModeCombo, printer->colorMode());
+    m_panel.m_resolution->setValue(printer->resolution());
+
+#if QT_VERSION >= 0x050300
+    m_pageLayout = printer->pageLayout();
+#else
+    if (printer->pageSize() == QPrinter::Custom)
+        m_printerLayout.setPaperSize(customPageSize(), m_units);
+    else
+        m_printerLayout.setPageSize(printer->pageSize());
+    m_printerLayout.setOrientation(printer->orientation());
+    m_printerLayout.setFullPage(printer->fullPage());
+    double left, top, right, bottom;
+    printer->getPageMargins(&left, &top, &right, &bottom, m_units);
+    m_printerLayout.setPageMargins(left, top, right, bottom, m_units);
+#endif
+    updatePageLayoutWidgets();
 }
 
-void PrintDialogPanel::enableCustomSizeControl()
+void PrintDialogPanel::updatePageLayoutWidgets()
 {
-    bool custom = (m_panel.m_pageSizeCombo->currentIndex() == QPrinter::Custom);
+    m_blockSignals = true;
+#if QT_VERSION >= 0x050300
+    setComboBoxValue(m_panel.m_unitsCombo, m_pageLayout.units());
+    setComboBoxValue(m_panel.m_pageSizeCombo, m_pageLayout.pageSize().id());
+    QSizeF sizef = m_pageLayout.pageSize().size(QPageSize::Unit(m_pageLayout.units()));
+    bool custom = (m_pageLayout.pageSize().id() == QPageSize::Custom);
+    setComboBoxValue(m_panel.m_orientationCombo, m_pageLayout.orientation());
+    m_panel.m_leftMargin->setValue(m_pageLayout.margins().left());
+    m_panel.m_topMargin->setValue(m_pageLayout.margins().top());
+    m_panel.m_rightMargin->setValue(m_pageLayout.margins().right());
+    m_panel.m_bottomMargin->setValue(m_pageLayout.margins().bottom());
+    setComboBoxValue(m_panel.m_layoutModeCombo, m_pageLayout.mode());
+    QRectF rectf = m_pageLayout.paintRect();
+#else
+    setComboBoxValue(m_panel.m_unitsCombo, m_units);
+    setComboBoxValue(m_panel.m_pageSizeCombo, m_printerLayout.pageSize());
+    QSizeF sizef = m_printerLayout.paperSize(m_units);
+    bool custom = (m_printerLayout.pageSize() == QPrinter::Custom);
+    setComboBoxValue(m_panel.m_orientationCombo, m_printerLayout.orientation());
+    double left, top, right, bottom;
+    m_printerLayout.getPageMargins(&left, &top, &right, &bottom, m_units);
+    m_panel.m_leftMargin->setValue(left);
+    m_panel.m_topMargin->setValue(top);
+    m_panel.m_rightMargin->setValue(right);
+    m_panel.m_bottomMargin->setValue(bottom);
+    if (m_printerLayout.fullPage())
+        setComboBoxValue(m_panel.m_layoutModeCombo, QPageLayout::FullPageMode);
+    else
+        setComboBoxValue(m_panel.m_layoutModeCombo, QPageLayout::StandardMode);
+    QRectF rectf = m_printerLayout.pageRect(m_units);
+#endif
+    m_panel.m_pageWidth->setValue(sizef.width());
+    m_panel.m_pageHeight->setValue(sizef.height());
     m_panel.m_pageWidth->setEnabled(custom);
     m_panel.m_pageHeight->setEnabled(custom);
+    m_panel.m_rectX->setValue(rectf.x());
+    m_panel.m_rectY->setValue(rectf.y());
+    m_panel.m_rectWidth->setValue(rectf.width());
+    m_panel.m_rectHeight->setValue(rectf.height());
+    QString suffix;
+    switch (comboBoxValue<QPageLayout::Unit>(m_panel.m_unitsCombo)) {
+    case QPageLayout::Millimeter:
+        suffix = tr(" mm");
+        break;
+    case QPageLayout::Point:
+        suffix = tr(" pt");
+        break;
+    case QPageLayout::Inch:
+        suffix = tr(" in");
+        break;
+    case QPageLayout::Pica:
+        suffix = tr(" pc");
+        break;
+    case QPageLayout::Didot:
+        suffix = tr(" DD");
+        break;
+    case QPageLayout::Cicero:
+        suffix = tr(" CC");
+        break;
+    }
+    m_panel.m_pageWidth->setSuffix(suffix);
+    m_panel.m_pageHeight->setSuffix(suffix);
+    m_panel.m_leftMargin->setSuffix(suffix);
+    m_panel.m_topMargin->setSuffix(suffix);
+    m_panel.m_rightMargin->setSuffix(suffix);
+    m_panel.m_bottomMargin->setSuffix(suffix);
+    m_panel.m_rectX->setSuffix(suffix);
+    m_panel.m_rectY->setSuffix(suffix);
+    m_panel.m_rectWidth->setSuffix(suffix);
+    m_panel.m_rectHeight->setSuffix(suffix);
+    m_blockSignals = false;
+}
+
+void PrintDialogPanel::unitsChanged()
+{
+    if (m_blockSignals)
+        return;
+#if QT_VERSION >= 0x050300
+    m_pageLayout.setUnits(comboBoxValue<QPageLayout::Unit>(m_panel.m_unitsCombo));
+#else
+    m_units = comboBoxValue<QPrinter::Unit>(m_panel.m_unitsCombo);
+#endif
+    updatePageLayoutWidgets();
+}
+
+void PrintDialogPanel::pageSizeChanged()
+{
+    if (m_blockSignals)
+        return;
+#if QT_VERSION >= 0x050300
+    const QPageSize::PageSizeId pageSizeId = comboBoxValue<QPageSize::PageSizeId>(m_panel.m_pageSizeCombo);
+    QPageSize pageSize;
+    if (pageSizeId == QPageSize::Custom)
+        pageSize = QPageSize(QSizeF(200, 200), QPageSize::Unit(m_pageLayout.units()));
+    else
+        pageSize = QPageSize(pageSizeId);
+    m_pageLayout.setPageSize(pageSize);
+#else
+    const QPrinter::PageSize pageSize = comboBoxValue<QPrinter::PageSize>(m_panel.m_pageSizeCombo);
+    if (pageSize == QPrinter::Custom)
+        m_printerLayout.setPaperSize(QSizeF(200, 200), m_units);
+    else
+        m_printerLayout.setPageSize(pageSize);
+#endif
+    updatePageLayoutWidgets();
+}
+
+void PrintDialogPanel::pageDimensionsChanged()
+{
+    if (m_blockSignals)
+        return;
+#if QT_VERSION >= 0x050300
+    m_pageLayout.setPageSize(QPageSize(customPageSize(), QPageSize::Unit(m_pageLayout.units())));
+#else
+    m_printerLayout.setPaperSize(customPageSize(), m_units);
+#endif
+    updatePageLayoutWidgets();
+}
+
+void PrintDialogPanel::orientationChanged()
+{
+    if (m_blockSignals)
+        return;
+#if QT_VERSION >= 0x050300
+    m_pageLayout.setOrientation(comboBoxValue<QPageLayout::Orientation>(m_panel.m_orientationCombo));
+#else
+    m_printerLayout.setOrientation(comboBoxValue<QPrinter::Orientation>(m_panel.m_orientationCombo));
+#endif
+    updatePageLayoutWidgets();
+}
+
+void PrintDialogPanel::marginsChanged()
+{
+    if (m_blockSignals)
+        return;
+#if QT_VERSION >= 0x050300
+    m_pageLayout.setMargins(QMarginsF(m_panel.m_leftMargin->value(), m_panel.m_topMargin->value(),
+                                      m_panel.m_rightMargin->value(), m_panel.m_bottomMargin->value()));
+#else
+    m_printerLayout.setPageMargins(m_panel.m_leftMargin->value(), m_panel.m_topMargin->value(),
+                                   m_panel.m_rightMargin->value(), m_panel.m_bottomMargin->value(),
+                                   m_units);
+#endif
+    updatePageLayoutWidgets();
+}
+
+void PrintDialogPanel::layoutModeChanged()
+{
+    if (m_blockSignals)
+        return;
+#if QT_VERSION >= 0x050300
+    m_pageLayout.setMode(comboBoxValue<QPageLayout::Mode>(m_panel.m_layoutModeCombo));
+#else
+    bool fullPage = (comboBoxValue<QPageLayout::Mode>(m_panel.m_layoutModeCombo) == QPageLayout::FullPageMode);
+    m_printerLayout.setFullPage(fullPage);
+#endif
+    updatePageLayoutWidgets();
+}
+
+void PrintDialogPanel::printerChanged()
+{
+    bool isPdf = (m_panel.m_printerCombo->currentData().toString() == QStringLiteral("PdfFormat"));
+    m_panel.m_fileName->setEnabled(isPdf);
+    if (isPdf && m_panel.m_fileName->text().isEmpty())
+        m_panel.m_fileName->setText(QDir::homePath() + QDir::separator() + QStringLiteral("print.pdf"));
 }
 
 void PrintDialogPanel::showPrintDialog()
@@ -359,7 +663,6 @@ void PrintDialogPanel::showPrintDialog()
     applySettings(m_printer.data());
     QPrintDialog dialog(m_printer.data(), this);
     dialog.setOptions(m_panel.m_dialogOptionsGroupBox->value<QPrintDialog::PrintDialogOptions>());
-    dialog.setPrintRange(comboBoxValue<QPrintDialog::PrintRange>(m_panel.m_printDialogRangeCombo));
     if (dialog.exec() == QDialog::Accepted) {
         retrieveSettings(m_printer.data());
         print(m_printer.data());
