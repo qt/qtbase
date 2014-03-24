@@ -1,20 +1,17 @@
 Generic plug-in for evdev multiple touch (ABS_MT) events.
 Supports protocol type A & B.
 Type B is supported both directly and via libmtdev.
-Single-touch devices reporting ABS_X and Y only are not supported
-by this plugin. Use tslib or evdevmouse instead.
-
 The protocol type will be detected automatically.
 
 libmtdev is automatically detected based on library availability. To disable it,
 pass -no-mtdev to configure.
 
-Tested with the following kernel drivers:
-  bcm5974 (type A)
-  hid_magicmouse (type A with ABS_MT_TRACKING_ID) (type B over libmtdev)
-  wacom (type B)
+Single-touch devices reporting ABS_X and Y are supported too. Keep in
+mind however that the libudev-based device discovery may not be able
+to recognize such devices. If mouse events are sufficient, it may be
+better to use evdevmouse or tslib with such devices.
 
-To use this "driver", pass -plugin EvdevTouch on the command line.
+To use this plugin, pass -plugin EvdevTouch on the command line.
 
 If automatic detection does not work, use -plugin
 EvdevTouch:/dev/input/eventN to explicitly set the device file
