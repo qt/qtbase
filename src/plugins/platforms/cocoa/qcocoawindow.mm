@@ -619,11 +619,13 @@ void QCocoaWindow::setVisible(bool visible)
             // update the window geometry if there is a parent.
             setGeometry(window()->geometry());
 
-            // Register popup windows so that the parent window can
-            // close them when needed.
-            if (window()->type() == Qt::Popup) {
+            // Register popup windows so that the parent window can close them when needed.
+            if (window()->type() == Qt::Popup || window()->type() == Qt::ToolTip) {
                 // qDebug() << "transientParent and popup" << window()->type() << Qt::Popup << (window()->type() & Qt::Popup);
                 parentCocoaWindow->m_activePopupWindow = window();
+            }
+
+            if (window()->type() == Qt::Popup) {
                 // QTBUG-30266: a window should not be resizable while a transient popup is open
                 // Since this isn't a native popup, the window manager doesn't close the popup when you click outside
                 NSUInteger parentStyleMask = [parentCocoaWindow->m_nsWindow styleMask];
