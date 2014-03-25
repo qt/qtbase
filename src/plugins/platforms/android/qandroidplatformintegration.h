@@ -120,9 +120,9 @@ public:
     QTouchDevice *touchDevice() const { return m_touchDevice; }
     void setTouchDevice(QTouchDevice *touchDevice) { m_touchDevice = touchDevice; }
 
-    static bool needsWorkaround();
     EGLDisplay m_eglDisplay;
 private:
+    static bool needsBasicRenderloopWorkaround();
 
     QTouchDevice *m_touchDevice;
 

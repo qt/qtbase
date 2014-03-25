@@ -62,6 +62,22 @@ void QAndroidPlatformOpenGLContext::swapBuffers(QPlatformSurface *surface)
         static_cast<QAndroidPlatformOpenGLWindow *>(surface)->checkNativeSurface(eglConfig());
 }
 
+bool QAndroidPlatformOpenGLContext::needsFBOReadBackWorkaroud()
+{
+    static bool set = false;
+    static bool needsWorkaround = false;
+
+    if (!set) {
+        const char *rendererString = reinterpret_cast<const char *>(glGetString(GL_RENDERER));
+        needsWorkaround =
+                qstrcmp(rendererString, "Mali-400 MP") == 0
+                || qstrcmp(rendererString, "Adreno (TM) 200") == 0;
+        set = true;
+    }
+
+    return needsWorkaround;
+}
+
 bool QAndroidPlatformOpenGLContext::makeCurrent(QPlatformSurface *surface)
 {
     bool ret = QEGLPlatformContext::makeCurrent(surface);
@@ -71,7 +87,7 @@ bool QAndroidPlatformOpenGLContext::makeCurrent(QPlatformSurface *surface)
     if (rendererString != 0 && qstrncmp(rendererString, "Android Emulator", 16) == 0)
         ctx_d->workaround_missingPrecisionQualifiers = true;
 
-    if (!ctx_d->workaround_brokenFBOReadBack && QAndroidPlatformIntegration::needsWorkaround())
+    if (!ctx_d->workaround_brokenFBOReadBack && needsFBOReadBackWorkaroud())
         ctx_d->workaround_brokenFBOReadBack = true;
 
     return ret;
