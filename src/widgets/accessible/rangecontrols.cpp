@@ -57,13 +57,6 @@
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_ACCESSIBILITY
-QString qt_accStripAmp(const QString &text);
-#ifndef QT_NO_SCROLLBAR
-extern QStyleOptionSlider Q_GUI_EXPORT qt_qscrollbarStyleOption(QScrollBar *scrollBar);
-#endif
-#ifndef QT_NO_SLIDER
-extern QStyleOptionSlider Q_GUI_EXPORT qt_qsliderStyleOption(QSlider *slider);
-#endif
 
 #ifndef QT_NO_SPINBOX
 QAccessibleAbstractSpinBox::QAccessibleAbstractSpinBox(QWidget *w)

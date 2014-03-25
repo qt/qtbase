@@ -51,8 +51,6 @@
 
 QT_BEGIN_NAMESPACE
 
-QString qt_accStripAmp(const QString &text);
-
 #ifndef QT_NO_ITEMVIEWS
 /*
 Implementation of the IAccessible2 table2 interface. Much simpler than
