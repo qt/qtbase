@@ -81,6 +81,7 @@ public:
     void setTransient(bool value);
 
     bool flashed;
+    int flashTimer;
     void flash();
 };
 
