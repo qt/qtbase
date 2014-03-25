@@ -2395,7 +2395,7 @@ QString QFontInfo::family() const
     \since 4.8
 
     Returns the style name of the matched window system font on
-    system that supports it.
+    systems that support it.
 
     \sa QFont::styleName()
 */
