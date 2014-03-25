@@ -48,6 +48,7 @@
 #include "qlocale_p.h"
 #include "qscopedpointer.h"
 #include <qdatastream.h>
+#include <qmath.h>
 
 #ifndef QT_NO_COMPRESS
 #include <zlib.h>
@@ -72,19 +73,7 @@ int qAllocMore(int alloc, int extra) Q_DECL_NOTHROW
     Q_ASSERT(alloc >= 0 && extra >= 0);
     Q_ASSERT_X(alloc < (1 << 30) - extra, "qAllocMore", "Requested size is too large!");
 
-    unsigned nalloc = alloc + extra;
-
-    // Round up to next power of 2
-
-    // Assuming container is growing, always overshoot
-    //--nalloc;
-
-    nalloc |= nalloc >> 1;
-    nalloc |= nalloc >> 2;
-    nalloc |= nalloc >> 4;
-    nalloc |= nalloc >> 8;
-    nalloc |= nalloc >> 16;
-    ++nalloc;
+    unsigned nalloc = qNextPowerOfTwo(alloc + extra);
 
     Q_ASSERT(nalloc > unsigned(alloc + extra));
 

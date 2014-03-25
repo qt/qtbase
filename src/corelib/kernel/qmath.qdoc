@@ -215,4 +215,37 @@
     \snippet code/src_corelib_kernel_qmath.cpp 3
 
     \sa qDegreesToRadians()
+
+/*!
+    \fn quint32 qNextPowerOfTwo(quint32 value)
+    \relates <QtMath>
+    \since 5.4
+
+    This function returns the nearest power of two greater than \a value. For 0 it returns 1, and for values larger than or equal to 2^31 it returns 0.
+*/
+
+/*!
+    \fn quint32 qNextPowerOfTwo(qint32 value)
+    \relates <QtMath>
+    \since 5.4
+    \overload
+
+    This function returns the nearest power of two greater than \a value. For negative values it returns 0.
+*/
+
+/*!
+    \fn quint64 qNextPowerOfTwo(quint64 value)
+    \relates <QtMath>
+    \since 5.4
+
+    This function returns the nearest power of two greater than \a value. For 0 it returns 1, and for values larger than or equal to 2^63 it returns 0.
+*/
+
+/*!
+    \fn quint64 qNextPowerOfTwo(qint64 value)
+    \relates <QtMath>
+    \since 5.4
+    \overload
+
+    This function returns the nearest power of two greater than \a value. For negative values it returns 0.
 */

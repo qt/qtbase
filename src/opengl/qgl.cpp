@@ -1868,20 +1868,6 @@ QImage qt_gl_read_texture(const QSize &size, bool alpha_format, bool include_alp
     return img;
 }
 
-// returns the highest number closest to v, which is a power of 2
-// NB! assumes 32 bit ints
-int qt_next_power_of_two(int v)
-{
-    v--;
-    v |= v >> 1;
-    v |= v >> 2;
-    v |= v >> 4;
-    v |= v >> 8;
-    v |= v >> 16;
-    ++v;
-    return v;
-}
-
 Q_GLOBAL_STATIC(QGLTextureCache, qt_gl_texture_cache)
 
 QGLTextureCache::QGLTextureCache()
@@ -2462,8 +2448,8 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
     // Scale the pixmap if needed. GL textures needs to have the
     // dimensions 2^n+2(border) x 2^m+2(border), unless we're using GL
     // 2.0 or use the GL_TEXTURE_RECTANGLE texture target
-    int tx_w = qt_next_power_of_two(image.width());
-    int tx_h = qt_next_power_of_two(image.height());
+    int tx_w = qNextPowerOfTwo(image.width() - 1);
+    int tx_h = qNextPowerOfTwo(image.height() - 1);
 
     QImage img = image;
 
