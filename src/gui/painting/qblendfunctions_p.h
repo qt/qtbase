@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
 
 template <typename SRC, typename T>
 void qt_scale_image_16bit(uchar *destPixels, int dbpl,
-                          const uchar *srcPixels, int sbpl,
+                          const uchar *srcPixels, int sbpl, int srch,
                           const QRectF &targetRect,
                           const QRectF &srcRect,
                           const QRect &clip,
@@ -136,6 +136,15 @@ void qt_scale_image_16bit(uchar *destPixels, int dbpl,
 
     quint16 *dst = ((quint16 *) (destPixels + ty1 * dbpl)) + tx1;
 
+    // this bounds check here is required as floating point rounding above might in some cases lead to
+    // w/h values that are one pixel too large, falling outside of the valid image area.
+    int yend = (srcy + iy * (h - 1)) >> 16;
+    if (yend < 0 || yend >= srch)
+        --h;
+    int xend = (basex + ix * (w - 1)) >> 16;
+    if (xend < 0 || xend >= (int)(sbpl/sizeof(quint32)))
+        --w;
+
     while (h--) {
         const SRC *src = (const SRC *) (srcPixels + (srcy >> 16) * sbpl);
         int srcx = basex;
@@ -161,7 +170,7 @@ void qt_scale_image_16bit(uchar *destPixels, int dbpl,
 }
 
 template <typename T> void qt_scale_image_32bit(uchar *destPixels, int dbpl,
-                                                const uchar *srcPixels, int sbpl,
+                                                const uchar *srcPixels, int sbpl, int srch,
                                                 const QRectF &targetRect,
                                                 const QRectF &srcRect,
                                                 const QRect &clip,
@@ -215,6 +224,8 @@ template <typename T> void qt_scale_image_32bit(uchar *destPixels, int dbpl,
 
     int h = ty2 - ty1;
     int w = tx2 - tx1;
+    if (!w || !h)
+        return;
 
     quint32 basex;
     quint32 srcy;
@@ -235,6 +246,15 @@ template <typename T> void qt_scale_image_32bit(uchar *destPixels, int dbpl,
     }
 
     quint32 *dst = ((quint32 *) (destPixels + ty1 * dbpl)) + tx1;
+
+    // this bounds check here is required as floating point rounding above might in some cases lead to
+    // w/h values that are one pixel too large, falling outside of the valid image area.
+    int yend = (srcy + iy * (h - 1)) >> 16;
+    if (yend < 0 || yend >= srch)
+        --h;
+    int xend = (basex + ix * (w - 1)) >> 16;
+    if (xend < 0 || xend >= (int)(sbpl/sizeof(quint32)))
+        --w;
 
     while (h--) {
         const uint *src = (const quint32 *) (srcPixels + (srcy >> 16) * sbpl);
