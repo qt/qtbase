@@ -71,6 +71,14 @@ QT_BEGIN_NAMESPACE
     How the offscreen surface is implemented depends on the underlying platform, but it will
     typically use a pixel buffer (pbuffer). If the platform doesn't implement or support
     offscreen surfaces, QOffscreenSurface will use an invisible QWindow internally.
+
+    \note In order to create an offscreen surface that is guaranteed to be compatible with
+    a given context and window, make sure to set the format to the context's or the
+    window's actual format, that is, the QSurfaceFormat returned from
+    QOpenGLContext::format() or QWindow::format() \e{after the context or window has been
+    created}. Passing the format returned from QWindow::requestedFormat() to setFormat()
+    may result in an incompatible offscreen surface since the underlying windowing system
+    interface may offer a different set of configurations for window and pbuffer surfaces.
 */
 class Q_GUI_EXPORT QOffscreenSurfacePrivate : public QObjectPrivate
 {
