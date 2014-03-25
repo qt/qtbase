@@ -157,7 +157,22 @@ static QSurface *createSurface(int surfaceClass)
         window->create();
         return window;
     } else if (surfaceClass == int(QSurface::Offscreen)) {
+        // Create a window and get the format from that.  For example, if an EGL
+        // implementation provides 565 and 888 configs for PBUFFER_BIT but only
+        // 888 for WINDOW_BIT, we may end up with a pbuffer surface that is
+        // incompatible with the context since it could choose the 565 while the
+        // window and the context uses a config with 888.
+        static QSurfaceFormat format;
+        if (format.redBufferSize() == -1) {
+            QWindow *window = new QWindow;
+            window->setSurfaceType(QWindow::OpenGLSurface);
+            window->setGeometry(0, 0, 10, 10);
+            window->create();
+            format = window->format();
+            delete window;
+        }
         QOffscreenSurface *offscreenSurface = new QOffscreenSurface;
+        offscreenSurface->setFormat(format);
         offscreenSurface->create();
         return offscreenSurface;
     }
