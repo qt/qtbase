@@ -1421,14 +1421,13 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
         }
         break;
     case CE_DockWidgetTitle:
-        if (const QDockWidget *dockWidget = qobject_cast<const QDockWidget *>(widget)) {
+        if (const QStyleOptionDockWidget *dwOpt = qstyleoption_cast<const QStyleOptionDockWidget *>(option)) {
+            const QDockWidget *dockWidget = qobject_cast<const QDockWidget *>(widget);
             QRect rect = option->rect;
-            if (dockWidget->isFloating()) {
+            if (dockWidget && dockWidget->isFloating()) {
                 QWindowsXPStyle::drawControl(element, option, painter, widget);
                 break; //otherwise fall through
             }
-
-            if (const QStyleOptionDockWidget *dwOpt = qstyleoption_cast<const QStyleOptionDockWidget *>(option)) {
 
             const QStyleOptionDockWidgetV2 *v2
                 = qstyleoption_cast<const QStyleOptionDockWidgetV2*>(dwOpt);
@@ -1490,7 +1489,6 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
                 }
             }
             break;
-        }
 #ifndef QT_NO_ITEMVIEWS
     case CE_ItemViewItem:
         {
