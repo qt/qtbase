@@ -60,7 +60,17 @@ void QAndroidPlatformFontDatabase::populateFontDatabase()
     QDir dir(fontpath, QLatin1String("*.ttf"));
     for (int i = 0; i < int(dir.count()); ++i) {
         const QByteArray file = QFile::encodeName(dir.absoluteFilePath(dir[i]));
-        addTTFile(QByteArray(), file);
+
+        QSupportedWritingSystems supportedWritingSystems;
+        QStringList families = addTTFile(QByteArray(), file, &supportedWritingSystems);
+
+        extern int qt_script_for_writing_system(QFontDatabase::WritingSystem writingSystem);
+        for (int i = 0; i < QFontDatabase::WritingSystemsCount; ++i) {
+            if (i == QFontDatabase::Any || supportedWritingSystems.supported(QFontDatabase::WritingSystem(i))) {
+                QChar::Script script = QChar::Script(qt_script_for_writing_system(QFontDatabase::WritingSystem(i)));
+                m_fallbacks[script] += families;
+            }
+        }
     }
 }
 
@@ -71,9 +81,9 @@ QStringList QAndroidPlatformFontDatabase::fallbacksForFamily(const QString &fami
 {
     Q_UNUSED(family);
     Q_UNUSED(style);
-    Q_UNUSED(script);
-    if (styleHint == QFont::Monospace)
-        return QString(qgetenv("QT_ANDROID_FONTS_MONOSPACE")).split(";");
 
-    return QString(qgetenv("QT_ANDROID_FONTS")).split(";");
+    if (styleHint == QFont::Monospace)
+        return QString(qgetenv("QT_ANDROID_FONTS_MONOSPACE")).split(";") + m_fallbacks[script];
+
+    return QString(qgetenv("QT_ANDROID_FONTS")).split(";") + m_fallbacks[script];
 }
