@@ -1165,6 +1165,14 @@ void QCocoaWindow::windowDidResize()
     [m_qtView updateGeometry];
 }
 
+void QCocoaWindow::windowDidEndLiveResize()
+{
+    if (m_synchedWindowState == Qt::WindowMaximized && ![m_nsWindow isZoomed]) {
+        m_effectivelyMaximized = false;
+        [m_qtView notifyWindowStateChanged:Qt::WindowNoState];
+    }
+}
+
 bool QCocoaWindow::windowShouldClose()
 {
     bool accepted = false;

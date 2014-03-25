@@ -75,6 +75,14 @@
     }
 }
 
+- (void)windowDidEndLiveResize:(NSNotification *)notification
+{
+    Q_UNUSED(notification);
+    if (m_cocoaWindow) {
+        m_cocoaWindow->windowDidEndLiveResize();
+    }
+}
+
 - (void)windowWillMove:(NSNotification *)notification
 {
     Q_UNUSED(notification);

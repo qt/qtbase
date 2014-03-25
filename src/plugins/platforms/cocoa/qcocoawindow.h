@@ -183,6 +183,7 @@ public:
     void windowWillMove();
     void windowDidMove();
     void windowDidResize();
+    void windowDidEndLiveResize();
     bool windowShouldClose();
     bool windowIsPopupType(Qt::WindowType type = Qt::Widget) const;
 
