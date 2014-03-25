@@ -84,8 +84,14 @@ void DBusConnection::serviceRegistered()
     QDBusConnection c = QDBusConnection::sessionBus();
     OrgA11yStatusInterface *a11yStatus = new OrgA11yStatusInterface(A11Y_SERVICE, A11Y_PATH, c, this);
 
+    //The variable was introduced because on some embedded platforms there are custom accessibility
+    //clients which don't set Status.ScreenReaderEnabled to true. The variable is also useful for
+    //debugging.
+    static const bool a11yAlwaysOn = !qEnvironmentVariableIsSet("QT_LINUX_ACCESSIBILITY_ALWAYS_ON");
+
     // a11yStatus->isEnabled() returns always true (since Gnome 3.6)
-    bool enabled = a11yStatus->screenReaderEnabled();
+    bool enabled = a11yAlwaysOn || a11yStatus->screenReaderEnabled();
+
     if (enabled != m_enabled) {
         m_enabled = enabled;
         if (m_a11yConnection.isConnected()) {

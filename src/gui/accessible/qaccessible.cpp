@@ -97,6 +97,15 @@ QT_BEGIN_NAMESPACE
     Accessibility, and the Unix/X11 AT-SPI standard. Other backends
     can be supported using QAccessibleBridge.
 
+    In the Unix/X11 AT-SPI implementation, applications become accessible
+    when two conditions are met:
+    \list
+    \li org.a11y.Status.IsEnabled DBus property is true
+    \li org.a11y.Status.ScreenReaderEnabled DBus property is true
+    \endlist
+    An alternative to setting the DBus AT-SPI properties is to set
+    the QT_LINUX_ACCESSIBILITY_ALWAYS_ON environment variable.
+
     In addition to QAccessible's static functions, Qt offers one
     generic interface, QAccessibleInterface, that can be used to wrap
     all widgets and objects (e.g., QPushButton). This single
