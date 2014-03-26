@@ -52,6 +52,12 @@
 #include <qt_windows.h>
 #include <d3dcommon.h>
 
+#ifdef D3DCOMPILER_LINKED
+namespace D3D {
+#  include <d3dcompiler.h>
+}
+#endif // D3DCOMPILER_LINKED
+
 Q_LOGGING_CATEGORY(QT_D3DCOMPILER, "qt.angle.d3dcompiler")
 
 namespace D3DCompiler {
@@ -127,6 +133,7 @@ private:
 
 static bool loadCompiler()
 {
+#ifndef D3DCOMPILER_LINKED
     static HMODULE d3dcompiler = 0;
     if (!d3dcompiler) {
         const wchar_t *dllNames[] = {
@@ -157,7 +164,9 @@ static bool loadCompiler()
         if (!d3dcompiler)
             qCDebug(QT_D3DCOMPILER) << "Unable to load D3D shader compiler.";
     }
-
+#else // !D3DCOMPILER_LINKED
+    compile = &D3D::D3DCompile;
+#endif // D3DCOMPILER_LINKED
     return bool(compile);
 }
 
