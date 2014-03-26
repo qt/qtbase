@@ -321,7 +321,12 @@ void tst_QStringList::streamingOperator()
     list << "hei";
     list << list << "hopp" << list;
 
+    QList<QString> slist = list;
+    list << slist;
+
     QCOMPARE(list, QStringList()
+            << "hei" << "hei" << "hopp"
+            << "hei" << "hei" << "hopp"
             << "hei" << "hei" << "hopp"
             << "hei" << "hei" << "hopp");
 

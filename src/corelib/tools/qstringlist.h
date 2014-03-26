@@ -85,6 +85,8 @@ public:
     { append(str); return *this; }
     inline QStringList &operator<<(const QStringList &l)
     { *this += l; return *this; }
+    inline QStringList &operator<<(const QList<QString> &l)
+    { *this += l; return *this; }
 
 #ifndef QT_NO_REGEXP
     inline QStringList filter(const QRegExp &rx) const;

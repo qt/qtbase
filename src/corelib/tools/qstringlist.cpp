@@ -478,6 +478,16 @@ QString QtPrivate::QStringList_join(const QStringList *that, const QChar *sep, i
     the latter string list.
 */
 
+/*!
+    \fn QStringList &QStringList::operator<<(const QList<QString> &other)
+    \since 5.4
+
+    \overload
+
+    Appends the \a other string list to the string list and returns a reference to
+    the latter string list.
+*/
+
 #ifndef QT_NO_DATASTREAM
 /*!
     \fn QDataStream &operator>>(QDataStream &in, QStringList &list)
