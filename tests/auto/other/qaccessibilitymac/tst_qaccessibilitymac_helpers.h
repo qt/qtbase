@@ -48,4 +48,5 @@
 bool macNativeAccessibilityEnabled();
 bool trusted();
 bool testLineEdit();
-bool testHierarchy();
+bool testHierarchy(QWidget *w);
+bool singleWidget();
