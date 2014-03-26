@@ -66,6 +66,7 @@ private slots:
     void lastIndexOf_regExp();
 
     void streamingOperator();
+    void assignmentOperator();
     void join() const;
     void join_data() const;
     void joinEmptiness() const;
@@ -342,6 +343,21 @@ void tst_QStringList::streamingOperator()
     list3 << "eva";
 
     QCOMPARE(list2 << list3, QStringList() << "adam" << "eva");
+}
+
+void tst_QStringList::assignmentOperator()
+{
+    // compile-only test
+
+    QStringList adam;
+    adam << "adam";
+    QList<QString> eva;
+    eva << "eva";
+    QStringList result;
+    QStringList &ref1 = (result = adam);
+    QStringList &ref2 = (result = eva);
+    Q_UNUSED(ref1);
+    Q_UNUSED(ref2);
 }
 
 void tst_QStringList::join() const

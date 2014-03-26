@@ -204,6 +204,27 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn QStringList &QStringList::operator=(const QList<QString> &other)
+    \since 5.4
+
+    Copy assignment operator from QList<QString>. Assigns the \a other
+    list of strings to this string list.
+
+    After the operation, \a other and \c *this will be equal.
+*/
+
+/*!
+    \fn QStringList &QStringList::operator=(QList<QString> &&other)
+    \overload
+    \since 5.4
+
+    Move assignment operator from QList<QString>. Moves the \a other
+    list of strings to this string list.
+
+    After the operation, \a other will be empty.
+*/
+
+/*!
     \fn void QStringList::sort(Qt::CaseSensitivity cs)
 
     Sorts the list of strings in ascending order.

@@ -68,6 +68,13 @@ public:
     inline QStringList(std::initializer_list<QString> args) : QList<QString>(args) { }
 #endif
 
+    QStringList &operator=(const QList<QString> &other)
+    { QList<QString>::operator=(other); return *this; }
+#ifdef Q_COMPILER_RVALUE_REFS
+    QStringList &operator=(QList<QString> &&other)
+    { QList<QString>::operator=(std::move(other)); return *this; }
+#endif
+
     inline void sort(Qt::CaseSensitivity cs = Qt::CaseSensitive);
     inline int removeDuplicates();
 
