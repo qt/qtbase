@@ -94,14 +94,33 @@ QSurfaceFormat QIOSContext::format() const
     return m_format;
 }
 
+#define QT_IOS_GL_STATUS_CASE(val) case val: return QLatin1Literal(#val)
+
+static QString fboStatusString(GLenum status)
+{
+    switch (status) {
+        QT_IOS_GL_STATUS_CASE(GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT);
+        QT_IOS_GL_STATUS_CASE(GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS);
+        QT_IOS_GL_STATUS_CASE(GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT);
+        QT_IOS_GL_STATUS_CASE(GL_FRAMEBUFFER_UNSUPPORTED);
+    default:
+        return QString(QStringLiteral("unknown status: %x")).arg(status);
+    }
+}
+
 bool QIOSContext::makeCurrent(QPlatformSurface *surface)
 {
     Q_ASSERT(surface && surface->surface()->surfaceType() == QSurface::OpenGLSurface);
 
     [EAGLContext setCurrentContext:m_eaglContext];
-    glBindFramebuffer(GL_FRAMEBUFFER, defaultFramebufferObject(surface));
+    FramebufferObject &framebufferObject = backingFramebufferObjectFor(surface);
 
-    return true;
+    // We bind the default FBO even if it's incomplete, so that clients who
+    // call glCheckFramebufferStatus as a result of this function returning
+    // false will get a matching error code.
+    glBindFramebuffer(GL_FRAMEBUFFER, framebufferObject.handle);
+
+    return framebufferObject.isComplete;
 }
 
 void QIOSContext::doneCurrent()
@@ -121,7 +140,7 @@ void QIOSContext::swapBuffers(QPlatformSurface *surface)
     [m_eaglContext presentRenderbuffer:GL_RENDERBUFFER];
 }
 
-GLuint QIOSContext::defaultFramebufferObject(QPlatformSurface *surface) const
+QIOSContext::FramebufferObject &QIOSContext::backingFramebufferObjectFor(QPlatformSurface *surface) const
 {
     Q_ASSERT(surface && surface->surface()->surfaceClass() == QSurface::Window);
     QIOSWindow *window = static_cast<QIOSWindow *>(surface);
@@ -181,11 +200,20 @@ GLuint QIOSContext::defaultFramebufferObject(QPlatformSurface *surface) const
                     framebufferObject.renderbufferWidth, framebufferObject.renderbufferHeight);
         }
 
-        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-            NSLog(@"Failed to make complete framebuffer object %x", glCheckFramebufferStatus(GL_FRAMEBUFFER));
+        framebufferObject.isComplete = glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
+
+        if (!framebufferObject.isComplete) {
+            qWarning("QIOSContext failed to make complete framebuffer object (%s)",
+                qPrintable(fboStatusString(glCheckFramebufferStatus(GL_FRAMEBUFFER))));
+        }
     }
 
-    return framebufferObject.handle;
+    return framebufferObject;
+}
+
+GLuint QIOSContext::defaultFramebufferObject(QPlatformSurface *surface) const
+{
+    return backingFramebufferObjectFor(surface).handle;
 }
 
 void QIOSContext::windowDestroyed(QObject *object)
