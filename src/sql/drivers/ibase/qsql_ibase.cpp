@@ -1313,6 +1313,7 @@ int QIBaseResult::numRowsAffected()
 {
     static char acCountInfo[] = {isc_info_sql_records};
     char cCountType;
+    bool bIsProcedure = false;
 
     switch (d->queryType) {
     case isc_info_sql_stmt_select:
@@ -1326,6 +1327,9 @@ int QIBaseResult::numRowsAffected()
         break;
     case isc_info_sql_stmt_insert:
         cCountType = isc_info_req_insert_count;
+        break;
+    case isc_info_sql_stmt_exec_procedure:
+        bIsProcedure = true; // will sum all changes
         break;
     default:
         qWarning() << "numRowsAffected: Unknown statement type (" << d->queryType << ")";
@@ -1344,8 +1348,14 @@ int QIBaseResult::numRowsAffected()
         pcBuf += 2;
         int iValue = isc_vax_integer (pcBuf, sLength);
         pcBuf += sLength;
-
-        if (cType == cCountType) {
+        if (bIsProcedure) {
+            if (cType == isc_info_req_insert_count || cType == isc_info_req_update_count
+                || cType == isc_info_req_delete_count) {
+                if (iResult == -1)
+                    iResult = 0;
+                iResult += iValue;
+            }
+        } else if (cType == cCountType) {
             iResult = iValue;
             break;
         }
