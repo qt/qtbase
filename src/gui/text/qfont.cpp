@@ -1106,7 +1106,7 @@ int QFont::weight() const
 
     Qt uses a weighting scale from 0 to 99 similar to, but not the
     same as, the scales used in Windows or CSS. A weight of 0 is
-    ultralight, whilst 99 will be an extremely black.
+    ultralight, whilst 99 will be extremely black.
 
     This enum contains the predefined font weights:
 
@@ -1282,7 +1282,7 @@ bool QFont::kerning() const
     When kerning is enabled, glyph metrics do not add up anymore,
     even for Latin text. In other words, the assumption that
     width('a') + width('b') is equal to width("ab") is not
-    neccesairly true.
+    necessarily true.
 
     \sa kerning(), QFontMetrics
 */
