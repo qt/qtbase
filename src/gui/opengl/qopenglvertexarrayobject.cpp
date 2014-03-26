@@ -149,8 +149,6 @@ bool QOpenGLVertexArrayObjectPrivate::create()
     }
 
     Q_Q(QOpenGLVertexArrayObject);
-    if (context)
-        QObject::disconnect(context, SIGNAL(aboutToBeDestroyed()), q, SLOT(_q_contextAboutToBeDestroyed()));
 
     QOpenGLContext *ctx = QOpenGLContext::currentContext();
     if (!ctx) {
@@ -202,6 +200,8 @@ void QOpenGLVertexArrayObjectPrivate::destroy()
     if (!vao)
         return;
 
+    Q_Q(QOpenGLVertexArrayObject);
+
     switch (vaoFuncsType) {
 #ifndef QT_OPENGL_ES_2
     case Core_3_2:
@@ -219,6 +219,10 @@ void QOpenGLVertexArrayObjectPrivate::destroy()
     default:
         break;
     }
+
+    Q_ASSERT(context);
+    QObject::disconnect(context, SIGNAL(aboutToBeDestroyed()), q, SLOT(_q_contextAboutToBeDestroyed()));
+    context = 0;
 
     vao = 0;
 }
