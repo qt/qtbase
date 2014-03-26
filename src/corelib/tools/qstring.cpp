@@ -7568,6 +7568,8 @@ QString QString::multiArg(int numArgs, const QString **args) const
     \since 5.2
 
     Constructs a new QString containing a copy of the \a string CFString.
+
+    \note this function is only available on Mac OS X and iOS.
 */
 
 /*! \fn CFStringRef QString::toCFString() const
@@ -7575,18 +7577,24 @@ QString QString::multiArg(int numArgs, const QString **args) const
 
     Creates a CFString from a QString. The caller owns the CFString and is
     responsible for releasing it.
+
+    \note this function is only available on Mac OS X and iOS.
 */
 
 /*! \fn QString QString::fromNSString(const NSString *string)
     \since 5.2
 
     Constructs a new QString containing a copy of the \a string NSString.
+
+    \note this function is only available on Mac OS X and iOS.
 */
 
 /*! \fn NSString QString::toNSString() const
     \since 5.2
 
-    Creates a NSString from a QString.g. The NSString is autoreleased.
+    Creates a NSString from a QString. The NSString is autoreleased.
+
+    \note this function is only available on Mac OS X and iOS.
 */
 
 /*! \fn bool QString::isSimpleText() const
