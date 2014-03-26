@@ -92,7 +92,7 @@ struct QFontDef
     uint weight     :  7; // 0-99
     uint fixedPitch :  1;
     uint style      :  2;
-    uint stretch    : 12; // 0-400
+    uint stretch    : 12; // 0-4000
 
     uint hintingPreference : 2;
     uint ignorePitch : 1;

@@ -2163,6 +2163,8 @@ QDataStream &operator<<(QDataStream &s, const QFont &font)
         s << font.d->request.family.toLatin1();
     } else {
         s << font.d->request.family;
+        if (s.version() >= QDataStream::Qt_5_4)
+            s << font.d->request.styleName;
     }
 
     if (s.version() >= QDataStream::Qt_4_0) {
@@ -2183,8 +2185,14 @@ QDataStream &operator<<(QDataStream &s, const QFont &font)
     }
 
     s << (quint8) font.d->request.styleHint;
-    if (s.version() >= QDataStream::Qt_3_1)
-        s << (quint8) font.d->request.styleStrategy;
+    if (s.version() >= QDataStream::Qt_3_1) {
+        // Continue writing 8 bits for versions < 5.4 so that we don't write too much,
+        // even though we need 16 to store styleStrategy, so there is some data loss.
+        if (s.version() >= QDataStream::Qt_5_4)
+            s << (quint16) font.d->request.styleStrategy;
+        else
+            s << (quint8) font.d->request.styleStrategy;
+    }
     s << (quint8) 0
       << (quint8) font.d->request.weight
       << get_font_bits(s.version(), font.d.data());
@@ -2196,6 +2204,8 @@ QDataStream &operator<<(QDataStream &s, const QFont &font)
         s << font.d->letterSpacing.value();
         s << font.d->wordSpacing.value();
     }
+    if (s.version() >= QDataStream::Qt_5_4)
+        s << (quint8)font.d->request.hintingPreference;
     return s;
 }
 
@@ -2213,7 +2223,8 @@ QDataStream &operator>>(QDataStream &s, QFont &font)
     font.d = new QFontPrivate;
     font.resolve_mask = QFont::AllPropertiesResolved;
 
-    quint8 styleHint, styleStrategy = QFont::PreferDefault, charSet, weight, bits;
+    quint8 styleHint, charSet, weight, bits;
+    quint16 styleStrategy = QFont::PreferDefault;
 
     if (s.version() == 1) {
         QByteArray fam;
@@ -2221,6 +2232,8 @@ QDataStream &operator>>(QDataStream &s, QFont &font)
         font.d->request.family = QString::fromLatin1(fam);
     } else {
         s >> font.d->request.family;
+        if (s.version() >= QDataStream::Qt_5_4)
+            s >> font.d->request.styleName;
     }
 
     if (s.version() >= QDataStream::Qt_4_0) {
@@ -2240,8 +2253,15 @@ QDataStream &operator>>(QDataStream &s, QFont &font)
         font.d->request.pixelSize = pixelSize;
     }
     s >> styleHint;
-    if (s.version() >= QDataStream::Qt_3_1)
-        s >> styleStrategy;
+    if (s.version() >= QDataStream::Qt_3_1) {
+        if (s.version() >= QDataStream::Qt_5_4) {
+            s >> styleStrategy;
+        } else {
+            quint8 tempStyleStrategy;
+            s >> tempStyleStrategy;
+            styleStrategy = tempStyleStrategy;
+        }
+    }
 
     s >> charSet;
     s >> weight;
@@ -2270,6 +2290,11 @@ QDataStream &operator>>(QDataStream &s, QFont &font)
         font.d->letterSpacing.setValue(value);
         s >> value;
         font.d->wordSpacing.setValue(value);
+    }
+    if (s.version() >= QDataStream::Qt_5_4) {
+        quint8 value;
+        s >> value;
+        font.d->request.hintingPreference = QFont::HintingPreference(value);
     }
 
     return s;
