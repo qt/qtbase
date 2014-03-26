@@ -44,5 +44,5 @@
     \snippet code/doc_src_qtxml.pro 1
 
     The \l{Qt XML C++ Classes} page gives an overview over the available classes
-    int this module.
+    in this module.
 */
