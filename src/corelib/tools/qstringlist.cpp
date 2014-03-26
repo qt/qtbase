@@ -191,20 +191,6 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QStringList::QStringList(const QStringList &other)
-
-    Constructs a copy of the \a other string list.
-
-    This operation takes \l{constant time} because QStringList is
-    \l{implicitly shared}, making the process of returning a
-    QStringList from a function very fast. If a shared instance is
-    modified, it will be copied (copy-on-write), and that takes
-    \l{linear time}.
-
-    \sa operator=()
-*/
-
-/*!
     \fn QStringList::QStringList(const QList<QString> &other)
 
     Constructs a copy of \a other.

@@ -63,7 +63,6 @@ class QStringList : public QList<QString>
 public:
     inline QStringList() { }
     inline explicit QStringList(const QString &i) { append(i); }
-    inline QStringList(const QStringList &l) : QList<QString>(l) { }
     inline QStringList(const QList<QString> &l) : QList<QString>(l) { }
 #ifdef Q_COMPILER_INITIALIZER_LISTS
     inline QStringList(std::initializer_list<QString> args) : QList<QString>(args) { }
