@@ -873,18 +873,23 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
     if (!connection->d_func()->shouldEmitChannelError(socket))
         return;
 
-    // Need to dequeu the request so that we can emit the error.
-    if (!reply)
-        connection->d_func()->dequeueRequest(socket);
-    if (reply) {
-        reply->d_func()->errorString = errorString;
-        emit reply->finishedWithError(errorCode, errorString);
-        reply = 0;
-        if (protocolHandler)
-            protocolHandler->setReply(0);
-    }
+    // emit error for all waiting replies
+    do {
+        // Need to dequeu the request so that we can emit the error.
+        if (!reply)
+            connection->d_func()->dequeueRequest(socket);
+
+        if (reply) {
+            reply->d_func()->errorString = errorString;
+            emit reply->finishedWithError(errorCode, errorString);
+            reply = 0;
+            if (protocolHandler)
+                protocolHandler->setReply(0);
+        }
+    } while (!connection->d_func()->highPriorityQueue.isEmpty()
+             || !connection->d_func()->lowPriorityQueue.isEmpty());
 #ifndef QT_NO_SSL
-    else if (connection->connectionType() == QHttpNetworkConnection::ConnectionTypeSPDY) {
+    if (connection->connectionType() == QHttpNetworkConnection::ConnectionTypeSPDY) {
         QList<HttpMessagePair> spdyPairs = spdyRequestsToSend.values();
         for (int a = 0; a < spdyPairs.count(); ++a) {
             // emit error for all replies
