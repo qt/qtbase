@@ -70,6 +70,35 @@ static jfieldID m_selectionStartFieldID = 0;
 static jfieldID m_startOffsetFieldID = 0;
 static jfieldID m_textFieldID = 0;
 
+static jboolean beginBatchEdit(JNIEnv */*env*/, jobject /*thiz*/)
+{
+    if (!m_androidInputContext)
+        return JNI_FALSE;
+
+#ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
+    qDebug() << "@@@ BEGINBATCH";
+#endif
+
+    return m_androidInputContext->beginBatchEdit();
+
+    return JNI_TRUE;
+}
+
+static jboolean endBatchEdit(JNIEnv */*env*/, jobject /*thiz*/)
+{
+    if (!m_androidInputContext)
+        return JNI_FALSE;
+
+#ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
+    qDebug() << "@@@ ENDBATCH";
+#endif
+
+    return m_androidInputContext->endBatchEdit();
+
+    return JNI_TRUE;
+}
+
+
 static jboolean commitText(JNIEnv *env, jobject /*thiz*/, jstring text, jint newCursorPosition)
 {
     if (!m_androidInputContext)
@@ -285,6 +314,8 @@ static jboolean updateCursorPosition(JNIEnv */*env*/, jobject /*thiz*/)
 
 
 static JNINativeMethod methods[] = {
+    {"beginBatchEdit", "()Z", (void *)beginBatchEdit},
+    {"endBatchEdit", "()Z", (void *)endBatchEdit},
     {"commitText", "(Ljava/lang/String;I)Z", (void *)commitText},
     {"deleteSurroundingText", "(II)Z", (void *)deleteSurroundingText},
     {"finishComposingText", "()Z", (void *)finishComposingText},
@@ -306,7 +337,7 @@ static JNINativeMethod methods[] = {
 
 
 QAndroidInputContext::QAndroidInputContext()
-    : QPlatformInputContext(), m_blockUpdateSelection(false)
+    : QPlatformInputContext(), m_blockUpdateSelection(false), m_batchEditNestingLevel(0)
 {
     QtAndroid::AttachedJNIEnv env;
     if (!env.jniEnv)
@@ -416,7 +447,7 @@ void QAndroidInputContext::commit()
 void QAndroidInputContext::updateCursorPosition()
 {
     QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery();
-    if (!query.isNull() && !m_blockUpdateSelection) {
+    if (!query.isNull() && !m_blockUpdateSelection && !m_batchEditNestingLevel) {
         // make sure it also works with editors that have not been updated to the new API
         QVariant absolutePos = query->value(Qt::ImAbsolutePosition);
         const int cursorPos = absolutePos.isValid() ? absolutePos.toInt() : query->value(Qt::ImCursorPosition).toInt();
@@ -505,6 +536,19 @@ void QAndroidInputContext::sendEvent(QObject *receiver, QInputMethodEvent *event
 void QAndroidInputContext::sendEvent(QObject *receiver, QInputMethodQueryEvent *event)
 {
     QCoreApplication::sendEvent(receiver, event);
+}
+
+jboolean QAndroidInputContext::beginBatchEdit()
+{
+    ++m_batchEditNestingLevel;
+    return JNI_TRUE;
+}
+
+jboolean QAndroidInputContext::endBatchEdit()
+{
+    if (--m_batchEditNestingLevel == 0 && !m_blockUpdateSelection) //ending batch edit mode
+        updateCursorPosition();
+    return JNI_TRUE;
 }
 
 jboolean QAndroidInputContext::commitText(const QString &text, jint /*newCursorPosition*/)
@@ -610,7 +654,7 @@ QString QAndroidInputContext::getTextBeforeCursor(jint length, jint /*flags*/)
 {
     QVariant textBefore = queryFocusObjectThreadSafe(Qt::ImTextBeforeCursor, QVariant(length));
     if (textBefore.isValid()) {
-        return textBefore.toString().left(length);
+        return textBefore.toString().left(length) + m_composingText;
     }
 
     //compatibility code for old controls that do not implement the new API
@@ -624,7 +668,7 @@ QString QAndroidInputContext::getTextBeforeCursor(jint length, jint /*flags*/)
         return text;
 
     const int wordLeftPos = cursorPos - length;
-    return text.mid(wordLeftPos > 0 ? wordLeftPos : 0, cursorPos);
+    return text.mid(wordLeftPos > 0 ? wordLeftPos : 0, cursorPos) + m_composingText;
 }
 
 jboolean QAndroidInputContext::setComposingText(const QString &text, jint newCursorPosition)
@@ -647,11 +691,11 @@ jboolean QAndroidInputContext::setComposingText(const QString &text, jint newCur
     sendInputMethodEvent(&event);
 
     QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery();
-    if (!query.isNull() && !m_blockUpdateSelection) {
+    if (!query.isNull() && !m_blockUpdateSelection && !m_batchEditNestingLevel) {
         QVariant absolutePos = query->value(Qt::ImAbsolutePosition);
         const int cursorPos = absolutePos.isValid() ? absolutePos.toInt() : query->value(Qt::ImCursorPosition).toInt();
         const int preeditLength = text.length();
-        QtAndroidInput::updateSelection(cursorPos+preeditLength, cursorPos+preeditLength, cursorPos, cursorPos+preeditLength);
+        QtAndroidInput::updateSelection(cursorPos+preeditLength, cursorPos+preeditLength, -1, -1);
     }
 
     return JNI_TRUE;

@@ -61,6 +61,8 @@ class QtExtractedText
 
 class QtNativeInputConnection
 {
+    static native boolean beginBatchEdit();
+    static native boolean endBatchEdit();
     static native boolean commitText(String text, int newCursorPosition);
     static native boolean commitCompletion(String text, int position);
     static native boolean deleteSurroundingText(int leftLength, int rightLength);
@@ -121,14 +123,14 @@ public class QtInputConnection extends BaseInputConnection
     public boolean beginBatchEdit()
     {
         setClosing(false);
-        return true;
+        return QtNativeInputConnection.beginBatchEdit();
     }
 
     @Override
     public boolean endBatchEdit()
     {
         setClosing(false);
-        return true;
+        return QtNativeInputConnection.endBatchEdit();
     }
 
     @Override
