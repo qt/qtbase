@@ -113,6 +113,11 @@ bool QIOSContext::makeCurrent(QPlatformSurface *surface)
     Q_ASSERT(surface && surface->surface()->surfaceType() == QSurface::OpenGLSurface);
 
     [EAGLContext setCurrentContext:m_eaglContext];
+
+    // For offscreen surfaces we don't prepare a default FBO
+    if (surface->surface()->surfaceClass() == QSurface::Offscreen)
+        return true;
+
     FramebufferObject &framebufferObject = backingFramebufferObjectFor(surface);
 
     // We bind the default FBO even if it's incomplete, so that clients who
@@ -131,6 +136,10 @@ void QIOSContext::doneCurrent()
 void QIOSContext::swapBuffers(QPlatformSurface *surface)
 {
     Q_ASSERT(surface && surface->surface()->surfaceType() == QSurface::OpenGLSurface);
+
+    if (surface->surface()->surfaceClass() == QSurface::Offscreen)
+        return; // Nothing to do
+
     Q_ASSERT(surface->surface()->surfaceClass() == QSurface::Window);
     QIOSWindow *window = static_cast<QIOSWindow *>(surface);
     Q_ASSERT(m_framebufferObjects.contains(window));
@@ -213,6 +222,13 @@ QIOSContext::FramebufferObject &QIOSContext::backingFramebufferObjectFor(QPlatfo
 
 GLuint QIOSContext::defaultFramebufferObject(QPlatformSurface *surface) const
 {
+    if (surface->surface()->surfaceClass() == QSurface::Offscreen) {
+        // Binding and rendering to the zero-FBO on iOS seems to be
+        // no-ops, so we can safely return 0 here, even if it's not
+        // really a valid FBO on iOS.
+        return 0;
+    }
+
     return backingFramebufferObjectFor(surface).handle;
 }
 

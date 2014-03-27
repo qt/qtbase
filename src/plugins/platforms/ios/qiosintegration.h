@@ -64,6 +64,7 @@ public:
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
 
     QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
+    QPlatformOffscreenSurface *createPlatformOffscreenSurface(QOffscreenSurface *surface) const Q_DECL_OVERRIDE;
 
     QPlatformFontDatabase *fontDatabase() const;
     QPlatformClipboard *clipboard() const;
