@@ -316,11 +316,17 @@ QCocoaIntegration *QCocoaIntegration::instance()
 */
 void QCocoaIntegration::updateScreens()
 {
-    NSArray *screens = [NSScreen screens];
+    NSArray *scrs = [NSScreen screens];
+    NSMutableArray *screens = [NSMutableArray arrayWithArray:scrs];
+    if ([screens count] == 0)
+        if ([NSScreen mainScreen])
+           [screens addObject:[NSScreen mainScreen]];
+    if ([screens count] == 0)
+        return;
     QSet<QCocoaScreen*> remainingScreens = QSet<QCocoaScreen*>::fromList(mScreens);
     QList<QPlatformScreen *> siblings;
     for (uint i = 0; i < [screens count]; i++) {
-        NSScreen* scr = [[NSScreen screens] objectAtIndex:i];
+        NSScreen* scr = [screens objectAtIndex:i];
         CGDirectDisplayID dpy = [[[scr deviceDescription] objectForKey:@"NSScreenNumber"] unsignedIntValue];
         // If this screen is a mirror and is not the primary one of the mirror set, ignore it.
         if (CGDisplayIsInMirrorSet(dpy)) {
