@@ -443,7 +443,7 @@ QString QtPrivate::QStringList_join(const QStringList *that, const QChar *sep, i
     if (totalLength == 0)
         return res;
     res.reserve(totalLength);
-    for (int i = 0; i < that->size(); ++i) {
+    for (int i = 0; i < size; ++i) {
         if (i)
             res.append(sep, seplen);
         res += that->at(i);
