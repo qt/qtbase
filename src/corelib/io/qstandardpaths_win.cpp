@@ -73,7 +73,7 @@ const GUID qCLSID_FOLDERID_Downloads = { 0x374de290, 0x123f, 0x4565, { 0x91, 0x6
 QT_BEGIN_NAMESPACE
 
 #if !defined(Q_OS_WINCE)
-typedef HRESULT (WINAPI *GetKnownFolderPath)(REFKNOWNFOLDERID, DWORD, HANDLE, LPWSTR*);
+typedef HRESULT (WINAPI *GetKnownFolderPath)(const GUID&, DWORD, HANDLE, LPWSTR*);
 #endif
 
 static QString convertCharArray(const wchar_t *path)
