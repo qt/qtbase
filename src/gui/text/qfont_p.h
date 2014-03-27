@@ -251,7 +251,7 @@ public:
             return script == other.script
                     && screen == other.screen
                     && multi == other.multi
-                    && (!multi || def.fallBackFamilies.size() == other.def.fallBackFamilies.size())
+                    && (!multi || def.fallBackFamilies == other.def.fallBackFamilies)
                     && def == other.def;
         }
     };
