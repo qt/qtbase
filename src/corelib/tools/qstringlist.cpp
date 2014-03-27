@@ -221,9 +221,14 @@ QT_BEGIN_NAMESPACE
     integer index.
 */
 
-static inline bool caseInsensitiveLessThan(const QString &s1, const QString &s2)
-{
-   return s1.compare(s2, Qt::CaseInsensitive) < 0;
+namespace {
+struct CaseInsensitiveLessThan {
+    typedef bool result_type;
+    result_type operator()(const QString &s1, const QString &s2) const
+    {
+        return s1.compare(s2, Qt::CaseInsensitive) < 0;
+    }
+};
 }
 
 void QtPrivate::QStringList_sort(QStringList *that, Qt::CaseSensitivity cs)
@@ -231,7 +236,7 @@ void QtPrivate::QStringList_sort(QStringList *that, Qt::CaseSensitivity cs)
     if (cs == Qt::CaseSensitive)
         std::sort(that->begin(), that->end());
     else
-        std::sort(that->begin(), that->end(), caseInsensitiveLessThan);
+        std::sort(that->begin(), that->end(), CaseInsensitiveLessThan());
 }
 
 
