@@ -288,8 +288,8 @@ QString QQnxFilePicker::filePickerType() const
     bool video = false;
     bool music = false;
     QMimeDatabase mimeDb;
-    for (int i = 0; i < filters().count(); i++) {
-        QList<QMimeType> mimeTypes = mimeDb.mimeTypesForFileName(filters().at(i));
+    for (int i = 0; i < m_filters.count(); i++) {
+        QList<QMimeType> mimeTypes = mimeDb.mimeTypesForFileName(m_filters.at(i));
         if (mimeTypes.isEmpty())
             return QStringLiteral("Other");
 
