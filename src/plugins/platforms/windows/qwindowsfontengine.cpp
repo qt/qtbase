@@ -1278,35 +1278,14 @@ void QWindowsFontEngine::initFontInfo(const QFontDef &request,
 
     Will probably be superseded by a common Free Type font engine in Qt 5.X.
 */
-
-QWindowsMultiFontEngine::QWindowsMultiFontEngine(QFontEngine *first, const QStringList &fallbacks)
-    : QFontEngineMulti(fallbacks.size() + 1),
-      fallbackFamilies(fallbacks)
+QWindowsMultiFontEngine::QWindowsMultiFontEngine(QFontEngine *fe, int script)
+    : QFontEngineMultiQPA(fe, script)
 {
-    engines[0] = first;
-    first->ref.ref();
-    fontDef = engines[0]->fontDef;
-    cache_cost = first->cache_cost;
-}
-
-void QWindowsMultiFontEngine::setFallbackFamiliesList(const QStringList &fallbacks)
-{
-    // Original FontEngine to restore after the fill.
-    QFontEngine *fe = engines[0];
-    fallbackFamilies = fallbacks;
-    if (!fallbackFamilies.isEmpty()) {
-        engines.fill(0, fallbackFamilies.size() + 1);
-        engines[0] = fe;
-    } else {
-        // Turns out we lied about having any fallback at all.
-        fallbackFamilies << fe->fontDef.family;
-        engines[1] = fe;
-        fe->ref.ref();
-    }
 }
 
 void QWindowsMultiFontEngine::loadEngine(int at)
 {
+    ensureFallbackFamiliesQueried();
     Q_ASSERT(at < engines.size());
     Q_ASSERT(engines.at(at) == 0);
 
@@ -1329,7 +1308,7 @@ void QWindowsMultiFontEngine::loadEngine(int at)
         data = fe->fontEngineData();
     }
 
-    const QString fam = fallbackFamilies.at(at-1);
+    const QString fam = fallbackFamilyAt(at - 1);
     memcpy(lf.lfFaceName, fam.utf16(), sizeof(wchar_t) * qMin(fam.length() + 1, 32));  // 32 = Windows hard-coded
 
 #ifndef QT_NO_DIRECTWRITE
