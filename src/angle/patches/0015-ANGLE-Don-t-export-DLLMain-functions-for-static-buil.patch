@@ -1,0 +1,63 @@
+From 6545677945d24854007d39fed86d4e44900b5c1a Mon Sep 17 00:00:00 2001
+From: Andrew Knight <andrew.knight@digia.com>
+Date: Thu, 27 Mar 2014 15:36:52 +0200
+Subject: [PATCH] ANGLE: Don't export DLLMain functions for static builds
+
+These ifdef guards were originally a part of
+"0004-Make-it-possible-to-link-ANGLE-statically-for-single.patch",
+but were lost during the last ANGLE upgrade.
+
+Task-number: QTBUG-37842
+Change-Id: I4340c1641675dd310c14454a851eb4bc0ae2ec0d
+---
+ src/3rdparty/angle/src/libEGL/main.cpp    | 4 ++++
+ src/3rdparty/angle/src/libGLESv2/main.cpp | 4 ++++
+ 2 files changed, 8 insertions(+)
+
+diff --git a/src/3rdparty/angle/src/libEGL/main.cpp b/src/3rdparty/angle/src/libEGL/main.cpp
+index e972691..4cdf5f0 100644
+--- a/src/3rdparty/angle/src/libEGL/main.cpp
++++ b/src/3rdparty/angle/src/libEGL/main.cpp
+@@ -69,6 +69,8 @@ void DeallocateCurrent()
+ 
+ }
+ 
++#ifndef QT_OPENGL_ES_2_ANGLE_STATIC
++
+ extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved)
+ {
+     switch (reason)
+@@ -124,6 +126,8 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved
+     return TRUE;
+ }
+ 
++#endif // !QT_OPENGL_ES_2_ANGLE_STATIC
++
+ namespace egl
+ {
+ 
+diff --git a/src/3rdparty/angle/src/libGLESv2/main.cpp b/src/3rdparty/angle/src/libGLESv2/main.cpp
+index 95f4b8d..e527994 100644
+--- a/src/3rdparty/angle/src/libGLESv2/main.cpp
++++ b/src/3rdparty/angle/src/libGLESv2/main.cpp
+@@ -66,6 +66,8 @@ void DeallocateCurrent()
+ 
+ }
+ 
++#ifndef QT_OPENGL_ES_2_ANGLE_STATIC
++
+ extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved)
+ {
+     switch (reason)
+@@ -107,6 +109,8 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved
+     return TRUE;
+ }
+ 
++#endif // !QT_OPENGL_ES_2_ANGLE_STATIC
++
+ namespace gl
+ {
+ 
+-- 
+1.8.4.msysgit.0
+

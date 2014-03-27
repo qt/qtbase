@@ -69,6 +69,8 @@ void DeallocateCurrent()
 
 }
 
+#ifndef QT_OPENGL_ES_2_ANGLE_STATIC
+
 extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved)
 {
     switch (reason)
@@ -123,6 +125,8 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved
 
     return TRUE;
 }
+
+#endif // !QT_OPENGL_ES_2_ANGLE_STATIC
 
 namespace egl
 {
