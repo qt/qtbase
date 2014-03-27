@@ -137,6 +137,8 @@ QAccessible::State QAccessibleButton::state() const
 
     QAbstractButton *b = button();
     QCheckBox *cb = qobject_cast<QCheckBox *>(b);
+    if (b->isCheckable())
+        state.checkable = true;
     if (b->isChecked())
         state.checked = true;
     else if (cb && cb->checkState() == Qt::PartiallyChecked)
