@@ -130,9 +130,9 @@ void QQnxFilePicker::open()
     map[QStringLiteral("AllowOverwrite")] = false;
 
     if (!m_defaultSaveFileNames.isEmpty())
-        map[QStringLiteral("DefaultFileNames")] = m_defaultSaveFileNames.join(",");
+        map[QStringLiteral("DefaultFileNames")] = m_defaultSaveFileNames.join(QLatin1Char(','));
     if (!m_filters.isEmpty())
-        map[QStringLiteral("Filter")] = m_filters.join(";");
+        map[QStringLiteral("Filter")] = m_filters.join(QLatin1Char(';'));
 
     QByteArray ppsData;
 #if defined(Q_OS_BLACKBERRY_TABLET)
