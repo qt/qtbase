@@ -140,17 +140,22 @@ void QIOSContext::swapBuffers(QPlatformSurface *surface)
     if (surface->surface()->surfaceClass() == QSurface::Offscreen)
         return; // Nothing to do
 
-    Q_ASSERT(surface->surface()->surfaceClass() == QSurface::Window);
-    QIOSWindow *window = static_cast<QIOSWindow *>(surface);
-    Q_ASSERT(m_framebufferObjects.contains(window));
+    FramebufferObject &framebufferObject = backingFramebufferObjectFor(surface);
 
     [EAGLContext setCurrentContext:m_eaglContext];
-    glBindRenderbuffer(GL_RENDERBUFFER, m_framebufferObjects[window].colorRenderbuffer);
+    glBindRenderbuffer(GL_RENDERBUFFER, framebufferObject.colorRenderbuffer);
     [m_eaglContext presentRenderbuffer:GL_RENDERBUFFER];
 }
 
 QIOSContext::FramebufferObject &QIOSContext::backingFramebufferObjectFor(QPlatformSurface *surface) const
 {
+    // We keep track of default-FBOs in the root context of a share-group. This assumes
+    // that the contexts form a tree, where leaf nodes are always destroyed before their
+    // parents. If that assumption (based on the current implementation) doesn't hold we
+    // should probably use QOpenGLMultiGroupSharedResource to track the shared default-FBOs.
+    if (m_sharedContext)
+        return m_sharedContext->backingFramebufferObjectFor(surface);
+
     Q_ASSERT(surface && surface->surface()->surfaceClass() == QSurface::Window);
     QIOSWindow *window = static_cast<QIOSWindow *>(surface);
 
