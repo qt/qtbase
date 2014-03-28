@@ -66,7 +66,12 @@ static QColormapPrivate *screenMap = 0;
 void QColormap::initialize()
 {
     screenMap = new QColormapPrivate;
-
+    if (!QGuiApplication::primaryScreen()) {
+        qWarning("no screens available, assuming 24-bit color");
+        screenMap->depth = 24;
+        screenMap->mode = QColormap::Direct;
+        return;
+    }
     screenMap->depth = QGuiApplication::primaryScreen()->depth();
     if (screenMap->depth < 8) {
         screenMap->mode = QColormap::Indexed;

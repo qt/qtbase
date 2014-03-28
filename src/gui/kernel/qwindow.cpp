@@ -159,10 +159,6 @@ QWindow::QWindow(QScreen *targetScreen)
     d->screen = targetScreen;
     if (!d->screen)
         d->screen = QGuiApplication::primaryScreen();
-
-    //if your applications aborts here, then chances are your creating a QWindow before the
-    //screen list is populated.
-    Q_ASSERT(d->screen);
     d->init();
 }
 
@@ -232,6 +228,13 @@ QWindow::~QWindow()
 void QWindowPrivate::init()
 {
     Q_Q(QWindow);
+
+    // If your application aborts here, you are probably creating a QWindow
+    // before the screen list is populated.
+    if (!screen) {
+        qFatal("Cannot create window: no screens available");
+        exit(1);
+    }
     QObject::connect(screen, SIGNAL(destroyed(QObject*)), q, SLOT(screenDestroyed(QObject*)));
     QGuiApplicationPrivate::window_list.prepend(q);
 }

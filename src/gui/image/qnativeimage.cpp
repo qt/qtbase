@@ -64,6 +64,8 @@ QNativeImage::~QNativeImage()
 
 QImage::Format QNativeImage::systemFormat()
 {
+    if (!QGuiApplication::primaryScreen())
+        return QImage::Format_Invalid;
     return QGuiApplication::primaryScreen()->handle()->format();
 }
 
