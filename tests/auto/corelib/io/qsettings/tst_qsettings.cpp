@@ -50,6 +50,7 @@
 #include <QtCore/QString>
 #include <QtCore/QDir>
 #include <QtCore/QThread>
+#include <QtCore/QSysInfo>
 #include <QtGui/QKeySequence>
 
 #include <cctype>
@@ -2797,10 +2798,30 @@ void tst_QSettings::isWritable()
         QSettings s1(format, QSettings::SystemScope, "software.org", "KillerAPP");
         QSettings s2(format, QSettings::SystemScope, "software.org", "Something Different");
         QSettings s3(format, QSettings::SystemScope, "foo.org", "Something Different");
+
         if (s1.contains("foo")) {
-            QVERIFY(s1.isWritable());
-            QVERIFY(s2.isWritable());
-            QVERIFY(s3.isWritable());
+#if defined(Q_OS_MACX)
+            if (QSysInfo::macVersion() >= QSysInfo::MV_10_9) {
+                QVERIFY(s1.isWritable());
+                if (format == QSettings::NativeFormat) {
+                    QVERIFY(!s2.isWritable());
+                    QVERIFY(!s3.isWritable());
+                } else {
+                    QVERIFY(s2.isWritable());
+                    QVERIFY(s3.isWritable());
+                }
+            } else if (QSysInfo::macVersion() >= QSysInfo::MV_10_7 &&
+                       format == QSettings::NativeFormat) {
+                QVERIFY(!s1.isWritable());
+                QVERIFY(!s2.isWritable());
+                QVERIFY(!s3.isWritable());
+            } else
+#endif
+            {
+                QVERIFY(s1.isWritable());
+                QVERIFY(s2.isWritable());
+                QVERIFY(s3.isWritable());
+            }
         } else {
             QVERIFY(!s1.isWritable());
             QVERIFY(!s2.isWritable());
