@@ -79,6 +79,7 @@
 #include "qfileinfo.h"
 #include <QtGui/qinputmethod.h>
 #include <QtGui/qopenglcontext.h>
+#include <QtGui/private/qopenglcontext_p.h>
 
 #include <private/qgraphicseffect_p.h>
 #include <qbackingstore.h>
@@ -11148,6 +11149,7 @@ QOpenGLContext *QWidgetPrivate::shareContext() const
     QWidgetPrivate *that = const_cast<QWidgetPrivate *>(this);
     if (!extra->topextra->shareContext) {
         QOpenGLContext *ctx = new QOpenGLContext();
+        ctx->setShareContext(QOpenGLContextPrivate::globalShareContext());
         ctx->setFormat(extra->topextra->window->format());
         ctx->create();
         that->extra->topextra->shareContext = ctx;
