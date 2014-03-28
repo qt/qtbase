@@ -301,9 +301,8 @@ inline bool operator<(const RGBData &data, const char *name)
 
 static bool get_named_rgb(const char *name_no_space, QRgb *rgb)
 {
-    QByteArray name = QByteArray(name_no_space).toLower();
-    const RGBData *r = std::lower_bound(rgbTbl, rgbTbl + rgbTblSize, name.constData());
-    if ((r != rgbTbl + rgbTblSize) && !(name.constData() < *r)) {
+    const RGBData *r = std::lower_bound(rgbTbl, rgbTbl + rgbTblSize, name_no_space);
+    if ((r != rgbTbl + rgbTblSize) && !(name_no_space < *r)) {
         *rgb = r->value;
         return true;
     }
@@ -319,7 +318,7 @@ bool qt_get_named_rgb(const char *name, QRgb* rgb)
     int pos = 0;
     for(int i = 0; i < len; i++) {
         if(name[i] != '\t' && name[i] != ' ')
-            name_no_space[pos++] = name[i];
+            name_no_space[pos++] = QChar::toLower(name[i]);
     }
     name_no_space[pos] = 0;
 
@@ -334,7 +333,7 @@ bool qt_get_named_rgb(const QChar *name, int len, QRgb *rgb)
     int pos = 0;
     for(int i = 0; i < len; i++) {
         if(name[i] != QLatin1Char('\t') && name[i] != QLatin1Char(' '))
-            name_no_space[pos++] = name[i].toLatin1();
+            name_no_space[pos++] = name[i].toLower().toLatin1();
     }
     name_no_space[pos] = 0;
     return get_named_rgb(name_no_space, rgb);

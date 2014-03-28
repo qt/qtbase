@@ -530,10 +530,19 @@ static const int rgbTblSize = sizeof(rgbTbl) / sizeof(RGBData);
 void tst_QColor::setNamedColor()
 {
     for (int i = 0; i < rgbTblSize; ++i) {
-        QColor color;
-        color.setNamedColor(QLatin1String(rgbTbl[i].name));
         QColor expected;
         expected.setRgba(rgbTbl[i].value);
+
+        QColor color;
+        color.setNamedColor(QLatin1String(rgbTbl[i].name));
+        QCOMPARE(color, expected);
+
+        // name should be case insensitive
+        color.setNamedColor(QString(rgbTbl[i].name).toUpper());
+        QCOMPARE(color, expected);
+
+        // spaces should be ignored
+        color.setNamedColor(QString(rgbTbl[i].name).insert(1, ' '));
         QCOMPARE(color, expected);
     }
 }
