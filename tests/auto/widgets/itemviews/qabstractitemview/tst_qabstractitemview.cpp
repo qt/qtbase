@@ -60,6 +60,7 @@
 #include <qlineedit.h>
 #include <qscreen.h>
 #include <qscopedpointer.h>
+#include <qstyleditemdelegate.h>
 
 static inline void setFrameless(QWidget *w)
 {
@@ -244,6 +245,8 @@ private slots:
     void testChangeEditorState();
     void deselectInSingleSelection();
     void testNoActivateOnDisabledItem();
+    void testFocusPolicy_data();
+    void testFocusPolicy();
 };
 
 class MyAbstractItemDelegate : public QAbstractItemDelegate
@@ -1726,6 +1729,57 @@ void tst_QAbstractItemView::testNoActivateOnDisabledItem()
     QTest::mouseClick(treeView.viewport(), Qt::LeftButton, 0, clickPos);
 
     QCOMPARE(activatedSpy.count(), 0);
+}
+
+void tst_QAbstractItemView::testFocusPolicy_data()
+{
+    QTest::addColumn<QAbstractItemDelegate*>("delegate");
+
+    QAbstractItemDelegate *styledItemDelegate = new QStyledItemDelegate(this);
+    QAbstractItemDelegate *itemDelegate = new QItemDelegate(this);
+
+    QTest::newRow("QStyledItemDelegate") << styledItemDelegate;
+    QTest::newRow("QItemDelegate") << itemDelegate;
+}
+
+void tst_QAbstractItemView::testFocusPolicy()
+{
+    QFETCH(QAbstractItemDelegate*, delegate);
+
+    QWidget window;
+    QTableView *table = new QTableView(&window);
+    table->setItemDelegate(delegate);
+    QVBoxLayout *layout = new QVBoxLayout(&window);
+    layout->addWidget(table);
+
+    QStandardItemModel model;
+    model.setRowCount(10);
+    model.setColumnCount(10);
+    table->setModel(&model);
+    table->setCurrentIndex(model.index(1, 1));
+
+    centerOnScreen(&window);
+    moveCursorAway(&window);
+
+    window.show();
+    QApplication::setActiveWindow(&window);
+    QVERIFY(QTest::qWaitForWindowActive(&window));
+
+    // itemview accepts focus => editor is closed => return focus to the itemview
+    QPoint clickpos = table->visualRect(model.index(1, 1)).center();
+    QTest::mouseDClick(table->viewport(), Qt::LeftButton, Qt::NoModifier, clickpos);
+    QWidget *editor = qApp->focusWidget();
+    QVERIFY(editor);
+    QTest::keyClick(editor, Qt::Key_Escape, Qt::NoModifier);
+    QCOMPARE(qApp->focusWidget(), table);
+
+    // itemview doesn't accept focus => editor is closed => clear the focus
+    table->setFocusPolicy(Qt::NoFocus);
+    QTest::mouseDClick(table->viewport(), Qt::LeftButton, Qt::NoModifier, clickpos);
+    editor = qApp->focusWidget();
+    QVERIFY(editor);
+    QTest::keyClick(editor, Qt::Key_Escape, Qt::NoModifier);
+    QVERIFY(!qApp->focusWidget());
 }
 
 QTEST_MAIN(tst_QAbstractItemView)
