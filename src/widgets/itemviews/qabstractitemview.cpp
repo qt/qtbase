@@ -2771,8 +2771,9 @@ void QAbstractItemView::closeEditor(QWidget *editor, QAbstractItemDelegate::EndE
     }
 
     // The EndEditHint part
-    QItemSelectionModel::SelectionFlags flags = QItemSelectionModel::ClearAndSelect
-                                                | d->selectionBehaviorFlags();
+    QItemSelectionModel::SelectionFlags flags = QItemSelectionModel::NoUpdate;
+    if (d->selectionMode != NoSelection)
+        flags = QItemSelectionModel::ClearAndSelect | d->selectionBehaviorFlags();
     switch (hint) {
     case QAbstractItemDelegate::EditNextItem: {
         QModelIndex index = moveCursor(MoveNext, Qt::NoModifier);

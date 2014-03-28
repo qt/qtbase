@@ -247,6 +247,7 @@ private slots:
     void testNoActivateOnDisabledItem();
     void testFocusPolicy_data();
     void testFocusPolicy();
+    void QTBUG31411_noSelection();
 };
 
 class MyAbstractItemDelegate : public QAbstractItemDelegate
@@ -1780,6 +1781,47 @@ void tst_QAbstractItemView::testFocusPolicy()
     QVERIFY(editor);
     QTest::keyClick(editor, Qt::Key_Escape, Qt::NoModifier);
     QVERIFY(!qApp->focusWidget());
+}
+
+Q_DECLARE_METATYPE(QItemSelection)
+void tst_QAbstractItemView::QTBUG31411_noSelection()
+{
+    QWidget window;
+    QTableView *table = new QTableView(&window);
+    table->setSelectionMode(QAbstractItemView::NoSelection);
+    QVBoxLayout *layout = new QVBoxLayout(&window);
+    layout->addWidget(table);
+
+    QStandardItemModel model;
+    model.setRowCount(10);
+    model.setColumnCount(10);
+    table->setModel(&model);
+    table->setCurrentIndex(model.index(1, 1));
+
+    centerOnScreen(&window);
+    moveCursorAway(&window);
+
+    window.show();
+    QApplication::setActiveWindow(&window);
+    QVERIFY(QTest::qWaitForWindowActive(&window));
+
+    qRegisterMetaType<QItemSelection>();
+    QSignalSpy selectionChangeSpy(table->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)));
+    QVERIFY(selectionChangeSpy.isValid());
+
+    QPoint clickpos = table->visualRect(model.index(1, 1)).center();
+    QTest::mouseClick(table->viewport(), Qt::LeftButton, Qt::NoModifier, clickpos);
+    QTest::mouseDClick(table->viewport(), Qt::LeftButton, Qt::NoModifier, clickpos);
+
+    QPointer<QWidget> editor1 = qApp->focusWidget();
+    QVERIFY(editor1);
+    QTest::keyClick(editor1, Qt::Key_Tab, Qt::NoModifier);
+
+    QPointer<QWidget> editor2 = qApp->focusWidget();
+    QVERIFY(editor2);
+    QTest::keyClick(editor2, Qt::Key_Escape, Qt::NoModifier);
+
+    QCOMPARE(selectionChangeSpy.count(), 0);
 }
 
 QTEST_MAIN(tst_QAbstractItemView)
