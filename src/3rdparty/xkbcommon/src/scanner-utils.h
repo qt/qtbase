@@ -49,12 +49,24 @@ struct scanner {
     size_t len;
     char buf[1024];
     size_t buf_pos;
-    int line, column;
+    unsigned line, column;
     /* The line/column of the start of the current token. */
-    int token_line, token_column;
+    unsigned token_line, token_column;
     const char *file_name;
     struct xkb_context *ctx;
 };
+
+#define scanner_log(scanner, level, fmt, ...) \
+    xkb_log((scanner)->ctx, (level), 0, \
+            "%s:%u:%u: " fmt "\n", \
+             (scanner)->file_name, \
+             (scanner)->token_line, (scanner)->token_column, ##__VA_ARGS__)
+
+#define scanner_err(scanner, fmt, ...) \
+    scanner_log(scanner, XKB_LOG_LEVEL_ERROR, fmt, ##__VA_ARGS__)
+
+#define scanner_warn(scanner, fmt, ...) \
+    scanner_log(scanner, XKB_LOG_LEVEL_WARNING, fmt, ##__VA_ARGS__)
 
 static inline void
 scanner_init(struct scanner *s, struct xkb_context *ctx,
@@ -72,7 +84,9 @@ scanner_init(struct scanner *s, struct xkb_context *ctx,
 static inline char
 peek(struct scanner *s)
 {
-    return s->pos < s->len ? s->s[s->pos] : '\0';
+    if (unlikely(s->pos >= s->len))
+        return '\0';
+    return s->s[s->pos];
 }
 
 static inline bool
@@ -90,9 +104,9 @@ eol(struct scanner *s)
 static inline char
 next(struct scanner *s)
 {
-    if (eof(s))
+    if (unlikely(eof(s)))
         return '\0';
-    if (eol(s)) {
+    if (unlikely(eol(s))) {
         s->line++;
         s->column = 1;
     }
@@ -105,7 +119,7 @@ next(struct scanner *s)
 static inline bool
 chr(struct scanner *s, char ch)
 {
-    if (peek(s) != ch)
+    if (likely(peek(s) != ch))
         return false;
     s->pos++; s->column++;
     return true;

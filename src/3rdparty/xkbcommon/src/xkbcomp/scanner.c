@@ -23,27 +23,6 @@
 
 #include "xkbcomp-priv.h"
 #include "parser-priv.h"
-#include "scanner-utils.h"
-
-static void
-scanner_log(enum xkb_log_level level, struct scanner *s, const char *msg)
-{
-    xkb_log(s->ctx, level, 0,  "%s:%d:%d: %s\n", s->file_name,
-            s->token_line, s->token_column, msg);
-}
-
-int
-scanner_error(struct scanner *s, const char *msg)
-{
-    scanner_log(XKB_LOG_LEVEL_ERROR, s, msg);
-    return ERROR_TOK;
-}
-
-void
-scanner_warn(struct scanner *s, const char *msg)
-{
-    scanner_log(XKB_LOG_LEVEL_WARNING, s, msg);
-}
 
 static bool
 number(struct scanner *s, int64_t *out, int *out_tok)
@@ -123,11 +102,13 @@ skip_more_whitespace_and_comments:
                 buf_append(s, next(s));
             }
         }
-        if (!buf_append(s, '\0') || !chr(s, '\"'))
-            return scanner_error(s, "unterminated string literal");
+        if (!buf_append(s, '\0') || !chr(s, '\"')) {
+            scanner_err(s, "unterminated string literal");
+            return ERROR_TOK;
+        }
         yylval->str = strdup(s->buf);
         if (!yylval->str)
-            return scanner_error(s, "scanner out of memory");
+            return ERROR_TOK;
         return STRING;
     }
 
@@ -135,8 +116,10 @@ skip_more_whitespace_and_comments:
     if (chr(s, '<')) {
         while (is_graph(peek(s)) && peek(s) != '>')
             buf_append(s, next(s));
-        if (!buf_append(s, '\0') || !chr(s, '>'))
-            return scanner_error(s, "unterminated key name literal");
+        if (!buf_append(s, '\0') || !chr(s, '>')) {
+            scanner_err(s, "unterminated key name literal");
+            return ERROR_TOK;
+        }
         /* Empty key name literals are allowed. */
         yylval->sval = xkb_atom_intern(s->ctx, s->buf, s->buf_pos - 1);
         return KEYNAME;
@@ -165,27 +148,32 @@ skip_more_whitespace_and_comments:
         s->buf_pos = 0;
         while (is_alnum(peek(s)) || peek(s) == '_')
             buf_append(s, next(s));
-        if (!buf_append(s, '\0'))
-            return scanner_error(s, "identifier too long");
+        if (!buf_append(s, '\0')) {
+            scanner_err(s, "identifier too long");
+            return ERROR_TOK;
+        }
 
         /* Keyword. */
-        tok = keyword_to_token(s->buf);
+        tok = keyword_to_token(s->buf, s->buf_pos - 1);
         if (tok != -1) return tok;
 
         yylval->str = strdup(s->buf);
         if (!yylval->str)
-            return scanner_error(s, "scanner out of memory");
+            return ERROR_TOK;
         return IDENT;
     }
 
     /* Number literal (hexadecimal / decimal / float). */
     if (number(s, &yylval->num, &tok)) {
-        if (tok == ERROR_TOK)
-            return scanner_error(s, "malformed number literal");
+        if (tok == ERROR_TOK) {
+            scanner_err(s, "malformed number literal");
+            return ERROR_TOK;
+        }
         return tok;
     }
 
-    return scanner_error(s, "unrecognized token");
+    scanner_err(s, "unrecognized token");
+    return ERROR_TOK;
 }
 
 XkbFile *

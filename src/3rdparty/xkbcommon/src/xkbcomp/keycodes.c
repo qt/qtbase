@@ -29,79 +29,6 @@
 #include "expr.h"
 #include "include.h"
 
-/*
- * The xkb_keycodes section
- * ========================
- *
- * This is the simplest section type, and is the first one to be
- * compiled. The purpose of this is mostly to map between the
- * hardware/evdev scancodes and xkb keycodes. Each key is given a name
- * by which it can be referred to later, e.g. in the symbols section.
- *
- * Keycode statements
- * ------------------
- * Statements of the form:
- *      <TLDE> = 49;
- *      <AE01> = 10;
- *
- * The above would let 49 and 10 be valid keycodes in the keymap, and
- * assign them the names TLDE and AE01 respectively. The format <WXYZ> is
- * always used to refer to a key by name.
- *
- * [ The naming convention <AE01> just denoted the position of the key
- * in the main alphanumric section of the keyboard, with the two letters
- * specifying the row and the two digits specifying the column, from
- * the bottom left.]
- *
- * In the common case this just maps to the evdev scancodes from
- * /usr/include/linux/input.h, e.g. the following definitions:
- *      #define KEY_GRAVE            41
- *      #define KEY_1                2
- * Similar definitions appear in the xf86-input-keyboard driver. Note
- * that in all current keymaps there's a constant offset of 8 (for
- * historical reasons).
- *
- * If there's a conflict, like the same name given to different keycodes,
- * or same keycode given different names, it is resolved according to the
- * merge mode which applies to the definitions.
- *
- * Alias statements
- * ----------------
- * Statements of the form:
- *      alias <MENU> = <COMP>;
- *
- * Allows to refer to a previously defined key (here <COMP>) by another
- * name (here <MENU>). Conflicts are handled similarly.
- *
- * LED name statements
- * -------------------------
- * Statements of the form:
- *      indicator 1 = "Caps Lock";
- *      indicator 2 = "Num Lock";
- *      indicator 3 = "Scroll Lock";
- *
- * Assigns a name to the keyboard LED (a.k.a indicator) with the given index.
- * The led may be referred by this name later in the compat section
- * and by the user.
- *
- * Effect on the keymap
- * --------------------
- * After all of the xkb_keycodes sections have been compiled, the
- * following members of struct xkb_keymap are finalized:
- *      xkb_keycode_t min_key_code;
- *      xkb_keycode_t max_key_code;
- *      unsigned int num_aliases;
- *      struct xkb_key_alias *key_aliases;
- *      char *keycodes_section_name;
- * The 'name' field of leds declared in xkb_keycodes:
- *      darray(struct xkb_led) leds;
- * Further, the array of keys:
- *      struct xkb_key *keys;
- * had been resized to its final size (i.e. all of the xkb_key objects are
- * referable by their keycode). However the objects themselves do not
- * contain any useful information besides the key name at this point.
- */
-
 typedef struct {
     enum merge_mode merge;
 
@@ -322,7 +249,7 @@ AddKeyName(KeyNamesInfo *info, xkb_keycode_t kc, xkb_atom_t name,
 
 /***====================================================================***/
 
-static int
+static bool
 HandleAliasDef(KeyNamesInfo *info, KeyAliasDef *def, enum merge_mode merge);
 
 static void
@@ -459,7 +386,7 @@ HandleKeycodeDef(KeyNamesInfo *info, KeycodeDef *stmt, enum merge_mode merge)
     return AddKeyName(info, stmt->value, stmt->name, merge, false, true);
 }
 
-static int
+static bool
 HandleAliasDef(KeyNamesInfo *info, KeyAliasDef *def, enum merge_mode merge)
 {
     AliasInfo *old, new;
@@ -499,7 +426,7 @@ HandleAliasDef(KeyNamesInfo *info, KeyAliasDef *def, enum merge_mode merge)
     return true;
 }
 
-static int
+static bool
 HandleKeyNameVar(KeyNamesInfo *info, VarDef *stmt)
 {
     const char *elem, *field;
@@ -524,7 +451,7 @@ HandleKeyNameVar(KeyNamesInfo *info, VarDef *stmt)
     return true;
 }
 
-static int
+static bool
 HandleLedNameDef(KeyNamesInfo *info, LedNameDef *def,
                  enum merge_mode merge)
 {

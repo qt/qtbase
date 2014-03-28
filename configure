@@ -5053,11 +5053,12 @@ if [ "$CFG_KMS" != "no" ]; then
 fi
 
 # Detect libxkbcommon
+MIN_REQ_XKBCOMMON="0.4.1"
 ORIG_CFG_XKBCOMMON="$CFG_XKBCOMMON"
 # currently only xcb platform plugin supports building xkbcommon
 if [ "$CFG_XCB" != "no" ]; then
     if [ "$CFG_XKBCOMMON" = "auto" ] || [ "$CFG_XKBCOMMON" = "system" ]; then
-        if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists "xkbcommon xkbcommon-x11 >= 0.4.0" 2>/dev/null; then
+        if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists "xkbcommon xkbcommon-x11 >= $MIN_REQ_XKBCOMMON" 2>/dev/null; then
             QMAKE_CFLAGS_XKBCOMMON="`$PKG_CONFIG --cflags xkbcommon xkbcommon-x11 2>/dev/null`"
             QMAKE_LIBS_XKBCOMMON="`$PKG_CONFIG --libs xkbcommon xkbcommon-x11 2>/dev/null`"
 
@@ -6564,7 +6565,7 @@ if [ "$CFG_OPENSSL" = "linked" ] && [ "$OPENSSL_LIBS" = "" ]; then
     echo
 fi
 if [ "$ORIG_CFG_XKBCOMMON" != qt ] && [ "$CFG_XKBCOMMON" = qt ]; then
-    echo "NOTE: libxkbcommon and libxkbcommon-x11 0.4.0 or higher not found on the system, will use "
+    echo "NOTE: libxkbcommon and libxkbcommon-x11 $MIN_REQ_XKBCOMMON or higher not found on the system, will use "
     echo "the bundled version from 3rd party directory."
 fi
 if [ "$CFG_XKBCOMMON" = "qt" ] && [ "$CFG_XKB_CONFIG_ROOT" = "not found" ]; then

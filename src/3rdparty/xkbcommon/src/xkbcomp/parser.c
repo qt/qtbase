@@ -82,27 +82,21 @@
 
 struct parser_param {
     struct xkb_context *ctx;
-    void *scanner;
+    struct scanner *scanner;
     XkbFile *rtrn;
     bool more_maps;
 };
 
-static void
-parser_error(struct parser_param *param, const char *msg)
-{
-    scanner_error(param->scanner, msg);
-}
+#define parser_err(param, fmt, ...) \
+    scanner_err((param)->scanner, fmt, ##__VA_ARGS__)
 
-static void
-parser_warn(struct parser_param *param, const char *msg)
-{
-    scanner_warn(param->scanner, msg);
-}
+#define parser_warn(param, fmt, ...) \
+    scanner_warn((param)->scanner, fmt, ##__VA_ARGS__)
 
 static void
 _xkbcommon_error(struct parser_param *param, const char *msg)
 {
-    parser_error(param, msg);
+    parser_err(param, "%s", msg);
 }
 
 static bool
@@ -129,11 +123,11 @@ resolve_keysym(const char *str, xkb_keysym_t *sym_rtrn)
     return false;
 }
 
-#define scanner param->scanner
+#define param_scanner param->scanner
 
 
 /* Line 268 of yacc.c  */
-#line 137 "src/xkbcomp/parser.c"
+#line 131 "src/xkbcomp/parser.c"
 
 /* Enabling traces.  */
 #ifndef YYDEBUG
@@ -298,7 +292,7 @@ typedef union YYSTYPE
 {
 
 /* Line 293 of yacc.c  */
-#line 167 "parser.y"
+#line 161 "parser.y"
 
         int              ival;
         int64_t          num;
@@ -327,7 +321,7 @@ typedef union YYSTYPE
 
 
 /* Line 293 of yacc.c  */
-#line 331 "src/xkbcomp/parser.c"
+#line 325 "src/xkbcomp/parser.c"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
@@ -339,7 +333,7 @@ typedef union YYSTYPE
 
 
 /* Line 343 of yacc.c  */
-#line 343 "src/xkbcomp/parser.c"
+#line 337 "src/xkbcomp/parser.c"
 
 #ifdef short
 # undef short
@@ -698,25 +692,25 @@ static const yytype_int16 yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,   238,   238,   240,   242,   246,   252,   253,   254,   257,
-     264,   268,   283,   284,   285,   286,   287,   290,   291,   294,
-     295,   298,   299,   300,   301,   302,   303,   304,   305,   308,
-     310,   313,   318,   323,   328,   333,   338,   343,   348,   353,
-     358,   363,   368,   369,   370,   371,   378,   380,   382,   386,
-     390,   394,   398,   400,   404,   406,   410,   416,   418,   422,
-     424,   428,   434,   440,   442,   444,   447,   448,   449,   450,
-     451,   454,   456,   460,   464,   468,   472,   474,   478,   480,
-     484,   488,   489,   492,   494,   496,   498,   500,   504,   505,
-     508,   509,   513,   514,   517,   519,   523,   527,   528,   531,
-     534,   536,   540,   542,   544,   548,   550,   554,   558,   562,
-     563,   564,   565,   568,   569,   572,   574,   576,   578,   580,
-     582,   584,   586,   588,   590,   592,   596,   597,   600,   601,
-     602,   603,   604,   614,   615,   618,   620,   624,   626,   628,
-     630,   632,   634,   638,   640,   642,   644,   646,   648,   650,
-     652,   656,   658,   662,   666,   668,   670,   672,   676,   678,
+       0,   232,   232,   234,   236,   240,   246,   247,   248,   251,
+     259,   263,   278,   279,   280,   281,   282,   285,   286,   289,
+     290,   293,   294,   295,   296,   297,   298,   299,   300,   303,
+     305,   308,   313,   318,   323,   328,   333,   338,   343,   348,
+     353,   358,   363,   364,   365,   366,   373,   375,   377,   381,
+     385,   389,   393,   396,   400,   402,   406,   412,   414,   418,
+     421,   425,   431,   437,   440,   442,   445,   446,   447,   448,
+     449,   452,   454,   458,   462,   466,   470,   472,   476,   478,
+     482,   486,   487,   490,   492,   494,   496,   498,   502,   503,
+     506,   507,   511,   512,   515,   517,   521,   525,   526,   529,
+     532,   534,   538,   540,   542,   546,   548,   552,   556,   560,
+     561,   562,   563,   566,   567,   570,   572,   574,   576,   578,
+     580,   582,   584,   586,   588,   590,   594,   595,   598,   599,
+     600,   601,   602,   612,   613,   616,   619,   623,   625,   627,
+     629,   631,   633,   637,   639,   641,   643,   645,   647,   649,
+     651,   655,   658,   662,   666,   668,   670,   672,   676,   678,
      680,   682,   686,   687,   690,   692,   694,   696,   700,   704,
-     710,   711,   725,   726,   729,   730,   733,   736,   739,   742,
-     743,   746,   749,   750,   753
+     710,   711,   731,   732,   735,   736,   739,   742,   745,   748,
+     749,   752,   755,   756,   759
 };
 #endif
 
@@ -1217,7 +1211,7 @@ while (YYID (0))
 #ifdef YYLEX_PARAM
 # define YYLEX yylex (&yylval, YYLEX_PARAM)
 #else
-# define YYLEX yylex (&yylval, scanner)
+# define YYLEX yylex (&yylval, param_scanner)
 #endif
 
 /* Enable debugging if requested.  */
@@ -1970,75 +1964,76 @@ yyreduce:
         case 2:
 
 /* Line 1806 of yacc.c  */
-#line 239 "parser.y"
+#line 233 "parser.y"
     { (yyval.file) = param->rtrn = (yyvsp[(1) - (1)].file); param->more_maps = true; }
     break;
 
   case 3:
 
 /* Line 1806 of yacc.c  */
-#line 241 "parser.y"
+#line 235 "parser.y"
     { (yyval.file) = param->rtrn = (yyvsp[(1) - (1)].file); param->more_maps = true; YYACCEPT; }
     break;
 
   case 4:
 
 /* Line 1806 of yacc.c  */
-#line 243 "parser.y"
+#line 237 "parser.y"
     { (yyval.file) = param->rtrn = NULL; param->more_maps = false; }
     break;
 
   case 5:
 
 /* Line 1806 of yacc.c  */
-#line 249 "parser.y"
-    { (yyval.file) = XkbFileCreate(param->ctx, (yyvsp[(2) - (7)].file_type), (yyvsp[(3) - (7)].str), &(yyvsp[(5) - (7)].file)->common, (yyvsp[(1) - (7)].mapFlags)); }
+#line 243 "parser.y"
+    { (yyval.file) = XkbFileCreate((yyvsp[(2) - (7)].file_type), (yyvsp[(3) - (7)].str), (ParseCommon *) (yyvsp[(5) - (7)].file), (yyvsp[(1) - (7)].mapFlags)); }
     break;
 
   case 6:
 
 /* Line 1806 of yacc.c  */
-#line 252 "parser.y"
+#line 246 "parser.y"
     { (yyval.file_type) = FILE_TYPE_KEYMAP; }
     break;
 
   case 7:
 
 /* Line 1806 of yacc.c  */
-#line 253 "parser.y"
+#line 247 "parser.y"
     { (yyval.file_type) = FILE_TYPE_KEYMAP; }
     break;
 
   case 8:
 
 /* Line 1806 of yacc.c  */
-#line 254 "parser.y"
+#line 248 "parser.y"
     { (yyval.file_type) = FILE_TYPE_KEYMAP; }
     break;
 
   case 9:
 
 /* Line 1806 of yacc.c  */
-#line 258 "parser.y"
+#line 252 "parser.y"
     {
                             if (!(yyvsp[(2) - (2)].file))
                                 (yyval.file) = (yyvsp[(1) - (2)].file);
                             else
-                                (yyval.file) = (XkbFile *)AppendStmt(&(yyvsp[(1) - (2)].file)->common, &(yyvsp[(2) - (2)].file)->common);
+                                (yyval.file) = (XkbFile *) AppendStmt((ParseCommon *) (yyvsp[(1) - (2)].file),
+                                                            (ParseCommon *) (yyvsp[(2) - (2)].file));
                         }
     break;
 
   case 10:
 
 /* Line 1806 of yacc.c  */
-#line 265 "parser.y"
+#line 260 "parser.y"
     { (yyval.file) = (yyvsp[(1) - (1)].file); }
     break;
 
   case 11:
 
 /* Line 1806 of yacc.c  */
-#line 271 "parser.y"
+#line 266 "parser.y"
     {
                             if ((yyvsp[(2) - (7)].file_type) == FILE_TYPE_GEOMETRY) {
                                 free((yyvsp[(3) - (7)].str));
@@ -2046,7 +2041,7 @@ yyreduce:
                                 (yyval.file) = NULL;
                             }
                             else {
-                                (yyval.file) = XkbFileCreate(param->ctx, (yyvsp[(2) - (7)].file_type), (yyvsp[(3) - (7)].str), (yyvsp[(5) - (7)].any), (yyvsp[(1) - (7)].mapFlags));
+                                (yyval.file) = XkbFileCreate((yyvsp[(2) - (7)].file_type), (yyvsp[(3) - (7)].str), (yyvsp[(5) - (7)].any), (yyvsp[(1) - (7)].mapFlags));
                             }
                         }
     break;
@@ -2054,273 +2049,273 @@ yyreduce:
   case 12:
 
 /* Line 1806 of yacc.c  */
-#line 283 "parser.y"
+#line 278 "parser.y"
     { (yyval.file_type) = FILE_TYPE_KEYCODES; }
     break;
 
   case 13:
 
 /* Line 1806 of yacc.c  */
-#line 284 "parser.y"
+#line 279 "parser.y"
     { (yyval.file_type) = FILE_TYPE_TYPES; }
     break;
 
   case 14:
 
 /* Line 1806 of yacc.c  */
-#line 285 "parser.y"
+#line 280 "parser.y"
     { (yyval.file_type) = FILE_TYPE_COMPAT; }
     break;
 
   case 15:
 
 /* Line 1806 of yacc.c  */
-#line 286 "parser.y"
+#line 281 "parser.y"
     { (yyval.file_type) = FILE_TYPE_SYMBOLS; }
     break;
 
   case 16:
 
 /* Line 1806 of yacc.c  */
-#line 287 "parser.y"
+#line 282 "parser.y"
     { (yyval.file_type) = FILE_TYPE_GEOMETRY; }
     break;
 
   case 17:
 
 /* Line 1806 of yacc.c  */
-#line 290 "parser.y"
+#line 285 "parser.y"
     { (yyval.mapFlags) = (yyvsp[(1) - (1)].mapFlags); }
     break;
 
   case 18:
 
 /* Line 1806 of yacc.c  */
-#line 291 "parser.y"
+#line 286 "parser.y"
     { (yyval.mapFlags) = 0; }
     break;
 
   case 19:
 
 /* Line 1806 of yacc.c  */
-#line 294 "parser.y"
+#line 289 "parser.y"
     { (yyval.mapFlags) = ((yyvsp[(1) - (2)].mapFlags) | (yyvsp[(2) - (2)].mapFlags)); }
     break;
 
   case 20:
 
 /* Line 1806 of yacc.c  */
-#line 295 "parser.y"
+#line 290 "parser.y"
     { (yyval.mapFlags) = (yyvsp[(1) - (1)].mapFlags); }
     break;
 
   case 21:
 
 /* Line 1806 of yacc.c  */
-#line 298 "parser.y"
+#line 293 "parser.y"
     { (yyval.mapFlags) = MAP_IS_PARTIAL; }
     break;
 
   case 22:
 
 /* Line 1806 of yacc.c  */
-#line 299 "parser.y"
+#line 294 "parser.y"
     { (yyval.mapFlags) = MAP_IS_DEFAULT; }
     break;
 
   case 23:
 
 /* Line 1806 of yacc.c  */
-#line 300 "parser.y"
+#line 295 "parser.y"
     { (yyval.mapFlags) = MAP_IS_HIDDEN; }
     break;
 
   case 24:
 
 /* Line 1806 of yacc.c  */
-#line 301 "parser.y"
+#line 296 "parser.y"
     { (yyval.mapFlags) = MAP_HAS_ALPHANUMERIC; }
     break;
 
   case 25:
 
 /* Line 1806 of yacc.c  */
-#line 302 "parser.y"
+#line 297 "parser.y"
     { (yyval.mapFlags) = MAP_HAS_MODIFIER; }
     break;
 
   case 26:
 
 /* Line 1806 of yacc.c  */
-#line 303 "parser.y"
+#line 298 "parser.y"
     { (yyval.mapFlags) = MAP_HAS_KEYPAD; }
     break;
 
   case 27:
 
 /* Line 1806 of yacc.c  */
-#line 304 "parser.y"
+#line 299 "parser.y"
     { (yyval.mapFlags) = MAP_HAS_FN; }
     break;
 
   case 28:
 
 /* Line 1806 of yacc.c  */
-#line 305 "parser.y"
+#line 300 "parser.y"
     { (yyval.mapFlags) = MAP_IS_ALTGR; }
     break;
 
   case 29:
 
 /* Line 1806 of yacc.c  */
-#line 309 "parser.y"
+#line 304 "parser.y"
     { (yyval.any) = AppendStmt((yyvsp[(1) - (2)].any), (yyvsp[(2) - (2)].any)); }
     break;
 
   case 30:
 
 /* Line 1806 of yacc.c  */
-#line 310 "parser.y"
+#line 305 "parser.y"
     { (yyval.any) = NULL; }
     break;
 
   case 31:
 
 /* Line 1806 of yacc.c  */
-#line 314 "parser.y"
+#line 309 "parser.y"
     {
                             (yyvsp[(2) - (2)].var)->merge = (yyvsp[(1) - (2)].merge);
-                            (yyval.any) = &(yyvsp[(2) - (2)].var)->common;
+                            (yyval.any) = (ParseCommon *) (yyvsp[(2) - (2)].var);
                         }
     break;
 
   case 32:
 
 /* Line 1806 of yacc.c  */
-#line 319 "parser.y"
+#line 314 "parser.y"
     {
                             (yyvsp[(2) - (2)].vmod)->merge = (yyvsp[(1) - (2)].merge);
-                            (yyval.any) = &(yyvsp[(2) - (2)].vmod)->common;
+                            (yyval.any) = (ParseCommon *) (yyvsp[(2) - (2)].vmod);
                         }
     break;
 
   case 33:
 
 /* Line 1806 of yacc.c  */
-#line 324 "parser.y"
+#line 319 "parser.y"
     {
                             (yyvsp[(2) - (2)].interp)->merge = (yyvsp[(1) - (2)].merge);
-                            (yyval.any) = &(yyvsp[(2) - (2)].interp)->common;
+                            (yyval.any) = (ParseCommon *) (yyvsp[(2) - (2)].interp);
                         }
     break;
 
   case 34:
 
 /* Line 1806 of yacc.c  */
-#line 329 "parser.y"
+#line 324 "parser.y"
     {
                             (yyvsp[(2) - (2)].keyCode)->merge = (yyvsp[(1) - (2)].merge);
-                            (yyval.any) = &(yyvsp[(2) - (2)].keyCode)->common;
+                            (yyval.any) = (ParseCommon *) (yyvsp[(2) - (2)].keyCode);
                         }
     break;
 
   case 35:
 
 /* Line 1806 of yacc.c  */
-#line 334 "parser.y"
+#line 329 "parser.y"
     {
                             (yyvsp[(2) - (2)].keyAlias)->merge = (yyvsp[(1) - (2)].merge);
-                            (yyval.any) = &(yyvsp[(2) - (2)].keyAlias)->common;
+                            (yyval.any) = (ParseCommon *) (yyvsp[(2) - (2)].keyAlias);
                         }
     break;
 
   case 36:
 
 /* Line 1806 of yacc.c  */
-#line 339 "parser.y"
+#line 334 "parser.y"
     {
                             (yyvsp[(2) - (2)].keyType)->merge = (yyvsp[(1) - (2)].merge);
-                            (yyval.any) = &(yyvsp[(2) - (2)].keyType)->common;
+                            (yyval.any) = (ParseCommon *) (yyvsp[(2) - (2)].keyType);
                         }
     break;
 
   case 37:
 
 /* Line 1806 of yacc.c  */
-#line 344 "parser.y"
+#line 339 "parser.y"
     {
                             (yyvsp[(2) - (2)].syms)->merge = (yyvsp[(1) - (2)].merge);
-                            (yyval.any) = &(yyvsp[(2) - (2)].syms)->common;
+                            (yyval.any) = (ParseCommon *) (yyvsp[(2) - (2)].syms);
                         }
     break;
 
   case 38:
 
 /* Line 1806 of yacc.c  */
-#line 349 "parser.y"
+#line 344 "parser.y"
     {
                             (yyvsp[(2) - (2)].modMask)->merge = (yyvsp[(1) - (2)].merge);
-                            (yyval.any) = &(yyvsp[(2) - (2)].modMask)->common;
+                            (yyval.any) = (ParseCommon *) (yyvsp[(2) - (2)].modMask);
                         }
     break;
 
   case 39:
 
 /* Line 1806 of yacc.c  */
-#line 354 "parser.y"
+#line 349 "parser.y"
     {
                             (yyvsp[(2) - (2)].groupCompat)->merge = (yyvsp[(1) - (2)].merge);
-                            (yyval.any) = &(yyvsp[(2) - (2)].groupCompat)->common;
+                            (yyval.any) = (ParseCommon *) (yyvsp[(2) - (2)].groupCompat);
                         }
     break;
 
   case 40:
 
 /* Line 1806 of yacc.c  */
-#line 359 "parser.y"
+#line 354 "parser.y"
     {
                             (yyvsp[(2) - (2)].ledMap)->merge = (yyvsp[(1) - (2)].merge);
-                            (yyval.any) = &(yyvsp[(2) - (2)].ledMap)->common;
+                            (yyval.any) = (ParseCommon *) (yyvsp[(2) - (2)].ledMap);
                         }
     break;
 
   case 41:
 
 /* Line 1806 of yacc.c  */
-#line 364 "parser.y"
+#line 359 "parser.y"
     {
                             (yyvsp[(2) - (2)].ledName)->merge = (yyvsp[(1) - (2)].merge);
-                            (yyval.any) = &(yyvsp[(2) - (2)].ledName)->common;
+                            (yyval.any) = (ParseCommon *) (yyvsp[(2) - (2)].ledName);
                         }
     break;
 
   case 42:
 
 /* Line 1806 of yacc.c  */
-#line 368 "parser.y"
+#line 363 "parser.y"
     { (yyval.any) = NULL; }
     break;
 
   case 43:
 
 /* Line 1806 of yacc.c  */
-#line 369 "parser.y"
+#line 364 "parser.y"
     { (yyval.any) = NULL; }
     break;
 
   case 44:
 
 /* Line 1806 of yacc.c  */
-#line 370 "parser.y"
+#line 365 "parser.y"
     { (yyval.any) = NULL; }
     break;
 
   case 45:
 
 /* Line 1806 of yacc.c  */
-#line 372 "parser.y"
+#line 367 "parser.y"
     {
-                            (yyval.any) = &IncludeCreate(param->ctx, (yyvsp[(2) - (2)].str), (yyvsp[(1) - (2)].merge))->common;
+                            (yyval.any) = (ParseCommon *) IncludeCreate(param->ctx, (yyvsp[(2) - (2)].str), (yyvsp[(1) - (2)].merge));
                             free((yyvsp[(2) - (2)].str));
                         }
     break;
@@ -2328,609 +2323,612 @@ yyreduce:
   case 46:
 
 /* Line 1806 of yacc.c  */
-#line 379 "parser.y"
+#line 374 "parser.y"
     { (yyval.var) = VarCreate((yyvsp[(1) - (4)].expr), (yyvsp[(3) - (4)].expr)); }
     break;
 
   case 47:
 
 /* Line 1806 of yacc.c  */
-#line 381 "parser.y"
+#line 376 "parser.y"
     { (yyval.var) = BoolVarCreate((yyvsp[(1) - (2)].sval), true); }
     break;
 
   case 48:
 
 /* Line 1806 of yacc.c  */
-#line 383 "parser.y"
+#line 378 "parser.y"
     { (yyval.var) = BoolVarCreate((yyvsp[(2) - (3)].sval), false); }
     break;
 
   case 49:
 
 /* Line 1806 of yacc.c  */
-#line 387 "parser.y"
+#line 382 "parser.y"
     { (yyval.keyCode) = KeycodeCreate((yyvsp[(1) - (4)].sval), (yyvsp[(3) - (4)].num)); }
     break;
 
   case 50:
 
 /* Line 1806 of yacc.c  */
-#line 391 "parser.y"
+#line 386 "parser.y"
     { (yyval.keyAlias) = KeyAliasCreate((yyvsp[(2) - (5)].sval), (yyvsp[(4) - (5)].sval)); }
     break;
 
   case 51:
 
 /* Line 1806 of yacc.c  */
-#line 395 "parser.y"
+#line 390 "parser.y"
     { (yyval.vmod) = (yyvsp[(2) - (3)].vmod); }
     break;
 
   case 52:
 
 /* Line 1806 of yacc.c  */
-#line 399 "parser.y"
-    { (yyval.vmod) = (VModDef *)AppendStmt(&(yyvsp[(1) - (3)].vmod)->common, &(yyvsp[(3) - (3)].vmod)->common); }
+#line 394 "parser.y"
+    { (yyval.vmod) = (VModDef *) AppendStmt((ParseCommon *) (yyvsp[(1) - (3)].vmod),
+                                                      (ParseCommon *) (yyvsp[(3) - (3)].vmod)); }
     break;
 
   case 53:
 
 /* Line 1806 of yacc.c  */
-#line 401 "parser.y"
+#line 397 "parser.y"
     { (yyval.vmod) = (yyvsp[(1) - (1)].vmod); }
     break;
 
   case 54:
 
 /* Line 1806 of yacc.c  */
-#line 405 "parser.y"
+#line 401 "parser.y"
     { (yyval.vmod) = VModCreate((yyvsp[(1) - (1)].sval), NULL); }
     break;
 
   case 55:
 
 /* Line 1806 of yacc.c  */
-#line 407 "parser.y"
+#line 403 "parser.y"
     { (yyval.vmod) = VModCreate((yyvsp[(1) - (3)].sval), (yyvsp[(3) - (3)].expr)); }
     break;
 
   case 56:
 
 /* Line 1806 of yacc.c  */
-#line 413 "parser.y"
+#line 409 "parser.y"
     { (yyvsp[(2) - (6)].interp)->def = (yyvsp[(4) - (6)].var); (yyval.interp) = (yyvsp[(2) - (6)].interp); }
     break;
 
   case 57:
 
 /* Line 1806 of yacc.c  */
-#line 417 "parser.y"
+#line 413 "parser.y"
     { (yyval.interp) = InterpCreate((yyvsp[(1) - (3)].keysym), (yyvsp[(3) - (3)].expr)); }
     break;
 
   case 58:
 
 /* Line 1806 of yacc.c  */
-#line 419 "parser.y"
+#line 415 "parser.y"
     { (yyval.interp) = InterpCreate((yyvsp[(1) - (1)].keysym), NULL); }
     break;
 
   case 59:
 
 /* Line 1806 of yacc.c  */
-#line 423 "parser.y"
-    { (yyval.var) = (VarDef *)AppendStmt(&(yyvsp[(1) - (2)].var)->common, &(yyvsp[(2) - (2)].var)->common); }
+#line 419 "parser.y"
+    { (yyval.var) = (VarDef *) AppendStmt((ParseCommon *) (yyvsp[(1) - (2)].var),
+                                                     (ParseCommon *) (yyvsp[(2) - (2)].var)); }
     break;
 
   case 60:
 
 /* Line 1806 of yacc.c  */
-#line 425 "parser.y"
+#line 422 "parser.y"
     { (yyval.var) = (yyvsp[(1) - (1)].var); }
     break;
 
   case 61:
 
 /* Line 1806 of yacc.c  */
-#line 431 "parser.y"
+#line 428 "parser.y"
     { (yyval.keyType) = KeyTypeCreate((yyvsp[(2) - (6)].sval), (yyvsp[(4) - (6)].var)); }
     break;
 
   case 62:
 
 /* Line 1806 of yacc.c  */
-#line 437 "parser.y"
+#line 434 "parser.y"
     { (yyval.syms) = SymbolsCreate((yyvsp[(2) - (6)].sval), (yyvsp[(4) - (6)].var)); }
     break;
 
   case 63:
 
 /* Line 1806 of yacc.c  */
-#line 441 "parser.y"
-    { (yyval.var) = (VarDef *)AppendStmt(&(yyvsp[(1) - (3)].var)->common, &(yyvsp[(3) - (3)].var)->common); }
+#line 438 "parser.y"
+    { (yyval.var) = (VarDef *) AppendStmt((ParseCommon *) (yyvsp[(1) - (3)].var),
+                                                     (ParseCommon *) (yyvsp[(3) - (3)].var)); }
     break;
 
   case 64:
 
 /* Line 1806 of yacc.c  */
-#line 443 "parser.y"
+#line 441 "parser.y"
     { (yyval.var) = (yyvsp[(1) - (1)].var); }
     break;
 
   case 65:
 
 /* Line 1806 of yacc.c  */
-#line 444 "parser.y"
+#line 442 "parser.y"
     { (yyval.var) = NULL; }
     break;
 
   case 66:
 
 /* Line 1806 of yacc.c  */
-#line 447 "parser.y"
+#line 445 "parser.y"
     { (yyval.var) = VarCreate((yyvsp[(1) - (3)].expr), (yyvsp[(3) - (3)].expr)); }
     break;
 
   case 67:
 
 /* Line 1806 of yacc.c  */
-#line 448 "parser.y"
+#line 446 "parser.y"
     { (yyval.var) = VarCreate((yyvsp[(1) - (3)].expr), (yyvsp[(3) - (3)].expr)); }
     break;
 
   case 68:
 
 /* Line 1806 of yacc.c  */
-#line 449 "parser.y"
+#line 447 "parser.y"
     { (yyval.var) = BoolVarCreate((yyvsp[(1) - (1)].sval), true); }
     break;
 
   case 69:
 
 /* Line 1806 of yacc.c  */
-#line 450 "parser.y"
+#line 448 "parser.y"
     { (yyval.var) = BoolVarCreate((yyvsp[(2) - (2)].sval), false); }
     break;
 
   case 70:
 
 /* Line 1806 of yacc.c  */
-#line 451 "parser.y"
+#line 449 "parser.y"
     { (yyval.var) = VarCreate(NULL, (yyvsp[(1) - (1)].expr)); }
     break;
 
   case 71:
 
 /* Line 1806 of yacc.c  */
-#line 455 "parser.y"
+#line 453 "parser.y"
     { (yyval.expr) = (yyvsp[(2) - (3)].expr); }
     break;
 
   case 72:
 
 /* Line 1806 of yacc.c  */
-#line 457 "parser.y"
+#line 455 "parser.y"
     { (yyval.expr) = ExprCreateUnary(EXPR_ACTION_LIST, EXPR_TYPE_ACTION, (yyvsp[(2) - (3)].expr)); }
     break;
 
   case 73:
 
 /* Line 1806 of yacc.c  */
-#line 461 "parser.y"
+#line 459 "parser.y"
     { (yyval.groupCompat) = GroupCompatCreate((yyvsp[(2) - (5)].ival), (yyvsp[(4) - (5)].expr)); }
     break;
 
   case 74:
 
 /* Line 1806 of yacc.c  */
-#line 465 "parser.y"
+#line 463 "parser.y"
     { (yyval.modMask) = ModMapCreate((yyvsp[(2) - (6)].sval), (yyvsp[(4) - (6)].expr)); }
     break;
 
   case 75:
 
 /* Line 1806 of yacc.c  */
-#line 469 "parser.y"
+#line 467 "parser.y"
     { (yyval.ledMap) = LedMapCreate((yyvsp[(2) - (6)].sval), (yyvsp[(4) - (6)].var)); }
     break;
 
   case 76:
 
 /* Line 1806 of yacc.c  */
-#line 473 "parser.y"
+#line 471 "parser.y"
     { (yyval.ledName) = LedNameCreate((yyvsp[(2) - (5)].ival), (yyvsp[(4) - (5)].expr), false); }
     break;
 
   case 77:
 
 /* Line 1806 of yacc.c  */
-#line 475 "parser.y"
+#line 473 "parser.y"
     { (yyval.ledName) = LedNameCreate((yyvsp[(3) - (6)].ival), (yyvsp[(5) - (6)].expr), true); }
     break;
 
   case 78:
 
 /* Line 1806 of yacc.c  */
-#line 479 "parser.y"
+#line 477 "parser.y"
     { (yyval.geom) = NULL; }
     break;
 
   case 79:
 
 /* Line 1806 of yacc.c  */
-#line 481 "parser.y"
+#line 479 "parser.y"
     { (yyval.geom) = NULL; }
     break;
 
   case 80:
 
 /* Line 1806 of yacc.c  */
-#line 485 "parser.y"
+#line 483 "parser.y"
     { (yyval.geom) = NULL; }
     break;
 
   case 81:
 
 /* Line 1806 of yacc.c  */
-#line 488 "parser.y"
+#line 486 "parser.y"
     { (yyval.geom) = NULL;}
     break;
 
   case 82:
 
 /* Line 1806 of yacc.c  */
-#line 489 "parser.y"
+#line 487 "parser.y"
     { (yyval.geom) = NULL; }
     break;
 
   case 83:
 
 /* Line 1806 of yacc.c  */
-#line 493 "parser.y"
+#line 491 "parser.y"
     { (yyval.geom) = NULL; }
     break;
 
   case 84:
 
 /* Line 1806 of yacc.c  */
-#line 495 "parser.y"
-    { FreeStmt(&(yyvsp[(1) - (1)].var)->common); (yyval.geom) = NULL; }
+#line 493 "parser.y"
+    { FreeStmt((ParseCommon *) (yyvsp[(1) - (1)].var)); (yyval.geom) = NULL; }
     break;
 
   case 85:
 
 /* Line 1806 of yacc.c  */
-#line 497 "parser.y"
+#line 495 "parser.y"
     { (yyval.geom) = NULL; }
     break;
 
   case 86:
 
 /* Line 1806 of yacc.c  */
-#line 499 "parser.y"
-    { FreeStmt(&(yyvsp[(1) - (1)].ledMap)->common); (yyval.geom) = NULL; }
+#line 497 "parser.y"
+    { FreeStmt((ParseCommon *) (yyvsp[(1) - (1)].ledMap)); (yyval.geom) = NULL; }
     break;
 
   case 87:
 
 /* Line 1806 of yacc.c  */
-#line 501 "parser.y"
+#line 499 "parser.y"
     { (yyval.geom) = NULL; }
     break;
 
   case 88:
 
 /* Line 1806 of yacc.c  */
-#line 504 "parser.y"
+#line 502 "parser.y"
     { (yyval.geom) = NULL;}
     break;
 
   case 89:
 
 /* Line 1806 of yacc.c  */
-#line 505 "parser.y"
+#line 503 "parser.y"
     { (yyval.geom) = NULL; }
     break;
 
   case 90:
 
 /* Line 1806 of yacc.c  */
-#line 508 "parser.y"
+#line 506 "parser.y"
     { (yyval.geom) = NULL; }
     break;
 
   case 91:
 
 /* Line 1806 of yacc.c  */
-#line 510 "parser.y"
-    { FreeStmt(&(yyvsp[(1) - (1)].var)->common); (yyval.geom) = NULL; }
+#line 508 "parser.y"
+    { FreeStmt((ParseCommon *) (yyvsp[(1) - (1)].var)); (yyval.geom) = NULL; }
     break;
 
   case 92:
 
 /* Line 1806 of yacc.c  */
-#line 513 "parser.y"
+#line 511 "parser.y"
     { (yyval.geom) = NULL; }
     break;
 
   case 93:
 
 /* Line 1806 of yacc.c  */
-#line 514 "parser.y"
+#line 512 "parser.y"
     { (yyval.geom) = NULL; }
     break;
 
   case 94:
 
 /* Line 1806 of yacc.c  */
-#line 518 "parser.y"
+#line 516 "parser.y"
     { (yyval.geom) = NULL; }
     break;
 
   case 95:
 
 /* Line 1806 of yacc.c  */
-#line 520 "parser.y"
-    { FreeStmt(&(yyvsp[(2) - (3)].expr)->common); (yyval.geom) = NULL; }
+#line 518 "parser.y"
+    { FreeStmt((ParseCommon *) (yyvsp[(2) - (3)].expr)); (yyval.geom) = NULL; }
     break;
 
   case 96:
 
 /* Line 1806 of yacc.c  */
-#line 524 "parser.y"
+#line 522 "parser.y"
     { (yyval.geom) = NULL; }
     break;
 
   case 97:
 
 /* Line 1806 of yacc.c  */
-#line 527 "parser.y"
+#line 525 "parser.y"
     { (yyval.geom) = NULL; }
     break;
 
   case 98:
 
 /* Line 1806 of yacc.c  */
-#line 528 "parser.y"
+#line 526 "parser.y"
     { (yyval.geom) = NULL; }
     break;
 
   case 99:
 
 /* Line 1806 of yacc.c  */
-#line 531 "parser.y"
+#line 529 "parser.y"
     { (yyval.geom) = NULL; }
     break;
 
   case 100:
 
 /* Line 1806 of yacc.c  */
-#line 535 "parser.y"
+#line 533 "parser.y"
     { (yyval.geom) = NULL;}
     break;
 
   case 101:
 
 /* Line 1806 of yacc.c  */
-#line 537 "parser.y"
+#line 535 "parser.y"
     { (yyval.geom) = NULL; }
     break;
 
   case 102:
 
 /* Line 1806 of yacc.c  */
-#line 541 "parser.y"
+#line 539 "parser.y"
     { (yyval.geom) = NULL; }
     break;
 
   case 103:
 
 /* Line 1806 of yacc.c  */
-#line 543 "parser.y"
+#line 541 "parser.y"
     { (yyval.geom) = NULL; }
     break;
 
   case 104:
 
 /* Line 1806 of yacc.c  */
-#line 545 "parser.y"
-    { FreeStmt(&(yyvsp[(3) - (3)].expr)->common); (yyval.geom) = NULL; }
+#line 543 "parser.y"
+    { FreeStmt((ParseCommon *) (yyvsp[(3) - (3)].expr)); (yyval.geom) = NULL; }
     break;
 
   case 105:
 
 /* Line 1806 of yacc.c  */
-#line 549 "parser.y"
+#line 547 "parser.y"
     { (yyval.expr) = NULL; }
     break;
 
   case 106:
 
 /* Line 1806 of yacc.c  */
-#line 551 "parser.y"
+#line 549 "parser.y"
     { (yyval.expr) = NULL; }
     break;
 
   case 107:
 
 /* Line 1806 of yacc.c  */
-#line 555 "parser.y"
+#line 553 "parser.y"
     { (yyval.expr) = NULL; }
     break;
 
   case 108:
 
 /* Line 1806 of yacc.c  */
-#line 559 "parser.y"
-    { FreeStmt(&(yyvsp[(4) - (6)].var)->common); (yyval.geom) = NULL; }
+#line 557 "parser.y"
+    { FreeStmt((ParseCommon *) (yyvsp[(4) - (6)].var)); (yyval.geom) = NULL; }
     break;
 
   case 109:
 
 /* Line 1806 of yacc.c  */
-#line 562 "parser.y"
+#line 560 "parser.y"
     { (yyval.ival) = 0; }
     break;
 
   case 110:
 
 /* Line 1806 of yacc.c  */
-#line 563 "parser.y"
+#line 561 "parser.y"
     { (yyval.ival) = 0; }
     break;
 
   case 111:
 
 /* Line 1806 of yacc.c  */
-#line 564 "parser.y"
+#line 562 "parser.y"
     { (yyval.ival) = 0; }
     break;
 
   case 112:
 
 /* Line 1806 of yacc.c  */
-#line 565 "parser.y"
+#line 563 "parser.y"
     { (yyval.ival) = 0; }
     break;
 
   case 113:
 
 /* Line 1806 of yacc.c  */
-#line 568 "parser.y"
+#line 566 "parser.y"
     { (yyval.sval) = (yyvsp[(1) - (1)].sval); }
     break;
 
   case 114:
 
 /* Line 1806 of yacc.c  */
-#line 569 "parser.y"
+#line 567 "parser.y"
     { (yyval.sval) = (yyvsp[(1) - (1)].sval); }
     break;
 
   case 115:
 
 /* Line 1806 of yacc.c  */
-#line 573 "parser.y"
+#line 571 "parser.y"
     { (yyval.sval) = xkb_atom_intern_literal(param->ctx, "action"); }
     break;
 
   case 116:
 
 /* Line 1806 of yacc.c  */
-#line 575 "parser.y"
+#line 573 "parser.y"
     { (yyval.sval) = xkb_atom_intern_literal(param->ctx, "interpret"); }
     break;
 
   case 117:
 
 /* Line 1806 of yacc.c  */
-#line 577 "parser.y"
+#line 575 "parser.y"
     { (yyval.sval) = xkb_atom_intern_literal(param->ctx, "type"); }
     break;
 
   case 118:
 
 /* Line 1806 of yacc.c  */
-#line 579 "parser.y"
+#line 577 "parser.y"
     { (yyval.sval) = xkb_atom_intern_literal(param->ctx, "key"); }
     break;
 
   case 119:
 
 /* Line 1806 of yacc.c  */
-#line 581 "parser.y"
+#line 579 "parser.y"
     { (yyval.sval) = xkb_atom_intern_literal(param->ctx, "group"); }
     break;
 
   case 120:
 
 /* Line 1806 of yacc.c  */
-#line 583 "parser.y"
+#line 581 "parser.y"
     {(yyval.sval) = xkb_atom_intern_literal(param->ctx, "modifier_map");}
     break;
 
   case 121:
 
 /* Line 1806 of yacc.c  */
-#line 585 "parser.y"
+#line 583 "parser.y"
     { (yyval.sval) = xkb_atom_intern_literal(param->ctx, "indicator"); }
     break;
 
   case 122:
 
 /* Line 1806 of yacc.c  */
-#line 587 "parser.y"
+#line 585 "parser.y"
     { (yyval.sval) = XKB_ATOM_NONE; }
     break;
 
   case 123:
 
 /* Line 1806 of yacc.c  */
-#line 589 "parser.y"
+#line 587 "parser.y"
     { (yyval.sval) = XKB_ATOM_NONE; }
     break;
 
   case 124:
 
 /* Line 1806 of yacc.c  */
-#line 591 "parser.y"
+#line 589 "parser.y"
     { (yyval.sval) = XKB_ATOM_NONE; }
     break;
 
   case 125:
 
 /* Line 1806 of yacc.c  */
-#line 593 "parser.y"
+#line 591 "parser.y"
     { (yyval.sval) = XKB_ATOM_NONE; }
     break;
 
   case 126:
 
 /* Line 1806 of yacc.c  */
-#line 596 "parser.y"
+#line 594 "parser.y"
     { (yyval.merge) = (yyvsp[(1) - (1)].merge); }
     break;
 
   case 127:
 
 /* Line 1806 of yacc.c  */
-#line 597 "parser.y"
+#line 595 "parser.y"
     { (yyval.merge) = MERGE_DEFAULT; }
     break;
 
   case 128:
 
 /* Line 1806 of yacc.c  */
-#line 600 "parser.y"
+#line 598 "parser.y"
     { (yyval.merge) = MERGE_DEFAULT; }
     break;
 
   case 129:
 
 /* Line 1806 of yacc.c  */
-#line 601 "parser.y"
+#line 599 "parser.y"
     { (yyval.merge) = MERGE_AUGMENT; }
     break;
 
   case 130:
 
 /* Line 1806 of yacc.c  */
-#line 602 "parser.y"
+#line 600 "parser.y"
     { (yyval.merge) = MERGE_OVERRIDE; }
     break;
 
   case 131:
 
 /* Line 1806 of yacc.c  */
-#line 603 "parser.y"
+#line 601 "parser.y"
     { (yyval.merge) = MERGE_REPLACE; }
     break;
 
   case 132:
 
 /* Line 1806 of yacc.c  */
-#line 605 "parser.y"
+#line 603 "parser.y"
     {
                     /*
                      * This used to be MERGE_ALT_FORM. This functionality was
@@ -2943,134 +2941,136 @@ yyreduce:
   case 133:
 
 /* Line 1806 of yacc.c  */
-#line 614 "parser.y"
+#line 612 "parser.y"
     { (yyval.expr) = (yyvsp[(1) - (1)].expr); }
     break;
 
   case 134:
 
 /* Line 1806 of yacc.c  */
-#line 615 "parser.y"
+#line 613 "parser.y"
     { (yyval.expr) = NULL; }
     break;
 
   case 135:
 
 /* Line 1806 of yacc.c  */
-#line 619 "parser.y"
-    { (yyval.expr) = (ExprDef *)AppendStmt(&(yyvsp[(1) - (3)].expr)->common, &(yyvsp[(3) - (3)].expr)->common); }
+#line 617 "parser.y"
+    { (yyval.expr) = (ExprDef *) AppendStmt((ParseCommon *) (yyvsp[(1) - (3)].expr),
+                                                      (ParseCommon *) (yyvsp[(3) - (3)].expr)); }
     break;
 
   case 136:
 
 /* Line 1806 of yacc.c  */
-#line 621 "parser.y"
+#line 620 "parser.y"
     { (yyval.expr) = (yyvsp[(1) - (1)].expr); }
     break;
 
   case 137:
 
 /* Line 1806 of yacc.c  */
-#line 625 "parser.y"
+#line 624 "parser.y"
     { (yyval.expr) = ExprCreateBinary(EXPR_DIVIDE, (yyvsp[(1) - (3)].expr), (yyvsp[(3) - (3)].expr)); }
     break;
 
   case 138:
 
 /* Line 1806 of yacc.c  */
-#line 627 "parser.y"
+#line 626 "parser.y"
     { (yyval.expr) = ExprCreateBinary(EXPR_ADD, (yyvsp[(1) - (3)].expr), (yyvsp[(3) - (3)].expr)); }
     break;
 
   case 139:
 
 /* Line 1806 of yacc.c  */
-#line 629 "parser.y"
+#line 628 "parser.y"
     { (yyval.expr) = ExprCreateBinary(EXPR_SUBTRACT, (yyvsp[(1) - (3)].expr), (yyvsp[(3) - (3)].expr)); }
     break;
 
   case 140:
 
 /* Line 1806 of yacc.c  */
-#line 631 "parser.y"
+#line 630 "parser.y"
     { (yyval.expr) = ExprCreateBinary(EXPR_MULTIPLY, (yyvsp[(1) - (3)].expr), (yyvsp[(3) - (3)].expr)); }
     break;
 
   case 141:
 
 /* Line 1806 of yacc.c  */
-#line 633 "parser.y"
+#line 632 "parser.y"
     { (yyval.expr) = ExprCreateBinary(EXPR_ASSIGN, (yyvsp[(1) - (3)].expr), (yyvsp[(3) - (3)].expr)); }
     break;
 
   case 142:
 
 /* Line 1806 of yacc.c  */
-#line 635 "parser.y"
+#line 634 "parser.y"
     { (yyval.expr) = (yyvsp[(1) - (1)].expr); }
     break;
 
   case 143:
 
 /* Line 1806 of yacc.c  */
-#line 639 "parser.y"
+#line 638 "parser.y"
     { (yyval.expr) = ExprCreateUnary(EXPR_NEGATE, (yyvsp[(2) - (2)].expr)->expr.value_type, (yyvsp[(2) - (2)].expr)); }
     break;
 
   case 144:
 
 /* Line 1806 of yacc.c  */
-#line 641 "parser.y"
+#line 640 "parser.y"
     { (yyval.expr) = ExprCreateUnary(EXPR_UNARY_PLUS, (yyvsp[(2) - (2)].expr)->expr.value_type, (yyvsp[(2) - (2)].expr)); }
     break;
 
   case 145:
 
 /* Line 1806 of yacc.c  */
-#line 643 "parser.y"
+#line 642 "parser.y"
     { (yyval.expr) = ExprCreateUnary(EXPR_NOT, EXPR_TYPE_BOOLEAN, (yyvsp[(2) - (2)].expr)); }
     break;
 
   case 146:
 
 /* Line 1806 of yacc.c  */
-#line 645 "parser.y"
+#line 644 "parser.y"
     { (yyval.expr) = ExprCreateUnary(EXPR_INVERT, (yyvsp[(2) - (2)].expr)->expr.value_type, (yyvsp[(2) - (2)].expr)); }
     break;
 
   case 147:
 
 /* Line 1806 of yacc.c  */
-#line 647 "parser.y"
+#line 646 "parser.y"
     { (yyval.expr) = (yyvsp[(1) - (1)].expr);  }
     break;
 
   case 148:
 
 /* Line 1806 of yacc.c  */
-#line 649 "parser.y"
+#line 648 "parser.y"
     { (yyval.expr) = ExprCreateAction((yyvsp[(1) - (4)].sval), (yyvsp[(3) - (4)].expr)); }
     break;
 
   case 149:
 
 /* Line 1806 of yacc.c  */
-#line 651 "parser.y"
+#line 650 "parser.y"
     { (yyval.expr) = (yyvsp[(1) - (1)].expr);  }
     break;
 
   case 150:
 
 /* Line 1806 of yacc.c  */
-#line 653 "parser.y"
+#line 652 "parser.y"
     { (yyval.expr) = (yyvsp[(2) - (3)].expr);  }
     break;
 
   case 151:
 
 /* Line 1806 of yacc.c  */
-#line 657 "parser.y"
-    { (yyval.expr) = (ExprDef *)AppendStmt(&(yyvsp[(1) - (3)].expr)->common, &(yyvsp[(3) - (3)].expr)->common); }
+#line 656 "parser.y"
+    { (yyval.expr) = (ExprDef *) AppendStmt((ParseCommon *) (yyvsp[(1) - (3)].expr),
+                                                      (ParseCommon *) (yyvsp[(3) - (3)].expr)); }
     break;
 
   case 152:
@@ -3215,14 +3215,20 @@ yyreduce:
 /* Line 1806 of yacc.c  */
 #line 712 "parser.y"
     {
-                            if ((yyvsp[(1) - (1)].ival) < 10) {      /* XKB_KEY_0 .. XKB_KEY_9 */
-                                (yyval.keysym) = XKB_KEY_0 + (yyvsp[(1) - (1)].ival);
+                            if ((yyvsp[(1) - (1)].ival) < 0) {
+                                parser_warn(param, "unrecognized keysym");
+                                (yyval.keysym) = XKB_KEY_NoSymbol;
+                            }
+                            else if ((yyvsp[(1) - (1)].ival) < 10) {      /* XKB_KEY_0 .. XKB_KEY_9 */
+                                (yyval.keysym) = XKB_KEY_0 + (xkb_keysym_t) (yyvsp[(1) - (1)].ival);
                             }
                             else {
                                 char buf[17];
                                 snprintf(buf, sizeof(buf), "0x%x", (yyvsp[(1) - (1)].ival));
-                                if (!resolve_keysym(buf, &(yyval.keysym)))
+                                if (!resolve_keysym(buf, &(yyval.keysym))) {
                                     parser_warn(param, "unrecognized keysym");
+                                    (yyval.keysym) = XKB_KEY_NoSymbol;
+                                }
                             }
                         }
     break;
@@ -3230,98 +3236,98 @@ yyreduce:
   case 172:
 
 /* Line 1806 of yacc.c  */
-#line 725 "parser.y"
+#line 731 "parser.y"
     { (yyval.ival) = -(yyvsp[(2) - (2)].ival); }
     break;
 
   case 173:
 
 /* Line 1806 of yacc.c  */
-#line 726 "parser.y"
+#line 732 "parser.y"
     { (yyval.ival) = (yyvsp[(1) - (1)].ival); }
     break;
 
   case 174:
 
 /* Line 1806 of yacc.c  */
-#line 729 "parser.y"
+#line 735 "parser.y"
     { (yyval.ival) = (yyvsp[(1) - (1)].num); }
     break;
 
   case 175:
 
 /* Line 1806 of yacc.c  */
-#line 730 "parser.y"
+#line 736 "parser.y"
     { (yyval.ival) = (yyvsp[(1) - (1)].num); }
     break;
 
   case 176:
 
 /* Line 1806 of yacc.c  */
-#line 733 "parser.y"
+#line 739 "parser.y"
     { (yyval.ival) = 0; }
     break;
 
   case 177:
 
 /* Line 1806 of yacc.c  */
-#line 736 "parser.y"
+#line 742 "parser.y"
     { (yyval.ival) = (yyvsp[(1) - (1)].num); }
     break;
 
   case 178:
 
 /* Line 1806 of yacc.c  */
-#line 739 "parser.y"
+#line 745 "parser.y"
     { (yyval.num) = (yyvsp[(1) - (1)].num); }
     break;
 
   case 179:
 
 /* Line 1806 of yacc.c  */
-#line 742 "parser.y"
+#line 748 "parser.y"
     { (yyval.sval) = xkb_atom_steal(param->ctx, (yyvsp[(1) - (1)].str)); }
     break;
 
   case 180:
 
 /* Line 1806 of yacc.c  */
-#line 743 "parser.y"
+#line 749 "parser.y"
     { (yyval.sval) = xkb_atom_intern_literal(param->ctx, "default"); }
     break;
 
   case 181:
 
 /* Line 1806 of yacc.c  */
-#line 746 "parser.y"
+#line 752 "parser.y"
     { (yyval.sval) = xkb_atom_steal(param->ctx, (yyvsp[(1) - (1)].str)); }
     break;
 
   case 182:
 
 /* Line 1806 of yacc.c  */
-#line 749 "parser.y"
+#line 755 "parser.y"
     { (yyval.str) = (yyvsp[(1) - (1)].str); }
     break;
 
   case 183:
 
 /* Line 1806 of yacc.c  */
-#line 750 "parser.y"
+#line 756 "parser.y"
     { (yyval.str) = NULL; }
     break;
 
   case 184:
 
 /* Line 1806 of yacc.c  */
-#line 753 "parser.y"
+#line 759 "parser.y"
     { (yyval.str) = (yyvsp[(1) - (1)].str); }
     break;
 
 
 
 /* Line 1806 of yacc.c  */
-#line 3325 "src/xkbcomp/parser.c"
+#line 3331 "src/xkbcomp/parser.c"
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -3552,13 +3558,11 @@ yyreturn:
 
 
 /* Line 2067 of yacc.c  */
-#line 756 "parser.y"
+#line 762 "parser.y"
 
-
-#undef scanner
 
 XkbFile *
-parse(struct xkb_context *ctx, void *scanner, const char *map)
+parse(struct xkb_context *ctx, struct scanner *scanner, const char *map)
 {
     int ret;
     XkbFile *first = NULL;
@@ -3603,6 +3607,4 @@ parse(struct xkb_context *ctx, void *scanner, const char *map)
 
     return first;
 }
-
-#define scanner param->scanner
 

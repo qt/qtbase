@@ -280,7 +280,7 @@ ModMaskText(const struct xkb_keymap *keymap, xkb_mod_mask_t mask)
     darray_enumerate(i, mod, keymap->mods) {
         int ret;
 
-        if (!(mask & (1 << i)))
+        if (!(mask & (1u << i)))
             continue;
 
         ret = snprintf(buf + pos, sizeof(buf) - pos, "%s%s",
@@ -307,14 +307,14 @@ LedStateMaskText(struct xkb_context *ctx, enum xkb_state_component mask)
     for (unsigned i = 0; mask; i++) {
         int ret;
 
-        if (!(mask & (1 << i)))
+        if (!(mask & (1u << i)))
             continue;
 
-        mask &= ~(1 << i);
+        mask &= ~(1u << i);
 
         ret = snprintf(buf + pos, sizeof(buf) - pos, "%s%s",
                        pos == 0 ? "" : "+",
-                       LookupValue(modComponentMaskNames, 1 << i));
+                       LookupValue(modComponentMaskNames, 1u << i));
         if (ret <= 0 || pos + ret >= sizeof(buf))
             break;
         else
@@ -339,14 +339,14 @@ ControlMaskText(struct xkb_context *ctx, enum xkb_action_controls mask)
     for (unsigned i = 0; mask; i++) {
         int ret;
 
-        if (!(mask & (1 << i)))
+        if (!(mask & (1u << i)))
             continue;
 
-        mask &= ~(1 << i);
+        mask &= ~(1u << i);
 
         ret = snprintf(buf + pos, sizeof(buf) - pos, "%s%s",
                        pos == 0 ? "" : "+",
-                       LookupValue(ctrlMaskNames, 1 << i));
+                       LookupValue(ctrlMaskNames, 1u << i));
         if (ret <= 0 || pos + ret >= sizeof(buf))
             break;
         else

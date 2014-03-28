@@ -143,9 +143,7 @@ expr_op_type_to_string(enum expr_op_type type);
 const char *
 expr_value_type_to_string(enum expr_value_type type);
 
-/* This struct contains fields common to all other AST nodes. It is only
- * ever embedded in other structs, so save some memory by packing it. */
-typedef struct ATTR_PACKED _ParseCommon  {
+typedef struct _ParseCommon  {
     struct _ParseCommon *next;
     enum stmt_type type;
 } ParseCommon;
@@ -226,7 +224,7 @@ typedef struct {
 typedef struct {
     ExprCommon expr;
     darray(xkb_keysym_t) syms;
-    darray(int) symsMapIndex;
+    darray(unsigned int) symsMapIndex;
     darray(unsigned int) symsNumEntries;
 } ExprKeysymList;
 
@@ -299,7 +297,7 @@ typedef struct {
 typedef struct {
     ParseCommon common;
     enum merge_mode merge;
-    int group;
+    unsigned group;
     ExprDef *def;
 } GroupCompatDef;
 
@@ -314,7 +312,7 @@ typedef struct {
 typedef struct {
     ParseCommon common;
     enum merge_mode merge;
-    int ndx;
+    unsigned ndx;
     ExprDef *name;
     bool virtual;
 } LedNameDef;

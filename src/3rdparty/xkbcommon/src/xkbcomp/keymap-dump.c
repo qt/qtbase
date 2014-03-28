@@ -92,7 +92,7 @@ check_write_buf(struct buf *buf, const char *fmt, ...)
     if (printed < 0)
         goto err;
 
-    if (printed >= available)
+    if ((size_t) printed >= available)
         if (!do_realloc(buf, printed))
             goto err;
 
@@ -103,7 +103,7 @@ check_write_buf(struct buf *buf, const char *fmt, ...)
     printed = vsnprintf(buf->buf + buf->size, available, fmt, args);
     va_end(args);
 
-    if (printed >= available || printed < 0)
+    if (printed < 0 || (size_t) printed >= available)
         goto err;
 
     buf->size += printed;
@@ -273,6 +273,20 @@ write_led_map(struct xkb_keymap *keymap, struct buf *buf,
     return true;
 }
 
+static const char *
+affect_lock_text(enum xkb_action_flags flags)
+{
+    switch (flags & (ACTION_LOCK_NO_LOCK | ACTION_LOCK_NO_UNLOCK)) {
+    case ACTION_LOCK_NO_UNLOCK:
+        return ",affect=lock";
+    case ACTION_LOCK_NO_LOCK:
+        return ",affect=unlock";
+    case ACTION_LOCK_NO_LOCK | ACTION_LOCK_NO_UNLOCK:
+        return ",affect=neither";
+    }
+    return "";
+}
+
 static bool
 write_action(struct xkb_keymap *keymap, struct buf *buf,
              const union xkb_action *action,
@@ -289,20 +303,17 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
     type = ActionTypeText(action->type);
 
     switch (action->type) {
+    case ACTION_TYPE_MOD_LOCK:
     case ACTION_TYPE_MOD_SET:
     case ACTION_TYPE_MOD_LATCH:
-    case ACTION_TYPE_MOD_LOCK:
         if (action->mods.flags & ACTION_MODS_LOOKUP_MODMAP)
             args = "modMapMods";
         else
             args = ModMaskText(keymap, action->mods.mods.mods);
-        write_buf(buf, "%s%s(modifiers=%s%s%s)%s", prefix, type, args,
-                  (action->type != ACTION_TYPE_MOD_LOCK &&
-                   (action->mods.flags & ACTION_LOCK_CLEAR)) ?
-                   ",clearLocks" : "",
-                  (action->type != ACTION_TYPE_MOD_LOCK &&
-                   (action->mods.flags & ACTION_LATCH_TO_LOCK)) ?
-                   ",latchToLock" : "",
+        write_buf(buf, "%s%s(modifiers=%s%s%s%s)%s", prefix, type, args,
+                  (action->type != ACTION_TYPE_MOD_LOCK && (action->mods.flags & ACTION_LOCK_CLEAR)) ? ",clearLocks" : "",
+                  (action->type != ACTION_TYPE_MOD_LOCK && (action->mods.flags & ACTION_LATCH_TO_LOCK)) ? ",latchToLock" : "",
+                  (action->type == ACTION_TYPE_MOD_LOCK) ? affect_lock_text(action->mods.flags) : "",
                   suffix);
         break;
 
@@ -310,16 +321,10 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
     case ACTION_TYPE_GROUP_LATCH:
     case ACTION_TYPE_GROUP_LOCK:
         write_buf(buf, "%s%s(group=%s%d%s%s)%s", prefix, type,
-                  (!(action->group.flags & ACTION_ABSOLUTE_SWITCH) &&
-                   action->group.group > 0) ? "+" : "",
-                  (action->group.flags & ACTION_ABSOLUTE_SWITCH) ?
-                  action->group.group + 1 : action->group.group,
-                  (action->type != ACTION_TYPE_GROUP_LOCK &&
-                   (action->group.flags & ACTION_LOCK_CLEAR)) ?
-                  ",clearLocks" : "",
-                  (action->type != ACTION_TYPE_GROUP_LOCK &&
-                   (action->group.flags & ACTION_LATCH_TO_LOCK)) ?
-                  ",latchToLock" : "",
+                  (!(action->group.flags & ACTION_ABSOLUTE_SWITCH) && action->group.group > 0) ? "+" : "",
+                  (action->group.flags & ACTION_ABSOLUTE_SWITCH) ? action->group.group + 1 : action->group.group,
+                  (action->type != ACTION_TYPE_GROUP_LOCK && (action->group.flags & ACTION_LOCK_CLEAR)) ? ",clearLocks" : "",
+                  (action->type != ACTION_TYPE_GROUP_LOCK && (action->group.flags & ACTION_LATCH_TO_LOCK)) ? ",latchToLock" : "",
                   suffix);
         break;
 
@@ -329,35 +334,17 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
 
     case ACTION_TYPE_PTR_MOVE:
         write_buf(buf, "%s%s(x=%s%d,y=%s%d%s)%s", prefix, type,
-                  (!(action->ptr.flags & ACTION_ABSOLUTE_X) &&
-                   action->ptr.x >= 0) ? "+" : "",
+                  (!(action->ptr.flags & ACTION_ABSOLUTE_X) && action->ptr.x >= 0) ? "+" : "",
                   action->ptr.x,
-                  (!(action->ptr.flags & ACTION_ABSOLUTE_Y) &&
-                   action->ptr.y >= 0) ? "+" : "",
+                  (!(action->ptr.flags & ACTION_ABSOLUTE_Y) && action->ptr.y >= 0) ? "+" : "",
                   action->ptr.y,
-                  (action->ptr.flags & ACTION_NO_ACCEL) ? ",!accel" : "",
+                  (action->ptr.flags & ACTION_ACCEL) ? "" : ",!accel",
                   suffix);
         break;
 
     case ACTION_TYPE_PTR_LOCK:
-        switch (action->btn.flags &
-                 (ACTION_LOCK_NO_LOCK | ACTION_LOCK_NO_UNLOCK)) {
-        case ACTION_LOCK_NO_UNLOCK:
-            args = ",affect=lock";
-            break;
-
-        case ACTION_LOCK_NO_LOCK:
-            args = ",affect=unlock";
-            break;
-
-        case ACTION_LOCK_NO_LOCK | ACTION_LOCK_NO_UNLOCK:
-            args = ",affect=neither";
-            break;
-
-        default:
-            args = ",affect=both";
-            break;
-        }
+        args = affect_lock_text(action->btn.flags);
+        /* fallthrough */
     case ACTION_TYPE_PTR_BUTTON:
         write_buf(buf, "%s%s(button=", prefix, type);
         if (action->btn.button > 0 && action->btn.button <= 5)
@@ -374,25 +361,25 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
     case ACTION_TYPE_PTR_DEFAULT:
         write_buf(buf, "%s%s(", prefix, type);
         write_buf(buf, "affect=button,button=%s%d",
-                  (!(action->dflt.flags & ACTION_ABSOLUTE_SWITCH) &&
-                   action->dflt.value >= 0) ? "+" : "",
+                  (!(action->dflt.flags & ACTION_ABSOLUTE_SWITCH) && action->dflt.value >= 0) ? "+" : "",
                   action->dflt.value);
         write_buf(buf, ")%s", suffix);
         break;
 
     case ACTION_TYPE_SWITCH_VT:
         write_buf(buf, "%s%s(screen=%s%d,%ssame)%s", prefix, type,
-                  (!(action->screen.flags & ACTION_ABSOLUTE_SWITCH) &&
-                   action->screen.screen >= 0) ? "+" : "",
+                  (!(action->screen.flags & ACTION_ABSOLUTE_SWITCH) && action->screen.screen >= 0) ? "+" : "",
                   action->screen.screen,
-                  (action->screen.flags & ACTION_SAME_SCREEN) ? "!" : "",
+                  (action->screen.flags & ACTION_SAME_SCREEN) ? "" : "!",
                   suffix);
         break;
 
     case ACTION_TYPE_CTRL_SET:
     case ACTION_TYPE_CTRL_LOCK:
-        write_buf(buf, "%s%s(controls=%s)%s", prefix, type,
-                  ControlMaskText(keymap->ctx, action->ctrls.ctrls), suffix);
+        write_buf(buf, "%s%s(controls=%s%s)%s", prefix, type,
+                  ControlMaskText(keymap->ctx, action->ctrls.ctrls),
+                  (action->type == ACTION_TYPE_CTRL_LOCK) ? affect_lock_text(action->ctrls.flags) : "",
+                  suffix);
         break;
 
     case ACTION_TYPE_NONE:
@@ -429,7 +416,7 @@ write_compat(struct xkb_keymap *keymap, struct buf *buf)
     write_buf(buf, "\tinterpret.useModMapMods= AnyLevel;\n");
     write_buf(buf, "\tinterpret.repeat= False;\n");
 
-    for (int i = 0; i < keymap->num_sym_interprets; i++) {
+    for (unsigned i = 0; i < keymap->num_sym_interprets; i++) {
         const struct xkb_sym_interpret *si = &keymap->sym_interprets[i];
 
         write_buf(buf, "\tinterpret %s+%s(%s) {\n",
@@ -635,7 +622,7 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
             continue;
 
         darray_enumerate(i, mod, keymap->mods)
-            if (key->modmap & (1 << i))
+            if (key->modmap & (1u << i))
                 write_buf(buf, "\tmodifier_map %s { %s };\n",
                           xkb_atom_text(keymap->ctx, mod->name),
                           KeyNameText(keymap->ctx, key->name));

@@ -48,10 +48,7 @@
 
 #include <xkbcommon/xkbcommon.h>
 #ifndef QT_NO_XKB
-// note: extern won't be needed from libxkbcommon 0.4.1 and above
-extern "C" {
 #include <xkbcommon/xkbcommon-x11.h>
-}
 #endif
 
 #include <QEvent>

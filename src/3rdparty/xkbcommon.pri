@@ -26,7 +26,8 @@ SOURCES += \
     $$PWD/xkbcommon/src/text.c \
     $$PWD/xkbcommon/src/context-priv.c \
     $$PWD/xkbcommon/src/keymap-priv.c \
-    $$PWD/xkbcommon/src/utils.c
+    $$PWD/xkbcommon/src/utils.c \
+    $$PWD/xkbcommon/src/utf8.c
 
 SOURCES += \
     $$PWD/xkbcommon/src/xkbcomp/action.c \
@@ -54,7 +55,7 @@ SOURCES += \
     SOURCES += \
         $$PWD/xkbcommon/src/x11/util.c \
         $$PWD/xkbcommon/src/x11/x11-keymap.c \ # renamed: keymap.c -> x11-keymap.c
-        $$PWD/xkbcommon/src/x11/x11-state.c    # renamed: state.c  -> x11-keymap.c
+        $$PWD/xkbcommon/src/x11/x11-state.c    # renamed: state.c  -> x11-state.c
 }
 
 TR_EXCLUDE += $$PWD/*
