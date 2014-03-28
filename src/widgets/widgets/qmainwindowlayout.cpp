@@ -615,11 +615,8 @@ static QList<T> findChildrenHelper(const QObject *o)
 }
 
 //pre4.3 tests the format that was used before 4.3
-bool QMainWindowLayoutState::checkFormat(QDataStream &stream, bool pre43)
+bool QMainWindowLayoutState::checkFormat(QDataStream &stream)
 {
-#ifdef QT_NO_TOOLBAR
-    Q_UNUSED(pre43);
-#endif
     while (!stream.atEnd()) {
         uchar marker;
         stream >> marker;
@@ -630,8 +627,7 @@ bool QMainWindowLayoutState::checkFormat(QDataStream &stream, bool pre43)
             case QToolBarAreaLayout::ToolBarStateMarkerEx:
                 {
                     QList<QToolBar *> toolBars = findChildrenHelper<QToolBar*>(mainWindow);
-                    if (!toolBarAreaLayout.restoreState(stream, toolBars, marker,
-                        pre43 /*testing 4.3 format*/, true /*testing*/)) {
+                    if (!toolBarAreaLayout.restoreState(stream, toolBars, marker, true /*testing*/)) {
                             return false;
                     }
                 }
@@ -672,14 +668,8 @@ bool QMainWindowLayoutState::restoreState(QDataStream &_stream,
     }
 
     QDataStream ds(copy);
-    const bool oldFormat = !checkFormat(ds, false);
-    if (oldFormat) {
-        //we should try with the old format
-        QDataStream ds2(copy);
-        if (!checkFormat(ds2, true)) {
-            return false; //format unknown
-        }
-    }
+    if (!checkFormat(ds))
+        return false;
 
     QDataStream stream(copy);
 
@@ -719,7 +709,7 @@ bool QMainWindowLayoutState::restoreState(QDataStream &_stream,
             case QToolBarAreaLayout::ToolBarStateMarkerEx:
                 {
                     QList<QToolBar *> toolBars = findChildrenHelper<QToolBar*>(mainWindow);
-                    if (!toolBarAreaLayout.restoreState(stream, toolBars, marker, oldFormat))
+                    if (!toolBarAreaLayout.restoreState(stream, toolBars, marker))
                         return false;
 
                     for (int i = 0; i < toolBars.size(); ++i) {
