@@ -1059,7 +1059,7 @@ void QPdfEngine::drawPath (const QPainterPath &p)
     if (!d->hasPen && !d->hasBrush)
         return;
 
-    if (d->simplePen) {
+    if (d->simplePen && d->opacity == 1.0) {
         // draw strokes natively in this case for better output
         *d->currentPage << QPdf::generatePath(p, QTransform(), d->hasBrush ? QPdf::FillAndStrokePath : QPdf::StrokePath);
     } else {
