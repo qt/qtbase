@@ -244,6 +244,9 @@ public:
 
     static QOpenGLContext *setCurrentContext(QOpenGLContext *context);
 
+    static void setGlobalShareContext(QOpenGLContext *context);
+    static QOpenGLContext *globalShareContext();
+
     int maxTextureSize();
 
     static QOpenGLContextPrivate *get(QOpenGLContext *context)

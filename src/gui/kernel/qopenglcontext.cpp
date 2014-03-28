@@ -230,6 +230,7 @@ public:
 };
 
 static QThreadStorage<QGuiGLThreadContext *> qwindow_context_storage;
+static QOpenGLContext *global_share_context = 0;
 
 #ifndef QT_NO_DEBUG
 QHash<QOpenGLContext *, bool> QOpenGLContextPrivate::makeCurrentTracker;
@@ -328,6 +329,25 @@ QOpenGLContext *QOpenGLContextPrivate::setCurrentContext(QOpenGLContext *context
     QOpenGLContext *previous = threadContext->context;
     threadContext->context = context;
     return previous;
+}
+
+/*!
+    \internal
+
+    This function is used by the Qt WebEngine to set up context sharing
+    across multiple windows. Do not use it for any other purpose.
+*/
+void QOpenGLContextPrivate::setGlobalShareContext(QOpenGLContext *context)
+{
+    global_share_context = context;
+}
+
+/*!
+    \internal
+*/
+QOpenGLContext *QOpenGLContextPrivate::globalShareContext()
+{
+    return global_share_context;
 }
 
 int QOpenGLContextPrivate::maxTextureSize()
