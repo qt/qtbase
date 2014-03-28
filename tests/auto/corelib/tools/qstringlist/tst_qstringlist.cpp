@@ -296,9 +296,11 @@ void tst_QStringList::removeDuplicates_data()
     QTest::addColumn<QString>("before");
     QTest::addColumn<QString>("after");
     QTest::addColumn<int>("count");
+    QTest::addColumn<bool>("detached");
 
-    QTest::newRow("empty-1") << "Hello,Hello" << "Hello" << 1;
-    QTest::newRow("empty-2") << "Hello,World" << "Hello,World" << 0;
+    QTest::newRow("empty-1") << "Hello,Hello" << "Hello" << 1 << true;
+    QTest::newRow("empty-2") << "Hello,World" << "Hello,World" << 0 << false;
+    QTest::newRow("middle")  << "Hello,World,Hello" << "Hello,World" << 1 << true;
 }
 
 void tst_QStringList::removeDuplicates()
@@ -306,13 +308,16 @@ void tst_QStringList::removeDuplicates()
     QFETCH(QString, before);
     QFETCH(QString, after);
     QFETCH(int, count);
+    QFETCH(bool, detached);
 
     QStringList lbefore = before.split(',');
+    const QStringList oldlbefore = lbefore;
     QStringList lafter = after.split(',');
     int removed = lbefore.removeDuplicates();
 
     QCOMPARE(removed, count);
     QCOMPARE(lbefore, lafter);
+    QCOMPARE(detached, !oldlbefore.isSharedWith(lbefore));
 }
 
 void tst_QStringList::streamingOperator()
