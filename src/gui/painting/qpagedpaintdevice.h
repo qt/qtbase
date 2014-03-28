@@ -43,6 +43,7 @@
 #define QPAGEDPAINTDEVICE_H
 
 #include <QtGui/qpaintdevice.h>
+#include <QtGui/qpagelayout.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -51,7 +52,6 @@ QT_BEGIN_NAMESPACE
 #endif
 
 class QPagedPaintDevicePrivate;
-class QPageLayout;
 
 class Q_GUI_EXPORT QPagedPaintDevice : public QPaintDevice
 {
@@ -214,6 +214,14 @@ public:
         Envelope10 = Comm10E
     };
 
+    // ### Qt6 Make these virtual
+    bool setPageLayout(const QPageLayout &pageLayout);
+    bool setPageSize(const QPageSize &pageSize);
+    bool setPageOrientation(QPageLayout::Orientation orientation);
+    bool setPageMargins(const QMarginsF &margins);
+    bool setPageMargins(const QMarginsF &margins, QPageLayout::Unit units);
+    QPageLayout pageLayout() const;
+
     virtual void setPageSize(PageSize size);
     PageSize pageSize() const;
 
@@ -232,6 +240,8 @@ public:
     Margins margins() const;
 
 protected:
+    QPagedPaintDevice(QPagedPaintDevicePrivate *dd);
+    QPagedPaintDevicePrivate *dd();
     QPageLayout devicePageLayout() const;
     QPageLayout &devicePageLayout();
     friend class QPagedPaintDevicePrivate;

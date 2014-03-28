@@ -66,11 +66,29 @@ QPagedPaintDevice::QPagedPaintDevice()
 }
 
 /*!
+    \internal
+    Constructs a new paged paint device with the derived private class.
+*/
+QPagedPaintDevice::QPagedPaintDevice(QPagedPaintDevicePrivate *dd)
+    : d(dd)
+{
+}
+
+/*!
   Destroys the object.
   */
 QPagedPaintDevice::~QPagedPaintDevice()
 {
     delete d;
+}
+
+/*!
+    \internal
+    Returns the QPagedPaintDevicePrivate.
+*/
+QPagedPaintDevicePrivate *QPagedPaintDevice::dd()
+{
+    return d;
 }
 
 /*!
@@ -293,6 +311,134 @@ QPagedPaintDevice::Margins QPagedPaintDevice::margins() const
     result.right = margins.right();
     result.bottom = margins.bottom();
     return result;
+}
+
+/*!
+    \since 5.3
+
+    Sets the page layout to \a newPageLayout.
+
+    You should call this before calling QPainter::begin(), or immediately
+    before calling newPage() to apply the new page layout to a new page.
+    You should not call any painting methods between a call to setPageLayout()
+    and newPage() as the wrong paint metrics may be used.
+
+    Returns true if the page layout was successfully set to \a newPageLayout.
+
+    \sa pageLayout()
+*/
+
+bool QPagedPaintDevice::setPageLayout(const QPageLayout &newPageLayout)
+{
+    return d->setPageLayout(newPageLayout);
+}
+
+/*!
+    \since 5.3
+
+    Sets the page size to \a pageSize.
+
+    To get the current QPageSize use pageLayout().pageSize().
+
+    You should call this before calling QPainter::begin(), or immediately
+    before calling newPage() to apply the new page size to a new page.
+    You should not call any painting methods between a call to setPageSize()
+    and newPage() as the wrong paint metrics may be used.
+
+    Returns true if the page size was successfully set to \a pageSize.
+
+    \sa pageLayout()
+*/
+
+bool QPagedPaintDevice::setPageSize(const QPageSize &pageSize)
+{
+    return d->setPageSize(pageSize);
+}
+
+/*!
+    \since 5.3
+
+    Sets the page \a orientation.
+
+    The page orientation is used to define the orientation of the
+    page size when obtaining the page rect.
+
+    You should call this before calling QPainter::begin(), or immediately
+    before calling newPage() to apply the new orientation to a new page.
+    You should not call any painting methods between a call to setPageOrientation()
+    and newPage() as the wrong paint metrics may be used.
+
+    To get the current QPageLayout::Orientation use pageLayout().pageOrientation().
+
+    Returns true if the page orientation was successfully set to \a orientation.
+
+    \sa pageLayout()
+*/
+
+bool QPagedPaintDevice::setPageOrientation(QPageLayout::Orientation orientation)
+{
+    return d->setPageOrientation(orientation);
+}
+
+/*!
+    \since 5.3
+
+    Set the page \a margins in the current page layout units.
+
+    You should call this before calling QPainter::begin(), or immediately
+    before calling newPage() to apply the new margins to a new page.
+    You should not call any painting methods between a call to setPageMargins()
+    and newPage() as the wrong paint metrics may be used.
+
+    To get the current page margins use pageLayout().pageMargins().
+
+    Returns true if the page margins were successfully set to \a margins.
+
+    \sa pageLayout()
+*/
+
+bool QPagedPaintDevice::setPageMargins(const QMarginsF &margins)
+{
+    return d->setPageMargins(margins);
+}
+
+/*!
+    \since 5.3
+
+    Set the page \a margins defined in the given \a units.
+
+    You should call this before calling QPainter::begin(), or immediately
+    before calling newPage() to apply the new margins to a new page.
+    You should not call any painting methods between a call to setPageMargins()
+    and newPage() as the wrong paint metrics may be used.
+
+    To get the current page margins use pageLayout().pageMargins().
+
+    Returns true if the page margins were successfully set to \a margins.
+
+    \sa pageLayout()
+*/
+
+bool QPagedPaintDevice::setPageMargins(const QMarginsF &margins, QPageLayout::Unit units)
+{
+    return d->setPageMargins(margins, units);
+}
+
+/*!
+    \since 5.3
+
+    Returns the current page layout.  Use this method to access the current
+    QPageSize, QPageLayout::Orientation, QMarginsF, fullRect() and paintRect().
+
+    Note that you cannot use the setters on the returned object, you must either
+    call the individual QPagedPaintDevice setters or use setPageLayout().
+
+    \sa setPageLayout(), setPageSize(), setPageOrientation(), setPageMargins()
+*/
+
+QPageLayout QPagedPaintDevice::pageLayout() const
+{
+    return d->pageLayout();
 }
 
 /*!
