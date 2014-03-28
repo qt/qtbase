@@ -64,6 +64,9 @@ public:
     inline QStringList() { }
     inline explicit QStringList(const QString &i) { append(i); }
     inline QStringList(const QList<QString> &l) : QList<QString>(l) { }
+#ifdef Q_COMPILER_RVALUE_REFS
+    inline QStringList(QList<QString> &&l) : QList<QString>(std::move(l)) { }
+#endif
 #ifdef Q_COMPILER_INITIALIZER_LISTS
     inline QStringList(std::initializer_list<QString> args) : QList<QString>(args) { }
 #endif

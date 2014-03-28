@@ -204,6 +204,16 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn QStringList::QStringList(QList<QString> &&other)
+    \overload
+    \since 5.4
+
+    Move-constructs from QList<QString>.
+
+    After a successful construction, \a other will be empty.
+*/
+
+/*!
     \fn QStringList &QStringList::operator=(const QList<QString> &other)
     \since 5.4
 
