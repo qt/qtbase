@@ -163,7 +163,7 @@ void QOpenGLWidget::resizeEvent(QResizeEvent *)
 
     d->context.makeCurrent(d->surface());
     delete d->fbo; // recreate when resized
-    d->fbo = new QOpenGLFramebufferObject(size() * devicePixelRatio());
+    d->fbo = new QOpenGLFramebufferObject(size() * devicePixelRatio(), QOpenGLFramebufferObject::CombinedDepthStencil);
     d->fbo->bind();
     QOpenGLFunctions *funcs = d->context.functions();
     funcs->glBindTexture(GL_TEXTURE_2D, d->fbo->texture());
