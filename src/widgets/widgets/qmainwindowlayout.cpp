@@ -508,8 +508,11 @@ QLayoutItem *QMainWindowLayoutState::item(const QList<int> &path)
     int i = path.first();
 
 #ifndef QT_NO_TOOLBAR
-    if (i == 0)
-        return toolBarAreaLayout.item(path.mid(1)).widgetItem;
+    if (i == 0) {
+        const QToolBarAreaLayoutItem *tbItem = toolBarAreaLayout.item(path.mid(1));
+        Q_ASSERT(tbItem);
+        return tbItem->widgetItem;
+    }
 #endif
 
 #ifndef QT_NO_DOCKWIDGET
@@ -1567,9 +1570,10 @@ bool QMainWindowLayout::plug(QLayoutItem *widgetItem)
 
     QList<int> previousPath = layoutState.indexOf(widget);
 
-    QLayoutItem *it = layoutState.plug(currentGapPos);
+    const QLayoutItem *it = layoutState.plug(currentGapPos);
+    if (!it)
+        return false;
     Q_ASSERT(it == widgetItem);
-    Q_UNUSED(it);
     if (!previousPath.isEmpty())
         layoutState.remove(previousPath);
 
