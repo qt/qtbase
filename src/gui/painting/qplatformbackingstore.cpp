@@ -247,14 +247,14 @@ void QPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &regi
         d_ptr->blitter->blit(textureId, target, QOpenGLTextureBlitter::OriginBottomLeft);
     }
 
-    GLuint textureId = toTexture(deviceRegion(region, window));
+    GLuint textureId = toTexture(deviceRegion(region, window), &d_ptr->textureSize);
     if (!textureId)
         return;
 
     funcs->glEnable(GL_BLEND);
     funcs->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    QMatrix4x4 target = QOpenGLTextureBlitter::targetTransform(windowRect, windowRect);
+    QMatrix4x4 target = QOpenGLTextureBlitter::targetTransform(QRect(QPoint(), d_ptr->textureSize), windowRect);
     d_ptr->blitter->setSwizzleRB(true);
     d_ptr->blitter->blit(textureId, target, QOpenGLTextureBlitter::OriginTopLeft);
     d_ptr->blitter->setSwizzleRB(false);
@@ -282,6 +282,7 @@ QImage QPlatformBackingStore::toImage() const
   backingstore as an OpenGL texture. \a dirtyRegion is the part of the
   backingstore which may have changed since the last call to this function. The
   caller of this function must ensure that there is a current context.
+  The size of the texture is returned in \a textureSize.
 
   The ownership of the texture is not transferred. The caller must not store
   the return value between calls, but instead call this function before each use.
@@ -291,7 +292,7 @@ QImage QPlatformBackingStore::toImage() const
   content using toImage() and performs a texture upload.
  */
 
-GLuint QPlatformBackingStore::toTexture(const QRegion &dirtyRegion) const
+GLuint QPlatformBackingStore::toTexture(const QRegion &dirtyRegion, QSize *textureSize) const
 {
     QImage image = toImage();
     QSize imageSize = image.size();
@@ -325,7 +326,8 @@ GLuint QPlatformBackingStore::toTexture(const QRegion &dirtyRegion) const
 
         funcs->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imageSize.width(), imageSize.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
                             const_cast<uchar*>(image.constBits()));
-        d_ptr->textureSize = imageSize;
+        if (textureSize)
+            *textureSize = imageSize;
     } else {
         funcs->glBindTexture(GL_TEXTURE_2D, d_ptr->textureId);
         QRect imageRect = image.rect();
