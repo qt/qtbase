@@ -1415,19 +1415,19 @@ void tst_QAccessibility::menuTest()
     iFile->actionInterface()->doAction(QAccessibleActionInterface::showMenuAction());
     if(menuFade)
         QTest::qWait(menuFadeDelay);
-    QVERIFY(file->isVisible() && !edit->isVisible() && !help->isVisible());
+    QTRY_VERIFY(file->isVisible() && !edit->isVisible() && !help->isVisible());
     iEdit->actionInterface()->doAction(QAccessibleActionInterface::showMenuAction());
     if(menuFade)
         QTest::qWait(menuFadeDelay);
-    QVERIFY(!file->isVisible() && edit->isVisible() && !help->isVisible());
+    QTRY_VERIFY(!file->isVisible() && edit->isVisible() && !help->isVisible());
     iHelp->actionInterface()->doAction(QAccessibleActionInterface::showMenuAction());
     if(menuFade)
         QTest::qWait(menuFadeDelay);
-    QVERIFY(!file->isVisible() && !edit->isVisible() && help->isVisible());
+    QTRY_VERIFY(!file->isVisible() && !edit->isVisible() && help->isVisible());
     iAction->actionInterface()->doAction(QAccessibleActionInterface::showMenuAction());
     if(menuFade)
         QTest::qWait(menuFadeDelay);
-    QVERIFY(!file->isVisible() && !edit->isVisible() && !help->isVisible());
+    QTRY_VERIFY(!file->isVisible() && !edit->isVisible() && !help->isVisible());
 
     QVERIFY(interface->actionInterface());
     QCOMPARE(interface->actionInterface()->actionNames(), QStringList());
@@ -1500,8 +1500,8 @@ void tst_QAccessibility::menuTest()
     iFile->actionInterface()->doAction(QAccessibleActionInterface::showMenuAction());
     iFileNew->actionInterface()->doAction(QAccessibleActionInterface::showMenuAction());
 
-    QVERIFY(file->isVisible());
-    QVERIFY(fileNew->isVisible());
+    QTRY_VERIFY(file->isVisible());
+    QTRY_VERIFY(fileNew->isVisible());
     QVERIFY(!edit->isVisible());
     QVERIFY(!help->isVisible());
 
