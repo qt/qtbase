@@ -119,7 +119,7 @@ QCocoaMenuItem::~QCocoaMenuItem()
 
 void QCocoaMenuItem::setText(const QString &text)
 {
-    m_text = qt_mac_removeAmpersandEscapes(text);
+    m_text = text;
 }
 
 void QCocoaMenuItem::setIcon(const QIcon &icon)
