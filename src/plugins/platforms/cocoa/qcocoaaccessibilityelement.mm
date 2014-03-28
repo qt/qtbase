@@ -116,6 +116,7 @@
         NSAccessibilityTopLevelUIElementAttribute,
         NSAccessibilityPositionAttribute,
         NSAccessibilitySizeAttribute,
+        NSAccessibilityTitleAttribute,
         NSAccessibilityDescriptionAttribute,
         NSAccessibilityEnabledAttribute,
         nil];
@@ -176,8 +177,10 @@
     } else if ([attribute isEqualToString:NSAccessibilitySizeAttribute]) {
         QSize qtSize = iface->rect().size();
         return [NSValue valueWithSize: NSMakeSize(qtSize.width(), qtSize.height())];
-    } else if ([attribute isEqualToString:NSAccessibilityDescriptionAttribute]) {
+    } else if ([attribute isEqualToString:NSAccessibilityTitleAttribute]) {
         return QCFString::toNSString(iface->text(QAccessible::Name));
+    } else if ([attribute isEqualToString:NSAccessibilityDescriptionAttribute]) {
+        return QCFString::toNSString(iface->text(QAccessible::Description));
     } else if ([attribute isEqualToString:NSAccessibilityEnabledAttribute]) {
         return [NSNumber numberWithBool:!iface->state().disabled];
     } else if ([attribute isEqualToString:NSAccessibilityValueAttribute]) {
