@@ -726,7 +726,7 @@ int QtPrivate::QStringList_removeDuplicates(QStringList *that)
             continue;
         seen.insert(s);
         if (j != i)
-            (*that)[j] = s;
+            that->swap(i, j);
         ++j;
     }
     if (n != j)
