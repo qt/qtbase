@@ -2861,16 +2861,19 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         case QEvent::NetworkReplyUpdated:
             break;
         default:
-            if (receiver->isWidgetType()) {
-                if (d->gestureManager->filterEvent(static_cast<QWidget *>(receiver), e))
-                    return true;
-            } else {
-                // a special case for events that go to QGesture objects.
-                // We pass the object to the gesture manager and it'll figure
-                // out if it's QGesture or not.
-                if (d->gestureManager->filterEvent(receiver, e))
-                    return true;
+            if (d->gestureManager->thread() == QThread::currentThread()) {
+                if (receiver->isWidgetType()) {
+                    if (d->gestureManager->filterEvent(static_cast<QWidget *>(receiver), e))
+                        return true;
+                } else {
+                    // a special case for events that go to QGesture objects.
+                    // We pass the object to the gesture manager and it'll figure
+                    // out if it's QGesture or not.
+                    if (d->gestureManager->filterEvent(receiver, e))
+                        return true;
+                }
             }
+            break;
         }
     }
 #endif // QT_NO_GESTURES
