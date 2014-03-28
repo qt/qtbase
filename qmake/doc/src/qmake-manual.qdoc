@@ -2382,6 +2382,118 @@
 
     See also \l{#DEPENDPATH}{DEPENDPATH}.
 
+    \target WINRT_MANIFEST
+    \section1 WINRT_MANIFEST
+
+    Specifies parameters to be passed to the application manifest on \l{Qt for WinRT}{Windows
+    Runtime}. The allowed values are:
+
+    \table
+    \header
+        \li Member
+        \li Description
+    \row
+        \li architecture
+        \li The target architecture. Defaults to \c VCPROJ_ARCH.
+    \row
+        \li arguments
+        \li Allows arguments to be passed to the executable.
+    \row
+        \li author
+        \li Package author. Defaults to \c{Default package author}.
+            This option is only available for Windows Phone.
+    \row
+        \li background
+        \li Tile background color. Defaults to \c{green}.
+    \row
+        \li capabilities
+        \li Specifies capabilities to add to the capability list.
+    \row
+        \li capabilities_device
+        \li Specifies device capabilities to add to the capability list
+            (location, webcam, and so on). This option is not available on Windows Phone.
+    \row
+        \li dependencies
+        \li Specifies dependencies required by the package.
+    \row
+        \li description
+        \li Package description. Defaults to \c{Default package description}.
+    \row
+        \li foreground
+        \li Tile foreground (text) color. Defaults to \c{light}.
+            This option is only available for Windows Store apps on Windows 8 and Windows RT.
+    \row
+        \li genre
+        \li Package genre. Defaults to \c{apps.normal}.
+            This option is only available for Windows Phone.
+    \row
+        \li iconic_tile_icon
+        \li Image file for the \c{iconic} tile template icon. Default provided by
+            the mkspec.
+    \row
+        \li iconic_tile_small
+        \li Image file for the small \c{iconic} tile template logo. Default provided
+            by the mkspec.
+    \row
+        \li identity
+        \li The unique ID of the app. Defaults to reusing the existing generated
+            manifest's UUID, or generates a new UUID if none is present.
+    \row
+        \li logo_large
+        \li Large logo image file. Default provided by the mkspec.
+    \row
+        \li logo_medium
+        \li Medium logo image file. Default provided by the mkspec.
+    \row
+        \li logo_small
+        \li Small logo image file. Default provided by the mkspec.
+    \row
+        \li logo_store
+        \li Logo image file for Windows Store. Default provided by the mkspec.
+    \row
+        \li name
+        \li The name of the package as displayed to the user. Defaults to TARGET.
+    \row
+        \li publisher
+        \li Display name of the publisher. Defaults to \c{Default publisher display name}.
+    \row
+        \li publisher_id
+        \li On Windows 8 or Windows RT, the publisher's distinguished name (default: \c{CN=MyCN}).
+            On Windows Phone, the publisher's UUID (default: invalid UUID string).
+    \row
+        \li splash_screen
+        \li Splash screen image file. Default provided by the mkspec.
+    \row
+        \li target
+        \li The name of the target (.exe). Defaults to TARGET.
+    \row
+        \li version
+        \li The version number of the package. Defaults to \c{1.0.0.0}.
+    \endtable
+
+    You can use any combination of those values.
+
+    For example:
+
+    \code
+    WINRT_MANIFEST.publisher = MyCompany
+    WINRT_MANIFEST.logo_store = someImage.png
+    winphone {
+        WINRT_MANIFEST.capabilities += ID_CAP_LOCATION ID_CAP_NETWORKING
+    } else {
+        WINRT_MANIFEST.capabilities += internetClient
+        WINRT_MANIFEST.device_capabilities += location
+    }
+    \endcode
+
+    Additionally, an input manifest file can be specified by using WINRT_MANIFEST.
+
+    For example:
+
+    \code
+    WINRT_MANIFEST = someManifest.xml.in
+    \endcode
+
     \target YACCSOURCES
     \section1 YACCSOURCES
 
