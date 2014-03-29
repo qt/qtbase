@@ -69,7 +69,8 @@ HEADERS +=  \
         tools/qunicodetables_p.h \
         tools/qunicodetools_p.h \
         tools/qvarlengtharray.h \
-        tools/qvector.h
+        tools/qvector.h \
+        tools/qversionnumber.h
 
 
 SOURCES += \
@@ -113,7 +114,8 @@ SOURCES += \
         tools/qtimezoneprivate.cpp \
         tools/qunicodetools.cpp \
         tools/qvector.cpp \
-        tools/qvsnprintf.cpp
+        tools/qvsnprintf.cpp \
+        tools/qversionnumber.cpp
 
 NO_PCH_SOURCES = tools/qstring_compat.cpp
 msvc: NO_PCH_SOURCES += tools/qvector_msvc.cpp

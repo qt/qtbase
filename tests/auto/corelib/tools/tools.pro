@@ -59,4 +59,6 @@ SUBDIRS=\
     qtimeline \
     qvarlengtharray \
     qvector \
-    qvector_strictiterators
+    qvector_strictiterators \
+    qversionnumber
+
