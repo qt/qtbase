@@ -559,10 +559,12 @@ void tst_QIcon::task184901_badCache()
 
 void tst_QIcon::fromTheme()
 {
-    QString searchPath = QLatin1String(":/icons");
-    QIcon::setThemeSearchPaths(QStringList() << searchPath);
-    QVERIFY(QIcon::themeSearchPaths().size() == 1);
-    QCOMPARE(searchPath, QIcon::themeSearchPaths()[0]);
+    QString firstSearchPath = QLatin1String(":/icons");
+    QString secondSearchPath = QLatin1String(":/second_icons");
+    QIcon::setThemeSearchPaths(QStringList() << firstSearchPath << secondSearchPath);
+    QVERIFY(QIcon::themeSearchPaths().size() == 2);
+    QCOMPARE(firstSearchPath, QIcon::themeSearchPaths()[0]);
+    QCOMPARE(secondSearchPath, QIcon::themeSearchPaths()[1]);
 
     QString themeName("testtheme");
     QIcon::setThemeName(themeName);
@@ -575,6 +577,14 @@ void tst_QIcon::fromTheme()
     QVERIFY(appointmentIcon.availableSizes().contains(QSize(16, 16)));
     QVERIFY(appointmentIcon.availableSizes().contains(QSize(32, 32)));
     QVERIFY(appointmentIcon.availableSizes().contains(QSize(22, 22)));
+
+    // Test fallback to less specific icon
+    QIcon specificAppointmentIcon = QIcon::fromTheme("appointment-new-specific");
+    QVERIFY(!QIcon::hasThemeIcon("appointment-new-specific"));
+    QVERIFY(QIcon::hasThemeIcon("appointment-new"));
+    QCOMPARE(specificAppointmentIcon.name(), QString::fromLatin1("appointment-new"));
+    QCOMPARE(specificAppointmentIcon.availableSizes(), appointmentIcon.availableSizes());
+    QCOMPARE(specificAppointmentIcon.pixmap(32).cacheKey(), appointmentIcon.pixmap(32).cacheKey());
 
     // Test icon from parent theme
     QIcon abIcon = QIcon::fromTheme("address-book-new");

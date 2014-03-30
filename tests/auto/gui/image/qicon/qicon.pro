@@ -7,4 +7,4 @@ qtHaveModule(widgets): QT += widgets
 SOURCES += tst_qicon.cpp
 RESOURCES = tst_qicon.qrc
 
-TESTDATA += icons/* *.png *.svg *.svgz
+TESTDATA += icons/* second_icons/* *.png *.svg *.svgz

@@ -1197,7 +1197,7 @@ bool QIcon::hasThemeIcon(const QString &name)
 {
     QIcon icon = fromTheme(name);
 
-    return !icon.isNull();
+    return icon.name() == name;
 }
 
 
