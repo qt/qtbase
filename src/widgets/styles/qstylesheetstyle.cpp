@@ -5805,6 +5805,25 @@ QRect QStyleSheetStyle::subElementRect(SubElement se, const QStyleOption *opt, c
         break;
 #endif //QT_NO_TOOLBAR
 
+    // On mac we make pixel adjustments to layouts which are not
+    // desireable when you have custom style sheets on them
+    case SE_CheckBoxLayoutItem:
+    case SE_ComboBoxLayoutItem:
+    case SE_DateTimeEditLayoutItem:
+    case SE_LabelLayoutItem:
+    case SE_ProgressBarLayoutItem:
+    case SE_PushButtonLayoutItem:
+    case SE_RadioButtonLayoutItem:
+    case SE_SliderLayoutItem:
+    case SE_SpinBoxLayoutItem:
+    case SE_ToolButtonLayoutItem:
+    case SE_FrameLayoutItem:
+    case SE_GroupBoxLayoutItem:
+    case SE_TabWidgetLayoutItem:
+        if (!rule.hasNativeBorder())
+            return opt->rect;
+        break;
+
     default:
         break;
     }
