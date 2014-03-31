@@ -86,7 +86,7 @@ protected:
     void handleKeyEvent(QWindow *window, QEvent::Type type, xcb_keycode_t code, quint16 state, xcb_timestamp_t time);
 
     void resolveMaskConflicts();
-    QString keysymToUnicode(xcb_keysym_t sym) const;
+    QString lookupString(struct xkb_state *state, xcb_keycode_t code) const;
     int keysymToQtKey(xcb_keysym_t keysym) const;
     int keysymToQtKey(xcb_keysym_t keysym, Qt::KeyboardModifiers &modifiers, QString text) const;
     void printKeymapError(const char *error) const;

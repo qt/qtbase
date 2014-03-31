@@ -853,7 +853,7 @@ QList<int> QXcbKeyboard::possibleKeys(const QKeyEvent *event) const
         return QList<int>();
 
     QList<int> result;
-    int baseQtKey = keysymToQtKey(sym, modifiers, keysymToUnicode(sym));
+    int baseQtKey = keysymToQtKey(sym, modifiers, lookupString(kb_state, event->nativeScanCode()));
     result += (baseQtKey + modifiers); // The base key is _always_ valid, of course
 
     xkb_mod_index_t shiftMod = xkb_keymap_mod_get_index(xkb_keymap, "Shift");
@@ -900,7 +900,7 @@ QList<int> QXcbKeyboard::possibleKeys(const QKeyEvent *event) const
                 continue;
 
             Qt::KeyboardModifiers mods = modifiers & ~neededMods;
-            qtKey = keysymToQtKey(sym, mods, keysymToUnicode(sym));
+            qtKey = keysymToQtKey(sym, mods, lookupString(kb_state, event->nativeScanCode()));
 
             if (qtKey == baseQtKey)
                 continue;
@@ -1316,7 +1316,8 @@ void QXcbKeyboard::handleKeyEvent(QWindow *window, QEvent::Type type, xcb_keycod
     }
 
     Qt::KeyboardModifiers modifiers = translateModifiers(state);
-    QString string = keysymToUnicode(sym);
+
+    QString string = lookupString(xkb_state, code);
     int count = string.size();
     string.truncate(count);
 
@@ -1379,16 +1380,12 @@ void QXcbKeyboard::handleKeyEvent(QWindow *window, QEvent::Type type, xcb_keycod
     }
 }
 
-QString QXcbKeyboard::keysymToUnicode(xcb_keysym_t sym) const
+QString QXcbKeyboard::lookupString(struct xkb_state *state, xcb_keycode_t code) const
 {
     QByteArray chars;
-    int bytes;
-    chars.resize(7);
-    bytes = xkb_keysym_to_utf8(sym, chars.data(), chars.size());
-    if (bytes == -1)
-        qWarning("QXcbKeyboard::handleKeyEvent - buffer too small");
-    chars.resize(bytes-1);
-
+    chars.resize(1 + xkb_state_key_get_utf8(state, code, 0, 0));
+    // equivalent of XLookupString
+    xkb_state_key_get_utf8(state, code, chars.data(), chars.size());
     return QString::fromUtf8(chars);
 }
 
