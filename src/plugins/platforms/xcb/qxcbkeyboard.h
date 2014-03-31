@@ -92,7 +92,7 @@ protected:
     QString keysymToUnicode(xcb_keysym_t sym) const;
     int keysymToQtKey(xcb_keysym_t keysym) const;
     int keysymToQtKey(xcb_keysym_t keysym, Qt::KeyboardModifiers &modifiers, QString text) const;
-    void printKeymapError(const QString &error) const;
+    void printKeymapError(const char *error) const;
 
     void readXKBConfig();
     void clearXKBConfig();
