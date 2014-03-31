@@ -126,8 +126,15 @@ bool QApplicationPrivate::modalState()
 
 QWidget *qt_tlw_for_window(QWindow *wnd)
 {
-    while (wnd && !wnd->isTopLevel()) // QTBUG-32177, wnd might be a QQuickView embedded via window container.
-        wnd = wnd->parent();
+    // QTBUG-32177, wnd might be a QQuickView embedded via window container.
+    while (wnd && !wnd->isTopLevel()) {
+        QWindow *parent = wnd->parent();
+        // Don't end up in windows not belonging to this application
+        if (parent && parent->type() != Qt::ForeignWindow)
+            wnd = wnd->parent();
+        else
+            break;
+    }
     if (wnd)
         foreach (QWidget *tlw, qApp->topLevelWidgets())
             if (tlw->windowHandle() == wnd)
