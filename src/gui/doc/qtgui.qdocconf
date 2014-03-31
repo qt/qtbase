@@ -16,7 +16,7 @@ qhp.QtGui.indexTitle          = Qt GUI
 qhp.QtGui.indexRoot           =
 
 qhp.QtGui.filterAttributes    = qtgui $QT_VERSION qtrefdoc
-qhp.QtGui.customFilters.Qt.name = Qtgui $QT_VERSION
+qhp.QtGui.customFilters.Qt.name = QtGui $QT_VERSION
 qhp.QtGui.customFilters.Qt.filterAttributes = qtgui $QT_VERSION
 
 qhp.QtGui.subprojects         = classes
