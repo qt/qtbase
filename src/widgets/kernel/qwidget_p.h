@@ -628,7 +628,7 @@ public:
 #ifndef QT_NO_OPENGL
     virtual GLuint textureId() const { return 0; }
 
-    void setRenderToTexture() { renderToTexture = true; textureChildSeen = true; }
+    void setRenderToTexture() { renderToTexture = true; setTextureChildSeen(); }
     void setTextureChildSeen()
     {
         Q_Q(QWidget);
