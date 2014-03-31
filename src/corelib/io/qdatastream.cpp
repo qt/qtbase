@@ -250,10 +250,6 @@ QT_BEGIN_NAMESPACE
     if (q_status != Ok) \
         return retVal;
 
-enum {
-    DefaultStreamVersion = QDataStream::Qt_5_4
-};
-
 /*!
     Constructs a data stream that has no I/O device.
 
@@ -265,7 +261,7 @@ QDataStream::QDataStream()
     dev = 0;
     owndev = false;
     byteorder = BigEndian;
-    ver = DefaultStreamVersion;
+    ver = Qt_DefaultCompiledVersion;
     noswap = QSysInfo::ByteOrder == QSysInfo::BigEndian;
     q_status = Ok;
 }
@@ -287,7 +283,7 @@ QDataStream::QDataStream(QIODevice *d)
     dev = d;                                // set device
     owndev = false;
     byteorder = BigEndian;                        // default byte order
-    ver = DefaultStreamVersion;
+    ver = Qt_DefaultCompiledVersion;
     noswap = QSysInfo::ByteOrder == QSysInfo::BigEndian;
     q_status = Ok;
 }
@@ -315,7 +311,7 @@ QDataStream::QDataStream(QByteArray *a, QIODevice::OpenMode flags)
     dev = buf;
     owndev = true;
     byteorder = BigEndian;
-    ver = DefaultStreamVersion;
+    ver = Qt_DefaultCompiledVersion;
     noswap = QSysInfo::ByteOrder == QSysInfo::BigEndian;
     q_status = Ok;
 }
@@ -339,7 +335,7 @@ QDataStream::QDataStream(const QByteArray &a)
     dev = buf;
     owndev = true;
     byteorder = BigEndian;
-    ver = DefaultStreamVersion;
+    ver = Qt_DefaultCompiledVersion;
     noswap = QSysInfo::ByteOrder == QSysInfo::BigEndian;
     q_status = Ok;
 }
@@ -543,6 +539,7 @@ void QDataStream::setByteOrder(ByteOrder bo)
     \value Qt_5_2 Version 15 (Qt 5.2)
     \value Qt_5_3 Same as Qt_5_2
     \value Qt_5_4 Same as Qt_5_2
+    \omitvalue Qt_DefaultCompiledVersion
 
     \sa setVersion(), version()
 */
