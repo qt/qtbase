@@ -87,9 +87,7 @@ public:
           q_ptr(printer),
           printRange(QPrinter::AllPages),
           use_default_engine(true),
-          validPrinter(false),
-          hasCustomPageMargins(false),
-          hasUserSetPageSize(false)
+          validPrinter(false)
     {
     }
 
@@ -129,7 +127,6 @@ public:
 
     uint validPrinter : 1;
     uint hasCustomPageMargins : 1;
-    uint hasUserSetPageSize : 1;
 
     // Used to remember which properties have been manually set by the user.
     QSet<QPrintEngine::PrintEnginePropertyKey> m_properties;

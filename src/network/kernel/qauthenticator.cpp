@@ -981,7 +981,7 @@ public:
     QNtlmPhase1Block() {
         qstrncpy(magic, "NTLMSSP", 8);
         type = 1;
-        flags = NTLMSSP_NEGOTIATE_UNICODE | NTLMSSP_NEGOTIATE_NTLM | NTLMSSP_REQUEST_TARGET;
+        flags = NTLMSSP_NEGOTIATE_UNICODE | NTLMSSP_NEGOTIATE_NTLM | NTLMSSP_REQUEST_TARGET | NTLMSSP_NEGOTIATE_ALWAYS_SIGN | NTLMSSP_NEGOTIATE_NTLM2;
     }
 
     // extracted
@@ -1423,9 +1423,16 @@ static QByteArray qNtlmPhase3(QAuthenticatorPrivate *ctx, const QByteArray& phas
     ds.setByteOrder(QDataStream::LittleEndian);
     QNtlmPhase3Block pb;
 
+    // set NTLMv2
+    if (ch.flags & NTLMSSP_NEGOTIATE_NTLM2)
+        pb.flags |= NTLMSSP_NEGOTIATE_NTLM2;
+
+    // set Always Sign
+    if (ch.flags & NTLMSSP_NEGOTIATE_ALWAYS_SIGN)
+        pb.flags |= NTLMSSP_NEGOTIATE_ALWAYS_SIGN;
+
     bool unicode = ch.flags & NTLMSSP_NEGOTIATE_UNICODE;
 
-    pb.flags = NTLMSSP_NEGOTIATE_NTLM;
     if (unicode)
         pb.flags |= NTLMSSP_NEGOTIATE_UNICODE;
     else

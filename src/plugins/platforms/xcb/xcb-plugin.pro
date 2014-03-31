@@ -131,12 +131,9 @@ contains(QT_CONFIG, xcb-qt) {
 
 # libxkbcommon
 contains(QT_CONFIG, xkbcommon-qt): {
+    QT_CONFIG += use-xkbcommon-x11support
     include(../../../3rdparty/xkbcommon.pri)
 } else {
     LIBS += $$QMAKE_LIBS_XKBCOMMON
     QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_XKBCOMMON
-    equals(QMAKE_VERSION_XKBCOMMON, "0.2.0") {
-        DEFINES += XKBCOMMON_0_2_0
-        INCLUDEPATH += ../../../3rdparty/xkbcommon/xkbcommon/
-    }
 }

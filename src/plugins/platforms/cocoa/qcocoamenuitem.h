@@ -118,6 +118,9 @@ private:
     quintptr m_tag;
 };
 
+#define COCOA_MENU_ANCESTOR(m) ((m)->property("_qCocoaMenuAncestor").value<QObject *>())
+#define SET_COCOA_MENU_ANCESTOR(m, ancestor) (m)->setProperty("_qCocoaMenuAncestor", QVariant::fromValue<QObject *>(ancestor))
+
 QT_END_NAMESPACE
 
 #endif

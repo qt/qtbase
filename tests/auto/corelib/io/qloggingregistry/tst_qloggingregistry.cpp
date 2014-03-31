@@ -172,7 +172,7 @@ private slots:
 
         QLoggingRule rule(QStringRef(&pattern), true);
         LoggingRuleState state = Invalid;
-        if (rule.flags != QLoggingRule::Invalid) {
+        if (rule.flags != 0) {
             switch (rule.pass(category, msgType)) {
             case -1: QFAIL("Shoudn't happen, we set pattern to true"); break;
             case 0: state = NoMatch; break;
@@ -302,6 +302,16 @@ private slots:
         QVERIFY(!cat.isWarningEnabled());
     }
 
+
+    void QLoggingRegistry_checkErrors()
+    {
+        QLoggingSettingsParser parser;
+        QString warnMsg = QString("Ignoring malformed logging rule: '***=false'");
+        QTest::ignoreMessage(QtWarningMsg, warnMsg.toLocal8Bit().constData());
+        parser.setContent("[Rules]\n"
+                          "***=false\n");
+        QVERIFY(parser.rules().isEmpty());
+    }
 };
 
 QTEST_MAIN(tst_QLoggingRegistry)

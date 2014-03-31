@@ -81,6 +81,27 @@ typedef ITypedEventHandler<Core::CoreApplicationView *, Activation::IActivatedEv
 
 static int g_mainExitCode;
 
+static QtMessageHandler defaultMessageHandler;
+static void devMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &message)
+{
+#ifndef Q_OS_WINPHONE
+    static HANDLE shmem = 0;
+    static HANDLE event = 0;
+    if (!shmem)
+        shmem = CreateFileMappingFromApp(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 4096, L"qdebug-shmem");
+    if (!event)
+        event = CreateEventEx(NULL, L"qdebug-event", 0, EVENT_ALL_ACCESS);
+
+    void *data = MapViewOfFileFromApp(shmem, FILE_MAP_WRITE, 0, 4096);
+    memset(data, quint32(type), sizeof(quint32));
+    memcpy_s(static_cast<quint32 *>(data) + 1, 4096 - sizeof(quint32),
+             message.data(), (message.length() + 1) * sizeof(wchar_t));
+    UnmapViewOfFile(data);
+    SetEvent(event);
+#endif // !Q_OS_WINPHONE
+    defaultMessageHandler(type, context, message);
+}
+
 class AppContainer : public Microsoft::WRL::RuntimeClass<Core::IFrameworkView>
 {
 public:
@@ -127,6 +148,10 @@ public:
             // (Unused) handle will automatically be closed when the app exits
             CreateFile2(reinterpret_cast<LPCWSTR>(pidFileName.utf16()),
                         0, FILE_SHARE_READ|FILE_SHARE_DELETE, CREATE_ALWAYS, &params);
+            // Install the develMode message handler
+#ifndef Q_OS_WINPHONE
+            defaultMessageHandler = qInstallMessageHandler(devMessageHandler);
+#endif
         }
         // Wait for debugger before continuing
         if (debugWait) {

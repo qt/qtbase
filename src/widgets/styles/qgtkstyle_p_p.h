@@ -200,23 +200,6 @@ typedef gint (*Ptr_pango_font_description_get_size) (const PangoFontDescription 
 typedef PangoWeight (*Ptr_pango_font_description_get_weight) (const PangoFontDescription *);
 typedef const char* (*Ptr_pango_font_description_get_family) (const PangoFontDescription *);
 typedef PangoStyle (*Ptr_pango_font_description_get_style) (const PangoFontDescription *desc);
-typedef gboolean (*Ptr_gtk_file_chooser_set_current_folder)(GtkFileChooser *, const gchar *);
-typedef GtkFileFilter* (*Ptr_gtk_file_filter_new)(void);
-typedef void (*Ptr_gtk_file_filter_set_name)(GtkFileFilter *, const gchar *);
-typedef void (*Ptr_gtk_file_filter_add_pattern)(GtkFileFilter *filter, const gchar *pattern);
-typedef void (*Ptr_gtk_file_chooser_add_filter)(GtkFileChooser *chooser, GtkFileFilter *filter);
-typedef void (*Ptr_gtk_file_chooser_set_filter)(GtkFileChooser *chooser, GtkFileFilter *filter);
-typedef GtkFileFilter* (*Ptr_gtk_file_chooser_get_filter)(GtkFileChooser *chooser);
-typedef gchar*  (*Ptr_gtk_file_chooser_get_filename)(GtkFileChooser *chooser);
-typedef GSList* (*Ptr_gtk_file_chooser_get_filenames)(GtkFileChooser *chooser);
-typedef GtkWidget* (*Ptr_gtk_file_chooser_dialog_new)(const gchar *title,
-                                                GtkWindow *parent,
-                                                GtkFileChooserAction action,
-                                                const gchar *first_button_text,
-                                                ...);
-typedef void (*Ptr_gtk_file_chooser_set_current_name) (GtkFileChooser *, const gchar *);
-typedef gboolean (*Ptr_gtk_file_chooser_set_filename) (GtkFileChooser *chooser, const gchar *name);
-typedef gint (*Ptr_gtk_dialog_run) (GtkDialog*);
 typedef void (*Ptr_gtk_border_free)(GtkBorder *);
 typedef void (*Ptr_gtk_widget_get_allocation) (GtkWidget*, GtkAllocation*);
 typedef void (*Ptr_gtk_widget_set_allocation) (GtkWidget*, const GtkAllocation*);
@@ -241,22 +224,6 @@ typedef Display* (*Ptr_gdk_x11_drawable_get_xdisplay) ( GdkDrawable *);
 
 
 QT_BEGIN_NAMESPACE
-
-#ifndef QT_NO_FILEDIALOG
-typedef QStringList (*_qt_filedialog_open_filenames_hook)(QWidget * parent, const QString &caption, const QString &dir,
-                                                          const QString &filter, QString *selectedFilter, QFileDialog::Options options);
-typedef QString (*_qt_filedialog_open_filename_hook)     (QWidget * parent, const QString &caption, const QString &dir,
-                                                          const QString &filter, QString *selectedFilter, QFileDialog::Options options);
-typedef QString (*_qt_filedialog_save_filename_hook)     (QWidget * parent, const QString &caption, const QString &dir,
-                                                          const QString &filter, QString *selectedFilter, QFileDialog::Options options);
-typedef QString (*_qt_filedialog_existing_directory_hook)(QWidget *parent, const QString &caption, const QString &dir,
-                                                          QFileDialog::Options options);
-
-extern Q_WIDGETS_EXPORT _qt_filedialog_open_filename_hook qt_filedialog_open_filename_hook;
-extern Q_WIDGETS_EXPORT _qt_filedialog_open_filenames_hook qt_filedialog_open_filenames_hook;
-extern Q_WIDGETS_EXPORT _qt_filedialog_save_filename_hook qt_filedialog_save_filename_hook;
-extern Q_WIDGETS_EXPORT _qt_filedialog_existing_directory_hook qt_filedialog_existing_directory_hook;
-#endif //!QT_NO_FILEDIALOG
 
 class QGtkPainter;
 class QGtkStylePrivate;
@@ -326,20 +293,6 @@ public:
     static QString getThemeName();
     virtual int getSpinboxArrowSize() const;
 
-#ifndef QT_NO_FILEDIALOG
-    static void setupGtkFileChooser(GtkWidget* gtkFileChooser, QWidget *parent,
-            const QString &dir, const QString &filter, QString *selectedFilter,
-            QFileDialog::Options options, bool isSaveDialog = false,
-            QHash<GtkFileFilter *, QString> *filterMap = 0);
-
-    static QString openFilename(QWidget *parent, const QString &caption, const QString &dir, const QString &filter,
-                                QString *selectedFilter, QFileDialog::Options options);
-    static QString saveFilename(QWidget *parent, const QString &caption, const QString &dir, const QString &filter,
-                                QString *selectedFilter, QFileDialog::Options options);
-    static QString openDirectory(QWidget *parent, const QString &caption, const QString &dir, QFileDialog::Options options);
-    static QStringList openFilenames(QWidget *parent, const QString &caption, const QString &dir, const QString &filter,
-                                    QString *selectedFilter, QFileDialog::Options options);
-#endif
     static QIcon getFilesystemIcon(const QFileInfo &);
 
     static Ptr_gtk_container_forall gtk_container_forall;
@@ -424,20 +377,6 @@ public:
     static Ptr_pango_font_description_get_weight pango_font_description_get_weight;
     static Ptr_pango_font_description_get_family pango_font_description_get_family;
     static Ptr_pango_font_description_get_style pango_font_description_get_style;
-
-    static Ptr_gtk_file_filter_new gtk_file_filter_new;
-    static Ptr_gtk_file_filter_set_name gtk_file_filter_set_name;
-    static Ptr_gtk_file_filter_add_pattern gtk_file_filter_add_pattern;
-    static Ptr_gtk_file_chooser_add_filter gtk_file_chooser_add_filter;
-    static Ptr_gtk_file_chooser_set_filter gtk_file_chooser_set_filter;
-    static Ptr_gtk_file_chooser_get_filter gtk_file_chooser_get_filter;
-    static Ptr_gtk_file_chooser_dialog_new gtk_file_chooser_dialog_new;
-    static Ptr_gtk_file_chooser_set_current_folder gtk_file_chooser_set_current_folder;
-    static Ptr_gtk_file_chooser_get_filename gtk_file_chooser_get_filename;
-    static Ptr_gtk_file_chooser_get_filenames gtk_file_chooser_get_filenames;
-    static Ptr_gtk_file_chooser_set_current_name gtk_file_chooser_set_current_name;
-    static Ptr_gtk_dialog_run gtk_dialog_run;
-    static Ptr_gtk_file_chooser_set_filename gtk_file_chooser_set_filename;
 
     static Ptr_gdk_pixbuf_get_pixels gdk_pixbuf_get_pixels;
     static Ptr_gdk_pixbuf_get_width gdk_pixbuf_get_width;

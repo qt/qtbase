@@ -11,8 +11,7 @@
     Description=\"$${WINRT_MANIFEST.description}\"
     Publisher=\"$${WINRT_MANIFEST.publisher}\"
     PublisherID=\"$${WINRT_MANIFEST.publisherid}\">
-    <IconPath IsRelative=\"true\" IsResource=\"false\">$${WINRT_MANIFEST.logo_medium}</IconPath>
-    <Capabilities>$${WINRT_MANIFEST.capabilities}</Capabilities>
+    <IconPath IsRelative=\"true\" IsResource=\"false\">$${WINRT_MANIFEST.logo_medium}</IconPath>$${WINRT_MANIFEST.capabilities}
     <Tasks>
       <DefaultTask
         Name=\"_default\"

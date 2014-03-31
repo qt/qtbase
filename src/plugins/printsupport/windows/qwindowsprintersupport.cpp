@@ -40,20 +40,17 @@
 ****************************************************************************/
 
 #include "qwindowsprintersupport.h"
+#include "qwindowsprintdevice.h"
 
-#include <QtCore/QList>
-#include <QtCore/QScopedArrayPointer>
-#include <QtPrintSupport/QPrinterInfo>
+#include <QtCore/QStringList>
 #include <qprintengine_win_p.h>
-#include <private/qpaintengine_alpha_p.h>
-#include <private/qprinterinfo_p.h>
+#include <private/qprintdevice_p.h>
 
 QT_BEGIN_NAMESPACE
 
 QWindowsPrinterSupport::QWindowsPrinterSupport()
     : QPlatformPrinterSupport()
 {
-    m_printers = QWindowsPrinterSupport::queryPrinters();
 }
 
 QWindowsPrinterSupport::~QWindowsPrinterSupport()
@@ -71,43 +68,19 @@ QPaintEngine *QWindowsPrinterSupport::createPaintEngine(QPrintEngine *engine, QP
     return static_cast<QWin32PrintEngine *>(engine);
 }
 
-QList<QPrinter::PaperSize> QWindowsPrinterSupport::supportedPaperSizes(const QPrinterInfo &printerInfo) const
+QPrintDevice QWindowsPrinterSupport::createPrintDevice(const QString &id)
 {
-    return QWin32PrintEngine::supportedPaperSizes(printerInfo);
+    return QPlatformPrinterSupport::createPrintDevice(new QWindowsPrintDevice(id));
 }
 
-QList<QPair<QString, QSizeF> >QWindowsPrinterSupport::supportedSizesWithNames(const QPrinterInfo &printerInfo) const
+QStringList QWindowsPrinterSupport::availablePrintDeviceIds() const
 {
-    return QWin32PrintEngine::supportedSizesWithNames(printerInfo);
+    return QWindowsPrintDevice::availablePrintDeviceIds();
 }
 
-QList<QPrinterInfo> QWindowsPrinterSupport::availablePrinters()
+QString QWindowsPrinterSupport::defaultPrintDeviceId() const
 {
-    m_printers = QWindowsPrinterSupport::queryPrinters();
-    return QPlatformPrinterSupport::availablePrinters();
-}
-
-QList<QPrinterInfo> QWindowsPrinterSupport::queryPrinters()
-{
-    QList<QPrinterInfo> result;
-    DWORD needed = 0;
-    DWORD returned = 0;
-    if ((!EnumPrinters(PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS, NULL, 4, 0, 0, &needed, &returned) && GetLastError() != ERROR_INSUFFICIENT_BUFFER)
-        || !needed) {
-        return result;
-    }
-    QScopedArrayPointer<BYTE> buffer(new BYTE[needed]);
-    if (!EnumPrinters(PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS, NULL, 4, buffer.data(), needed, &needed, &returned))
-        return result;
-    PPRINTER_INFO_4 infoList = reinterpret_cast<PPRINTER_INFO_4>(buffer.data());
-    QString defaultPrinterName;
-    QWin32PrintEngine::queryDefaultPrinter(defaultPrinterName);
-    for (uint i = 0; i < returned; ++i) {
-        const QString printerName(QString::fromWCharArray(infoList[i].pPrinterName));
-        const bool isDefault = (printerName == defaultPrinterName);
-        result.append(QPlatformPrinterSupport::createPrinterInfo(printerName, QString(), QString(), QString(), isDefault, i));
-    }
-    return result;
+    return QWindowsPrintDevice::defaultPrintDeviceId();
 }
 
 QT_END_NAMESPACE

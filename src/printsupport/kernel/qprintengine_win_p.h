@@ -58,10 +58,11 @@
 #ifndef QT_NO_PRINTER
 
 #include <QtGui/qpaintengine.h>
+#include <QtGui/qpagelayout.h>
 #include <QtPrintSupport/QPrintEngine>
 #include <QtPrintSupport/QPrinter>
-#include <QtPrintSupport/QPrinterInfo>
 #include <private/qpaintengine_alpha_p.h>
+#include <private/qprintdevice_p.h>
 #include <QtCore/qt_windows.h>
 
 QT_BEGIN_NAMESPACE
@@ -105,15 +106,10 @@ public:
     HDC getDC() const;
     void releaseDC(HDC) const;
 
-    static QList<QPrinter::PaperSize> supportedPaperSizes(const QPrinterInfo &printerInfo);
-    static QList<QPair<QString, QSizeF> > supportedSizesWithNames(const QPrinterInfo &printerInfo);
-
     /* Used by print/page setup dialogs */
     void setGlobalDevMode(HGLOBAL globalDevNames, HGLOBAL globalDevMode);
     HGLOBAL *createGlobalDevNames();
     HGLOBAL globalDevMode();
-
-    static void queryDefaultPrinter(QString &name);
 
 private:
     friend class QPrintDialog;
@@ -133,21 +129,15 @@ public:
         mode(QPrinter::ScreenResolution),
         state(QPrinter::Idle),
         resolution(0),
-        pageMarginsSet(false),
+        m_pageLayout(QPageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF(0, 0, 0, 0))),
         num_copies(1),
         printToFile(false),
-        fullPage(false),
-        reinit(false),
-        has_custom_paper_size(false)
+        reinit(false)
     {
     }
 
     ~QWin32PrintEnginePrivate();
 
-
-    /* Reads the default printer name and its driver (printerProgram) into
-       the engines private data. */
-    void queryDefault();
 
     /* Initializes the printer data based on the current printer name. This
        function creates a DEVMODE struct, HDC and a printer handle. If these
@@ -162,10 +152,6 @@ public:
     /* Releases all the handles the printer currently holds, HDC, DEVMODE,
        etc and resets the corresponding members to 0. */
     void release();
-
-    /* Queries the resolutions for the current printer, and returns them
-       in a list. */
-    QList<QVariant> queryResolutions() const;
 
     /* Resets the DC with changes in devmode. If the printer is active
        this function only sets the reinit variable to true so it
@@ -184,12 +170,10 @@ public:
     void fillPath_dev(const QPainterPath &path, const QColor &color);
     void strokePath_dev(const QPainterPath &path, const QColor &color, qreal width);
 
-    void updateOrigin();
-
-    void initDevRects();
-    void setPageMargins(int margin_left, int margin_top, int margin_right, int margin_bottom);
-    QRect getPageMargins() const;
-    void updateCustomPaperSize();
+    void setPageSize(const QPageSize &pageSize);
+    void updatePageLayout();
+    void updateMetrics();
+    void debugMetrics() const;
 
     // Windows GDI printer references.
     HANDLE hPrinter;
@@ -203,8 +187,8 @@ public:
 
     QPrinter::PrinterMode mode;
 
-    // Printer info
-    QString name;
+    // Print Device
+    QPrintDevice m_printDevice;
 
     // Document info
     QString docName;
@@ -214,19 +198,14 @@ public:
     QPrinter::PrinterState state;
     int resolution;
 
-    // This QRect is used to store the exact values
-    // entered into the PageSetup Dialog because those are
-    // entered in mm but are since converted to device coordinates.
-    // If they were to be converted back when displaying the dialog
-    // again, there would be inaccuracies so when the user entered 10
-    // it may show up as 9.99 the next time the dialog is opened.
-    // We don't want that confusion.
-    QRect previousDialogMargins;
+    // Page Layout
+    QPageLayout m_pageLayout;
 
-    bool pageMarginsSet;
-    QRect devPageRect;
-    QRect devPhysicalPageRect;
-    QRect devPaperRect;
+    // Page metrics cache
+    QRect m_paintRectPixels;
+    QSize m_paintSizeMM;
+
+    // Windows painting
     qreal stretch_x;
     qreal stretch_y;
     int origin_x;
@@ -238,7 +217,6 @@ public:
     int num_copies;
 
     uint printToFile : 1;
-    uint fullPage : 1;
     uint reinit : 1;
 
     uint complex_xform : 1;
@@ -251,7 +229,7 @@ public:
     QColor brush_color;
     QPen pen;
     QColor pen_color;
-    QSizeF paper_size;
+    QSizeF paper_size;  // In points
 
     QTransform painterMatrix;
     QTransform matrix;

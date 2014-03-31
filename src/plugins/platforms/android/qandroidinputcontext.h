@@ -114,14 +114,19 @@ public:
     jboolean copyURL();
     jboolean paste();
 
+public slots:
+    void updateCursorPosition();
+
 private:
     QSharedPointer<QInputMethodQueryEvent> focusObjectInputMethodQuery(Qt::InputMethodQueries queries = Qt::ImQueryAll);
     void sendInputMethodEvent(QInputMethodEvent *event);
 
+    Q_INVOKABLE QVariant queryFocusObjectUnsafe(Qt::InputMethodQuery query, QVariant argument);
+    QVariant queryFocusObjectThreadSafe(Qt::InputMethodQuery query, QVariant argument);
+
 private slots:
     virtual void sendEvent(QObject *receiver, QInputMethodEvent *event);
     virtual void sendEvent(QObject *receiver, QInputMethodQueryEvent *event);
-    void updateCursorPosition();
 
 private:
     ExtractedText m_extractedText;

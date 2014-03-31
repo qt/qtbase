@@ -1713,7 +1713,7 @@ QT_END_INCLUDE_NAMESPACE
  * the buffers together
  */
 typedef struct _POINTBLOCK {
-    int data[NUMPTSTOBUFFER * sizeof(QPoint)];
+    char data[NUMPTSTOBUFFER * sizeof(QPoint)];
     QPoint *pts;
     struct _POINTBLOCK *next;
 } POINTBLOCK;

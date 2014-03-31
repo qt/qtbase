@@ -375,6 +375,7 @@ bool QCocoaIntegration::hasCapability(QPlatformIntegration::Capability cap) cons
     case WindowMasks:
     case MultipleWindows:
     case ForeignWindows:
+    case RasterGLSurface:
         return true;
     default:
         return QPlatformIntegration::hasCapability(cap);
@@ -462,6 +463,11 @@ QVariant QCocoaIntegration::styleHint(StyleHint hint) const
         return false;
 
     return QPlatformIntegration::styleHint(hint);
+}
+
+Qt::KeyboardModifiers QCocoaIntegration::queryKeyboardModifiers() const
+{
+    return QCocoaKeyMapper::queryKeyboardModifiers();
 }
 
 QList<int> QCocoaIntegration::possibleKeys(const QKeyEvent *event) const

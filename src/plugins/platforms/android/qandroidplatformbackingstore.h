@@ -56,9 +56,10 @@ public:
     virtual void flush(QWindow *window, const QRegion &region, const QPoint &offset);
     virtual void resize(const QSize &size, const QRegion &staticContents);
     const QImage image() { return m_image; }
-
+    void setBackingStore(QWindow *window);
 protected:
     QImage m_image;
+    bool m_backingStoreSet = false;
 };
 
 QT_END_NAMESPACE

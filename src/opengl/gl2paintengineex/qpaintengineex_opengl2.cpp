@@ -1158,6 +1158,7 @@ bool QGL2PaintEngineExPrivate::prepareForDraw(bool srcPixelsAreOpaque)
         brushUniformsDirty = true;
         opacityUniformDirty = true;
         matrixUniformDirty = true;
+        translateZUniformDirty = true;
     }
 
     if (brushUniformsDirty && mode != ImageDrawingMode && mode != ImageArrayDrawingMode)
@@ -1172,6 +1173,12 @@ bool QGL2PaintEngineExPrivate::prepareForDraw(bool srcPixelsAreOpaque)
         shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::Matrix),
                                                          pmvMatrix);
         matrixUniformDirty = false;
+    }
+
+    if (translateZUniformDirty && shaderManager->hasComplexGeometry()) {
+        shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::TranslateZ),
+                                                         translateZ);
+        translateZUniformDirty = false;
     }
 
     return changed;
@@ -2011,6 +2018,7 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
     d->matrixDirty = true;
     d->compositionModeDirty = true;
     d->opacityUniformDirty = true;
+    d->translateZUniformDirty = true;
     d->needsSync = true;
     d->useSystemClip = !systemClip().isEmpty();
     d->currentBrush = QBrush();
@@ -2372,6 +2380,15 @@ void QGL2PaintEngineExPrivate::systemStateChanged()
         writeClip(qtVectorPathForPath(q->state()->matrix.inverted().map(path)), 1);
         q->state()->currentClip = 1;
         q->state()->clipTestEnabled = true;
+    }
+}
+
+void QGL2PaintEngineEx::setTranslateZ(GLfloat z)
+{
+    Q_D(QGL2PaintEngineEx);
+    if (d->translateZ != z) {
+        d->translateZ = z;
+        d->translateZUniformDirty = true;
     }
 }
 

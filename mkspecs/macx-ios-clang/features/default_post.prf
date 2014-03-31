@@ -71,6 +71,7 @@ equals(TEMPLATE, app) {
                 distclean.depends = xcode_distclean
                 QMAKE_EXTRA_TARGETS += distclean
 
+                mkpath($$OUT_PWD)|error("Aborting.")
                 args =
                 for(arg, QMAKE_ARGS): \
                     args += $$system_quote($$arg)

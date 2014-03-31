@@ -130,6 +130,7 @@ public:
         ComboBoxPalette,
         ItemViewPalette,
         MessageBoxLabelPelette,
+        MessageBoxLabelPalette = MessageBoxLabelPelette,
         TabBarPalette,
         LabelPalette,
         GroupBoxPalette,

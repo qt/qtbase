@@ -35,6 +35,7 @@
 #define XKB_MOD_NAME_CAPS       "Lock"
 #define XKB_MOD_NAME_CTRL       "Control"
 #define XKB_MOD_NAME_ALT        "Mod1"
+#define XKB_MOD_NAME_NUM        "Mod2"
 #define XKB_MOD_NAME_LOGO       "Mod4"
 
 #define XKB_LED_NAME_CAPS       "Caps Lock"

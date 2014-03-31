@@ -155,7 +155,14 @@ static bool isMouseEvent(NSEvent *ev)
         }
     }
 
+    // The call to -[NSWindow sendEvent] may result in the window being deleted
+    // (e.g., when closing the window by pressing the title bar close button).
+    [self retain];
     [self.window superSendEvent:theEvent];
+    bool windowStillAlive = self.window != nil; // We need to read before releasing
+    [self release];
+    if (!windowStillAlive)
+        return;
 
     if (!self.window.delegate)
         return; // Already detached, pending NSAppKitDefined event
@@ -177,6 +184,11 @@ static bool isMouseEvent(NSEvent *ev)
 {
     [self.window.delegate release];
     self.window.delegate = nil;
+}
+
+- (void)clearWindow
+{
+    _window = nil;
 }
 
 - (void)dealloc
@@ -259,6 +271,7 @@ static bool isMouseEvent(NSEvent *ev)
 
 - (void)dealloc
 {
+    [_helper clearWindow];
     [_helper release];
     _helper = nil;
     [super dealloc];
@@ -319,6 +332,7 @@ static bool isMouseEvent(NSEvent *ev)
 
 - (void)dealloc
 {
+    [_helper clearWindow];
     [_helper release];
     _helper = nil;
     [super dealloc];
@@ -378,7 +392,7 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
         // problem, except if the appilcation wants to have a "custom" viewport.
         // (like the hellogl example)
         if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7
-            && tlw->surfaceType() == QSurface::OpenGLSurface) {
+            && tlw->supportsOpenGL()) {
             BOOL enable = qt_mac_resolveOption(YES, tlw, "_q_mac_wantsBestResolutionOpenGLSurface",
                                                           "QT_MAC_WANTS_BEST_RESOLUTION_OPENGL_SURFACE");
             [m_contentView setWantsBestResolutionOpenGLSurface:enable];
@@ -446,6 +460,22 @@ void QCocoaWindow::setGeometry(const QRect &rectIn)
     qDebug() << "QCocoaWindow::setGeometry" << this << rect;
 #endif
     setCocoaGeometry(rect);
+}
+
+QRect QCocoaWindow::geometry() const
+{
+    // QWindows that are embedded in a NSView hiearchy may be considered
+    // top-level from Qt's point of view but are not from Cocoa's point
+    // of view. Embedded QWindows get global (screen) geometry.
+    if (m_contentViewIsEmbedded) {
+        NSPoint windowPoint = [m_contentView convertPoint:NSMakePoint(0, 0) toView:nil];
+        NSPoint screenPoint = [[m_contentView window] convertBaseToScreen:windowPoint]; // ### use convertRectToScreen after 10.6 removal
+        QPoint position = qt_mac_flipPoint(screenPoint).toPoint();
+        QSize size = qt_mac_toQRect([m_contentView bounds]).size();
+        return QRect(position, size);
+    }
+
+    return QPlatformWindow::geometry();
 }
 
 void QCocoaWindow::setCocoaGeometry(const QRect &rect)
@@ -791,6 +821,18 @@ void QCocoaWindow::setWindowShadow(Qt::WindowFlags flags)
     [m_nsWindow setHasShadow:(keepShadow ? YES : NO)];
 }
 
+void QCocoaWindow::setWindowZoomButton(Qt::WindowFlags flags)
+{
+    // Disable the zoom (maximize) button for fixed-sized windows and customized
+    // no-WindowMaximizeButtonHint windows. From a Qt perspective it migth be expected
+    // that the button would be removed in the latter case, but disabling it is more
+    // in line with the platform style guidelines.
+    bool fixedSizeNoZoom = (window()->minimumSize().isValid() && window()->maximumSize().isValid()
+                            && window()->minimumSize() == window()->maximumSize());
+    bool customizeNoZoom = ((flags & Qt::CustomizeWindowHint) && !(flags & Qt::WindowMaximizeButtonHint));
+    [[m_nsWindow standardWindowButton:NSWindowZoomButton] setEnabled:!(fixedSizeNoZoom || customizeNoZoom)];
+}
+
 void QCocoaWindow::setWindowFlags(Qt::WindowFlags flags)
 {
     if (m_nsWindow && !m_isNSWindowChild) {
@@ -816,6 +858,7 @@ void QCocoaWindow::setWindowFlags(Qt::WindowFlags flags)
             }
         }
 #endif
+        setWindowZoomButton(flags);
     }
 
     m_windowFlags = flags;
@@ -908,6 +951,9 @@ void QCocoaWindow::raise()
             [parentNSWindow addChildWindow:m_nsWindow ordered:NSWindowAbove];
         } else {
             [m_nsWindow orderFront: m_nsWindow];
+            ProcessSerialNumber psn;
+            GetCurrentProcess(&psn);
+            SetFrontProcessWithOptions(&psn, kSetFrontProcessFrontWindowOnly);
         }
     }
 }
@@ -978,6 +1024,9 @@ void QCocoaWindow::propagateSizeHints()
     // Set the maximum content size.
     const QSize maximumSize = window()->maximumSize();
     [m_nsWindow setContentMaxSize : NSMakeSize(maximumSize.width(), maximumSize.height())];
+
+    // The window may end up with a fixed size; in this case the zoom button should be disabled.
+    setWindowZoomButton(m_windowFlags);
 
     // sizeIncrement is observed to take values of (-1, -1) and (0, 0) for windows that should be
     // resizable and that have no specific size increment set. Cocoa expects (1.0, 1.0) in this case.
@@ -1080,7 +1129,9 @@ NSWindow *QCocoaWindow::nativeWindow() const
 void QCocoaWindow::setEmbeddedInForeignView(bool embedded)
 {
     m_contentViewIsToBeEmbedded = embedded;
-    recreateWindow(0); // destroy what was already created
+    // Release any previosly created NSWindow.
+    [m_nsWindow closeAndRelease];
+    m_nsWindow = 0;
 }
 
 void QCocoaWindow::windowWillMove()
@@ -1505,15 +1556,46 @@ void QCocoaWindow::setContentBorderThickness(int topThickness, int bottomThickne
     applyContentBorderThickness(m_nsWindow);
 }
 
+void QCocoaWindow::registerContentBorderArea(quintptr identifier, int upper, int lower)
+{
+    m_contentBorderAreas.insert(identifier, BorderRange(upper, lower));
+
+    // Find consecutive registered border areas, starting from the top.
+    QList<BorderRange> ranges = m_contentBorderAreas.values();
+    std::sort(ranges.begin(), ranges.end());
+    m_topContentBorderThickness = 0;
+    foreach (BorderRange range, ranges) {
+        // Is this sub-range adjacent to or overlaping the
+        // existing total border area range? If so merge
+        // it into the total range,
+        if (range.upper <= (m_topContentBorderThickness + 1))
+            m_topContentBorderThickness = qMax(m_topContentBorderThickness, range.lower);
+        else
+            break;
+    }
+
+    m_bottomContentBorderThickness = 0; // (not supported)
+    if (m_drawContentBorderGradient)
+        applyContentBorderThickness(m_nsWindow);
+}
+
+void QCocoaWindow::enableContentBorderArea(bool enable)
+{
+    m_drawContentBorderGradient = enable;
+    applyContentBorderThickness(m_nsWindow);
+}
+
 void QCocoaWindow::applyContentBorderThickness(NSWindow *window)
 {
     if (!window)
         return;
 
-    if (m_drawContentBorderGradient)
-        [window setStyleMask:[window styleMask] | NSTexturedBackgroundWindowMask];
-    else
+    if (!m_drawContentBorderGradient) {
         [window setStyleMask:[window styleMask] & ~NSTexturedBackgroundWindowMask];
+        return;
+    }
+
+    [window setStyleMask:[window styleMask] | NSTexturedBackgroundWindowMask];
 
     if (m_topContentBorderThickness > 0) {
         [window setContentBorderThickness:m_topContentBorderThickness forEdge:NSMaxYEdge];

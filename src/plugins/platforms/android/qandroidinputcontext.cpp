@@ -81,7 +81,7 @@ static jboolean commitText(JNIEnv *env, jobject /*thiz*/, jstring text, jint new
     env->ReleaseStringChars(text, jstr);
 
 #ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
-    qDebug() << "@@@ COMMIT" << str;
+    qDebug() << "@@@ COMMIT" << str << newCursorPosition;
 #endif
     return m_androidInputContext->commitText(str, newCursorPosition);
 }
@@ -160,7 +160,7 @@ static jstring getTextAfterCursor(JNIEnv *env, jobject /*thiz*/, jint length, ji
 
     const QString &text = m_androidInputContext->getTextAfterCursor(length, flags);
 #ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
-    qDebug() << "@@@ GET" << length << text;
+    qDebug() << "@@@ GETA" << length << text;
 #endif
     return env->NewString(reinterpret_cast<const jchar *>(text.constData()), jsize(text.length()));
 }
@@ -172,7 +172,7 @@ static jstring getTextBeforeCursor(JNIEnv *env, jobject /*thiz*/, jint length, j
 
     const QString &text = m_androidInputContext->getTextBeforeCursor(length, flags);
 #ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
-    qDebug() << "@@@ GET" << length << text;
+    qDebug() << "@@@ GETB" << length << text;
 #endif
     return env->NewString(reinterpret_cast<const jchar *>(text.constData()), jsize(text.length()));
 }
@@ -188,7 +188,7 @@ static jboolean setComposingText(JNIEnv *env, jobject /*thiz*/, jstring text, ji
     env->ReleaseStringChars(text, jstr);
 
 #ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
-    qDebug() << "@@@ SET" << str;
+    qDebug() << "@@@ SET" << str << newCursorPosition;
 #endif
     return m_androidInputContext->setComposingText(str, newCursorPosition);
 }
@@ -271,6 +271,18 @@ static jboolean paste(JNIEnv */*env*/, jobject /*thiz*/)
     return m_androidInputContext->paste();
 }
 
+static jboolean updateCursorPosition(JNIEnv */*env*/, jobject /*thiz*/)
+{
+    if (!m_androidInputContext)
+        return JNI_FALSE;
+
+#ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
+    qDebug() << "@@@ UPDATECURSORPOS";
+#endif
+    m_androidInputContext->updateCursorPosition();
+    return true;
+}
+
 
 static JNINativeMethod methods[] = {
     {"commitText", "(Ljava/lang/String;I)Z", (void *)commitText},
@@ -288,7 +300,8 @@ static JNINativeMethod methods[] = {
     {"cut", "()Z", (void *)cut},
     {"copy", "()Z", (void *)copy},
     {"copyURL", "()Z", (void *)copyURL},
-    {"paste", "()Z", (void *)paste}
+    {"paste", "()Z", (void *)paste},
+    {"updateCursorPosition", "()Z", (void *)updateCursorPosition}
 };
 
 
@@ -404,7 +417,9 @@ void QAndroidInputContext::updateCursorPosition()
 {
     QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery();
     if (!query.isNull() && !m_blockUpdateSelection) {
-        const int cursorPos = query->value(Qt::ImCursorPosition).toInt();
+        // make sure it also works with editors that have not been updated to the new API
+        QVariant absolutePos = query->value(Qt::ImAbsolutePosition);
+        const int cursorPos = absolutePos.isValid() ? absolutePos.toInt() : query->value(Qt::ImCursorPosition).toInt();
         QtAndroidInput::updateSelection(cursorPos, cursorPos, -1, -1); //selection empty and no pre-edit text
     }
 }
@@ -422,9 +437,9 @@ void QAndroidInputContext::invokeAction(QInputMethod::Action action, int cursorP
 #warning TODO Handle at least QInputMethod::ContextMenu action
     Q_UNUSED(action)
     Q_UNUSED(cursorPosition)
-
-    if (action == QInputMethod::Click)
-        commit();
+    //### click should be passed to the IM, but in the meantime it's better to ignore it than to do something wrong
+    // if (action == QInputMethod::Click)
+    //     commit();
 }
 
 QRectF QAndroidInputContext::keyboardRect() const
@@ -573,6 +588,12 @@ QString QAndroidInputContext::getSelectedText(jint /*flags*/)
 
 QString QAndroidInputContext::getTextAfterCursor(jint length, jint /*flags*/)
 {
+    QVariant textAfter = queryFocusObjectThreadSafe(Qt::ImTextAfterCursor, QVariant(length));
+    if (textAfter.isValid()) {
+        return textAfter.toString().left(length);
+    }
+
+    //compatibility code for old controls that do not implement the new API
     QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery();
     if (query.isNull())
         return QString();
@@ -587,15 +608,21 @@ QString QAndroidInputContext::getTextAfterCursor(jint length, jint /*flags*/)
 
 QString QAndroidInputContext::getTextBeforeCursor(jint length, jint /*flags*/)
 {
+    QVariant textBefore = queryFocusObjectThreadSafe(Qt::ImTextBeforeCursor, QVariant(length));
+    if (textBefore.isValid()) {
+        return textBefore.toString().left(length);
+    }
+
+    //compatibility code for old controls that do not implement the new API
     QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery();
     if (query.isNull())
         return QString();
 
+    int cursorPos = query->value(Qt::ImCursorPosition).toInt();
     QString text = query->value(Qt::ImSurroundingText).toString();
     if (!text.length())
         return text;
 
-    int cursorPos = query->value(Qt::ImCursorPosition).toInt();
     const int wordLeftPos = cursorPos - length;
     return text.mid(wordLeftPos > 0 ? wordLeftPos : 0, cursorPos);
 }
@@ -621,8 +648,9 @@ jboolean QAndroidInputContext::setComposingText(const QString &text, jint newCur
 
     QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery();
     if (!query.isNull() && !m_blockUpdateSelection) {
-        int cursorPos = query->value(Qt::ImCursorPosition).toInt();
-        int preeditLength = text.length();
+        QVariant absolutePos = query->value(Qt::ImAbsolutePosition);
+        const int cursorPos = absolutePos.isValid() ? absolutePos.toInt() : query->value(Qt::ImCursorPosition).toInt();
+        const int preeditLength = text.length();
         QtAndroidInput::updateSelection(cursorPos+preeditLength, cursorPos+preeditLength, cursorPos, cursorPos+preeditLength);
     }
 
@@ -650,16 +678,19 @@ jboolean QAndroidInputContext::setComposingRegion(jint start, jint end)
       Therefore, the length of the region is end - start
      */
     int length = end - start;
+    int localPos = query->value(Qt::ImCursorPosition).toInt();
+    QVariant absolutePos = query->value(Qt::ImAbsolutePosition);
+    int blockPosition = absolutePos.isValid() ? absolutePos.toInt() - localPos : 0;
+    int localStart = start - blockPosition; // Qt uses position inside block
 
     bool updateSelectionWasBlocked = m_blockUpdateSelection;
     m_blockUpdateSelection = true;
 
     QString text = query->value(Qt::ImSurroundingText).toString();
-    m_composingText = text.mid(start, length);
+    m_composingText = text.mid(localStart, length);
 
-    //in the Qt text controls, cursor pos is the start of the preedit
-    int cursorPos = query->value(Qt::ImCursorPosition).toInt();
-    int relativeStart = start - cursorPos;
+    //in the Qt text controls, the cursor position is the start of the preedit
+    int relativeStart = localStart - localPos;
 
     QList<QInputMethodEvent::Attribute> attributes;
 
@@ -668,6 +699,9 @@ jboolean QAndroidInputContext::setComposingRegion(jint start, jint end)
     underlined.setFontUnderline(true);
     attributes.append(QInputMethodEvent::Attribute(QInputMethodEvent::TextFormat,0, length,
                                                    QVariant(underlined)));
+
+    // Keep the cursor position unchanged (don't move to end of preedit)
+    attributes.append(QInputMethodEvent::Attribute(QInputMethodEvent::Cursor, localPos - localStart, length, QVariant()));
 
     QInputMethodEvent event(m_composingText, attributes);
     event.setCommitString(QString(), relativeStart, length);
@@ -718,6 +752,26 @@ jboolean QAndroidInputContext::paste()
 {
 #warning TODO
     return JNI_FALSE;
+}
+
+
+Q_INVOKABLE QVariant QAndroidInputContext::queryFocusObjectUnsafe(Qt::InputMethodQuery query, QVariant argument)
+{
+    return QInputMethod::queryFocusObject(query, argument);
+}
+
+QVariant QAndroidInputContext::queryFocusObjectThreadSafe(Qt::InputMethodQuery query, QVariant argument)
+{
+    bool inMainThread = qGuiApp->thread() == QThread::currentThread();
+    QVariant retval;
+
+    QMetaObject::invokeMethod(this, "queryFocusObjectUnsafe",
+                              inMainThread ? Qt::DirectConnection : Qt::BlockingQueuedConnection,
+                              Q_RETURN_ARG(QVariant, retval),
+                              Q_ARG(Qt::InputMethodQuery, query),
+                              Q_ARG(QVariant, argument));
+
+    return retval;
 }
 
 QSharedPointer<QInputMethodQueryEvent> QAndroidInputContext::focusObjectInputMethodQuery(Qt::InputMethodQueries queries)

@@ -1706,8 +1706,10 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
 
     \value SH_Menu_Scrollable Whether popup menus must support scrolling.
 
-    \value SH_Menu_SloppySubMenus Whether popupmenu's must support
-        sloppy submenu; as implemented on Mac OS.
+    \value SH_Menu_SloppySubMenus  Whether popup menus must support
+        the user moving the mouse cursor to a submenu while crossing
+        other items of the menu. This is supported on most modern
+        desktop platforms.
 
     \value SH_ScrollView_FrameOnlyAroundContents  Whether scrollviews
         draw their frame only around contents (like Motif), or around

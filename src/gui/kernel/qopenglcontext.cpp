@@ -247,8 +247,8 @@ QMutex QOpenGLContextPrivate::makeCurrentTrackerMutex;
     To set up a context, set its screen and format such that they match those
     of the surface or surfaces with which the context is meant to be used, if
     necessary make it share resources with other contexts with
-    setShareContext(), and finally call create(). Use isValid() to check if the
-    context was successfully initialized.
+    setShareContext(), and finally call create(). Use the return value or isValid()
+    to check if the context was successfully initialized.
 
     A context can be made current against a given surface by calling
     makeCurrent(). When OpenGL rendering is done, call swapBuffers() to swap
@@ -491,7 +491,7 @@ bool QOpenGLContext::create()
         d->shareContext = 0;
     d->shareGroup = d->shareContext ? d->shareContext->shareGroup() : new QOpenGLContextGroup;
     d->shareGroup->d_func()->addContext(this);
-    return d->platformGLContext;
+    return isValid();
 }
 
 /*!
@@ -578,6 +578,9 @@ bool QOpenGLContext::isValid() const
     without having to manage it manually.
 
     The context or a sharing context must be current.
+
+    The returned QOpenGLFunctions instance is ready to be used and it
+    does not need initializeOpenGLFunctions() to be called.
 */
 QOpenGLFunctions *QOpenGLContext::functions() const
 {

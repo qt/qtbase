@@ -133,7 +133,6 @@ enum xkb_action_type {
     ACTION_TYPE_SWITCH_VT,
     ACTION_TYPE_CTRL_SET,
     ACTION_TYPE_CTRL_LOCK,
-    ACTION_TYPE_KEY_REDIRECT,
     ACTION_TYPE_PRIVATE,
     _ACTION_TYPE_NUM_ENTRIES
 };
@@ -213,16 +212,6 @@ struct xkb_switch_screen_action {
     int8_t screen;
 };
 
-struct xkb_redirect_key_action {
-    enum xkb_action_type type;
-    enum xkb_action_flags flags;
-    xkb_keycode_t new_kc;
-    uint8_t mods_mask;
-    uint8_t mods;
-    uint16_t vmods_mask;
-    uint16_t vmods;
-};
-
 struct xkb_pointer_action {
     enum xkb_action_type type;
     enum xkb_action_flags flags;
@@ -250,7 +239,6 @@ union xkb_action {
     struct xkb_controls_action ctrls;
     struct xkb_pointer_default_action dflt;
     struct xkb_switch_screen_action screen;
-    struct xkb_redirect_key_action redirect;    /* XXX wholly unnecessary? */
     struct xkb_pointer_action ptr;
     struct xkb_pointer_button_action btn;
     struct xkb_private_action priv;
@@ -313,8 +301,8 @@ struct xkb_controls {
 
 /* Such an awkward name.  Oh well. */
 enum xkb_range_exceed_type {
+    RANGE_WRAP = 0,
     RANGE_SATURATE,
-    RANGE_WRAP,
     RANGE_REDIRECT,
 };
 
@@ -386,7 +374,8 @@ struct xkb_keymap {
     struct xkb_key_type *types;
     unsigned int num_types;
 
-    darray(struct xkb_sym_interpret) sym_interprets;
+    unsigned int num_sym_interprets;
+    struct xkb_sym_interpret *sym_interprets;
 
     darray(struct xkb_mod) mods;
 
@@ -423,11 +412,19 @@ XkbKeyGroupWidth(const struct xkb_key *key, xkb_layout_index_t layout)
     return key->groups[layout].type->num_levels;
 }
 
+struct xkb_keymap *
+xkb_keymap_new(struct xkb_context *ctx,
+               enum xkb_keymap_format format,
+               enum xkb_keymap_compile_flags flags);
+
 struct xkb_key *
 XkbKeyByName(struct xkb_keymap *keymap, xkb_atom_t name, bool use_aliases);
 
 xkb_atom_t
 XkbResolveKeyAlias(struct xkb_keymap *keymap, xkb_atom_t name);
+
+void
+XkbEscapeMapName(char *name);
 
 xkb_layout_index_t
 wrap_group_into_range(int32_t group,
@@ -439,9 +436,7 @@ struct xkb_keymap_format_ops {
     bool (*keymap_new_from_names)(struct xkb_keymap *keymap,
                                   const struct xkb_rule_names *names);
     bool (*keymap_new_from_string)(struct xkb_keymap *keymap,
-                                   const char *string);
-    bool (*keymap_new_from_buffer)(struct xkb_keymap *keymap,
-                                   const char *buffer, size_t length);
+                                   const char *string, size_t length);
     bool (*keymap_new_from_file)(struct xkb_keymap *keymap, FILE *file);
     char *(*keymap_get_as_string)(struct xkb_keymap *keymap);
 };

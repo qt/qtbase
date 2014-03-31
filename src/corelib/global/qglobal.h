@@ -534,8 +534,8 @@ Q_DECL_CONSTEXPR inline const T &qBound(const T &min, const T &val, const T &max
 
 #ifdef Q_OS_DARWIN
 #  define QT_MAC_PLATFORM_SDK_EQUAL_OR_ABOVE(osx, ios) \
-    ((defined(__MAC_OS_X_VERSION_MAX_ALLOWED) && __MAC_OS_X_VERSION_MAX_ALLOWED >= osx) || \
-     (defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= ios))
+    ((defined(__MAC_OS_X_VERSION_MAX_ALLOWED) && osx != __MAC_NA && __MAC_OS_X_VERSION_MAX_ALLOWED >= osx) || \
+     (defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && ios != __IPHONE_NA && __IPHONE_OS_VERSION_MAX_ALLOWED >= ios))
 
 #  define QT_MAC_DEPLOYMENT_TARGET_BELOW(osx, ios) \
     ((defined(__MAC_OS_X_VERSION_MIN_REQUIRED) && osx != __MAC_NA && __MAC_OS_X_VERSION_MIN_REQUIRED < osx) || \
@@ -896,8 +896,11 @@ struct QForeachContainerBase {};
 
 template <typename T>
 class QForeachContainer : public QForeachContainerBase {
+    QForeachContainer &operator=(const QForeachContainer &) Q_DECL_EQ_DELETE;
 public:
     inline QForeachContainer(const T& t): c(t), brk(0), i(c.begin()), e(c.end()){}
+    QForeachContainer(const QForeachContainer &other)
+        : c(other.c), brk(other.brk), i(other.i), e(other.e) {}
     const T c;
     mutable int brk;
     mutable typename T::const_iterator i, e;

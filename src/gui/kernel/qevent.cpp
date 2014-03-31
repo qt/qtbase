@@ -4361,13 +4361,13 @@ void QTouchEvent::TouchPoint::setFlags(InfoFlags flags)
     \ingroup events
     \inmodule QtGui
 
-    \brief The QScrollPrepareEvent class is send in preparation of a scrolling.
+    \brief The QScrollPrepareEvent class is sent in preparation of scrolling.
 
-    The scroll prepare event is send before scrolling (usually by QScroller) is started.
+    The scroll prepare event is sent before scrolling (usually by QScroller) is started.
     The object receiving this event should set viewportSize, maxContentPos and contentPos.
     It also should accept this event to indicate that scrolling should be started.
 
-    It is not guaranteed that a QScrollEvent will be send after an acceepted
+    It is not guaranteed that a QScrollEvent will be sent after an acceepted
     QScrollPrepareEvent, e.g. in a case where the maximum content position is (0,0).
 
     \sa QScrollEvent, QScroller
@@ -4462,9 +4462,9 @@ void QScrollPrepareEvent::setContentPos(const QPointF &pos)
     \ingroup events
     \inmodule QtGui
 
-    \brief The QScrollEvent class is send when scrolling.
+    \brief The QScrollEvent class is sent when scrolling.
 
-    The scroll event is send to indicate that the receiver should be scrolled.
+    The scroll event is sent to indicate that the receiver should be scrolled.
     Usually the receiver should be something visual like QWidget or QGraphicsObject.
 
     Some care should be taken that no conflicting QScrollEvents are sent from two

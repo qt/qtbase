@@ -262,18 +262,20 @@ private:
 AndroidAssetsFileEngineHandler::AndroidAssetsFileEngineHandler()
     : m_assetsCache(std::max(5, qgetenv("QT_ANDROID_MAX_ASSETS_CACHE_SIZE").toInt()))
     , m_hasPrepopulatedCache(false)
+    , m_hasTriedPrepopulatingCache(false)
 {
     m_assetManager = QtAndroid::assetManager();
-    prepopulateCache();
 }
 
 AndroidAssetsFileEngineHandler::~AndroidAssetsFileEngineHandler()
 {
 }
 
-void AndroidAssetsFileEngineHandler::prepopulateCache()
+void AndroidAssetsFileEngineHandler::prepopulateCache() const
 {
-    QMutexLocker locker(&m_assetsCacheMutext);
+    Q_ASSERT(!m_hasTriedPrepopulatingCache);
+    m_hasTriedPrepopulatingCache = true;
+
     Q_ASSERT(m_assetsCache.isEmpty());
 
     // Failsafe: Don't read cache files that are larger than 1MB
@@ -364,7 +366,11 @@ QAbstractFileEngine * AndroidAssetsFileEngineHandler::create(const QString &file
     if (!path.size())
          path = fileName.left(fileName.length() - 1).toUtf8();
 
+
     m_assetsCacheMutext.lock();
+    if (!m_hasTriedPrepopulatingCache)
+        prepopulateCache();
+
     QSharedPointer<AndroidAssetDir> *aad = m_assetsCache.object(path);
     m_assetsCacheMutext.unlock();
     if (!aad) {

@@ -79,6 +79,8 @@ public:
     QSharedPointer<T> &operator=(const QSharedPointer<T> &other);
     QSharedPointer<T> &operator=(const QWeakPointer<T> &other);
 
+    void swap(QSharedPointer<T> &other);
+
     QWeakPointer<T> toWeakRef() const;
 
     void clear();

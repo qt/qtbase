@@ -242,19 +242,14 @@ QQnxWindow::~QQnxWindow()
 void QQnxWindow::setGeometry(const QRect &rect)
 {
     QRect newGeometry = rect;
-    if (screen()->rootWindow() == this) //If this is the root window, it has to be shown fullscreen
+    if (shouldMakeFullScreen())
         newGeometry = screen()->geometry();
 
     setGeometryHelper(newGeometry);
 
-    // Send a geometry change event to Qt (triggers resizeEvent() in QWindow/QWidget).
-
-    // Calling flushWindowSystemEvents() here would flush input events which
-    // could result in re-entering QQnxWindow::setGeometry() again.
-    QWindowSystemInterface::setSynchronousWindowsSystemEvents(true);
     QWindowSystemInterface::handleGeometryChange(window(), newGeometry);
-    QWindowSystemInterface::handleExposeEvent(window(), newGeometry);
-    QWindowSystemInterface::setSynchronousWindowsSystemEvents(false);
+    if (isExposed())
+        QWindowSystemInterface::handleExposeEvent(window(), newGeometry);
 }
 
 void QQnxWindow::setGeometryHelper(const QRect &rect)
@@ -714,7 +709,7 @@ void QQnxWindow::initWindow()
     if (window()->parent() && window()->parent()->handle())
         setParent(window()->parent()->handle());
 
-    if (screen()->rootWindow() == this) {
+    if (shouldMakeFullScreen()) {
         setGeometryHelper(screen()->geometry());
         QWindowSystemInterface::handleGeometryChange(window(), screen()->geometry());
     } else {
@@ -815,6 +810,11 @@ void QQnxWindow::windowPosted()
         m_cover->updateCover();
 
     qqnxLgmonFramePosted(m_cover);  // for performance measurements
+}
+
+bool QQnxWindow::shouldMakeFullScreen() const
+{
+    return ((screen()->rootWindow() == this) && (QQnxIntegration::options() & QQnxIntegration::FullScreenApplication));
 }
 
 QT_END_NAMESPACE

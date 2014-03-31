@@ -53,6 +53,7 @@ void qt_registerFont(const QString &familyname, const QString &stylename,
                      bool scalable, int pixelSize, bool fixedPitch,
                      const QSupportedWritingSystems &writingSystems, void *hanlde);
 
+void qt_registerFontFamily(const QString &familyName);
 void qt_registerAliasToFontFamily(const QString &familyName, const QString &alias);
 
 /*!
@@ -118,7 +119,7 @@ void QPlatformFontDatabase::registerQPF2Font(const QByteArray &dataArray, void *
     The writing systems supported by the font are specified by the
     \a writingSystems argument.
 
-    \sa registerQPF2Font()
+    \sa registerQPF2Font(), registerFontFamily()
 */
 void QPlatformFontDatabase::registerFont(const QString &familyname, const QString &stylename,
                                          const QString &foundryname, QFont::Weight weight,
@@ -132,6 +133,18 @@ void QPlatformFontDatabase::registerFont(const QString &familyname, const QStrin
     qt_registerFont(familyname, stylename, foundryname, weight, style,
                     stretch, antialiased, scalable, pixelSize,
                     fixedPitch, writingSystems, usrPtr);
+}
+
+/*!
+    Registers a font family with the font database. The font will be
+    lazily populated by a callback to populateFamily() when the font
+    database determines that the family needs population.
+
+    \sa populateFamily(), registerFont()
+*/
+void QPlatformFontDatabase::registerFontFamily(const QString &familyName)
+{
+    qt_registerFontFamily(familyName);
 }
 
 class QWritingSystemsPrivate
@@ -249,6 +262,11 @@ QPlatformFontDatabase::~QPlatformFontDatabase()
   Reimplement this function in a subclass for a convenient place to initialize
   the internal font database.
 
+  You may lazily populate the database by calling registerFontFamily() instead
+  of registerFont(), in which case you'll get a callback to populateFamily()
+  when the required family needs population. You then call registerFont() to
+  finish population of the family.
+
   The default implementation looks in the fontDir() location and registers all
   QPF2 fonts.
 */
@@ -273,6 +291,18 @@ void QPlatformFontDatabase::populateFontDatabase()
             registerQPF2Font(fileData, fileDataPtr);
         }
     }
+}
+
+/*!
+    This function is called whenever a lazily populated family, populated
+    through registerFontFamily(), needs full population.
+
+    You are expected to fully populate the family by calling registerFont()
+    for each font that matches the family name.
+*/
+void QPlatformFontDatabase::populateFamily(const QString &familyName)
+{
+    Q_UNUSED(familyName);
 }
 
 /*!

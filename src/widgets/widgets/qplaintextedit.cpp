@@ -1810,7 +1810,7 @@ void QPlainTextEdit::keyReleaseEvent(QKeyEvent *e)
         }
     }
 #else
-    Q_UNUSED(e);
+    QWidget::keyReleaseEvent(e);
 #endif
 }
 
@@ -2185,6 +2185,13 @@ void QPlainTextEdit::scrollContentsBy(int dx, int /*dy*/)
 */
 QVariant QPlainTextEdit::inputMethodQuery(Qt::InputMethodQuery property) const
 {
+    return inputMethodQuery(property, QVariant());
+}
+
+/*!\internal
+ */
+QVariant QPlainTextEdit::inputMethodQuery(Qt::InputMethodQuery property, QVariant argument) const
+{
     Q_D(const QPlainTextEdit);
     QVariant v;
     switch (property) {
@@ -2192,7 +2199,7 @@ QVariant QPlainTextEdit::inputMethodQuery(Qt::InputMethodQuery property) const
         v = QWidget::inputMethodQuery(property);
         break;
     default:
-        v = d->control->inputMethodQuery(property, QVariant());
+        v = d->control->inputMethodQuery(property, argument);
         const QPoint offset(-d->horizontalOffset(), -0);
         if (v.type() == QVariant::RectF)
             v = v.toRectF().toRect().translated(offset);

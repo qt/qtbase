@@ -83,6 +83,7 @@ class QCocoaKeyMapper
 public:
     QCocoaKeyMapper();
     ~QCocoaKeyMapper();
+    static Qt::KeyboardModifiers queryKeyboardModifiers();
     QList<int> possibleKeys(const QKeyEvent *event) const;
     bool updateKeyboard();
     void deleteLayouts();

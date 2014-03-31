@@ -43,7 +43,7 @@
 
 int main(int, char **)
 {
-    cups_dest_t *d;
-    cupsGetDests(&d);
+    // CUPS 1.4 test
+    cupsGetNamedDest(CUPS_HTTP_DEFAULT, NULL, NULL);
     return 0;
 }

@@ -387,7 +387,12 @@ static int choosePixelFormat(HDC hdc,
     iAttributes[i++] = WGL_DRAW_TO_WINDOW_ARB;
     iAttributes[i++] = TRUE;
     iAttributes[i++] = WGL_COLOR_BITS_ARB;
-    iAttributes[i++] = 24;
+
+    iAttributes[i++] = (format.redBufferSize() > 0)
+                       && (format.greenBufferSize() > 0)
+                       && (format.blueBufferSize() > 0) ?
+                       format.redBufferSize() + format.greenBufferSize() + format.blueBufferSize() :
+                       24;
     switch (format.swapBehavior()) {
     case QSurfaceFormat::SingleBuffer:
         iAttributes[i++] = WGL_DOUBLE_BUFFER_ARB;

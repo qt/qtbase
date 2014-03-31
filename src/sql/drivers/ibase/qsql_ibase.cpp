@@ -1490,27 +1490,22 @@ bool QIBaseDriver::open(const QString & db,
     pass.truncate(255);
 
     QByteArray ba;
-    ba.resize(usr.length() + pass.length() + enc.length() + role.length() + 6);
-    int i = -1;
-    ba[++i] = isc_dpb_version1;
-    ba[++i] = isc_dpb_user_name;
-    ba[++i] = usr.length();
-    memcpy(ba.data() + ++i, usr.data(), usr.length());
-    i += usr.length();
-    ba[i] = isc_dpb_password;
-    ba[++i] = pass.length();
-    memcpy(ba.data() + ++i, pass.data(), pass.length());
-    i += pass.length();
-    ba[i] = isc_dpb_lc_ctype;
-    ba[++i] = enc.length();
-    memcpy(ba.data() + ++i, enc.data(), enc.length());
-    i += enc.length();
+    ba.reserve(usr.length() + pass.length() + enc.length() + role.length() + 9);
+    ba.append(char(isc_dpb_version1));
+    ba.append(char(isc_dpb_user_name));
+    ba.append(char(usr.length()));
+    ba.append(usr.data(), usr.length());
+    ba.append(char(isc_dpb_password));
+    ba.append(char(pass.length()));
+    ba.append(pass.data(), pass.length());
+    ba.append(char(isc_dpb_lc_ctype));
+    ba.append(char(enc.length()));
+    ba.append(enc.data(), enc.length());
 
     if (!role.isEmpty()) {
-        ba[i] = isc_dpb_sql_role_name;
-        ba[++i] = role.length();
-        memcpy(ba.data() + ++i, role.data(), role.length());
-        i += role.length();
+        ba.append(char(isc_dpb_sql_role_name));
+        ba.append(char(role.length()));
+        ba.append(role.data(), role.length());
     }
 
     QString portString;
@@ -1522,7 +1517,7 @@ bool QIBaseDriver::open(const QString & db,
         ldb += host + portString + QLatin1Char(':');
     ldb += db;
     isc_attach_database(d->status, 0, const_cast<char *>(ldb.toLocal8Bit().constData()),
-                        &d->ibase, i, ba.data());
+                        &d->ibase, ba.size(), ba.data());
     if (d->isError(QT_TRANSLATE_NOOP("QIBaseDriver", "Error opening database"),
                    QSqlError::ConnectionError)) {
         setOpenError(true);

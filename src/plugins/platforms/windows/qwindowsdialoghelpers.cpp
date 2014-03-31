@@ -1195,7 +1195,7 @@ static QList<FilterSpec> filterSpecs(const QStringList &filters,
     const QRegExp filterSeparatorRE(QStringLiteral("[;\\s]+"));
     const QString separator = QStringLiteral(";");
     Q_ASSERT(filterSeparatorRE.isValid());
-    // Split filter specification as 'Texts (*.txt[;] *.doc)'
+    // Split filter specification as 'Texts (*.txt[;] *.doc)', '*.txt[;] *.doc'
     // into description and filters specification as '*.txt;*.doc'
     foreach (const QString &filterString, filters) {
         const int openingParenPos = filterString.lastIndexOf(QLatin1Char('('));
@@ -1203,8 +1203,10 @@ static QList<FilterSpec> filterSpecs(const QStringList &filters,
             filterString.indexOf(QLatin1Char(')'), openingParenPos + 1) : -1;
         FilterSpec filterSpec;
         filterSpec.filter = closingParenPos == -1 ?
-            QString(QLatin1Char('*')) :
+            filterString :
             filterString.mid(openingParenPos + 1, closingParenPos - openingParenPos - 1).trimmed();
+        if (filterSpec.filter.isEmpty())
+            filterSpec.filter += QLatin1Char('*');
         filterSpec.filter.replace(filterSeparatorRE, separator);
         filterSpec.description = filterString;
         if (hideFilterDetails && openingParenPos != -1) { // Do not show pattern in description
@@ -1559,7 +1561,7 @@ public:
     QWindowsFileDialogHelper() {}
     virtual bool supportsNonModalDialog(const QWindow * /* parent */ = 0) const { return false; }
     virtual bool defaultNameFilterDisables() const
-        { return true; }
+        { return false; }
     virtual void setDirectory(const QUrl &directory) Q_DECL_OVERRIDE;
     virtual QUrl directory() const Q_DECL_OVERRIDE;
     virtual void selectFile(const QUrl &filename) Q_DECL_OVERRIDE;

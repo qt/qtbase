@@ -76,6 +76,7 @@ public:
     virtual QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
 #endif
     virtual QAbstractEventDispatcher *createEventDispatcher() const;
+    void initialize() Q_DECL_OVERRIDE;
 #ifndef QT_NO_CLIPBOARD
     virtual QPlatformClipboard *clipboard() const;
 #  ifndef QT_NO_DRAGANDDROP

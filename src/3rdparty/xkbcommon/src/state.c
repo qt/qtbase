@@ -60,6 +60,7 @@
  */
 
 #include "keymap.h"
+#include "keysym.h"
 
 struct xkb_filter {
     union xkb_action action;
@@ -405,7 +406,6 @@ xkb_action_breaks_latch(const union xkb_action *action)
     case ACTION_TYPE_PTR_LOCK:
     case ACTION_TYPE_CTRL_SET:
     case ACTION_TYPE_CTRL_LOCK:
-    case ACTION_TYPE_KEY_REDIRECT:
     case ACTION_TYPE_SWITCH_VT:
     case ACTION_TYPE_TERMINATE:
         return true;
@@ -833,13 +833,26 @@ XKB_EXPORT xkb_keysym_t
 xkb_state_key_get_one_sym(struct xkb_state *state, xkb_keycode_t kc)
 {
     const xkb_keysym_t *syms;
+    xkb_keysym_t sym;
     int num_syms;
+    xkb_mod_index_t caps;
 
     num_syms = xkb_state_key_get_syms(state, kc, &syms);
     if (num_syms != 1)
         return XKB_KEY_NoSymbol;
 
-    return syms[0];
+    sym = syms[0];
+
+    /*
+     * Perform capitalization transformation, see:
+     * http://www.x.org/releases/current/doc/kbproto/xkbproto.html#Interpreting_the_Lock_Modifier
+     */
+    caps = xkb_keymap_mod_get_index(state->keymap, XKB_MOD_NAME_CAPS);
+    if (xkb_state_mod_index_is_active(state, caps, XKB_STATE_MODS_EFFECTIVE) > 0 &&
+        xkb_state_mod_index_is_consumed(state, kc, caps) == 0)
+        sym = xkb_keysym_to_upper(sym);
+
+    return sym;
 }
 
 /**
@@ -989,13 +1002,12 @@ xkb_state_mod_names_are_active(struct xkb_state *state,
 {
     va_list ap;
     xkb_mod_index_t idx = 0;
-    const char *str;
     xkb_mod_mask_t wanted = 0;
     int ret = 0;
 
     va_start(ap, match);
     while (1) {
-        str = va_arg(ap, const char *);
+        const char *str = va_arg(ap, const char *);
         if (str == NULL)
             break;
         idx = xkb_keymap_mod_get_index(state->keymap, str);

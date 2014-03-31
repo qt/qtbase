@@ -444,6 +444,7 @@ public:
         BrushTransform,
         BrushTexture,
         Matrix,
+        TranslateZ,
         NumUniforms
     };
 

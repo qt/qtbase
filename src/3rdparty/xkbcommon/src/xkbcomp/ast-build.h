@@ -31,7 +31,19 @@ ParseCommon *
 AppendStmt(ParseCommon *to, ParseCommon *append);
 
 ExprDef *
-ExprCreate(enum expr_op_type op, enum expr_value_type type);
+ExprCreateString(xkb_atom_t str);
+
+ExprDef *
+ExprCreateInteger(int ival);
+
+ExprDef *
+ExprCreateBoolean(bool set);
+
+ExprDef *
+ExprCreateKeyName(xkb_atom_t key_name);
+
+ExprDef *
+ExprCreateIdent(xkb_atom_t ident);
 
 ExprDef *
 ExprCreateUnary(enum expr_op_type op, enum expr_value_type type,
@@ -39,6 +51,27 @@ ExprCreateUnary(enum expr_op_type op, enum expr_value_type type,
 
 ExprDef *
 ExprCreateBinary(enum expr_op_type op, ExprDef *left, ExprDef *right);
+
+ExprDef *
+ExprCreateFieldRef(xkb_atom_t element, xkb_atom_t field);
+
+ExprDef *
+ExprCreateArrayRef(xkb_atom_t element, xkb_atom_t field, ExprDef *entry);
+
+ExprDef *
+ExprCreateAction(xkb_atom_t name, ExprDef *args);
+
+ExprDef *
+ExprCreateMultiKeysymList(ExprDef *list);
+
+ExprDef *
+ExprCreateKeysymList(xkb_keysym_t sym);
+
+ExprDef *
+ExprAppendMultiKeysymList(ExprDef *list, ExprDef *append);
+
+ExprDef *
+ExprAppendKeysymList(ExprDef *list, xkb_keysym_t sym);
 
 KeycodeDef *
 KeycodeCreate(xkb_atom_t name, int64_t value);
@@ -53,16 +86,16 @@ VarDef *
 VarCreate(ExprDef *name, ExprDef *value);
 
 VarDef *
-BoolVarCreate(xkb_atom_t nameToken, unsigned set);
+BoolVarCreate(xkb_atom_t ident, bool set);
 
 InterpDef *
-InterpCreate(char *sym, ExprDef *match);
+InterpCreate(xkb_keysym_t sym, ExprDef *match);
 
 KeyTypeDef *
 KeyTypeCreate(xkb_atom_t name, VarDef *body);
 
 SymbolsDef *
-SymbolsCreate(xkb_atom_t keyName, ExprDef *symbols);
+SymbolsCreate(xkb_atom_t keyName, VarDef *symbols);
 
 GroupCompatDef *
 GroupCompatCreate(int group, ExprDef *def);
@@ -76,27 +109,12 @@ LedMapCreate(xkb_atom_t name, VarDef *body);
 LedNameDef *
 LedNameCreate(int ndx, ExprDef *name, bool virtual);
 
-ExprDef *
-ActionCreate(xkb_atom_t name, ExprDef *args);
-
-ExprDef *
-CreateMultiKeysymList(ExprDef *list);
-
-ExprDef *
-CreateKeysymList(char *sym);
-
-ExprDef *
-AppendMultiKeysymList(ExprDef *list, ExprDef *append);
-
-ExprDef *
-AppendKeysymList(ExprDef *list, char *sym);
-
 IncludeStmt *
 IncludeCreate(struct xkb_context *ctx, char *str, enum merge_mode merge);
 
 XkbFile *
 XkbFileCreate(struct xkb_context *ctx, enum xkb_file_type type, char *name,
-              ParseCommon *defs, unsigned flags);
+              ParseCommon *defs, enum xkb_map_flags flags);
 
 void
 FreeStmt(ParseCommon *stmt);

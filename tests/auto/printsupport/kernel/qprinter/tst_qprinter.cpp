@@ -51,6 +51,7 @@
 #include <qvariant.h>
 #include <qpainter.h>
 #include <qprintengine.h>
+#include <qpagelayout.h>
 
 #include <math.h>
 
@@ -88,9 +89,6 @@ public slots:
     void cleanupTestCase();
 #else
 private slots:
-#ifdef Q_OS_WIN
-    void testNonExistentPrinter();
-#endif
     void testPageRectAndPaperRect();
     void testPageRectAndPaperRect_data();
     void testSetOptions();
@@ -103,7 +101,6 @@ private slots:
     void testPageMargins_data();
     void testPageMargins();
     void outputFormatFromSuffix();
-    void setGetPaperSize();
     void errorReporting();
     void testCustomPageSizes();
     void customPaperSizeAndMargins_data();
@@ -116,8 +113,6 @@ private slots:
     void testCurrentPage();
     void taskQTBUG4497_reusePrinterOnDifferentFiles();
     void testPdfTitle();
-    void testPageMetrics_data();
-    void testPageMetrics();
 
     // Test QPrintEngine keys and their QPrinter setters/getters
     void testMultipleKeys();
@@ -148,6 +143,9 @@ private slots:
     // Test QPrinter setters/getters for non-QPrintEngine options
     void outputFormat();
     void fromToPage();
+
+    void testPageMetrics_data();
+    void testPageMetrics();
 #endif
 };
 
@@ -356,40 +354,6 @@ void tst_QPrinter::testMargins()
     QFile::remove("silly");
 }
 
-#ifdef Q_OS_WIN
-// QPrinter::testNonExistentPrinter() is not relevant for this platform
-void tst_QPrinter::testNonExistentPrinter()
-{
-    QPrinter printer;
-    QPainter painter;
-
-    // Make sure it doesn't crash on setting or getting properties
-    printer.printEngine()->setProperty(QPrintEngine::PPK_PrinterName, "some non existing printer");
-    printer.setPageSize(QPrinter::A4);
-    printer.setOrientation(QPrinter::Portrait);
-    printer.setFullPage(true);
-    printer.pageSize();
-    printer.orientation();
-    printer.fullPage();
-    printer.setCopyCount(1);
-    printer.printerName();
-
-    // nor metrics
-    QCOMPARE(printer.printEngine()->metric(QPaintDevice::PdmWidth), 0);
-    QCOMPARE(printer.printEngine()->metric(QPaintDevice::PdmHeight), 0);
-    QCOMPARE(printer.printEngine()->metric(QPaintDevice::PdmWidthMM), 0);
-    QCOMPARE(printer.printEngine()->metric(QPaintDevice::PdmHeightMM), 0);
-    QCOMPARE(printer.printEngine()->metric(QPaintDevice::PdmNumColors), 0);
-    QCOMPARE(printer.printEngine()->metric(QPaintDevice::PdmDepth), 0);
-    QCOMPARE(printer.printEngine()->metric(QPaintDevice::PdmDpiX), 0);
-    QCOMPARE(printer.printEngine()->metric(QPaintDevice::PdmDpiY), 0);
-    QCOMPARE(printer.printEngine()->metric(QPaintDevice::PdmPhysicalDpiX), 0);
-    QCOMPARE(printer.printEngine()->metric(QPaintDevice::PdmPhysicalDpiY), 0);
-
-    QVERIFY(!painter.begin(&printer));
-}
-#endif
-
 void tst_QPrinter::testMulitpleSets_data()
 {
     QTest::addColumn<int>("resolution");
@@ -477,20 +441,6 @@ void tst_QPrinter::outputFormatFromSuffix()
     QVERIFY(p.outputFormat() == QPrinter::NativeFormat);
 }
 
-void tst_QPrinter::setGetPaperSize()
-{
-    QPrinter p;
-    p.setOutputFormat(QPrinter::PdfFormat);
-    QSizeF size(500, 10);
-    p.setPaperSize(size, QPrinter::Millimeter);
-    QCOMPARE(p.paperSize(QPrinter::Millimeter), size);
-    QCOMPARE(p.pageSizeMM(), size);
-    QSizeF ptSize = p.paperSize(QPrinter::Point);
-    //qDebug() << ptSize;
-    QVERIFY(qAbs(ptSize.width() - size.width() * (72/25.4)) < 1E-4);
-    QVERIFY(qAbs(ptSize.height() - size.height() * (72/25.4)) < 1E-4);
-}
-
 void tst_QPrinter::testPageMargins_data()
 {
     QTest::addColumn<qreal>("left");
@@ -499,11 +449,12 @@ void tst_QPrinter::testPageMargins_data()
     QTest::addColumn<qreal>("bottom");
     QTest::addColumn<int>("unit");
 
-    QTest::newRow("data0") << qreal(5.5) << qreal(6.5) << qreal(7.5) << qreal(8.5) << static_cast<int>(QPrinter::Millimeter);
-    QTest::newRow("data1") << qreal(5.5) << qreal(6.5) << qreal(7.5) << qreal(8.5) << static_cast<int>(QPrinter::Point);
+    // Use custom margins that will exceed most printers minimum allowed
+    QTest::newRow("data0") << qreal(25.5) << qreal(26.5) << qreal(27.5) << qreal(28.5) << static_cast<int>(QPrinter::Millimeter);
+    QTest::newRow("data1") << qreal(55.5) << qreal(56.5) << qreal(57.5) << qreal(58.5) << static_cast<int>(QPrinter::Point);
     QTest::newRow("data2") << qreal(5.5) << qreal(6.5) << qreal(7.5) << qreal(8.5) << static_cast<int>(QPrinter::Inch);
     QTest::newRow("data3") << qreal(5.5) << qreal(6.5) << qreal(7.5) << qreal(8.5) << static_cast<int>(QPrinter::Pica);
-    QTest::newRow("data4") << qreal(5.5) << qreal(6.5) << qreal(7.5) << qreal(8.5) << static_cast<int>(QPrinter::Didot);
+    QTest::newRow("data4") << qreal(55.5) << qreal(56.5) << qreal(57.5) << qreal(58.5) << static_cast<int>(QPrinter::Didot);
     QTest::newRow("data5") << qreal(5.5) << qreal(6.5) << qreal(7.5) << qreal(8.5) << static_cast<int>(QPrinter::Cicero);
 }
 
@@ -511,61 +462,54 @@ void tst_QPrinter::testPageMargins()
 {
     QPrinter obj1;
 
-    qreal toMillimeters[6];
-    toMillimeters[QPrinter::Millimeter] = 1;
-    toMillimeters[QPrinter::Point] = 0.352777778;
-    toMillimeters[QPrinter::Inch] = 25.4;
-    toMillimeters[QPrinter::Pica] = 4.23333333;
-    toMillimeters[QPrinter::Didot] = 0.376;
-    toMillimeters[QPrinter::Cicero] = 4.51166667;
-
     QFETCH(qreal, left);
     QFETCH(qreal, top);
     QFETCH(qreal, right);
     QFETCH(qreal, bottom);
     QFETCH(int, unit);
 
+    QPageLayout layout = QPageLayout(QPageSize(QPageSize::A0), QPageLayout::Portrait,
+                                     QMarginsF(left, top, right, bottom), QPageLayout::Unit(unit));
+
     qreal nLeft, nTop, nRight, nBottom;
 
-    obj1.setPageMargins(left, top, right, bottom, static_cast<QPrinter::Unit>(unit));
-
-    qreal tolerance = 0.05;
+    obj1.setPageMargins(left, top, right, bottom, QPrinter::Unit(unit));
 
     obj1.getPageMargins(&nLeft, &nTop, &nRight, &nBottom, QPrinter::Millimeter);
-    QVERIFY(fabs(left*toMillimeters[unit] - nLeft*toMillimeters[QPrinter::Millimeter]) < tolerance);
-    QVERIFY(fabs(top*toMillimeters[unit] - nTop*toMillimeters[QPrinter::Millimeter]) < tolerance);
-    QVERIFY(fabs(right*toMillimeters[unit] - nRight*toMillimeters[QPrinter::Millimeter]) < tolerance);
-    QVERIFY(fabs(bottom*toMillimeters[unit] - nBottom*toMillimeters[QPrinter::Millimeter]) < tolerance);
+    QCOMPARE(nLeft, layout.margins(QPageLayout::Millimeter).left());
+    QCOMPARE(nRight, layout.margins(QPageLayout::Millimeter).right());
+    QCOMPARE(nTop, layout.margins(QPageLayout::Millimeter).top());
+    QCOMPARE(nBottom, layout.margins(QPageLayout::Millimeter).bottom());
 
     obj1.getPageMargins(&nLeft, &nTop, &nRight, &nBottom, QPrinter::Point);
-    QVERIFY(fabs(left*toMillimeters[unit] - nLeft*toMillimeters[QPrinter::Point]) < tolerance);
-    QVERIFY(fabs(top*toMillimeters[unit] - nTop*toMillimeters[QPrinter::Point]) < tolerance);
-    QVERIFY(fabs(right*toMillimeters[unit] - nRight*toMillimeters[QPrinter::Point]) < tolerance);
-    QVERIFY(fabs(bottom*toMillimeters[unit] - nBottom*toMillimeters[QPrinter::Point]) < tolerance);
+    QCOMPARE(nLeft, layout.margins(QPageLayout::Point).left());
+    QCOMPARE(nRight, layout.margins(QPageLayout::Point).right());
+    QCOMPARE(nTop, layout.margins(QPageLayout::Point).top());
+    QCOMPARE(nBottom, layout.margins(QPageLayout::Point).bottom());
 
     obj1.getPageMargins(&nLeft, &nTop, &nRight, &nBottom, QPrinter::Inch);
-    QVERIFY(fabs(left*toMillimeters[unit] - nLeft*toMillimeters[QPrinter::Inch]) < tolerance);
-    QVERIFY(fabs(top*toMillimeters[unit] - nTop*toMillimeters[QPrinter::Inch]) < tolerance);
-    QVERIFY(fabs(right*toMillimeters[unit] - nRight*toMillimeters[QPrinter::Inch]) < tolerance);
-    QVERIFY(fabs(bottom*toMillimeters[unit] - nBottom*toMillimeters[QPrinter::Inch]) < tolerance);
+    QCOMPARE(nLeft, layout.margins(QPageLayout::Inch).left());
+    QCOMPARE(nRight, layout.margins(QPageLayout::Inch).right());
+    QCOMPARE(nTop, layout.margins(QPageLayout::Inch).top());
+    QCOMPARE(nBottom, layout.margins(QPageLayout::Inch).bottom());
 
     obj1.getPageMargins(&nLeft, &nTop, &nRight, &nBottom, QPrinter::Pica);
-    QVERIFY(fabs(left*toMillimeters[unit] - nLeft*toMillimeters[QPrinter::Pica]) < tolerance);
-    QVERIFY(fabs(top*toMillimeters[unit] - nTop*toMillimeters[QPrinter::Pica]) < tolerance);
-    QVERIFY(fabs(right*toMillimeters[unit] - nRight*toMillimeters[QPrinter::Pica]) < tolerance);
-    QVERIFY(fabs(bottom*toMillimeters[unit] - nBottom*toMillimeters[QPrinter::Pica]) < tolerance);
+    QCOMPARE(nLeft, layout.margins(QPageLayout::Pica).left());
+    QCOMPARE(nRight, layout.margins(QPageLayout::Pica).right());
+    QCOMPARE(nTop, layout.margins(QPageLayout::Pica).top());
+    QCOMPARE(nBottom, layout.margins(QPageLayout::Pica).bottom());
 
     obj1.getPageMargins(&nLeft, &nTop, &nRight, &nBottom, QPrinter::Didot);
-    QVERIFY(fabs(left*toMillimeters[unit] - nLeft*toMillimeters[QPrinter::Didot]) < tolerance);
-    QVERIFY(fabs(top*toMillimeters[unit] - nTop*toMillimeters[QPrinter::Didot]) < tolerance);
-    QVERIFY(fabs(right*toMillimeters[unit] - nRight*toMillimeters[QPrinter::Didot]) < tolerance);
-    QVERIFY(fabs(bottom*toMillimeters[unit] - nBottom*toMillimeters[QPrinter::Didot]) < tolerance);
+    QCOMPARE(nLeft, layout.margins(QPageLayout::Didot).left());
+    QCOMPARE(nRight, layout.margins(QPageLayout::Didot).right());
+    QCOMPARE(nTop, layout.margins(QPageLayout::Didot).top());
+    QCOMPARE(nBottom, layout.margins(QPageLayout::Didot).bottom());
 
     obj1.getPageMargins(&nLeft, &nTop, &nRight, &nBottom, QPrinter::Cicero);
-    QVERIFY(fabs(left*toMillimeters[unit] - nLeft*toMillimeters[QPrinter::Cicero]) < tolerance);
-    QVERIFY(fabs(top*toMillimeters[unit] - nTop*toMillimeters[QPrinter::Cicero]) < tolerance);
-    QVERIFY(fabs(right*toMillimeters[unit] - nRight*toMillimeters[QPrinter::Cicero]) < tolerance);
-    QVERIFY(fabs(bottom*toMillimeters[unit] - nBottom*toMillimeters[QPrinter::Cicero]) < tolerance);
+    QCOMPARE(nLeft, layout.margins(QPageLayout::Cicero).left());
+    QCOMPARE(nRight, layout.margins(QPageLayout::Cicero).right());
+    QCOMPARE(nTop, layout.margins(QPageLayout::Cicero).top());
+    QCOMPARE(nBottom, layout.margins(QPageLayout::Cicero).bottom());
 }
 
 void tst_QPrinter::errorReporting()
@@ -586,13 +530,6 @@ void tst_QPrinter::errorReporting()
     painter.end();
 }
 
-static QByteArray msgSizeMismatch(const QSizeF &actual, const QSizeF &expected)
-{
-  QString result;
-  QDebug(&result) << "Paper size mismatch" << actual << "!=" << expected;
-  return result.toLocal8Bit();
-}
-
 void tst_QPrinter::testCustomPageSizes()
 {
     QPrinter p;
@@ -601,16 +538,14 @@ void tst_QPrinter::testCustomPageSizes()
     p.setPaperSize(customSize, QPrinter::Inch);
 
     QSizeF paperSize = p.paperSize(QPrinter::Inch);
-    // Due to the different calculations, the sizes may be off by a fraction so we have to check it manually
-    // instead of relying on QSizeF comparison
-    QVERIFY2(sqrt(pow(paperSize.width() - customSize.width(), 2.0) + pow(paperSize.height() - customSize.height(), 2.0)) < 0.01,
-             msgSizeMismatch(paperSize, customSize));
+    QCOMPARE(paperSize.width(), customSize.width());
+    QCOMPARE(paperSize.height(), customSize.height());
 
     QPrinter p2(QPrinter::HighResolution);
     p2.setPaperSize(customSize, QPrinter::Inch);
     paperSize = p.paperSize(QPrinter::Inch);
-    QVERIFY2(sqrt(pow(paperSize.width() - customSize.width(), 2.0) + pow(paperSize.height() - customSize.height(), 2.0)) < 0.01,
-            msgSizeMismatch(paperSize, customSize));
+    QCOMPARE(paperSize.width(), customSize.width());
+    QCOMPARE(paperSize.height(), customSize.height());
 }
 
 void tst_QPrinter::customPaperSizeAndMargins_data()
@@ -622,10 +557,11 @@ void tst_QPrinter::customPaperSizeAndMargins_data()
     QTest::addColumn<qreal>("right");
     QTest::addColumn<qreal>("bottom");
 
-    QTest::newRow("beforeNoPDF") << false << true << qreal(2) << qreal(2) << qreal(2) << qreal(2);
-    QTest::newRow("beforePDF") << true << true << qreal(2) << qreal(2) << qreal(2) << qreal(2);
-    QTest::newRow("afterNoPDF") << false << false << qreal(2) << qreal(2) << qreal(2) << qreal(2);
-    QTest::newRow("afterAfterPDF") << true << false << qreal(2) << qreal(2) << qreal(2) << qreal(2);
+    // Use custom margins that will exceed most printers minimum allowed
+    QTest::newRow("beforeNoPDF")   << false << true  << qreal(30) << qreal(30) << qreal(30) << qreal(30);
+    QTest::newRow("beforePDF")     << true  << true  << qreal(30) << qreal(30) << qreal(30) << qreal(30);
+    QTest::newRow("afterNoPDF")    << false << false << qreal(30) << qreal(30) << qreal(30) << qreal(30);
+    QTest::newRow("afterAfterPDF") << true  << false << qreal(30) << qreal(30) << qreal(30) << qreal(30);
 }
 
 void tst_QPrinter::customPaperSizeAndMargins()
@@ -642,7 +578,9 @@ void tst_QPrinter::customPaperSizeAndMargins()
     qreal getRight = 0;
     qreal getTop = 0;
     qreal getBottom = 0;
-    QSizeF customSize(8.5, 11.0);
+    // Use a custom page size that most printers should support, A4 is 210x297
+    // TODO Use print device api when available
+    QSizeF customSize(200.0, 300.0);
 
     QPrinter p;
     if (pdf)
@@ -657,10 +595,6 @@ void tst_QPrinter::customPaperSizeAndMargins()
         QVERIFY(fabs(left - getRight) < tolerance);
         QVERIFY(fabs(left - getBottom) < tolerance);
     } else {
-        QVERIFY(getLeft == 0);
-        QVERIFY(getTop == 0);
-        QVERIFY(getRight == 0);
-        QVERIFY(getBottom == 0);
         p.setPageMargins(left, top, right, bottom, QPrinter::Millimeter);
         p.getPageMargins(&getLeft, &getTop, &getRight, &getBottom, QPrinter::Millimeter);
         QVERIFY(fabs(left - getLeft) < tolerance);
@@ -781,100 +715,62 @@ void tst_QPrinter::testPdfTitle()
     QVERIFY(file.readAll().contains(QByteArray(expected, 26)));
 }
 
-void tst_QPrinter::testPageMetrics_data()
-{
-    QTest::addColumn<int>("pageSize");
-    QTest::addColumn<int>("widthMM");
-    QTest::addColumn<int>("heightMM");
-    QTest::addColumn<float>("widthMMf");
-    QTest::addColumn<float>("heightMMf");
-
-    QTest::newRow("A4")     << int(QPrinter::A4)     << 210 << 297 << 210.0f << 297.0f;
-    QTest::newRow("A5")     << int(QPrinter::A5)     << 148 << 210 << 148.0f << 210.0f;
-    QTest::newRow("Letter") << int(QPrinter::Letter) << 216 << 279 << 215.9f << 279.4f;
-}
-
-void tst_QPrinter::testPageMetrics()
-{
-    QFETCH(int, pageSize);
-    QFETCH(int, widthMM);
-    QFETCH(int, heightMM);
-    QFETCH(float, widthMMf);
-    QFETCH(float, heightMMf);
-
-    QPrinter printer(QPrinter::HighResolution);
-    printer.setFullPage(true);
-    printer.setPageSize(QPrinter::PageSize(pageSize));
-
-    if (printer.pageSize() != pageSize) {
-        QSKIP("Current page size is not supported on this printer");
-        return;
-    }
-
-    QCOMPARE(printer.widthMM(), int(widthMM));
-    QCOMPARE(printer.heightMM(), int(heightMM));
-    QCOMPARE(printer.pageSizeMM(), QSizeF(widthMMf, heightMMf));
-}
-
 void tst_QPrinter::customPaperNameSettingBySize()
 {
-#ifndef Q_OS_WIN
-    QSKIP("Currently this triggers a problem on non Windows platforms, this will be fixed separately - QTBUG-34521");
-#endif
     QPrinter printer(QPrinter::HighResolution);
     QPrinterInfo info(printer);
-    QList<QPair<QString, QSizeF> > sizes = info.supportedSizesWithNames();
+    QList<QPageSize> sizes = info.supportedPageSizes();
     if (sizes.size() == 0)
         QSKIP("No printers installed on this machine");
     for (int i=0; i<sizes.size(); i++) {
-        printer.setPaperSize(sizes.at(i).second, QPrinter::Millimeter);
-        QCOMPARE(sizes.at(i).second, printer.paperSize(QPrinter::Millimeter));
+        printer.setPaperSize(sizes.at(i).size(QPageSize::Millimeter), QPrinter::Millimeter);
+        QCOMPARE(sizes.at(i).size(QPageSize::Millimeter), printer.paperSize(QPrinter::Millimeter));
         // Some printers have the same size under different names which can cause a problem for the test
-        // So we iterate up to the current position to check
-        QSizeF paperSize = sizes.at(i).second;
+        // So we look at all the other sizes to see if one also matches as we don't know which order they are in
+        QSizeF paperSize = sizes.at(i).size(QPageSize::Millimeter);
         QString paperName = printer.paperName();
-        bool paperNameFound = (sizes.at(i).first == paperName);
+        bool paperNameFound = (sizes.at(i).name() == paperName);
         if (!paperNameFound) {
-            for (int j=0; j<i; j++) {
-                if (sizes.at(j).second == paperSize && sizes.at(j).first == paperName) {
+            for (int j = 0; j < sizes.size(); ++j) {
+                if (j != i
+                    && sizes.at(j).size(QPageSize::Millimeter) == paperSize
+                    && sizes.at(j).name() == paperName) {
                     paperNameFound = true;
                     break;
                 }
             }
         }
         // Fail with the original values
-        if (!paperNameFound)
-            QCOMPARE(sizes.at(i).first, printer.paperName());
+        if (!paperNameFound) {
+            qDebug() << "supportedPageSizes() = " << sizes;
+            QEXPECT_FAIL("", "Paper Name mismatch: please report this failure at bugreports.qt-project.org", Continue);
+            QCOMPARE(sizes.at(i).name(), printer.paperName());
+        }
     }
 
     // Check setting a custom size after setting a standard one works
-    QSizeF customSize(200, 200);
+    QSizeF customSize(200, 300);
     printer.setPaperSize(customSize, QPrinter::Millimeter);
     QCOMPARE(printer.paperSize(QPrinter::Millimeter), customSize);
     QCOMPARE(printer.paperSize(), QPrinter::Custom);
 
     // Finally check setting a standard size after a custom one works
-    printer.setPaperSize(sizes.at(0).second, QPrinter::Millimeter);
-    QCOMPARE(printer.paperName(), sizes.at(0).first);
-    QCOMPARE(printer.paperSize(QPrinter::Millimeter), sizes.at(0).second);
+    printer.setPaperSize(sizes.at(0).size(QPageSize::Millimeter), QPrinter::Millimeter);
+    QCOMPARE(printer.paperName(), sizes.at(0).name());
+    QCOMPARE(printer.paperSize(QPrinter::Millimeter), sizes.at(0).size(QPageSize::Millimeter));
 }
 
 void tst_QPrinter::customPaperNameSettingByName()
 {
-#ifndef Q_OS_WIN
-    QSKIP("Currently this triggers a problem on non Windows platforms, this will be fixed separately - QTBUG-34521");
-#endif
     QPrinter printer(QPrinter::HighResolution);
     QPrinterInfo info(printer);
-    QList<QPair<QString, QSizeF> > sizes = info.supportedSizesWithNames();
+    QList<QPageSize> sizes = info.supportedPageSizes();
     if (sizes.size() == 0)
         QSKIP("No printers installed on this machine");
     for (int i=0; i<sizes.size(); i++) {
-        printer.setPaperName(sizes.at(i).first);
-        QCOMPARE(sizes.at(i).first, printer.paperName());
-        QSizeF paperSize = printer.paperSize(QPrinter::Millimeter);
-        QVERIFY2(sqrt(pow(sizes.at(i).second.width() - paperSize.width(), 2.0) + pow(sizes.at(i).second.height() - paperSize.height(), 2.0)) < 0.01,
-             msgSizeMismatch(sizes.at(i).second, paperSize));
+        printer.setPaperName(sizes.at(i).name());
+        QCOMPARE(sizes.at(i).name(), printer.paperName());
+        QCOMPARE(sizes.at(i).size(QPageSize::Millimeter), printer.paperSize(QPrinter::Millimeter));
     }
 }
 
@@ -1794,43 +1690,46 @@ void tst_QPrinter::supportedResolutions()
 void tst_QPrinter::windowsPageSize()
 {
     // winPageSize() / setWinPageSize() / PPK_WindowsPageSize
-    // PdfFormat: ifdef'd out TODO remove ifdef
-    // NativeFormat, Cups: ifdef'd out TODO remove ifdef
+    // PdfFormat: Supported, defaults to printer default
+    // NativeFormat, Cups: Supported, defaults to printer default
     // NativeFormat, Win: Supported, defaults to printer default
-    // NativeFormat, Mac: ifdef'd out TODO remove ifdef
+    // NativeFormat, Mac: Supported, defaults to printer default
 
-#ifdef Q_OS_WIN
+    QPrinter pdf;
+    pdf.setOutputFormat(QPrinter::PdfFormat);
+    QCOMPARE(pdf.winPageSize(), 9);  // DMPAPER_A4
+    pdf.setWinPageSize(1); // DMPAPER_LETTER
+    QCOMPARE(pdf.winPageSize(), 1);
+
     QPrinter native;
     if (native.outputFormat() == QPrinter::NativeFormat) {
         // Test set/get
         native.setPaperSize(QPrinter::A4);
         QCOMPARE(native.pageSize(), QPrinter::A4);
-        QCOMPARE(native.winPageSize(), DMPAPER_A4);
+        QCOMPARE(native.winPageSize(), 9);  // DMPAPER_A4
 
         native.setPaperSize(QPrinter::Letter);
         QCOMPARE(native.pageSize(), QPrinter::Letter);
-        QCOMPARE(native.winPageSize(), DMPAPER_LETTER);
+        QCOMPARE(native.winPageSize(), 1); // DMPAPER_LETTER
 
-        native.setWinPageSize(DMPAPER_A4);
+        native.setWinPageSize(9);  // DMPAPER_A4
         QCOMPARE(native.pageSize(), QPrinter::A4);
-        QCOMPARE(native.winPageSize(), DMPAPER_A4);
+        QCOMPARE(native.winPageSize(), 9);  // DMPAPER_A4
 
-        native.setWinPageSize(DMPAPER_LETTER);
+        native.setWinPageSize(1); // DMPAPER_LETTER
         QCOMPARE(native.pageSize(), QPrinter::Letter);
-        QCOMPARE(native.winPageSize(), DMPAPER_LETTER);
+        QCOMPARE(native.winPageSize(), 1); // DMPAPER_LETTER
 
         // Test value preservation
         native.setOutputFormat(QPrinter::PdfFormat);
         QCOMPARE(native.pageSize(), QPrinter::Letter);
-        QEXPECT_FAIL("", "Win paper size doesn't persist over format change", Continue);
-        QCOMPARE(native.winPageSize(), DMPAPER_LETTER);
+        QCOMPARE(native.winPageSize(), 1); // DMPAPER_LETTER
         native.setOutputFormat(QPrinter::NativeFormat);
         QCOMPARE(native.pageSize(), QPrinter::Letter);
-        QCOMPARE(native.winPageSize(), DMPAPER_LETTER);
+        QCOMPARE(native.winPageSize(), 1); // DMPAPER_LETTER
     } else {
         QSKIP("No printers installed, cannot test NativeFormat, please install printers to test");
     }
-#endif // Q_OS_WIN
 }
 
 // Test QPrinter setters/getters for non-QPrintEngine options
@@ -1859,6 +1758,191 @@ void tst_QPrinter::fromToPage()
     printer.setFromTo(3, 7);
     QCOMPARE(printer.fromPage(), 3);
     QCOMPARE(printer.toPage(), 7);
+}
+
+void tst_QPrinter::testPageMetrics_data()
+{
+    QTest::addColumn<int>("outputFormat");
+    QTest::addColumn<int>("pageSize");
+    QTest::addColumn<qreal>("widthMMf");
+    QTest::addColumn<qreal>("heightMMf");
+    QTest::addColumn<bool>("setMargins");
+    QTest::addColumn<qreal>("leftMMf");
+    QTest::addColumn<qreal>("rightMMf");
+    QTest::addColumn<qreal>("topMMf");
+    QTest::addColumn<qreal>("bottomMMf");
+
+    QTest::newRow("PDF A4")            << int(QPrinter::PdfFormat)    << int(QPrinter::A4) << 210.0 << 297.0 << false <<  0.0 <<  0.0 <<  0.0 <<  0.0;
+    QTest::newRow("PDF A4 Margins")    << int(QPrinter::PdfFormat)    << int(QPrinter::A4) << 210.0 << 297.0 << true  << 20.0 << 30.0 << 40.0 << 50.0;
+    QTest::newRow("Native A4")         << int(QPrinter::NativeFormat) << int(QPrinter::A4) << 210.0 << 297.0 << false <<  0.0 <<  0.0 <<  0.0 <<  0.0;
+    QTest::newRow("Native A4 Margins") << int(QPrinter::NativeFormat) << int(QPrinter::A4) << 210.0 << 297.0 << true  << 20.0 << 30.0 << 40.0 << 50.0;
+
+    QTest::newRow("PDF Portrait")             << int(QPrinter::PdfFormat)    << -1 << 200.0 << 300.0 << false <<  0.0 <<  0.0 <<  0.0 <<  0.0;
+    QTest::newRow("PDF Portrait Margins")     << int(QPrinter::PdfFormat)    << -1 << 200.0 << 300.0 << true  << 20.0 << 30.0 << 40.0 << 50.0;
+    QTest::newRow("PDF Landscape")            << int(QPrinter::PdfFormat)    << -1 << 300.0 << 200.0 << false <<  0.0 <<  0.0 <<  0.0 <<  0.0;
+    QTest::newRow("PDF Landscape Margins")    << int(QPrinter::PdfFormat)    << -1 << 300.0 << 200.0 << true  << 20.0 << 30.0 << 40.0 << 50.0;
+    QTest::newRow("Native Portrait")          << int(QPrinter::NativeFormat) << -1 << 200.0 << 300.0 << false <<  0.0 <<  0.0 <<  0.0 <<  0.0;
+    QTest::newRow("Native Portrait Margins")  << int(QPrinter::NativeFormat) << -1 << 200.0 << 300.0 << true  << 20.0 << 30.0 << 40.0 << 50.0;
+    QTest::newRow("Native Landscape")         << int(QPrinter::NativeFormat) << -1 << 300.0 << 200.0 << false <<  0.0 <<  0.0 <<  0.0 <<  0.0;
+    QTest::newRow("Native Landscape Margins") << int(QPrinter::NativeFormat) << -1 << 300.0 << 200.0 << true  << 20.0 << 30.0 << 40.0 << 50.0;
+}
+
+void tst_QPrinter::testPageMetrics()
+{
+    QFETCH(int, outputFormat);
+    QFETCH(int, pageSize);
+    QFETCH(qreal, widthMMf);
+    QFETCH(qreal, heightMMf);
+    QFETCH(bool, setMargins);
+    QFETCH(qreal, leftMMf);
+    QFETCH(qreal, rightMMf);
+    QFETCH(qreal, topMMf);
+    QFETCH(qreal, bottomMMf);
+
+    QSizeF sizeMMf = QSizeF(widthMMf, heightMMf);
+
+    QPrinter printer;
+    printer.setOutputFormat(QPrinter::OutputFormat(outputFormat));
+    if (printer.outputFormat() != QPrinter::OutputFormat(outputFormat))
+        QSKIP("Please install a native printer to run this test");
+    QCOMPARE(printer.outputFormat(), QPrinter::OutputFormat(outputFormat));
+    QCOMPARE(printer.orientation(), QPrinter::Portrait);
+
+    if (setMargins) {
+        // Setup the given margins
+        QPrinter::Margins margins;
+        margins.left = leftMMf;
+        margins.right = rightMMf;
+        margins.top = topMMf;
+        margins.bottom = bottomMMf;
+        printer.setMargins(margins);
+        QCOMPARE(printer.margins().left, leftMMf);
+        QCOMPARE(printer.margins().right, rightMMf);
+        QCOMPARE(printer.margins().top, topMMf);
+        QCOMPARE(printer.margins().bottom, bottomMMf);
+    }
+
+
+    // Set the given size, in Portrait mode
+    if (pageSize < 0) {
+        printer.setPageSizeMM(sizeMMf);
+        QCOMPARE(printer.pageSize(), QPrinter::Custom);
+    } else {
+        printer.setPageSize(QPrinter::PageSize(pageSize));
+        QCOMPARE(printer.pageSize(), QPrinter::PageSize(pageSize));
+    }
+    QCOMPARE(printer.orientation(), QPrinter::Portrait);
+    if (setMargins) {
+        // Check margins unchanged from page size change
+        QCOMPARE(printer.margins().left, leftMMf);
+        QCOMPARE(printer.margins().right, rightMMf);
+        QCOMPARE(printer.margins().top, topMMf);
+        QCOMPARE(printer.margins().bottom, bottomMMf);
+    } else {
+        // Fetch the default margins for the printer and page size
+        // TODO Check against margins from print device when api added
+        leftMMf = printer.margins().left;
+        rightMMf = printer.margins().right;
+        topMMf = printer.margins().top;
+        bottomMMf = printer.margins().bottom;
+    }
+
+    // QPagedPaintDevice::pageSizeMM() always returns Portrait
+    QCOMPARE(printer.pageSizeMM(), sizeMMf);
+
+    // QPrinter::paperSize() always returns set orientation
+    QCOMPARE(printer.paperSize(QPrinter::Millimeter), sizeMMf);
+
+    // QPagedPaintDevice::widthMM() and heightMM() are paint metrics and always return set orientation
+    QCOMPARE(printer.widthMM(), qRound(widthMMf - leftMMf - rightMMf));
+    QCOMPARE(printer.heightMM(), qRound(heightMMf - topMMf - bottomMMf));
+
+    // QPrinter::paperRect() always returns set orientation
+    QCOMPARE(printer.paperRect(QPrinter::Millimeter), QRectF(0, 0, widthMMf, heightMMf));
+
+    // QPrinter::pageRect() always returns set orientation
+    QCOMPARE(printer.pageRect(QPrinter::Millimeter), QRectF(leftMMf, topMMf, widthMMf - leftMMf - rightMMf, heightMMf - topMMf - bottomMMf));
+
+
+    // Now switch to Landscape mode, size should be unchanged, but rect and metrics should change
+    printer.setOrientation(QPrinter::Landscape);
+    if (pageSize < 0) {
+        QCOMPARE(printer.pageSize(), QPrinter::Custom);
+    } else {
+        QCOMPARE(printer.pageSize(), QPrinter::PageSize(pageSize));
+    }
+    QCOMPARE(printer.orientation(), QPrinter::Landscape);
+    if (setMargins) {
+        // Check margins unchanged from page size change
+        QCOMPARE(printer.margins().left, leftMMf);
+        QCOMPARE(printer.margins().right, rightMMf);
+        QCOMPARE(printer.margins().top, topMMf);
+        QCOMPARE(printer.margins().bottom, bottomMMf);
+    } else {
+        // Fetch the default margins for the printer and page size
+        // TODO Check against margins from print device when api added
+        leftMMf = printer.margins().left;
+        rightMMf = printer.margins().right;
+        topMMf = printer.margins().top;
+        bottomMMf = printer.margins().bottom;
+    }
+
+    // QPagedPaintDevice::pageSizeMM() always returns Portrait
+    QCOMPARE(printer.pageSizeMM(), sizeMMf);
+
+    // QPrinter::paperSize() always returns set orientation
+    QCOMPARE(printer.paperSize(QPrinter::Millimeter), sizeMMf.transposed());
+
+    // QPagedPaintDevice::widthMM() and heightMM() are paint metrics and always return set orientation
+    QCOMPARE(printer.widthMM(), qRound(heightMMf - leftMMf - rightMMf));
+    QCOMPARE(printer.heightMM(), qRound(widthMMf - topMMf - bottomMMf));
+
+    // QPrinter::paperRect() always returns set orientation
+    QCOMPARE(printer.paperRect(QPrinter::Millimeter), QRectF(0, 0, heightMMf, widthMMf));
+
+    // QPrinter::pageRect() always returns set orientation
+    QCOMPARE(printer.pageRect(QPrinter::Millimeter), QRectF(leftMMf, topMMf, heightMMf - leftMMf - rightMMf, widthMMf - topMMf - bottomMMf));
+
+
+    // Now while in Landscape mode, set the size again, results should be the same
+    if (pageSize < 0) {
+        printer.setPageSizeMM(sizeMMf);
+        QCOMPARE(printer.pageSize(), QPrinter::Custom);
+    } else {
+        printer.setPageSize(QPrinter::PageSize(pageSize));
+        QCOMPARE(printer.pageSize(), QPrinter::PageSize(pageSize));
+    }
+    QCOMPARE(printer.orientation(), QPrinter::Landscape);
+    if (setMargins) {
+        // Check margins unchanged from page size change
+        QCOMPARE(printer.margins().left, leftMMf);
+        QCOMPARE(printer.margins().right, rightMMf);
+        QCOMPARE(printer.margins().top, topMMf);
+        QCOMPARE(printer.margins().bottom, bottomMMf);
+    } else {
+        // Fetch the default margins for the printer and page size
+        // TODO Check against margins from print device when api added
+        leftMMf = printer.margins().left;
+        rightMMf = printer.margins().right;
+        topMMf = printer.margins().top;
+        bottomMMf = printer.margins().bottom;
+    }
+
+    // QPagedPaintDevice::pageSizeMM() always returns Portrait
+    QCOMPARE(printer.pageSizeMM(), sizeMMf);
+
+    // QPrinter::paperSize() always returns set orientation
+    QCOMPARE(printer.paperSize(QPrinter::Millimeter), sizeMMf.transposed());
+
+    // QPagedPaintDevice::widthMM() and heightMM() are paint metrics and always return set orientation
+    QCOMPARE(printer.widthMM(), qRound(heightMMf - leftMMf - rightMMf));
+    QCOMPARE(printer.heightMM(), qRound(widthMMf - topMMf - bottomMMf));
+
+    // QPrinter::paperRect() always returns set orientation
+    QCOMPARE(printer.paperRect(QPrinter::Millimeter), QRectF(0, 0, heightMMf, widthMMf));
+
+    // QPrinter::pageRect() always returns set orientation
+    QCOMPARE(printer.pageRect(QPrinter::Millimeter), QRectF(leftMMf, topMMf, heightMMf - leftMMf - rightMMf, widthMMf - topMMf - bottomMMf));
 }
 
 #endif // QT_NO_PRINTER

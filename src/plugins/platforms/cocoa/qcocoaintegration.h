@@ -129,6 +129,7 @@ public:
     QCocoaServices *services() const;
     QVariant styleHint(StyleHint hint) const;
 
+    Qt::KeyboardModifiers queryKeyboardModifiers() const;
     QList<int> possibleKeys(const QKeyEvent *event) const;
 
     void updateScreens();

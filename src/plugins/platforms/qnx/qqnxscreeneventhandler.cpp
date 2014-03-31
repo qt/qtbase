@@ -457,7 +457,7 @@ void QQnxScreenEventHandler::handleTouchEvent(screen_event_t event, int qnxType)
 
             m_touchPoints[touchId].area = QRectF(w->geometry().left() + windowPos[0] - (touchArea[0]>>1),
                                                  w->geometry().top()  + windowPos[1] - (touchArea[1]>>1),
-                                                 0.0, 0.0);
+                                                 (touchArea[0]>>1), (touchArea[1]>>1));
             QWindow *parent = w->parent();
             while (parent) {
                 m_touchPoints[touchId].area.translate(parent->geometry().topLeft());

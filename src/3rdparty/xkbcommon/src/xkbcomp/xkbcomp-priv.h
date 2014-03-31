@@ -45,12 +45,9 @@ XkbParseFile(struct xkb_context *ctx, FILE *file,
              const char *file_name, const char *map);
 
 XkbFile *
-XkbParseString(struct xkb_context *ctx, const char *string,
-               const char *file_name);
-
-XkbFile *
-XkbParseBuffer(struct xkb_context *ctx, char *buf, size_t length,
-               const char *file_name);
+XkbParseString(struct xkb_context *ctx,
+               const char *string, size_t len,
+               const char *file_name, const char *map);
 
 void
 FreeXkbFile(XkbFile *file);
@@ -78,9 +75,6 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
 bool
 CompileKeymap(XkbFile *file, struct xkb_keymap *keymap,
               enum merge_mode merge);
-
-bool
-LookupKeysym(const char *str, xkb_keysym_t *sym_rtrn);
 
 /***====================================================================***/
 

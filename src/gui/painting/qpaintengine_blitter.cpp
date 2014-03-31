@@ -494,11 +494,12 @@ void QBlitterPaintEngine::clipEnabledChanged()
 
 bool QBlitterPaintEngine::begin(QPaintDevice *pdev)
 {
+    Q_D(QBlitterPaintEngine);
     bool ok = QRasterPaintEngine::begin(pdev);
 #ifdef QT_BLITTER_RASTEROVERLAY
-    Q_D(QBlitterPaintEngine);
     d->pmData->unmergeOverlay();
 #endif
+    d->pdev = pdev;
     return ok;
 }
 

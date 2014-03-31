@@ -492,8 +492,17 @@ Q_GLOBAL_STATIC(StaticVariables, staticVariables);
     if (!focusObject)
         return;
 
-    if ([text isEqualToString:@"\n"] && self.returnKeyType == UIReturnKeyDone)
-        [self resignFirstResponder];
+    if ([text isEqualToString:@"\n"]) {
+        QKeyEvent press(QEvent::KeyPress, Qt::Key_Return, Qt::NoModifier);
+        QKeyEvent release(QEvent::KeyRelease, Qt::Key_Return, Qt::NoModifier);
+        [self sendEventToFocusObject:press];
+        [self sendEventToFocusObject:release];
+
+        if (self.returnKeyType == UIReturnKeyDone)
+            [self resignFirstResponder];
+
+        return;
+    }
 
     QInputMethodEvent e;
     e.setCommitString(QString::fromNSString(text));

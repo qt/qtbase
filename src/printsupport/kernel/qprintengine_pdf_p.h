@@ -68,6 +68,7 @@
 #include "private/qpdf_p.h"
 #include "private/qpaintengine_p.h"
 #include "qprintengine.h"
+#include "qprint_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -77,16 +78,6 @@ class QPen;
 class QPointF;
 class QRegion;
 class QFile;
-class QPdfPrintEngine;
-
-namespace QPdf {
-
-    struct PaperSize {
-        int width, height; // in postscript points
-    };
-    Q_PRINTSUPPORT_EXPORT PaperSize paperSize(QPrinter::PaperSize paperSize);
-    Q_PRINTSUPPORT_EXPORT const char *paperSizeToString(QPrinter::PaperSize paperSize);
-}
 
 class QPdfPrintEnginePrivate;
 
@@ -131,8 +122,6 @@ public:
     virtual bool openPrintDevice();
     virtual void closePrintDevice();
 
-    virtual void updatePaperSize();
-
 private:
     Q_DISABLE_COPY(QPdfPrintEnginePrivate)
 
@@ -143,15 +132,12 @@ private:
     QString printProgram;
     QString selectionOption;
 
-    QPrinter::DuplexMode duplex;
+    QPrint::DuplexMode duplex;
     bool collate;
     int copies;
     QPrinter::PageOrder pageOrder;
     QPrinter::PaperSource paperSource;
 
-    QPrinter::PaperSize printerPaperSize;
-    QSizeF customPaperSize; // in postscript points
-    bool pageMarginsSet;
     int fd;
 };
 

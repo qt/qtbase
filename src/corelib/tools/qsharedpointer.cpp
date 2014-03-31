@@ -478,6 +478,14 @@
 */
 
 /*!
+    \fn void QSharedPointer::swap(QSharedPointer<T> &other);
+    \since 5.3
+
+    Swaps this shared pointer instance with \a other. This function is
+    very fast and never fails.
+*/
+
+/*!
     \fn T *QSharedPointer::data() const
 
     Returns the value of the pointer referenced by this object.

@@ -275,6 +275,7 @@ void Widget::start()
         addRenderWindow();
         return;
     }
+    m_surface = renderWindow;
 
     renderWindow->setForceGLSL110(forceGLSL110);
     connect(renderWindow, &RenderWindow::ready, this, &Widget::renderWindowReady);
@@ -284,12 +285,8 @@ void Widget::start()
     addRenderWindow();
 }
 
-void Widget::renderWindowReady()
+void Widget::printFormat(const QSurfaceFormat &format)
 {
-    QOpenGLContext *context = QOpenGLContext::currentContext();
-    Q_ASSERT(context);
-    const QSurfaceFormat format = context->format();
-
     m_output->append(tr("OpenGL version: %1.%2").arg(format.majorVersion()).arg(format.minorVersion()));
 
     for (size_t i = 0; i < sizeof(profiles) / sizeof(Profile); ++i)
@@ -310,6 +307,21 @@ void Widget::renderWindowReady()
             break;
         }
 
+    m_output->append(tr("Depth buffer size: %1").arg(QString::number(format.depthBufferSize())));
+    m_output->append(tr("Stencil buffer size: %1").arg(QString::number(format.stencilBufferSize())));
+    m_output->append(tr("Samples: %1").arg(QString::number(format.samples())));
+    m_output->append(tr("Red buffer size: %1").arg(QString::number(format.redBufferSize())));
+    m_output->append(tr("Green buffer size: %1").arg(QString::number(format.greenBufferSize())));
+    m_output->append(tr("Blue buffer size: %1").arg(QString::number(format.blueBufferSize())));
+    m_output->append(tr("Alpha buffer size: %1").arg(QString::number(format.alphaBufferSize())));
+    m_output->append(tr("Swap interval: %1").arg(QString::number(format.swapInterval())));
+}
+
+void Widget::renderWindowReady()
+{
+    QOpenGLContext *context = QOpenGLContext::currentContext();
+    Q_ASSERT(context);
+
     QString vendor, renderer, version, glslVersion;
     const GLubyte *p;
     QOpenGLFunctions *f = context->functions();
@@ -322,22 +334,21 @@ void Widget::renderWindowReady()
     if ((p = f->glGetString(GL_SHADING_LANGUAGE_VERSION)))
         glslVersion = QString::fromLatin1(reinterpret_cast<const char *>(p));
 
-    m_output->append(tr("\nVendor: %1").arg(vendor));
+    m_output->append(tr("*** Context information ***"));
+    m_output->append(tr("Vendor: %1").arg(vendor));
     m_output->append(tr("Renderer: %1").arg(renderer));
     m_output->append(tr("OpenGL version: %1").arg(version));
     m_output->append(tr("GLSL version: %1").arg(glslVersion));
 
-    m_output->append(tr("\nDepth buffer size: %1").arg(QString::number(format.depthBufferSize())));
-    m_output->append(tr("Stencil buffer size: %1").arg(QString::number(format.stencilBufferSize())));
-    m_output->append(tr("Samples: %1").arg(QString::number(format.samples())));
-    m_output->append(tr("Red buffer size: %1").arg(QString::number(format.redBufferSize())));
-    m_output->append(tr("Green buffer size: %1").arg(QString::number(format.greenBufferSize())));
-    m_output->append(tr("Blue buffer size: %1").arg(QString::number(format.blueBufferSize())));
-    m_output->append(tr("Alpha buffer size: %1").arg(QString::number(format.alphaBufferSize())));
-    m_output->append(tr("Swap interval: %1").arg(QString::number(format.swapInterval())));
+    m_output->append(tr("\n*** QSurfaceFormat from context ***"));
+    printFormat(context->format());
 
+    m_output->append(tr("\n*** QSurfaceFormat from window surface ***"));
+    printFormat(m_surface->format());
+
+    m_output->append(tr("\n*** Qt build information ***"));
     const char *gltype[] = { "Desktop", "GLES 2", "GLES 1" };
-    m_output->append(tr("\nQt OpenGL configuration: %1")
+    m_output->append(tr("Qt OpenGL configuration: %1")
                      .arg(QString::fromLatin1(gltype[QOpenGLContext::openGLModuleType()])));
     m_output->append(tr("Qt OpenGL library handle: %1")
                      .arg(QString::number(qintptr(QOpenGLContext::openGLModuleHandle()), 16)));

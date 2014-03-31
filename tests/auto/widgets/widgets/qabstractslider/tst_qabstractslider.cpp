@@ -990,15 +990,12 @@ void tst_QAbstractSlider::sliderPressedReleased()
     QRect rect = slider->style()->subControlRect(QStyle::ComplexControl(control), &option,
                                                  QStyle::SubControl(subControl), slider);
 
+    if (qApp->style()->styleHint(QStyle::SH_ScrollBar_LeftClickAbsolutePosition))
+        QSKIP("The result depends on system setting on mac");
+
     QTest::mousePress(slider, Qt::LeftButton, 0, QPoint(rect.center().x() + 2, rect.center().y() + 2));
-#ifdef Q_OS_MAC
-    QEXPECT_FAIL("scrollbar on the groove", "QTBUG-23679", Continue);
-#endif
     QCOMPARE(spy1.count(), expectedCount);
     QTest::mouseRelease(slider, Qt::LeftButton, 0, rect.center());
-#ifdef Q_OS_MAC
-    QEXPECT_FAIL("scrollbar on the groove", "QTBUG-23679", Continue);
-#endif
     QCOMPARE(spy2.count(), expectedCount);
 
     delete slider;

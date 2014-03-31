@@ -55,27 +55,25 @@
 
 #include <qpagedpaintdevice.h>
 
+#include "qpagelayout.h"
+
 QT_BEGIN_NAMESPACE
 
 class Q_GUI_EXPORT QPagedPaintDevicePrivate
 {
 public:
     QPagedPaintDevicePrivate()
-        : pageSize(QPagedPaintDevice::A4),
-          pageSizeMM(210, 297),
+        : m_pageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF(0, 0, 0, 0)),
           fromPage(0),
           toPage(0),
           pageOrderAscending(true),
           printSelectionOnly(false)
     {
-        margins.left = margins.right = margins.top = margins.bottom = 0;
     }
 
     static inline QPagedPaintDevicePrivate *get(QPagedPaintDevice *pd) { return pd->d; }
 
-    QPagedPaintDevice::PageSize pageSize;
-    QSizeF pageSizeMM;
-    QPagedPaintDevice::Margins margins;
+    QPageLayout m_pageLayout;
 
     // These are currently required to keep QPrinter functionality working in QTextDocument::print()
     int fromPage;

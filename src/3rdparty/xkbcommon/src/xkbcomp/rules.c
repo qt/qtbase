@@ -47,16 +47,10 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#include <ctype.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-
 #include "xkbcomp-priv.h"
 #include "rules.h"
 #include "include.h"
+#include "scanner-utils.h"
 
 /*
  * The rules file
@@ -138,25 +132,6 @@
 
 /* Scanner / Lexer */
 
-/* Point to some substring in the file; used to avoid copying. */
-struct sval {
-    const char *start;
-    unsigned int len;
-};
-typedef darray(struct sval) darray_sval;
-
-static inline bool
-svaleq(struct sval s1, struct sval s2)
-{
-    return s1.len == s2.len && strncmp(s1.start, s2.start, s1.len) == 0;
-}
-
-static inline bool
-svaleq_prefix(struct sval s1, struct sval s2)
-{
-    return s1.len <= s2.len && strncmp(s1.start, s2.start, s1.len) == 0;
-}
-
 /* Values returned with some tokens, like yylval. */
 union lvalue {
     struct sval string;
@@ -170,15 +145,6 @@ struct location {
     int line, column;
 };
 
-struct scanner {
-    const char *s;
-    size_t pos;
-    size_t len;
-    int line, column;
-    const char *file_name;
-    struct xkb_context *ctx;
-};
-
 enum rules_token {
     TOK_END_OF_FILE = 0,
     TOK_END_OF_LINE,
@@ -190,80 +156,19 @@ enum rules_token {
     TOK_ERROR
 };
 
-static void
-scanner_init(struct scanner *s, struct xkb_context *ctx,
-             const char *string, size_t len, const char *file_name)
-{
-    s->s = string;
-    s->len = len;
-    s->pos = 0;
-    s->line = s->column = 1;
-    s->file_name = file_name;
-    s->ctx = ctx;
-}
-
 /* C99 is stupid. Just use the 1 variant when there are no args. */
 #define scanner_error1(scanner, loc, msg) \
-    log_warn(scanner->ctx, "rules/%s:%d:%d: " msg "\n", \
-             scanner->file_name, loc->line, loc->column)
+    log_warn((scanner)->ctx, "rules/%s:%d:%d: %s\n", \
+             (scanner)->file_name, (loc)->line, (loc)->column, msg)
 #define scanner_error(scanner, loc, fmt, ...) \
-    log_warn(scanner->ctx, "rules/%s:%d:%d: " fmt "\n", \
-             scanner->file_name, loc->line, loc->column, __VA_ARGS__)
+    log_warn((scanner)->ctx, "rules/%s:%d:%d: " fmt "\n", \
+             (scanner)->file_name, (loc)->line, (loc)->column, __VA_ARGS__)
 
-static char
-peek(struct scanner *s)
+static inline bool
+is_ident(char ch)
 {
-    return s->pos < s->len ? s->s[s->pos] : '\0';
+    return is_graph(ch) && ch != '\\';
 }
-
-static bool
-eof(struct scanner *s)
-{
-    return peek(s) == '\0';
-}
-
-static bool
-eol(struct scanner *s)
-{
-    return peek(s) == '\n';
-}
-
-static char
-next(struct scanner *s)
-{
-    if (eof(s))
-        return '\0';
-    if (eol(s)) {
-        s->line++;
-        s->column = 1;
-    }
-    else {
-        s->column++;
-    }
-    return s->s[s->pos++];
-}
-
-static bool
-chr(struct scanner *s, char ch)
-{
-    if (peek(s) != ch)
-        return false;
-    s->pos++; s->column++;
-    return true;
-}
-
-static bool
-str(struct scanner *s, const char *string, size_t len)
-{
-    if (s->len - s->pos < len)
-        return false;
-    if (strncasecmp(s->s + s->pos, string, len) != 0)
-        return false;
-    s->pos += len; s->column += len;
-    return true;
-}
-
-#define lit(s, literal) str(s, literal, sizeof(literal) - 1)
 
 static enum rules_token
 lex(struct scanner *s, union lvalue *val, struct location *loc)
@@ -310,7 +215,7 @@ skip_more_whitespace_and_comments:
     if (chr(s, '$')) {
         val->string.start = s->s + s->pos;
         val->string.len = 0;
-        while (isgraph(peek(s))) {
+        while (is_ident(peek(s))) {
             next(s);
             val->string.len++;
         }
@@ -323,10 +228,10 @@ skip_more_whitespace_and_comments:
     }
 
     /* Identifier. */
-    if (isgraph(peek(s))) {
+    if (is_ident(peek(s))) {
         val->string.start = s->s + s->pos;
         val->string.len = 0;
-        while (isgraph(peek(s))) {
+        while (is_ident(peek(s))) {
             next(s);
             val->string.len++;
         }
@@ -440,8 +345,8 @@ struct matcher {
 static struct sval
 strip_spaces(struct sval v)
 {
-    while (v.len > 0 && isspace(v.start[0])) { v.len--; v.start++; }
-    while (v.len > 0 && isspace(v.start[v.len - 1])) v.len--;
+    while (v.len > 0 && is_space(v.start[0])) { v.len--; v.start++; }
+    while (v.len > 0 && is_space(v.start[v.len - 1])) v.len--;
     return v;
 }
 
@@ -449,7 +354,6 @@ static darray_sval
 split_comma_separated_string(const char *s)
 {
     darray_sval arr = darray_new();
-    struct sval val = { NULL, 0 };
 
     /*
      * Make sure the array returned by this function always includes at
@@ -457,12 +361,13 @@ split_comma_separated_string(const char *s)
      */
 
     if (!s) {
+        struct sval val = { NULL, 0 };
         darray_append(arr, val);
         return arr;
     }
 
     while (true) {
-        val.start = s; val.len = 0;
+        struct sval val = { s, 0 };
         while (*s != '\0' && *s != ',') { s++; val.len++; }
         darray_append(arr, strip_spaces(val));
         if (*s == '\0') break;
@@ -482,7 +387,7 @@ matcher_new(struct xkb_context *ctx,
 
     m->ctx = ctx;
     m->rmlvo.model.start = rmlvo->model;
-    m->rmlvo.model.len = rmlvo->model ? strlen(rmlvo->model) : 0;
+    m->rmlvo.model.len = strlen_safe(rmlvo->model);
     m->rmlvo.layouts = split_comma_separated_string(rmlvo->layout);
     m->rmlvo.variants = split_comma_separated_string(rmlvo->variant);
     m->rmlvo.options = split_comma_separated_string(rmlvo->options);
@@ -505,15 +410,10 @@ matcher_free(struct matcher *m)
     free(m);
 }
 
-/* C99 is stupid. Just use the 1 variant when there are no args. */
 #define matcher_error1(matcher, msg) \
-    log_warn(matcher->ctx, "rules/%s:%d:%d: " msg "\n", \
-             matcher->scanner.file_name, matcher->loc.line, \
-             matcher->loc.column)
+    scanner_error1(&(matcher)->scanner, &(matcher)->loc, msg)
 #define matcher_error(matcher, fmt, ...) \
-    log_warn(matcher->ctx, "rules/%s:%d:%d: " fmt "\n", \
-             matcher->scanner.file_name, matcher->loc.line, \
-             matcher->loc.column, __VA_ARGS__)
+    scanner_error(&(matcher)->scanner, &(matcher)->loc, fmt, __VA_ARGS__)
 
 static void
 matcher_group_start_new(struct matcher *m, struct sval name)
@@ -532,10 +432,9 @@ matcher_group_add_element(struct matcher *m, struct sval element)
 static void
 matcher_mapping_start_new(struct matcher *m)
 {
-    unsigned int i;
-    for (i = 0; i < _MLVO_NUM_ENTRIES; i++)
+    for (unsigned i = 0; i < _MLVO_NUM_ENTRIES; i++)
         m->mapping.mlvo_at_pos[i] = -1;
-    for (i = 0; i < _KCCGST_NUM_ENTRIES; i++)
+    for (unsigned i = 0; i < _KCCGST_NUM_ENTRIES; i++)
         m->mapping.kccgst_at_pos[i] = -1;
     m->mapping.layout_idx = m->mapping.variant_idx = XKB_LAYOUT_INVALID;
     m->mapping.num_mlvo = m->mapping.num_kccgst = 0;
@@ -551,7 +450,7 @@ extract_layout_index(const char *s, size_t max_len, xkb_layout_index_t *out)
     *out = XKB_LAYOUT_INVALID;
     if (max_len < 3)
         return -1;
-    if (s[0] != '[' || !isdigit(s[1]) || s[2] != ']')
+    if (s[0] != '[' || !is_digit(s[1]) || s[2] != ']')
         return -1;
     if (s[1] - '0' < 1 || s[1] - '0' > XKB_MAX_GROUPS)
         return -1;
@@ -565,8 +464,6 @@ matcher_mapping_set_mlvo(struct matcher *m, struct sval ident)
 {
     enum rules_mlvo mlvo;
     struct sval mlvo_sval;
-    xkb_layout_index_t idx;
-    int consumed;
 
     for (mlvo = 0; mlvo < _MLVO_NUM_ENTRIES; mlvo++) {
         mlvo_sval = rules_mlvo_svals[mlvo];
@@ -596,8 +493,9 @@ matcher_mapping_set_mlvo(struct matcher *m, struct sval ident)
 
     /* If there are leftovers still, it must be an index. */
     if (mlvo_sval.len < ident.len) {
-        consumed = extract_layout_index(ident.start + mlvo_sval.len,
-                                       ident.len - mlvo_sval.len, &idx);
+        xkb_layout_index_t idx;
+        int consumed = extract_layout_index(ident.start + mlvo_sval.len,
+                                            ident.len - mlvo_sval.len, &idx);
         if ((int) (ident.len - mlvo_sval.len) != consumed) {
             matcher_error(m,
                           "invalid mapping:\" %.*s\" may only be followed by a valid group index; "
@@ -822,14 +720,8 @@ static bool
 append_expanded_kccgst_value(struct matcher *m, darray_char *to,
                              struct sval value)
 {
-    unsigned int i;
-    size_t original_size = darray_size(*to);
+    const size_t original_size = darray_size(*to);
     const char *s = value.start;
-    xkb_layout_index_t idx;
-    int consumed;
-    enum rules_mlvo mlv;
-    struct sval expanded;
-    char pfx, sfx;
 
     /*
      * Appending  bar to  foo ->  foo (not an error if this happens)
@@ -847,7 +739,12 @@ append_expanded_kccgst_value(struct matcher *m, darray_char *to,
      * Some ugly hand-lexing here, but going through the scanner is more
      * trouble than it's worth, and the format is ugly on its own merit.
      */
-    for (i = 0; i < value.len; ) {
+    for (unsigned i = 0; i < value.len; ) {
+        enum rules_mlvo mlv;
+        xkb_layout_index_t idx;
+        char pfx, sfx;
+        struct sval expanded;
+
         /* Check if that's a start of an expansion. */
         if (s[i] != '%') {
             /* Just a normal character. */
@@ -876,22 +773,19 @@ append_expanded_kccgst_value(struct matcher *m, darray_char *to,
 
         /* Check for index. */
         idx = XKB_LAYOUT_INVALID;
-        if (i < value.len) {
-            if (s[i] == '[') {
-                if (mlv != MLVO_LAYOUT && mlv != MLVO_VARIANT) {
-                    matcher_error1(m,
-                                   "invalid index in %%-expansion; "
-                                   "may only index layout or variant");
-                    goto error;
-                }
+        if (i < value.len && s[i] == '[') {
+            int consumed;
 
-                consumed = extract_layout_index(s + i, value.len - i, &idx);
-                if (consumed == -1) goto error;
-                i += consumed;
+            if (mlv != MLVO_LAYOUT && mlv != MLVO_VARIANT) {
+                matcher_error1(m,
+                                "invalid index in %%-expansion; "
+                                "may only index layout or variant");
+                goto error;
             }
-            else {
-                idx = XKB_LAYOUT_INVALID;
-            }
+
+            consumed = extract_layout_index(s + i, value.len - i, &idx);
+            if (consumed == -1) goto error;
+            i += consumed;
         }
 
         /* Check for suffix, if there supposed to be one. */
@@ -959,37 +853,31 @@ matcher_rule_verify(struct matcher *m)
 static void
 matcher_rule_apply_if_matches(struct matcher *m)
 {
-    unsigned int i;
-    enum rules_mlvo mlvo;
-    enum rules_kccgst kccgst;
-    struct sval value, *option;
-    enum mlvo_match_type match_type;
-    bool matched = false;
-    xkb_layout_index_t idx;
-
-    for (i = 0; i < m->mapping.num_mlvo; i++) {
-        mlvo = m->mapping.mlvo_at_pos[i];
-        value = m->rule.mlvo_value_at_pos[i];
-        match_type = m->rule.match_type_at_pos[i];
+    for (unsigned i = 0; i < m->mapping.num_mlvo; i++) {
+        enum rules_mlvo mlvo = m->mapping.mlvo_at_pos[i];
+        struct sval value = m->rule.mlvo_value_at_pos[i];
+        enum mlvo_match_type match_type = m->rule.match_type_at_pos[i];
+        bool matched = false;
 
         if (mlvo == MLVO_MODEL) {
             matched = match_value(m, value, m->rmlvo.model, match_type);
         }
         else if (mlvo == MLVO_LAYOUT) {
-            idx = m->mapping.layout_idx;
+            xkb_layout_index_t idx = m->mapping.layout_idx;
             idx = (idx == XKB_LAYOUT_INVALID ? 0 : idx);
             matched = match_value(m, value,
                                   darray_item(m->rmlvo.layouts, idx),
                                   match_type);
         }
         else if (mlvo == MLVO_VARIANT) {
-            idx = m->mapping.layout_idx;
+            xkb_layout_index_t idx = m->mapping.layout_idx;
             idx = (idx == XKB_LAYOUT_INVALID ? 0 : idx);
             matched = match_value(m, value,
                                   darray_item(m->rmlvo.variants, idx),
                                   match_type);
         }
         else if (mlvo == MLVO_OPTION) {
+            struct sval *option;
             darray_foreach(option, m->rmlvo.options) {
                 matched = match_value(m, value, *option, match_type);
                 if (matched)
@@ -1001,9 +889,9 @@ matcher_rule_apply_if_matches(struct matcher *m)
             return;
     }
 
-    for (i = 0; i < m->mapping.num_kccgst; i++) {
-        kccgst = m->mapping.kccgst_at_pos[i];
-        value = m->rule.kccgst_value_at_pos[i];
+    for (unsigned i = 0; i < m->mapping.num_kccgst; i++) {
+        enum rules_kccgst kccgst = m->mapping.kccgst_at_pos[i];
+        struct sval value = m->rule.kccgst_value_at_pos[i];
         append_expanded_kccgst_value(m, &m->kccgst[kccgst], value);
     }
 
@@ -1193,36 +1081,27 @@ xkb_components_from_rules(struct xkb_context *ctx,
     bool ret = false;
     FILE *file;
     char *path;
-    int fd;
-    struct stat stat_buf;
-    char *string;
+    const char *string;
+    size_t size;
     struct matcher *matcher;
 
     file = FindFileInXkbPath(ctx, rmlvo->rules, FILE_TYPE_RULES, &path);
     if (!file)
         goto err_out;
 
-    fd = fileno(file);
-
-    if (fstat(fd, &stat_buf) != 0) {
-        log_err(ctx, "Couldn't stat rules file\n");
-        goto err_file;
-    }
-
-    string = mmap(NULL, stat_buf.st_size, PROT_READ, MAP_SHARED, fd, 0);
-    if (string == MAP_FAILED) {
-        log_err(ctx, "Couldn't mmap rules file (%lld bytes)\n",
-                (long long) stat_buf.st_size);
+    ret = map_file(file, &string, &size);
+    if (!ret) {
+        log_err(ctx, "Couldn't read rules file: %s\n", strerror(errno));
         goto err_file;
     }
 
     matcher = matcher_new(ctx, rmlvo);
-    ret = matcher_match(matcher, string, stat_buf.st_size, rmlvo->rules, out);
+    ret = matcher_match(matcher, string, size, rmlvo->rules, out);
     if (!ret)
         log_err(ctx, "No components returned from XKB rules \"%s\"\n", path);
     matcher_free(matcher);
 
-    munmap(string, stat_buf.st_size);
+    unmap_file(string, size);
 err_file:
     free(path);
     fclose(file);

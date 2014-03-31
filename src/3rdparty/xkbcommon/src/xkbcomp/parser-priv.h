@@ -27,21 +27,24 @@
 #ifndef XKBCOMP_PARSER_PRIV_H
 #define XKBCOMP_PARSER_PRIV_H
 
-struct scanner_extra;
+struct scanner;
 struct parser_param;
 
-#pragma GCC diagnostic ignored "-Wredundant-decls"
-#pragma GCC diagnostic push
 #include "parser.h"
-#pragma GCC diagnostic pop
-
-void
-scanner_error(YYLTYPE *loc, void *scanner, const char *msg);
 
 int
-_xkbcommon_lex(YYSTYPE *val, YYLTYPE *loc, void *scanner);
+scanner_error(struct scanner *scanner, const char *msg);
+
+void
+scanner_warn(struct scanner *s, const char *msg);
+
+int
+_xkbcommon_lex(YYSTYPE *yylval, struct scanner *scanner);
 
 XkbFile *
 parse(struct xkb_context *ctx, void *scanner, const char *map);
+
+int
+keyword_to_token(const char *string);
 
 #endif

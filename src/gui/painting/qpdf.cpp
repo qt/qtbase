@@ -1425,19 +1425,60 @@ QPaintEngine::Type QPdfEngine::type() const
     return QPaintEngine::Pdf;
 }
 
+void QPdfEngine::setResolution(int resolution)
+{
+    Q_D(QPdfEngine);
+    d->resolution = resolution;
+}
 
+int QPdfEngine::resolution() const
+{
+    Q_D(const QPdfEngine);
+    return d->resolution;
+}
 
+void QPdfEngine::setPageLayout(const QPageLayout &pageLayout)
+{
+    Q_D(QPdfEngine);
+    d->m_pageLayout = pageLayout;
+}
+
+void QPdfEngine::setPageSize(const QPageSize &pageSize)
+{
+    Q_D(QPdfEngine);
+    d->m_pageLayout.setPageSize(pageSize);
+}
+
+void QPdfEngine::setPageOrientation(QPageLayout::Orientation orientation)
+{
+    Q_D(QPdfEngine);
+    d->m_pageLayout.setOrientation(orientation);
+}
+
+void QPdfEngine::setPageMargins(const QMarginsF &margins, QPageLayout::Unit units)
+{
+    Q_D(QPdfEngine);
+    d->m_pageLayout.setUnits(units);
+    d->m_pageLayout.setMargins(margins);
+}
+
+QPageLayout QPdfEngine::pageLayout() const
+{
+    Q_D(const QPdfEngine);
+    return d->m_pageLayout;
+}
+
+// Metrics are in Device Pixels
 int QPdfEngine::metric(QPaintDevice::PaintDeviceMetric metricType) const
 {
     Q_D(const QPdfEngine);
     int val;
-    QRect r = d->pageRect();
     switch (metricType) {
     case QPaintDevice::PdmWidth:
-        val = r.width();
+        val = d->m_pageLayout.paintRectPixels(d->resolution).width();
         break;
     case QPaintDevice::PdmHeight:
-        val = r.height();
+        val = d->m_pageLayout.paintRectPixels(d->resolution).height();
         break;
     case QPaintDevice::PdmDpiX:
     case QPaintDevice::PdmDpiY:
@@ -1448,10 +1489,10 @@ int QPdfEngine::metric(QPaintDevice::PaintDeviceMetric metricType) const
         val = 1200;
         break;
     case QPaintDevice::PdmWidthMM:
-        val = qRound(r.width()*25.4/d->resolution);
+        val = qRound(d->m_pageLayout.paintRect(QPageLayout::Millimeter).width());
         break;
     case QPaintDevice::PdmHeightMM:
-        val = qRound(r.height()*25.4/d->resolution);
+        val = qRound(d->m_pageLayout.paintRect(QPageLayout::Millimeter).height());
         break;
     case QPaintDevice::PdmNumColors:
         val = INT_MAX;
@@ -1469,21 +1510,12 @@ int QPdfEngine::metric(QPaintDevice::PaintDeviceMetric metricType) const
     return val;
 }
 
-static inline QSizeF pageSizeToPostScriptPoints(const QSizeF &pageSizeMM)
-{
-#define Q_MM(n) int((n * 720 + 127) / 254)
-    return QSizeF(Q_MM(pageSizeMM.width()), Q_MM(pageSizeMM.height()));
-#undef Q_MM
-}
-
 QPdfEnginePrivate::QPdfEnginePrivate()
     : clipEnabled(false), allClipped(false), hasPen(true), hasBrush(false), simplePen(false),
       outDevice(0), ownsDevice(false),
-      fullPage(false), embedFonts(true),
-      landscape(false),
+      embedFonts(true),
       grayscale(false),
-      paperSize(pageSizeToPostScriptPoints(QSizeF(210, 297))), // A4
-      leftMargin(10), topMargin(10), rightMargin(10), bottomMargin(10) // ~3.5 mm
+      m_pageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF(10, 10, 10, 10))
 {
     resolution = 1200;
     currentObject = 1;
@@ -1493,11 +1525,6 @@ QPdfEnginePrivate::QPdfEnginePrivate()
     streampos = 0;
 
     stream = new QDataStream;
-}
-
-void QPdfEnginePrivate::setPaperSize(const QSizeF &pageSizeMM)
-{
-    paperSize = pageSizeToPostScriptPoints(pageSizeMM);
 }
 
 bool QPdfEngine::begin(QPaintDevice *pdev)
@@ -1580,31 +1607,6 @@ QPdfEnginePrivate::~QPdfEnginePrivate()
     delete currentPage;
     delete stream;
 }
-
-QRect QPdfEnginePrivate::paperRect() const
-{
-    int w = qRound(paperSize.width()*resolution/72.);
-    int h = qRound(paperSize.height()*resolution/72.);
-
-    if (!landscape)
-        return QRect(0, 0, w, h);
-    else
-        return QRect(0, 0, h, w);
-}
-
-QRect QPdfEnginePrivate::pageRect() const
-{
-    QRect r = paperRect();
-
-    if(!fullPage)
-        r.adjust(qRound(leftMargin*(resolution/72.)),
-                 qRound(topMargin*(resolution/72.)),
-                 -qRound(rightMargin*(resolution/72.)),
-                 -qRound(bottomMargin*(resolution/72.)));
-
-    return r;
-}
-
 
 void QPdfEnginePrivate::writeHeader()
 {
@@ -2615,9 +2617,9 @@ void QPdfEnginePrivate::drawTextItem(const QPointF &p, const QTextItemInt &ti)
 QTransform QPdfEnginePrivate::pageMatrix() const
 {
     qreal scale = 72./resolution;
-    QTransform tmp(scale, 0.0, 0.0, -scale, 0.0, height());
-    if (!fullPage) {
-        QRect r = pageRect();
+    QTransform tmp(scale, 0.0, 0.0, -scale, 0.0, m_pageLayout.fullRectPoints().height());
+    if (m_pageLayout.mode() != QPageLayout::FullPageMode) {
+        QRect r = m_pageLayout.paintRectPixels(resolution);
         tmp.translate(r.left(), r.top());
     }
     return tmp;
@@ -2626,12 +2628,12 @@ QTransform QPdfEnginePrivate::pageMatrix() const
 void QPdfEnginePrivate::newPage()
 {
     if (currentPage && currentPage->pageSize.isEmpty())
-        currentPage->pageSize = QSize(width(), height());
+        currentPage->pageSize = m_pageLayout.fullRectPoints().size();
     writePage();
 
     delete currentPage;
     currentPage = new QPdfPage;
-    currentPage->pageSize = QSize(width(), height());
+    currentPage->pageSize = m_pageLayout.fullRectPoints().size();
     stroker.stream = currentPage;
     pages.append(requestObject());
 

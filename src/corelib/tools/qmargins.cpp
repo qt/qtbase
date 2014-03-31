@@ -312,7 +312,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QMargins &operator+=(const QMargins &margins)
+    \fn QMargins &QMargins::operator+=(const QMargins &margins)
 
     Add each component of \a margins to the respective component of this object
     and returns a reference to it.
@@ -323,7 +323,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QMargins &operator-=(const QMargins &margins)
+    \fn QMargins &QMargins::operator-=(const QMargins &margins)
 
     Subtract each component of \a margins from the respective component of this object
     and returns a reference to it.
@@ -334,7 +334,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QMargins &operator*=(int factor)
+    \fn QMargins &QMargins::operator*=(int factor)
 
     Multiplies each component of this object by \a factor
     and returns a reference to it.
@@ -345,7 +345,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QMargins &operator*=(qreal factor)
+    \fn QMargins &QMargins::operator*=(qreal factor)
     \overload
 
     Multiplies each component of this object by \a factor
@@ -357,7 +357,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QMargins &operator/=(int divisor)
+    \fn QMargins &QMargins::operator/=(int divisor)
 
     Divides each component of this object by \a divisor
     and returns a reference to it.
@@ -368,7 +368,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QMargins &operator/=(qreal divisor)
+    \fn QMargins &QMargins::operator/=(qreal divisor)
 
     \overload
 

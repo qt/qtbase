@@ -1650,30 +1650,33 @@ void tst_QAccessibility::textEditTest()
         QTest::qWaitForWindowShown(&edit);
         QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(&edit);
         QCOMPARE(iface->text(QAccessible::Value), edit.toPlainText());
-        QCOMPARE(iface->textInterface()->textAtOffset(8, QAccessible::WordBoundary, &startOffset, &endOffset), QString("world"));
+        QAccessibleTextInterface *textIface = iface->textInterface();
+        QVERIFY(textIface);
+
+        QCOMPARE(textIface->textAtOffset(8, QAccessible::WordBoundary, &startOffset, &endOffset), QString("world"));
         QCOMPARE(startOffset, 6);
         QCOMPARE(endOffset, 11);
-        QCOMPARE(iface->textInterface()->textAtOffset(15, QAccessible::LineBoundary, &startOffset, &endOffset), QString("How are you today?"));
+        QCOMPARE(textIface->textAtOffset(15, QAccessible::LineBoundary, &startOffset, &endOffset), QString("How are you today?"));
         QCOMPARE(startOffset, 13);
         QCOMPARE(endOffset, 31);
-        QCOMPARE(iface->textInterface()->characterCount(), 48);
+        QCOMPARE(textIface->characterCount(), 48);
         QFontMetrics fm(edit.currentFont());
-        QCOMPARE(iface->textInterface()->characterRect(0).size(), QSize(fm.width("h"), fm.height()));
-        QCOMPARE(iface->textInterface()->characterRect(5).size(), QSize(fm.width(" "), fm.height()));
-        QCOMPARE(iface->textInterface()->characterRect(6).size(), QSize(fm.width("w"), fm.height()));
+        QCOMPARE(textIface->characterRect(0).size(), QSize(fm.width("h"), fm.height()));
+        QCOMPARE(textIface->characterRect(5).size(), QSize(fm.width(" "), fm.height()));
+        QCOMPARE(textIface->characterRect(6).size(), QSize(fm.width("w"), fm.height()));
 
         int offset = 10;
-        QCOMPARE(iface->textInterface()->text(offset, offset + 1), QStringLiteral("d"));
-        QVERIFY(fuzzyRectCompare(iface->textInterface()->characterRect(offset), characterRect(edit, offset)));
+        QCOMPARE(textIface->text(offset, offset + 1), QStringLiteral("d"));
+        QVERIFY(fuzzyRectCompare(textIface->characterRect(offset), characterRect(edit, offset)));
         offset = 13;
-        QCOMPARE(iface->textInterface()->text(offset, offset + 1), QStringLiteral("H"));
-        QVERIFY(fuzzyRectCompare(iface->textInterface()->characterRect(offset), characterRect(edit, offset)));
+        QCOMPARE(textIface->text(offset, offset + 1), QStringLiteral("H"));
+        QVERIFY(fuzzyRectCompare(textIface->characterRect(offset), characterRect(edit, offset)));
         offset = 21;
-        QCOMPARE(iface->textInterface()->text(offset, offset + 1), QStringLiteral("y"));
-        QVERIFY(fuzzyRectCompare(iface->textInterface()->characterRect(offset), characterRect(edit, offset)));
+        QCOMPARE(textIface->text(offset, offset + 1), QStringLiteral("y"));
+        QVERIFY(fuzzyRectCompare(textIface->characterRect(offset), characterRect(edit, offset)));
         offset = 32;
-        QCOMPARE(iface->textInterface()->text(offset, offset + 1), QStringLiteral("I"));
-        QVERIFY(fuzzyRectCompare(iface->textInterface()->characterRect(offset), characterRect(edit, offset)));
+        QCOMPARE(textIface->text(offset, offset + 1), QStringLiteral("I"));
+        QVERIFY(fuzzyRectCompare(textIface->characterRect(offset), characterRect(edit, offset)));
 
         QTestAccessibility::clearEvents();
 
@@ -1692,6 +1695,22 @@ void tst_QAccessibility::textEditTest()
         sel.setCursorPosition(end);
         sel.setSelection(0, end);
         QVERIFY_EVENT(&sel);
+
+        // check that we have newlines handled
+        QString poem = QStringLiteral("Once upon a midnight dreary,\nwhile I pondered, weak and weary,\nOver many a quaint and curious volume of forgotten lore\n");
+        QAccessibleEditableTextInterface *editableTextIface = iface->editableTextInterface();
+        QVERIFY(editableTextIface);
+        editableTextIface->replaceText(0, end, poem);
+        QCOMPARE(iface->text(QAccessible::Value), poem);
+        QCOMPARE(textIface->text(0, poem.size()), poem);
+        QCOMPARE(textIface->text(28, 29), QLatin1String("\n"));
+        int start;
+        QCOMPARE(textIface->textAtOffset(42, QAccessible::LineBoundary, &start, &end), QStringLiteral("while I pondered, weak and weary,"));
+        QCOMPARE(start, 29);
+        QCOMPARE(end, 62);
+        QCOMPARE(textIface->textAtOffset(28, QAccessible::CharBoundary, &start, &end), QLatin1String("\n"));
+        QCOMPARE(start, 28);
+        QCOMPARE(end, 29);
         }
         QTestAccessibility::clearEvents();
     }

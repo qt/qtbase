@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include <qapplication.h>
 #include <qaction.h>
 #include <qwidgetaction.h>
 #include <qtoolbar.h>
@@ -47,6 +48,9 @@
 #include <qmenu.h>
 #include <qdebug.h>
 #include <qmath.h>
+#ifdef Q_OS_OSX
+#include <qpa/qplatformnativeinterface.h>
+#endif
 
 #include "qmainwindowlayout_p.h"
 #include "qtoolbarextension_p.h"
@@ -341,6 +345,37 @@ static bool defaultWidgetAction(QToolBarItem *item)
     return a != 0 && a->defaultWidget() == item->widget();
 }
 
+void QToolBarLayout::updateMacBorderMetrics()
+{
+#ifdef Q_OS_OSX
+    QToolBar *tb = qobject_cast<QToolBar*>(parentWidget());
+    if (!tb)
+        return;
+
+    QRect rect = geometry();
+
+    QMainWindow *mainWindow = qobject_cast<QMainWindow*>(tb->parentWidget());
+    if (!mainWindow || !mainWindow->isWindow() || !mainWindow->unifiedTitleAndToolBarOnMac())
+        return;
+
+    QPlatformNativeInterface *nativeInterface = QApplication::platformNativeInterface();
+    QPlatformNativeInterface::NativeResourceForIntegrationFunction function =
+        nativeInterface->nativeResourceFunctionForIntegration("registerContentBorderArea");
+    if (!function)
+        return; // Not Cocoa platform plugin.
+
+    QPoint upper = tb->mapToParent(rect.topLeft());
+    QPoint lower = tb->mapToParent(rect.bottomLeft() + QPoint(0, 1));
+
+    typedef void (*RegisterContentBorderAreaFunction)(QWindow *window, void *identifier, int upper, int lower);
+    if (mainWindow->toolBarArea(tb) == Qt::TopToolBarArea) {
+        (reinterpret_cast<RegisterContentBorderAreaFunction>(function))(tb->window()->windowHandle(), this, upper.y(), lower.y());
+    } else {
+        (reinterpret_cast<RegisterContentBorderAreaFunction>(function))(tb->window()->windowHandle(), this, 0, 0);
+    }
+#endif
+}
+
 void QToolBarLayout::setGeometry(const QRect &rect)
 {
     QToolBar *tb = qobject_cast<QToolBar*>(parentWidget());
@@ -354,6 +389,8 @@ void QToolBarLayout::setGeometry(const QRect &rect)
     Qt::Orientation o = tb->orientation();
 
     QLayout::setGeometry(rect);
+
+    updateMacBorderMetrics();
 
     bool ranOutOfSpace = false;
     if (!animating)

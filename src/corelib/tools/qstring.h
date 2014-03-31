@@ -870,6 +870,12 @@ inline QString QString::arg(const QString &a1, const QString &a2, const QString 
 inline QString QString::section(QChar asep, int astart, int aend, SectionFlags aflags) const
 { return section(QString(asep), astart, aend, aflags); }
 
+#ifdef Q_CC_MSVC
+// "conditional expression is constant"
+#pragma warning(push)
+#pragma warning(disable : 4127)
+#endif
+
 inline int QString::toWCharArray(wchar_t *array) const
 {
     if (sizeof(wchar_t) == sizeof(QChar)) {
@@ -878,6 +884,11 @@ inline int QString::toWCharArray(wchar_t *array) const
     }
     return toUcs4_helper(d->data(), size(), reinterpret_cast<uint *>(array));
 }
+
+#ifdef Q_CC_MSVC
+#pragma warning(pop)
+#endif
+
 inline QString QString::fromWCharArray(const wchar_t *string, int size)
 {
     return sizeof(wchar_t) == sizeof(QChar) ? fromUtf16(reinterpret_cast<const ushort *>(string), size)

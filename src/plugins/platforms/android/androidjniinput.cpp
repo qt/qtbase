@@ -67,8 +67,6 @@ namespace QtAndroidInput
 
     static QPointer<QWindow> m_mouseGrabber;
 
-    static int m_lastCursorPos = -1;
-
     void updateSelection(int selStart, int selEnd, int candidatesStart, int candidatesEnd)
     {
         AttachedJNIEnv env;
@@ -78,21 +76,6 @@ namespace QtAndroidInput
 #ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
         qDebug() << ">>> UPDATESELECTION" << selStart << selEnd << candidatesStart << candidatesEnd;
 #endif
-        if (candidatesStart == -1 && candidatesEnd == -1 && selStart == selEnd) {
-            // Qt only gives us position inside the block, so if we move to the
-            // same position in another block, the Android keyboard will believe
-            // we have not changed position, and be terribly confused.
-            if (selStart == m_lastCursorPos) {
-#ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
-                qDebug() << ">>> FAKEUPDATESELECTION" << selStart+1;
-#endif
-                env.jniEnv->CallStaticVoidMethod(applicationClass(), m_updateSelectionMethodID,
-                                         selStart+1, selEnd+1, candidatesStart, candidatesEnd);
-            }
-            m_lastCursorPos = selStart;
-        } else {
-            m_lastCursorPos = -1;
-        }
         env.jniEnv->CallStaticVoidMethod(applicationClass(), m_updateSelectionMethodID,
                                          selStart, selEnd, candidatesStart, candidatesEnd);
     }
@@ -517,6 +500,12 @@ namespace QtAndroidInput
         }
     }
 
+    // maps 0 to the empty string, and anything else to a single-character string
+    static inline QString toString(jint unicode)
+    {
+        return unicode ? QString(QChar(unicode)) : QString();
+    }
+
     static void keyDown(JNIEnv */*env*/, jobject /*thiz*/, jint key, jint unicode, jint modifier)
     {
         Qt::KeyboardModifiers modifiers;
@@ -533,7 +522,7 @@ namespace QtAndroidInput
                                                QEvent::KeyPress,
                                                mapAndroidKey(key),
                                                modifiers,
-                                               QChar(unicode),
+                                               toString(unicode),
                                                false);
     }
 
@@ -553,7 +542,7 @@ namespace QtAndroidInput
                                                QEvent::KeyRelease,
                                                mapAndroidKey(key),
                                                modifiers,
-                                               QChar(unicode),
+                                               toString(unicode),
                                                false);
     }
 

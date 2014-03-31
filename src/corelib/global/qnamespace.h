@@ -267,6 +267,8 @@ public:
         TextJustificationForced = 0x10000,
         TextForceLeftToRight = 0x20000,
         TextForceRightToLeft = 0x40000,
+        // Ensures that the longest variant is always used when computing the
+        // size of a multi-variant string.
         TextLongestVariant = 0x80000,
         TextBypassShaping = 0x100000
     };

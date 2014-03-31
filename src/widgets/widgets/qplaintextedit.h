@@ -185,6 +185,7 @@ public:
 
     int blockCount() const;
     QVariant inputMethodQuery(Qt::InputMethodQuery property) const;
+    Q_INVOKABLE QVariant inputMethodQuery(Qt::InputMethodQuery query, QVariant argument) const;
 
 public Q_SLOTS:
 

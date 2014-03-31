@@ -79,35 +79,6 @@ QT_BEGIN_NAMESPACE
 
 Q_GLOBAL_STATIC(QString, lastVisitedDir)
 
-/*
-    \internal
-
-    Exported hooks that can be used to customize the static functions.
- */
-typedef QString (*_qt_filedialog_existing_directory_hook)(QWidget *parent, const QString &caption, const QString &dir, QFileDialog::Options options);
-Q_WIDGETS_EXPORT _qt_filedialog_existing_directory_hook qt_filedialog_existing_directory_hook = 0;
-
-typedef QUrl (*_qt_filedialog_existing_directory_url_hook)(QWidget *parent, const QString &caption, const QUrl &dir, QFileDialog::Options options, const QStringList &supportedSchemes);
-Q_WIDGETS_EXPORT _qt_filedialog_existing_directory_url_hook qt_filedialog_existing_directory_url_hook = 0;
-
-typedef QString (*_qt_filedialog_open_filename_hook)(QWidget * parent, const QString &caption, const QString &dir, const QString &filter, QString *selectedFilter, QFileDialog::Options options);
-Q_WIDGETS_EXPORT _qt_filedialog_open_filename_hook qt_filedialog_open_filename_hook = 0;
-
-typedef QUrl (*_qt_filedialog_open_file_url_hook)(QWidget * parent, const QString &caption, const QUrl &dir, const QString &filter, QString *selectedFilter, QFileDialog::Options options, const QStringList &supportedSchemes);
-Q_WIDGETS_EXPORT _qt_filedialog_open_file_url_hook qt_filedialog_open_file_url_hook = 0;
-
-typedef QStringList (*_qt_filedialog_open_filenames_hook)(QWidget * parent, const QString &caption, const QString &dir, const QString &filter, QString *selectedFilter, QFileDialog::Options options);
-Q_WIDGETS_EXPORT _qt_filedialog_open_filenames_hook qt_filedialog_open_filenames_hook = 0;
-
-typedef QList<QUrl> (*_qt_filedialog_open_file_urls_hook)(QWidget * parent, const QString &caption, const QUrl &dir, const QString &filter, QString *selectedFilter, QFileDialog::Options options, const QStringList &supportedSchemes);
-Q_WIDGETS_EXPORT _qt_filedialog_open_file_urls_hook qt_filedialog_open_file_urls_hook = 0;
-
-typedef QString (*_qt_filedialog_save_filename_hook)(QWidget * parent, const QString &caption, const QString &dir, const QString &filter, QString *selectedFilter, QFileDialog::Options options);
-Q_WIDGETS_EXPORT _qt_filedialog_save_filename_hook qt_filedialog_save_filename_hook = 0;
-
-typedef QUrl (*_qt_filedialog_save_file_url_hook)(QWidget * parent, const QString &caption, const QUrl &dir, const QString &filter, QString *selectedFilter, QFileDialog::Options options, const QStringList &supportedSchemes);
-Q_WIDGETS_EXPORT _qt_filedialog_save_file_url_hook qt_filedialog_save_file_url_hook = 0;
-
 /*!
   \class QFileDialog
   \brief The QFileDialog class provides a dialog that allow users to select files or directories.
@@ -1342,13 +1313,13 @@ QStringList qt_make_filter_list(const QString &filter)
     Sets the filter used in the file dialog to the given \a filter.
 
     If \a filter contains a pair of parentheses containing one or more
-    of \b{anything*something}, separated by spaces, then only the
+    filename-wildcard patterns, separated by spaces, then only the
     text contained in the parentheses is used as the filter. This means
     that these calls are all equivalent:
 
     \snippet code/src_gui_dialogs_qfiledialog.cpp 6
 
-    \sa setNameFilters()
+    \sa setMimeTypeFilters(), setNameFilters()
 */
 void QFileDialog::setNameFilter(const QString &filter)
 {
@@ -1402,7 +1373,19 @@ QStringList qt_strip_filters(const QStringList &filters)
 
     Sets the \a filters used in the file dialog.
 
+    Note that the filter \b{*.*} is not portable, because the historical
+    assumption that the file extension determines the file type is not
+    consistent on every operating system. It is possible to have a file with no
+    dot in its name (for example, \c Makefile). In a native Windows file
+    dialog, \b{*.*} will match such files, while in other types of file dialogs
+    it may not. So it is better to use \b{*} if you mean to select any file.
+
     \snippet code/src_gui_dialogs_qfiledialog.cpp 7
+
+    \l setMimeTypeFilters() has the advantage of providing all possible name
+    filters for each file type. For example, JPEG images have three possible
+    extensions; if your application can open such files, selecting the
+    \c image/jpeg mime type as a filter will allow you to open all of them.
 */
 void QFileDialog::setNameFilters(const QStringList &filters)
 {
@@ -2099,8 +2082,6 @@ QString QFileDialog::getOpenFileName(QWidget *parent,
                                QString *selectedFilter,
                                Options options)
 {
-    if (qt_filedialog_open_filename_hook && !(options & DontUseNativeDialog))
-        return qt_filedialog_open_filename_hook(parent, caption, dir, filter, selectedFilter, options);
     QFileDialogArgs args;
     args.parent = parent;
     args.caption = caption;
@@ -2162,8 +2143,7 @@ QUrl QFileDialog::getOpenFileUrl(QWidget *parent,
                                  Options options,
                                  const QStringList &supportedSchemes)
 {
-    if (qt_filedialog_open_file_url_hook && !(options & DontUseNativeDialog))
-        return qt_filedialog_open_file_url_hook(parent, caption, dir, filter, selectedFilter, options, supportedSchemes);
+    Q_UNUSED(supportedSchemes);
 
     // Falls back to local file
     return QUrl::fromLocalFile(getOpenFileName(parent, caption, dir.toLocalFile(), filter, selectedFilter, options));
@@ -2225,8 +2205,6 @@ QStringList QFileDialog::getOpenFileNames(QWidget *parent,
                                           QString *selectedFilter,
                                           Options options)
 {
-    if (qt_filedialog_open_filenames_hook && !(options & DontUseNativeDialog))
-        return qt_filedialog_open_filenames_hook(parent, caption, dir, filter, selectedFilter, options);
     QFileDialogArgs args;
     args.parent = parent;
     args.caption = caption;
@@ -2290,8 +2268,7 @@ QList<QUrl> QFileDialog::getOpenFileUrls(QWidget *parent,
                                          Options options,
                                          const QStringList &supportedSchemes)
 {
-    if (qt_filedialog_open_file_urls_hook && !(options & DontUseNativeDialog))
-        return qt_filedialog_open_file_urls_hook(parent, caption, dir, filter, selectedFilter, options, supportedSchemes);
+    Q_UNUSED(supportedSchemes);
 
     // Falls back to local files
     QList<QUrl> urls;
@@ -2360,8 +2337,6 @@ QString QFileDialog::getSaveFileName(QWidget *parent,
                                      QString *selectedFilter,
                                      Options options)
 {
-    if (qt_filedialog_save_filename_hook && !(options & DontUseNativeDialog))
-        return qt_filedialog_save_filename_hook(parent, caption, dir, filter, selectedFilter, options);
     QFileDialogArgs args;
     args.parent = parent;
     args.caption = caption;
@@ -2426,8 +2401,7 @@ QUrl QFileDialog::getSaveFileUrl(QWidget *parent,
                                  Options options,
                                  const QStringList &supportedSchemes)
 {
-    if (qt_filedialog_save_file_url_hook && !(options & DontUseNativeDialog))
-        return qt_filedialog_save_file_url_hook(parent, caption, dir, filter, selectedFilter, options, supportedSchemes);
+    Q_UNUSED(supportedSchemes);
 
     // Falls back to local file
     return QUrl::fromLocalFile(getSaveFileName(parent, caption, dir.toLocalFile(), filter, selectedFilter, options));
@@ -2477,8 +2451,6 @@ QString QFileDialog::getExistingDirectory(QWidget *parent,
                                           const QString &dir,
                                           Options options)
 {
-    if (qt_filedialog_existing_directory_hook && !(options & DontUseNativeDialog))
-        return qt_filedialog_existing_directory_hook(parent, caption, dir, options);
     QFileDialogArgs args;
     args.parent = parent;
     args.caption = caption;
@@ -2537,8 +2509,7 @@ QUrl QFileDialog::getExistingDirectoryUrl(QWidget *parent,
                                           Options options,
                                           const QStringList &supportedSchemes)
 {
-    if (qt_filedialog_existing_directory_url_hook && !(options & DontUseNativeDialog))
-        return qt_filedialog_existing_directory_url_hook(parent, caption, dir, options, supportedSchemes);
+    Q_UNUSED(supportedSchemes);
 
     // Falls back to local file
     return QUrl::fromLocalFile(getExistingDirectory(parent, caption, dir.toLocalFile(), options));
@@ -3904,13 +3875,8 @@ void QFileDialogLineEdit::keyPressEvent(QKeyEvent *e)
 
     int key = e->key();
     QLineEdit::keyPressEvent(e);
-    if (key != Qt::Key_Escape)
+    if (key != Qt::Key_Escape && key != Qt::Key_Back)
         e->accept();
-    if (hideOnEsc && (key == Qt::Key_Escape || key == Qt::Key_Return || key == Qt::Key_Enter)) {
-        e->accept();
-        hide();
-        d_ptr->currentView()->setFocus(Qt::ShortcutFocusReason);
-    }
 }
 
 #ifndef QT_NO_FSCOMPLETER

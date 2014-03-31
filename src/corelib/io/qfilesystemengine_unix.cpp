@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Samuel Gaist <samuel.gaist@edeltech.ch>>
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Samuel Gaist <samuel.gaist@edeltech.ch>
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -89,35 +89,23 @@ static bool isPackage(const QFileSystemMetaData &data, const QFileSystemEntry &e
     QFileInfo info(entry.filePath());
     QString suffix = info.suffix();
 
-    // First step: is the extenstion known ?
-    if (suffix == QLatin1String("app")
-            || suffix == QLatin1String("debug")
-            || suffix == QLatin1String("profile")
-            || suffix == QLatin1String("bundle")
-            || suffix == QLatin1String("pkg")) {
-        return true;
-    }
-
-    // Second step: check if an application knows the package type
-    const QByteArray &native = entry.nativeFilePath();
-    const char *nativeFilePath = native.constData();
-    int nativeFilePathLength = native.size();
-
-    QCFType<CFStringRef> path = CFStringCreateWithBytes(0,
-                                                        reinterpret_cast<const UInt8*>(nativeFilePath),
-                                                        nativeFilePathLength,
-                                                        kCFStringEncodingUTF8,
-                                                        false);
-
-    QCFType<CFURLRef> url = CFURLCreateWithFileSystemPath(0, path, kCFURLPOSIXPathStyle, true);
-
-    UInt32 type, creator;
-    // Well created packages have the PkgInfo file
-    if (CFBundleGetPackageInfoInDirectory(url, &type, &creator))
-        return true;
-
-    // Find if an application other than Finder claims to know how to handle the package
     if (suffix.length() > 0) {
+        // First step: is the extension known ?
+        CFStringRef extensionRef = QCFString::toCFStringRef(suffix);
+        CFStringRef uniformTypeIdentifier = UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, extensionRef, NULL);
+        if (UTTypeConformsTo(uniformTypeIdentifier, kUTTypeBundle))
+            return true;
+
+        // Second step: check if an application knows the package type
+        CFStringRef path = QCFString::toCFStringRef(entry.filePath());
+        QCFType<CFURLRef> url = CFURLCreateWithFileSystemPath(0, path, kCFURLPOSIXPathStyle, true);
+
+        UInt32 type, creator;
+        // Well created packages have the PkgInfo file
+        if (CFBundleGetPackageInfoInDirectory(url, &type, &creator))
+            return true;
+
+        // Find if an application other than Finder claims to know how to handle the package
         QCFType<CFURLRef> application;
         LSGetApplicationForURL(url,
                                kLSRolesEditor|kLSRolesViewer|kLSRolesViewer,
@@ -134,7 +122,7 @@ static bool isPackage(const QFileSystemMetaData &data, const QFileSystemEntry &e
 
     // Third step: check if the directory has the package bit set
     FSRef packageRef;
-    FSPathMakeRef((UInt8 *)nativeFilePath, &packageRef, NULL);
+    FSPathMakeRef((UInt8 *)entry.nativeFilePath().constData(), &packageRef, NULL);
 
     FSCatalogInfo catalogInfo;
     FSGetCatalogInfo(&packageRef,

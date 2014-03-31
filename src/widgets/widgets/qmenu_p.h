@@ -92,7 +92,7 @@ public:
                       cancelAction(0),
 #endif
                       scroll(0), eventLoop(0), tearoff(0), tornoff(0), tearoffHighlighted(0),
-                      hasCheckableItems(0), sloppyAction(0), doChildEffects(false), platformMenu(0)
+                      hasCheckableItems(0), sloppyDelayTimer(0), sloppyAction(0), doChildEffects(false), platformMenu(0)
 
 #if defined(Q_OS_WINCE) && !defined(QT_NO_MENUBAR)
                       ,wce_menu(0)
@@ -204,7 +204,7 @@ public:
     mutable bool hasCheckableItems;
 
     //sloppy selection
-    static int sloppyDelayTimer;
+    int sloppyDelayTimer;
     mutable QAction *sloppyAction;
     QRegion sloppyRegion;
 

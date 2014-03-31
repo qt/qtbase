@@ -306,6 +306,11 @@ void QVector<T>::copyConstruct(const T *srcFrom, const T *srcTo, T *dstFrom)
     }
 }
 
+#if defined(Q_CC_MSVC)
+#pragma warning( push )
+#pragma warning( disable : 4127 ) // conditional expression is constant
+#endif
+
 template <typename T>
 void QVector<T>::destruct(T *from, T *to)
 {
@@ -315,6 +320,10 @@ void QVector<T>::destruct(T *from, T *to)
         }
     }
 }
+
+#if defined(Q_CC_MSVC)
+#pragma warning( pop )
+#endif
 
 template <typename T>
 inline QVector<T>::QVector(const QVector<T> &v)

@@ -211,6 +211,8 @@ private slots:
     void QTBUG_6852();
     void QTBUG_5765_data() { generic_data("QMYSQL"); }
     void QTBUG_5765();
+    void QTBUG_12186_data() { generic_data("QSQLITE"); }
+    void QTBUG_12186();
     void QTBUG_14132_data() { generic_data("QOCI"); }
     void QTBUG_14132();
     void QTBUG_18435_data() { generic_data("QODBC"); }
@@ -3052,6 +3054,27 @@ void tst_QSqlQuery::QTBUG_551()
     QCOMPARE(res_outLst[0].toString(), QLatin1String("1. Value is 0"));
     QCOMPARE(res_outLst[1].toString(), QLatin1String("2. Value is 1"));
     QCOMPARE(res_outLst[2].toString(), QLatin1String("3. Value is 2"));
+}
+
+void tst_QSqlQuery::QTBUG_12186()
+{
+    QFETCH( QString, dbName );
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+
+    // make sure that query.boundValues() returns the values in the right order even for more than 16 placeholders
+    QSqlQuery query(db);
+    query.prepare("INSERT INTO person (col1, col2, col3, col4, col5, col6, col7, col8, col9, col10, col11, col12, col13, col14, col15, col16, col17, col18) "
+                  "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+
+    QList<QVariant> values;
+
+    for (int i = 0; i < 18; ++i)
+        values << i;
+
+    foreach (QVariant v, values)
+        query.bindValue(v.toInt(), v);
+
+    QCOMPARE(query.boundValues().values(), values);
 }
 
 void tst_QSqlQuery::QTBUG_14132()

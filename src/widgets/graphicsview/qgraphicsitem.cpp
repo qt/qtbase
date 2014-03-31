@@ -472,7 +472,7 @@
     notification).
 
     \value ItemTransformChange The item's transformation matrix changes. This
-    notification is send if the ItemSendsGeometryChanges flag is enabled, and
+    notification is sent if the ItemSendsGeometryChanges flag is enabled, and
     when the item's local transformation matrix changes (i.e., as a result of
     calling setTransform(). The value argument is the new matrix (i.e., a
     QTransform); to get the old matrix, call transform(). Do not call
@@ -6604,7 +6604,7 @@ void QGraphicsItem::removeSceneEventFilter(QGraphicsItem *filterItem)
 
     Reimplementing this function in a subclass makes it possible
     for the item to be used as an event filter for other items,
-    intercepting all the events send to those items before they are
+    intercepting all the events sent to those items before they are
     able to respond.
 
     Reimplementations must return true to prevent further processing of
@@ -9592,9 +9592,9 @@ QRectF QGraphicsPixmapItem::boundingRect() const
         return QRectF();
     if (d->flags & ItemIsSelectable) {
         qreal pw = 1.0;
-        return QRectF(d->offset, d->pixmap.size()).adjusted(-pw/2, -pw/2, pw/2, pw/2);
+        return QRectF(d->offset, d->pixmap.size() / d->pixmap.devicePixelRatio()).adjusted(-pw/2, -pw/2, pw/2, pw/2);
     } else {
-        return QRectF(d->offset, d->pixmap.size());
+        return QRectF(d->offset, d->pixmap.size() / d->pixmap.devicePixelRatio());
     }
 }
 
@@ -10778,7 +10778,6 @@ void QGraphicsSimpleTextItem::paint(QPainter *painter, const QStyleOptionGraphic
     tmp.replace(QLatin1Char('\n'), QChar::LineSeparator);
     QStackTextEngine engine(tmp, d->font);
     QTextLayout layout(&engine);
-    setupTextLayout(&layout);
 
     QPen p;
     p.setBrush(d->brush);
@@ -10795,6 +10794,7 @@ void QGraphicsSimpleTextItem::paint(QPainter *painter, const QStyleOptionGraphic
         layout.setAdditionalFormats(formats);
     }
 
+    setupTextLayout(&layout);
     layout.draw(painter, QPointF(0, 0));
 
     if (option->state & (QStyle::State_Selected | QStyle::State_HasFocus))

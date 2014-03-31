@@ -2697,7 +2697,8 @@ void QApplication::setStartDragDistance(int l)
 
     Qt uses this value internally, e.g. in QFileDialog.
 
-    The default value is 4 pixels.
+    The default value (if the platform doesn't provide a different default)
+    is 10 pixels.
 
     \sa startDragTime(), QPoint::manhattanLength(), {Drag and Drop}
 */
@@ -3102,12 +3103,12 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             QPoint relpos = wheel->pos();
             bool eventAccepted = wheel->isAccepted();
 
-            if (e->spontaneous())
+            if (e->spontaneous() && wheel->phase() == Qt::ScrollUpdate)
                 QApplicationPrivate::giveFocusAccordingToFocusPolicy(w, e, relpos);
 
             while (w) {
                 QWheelEvent we(relpos, wheel->globalPos(), wheel->pixelDelta(), wheel->angleDelta(), wheel->delta(), wheel->orientation(), wheel->buttons(),
-                               wheel->modifiers());
+                               wheel->modifiers(), wheel->phase());
                 we.spont = wheel->spontaneous();
                 res = d->notify_helper(w, w == receiver ? wheel : &we);
                 eventAccepted = ((w == receiver) ? wheel : &we)->isAccepted();

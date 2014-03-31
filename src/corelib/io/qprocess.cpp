@@ -165,7 +165,7 @@ QProcessEnvironment QProcessEnvironmentPrivate::fromList(const QStringList &list
     QStringList::ConstIterator it = list.constBegin(),
                               end = list.constEnd();
     for ( ; it != end; ++it) {
-        int pos = it->indexOf(QLatin1Char('='));
+        int pos = it->indexOf(QLatin1Char('='), 1);
         if (pos < 1)
             continue;
 
@@ -2227,6 +2227,8 @@ void QProcess::start(const QString &command, OpenMode mode)
 }
 
 /*!
+    \since 5.0
+
     Returns the program the process was last started with.
 
     \sa start()
@@ -2256,6 +2258,8 @@ void QProcess::setProgram(const QString &program)
 }
 
 /*!
+    \since 5.0
+
     Returns the command line arguments the process was last started with.
 
     \sa start()

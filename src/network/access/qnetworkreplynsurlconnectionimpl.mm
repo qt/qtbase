@@ -128,6 +128,7 @@ QNetworkReplyNSURLConnectionImplPrivate::QNetworkReplyNSURLConnectionImplPrivate
 
 QNetworkReplyNSURLConnectionImplPrivate::~QNetworkReplyNSURLConnectionImplPrivate()
 {
+    [urlConnection cancel];
     [urlConnection release];
     [urlConnectionDelegate release];
     if (readStream)

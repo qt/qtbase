@@ -142,6 +142,8 @@ void tst_MacGui::splashScreenModality()
     box.setText("accessible?");
     box.show();
 
+    QSKIP("QTBUG-35169");
+
     // Find the "OK" button and schedule a press.
     QAccessibleInterface *interface = wn.find(QAccessible::Name, "OK", &box);
     QVERIFY(interface);

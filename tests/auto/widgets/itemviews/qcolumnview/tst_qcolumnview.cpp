@@ -411,7 +411,10 @@ void tst_QColumnView::scrollTo()
     ColumnView view(&topLevel);
     view.resize(200, 200);
     topLevel.show();
+    topLevel.activateWindow();
     centerOnScreen(&topLevel);
+    QVERIFY(QTest::qWaitForWindowActive(&topLevel));
+
     view.scrollTo(QModelIndex(), QAbstractItemView::EnsureVisible);
     QCOMPARE(view.HorizontalOffset(), 0);
 

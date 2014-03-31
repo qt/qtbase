@@ -88,7 +88,7 @@ HEADERS += \
 contains(QT_CONFIG, harfbuzz)|contains(QT_CONFIG, system-harfbuzz) {
     DEFINES += QT_ENABLE_HARFBUZZ_NG
 
-    include($$PWD/../../3rdparty/harfbuzz.pri)
+    include($$PWD/../../3rdparty/harfbuzzng.pri)
 
     SOURCES += text/qharfbuzzng.cpp
     HEADERS += text/qharfbuzzng_p.h

@@ -53,26 +53,6 @@
 #include "keymap.h"
 #include "text.h"
 
-static struct xkb_keymap *
-xkb_keymap_new(struct xkb_context *ctx,
-               enum xkb_keymap_format format,
-               enum xkb_keymap_compile_flags flags)
-{
-    struct xkb_keymap *keymap;
-
-    keymap = calloc(1, sizeof(*keymap));
-    if (!keymap)
-        return NULL;
-
-    keymap->refcnt = 1;
-    keymap->ctx = xkb_context_ref(ctx);
-
-    keymap->format = format;
-    keymap->flags = flags;
-
-    return keymap;
-}
-
 XKB_EXPORT struct xkb_keymap *
 xkb_keymap_ref(struct xkb_keymap *keymap)
 {
@@ -83,30 +63,34 @@ xkb_keymap_ref(struct xkb_keymap *keymap)
 XKB_EXPORT void
 xkb_keymap_unref(struct xkb_keymap *keymap)
 {
-    unsigned int i, j;
-    struct xkb_key *key;
-
     if (!keymap || --keymap->refcnt > 0)
         return;
 
     if (keymap->keys) {
+        struct xkb_key *key;
         xkb_foreach_key(key, keymap) {
-            for (i = 0; i < key->num_groups; i++) {
-                for (j = 0; j < XkbKeyGroupWidth(key, i); j++)
-                    if (key->groups[i].levels[j].num_syms > 1)
-                        free(key->groups[i].levels[j].u.syms);
-                free(key->groups[i].levels);
+            if (key->groups) {
+                for (unsigned i = 0; i < key->num_groups; i++) {
+                    if (key->groups[i].levels) {
+                        for (unsigned j = 0; j < XkbKeyGroupWidth(key, i); j++)
+                            if (key->groups[i].levels[j].num_syms > 1)
+                                free(key->groups[i].levels[j].u.syms);
+                        free(key->groups[i].levels);
+                    }
+                }
+                free(key->groups);
             }
-            free(key->groups);
         }
         free(keymap->keys);
     }
-    for (i = 0; i < keymap->num_types; i++) {
-        free(keymap->types[i].entries);
-        free(keymap->types[i].level_names);
+    if (keymap->types) {
+        for (unsigned i = 0; i < keymap->num_types; i++) {
+            free(keymap->types[i].entries);
+            free(keymap->types[i].level_names);
+        }
+        free(keymap->types);
     }
-    free(keymap->types);
-    darray_free(keymap->sym_interprets);
+    free(keymap->sym_interprets);
     free(keymap->key_aliases);
     free(keymap->group_names);
     darray_free(keymap->mods);
@@ -190,35 +174,8 @@ xkb_keymap_new_from_string(struct xkb_context *ctx,
                            enum xkb_keymap_format format,
                            enum xkb_keymap_compile_flags flags)
 {
-    struct xkb_keymap *keymap;
-    const struct xkb_keymap_format_ops *ops;
-
-    ops = get_keymap_format_ops(format);
-    if (!ops || !ops->keymap_new_from_string) {
-        log_err_func(ctx, "unsupported keymap format: %d\n", format);
-        return NULL;
-    }
-
-    if (flags & ~(XKB_MAP_COMPILE_PLACEHOLDER)) {
-        log_err_func(ctx, "unrecognized flags: %#x\n", flags);
-        return NULL;
-    }
-
-    if (!string) {
-        log_err_func1(ctx, "no string specified\n");
-        return NULL;
-    }
-
-    keymap = xkb_keymap_new(ctx, format, flags);
-    if (!keymap)
-        return NULL;
-
-    if (!ops->keymap_new_from_string(keymap, string)) {
-        xkb_keymap_unref(keymap);
-        return NULL;
-    }
-
-    return keymap;
+    return xkb_keymap_new_from_buffer(ctx, string, strlen(string),
+                                      format, flags);
 }
 
 XKB_EXPORT struct xkb_keymap *
@@ -250,7 +207,7 @@ xkb_keymap_new_from_buffer(struct xkb_context *ctx,
     if (!keymap)
         return NULL;
 
-    if (!ops->keymap_new_from_buffer(keymap, buffer, length)) {
+    if (!ops->keymap_new_from_string(keymap, buffer, length)) {
         xkb_keymap_unref(keymap);
         return NULL;
     }
@@ -512,6 +469,28 @@ err:
     return 0;
 }
 
+XKB_EXPORT xkb_keycode_t
+xkb_keymap_min_keycode(struct xkb_keymap *keymap)
+{
+    return keymap->min_key_code;
+}
+
+XKB_EXPORT xkb_keycode_t
+xkb_keymap_max_keycode(struct xkb_keymap *keymap)
+{
+    return keymap->max_key_code;
+}
+
+XKB_EXPORT void
+xkb_keymap_key_for_each(struct xkb_keymap *keymap, xkb_keymap_key_iter_t iter,
+                        void *data)
+{
+    struct xkb_key *key;
+
+    xkb_foreach_key(key, keymap)
+        iter(keymap, key->keycode, data);
+}
+
 /**
  * Simple boolean specifying whether or not the key should repeat.
  */
@@ -524,32 +503,4 @@ xkb_keymap_key_repeats(struct xkb_keymap *keymap, xkb_keycode_t kc)
         return 0;
 
     return key->repeats;
-}
-
-struct xkb_key *
-XkbKeyByName(struct xkb_keymap *keymap, xkb_atom_t name, bool use_aliases)
-{
-    struct xkb_key *key;
-
-    xkb_foreach_key(key, keymap)
-        if (key->name == name)
-            return key;
-
-    if (use_aliases) {
-        xkb_atom_t new_name = XkbResolveKeyAlias(keymap, name);
-        if (new_name != XKB_ATOM_NONE)
-            return XkbKeyByName(keymap, new_name, false);
-    }
-
-    return NULL;
-}
-
-xkb_atom_t
-XkbResolveKeyAlias(struct xkb_keymap *keymap, xkb_atom_t name)
-{
-    for (unsigned i = 0; i < keymap->num_key_aliases; i++)
-        if (keymap->key_aliases[i].alias == name)
-            return keymap->key_aliases[i].real;
-
-    return XKB_ATOM_NONE;
 }

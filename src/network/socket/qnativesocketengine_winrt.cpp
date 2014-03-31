@@ -549,9 +549,9 @@ qint64 QNativeSocketEngine::write(const char *data, qint64 len)
     Q_D(QNativeSocketEngine);
     qint64 bytesWritten = -1;
     if (d->socketType == QAbstractSocket::TcpSocket)
-        bytesWritten = ::nativeWrite(d->tcp, data, len);
+        bytesWritten = nativeWrite(d->tcp, data, len);
     else if (d->socketType == QAbstractSocket::UdpSocket)
-        bytesWritten = ::nativeWrite(d->udp, data, len);
+        bytesWritten = nativeWrite(d->udp, data, len);
     if (bytesWritten != -1 && d->notifyOnWrite)
         writeNotification();
     return bytesWritten;

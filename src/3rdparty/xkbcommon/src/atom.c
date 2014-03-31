@@ -74,15 +74,15 @@
 #include "atom.h"
 
 struct atom_node {
-    struct atom_node *left, *right;
+    xkb_atom_t left, right;
     xkb_atom_t atom;
     unsigned int fingerprint;
     char *string;
 };
 
 struct atom_table {
-    struct atom_node *root;
-    darray(struct atom_node *) table;
+    xkb_atom_t root;
+    darray(struct atom_node) table;
 };
 
 struct atom_table *
@@ -95,31 +95,22 @@ atom_table_new(void)
         return NULL;
 
     darray_init(table->table);
-    darray_growalloc(table->table, 100);
-    darray_append(table->table, NULL);
+    /* The original throw-away root is here, at the illegal atom 0. */
+    darray_resize0(table->table, 1);
 
     return table;
-}
-
-static void
-free_atom(struct atom_node *patom)
-{
-    if (!patom)
-        return;
-
-    free_atom(patom->left);
-    free_atom(patom->right);
-    free(patom->string);
-    free(patom);
 }
 
 void
 atom_table_free(struct atom_table *table)
 {
+    struct atom_node *node;
+
     if (!table)
         return;
 
-    free_atom(table->root);
+    darray_foreach(node, table->table)
+        free(node->string);
     darray_free(table->table);
     free(table);
 }
@@ -127,52 +118,42 @@ atom_table_free(struct atom_table *table)
 const char *
 atom_text(struct atom_table *table, xkb_atom_t atom)
 {
-    if (atom >= darray_size(table->table) ||
-        darray_item(table->table, atom) == NULL)
+    if (atom == XKB_ATOM_NONE || atom >= darray_size(table->table))
         return NULL;
 
-    return darray_item(table->table, atom)->string;
-}
-
-char *
-atom_strdup(struct atom_table *table, xkb_atom_t atom)
-{
-    return strdup_safe(atom_text(table, atom));
+    return darray_item(table->table, atom).string;
 }
 
 static bool
-find_node_pointer(struct atom_table *table, const char *string,
-                  struct atom_node ***np_out, unsigned int *fingerprint_out)
+find_atom_pointer(struct atom_table *table, const char *string, size_t len,
+                  xkb_atom_t **atomp_out, unsigned int *fingerprint_out)
 {
-    struct atom_node **np;
-    unsigned i;
-    int comp;
-    unsigned int fp = 0;
-    size_t len;
+    xkb_atom_t *atomp = &table->root;
+    unsigned int fingerprint = 0;
     bool found = false;
 
-    len = strlen(string);
-    np = &table->root;
-    for (i = 0; i < (len + 1) / 2; i++) {
-        fp = fp * 27 + string[i];
-        fp = fp * 27 + string[len - 1 - i];
+    for (size_t i = 0; i < (len + 1) / 2; i++) {
+        fingerprint = fingerprint * 27 + string[i];
+        fingerprint = fingerprint * 27 + string[len - 1 - i];
     }
 
-    while (*np) {
-        if (fp < (*np)->fingerprint) {
-            np = &((*np)->left);
+    while (*atomp != XKB_ATOM_NONE) {
+        struct atom_node *node = &darray_item(table->table, *atomp);
+
+        if (fingerprint < node->fingerprint) {
+            atomp = &node->left;
         }
-        else if (fp > (*np)->fingerprint) {
-            np = &((*np)->right);
+        else if (fingerprint > node->fingerprint) {
+            atomp = &node->right;
         }
         else {
-            /* now start testing the strings */
-            comp = strncmp(string, (*np)->string, len);
-            if (comp < 0 || (comp == 0 && len < strlen((*np)->string))) {
-                np = &((*np)->left);
+            /* Now start testing the strings. */
+            const int cmp = strncmp(string, node->string, len);
+            if (cmp < 0 || (cmp == 0 && len < strlen(node->string))) {
+                atomp = &node->left;
             }
-            else if (comp > 0) {
-                np = &((*np)->right);
+            else if (cmp > 0) {
+                atomp = &node->right;
             }
             else {
                 found = true;
@@ -181,68 +162,64 @@ find_node_pointer(struct atom_table *table, const char *string,
         }
     }
 
-    *fingerprint_out = fp;
-    *np_out = np;
+    if (fingerprint_out)
+        *fingerprint_out = fingerprint;
+    if (atomp_out)
+        *atomp_out = atomp;
     return found;
 }
 
 xkb_atom_t
-atom_lookup(struct atom_table *table, const char *string)
+atom_lookup(struct atom_table *table, const char *string, size_t len)
 {
-    struct atom_node **np;
-    unsigned int fp;
+    xkb_atom_t *atomp;
 
     if (!string)
         return XKB_ATOM_NONE;
 
-    if (!find_node_pointer(table, string, &np, &fp))
+    if (!find_atom_pointer(table, string, len, &atomp, NULL))
         return XKB_ATOM_NONE;
 
-    return (*np)->atom;
+    return *atomp;
 }
 
 /*
  * If steal is true, we do not strdup @string; therefore it must be
- * dynamically allocated, not be free'd by the caller and not be used
- * afterwards. Use to avoid some redundant allocations.
+ * dynamically allocated, NUL-terminated, not be free'd by the caller
+ * and not be used afterwards. Use to avoid some redundant allocations.
  */
 xkb_atom_t
-atom_intern(struct atom_table *table, const char *string,
+atom_intern(struct atom_table *table, const char *string, size_t len,
             bool steal)
 {
-    struct atom_node **np;
-    struct atom_node *nd;
-    unsigned int fp;
+    xkb_atom_t *atomp;
+    struct atom_node node;
+    unsigned int fingerprint;
 
     if (!string)
         return XKB_ATOM_NONE;
 
-    if (find_node_pointer(table, string, &np, &fp)) {
+    if (find_atom_pointer(table, string, len, &atomp, &fingerprint)) {
         if (steal)
             free(UNCONSTIFY(string));
-        return (*np)->atom;
+        return *atomp;
     }
-
-    nd = malloc(sizeof(*nd));
-    if (!nd)
-        return XKB_ATOM_NONE;
 
     if (steal) {
-        nd->string = UNCONSTIFY(string);
+        node.string = UNCONSTIFY(string);
     }
     else {
-        nd->string = strdup(string);
-        if (!nd->string) {
-            free(nd);
+        node.string = strndup(string, len);
+        if (!node.string)
             return XKB_ATOM_NONE;
-        }
     }
 
-    *np = nd;
-    nd->left = nd->right = NULL;
-    nd->fingerprint = fp;
-    nd->atom = darray_size(table->table);
-    darray_append(table->table, nd);
+    node.left = node.right = XKB_ATOM_NONE;
+    node.fingerprint = fingerprint;
+    node.atom = darray_size(table->table);
+    /* Do this before the append, as it may realloc and change the offsets. */
+    *atomp = node.atom;
+    darray_append(table->table, node);
 
-    return nd->atom;
+    return node.atom;
 }
