@@ -118,7 +118,7 @@ void qt_format_text(const QFont &fnt, const QRectF &_r,
 */
 
 const char  *qt_mfhdr_tag = "QPIC"; // header tag
-static const quint16 mfhdr_maj = 11; // major version #
+static const quint16 mfhdr_maj = QDataStream::Qt_DefaultCompiledVersion; // major version #
 static const quint16 mfhdr_min = 0; // minor version #
 
 /*!
