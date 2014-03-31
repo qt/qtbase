@@ -1596,28 +1596,17 @@ void QCocoaWindow::setContentBorderThickness(int topThickness, int bottomThickne
 
 void QCocoaWindow::registerContentBorderArea(quintptr identifier, int upper, int lower)
 {
-    m_contentBorderAreas.insert(identifier, BorderRange(upper, lower));
-
-    // Find consecutive registered border areas, starting from the top.
-    QList<BorderRange> ranges = m_contentBorderAreas.values();
-    std::sort(ranges.begin(), ranges.end());
-    m_topContentBorderThickness = 0;
-    foreach (BorderRange range, ranges) {
-        // Is this sub-range adjacent to or overlaping the
-        // existing total border area range? If so merge
-        // it into the total range,
-        if (range.upper <= (m_topContentBorderThickness + 1))
-            m_topContentBorderThickness = qMax(m_topContentBorderThickness, range.lower);
-        else
-            break;
-    }
-
-    m_bottomContentBorderThickness = 0; // (not supported)
-    if (m_drawContentBorderGradient)
-        applyContentBorderThickness(m_nsWindow);
+    m_contentBorderAreas.insert(identifier, BorderRange(identifier, upper, lower));
+    applyContentBorderThickness(m_nsWindow);
 }
 
-void QCocoaWindow::enableContentBorderArea(bool enable)
+void QCocoaWindow::setContentBorderAreaEnabled(quintptr identifier, bool enable)
+{
+    m_enabledContentBorderAreas.insert(identifier, enable);
+    applyContentBorderThickness(m_nsWindow);
+}
+
+void QCocoaWindow::setContentBorderEnabled(bool enable)
 {
     m_drawContentBorderGradient = enable;
     applyContentBorderThickness(m_nsWindow);
@@ -1633,17 +1622,33 @@ void QCocoaWindow::applyContentBorderThickness(NSWindow *window)
         return;
     }
 
+    // Find consecutive registered border areas, starting from the top.
+    QList<BorderRange> ranges = m_contentBorderAreas.values();
+    std::sort(ranges.begin(), ranges.end());
+    int effectiveTopContentBorderThickness = m_topContentBorderThickness;
+    foreach (BorderRange range, ranges) {
+        // Skip disiabled ranges (typically hidden tool bars)
+        if (!m_enabledContentBorderAreas.value(range.identifier, false))
+            continue;
+
+        // Is this sub-range adjacent to or overlaping the
+        // existing total border area range? If so merge
+        // it into the total range,
+        if (range.upper <= (effectiveTopContentBorderThickness + 1))
+            effectiveTopContentBorderThickness = qMax(effectiveTopContentBorderThickness, range.lower);
+        else
+            break;
+    }
+
+    int effectiveBottomContentBorderThickness = m_bottomContentBorderThickness;
+
     [window setStyleMask:[window styleMask] | NSTexturedBackgroundWindowMask];
 
-    if (m_topContentBorderThickness > 0) {
-        [window setContentBorderThickness:m_topContentBorderThickness forEdge:NSMaxYEdge];
-        [window setAutorecalculatesContentBorderThickness:NO forEdge:NSMaxYEdge];
-    }
+    [window setContentBorderThickness:effectiveTopContentBorderThickness forEdge:NSMaxYEdge];
+    [window setAutorecalculatesContentBorderThickness:NO forEdge:NSMaxYEdge];
 
-    if (m_bottomContentBorderThickness > 0) {
-        [window setContentBorderThickness:m_topContentBorderThickness forEdge:NSMinYEdge];
-        [window setAutorecalculatesContentBorderThickness:NO forEdge:NSMinYEdge];
-    }
+    [window setContentBorderThickness:effectiveBottomContentBorderThickness forEdge:NSMinYEdge];
+    [window setAutorecalculatesContentBorderThickness:NO forEdge:NSMinYEdge];
 }
 
 void QCocoaWindow::updateNSToolbar()
