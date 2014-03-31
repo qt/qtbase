@@ -2773,7 +2773,8 @@ if [ -f "$relpath"/LICENSE.PREVIEW.COMMERCIAL ] && [ $COMMERCIAL_USER = "yes" ];
     EditionString="Technology Preview"
 elif [ $COMMERCIAL_USER = "yes" ]; then
     if test -x "$relpath/bin/licheck"; then
-        LicheckOutput=`$relpath/bin/licheck $relpath $outpath $PLATFORM $XPLATFORM`
+        LicheckOutput=`$relpath/bin/licheck $OPT_CONFIRM_LICENSE $relpath $outpath\
+                       $PLATFORM $XPLATFORM`
         if [ $? -ne 0 ]; then
             exit 1
         else

@@ -71,8 +71,9 @@ void Tools::checkLicense(QMap<QString,QString> &dictionary,
         const QString xQMakeSpec =
             QDir::toNativeSeparators(dictionary.value("XQMAKESPEC"));
 
-        QString command = QString("%1 %2 %3 %4 %5")
+        QString command = QString("%1 %2 %3 %4 %5 %6")
             .arg(licenseChecker,
+                 dictionary.value("LICENSE_CONFIRMED", "no"),
                  QDir::toNativeSeparators(sourcePath),
                  QDir::toNativeSeparators(buildPath),
                  qMakeSpec, xQMakeSpec);
