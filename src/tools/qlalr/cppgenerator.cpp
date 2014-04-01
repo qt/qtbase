@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QLALR module of the Qt Toolkit.
@@ -55,7 +55,7 @@ QString CppGenerator::copyrightHeader() const
   return QLatin1String(
     "/****************************************************************************\n"
     "**\n"
-    "** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).\n"
+    "** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).\n"
     "** Contact: http://www.qt-project.org/legal\n"
     "**\n"
     "** This file is part of the Qt Toolkit.\n"

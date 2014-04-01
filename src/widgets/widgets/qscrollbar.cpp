@@ -248,8 +248,13 @@ void QScrollBarPrivate::flash()
     Q_Q(QScrollBar);
     if (!flashed && q->style()->styleHint(QStyle::SH_ScrollBar_Transient, 0, q)) {
         flashed = true;
-        q->show();
+        if (!q->isVisible())
+            q->show();
+        else
+            q->update();
     }
+    if (!flashTimer)
+        flashTimer = q->startTimer(0);
 }
 
 void QScrollBarPrivate::activateControl(uint control, int threshold)
@@ -386,6 +391,7 @@ void QScrollBarPrivate::init()
     pointerOutsidePressedControl = false;
     transient = q->style()->styleHint(QStyle::SH_ScrollBar_Transient, 0, q);
     flashed = false;
+    flashTimer = 0;
     q->setFocusPolicy(Qt::NoFocus);
     QSizePolicy sp(QSizePolicy::Minimum, QSizePolicy::Fixed, QSizePolicy::Slider);
     if (orientation == Qt::Vertical)
@@ -476,6 +482,7 @@ void QScrollBar::sliderChange(SliderChange change)
 */
 bool QScrollBar::event(QEvent *event)
 {
+    Q_D(QScrollBar);
     switch(event->type()) {
     case QEvent::HoverEnter:
     case QEvent::HoverLeave:
@@ -485,6 +492,16 @@ bool QScrollBar::event(QEvent *event)
         break;
     case QEvent::StyleChange:
         d_func()->setTransient(style()->styleHint(QStyle::SH_ScrollBar_Transient, 0, this));
+        break;
+    case QEvent::Timer:
+        if (static_cast<QTimerEvent *>(event)->timerId() == d->flashTimer) {
+            if (d->flashed && style()->styleHint(QStyle::SH_ScrollBar_Transient, 0, this)) {
+                d->flashed = false;
+                update();
+            }
+            killTimer(d->flashTimer);
+            d->flashTimer = 0;
+        }
         break;
     default:
         break;
@@ -536,10 +553,6 @@ void QScrollBar::paintEvent(QPaintEvent *)
         opt.activeSubControls = (QStyle::SubControl)d->hoverControl;
     }
     style()->drawComplexControl(QStyle::CC_ScrollBar, &opt, &p, this);
-    if (d->flashed && style()->styleHint(QStyle::SH_ScrollBar_Transient, 0, this)) {
-        d->flashed = false;
-        update();
-    }
 }
 
 /*!

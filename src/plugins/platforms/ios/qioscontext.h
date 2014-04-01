@@ -85,10 +85,12 @@ private:
         GLuint depthRenderbuffer;
         GLint renderbufferWidth;
         GLint renderbufferHeight;
+        bool isComplete;
     };
 
     static void deleteBuffers(const FramebufferObject &framebufferObject);
 
+    FramebufferObject &backingFramebufferObjectFor(QPlatformSurface *) const;
     mutable QHash<QIOSWindow *, FramebufferObject> m_framebufferObjects;
 };
 

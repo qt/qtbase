@@ -54,7 +54,7 @@
 #include <qpa/qwindowsysteminterface.h>
 
 // This is needed to make Qt compile together with XKB. xkb.h is using a variable
-// which is called 'explicit', this is a reserved keyword in c++ */
+// which is called 'explicit', this is a reserved keyword in c++
 #ifndef QT_NO_XKB
 #define explicit dont_use_cxx_explicit
 #include <xcb/xkb.h>

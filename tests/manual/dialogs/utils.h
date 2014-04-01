@@ -59,6 +59,7 @@ struct FlagData
 
 // Helpers for creating combo boxes representing enumeration values from flag data.
 QComboBox *createCombo(QWidget *parent, const FlagData *d, size_t size);
+void populateCombo(QComboBox *combo, const FlagData *d, size_t size);
 
 template <class Enum>
 Enum comboBoxValue(const QComboBox *c)
@@ -71,7 +72,10 @@ void setComboBoxValue(QComboBox *c, int v);
 // A group box with check boxes for option flags.
 class OptionsControl : public QGroupBox {
 public:
+    OptionsControl(QWidget *parent);
     explicit OptionsControl(const QString &title, const FlagData *data, size_t count, QWidget *parent);
+
+    void populateOptions(const FlagData *data, size_t count);
 
     void setValue(int flags);
     template <class Enum>

@@ -78,6 +78,7 @@
 #include "qchar.cpp"
 #include "qstringmatcher.cpp"
 #include "qstringiterator_p.h"
+#include "qthreadstorage.h"
 
 #ifdef Q_OS_WIN
 #  include <qt_windows.h>
@@ -5319,6 +5320,10 @@ int QString::localeAwareCompare(const QString &other) const
     return localeAwareCompare_helper(constData(), length(), other.constData(), other.length());
 }
 
+#if defined(QT_USE_ICU)
+Q_GLOBAL_STATIC(QThreadStorage<QCollator>, defaultCollator)
+#endif
+
 /*!
     \internal
     \since 4.5
@@ -5362,8 +5367,9 @@ int QString::localeAwareCompare_helper(const QChar *data1, int length1,
     CFRelease(otherString);
     return result;
 #elif defined(QT_USE_ICU)
-    QCollator collator;
-    return collator.compare(data1, length1, data2, length2);
+    if (!defaultCollator()->hasLocalData())
+        defaultCollator()->setLocalData(QCollator());
+    return defaultCollator()->localData().compare(data1, length1, data2, length2);
 #elif defined(Q_OS_UNIX)
     // declared in <string.h>
     int delta = strcoll(toLocal8Bit_helper(data1, length1).constData(), toLocal8Bit_helper(data2, length2).constData());
@@ -6168,7 +6174,7 @@ qulonglong QString::toIntegral_helper(const QChar *data, uint len, bool *ok, int
 
     \snippet qstring/main.cpp 73
 
-    \sa number(), toULong(), toInt(), QLocale::toLong()
+    \sa number(), toULong(), toInt(), QLocale::toInt()
 */
 
 long QString::toLong(bool *ok, int base) const
@@ -6197,7 +6203,7 @@ long QString::toLong(bool *ok, int base) const
 
     \snippet qstring/main.cpp 78
 
-    \sa number(), QLocale::toULong()
+    \sa number(), QLocale::toUInt()
 */
 
 ulong QString::toULong(bool *ok, int base) const
@@ -7562,6 +7568,8 @@ QString QString::multiArg(int numArgs, const QString **args) const
     \since 5.2
 
     Constructs a new QString containing a copy of the \a string CFString.
+
+    \note this function is only available on Mac OS X and iOS.
 */
 
 /*! \fn CFStringRef QString::toCFString() const
@@ -7569,18 +7577,24 @@ QString QString::multiArg(int numArgs, const QString **args) const
 
     Creates a CFString from a QString. The caller owns the CFString and is
     responsible for releasing it.
+
+    \note this function is only available on Mac OS X and iOS.
 */
 
 /*! \fn QString QString::fromNSString(const NSString *string)
     \since 5.2
 
     Constructs a new QString containing a copy of the \a string NSString.
+
+    \note this function is only available on Mac OS X and iOS.
 */
 
 /*! \fn NSString QString::toNSString() const
     \since 5.2
 
-    Creates a NSString from a QString.g. The NSString is autoreleased.
+    Creates a NSString from a QString. The NSString is autoreleased.
+
+    \note this function is only available on Mac OS X and iOS.
 */
 
 /*! \fn bool QString::isSimpleText() const

@@ -939,10 +939,6 @@ public:
     }
 
     template<class T>
-    static void advanceImpl(void **p, int step)
-    { IteratorOwner<typename T::const_iterator>::advance(p, step); }
-
-    template<class T>
     static void moveToBeginImpl(const void *container, void **iterator)
     { IteratorOwner<typename T::const_iterator>::assign(iterator, static_cast<const T*>(container)->begin()); }
 
@@ -951,20 +947,8 @@ public:
     { IteratorOwner<typename T::const_iterator>::assign(iterator, static_cast<const T*>(container)->end()); }
 
     template<class T>
-    static void destroyIterImpl(void **iterator)
-    { IteratorOwner<typename T::const_iterator>::destroy(iterator); }
-
-    template<class T>
-    static bool equalIterImpl(void * const *iterator, void * const *other)
-    { return IteratorOwner<typename T::const_iterator>::equal(iterator, other); }
-
-    template<class T>
     static VariantData getImpl(void * const *iterator, int metaTypeId, uint flags)
     { return VariantData(metaTypeId, IteratorOwner<typename T::const_iterator>::getData(iterator), flags); }
-
-    template<class T>
-    static void copyIterImpl(void **dest, void * const * src)
-    { IteratorOwner<typename T::const_iterator>::assign(dest, src); }
 
 public:
     template<class T> QSequentialIterableImpl(const T*p)
@@ -977,11 +961,11 @@ public:
       , _at(atImpl<T>)
       , _moveToBegin(moveToBeginImpl<T>)
       , _moveToEnd(moveToEndImpl<T>)
-      , _advance(advanceImpl<T>)
+      , _advance(IteratorOwner<typename T::const_iterator>::advance)
       , _get(getImpl<T>)
-      , _destroyIter(destroyIterImpl<T>)
-      , _equalIter(equalIterImpl<T>)
-      , _copyIter(copyIterImpl<T>)
+      , _destroyIter(IteratorOwner<typename T::const_iterator>::destroy)
+      , _equalIter(IteratorOwner<typename T::const_iterator>::equal)
+      , _copyIter(IteratorOwner<typename T::const_iterator>::assign)
     {
     }
 
@@ -1134,18 +1118,6 @@ public:
     static VariantData getValueImpl(void * const *iterator, int metaTypeId, uint flags)
     { return VariantData(metaTypeId, &AssociativeContainerAccessor<T>::getValue(*static_cast<typename T::const_iterator*>(*iterator)), flags); }
 
-    template<class T>
-    static void destroyIterImpl(void **iterator)
-    { IteratorOwner<typename T::const_iterator>::destroy(iterator); }
-
-    template<class T>
-    static bool equalIterImpl(void * const *iterator, void * const *other)
-    { return IteratorOwner<typename T::const_iterator>::equal(iterator, other); }
-
-    template<class T>
-    static void copyIterImpl(void **dest, void * const * src)
-    { IteratorOwner<typename T::const_iterator>::assign(dest, src); }
-
 public:
     template<class T> QAssociativeIterableImpl(const T*p)
       : _iterable(p)
@@ -1160,9 +1132,9 @@ public:
       , _advance(advanceImpl<T>)
       , _getKey(getKeyImpl<T>)
       , _getValue(getValueImpl<T>)
-      , _destroyIter(destroyIterImpl<T>)
-      , _equalIter(equalIterImpl<T>)
-      , _copyIter(copyIterImpl<T>)
+      , _destroyIter(IteratorOwner<typename T::const_iterator>::destroy)
+      , _equalIter(IteratorOwner<typename T::const_iterator>::equal)
+      , _copyIter(IteratorOwner<typename T::const_iterator>::assign)
     {
     }
 

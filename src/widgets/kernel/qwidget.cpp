@@ -4681,7 +4681,8 @@ void QWidget::unsetCursor()
 void QWidget::render(QPaintDevice *target, const QPoint &targetOffset,
                      const QRegion &sourceRegion, RenderFlags renderFlags)
 {
-    d_func()->render(target, targetOffset, sourceRegion, renderFlags, false);
+    QPainter p(target);
+    render(&p, targetOffset, sourceRegion, renderFlags);
 }
 
 /*!
@@ -4725,9 +4726,6 @@ void QWidget::render(QPainter *painter, const QPoint &targetOffset,
         d->createExtra();
     d->extra->inRenderWithPainter = true;
 
-#ifdef Q_WS_MAC
-    d->render_helper(painter, targetOffset, toBePainted, renderFlags);
-#else
     QPaintEngine *engine = painter->paintEngine();
     Q_ASSERT(engine);
     QPaintEnginePrivate *enginePriv = engine->d_func();
@@ -4738,7 +4736,7 @@ void QWidget::render(QPainter *painter, const QPoint &targetOffset,
     // Render via a pixmap when dealing with non-opaque painters or printers.
     if (!inRenderWithPainter && (opacity < 1.0 || (target->devType() == QInternal::Printer))) {
         d->render_helper(painter, targetOffset, toBePainted, renderFlags);
-        d->extra->inRenderWithPainter = false;
+        d->extra->inRenderWithPainter = inRenderWithPainter;
         return;
     }
 
@@ -4759,7 +4757,7 @@ void QWidget::render(QPainter *painter, const QPoint &targetOffset,
         enginePriv->setSystemViewport(oldSystemClip);
     }
 
-    render(target, targetOffset, toBePainted, renderFlags);
+    d->render(target, targetOffset, toBePainted, renderFlags);
 
     // Restore system clip, viewport and transform.
     enginePriv->systemClip = oldSystemClip;
@@ -4768,9 +4766,8 @@ void QWidget::render(QPainter *painter, const QPoint &targetOffset,
 
     // Restore shared painter.
     d->setSharedPainter(oldPainter);
-#endif
 
-    d->extra->inRenderWithPainter = false;
+    d->extra->inRenderWithPainter = inRenderWithPainter;
 }
 
 static void sendResizeEvents(QWidget *target)
@@ -5208,8 +5205,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
 }
 
 void QWidgetPrivate::render(QPaintDevice *target, const QPoint &targetOffset,
-                            const QRegion &sourceRegion, QWidget::RenderFlags renderFlags,
-                            bool readyToRender)
+                            const QRegion &sourceRegion, QWidget::RenderFlags renderFlags)
 {
     if (!target) {
         qWarning("QWidget::render: null pointer to paint device");
@@ -5217,7 +5213,7 @@ void QWidgetPrivate::render(QPaintDevice *target, const QPoint &targetOffset,
     }
 
     const bool inRenderWithPainter = extra && extra->inRenderWithPainter;
-    QRegion paintRegion = !inRenderWithPainter && !readyToRender
+    QRegion paintRegion = !inRenderWithPainter
                           ? prepareToRender(sourceRegion, renderFlags)
                           : sourceRegion;
     if (paintRegion.isEmpty())
@@ -5276,23 +5272,12 @@ void QWidgetPrivate::render(QPaintDevice *target, const QPoint &targetOffset,
 
     flags |= DontSetCompositionMode;
 
-    if (target->devType() == QInternal::Printer) {
-        QPainter p(target);
-        render_helper(&p, targetOffset, paintRegion, renderFlags);
-        return;
-    }
-
-#ifndef Q_WS_MAC
     // Render via backingstore.
     drawWidget(target, paintRegion, offset, flags, sharedPainter());
 
     // Restore shared painter.
     if (oldSharedPainter)
         setSharedPainter(oldSharedPainter);
-#else
-    // Render via backingstore (no shared painter).
-    drawWidget(target, paintRegion, offset, flags, 0);
-#endif
 }
 
 void QWidgetPrivate::paintSiblingsRecursive(QPaintDevice *pdev, const QObjectList& siblings, int index, const QRegion &rgn,

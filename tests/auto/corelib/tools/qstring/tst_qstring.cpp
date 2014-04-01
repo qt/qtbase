@@ -4876,10 +4876,8 @@ void tst_QString::localeAwareCompare()
     DWORD oldLcid = GetUserDefaultLCID();
     SetUserDefaultLCID(locale);
     QCOMPARE(locale, GetUserDefaultLCID());
-#elif defined (Q_OS_MAC)
-    QSKIP("Setting the locale is not supported on OS X (you can set the C locale, but that won't affect CFStringCompare which is used to compare strings)");
-#elif defined(QT_USE_ICU)
-    QLocale::setDefault(QLocale(locale));
+#elif defined (Q_OS_MAC) || defined(QT_USE_ICU)
+    QSKIP("Setting the locale is not supported on OS X or ICU (you can set the C locale, but that won't affect localeAwareCompare)");
 #else
     if (!locale.isEmpty()) {
         const char *newLocale = setlocale(LC_ALL, locale.toLatin1());

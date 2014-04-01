@@ -2496,6 +2496,12 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
 
         \snippet code/src_corelib_io_qsettings.cpp 7
 
+    \li On Mac OS X, permissions to access settings not belonging to the
+       current user (i.e. SystemScope) have changed with 10.7 (Lion). Prior to
+       that version, users having admin rights could access these. For 10.7 and
+       10.8 (Mountain Lion), only root can. However, 10.9 (Mavericks) changes
+       that rule again but only for the native format (plist files).
+
     \li On Unix and Mac OS X systems, the advisory file locking is disabled
        if NFS (or AutoFS or CacheFS) is detected to work around a bug in the
        NFS fcntl() implementation, which hangs forever if statd or lockd aren't

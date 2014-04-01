@@ -51,6 +51,8 @@
 #include "qiostheme.h"
 #include "qiosservices.h"
 
+#include <qpa/qplatformoffscreensurface.h>
+
 #include <QtPlatformSupport/private/qcoretextfontdatabase_p.h>
 #include <QtPlatformSupport/private/qmacmime_p.h>
 #include <QDir>
@@ -142,6 +144,11 @@ QPlatformBackingStore *QIOSIntegration::createPlatformBackingStore(QWindow *wind
 QPlatformOpenGLContext *QIOSIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
     return new QIOSContext(context);
+}
+
+QPlatformOffscreenSurface *QIOSIntegration::createPlatformOffscreenSurface(QOffscreenSurface *surface) const
+{
+    return new QPlatformOffscreenSurface(surface);
 }
 
 QAbstractEventDispatcher *QIOSIntegration::createEventDispatcher() const

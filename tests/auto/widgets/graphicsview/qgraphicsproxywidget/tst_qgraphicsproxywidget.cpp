@@ -3065,21 +3065,30 @@ void tst_QGraphicsProxyWidget::createProxyForChildWidget()
     delete boxProxy;
 }
 
-class ContextMenuWidget : public QWidget
+class ContextMenuWidget : public QLabel
 {
     Q_OBJECT
 public:
     ContextMenuWidget()
-        : embeddedPopup(false),
-          gotContextMenuEvent(false)
+        : QLabel(QStringLiteral("ContextMenuWidget"))
+        , embeddedPopup(false)
+        , gotContextMenuEvent(false)
+        , m_embeddedPopupSet(false)
+        , m_timer(0)
     { }
     bool embeddedPopup;
     bool gotContextMenuEvent;
 protected:
     bool event(QEvent *event)
     {
-        if (event->type() == QEvent::ContextMenu)
-            QTimer::singleShot(0, this, SLOT(checkMenu()));
+        if (event->type() == QEvent::ContextMenu) {
+            if (!m_timer) {
+                m_timer = new QTimer(this);
+                m_timer->setInterval(10);
+                connect(m_timer, SIGNAL(timeout()), this, SLOT(checkMenu()));
+                m_timer->start();
+            }
+        }
         return QWidget::event(event);
     }
     void contextMenuEvent(QContextMenuEvent *)
@@ -3090,10 +3099,19 @@ protected:
 private slots:
     void checkMenu()
     {
-        if (this->findChild<QMenu *>())
-            embeddedPopup = true;
+        QMenu *menu = findChild<QMenu *>();
+        if (!m_embeddedPopupSet) {
+            m_embeddedPopupSet = true;
+            embeddedPopup = menu != 0;
+        }
+        if (menu && menu->isVisible())
+            menu->hide();
         hide();
     }
+
+private:
+    bool m_embeddedPopupSet;
+    QTimer *m_timer;
 };
 
 void tst_QGraphicsProxyWidget::actionsContextMenu_data()
@@ -3120,8 +3138,11 @@ void tst_QGraphicsProxyWidget::actionsContextMenu()
         widget->setContextMenuPolicy(Qt::ActionsContextMenu);
     }
     QGraphicsScene scene;
-
+    QGraphicsProxyWidget *proxyWidget = scene.addWidget(widget);
     QGraphicsView view(&scene);
+    view.setWindowTitle(QStringLiteral("actionsContextMenu"));
+    view.resize(200, 200);
+    view.move(QGuiApplication::primaryScreen()->geometry().center() - QPoint(100, 100));
     view.show();
     QApplication::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
@@ -3129,9 +3150,9 @@ void tst_QGraphicsProxyWidget::actionsContextMenu()
     QTRY_VERIFY(view.hasFocus());
 
     if (hasFocus)
-        scene.addWidget(widget)->setFocus();
+        proxyWidget->setFocus();
     else
-        scene.addWidget(widget)->clearFocus();
+        proxyWidget->clearFocus();
 
     QApplication::processEvents();
 

@@ -576,7 +576,8 @@ static void updateWindow(JNIEnv */*env*/, jobject /*thiz*/)
     }
 
     QAndroidPlatformScreen *screen = static_cast<QAndroidPlatformScreen *>(m_androidPlatformIntegration->screen());
-    QMetaObject::invokeMethod(screen, "setDirty", Qt::QueuedConnection, Q_ARG(QRect,screen->geometry()));
+    if (screen->rasterSurfaces())
+        QMetaObject::invokeMethod(screen, "setDirty", Qt::QueuedConnection, Q_ARG(QRect,screen->geometry()));
 }
 
 static void updateApplicationState(JNIEnv */*env*/, jobject /*thiz*/, jint state)

@@ -168,6 +168,8 @@ private slots:
 
     void convertOverUnPreMul();
 
+    void scaled_QTBUG35972();
+
     void cleanupFunctions();
 };
 
@@ -2437,6 +2439,25 @@ void tst_QImage::convertOverUnPreMul()
             QCOMPARE(qGray(image2.pixel(i, j)), qGray(image.pixel(i, j)));
         }
     }
+}
+
+void tst_QImage::scaled_QTBUG35972()
+{
+    QImage src(532,519,QImage::Format_ARGB32_Premultiplied);
+    src.fill(QColor(Qt::white));
+    QImage dest(1000,1000,QImage::Format_ARGB32_Premultiplied);
+    dest.fill(QColor(Qt::white));
+    QPainter painter1(&dest);
+    const QTransform trf(1.25, 0,
+                         0, 1.25,
+                         /*dx */ 15.900000000000034, /* dy */ 72.749999999999986);
+    painter1.setTransform(trf);
+    painter1.drawImage(QRectF(-2.6, -2.6, 425.6, 415.20000000000005), src, QRectF(0,0,532,519));
+
+    const quint32 *pixels = reinterpret_cast<const quint32 *>(dest.constBits());
+    int size = dest.width()*dest.height();
+    for (int i = 0; i < size; ++i)
+        QCOMPARE(pixels[i], 0xffffffff);
 }
 
 static void cleanupFunction(void* info)

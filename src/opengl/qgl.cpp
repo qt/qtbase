@@ -3227,43 +3227,6 @@ void QGLContext::moveToThread(QThread *thread)
     visual. On other platforms it may work differently.
 */
 
-/*! \fn int QGLContext::choosePixelFormat(void* dummyPfd, HDC pdc)
-
-    \b{Win32 only:} This virtual function chooses a pixel format
-    that matches the OpenGL \l{setFormat()}{format}.
-    Reimplement this function in a subclass if you need a custom
-    context.
-
-    \warning The \a dummyPfd pointer and \a pdc are used as a \c
-    PIXELFORMATDESCRIPTOR*. We use \c void to avoid using
-    Windows-specific types in our header files.
-
-    \sa chooseContext()
-*/
-
-/*! \fn void *QGLContext::chooseVisual()
-
-  \b{X11 only:} This virtual function tries to find a visual that
-  matches the format, reducing the demands if the original request
-  cannot be met.
-
-  The algorithm for reducing the demands of the format is quite
-  simple-minded, so override this method in your subclass if your
-  application has spcific requirements on visual selection.
-
-  \sa chooseContext()
-*/
-
-/*! \fn void *QGLContext::tryVisual(const QGLFormat& f, int bufDepth)
-  \internal
-
-  \b{X11 only:} This virtual function chooses a visual that matches
-  the OpenGL \l{format()}{format}. Reimplement this function
-  in a subclass if you need a custom visual.
-
-  \sa chooseContext()
-*/
-
 /*!
     \fn void QGLContext::reset()
 
@@ -3706,7 +3669,7 @@ QGLWidget::~QGLWidget()
 */
 
 /*!
-    \fn QFunctionPointer QGLContext::getProcAddress() const
+    \fn QFunctionPointer QGLContext::getProcAddress(const QString &proc) const
 
     Returns a function pointer to the GL extension function passed in
     \a proc. 0 is returned if a pointer to the function could not be
@@ -4042,14 +4005,6 @@ void QGLWidget::paintEvent(QPaintEvent *)
 
     Handles resize events that are passed in the \a event parameter.
     Calls the virtual function resizeGL().
-*/
-
-
-/*!
-    \fn void QGLWidget::setMouseTracking(bool enable)
-
-    If \a enable is true then mouse tracking is enabled; otherwise it
-    is disabled.
 */
 
 

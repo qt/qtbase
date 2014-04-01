@@ -157,7 +157,22 @@ static QSurface *createSurface(int surfaceClass)
         window->create();
         return window;
     } else if (surfaceClass == int(QSurface::Offscreen)) {
+        // Create a window and get the format from that.  For example, if an EGL
+        // implementation provides 565 and 888 configs for PBUFFER_BIT but only
+        // 888 for WINDOW_BIT, we may end up with a pbuffer surface that is
+        // incompatible with the context since it could choose the 565 while the
+        // window and the context uses a config with 888.
+        static QSurfaceFormat format;
+        if (format.redBufferSize() == -1) {
+            QWindow *window = new QWindow;
+            window->setSurfaceType(QWindow::OpenGLSurface);
+            window->setGeometry(0, 0, 10, 10);
+            window->create();
+            format = window->format();
+            delete window;
+        }
         QOffscreenSurface *offscreenSurface = new QOffscreenSurface;
+        offscreenSurface->setFormat(format);
         offscreenSurface->create();
         return offscreenSurface;
     }
@@ -392,6 +407,10 @@ void qt_opengl_check_test_pattern(const QImage& img)
     // As we're doing more than trivial painting, we can't just compare to
     // an image rendered with raster. Instead, we sample at well-defined
     // test-points:
+    QVERIFY(!img.isNull());
+    QVERIFY2(img.width() > 217, QByteArray::number(img.width()));
+    QVERIFY2(img.height() > 90, QByteArray::number(img.height()));
+
     QFUZZY_COMPARE_PIXELS(img.pixel(39, 64), QColor(Qt::red).rgb());
     QFUZZY_COMPARE_PIXELS(img.pixel(89, 64), QColor(Qt::red).rgb());
     QFUZZY_COMPARE_PIXELS(img.pixel(64, 39), QColor(Qt::blue).rgb());
@@ -415,7 +434,7 @@ void tst_QOpenGL::fboSimpleRendering()
     QOpenGLContext ctx;
     QVERIFY(ctx.create());
 
-    ctx.makeCurrent(surface.data());
+    QVERIFY(ctx.makeCurrent(surface.data()));
 
     if (!QOpenGLFramebufferObject::hasOpenGLFramebufferObjects())
         QSKIP("QOpenGLFramebufferObject not supported on this platform");
@@ -424,21 +443,21 @@ void tst_QOpenGL::fboSimpleRendering()
     QOpenGLFramebufferObjectFormat fboFormat;
     fboFormat.setAttachment(QOpenGLFramebufferObject::NoAttachment);
 
-    QOpenGLFramebufferObject *fbo = new QOpenGLFramebufferObject(200, 100, fboFormat);
+    const QSize size(200, 100);
+    QScopedPointer<QOpenGLFramebufferObject> fbo(new QOpenGLFramebufferObject(size, fboFormat));
 
-    fbo->bind();
+    QVERIFY(fbo->bind());
 
     glClearColor(1.0, 0.0, 0.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
     glFinish();
 
-    QImage fb = fbo->toImage().convertToFormat(QImage::Format_RGB32);
-    QImage reference(fb.size(), QImage::Format_RGB32);
+    const QImage fb = fbo->toImage().convertToFormat(QImage::Format_RGB32);
+    QCOMPARE(fb.size(), size);
+    QImage reference(size, QImage::Format_RGB32);
     reference.fill(0xffff0000);
 
     QFUZZY_COMPARE_IMAGES(fb, reference);
-
-    delete fbo;
 }
 
 void tst_QOpenGL::fboTextureOwnership_data()
@@ -511,7 +530,7 @@ void tst_QOpenGL::fboRendering()
     QOpenGLContext ctx;
     QVERIFY(ctx.create());
 
-    ctx.makeCurrent(surface.data());
+    QVERIFY(ctx.makeCurrent(surface.data()));
 
     if (!QOpenGLFramebufferObject::hasOpenGLFramebufferObjects())
         QSKIP("QOpenGLFramebufferObject not supported on this platform");
@@ -521,12 +540,13 @@ void tst_QOpenGL::fboRendering()
     fboFormat.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
 
     // Uncomplicate things by using NPOT:
-    QOpenGLFramebufferObject fbo(256, 128, fboFormat);
+    const QSize size(256, 128);
+    QOpenGLFramebufferObject fbo(size, fboFormat);
 
     if (fbo.attachment() != QOpenGLFramebufferObject::CombinedDepthStencil)
         QSKIP("FBOs missing combined depth~stencil support");
 
-    fbo.bind();
+    QVERIFY(fbo.bind());
 
     QPainter fboPainter;
     QOpenGLPaintDevice device(fbo.width(), fbo.height());
@@ -537,7 +557,8 @@ void tst_QOpenGL::fboRendering()
 
     fboPainter.end();
 
-    QImage fb = fbo.toImage().convertToFormat(QImage::Format_RGB32);
+    const QImage fb = fbo.toImage().convertToFormat(QImage::Format_RGB32);
+    QCOMPARE(fb.size(), size);
 
     qt_opengl_check_test_pattern(fb);
 }
@@ -588,9 +609,11 @@ void tst_QOpenGL::openGLPaintDevice()
     QSurfaceFormat format = ctx.format();
     if (format.majorVersion() < 2)
         QSKIP("This test requires at least OpenGL 2.0");
-    ctx.makeCurrent(surface.data());
+    QVERIFY(ctx.makeCurrent(surface.data()));
 
-    QImage image(128, 128, QImage::Format_RGB32);
+    const QSize size(128, 128);
+
+    QImage image(size, QImage::Format_RGB32);
     QPainter p(&image);
     p.fillRect(0, 0, image.width() / 2, image.height() / 2, Qt::red);
     p.fillRect(image.width() / 2, 0, image.width() / 2, image.height() / 2, Qt::green);
@@ -598,32 +621,38 @@ void tst_QOpenGL::openGLPaintDevice()
     p.fillRect(0, image.height() / 2, image.width() / 2, image.height() / 2, Qt::white);
     p.end();
 
-    QOpenGLFramebufferObject fbo(128, 128);
-    fbo.bind();
+    QOpenGLFramebufferObject fbo(size);
+    QVERIFY(fbo.bind());
 
-    QOpenGLPaintDevice device(128, 128);
-    p.begin(&device);
+    QOpenGLPaintDevice device(size);
+    QVERIFY(p.begin(&device));
     p.fillRect(0, 0, image.width() / 2, image.height() / 2, Qt::red);
     p.fillRect(image.width() / 2, 0, image.width() / 2, image.height() / 2, Qt::green);
     p.fillRect(image.width() / 2, image.height() / 2, image.width() / 2, image.height() / 2, Qt::blue);
     p.fillRect(0, image.height() / 2, image.width() / 2, image.height() / 2, Qt::white);
     p.end();
 
-    QCOMPARE(image, fbo.toImage().convertToFormat(QImage::Format_RGB32));
+    QImage actual = fbo.toImage().convertToFormat(QImage::Format_RGB32);
+    QCOMPARE(image.size(), actual.size());
+    QCOMPARE(image, actual);
 
-    p.begin(&device);
+    QVERIFY(p.begin(&device));
     p.fillRect(0, 0, image.width(), image.height(), Qt::black);
     p.drawImage(0, 0, image);
     p.end();
 
-    QCOMPARE(image, fbo.toImage().convertToFormat(QImage::Format_RGB32));
+    actual = fbo.toImage().convertToFormat(QImage::Format_RGB32);
+    QCOMPARE(image.size(), actual.size());
+    QCOMPARE(image, actual);
 
-    p.begin(&device);
+    QVERIFY(p.begin(&device));
     p.fillRect(0, 0, image.width(), image.height(), Qt::black);
     p.fillRect(0, 0, image.width(), image.height(), QBrush(image));
     p.end();
 
-    QCOMPARE(image, fbo.toImage().convertToFormat(QImage::Format_RGB32));
+    actual = fbo.toImage().convertToFormat(QImage::Format_RGB32);
+    QCOMPARE(image.size(), actual.size());
+    QCOMPARE(image, actual);
 }
 
 void tst_QOpenGL::aboutToBeDestroyed()
@@ -689,9 +718,11 @@ void tst_QOpenGL::QTBUG15621_triangulatingStrokerDivZero()
     QSKIP("QTBUG-22617");
 #endif
 
+    const QSize size(128, 128);
+
     QWindow window;
     window.setSurfaceType(QWindow::OpenGLSurface);
-    window.setGeometry(0, 0, 128, 128);
+    window.setGeometry(QRect(QPoint(0, 0), size));
     window.create();
 
     QOpenGLContext ctx;
@@ -701,10 +732,10 @@ void tst_QOpenGL::QTBUG15621_triangulatingStrokerDivZero()
     if (!QOpenGLFramebufferObject::hasOpenGLFramebufferObjects())
         QSKIP("QOpenGLFramebufferObject not supported on this platform");
 
-    QOpenGLFramebufferObject fbo(128, 128);
-    fbo.bind();
+    QOpenGLFramebufferObject fbo(size);
+    QVERIFY(fbo.bind());
 
-    QOpenGLPaintDevice device(128, 128);
+    QOpenGLPaintDevice device(size);
 
     // QTBUG-15621 is only a problem when qreal is double, but do the test anyway.
     qreal delta = sizeof(qreal) == sizeof(float) ? 1e-4 : 1e-8;
@@ -731,10 +762,11 @@ void tst_QOpenGL::QTBUG15621_triangulatingStrokerDivZero()
     QPen pen(Qt::red, 28, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
 
     QPainter p(&device);
-    p.fillRect(QRect(0, 0, 128, 128), Qt::blue);
+    p.fillRect(QRect(QPoint(0, 0), size), Qt::blue);
     p.strokePath(path, pen);
     p.end();
-    QImage image = fbo.toImage().convertToFormat(QImage::Format_RGB32);
+    const QImage image = fbo.toImage().convertToFormat(QImage::Format_RGB32);
+    QCOMPARE(image.size(), size);
 
     const QRgb red = 0xffff0000;
     const QRgb blue = 0xff0000ff;

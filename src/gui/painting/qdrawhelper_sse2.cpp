@@ -568,7 +568,7 @@ const uint * QT_FASTCALL qt_fetch_radial_gradient_sse2(uint *buffer, const Opera
 }
 
 void qt_scale_image_argb32_on_argb32_sse2(uchar *destPixels, int dbpl,
-                                          const uchar *srcPixels, int sbpl,
+                                          const uchar *srcPixels, int sbpl, int srch,
                                           const QRectF &targetRect,
                                           const QRectF &sourceRect,
                                           const QRect &clip,
@@ -577,12 +577,12 @@ void qt_scale_image_argb32_on_argb32_sse2(uchar *destPixels, int dbpl,
     if (const_alpha != 256) {
         // from qblendfunctions.cpp
         extern void qt_scale_image_argb32_on_argb32(uchar *destPixels, int dbpl,
-                                               const uchar *srcPixels, int sbpl,
+                                               const uchar *srcPixels, int sbpl, int srch,
                                                const QRectF &targetRect,
                                                const QRectF &sourceRect,
                                                const QRect &clip,
                                                int const_alpha);
-        return qt_scale_image_argb32_on_argb32(destPixels, dbpl, srcPixels, sbpl, targetRect, sourceRect, clip, const_alpha);
+        return qt_scale_image_argb32_on_argb32(destPixels, dbpl, srcPixels, sbpl, srch, targetRect, sourceRect, clip, const_alpha);
     }
 
     qreal sx = targetRect.width() / (qreal) sourceRect.width();
@@ -651,6 +651,14 @@ void qt_scale_image_argb32_on_argb32_sse2(uchar *destPixels, int dbpl,
     const __m128i alphaMask = _mm_set1_epi32(0xff000000);
     const __m128i ixVector = _mm_set1_epi32(4*ix);
 
+    // this bounds check here is required as floating point rounding above might in some cases lead to
+    // w/h values that are one pixel too large, falling outside of the valid image area.
+    int yend = (srcy + iy * (h - 1)) >> 16;
+    if (yend < 0 || yend >= srch)
+        --h;
+    int xend = (basex + ix * (w - 1)) >> 16;
+    if (xend < 0 || xend >= (int)(sbpl/sizeof(quint32)))
+        --w;
 
     while (h--) {
         const uint *src = (const quint32 *) (srcPixels + (srcy >> 16) * sbpl);

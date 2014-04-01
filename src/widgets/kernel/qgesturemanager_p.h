@@ -81,6 +81,7 @@ public:
 #endif //QT_NO_GRAPHICSVIEW
 
     static QGestureManager* instance(); // declared in qapplication.cpp
+    static bool gesturePending(QObject *o);
 
     void cleanupCachedGestures(QObject *target, Qt::GestureType type);
 

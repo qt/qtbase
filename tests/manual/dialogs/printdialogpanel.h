@@ -44,6 +44,12 @@
 
 #ifndef QT_NO_PRINTER
 
+#include "ui_printdialogpanel.h"
+
+#if QT_VERSION >= 0x050300
+#include <QPageLayout>
+#endif
+#include <QPrinter>
 #include <QWidget>
 
 QT_BEGIN_NAMESPACE
@@ -56,6 +62,31 @@ QT_END_NAMESPACE
 
 class PageSizeControl;
 class OptionsControl;
+
+#if QT_VERSION < 0x050300
+// Copied from class QPageLayout introduced in Qt 5.3
+namespace QPageLayout
+{
+    enum Unit {
+        Millimeter,
+        Point,
+        Inch,
+        Pica,
+        Didot,
+        Cicero
+    };
+
+    enum Orientation {
+        Portrait,
+        Landscape
+    };
+
+    enum Mode {
+        StandardMode,  // Paint Rect includes margins
+        FullPageMode   // Paint Rect excludes margins
+    };
+}
+#endif
 
 class PrintDialogPanel  : public QWidget
 {
@@ -70,25 +101,30 @@ private slots:
     void showPrintDialog();
     void showPreviewDialog();
     void showPageSetupDialog();
-    void enableCustomSizeControl();
+    void unitsChanged();
+    void pageSizeChanged();
+    void pageDimensionsChanged();
+    void orientationChanged();
+    void marginsChanged();
+    void layoutModeChanged();
+    void printerChanged();
 
 private:
+    QSizeF customPageSize() const;
     void applySettings(QPrinter *printer) const;
     void retrieveSettings(const QPrinter *printer);
+    void updatePageLayoutWidgets();
     void enablePanels();
 
-    QGroupBox *m_creationGroupBox;
-    QPushButton *m_createButton;
-    QPushButton *m_deleteButton;
-    QGroupBox *m_settingsGroupBox;
-    QCheckBox *m_fullPageCheckBox;
-    QGroupBox *m_dialogsGroupBox;
-    OptionsControl *m_printDialogOptionsControl;
-    QComboBox *m_printDialogRangeCombo;
-    QComboBox *m_modeCombo;
-    QComboBox *m_orientationCombo;
-    QComboBox *m_pageSizeCombo;
-    PageSizeControl *m_customPageSizeControl;
+    bool m_blockSignals;
+    Ui::PrintDialogPanel m_panel;
+
+#if QT_VERSION >= 0x050300
+    QPageLayout m_pageLayout;
+#else
+    QPrinter m_printerLayout;
+    QPrinter::Unit m_units;
+#endif
     QScopedPointer<QPrinter> m_printer;
 };
 

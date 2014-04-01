@@ -81,7 +81,7 @@ QT_BEGIN_NAMESPACE
     multisampling. Most hardware require significantly more memory to
     do multisampling and the resulting quality is not on par with the
     quality of the software paint engine. The OpenGL paint engine's
-    strenght lies in its performance, not its visual rendering
+    strength lies in its performance, not its visual rendering
     quality.
 
     \section1 State Changes

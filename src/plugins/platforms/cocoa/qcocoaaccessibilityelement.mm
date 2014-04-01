@@ -417,7 +417,23 @@
 }
 
 - (id)accessibilityFocusedUIElement {
-    return NSAccessibilityUnignoredAncestor(self);
+    QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
+
+    if (!iface || !iface->isValid()) {
+        qWarning() << "FocusedUIElement for INVALID";
+        return nil;
+    }
+    QAccessibleInterface *childInterface = iface->focusChild();
+    if (childInterface) {
+        QAccessible::Id childAxid = QAccessible::uniqueId(childInterface);
+        // FIXME: parent could be wrong
+        QCocoaAccessibleElement *accessibleElement = [QCocoaAccessibleElement createElementWithId:childAxid parent:self];
+        [accessibleElement autorelease];
+        return accessibleElement;
+    }
+
+    // no focus found
+    return nil;
 }
 
 @end

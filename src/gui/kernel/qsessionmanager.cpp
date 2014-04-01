@@ -201,7 +201,7 @@ QString QSessionManager::sessionKey() const
     Here's an example of how an application's QGuiApplication::commitDataRequest()
     might be implemented:
 
-    \snippet code/src_gui_kernel_qguiapplication.cpp 8
+    \snippet code/src_gui_kernel_qguiapplication.cpp 1
 
     If an error occurred within the application while saving its data, you may
     want to try allowsErrorInteraction() instead.
@@ -293,7 +293,7 @@ QSessionManager::RestartHint QSessionManager::restartHint() const
     If the session manager is capable of restoring sessions it will execute
     \a command in order to restore the application. The command defaults to
 
-    \snippet code/src_gui_kernel_qguiapplication.cpp 9
+    \snippet code/src_gui_kernel_qguiapplication.cpp 2
 
     The \c -session option is mandatory; otherwise QGuiApplication cannot
     tell whether it has been restored or what the current session identifier
@@ -321,7 +321,7 @@ void QSessionManager::setRestartCommand(const QStringList &command)
 
     To iterate over the list, you can use the \l foreach pseudo-keyword:
 
-    \snippet code/src_gui_kernel_qguiapplication.cpp 10
+    \snippet code/src_gui_kernel_qguiapplication.cpp 3
 
     \sa setRestartCommand(), restartHint()
 */
@@ -347,7 +347,7 @@ void QSessionManager::setDiscardCommand(const QStringList &command)
 
     To iterate over the list, you can use the \l foreach pseudo-keyword:
 
-    \snippet code/src_gui_kernel_qguiapplication.cpp 11
+    \snippet code/src_gui_kernel_qguiapplication.cpp 4
 
     \sa setDiscardCommand(), restartCommand(), setRestartCommand()
 */

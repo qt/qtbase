@@ -37,6 +37,7 @@ exampledirs += \
                snippets \
                ../../../examples/threads/ \
                ../../../examples/tools/ \
+               ../../../examples/ipc/ \
                ../../../examples/json/ \
                ../../../examples/network/dnslookup
 

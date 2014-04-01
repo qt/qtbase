@@ -349,11 +349,11 @@ QXmlStreamEntityResolver *QXmlStreamReader::entityResolver() const
   \l{QNetworkAccessManager} {network access manager}, you would issue
   a \l{QNetworkRequest} {network request} to the manager and receive a
   \l{QNetworkReply} {network reply} in return. Since a QNetworkReply
-  is a QIODevice, you connect its \l{QNetworkReply::readyRead()}
+  is a QIODevice, you connect its \l{QIODevice::readyRead()}
   {readyRead()} signal to a custom slot, e.g. \c{slotReadyRead()} in
   the code snippet shown in the discussion for QNetworkAccessManager.
   In this slot, you read all available data with
-  \l{QNetworkReply::readAll()} {readAll()} and pass it to the XML
+  \l{QIODevice::readAll()} {readAll()} and pass it to the XML
   stream reader using addData(). Then you call your custom parsing
   function that reads the XML events from the reader.
 

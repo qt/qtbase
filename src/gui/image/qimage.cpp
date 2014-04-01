@@ -611,7 +611,7 @@ bool QImageData::checkForAlphaPixels() const
 */
 
 /*!
-    \fn QImage &operator=(QImage &&other)
+    \fn QImage &QImage::operator=(QImage &&other)
 
     Move-assigns \a other to this QImage instance.
 

@@ -531,7 +531,7 @@ static const int scriptForWritingSystem[] = {
 
 Q_STATIC_ASSERT(sizeof(scriptForWritingSystem) / sizeof(scriptForWritingSystem[0]) == QFontDatabase::WritingSystemsCount);
 
-int qt_script_for_writing_system(QFontDatabase::WritingSystem writingSystem)
+Q_GUI_EXPORT int qt_script_for_writing_system(QFontDatabase::WritingSystem writingSystem)
 {
     return scriptForWritingSystem[writingSystem];
 }

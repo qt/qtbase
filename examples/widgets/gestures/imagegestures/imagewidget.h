@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -52,6 +52,8 @@ class QPinchGesture;
 class QSwipeGesture;
 QT_END_NAMESPACE
 
+Q_DECLARE_LOGGING_CATEGORY(lcExample)
+
 //! [class definition begin]
 class ImageWidget : public QWidget
 {
@@ -60,6 +62,7 @@ class ImageWidget : public QWidget
 public:
     ImageWidget(QWidget *parent = 0);
     void openDirectory(const QString &path);
+    void grabGestures(const QList<Qt::GestureType> &gestures);
 
 protected:
     bool event(QEvent *event);
@@ -88,11 +91,11 @@ private:
     QImage prevImage, nextImage;
     QImage currentImage;
 
-    float horizontalOffset;
-    float verticalOffset;
-    float rotationAngle;
-    float scaleFactor;
-    float currentStepScaleFactor;
+    qreal horizontalOffset;
+    qreal verticalOffset;
+    qreal rotationAngle;
+    qreal scaleFactor;
+    qreal currentStepScaleFactor;
 //! [class definition end]
 };
 //! [class definition end]

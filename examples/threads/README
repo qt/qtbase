@@ -1,9 +1,7 @@
-Qt 4 makes it easier than ever to write multithreaded applications. More
-classes have been made usable from non-GUI threads, and the signals and slots
-mechanism can now be used to communicate between threads.
+This folder contains examples for the use of the threading-related classes
+in Qt Core. For examples using the higher-level Qt Concurrent module,
+check out the "qtconcurrent" folder instead.
 
-Additionally, it is now possible to move objects between threads.
-
-
-Documentation for these examples can be found via the Examples
-link in the main Qt documentation.
+Documentation for examples can be found via the Examples and Tutorials link
+in the main Qt documentation. The examples and their documentation can also
+be opened from the Examples tab of Qt Creator's Welcome mode.

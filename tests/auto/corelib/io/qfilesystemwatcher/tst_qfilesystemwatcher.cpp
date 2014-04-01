@@ -324,6 +324,9 @@ void tst_QFileSystemWatcher::watchDirectory()
     fileName = changedSpy.at(1).at(0).toString();
     QCOMPARE(fileName, testDir.absolutePath());
 
+    // flush pending signals (like the one from the rmdir above)
+    timer.start(5000);
+    eventLoop.exec();
     changedSpy.clear();
 
     // recreate the file, we should not get any notification

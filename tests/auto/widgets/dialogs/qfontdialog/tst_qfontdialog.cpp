@@ -66,6 +66,7 @@ public slots:
     void postKeyReturn();
     void testGetFont();
     void testSetFont();
+    void testNonStandardFontSize();
 
 public slots:
     void initTestCase();
@@ -76,6 +77,7 @@ private slots:
     void defaultOkButton();
     void setFont();
     void task256466_wrongStyle();
+    void setNonStandardFontSize();
 
 private:
     void runSlotWithFailsafeTimer(const char *member);
@@ -203,8 +205,38 @@ void tst_QFontDialog::task256466_wrongStyle()
     }
 }
 
+void tst_QFontDialog::setNonStandardFontSize()
+{
+    runSlotWithFailsafeTimer(SLOT(testNonStandardFontSize()));
+}
 
+void tst_QFontDialog::testNonStandardFontSize()
+{
+    QList<int> standardSizesList = QFontDatabase::standardSizes();
+    int nonStandardFontSize;
+    if (!standardSizesList.isEmpty()) {
+        nonStandardFontSize = standardSizesList.at(standardSizesList.count()-1); // get the maximum standard size.
+        nonStandardFontSize += 1; // the increment of 1 to mock a non-standard font size.
+    } else {
+        QSKIP("QFontDatabase::standardSizes() is empty.");
+    }
 
+    QFont testFont;
+    testFont.setPointSize(nonStandardFontSize);
+
+    bool accepted = false;
+    QTimer::singleShot(2000, this, SLOT(postKeyReturn()));
+    QFont resultFont = QFontDialog::getFont(&accepted, testFont,
+        QApplication::activeWindow(),
+        QLatin1String("QFontDialog - NonStandardFontSize Test"),
+        QFontDialog::DontUseNativeDialog);
+    QVERIFY(accepted);
+
+    if (accepted)
+        QCOMPARE(testFont.pointSize(), resultFont.pointSize());
+    else
+        QWARN("Fail using a non-standard font size.");
+}
 
 QTEST_MAIN(tst_QFontDialog)
 #include "tst_qfontdialog.moc"

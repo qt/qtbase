@@ -120,7 +120,7 @@ public class QtActivityDelegate
 
     private boolean m_keyboardIsVisible = false;
     public boolean m_backKeyPressedSent = false;
-
+    private long m_showHideTimeStamp = System.nanoTime();
 
     public void setFullScreen(boolean enterFullScreen)
     {
@@ -201,12 +201,18 @@ public class QtActivityDelegate
     private final int ApplicationInactive = 0x2;
     private final int ApplicationActive = 0x4;
 
-    public void setKeyboardVisibility(boolean visibility)
+
+    public boolean setKeyboardVisibility(boolean visibility, long timeStamp)
     {
+        if (m_showHideTimeStamp > timeStamp)
+            return false;
+        m_showHideTimeStamp = timeStamp;
+
         if (m_keyboardIsVisible == visibility)
-            return;
+            return false;
         m_keyboardIsVisible = visibility;
         QtNative.keyboardVisibilityChanged(m_keyboardIsVisible);
+        return true;
     }
     public void resetSoftwareKeyboard()
     {
@@ -304,11 +310,11 @@ public class QtActivityDelegate
                                 QtNativeInputConnection.updateCursorPosition();
                                 //FALLTHROUGH
                             case InputMethodManager.RESULT_UNCHANGED_SHOWN:
-                                setKeyboardVisibility(true);
+                                setKeyboardVisibility(true, System.nanoTime());
                                 break;
                             case InputMethodManager.RESULT_HIDDEN:
                             case InputMethodManager.RESULT_UNCHANGED_HIDDEN:
-                                setKeyboardVisibility(false);
+                                setKeyboardVisibility(false, System.nanoTime());
                                 break;
                         }
                     }
@@ -331,11 +337,11 @@ public class QtActivityDelegate
                 switch (resultCode) {
                     case InputMethodManager.RESULT_SHOWN:
                     case InputMethodManager.RESULT_UNCHANGED_SHOWN:
-                        setKeyboardVisibility(true);
+                        setKeyboardVisibility(true, System.nanoTime());
                         break;
                     case InputMethodManager.RESULT_HIDDEN:
                     case InputMethodManager.RESULT_UNCHANGED_HIDDEN:
-                        setKeyboardVisibility(false);
+                        setKeyboardVisibility(false, System.nanoTime());
                         break;
                 }
             }
@@ -827,7 +833,7 @@ public class QtActivityDelegate
 
         if (keyCode == KeyEvent.KEYCODE_BACK && !m_backKeyPressedSent) {
             hideSoftwareKeyboard();
-            setKeyboardVisibility(false);
+            setKeyboardVisibility(false, System.nanoTime());
             return true;
         }
 

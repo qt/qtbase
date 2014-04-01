@@ -183,6 +183,7 @@ public:
     void windowWillMove();
     void windowDidMove();
     void windowDidResize();
+    void windowDidEndLiveResize();
     bool windowShouldClose();
     bool windowIsPopupType(Qt::WindowType type = Qt::Widget) const;
 
@@ -252,6 +253,7 @@ public: // for QNSView
     QList<QCocoaWindow *> m_childWindows;
 
     Qt::WindowFlags m_windowFlags;
+    bool m_effectivelyMaximized;
     Qt::WindowState m_synchedWindowState;
     Qt::WindowModality m_windowModality;
     QPointer<QWindow> m_activePopupWindow;

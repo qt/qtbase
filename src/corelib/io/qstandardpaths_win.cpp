@@ -49,6 +49,10 @@
 #include <qcoreapplication.h>
 #endif
 
+#if !defined(Q_OS_WINCE)
+const GUID qCLSID_FOLDERID_Downloads = { 0x374de290, 0x123f, 0x4565, { 0x91, 0x64,  0x39,  0xc4,  0x92,  0x5e,  0x46,  0x7b } };
+#endif
+
 #include <qt_windows.h>
 #include <shlobj.h>
 #if !defined(Q_OS_WINCE)
@@ -68,6 +72,10 @@
 
 QT_BEGIN_NAMESPACE
 
+#if !defined(Q_OS_WINCE)
+typedef HRESULT (WINAPI *GetKnownFolderPath)(const GUID&, DWORD, HANDLE, LPWSTR*);
+#endif
+
 static QString convertCharArray(const wchar_t *path)
 {
     return QDir::fromNativeSeparators(QString::fromWCharArray(path));
@@ -76,6 +84,10 @@ static QString convertCharArray(const wchar_t *path)
 QString QStandardPaths::writableLocation(StandardLocation type)
 {
     QString result;
+
+#if !defined(Q_OS_WINCE)
+    static GetKnownFolderPath SHGetKnownFolderPath = (GetKnownFolderPath)QSystemLibrary::resolve(QLatin1String("shell32"), "SHGetKnownFolderPath");
+#endif
 
     wchar_t path[MAX_PATH];
 
@@ -107,7 +119,18 @@ QString QStandardPaths::writableLocation(StandardLocation type)
             result = convertCharArray(path);
         break;
 
-    case DownloadLocation: // TODO implement with SHGetKnownFolderPath(FOLDERID_Downloads) (starting from Vista)
+    case DownloadLocation:
+#if !defined(Q_OS_WINCE)
+        if (SHGetKnownFolderPath) {
+            LPWSTR path;
+            if (SHGetKnownFolderPath(qCLSID_FOLDERID_Downloads, 0, 0, &path) == S_OK) {
+                result = convertCharArray(path);
+                CoTaskMemFree(path);
+            }
+            break;
+        }
+#endif
+        // fall through
     case DocumentsLocation:
         if (SHGetSpecialFolderPath(0, path, CSIDL_PERSONAL, FALSE))
             result = convertCharArray(path);

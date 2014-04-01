@@ -50,6 +50,7 @@
 #include <QtCore/QString>
 #include <QtCore/QDir>
 #include <QtCore/QThread>
+#include <QtCore/QSysInfo>
 #include <QtGui/QKeySequence>
 
 #include <cctype>
@@ -73,9 +74,29 @@ Q_DECLARE_METATYPE(QSettings::Format)
 
 QT_FORWARD_DECLARE_CLASS(QSettings)
 
+static inline bool canWriteNativeSystemSettings()
+{
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+    HKEY key;
+    const LONG result = RegOpenKeyEx(HKEY_LOCAL_MACHINE, L"Software", 0, KEY_WRITE, &key);
+    if (result == ERROR_SUCCESS)
+        RegCloseKey(key);
+    else
+        qErrnoWarning(result, "RegOpenKeyEx failed");
+    return result == ERROR_SUCCESS;
+#else // Q_OS_WIN && !Q_OS_WINRT
+    return true;
+#endif
+}
+
+static const char insufficientPermissionSkipMessage[] = "Insufficient permissions for this test.";
+
 class tst_QSettings : public QObject
 {
     Q_OBJECT
+
+public:
+    tst_QSettings() : m_canWriteNativeSystemSettings(canWriteNativeSystemSettings()) {}
 
 public slots:
     void initTestCase();
@@ -145,6 +166,9 @@ private slots:
 
     void testByteArray_data();
     void testByteArray();
+
+private:
+    const bool m_canWriteNativeSystemSettings;
 };
 
 // Testing get/set functions
@@ -259,6 +283,8 @@ static void populateWithFormats()
 
 void tst_QSettings::initTestCase()
 {
+    if (!m_canWriteNativeSystemSettings)
+        qWarning("The test is not running with administrative rights. Some tests will be skipped.");
     QSettings::Format custom1 = QSettings::registerFormat("custom1", readCustom1File, writeCustom1File);
     QSettings::Format custom2 = QSettings::registerFormat("custom2", readCustom2File, writeCustom2File
 #ifndef QT_QSETTINGS_ALWAYS_CASE_SENSITIVE_AND_FORGET_ORIGINAL_KEY_ORDER
@@ -276,17 +302,19 @@ void tst_QSettings::init()
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     QSettings("HKEY_CURRENT_USER\\Software\\software.org", QSettings::NativeFormat).clear();
-    QSettings("HKEY_LOCAL_MACHINE\\Software\\software.org", QSettings::NativeFormat).clear();
     QSettings("HKEY_CURRENT_USER\\Software\\other.software.org", QSettings::NativeFormat).clear();
-    QSettings("HKEY_LOCAL_MACHINE\\Software\\other.software.org", QSettings::NativeFormat).clear();
     QSettings("HKEY_CURRENT_USER\\Software\\foo", QSettings::NativeFormat).clear();
     QSettings("HKEY_CURRENT_USER\\Software\\bar", QSettings::NativeFormat).clear();
     QSettings("HKEY_CURRENT_USER\\Software\\bat", QSettings::NativeFormat).clear();
     QSettings("HKEY_CURRENT_USER\\Software\\baz", QSettings::NativeFormat).clear();
-    QSettings("HKEY_LOCAL_MACHINE\\Software\\foo", QSettings::NativeFormat).clear();
-    QSettings("HKEY_LOCAL_MACHINE\\Software\\bar", QSettings::NativeFormat).clear();
-    QSettings("HKEY_LOCAL_MACHINE\\Software\\bat", QSettings::NativeFormat).clear();
-    QSettings("HKEY_LOCAL_MACHINE\\Software\\baz", QSettings::NativeFormat).clear();
+    if (m_canWriteNativeSystemSettings) {
+        QSettings("HKEY_LOCAL_MACHINE\\Software\\software.org", QSettings::NativeFormat).clear();
+        QSettings("HKEY_LOCAL_MACHINE\\Software\\other.software.org", QSettings::NativeFormat).clear();
+        QSettings("HKEY_LOCAL_MACHINE\\Software\\foo", QSettings::NativeFormat).clear();
+        QSettings("HKEY_LOCAL_MACHINE\\Software\\bar", QSettings::NativeFormat).clear();
+        QSettings("HKEY_LOCAL_MACHINE\\Software\\bat", QSettings::NativeFormat).clear();
+        QSettings("HKEY_LOCAL_MACHINE\\Software\\baz", QSettings::NativeFormat).clear();
+    }
     if (QDir(settingsPath()).exists()) {
 #if defined(Q_OS_WINCE)
         removePath(settingsPath());
@@ -333,6 +361,9 @@ void tst_QSettings::ctor_data()
 void tst_QSettings::ctor()
 {
     QFETCH(QSettings::Format, format);
+
+    if (!m_canWriteNativeSystemSettings && format == QSettings::NativeFormat)
+        QSKIP(insufficientPermissionSkipMessage);
 
     {
         QSettings settings1(format, QSettings::UserScope, "software.org", "KillerAPP");
@@ -1263,43 +1294,55 @@ void tst_QSettings::remove()
 
     QSettings settings1(QSettings::UserScope, "software.org", "KillerAPP");
     QSettings settings2(QSettings::UserScope, "software.org");
-    QSettings settings3(QSettings::SystemScope, "software.org", "KillerAPP");
-    QSettings settings4(QSettings::SystemScope, "software.org");
 
-    settings4.setValue("key 1", "doodah");
-    settings3.setValue("key 1", "blah");
+    QScopedPointer<QSettings> settings3;
+    QScopedPointer<QSettings> settings4;
+
+    if (m_canWriteNativeSystemSettings) {
+        settings3.reset(new QSettings(QSettings::SystemScope, "software.org", "KillerAPP"));
+        settings4.reset(new QSettings(QSettings::SystemScope, "software.org"));
+        settings3->setValue("key 1", "blah");
+        settings4->setValue("key 1", "doodah");
+    }
+
     settings2.setValue("key 1", "whoa");
     settings1.setValue("key 1", "gurgle");
     QCOMPARE(settings1.value("key 1").toString(), QString("gurgle"));
     QCOMPARE(settings2.value("key 1").toString(), QString("whoa"));
 
 #if !defined(Q_OS_BLACKBERRY)
-    QCOMPARE(settings3.value("key 1").toString(), QString("blah"));
-    QCOMPARE(settings4.value("key 1").toString(), QString("doodah"));
+    if (m_canWriteNativeSystemSettings) {
+        QCOMPARE(settings3->value("key 1").toString(), QString("blah"));
+        QCOMPARE(settings4->value("key 1").toString(), QString("doodah"));
+    }
 
     settings1.remove("key 1");
     QCOMPARE(settings1.value("key 1").toString(), QString("whoa"));
     QCOMPARE(settings2.value("key 1").toString(), QString("whoa"));
-    QCOMPARE(settings3.value("key 1").toString(), QString("blah"));
-    QCOMPARE(settings4.value("key 1").toString(), QString("doodah"));
+    if (m_canWriteNativeSystemSettings) {
+        QCOMPARE(settings3->value("key 1").toString(), QString("blah"));
+        QCOMPARE(settings4->value("key 1").toString(), QString("doodah"));
+    }
 
-    settings2.remove("key 1");
-    QCOMPARE(settings1.value("key 1").toString(), QString("blah"));
-    QCOMPARE(settings2.value("key 1").toString(), QString("doodah"));
-    QCOMPARE(settings3.value("key 1").toString(), QString("blah"));
-    QCOMPARE(settings4.value("key 1").toString(), QString("doodah"));
+    if (m_canWriteNativeSystemSettings) {
+        settings2.remove("key 1");
+        QCOMPARE(settings1.value("key 1").toString(), QString("blah"));
+        QCOMPARE(settings2.value("key 1").toString(), QString("doodah"));
+        QCOMPARE(settings3->value("key 1").toString(), QString("blah"));
+        QCOMPARE(settings4->value("key 1").toString(), QString("doodah"));
 
-    settings3.remove("key 1");
-    QCOMPARE(settings1.value("key 1").toString(), QString("doodah"));
-    QCOMPARE(settings2.value("key 1").toString(), QString("doodah"));
-    QCOMPARE(settings3.value("key 1").toString(), QString("doodah"));
-    QCOMPARE(settings4.value("key 1").toString(), QString("doodah"));
+        settings3->remove("key 1");
+        QCOMPARE(settings1.value("key 1").toString(), QString("doodah"));
+        QCOMPARE(settings2.value("key 1").toString(), QString("doodah"));
+        QCOMPARE(settings3->value("key 1").toString(), QString("doodah"));
+        QCOMPARE(settings4->value("key 1").toString(), QString("doodah"));
 
-    settings4.remove("key 1");
-    QVERIFY(!settings1.contains("key 1"));
-    QVERIFY(!settings2.contains("key 1"));
-    QVERIFY(!settings3.contains("key 1"));
-    QVERIFY(!settings4.contains("key 1"));
+        settings4->remove("key 1");
+        QVERIFY(!settings1.contains("key 1"));
+        QVERIFY(!settings2.contains("key 1"));
+        QVERIFY(!settings3->contains("key 1"));
+        QVERIFY(!settings4->contains("key 1"));
+    }
 #else
     settings1.remove("key 1");
     QCOMPARE(settings2.value("key 1").toString(), QString("whoa"));
@@ -1315,13 +1358,18 @@ void tst_QSettings::remove()
 
     settings1.clear();
     settings2.clear();
-    settings3.clear();
-    settings4.clear();
+    if (m_canWriteNativeSystemSettings) {
+        settings3->clear();
+        settings4->clear();
+    }
 
     settings1.sync();
     settings2.sync();
-    settings3.sync();
-    settings4.sync();
+
+    if (m_canWriteNativeSystemSettings) {
+        settings3->sync();
+        settings4->sync();
+    }
 
     /*
       Check that recursive removes work correctly when some of the
@@ -1555,6 +1603,9 @@ void tst_QSettings::setFallbacksEnabled_data()
 void tst_QSettings::setFallbacksEnabled()
 {
     QFETCH(QSettings::Format, format);
+
+    if (!m_canWriteNativeSystemSettings && format == QSettings::NativeFormat)
+        QSKIP(insufficientPermissionSkipMessage);
 
     QSettings settings1(format, QSettings::UserScope, "software.org", "KillerAPP");
     QSettings settings2(format, QSettings::UserScope, "software.org");
@@ -2747,10 +2798,30 @@ void tst_QSettings::isWritable()
         QSettings s1(format, QSettings::SystemScope, "software.org", "KillerAPP");
         QSettings s2(format, QSettings::SystemScope, "software.org", "Something Different");
         QSettings s3(format, QSettings::SystemScope, "foo.org", "Something Different");
+
         if (s1.contains("foo")) {
-            QVERIFY(s1.isWritable());
-            QVERIFY(s2.isWritable());
-            QVERIFY(s3.isWritable());
+#if defined(Q_OS_MACX)
+            if (QSysInfo::macVersion() >= QSysInfo::MV_10_9) {
+                QVERIFY(s1.isWritable());
+                if (format == QSettings::NativeFormat) {
+                    QVERIFY(!s2.isWritable());
+                    QVERIFY(!s3.isWritable());
+                } else {
+                    QVERIFY(s2.isWritable());
+                    QVERIFY(s3.isWritable());
+                }
+            } else if (QSysInfo::macVersion() >= QSysInfo::MV_10_7 &&
+                       format == QSettings::NativeFormat) {
+                QVERIFY(!s1.isWritable());
+                QVERIFY(!s2.isWritable());
+                QVERIFY(!s3.isWritable());
+            } else
+#endif
+            {
+                QVERIFY(s1.isWritable());
+                QVERIFY(s2.isWritable());
+                QVERIFY(s3.isWritable());
+            }
         } else {
             QVERIFY(!s1.isWritable());
             QVERIFY(!s2.isWritable());
@@ -2771,8 +2842,10 @@ void tst_QSettings::childGroups()
 {
     QFETCH(QSettings::Format, format);
 
+    const QSettings::Scope scope = m_canWriteNativeSystemSettings ? QSettings::SystemScope : QSettings::UserScope;
+
     {
-        QSettings settings(format, QSettings::SystemScope, "software.org");
+        QSettings settings(format, scope, "software.org");
         settings.setValue("alpha", "1");
         settings.setValue("alpha/a", "2");
         settings.setValue("alpha/b", "3");
@@ -2789,7 +2862,7 @@ void tst_QSettings::childGroups()
 
     for (int pass = 0; pass < 3; ++pass) {
         QConfFile::clearCache();
-        QSettings settings(format, QSettings::SystemScope, "software.org");
+        QSettings settings(format, scope, "software.org");
         settings.setFallbacksEnabled(false);
         if (pass == 1) {
             settings.value("gamma/d");
@@ -2837,8 +2910,10 @@ void tst_QSettings::childKeys()
 {
     QFETCH(QSettings::Format, format);
 
+    const QSettings::Scope scope = m_canWriteNativeSystemSettings ? QSettings::SystemScope : QSettings::UserScope;
+
     {
-        QSettings settings(format, QSettings::SystemScope, "software.org");
+        QSettings settings(format, scope, "software.org");
         settings.setValue("alpha", "1");
         settings.setValue("alpha/a", "2");
         settings.setValue("alpha/b", "3");
@@ -2855,7 +2930,7 @@ void tst_QSettings::childKeys()
 
     for (int pass = 0; pass < 3; ++pass) {
         QConfFile::clearCache();
-        QSettings settings(format, QSettings::SystemScope, "software.org");
+        QSettings settings(format, scope, "software.org");
         settings.setFallbacksEnabled(false);
         if (pass == 1) {
             settings.value("gamma/d");
@@ -2907,15 +2982,17 @@ void tst_QSettings::allKeys()
     allKeys << "alpha" << "alpha/a" << "alpha/b" << "alpha/c" << "beta" << "gamma" << "gamma/d"
             << "gamma/d/e" << "gamma/f/g" << "omicron/h/i/j/x" << "omicron/h/i/k/y" << "zeta/z";
 
+    const QSettings::Scope scope = m_canWriteNativeSystemSettings ? QSettings::SystemScope : QSettings::UserScope;
+
     {
-        QSettings settings(format, QSettings::SystemScope, "software.org");
+        QSettings settings(format, scope, "software.org");
         for (int i = 0; i < allKeys.size(); ++i)
             settings.setValue(allKeys.at(i), QString::number(i + 1));
     }
 
     for (int pass = 0; pass < 3; ++pass) {
         QConfFile::clearCache();
-        QSettings settings(format, QSettings::SystemScope, "software.org");
+        QSettings settings(format, scope, "software.org");
         settings.setFallbacksEnabled(false);
 
         if (pass == 1) {

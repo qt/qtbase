@@ -147,7 +147,6 @@ private:
     QString sybase;
     QString sybaseLibs;
 
-    QMap<QString,QString> licenseInfo;
     QString outputLine;
 
     QTextStream outStream;

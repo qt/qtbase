@@ -70,6 +70,35 @@ static jfieldID m_selectionStartFieldID = 0;
 static jfieldID m_startOffsetFieldID = 0;
 static jfieldID m_textFieldID = 0;
 
+static jboolean beginBatchEdit(JNIEnv */*env*/, jobject /*thiz*/)
+{
+    if (!m_androidInputContext)
+        return JNI_FALSE;
+
+#ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
+    qDebug() << "@@@ BEGINBATCH";
+#endif
+
+    return m_androidInputContext->beginBatchEdit();
+
+    return JNI_TRUE;
+}
+
+static jboolean endBatchEdit(JNIEnv */*env*/, jobject /*thiz*/)
+{
+    if (!m_androidInputContext)
+        return JNI_FALSE;
+
+#ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
+    qDebug() << "@@@ ENDBATCH";
+#endif
+
+    return m_androidInputContext->endBatchEdit();
+
+    return JNI_TRUE;
+}
+
+
 static jboolean commitText(JNIEnv *env, jobject /*thiz*/, jstring text, jint newCursorPosition)
 {
     if (!m_androidInputContext)
@@ -121,11 +150,12 @@ static jobject getExtractedText(JNIEnv *env, jobject /*thiz*/, int hintMaxChars,
     if (!m_androidInputContext)
         return 0;
 
-#ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
-    qDebug() << "@@@ GETEX";
-#endif
     const QAndroidInputContext::ExtractedText &extractedText =
             m_androidInputContext->getExtractedText(hintMaxChars, hintMaxLines, flags);
+
+#ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
+    qDebug() << "@@@ GETEX" << hintMaxChars << hintMaxLines << QString::fromLatin1("0x") + QString::number(flags,16) << extractedText.text << "partOff:" << extractedText.partialStartOffset << extractedText.partialEndOffset << "sel:" << extractedText.selectionStart << extractedText.selectionEnd << "offset:" << extractedText.startOffset;
+#endif
 
     jobject object = env->NewObject(m_extractedTextClass, m_classConstructorMethodID);
     env->SetIntField(object, m_partialStartOffsetFieldID, extractedText.partialStartOffset);
@@ -285,6 +315,8 @@ static jboolean updateCursorPosition(JNIEnv */*env*/, jobject /*thiz*/)
 
 
 static JNINativeMethod methods[] = {
+    {"beginBatchEdit", "()Z", (void *)beginBatchEdit},
+    {"endBatchEdit", "()Z", (void *)endBatchEdit},
     {"commitText", "(Ljava/lang/String;I)Z", (void *)commitText},
     {"deleteSurroundingText", "(II)Z", (void *)deleteSurroundingText},
     {"finishComposingText", "()Z", (void *)finishComposingText},
@@ -306,7 +338,7 @@ static JNINativeMethod methods[] = {
 
 
 QAndroidInputContext::QAndroidInputContext()
-    : QPlatformInputContext(), m_blockUpdateSelection(false)
+    : QPlatformInputContext(), m_blockUpdateSelection(false), m_batchEditNestingLevel(0)
 {
     QtAndroid::AttachedJNIEnv env;
     if (!env.jniEnv)
@@ -416,11 +448,14 @@ void QAndroidInputContext::commit()
 void QAndroidInputContext::updateCursorPosition()
 {
     QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery();
-    if (!query.isNull() && !m_blockUpdateSelection) {
+    if (!query.isNull() && !m_blockUpdateSelection && !m_batchEditNestingLevel) {
         // make sure it also works with editors that have not been updated to the new API
         QVariant absolutePos = query->value(Qt::ImAbsolutePosition);
         const int cursorPos = absolutePos.isValid() ? absolutePos.toInt() : query->value(Qt::ImCursorPosition).toInt();
-        QtAndroidInput::updateSelection(cursorPos, cursorPos, -1, -1); //selection empty and no pre-edit text
+        const int composeLength = m_composingText.length();
+        const int composeStart = composeLength ? cursorPos : -1;
+        QtAndroidInput::updateSelection(cursorPos + composeLength, cursorPos + composeLength, //empty selection
+                                        composeStart, composeStart + composeLength); // pre-edit text
     }
 }
 
@@ -507,6 +542,19 @@ void QAndroidInputContext::sendEvent(QObject *receiver, QInputMethodQueryEvent *
     QCoreApplication::sendEvent(receiver, event);
 }
 
+jboolean QAndroidInputContext::beginBatchEdit()
+{
+    ++m_batchEditNestingLevel;
+    return JNI_TRUE;
+}
+
+jboolean QAndroidInputContext::endBatchEdit()
+{
+    if (--m_batchEditNestingLevel == 0 && !m_blockUpdateSelection) //ending batch edit mode
+        updateCursorPosition();
+    return JNI_TRUE;
+}
+
 jboolean QAndroidInputContext::commitText(const QString &text, jint /*newCursorPosition*/)
 {
     m_composingText = text;
@@ -559,19 +607,39 @@ jint QAndroidInputContext::getCursorCapsMode(jint /*reqModes*/)
 
 const QAndroidInputContext::ExtractedText &QAndroidInputContext::getExtractedText(jint hintMaxChars, jint /*hintMaxLines*/, jint /*flags*/)
 {
+    // Note to self: "if the GET_EXTRACTED_TEXT_MONITOR flag is set, you should be calling
+    // updateExtractedText(View, int, ExtractedText) whenever you call
+    // updateSelection(View, int, int, int, int)."  QTBUG-37980
+
     QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery();
     if (query.isNull())
         return m_extractedText;
 
-    if (hintMaxChars)
-        m_extractedText.text = query->value(Qt::ImSurroundingText).toString().right(hintMaxChars);
+    int localPos = query->value(Qt::ImCursorPosition).toInt(); //position before pre-edit text relative to the current block
+    QVariant absolutePos = query->value(Qt::ImAbsolutePosition);
+    int blockPos = absolutePos.isValid() ? absolutePos.toInt() - localPos : 0; // position of the start of the current block
+    QString blockText = query->value(Qt::ImSurroundingText).toString() + m_composingText;
+    int composeLength = m_composingText.length();
 
-    m_extractedText.startOffset = query->value(Qt::ImCursorPosition).toInt();
+    int cpos = localPos + composeLength; //actual cursor pos relative to the current block
+
+    int localOffset = 0; // start of extracted text relative to the current block
+    if (hintMaxChars) {
+        if (cpos > hintMaxChars)
+            localOffset = cpos - hintMaxChars;
+        m_extractedText.text = blockText.mid(localOffset, hintMaxChars);
+    }
+
+    m_extractedText.startOffset = blockPos + localOffset; // "The offset in the overall text at which the extracted text starts."
+
     const QString &selection = query->value(Qt::ImCurrentSelection).toString();
     const int selLen = selection.length();
     if (selLen) {
-        m_extractedText.selectionStart = query->value(Qt::ImAnchorPosition).toInt();
-        m_extractedText.selectionEnd = m_extractedText.startOffset;
+        m_extractedText.selectionStart = query->value(Qt::ImAnchorPosition).toInt() - localOffset;
+        m_extractedText.selectionEnd = m_extractedText.selectionStart + selLen;
+    } else {
+        m_extractedText.selectionStart = cpos - localOffset;
+        m_extractedText.selectionEnd = cpos - localOffset;
     }
 
     return m_extractedText;
@@ -610,7 +678,7 @@ QString QAndroidInputContext::getTextBeforeCursor(jint length, jint /*flags*/)
 {
     QVariant textBefore = queryFocusObjectThreadSafe(Qt::ImTextBeforeCursor, QVariant(length));
     if (textBefore.isValid()) {
-        return textBefore.toString().left(length);
+        return textBefore.toString().left(length) + m_composingText;
     }
 
     //compatibility code for old controls that do not implement the new API
@@ -624,7 +692,7 @@ QString QAndroidInputContext::getTextBeforeCursor(jint length, jint /*flags*/)
         return text;
 
     const int wordLeftPos = cursorPos - length;
-    return text.mid(wordLeftPos > 0 ? wordLeftPos : 0, cursorPos);
+    return text.mid(wordLeftPos > 0 ? wordLeftPos : 0, cursorPos) + m_composingText;
 }
 
 jboolean QAndroidInputContext::setComposingText(const QString &text, jint newCursorPosition)
@@ -647,11 +715,11 @@ jboolean QAndroidInputContext::setComposingText(const QString &text, jint newCur
     sendInputMethodEvent(&event);
 
     QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery();
-    if (!query.isNull() && !m_blockUpdateSelection) {
+    if (!query.isNull() && !m_blockUpdateSelection && !m_batchEditNestingLevel) {
         QVariant absolutePos = query->value(Qt::ImAbsolutePosition);
         const int cursorPos = absolutePos.isValid() ? absolutePos.toInt() : query->value(Qt::ImCursorPosition).toInt();
         const int preeditLength = text.length();
-        QtAndroidInput::updateSelection(cursorPos+preeditLength, cursorPos+preeditLength, cursorPos, cursorPos+preeditLength);
+        QtAndroidInput::updateSelection(cursorPos+preeditLength, cursorPos+preeditLength, -1, -1);
     }
 
     return JNI_TRUE;
@@ -713,9 +781,17 @@ jboolean QAndroidInputContext::setComposingRegion(jint start, jint end)
 
 jboolean QAndroidInputContext::setSelection(jint start, jint end)
 {
+    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery();
+    if (query.isNull())
+        return JNI_FALSE;
+
+    int localPos = query->value(Qt::ImCursorPosition).toInt();
+    QVariant absolutePos = query->value(Qt::ImAbsolutePosition);
+    int blockPosition = absolutePos.isValid() ? absolutePos.toInt() - localPos : 0;
+
     QList<QInputMethodEvent::Attribute> attributes;
     attributes.append(QInputMethodEvent::Attribute(QInputMethodEvent::Selection,
-                                                   start,
+                                                   start - blockPosition,
                                                    end - start,
                                                    QVariant()));
 

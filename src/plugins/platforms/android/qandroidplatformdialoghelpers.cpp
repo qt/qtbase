@@ -41,6 +41,9 @@
 
 #include "qandroidplatformdialoghelpers.h"
 #include "androidjnimain.h"
+
+#include <QTextDocument>
+
 #include <private/qguiapplication_p.h>
 #include <qpa/qplatformtheme.h>
 
@@ -61,6 +64,14 @@ void QAndroidPlatformMessageDialogHelper::exec()
     m_loop.exec();
 }
 
+static QString htmlText(QString text)
+{
+    if (Qt::mightBeRichText(text))
+        return text;
+    text.remove(QLatin1Char('\r'));
+    return text.toHtmlEscaped().replace(QLatin1Char('\n'), QLatin1String("<br />"));
+}
+
 bool QAndroidPlatformMessageDialogHelper::show(Qt::WindowFlags windowFlags
                                          , Qt::WindowModality windowModality
                                          , QWindow *parent)
@@ -74,19 +85,19 @@ bool QAndroidPlatformMessageDialogHelper::show(Qt::WindowFlags windowFlags
 
     m_javaMessageDialog.callMethod<void>("setIcon", "(I)V", opt->icon());
 
-    QString str = opt->windowTitle();
+    QString str = htmlText(opt->windowTitle());
     if (!str.isEmpty())
         m_javaMessageDialog.callMethod<void>("setTile", "(Ljava/lang/String;)V", QJNIObjectPrivate::fromString(str).object());
 
-    str = opt->text();
+    str = htmlText(opt->text());
     if (!str.isEmpty())
         m_javaMessageDialog.callMethod<void>("setText", "(Ljava/lang/String;)V", QJNIObjectPrivate::fromString(str).object());
 
-    str = opt->informativeText();
+    str = htmlText(opt->informativeText());
     if (!str.isEmpty())
         m_javaMessageDialog.callMethod<void>("setInformativeText", "(Ljava/lang/String;)V", QJNIObjectPrivate::fromString(str).object());
 
-    str = opt->detailedText();
+    str = htmlText(opt->detailedText());
     if (!str.isEmpty())
         m_javaMessageDialog.callMethod<void>("setDetailedText", "(Ljava/lang/String;)V", QJNIObjectPrivate::fromString(str).object());
 

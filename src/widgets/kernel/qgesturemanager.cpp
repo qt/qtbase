@@ -718,6 +718,12 @@ void QGestureManager::recycle(QGesture *gesture)
     }
 }
 
+bool QGestureManager::gesturePending(QObject *o)
+{
+    const QGestureManager *gm = QGestureManager::instance();
+    return gm && gm->m_gestureOwners.key(o);
+}
+
 QT_END_NAMESPACE
 
 #endif // QT_NO_GESTURES

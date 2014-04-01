@@ -141,7 +141,16 @@ QImage::Format QEglFSHooks::screenFormat() const
 
 QSurfaceFormat QEglFSHooks::surfaceFormatFor(const QSurfaceFormat &inputFormat) const
 {
-    return inputFormat;
+    QSurfaceFormat format = inputFormat;
+
+    static const bool force888 = qgetenv("QT_QPA_EGLFS_FORCE888").toInt();
+    if (force888) {
+        format.setRedBufferSize(8);
+        format.setGreenBufferSize(8);
+        format.setBlueBufferSize(8);
+    }
+
+    return format;
 }
 
 bool QEglFSHooks::filterConfig(EGLDisplay, EGLConfig) const

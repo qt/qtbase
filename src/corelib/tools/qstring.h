@@ -711,7 +711,7 @@ public:
     Q_DECL_CONSTEXPR inline QString(QStringDataPtr dd) : d(dd.ptr) {}
 
 private:
-#if defined(QT_NO_CAST_FROM_ASCII) && !defined(Q_NO_DECLARED_NOT_DEFINED)
+#if defined(QT_NO_CAST_FROM_ASCII)
     QString &operator+=(const char *s);
     QString &operator+=(const QByteArray &s);
     QString(const char *ch);

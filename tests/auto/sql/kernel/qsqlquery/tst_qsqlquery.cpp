@@ -1069,6 +1069,18 @@ void tst_QSqlQuery::numRowsAffected()
     QCOMPARE( q.numRowsAffected(), i );
     QCOMPARE( q.numRowsAffected(), i ); // yes, we check twice
 
+    QVERIFY_SQL( q, prepare( "update " + qtest + " set id = id + :newid" ) );
+    q.bindValue(":newid", 100);
+    QVERIFY_SQL( q, exec() );
+    QCOMPARE( q.numRowsAffected(), i );
+    QCOMPARE( q.numRowsAffected(), i ); // yes, we check twice
+
+    QVERIFY_SQL( q, prepare( "update " + qtest + " set id = id + :newid where NOT(1 = 1)" ) );
+    q.bindValue(":newid", 100);
+    QVERIFY_SQL( q, exec() );
+    QCOMPARE( q.numRowsAffected(), 0 );
+    QCOMPARE( q.numRowsAffected(), 0 ); // yes, we check twice
+
     QVERIFY_SQL( q, exec( "insert into " + qtest + " values (42000, 'homer', 'marge')" ) );
     QCOMPARE( q.numRowsAffected(), 1 );
     QCOMPARE( q.numRowsAffected(), 1 ); // yes, we check twice

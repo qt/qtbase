@@ -1069,7 +1069,7 @@ void tst_QProcess::softExitInSlots()
         SoftExitProcess proc(i);
         proc.writeAfterStart("OLEBOLE", 8); // include the \0
         proc.start(appName);
-        QTRY_VERIFY(proc.waitedForFinished);
+        QTRY_VERIFY_WITH_TIMEOUT(proc.waitedForFinished, 10000);
         QCOMPARE(proc.state(), QProcess::NotRunning);
     }
 }

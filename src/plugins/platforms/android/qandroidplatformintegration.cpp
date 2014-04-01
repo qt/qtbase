@@ -41,6 +41,7 @@
 
 #include "qandroidplatformintegration.h"
 
+#include <QtCore/private/qjni_p.h>
 #include <QGuiApplication>
 #include <QOpenGLContext>
 #include <QThread>
@@ -103,9 +104,6 @@ QAndroidPlatformIntegration::QAndroidPlatformIntegration(const QStringList &para
 
     m_androidPlatformNativeInterface = new QAndroidPlatformNativeInterface();
 
-    if (!eglBindAPI(EGL_OPENGL_ES_API))
-        qFatal("Could not bind GL_ES API");
-
     m_eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     if (m_eglDisplay == EGL_NO_DISPLAY)
         qFatal("Could not open egl display");
@@ -113,6 +111,9 @@ QAndroidPlatformIntegration::QAndroidPlatformIntegration(const QStringList &para
     EGLint major, minor;
     if (!eglInitialize(m_eglDisplay, &major, &minor))
         qFatal("Could not initialize egl display");
+
+    if (!eglBindAPI(EGL_OPENGL_ES_API))
+        qFatal("Could not bind GL_ES API");
 
     m_primaryScreen = new QAndroidPlatformScreen();
     screenAdded(m_primaryScreen);
@@ -130,9 +131,41 @@ QAndroidPlatformIntegration::QAndroidPlatformIntegration(const QStringList &para
 #endif
 
     m_androidSystemLocale = new QAndroidSystemLocale;
+
+    QJNIObjectPrivate javaActivity(QtAndroid::activity());
+    if (javaActivity.isValid()) {
+        QJNIObjectPrivate resources = javaActivity.callObjectMethod("getResources", "()Landroid/content/res/Resources;");
+        QJNIObjectPrivate configuration = resources.callObjectMethod("getConfiguration", "()Landroid/content/res/Configuration;");
+
+        int touchScreen = configuration.getField<jint>("touchscreen");
+        if (touchScreen == QJNIObjectPrivate::getStaticField<jint>("android/content/res/Configuration", "TOUCHSCREEN_FINGER")
+                || touchScreen == QJNIObjectPrivate::getStaticField<jint>("android/content/res/Configuration", "TOUCHSCREEN_STYLUS"))
+        {
+            m_touchDevice = new QTouchDevice;
+            m_touchDevice->setType(QTouchDevice::TouchScreen);
+            m_touchDevice->setCapabilities(QTouchDevice::Position
+                                         | QTouchDevice::Area
+                                         | QTouchDevice::Pressure
+                                         | QTouchDevice::NormalizedPosition);
+
+            QJNIObjectPrivate pm = javaActivity.callObjectMethod("getPackageManager", "()Landroid/content/pm/PackageManager;");
+            Q_ASSERT(pm.isValid());
+            if (pm.callMethod<jboolean>("hasSystemFeature","(Ljava/lang/String;)Z",
+                                     QJNIObjectPrivate::getStaticObjectField("android/content/pm/PackageManager", "FEATURE_TOUCHSCREEN_MULTITOUCH_JAZZHAND", "Ljava/lang/String;").object())) {
+                m_touchDevice->setMaximumTouchPoints(10);
+            } else if (pm.callMethod<jboolean>("hasSystemFeature","(Ljava/lang/String;)Z",
+                                            QJNIObjectPrivate::getStaticObjectField("android/content/pm/PackageManager", "FEATURE_TOUCHSCREEN_MULTITOUCH_DISTINCT", "Ljava/lang/String;").object())) {
+                m_touchDevice->setMaximumTouchPoints(4);
+            } else if (pm.callMethod<jboolean>("hasSystemFeature","(Ljava/lang/String;)Z",
+                                            QJNIObjectPrivate::getStaticObjectField("android/content/pm/PackageManager", "FEATURE_TOUCHSCREEN_MULTITOUCH", "Ljava/lang/String;").object())) {
+                m_touchDevice->setMaximumTouchPoints(2);
+            }
+            QWindowSystemInterface::registerTouchDevice(m_touchDevice);
+        }
+    }
 }
 
-bool QAndroidPlatformIntegration::needsWorkaround()
+bool QAndroidPlatformIntegration::needsBasicRenderloopWorkaround()
 {
     static bool needsWorkaround =
             QtAndroid::deviceName().compare(QStringLiteral("samsung SM-T211"), Qt::CaseInsensitive) == 0
@@ -150,7 +183,7 @@ bool QAndroidPlatformIntegration::hasCapability(Capability cap) const
         case OpenGL: return true;
         case ForeignWindows: return true;
         case ThreadedOpenGL:
-            if (needsWorkaround())
+            if (needsBasicRenderloopWorkaround())
                 return false;
             else
                 return true;

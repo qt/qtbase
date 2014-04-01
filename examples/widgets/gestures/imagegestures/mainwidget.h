@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -51,6 +51,7 @@ class MainWidget : public QMainWindow
 
 public:
     MainWidget(QWidget *parent = 0);
+    void grabGestures(const QList<Qt::GestureType> &gestures);
 
 public slots:
     void openDirectory(const QString &path);
