@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -293,8 +293,8 @@ inline void OleUninitialize()
 inline DWORD GetGlyphOutline( HDC /*hdc*/, UINT /*uChar*/, INT /*fuFormat*/, GLYPHMETRICS * /*lpgm*/,
                        DWORD /*cjBuffer*/, LPVOID /*pvBuffer*/, CONST MAT2 * /*lpmat2*/ )
 {
-    qFatal("GetGlyphOutline not supported under Windows CE. Please try using freetype fontrendering, by"
-           "passing -platform windows:freetype as arguments to the application.");
+    qFatal("GetGlyphOutline() not supported under Windows CE. Please try using freetype font-rendering, by "
+           "passing the command line argument -platform windows:fontengine=freetype to the application.");
     return GDI_ERROR;
 }
 
