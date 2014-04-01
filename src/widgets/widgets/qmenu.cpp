@@ -50,6 +50,9 @@
 #include "qlayout.h"
 #include "qpainter.h"
 #include <qpa/qplatformtheme.h>
+#ifdef Q_OS_OSX
+#include "qmacnativewidget_mac.h"
+#endif
 #include "qapplication.h"
 #include "qdesktopwidget.h"
 #ifndef QT_NO_ACCESSIBILITY
@@ -163,7 +166,7 @@ void QMenuPrivate::setPlatformMenu(QPlatformMenu *menu)
 
     platformMenu = menu;
     if (!platformMenu.isNull()) {
-        QObject::connect(platformMenu, SIGNAL(aboutToShow()), q, SIGNAL(aboutToShow()));
+        QObject::connect(platformMenu, SIGNAL(aboutToShow()), q, SLOT(_q_platformMenuAboutToShow()));
         QObject::connect(platformMenu, SIGNAL(aboutToHide()), q, SIGNAL(aboutToHide()));
     }
 }
@@ -1104,6 +1107,8 @@ void QMenuPrivate::_q_actionTriggered()
     Q_Q(QMenu);
     if (QAction *action = qobject_cast<QAction *>(q->sender())) {
         QPointer<QAction> actionGuard = action;
+        if (platformMenu && widgetItems.value(action))
+            platformMenu->dismiss();
         emit q->triggered(action);
         if (!activationRecursionGuard && actionGuard) {
             //in case the action has not been activated by the mouse
@@ -1132,6 +1137,24 @@ void QMenuPrivate::_q_actionHovered()
     if (QAction * action = qobject_cast<QAction *>(q->sender())) {
         emit q->hovered(action);
     }
+}
+
+void QMenuPrivate::_q_platformMenuAboutToShow()
+{
+    Q_Q(QMenu);
+
+#ifdef Q_OS_OSX
+    if (platformMenu)
+        Q_FOREACH (QAction *action, q->actions())
+            if (QWidget *widget = widgetItems.value(const_cast<QAction *>(action)))
+                if (widget->parent() == q) {
+                    QPlatformMenuItem *menuItem = platformMenu->menuItemForTag(reinterpret_cast<quintptr>(action));
+                    moveWidgetToPlatformItem(widget, menuItem);
+                    platformMenu->syncMenuItem(menuItem);
+                }
+#endif
+
+    emit q->aboutToShow();
 }
 
 bool QMenuPrivate::hasMouseMoved(const QPoint &globalPos)
@@ -2996,8 +3019,19 @@ void QMenu::actionEvent(QActionEvent *e)
         if (e->action() == d->currentAction)
             d->currentAction = 0;
         if (QWidgetAction *wa = qobject_cast<QWidgetAction *>(e->action())) {
-            if (QWidget *widget = d->widgetItems.value(wa))
+            if (QWidget *widget = d->widgetItems.value(wa)) {
+#ifdef Q_OS_OSX
+                QWidget *p = widget->parentWidget();
+                if (p != this && qobject_cast<QMacNativeWidget *>(p)) {
+                    // This widget was reparented into a native Mac view
+                    // (see QMenuPrivate::moveWidgetToPlatformItem).
+                    // Reset the parent and delete the native widget.
+                    widget->setParent(this);
+                    p->deleteLater();
+                }
+#endif
                 wa->releaseWidget(widget);
+            }
         }
         d->widgetItems.remove(e->action());
     }
