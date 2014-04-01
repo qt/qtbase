@@ -538,7 +538,7 @@ void QDataStream::setByteOrder(ByteOrder bo)
     \value Qt_5_1 Version 14 (Qt 5.1)
     \value Qt_5_2 Version 15 (Qt 5.2)
     \value Qt_5_3 Same as Qt_5_2
-    \value Qt_5_4 Same as Qt_5_2
+    \value Qt_5_4 Version 16 (Qt 5.4)
     \omitvalue Qt_DefaultCompiledVersion
 
     \sa setVersion(), version()
@@ -555,7 +555,8 @@ void QDataStream::setByteOrder(ByteOrder bo)
 /*!
     \fn void QDataStream::setVersion(int v)
 
-    Sets the version number of the data serialization format to \a v.
+    Sets the version number of the data serialization format to \a v,
+    a value of the \l Version enum.
 
     You don't \e have to set a version if you are using the current
     version of Qt, but for your own custom binary formats we
@@ -568,25 +569,6 @@ void QDataStream::setByteOrder(ByteOrder bo)
     Qt, or write data that can be read by a program that was compiled
     with an earlier version of Qt, use this function to modify the
     serialization format used by QDataStream.
-
-    \table
-    \header \li Qt Version       \li QDataStream Version
-    \row \li Qt 5.2                  \li 15
-    \row \li Qt 5.1                  \li 14
-    \row \li Qt 5.0                  \li 13
-    \row \li Qt 4.6                  \li 12
-    \row \li Qt 4.5                  \li 11
-    \row \li Qt 4.4                  \li 10
-    \row \li Qt 4.3                  \li 9
-    \row \li Qt 4.2                  \li 8
-    \row \li Qt 4.0, 4.1            \li 7
-    \row \li Qt 3.3                  \li 6
-    \row \li Qt 3.1, 3.2             \li 5
-    \row \li Qt 3.0                  \li 4
-    \row \li Qt 2.1, 2.2, 2.3      \li 3
-    \row \li Qt 2.0                  \li 2
-    \row \li Qt 1.x                  \li 1
-    \endtable
 
     The \l Version enum provides symbolic constants for the different
     versions of Qt. For example:
