@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -4876,6 +4876,7 @@ void tst_QNetworkReply::ioPostToHttpUploadProgress()
     //test file must be larger than OS socket buffers (~830kB on MacOS 10.6)
     QFile sourceFile(testDataDir + "/image1.jpg");
     QVERIFY(sourceFile.open(QIODevice::ReadOnly));
+    const qint64 sourceFileSize = sourceFile.size();
 
     // emulate a minimal http server
     QTcpServer server;
@@ -4900,24 +4901,32 @@ void tst_QNetworkReply::ioPostToHttpUploadProgress()
     QTestEventLoop::instance().enterLoop(5);
     // some progress should have been made
     QVERIFY(!spy.isEmpty());
-    QList<QVariant> args = spy.last();
+    const QList<QVariant> args = spy.last();
     QVERIFY(!args.isEmpty());
-    QVERIFY(args.at(0).toLongLong() > 0);
-    // but not everything!
-    QVERIFY(args.at(0).toLongLong() != sourceFile.size());
+    const qint64 bufferedUploadProgress = args.at(0).toLongLong();
+    QVERIFY(bufferedUploadProgress > 0);
+    // but not everything? - Note however, that under CI virtualization,
+    // particularly on Windows, it frequently happens that the whole file
+    // is uploaded in one chunk.
+    if (bufferedUploadProgress == sourceFileSize) {
+        qWarning() << QDir::toNativeSeparators(sourceFile.fileName())
+                   << "of" << sourceFileSize << "bytes was uploaded in one go.";
+    }
 
     // set the read buffer to unlimited
     incomingSocket->setReadBufferSize(0);
     QTestEventLoop::instance().enterLoop(10);
     // progress should be finished
     QVERIFY(!spy.isEmpty());
-    QList<QVariant> args3 = spy.last();
+    const QList<QVariant> args3 = spy.last();
     QVERIFY(!args3.isEmpty());
     // More progress than before
-    QVERIFY(args3.at(0).toLongLong() > args.at(0).toLongLong());
-    QCOMPARE(args3.at(0).toLongLong(), args3.at(1).toLongLong());
+    const qint64 unbufferedUploadProgress = args3.at(0).toLongLong();
+    if (bufferedUploadProgress < sourceFileSize)
+        QVERIFY(unbufferedUploadProgress > bufferedUploadProgress);
+    QCOMPARE(unbufferedUploadProgress, args3.at(1).toLongLong());
     // And actually finished..
-    QCOMPARE(args3.at(0).toLongLong(), sourceFile.size());
+    QCOMPARE(unbufferedUploadProgress, sourceFileSize);
 
     // after sending this, the QNAM should emit finished()
     connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
