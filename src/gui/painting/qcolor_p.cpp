@@ -352,6 +352,7 @@ QStringList qt_get_colornames()
 {
     int i = 0;
     QStringList lst;
+    lst.reserve(rgbTblSize);
     for (i = 0; i < rgbTblSize; i++)
         lst << QLatin1String(rgbTbl[i].name);
     return lst;
