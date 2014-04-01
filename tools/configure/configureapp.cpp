@@ -3472,10 +3472,6 @@ void Configure::generateConfigfiles()
         if (dictionary["STYLE_WINDOWSXP"] != "yes" && dictionary["STYLE_WINDOWSVISTA"] != "yes")
             qconfigList += "QT_NO_STYLE_WINDOWSXP";
         if (dictionary["STYLE_WINDOWSVISTA"] != "yes")   qconfigList += "QT_NO_STYLE_WINDOWSVISTA";
-
-        // ### We still need the QT_NO_STYLE_S60 define for compiling Qt. Remove later!
-        qconfigList += "QT_NO_STYLE_S60";
-
         if (dictionary["STYLE_WINDOWSCE"] != "yes")   qconfigList += "QT_NO_STYLE_WINDOWSCE";
         if (dictionary["STYLE_WINDOWSMOBILE"] != "yes")   qconfigList += "QT_NO_STYLE_WINDOWSMOBILE";
         if (dictionary["STYLE_GTK"] != "yes")         qconfigList += "QT_NO_STYLE_GTK";
