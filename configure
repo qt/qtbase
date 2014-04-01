@@ -2270,9 +2270,6 @@ Configure options:
 
     -system-sqlite ..... Use sqlite from the operating system.
 
-    -no-javascript-jit . Do not build the JavaScriptCore JIT compiler.
- +  -javascript-jit .... Build the JavaScriptCore JIT compiler.
-
     -no-qml-debug ...... Do not build the in-process QML debugging support.
  +  -qml-debug ......... Build the QML debugging support.
 
