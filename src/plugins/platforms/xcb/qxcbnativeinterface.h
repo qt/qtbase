@@ -77,12 +77,12 @@ public:
     QXcbNativeInterface();
 
     void *nativeResourceForIntegration(const QByteArray &resource) Q_DECL_OVERRIDE;
-    void *nativeResourceForContext(const QByteArray &resourceString, QOpenGLContext *context);
-    void *nativeResourceForScreen(const QByteArray &resource, QScreen *screen);
-    void *nativeResourceForWindow(const QByteArray &resourceString, QWindow *window);
+    void *nativeResourceForContext(const QByteArray &resourceString, QOpenGLContext *context) Q_DECL_OVERRIDE;
+    void *nativeResourceForScreen(const QByteArray &resource, QScreen *screen) Q_DECL_OVERRIDE;
+    void *nativeResourceForWindow(const QByteArray &resourceString, QWindow *window) Q_DECL_OVERRIDE;
 
     NativeResourceForIntegrationFunction nativeResourceFunctionForIntegration(const QByteArray &resource) Q_DECL_OVERRIDE;
-    NativeResourceForContextFunction nativeResourceFunctionForContext(const QByteArray &resource);
+    NativeResourceForContextFunction nativeResourceFunctionForContext(const QByteArray &resource) Q_DECL_OVERRIDE;
     NativeResourceForScreenFunction nativeResourceFunctionForScreen(const QByteArray &resource) Q_DECL_OVERRIDE;
 
     inline const QByteArray &genericEventFilterType() const { return m_genericEventFilterType; }
