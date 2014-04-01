@@ -81,6 +81,7 @@ public:
     void *nativeResourceForScreen(const QByteArray &resource, QScreen *screen);
     void *nativeResourceForWindow(const QByteArray &resourceString, QWindow *window);
 
+    NativeResourceForIntegrationFunction nativeResourceFunctionForIntegration(const QByteArray &resource) Q_DECL_OVERRIDE;
     NativeResourceForContextFunction nativeResourceFunctionForContext(const QByteArray &resource);
     NativeResourceForScreenFunction nativeResourceFunctionForScreen(const QByteArray &resource) Q_DECL_OVERRIDE;
 
@@ -96,6 +97,7 @@ public:
     void *startupId();
     void *x11Screen();
     void *rootWindow();
+    static void setStartupId(const char *);
     static void setAppTime(QScreen *screen, xcb_timestamp_t time);
     static void setAppUserTime(QScreen *screen, xcb_timestamp_t time);
     static void *eglContextForContext(QOpenGLContext *context);

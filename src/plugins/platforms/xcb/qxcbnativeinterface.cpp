@@ -225,6 +225,14 @@ void *QXcbNativeInterface::nativeResourceForWindow(const QByteArray &resourceStr
     return result;
 }
 
+QPlatformNativeInterface::NativeResourceForIntegrationFunction QXcbNativeInterface::nativeResourceFunctionForIntegration(const QByteArray &resource)
+{
+    QByteArray lowerCaseResource = resource.toLower();
+    if (lowerCaseResource == "setstartupid")
+        return NativeResourceForIntegrationFunction(setStartupId);
+    return 0;
+}
+
 QPlatformNativeInterface::NativeResourceForScreenFunction QXcbNativeInterface::nativeResourceFunctionForScreen(const QByteArray &resource)
 {
     const QByteArray lowerCaseResource = resource.toLower();
@@ -285,6 +293,15 @@ void QXcbNativeInterface::setAppTime(QScreen* screen, xcb_timestamp_t time)
 void QXcbNativeInterface::setAppUserTime(QScreen* screen, xcb_timestamp_t time)
 {
     static_cast<QXcbScreen *>(screen->handle())->connection()->setNetWmUserTime(time);
+}
+
+void QXcbNativeInterface::setStartupId(const char *data)
+{
+    QByteArray startupId(data);
+    QXcbIntegration *integration = static_cast<QXcbIntegration *>(QGuiApplicationPrivate::platformIntegration());
+    QXcbConnection *defaultConnection = integration->defaultConnection();
+    if (defaultConnection)
+        defaultConnection->setStartupId(startupId);
 }
 
 QPlatformNativeInterface::NativeResourceForContextFunction QXcbNativeInterface::nativeResourceFunctionForContext(const QByteArray &resource)

@@ -445,6 +445,7 @@ public:
     void setFocusWindow(QXcbWindow *);
 
     QByteArray startupId() const { return m_startupId; }
+    void setStartupId(const QByteArray &nextId) { m_startupId = nextId; }
     void clearStartupId() { m_startupId.clear(); }
 
     void grabServer();
