@@ -2934,8 +2934,9 @@ void QGLContext::setFormat(const QGLFormat &format)
 void QGLContext::setDevice(QPaintDevice *pDev)
 {
     Q_D(QGLContext);
-    if (isValid())
-        reset();
+    // Do not touch the valid flag here. The context is either a new one and
+    // valid is not yet set or it is adapted from a valid QOpenGLContext in which
+    // case it must remain valid.
     d->paintDevice = pDev;
     if (d->paintDevice && (d->paintDevice->devType() != QInternal::Widget
                            && d->paintDevice->devType() != QInternal::Pixmap
