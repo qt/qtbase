@@ -1034,6 +1034,7 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size,
     LPVOID mapAddress = ::MapViewOfFile(mapHandle, access,
                                       offsetHi, offsetLo, size + extra);
 #else
+    offset = (offsetHi << 32) + offsetLo;
     LPVOID mapAddress = ::MapViewOfFileFromApp(mapHandle, access, offset, size);
 #endif
     if (mapAddress) {
