@@ -70,6 +70,10 @@ MODULE_FWD_PRI = $$mod_work_pfx/qt_lib_$${MODULE_ID}.pri
         module_config = "QT.$${MODULE_ID}.CONFIG = $$MODULE_CONFIG"
     else: \
         module_config =
+    !isEmpty(MODULE_PLUGIN_TYPES): \
+        module_plugtypes = "QT.$${MODULE_ID}.plugin_types = $$replace(MODULE_PLUGIN_TYPES, /.*$, )"
+    else: \
+        module_plugtypes =
     !no_module_headers:!minimal_syncqt {
         MODULE_INCLUDES = \$\$QT_MODULE_INCLUDE_BASE \$\$QT_MODULE_INCLUDE_BASE/$$MODULE_INCNAME
         MODULE_PRIVATE_INCLUDES = \$\$QT_MODULE_INCLUDE_BASE/$$MODULE_INCNAME/$$VERSION \
@@ -100,7 +104,7 @@ MODULE_FWD_PRI = $$mod_work_pfx/qt_lib_$${MODULE_ID}.pri
         "QT.$${MODULE_ID}.plugins = \$\$QT_MODULE_PLUGIN_BASE" \
         "QT.$${MODULE_ID}.imports = \$\$QT_MODULE_IMPORT_BASE" \
         "QT.$${MODULE_ID}.qml = \$\$QT_MODULE_QML_BASE" \
-        $$join(MODULE_PLUGIN_TYPES, " ", "QT.$${MODULE_ID}.plugin_types = ")
+        $$module_plugtypes
     MODULE_PRI_CONT += \
         "QT.$${MODULE_ID}.depends =$$join(MODULE_DEPENDS, " ", " ")" \
         $$module_rundep \

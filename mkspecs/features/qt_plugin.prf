@@ -32,7 +32,9 @@ CONFIG(static, static|shared) {
     !build_pass {
         MODULE_PRI_CONT = \
             "QT_PLUGIN.$${MODULE}.TYPE = $$PLUGIN_TYPE" \
-            "QT_PLUGIN.$${MODULE}.CLASS_NAME = $$PLUGIN_CLASS_NAME"
+            "QT_PLUGIN.$${MODULE}.EXTENDS = $$PLUGIN_EXTENDS" \
+            "QT_PLUGIN.$${MODULE}.CLASS_NAME = $$PLUGIN_CLASS_NAME" \
+            "QT_PLUGINS += $$MODULE"
 
         write_file($$MODULE_PRI, MODULE_PRI_CONT)|error("Aborting.")
     }
