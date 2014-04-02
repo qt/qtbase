@@ -371,8 +371,9 @@ static QTouchDevice *touchDevice = 0;
 {
     m_backingStore = backingStore;
     m_backingStoreOffset = offset * m_backingStore->getBackingStoreDevicePixelRatio();
-    QRect br = region.boundingRect();
-    [self setNeedsDisplayInRect:NSMakeRect(br.x(), br.y(), br.width(), br.height())];
+    foreach (QRect rect, region.rects()) {
+        [self setNeedsDisplayInRect:NSMakeRect(rect.x(), rect.y(), rect.width(), rect.height())];
+    }
 }
 
 - (BOOL) hasMask
