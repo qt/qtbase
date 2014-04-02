@@ -253,12 +253,10 @@ private:
     {
         QString rc;
         QDebug str = QDebug(&rc).nospace();
-        str << "Event " << needle->object() <<  ", type: "
-           << needle->type() << ", child: " << needle->child()
-           <<  " not found at head of event list of size " << haystack.size() << " :";
+        str << "Event " << *needle
+            <<  " not found at head of event list of size " << haystack.size() << " :";
         Q_FOREACH (const QAccessibleEvent *e, haystack)
-            str << ' ' << e->object() << ", type: "
-                << e->type() << ", child: " << e->child();
+            str << ' ' << *e;
         return rc;
     }
 
