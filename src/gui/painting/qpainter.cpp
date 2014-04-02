@@ -6416,6 +6416,7 @@ void QPainterPrivate::drawTextItem(const QPointF &p, const QTextItem &_ti, QText
                 continue;
 
 
+            multi->ensureEngineAt(which);
             QTextItemInt ti2 = ti.midItem(multi->engine(which), start, end - start);
             ti2.width = 0;
             // set the high byte to zero and calc the width
@@ -6443,6 +6444,7 @@ void QPainterPrivate::drawTextItem(const QPointF &p, const QTextItem &_ti, QText
             which = e;
         }
 
+        multi->ensureEngineAt(which);
         QTextItemInt ti2 = ti.midItem(multi->engine(which), start, end - start);
         ti2.width = 0;
         // set the high byte to zero and calc the width
