@@ -144,6 +144,7 @@ private:
                                       QHash<QString, ProStringList> &subdirProjectLookup,
                                       const ProStringList &allDependencies = ProStringList());
     QUuid increaseUUID(const QUuid &id);
+    QString retrievePlatformToolSet() const;
     friend class VCFilter;
 };
 

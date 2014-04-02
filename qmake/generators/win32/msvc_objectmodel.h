@@ -901,6 +901,7 @@ public:
     QString                 OutputDirectory;
     QString                 PrimaryOutput;
     QString                 ProgramDatabase;
+    QString                 PlatformToolSet;
     triState                RegisterOutput;
     useOfATL                UseOfATL;
     useOfMfc                UseOfMfc;
