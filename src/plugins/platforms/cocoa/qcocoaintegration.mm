@@ -156,6 +156,24 @@ qreal QCocoaScreen::devicePixelRatio() const
     }
 }
 
+QWindow *QCocoaScreen::topLevelAt(const QPoint &point) const
+{
+    // Get a z-ordered list of windows. Iterate through it until
+    // we find a window which contains the point.
+    for (NSWindow *nsWindow in [NSApp orderedWindows]) {
+        QCocoaWindow *cocoaWindow = QCocoaIntegration::instance()->window(nsWindow);
+        if (!cocoaWindow)
+            continue;
+        QWindow *window = cocoaWindow->window();
+        if (!window->isTopLevel())
+             continue;
+        if (window->geometry().contains(point))
+            return window;
+    }
+
+    return QPlatformScreen::topLevelAt(point);
+}
+
 extern CGContextRef qt_mac_cg_context(const QPaintDevice *pdev);
 
 QPixmap QCocoaScreen::grabWindow(WId window, int x, int y, int width, int height) const
@@ -498,6 +516,16 @@ void QCocoaIntegration::setToolbar(QWindow *window, NSToolbar *toolbar)
 NSToolbar *QCocoaIntegration::toolbar(QWindow *window) const
 {
     return mToolbars.value(window);
+}
+
+void QCocoaIntegration::setWindow(NSWindow* nsWindow, QCocoaWindow *window)
+{
+    mWindows.insert(nsWindow, window);
+}
+
+QCocoaWindow *QCocoaIntegration::window(NSWindow *window)
+{
+    return mWindows.value(window);
 }
 
 void QCocoaIntegration::clearToolbars()
