@@ -76,9 +76,9 @@ public:
     void updateXKBMods();
     quint32 xkbModMask(quint16 state);
     void updateXKBStateFromCore(quint16 state);
+#ifndef QT_NO_XKB
     // when XKEYBOARD is present on the X server
     int coreDeviceId() const { return core_device_id; }
-#ifndef QT_NO_XKB
     void updateXKBState(xcb_xkb_state_notify_event_t *state);
 #endif
 
@@ -131,9 +131,11 @@ private:
         xkb_mod_index_t mod5;
     };
     _xkb_mods xkb_mods;
+#ifndef QT_NO_XKB
     // when XKEYBOARD is present on the X server
     _mod_masks vmod_masks;
     int core_device_id;
+#endif
 };
 
 QT_END_NAMESPACE

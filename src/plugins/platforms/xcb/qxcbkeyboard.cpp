@@ -976,10 +976,10 @@ QXcbKeyboard::QXcbKeyboard(QXcbConnection *connection)
     , xkb_context(0)
     , xkb_keymap(0)
     , xkb_state(0)
-    , core_device_id(0)
 {
     memset(&xkb_names, 0, sizeof(xkb_names));
 #ifndef QT_NO_XKB
+    core_device_id = 0;
     if (connection->hasXKB()) {
         updateVModMapping();
         updateVModToRModMapping();
