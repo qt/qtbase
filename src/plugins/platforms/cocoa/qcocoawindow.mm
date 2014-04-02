@@ -1473,7 +1473,7 @@ void QCocoaWindow::syncWindowState(Qt::WindowState newState)
 
     if ((m_synchedWindowState & Qt::WindowMaximized) != (newState & Qt::WindowMaximized) || (m_effectivelyMaximized && newState == Qt::WindowNoState)) {
         if ((m_synchedWindowState & Qt::WindowFullScreen) == (newState & Qt::WindowFullScreen)) {
-            [m_nsWindow performZoom : m_nsWindow]; // toggles
+            [m_nsWindow zoom : m_nsWindow]; // toggles
             m_effectivelyMaximized = !m_effectivelyMaximized;
         } else if (!(newState & Qt::WindowMaximized)) {
             // it would be nice to change the target geometry that toggleFullScreen will animate toward
