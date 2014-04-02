@@ -2416,6 +2416,9 @@ Additional options:
     -no-iconv .......... Do not compile support for iconv(3).
  *  -iconv ............. Compile support for iconv(3).
 
+    -no-evdev .......... Do not compile support for evdev.
+ *  -evdev ............. Compile support for evdev.
+
     -no-icu ............ Do not compile support for ICU libraries.
  +  -icu ............... Compile support for ICU libraries.
 
@@ -6045,6 +6048,7 @@ QMakeVar set sql-plugins "$SQL_PLUGINS"
 # X11/Unix/Mac only configs
 [ "$CFG_CUPS" = "no" ]       && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_CUPS"
 [ "$CFG_ICONV" = "no" ]      && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_ICONV"
+[ "$CFG_EVDEV" = "no" ]      && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_EVDEV"
 [ "$CFG_GLIB" != "yes" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_GLIB"
 [ "$CFG_QGTKSTYLE" != "yes" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_STYLE_GTK"
 [ "$CFG_CLOCK_MONOTONIC" = "no" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_CLOCK_MONOTONIC"
@@ -6464,6 +6468,7 @@ report_support "  ALSA ..................." "$CFG_ALSA"
 report_support "  CUPS ..................." "$CFG_CUPS"
 [ "$XPLATFORM_MINGW" = "yes" ] && \
     report_support "  DirectWrite ............" "$CFG_DIRECTWRITE"
+report_support "  Evdev .................." "$CFG_EVDEV"
 report_support "  FontConfig ............." "$CFG_FONTCONFIG"
 report_support "  FreeType ..............." "$CFG_FREETYPE" system "system library" yes "bundled copy"
 report_support "  Glib ..................." "$CFG_GLIB"
