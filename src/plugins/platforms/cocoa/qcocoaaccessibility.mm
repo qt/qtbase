@@ -298,7 +298,8 @@ bool hasValueAttribute(QAccessibleInterface *interface)
     Q_ASSERT(interface);
     const QAccessible::Role qtrole = interface->role();
     if (qtrole == QAccessible::EditableText
-            || interface->valueInterface()) {
+            || interface->valueInterface()
+            || interface->state().checkable) {
         return true;
     }
 
@@ -328,6 +329,10 @@ id getValueAttribute(QAccessibleInterface *interface)
 
     if (QAccessibleValueInterface *valueInterface = interface->valueInterface()) {
         return QCFString::toNSString(QString::number(valueInterface->currentValue().toDouble()));
+    }
+
+    if (interface->state().checkable) {
+        return [NSNumber numberWithInt: (interface->state().checked ? 1 : 0)];
     }
 
     return nil;

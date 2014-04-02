@@ -64,7 +64,7 @@ public:
     QStringList addApplicationFont(const QByteArray &fontData, const QString &fileName);
     void releaseHandle(void *handle);
 
-    static QStringList addTTFile(const QByteArray &fontData, const QByteArray &file);
+    static QStringList addTTFile(const QByteArray &fontData, const QByteArray &file, QSupportedWritingSystems *supportedWritingSystems = 0);
     static QString fontNameFromTTFile(const QString &filename);
 };
 

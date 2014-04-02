@@ -97,6 +97,8 @@ public:
     void clear();
 
     //---------------//
+    jboolean beginBatchEdit();
+    jboolean endBatchEdit();
     jboolean commitText(const QString &text, jint newCursorPosition);
     jboolean deleteSurroundingText(jint leftLength, jint rightLength);
     jboolean finishComposingText();
@@ -133,6 +135,7 @@ private:
     QString m_composingText;
     QMetaObject::Connection m_updateCursorPosConnection;
     bool m_blockUpdateSelection;
+    int m_batchEditNestingLevel;
 };
 
 QT_END_NAMESPACE

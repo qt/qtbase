@@ -163,6 +163,7 @@ public:
     // The following variables help organizing modal sessions:
     QStack<QCocoaModalSessionInfo> cocoaModalSessionStack;
     bool currentExecIsNSAppRun;
+    bool modalSessionOnNSAppRun;
     bool nsAppRunCalledByQt;
     bool cleanupModalSessionsNeeded;
     uint processEventsCalled;

@@ -79,6 +79,7 @@ private slots:
     void init();
     void cleanup();
 
+    void singleWidgetTest();
     void lineEditTest();
     void hierarchyTest();
 private:
@@ -101,6 +102,16 @@ void tst_QAccessibilityMac::cleanup()
     delete m_window;
 }
 
+void tst_QAccessibilityMac::singleWidgetTest()
+{
+    if (!macNativeAccessibilityEnabled())
+        return;
+
+    delete m_window;
+    m_window = 0;
+
+    QVERIFY(singleWidget());
+}
 
 void tst_QAccessibilityMac::lineEditTest()
 {
@@ -122,14 +133,19 @@ void tst_QAccessibilityMac::hierarchyTest()
 
     QWidget *w = new QWidget(m_window);
     m_window->addWidget(w);
-    QPushButton *b = new QPushButton(w);
+
     w->setLayout(new QVBoxLayout());
+    QPushButton *b = new QPushButton(w);
     w->layout()->addWidget(b);
     b->setText("I am a button");
 
+    QPushButton *b2 = new QPushButton(w);
+    w->layout()->addWidget(b2);
+    b2->setText("Button 2");
+
     QVERIFY(QTest::qWaitForWindowExposed(m_window));
     QCoreApplication::processEvents();
-    QVERIFY(testHierarchy());
+    QVERIFY(testHierarchy(w));
 }
 
 QTEST_MAIN(tst_QAccessibilityMac)

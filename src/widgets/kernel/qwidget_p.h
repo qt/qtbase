@@ -389,7 +389,7 @@ public:
     void render_helper(QPainter *painter, const QPoint &targetOffset, const QRegion &sourceRegion,
                        QWidget::RenderFlags renderFlags);
     void render(QPaintDevice *target, const QPoint &targetOffset, const QRegion &sourceRegion,
-                QWidget::RenderFlags renderFlags, bool readyToRender);
+                QWidget::RenderFlags renderFlags);
     void drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QPoint &offset, int flags,
                     QPainter *sharedPainter = 0, QWidgetBackingStore *backingStore = 0);
 
@@ -628,7 +628,7 @@ public:
 #ifndef QT_NO_OPENGL
     virtual GLuint textureId() const { return 0; }
 
-    void setRenderToTexture() { renderToTexture = true; textureChildSeen = true; }
+    void setRenderToTexture() { renderToTexture = true; setTextureChildSeen(); }
     void setTextureChildSeen()
     {
         Q_Q(QWidget);

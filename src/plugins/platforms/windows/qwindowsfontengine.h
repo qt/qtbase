@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include <QtGui/private/qfontengine_p.h>
+#include <QtGui/private/qfontengine_qpa_p.h>
 
 #include <QtGui/QImage>
 #include <QtCore/QSharedPointer>
@@ -166,15 +166,13 @@ private:
     mutable int designAdvancesSize;
 };
 
-class QWindowsMultiFontEngine : public QFontEngineMulti
+
+class QWindowsMultiFontEngine : public QFontEngineMultiQPA
 {
 public:
-    QWindowsMultiFontEngine(QFontEngine *first, const QStringList &fallbacks);
+    explicit QWindowsMultiFontEngine(QFontEngine *fe, int script);
 
-    void setFallbackFamiliesList(const QStringList &fallbacks);
     void loadEngine(int at);
-
-    QStringList fallbackFamilies;
 };
 
 QT_END_NAMESPACE

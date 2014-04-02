@@ -334,6 +334,26 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn QMargins &QMargins::operator+=(int addend)
+    \overload
+
+    Adds the \a addend to each component of this object
+    and returns a reference to it.
+
+    \sa operator-=()
+*/
+
+/*!
+    \fn QMargins &QMargins::operator-=(int subtrahend)
+    \overload
+
+    Subtracts the \a subtrahend from each component of this object
+    and returns a reference to it.
+
+    \sa operator+=()
+*/
+
+/*!
     \fn QMargins &QMargins::operator*=(int factor)
 
     Multiplies each component of this object by \a factor

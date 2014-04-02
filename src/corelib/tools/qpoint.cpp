@@ -49,6 +49,7 @@ QT_BEGIN_NAMESPACE
     \class QPoint
     \inmodule QtCore
     \ingroup painting
+    \reentrant
 
     \brief The QPoint class defines a point in the plane using integer
     precision.
@@ -470,6 +471,7 @@ QDebug operator<<(QDebug dbg, const QPointF &p)
     \class QPointF
     \inmodule QtCore
     \ingroup painting
+    \reentrant
 
     \brief The QPointF class defines a point in the plane using
     floating point precision.

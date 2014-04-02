@@ -387,7 +387,7 @@ void QSurfaceFormat::setOption(QSurfaceFormat::FormatOption option, bool on)
 
     Returns true if the format option \a option is set; otherwise returns false.
 
-    \sa options(), testOption()
+    \sa options()
 */
 bool QSurfaceFormat::testOption(QSurfaceFormat::FormatOption option) const
 {

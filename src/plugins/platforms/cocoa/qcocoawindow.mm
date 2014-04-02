@@ -352,6 +352,7 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
     , m_contentViewIsToBeEmbedded(false)
     , m_parentCocoaWindow(0)
     , m_isNSWindowChild(false)
+    , m_effectivelyMaximized(false)
     , m_synchedWindowState(Qt::WindowActive)
     , m_windowModality(Qt::NonModal)
     , m_windowUnderMouse(false)
@@ -1164,6 +1165,14 @@ void QCocoaWindow::windowDidResize()
     [m_qtView updateGeometry];
 }
 
+void QCocoaWindow::windowDidEndLiveResize()
+{
+    if (m_synchedWindowState == Qt::WindowMaximized && ![m_nsWindow isZoomed]) {
+        m_effectivelyMaximized = false;
+        [m_qtView notifyWindowStateChanged:Qt::WindowNoState];
+    }
+}
+
 bool QCocoaWindow::windowShouldClose()
 {
     bool accepted = false;
@@ -1436,7 +1445,6 @@ void QCocoaWindow::syncWindowState(Qt::WindowState newState)
 {
     if (!m_nsWindow)
         return;
-
     // if content view width or height is 0 then the window animations will crash so
     // do nothing except set the new state
     NSRect contentRect = [contentView() frame];
@@ -1446,9 +1454,7 @@ void QCocoaWindow::syncWindowState(Qt::WindowState newState)
         return;
     }
 
-    if ((m_synchedWindowState & Qt::WindowMaximized) != (newState & Qt::WindowMaximized)) {
-        [m_nsWindow performZoom : m_nsWindow]; // toggles
-    }
+    Qt::WindowState predictedState = newState;
 
     if ((m_synchedWindowState & Qt::WindowMinimized) != (newState & Qt::WindowMinimized)) {
         if (newState & Qt::WindowMinimized) {
@@ -1458,12 +1464,26 @@ void QCocoaWindow::syncWindowState(Qt::WindowState newState)
         }
     }
 
+    if ((m_synchedWindowState & Qt::WindowMaximized) != (newState & Qt::WindowMaximized) || (m_effectivelyMaximized && newState == Qt::WindowNoState)) {
+        if ((m_synchedWindowState & Qt::WindowFullScreen) == (newState & Qt::WindowFullScreen)) {
+            [m_nsWindow performZoom : m_nsWindow]; // toggles
+            m_effectivelyMaximized = !m_effectivelyMaximized;
+        } else if (!(newState & Qt::WindowMaximized)) {
+            // it would be nice to change the target geometry that toggleFullScreen will animate toward
+            // but there is no known way, so the maximized state is not possible at this time
+            predictedState = static_cast<Qt::WindowState>(static_cast<int>(newState) | Qt::WindowMaximized);
+            m_effectivelyMaximized = true;
+        }
+    }
+
     if ((m_synchedWindowState & Qt::WindowFullScreen) != (newState & Qt::WindowFullScreen)) {
         bool fakeFullScreen = true;
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
         if (QSysInfo::QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7) {
             if (window()->flags() & Qt::WindowFullscreenButtonHint) {
                 fakeFullScreen = false;
+                if (m_effectivelyMaximized && m_synchedWindowState == Qt::WindowFullScreen)
+                    predictedState = Qt::WindowMaximized;
                 [m_nsWindow toggleFullScreen : m_nsWindow];
             }
         }
@@ -1490,8 +1510,12 @@ void QCocoaWindow::syncWindowState(Qt::WindowState newState)
         }
     }
 
+#ifdef QT_COCOA_ENABLE_WINDOW_DEBUG
+    qDebug() << "QCocoaWindow::syncWindowState" << newState << "actual" << predictedState << "was" << m_synchedWindowState << "effectively maximized" << m_effectivelyMaximized;
+#endif
+
     // New state is now the current synched state
-    m_synchedWindowState = newState;
+    m_synchedWindowState = predictedState;
 }
 
 bool QCocoaWindow::setWindowModified(bool modified)

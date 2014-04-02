@@ -2753,10 +2753,14 @@ void QAbstractItemView::closeEditor(QWidget *editor, QAbstractItemDelegate::EndE
             editor->removeEventFilter(d->delegateForIndex(index));
             d->removeEditor(editor);
         }
-        if (hadFocus)
-            setFocus(); // this will send a focusLost event to the editor
-        else
+        if (hadFocus) {
+            if (focusPolicy() != Qt::NoFocus)
+                setFocus(); // this will send a focusLost event to the editor
+            else
+                editor->clearFocus();
+        } else {
             d->checkPersistentEditorFocus();
+        }
 
         QPointer<QWidget> ed = editor;
         QApplication::sendPostedEvents(editor, 0);
@@ -2767,8 +2771,9 @@ void QAbstractItemView::closeEditor(QWidget *editor, QAbstractItemDelegate::EndE
     }
 
     // The EndEditHint part
-    QItemSelectionModel::SelectionFlags flags = QItemSelectionModel::ClearAndSelect
-                                                | d->selectionBehaviorFlags();
+    QItemSelectionModel::SelectionFlags flags = QItemSelectionModel::NoUpdate;
+    if (d->selectionMode != NoSelection)
+        flags = QItemSelectionModel::ClearAndSelect | d->selectionBehaviorFlags();
     switch (hint) {
     case QAbstractItemDelegate::EditNextItem: {
         QModelIndex index = moveCursor(MoveNext, Qt::NoModifier);

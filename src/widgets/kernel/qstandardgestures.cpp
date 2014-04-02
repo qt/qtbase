@@ -77,11 +77,10 @@ QGestureRecognizer::Result QPanGestureRecognizer::recognize(QGesture *state,
     QPanGesture *q = static_cast<QPanGesture *>(state);
     QPanGesturePrivate *d = q->d_func();
 
-    const QTouchEvent *ev = static_cast<const QTouchEvent *>(event);
-
-    QGestureRecognizer::Result result;
+    QGestureRecognizer::Result result = QGestureRecognizer::Ignore;
     switch (event->type()) {
     case QEvent::TouchBegin: {
+        const QTouchEvent *ev = static_cast<const QTouchEvent *>(event);
         result = QGestureRecognizer::MayBeGesture;
         QTouchEvent::TouchPoint p = ev->touchPoints().at(0);
         d->lastOffset = d->offset = QPointF();
@@ -89,6 +88,7 @@ QGestureRecognizer::Result QPanGestureRecognizer::recognize(QGesture *state,
     }
     case QEvent::TouchEnd: {
         if (q->state() != Qt::NoGesture) {
+            const QTouchEvent *ev = static_cast<const QTouchEvent *>(event);
             if (ev->touchPoints().size() == 2) {
                 QTouchEvent::TouchPoint p1 = ev->touchPoints().at(0);
                 QTouchEvent::TouchPoint p2 = ev->touchPoints().at(1);
@@ -104,6 +104,7 @@ QGestureRecognizer::Result QPanGestureRecognizer::recognize(QGesture *state,
         break;
     }
     case QEvent::TouchUpdate: {
+        const QTouchEvent *ev = static_cast<const QTouchEvent *>(event);
         if (ev->touchPoints().size() >= 2) {
             QTouchEvent::TouchPoint p1 = ev->touchPoints().at(0);
             QTouchEvent::TouchPoint p2 = ev->touchPoints().at(1);
@@ -121,13 +122,7 @@ QGestureRecognizer::Result QPanGestureRecognizer::recognize(QGesture *state,
         }
         break;
     }
-    case QEvent::MouseButtonPress:
-    case QEvent::MouseMove:
-    case QEvent::MouseButtonRelease:
-        result = QGestureRecognizer::Ignore;
-        break;
     default:
-        result = QGestureRecognizer::Ignore;
         break;
     }
     return result;
@@ -168,9 +163,7 @@ QGestureRecognizer::Result QPinchGestureRecognizer::recognize(QGesture *state,
     QPinchGesture *q = static_cast<QPinchGesture *>(state);
     QPinchGesturePrivate *d = q->d_func();
 
-    const QTouchEvent *ev = static_cast<const QTouchEvent *>(event);
-
-    QGestureRecognizer::Result result;
+    QGestureRecognizer::Result result = QGestureRecognizer::Ignore;
 
     switch (event->type()) {
     case QEvent::TouchBegin: {
@@ -186,6 +179,7 @@ QGestureRecognizer::Result QPinchGestureRecognizer::recognize(QGesture *state,
         break;
     }
     case QEvent::TouchUpdate: {
+        const QTouchEvent *ev = static_cast<const QTouchEvent *>(event);
         d->changeFlags = 0;
         if (ev->touchPoints().size() == 2) {
             QTouchEvent::TouchPoint p1 = ev->touchPoints().at(0);
@@ -245,13 +239,7 @@ QGestureRecognizer::Result QPinchGestureRecognizer::recognize(QGesture *state,
         }
         break;
     }
-    case QEvent::MouseButtonPress:
-    case QEvent::MouseMove:
-    case QEvent::MouseButtonRelease:
-        result = QGestureRecognizer::Ignore;
-        break;
     default:
-        result = QGestureRecognizer::Ignore;
         break;
     }
     return result;
@@ -297,9 +285,7 @@ QGestureRecognizer::Result QSwipeGestureRecognizer::recognize(QGesture *state,
     QSwipeGesture *q = static_cast<QSwipeGesture *>(state);
     QSwipeGesturePrivate *d = q->d_func();
 
-    const QTouchEvent *ev = static_cast<const QTouchEvent *>(event);
-
-    QGestureRecognizer::Result result;
+    QGestureRecognizer::Result result = QGestureRecognizer::Ignore;
 
     switch (event->type()) {
     case QEvent::TouchBegin: {
@@ -318,6 +304,7 @@ QGestureRecognizer::Result QSwipeGestureRecognizer::recognize(QGesture *state,
         break;
     }
     case QEvent::TouchUpdate: {
+        const QTouchEvent *ev = static_cast<const QTouchEvent *>(event);
         if (!d->started)
             result = QGestureRecognizer::CancelGesture;
         else if (ev->touchPoints().size() == 3) {
@@ -384,13 +371,7 @@ QGestureRecognizer::Result QSwipeGestureRecognizer::recognize(QGesture *state,
         }
         break;
     }
-    case QEvent::MouseButtonPress:
-    case QEvent::MouseMove:
-    case QEvent::MouseButtonRelease:
-        result = QGestureRecognizer::Ignore;
-        break;
     default:
-        result = QGestureRecognizer::Ignore;
         break;
     }
     return result;

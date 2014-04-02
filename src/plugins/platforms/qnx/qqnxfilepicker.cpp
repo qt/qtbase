@@ -130,9 +130,9 @@ void QQnxFilePicker::open()
     map[QStringLiteral("AllowOverwrite")] = false;
 
     if (!m_defaultSaveFileNames.isEmpty())
-        map[QStringLiteral("DefaultFileNames")] = m_defaultSaveFileNames.join(",");
+        map[QStringLiteral("DefaultFileNames")] = m_defaultSaveFileNames.join(QLatin1Char(','));
     if (!m_filters.isEmpty())
-        map[QStringLiteral("Filter")] = m_filters.join(";");
+        map[QStringLiteral("Filter")] = m_filters.join(QLatin1Char(';'));
 
     QByteArray ppsData;
 #if defined(Q_OS_BLACKBERRY_TABLET)
@@ -288,8 +288,8 @@ QString QQnxFilePicker::filePickerType() const
     bool video = false;
     bool music = false;
     QMimeDatabase mimeDb;
-    for (int i = 0; i < filters().count(); i++) {
-        QList<QMimeType> mimeTypes = mimeDb.mimeTypesForFileName(filters().at(i));
+    for (int i = 0; i < m_filters.count(); i++) {
+        QList<QMimeType> mimeTypes = mimeDb.mimeTypesForFileName(m_filters.at(i));
         if (mimeTypes.isEmpty())
             return QStringLiteral("Other");
 

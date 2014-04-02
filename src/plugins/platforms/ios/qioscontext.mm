@@ -94,14 +94,38 @@ QSurfaceFormat QIOSContext::format() const
     return m_format;
 }
 
+#define QT_IOS_GL_STATUS_CASE(val) case val: return QLatin1Literal(#val)
+
+static QString fboStatusString(GLenum status)
+{
+    switch (status) {
+        QT_IOS_GL_STATUS_CASE(GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT);
+        QT_IOS_GL_STATUS_CASE(GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS);
+        QT_IOS_GL_STATUS_CASE(GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT);
+        QT_IOS_GL_STATUS_CASE(GL_FRAMEBUFFER_UNSUPPORTED);
+    default:
+        return QString(QStringLiteral("unknown status: %x")).arg(status);
+    }
+}
+
 bool QIOSContext::makeCurrent(QPlatformSurface *surface)
 {
     Q_ASSERT(surface && surface->surface()->surfaceType() == QSurface::OpenGLSurface);
 
     [EAGLContext setCurrentContext:m_eaglContext];
-    glBindFramebuffer(GL_FRAMEBUFFER, defaultFramebufferObject(surface));
 
-    return true;
+    // For offscreen surfaces we don't prepare a default FBO
+    if (surface->surface()->surfaceClass() == QSurface::Offscreen)
+        return true;
+
+    FramebufferObject &framebufferObject = backingFramebufferObjectFor(surface);
+
+    // We bind the default FBO even if it's incomplete, so that clients who
+    // call glCheckFramebufferStatus as a result of this function returning
+    // false will get a matching error code.
+    glBindFramebuffer(GL_FRAMEBUFFER, framebufferObject.handle);
+
+    return framebufferObject.isComplete;
 }
 
 void QIOSContext::doneCurrent()
@@ -112,17 +136,26 @@ void QIOSContext::doneCurrent()
 void QIOSContext::swapBuffers(QPlatformSurface *surface)
 {
     Q_ASSERT(surface && surface->surface()->surfaceType() == QSurface::OpenGLSurface);
-    Q_ASSERT(surface->surface()->surfaceClass() == QSurface::Window);
-    QIOSWindow *window = static_cast<QIOSWindow *>(surface);
-    Q_ASSERT(m_framebufferObjects.contains(window));
+
+    if (surface->surface()->surfaceClass() == QSurface::Offscreen)
+        return; // Nothing to do
+
+    FramebufferObject &framebufferObject = backingFramebufferObjectFor(surface);
 
     [EAGLContext setCurrentContext:m_eaglContext];
-    glBindRenderbuffer(GL_RENDERBUFFER, m_framebufferObjects[window].colorRenderbuffer);
+    glBindRenderbuffer(GL_RENDERBUFFER, framebufferObject.colorRenderbuffer);
     [m_eaglContext presentRenderbuffer:GL_RENDERBUFFER];
 }
 
-GLuint QIOSContext::defaultFramebufferObject(QPlatformSurface *surface) const
+QIOSContext::FramebufferObject &QIOSContext::backingFramebufferObjectFor(QPlatformSurface *surface) const
 {
+    // We keep track of default-FBOs in the root context of a share-group. This assumes
+    // that the contexts form a tree, where leaf nodes are always destroyed before their
+    // parents. If that assumption (based on the current implementation) doesn't hold we
+    // should probably use QOpenGLMultiGroupSharedResource to track the shared default-FBOs.
+    if (m_sharedContext)
+        return m_sharedContext->backingFramebufferObjectFor(surface);
+
     Q_ASSERT(surface && surface->surface()->surfaceClass() == QSurface::Window);
     QIOSWindow *window = static_cast<QIOSWindow *>(surface);
 
@@ -181,11 +214,27 @@ GLuint QIOSContext::defaultFramebufferObject(QPlatformSurface *surface) const
                     framebufferObject.renderbufferWidth, framebufferObject.renderbufferHeight);
         }
 
-        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-            NSLog(@"Failed to make complete framebuffer object %x", glCheckFramebufferStatus(GL_FRAMEBUFFER));
+        framebufferObject.isComplete = glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
+
+        if (!framebufferObject.isComplete) {
+            qWarning("QIOSContext failed to make complete framebuffer object (%s)",
+                qPrintable(fboStatusString(glCheckFramebufferStatus(GL_FRAMEBUFFER))));
+        }
     }
 
-    return framebufferObject.handle;
+    return framebufferObject;
+}
+
+GLuint QIOSContext::defaultFramebufferObject(QPlatformSurface *surface) const
+{
+    if (surface->surface()->surfaceClass() == QSurface::Offscreen) {
+        // Binding and rendering to the zero-FBO on iOS seems to be
+        // no-ops, so we can safely return 0 here, even if it's not
+        // really a valid FBO on iOS.
+        return 0;
+    }
+
+    return backingFramebufferObjectFor(surface).handle;
 }
 
 void QIOSContext::windowDestroyed(QObject *object)

@@ -30,6 +30,8 @@ pcviewer.cfg
 *.a
 *.la
 *.core
+*.d
+*.dylib
 *.moc
 *.o
 *.obj

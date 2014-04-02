@@ -133,8 +133,10 @@ void QAndroidPlatformScreen::addWindow(QAndroidPlatformWindow *window)
         return;
 
     m_windowStack.prepend(window);
-    if (window->isRaster())
+    if (window->isRaster()) {
+        m_rasterSurfaces.ref();
         setDirty(window->geometry());
+    }
 
     QWindow *w = topWindow();
     QWindowSystemInterface::handleWindowActivated(w);
@@ -148,8 +150,10 @@ void QAndroidPlatformScreen::removeWindow(QAndroidPlatformWindow *window)
 
     m_windowStack.removeOne(window);
     if (window->isRaster()) {
+        m_rasterSurfaces.deref();
         setDirty(window->geometry());
     }
+
     QWindow *w = topWindow();
     QWindowSystemInterface::handleWindowActivated(w);
     topWindowChanged(w);
@@ -238,6 +242,11 @@ void QAndroidPlatformScreen::topWindowChanged(QWindow *w)
     }
 }
 
+int QAndroidPlatformScreen::rasterSurfaces()
+{
+    return m_rasterSurfaces;
+}
+
 void QAndroidPlatformScreen::doRedraw()
 {
     PROFILE_SCOPE;
@@ -246,7 +255,7 @@ void QAndroidPlatformScreen::doRedraw()
         return;
 
     QMutexLocker lock(&m_surfaceMutex);
-    if (m_id == -1) {
+    if (m_id == -1 && m_rasterSurfaces) {
         m_id = QtAndroid::createSurface(this, m_geometry, true, m_depth);
         m_surfaceWaitCondition.wait(&m_surfaceMutex);
     }

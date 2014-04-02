@@ -138,7 +138,7 @@ typedef void (*SrcOverBlendFunc)(uchar *destPixels, int dbpl,
                                  int const_alpha);
 
 typedef void (*SrcOverScaleFunc)(uchar *destPixels, int dbpl,
-                                 const uchar *src, int spbl,
+                                 const uchar *src, int spbl, int srch,
                                  const QRectF &targetRect,
                                  const QRectF &sourceRect,
                                  const QRect &clipRect,

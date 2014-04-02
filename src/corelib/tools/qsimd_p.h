@@ -79,7 +79,7 @@
 
 // SSE intrinsics
 #if defined(__SSE2__) || (defined(QT_COMPILER_SUPPORTS_SSE2) && defined(Q_CC_MSVC))
-#if defined(QT_LINUXBASE)
+#if defined(QT_LINUXBASE) || defined(Q_OS_ANDROID_NO_SDK)
 /// this is an evil hack - the posix_memalign declaration in LSB
 /// is wrong - see http://bugs.linuxbase.org/show_bug.cgi?id=2431
 #  define posix_memalign _lsb_hack_posix_memalign

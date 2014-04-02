@@ -709,12 +709,12 @@ void QQnxWindow::initWindow()
     if (window()->parent() && window()->parent()->handle())
         setParent(window()->parent()->handle());
 
-    if (shouldMakeFullScreen()) {
+    if (shouldMakeFullScreen())
         setGeometryHelper(screen()->geometry());
-        QWindowSystemInterface::handleGeometryChange(window(), screen()->geometry());
-    } else {
+    else
         setGeometryHelper(window()->geometry());
-    }
+
+    QWindowSystemInterface::handleGeometryChange(window(), screen()->geometry());
 }
 
 void QQnxWindow::createWindowGroup()

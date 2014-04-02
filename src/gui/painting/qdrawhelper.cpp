@@ -6522,7 +6522,7 @@ void qInitDrawhelperAsm()
     qDrawHelper[QImage::Format_RGBA8888_Premultiplied].bitmapBlit = qt_bitmapblit8888_sse2;
 
     extern void qt_scale_image_argb32_on_argb32_sse2(uchar *destPixels, int dbpl,
-                                                     const uchar *srcPixels, int sbpl,
+                                                     const uchar *srcPixels, int sbpl, int srch,
                                                      const QRectF &targetRect,
                                                      const QRectF &sourceRect,
                                                      const QRect &clip,

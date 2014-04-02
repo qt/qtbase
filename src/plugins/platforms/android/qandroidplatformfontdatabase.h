@@ -53,6 +53,9 @@ public:
                                            QFont::Style style,
                                            QFont::StyleHint styleHint,
                                            QChar::Script script) const;
+
+private:
+    QHash<QChar::Script, QStringList> m_fallbacks;
 };
 
 #endif // QANDROIDPLATFORMFONTDATABASE_H

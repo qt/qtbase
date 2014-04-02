@@ -171,6 +171,7 @@ public:
     template <typename T>
     T *value(QOpenGLContext *context) {
         QOpenGLContextGroup *group = context->shareGroup();
+        QMutexLocker locker(&group->d_func()->m_mutex);
         T *resource = static_cast<T *>(group->d_func()->m_resources.value(this, 0));
         if (!resource) {
             resource = new T(context);

@@ -28,6 +28,7 @@
 # WINRT_MANIFEST.iconic_tile_icon: Image file for the "iconic" tile template icon. Default provided by the mkspec.
 # WINRT_MANIFEST.iconic_tile_small: Image file for the small "iconic" tile template logo. Default provided by the mkspec.
 # WINRT_MANIFEST.capabilities: Specifies capabilities to add to the capability list.
+# WINRT_MANIFEST.capabilities_device: Specifies device capabilities to add to the capability list. (location, webcam...)
 # WINRT_MANIFEST.dependencies: Specifies dependencies required by the package.
 
 # The manifest is generated for each build pass for normal apps, and only once for vcapps.
@@ -95,10 +96,14 @@
 
     # Capabilities are given as a string list and may change with the configuration (network, sensors, etc.)
     WINRT_MANIFEST.capabilities = $$unique(WINRT_MANIFEST.capabilities)
-    !isEmpty(WINRT_MANIFEST.capabilities)|winphone {
+    WINRT_MANIFEST.capabilities_device = $$unique(WINRT_MANIFEST.capabilities_device)
+
+    !isEmpty(WINRT_MANIFEST.capabilities)|!isEmpty(WINRT_MANIFEST.capabilities_device)|winphone {
         MANIFEST_CAPABILITIES += "<Capabilities>"
         for(CAPABILITY, WINRT_MANIFEST.capabilities): \
             MANIFEST_CAPABILITIES += "  <Capability Name=\"$$CAPABILITY\" />"
+        !winphone:for(CAPABILITY, WINRT_MANIFEST.capabilities_device): \
+            MANIFEST_CAPABILITIES += "  <DeviceCapability Name=\"$$CAPABILITY\" />"
         MANIFEST_CAPABILITIES += "</Capabilities>"
 
         WINRT_MANIFEST.capabilities = $$join(MANIFEST_CAPABILITIES, $$INDENT, $$INDENT)

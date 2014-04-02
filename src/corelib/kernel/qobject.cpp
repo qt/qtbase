@@ -551,7 +551,7 @@ void QMetaCallEvent::placeMetaCall(QObject *object)
     QObject::signalsBlocked() state is transferred to this object.
 
     The object's signals this signal blocker was blocking prior to
-    being moved to, if any, are unblocked \em except in the case where
+    being moved to, if any, are unblocked \e except in the case where
     both instances block the same object's signals and \c *this is
     unblocked while \a other is not, at the time of the move.
 */
@@ -2731,9 +2731,7 @@ QMetaObject::Connection QObject::connect(const QObject *sender, const char *sign
             Qt::ConnectionType type)
     but it uses QMetaMethod to specify signal and method.
 
-    \sa connect(const QObject *sender, const char *signal,
-                const QObject *receiver, const char *method,
-                Qt::ConnectionType type)
+    \sa connect(const QObject *sender, const char *signal, const QObject *receiver, const char *method, Qt::ConnectionType type)
  */
 QMetaObject::Connection QObject::connect(const QObject *sender, const QMetaMethod &signal,
                                      const QObject *receiver, const QMetaMethod &method,

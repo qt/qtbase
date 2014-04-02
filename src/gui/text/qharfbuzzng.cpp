@@ -264,16 +264,12 @@ _hb_qt_unicode_compose(hb_unicode_funcs_t * /*ufuncs*/,
     // ### optimize
     QString s = QString::fromUcs4(&a, 1) + QString::fromUcs4(&b, 1);
     QString normalized = s.normalized(QString::NormalizationForm_C);
-    if (normalized.isEmpty())
-        return false;
 
-    QVector<uint> ucs4str = normalized.toUcs4();
-    if (ucs4str.size() == 1) {
-        *ab = ucs4str.at(0);
-        return true;
-    }
+    QStringIterator it(normalized);
+    Q_ASSERT(it.hasNext()); // size>0
+    *ab = it.next();
 
-    return false;
+    return !it.hasNext(); // size==1
 }
 
 static hb_bool_t
@@ -287,29 +283,28 @@ _hb_qt_unicode_decompose(hb_unicode_funcs_t * /*ufuncs*/,
         return false;
 
     QString normalized = QChar::decomposition(ab);
-    Q_ASSERT(!normalized.isEmpty());
+    if (normalized.isEmpty())
+        return false;
 
-    const QVector<uint> ucs4str = normalized.toUcs4();
-    Q_ASSERT(ucs4str.size() <= HB_UNICODE_MAX_DECOMPOSITION_LEN);
+    QStringIterator it(normalized);
+    Q_ASSERT(it.hasNext()); // size>0
+    *a = it.next();
 
-    if (ucs4str.size() == 1) {
-        *a = ucs4str.at(0);
+    if (!it.hasNext()) { // size==1
         *b = 0;
         return *a != ab;
     }
 
-    if (ucs4str.size() == 2) {
-        *a = ucs4str.at(0);
-        *b = ucs4str.at(1);
-
+    // size>1
+    *b = it.next();
+    if (!it.hasNext()) { // size==2
         // Here's the ugly part: if ab decomposes to a single character and
         // that character decomposes again, we have to detect that and undo
         // the second part :-(
-        QString recomposed = normalized.normalized(QString::NormalizationForm_C);
-        if (recomposed.isEmpty() || recomposed == normalized)
-            return false;
-
-        hb_codepoint_t c = recomposed.toUcs4().at(0);
+        const QString recomposed = normalized.normalized(QString::NormalizationForm_C);
+        QStringIterator jt(recomposed);
+        Q_ASSERT(jt.hasNext()); // size>0
+        const hb_codepoint_t c = jt.next();
         if (c != *a && c != ab) {
             *a = c;
             *b = 0;
@@ -317,17 +312,18 @@ _hb_qt_unicode_decompose(hb_unicode_funcs_t * /*ufuncs*/,
         return true;
     }
 
+    // size>2
     // If decomposed to more than two characters, take the last one,
     // and recompose the rest to get the first component
-    *b = ucs4str.last();
-    normalized.chop(1);
-    QString recomposed = normalized.normalized(QString::NormalizationForm_C);
-    if (recomposed.isEmpty() || recomposed == normalized)
-        return false;
-
+    do {
+        *b = it.next();
+    } while (it.hasNext());
+    normalized.chop(QChar::requiresSurrogates(*b) ? 2 : 1);
+    const QString recomposed = normalized.normalized(QString::NormalizationForm_C);
+    QStringIterator jt(recomposed);
+    Q_ASSERT(jt.hasNext()); // size>0
     // We expect that recomposed has exactly one character now
-    *a = recomposed.toUcs4().at(0);
-
+    *a = jt.next();
     return true;
 }
 
@@ -337,9 +333,6 @@ _hb_qt_unicode_decompose_compatibility(hb_unicode_funcs_t * /*ufuncs*/,
                                        hb_codepoint_t *decomposed,
                                        void * /*user_data*/)
 {
-    if (QChar::decompositionTag(u) == QChar::NoDecomposition) // !NFKD
-        return 0;
-
     const QString normalized = QChar::decomposition(u);
 
     uint outlen = 0;

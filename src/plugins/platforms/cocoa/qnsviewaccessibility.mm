@@ -54,6 +54,15 @@
 
 @implementation QNSView (QNSViewAccessibility)
 
+- (id)childAccessibleElement {
+    if (!m_window->accessibleRoot())
+        return nil;
+
+    QAccessible::Id childId = QAccessible::uniqueId(m_window->accessibleRoot());
+    QCocoaAccessibleElement *child = [QCocoaAccessibleElement createElementWithId: childId parent: self];
+    return [child autorelease];
+}
+
 // The QNSView is a container that the user does not interact directly with:
 // Remove it from the user-visible accessibility tree.
 - (BOOL)accessibilityIsIgnored {
@@ -61,58 +70,22 @@
 }
 
 - (id)accessibilityAttributeValue:(NSString *)attribute {
-
     // activate accessibility updates
     QCocoaIntegration::instance()->accessibility()->setActive(true);
 
-    if ([attribute isEqualToString:NSAccessibilityRoleAttribute]) {
-        if (m_window->accessibleRoot())
-            return QCocoaAccessible::macRole(m_window->accessibleRoot());
-        return NSAccessibilityUnknownRole;
-    } else if ([attribute isEqualToString:NSAccessibilityRoleDescriptionAttribute]) {
-        return NSAccessibilityRoleDescriptionForUIElement(self);
-    } else if ([attribute isEqualToString:NSAccessibilityChildrenAttribute]) {
-        if (!m_window->accessibleRoot())
-            return [super accessibilityAttributeValue:attribute];
-        return QCocoaAccessible::unignoredChildren(self, m_window->accessibleRoot());
+    if ([attribute isEqualToString:NSAccessibilityChildrenAttribute]) {
+        return NSAccessibilityUnignoredChildrenForOnlyChild([self childAccessibleElement]);
     } else {
         return [super accessibilityAttributeValue:attribute];
     }
 }
 
 - (id)accessibilityHitTest:(NSPoint)point {
-    if (!m_window->accessibleRoot())
-        return [super accessibilityHitTest:point];
-
-    QAccessibleInterface *childInterface = m_window->accessibleRoot()->childAt(point.x, qt_mac_flipYCoordinate(point.y));
-    // No child found, meaning we hit the NSView
-    if (!childInterface) {
-        return [super accessibilityHitTest:point];
-    }
-
-    // Hit a child, forward to child accessible interface.
-    QAccessible::Id childAxid = QAccessible::uniqueId(childInterface);
-    // FIXME: parent could be wrong
-    QCocoaAccessibleElement *accessibleElement = [QCocoaAccessibleElement createElementWithId:childAxid parent:self ];
-    [accessibleElement autorelease];
-    return [accessibleElement accessibilityHitTest:point];
+    return [[self childAccessibleElement] accessibilityHitTest: point];
 }
 
 - (id)accessibilityFocusedUIElement {
-    if (!m_window->accessibleRoot())
-        return [super accessibilityFocusedUIElement];
-
-    QAccessibleInterface *childInterface = m_window->accessibleRoot()->focusChild();
-    if (childInterface) {
-        QAccessible::Id childAxid = QAccessible::uniqueId(childInterface);
-        // FIXME: parent could be wrong
-        QCocoaAccessibleElement *accessibleElement = [QCocoaAccessibleElement createElementWithId:childAxid parent:self];
-        [accessibleElement autorelease];
-        return accessibleElement;
-    }
-
-    // should not happen
-    return nil;
+    return [[self childAccessibleElement] accessibilityFocusedUIElement];
 }
 
 @end

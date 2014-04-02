@@ -77,6 +77,8 @@ public:
 
     int rotation() const { return m_currentRotation; }
 
+    QString name() const { return m_name; }
+
     int nativeFormat() const { return (depth() == 32) ? SCREEN_FORMAT_RGBA8888 : SCREEN_FORMAT_RGB565; }
     screen_display_t nativeDisplay() const { return m_display; }
     screen_context_t nativeContext() const { return m_screenContext; }
@@ -132,6 +134,7 @@ private:
     int m_initialRotation;
     int m_currentRotation;
     int m_keyboardHeight;
+    QString m_name;
     QSize m_initialPhysicalSize;
     QSize m_currentPhysicalSize;
     Qt::ScreenOrientation m_nativeOrientation;

@@ -177,6 +177,11 @@ QQnxScreen::QQnxScreen(screen_context_t screenContext, screen_display_t display,
 
     m_currentGeometry = m_initialGeometry = QRect(0, 0, val[0], val[1]);
 
+    char name[100];
+    Q_SCREEN_CHECKERROR(screen_get_display_property_cv(m_display, SCREEN_PROPERTY_ID_STRING, 100,
+                                                       name), "Failed to query display name");
+    m_name = QString::fromUtf8(name);
+
     // Cache size of this display in millimeters. We have to take care of the orientation.
     // libscreen always reports the physical size dimensions as width and height in the
     // native orientation. Contrary to this, QPlatformScreen::physicalSize() expects the

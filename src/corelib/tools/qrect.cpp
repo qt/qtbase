@@ -52,6 +52,7 @@ QT_BEGIN_NAMESPACE
     \class QRect
     \inmodule QtCore
     \ingroup painting
+    \reentrant
 
     \brief The QRect class defines a rectangle in the plane using
     integer precision.
@@ -1298,6 +1299,7 @@ QDebug operator<<(QDebug dbg, const QRect &r)
     \class QRectF
     \inmodule QtCore
     \ingroup painting
+    \reentrant
 
     \brief The QRectF class defines a rectangle in the plane using floating
     point precision.

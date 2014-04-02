@@ -82,16 +82,7 @@ QVector<EGLint> q_createConfigAttributesFromFormat(const QSurfaceFormat &format)
     // put in the list before 32-bit configs. So, to make sure 16-bit is preffered over 32-bit,
     // we must set the red/green/blue sizes to zero. This has an unfortunate consequence that
     // if the application sets the red/green/blue size to 5/6/5 on the QSurfaceFormat,
-    // they will probably get a 32-bit config, even when there's an RGB565 config available.
-
-//    // Now normalize the values so -1 becomes 0
-//    redSize   = redSize   > 0 ? redSize   : 0;
-//    greenSize = greenSize > 0 ? greenSize : 0;
-//    blueSize  = blueSize  > 0 ? blueSize  : 0;
-//    alphaSize = alphaSize > 0 ? alphaSize : 0;
-//    depthSize = depthSize > 0 ? depthSize : 0;
-//    stencilSize = stencilSize > 0 ? stencilSize : 0;
-//    sampleCount = sampleCount > 0 ? sampleCount : 0;
+    // they might still get a 32-bit config, even when there's an RGB565 config available.
 
     QVector<EGLint> configAttributes;
 
@@ -446,11 +437,9 @@ void q_printEglConfig(EGLDisplay display, EGLConfig config)
     for (index = 0; attrs[index].attr != -1; ++index) {
         EGLint value;
         if (eglGetConfigAttrib(display, config, attrs[index].attr, &value)) {
-            qWarning("\t%s: %d\n", attrs[index].name, (int)value);
+            qDebug("\t%s: %d", attrs[index].name, (int)value);
         }
     }
-
-    qWarning("\n");
 }
 
 #ifdef Q_OS_LINUX

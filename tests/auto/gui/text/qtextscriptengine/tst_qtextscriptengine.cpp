@@ -86,11 +86,12 @@ private slots:
     void greek_data();
     void greek();
 
-    void controlInSyllable_qtbug14204();
-    void combiningMarks_qtbug15675();
-
     void mirroredChars_data();
     void mirroredChars();
+
+    void controlInSyllable_qtbug14204();
+    void combiningMarks_qtbug15675_data();
+    void combiningMarks_qtbug15675();
 
     void thaiIsolatedSaraAm();
     void thaiWithZWJ();
@@ -1051,87 +1052,18 @@ void tst_QTextScriptEngine::greek()
     doShapingTests();
 }
 
-void tst_QTextScriptEngine::controlInSyllable_qtbug14204()
-{
-#if 0 && defined(Q_OS_UNIX)
-    // ### the test is incorrect -> disable for now
-    QString s;
-    s.append(QChar(0x0915));
-    s.append(QChar(0x094d));
-    s.append(QChar(0x200d));
-    s.append(QChar(0x0915));
-
-    QTextLayout layout(s);
-    QTextEngine *e = layout.engine();
-    e->itemize();
-    e->shape(0);
-
-    QCOMPARE(e->layoutData->items[0].num_glyphs, ushort(2));
-    QVERIFY(e->layoutData->glyphLayout.advances[1].toInt() != 0);
-#endif
-}
-
-void tst_QTextScriptEngine::combiningMarks_qtbug15675()
-{
-#if defined(Q_OS_MAC)
-    QString s;
-    s.append(QChar(0x0061));
-    s.append(QChar(0x0062));
-    s.append(QChar(0x0300));
-    s.append(QChar(0x0063));
-
-    QFont font("Monaco");
-    QTextLayout layout(s, font);
-    QTextEngine *e = layout.engine();
-    e->itemize();
-    e->shape(0);
-
-    QCOMPARE(e->layoutData->items[0].num_glyphs, ushort(4));
-    QCOMPARE(e->layoutData->glyphLayout.advances[2].toInt(), 0);
-#else
-    QFontDatabase db;
-
-    if (!db.families().contains("DejaVu Sans Mono"))
-        QSKIP("Required font (DejaVu Sans Mono) doesn't exist, skip test.");
-
-    QString s;
-    s.append(QChar(0x0062));
-    s.append(QChar(0x0332));
-    s.append(QChar(0x0063));
-
-    QTextLayout layout(s, QFont("DejaVu Sans Mono"));
-    QTextEngine *e = layout.engine();
-    e->itemize();
-    e->shape(0);
-
-    QCOMPARE(e->layoutData->items[0].num_glyphs, ushort(3));
-    QCOMPARE(e->layoutData->glyphLayout.advances[1].toInt(), 0);
-#endif
-}
-
 void tst_QTextScriptEngine::mirroredChars_data()
 {
-    QTest::addColumn<int>("hintingPreference");
+    QTest::addColumn<QString>("s");
 
-    QTest::newRow("Default hinting") << int(QFont::PreferDefaultHinting);
-    QTest::newRow("No hinting") << int(QFont::PreferNoHinting);
-    QTest::newRow("Vertical hinting") << int(QFont::PreferVerticalHinting);
-    QTest::newRow("Full hinting") << int(QFont::PreferFullHinting);
+    QTest::newRow("()") << QStringLiteral("()");
+    QTest::newRow("[]") << QStringLiteral("[]");
+    QTest::newRow("{}") << QStringLiteral("{}");
 }
 
 void tst_QTextScriptEngine::mirroredChars()
 {
-#if defined(Q_OS_MAC)
-    QSKIP("Not supported on Mac");
-#endif
-    QFETCH(int, hintingPreference);
-
-    QFont font;
-    font.setHintingPreference(QFont::HintingPreference(hintingPreference));
-
-    QString s;
-    s.append(QLatin1Char('('));
-    s.append(QLatin1Char(')'));
+    QFETCH(QString, s);
 
     glyph_t leftParenthesis;
     glyph_t rightParenthesis;
@@ -1144,10 +1076,12 @@ void tst_QTextScriptEngine::mirroredChars()
 
         QTextEngine *e = layout.engine();
         e->itemize();
+        QCOMPARE(e->layoutData->items.size(), 1);
+
         e->shape(0);
         QCOMPARE(e->layoutData->items[0].num_glyphs, ushort(2));
 
-        const QGlyphLayout &glyphLayout = e->layoutData->glyphLayout;
+        const QGlyphLayout glyphLayout = e->shapedGlyphs(&e->layoutData->items[0]);
         leftParenthesis = glyphLayout.glyphs[0];
         rightParenthesis = glyphLayout.glyphs[1];
     }
@@ -1158,61 +1092,170 @@ void tst_QTextScriptEngine::mirroredChars()
 
         QTextEngine *e = layout.engine();
         e->itemize();
+        QCOMPARE(e->layoutData->items.size(), 1);
+
         e->shape(0);
         QCOMPARE(e->layoutData->items[0].num_glyphs, ushort(2));
 
-        const QGlyphLayout &glyphLayout = e->layoutData->glyphLayout;
+        const QGlyphLayout glyphLayout = e->shapedGlyphs(&e->layoutData->items[0]);
         QCOMPARE(glyphLayout.glyphs[0], rightParenthesis);
         QCOMPARE(glyphLayout.glyphs[1], leftParenthesis);
     }
 }
 
+void tst_QTextScriptEngine::controlInSyllable_qtbug14204()
+{
+    QFontDatabase db;
+    if (!db.families().contains(QStringLiteral("Aparajita")))
+        QSKIP("couldn't find 'Aparajita' font");
+
+    QFont font(QStringLiteral("Aparajita"));
+    font.setStyleStrategy(QFont::NoFontMerging);
+
+    QString s;
+    s.append(QChar(0x0915));
+    s.append(QChar(0x094d));
+    s.append(QChar(0x200d));
+    s.append(QChar(0x0915));
+
+    QTextLayout layout(s, font);
+    QTextEngine *e = layout.engine();
+    e->itemize();
+    QCOMPARE(e->layoutData->items.size(), 1);
+
+    QFontEngine *fe = e->fontEngine(e->layoutData->items[0]);
+    if (fe->type() == QFontEngine::Box)
+        QSKIP("OpenType support missing for script");
+    QCOMPARE(fe->fontDef.family, font.family());
+
+    e->shape(0);
+    QCOMPARE(e->layoutData->items[0].num_glyphs, ushort(2));
+
+    const ushort *log_clusters = e->logClusters(&e->layoutData->items[0]);
+    QCOMPARE(log_clusters[0], ushort(0));
+    QCOMPARE(log_clusters[1], ushort(0));
+    QCOMPARE(log_clusters[2], ushort(0));
+    QCOMPARE(log_clusters[3], ushort(0));
+}
+
+void tst_QTextScriptEngine::combiningMarks_qtbug15675_data()
+{
+    QTest::addColumn<QFont>("font");
+    QTest::addColumn<QString>("string");
+
+    bool hasTests = false;
+
+    QStringList families;
+    families << QStringLiteral("Monaco");
+    families << QStringLiteral("DejaVu Sans Mono");
+
+    foreach (const QString &family, families) {
+        QFont font(family);
+        font.setStyleStrategy(QFont::NoFontMerging);
+        if (QFontInfo(font).family() != family)
+            continue;
+
+        hasTests = true;
+
+        QString s(QStringLiteral("ab cd"));
+        for (ushort uc = 0x0300; uc < 0x0370; ++uc) {
+            s[2] = QChar(uc);
+            QByteArray testName = family.toLatin1() + ": ab<U+" + QByteArray::number(uc, 16).rightJustified(4, '0') + ">cd";
+            QTest::newRow(testName.constData()) << font << s;
+        }
+    }
+
+    if (!hasTests)
+        QSKIP("Couldn't find required fonts, skip test.");
+}
+
+void tst_QTextScriptEngine::combiningMarks_qtbug15675()
+{
+    QFETCH(QFont, font);
+    QFETCH(QString, string);
+
+    QTextLayout layout(string, font);
+    QTextEngine *e = layout.engine();
+    e->itemize();
+    QCOMPARE(e->layoutData->items.size(), 1);
+
+    QFontEngine *fe = e->fontEngine(e->layoutData->items[0]);
+    if (fe->type() == QFontEngine::Box)
+        QSKIP("OpenType support missing for script");
+    QCOMPARE(fe->fontDef.family, font.family());
+
+    e->shape(0);
+    const int diff = e->layoutData->items[0].num_glyphs - string.size();
+    QVERIFY(diff >= -1 && diff <= 1); // could compose or decompose exactly one character
+
+    const ushort *log_clusters = e->logClusters(&e->layoutData->items[0]);
+    QCOMPARE(log_clusters[0], ushort(0));
+    QCOMPARE(log_clusters[1], ushort(1));
+    QCOMPARE(log_clusters[2], ushort(1));
+    QCOMPARE(log_clusters[3], ushort(3 + diff));
+    QCOMPARE(log_clusters[4], ushort(4 + diff));
+
+    const QGlyphLayout glyphLayout = e->shapedGlyphs(&e->layoutData->items[0]);
+    for (int i = 0; i < glyphLayout.numGlyphs; ++i) {
+        if ((diff >= 0 && i == 2) || (diff > 0 && i == 2 + diff))
+            QCOMPARE(glyphLayout.advances[i].toInt(), 0);
+        else
+            QVERIFY(glyphLayout.advances[i].toInt() != 0);
+    }
+}
+
 void tst_QTextScriptEngine::thaiIsolatedSaraAm()
 {
-    if (QFontDatabase().families(QFontDatabase::Any).contains("Waree")) {
-        QString s;
-        s.append(QChar(0x0e33));
+    QFontDatabase db;
+    if (!db.families().contains("Waree"))
+        QSKIP("couldn't find 'Waree' font");
 
-        QTextLayout layout(s, QFont("Waree"));
-        layout.setCacheEnabled(true);
-        layout.beginLayout();
-        layout.createLine();
-        layout.endLayout();
+    QFont font(QStringLiteral("Waree"));
+    font.setStyleStrategy(QFont::NoFontMerging);
 
-        QTextEngine *e = layout.engine();
-        e->itemize();
-        e->shape(0);
-        QCOMPARE(e->layoutData->items[0].num_glyphs, ushort(3));
+    QString s;
+    s.append(QChar(0x0e33));
 
-        unsigned short *logClusters = e->logClusters(&e->layoutData->items[0]);
-        QCOMPARE(logClusters[0], ushort(0));
-    } else
-        QSKIP("Cannot find Waree.");
+    QTextLayout layout(s, font);
+    QTextEngine *e = layout.engine();
+    e->itemize();
+    QCOMPARE(e->layoutData->items.size(), 1);
+
+    QFontEngine *fe = e->fontEngine(e->layoutData->items[0]);
+    if (fe->type() == QFontEngine::Box)
+        QSKIP("OpenType support missing for script");
+    QCOMPARE(fe->fontDef.family, font.family());
+
+    e->shape(0);
+    QVERIFY(e->layoutData->items[0].num_glyphs > 0);
+
+    const ushort *log_clusters = e->logClusters(&e->layoutData->items[0]);
+    QCOMPARE(log_clusters[0], ushort(0));
 }
 
 void tst_QTextScriptEngine::thaiWithZWJ()
 {
-#ifdef Q_OS_WIN
-    QSKIP("This test currently fails on Windows - QTBUG-24565");
-#endif
+    QFontDatabase db;
+    if (!db.families().contains("Waree"))
+        QSKIP("couldn't find 'Waree' font");
+
+    QFont font(QStringLiteral("Waree"));
+    font.setStyleStrategy(QFont::NoFontMerging);
+
     QString s(QString::fromUtf8("\xe0\xb8\xa3\xe2\x80\x8d\xe0\xb8\xa3\xe2\x80"
                                 "\x8c\x2e\xe0\xb8\xa3\x2e\xe2\x80\x9c\xe0\xb8"
                                 "\xa3\xe2\x80\xa6\xe0\xb8\xa3\xe2\x80\x9d\xe0"
                                 "\xb8\xa3\xa0\xe0\xb8\xa3\xe6\x9c\xac\xe0\xb8\xa3")
               + QChar(0x0363)/*superscript 'a', for testing Inherited class*/);
-    QTextLayout layout(s);
-    layout.setCacheEnabled(true);
-    layout.beginLayout();
-    layout.createLine();
-    layout.endLayout();
 
+    QTextLayout layout(s, font);
     QTextEngine *e = layout.engine();
-    e->width(0, s.length()); //force itemize and shape
-
-    // A thai implementation could either remove the ZWJ and ZWNJ characters, or hide them.
-    // The current implementation hides them, so we test for that.
-    // But make sure that we don't hide anything else
+    e->itemize();
     QCOMPARE(e->layoutData->items.size(), 11);
+
+    for (int item = 0; item < e->layoutData->items.size(); ++item)
+        e->shape(item);
+
     QCOMPARE(e->layoutData->items[0].num_glyphs, ushort(7));  // Thai: The ZWJ and ZWNJ characters are inherited, so should be part of the thai script
     QCOMPARE(e->layoutData->items[1].num_glyphs, ushort(1));  // Common: The smart quotes cannot be handled by thai, so should be a separate item
     QCOMPARE(e->layoutData->items[2].num_glyphs, ushort(1));  // Thai: Thai character
@@ -1231,15 +1274,18 @@ void tst_QTextScriptEngine::thaiWithZWJ()
         QCOMPARE(logClusters[i], ushort(i));
     for (int i = 0; i < 10; i++)
         QCOMPARE(logClusters[i+7], ushort(0));
-#ifdef Q_OS_MAC
-    QEXPECT_FAIL("", "QTBUG-23064", Abort);
-#endif
     QCOMPARE(logClusters[17], ushort(1));
 
-    // The only characters that we should be hiding are the ZWJ and ZWNJ characters in position 1
-    // and 3.
-    for (int i = 0; i < 18; i++)
-        QCOMPARE((bool)e->layoutData->glyphLayout.attributes[i].dontPrint, (i == 1 || i == 3));
+    // A thai implementation could either remove the ZWJ and ZWNJ characters, or hide them.
+    // The current implementation hides them, so we test for that.
+    // The only characters that we should be hiding are the ZWJ and ZWNJ characters in position 1 and 3.
+    const QGlyphLayout glyphLayout = e->layoutData->glyphLayout;
+    for (int i = 0; i < 18; i++) {
+        if (i == 1 || i == 3)
+            QCOMPARE(glyphLayout.advances[i].toInt(), 0);
+        else
+            QVERIFY(glyphLayout.advances[i].toInt() != 0);
+    }
 }
 
 void tst_QTextScriptEngine::thaiMultipleVowels()
@@ -1253,14 +1299,13 @@ void tst_QTextScriptEngine::thaiMultipleVowels()
 
     for (int i = 0; i < 10; i++)
         s += s; //Repeat the string to make it more likely to crash if we have a buffer overflow
-    QTextLayout layout(s);
-    layout.setCacheEnabled(true);
-    layout.beginLayout();
-    layout.createLine();
-    layout.endLayout();
 
+    QTextLayout layout(s);
     QTextEngine *e = layout.engine();
-    e->width(0, s.length()); //force itemize and shape
+    e->itemize();
+
+    for (int item = 0; item < e->layoutData->items.size(); ++item)
+        e->shape(item);
 
     // If we haven't crashed at this point, then the test has passed.
 }

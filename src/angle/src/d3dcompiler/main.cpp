@@ -52,6 +52,12 @@
 #include <qt_windows.h>
 #include <d3dcommon.h>
 
+#ifdef D3DCOMPILER_LINKED
+namespace D3D {
+#  include <d3dcompiler.h>
+}
+#endif // D3DCOMPILER_LINKED
+
 Q_LOGGING_CATEGORY(QT_D3DCOMPILER, "qt.angle.d3dcompiler")
 
 namespace D3DCompiler {
@@ -127,6 +133,7 @@ private:
 
 static bool loadCompiler()
 {
+#ifndef D3DCOMPILER_LINKED
     static HMODULE d3dcompiler = 0;
     if (!d3dcompiler) {
         const wchar_t *dllNames[] = {
@@ -157,7 +164,9 @@ static bool loadCompiler()
         if (!d3dcompiler)
             qCDebug(QT_D3DCOMPILER) << "Unable to load D3D shader compiler.";
     }
-
+#else // !D3DCOMPILER_LINKED
+    compile = &D3D::D3DCompile;
+#endif // D3DCOMPILER_LINKED
     return bool(compile);
 }
 
@@ -190,9 +199,19 @@ HRESULT WINAPI D3DCompile(
     }
 
     static bool initialized = false;
-    static QString binaryPath;
+    static QStringList binaryPaths;
     static QString sourcePath;
     if (!initialized) {
+        // Precompiled directory
+        QString precompiledPath;
+        if (qEnvironmentVariableIsSet("QT_D3DCOMPILER_BINARY_DIR"))
+            precompiledPath = QString::fromLocal8Bit(qgetenv("QT_D3DCOMPILER_BINARY_DIR"));
+        else
+            precompiledPath = QStringLiteral(":/qt.d3dcompiler"); // Default QRC path
+        if (QDir(precompiledPath).exists())
+            binaryPaths.append(precompiledPath);
+
+        // Service directory
         QString base;
         if (qEnvironmentVariableIsSet("QT_D3DCOMPILER_DIR"))
             base = QString::fromLocal8Bit(qgetenv("QT_D3DCOMPILER_DIR"));
@@ -203,28 +222,33 @@ HRESULT WINAPI D3DCompile(
                 base = location + QStringLiteral("/d3dcompiler");
         }
 
-        // Unless the service has run, this directory won't exist.
+        // Create the directory structure
         QDir baseDir(base);
-        if (baseDir.exists()) {
-            // Check if we have can read/write blobs
-            if (baseDir.exists(QStringLiteral("binary"))) {
-                binaryPath = baseDir.absoluteFilePath(QStringLiteral("binary/"));
-            } else {
-                qCWarning(QT_D3DCOMPILER) << "D3D compiler base directory exists, but the binary directory does not.\n"
-                                             "Check the compiler service.";
+        if (!baseDir.exists()) {
+            baseDir.cdUp();
+            if (!baseDir.mkdir(QStringLiteral("d3dcompiler"))) {
+                qCWarning(QT_D3DCOMPILER) << "Unable to create shader base directory:"
+                                          << QDir::toNativeSeparators(baseDir.absolutePath());
+                if (binaryPaths.isEmpty()) // No possibility to get a shader, abort
+                    return E_FAIL;
             }
+            baseDir.cd(QStringLiteral("d3dcompiler"));
+        }
 
-            // Check if we can write shader source
-            if (baseDir.exists(QStringLiteral("source"))) {
-                sourcePath = baseDir.absoluteFilePath(QStringLiteral("source/"));
-            } else {
-                qCWarning(QT_D3DCOMPILER) << "D3D compiler base directory exists, but the source directory does not.\n"
-                                             "Check the compiler service.";
-            }
+        if (!baseDir.exists(QStringLiteral("binary")) && !baseDir.mkdir(QStringLiteral("binary"))) {
+            qCWarning(QT_D3DCOMPILER) << "Unable to create shader binary directory:"
+                                      << QDir::toNativeSeparators(baseDir.absoluteFilePath(QStringLiteral("binary")));
+            if (binaryPaths.isEmpty()) // No possibility to get a shader, abort
+                return E_FAIL;
         } else {
-            qCWarning(QT_D3DCOMPILER) << "D3D compiler base directory does not exist:"
-                                      << QDir::toNativeSeparators(base)
-                                      << "\nCheck that the compiler service is running.";
+            binaryPaths.append(baseDir.absoluteFilePath(QStringLiteral("binary/")));
+        }
+
+        if (!baseDir.exists(QStringLiteral("source")) && !baseDir.mkdir(QStringLiteral("source"))) {
+            qCWarning(QT_D3DCOMPILER) << "Unable to create shader source directory:"
+                                      << QDir::toNativeSeparators(baseDir.absoluteFilePath(QStringLiteral("source")));
+        } else {
+            sourcePath = baseDir.absoluteFilePath(QStringLiteral("source/"));
         }
 
         initialized = true;
@@ -245,8 +269,8 @@ HRESULT WINAPI D3DCompile(
             + QLatin1Char('!') + QString::number(sflags);
 
     // Check if pre-compiled shader blob is available
-    if (!binaryPath.isEmpty()) {
-        QString blobName = binaryPath + fileName;
+    foreach (const QString &path, binaryPaths) {
+        QString blobName = path + fileName;
         QFile blob(blobName);
         while (!blob.exists()) {
             // Progressively drop optional parts
@@ -262,6 +286,7 @@ HRESULT WINAPI D3DCompile(
                 return S_FALSE;
             }
             qCDebug(QT_D3DCOMPILER) << "Found, but unable to open, precompiled shader blob at" << blob.fileName();
+            break;
         }
     }
 
@@ -284,7 +309,7 @@ HRESULT WINAPI D3DCompile(
 
         QElapsedTimer timer;
         timer.start();
-        QFile blob(binaryPath + fileName);
+        QFile blob(binaryPaths.last() + fileName);
         while (!(blob.exists() && blob.open(QFile::ReadOnly)) && timer.elapsed() < timeout)
             QThread::msleep(100);
 

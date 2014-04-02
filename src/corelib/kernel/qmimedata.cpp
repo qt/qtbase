@@ -299,7 +299,7 @@ QVariant QMimeDataPrivate::retrieveTypedData(const QString &format, QVariant::Ty
     QMacPasteboardMime maps MIME to Mac flavors.
 
     \sa QClipboard, QDragEnterEvent, QDragMoveEvent, QDropEvent, QDrag,
-        QWindowsMime, QMacPasteboardMime, {Drag and Drop}
+        QMacPasteboardMime, {Drag and Drop}
 */
 
 /*!

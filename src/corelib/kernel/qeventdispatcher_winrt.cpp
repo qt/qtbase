@@ -45,6 +45,7 @@
 #include <QtCore/QThread>
 #include <QtCore/QHash>
 #include <private/qabstracteventdispatcher_p.h>
+#include <private/qcoreapplication_p.h>
 
 #include <wrl.h>
 #include <windows.foundation.h>
@@ -109,6 +110,11 @@ QEventDispatcherWinRT::QEventDispatcherWinRT(QObject *parent)
     : QAbstractEventDispatcher(*new QEventDispatcherWinRTPrivate, parent)
 {
     Q_D(QEventDispatcherWinRT);
+
+    // Only look up the event dispatcher in the main thread
+    if (QThread::currentThread() != QCoreApplicationPrivate::theMainThread)
+        return;
+
     ComPtr<ICoreApplication> application;
     HRESULT hr = RoGetActivationFactory(HString::MakeReference(RuntimeClass_Windows_ApplicationModel_Core_CoreApplication).Get(),
                                         IID_PPV_ARGS(&application));

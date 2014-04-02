@@ -155,13 +155,18 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QDBusReply::error()
+    \fn const QDBusError& QDBusReply::error() const
 
     Returns the error code that was returned from the remote function call. If the remote call did
     not return an error (i.e., if it succeeded), then the QDBusError object that is returned will
     not be a valid error code (QDBusError::isValid() will return false).
 
     \sa isValid()
+*/
+
+/*!
+    \fn const QDBusError& QDBusReply::error()
+    \overload
 */
 
 /*!

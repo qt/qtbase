@@ -1829,21 +1829,21 @@ void QXcbWindow::handlePropertyNotifyEvent(const xcb_property_notify_event_t *ev
             return;
 
         Qt::WindowState newState = Qt::WindowNoState;
-        if (event->atom == atom(QXcbAtom::_NET_WM_STATE)) { // WM_STATE: Quick check for 'Minimize'.
+        if (event->atom == atom(QXcbAtom::WM_STATE)) { // WM_STATE: Quick check for 'Minimize'.
             const xcb_get_property_cookie_t get_cookie =
-            xcb_get_property(xcb_connection(), 0, m_window, atom(QXcbAtom::_NET_WM_STATE),
-                                 XCB_ATOM_ANY, 0, 1024);
+            xcb_get_property(xcb_connection(), 0, m_window, atom(QXcbAtom::WM_STATE),
+                             XCB_ATOM_ANY, 0, 1024);
 
             xcb_get_property_reply_t *reply =
                 xcb_get_property_reply(xcb_connection(), get_cookie, NULL);
 
-            if (reply && reply->format == 32 && reply->type == atom(QXcbAtom::_NET_WM_STATE)) {
+            if (reply && reply->format == 32 && reply->type == atom(QXcbAtom::WM_STATE)) {
                 const quint32 *data = (const quint32 *)xcb_get_property_value(reply);
                 if (reply->length != 0 && XCB_WM_STATE_ICONIC == data[0])
                     newState = Qt::WindowMinimized;
             }
             free(reply);
-        } // WM_STATE: Quick check for 'Minimize'.
+        }
         if (newState != Qt::WindowMinimized) { // Something else changed, get _NET_WM_STATE.
             const NetWmStates states = netWmStates();
             if ((states & NetWmStateMaximizedHorz) && (states & NetWmStateMaximizedVert))

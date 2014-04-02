@@ -407,6 +407,9 @@ Q_GLOBAL_STATIC(QEventUserEventRegistration, userEventRegistrationHelper)
     between QEvent::User and QEvent::MaxUser that has not yet been
     registered. The \a hint is ignored if its value is not between
     QEvent::User and QEvent::MaxUser.
+
+    Returns -1 if all available values are already taken or the
+    program is shutting down.
 */
 int QEvent::registerEventType(int hint)
 {

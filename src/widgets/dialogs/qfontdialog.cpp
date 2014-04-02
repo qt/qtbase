@@ -256,8 +256,10 @@ void QFontDialogPrivate::init()
     }
 
     updateFamilies();
-    if (familyList->count() != 0)
+    if (familyList->count() != 0) {
         familyList->setCurrentItem(0);
+        sizeList->setCurrentItem(0);
+    }
 
     // grid layout
     QGridLayout *mainGrid = new QGridLayout(q);
@@ -621,16 +623,13 @@ void QFontDialogPrivate::updateSizes()
         QStringList str_sizes;
         for(QList<int>::const_iterator it = sizes.constBegin(); it != sizes.constEnd(); ++it) {
             str_sizes.append(QString::number(*it));
-            if (current == -1 && *it >= size)
+            if (current == -1 && *it == size)
                 current = i;
             ++i;
         }
         sizeList->model()->setStringList(str_sizes);
-        if (current == -1) {
-            // we request a size bigger than the ones in the list, select the biggest one
-            current = sizeList->count() - 1;
-        }
-        sizeList->setCurrentItem(current);
+        if (current != -1)
+            sizeList->setCurrentItem(current);
 
         const QSignalBlocker blocker(sizeEdit);
         sizeEdit->setText((smoothScalable ? QString::number(size) : sizeList->currentText()));
@@ -750,7 +749,10 @@ void QFontDialogPrivate::_q_sizeChanged(const QString &s)
                 break;
         }
         const QSignalBlocker blocker(sizeList);
-        sizeList->setCurrentItem(i);
+        if (sizeList->text(i).toInt() == this->size)
+            sizeList->setCurrentItem(i);
+        else
+            sizeList->clearSelection();
     }
     _q_updateSample();
 }
