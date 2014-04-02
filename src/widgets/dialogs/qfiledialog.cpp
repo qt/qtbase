@@ -533,7 +533,7 @@ QFileDialogPrivate::QFileDialogPrivate()
         showHiddenAction(0),
         useDefaultCaption(true),
         qFileDialogUi(0),
-        options(new QFileDialogOptions)
+        options(QFileDialogOptions::create())
 {
 }
 

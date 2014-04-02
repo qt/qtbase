@@ -200,7 +200,7 @@ public:
 #endif
                            compatMode(false), autoAddOkButton(true),
                            detectedEscapeButton(0), informativeLabel(0),
-                           options(new QMessageDialogOptions) { }
+                           options(QMessageDialogOptions::create()) { }
 
     void init(const QString &title = QString(), const QString &text = QString());
     void setupLayout();

@@ -92,7 +92,7 @@ public:
         SetColorAll = ShowColor | SelectColor
     };
 
-    QColorDialogPrivate() : options(new QColorDialogOptions)
+    QColorDialogPrivate() : options(QColorDialogOptions::create())
 #ifdef Q_OS_WIN32
         , updateTimer(0)
 #endif

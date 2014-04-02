@@ -110,7 +110,7 @@ static const Qt::WindowFlags DefaultWindowFlags =
 
 QFontDialogPrivate::QFontDialogPrivate()
     : writingSystem(QFontDatabase::Any),
-      options(QSharedPointer<QFontDialogOptions>::create())
+      options(QFontDialogOptions::create())
 {
 }
 
