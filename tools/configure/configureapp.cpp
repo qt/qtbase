@@ -190,6 +190,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "POSIX_IPC" ]       = "no";
     dictionary[ "QT_GLIB" ]         = "no";
     dictionary[ "QT_ICONV" ]        = "auto";
+    dictionary[ "QT_EVDEV" ]        = "auto";
     dictionary[ "QT_INOTIFY" ]      = "auto";
     dictionary[ "QT_EVENTFD" ]      = "auto";
     dictionary[ "QT_CUPS" ]         = "auto";
@@ -1255,6 +1256,12 @@ void Configure::parseCmdLine()
             dictionary["QT_ICONV"] = "gnu";
         }
 
+        else if (configCmdLine.at(i) == "-no-evdev") {
+            dictionary[ "QT_EVDEV" ] = "no";
+        } else if (configCmdLine.at(i) == "-evdev") {
+            dictionary[ "QT_EVDEV" ] = "yes";
+        }
+
         else if (configCmdLine.at(i) == "-inotify") {
             dictionary["QT_INOTIFY"] = "yes";
         } else if (configCmdLine.at(i) == "-no-inotify") {
@@ -1668,6 +1675,7 @@ void Configure::applySpecSpecifics()
         dictionary[ "QT_CUPS" ]             = "no";
         dictionary[ "QT_GLIB" ]             = "no";
         dictionary[ "QT_ICONV" ]            = "no";
+        dictionary[ "QT_EVDEV" ]            = "no";
         dictionary[ "FONT_CONFIG" ]         = "auto";
 
         dictionary["DECORATIONS"]           = "default windows styled";
@@ -1825,6 +1833,9 @@ bool Configure::displayHelp()
         desc("QT_ICONV",    "yes",     "-iconv",        "Enable support for iconv(3).");
         desc("QT_ICONV",    "yes",     "-sun-iconv",    "Enable support for iconv(3) using sun-iconv.");
         desc("QT_ICONV",    "yes",     "-gnu-iconv",    "Enable support for iconv(3) using gnu-libiconv.\n");
+
+        desc("QT_EVDEV",    "no",      "-no-evdev",     "Do not enable support for evdev.");
+        desc("QT_EVDEV",    "yes",     "-evdev",        "Enable support for evdev.");
 
         desc("QT_INOTIFY",  "yes",     "-inotify",      "Explicitly enable Qt inotify(7) support.");
         desc("QT_INOTIFY",  "no",      "-no-inotify",   "Explicitly disable Qt inotify(7) support.\n");
@@ -2237,6 +2248,8 @@ bool Configure::checkAvailability(const QString &part)
         available = tryCompileProject("qpa/direct2d");
     } else if (part == "ICONV") {
         available = tryCompileProject("unix/iconv") || tryCompileProject("unix/gnu-libiconv");
+    } else if (part == "EVDEV") {
+        available = tryCompileProject("unix/evdev");
     } else if (part == "INOTIFY") {
         available = tryCompileProject("unix/inotify");
     } else if (part == "QT_EVENTFD") {
@@ -2386,6 +2399,10 @@ void Configure::autoDetection()
     // Detection of iconv support
     if (dictionary["QT_ICONV"] == "auto")
         dictionary["QT_ICONV"] = checkAvailability("ICONV") ? "yes" : "no";
+
+    // Detection of evdev support
+    if (dictionary["QT_EVDEV"] == "auto")
+        dictionary["QT_EVDEV"] = checkAvailability("EVDEV") ? "yes" : "no";
 
     // Detection of inotify
     if (dictionary["QT_INOTIFY"] == "auto")
@@ -2804,6 +2821,9 @@ void Configure::generateOutputVars()
         qtConfig += "sun-libiconv";
     else if (dictionary["QT_ICONV"] == "gnu")
         qtConfig += "gnu-libiconv";
+
+    if (dictionary["QT_EVDEV"] == "yes")
+        qtConfig += "evdev";
 
     if (dictionary["QT_INOTIFY"] == "yes")
         qtConfig += "inotify";
@@ -3487,6 +3507,7 @@ void Configure::generateConfigfiles()
         if (dictionary["LARGE_FILE"] == "yes")       qconfigList += "QT_LARGEFILE_SUPPORT=64";
         if (dictionary["QT_CUPS"] == "no")           qconfigList += "QT_NO_CUPS";
         if (dictionary["QT_ICONV"] == "no")          qconfigList += "QT_NO_ICONV";
+        if (dictionary["QT_EVDEV"] == "no")          qconfigList += "QT_NO_EVDEV";
         if (dictionary["QT_GLIB"] == "no")           qconfigList += "QT_NO_GLIB";
         if (dictionary["QT_INOTIFY"] == "no")        qconfigList += "QT_NO_INOTIFY";
         if (dictionary["QT_EVENTFD"] ==  "no")       qconfigList += "QT_NO_EVENTFD";
@@ -3583,6 +3604,7 @@ void Configure::displayConfig()
     sout << "Large File support.........." << dictionary[ "LARGE_FILE" ] << endl;
     sout << "NIS support................." << dictionary[ "NIS" ] << endl;
     sout << "Iconv support..............." << dictionary[ "QT_ICONV" ] << endl;
+    sout << "Evdev support..............." << dictionary[ "QT_EVDEV" ] << endl;
     sout << "Inotify support............." << dictionary[ "QT_INOTIFY" ] << endl;
     sout << "eventfd(7) support.........." << dictionary[ "QT_EVENTFD" ] << endl;
     sout << "Glib support................" << dictionary[ "QT_GLIB" ] << endl;
