@@ -498,7 +498,9 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
                     if (urlRef) {
                         QCFString path = CFURLCopyFileSystemPath(urlRef, kCFURLPOSIXPathStyle);
 #ifdef Q_OS_MACX
-                        return QDir::cleanPath(QString(path) + QLatin1String("/Contents/") + ret);
+                        QString bundleContentsDir = QString(path) + QLatin1String("/Contents/");
+                        if (QDir(bundleContentsDir).exists())
+                            return QDir::cleanPath(bundleContentsDir + ret);
 #else
                         return QDir::cleanPath(QString(path) + QLatin1Char('/') + ret); // iOS
 #endif
