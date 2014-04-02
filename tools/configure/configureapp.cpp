@@ -482,7 +482,18 @@ void Configure::parseCmdLine()
         else if (configCmdLine.at(i) == "-force-asserts") {
             dictionary[ "FORCE_ASSERTS" ] = "yes";
         }
-
+        else if (configCmdLine.at(i) == "-target") {
+            ++i;
+            if (i == argCount)
+                break;
+            const QString option = configCmdLine.at(i);
+            if (option != "xp") {
+                cout << "ERROR: invalid argument for -target option" << endl;
+                dictionary["DONE"] = "error";
+                return;
+            }
+            dictionary["TARGET_OS"] = option;
+        }
         else if (configCmdLine.at(i) == "-platform") {
             ++i;
             if (i == argCount)
@@ -1817,6 +1828,10 @@ bool Configure::displayHelp()
         desc(                   "-platform <spec>",     "The operating system and compiler you are building on.\n(default %QMAKESPEC%)\n");
         desc(                   "-xplatform <spec>",    "The operating system and compiler you are cross compiling to.\n");
         desc(                   "",                     "See the README file for a list of supported operating systems and compilers.\n", false, ' ');
+
+        desc("TARGET_OS", "*", "-target",               "Set target OS version. Currently the only valid value is 'xp' for targeting Windows XP.\n"
+                                                        "MSVC >= 2012 targets Windows Vista by default.\n");
+
         desc(                   "-sysroot <dir>",       "Sets <dir> as the target compiler's and qmake's sysroot and also sets pkg-config paths.");
         desc(                   "-no-gcc-sysroot",      "When using -sysroot, it disables the passing of --sysroot to the compiler.\n");
 
@@ -2497,6 +2512,12 @@ bool Configure::verifyConfiguration()
              << "files such as headers and libraries." << endl;
         prompt = true;
     }
+#if WINVER > 0x0601
+    if (dictionary["TARGET_OS"] == "xp") {
+        cout << "WARNING: Cannot use Windows Kit 8 to build Qt for Windows XP.\n"
+                "WARNING: Windows SDK v7.1A is recommended.\n";
+    }
+#endif
 
     if (dictionary["DIRECT2D"] == "yes" && !checkAvailability("DIRECT2D")) {
         cout << "WARNING: To be able to build the Direct2D platform plugin you will" << endl
@@ -3331,6 +3352,10 @@ void Configure::generateQConfigPri()
                          << "}" << endl;
         }
 
+        const QString targetOS = dictionary.value("TARGET_OS");
+        if (!targetOS.isEmpty())
+            configStream << "QMAKE_TARGET_OS = " << targetOS << endl;
+
         if (!dictionary["QMAKE_RPATHDIR"].isEmpty())
             configStream << "QMAKE_RPATHDIR += " << formatPath(dictionary["QMAKE_RPATHDIR"]) << endl;
 
@@ -3574,6 +3599,8 @@ void Configure::displayConfig()
         sout << "QMAKESPEC..................." << dictionary[ "XQMAKESPEC" ] << " (" << dictionary["QMAKESPEC_FROM"] << ")" << endl;
     else
         sout << "QMAKESPEC..................." << dictionary[ "QMAKESPEC" ] << " (" << dictionary["QMAKESPEC_FROM"] << ")" << endl;
+    if (!dictionary["TARGET_OS"].isEmpty())
+        sout << "Target OS..................." << dictionary["TARGET_OS"] << endl;
     sout << "Architecture................" << dictionary["QT_ARCH"]
          << ", features:" << dictionary["QT_CPU_FEATURES"] << endl;
     sout << "Host Architecture..........." << dictionary["QT_HOST_ARCH"]

@@ -396,12 +396,18 @@ QString VcprojGenerator::retrievePlatformToolSet() const
     if (!envVar.isEmpty())
         return envVar;
 
+    QString suffix;
+    if (vcProject.Configuration.WinPhone)
+        suffix = "_wp80";
+    else if (project->first("QMAKE_TARGET_OS") == "xp")
+        suffix = "_xp";
+
     switch (vcProject.Configuration.CompilerVersion)
     {
     case NET2012:
-        return vcProject.Configuration.WinPhone ? "v110_wp80" : "v110";
+        return QStringLiteral("v110") + suffix;
     case NET2013:
-        return "v120";
+        return QStringLiteral("v120") + suffix;
     default:
         return QString();
     }
