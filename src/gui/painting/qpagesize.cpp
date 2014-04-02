@@ -389,18 +389,17 @@ static const StandardPageSize qt_pageSizes[] = {
 };
 
 static const int pageSizesCount = int(sizeof(qt_pageSizes) / sizeof(qt_pageSizes[0]));
+Q_STATIC_ASSERT(pageSizesCount == QPageSize::LastPageSize + 1);
 
 // Return key name for PageSize
 static QString qt_keyForPageSizeId(QPageSize::PageSizeId id)
 {
-    Q_ASSERT(pageSizesCount == QPageSize::LastPageSize + 1);
     return QString::fromLatin1(qt_pageSizes[id].mediaOption);
 }
 
 // Return id name for PPD Key
 static QPageSize::PageSizeId qt_idForPpdKey(const QString &ppdKey, QSize *match = 0)
 {
-    Q_ASSERT(pageSizesCount == QPageSize::LastPageSize + 1);
     if (ppdKey.isEmpty())
         return QPageSize::Custom;
     QString key = ppdKey;
@@ -422,7 +421,6 @@ static QPageSize::PageSizeId qt_idForPpdKey(const QString &ppdKey, QSize *match 
 // Return id name for Windows ID
 static QPageSize::PageSizeId qt_idForWindowsID(int windowsId, QSize *match = 0)
 {
-    Q_ASSERT(pageSizesCount == QPageSize::LastPageSize + 1);
     // If outside known values then is Custom
     if (windowsId <= DMPAPER_NONE || windowsId > DMPAPER_LAST)
         return QPageSize::Custom;
@@ -536,7 +534,6 @@ Q_GUI_EXPORT qreal qt_pixelMultiplier(int resolution)
 
 static QSizeF qt_definitionSize(QPageSize::PageSizeId pageSizeId)
 {
-    Q_ASSERT(pageSizesCount == QPageSize::LastPageSize + 1);
     QPageSize::Unit units = qt_pageSizes[pageSizeId].definitionUnits;
     if (units == QPageSize::Millimeter)
         return QSizeF(qt_pageSizes[pageSizeId].widthMillimeters, qt_pageSizes[pageSizeId].heightMillimeters);
@@ -595,7 +592,6 @@ static QSizeF qt_convertPointsToUnits(const QSize &size, QPageSize::Unit units)
 
 static QSizeF qt_unitSize(QPageSize::PageSizeId pageSizeId, QPageSize::Unit units)
 {
-    Q_ASSERT(pageSizesCount == QPageSize::LastPageSize + 1);
     switch (units) {
     case QPageSize::Millimeter:
         return QSizeF(qt_pageSizes[pageSizeId].widthMillimeters, qt_pageSizes[pageSizeId].heightMillimeters);
@@ -619,7 +615,6 @@ static QPageSize::PageSizeId qt_idForPointSize(const QSize &size, QPageSize::Siz
         return QPageSize::Custom;
 
     // Try exact match in portrait layout
-    Q_ASSERT(pageSizesCount == QPageSize::LastPageSize + 1);
     for (int i = 0; i <= int(QPageSize::LastPageSize); ++i) {
         if (size.width() == qt_pageSizes[i].widthPoints && size.height() == qt_pageSizes[i].heightPoints) {
             if (match)
@@ -687,7 +682,6 @@ static QPageSize::PageSizeId qt_idForSize(const QSizeF &size, QPageSize::Unit un
         return QPageSize::Custom;
 
     // Try exact match if units are the same
-    Q_ASSERT(pageSizesCount == QPageSize::LastPageSize + 1);
     if (units == QPageSize::Millimeter) {
         for (int i = 0; i <= QPageSize::LastPageSize; ++i) {
             if (size.width() == qt_pageSizes[i].widthMillimeters && size.height() == qt_pageSizes[i].heightMillimeters) {
@@ -834,7 +828,6 @@ QPageSizePrivate::~QPageSizePrivate()
 // Init a standard PageSizeId
 void QPageSizePrivate::init(QPageSize::PageSizeId id, const QString &name)
 {
-    Q_ASSERT(pageSizesCount == QPageSize::LastPageSize + 1);
     m_id = id;
     m_size = qt_definitionSize(id);
     m_units = qt_pageSizes[id].definitionUnits;
@@ -1480,7 +1473,6 @@ QString QPageSize::key(QPageSize::PageSizeId pageSizeId)
 {
     if (pageSizeId < QPageSize::PageSizeId(0) || pageSizeId > QPageSize::LastPageSize)
         return QString();
-    Q_ASSERT(pageSizesCount == QPageSize::LastPageSize + 1);
     return QString::fromUtf8(qt_pageSizes[pageSizeId].mediaOption);
 }
 
@@ -1795,7 +1787,6 @@ QPageSize::PageSizeId QPageSize::id(int windowsId)
 
 int QPageSize::windowsId(QPageSize::PageSizeId pageSizeId)
 {
-    Q_ASSERT(pageSizesCount == QPageSize::LastPageSize + 1);
     return qt_pageSizes[pageSizeId].windowsId;
 }
 
@@ -1822,7 +1813,6 @@ QPageSize::Unit QPageSize::definitionUnits(QPageSize::PageSizeId pageSizeId)
 {
     if (pageSizeId == QPageSize::Custom)
         return QPageSize::Unit(-1);
-    Q_ASSERT(pageSizesCount == QPageSize::LastPageSize + 1);
     return qt_pageSizes[pageSizeId].definitionUnits;
 }
 
@@ -1845,7 +1835,6 @@ QSize QPageSize::sizePoints(QPageSize::PageSizeId pageSizeId)
 {
     if (pageSizeId == QPageSize::Custom)
         return QSize();
-    Q_ASSERT(pageSizesCount == QPageSize::LastPageSize + 1);
     return QSize(qt_pageSizes[pageSizeId].widthPoints, qt_pageSizes[pageSizeId].heightPoints);
 }
 
