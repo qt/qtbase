@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -117,7 +117,7 @@ void tst_QSql::basicDriverTest()
     char *argv[] = { const_cast<char*>(QTest::currentAppName()) };
     QCoreApplication app(argc, argv, false);
     tst_Databases dbs;
-    dbs.open();
+    QVERIFY(dbs.open());
 
     foreach (const QString& dbName, dbs.dbNames) {
         QSqlDatabase db = QSqlDatabase::database(dbName);
@@ -161,7 +161,7 @@ void tst_QSql::open()
         QCoreApplication app(argc, argv, false);
         tst_Databases dbs;
 
-        dbs.open();
+        QVERIFY(dbs.open());
         if (count == -1)
             // first iteration: see how many dbs are open
             count = (int) dbs.dbNames.count();
@@ -188,7 +188,7 @@ void tst_QSql::concurrentAccess()
     QCoreApplication app(argc, argv, false);
     tst_Databases dbs;
 
-    dbs.open();
+    QVERIFY(dbs.open());
     foreach (const QString& dbName, dbs.dbNames) {
         QSqlDatabase db = QSqlDatabase::database(dbName);
         QVERIFY(db.isValid());
@@ -204,6 +204,7 @@ void tst_QSql::concurrentAccess()
         QVERIFY_SQL(ndb, open());
 
         QCOMPARE(db.tables(), ndb.tables());
+        ndb.close();
     }
     // no database servers installed - don't fail
     QVERIFY(1);
@@ -217,7 +218,7 @@ void tst_QSql::openErrorRecovery()
     QCoreApplication app(argc, argv, false);
     tst_Databases dbs;
 
-    dbs.addDbs();
+    QVERIFY(dbs.addDbs());
     if (dbs.dbNames.isEmpty())
         QSKIP("No database drivers installed");
     foreach (const QString& dbName, dbs.dbNames) {

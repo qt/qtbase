@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -257,7 +257,7 @@ tst_QSqlQuery::~tst_QSqlQuery()
 
 void tst_QSqlQuery::initTestCase()
 {
-    dbs.open();
+    QVERIFY(dbs.open());
 
     for ( QStringList::ConstIterator it = dbs.dbNames.begin(); it != dbs.dbNames.end(); ++it ) {
         QSqlDatabase db = QSqlDatabase::database(( *it ) );

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -157,7 +157,7 @@ private:
 
 tst_QSqlTableModel::tst_QSqlTableModel()
 {
-    dbs.open();
+    QVERIFY(dbs.open());
 }
 
 tst_QSqlTableModel::~tst_QSqlTableModel()
@@ -1968,6 +1968,7 @@ void tst_QSqlTableModel::sqlite_attachedDatabase()
     QCOMPARE(model.rowCount(), 1);
     QCOMPARE(model.data(model.index(0, 0), Qt::DisplayRole).toInt(), 3);
     QCOMPARE(model.data(model.index(0, 1), Qt::DisplayRole).toString(), QLatin1String("main"));
+    attachedDb.close();
 }
 
 
