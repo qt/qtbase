@@ -111,15 +111,22 @@ if(build_all|CONFIG(debug, debug|release)): CMAKE_DEBUG_TYPE = debug
 if(build_all|CONFIG(release, debug|release)): CMAKE_RELEASE_TYPE = release
 
 contains(CONFIG, plugin) {
-    PLUGIN_MODULE_NAME =
-    for (mod, QT_MODULES) {
-        types = $$replace(QT.$${mod}.plugin_types, /.*$, )
-        contains(types, $$PLUGIN_TYPE) {
-            PLUGIN_MODULE_NAME = $$mod
-            break()
+    !isEmpty(PLUGIN_EXTENDS):!equals(PLUGIN_EXTENDS, -) {
+        count(PLUGIN_EXTENDS, 1, greaterThan): \
+            error("Plugin declares to extend multiple modules. We don't handle that ...")
+        PLUGIN_MODULE_NAME = $$PLUGIN_EXTENDS
+    } else {
+        PLUGIN_MODULE_NAME =
+        for (mod, QT_MODULES) {
+            contains(QT.$${mod}.plugin_types, $$PLUGIN_TYPE) {
+                !isEmpty(PLUGIN_MODULE_NAME): \
+                    error("Multiple modules claim plugin type '$$PLUGIN_TYPE' ($$mod, in addition to $$PLUGIN_MODULE_NAME)")
+                PLUGIN_MODULE_NAME = $$mod
+                break()
+            }
         }
+        isEmpty(PLUGIN_MODULE_NAME): error("No module claims plugin type '$$PLUGIN_TYPE'")
     }
-    isEmpty(PLUGIN_MODULE_NAME): return()
 
     CMAKE_MODULE_NAME = $$cmakeModuleName($$PLUGIN_MODULE_NAME)
 

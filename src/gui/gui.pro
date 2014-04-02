@@ -10,6 +10,10 @@ QMAKE_DOCS = $$PWD/doc/qtgui.qdocconf
 
 MODULE_PLUGIN_TYPES = \
     platforms \
+    platformthemes \
+    platforminputcontexts \
+    generic \
+    iconengines \
     imageformats
 
 # This is here only because the platform plugin is no module, obviously.

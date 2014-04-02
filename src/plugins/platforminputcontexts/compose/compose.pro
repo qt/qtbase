@@ -1,6 +1,7 @@
 TARGET = composeplatforminputcontextplugin
 
 PLUGIN_TYPE = platforminputcontexts
+PLUGIN_EXTENDS = -
 PLUGIN_CLASS_NAME = QComposePlatformInputContextPlugin
 load(qt_plugin)
 
