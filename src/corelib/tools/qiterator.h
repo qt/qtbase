@@ -87,12 +87,9 @@ class QMutable##C##Iterator \
 public: \
     inline QMutable##C##Iterator(Q##C<T> &container) \
         : c(&container) \
-    { c->setSharable(false); i = c->begin(); n = c->end(); } \
-    inline ~QMutable##C##Iterator() \
-    { c->setSharable(true); } \
+    { i = c->begin(); n = c->end(); } \
     inline QMutable##C##Iterator &operator=(Q##C<T> &container) \
-    { c->setSharable(true); c = &container; c->setSharable(false); \
-      i = c->begin(); n = c->end(); return *this; } \
+    { c = &container; i = c->begin(); n = c->end(); return *this; } \
     inline void toFront() { i = c->begin(); n = c->end(); } \
     inline void toBack() { i = c->end(); n = i; } \
     inline bool hasNext() const { return c->constEnd() != const_iterator(i); } \
@@ -160,11 +157,9 @@ class QMutable##C##Iterator \
 public: \
     inline QMutable##C##Iterator(Q##C<Key,T> &container) \
         : c(&container) \
-    { c->setSharable(false); i = c->begin(); n = c->end(); } \
-    inline ~QMutable##C##Iterator() \
-    { c->setSharable(true); } \
+    { i = c->begin(); n = c->end(); } \
     inline QMutable##C##Iterator &operator=(Q##C<Key,T> &container) \
-    { c->setSharable(true); c = &container; c->setSharable(false); i = c->begin(); n = c->end(); return *this; } \
+    { c = &container; i = c->begin(); n = c->end(); return *this; } \
     inline void toFront() { i = c->begin(); n = c->end(); } \
     inline void toBack() { i = c->end(); n = c->end(); } \
     inline bool hasNext() const { return const_iterator(i) != c->constEnd(); } \

@@ -2437,8 +2437,7 @@ void testContainer()
     }
 
     /*
-        Verify that the 'sharable' flag is true while no mutable
-        iterator is active.
+        Verify that the 'sharable' flag is true in populated containers.
     */
     {
         Container c1;
@@ -2451,95 +2450,6 @@ void testContainer()
         QVERIFY(c2.size() == 4);
         QVERIFY(!c1.isDetached());
         QVERIFY(!c2.isDetached());
-    }
-
-    /*
-        Verify that the 'sharable' flag is set to false by the
-        mutable iterator.
-    */
-    {
-        Container c1;
-        populate(c1);
-        QVERIFY(c1.size() == 4);
-        QVERIFY(c1.isDetached());
-
-        ContainerMutableIterator i(c1);
-        i.next();
-
-        Container c2 = c1;
-        QVERIFY(c1.size() == 4);
-        QVERIFY(c2.size() == 4);
-        QVERIFY(c1.isDetached());
-        QVERIFY(c2.isDetached());
-
-        i.remove();
-        QVERIFY(c1.size() == 3);
-        QVERIFY(c2.size() == 4);
-    }
-
-    /*
-        Verify that the 'sharable' flag is reset to true by the
-        mutable iterator's destructor.
-    */
-    {
-        Container c1;
-        populate(c1);
-        QVERIFY(c1.size() == 4);
-        QVERIFY(c1.isDetached());
-
-        {
-            ContainerMutableIterator i(c1);
-            i.next();
-        }
-
-        Container c2 = c1;
-        QVERIFY(c1.size() == 4);
-        QVERIFY(c2.size() == 4);
-        QVERIFY(!c1.isDetached());
-        QVERIFY(!c2.isDetached());
-    }
-
-    /*
-        Verify that the 'sharable' flag only affects the original
-        object, not the copies.
-    */
-    {
-        Container c1;
-        populate(c1);
-        QVERIFY(c1.size() == 4);
-        QVERIFY(c1.isDetached());
-
-        Container c2 = c1;
-        QVERIFY(isSharable(c2));
-
-        ContainerMutableIterator i(c1);
-        QVERIFY(!isSharable(c1));
-        QVERIFY(isSharable(c2));
-
-        Container c3 = c1;
-        QVERIFY(!isSharable(c1));
-        QVERIFY(isSharable(c2));
-        QVERIFY(isSharable(c3));
-        QVERIFY(c1.isDetached());
-        QVERIFY(c2.isDetached());
-        QVERIFY(c3.isDetached());
-
-        Container c4;
-        c4 = c1;
-        QVERIFY(!isSharable(c1));
-        QVERIFY(isSharable(c2));
-        QVERIFY(isSharable(c4));
-        QVERIFY(c1.isDetached());
-        QVERIFY(c2.isDetached());
-        QVERIFY(c4.isDetached());
-
-        c3 = c2;
-        QVERIFY(!isSharable(c1));
-        QVERIFY(isSharable(c2));
-        QVERIFY(isSharable(c3));
-        QVERIFY(c1.isDetached());
-        QVERIFY(!c2.isDetached());
-        QVERIFY(!c3.isDetached());
     }
 
     /* test that the move operators work properly */
