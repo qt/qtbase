@@ -690,7 +690,7 @@ QString QAndroidInputContext::getTextBeforeCursor(jint length, jint /*flags*/)
 {
     QVariant textBefore = queryFocusObjectThreadSafe(Qt::ImTextBeforeCursor, QVariant(length));
     if (textBefore.isValid()) {
-        return textBefore.toString().left(length) + m_composingText;
+        return textBefore.toString().right(length) + m_composingText;
     }
 
     //compatibility code for old controls that do not implement the new API
