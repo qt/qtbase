@@ -1844,9 +1844,9 @@ QNonContiguousByteDevice* QNetworkReplyHttpImplPrivate::createUploadByteDevice()
     Q_Q(QNetworkReplyHttpImpl);
 
     if (outgoingDataBuffer)
-        uploadByteDevice = QSharedPointer<QNonContiguousByteDevice>(QNonContiguousByteDeviceFactory::create(outgoingDataBuffer));
+        uploadByteDevice = QNonContiguousByteDeviceFactory::createShared(outgoingDataBuffer);
     else if (outgoingData) {
-        uploadByteDevice = QSharedPointer<QNonContiguousByteDevice>(QNonContiguousByteDeviceFactory::create(outgoingData));
+        uploadByteDevice = QNonContiguousByteDeviceFactory::createShared(outgoingData);
     } else {
         return 0;
     }

@@ -506,6 +506,25 @@ QNonContiguousByteDevice* QNonContiguousByteDeviceFactory::create(QIODevice *dev
 }
 
 /*!
+    Create a QNonContiguousByteDevice out of a QIODevice, return it in a QSharedPointer.
+    For QFile, QBuffer and all other QIODevice, sequential or not.
+
+    \internal
+*/
+QSharedPointer<QNonContiguousByteDevice> QNonContiguousByteDeviceFactory::createShared(QIODevice *device)
+{
+    // shortcut if it is a QBuffer
+    if (QBuffer *buffer = qobject_cast<QBuffer*>(device))
+        return QSharedPointer<QNonContiguousByteDeviceBufferImpl>::create(buffer);
+
+    // ### FIXME special case if device is a QFile that supports map()
+    // then we can actually deal with the file without using read/peek
+
+    // generic QIODevice
+    return QSharedPointer<QNonContiguousByteDeviceIoDeviceImpl>::create(device); // FIXME
+}
+
+/*!
     \fn static QNonContiguousByteDevice* QNonContiguousByteDeviceFactory::create(QSharedPointer<QRingBuffer> ringBuffer)
 
     Create a QNonContiguousByteDevice out of a QRingBuffer.
@@ -518,6 +537,16 @@ QNonContiguousByteDevice* QNonContiguousByteDeviceFactory::create(QSharedPointer
 }
 
 /*!
+    Create a QNonContiguousByteDevice out of a QRingBuffer, return it in a QSharedPointer.
+
+    \internal
+*/
+QSharedPointer<QNonContiguousByteDevice> QNonContiguousByteDeviceFactory::createShared(QSharedPointer<QRingBuffer> ringBuffer)
+{
+    return QSharedPointer<QNonContiguousByteDeviceRingBufferImpl>::create(qMove(ringBuffer));
+}
+
+/*!
     \fn static QNonContiguousByteDevice* QNonContiguousByteDeviceFactory::create(QByteArray *byteArray)
 
     Create a QNonContiguousByteDevice out of a QByteArray.
@@ -527,6 +556,16 @@ QNonContiguousByteDevice* QNonContiguousByteDeviceFactory::create(QSharedPointer
 QNonContiguousByteDevice* QNonContiguousByteDeviceFactory::create(QByteArray *byteArray)
 {
     return new QNonContiguousByteDeviceByteArrayImpl(byteArray);
+}
+
+/*!
+    Create a QNonContiguousByteDevice out of a QByteArray.
+
+    \internal
+*/
+QSharedPointer<QNonContiguousByteDevice> QNonContiguousByteDeviceFactory::createShared(QByteArray *byteArray)
+{
+    return QSharedPointer<QNonContiguousByteDeviceByteArrayImpl>::create(byteArray);
 }
 
 /*!

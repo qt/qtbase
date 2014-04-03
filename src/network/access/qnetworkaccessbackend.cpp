@@ -130,9 +130,9 @@ QStringList QNetworkAccessManagerPrivate::backendSupportedSchemes() const
 QNonContiguousByteDevice* QNetworkAccessBackend::createUploadByteDevice()
 {
     if (reply->outgoingDataBuffer)
-        uploadByteDevice = QSharedPointer<QNonContiguousByteDevice>(QNonContiguousByteDeviceFactory::create(reply->outgoingDataBuffer));
+        uploadByteDevice = QNonContiguousByteDeviceFactory::createShared(reply->outgoingDataBuffer);
     else if (reply->outgoingData) {
-        uploadByteDevice = QSharedPointer<QNonContiguousByteDevice>(QNonContiguousByteDeviceFactory::create(reply->outgoingData));
+        uploadByteDevice = QNonContiguousByteDeviceFactory::createShared(reply->outgoingData);
     } else {
         return 0;
     }

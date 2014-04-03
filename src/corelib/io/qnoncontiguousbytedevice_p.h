@@ -90,8 +90,14 @@ class Q_CORE_EXPORT QNonContiguousByteDeviceFactory
 {
 public:
     static QNonContiguousByteDevice* create(QIODevice *device);
+    static QSharedPointer<QNonContiguousByteDevice> createShared(QIODevice *device);
+
     static QNonContiguousByteDevice* create(QByteArray *byteArray);
+    static QSharedPointer<QNonContiguousByteDevice> createShared(QByteArray *byteArray);
+
     static QNonContiguousByteDevice* create(QSharedPointer<QRingBuffer> ringBuffer);
+    static QSharedPointer<QNonContiguousByteDevice> createShared(QSharedPointer<QRingBuffer> ringBuffer);
+
     static QIODevice* wrap(QNonContiguousByteDevice* byteDevice);
 };
 
