@@ -3002,6 +3002,7 @@ void QGuiApplication::sync()
             && QGuiApplicationPrivate::platform_integration->hasCapability(QPlatformIntegration::SyncState)) {
         QGuiApplicationPrivate::platform_integration->sync();
         QCoreApplication::processEvents();
+        QWindowSystemInterface::flushWindowSystemEvents();
     }
 }
 
