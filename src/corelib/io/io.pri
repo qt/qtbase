@@ -119,7 +119,9 @@ win32 {
                 io/qwindowspipereader.cpp
         }
     } else {
-        SOURCES += io/qstandardpaths_winrt.cpp
+        SOURCES += \
+                io/qstandardpaths_winrt.cpp \
+                io/qsettings_winrt.cpp
     }
 } else:unix|integrity {
         SOURCES += \

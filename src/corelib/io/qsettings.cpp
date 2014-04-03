@@ -282,9 +282,9 @@ after_loop:
     return result;
 }
 
-// see also qsettings_win.cpp and qsettings_mac.cpp
+// see also qsettings_win.cpp, qsettings_winrt.cpp and qsettings_mac.cpp
 
-#if defined(Q_OS_WINRT) || (!defined(Q_OS_WIN) && !defined(Q_OS_MAC))
+#if !defined(Q_OS_WIN) && !defined(Q_OS_MAC)
 QSettingsPrivate *QSettingsPrivate::create(QSettings::Format format, QSettings::Scope scope,
                                            const QString &organization, const QString &application)
 {
@@ -292,7 +292,7 @@ QSettingsPrivate *QSettingsPrivate::create(QSettings::Format format, QSettings::
 }
 #endif
 
-#if defined(Q_OS_WINRT) || !defined(Q_OS_WIN)
+#if !defined(Q_OS_WIN)
 QSettingsPrivate *QSettingsPrivate::create(const QString &fileName, QSettings::Format format)
 {
     return new QConfFileSettingsPrivate(fileName, format);

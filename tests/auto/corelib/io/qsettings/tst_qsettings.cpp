@@ -184,14 +184,14 @@ void tst_QSettings::getSetCheck()
     QCOMPARE(true, obj1.fallbacksEnabled());
 }
 
-#if defined(Q_OS_WINCE)
+#if defined(Q_OS_WINCE) || defined(Q_OS_WINRT)
 static void removePath(const QString& _path)
 {
     QString path = _path;
     QDir dir(path);
     if (!dir.exists())
         return;
-    QStringList entries = dir.entryList();
+    QStringList entries = dir.entryList(QDir::NoDotAndDotDot);
     foreach(QString name, entries) {
         QString absolute = path + name;
         if (QFileInfo(absolute).isDir())
@@ -342,6 +342,17 @@ void tst_QSettings::init()
     system(QString("rm -fr %1 2> /dev/null").arg(settingsPath()).toLatin1());
 #endif
 
+#if defined(Q_OS_WINRT)
+    QSettings(QSettings::UserScope, "software.org", "KillerAPP").clear();
+    QSettings(QSettings::SystemScope, "software.org", "KillerAPP").clear();
+    QSettings(QSettings::UserScope, "other.software.org", "KillerAPP").clear();
+    QSettings(QSettings::SystemScope, "other.software.org", "KillerAPP").clear();
+    QSettings(QSettings::UserScope, "software.org").clear();
+    QSettings(QSettings::SystemScope, "software.org").clear();
+    QSettings(QSettings::UserScope, "other.software.org").clear();
+    QSettings(QSettings::SystemScope, "other.software.org").clear();
+    removePath(settingsPath());
+#endif
     QFile::remove("foo");
 }
 
@@ -552,7 +563,7 @@ void tst_QSettings::ctor()
         } else {
             caseSensitive = pathconf(QDir::currentPath().toLatin1().constData(), _PC_CASE_SENSITIVE);
         }
-#elif defined(Q_OS_WIN32)
+#elif defined(Q_OS_WIN32) || defined(Q_OS_WINRT)
         caseSensitive = false;
 #endif
         if (caseSensitive)
@@ -626,8 +637,8 @@ void tst_QSettings::ctor()
             QCoreApplication::instance()->setOrganizationName("");
             QCoreApplication::instance()->setApplicationName("");
             QSettings settings;
-#ifdef Q_OS_MAC
-            QEXPECT_FAIL("native", "Default settings on Mac are valid, despite organization domain, name, and app name being null", Continue);
+#if defined(Q_OS_MAC) || defined(Q_OS_WINRT)
+            QEXPECT_FAIL("native", "Default settings on Mac/WinRT are valid, despite organization domain, name, and app name being null", Continue);
 #endif
             QCOMPARE(settings.status(), QSettings::AccessError);
             QCoreApplication::instance()->setOrganizationName("software.org");
@@ -641,8 +652,8 @@ void tst_QSettings::ctor()
         }
 
         QSettings settings(format, QSettings::UserScope, "", "");
-#ifdef Q_OS_MAC
-        QEXPECT_FAIL("native", "Default settings on Mac are valid, despite organization domain, name, and app name being null", Continue);
+#if defined(Q_OS_MAC) || defined(Q_OS_WINRT)
+        QEXPECT_FAIL("native", "Default settings on Mac/WinRT are valid, despite organization domain, name, and app name being null", Continue);
 #endif
         QCOMPARE(settings.status(), QSettings::AccessError);
         QSettings settings2(format, QSettings::UserScope, "software.org", "KillerAPP");
@@ -1747,14 +1758,18 @@ void tst_QSettings::testChildKeysAndGroups()
 
     settings1.beginGroup("/alpha");
     QCOMPARE(settings1.childKeys(), QStringList());
-    QCOMPARE(settings1.childGroups(), QStringList() << "beta" << "gamma");
+    QStringList children = settings1.childGroups();
+    children.sort();
+    QCOMPARE(children, QStringList() << "beta" << "gamma");
 
     settings1.beginGroup("/beta");
     QCOMPARE(settings1.childKeys(), QStringList() << "geometry");
     QCOMPARE(settings1.childGroups(), QStringList() << "geometry");
 
     settings1.beginGroup("/geometry");
-    QCOMPARE(settings1.childKeys(), QStringList()  << "height" << "width" << "x" << "y");
+    children = settings1.childKeys();
+    children.sort();
+    QCOMPARE(children, QStringList()  << "height" << "width" << "x" << "y");
     QCOMPARE(settings1.childGroups(), QStringList());
 
     settings1.beginGroup("/width");
@@ -2044,7 +2059,7 @@ void tst_QSettings::fromFile()
 
     QString path = "foo";
 
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     if (format == QSettings::NativeFormat)
         path = "\\HKEY_CURRENT_USER\\Software\\foo";
 #endif
@@ -2063,7 +2078,7 @@ void tst_QSettings::fromFile()
         QCOMPARE(settings2.value("alpha").toInt(), 2);
 
         settings1.sync();
-#ifndef Q_OS_WIN
+#if !defined(Q_OS_WIN) || defined(Q_OS_WINRT)
         QVERIFY(QFile::exists("foo"));
 #endif
         QCOMPARE(settings1.value("alpha").toInt(), 2);
@@ -2894,7 +2909,9 @@ void tst_QSettings::childGroups()
         }
 
         settings.beginGroup("gamma");
-        QCOMPARE(settings.childGroups(), QStringList() << "d" << "f");
+        QStringList childGroups = settings.childGroups();
+        childGroups.sort();
+        QCOMPARE(childGroups, QStringList() << "d" << "f");
         settings.beginGroup("d");
         QCOMPARE(settings.childGroups(), QStringList());
         settings.endGroup();
@@ -2909,14 +2926,20 @@ void tst_QSettings::childGroups()
         settings.endGroup();
 
         settings.beginGroup("/omicron///h/i///");
-        QCOMPARE(settings.childGroups(), QStringList() << "j" << "k");
+        childGroups = settings.childGroups();
+        childGroups.sort();
+        QCOMPARE(childGroups, QStringList() << "j" << "k");
         settings.endGroup();
 
         settings.beginGroup("////");
-        QCOMPARE(settings.childGroups(), QStringList() << "alpha" << "gamma" << "omicron" << "zeta");
+        childGroups = settings.childGroups();
+        childGroups.sort();
+        QCOMPARE(childGroups, QStringList() << "alpha" << "gamma" << "omicron" << "zeta");
         settings.endGroup();
 
-        QCOMPARE(settings.childGroups(), QStringList() << "alpha" << "gamma" << "omicron" << "zeta");
+        childGroups = settings.childGroups();
+        childGroups.sort();
+        QCOMPARE(childGroups, QStringList() << "alpha" << "gamma" << "omicron" << "zeta");
     }
 }
 #endif
@@ -2969,7 +2992,9 @@ void tst_QSettings::childKeys()
         settings.endGroup();
 
         settings.beginGroup("alpha");
-        QCOMPARE(settings.childKeys(), QStringList() << "a" << "b" << "c");
+        QStringList childKeys = settings.childKeys();
+        childKeys.sort();
+        QCOMPARE(childKeys, QStringList() << "a" << "b" << "c");
         settings.endGroup();
 
         settings.beginGroup("d");
@@ -2981,10 +3006,14 @@ void tst_QSettings::childKeys()
         settings.endGroup();
 
         settings.beginGroup("////");
-        QCOMPARE(settings.childKeys(), QStringList() << "alpha" << "beta" << "gamma");
+        childKeys = settings.childKeys();
+        childKeys.sort();
+        QCOMPARE(childKeys, QStringList() << "alpha" << "beta" << "gamma");
         settings.endGroup();
 
-        QCOMPARE(settings.childKeys(), QStringList() << "alpha" << "beta" << "gamma");
+        childKeys = settings.childKeys();
+        childKeys.sort();
+        QCOMPARE(childKeys, QStringList() << "alpha" << "beta" << "gamma");
     }
 }
 #endif
@@ -3025,14 +3054,18 @@ void tst_QSettings::allKeys()
         }
 
         settings.beginGroup("gamma");
-        QCOMPARE(settings.allKeys(), QStringList() << "d" << "d/e" << "f/g");
+        QStringList keys = settings.allKeys();
+        keys.sort();
+        QCOMPARE(keys, QStringList() << "d" << "d/e" << "f/g");
         settings.beginGroup("d");
         QCOMPARE(settings.allKeys(), QStringList() << "e");
         settings.endGroup();
         settings.endGroup();
 
         settings.beginGroup("alpha");
-        QCOMPARE(settings.allKeys(), QStringList() << "a" << "b" << "c");
+        keys = settings.allKeys();
+        keys.sort();
+        QCOMPARE(keys, QStringList() << "a" << "b" << "c");
         settings.endGroup();
 
         settings.beginGroup("d");
@@ -3040,14 +3073,20 @@ void tst_QSettings::allKeys()
         settings.endGroup();
 
         settings.beginGroup("/omicron///h/i///");
-        QCOMPARE(settings.allKeys(), QStringList() << "j/x" << "k/y");
+        keys = settings.allKeys();
+        keys.sort();
+        QCOMPARE(keys, QStringList() << "j/x" << "k/y");
         settings.endGroup();
 
         settings.beginGroup("////");
-        QCOMPARE(settings.allKeys(), allKeys);
+        keys = settings.allKeys();
+        keys.sort();
+        QCOMPARE(keys, allKeys);
         settings.endGroup();
 
-        QCOMPARE(settings.allKeys(), allKeys);
+        keys = settings.allKeys();
+        keys.sort();
+        QCOMPARE(keys, allKeys);
     }
 }
 #endif
@@ -3262,7 +3301,7 @@ void tst_QSettings::rainersSyncBugOnMac()
 {
     QFETCH(QSettings::Format, format);
 
-#ifdef Q_OS_OSX
+#if defined(Q_OS_OSX) || defined(Q_OS_WINRT)
     if (format == QSettings::NativeFormat)
         QSKIP("OSX does not support direct reads from and writes to .plist files, due to caching and background syncing. See QTBUG-34899.");
 #endif
