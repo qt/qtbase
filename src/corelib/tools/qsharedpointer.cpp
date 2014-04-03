@@ -630,9 +630,15 @@
     This function will attempt to call a constructor for type \tt T that can
     accept all the arguments passed. Arguments will be perfectly-forwarded.
 
-    \note This function is only available with a C++11 compiler that supports
-    perfect forwarding of an arbitrary number of arguments. If the compiler
-    does not support the necessary C++11 features, you must use the overload
+    \note This function is only fully available with a C++11 compiler that
+    supports perfect forwarding of an arbitrary number of arguments.
+
+    If the compiler does not support the necessary C++11 features,
+    then a restricted version is available since Qt 5.4: you may pass
+    one (but just one) argument, and it will always be passed by const
+    reference.
+
+    If you target Qt before version 5.4, you must use the overload
     that calls the default constructor.
 */
 

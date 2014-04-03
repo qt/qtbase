@@ -441,6 +441,27 @@ public:
         result.d->setQObjectShared(result.value, true);
         return result;
     }
+
+    template <typename Arg>
+    static inline QSharedPointer create(const Arg &arg)
+    {
+        typedef QtSharedPointer::ExternalRefCountWithContiguousData<T> Private;
+# ifdef QT_SHAREDPOINTER_TRACK_POINTERS
+        typename Private::DestroyerFn destroy = &Private::safetyCheckDeleter;
+# else
+        typename Private::DestroyerFn destroy = &Private::deleter;
+# endif
+        QSharedPointer result(Qt::Uninitialized);
+        result.d = Private::create(&result.value, destroy);
+
+        // now initialize the data
+        new (result.data()) T(arg);
+# ifdef QT_SHAREDPOINTER_TRACK_POINTERS
+        internalSafetyCheckAdd(result.d, result.value);
+# endif
+        result.d->setQObjectShared(result.value, true);
+        return result;
+    }
 #endif
 
 private:
