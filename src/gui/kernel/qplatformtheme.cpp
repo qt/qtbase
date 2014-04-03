@@ -45,6 +45,7 @@
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformdialoghelper.h>
 
+#include <algorithm>
 
 QT_BEGIN_NAMESPACE
 
@@ -569,6 +570,23 @@ static inline int maybeSwapShortcut(int shortcut)
 }
 #endif
 
+// mixed-mode predicate: all of these overloads are actually needed (but not all for every compiler)
+struct ByStandardKey {
+    typedef bool result_type;
+
+    bool operator()(QKeySequence::StandardKey lhs, QKeySequence::StandardKey rhs) const
+    { return lhs < rhs; }
+
+    bool operator()(const QKeyBinding& lhs, const QKeyBinding& rhs) const
+    { return operator()(lhs.standardKey, rhs.standardKey); }
+
+    bool operator()(QKeySequence::StandardKey lhs, const QKeyBinding& rhs) const
+    { return operator()(lhs, rhs.standardKey); }
+
+    bool operator()(const QKeyBinding& lhs, QKeySequence::StandardKey rhs) const
+    { return operator()(lhs.standardKey, rhs); }
+};
+
 /*!
    Returns the key sequence that should be used for a standard action.
 
@@ -579,62 +597,27 @@ QList<QKeySequence> QPlatformTheme::keyBindings(QKeySequence::StandardKey key) c
     const uint platform = QPlatformThemePrivate::currentKeyPlatforms();
     QList <QKeySequence> list;
 
-    uint N = QPlatformThemePrivate::numberOfKeyBindings;
-    int first = 0;
-    int last = N - 1;
+    std::pair<const QKeyBinding *, const QKeyBinding *> range =
+        std::equal_range(QPlatformThemePrivate::keyBindings,
+                         QPlatformThemePrivate::keyBindings + QPlatformThemePrivate::numberOfKeyBindings,
+                         key, ByStandardKey());
 
-    while (first <= last) {
-        int mid = (first + last) / 2;
-        const QKeyBinding &midVal = QPlatformThemePrivate::keyBindings[mid];
+    for (const QKeyBinding *it = range.first; it < range.second; ++it) {
+        if (!(it->platform & platform))
+            continue;
 
-        if (key > midVal.standardKey){
-            first = mid + 1;  // Search in top half
-        }
-        else if (key < midVal.standardKey){
-            last = mid - 1; // Search in bottom half
-        }
-        else {
-            //We may have several equal values for different platforms, so we must search in both directions
-            //search forward including current location
-            for (unsigned int i = mid; i < N ; ++i) {
-                QKeyBinding current = QPlatformThemePrivate::keyBindings[i];
-                if (current.standardKey != key)
-                    break;
-                else if (current.platform & platform && current.standardKey == key) {
-                    uint shortcut =
+        uint shortcut =
 #if defined(Q_OS_MACX)
-                        maybeSwapShortcut(current.shortcut);
+            maybeSwapShortcut(it->shortcut);
 #else
-                        current.shortcut;
+            it->shortcut;
 #endif
-                    if (current.priority > 0)
-                        list.prepend(QKeySequence(shortcut));
-                    else
-                        list.append(QKeySequence(shortcut));
-                }
-            }
-
-            //search back
-            for (int i = mid - 1 ; i >= 0 ; --i) {
-                QKeyBinding current = QPlatformThemePrivate::keyBindings[i];
-                if (current.standardKey != key)
-                    break;
-                else if (current.platform & platform && current.standardKey == key) {
-                    uint shortcut =
-#if defined(Q_OS_MACX)
-                        maybeSwapShortcut(current.shortcut);
-#else
-                        current.shortcut;
-#endif
-                    if (current.priority > 0)
-                        list.prepend(QKeySequence(shortcut));
-                    else
-                        list.append(QKeySequence(shortcut));
-                }
-            }
-            break;
-        }
+        if (it->priority > 0)
+            list.prepend(QKeySequence(shortcut));
+        else
+            list.append(QKeySequence(shortcut));
     }
+
     return list;
 }
 

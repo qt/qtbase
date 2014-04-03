@@ -391,7 +391,7 @@ void tst_QKeySequence::keyBindings()
         expected  << ctrlC << ctrlInsert;
         break;
     default: // X11
-        expected  << ctrlC << QKeySequence(QStringLiteral("F16")) << ctrlInsert;
+        expected  << ctrlC << ctrlInsert << QKeySequence(QStringLiteral("F16"));
         break;
     }
     QCOMPARE(bindings, expected);
