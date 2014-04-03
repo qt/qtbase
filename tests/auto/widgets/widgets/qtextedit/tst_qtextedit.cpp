@@ -2018,6 +2018,7 @@ void tst_QTextEdit::fullWidthSelection2()
     QPalette myPalette;
     myPalette.setColor(QPalette::All, QPalette::HighlightedText, QColor(0,0,0,0));
     myPalette.setColor(QPalette::All, QPalette::Highlight, QColor(239,221,85));
+    myPalette.setColor(QPalette::All, QPalette::Base, QColor(255,255,255));
 
     QTextEdit widget;
     widget.setPalette(myPalette);
@@ -2218,7 +2219,7 @@ void tst_QTextEdit::twoSameInputMethodEvents()
 
     QInputMethodEvent event("PreEditText", attributes);
     QApplication::sendEvent(ed, &event);
-    QCOMPARE(ed->document()->firstBlock().layout()->lineCount(), 1);
+    QTRY_COMPARE(ed->document()->firstBlock().layout()->lineCount(), 1);
     QApplication::sendEvent(ed, &event);
     QCOMPARE(ed->document()->firstBlock().layout()->lineCount(), 1);
 }
