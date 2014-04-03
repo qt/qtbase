@@ -1002,8 +1002,10 @@ void VcprojGenerator::initConfiguration()
 
         // The target name could have been changed.
         conf.PrimaryOutput = project->first("TARGET").toQString();
-        if ( !conf.PrimaryOutput.isEmpty() && !project->first("TARGET_VERSION_EXT").isEmpty() && project->isActiveConfig("shared"))
+        if (!conf.PrimaryOutput.isEmpty() && project->first("TEMPLATE") == "vclib"
+                && project->isActiveConfig("shared")) {
             conf.PrimaryOutput.append(project->first("TARGET_VERSION_EXT").toQString());
+        }
     }
 
     if (conf.CompilerVersion >= NET2012) {
