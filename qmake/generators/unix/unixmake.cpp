@@ -210,7 +210,7 @@ UnixMakefileGenerator::init()
 
             // replace place holders
             pchFlags = pchFlags.replace("${QMAKE_PCH_INPUT}",
-                                        fileFixify(project->first("PRECOMPILED_HEADER").toQString()));
+                                        project->first("PRECOMPILED_HEADER").toQString());
             pchFlags = pchFlags.replace("${QMAKE_PCH_OUTPUT_BASE}", pchBaseName);
             if (project->isActiveConfig("icc_pch_style")) {
                 // icc style
