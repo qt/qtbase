@@ -454,12 +454,21 @@ QStringList Config::getStringList(const QString& var) const
 }
 
 /*!
-   \brief Returns the a path list where all paths are canonicalized, then
-          made relative to the config file.
-   \param var The variable containing the list of paths.
-   \see   Location::canonicalRelativePath()
+   Returns the a path list where all paths from the config variable \a var
+   are canonicalized. If \a validate is true, a warning for invalid paths is
+   generated.
+
+   First, this function looks up the configuration variable \a var
+   in the location map and, if found, sets the internal variable
+   \c{lastLocation_} the Location that \a var maps to.
+
+   Then it looks up the configuration variable \a var in the string
+   list map, which maps to one or more records that each contains a
+   list of file paths.
+
+   \sa Location::canonicalRelativePath()
  */
-QStringList Config::getCanonicalPathList(const QString& var) const
+QStringList Config::getCanonicalPathList(const QString& var, bool validate) const
 {
     QStringList t;
     QList<ConfigVar> configVars = configVars_.values(var);
@@ -476,88 +485,14 @@ QStringList Config::getCanonicalPathList(const QString& var) const
             if (!sl.isEmpty()) {
                 t.reserve(t.size() + sl.size());
                 for (int i=0; i<sl.size(); ++i) {
-                    QDir dir(d + "/" + sl[i]);
-                    t.append(dir.canonicalPath());
-                }
-            }
-            --i;
-        }
-    }
-    return t;
-}
-
-/*!
-  This function should only be called when the configuration
-  variable \a var maps to string lists that contain file paths.
-  It cleans the paths with QDir::cleanPath() before returning
-  them.
- */
-QStringList Config::getCleanPathList(const QString& var) const
-{
-    QStringList t;
-    QList<ConfigVar> configVars = configVars_.values(var);
-    if (!configVars.empty()) {
-        int i = configVars.size() - 1;
-        while (i >= 0) {
-            const ConfigVar& cv = configVars[i];
-            if (!cv.plus_)
-                t.clear();
-            if (!cv.location_.isEmpty())
-                (Location&) lastLocation_ = cv.location_;
-            const QStringList& sl = cv.values_;
-            if (!sl.isEmpty()) {
-                t.reserve(t.size() + sl.size());
-                for (int i=0; i<sl.size(); ++i) {
-                    t.append(QDir::cleanPath(sl[i].simplified()));
-                }
-            }
-            --i;
-        }
-    }
-    return t;
-}
-
-/*!
-  This function should only be called when the configuration
-  variable \a var maps to string lists that contain file paths.
-  It cleans the paths with QDir::cleanPath() before returning
-  them.
-
-  First, this function looks up the configuration variable \a var
-  in the location map and, if found, sets the internal variable
-  \c{lastLocation_} the Location that \a var maps to.
-
-  Then it looks up the configuration variable \a var in the string
-  list map, which maps to one or more records that each contains a
-  list of file paths.
-
-  These paths might not be clean, so QDir::cleanPath() is called
-  for each one. The string list returned contains cleaned paths.
- */
-QStringList Config::getPathList(const QString& var) const
-{
-    QStringList t;
-    QList<ConfigVar> configVars = configVars_.values(var);
-    if (!configVars.empty()) {
-        int i = configVars.size() - 1;
-        while (i >= 0) {
-            const ConfigVar& cv = configVars[i];
-            if (!cv.plus_)
-                t.clear();
-            if (!cv.location_.isEmpty())
-                (Location&) lastLocation_ = cv.location_;
-            const QString d = cv.currentPath_;
-            const QStringList& sl = cv.values_;
-            if (!sl.isEmpty()) {
-                t.reserve(t.size() + sl.size());
-                for (int i=0; i<sl.size(); ++i) {
-                    QFileInfo fileInfo;
-                    QString path = d + "/" + QDir::cleanPath(sl[i].simplified());
-                    fileInfo.setFile(path);
-                    if (!fileInfo.exists())
-                        lastLocation_.warning(tr("File '%1' does not exist").arg(path));
+                    QDir dir(sl[i].simplified());
+                    QString path = dir.path();
+                    if (dir.isRelative())
+                        dir.setPath(d + "/" + path);
+                    if (validate && !QFileInfo::exists(dir.path()))
+                        lastLocation_.warning(tr("Cannot find file or directory: %1").arg(path));
                     else
-                        t.append(path);
+                        t.append(dir.canonicalPath());
                 }
             }
             --i;
@@ -565,7 +500,6 @@ QStringList Config::getPathList(const QString& var) const
     }
     return t;
 }
-
 
 /*!
   Calls getRegExpList() with the control variable \a var and

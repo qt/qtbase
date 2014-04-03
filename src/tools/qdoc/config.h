@@ -103,9 +103,7 @@ public:
     QString getString(const QString& var) const;
     QSet<QString> getStringSet(const QString& var) const;
     QStringList getStringList(const QString& var) const;
-    QStringList getCanonicalPathList(const QString& var) const;
-    QStringList getCleanPathList(const QString& var) const;
-    QStringList getPathList(const QString& var) const;
+    QStringList getCanonicalPathList(const QString& var, bool validate = false) const;
     QRegExp getRegExp(const QString& var) const;
     QList<QRegExp> getRegExpList(const QString& var) const;
     QSet<QString> subVars(const QString& var) const;

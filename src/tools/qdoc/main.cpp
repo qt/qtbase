@@ -393,7 +393,7 @@ static void processQdocconfFile(const QString &fileName)
     }
 
     Generator::debug("Reading excludefiles");
-    excludedFilesList = config.getCleanPathList(CONFIG_EXCLUDEFILES);
+    excludedFilesList = config.getCanonicalPathList(CONFIG_EXCLUDEFILES);
     foreach (const QString& excludeFile, excludedFilesList) {
         QString p = QDir::fromNativeSeparators(excludeFile);
         excludedFiles.insert(p);

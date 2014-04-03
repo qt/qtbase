@@ -1585,13 +1585,13 @@ void Generator::initialize(const Config &config)
             config.lastLocation().fatal(tr("Cannot create style directory '%1'").arg(outDir_ + "/style"));
     }
 
-    imageFiles = config.getCleanPathList(CONFIG_IMAGES);
-    imageDirs = config.getCleanPathList(CONFIG_IMAGEDIRS);
-    scriptFiles = config.getCleanPathList(CONFIG_SCRIPTS);
-    scriptDirs = config.getCleanPathList(CONFIG_SCRIPTDIRS);
-    styleFiles = config.getCleanPathList(CONFIG_STYLES);
-    styleDirs = config.getCleanPathList(CONFIG_STYLEDIRS);
-    exampleDirs = config.getCleanPathList(CONFIG_EXAMPLEDIRS);
+    imageFiles = config.getCanonicalPathList(CONFIG_IMAGES);
+    imageDirs = config.getCanonicalPathList(CONFIG_IMAGEDIRS);
+    scriptFiles = config.getCanonicalPathList(CONFIG_SCRIPTS);
+    scriptDirs = config.getCanonicalPathList(CONFIG_SCRIPTDIRS);
+    styleFiles = config.getCanonicalPathList(CONFIG_STYLES);
+    styleDirs = config.getCanonicalPathList(CONFIG_STYLEDIRS);
+    exampleDirs = config.getCanonicalPathList(CONFIG_EXAMPLEDIRS);
     exampleImgExts = config.getStringList(CONFIG_EXAMPLES + Config::dot + CONFIG_IMAGEEXTENSIONS);
 
     QString imagesDotFileExtensions = CONFIG_IMAGES + Config::dot + CONFIG_FILEEXTENSIONS;
@@ -1607,9 +1607,9 @@ void Generator::initialize(const Config &config)
         if (outputFormats.contains((*g)->format())) {
             currentGenerator_ = (*g);
             (*g)->initializeGenerator(config);
-            QStringList extraImages = config.getPathList((*g)->format() +
+            QStringList extraImages = config.getCanonicalPathList((*g)->format() +
                                                          Config::dot +
-                                                         CONFIG_EXTRAIMAGES);
+                                                         CONFIG_EXTRAIMAGES, true);
             QStringList::ConstIterator e = extraImages.constBegin();
             while (e != extraImages.constEnd()) {
                 QString filePath = *e;
@@ -1620,7 +1620,7 @@ void Generator::initialize(const Config &config)
             }
 
             // Documentation template handling
-            QStringList scripts = config.getPathList((*g)->format()+Config::dot+CONFIG_SCRIPTS);
+            QStringList scripts = config.getCanonicalPathList((*g)->format()+Config::dot+CONFIG_SCRIPTS, true);
             e = scripts.constBegin();
             while (e != scripts.constEnd()) {
                 QString filePath = *e;
@@ -1630,7 +1630,7 @@ void Generator::initialize(const Config &config)
                 ++e;
             }
 
-            QStringList styles = config.getPathList((*g)->format()+Config::dot+CONFIG_STYLESHEETS);
+            QStringList styles = config.getCanonicalPathList((*g)->format()+Config::dot+CONFIG_STYLESHEETS, true);
             e = styles.constBegin();
             while (e != styles.constEnd()) {
                 QString filePath = *e;
