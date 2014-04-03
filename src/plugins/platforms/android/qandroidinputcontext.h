@@ -134,6 +134,8 @@ private slots:
 private:
     ExtractedText m_extractedText;
     QString m_composingText;
+    int m_composingTextStart;
+    int m_composingCursor;
     QMetaObject::Connection m_updateCursorPosConnection;
     bool m_blockUpdateSelection;
     int m_batchEditNestingLevel;
