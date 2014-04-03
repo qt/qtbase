@@ -2834,6 +2834,18 @@ void QComboBox::changeEvent(QEvent *e)
             d->updateLineEditGeometry();
         d->setLayoutItemMargins(QStyle::SE_ComboBoxLayoutItem);
 
+        if (e->type() == QEvent::MacSizeChange){
+            QPlatformTheme::Font f = QPlatformTheme::SystemFont;
+            if (testAttribute(Qt::WA_MacSmallSize))
+                f = QPlatformTheme::SmallFont;
+            else if (testAttribute(Qt::WA_MacMiniSize))
+                f = QPlatformTheme::MiniFont;
+            if (const QFont *platformFont = QApplicationPrivate::platformTheme()->font(f)) {
+                QFont f = font();
+                f.setPointSizeF(platformFont->pointSizeF());
+                setFont(f);
+            }
+        }
         // ### need to update scrollers etc. as well here
         break;
     case QEvent::EnabledChange:
