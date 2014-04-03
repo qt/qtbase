@@ -195,17 +195,17 @@ public:
     QSize sizeHint(const QStyleOptionViewItem &option,
                    const QModelIndex &index) const Q_DECL_OVERRIDE;
 
-    QIcon truetype;
-    QIcon bitmap;
+    const QIcon truetype;
+    const QIcon bitmap;
     QFontDatabase::WritingSystem writingSystem;
 };
 
 QFontFamilyDelegate::QFontFamilyDelegate(QObject *parent)
-    : QAbstractItemDelegate(parent)
+    : QAbstractItemDelegate(parent),
+      truetype(QStringLiteral(":/qt-project.org/styles/commonstyle/images/fonttruetype-16.png")),
+      bitmap(QStringLiteral(":/qt-project.org/styles/commonstyle/images/fontbitmap-16.png")),
+      writingSystem(QFontDatabase::Any)
 {
-    truetype = QIcon(QLatin1String(":/qt-project.org/styles/commonstyle/images/fonttruetype-16.png"));
-    bitmap = QIcon(QLatin1String(":/qt-project.org/styles/commonstyle/images/fontbitmap-16.png"));
-    writingSystem = QFontDatabase::Any;
 }
 
 void QFontFamilyDelegate::paint(QPainter *painter,
