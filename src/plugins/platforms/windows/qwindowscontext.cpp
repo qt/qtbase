@@ -49,11 +49,11 @@
 #include "qwindowsmime.h"
 #include "qwindowsinputcontext.h"
 #include "qwindowstabletsupport.h"
+#include <private/qguiapplication_p.h>
 #ifndef QT_NO_ACCESSIBILITY
 # include "accessible/qwindowsaccessibility.h"
 #endif
 #if !defined(Q_OS_WINCE) && !defined(QT_NO_SESSIONMANAGER)
-# include <private/qguiapplication_p.h>
 # include <private/qsessionmanager_p.h>
 # include "qwindowssessionmanager.h"
 #endif
@@ -1025,6 +1025,12 @@ void QWindowsContext::handleFocusEvent(QtWindows::WindowsEventType et,
 {
     QWindow *nextActiveWindow = 0;
     if (et == QtWindows::FocusInEvent) {
+        QWindow *topWindow = QWindowsWindow::topLevelOf(platformWindow->window());
+        QWindow *modalWindow = 0;
+        if (QGuiApplicationPrivate::instance()->isWindowBlocked(topWindow, &modalWindow) && topWindow != modalWindow) {
+            modalWindow->requestActivate();
+            return;
+        }
         nextActiveWindow = platformWindow->window();
     } else {
         // Focus out: Is the next window known and different
