@@ -1264,9 +1264,7 @@ QPageSize &QPageSize::operator=(const QPageSize &other)
 
 bool operator==(const QPageSize &lhs, const QPageSize &rhs)
 {
-    if (lhs.d == rhs.d)
-        return true;
-    return lhs.d && rhs.d && *lhs.d == *rhs.d;
+    return lhs.d == rhs.d || *lhs.d == *rhs.d;
 }
 /*!
     \fn bool operator!=(const QPageSize &lhs, const QPageSize &rhs)
