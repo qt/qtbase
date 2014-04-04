@@ -495,6 +495,7 @@ static QWindowGeometrySpecification windowGeometrySpecification;
             \l{Session Management}{session}.
         \li  -qwindowgeometry, sets the geometry of the first window
         \li  -qwindowtitle, sets the title of the first window
+        \li  -qwindowicon, sets the default window icon
     \endlist
 
     The following standard command line options are available for X11:
@@ -1115,6 +1116,11 @@ void QGuiApplicationPrivate::createPlatformIntegration()
         } else if (arg == "-qwindowtitle" || (platformName == "xcb" && arg == "-title")) {
             if (++i < argc)
                 firstWindowTitle = QString::fromLocal8Bit(argv[i]);
+        } else if (arg == "-qwindowicon" || (platformName == "xcb" && arg == "-icon")) {
+            if (++i < argc) {
+                const QString icon = QString::fromLocal8Bit(argv[i]);
+                forcedWindowIcon = QDir::isAbsolutePath(icon) ? QIcon(icon) : QIcon::fromTheme(icon);
+            }
         } else {
             argv[j++] = argv[i];
         }

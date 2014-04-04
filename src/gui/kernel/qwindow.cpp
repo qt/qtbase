@@ -436,11 +436,14 @@ void QWindow::setVisible(bool visible)
         QCoreApplication::removePostedEvents(qApp, QEvent::Quit);
 
         if (type() == Qt::Window) {
-            QString &firstWindowTitle = QGuiApplicationPrivate::instance()->firstWindowTitle;
+            QGuiApplicationPrivate *app_priv = QGuiApplicationPrivate::instance();
+            QString &firstWindowTitle = app_priv->firstWindowTitle;
             if (!firstWindowTitle.isEmpty()) {
                 setTitle(firstWindowTitle);
                 firstWindowTitle = QString();
             }
+            if (!app_priv->forcedWindowIcon.isNull())
+                setIcon(app_priv->forcedWindowIcon);
         }
 
         QShowEvent showEvent;

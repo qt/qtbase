@@ -234,6 +234,7 @@ public:
     QInputMethod *inputMethod;
 
     QString firstWindowTitle;
+    QIcon forcedWindowIcon;
 
     static QList<QObject *> generic_plugin_list;
 #ifndef QT_NO_SHORTCUT

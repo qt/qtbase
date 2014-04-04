@@ -61,6 +61,7 @@ class tst_QGuiApplication: public tst_QCoreApplication
 private slots:
     void displayName();
     void firstWindowTitle();
+    void windowIcon();
     void focusObject();
     void allWindows();
     void topLevelWindows();
@@ -93,6 +94,24 @@ void tst_QGuiApplication::firstWindowTitle()
     window.setTitle("Application Title");
     window.show();
     QCOMPARE(window.title(), QString("User Title"));
+}
+
+void tst_QGuiApplication::windowIcon()
+{
+    int argc = 3;
+    char *argv[] = { const_cast<char*>("tst_qguiapplication"), const_cast<char*>("-qwindowicon"), const_cast<char*>(":/icons/usericon.png") };
+    QGuiApplication app(argc, argv);
+    QIcon appIcon(":/icons/appicon.png");
+    app.setWindowIcon(appIcon);
+
+    QWindow window;
+    window.show();
+
+    QIcon userIcon(":/icons/usericon.png");
+    // Comparing icons is hard. cacheKey() differs because the icon was independently loaded.
+    // So we use availableSizes, after making sure that the app and user icons do have different sizes.
+    QVERIFY(userIcon.availableSizes() != appIcon.availableSizes());
+    QCOMPARE(window.icon().availableSizes(), userIcon.availableSizes());
 }
 
 class DummyWindow : public QWindow
