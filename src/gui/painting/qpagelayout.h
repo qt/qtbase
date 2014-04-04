@@ -79,8 +79,8 @@ public:
     };
 
     QPageLayout();
-    QPageLayout(const QPageSize &pageSize, QPageLayout::Orientation orientation,
-                const QMarginsF &margins, QPageLayout::Unit units = QPageLayout::Point,
+    QPageLayout(const QPageSize &pageSize, Orientation orientation,
+                const QMarginsF &margins, Unit units = Point,
                 const QMarginsF &minMargins = QMarginsF(0, 0, 0, 0));
     QPageLayout(const QPageLayout &other);
     ~QPageLayout();
@@ -97,18 +97,18 @@ public:
 
     bool isValid() const;
 
-    void setMode(QPageLayout::Mode mode);
-    QPageLayout::Mode mode() const;
+    void setMode(Mode mode);
+    Mode mode() const;
 
     void setPageSize(const QPageSize &pageSize,
                      const QMarginsF &minMargins = QMarginsF(0, 0, 0, 0));
     QPageSize pageSize() const;
 
-    void setOrientation(QPageLayout::Orientation orientation);
-    QPageLayout::Orientation orientation() const;
+    void setOrientation(Orientation orientation);
+    Orientation orientation() const;
 
-    void setUnits(QPageLayout::Unit units);
-    QPageLayout::Unit units() const;
+    void setUnits(Unit units);
+    Unit units() const;
 
     bool setMargins(const QMarginsF &margins);
     bool setLeftMargin(qreal leftMargin);
@@ -117,7 +117,7 @@ public:
     bool setBottomMargin(qreal bottomMargin);
 
     QMarginsF margins() const;
-    QMarginsF margins(QPageLayout::Unit units) const;
+    QMarginsF margins(Unit units) const;
     QMargins marginsPoints() const;
     QMargins marginsPixels(int resolution) const;
 
@@ -126,12 +126,12 @@ public:
     QMarginsF maximumMargins() const;
 
     QRectF fullRect() const;
-    QRectF fullRect(QPageLayout::Unit units) const;
+    QRectF fullRect(Unit units) const;
     QRect fullRectPoints() const;
     QRect fullRectPixels(int resolution) const;
 
     QRectF paintRect() const;
-    QRectF paintRect(QPageLayout::Unit units) const;
+    QRectF paintRect(Unit units) const;
     QRect paintRectPoints() const;
     QRect paintRectPixels(int resolution) const;
 

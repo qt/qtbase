@@ -375,8 +375,8 @@ QPageLayout::QPageLayout()
     margins allowed by the page size.
 */
 
-QPageLayout::QPageLayout(const QPageSize &pageSize, QPageLayout::Orientation orientation,
-                         const QMarginsF &margins, QPageLayout::Unit units,
+QPageLayout::QPageLayout(const QPageSize &pageSize, Orientation orientation,
+                         const QMarginsF &margins, Unit units,
                          const QMarginsF &minMargins)
     : d(new QPageLayoutPrivate(pageSize, orientation, margins, units, minMargins))
 {
@@ -464,7 +464,7 @@ bool QPageLayout::isValid() const
     Sets a page layout mode to \a mode.
 */
 
-void QPageLayout::setMode(QPageLayout::Mode mode)
+void QPageLayout::setMode(Mode mode)
 {
     d->m_mode = mode;
 }
@@ -519,7 +519,7 @@ QPageSize QPageLayout::pageSize() const
     the minimum margins.
 */
 
-void QPageLayout::setOrientation(QPageLayout::Orientation orientation)
+void QPageLayout::setOrientation(Orientation orientation)
 {
     if (orientation != d->m_orientation) {
         d->m_orientation = orientation;
@@ -546,7 +546,7 @@ QPageLayout::Orientation QPageLayout::orientation() const
     Sets the \a units used to define the page layout.
 */
 
-void QPageLayout::setUnits(QPageLayout::Unit units)
+void QPageLayout::setUnits(Unit units)
 {
     if (units != d->m_units) {
         d->m_margins = qt_convertMargins(d->m_margins, d->m_units, units);
@@ -584,7 +584,7 @@ QPageLayout::Unit QPageLayout::units() const
 
 bool QPageLayout::setMargins(const QMarginsF &margins)
 {
-    if (d->m_mode == QPageLayout::FullPageMode) {
+    if (d->m_mode == FullPageMode) {
         d->m_margins = margins;
         return true;
     } else if (margins.left() >= d->m_minMargins.left()
@@ -619,7 +619,7 @@ bool QPageLayout::setMargins(const QMarginsF &margins)
 
 bool QPageLayout::setLeftMargin(qreal leftMargin)
 {
-    if (d->m_mode == QPageLayout::FullPageMode
+    if (d->m_mode == FullPageMode
         || (leftMargin >= d->m_minMargins.left() && leftMargin <= d->m_maxMargins.left())) {
         d->m_margins.setLeft(leftMargin);
         return true;
@@ -645,7 +645,7 @@ bool QPageLayout::setLeftMargin(qreal leftMargin)
 
 bool QPageLayout::setRightMargin(qreal rightMargin)
 {
-    if (d->m_mode == QPageLayout::FullPageMode
+    if (d->m_mode == FullPageMode
         || (rightMargin >= d->m_minMargins.right() && rightMargin <= d->m_maxMargins.right())) {
         d->m_margins.setRight(rightMargin);
         return true;
@@ -671,7 +671,7 @@ bool QPageLayout::setRightMargin(qreal rightMargin)
 
 bool QPageLayout::setTopMargin(qreal topMargin)
 {
-    if (d->m_mode == QPageLayout::FullPageMode
+    if (d->m_mode == FullPageMode
         || (topMargin >= d->m_minMargins.top() && topMargin <= d->m_maxMargins.top())) {
         d->m_margins.setTop(topMargin);
         return true;
@@ -697,7 +697,7 @@ bool QPageLayout::setTopMargin(qreal topMargin)
 
 bool QPageLayout::setBottomMargin(qreal bottomMargin)
 {
-    if (d->m_mode == QPageLayout::FullPageMode
+    if (d->m_mode == FullPageMode
         || (bottomMargin >= d->m_minMargins.bottom() && bottomMargin <= d->m_maxMargins.bottom())) {
         d->m_margins.setBottom(bottomMargin);
         return true;
@@ -722,7 +722,7 @@ QMarginsF QPageLayout::margins() const
     \sa setMargins(), margins()
 */
 
-QMarginsF QPageLayout::margins(QPageLayout::Unit units) const
+QMarginsF QPageLayout::margins(Unit units) const
 {
     return d->margins(units);
 }
@@ -818,7 +818,7 @@ QRectF QPageLayout::fullRect() const
     \sa paintRect()
 */
 
-QRectF QPageLayout::fullRect(QPageLayout::Unit units) const
+QRectF QPageLayout::fullRect(Unit units) const
 {
     return isValid() ? d->fullRect(units) : QRect();
 }
@@ -876,13 +876,13 @@ QRectF QPageLayout::paintRect() const
     the margins must be manually managed.
 */
 
-QRectF QPageLayout::paintRect(QPageLayout::Unit units) const
+QRectF QPageLayout::paintRect(Unit units) const
 {
     if (!isValid())
         return QRectF();
     if (units == d->m_units)
         return d->paintRect();
-    return d->m_mode == QPageLayout::FullPageMode ? d->fullRect(units)
+    return d->m_mode == FullPageMode ? d->fullRect(units)
                                                   : d->fullRect(units) - d->margins(units);
 }
 
@@ -900,7 +900,7 @@ QRect QPageLayout::paintRectPoints() const
 {
     if (!isValid())
         return QRect();
-    return d->m_mode == QPageLayout::FullPageMode ? d->fullRectPoints()
+    return d->m_mode == FullPageMode ? d->fullRectPoints()
                                                   : d->fullRectPoints() - d->marginsPoints();
 }
 
@@ -918,7 +918,7 @@ QRect QPageLayout::paintRectPixels(int resolution) const
 {
     if (!isValid())
         return QRect();
-    return d->m_mode == QPageLayout::FullPageMode ? d->fullRectPixels(resolution)
+    return d->m_mode == FullPageMode ? d->fullRectPixels(resolution)
                                                   : d->fullRectPixels(resolution) - d->marginsPixels(resolution);
 }
 
