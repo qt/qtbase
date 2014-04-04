@@ -438,9 +438,7 @@ QPageLayout &QPageLayout::operator=(const QPageLayout &other)
 
 bool operator==(const QPageLayout &lhs, const QPageLayout &rhs)
 {
-    if (lhs.d && rhs.d)
-        return (*lhs.d == *rhs.d);
-    return (lhs.d == rhs.d);
+    return lhs.d == rhs.d || *lhs.d == *rhs.d;
 }
 
 /*!
