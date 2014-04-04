@@ -241,7 +241,12 @@ for(QT_CURRENT_VERIFY, $$list($$QT_PLUGIN_VERIFY)) {
 
         # Only link against plugin in static builds
         isEqual(QT_CURRENT_VERIFY, QTPLUGIN): {
-            !isEmpty(QT_PLUGINPATH): LIBS *= -L$$[QT_INSTALL_PLUGINS/get]/$$QT_PLUGINPATH
+            !isEmpty(QT_PLUGINPATH) {
+                plugpath = $$eval(QT_PLUGIN.$${QTPLUG}.PATH)
+                isEmpty(plugpath): \
+                    plugpath = $$[QT_INSTALL_PLUGINS/get]
+                LIBS *= -L$$plugpath/$$QT_PLUGINPATH
+            }
                 LIBS += $$QT_LINKAGE
             # if the plugin is linked statically there is no need to deploy it
             DEPLOYMENT_PLUGIN -= $$QT_CURRENT_VERIFY
