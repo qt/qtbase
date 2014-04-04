@@ -230,12 +230,12 @@ public:
 
     QPageSize();
     explicit QPageSize(QPageSize::PageSizeId pageSizeId);
-    QPageSize(const QSize &pointSize,
-              const QString &name = QString(),
-              QPageSize::SizeMatchPolicy matchPolicy = QPageSize::FuzzyMatch);
-    QPageSize(const QSizeF &size, QPageSize::Unit units,
-              const QString &name = QString(),
-              QPageSize::SizeMatchPolicy matchPolicy = QPageSize::FuzzyMatch);
+    explicit QPageSize(const QSize &pointSize,
+                       const QString &name = QString(),
+                       QPageSize::SizeMatchPolicy matchPolicy = QPageSize::FuzzyMatch);
+    explicit QPageSize(const QSizeF &size, QPageSize::Unit units,
+                       const QString &name = QString(),
+                       QPageSize::SizeMatchPolicy matchPolicy = QPageSize::FuzzyMatch);
     QPageSize(const QPageSize &other);
     ~QPageSize();
 
