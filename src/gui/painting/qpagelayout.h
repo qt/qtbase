@@ -92,7 +92,7 @@ public:
 
     void swap(QPageLayout &other) { d.swap(other.d); }
 
-    bool operator==(const QPageLayout &other) const;
+    friend Q_GUI_EXPORT bool operator==(const QPageLayout &lhs, const QPageLayout &rhs);
     bool isEquivalentTo(const QPageLayout &other) const;
 
     bool isValid() const;
@@ -141,6 +141,8 @@ private:
 };
 
 Q_DECLARE_SHARED(QPageLayout)
+
+Q_GUI_EXPORT bool operator==(const QPageLayout &lhs, const QPageLayout &rhs);
 
 #ifndef QT_NO_DEBUG_STREAM
 Q_GUI_EXPORT QDebug operator<<(QDebug dbg, const QPageLayout &pageLayout);

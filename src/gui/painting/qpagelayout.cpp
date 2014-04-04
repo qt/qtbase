@@ -424,21 +424,23 @@ QPageLayout &QPageLayout::operator=(const QPageLayout &other)
 */
 
 /*!
-    Returns \c true if this page layout is equal to the \a other page layout,
+    \relates QPageLayout
+
+    Returns \c true if page layout \a lhs is equal to page layout \a rhs,
     i.e. if all the attributes are exactly equal.
 
     Note that this is a strict equality, especially for page size where the
     QPageSize ID, name and size must exactly match, and the margins where the
     units must match.
 
-    \sa isEquivalentTo()
+    \sa QPageLayout::isEquivalentTo()
 */
 
-bool QPageLayout::operator==(const QPageLayout &other) const
+bool operator==(const QPageLayout &lhs, const QPageLayout &rhs)
 {
-    if (d && other.d)
-        return (*d == *other.d);
-    return (d == other.d);
+    if (lhs.d && rhs.d)
+        return (*lhs.d == *rhs.d);
+    return (lhs.d == rhs.d);
 }
 
 /*!
