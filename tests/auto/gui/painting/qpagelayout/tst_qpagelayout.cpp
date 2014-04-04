@@ -83,8 +83,12 @@ void tst_QPageLayout::basics()
     QCOMPARE(simple.paintRectPoints(), QRect(0, 0, 595, 842));
     QCOMPARE(simple.paintRectPixels(72), QRect(0, 0, 595, 842));
 
+    const QPageLayout a4portrait = simple;
+    QVERIFY(a4portrait == simple);
+
     // Change orientation
     simple.setOrientation(QPageLayout::Landscape);
+    QVERIFY(simple != a4portrait);
     QCOMPARE(simple.orientation(), QPageLayout::Landscape);
     QCOMPARE(simple.margins(), QMarginsF(0, 0, 0, 0));
     QCOMPARE(simple.minimumMargins(), QMarginsF(0, 0, 0, 0));
