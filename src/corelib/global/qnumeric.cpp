@@ -140,6 +140,7 @@ static inline quint32 f2i(float f)
     \endcode
 
     \sa qFuzzyCompare()
+    \since 5.2
     \relates <QtGlobal>
 */
 Q_CORE_EXPORT quint32 qFloatDistance(float a, float b)
@@ -197,6 +198,7 @@ static inline quint64 d2i(double d)
 
 
     \sa qFuzzyCompare()
+    \since 5.2
     \relates <QtGlobal>
 */
 Q_CORE_EXPORT quint64 qFloatDistance(double a, double b)
