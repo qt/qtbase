@@ -60,7 +60,6 @@ public:
     QOpenGLWidgetPrivate()
         : fbo(0), uninitialized(true)
     {
-        setRenderToTexture();
     }
     GLuint textureId() const { return fbo ? fbo->texture() : 0; }
 
@@ -91,6 +90,8 @@ void QOpenGLWidgetPrivate::initialize()
 QOpenGLWidget::QOpenGLWidget(QWidget *parent, Qt::WindowFlags f)
     : QWidget(*(new QOpenGLWidgetPrivate), parent, f)
 {
+    Q_D(QOpenGLWidget);
+    d->setRenderToTexture();
 }
 
 QOpenGLWidget::~QOpenGLWidget()
