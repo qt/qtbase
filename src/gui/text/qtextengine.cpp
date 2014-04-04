@@ -3181,23 +3181,19 @@ int QTextEngine::lineNumberForTextPosition(int pos)
 void QTextEngine::insertionPointsForLine(int lineNum, QVector<int> &insertionPoints)
 {
     QTextLineItemIterator iterator(this, lineNum);
-    bool rtl = isRightToLeft();
     bool lastLine = lineNum >= lines.size() - 1;
 
     while (!iterator.atEnd()) {
-        iterator.next();
-        const QScriptItem *si = &layoutData->items[iterator.item];
-        if (si->analysis.bidiLevel % 2) {
-            int i = iterator.itemEnd - 1, min = iterator.itemStart;
-            if (lastLine && (rtl ? iterator.atBeginning() : iterator.atEnd()))
-                i++;
-            for (; i >= min; i--)
+        const QScriptItem &si = iterator.next();
+
+        int end = iterator.itemEnd;
+        if (lastLine && iterator.item == iterator.lastItem)
+            ++end; // the last item in the last line -> insert eol position
+        if (si.analysis.bidiLevel % 2) {
+            for (int i = end - 1; i >= iterator.itemStart; --i)
                 insertionPoints.push_back(i);
         } else {
-            int i = iterator.itemStart, max = iterator.itemEnd;
-            if (lastLine && (rtl ? iterator.atBeginning() : iterator.atEnd()))
-                max++;
-            for (; i < max; i++)
+            for (int i = iterator.itemStart; i < end; ++i)
                 insertionPoints.push_back(i);
         }
     }
