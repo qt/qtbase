@@ -137,7 +137,7 @@ public:
 
 private:
     friend class QPageLayoutPrivate;
-    QSharedDataPointer<QPageLayoutPrivate> d;
+    QExplicitlySharedDataPointer<QPageLayoutPrivate> d;
 };
 
 Q_DECLARE_SHARED(QPageLayout)
