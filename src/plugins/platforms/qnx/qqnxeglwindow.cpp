@@ -81,15 +81,14 @@ QQnxEglWindow::~QQnxEglWindow()
 
 void QQnxEglWindow::createEGLSurface()
 {
-    // Fetch the surface size from the window and update
-    // the window's buffers before we create the EGL surface
-    const QSize surfaceSize = requestedBufferSize();
-    if (!surfaceSize.isValid()) {
+    if (!m_requestedBufferSize.isValid()) {
         qWarning("QQNX: Trying to create 0 size EGL surface. "
                "Please set a valid window size before calling QOpenGLContext::makeCurrent()");
         return;
     }
-    setBufferSize(surfaceSize);
+
+    // update the window's buffers before we create the EGL surface
+    setBufferSize(m_requestedBufferSize);
 
     const EGLint eglSurfaceAttrs[] =
     {
@@ -99,9 +98,10 @@ void QQnxEglWindow::createEGLSurface()
 
     qEglWindowDebug() << "Creating EGL surface" << platformOpenGLContext()->getEglDisplay()
                    << platformOpenGLContext()->getEglConfig();
+
     // Create EGL surface
-    m_eglSurface = eglCreateWindowSurface(platformOpenGLContext()->getEglDisplay()
-                                          , platformOpenGLContext()->getEglConfig(),
+    m_eglSurface = eglCreateWindowSurface(platformOpenGLContext()->getEglDisplay(),
+                                          platformOpenGLContext()->getEglConfig(),
                                           (EGLNativeWindowType) nativeHandle(), eglSurfaceAttrs);
     if (m_eglSurface == EGL_NO_SURFACE) {
         const EGLenum error = QQnxGLContext::checkEGLError("eglCreateWindowSurface");
@@ -169,11 +169,6 @@ void QQnxEglWindow::setGeometry(const QRect &rect)
             m_newSurfaceRequested.testAndSetRelease(false, true);
     }
     QQnxWindow::setGeometry(newGeometry);
-}
-
-QSize QQnxEglWindow::requestedBufferSize() const
-{
-    return m_requestedBufferSize;
 }
 
 void QQnxEglWindow::setPlatformOpenGLContext(QQnxGLContext *platformOpenGLContext)
