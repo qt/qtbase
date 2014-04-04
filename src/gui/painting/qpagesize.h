@@ -229,13 +229,13 @@ public:
     };
 
     QPageSize();
-    explicit QPageSize(QPageSize::PageSizeId pageSizeId);
+    explicit QPageSize(PageSizeId pageSizeId);
     explicit QPageSize(const QSize &pointSize,
                        const QString &name = QString(),
-                       QPageSize::SizeMatchPolicy matchPolicy = QPageSize::FuzzyMatch);
-    explicit QPageSize(const QSizeF &size, QPageSize::Unit units,
+                       SizeMatchPolicy matchPolicy = FuzzyMatch);
+    explicit QPageSize(const QSizeF &size, Unit units,
                        const QString &name = QString(),
-                       QPageSize::SizeMatchPolicy matchPolicy = QPageSize::FuzzyMatch);
+                       SizeMatchPolicy matchPolicy = FuzzyMatch);
     QPageSize(const QPageSize &other);
     ~QPageSize();
 
@@ -254,38 +254,38 @@ public:
     QString key() const;
     QString name() const;
 
-    QPageSize::PageSizeId id() const;
+    PageSizeId id() const;
 
     int windowsId() const;
 
     QSizeF definitionSize() const;
-    QPageSize::Unit definitionUnits() const;
+    Unit definitionUnits() const;
 
-    QSizeF size(QPageSize::Unit units) const;
+    QSizeF size(Unit units) const;
     QSize sizePoints() const;
     QSize sizePixels(int resolution) const;
 
-    QRectF rect(QPageSize::Unit units) const;
+    QRectF rect(Unit units) const;
     QRect rectPoints() const;
     QRect rectPixels(int resolution) const;
 
-    static QString key(QPageSize::PageSizeId pageSizeId);
-    static QString name(QPageSize::PageSizeId pageSizeId);
+    static QString key(PageSizeId pageSizeId);
+    static QString name(PageSizeId pageSizeId);
 
-    static QPageSize::PageSizeId id(const QSize &pointSize,
-                                    QPageSize::SizeMatchPolicy matchPolicy = QPageSize::FuzzyMatch);
-    static QPageSize::PageSizeId id(const QSizeF &size, QPageSize::Unit units,
-                                    QPageSize::SizeMatchPolicy matchPolicy = QPageSize::FuzzyMatch);
+    static PageSizeId id(const QSize &pointSize,
+                         SizeMatchPolicy matchPolicy = FuzzyMatch);
+    static PageSizeId id(const QSizeF &size, Unit units,
+                         SizeMatchPolicy matchPolicy = FuzzyMatch);
 
-    static QPageSize::PageSizeId id(int windowsId);
-    static int windowsId(QPageSize::PageSizeId pageSizeId);
+    static PageSizeId id(int windowsId);
+    static int windowsId(PageSizeId pageSizeId);
 
-    static QSizeF definitionSize(QPageSize::PageSizeId pageSizeId);
-    static QPageSize::Unit definitionUnits(QPageSize::PageSizeId pageSizeId);
+    static QSizeF definitionSize(PageSizeId pageSizeId);
+    static Unit definitionUnits(PageSizeId pageSizeId);
 
-    static QSizeF size(QPageSize::PageSizeId pageSizeId, QPageSize::Unit units);
-    static QSize sizePoints(QPageSize::PageSizeId pageSizeId);
-    static QSize sizePixels(QPageSize::PageSizeId pageSizeId, int resolution);
+    static QSizeF size(PageSizeId pageSizeId, Unit units);
+    static QSize sizePoints(PageSizeId pageSizeId);
+    static QSize sizePixels(PageSizeId pageSizeId, int resolution);
 
 private:
     friend class QPageSizePrivate;

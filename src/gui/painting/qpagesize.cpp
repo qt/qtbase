@@ -1131,7 +1131,7 @@ QPageSize::QPageSize()
     be valid. Use the custom size constructor instead.
 */
 
-QPageSize::QPageSize(QPageSize::PageSizeId pageSize)
+QPageSize::QPageSize(PageSizeId pageSize)
     : d(new QPageSizePrivate(pageSize))
 {
 }
@@ -1174,7 +1174,7 @@ QPageSize::QPageSize(const QSize &pointSize, const QString &name, SizeMatchPolic
     "Custom (width x height)" where the size is expressed in units provided.
 */
 
-QPageSize::QPageSize(const QSizeF &size, QPageSize::Unit units,
+QPageSize::QPageSize(const QSizeF &size, Unit units,
                      const QString &name, SizeMatchPolicy matchPolicy)
     : d(new QPageSizePrivate(size, units, name, matchPolicy))
 {
@@ -1343,7 +1343,7 @@ QString QPageSize::name() const
 
 QPageSize::PageSizeId QPageSize::id() const
 {
-    return isValid() ? d->m_id : QPageSize::Custom;
+    return isValid() ? d->m_id : Custom;
 }
 
 /*!
@@ -1361,7 +1361,7 @@ int QPageSize::windowsId() const
 {
     if (!isValid())
         return 0;
-    return d->m_windowsId > 0 ? d->m_windowsId : QPageSize::windowsId(d->m_id);
+    return d->m_windowsId > 0 ? d->m_windowsId : windowsId(d->m_id);
 }
 
 /*!
@@ -1401,7 +1401,7 @@ QSizeF QPageSize::definitionSize() const
 
 QPageSize::Unit QPageSize::definitionUnits() const
 {
-    return isValid() ? d->m_units : QPageSize::Unit(-1);
+    return isValid() ? d->m_units : Unit(-1);
 }
 
 /*!
@@ -1410,7 +1410,7 @@ QPageSize::Unit QPageSize::definitionUnits() const
     If the QPageSize is invalid then the QSizeF will be invalid.
 */
 
-QSizeF QPageSize::size(QPageSize::Unit units) const
+QSizeF QPageSize::size(Unit units) const
 {
     return isValid() ? d->size(units) : QSize();
 }
@@ -1443,7 +1443,7 @@ QSize QPageSize::sizePixels(int resolution) const
     If the QPageSize is invalid then the QRect will be invalid.
 */
 
-QRectF QPageSize::rect(QPageSize::Unit units) const
+QRectF QPageSize::rect(Unit units) const
 {
     return isValid() ? QRectF(QPointF(0, 0), d->size(units)) : QRectF();
 }
@@ -1478,9 +1478,9 @@ QRect QPageSize::rectPixels(int resolution) const
     If the QPageSize is invalid then the key will be empty.
 */
 
-QString QPageSize::key(QPageSize::PageSizeId pageSizeId)
+QString QPageSize::key(PageSizeId pageSizeId)
 {
-    if (pageSizeId < QPageSize::PageSizeId(0) || pageSizeId > QPageSize::LastPageSize)
+    if (pageSizeId < PageSizeId(0) || pageSizeId > LastPageSize)
         return QString();
     return QString::fromUtf8(qt_pageSizes[pageSizeId].mediaOption);
 }
@@ -1497,249 +1497,249 @@ static QString msgImperialPageSizeInch(int width, int height)
     If the QPageSize is invalid then the name will be empty.
 */
 
-QString QPageSize::name(QPageSize::PageSizeId pageSizeId)
+QString QPageSize::name(PageSizeId pageSizeId)
 {
-    if (pageSizeId < QPageSize::PageSizeId(0) || pageSizeId > QPageSize::LastPageSize)
+    if (pageSizeId < PageSizeId(0) || pageSizeId > LastPageSize)
         return QString();
 
     switch (pageSizeId) {
-    case QPageSize::A0:
+    case A0:
         return QCoreApplication::translate("QPageSize", "A0");
-    case QPageSize::A1:
+    case A1:
         return QCoreApplication::translate("QPageSize", "A1");
-    case QPageSize::A2:
+    case A2:
         return QCoreApplication::translate("QPageSize", "A2");
-    case QPageSize::A3:
+    case A3:
         return QCoreApplication::translate("QPageSize", "A3");
-    case QPageSize::A4:
+    case A4:
         return QCoreApplication::translate("QPageSize", "A4");
-    case QPageSize::A5:
+    case A5:
         return QCoreApplication::translate("QPageSize", "A5");
-    case QPageSize::A6:
+    case A6:
         return QCoreApplication::translate("QPageSize", "A6");
-    case QPageSize::A7:
+    case A7:
         return QCoreApplication::translate("QPageSize", "A7");
-    case QPageSize::A8:
+    case A8:
         return QCoreApplication::translate("QPageSize", "A8");
-    case QPageSize::A9:
+    case A9:
         return QCoreApplication::translate("QPageSize", "A9");
-    case QPageSize::A10:
+    case A10:
         return QCoreApplication::translate("QPageSize", "A10");
-    case QPageSize::B0:
+    case B0:
         return QCoreApplication::translate("QPageSize", "B0");
-    case QPageSize::B1:
+    case B1:
         return QCoreApplication::translate("QPageSize", "B1");
-    case QPageSize::B2:
+    case B2:
         return QCoreApplication::translate("QPageSize", "B2");
-    case QPageSize::B3:
+    case B3:
         return QCoreApplication::translate("QPageSize", "B3");
-    case QPageSize::B4:
+    case B4:
         return QCoreApplication::translate("QPageSize", "B4");
-    case QPageSize::B5:
+    case B5:
         return QCoreApplication::translate("QPageSize", "B5");
-    case QPageSize::B6:
+    case B6:
         return QCoreApplication::translate("QPageSize", "B6");
-    case QPageSize::B7:
+    case B7:
         return QCoreApplication::translate("QPageSize", "B7");
-    case QPageSize::B8:
+    case B8:
         return QCoreApplication::translate("QPageSize", "B8");
-    case QPageSize::B9:
+    case B9:
         return QCoreApplication::translate("QPageSize", "B9");
-    case QPageSize::B10:
+    case B10:
         return QCoreApplication::translate("QPageSize", "B10");
-    case QPageSize::Executive:
+    case Executive:
         return QCoreApplication::translate("QPageSize", "Executive (7.5 x 10 in)");
-    case QPageSize::ExecutiveStandard:
+    case ExecutiveStandard:
         return QCoreApplication::translate("QPageSize", "Executive (7.25 x 10.5 in)");
-    case QPageSize::Folio:
+    case Folio:
         return QCoreApplication::translate("QPageSize", "Folio (8.27 x 13 in)");
-    case QPageSize::Legal:
+    case Legal:
         return QCoreApplication::translate("QPageSize", "Legal");
-    case QPageSize::Letter:
+    case Letter:
         return QCoreApplication::translate("QPageSize", "Letter / ANSI A");
-    case QPageSize::Tabloid:
+    case Tabloid:
         return QCoreApplication::translate("QPageSize", "Tabloid / ANSI B");
-    case QPageSize::Ledger:
+    case Ledger:
         return QCoreApplication::translate("QPageSize", "Ledger / ANSI B");
-    case QPageSize::Custom:
+    case Custom:
         return QCoreApplication::translate("QPageSize", "Custom");
-    case QPageSize::A3Extra:
+    case A3Extra:
         return QCoreApplication::translate("QPageSize", "A3 Extra");
-    case QPageSize::A4Extra:
+    case A4Extra:
         return QCoreApplication::translate("QPageSize", "A4 Extra");
-    case QPageSize::A4Plus:
+    case A4Plus:
         return QCoreApplication::translate("QPageSize", "A4 Plus");
-    case QPageSize::A4Small:
+    case A4Small:
         return QCoreApplication::translate("QPageSize", "A4 Small");
-    case QPageSize::A5Extra:
+    case A5Extra:
         return QCoreApplication::translate("QPageSize", "A5 Extra");
-    case QPageSize::B5Extra:
+    case B5Extra:
         return QCoreApplication::translate("QPageSize", "B5 Extra");
-    case QPageSize::JisB0:
+    case JisB0:
         return QCoreApplication::translate("QPageSize", "JIS B0");
-    case QPageSize::JisB1:
+    case JisB1:
         return QCoreApplication::translate("QPageSize", "JIS B1");
-    case QPageSize::JisB2:
+    case JisB2:
         return QCoreApplication::translate("QPageSize", "JIS B2");
-    case QPageSize::JisB3:
+    case JisB3:
         return QCoreApplication::translate("QPageSize", "JIS B3");
-    case QPageSize::JisB4:
+    case JisB4:
         return QCoreApplication::translate("QPageSize", "JIS B4");
-    case QPageSize::JisB5:
+    case JisB5:
         return QCoreApplication::translate("QPageSize", "JIS B5");
-    case QPageSize::JisB6:
+    case JisB6:
         return QCoreApplication::translate("QPageSize", "JIS B6");
-    case QPageSize::JisB7:
+    case JisB7:
         return QCoreApplication::translate("QPageSize", "JIS B7");
-    case QPageSize::JisB8:
+    case JisB8:
         return QCoreApplication::translate("QPageSize", "JIS B8");
-    case QPageSize::JisB9:
+    case JisB9:
         return QCoreApplication::translate("QPageSize", "JIS B9");
-    case QPageSize::JisB10:
+    case JisB10:
         return QCoreApplication::translate("QPageSize", "JIS B10");
-    case QPageSize::AnsiC:
+    case AnsiC:
         return QCoreApplication::translate("QPageSize", "ANSI C");
-    case QPageSize::AnsiD:
+    case AnsiD:
         return QCoreApplication::translate("QPageSize", "ANSI D");
-    case QPageSize::AnsiE:
+    case AnsiE:
         return QCoreApplication::translate("QPageSize", "ANSI E");
-    case QPageSize::LegalExtra:
+    case LegalExtra:
         return QCoreApplication::translate("QPageSize", "Legal Extra");
-    case QPageSize::LetterExtra:
+    case LetterExtra:
         return QCoreApplication::translate("QPageSize", "Letter Extra");
-    case QPageSize::LetterPlus:
+    case LetterPlus:
         return QCoreApplication::translate("QPageSize", "Letter Plus");
-    case QPageSize::LetterSmall:
+    case LetterSmall:
         return QCoreApplication::translate("QPageSize", "Letter Small");
-    case QPageSize::TabloidExtra:
+    case TabloidExtra:
         return QCoreApplication::translate("QPageSize", "Tabloid Extra");
-    case QPageSize::ArchA:
+    case ArchA:
         return QCoreApplication::translate("QPageSize", "Architect A");
-    case QPageSize::ArchB:
+    case ArchB:
         return QCoreApplication::translate("QPageSize", "Architect B");
-    case QPageSize::ArchC:
+    case ArchC:
         return QCoreApplication::translate("QPageSize", "Architect C");
-    case QPageSize::ArchD:
+    case ArchD:
         return QCoreApplication::translate("QPageSize", "Architect D");
-    case QPageSize::ArchE:
+    case ArchE:
         return QCoreApplication::translate("QPageSize", "Architect E");
-    case QPageSize::Imperial7x9:
+    case Imperial7x9:
         return msgImperialPageSizeInch(7, 9);
-    case QPageSize::Imperial8x10:
+    case Imperial8x10:
         return msgImperialPageSizeInch(8, 10);
-    case QPageSize::Imperial9x11:
+    case Imperial9x11:
         return msgImperialPageSizeInch(9, 11);
-    case QPageSize::Imperial9x12:
+    case Imperial9x12:
         return msgImperialPageSizeInch(9, 12);
-    case QPageSize::Imperial10x11:
+    case Imperial10x11:
         return msgImperialPageSizeInch(10, 11);
-    case QPageSize::Imperial10x13:
+    case Imperial10x13:
         return msgImperialPageSizeInch(10, 13);
-    case QPageSize::Imperial10x14:
+    case Imperial10x14:
         return msgImperialPageSizeInch(10, 14);
-    case QPageSize::Imperial12x11:
+    case Imperial12x11:
         return msgImperialPageSizeInch(12, 11);
-    case QPageSize::Imperial15x11:
+    case Imperial15x11:
         return msgImperialPageSizeInch(15, 11);
-    case QPageSize::Note:
+    case Note:
         return QCoreApplication::translate("QPageSize", "Note");
-    case QPageSize::Quarto:
+    case Quarto:
         return QCoreApplication::translate("QPageSize", "Quarto");
-    case QPageSize::Statement:
+    case Statement:
         return QCoreApplication::translate("QPageSize", "Statement");
-    case QPageSize::SuperA:
+    case SuperA:
         return QCoreApplication::translate("QPageSize", "Super A");
-    case QPageSize::SuperB:
+    case SuperB:
         return QCoreApplication::translate("QPageSize", "Super B");
-    case QPageSize::Postcard:
+    case Postcard:
         return QCoreApplication::translate("QPageSize", "Postcard");
-    case QPageSize::DoublePostcard:
+    case DoublePostcard:
         return QCoreApplication::translate("QPageSize", "Double Postcard");
-    case QPageSize::Prc16K:
+    case Prc16K:
         return QCoreApplication::translate("QPageSize", "PRC 16K");
-    case QPageSize::Prc32K:
+    case Prc32K:
         return QCoreApplication::translate("QPageSize", "PRC 32K");
-    case QPageSize::Prc32KBig:
+    case Prc32KBig:
         return QCoreApplication::translate("QPageSize", "PRC 32K Big");
-    case QPageSize::FanFoldUS:
+    case FanFoldUS:
         return QCoreApplication::translate("QPageSize", "Fan-fold US (14.875 x 11 in)");
-    case QPageSize::FanFoldGerman:
+    case FanFoldGerman:
         return QCoreApplication::translate("QPageSize", "Fan-fold German (8.5 x 12 in)");
-    case QPageSize::FanFoldGermanLegal:
+    case FanFoldGermanLegal:
         return QCoreApplication::translate("QPageSize", "Fan-fold German Legal (8.5 x 13 in)");
-    case QPageSize::EnvelopeB4:
+    case EnvelopeB4:
         return QCoreApplication::translate("QPageSize", "Envelope B4");
-    case QPageSize::EnvelopeB5:
+    case EnvelopeB5:
         return QCoreApplication::translate("QPageSize", "Envelope B5");
-    case QPageSize::EnvelopeB6:
+    case EnvelopeB6:
         return QCoreApplication::translate("QPageSize", "Envelope B6");
-    case QPageSize::EnvelopeC0:
+    case EnvelopeC0:
         return QCoreApplication::translate("QPageSize", "Envelope C0");
-    case QPageSize::EnvelopeC1:
+    case EnvelopeC1:
         return QCoreApplication::translate("QPageSize", "Envelope C1");
-    case QPageSize::EnvelopeC2:
+    case EnvelopeC2:
         return QCoreApplication::translate("QPageSize", "Envelope C2");
-    case QPageSize::EnvelopeC3:
+    case EnvelopeC3:
         return QCoreApplication::translate("QPageSize", "Envelope C3");
-    case QPageSize::EnvelopeC4:
+    case EnvelopeC4:
         return QCoreApplication::translate("QPageSize", "Envelope C4");
-    case QPageSize::EnvelopeC5: // C5E
+    case EnvelopeC5: // C5E
         return QCoreApplication::translate("QPageSize", "Envelope C5");
-    case QPageSize::EnvelopeC6:
+    case EnvelopeC6:
         return QCoreApplication::translate("QPageSize", "Envelope C6");
-    case QPageSize::EnvelopeC65:
+    case EnvelopeC65:
         return QCoreApplication::translate("QPageSize", "Envelope C65");
-    case QPageSize::EnvelopeC7:
+    case EnvelopeC7:
         return QCoreApplication::translate("QPageSize", "Envelope C7");
-    case QPageSize::EnvelopeDL: // DLE:
+    case EnvelopeDL: // DLE:
         return QCoreApplication::translate("QPageSize", "Envelope DL");
-    case QPageSize::Envelope9:
+    case Envelope9:
         return QCoreApplication::translate("QPageSize", "Envelope US 9");
-    case QPageSize::Envelope10: // Comm10E
+    case Envelope10: // Comm10E
         return QCoreApplication::translate("QPageSize", "Envelope US 10");
-    case QPageSize::Envelope11:
+    case Envelope11:
         return QCoreApplication::translate("QPageSize", "Envelope US 11");
-    case QPageSize::Envelope12:
+    case Envelope12:
         return QCoreApplication::translate("QPageSize", "Envelope US 12");
-    case QPageSize::Envelope14:
+    case Envelope14:
         return QCoreApplication::translate("QPageSize", "Envelope US 14");
-    case QPageSize::EnvelopeMonarch:
+    case EnvelopeMonarch:
         return QCoreApplication::translate("QPageSize", "Envelope Monarch");
-    case QPageSize::EnvelopePersonal:
+    case EnvelopePersonal:
         return QCoreApplication::translate("QPageSize", "Envelope Personal");
-    case QPageSize::EnvelopeChou3:
+    case EnvelopeChou3:
         return QCoreApplication::translate("QPageSize", "Envelope Chou 3");
-    case QPageSize::EnvelopeChou4:
+    case EnvelopeChou4:
         return QCoreApplication::translate("QPageSize", "Envelope Chou 4");
-    case QPageSize::EnvelopeInvite:
+    case EnvelopeInvite:
         return QCoreApplication::translate("QPageSize", "Envelope Invite");
-    case QPageSize::EnvelopeItalian:
+    case EnvelopeItalian:
         return QCoreApplication::translate("QPageSize", "Envelope Italian");
-    case QPageSize::EnvelopeKaku2:
+    case EnvelopeKaku2:
         return QCoreApplication::translate("QPageSize", "Envelope Kaku 2");
-    case QPageSize::EnvelopeKaku3:
+    case EnvelopeKaku3:
         return QCoreApplication::translate("QPageSize", "Envelope Kaku 3");
-    case QPageSize::EnvelopePrc1:
+    case EnvelopePrc1:
         return QCoreApplication::translate("QPageSize", "Envelope PRC 1");
-    case QPageSize::EnvelopePrc2:
+    case EnvelopePrc2:
         return QCoreApplication::translate("QPageSize", "Envelope PRC 2");
-    case QPageSize::EnvelopePrc3:
+    case EnvelopePrc3:
         return QCoreApplication::translate("QPageSize", "Envelope PRC 3");
-    case QPageSize::EnvelopePrc4:
+    case EnvelopePrc4:
         return QCoreApplication::translate("QPageSize", "Envelope PRC 4");
-    case QPageSize::EnvelopePrc5:
+    case EnvelopePrc5:
         return QCoreApplication::translate("QPageSize", "Envelope PRC 5");
-    case QPageSize::EnvelopePrc6:
+    case EnvelopePrc6:
         return QCoreApplication::translate("QPageSize", "Envelope PRC 6");
-    case QPageSize::EnvelopePrc7:
+    case EnvelopePrc7:
         return QCoreApplication::translate("QPageSize", "Envelope PRC 7");
-    case QPageSize::EnvelopePrc8:
+    case EnvelopePrc8:
         return QCoreApplication::translate("QPageSize", "Envelope PRC 8");
-    case QPageSize::EnvelopePrc9:
+    case EnvelopePrc9:
         return QCoreApplication::translate("QPageSize", "Envelope PRC 9");
-    case QPageSize::EnvelopePrc10:
+    case EnvelopePrc10:
         return QCoreApplication::translate("QPageSize", "Envelope PRC 10");
-    case QPageSize::EnvelopeYou4:
+    case EnvelopeYou4:
         return QCoreApplication::translate("QPageSize", "Envelope You 4");
     }
     return QString();
@@ -1755,7 +1755,7 @@ QString QPageSize::name(QPageSize::PageSizeId pageSizeId)
     point size of the PageSizeId before using it in any calculations.
 */
 
-QPageSize::PageSizeId QPageSize::id(const QSize &pointSize, QPageSize::SizeMatchPolicy matchPolicy)
+QPageSize::PageSizeId QPageSize::id(const QSize &pointSize, SizeMatchPolicy matchPolicy)
 {
     return qt_idForPointSize(pointSize, matchPolicy, 0);
 }
@@ -1770,8 +1770,8 @@ QPageSize::PageSizeId QPageSize::id(const QSize &pointSize, QPageSize::SizeMatch
     unit size of the PageSizeId before using it in any calculations.
 */
 
-QPageSize::PageSizeId QPageSize::id(const QSizeF &size, QPageSize::Unit units,
-                                    QPageSize::SizeMatchPolicy matchPolicy)
+QPageSize::PageSizeId QPageSize::id(const QSizeF &size, Unit units,
+                                    SizeMatchPolicy matchPolicy)
 {
     return qt_idForSize(size, units, matchPolicy, 0);
 }
@@ -1794,7 +1794,7 @@ QPageSize::PageSizeId QPageSize::id(int windowsId)
     will be returned.
 */
 
-int QPageSize::windowsId(QPageSize::PageSizeId pageSizeId)
+int QPageSize::windowsId(PageSizeId pageSizeId)
 {
     return qt_pageSizes[pageSizeId].windowsId;
 }
@@ -1805,9 +1805,9 @@ int QPageSize::windowsId(QPageSize::PageSizeId pageSizeId)
     To obtain the definition units, call QPageSize::definitionUnits().
 */
 
-QSizeF QPageSize::definitionSize(QPageSize::PageSizeId pageSizeId)
+QSizeF QPageSize::definitionSize(PageSizeId pageSizeId)
 {
-    if (pageSizeId == QPageSize::Custom)
+    if (pageSizeId == Custom)
         return QSizeF();
     return qt_definitionSize(pageSizeId);
 }
@@ -1818,10 +1818,10 @@ QSizeF QPageSize::definitionSize(QPageSize::PageSizeId pageSizeId)
     To obtain the definition size, call QPageSize::definitionSize().
 */
 
-QPageSize::Unit QPageSize::definitionUnits(QPageSize::PageSizeId pageSizeId)
+QPageSize::Unit QPageSize::definitionUnits(PageSizeId pageSizeId)
 {
-    if (pageSizeId == QPageSize::Custom)
-        return QPageSize::Unit(-1);
+    if (pageSizeId == Custom)
+        return Unit(-1);
     return qt_pageSizes[pageSizeId].definitionUnits;
 }
 
@@ -1829,9 +1829,9 @@ QPageSize::Unit QPageSize::definitionUnits(QPageSize::PageSizeId pageSizeId)
     Returns the size of the standard \a pageSizeId in the requested \a units.
 */
 
-QSizeF QPageSize::size(QPageSize::PageSizeId pageSizeId, QPageSize::Unit units)
+QSizeF QPageSize::size(PageSizeId pageSizeId, Unit units)
 {
-    if (pageSizeId == QPageSize::Custom)
+    if (pageSizeId == Custom)
         return QSizeF();
     return qt_unitSize(pageSizeId, units);
 }
@@ -1840,9 +1840,9 @@ QSizeF QPageSize::size(QPageSize::PageSizeId pageSizeId, QPageSize::Unit units)
     Returns the size of the standard \a pageSizeId in Points.
 */
 
-QSize QPageSize::sizePoints(QPageSize::PageSizeId pageSizeId)
+QSize QPageSize::sizePoints(PageSizeId pageSizeId)
 {
-    if (pageSizeId == QPageSize::Custom)
+    if (pageSizeId == Custom)
         return QSize();
     return QSize(qt_pageSizes[pageSizeId].widthPoints, qt_pageSizes[pageSizeId].heightPoints);
 }
@@ -1852,11 +1852,11 @@ QSize QPageSize::sizePoints(QPageSize::PageSizeId pageSizeId)
     for the given \a resolution.
 */
 
-QSize QPageSize::sizePixels(QPageSize::PageSizeId pageSizeId, int resolution)
+QSize QPageSize::sizePixels(PageSizeId pageSizeId, int resolution)
 {
-    if (pageSizeId == QPageSize::Custom)
+    if (pageSizeId == Custom)
         return QSize();
-    return qt_convertPointsToPixels(QPageSize::sizePoints(pageSizeId), resolution);
+    return qt_convertPointsToPixels(sizePoints(pageSizeId), resolution);
 }
 
 #ifndef QT_NO_DEBUG_STREAM
