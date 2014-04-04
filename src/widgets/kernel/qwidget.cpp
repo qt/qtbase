@@ -2837,7 +2837,10 @@ void QWidget::showFullScreen()
     setWindowState((windowState() & ~(Qt::WindowMinimized | Qt::WindowMaximized))
                    | Qt::WindowFullScreen);
     setVisible(true);
+#if !defined Q_OS_QNX // On QNX this window will be activated anyway from libscreen
+                      // activating it here before libscreen activates it causes problems
     activateWindow();
+#endif
 }
 
 /*!
