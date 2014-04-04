@@ -50,11 +50,6 @@
 
 QT_BEGIN_NAMESPACE
 
-static qreal qt_clamp(qreal value, qreal min, qreal max)
-{
-    return qMin(qMax(value, min), max);
-}
-
 // Multiplier for converting units to points.
 Q_GUI_EXPORT qreal qt_pointMultiplier(QPageLayout::Unit unit)
 {
@@ -221,10 +216,10 @@ bool QPageLayoutPrivate::isValid() const
 
 void QPageLayoutPrivate::clampMargins(const QMarginsF &margins)
 {
-    m_margins = QMarginsF(qt_clamp(margins.left(), m_minMargins.left(), m_maxMargins.left()),
-                          qt_clamp(margins.top(), m_minMargins.top(), m_maxMargins.top()),
-                          qt_clamp(margins.right(), m_minMargins.right(), m_maxMargins.right()),
-                          qt_clamp(margins.bottom(), m_minMargins.bottom(), m_maxMargins.bottom()));
+    m_margins = QMarginsF(qBound(m_minMargins.left(),   margins.left(),   m_maxMargins.left()),
+                          qBound(m_minMargins.top(),    margins.top(),    m_maxMargins.top()),
+                          qBound(m_minMargins.right(),  margins.right(),  m_maxMargins.right()),
+                          qBound(m_minMargins.bottom(), margins.bottom(), m_maxMargins.bottom()));
 }
 
 QMarginsF QPageLayoutPrivate::margins(QPageLayout::Unit units) const
