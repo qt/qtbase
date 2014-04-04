@@ -71,6 +71,8 @@ private slots:
     void bidiCursorMovement();
     void bidiCursorLogicalMovement_data();
     void bidiCursorLogicalMovement();
+    void bidiInvalidCursorNoMovement_data();
+    void bidiInvalidCursorNoMovement();
 };
 
 tst_QComplexText::tst_QComplexText()
@@ -270,6 +272,37 @@ void tst_QComplexText::bidiCursorLogicalMovement()
         QVERIFY(newPos <= oldPos);
         moved = (oldPos != newPos);
     } while (moved);
+}
+
+void tst_QComplexText::bidiInvalidCursorNoMovement_data()
+{
+    bidiCursorMovement_data();
+}
+
+void tst_QComplexText::bidiInvalidCursorNoMovement()
+{
+    QFETCH(QString, logical);
+    QFETCH(int,  basicDir);
+
+    QTextLayout layout(logical);
+
+    QTextOption option = layout.textOption();
+    option.setTextDirection(basicDir == QChar::DirL ? Qt::LeftToRight : Qt::RightToLeft);
+    layout.setTextOption(option);
+
+    // visual
+    QCOMPARE(layout.rightCursorPosition(-1000), -1000);
+    QCOMPARE(layout.rightCursorPosition(1000), 1000);
+
+    QCOMPARE(layout.leftCursorPosition(-1000), -1000);
+    QCOMPARE(layout.leftCursorPosition(1000), 1000);
+
+    // logical
+    QCOMPARE(layout.nextCursorPosition(-1000), -1000);
+    QCOMPARE(layout.nextCursorPosition(1000), 1000);
+
+    QCOMPARE(layout.previousCursorPosition(-1000), -1000);
+    QCOMPARE(layout.previousCursorPosition(1000), 1000);
 }
 
 void tst_QComplexText::bidiCursor_PDF()

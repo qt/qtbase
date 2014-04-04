@@ -3138,11 +3138,12 @@ int QTextEngine::positionInLigature(const QScriptItem *si, int end,
 int QTextEngine::previousLogicalPosition(int oldPos) const
 {
     const QCharAttributes *attrs = attributes();
-    if (!attrs || oldPos < 0)
+    int len = block.isValid() ? block.length() - 1
+                              : layoutData->string.length();
+    Q_ASSERT(len <= layoutData->string.length());
+    if (!attrs || oldPos <= 0 || oldPos > len)
         return oldPos;
 
-    if (oldPos <= 0)
-        return 0;
     oldPos--;
     while (oldPos && !attrs[oldPos].graphemeBoundary)
         oldPos--;
@@ -3224,8 +3225,7 @@ int QTextEngine::beginningOfLine(int lineNum)
 
 int QTextEngine::positionAfterVisualMovement(int pos, QTextCursor::MoveOperation op)
 {
-    if (!layoutData)
-        itemize();
+    itemize();
 
     bool moveRight = (op == QTextCursor::Right);
     bool alignRight = isRightToLeft();
@@ -3233,7 +3233,8 @@ int QTextEngine::positionAfterVisualMovement(int pos, QTextCursor::MoveOperation
         return moveRight ^ alignRight ? nextLogicalPosition(pos) : previousLogicalPosition(pos);
 
     int lineNum = lineNumberForTextPosition(pos);
-    Q_ASSERT(lineNum >= 0);
+    if (lineNum < 0)
+        return pos;
 
     QVector<int> insertionPoints;
     insertionPointsForLine(lineNum, insertionPoints);
@@ -3256,6 +3257,8 @@ int QTextEngine::positionAfterVisualMovement(int pos, QTextCursor::MoveOperation
                 if (lineNum > 0)
                     return alignRight ? beginningOfLine(lineNum - 1) : endOfLine(lineNum - 1);
             }
+
+            break;
         }
 
     return pos;
