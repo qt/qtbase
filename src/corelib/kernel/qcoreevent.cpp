@@ -471,7 +471,7 @@ static inline int registerEventTypeZeroBased(int id) Q_DECL_NOTHROW
     Returns -1 if all available values are already taken or the
     program is shutting down.
 */
-int QEvent::registerEventType(int hint)
+int QEvent::registerEventType(int hint) Q_DECL_NOTHROW
 {
     const int result = registerEventTypeZeroBased(QEvent::MaxUser - hint);
     return result < 0 ? -1 : QEvent::MaxUser - result ;
