@@ -287,7 +287,7 @@ QLibraryInfo::buildDate()
 #else
 #  define DEBUG_STRING " debug"
 #endif
-#define QT_BUILD_STR "Qt " QT_VERSION_STR " (" __DATE__ "; " ARCH_FULL DEBUG_STRING " build; by " COMPILER_STRING ")"
+#define QT_BUILD_STR "Qt " QT_VERSION_STR " (" ARCH_FULL DEBUG_STRING " build; by " COMPILER_STRING ")"
 
 /*!
   Returns a string describing how this version of Qt was built.
