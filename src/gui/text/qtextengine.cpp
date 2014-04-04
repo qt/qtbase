@@ -3181,6 +3181,9 @@ int QTextEngine::lineNumberForTextPosition(int pos)
 void QTextEngine::insertionPointsForLine(int lineNum, QVector<int> &insertionPoints)
 {
     QTextLineItemIterator iterator(this, lineNum);
+
+    insertionPoints.reserve(iterator.line.length);
+
     bool lastLine = lineNum >= lines.size() - 1;
 
     while (!iterator.atEnd()) {
