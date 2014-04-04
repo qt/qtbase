@@ -1255,15 +1255,18 @@ QPageSize &QPageSize::operator=(const QPageSize &other)
 */
 
 /*!
-    Returns \c true if this page is equal to the \a other page, i.e. if the
-    page has the same attributes. Current attributes are size and name.
+    \relates QPageSize
+
+    Returns \c true if page size \a lhs is equal to page size \a rhs,
+    i.e. if the page sizes have the same attributes. Current
+    attributes are size and name.
 */
 
-bool QPageSize::operator==(const QPageSize &other) const
+bool operator==(const QPageSize &lhs, const QPageSize &rhs)
 {
-    if (d == other.d)
+    if (lhs.d == rhs.d)
         return true;
-    return d && other.d && *d == *other.d;
+    return lhs.d && rhs.d && *lhs.d == *rhs.d;
 }
 
 /*!

@@ -246,7 +246,7 @@ public:
 
     void swap(QPageSize &other) { d.swap(other.d); }
 
-    bool operator==(const QPageSize &other) const;
+    friend Q_GUI_EXPORT bool operator==(const QPageSize &lhs, const QPageSize &rhs);
     bool isEquivalentTo(const QPageSize &other) const;
 
     bool isValid() const;
@@ -297,6 +297,8 @@ private:
 };
 
 Q_DECLARE_SHARED(QPageSize)
+
+Q_GUI_EXPORT bool operator==(const QPageSize &lhs, const QPageSize &rhs);
 
 #ifndef QT_NO_DEBUG_STREAM
 Q_GUI_EXPORT QDebug operator<<(QDebug dbg, const QPageSize &pageSize);
