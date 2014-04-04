@@ -2878,7 +2878,12 @@ void QTest::qSleep(int ms)
     // requested time.
     qint64 requested = 1000000 * (qint64)ms;
     qint64 diff = timer.nsecsElapsed() - requested;
-    if (diff * 2 > requested || diff * 10 < -requested) {
+#ifndef Q_OS_WIN
+    const qint64 factor = 2; // more than 50% longer
+#else
+    const qint64 factor = 1; // Windows: 50% is quite common, warn about 100%
+#endif
+    if (diff * factor > requested || diff * 10 < -requested) {
         QTestLog::warn(qPrintable(
             QString::fromLatin1("QTest::qSleep() should have taken %1ns, but actually took %2ns!")
                     .arg(requested).arg(diff + requested)), __FILE__, __LINE__);
