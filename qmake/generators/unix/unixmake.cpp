@@ -921,7 +921,8 @@ UnixMakefileGenerator::escapeFilePath(const QString &path) const
 {
     QString ret = path;
     if(!ret.isEmpty()) {
-        ret = unescapeFilePath(ret).replace(QLatin1Char(' '), QLatin1String("\\ "));
+        ret = unescapeFilePath(ret).replace(QLatin1Char(' '), QLatin1String("\\ "))
+                                   .replace(QLatin1Char('\t'), QLatin1String("\\\t"));
         debug_msg(2, "EscapeFilePath: %s -> %s", path.toLatin1().constData(), ret.toLatin1().constData());
     }
     return ret;

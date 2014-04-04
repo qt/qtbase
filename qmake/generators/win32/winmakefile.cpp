@@ -883,7 +883,7 @@ QString Win32MakefileGenerator::escapeFilePath(const QString &path) const
     QString ret = path;
     if(!ret.isEmpty()) {
         ret = unescapeFilePath(ret);
-        if(ret.contains(" "))
+        if (ret.contains(' ') || ret.contains('\t'))
             ret = "\"" + ret + "\"";
         debug_msg(2, "EscapeFilePath: %s -> %s", path.toLatin1().constData(), ret.toLatin1().constData());
     }
