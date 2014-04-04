@@ -1268,6 +1268,14 @@ bool operator==(const QPageSize &lhs, const QPageSize &rhs)
         return true;
     return lhs.d && rhs.d && *lhs.d == *rhs.d;
 }
+/*!
+    \fn bool operator!=(const QPageSize &lhs, const QPageSize &rhs)
+    \relates QPageSize
+
+    Returns \c true if page size \a lhs is unequal to page size \a
+    rhs, i.e. if the page size has different attributes. Current
+    attributes are size and name.
+*/
 
 /*!
     Returns \c true if this page is equivalent to the \a other page, i.e. if the
