@@ -569,6 +569,9 @@ void QSslSocketPrivate::ensureInitialized()
 
 long QSslSocketPrivate::sslLibraryVersionNumber()
 {
+    if (!supportsSsl())
+        return 0;
+
     return q_SSLeay();
 }
 
