@@ -427,6 +427,17 @@ int q_X509_STORE_CTX_get_error_depth(X509_STORE_CTX *ctx);
 X509 *q_X509_STORE_CTX_get_current_cert(X509_STORE_CTX *ctx);
 STACK_OF(X509) *q_X509_STORE_CTX_get_chain(X509_STORE_CTX *ctx);
 
+// Diffie-Hellman support
+DH *q_DH_new();
+void q_DH_free(DH *dh);
+BIGNUM *q_BN_bin2bn(const unsigned char *s, int len, BIGNUM *ret);
+#define q_SSL_CTX_set_tmp_dh(ctx, dh) q_SSL_CTX_ctrl((ctx), SSL_CTRL_SET_TMP_DH, 0, (char *)dh)
+
+// EC Diffie-Hellman support
+EC_KEY *q_EC_KEY_new_by_curve_name(int nid);
+void q_EC_KEY_free(EC_KEY *ecdh);
+#define q_SSL_CTX_set_tmp_ecdh(ctx, ecdh) q_SSL_CTX_ctrl((ctx), SSL_CTRL_SET_TMP_ECDH, 0, (char *)ecdh)
+
 #define q_BIO_get_mem_data(b, pp) (int)q_BIO_ctrl(b,BIO_CTRL_INFO,0,(char *)pp)
 #define q_BIO_pending(b) (int)q_BIO_ctrl(b,BIO_CTRL_PENDING,0,NULL)
 #ifdef SSLEAY_MACROS
