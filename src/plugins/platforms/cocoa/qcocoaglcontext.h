@@ -55,7 +55,7 @@ QT_BEGIN_NAMESPACE
 class QCocoaGLContext : public QPlatformOpenGLContext
 {
 public:
-    QCocoaGLContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share);
+    QCocoaGLContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, const QVariant &nativeHandle);
     ~QCocoaGLContext();
 
     QSurfaceFormat format() const;
@@ -76,6 +76,8 @@ public:
     bool isValid() const;
 
     void windowWasHidden();
+
+    QVariant nativeHandle() const;
 
 private:
     void setActiveWindow(QWindow *window);

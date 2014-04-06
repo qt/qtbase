@@ -422,7 +422,11 @@ QPlatformWindow *QCocoaIntegration::createPlatformWindow(QWindow *window) const
 
 QPlatformOpenGLContext *QCocoaIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
-    return new QCocoaGLContext(context->format(), context->shareHandle());
+    QCocoaGLContext *glContext = new QCocoaGLContext(context->format(),
+                                                     context->shareHandle(),
+                                                     context->nativeHandle());
+    context->setNativeHandle(glContext->nativeHandle());
+    return glContext;
 }
 
 QPlatformBackingStore *QCocoaIntegration::createPlatformBackingStore(QWindow *window) const
