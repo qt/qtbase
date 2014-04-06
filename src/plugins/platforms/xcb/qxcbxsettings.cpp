@@ -150,7 +150,7 @@ public:
     {
         if (xSettings.length() < 12)
             return;
-        char byteOrder = xSettings.at(1);
+        char byteOrder = xSettings.at(0);
         if (byteOrder != LSBFirst && byteOrder != MSBFirst) {
             qWarning("%s ByteOrder byte %d not 0 or 1", Q_FUNC_INFO , byteOrder);
             return;
