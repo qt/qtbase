@@ -277,10 +277,12 @@ void QUnifiedTimer::updateAnimationTimers(qint64 currentTick)
 
     lastTick = totalElapsed;
 
-    //we make sure we only call update time if the time has actually changed
-    //it might happen in some cases that the time doesn't change because events are delayed
-    //when the CPU load is high
-    if (delta) {
+    //we make sure we only call update time if the time has actually advanced
+    //* it might happen in some cases that the time doesn't change because events are delayed
+    //  when the CPU load is high
+    //* it might happen in some cases that the delta is negative because the animation driver
+    //  advances faster than time.elapsed()
+    if (delta > 0) {
         insideTick = true;
         if (profilerCallback)
             profilerCallback(delta);
