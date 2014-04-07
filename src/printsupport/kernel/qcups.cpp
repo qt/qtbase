@@ -113,7 +113,7 @@ void QCUPSSupport::setJobHold(QPrinter *printer, const JobHoldUntil jobHold, con
         QDateTime localDateTime = QDateTime::currentDateTime();
         // Check if time is for tomorrow in case of DST change overnight
         if (holdUntilTime < localDateTime.time())
-            localDateTime.addDays(1);
+            localDateTime = localDateTime.addDays(1);
         localDateTime.setTime(holdUntilTime);
         setCupsOption(cupsOptions,
                       QStringLiteral("job-hold-until"),
