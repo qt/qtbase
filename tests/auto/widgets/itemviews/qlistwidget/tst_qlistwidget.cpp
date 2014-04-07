@@ -317,13 +317,7 @@ void tst_QListWidget::closePersistentEditor()
     // actual test
     childCount = testWidget->viewport()->children().count();
     testWidget->closePersistentEditor(item);
-    // Spin the event loop and hopefully it will die.
-    QEventLoop eventLoop;
-    for (int i=0; i < childCount; ++i)
-        connect(testWidget->viewport()->children().at(i), SIGNAL(destroyed()), &eventLoop, SLOT(quit()));
-    QTimer::singleShot(100, &eventLoop, SLOT(quit()));
-    eventLoop.exec();
-    QCOMPARE(testWidget->viewport()->children().count(), childCount - 1);
+    QTRY_COMPARE(testWidget->viewport()->children().count(), childCount - 1);
 }
 
 void tst_QListWidget::setItemHidden()
