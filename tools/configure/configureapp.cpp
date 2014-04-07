@@ -191,6 +191,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "QT_GLIB" ]         = "no";
     dictionary[ "QT_ICONV" ]        = "auto";
     dictionary[ "QT_EVDEV" ]        = "auto";
+    dictionary[ "QT_MTDEV" ]        = "auto";
     dictionary[ "QT_INOTIFY" ]      = "auto";
     dictionary[ "QT_EVENTFD" ]      = "auto";
     dictionary[ "QT_CUPS" ]         = "auto";
@@ -1268,6 +1269,12 @@ void Configure::parseCmdLine()
             dictionary[ "QT_EVDEV" ] = "yes";
         }
 
+        else if (configCmdLine.at(i) == "-no-mtdev") {
+            dictionary[ "QT_MTDEV" ] = "no";
+        } else if (configCmdLine.at(i) == "-mtdev") {
+            dictionary[ "QT_MTDEV" ] = "yes";
+        }
+
         else if (configCmdLine.at(i) == "-inotify") {
             dictionary["QT_INOTIFY"] = "yes";
         } else if (configCmdLine.at(i) == "-no-inotify") {
@@ -1682,6 +1689,7 @@ void Configure::applySpecSpecifics()
         dictionary[ "QT_GLIB" ]             = "no";
         dictionary[ "QT_ICONV" ]            = "no";
         dictionary[ "QT_EVDEV" ]            = "no";
+        dictionary[ "QT_MTDEV" ]            = "no";
         dictionary[ "FONT_CONFIG" ]         = "auto";
 
         dictionary["DECORATIONS"]           = "default windows styled";
@@ -1845,6 +1853,9 @@ bool Configure::displayHelp()
 
         desc("QT_EVDEV",    "no",      "-no-evdev",     "Do not enable support for evdev.");
         desc("QT_EVDEV",    "yes",     "-evdev",        "Enable support for evdev.");
+
+        desc("QT_MTDEV",    "no",      "-no-mtdev",     "Do not enable support for mtdev.");
+        desc("QT_MTDEV",    "yes",     "-mtdev",        "Enable support for mtdev.");
 
         desc("QT_INOTIFY",  "yes",     "-inotify",      "Explicitly enable Qt inotify(7) support.");
         desc("QT_INOTIFY",  "no",      "-no-inotify",   "Explicitly disable Qt inotify(7) support.\n");
@@ -2257,6 +2268,8 @@ bool Configure::checkAvailability(const QString &part)
         available = tryCompileProject("unix/iconv") || tryCompileProject("unix/gnu-libiconv");
     } else if (part == "EVDEV") {
         available = tryCompileProject("unix/evdev");
+    } else if (part == "MTDEV") {
+        available = tryCompileProject("unix/mtdev");
     } else if (part == "INOTIFY") {
         available = tryCompileProject("unix/inotify");
     } else if (part == "QT_EVENTFD") {
@@ -2410,6 +2423,10 @@ void Configure::autoDetection()
     // Detection of evdev support
     if (dictionary["QT_EVDEV"] == "auto")
         dictionary["QT_EVDEV"] = checkAvailability("EVDEV") ? "yes" : "no";
+
+    // Detection of mtdev support
+    if (dictionary["QT_MTDEV"] == "auto")
+        dictionary["QT_MTDEV"] = checkAvailability("MTDEV") ? "yes" : "no";
 
     // Detection of inotify
     if (dictionary["QT_INOTIFY"] == "auto")
@@ -2832,6 +2849,9 @@ void Configure::generateOutputVars()
 
     if (dictionary["QT_EVDEV"] == "yes")
         qtConfig += "evdev";
+
+    if (dictionary["QT_MTDEV"] == "yes")
+        qtConfig += "mtdev";
 
     if (dictionary["QT_INOTIFY"] == "yes")
         qtConfig += "inotify";
@@ -3513,6 +3533,7 @@ void Configure::generateConfigfiles()
         if (dictionary["QT_CUPS"] == "no")           qconfigList += "QT_NO_CUPS";
         if (dictionary["QT_ICONV"] == "no")          qconfigList += "QT_NO_ICONV";
         if (dictionary["QT_EVDEV"] == "no")          qconfigList += "QT_NO_EVDEV";
+        if (dictionary["QT_MTDEV"] == "no")          qconfigList += "QT_NO_MTDEV";
         if (dictionary["QT_GLIB"] == "no")           qconfigList += "QT_NO_GLIB";
         if (dictionary["QT_INOTIFY"] == "no")        qconfigList += "QT_NO_INOTIFY";
         if (dictionary["QT_EVENTFD"] ==  "no")       qconfigList += "QT_NO_EVENTFD";
@@ -3612,6 +3633,7 @@ void Configure::displayConfig()
     sout << "NIS support................." << dictionary[ "NIS" ] << endl;
     sout << "Iconv support..............." << dictionary[ "QT_ICONV" ] << endl;
     sout << "Evdev support..............." << dictionary[ "QT_EVDEV" ] << endl;
+    sout << "Mtdev support..............." << dictionary[ "QT_MTDEV" ] << endl;
     sout << "Inotify support............." << dictionary[ "QT_INOTIFY" ] << endl;
     sout << "eventfd(7) support.........." << dictionary[ "QT_EVENTFD" ] << endl;
     sout << "Glib support................" << dictionary[ "QT_GLIB" ] << endl;
