@@ -64,7 +64,6 @@ enum CandidateSignal {
     TextValueSelectedSignal,
     IntValueSelectedSignal,
     DoubleValueSelectedSignal,
-    AcceptedSignal,
 
     NumCandidateSignals
 };
@@ -75,7 +74,6 @@ static const char *candidateSignal(int which)
     case TextValueSelectedSignal:   return SIGNAL(textValueSelected(QString));
     case IntValueSelectedSignal:    return SIGNAL(intValueSelected(int));
     case DoubleValueSelectedSignal: return SIGNAL(doubleValueSelected(double));
-    case AcceptedSignal:            return SIGNAL(accepted());
 
     case NumCandidateSignals:       ; // fall through
     };
@@ -87,13 +85,12 @@ static const char *signalForMember(const char *member)
 {
     QByteArray normalizedMember(QMetaObject::normalizedSignature(member));
 
-    int i = 0;
-    while (i < NumCandidateSignals - 1) { // sic
+    for (int i = 0; i < NumCandidateSignals; ++i)
         if (QMetaObject::checkConnectArgs(candidateSignal(i), normalizedMember))
-            break;
-        ++i;
-    }
-    return candidateSignal(i);
+            return candidateSignal(i);
+
+    // otherwise, use fit-all accepted signal:
+    return SIGNAL(accepted());
 }
 
 QT_BEGIN_NAMESPACE
