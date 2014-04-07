@@ -3047,7 +3047,13 @@ void tst_QTreeView::styleOptionViewItem()
             static const char* s_pos[] = { "Invalid", "Beginning", "Middle", "End", "OnlyOne" };
             return s_pos[pos];
         }
-        public:
+    public:
+        MyDelegate()
+            : QStyledItemDelegate(),
+              count(0),
+              allCollapsed(false)
+        {}
+
             void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index ) const
             {
                 QVERIFY(qstyleoption_cast<const QStyleOptionViewItemV4 *>(&option));
