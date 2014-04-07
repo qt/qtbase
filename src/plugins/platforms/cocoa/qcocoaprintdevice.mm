@@ -219,10 +219,11 @@ QPageSize QCocoaPrintDevice::defaultPageSize() const
     QPageSize pageSize;
     PMPageFormat pageFormat;
     PMPaper paper;
-    if (PMCreatePageFormat(&pageFormat) == noErr
-        && PMSessionDefaultPageFormat(m_session, pageFormat) == noErr
-        && PMGetPageFormatPaper(pageFormat, &paper) == noErr) {
-        pageSize = createPageSize(paper);
+    if (PMCreatePageFormat(&pageFormat) == noErr) {
+        if (PMSessionDefaultPageFormat(m_session, pageFormat) == noErr
+            && PMGetPageFormatPaper(pageFormat, &paper) == noErr) {
+            pageSize = createPageSize(paper);
+        }
         PMRelease(pageFormat);
     }
     return pageSize;
