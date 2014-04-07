@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -658,7 +658,91 @@ public:
             break;
 
         case Qt::LinearGradientPattern:
+            if (newBrush.gradient()->spread() != QGradient::PadSpread) {
+                *needsEmulation = true;
+            } else {
+                ComPtr<ID2D1LinearGradientBrush> linear;
+                const QLinearGradient *qlinear = static_cast<const QLinearGradient *>(newBrush.gradient());
+
+                D2D1_LINEAR_GRADIENT_BRUSH_PROPERTIES linearGradientBrushProperties;
+                ComPtr<ID2D1GradientStopCollection> gradientStopCollection;
+
+                const QGradientStops &qstops = qlinear->stops();
+                QVector<D2D1_GRADIENT_STOP> stops(qstops.count());
+
+                linearGradientBrushProperties.startPoint = to_d2d_point_2f(qlinear->start());
+                linearGradientBrushProperties.endPoint = to_d2d_point_2f(qlinear->finalStop());
+
+                for (int i = 0; i < stops.size(); i++) {
+                    stops[i].position = qstops[i].first;
+                    stops[i].color = to_d2d_color_f(qstops[i].second);
+                }
+
+                hr = dc()->CreateGradientStopCollection(stops.constData(), stops.size(), &gradientStopCollection);
+                if (FAILED(hr)) {
+                    qWarning("%s: Could not create gradient stop collection for linear gradient: %#x", __FUNCTION__, hr);
+                    break;
+                }
+
+                hr = dc()->CreateLinearGradientBrush(linearGradientBrushProperties, gradientStopCollection.Get(),
+                                                     &linear);
+                if (FAILED(hr)) {
+                    qWarning("%s: Could not create Direct2D linear gradient brush: %#x", __FUNCTION__, hr);
+                    break;
+                }
+
+                hr = linear.As(&result);
+                if (FAILED(hr)) {
+                    qWarning("%s: Could not convert Direct2D linear gradient brush: %#x", __FUNCTION__, hr);
+                    break;
+                }
+            }
+            break;
+
         case Qt::RadialGradientPattern:
+            if (newBrush.gradient()->spread() != QGradient::PadSpread) {
+                *needsEmulation = true;
+            } else {
+                ComPtr<ID2D1RadialGradientBrush> radial;
+                const QRadialGradient *qradial = static_cast<const QRadialGradient *>(newBrush.gradient());
+
+                D2D1_RADIAL_GRADIENT_BRUSH_PROPERTIES radialGradientBrushProperties;
+                ComPtr<ID2D1GradientStopCollection> gradientStopCollection;
+
+                const QGradientStops &qstops = qradial->stops();
+                QVector<D2D1_GRADIENT_STOP> stops(qstops.count());
+
+                radialGradientBrushProperties.center = to_d2d_point_2f(qradial->center());
+                radialGradientBrushProperties.gradientOriginOffset = to_d2d_point_2f(qradial->focalPoint() - qradial->center());
+                radialGradientBrushProperties.radiusX = qradial->radius();
+                radialGradientBrushProperties.radiusY = qradial->radius();
+
+                for (int i = 0; i < stops.size(); i++) {
+                    stops[i].position = qstops[i].first;
+                    stops[i].color = to_d2d_color_f(qstops[i].second);
+                }
+
+                hr = dc()->CreateGradientStopCollection(stops.constData(), stops.size(), &gradientStopCollection);
+                if (FAILED(hr)) {
+                    qWarning("%s: Could not create gradient stop collection for radial gradient: %#x", __FUNCTION__, hr);
+                    break;
+                }
+
+                hr = dc()->CreateRadialGradientBrush(radialGradientBrushProperties, gradientStopCollection.Get(),
+                                                     &radial);
+                if (FAILED(hr)) {
+                    qWarning("%s: Could not create Direct2D radial gradient brush: %#x", __FUNCTION__, hr);
+                    break;
+                }
+
+                radial.As(&result);
+                if (FAILED(hr)) {
+                    qWarning("%s: Could not convert Direct2D radial gradient brush: %#x", __FUNCTION__, hr);
+                    break;
+                }
+            }
+            break;
+
         case Qt::ConicalGradientPattern:
             *needsEmulation = true;
             break;
@@ -706,16 +790,9 @@ QWindowsDirect2DPaintEngine::QWindowsDirect2DPaintEngine(QWindowsDirect2DBitmap 
     : QPaintEngineEx(*(new QWindowsDirect2DPaintEnginePrivate(bitmap)))
 {
     QPaintEngine::PaintEngineFeatures unsupported =
-            // As of 1.1 Direct2D gradient support is deficient for linear and radial gradients
-            QPaintEngine::LinearGradientFill
-            | QPaintEngine::RadialGradientFill
-
-            // As of 1.1 Direct2D does not support conical gradients at all
-            | QPaintEngine::ConicalGradientFill
-
             // As of 1.1 Direct2D does not natively support complex composition modes
             // However, using Direct2D effects that implement them should be possible
-            | QPaintEngine::PorterDuff
+            QPaintEngine::PorterDuff
             | QPaintEngine::BlendModes
             | QPaintEngine::RasterOpModes
 
@@ -796,7 +873,7 @@ void QWindowsDirect2DPaintEngine::fill(const QVectorPath &path, const QBrush &br
 
     if (d->brush.emulate) {
         // We mostly (only?) get here when gradients are required.
-        // We could probably natively support linear and radial gradients that have pad reflect
+        // We natively support only linear and radial gradients that have pad reflect due to D2D limitations
 
         QImage img(d->bitmap->size(), QImage::Format_ARGB32);
         img.fill(Qt::transparent);
