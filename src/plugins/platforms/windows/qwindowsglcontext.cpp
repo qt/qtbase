@@ -711,6 +711,8 @@ QWindowsOpenGLContextFormat QWindowsOpenGLContextFormat::current()
             minorDot = version.size();
         result.version = (version.mid(0, majorDot).toInt() << 8)
             + version.mid(majorDot + 1, minorDot - majorDot - 1).toInt();
+    } else {
+        result.version = 0x0200;
     }
     result.profile = QSurfaceFormat::NoProfile;
     if (result.version < 0x0300) {
