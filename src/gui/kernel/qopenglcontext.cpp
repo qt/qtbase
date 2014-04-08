@@ -617,7 +617,8 @@ QOpenGLFunctions *QOpenGLContext::functions() const
 
     Returns a pointer to an object that provides access to all functions for
     the version and profile of this context. Before using any of the functions
-    they must be initialized by calling QAbstractOpenGLFunctions::initializeOpenGLFunctions().
+    they must be initialized by calling QAbstractOpenGLFunctions::initializeOpenGLFunctions()
+    with this context being the current context.
 
     Usually one would use the template version of this function to automatically
     have the result cast to the correct type.
@@ -629,7 +630,7 @@ QOpenGLFunctions *QOpenGLContext::functions() const
             qWarning() << "Could not obtain required OpenGL context version";
             exit(1);
         }
-        funcs->initializeOpenGLFunctions(context);
+        funcs->initializeOpenGLFunctions();
     \endcode
 
     It is possible to request a functions object for a different version and profile
@@ -659,8 +660,9 @@ QOpenGLFunctions *QOpenGLContext::functions() const
 
 /*!
     Returns a pointer to an object that provides access to all functions for the
-    \a versionProfile of the current context. Before using any of the functions they must
-    be initialized by calling QAbstractOpenGLFunctions::initializeOpenGLFunctions().
+    \a versionProfile of this context. Before using any of the functions they must
+    be initialized by calling QAbstractOpenGLFunctions::initializeOpenGLFunctions()
+    with this context being the current context.
 
     Usually one would use the template version of this function to automatically
     have the result cast to the correct type.
