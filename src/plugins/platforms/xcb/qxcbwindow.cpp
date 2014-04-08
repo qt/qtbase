@@ -554,7 +554,7 @@ QMargins QXcbWindow::frameMargins() const
 
             xcb_query_tree_reply_t *reply = xcb_query_tree_reply(xcb_connection(), cookie, NULL);
             if (reply) {
-                if (reply->root == reply->parent || virtualRoots.indexOf(reply->parent) != -1) {
+                if (reply->root == reply->parent || virtualRoots.indexOf(reply->parent) != -1 || reply->parent == XCB_WINDOW_NONE) {
                     foundRoot = true;
                 } else {
                     window = parent;
