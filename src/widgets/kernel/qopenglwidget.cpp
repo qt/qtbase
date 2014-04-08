@@ -147,6 +147,9 @@ void QOpenGLWidget::paintGL()
 void QOpenGLWidget::updateGL()
 {
     Q_D(QOpenGLWidget);
+    if (d->uninitialized)
+        return;
+
     makeCurrent();
     paintGL();
     d->context.functions()->glFlush();
