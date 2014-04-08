@@ -93,7 +93,6 @@ bool qt_try_modal(QWidget *widget, QEvent::Type type)
         return true;
 
     bool block_event  = false;
-    bool paint_event = false;
 
     switch (type) {
 #if 0
@@ -113,7 +112,7 @@ bool qt_try_modal(QWidget *widget, QEvent::Type type)
         break;
     }
 
-    if ((block_event || paint_event) && top->parentWidget() == 0)
+    if (block_event && top && top->parentWidget() == 0)
         top->raise();
 
     return !block_event;
