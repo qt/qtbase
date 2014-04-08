@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -43,7 +43,6 @@
 #include <QtTest/QtTest>
 #include <QtGui/QtGui>
 #include <QtWidgets/QtWidgets>
-#include <qeventloop.h>
 #include <qlist.h>
 
 #include <qlistwidget.h>
@@ -209,14 +208,7 @@ void tst_QListWidget::cleanupTestCase()
 void tst_QListWidget::init()
 {
     testWidget->clear();
-
-    if (testWidget->viewport()->children().count() > 0) {
-        QEventLoop eventLoop;
-        for (int i=0; i < testWidget->viewport()->children().count(); ++i)
-            connect(testWidget->viewport()->children().at(i), SIGNAL(destroyed()), &eventLoop, SLOT(quit()));
-        QTimer::singleShot(100, &eventLoop, SLOT(quit()));
-        eventLoop.exec();
-    }
+    QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
 }
 
 void tst_QListWidget::checkDefaultValues()
@@ -317,12 +309,7 @@ void tst_QListWidget::closePersistentEditor()
     // actual test
     childCount = testWidget->viewport()->children().count();
     testWidget->closePersistentEditor(item);
-    // Spin the event loop and hopefully it will die.
-    QEventLoop eventLoop;
-    for (int i=0; i < childCount; ++i)
-        connect(testWidget->viewport()->children().at(i), SIGNAL(destroyed()), &eventLoop, SLOT(quit()));
-    QTimer::singleShot(100, &eventLoop, SLOT(quit()));
-    eventLoop.exec();
+    QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
     QCOMPARE(testWidget->viewport()->children().count(), childCount - 1);
 }
 
