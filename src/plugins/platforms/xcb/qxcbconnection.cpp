@@ -93,9 +93,36 @@
 QT_BEGIN_NAMESPACE
 
 #ifdef XCB_USE_XLIB
+static const char * const xcbConnectionErrors[] = {
+    "No error", /* Error 0 */
+    "I/O error", /* XCB_CONN_ERROR */
+    "Unsupported extension used", /* XCB_CONN_CLOSED_EXT_NOTSUPPORTED */
+    "Out of memory", /* XCB_CONN_CLOSED_MEM_INSUFFICIENT */
+    "Maximum allowed requested length exceeded", /* XCB_CONN_CLOSED_REQ_LEN_EXCEED */
+    "Failed to parse display string", /* XCB_CONN_CLOSED_PARSE_ERR */
+    "No such screen on display", /* XCB_CONN_CLOSED_INVALID_SCREEN */
+    "Error during FD passing" /* XCB_CONN_CLOSED_FDPASSING_FAILED */
+};
+
 static int nullErrorHandler(Display *, XErrorEvent *)
 {
     return 0;
+}
+
+static int ioErrorHandler(Display *dpy)
+{
+    xcb_connection_t *conn = XGetXCBConnection(dpy);
+    if (conn != NULL) {
+        /* Print a message with a textual description of the error */
+        int code = xcb_connection_has_error(conn);
+        const char *str = "Unknown error";
+        int arrayLength = sizeof(xcbConnectionErrors) / sizeof(xcbConnectionErrors[0]);
+        if (code >= 0 && code < arrayLength)
+            str = xcbConnectionErrors[code];
+
+        qWarning("The X11 connection broke: %s (code %d)", str, code);
+    }
+    return _XDefaultIOError(dpy);
 }
 #endif
 
@@ -284,6 +311,7 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
         m_connection = XGetXCBConnection(dpy);
         XSetEventQueueOwner(dpy, XCBOwnsEventQueue);
         XSetErrorHandler(nullErrorHandler);
+        XSetIOErrorHandler(ioErrorHandler);
         m_xlib_display = dpy;
     }
 #else
