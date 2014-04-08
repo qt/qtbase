@@ -842,8 +842,8 @@
 #endif /* Q_CC_MSVC */
 
 #ifdef __cplusplus
+# include <utility>
 # if defined(Q_OS_QNX)
-#  include <utility>
 #  if defined(_YVALS) || defined(_LIBCPP_VER)
 // QNX: libcpp (Dinkumware-based) doesn't have the <initializer_list>
 // header, so the feature is useless, even if the compiler supports
@@ -854,8 +854,16 @@
 #    undef Q_COMPILER_RVALUE_REFS
 #    undef Q_COMPILER_REF_QUALIFIERS
 #  endif
+# endif // Q_OS_QNX
+# if (defined(Q_CC_CLANG) || defined(Q_CC_INTEL)) && defined(Q_OS_MAC) && defined(__GNUC_LIBSTD__) \
+    && ((__GNUC_LIBSTD__-0) * 100 + __GNUC_LIBSTD_MINOR__-0 <= 402)
+// Mac OS X: Apple has not updated libstdc++ since 2007, which means it does not have
+// <initializer_list> or std::move. Let's disable these features
+#  undef Q_COMPILER_INITIALIZER_LISTS
+#  undef Q_COMPILER_RVALUE_REFS
+#  undef Q_COMPILER_REF_QUALIFIERS
 # endif
-#endif // Q_OS_QNX
+#endif
 
 /*
  * C++11 keywords and expressions
