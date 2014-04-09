@@ -3708,7 +3708,7 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
             EXTRA_SRCS="\"\$(SOURCE_PATH)/src/corelib/io/qfilesystemengine_unix.cpp\" \
                         \"\$(SOURCE_PATH)/src/corelib/io/qfilesystemiterator_unix.cpp\" \
                         \"\$(SOURCE_PATH)/src/corelib/io/qfsfileengine_unix.cpp\" \
-                        \"\$(SOURCE_PATH)/src/corelib/tools/qlocal_unix.cpp\""
+                        \"\$(SOURCE_PATH)/src/corelib/tools/qlocale_unix.cpp\""
             EXEEXT=
         fi
         if [ "$BUILD_ON_MAC" = "yes" ]; then
