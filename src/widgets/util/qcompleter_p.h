@@ -150,10 +150,10 @@ public:
     void filter(const QStringList &parts);
 
     QMatchData filterHistory();
-    bool matchHint(QString, const QModelIndex&, QMatchData*);
+    bool matchHint(const QString &part, const QModelIndex &parent, QMatchData *m) const;
 
     void saveInCache(QString, const QModelIndex&, const QMatchData&);
-    bool lookupCache(QString part, const QModelIndex& parent, QMatchData *m);
+    bool lookupCache(const QString &part, const QModelIndex &parent, QMatchData *m) const;
 
     virtual void filterOnDemand(int) { }
     virtual QMatchData filter(const QString&, const QModelIndex&, int) = 0;
