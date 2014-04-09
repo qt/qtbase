@@ -807,6 +807,9 @@ _hb_coretext_shape (hb_shape_plan_t    *shape_plan,
 
   buffer->clear_positions ();
 
+  bool bufferRtl = !HB_DIRECTION_IS_FORWARD (buffer->props.direction);
+  bool runRtl = (CTRunGetStatus(static_cast<CTRunRef>(CFArrayGetValueAtIndex(glyph_runs, 0))) & kCTRunStatusRightToLeft);
+
   unsigned int count = buffer->len;
   for (unsigned int i = 0; i < count; ++i) {
     hb_glyph_info_t *info = &buffer->info[i];
@@ -816,6 +819,12 @@ _hb_coretext_shape (hb_shape_plan_t    *shape_plan,
     pos->x_advance = info->mask;
     pos->x_offset = info->var1.u32;
     pos->y_offset = info->var2.u32;
+
+    if (bufferRtl != runRtl && i < count / 2) {
+        unsigned int temp = buffer->info[count - i - 1].cluster;
+        buffer->info[count - i - 1].cluster = info->cluster;
+        info->cluster = temp;
+    }
   }
 
   /* Fix up clusters so that we never return out-of-order indices;
