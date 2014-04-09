@@ -827,13 +827,18 @@
 #      define Q_COMPILER_DELEGATING_CONSTRUCTORS
 #      define Q_COMPILER_EXPLICIT_CONVERSIONS
 #      define Q_COMPILER_NONSTATIC_MEMBER_INIT
-#      define Q_COMPILER_INITIALIZER_LISTS
+// implemented, but nested initialization fails (eg tst_qvector): http://connect.microsoft.com/VisualStudio/feedback/details/800364/initializer-list-calls-object-destructor-twice
+//      #define Q_COMPILER_INITIALIZER_LISTS
 // implemented in principle, but has a bug that makes it unusable: http://connect.microsoft.com/VisualStudio/feedback/details/802058/c-11-unified-initialization-fails-with-c-style-arrays
 //      #define Q_COMPILER_UNIFORM_INIT
 #      define Q_COMPILER_RAW_STRINGS
 #      define Q_COMPILER_TEMPLATE_ALIAS
 #      define Q_COMPILER_VARIADIC_TEMPLATES
 #    endif /* VC 12 */
+#    if _MSC_FULL_VER >= 180030324 // VC 12 SP 2 RC
+#      define Q_COMPILER_INITIALIZER_LISTS
+#    endif /* VC 12 SP 2 RC */
+
 #endif /* Q_CC_MSVC */
 
 #ifdef __cplusplus
