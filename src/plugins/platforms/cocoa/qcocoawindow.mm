@@ -1710,6 +1710,7 @@ void QCocoaWindow::exposeWindow()
     if (!m_isExposed) {
         m_isExposed = true;
         m_exposedGeometry = geometry();
+        m_exposedDevicePixelRatio = devicePixelRatio();
         QWindowSystemInterface::handleExposeEvent(window(), QRegion(geometry()));
     }
 }
@@ -1735,11 +1736,12 @@ void QCocoaWindow::updateExposedGeometry()
     if (!isWindowExposable())
         return;
 
-    if (m_exposedGeometry == geometry())
+    if (m_exposedGeometry == geometry() && m_exposedDevicePixelRatio == devicePixelRatio())
         return;
 
     m_isExposed = true;
     m_exposedGeometry = geometry();
+    m_exposedDevicePixelRatio = devicePixelRatio();
     QWindowSystemInterface::handleExposeEvent(window(), QRegion(geometry()));
 }
 

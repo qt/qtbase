@@ -272,6 +272,7 @@ public: // for QNSView
     bool m_geometryUpdateExposeAllowed;
     bool m_isExposed;
     QRect m_exposedGeometry;
+    qreal m_exposedDevicePixelRatio;
     int m_registerTouchCount;
     bool m_resizableTransientParent;
     bool m_hiddenByClipping;
