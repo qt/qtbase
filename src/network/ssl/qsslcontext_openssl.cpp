@@ -97,9 +97,9 @@ static inline QString msgErrorSettingEllipticCurves(const QString &why)
     return QSslSocket::tr("Error when setting the elliptic curves (%1)").arg(why);
 }
 
-QSslContext* QSslContext::fromConfiguration(QSslSocket::SslMode mode, const QSslConfiguration &configuration, bool allowRootCertOnDemandLoading)
+// static
+void QSslContext::initSslContext(QSslContext *sslContext, QSslSocket::SslMode mode, const QSslConfiguration &configuration, bool allowRootCertOnDemandLoading)
 {
-    QSslContext *sslContext = new QSslContext();
     sslContext->sslConfiguration = configuration;
     sslContext->errorCode = QSslError::NoError;
 
@@ -187,7 +187,7 @@ init_context:
             unsupportedProtocol ? QSslSocket::tr("unsupported protocol") : QSslSocketBackendPrivate::getErrorsFromOpenSsl()
         );
         sslContext->errorCode = QSslError::UnspecifiedError;
-        return sslContext;
+        return;
     }
 
     // Enable bug workarounds.
@@ -218,7 +218,7 @@ init_context:
     if (!q_SSL_CTX_set_cipher_list(sslContext->ctx, cipherString.data())) {
         sslContext->errorStr = QSslSocket::tr("Invalid or empty cipher list (%1)").arg(QSslSocketBackendPrivate::getErrorsFromOpenSsl());
         sslContext->errorCode = QSslError::UnspecifiedError;
-        return sslContext;
+        return;
     }
 
     const QDateTime now = QDateTime::currentDateTimeUtc();
@@ -253,14 +253,14 @@ init_context:
         if (sslContext->sslConfiguration.privateKey().isNull()) {
             sslContext->errorStr = QSslSocket::tr("Cannot provide a certificate with no key, %1").arg(QSslSocketBackendPrivate::getErrorsFromOpenSsl());
             sslContext->errorCode = QSslError::UnspecifiedError;
-            return sslContext;
+            return;
         }
 
         // Load certificate
         if (!q_SSL_CTX_use_certificate(sslContext->ctx, (X509 *)sslContext->sslConfiguration.localCertificate().handle())) {
             sslContext->errorStr = QSslSocket::tr("Error loading local certificate, %1").arg(QSslSocketBackendPrivate::getErrorsFromOpenSsl());
             sslContext->errorCode = QSslError::UnspecifiedError;
-            return sslContext;
+            return;
         }
 
         if (configuration.d->privateKey.algorithm() == QSsl::Opaque) {
@@ -284,7 +284,7 @@ init_context:
         if (!q_SSL_CTX_use_PrivateKey(sslContext->ctx, sslContext->pkey)) {
             sslContext->errorStr = QSslSocket::tr("Error loading private key, %1").arg(QSslSocketBackendPrivate::getErrorsFromOpenSsl());
             sslContext->errorCode = QSslError::UnspecifiedError;
-            return sslContext;
+            return;
         }
         if (configuration.d->privateKey.algorithm() == QSsl::Opaque)
             sslContext->pkey = 0; // Don't free the private key, it belongs to QSslKey
@@ -293,7 +293,7 @@ init_context:
         if (!q_SSL_CTX_check_private_key(sslContext->ctx)) {
             sslContext->errorStr = QSslSocket::tr("Private key does not certify public key, %1").arg(QSslSocketBackendPrivate::getErrorsFromOpenSsl());
             sslContext->errorCode = QSslError::UnspecifiedError;
-            return sslContext;
+            return;
         }
 
         // If we have any intermediate certificates then we need to add them to our chain
@@ -357,7 +357,6 @@ init_context:
                                 const_cast<int *>(reinterpret_cast<const int *>(qcurves.data())))) {
                 sslContext->errorStr = msgErrorSettingEllipticCurves(QSslSocketBackendPrivate::getErrorsFromOpenSsl());
                 sslContext->errorCode = QSslError::UnspecifiedError;
-                return sslContext;
             }
         } else
 #endif // OPENSSL_VERSION_NUMBER >= 0x10002000L && !defined(OPENSSL_NO_EC)
@@ -365,10 +364,14 @@ init_context:
             // specific curves requested, but not possible to set -> error
             sslContext->errorStr = msgErrorSettingEllipticCurves(QSslSocket::tr("OpenSSL version too old, need at least v1.0.2"));
             sslContext->errorCode = QSslError::UnspecifiedError;
-            return sslContext;
         }
     }
+}
 
+QSslContext* QSslContext::fromConfiguration(QSslSocket::SslMode mode, const QSslConfiguration &configuration, bool allowRootCertOnDemandLoading)
+{
+    QSslContext *sslContext = new QSslContext();
+    initSslContext(sslContext, mode, configuration, allowRootCertOnDemandLoading);
     return sslContext;
 }
 

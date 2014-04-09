@@ -101,6 +101,10 @@ protected:
     QSslContext();
 
 private:
+    static void initSslContext(QSslContext* sslContext, QSslSocket::SslMode mode, const QSslConfiguration &configuration,
+                               bool allowRootCertOnDemandLoading);
+
+private:
     SSL_CTX* ctx;
     EVP_PKEY *pkey;
     SSL_SESSION *session;
