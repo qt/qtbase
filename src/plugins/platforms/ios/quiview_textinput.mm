@@ -473,6 +473,8 @@ Q_GLOBAL_STATIC(StaticVariables, staticVariables);
     QCoreApplication::sendEvent(focusObject, &e);
     QFont qfont = qvariant_cast<QFont>(e.value(Qt::ImFont));
     UIFont *uifont = [UIFont fontWithName:qfont.family().toNSString() size:qfont.pointSize()];
+    if (!uifont)
+        return [NSDictionary dictionary];
     return [NSDictionary dictionaryWithObject:uifont forKey:UITextInputTextFontKey];
 }
 
