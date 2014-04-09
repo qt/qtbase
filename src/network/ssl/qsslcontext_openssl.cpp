@@ -375,6 +375,13 @@ QSslContext* QSslContext::fromConfiguration(QSslSocket::SslMode mode, const QSsl
     return sslContext;
 }
 
+QSharedPointer<QSslContext> QSslContext::sharedFromConfiguration(QSslSocket::SslMode mode, const QSslConfiguration &configuration, bool allowRootCertOnDemandLoading)
+{
+    QSharedPointer<QSslContext> sslContext = QSharedPointer<QSslContext>::create();
+    initSslContext(sslContext.data(), mode, configuration, allowRootCertOnDemandLoading);
+    return sslContext;
+}
+
 #if OPENSSL_VERSION_NUMBER >= 0x1000100fL && !defined(OPENSSL_NO_NEXTPROTONEG)
 
 static int next_proto_cb(SSL *, unsigned char **out, unsigned char *outlen,
