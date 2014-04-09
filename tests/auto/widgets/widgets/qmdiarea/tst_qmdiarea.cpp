@@ -1007,7 +1007,7 @@ void tst_QMdiArea::activeSubWindow()
     qApp->setActiveWindow(&mainWindow);
     QCOMPARE(mdiArea->activeSubWindow(), subWindow);
 
-#if !defined(Q_OS_MAC) && !defined(Q_OS_WIN)
+#if !defined(Q_OS_MAC) && !defined(Q_OS_WIN) && !defined(Q_OS_QNX)
     qApp->setActiveWindow(0);
     QVERIFY(!mdiArea->activeSubWindow());
 #endif
@@ -1088,7 +1088,7 @@ void tst_QMdiArea::currentSubWindow()
     QVERIFY(mdiArea.activeSubWindow());
     QVERIFY(mdiArea.currentSubWindow());
 
-#if !defined(Q_OS_MAC) && !defined(Q_OS_WIN)
+#if !defined(Q_OS_MAC) && !defined(Q_OS_WIN) && !defined(Q_OS_QNX)
     qApp->setActiveWindow(0);
     QVERIFY(!mdiArea.activeSubWindow());
     QVERIFY(mdiArea.currentSubWindow());
@@ -1701,7 +1701,7 @@ void tst_QMdiArea::tileSubWindows()
     qApp->processEvents();
     QTRY_COMPARE(workspace.size(), QSize(350, 150));
 
-    const QSize minSize(300, 100);
+    const QSize minSize(600, 130);
     foreach (QMdiSubWindow *subWindow, workspace.subWindowList())
         subWindow->setMinimumSize(minSize);
 
@@ -1908,6 +1908,9 @@ void tst_QMdiArea::dontMaximizeSubWindowOnActivation()
     for (int i = 0; i < 5; ++i) {
         QMdiSubWindow *window = mdiArea.addSubWindow(new QWidget);
         window->show();
+#if defined Q_OS_QNX
+        QEXPECT_FAIL("", "QTBUG-38231", Abort);
+#endif
         QVERIFY(window->isMaximized());
         qApp->processEvents();
     }
