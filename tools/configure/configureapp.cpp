@@ -164,6 +164,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "GUI" ]             = "yes";
     dictionary[ "RTTI" ]            = "yes";
     dictionary[ "STRIP" ]           = "yes";
+    dictionary[ "SEPARATE_DEBUG_INFO" ] = "no";
     dictionary[ "SSE2" ]            = "auto";
     dictionary[ "SSE3" ]            = "auto";
     dictionary[ "SSSE3" ]           = "auto";
@@ -445,6 +446,10 @@ void Configure::parseCmdLine()
             dictionary[ "BUILDALL" ] = "yes";
         else if (configCmdLine.at(i) == "-force-debug-info")
             dictionary[ "FORCEDEBUGINFO" ] = "yes";
+        else if (configCmdLine.at(i) == "-no-separate-debug-info")
+            dictionary[ "SEPARATE_DEBUG_INFO" ] = "no";
+        else if (configCmdLine.at(i) == "-separate-debug-info")
+            dictionary[ "SEPARATE_DEBUG_INFO" ] = "yes";
 
         else if (configCmdLine.at(i) == "-compile-examples") {
             dictionary[ "COMPILE_EXAMPLES" ] = "yes";
@@ -1765,7 +1770,8 @@ bool Configure::displayHelp()
         desc("BUILD", "debug",  "-debug",               "Compile and link Qt with debugging turned on.");
         desc("BUILDALL", "yes", "-debug-and-release",   "Compile and link two Qt libraries, with and without debugging turned on.\n");
 
-        desc("FORCEDEBUGINFO", "yes","-force-debug-info", "Create symbol files for release builds.\n");
+        desc("FORCEDEBUGINFO", "yes","-force-debug-info", "Create symbol files for release builds.");
+        desc("SEPARATE_DEBUG_INFO", "yes","-separate-debug-info", "Strip debug information into a separate file.\n");
 
         desc("BUILDDEV", "yes", "-developer-build",      "Compile and link Qt with Qt developer options (including auto-tests exporting)\n");
 
@@ -2165,6 +2171,9 @@ bool Configure::checkAvailability(const QString &part)
     if (part == "STYLE_WINDOWSXP")
         available = (platform() == WINDOWS) && findFile("uxtheme.h");
 
+    else if (part == "OBJCOPY")
+        available = tryCompileProject("unix/objcopy");
+
     else if (part == "ZLIB")
         available = findFile("zlib.h");
 
@@ -2489,6 +2498,21 @@ bool Configure::verifyConfiguration()
         dictionary["C++11"] = "auto";
     }
 
+    if (dictionary["SEPARATE_DEBUG_INFO"] == "yes") {
+        if (dictionary[ "SHARED" ] == "no") {
+            cout << "ERROR: -separate-debug-info is incompatible with -static" << endl << endl;
+            dictionary[ "DONE" ] = "error";
+        } else if (dictionary[ "BUILD" ] != "debug"
+                && dictionary[ "BUILDALL" ] == "no"
+                && dictionary[ "FORCEDEBUGINFO" ] == "no") {
+            cout << "ERROR: -separate-debug-info needs -debug, -debug-and-release, or -force-debug-info" << endl << endl;
+            dictionary[ "DONE" ] = "error";
+        } else if (dictionary["SEPARATE_DEBUG_INFO"] == "yes" && !checkAvailability("OBJCOPY")) {
+            cout << "ERROR: -separate-debug-info was requested but this binutils does not support it." << endl;
+            dictionary[ "DONE" ] = "error";
+        }
+    }
+
     if (dictionary["SQL_SQLITE_LIB"] == "no" && dictionary["SQL_SQLITE"] != "no") {
         cout << "WARNING: Configure could not detect the presence of a system SQLite3 lib." << endl
              << "Configure will therefore continue with the SQLite3 lib bundled with Qt." << endl;
@@ -2752,6 +2776,8 @@ void Configure::generateOutputVars()
     if (dictionary[ "BUILDALL" ] == "yes") {
         qtConfig += "build_all";
     }
+    if (dictionary[ "SEPARATE_DEBUG_INFO" ] == "yes")
+        qtConfig += "separate_debug_info";
     if (dictionary[ "FORCEDEBUGINFO" ] == "yes")
         qmakeConfig += "force_debug_info";
     qmakeConfig += dictionary[ "BUILD" ];
