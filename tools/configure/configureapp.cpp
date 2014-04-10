@@ -258,7 +258,7 @@ Configure::Configure(int& argc, char** argv)
 
     dictionary[ "PCRE" ]            = "auto";
 
-    dictionary[ "ICU" ]             = "auto";
+    dictionary[ "ICU" ]             = "no";
 
     dictionary[ "ANGLE" ]           = "auto";
     dictionary[ "DYNAMICGL" ]       = "auto";

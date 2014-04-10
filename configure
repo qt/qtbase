@@ -1331,6 +1331,7 @@ while [ "$#" -gt 0 ]; do
             XPLATFORM_MINGW=yes
             CFG_RPATH=no
             CFG_REDUCE_EXPORTS=no
+            CFG_ICU=no
             ;;
         esac
         ;;
