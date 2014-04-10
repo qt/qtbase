@@ -1556,8 +1556,10 @@ void QTextEngine::itemize() const
 #ifdef QT_ENABLE_HARFBUZZ_NG
     analysis = scriptAnalysis.data();
     if (useHarfbuzzNG) {
+        // ### pretend HB-old behavior for now
         for (int i = 0; i < length; ++i) {
             switch (analysis[i].script) {
+            case QChar::Script_Latin:
             case QChar::Script_Han:
             case QChar::Script_Hiragana:
             case QChar::Script_Katakana:

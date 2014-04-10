@@ -616,7 +616,7 @@ CFG_EGL=auto
 CFG_EGL_X=auto
 CFG_FONTCONFIG=auto
 CFG_FREETYPE=auto
-CFG_HARFBUZZ=no
+CFG_HARFBUZZ=auto
 CFG_SQL_AVAILABLE=
 QT_ALL_BUILD_PARTS=" libs tools examples tests "
 QT_DEFAULT_BUILD_PARTS="libs tools examples"
@@ -5233,8 +5233,8 @@ if [ "$CFG_FREETYPE" = "auto" ]; then
 fi
 
 # harfbuzz support
-[ "$XPLATFORM_MINGW" = "yes" ] && [ "$CFG_HARFBUZZ" = "auto" ] && CFG_HARFBUZZ=no
 [ "$XPLATFORM_MAC" = "yes" ] && [ "$CFG_HARFBUZZ" = "auto" ] && CFG_HARFBUZZ=yes
+[ "$CFG_HARFBUZZ" = "auto" ] && CFG_HARFBUZZ=no # disable auto-detection on non-Mac for now
 if [ "$CFG_HARFBUZZ" = "auto" ]; then
     if compileTest unix/harfbuzz "HarfBuzz"; then
         CFG_HARFBUZZ=system
