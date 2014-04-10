@@ -218,25 +218,25 @@ QTemporaryDir::QTemporaryDir()
 }
 
 /*!
-    Constructs a QTemporaryFile with a template name of \a templateName.
+    Constructs a QTemporaryDir with a template of \a templatePath.
 
-    If \a templateName is a relative path, the path will be relative to the
+    If \a templatePath is a relative path, the path will be relative to the
     current working directory. You can use QDir::tempPath() to construct \a
-    templateName if you want use the system's temporary directory.
+    templatePath if you want use the system's temporary directory.
 
-    If the \a templateName ends with XXXXXX it will be used as the dynamic portion
+    If the \a templatePath ends with XXXXXX it will be used as the dynamic portion
     of the directory name, otherwise it will be appended.
     Unlike QTemporaryFile, XXXXXX in the middle of the template string is not supported.
 
     \sa QDir::tempPath()
 */
-QTemporaryDir::QTemporaryDir(const QString &templateName)
+QTemporaryDir::QTemporaryDir(const QString &templatePath)
     : d_ptr(new QTemporaryDirPrivate)
 {
-    if (templateName.isEmpty())
+    if (templatePath.isEmpty())
         d_ptr->create(defaultTemplateName());
     else
-        d_ptr->create(templateName);
+        d_ptr->create(templatePath);
 }
 
 /*!
