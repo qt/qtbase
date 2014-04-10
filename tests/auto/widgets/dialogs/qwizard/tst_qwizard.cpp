@@ -2605,6 +2605,9 @@ void tst_QWizard::task161658_alignments()
 
 void tst_QWizard::task177022_setFixedSize()
 {
+#ifdef Q_OS_BLACKBERRY
+    QSKIP("Window is forced fullscreen");
+#endif
     int width = 300;
     int height = 200;
     QWizard wiz;
@@ -2622,7 +2625,7 @@ void tst_QWizard::task177022_setFixedSize()
     QCOMPARE(wiz.maximumWidth(), width);
     QCOMPARE(wiz.maximumHeight(), height);
 
-    wiz.show();
+    wiz.showNormal();
     QVERIFY(QTest::qWaitForWindowExposed(&wiz));
 
     QCOMPARE(wiz.size(), QSize(width, height));
