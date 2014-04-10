@@ -168,6 +168,14 @@
 // TODO: multi-selection: NSAccessibilitySelectedTextRangesAttribute,
     }
 
+    if (iface->valueInterface()) {
+        [attributes addObjectsFromArray: [[NSArray alloc] initWithObjects:
+            NSAccessibilityMinValueAttribute,
+            NSAccessibilityMaxValueAttribute,
+            nil
+        ]];
+    }
+
     return [attributes autorelease];
 }
 
@@ -189,6 +197,19 @@
 
     QAccessible::Id parentId = QAccessible::uniqueId(parent);
     return [QCocoaAccessibleElement elementWithId: parentId];
+}
+
+
+- (id) minValueAttribute:(QAccessibleInterface*)iface {
+    if (QAccessibleValueInterface *val = iface->valueInterface())
+        return [NSNumber numberWithDouble: val->minimumValue().toDouble()];
+    return nil;
+}
+
+- (id) maxValueAttribute:(QAccessibleInterface*)iface {
+    if (QAccessibleValueInterface *val = iface->valueInterface())
+        return [NSNumber numberWithDouble: val->maximumValue().toDouble()];
+    return nil;
 }
 
 - (id)accessibilityAttributeValue:(NSString *)attribute {
@@ -272,6 +293,10 @@
             return [NSNumber numberWithInt: textBeforeCursor.count(QLatin1Char('\n'))];
         }
         return nil;
+    } else if ([attribute isEqualToString:NSAccessibilityMinValueAttribute]) {
+        return [self minValueAttribute:iface];
+    } else if ([attribute isEqualToString:NSAccessibilityMaxValueAttribute]) {
+        return [self maxValueAttribute:iface];
     }
 
     return nil;
