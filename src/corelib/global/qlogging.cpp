@@ -48,6 +48,8 @@
 #include "qmutex.h"
 #include "qloggingcategory.h"
 #ifndef QT_BOOTSTRAPPED
+#include "qelapsedtimer.h"
+#include "qdatetime.h"
 #include "qcoreapplication.h"
 #include "qthread.h"
 #include "private/qloggingregistry_p.h"
@@ -760,6 +762,7 @@ static const char functionTokenC[] = "%{function}";
 static const char pidTokenC[] = "%{pid}";
 static const char appnameTokenC[] = "%{appname}";
 static const char threadidTokenC[] = "%{threadid}";
+static const char timeTokenC[] = "%{time";
 static const char ifCategoryTokenC[] = "%{if-category}";
 static const char ifDebugTokenC[] = "%{if-debug}";
 static const char ifWarningTokenC[] = "%{if-warning}";
@@ -780,9 +783,14 @@ struct QMessagePattern {
     // 0 terminated arrays of literal tokens / literal or placeholder tokens
     const char **literals;
     const char **tokens;
+    QString timeFormat;
 
     bool fromEnvironment;
     static QBasicMutex mutex;
+#ifndef QT_BOOTSTRAPPED
+    QElapsedTimer timer;
+    QDateTime startTime;
+#endif
 };
 
 QBasicMutex QMessagePattern::mutex;
@@ -791,7 +799,13 @@ QMessagePattern::QMessagePattern()
     : literals(0)
     , tokens(0)
     , fromEnvironment(false)
+#ifndef QT_BOOTSTRAPPED
+    , startTime(QDateTime::currentDateTime())
+#endif
 {
+#ifndef QT_BOOTSTRAPPED
+    timer.start();
+#endif
     const QString envPattern = QString::fromLocal8Bit(qgetenv("QT_MESSAGE_PATTERN"));
     if (envPattern.isEmpty()) {
         setPattern(QLatin1String(defaultPattern));
@@ -879,6 +893,12 @@ void QMessagePattern::setPattern(const QString &pattern)
                 tokens[i] = appnameTokenC;
             else if (lexeme == QLatin1String(threadidTokenC))
                 tokens[i] = threadidTokenC;
+            else if (lexeme.startsWith(QLatin1String(timeTokenC))) {
+                tokens[i] = timeTokenC;
+                int spaceIdx = lexeme.indexOf(QChar::fromLatin1(' '));
+                if (spaceIdx > 0)
+                    timeFormat = lexeme.mid(spaceIdx + 1, lexeme.length() - spaceIdx - 2);
+            }
 
 #define IF_TOKEN(LEVEL) \
             else if (lexeme == QLatin1String(LEVEL)) { \
@@ -1048,6 +1068,12 @@ Q_CORE_EXPORT QString qMessageFormatString(QtMsgType type, const QMessageLogCont
         } else if (token == threadidTokenC) {
             message.append(QLatin1String("0x"));
             message.append(QString::number(qlonglong(QThread::currentThread()->currentThread()), 16));
+        } else if (token == timeTokenC) {
+            quint64 ms = pattern->timer.elapsed();
+            if (pattern->timeFormat.isEmpty())
+                message.append(QString().sprintf("%6d.%03d", uint(ms / 1000), uint(ms % 1000)));
+            else
+                message.append(pattern->startTime.addMSecs(ms).toString(pattern->timeFormat));
 #endif
         } else if (token == ifCategoryTokenC) {
             if (!context.category || (strcmp(context.category, "default") == 0))
@@ -1430,6 +1456,9 @@ void qErrnoWarning(int code, const char *msg, ...)
     \row \li \c %{pid} \li QCoreApplication::applicationPid()
     \row \li \c %{threadid} \li ID of current thread
     \row \li \c %{type} \li "debug", "warning", "critical" or "fatal"
+    \row \li \c %{time} \li time of the message, in seconds since the process started
+    \row \li \c %{time format} \li system time when the message occurred, formatted by
+        passing the \c format to \l QDateTime::toString()
     \endtable
 
     You can also use conditionals on the type of the message using \c %{if-debug},
@@ -1441,7 +1470,7 @@ void qErrnoWarning(int code, const char *msg, ...)
 
     Example:
     \code
-    QT_MESSAGE_PATTERN="[%{if-debug}D%{endif}%{if-warning}W%{endif}%{if-critical}C%{endif}%{if-fatal}F%{endif}] %{file}:%{line} - %{message}"
+    QT_MESSAGE_PATTERN="[%{time yyyyMMdd h:mm:ss.zzz t} %{if-debug}D%{endif}%{if-warning}W%{endif}%{if-critical}C%{endif}%{if-fatal}F%{endif}] %{file}:%{line} - %{message}"
     \endcode
 
     The default \a pattern is "%{if-category}%{category}: %{endif}%{message}".
