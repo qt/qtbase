@@ -1438,8 +1438,10 @@ void QSslSocketBackendPrivate::continueHandshake()
     if (readBufferMaxSize)
         plainSocket->setReadBufferSize(readBufferMaxSize);
 
+#if OPENSSL_VERSION_NUMBER >= 0x0090806fL && !defined(OPENSSL_NO_TLSEXT)
     if (q_SSL_ctrl((ssl), SSL_CTRL_GET_SESSION_REUSED, 0, NULL))
         configuration.peerSessionShared = true;
+#endif
 
 #ifdef QT_DECRYPT_SSL_TRAFFIC
     if (ssl->session && ssl->s3) {
