@@ -407,9 +407,6 @@ public:
     void glVertexAttrib4fv(GLuint indx, const GLfloat* values);
     void glVertexAttribPointer(GLuint indx, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void* ptr);
 
-    // OpenGL1, not GLES2
-    void glGetTexLevelParameteriv(GLenum target, GLint level, GLenum pname, GLint *params);
-
 protected:
     QOpenGLFunctionsPrivate *d_ptr;
     static bool isInitialized(const QOpenGLFunctionsPrivate *d) { return d != 0; }
@@ -564,9 +561,6 @@ struct QOpenGLFunctionsPrivate
     void (QOPENGLF_APIENTRYP VertexAttrib4f)(GLuint indx, GLfloat x, GLfloat y, GLfloat z, GLfloat w);
     void (QOPENGLF_APIENTRYP VertexAttrib4fv)(GLuint indx, const GLfloat* values);
     void (QOPENGLF_APIENTRYP VertexAttribPointer)(GLuint indx, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void* ptr);
-
-    // OpenGL1 only, not GLES2
-    void (QOPENGLF_APIENTRYP GetTexLevelParameteriv)(GLenum target, GLint level, GLenum pname, GLint *params);
 
     // Special non-ES OpenGL variants, not to be called directly
     void (QOPENGLF_APIENTRYP ClearDepth)(GLdouble depth);
@@ -2150,24 +2144,6 @@ inline void QOpenGLFunctions::glVertexAttribPointer(GLuint indx, GLint size, GLe
 #else
     Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
     d_ptr->VertexAttribPointer(indx, size, type, normalized, stride, ptr);
-#endif
-    Q_OPENGL_FUNCTIONS_DEBUG
-}
-
-// OpenGL1, not GLES2
-
-inline void QOpenGLFunctions::glGetTexLevelParameteriv(GLenum target, GLint level, GLenum pname, GLint *params)
-{
-#ifdef QT_OPENGL_ES_2
-    Q_UNUSED(target);
-    Q_UNUSED(level);
-    Q_UNUSED(pname);
-    Q_UNUSED(params);
-    // Cannot get here.
-    qFatal("QOpenGLFunctions: glGetTexLevelParameteriv not available with OpenGL ES");
-#else
-    Q_ASSERT(QOpenGLFunctions::isInitialized(d_ptr));
-    d_ptr->GetTexLevelParameteriv(target, level, pname, params);
 #endif
     Q_OPENGL_FUNCTIONS_DEBUG
 }
