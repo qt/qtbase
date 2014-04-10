@@ -1322,7 +1322,7 @@ void tst_QLineEdit::undo_keypressevents_data()
 
         // unselect any current selection
         keys.addKeyClick(Qt::Key_Right);
-#ifdef Q_OS_WIN //Mac has a specialcase to handle jumping to the end of a selection
+#if defined Q_OS_WIN || defined Q_OS_QNX //Windows and QNX do not jump to the beginning of the selection
         keys.addKeyClick(Qt::Key_Left);
 #endif
 
@@ -3206,7 +3206,7 @@ void tst_QLineEdit::leftKeyOnSelectedText()
     QCOMPARE(testWidget->cursorPosition(), 2);
     QCOMPARE(testWidget->selectedText(), QString("23"));
     QTest::keyClick(testWidget, Qt::Key_Left);
-#ifdef Q_OS_WIN
+#if defined Q_OS_WIN || defined Q_OS_QNX
     QCOMPARE(testWidget->cursorPosition(), 1);
 #else
     // Selection is cleared ands cursor remains at position 2.
