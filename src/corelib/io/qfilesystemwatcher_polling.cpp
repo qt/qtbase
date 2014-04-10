@@ -65,14 +65,16 @@ QStringList QPollingFileSystemWatcherEngine::addPaths(const QStringList &paths,
         if (!fi.exists())
             continue;
         if (fi.isDir()) {
-            if (!directories->contains(path))
-                directories->append(path);
+            if (directories->contains(path))
+                continue;
+            directories->append(path);
             if (!path.endsWith(QLatin1Char('/')))
                 fi = QFileInfo(path + QLatin1Char('/'));
             this->directories.insert(path, fi);
         } else {
-            if (!files->contains(path))
-                files->append(path);
+            if (files->contains(path))
+                continue;
+            files->append(path);
             this->files.insert(path, fi);
         }
         it.remove();
