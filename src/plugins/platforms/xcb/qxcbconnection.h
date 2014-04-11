@@ -454,6 +454,10 @@ public:
 
     QXcbSystemTrayTracker *systemTrayTracker();
 
+#ifdef XCB_USE_XINPUT2
+    void handleEnterEvent(const xcb_enter_notify_event_t *);
+#endif
+
 private slots:
     void processXcbEvents();
 

@@ -524,6 +524,35 @@ void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
     }
 }
 
+void QXcbConnection::handleEnterEvent(const xcb_enter_notify_event_t *)
+{
+#ifdef XCB_USE_XINPUT21
+    QHash<int, ScrollingDevice>::iterator it = m_scrollingDevices.begin();
+    const QHash<int, ScrollingDevice>::iterator end = m_scrollingDevices.end();
+    while (it != end) {
+        ScrollingDevice& scrollingDevice = it.value();
+        int nrDevices = 0;
+        XIDeviceInfo* xiDeviceInfo = XIQueryDevice(static_cast<Display *>(m_xlib_display), scrollingDevice.deviceId, &nrDevices);
+        if (nrDevices <= 0) {
+            it = m_scrollingDevices.erase(it);
+            continue;
+        }
+        for (int c = 0; c < xiDeviceInfo->num_classes; ++c) {
+            if (xiDeviceInfo->classes[c]->type == XIValuatorClass) {
+                XIValuatorClassInfo *vci = reinterpret_cast<XIValuatorClassInfo *>(xiDeviceInfo->classes[c]);
+                const int valuatorAtom = qatom(vci->label);
+                if (valuatorAtom == QXcbAtom::RelHorizScroll || valuatorAtom == QXcbAtom::RelHorizWheel)
+                    scrollingDevice.lastScrollPosition.setX(vci->value);
+                else if (valuatorAtom == QXcbAtom::RelVertScroll || valuatorAtom == QXcbAtom::RelVertWheel)
+                    scrollingDevice.lastScrollPosition.setY(vci->value);
+            }
+        }
+        XIFreeDeviceInfo(xiDeviceInfo);
+        ++it;
+    }
+#endif
+}
+
 void QXcbConnection::xi2HandleScrollEvent(void *event, ScrollingDevice &scrollingDevice)
 {
 #ifdef XCB_USE_XINPUT21
