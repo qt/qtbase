@@ -3178,7 +3178,7 @@ if [ "$CFG_PRECOMPILE" = "auto" ]; then
     fi
 fi
 
-# auto-detect support for separate debug info in objcopy
+# sanity-check for separate debug info
 if [ "$CFG_SEPARATE_DEBUG_INFO" = "yes" ]; then
     if [ "$CFG_SHARED" = "no" ]; then
         echo "ERROR: -separate-debug-info is incompatible with -static"
@@ -3186,13 +3186,6 @@ if [ "$CFG_SEPARATE_DEBUG_INFO" = "yes" ]; then
     fi
     if [ "$CFG_DEBUG" = "no" -a "$CFG_DEBUG_RELEASE" = "no" -a "$CFG_FORCEDEBUGINFO" = "no" ]; then
         echo "ERROR: -separate-debug-info needs -debug, -debug-and-release, or -force-debug-info"
-        exit 1
-    fi
-    TEST_OBJCOPY=`getXQMakeConf QMAKE_OBJCOPY`
-    COMPILER_WITH_FLAGS="$TEST_COMPILER $TEST_COMPILER_CXXFLAGS"
-    if "$unixtests/objcopy.test" "$COMPILER_WITH_FLAGS" "$TEST_OBJCOPY" "$OPT_VERBOSE"; then
-        echo "ERROR: -separate-debug-info was requested but this binutils does not support it."
-        echo "Re-run configure with -v for more information"
         exit 1
     fi
 fi
@@ -3935,6 +3928,15 @@ fi
 #-------------------------------------------------------------------------------
 # functionality tests
 #-------------------------------------------------------------------------------
+
+# Detect objcopy support
+if [ "$CFG_SEPARATE_DEBUG_INFO" = "yes" ]; then
+    if ! compileTest unix/objcopy "objcopy"; then
+        echo "ERROR: -separate-debug-info was requested but this binutils does not support it."
+        echo "Re-run configure with -v for more information"
+        exit 1
+    fi
+fi
 
 # Detect C++11 support
 if [ "$CFG_CXX11" != "no" ]; then
