@@ -496,8 +496,10 @@ private:
 #ifdef XCB_USE_XINPUT2
     void initializeXInput2();
     void finalizeXInput2();
+    void xi2SetupDevices();
     XInput2DeviceData *deviceForId(int id);
     void xi2HandleEvent(xcb_ge_event_t *event);
+    void xi2HandleHierachyEvent(void *event);
     int m_xiOpCode, m_xiEventBase, m_xiErrorBase;
 #ifndef QT_NO_TABLETEVENT
     struct TabletData {

@@ -73,10 +73,6 @@ void QXcbConnection::initializeXInput2()
 {
     debug_xinput = qEnvironmentVariableIsSet("QT_XCB_DEBUG_XINPUT");
     debug_xinput_devices = qEnvironmentVariableIsSet("QT_XCB_DEBUG_XINPUT_DEVICES");
-#ifndef QT_NO_TABLETEVENT
-    m_tabletData.clear();
-#endif
-    m_scrollingDevices.clear();
     Display *xDisplay = static_cast<Display *>(m_xlib_display);
     if (XQueryExtension(xDisplay, "XInputExtension", &m_xiOpCode, &m_xiEventBase, &m_xiErrorBase)) {
         int xiMajor = 2;
@@ -97,122 +93,137 @@ void QXcbConnection::initializeXInput2()
 #else
                 qDebug("XInput version %d.%d is available and Qt supports 2.0", xiMajor, m_xi2Minor);
 #endif
-            int deviceCount = 0;
-            XIDeviceInfo *devices = XIQueryDevice(xDisplay, XIAllDevices, &deviceCount);
-            for (int i = 0; i < deviceCount; ++i) {
-                // Only non-master pointing devices are relevant here.
-                if (devices[i].use != XISlavePointer)
-                    continue;
+        }
+
+        xi2SetupDevices();
+    }
+}
+
+void QXcbConnection::xi2SetupDevices()
+{
+#ifndef QT_NO_TABLETEVENT
+    m_tabletData.clear();
+#endif
+    m_scrollingDevices.clear();
+
+    if (!m_xi2Enabled)
+        return;
+
+    Display *xDisplay = static_cast<Display *>(m_xlib_display);
+    int deviceCount = 0;
+    XIDeviceInfo *devices = XIQueryDevice(xDisplay, XIAllDevices, &deviceCount);
+    for (int i = 0; i < deviceCount; ++i) {
+        // Only non-master pointing devices are relevant here.
+        if (devices[i].use != XISlavePointer)
+            continue;
+        if (Q_UNLIKELY(debug_xinput_devices))
+            qDebug() << "input device "<< devices[i].name;
+#ifndef QT_NO_TABLETEVENT
+        TabletData tabletData;
+#endif
+        ScrollingDevice scrollingDevice;
+        for (int c = 0; c < devices[i].num_classes; ++c) {
+            switch (devices[i].classes[c]->type) {
+            case XIValuatorClass: {
+                XIValuatorClassInfo *vci = reinterpret_cast<XIValuatorClassInfo *>(devices[i].classes[c]);
+                const int valuatorAtom = qatom(vci->label);
                 if (Q_UNLIKELY(debug_xinput_devices))
-                    qDebug() << "input device "<< devices[i].name;
+                    qDebug() << "   has valuator" << atomName(vci->label) << "recognized?" << (valuatorAtom < QXcbAtom::NAtoms);
 #ifndef QT_NO_TABLETEVENT
-                TabletData tabletData;
-#endif
-                ScrollingDevice scrollingDevice;
-                for (int c = 0; c < devices[i].num_classes; ++c) {
-                    switch (devices[i].classes[c]->type) {
-                    case XIValuatorClass: {
-                        XIValuatorClassInfo *vci = reinterpret_cast<XIValuatorClassInfo *>(devices[i].classes[c]);
-                        const int valuatorAtom = qatom(vci->label);
-                        if (Q_UNLIKELY(debug_xinput_devices))
-                            qDebug() << "   has valuator" << atomName(vci->label) << "recognized?" << (valuatorAtom < QXcbAtom::NAtoms);
-#ifndef QT_NO_TABLETEVENT
-                        if (valuatorAtom < QXcbAtom::NAtoms) {
-                            TabletData::ValuatorClassInfo info;
-                            info.minVal = vci->min;
-                            info.maxVal = vci->max;
-                            info.number = vci->number;
-                            tabletData.valuatorInfo[valuatorAtom] = info;
-                        }
-#endif // QT_NO_TABLETEVENT
-                        if (valuatorAtom == QXcbAtom::RelHorizScroll || valuatorAtom == QXcbAtom::RelHorizWheel)
-                            scrollingDevice.lastScrollPosition.setX(vci->value);
-                        else if (valuatorAtom == QXcbAtom::RelVertScroll || valuatorAtom == QXcbAtom::RelVertWheel)
-                            scrollingDevice.lastScrollPosition.setY(vci->value);
-                        break;
-                    }
-#ifdef XCB_USE_XINPUT21
-                    case XIScrollClass: {
-                        XIScrollClassInfo *sci = reinterpret_cast<XIScrollClassInfo *>(devices[i].classes[c]);
-                        if (sci->scroll_type == XIScrollTypeVertical) {
-                            scrollingDevice.orientations |= Qt::Vertical;
-                            scrollingDevice.verticalIndex = sci->number;
-                            scrollingDevice.verticalIncrement = sci->increment;
-                        }
-                        else if (sci->scroll_type == XIScrollTypeHorizontal) {
-                            scrollingDevice.orientations |= Qt::Horizontal;
-                            scrollingDevice.horizontalIndex = sci->number;
-                            scrollingDevice.horizontalIncrement = sci->increment;
-                        }
-                        break;
-                    }
-                    case XIButtonClass: {
-                        XIButtonClassInfo *bci = reinterpret_cast<XIButtonClassInfo *>(devices[i].classes[c]);
-                        if (bci->num_buttons >= 5) {
-                            Atom label4 = bci->labels[3];
-                            Atom label5 = bci->labels[4];
-                            if ((!label4 || qatom(label4) == QXcbAtom::ButtonWheelUp) && (!label5 || qatom(label5) == QXcbAtom::ButtonWheelDown))
-                                scrollingDevice.legacyOrientations |= Qt::Vertical;
-                        }
-                        if (bci->num_buttons >= 7) {
-                            Atom label6 = bci->labels[5];
-                            Atom label7 = bci->labels[6];
-                            if ((!label6 || qatom(label6) == QXcbAtom::ButtonHorizWheelLeft) && (!label7 || qatom(label7) == QXcbAtom::ButtonHorizWheelRight))
-                                scrollingDevice.legacyOrientations |= Qt::Horizontal;
-                        }
-                        break;
-                    }
-#endif
-                    default:
-                        break;
-                    }
-                }
-                bool isTablet = false;
-#ifndef QT_NO_TABLETEVENT
-                // If we have found the valuators which we expect a tablet to have, assume it's a tablet.
-                if (tabletData.valuatorInfo.contains(QXcbAtom::AbsX) &&
-                        tabletData.valuatorInfo.contains(QXcbAtom::AbsY) &&
-                        tabletData.valuatorInfo.contains(QXcbAtom::AbsPressure)) {
-                    tabletData.deviceId = devices[i].deviceid;
-                    tabletData.pointerType = QTabletEvent::Pen;
-                    if (QByteArray(devices[i].name).toLower().contains("eraser"))
-                        tabletData.pointerType = QTabletEvent::Eraser;
-                    m_tabletData.append(tabletData);
-                    isTablet = true;
-                    if (Q_UNLIKELY(debug_xinput_devices))
-                        qDebug() << "   it's a tablet with pointer type" << tabletData.pointerType;
+                if (valuatorAtom < QXcbAtom::NAtoms) {
+                    TabletData::ValuatorClassInfo info;
+                    info.minVal = vci->min;
+                    info.maxVal = vci->max;
+                    info.number = vci->number;
+                    tabletData.valuatorInfo[valuatorAtom] = info;
                 }
 #endif // QT_NO_TABLETEVENT
-
-#ifdef XCB_USE_XINPUT21
-                if (scrollingDevice.orientations || scrollingDevice.legacyOrientations) {
-                    scrollingDevice.deviceId = devices[i].deviceid;
-                    // Only use legacy wheel button events when we don't have real scroll valuators.
-                    scrollingDevice.legacyOrientations &= ~scrollingDevice.orientations;
-                    m_scrollingDevices.insert(scrollingDevice.deviceId, scrollingDevice);
-                    if (Q_UNLIKELY(debug_xinput_devices))
-                        qDebug() << "   it's a scrolling device";
-                }
-#endif
-
-                if (!isTablet) {
-                    XInput2DeviceData *dev = deviceForId(devices[i].deviceid);
-                    if (Q_UNLIKELY(debug_xinput_devices)) {
-                        if (dev && dev->qtTouchDevice->type() == QTouchDevice::TouchScreen)
-                            qDebug("   it's a touchscreen with type %d capabilities 0x%X max touch points %d",
-                                   dev->qtTouchDevice->type(), (unsigned int)dev->qtTouchDevice->capabilities(),
-                                   dev->qtTouchDevice->maximumTouchPoints());
-                        else if (dev && dev->qtTouchDevice->type() == QTouchDevice::TouchPad)
-                            qDebug("   it's a touchpad with type %d capabilities 0x%X max touch points %d size %f x %f",
-                                   dev->qtTouchDevice->type(), (unsigned int)dev->qtTouchDevice->capabilities(),
-                                   dev->qtTouchDevice->maximumTouchPoints(),
-                                   dev->size.width(), dev->size.height());
-                    }
-                }
+                if (valuatorAtom == QXcbAtom::RelHorizScroll || valuatorAtom == QXcbAtom::RelHorizWheel)
+                    scrollingDevice.lastScrollPosition.setX(vci->value);
+                else if (valuatorAtom == QXcbAtom::RelVertScroll || valuatorAtom == QXcbAtom::RelVertWheel)
+                    scrollingDevice.lastScrollPosition.setY(vci->value);
+                break;
             }
-            XIFreeDeviceInfo(devices);
+#ifdef XCB_USE_XINPUT21
+            case XIScrollClass: {
+                XIScrollClassInfo *sci = reinterpret_cast<XIScrollClassInfo *>(devices[i].classes[c]);
+                if (sci->scroll_type == XIScrollTypeVertical) {
+                    scrollingDevice.orientations |= Qt::Vertical;
+                    scrollingDevice.verticalIndex = sci->number;
+                    scrollingDevice.verticalIncrement = sci->increment;
+                }
+                else if (sci->scroll_type == XIScrollTypeHorizontal) {
+                    scrollingDevice.orientations |= Qt::Horizontal;
+                    scrollingDevice.horizontalIndex = sci->number;
+                    scrollingDevice.horizontalIncrement = sci->increment;
+                }
+                break;
+            }
+            case XIButtonClass: {
+                XIButtonClassInfo *bci = reinterpret_cast<XIButtonClassInfo *>(devices[i].classes[c]);
+                if (bci->num_buttons >= 5) {
+                    Atom label4 = bci->labels[3];
+                    Atom label5 = bci->labels[4];
+                    if ((!label4 || qatom(label4) == QXcbAtom::ButtonWheelUp) && (!label5 || qatom(label5) == QXcbAtom::ButtonWheelDown))
+                        scrollingDevice.legacyOrientations |= Qt::Vertical;
+                }
+                if (bci->num_buttons >= 7) {
+                    Atom label6 = bci->labels[5];
+                    Atom label7 = bci->labels[6];
+                    if ((!label6 || qatom(label6) == QXcbAtom::ButtonHorizWheelLeft) && (!label7 || qatom(label7) == QXcbAtom::ButtonHorizWheelRight))
+                        scrollingDevice.legacyOrientations |= Qt::Horizontal;
+                }
+                break;
+            }
+#endif
+            default:
+                break;
+            }
+        }
+        bool isTablet = false;
+#ifndef QT_NO_TABLETEVENT
+        // If we have found the valuators which we expect a tablet to have, assume it's a tablet.
+        if (tabletData.valuatorInfo.contains(QXcbAtom::AbsX) &&
+                tabletData.valuatorInfo.contains(QXcbAtom::AbsY) &&
+                tabletData.valuatorInfo.contains(QXcbAtom::AbsPressure)) {
+            tabletData.deviceId = devices[i].deviceid;
+            tabletData.pointerType = QTabletEvent::Pen;
+            if (QByteArray(devices[i].name).toLower().contains("eraser"))
+                tabletData.pointerType = QTabletEvent::Eraser;
+            m_tabletData.append(tabletData);
+            isTablet = true;
+            if (Q_UNLIKELY(debug_xinput_devices))
+                qDebug() << "   it's a tablet with pointer type" << tabletData.pointerType;
+        }
+#endif // QT_NO_TABLETEVENT
+
+#ifdef XCB_USE_XINPUT21
+        if (scrollingDevice.orientations || scrollingDevice.legacyOrientations) {
+            scrollingDevice.deviceId = devices[i].deviceid;
+            // Only use legacy wheel button events when we don't have real scroll valuators.
+            scrollingDevice.legacyOrientations &= ~scrollingDevice.orientations;
+            m_scrollingDevices.insert(scrollingDevice.deviceId, scrollingDevice);
+            if (Q_UNLIKELY(debug_xinput_devices))
+                qDebug() << "   it's a scrolling device";
+        }
+#endif
+
+        if (!isTablet) {
+            XInput2DeviceData *dev = deviceForId(devices[i].deviceid);
+            if (Q_UNLIKELY(debug_xinput_devices)) {
+                if (dev && dev->qtTouchDevice->type() == QTouchDevice::TouchScreen)
+                    qDebug("   it's a touchscreen with type %d capabilities 0x%X max touch points %d",
+                           dev->qtTouchDevice->type(), (unsigned int)dev->qtTouchDevice->capabilities(),
+                           dev->qtTouchDevice->maximumTouchPoints());
+                else if (dev && dev->qtTouchDevice->type() == QTouchDevice::TouchPad)
+                    qDebug("   it's a touchpad with type %d capabilities 0x%X max touch points %d size %f x %f",
+                           dev->qtTouchDevice->type(), (unsigned int)dev->qtTouchDevice->capabilities(),
+                           dev->qtTouchDevice->maximumTouchPoints(),
+                           dev->size.width(), dev->size.height());
+            }
         }
     }
+    XIFreeDeviceInfo(devices);
 }
 
 void QXcbConnection::finalizeXInput2()
@@ -303,6 +314,16 @@ void QXcbConnection::xi2Select(xcb_window_t window)
 #else
     Q_UNUSED(xiBitMask);
 #endif
+
+    {
+        // Listen for hotplug events
+        XIEventMask xiEventMask;
+        bitMask = XI_HierarchyChangedMask;
+        xiEventMask.deviceid = XIAllDevices;
+        xiEventMask.mask_len = sizeof(bitMask);
+        xiEventMask.mask = xiBitMask;
+        XISelectEvents(xDisplay, window, &xiEventMask, 1);
+    }
 }
 
 XInput2DeviceData *QXcbConnection::deviceForId(int id)
@@ -402,6 +423,10 @@ void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
     if (xi2PrepareXIGenericDeviceEvent(event, m_xiOpCode)) {
         xXIGenericDeviceEvent *xiEvent = reinterpret_cast<xXIGenericDeviceEvent *>(event);
 
+        if (xiEvent->evtype == XI_HierarchyChanged) {
+            xi2HandleHierachyEvent(xiEvent);
+            return;
+        }
 #ifndef QT_NO_TABLETEVENT
         for (int i = 0; i < m_tabletData.count(); ++i) {
             if (m_tabletData.at(i).deviceId == xiEvent->deviceid) {
@@ -558,6 +583,19 @@ void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
             }
         }
 #endif // XCB_USE_XINPUT22
+    }
+}
+
+void QXcbConnection::xi2HandleHierachyEvent(void *event)
+{
+    xXIHierarchyEvent *xiEvent = reinterpret_cast<xXIHierarchyEvent *>(event);
+    // We only care about hotplugged devices
+    if (!(xiEvent->flags & (XISlaveRemoved | XISlaveAdded)))
+        return;
+    xi2SetupDevices();
+    // Reselect events for all event-listening windows.
+    Q_FOREACH (xcb_window_t window, m_mapper.keys()) {
+        xi2Select(window);
     }
 }
 
