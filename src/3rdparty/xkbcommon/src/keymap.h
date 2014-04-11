@@ -146,7 +146,7 @@ enum xkb_action_flags {
     ACTION_ABSOLUTE_SWITCH = (1 << 5),
     ACTION_ABSOLUTE_X = (1 << 6),
     ACTION_ABSOLUTE_Y = (1 << 7),
-    ACTION_NO_ACCEL = (1 << 8),
+    ACTION_ACCEL = (1 << 8),
     ACTION_SAME_SCREEN = (1 << 9),
 };
 
@@ -223,7 +223,7 @@ struct xkb_pointer_button_action {
     enum xkb_action_type type;
     enum xkb_action_flags flags;
     uint8_t count;
-    int8_t button;
+    uint8_t button;
 };
 
 struct xkb_private_action {
@@ -262,10 +262,10 @@ struct xkb_key_type {
 struct xkb_sym_interpret {
     xkb_keysym_t sym;
     enum xkb_match_operation match;
-    bool level_one_only;
     xkb_mod_mask_t mods;
     xkb_mod_index_t virtual_mod;
     union xkb_action action;
+    bool level_one_only;
     bool repeat;
 };
 

@@ -329,6 +329,7 @@ static QTouchDevice *touchDevice = 0;
         if (m_window) {
             NSUInteger screenIndex = [[NSScreen screens] indexOfObject:self.window.screen];
             if (screenIndex != NSNotFound) {
+                m_platformWindow->updateExposedGeometry();
                 QCocoaScreen *cocoaScreen = QCocoaIntegration::instance()->screenAtIndex(screenIndex);
                 QWindowSystemInterface::handleWindowScreenChanged(m_window, cocoaScreen->screen());
             }
@@ -371,8 +372,9 @@ static QTouchDevice *touchDevice = 0;
 {
     m_backingStore = backingStore;
     m_backingStoreOffset = offset * m_backingStore->getBackingStoreDevicePixelRatio();
-    QRect br = region.boundingRect();
-    [self setNeedsDisplayInRect:NSMakeRect(br.x(), br.y(), br.width(), br.height())];
+    foreach (QRect rect, region.rects()) {
+        [self setNeedsDisplayInRect:NSMakeRect(rect.x(), rect.y(), rect.width(), rect.height())];
+    }
 }
 
 - (BOOL) hasMask
@@ -1647,6 +1649,21 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     }
 }
 
+static QWindow *findEventTargetWindow(QWindow *candidate)
+{
+    while (candidate) {
+        if (!(candidate->flags() & Qt::WindowTransparentForInput))
+            return candidate;
+        candidate = candidate->parent();
+    }
+    return candidate;
+}
+
+static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint point)
+{
+    return target->mapFromGlobal(source->mapToGlobal(point));
+}
+
 - (NSDragOperation) draggingSourceOperationMaskForLocal:(BOOL)isLocal
 {
     Q_UNUSED(isLocal);
@@ -1676,16 +1693,18 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     QPoint qt_windowPoint(windowPoint.x, windowPoint.y);
     Qt::DropActions qtAllowed = qt_mac_mapNSDragOperations([sender draggingSourceOperationMask]);
 
+    QWindow *target = findEventTargetWindow(m_window);
+
     // update these so selecting move/copy/link works
     QGuiApplicationPrivate::modifier_buttons = [QNSView convertKeyModifiers: [[NSApp currentEvent] modifierFlags]];
 
     QPlatformDragQtResponse response(false, Qt::IgnoreAction, QRect());
     if ([sender draggingSource] != nil) {
         QCocoaDrag* nativeDrag = QCocoaIntegration::instance()->drag();
-        response = QWindowSystemInterface::handleDrag(m_window, nativeDrag->platformDropData(), qt_windowPoint, qtAllowed);
+        response = QWindowSystemInterface::handleDrag(target, nativeDrag->platformDropData(), mapWindowCoordinates(m_window, target, qt_windowPoint), qtAllowed);
     } else {
         QCocoaDropData mimeData([sender draggingPasteboard]);
-        response = QWindowSystemInterface::handleDrag(m_window, &mimeData, qt_windowPoint, qtAllowed);
+        response = QWindowSystemInterface::handleDrag(target, &mimeData, mapWindowCoordinates(m_window, target, qt_windowPoint), qtAllowed);
     }
 
     return qt_mac_mapDropAction(response.acceptedAction());
@@ -1693,16 +1712,20 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 
 - (void)draggingExited:(id <NSDraggingInfo>)sender
 {
+    QWindow *target = findEventTargetWindow(m_window);
+
     NSPoint windowPoint = [self convertPoint: [sender draggingLocation] fromView: nil];
     QPoint qt_windowPoint(windowPoint.x, windowPoint.y);
 
     // Send 0 mime data to indicate drag exit
-    QWindowSystemInterface::handleDrag(m_window, 0 ,qt_windowPoint, Qt::IgnoreAction);
+    QWindowSystemInterface::handleDrag(target, 0, mapWindowCoordinates(m_window, target, qt_windowPoint), Qt::IgnoreAction);
 }
 
 // called on drop, send the drop to Qt and return if it was accepted.
 - (BOOL)performDragOperation:(id <NSDraggingInfo>)sender
 {
+    QWindow *target = findEventTargetWindow(m_window);
+
     NSPoint windowPoint = [self convertPoint: [sender draggingLocation] fromView: nil];
     QPoint qt_windowPoint(windowPoint.x, windowPoint.y);
     Qt::DropActions qtAllowed = qt_mac_mapNSDragOperations([sender draggingSourceOperationMask]);
@@ -1710,10 +1733,10 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     QPlatformDropQtResponse response(false, Qt::IgnoreAction);
     if ([sender draggingSource] != nil) {
         QCocoaDrag* nativeDrag = QCocoaIntegration::instance()->drag();
-        response = QWindowSystemInterface::handleDrop(m_window, nativeDrag->platformDropData(), qt_windowPoint, qtAllowed);
+        response = QWindowSystemInterface::handleDrop(target, nativeDrag->platformDropData(), mapWindowCoordinates(m_window, target, qt_windowPoint), qtAllowed);
     } else {
         QCocoaDropData mimeData([sender draggingPasteboard]);
-        response = QWindowSystemInterface::handleDrop(m_window, &mimeData, qt_windowPoint, qtAllowed);
+        response = QWindowSystemInterface::handleDrop(target, &mimeData, mapWindowCoordinates(m_window, target, qt_windowPoint), qtAllowed);
     }
     if (response.isAccepted()) {
         QCocoaDrag* nativeDrag = QCocoaIntegration::instance()->drag();
@@ -1726,6 +1749,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 {
     Q_UNUSED(img);
     Q_UNUSED(operation);
+    QWindow *target = findEventTargetWindow(m_window);
 
 // keep our state, and QGuiApplication state (buttons member) in-sync,
 // or future mouse events will be processed incorrectly
@@ -1738,7 +1762,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     NSPoint screenPoint = [window convertBaseToScreen :point];
     QPoint qtScreenPoint = QPoint(screenPoint.x, qt_mac_flipYCoordinate(screenPoint.y));
 
-    QWindowSystemInterface::handleMouseEvent(m_window, qtWindowPoint, qtScreenPoint, m_buttons);
+    QWindowSystemInterface::handleMouseEvent(target, mapWindowCoordinates(m_window, target, qtWindowPoint), qtScreenPoint, m_buttons);
 }
 
 @end

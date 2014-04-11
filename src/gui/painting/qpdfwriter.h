@@ -74,13 +74,16 @@ public:
     void setResolution(int resolution);
     int resolution() const;
 
+#ifdef Q_QDOC
     bool setPageLayout(const QPageLayout &pageLayout);
     bool setPageSize(const QPageSize &pageSize);
     bool setPageOrientation(QPageLayout::Orientation orientation);
     bool setPageMargins(const QMarginsF &margins);
     bool setPageMargins(const QMarginsF &margins, QPageLayout::Unit units);
-
     QPageLayout pageLayout() const;
+#else
+    using QPagedPaintDevice::setPageSize;
+#endif
 
     void setPageSize(PageSize size);
     void setPageSizeMM(const QSizeF &size);

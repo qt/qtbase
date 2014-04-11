@@ -2430,11 +2430,6 @@ void PaintCommands::command_surface_end(QRegExp)
     if (m_type == OpenGLType || m_type == OpenGLBufferType) {
 #ifndef QT_NO_OPENGL
         QImage new_image = m_surface_glbuffer->toImage().convertToFormat(QImage::Format_ARGB32_Premultiplied);
-        m_default_glcontext->makeCurrent(m_default_glcontext->surface());
-        m_painter->drawImage(m_surface_rect, new_image);
-        // Flush the pipeline:
-        m_painter->beginNativePainting();
-        m_painter->endNativePainting();
 
         delete m_surface_glpaintdevice;
         m_surface_glpaintdevice = 0;
@@ -2442,6 +2437,12 @@ void PaintCommands::command_surface_end(QRegExp)
         m_surface_glbuffer = 0;
         delete m_surface_glcontext;
         m_surface_glcontext = 0;
+
+        m_default_glcontext->makeCurrent(m_default_glcontext->surface());
+        m_painter->drawImage(m_surface_rect, new_image);
+        // Flush the pipeline:
+        m_painter->beginNativePainting();
+        m_painter->endNativePainting();
 #endif
 #ifdef Q_WS_X11
     } else if (m_type == WidgetType) {

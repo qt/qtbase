@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -82,6 +82,8 @@ private slots:
     void singleWidgetTest();
     void lineEditTest();
     void hierarchyTest();
+    void notificationsTest();
+
 private:
     AccessibleTestWindow *m_window;
 };
@@ -123,6 +125,7 @@ void tst_QAccessibilityMac::lineEditTest()
     m_window->addWidget(lineEdit);
     QVERIFY(QTest::qWaitForWindowExposed(m_window));
     QCoreApplication::processEvents();
+
     QVERIFY(testLineEdit());
 }
 
@@ -146,6 +149,14 @@ void tst_QAccessibilityMac::hierarchyTest()
     QVERIFY(QTest::qWaitForWindowExposed(m_window));
     QCoreApplication::processEvents();
     QVERIFY(testHierarchy(w));
+}
+
+void tst_QAccessibilityMac::notificationsTest()
+{
+    if (!macNativeAccessibilityEnabled())
+        return;
+
+    QVERIFY(notifications(m_window));
 }
 
 QTEST_MAIN(tst_QAccessibilityMac)

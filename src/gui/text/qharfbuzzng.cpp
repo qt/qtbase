@@ -605,8 +605,6 @@ _hb_qt_reference_table(hb_face_t * /*face*/, hb_tag_t tag, void *user_data)
 static inline hb_face_t *
 _hb_qt_face_create(QFontEngine *fe)
 {
-    Q_ASSERT(fe);
-
     QFontEngine::FaceData *data = (QFontEngine::FaceData *)malloc(sizeof(QFontEngine::FaceData));
     Q_CHECK_PTR(data);
     data->user_data = fe->faceData.user_data;
@@ -633,6 +631,8 @@ _hb_qt_face_release(void *user_data)
 
 hb_face_t *hb_qt_face_get_for_engine(QFontEngine *fe)
 {
+    Q_ASSERT(fe && fe->type() != QFontEngine::Multi);
+
     if (Q_UNLIKELY(!fe->face_)) {
         fe->face_ = _hb_qt_face_create(fe);
         if (Q_UNLIKELY(!fe->face_))
@@ -647,8 +647,6 @@ hb_face_t *hb_qt_face_get_for_engine(QFontEngine *fe)
 static inline hb_font_t *
 _hb_qt_font_create(QFontEngine *fe)
 {
-    Q_ASSERT(fe);
-
     hb_face_t *face = hb_qt_face_get_for_engine(fe);
     if (Q_UNLIKELY(!face))
         return NULL;
@@ -685,6 +683,8 @@ _hb_qt_font_release(void *user_data)
 
 hb_font_t *hb_qt_font_get_for_engine(QFontEngine *fe)
 {
+    Q_ASSERT(fe && fe->type() != QFontEngine::Multi);
+
     if (Q_UNLIKELY(!fe->font_)) {
         fe->font_ = _hb_qt_font_create(fe);
         if (Q_UNLIKELY(!fe->font_))

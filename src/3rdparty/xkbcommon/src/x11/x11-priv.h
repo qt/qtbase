@@ -26,8 +26,8 @@
 
 #include <xcb/xkb.h>
 
-#include "xkbcommon/xkbcommon-x11.h"
 #include "keymap.h"
+#include "xkbcommon/xkbcommon-x11.h"
 
 /* Get a strdup'd name of an X atom. */
 bool

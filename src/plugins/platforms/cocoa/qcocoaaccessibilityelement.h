@@ -52,12 +52,11 @@
 
 @interface QCocoaAccessibleElement : NSObject {
     NSString *role;
-    NSObject *parent;
     QAccessible::Id axid;
 }
 
-- (id)initWithId:(QAccessible::Id)anId parent:(id)aParent;
-+ (QCocoaAccessibleElement *)createElementWithId:(QAccessible::Id)anId parent:(id)aParent;
+- (id)initWithId:(QAccessible::Id)anId;
++ (QCocoaAccessibleElement *)elementWithId:(QAccessible::Id)anId;
 
 @end
 

@@ -111,6 +111,7 @@ public:
 #endif
 
     void _q_emitCursorPosChanged(const QTextCursor &someCursor);
+    void _q_contentsChanged(int from, int charsRemoved, int charsAdded);
 
     void setBlinkingCursorEnabled(bool enable);
 

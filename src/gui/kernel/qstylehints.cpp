@@ -163,7 +163,7 @@ void QStyleHints::setStartDragDistance(int startDragDistance)
     and the current position (e.g. in the mouse move event) is \c currentPos,
     you can find out if a drag should be started with code like this:
 
-    \snippet code/src_gui_kernel_qguiapplication.cpp 6
+    \snippet code/src_gui_kernel_qapplication.cpp 6
 
     \sa startDragTime(), QPoint::manhattanLength(), {Drag and Drop}
 */

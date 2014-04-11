@@ -43,6 +43,7 @@
 
 #ifndef QT_NO_PDF
 
+#include "qpagedpaintdevice_p.h"
 #include <QtCore/private/qobject_p.h>
 #include "private/qpdf_p.h"
 #include <QtCore/qfile.h>
@@ -68,6 +69,64 @@ public:
     QFile *output;
 };
 
+class QPdfPagedPaintDevicePrivate : public QPagedPaintDevicePrivate
+{
+public:
+    QPdfPagedPaintDevicePrivate(QPdfWriterPrivate *d)
+        : QPagedPaintDevicePrivate(), pd(d)
+    {}
+
+    virtual ~QPdfPagedPaintDevicePrivate()
+    {}
+
+    bool setPageLayout(const QPageLayout &newPageLayout) Q_DECL_OVERRIDE
+    {
+        // Try to set the paint engine page layout
+        pd->engine->setPageLayout(newPageLayout);
+        // Set QPagedPaintDevice layout to match the current paint engine layout
+        m_pageLayout = pd->engine->pageLayout();
+        return m_pageLayout.isEquivalentTo(newPageLayout);
+    }
+
+    bool setPageSize(const QPageSize &pageSize) Q_DECL_OVERRIDE
+    {
+        // Try to set the paint engine page size
+        pd->engine->setPageSize(pageSize);
+        // Set QPagedPaintDevice layout to match the current paint engine layout
+        m_pageLayout = pd->engine->pageLayout();
+        return m_pageLayout.pageSize().isEquivalentTo(pageSize);
+    }
+
+    bool setPageOrientation(QPageLayout::Orientation orientation) Q_DECL_OVERRIDE
+    {
+        // Set the print engine value
+        pd->engine->setPageOrientation(orientation);
+        // Set QPagedPaintDevice layout to match the current paint engine layout
+        m_pageLayout = pd->engine->pageLayout();
+        return m_pageLayout.orientation() == orientation;
+    }
+
+    bool setPageMargins(const QMarginsF &margins) Q_DECL_OVERRIDE
+    {
+        return setPageMargins(margins, pageLayout().units());
+    }
+
+    bool setPageMargins(const QMarginsF &margins, QPageLayout::Unit units) Q_DECL_OVERRIDE
+    {
+        // Try to set engine margins
+        pd->engine->setPageMargins(margins, units);
+        // Set QPagedPaintDevice layout to match the current paint engine layout
+        m_pageLayout = pd->engine->pageLayout();
+        return m_pageLayout.margins() == margins && m_pageLayout.units() == units;
+    }
+
+    QPageLayout pageLayout() const Q_DECL_OVERRIDE
+    {
+        return pd->engine->pageLayout();
+    }
+
+    QPdfWriterPrivate *pd;
+};
 
 /*! \class QPdfWriter
     \inmodule QtGui
@@ -85,7 +144,8 @@ public:
   Constructs a PDF writer that will write the pdf to \a filename.
   */
 QPdfWriter::QPdfWriter(const QString &filename)
-    : QObject(*new QPdfWriterPrivate)
+    : QObject(*new QPdfWriterPrivate),
+      QPagedPaintDevice(new QPdfPagedPaintDevicePrivate(d_func()))
 {
     Q_D(QPdfWriter);
 
@@ -195,7 +255,10 @@ int QPdfWriter::resolution() const
     return d->engine->resolution();
 }
 
+// Defined in QPagedPaintDevice but non-virtual, add QPdfWriter specific doc here
+#ifdef Q_QDOC
 /*!
+    \fn bool QPdfWriter::setPageLayout(const QPageLayout &newPageLayout)
     \since 5.3
 
     Sets the PDF page layout to \a newPageLayout.
@@ -210,17 +273,8 @@ int QPdfWriter::resolution() const
     \sa pageLayout()
 */
 
-bool QPdfWriter::setPageLayout(const QPageLayout &newPageLayout)
-{
-    Q_D(const QPdfWriter);
-    // Try to set the paint engine page layout
-    d->engine->setPageLayout(newPageLayout);
-    // Set QPagedPaintDevice layout to match the current paint engine layout
-    devicePageLayout() = d->engine->pageLayout();
-    return pageLayout().isEquivalentTo(newPageLayout);
-}
-
 /*!
+    \fn bool QPdfWriter::setPageSize(const QPageSize &pageSize)
     \since 5.3
 
     Sets the PDF page size to \a pageSize.
@@ -237,17 +291,8 @@ bool QPdfWriter::setPageLayout(const QPageLayout &newPageLayout)
     \sa pageLayout()
 */
 
-bool QPdfWriter::setPageSize(const QPageSize &pageSize)
-{
-    Q_D(const QPdfWriter);
-    // Try to set the paint engine page size
-    d->engine->setPageSize(pageSize);
-    // Set QPagedPaintDevice layout to match the current paint engine layout
-    devicePageLayout() = d->engine->pageLayout();
-    return pageLayout().pageSize().isEquivalentTo(pageSize);
-}
-
 /*!
+    \fn bool QPdfWriter::setPageOrientation(QPageLayout::Orientation orientation)
     \since 5.3
 
     Sets the PDF page \a orientation.
@@ -267,17 +312,8 @@ bool QPdfWriter::setPageSize(const QPageSize &pageSize)
     \sa pageLayout()
 */
 
-bool QPdfWriter::setPageOrientation(QPageLayout::Orientation orientation)
-{
-    Q_D(const QPdfWriter);
-    // Set the print engine value
-    d->engine->setPageOrientation(orientation);
-    // Set QPagedPaintDevice layout to match the current paint engine layout
-    devicePageLayout() = d->engine->pageLayout();
-    return pageLayout().orientation() == orientation;
-}
-
 /*!
+    \fn bool QPdfWriter::setPageMargins(const QMarginsF &margins)
     \since 5.3
 
     Set the PDF page \a margins in the current page layout units.
@@ -294,17 +330,8 @@ bool QPdfWriter::setPageOrientation(QPageLayout::Orientation orientation)
     \sa pageLayout()
 */
 
-bool QPdfWriter::setPageMargins(const QMarginsF &margins)
-{
-    Q_D(const QPdfWriter);
-    // Try to set engine margins
-    d->engine->setPageMargins(margins, pageLayout().units());
-    // Set QPagedPaintDevice layout to match the current paint engine layout
-    devicePageLayout() = d->engine->pageLayout();
-    return pageLayout().margins() == margins;
-}
-
 /*!
+    \fn bool QPdfWriter::setPageMargins(const QMarginsF &margins, QPageLayout::Unit units)
     \since 5.3
 
     Set the PDF page \a margins defined in the given \a units.
@@ -321,17 +348,10 @@ bool QPdfWriter::setPageMargins(const QMarginsF &margins)
     \sa pageLayout()
 */
 
-bool QPdfWriter::setPageMargins(const QMarginsF &margins, QPageLayout::Unit units)
-{
-    Q_D(const QPdfWriter);
-    // Try to set engine margins
-    d->engine->setPageMargins(margins, units);
-    // Set QPagedPaintDevice layout to match the current paint engine layout
-    devicePageLayout() = d->engine->pageLayout();
-    return pageLayout().margins() == margins && pageLayout().units() == units;
-}
-
 /*!
+    \fn QPageLayout QPdfWriter::pageLayout() const
+    \since 5.3
+
     Returns the current page layout.  Use this method to access the current
     QPageSize, QPageLayout::Orientation, QMarginsF, fullRect() and paintRect().
 
@@ -340,12 +360,7 @@ bool QPdfWriter::setPageMargins(const QMarginsF &margins, QPageLayout::Unit unit
 
     \sa setPageLayout(), setPageSize(), setPageOrientation(), setPageMargins()
 */
-
-QPageLayout QPdfWriter::pageLayout() const
-{
-    Q_D(const QPdfWriter);
-    return d->engine->pageLayout();
-}
+#endif
 
 /*!
     \reimp

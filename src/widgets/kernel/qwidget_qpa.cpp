@@ -110,6 +110,11 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
         win = topData()->window;
     }
 
+    foreach (const QByteArray &propertyName, q->dynamicPropertyNames()) {
+        if (!qstrncmp(propertyName, "_q_platform_", 12))
+            win->setProperty(propertyName, q->property(propertyName));
+    }
+
     win->setFlags(data.window_flags);
     fixPosIncludesFrame();
     if (q->testAttribute(Qt::WA_Moved)
@@ -834,13 +839,16 @@ int QWidget::metric(PaintDeviceMetric m) const
 {
     Q_D(const QWidget);
 
+    QWindow *topLevelWindow = 0;
     QScreen *screen = 0;
     if (QWidget *topLevel = window())
-        if (QWindow *topLevelWindow = topLevel->windowHandle()) {
-            QPlatformScreen *platformScreen = QPlatformScreen::platformScreenForWindow(topLevelWindow);
-            if (platformScreen)
-                screen = platformScreen->screen();
-        }
+        topLevelWindow = topLevel->windowHandle();
+
+    if (topLevelWindow) {
+        QPlatformScreen *platformScreen = QPlatformScreen::platformScreenForWindow(topLevelWindow);
+        if (platformScreen)
+            screen = platformScreen->screen();
+    }
     if (!screen && QGuiApplication::primaryScreen())
         screen = QGuiApplication::primaryScreen();
 
@@ -877,7 +885,7 @@ int QWidget::metric(PaintDeviceMetric m) const
     } else if (m == PdmPhysicalDpiY) {
         return qRound(screen->physicalDotsPerInchY());
     } else if (m == PdmDevicePixelRatio) {
-        return screen->devicePixelRatio();
+        return topLevelWindow ? topLevelWindow->devicePixelRatio() : qApp->devicePixelRatio();
     } else {
         val = QPaintDevice::metric(m);// XXX
     }

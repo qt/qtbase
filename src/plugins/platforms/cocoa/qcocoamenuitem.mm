@@ -227,7 +227,8 @@ NSMenuItem *QCocoaMenuItem::sync()
             if (depth == 3 || !menubar)
                 break; // Menu item too deep in the hierarchy, or not connected to any menubar
 
-            switch (detectMenuRole(m_text)) {
+            m_detectedRole = detectMenuRole(m_text);
+            switch (m_detectedRole) {
             case QPlatformMenuItem::AboutRole:
                 if (m_text.indexOf(QRegExp(QString::fromLatin1("qt$"), Qt::CaseInsensitive)) == -1)
                     mergeItem = [loader aboutMenuItem];
@@ -241,6 +242,8 @@ NSMenuItem *QCocoaMenuItem::sync()
                 mergeItem = [loader quitMenuItem];
                 break;
             default:
+                if (m_detectedRole >= CutRole && m_detectedRole < RoleCount && menubar)
+                    mergeItem = menubar->itemForRole(m_detectedRole);
                 if (!m_text.isEmpty())
                     m_textSynced = true;
                 break;
@@ -249,7 +252,7 @@ NSMenuItem *QCocoaMenuItem::sync()
         }
 
         default:
-            qWarning() << Q_FUNC_INFO << "unsupported role" << (int) m_role;
+            qWarning() << Q_FUNC_INFO << "menu item" << m_text << "has unsupported role" << (int)m_role;
         }
 
         if (mergeItem) {
@@ -373,4 +376,12 @@ void QCocoaMenuItem::syncModalState(bool modal)
         [m_native setEnabled:NO];
     else
         [m_native setEnabled:m_enabled];
+}
+
+QPlatformMenuItem::MenuRole QCocoaMenuItem::effectiveRole() const
+{
+    if (m_role > TextHeuristicRole)
+        return m_role;
+    else
+        return m_detectedRole;
 }

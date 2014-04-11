@@ -3092,9 +3092,14 @@ void tst_QTreeWidget::task253109_itemHeight()
 void tst_QTreeWidget::task206367_duplication()
 {
     QWidget topLevel;
+    // Explicitly set the font size because it is dpi dependent on some platforms
+    QFont font;
+    font.setPixelSize(40);
+    topLevel.setFont(font);
     QTreeWidget treeWidget(&topLevel);
     topLevel.show();
     treeWidget.resize(200, 200);
+    treeWidget.setHeaderHidden(true);
 
     treeWidget.setSortingEnabled(true);
     QTreeWidgetItem* rootItem = new QTreeWidgetItem( &treeWidget, QStringList("root") );
@@ -3105,10 +3110,9 @@ void tst_QTreeWidget::task206367_duplication()
         itemFile->setExpanded(true);
     }
     rootItem->setExpanded(true);
-    QTest::qWait(2000);
 
     //there should be enough room for 2x2 items.  If there is a scrollbar, it means the items are duplicated
-    QVERIFY(!treeWidget.verticalScrollBar()->isVisible());
+    QTRY_VERIFY(!treeWidget.verticalScrollBar()->isVisible());
 
 }
 

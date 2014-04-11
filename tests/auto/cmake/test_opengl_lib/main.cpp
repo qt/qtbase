@@ -40,9 +40,7 @@
 ****************************************************************************/
 
 
-#if GL_IMPLEMENTATION_GLES1
-#include <GLES/gl.h>
-#elif GL_IMPLEMENTATION_GLES2
+#if GL_IMPLEMENTATION_GLES2
 #include <GLES2/gl2.h>
 #elif GL_IMPLEMENTATION_GL
 

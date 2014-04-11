@@ -142,13 +142,13 @@ contains(QT_CONFIG, concurrent):SUBDIRS += src_concurrent
         src_gui.depends += src_angle
     }
     SUBDIRS += src_gui src_platformsupport
-    contains(QT_CONFIG, opengl(es1|es2)?):SUBDIRS += src_openglextensions
+    contains(QT_CONFIG, opengl(es2)?):SUBDIRS += src_openglextensions
     src_plugins.depends += src_gui src_platformsupport
     !contains(QT_CONFIG, no-widgets) {
         SUBDIRS += src_tools_uic src_widgets
         TOOLS += src_tools_uic
         src_plugins.depends += src_widgets
-        contains(QT_CONFIG, opengl(es1|es2)?):!contains(QT_CONFIG, dynamicgl) {
+        contains(QT_CONFIG, opengl(es2)?):!contains(QT_CONFIG, dynamicgl) {
             SUBDIRS += src_opengl
             src_plugins.depends += src_opengl
         }

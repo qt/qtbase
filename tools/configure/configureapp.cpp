@@ -190,6 +190,8 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "POSIX_IPC" ]       = "no";
     dictionary[ "QT_GLIB" ]         = "no";
     dictionary[ "QT_ICONV" ]        = "auto";
+    dictionary[ "QT_EVDEV" ]        = "auto";
+    dictionary[ "QT_MTDEV" ]        = "auto";
     dictionary[ "QT_INOTIFY" ]      = "auto";
     dictionary[ "QT_EVENTFD" ]      = "auto";
     dictionary[ "QT_CUPS" ]         = "auto";
@@ -481,7 +483,18 @@ void Configure::parseCmdLine()
         else if (configCmdLine.at(i) == "-force-asserts") {
             dictionary[ "FORCE_ASSERTS" ] = "yes";
         }
-
+        else if (configCmdLine.at(i) == "-target") {
+            ++i;
+            if (i == argCount)
+                break;
+            const QString option = configCmdLine.at(i);
+            if (option != "xp") {
+                cout << "ERROR: invalid argument for -target option" << endl;
+                dictionary["DONE"] = "error";
+                return;
+            }
+            dictionary["TARGET_OS"] = option;
+        }
         else if (configCmdLine.at(i) == "-platform") {
             ++i;
             if (i == argCount)
@@ -664,9 +677,6 @@ void Configure::parseCmdLine()
         else if (configCmdLine.at(i) == "-no-opengl") {
             dictionary[ "OPENGL" ]    = "no";
             dictionary[ "OPENGL_ES_2" ]     = "no";
-        } else if (configCmdLine.at(i) == "-opengl-es-cm") {
-            dictionary[ "OPENGL" ]          = "yes";
-            dictionary[ "OPENGL_ES_CM" ]    = "yes";
         } else if (configCmdLine.at(i) == "-opengl-es-2") {
             dictionary[ "OPENGL" ]          = "yes";
             dictionary[ "OPENGL_ES_2" ]     = "yes";
@@ -677,9 +687,7 @@ void Configure::parseCmdLine()
                 break;
 
             dictionary[ "OPENGL_ES_2" ]         = "no";
-            if (configCmdLine.at(i) == "es1") {
-                dictionary[ "OPENGL_ES_CM" ]    = "yes";
-            } else if ( configCmdLine.at(i) == "es2" ) {
+            if ( configCmdLine.at(i) == "es2" ) {
                 dictionary[ "OPENGL_ES_2" ]     = "yes";
             } else if ( configCmdLine.at(i) == "desktop" ) {
                 // OPENGL=yes suffices
@@ -1255,6 +1263,18 @@ void Configure::parseCmdLine()
             dictionary["QT_ICONV"] = "gnu";
         }
 
+        else if (configCmdLine.at(i) == "-no-evdev") {
+            dictionary[ "QT_EVDEV" ] = "no";
+        } else if (configCmdLine.at(i) == "-evdev") {
+            dictionary[ "QT_EVDEV" ] = "yes";
+        }
+
+        else if (configCmdLine.at(i) == "-no-mtdev") {
+            dictionary[ "QT_MTDEV" ] = "no";
+        } else if (configCmdLine.at(i) == "-mtdev") {
+            dictionary[ "QT_MTDEV" ] = "yes";
+        }
+
         else if (configCmdLine.at(i) == "-inotify") {
             dictionary["QT_INOTIFY"] = "yes";
         } else if (configCmdLine.at(i) == "-no-inotify") {
@@ -1668,6 +1688,8 @@ void Configure::applySpecSpecifics()
         dictionary[ "QT_CUPS" ]             = "no";
         dictionary[ "QT_GLIB" ]             = "no";
         dictionary[ "QT_ICONV" ]            = "no";
+        dictionary[ "QT_EVDEV" ]            = "no";
+        dictionary[ "QT_MTDEV" ]            = "no";
         dictionary[ "FONT_CONFIG" ]         = "auto";
 
         dictionary["DECORATIONS"]           = "default windows styled";
@@ -1800,7 +1822,6 @@ bool Configure::displayHelp()
                                                         "Available values for <api>:");
         desc("", "no", "",                              "  desktop - Enable support for Desktop OpenGL", ' ');
         desc("", "no", "",                              "  dynamic - Enable support for dynamically loaded OpenGL (either desktop or ES)", ' ');
-        desc("OPENGL_ES_CM", "no", "",                  "  es1 - Enable support for OpenGL ES Common Profile", ' ');
         desc("OPENGL_ES_2",  "yes", "",                 "  es2 - Enable support for OpenGL ES 2.0\n", ' ');
 
         desc("OPENVG", "no","-no-openvg",               "Disables OpenVG functionality.");
@@ -1809,6 +1830,10 @@ bool Configure::displayHelp()
         desc(                   "-platform <spec>",     "The operating system and compiler you are building on.\n(default %QMAKESPEC%)\n");
         desc(                   "-xplatform <spec>",    "The operating system and compiler you are cross compiling to.\n");
         desc(                   "",                     "See the README file for a list of supported operating systems and compilers.\n", false, ' ');
+
+        desc("TARGET_OS", "*", "-target",               "Set target OS version. Currently the only valid value is 'xp' for targeting Windows XP.\n"
+                                                        "MSVC >= 2012 targets Windows Vista by default.\n");
+
         desc(                   "-sysroot <dir>",       "Sets <dir> as the target compiler's and qmake's sysroot and also sets pkg-config paths.");
         desc(                   "-no-gcc-sysroot",      "When using -sysroot, it disables the passing of --sysroot to the compiler.\n");
 
@@ -1825,6 +1850,12 @@ bool Configure::displayHelp()
         desc("QT_ICONV",    "yes",     "-iconv",        "Enable support for iconv(3).");
         desc("QT_ICONV",    "yes",     "-sun-iconv",    "Enable support for iconv(3) using sun-iconv.");
         desc("QT_ICONV",    "yes",     "-gnu-iconv",    "Enable support for iconv(3) using gnu-libiconv.\n");
+
+        desc("QT_EVDEV",    "no",      "-no-evdev",     "Do not enable support for evdev.");
+        desc("QT_EVDEV",    "yes",     "-evdev",        "Enable support for evdev.");
+
+        desc("QT_MTDEV",    "no",      "-no-mtdev",     "Do not enable support for mtdev.");
+        desc("QT_MTDEV",    "yes",     "-mtdev",        "Enable support for mtdev.");
 
         desc("QT_INOTIFY",  "yes",     "-inotify",      "Explicitly enable Qt inotify(7) support.");
         desc("QT_INOTIFY",  "no",      "-no-inotify",   "Explicitly disable Qt inotify(7) support.\n");
@@ -2187,8 +2218,6 @@ bool Configure::checkAvailability(const QString &part)
         available = findFile("ibase.h") && (findFile("gds32_ms.lib") || findFile("gds32.lib"));
     else if (part == "IWMMXT")
         available = (dictionary.value("XQMAKESPEC").startsWith("wince"));
-    else if (part == "OPENGL_ES_CM")
-        available = (dictionary.value("XQMAKESPEC").startsWith("wince"));
     else if (part == "OPENGL_ES_2")
         available = (dictionary.value("XQMAKESPEC").startsWith("wince"));
     else if (part == "SSE2")
@@ -2237,6 +2266,10 @@ bool Configure::checkAvailability(const QString &part)
         available = tryCompileProject("qpa/direct2d");
     } else if (part == "ICONV") {
         available = tryCompileProject("unix/iconv") || tryCompileProject("unix/gnu-libiconv");
+    } else if (part == "EVDEV") {
+        available = tryCompileProject("unix/evdev");
+    } else if (part == "MTDEV") {
+        available = tryCompileProject("unix/mtdev");
     } else if (part == "INOTIFY") {
         available = tryCompileProject("unix/inotify");
     } else if (part == "QT_EVENTFD") {
@@ -2387,6 +2420,14 @@ void Configure::autoDetection()
     if (dictionary["QT_ICONV"] == "auto")
         dictionary["QT_ICONV"] = checkAvailability("ICONV") ? "yes" : "no";
 
+    // Detection of evdev support
+    if (dictionary["QT_EVDEV"] == "auto")
+        dictionary["QT_EVDEV"] = checkAvailability("EVDEV") ? "yes" : "no";
+
+    // Detection of mtdev support
+    if (dictionary["QT_MTDEV"] == "auto")
+        dictionary["QT_MTDEV"] = checkAvailability("MTDEV") ? "yes" : "no";
+
     // Detection of inotify
     if (dictionary["QT_INOTIFY"] == "auto")
         dictionary["QT_INOTIFY"] = checkAvailability("INOTIFY") ? "yes" : "no";
@@ -2480,6 +2521,12 @@ bool Configure::verifyConfiguration()
              << "files such as headers and libraries." << endl;
         prompt = true;
     }
+#if WINVER > 0x0601
+    if (dictionary["TARGET_OS"] == "xp") {
+        cout << "WARNING: Cannot use Windows Kit 8 to build Qt for Windows XP.\n"
+                "WARNING: Windows SDK v7.1A is recommended.\n";
+    }
+#endif
 
     if (dictionary["DIRECT2D"] == "yes" && !checkAvailability("DIRECT2D")) {
         cout << "WARNING: To be able to build the Direct2D platform plugin you will" << endl
@@ -2746,11 +2793,6 @@ void Configure::generateOutputVars()
     if (dictionary[ "OPENGL" ] == "yes")
         qtConfig += "opengl";
 
-    if (dictionary["OPENGL_ES_CM"] == "yes") {
-        qtConfig += "opengles1";
-        qtConfig += "egl";
-    }
-
     if (dictionary["OPENGL_ES_2"] == "yes") {
         qtConfig += "opengles2";
         qtConfig += "egl";
@@ -2804,6 +2846,12 @@ void Configure::generateOutputVars()
         qtConfig += "sun-libiconv";
     else if (dictionary["QT_ICONV"] == "gnu")
         qtConfig += "gnu-libiconv";
+
+    if (dictionary["QT_EVDEV"] == "yes")
+        qtConfig += "evdev";
+
+    if (dictionary["QT_MTDEV"] == "yes")
+        qtConfig += "mtdev";
 
     if (dictionary["QT_INOTIFY"] == "yes")
         qtConfig += "inotify";
@@ -3311,6 +3359,10 @@ void Configure::generateQConfigPri()
                          << "}" << endl;
         }
 
+        const QString targetOS = dictionary.value("TARGET_OS");
+        if (!targetOS.isEmpty())
+            configStream << "QMAKE_TARGET_OS = " << targetOS << endl;
+
         if (!dictionary["QMAKE_RPATHDIR"].isEmpty())
             configStream << "QMAKE_RPATHDIR += " << formatPath(dictionary["QMAKE_RPATHDIR"]) << endl;
 
@@ -3427,10 +3479,6 @@ void Configure::generateConfigfiles()
         if (dictionary["STYLE_WINDOWSXP"] != "yes" && dictionary["STYLE_WINDOWSVISTA"] != "yes")
             qconfigList += "QT_NO_STYLE_WINDOWSXP";
         if (dictionary["STYLE_WINDOWSVISTA"] != "yes")   qconfigList += "QT_NO_STYLE_WINDOWSVISTA";
-
-        // ### We still need the QT_NO_STYLE_S60 define for compiling Qt. Remove later!
-        qconfigList += "QT_NO_STYLE_S60";
-
         if (dictionary["STYLE_WINDOWSCE"] != "yes")   qconfigList += "QT_NO_STYLE_WINDOWSCE";
         if (dictionary["STYLE_WINDOWSMOBILE"] != "yes")   qconfigList += "QT_NO_STYLE_WINDOWSMOBILE";
         if (dictionary["STYLE_GTK"] != "yes")         qconfigList += "QT_NO_STYLE_GTK";
@@ -3459,10 +3507,7 @@ void Configure::generateConfigfiles()
         if (dictionary["HARFBUZZ"] == "no")          qconfigList += "QT_NO_HARFBUZZ";
         if (dictionary["NATIVE_GESTURES"] == "no")   qconfigList += "QT_NO_NATIVE_GESTURES";
 
-        if (dictionary["OPENGL_ES_CM"] == "yes" ||
-           dictionary["OPENGL_ES_2"]  == "yes")     qconfigList += "QT_OPENGL_ES";
-
-        if (dictionary["OPENGL_ES_CM"] == "yes")     qconfigList += "QT_OPENGL_ES_1";
+        if (dictionary["OPENGL_ES_2"]  == "yes")     qconfigList += "QT_OPENGL_ES";
         if (dictionary["OPENGL_ES_2"]  == "yes")     qconfigList += "QT_OPENGL_ES_2";
         if (dictionary["DYNAMICGL"] == "yes")        qconfigList += "QT_OPENGL_DYNAMIC";
         if (dictionary["SQL_MYSQL"] == "yes")        qconfigList += "QT_SQL_MYSQL";
@@ -3487,6 +3532,8 @@ void Configure::generateConfigfiles()
         if (dictionary["LARGE_FILE"] == "yes")       qconfigList += "QT_LARGEFILE_SUPPORT=64";
         if (dictionary["QT_CUPS"] == "no")           qconfigList += "QT_NO_CUPS";
         if (dictionary["QT_ICONV"] == "no")          qconfigList += "QT_NO_ICONV";
+        if (dictionary["QT_EVDEV"] == "no")          qconfigList += "QT_NO_EVDEV";
+        if (dictionary["QT_MTDEV"] == "no")          qconfigList += "QT_NO_MTDEV";
         if (dictionary["QT_GLIB"] == "no")           qconfigList += "QT_NO_GLIB";
         if (dictionary["QT_INOTIFY"] == "no")        qconfigList += "QT_NO_INOTIFY";
         if (dictionary["QT_EVENTFD"] ==  "no")       qconfigList += "QT_NO_EVENTFD";
@@ -3553,6 +3600,8 @@ void Configure::displayConfig()
         sout << "QMAKESPEC..................." << dictionary[ "XQMAKESPEC" ] << " (" << dictionary["QMAKESPEC_FROM"] << ")" << endl;
     else
         sout << "QMAKESPEC..................." << dictionary[ "QMAKESPEC" ] << " (" << dictionary["QMAKESPEC_FROM"] << ")" << endl;
+    if (!dictionary["TARGET_OS"].isEmpty())
+        sout << "Target OS..................." << dictionary["TARGET_OS"] << endl;
     sout << "Architecture................" << dictionary["QT_ARCH"]
          << ", features:" << dictionary["QT_CPU_FEATURES"] << endl;
     sout << "Host Architecture..........." << dictionary["QT_HOST_ARCH"]
@@ -3583,6 +3632,8 @@ void Configure::displayConfig()
     sout << "Large File support.........." << dictionary[ "LARGE_FILE" ] << endl;
     sout << "NIS support................." << dictionary[ "NIS" ] << endl;
     sout << "Iconv support..............." << dictionary[ "QT_ICONV" ] << endl;
+    sout << "Evdev support..............." << dictionary[ "QT_EVDEV" ] << endl;
+    sout << "Mtdev support..............." << dictionary[ "QT_MTDEV" ] << endl;
     sout << "Inotify support............." << dictionary[ "QT_INOTIFY" ] << endl;
     sout << "eventfd(7) support.........." << dictionary[ "QT_EVENTFD" ] << endl;
     sout << "Glib support................" << dictionary[ "QT_GLIB" ] << endl;

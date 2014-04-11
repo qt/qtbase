@@ -64,7 +64,11 @@ compare_by_keysym(const void *a, const void *b)
 {
     const xkb_keysym_t *key = a;
     const struct name_keysym *entry = b;
-    return *key - (int32_t) entry->keysym;
+    if (*key < entry->keysym)
+        return -1;
+    if (*key > entry->keysym)
+        return 1;
+    return 0;
 }
 
 static int

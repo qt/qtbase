@@ -79,6 +79,7 @@
 #include "qfileinfo.h"
 #include <QtGui/qinputmethod.h>
 #include <QtGui/qopenglcontext.h>
+#include <QtGui/private/qopenglcontext_p.h>
 
 #include <private/qgraphicseffect_p.h>
 #include <qbackingstore.h>
@@ -2840,7 +2841,10 @@ void QWidget::showFullScreen()
     setWindowState((windowState() & ~(Qt::WindowMinimized | Qt::WindowMaximized))
                    | Qt::WindowFullScreen);
     setVisible(true);
+#if !defined Q_OS_QNX // On QNX this window will be activated anyway from libscreen
+                      // activating it here before libscreen activates it causes problems
     activateWindow();
+#endif
 }
 
 /*!
@@ -8359,6 +8363,8 @@ bool QWidget::event(QEvent *event)
                 d->extra->customDpiY = value;
             d->updateFont(d->data.fnt);
         }
+        if (windowHandle() && !qstrncmp(propName, "_q_platform_", 12))
+            windowHandle()->setProperty(propName, property(propName));
         // fall through
     }
 #endif
@@ -11153,6 +11159,7 @@ QOpenGLContext *QWidgetPrivate::shareContext() const
     QWidgetPrivate *that = const_cast<QWidgetPrivate *>(this);
     if (!extra->topextra->shareContext) {
         QOpenGLContext *ctx = new QOpenGLContext();
+        ctx->setShareContext(QOpenGLContextPrivate::globalShareContext());
         ctx->setFormat(extra->topextra->window->format());
         ctx->create();
         that->extra->topextra->shareContext = ctx;

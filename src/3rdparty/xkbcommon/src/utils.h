@@ -163,13 +163,13 @@ is_graph(char ch)
  * Note: this is 1-based! It's more useful this way, and returns 0 when
  * mask is all 0s.
  */
-static inline int
+static inline unsigned
 msb_pos(uint32_t mask)
 {
-    int pos = 0;
+    unsigned pos = 0;
     while (mask) {
         pos++;
-        mask >>= 1;
+        mask >>= 1u;
     }
     return pos;
 }
@@ -186,6 +186,22 @@ unmap_file(const char *str, size_t size);
 #define MIN3(a, b, c) MIN(MIN((a), (b)), (c))
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define MAX3(a, b, c) MAX(MAX((a), (b)), (c))
+
+#if defined(HAVE_SECURE_GETENV)
+# define secure_getenv secure_getenv
+#elif defined(HAVE___SECURE_GETENV)
+# define secure_getenv __secure_getenv
+#else
+# define secure_getenv getenv
+#endif
+
+#if defined(HAVE___BUILTIN_EXPECT)
+# define likely(x)   __builtin_expect(!!(x), 1)
+# define unlikely(x) __builtin_expect(!!(x), 0)
+#else
+# define likely(x)   (x)
+# define unlikely(x) (x)
+#endif
 
 /* Compiler Attributes */
 

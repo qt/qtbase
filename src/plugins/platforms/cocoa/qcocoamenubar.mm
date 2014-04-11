@@ -205,6 +205,59 @@ QCocoaMenuBar *QCocoaMenuBar::findGlobalMenubar()
     return NULL;
 }
 
+void QCocoaMenuBar::redirectKnownMenuItemsToFirstResponder()
+{
+    // QTBUG-17291: http://forums.macrumors.com/showthread.php?t=1249452
+    // When a dialog is opened, shortcuts for actions inside the dialog (cut, paste, ...)
+    // continue to go through the same menu items which claimed those shortcuts.
+    // They are not keystrokes which we can intercept in any other way; the OS intercepts them.
+    // The menu items had to be created by the application.  That's why we need roles
+    // to identify those "special" menu items which can be useful even when non-Qt
+    // native widgets are in focus.  When the native widget is focused it will be the
+    // first responder, so the menu item needs to have its target be the first responder;
+    // this is done by setting it to nil.
+
+    // This function will find all menu items on all menus which have
+    // "special" roles, set the target and also set the standard actions which
+    // apply to those roles.  But afterwards it is necessary to call
+    // resetKnownMenuItemsToQt() to put back the target and action so that
+    // those menu items will go back to invoking their associated QActions.
+    foreach (QCocoaMenuBar *mb, static_menubars)
+        foreach (QCocoaMenu *m, mb->m_menus)
+            foreach (QCocoaMenuItem *i, m->items()) {
+                bool known = true;
+                switch (i->effectiveRole()) {
+                case QPlatformMenuItem::CutRole:
+                    [i->nsItem() setAction:@selector(cut:)];
+                    break;
+                case QPlatformMenuItem::CopyRole:
+                    [i->nsItem() setAction:@selector(copy:)];
+                    break;
+                case QPlatformMenuItem::PasteRole:
+                    [i->nsItem() setAction:@selector(paste:)];
+                    break;
+                case QPlatformMenuItem::SelectAllRole:
+                    [i->nsItem() setAction:@selector(selectAll:)];
+                    break;
+                // We may discover later that there are other roles/actions which
+                // are meaningful to standard native widgets; they can be added.
+                default:
+                    known = false;
+                    break;
+                }
+                if (known)
+                    [i->nsItem() setTarget:nil];
+            }
+}
+
+void QCocoaMenuBar::resetKnownMenuItemsToQt()
+{
+    // Undo the effect of redirectKnownMenuItemsToFirstResponder():
+    // set the menu items' actions to itemFired and their targets to
+    // the QCocoaMenuDelegate.
+    updateMenuBarImmediately();
+}
+
 void QCocoaMenuBar::updateMenuBarImmediately()
 {
     QCocoaAutoReleasePool pool;
@@ -321,3 +374,13 @@ QPlatformMenu *QCocoaMenuBar::menuForTag(quintptr tag) const
 
     return 0;
 }
+
+NSMenuItem *QCocoaMenuBar::itemForRole(QPlatformMenuItem::MenuRole r)
+{
+    foreach (QCocoaMenu *m, m_menus)
+        foreach (QCocoaMenuItem *i, m->items())
+            if (i->effectiveRole() == r)
+                return i->nsItem();
+    return Q_NULLPTR;
+}
+

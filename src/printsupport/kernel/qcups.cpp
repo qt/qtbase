@@ -88,7 +88,7 @@ static inline QString jobHoldToString(const QCUPSSupport::JobHoldUntil jobHold, 
             QDateTime localDateTime = QDateTime::currentDateTime();
             // Check if time is for tomorrow in case of DST change overnight
             if (holdUntilTime < localDateTime.time())
-                localDateTime.addDays(1);
+                localDateTime = localDateTime.addDays(1);
             localDateTime.setTime(holdUntilTime);
             return localDateTime.toUTC().time().toString(QStringLiteral("HH:mm"));
         }

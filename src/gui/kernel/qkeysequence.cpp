@@ -238,9 +238,9 @@ void Q_GUI_EXPORT qt_set_sequence_auto_mnemonic(bool b) { qt_sequence_no_mnemoni
     \row    \li SaveAs           \li                                      \li Ctrl+Shift+S             \li              \li Ctrl+Shift+S
     \row    \li New              \li Ctrl+N                               \li Ctrl+N                   \li Ctrl+N       \li Ctrl+N
     \row    \li Delete           \li Del                                  \li Del, Meta+D              \li Del, Ctrl+D  \li Del, Ctrl+D
-    \row    \li Cut              \li Ctrl+X, Shift+Del                    \li Ctrl+X                   \li Ctrl+X, F20, Shift+Del \li Ctrl+X, F20, Shift+Del
+    \row    \li Cut              \li Ctrl+X, Shift+Del                    \li Ctrl+X, Meta+K           \li Ctrl+X, F20, Shift+Del \li Ctrl+X, F20, Shift+Del
     \row    \li Copy             \li Ctrl+C, Ctrl+Ins                     \li Ctrl+C                   \li Ctrl+C, F16, Ctrl+Ins  \li Ctrl+C, F16, Ctrl+Ins
-    \row    \li Paste            \li Ctrl+V, Shift+Ins                    \li Ctrl+V                   \li Ctrl+V, F18, Shift+Ins \li Ctrl+V, F18, Shift+Ins
+    \row    \li Paste            \li Ctrl+V, Shift+Ins                    \li Ctrl+V, Meta+Y           \li Ctrl+V, F18, Shift+Ins \li Ctrl+V, F18, Shift+Ins
     \row    \li Preferences      \li                                      \li Ctrl+,                   \li              \li
     \row    \li Undo             \li Ctrl+Z, Alt+Backspace                \li Ctrl+Z                   \li Ctrl+Z, F14  \li Ctrl+Z, F14
     \row    \li Redo             \li Ctrl+Y, Shift+Ctrl+Z, Alt+Shift+Backspace \li Ctrl+Shift+Z        \li Ctrl+Shift+Z \li Ctrl+Shift+Z
@@ -263,13 +263,13 @@ void Q_GUI_EXPORT qt_set_sequence_auto_mnemonic(bool b) { qt_sequence_no_mnemoni
     \row    \li Bold             \li Ctrl+B                               \li Ctrl+B                   \li Ctrl+B         \li Ctrl+B
     \row    \li Italic           \li Ctrl+I                               \li Ctrl+I                   \li Ctrl+I         \li Ctrl+I
     \row    \li Underline        \li Ctrl+U                               \li Ctrl+U                   \li Ctrl+U         \li Ctrl+U
-    \row    \li MoveToNextChar       \li Right                            \li Right                    \li Right          \li Right
-    \row    \li MoveToPreviousChar   \li Left                             \li Left                     \li Left           \li Left
+    \row    \li MoveToNextChar       \li Right                            \li Right, Meta+F            \li Right          \li Right
+    \row    \li MoveToPreviousChar   \li Left                             \li Left, Meta+B             \li Left           \li Left
     \row    \li MoveToNextWord       \li Ctrl+Right                       \li Alt+Right                \li Ctrl+Right     \li Ctrl+Right
     \row    \li MoveToPreviousWord   \li Ctrl+Left                        \li Alt+Left                 \li Ctrl+Left      \li Ctrl+Left
-    \row    \li MoveToNextLine       \li Down                             \li Down                     \li Down           \li Down
-    \row    \li MoveToPreviousLine   \li Up                               \li Up                       \li Up             \li Up
-    \row    \li MoveToNextPage       \li PgDown                           \li PgDown, Alt+PgDown, Meta+Down, Meta+PgDown\li PgDown \li PgDown
+    \row    \li MoveToNextLine       \li Down                             \li Down, Meta+N             \li Down           \li Down
+    \row    \li MoveToPreviousLine   \li Up                               \li Up, Meta+P               \li Up             \li Up
+    \row    \li MoveToNextPage       \li PgDown                           \li PgDown, Alt+PgDown, Meta+Down, Meta+PgDown, Meta+V \li PgDown \li PgDown
     \row    \li MoveToPreviousPage   \li PgUp                             \li PgUp, Alt+PgUp, Meta+Up, Meta+PgUp        \li PgUp   \li PgUp
     \row    \li MoveToStartOfLine    \li Home                             \li Ctrl+Left, Meta+Left   \li Home            \li Home
     \row    \li MoveToEndOfLine      \li End                              \li Ctrl+Right, Meta+Right \li End, Ctrl+E     \li End, Ctrl+E
@@ -296,7 +296,7 @@ void Q_GUI_EXPORT qt_set_sequence_auto_mnemonic(bool b) { qt_sequence_no_mnemoni
     \row    \li DeleteEndOfLine      \li (none)                           \li (none)                 \li Ctrl+K         \li Ctrl+K
     \row    \li DeleteCompleteLine   \li (none)                           \li (none)                 \li Ctrl+U         \li Ctrl+U
     \row    \li InsertParagraphSeparator     \li Enter                    \li Enter                  \li Enter          \li Enter
-    \row    \li InsertLineSeparator          \li Shift+Enter              \li Meta+Enter             \li Shift+Enter    \li Shift+Enter
+    \row    \li InsertLineSeparator          \li Shift+Enter              \li Meta+Enter, Meta+O     \li Shift+Enter    \li Shift+Enter
     \endtable
 
     Note that, since the key sequences used for the standard shortcuts differ

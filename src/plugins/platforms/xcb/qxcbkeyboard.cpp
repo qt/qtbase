@@ -663,23 +663,17 @@ void QXcbKeyboard::clearXKBConfig()
     memset(&xkb_names, 0, sizeof(xkb_names));
 }
 
-void QXcbKeyboard::printKeymapError(const QString &error) const
+void QXcbKeyboard::printKeymapError(const char *error) const
 {
-    qWarning() << "Qt: " << error;
-    // check if XKB config root is a valid path
-    const QDir xkbRoot = qEnvironmentVariableIsSet("QT_XKB_CONFIG_ROOT")
-        ? QString::fromLocal8Bit(qgetenv("QT_XKB_CONFIG_ROOT"))
-        : DFLT_XKB_CONFIG_ROOT;
-    if (!xkbRoot.exists() || xkbRoot.dirName() != "xkb") {
-        qWarning() << "Set QT_XKB_CONFIG_ROOT to provide a valid XKB configuration data path, current search paths: "
-                   << xkbRoot.path() << ". Use ':' as separator to provide several search paths.";
-        return;
+    qWarning() << error;
+    if (xkb_context) {
+        qWarning() << "Current XKB configuration data search paths are: ";
+        for (unsigned int i = 0; i < xkb_context_num_include_paths(xkb_context); ++i)
+            qWarning() << xkb_context_include_path_get(xkb_context, i);
     }
-    qWarning() << "_XKB_RULES_NAMES property contains:"  << "\nrules : " << xkb_names.rules <<
-                  "\nmodel : " << xkb_names.model << "\nlayout : " << xkb_names.layout <<
-                  "\nvariant : " << xkb_names.variant << "\noptions : " << xkb_names.options <<
-                  "\nIf this looks like a valid keyboard layout information then you might need to "
-                  "update XKB configuration data on the system (http://cgit.freedesktop.org/xkeyboard-config/).";
+    qWarning() << "Use QT_XKB_CONFIG_ROOT environmental variable to provide an additional search path, "
+                  "add ':' as separator to provide several search paths and/or make sure that XKB configuration data "
+                  "directory contains recent enough contents, to update please see http://cgit.freedesktop.org/xkeyboard-config/ .";
 }
 
 void QXcbKeyboard::updateKeymap()
@@ -696,7 +690,7 @@ void QXcbKeyboard::updateKeymap()
             xkb_context = xkb_context_new((xkb_context_flags)0);
         }
         if (!xkb_context) {
-            printKeymapError("Failed to create XKB context!");
+            printKeymapError("Qt: Failed to create XKB context!");
             m_config = false;
             return;
         }
@@ -731,8 +725,7 @@ void QXcbKeyboard::updateKeymap()
         if (xkb_keymap) {
             new_state = xkb_state_new(xkb_keymap);
         } else {
-            // failed to compile from RMLVO, give a verbose error message
-            printKeymapError("Qt: Failed to compile a keymap!");
+            printKeymapError("Failed to compile a keymap!");
             m_config = false;
             return;
         }
@@ -863,7 +856,7 @@ QList<int> QXcbKeyboard::possibleKeys(const QKeyEvent *event) const
         return QList<int>();
 
     QList<int> result;
-    int baseQtKey = keysymToQtKey(sym, modifiers, keysymToUnicode(sym));
+    int baseQtKey = keysymToQtKey(sym, modifiers, lookupString(kb_state, event->nativeScanCode()));
     result += (baseQtKey + modifiers); // The base key is _always_ valid, of course
 
     xkb_mod_index_t shiftMod = xkb_keymap_mod_get_index(xkb_keymap, "Shift");
@@ -910,7 +903,7 @@ QList<int> QXcbKeyboard::possibleKeys(const QKeyEvent *event) const
                 continue;
 
             Qt::KeyboardModifiers mods = modifiers & ~neededMods;
-            qtKey = keysymToQtKey(sym, mods, keysymToUnicode(sym));
+            qtKey = keysymToQtKey(sym, mods, lookupString(kb_state, event->nativeScanCode()));
 
             if (qtKey == baseQtKey)
                 continue;
@@ -986,10 +979,10 @@ QXcbKeyboard::QXcbKeyboard(QXcbConnection *connection)
     , xkb_context(0)
     , xkb_keymap(0)
     , xkb_state(0)
-    , core_device_id(0)
 {
     memset(&xkb_names, 0, sizeof(xkb_names));
 #ifndef QT_NO_XKB
+    core_device_id = 0;
     if (connection->hasXKB()) {
         updateVModMapping();
         updateVModToRModMapping();
@@ -1326,7 +1319,8 @@ void QXcbKeyboard::handleKeyEvent(QWindow *window, QEvent::Type type, xcb_keycod
     }
 
     Qt::KeyboardModifiers modifiers = translateModifiers(state);
-    QString string = keysymToUnicode(sym);
+
+    QString string = lookupString(xkb_state, code);
     int count = string.size();
     string.truncate(count);
 
@@ -1389,16 +1383,12 @@ void QXcbKeyboard::handleKeyEvent(QWindow *window, QEvent::Type type, xcb_keycod
     }
 }
 
-QString QXcbKeyboard::keysymToUnicode(xcb_keysym_t sym) const
+QString QXcbKeyboard::lookupString(struct xkb_state *state, xcb_keycode_t code) const
 {
     QByteArray chars;
-    int bytes;
-    chars.resize(7);
-    bytes = xkb_keysym_to_utf8(sym, chars.data(), chars.size());
-    if (bytes == -1)
-        qWarning("QXcbKeyboard::handleKeyEvent - buffer too small");
-    chars.resize(bytes-1);
-
+    chars.resize(1 + xkb_state_key_get_utf8(state, code, 0, 0));
+    // equivalent of XLookupString
+    xkb_state_key_get_utf8(state, code, chars.data(), chars.size());
     return QString::fromUtf8(chars);
 }
 

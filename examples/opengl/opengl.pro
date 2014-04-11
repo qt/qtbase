@@ -2,16 +2,8 @@ requires(qtHaveModule(opengl))
 
 TEMPLATE      = subdirs
 
-contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles2){
-    contains(QT_CONFIG, opengles2) {
-        SUBDIRS   = hellogl_es2
-    } else {
-        SUBDIRS   = hellogl_es
-    }
-    SUBDIRS += textures
-    contains(QT_CONFIG, opengles1) {
-        SUBDIRS += hellogl
-    }
+contains(QT_CONFIG, opengles2) {
+    SUBDIRS   = hellogl_es2
 } else {
     SUBDIRS   = 2dpainting \
                 grabber \
@@ -19,13 +11,13 @@ contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles2){
                 overpainting \
                 pbuffers \
                 framebufferobject2 \
-                samplebuffers \
-                textures
+                samplebuffers
 }
 
 SUBDIRS += hellowindow \
            paintedwindow \
            contextinfo \
-           cube
+           cube \
+           textures
 
 EXAMPLE_FILES = shared

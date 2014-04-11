@@ -37,6 +37,7 @@
 
 #include "xkbcommon/xkbcommon.h"
 #include "utils.h"
+#include "utf8.h"
 
 /* We don't use the uint32_t types here, to save some space. */
 struct codepair {
@@ -838,15 +839,15 @@ static const struct codepair keysymtab[] = {
 static uint32_t
 bin_search(const struct codepair *table, size_t length, xkb_keysym_t keysym)
 {
-    int first = 0;
-    int last = length;
+    size_t first = 0;
+    size_t last = length;
 
     if (keysym < table[0].keysym  || keysym > table[length].keysym)
         return 0;
 
     /* binary search in table */
     while (last >= first) {
-        int mid = (first + last) / 2;
+        size_t mid = (first + last) / 2;
         if (table[mid].keysym < keysym)
             first = mid + 1;
         else if (table[mid].keysym > keysym)
@@ -911,47 +912,6 @@ xkb_keysym_to_utf32(xkb_keysym_t keysym)
  *
  * Author: Rob Bradford <rob@linux.intel.com>
  */
-
-static int
-utf32_to_utf8(uint32_t unichar, char *buffer)
-{
-    int count, shift, length;
-    uint8_t head;
-
-    if (unichar <= 0x007f) {
-        buffer[0] = unichar;
-        buffer[1] = '\0';
-        return 2;
-    }
-    else if (unichar <= 0x07FF) {
-        length = 2;
-        head = 0xc0;
-    }
-    else if (unichar <= 0xffff) {
-        length = 3;
-        head = 0xe0;
-    }
-    else if (unichar <= 0x1fffff) {
-        length = 4;
-        head = 0xf0;
-    }
-    else if (unichar <= 0x3ffffff) {
-        length = 5;
-        head = 0xf8;
-    }
-    else {
-        length = 6;
-        head = 0xfc;
-    }
-
-    for (count = length - 1, shift = 0; count > 0; count--, shift += 6)
-        buffer[count] = 0x80 | ((unichar >> shift) & 0x3f);
-
-    buffer[0] = head | ((unichar >> shift) & 0x3f);
-    buffer[length] = '\0';
-
-    return length + 1;
-}
 
 XKB_EXPORT int
 xkb_keysym_to_utf8(xkb_keysym_t keysym, char *buffer, size_t size)

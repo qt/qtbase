@@ -54,179 +54,6 @@
 #include "vmod.h"
 #include "include.h"
 
-/*
- * The xkb_compat section
- * =====================
- * This section is the third to be processed, after xkb_keycodes and
- * xkb_types.
- *
- * Interpret statements
- * --------------------
- * Statements of the form:
- *      interpret Num_Lock+Any { ... }
- *      interpret Shift_Lock+AnyOf(Shift+Lock) { ... }
- *
- * The xkb_symbols section (see symbols.c) allows the keymap author to do,
- * among other things, the following for each key:
- * - Bind an action, like SetMods or LockGroup, to the key. Actions, like
- *   symbols, are specified for each level of each group in the key
- *   separately.
- * - Add a virtual modifier to the key's virtual modifier mapping (vmodmap).
- * - Specify whether the key should repeat or not.
- *
- * However, doing this for each key (or level) is tedious and inflexible.
- * Interpret's are a mechanism to apply these settings to a bunch of
- * keys/levels at once.
- *
- * Each interpret specifies a condition by which it attaches to certain
- * levels. The condition consists of two parts:
- * - A keysym. If the level has a different (or more than one) keysym, the
- *   match failes. Leaving out the keysym is equivalent to using the
- *   NoSymbol keysym, which always matches successfully.
- * - A modifier predicate. The predicate consists of a matching operation
- *   and a mask of (real) modifiers. The modifers are matched against the
- *   key's modifier map (modmap). The matching operation can be one of the
- *   following:
- *   + AnyOfOrNone - The modmap must either be empty or include at least
- *     one of the specified modifiers.
- *   + AnyOf - The modmap must include at least one of the specified
- *     modifiers.
- *   + NoneOf - The modmap must not include any of the specified modifiers.
- *   + AllOf - The modmap must include all of the specified modifiers (but
- *     may include others as well).
- *   + Exactly - The modmap must be exactly the same as the specified
- *     modifiers.
- *   Leaving out the predicate is equivalent to usign AnyOfOrNone while
- *   specifying all modifiers. Leaving out just the matching condtition
- *   is equivalent to using Exactly.
- * An interpret may also include "useModMapMods = level1;" - see below.
- *
- * If a level fulfils the conditions of several interpret's, only the
- * most specific one is used:
- * - A specific keysym will always match before a generic NoSymbol
- *   condition.
- * - If the keysyms are the same, the interpret with the more specific
- *   matching operation is used. The above list is sorted from least to
- *   most specific.
- * - If both the keysyms and the matching operations are the same (but the
- *   modifiers are different), the first interpret is used.
- *
- * As described above, once an interpret "attaches" to a level, it can bind
- * an action to that level, add one virtual modifier to the key's vmodmap,
- * or set the key's repeat setting. You should note the following:
- * - The key repeat is a property of the entire key; it is not level-specific.
- *   In order to avoid confusion, it is only inspected for the first level of
- *   the first group; the interpret's repeat setting is ignored when applied
- *   to other levels.
- * - If one of the above fields was set directly for a key in xkb_symbols,
- *   the explicit setting takes precedence over the interpret.
- *
- * The body of the statment may include statements of the following
- * forms (all of which are optional):
- *
- * - useModMapMods statement:
- *      useModMapMods = level1;
- *
- *   When set to 'level1', the interpret will only match levels which are
- *   the first level of the first group of the keys. This can be useful in
- *   conjunction with e.g. a virtualModifier statement.
- *
- * - action statement:
- *      action = LockMods(modifiers=NumLock);
- *
- *   Bind this action to the matching levels.
- *
- * - virtual modifier statement:
- *      virtualModifier = NumLock;
- *
- *   Add this virtual modifier to the key's vmodmap. The given virtual
- *   modifier must be declared at the top level of the file with a
- *   virtual_modifiers statement, e.g.:
- *      virtual_modifiers NumLock;
- *
- * - repeat statement:
- *      repeat = True;
- *
- *   Set whether the key should repeat or not. Must be a boolean value.
- *
- * Led map statements
- * ------------------------
- * Statements of the form:
- *      indicator "Shift Lock" { ... }
- *
- *   This statement specifies the behavior and binding of the LED (a.k.a
- *   indicator) with the given name ("Shift Lock" above). The name should
- *   have been declared previously in the xkb_keycodes section (see Led
- *   name statement), and given an index there. If it wasn't, it is created
- *   with the next free index.
- *   The body of the statement describes the conditions of the keyboard
- *   state which will cause the LED to be lit. It may include the following
- *   statements:
- *
- * - modifiers statment:
- *      modifiers = ScrollLock;
- *
- *   If the given modifiers are in the required state (see below), the
- *   led is lit.
- *
- * - whichModifierState statment:
- *      whichModState = Latched + Locked;
- *
- *   Can be any combination of:
- *      base, latched, locked, effective
- *      any (i.e. all of the above)
- *      none (i.e. none of the above)
- *      compat (legacy value, treated as effective)
- *   This will cause the respective portion of the modifer state (see
- *   struct xkb_state) to be matched against the modifiers given in the
- *   "modifiers" statement.
- *
- *   Here's a simple example:
- *      indicator "Num Lock" {
- *          modifiers = NumLock;
- *          whichModState = Locked;
- *      };
- *   Whenever the NumLock modifier is locked, the Num Lock LED will light
- *   up.
- *
- * - groups statment:
- *      groups = All - group1;
- *
- *   If the given groups are in the required state (see below), the led
- *   is lit.
- *
- * - whichGroupState statment:
- *      whichGroupState = Effective;
- *
- *   Can be any combination of:
- *      base, latched, locked, effective
- *      any (i.e. all of the above)
- *      none (i.e. none of the above)
- *   This will cause the respective portion of the group state (see
- *   struct xkb_state) to be matched against the groups given in the
- *   "groups" statement.
- *
- *   Note: the above conditions are disjunctive, i.e. if any of them are
- *   satisfied the led is lit.
- *
- * Virtual modifier statements
- * ---------------------------
- * Statements of the form:
- *     virtual_modifiers LControl;
- *
- * Can appear in the xkb_types, xkb_compat, xkb_symbols sections.
- * TODO
- *
- * Effect on keymap
- * ----------------
- * After all of the xkb_compat sections have been compiled, the following
- * members of struct xkb_keymap are finalized:
- *      darray(struct xkb_sym_interpret) sym_interprets;
- *      darray(struct xkb_led) leds;
- *      char *compat_section_name;
- * TODO: virtual modifiers.
- */
-
 enum si_field {
     SI_FIELD_VIRTUAL_MOD    = (1 << 0),
     SI_FIELD_ACTION         = (1 << 1),
@@ -555,16 +382,28 @@ MergeIncludedCompatMaps(CompatInfo *into, CompatInfo *from,
         from->name = NULL;
     }
 
-    darray_foreach(si, from->interps) {
-        si->merge = (merge == MERGE_DEFAULT ? si->merge : merge);
-        if (!AddInterp(into, si, false))
-            into->errorCount++;
+    if (darray_empty(into->interps)) {
+        into->interps = from->interps;
+        darray_init(from->interps);
+    }
+    else {
+        darray_foreach(si, from->interps) {
+            si->merge = (merge == MERGE_DEFAULT ? si->merge : merge);
+            if (!AddInterp(into, si, false))
+                into->errorCount++;
+        }
     }
 
-    darray_foreach(ledi, from->leds) {
-        ledi->merge = (merge == MERGE_DEFAULT ? ledi->merge : merge);
-        if (!AddLedMap(into, ledi, false))
-            into->errorCount++;
+    if (darray_empty(into->leds)) {
+        into->leds = from->leds;
+        darray_init(from->leds);
+    }
+    else {
+        darray_foreach(ledi, from->leds) {
+            ledi->merge = (merge == MERGE_DEFAULT ? ledi->merge : merge);
+            if (!AddLedMap(into, ledi, false))
+                into->errorCount++;
+        }
     }
 }
 
@@ -929,7 +768,7 @@ HandleCompatMapFile(CompatInfo *info, XkbFile *file, enum merge_mode merge)
             ok = HandleGlobalVar(info, (VarDef *) stmt);
             break;
         case STMT_VMOD:
-            ok = HandleVModDef(info->keymap, (VModDef *) stmt);
+            ok = HandleVModDef(info->keymap, (VModDef *) stmt, merge);
             break;
         default:
             log_err(info->keymap->ctx,

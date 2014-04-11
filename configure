@@ -2270,9 +2270,6 @@ Configure options:
 
     -system-sqlite ..... Use sqlite from the operating system.
 
-    -no-javascript-jit . Do not build the JavaScriptCore JIT compiler.
- +  -javascript-jit .... Build the JavaScriptCore JIT compiler.
-
     -no-qml-debug ...... Do not build the in-process QML debugging support.
  +  -qml-debug ......... Build the QML debugging support.
 
@@ -2418,6 +2415,9 @@ Additional options:
 
     -no-iconv .......... Do not compile support for iconv(3).
  *  -iconv ............. Compile support for iconv(3).
+
+    -no-evdev .......... Do not compile support for evdev.
+ *  -evdev ............. Compile support for evdev.
 
     -no-icu ............ Do not compile support for ICU libraries.
  +  -icu ............... Compile support for ICU libraries.
@@ -2773,7 +2773,8 @@ if [ -f "$relpath"/LICENSE.PREVIEW.COMMERCIAL ] && [ $COMMERCIAL_USER = "yes" ];
     EditionString="Technology Preview"
 elif [ $COMMERCIAL_USER = "yes" ]; then
     if test -x "$relpath/bin/licheck"; then
-        LicheckOutput=`$relpath/bin/licheck $relpath $outpath $PLATFORM $XPLATFORM`
+        LicheckOutput=`$relpath/bin/licheck $OPT_CONFIRM_LICENSE $relpath $outpath\
+                       $PLATFORM $XPLATFORM`
         if [ $? -ne 0 ]; then
             exit 1
         else
@@ -3102,7 +3103,7 @@ if [ "$XPLATFORM_IOS" = "yes" ]; then
     CFG_PKGCONFIG="no"
     CFG_NOBUILD_PARTS="$CFG_NOBUILD_PARTS examples"
     CFG_SHARED="no" # iOS builds should be static to be able to submit to the App Store
-    CFG_SKIP_MODULES="$CFG_SKIP_MODULES qtconnectivity qtdoc qtlocation qtmacextras qtserialport qttools qtwebkit qtwebkit-examples"
+    CFG_SKIP_MODULES="$CFG_SKIP_MODULES qtconnectivity qtdoc qtmacextras qtserialport qttools qtwebkit qtwebkit-examples"
 
     # If the user passes -sdk on the command line we build a SDK-specific Qt build.
     # Otherwise we build a joined simulator and device build, which is the default.
@@ -3707,7 +3708,7 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
             EXTRA_SRCS="\"\$(SOURCE_PATH)/src/corelib/io/qfilesystemengine_unix.cpp\" \
                         \"\$(SOURCE_PATH)/src/corelib/io/qfilesystemiterator_unix.cpp\" \
                         \"\$(SOURCE_PATH)/src/corelib/io/qfsfileengine_unix.cpp\" \
-                        \"\$(SOURCE_PATH)/src/corelib/tools/qlocal_unix.cpp\""
+                        \"\$(SOURCE_PATH)/src/corelib/tools/qlocale_unix.cpp\""
             EXEEXT=
         fi
         if [ "$BUILD_ON_MAC" = "yes" ]; then
@@ -5052,11 +5053,12 @@ if [ "$CFG_KMS" != "no" ]; then
 fi
 
 # Detect libxkbcommon
+MIN_REQ_XKBCOMMON="0.4.1"
 ORIG_CFG_XKBCOMMON="$CFG_XKBCOMMON"
 # currently only xcb platform plugin supports building xkbcommon
 if [ "$CFG_XCB" != "no" ]; then
     if [ "$CFG_XKBCOMMON" = "auto" ] || [ "$CFG_XKBCOMMON" = "system" ]; then
-        if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists "xkbcommon xkbcommon-x11 >= 0.4.0" 2>/dev/null; then
+        if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists "xkbcommon xkbcommon-x11 >= $MIN_REQ_XKBCOMMON" 2>/dev/null; then
             QMAKE_CFLAGS_XKBCOMMON="`$PKG_CONFIG --cflags xkbcommon xkbcommon-x11 2>/dev/null`"
             QMAKE_LIBS_XKBCOMMON="`$PKG_CONFIG --libs xkbcommon xkbcommon-x11 2>/dev/null`"
 
@@ -6047,6 +6049,7 @@ QMakeVar set sql-plugins "$SQL_PLUGINS"
 # X11/Unix/Mac only configs
 [ "$CFG_CUPS" = "no" ]       && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_CUPS"
 [ "$CFG_ICONV" = "no" ]      && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_ICONV"
+[ "$CFG_EVDEV" = "no" ]      && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_EVDEV"
 [ "$CFG_GLIB" != "yes" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_GLIB"
 [ "$CFG_QGTKSTYLE" != "yes" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_STYLE_GTK"
 [ "$CFG_CLOCK_MONOTONIC" = "no" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_CLOCK_MONOTONIC"
@@ -6466,6 +6469,7 @@ report_support "  ALSA ..................." "$CFG_ALSA"
 report_support "  CUPS ..................." "$CFG_CUPS"
 [ "$XPLATFORM_MINGW" = "yes" ] && \
     report_support "  DirectWrite ............" "$CFG_DIRECTWRITE"
+report_support "  Evdev .................." "$CFG_EVDEV"
 report_support "  FontConfig ............." "$CFG_FONTCONFIG"
 report_support "  FreeType ..............." "$CFG_FREETYPE" system "system library" yes "bundled copy"
 report_support "  Glib ..................." "$CFG_GLIB"
@@ -6561,7 +6565,7 @@ if [ "$CFG_OPENSSL" = "linked" ] && [ "$OPENSSL_LIBS" = "" ]; then
     echo
 fi
 if [ "$ORIG_CFG_XKBCOMMON" != qt ] && [ "$CFG_XKBCOMMON" = qt ]; then
-    echo "NOTE: libxkbcommon and libxkbcommon-x11 0.4.0 or higher not found on the system, will use "
+    echo "NOTE: libxkbcommon and libxkbcommon-x11 $MIN_REQ_XKBCOMMON or higher not found on the system, will use "
     echo "the bundled version from 3rd party directory."
 fi
 if [ "$CFG_XKBCOMMON" = "qt" ] && [ "$CFG_XKB_CONFIG_ROOT" = "not found" ]; then

@@ -91,4 +91,8 @@
 
 #define xkb_state_get_map(state) xkb_state_get_keymap(state)
 
+/* Not needed anymore, since there's NO_FLAGS. */
+#define XKB_MAP_COMPILE_PLACEHOLDER XKB_KEYMAP_COMPILE_NO_FLAGS
+#define XKB_MAP_COMPILE_NO_FLAGS XKB_KEYMAP_COMPILE_NO_FLAGS
+
 #endif

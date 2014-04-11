@@ -39,4 +39,4 @@
 **
 ****************************************************************************/
 
-#include "../qnx-armv7le-qcc/qplatformdefs.h"
+#include "../qnx-armle-v7-qcc/qplatformdefs.h"

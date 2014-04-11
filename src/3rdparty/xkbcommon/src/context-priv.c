@@ -112,60 +112,79 @@ xkb_context_get_buffer(struct xkb_context *ctx, size_t size)
 #define DEFAULT_XKB_OPTIONS NULL
 #endif
 
-const char *
+static const char *
 xkb_context_get_default_rules(struct xkb_context *ctx)
 {
     const char *env = NULL;
 
     if (ctx->use_environment_names)
-        env = getenv("XKB_DEFAULT_RULES");
+        env = secure_getenv("XKB_DEFAULT_RULES");
 
     return env ? env : DEFAULT_XKB_RULES;
 }
 
-const char *
+static const char *
 xkb_context_get_default_model(struct xkb_context *ctx)
 {
     const char *env = NULL;
 
     if (ctx->use_environment_names)
-        env = getenv("XKB_DEFAULT_MODEL");
+        env = secure_getenv("XKB_DEFAULT_MODEL");
 
     return env ? env : DEFAULT_XKB_MODEL;
 }
 
-const char *
+static const char *
 xkb_context_get_default_layout(struct xkb_context *ctx)
 {
     const char *env = NULL;
 
     if (ctx->use_environment_names)
-        env = getenv("XKB_DEFAULT_LAYOUT");
+        env = secure_getenv("XKB_DEFAULT_LAYOUT");
 
     return env ? env : DEFAULT_XKB_LAYOUT;
 }
 
-const char *
+static const char *
 xkb_context_get_default_variant(struct xkb_context *ctx)
 {
     const char *env = NULL;
-    const char *layout = getenv("XKB_DEFAULT_VARIANT");
+    const char *layout = secure_getenv("XKB_DEFAULT_LAYOUT");
 
     /* We don't want to inherit the variant if they haven't also set a
      * layout, since they're so closely paired. */
     if (layout && ctx->use_environment_names)
-        env = getenv("XKB_DEFAULT_VARIANT");
+        env = secure_getenv("XKB_DEFAULT_VARIANT");
 
     return env ? env : DEFAULT_XKB_VARIANT;
 }
 
-const char *
+static const char *
 xkb_context_get_default_options(struct xkb_context *ctx)
 {
     const char *env = NULL;
 
     if (ctx->use_environment_names)
-        env = getenv("XKB_DEFAULT_OPTIONS");
+        env = secure_getenv("XKB_DEFAULT_OPTIONS");
 
     return env ? env : DEFAULT_XKB_OPTIONS;
+}
+
+void
+xkb_context_sanitize_rule_names(struct xkb_context *ctx,
+                                struct xkb_rule_names *rmlvo)
+{
+    if (isempty(rmlvo->rules))
+        rmlvo->rules = xkb_context_get_default_rules(ctx);
+    if (isempty(rmlvo->model))
+        rmlvo->model = xkb_context_get_default_model(ctx);
+    /* Layout and variant are tied together, so don't try to use one from
+     * the caller and one from the environment. */
+    if (isempty(rmlvo->layout)) {
+        rmlvo->layout = xkb_context_get_default_layout(ctx);
+        rmlvo->variant = xkb_context_get_default_variant(ctx);
+    }
+    /* Options can be empty, so respect that if passed in. */
+    if (rmlvo->options == NULL)
+        rmlvo->options = xkb_context_get_default_options(ctx);
 }

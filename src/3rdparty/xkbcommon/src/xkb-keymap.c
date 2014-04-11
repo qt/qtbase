@@ -110,10 +110,10 @@ get_keymap_format_ops(enum xkb_keymap_format format)
         [XKB_KEYMAP_FORMAT_TEXT_V1] = &text_v1_keymap_format_ops,
     };
 
-    if ((int) format < 0 || (int) format >= ARRAY_SIZE(keymap_format_ops))
+    if ((int) format < 0 || (int) format >= (int) ARRAY_SIZE(keymap_format_ops))
         return NULL;
 
-    return keymap_format_ops[format];
+    return keymap_format_ops[(int) format];
 }
 
 XKB_EXPORT struct xkb_keymap *
@@ -132,33 +132,20 @@ xkb_keymap_new_from_names(struct xkb_context *ctx,
         return NULL;
     }
 
-    if (flags & ~(XKB_MAP_COMPILE_PLACEHOLDER)) {
+    if (flags & ~(XKB_KEYMAP_COMPILE_NO_FLAGS)) {
         log_err_func(ctx, "unrecognized flags: %#x\n", flags);
         return NULL;
     }
+
+    keymap = xkb_keymap_new(ctx, format, flags);
+    if (!keymap)
+        return NULL;
 
     if (rmlvo_in)
         rmlvo = *rmlvo_in;
     else
         memset(&rmlvo, 0, sizeof(rmlvo));
-
-    if (isempty(rmlvo.rules))
-        rmlvo.rules = xkb_context_get_default_rules(ctx);
-    if (isempty(rmlvo.model))
-        rmlvo.model = xkb_context_get_default_model(ctx);
-    /* Layout and variant are tied together, so don't try to use one from
-     * the caller and one from the environment. */
-    if (isempty(rmlvo.layout)) {
-        rmlvo.layout = xkb_context_get_default_layout(ctx);
-        rmlvo.variant = xkb_context_get_default_variant(ctx);
-    }
-    /* Options can be empty, so respect that if passed in. */
-    if (rmlvo.options == NULL)
-        rmlvo.options = xkb_context_get_default_options(ctx);
-
-    keymap = xkb_keymap_new(ctx, format, flags);
-    if (!keymap)
-        return NULL;
+    xkb_context_sanitize_rule_names(ctx, &rmlvo);
 
     if (!ops->keymap_new_from_names(keymap, &rmlvo)) {
         xkb_keymap_unref(keymap);
@@ -193,7 +180,7 @@ xkb_keymap_new_from_buffer(struct xkb_context *ctx,
         return NULL;
     }
 
-    if (flags & ~(XKB_MAP_COMPILE_PLACEHOLDER)) {
+    if (flags & ~(XKB_KEYMAP_COMPILE_NO_FLAGS)) {
         log_err_func(ctx, "unrecognized flags: %#x\n", flags);
         return NULL;
     }
@@ -230,7 +217,7 @@ xkb_keymap_new_from_file(struct xkb_context *ctx,
         return NULL;
     }
 
-    if (flags & ~(XKB_MAP_COMPILE_PLACEHOLDER)) {
+    if (flags & ~(XKB_KEYMAP_COMPILE_NO_FLAGS)) {
         log_err_func(ctx, "unrecognized flags: %#x\n", flags);
         return NULL;
     }

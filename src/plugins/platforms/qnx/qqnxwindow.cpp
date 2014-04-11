@@ -353,37 +353,39 @@ void QQnxWindow::setBufferSize(const QSize &size)
 {
     qWindowDebug() << Q_FUNC_INFO << "window =" << window() << "size =" << size;
 
-    // Set window buffer size
     // libscreen fails when creating empty buffers
     const QSize nonEmptySize = size.isEmpty() ? QSize(1, 1) : size;
+    int format = pixelFormat();
+
+    if (nonEmptySize == m_bufferSize || format == -1)
+        return;
+
+    Q_SCREEN_CRITICALERROR(
+            screen_set_window_property_iv(m_window, SCREEN_PROPERTY_FORMAT, &format),
+            "Failed to set window format");
+
+    if (m_bufferSize.isValid()) {
+        // destroy buffers first, if resized
+        Q_SCREEN_CRITICALERROR(screen_destroy_window_buffers(m_window),
+                               "Failed to destroy window buffers");
+    }
 
     int val[2] = { nonEmptySize.width(), nonEmptySize.height() };
     Q_SCREEN_CHECKERROR(screen_set_window_property_iv(m_window, SCREEN_PROPERTY_BUFFER_SIZE, val),
                         "Failed to set window buffer size");
 
-    // Create window buffers if they do not exist
-    if (m_bufferSize.isEmpty()) {
-        val[0] = pixelFormat();
-        if (val[0] == -1) // The platform GL context was not set yet on the window, so we can't procede
-            return;
+    Q_SCREEN_CRITICALERROR(screen_create_window_buffers(m_window, MAX_BUFFER_COUNT),
+                           "Failed to create window buffers");
 
-        Q_SCREEN_CRITICALERROR(
-                screen_set_window_property_iv(m_window, SCREEN_PROPERTY_FORMAT, val),
-                "Failed to set window format");
+    // check if there are any buffers available
+    int bufferCount = 0;
+    Q_SCREEN_CRITICALERROR(
+        screen_get_window_property_iv(m_window, SCREEN_PROPERTY_RENDER_BUFFER_COUNT, &bufferCount),
+        "Failed to query render buffer count");
 
-        Q_SCREEN_CRITICALERROR(screen_create_window_buffers(m_window, MAX_BUFFER_COUNT),
-                            "Failed to create window buffers");
-
-        // check if there are any buffers available
-        int bufferCount = 0;
-        Q_SCREEN_CRITICALERROR(
-                screen_get_window_property_iv(m_window, SCREEN_PROPERTY_RENDER_BUFFER_COUNT, &bufferCount),
-                "Failed to query render buffer count");
-
-        if (bufferCount != MAX_BUFFER_COUNT) {
-            qFatal("QQnxWindow: invalid buffer count. Expected = %d, got = %d. You might experience problems.",
-                    MAX_BUFFER_COUNT, bufferCount);
-        }
+    if (bufferCount != MAX_BUFFER_COUNT) {
+        qFatal("QQnxWindow: invalid buffer count. Expected = %d, got = %d.",
+                MAX_BUFFER_COUNT, bufferCount);
     }
 
     // Set the transparency. According to QNX technical support, setting the window

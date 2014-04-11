@@ -98,6 +98,8 @@ public:
     inline bool isSeparator() const { return m_isSeparator; }
 
     QCocoaMenu *menu() const { return m_menu; }
+    MenuRole effectiveRole() const;
+
 private:
     QString mergeText();
     QKeySequence mergeAccel();
@@ -112,6 +114,7 @@ private:
     bool m_isSeparator;
     QFont m_font;
     MenuRole m_role;
+    MenuRole m_detectedRole;
     QKeySequence m_shortcut;
     bool m_checked;
     bool m_merged;

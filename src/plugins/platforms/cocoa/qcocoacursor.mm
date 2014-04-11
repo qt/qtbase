@@ -308,8 +308,7 @@ NSCursor *QCocoaCursor::createCursorFromBitmap(const QBitmap *bitmap, const QBit
 
 NSCursor *QCocoaCursor::createCursorFromPixmap(const QPixmap pixmap, const QPoint hotspot)
 {
-    NSPoint hotSpot = NSMakePoint(hotspot.x() / pixmap.devicePixelRatio(),
-                                  hotspot.y() / pixmap.devicePixelRatio());
+    NSPoint hotSpot = NSMakePoint(hotspot.x(), hotspot.y());
     NSImage *nsimage;
     if (pixmap.devicePixelRatio() > 1.0) {
         QSize layoutSize = pixmap.size() / pixmap.devicePixelRatio();

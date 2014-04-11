@@ -58,8 +58,7 @@ QT_BEGIN_NAMESPACE
 Q_WIDGETS_EXPORT extern bool qt_tab_all_widgets();
 
 QWidget *qt_button_down = 0; // widget got last button-down
-static QWidget *qt_tablet_target = 0;
-static QWidget *qt_tablet_target_window = 0;
+static QPointer<QWidget> qt_tablet_target = 0;
 
 // popup control
 QWidget *qt_popup_down = 0; // popup that contains the pressed widget
@@ -105,10 +104,6 @@ QWidgetWindow::QWidgetWindow(QWidget *widget)
 
 QWidgetWindow::~QWidgetWindow()
 {
-    if (m_widget == qt_tablet_target_window) {
-        qt_tablet_target = 0;
-        qt_tablet_target_window = 0;
-    }
 }
 
 #ifndef QT_NO_ACCESSIBILITY
@@ -486,7 +481,7 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
     if (!widget)
         widget = m_widget;
 
-    if (event->type() == QEvent::MouseButtonPress || event->type() == QEvent::MouseButtonDblClick)
+    if (event->type() == QEvent::MouseButtonPress)
         qt_button_down = widget;
 
     QWidget *receiver = QApplicationPrivate::pickMouseReceiver(m_widget, event->windowPos().toPoint(), &mapped, event->type(), event->buttons(),
@@ -791,7 +786,6 @@ void QWidgetWindow::handleTabletEvent(QTabletEvent *event)
             widget = m_widget;
 
         qt_tablet_target = widget;
-        qt_tablet_target_window = m_widget;
     }
 
     if (qt_tablet_target) {
@@ -804,10 +798,8 @@ void QWidgetWindow::handleTabletEvent(QTabletEvent *event)
         QGuiApplication::sendSpontaneousEvent(qt_tablet_target, &ev);
     }
 
-    if (event->type() == QEvent::TabletRelease) {
+    if (event->type() == QEvent::TabletRelease)
         qt_tablet_target = 0;
-        qt_tablet_target_window = 0;
-    }
 }
 #endif // QT_NO_TABLETEVENT
 

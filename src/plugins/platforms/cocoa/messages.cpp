@@ -90,6 +90,14 @@ QPlatformMenuItem::MenuRole detectMenuRole(const QString &caption)
         || caption.startsWith(QCoreApplication::translate("QCocoaMenuItem", "Exit"), Qt::CaseInsensitive)) {
         return QPlatformMenuItem::QuitRole;
     }
+    if (!caption.compare(QCoreApplication::translate("QCocoaMenuItem", "Cut"), Qt::CaseInsensitive))
+        return QPlatformMenuItem::CutRole;
+    if (!caption.compare(QCoreApplication::translate("QCocoaMenuItem", "Copy"), Qt::CaseInsensitive))
+        return QPlatformMenuItem::CopyRole;
+    if (!caption.compare(QCoreApplication::translate("QCocoaMenuItem", "Paste"), Qt::CaseInsensitive))
+        return QPlatformMenuItem::PasteRole;
+    if (!caption.compare(QCoreApplication::translate("QCocoaMenuItem", "Select All"), Qt::CaseInsensitive))
+        return QPlatformMenuItem::SelectAllRole;
     return QPlatformMenuItem::NoRole;
 }
 

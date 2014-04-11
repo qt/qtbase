@@ -27,6 +27,10 @@
 #include <xcb/xcb.h>
 #include <xkbcommon/xkbcommon.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @file
  * libxkbcommon-x11 API - Additional X11 support for xkbcommon.
@@ -163,4 +167,8 @@ xkb_x11_state_new_from_device(struct xkb_keymap *keymap,
 
 /** @} */
 
+#ifdef __cplusplus
+} /* extern "C" */
 #endif
+
+#endif /* _XKBCOMMON_X11_H */

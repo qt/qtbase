@@ -633,7 +633,7 @@ void tst_QPushButton::sizeHint()
         tabWidget->addTab(tab2, "2");
         QVBoxLayout *mainLayout = new QVBoxLayout(dialog);
         mainLayout->addWidget(tabWidget);
-        dialog->show();
+        dialog->showNormal();
         tabWidget->setCurrentWidget(tab2);
         tabWidget->setCurrentWidget(tab1);
         QTest::qWait(100);

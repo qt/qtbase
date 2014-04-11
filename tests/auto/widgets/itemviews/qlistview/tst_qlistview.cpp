@@ -1468,15 +1468,16 @@ void tst_QListView::wordWrap()
     model.setStringList(list);
     lv.setModel(&model);
     lv.setWordWrap(true);
-    lv.setFixedSize(150, 150);
-#ifdef Q_OS_BLACKBERRY
-    // BB standard font size is too big, triggering
-    // a horizontal scrollbar even when word-wrapping
-    // is enabled
+    lv.setFixedSize(400, 150);
+
+#if defined Q_OS_BLACKBERRY
     QFont font = lv.font();
-    font.setPointSize(5);
+    // On BB10 the root window is stretched over the whole screen
+    // This makes sure that the text will be long enough to produce
+    // a vertical scrollbar
+    font.setPixelSize(50);
     lv.setFont(font);
-#endif // Q_OS_BLACKBERRY
+#endif
     lv.showNormal();
     QApplication::processEvents();
 
@@ -2019,7 +2020,7 @@ void tst_QListView::taskQTBUG_9455_wrongScrollbarRanges()
     w.setViewMode(QListView::IconMode);
     w.resize(116, 132);
     w.setMovement(QListView::Static);
-    const int spacing = 40;
+    const int spacing = 200;
     w.setSpacing(spacing);
     w.showNormal();
     QVERIFY(QTest::qWaitForWindowExposed(&w));
@@ -2113,6 +2114,12 @@ void tst_QListView::taskQTBUG_21115_scrollToAndHiddenItems_data()
 
 void tst_QListView::taskQTBUG_21115_scrollToAndHiddenItems()
 {
+#if defined Q_OS_BLACKBERRY
+    // On BB10 we need to create a root window which is automatically stretched
+    // over the whole screen
+    QWindow rootWindow;
+    rootWindow.show();
+#endif
     QFETCH(int, flow);
 
     QListView lv;
@@ -2309,6 +2316,12 @@ void tst_QListView::spacing()
 
 void tst_QListView::testScrollToWithHidden()
 {
+#if defined Q_OS_BLACKBERRY
+    // On BB10 we need to create a root window which is automatically stretched
+    // over the whole screen
+    QWindow rootWindow;
+    rootWindow.show();
+#endif
     QListView lv;
 
     QStringListModel model;
@@ -2321,7 +2334,7 @@ void tst_QListView::testScrollToWithHidden()
     lv.setRowHidden(1, true);
     lv.setSpacing(5);
 
-    lv.show();
+    lv.showNormal();
     QTest::qWaitForWindowExposed(&lv);
 
     QCOMPARE(lv.verticalScrollBar()->value(), 0);

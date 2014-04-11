@@ -93,7 +93,6 @@ bool qt_try_modal(QWidget *widget, QEvent::Type type)
         return true;
 
     bool block_event  = false;
-    bool paint_event = false;
 
     switch (type) {
 #if 0
@@ -113,7 +112,7 @@ bool qt_try_modal(QWidget *widget, QEvent::Type type)
         break;
     }
 
-    if ((block_event || paint_event) && top->parentWidget() == 0)
+    if (block_event && top && top->parentWidget() == 0)
         top->raise();
 
     return !block_event;
@@ -126,8 +125,15 @@ bool QApplicationPrivate::modalState()
 
 QWidget *qt_tlw_for_window(QWindow *wnd)
 {
-    while (wnd && !wnd->isTopLevel()) // QTBUG-32177, wnd might be a QQuickView embedded via window container.
-        wnd = wnd->parent();
+    // QTBUG-32177, wnd might be a QQuickView embedded via window container.
+    while (wnd && !wnd->isTopLevel()) {
+        QWindow *parent = wnd->parent();
+        // Don't end up in windows not belonging to this application
+        if (parent && parent->type() != Qt::ForeignWindow)
+            wnd = wnd->parent();
+        else
+            break;
+    }
     if (wnd)
         foreach (QWidget *tlw, qApp->topLevelWidgets())
             if (tlw->windowHandle() == wnd)

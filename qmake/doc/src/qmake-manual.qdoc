@@ -1696,11 +1696,10 @@
     If the OpenGL implementation uses EGL (most OpenGL/ES systems),
     then QMAKE_INCDIR_EGL may also need to be set.
 
-    \section1 QMAKE_INCDIR_OPENGL_ES1, QMAKE_INCDIR_OPENGL_ES2
+    \section1 QMAKE_INCDIR_OPENGL_ES2
 
-    These variables specify the location of OpenGL headers files to be added
-    to \l{INCLUDEPATH} when building a target with OpenGL ES 1
-    or OpenGL ES 2 support respectively.
+    This variable specifies the location of OpenGL header files to be added
+    to \l{INCLUDEPATH} when building a target with OpenGL ES 2 support.
 
     The value of this variable is typically handled by qmake or
     \l{#QMAKESPEC}{qmake.conf} and rarely

@@ -39,9 +39,4 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMDEFS_H
-#define QPLATFORMDEFS_H
-
-#include "../common/qnx/qplatformdefs.h"
-
-#endif // QPLATFORMDEFS_H
+#include "../qnx-armle-v7-qcc/qplatformdefs.h"

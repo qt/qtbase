@@ -30,111 +30,6 @@
 #include "expr.h"
 #include "include.h"
 
-/*
- * The xkb_types section
- * =====================
- * This section is the second to be processesed, after xkb_keycodes.
- * However, it is completely independent and could have been the first
- * to be processed (it does not refer to specific keys as specified in
- * the xkb_keycodes section).
- *
- * This section defines key types, which, given a key and a keyboard
- * state (i.e. modifier state and group), determine the shift level to
- * be used in translating the key to keysyms. These types are assigned
- * to each group in each key, in the xkb_symbols section.
- *
- * Key types are called this way because, in a way, they really describe
- * the "type" of the key (or more correctly, a specific group of the
- * key). For example, an ordinary keymap will provide a type called
- * "KEYPAD", which consists of two levels, with the second level being
- * chosen according to the state of the Num Lock (or Shift) modifiers.
- * Another example is a type called "ONE_LEVEL", which is usually
- * assigned to keys such as Escape; these have just one level and are
- * not affected by the modifier state. Yet more common examples are
- * "TWO_LEVEL" (with Shift choosing the second level), "ALPHABETIC"
- * (where Caps Lock may also choose the second level), etc.
- *
- * Type definitions
- * ----------------
- *  Statements of the form:
- *      type "FOUR_LEVEL" { ... }
- *
- * The above would create a new type named "FOUR_LEVEL".
- * The body of the definition may include statements of the following
- * forms:
- *
- * - level_name statements (mandatory for each level in the type):
- *      level_name[Level1] = "Base";
- *
- *   Gives each level in this type a descriptive name. It isn't used
- *   for any thing.
- *   Note: A level may be specified as Level[1-8] or just a number (can
- *   be more than 8).
- *
- * - modifiers statement (mandatory, should be specified only once):
- *      modifiers = Shift+Lock+LevelThree;
- *
- *   A mask of real and virtual modifiers. These are the only modifiers
- *   being considered when matching the modifier state against the type.
- *   The other modifiers, whether active or not, are masked out in the
- *   calculation.
- *
- * - map entry statements (should have at least as many mappings as there
- *   are levels in the type):
- *      map[Shift+LevelThree] = Level4;
- *
- *   If the active modifiers, masked with the type's modifiers (as stated
- *   above), match (i.e. equal) the modifiers inside the map[] statement,
- *   then the level in the right hand side is chosen. For example, in the
- *   above, if in the current keyboard state the Shift and LevelThree
- *   modifiers are active, while the Lock modifier is not, then the
- *   keysym(s) in the 4th level of the group will be returned to the
- *   user.
- *
- * - preserve statements:
- *      map[Shift+Lock+LevelThree] = Level5;
- *      preserve[Shift+Lock+LevelThree] = Lock;
- *
- *   When a map entry matches the active modifiers and the level it
- *   specified is chosen, then these modifiers are said to be "consumed";
- *   for example, in a simple US keymap where the "g" key is assigned an
- *   ordinary ALPHABETIC key type, if the Lock (Caps Lock) modifier is
- *   active and the key is pressed, then a "G" keysym is produced (as
- *   opposed to lower-case "g"). This is because the type definition has
- *   a map entry like the following:
- *      map[Lock] = Level2;
- *   And as such the Lock modifier is consumed. This information is
- *   relevant for applications which further process the modifiers,
- *   since by then the consumed modifiers have already "done their part"
- *   and should be masked out.
- *
- *   However, sometimes even if a modifier is actually used to choose
- *   the shift level (as Lock above), it should *not* be reported as
- *   consumed, for various reasons. In this case, a preserve[] statement
- *   can be used to augment the map entry. The modifiers inside the square
- *   brackets should match one of the map[] statements in the type. The
- *   right hand side should consists of modifiers from the left hand
- *   side; these modifiers are then "preserved" and not reported as
- *   consumed.
- *
- * Virtual modifier statements
- * ---------------------------
- * Statements of the form:
- *     virtual_modifiers LControl;
- *
- * Can appear in the xkb_types, xkb_compat, xkb_symbols sections.
- * TODO
- *
- * Effect on keymap
- * ----------------
- * After all of the xkb_types sections have been compiled, the following
- * members of struct xkb_keymap are finalized:
- *      struct xkb_key_type *types;
- *      unsigned int num_types;
- *      char *types_section_name;
- * TODO: virtual modifiers.
- */
-
 enum type_field {
     TYPE_FIELD_MASK       = (1 << 0),
     TYPE_FIELD_MAP        = (1 << 1),
@@ -287,10 +182,16 @@ MergeIncludedKeyTypes(KeyTypesInfo *into, KeyTypesInfo *from,
         from->name = NULL;
     }
 
-    darray_foreach(type, from->types) {
-        type->merge = (merge == MERGE_DEFAULT ? type->merge : merge);
-        if (!AddKeyType(into, type, false))
-            into->errorCount++;
+    if (darray_empty(into->types)) {
+        into->types = from->types;
+        darray_init(from->types);
+    }
+    else {
+        darray_foreach(type, from->types) {
+            type->merge = (merge == MERGE_DEFAULT ? type->merge : merge);
+            if (!AddKeyType(into, type, false))
+                into->errorCount++;
+        }
     }
 }
 
@@ -738,7 +639,7 @@ HandleKeyTypesFile(KeyTypesInfo *info, XkbFile *file, enum merge_mode merge)
             ok = true;
             break;
         case STMT_VMOD:
-            ok = HandleVModDef(info->keymap, (VModDef *) stmt);
+            ok = HandleVModDef(info->keymap, (VModDef *) stmt, merge);
             break;
         default:
             log_err(info->keymap->ctx,

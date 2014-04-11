@@ -273,7 +273,15 @@ bool QLibraryPrivate::unload_sys()
 #  else
     if (dlclose(pHnd)) {
 #  endif
+#  if defined (Q_OS_QNX)              // Workaround until fixed in QNX; fixes crash in
+        char *error = dlerror();      // QtDeclarative auto test "qqmlenginecleanup" for instance
+        if (!qstrcmp(error, "Shared objects still referenced")) // On QNX that's only "informative"
+            return true;
+        errorString = QLibrary::tr("Cannot unload library %1: %2").arg(fileName)
+                                                                  .arg(QLatin1String(error));
+#  else
         errorString = QLibrary::tr("Cannot unload library %1: %2").arg(fileName).arg(qdlerror());
+#  endif
         return false;
     }
 #endif

@@ -16,6 +16,7 @@ SUBDIRS=\
    networkselftest \
    qaccessibility \
    qaccessibilitylinux \
+   qaccessibilitymac \
    qcomplextext \
    qfocusevent \
    qnetworkaccessmanager_and_qprogressdialog \
@@ -33,7 +34,6 @@ SUBDIRS=\
    languagechange \
    modeltest \
    qaccessibility \
-   qcomplextext \
    qfocusevent \
    qnetworkaccessmanager_and_qprogressdialog \
    qsharedpointer_and_qwidget \

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -49,6 +49,7 @@
 #include <QSqlQuery>
 #include <QRegExp>
 #include <QDir>
+#include <QScopedPointer>
 #include <QVariant>
 #include <QDebug>
 #include <QSqlTableModel>
@@ -248,7 +249,7 @@ public:
         dbNames.append( cName );
     }
 
-    void addDbs()
+    bool addDbs()
     {
         //addDb("QOCI", "localhost", "system", "penandy");
 //         addDb( "QOCI8", "//horsehead.qt-project.org:1521/pony.troll.no", "scott", "tiger" ); // Oracle 9i on horsehead
@@ -302,7 +303,10 @@ public:
 
 //      use in-memory database to prevent local files
 //         addDb("QSQLITE", ":memory:");
-         addDb( "QSQLITE", QDir::toNativeSeparators(dbDir.path() + "/foo.db") );
+        QTemporaryDir *sqLiteDir = dbDir();
+        if (!sqLiteDir)
+            return false;
+        addDb( QStringLiteral("QSQLITE"), QDir::toNativeSeparators(sqLiteDir->path() + QStringLiteral("/foo.db")) );
 //         addDb( "QSQLITE2", QDir::toNativeSeparators(dbDir.path() + "/foo2.db") );
 //         addDb( "QODBC3", "DRIVER={SQL SERVER};SERVER=iceblink.qt-project.org\\ICEBLINK", "troll", "trond", "" );
 //         addDb( "QODBC3", "DRIVER={SQL Native Client};SERVER=silence.qt-project.org\\SQLEXPRESS", "troll", "trond", "" );
@@ -319,11 +323,14 @@ public:
 //         addDb( "QODBC3", "DRIVER={SQL SERVER};SERVER=bq-winserv2008-x86-01.qt-project.org;DATABASE=testdb;PORT=1433", "testuser", "Ee4Gabf6_", "" );
 //         addDb( "QODBC", "DRIVER={Microsoft Access Driver (*.mdb)};DBQ=c:\\dbs\\access\\testdb.mdb", "", "", "" );
 //         addDb( "QODBC", "DRIVER={Postgresql};SERVER=bq-pgsql84.qt-project.org;DATABASE=testdb", "testuser", "Ee4Gabf6_", "" );
+         return true;
     }
 
-    void open()
+    // 'false' return indicates a system error, for example failure to create a temporary directory.
+    bool open()
     {
-        addDbs();
+        if (!addDbs())
+            return false;
 
         QStringList::Iterator it = dbNames.begin();
 
@@ -341,6 +348,7 @@ public:
                 }
             }
         }
+        return true;
     }
 
     void close()
@@ -589,7 +597,21 @@ public:
 
     QStringList     dbNames;
     int      counter;
-    QTemporaryDir dbDir;
+
+private:
+    QTemporaryDir *dbDir()
+    {
+        if (m_dbDir.isNull()) {
+            m_dbDir.reset(new QTemporaryDir);
+            if (!m_dbDir->isValid()) {
+                qWarning() << Q_FUNC_INFO << "Unable to create a temporary directory: " << QDir::toNativeSeparators(m_dbDir->path());
+                m_dbDir.reset();
+            }
+        }
+        return m_dbDir.data();
+    }
+
+    QScopedPointer<QTemporaryDir> m_dbDir;
 };
 
 #endif

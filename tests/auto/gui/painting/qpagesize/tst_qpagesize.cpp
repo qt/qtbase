@@ -137,10 +137,13 @@ void tst_QPageSize::basics()
 
     // Comparisons
     QCOMPARE((a4 == folio), false);
+    QCOMPARE((a4 != folio), true);
     QCOMPARE((a4.isEquivalentTo(folio)), false);
     QCOMPARE((a4 == a4b), true);
+    QCOMPARE((a4 != a4b), false);
     QCOMPARE((a4.isEquivalentTo(a4b)), true);
     QCOMPARE((folio == folio2), false);  // Name different
+    QCOMPARE((folio != folio2), true);  // Name different
     QCOMPARE((folio.isEquivalentTo(folio2)), true);
 
     // Simple QSize in Millimeters

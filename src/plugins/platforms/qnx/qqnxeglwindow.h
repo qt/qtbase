@@ -65,9 +65,6 @@ public:
 
     void setGeometry(const QRect &rect);
 
-    // Called by QQnxGLContext::createSurface()
-    QSize requestedBufferSize() const;
-
 protected:
     int pixelFormat() const;
     void resetBuffers();

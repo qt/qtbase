@@ -333,20 +333,18 @@ void QOpenGLBuffer::destroy()
 bool QOpenGLBuffer::read(int offset, void *data, int count)
 {
 #if !defined(QT_OPENGL_ES)
-    if (QOpenGLContext::openGLModuleType() != QOpenGLContext::GLES1) {
-        Q_D(QOpenGLBuffer);
-        if (!d->funcs->hasOpenGLFeature(QOpenGLFunctions::Buffers) || !d->guard->id())
-            return false;
-        while (d->funcs->glGetError() != GL_NO_ERROR) ; // Clear error state.
-        d->funcs->glGetBufferSubData(d->type, offset, count, data);
-        return d->funcs->glGetError() == GL_NO_ERROR;
-    }
+    Q_D(QOpenGLBuffer);
+    if (!d->funcs->hasOpenGLFeature(QOpenGLFunctions::Buffers) || !d->guard->id())
+        return false;
+    while (d->funcs->glGetError() != GL_NO_ERROR) ; // Clear error state.
+    d->funcs->glGetBufferSubData(d->type, offset, count, data);
+    return d->funcs->glGetError() == GL_NO_ERROR;
 #else
     Q_UNUSED(offset);
     Q_UNUSED(data);
     Q_UNUSED(count);
-#endif
     return false;
+#endif
 }
 
 /*!

@@ -62,6 +62,7 @@ public:
     };
 
     bool create();
+    bool isCreated() const;
     void destroy();
 
     void bind();

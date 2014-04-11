@@ -713,7 +713,7 @@ void tst_QGridLayout::spacingsAndMargins()
 
     grid1.setColumnStretch(columns-1, 1);
     grid1.setRowStretch(rows-1, 1);
-    toplevel.show();
+    toplevel.showNormal();
     toplevel.adjustSize();
     QApplication::processEvents();
     QVERIFY(QTest::qWaitForWindowExposed(&toplevel));
@@ -1230,6 +1230,9 @@ void tst_QGridLayout::layoutSpacing_data()
         style->reimplementSubelementRect = true;
         QApplication::setStyle(style);
         QWidget *w = new QWidget();
+        QFont font;
+        font.setPixelSize(10);
+        w->setFont(font);
         setFrameless(w);
         QGridLayout *layout = new QGridLayout();
         QPushButton *pb1 = new QPushButton(QLatin1String("Push 1"), w);

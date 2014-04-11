@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -177,6 +177,7 @@ public Q_SLOTS:
     void authenticationRequired(QNetworkReply*,QAuthenticator*);
     void proxyAuthenticationRequired(const QNetworkProxy &,QAuthenticator*);
     void pipeliningHelperSlot();
+    void emitErrorForAllRepliesSlot();
 
 #ifndef QT_NO_SSL
     void sslErrors(QNetworkReply*,const QList<QSslError> &);
@@ -448,6 +449,8 @@ private Q_SLOTS:
 
     void ftpAuthentication_data();
     void ftpAuthentication();
+
+    void emitErrorForAllReplies(); // QTBUG-36890
 
 #ifdef QT_BUILD_INTERNAL
     void backgroundRequest_data();
@@ -4873,6 +4876,7 @@ void tst_QNetworkReply::ioPostToHttpUploadProgress()
     //test file must be larger than OS socket buffers (~830kB on MacOS 10.6)
     QFile sourceFile(testDataDir + "/image1.jpg");
     QVERIFY(sourceFile.open(QIODevice::ReadOnly));
+    const qint64 sourceFileSize = sourceFile.size();
 
     // emulate a minimal http server
     QTcpServer server;
@@ -4897,24 +4901,32 @@ void tst_QNetworkReply::ioPostToHttpUploadProgress()
     QTestEventLoop::instance().enterLoop(5);
     // some progress should have been made
     QVERIFY(!spy.isEmpty());
-    QList<QVariant> args = spy.last();
+    const QList<QVariant> args = spy.last();
     QVERIFY(!args.isEmpty());
-    QVERIFY(args.at(0).toLongLong() > 0);
-    // but not everything!
-    QVERIFY(args.at(0).toLongLong() != sourceFile.size());
+    const qint64 bufferedUploadProgress = args.at(0).toLongLong();
+    QVERIFY(bufferedUploadProgress > 0);
+    // but not everything? - Note however, that under CI virtualization,
+    // particularly on Windows, it frequently happens that the whole file
+    // is uploaded in one chunk.
+    if (bufferedUploadProgress == sourceFileSize) {
+        qWarning() << QDir::toNativeSeparators(sourceFile.fileName())
+                   << "of" << sourceFileSize << "bytes was uploaded in one go.";
+    }
 
     // set the read buffer to unlimited
     incomingSocket->setReadBufferSize(0);
     QTestEventLoop::instance().enterLoop(10);
     // progress should be finished
     QVERIFY(!spy.isEmpty());
-    QList<QVariant> args3 = spy.last();
+    const QList<QVariant> args3 = spy.last();
     QVERIFY(!args3.isEmpty());
     // More progress than before
-    QVERIFY(args3.at(0).toLongLong() > args.at(0).toLongLong());
-    QCOMPARE(args3.at(0).toLongLong(), args3.at(1).toLongLong());
+    const qint64 unbufferedUploadProgress = args3.at(0).toLongLong();
+    if (bufferedUploadProgress < sourceFileSize)
+        QVERIFY(unbufferedUploadProgress > bufferedUploadProgress);
+    QCOMPARE(unbufferedUploadProgress, args3.at(1).toLongLong());
     // And actually finished..
-    QCOMPARE(args3.at(0).toLongLong(), sourceFile.size());
+    QCOMPARE(unbufferedUploadProgress, sourceFileSize);
 
     // after sending this, the QNAM should emit finished()
     connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
@@ -7465,6 +7477,12 @@ void tst_QNetworkReply::pipeliningHelperSlot() {
     }
 }
 
+void tst_QNetworkReply::emitErrorForAllRepliesSlot() {
+    static int a = 0;
+    if (++a == 3)
+        QTestEventLoop::instance().exitLoop();
+}
+
 void tst_QNetworkReply::closeDuringDownload_data()
 {
     QTest::addColumn<QUrl>("url");
@@ -7511,6 +7529,37 @@ void tst_QNetworkReply::ftpAuthentication()
 
     QCOMPARE(reply->url(), request.url());
     QCOMPARE(reply->error(), QNetworkReply::NetworkError(error));
+}
+
+void tst_QNetworkReply::emitErrorForAllReplies() // QTBUG-36890
+{
+    // port 100 is not well-known and should be closed
+    QList<QUrl> urls = QList<QUrl>() << QUrl("http://localhost:100/request1")
+                                     << QUrl("http://localhost:100/request2")
+                                     << QUrl("http://localhost:100/request3");
+    QList<QNetworkReply *> replies;
+    QList<QSignalSpy *> errorSpies;
+    QList<QSignalSpy *> finishedSpies;
+    for (int a = 0; a < urls.count(); ++a) {
+        QNetworkRequest request(urls.at(a));
+        QNetworkReply *reply = manager.get(request);
+        replies.append(reply);
+        QSignalSpy *errorSpy = new QSignalSpy(reply, SIGNAL(error(QNetworkReply::NetworkError)));
+        errorSpies.append(errorSpy);
+        QSignalSpy *finishedSpy = new QSignalSpy(reply, SIGNAL(finished()));
+        finishedSpies.append(finishedSpy);
+        QObject::connect(reply, SIGNAL(finished()), SLOT(emitErrorForAllRepliesSlot()));
+    }
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    for (int a = 0; a < urls.count(); ++a) {
+        QVERIFY(replies.at(a)->isFinished());
+        QCOMPARE(errorSpies.at(a)->count(), 1);
+        errorSpies.at(a)->deleteLater();
+        QCOMPARE(finishedSpies.at(a)->count(), 1);
+        finishedSpies.at(a)->deleteLater();
+        replies.at(a)->deleteLater();
+    }
 }
 
 #ifdef QT_BUILD_INTERNAL

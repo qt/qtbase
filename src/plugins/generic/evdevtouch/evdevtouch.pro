@@ -1,6 +1,7 @@
 TARGET = qevdevtouchplugin
 
 PLUGIN_TYPE = generic
+PLUGIN_EXTENDS = -
 PLUGIN_CLASS_NAME = QEvdevTouchScreenPlugin
 load(qt_plugin)
 

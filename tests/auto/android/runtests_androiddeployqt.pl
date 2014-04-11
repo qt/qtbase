@@ -68,9 +68,18 @@ my $android_sdk_dir = "$ENV{'ANDROID_SDK_ROOT'}";
 my $android_ndk_dir = "$ENV{'ANDROID_NDK_ROOT'}";
 my $android_to_connect = "$ENV{'ANDROID_DEVICE'}";
 my $ant_tool = `which ant`;
+my $silent = 0;
 chomp $ant_tool;
 my $strip_tool="";
 my $readelf_tool="";
+# for ci usage
+my @failures = '';
+my $total_tests = 0;
+my $total_failed = 0;
+my $failed_insignificants = 0;
+my $ci_use = 0;
+my $start = time();
+
 GetOptions('h|help' => \$help
             , man => \$man
             , 's|serial=s' => \$device_serial
@@ -87,10 +96,15 @@ GetOptions('h|help' => \$help
             , 'strip=s' => \$strip_tool
             , 'readelf=s' => \$readelf_tool
             , 'testcase=s' => \$testcase
+            , 'silent' => sub { $silent = 1 }
+            , 'ci' => sub { $ci_use = 1 }
             ) or pod2usage(2);
 pod2usage(1) if $help;
 pod2usage(-verbose => 2) if $man;
 
+if ($ci_use){
+    use QMake::Project;
+}
 my $adb_tool="$android_sdk_dir/platform-tools/adb";
 
 # For CI. Nodes are connecting to test devices over IP, which is stored to env variable
@@ -139,6 +153,123 @@ sub popd ()
     dir;
 }
 
+##############################
+# Read possible insignificance
+# from pro file
+##############################
+sub check_if_insignificant
+{
+    return 0 if ( !$ci_use );
+    my $case = shift;
+    my $insignificant = 0;
+    my $prj = QMake::Project->new( 'Makefile' );
+    $insignificant = $prj->test( 'insignificant_test' );
+    return $insignificant;
+}
+
+##############################
+# Print output from given
+# $testresult.txt file
+##############################
+sub print_output
+{
+    my $res_file = shift;
+    my $case = shift;
+    my $insignificant = shift;
+    my $print_all = 0;
+    $total_tests++;
+    if (-e $res_file) {
+            open my $file, $res_file or die "Could not open $res_file: $!";
+            while (my $line = <$file>) {
+                    if ($line =~ m/^FAIL/) {
+                        print "$line";
+                        # Pretend to be like the "real" testrunner and print out
+                        # all steps
+                        $print_all = 1;
+                    }
+            }
+            close $file;
+            if ($print_all) {
+                    # In case we are printing all, the test failed
+                    system("cat $res_file");
+                    if ($insignificant) {
+                            print " Testrunner: $case failed, but it is marked with insignificant_test\n";
+                            push (@failures ,(basename($case)." [insignificant]"));
+                            $failed_insignificants++;
+                    } else {
+                            $total_failed++;
+                            push (@failures ,(basename($case)));
+                    }
+            } else {
+                    my $cmd = "sed -n 'x;\$p' ${res_file}";
+                    my $summary = qx(${cmd});
+                    if ($summary =~ m/^Totals/) {
+                        print "$summary";
+                    } else {
+                        print "Error: The log is incomplete. Looks like you have to increase the timeout.";
+                        # The test log seems inclomplete, considering the test as failed.
+                        if ($insignificant) {
+                            print " Testrunner: $case failed, but it is marked with insignificant_test\n";
+                            push (@failures ,(basename($case)." [insignificant]"));
+                            $failed_insignificants++;
+                        } else {
+                            $total_failed++;
+                            push (@failures ,(basename($case)));
+                        }
+                    }
+            }
+    } else {
+        if ($insignificant) {
+            print " Failed to execute $case, but it is marked with insignificant_test\n";
+            push (@failures ,(basename($case)." [insignificant]"));
+                        $failed_insignificants++;
+        } else {
+                print "Failed to execute $case \n";
+                $total_failed++;
+                push (@failures ,(basename($case)));
+            }
+    }
+}
+
+##############################
+# Print summary of test run
+##############################
+
+sub print_summary
+{
+    my $total = time()-$start;
+    my $h = 0;
+    my $m = 0;
+    my $s = 0;
+    my $exit = 0;
+    print "=== Timing: =================== TEST RUN COMPLETED! ============================\n";
+    if ($total > 60*60) {
+        $h = int($total/60/60);
+        $s = int($total - $h*60*60);
+
+        $m = int($s/60);
+        $s = 0;
+        print "Total:                                       $h hours $m minutes\n";
+    } elsif ($total > 60) {
+        $m = int($total/60);
+        $s = int($total - $m*60);
+        print "Total:                                       $m minutes $s seconds\n";
+    } else {
+        $s = int($total);
+        print "Total:                                       $s seconds\n";
+    }
+
+    print "=== Failures: ==================================================================";
+    foreach my $failed (@failures) {
+        print $failed."\n";
+        $exit = 1;
+    }
+    print "=== Totals: ".$total_tests." tests, ".($total_tests-$total_failed).
+          " passes, ".$failed_insignificants.
+          " insignificant fails ======================\n";
+    return $exit;
+}
+
 
 sub waitForProcess
 {
@@ -147,8 +278,8 @@ sub waitForProcess
     my $timeout=shift;
     my $sleepPeriod=shift;
     $sleepPeriod=1 if !defined($sleepPeriod);
-    print "Waiting for $process ".$timeout*$sleepPeriod." seconds to";
-    print $action?" start...\n":" die...\n";
+    print "Waiting for $process ".$timeout*$sleepPeriod." seconds to" if (!$silent);
+    print $action?" start...\n":" die...\n" if (!$silent);
     while ($timeout--)
     {
         my $output = `$adb_tool $device_serial shell ps 2>&1`; # get current processes
@@ -156,13 +287,13 @@ sub waitForProcess
         my $res=($output =~ m/.*S $process/)?1:0; # check the procress
         if ($action == $res)
         {
-            print "... succeed\n";
+            print "... succeed\n"  if (!$silent);
             return 1;
         }
         sleep($sleepPeriod);
-        print "timeount in ".$timeout*$sleepPeriod." seconds\n"
+        print "timeount in ".$timeout*$sleepPeriod." seconds\n" if (!$silent);
     }
-    print "... failed\n";
+    print "... failed\n" if (!$silent);
     return 0;
 }
 
@@ -191,6 +322,7 @@ sub startTest
     my $packageName = "org.qtproject.example.tst_$testName";
     my $intentName = "$packageName/org.qtproject.qt5.android.bindings.QtActivity";
     my $output_file = shift;
+    my $insignificance = shift;
     my $get_xml= 0;
     my $get_txt= 0;
     my $testLib ="";
@@ -206,7 +338,9 @@ sub startTest
         $get_txt = 1;
     }
 
-    system("$adb_tool $device_serial shell am start -e applicationArguments \"$testLib\" -n $intentName"); # start intent
+    my $cmd="${adb_tool} ${device_serial} shell am start -e applicationArguments \"${testLib}\" -n ${intentName}";
+    my $res = qx(${cmd});
+    print $res if (!$silent);
     #wait to start (if it has not started and quit already)
     waitForProcess($packageName,1,10);
 
@@ -223,6 +357,11 @@ sub startTest
 
     system("$adb_tool $device_serial pull /data/data/$packageName/output.xml $output_dir/$output_file.xml") if ($get_xml);
     system("$adb_tool $device_serial pull /data/data/$packageName/output.txt $output_dir/$output_file.txt") if ($get_txt);
+    if ($get_txt){
+       print "Tesresults for $packageName:\n";
+       my $insig =
+       print_output("$output_dir/$output_file.txt", $packageName, $insignificance);
+    }
     return 1;
 }
 
@@ -244,9 +383,18 @@ foreach (split("\n",$testsFiles))
 {
     chomp; #remove white spaces
     pushd(abs_path(dirname($_))); # cd to application dir
-    system("make INSTALL_ROOT=$temp_dir install"); # install the application to temp dir
+    my $insig = check_if_insignificant();
+    my $cmd="make INSTALL_ROOT=${temp_dir} install";
+    my $res = qx(${cmd});
+    print $res if (!$silent);
     my $application=basename(cwd);
-    system("androiddeployqt --install $deployqt_device_serial --output $temp_dir --deployment debug --verbose --input android-libtst_$application.so-deployment-settings.json");
+    if ($silent) {
+        $cmd="androiddeployqt --install ${deployqt_device_serial} --output ${temp_dir} --deployment debug --verbose --input android-libtst_${application}.so-deployment-settings.json >/dev/null 2>&1";
+    } else {
+        $cmd="androiddeployqt --install ${deployqt_device_serial} --output ${temp_dir} --deployment debug --verbose --input android-libtst_${application}.so-deployment-settings.json";
+    }
+    $res = qx(${cmd});
+    print $res if (!$silent);
     my $output_name=dirname($_);
     $output_name =~ s/\.//;   # remove first "." character
     $output_name =~ s/\///;   # remove first "/" character
@@ -272,12 +420,13 @@ foreach (split("\n",$testsFiles))
     }
     else
     {
-         startTest($application, "$output_name") or warn "Can't run $application ...\n";
+         startTest($application, "$output_name", $insig) or warn "Can't run $application ...\n";
     }
 
     popd();
     remove_tree( $temp_dir, {keep_root => 1} );
 }
+print_summary() if ($ci_use);
 popd();
 
 __END__
@@ -337,6 +486,15 @@ The format of log file, default is xml.
 =item B<--runtime = minutes>
 
 The timeout period before stopping individual tests from running.
+
+=item B<-silent>
+
+Suppress output of system commands.
+
+=item B<-ci>
+
+Enables checking if test is insignificant or not. Also prints test
+summary after all tests has been executed.
 
 =item B<-h  --help>
 

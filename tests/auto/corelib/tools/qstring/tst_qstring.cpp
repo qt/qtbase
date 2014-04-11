@@ -4277,14 +4277,23 @@ void tst_QString::capacity()
     QVERIFY( (int)s2.capacity() >= res );
     QCOMPARE( s2, s1 );
 
+    s2 = s1;    // share again
     s2.reserve( res * 2 );
     QVERIFY( (int)s2.capacity() >=  res * 2 );
+    QVERIFY(s2.constData() != s1.constData());
     QCOMPARE( s2, s1 );
 
+    // don't share again -- s2 must be detached for squeeze() to do anything
     s2.squeeze();
     QVERIFY( (int)s2.capacity() == res );
     QCOMPARE( s2, s1 );
 
+    s2 = s1;    // share again
+    int oldsize = s1.size();
+    s2.reserve( res / 2 );
+    QVERIFY( (int)s2.capacity() >=  res / 2 );
+    QVERIFY( (int)s2.capacity() >=  oldsize );
+    QCOMPARE( s2, s1 );
 }
 
 void tst_QString::section_data()

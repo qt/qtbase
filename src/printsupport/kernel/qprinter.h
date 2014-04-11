@@ -307,11 +307,17 @@ public:
     void setCreator(const QString &);
     QString creator() const;
 
+#ifdef Q_QDOC
     bool setPageLayout(const QPageLayout &pageLayout);
     bool setPageSize(const QPageSize &pageSize);
     bool setPageOrientation(QPageLayout::Orientation orientation);
+    bool setPageMargins(const QMarginsF &margins);
     bool setPageMargins(const QMarginsF &margins, QPageLayout::Unit units);
     QPageLayout pageLayout() const;
+#else
+    using QPagedPaintDevice::setPageSize;
+    using QPagedPaintDevice::setPageMargins;
+#endif
 
     void setOrientation(Orientation);
     Orientation orientation() const;

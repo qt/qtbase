@@ -94,14 +94,23 @@ QXcbShmImage::QXcbShmImage(QXcbScreen *screen, const QSize &size, uint depth, QI
     , m_gc_window(0)
 {
     Q_XCB_NOOP(connection());
-    m_xcb_image = xcb_image_create_native(xcb_connection(),
-                                          size.width(),
-                                          size.height(),
-                                          XCB_IMAGE_FORMAT_Z_PIXMAP,
-                                          depth,
-                                          0,
-                                          ~0,
-                                          0);
+
+    const xcb_setup_t *setup = xcb_get_setup(xcb_connection());
+    xcb_format_t *fmt = xcb_setup_pixmap_formats(setup);
+    xcb_format_t *fmtend = fmt + xcb_setup_pixmap_formats_length(setup);
+    for (; fmt != fmtend; ++fmt)
+        if (fmt->depth == depth)
+            break;
+
+    Q_ASSERT(fmt != fmtend);
+
+    m_xcb_image = xcb_image_create(size.width(), size.height(),
+                                   XCB_IMAGE_FORMAT_Z_PIXMAP,
+                                   fmt->scanline_pad,
+                                   fmt->depth, fmt->bits_per_pixel, 0,
+                                   QSysInfo::ByteOrder == QSysInfo::BigEndian ? XCB_IMAGE_ORDER_MSB_FIRST : XCB_IMAGE_ORDER_LSB_FIRST,
+                                   XCB_IMAGE_ORDER_MSB_FIRST,
+                                   0, ~0, 0);
 
     const int segmentSize = m_xcb_image->stride * m_xcb_image->height;
     if (!segmentSize)
@@ -209,10 +218,13 @@ void QXcbShmImage::put(xcb_window_t window, const QPoint &target, const QRect &s
         // at least 16384 bytes. That should be enough for quite large images.
         Q_ASSERT(rows_per_put > 0);
 
+        // Convert the image to the native byte order.
+        xcb_image_t *converted_image = xcb_image_native(xcb_connection(), m_xcb_image, 1);
+
         while (height > 0) {
             int rows = std::min(height, rows_per_put);
 
-            xcb_image_t *subimage = xcb_image_subimage(m_xcb_image, src_x, src_y, width, rows,
+            xcb_image_t *subimage = xcb_image_subimage(converted_image, src_x, src_y, width, rows,
                                                        0, 0, 0);
             xcb_image_put(xcb_connection(),
                           window,
@@ -228,6 +240,9 @@ void QXcbShmImage::put(xcb_window_t window, const QPoint &target, const QRect &s
             target_y += rows;
             height -= rows;
         }
+
+        if (converted_image != m_xcb_image)
+            xcb_image_destroy(converted_image);
     }
     Q_XCB_NOOP(connection());
 

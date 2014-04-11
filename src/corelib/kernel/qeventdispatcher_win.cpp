@@ -435,10 +435,10 @@ static inline UINT inputTimerMask()
     UINT result = QS_TIMER | QS_INPUT | QS_RAWINPUT;
     // QTBUG 28513, QTBUG-29097, QTBUG-29435: QS_TOUCH, QS_POINTER became part of
     // QS_INPUT in Windows Kit 8. They should not be used when running on pre-Windows 8.
-#if defined(_MSC_VER) && _MSC_VER >= 1700
+#if WINVER > 0x0602
     if (QSysInfo::WindowsVersion < QSysInfo::WV_WINDOWS8)
         result &= ~(QS_TOUCH | QS_POINTER);
-#endif //  _MSC_VER >= 1700
+#endif //  WINVER > 0x0602
     return result;
 }
 

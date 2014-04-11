@@ -644,6 +644,13 @@
           </property>
          </widget>
         </item>
+        <item>
+         <widget class="QPushButton" name="m_directPrintButton">
+          <property name="text">
+           <string>Direct Print</string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </widget>
      </item>

@@ -48,10 +48,7 @@
 
 #include <xkbcommon/xkbcommon.h>
 #ifndef QT_NO_XKB
-// note: extern won't be needed from libxkbcommon 0.4.1 and above
-extern "C" {
 #include <xkbcommon/xkbcommon-x11.h>
-}
 #endif
 
 #include <QEvent>
@@ -79,9 +76,9 @@ public:
     void updateXKBMods();
     quint32 xkbModMask(quint16 state);
     void updateXKBStateFromCore(quint16 state);
+#ifndef QT_NO_XKB
     // when XKEYBOARD is present on the X server
     int coreDeviceId() const { return core_device_id; }
-#ifndef QT_NO_XKB
     void updateXKBState(xcb_xkb_state_notify_event_t *state);
 #endif
 
@@ -89,10 +86,10 @@ protected:
     void handleKeyEvent(QWindow *window, QEvent::Type type, xcb_keycode_t code, quint16 state, xcb_timestamp_t time);
 
     void resolveMaskConflicts();
-    QString keysymToUnicode(xcb_keysym_t sym) const;
+    QString lookupString(struct xkb_state *state, xcb_keycode_t code) const;
     int keysymToQtKey(xcb_keysym_t keysym) const;
     int keysymToQtKey(xcb_keysym_t keysym, Qt::KeyboardModifiers &modifiers, QString text) const;
-    void printKeymapError(const QString &error) const;
+    void printKeymapError(const char *error) const;
 
     void readXKBConfig();
     void clearXKBConfig();
@@ -134,9 +131,11 @@ private:
         xkb_mod_index_t mod5;
     };
     _xkb_mods xkb_mods;
+#ifndef QT_NO_XKB
     // when XKEYBOARD is present on the X server
     _mod_masks vmod_masks;
     int core_device_id;
+#endif
 };
 
 QT_END_NAMESPACE

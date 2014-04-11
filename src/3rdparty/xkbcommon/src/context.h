@@ -91,20 +91,9 @@ ATTR_PRINTF(4, 5) void
 xkb_log(struct xkb_context *ctx, enum xkb_log_level level, int verbosity,
         const char *fmt, ...);
 
-const char *
-xkb_context_get_default_rules(struct xkb_context *ctx);
-
-const char *
-xkb_context_get_default_model(struct xkb_context *ctx);
-
-const char *
-xkb_context_get_default_layout(struct xkb_context *ctx);
-
-const char *
-xkb_context_get_default_variant(struct xkb_context *ctx);
-
-const char *
-xkb_context_get_default_options(struct xkb_context *ctx);
+void
+xkb_context_sanitize_rule_names(struct xkb_context *ctx,
+                                struct xkb_rule_names *rmlvo);
 
 /*
  * The format is not part of the argument list in order to avoid the

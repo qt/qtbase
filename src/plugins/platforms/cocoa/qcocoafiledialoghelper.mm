@@ -52,6 +52,7 @@
 #include <private/qguiapplication_p.h>
 #include "qt_mac_p.h"
 #include "qcocoahelpers.h"
+#include "qcocoamenubar.h"
 #include <qregexp.h>
 #include <qbuffer.h>
 #include <qdebug.h>
@@ -225,6 +226,7 @@ static QString strippedText(QString s)
             || [self panel:nil shouldShowFilename:filepath];
 
         [self updateProperties];
+        QCocoaMenuBar::redirectKnownMenuItemsToFirstResponder();
         [mOpenPanel setAllowedFileTypes:nil];
         [mSavePanel setNameFieldStringValue:selectable ? QT_PREPEND_NAMESPACE(QCFString::toNSString)(info.fileName()) : @""];
 
@@ -250,7 +252,9 @@ static QString strippedText(QString s)
     // cleanup of modal sessions. Do this before showing the native dialog, otherwise it will
     // close down during the cleanup.
     qApp->processEvents(QEventLoop::ExcludeUserInputEvents | QEventLoop::ExcludeSocketNotifiers);
+    QCocoaMenuBar::redirectKnownMenuItemsToFirstResponder();
     mReturnCode = [mSavePanel runModal];
+    QCocoaMenuBar::resetKnownMenuItemsToQt();
 
     QAbstractEventDispatcher::instance()->interrupt();
     return (mReturnCode == NSOKButton);
@@ -269,6 +273,7 @@ static QString strippedText(QString s)
         || [self panel:nil shouldShowFilename:filepath];
 
     [self updateProperties];
+    QCocoaMenuBar::redirectKnownMenuItemsToFirstResponder();
     [mSavePanel setDirectoryURL: [NSURL fileURLWithPath:mCurrentDir]];
 
     [mSavePanel setNameFieldStringValue:selectable ? QCFString::toNSString(info.fileName()) : @""];
@@ -583,6 +588,7 @@ void QCocoaFileDialogHelper::QNSOpenSavePanelDelegate_selectionChanged(const QSt
 
 void QCocoaFileDialogHelper::QNSOpenSavePanelDelegate_panelClosed(bool accepted)
 {
+    QCocoaMenuBar::resetKnownMenuItemsToQt();
     if (accepted) {
         emit accept();
     } else {

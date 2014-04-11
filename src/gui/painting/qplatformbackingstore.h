@@ -111,7 +111,7 @@ public:
 #ifndef QT_NO_OPENGL
     virtual void composeAndFlush(QWindow *window, const QRegion &region, const QPoint &offset, QPlatformTextureList *textures, QOpenGLContext *context);
     virtual QImage toImage() const;
-    virtual GLuint toTexture(const QRegion &dirtyRegion) const;
+    virtual GLuint toTexture(const QRegion &dirtyRegion, QSize *textureSize) const;
 #endif
 
     virtual void resize(const QSize &size, const QRegion &staticContents) = 0;

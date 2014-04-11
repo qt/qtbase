@@ -560,8 +560,7 @@ bool QNetworkReplyHttpImplPrivate::loadFromCacheIfAllowed(QHttpNetworkRequest &h
         if (!expirationDate.isValid()) {
             if (lastModified.isValid()) {
                 int diff = currentDateTime.secsTo(lastModified);
-                expirationDate = lastModified;
-                expirationDate.addSecs(diff / 10);
+                expirationDate = lastModified.addSecs(diff / 10);
                 if (httpRequest.headerField("Warning").isEmpty()) {
                     QDateTime dt;
                     dt.setTime_t(current_age);

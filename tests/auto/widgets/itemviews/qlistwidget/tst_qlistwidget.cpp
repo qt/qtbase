@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -43,7 +43,6 @@
 #include <QtTest/QtTest>
 #include <QtGui/QtGui>
 #include <QtWidgets/QtWidgets>
-#include <qeventloop.h>
 #include <qlist.h>
 
 #include <qlistwidget.h>
@@ -209,14 +208,7 @@ void tst_QListWidget::cleanupTestCase()
 void tst_QListWidget::init()
 {
     testWidget->clear();
-
-    if (testWidget->viewport()->children().count() > 0) {
-        QEventLoop eventLoop;
-        for (int i=0; i < testWidget->viewport()->children().count(); ++i)
-            connect(testWidget->viewport()->children().at(i), SIGNAL(destroyed()), &eventLoop, SLOT(quit()));
-        QTimer::singleShot(100, &eventLoop, SLOT(quit()));
-        eventLoop.exec();
-    }
+    QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
 }
 
 void tst_QListWidget::checkDefaultValues()
@@ -317,7 +309,8 @@ void tst_QListWidget::closePersistentEditor()
     // actual test
     childCount = testWidget->viewport()->children().count();
     testWidget->closePersistentEditor(item);
-    QTRY_COMPARE(testWidget->viewport()->children().count(), childCount - 1);
+    QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
+    QCOMPARE(testWidget->viewport()->children().count(), childCount - 1);
 }
 
 void tst_QListWidget::setItemHidden()
@@ -1582,7 +1575,7 @@ void tst_QListWidget::task217070_scrollbarsAdjusted()
     for(int f=150; f>90 ; f--) {
         v.resize(f,100);
         QTest::qWait(30);
-        QVERIFY(vbar->style()->styleHint(QStyle::SH_ScrollBar_Transient) || vbar->isVisible());
+        QVERIFY(vbar->style()->styleHint(QStyle::SH_ScrollBar_Transient, 0, vbar) || vbar->isVisible());
         //the horizontal scrollbar must not be visible.
         QVERIFY(!hbar->isVisible());
     }

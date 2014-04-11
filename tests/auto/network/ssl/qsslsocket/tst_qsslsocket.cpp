@@ -192,6 +192,8 @@ private slots:
     void resume();
     void qtbug18498_peek();
     void qtbug18498_peek2();
+    void dhServer();
+    void ecdhServer();
     void setEmptyDefaultConfiguration(); // this test should be last
 
     static void exitLoop()
@@ -1004,6 +1006,7 @@ public:
     QString m_keyFile;
     QString m_certFile;
     QString m_interFile;
+    QString ciphers;
 
 protected:
     void incomingConnection(qintptr socketDescriptor)
@@ -1035,6 +1038,10 @@ protected:
             QVERIFY(interCert.first().handle());
 
             socket->setLocalCertificateChain(localCert + interCert);
+        }
+
+        if (!ciphers.isEmpty()) {
+            socket->setCiphers(ciphers);
         }
 
         QVERIFY(socket->setSocketDescriptor(socketDescriptor, QAbstractSocket::ConnectedState));
@@ -2663,6 +2670,66 @@ void tst_QSslSocket::qtbug18498_peek2()
     QCOMPARE(server->readAll(), QByteArray("goodbye\r\n"));
     client->disconnectFromHost();
     QVERIFY(client->waitForDisconnected(5000));
+}
+
+void tst_QSslSocket::dhServer()
+{
+    if (!QSslSocket::supportsSsl()) {
+        qWarning("SSL not supported, skipping test");
+        return;
+    }
+
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return;
+
+    SslServer server;
+    server.ciphers = QLatin1String("DHE-RSA-AES256-SHA:DHE-DSS-AES256-SHA");
+    QVERIFY(server.listen());
+
+    QEventLoop loop;
+    QTimer::singleShot(5000, &loop, SLOT(quit()));
+
+    QSslSocketPtr client(new QSslSocket);
+    socket = client.data();
+    connect(socket, SIGNAL(error(QAbstractSocket::SocketError)), &loop, SLOT(quit()));
+    connect(socket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(ignoreErrorSlot()));
+    connect(socket, SIGNAL(encrypted()), &loop, SLOT(quit()));
+
+    client->connectToHostEncrypted(QHostAddress(QHostAddress::LocalHost).toString(), server.serverPort());
+
+    loop.exec();
+    QVERIFY(client->state() == QAbstractSocket::ConnectedState);
+}
+
+void tst_QSslSocket::ecdhServer()
+{
+    if (!QSslSocket::supportsSsl()) {
+        qWarning("SSL not supported, skipping test");
+        return;
+    }
+
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return;
+
+    SslServer server;
+    server.ciphers = QLatin1String("ECDHE-RSA-AES128-SHA");
+    QVERIFY(server.listen());
+
+    QEventLoop loop;
+    QTimer::singleShot(5000, &loop, SLOT(quit()));
+
+    QSslSocketPtr client(new QSslSocket);
+    socket = client.data();
+    connect(socket, SIGNAL(error(QAbstractSocket::SocketError)), &loop, SLOT(quit()));
+    connect(socket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(ignoreErrorSlot()));
+    connect(socket, SIGNAL(encrypted()), &loop, SLOT(quit()));
+
+    client->connectToHostEncrypted(QHostAddress(QHostAddress::LocalHost).toString(), server.serverPort());
+
+    loop.exec();
+    QVERIFY(client->state() == QAbstractSocket::ConnectedState);
 }
 
 void tst_QSslSocket::setEmptyDefaultConfiguration() // this test should be last, as it has some side effects

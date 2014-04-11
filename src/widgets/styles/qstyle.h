@@ -702,6 +702,7 @@ public:
         SH_ToolTip_FallAsleepDelay,
         SH_Widget_Animate,
         SH_Splitter_OpaqueResize,
+        SH_ComboBox_UseNativePopup,
         SH_LineEdit_PasswordMaskDelay,
         // Add new style hint values here
 

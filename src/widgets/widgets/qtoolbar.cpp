@@ -83,6 +83,7 @@ void QToolBarPrivate::init()
     q->setBackgroundRole(QPalette::Button);
     q->setAttribute(Qt::WA_Hover);
     q->setAttribute(Qt::WA_X11NetWmWindowTypeToolBar);
+    q->setProperty("_q_platform_MacUseNSWindow", QVariant(true));
 
     QStyle *style = q->style();
     int e = style->pixelMetric(QStyle::PM_ToolBarIconSize, 0, q);
@@ -1039,6 +1040,21 @@ static bool waitForPopup(QToolBar *tb, QWidget *popup)
     return false;
 }
 
+#ifdef Q_OS_OSX
+static void enableMacToolBar(QToolBar *toolbar, bool enable)
+{
+    QPlatformNativeInterface *nativeInterface = QApplication::platformNativeInterface();
+    QPlatformNativeInterface::NativeResourceForIntegrationFunction function =
+        nativeInterface->nativeResourceFunctionForIntegration("setContentBorderAreaEnabled");
+    if (!function)
+        return; // Not Cocoa platform plugin.
+
+    typedef void (*SetContentBorderAreaEnabledFunction)(QWindow *window, void *identifier, bool enabled);
+    (reinterpret_cast<SetContentBorderAreaEnabledFunction>(function))(toolbar->window()->windowHandle(), toolbar, enable);
+}
+#endif
+
+
 /*! \reimp */
 bool QToolBar::event(QEvent *event)
 {
@@ -1061,6 +1077,9 @@ bool QToolBar::event(QEvent *event)
         // fallthrough intended
     case QEvent::Show:
         d->toggleViewAction->setChecked(event->type() == QEvent::Show);
+#ifdef Q_OS_OSX
+        enableMacToolBar(this, event->type() == QEvent::Show);
+#endif
         emit visibilityChanged(event->type() == QEvent::Show);
         break;
     case QEvent::ParentChange:
