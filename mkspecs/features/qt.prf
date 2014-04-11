@@ -73,10 +73,11 @@ wince*:static:gui {
    QTLIB += qmenu_wce.res
 }
 
-# static builds: link qml import plugins into the app.
 qt_module_deps = $$QT $$QT_PRIVATE
 qt_module_deps = $$replace(qt_module_deps, -private$, _private)
 qt_module_deps = $$resolve_depends(qt_module_deps, "QT.")
+
+# static builds: link qml import plugins into the app.
 contains(qt_module_deps, qml): \
         contains(QT_CONFIG, static):contains(TEMPLATE, .*app):!host_build:!no_import_scan {
     # run qmlimportscanner
@@ -162,6 +163,37 @@ contains(qt_module_deps, qml): \
     }
 }
 
+contains(TEMPLATE, .*app) {
+    autoplugs =
+    for (qtmod, qt_module_deps) {
+        for (ptype, QT.$${qtmod}.plugin_types) {
+            isEmpty(QTPLUGIN.$$ptype) {
+                for (plug, QT_PLUGINS) {
+                    equals(QT_PLUGIN.$${plug}.TYPE, $$ptype) {
+                        for (dep, QT_PLUGIN.$${plug}.EXTENDS) {
+                            !contains(qt_module_deps, $$dep) {
+                                plug =
+                                break()
+                            }
+                        }
+                        autoplugs += $$plug
+                    }
+                }
+            } else {
+                plug = $$eval(QTPLUGIN.$$ptype)
+                !equals(plug, -): \
+                    autoplugs += $$plug
+            }
+        }
+    }
+    manualplugs = $$QTPLUGIN
+    manualplugs -= $$autoplugs
+    QTPLUGIN -= $$manualplugs
+    !isEmpty(QTPLUGIN): \
+        warning("Redundant entries in QTPLUGIN: $$QTPLUGIN")
+    QTPLUGIN = $$manualplugs $$autoplugs
+}
+
 QT_PLUGIN_VERIFY = DEPLOYMENT_PLUGIN
 contains(QT_CONFIG, static) {
     QT_PLUGIN_VERIFY += QTPLUGIN
@@ -209,7 +241,12 @@ for(QT_CURRENT_VERIFY, $$list($$QT_PLUGIN_VERIFY)) {
 
         # Only link against plugin in static builds
         isEqual(QT_CURRENT_VERIFY, QTPLUGIN): {
-            !isEmpty(QT_PLUGINPATH): LIBS *= -L$$[QT_INSTALL_PLUGINS/get]/$$QT_PLUGINPATH
+            !isEmpty(QT_PLUGINPATH) {
+                plugpath = $$eval(QT_PLUGIN.$${QTPLUG}.PATH)
+                isEmpty(plugpath): \
+                    plugpath = $$[QT_INSTALL_PLUGINS/get]
+                LIBS *= -L$$plugpath/$$QT_PLUGINPATH
+            }
                 LIBS += $$QT_LINKAGE
             # if the plugin is linked statically there is no need to deploy it
             DEPLOYMENT_PLUGIN -= $$QT_CURRENT_VERIFY

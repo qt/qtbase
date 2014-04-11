@@ -75,6 +75,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.lang.System;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -806,6 +807,13 @@ public class QtActivityDelegate
             c = composed;
         }
 
+        if ((keyCode == KeyEvent.KEYCODE_VOLUME_UP
+            || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN
+            || keyCode == KeyEvent.KEYCODE_MUTE)
+            && System.getenv("QT_ANDROID_VOLUME_KEYS") == null) {
+            return false;
+        }
+
         m_lastChar = lc;
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             m_backKeyPressedSent = !m_keyboardIsVisible;
@@ -829,6 +837,13 @@ public class QtActivityDelegate
                 e.printStackTrace();
                 return false;
             }
+        }
+
+        if ((keyCode == KeyEvent.KEYCODE_VOLUME_UP
+            || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN
+            || keyCode == KeyEvent.KEYCODE_MUTE)
+            && System.getenv("QT_ANDROID_VOLUME_KEYS") == null) {
+            return false;
         }
 
         if (keyCode == KeyEvent.KEYCODE_BACK && !m_backKeyPressedSent) {

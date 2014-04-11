@@ -71,7 +71,8 @@ bool QAndroidPlatformOpenGLContext::needsFBOReadBackWorkaroud()
         const char *rendererString = reinterpret_cast<const char *>(glGetString(GL_RENDERER));
         needsWorkaround =
                 qstrcmp(rendererString, "Mali-400 MP") == 0
-                || qstrcmp(rendererString, "Adreno (TM) 200") == 0;
+                || qstrcmp(rendererString, "Adreno (TM) 200") == 0
+                || qstrcmp(rendererString, "GC1000 core") == 0;
         set = true;
     }
 

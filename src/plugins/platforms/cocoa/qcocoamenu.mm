@@ -269,7 +269,6 @@ void QCocoaMenu::insertMenuItem(QPlatformMenuItem *menuItem, QPlatformMenuItem *
     QCocoaMenuItem *cocoaItem = static_cast<QCocoaMenuItem *>(menuItem);
     QCocoaMenuItem *beforeItem = static_cast<QCocoaMenuItem *>(before);
 
-    SET_COCOA_MENU_ANCESTOR(menuItem, this);
     cocoaItem->sync();
     if (beforeItem) {
         int index = m_menuItems.indexOf(beforeItem);
@@ -315,6 +314,7 @@ void QCocoaMenu::insertNative(QCocoaMenuItem *item, QCocoaMenuItem *beforeItem)
     } else {
         [m_nativeMenu addItem: item->nsItem()];
     }
+    SET_COCOA_MENU_ANCESTOR(item, this);
 }
 
 void QCocoaMenu::removeMenuItem(QPlatformMenuItem *menuItem)

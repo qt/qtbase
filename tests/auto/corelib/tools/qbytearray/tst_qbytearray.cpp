@@ -1855,6 +1855,21 @@ void tst_QByteArray::reserve()
         QVERIFY(data == qba.data());
     }
 
+    qba.resize(capacity);
+
+    QByteArray copy = qba;
+    qba.reserve(capacity / 2);
+    QCOMPARE(qba.size(), capacity); // we didn't shrink the size!
+    QCOMPARE(qba.capacity(), capacity);
+    QCOMPARE(copy.capacity(), capacity);
+
+    copy = qba;
+    qba.reserve(capacity * 2);
+    QCOMPARE(qba.size(), capacity);
+    QCOMPARE(qba.capacity(), capacity * 2);
+    QCOMPARE(copy.capacity(), capacity);
+    QVERIFY(qba.constData() != data);
+
     QByteArray nil1, nil2;
     nil1.reserve(0);
     nil2.squeeze();

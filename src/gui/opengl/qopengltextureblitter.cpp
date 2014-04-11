@@ -282,6 +282,12 @@ bool QOpenGLTextureBlitter::create()
     return true;
 }
 
+bool QOpenGLTextureBlitter::isCreated() const
+{
+    Q_D(const QOpenGLTextureBlitter);
+    return d->program;
+}
+
 void QOpenGLTextureBlitter::destroy()
 {
     Q_D(QOpenGLTextureBlitter);

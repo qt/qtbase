@@ -269,12 +269,12 @@
 
     S390 is big-endian.
 */
-// #elif defined(__s390__)
-// #  define Q_PROCESSOR_S390
-// #  if defined(__s390x__)
-// #    define Q_PROCESSOR_S390_X
-// #  endif
-// #  define Q_BYTE_ORDER Q_BIG_ENDIAN
+#elif defined(__s390__)
+#  define Q_PROCESSOR_S390
+#  if defined(__s390x__)
+#    define Q_PROCESSOR_S390_X
+#  endif
+#  define Q_BYTE_ORDER Q_BIG_ENDIAN
 
 /*
     SuperH family, optional revision: SH-4A

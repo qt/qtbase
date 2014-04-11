@@ -70,6 +70,15 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     QAction *quitAction = fileMenu->addAction(tr("Quit"));
     quitAction->setShortcut(QKeySequence(QKeySequence::Quit));
     connect(quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
+    QMenu *editMenu = menuBar()->addMenu(tr("&Edit"));
+    QAction *action = editMenu->addAction(tr("Cut"));
+    action->setShortcut(QKeySequence(QKeySequence::Quit));
+    action = editMenu->addAction(tr("Copy"));
+    action->setShortcut(QKeySequence(QKeySequence::Copy));
+    action = editMenu->addAction(tr("Paste"));
+    action->setShortcut(QKeySequence(QKeySequence::Paste));
+    action = editMenu->addAction(tr("Select All"));
+    action->setShortcut(QKeySequence(QKeySequence::SelectAll));
     QTabWidget *tabWidget = new QTabWidget;
     tabWidget->addTab(new FileDialogPanel, tr("QFileDialog"));
     tabWidget->addTab(new ColorDialogPanel, tr("QColorDialog"));

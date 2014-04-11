@@ -105,15 +105,29 @@ static void devMessageHandler(QtMsgType type, const QMessageLogContext &context,
 class AppContainer : public Microsoft::WRL::RuntimeClass<Core::IFrameworkView>
 {
 public:
-    AppContainer(int argc, char *argv[]) : m_argc(argc)
+    AppContainer(int argc, char *argv[]) : m_argc(argc), m_deleteArgv0(false)
     {
         m_argv.reserve(argc);
-        for (int i = 0; i < argc; ++i)
+        for (int i = 0; i < argc; ++i) {
+            // Workaround for empty argv[0] which occurs when WMAppManifest's ImageParams is used
+            // The second argument is taken to be the executable
+            if (i == 0 && argc >= 2 && !qstrlen(argv[0])) {
+                const QByteArray argv0 = QDir::current()
+                        .absoluteFilePath(QString::fromLatin1(argv[1])).toUtf8();
+                m_argv.append(qstrdup(argv0.constData()));
+                m_argc -= 1;
+                m_deleteArgv0 = true;
+                ++i;
+                continue;
+            }
             m_argv.append(argv[i]);
+        }
     }
 
     ~AppContainer()
     {
+        if (m_deleteArgv0)
+            delete[] m_argv[0];
         for (int i = m_argc; i < m_argv.size(); ++i)
             delete[] m_argv[i];
     }
@@ -186,6 +200,7 @@ private:
 
     int m_argc;
     QVector<char *> m_argv;
+    bool m_deleteArgv0;
     EventRegistrationToken m_activationToken;
 };
 

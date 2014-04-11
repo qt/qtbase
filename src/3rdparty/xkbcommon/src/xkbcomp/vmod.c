@@ -30,27 +30,64 @@
 #include "vmod.h"
 
 bool
-HandleVModDef(struct xkb_keymap *keymap, VModDef *stmt)
+HandleVModDef(struct xkb_keymap *keymap, VModDef *stmt,
+              enum merge_mode merge)
 {
     xkb_mod_index_t i;
-    const struct xkb_mod *mod;
+    struct xkb_mod *mod;
+    xkb_mod_mask_t mapping;
     struct xkb_mod new;
 
-    if (stmt->value)
-        log_err(keymap->ctx,
-                "Support for setting a value in a virtual_modifiers statement has been removed; "
-                "Value ignored\n");
+    merge = (merge == MERGE_DEFAULT ? stmt->merge : merge);
+
+    if (stmt->value) {
+        /*
+         * This is a statement such as 'virtualModifiers NumLock = Mod1';
+         * it sets the vmod-to-real-mod[s] mapping directly instead of going
+         * through modifier_map or some such.
+         */
+        if (!ExprResolveModMask(keymap, stmt->value, MOD_REAL, &mapping)) {
+            log_err(keymap->ctx,
+                    "Declaration of %s ignored\n",
+                    xkb_atom_text(keymap->ctx, stmt->name));
+            return false;
+        }
+    }
+    else {
+        mapping = 0;
+    }
 
     darray_enumerate(i, mod, keymap->mods) {
         if (mod->name == stmt->name) {
-            if (mod->type == MOD_VIRT)
+            if (mod->type != MOD_VIRT) {
+                log_err(keymap->ctx,
+                        "Can't add a virtual modifier named \"%s\"; "
+                        "there is already a non-virtual modifier with this name! Ignored\n",
+                        xkb_atom_text(keymap->ctx, mod->name));
+                return false;
+            }
+
+            if (mod->mapping == mapping)
                 return true;
 
-            log_err(keymap->ctx,
-                    "Can't add a virtual modifier named \"%s\"; "
-                    "there is already a non-virtual modifier with this name! Ignored\n",
-                    xkb_atom_text(keymap->ctx, mod->name));
-            return false;
+            if (mod->mapping != 0) {
+                xkb_mod_mask_t use, ignore;
+
+                use = (merge == MERGE_OVERRIDE ? mapping : mod->mapping);
+                ignore = (merge == MERGE_OVERRIDE ? mod->mapping : mapping);
+
+                log_warn(keymap->ctx,
+                         "Virtual modifier %s defined multiple times; "
+                         "Using %s, ignoring %s\n",
+                         xkb_atom_text(keymap->ctx, stmt->name),
+                         ModMaskText(keymap, use),
+                         ModMaskText(keymap, ignore));
+
+                mapping = use;
+            }
+
+            mod->mapping = mapping;
+            return true;
         }
     }
 
@@ -62,7 +99,7 @@ HandleVModDef(struct xkb_keymap *keymap, VModDef *stmt)
     }
 
     new.name = stmt->name;
-    new.mapping = 0;
+    new.mapping = mapping;
     new.type = MOD_VIRT;
     darray_append(keymap->mods, new);
     return true;

@@ -216,9 +216,9 @@ QMutex::~QMutex()
 */
 void QMutex::lock() QT_MUTEX_LOCK_NOEXCEPT
 {
-    if (fastTryLock())
+    QMutexData *current;
+    if (fastTryLock(current))
         return;
-    QMutexData *current = d_ptr.loadAcquire();
     if (QT_PREPEND_NAMESPACE(isRecursive)(current))
         static_cast<QRecursiveMutexPrivate *>(current)->lock(-1);
     else
@@ -250,9 +250,9 @@ void QMutex::lock() QT_MUTEX_LOCK_NOEXCEPT
 */
 bool QMutex::tryLock(int timeout) QT_MUTEX_LOCK_NOEXCEPT
 {
-    if (fastTryLock())
+    QMutexData *current;
+    if (fastTryLock(current))
         return true;
-    QMutexData *current = d_ptr.loadAcquire();
     if (QT_PREPEND_NAMESPACE(isRecursive)(current))
         return static_cast<QRecursiveMutexPrivate *>(current)->lock(timeout);
     else
@@ -268,9 +268,9 @@ bool QMutex::tryLock(int timeout) QT_MUTEX_LOCK_NOEXCEPT
 */
 void QMutex::unlock() Q_DECL_NOTHROW
 {
-    if (fastTryUnlock())
+    QMutexData *current;
+    if (fastTryUnlock(current))
         return;
-    QMutexData *current = d_ptr.loadAcquire();
     if (QT_PREPEND_NAMESPACE(isRecursive)(current))
         static_cast<QRecursiveMutexPrivate *>(current)->unlock();
     else

@@ -171,15 +171,18 @@ QPrint::DeviceState QCocoaPrintDevice::state() const
 
 QPageSize QCocoaPrintDevice::createPageSize(const PMPaper &paper) const
 {
-    QCFString key;
+    CFStringRef key;
     double width;
     double height;
-    QCFString localizedName;
+    CFStringRef localizedName;
     if (PMPaperGetPPDPaperName(paper, &key) == noErr
         && PMPaperGetWidth(paper, &width) == noErr
         && PMPaperGetHeight(paper, &height) == noErr
         && PMPaperCreateLocalizedName(paper, m_printer, &localizedName) == noErr) {
-        return(QPlatformPrintDevice::createPageSize(key, QSize(width, height), localizedName));
+        QPageSize pageSize = QPlatformPrintDevice::createPageSize(QString::fromCFString(key),QSize(width, height),
+                                                                  QString::fromCFString(localizedName));
+        CFRelease(localizedName);
+        return pageSize;
     }
     return QPageSize();
 }
@@ -216,10 +219,11 @@ QPageSize QCocoaPrintDevice::defaultPageSize() const
     QPageSize pageSize;
     PMPageFormat pageFormat;
     PMPaper paper;
-    if (PMCreatePageFormat(&pageFormat) == noErr
-        && PMSessionDefaultPageFormat(m_session, pageFormat) == noErr
-        && PMGetPageFormatPaper(pageFormat, &paper) == noErr) {
-        pageSize = createPageSize(paper);
+    if (PMCreatePageFormat(&pageFormat) == noErr) {
+        if (PMSessionDefaultPageFormat(m_session, pageFormat) == noErr
+            && PMGetPageFormatPaper(pageFormat, &paper) == noErr) {
+            pageSize = createPageSize(paper);
+        }
         PMRelease(pageFormat);
     }
     return pageSize;

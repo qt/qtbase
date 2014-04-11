@@ -384,6 +384,35 @@ QUuid VcprojGenerator::increaseUUID(const QUuid &id)
     return result;
 }
 
+QString VcprojGenerator::retrievePlatformToolSet() const
+{
+    // The PlatformToolset string corresponds to the name of a directory in
+    // $(VCTargetsPath)\Platforms\{Win32,x64,...}\PlatformToolsets
+    // e.g. v90, v100, v110, v110_xp, v120_CTP_Nov, v120, or WindowsSDK7.1
+
+    // This environment variable may be set by a commandline build
+    // environment such as the Windows SDK command prompt
+    QByteArray envVar = qgetenv("PlatformToolset");
+    if (!envVar.isEmpty())
+        return envVar;
+
+    QString suffix;
+    if (vcProject.Configuration.WinPhone)
+        suffix = "_wp80";
+    else if (project->first("QMAKE_TARGET_OS") == "xp")
+        suffix = "_xp";
+
+    switch (vcProject.Configuration.CompilerVersion)
+    {
+    case NET2012:
+        return QStringLiteral("v110") + suffix;
+    case NET2013:
+        return QStringLiteral("v120") + suffix;
+    default:
+        return QString();
+    }
+}
+
 ProStringList VcprojGenerator::collectDependencies(QMakeProject *proj, QHash<QString, QString> &projLookup,
                                                    QHash<QString, QString> &projGuids,
                                                    QHash<VcsolutionDepend *, QStringList> &extraSubdirs,
@@ -969,10 +998,14 @@ void VcprojGenerator::initConfiguration()
     if (!conf.OutputDirectory.endsWith("\\"))
         conf.OutputDirectory += '\\';
     if (conf.CompilerVersion >= NET2010) {
+        conf.PlatformToolSet = retrievePlatformToolSet();
+
         // The target name could have been changed.
         conf.PrimaryOutput = project->first("TARGET").toQString();
-        if ( !conf.PrimaryOutput.isEmpty() && !project->first("TARGET_VERSION_EXT").isEmpty() && project->isActiveConfig("shared"))
+        if (!conf.PrimaryOutput.isEmpty() && project->first("TEMPLATE") == "vclib"
+                && project->isActiveConfig("shared")) {
             conf.PrimaryOutput.append(project->first("TARGET_VERSION_EXT").toQString());
+        }
     }
 
     if (conf.CompilerVersion >= NET2012) {

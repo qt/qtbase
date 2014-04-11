@@ -674,7 +674,10 @@ int QTextLayout::nextCursorPosition(int oldPos, CursorMode mode) const
 int QTextLayout::previousCursorPosition(int oldPos, CursorMode mode) const
 {
     const QCharAttributes *attributes = d->attributes();
-    if (!attributes || oldPos <= 0 || oldPos > d->layoutData->string.length())
+    int len = d->block.isValid() ? d->block.length() - 1
+                                 : d->layoutData->string.length();
+    Q_ASSERT(len <= d->layoutData->string.length());
+    if (!attributes || oldPos <= 0 || oldPos > len)
         return oldPos;
 
     if (mode == SkipCharacters) {

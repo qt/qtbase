@@ -179,6 +179,19 @@ static bool isVerticalTabs(const QTabBar::Shape shape) {
                 || shape == QTabBar::TriangularWest);
 }
 
+static bool isInMacUnifiedToolbarArea(QWindow *window, int windowY)
+{
+    QPlatformNativeInterface *nativeInterface = QGuiApplication::platformNativeInterface();
+    QPlatformNativeInterface::NativeResourceForIntegrationFunction function =
+        nativeInterface->nativeResourceFunctionForIntegration("testContentBorderPosition");
+    if (!function)
+        return false; // Not Cocoa platform plugin.
+
+    typedef bool (*TestContentBorderPositionFunction)(QWindow *, int);
+    return (reinterpret_cast<TestContentBorderPositionFunction>(function))(window, windowY);
+}
+
+
 void drawTabCloseButton(QPainter *p, bool hover, bool active, bool selected)
 {
     // draw background circle
@@ -239,7 +252,7 @@ QRect rotateTabPainter(QPainter *p, QTabBar::Shape shape, QRect tabRect)
     return tabRect;
 }
 
-void drawTabShape(QPainter *p, const QStyleOptionTabV3 *tabOpt)
+void drawTabShape(QPainter *p, const QStyleOptionTabV3 *tabOpt, bool isUnified)
 {
     QRect r = tabOpt->rect;
     p->translate(tabOpt->rect.x(), tabOpt->rect.y());
@@ -256,7 +269,12 @@ void drawTabShape(QPainter *p, const QStyleOptionTabV3 *tabOpt)
         QRect rect(1, 0, width - 2, height);
 
         // fill body
-        if (active) {
+        if (tabOpt->documentMode && isUnified) {
+            p->save();
+            p->setCompositionMode(QPainter::CompositionMode_Source);
+            p->fillRect(rect, QColor(Qt::transparent));
+            p->restore();
+        } else if (active) {
             int d = (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_6) ? 16 : 0;
             p->fillRect(rect, QColor(151 + d, 151 + d, 151 + d));
         } else {
@@ -3721,7 +3739,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             QStyleOptionComboBox comboCopy = *cb;
             comboCopy.direction = Qt::LeftToRight;
             if ((opt->state & QStyle::State_Small) && QSysInfo::macVersion() > QSysInfo::MV_10_6)
-                comboCopy.rect.translate(0, w ? -1 : -2); // Supports Qt Quick Controls
+                comboCopy.rect.translate(0, w ? (QSysInfo::macVersion() > QSysInfo::MV_10_8 ? 0 : -1) : -2); // Supports Qt Quick Controls
             else if (QSysInfo::macVersion() > QSysInfo::MV_10_8)
                 comboCopy.rect.translate(0, 1);
             QCommonStyle::drawControl(CE_ComboBoxLabel, &comboCopy, p, w);
@@ -3733,8 +3751,14 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             if (const QStyleOptionTabV3 *tabOptV3 = qstyleoption_cast<const QStyleOptionTabV3 *>(opt)) {
                 if (tabOptV3->documentMode) {
                     p->save();
-                    // QRect tabRect = tabOptV3->rect;
-                    drawTabShape(p, tabOptV3);
+                    bool isUnified = false;
+                    if (w) {
+                        QRect tabRect = tabOptV3->rect;
+                        QPoint windowTabStart = w->mapTo(w->window(), tabRect.topLeft());
+                        isUnified = isInMacUnifiedToolbarArea(w->window()->windowHandle(), windowTabStart.y());
+                    }
+
+                    drawTabShape(p, tabOptV3, isUnified);
                     p->restore();
                     return;
                 }
@@ -4414,7 +4438,9 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                     QPen pen(strokeColor);
                     p->setPen(pen);
                     p->setBrush(fillColor);
-                    p->drawRect(opt->rect.adjusted(0, 0, -1, -1));
+                    QRect adjusted = opt->rect.adjusted(1, 1, -1, -1);
+                    if (adjusted.isValid())
+                        p->drawRect(adjusted);
                     p->setPen(oldPen);
                     p->setBrush(oldBrush);
                 }
@@ -4440,15 +4466,22 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                     p->fillRect(opt->rect, Qt::transparent);
                     p->restore();
 
-                    // drow horizontal sepearator line at toolBar bottom.
-                    SInt32 margin;
-                    GetThemeMetric(kThemeMetricSeparatorSize, &margin);
-                    CGRect separatorRect = CGRectMake(opt->rect.left(), opt->rect.bottom(), opt->rect.width(), margin);
-                    HIThemeSeparatorDrawInfo separatorDrawInfo;
-                    separatorDrawInfo.version = 0;
-                    separatorDrawInfo.state = qt_macWindowMainWindow(mainWindow) ? kThemeStateActive : kThemeStateInactive;
-                    QMacCGContext cg(p);
-                    HIThemeDrawSeparator(&separatorRect, &separatorDrawInfo, cg, kHIThemeOrientationNormal);
+                    // Drow a horizontal sepearator line at the toolBar bottom if the "unified" area ends here.
+                    // There might be additional toolbars or other widgets such as tab bars in document
+                    // mode below. Determine this by making a unified toolbar area test for the row below
+                    // this toolbar.
+                    QPoint windowToolbarEnd = w->mapTo(w->window(), opt->rect.bottomLeft());
+                    bool isEndOfUnifiedArea = !isInMacUnifiedToolbarArea(w->window()->windowHandle(), windowToolbarEnd.y() + 1);
+                    if (isEndOfUnifiedArea) {
+                        SInt32 margin;
+                        GetThemeMetric(kThemeMetricSeparatorSize, &margin);
+                        CGRect separatorRect = CGRectMake(opt->rect.left(), opt->rect.bottom(), opt->rect.width(), margin);
+                        HIThemeSeparatorDrawInfo separatorDrawInfo;
+                        separatorDrawInfo.version = 0;
+                        separatorDrawInfo.state = qt_macWindowMainWindow(mainWindow) ? kThemeStateActive : kThemeStateInactive;
+                        QMacCGContext cg(p);
+                        HIThemeDrawSeparator(&separatorRect, &separatorDrawInfo, cg, kHIThemeOrientationNormal);
+                    }
                     break;
                 }
             }

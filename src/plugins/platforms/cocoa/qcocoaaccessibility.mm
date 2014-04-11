@@ -55,19 +55,31 @@ QCocoaAccessibility::~QCocoaAccessibility()
 
 void QCocoaAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event)
 {
-    QAccessible::Id interfaceId = event->uniqueId();
-    if (!interfaceId)
+    QCocoaAccessibleElement *element = [QCocoaAccessibleElement elementWithId: event->uniqueId()];
+    if (!element) {
+        qWarning() << "QCocoaAccessibility::notifyAccessibilityUpdate: invalid element";
         return;
+    }
 
     switch (event->type()) {
-        case QAccessible::ValueChanged:
-        case QAccessible::TextInserted :
-        case QAccessible::TextRemoved :
-        case QAccessible::TextUpdated : {
-            QCocoaAccessibleElement *element = [QCocoaAccessibleElement createElementWithId : interfaceId parent : nil];
-            [element autorelease];
-            NSAccessibilityPostNotification(element, NSAccessibilityValueChangedNotification);
-        break; }
+    case QAccessible::Focus: {
+        NSAccessibilityPostNotification(element, NSAccessibilityFocusedUIElementChangedNotification);
+        break;
+    }
+    case QAccessible::StateChanged:
+    case QAccessible::ValueChanged:
+    case QAccessible::TextInserted:
+    case QAccessible::TextRemoved:
+    case QAccessible::TextUpdated:
+        NSAccessibilityPostNotification(element, NSAccessibilityValueChangedNotification);
+        break;
+    case QAccessible::TextCaretMoved:
+    case QAccessible::TextSelectionChanged:
+        NSAccessibilityPostNotification(element, NSAccessibilitySelectedTextChangedNotification);
+        break;
+    case QAccessible::NameChanged:
+        NSAccessibilityPostNotification(element, NSAccessibilityTitleChangedNotification);
+        break;
     default:
         break;
     }
@@ -218,7 +230,7 @@ bool shouldBeIgnored(QAccessibleInterface *interface)
     return false;
 }
 
-NSArray *unignoredChildren(id parentObject, QAccessibleInterface *interface)
+NSArray *unignoredChildren(QAccessibleInterface *interface)
 {
     int numKids = interface->childCount();
     // qDebug() << "Children for: " << axid << iface << " are: " << numKids;
@@ -231,9 +243,12 @@ NSArray *unignoredChildren(id parentObject, QAccessibleInterface *interface)
 
         QAccessible::Id childId = QAccessible::uniqueId(child);
         //qDebug() << "    kid: " << childId << child;
-        QCocoaAccessibleElement *element = [QCocoaAccessibleElement createElementWithId:childId parent:parentObject];
-        [kids addObject: element];
-        [element release];
+
+        QCocoaAccessibleElement *element = [QCocoaAccessibleElement elementWithId: childId];
+        if (element)
+            [kids addObject: element];
+        else
+            qWarning() << "QCocoaAccessibility: invalid child";
     }
     return NSAccessibilityUnignoredChildren(kids);
 }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -42,23 +42,41 @@
 #ifndef QACCESSIBLECACHE_P
 #define QACCESSIBLECACHE_P
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #include <QtCore/qglobal.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qhash.h>
 
 #include "qaccessible.h"
 
+Q_FORWARD_DECLARE_OBJC_CLASS(QCocoaAccessibleElement);
+
 QT_BEGIN_NAMESPACE
 
-
-class QAccessibleCache  :public QObject
+class Q_GUI_EXPORT QAccessibleCache  :public QObject
 {
     Q_OBJECT
 
 public:
+    static QAccessibleCache *instance();
     QAccessibleInterface *interfaceForId(QAccessible::Id id) const;
     QAccessible::Id insert(QObject *object, QAccessibleInterface *iface) const;
     void deleteInterface(QAccessible::Id id, QObject *obj = 0);
+
+#ifdef Q_OS_OSX
+    QCocoaAccessibleElement *elementForId(QAccessible::Id axid) const;
+    void insertElement(QAccessible::Id axid, QCocoaAccessibleElement *element) const;
+#endif
 
 private Q_SLOTS:
     void objectDestroyed(QObject *obj);
@@ -68,6 +86,11 @@ private:
 
     mutable QHash<QAccessible::Id, QAccessibleInterface *> idToInterface;
     mutable QHash<QObject *, QAccessible::Id> objectToId;
+
+#ifdef Q_OS_OSX
+    void removeCocoaElement(QAccessible::Id axid);
+    mutable QHash<QAccessible::Id, QCocoaAccessibleElement *> cocoaElements;
+#endif
 
     friend class QAccessible;
     friend class QAccessibleInterface;

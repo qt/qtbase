@@ -3903,7 +3903,7 @@ void tst_QLineEdit::bidiVisualMovement()
 
     do {
         oldPos = newPos;
-        QVERIFY(oldPos == positionList[i]);
+        QCOMPARE(oldPos, positionList[i]);
         if (basicDir == QChar::DirL) {
             QTest::keyClick(&le, Qt::Key_Right);
         } else
@@ -3913,12 +3913,12 @@ void tst_QLineEdit::bidiVisualMovement()
         i++;
     } while (moved);
 
-    QVERIFY(i == positionList.size());
+    QCOMPARE(i, positionList.size());
 
     do {
         i--;
         oldPos = newPos;
-        QVERIFY(oldPos == positionList[i]);
+        QCOMPARE(oldPos, positionList[i]);
         if (basicDir == QChar::DirL) {
             QTest::keyClick(&le, Qt::Key_Left);
         } else
@@ -3939,6 +3939,7 @@ void tst_QLineEdit::bidiLogicalMovement()
 {
     QFETCH(QString, logical);
     QFETCH(int,     basicDir);
+    QFETCH(IntList, positionList);
 
     QLineEdit le;
     le.setText(logical);
@@ -3951,7 +3952,7 @@ void tst_QLineEdit::bidiLogicalMovement()
 
     do {
         oldPos = newPos;
-        QVERIFY(oldPos == i);
+        QCOMPARE(oldPos, i);
         if (basicDir == QChar::DirL) {
             QTest::keyClick(&le, Qt::Key_Right);
         } else
@@ -3961,10 +3962,12 @@ void tst_QLineEdit::bidiLogicalMovement()
         i++;
     } while (moved);
 
+    QCOMPARE(i, positionList.size());
+
     do {
         i--;
         oldPos = newPos;
-        QVERIFY(oldPos == i);
+        QCOMPARE(oldPos, i);
         if (basicDir == QChar::DirL) {
             QTest::keyClick(&le, Qt::Key_Left);
         } else

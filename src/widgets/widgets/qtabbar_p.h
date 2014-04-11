@@ -182,6 +182,7 @@ public:
     void layoutWidgets(int start = 0);
     void layoutTab(int index);
     void updateMacBorderMetrics();
+    bool isTabInMacUnifiedToolbarArea() const;
     void setupMovableTab();
 
     void makeVisible(int index);

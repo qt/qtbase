@@ -339,10 +339,9 @@ keyword_gperf_lookup (register const char *str, register unsigned int len)
 
 
 int
-keyword_to_token(const char *string)
+keyword_to_token(const char *string, unsigned int len)
 {
-    const struct keyword_tok *kt;
-    kt = keyword_gperf_lookup(string, strlen(string));
+    const struct keyword_tok *kt = keyword_gperf_lookup(string, len);
     if (!kt)
         return -1;
     return kt->tok;

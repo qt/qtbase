@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the config.tests of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -39,13 +39,29 @@
 **
 ****************************************************************************/
 
-#include <GLES/egl.h>
+#include "qaccessiblecache_p.h"
 
-int main(int, char **)
+#ifdef Q_OS_OSX
+
+QT_BEGIN_NAMESPACE
+
+void QAccessibleCache::insertElement(QAccessible::Id axid, QCocoaAccessibleElement *element) const
 {
-    EGLint x = 0;
-    EGLDisplay dpy = 0;
-    EGLContext ctx = 0;
-    eglDestroyContext(dpy, ctx);
-    return 0;
+    cocoaElements[axid] = element;
 }
+
+void QAccessibleCache::removeCocoaElement(QAccessible::Id axid)
+{
+    QCocoaAccessibleElement *element = elementForId(axid);
+    [element invalidate];
+    cocoaElements.remove(axid);
+}
+
+QCocoaAccessibleElement *QAccessibleCache::elementForId(QAccessible::Id axid) const
+{
+    return cocoaElements.value(axid);
+}
+
+QT_END_NAMESPACE
+
+#endif

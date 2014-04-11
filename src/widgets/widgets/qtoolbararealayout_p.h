@@ -232,7 +232,7 @@ public:
     void remove(const QList<int> &path);
     void remove(QLayoutItem *item);
     void clear();
-    QToolBarAreaLayoutItem &item(const QList<int> &path);
+    QToolBarAreaLayoutItem *item(const QList<int> &path);
     QRect itemRect(const QList<int> &path) const;
     QLayoutItem *plug(const QList<int> &path);
     QLayoutItem *unplug(const QList<int> &path, QToolBarAreaLayout *other);

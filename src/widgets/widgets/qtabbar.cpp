@@ -56,6 +56,9 @@
 #ifndef QT_NO_ACCESSIBILITY
 #include "qaccessible.h"
 #endif
+#ifdef Q_OS_OSX
+#include <qpa/qplatformnativeinterface.h>
+#endif
 
 #include "qdebug.h"
 #include "private/qtabbar_p.h"
@@ -80,35 +83,44 @@ inline static bool verticalTabs(QTabBar::Shape shape)
 
 void QTabBarPrivate::updateMacBorderMetrics()
 {
-#if defined(Q_WS_MAC)
-    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_5) {
-        Q_Q(QTabBar);
-        ::HIContentBorderMetrics metrics;
+#if defined(Q_OS_OSX)
+    Q_Q(QTabBar);
+    // Extend the unified title and toolbar area to cover the tab bar iff
+    // 1) the tab bar is in document mode
+    // 2) the tab bar is directly below an "unified" area.
+    // The extending itself is done in the Cocoa platform plugin and Mac style,
+    // this function registers geometry and visibility state for the tab bar.
 
-        // TODO: get metrics to preserve the bottom value
-        // TODO: test tab bar position
-
-        OSWindowRef window = qt_mac_window_for(q);
-
-        // push base line separator down to the client are so we can paint over it (Carbon)
-        metrics.top = (documentMode && q->isVisible()) ? 1 : 0;
-        metrics.bottom = 0;
-        metrics.left = 0;
-        metrics.right = 0;
-        qt_mac_updateContentBorderMetricts(window, metrics);
-        // In Cocoa we need to keep track of the drawRect method.
-        // If documentMode is enabled we need to change it, unless
-        // a toolbar is present.
-        // Notice that all the information is kept in the window,
-        // that's why we get the private widget for it instead of
-        // the private widget for this widget.
-        QWidgetPrivate *privateWidget = qt_widget_private(q->window());
-        if(privateWidget)
-            privateWidget->changeMethods = documentMode;
-        // Since in Cocoa there is no simple way to remove the baseline, so we just ask the
-        // top level to do the magic for us.
-        privateWidget->syncUnifiedMode();
+    // Calculate geometry
+    int upper, lower;
+    if (documentMode) {
+        QPoint windowPos = q->mapTo(q->window(), QPoint(0,0));
+        upper = windowPos.y();
+        int tabStripHeight = q->tabSizeHint(0).height();
+        int pixelTweak = -3;
+        lower = upper + tabStripHeight + pixelTweak;
+    } else {
+        upper = 0;
+        lower = 0;
     }
+
+    QPlatformNativeInterface *nativeInterface = QGuiApplication::platformNativeInterface();
+    quintptr identifier = reinterpret_cast<quintptr>(q);
+
+    // Set geometry
+    QPlatformNativeInterface::NativeResourceForIntegrationFunction function =
+        nativeInterface->nativeResourceFunctionForIntegration("registerContentBorderArea");
+    if (!function)
+        return; // Not Cocoa platform plugin.
+    typedef void (*RegisterContentBorderAreaFunction)(QWindow *window, quintptr identifier, int upper, int lower);
+    (reinterpret_cast<RegisterContentBorderAreaFunction>(function))(q->window()->windowHandle(), identifier, upper, lower);
+
+    // Set visibility state
+    function = nativeInterface->nativeResourceFunctionForIntegration("setContentBorderAreaEnabled");
+    if (!function)
+        return;
+    typedef void (*SetContentBorderAreaEnabledFunction)(QWindow *window, quintptr identifier, bool enable);
+    (reinterpret_cast<SetContentBorderAreaEnabledFunction>(function))(q->window()->windowHandle(), identifier, q->isVisible());
 #endif
 }
 
@@ -1502,6 +1514,9 @@ bool QTabBar::event(QEvent *event)
                                             || (!d->rightB->isHidden() && d->rightB->geometry().contains(pos));
         if (!isEventInCornerButtons)
             emit tabBarDoubleClicked(tabAt(pos));
+    } else if (event->type() == QEvent::Move) {
+        d->updateMacBorderMetrics();
+        return QWidget::event(event);
     }
     return QWidget::event(event);
 }

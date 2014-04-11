@@ -261,6 +261,8 @@ static bool isMouseEvent(NSEvent *ev)
 {
     [self close];
 
+    QCocoaIntegration::instance()->setWindow(self, 0);
+
     if (self.helper.grabbingMouse) {
         self.helper.releaseOnMouseUp = YES;
     } else {
@@ -327,6 +329,7 @@ static bool isMouseEvent(NSEvent *ev)
 {
     [self.helper detachFromPlatformWindow];
     [self close];
+    QCocoaIntegration::instance()->setWindow(self, 0);
     [self release];
 }
 
@@ -619,11 +622,13 @@ void QCocoaWindow::setVisible(bool visible)
             // update the window geometry if there is a parent.
             setGeometry(window()->geometry());
 
-            // Register popup windows so that the parent window can
-            // close them when needed.
-            if (window()->type() == Qt::Popup) {
+            // Register popup windows so that the parent window can close them when needed.
+            if (window()->type() == Qt::Popup || window()->type() == Qt::ToolTip) {
                 // qDebug() << "transientParent and popup" << window()->type() << Qt::Popup << (window()->type() & Qt::Popup);
                 parentCocoaWindow->m_activePopupWindow = window();
+            }
+
+            if (window()->type() == Qt::Popup) {
                 // QTBUG-30266: a window should not be resizable while a transient popup is open
                 // Since this isn't a native popup, the window manager doesn't close the popup when you click outside
                 NSUInteger parentStyleMask = [parentCocoaWindow->m_nsWindow styleMask];
@@ -1210,11 +1215,18 @@ QCocoaGLContext *QCocoaWindow::currentContext() const
 void QCocoaWindow::recreateWindow(const QPlatformWindow *parentWindow)
 {
     bool wasNSWindowChild = m_isNSWindowChild;
-    // TODO Set value for m_isNSWindowChild here
+    m_isNSWindowChild = parentWindow && (window()->property("_q_platform_MacUseNSWindow").toBool());
     bool needsNSWindow = m_isNSWindowChild || !parentWindow;
 
     QCocoaWindow *oldParentCocoaWindow = m_parentCocoaWindow;
     m_parentCocoaWindow = const_cast<QCocoaWindow *>(static_cast<const QCocoaWindow *>(parentWindow));
+    if (m_parentCocoaWindow && m_isNSWindowChild) {
+        QWindow *parentQWindow = m_parentCocoaWindow->window();
+        if (!parentQWindow->property("_q_platform_MacUseNSWindow").toBool()) {
+            parentQWindow->setProperty("_q_platform_MacUseNSWindow", QVariant(true));
+            m_parentCocoaWindow->recreateWindow(m_parentCocoaWindow->m_parentCocoaWindow);
+        }
+    }
 
     bool usesNSPanel = [m_nsWindow isKindOfClass:[QNSPanel class]];
 
@@ -1400,6 +1412,8 @@ QCocoaNSWindow * QCocoaWindow::createNSWindow()
 
     applyContentBorderThickness(createdWindow);
 
+    QCocoaIntegration::instance()->setWindow(createdWindow, this);
+
     return createdWindow;
 }
 
@@ -1466,7 +1480,7 @@ void QCocoaWindow::syncWindowState(Qt::WindowState newState)
 
     if ((m_synchedWindowState & Qt::WindowMaximized) != (newState & Qt::WindowMaximized) || (m_effectivelyMaximized && newState == Qt::WindowNoState)) {
         if ((m_synchedWindowState & Qt::WindowFullScreen) == (newState & Qt::WindowFullScreen)) {
-            [m_nsWindow performZoom : m_nsWindow]; // toggles
+            [m_nsWindow zoom : m_nsWindow]; // toggles
             m_effectivelyMaximized = !m_effectivelyMaximized;
         } else if (!(newState & Qt::WindowMaximized)) {
             // it would be nice to change the target geometry that toggleFullScreen will animate toward
@@ -1582,28 +1596,17 @@ void QCocoaWindow::setContentBorderThickness(int topThickness, int bottomThickne
 
 void QCocoaWindow::registerContentBorderArea(quintptr identifier, int upper, int lower)
 {
-    m_contentBorderAreas.insert(identifier, BorderRange(upper, lower));
-
-    // Find consecutive registered border areas, starting from the top.
-    QList<BorderRange> ranges = m_contentBorderAreas.values();
-    std::sort(ranges.begin(), ranges.end());
-    m_topContentBorderThickness = 0;
-    foreach (BorderRange range, ranges) {
-        // Is this sub-range adjacent to or overlaping the
-        // existing total border area range? If so merge
-        // it into the total range,
-        if (range.upper <= (m_topContentBorderThickness + 1))
-            m_topContentBorderThickness = qMax(m_topContentBorderThickness, range.lower);
-        else
-            break;
-    }
-
-    m_bottomContentBorderThickness = 0; // (not supported)
-    if (m_drawContentBorderGradient)
-        applyContentBorderThickness(m_nsWindow);
+    m_contentBorderAreas.insert(identifier, BorderRange(identifier, upper, lower));
+    applyContentBorderThickness(m_nsWindow);
 }
 
-void QCocoaWindow::enableContentBorderArea(bool enable)
+void QCocoaWindow::setContentBorderAreaEnabled(quintptr identifier, bool enable)
+{
+    m_enabledContentBorderAreas.insert(identifier, enable);
+    applyContentBorderThickness(m_nsWindow);
+}
+
+void QCocoaWindow::setContentBorderEnabled(bool enable)
 {
     m_drawContentBorderGradient = enable;
     applyContentBorderThickness(m_nsWindow);
@@ -1619,17 +1622,33 @@ void QCocoaWindow::applyContentBorderThickness(NSWindow *window)
         return;
     }
 
+    // Find consecutive registered border areas, starting from the top.
+    QList<BorderRange> ranges = m_contentBorderAreas.values();
+    std::sort(ranges.begin(), ranges.end());
+    int effectiveTopContentBorderThickness = m_topContentBorderThickness;
+    foreach (BorderRange range, ranges) {
+        // Skip disiabled ranges (typically hidden tool bars)
+        if (!m_enabledContentBorderAreas.value(range.identifier, false))
+            continue;
+
+        // Is this sub-range adjacent to or overlaping the
+        // existing total border area range? If so merge
+        // it into the total range,
+        if (range.upper <= (effectiveTopContentBorderThickness + 1))
+            effectiveTopContentBorderThickness = qMax(effectiveTopContentBorderThickness, range.lower);
+        else
+            break;
+    }
+
+    int effectiveBottomContentBorderThickness = m_bottomContentBorderThickness;
+
     [window setStyleMask:[window styleMask] | NSTexturedBackgroundWindowMask];
 
-    if (m_topContentBorderThickness > 0) {
-        [window setContentBorderThickness:m_topContentBorderThickness forEdge:NSMaxYEdge];
-        [window setAutorecalculatesContentBorderThickness:NO forEdge:NSMaxYEdge];
-    }
+    [window setContentBorderThickness:effectiveTopContentBorderThickness forEdge:NSMaxYEdge];
+    [window setAutorecalculatesContentBorderThickness:NO forEdge:NSMaxYEdge];
 
-    if (m_bottomContentBorderThickness > 0) {
-        [window setContentBorderThickness:m_topContentBorderThickness forEdge:NSMinYEdge];
-        [window setAutorecalculatesContentBorderThickness:NO forEdge:NSMinYEdge];
-    }
+    [window setContentBorderThickness:effectiveBottomContentBorderThickness forEdge:NSMinYEdge];
+    [window setAutorecalculatesContentBorderThickness:NO forEdge:NSMinYEdge];
 }
 
 void QCocoaWindow::updateNSToolbar()
@@ -1644,6 +1663,12 @@ void QCocoaWindow::updateNSToolbar()
 
     [m_nsWindow setToolbar: toolbar];
     [m_nsWindow setShowsToolbarButton:YES];
+}
+
+bool QCocoaWindow::testContentBorderAreaPosition(int position) const
+{
+    return m_nsWindow && m_drawContentBorderGradient &&
+            0 <= position && position < [m_nsWindow contentBorderThicknessForEdge: NSMaxYEdge];
 }
 
 qreal QCocoaWindow::devicePixelRatio() const
@@ -1685,6 +1710,7 @@ void QCocoaWindow::exposeWindow()
     if (!m_isExposed) {
         m_isExposed = true;
         m_exposedGeometry = geometry();
+        m_exposedDevicePixelRatio = devicePixelRatio();
         QWindowSystemInterface::handleExposeEvent(window(), QRegion(geometry()));
     }
 }
@@ -1710,11 +1736,12 @@ void QCocoaWindow::updateExposedGeometry()
     if (!isWindowExposable())
         return;
 
-    if (m_exposedGeometry == geometry())
+    if (m_exposedGeometry == geometry() && m_exposedDevicePixelRatio == devicePixelRatio())
         return;
 
     m_isExposed = true;
     m_exposedGeometry = geometry();
+    m_exposedDevicePixelRatio = devicePixelRatio();
     QWindowSystemInterface::handleExposeEvent(window(), QRegion(geometry()));
 }
 

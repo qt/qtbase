@@ -44,6 +44,7 @@
 #include <QtCore/private/qobject_p.h>
 #include <QtGui/qopenglcontext.h>
 #include <QtGui/qopenglfunctions.h>
+#include <QtGui/qoffscreensurface.h>
 
 #include <QtGui/qopenglfunctions_3_0.h>
 #include <QtGui/qopenglfunctions_3_2_core.h>
@@ -359,9 +360,17 @@ QOpenGLVertexArrayObject::~QOpenGLVertexArrayObject()
 
     Q_D(QOpenGLVertexArrayObject);
     QOpenGLContext *oldContext = 0;
+    QScopedPointer<QOffscreenSurface> offscreenSurface;
     if (d->context && ctx && d->context != ctx) {
         oldContext = ctx;
-        if (d->context->makeCurrent(oldContext->surface())) {
+        // Cannot just make the current surface current again with another context.
+        // The format may be incompatible and some platforms (iOS) may impose
+        // restrictions on using a window with different contexts. Create an
+        // offscreen surface (a pbuffer or a hidden window) instead to be safe.
+        offscreenSurface.reset(new QOffscreenSurface);
+        offscreenSurface->setFormat(d->context->format());
+        offscreenSurface->create();
+        if (d->context->makeCurrent(offscreenSurface.data())) {
             ctx = d->context;
         } else {
             qWarning("QOpenGLVertexArrayObject::~QOpenGLVertexArrayObject() failed to make VAO's context current");

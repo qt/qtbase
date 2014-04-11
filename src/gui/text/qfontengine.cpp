@@ -280,6 +280,7 @@ QFixed QFontEngine::underlinePosition() const
 
 void *QFontEngine::harfbuzzFont() const
 {
+    Q_ASSERT(type() != QFontEngine::Multi);
 #ifdef QT_ENABLE_HARFBUZZ_NG
     if (useHarfbuzzNG)
         return hb_qt_font_get_for_engine(const_cast<QFontEngine *>(this));
@@ -312,6 +313,7 @@ void *QFontEngine::harfbuzzFont() const
 
 void *QFontEngine::harfbuzzFace() const
 {
+    Q_ASSERT(type() != QFontEngine::Multi);
 #ifdef QT_ENABLE_HARFBUZZ_NG
     if (useHarfbuzzNG)
         return hb_qt_face_get_for_engine(const_cast<QFontEngine *>(this));
@@ -329,6 +331,9 @@ void *QFontEngine::harfbuzzFace() const
 
 bool QFontEngine::supportsScript(QChar::Script script) const
 {
+    if (type() <= QFontEngine::Multi)
+        return true;
+
     // ### TODO: This only works for scripts that require OpenType. More generally
     // for scripts that do not require OpenType we should just look at the list of
     // supported writing systems in the font's OS/2 table.

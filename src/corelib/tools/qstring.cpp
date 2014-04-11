@@ -559,11 +559,13 @@ static int ucstrncmp(const QChar *a, const uchar *c, int l)
         }
     }
 
-    // we'll read uc[offset..offset+7] (16 bytes) and c[offset-8..offset+7] (16 bytes)
+#  ifdef Q_PROCESSOR_X86_64
+    enum { MaxTailLength = 7 };
+    // we'll read uc[offset..offset+7] (16 bytes) and c[offset..offset+7] (8 bytes)
     if (uc + offset + 7 < e) {
-        // same, but we'll throw away half the data
-        __m128i chunk = _mm_loadu_si128((__m128i*)(c + offset - 8));
-        __m128i secondHalf = _mm_unpackhi_epi8(chunk, nullmask);
+        // same, but we're using an 8-byte load
+        __m128i chunk = _mm_cvtsi64_si128(*(long long *)(c + offset));
+        __m128i secondHalf = _mm_unpacklo_epi8(chunk, nullmask);
 
         __m128i ucdata = _mm_loadu_si128((__m128i*)(uc + offset));
         __m128i result = _mm_cmpeq_epi16(secondHalf, ucdata);
@@ -577,6 +579,10 @@ static int ucstrncmp(const QChar *a, const uchar *c, int l)
         // still matched
         offset += 8;
     }
+#  else
+    // 32-bit, we can't do MOVQ to load 8 bytes
+    enum { MaxTailLength = 15 };
+#  endif
 
     // reset uc and c
     uc += offset;
@@ -584,7 +590,7 @@ static int ucstrncmp(const QChar *a, const uchar *c, int l)
 
 #  ifdef Q_COMPILER_LAMBDA
     const auto &lambda = [=](int i) { return uc[i] - ushort(c[i]); };
-    return UnrollTailLoop<7>::exec(e - uc, 0, lambda, lambda);
+    return UnrollTailLoop<MaxTailLength>::exec(e - uc, 0, lambda, lambda);
 #  endif
 #endif
 
@@ -5320,7 +5326,7 @@ int QString::localeAwareCompare(const QString &other) const
     return localeAwareCompare_helper(constData(), length(), other.constData(), other.length());
 }
 
-#if defined(QT_USE_ICU)
+#if defined(QT_USE_ICU) && !defined(Q_OS_WIN32) && !defined(Q_OS_WINCE) && !defined (Q_OS_MAC)
 Q_GLOBAL_STATIC(QThreadStorage<QCollator>, defaultCollator)
 #endif
 

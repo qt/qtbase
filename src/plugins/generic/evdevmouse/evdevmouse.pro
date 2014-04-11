@@ -1,6 +1,7 @@
 TARGET = qevdevmouseplugin
 
 PLUGIN_TYPE = generic
+PLUGIN_EXTENDS = -
 PLUGIN_CLASS_NAME = QEvdevMousePlugin
 load(qt_plugin)
 

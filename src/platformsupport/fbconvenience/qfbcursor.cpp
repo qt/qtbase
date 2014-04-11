@@ -46,7 +46,7 @@
 QT_BEGIN_NAMESPACE
 
 QFbCursor::QFbCursor(QFbScreen *screen)
-        : mScreen(screen), mCurrentRect(QRect()), mPrevRect(QRect())
+        : mScreen(screen), mDirty(false), mOnScreen(false)
 {
     mGraphic = new QPlatformCursorImage(0, 0, 0, 0, 0, 0);
     setCursor(Qt::ArrowCursor);

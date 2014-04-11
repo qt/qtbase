@@ -377,6 +377,10 @@ public:
     void modelChanged();
     void updateViewContainerPaletteAndOpacity();
 
+#ifdef Q_OS_OSX
+    bool showNativePopup();
+#endif
+
     QAbstractItemModel *model;
     QLineEdit *lineEdit;
     QComboBoxPrivateContainer *container;

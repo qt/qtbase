@@ -10,6 +10,10 @@ QMAKE_DOCS = $$PWD/doc/qtgui.qdocconf
 
 MODULE_PLUGIN_TYPES = \
     platforms \
+    platformthemes \
+    platforminputcontexts \
+    generic \
+    iconengines \
     imageformats
 
 # This is here only because the platform plugin is no module, obviously.
@@ -67,14 +71,7 @@ contains(QT_CONFIG, angle) {
         !isEmpty(QMAKE_LIBDIR_EGL): CMAKE_EGL_LIBDIR += $$cmakeTargetPath($$QMAKE_LIBDIR_EGL)
     }
 
-    contains(QT_CONFIG, opengles1) {
-        !isEmpty(QMAKE_INCDIR_OPENGL_ES1): CMAKE_GL_INCDIRS = $$cmakeTargetPaths($$QMAKE_INCDIR_OPENGL_ES1)
-        CMAKE_OPENGL_INCDIRS = $$cmakePortablePaths($$QMAKE_INCDIR_OPENGL_ES1)
-        CMAKE_OPENGL_LIBS = $$cmakeProcessLibs($$QMAKE_LIBS_OPENGL_ES1)
-        !isEmpty(QMAKE_LIBDIR_OPENGL_ES1): CMAKE_OPENGL_LIBDIR = $$cmakePortablePaths($$QMAKE_LIBDIR_OPENGL_ES1)
-        CMAKE_GL_HEADER_NAME = GLES/gl.h
-        CMAKE_QT_OPENGL_IMPLEMENTATION = GLES
-    } else:contains(QT_CONFIG, opengles2) {
+    contains(QT_CONFIG, opengles2) {
         !isEmpty(QMAKE_INCDIR_OPENGL_ES2): CMAKE_GL_INCDIRS = $$cmakeTargetPaths($$QMAKE_INCDIR_OPENGL_ES2)
         CMAKE_OPENGL_INCDIRS = $$cmakePortablePaths($$QMAKE_INCDIR_OPENGL_ES2)
         CMAKE_OPENGL_LIBS = $$cmakeProcessLibs($$QMAKE_LIBS_OPENGL_ES2)

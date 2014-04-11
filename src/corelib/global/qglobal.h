@@ -995,7 +995,7 @@ Q_CORE_EXPORT QString qtTrId(const char *id, int n = -1);
    dynamic_cast to cause a compile failure.
 */
 
-#ifdef QT_NO_DYNAMIC_CAST
+#if defined(QT_NO_DYNAMIC_CAST) && !defined(dynamic_cast)
 #  define dynamic_cast QT_PREPEND_NAMESPACE(qt_dynamic_cast_check)
 
   template<typename T, typename X>

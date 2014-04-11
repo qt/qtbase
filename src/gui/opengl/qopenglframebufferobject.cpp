@@ -890,6 +890,8 @@ QOpenGLFramebufferObject::QOpenGLFramebufferObject(const QSize &size, Attachment
 QOpenGLFramebufferObject::~QOpenGLFramebufferObject()
 {
     Q_D(QOpenGLFramebufferObject);
+    if (isBound())
+        release();
 
     if (d->texture_guard)
         d->texture_guard->free();

@@ -28,6 +28,7 @@
 #define XKBCOMP_VMOD_H
 
 bool
-HandleVModDef(struct xkb_keymap *keymap, VModDef *stmt);
+HandleVModDef(struct xkb_keymap *keymap, VModDef *stmt,
+              enum merge_mode merge);
 
 #endif

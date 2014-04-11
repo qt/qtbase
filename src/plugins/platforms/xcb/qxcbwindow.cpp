@@ -1174,7 +1174,7 @@ void QXcbWindow::updateNetWmUserTime(xcb_timestamp_t timestamp)
 
 void QXcbWindow::setTransparentForMouseEvents(bool transparent)
 {
-    if (transparent == m_transparent)
+    if (!connection()->hasXFixes() || transparent == m_transparent)
         return;
 
     xcb_rectangle_t rectangle;

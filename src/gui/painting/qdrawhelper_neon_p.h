@@ -96,14 +96,14 @@ void qt_alphamapblit_quint16_neon(QRasterBuffer *rasterBuffer,
                                   const QClipData *clip);
 
 void qt_scale_image_argb32_on_rgb16_neon(uchar *destPixels, int dbpl,
-                                         const uchar *srcPixels, int sbpl,
+                                         const uchar *srcPixels, int sbpl, int srch,
                                          const QRectF &targetRect,
                                          const QRectF &sourceRect,
                                          const QRect &clip,
                                          int const_alpha);
 
 void qt_scale_image_rgb16_on_rgb16_neon(uchar *destPixels, int dbpl,
-                                        const uchar *srcPixels, int sbpl,
+                                        const uchar *srcPixels, int sbpl, int srch,
                                         const QRectF &targetRect,
                                         const QRectF &sourceRect,
                                         const QRect &clip,

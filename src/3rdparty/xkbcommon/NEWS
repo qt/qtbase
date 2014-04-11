@@ -1,3 +1,46 @@
+libxkbcommon 0.4.1
+==================
+
+- Converted README to markdown and added a Quick Guide to the
+  documentation, which breezes through the most common parts of
+  xkbcommon.
+
+- Added two new functions, xkb_state_key_get_utf{8,32}(). They
+  combine the operations of xkb_state_key_get_syms() and
+  xkb_keysym_to_utf{8,32}(), and provide a nicer interface for it
+  (espcially for multiple-keysyms-per-level).
+
+- The xkb_state_key_get_utf{8,32}() functions now apply Control
+  transformation: when the Control modifier is active, the string
+  is converted to an appropriate control character.
+  This matches the behavior of libX11's XLookupString(3), and
+  required by the XKB specification:
+  http://www.x.org/releases/current/doc/kbproto/xkbproto.html#Interpreting_the_Control_Modifier
+
+  https://bugs.freedesktop.org/show_bug.cgi?id=75892
+
+- The consumed modifiers for a key are now calculated similarly
+  to libX11. The previous behavior caused a bug where Shift would
+  not cancel an active Caps Lock.
+
+- Make xkbcommon-x11 work with the keymap reported by the XQuartz
+  X server.
+
+  https://bugs.freedesktop.org/show_bug.cgi?id=75798
+
+- Reduce memory usage during keymap compilation some more.
+
+- New API:
+  xkb_state_key_get_consumed_mods()
+  xkb_state_key_get_utf8()
+  xkb_state_key_get_utf32()
+
+- Deprecated API:
+  XKB_MAP_COMPILE_PLACEHOLDER, XKB_MAP_NO_FLAGS
+    use XKB_KEYMAP_NO_FLAGS instead.
+
+- Bug fixes.
+
 libxkbcommon 0.4.0
 ==================
 

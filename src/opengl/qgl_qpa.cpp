@@ -109,6 +109,11 @@ QSurfaceFormat QGLFormat::toSurfaceFormat(const QGLFormat &format)
     retFormat.setMajorVersion(format.majorVersion());
     retFormat.setMinorVersion(format.minorVersion());
     retFormat.setProfile(static_cast<QSurfaceFormat::OpenGLContextProfile>(format.profile()));
+    // QGLFormat has no way to set DeprecatedFunctions, that is, to tell that forward
+    // compatibility should not be requested. Some drivers fail to ignore the fwdcompat
+    // bit with compatibility profiles so make sure it is not set.
+    if (format.profile() == QGLFormat::CompatibilityProfile)
+        retFormat.setOption(QSurfaceFormat::DeprecatedFunctions);
     return retFormat;
 }
 

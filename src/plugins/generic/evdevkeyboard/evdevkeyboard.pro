@@ -1,6 +1,7 @@
 TARGET = qevdevkeyboardplugin
 
 PLUGIN_TYPE = generic
+PLUGIN_EXTENDS = -
 PLUGIN_CLASS_NAME = QEvdevKeyboardPlugin
 load(qt_plugin)
 

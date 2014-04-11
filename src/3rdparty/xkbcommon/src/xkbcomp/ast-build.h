@@ -98,23 +98,23 @@ SymbolsDef *
 SymbolsCreate(xkb_atom_t keyName, VarDef *symbols);
 
 GroupCompatDef *
-GroupCompatCreate(int group, ExprDef *def);
+GroupCompatCreate(unsigned group, ExprDef *def);
 
 ModMapDef *
-ModMapCreate(uint32_t modifier, ExprDef *keys);
+ModMapCreate(xkb_atom_t modifier, ExprDef *keys);
 
 LedMapDef *
 LedMapCreate(xkb_atom_t name, VarDef *body);
 
 LedNameDef *
-LedNameCreate(int ndx, ExprDef *name, bool virtual);
+LedNameCreate(unsigned ndx, ExprDef *name, bool virtual);
 
 IncludeStmt *
 IncludeCreate(struct xkb_context *ctx, char *str, enum merge_mode merge);
 
 XkbFile *
-XkbFileCreate(struct xkb_context *ctx, enum xkb_file_type type, char *name,
-              ParseCommon *defs, enum xkb_map_flags flags);
+XkbFileCreate(enum xkb_file_type type, char *name, ParseCommon *defs,
+              enum xkb_map_flags flags);
 
 void
 FreeStmt(ParseCommon *stmt);

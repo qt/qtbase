@@ -64,7 +64,9 @@
 #endif
 
 #if defined(QT_USE_JOURNALD) && !defined(QT_BOOTSTRAPPED)
+# define SD_JOURNAL_SUPPRESS_LOCATION
 # include <systemd/sd-journal.h>
+# include <syslog.h>
 # include <unistd.h>
 #endif
 
@@ -1170,13 +1172,13 @@ static void systemd_default_message_handler(QtMsgType type,
         break;
     }
 
-    char filebuf[PATH_MAX + sizeof("CODE_FILE=")];
-    snprintf(filebuf, sizeof(filebuf), "CODE_FILE=%s", context.file ? context.file : "unknown");
-
-    char linebuf[20];
-    snprintf(linebuf, sizeof(linebuf), "CODE_LINE=%d", context.line);
-
-    sd_journal_print_with_location(priority, filebuf, linebuf, context.function ? context.function : "unknown", "%s", message.toUtf8().constData());
+    sd_journal_send("MESSAGE=%s",     message.toUtf8().constData(),
+                    "PRIORITY=%i",    priority,
+                    "CODE_FUNC=%s",   context.function ? context.function : "unknown",
+                    "CODE_LINE=%d",   context.line,
+                    "CODE_FILE=%s",   context.file ? context.file : "unknown",
+                    "QT_CATEGORY=%s", context.category ? context.category : "unknown",
+                    NULL);
 }
 #endif
 

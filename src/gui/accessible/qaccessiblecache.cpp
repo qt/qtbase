@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -48,6 +48,13 @@ QT_BEGIN_NAMESPACE
     \internal
     \brief Maintains a cache of accessible interfaces.
 */
+
+Q_GLOBAL_STATIC(QAccessibleCache, qAccessibleCache)
+
+QAccessibleCache *QAccessibleCache::instance()
+{
+    return qAccessibleCache;
+}
 
 /*
   The ID is always in the range [INT_MAX+1, UINT_MAX].
@@ -113,6 +120,10 @@ void QAccessibleCache::deleteInterface(QAccessible::Id id, QObject *obj)
     if (obj)
         objectToId.remove(obj);
     delete iface;
+
+#ifdef Q_OS_MACX
+    removeCocoaElement(id);
+#endif
 }
 
 QT_END_NAMESPACE

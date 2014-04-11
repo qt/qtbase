@@ -196,8 +196,7 @@ public:
 
     enum OpenGLModuleType {
         DesktopGL,
-        GLES2,
-        GLES1
+        GLES2
     };
 
     static OpenGLModuleType openGLModuleType();

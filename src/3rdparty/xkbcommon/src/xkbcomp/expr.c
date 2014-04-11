@@ -116,7 +116,7 @@ LookupModMask(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
     if (ndx == XKB_MOD_INVALID)
         return false;
 
-    *val_rtrn = (1 << ndx);
+    *val_rtrn = (1u << ndx);
     return true;
 }
 
@@ -427,14 +427,8 @@ ExprResolveLevel(struct xkb_context *ctx, const ExprDef *expr,
 bool
 ExprResolveButton(struct xkb_context *ctx, const ExprDef *expr, int *btn_rtrn)
 {
-    int result;
-
-    if (!ExprResolveIntegerLookup(ctx, expr, &result, SimpleLookup,
-                                  buttonNames))
-        return false;
-
-    *btn_rtrn = result;
-    return true;
+    return ExprResolveIntegerLookup(ctx, expr, btn_rtrn, SimpleLookup,
+                                    buttonNames);
 }
 
 bool

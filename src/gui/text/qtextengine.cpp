@@ -3138,11 +3138,12 @@ int QTextEngine::positionInLigature(const QScriptItem *si, int end,
 int QTextEngine::previousLogicalPosition(int oldPos) const
 {
     const QCharAttributes *attrs = attributes();
-    if (!attrs || oldPos < 0)
+    int len = block.isValid() ? block.length() - 1
+                              : layoutData->string.length();
+    Q_ASSERT(len <= layoutData->string.length());
+    if (!attrs || oldPos <= 0 || oldPos > len)
         return oldPos;
 
-    if (oldPos <= 0)
-        return 0;
     oldPos--;
     while (oldPos && !attrs[oldPos].graphemeBoundary)
         oldPos--;
@@ -3181,23 +3182,22 @@ int QTextEngine::lineNumberForTextPosition(int pos)
 void QTextEngine::insertionPointsForLine(int lineNum, QVector<int> &insertionPoints)
 {
     QTextLineItemIterator iterator(this, lineNum);
-    bool rtl = isRightToLeft();
+
+    insertionPoints.reserve(iterator.line.length);
+
     bool lastLine = lineNum >= lines.size() - 1;
 
     while (!iterator.atEnd()) {
-        iterator.next();
-        const QScriptItem *si = &layoutData->items[iterator.item];
-        if (si->analysis.bidiLevel % 2) {
-            int i = iterator.itemEnd - 1, min = iterator.itemStart;
-            if (lastLine && (rtl ? iterator.atBeginning() : iterator.atEnd()))
-                i++;
-            for (; i >= min; i--)
+        const QScriptItem &si = iterator.next();
+
+        int end = iterator.itemEnd;
+        if (lastLine && iterator.item == iterator.lastItem)
+            ++end; // the last item in the last line -> insert eol position
+        if (si.analysis.bidiLevel % 2) {
+            for (int i = end - 1; i >= iterator.itemStart; --i)
                 insertionPoints.push_back(i);
         } else {
-            int i = iterator.itemStart, max = iterator.itemEnd;
-            if (lastLine && (rtl ? iterator.atBeginning() : iterator.atEnd()))
-                max++;
-            for (; i < max; i++)
+            for (int i = iterator.itemStart; i < end; ++i)
                 insertionPoints.push_back(i);
         }
     }
@@ -3225,8 +3225,7 @@ int QTextEngine::beginningOfLine(int lineNum)
 
 int QTextEngine::positionAfterVisualMovement(int pos, QTextCursor::MoveOperation op)
 {
-    if (!layoutData)
-        itemize();
+    itemize();
 
     bool moveRight = (op == QTextCursor::Right);
     bool alignRight = isRightToLeft();
@@ -3234,7 +3233,8 @@ int QTextEngine::positionAfterVisualMovement(int pos, QTextCursor::MoveOperation
         return moveRight ^ alignRight ? nextLogicalPosition(pos) : previousLogicalPosition(pos);
 
     int lineNum = lineNumberForTextPosition(pos);
-    Q_ASSERT(lineNum >= 0);
+    if (lineNum < 0)
+        return pos;
 
     QVector<int> insertionPoints;
     insertionPointsForLine(lineNum, insertionPoints);
@@ -3257,6 +3257,8 @@ int QTextEngine::positionAfterVisualMovement(int pos, QTextCursor::MoveOperation
                 if (lineNum > 0)
                     return alignRight ? beginningOfLine(lineNum - 1) : endOfLine(lineNum - 1);
             }
+
+            break;
         }
 
     return pos;
@@ -3520,7 +3522,12 @@ QScriptItem &QTextLineItemIterator::next()
     if (!si->num_glyphs)
         eng->shape(item);
 
+    itemStart = qMax(line.from, si->position);
+    itemEnd = qMin(lineEnd, si->position + itemLength);
+
     if (si->analysis.flags >= QScriptAnalysis::TabOrObject) {
+        glyphsStart = 0;
+        glyphsEnd = 1;
         itemWidth = si->width;
         return *si;
     }
@@ -3528,15 +3535,9 @@ QScriptItem &QTextLineItemIterator::next()
     unsigned short *logClusters = eng->logClusters(si);
     QGlyphLayout glyphs = eng->shapedGlyphs(si);
 
-    itemStart = qMax(line.from, si->position);
     glyphsStart = logClusters[itemStart - si->position];
-    if (lineEnd < si->position + itemLength) {
-        itemEnd = lineEnd;
-        glyphsEnd = logClusters[itemEnd-si->position];
-    } else {
-        itemEnd = si->position + itemLength;
-        glyphsEnd = si->num_glyphs;
-    }
+    glyphsEnd = (itemEnd == si->position + itemLength) ? si->num_glyphs : logClusters[itemEnd - si->position];
+
     // show soft-hyphen at line-break
     if (si->position + itemLength >= lineEnd
         && eng->layoutData->string.at(lineEnd - 1).unicode() == QChar::SoftHyphen)

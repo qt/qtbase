@@ -42,7 +42,7 @@
 
 #include "qtextimagehandler_p.h"
 
-#include <qcoreapplication.h>
+#include <qguiapplication.h>
 #include <qtextformat.h>
 #include <qpainter.h>
 #include <qdebug.h>
@@ -52,6 +52,21 @@
 
 QT_BEGIN_NAMESPACE
 
+static QString resolve2xFile(const QString &fileName, qreal targetDevicePixelRatio)
+{
+    if (targetDevicePixelRatio <= 1.0)
+        return fileName;
+
+    int dotIndex = fileName.lastIndexOf(QLatin1Char('.'));
+    if (dotIndex != -1) {
+        QString at2xfileName = fileName;
+        at2xfileName.insert(dotIndex, QStringLiteral("@2x"));
+        if (QFile::exists(at2xfileName))
+            return at2xfileName;
+    }
+    return fileName;
+}
+
 static QPixmap getPixmap(QTextDocument *doc, const QTextImageFormat &format)
 {
     QPixmap pm;
@@ -59,6 +74,8 @@ static QPixmap getPixmap(QTextDocument *doc, const QTextImageFormat &format)
     QString name = format.name();
     if (name.startsWith(QLatin1String(":/"))) // auto-detect resources
         name.prepend(QLatin1String("qrc"));
+    QPaintDevice *pdev = doc->documentLayout()->paintDevice();
+    name = resolve2xFile(name, pdev ? pdev->devicePixelRatio() : qApp->devicePixelRatio());
     QUrl url = QUrl(name);
     const QVariant data = doc->resource(QTextDocument::ImageResource, url);
     if (data.type() == QVariant::Pixmap || data.type() == QVariant::Image) {
@@ -85,6 +102,9 @@ static QPixmap getPixmap(QTextDocument *doc, const QTextImageFormat &format)
         doc->addResource(QTextDocument::ImageResource, url, pm);
     }
 
+    if (name.contains(QStringLiteral("@2x")))
+        pm.setDevicePixelRatio(2.0);
+
     return pm;
 }
 
@@ -100,17 +120,20 @@ static QSize getPixmapSize(QTextDocument *doc, const QTextImageFormat &format)
     QSize size(width, height);
     if (!hasWidth || !hasHeight) {
         pm = getPixmap(doc, format);
+        const int pmWidth = pm.width() / pm.devicePixelRatio();
+        const int pmHeight = pm.height() / pm.devicePixelRatio();
+
         if (!hasWidth) {
             if (!hasHeight)
-                size.setWidth(pm.width());
+                size.setWidth(pmWidth);
             else
-                size.setWidth(qRound(height * (pm.width() / (qreal) pm.height())));
+                size.setWidth(qRound(height * (pmWidth / (qreal) pmHeight)));
         }
         if (!hasHeight) {
             if (!hasWidth)
-                size.setHeight(pm.height());
+                size.setHeight(pmHeight);
             else
-                size.setHeight(qRound(width * (pm.height() / (qreal) pm.width())));
+                size.setHeight(qRound(width * (pmHeight / (qreal) pmWidth)));
         }
     }
 
@@ -134,6 +157,8 @@ static QImage getImage(QTextDocument *doc, const QTextImageFormat &format)
     QString name = format.name();
     if (name.startsWith(QLatin1String(":/"))) // auto-detect resources
         name.prepend(QLatin1String("qrc"));
+    QPaintDevice *pdev = doc->documentLayout()->paintDevice();
+    name = resolve2xFile(name, pdev ? pdev->devicePixelRatio() : qApp->devicePixelRatio());
     QUrl url = QUrl(name);
     const QVariant data = doc->resource(QTextDocument::ImageResource, url);
     if (data.type() == QVariant::Image) {
@@ -159,6 +184,9 @@ static QImage getImage(QTextDocument *doc, const QTextImageFormat &format)
         doc->addResource(QTextDocument::ImageResource, url, image);
     }
 
+    if (name.contains(QStringLiteral("@2x")))
+        image.setDevicePixelRatio(2.0);
+
     return image;
 }
 
@@ -175,9 +203,9 @@ static QSize getImageSize(QTextDocument *doc, const QTextImageFormat &format)
     if (!hasWidth || !hasHeight) {
         image = getImage(doc, format);
         if (!hasWidth)
-            size.setWidth(image.width());
+            size.setWidth(image.width() / image.devicePixelRatio());
         if (!hasHeight)
-            size.setHeight(image.height());
+            size.setHeight(image.height() / image.devicePixelRatio());
     }
 
     qreal scale = 1.0;

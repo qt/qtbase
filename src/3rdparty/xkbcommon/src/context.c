@@ -82,7 +82,7 @@ xkb_context_include_path_append_default(struct xkb_context *ctx)
 
     ret |= xkb_context_include_path_append(ctx, DFLT_XKB_CONFIG_ROOT);
 
-    home = getenv("HOME");
+    home = secure_getenv("HOME");
     if (!home)
         return ret;
     err = asprintf(&user_path, "%s/.xkb", home);
@@ -252,11 +252,11 @@ xkb_context_new(enum xkb_context_flags flags)
     ctx->log_verbosity = 0;
 
     /* Environment overwrites defaults. */
-    env = getenv("XKB_LOG_LEVEL");
+    env = secure_getenv("XKB_LOG_LEVEL");
     if (env)
         xkb_context_set_log_level(ctx, log_level(env));
 
-    env = getenv("XKB_LOG_VERBOSITY");
+    env = secure_getenv("XKB_LOG_VERBOSITY");
     if (env)
         xkb_context_set_log_verbosity(ctx, log_verbosity(env));
 

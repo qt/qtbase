@@ -27,24 +27,18 @@
 #ifndef XKBCOMP_PARSER_PRIV_H
 #define XKBCOMP_PARSER_PRIV_H
 
-struct scanner;
 struct parser_param;
 
+#include "scanner-utils.h"
 #include "parser.h"
-
-int
-scanner_error(struct scanner *scanner, const char *msg);
-
-void
-scanner_warn(struct scanner *s, const char *msg);
 
 int
 _xkbcommon_lex(YYSTYPE *yylval, struct scanner *scanner);
 
 XkbFile *
-parse(struct xkb_context *ctx, void *scanner, const char *map);
+parse(struct xkb_context *ctx, struct scanner *scanner, const char *map);
 
 int
-keyword_to_token(const char *string);
+keyword_to_token(const char *string, unsigned int len);
 
 #endif

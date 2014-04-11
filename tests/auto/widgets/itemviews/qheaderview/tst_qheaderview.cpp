@@ -621,6 +621,9 @@ void tst_QHeaderView::sectionSize_data()
 
 void tst_QHeaderView::sectionSize()
 {
+#if defined Q_OS_QNX
+    QSKIP("The section size is dpi dependent on QNX");
+#endif
     QFETCH(QList<int>, boundsCheck);
     QFETCH(QList<int>, defaultSizes);
     QFETCH(int, initialDefaultSize);
@@ -734,6 +737,9 @@ void tst_QHeaderView::visualIndexAt_data()
 
 void tst_QHeaderView::visualIndexAt()
 {
+#if defined Q_OS_QNX
+    QSKIP("The section size is dpi dependent on QNX");
+#endif
     QFETCH(QList<int>, hidden);
     QFETCH(QList<int>, from);
     QFETCH(QList<int>, to);

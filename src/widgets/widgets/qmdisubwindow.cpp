@@ -1761,11 +1761,13 @@ bool QMdiSubWindowPrivate::drawTitleBarWhenMaximized() const
         return false;
 
 #if defined(Q_OS_MAC) && !defined(QT_NO_STYLE_MAC) || defined(Q_OS_WINCE_WM)
+    Q_UNUSED(isChildOfQMdiSubWindow);
     return true;
 #else
     if (q->style()->styleHint(QStyle::SH_Workspace_FillSpaceOnMaximize, 0, q))
         return true;
 #if defined(QT_NO_MENUBAR) || defined(QT_NO_MAINWINDOW)
+    Q_UNUSED(isChildOfQMdiSubWindow);
     return true;
 #else
     QMainWindow *mainWindow = qobject_cast<QMainWindow *>(q->window());

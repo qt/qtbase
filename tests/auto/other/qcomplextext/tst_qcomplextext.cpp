@@ -39,11 +39,6 @@
 **
 ****************************************************************************/
 
-
-// Horrible hack, but this get this out of the way for now
-// Carlos Duclos, 2007-12-11
-#if !defined(Q_OS_MAC)
-
 #include <QtTest/QtTest>
 #include <QtGui/QtGui>
 #include <private/qtextengine_p.h>
@@ -71,6 +66,8 @@ private slots:
     void bidiCursorMovement();
     void bidiCursorLogicalMovement_data();
     void bidiCursorLogicalMovement();
+    void bidiInvalidCursorNoMovement_data();
+    void bidiInvalidCursorNoMovement();
 };
 
 tst_QComplexText::tst_QComplexText()
@@ -272,6 +269,37 @@ void tst_QComplexText::bidiCursorLogicalMovement()
     } while (moved);
 }
 
+void tst_QComplexText::bidiInvalidCursorNoMovement_data()
+{
+    bidiCursorMovement_data();
+}
+
+void tst_QComplexText::bidiInvalidCursorNoMovement()
+{
+    QFETCH(QString, logical);
+    QFETCH(int,  basicDir);
+
+    QTextLayout layout(logical);
+
+    QTextOption option = layout.textOption();
+    option.setTextDirection(basicDir == QChar::DirL ? Qt::LeftToRight : Qt::RightToLeft);
+    layout.setTextOption(option);
+
+    // visual
+    QCOMPARE(layout.rightCursorPosition(-1000), -1000);
+    QCOMPARE(layout.rightCursorPosition(1000), 1000);
+
+    QCOMPARE(layout.leftCursorPosition(-1000), -1000);
+    QCOMPARE(layout.leftCursorPosition(1000), 1000);
+
+    // logical
+    QCOMPARE(layout.nextCursorPosition(-1000), -1000);
+    QCOMPARE(layout.nextCursorPosition(1000), 1000);
+
+    QCOMPARE(layout.previousCursorPosition(-1000), -1000);
+    QCOMPARE(layout.previousCursorPosition(1000), 1000);
+}
+
 void tst_QComplexText::bidiCursor_PDF()
 {
     QString str = QString::fromUtf8("\342\200\252hello\342\200\254");
@@ -289,6 +317,3 @@ void tst_QComplexText::bidiCursor_PDF()
 
 QTEST_MAIN(tst_QComplexText)
 #include "tst_qcomplextext.moc"
-
-#endif // Q_OS_MAC
-

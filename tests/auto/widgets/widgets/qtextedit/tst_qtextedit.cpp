@@ -2018,6 +2018,7 @@ void tst_QTextEdit::fullWidthSelection2()
     QPalette myPalette;
     myPalette.setColor(QPalette::All, QPalette::HighlightedText, QColor(0,0,0,0));
     myPalette.setColor(QPalette::All, QPalette::Highlight, QColor(239,221,85));
+    myPalette.setColor(QPalette::All, QPalette::Base, QColor(255,255,255));
 
     QTextEdit widget;
     widget.setPalette(myPalette);
@@ -2218,7 +2219,7 @@ void tst_QTextEdit::twoSameInputMethodEvents()
 
     QInputMethodEvent event("PreEditText", attributes);
     QApplication::sendEvent(ed, &event);
-    QCOMPARE(ed->document()->firstBlock().layout()->lineCount(), 1);
+    QTRY_COMPARE(ed->document()->firstBlock().layout()->lineCount(), 1);
     QApplication::sendEvent(ed, &event);
     QCOMPARE(ed->document()->firstBlock().layout()->lineCount(), 1);
 }
@@ -2303,7 +2304,7 @@ void tst_QTextEdit::bidiVisualMovement()
 
     do {
         oldPos = newPos;
-        QVERIFY(oldPos == positionList[i]);
+        QCOMPARE(oldPos, positionList[i]);
         if (basicDir == QChar::DirL) {
             ed->moveCursor(QTextCursor::Right);
         } else
@@ -2315,12 +2316,12 @@ void tst_QTextEdit::bidiVisualMovement()
         i++;
     } while (moved);
 
-    QVERIFY(i == positionList.size());
+    QCOMPARE(i, positionList.size());
 
     do {
         i--;
         oldPos = newPos;
-        QVERIFY(oldPos == positionList[i]);
+        QCOMPARE(oldPos, positionList[i]);
         if (basicDir == QChar::DirL) {
             ed->moveCursor(QTextCursor::Left);
         } else
@@ -2341,6 +2342,7 @@ void tst_QTextEdit::bidiLogicalMovement()
 {
     QFETCH(QString,      logical);
     QFETCH(int,          basicDir);
+    QFETCH(QList<int>,   positionList);
 
     ed->setText(logical);
 
@@ -2357,7 +2359,7 @@ void tst_QTextEdit::bidiLogicalMovement()
 
     do {
         oldPos = newPos;
-        QVERIFY(oldPos == i);
+        QCOMPARE(oldPos, i);
         if (basicDir == QChar::DirL) {
             ed->moveCursor(QTextCursor::Right);
         } else
@@ -2369,10 +2371,12 @@ void tst_QTextEdit::bidiLogicalMovement()
         i++;
     } while (moved);
 
+    QCOMPARE(i, positionList.size());
+
     do {
         i--;
         oldPos = newPos;
-        QVERIFY(oldPos == i);
+        QCOMPARE(oldPos, i);
         if (basicDir == QChar::DirL) {
             ed->moveCursor(QTextCursor::Left);
         } else

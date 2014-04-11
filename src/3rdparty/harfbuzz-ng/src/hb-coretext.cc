@@ -691,11 +691,12 @@ _hb_coretext_shape (hb_shape_plan_t    *shape_plan,
     CFDictionaryRef attributes = CTRunGetAttributes (run);
     CTFontRef run_ct_font = static_cast<CTFontRef>(CFDictionaryGetValue (attributes, kCTFontAttributeName));
     CGFontRef run_cg_font = CTFontCopyGraphicsFont (run_ct_font, 0);
+
+    CFRange range = CTRunGetStringRange (run);
     if (!CFEqual (run_cg_font, face_data->cg_font))
     {
         CFRelease (run_cg_font);
 
-	CFRange range = CTRunGetStringRange (run);
 	buffer->ensure (buffer->len + range.length);
 	if (buffer->in_error)
 	  FAIL ("Buffer resize failed");
@@ -732,11 +733,16 @@ _hb_coretext_shape (hb_shape_plan_t    *shape_plan,
     }
     CFRelease (run_cg_font);
 
+    /* CoreText throws away the PDF token, while the OpenType backend will add a zero-advance
+     * glyph for this. We need to make sure the two produce the same output. */
+    UniChar endGlyph = CFStringGetCharacterAtIndex(string_ref, range.location + range.length - 1);
+    bool endWithPDF = endGlyph == 0x202c;
+
     unsigned int num_glyphs = CTRunGetGlyphCount (run);
     if (num_glyphs == 0)
       continue;
 
-    buffer->ensure (buffer->len + num_glyphs);
+    buffer->ensure (buffer->len + num_glyphs + (endWithPDF ? 1 : 0));
 
     scratch = buffer->get_scratch_buffer (&scratch_size);
 
@@ -783,9 +789,26 @@ _hb_coretext_shape (hb_shape_plan_t    *shape_plan,
 
       buffer->len++;
     }
+
+    if (endWithPDF) {
+        hb_glyph_info_t *info = &buffer->info[buffer->len];
+
+        info->codepoint = 0xffff;
+        info->cluster = range.location + range.length - 1;
+
+        /* Currently, we do all x-positioning by setting the advance, we never use x-offset. */
+        info->mask = 0;
+        info->var1.u32 = 0;
+        info->var2.u32 = 0;
+
+        buffer->len++;
+    }
   }
 
   buffer->clear_positions ();
+
+  bool bufferRtl = !HB_DIRECTION_IS_FORWARD (buffer->props.direction);
+  bool runRtl = (CTRunGetStatus(static_cast<CTRunRef>(CFArrayGetValueAtIndex(glyph_runs, 0))) & kCTRunStatusRightToLeft);
 
   unsigned int count = buffer->len;
   for (unsigned int i = 0; i < count; ++i) {
@@ -796,6 +819,12 @@ _hb_coretext_shape (hb_shape_plan_t    *shape_plan,
     pos->x_advance = info->mask;
     pos->x_offset = info->var1.u32;
     pos->y_offset = info->var2.u32;
+
+    if (bufferRtl != runRtl && i < count / 2) {
+        unsigned int temp = buffer->info[count - i - 1].cluster;
+        buffer->info[count - i - 1].cluster = info->cluster;
+        info->cluster = temp;
+    }
   }
 
   /* Fix up clusters so that we never return out-of-order indices;

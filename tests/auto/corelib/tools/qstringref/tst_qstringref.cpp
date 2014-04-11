@@ -68,6 +68,8 @@ private slots:
     void isEmpty();
     void compare_data();
     void compare();
+    void compare2_data();
+    void compare2();
     void operator_eqeq_nullstring();
     void toNum();
     void toDouble_data();
@@ -792,11 +794,17 @@ void tst_QStringRef::compare_data()
     QTest::newRow("data3") << QString("abc") << QString("abc") << 0 << 0;
     QTest::newRow("data4") << QString("abC") << QString("abc") << -1 << 0;
     QTest::newRow("data5") << QString("abc") << QString("abC") << 1 << 0;
+    QTest::newRow("data10") << QString("abcdefgh") << QString("abcdefgh") << 0 << 0;
+    QTest::newRow("data11") << QString("abcdefgh") << QString("abCdefgh") << 1 << 0;
+    QTest::newRow("data12") << QString("0123456789012345") << QString("0123456789012345") << 0 << 0;
+    QTest::newRow("data13") << QString("0123556789012345") << QString("0123456789012345") << 1 << 1;
 
     // different length
     QTest::newRow("data6") << QString("abcdef") << QString("abc") << 1 << 1;
     QTest::newRow("data7") << QString("abCdef") << QString("abc") << -1 << 1;
     QTest::newRow("data8") << QString("abc") << QString("abcdef") << -1 << -1;
+    QTest::newRow("data14") << QString("abcdefgh") << QString("abcdefghi") << -1 << -1;
+    QTest::newRow("data15") << QString("01234567890123456") << QString("0123456789012345") << 1 << 1;
 
     QString upper;
     upper += QChar(QChar::highSurrogate(0x10400));
@@ -859,6 +867,46 @@ void tst_QStringRef::compare()
     if (isLatin(s1)) {
         QCOMPARE(sign(QString::compare(QLatin1String(s1.toLatin1()), s2)), csr);
         QCOMPARE(sign(QString::compare(QLatin1String(s1.toLatin1()), s2, Qt::CaseInsensitive)), cir);
+    }
+}
+
+void tst_QStringRef::compare2_data()
+{
+    compare_data();
+}
+
+void tst_QStringRef::compare2()
+{
+    QFETCH(QString, s1);
+    QFETCH(QString, s2);
+    QFETCH(int, csr);
+    QFETCH(int, cir);
+
+    // prepend and append data
+    // we only use Latin1 here so isLatin1 still results true
+    s1.prepend("xyz").append("zyx");
+    s2.prepend("foobar").append("raboof");
+
+    QStringRef r1(&s1, 3, s1.length() - 6);
+    QStringRef r2(&s2, 6, s2.length() - 12);
+
+    QCOMPARE(sign(QStringRef::compare(r1, r2)), csr);
+    QCOMPARE(sign(r1.compare(r2)), csr);
+
+    QCOMPARE(sign(r1.compare(r2, Qt::CaseSensitive)), csr);
+    QCOMPARE(sign(r1.compare(r2, Qt::CaseInsensitive)), cir);
+
+    QCOMPARE(sign(QStringRef::compare(r1, r2, Qt::CaseSensitive)), csr);
+    QCOMPARE(sign(QStringRef::compare(r1, r2, Qt::CaseInsensitive)), cir);
+
+    if (isLatin(s2)) {
+        QCOMPARE(sign(QStringRef::compare(r1, QLatin1String(r2.toLatin1()))), csr);
+        QCOMPARE(sign(QStringRef::compare(r1, QLatin1String(r2.toLatin1()), Qt::CaseInsensitive)), cir);
+    }
+
+    if (isLatin(s1)) {
+        QCOMPARE(sign(QStringRef::compare(r2, QLatin1String(r1.toLatin1()))), -csr);
+        QCOMPARE(sign(QStringRef::compare(r2, QLatin1String(r1.toLatin1()), Qt::CaseInsensitive)), -cir);
     }
 }
 

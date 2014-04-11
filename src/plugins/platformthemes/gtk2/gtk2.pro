@@ -1,6 +1,7 @@
 TARGET = qgtk2
 
 PLUGIN_TYPE = platformthemes
+PLUGIN_EXTENDS = -
 PLUGIN_CLASS_NAME = QGtk2ThemePlugin
 load(qt_plugin)
 

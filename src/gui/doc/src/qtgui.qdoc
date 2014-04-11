@@ -122,22 +122,40 @@
 
 
 
-    \section1 OpenGL and OpenGL ES integration
+    \section1 OpenGL and OpenGL ES Integration
 
-    QWindow supports rendering using desktop OpenGL, OpenGL ES 1.1 and
-    OpenGL ES 2.0, depending on what the platform supports. OpenGL
-    rendering is enabled by setting the QWindow's surface type to
-    QSurface::OpenGLSurface, choosing the format attributes with
-    QSurfaceFormat, and then creating a QOpenGLContext to manage
-    the native OpenGL context. In addition, Qt has QOpenGLPaintDevice,
-    which enables the use of OpenGL accelerated QPainter rendering, as well as
-    convenience classes that simplify the writing of OpenGL code and hides the
-    complexities of extension handling and the differences between OpenGL ES 2
-    and desktop OpenGL. The convenience classes include QOpenGLFunctions that
-    lets an application use all the OpenGL ES 2 functions on desktop OpenGL
-    without having to manually resolve the OpenGL function pointers and some
-    classes that wrap native OpenGL resources in a simpler Qt API:
-    QOpenGLBuffer, QOpenGLFramebufferObject, and QOpenGLShaderProgram.
+    QWindow supports rendering using OpenGL and OpenGL ES, depending
+    on what the platform supports. OpenGL rendering is enabled by
+    setting the QWindow's surface type to QSurface::OpenGLSurface,
+    choosing the format attributes with QSurfaceFormat, and then
+    creating a QOpenGLContext to manage the native OpenGL context. In
+    addition, Qt has QOpenGLPaintDevice, which enables the use of
+    OpenGL accelerated QPainter rendering, as well as convenience
+    classes that simplify the writing of OpenGL code and hides the
+    complexities of extension handling and the differences between
+    OpenGL ES 2 and desktop OpenGL. The convenience classes include
+    QOpenGLFunctions that lets an application use all the OpenGL ES 2
+    functions on desktop OpenGL without having to manually resolve the
+    OpenGL function pointers, thus allowing cross-platform development
+    of applications targeting mobile or embedded devices, and some
+    classes that wrap native OpenGL functionality in a simpler Qt API:
+
+    \list
+    \li QOpenGLBuffer
+    \li QOpenGLFramebufferObject
+    \li QOpenGLShaderProgram
+    \li QOpenGLTexture
+    \li QOpenGLDebugLogger
+    \li QOpenGLTimerQuery
+    \li QOpenGLVertexArrayObject
+    \endlist
+
+    Finally, in order to provide better support for the newer versions
+    (3.0 and higher) of OpenGL, a versioned function wrapper mechanism
+    is also available: The QOpenGLFunction_N_N family of classes
+    expose all the functions in a given OpenGL version and profile,
+    allowing easy development of desktop applications relying on
+    modern, desktop-only OpenGL features.
 
     For more information, see the \l {OpenGL Window Example}.
 
@@ -147,7 +165,7 @@
 
     A \l {QWindow} created with the \l {QSurface::OpenGLSurface} can
     be used in combination with \l QPainter and \l QOpenGLPaintDevice
-    to have OpenGL hardware accellerated 2D graphics, by sacrificing
+    to have OpenGL hardware accelerated 2D graphics, by sacrificing
     some of the visual quality.
 
 

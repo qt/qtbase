@@ -274,12 +274,24 @@ private slots:
 
 public slots:
     void dummySlot() {}
+
+private:
+#if defined Q_OS_BLACKBERRY
+    QScopedPointer<QWidget> rootWindow;
+#endif
 };
 
 void tst_QGraphicsView::initTestCase()
 {
 #ifdef Q_OS_WINCE_WM
     qApp->setAutoMaximizeThreshold(-1);
+#endif
+
+#if defined Q_OS_BLACKBERRY
+    // On BlackBerry first window is always shown full screen. However, many tests rely on specific
+    // window sizes. Create a dummy full screen window, so subsequent windows have correct size.
+    rootWindow.reset(new QWidget);
+    rootWindow->show();
 #endif
 }
 
@@ -1300,7 +1312,7 @@ void tst_QGraphicsView::fitInView()
     view.setFixedSize(400, 200);
 #endif
 
-    view.show();
+    view.showNormal();
     view.fitInView(scene.itemsBoundingRect(), Qt::IgnoreAspectRatio);
     qApp->processEvents();
 
@@ -1412,7 +1424,7 @@ void tst_QGraphicsView::itemsAtPosition()
     view.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     view.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     view.setScene(&scene);
-    view.show();
+    view.showNormal();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     QPoint screenPos = view.viewport()->mapToGlobal(viewPos);
@@ -1530,7 +1542,7 @@ void tst_QGraphicsView::itemsInRect_cosmeticAdjust()
     view.setRenderHint(QPainter::Antialiasing, adjustForAntialiasing);
     view.setFrameStyle(0);
     view.resize(300, 300);
-    view.show();
+    view.showNormal();
     QVERIFY(QTest::qWaitForWindowActive(&view));
     QTRY_VERIFY(rect->numPaints > 0);
 
@@ -2524,9 +2536,9 @@ public:
 
     bool dirtyPainter;
 
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *w)
     {
-        dirtyPainter = (painter->pen().color() != Qt::black);
+        dirtyPainter = (painter->pen().color() != w->palette().color(w->foregroundRole()));
         painter->setPen(Qt::red);
     }
 };
@@ -2801,7 +2813,7 @@ void tst_QGraphicsView::scrollBarRanges()
     view.setHorizontalScrollBarPolicy(hbarpolicy);
     view.setVerticalScrollBarPolicy(vbarpolicy);
 
-    view.show();
+    view.showNormal();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     const int offset = view.style()->pixelMetric(QStyle::PM_ScrollBarExtent, 0, 0);
@@ -3529,7 +3541,7 @@ void tst_QGraphicsView::moveItemWhileScrolling()
         view.setOptimizationFlag(QGraphicsView::DontAdjustForAntialiasing);
     view.resize(200, 200);
     view.painted = false;
-    view.show();
+    view.showNormal();
     if (changedConnected)
         QObject::connect(view.scene(), SIGNAL(changed(QList<QRectF>)), this, SLOT(dummySlot()));
     QVERIFY(QTest::qWaitForWindowExposed(&view));
@@ -4622,7 +4634,7 @@ void tst_QGraphicsView::QTBUG_5859_exposedRect()
 
     QGraphicsView view(&scene);
     view.scale(4.15, 4.15);
-    view.show();
+    view.showNormal();
     qApp->setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
@@ -4699,12 +4711,17 @@ void tst_QGraphicsView::hoverLeave()
     const QPoint outOfWindow = view.geometry().topRight() + QPoint(50, 0);
     QCursor::setPos(outOfWindow);
 
-    view.show();
+    view.showNormal();
     qApp->setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
     QPoint pos = view.viewport()->mapToGlobal(view.mapFromScene(item->mapToScene(10, 10)));
     QCursor::setPos(pos);
+
+#if defined(Q_OS_QNX)
+    QEXPECT_FAIL("", "QCursor does not set native cursor on QNX", Abort);
+#endif
+
     QTRY_VERIFY(item->receivedEnterEvent);
     QCOMPARE(item->enterWidget, view.viewport());
 

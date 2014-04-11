@@ -53,7 +53,6 @@
 
 #include "xkbcomp-priv.h"
 #include "ast-build.h"
-#include "parser-priv.h"
 #include "include.h"
 
 ParseCommon *
@@ -202,7 +201,7 @@ ExprCreateKeysymList(xkb_keysym_t sym)
 ExprDef *
 ExprCreateMultiKeysymList(ExprDef *expr)
 {
-    size_t nLevels = darray_size(expr->keysym_list.symsMapIndex);
+    unsigned nLevels = darray_size(expr->keysym_list.symsMapIndex);
 
     darray_resize(expr->keysym_list.symsMapIndex, 1);
     darray_resize(expr->keysym_list.symsNumEntries, 1);
@@ -215,7 +214,7 @@ ExprCreateMultiKeysymList(ExprDef *expr)
 ExprDef *
 ExprAppendKeysymList(ExprDef *expr, xkb_keysym_t sym)
 {
-    size_t nSyms = darray_size(expr->keysym_list.syms);
+    unsigned nSyms = darray_size(expr->keysym_list.syms);
 
     darray_append(expr->keysym_list.symsMapIndex, nSyms);
     darray_append(expr->keysym_list.symsNumEntries, 1);
@@ -227,8 +226,8 @@ ExprAppendKeysymList(ExprDef *expr, xkb_keysym_t sym)
 ExprDef *
 ExprAppendMultiKeysymList(ExprDef *expr, ExprDef *append)
 {
-    size_t nSyms = darray_size(expr->keysym_list.syms);
-    size_t numEntries = darray_size(append->keysym_list.syms);
+    unsigned nSyms = darray_size(expr->keysym_list.syms);
+    unsigned numEntries = darray_size(append->keysym_list.syms);
 
     darray_append(expr->keysym_list.symsMapIndex, nSyms);
     darray_append(expr->keysym_list.symsNumEntries, numEntries);
@@ -356,7 +355,7 @@ SymbolsCreate(xkb_atom_t keyName, VarDef *symbols)
 }
 
 GroupCompatDef *
-GroupCompatCreate(int group, ExprDef *val)
+GroupCompatCreate(unsigned group, ExprDef *val)
 {
     GroupCompatDef *def = malloc(sizeof(*def));
     if (!def)
@@ -372,7 +371,7 @@ GroupCompatCreate(int group, ExprDef *val)
 }
 
 ModMapDef *
-ModMapCreate(uint32_t modifier, ExprDef *keys)
+ModMapCreate(xkb_atom_t modifier, ExprDef *keys)
 {
     ModMapDef *def = malloc(sizeof(*def));
     if (!def)
@@ -404,7 +403,7 @@ LedMapCreate(xkb_atom_t name, VarDef *body)
 }
 
 LedNameDef *
-LedNameCreate(int ndx, ExprDef *name, bool virtual)
+LedNameCreate(unsigned ndx, ExprDef *name, bool virtual)
 {
     LedNameDef *def = malloc(sizeof(*def));
     if (!def)
@@ -496,8 +495,8 @@ err:
 }
 
 XkbFile *
-XkbFileCreate(struct xkb_context *ctx, enum xkb_file_type type, char *name,
-              ParseCommon *defs, enum xkb_map_flags flags)
+XkbFileCreate(enum xkb_file_type type, char *name, ParseCommon *defs,
+              enum xkb_map_flags flags)
 {
     XkbFile *file;
 
@@ -533,7 +532,7 @@ XkbFileFromComponents(struct xkb_context *ctx,
         if (!include)
             goto err;
 
-        file = XkbFileCreate(ctx, type, NULL, &include->common, 0);
+        file = XkbFileCreate(type, NULL, (ParseCommon *) include, 0);
         if (!file) {
             FreeInclude(include);
             goto err;
@@ -542,7 +541,7 @@ XkbFileFromComponents(struct xkb_context *ctx,
         defs = AppendStmt(defs, &file->common);
     }
 
-    file = XkbFileCreate(ctx, FILE_TYPE_KEYMAP, NULL, defs, 0);
+    file = XkbFileCreate(FILE_TYPE_KEYMAP, NULL, defs, 0);
     if (!file)
         goto err;
 
@@ -565,7 +564,7 @@ FreeExpr(ExprDef *expr)
     case EXPR_UNARY_PLUS:
     case EXPR_NOT:
     case EXPR_INVERT:
-        FreeStmt(&expr->unary.child->common);
+        FreeStmt((ParseCommon *) expr->unary.child);
         break;
 
     case EXPR_DIVIDE:
@@ -573,16 +572,16 @@ FreeExpr(ExprDef *expr)
     case EXPR_SUBTRACT:
     case EXPR_MULTIPLY:
     case EXPR_ASSIGN:
-        FreeStmt(&expr->binary.left->common);
-        FreeStmt(&expr->binary.right->common);
+        FreeStmt((ParseCommon *) expr->binary.left);
+        FreeStmt((ParseCommon *) expr->binary.right);
         break;
 
     case EXPR_ACTION_DECL:
-        FreeStmt(&expr->action.args->common);
+        FreeStmt((ParseCommon *) expr->action.args);
         break;
 
     case EXPR_ARRAY_REF:
-        FreeStmt(&expr->array_ref.entry->common);
+        FreeStmt((ParseCommon *) expr->array_ref.entry);
         break;
 
     case EXPR_KEYSYM_LIST:
@@ -619,12 +618,10 @@ void
 FreeStmt(ParseCommon *stmt)
 {
     ParseCommon *next;
-    YYSTYPE u;
 
     while (stmt)
     {
         next = stmt->next;
-        u.any = stmt;
 
         switch (stmt->type) {
         case STMT_INCLUDE:
@@ -633,36 +630,36 @@ FreeStmt(ParseCommon *stmt)
             stmt = NULL;
             break;
         case STMT_EXPR:
-            FreeExpr(u.expr);
+            FreeExpr((ExprDef *) stmt);
             break;
         case STMT_VAR:
-            FreeStmt(&u.var->name->common);
-            FreeStmt(&u.var->value->common);
+            FreeStmt((ParseCommon *) ((VarDef *) stmt)->name);
+            FreeStmt((ParseCommon *) ((VarDef *) stmt)->value);
             break;
         case STMT_TYPE:
-            FreeStmt(&u.keyType->body->common);
+            FreeStmt((ParseCommon *) ((KeyTypeDef *) stmt)->body);
             break;
         case STMT_INTERP:
-            FreeStmt(&u.interp->match->common);
-            FreeStmt(&u.interp->def->common);
+            FreeStmt((ParseCommon *) ((InterpDef *) stmt)->match);
+            FreeStmt((ParseCommon *) ((InterpDef *) stmt)->def);
             break;
         case STMT_VMOD:
-            FreeStmt(&u.vmod->value->common);
+            FreeStmt((ParseCommon *) ((VModDef *) stmt)->value);
             break;
         case STMT_SYMBOLS:
-            FreeStmt(&u.syms->symbols->common);
+            FreeStmt((ParseCommon *) ((SymbolsDef *) stmt)->symbols);
             break;
         case STMT_MODMAP:
-            FreeStmt(&u.modMask->keys->common);
+            FreeStmt((ParseCommon *) ((ModMapDef *) stmt)->keys);
             break;
         case STMT_GROUP_COMPAT:
-            FreeStmt(&u.groupCompat->def->common);
+            FreeStmt((ParseCommon *) ((GroupCompatDef *) stmt)->def);
             break;
         case STMT_LED_MAP:
-            FreeStmt(&u.ledMap->body->common);
+            FreeStmt((ParseCommon *) ((LedMapDef *) stmt)->body);
             break;
         case STMT_LED_NAME:
-            FreeStmt(&u.ledName->name->common);
+            FreeStmt((ParseCommon *) ((LedNameDef *) stmt)->name);
             break;
         default:
             break;

@@ -438,6 +438,7 @@ void QWidgetTextControlPrivate::setContent(Qt::TextFormat format, const QString 
 
         QObject::connect(doc, SIGNAL(contentsChanged()), q, SLOT(_q_updateCurrentCharFormatAndSelection()));
         QObject::connect(doc, SIGNAL(cursorPositionChanged(QTextCursor)), q, SLOT(_q_emitCursorPosChanged(QTextCursor)));
+        QObject::connect(doc, SIGNAL(contentsChange(int,int,int)), q, SLOT(_q_contentsChanged(int,int,int)));
         QObject::connect(doc, SIGNAL(documentLayoutChanged()), q, SLOT(_q_documentLayoutChanged()));
 
         // convenience signal forwards
@@ -639,6 +640,33 @@ void QWidgetTextControlPrivate::_q_emitCursorPosChanged(const QTextCursor &someC
         emit q->cursorPositionChanged();
         emit q->microFocusChanged();
     }
+}
+
+void QWidgetTextControlPrivate::_q_contentsChanged(int from, int charsRemoved, int charsAdded)
+{
+    Q_Q(QWidgetTextControl);
+#ifndef QT_NO_ACCESSIBILITY
+    if (QAccessible::isActive()) {
+        QTextCursor tmp(doc);
+        tmp.setPosition(from);
+        tmp.setPosition(from + charsAdded, QTextCursor::KeepAnchor);
+        QString newText = tmp.selectedText();
+
+        // always report the right number of removed chars, but in lack of the real string use spaces
+        QString oldText = QString(charsRemoved, QLatin1Char(' '));
+
+        QAccessibleEvent *ev = 0;
+        if (charsRemoved == 0) {
+            ev = new QAccessibleTextInsertEvent(q->parent(), from, newText);
+        } else if (charsAdded == 0) {
+            ev = new QAccessibleTextRemoveEvent(q->parent(), from, oldText);
+        } else {
+            ev = new QAccessibleTextUpdateEvent(q->parent(), from, oldText, newText);
+        }
+        QAccessible::updateAccessibility(ev);
+        delete ev;
+    }
+#endif
 }
 
 void QWidgetTextControlPrivate::_q_documentLayoutChanged()

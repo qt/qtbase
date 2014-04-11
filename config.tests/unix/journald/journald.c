@@ -40,9 +40,15 @@
 ****************************************************************************/
 
 #include <systemd/sd-journal.h>
+#include <syslog.h>
 
 int main(int argc, char **argv)
 {
-    sd_journal_print_with_location(LOG_INFO, "CODE_FILE=foo.c", "CODE_LINE=0", "unknown_function", "test message");
+    sd_journal_send("MESSAGE=%s",     "test message",
+                    "PRIORITY=%i",    LOG_INFO,
+                    "CODE_FUNC=%s",   "unknown",
+                    "CODE_LINE=%d",   0,
+                    "CODE_FILE=%s",   "foo.c",
+                    NULL);
     return 0;
 }

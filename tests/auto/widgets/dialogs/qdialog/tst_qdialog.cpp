@@ -276,7 +276,7 @@ void tst_QDialog::showMaximized()
     QVERIFY(dialog.isMaximized());
     QVERIFY(!dialog.isVisible());
 
-    dialog.show();
+    dialog.setVisible(true);
     QVERIFY(dialog.isMaximized());
     QVERIFY(dialog.isVisible());
 
@@ -309,7 +309,7 @@ void tst_QDialog::showMinimized()
     QVERIFY(dialog.isMinimized());
     QVERIFY(!dialog.isVisible());
 
-    dialog.show();
+    dialog.setVisible(true);
     QVERIFY(dialog.isMinimized());
     QVERIFY(dialog.isVisible());
 

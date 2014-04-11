@@ -44,6 +44,7 @@
 #ifndef QT_NO_COMBOBOX
 #include <qstylepainter.h>
 #include <qpa/qplatformtheme.h>
+#include <qpa/qplatformmenu.h>
 #include <qlineedit.h>
 #include <qapplication.h>
 #include <qdesktopwidget.h>
@@ -205,7 +206,7 @@ void QComboBoxPrivate::updateArrow(QStyle::StateFlag state)
     arrowState = state;
     QStyleOptionComboBox opt;
     q->initStyleOption(&opt);
-    q->update(q->style()->subControlRect(QStyle::CC_ComboBox, &opt, QStyle::SC_ComboBoxArrow, q));
+    q->update(q->rect());
 }
 
 void QComboBoxPrivate::_q_modelReset()
@@ -2375,6 +2376,79 @@ QSize QComboBox::sizeHint() const
     return d->recomputeSizeHint(d->sizeHint);
 }
 
+#ifdef Q_OS_OSX
+/*!
+ * \internal
+ *
+ * Tries to show a native popup. Returns true if it could, false otherwise.
+ *
+ */
+bool QComboBoxPrivate::showNativePopup()
+{
+    Q_Q(QComboBox);
+
+    QPlatformTheme *theme = QGuiApplicationPrivate::instance()->platformTheme();
+    if (QPlatformMenu *menu = theme->createPlatformMenu()) {
+        int itemsCount = q->count();
+
+        struct IndexSetter {
+            int index;
+            QComboBox *cb;
+
+            void operator()(void) { cb->setCurrentIndex(index); }
+        };
+
+        QList<QPlatformMenuItem *> items;
+        items.reserve(itemsCount);
+        QPlatformMenuItem *currentItem = 0;
+        int currentIndex = q->currentIndex();
+
+        for (int i = 0; i < itemsCount; ++i) {
+            QPlatformMenuItem *item = theme->createPlatformMenuItem();
+            QModelIndex rowIndex = model->index(i, modelColumn, root);
+            QVariant textVariant = model->data(rowIndex, Qt::EditRole);
+            item->setText(textVariant.toString());
+            QVariant iconVariant = model->data(rowIndex, Qt::DecorationRole);
+            if (iconVariant.canConvert<QIcon>())
+                item->setIcon(iconVariant.value<QIcon>());
+            item->setCheckable(true);
+            item->setChecked(i == currentIndex);
+            if (!currentItem || i == currentIndex)
+                currentItem = item;
+
+            IndexSetter setter = { i, q };
+            QObject::connect(item, &QPlatformMenuItem::activated, setter);
+
+            menu->insertMenuItem(item, 0);
+            menu->syncMenuItem(item);
+        }
+
+        QWindow *tlw = q->window()->windowHandle();
+        menu->setFont(q->font());
+        menu->setMinimumWidth(q->rect().width());
+        QPoint offset = QPoint(0, 7);
+        if (q->testAttribute(Qt::WA_MacSmallSize))
+            offset = QPoint(-1, 7);
+        else if (q->testAttribute(Qt::WA_MacMiniSize))
+            offset = QPoint(-2, 6);
+        menu->showPopup(tlw, tlw->mapFromGlobal(q->mapToGlobal(offset)), currentItem);
+        menu->deleteLater();
+        Q_FOREACH (QPlatformMenuItem *item, items)
+            item->deleteLater();
+
+        // The Cocoa popup will swallow any mouse release event.
+        // We need to fake one here to un-press the button.
+        QMouseEvent mouseReleased(QEvent::MouseButtonRelease, q->pos(), Qt::LeftButton,
+                                  Qt::MouseButtons(Qt::LeftButton), Qt::KeyboardModifiers());
+        qApp->sendEvent(q, &mouseReleased);
+
+        return true;
+    }
+
+    return false;
+}
+#endif // Q_OS_OSX
+
 /*!
     Displays the list of items in the combobox. If the list is empty
     then the no items will be shown.
@@ -2390,6 +2464,21 @@ void QComboBox::showPopup()
     if (count() <= 0)
         return;
 
+    QStyle * const style = this->style();
+    QStyleOptionComboBox opt;
+    initStyleOption(&opt);
+    const bool usePopup = style->styleHint(QStyle::SH_ComboBox_Popup, &opt, this);
+
+#ifdef Q_OS_OSX
+    if (usePopup
+        && (!d->container
+            || (view()->metaObject()->className() == QByteArray("QComboBoxListView")
+                && view()->itemDelegate()->metaObject()->className() == QByteArray("QComboMenuDelegate")))
+        && style->styleHint(QStyle::SH_ComboBox_UseNativePopup, &opt, this)
+        && d->showNativePopup())
+        return;
+#endif // Q_OS_OSX
+
 #ifdef QT_KEYPAD_NAVIGATION
 #ifndef QT_NO_COMPLETER
     if (QApplication::keypadNavigationEnabled() && d->completer) {
@@ -2401,14 +2490,10 @@ void QComboBox::showPopup()
 #endif
 #endif
 
-    QStyle * const style = this->style();
-
     // set current item and select it
     view()->selectionModel()->setCurrentIndex(d->currentIndex,
                                               QItemSelectionModel::ClearAndSelect);
     QComboBoxPrivateContainer* container = d->viewContainer();
-    QStyleOptionComboBox opt;
-    initStyleOption(&opt);
     QRect listRect(style->subControlRect(QStyle::CC_ComboBox, &opt,
                                          QStyle::SC_ComboBoxListBoxPopup, this));
     QRect screen = d->popupGeometry(QApplication::desktop()->screenNumber(this));
@@ -2419,7 +2504,6 @@ void QComboBox::showPopup()
     int aboveHeight = above.y() - screen.y();
     bool boundToScreen = !window()->testAttribute(Qt::WA_DontShowOnScreen);
 
-    const bool usePopup = style->styleHint(QStyle::SH_ComboBox_Popup, &opt, this);
     {
         int listHeight = 0;
         int count = 0;
@@ -2750,6 +2834,18 @@ void QComboBox::changeEvent(QEvent *e)
             d->updateLineEditGeometry();
         d->setLayoutItemMargins(QStyle::SE_ComboBoxLayoutItem);
 
+        if (e->type() == QEvent::MacSizeChange){
+            QPlatformTheme::Font f = QPlatformTheme::SystemFont;
+            if (testAttribute(Qt::WA_MacSmallSize))
+                f = QPlatformTheme::SmallFont;
+            else if (testAttribute(Qt::WA_MacMiniSize))
+                f = QPlatformTheme::MiniFont;
+            if (const QFont *platformFont = QApplicationPrivate::platformTheme()->font(f)) {
+                QFont f = font();
+                f.setPointSizeF(platformFont->pointSizeF());
+                setFont(f);
+            }
+        }
         // ### need to update scrollers etc. as well here
         break;
     case QEvent::EnabledChange:

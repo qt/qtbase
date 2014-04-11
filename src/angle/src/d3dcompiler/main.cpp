@@ -207,7 +207,7 @@ HRESULT WINAPI D3DCompile(
         if (qEnvironmentVariableIsSet("QT_D3DCOMPILER_BINARY_DIR"))
             precompiledPath = QString::fromLocal8Bit(qgetenv("QT_D3DCOMPILER_BINARY_DIR"));
         else
-            precompiledPath = QStringLiteral(":/qt.d3dcompiler"); // Default QRC path
+            precompiledPath = QStringLiteral(":/qt.d3dcompiler/"); // Default QRC path
         if (QDir(precompiledPath).exists())
             binaryPaths.append(precompiledPath);
 

@@ -133,16 +133,23 @@ private:
     // deregisters.
     static void registerTouchWindow(QWindow *window,  bool enable);
 
-    // Request a unified title and toolbar look for the window.
+    // Enable the unified title and toolbar area for a window.
+    static void setContentBorderEnabled(QWindow *window, bool enable);
+
+    // Set the size of the unified title and toolbar area.
     static void setContentBorderThickness(QWindow *window, int topThickness, int bottomThickness);
 
-    // Request a unified title and toolbar look for the window by registering
-    // an area. Multiple callers can register areas and the platform plugin
+    // Set the size for a unified toolbar content border area.
+    // Multiple callers can register areas and the platform plugin
     // will extend the "unified" area to cover them.
     static void registerContentBorderArea(QWindow *window, quintptr identifer, int upper, int lower);
 
-    // Enable the unified title and toolbar area.
-    static void enableContentBorderArea(QWindow *window, bool enable);
+    // Enables or disiables a content border area.
+    static void setContentBorderAreaEnabled(QWindow *window, quintptr identifier, bool enable);
+
+    // Returns true if the given coordinate is inside the current
+    // content border.
+    static bool testContentBorderPosition(QWindow *window, int position);
 
     // Sets a NSToolbar instance for the given QWindow. The
     // toolbar will be attached to the native NSWindow when

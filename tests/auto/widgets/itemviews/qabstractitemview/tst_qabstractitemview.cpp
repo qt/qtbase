@@ -1246,7 +1246,7 @@ void tst_QAbstractItemView::task250754_fontChange()
     vLayout->addWidget(&tree);
 
     QStandardItemModel *m = new QStandardItemModel(this);
-    for (int i=0; i<5; ++i) {
+    for (int i=0; i<20; ++i) {
         QStandardItem *item = new QStandardItem(QString("Item number %1").arg(i));
         for (int j=0; j<5; ++j) {
             QStandardItem *child = new QStandardItem(QString("Child Item number %1").arg(j));
@@ -1256,10 +1256,11 @@ void tst_QAbstractItemView::task250754_fontChange()
     }
     tree.setModel(m);
 
-    w.resize(160, 240); // Minimum width for windows with frame on Windows 8
+    tree.setHeaderHidden(true); // The header is (in certain styles) dpi dependent
+    w.resize(160, 300); // Minimum width for windows with frame on Windows 8
     centerOnScreen(&w);
     moveCursorAway(&w);
-    w.show();
+    w.showNormal();
     QVERIFY(QTest::qWaitForWindowExposed(&w));
     QFont font = tree.font();
     font.setPixelSize(10);
@@ -1579,11 +1580,16 @@ void tst_QAbstractItemView::testDelegateDestroyEditor()
 
 void tst_QAbstractItemView::testClickedSignal()
 {
+#if defined Q_OS_BLACKBERRY
+    QWidget rootWindow;
+    rootWindow.show();
+    QTest::qWaitForWindowExposed(&rootWindow);
+#endif
     QTableWidget view(5, 5);
 
     centerOnScreen(&view);
     moveCursorAway(&view);
-    view.show();
+    view.showNormal();
     QApplication::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
     QCOMPARE(static_cast<QWidget *>(&view), QApplication::activeWindow());

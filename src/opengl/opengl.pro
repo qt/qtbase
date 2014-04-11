@@ -11,7 +11,6 @@ QMAKE_DOCS = $$PWD/doc/qtopengl.qdocconf
 load(qt_module)
 
 contains(QT_CONFIG, opengl):CONFIG += opengl
-contains(QT_CONFIG, opengles1):CONFIG += opengles1
 contains(QT_CONFIG, opengles2):CONFIG += opengles2
 
 HEADERS += qgl.h \

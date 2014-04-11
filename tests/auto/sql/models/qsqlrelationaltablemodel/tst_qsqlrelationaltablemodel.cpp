@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -98,7 +98,7 @@ private:
 
 void tst_QSqlRelationalTableModel::initTestCase_data()
 {
-    dbs.open();
+    QVERIFY(dbs.open());
     if (dbs.fillTestTable() == 0)
         QSKIP("No database drivers are available in this Qt configuration");
 }

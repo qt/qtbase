@@ -430,8 +430,10 @@ void TableGenerator::parseKeySequence(char *line)
                     elem.keys[i] = XKB_KEY_dead_invertedbreve;
                 else if (!strcmp(sym, "dead_double_grave"))
                     elem.keys[i] = XKB_KEY_dead_doublegrave;
+#ifdef DEBUG_GENERATOR
                 else
                     qWarning() << QString("Qt Warning - invalid keysym: %1").arg(sym);
+#endif
             }
         } else {
             elem.keys[i] = 0;

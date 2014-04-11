@@ -485,6 +485,8 @@
  *  N3652           Q_COMPILER_RELAXED_CONSTEXPR_FUNCTIONS
  *  N3386 N3638     Q_COMPILER_RETURN_TYPE_DEDUCTION
  *  N3651           Q_COMPILER_VARIABLE_TEMPLATES
+ *
+ * C++14 Technical Specifications / C++17:
  *  N3639           Q_COMPILER_VLA  (see also Q_COMPILER_RESTRICTED_VLA)
  *
  */
@@ -776,7 +778,6 @@
 //#    define Q_COMPILER_BINARY_LITERALS   // already supported since GCC 4.3 as an extension
 #      define Q_COMPILER_LAMBDA_CAPTURES
 #      define Q_COMPILER_RETURN_TYPE_DEDUCTION
-#      define Q_COMPILER_VLA
 #    endif
 #  endif
 #endif
@@ -828,13 +829,18 @@
 #      define Q_COMPILER_DELEGATING_CONSTRUCTORS
 #      define Q_COMPILER_EXPLICIT_CONVERSIONS
 #      define Q_COMPILER_NONSTATIC_MEMBER_INIT
-#      define Q_COMPILER_INITIALIZER_LISTS
+// implemented, but nested initialization fails (eg tst_qvector): http://connect.microsoft.com/VisualStudio/feedback/details/800364/initializer-list-calls-object-destructor-twice
+//      #define Q_COMPILER_INITIALIZER_LISTS
 // implemented in principle, but has a bug that makes it unusable: http://connect.microsoft.com/VisualStudio/feedback/details/802058/c-11-unified-initialization-fails-with-c-style-arrays
 //      #define Q_COMPILER_UNIFORM_INIT
 #      define Q_COMPILER_RAW_STRINGS
 #      define Q_COMPILER_TEMPLATE_ALIAS
 #      define Q_COMPILER_VARIADIC_TEMPLATES
 #    endif /* VC 12 */
+#    if _MSC_FULL_VER >= 180030324 // VC 12 SP 2 RC
+#      define Q_COMPILER_INITIALIZER_LISTS
+#    endif /* VC 12 SP 2 RC */
+
 #endif /* Q_CC_MSVC */
 
 #ifdef __cplusplus

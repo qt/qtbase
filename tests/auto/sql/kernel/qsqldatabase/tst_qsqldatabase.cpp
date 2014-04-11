@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -394,7 +394,7 @@ void tst_QSqlDatabase::populateTestTables(QSqlDatabase db)
 void tst_QSqlDatabase::initTestCase()
 {
     qRegisterMetaType<QSqlDriver::NotificationSource>("QSqlDriver::NotificationSource");
-    dbs.open();
+    QVERIFY(dbs.open());
 
     for (QStringList::ConstIterator it = dbs.dbNames.begin(); it != dbs.dbNames.end(); ++it) {
         QSqlDatabase db = QSqlDatabase::database((*it));
@@ -2229,6 +2229,7 @@ void tst_QSqlDatabase::sqlite_enable_cache_mode()
     QSqlQuery q(db), q2(db2);
     QVERIFY_SQL(q, exec("select * from " + qTableName("qtest", __FILE__, db)));
     QVERIFY_SQL(q2, exec("select * from " + qTableName("qtest", __FILE__, db)));
+    db2.close();
 }
 
 QTEST_MAIN(tst_QSqlDatabase)

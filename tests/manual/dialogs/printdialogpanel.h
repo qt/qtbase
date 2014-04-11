@@ -101,6 +101,7 @@ private slots:
     void showPrintDialog();
     void showPreviewDialog();
     void showPageSetupDialog();
+    void directPrint();
     void unitsChanged();
     void pageSizeChanged();
     void pageDimensionsChanged();
