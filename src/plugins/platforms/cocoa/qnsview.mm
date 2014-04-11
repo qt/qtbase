@@ -639,8 +639,12 @@ static QTouchDevice *touchDevice = 0;
     if (m_platformWindow->m_activePopupWindow) {
         QWindowSystemInterface::handleCloseEvent(m_platformWindow->m_activePopupWindow);
         QWindowSystemInterface::flushWindowSystemEvents();
+        Qt::WindowType type = m_platformWindow->m_activePopupWindow->type();
         m_platformWindow->m_activePopupWindow = 0;
-        return;
+        // Consume the mouse event when closing the popup, except for tool tips
+        // were it's expected that the event is processed normally.
+        if (type != Qt::ToolTip)
+            return;
     }
     if ([self hasMarkedText]) {
         NSInputManager* inputManager = [NSInputManager currentInputManager];
