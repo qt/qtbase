@@ -95,6 +95,7 @@ public:
 
     bool isComposing() const;
     void clear();
+    void setFocusObject(QObject *object);
 
     //---------------//
     jboolean beginBatchEdit();
@@ -136,6 +137,7 @@ private:
     QMetaObject::Connection m_updateCursorPosConnection;
     bool m_blockUpdateSelection;
     int m_batchEditNestingLevel;
+    QObject *m_focusObject;
 };
 
 QT_END_NAMESPACE

@@ -338,7 +338,7 @@ static JNINativeMethod methods[] = {
 
 
 QAndroidInputContext::QAndroidInputContext()
-    : QPlatformInputContext(), m_blockUpdateSelection(false), m_batchEditNestingLevel(0)
+    : QPlatformInputContext(), m_blockUpdateSelection(false), m_batchEditNestingLevel(0), m_focusObject(0)
 {
     QtAndroid::AttachedJNIEnv env;
     if (!env.jniEnv)
@@ -530,6 +530,18 @@ void QAndroidInputContext::clear()
 {
     m_composingText.clear();
     m_extractedText.clear();
+}
+
+
+void QAndroidInputContext::setFocusObject(QObject *object)
+{
+    if (object != m_focusObject) {
+        m_focusObject = object;
+        if (!m_composingText.isEmpty())
+            finishComposingText();
+        reset();
+    }
+    QPlatformInputContext::setFocusObject(object);
 }
 
 void QAndroidInputContext::sendEvent(QObject *receiver, QInputMethodEvent *event)
