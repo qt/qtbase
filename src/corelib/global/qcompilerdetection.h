@@ -849,7 +849,10 @@
 // header, so the feature is useless, even if the compiler supports
 // it. Disable.
 #    undef Q_COMPILER_INITIALIZER_LISTS
+// That libcpp doesn't have std::move either, so disable everything
+// related to rvalue refs.
 #    undef Q_COMPILER_RVALUE_REFS
+#    undef Q_COMPILER_REF_QUALIFIERS
 #  endif
 # endif
 #endif // Q_OS_QNX
