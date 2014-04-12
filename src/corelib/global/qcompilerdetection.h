@@ -848,12 +848,8 @@
 // QNX: libcpp (Dinkumware-based) doesn't have the <initializer_list>
 // header, so the feature is useless, even if the compiler supports
 // it. Disable.
-#    ifdef Q_COMPILER_INITIALIZER_LISTS
-#      undef Q_COMPILER_INITIALIZER_LISTS
-#    endif
-#    ifdef Q_COMPILER_RVALUE_REFS
-#      undef Q_COMPILER_RVALUE_REFS
-#    endif
+#    undef Q_COMPILER_INITIALIZER_LISTS
+#    undef Q_COMPILER_RVALUE_REFS
 #  endif
 # endif
 #endif // Q_OS_QNX
