@@ -105,6 +105,7 @@ public:
     }
 #endif
     bool isBlacklisted() const;
+    bool isSelfSigned() const;
     void clear();
 
     // Certificate info

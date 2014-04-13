@@ -316,6 +316,7 @@ DEFINEFUNC2(int, ASN1_STRING_print, BIO *a, a, const ASN1_STRING *b, b, return 0
 #else
 DEFINEFUNC2(int, ASN1_STRING_print, BIO *a, a, ASN1_STRING *b, b, return 0, return)
 #endif
+DEFINEFUNC2(int, X509_check_issued, X509 *a, a, X509 *b, b, return -1, return)
 DEFINEFUNC(X509_NAME *, X509_get_issuer_name, X509 *a, a, return 0, return)
 DEFINEFUNC(X509_NAME *, X509_get_subject_name, X509 *a, a, return 0, return)
 DEFINEFUNC(int, X509_verify_cert, X509_STORE_CTX *a, a, return -1, return)
@@ -819,6 +820,7 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(BASIC_CONSTRAINTS_free)
     RESOLVEFUNC(AUTHORITY_KEYID_free)
     RESOLVEFUNC(ASN1_STRING_print)
+    RESOLVEFUNC(X509_check_issued)
     RESOLVEFUNC(X509_get_issuer_name)
     RESOLVEFUNC(X509_get_subject_name)
     RESOLVEFUNC(X509_verify_cert)

@@ -407,6 +407,7 @@ int q_ASN1_STRING_print(BIO *a, const ASN1_STRING *b);
 #else
 int q_ASN1_STRING_print(BIO *a, ASN1_STRING *b);
 #endif
+int q_X509_check_issued(X509 *a, X509 *b);
 X509_NAME *q_X509_get_issuer_name(X509 *a);
 X509_NAME *q_X509_get_subject_name(X509 *a);
 int q_X509_verify_cert(X509_STORE_CTX *ctx);

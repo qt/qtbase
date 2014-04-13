@@ -265,6 +265,21 @@ bool QSslCertificate::isBlacklisted() const
 }
 
 /*!
+    Returns \c true if this certificate is self signed; otherwise
+    returns \c false.
+
+    A certificate is considered self-signed its issuer and subject
+    are identical.
+*/
+bool QSslCertificate::isSelfSigned() const
+{
+    if (!d->x509)
+        return false;
+
+    return (q_X509_check_issued(d->x509, d->x509) == X509_V_OK);
+}
+
+/*!
     Clears the contents of this certificate, making it a null
     certificate.
 

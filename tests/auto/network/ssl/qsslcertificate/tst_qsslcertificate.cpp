@@ -104,6 +104,7 @@ private slots:
     void largeSerialNumber();
     void largeExpirationDate();
     void blacklistedCertificates();
+    void selfsignedCertificates();
     void toText();
     void multipleCommonNames();
     void subjectAndIssuerAttributes();
@@ -844,6 +845,13 @@ void tst_QSslCertificate::blacklistedCertificates()
     for (int a = 0; a < blacklistedCerts.count(); a++) {
         QVERIFY(blacklistedCerts.at(a).isBlacklisted());
     }
+}
+
+void tst_QSslCertificate::selfsignedCertificates()
+{
+    QVERIFY(QSslCertificate::fromPath(testDataDir + "/certificates/cert-ss.pem").first().isSelfSigned());
+    QVERIFY(!QSslCertificate::fromPath(testDataDir + "/certificates/cert.pem").first().isSelfSigned());
+    QVERIFY(!QSslCertificate().isSelfSigned());
 }
 
 void tst_QSslCertificate::toText()
