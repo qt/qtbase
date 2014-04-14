@@ -171,18 +171,7 @@ load(qt_installs)
 load(qt_targets)
 load(qt_common)
 
-!isEmpty(_QMAKE_SUPER_CACHE_): \
-    rplbase = $$dirname(_QMAKE_SUPER_CACHE_)/[^/][^/]*
-else: \
-    rplbase = $$MODULE_BASE_OUTDIR
-lib_replace.match = $$rplbase/lib
-host_build: \
-    lib_replace.replace = $$[QT_HOST_LIBS]
-else: \
-    lib_replace.replace = $$[QT_INSTALL_LIBS/raw]
-lib_replace.CONFIG = path
-QMAKE_PRL_INSTALL_REPLACE += lib_replace
-
+# this builds on top of qt_common
 unix|mingw {
     CONFIG += create_pc
     QMAKE_PKGCONFIG_DESTDIR = pkgconfig

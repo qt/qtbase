@@ -19,6 +19,18 @@ contains(TEMPLATE, .*lib) {
     unix:contains(QT_CONFIG, reduce_relocations): CONFIG += bsymbolic_functions
     contains(QT_CONFIG, largefile): CONFIG += largefile
     contains(QT_CONFIG, separate_debug_info): CONFIG += separate_debug_info
+
+    !isEmpty(_QMAKE_SUPER_CACHE_): \
+        rplbase = $$dirname(_QMAKE_SUPER_CACHE_)/[^/][^/]*
+    else: \
+        rplbase = $$MODULE_BASE_OUTDIR
+    lib_replace.match = $$rplbase/lib
+    host_build: \
+        lib_replace.replace = $$[QT_HOST_LIBS]
+    else: \
+        lib_replace.replace = $$[QT_INSTALL_LIBS/raw]
+    lib_replace.CONFIG = path
+    QMAKE_PRL_INSTALL_REPLACE += lib_replace
 }
 
 warnings_are_errors:warning_clean {
