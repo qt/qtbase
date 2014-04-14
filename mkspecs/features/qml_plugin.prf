@@ -106,4 +106,5 @@ load(qml_module)
 else: \
     lib_replace.match = $$MODULE_BASE_OUTDIR
 lib_replace.replace = $$[QT_INSTALL_LIBS/raw]
+lib_replace.CONFIG = path
 QMAKE_PRL_INSTALL_REPLACE += lib_replace
