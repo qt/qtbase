@@ -175,7 +175,7 @@ load(qt_common)
 unix|mingw {
     CONFIG += create_pc
     QMAKE_PKGCONFIG_DESTDIR = pkgconfig
-    QMAKE_PKGCONFIG_LIBDIR = $$lib_replace.replace
+    QMAKE_PKGCONFIG_LIBDIR = $$qt_libdir
     QMAKE_PKGCONFIG_INCDIR = $$[QT_INSTALL_HEADERS/raw]
     QMAKE_PKGCONFIG_CFLAGS = -I${includedir}/$$MODULE_INCNAME
     QMAKE_PKGCONFIG_NAME = $$replace(TARGET, ^Qt, "Qt$$section(VERSION, ., 0, 0) ")
@@ -188,7 +188,7 @@ unix|mingw {
 
     unix {
         CONFIG += create_libtool explicitlib
-        QMAKE_LIBTOOL_LIBDIR = $$lib_replace.replace
+        QMAKE_LIBTOOL_LIBDIR = $$qt_libdir
         QMAKE_LIBTOOL_INSTALL_REPLACE += lib_replace
     }
 }
