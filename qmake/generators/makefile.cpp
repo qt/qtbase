@@ -3217,7 +3217,7 @@ MakefileGenerator::writePkgConfigFile()
     QString prefix = pkgConfigPrefix();
     QString libDir = project->first("QMAKE_PKGCONFIG_LIBDIR").toQString();
     if(libDir.isEmpty())
-        libDir = prefix + Option::dir_sep + "lib" + Option::dir_sep;
+        libDir = prefix + "/lib";
     QString includeDir = project->first("QMAKE_PKGCONFIG_INCDIR").toQString();
     if(includeDir.isEmpty())
         includeDir = prefix + "/include";
