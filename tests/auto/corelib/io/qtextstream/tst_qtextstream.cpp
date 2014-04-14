@@ -247,6 +247,13 @@ private:
     QString testFileName;
 };
 
+void runOnExit()
+{
+    QByteArray buffer;
+    QTextStream(&buffer) << "This will try to use QTextCodec::codecForLocale" << endl;
+}
+Q_DESTRUCTOR_FUNCTION(runOnExit)
+
 tst_QTextStream::tst_QTextStream()
     : tempDir(QDir::tempPath() + "/tst_qtextstream.XXXXXX")
 {
