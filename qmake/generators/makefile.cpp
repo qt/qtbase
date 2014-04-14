@@ -3284,10 +3284,12 @@ MakefileGenerator::writePkgConfigFile()
 
     // libs
     t << "Libs: ";
-    QString pkgConfiglibDir;
     QString pkgConfiglibName;
     if (target_mode == TARG_MAC_MODE && project->isActiveConfig("lib_bundle")) {
-        pkgConfiglibDir = "-F${libdir}";
+        if (libDir != QLatin1String("/System/Library/Frameworks")
+            && libDir != QLatin1String("/Library/Frameworks")) {
+            t << "-F${libdir} ";
+        }
         ProString bundle;
         if (!project->isEmpty("QMAKE_FRAMEWORK_BUNDLE_NAME"))
             bundle = unescapeFilePath(project->first("QMAKE_FRAMEWORK_BUNDLE_NAME"));
@@ -3298,12 +3300,13 @@ MakefileGenerator::writePkgConfigFile()
             bundle = bundle.left(suffix);
         pkgConfiglibName = "-framework " + bundle + " ";
     } else {
-        pkgConfiglibDir = "-L${libdir}";
+        if (!project->values("QMAKE_DEFAULT_LIBDIRS").contains(libDir))
+            t << "-L${libdir} ";
         pkgConfiglibName = "-l" + unescapeFilePath(project->first("QMAKE_ORIG_TARGET"));
         if (project->isActiveConfig("shared"))
             pkgConfiglibName += project->first("TARGET_VERSION_EXT").toQString();
     }
-    t << pkgConfiglibDir << " " << pkgConfiglibName << " \n";
+    t << pkgConfiglibName << " \n";
 
     ProStringList libs;
     if(!project->isEmpty("QMAKE_INTERNAL_PRL_LIBS")) {
@@ -3327,7 +3330,10 @@ MakefileGenerator::writePkgConfigFile()
       << varGlue("PRL_EXPORT_CXXFLAGS", "", " ", " ")
       << varGlue("QMAKE_PKGCONFIG_CFLAGS", "", " ", " ")
         //      << varGlue("DEFINES","-D"," -D"," ")
-      << "-I${includedir}\n";
+         ;
+    if (!project->values("QMAKE_DEFAULT_INCDIRS").contains(includeDir))
+        t << "-I${includedir}";
+    t << endl;
 
     // requires
     const QString requires = project->values("QMAKE_PKGCONFIG_REQUIRES").join(' ');
