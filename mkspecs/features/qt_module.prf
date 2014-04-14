@@ -170,30 +170,27 @@ load(qt_installs)
     rplbase = $$dirname(_QMAKE_SUPER_CACHE_)/[^/][^/]*
 else: \
     rplbase = $$MODULE_BASE_OUTDIR
-include_replace.match = $$rplbase/include
-include_replace.replace = $$[QT_INSTALL_HEADERS/raw]
-include_replace.CONFIG = path
 lib_replace.match = $$rplbase/lib
 host_build: \
     lib_replace.replace = $$[QT_HOST_LIBS]
 else: \
     lib_replace.replace = $$[QT_INSTALL_LIBS/raw]
 lib_replace.CONFIG = path
-QMAKE_PRL_INSTALL_REPLACE += include_replace lib_replace
+QMAKE_PRL_INSTALL_REPLACE += lib_replace
 
 unix|mingw {
    CONFIG += create_pc
    QMAKE_PKGCONFIG_LIBDIR = $$lib_replace.replace
-   QMAKE_PKGCONFIG_INCDIR = $$include_replace.replace
+   QMAKE_PKGCONFIG_INCDIR = $$[QT_INSTALL_HEADERS/raw]
    QMAKE_PKGCONFIG_CFLAGS = -I${includedir}/$$MODULE_INCNAME
    QMAKE_PKGCONFIG_DESTDIR = pkgconfig
-   QMAKE_PKGCONFIG_INSTALL_REPLACE += include_replace lib_replace
+   QMAKE_PKGCONFIG_INSTALL_REPLACE += lib_replace
 }
 
 unix {
    CONFIG += create_libtool explicitlib
    QMAKE_LIBTOOL_LIBDIR = $$lib_replace.replace
-   QMAKE_LIBTOOL_INSTALL_REPLACE += include_replace lib_replace
+   QMAKE_LIBTOOL_INSTALL_REPLACE += lib_replace
 }
 
 unix|mingw {
