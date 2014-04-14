@@ -388,7 +388,7 @@ int qFindString(const QChar *haystack, int haystackLen, int from,
     Note: Quantifiers are normally "greedy". They always match as much
     text as they can. For example, \b{0+} matches the first zero it
     finds and all the consecutive zeros after the first zero. Applied
-    to '20005', it matches'2\underline{000}5'. Quantifiers can be made
+    to '20005', it matches '2\underline{000}5'. Quantifiers can be made
     non-greedy, see setMinimal().
 
     \target capturing parentheses
@@ -678,7 +678,7 @@ int qFindString(const QChar *haystack, int haystackLen, int from,
     QRegExp can match case insensitively using setCaseSensitivity(),
     and can use non-greedy matching, see setMinimal(). By
     default QRegExp uses full regexps but this can be changed with
-    setWildcard(). Searching can be forward with indexIn() or backward
+    setPatternSyntax(). Searching can be done forward with indexIn() or backward
     with lastIndexIn(). Captured text can be accessed using
     capturedTexts() which returns a string list of all captured
     strings, or using cap() which returns the captured string for the
