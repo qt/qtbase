@@ -92,51 +92,124 @@ static inline ID2D1Factory1 *factory()
     return QWindowsDirect2DContext::instance()->d2dFactory();
 }
 
-// XXX reduce code duplication between painterPathToPathGeometry and
-// vectorPathToID2D1PathGeometry, the two are quite similar
-
-static ComPtr<ID2D1PathGeometry1> painterPathToPathGeometry(const QPainterPath &path)
+class Direct2DPathGeometryWriter
 {
-    ComPtr<ID2D1PathGeometry1> geometry;
-    ComPtr<ID2D1GeometrySink> sink;
+public:
+    Direct2DPathGeometryWriter()
+        : m_inFigure(false)
+        , m_roundCoordinates(false)
+    {
 
-    HRESULT hr = factory()->CreatePathGeometry(&geometry);
-    if (FAILED(hr)) {
-        qWarning("%s: Could not create path geometry: %#x", __FUNCTION__, hr);
+    }
+
+    bool begin()
+    {
+        HRESULT hr = factory()->CreatePathGeometry(&m_geometry);
+        if (FAILED(hr)) {
+            qWarning("%s: Could not create path geometry: %#x", __FUNCTION__, hr);
+            return false;
+        }
+
+        hr = m_geometry->Open(&m_sink);
+        if (FAILED(hr)) {
+            qWarning("%s: Could not create geometry sink: %#x", __FUNCTION__, hr);
+            return false;
+        }
+
+        return true;
+    }
+
+    void setWindingFillEnabled(bool enable)
+    {
+        if (enable)
+            m_sink->SetFillMode(D2D1_FILL_MODE_WINDING);
+        else
+            m_sink->SetFillMode(D2D1_FILL_MODE_ALTERNATE);
+    }
+
+    void setAliasingEnabled(bool enable)
+    {
+        m_roundCoordinates = enable;
+    }
+
+    bool isInFigure() const
+    {
+        return m_inFigure;
+    }
+
+    void moveTo(const QPointF &point)
+    {
+        if (m_inFigure)
+            m_sink->EndFigure(D2D1_FIGURE_END_OPEN);
+
+        m_sink->BeginFigure(adjusted(point), D2D1_FIGURE_BEGIN_FILLED);
+        m_inFigure = true;
+    }
+
+    void lineTo(const QPointF &point)
+    {
+        m_sink->AddLine(adjusted(point));
+    }
+
+    void curveTo(const QPointF &p1, const QPointF &p2, const QPointF &p3)
+    {
+        D2D1_BEZIER_SEGMENT segment = {
+            adjusted(p1),
+            adjusted(p2),
+            adjusted(p3)
+        };
+
+        m_sink->AddBezier(segment);
+    }
+
+    void close()
+    {
+        if (m_inFigure)
+            m_sink->EndFigure(D2D1_FIGURE_END_OPEN);
+
+        m_sink->Close();
+    }
+
+    ComPtr<ID2D1PathGeometry1> geometry() const
+    {
+        return m_geometry;
+    }
+
+private:
+    D2D1_POINT_2F adjusted(const QPointF &point)
+    {
+        if (m_roundCoordinates)
+            return to_d2d_point_2f(point.toPoint());
+        else
+            return to_d2d_point_2f(point);
+    }
+
+    ComPtr<ID2D1PathGeometry1> m_geometry;
+    ComPtr<ID2D1GeometrySink> m_sink;
+
+    bool m_inFigure;
+    bool m_roundCoordinates;
+};
+
+static ComPtr<ID2D1PathGeometry1> painterPathToID2D1PathGeometry(const QPainterPath &path, bool alias)
+{
+    Direct2DPathGeometryWriter writer;
+    if (!writer.begin())
         return NULL;
-    }
 
-    hr = geometry->Open(&sink);
-    if (FAILED(hr)) {
-        qWarning("%s: Could not create geometry sink: %#x", __FUNCTION__, hr);
-        return NULL;
-    }
-
-    switch (path.fillRule()) {
-    case Qt::WindingFill:
-        sink->SetFillMode(D2D1_FILL_MODE_WINDING);
-        break;
-    case Qt::OddEvenFill:
-        sink->SetFillMode(D2D1_FILL_MODE_ALTERNATE);
-        break;
-    }
-
-    bool inFigure = false;
+    writer.setWindingFillEnabled(path.fillRule() == Qt::WindingFill);
+    writer.setAliasingEnabled(alias);
 
     for (int i = 0; i < path.elementCount(); i++) {
         const QPainterPath::Element element = path.elementAt(i);
 
         switch (element.type) {
         case QPainterPath::MoveToElement:
-            if (inFigure)
-                sink->EndFigure(D2D1_FIGURE_END_OPEN);
-
-            sink->BeginFigure(to_d2d_point_2f(element), D2D1_FIGURE_BEGIN_FILLED);
-            inFigure = true;
+            writer.moveTo(element);
             break;
 
         case QPainterPath::LineToElement:
-            sink->AddLine(to_d2d_point_2f(element));
+            writer.lineTo(element);
             break;
 
         case QPainterPath::CurveToElement:
@@ -149,13 +222,7 @@ static ComPtr<ID2D1PathGeometry1> painterPathToPathGeometry(const QPainterPath &
             Q_ASSERT(data1.type == QPainterPath::CurveToDataElement);
             Q_ASSERT(data2.type == QPainterPath::CurveToDataElement);
 
-            D2D1_BEZIER_SEGMENT segment;
-
-            segment.point1 = to_d2d_point_2f(element);
-            segment.point2 = to_d2d_point_2f(data1);
-            segment.point3 = to_d2d_point_2f(data2);
-
-            sink->AddBezier(segment);
+            writer.curveTo(element, data1, data2);
         }
             break;
 
@@ -165,55 +232,22 @@ static ComPtr<ID2D1PathGeometry1> painterPathToPathGeometry(const QPainterPath &
         }
     }
 
-    if (inFigure)
-        sink->EndFigure(D2D1_FIGURE_END_OPEN);
-
-    sink->Close();
-
-    return geometry;
+    writer.close();
+    return writer.geometry();
 }
 
 static ComPtr<ID2D1PathGeometry1> vectorPathToID2D1PathGeometry(const QVectorPath &path, bool alias)
 {
-    ComPtr<ID2D1PathGeometry1> pathGeometry;
-    HRESULT hr = factory()->CreatePathGeometry(pathGeometry.GetAddressOf());
-    if (FAILED(hr)) {
-        qWarning("%s: Could not create path geometry: %#x", __FUNCTION__, hr);
+    Direct2DPathGeometryWriter writer;
+    if (!writer.begin())
         return NULL;
-    }
 
-    if (path.isEmpty())
-        return pathGeometry;
-
-    ComPtr<ID2D1GeometrySink> sink;
-    hr = pathGeometry->Open(sink.GetAddressOf());
-    if (FAILED(hr)) {
-        qWarning("%s: Could not create geometry sink: %#x", __FUNCTION__, hr);
-        return NULL;
-    }
-
-    sink->SetFillMode(path.hasWindingFill() ? D2D1_FILL_MODE_WINDING
-                                            : D2D1_FILL_MODE_ALTERNATE);
-
-    bool inFigure = false;
+    writer.setWindingFillEnabled(path.hasWindingFill());
+    writer.setAliasingEnabled(alias);
 
     const QPainterPath::ElementType *types = path.elements();
     const int count = path.elementCount();
-    const qreal *points = 0;
-
-    QScopedArrayPointer<qreal> rounded_points;
-
-    if (alias) {
-        // Aliased painting, round to whole numbers
-        rounded_points.reset(new qreal[count * 2]);
-        points = rounded_points.data();
-
-        for (int i = 0; i < (count * 2); i++)
-            rounded_points[i] = qRound(path.points()[i]);
-    } else {
-        // Antialiased painting, keep original numbers
-        points = path.points();
-    }
+    const qreal *points = path.points();
 
     Q_ASSERT(points);
 
@@ -226,15 +260,11 @@ static ComPtr<ID2D1PathGeometry1> vectorPathToID2D1PathGeometry(const QVectorPat
 
             switch (types[i]) {
             case QPainterPath::MoveToElement:
-                if (inFigure)
-                    sink->EndFigure(D2D1_FIGURE_END_OPEN);
-
-                sink->BeginFigure(D2D1::Point2F(x, y), D2D1_FIGURE_BEGIN_FILLED);
-                inFigure = true;
+                writer.moveTo(QPointF(x, y));
                 break;
 
             case QPainterPath::LineToElement:
-                sink->AddLine(D2D1::Point2F(x, y));
+                writer.lineTo(QPointF(x, y));
                 break;
 
             case QPainterPath::CurveToElement:
@@ -251,13 +281,7 @@ static ComPtr<ID2D1PathGeometry1> vectorPathToID2D1PathGeometry(const QVectorPat
                 const qreal x3 = points[i * 2];
                 const qreal y3 = points[i * 2 + 1];
 
-                D2D1_BEZIER_SEGMENT segment = {
-                    D2D1::Point2F(x, y),
-                    D2D1::Point2F(x2, y2),
-                    D2D1::Point2F(x3, y3)
-                };
-
-                sink->AddBezier(segment);
+                writer.curveTo(QPointF(x, y), QPointF(x2, y2), QPointF(x3, y3));
             }
                 break;
 
@@ -267,23 +291,17 @@ static ComPtr<ID2D1PathGeometry1> vectorPathToID2D1PathGeometry(const QVectorPat
             }
         }
     } else {
-        sink->BeginFigure(D2D1::Point2F(points[0], points[1]), D2D1_FIGURE_BEGIN_FILLED);
-        inFigure = true;
-
+        writer.moveTo(QPointF(points[0], points[1]));
         for (int i = 1; i < count; i++)
-            sink->AddLine(D2D1::Point2F(points[i * 2], points[i * 2 + 1]));
+            writer.lineTo(QPointF(points[i * 2], points[i * 2 + 1]));
     }
 
-    if (inFigure) {
+    if (writer.isInFigure())
         if (path.hasImplicitClose())
-            sink->AddLine(D2D1::Point2F(points[0], points[1]));
+            writer.lineTo(QPointF(points[0], points[1]));
 
-        sink->EndFigure(D2D1_FIGURE_END_OPEN);
-    }
-
-    sink->Close();
-
-    return pathGeometry;
+    writer.close();
+    return writer.geometry();
 }
 
 class QWindowsDirect2DPaintEnginePrivate : public QPaintEngineExPrivate
@@ -375,7 +393,7 @@ public:
     {
         popClip();
 
-        ComPtr<ID2D1PathGeometry1> geometry = painterPathToPathGeometry(clipPath);
+        ComPtr<ID2D1PathGeometry1> geometry = painterPathToID2D1PathGeometry(clipPath, antialiasMode() == D2D1_ANTIALIAS_MODE_ALIASED);
         if (!geometry)
             return;
 
@@ -816,7 +834,7 @@ bool QWindowsDirect2DPaintEngine::begin(QPaintDevice * pdev)
         QPainterPath p;
         p.addRegion(systemClip());
 
-        ComPtr<ID2D1PathGeometry1> geometry = painterPathToPathGeometry(p);
+        ComPtr<ID2D1PathGeometry1> geometry = painterPathToID2D1PathGeometry(p, d->antialiasMode() == D2D1_ANTIALIAS_MODE_ALIASED);
         if (!geometry)
             return false;
 
