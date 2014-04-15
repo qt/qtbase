@@ -165,6 +165,11 @@ win32 {
             SOURCES += \
                 io/qstandardpaths_android.cpp \
                 io/qstorageinfo_unix.cpp
+        } else:haiku {
+            SOURCES += \
+                io/qstandardpaths_haiku.cpp \
+                io/qstorageinfo_unix.cpp
+            LIBS += -lbe
         } else {
             SOURCES += \
                 io/qstandardpaths_unix.cpp \
