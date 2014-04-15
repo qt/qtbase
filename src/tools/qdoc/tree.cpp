@@ -787,11 +787,9 @@ const Node* Tree::findNode(const QStringList& path, const Node* start, int findF
         if (node && i == path.size()
                 && (!(findFlags & NonFunction) || node->type() != Node::Function
                     || ((FunctionNode*)node)->metaness() == FunctionNode::MacroWithoutParams)) {
-            if (!node->isQmlPropertyGroup()) {
                 if (node->isCollisionNode())
                     node = node->applyModuleName(start);
                 return node;
-            }
         }
         current = current->parent();
     } while (current);

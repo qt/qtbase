@@ -712,7 +712,7 @@ Node* InnerNode::findChildNode(const QString& name, bool qml) const
                 if (!node->isQmlNode())
                     return node;
             }
-            else if (node->isQmlNode() && !node->isQmlPropertyGroup())
+            else if (node->isQmlNode())
                 return node;
         }
     }
