@@ -8525,6 +8525,8 @@ void QWidget::mouseReleaseEvent(QMouseEvent *event)
     This event handler, for event \a event, can be reimplemented in a
     subclass to receive mouse double click events for the widget.
 
+    The default implementation calls mousePressEvent().
+
     \note The widget will also receive mouse press and mouse release
     events in addition to the double click event. It is up to the
     developer to ensure that the application interprets these events
@@ -8536,7 +8538,7 @@ void QWidget::mouseReleaseEvent(QMouseEvent *event)
 
 void QWidget::mouseDoubleClickEvent(QMouseEvent *event)
 {
-    event->ignore();
+    mousePressEvent(event);
 }
 
 #ifndef QT_NO_WHEELEVENT
