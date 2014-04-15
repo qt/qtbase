@@ -511,12 +511,23 @@ const QSqlResult* QSqlQuery::result() const
 
   \list
 
-  \li If the result is currently positioned before the first record or
-  on the first record, and \a index is negative, there is no change,
-  and false is returned.
+  \li If the result is currently positioned before the first record and:
+  \list
+  \li \a index is negative or zero, there is no change, and false is
+  returned.
+  \li \a index is positive, an attempt is made to position the result
+  at absolute position \a index - 1, following the sames rule for non
+  relative seek, above.
+  \endlist
 
-  \li If the result is currently located after the last record, and \a
-  index is positive, there is no change, and false is returned.
+  \li If the result is currently positioned after the last record and:
+  \list
+  \li \a index is positive or zero, there is no change, and false is
+  returned.
+  \li \a index is negative, an attempt is made to position the result
+  at \a index + 1 relative position from last record, following the
+  rule below.
+  \endlist
 
   \li If the result is currently located somewhere in the middle, and
   the relative offset \a index moves the result below zero, the result
@@ -549,7 +560,7 @@ bool QSqlQuery::seek(int index, bool relative)
         switch (at()) { // relative seek
         case QSql::BeforeFirstRow:
             if (index > 0)
-                actualIdx = index;
+                actualIdx = index - 1;
             else {
                 return false;
             }
@@ -557,7 +568,7 @@ bool QSqlQuery::seek(int index, bool relative)
         case QSql::AfterLastRow:
             if (index < 0) {
                 d->sqlResult->fetchLast();
-                actualIdx = at() + index;
+                actualIdx = at() + index + 1;
             } else {
                 return false;
             }

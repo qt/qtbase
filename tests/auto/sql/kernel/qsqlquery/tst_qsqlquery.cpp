@@ -1247,6 +1247,26 @@ void tst_QSqlQuery::seek()
     QVERIFY( q.seek( 0 ) );
     QCOMPARE( q.at(), 0 );
     QCOMPARE( q.value( 0 ).toInt(), 1 );
+
+    QVERIFY(!q.seek(QSql::BeforeFirstRow));
+    QCOMPARE(q.at(), int(QSql::BeforeFirstRow));
+    QVERIFY(q.seek(1, true));
+    QCOMPARE(q.at(), 0);
+    QCOMPARE(q.value(0).toInt(), 1);
+
+    qint32 count = 1;
+    while (q.next()) ++count;
+
+    QCOMPARE(q.at(), int(QSql::AfterLastRow));
+
+    if (!q.isForwardOnly()) {
+        QVERIFY(q.seek(-1, true));
+        QCOMPARE(q.at(), count - 1);
+        QCOMPARE(q.value(0).toInt(), count);
+    } else {
+        QVERIFY(!q.seek(-1, true));
+        QCOMPARE(q.at(), int(QSql::AfterLastRow));
+    }
 }
 
 void tst_QSqlQuery::seekForwardOnlyQuery()
