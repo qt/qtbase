@@ -1143,7 +1143,7 @@ void QWindowsDirect2DPaintEngine::drawStaticTextItem(QStaticTextItem *staticText
     Q_D(QWindowsDirect2DPaintEngine);
     D2D_TAG(D2DDebugDrawStaticTextItemTag);
 
-    if (qpen_style(d->pen.qpen) == Qt::NoPen)
+    if (qpen_style(d->pen.qpen) == Qt::NoPen && qbrush_style(d->brush.qbrush) == Qt::NoBrush)
         return;
 
     if (staticTextItem->numGlyphs == 0)
@@ -1193,7 +1193,7 @@ void QWindowsDirect2DPaintEngine::drawTextItem(const QPointF &p, const QTextItem
     Q_D(QWindowsDirect2DPaintEngine);
     D2D_TAG(D2DDebugDrawTextItemTag);
 
-    if (qpen_style(d->pen.qpen) == Qt::NoPen)
+    if (qpen_style(d->pen.qpen) == Qt::NoPen && qbrush_style(d->brush.qbrush) == Qt::NoBrush)
         return;
 
     const QTextItemInt &ti = static_cast<const QTextItemInt &>(textItem);
