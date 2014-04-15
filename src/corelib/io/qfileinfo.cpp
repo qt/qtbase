@@ -271,6 +271,17 @@ QDateTime &QFileInfoPrivate::getFileTime(QAbstractFileEngine::FileTime request) 
     groupId(). You can examine a file's permissions and ownership in a
     single statement using the permission() function.
 
+    \note On NTFS file systems, ownership and permissions checking is
+    disabled by default for performance reasons. To enable it,
+    include the following line:
+
+    \snippet ntfsp.cpp 0
+
+    Permission checking is then turned on and off by incrementing and
+    decrementing \c qt_ntfs_permission_lookup by 1.
+
+    \snippet ntfsp.cpp 1
+
     \section1 Performance Issues
 
     Some of QFileInfo's functions query the file system, but for
