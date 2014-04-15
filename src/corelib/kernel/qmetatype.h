@@ -1277,6 +1277,11 @@ namespace QtPrivate
         enum { Value = false };
     };
     template<>
+    struct IsPointerToTypeDerivedFromQObject<const void*>
+    {
+        enum { Value = false };
+    };
+    template<>
     struct IsPointerToTypeDerivedFromQObject<QObject*>
     {
         enum { Value = true };
