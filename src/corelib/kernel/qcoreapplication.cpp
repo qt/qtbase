@@ -71,6 +71,7 @@
 #include <private/qfactoryloader_p.h>
 #include <private/qfunctions_p.h>
 #include <private/qlocale_p.h>
+#include <private/qhooks_p.h>
 
 #ifndef QT_NO_QOBJECT
 #if defined(Q_OS_UNIX)
@@ -765,6 +766,10 @@ void QCoreApplication::init()
 
     qt_call_pre_routines();
     qt_startup_hook();
+#ifndef QT_BOOTSTRAPPED
+    if (Q_UNLIKELY(qtHookData[QHooks::Startup]))
+        reinterpret_cast<QHooks::StartupCallback>(qtHookData[QHooks::Startup])();
+#endif
 
 #ifndef QT_NO_QOBJECT
     QCoreApplicationPrivate::is_app_running = true; // No longer starting up.

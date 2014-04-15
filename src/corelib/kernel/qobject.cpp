@@ -63,6 +63,7 @@
 #include <qsharedpointer.h>
 
 #include <private/qorderedmutexlocker_p.h>
+#include <private/qhooks_p.h>
 
 #include <new>
 
@@ -138,6 +139,7 @@ static inline QMutex *signalSlotLock(const QObject *o)
         uint(quintptr(o)) % sizeof(_q_ObjectMutexPool)/sizeof(QBasicMutex)]);
 }
 
+// ### Qt >= 5.6, remove qt_add/removeObject
 extern "C" Q_CORE_EXPORT void qt_addObject(QObject *)
 {}
 
@@ -820,6 +822,8 @@ QObject::QObject(QObject *parent)
         }
     }
     qt_addObject(this);
+    if (Q_UNLIKELY(qtHookData[QHooks::AddQObject]))
+        reinterpret_cast<QHooks::AddQObjectCallback>(qtHookData[QHooks::AddQObject])(this);
 }
 
 /*!
@@ -851,6 +855,8 @@ QObject::QObject(QObjectPrivate &dd, QObject *parent)
         }
     }
     qt_addObject(this);
+    if (Q_UNLIKELY(qtHookData[QHooks::AddQObject]))
+        reinterpret_cast<QHooks::AddQObjectCallback>(qtHookData[QHooks::AddQObject])(this);
 }
 
 /*!
@@ -1028,6 +1034,8 @@ QObject::~QObject()
         d->deleteChildren();
 
     qt_removeObject(this);
+    if (Q_UNLIKELY(qtHookData[QHooks::RemoveQObject]))
+        reinterpret_cast<QHooks::RemoveQObjectCallback>(qtHookData[QHooks::RemoveQObject])(this);
 
     if (d->parent)        // remove it from parent object
         d->setParent_helper(0);

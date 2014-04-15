@@ -1,0 +1,90 @@
+/****************************************************************************
+**
+** Copyright (C) 2014 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Volker Krause <volker.krause@kdab.com>
+** Contact: http://www.qt-project.org/legal
+**
+** This file is part of the QtCore module of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and Digia.  For licensing terms and
+** conditions see http://qt.digia.com/licensing.  For further information
+** use the contact form at http://qt.digia.com/contact-us.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Digia gives you certain additional
+** rights.  These rights are described in the Digia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+
+#include <QtTest/QtTest>
+#include <QtCore/private/qhooks_p.h>
+
+class tst_QHooks: public QObject
+{
+    Q_OBJECT
+
+private slots:
+    void testVersion();
+    void testAddRemoveObject();
+};
+
+void tst_QHooks::testVersion()
+{
+    QVERIFY(qtHookData[QHooks::HookDataVersion] >= 1);
+    QCOMPARE(qtHookData[QHooks::HookDataSize], (quintptr)QHooks::LastHookIndex);
+    QCOMPARE(qtHookData[QHooks::QtVersion], (quintptr)QT_VERSION);
+}
+
+static int objectCount = 0;
+
+static void objectAddHook(QObject*)
+{
+    ++objectCount;
+}
+
+static void objectRemoveHook(QObject*)
+{
+    --objectCount;
+}
+
+void tst_QHooks::testAddRemoveObject()
+{
+    QCOMPARE(qtHookData[QHooks::AddQObject], (quintptr)0);
+    QCOMPARE(qtHookData[QHooks::RemoveQObject], (quintptr)0);
+
+    qtHookData[QHooks::AddQObject] = (quintptr)&objectAddHook;
+    qtHookData[QHooks::RemoveQObject] = (quintptr)&objectRemoveHook;
+
+    QCOMPARE(objectCount, 0);
+    QObject *obj = new QObject;
+    QVERIFY(objectCount > 0);
+    delete obj;
+    QCOMPARE(objectCount, 0);
+}
+
+QTEST_APPLESS_MAIN(tst_QHooks)
+#include "tst_qhooks.moc"
