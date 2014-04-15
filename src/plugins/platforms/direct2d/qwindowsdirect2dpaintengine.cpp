@@ -897,13 +897,25 @@ void QWindowsDirect2DPaintEngine::fill(const QVectorPath &path, const QBrush &br
     if (!d->brush.brush)
         return;
 
-    ComPtr<ID2D1Geometry> geometry = vectorPathToID2D1PathGeometry(path, d->antialiasMode() == D2D1_ANTIALIAS_MODE_ALIASED);
-    if (!geometry) {
-        qWarning("%s: Could not convert path to d2d geometry", __FUNCTION__);
-        return;
-    }
+    if (path.hints() & QVectorPath::RectangleShapeMask) {
+        const qreal * const points = path.points();
+        D2D_RECT_F rect = {
+            points[0], // left
+            points[1], // top
+            points[2], // right,
+            points[5]  // bottom
+        };
 
-    d->dc()->FillGeometry(geometry.Get(), d->brush.brush.Get());
+        d->dc()->FillRectangle(rect, d->brush.brush.Get());
+    } else {
+        ComPtr<ID2D1Geometry> geometry = vectorPathToID2D1PathGeometry(path, d->antialiasMode() == D2D1_ANTIALIAS_MODE_ALIASED);
+        if (!geometry) {
+            qWarning("%s: Could not convert path to d2d geometry", __FUNCTION__);
+            return;
+        }
+
+        d->dc()->FillGeometry(geometry.Get(), d->brush.brush.Get());
+    }
 }
 
 // For clipping we convert everything to painter paths since it allows
