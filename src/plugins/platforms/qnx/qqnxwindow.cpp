@@ -174,7 +174,7 @@ QQnxWindow::QQnxWindow(QWindow *window, screen_context_t context, bool needRootW
     // indication that we want to create a child window and join that window group.
     const QVariant windowGroup = window->property("qnxInitialWindowGroup");
 
-    if (window->type() == Qt::CoverWindow || window->type() == Qt::Desktop) {
+    if (window->type() == Qt::CoverWindow) {
         // Cover windows have to be top level to be accessible to window delegate (i.e. navigator)
         // Desktop windows also need to be toplevel because they are not
         // supposed to be part of the window hierarchy tree
@@ -189,10 +189,13 @@ QQnxWindow::QQnxWindow(QWindow *window, screen_context_t context, bool needRootW
         m_isTopLevel = !needRootWindow || !platformScreen->rootWindow();
     }
 
+    if (window->type() == Qt::Desktop)  // A desktop widget does not need a libscreen window
+        return;
+
     if (m_isTopLevel) {
         Q_SCREEN_CRITICALERROR(screen_create_window(&m_window, m_screenContext),
                             "Could not create top level window"); // Creates an application window
-        if (window->type() != Qt::CoverWindow && window->type() != Qt::Desktop) {
+        if (window->type() != Qt::CoverWindow) {
             if (needRootWindow)
                 platformScreen->setRootWindow(this);
         }
@@ -245,7 +248,8 @@ void QQnxWindow::setGeometry(const QRect &rect)
     if (shouldMakeFullScreen())
         newGeometry = screen()->geometry();
 
-    setGeometryHelper(newGeometry);
+    if (window()->type() != Qt::Desktop)
+        setGeometryHelper(newGeometry);
 
     if (isExposed())
         QWindowSystemInterface::handleExposeEvent(window(), newGeometry);
@@ -285,7 +289,7 @@ void QQnxWindow::setVisible(bool visible)
 {
     qWindowDebug() << Q_FUNC_INFO << "window =" << window() << "visible =" << visible;
 
-    if (m_visible == visible)
+    if (m_visible == visible || window()->type() == Qt::Desktop)
         return;
 
     // The first time through we join a window group if appropriate.
@@ -668,6 +672,9 @@ void QQnxWindow::setRotation(int rotation)
 
 void QQnxWindow::initWindow()
 {
+    if (window()->type() == Qt::Desktop)
+        return;
+
     // Alpha channel is always pre-multiplied if present
     int val = SCREEN_PRE_MULTIPLIED_ALPHA;
     Q_SCREEN_CHECKERROR(screen_set_window_property_iv(m_window, SCREEN_PROPERTY_ALPHA_MODE, &val),
