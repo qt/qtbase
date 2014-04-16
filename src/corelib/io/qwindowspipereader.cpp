@@ -318,6 +318,7 @@ bool QWindowsPipeReader::waitForPipeClosed(int msecs)
     QElapsedTimer stopWatch;
     stopWatch.start();
     forever {
+        waitForReadyRead(0);
         checkPipeState();
         if (pipeBroken)
             return true;
