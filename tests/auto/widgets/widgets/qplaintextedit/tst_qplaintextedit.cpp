@@ -154,6 +154,7 @@ private slots:
     void findBackwardWithRegExp();
     void findWithRegExpReturnsFalseIfNoMoreResults();
 #endif
+    void layoutAfterMultiLineRemove();
 
 private:
     void createSelection();
@@ -1566,6 +1567,50 @@ void tst_QPlainTextEdit::findWithRegExpReturnsFalseIfNoMoreResults()
     QCOMPARE(ed->textCursor().selectedText(), QStringLiteral("text"));
 }
 #endif
+
+void tst_QPlainTextEdit::layoutAfterMultiLineRemove()
+{
+    ed->setVisible(true); // The widget must be visible to reproduce this bug.
+
+    QString contents;
+    for (int i = 0; i < 5; ++i)
+        contents.append("\ttest\n");
+
+    ed->setPlainText(contents);
+
+    /*
+     * Remove the tab from the beginning of lines 2-4, in an edit block. The
+     * edit block is required for the bug to be reproduced.
+     */
+
+    QTextCursor curs = ed->textCursor();
+    curs.movePosition(QTextCursor::Start);
+    curs.movePosition(QTextCursor::NextBlock);
+
+    curs.beginEditBlock();
+    for (int i = 0; i < 3; ++i) {
+        curs.deleteChar();
+        curs.movePosition(QTextCursor::NextBlock);
+    }
+    curs.endEditBlock();
+
+    /*
+     * Now, we're going to perform the following actions:
+     *
+     *     - Move to the beginning of the document.
+     *     - Move down three times - this should put us at the front of block 3.
+     *     - Move to the end of the line.
+     *
+     * At this point, if the document layout is behaving correctly, we should
+     * still be positioned on block 3. Verify that this is the case.
+     */
+
+    curs.movePosition(QTextCursor::Start);
+    curs.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, 3);
+    curs.movePosition(QTextCursor::EndOfLine);
+
+    QCOMPARE(curs.blockNumber(), 3);
+}
 
 QTEST_MAIN(tst_QPlainTextEdit)
 #include "tst_qplaintextedit.moc"
