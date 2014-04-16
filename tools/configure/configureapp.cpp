@@ -3372,10 +3372,8 @@ void Configure::generateQConfigPri()
         if (!dictionary["QT_NAMESPACE"].isEmpty())
             configStream << "#namespaces" << endl << "QT_NAMESPACE = " << dictionary["QT_NAMESPACE"] << endl;
 
-        if (dictionary[ "SHARED" ] == "no") {
-            configStream << "QT_DEFAULT_QPA_PLUGIN = q" << qpaPlatformName() << endl
-                         << "QT_DEFAULT_PRINTSUPPORTPLUGIN = " << qpaPrintSupportPluginName() << endl;
-        }
+        if (dictionary[ "SHARED" ] == "no")
+            configStream << "QT_DEFAULT_QPA_PLUGIN = q" << qpaPlatformName() << endl;
 
         if (!configStream.flush())
             dictionary[ "DONE" ] = "error";
@@ -3548,8 +3546,7 @@ void Configure::generateConfigfiles()
         for (int i = 0; i < qconfigList.count(); ++i)
             tmpStream << addDefine(qconfigList.at(i));
 
-        tmpStream << "#define QT_QPA_DEFAULT_PLATFORM_NAME \"" << qpaPlatformName() << "\"" << endl
-                  << "#define QT_QPA_DEFAULT_PRINTSUPPORTPLUGIN_NAME \"" << qpaPrintSupportPluginName() << "\"" << endl;
+        tmpStream<<"#define QT_QPA_DEFAULT_PLATFORM_NAME \"" << qpaPlatformName() << "\""<<endl;
 
         if (!tmpStream.flush())
             dictionary[ "DONE" ] = "error";
@@ -4447,11 +4444,6 @@ QString Configure::qpaPlatformName() const
     case ANDROID:
         return QStringLiteral("android");
     }
-}
-
-QString Configure::qpaPrintSupportPluginName() const
-{
-    return platform() == WINDOWS ? QStringLiteral("windowsprintersupport") : QString();
 }
 
 int Configure::platform() const

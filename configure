@@ -781,8 +781,6 @@ QT_LIBS_GLIB=
 
 # default qpa platform
 QT_QPA_DEFAULT_PLATFORM=
-# default print support plugin
-QT_PRINTSUPPORT_DEFAULT_PLUGIN=
 
 # Android vars
 CFG_DEFAULT_ANDROID_NDK_ROOT=$ANDROID_NDK_ROOT
@@ -5181,15 +5179,6 @@ if [ -z "$QT_QPA_DEFAULT_PLATFORM" ]; then
     fi
 fi
 
-# Determine print support plugin belonging to the default QPA platform
-if [ "$QT_QPA_DEFAULT_PLATFORM" = "cocoa" ]; then
-    QT_PRINTSUPPORT_DEFAULT_PLUGIN=cocoaprintersupport
-elif [ "$QT_QPA_DEFAULT_PLATFORM" = "windows" ]; then
-    QT_PRINTSUPPORT_DEFAULT_PLUGIN=windowsprintersupport
-elif [ "$QT_QPA_DEFAULT_PLATFORM" = "xcb" ]; then
-    QT_PRINTSUPPORT_DEFAULT_PLUGIN=cupsprintersupport
-fi
-
 if [ -n "$QMAKE_CFLAGS_XCB" ] || [ -n "$QMAKE_LIBS_XCB" ]; then
     QMakeVar set QMAKE_CFLAGS_XCB "$QMAKE_CFLAGS_XCB"
     QMakeVar set QMAKE_LIBS_XCB "$QMAKE_LIBS_XCB"
@@ -6149,7 +6138,6 @@ EOF
 fi
 
 echo "#define QT_QPA_DEFAULT_PLATFORM_NAME \"$QT_QPA_DEFAULT_PLATFORM\"" >>"$outpath/src/corelib/global/qconfig.h.new"
-echo "#define QT_QPA_DEFAULT_PRINTSUPPORTPLUGIN_NAME \"QT_PRINTSUPPORT_DEFAULT_PLUGIN\"" >>"$outpath/src/corelib/global/qconfig.h.new"
 
 # avoid unecessary rebuilds by copying only if qconfig.h has changed
 if cmp -s "$outpath/src/corelib/global/qconfig.h" "$outpath/src/corelib/global/qconfig.h.new"; then
@@ -6219,7 +6207,6 @@ EOF
 
 if [ "$CFG_SHARED" = "no" ]; then
     echo "QT_DEFAULT_QPA_PLUGIN = q$QT_QPA_DEFAULT_PLATFORM" >> "$QTCONFIG.tmp"
-    echo "QT_DEFAULT_PRINTSUPPORTPLUGIN = $QT_PRINTSUPPORT_DEFAULT_PLUGIN" >> "$QTCONFIG.tmp"
     echo >> "$QTCONFIG.tmp"
 fi
 
