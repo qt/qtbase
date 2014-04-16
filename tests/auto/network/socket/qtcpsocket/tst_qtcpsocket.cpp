@@ -331,8 +331,8 @@ void tst_QTcpSocket::initTestCase_data()
 
     qDebug() << QtNetworkSettings::serverName();
     QTest::newRow("WithoutProxy") << false << 0 << false;
-    QTest::newRow("WithSocks5Proxy") << true << int(Socks5Proxy) << false;
-    QTest::newRow("WithSocks5ProxyAuth") << true << int(Socks5Proxy | AuthBasic) << false;
+    //QTest::newRow("WithSocks5Proxy") << true << int(Socks5Proxy) << false; ### temporarily disabled, QTBUG-38385
+    //QTest::newRow("WithSocks5ProxyAuth") << true << int(Socks5Proxy | AuthBasic) << false; ### temporarily disabled, QTBUG-38385
 
     QTest::newRow("WithHttpProxy") << true << int(HttpProxy) << false;
     QTest::newRow("WithHttpProxyBasicAuth") << true << int(HttpProxy | AuthBasic) << false;
@@ -340,8 +340,8 @@ void tst_QTcpSocket::initTestCase_data()
 
 #ifndef QT_NO_SSL
     QTest::newRow("WithoutProxy SSL") << false << 0 << true;
-    QTest::newRow("WithSocks5Proxy SSL") << true << int(Socks5Proxy) << true;
-    QTest::newRow("WithSocks5AuthProxy SSL") << true << int(Socks5Proxy | AuthBasic) << true;
+    //QTest::newRow("WithSocks5Proxy SSL") << true << int(Socks5Proxy) << true; ### temporarily disabled, QTBUG-38385
+    //QTest::newRow("WithSocks5AuthProxy SSL") << true << int(Socks5Proxy | AuthBasic) << true; ### temporarily disabled, QTBUG-38385
 
     QTest::newRow("WithHttpProxy SSL") << true << int(HttpProxy) << true;
     QTest::newRow("WithHttpProxyBasicAuth SSL") << true << int(HttpProxy | AuthBasic) << true;
