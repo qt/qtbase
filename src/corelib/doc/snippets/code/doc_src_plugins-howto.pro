@@ -43,7 +43,7 @@ CONFIG += release
 #! [3]
 
 #! [4]
-CONFIG += qpa_minimal_plugin
+QTPLUGIN.platforms = qminimal
 #! [4]
 
 #! [5]
@@ -53,7 +53,7 @@ QTPLUGIN     += qjpeg \
 #! [5]
 
 #! [6]
-CONFIG -= import_qpa_plugin
+QTPLUGIN.platforms = -
 #! [6]
 
 #! [7]
