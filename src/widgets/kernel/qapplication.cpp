@@ -368,6 +368,7 @@ QApplicationPrivate::~QApplicationPrivate()
 
 void qt_init(QApplicationPrivate *priv, int type
    );
+void qt_init_tooltip_palette();
 void qt_cleanup();
 
 QStyle *QApplicationPrivate::app_style = 0;        // default application style
@@ -4025,6 +4026,7 @@ void QApplicationPrivate::notifyThemeChanged()
     QGuiApplicationPrivate::notifyThemeChanged();
     clearSystemPalette();
     initSystemPalette();
+    qt_init_tooltip_palette();
 }
 
 #ifndef QT_NO_DRAGANDDROP
