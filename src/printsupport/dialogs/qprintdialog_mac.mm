@@ -143,11 +143,11 @@ QT_USE_NAMESPACE
             CFURLGetFileSystemRepresentation(file, true, localFile, sizeof(localFile));
             printer->setOutputFileName(QString::fromUtf8(reinterpret_cast<const char *>(localFile)));
         } else {
-            // Keep output format.
-            QPrinter::OutputFormat format;
-            format = printer->outputFormat();
-            printer->setOutputFileName(QString());
-            printer->setOutputFormat(format);
+            PMPrinter macPrinter;
+            PMSessionGetCurrentPrinter(session, &macPrinter);
+            QString printerId = QString::fromCFString(PMPrinterGetID(macPrinter));
+            if (printer->printerName() != printerId)
+                printer->setPrinterName(printerId);
         }
     }
 
