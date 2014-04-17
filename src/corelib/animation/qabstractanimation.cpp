@@ -253,8 +253,9 @@ QUnifiedTimer *QUnifiedTimer::instance()
 
 void QUnifiedTimer::maybeUpdateAnimationsToCurrentTime()
 {
-    if (time.elapsed() - lastTick > 50)
-        updateAnimationTimers(driver->elapsed());
+    qint64 elapsed = driver->elapsed();
+    if (elapsed - lastTick > 50)
+        updateAnimationTimers(elapsed);
 }
 
 void QUnifiedTimer::updateAnimationTimers(qint64 currentTick)
@@ -263,7 +264,7 @@ void QUnifiedTimer::updateAnimationTimers(qint64 currentTick)
     if(insideTick)
         return;
 
-    qint64 totalElapsed = currentTick >= 0 ? currentTick : time.elapsed();
+    qint64 totalElapsed = currentTick >= 0 ? currentTick : driver->elapsed();
 
     // ignore consistentTiming in case the pause timer is active
     qint64 delta = (consistentTiming && !pauseTimer.isActive()) ?
