@@ -83,3 +83,8 @@ QSignalSpy spy(myPushButton, SIGNAL(clicked(bool)));
 //! [5]
 QVERIFY(spy.wait(1000));
 //! [5]
+
+//! [6]
+QSignalSpy spy(myPushButton, &QPushButton::clicked);
+//! [6]
+

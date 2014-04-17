@@ -98,6 +98,48 @@ public:
         initArgs(mo->method(sigIndex), obj);
     }
 
+#ifdef Q_QDOC
+    QSignalSpy(const QObject *object, PointerToMemberFunction signal);
+#else
+    template <typename Func>
+    QSignalSpy(const typename QtPrivate::FunctionPointer<Func>::Object *obj, Func signal0)
+        : m_waiting(false)
+    {
+#ifdef Q_CC_BOR
+        const int memberOffset = QObject::staticMetaObject.methodCount();
+#else
+        static const int memberOffset = QObject::staticMetaObject.methodCount();
+#endif
+        if (!obj) {
+            qWarning("QSignalSpy: Cannot spy on a null object");
+            return;
+        }
+
+        if (!signal0) {
+            qWarning("QSignalSpy: Null signal name is not valid");
+            return;
+        }
+
+        const QMetaObject * const mo = obj->metaObject();
+        const QMetaMethod signalMetaMethod = QMetaMethod::fromSignal(signal0);
+        const int sigIndex = signalMetaMethod.methodIndex();
+        if (!signalMetaMethod.isValid() ||
+            signalMetaMethod.methodType() != QMetaMethod::Signal) {
+            qWarning("QSignalSpy: Not a valid signal: '%s'",
+                     signalMetaMethod.methodSignature().constData());
+            return;
+        }
+
+        if (!QMetaObject::connect(obj, sigIndex, this, memberOffset,
+                    Qt::DirectConnection, 0)) {
+            qWarning("QSignalSpy: QMetaObject::connect returned false. Unable to connect.");
+            return;
+        }
+        sig = signalMetaMethod.methodSignature();
+        initArgs(mo->method(sigIndex), obj);
+    }
+#endif // Q_QDOC
+
     inline bool isValid() const { return !sig.isEmpty(); }
     inline QByteArray signal() const { return sig; }
 

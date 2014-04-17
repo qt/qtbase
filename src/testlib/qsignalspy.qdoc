@@ -72,6 +72,20 @@
     \snippet code/doc_src_qsignalspy.cpp 4
 */
 
+/*! \fn QSignalSpy::QSignalSpy(const QObject *object, PointerToMemberFunction signal)
+    \since 5.4
+
+    Constructs a new QSignalSpy that listens for emissions of the \a signal
+    from the QObject \a object. If QSignalSpy is not able to listen for a
+    valid signal (for example, because \a object is null or \a signal does
+    not denote a valid signal of \a object), an explanatory warning message
+    will be output using qWarning() and subsequent calls to \c isValid() will
+    return false.
+
+    Example:
+    \snippet code/doc_src_qsignalspy.cpp 6
+*/
+
 /*! \fn QSignalSpy::isValid() const
 
     Returns \c true if the signal spy listens to a valid signal, otherwise false.
