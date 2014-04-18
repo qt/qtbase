@@ -213,7 +213,7 @@ bool QWindowsUser32DLL::initTouch()
     unregisterTouchWindow = (UnregisterTouchWindow)(library.resolve("UnregisterTouchWindow"));
     getTouchInputInfo = (GetTouchInputInfo)(library.resolve("GetTouchInputInfo"));
     closeTouchInputHandle = (CloseTouchInputHandle)(library.resolve("CloseTouchInputHandle"));
-    return registerTouchWindow && unregisterTouchWindow && getTouchInputInfo && getTouchInputInfo;
+    return registerTouchWindow && unregisterTouchWindow && getTouchInputInfo && closeTouchInputHandle;
 }
 
 /*!
