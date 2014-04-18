@@ -2490,7 +2490,16 @@ static const char *pcreCompileErrorCodes[] =
     QT_TRANSLATE_NOOP("QRegularExpression", "disallowed Unicode code point (>= 0xd800 && <= 0xdfff)"),
     QT_TRANSLATE_NOOP("QRegularExpression", "invalid UTF-16 string"),
     QT_TRANSLATE_NOOP("QRegularExpression", "name is too long in (*MARK), (*PRUNE), (*SKIP), or (*THEN)"),
-    QT_TRANSLATE_NOOP("QRegularExpression", "character value in \\u.... sequence is too large")
+    QT_TRANSLATE_NOOP("QRegularExpression", "character value in \\u.... sequence is too large"),
+    QT_TRANSLATE_NOOP("QRegularExpression", "invalid UTF-32 string"),
+    QT_TRANSLATE_NOOP("QRegularExpression", "setting UTF is disabled by the application"),
+    QT_TRANSLATE_NOOP("QRegularExpression", "non-hex character in \\x{} (closing brace missing?)"),
+    QT_TRANSLATE_NOOP("QRegularExpression", "non-octal character in \\o{} (closing brace missing?)"),
+    QT_TRANSLATE_NOOP("QRegularExpression", "missing opening brace after \\o"),
+    QT_TRANSLATE_NOOP("QRegularExpression", "parentheses are too deeply nested"),
+    QT_TRANSLATE_NOOP("QRegularExpression", "invalid range in character class"),
+    QT_TRANSLATE_NOOP("QRegularExpression", "group name must start with a non-digit"),
+    QT_TRANSLATE_NOOP("QRegularExpression", "parentheses are too deeply nested (stack check)")
 };
 #endif // #if 0
 
