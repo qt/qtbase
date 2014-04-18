@@ -1120,7 +1120,7 @@ void QRegularExpressionPrivate::optimizePattern()
 
     int studyOptions = 0;
     if (enableJit)
-        studyOptions |= PCRE_STUDY_JIT_COMPILE;
+        studyOptions |= (PCRE_STUDY_JIT_COMPILE | PCRE_STUDY_JIT_PARTIAL_SOFT_COMPILE | PCRE_STUDY_JIT_PARTIAL_HARD_COMPILE);
 
     const char *err;
     pcre16_extra * const localStudyData = pcre16_study(compiledPattern, studyOptions, &err);
