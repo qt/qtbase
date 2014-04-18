@@ -41,7 +41,7 @@
 
 #include <pcre.h>
 
-#if (PCRE_MAJOR < 8) || ((PCRE_MAJOR == 8) && (PCRE_MINOR < 30))
+#if (PCRE_MAJOR < 8) || ((PCRE_MAJOR == 8) && (PCRE_MINOR < 31))
 #error This PCRE version is not supported
 #endif
 
