@@ -147,6 +147,7 @@ private slots:
     void ortho();
     void frustum();
     void perspective();
+    void viewport();
     void flipCoordinates();
 
     void convertGeneric();
@@ -2792,6 +2793,40 @@ void tst_QMatrixNxN::perspective()
     QVERIFY(m5.isIdentity());
     m5.perspective(0.0f, 1.0f, -1.0f, 1.0f);
     QVERIFY(m5.isIdentity());
+}
+
+// Test viewport transformations
+void tst_QMatrixNxN::viewport()
+{
+    // Uses default depth range of 0->1
+    QMatrix4x4 m1;
+    m1.viewport(0.0f, 0.0f, 1024.0f, 768.0f);
+
+    // Lower left
+    QVector4D p1 = m1 * QVector4D(-1.0f, -1.0f, 0.0f, 1.0f);
+    QVERIFY(qFuzzyIsNull(p1.x()));
+    QVERIFY(qFuzzyIsNull(p1.y()));
+    QVERIFY(qFuzzyCompare(p1.z(), 0.5f));
+
+    // Lower right
+    QVector4D p2 = m1 * QVector4D(1.0f, -1.0f, 0.0f, 1.0f);
+    QVERIFY(qFuzzyCompare(p2.x(), 1024.0f));
+    QVERIFY(qFuzzyIsNull(p2.y()));
+
+    // Upper right
+    QVector4D p3 = m1 * QVector4D(1.0f, 1.0f, 0.0f, 1.0f);
+    QVERIFY(qFuzzyCompare(p3.x(), 1024.0f));
+    QVERIFY(qFuzzyCompare(p3.y(), 768.0f));
+
+    // Upper left
+    QVector4D p4 = m1 * QVector4D(-1.0f, 1.0f, 0.0f, 1.0f);
+    QVERIFY(qFuzzyIsNull(p4.x()));
+    QVERIFY(qFuzzyCompare(p4.y(), 768.0f));
+
+    // Center
+    QVector4D p5 = m1 * QVector4D(0.0f, 0.0f, 0.0f, 1.0f);
+    QVERIFY(qFuzzyCompare(p5.x(), 1024.0f / 2.0f));
+    QVERIFY(qFuzzyCompare(p5.y(), 768.0f / 2.0f));
 }
 
 // Test left-handed vs right-handed coordinate flipping.

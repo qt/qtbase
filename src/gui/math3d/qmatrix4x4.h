@@ -148,6 +148,8 @@ public:
 #ifndef QT_NO_VECTOR3D
     void lookAt(const QVector3D& eye, const QVector3D& center, const QVector3D& up);
 #endif
+    void viewport(const QRectF &rect);
+    void viewport(float left, float bottom, float width, float height, float nearPlane = 0.0f, float farPlane = 1.0f);
     void flipCoordinates();
 
     void copyDataTo(float *values) const;
@@ -1075,6 +1077,11 @@ inline float *QMatrix4x4::data()
     // so we flip it over to "General" mode.
     flagBits = General;
     return *m;
+}
+
+inline void QMatrix4x4::viewport(const QRectF &rect)
+{
+    viewport(rect.x(), rect.y(), rect.width(), rect.height());
 }
 
 #ifndef QT_NO_DEBUG_STREAM

@@ -1542,6 +1542,52 @@ void QMatrix4x4::lookAt(const QVector3D& eye, const QVector3D& center, const QVe
 #endif
 
 /*!
+    \fn void QMatrix4x4::viewport(const QRectF &rect)
+    \overload
+
+    Sets up viewport transform for viewport bounded by \a rect and with near and far set
+    to 0 and 1 respectively.
+*/
+
+/*!
+    Multiplies this matrix by another that performs the scale and bias
+    transformation used by OpenGL to transform from normalized device
+    coordinates (NDC) to viewport (window) coordinates. That is it maps
+    points from the cube ranging over [-1, 1] in each dimension to the
+    viewport with it's near-lower-left corner at (\a left, \a bottom, \a nearPlane)
+    and with size (\a width, \a height, \a farPlane - \a nearPlane).
+
+    This matches the transform used by the fixed function OpenGL viewport
+    transform controlled by the functions glViewport() and glDepthRange().
+ */
+void QMatrix4x4::viewport(float left, float bottom, float width, float height, float nearPlane, float farPlane)
+{
+    const float w2 = width / 2.0f;
+    const float h2 = height / 2.0f;
+
+    QMatrix4x4 m(1);
+    m.m[0][0] = w2;
+    m.m[1][0] = 0.0f;
+    m.m[2][0] = 0.0f;
+    m.m[3][0] = left + w2;
+    m.m[0][1] = 0.0f;
+    m.m[1][1] = h2;
+    m.m[2][1] = 0.0f;
+    m.m[3][1] = bottom + h2;
+    m.m[0][2] = 0.0f;
+    m.m[1][2] = 0.0f;
+    m.m[2][2] = (farPlane - nearPlane) / 2.0f;
+    m.m[3][2] = (nearPlane + farPlane) / 2.0f;
+    m.m[0][3] = 0.0f;
+    m.m[1][3] = 0.0f;
+    m.m[2][3] = 0.0f;
+    m.m[3][3] = 1.0f;
+    m.flagBits = General;
+
+    *this *= m;
+}
+
+/*!
     \deprecated
 
     Flips between right-handed and left-handed coordinate systems
