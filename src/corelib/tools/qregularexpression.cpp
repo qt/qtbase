@@ -699,6 +699,12 @@ QT_BEGIN_NAMESPACE
         \c{\w} to match any character with either the Unicode L (letter) or N
         (digit) property, plus underscore, and so on. This option corresponds
         to the \c{/u} modifier in Perl regular expressions.
+
+    \value OptimizeOnFirstUsageOption
+        The regular expression will be optimized (and possibly
+        JIT-compiled) on its first usage, instead of after a certain (undefined)
+        number of usages. See also \l{QRegularExpression::}{optimize()}.
+        This enum value has been introduced in Qt 5.4.
 */
 
 /*!
@@ -802,7 +808,13 @@ struct QRegularExpressionPrivate : QSharedData
     void cleanCompiledPattern();
     void compilePattern();
     void getPatternInfo();
-    void optimizePattern();
+
+    enum OptimizePatternOption {
+        LazyOptimizeOption,
+        ImmediateOptimizeOption
+    };
+
+    void optimizePattern(OptimizePatternOption option);
 
     QRegularExpressionMatchPrivate *doMatch(const QString &subject,
                                             int offset,
@@ -1107,13 +1119,16 @@ static bool isJitEnabled()
     (localStudyData) before using storeRelease on studyData. In doMatch there's
     the corresponding loadAcquire.
 */
-void QRegularExpressionPrivate::optimizePattern()
+void QRegularExpressionPrivate::optimizePattern(OptimizePatternOption option)
 {
     Q_ASSERT(compiledPattern);
 
     QMutexLocker lock(&mutex);
 
-    if (studyData.load() || (++usedCount != qt_qregularexpression_optimize_after_use_count))
+    if (studyData.load()) // already optimized
+        return;
+
+    if ((option == LazyOptimizeOption) && (++usedCount != qt_qregularexpression_optimize_after_use_count))
         return;
 
     static const bool enableJit = isJitEnabled();
@@ -1233,8 +1248,13 @@ QRegularExpressionMatchPrivate *QRegularExpressionPrivate::doMatch(const QString
                                                                               matchType, matchOptions,
                                                                               capturingCount + 1);
 
+    const OptimizePatternOption optimizePatternOption =
+            (patternOptions & QRegularExpression::OptimizeOnFirstUsageOption)
+                ? ImmediateOptimizeOption
+                : LazyOptimizeOption;
+
     // this is mutex protected
-    const_cast<QRegularExpressionPrivate *>(this)->optimizePattern();
+    const_cast<QRegularExpressionPrivate *>(this)->optimizePattern(optimizePatternOption);
 
     // work with a local copy of the study data, as we are running pcre_exec
     // potentially more than once, and we don't want to run call it
@@ -1664,6 +1684,27 @@ QRegularExpressionMatchIterator QRegularExpression::globalMatch(const QString &s
                                                        match(subject, offset, matchType, matchOptions));
 
     return QRegularExpressionMatchIterator(*priv);
+}
+
+/*!
+    \since 5.4
+
+    Forces an immediate optimization of the pattern, including
+    JIT-compiling it (if the JIT compiler is enabled).
+
+    Patterns are normally optimized only after a certain number of usages.
+    If you can predict that this QRegularExpression object is going to be
+    used for several matches, it may be convenient to optimize it in
+    advance by calling this function.
+
+    \sa QRegularExpression::OptimizeOnFirstUsageOption
+*/
+void QRegularExpression::optimize()
+{
+    if (!isValid()) // will compile the pattern
+        return;
+
+    d->optimizePattern(QRegularExpressionPrivate::ImmediateOptimizeOption);
 }
 
 /*!
@@ -2327,6 +2368,8 @@ QDebug operator<<(QDebug debug, QRegularExpression::PatternOptions patternOption
             flags.append("DontCaptureOption|");
         if (patternOptions & QRegularExpression::UseUnicodePropertiesOption)
             flags.append("UseUnicodePropertiesOption|");
+        if (patternOptions & QRegularExpression::OptimizeOnFirstUsageOption)
+            flags.append("OptimizeOnFirstUsageOption|");
         flags.chop(1);
     }
 

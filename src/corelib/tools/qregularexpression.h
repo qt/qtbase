@@ -69,7 +69,8 @@ public:
         ExtendedPatternSyntaxOption    = 0x0008,
         InvertedGreedinessOption       = 0x0010,
         DontCaptureOption              = 0x0020,
-        UseUnicodePropertiesOption     = 0x0040
+        UseUnicodePropertiesOption     = 0x0040,
+        OptimizeOnFirstUsageOption     = 0x0080
     };
     Q_DECLARE_FLAGS(PatternOptions, PatternOption)
 
@@ -121,6 +122,8 @@ public:
                                                 int offset                = 0,
                                                 MatchType matchType       = NormalMatch,
                                                 MatchOptions matchOptions = NoMatchOption) const;
+
+    void optimize();
 
     static QString escape(const QString &str);
 

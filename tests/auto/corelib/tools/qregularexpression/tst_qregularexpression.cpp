@@ -48,6 +48,10 @@
 
 #include "tst_qregularexpression.h"
 
+#ifndef forceOptimize
+#define forceOptimize false
+#endif
+
 struct Match
 {
     Match()
@@ -329,22 +333,30 @@ void tst_QRegularExpression::gettersSetters()
     {
         QRegularExpression re;
         re.setPattern(pattern);
+        if (forceOptimize)
+            re.optimize();
         QCOMPARE(re.pattern(), pattern);
         QCOMPARE(re.patternOptions(), QRegularExpression::NoPatternOption);
     }
     {
         QRegularExpression re;
         re.setPatternOptions(patternOptions);
+        if (forceOptimize)
+            re.optimize();
         QCOMPARE(re.pattern(), QString());
         QCOMPARE(re.patternOptions(), patternOptions);
     }
     {
         QRegularExpression re(pattern);
+        if (forceOptimize)
+            re.optimize();
         QCOMPARE(re.pattern(), pattern);
         QCOMPARE(re.patternOptions(), QRegularExpression::NoPatternOption);
     }
     {
         QRegularExpression re(pattern, patternOptions);
+        if (forceOptimize)
+            re.optimize();
         QCOMPARE(re.pattern(), pattern);
         QCOMPARE(re.patternOptions(), patternOptions);
     }
@@ -385,6 +397,8 @@ void tst_QRegularExpression::escape()
     QFETCH(QString, escaped);
     QCOMPARE(QRegularExpression::escape(string), escaped);
     QRegularExpression re(escaped);
+    if (forceOptimize)
+        re.optimize();
     QCOMPARE(re.isValid(), true);
 }
 
@@ -415,6 +429,8 @@ void tst_QRegularExpression::validity()
     QFETCH(QString, pattern);
     QFETCH(bool, validity);
     QRegularExpression re(pattern);
+    if (forceOptimize)
+        re.optimize();
     QCOMPARE(re.isValid(), validity);
     if (!validity)
         QTest::ignoreMessage(QtWarningMsg, "QRegularExpressionPrivate::doMatch(): called on an invalid QRegularExpression object");
@@ -500,6 +516,9 @@ void tst_QRegularExpression::patternOptions()
     QFETCH(QRegularExpression, regexp);
     QFETCH(QString, subject);
     QFETCH(Match, match);
+
+    if (forceOptimize)
+        regexp.optimize();
 
     QRegularExpressionMatch m = regexp.match(subject);
     consistencyCheck(m);
@@ -716,6 +735,9 @@ void tst_QRegularExpression::normalMatch()
     QFETCH(int, offset);
     QFETCH(QRegularExpression::MatchOptions, matchOptions);
     QFETCH(Match, match);
+
+    if (forceOptimize)
+        regexp.optimize();
 
     {
         QRegularExpressionMatch m = regexp.match(subject, offset, QRegularExpression::NormalMatch, matchOptions);
@@ -994,6 +1016,9 @@ void tst_QRegularExpression::partialMatch()
     QFETCH(QRegularExpression::MatchType, matchType);
     QFETCH(QRegularExpression::MatchOptions, matchOptions);
     QFETCH(Match, match);
+
+    if (forceOptimize)
+        regexp.optimize();
 
     {
         QRegularExpressionMatch m = regexp.match(subject, offset, matchType, matchOptions);
@@ -1286,6 +1311,10 @@ void tst_QRegularExpression::globalMatch()
     QFETCH(QRegularExpression::MatchType, matchType);
     QFETCH(QRegularExpression::MatchOptions, matchOptions);
     QFETCH(QList<Match>, matchList);
+
+    if (forceOptimize)
+        regexp.optimize();
+
     {
         QRegularExpressionMatchIterator iterator = regexp.globalMatch(subject, offset, matchType, matchOptions);
         consistencyCheck(iterator);
@@ -1320,6 +1349,10 @@ void tst_QRegularExpression::serialize()
     QFETCH(QString, pattern);
     QFETCH(QRegularExpression::PatternOptions, patternOptions);
     QRegularExpression outRe(pattern, patternOptions);
+
+    if (forceOptimize)
+        outRe.optimize();
+
     QByteArray buffer;
     {
         QDataStream out(&buffer, QIODevice::WriteOnly);
@@ -1376,16 +1409,34 @@ void tst_QRegularExpression::operatoreq()
     {
         QRegularExpression re1(pattern);
         QRegularExpression re2(pattern);
+
+        if (forceOptimize)
+            re1.optimize();
+        if (forceOptimize)
+            re2.optimize();
+
         verifyEquality(re1, re2);
     }
     {
         QRegularExpression re1(QString(), patternOptions);
         QRegularExpression re2(QString(), patternOptions);
+
+        if (forceOptimize)
+            re1.optimize();
+        if (forceOptimize)
+            re2.optimize();
+
         verifyEquality(re1, re2);
     }
     {
         QRegularExpression re1(pattern, patternOptions);
         QRegularExpression re2(pattern, patternOptions);
+
+        if (forceOptimize)
+            re1.optimize();
+        if (forceOptimize)
+            re2.optimize();
+
         verifyEquality(re1, re2);
     }
 }
@@ -1414,6 +1465,10 @@ void tst_QRegularExpression::captureCount()
 {
     QFETCH(QString, pattern);
     QRegularExpression re(pattern);
+
+    if (forceOptimize)
+        re.optimize();
+
     QTEST(re.captureCount(), "captureCount");
     if (!re.isValid())
         QCOMPARE(re.captureCount(), -1);
@@ -1480,7 +1535,11 @@ void tst_QRegularExpression::captureNames()
     QFETCH(QString, pattern);
     QFETCH(StringToIntMap, namedCapturesIndexMap);
 
-    const QRegularExpression re(pattern);
+    QRegularExpression re(pattern);
+
+    if (forceOptimize)
+        re.optimize();
+
     QStringList namedCaptureGroups = re.namedCaptureGroups();
     int namedCaptureGroupsCount = namedCaptureGroups.size();
 
@@ -1515,6 +1574,10 @@ void tst_QRegularExpression::pcreJitStackUsage()
     QFETCH(QString, subject);
 
     QRegularExpression re(pattern);
+
+    if (forceOptimize)
+        re.optimize();
+
     QVERIFY(re.isValid());
     QRegularExpressionMatch match = re.match(subject);
     consistencyCheck(match);
@@ -1541,6 +1604,10 @@ void tst_QRegularExpression::regularExpressionMatch()
     QFETCH(QString, subject);
 
     QRegularExpression re(pattern);
+
+    if (forceOptimize)
+        re.optimize();
+
     QVERIFY(re.isValid());
     QRegularExpressionMatch match = re.match(subject);
     consistencyCheck(match);
@@ -1580,5 +1647,7 @@ void tst_QRegularExpression::JOptionUsage()
     QRegularExpression re(pattern);
     if (isValid && JOptionUsed)
         QTest::ignoreMessage(QtWarningMsg, qPrintable(warningMessage.arg(pattern)));
+    if (forceOptimize)
+        re.optimize();
     QCOMPARE(re.isValid(), isValid);
 }
