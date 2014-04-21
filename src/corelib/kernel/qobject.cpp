@@ -4433,6 +4433,8 @@ void qDeleteInEventHandler(QObject *o)
     \snippet code/src_corelib_kernel_qobject.cpp 46
 
     The connection will automatically disconnect if the sender is destroyed.
+    However, you should take care that any objects used within the functor
+    are still alive when the signal is emitted.
 
     \note If the compiler does not support C++11 variadic templates, the number
     of arguments in the signal or slot are limited to 6, and the functor object
@@ -4470,6 +4472,8 @@ void qDeleteInEventHandler(QObject *o)
 
     The connection will automatically disconnect if the sender or the context
     is destroyed.
+    However, you should take care that any objects used within the functor
+    are still alive when the signal is emitted.
 
     \note If the compiler does not support C++11 variadic templates, the number
     of arguments in the signal or slot are limited to 6, and the functor object
