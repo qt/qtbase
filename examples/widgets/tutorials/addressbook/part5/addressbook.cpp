@@ -73,7 +73,7 @@ AddressBook::AddressBook(QWidget *parent)
     previousButton->setEnabled(false);
 
 //! [instantiating FindDialog]
-    dialog = new FindDialog;
+    dialog = new FindDialog(this);
 //! [instantiating FindDialog]
 
     connect(addButton, SIGNAL(clicked()), this, SLOT(addContact()));
