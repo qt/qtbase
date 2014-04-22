@@ -229,6 +229,13 @@
     [super touchesEnded:touches withEvent:event];
 }
 
+- (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    m_touchPressWhileKeyboardVisible = NO;
+    [self performSelectorOnMainThread:@selector(touchesEndedPostDelivery) withObject:nil waitUntilDone:NO];
+    [super touchesCancelled:touches withEvent:event];
+}
+
 - (void)touchesEndedPostDelivery
 {
     // Do some clean-up _after_ touchEnd has been delivered to QUIView
