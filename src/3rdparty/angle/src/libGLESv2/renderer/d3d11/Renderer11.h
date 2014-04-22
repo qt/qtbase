@@ -18,6 +18,17 @@
 #include "libGLESv2/renderer/d3d11/InputLayoutCache.h"
 #include "libGLESv2/renderer/RenderTarget.h"
 
+#if defined(ANGLE_OS_WINRT) && !defined(ANGLE_OS_WINPHONE)
+struct IInspectable;
+namespace ABI {
+    namespace Windows {
+        namespace ApplicationModel {
+            struct ISuspendingEventArgs;
+        }
+    }
+}
+#endif
+
 namespace gl
 {
 class Renderbuffer;
@@ -201,6 +212,10 @@ class Renderer11 : public Renderer
     bool blitRenderbufferRect(const gl::Rectangle &readRect, const gl::Rectangle &drawRect, RenderTarget *readRenderTarget, 
                               RenderTarget *drawRenderTarget, bool wholeBufferCopy);
     ID3D11Texture2D *resolveMultisampledTexture(ID3D11Texture2D *source, unsigned int subresource);
+
+#if defined(ANGLE_OS_WINRT) && !defined(ANGLE_OS_WINPHONE)
+    HRESULT onSuspend(IInspectable *, ABI::Windows::ApplicationModel::ISuspendingEventArgs *);
+#endif
 
     HMODULE mD3d11Module;
     HMODULE mDxgiModule;
