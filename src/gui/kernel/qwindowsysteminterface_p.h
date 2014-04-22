@@ -176,11 +176,12 @@ public:
 
     class ApplicationStateChangedEvent : public WindowSystemEvent {
     public:
-        ApplicationStateChangedEvent(Qt::ApplicationState newState)
-            : WindowSystemEvent(ApplicationStateChanged), newState(newState)
+        ApplicationStateChangedEvent(Qt::ApplicationState newState, bool forcePropagate = false)
+            : WindowSystemEvent(ApplicationStateChanged), newState(newState), forcePropagate(forcePropagate)
         { }
 
         Qt::ApplicationState newState;
+        bool forcePropagate;
     };
 
     class FlushEventsEvent : public WindowSystemEvent {

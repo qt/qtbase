@@ -1528,8 +1528,9 @@ void QGuiApplicationPrivate::processWindowSystemEvent(QWindowSystemInterfacePriv
     case QWindowSystemInterfacePrivate::WindowScreenChanged:
         QGuiApplicationPrivate::processWindowScreenChangedEvent(static_cast<QWindowSystemInterfacePrivate::WindowScreenChangedEvent *>(e));
         break;
-    case QWindowSystemInterfacePrivate::ApplicationStateChanged:
-        QGuiApplicationPrivate::setApplicationState(static_cast<QWindowSystemInterfacePrivate::ApplicationStateChangedEvent *>(e)->newState);
+    case QWindowSystemInterfacePrivate::ApplicationStateChanged: {
+        QWindowSystemInterfacePrivate::ApplicationStateChangedEvent * changeEvent = static_cast<QWindowSystemInterfacePrivate::ApplicationStateChangedEvent *>(e);
+        QGuiApplicationPrivate::setApplicationState(changeEvent->newState, changeEvent->forcePropagate); }
         break;
     case QWindowSystemInterfacePrivate::FlushEvents:
         QWindowSystemInterface::deferredFlushWindowSystemEvents();
@@ -2834,9 +2835,9 @@ Qt::ApplicationState QGuiApplication::applicationState()
     \sa applicationState()
 */
 
-void QGuiApplicationPrivate::setApplicationState(Qt::ApplicationState state)
+void QGuiApplicationPrivate::setApplicationState(Qt::ApplicationState state, bool forcePropagate)
 {
-    if (applicationState == state)
+    if ((applicationState == state) && !forcePropagate)
         return;
 
     applicationState = state;

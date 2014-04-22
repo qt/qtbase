@@ -148,7 +148,7 @@ public:
     static void handleWindowStateChanged(QWindow *w, Qt::WindowState newState);
     static void handleWindowScreenChanged(QWindow *w, QScreen *newScreen);
 
-    static void handleApplicationStateChanged(Qt::ApplicationState newState);
+    static void handleApplicationStateChanged(Qt::ApplicationState newState, bool forcePropagate = false);
 
     static void handleExposeEvent(QWindow *tlw, const QRegion &region);
 

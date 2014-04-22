@@ -405,13 +405,12 @@ bool QCocoaIntegration::hasCapability(QPlatformIntegration::Capability cap) cons
     case MultipleWindows:
     case ForeignWindows:
     case RasterGLSurface:
+    case ApplicationState:
         return true;
     default:
         return QPlatformIntegration::hasCapability(cap);
     }
 }
-
-
 
 QPlatformWindow *QCocoaIntegration::createPlatformWindow(QWindow *window) const
 {
