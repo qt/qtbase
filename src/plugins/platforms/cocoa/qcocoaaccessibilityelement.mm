@@ -332,7 +332,7 @@
             startOffset = text.indexOf(QLatin1Char('\n'), startOffset) + 1;
         if (startOffset < 0) // invalid line number, return the first line
             startOffset = 0;
-        int endOffset = text.indexOf(QLatin1Char('\n'), startOffset + 1);
+        int endOffset = text.indexOf(QLatin1Char('\n'), startOffset);
         if (endOffset == -1)
             endOffset = text.length();
         return [NSValue valueWithRange:NSMakeRange(quint32(startOffset), quint32(endOffset - startOffset))];
