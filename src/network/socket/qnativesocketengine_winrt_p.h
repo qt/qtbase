@@ -52,6 +52,8 @@
 //
 // We mean it.
 //
+#include <QtCore/QEventLoop>
+#include <QtCore/QBuffer>
 #include "QtNetwork/qhostaddress.h"
 #include "private/qabstractsocketengine_p.h"
 #include <wrl.h>
@@ -127,6 +129,11 @@ public:
     bool isExceptionNotificationEnabled() const;
     void setExceptionNotificationEnabled(bool enable);
 
+signals:
+    void connectionReady();
+    void readReady();
+    void writeReady();
+
 private:
     Q_DECLARE_PRIVATE(QNativeSocketEngine)
     Q_DISABLE_COPY(QNativeSocketEngine)
@@ -191,17 +198,22 @@ private:
         ABI::Windows::Networking::Sockets::IDatagramSocket *udp;
     };
     Microsoft::WRL::ComPtr<ABI::Windows::Networking::Sockets::IStreamSocketListener> tcpListener;
-    Microsoft::WRL::ComPtr<ABI::Windows::Storage::Streams::IBuffer> inputBuffer;
+    Microsoft::WRL::ComPtr<ABI::Windows::Storage::Streams::IBuffer> readBuffer;
+    QBuffer readBytes;
+    QMutex readMutex;
     QList<ABI::Windows::Networking::Sockets::IDatagramSocketMessageReceivedEventArgs *> pendingDatagrams;
     QList<ABI::Windows::Networking::Sockets::IStreamSocket *> pendingConnections;
     QList<ABI::Windows::Networking::Sockets::IStreamSocket *> currentConnections;
+    QEventLoop eventLoop;
 
+    HRESULT handleBindCompleted(ABI::Windows::Foundation::IAsyncAction *, ABI::Windows::Foundation::AsyncStatus);
     HRESULT handleNewDatagram(ABI::Windows::Networking::Sockets::IDatagramSocket *socket,
                               ABI::Windows::Networking::Sockets::IDatagramSocketMessageReceivedEventArgs *args);
     HRESULT handleClientConnection(ABI::Windows::Networking::Sockets::IStreamSocketListener *tcpListener,
                                    ABI::Windows::Networking::Sockets::IStreamSocketListenerConnectionReceivedEventArgs *args);
-    static HRESULT interruptEventDispatcher(ABI::Windows::Foundation::IAsyncAction *, ABI::Windows::Foundation::AsyncStatus);
-    static HRESULT handleReadyRead(ABI::Windows::Foundation::IAsyncOperationWithProgress<ABI::Windows::Storage::Streams::IBuffer *, UINT32> *asyncInfo, ABI::Windows::Foundation::AsyncStatus);
+    HRESULT handleConnectToHost(ABI::Windows::Foundation::IAsyncAction *, ABI::Windows::Foundation::AsyncStatus);
+    HRESULT handleReadyRead(ABI::Windows::Foundation::IAsyncOperationWithProgress<ABI::Windows::Storage::Streams::IBuffer *, UINT32> *asyncInfo, ABI::Windows::Foundation::AsyncStatus);
+    HRESULT handleWriteCompleted(ABI::Windows::Foundation::IAsyncOperationWithProgress<UINT32, UINT32> *, ABI::Windows::Foundation::AsyncStatus);
 };
 
 QT_END_NAMESPACE
