@@ -65,6 +65,8 @@ public:
 
     Type type() const Q_DECL_OVERRIDE;
 
+    void setState(QPainterState *s) Q_DECL_OVERRIDE;
+
     void fill(const QVectorPath &path, const QBrush &brush) Q_DECL_OVERRIDE;
     void clip(const QVectorPath &path, Qt::ClipOperation op) Q_DECL_OVERRIDE;
 
@@ -87,6 +89,11 @@ private:
     void drawGlyphRun(const D2D1_POINT_2F &pos, IDWriteFontFace *fontFace, const QFont &font,
                       int numGlyphs, const UINT16 *glyphIndices, const FLOAT *glyphAdvances,
                       const DWRITE_GLYPH_OFFSET *glyphOffsets, bool rtl);
+
+    void ensureBrush();
+    void ensureBrush(const QBrush &brush);
+    void ensurePen();
+    void ensurePen(const QPen &pen);
 };
 
 QT_END_NAMESPACE

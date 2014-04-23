@@ -495,7 +495,7 @@ public:
     {
         Q_Q(const QWindowsDirect2DPaintEngine);
 
-        if (qbrush_fast_equals(brush.qbrush, newBrush))
+        if (qbrush_fast_equals(brush.qbrush, newBrush) && (brush.brush || brush.emulate))
             return;
 
         brush.brush = to_d2d_brush(newBrush, &brush.emulate);
@@ -540,12 +540,10 @@ public:
         currentBrushOrigin = origin;
     }
 
-    void updatePen()
+    void updatePen(const QPen &newPen)
     {
         Q_Q(const QWindowsDirect2DPaintEngine);
-        const QPen &newPen = q->state()->pen;
-
-        if (qpen_fast_equals(newPen, pen.qpen))
+        if (qpen_fast_equals(newPen, pen.qpen) && (pen.brush || pen.emulate))
             return;
 
         pen.reset();
@@ -909,6 +907,23 @@ QPaintEngine::Type QWindowsDirect2DPaintEngine::type() const
     return QPaintEngine::Direct2D;
 }
 
+void QWindowsDirect2DPaintEngine::setState(QPainterState *s)
+{
+    Q_D(QWindowsDirect2DPaintEngine);
+
+    QPaintEngineEx::setState(s);
+    d->clearClips();
+
+    clipEnabledChanged();
+    penChanged();
+    brushChanged();
+    brushOriginChanged();
+    opacityChanged();
+    compositionModeChanged();
+    renderHintsChanged();
+    transformChanged();
+}
+
 void QWindowsDirect2DPaintEngine::fill(const QVectorPath &path, const QBrush &brush)
 {
     Q_D(QWindowsDirect2DPaintEngine);
@@ -917,7 +932,7 @@ void QWindowsDirect2DPaintEngine::fill(const QVectorPath &path, const QBrush &br
     if (path.isEmpty())
         return;
 
-    d->updateBrush(brush);
+    ensureBrush(brush);
 
     if (d->brush.emulate) {
         // We mostly (only?) get here when gradients are required.
@@ -981,7 +996,7 @@ void QWindowsDirect2DPaintEngine::clipEnabledChanged()
 void QWindowsDirect2DPaintEngine::penChanged()
 {
     Q_D(QWindowsDirect2DPaintEngine);
-    d->updatePen();
+    d->updatePen(state()->pen);
 }
 
 void QWindowsDirect2DPaintEngine::brushChanged()
@@ -1050,6 +1065,8 @@ void QWindowsDirect2DPaintEngine::drawPixmap(const QRectF &r,
 
     QWindowsDirect2DPlatformPixmap *pp = static_cast<QWindowsDirect2DPlatformPixmap *>(pm.handle());
     QWindowsDirect2DBitmap *bitmap = pp->bitmap();
+
+    ensurePen();
 
     if (bitmap->bitmap() != d->bitmap->bitmap()) {
         // Good, src bitmap != dst bitmap
@@ -1149,11 +1166,10 @@ void QWindowsDirect2DPaintEngine::drawStaticTextItem(QStaticTextItem *staticText
     Q_D(QWindowsDirect2DPaintEngine);
     D2D_TAG(D2DDebugDrawStaticTextItemTag);
 
-    if (qpen_style(d->pen.qpen) == Qt::NoPen && qbrush_style(d->brush.qbrush) == Qt::NoBrush)
-        return;
-
     if (staticTextItem->numGlyphs == 0)
         return;
+
+    ensurePen();
 
     // If we can't support the current configuration with Direct2D, fall back to slow path
     // Most common cases are perspective transform and gradient brush as pen
@@ -1199,12 +1215,11 @@ void QWindowsDirect2DPaintEngine::drawTextItem(const QPointF &p, const QTextItem
     Q_D(QWindowsDirect2DPaintEngine);
     D2D_TAG(D2DDebugDrawTextItemTag);
 
-    if (qpen_style(d->pen.qpen) == Qt::NoPen && qbrush_style(d->brush.qbrush) == Qt::NoBrush)
-        return;
-
     const QTextItemInt &ti = static_cast<const QTextItemInt &>(textItem);
     if (ti.glyphs.numGlyphs == 0)
         return;
+
+    ensurePen();
 
     // If we can't support the current configuration with Direct2D, fall back to slow path
     // Most common cases are perspective transform and gradient brush as pen
@@ -1305,6 +1320,28 @@ void QWindowsDirect2DPaintEngine::drawGlyphRun(const D2D1_POINT_2F &pos,
                           NULL,
                           d->pen.brush.Get(),
                           DWRITE_MEASURING_MODE_GDI_CLASSIC);
+}
+
+void QWindowsDirect2DPaintEngine::ensureBrush()
+{
+    ensureBrush(state()->brush);
+}
+
+void QWindowsDirect2DPaintEngine::ensureBrush(const QBrush &brush)
+{
+    Q_D(QWindowsDirect2DPaintEngine);
+    d->updateBrush(brush);
+}
+
+void QWindowsDirect2DPaintEngine::ensurePen()
+{
+    ensurePen(state()->pen);
+}
+
+void QWindowsDirect2DPaintEngine::ensurePen(const QPen &pen)
+{
+    Q_D(QWindowsDirect2DPaintEngine);
+    d->updatePen(pen);
 }
 
 QT_END_NAMESPACE
