@@ -3619,6 +3619,14 @@ void tst_QString::fromUtf8_data()
     str += " some ";
     QTest::newRow("str3-len") << QByteArray("\342\202\254 some text") << str << 9;
 
+    // test that QString::fromUtf8 suppresses an initial BOM, but not a ZWNBSP
+    str = "hello";
+    QByteArray bom("\357\273\277");
+    QTest::newRow("bom0") << bom << QString() << 3;
+    QTest::newRow("bom1") << bom + "hello" << str << -1;
+    QTest::newRow("bom+zwnbsp0") << bom + bom << QString(QChar(0xfeff)) << -1;
+    QTest::newRow("bom+zwnbsp1") << bom + "hello" + bom << str + QChar(0xfeff) << -1;
+
     str = "hello";
     str += QChar::ReplacementCharacter;
     str += QChar(0x68);
