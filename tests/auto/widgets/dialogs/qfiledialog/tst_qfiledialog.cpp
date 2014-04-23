@@ -857,36 +857,38 @@ void tst_QFiledialog::selectFile()
 {
     QFETCH(QString, file);
     QFETCH(int, count);
-    QNonNativeFileDialog fd;
-    QFileSystemModel *model = fd.findChild<QFileSystemModel*>("qt_filesystem_model");
+    QScopedPointer<QNonNativeFileDialog> fd(new QNonNativeFileDialog);
+    QFileSystemModel *model = fd->findChild<QFileSystemModel*>("qt_filesystem_model");
     QVERIFY(model);
-    fd.setDirectory(QDir::currentPath());
+    fd->setDirectory(QDir::currentPath());
     // default value
-    QCOMPARE(fd.selectedFiles().count(), 1);
+    QCOMPARE(fd->selectedFiles().count(), 1);
 
-    QTemporaryFile tempFile(QDir::tempPath() + "/aXXXXXX");
-    bool inTemp = (file == "temp");
-    if (inTemp) {
-        tempFile.open();
-        file = tempFile.fileName();
+    QScopedPointer<QTemporaryFile> tempFile;
+    if (file == QLatin1String("temp")) {
+        tempFile.reset(new QTemporaryFile(QDir::tempPath() + QStringLiteral("/aXXXXXX")));
+        QVERIFY(tempFile->open());
+        file = tempFile->fileName();
     }
 
-    fd.selectFile(file);
-    QCOMPARE(fd.selectedFiles().count(), count);
-    if (inTemp) {
-        QCOMPARE(model->index(fd.directory().path()), model->index(QDir::tempPath()));
+    fd->selectFile(file);
+    QCOMPARE(fd->selectedFiles().count(), count);
+    if (tempFile.isNull()) {
+        QCOMPARE(model->index(fd->directory().path()), model->index(QDir::currentPath()));
     } else {
-        QCOMPARE(model->index(fd.directory().path()), model->index(QDir::currentPath()));
+        QCOMPARE(model->index(fd->directory().path()), model->index(QDir::tempPath()));
     }
+    fd.reset(); // Ensure the file dialog let's go of the temporary file for "temp".
 }
 
 void tst_QFiledialog::selectFiles()
 {
-    QNonNativeFileDialog fd;
-    fd.setViewMode(QFileDialog::List);
     QTemporaryDir tempDir;
     QVERIFY(tempDir.isValid());
     const QString tempPath = tempDir.path();
+    {
+    QNonNativeFileDialog fd;
+    fd.setViewMode(QFileDialog::List);
     fd.setDirectory(tempPath);
     QSignalSpy spyCurrentChanged(&fd, SIGNAL(currentChanged(QString)));
     QSignalSpy spyDirectoryEntered(&fd, SIGNAL(directoryEntered(QString)));
@@ -931,17 +933,20 @@ void tst_QFiledialog::selectFiles()
     QCOMPARE(spyFilesSelected.count(), 0);
     QCOMPARE(spyFilterSelected.count(), 0);
 
-    //If the selection is invalid then we fill the line edit but without the /
-    QNonNativeFileDialog * dialog = new QNonNativeFileDialog( 0, "Save" );
-    dialog->setFileMode( QFileDialog::AnyFile );
-    dialog->setAcceptMode( QFileDialog::AcceptSave );
-    dialog->selectFile(tempPath + QStringLiteral("/blah"));
-    dialog->show();
-    QVERIFY(QTest::qWaitForWindowExposed(dialog));
-    QLineEdit *lineEdit = dialog->findChild<QLineEdit*>("fileNameEdit");
-    QVERIFY(lineEdit);
-    QCOMPARE(lineEdit->text(),QLatin1String("blah"));
-    delete dialog;
+    }
+
+    {
+        //If the selection is invalid then we fill the line edit but without the /
+        QNonNativeFileDialog dialog( 0, "Save" );
+        dialog.setFileMode( QFileDialog::AnyFile );
+        dialog.setAcceptMode( QFileDialog::AcceptSave );
+        dialog.selectFile(tempPath + QStringLiteral("/blah"));
+        dialog.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&dialog));
+        QLineEdit *lineEdit = dialog.findChild<QLineEdit*>("fileNameEdit");
+        QVERIFY(lineEdit);
+        QCOMPARE(lineEdit->text(),QLatin1String("blah"));
+    }
 }
 
 void tst_QFiledialog::viewMode()
