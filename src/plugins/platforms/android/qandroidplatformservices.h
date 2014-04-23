@@ -44,7 +44,6 @@
 
 #include <qpa/qplatformservices.h>
 #include "androidjnimain.h"
-#include <jni.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -55,9 +54,6 @@ public:
     bool openUrl(const QUrl &url);
     bool openDocument(const QUrl &url);
     QByteArray desktopEnvironment() const;
-private:
-    jmethodID m_openURIMethodID;
-
 };
 
 QT_END_NAMESPACE
