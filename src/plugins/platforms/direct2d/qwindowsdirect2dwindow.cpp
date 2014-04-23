@@ -54,6 +54,9 @@ QWindowsDirect2DWindow::QWindowsDirect2DWindow(QWindow *window, const QWindowsWi
     : QWindowsWindow(window, data)
     , m_needsFullFlush(true)
 {
+    if (window->type() == Qt::Desktop)
+        return; // No further handling for Qt::Desktop
+
     DXGI_SWAP_CHAIN_DESC1 desc = {};
 
     desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
