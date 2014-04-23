@@ -55,126 +55,32 @@
 ****************************************************************************/
 
 #include "qsslsocket_openssl_p.h"
-
-
-
-#include <jni.h>
-#include <android/log.h>
-
-static JavaVM *javaVM = 0;
-static jclass appClass;
-
-static jmethodID getSslCertificatesMethodID;
-
-struct AttachedJNIEnv
-{
-    AttachedJNIEnv()
-    {
-        attached = false;
-        if (javaVM->GetEnv((void**)&jniEnv, JNI_VERSION_1_6) < 0) {
-            if (javaVM->AttachCurrentThread(&jniEnv, NULL) < 0) {
-                __android_log_print(ANDROID_LOG_ERROR, "Qt", "AttachCurrentThread failed");
-                jniEnv = 0;
-                return;
-            }
-            attached = true;
-        }
-    }
-
-    ~AttachedJNIEnv()
-    {
-        if (attached)
-            javaVM->DetachCurrentThread();
-    }
-    bool attached;
-    JNIEnv *jniEnv;
-};
-
-static const char logTag[] = "Qt";
-static const char classErrorMsg[] = "Can't find class \"%s\"";
-static const char methodErrorMsg[] = "Can't find method \"%s%s\"";
-
-
-#define FIND_AND_CHECK_CLASS(CLASS_NAME) \
-clazz = env->FindClass(CLASS_NAME); \
-if (!clazz) { \
-    __android_log_print(ANDROID_LOG_FATAL, logTag, classErrorMsg, CLASS_NAME); \
-    return JNI_FALSE; \
-}
-
-#define GET_AND_CHECK_STATIC_METHOD(VAR, CLASS, METHOD_NAME, METHOD_SIGNATURE) \
-VAR = env->GetStaticMethodID(CLASS, METHOD_NAME, METHOD_SIGNATURE); \
-if (!VAR) { \
-    __android_log_print(ANDROID_LOG_FATAL, logTag, methodErrorMsg, METHOD_NAME, METHOD_SIGNATURE); \
-    return JNI_FALSE; \
-}
-
-static bool registerNatives(JNIEnv *env)
-{
-    jclass clazz;
-    FIND_AND_CHECK_CLASS("org/qtproject/qt5/android/QtNative");
-    appClass = static_cast<jclass>(env->NewGlobalRef(clazz));
-
-#if 0 //we don't call C++ functions from Java at this time
-    if (env->RegisterNatives(appClass, methods, sizeof(methods) / sizeof(methods[0])) < 0) {
-        __android_log_print(ANDROID_LOG_FATAL, logTag, "RegisterNatives failed");
-        return JNI_FALSE;
-    }
-#endif
-
-    GET_AND_CHECK_STATIC_METHOD(getSslCertificatesMethodID, appClass, "getSSLCertificates", "()[[B");
-
-    return true;
-}
-
-Q_DECL_EXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void * /*reserved*/)
-{
-    typedef union {
-        JNIEnv *nativeEnvironment;
-        void *venv;
-    } UnionJNIEnvToVoid;
-
-    __android_log_print(ANDROID_LOG_INFO, logTag, "Network start");
-    UnionJNIEnvToVoid uenv;
-    uenv.venv = NULL;
-    javaVM = 0;
-
-    if (vm->GetEnv(&uenv.venv, JNI_VERSION_1_4) != JNI_OK) {
-        __android_log_print(ANDROID_LOG_FATAL, logTag, "GetEnv failed");
-        return -1;
-    }
-    JNIEnv *env = uenv.nativeEnvironment;
-    if (!registerNatives(env)) {
-        __android_log_print(ANDROID_LOG_FATAL, logTag, "registerNatives failed");
-        return -1;
-    }
-
-    javaVM = vm;
-    return JNI_VERSION_1_4;
-}
+#include <QtCore/private/qjni_p.h>
 
 QT_BEGIN_NAMESPACE
 
 QList<QByteArray> QSslSocketPrivate::fetchSslCertificateData()
 {
     QList<QByteArray> certificateData;
-    AttachedJNIEnv env;
 
-    if (env.jniEnv) {
-        jobjectArray jcertificates =
-            static_cast<jobjectArray>(env.jniEnv->CallStaticObjectMethod(appClass, getSslCertificatesMethodID));
-        jint nCertificates = env.jniEnv->GetArrayLength(jcertificates);
+    QJNIObjectPrivate certificates = QJNIObjectPrivate::callStaticObjectMethod("org/qtproject/qt5/android/QtNative",
+                                                                               "getSSLCertificates",
+                                                                               "()[[B");
+    if (!certificates.isValid())
+        return certificateData;
 
-        for (int i = 0; i < nCertificates; ++i) {
-            jbyteArray jCert = static_cast<jbyteArray>(env.jniEnv->GetObjectArrayElement(jcertificates, i));
+    QJNIEnvironmentPrivate env;
+    jobjectArray jcertificates = static_cast<jobjectArray>(certificates.object());
+    const jint nCertificates = env->GetArrayLength(jcertificates);
 
-            const uint sz = env.jniEnv->GetArrayLength(jCert);
-            jbyte *buffer = env.jniEnv->GetByteArrayElements(jCert, 0);
-            certificateData.append(QByteArray(reinterpret_cast<char*>(buffer), sz));
+    for (int i = 0; i < nCertificates; ++i) {
+        jbyteArray jCert = static_cast<jbyteArray>(env->GetObjectArrayElement(jcertificates, i));
+        const uint sz = env->GetArrayLength(jCert);
+        jbyte *buffer = env->GetByteArrayElements(jCert, 0);
+        certificateData.append(QByteArray(reinterpret_cast<char*>(buffer), sz));
 
-            env.jniEnv->ReleaseByteArrayElements(jCert, buffer, JNI_ABORT); // don't copy back the elements
-            env.jniEnv->DeleteLocalRef(jCert);
-        }
+        env->ReleaseByteArrayElements(jCert, buffer, JNI_ABORT); // don't copy back the elements
+        env->DeleteLocalRef(jCert);
     }
 
     return certificateData;
