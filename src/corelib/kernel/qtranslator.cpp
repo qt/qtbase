@@ -465,6 +465,12 @@ QTranslator::~QTranslator()
     \li \c /opt/foolib/foo.qm
     \li \c /opt/foolib/foo
     \endlist
+
+    Usually, it is better to use the QTranslator::load(const QLocale &,
+    const QString &, const QString &, const QString &, const QString &)
+    function instead, because it uses \l{QLocale::uiLanguages()} and not simply
+    the locale name, which refers to the formatting of dates and numbers and not
+    necessarily the UI language.
 */
 
 bool QTranslator::load(const QString & filename, const QString & directory,

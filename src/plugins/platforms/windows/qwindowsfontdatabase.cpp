@@ -1040,7 +1040,11 @@ QWindowsFontDatabase::~QWindowsFontDatabase()
 
 QFontEngineMulti *QWindowsFontDatabase::fontEngineMulti(QFontEngine *fontEngine, QChar::Script script)
 {
-    return new QWindowsMultiFontEngine(fontEngine, script);
+    if (script == QChar::Script_Common)
+        return new QWindowsMultiFontEngine(fontEngine, script);
+    // ### as long as fallbacksForFamily() does not take script parameter into account,
+    // prefer QFontEngineMultiQPA's loadEngine() implementation for complex scripts
+    return QPlatformFontDatabase::fontEngineMulti(fontEngine, script);
 }
 
 QFontEngine * QWindowsFontDatabase::fontEngine(const QFontDef &fontDef, void *handle)
@@ -1619,8 +1623,7 @@ QStringList QWindowsFontDatabase::fallbacksForFamily(const QString &family, QFon
             result << QString::fromLatin1("Arial");
     }
 
-    if (script == QChar::Script_Common || script == QChar::Script_Han)
-        result.append(QWindowsFontDatabase::extraTryFontsForFamily(family));
+    result.append(QWindowsFontDatabase::extraTryFontsForFamily(family));
 
     qCDebug(lcQpaFonts) << __FUNCTION__ << family << style << styleHint
         << script << result << m_families.size();

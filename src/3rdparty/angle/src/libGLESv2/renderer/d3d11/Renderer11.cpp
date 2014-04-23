@@ -40,6 +40,13 @@
 
 #include "libEGL/Display.h"
 
+#if defined(ANGLE_OS_WINRT) && !defined(ANGLE_OS_WINPHONE)
+#  include <dxgi1_3.h>
+#  include <wrl.h>
+#  include <windows.applicationmodel.core.h>
+typedef ABI::Windows::Foundation::IEventHandler<ABI::Windows::ApplicationModel::SuspendingEventArgs *> SuspendEventHandler;
+#endif
+
 #ifdef _DEBUG
 // this flag enables suppressing some spurious warnings that pop up in certain WebGL samples
 // and conformance tests. to enable all warnings, remove this define.
@@ -426,8 +433,48 @@ EGLint Renderer11::initialize()
         }
     }
 
+#if defined(ANGLE_OS_WINRT) && !defined(ANGLE_OS_WINPHONE)
+    // Monitor when the application suspends so that Trim() can be called
+    Microsoft::WRL::ComPtr<ABI::Windows::ApplicationModel::Core::ICoreApplication> application;
+    result = RoGetActivationFactory(Microsoft::WRL::Wrappers::HString::MakeReference(RuntimeClass_Windows_ApplicationModel_Core_CoreApplication).Get(),
+                                    IID_PPV_ARGS(&application));
+    if (FAILED(result))
+    {
+        ERR("Error obtaining CoreApplication: 0x%08X", result);
+        return EGL_NOT_INITIALIZED;
+    }
+
+    EventRegistrationToken cookie;
+    result = application->add_Suspending(Microsoft::WRL::Callback<SuspendEventHandler>(this, &Renderer11::onSuspend).Get(), &cookie);
+    if (FAILED(result))
+    {
+        ERR("Error setting suspend callback: 0x%08X", result);
+        return EGL_NOT_INITIALIZED;
+    }
+#endif
+
     return EGL_SUCCESS;
 }
+
+#if defined(ANGLE_OS_WINRT) && !defined(ANGLE_OS_WINPHONE)
+HRESULT Renderer11::onSuspend(IInspectable *, ABI::Windows::ApplicationModel::ISuspendingEventArgs *)
+{
+    if (!mDevice)
+        return S_OK;
+
+    Microsoft::WRL::ComPtr<IDXGIDevice3> dxgiDevice;
+    HRESULT result = mDevice->QueryInterface(IID_PPV_ARGS(&dxgiDevice));
+    if (FAILED(result))
+    {
+        ERR("Error obtaining DXGIDevice3 on suspend: 0x%08X", result);
+        return S_OK;
+    }
+
+    dxgiDevice->Trim();
+
+    return S_OK;
+}
+#endif
 
 // do any one-time device initialization
 // NOTE: this is also needed after a device lost/reset

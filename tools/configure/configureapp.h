@@ -100,7 +100,6 @@ public:
     int platform() const;
     QString platformName() const;
     QString qpaPlatformName() const;
-    QString qpaPrintSupportPluginName() const;
 
 private:
     bool checkAngleAvailability(QString *errorMessage = 0) const;

@@ -477,8 +477,7 @@ QStringList QWindowsFontDatabaseFT::fallbacksForFamily(const QString &family, QF
     }
 #endif
 
-    if (script == QChar::Script_Common || script == QChar::Script_Han)
-        result.append(QWindowsFontDatabase::extraTryFontsForFamily(family));
+    result.append(QWindowsFontDatabase::extraTryFontsForFamily(family));
 
     qCDebug(lcQpaFonts) << __FUNCTION__ << family << style << styleHint
         << script << result << m_families;

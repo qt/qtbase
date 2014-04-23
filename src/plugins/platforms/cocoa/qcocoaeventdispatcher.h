@@ -134,6 +134,8 @@ public:
     void interrupt();
     void flush();
 
+    bool event(QEvent *);
+
     friend void qt_mac_maybeCancelWaitForMoreEventsForwarder(QAbstractEventDispatcher *eventDispatcher);
 };
 
@@ -163,7 +165,6 @@ public:
     // The following variables help organizing modal sessions:
     QStack<QCocoaModalSessionInfo> cocoaModalSessionStack;
     bool currentExecIsNSAppRun;
-    bool modalSessionOnNSAppRun;
     bool nsAppRunCalledByQt;
     bool cleanupModalSessionsNeeded;
     uint processEventsCalled;
