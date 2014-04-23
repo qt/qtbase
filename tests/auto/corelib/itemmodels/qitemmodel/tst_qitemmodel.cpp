@@ -608,7 +608,7 @@ void tst_QItemModel::setData()
     QFETCH(QString, modelType);
     currentModel = testModels->createModel(modelType);
     QVERIFY(currentModel);
-    QSignalSpy spy(currentModel, SIGNAL(dataChanged(QModelIndex,QModelIndex)));
+    QSignalSpy spy(currentModel, &QAbstractItemModel::dataChanged);
     QVERIFY(spy.isValid());
     QCOMPARE(currentModel->setData(QModelIndex(), QVariant()), false);
     QCOMPARE(spy.count(), 0);
@@ -670,7 +670,7 @@ void tst_QItemModel::setHeaderData()
     QVERIFY(index.isValid());
 
     qRegisterMetaType<Qt::Orientation>("Qt::Orientation");
-    QSignalSpy spy(currentModel, SIGNAL(headerDataChanged(Qt::Orientation,int,int)));
+    QSignalSpy spy(currentModel, &QAbstractItemModel::headerDataChanged);
     QVERIFY(spy.isValid());
 
     QString text = "Index private pointers should always be the same";
@@ -711,7 +711,7 @@ void tst_QItemModel::sort()
     QVERIFY(currentModel->hasChildren(topIndex));
     QModelIndex index = currentModel->index(0, 0, topIndex);
     QVERIFY(index.isValid());
-    QSignalSpy spy(currentModel, SIGNAL(layoutChanged()));
+    QSignalSpy spy(currentModel, &QAbstractItemModel::layoutChanged);
     QVERIFY(spy.isValid());
     for (int i=-1; i < 10; ++i){
         currentModel->sort(i);
@@ -849,12 +849,12 @@ void tst_QItemModel::remove()
 
     // When a row or column is removed there should be two signals.
     // Watch to make sure they are emitted and get the row/column count when they do get emitted by connecting them to a slot
-    QSignalSpy columnsAboutToBeRemovedSpy(currentModel, SIGNAL(columnsAboutToBeRemoved(QModelIndex,int,int)));
-    QSignalSpy rowsAboutToBeRemovedSpy(currentModel, SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)));
-    QSignalSpy columnsRemovedSpy(currentModel, SIGNAL(columnsRemoved(QModelIndex,int,int)));
-    QSignalSpy rowsRemovedSpy(currentModel, SIGNAL(rowsRemoved(QModelIndex,int,int)));
-    QSignalSpy modelResetSpy(currentModel, SIGNAL(modelReset()));
-    QSignalSpy modelLayoutChangedSpy(currentModel, SIGNAL(layoutChanged()));
+    QSignalSpy columnsAboutToBeRemovedSpy(currentModel, &QAbstractItemModel::columnsAboutToBeRemoved);
+    QSignalSpy rowsAboutToBeRemovedSpy(currentModel, &QAbstractItemModel::rowsAboutToBeRemoved);
+    QSignalSpy columnsRemovedSpy(currentModel, &QAbstractItemModel::columnsRemoved);
+    QSignalSpy rowsRemovedSpy(currentModel, &QAbstractItemModel::rowsRemoved);
+    QSignalSpy modelResetSpy(currentModel, &QAbstractItemModel::modelReset);
+    QSignalSpy modelLayoutChangedSpy(currentModel, &QAbstractItemModel::layoutChanged);
 
     QVERIFY(columnsAboutToBeRemovedSpy.isValid());
     QVERIFY(rowsAboutToBeRemovedSpy.isValid());
@@ -1191,12 +1191,12 @@ void tst_QItemModel::insert()
 
     // When a row or column is inserted there should be two signals.
     // Watch to make sure they are emitted and get the row/column count when they do get emitted by connecting them to a slot
-    QSignalSpy columnsAboutToBeInsertedSpy(currentModel, SIGNAL(columnsAboutToBeInserted(QModelIndex,int,int)));
-    QSignalSpy rowsAboutToBeInsertedSpy(currentModel, SIGNAL(rowsAboutToBeInserted(QModelIndex,int,int)));
-    QSignalSpy columnsInsertedSpy(currentModel, SIGNAL(columnsInserted(QModelIndex,int,int)));
-    QSignalSpy rowsInsertedSpy(currentModel, SIGNAL(rowsInserted(QModelIndex,int,int)));
-    QSignalSpy modelResetSpy(currentModel, SIGNAL(modelReset()));
-    QSignalSpy modelLayoutChangedSpy(currentModel, SIGNAL(layoutChanged()));
+    QSignalSpy columnsAboutToBeInsertedSpy(currentModel, &QAbstractItemModel::columnsAboutToBeInserted);
+    QSignalSpy rowsAboutToBeInsertedSpy(currentModel, &QAbstractItemModel::rowsAboutToBeInserted);
+    QSignalSpy columnsInsertedSpy(currentModel, &QAbstractItemModel::columnsInserted);
+    QSignalSpy rowsInsertedSpy(currentModel, &QAbstractItemModel::rowsInserted);
+    QSignalSpy modelResetSpy(currentModel, &QAbstractItemModel::modelReset);
+    QSignalSpy modelLayoutChangedSpy(currentModel, &QAbstractItemModel::layoutChanged);
 
     QVERIFY(columnsAboutToBeInsertedSpy.isValid());
     QVERIFY(rowsAboutToBeInsertedSpy.isValid());

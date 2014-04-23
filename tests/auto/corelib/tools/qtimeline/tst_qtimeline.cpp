@@ -102,7 +102,7 @@ void tst_QTimeLine::range()
 
     // Verify that you can change the range in the timeLine
     timeLine.setFrameRange(10, 20);
-    QSignalSpy spy(&timeLine, SIGNAL(frameChanged(int)));
+    QSignalSpy spy(&timeLine, &QTimeLine::frameChanged);
     QVERIFY(spy.isValid());
     timeLine.start();
 #ifdef Q_OS_WINCE
@@ -131,7 +131,7 @@ void tst_QTimeLine::currentTime()
 {
     QTimeLine timeLine(2000);
     timeLine.setUpdateInterval((timeLine.duration()/2) / 33);
-    QSignalSpy spy(&timeLine, SIGNAL(valueChanged(qreal)));
+    QSignalSpy spy(&timeLine, &QTimeLine::valueChanged);
     QVERIFY(spy.isValid());
     timeLine.setFrameRange(10, 20);
     QCOMPARE(timeLine.currentTime(), 0);
@@ -202,7 +202,7 @@ void tst_QTimeLine::frameRate()
 
     // Default speed
     timeLine.setUpdateInterval(1000 / 33);
-    QSignalSpy spy(&timeLine, SIGNAL(frameChanged(int)));
+    QSignalSpy spy(&timeLine, &QTimeLine::frameChanged);
     QVERIFY(spy.isValid());
     timeLine.start();
     QTest::qWait(timeLine.duration()*2);
@@ -225,7 +225,7 @@ void tst_QTimeLine::value()
     QVERIFY(timeLine.currentValue() == 0.0);
 
     // Default speed
-    QSignalSpy spy(&timeLine, SIGNAL(valueChanged(qreal)));
+    QSignalSpy spy(&timeLine, &QTimeLine::valueChanged);
     QVERIFY(spy.isValid());
     timeLine.start();
     QTest::qWait(timeLine.duration()/3);
@@ -256,7 +256,7 @@ void tst_QTimeLine::currentFrame()
     QCOMPARE(timeLine.currentFrame(), 10);
 
     // Default speed
-    QSignalSpy spy(&timeLine, SIGNAL(frameChanged(int)));
+    QSignalSpy spy(&timeLine, &QTimeLine::frameChanged);
     QVERIFY(spy.isValid());
     timeLine.start();
     QTest::qWait(timeLine.duration()/3);
@@ -288,7 +288,7 @@ void tst_QTimeLine::loopCount()
     QCOMPARE(timeLine.loopCount(), 0);
 
     // Default speed infiniti looping
-    QSignalSpy spy(&timeLine, SIGNAL(frameChanged(int)));
+    QSignalSpy spy(&timeLine, &QTimeLine::frameChanged);
     QVERIFY(spy.isValid());
     timeLine.start();
     QTest::qWait(timeLine.duration());
@@ -306,8 +306,8 @@ void tst_QTimeLine::loopCount()
     timeLine.setFrameRange(0, 2);
     timeLine.setLoopCount(4);
 
-    QSignalSpy finishedSpy(&timeLine, SIGNAL(finished()));
-    QSignalSpy frameChangedSpy(&timeLine, SIGNAL(frameChanged(int)));
+    QSignalSpy finishedSpy(&timeLine, &QTimeLine::finished);
+    QSignalSpy frameChangedSpy(&timeLine, &QTimeLine::frameChanged);
     QVERIFY(finishedSpy.isValid());
     QVERIFY(frameChangedSpy.isValid());
     QEventLoop loop;
@@ -461,7 +461,7 @@ void tst_QTimeLine::frameChanged()
     timeLine.setCurveShape(QTimeLine::LinearCurve);
     timeLine.setFrameRange(0,9);
     timeLine.setUpdateInterval(800);
-    QSignalSpy spy(&timeLine, SIGNAL(frameChanged(int)));
+    QSignalSpy spy(&timeLine, &QTimeLine::frameChanged);
     QVERIFY(spy.isValid());
 
     // Test what happens when duration expires before all frames are emitted.
@@ -492,7 +492,7 @@ void tst_QTimeLine::stopped()
     QTimeLine timeLine;
     timeLine.setFrameRange(0, 9);
     qRegisterMetaType<QTimeLine::State>("QTimeLine::State");
-    QSignalSpy spy(&timeLine, SIGNAL(stateChanged(QTimeLine::State)));
+    QSignalSpy spy(&timeLine, &QTimeLine::stateChanged);
     QVERIFY(spy.isValid());
     timeLine.start();
     QTest::qWait(timeLine.duration()*2);
@@ -510,7 +510,7 @@ void tst_QTimeLine::finished()
 {
     QTimeLine timeLine;
     timeLine.setFrameRange(0,9);
-    QSignalSpy spy(&timeLine, SIGNAL(finished()));
+    QSignalSpy spy(&timeLine, &QTimeLine::finished);
     QVERIFY(spy.isValid());
     timeLine.start();
     QTest::qWait(timeLine.duration()*2);
@@ -543,7 +543,7 @@ void tst_QTimeLine::multipleTimeLines()
     // Stopping a timer shouldn't affect the other timers
     QTimeLine timeLine(200);
     timeLine.setFrameRange(0,99);
-    QSignalSpy spy(&timeLine, SIGNAL(finished()));
+    QSignalSpy spy(&timeLine, &QTimeLine::finished);
     QVERIFY(spy.isValid());
 
     QTimeLine timeLineKiller;

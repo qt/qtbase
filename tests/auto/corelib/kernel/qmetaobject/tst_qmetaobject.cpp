@@ -857,7 +857,7 @@ void tst_QMetaObject::invokeTypedefTypes()
 {
     qRegisterMetaType<CustomString>("CustomString");
     QtTestCustomObject obj;
-    QSignalSpy spy(&obj, SIGNAL(sig_custom(CustomString)));
+    QSignalSpy spy(&obj, &QtTestCustomObject::sig_custom);
     QVERIFY(spy.isValid());
 
     QCOMPARE(spy.count(), 0);

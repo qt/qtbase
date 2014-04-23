@@ -138,7 +138,7 @@ void tst_QFileSystemWatcher::basicTest()
     watcher.setObjectName(QLatin1String("_qt_autotest_force_engine_") + backend);
     QVERIFY(watcher.addPath(testFile.fileName()));
 
-    QSignalSpy changedSpy(&watcher, SIGNAL(fileChanged(QString)));
+    QSignalSpy changedSpy(&watcher, &QFileSystemWatcher::fileChanged);
     QVERIFY(changedSpy.isValid());
     QEventLoop eventLoop;
     QTimer timer;
@@ -276,7 +276,7 @@ void tst_QFileSystemWatcher::watchDirectory()
     watcher.setObjectName(QLatin1String("_qt_autotest_force_engine_") + backend);
     QVERIFY(watcher.addPath(testDir.absolutePath()));
 
-    QSignalSpy changedSpy(&watcher, SIGNAL(directoryChanged(QString)));
+    QSignalSpy changedSpy(&watcher, &QFileSystemWatcher::directoryChanged);
     QVERIFY(changedSpy.isValid());
     QEventLoop eventLoop;
     QTimer timer;
@@ -436,8 +436,8 @@ void tst_QFileSystemWatcher::watchFileAndItsDirectory()
     QVERIFY(watcher.addPath(testDir.absolutePath()));
     QVERIFY(watcher.addPath(testFileName));
 
-    QSignalSpy fileChangedSpy(&watcher, SIGNAL(fileChanged(QString)));
-    QSignalSpy dirChangedSpy(&watcher, SIGNAL(directoryChanged(QString)));
+    QSignalSpy fileChangedSpy(&watcher, &QFileSystemWatcher::fileChanged);
+    QSignalSpy dirChangedSpy(&watcher, &QFileSystemWatcher::directoryChanged);
     QVERIFY(fileChangedSpy.isValid());
     QVERIFY(dirChangedSpy.isValid());
     QEventLoop eventLoop;
@@ -596,7 +596,7 @@ void tst_QFileSystemWatcher::QTBUG2331()
     QVERIFY(watcher.addPath(temporaryDirectory.path()));
 
     // watch signal
-    QSignalSpy changedSpy(&watcher, SIGNAL(directoryChanged(QString)));
+    QSignalSpy changedSpy(&watcher, &QFileSystemWatcher::directoryChanged);
     QVERIFY(changedSpy.isValid());
 
     // remove directory, we should get one change signal, and we should no longer
@@ -675,7 +675,7 @@ void tst_QFileSystemWatcher::signalsEmittedAfterFileMoved()
     connect(&watcher, SIGNAL(fileChanged(QString)), &signalReceiver, SLOT(fileChanged(QString)));
 
     // watch signals
-    QSignalSpy changedSpy(&watcher, SIGNAL(fileChanged(QString)));
+    QSignalSpy changedSpy(&watcher, &QFileSystemWatcher::fileChanged);
     QVERIFY(changedSpy.isValid());
 
     // move files to second directory

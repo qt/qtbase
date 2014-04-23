@@ -267,12 +267,12 @@ void tst_QSocketNotifier::posixSockets()
     {
         QSocketNotifier rn(posixSocket, QSocketNotifier::Read);
         connect(&rn, SIGNAL(activated(int)), &QTestEventLoop::instance(), SLOT(exitLoop()));
-        QSignalSpy readSpy(&rn, SIGNAL(activated(int)));
+        QSignalSpy readSpy(&rn, &QSocketNotifier::activated);
         QVERIFY(readSpy.isValid());
         // No write notifier, some systems trigger write notification on socket creation, but not all
         QSocketNotifier en(posixSocket, QSocketNotifier::Exception);
         connect(&en, SIGNAL(activated(int)), &QTestEventLoop::instance(), SLOT(exitLoop()));
-        QSignalSpy errorSpy(&en, SIGNAL(activated(int)));
+        QSignalSpy errorSpy(&en, &QSocketNotifier::activated);
         QVERIFY(errorSpy.isValid());
 
         passive->write("hello",6);
@@ -289,7 +289,7 @@ void tst_QSocketNotifier::posixSockets()
 
         QSocketNotifier wn(posixSocket, QSocketNotifier::Write);
         connect(&wn, SIGNAL(activated(int)), &QTestEventLoop::instance(), SLOT(exitLoop()));
-        QSignalSpy writeSpy(&wn, SIGNAL(activated(int)));
+        QSignalSpy writeSpy(&wn, &QSocketNotifier::activated);
         QVERIFY(writeSpy.isValid());
         qt_safe_write(posixSocket, "goodbye", 8);
 

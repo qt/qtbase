@@ -1529,7 +1529,7 @@ void tst_QItemSelectionModel::resetModel()
     MyStandardItemModel model(20, 20);
     QItemSelectionModel *selectionModel = new QItemSelectionModel(&model);
 
-    QSignalSpy spy(selectionModel, SIGNAL(selectionChanged(QItemSelection,QItemSelection)));
+    QSignalSpy spy(selectionModel, &QItemSelectionModel::selectionChanged);
     QVERIFY(spy.isValid());
 
     selectionModel->select(QItemSelection(model.index(0, 0), model.index(5, 5)), QItemSelectionModel::Select);
@@ -1592,7 +1592,7 @@ void tst_QItemSelectionModel::removeRows()
 
     MyStandardItemModel model(rowCount, columnCount);
     QItemSelectionModel selections(&model);
-    QSignalSpy spy(&selections, SIGNAL(selectionChanged(QItemSelection,QItemSelection)));
+    QSignalSpy spy(&selections, &QItemSelectionModel::selectionChanged);
     QVERIFY(spy.isValid());
 
     QModelIndex tl = model.index(selectTop, selectLeft);
@@ -1655,7 +1655,7 @@ void tst_QItemSelectionModel::removeColumns()
 
     MyStandardItemModel model(rowCount, columnCount);
     QItemSelectionModel selections(&model);
-    QSignalSpy spy(&selections, SIGNAL(selectionChanged(QItemSelection,QItemSelection)));
+    QSignalSpy spy(&selections, &QItemSelectionModel::selectionChanged);
     QVERIFY(spy.isValid());
 
     QModelIndex tl = model.index(selectTop, selectLeft);
@@ -1914,12 +1914,9 @@ void tst_QItemSelectionModel::setCurrentIndex()
             treemodel->index(0, 0, treemodel->index(0, 0)),
             QItemSelectionModel::SelectCurrent);
 
-    QSignalSpy currentSpy(&selectionModel,
-            SIGNAL(currentChanged(QModelIndex,QModelIndex)));
-    QSignalSpy rowSpy(&selectionModel,
-            SIGNAL(currentRowChanged(QModelIndex,QModelIndex)));
-    QSignalSpy columnSpy(&selectionModel,
-            SIGNAL(currentColumnChanged(QModelIndex,QModelIndex)));
+    QSignalSpy currentSpy(&selectionModel, &QItemSelectionModel::currentChanged);
+    QSignalSpy rowSpy(&selectionModel, &QItemSelectionModel::currentRowChanged);
+    QSignalSpy columnSpy(&selectionModel, &QItemSelectionModel::currentColumnChanged);
 
     QVERIFY(currentSpy.isValid());
     QVERIFY(rowSpy.isValid());
@@ -2223,7 +2220,7 @@ void tst_QItemSelectionModel::childrenDeselectionSignal()
     QItemSelectionModel selectionModel(&model);
     selectionModel.select(sel, QItemSelectionModel::SelectCurrent);
 
-    QSignalSpy deselectSpy(&selectionModel, SIGNAL(selectionChanged(QItemSelection,QItemSelection)));
+    QSignalSpy deselectSpy(&selectionModel, &QItemSelectionModel::selectionChanged);
     QVERIFY(deselectSpy.isValid());
     model.removeRows(0, 1, root);
     QVERIFY(deselectSpy.count() == 1);
@@ -2406,7 +2403,7 @@ void tst_QItemSelectionModel::deselectRemovedMiddleRange()
 
     RemovalObserver ro(&selModel);
 
-    QSignalSpy spy(&selModel, SIGNAL(selectionChanged(QItemSelection,QItemSelection)));
+    QSignalSpy spy(&selModel, &QItemSelectionModel::selectionChanged);
     QVERIFY(spy.isValid());
     bool ok = model.removeRows(4, 2);
 
@@ -2738,7 +2735,7 @@ void tst_QItemSelectionModel::testClearCurrentIndex()
 
     QItemSelectionModel selectionModel(&model, 0);
 
-    QSignalSpy currentIndexSpy(&selectionModel, SIGNAL(currentChanged(QModelIndex,QModelIndex)));
+    QSignalSpy currentIndexSpy(&selectionModel, &QItemSelectionModel::currentChanged);
     QVERIFY(currentIndexSpy.isValid());
 
     QModelIndex firstIndex = model.index(0, 0);

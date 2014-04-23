@@ -1593,7 +1593,7 @@ void tst_QMetaObjectBuilder::usage_signal()
 {
     QScopedPointer<TestObject> testObject(new TestObject);
 
-    QSignalSpy propChangedSpy(testObject.data(), SIGNAL(intPropChanged(int)));
+    QSignalSpy propChangedSpy(testObject.data(), &TestObject::intPropChanged);
     testObject->emitIntPropChanged();
     QCOMPARE(propChangedSpy.count(), 1);
     QCOMPARE(propChangedSpy.at(0).count(), 1);
@@ -1608,7 +1608,7 @@ void tst_QMetaObjectBuilder::usage_property()
     QCOMPARE(prop.type(), QVariant::Int);
     QCOMPARE(prop.toInt(), testObject->intProp());
 
-    QSignalSpy propChangedSpy(testObject.data(), SIGNAL(intPropChanged(int)));
+    QSignalSpy propChangedSpy(testObject.data(), &TestObject::intPropChanged);
     QVERIFY(testObject->intProp() != 123);
     testObject->setProperty("intProp", 123);
     QCOMPARE(propChangedSpy.count(), 1);

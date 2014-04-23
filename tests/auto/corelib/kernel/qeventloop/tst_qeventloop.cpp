@@ -195,8 +195,8 @@ protected:
 
 void tst_QEventLoop::processEvents()
 {
-    QSignalSpy aboutToBlockSpy(QAbstractEventDispatcher::instance(), SIGNAL(aboutToBlock()));
-    QSignalSpy awakeSpy(QAbstractEventDispatcher::instance(), SIGNAL(awake()));
+    QSignalSpy aboutToBlockSpy(QAbstractEventDispatcher::instance(), &QAbstractEventDispatcher::aboutToBlock);
+    QSignalSpy awakeSpy(QAbstractEventDispatcher::instance(), &QAbstractEventDispatcher::awake);
 
     QVERIFY(aboutToBlockSpy.isValid());
     QVERIFY(awakeSpy.isValid());
@@ -282,7 +282,7 @@ void tst_QEventLoop::exec()
         thread.cond.wait(&thread.mutex);
 
         // make sure the eventloop runs
-        QSignalSpy spy(QAbstractEventDispatcher::instance(&thread), SIGNAL(awake()));
+        QSignalSpy spy(QAbstractEventDispatcher::instance(&thread), &QAbstractEventDispatcher::awake);
         QVERIFY(spy.isValid());
         thread.cond.wakeOne();
         thread.cond.wait(&thread.mutex);
@@ -345,7 +345,7 @@ void tst_QEventLoop::wakeUp()
     thread.start();
     (void) eventLoop.exec();
 
-    QSignalSpy spy(QAbstractEventDispatcher::instance(&thread), SIGNAL(awake()));
+    QSignalSpy spy(QAbstractEventDispatcher::instance(&thread), &QAbstractEventDispatcher::awake);
     QVERIFY(spy.isValid());
     thread.eventLoop->wakeUp();
 
@@ -633,7 +633,7 @@ void tst_QEventLoop::testQuitLock()
 
     QTimer timer;
     timer.setInterval(100);
-    QSignalSpy timerSpy(&timer, SIGNAL(timeout()));
+    QSignalSpy timerSpy(&timer, &QTimer::timeout);
     timer.start();
 
     QEventLoopPrivate* privateClass = static_cast<QEventLoopPrivate*>(QObjectPrivate::get(&eventLoop));

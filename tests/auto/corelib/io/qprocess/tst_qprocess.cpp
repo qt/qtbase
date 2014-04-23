@@ -259,7 +259,7 @@ void tst_QProcess::simpleStart()
     qRegisterMetaType<QProcess::ProcessState>("QProcess::ProcessState");
 
     process = new QProcess;
-    QSignalSpy spy(process, SIGNAL(stateChanged(QProcess::ProcessState)));
+    QSignalSpy spy(process, &QProcess::stateChanged);
     QVERIFY(spy.isValid());
     connect(process, SIGNAL(readyRead()), this, SLOT(readFromProcess()));
 
@@ -351,7 +351,7 @@ void tst_QProcess::crashTest()
 {
     qRegisterMetaType<QProcess::ProcessState>("QProcess::ProcessState");
     process = new QProcess;
-    QSignalSpy stateSpy(process, SIGNAL(stateChanged(QProcess::ProcessState)));
+    QSignalSpy stateSpy(process, &QProcess::stateChanged);
     QVERIFY(stateSpy.isValid());
     process->start("testProcessCrash/testProcessCrash");
     QVERIFY(process->waitForStarted(5000));
@@ -359,8 +359,8 @@ void tst_QProcess::crashTest()
     qRegisterMetaType<QProcess::ProcessError>("QProcess::ProcessError");
     qRegisterMetaType<QProcess::ExitStatus>("QProcess::ExitStatus");
 
-    QSignalSpy spy(process, SIGNAL(error(QProcess::ProcessError)));
-    QSignalSpy spy2(process, SIGNAL(finished(int,QProcess::ExitStatus)));
+    QSignalSpy spy(process, static_cast<void (QProcess::*)(QProcess::ProcessError)>(&QProcess::error));
+    QSignalSpy spy2(process, static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished));
 
     QVERIFY(spy.isValid());
     QVERIFY(spy2.isValid());
@@ -394,8 +394,8 @@ void tst_QProcess::crashTest2()
     qRegisterMetaType<QProcess::ProcessError>("QProcess::ProcessError");
     qRegisterMetaType<QProcess::ExitStatus>("QProcess::ExitStatus");
 
-    QSignalSpy spy(process, SIGNAL(error(QProcess::ProcessError)));
-    QSignalSpy spy2(process, SIGNAL(finished(int,QProcess::ExitStatus)));
+    QSignalSpy spy(process, static_cast<void (QProcess::*)(QProcess::ProcessError)>(&QProcess::error));
+    QSignalSpy spy2(process, static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished));
 
     QVERIFY(spy.isValid());
     QVERIFY(spy2.isValid());
@@ -503,8 +503,8 @@ void tst_QProcess::echoTest2()
     QCOMPARE(process->error(), QProcess::Timedout);
 
     process->write("Hello");
-    QSignalSpy spy1(process, SIGNAL(readyReadStandardOutput()));
-    QSignalSpy spy2(process, SIGNAL(readyReadStandardError()));
+    QSignalSpy spy1(process, &QProcess::readyReadStandardOutput);
+    QSignalSpy spy2(process, &QProcess::readyReadStandardError);
 
     QVERIFY(spy1.isValid());
     QVERIFY(spy2.isValid());
@@ -685,7 +685,7 @@ void tst_QProcess::readTimeoutAndThenCrash()
     QCOMPARE(process->error(), QProcess::Timedout);
 
     qRegisterMetaType<QProcess::ProcessError>("QProcess::ProcessError");
-    QSignalSpy spy(process, SIGNAL(error(QProcess::ProcessError)));
+    QSignalSpy spy(process, static_cast<void (QProcess::*)(QProcess::ProcessError)>(&QProcess::error));
     QVERIFY(spy.isValid());
 
     process->kill();
@@ -887,7 +887,7 @@ void tst_QProcess::emitReadyReadOnlyWhenNewDataArrives()
 
     QProcess proc;
     connect(&proc, SIGNAL(readyRead()), this, SLOT(exitLoopSlot()));
-    QSignalSpy spy(&proc, SIGNAL(readyRead()));
+    QSignalSpy spy(&proc, &QProcess::readyRead);
     QVERIFY(spy.isValid());
 
     proc.start("testProcessEcho/testProcessEcho");
@@ -1283,7 +1283,7 @@ void tst_QProcess::waitForReadyReadInAReadyReadSlot()
     process->start("testProcessEcho/testProcessEcho");
     QVERIFY(process->waitForStarted(5000));
 
-    QSignalSpy spy(process, SIGNAL(readyRead()));
+    QSignalSpy spy(process, &QProcess::readyRead);
     QVERIFY(spy.isValid());
     process->write("foo");
     QTestEventLoop::instance().enterLoop(30);
@@ -1323,7 +1323,7 @@ void tst_QProcess::waitForBytesWrittenInABytesWrittenSlot()
     process->start("testProcessEcho/testProcessEcho");
     QVERIFY(process->waitForStarted(5000));
 
-    QSignalSpy spy(process, SIGNAL(bytesWritten(qint64)));
+    QSignalSpy spy(process, &QProcess::bytesWritten);
     QVERIFY(spy.isValid());
     process->write("f");
     QTestEventLoop::instance().enterLoop(30);
@@ -1538,10 +1538,10 @@ void tst_QProcess::failToStart()
     qRegisterMetaType<QProcess::ProcessState>("QProcess::ProcessState");
 
     QProcess process;
-    QSignalSpy stateSpy(&process, SIGNAL(stateChanged(QProcess::ProcessState)));
-    QSignalSpy errorSpy(&process, SIGNAL(error(QProcess::ProcessError)));
-    QSignalSpy finishedSpy(&process, SIGNAL(finished(int)));
-    QSignalSpy finishedSpy2(&process, SIGNAL(finished(int,QProcess::ExitStatus)));
+    QSignalSpy stateSpy(&process, &QProcess::stateChanged);
+    QSignalSpy errorSpy(&process, static_cast<void (QProcess::*)(QProcess::ProcessError)>(&QProcess::error));
+    QSignalSpy finishedSpy(&process, static_cast<void (QProcess::*)(int)>(&QProcess::finished));
+    QSignalSpy finishedSpy2(&process, static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished));
 
     QVERIFY(stateSpy.isValid());
     QVERIFY(errorSpy.isValid());
@@ -1605,9 +1605,9 @@ void tst_QProcess::failToStartWithWait()
 
     QProcess process;
     QEventLoop loop;
-    QSignalSpy errorSpy(&process, SIGNAL(error(QProcess::ProcessError)));
-    QSignalSpy finishedSpy(&process, SIGNAL(finished(int)));
-    QSignalSpy finishedSpy2(&process, SIGNAL(finished(int,QProcess::ExitStatus)));
+    QSignalSpy errorSpy(&process, static_cast<void (QProcess::*)(QProcess::ProcessError)>(&QProcess::error));
+    QSignalSpy finishedSpy(&process, static_cast<void (QProcess::*)(int)>(&QProcess::finished));
+    QSignalSpy finishedSpy2(&process, static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished));
 
     QVERIFY(errorSpy.isValid());
     QVERIFY(finishedSpy.isValid());
@@ -1632,9 +1632,9 @@ void tst_QProcess::failToStartWithEventLoop()
 
     QProcess process;
     QEventLoop loop;
-    QSignalSpy errorSpy(&process, SIGNAL(error(QProcess::ProcessError)));
-    QSignalSpy finishedSpy(&process, SIGNAL(finished(int)));
-    QSignalSpy finishedSpy2(&process, SIGNAL(finished(int,QProcess::ExitStatus)));
+    QSignalSpy errorSpy(&process, static_cast<void (QProcess::*)(QProcess::ProcessError)>(&QProcess::error));
+    QSignalSpy finishedSpy(&process, static_cast<void (QProcess::*)(int)>(&QProcess::finished));
+    QSignalSpy finishedSpy2(&process, static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished));
 
     QVERIFY(errorSpy.isValid());
     QVERIFY(finishedSpy.isValid());
@@ -1864,9 +1864,9 @@ void tst_QProcess::waitForReadyReadForNonexistantProcess()
     qRegisterMetaType<QProcess::ExitStatus>("QProcess::ExitStatus");
 
     QProcess process;
-    QSignalSpy errorSpy(&process, SIGNAL(error(QProcess::ProcessError)));
-    QSignalSpy finishedSpy1(&process, SIGNAL(finished(int)));
-    QSignalSpy finishedSpy2(&process, SIGNAL(finished(int,QProcess::ExitStatus)));
+    QSignalSpy errorSpy(&process, static_cast<void (QProcess::*)(QProcess::ProcessError)>(&QProcess::error));
+    QSignalSpy finishedSpy1(&process, static_cast<void (QProcess::*)(int)>(&QProcess::finished));
+    QSignalSpy finishedSpy2(&process, static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished));
 
     QVERIFY(errorSpy.isValid());
     QVERIFY(finishedSpy1.isValid());
@@ -2202,7 +2202,7 @@ void tst_QProcess::invalidProgramString()
     QProcess process;
 
     qRegisterMetaType<QProcess::ProcessError>("QProcess::ProcessError");
-    QSignalSpy spy(&process, SIGNAL(error(QProcess::ProcessError)));
+    QSignalSpy spy(&process, static_cast<void (QProcess::*)(QProcess::ProcessError)>(&QProcess::error));
     QVERIFY(spy.isValid());
 
     process.start(programString);
@@ -2218,8 +2218,8 @@ void tst_QProcess::onlyOneStartedSignal()
     qRegisterMetaType<QProcess::ExitStatus>("QProcess::ExitStatus");
     QProcess process;
 
-    QSignalSpy spyStarted(&process,  SIGNAL(started()));
-    QSignalSpy spyFinished(&process, SIGNAL(finished(int,QProcess::ExitStatus)));
+    QSignalSpy spyStarted(&process,  &QProcess::started);
+    QSignalSpy spyFinished(&process, static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished));
 
     QVERIFY(spyStarted.isValid());
     QVERIFY(spyFinished.isValid());

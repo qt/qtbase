@@ -230,9 +230,9 @@ void tst_QPropertyAnimation::statesAndSignals()
         anim = new DummyPropertyAnimation;
     anim->setDuration(100);
 
-    QSignalSpy finishedSpy(anim, SIGNAL(finished()));
-    QSignalSpy runningSpy(anim, SIGNAL(stateChanged(QAbstractAnimation::State,QAbstractAnimation::State)));
-    QSignalSpy currentLoopSpy(anim, SIGNAL(currentLoopChanged(int)));
+    QSignalSpy finishedSpy(anim, &QPropertyAnimation::finished);
+    QSignalSpy runningSpy(anim, &QPropertyAnimation::stateChanged);
+    QSignalSpy currentLoopSpy(anim, &QPropertyAnimation::currentLoopChanged);
 
     QVERIFY(finishedSpy.isValid());
     QVERIFY(runningSpy.isValid());
@@ -311,8 +311,8 @@ void tst_QPropertyAnimation::deletion1()
     QPointer<QPropertyAnimation> anim = new QPropertyAnimation(object, "minimumWidth");
 
     //test that the animation is deleted correctly depending of the deletion flag passed in start()
-    QSignalSpy runningSpy(anim, SIGNAL(stateChanged(QAbstractAnimation::State,QAbstractAnimation::State)));
-    QSignalSpy finishedSpy(anim, SIGNAL(finished()));
+    QSignalSpy runningSpy(anim.data(), &QPropertyAnimation::stateChanged);
+    QSignalSpy finishedSpy(anim.data(), &QPropertyAnimation::finished);
     QVERIFY(runningSpy.isValid());
     QVERIFY(finishedSpy.isValid());
     anim->setStartValue(10);
@@ -355,8 +355,8 @@ void tst_QPropertyAnimation::deletion2()
     anim->setEndValue(20);
     anim->setDuration(200);
 
-    QSignalSpy runningSpy(anim, SIGNAL(stateChanged(QAbstractAnimation::State,QAbstractAnimation::State)));
-    QSignalSpy finishedSpy(anim, SIGNAL(finished()));
+    QSignalSpy runningSpy(anim.data(), &QPropertyAnimation::stateChanged);
+    QSignalSpy finishedSpy(anim.data(), &QPropertyAnimation::finished);
 
     QVERIFY(runningSpy.isValid());
     QVERIFY(finishedSpy.isValid());
@@ -389,8 +389,8 @@ void tst_QPropertyAnimation::deletion3()
     anim->setEndValue(20);
     anim->setDuration(200);
 
-    QSignalSpy runningSpy(anim, SIGNAL(stateChanged(QAbstractAnimation::State,QAbstractAnimation::State)));
-    QSignalSpy finishedSpy(anim, SIGNAL(finished()));
+    QSignalSpy runningSpy(anim, &QPropertyAnimation::stateChanged);
+    QSignalSpy finishedSpy(anim, &QPropertyAnimation::finished);
 
     QVERIFY(runningSpy.isValid());
     QVERIFY(finishedSpy.isValid());
@@ -490,7 +490,7 @@ void tst_QPropertyAnimation::startWhenAnotherIsRunning()
         //normal case: the animation finishes and is deleted
         QPointer<QVariantAnimation> anim = new QPropertyAnimation(&o, "ole");
         anim->setEndValue(100);
-        QSignalSpy runningSpy(anim, SIGNAL(stateChanged(QAbstractAnimation::State,QAbstractAnimation::State)));
+        QSignalSpy runningSpy(anim.data(), &QVariantAnimation::stateChanged);
         QVERIFY(runningSpy.isValid());
         anim->start(QVariantAnimation::DeleteWhenStopped);
         QTest::qWait(anim->duration() + 100);
@@ -501,7 +501,7 @@ void tst_QPropertyAnimation::startWhenAnotherIsRunning()
     {
         QPointer<QVariantAnimation> anim = new QPropertyAnimation(&o, "ole");
         anim->setEndValue(100);
-        QSignalSpy runningSpy(anim, SIGNAL(stateChanged(QAbstractAnimation::State,QAbstractAnimation::State)));
+        QSignalSpy runningSpy(anim.data(), &QVariantAnimation::stateChanged);
         QVERIFY(runningSpy.isValid());
         anim->start(QVariantAnimation::DeleteWhenStopped);
         QTest::qWait(anim->duration()/2);
@@ -850,7 +850,7 @@ void tst_QPropertyAnimation::setStartEndValues()
 void tst_QPropertyAnimation::zeroDurationStart()
 {
     DummyPropertyAnimation anim;
-    QSignalSpy spy(&anim, SIGNAL(stateChanged(QAbstractAnimation::State,QAbstractAnimation::State)));
+    QSignalSpy spy(&anim, &DummyPropertyAnimation::stateChanged);
     QVERIFY(spy.isValid());
     anim.setDuration(0);
     QCOMPARE(anim.state(), QAbstractAnimation::Stopped);
@@ -972,7 +972,7 @@ void tst_QPropertyAnimation::operationsInStates()
     o.setProperty("ole", 42);
     QPropertyAnimation anim(&o, "ole");
     anim.setEndValue(100);
-    QSignalSpy spy(&anim, SIGNAL(stateChanged(QAbstractAnimation::State,QAbstractAnimation::State)));
+    QSignalSpy spy(&anim, &QPropertyAnimation::stateChanged);
     QVERIFY(spy.isValid());
 
     anim.stop();
@@ -1132,7 +1132,7 @@ void tst_QPropertyAnimation::valueChanged()
     QPropertyAnimation anim(&o, "ole");
     anim.setEndValue(5);
     anim.setDuration(1000);
-    QSignalSpy spy(&anim, SIGNAL(valueChanged(QVariant)));
+    QSignalSpy spy(&anim, &QPropertyAnimation::valueChanged);
     QVERIFY(spy.isValid());
     anim.start();
 
@@ -1263,8 +1263,8 @@ void tst_QPropertyAnimation::zeroLoopCount()
     anim->setDuration(20);
     anim->setLoopCount(0);
 
-    QSignalSpy runningSpy(anim, SIGNAL(stateChanged(QAbstractAnimation::State,QAbstractAnimation::State)));
-    QSignalSpy finishedSpy(anim, SIGNAL(finished()));
+    QSignalSpy runningSpy(anim, &QPropertyAnimation::stateChanged);
+    QSignalSpy finishedSpy(anim, &QPropertyAnimation::finished);
 
     QVERIFY(runningSpy.isValid());
     QVERIFY(finishedSpy.isValid());

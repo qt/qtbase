@@ -264,8 +264,8 @@ void tst_QPluginLoader::deleteinstanceOnUnload()
         PluginInterface *instance2 = qobject_cast<PluginInterface*>(loader2.instance());
         QCOMPARE(instance2->pluginName(), QLatin1String("Plugin ok"));
 
-        QSignalSpy spy1(loader1.instance(), SIGNAL(destroyed()));
-        QSignalSpy spy2(loader2.instance(), SIGNAL(destroyed()));
+        QSignalSpy spy1(loader1.instance(), &QObject::destroyed);
+        QSignalSpy spy2(loader2.instance(), &QObject::destroyed);
         QVERIFY(spy1.isValid());
         QVERIFY(spy2.isValid());
         if (pass == 0) {
@@ -423,7 +423,7 @@ void tst_QPluginLoader::reloadPlugin()
     QVERIFY(instance);
     QCOMPARE(instance->pluginName(), QLatin1String("Plugin ok"));
 
-    QSignalSpy spy(loader.instance(), SIGNAL(destroyed()));
+    QSignalSpy spy(loader.instance(), &QObject::destroyed);
     QVERIFY(spy.isValid());
     QVERIFY(loader.unload());   // refcount reached 0, did really unload
     QCOMPARE(spy.count(), 1);

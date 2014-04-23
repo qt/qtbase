@@ -163,10 +163,10 @@ void tst_QIdentityProxyModel::insertRows()
 
     verifyIdentity(m_model);
 
-    QSignalSpy modelBeforeSpy(m_model, SIGNAL(rowsAboutToBeInserted(QModelIndex,int,int)));
-    QSignalSpy modelAfterSpy(m_model, SIGNAL(rowsInserted(QModelIndex,int,int)));
-    QSignalSpy proxyBeforeSpy(m_proxy, SIGNAL(rowsAboutToBeInserted(QModelIndex,int,int)));
-    QSignalSpy proxyAfterSpy(m_proxy, SIGNAL(rowsInserted(QModelIndex,int,int)));
+    QSignalSpy modelBeforeSpy(m_model, &QStandardItemModel::rowsAboutToBeInserted);
+    QSignalSpy modelAfterSpy(m_model, &QStandardItemModel::rowsInserted);
+    QSignalSpy proxyBeforeSpy(m_proxy, &QStandardItemModel::rowsAboutToBeInserted);
+    QSignalSpy proxyAfterSpy(m_proxy, &QStandardItemModel::rowsInserted);
 
     QVERIFY(modelBeforeSpy.isValid());
     QVERIFY(modelAfterSpy.isValid());
@@ -203,10 +203,10 @@ void tst_QIdentityProxyModel::removeRows()
 
     verifyIdentity(m_model);
 
-    QSignalSpy modelBeforeSpy(m_model, SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)));
-    QSignalSpy modelAfterSpy(m_model, SIGNAL(rowsRemoved(QModelIndex,int,int)));
-    QSignalSpy proxyBeforeSpy(m_proxy, SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)));
-    QSignalSpy proxyAfterSpy(m_proxy, SIGNAL(rowsRemoved(QModelIndex,int,int)));
+    QSignalSpy modelBeforeSpy(m_model, &QStandardItemModel::rowsAboutToBeRemoved);
+    QSignalSpy modelAfterSpy(m_model, &QStandardItemModel::rowsRemoved);
+    QSignalSpy proxyBeforeSpy(m_proxy, &QStandardItemModel::rowsAboutToBeRemoved);
+    QSignalSpy proxyAfterSpy(m_proxy, &QStandardItemModel::rowsRemoved);
 
     QVERIFY(modelBeforeSpy.isValid());
     QVERIFY(modelAfterSpy.isValid());
@@ -257,10 +257,10 @@ void tst_QIdentityProxyModel::moveRows()
 
     verifyIdentity(&model);
 
-    QSignalSpy modelBeforeSpy(&model, SIGNAL(rowsAboutToBeMoved(QModelIndex,int,int,QModelIndex,int)));
-    QSignalSpy modelAfterSpy(&model, SIGNAL(rowsMoved(QModelIndex,int,int,QModelIndex,int)));
-    QSignalSpy proxyBeforeSpy(m_proxy, SIGNAL(rowsAboutToBeMoved(QModelIndex,int,int,QModelIndex,int)));
-    QSignalSpy proxyAfterSpy(m_proxy, SIGNAL(rowsMoved(QModelIndex,int,int,QModelIndex,int)));
+    QSignalSpy modelBeforeSpy(&model, &DynamicTreeModel::rowsAboutToBeMoved);
+    QSignalSpy modelAfterSpy(&model, &DynamicTreeModel::rowsMoved);
+    QSignalSpy proxyBeforeSpy(m_proxy, &QIdentityProxyModel::rowsAboutToBeMoved);
+    QSignalSpy proxyAfterSpy(m_proxy, &QIdentityProxyModel::rowsMoved);
 
     QVERIFY(modelBeforeSpy.isValid());
     QVERIFY(modelAfterSpy.isValid());
@@ -318,10 +318,10 @@ void tst_QIdentityProxyModel::reset()
 
     verifyIdentity(&model);
 
-    QSignalSpy modelBeforeSpy(&model, SIGNAL(modelAboutToBeReset()));
-    QSignalSpy modelAfterSpy(&model, SIGNAL(modelReset()));
-    QSignalSpy proxyBeforeSpy(m_proxy, SIGNAL(modelAboutToBeReset()));
-    QSignalSpy proxyAfterSpy(m_proxy, SIGNAL(modelReset()));
+    QSignalSpy modelBeforeSpy(&model, &DynamicTreeModel::modelAboutToBeReset);
+    QSignalSpy modelAfterSpy(&model, &DynamicTreeModel::modelReset);
+    QSignalSpy proxyBeforeSpy(m_proxy, &QIdentityProxyModel::modelAboutToBeReset);
+    QSignalSpy proxyAfterSpy(m_proxy, &QIdentityProxyModel::modelReset);
 
     QVERIFY(modelBeforeSpy.isValid());
     QVERIFY(modelAfterSpy.isValid());
@@ -351,8 +351,8 @@ void tst_QIdentityProxyModel::dataChanged()
 
     verifyIdentity(&model);
 
-    QSignalSpy modelSpy(&model, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)));
-    QSignalSpy proxySpy(m_proxy, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)));
+    QSignalSpy modelSpy(&model, &DataChangedModel::dataChanged);
+    QSignalSpy proxySpy(m_proxy, &QIdentityProxyModel::dataChanged);
 
     QVERIFY(modelSpy.isValid());
     QVERIFY(proxySpy.isValid());
