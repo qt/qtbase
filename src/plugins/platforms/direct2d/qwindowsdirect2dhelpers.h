@@ -84,8 +84,6 @@ Q_DECL_CONSTEXPR inline D2D1::ColorF to_d2d_color_f(const QColor &c)
 
 Q_DECL_CONSTEXPR inline D2D1_MATRIX_3X2_F to_d2d_matrix_3x2_f(const QTransform &transform)
 {
-    Q_ASSERT(transform.isAffine());
-
     return D2D1::Matrix3x2F(transform.m11(), transform.m12(),
                             transform.m21(), transform.m22(),
                             transform.m31(), transform.m32());

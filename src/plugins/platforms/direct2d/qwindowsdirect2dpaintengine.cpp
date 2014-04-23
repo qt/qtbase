@@ -378,17 +378,13 @@ public:
                                                                   : D2D1_ANTIALIAS_MODE_ALIASED;
     }
 
-    void updateTransform()
+    void updateTransform(const QTransform &transform)
     {
-        Q_Q(const QWindowsDirect2DPaintEngine);
-        // Note the loss of info going from 3x3 to 3x2 matrix here
-        dc()->SetTransform(to_d2d_matrix_3x2_f(q->state()->transform()));
+        dc()->SetTransform(to_d2d_matrix_3x2_f(transform));
     }
 
-    void updateOpacity()
+    void updateOpacity(qreal opacity)
     {
-        Q_Q(const QWindowsDirect2DPaintEngine);
-        qreal opacity = q->state()->opacity;
         if (brush.brush)
             brush.brush->SetOpacity(opacity);
         if (pen.brush)
@@ -447,10 +443,9 @@ public:
         }
     }
 
-    void updateClipEnabled()
+    void updateClipEnabled(bool enabled)
     {
-        Q_Q(const QWindowsDirect2DPaintEngine);
-        if (!q->state()->clipEnabled)
+        if (!enabled)
             clearClips();
         else if (pushedClips.isEmpty())
             replayClipOperations();
@@ -472,11 +467,8 @@ public:
         }
     }
 
-    void updateCompositionMode()
+    void updateCompositionMode(QPainter::CompositionMode mode)
     {
-        Q_Q(const QWindowsDirect2DPaintEngine);
-        QPainter::CompositionMode mode = q->state()->compositionMode();
-
         switch (mode) {
         case QPainter::CompositionMode_Source:
             dc()->SetPrimitiveBlend(D2D1_PRIMITIVE_BLEND_COPY);
@@ -507,12 +499,10 @@ public:
         }
     }
 
-    void updateBrushOrigin()
+    void updateBrushOrigin(const QPointF &brushOrigin)
     {
-        Q_Q(const QWindowsDirect2DPaintEngine);
-
         negateCurrentBrushOrigin();
-        applyBrushOrigin(q->state()->brushOrigin);
+        applyBrushOrigin(brushOrigin);
     }
 
     void negateCurrentBrushOrigin()
@@ -934,26 +924,8 @@ void QWindowsDirect2DPaintEngine::fill(const QVectorPath &path, const QBrush &br
 
     ensureBrush(brush);
 
-    if (d->brush.emulate) {
-        // We mostly (only?) get here when gradients are required.
-        // We natively support only linear and radial gradients that have pad reflect due to D2D limitations
-
-        QImage img(d->bitmap->size(), QImage::Format_ARGB32);
-        img.fill(Qt::transparent);
-
-        QPainter p;
-        QPaintEngine *engine = img.paintEngine();
-        if (engine->isExtended() && p.begin(&img)) {
-            QPaintEngineEx *extended = static_cast<QPaintEngineEx *>(engine);
-            extended->fill(path, brush);
-            if (!p.end())
-                qWarning("%s: Paint Engine end returned false", __FUNCTION__);
-
-            drawImage(img.rect(), img, img.rect());
-        } else {
-            qWarning("%s: Could not fall back to QImage", __FUNCTION__);
-        }
-
+    if (!state()->matrix.isAffine() || d->brush.emulate) {
+        rasterFill(path, brush);
         return;
     }
 
@@ -990,7 +962,7 @@ void QWindowsDirect2DPaintEngine::clip(const QVectorPath &path, Qt::ClipOperatio
 void QWindowsDirect2DPaintEngine::clipEnabledChanged()
 {
     Q_D(QWindowsDirect2DPaintEngine);
-    d->updateClipEnabled();
+    d->updateClipEnabled(state()->clipEnabled);
 }
 
 void QWindowsDirect2DPaintEngine::penChanged()
@@ -1008,19 +980,19 @@ void QWindowsDirect2DPaintEngine::brushChanged()
 void QWindowsDirect2DPaintEngine::brushOriginChanged()
 {
     Q_D(QWindowsDirect2DPaintEngine);
-    d->updateBrushOrigin();
+    d->updateBrushOrigin(state()->brushOrigin);
 }
 
 void QWindowsDirect2DPaintEngine::opacityChanged()
 {
     Q_D(QWindowsDirect2DPaintEngine);
-    d->updateOpacity();
+    d->updateOpacity(state()->opacity);
 }
 
 void QWindowsDirect2DPaintEngine::compositionModeChanged()
 {
     Q_D(QWindowsDirect2DPaintEngine);
-    d->updateCompositionMode();
+    d->updateCompositionMode(state()->compositionMode());
 }
 
 void QWindowsDirect2DPaintEngine::renderHintsChanged()
@@ -1032,7 +1004,7 @@ void QWindowsDirect2DPaintEngine::renderHintsChanged()
 void QWindowsDirect2DPaintEngine::transformChanged()
 {
     Q_D(QWindowsDirect2DPaintEngine);
-    d->updateTransform();
+    d->updateTransform(state()->transform());
 }
 
 void QWindowsDirect2DPaintEngine::drawImage(const QRectF &rectangle, const QImage &image,
@@ -1342,6 +1314,69 @@ void QWindowsDirect2DPaintEngine::ensurePen(const QPen &pen)
 {
     Q_D(QWindowsDirect2DPaintEngine);
     d->updatePen(pen);
+}
+
+void QWindowsDirect2DPaintEngine::rasterFill(const QVectorPath &path, const QBrush &brush)
+{
+    Q_D(QWindowsDirect2DPaintEngine);
+
+    QImage img(d->bitmap->size(), QImage::Format_ARGB32);
+    img.fill(Qt::transparent);
+
+    QPainter p;
+    QPaintEngine *engine = img.paintEngine();
+
+    if (engine->isExtended() && p.begin(&img)) {
+        p.setRenderHints(state()->renderHints);
+        p.setCompositionMode(state()->compositionMode());
+        p.setOpacity(state()->opacity);
+        p.setBrushOrigin(state()->brushOrigin);
+        p.setBrush(state()->brush);
+        p.setPen(state()->pen);
+
+        QPaintEngineEx *extended = static_cast<QPaintEngineEx *>(engine);
+        foreach (const QPainterClipInfo &info, state()->clipInfo) {
+            extended->state()->matrix = info.matrix;
+            extended->transformChanged();
+
+            switch (info.clipType) {
+            case QPainterClipInfo::RegionClip:
+                extended->clip(info.region, info.operation);
+                break;
+            case QPainterClipInfo::PathClip:
+                extended->clip(info.path, info.operation);
+                break;
+            case QPainterClipInfo::RectClip:
+                extended->clip(info.rect, info.operation);
+                break;
+            case QPainterClipInfo::RectFClip:
+                qreal right = info.rectf.x() + info.rectf.width();
+                qreal bottom = info.rectf.y() + info.rectf.height();
+                qreal pts[] = { info.rectf.x(), info.rectf.y(),
+                                right, info.rectf.y(),
+                                right, bottom,
+                                info.rectf.x(), bottom };
+                QVectorPath vp(pts, 4, 0, QVectorPath::RectangleHint);
+                extended->clip(vp, info.operation);
+                break;
+            }
+        }
+
+        extended->state()->matrix = state()->matrix;
+        extended->transformChanged();
+
+        extended->fill(path, brush);
+        if (!p.end())
+            qWarning("%s: Paint Engine end returned false", __FUNCTION__);
+
+        d->updateClipEnabled(false);
+        d->updateTransform(QTransform());
+        drawImage(img.rect(), img, img.rect());
+        transformChanged();
+        clipEnabledChanged();
+    } else {
+        qWarning("%s: Could not fall back to QImage", __FUNCTION__);
+    }
 }
 
 QT_END_NAMESPACE

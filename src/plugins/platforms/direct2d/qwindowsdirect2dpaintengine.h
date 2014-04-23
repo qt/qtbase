@@ -94,6 +94,8 @@ private:
     void ensureBrush(const QBrush &brush);
     void ensurePen();
     void ensurePen(const QPen &pen);
+
+    void rasterFill(const QVectorPath &path, const QBrush &brush);
 };
 
 QT_END_NAMESPACE
