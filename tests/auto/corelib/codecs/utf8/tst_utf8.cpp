@@ -117,10 +117,10 @@ void tst_Utf8::roundTrip_data()
     QTest::newRow("nul") << QByteArray("", 1) << QString(QChar(QChar::Null));
 
     static const char ascii[] = "This is a standard US-ASCII message";
-    QTest::newRow("ascii") << QByteArray(ascii) << ascii;
+    QTest::newRow("ascii") << QByteArray(ascii) << QString::fromLatin1(ascii);
 
     static const char ascii2[] = "\1This\2is\3an\4US-ASCII\020 message interspersed with control chars";
-    QTest::newRow("ascii2") << QByteArray(ascii2) << ascii2;
+    QTest::newRow("ascii2") << QByteArray(ascii2) << QString::fromLatin1(ascii2);
 
     static const char utf8_1[] = "\302\240"; // NBSP
     QTest::newRow("utf8_1") << QByteArray(utf8_1) << QString(QChar(QChar::Nbsp));
@@ -164,6 +164,15 @@ void tst_Utf8::roundTrip()
     QFETCH(QByteArray, utf8);
     QFETCH(QString, utf16);
 
+    QCOMPARE(to8Bit(utf16), utf8);
+    QCOMPARE(from8Bit(utf8), utf16);
+
+    QCOMPARE(to8Bit(from8Bit(utf8)), utf8);
+    QCOMPARE(from8Bit(to8Bit(utf16)), utf16);
+
+    // repeat with a longer message
+    utf8.prepend("12345678901234");
+    utf16.prepend(QLatin1String("12345678901234"));
     QCOMPARE(to8Bit(utf16), utf8);
     QCOMPARE(from8Bit(utf8), utf16);
 
