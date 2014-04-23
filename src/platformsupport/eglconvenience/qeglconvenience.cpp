@@ -66,25 +66,29 @@ QVector<EGLint> q_createConfigAttributesFromFormat(const QSurfaceFormat &format)
     int stencilSize = format.stencilBufferSize();
     int sampleCount = format.samples();
 
-    // We want to make sure 16-bit configs are chosen over 32-bit configs as they will provide
-    // the best performance. The EGL config selection algorithm is a bit stange in this regard:
-    // The selection criteria for EGL_BUFFER_SIZE is "AtLeast", so we can't use it to discard
-    // 32-bit configs completely from the selection. So it then comes to the sorting algorithm.
-    // The red/green/blue sizes have a sort priority of 3, so they are sorted by first. The sort
-    // order is special and described as "by larger _total_ number of color bits.". So EGL will
-    // put 32-bit configs in the list before the 16-bit configs. However, the spec also goes on
-    // to say "If the requested number of bits in attrib_list for a particular component is 0,
-    // then the number of bits for that component is not considered". This part of the spec also
-    // seems to imply that setting the red/green/blue bits to zero means none of the components
-    // are considered and EGL disregards the entire sorting rule. It then looks to the next
-    // highest priority rule, which is EGL_BUFFER_SIZE. Despite the selection criteria being
-    // "AtLeast" for EGL_BUFFER_SIZE, it's sort order is "smaller" meaning 16-bit configs are
-    // put in the list before 32-bit configs. So, to make sure 16-bit is preffered over 32-bit,
-    // we must set the red/green/blue sizes to zero. This has an unfortunate consequence that
-    // if the application sets the red/green/blue size to 5/6/5 on the QSurfaceFormat,
-    // they might still get a 32-bit config, even when there's an RGB565 config available.
-
     QVector<EGLint> configAttributes;
+
+    // Map default, unspecified values (-1) to 0. This is important due to sorting rule #3
+    // in section 3.4.1 of the spec and allows picking a potentially faster 16-bit config
+    // over 32-bit ones when there is no explicit request for the color channel sizes:
+    //
+    // The red/green/blue sizes have a sort priority of 3, so they are sorted by
+    // first. (unless a caveat like SLOW or NON_CONFORMANT is present) The sort order is
+    // Special and described as "by larger _total_ number of color bits.". So EGL will put
+    // 32-bit configs in the list before the 16-bit configs. However, the spec also goes
+    // on to say "If the requested number of bits in attrib_list for a particular
+    // component is 0, then the number of bits for that component is not considered". This
+    // part of the spec also seems to imply that setting the red/green/blue bits to zero
+    // means none of the components are considered and EGL disregards the entire sorting
+    // rule. It then looks to the next highest priority rule, which is
+    // EGL_BUFFER_SIZE. Despite the selection criteria being "AtLeast" for
+    // EGL_BUFFER_SIZE, it's sort order is "smaller" meaning 16-bit configs are put in the
+    // list before 32-bit configs.
+    //
+    // This also means that explicitly specifying a size like 565 will still result in
+    // having larger (888) configs first in the returned list. We need to handle this
+    // ourselves later by manually filtering the list, instead of just blindly taking the
+    // first config from it.
 
     configAttributes.append(EGL_RED_SIZE);
     configAttributes.append(redSize > 0 ? redSize : 0);
@@ -293,6 +297,13 @@ EGLConfig QEglConfigChooser::chooseConfig()
         if (!cfg && matching > 0)
             cfg = configs.first();
 
+        // Filter the list. Due to the EGL sorting rules configs with higher depth are
+        // placed first when the minimum color channel sizes have been specified (i.e. the
+        // QSurfaceFormat contains color sizes > 0). To prevent returning a 888 config
+        // when the QSurfaceFormat explicitly asked for 565, go through the returned
+        // configs and look for one that exactly matches the requested sizes. When no
+        // sizes have been given, take the first, which will be a config with the smaller
+        // (e.g. 16-bit) depth.
         for (int i = 0; i < configs.size(); ++i) {
             if (filterConfig(configs[i]))
                 return configs.at(i);
@@ -306,6 +317,8 @@ EGLConfig QEglConfigChooser::chooseConfig()
 
 bool QEglConfigChooser::filterConfig(EGLConfig config) const
 {
+    // If we are fine with the highest depth (e.g. RGB888 configs) even when something
+    // smaller (565) was explicitly requested, do nothing.
     if (m_ignore)
         return true;
 
@@ -314,6 +327,7 @@ bool QEglConfigChooser::filterConfig(EGLConfig config) const
     EGLint blue = 0;
     EGLint alpha = 0;
 
+    // Compare only if a size was given. Otherwise just accept.
     if (m_confAttrRed)
         eglGetConfigAttrib(display(), config, EGL_RED_SIZE, &red);
     if (m_confAttrGreen)
