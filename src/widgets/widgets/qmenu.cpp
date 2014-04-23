@@ -1091,9 +1091,6 @@ void QMenuPrivate::activateAction(QAction *action, QAction::ActionEvent action_e
             QAccessibleEvent focusEvent(q, QAccessible::Focus);
             focusEvent.setChild(actionIndex);
             QAccessible::updateAccessibility(&focusEvent);
-            QAccessibleEvent selectionEvent(q, QAccessible::Selection);
-            focusEvent.setChild(actionIndex);
-            QAccessible::updateAccessibility(&selectionEvent);
         }
 #endif
         action->showStatusText(topCausedWidget());
