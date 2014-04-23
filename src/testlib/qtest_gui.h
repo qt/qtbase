@@ -98,7 +98,7 @@ inline bool qCompare(QImage const &t1, QImage const &t2,
     }
     if (t1Null && t2Null)
         return compare_helper(true, 0, 0, 0, actual, expected, file, line);
-    if (t1.width() != t2.width() || t2.height() != t2.height()) {
+    if (t1.width() != t2.width() || t1.height() != t2.height()) {
         qsnprintf(msg, 1024, "Compared QImages differ in size.\n"
                   "   Actual   (%s): %dx%d\n"
                   "   Expected (%s): %dx%d",
@@ -132,7 +132,7 @@ inline bool qCompare(QPixmap const &t1, QPixmap const &t2, const char *actual, c
     }
     if (t1Null && t2Null)
         return compare_helper(true, 0, 0, 0, actual, expected, file, line);
-    if (t1.width() != t2.width() || t2.height() != t2.height()) {
+    if (t1.width() != t2.width() || t1.height() != t2.height()) {
         qsnprintf(msg, 1024, "Compared QPixmaps differ in size.\n"
                   "   Actual   (%s): %dx%d\n"
                   "   Expected (%s): %dx%d",
