@@ -62,7 +62,7 @@ bool tst_QGLFunctions::hasExtension(const char *name)
 {
     QString extensions =
         QString::fromLatin1
-            (reinterpret_cast<const char *>(glGetString(GL_EXTENSIONS)));
+            (reinterpret_cast<const char *>(QOpenGLContext::currentContext()->functions()->glGetString(GL_EXTENSIONS)));
     return extensions.split(QLatin1Char(' ')).contains
         (QString::fromLatin1(name));
 }
@@ -194,46 +194,46 @@ void tst_QGLFunctions::features()
 // Verify that the multitexture functions appear to resolve and work.
 void tst_QGLFunctions::multitexture()
 {
-    QGLFunctions funcs;
+    QOpenGLFunctions funcs;
     QGLWidget glw;
     if (!glw.isValid())
         QSKIP("Could not create a GL context");
     glw.makeCurrent();
-    funcs.initializeGLFunctions();
+    funcs.initializeOpenGLFunctions();
 
-    if (!funcs.hasOpenGLFeature(QGLFunctions::Multitexture))
+    if (!funcs.hasOpenGLFeature(QOpenGLFunctions::Multitexture))
         QSKIP("Multitexture functions are not supported");
 
     funcs.glActiveTexture(GL_TEXTURE1);
 
     GLint active = 0;
-    glGetIntegerv(GL_ACTIVE_TEXTURE, &active);
+    funcs.glGetIntegerv(GL_ACTIVE_TEXTURE, &active);
     QVERIFY(active == GL_TEXTURE1);
 
     funcs.glActiveTexture(GL_TEXTURE0);
 
     active = 0;
-    glGetIntegerv(GL_ACTIVE_TEXTURE, &active);
+    funcs.glGetIntegerv(GL_ACTIVE_TEXTURE, &active);
     QVERIFY(active == GL_TEXTURE0);
 }
 
 // Verify that the glBlendColor() function appears to resolve and work.
 void tst_QGLFunctions::blendColor()
 {
-    QGLFunctions funcs;
+    QOpenGLFunctions funcs;
     QGLWidget glw;
     if (!glw.isValid())
         QSKIP("Could not create a GL context");
     glw.makeCurrent();
-    funcs.initializeGLFunctions();
+    funcs.initializeOpenGLFunctions();
 
-    if (!funcs.hasOpenGLFeature(QGLFunctions::BlendColor))
+    if (!funcs.hasOpenGLFeature(QOpenGLFunctions::BlendColor))
         QSKIP("glBlendColor() is not supported");
 
     funcs.glBlendColor(0.0f, 1.0f, 0.0f, 1.0f);
 
     GLfloat colors[4] = {0.5f, 0.5f, 0.5f, 0.5f};
-    glGetFloatv(GL_BLEND_COLOR, colors);
+    funcs.glGetFloatv(GL_BLEND_COLOR, colors);
 
     QCOMPARE(colors[0], 0.0f);
     QCOMPARE(colors[1], 1.0f);

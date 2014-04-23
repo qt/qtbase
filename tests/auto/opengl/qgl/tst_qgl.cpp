@@ -1090,9 +1090,10 @@ void tst_QGL::glFBOSimpleRendering()
 
     fbo->bind();
 
-    glClearColor(1.0, 0.0, 0.0, 1.0);
-    glClear(GL_COLOR_BUFFER_BIT);
-    glFinish();
+    QOpenGLFunctions *funcs = QOpenGLContext::currentContext()->functions();
+    funcs->glClearColor(1.0, 0.0, 0.0, 1.0);
+    funcs->glClear(GL_COLOR_BUFFER_BIT);
+    funcs->glFinish();
 
     QImage fb = fbo->toImage().convertToFormat(QImage::Format_RGB32);
     QImage reference(fb.size(), QImage::Format_RGB32);
@@ -1390,11 +1391,11 @@ class RenderPixmapWidget : public QGLWidget
 protected:
     void initializeGL() {
         // Set some gl state:
-        glClearColor(1.0, 0.0, 0.0, 1.0);
+        QOpenGLContext::currentContext()->functions()->glClearColor(1.0, 0.0, 0.0, 1.0);
     }
 
     void paintGL() {
-        glClear(GL_COLOR_BUFFER_BIT);
+        QOpenGLContext::currentContext()->functions()->glClear(GL_COLOR_BUFFER_BIT);
     }
 };
 
@@ -1683,11 +1684,12 @@ protected:
     void paintEvent(QPaintEvent*)
     {
         // clear the stencil with junk
-        glStencilMask(0xFFFF);
-        glClearStencil(0xFFFF);
-        glDisable(GL_STENCIL_TEST);
-        glDisable(GL_SCISSOR_TEST);
-        glClear(GL_STENCIL_BUFFER_BIT);
+        QOpenGLFunctions *funcs = QOpenGLContext::currentContext()->functions();
+        funcs->glStencilMask(0xFFFF);
+        funcs->glClearStencil(0xFFFF);
+        funcs->glDisable(GL_STENCIL_TEST);
+        funcs->glDisable(GL_SCISSOR_TEST);
+        funcs->glClear(GL_STENCIL_BUFFER_BIT);
 
         QPainter painter(this);
         paint(&painter);
@@ -2029,26 +2031,27 @@ void tst_QGL::qglContextDefaultBindTexture()
     QVERIFY(QImagePixmapCleanupHooks::isImageCached(*boundImage));
     QVERIFY(QImagePixmapCleanupHooks::isPixmapCached(*boundPixmap));
 
+    QOpenGLFunctions *funcs = QOpenGLContext::currentContext()->functions();
     // Make sure the texture IDs returned are valid:
-    QCOMPARE((bool)glIsTexture(boundImageTextureId), GL_TRUE);
-    QCOMPARE((bool)glIsTexture(boundPixmapTextureId), GL_TRUE);
+    QCOMPARE((bool)funcs->glIsTexture(boundImageTextureId), GL_TRUE);
+    QCOMPARE((bool)funcs->glIsTexture(boundPixmapTextureId), GL_TRUE);
 
     // Make sure the textures are still valid after we delete the image/pixmap:
     // Also check that although the textures are left intact, the cache entries are removed:
     delete boundImage;
     boundImage = 0;
-    QCOMPARE((bool)glIsTexture(boundImageTextureId), GL_TRUE);
+    QCOMPARE((bool)funcs->glIsTexture(boundImageTextureId), GL_TRUE);
     QCOMPARE(QGLTextureCache::instance()->size(), startCacheItemCount+1);
     delete boundPixmap;
     boundPixmap = 0;
-    QCOMPARE((bool)glIsTexture(boundPixmapTextureId), GL_TRUE);
+    QCOMPARE((bool)funcs->glIsTexture(boundPixmapTextureId), GL_TRUE);
     QCOMPARE(QGLTextureCache::instance()->size(), startCacheItemCount);
 
     // Finally, make sure QGLContext::deleteTexture deletes the texture IDs:
     ctx->deleteTexture(boundImageTextureId);
     ctx->deleteTexture(boundPixmapTextureId);
-    QCOMPARE((bool)glIsTexture(boundImageTextureId), GL_FALSE);
-    QCOMPARE((bool)glIsTexture(boundPixmapTextureId), GL_FALSE);
+    QCOMPARE((bool)funcs->glIsTexture(boundImageTextureId), GL_FALSE);
+    QCOMPARE((bool)funcs->glIsTexture(boundPixmapTextureId), GL_FALSE);
 }
 #endif
 

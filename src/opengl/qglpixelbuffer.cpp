@@ -124,7 +124,7 @@ void QGLPBufferGLPaintDevice::beginPaint()
 
 void QGLPBufferGLPaintDevice::endPaint()
 {
-    glFlush();
+    QOpenGLContext::currentContext()->functions()->glFlush();
     QGLPaintDevice::endPaint();
 }
 
@@ -235,7 +235,7 @@ bool QGLPixelBuffer::makeCurrent()
         d->fbo = new QOpenGLFramebufferObject(d->req_size, format);
         d->fbo->bind();
         d->glDevice.setFbo(d->fbo->handle());
-        glViewport(0, 0, d->req_size.width(), d->req_size.height());
+        QOpenGLContext::currentContext()->functions()->glViewport(0, 0, d->req_size.width(), d->req_size.height());
     }
     return true;
 }
@@ -359,12 +359,12 @@ void QGLPixelBuffer::updateDynamicTexture(GLuint texture_id) const
         extensions.glBindFramebuffer(GL_READ_FRAMEBUFFER, d->blit_fbo->handle());
     }
 
-    glBindTexture(GL_TEXTURE_2D, texture_id);
+    ctx->functions()->glBindTexture(GL_TEXTURE_2D, texture_id);
 #ifndef QT_OPENGL_ES
     GLenum format = ctx->isES() ? GL_RGBA : GL_RGBA8;
-    glCopyTexImage2D(GL_TEXTURE_2D, 0, format, 0, 0, d->req_size.width(), d->req_size.height(), 0);
+    ctx->functions()->glCopyTexImage2D(GL_TEXTURE_2D, 0, format, 0, 0, d->req_size.width(), d->req_size.height(), 0);
 #else
-    glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, d->req_size.width(), d->req_size.height(), 0);
+    ctx->functions()->glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, d->req_size.width(), d->req_size.height(), 0);
 #endif
 
     if (d->blit_fbo)
@@ -629,17 +629,18 @@ GLuint QGLPixelBuffer::generateDynamicTexture() const
     }
 
     GLuint texture;
+    QOpenGLFunctions *funcs = QOpenGLContext::currentContext()->functions();
 
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
+    funcs->glGenTextures(1, &texture);
+    funcs->glBindTexture(GL_TEXTURE_2D, texture);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    funcs->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    funcs->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    funcs->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    funcs->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, d->req_size.width(), d->req_size.height(), 0,
-            GL_RGBA, GL_UNSIGNED_BYTE, 0);
+    funcs->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, d->req_size.width(), d->req_size.height(), 0,
+                        GL_RGBA, GL_UNSIGNED_BYTE, 0);
 
     return texture;
 }

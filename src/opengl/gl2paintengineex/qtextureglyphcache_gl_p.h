@@ -92,7 +92,7 @@ struct QGLGlyphTexture : public QOpenGLSharedResource
         if (ctx && m_fbo)
             ctx->contextHandle()->functions()->glDeleteFramebuffers(1, &m_fbo);
         if (m_width || m_height)
-            glDeleteTextures(1, &m_texture);
+            ctx->contextHandle()->functions()->glDeleteTextures(1, &m_texture);
     }
 
     void invalidateResource()

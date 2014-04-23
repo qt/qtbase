@@ -165,7 +165,7 @@ private:
     Q_DISABLE_COPY(QGL2PaintEngineEx)
 };
 
-class QGL2PaintEngineExPrivate : public QPaintEngineExPrivate
+class QGL2PaintEngineExPrivate : public QPaintEngineExPrivate, protected QOpenGLExtensions
 {
     Q_DECLARE_PUBLIC(QGL2PaintEngineEx)
 public:
@@ -261,8 +261,6 @@ public:
     EngineMode mode;
     QFontEngine::GlyphFormat glyphCacheFormat;
 
-    QOpenGLExtensions funcs;
-
     // Dirty flags
     bool matrixDirty; // Implies matrix uniforms are also dirty
     bool compositionModeDirty;
@@ -327,9 +325,9 @@ void QGL2PaintEngineExPrivate::setVertexAttributePointer(unsigned int arrayIndex
 
     vertexAttribPointers[arrayIndex] = pointer;
     if (arrayIndex == QT_OPACITY_ATTR)
-        funcs.glVertexAttribPointer(arrayIndex, 1, GL_FLOAT, GL_FALSE, 0, pointer);
+        glVertexAttribPointer(arrayIndex, 1, GL_FLOAT, GL_FALSE, 0, pointer);
     else
-        funcs.glVertexAttribPointer(arrayIndex, 2, GL_FLOAT, GL_FALSE, 0, pointer);
+        glVertexAttribPointer(arrayIndex, 2, GL_FLOAT, GL_FALSE, 0, pointer);
 }
 
 QT_END_NAMESPACE

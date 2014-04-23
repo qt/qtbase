@@ -89,11 +89,12 @@ void QGL2GradientCache::freeResource(QOpenGLContext *)
 
 void QGL2GradientCache::cleanCache()
 {
+    QOpenGLFunctions *funcs = QOpenGLContext::currentContext()->functions();
     QMutexLocker lock(&m_mutex);
     QGLGradientColorTableHash::const_iterator it = cache.constBegin();
     for (; it != cache.constEnd(); ++it) {
         const CacheInfo &cache_info = it.value();
-        glDeleteTextures(1, &cache_info.texId);
+        funcs->glDeleteTextures(1, &cache_info.texId);
     }
     cache.clear();
 }
@@ -129,6 +130,7 @@ GLuint QGL2GradientCache::getBuffer(const QGradient &gradient, qreal opacity)
 
 GLuint QGL2GradientCache::addCacheElement(quint64 hash_val, const QGradient &gradient, qreal opacity)
 {
+    QOpenGLFunctions *funcs = QOpenGLContext::currentContext()->functions();
     if (cache.size() == maxCacheSize()) {
         int elem_to_remove = qrand() % maxCacheSize();
         quint64 key = cache.keys()[elem_to_remove];
@@ -136,7 +138,7 @@ GLuint QGL2GradientCache::addCacheElement(quint64 hash_val, const QGradient &gra
         // need to call glDeleteTextures on each removed cache entry:
         QGLGradientColorTableHash::const_iterator it = cache.constFind(key);
         do {
-            glDeleteTextures(1, &it.value().texId);
+            funcs->glDeleteTextures(1, &it.value().texId);
         } while (++it != cache.constEnd() && it.key() == key);
         cache.remove(key); // may remove more than 1, but OK
     }
@@ -144,10 +146,10 @@ GLuint QGL2GradientCache::addCacheElement(quint64 hash_val, const QGradient &gra
     CacheInfo cache_entry(gradient.stops(), opacity, gradient.interpolationMode());
     uint buffer[1024];
     generateGradientColorTable(gradient, buffer, paletteSize(), opacity);
-    glGenTextures(1, &cache_entry.texId);
-    glBindTexture(GL_TEXTURE_2D, cache_entry.texId);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, paletteSize(), 1,
-                    0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
+    funcs->glGenTextures(1, &cache_entry.texId);
+    funcs->glBindTexture(GL_TEXTURE_2D, cache_entry.texId);
+    funcs->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, paletteSize(), 1,
+                        0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
     return cache.insert(hash_val, cache_entry).value().texId;
 }
 

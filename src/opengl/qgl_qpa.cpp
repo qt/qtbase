@@ -226,7 +226,7 @@ void QGLContext::makeCurrent()
     if (d->guiGlContext->makeCurrent(widget->windowHandle())) {
         if (!d->workaroundsCached) {
             d->workaroundsCached = true;
-            const char *renderer = reinterpret_cast<const char *>(glGetString(GL_RENDERER));
+            const char *renderer = reinterpret_cast<const char *>(d->guiGlContext->functions()->glGetString(GL_RENDERER));
             if (renderer && strstr(renderer, "Mali")) {
                 d->workaround_brokenFBOReadBack = true;
             }

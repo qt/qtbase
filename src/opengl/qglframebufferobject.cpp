@@ -61,11 +61,11 @@ extern QImage qt_gl_read_frame_buffer(const QSize&, bool, bool);
 #ifndef QT_NO_DEBUG
 #define QT_RESET_GLERROR()                                \
 {                                                         \
-    while (glGetError() != GL_NO_ERROR) {}                \
+    while (QOpenGLContext::currentContext()->functions()->glGetError() != GL_NO_ERROR) {} \
 }
 #define QT_CHECK_GLERROR()                                \
 {                                                         \
-    GLenum err = glGetError();                            \
+    GLenum err = QOpenGLContext::currentContext()->functions()->glGetError(); \
     if (err != GL_NO_ERROR) {                             \
         qDebug("[%s line %d] GL Error: %d",               \
                __FILE__, __LINE__, (int)err);             \
@@ -460,7 +460,7 @@ namespace
     void freeTextureFunc(QGLContext *ctx, GLuint id)
     {
         Q_UNUSED(ctx);
-        glDeleteTextures(1, &id);
+        ctx->contextHandle()->functions()->glDeleteTextures(1, &id);
     }
 }
 
@@ -493,10 +493,10 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
     QT_CHECK_GLERROR();
     // init texture
     if (samples == 0) {
-        glGenTextures(1, &texture);
-        glBindTexture(target, texture);
-        glTexImage2D(target, 0, internal_format, size.width(), size.height(), 0,
-                GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+        funcs.glGenTextures(1, &texture);
+        funcs.glBindTexture(target, texture);
+        funcs.glTexImage2D(target, 0, internal_format, size.width(), size.height(), 0,
+                           GL_RGBA, GL_UNSIGNED_BYTE, NULL);
         if (mipmap) {
             int width = size.width();
             int height = size.height();
@@ -505,26 +505,26 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
                 width = qMax(1, width >> 1);
                 height = qMax(1, height >> 1);
                 ++level;
-                glTexImage2D(target, level, internal_format, width, height, 0,
-                        GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+                funcs.glTexImage2D(target, level, internal_format, width, height, 0,
+                                   GL_RGBA, GL_UNSIGNED_BYTE, NULL);
             }
         }
-        glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        funcs.glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        funcs.glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        funcs.glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        funcs.glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         funcs.glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                 target, texture, 0);
 
         QT_CHECK_GLERROR();
         valid = checkFramebufferStatus();
-        glBindTexture(target, 0);
+        funcs.glBindTexture(target, 0);
 
         color_buffer = 0;
     } else {
         mipmap = false;
         GLint maxSamples;
-        glGetIntegerv(GL_MAX_SAMPLES, &maxSamples);
+        funcs.glGetIntegerv(GL_MAX_SAMPLES, &maxSamples);
 
         samples = qBound(0, int(samples), int(maxSamples));
 
@@ -694,7 +694,7 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
         if (color_buffer)
             funcs.glDeleteRenderbuffers(1, &color_buffer);
         else
-            glDeleteTextures(1, &texture);
+            funcs.glDeleteTextures(1, &texture);
         if (depth_buffer)
             funcs.glDeleteRenderbuffers(1, &depth_buffer);
         if (stencil_buffer && depth_buffer != stencil_buffer)

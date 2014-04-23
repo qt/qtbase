@@ -164,18 +164,19 @@ void QGLWidgetGLPaintDevice::setWidget(QGLWidget* w)
 void QGLWidgetGLPaintDevice::beginPaint()
 {
     QGLPaintDevice::beginPaint();
+    QOpenGLFunctions *funcs = QOpenGLContext::currentContext()->functions();
     if (!glWidget->d_func()->disable_clear_on_painter_begin && glWidget->autoFillBackground()) {
         if (glWidget->testAttribute(Qt::WA_TranslucentBackground))
-            glClearColor(0.0, 0.0, 0.0, 0.0);
+            funcs->glClearColor(0.0, 0.0, 0.0, 0.0);
         else {
             const QColor &c = glWidget->palette().brush(glWidget->backgroundRole()).color();
             float alpha = c.alphaF();
-            glClearColor(c.redF() * alpha, c.greenF() * alpha, c.blueF() * alpha, alpha);
+            funcs->glClearColor(c.redF() * alpha, c.greenF() * alpha, c.blueF() * alpha, alpha);
         }
         if (context()->d_func()->workaround_needsFullClearOnEveryFrame)
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+            funcs->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
         else
-            glClear(GL_COLOR_BUFFER_BIT);
+            funcs->glClear(GL_COLOR_BUFFER_BIT);
     }
 }
 

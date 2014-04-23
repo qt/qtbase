@@ -459,9 +459,9 @@ void tst_QOpenGL::fboSimpleRendering()
 
     QVERIFY(fbo->bind());
 
-    glClearColor(1.0, 0.0, 0.0, 1.0);
-    glClear(GL_COLOR_BUFFER_BIT);
-    glFinish();
+    ctx.functions()->glClearColor(1.0, 0.0, 0.0, 1.0);
+    ctx.functions()->glClear(GL_COLOR_BUFFER_BIT);
+    ctx.functions()->glFinish();
 
     const QImage fb = fbo->toImage().convertToFormat(QImage::Format_RGB32);
     QCOMPARE(fb.size(), size);
@@ -505,9 +505,9 @@ void tst_QOpenGL::fboTextureOwnership()
     fbo->bind();
     QVERIFY(fbo->texture() != 0 && fbo->texture() != texture);
 
-    glClearColor(1.0, 0.0, 0.0, 1.0);
-    glClear(GL_COLOR_BUFFER_BIT);
-    glFinish();
+    ctx.functions()->glClearColor(1.0, 0.0, 0.0, 1.0);
+    ctx.functions()->glClear(GL_COLOR_BUFFER_BIT);
+    ctx.functions()->glFinish();
 
     QImage fb = fbo->toImage().convertToFormat(QImage::Format_RGB32);
     QImage reference(fb.size(), QImage::Format_RGB32);
@@ -515,7 +515,7 @@ void tst_QOpenGL::fboTextureOwnership()
 
     QFUZZY_COMPARE_IMAGES(fb, reference);
 
-    glDeleteTextures(1, &texture);
+    ctx.functions()->glDeleteTextures(1, &texture);
     delete fbo;
 }
 

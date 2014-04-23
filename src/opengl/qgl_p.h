@@ -346,7 +346,7 @@ public:
 
 private:
     static void freeTextureFunc(QOpenGLFunctions *, GLuint id) {
-        glDeleteTextures(1, &id);
+        QOpenGLContext::currentContext()->functions()->glDeleteTextures(1, &id);
     }
 };
 

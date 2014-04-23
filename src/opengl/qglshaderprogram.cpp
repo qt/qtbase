@@ -3074,8 +3074,9 @@ int QGLShaderProgram::maxGeometryOutputVertices() const
 {
     GLint n = 0;
 #if !defined(QT_OPENGL_ES_2)
+    Q_D(const QGLShaderProgram);
     if (!QOpenGLContext::currentContext()->isES())
-        glGetIntegerv(GL_MAX_GEOMETRY_OUTPUT_VERTICES_EXT, &n);
+        d->glfuncs->glGetIntegerv(GL_MAX_GEOMETRY_OUTPUT_VERTICES_EXT, &n);
 #endif
     return n;
 }
@@ -3229,7 +3230,7 @@ bool QGLShader::hasOpenGLShaders(ShaderType type, const QGLContext *context)
     if (!resolved)
         return false;
 
-    if ((type & Geometry) && !QByteArray((const char *) glGetString(GL_EXTENSIONS)).contains("GL_EXT_geometry_shader4"))
+    if ((type & Geometry) && !QByteArray((const char *) functions.glGetString(GL_EXTENSIONS)).contains("GL_EXT_geometry_shader4"))
         return false;
 
     return true;
