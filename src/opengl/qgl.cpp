@@ -2497,7 +2497,19 @@ QGLTexture *QGLContextPrivate::bindTexture(const QPixmap &pixmap, GLenum target,
     }
 
     if (!texture) {
-        QImage image = pixmap.toImage();
+        QImage image;
+        QPaintEngine* paintEngine = pixmap.paintEngine();
+        if (!paintEngine || paintEngine->type() != QPaintEngine::Raster)
+            image = pixmap.toImage();
+        else {
+            // QRasterPixmapData::toImage() will deep-copy the backing QImage if there's an active QPainter on it.
+            // For performance reasons, we don't want that here, so we temporarily redirect the paint engine.
+            QPaintDevice* currentPaintDevice = paintEngine->paintDevice();
+            paintEngine->setPaintDevice(0);
+            image = pixmap.toImage();
+            paintEngine->setPaintDevice(currentPaintDevice);
+        }
+
         // If the system depth is 16 and the pixmap doesn't have an alpha channel
         // then we convert it to RGB16 in the hope that it gets uploaded as a 16
         // bit texture which is much faster to access than a 32-bit one.
