@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -1255,7 +1255,7 @@ QStringList QFileDialog::selectedFiles() const
     QStringList files;
     foreach (const QUrl &file, d->userSelectedFiles())
         files.append(file.toLocalFile());
-    if (files.isEmpty()) {
+    if (files.isEmpty() && d->usingWidgets()) {
         const FileMode fm = fileMode();
         if (fm != ExistingFile && fm != ExistingFiles)
             files.append(d->rootIndex().data(QFileSystemModel::FilePathRole).toString());

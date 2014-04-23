@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -147,6 +147,7 @@ private slots:
     void clearLineEdit();
     void enableChooseButton();
     void widgetlessNativeDialog();
+    void selectedFilesWithoutWidgets();
     void trailingDotsAndSpaces();
 #ifdef Q_OS_UNIX
 #ifdef QT_BUILD_INTERNAL
@@ -1324,6 +1325,14 @@ void tst_QFiledialog::widgetlessNativeDialog()
     QVERIFY(!model);
     QPushButton *button = fd.findChild<QPushButton*>();
     QVERIFY(!button);
+}
+
+void tst_QFiledialog::selectedFilesWithoutWidgets()
+{
+    // Test for a crash when widgets are not instantiated yet.
+    QFileDialog fd;
+    fd.setAcceptMode(QFileDialog::AcceptOpen);
+    QVERIFY(fd.selectedFiles().size() >= 0);
 }
 
 void tst_QFiledialog::trailingDotsAndSpaces()
