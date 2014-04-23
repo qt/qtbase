@@ -52,6 +52,7 @@
 #include "qwindowsfontdatabase.h"
 #include "qwindowsintegration.h"
 
+#include <QtCore/QStack>
 #include <QtGui/private/qpaintengine_p.h>
 #include <QtGui/private/qtextengine_p.h>
 #include <QtGui/private/qfontengine_p.h>
@@ -80,9 +81,14 @@ enum {
 
 //Clipping flags
 enum {
-    UserClip = 0x1,
-    SimpleSystemClip = 0x2
+    SimpleSystemClip = 0x1
 };
+
+enum ClipType {
+    AxisAlignedClip,
+    LayerClip
+};
+
 #define D2D_TAG(tag) d->dc()->SetTags(tag, tag)
 
 Q_GUI_EXPORT QImage qt_imageForBrush(int brushStyle, bool invert);
@@ -320,8 +326,8 @@ public:
 
     QWindowsDirect2DBitmap *bitmap;
 
-    QPainterPath clipPath;
     unsigned int clipFlags;
+    QStack<ClipType> pushedClips;
 
     QPointF currentBrushOrigin;
 
@@ -389,30 +395,55 @@ public:
             pen.brush->SetOpacity(opacity);
     }
 
-    void pushClip()
+    void pushClip(const QVectorPath &path)
     {
-        popClip();
+        Q_Q(QWindowsDirect2DPaintEngine);
 
-        ComPtr<ID2D1PathGeometry1> geometry = painterPathToID2D1PathGeometry(clipPath, antialiasMode() == D2D1_ANTIALIAS_MODE_ALIASED);
-        if (!geometry)
-            return;
+        if (path.isEmpty()) {
+            D2D_RECT_F rect = {0, 0, 0, 0};
+            dc()->PushAxisAlignedClip(rect, antialiasMode());
+            pushedClips.push(AxisAlignedClip);
+        } else if (path.isRect() && (q->state()->matrix.type() <= QTransform::TxScale)) {
+            const qreal * const points = path.points();
+            D2D_RECT_F rect = {
+                points[0], // left
+                points[1], // top
+                points[2], // right,
+                points[5]  // bottom
+            };
 
-        dc()->PushLayer(D2D1::LayerParameters1(D2D1::InfiniteRect(),
-                                               geometry.Get(),
-                                               antialiasMode(),
-                                               D2D1::IdentityMatrix(),
-                                               1.0,
-                                               NULL,
-                                               D2D1_LAYER_OPTIONS1_INITIALIZE_FROM_BACKGROUND),
-                        NULL);
-        clipFlags |= UserClip;
+            dc()->PushAxisAlignedClip(rect, antialiasMode());
+            pushedClips.push(AxisAlignedClip);
+        } else {
+            ComPtr<ID2D1PathGeometry1> geometry = vectorPathToID2D1PathGeometry(path, antialiasMode() == D2D1_ANTIALIAS_MODE_ALIASED);
+            if (!geometry) {
+                qWarning("%s: Could not convert vector path to painter path!", __FUNCTION__);
+                return;
+            }
+
+            dc()->PushLayer(D2D1::LayerParameters1(D2D1::InfiniteRect(),
+                                                   geometry.Get(),
+                                                   antialiasMode(),
+                                                   D2D1::IdentityMatrix(),
+                                                   1.0,
+                                                   NULL,
+                                                   D2D1_LAYER_OPTIONS1_INITIALIZE_FROM_BACKGROUND),
+                            NULL);
+            pushedClips.push(LayerClip);
+        }
     }
 
-    void popClip()
+    void clearClips()
     {
-        if (clipFlags & UserClip) {
-            dc()->PopLayer();
-            clipFlags &= ~UserClip;
+        while (!pushedClips.isEmpty()) {
+            switch (pushedClips.pop()) {
+            case AxisAlignedClip:
+                dc()->PopAxisAlignedClip();
+                break;
+            case LayerClip:
+                dc()->PopLayer();
+                break;
+            }
         }
     }
 
@@ -420,24 +451,23 @@ public:
     {
         Q_Q(const QWindowsDirect2DPaintEngine);
         if (!q->state()->clipEnabled)
-            popClip();
-        else if (!(clipFlags & UserClip))
-            pushClip();
+            clearClips();
+        else if (pushedClips.isEmpty())
+            replayClipOperations();
     }
 
-    void updateClipPath(const QPainterPath &path, Qt::ClipOperation operation)
+    void clip(const QVectorPath &path, Qt::ClipOperation operation)
     {
         switch (operation) {
         case Qt::NoClip:
-            popClip();
+            clearClips();
             break;
         case Qt::ReplaceClip:
-            clipPath = path;
-            pushClip();
+            clearClips();
+            pushClip(path);
             break;
         case Qt::IntersectClip:
-            clipPath &= path;
-            pushClip();
+            pushClip(path);
             break;
         }
     }
@@ -863,7 +893,7 @@ bool QWindowsDirect2DPaintEngine::end()
 {
     Q_D(QWindowsDirect2DPaintEngine);
     // First pop any user-applied clipping
-    d->popClip();
+    d->clearClips();
     // Now the system clip from begin() above
     if (d->clipFlags & SimpleSystemClip) {
         d->dc()->PopAxisAlignedClip();
@@ -915,7 +945,7 @@ void QWindowsDirect2DPaintEngine::fill(const QVectorPath &path, const QBrush &br
     if (!d->brush.brush)
         return;
 
-    if (path.hints() & QVectorPath::RectangleShapeMask) {
+    if (path.isRect()) {
         const qreal * const points = path.points();
         D2D_RECT_F rect = {
             points[0], // left
@@ -936,34 +966,10 @@ void QWindowsDirect2DPaintEngine::fill(const QVectorPath &path, const QBrush &br
     }
 }
 
-// For clipping we convert everything to painter paths since it allows
-// calculating intersections easily. It might be faster to convert to
-// ID2D1Geometry and use its operations, although that needs to measured.
-// The implementation would be more complex in any case.
-
 void QWindowsDirect2DPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
 {
-    clip(path.convertToPainterPath(), op);
-}
-
-void QWindowsDirect2DPaintEngine::clip(const QRect &rect, Qt::ClipOperation op)
-{
-    QPainterPath p;
-    p.addRect(rect);
-    clip(p, op);
-}
-
-void QWindowsDirect2DPaintEngine::clip(const QRegion &region, Qt::ClipOperation op)
-{
-    QPainterPath p;
-    p.addRegion(region);
-    clip(p, op);
-}
-
-void QWindowsDirect2DPaintEngine::clip(const QPainterPath &path, Qt::ClipOperation op)
-{
     Q_D(QWindowsDirect2DPaintEngine);
-    d->updateClipPath(path, op);
+    d->clip(path, op);
 }
 
 void QWindowsDirect2DPaintEngine::clipEnabledChanged()

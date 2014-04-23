@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -66,11 +66,7 @@ public:
     Type type() const Q_DECL_OVERRIDE;
 
     void fill(const QVectorPath &path, const QBrush &brush) Q_DECL_OVERRIDE;
-
     void clip(const QVectorPath &path, Qt::ClipOperation op) Q_DECL_OVERRIDE;
-    void clip(const QRect &rect, Qt::ClipOperation op) Q_DECL_OVERRIDE;
-    void clip(const QRegion &region, Qt::ClipOperation op) Q_DECL_OVERRIDE;
-    void clip(const QPainterPath &path, Qt::ClipOperation op) Q_DECL_OVERRIDE;
 
     void clipEnabledChanged() Q_DECL_OVERRIDE;
     void penChanged() Q_DECL_OVERRIDE;
