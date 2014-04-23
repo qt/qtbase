@@ -199,7 +199,16 @@ public:
     QByteArray toEncoded(FormattingOptions options = FullyEncoded) const;
     static QUrl fromEncoded(const QByteArray &url, ParsingMode mode = TolerantMode);
 
+    enum UserInputResolutionOption {
+        DefaultResolution,
+        AssumeLocalFile
+    };
+    Q_DECLARE_FLAGS(UserInputResolutionOptions, UserInputResolutionOption)
+
     static QUrl fromUserInput(const QString &userInput);
+    // ### Qt6 merge with fromUserInput(QString), by adding = QString()
+    static QUrl fromUserInput(const QString &userInput, const QString &workingDirectory,
+                              UserInputResolutionOptions options = DefaultResolution);
 
     bool isValid() const;
     QString errorString() const;

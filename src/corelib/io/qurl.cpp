@@ -364,6 +364,29 @@
 */
 
 /*!
+    \enum QUrl::UserInputResolutionOption
+    \since 5.4
+
+    The user input resolution options define how fromUserInput() should
+    interpret strings that could either be a relative path or the short
+    form of a HTTP URL. For instance \c{file.pl} can be either a local file
+    or the URL \c{http://file.pl}.
+
+    \value DefaultResolution  The default resolution mechanism is to check
+                              whether a local file exists, in the working
+                              directory given to fromUserInput, and only
+                              return a local path in that case. Otherwise a URL
+                              is assumed.
+    \value AssumeLocalFile    This option makes fromUserInput() always return
+                              a local path unless the input contains a scheme, such as
+                              \c{http://file.pl}. This is useful for applications
+                              such as text editors, which are able to create
+                              the file if it doesn't exist.
+
+    \sa fromUserInput()
+*/
+
+/*!
     \fn QUrl::QUrl(QUrl &&other)
 
     Move-constructs a QUrl instance, making it point at the same
@@ -4090,6 +4113,43 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 */
 
+
+/*!
+    Returns a valid URL from a user supplied \a userInput string if one can be
+    deducted. In the case that is not possible, an invalid QUrl() is returned.
+
+    This overload takes a \a workingDirectory path, in order to be able to
+    handle relative paths. This is especially useful when handling command
+    line arguments.
+    If \a workingDirectory is empty, no handling of relative paths will be done,
+    so this method will behave like its one argument overload.
+
+    By default, an input string that looks like a relative path will only be treated
+    as such if the file actually exists in the given working directory.
+
+    If the application can handle files that don't exist yet, it should pass the
+    flag AssumeLocalFile in \a options.
+
+    \since 5.4
+*/
+QUrl QUrl::fromUserInput(const QString &userInput, const QString &workingDirectory,
+                         UserInputResolutionOptions options)
+{
+    QString trimmedString = userInput.trimmed();
+
+    if (trimmedString.isEmpty())
+        return QUrl();
+
+    // Check both QUrl::isRelative (to detect full URLs) and QDir::isAbsolutePath (since on Windows drive letters can be interpreted as schemes)
+    QUrl url = QUrl(trimmedString, QUrl::TolerantMode);
+    if (url.isRelative() && !QDir::isAbsolutePath(trimmedString)) {
+        QFileInfo fileInfo(QDir(workingDirectory), trimmedString);
+        if ((options & AssumeLocalFile) || fileInfo.exists())
+            return QUrl::fromLocalFile(fileInfo.absoluteFilePath());
+    }
+
+    return fromUserInput(trimmedString);
+}
 
 /*!
     Returns a valid URL from a user supplied \a userInput string if one can be

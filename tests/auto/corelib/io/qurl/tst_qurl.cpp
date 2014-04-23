@@ -165,6 +165,8 @@ private slots:
     void binaryData();
     void fromUserInput_data();
     void fromUserInput();
+    void fromUserInputWithCwd_data();
+    void fromUserInputWithCwd();
     void fileName_data();
     void fileName();
     void isEmptyForEncodedUrl();
@@ -2911,6 +2913,52 @@ void tst_QUrl::fromUserInput()
 
     QUrl url = QUrl::fromUserInput(string);
     QCOMPARE(url, guessUrlFromString);
+}
+
+void tst_QUrl::fromUserInputWithCwd_data()
+{
+    QTest::addColumn<QString>("string");
+    QTest::addColumn<QString>("directory");
+    QTest::addColumn<QUrl>("guessedUrlDefault");
+    QTest::addColumn<QUrl>("guessedUrlAssumeLocalFile");
+
+    // Null
+    QTest::newRow("null") << QString() << QString() << QUrl() << QUrl();
+
+    // Existing file
+    QDirIterator it(QDir::currentPath(), QDir::NoDotDot | QDir::AllEntries);
+    int c = 0;
+    while (it.hasNext()) {
+        it.next();
+        QUrl url = QUrl::fromLocalFile(it.filePath());
+        QTest::newRow(QString("file-%1").arg(c++).toLatin1()) << it.fileName() << QDir::currentPath() << url << url;
+    }
+    QDir parent = QDir::current();
+    QVERIFY(parent.cdUp());
+    QUrl parentUrl = QUrl::fromLocalFile(parent.path());
+    QTest::newRow("dotdot") << ".." << QDir::currentPath() << parentUrl << parentUrl;
+
+    QTest::newRow("nonexisting") << "nonexisting" << QDir::currentPath() << QUrl("http://nonexisting") << QUrl::fromLocalFile(QDir::currentPath() + "/nonexisting");
+    QTest::newRow("short-url") << "example.org" << QDir::currentPath() << QUrl("http://example.org") << QUrl::fromLocalFile(QDir::currentPath() + "/example.org");
+    QTest::newRow("full-url") << "http://example.org" << QDir::currentPath() << QUrl("http://example.org") << QUrl("http://example.org");
+    QTest::newRow("absolute") << "/doesnotexist.txt" << QDir::currentPath() << QUrl("file:///doesnotexist.txt") << QUrl("file:///doesnotexist.txt");
+#ifdef Q_OS_WIN
+    QTest::newRow("windows-absolute") << "c:/doesnotexist.txt" << QDir::currentPath() << QUrl("file:///c:/doesnotexist.txt") << QUrl("file:///c:/doesnotexist.txt");
+#endif
+}
+
+void tst_QUrl::fromUserInputWithCwd()
+{
+    QFETCH(QString, string);
+    QFETCH(QString, directory);
+    QFETCH(QUrl, guessedUrlDefault);
+    QFETCH(QUrl, guessedUrlAssumeLocalFile);
+
+    QUrl url = QUrl::fromUserInput(string, directory);
+    QCOMPARE(url, guessedUrlDefault);
+
+    url = QUrl::fromUserInput(string, directory, QUrl::AssumeLocalFile);
+    QCOMPARE(url, guessedUrlAssumeLocalFile);
 }
 
 void tst_QUrl::fileName_data()
