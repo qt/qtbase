@@ -79,7 +79,28 @@
 typedef void* GLeglImageOES;
 
 # else // "uncontrolled" ES2 platforms
-#  include <GLES2/gl2.h>
+
+// In "es2" builds (QT_OPENGL_ES_2) additional defines indicate if ES
+// 3.0 or higher is available. In this case include the corresponding
+// header. These are backwards compatible and it should be safe to
+// include headers on top of each other, meaning that applications can
+// include gl2.h even if gl31.h gets included here.
+
+// This compile time differentation is important inside Qt because,
+// unlike desktop GL, GLES is different when it comes to versioning
+// and extensions: Standard functions that are new in a given version
+// are always available in a version-specific header and are not
+// guaranteed to be dynamically resolvable via eglGetProcAddress (and
+// are typically not available as extensions even if they were part of
+// an extension for a previous version).
+
+#  if defined(QT_OPENGL_ES_3_1)
+#   include <GLES3/gl31.h>
+#  elif defined(QT_OPENGL_ES_3)
+#   include <GLES3/gl3.h>
+#  else
+#   include <GLES2/gl2.h>
+#endif
 
 /*
    Some GLES2 implementations (like the one on Harmattan) are missing the
