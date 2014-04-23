@@ -153,6 +153,8 @@ Q_DECL_EXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void * /*reserved*/)
     return JNI_VERSION_1_4;
 }
 
+QT_BEGIN_NAMESPACE
+
 QList<QByteArray> QSslSocketPrivate::fetchSslCertificateData()
 {
     QList<QByteArray> certificateData;
@@ -177,3 +179,5 @@ QList<QByteArray> QSslSocketPrivate::fetchSslCertificateData()
 
     return certificateData;
 }
+
+QT_END_NAMESPACE

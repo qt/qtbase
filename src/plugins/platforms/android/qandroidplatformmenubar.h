@@ -46,6 +46,8 @@
 #include <qvector.h>
 #include <qmutex.h>
 
+QT_BEGIN_NAMESPACE
+
 class QAndroidPlatformMenu;
 class QAndroidPlatformMenuBar: public QPlatformMenuBar
 {
@@ -70,5 +72,7 @@ private:
     QWindow *m_parentWindow;
     QMutex m_menusListMutex;
 };
+
+QT_END_NAMESPACE
 
 #endif // QANDROIDPLATFORMMENUBAR_H

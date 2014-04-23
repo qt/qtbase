@@ -42,6 +42,9 @@
 #ifndef ANDROIDJNIINPUT_H
 #define ANDROIDJNIINPUT_H
 #include <jni.h>
+#include <QtCore/qglobal.h>
+
+QT_BEGIN_NAMESPACE
 
 namespace QtAndroidInput
 {
@@ -55,5 +58,7 @@ namespace QtAndroidInput
 
     bool registerNatives(JNIEnv *env);
 }
+
+QT_END_NAMESPACE
 
 #endif // ANDROIDJNIINPUT_H

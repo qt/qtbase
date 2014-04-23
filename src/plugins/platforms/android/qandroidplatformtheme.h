@@ -45,6 +45,8 @@
 #include <qpa/qplatformtheme.h>
 #include <QtGui/qpalette.h>
 
+QT_BEGIN_NAMESPACE
+
 class QAndroidPlatformNativeInterface;
 class QAndroidPlatformTheme: public QPlatformTheme
 {
@@ -65,5 +67,7 @@ private:
     QAndroidPlatformNativeInterface * m_androidPlatformNativeInterface;
     QPalette m_defaultPalette;
 };
+
+QT_END_NAMESPACE
 
 #endif // QANDROIDPLATFORMTHEME_H

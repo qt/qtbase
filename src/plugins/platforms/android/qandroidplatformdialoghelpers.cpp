@@ -47,6 +47,8 @@
 #include <private/qguiapplication_p.h>
 #include <qpa/qplatformtheme.h>
 
+QT_BEGIN_NAMESPACE
+
 namespace QtAndroidDialogHelpers {
 static jclass g_messageDialogHelperClass = 0;
 
@@ -172,3 +174,5 @@ bool registerNatives(JNIEnv *env)
     return true;
 }
 }
+
+QT_END_NAMESPACE

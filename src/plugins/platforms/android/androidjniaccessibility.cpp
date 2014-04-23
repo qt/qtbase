@@ -55,6 +55,8 @@ static const char m_qtTag[] = "Qt A11Y";
 static const char m_classErrorMsg[] = "Can't find class \"%s\"";
 static const char m_methodErrorMsg[] = "Can't find method \"%s%s\"";
 
+QT_BEGIN_NAMESPACE
+
 namespace QtAndroidAccessibility
 {
     static jmethodID m_addActionMethodID = 0;
@@ -290,3 +292,5 @@ if (!clazz) { \
         return true;
     }
 }
+
+QT_END_NAMESPACE

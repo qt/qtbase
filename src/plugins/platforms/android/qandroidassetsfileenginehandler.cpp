@@ -45,6 +45,8 @@
 #include <QCoreApplication>
 #include <QVector>
 
+QT_BEGIN_NAMESPACE
+
 typedef QVector<QString> FilesList;
 
 struct AndroidAssetDir
@@ -394,3 +396,5 @@ QAbstractFileEngine * AndroidAssetsFileEngineHandler::create(const QString &file
     }
     return 0;
 }
+
+QT_END_NAMESPACE

@@ -76,6 +76,8 @@
 
 Q_IMPORT_PLUGIN(QAndroidPlatformIntegrationPlugin)
 
+QT_BEGIN_NAMESPACE
+
 static JavaVM *m_javaVM = NULL;
 static jclass m_applicationClass  = NULL;
 static jobject m_classLoaderObject = NULL;
@@ -748,8 +750,11 @@ static int registerNatives(JNIEnv *env)
     return JNI_TRUE;
 }
 
+QT_END_NAMESPACE
+
 Q_DECL_EXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void */*reserved*/)
 {
+    QT_USE_NAMESPACE
     typedef union {
         JNIEnv *nativeEnvironment;
         void *venv;

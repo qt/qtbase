@@ -43,6 +43,9 @@
 #define ANDROIDJNIMENU_H
 
 #include <jni.h>
+#include <qglobal.h>
+
+QT_BEGIN_NAMESPACE
 
 class QAndroidPlatformMenuBar;
 class QAndroidPlatformMenu;
@@ -65,5 +68,7 @@ namespace QtAndroidMenu
     // Menu support
     bool registerNatives(JNIEnv *env);
 }
+
+QT_END_NAMESPACE
 
 #endif // ANDROIDJNIMENU_H

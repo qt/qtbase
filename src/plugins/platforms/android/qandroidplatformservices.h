@@ -46,6 +46,8 @@
 #include "androidjnimain.h"
 #include <jni.h>
 
+QT_BEGIN_NAMESPACE
+
 class QAndroidPlatformServices: public QPlatformServices
 {
 public:
@@ -57,5 +59,7 @@ private:
     jmethodID m_openURIMethodID;
 
 };
+
+QT_END_NAMESPACE
 
 #endif // ANDROIDPLATFORMDESKTOPSERVICE_H
