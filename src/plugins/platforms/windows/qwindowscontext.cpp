@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 Samuel Gaist <samuel.gaist@edeltech.ch>
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -76,6 +76,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <windowsx.h>
+#ifndef Q_OS_WINCE
+#  include <comdef.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -308,6 +311,10 @@ QWindowsContextPrivate::QWindowsContextPrivate()
     if (useRTL_Extensions(ver)) {
         m_systemInfo |= QWindowsContext::SI_RTL_Extensions;
         m_keyMapper.setUseRTLExtensions(true);
+    }
+    if (FAILED(m_oleInitializeResult)) {
+       qWarning() << "QWindowsContext: OleInitialize() failed: "
+           << QWindowsContext::comErrorString(m_oleInitializeResult);
     }
 }
 
@@ -691,45 +698,70 @@ HWND QWindowsContext::createDummyWindow(const QString &classNameIn,
 
 QByteArray QWindowsContext::comErrorString(HRESULT hr)
 {
+    QByteArray result = QByteArrayLiteral("COM error 0x")
+        + QByteArray::number(quintptr(hr), 16) + ' ';
     switch (hr) {
     case S_OK:
-        return QByteArrayLiteral("S_OK");
+        result += QByteArrayLiteral("S_OK");
+        break;
     case S_FALSE:
-        return QByteArrayLiteral("S_FALSE");
+        result += QByteArrayLiteral("S_FALSE");
+        break;
     case E_UNEXPECTED:
-        return QByteArrayLiteral("E_UNEXPECTED");
+        result += QByteArrayLiteral("E_UNEXPECTED");
+        break;
     case CO_E_ALREADYINITIALIZED:
-        return QByteArrayLiteral("CO_E_ALREADYINITIALIZED");
+        result += QByteArrayLiteral("CO_E_ALREADYINITIALIZED");
+        break;
     case CO_E_NOTINITIALIZED:
-        return QByteArrayLiteral("CO_E_NOTINITIALIZED");
+        result += QByteArrayLiteral("CO_E_NOTINITIALIZED");
+        break;
     case RPC_E_CHANGED_MODE:
-        return QByteArrayLiteral("RPC_E_CHANGED_MODE");
+        result += QByteArrayLiteral("RPC_E_CHANGED_MODE");
+        break;
     case OLE_E_WRONGCOMPOBJ:
-        return QByteArrayLiteral("OLE_E_WRONGCOMPOBJ");
+        result += QByteArrayLiteral("OLE_E_WRONGCOMPOBJ");
+        break;
     case CO_E_NOT_SUPPORTED:
-        return QByteArrayLiteral("CO_E_NOT_SUPPORTED");
+        result += QByteArrayLiteral("CO_E_NOT_SUPPORTED");
+        break;
     case E_NOTIMPL:
-        return QByteArrayLiteral("E_NOTIMPL");
+        result += QByteArrayLiteral("E_NOTIMPL");
+        break;
     case E_INVALIDARG:
-        return QByteArrayLiteral("E_INVALIDARG");
+        result += QByteArrayLiteral("E_INVALIDARG");
+        break;
     case E_NOINTERFACE:
-        return QByteArrayLiteral("E_NOINTERFACE");
+        result += QByteArrayLiteral("E_NOINTERFACE");
+        break;
     case E_POINTER:
-        return QByteArrayLiteral("E_POINTER");
+        result += QByteArrayLiteral("E_POINTER");
+        break;
     case E_HANDLE:
-        return QByteArrayLiteral("E_HANDLE");
+        result += QByteArrayLiteral("E_HANDLE");
+        break;
     case E_ABORT:
-        return QByteArrayLiteral("E_ABORT");
+        result += QByteArrayLiteral("E_ABORT");
+        break;
     case E_FAIL:
-        return QByteArrayLiteral("E_FAIL");
+        result += QByteArrayLiteral("E_FAIL");
+        break;
     case RPC_E_WRONG_THREAD:
-        return QByteArrayLiteral("RPC_E_WRONG_THREAD");
+        result += QByteArrayLiteral("RPC_E_WRONG_THREAD");
+        break;
     case RPC_E_THREAD_NOT_INIT:
-        return QByteArrayLiteral("RPC_E_THREAD_NOT_INIT");
+        result += QByteArrayLiteral("RPC_E_THREAD_NOT_INIT");
+        break;
     default:
         break;
     }
-    return "Unknown error 0x" + QByteArray::number(quint64(hr), 16);
+#ifndef Q_OS_WINCE
+    _com_error error(hr);
+    result += QByteArrayLiteral(" (");
+    result += QString::fromWCharArray(error.ErrorMessage()).toLocal8Bit();
+    result += ')';
+#endif // !Q_OS_WINCE
+    return result;
 }
 
 /*!
