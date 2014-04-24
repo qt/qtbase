@@ -128,7 +128,7 @@ void QWindowsDirect2DWindow::flush(QWindowsDirect2DBitmap *bitmap, const QRegion
     }
 
     m_bitmap->deviceContext()->end();
-    m_swapChain->Present(1, 0);
+    m_swapChain->Present(0, 0);
 }
 
 void QWindowsDirect2DWindow::resizeSwapChain(const QSize &size)
