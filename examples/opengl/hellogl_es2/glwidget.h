@@ -42,15 +42,16 @@
 #define GLWIDGET_H
 
 #include <QGLWidget>
-#include <QtGui/qvector3d.h>
-#include <QtGui/qmatrix4x4.h>
-#include <QtOpenGL/qglshaderprogram.h>
+#include <QOpenGLFunctions>
+#include <QGLShaderProgram>
+#include <QVector3D>
+#include <QMatrix4x4>
 #include <QTime>
 #include <QVector>
 
 class Bubble;
-class GLWidget : public QGLWidget {
-
+class GLWidget : public QGLWidget, protected QOpenGLFunctions
+{
     Q_OBJECT
 public:
     GLWidget(QWidget *parent = 0);

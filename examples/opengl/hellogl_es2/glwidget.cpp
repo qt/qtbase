@@ -171,6 +171,8 @@ void GLWidget::paintTexturedCube()
 
 void GLWidget::initializeGL ()
 {
+    initializeOpenGLFunctions();
+
     glClearColor(0.1f, 0.1f, 0.2f, 1.0f);
 
     glGenTextures(1, &m_uiTexture);

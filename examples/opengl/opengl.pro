@@ -2,7 +2,11 @@ requires(qtHaveModule(opengl))
 
 TEMPLATE      = subdirs
 
-contains(QT_CONFIG, opengles2) {
+contains(QT_CONFIG, dynamicgl) {
+    SUBDIRS = hellowindow \
+              contextinfo \
+              hellogl_es2
+} else: contains(QT_CONFIG, opengles2){
     SUBDIRS   = hellogl_es2
 } else {
     SUBDIRS   = 2dpainting \
@@ -14,7 +18,7 @@ contains(QT_CONFIG, opengles2) {
                 samplebuffers
 }
 
-SUBDIRS += hellowindow \
+!contains(QT_CONFIG, dynamicgl): SUBDIRS += hellowindow \
            paintedwindow \
            contextinfo \
            cube \

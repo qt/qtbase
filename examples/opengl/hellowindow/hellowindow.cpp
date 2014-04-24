@@ -182,7 +182,7 @@ void Renderer::paintQtLogo()
     m_program->enableAttributeArray(vertexAttr);
     m_program->setAttributeArray(vertexAttr, vertices.constData());
     m_program->setAttributeArray(normalAttr, normals.constData());
-    glDrawArrays(GL_TRIANGLES, 0, vertices.size());
+    m_context->functions()->glDrawArrays(GL_TRIANGLES, 0, vertices.size());
     m_program->disableAttributeArray(normalAttr);
     m_program->disableAttributeArray(vertexAttr);
 }
