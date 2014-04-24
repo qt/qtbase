@@ -43,6 +43,7 @@
 #define QIMAGEWRITER_H
 
 #include <QtCore/qbytearray.h>
+#include <QtCore/qcoreapplication.h>
 #include <QtCore/qlist.h>
 #include <QtGui/qimageiohandler.h>
 
@@ -55,6 +56,7 @@ class QImage;
 class QImageWriterPrivate;
 class Q_GUI_EXPORT QImageWriter
 {
+    Q_DECLARE_TR_FUNCTIONS(QImageWriter)
 public:
     enum ImageWriterError {
         UnknownError,

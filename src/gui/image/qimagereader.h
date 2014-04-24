@@ -43,6 +43,7 @@
 #define QIMAGEREADER_H
 
 #include <QtCore/qbytearray.h>
+#include <QtCore/qcoreapplication.h>
 #include <QtGui/qimage.h>
 #include <QtGui/qimageiohandler.h>
 
@@ -58,6 +59,7 @@ class QStringList;
 class QImageReaderPrivate;
 class Q_GUI_EXPORT QImageReader
 {
+    Q_DECLARE_TR_FUNCTIONS(QImageReader)
 public:
     enum ImageReaderError {
         UnknownError,

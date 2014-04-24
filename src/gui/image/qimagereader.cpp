@@ -567,7 +567,7 @@ bool QImageReaderPrivate::initHandler()
     // check some preconditions
     if (!device || (!deleteDevice && !device->isOpen() && !device->open(QIODevice::ReadOnly))) {
         imageReaderError = QImageReader::DeviceError;
-        errorString = QLatin1String(QT_TRANSLATE_NOOP(QImageReader, "Invalid device"));
+        errorString = QImageReader::tr("Invalid device");
         return false;
     }
 
@@ -594,7 +594,7 @@ bool QImageReaderPrivate::initHandler()
 
         if (!device->isOpen()) {
             imageReaderError = QImageReader::FileNotFoundError;
-            errorString = QLatin1String(QT_TRANSLATE_NOOP(QImageReader, "File not found"));
+            errorString = QImageReader::tr("File not found");
             file->setFileName(fileName); // restore the old file name
             return false;
         }
@@ -603,7 +603,7 @@ bool QImageReaderPrivate::initHandler()
     // assign a handler
     if (!handler && (handler = createReadHandlerHelper(device, format, autoDetectImageFormat, ignoresFormatAndExtension)) == 0) {
         imageReaderError = QImageReader::UnsupportedFormatError;
-        errorString = QLatin1String(QT_TRANSLATE_NOOP(QImageReader, "Unsupported image format"));
+        errorString = QImageReader::tr("Unsupported image format");
         return false;
     }
     return true;
@@ -1190,7 +1190,7 @@ bool QImageReader::read(QImage *image)
     // read the image
     if (!d->handler->read(image)) {
         d->imageReaderError = InvalidDataError;
-        d->errorString = QLatin1String(QT_TRANSLATE_NOOP(QImageReader, "Unable to read image data"));
+        d->errorString = QImageReader::tr("Unable to read image data");
         return false;
     }
 
@@ -1382,7 +1382,7 @@ QImageReader::ImageReaderError QImageReader::error() const
 QString QImageReader::errorString() const
 {
     if (d->errorString.isEmpty())
-        return QLatin1String(QT_TRANSLATE_NOOP(QImageReader, "Unknown error"));
+        return QImageReader::tr("Unknown error");
     return d->errorString;
 }
 
