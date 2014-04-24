@@ -52,6 +52,7 @@ QT_BEGIN_NAMESPACE
 struct QWindowsIntegrationPrivate;
 struct QWindowsWindowData;
 class QWindowsWindow;
+class QWindowsStaticOpenGLContext;
 
 class QWindowsIntegration : public QPlatformIntegration
 {
@@ -74,6 +75,8 @@ public:
     QPlatformWindow *createPlatformWindow(QWindow *window) const;
 #ifndef QT_NO_OPENGL
     virtual QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
+    QOpenGLContext::OpenGLModuleType openGLModuleType();
+    static QWindowsStaticOpenGLContext *staticOpenGLContext();
 #endif
     virtual QAbstractEventDispatcher *createEventDispatcher() const;
     void initialize() Q_DECL_OVERRIDE;

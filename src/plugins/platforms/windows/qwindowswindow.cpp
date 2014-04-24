@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -48,15 +48,11 @@
 #  include "qwindowscursor.h"
 #endif
 
-#if defined(QT_OPENGL_ES_2) || defined(QT_OPENGL_DYNAMIC)
-#  include "qwindowseglcontext.h"
-#  include <QtGui/QOpenGLFunctions>
-#endif
-
 #include <QtGui/QGuiApplication>
 #include <QtGui/QScreen>
 #include <QtGui/QWindow>
 #include <QtGui/QRegion>
+#include <QtGui/QOpenGLContext>
 #include <private/qsystemlibrary_p.h>
 #include <private/qwindow_p.h>
 #include <private/qguiapplication_p.h>
@@ -867,15 +863,13 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const QWindowsWindowData &data)
     m_opacity(1.0),
     m_dropTarget(0),
     m_savedStyle(0),
-    m_format(aWindow->format()),
-#if defined(QT_OPENGL_ES_2) || defined(QT_OPENGL_DYNAMIC)
-    m_eglSurface(0),
-#endif
+    m_format(aWindow->requestedFormat()),
 #ifdef Q_OS_WINCE
     m_previouslyHidden(false),
 #endif
     m_iconSmall(0),
-    m_iconBig(0)
+    m_iconBig(0),
+    m_surface(0)
 {
     // Clear the creation context as the window can be found in QWindowsContext's map.
     QWindowsContext::instance()->setWindowCreationContext(QSharedPointer<QWindowCreationContext>());
@@ -883,13 +877,14 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const QWindowsWindowData &data)
     const Qt::WindowType type = aWindow->type();
     if (type == Qt::Desktop)
         return; // No further handling for Qt::Desktop
+#ifndef QT_NO_OPENGL
     if (aWindow->surfaceType() == QWindow::OpenGLSurface) {
-        setFlag(OpenGLSurface);
-#if defined(QT_OPENGL_ES_2) || defined(QT_OPENGL_DYNAMIC)
-        if (QOpenGLContext::openGLModuleType() != QOpenGLContext::LibGL)
+        if (QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGL)
+            setFlag(OpenGLSurface);
+        else
             setFlag(OpenGL_ES2);
-#endif
     }
+#endif // QT_NO_OPENGL
     updateDropSite();
 
 #ifndef Q_OS_WINCE
@@ -953,13 +948,10 @@ void QWindowsWindow::destroyWindow()
         if (hasMouseCapture())
             setMouseGrabEnabled(false);
         setDropSiteEnabled(false);
-#if defined(QT_OPENGL_ES_2) || defined(QT_OPENGL_DYNAMIC)
-        if (m_eglSurface) {
-            qCDebug(lcQpaGl) << __FUNCTION__ << "Freeing EGL surface " << m_eglSurface << window();
-            eglDestroySurface(m_staticEglContext->display(), m_eglSurface);
-            m_eglSurface = 0;
+        if (m_surface) {
+            m_data.staticOpenGLContext->destroyWindowSurface(m_surface);
+            m_surface = 0;
         }
-#endif
 #ifdef Q_OS_WINCE
         if ((m_windowState & Qt::WindowFullScreen) && !m_previouslyHidden) {
             HWND handle = FindWindow(L"HHTaskBar", L"");
@@ -2144,23 +2136,6 @@ void QWindowsWindow::setEnabled(bool enabled)
         setStyle(newStyle);
 }
 
-#if defined(QT_OPENGL_ES_2) || defined(QT_OPENGL_DYNAMIC)
-EGLSurface QWindowsWindow::ensureEglSurfaceHandle(const QWindowsWindow::QWindowsEGLStaticContextPtr &staticContext, EGLConfig config)
-{
-    if (!m_eglSurface) {
-        m_staticEglContext = staticContext;
-        m_eglSurface = eglCreateWindowSurface(staticContext->display(), config, (EGLNativeWindowType)m_data.hwnd, NULL);
-        if (m_eglSurface == EGL_NO_SURFACE)
-            qWarning("%s: Could not create the egl surface for %s/'%s' (eglCreateWindowSurface failed): error = 0x%x\n",
-                     Q_FUNC_INFO, window()->metaObject()->className(),
-                     qPrintable(window()->objectName()), eglGetError());
-
-            qCDebug(lcQpaGl) << __FUNCTION__<<"Created EGL surface "<< m_eglSurface <<window();
-    }
-    return m_eglSurface;
-}
-#endif // QT_OPENGL_ES_2
-
 QByteArray QWindowsWindow::debugWindowFlags(Qt::WindowFlags wf)
 {
     const int iwf = int(wf);
@@ -2270,6 +2245,14 @@ void QWindowsWindow::setCustomMargins(const QMargins &newCustomMargins)
             << currentFrameGeometry << "->" << newFrame;
         SetWindowPos(m_data.hwnd, 0, newFrame.x(), newFrame.y(), newFrame.width(), newFrame.height(), SWP_NOZORDER | SWP_FRAMECHANGED);
     }
+}
+
+void *QWindowsWindow::surface(void *nativeConfig)
+{
+    if (!m_surface)
+        m_surface = m_data.staticOpenGLContext->createWindowSurface(m_data.hwnd, nativeConfig);
+
+    return m_surface;
 }
 
 QT_END_NAMESPACE

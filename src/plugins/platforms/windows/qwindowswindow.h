@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -47,22 +47,14 @@
 #  include "qplatformfunctions_wince.h"
 #endif
 #include "qwindowscursor.h"
+#include "qwindowsopenglcontext.h"
 
 #include <qpa/qplatformwindow.h>
-
-#if defined(QT_OPENGL_ES_2) || defined(QT_OPENGL_DYNAMIC)
-#  include <QtCore/QSharedPointer>
-#  include <EGL/egl.h>
-#endif
 
 QT_BEGIN_NAMESPACE
 
 class QWindowsOleDropTarget;
 class QDebug;
-
-#if defined(QT_OPENGL_ES_2) || defined(QT_OPENGL_DYNAMIC)
-class QWindowsEGLStaticContext;
-#endif
 
 struct QWindowsGeometryHint
 {
@@ -121,6 +113,9 @@ struct QWindowsWindowData
     QMargins customMargins; // User-defined, additional frame for NCCALCSIZE
     HWND hwnd;
     bool embedded;
+#ifndef QT_NO_OPENGL
+    QSharedPointer<QWindowsStaticOpenGLContext> staticOpenGLContext;
+#endif // QT_NO_OPENGL
 
     static QWindowsWindowData create(const QWindow *w,
                                      const QWindowsWindowData &parameters,
@@ -130,10 +125,6 @@ struct QWindowsWindowData
 class QWindowsWindow : public QPlatformWindow
 {
 public:
-#if defined(QT_OPENGL_ES_2) || defined(QT_OPENGL_DYNAMIC)
-    typedef QSharedPointer<QWindowsEGLStaticContext> QWindowsEGLStaticContextPtr;
-#endif
-
     enum Flags
     {
         AutoMouseCapture = 0x1, //! Automatic mouse capture on button press.
@@ -207,11 +198,6 @@ public:
     QMargins customMargins() const { return m_data.customMargins; }
     void setCustomMargins(const QMargins &m);
 
-#if defined(QT_OPENGL_ES_2) || defined(QT_OPENGL_DYNAMIC)
-    EGLSurface eglSurfaceHandle() const { return m_eglSurface;}
-    EGLSurface ensureEglSurfaceHandle(const QWindowsEGLStaticContextPtr &staticContext, EGLConfig config);
-#endif
-
     inline unsigned style() const
         { return GetWindowLongPtr(m_data.hwnd, GWL_STYLE); }
     void setStyle(unsigned s) const;
@@ -263,6 +249,8 @@ public:
     bool isEnabled() const;
     void setWindowIcon(const QIcon &icon);
 
+    void *surface(void *nativeConfig);
+
 #ifndef Q_OS_WINCE
     void setAlertState(bool enabled);
     bool isAlertState() const { return testFlag(AlertState); }
@@ -302,15 +290,12 @@ private:
     unsigned m_savedStyle;
     QRect m_savedFrameGeometry;
     const QSurfaceFormat m_format;
-#if defined(QT_OPENGL_ES_2) || defined(QT_OPENGL_DYNAMIC)
-    EGLSurface m_eglSurface;
-    QSharedPointer<QWindowsEGLStaticContext> m_staticEglContext;
-#endif
 #ifdef Q_OS_WINCE
     bool m_previouslyHidden;
 #endif
     HICON m_iconSmall;
     HICON m_iconBig;
+    void *m_surface;
 };
 
 // Debug

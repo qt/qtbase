@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -44,10 +44,9 @@
 
 #include "array.h"
 #include "qtwindows_additional.h"
+#include "qwindowsopenglcontext.h"
 
-#include <qpa/qplatformopenglcontext.h>
 #include <QtGui/QOpenGLContext>
-#include <QtCore/QSharedPointer>
 
 QT_BEGIN_NAMESPACE
 
@@ -81,6 +80,8 @@ struct QOpenGLContextData
     HDC hdc;
 };
 
+class QOpenGLStaticContext;
+
 struct QWindowsOpenGLContextFormat
 {
     QWindowsOpenGLContextFormat();
@@ -94,7 +95,87 @@ struct QWindowsOpenGLContextFormat
 
 QDebug operator<<(QDebug d, const QWindowsOpenGLContextFormat &);
 
-class QOpenGLStaticContext
+struct QWindowsOpengl32DLL
+{
+    bool init(bool softwareRendering);
+    void *moduleHandle() const { return m_lib; }
+    bool moduleIsNotOpengl32() const { return m_nonOpengl32; }
+
+    // Wrappers. Always use these instead of SwapBuffers/wglSwapBuffers/etc.
+    BOOL swapBuffers(HDC dc);
+    BOOL setPixelFormat(HDC dc, int pf, const PIXELFORMATDESCRIPTOR *pfd);
+
+    // WGL
+    HGLRC (WINAPI * wglCreateContext)(HDC dc);
+    BOOL (WINAPI * wglDeleteContext)(HGLRC context);
+    HGLRC (WINAPI * wglGetCurrentContext)();
+    HDC (WINAPI * wglGetCurrentDC)();
+    PROC (WINAPI * wglGetProcAddress)(LPCSTR name);
+    BOOL (WINAPI * wglMakeCurrent)(HDC dc, HGLRC context);
+    BOOL (WINAPI * wglShareLists)(HGLRC context1, HGLRC context2);
+
+    // GL1+GLES2 common
+    void (APIENTRY * glBindTexture)(GLenum target, GLuint texture);
+    void (APIENTRY * glBlendFunc)(GLenum sfactor, GLenum dfactor);
+    void (APIENTRY * glClear)(GLbitfield mask);
+    void (APIENTRY * glClearColor)(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha);
+    void (APIENTRY * glClearStencil)(GLint s);
+    void (APIENTRY * glColorMask)(GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha);
+    void (APIENTRY * glCopyTexImage2D)(GLenum target, GLint level, GLenum internalformat, GLint x, GLint y, GLsizei width, GLsizei height, GLint border);
+    void (APIENTRY * glCopyTexSubImage2D)(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height);
+    void (APIENTRY * glCullFace)(GLenum mode);
+    void (APIENTRY * glDeleteTextures)(GLsizei n, const GLuint* textures);
+    void (APIENTRY * glDepthFunc)(GLenum func);
+    void (APIENTRY * glDepthMask)(GLboolean flag);
+    void (APIENTRY * glDisable)(GLenum cap);
+    void (APIENTRY * glDrawArrays)(GLenum mode, GLint first, GLsizei count);
+    void (APIENTRY * glDrawElements)(GLenum mode, GLsizei count, GLenum type, const GLvoid* indices);
+    void (APIENTRY * glEnable)(GLenum cap);
+    void (APIENTRY * glFinish)();
+    void (APIENTRY * glFlush)();
+    void (APIENTRY * glFrontFace)(GLenum mode);
+    void (APIENTRY * glGenTextures)(GLsizei n, GLuint* textures);
+    void (APIENTRY * glGetBooleanv)(GLenum pname, GLboolean* params);
+    GLenum (APIENTRY * glGetError)();
+    void (APIENTRY * glGetFloatv)(GLenum pname, GLfloat* params);
+    void (APIENTRY * glGetIntegerv)(GLenum pname, GLint* params);
+    const GLubyte * (APIENTRY * glGetString)(GLenum name);
+    void (APIENTRY * glGetTexParameterfv)(GLenum target, GLenum pname, GLfloat* params);
+    void (APIENTRY * glGetTexParameteriv)(GLenum target, GLenum pname, GLint* params);
+    void (APIENTRY * glHint)(GLenum target, GLenum mode);
+    GLboolean (APIENTRY * glIsEnabled)(GLenum cap);
+    GLboolean (APIENTRY * glIsTexture)(GLuint texture);
+    void (APIENTRY * glLineWidth)(GLfloat width);
+    void (APIENTRY * glPixelStorei)(GLenum pname, GLint param);
+    void (APIENTRY * glPolygonOffset)(GLfloat factor, GLfloat units);
+    void (APIENTRY * glReadPixels)(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLvoid* pixels);
+    void (APIENTRY * glScissor)(GLint x, GLint y, GLsizei width, GLsizei height);
+    void (APIENTRY * glStencilFunc)(GLenum func, GLint ref, GLuint mask);
+    void (APIENTRY * glStencilMask)(GLuint mask);
+    void (APIENTRY * glStencilOp)(GLenum fail, GLenum zfail, GLenum zpass);
+    void (APIENTRY * glTexImage2D)(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid* pixels);
+    void (APIENTRY * glTexParameterf)(GLenum target, GLenum pname, GLfloat param);
+    void (APIENTRY * glTexParameterfv)(GLenum target, GLenum pname, const GLfloat* params);
+    void (APIENTRY * glTexParameteri)(GLenum target, GLenum pname, GLint param);
+    void (APIENTRY * glTexParameteriv)(GLenum target, GLenum pname, const GLint* params);
+    void (APIENTRY * glTexSubImage2D)(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid* pixels);
+    void (APIENTRY * glViewport)(GLint x, GLint y, GLsizei width, GLsizei height);
+
+    // GL only
+    void (APIENTRY * glClearDepth)(GLdouble depth);
+    void (APIENTRY * glDepthRange)(GLdouble zNear, GLdouble zFar);
+
+private:
+    void *resolve(const char *name);
+    HMODULE m_lib;
+    bool m_nonOpengl32;
+
+    // For Mesa llvmpipe shipped with a name other than opengl32.dll
+    BOOL (WINAPI * wglSwapBuffers)(HDC dc);
+    BOOL (WINAPI * wglSetPixelFormat)(HDC dc, int pf, const PIXELFORMATDESCRIPTOR *pfd);
+};
+
+class QOpenGLStaticContext : public QWindowsStaticOpenGLContext
 {
     Q_DISABLE_COPY(QOpenGLStaticContext)
     QOpenGLStaticContext();
@@ -125,8 +206,16 @@ public:
     bool hasExtensions() const
         { return wglGetPixelFormatAttribIVARB && wglChoosePixelFormatARB && wglCreateContextAttribsARB; }
 
-    static QOpenGLStaticContext *create();
+    static QOpenGLStaticContext *create(bool softwareRendering = false);
     static QByteArray getGlString(unsigned int which);
+
+    QWindowsOpenGLContext *createContext(QOpenGLContext *context);
+    void *moduleHandle() const { return opengl32.moduleHandle(); }
+    QOpenGLContext::OpenGLModuleType moduleType() const { return QOpenGLContext::LibGL; }
+
+    // For a regular opengl32.dll report the ThreadedOpenGL capability.
+    // For others, which are likely to be software-only, don't.
+    bool supportsThreadedOpenGL() const { return !opengl32.moduleIsNotOpengl32(); }
 
     const QByteArray vendor;
     const QByteArray renderer;
@@ -139,37 +228,38 @@ public:
     WglCreateContextAttribsARB wglCreateContextAttribsARB;
     WglSwapInternalExt wglSwapInternalExt;
     WglGetSwapInternalExt wglGetSwapInternalExt;
+
+    static QWindowsOpengl32DLL opengl32;
 };
 
 QDebug operator<<(QDebug d, const QOpenGLStaticContext &);
 
-class QWindowsGLContext : public QPlatformOpenGLContext
+class QWindowsGLContext : public QWindowsOpenGLContext
 {
 public:
-    typedef QSharedPointer<QOpenGLStaticContext> QOpenGLStaticContextPtr;
-
-    explicit QWindowsGLContext(const QOpenGLStaticContextPtr &staticContext,
-                               QOpenGLContext *context);
+    explicit QWindowsGLContext(QOpenGLStaticContext *staticContext, QOpenGLContext *context);
     virtual ~QWindowsGLContext();
-    bool isSharing() const                { return m_context->shareHandle(); }
-    bool isValid() const                  { return m_renderingContext; }
-    virtual QSurfaceFormat format() const { return m_obtainedFormat; }
+    bool isSharing() const Q_DECL_OVERRIDE { return m_context->shareHandle(); }
+    bool isValid() const Q_DECL_OVERRIDE { return m_renderingContext; }
+    virtual QSurfaceFormat format() const Q_DECL_OVERRIDE { return m_obtainedFormat; }
 
-    virtual void swapBuffers(QPlatformSurface *surface);
+    virtual void swapBuffers(QPlatformSurface *surface) Q_DECL_OVERRIDE;
 
-    virtual bool makeCurrent(QPlatformSurface *surface);
-    virtual void doneCurrent();
+    virtual bool makeCurrent(QPlatformSurface *surface) Q_DECL_OVERRIDE;
+    virtual void doneCurrent() Q_DECL_OVERRIDE;
 
     typedef void (*GL_Proc) ();
 
-    virtual GL_Proc getProcAddress(const QByteArray &procName);
+    virtual QFunctionPointer getProcAddress(const QByteArray &procName) Q_DECL_OVERRIDE;
 
-    HGLRC renderingContext() const        { return m_renderingContext; }
+    HGLRC renderingContext() const { return m_renderingContext; }
+
+    void *nativeContext() const Q_DECL_OVERRIDE { return m_renderingContext; }
 
 private:
     inline void releaseDCs();
 
-    const QOpenGLStaticContextPtr m_staticContext;
+    QOpenGLStaticContext *m_staticContext;
     QOpenGLContext *m_context;
     QSurfaceFormat m_obtainedFormat;
     HGLRC m_renderingContext;

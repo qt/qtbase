@@ -521,6 +521,7 @@ public:
         AA_ForceRasterWidgets = 14,
         AA_UseDesktopOpenGL = 15,
         AA_UseOpenGLES = 16,
+        AA_UseSoftwareOpenGL = 17,
 
         // Add new attributes before this line
         AA_AttributeCount

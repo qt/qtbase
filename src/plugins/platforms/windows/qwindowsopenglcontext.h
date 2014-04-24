@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -39,58 +39,51 @@
 **
 ****************************************************************************/
 
-#ifndef QWINDOWSNATIVEINTERFACE_H
-#define QWINDOWSNATIVEINTERFACE_H
+#ifndef QWINDOWSOPENGLCONTEXT_H
+#define QWINDOWSOPENGLCONTEXT_H
 
-#include "qtwindows_additional.h"
-#include <QtGui/qpa/qplatformnativeinterface.h>
+#include <QtGui/QOpenGLContext>
+#include <qpa/qplatformopenglcontext.h>
 
 QT_BEGIN_NAMESPACE
 
-/*!
-    \class QWindowsNativeInterface
-    \brief Provides access to native handles.
-
-    Currently implemented keys
-    \list
-    \li handle (HWND)
-    \li getDC (DC)
-    \li releaseDC Releases the previously acquired DC and returns 0.
-    \endlist
-
-    \internal
-    \ingroup qt-lighthouse-win
-*/
-
-class QWindowsNativeInterface : public QPlatformNativeInterface
-{
-    Q_OBJECT
-    Q_PROPERTY(bool asyncExpose READ asyncExpose WRITE setAsyncExpose)
-
-public:
-    void *nativeResourceForIntegration(const QByteArray &resource) Q_DECL_OVERRIDE;
 #ifndef QT_NO_OPENGL
-    void *nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context) Q_DECL_OVERRIDE;
-#endif
-    void *nativeResourceForWindow(const QByteArray &resource, QWindow *window) Q_DECL_OVERRIDE;
 
-    Q_INVOKABLE void *createMessageWindow(const QString &classNameTemplate,
-                                          const QString &windowName,
-                                          void *eventProc) const;
+class QWindowsOpenGLContext;
 
-    Q_INVOKABLE QString registerWindowClass(const QString &classNameIn, void *eventProc) const;
+class QWindowsStaticOpenGLContext
+{
+public:
+    static QWindowsStaticOpenGLContext *create();
+    virtual ~QWindowsStaticOpenGLContext() { }
 
-    Q_INVOKABLE void beep() { MessageBeep(MB_OK); } // For QApplication
+    virtual QWindowsOpenGLContext *createContext(QOpenGLContext *context) = 0;
+    virtual void *moduleHandle() const = 0;
+    virtual QOpenGLContext::OpenGLModuleType moduleType() const = 0;
+    virtual bool supportsThreadedOpenGL() const { return false; }
 
-    bool asyncExpose() const;
-    void setAsyncExpose(bool value);
-
-    QVariantMap windowProperties(QPlatformWindow *window) const Q_DECL_OVERRIDE;
-    QVariant windowProperty(QPlatformWindow *window, const QString &name) const Q_DECL_OVERRIDE;
-    QVariant windowProperty(QPlatformWindow *window, const QString &name, const QVariant &defaultValue) const Q_DECL_OVERRIDE;
-    void setWindowProperty(QPlatformWindow *window, const QString &name, const QVariant &value) Q_DECL_OVERRIDE;
+    // If the windowing system interface needs explicitly created window surfaces (like EGL),
+    // reimplement these.
+    virtual void *createWindowSurface(void * /*nativeWindow*/, void * /*nativeConfig*/) { return 0; }
+    virtual void destroyWindowSurface(void * /*nativeSurface*/) { }
 };
+
+class QWindowsOpenGLContext : public QPlatformOpenGLContext
+{
+public:
+    virtual ~QWindowsOpenGLContext() { }
+
+    // Returns the native context handle (e.g. HGLRC for WGL, EGLContext for EGL).
+    virtual void *nativeContext() const = 0;
+
+    // These should be implemented only for some winsys interfaces, for example EGL.
+    // For others, like WGL, they are not relevant.
+    virtual void *nativeDisplay() const { return 0; }
+    virtual void *nativeConfig() const { return 0; }
+};
+
+#endif // QT_NO_OPENGL
 
 QT_END_NAMESPACE
 
-#endif // QWINDOWSNATIVEINTERFACE_H
+#endif // QWINDOWSOPENGLCONTEXT_H

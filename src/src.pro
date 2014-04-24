@@ -152,7 +152,7 @@ contains(QT_CONFIG, concurrent):SUBDIRS += src_concurrent
         SUBDIRS += src_tools_uic src_widgets
         TOOLS += src_tools_uic
         src_plugins.depends += src_widgets
-        contains(QT_CONFIG, opengl(es2)?):!contains(QT_CONFIG, dynamicgl) {
+        contains(QT_CONFIG, opengl(es2)?) {
             SUBDIRS += src_opengl
             src_plugins.depends += src_opengl
         }

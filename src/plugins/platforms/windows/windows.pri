@@ -66,7 +66,11 @@ HEADERS += \
     $$PWD/qwindowsnativeimage.h \
     $$PWD/qwindowsnativeinterface.h
 
+!wince: HEADERS += $$PWD/qwindowsopengltester.h
+
 INCLUDEPATH += $$PWD
+
+contains(QT_CONFIG,opengl): HEADERS += $$PWD/qwindowsopenglcontext.h
 
 contains(QT_CONFIG, opengles2) {
     SOURCES += $$PWD/qwindowseglcontext.cpp
@@ -78,7 +82,8 @@ contains(QT_CONFIG, opengles2) {
 
 # Dynamic GL needs both WGL and EGL
 contains(QT_CONFIG,dynamicgl) {
-    SOURCES += $$PWD/qwindowseglcontext.cpp
+    SOURCES += $$PWD/qwindowseglcontext.cpp \
+               $$PWD/qwindowsopengltester.cpp
     HEADERS += $$PWD/qwindowseglcontext.h
 }
 

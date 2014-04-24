@@ -227,7 +227,9 @@ QOpenGLFunctions_1_0_CoreBackend::QOpenGLFunctions_1_0_CoreBackend(QOpenGLContex
 {
     // OpenGL 1.0 core functions
 #if defined(Q_OS_WIN)
-    HMODULE handle = GetModuleHandleA("opengl32.dll");
+    HMODULE handle = static_cast<HMODULE>(QOpenGLContext::openGLModuleHandle());
+    if (!handle)
+        handle = GetModuleHandleA("opengl32.dll");
     Viewport = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLint , GLint , GLsizei , GLsizei )>(GetProcAddress(handle, "glViewport"));
     DepthRange = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLdouble , GLdouble )>(GetProcAddress(handle, "glDepthRange"));
     IsEnabled = reinterpret_cast<GLboolean (QOPENGLF_APIENTRYP)(GLenum )>(GetProcAddress(handle, "glIsEnabled"));
@@ -339,7 +341,9 @@ QOpenGLFunctions_1_1_CoreBackend::QOpenGLFunctions_1_1_CoreBackend(QOpenGLContex
 {
     // OpenGL 1.1 core functions
 #if defined(Q_OS_WIN)
-    HMODULE handle = GetModuleHandleA("opengl32.dll");
+    HMODULE handle = static_cast<HMODULE>(QOpenGLContext::openGLModuleHandle());
+    if (!handle)
+        handle = GetModuleHandleA("opengl32.dll");
     Indexubv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(const GLubyte *)>(GetProcAddress(handle, "glIndexubv"));
     Indexub = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLubyte )>(GetProcAddress(handle, "glIndexub"));
     IsTexture = reinterpret_cast<GLboolean (QOPENGLF_APIENTRYP)(GLuint )>(GetProcAddress(handle, "glIsTexture"));
@@ -991,7 +995,9 @@ QOpenGLFunctions_1_0_DeprecatedBackend::QOpenGLFunctions_1_0_DeprecatedBackend(Q
 {
     // OpenGL 1.0 deprecated functions
 #if defined(Q_OS_WIN)
-    HMODULE handle = GetModuleHandleA("opengl32.dll");
+    HMODULE handle = static_cast<HMODULE>(QOpenGLContext::openGLModuleHandle());
+    if (!handle)
+        handle = GetModuleHandleA("opengl32.dll");
     Translatef = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLfloat , GLfloat , GLfloat )>(GetProcAddress(handle, "glTranslatef"));
     Translated = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLdouble , GLdouble , GLdouble )>(GetProcAddress(handle, "glTranslated"));
     Scalef = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLfloat , GLfloat , GLfloat )>(GetProcAddress(handle, "glScalef"));
@@ -1523,7 +1529,9 @@ QOpenGLFunctions_1_1_DeprecatedBackend::QOpenGLFunctions_1_1_DeprecatedBackend(Q
 {
     // OpenGL 1.1 deprecated functions
 #if defined(Q_OS_WIN)
-    HMODULE handle = GetModuleHandleA("opengl32.dll");
+    HMODULE handle = static_cast<HMODULE>(QOpenGLContext::openGLModuleHandle());
+    if (!handle)
+        handle = GetModuleHandleA("opengl32.dll");
     PushClientAttrib = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLbitfield )>(GetProcAddress(handle, "glPushClientAttrib"));
     PopClientAttrib = reinterpret_cast<void (QOPENGLF_APIENTRYP)()>(GetProcAddress(handle, "glPopClientAttrib"));
     PrioritizeTextures = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLsizei , const GLuint *, const GLfloat *)>(GetProcAddress(handle, "glPrioritizeTextures"));

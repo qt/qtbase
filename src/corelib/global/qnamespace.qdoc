@@ -168,13 +168,25 @@
     \value AA_ForceRasterWidgets Make top-level widgets use pure raster surfaces,
            and do not support non-native GL-based child widgets.
 
-    \value AA_UseDesktopOpenGL Forces the usage of the desktop OpenGL on
+    \value AA_UseDesktopOpenGL Forces the usage of desktop OpenGL (for example,
+           \e opengl32.dll or \e libGL.so) on platforms that use dynamic loading
+           of the OpenGL implementation.
+           This value has been added in Qt 5.3.
+
+    \value AA_UseOpenGLES Forces the usage of OpenGL ES 2.0 or higher on
            platforms that use dynamic loading of the OpenGL implementation.
            This value has been added in Qt 5.3.
 
-    \value AA_UseOpenGLES Forces the usage of OpenGL ES 2.0 on platforms that
-           use dynamic loading of the OpenGL implementation.
-           This value has been added in Qt 5.3.
+    \value AA_UseSoftwareOpenGL Forces the usage of a software based OpenGL
+           implementation on platforms that use dynamic loading of the OpenGL
+           implementation. This will typically be a patched build of
+           \l{http://www.mesa3d.org/llvmpipe.html}{Mesa llvmpipe}, providing
+           OpenGL 2.1. The value may have no effect if no such OpenGL
+           implementation is available. The default name of this library is
+           QtSoftwareOpenGL.dll and can be overridden by setting the environment
+           variable \e QT_OPENGL_DLL. See the platform-specific pages, for
+           instance \l{Qt for Windows}, for more information.  This value has
+           been added in Qt 5.4.
 
     The following values are obsolete:
 
