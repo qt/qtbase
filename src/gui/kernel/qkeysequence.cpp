@@ -289,6 +289,7 @@ void Q_GUI_EXPORT qt_set_sequence_auto_mnemonic(bool b) { qt_sequence_no_mnemoni
     \row    \li DeleteCompleteLine   \li (none)                           \li (none)                 \li Ctrl+U         \li Ctrl+U
     \row    \li InsertParagraphSeparator     \li Enter                    \li Enter                  \li Enter          \li Enter
     \row    \li InsertLineSeparator          \li Shift+Enter              \li Meta+Enter, Meta+O     \li Shift+Enter    \li Shift+Enter
+    \row    \li Backspace             \li (none)                          \li Meta+H                 \li (none)         \li (none)
     \endtable
 
     Note that, since the key sequences used for the standard shortcuts differ
@@ -679,6 +680,7 @@ static const struct {
 
     \value AddTab           Add new tab.
     \value Back             Navigate back.
+    \value Backspace        Delete previous character.
     \value Bold             Bold text.
     \value Close            Close document/tab.
     \value Copy             Copy.

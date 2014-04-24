@@ -134,7 +134,8 @@ public:
         Quit,
         FullScreen,
         Deselect,
-        DeleteCompleteLine
+        DeleteCompleteLine,
+        Backspace
      };
 
     enum SequenceFormat {
