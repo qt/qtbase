@@ -44,6 +44,7 @@
 #include "qeglpbuffer_p.h"
 #include <qpa/qplatformwindow.h>
 #include <QOpenGLContext>
+#include <QtPlatformHeaders/QEGLNativeContext>
 #include <QDebug>
 
 QT_BEGIN_NAMESPACE
@@ -108,25 +109,21 @@ QT_BEGIN_NAMESPACE
 #define GL_CONTEXT_COMPATIBILITY_PROFILE_BIT 0x00000002
 #endif
 
-QEGLPlatformContext::QEGLPlatformContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display)
-    : m_eglDisplay(display)
-    , m_eglConfig(q_configFromGLFormat(display, format))
-    , m_swapInterval(-1)
-    , m_swapIntervalEnvChecked(false)
-    , m_swapIntervalFromEnv(-1)
-{
-    init(format, share);
-}
-
 QEGLPlatformContext::QEGLPlatformContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display,
-                                         EGLConfig config)
+                                         EGLConfig *config, const QVariant &nativeHandle)
     : m_eglDisplay(display)
-    , m_eglConfig(config)
     , m_swapInterval(-1)
     , m_swapIntervalEnvChecked(false)
     , m_swapIntervalFromEnv(-1)
 {
-    init(format, share);
+    if (nativeHandle.isNull()) {
+        m_eglConfig = config ? *config : q_configFromGLFormat(display, format);
+        m_ownsContext = true;
+        init(format, share);
+    } else {
+        m_ownsContext = false;
+        adopt(nativeHandle, share);
+    }
 }
 
 void QEGLPlatformContext::init(const QSurfaceFormat &format, QPlatformOpenGLContext *share)
@@ -198,6 +195,59 @@ void QEGLPlatformContext::init(const QSurfaceFormat &format, QPlatformOpenGLCont
         q_printEglConfig(m_eglDisplay, m_eglConfig);
     }
 
+    updateFormatFromGL();
+}
+
+void QEGLPlatformContext::adopt(const QVariant &nativeHandle, QPlatformOpenGLContext *share)
+{
+    if (!nativeHandle.canConvert<QEGLNativeContext>()) {
+        qWarning("QEGLPlatformContext: Requires a QEGLNativeContext");
+        return;
+    }
+    QEGLNativeContext handle = nativeHandle.value<QEGLNativeContext>();
+    EGLContext context = handle.context();
+    if (!context) {
+        qWarning("QEGLPlatformContext: No EGLContext given");
+        return;
+    }
+
+    // A context belonging to a given EGLDisplay cannot be used with another one.
+    if (handle.display() != m_eglDisplay) {
+        qWarning("QEGLPlatformContext: Cannot adopt context from different display");
+        return;
+    }
+
+    // Figure out the EGLConfig.
+    EGLint value = 0;
+    eglQueryContext(m_eglDisplay, context, EGL_CONFIG_ID, &value);
+    EGLint n = 0;
+    EGLConfig cfg;
+    const EGLint attribs[] = { EGL_CONFIG_ID, value, EGL_NONE };
+    if (eglChooseConfig(m_eglDisplay, attribs, &cfg, 1, &n) && n == 1) {
+        m_eglConfig = cfg;
+        m_format = q_glFormatFromConfig(m_eglDisplay, m_eglConfig);
+    } else {
+        qWarning("QEGLPlatformContext: Failed to get framebuffer configuration for context");
+    }
+
+    // Fetch client API type.
+    value = 0;
+    eglQueryContext(m_eglDisplay, context, EGL_CONTEXT_CLIENT_TYPE, &value);
+    if (value == EGL_OPENGL_API || value == EGL_OPENGL_ES_API) {
+        m_api = value;
+        eglBindAPI(m_api);
+    } else {
+        qWarning("QEGLPlatformContext: Failed to get client API type");
+        m_api = EGL_OPENGL_ES_API;
+    }
+
+    m_eglContext = context;
+    m_shareContext = share ? static_cast<QEGLPlatformContext *>(share)->m_eglContext : 0;
+    updateFormatFromGL();
+}
+
+void QEGLPlatformContext::updateFormatFromGL()
+{
 #ifndef QT_NO_OPENGL
     // Make the context current to ensure the GL version query works. This needs a surface too.
     const EGLint pbufferAttributes[] = {
@@ -296,10 +346,10 @@ bool QEGLPlatformContext::makeCurrent(QPlatformSurface *surface)
 
 QEGLPlatformContext::~QEGLPlatformContext()
 {
-    if (m_eglContext != EGL_NO_CONTEXT) {
+    if (m_ownsContext && m_eglContext != EGL_NO_CONTEXT)
         eglDestroyContext(m_eglDisplay, m_eglContext);
-        m_eglContext = EGL_NO_CONTEXT;
-    }
+
+    m_eglContext = EGL_NO_CONTEXT;
 }
 
 void QEGLPlatformContext::doneCurrent()

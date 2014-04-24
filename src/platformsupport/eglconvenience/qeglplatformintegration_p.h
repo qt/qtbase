@@ -44,6 +44,7 @@
 
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformnativeinterface.h>
+#include <QtCore/QVariant>
 #include <EGL/egl.h>
 
 QT_BEGIN_NAMESPACE
@@ -89,7 +90,8 @@ protected:
     virtual QEGLPlatformWindow *createWindow(QWindow *window) const = 0;
     virtual QEGLPlatformContext *createContext(const QSurfaceFormat &format,
                                                QPlatformOpenGLContext *shareContext,
-                                               EGLDisplay display) const = 0;
+                                               EGLDisplay display,
+                                               QVariant *nativeHandle) const = 0;
     virtual QPlatformOffscreenSurface *createOffscreenSurface(EGLDisplay display,
                                                               const QSurfaceFormat &format,
                                                               QOffscreenSurface *surface) const = 0;

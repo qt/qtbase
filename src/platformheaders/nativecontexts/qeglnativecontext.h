@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -39,43 +39,35 @@
 **
 ****************************************************************************/
 
-#include "qeglfscontext.h"
-#include "qeglfswindow.h"
-#include "qeglfshooks.h"
+#ifndef QEGLNATIVECONTEXT_H
+#define QEGLNATIVECONTEXT_H
 
-#include <QtPlatformSupport/private/qeglconvenience_p.h>
-#include <QtPlatformSupport/private/qeglpbuffer_p.h>
-#include <QtPlatformSupport/private/qeglplatformcursor_p.h>
-#include <QtGui/QSurface>
-#include <QtDebug>
+#include <EGL/egl.h>
 
 QT_BEGIN_NAMESPACE
 
-QEglFSContext::QEglFSContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display,
-                             EGLConfig *config, const QVariant &nativeHandle)
-    : QEGLPlatformContext(format, share, display, config, nativeHandle)
+struct QEGLNativeContext
 {
-}
+    QEGLNativeContext()
+        : m_context(0),
+          m_display(0)
+    { }
 
-EGLSurface QEglFSContext::eglSurfaceForPlatformSurface(QPlatformSurface *surface)
-{
-    if (surface->surface()->surfaceClass() == QSurface::Window)
-        return static_cast<QEglFSWindow *>(surface)->surface();
-    else
-        return static_cast<QEGLPbuffer *>(surface)->pbuffer();
-}
+    QEGLNativeContext(EGLContext ctx, EGLDisplay dpy)
+        : m_context(ctx),
+          m_display(dpy)
+    { }
 
-void QEglFSContext::swapBuffers(QPlatformSurface *surface)
-{
-    // draw the cursor
-    if (surface->surface()->surfaceClass() == QSurface::Window) {
-        QPlatformWindow *window = static_cast<QPlatformWindow *>(surface);
-        if (QEGLPlatformCursor *cursor = static_cast<QEGLPlatformCursor *>(window->screen()->cursor()))
-            cursor->paintOnScreen();
-    }
+    EGLContext context() const { return m_context; }
+    EGLDisplay display() const { return m_display; }
 
-    QEglFSHooks::hooks()->waitForVSync();
-    QEGLPlatformContext::swapBuffers(surface);
-}
+private:
+    EGLContext m_context;
+    EGLDisplay m_display;
+};
 
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(QEGLNativeContext)
+
+#endif // QEGLNATIVECONTEXT_H

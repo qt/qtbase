@@ -44,6 +44,7 @@
 
 #include <qpa/qplatformwindow.h>
 #include <qpa/qplatformopenglcontext.h>
+#include <QtCore/QVariant>
 #include <EGL/egl.h>
 
 QT_BEGIN_NAMESPACE
@@ -51,9 +52,8 @@ QT_BEGIN_NAMESPACE
 class QEGLPlatformContext : public QPlatformOpenGLContext
 {
 public:
-    QEGLPlatformContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display);
     QEGLPlatformContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display,
-                        EGLConfig config);
+                        EGLConfig *config = 0, const QVariant &nativeHandle = QVariant());
     ~QEGLPlatformContext();
 
     bool makeCurrent(QPlatformSurface *surface);
@@ -74,6 +74,8 @@ protected:
 
 private:
     void init(const QSurfaceFormat &format, QPlatformOpenGLContext *share);
+    void adopt(const QVariant &nativeHandle, QPlatformOpenGLContext *share);
+    void updateFormatFromGL();
 
     EGLContext m_eglContext;
     EGLContext m_shareContext;
@@ -84,6 +86,7 @@ private:
     int m_swapInterval;
     bool m_swapIntervalEnvChecked;
     int m_swapIntervalFromEnv;
+    bool m_ownsContext;
 };
 
 QT_END_NAMESPACE

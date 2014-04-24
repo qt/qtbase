@@ -158,9 +158,14 @@ QPlatformOpenGLContext *QEGLPlatformIntegration::createPlatformOpenGLContext(QOp
     // If there is a "root" window into which raster and QOpenGLWidget content is
     // composited, all other contexts must share with its context.
     QOpenGLContext *compositingContext = screen ? screen->compositingContext() : 0;
-    return createContext(context->format(),
-                         compositingContext ? compositingContext->handle() : context->shareHandle(),
-                         display());
+    QPlatformOpenGLContext *share = compositingContext ? compositingContext->handle() : context->shareHandle();
+    QVariant nativeHandle = context->nativeHandle();
+    QPlatformOpenGLContext *platformContext = createContext(context->format(),
+                                                            share,
+                                                            display(),
+                                                            &nativeHandle);
+    context->setNativeHandle(nativeHandle);
+    return platformContext;
 }
 
 QPlatformOffscreenSurface *QEGLPlatformIntegration::createPlatformOffscreenSurface(QOffscreenSurface *surface) const

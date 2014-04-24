@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -39,43 +39,38 @@
 **
 ****************************************************************************/
 
-#include "qeglfscontext.h"
-#include "qeglfswindow.h"
-#include "qeglfshooks.h"
+#ifndef QOPENGLCONTEXTWINDOW_H
+#define QOPENGLCONTEXTWINDOW_H
 
-#include <QtPlatformSupport/private/qeglconvenience_p.h>
-#include <QtPlatformSupport/private/qeglpbuffer_p.h>
-#include <QtPlatformSupport/private/qeglplatformcursor_p.h>
-#include <QtGui/QSurface>
-#include <QtDebug>
+#include <QtGui/QWindow>
+#include <QtGui/QOpenGLContext>
+#include <QtGui/QImage>
+#include <QtCore/QVariant>
+#include <QtGui/private/qopengltextureblitter_p.h>
 
-QT_BEGIN_NAMESPACE
-
-QEglFSContext::QEglFSContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display,
-                             EGLConfig *config, const QVariant &nativeHandle)
-    : QEGLPlatformContext(format, share, display, config, nativeHandle)
+class QOpenGLContextWindow : public QWindow
 {
-}
+    Q_OBJECT
 
-EGLSurface QEglFSContext::eglSurfaceForPlatformSurface(QPlatformSurface *surface)
-{
-    if (surface->surface()->surfaceClass() == QSurface::Window)
-        return static_cast<QEglFSWindow *>(surface)->surface();
-    else
-        return static_cast<QEGLPbuffer *>(surface)->pbuffer();
-}
+public:
+    QOpenGLContextWindow();
+    ~QOpenGLContextWindow();
 
-void QEglFSContext::swapBuffers(QPlatformSurface *surface)
-{
-    // draw the cursor
-    if (surface->surface()->surfaceClass() == QSurface::Window) {
-        QPlatformWindow *window = static_cast<QPlatformWindow *>(surface);
-        if (QEGLPlatformCursor *cursor = static_cast<QEGLPlatformCursor *>(window->screen()->cursor()))
-            cursor->paintOnScreen();
-    }
+    void render();
 
-    QEglFSHooks::hooks()->waitForVSync();
-    QEGLPlatformContext::swapBuffers(surface);
-}
+protected:
+    void exposeEvent(QExposeEvent *event);
 
-QT_END_NAMESPACE
+private:
+    qreal dWidth() const { return width() * devicePixelRatio(); }
+    qreal dHeight() const { return height() * devicePixelRatio(); }
+    void createForeignContext();
+
+    QOpenGLContext *m_context;
+    QImage m_image;
+    QVariant m_nativeHandle;
+    uint m_textureId;
+    QOpenGLTextureBlitter *m_blitter;
+};
+
+#endif

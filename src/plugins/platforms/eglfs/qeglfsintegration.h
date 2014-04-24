@@ -66,7 +66,8 @@ protected:
     QEGLPlatformWindow *createWindow(QWindow *window) const Q_DECL_OVERRIDE;
     QEGLPlatformContext *createContext(const QSurfaceFormat &format,
                                        QPlatformOpenGLContext *shareContext,
-                                       EGLDisplay display) const Q_DECL_OVERRIDE;
+                                       EGLDisplay display,
+                                       QVariant *nativeHandle) const Q_DECL_OVERRIDE;
     QPlatformOffscreenSurface *createOffscreenSurface(EGLDisplay display,
                                                       const QSurfaceFormat &format,
                                                       QOffscreenSurface *surface) const Q_DECL_OVERRIDE;

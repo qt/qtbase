@@ -50,6 +50,7 @@
 #include <QtPlatformSupport/private/qeglconvenience_p.h>
 #include <QtPlatformSupport/private/qeglplatformcontext_p.h>
 #include <QtPlatformSupport/private/qeglpbuffer_p.h>
+#include <QtPlatformHeaders/QEGLNativeContext>
 
 #include <qpa/qplatformwindow.h>
 #include <QtGui/QSurfaceFormat>
@@ -115,9 +116,20 @@ QEGLPlatformWindow *QEglFSIntegration::createWindow(QWindow *window) const
 
 QEGLPlatformContext *QEglFSIntegration::createContext(const QSurfaceFormat &format,
                                                       QPlatformOpenGLContext *shareContext,
-                                                      EGLDisplay display) const
+                                                      EGLDisplay display,
+                                                      QVariant *nativeHandle) const
 {
-    return new QEglFSContext(QEglFSHooks::hooks()->surfaceFormatFor(format), shareContext, display);
+    QEglFSContext *ctx;
+    if (!nativeHandle || nativeHandle->isNull()) {
+        EGLConfig config = QEglFSIntegration::chooseConfig(display, format);
+        ctx =  new QEglFSContext(QEglFSHooks::hooks()->surfaceFormatFor(format), shareContext, display,
+                                 &config, QVariant());
+    } else {
+        ctx =  new QEglFSContext(QEglFSHooks::hooks()->surfaceFormatFor(format), shareContext, display,
+                                 0, *nativeHandle);
+    }
+    *nativeHandle = QVariant::fromValue<QEGLNativeContext>(QEGLNativeContext(ctx->eglContext(), display));
+    return ctx;
 }
 
 QPlatformOffscreenSurface *QEglFSIntegration::createOffscreenSurface(EGLDisplay display,

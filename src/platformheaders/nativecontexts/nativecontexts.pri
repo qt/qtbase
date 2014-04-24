@@ -1,1 +1,2 @@
-HEADERS += $$PWD/qglxnativecontext.h
+HEADERS += $$PWD/qglxnativecontext.h \
+           $$PWD/qeglnativecontext.h

@@ -47,7 +47,10 @@ unc
 
 !contains(QT_CONFIG, openssl):!contains(QT_CONFIG, openssl-linked):SUBDIRS -= qssloptions
 
-contains(QT_CONFIG, opengl):SUBDIRS += qopengltextureblitter
+contains(QT_CONFIG, opengl) {
+    SUBDIRS += qopengltextureblitter
+    contains(QT_CONFIG, egl): SUBDIRS += qopenglcontext
+}
 
 win32 {
     SUBDIRS -= network_remote_stresstest network_stresstest

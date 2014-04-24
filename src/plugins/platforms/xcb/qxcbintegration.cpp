@@ -83,6 +83,7 @@
 #include "qxcbeglsurface.h"
 #include <QtPlatformSupport/private/qeglplatformcontext_p.h>
 #include <QtPlatformSupport/private/qeglpbuffer_p.h>
+#include <QtPlatformHeaders/QEGLNativeContext>
 #endif
 
 #include <QtGui/QOpenGLContext>
@@ -186,8 +187,8 @@ class QEGLXcbPlatformContext : public QEGLPlatformContext
 {
 public:
     QEGLXcbPlatformContext(const QSurfaceFormat &glFormat, QPlatformOpenGLContext *share,
-                           EGLDisplay display, QXcbConnection *c)
-        : QEGLPlatformContext(glFormat, share, display)
+                           EGLDisplay display, QXcbConnection *c, const QVariant &nativeHandle)
+        : QEGLPlatformContext(glFormat, share, display, 0, nativeHandle)
         , m_connection(c)
     {
         Q_XCB_NOOP(m_connection);
@@ -223,6 +224,10 @@ public:
             return static_cast<QEGLPbuffer *>(surface)->pbuffer();
     }
 
+    QVariant nativeHandle() const {
+        return QVariant::fromValue<QEGLNativeContext>(QEGLNativeContext(eglContext(), eglDisplay()));
+    }
+
 private:
     QXcbConnection *m_connection;
 };
@@ -238,8 +243,13 @@ QPlatformOpenGLContext *QXcbIntegration::createPlatformOpenGLContext(QOpenGLCont
     context->setNativeHandle(platformContext->nativeHandle());
     return platformContext;
 #elif defined(XCB_USE_EGL)
-    return new QEGLXcbPlatformContext(context->format(), context->shareHandle(),
-        screen->connection()->egl_display(), screen->connection());
+    QEGLXcbPlatformContext *platformContext = new QEGLXcbPlatformContext(context->format(),
+                                                                         context->shareHandle(),
+                                                                         screen->connection()->egl_display(),
+                                                                         screen->connection(),
+                                                                         context->nativeHandle());
+    context->setNativeHandle(platformContext->nativeHandle());
+    return platformContext;
 #else
     Q_UNUSED(screen);
     qWarning("QXcbIntegration: Cannot create platform OpenGL context, neither GLX nor EGL are enabled");

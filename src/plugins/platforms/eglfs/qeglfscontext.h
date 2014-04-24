@@ -43,13 +43,15 @@
 #define QEGLFSCONTEXT_H
 
 #include <QtPlatformSupport/private/qeglplatformcontext_p.h>
+#include <QtCore/QVariant>
 
 QT_BEGIN_NAMESPACE
 
 class QEglFSContext : public QEGLPlatformContext
 {
 public:
-    QEglFSContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display);
+    QEglFSContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display,
+                  EGLConfig *config, const QVariant &nativeHandle);
     EGLSurface eglSurfaceForPlatformSurface(QPlatformSurface *surface) Q_DECL_OVERRIDE;
     void swapBuffers(QPlatformSurface *surface) Q_DECL_OVERRIDE;
 };

@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -39,43 +39,16 @@
 **
 ****************************************************************************/
 
-#include "qeglfscontext.h"
-#include "qeglfswindow.h"
-#include "qeglfshooks.h"
+#include <QtGui/QGuiApplication>
+#include "qopenglcontextwindow.h"
 
-#include <QtPlatformSupport/private/qeglconvenience_p.h>
-#include <QtPlatformSupport/private/qeglpbuffer_p.h>
-#include <QtPlatformSupport/private/qeglplatformcursor_p.h>
-#include <QtGui/QSurface>
-#include <QtDebug>
-
-QT_BEGIN_NAMESPACE
-
-QEglFSContext::QEglFSContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display,
-                             EGLConfig *config, const QVariant &nativeHandle)
-    : QEGLPlatformContext(format, share, display, config, nativeHandle)
+int main(int argc, char **argv)
 {
+    QGuiApplication app(argc, argv);
+
+    QOpenGLContextWindow window;
+    window.resize(300, 300);
+    window.show();
+
+    return app.exec();
 }
-
-EGLSurface QEglFSContext::eglSurfaceForPlatformSurface(QPlatformSurface *surface)
-{
-    if (surface->surface()->surfaceClass() == QSurface::Window)
-        return static_cast<QEglFSWindow *>(surface)->surface();
-    else
-        return static_cast<QEGLPbuffer *>(surface)->pbuffer();
-}
-
-void QEglFSContext::swapBuffers(QPlatformSurface *surface)
-{
-    // draw the cursor
-    if (surface->surface()->surfaceClass() == QSurface::Window) {
-        QPlatformWindow *window = static_cast<QPlatformWindow *>(surface);
-        if (QEGLPlatformCursor *cursor = static_cast<QEGLPlatformCursor *>(window->screen()->cursor()))
-            cursor->paintOnScreen();
-    }
-
-    QEglFSHooks::hooks()->waitForVSync();
-    QEGLPlatformContext::swapBuffers(surface);
-}
-
-QT_END_NAMESPACE
