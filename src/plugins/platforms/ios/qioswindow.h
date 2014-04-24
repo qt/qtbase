@@ -88,6 +88,7 @@ public:
     WId winId() const { return WId(m_view); };
 
 private:
+    void applicationStateChanged(Qt::ApplicationState state);
     void applyGeometry(const QRect &rect);
 
     QUIView *m_view;

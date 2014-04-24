@@ -192,12 +192,25 @@
 
 - (void)displayLayer:(CALayer *)layer
 {
-    QSize bounds = fromCGRect(layer.bounds).toRect().size();
+    Q_UNUSED(layer);
+    Q_ASSERT(layer == self.layer);
 
-    Q_ASSERT(m_qioswindow->geometry().size() == bounds);
-    Q_ASSERT(self.hidden == !m_qioswindow->window()->isVisible());
+    [self sendUpdatedExposeEvent];
+}
 
-    QRegion region = self.hidden ? QRegion() : QRect(QPoint(), bounds);
+- (void)sendUpdatedExposeEvent
+{
+    QRegion region;
+
+    if (m_qioswindow->isExposed()) {
+        QSize bounds = fromCGRect(self.layer.bounds).toRect().size();
+
+        Q_ASSERT(m_qioswindow->geometry().size() == bounds);
+        Q_ASSERT(self.hidden == !m_qioswindow->window()->isVisible());
+
+        region = QRect(QPoint(), bounds);
+    }
+
     QWindowSystemInterface::handleExposeEvent(m_qioswindow->window(), region);
     QWindowSystemInterface::flushWindowSystemEvents();
 }
@@ -334,6 +347,8 @@ QIOSWindow::QIOSWindow(QWindow *window)
     , m_view([[QUIView alloc] initWithQIOSWindow:this])
     , m_windowLevel(0)
 {
+    connect(qGuiApp, &QGuiApplication::applicationStateChanged, this, &QIOSWindow::applicationStateChanged);
+
     setParent(QPlatformWindow::parent());
 
     // Resolve default window geometry in case it was not set before creating the
@@ -471,7 +486,8 @@ void QIOSWindow::applyGeometry(const QRect &rect)
 
 bool QIOSWindow::isExposed() const
 {
-    return window()->isVisible() && !window()->geometry().isEmpty();
+    return qApp->applicationState() > Qt::ApplicationHidden
+        && window()->isVisible() && !window()->geometry().isEmpty();
 }
 
 void QIOSWindow::setWindowState(Qt::WindowState state)
@@ -591,6 +607,12 @@ void QIOSWindow::handleContentOrientationChange(Qt::ScreenOrientation orientatio
     // that the task bar (and associated gestures) are aligned correctly:
     UIInterfaceOrientation uiOrientation = UIInterfaceOrientation(fromQtScreenOrientation(orientation));
     [[UIApplication sharedApplication] setStatusBarOrientation:uiOrientation animated:NO];
+}
+
+void QIOSWindow::applicationStateChanged(Qt::ApplicationState)
+{
+    if (window()->isExposed() != isExposed())
+        [m_view sendUpdatedExposeEvent];
 }
 
 qreal QIOSWindow::devicePixelRatio() const
