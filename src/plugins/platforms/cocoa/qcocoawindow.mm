@@ -237,6 +237,9 @@ static bool isMouseEvent(NSEvent *ev)
     if (!pw || pw->m_isNSWindowChild)
         return NO;
 
+    if (pw->shouldRefuseKeyWindowAndFirstResponder())
+        return NO;
+
     // The default implementation returns NO for title-bar less windows,
     // override and return yes here to make sure popup windows such as
     // the combobox popup can become the key window.
@@ -312,6 +315,9 @@ static bool isMouseEvent(NSEvent *ev)
 {
     QCocoaWindow *pw = self.helper.platformWindow;
     if (!pw)
+        return NO;
+
+    if (pw->shouldRefuseKeyWindowAndFirstResponder())
         return NO;
 
     // Only tool or dialog windows should become key:
@@ -1774,6 +1780,17 @@ QWindow *QCocoaWindow::childWindowAt(QPoint windowPoint)
                     targetWindow = static_cast<QCocoaWindow*>(handle)->childWindowAt(windowPoint - childWindow->position());
 
     return targetWindow;
+}
+
+bool QCocoaWindow::shouldRefuseKeyWindowAndFirstResponder()
+{
+    // This function speaks up if there's any reason
+    // to refuse key window or first responder state.
+
+    if (window()->flags() & Qt::WindowDoesNotAcceptFocus)
+        return true;
+
+    return false;
 }
 
 QMargins QCocoaWindow::frameMargins() const

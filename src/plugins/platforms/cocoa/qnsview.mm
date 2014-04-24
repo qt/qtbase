@@ -596,7 +596,7 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
 
 - (BOOL)acceptsFirstResponder
 {
-    if (m_window->flags() & Qt::WindowDoesNotAcceptFocus)
+    if (m_platformWindow->shouldRefuseKeyWindowAndFirstResponder())
         return NO;
     if (m_window->flags() & Qt::WindowTransparentForInput)
         return NO;
