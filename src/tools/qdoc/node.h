@@ -247,6 +247,7 @@ public:
     virtual Node* disambiguate(Type , SubType ) { return this; }
     virtual bool wasSeen() const { return false; }
     virtual void appendGroupName(const QString& ) { }
+    virtual QString element() const { return QString(); }
     bool isIndexNode() const { return indexNodeFlag_; }
     Type type() const { return nodeType_; }
     virtual SubType subType() const { return NoSubType; }
@@ -658,7 +659,7 @@ public:
     virtual QString idNumber();
     virtual bool isQmlPropertyGroup() const { return true; }
 
-    const QString& element() const { return parent()->name(); }
+    virtual QString element() const { return parent()->name(); }
 
  private:
     int     idNumber_;
@@ -697,8 +698,7 @@ public:
     virtual QString qmlModuleName() const { return parent()->qmlModuleName(); }
     virtual QString qmlModuleVersion() const { return parent()->qmlModuleVersion(); }
     virtual QString qmlModuleIdentifier() const { return parent()->qmlModuleIdentifier(); }
-
-    const QString& element() const { return static_cast<QmlPropertyGroupNode*>(parent())->element(); }
+    virtual QString element() const;
 
  private:
     PropertyNode* findCorrespondingCppProperty();
@@ -858,7 +858,7 @@ public:
 
     QStringList reconstructParams(bool values = false) const;
     QString signature(bool values = false) const;
-    const QString& element() const { return parent()->name(); }
+    virtual QString element() const { return parent()->name(); }
     virtual bool isAttached() const { return attached_; }
     virtual bool isQmlNode() const {
         return ((type() == QmlSignal) ||

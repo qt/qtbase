@@ -490,7 +490,6 @@ static void processQdocconfFile(const QString &fileName)
         CodeParser *codeParser = CodeParser::parserForSourceFile(s.key());
         if (codeParser) {
             ++parsed;
-            //Generator::setDebugFlag(true);
             Generator::debug(QString("Parsing " + s.key()));
             codeParser->parseSourceFile(config.location(), s.key());
             usedParsers.insert(codeParser);
@@ -498,7 +497,6 @@ static void processQdocconfFile(const QString &fileName)
         ++s;
     }
     Generator::debug(QString("Parsing done."));
-    //Generator::setDebugFlag(false);
 
     foreach (CodeParser *codeParser, usedParsers)
         codeParser->doneParsingSourceFiles();
@@ -654,7 +652,7 @@ int main(int argc, char **argv)
             autolinkErrors = true;
         }
         else if (opt == "-debug") {
-            Generator::setDebugFlag(true);
+            Generator::startDebugging(QString("command line"));
         }
         else if (opt == "-prepare") {
             Generator::setQDocPass(Generator::Prepare);

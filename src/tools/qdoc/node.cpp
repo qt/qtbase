@@ -2336,6 +2336,16 @@ PropertyNode* QmlPropertyNode::findCorrespondingCppProperty()
     return 0;
 }
 
+/*!
+  This returns the name of the owning QML type.
+ */
+QString QmlPropertyNode::element() const
+{
+    if (parent()->isQmlPropertyGroup())
+        return parent()->element();
+    return parent()->name();
+}
+
 /*! \class NameCollisionNode
 
   An instance of this node is inserted in the tree

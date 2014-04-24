@@ -102,15 +102,16 @@ bool Generator::redirectDocumentationToDevNull_ = false;
 Generator::Passes Generator::qdocPass_ = Both;
 bool Generator::useOutputSubdirs_ = true;
 
-void Generator::setDebugFlag(bool b)
+void Generator::startDebugging(const QString& message)
 {
-#if 0
-    if (b)
-        qDebug() << "DEBUG: Setting debug flag.";
-    else
-        qDebug() << "DEBUG: Clearing debug flag.";
-#endif
-    debugging_ = b;
+    debugging_ = true;
+    qDebug() << "START DEBUGGING:" << message;
+}
+
+void Generator::stopDebugging(const QString& message)
+{
+    debugging_ = false;
+    qDebug() << "STOP DEBUGGING:" << message;
 }
 
 /*!
@@ -119,7 +120,7 @@ void Generator::setDebugFlag(bool b)
 void Generator::debug(const QString& message)
 {
     if (debugging())
-        qDebug() << "DEBUG:" << message;
+        qDebug() << "  DEBUG:" << message;
 }
 
 /*!

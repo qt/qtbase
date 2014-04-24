@@ -302,11 +302,7 @@ int HtmlGenerator::generateAtom(const Atom *atom, const Node *relative, CodeMark
 {
     int skipAhead = 0;
     static bool in_para = false;
-#if 0
-    if (Generator::debugging()) {
-        atom->dump();
-    }
-#endif
+
     switch (atom->type()) {
     case Atom::AbstractLeft:
         if (relative)
@@ -320,7 +316,6 @@ int HtmlGenerator::generateAtom(const Atom *atom, const Node *relative, CodeMark
         if (!inLink_ && !inContents_ && !inSectionHeading_) {
             const Node *node = 0;
             QString link = getLink(atom, relative, &node);
-            QDocDatabase::debug = false;
             if (!link.isEmpty()) {
                 beginLink(link, node, relative);
                 generateLink(atom, marker);

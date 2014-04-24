@@ -93,7 +93,8 @@ public:
     static void writeOutFileNames();
     static void augmentImageDirs(QSet<QString>& moreImageDirs);
     static void debug(const QString& message);
-    static void setDebugFlag(bool b);
+    static void startDebugging(const QString& message);
+    static void stopDebugging(const QString& message);
     static bool debugging() { return debugging_; }
     static bool noLinkErrors() { return noLinkErrors_; }
     static bool autolinkErrors() { return autolinkErrors_; }
