@@ -372,6 +372,7 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
     , m_windowModality(Qt::NonModal)
     , m_windowUnderMouse(false)
     , m_inConstructor(true)
+    , m_inSetVisible(false)
     , m_glContext(0)
     , m_menubar(0)
     , m_windowCursor(0)
@@ -618,6 +619,8 @@ void QCocoaWindow::setVisible(bool visible)
     if (m_isNSWindowChild && m_hiddenByClipping)
         return;
 
+    m_inSetVisible = true;
+
     QCocoaAutoReleasePool pool;
     QCocoaWindow *parentCocoaWindow = 0;
     if (window()->transientParent())
@@ -755,6 +758,8 @@ void QCocoaWindow::setVisible(bool visible)
                 [parentCocoaWindow->m_nsWindow setStyleMask:[parentCocoaWindow->m_nsWindow styleMask] | NSResizableWindowMask];
         }
     }
+
+    m_inSetVisible = false;
 }
 
 NSInteger QCocoaWindow::windowLevel(Qt::WindowFlags flags)
@@ -1789,6 +1794,12 @@ bool QCocoaWindow::shouldRefuseKeyWindowAndFirstResponder()
 
     if (window()->flags() & Qt::WindowDoesNotAcceptFocus)
         return true;
+
+    if (m_inSetVisible) {
+        QVariant showWithoutActivating = window()->property("_q_showWithoutActivating");
+        if (showWithoutActivating.isValid() && showWithoutActivating.toBool())
+            return true;
+    }
 
     return false;
 }

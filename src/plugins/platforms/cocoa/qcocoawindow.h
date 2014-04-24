@@ -271,6 +271,7 @@ public: // for QNSView
     bool m_windowUnderMouse;
 
     bool m_inConstructor;
+    bool m_inSetVisible;
     QCocoaGLContext *m_glContext;
     QCocoaMenuBar *m_menubar;
     NSCursor *m_windowCursor;
