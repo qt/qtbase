@@ -402,6 +402,12 @@ public:
 #elif defined(XCB_USE_XINPUT2)
     void xi2Select(xcb_window_t window);
 #endif
+#ifdef XCB_USE_XINPUT21
+    bool isUsingXInput21() { return m_xi2Enabled && m_xi2Minor >= 1; }
+#else
+    bool isUsingXInput21() { return false; }
+#endif
+
 
     void sync();
     void flush() { xcb_flush(m_connection); }
@@ -511,11 +517,12 @@ private:
     QVector<TabletData> m_tabletData;
 #endif
     struct ScrollingDevice {
-        ScrollingDevice() : deviceId(0), verticalIndex(0), horizontalIndex(0), orientations(0) { }
+        ScrollingDevice() : deviceId(0), verticalIndex(0), horizontalIndex(0), orientations(0), legacyOrientations(0) { }
         int deviceId;
         int verticalIndex, horizontalIndex;
         double verticalIncrement, horizontalIncrement;
         Qt::Orientations orientations;
+        Qt::Orientations legacyOrientations;
         QPointF lastScrollPosition;
     };
     void xi2HandleScrollEvent(void *event, ScrollingDevice &scrollingDevice);
@@ -525,6 +532,7 @@ private:
 #if defined(XCB_USE_XINPUT2) || defined(XCB_USE_XINPUT2_MAEMO)
     static bool xi2GetValuatorValueIfSet(void *event, int valuatorNum, double *value);
     static bool xi2PrepareXIGenericDeviceEvent(xcb_ge_event_t *event, int opCode);
+    static bool xi2GetButtonState(void *event, int buttonNum);
 #endif
 
     xcb_connection_t *m_connection;

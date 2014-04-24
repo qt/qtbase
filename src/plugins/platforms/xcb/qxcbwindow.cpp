@@ -1705,16 +1705,16 @@ void QXcbWindow::handleButtonPressEvent(const xcb_button_press_event_t *event)
     Qt::KeyboardModifiers modifiers = connection()->keyboard()->translateModifiers(event->state);
 
     if (isWheel) {
-#ifndef XCB_USE_XINPUT21
-        // Logic borrowed from qapplication_x11.cpp
-        int delta = 120 * ((event->detail == 4 || event->detail == 6) ? 1 : -1);
-        bool hor = (((event->detail == 4 || event->detail == 5)
-                     && (modifiers & Qt::AltModifier))
-                    || (event->detail == 6 || event->detail == 7));
+        if (!connection()->isUsingXInput21()) {
+            // Logic borrowed from qapplication_x11.cpp
+            int delta = 120 * ((event->detail == 4 || event->detail == 6) ? 1 : -1);
+            bool hor = (((event->detail == 4 || event->detail == 5)
+                         && (modifiers & Qt::AltModifier))
+                        || (event->detail == 6 || event->detail == 7));
 
-        QWindowSystemInterface::handleWheelEvent(window(), event->time,
-                                                 local, global, delta, hor ? Qt::Horizontal : Qt::Vertical, modifiers);
-#endif
+            QWindowSystemInterface::handleWheelEvent(window(), event->time,
+                                                     local, global, delta, hor ? Qt::Horizontal : Qt::Vertical, modifiers);
+        }
         return;
     }
 
