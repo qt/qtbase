@@ -247,7 +247,6 @@ void QQnxWindow::setGeometry(const QRect &rect)
 
     setGeometryHelper(newGeometry);
 
-    QWindowSystemInterface::handleGeometryChange(window(), newGeometry);
     if (isExposed())
         QWindowSystemInterface::handleExposeEvent(window(), newGeometry);
 }
@@ -278,6 +277,8 @@ void QQnxWindow::setGeometryHelper(const QRect &rect)
                         "Failed to set window source size");
 
     screen_flush_context(m_screenContext, 0);
+
+    QWindowSystemInterface::handleGeometryChange(window(), rect);
 }
 
 void QQnxWindow::setVisible(bool visible)
@@ -711,12 +712,7 @@ void QQnxWindow::initWindow()
     if (window()->parent() && window()->parent()->handle())
         setParent(window()->parent()->handle());
 
-    if (shouldMakeFullScreen())
-        setGeometryHelper(screen()->geometry());
-    else
-        setGeometryHelper(window()->geometry());
-
-    QWindowSystemInterface::handleGeometryChange(window(), screen()->geometry());
+    setGeometryHelper(shouldMakeFullScreen() ? screen()->geometry() : window()->geometry());
 }
 
 void QQnxWindow::createWindowGroup()
