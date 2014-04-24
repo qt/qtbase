@@ -56,7 +56,7 @@
 #define Q_XDG_PLATFORM
 #endif
 
-static const int MaxStandardLocation = QStandardPaths::GenericConfigLocation;
+static const int MaxStandardLocation = QStandardPaths::AppDataLocation;
 
 class tst_qstandardpaths : public QObject
 {
@@ -129,7 +129,8 @@ static const char * const enumNames[MaxStandardLocation + 1 - int(QStandardPaths
     "ConfigLocation",
     "DownloadLocation",
     "GenericCacheLocation",
-    "GenericConfigLocation"
+    "GenericConfigLocation",
+    "AppDataLocation"
 };
 
 void tst_qstandardpaths::dump()
@@ -238,7 +239,8 @@ void tst_qstandardpaths::enableTestMode()
     // Check this for locations where test programs typically write. Not desktop, download, music etc...
     typedef QHash<QStandardPaths::StandardLocation, QString> LocationHash;
     LocationHash testLocations;
-    testLocations.insert(QStandardPaths::DataLocation, QStandardPaths::writableLocation(QStandardPaths::DataLocation));
+    testLocations.insert(QStandardPaths::AppDataLocation, QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
+    testLocations.insert(QStandardPaths::AppLocalDataLocation, QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation));
     testLocations.insert(QStandardPaths::GenericDataLocation, QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation));
     testLocations.insert(QStandardPaths::ConfigLocation, QStandardPaths::writableLocation(QStandardPaths::ConfigLocation));
     testLocations.insert(QStandardPaths::GenericConfigLocation, QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation));
@@ -294,18 +296,18 @@ void tst_qstandardpaths::testDataLocation()
     // applications are sandboxed.
 #if !defined(Q_OS_BLACKBERRY) && !defined(Q_OS_ANDROID) && !defined(Q_OS_WINRT)
     const QString base = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
-    QCOMPARE(QStandardPaths::writableLocation(QStandardPaths::DataLocation), base + "/tst_qstandardpaths");
+    QCOMPARE(QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation), base + "/tst_qstandardpaths");
     QCoreApplication::instance()->setOrganizationName("Qt");
-    QCOMPARE(QStandardPaths::writableLocation(QStandardPaths::DataLocation), base + "/Qt/tst_qstandardpaths");
+    QCOMPARE(QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation), base + "/Qt/tst_qstandardpaths");
     QCoreApplication::instance()->setApplicationName("QtTest");
-    QCOMPARE(QStandardPaths::writableLocation(QStandardPaths::DataLocation), base + "/Qt/QtTest");
+    QCOMPARE(QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation), base + "/Qt/QtTest");
 #endif
 
 #ifdef Q_XDG_PLATFORM
     setDefaultLocations();
     const QString expectedAppDataDir = QDir::homePath() + QString::fromLatin1("/.local/share/Qt/QtTest");
-    QCOMPARE(QStandardPaths::writableLocation(QStandardPaths::DataLocation), expectedAppDataDir);
-    const QStringList appDataDirs = QStandardPaths::standardLocations(QStandardPaths::DataLocation);
+    QCOMPARE(QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation), expectedAppDataDir);
+    const QStringList appDataDirs = QStandardPaths::standardLocations(QStandardPaths::AppLocalDataLocation);
     QCOMPARE(appDataDirs.count(), 3);
     QCOMPARE(appDataDirs.at(0), expectedAppDataDir);
     QCOMPARE(appDataDirs.at(1), QString::fromLatin1("/usr/local/share/Qt/QtTest"));
@@ -463,7 +465,7 @@ void tst_qstandardpaths::testAllWritableLocations_data()
     QTest::newRow("PicturesLocation") << QStandardPaths::PicturesLocation;
     QTest::newRow("TempLocation") << QStandardPaths::TempLocation;
     QTest::newRow("HomeLocation") << QStandardPaths::HomeLocation;
-    QTest::newRow("DataLocation") << QStandardPaths::DataLocation;
+    QTest::newRow("AppLocalDataLocation") << QStandardPaths::AppLocalDataLocation;
     QTest::newRow("DownloadLocation") << QStandardPaths::DownloadLocation;
 }
 

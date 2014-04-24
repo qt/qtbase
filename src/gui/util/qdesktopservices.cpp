@@ -314,7 +314,7 @@ extern Q_CORE_EXPORT QString qt_applicationName_noFallback();
 
 QString QDesktopServices::storageLocationImpl(QStandardPaths::StandardLocation type)
 {
-    if (type == QStandardPaths::DataLocation) {
+    if (type == QStandardPaths::AppLocalDataLocation) {
         // Preserve Qt 4 compatibility:
         // * QCoreApplication::applicationName() must default to empty
         // * Unix data location is under the "data/" subdirectory

@@ -244,7 +244,8 @@ QString QStandardPaths::writableLocation(StandardLocation type)
         return getFilesDir() + testDir() + QLatin1String("/settings");
     case QStandardPaths::GenericDataLocation:
         return getExternalStorageDirectory() + testDir();
-    case QStandardPaths::DataLocation:
+    case QStandardPaths::AppDataLocation:
+    case QStandardPaths::AppLocalDataLocation:
         return getFilesDir() + testDir();
     case QStandardPaths::GenericCacheLocation:
     case QStandardPaths::RuntimeLocation:
@@ -301,7 +302,7 @@ QStringList QStandardPaths::standardLocations(StandardLocation type)
                              << getExternalFilesDir("DIRECTORY_DOWNLOADS");
     }
 
-    if (type == DataLocation) {
+    if (type == AppDataLocation || type == AppLocalDataLocation) {
         return QStringList() << writableLocation(type)
                              << getExternalFilesDir();
     }

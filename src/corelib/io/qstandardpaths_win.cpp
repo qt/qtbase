@@ -81,6 +81,18 @@ static QString convertCharArray(const wchar_t *path)
     return QDir::fromNativeSeparators(QString::fromWCharArray(path));
 }
 
+static inline int clsidForAppDataLocation(QStandardPaths::StandardLocation type)
+{
+#ifndef Q_OS_WINCE
+    return type == QStandardPaths::AppDataLocation ?
+        CSIDL_APPDATA :      // "Roaming" path
+        CSIDL_LOCAL_APPDATA; // Local path
+#else
+    Q_UNUSED(type)
+    return CSIDL_APPDATA;
+#endif
+}
+
 QString QStandardPaths::writableLocation(StandardLocation type)
 {
     QString result;
@@ -92,15 +104,12 @@ QString QStandardPaths::writableLocation(StandardLocation type)
     wchar_t path[MAX_PATH];
 
     switch (type) {
-    case ConfigLocation: // same as DataLocation, on Windows (oversight, but too late to fix it)
-    case GenericConfigLocation: // same as GenericDataLocation, on Windows
-    case DataLocation:
+    case ConfigLocation: // same as AppLocalDataLocation, on Windows
+    case GenericConfigLocation: // same as GenericDataLocation on Windows
+    case AppDataLocation:
+    case AppLocalDataLocation:
     case GenericDataLocation:
-#if defined Q_OS_WINCE
-        if (SHGetSpecialFolderPath(0, path, CSIDL_APPDATA, FALSE))
-#else
-        if (SHGetSpecialFolderPath(0, path, CSIDL_LOCAL_APPDATA, FALSE))
-#endif
+        if (SHGetSpecialFolderPath(0, path, clsidForAppDataLocation(type), FALSE))
             result = convertCharArray(path);
         if (isTestModeEnabled())
             result += QLatin1String("/qttest");
@@ -165,7 +174,7 @@ QString QStandardPaths::writableLocation(StandardLocation type)
         // Although Microsoft has a Cache key it is a pointer to IE's cache, not a cache
         // location for everyone.  Most applications seem to be using a
         // cache directory located in their AppData directory
-        return writableLocation(DataLocation) + QLatin1String("/cache");
+        return writableLocation(AppLocalDataLocation) + QLatin1String("/cache");
 
     case GenericCacheLocation:
         return writableLocation(GenericDataLocation) + QLatin1String("/cache");
@@ -192,11 +201,12 @@ QStringList QStandardPaths::standardLocations(StandardLocation type)
     {
         wchar_t path[MAX_PATH];
         switch (type) {
-        case ConfigLocation: // same as DataLocation, on Windows (oversight, but too late to fix it)
+        case ConfigLocation: // same as AppLocalDataLocation, on Windows (oversight, but too late to fix it)
         case GenericConfigLocation: // same as GenericDataLocation, on Windows
-        case DataLocation:
+        case AppDataLocation:
+        case AppLocalDataLocation:
         case GenericDataLocation:
-            if (SHGetSpecialFolderPath(0, path, CSIDL_COMMON_APPDATA, FALSE)) {
+            if (SHGetSpecialFolderPath(0, path, clsidForAppDataLocation(type), FALSE)) {
                 QString result = convertCharArray(path);
                 if (type != GenericDataLocation && type != GenericConfigLocation) {
 #ifndef QT_BOOTSTRAPPED

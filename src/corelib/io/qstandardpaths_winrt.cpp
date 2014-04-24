@@ -73,9 +73,10 @@ QString QStandardPaths::writableLocation(StandardLocation type)
     QString result;
 
     switch (type) {
-    case ConfigLocation: // same as DataLocation, on Windows
+    case ConfigLocation: // same as AppLocalDataLocation, on Windows
     case GenericConfigLocation: // same as GenericDataLocation, on Windows
-    case DataLocation:
+    case AppDataLocation:
+    case AppLocalDataLocation:
     case GenericDataLocation: {
         ComPtr<IApplicationDataStatics> applicationDataStatics;
         if (FAILED(GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Storage_ApplicationData).Get(), &applicationDataStatics)))
@@ -98,7 +99,7 @@ QString QStandardPaths::writableLocation(StandardLocation type)
         break;
     }
     case CacheLocation:
-        return writableLocation(DataLocation) + QLatin1String("/cache");
+        return writableLocation(AppLocalDataLocation) + QLatin1String("/cache");
 
     case GenericCacheLocation:
         return writableLocation(GenericDataLocation) + QLatin1String("/cache");

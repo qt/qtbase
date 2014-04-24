@@ -117,10 +117,9 @@ QT_BEGIN_NAMESPACE
     \value HomeLocation Returns the user's home directory (the same as QDir::homePath()). On Unix
            systems, this is equal to the HOME environment variable. This value might be
            generic or application-specific, but the returned path is never empty.
-    \value DataLocation Returns a directory location where persistent
-           application data can be stored. This is an application-specific directory. To obtain a
-           path to store data to be shared with other applications, use
-           QStandardPaths::GenericDataLocation. The returned path is never empty.
+    \value DataLocation Returns the same value as AppLocalDataLocation. This enumeration value
+           is deprecated. Using AppDataLocation is preferable since on Windows, the roaming path is
+           recommended.
     \value CacheLocation Returns a directory location where user-specific
            non-essential (cached) data should be written. This is an application-specific directory.
            The returned path is never empty.
@@ -142,6 +141,15 @@ QT_BEGIN_NAMESPACE
     \value GenericConfigLocation Returns a directory location where user-specific
            configuration files shared between multiple applications should be written.
            This is a generic value and the returned path is never empty.
+    \value AppDataLocation Returns a directory location where persistent
+           application data can be stored. This is an application-specific directory.
+           To obtain a path to store data to be shared with other applications, use
+           QStandardPaths::GenericDataLocation. The returned path is never empty.
+           On the Windows operating system, this returns the roaming path.
+           This enum value was added in Qt 5.4.
+    \value AppLocalDataLocation Returns the local settings path on the Windows operating
+           system. On all other platforms, it returns the same value as AppDataLocation.
+           This enum value was added in Qt 5.4.
 
     The following table gives examples of paths on different operating systems.
     The first path is the writable path (unless noted). Other, additional
@@ -200,6 +208,12 @@ QT_BEGIN_NAMESPACE
     \row \li GenericCacheLocation
          \li "~/Library/Caches", "/Library/Caches"
          \li "C:/Users/<USER>/AppData/Local/cache"
+    \row \li AppDataLocation
+         \li "~/Library/Application Support/<APPNAME>", "/Library/Application Support/<APPNAME>". "<APPDIR>/../Resources"
+         \li "C:/Users/<USER>/AppData/Roaming/<APPNAME>", "C:/ProgramData/<APPNAME>", "<APPDIR>", "<APPDIR>/data"
+    \row \li AppLocalDataLocation
+         \li "~/Library/Application Support/<APPNAME>", "/Library/Application Support/<APPNAME>". "<APPDIR>/../Resources"
+         \li "C:/Users/<USER>/AppData/Local/<APPNAME>", "C:/ProgramData/<APPNAME>", "<APPDIR>", "<APPDIR>/data"
     \endtable
 
     \table
@@ -255,6 +269,12 @@ QT_BEGIN_NAMESPACE
     \row \li GenericCacheLocation
          \li "<APPROOT>/data/Cache" (there is no shared cache)
          \li "~/.cache"
+    \row \li AppDataLocation
+         \li "<APPROOT>/data", "<APPROOT>/app/native/assets"
+         \li "~/.local/share/<APPNAME>", "/usr/local/share/<APPNAME>", "/usr/share/<APPNAME>"
+    \row \li AppLocalDataLocation
+         \li "<APPROOT>/data", "<APPROOT>/app/native/assets"
+         \li "~/.local/share/<APPNAME>", "/usr/local/share/<APPNAME>", "/usr/share/<APPNAME>"
     \endtable
 
     \table
@@ -293,6 +313,8 @@ QT_BEGIN_NAMESPACE
          \li "<USER>/Downloads", "<USER>/<APPNAME>/Downloads"
     \row \li GenericCacheLocation
          \li "<APPROOT>/cache" (there is no shared cache)
+    \row \li AppDataLocation
+         \li "<APPROOT>/files", "<USER>/<APPNAME>/files"
     \endtable
 
     In the table above, \c <APPNAME> is usually the organization name, the
@@ -534,8 +556,6 @@ QString QStandardPaths::displayName(StandardLocation type)
         return QCoreApplication::translate("QStandardPaths", "Temporary Directory");
     case HomeLocation:
         return QCoreApplication::translate("QStandardPaths", "Home");
-    case DataLocation:
-        return QCoreApplication::translate("QStandardPaths", "Application Data");
     case CacheLocation:
         return QCoreApplication::translate("QStandardPaths", "Cache");
     case GenericDataLocation:
@@ -550,6 +570,9 @@ QString QStandardPaths::displayName(StandardLocation type)
         return QCoreApplication::translate("QStandardPaths", "Shared Cache");
     case DownloadLocation:
         return QCoreApplication::translate("QStandardPaths", "Download");
+    case AppDataLocation:
+    case AppLocalDataLocation:
+        return QCoreApplication::translate("QStandardPaths", "Application Data");
     }
     // not reached
     return QString();

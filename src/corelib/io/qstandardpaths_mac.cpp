@@ -83,7 +83,8 @@ OSType translateLocation(QStandardPaths::StandardLocation type)
         return kTemporaryFolderType;
     case QStandardPaths::GenericDataLocation:
     case QStandardPaths::RuntimeLocation:
-    case QStandardPaths::DataLocation:
+    case QStandardPaths::AppDataLocation:
+    case QStandardPaths::AppLocalDataLocation:
         return kApplicationSupportFolderType;
     case QStandardPaths::GenericCacheLocation:
     case QStandardPaths::CacheLocation:
@@ -128,7 +129,7 @@ static QString macLocation(QStandardPaths::StandardLocation type, short domain)
 
    QString path = getFullPath(ref);
 
-    if (type == QStandardPaths::DataLocation || type == QStandardPaths::CacheLocation)
+    if (type == QStandardPaths::AppDataLocation || type == QStandardPaths::AppLocalDataLocation || type == QStandardPaths::CacheLocation)
         appendOrganizationAndApp(path);
     return path;
 }
@@ -140,9 +141,10 @@ QString QStandardPaths::writableLocation(StandardLocation type)
         QString path;
         switch (type) {
         case GenericDataLocation:
-        case DataLocation:
+        case AppDataLocation:
+        case AppLocalDataLocation:
             path = qttestDir + QLatin1String("/Application Support");
-            if (type == DataLocation)
+            if (type != GenericDataLocation)
                 appendOrganizationAndApp(path);
             return path;
         case GenericCacheLocation:
@@ -165,7 +167,7 @@ QString QStandardPaths::writableLocation(StandardLocation type)
     case TempLocation:
         return QDir::tempPath();
     case GenericDataLocation:
-    case DataLocation:
+    case AppLocalDataLocation:
     case GenericCacheLocation:
     case CacheLocation:
     case RuntimeLocation:
@@ -179,13 +181,13 @@ QStringList QStandardPaths::standardLocations(StandardLocation type)
 {
     QStringList dirs;
 
-    if (type == GenericDataLocation || type == DataLocation || type == GenericCacheLocation || type == CacheLocation) {
+    if (type == GenericDataLocation || type == AppDataLocation || type == AppLocalDataLocation || type == GenericCacheLocation || type == CacheLocation) {
         const QString path = macLocation(type, kOnAppropriateDisk);
         if (!path.isEmpty())
             dirs.append(path);
     }
 
-    if (type == DataLocation) {
+    if (type == AppDataLocation || type == AppLocalDataLocation) {
         CFBundleRef mainBundle = CFBundleGetMainBundle();
         if (mainBundle) {
             CFURLRef bundleUrl = CFBundleCopyBundleURL(mainBundle);

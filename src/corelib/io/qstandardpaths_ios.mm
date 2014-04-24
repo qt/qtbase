@@ -90,7 +90,8 @@ QString QStandardPaths::writableLocation(StandardLocation type)
     case HomeLocation:
         location = bundlePath();
         break;
-    case DataLocation:
+    case AppDataLocation:
+    case AppLocalDataLocation:
     case GenericDataLocation:
         location = pathForDirectory(NSDocumentDirectory);
         break;

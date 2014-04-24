@@ -63,7 +63,8 @@ QString QStandardPaths::writableLocation(StandardLocation type)
     const QString sharedRoot = sharedDir.absolutePath();
 
     switch (type) {
-    case DataLocation:
+    case AppDataLocation:
+    case AppLocalDataLocation:
         return QDir::homePath() + testModeInsert();
     case DesktopLocation:
     case HomeLocation:
@@ -108,7 +109,7 @@ QStringList QStandardPaths::standardLocations(StandardLocation type)
     if (type == FontsLocation)
         return QStringList(QLatin1String("/base/usr/fonts"));
 
-    if (type == DataLocation)
+    if (type == AppDataLocation || type == AppLocalDataLocation)
         dirs.append(QDir::homePath() + testModeInsert() + QLatin1String("native/assets"));
 
     const QString localDir = writableLocation(type);

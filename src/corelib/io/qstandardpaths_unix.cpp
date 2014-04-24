@@ -90,7 +90,8 @@ QString QStandardPaths::writableLocation(StandardLocation type)
             appendOrganizationAndApp(xdgCacheHome);
         return xdgCacheHome;
     }
-    case DataLocation:
+    case AppDataLocation:
+    case AppLocalDataLocation:
     case GenericDataLocation:
     {
         QString xdgDataHome = QFile::decodeName(qgetenv("XDG_DATA_HOME"));
@@ -98,7 +99,7 @@ QString QStandardPaths::writableLocation(StandardLocation type)
             xdgDataHome = QDir::homePath() + QLatin1String("/.qttest/share");
         if (xdgDataHome.isEmpty())
             xdgDataHome = QDir::homePath() + QLatin1String("/.local/share");
-        if (type == QStandardPaths::DataLocation)
+        if (type == AppDataLocation || type == AppLocalDataLocation)
             appendOrganizationAndApp(xdgDataHome);
         return xdgDataHome;
     }
@@ -305,7 +306,8 @@ QStringList QStandardPaths::standardLocations(StandardLocation type)
         for (int i = 0; i < dirs.count(); ++i)
             dirs[i].append(QLatin1String("/applications"));
         break;
-    case DataLocation:
+    case AppDataLocation:
+    case AppLocalDataLocation:
         dirs = xdgDataDirs();
         for (int i = 0; i < dirs.count(); ++i)
             appendOrganizationAndApp(dirs[i]);
