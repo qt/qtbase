@@ -115,6 +115,7 @@ const QStringList& qt_mac_enabledDraggedTypes()
   \list
     \i public.utf8-plain-text - converts to "text/plain"
     \i public.utf16-plain-text - converts to "text/plain"
+    \i public.text - converts to "text/plain"
     \i public.html - converts to "text/html"
     \i public.url - converts to "text/uri-list"
     \i public.file-url - converts to "text/uri-list"
@@ -340,6 +341,69 @@ QList<QByteArray> QMacPasteboardMimePlainText::convertFromMime(const QString &, 
     QString string = data.toString();
     if (flavor == QLatin1String("com.apple.traditional-mac-plain-text"))
         ret.append(string.toLatin1());
+    return ret;
+}
+
+class QMacPasteboardMimePlainTextFallback : public QMacInternalPasteboardMime {
+public:
+    QMacPasteboardMimePlainTextFallback() : QMacInternalPasteboardMime(MIME_ALL) { }
+    QString convertorName();
+
+    QString flavorFor(const QString &mime);
+    QString mimeFor(QString flav);
+    bool canConvert(const QString &mime, QString flav);
+    QVariant convertToMime(const QString &mime, QList<QByteArray> data, QString flav);
+    QList<QByteArray> convertFromMime(const QString &mime, QVariant data, QString flav);
+};
+
+QString QMacPasteboardMimePlainTextFallback::convertorName()
+{
+    return QLatin1String("PlainText (public.text)");
+}
+
+QString QMacPasteboardMimePlainTextFallback::flavorFor(const QString &mime)
+{
+    if (mime == QLatin1String("text/plain"))
+        return QLatin1String("public.text");
+    return QString();
+}
+
+QString QMacPasteboardMimePlainTextFallback::mimeFor(QString flav)
+{
+    if (flav == QLatin1String("public.text"))
+        return QLatin1String("text/plain");
+    return QString();
+}
+
+bool QMacPasteboardMimePlainTextFallback::canConvert(const QString &mime, QString flav)
+{
+    return mime == mimeFor(flav);
+}
+
+QVariant QMacPasteboardMimePlainTextFallback::convertToMime(const QString &mimetype, QList<QByteArray> data, QString flavor)
+{
+    if (data.count() > 1)
+        qWarning("QMacPasteboardMimePlainTextFallback: Cannot handle multiple member data");
+
+    if (flavor == QLatin1String("public.text")) {
+        // Note that public.text is documented by Apple to have an undefined encoding. From
+        // testing it seems that utf8 is normally used, at least by Safari on iOS.
+        const QByteArray &firstData = data.first();
+        return QString::fromCFString(CFStringCreateWithBytes(kCFAllocatorDefault,
+                                             reinterpret_cast<const UInt8 *>(firstData.constData()),
+                                             firstData.size(), kCFStringEncodingUTF8, false));
+    } else {
+        qWarning("QMime::convertToMime: unhandled mimetype: %s", qPrintable(mimetype));
+    }
+    return QVariant();
+}
+
+QList<QByteArray> QMacPasteboardMimePlainTextFallback::convertFromMime(const QString &, QVariant data, QString flavor)
+{
+    QList<QByteArray> ret;
+    QString string = data.toString();
+    if (flavor == QLatin1String("public.text"))
+        ret.append(string.toUtf8());
     return ret;
 }
 
@@ -696,6 +760,7 @@ void QMacInternalPasteboardMime::initializeMimeTypes()
         new QMacPasteboardMimeAny;
 
         //standard types that we wrap
+        new QMacPasteboardMimePlainTextFallback;
         new QMacPasteboardMimeUnicodeText;
         new QMacPasteboardMimePlainText;
         new QMacPasteboardMimeHTMLText;
