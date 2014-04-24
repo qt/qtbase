@@ -74,7 +74,7 @@ public:
         // context, so we need a fallback just to be safe, even though in pratice there
         // will usually be a context current.
         QOpenGLContext *ctx = QOpenGLContext::currentContext();
-        const bool isES = ctx ? ctx->isES() : QOpenGLContext::openGLModuleType() != QOpenGLContext::DesktopGL;
+        const bool isES = ctx ? ctx->isOpenGLES() : QOpenGLContext::openGLModuleType() != QOpenGLContext::LibGL;
         internal_format = isES ? GL_RGBA : GL_RGBA8;
 #else
         internal_format = GL_RGBA;

@@ -256,7 +256,7 @@ QOpenGLExtensions::QOpenGLExtensions(QOpenGLContext *context)
 static int qt_gl_resolve_features()
 {
     QOpenGLContext *ctx = QOpenGLContext::currentContext();
-    if (ctx->isES()) {
+    if (ctx->isOpenGLES()) {
         // OpenGL ES 2
         int features = QOpenGLFunctions::Multitexture |
             QOpenGLFunctions::Shaders |
@@ -367,7 +367,7 @@ static int qt_gl_resolve_extensions()
     if (extensionMatcher.match("GL_ARB_pixel_buffer_object"))
         extensions |= QOpenGLExtensions::PixelBufferObject;
 
-    if (ctx->isES()) {
+    if (ctx->isOpenGLES()) {
         if (format.majorVersion() >= 2)
             extensions |= QOpenGLExtensions::GenerateMipmap;
         if (extensionMatcher.match("GL_OES_mapbuffer"))
@@ -2415,7 +2415,7 @@ static void QOPENGLF_APIENTRY qopenglfResolveClearColor(GLclampf red, GLclampf g
 
 static void QOPENGLF_APIENTRY qopenglfResolveClearDepthf(GLclampf depth)
 {
-    if (QOpenGLContext::currentContext()->isES()) {
+    if (QOpenGLContext::currentContext()->isOpenGLES()) {
         RESOLVE_FUNC_VOID(0, ClearDepthf)(depth);
     } else {
         RESOLVE_FUNC_VOID(0, ClearDepth)((GLdouble) depth);
@@ -2464,7 +2464,7 @@ static void QOPENGLF_APIENTRY qopenglfResolveDepthMask(GLboolean flag)
 
 static void QOPENGLF_APIENTRY qopenglfResolveDepthRangef(GLclampf zNear, GLclampf zFar)
 {
-    if (QOpenGLContext::currentContext()->isES()) {
+    if (QOpenGLContext::currentContext()->isOpenGLES()) {
         RESOLVE_FUNC_VOID(0, DepthRangef)(zNear, zFar);
     } else {
         RESOLVE_FUNC_VOID(0, DepthRange)((GLdouble) zNear, (GLdouble) zFar);

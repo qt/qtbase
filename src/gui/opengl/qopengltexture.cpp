@@ -2432,7 +2432,7 @@ bool QOpenGLTexture::hasFeature(Feature feature)
     bool supported = false;
 
 #if !defined(QT_OPENGL_ES_2)
-    if (!ctx->isES()) {
+    if (!ctx->isOpenGLES()) {
         switch (feature) {
         case ImmutableMultisampleStorage:
         case TextureBuffer:
@@ -2489,7 +2489,7 @@ bool QOpenGLTexture::hasFeature(Feature feature)
         }
     }
 
-    if (ctx->isES())
+    if (ctx->isOpenGLES())
 #endif
     {
         switch (feature) {
@@ -2524,7 +2524,7 @@ bool QOpenGLTexture::hasFeature(Feature feature)
 void QOpenGLTexture::setMipBaseLevel(int baseLevel)
 {
 #if !defined(QT_OPENGL_ES_2)
-    if (!QOpenGLContext::currentContext()->isES()) {
+    if (!QOpenGLContext::currentContext()->isOpenGLES()) {
         Q_D(QOpenGLTexture);
         d->create();
         Q_ASSERT(d->textureId);
@@ -2561,7 +2561,7 @@ int QOpenGLTexture::mipBaseLevel() const
 void QOpenGLTexture::setMipMaxLevel(int maxLevel)
 {
 #if !defined(QT_OPENGL_ES_2)
-    if (!QOpenGLContext::currentContext()->isES()) {
+    if (!QOpenGLContext::currentContext()->isOpenGLES()) {
         Q_D(QOpenGLTexture);
         d->create();
         Q_ASSERT(d->textureId);
@@ -2598,7 +2598,7 @@ int QOpenGLTexture::mipMaxLevel() const
 void QOpenGLTexture::setMipLevelRange(int baseLevel, int maxLevel)
 {
 #if !defined(QT_OPENGL_ES_2)
-    if (!QOpenGLContext::currentContext()->isES()) {
+    if (!QOpenGLContext::currentContext()->isOpenGLES()) {
         Q_D(QOpenGLTexture);
         d->create();
         Q_ASSERT(d->textureId);
@@ -2708,7 +2708,7 @@ void QOpenGLTexture::generateMipMaps(int baseLevel, bool resetBaseLevel)
 void QOpenGLTexture::setSwizzleMask(SwizzleComponent component, SwizzleValue value)
 {
 #if !defined(Q_OS_MAC) && !defined(QT_OPENGL_ES_2)
-    if (!QOpenGLContext::currentContext()->isES()) {
+    if (!QOpenGLContext::currentContext()->isOpenGLES()) {
         Q_D(QOpenGLTexture);
         d->create();
         Q_ASSERT(d->texFuncs);
@@ -2737,7 +2737,7 @@ void QOpenGLTexture::setSwizzleMask(SwizzleValue r, SwizzleValue g,
                                     SwizzleValue b, SwizzleValue a)
 {
 #if !defined(Q_OS_MAC) && !defined(QT_OPENGL_ES_2)
-    if (!QOpenGLContext::currentContext()->isES()) {
+    if (!QOpenGLContext::currentContext()->isOpenGLES()) {
         Q_D(QOpenGLTexture);
         d->create();
         Q_ASSERT(d->texFuncs);
@@ -2786,7 +2786,7 @@ QOpenGLTexture::SwizzleValue QOpenGLTexture::swizzleMask(SwizzleComponent compon
 void QOpenGLTexture::setDepthStencilMode(QOpenGLTexture::DepthStencilMode mode)
 {
 #if !defined(Q_OS_MAC) && !defined(QT_OPENGL_ES_2)
-    if (!QOpenGLContext::currentContext()->isES()) {
+    if (!QOpenGLContext::currentContext()->isOpenGLES()) {
         Q_D(QOpenGLTexture);
         d->create();
         Q_ASSERT(d->texFuncs);
@@ -2977,7 +2977,7 @@ QOpenGLTexture::WrapMode QOpenGLTexture::wrapMode(QOpenGLTexture::CoordinateDire
 void QOpenGLTexture::setBorderColor(QColor color)
 {
 #if !defined(QT_OPENGL_ES_2)
-    if (!QOpenGLContext::currentContext()->isES()) {
+    if (!QOpenGLContext::currentContext()->isOpenGLES()) {
         Q_D(QOpenGLTexture);
         d->create();
         Q_ASSERT(d->texFuncs);
@@ -3007,7 +3007,7 @@ void QOpenGLTexture::setBorderColor(QColor color)
 void QOpenGLTexture::setBorderColor(float r, float g, float b, float a)
 {
 #if !defined(QT_OPENGL_ES_2)
-    if (!QOpenGLContext::currentContext()->isES()) {
+    if (!QOpenGLContext::currentContext()->isOpenGLES()) {
         Q_D(QOpenGLTexture);
         d->create();
         Q_ASSERT(d->texFuncs);
@@ -3040,7 +3040,7 @@ void QOpenGLTexture::setBorderColor(float r, float g, float b, float a)
 void QOpenGLTexture::setBorderColor(int r, int g, int b, int a)
 {
 #if !defined(QT_OPENGL_ES_2)
-    if (!QOpenGLContext::currentContext()->isES()) {
+    if (!QOpenGLContext::currentContext()->isOpenGLES()) {
         Q_D(QOpenGLTexture);
         d->create();
         Q_ASSERT(d->texFuncs);
@@ -3075,7 +3075,7 @@ void QOpenGLTexture::setBorderColor(int r, int g, int b, int a)
 void QOpenGLTexture::setBorderColor(uint r, uint g, uint b, uint a)
 {
 #if !defined(QT_OPENGL_ES_2)
-    if (!QOpenGLContext::currentContext()->isES()) {
+    if (!QOpenGLContext::currentContext()->isOpenGLES()) {
         Q_D(QOpenGLTexture);
         d->create();
         Q_ASSERT(d->texFuncs);
@@ -3187,7 +3187,7 @@ void QOpenGLTexture::borderColor(unsigned int *border) const
 void QOpenGLTexture::setMinimumLevelOfDetail(float value)
 {
 #if !defined(QT_OPENGL_ES_2)
-    if (!QOpenGLContext::currentContext()->isES()) {
+    if (!QOpenGLContext::currentContext()->isOpenGLES()) {
         Q_D(QOpenGLTexture);
         d->create();
         Q_ASSERT(d->texFuncs);
@@ -3224,7 +3224,7 @@ float QOpenGLTexture::minimumLevelOfDetail() const
 void QOpenGLTexture::setMaximumLevelOfDetail(float value)
 {
 #if !defined(QT_OPENGL_ES_2)
-    if (!QOpenGLContext::currentContext()->isES()) {
+    if (!QOpenGLContext::currentContext()->isOpenGLES()) {
         Q_D(QOpenGLTexture);
         d->create();
         Q_ASSERT(d->texFuncs);
@@ -3260,7 +3260,7 @@ float QOpenGLTexture::maximumLevelOfDetail() const
 void QOpenGLTexture::setLevelOfDetailRange(float min, float max)
 {
 #if !defined(QT_OPENGL_ES_2)
-    if (!QOpenGLContext::currentContext()->isES()) {
+    if (!QOpenGLContext::currentContext()->isOpenGLES()) {
         Q_D(QOpenGLTexture);
         d->create();
         Q_ASSERT(d->texFuncs);
@@ -3302,7 +3302,7 @@ QPair<float, float> QOpenGLTexture::levelOfDetailRange() const
 void QOpenGLTexture::setLevelofDetailBias(float bias)
 {
 #if !defined(QT_OPENGL_ES_2)
-    if (!QOpenGLContext::currentContext()->isES()) {
+    if (!QOpenGLContext::currentContext()->isOpenGLES()) {
         Q_D(QOpenGLTexture);
         d->create();
         Q_ASSERT(d->texFuncs);
