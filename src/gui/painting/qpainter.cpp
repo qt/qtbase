@@ -7438,6 +7438,7 @@ start_lengthVariant:
         underlinePositions.resize(maxUnderlines + 1);
 
         QChar *cout = text.data() + old_offset;
+        QChar *cout0 = cout;
         QChar *cin = cout;
         int l = length;
         while (l) {
@@ -7448,7 +7449,18 @@ start_lengthVariant:
                 if (!l)
                     break;
                 if (*cin != QLatin1Char('&') && !hidemnmemonic)
-                    underlinePositions[numUnderlines++] = cout - text.data() - old_offset;
+                    underlinePositions[numUnderlines++] = cout - cout0;
+            } else if (hidemnmemonic && *cin == QLatin1Char('(') && l >= 4 &&
+                       cin[1] == QLatin1Char('&') && cin[2] != QLatin1Char('&') &&
+                       cin[3] == QLatin1Char(')')) {
+                int n = 0;
+                while ((cout - n) > cout0 && (cout - n - 1)->isSpace())
+                    ++n;
+                cout -= n;
+                cin += 4;
+                length -= n + 4;
+                l -= 4;
+                continue;
             }
             *cout = *cin;
             ++cout;

@@ -503,6 +503,18 @@ QString qt_mac_removeMnemonics(const QString &original)
             --l;
             if (l == 0)
                 break;
+        } else if (original.at(currPos) == QLatin1Char('(') && l >= 4 &&
+                   original.at(currPos + 1) == QLatin1Char('&') &&
+                   original.at(currPos + 2) != QLatin1Char('&') &&
+                   original.at(currPos + 3) == QLatin1Char(')')) {
+            /* remove mnemonics its format is "\s*(&X)" */
+            int n = 0;
+            while (finalDest > n && returnText.at(finalDest - n - 1).isSpace())
+                ++n;
+            finalDest -= n;
+            currPos += 4;
+            l -= 4;
+            continue;
         }
         returnText[finalDest] = original.at(currPos);
         ++currPos;
@@ -761,16 +773,7 @@ bool qt_mac_execute_apple_script(const QString &script, AEDesc *ret)
 
 QString qt_mac_removeAmpersandEscapes(QString s)
 {
-    int i = 0;
-    while (i < s.size()) {
-        ++i;
-        if (s.at(i-1) != QLatin1Char('&'))
-            continue;
-        if (i < s.size() && s.at(i) == QLatin1Char('&'))
-            ++i;
-        s.remove(i-1,1);
-    }
-    return s.trimmed();
+    return qt_mac_removeMnemonics(s).trimmed();
 }
 
 /*! \internal

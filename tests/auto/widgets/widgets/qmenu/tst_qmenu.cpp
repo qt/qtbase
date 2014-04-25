@@ -1047,6 +1047,14 @@ void tst_QMenu::QTBUG_37933_ampersands_data()
     QTest::newRow("simple") << QString("Test") << QString("Test");
     QTest::newRow("ampersand") << QString("&Test") << QString("Test");
     QTest::newRow("double_ampersand") << QString("&Test && more") << QString("Test & more");
+    QTest::newRow("ampersand_in_parentheses") << QString("Test(&T) (&&) more") << QString("Test (&) more");
+    QTest::newRow("ampersand_in_parentheses_after_space") << QString("Test (&T)") << QString("Test");
+    QTest::newRow("ampersand_in_parentheses_after_spaces") << QString("Test  (&T)") << QString("Test");
+    QTest::newRow("ampersand_in_parentheses_before_space") << QString("Test(&T) ") << QString("Test ");
+    QTest::newRow("only_ampersand_in_parentheses") << QString("(&T)") << QString("");
+    QTest::newRow("only_ampersand_in_parentheses_after_space") << QString(" (&T)") << QString("");
+    QTest::newRow("parentheses_after_space") << QString(" (Dummy)") << QString(" (Dummy)");
+    QTest::newRow("ampersand_after_space") << QString("About &Qt Project") << QString("About Qt Project");
 }
 
 void tst_qmenu_QTBUG_37933_ampersands();
