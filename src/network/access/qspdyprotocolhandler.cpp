@@ -506,25 +506,7 @@ QByteArray QSpdyProtocolHandler::composeHeader(const QHttpNetworkRequest &reques
 #endif
     uncompressedHeader.append(headerField(":version", "HTTP/1.1"));
 
-    QHostAddress add; // ### unify with the host parsing from QHttpNetworkConnection
-    QByteArray host;
-    QString hostName = m_connection->hostName();
-    if (add.setAddress(hostName)) {
-        if (add.protocol() == QAbstractSocket::IPv6Protocol)
-            host = "[" + hostName.toLatin1() + "]"; //format the ipv6 in the standard way
-        else
-            host = hostName.toLatin1();
-
-    } else {
-        host = QUrl::toAce(hostName);
-    }
-
-    int port = request.url().port();
-    if (port != -1) {
-        host += ':';
-        host += QByteArray::number(port);
-    }
-    uncompressedHeader.append(headerField(":host", host));
+    uncompressedHeader.append(headerField(":host", request.url().authority(QUrl::FullyEncoded | QUrl::RemoveUserInfo).toLatin1()));
 
     uncompressedHeader.append(headerField(":scheme", request.url().scheme().toLatin1()));
 
