@@ -1600,7 +1600,7 @@ QFileDialog::ViewMode QFileDialog::viewMode() const
 {
     Q_D(const QFileDialog);
     if (!d->usingWidgets())
-        return QFileDialog::List;
+        return static_cast<QFileDialog::ViewMode>(d->options->viewMode());
     return (d->qFileDialogUi->stackedWidget->currentWidget() == d->qFileDialogUi->listView->parent() ? QFileDialog::List : QFileDialog::Detail);
 }
 
