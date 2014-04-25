@@ -43,7 +43,7 @@ if(!build_pass:equals(TEMPLATE, "vcapp")) {
 
     !isEmpty(FONTS):equals(TEMPLATE, "app") {
         fonts.files = $$BUILD_DIR/fonts/*
-        isEmpty($$target.path) {
+        isEmpty(target.path) {
             fonts.path = $$OUT_PWD/fonts
         } else {
             fonts.path = $$target.path/fonts
