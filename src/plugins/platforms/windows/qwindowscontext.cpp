@@ -1063,6 +1063,15 @@ void QWindowsContext::handleFocusEvent(QtWindows::WindowsEventType et,
             modalWindow->requestActivate();
             return;
         }
+        // QTBUG-32867: Invoking WinAPI SetParent() can cause focus-in for the
+        // window which is not desired for native child widgets.
+        if (platformWindow->testFlag(QWindowsWindow::WithinSetParent)) {
+            QWindow *currentFocusWindow = QGuiApplication::focusWindow();
+            if (currentFocusWindow && currentFocusWindow != platformWindow->window()) {
+                currentFocusWindow->requestActivate();
+                return;
+            }
+        }
         nextActiveWindow = platformWindow->window();
     } else {
         // Focus out: Is the next window known and different
