@@ -667,7 +667,7 @@ Q_CORE_EXPORT void initCharAttributes(const ushort *string, int length,
 
 // ----------------------------------------------------------------------------
 //
-// The Unicode script property. See http://www.unicode.org/reports/tr24/ (some very old version)
+// The Unicode script property. See http://www.unicode.org/reports/tr24/tr24-21.html
 //
 // ----------------------------------------------------------------------------
 
@@ -689,15 +689,36 @@ Q_CORE_EXPORT void initScripts(const ushort *string, int length, uchar *scripts)
 
         const QUnicodeTables::Properties *prop = QUnicodeTables::properties(ucs4);
 
-        if (Q_LIKELY(prop->script == script || prop->script == QChar::Script_Inherited))
+        if (Q_LIKELY(prop->script == script || prop->script <= QChar::Script_Inherited))
             continue;
 
         // Never break between a combining mark (gc= Mc, Mn or Me) and its base character.
         // Thus, a combining mark — whatever its script property value is — should inherit
         // the script property value of its base character.
         static const int test = (FLAG(QChar::Mark_NonSpacing) | FLAG(QChar::Mark_SpacingCombining) | FLAG(QChar::Mark_Enclosing));
-        if (Q_UNLIKELY(FLAG(prop->category) & test))
-            continue;
+        if (Q_UNLIKELY(FLAG(prop->category) & test)) {
+            // In cases where the base character itself has the Common script property value,
+            // and it is followed by one or more combining marks with a specific script property value,
+            // it may be even better for processing to let the base acquire the script property value
+            // from the first mark. This approach can be generalized by treating all the characters
+            // of a combining character sequence as having the script property value
+            // of the first non-Inherited, non-Common character in the sequence if there is one,
+            // and otherwise treating all the characters as having the Common script property value.
+            if (Q_LIKELY(script > QChar::Script_Common || prop->script <= QChar::Script_Common))
+                continue;
+
+            script = QChar::Script(prop->script);
+        }
+
+        if (Q_LIKELY(script != QChar::Script_Common)) {
+            // override preceding Common-s
+            while (sor > 0 && scripts[sor - 1] == QChar::Script_Common)
+                --sor;
+        } else {
+            // see if we are inheriting preceding run
+            if (sor > 0)
+                script = scripts[sor - 1];
+        }
 
         while (sor < eor)
             scripts[sor++] = script;
@@ -705,6 +726,15 @@ Q_CORE_EXPORT void initScripts(const ushort *string, int length, uchar *scripts)
         script = prop->script;
     }
     eor = length;
+    if (Q_LIKELY(script != QChar::Script_Common)) {
+        // override preceding Common-s
+        while (sor > 0 && scripts[sor - 1] == QChar::Script_Common)
+            --sor;
+    } else {
+        // see if we are inheriting preceding run
+        if (sor > 0)
+            script = scripts[sor - 1];
+    }
     while (sor < eor)
         scripts[sor++] = script;
 }

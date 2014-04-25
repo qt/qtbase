@@ -1,7 +1,6 @@
 TARGET     = QtPrintSupport
 QT = core-private gui-private widgets-private
 
-MODULE_CONFIG = needs_printsupport_plugin
 DEFINES   += QT_NO_USING_NAMESPACE
 
 MODULE_PLUGIN_TYPES = \

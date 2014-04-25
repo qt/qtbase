@@ -4063,18 +4063,21 @@ QDebug operator<<(QDebug dbg, const QObject *o) {
     \macro Q_CLASSINFO(Name, Value)
     \relates QObject
 
-    This macro associates extra information to the class, which is
-    available using QObject::metaObject(). Except for the ActiveQt
-    extension, Qt doesn't use this information.
+    This macro associates extra information to the class, which is available
+    using QObject::metaObject(). Qt makes only limited use of this feature, in
+    the \l{Active Qt}, \l{Qt D-Bus} and \l{Qt QML} modules.
 
-    The extra information takes the form of a \a Name string and a \a
-    Value literal string.
+    The extra information takes the form of a \a Name string and a \a Value
+    literal string.
 
     Example:
 
     \snippet code/src_corelib_kernel_qobject.cpp 35
 
     \sa QMetaObject::classInfo()
+    \sa QAxFactory
+    \sa {Using Qt D-Bus Adaptors}
+    \sa {Extending QML - Default Property Example}
 */
 
 /*!

@@ -19,6 +19,7 @@ defines                 += Q_QDOC \
                           Q_COMPILER_RVALUE_REFS
 
 Cpp.ignoretokens        += \
+                          ENGINIOCLIENT_EXPORT \
                           PHONON_EXPORT \
                           Q_AUTOTEST_EXPORT \
                           Q_BLUETOOTH_EXPORT \

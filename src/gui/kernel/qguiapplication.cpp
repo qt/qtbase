@@ -1872,7 +1872,11 @@ void QGuiApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate
         return;
 
     if (previous) {
-        QFocusEvent focusOut(QEvent::FocusOut, e->reason);
+        Qt::FocusReason r = e->reason;
+        if ((r == Qt::OtherFocusReason || r == Qt::ActiveWindowFocusReason) &&
+                newFocus && (newFocus->flags() & Qt::Popup) == Qt::Popup)
+            r = Qt::PopupFocusReason;
+        QFocusEvent focusOut(QEvent::FocusOut, r);
         QCoreApplication::sendSpontaneousEvent(previous, &focusOut);
         QObject::disconnect(previous, SIGNAL(focusObjectChanged(QObject*)),
                             qApp, SLOT(_q_updateFocusObject(QObject*)));
@@ -1881,7 +1885,11 @@ void QGuiApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate
     }
 
     if (QGuiApplicationPrivate::focus_window) {
-        QFocusEvent focusIn(QEvent::FocusIn, e->reason);
+        Qt::FocusReason r = e->reason;
+        if ((r == Qt::OtherFocusReason || r == Qt::ActiveWindowFocusReason) &&
+                previous && (previous->flags() & Qt::Popup) == Qt::Popup)
+            r = Qt::PopupFocusReason;
+        QFocusEvent focusIn(QEvent::FocusIn, r);
         QCoreApplication::sendSpontaneousEvent(QGuiApplicationPrivate::focus_window, &focusIn);
         QObject::connect(QGuiApplicationPrivate::focus_window, SIGNAL(focusObjectChanged(QObject*)),
                          qApp, SLOT(_q_updateFocusObject(QObject*)));

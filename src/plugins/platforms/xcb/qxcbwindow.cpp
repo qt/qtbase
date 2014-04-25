@@ -1844,6 +1844,9 @@ public:
 void QXcbWindow::handleEnterNotifyEvent(const xcb_enter_notify_event_t *event)
 {
     connection()->setTime(event->time);
+#ifdef XCB_USE_XINPUT2
+    connection()->handleEnterEvent(event);
+#endif
 
     if ((event->mode != XCB_NOTIFY_MODE_NORMAL && event->mode != XCB_NOTIFY_MODE_UNGRAB)
         || event->detail == XCB_NOTIFY_DETAIL_VIRTUAL

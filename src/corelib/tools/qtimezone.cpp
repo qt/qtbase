@@ -418,6 +418,13 @@ QTimeZone::~QTimeZone()
 }
 
 /*!
+    \fn QTimeZone::swap(QTimeZone &other)
+
+    Swaps this time zone instance with \a other. This function is very
+    fast and never fails.
+*/
+
+/*!
     Assignment operator, assign \a other to this.
 */
 

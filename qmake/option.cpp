@@ -488,7 +488,7 @@ bool Option::postProcessProject(QMakeProject *project)
 
     Option::dir_sep = project->dirSep().toQString();
 
-    if (Option::output_dir.startsWith(project->buildRoot()))
+    if (!project->buildRoot().isEmpty() && Option::output_dir.startsWith(project->buildRoot()))
         Option::mkfile::cachefile_depth =
                 Option::output_dir.mid(project->buildRoot().length()).count('/');
 

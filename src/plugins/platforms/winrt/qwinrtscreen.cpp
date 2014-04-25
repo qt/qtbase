@@ -1020,7 +1020,9 @@ HRESULT QWinRTScreen::onOrientationChanged(IInspectable *)
 HRESULT QWinRTScreen::onBackButtonPressed(IInspectable *, IBackPressedEventArgs *args)
 {
     QKeyEvent backPress(QEvent::KeyPress, Qt::Key_Back, Qt::NoModifier);
+    QKeyEvent backRelease(QEvent::KeyRelease, Qt::Key_Back, Qt::NoModifier);
     backPress.setAccepted(false);
+    backRelease.setAccepted(false);
 
     QObject *receiver = m_visibleWindows.isEmpty()
             ? static_cast<QObject *>(QGuiApplication::instance())
@@ -1028,12 +1030,8 @@ HRESULT QWinRTScreen::onBackButtonPressed(IInspectable *, IBackPressedEventArgs 
 
     // If the event is ignored, the app will suspend
     QGuiApplication::sendEvent(receiver, &backPress);
-    if (backPress.isAccepted()) {
-        args->put_Handled(true);
-        // If the app accepts the event, send the release for symmetry
-        QKeyEvent backRelease(QEvent::KeyRelease, Qt::Key_Back, Qt::NoModifier);
-        QGuiApplication::sendEvent(receiver, &backRelease);
-    }
+    QGuiApplication::sendEvent(receiver, &backRelease);
+    args->put_Handled(backPress.isAccepted() || backRelease.isAccepted());
 
     return S_OK;
 }

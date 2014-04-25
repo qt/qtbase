@@ -143,11 +143,11 @@ QT_USE_NAMESPACE
             CFURLGetFileSystemRepresentation(file, true, localFile, sizeof(localFile));
             printer->setOutputFileName(QString::fromUtf8(reinterpret_cast<const char *>(localFile)));
         } else {
-            // Keep output format.
-            QPrinter::OutputFormat format;
-            format = printer->outputFormat();
-            printer->setOutputFileName(QString());
-            printer->setOutputFormat(format);
+            PMPrinter macPrinter;
+            PMSessionGetCurrentPrinter(session, &macPrinter);
+            QString printerId = QString::fromCFString(PMPrinterGetID(macPrinter));
+            if (printer->printerName() != printerId)
+                printer->setPrinterName(printerId);
         }
     }
 
@@ -160,13 +160,13 @@ QT_USE_NAMESPACE
     PMOrientation orientation;
     PMGetOrientation(pageFormat, &orientation);
     QPageSize pageSize;
-    QCFString key;
+    CFStringRef key;
     double width = 0;
     double height = 0;
     // If the PPD name is empty then is custom, for some reason PMPaperIsCustom doesn't work here
     PMPaperGetPPDPaperName(paper, &key);
     if (PMPaperGetWidth(paper, &width) == noErr && PMPaperGetHeight(paper, &height) == noErr) {
-        QString ppdKey = key;
+        QString ppdKey = QString::fromCFString(key);
         if (ppdKey.isEmpty()) {
             // Is using a custom page size as defined in the Print Dialog custom settings using mm or inches.
             // We can't ask PMPaper what those units actually are, we can only get the point size which may return
@@ -185,7 +185,7 @@ QT_USE_NAMESPACE
                 pageSize = QPageSize(QSizeF(w / 100.0, h / 100.0), QPageSize::Inch);
             }
         } else {
-            pageSize = QPlatformPrintDevice::createPageSize(key, QSize(width, height), QString());
+            pageSize = QPlatformPrintDevice::createPageSize(ppdKey, QSize(width, height), QString());
         }
     }
     if (pageSize.isValid() && !pageSize.isEquivalentTo(printer->pageLayout().pageSize()))

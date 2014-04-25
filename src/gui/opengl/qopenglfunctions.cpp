@@ -2012,12 +2012,6 @@ void QOpenGLFunctions::initializeOpenGLFunctions()
 */
 
 /*!
-    \fn void QOpenGLFunctions::glGetTexLevelParameteriv(GLenum target, GLint level, GLenum pname, GLint *params)
-
-    \internal
-*/
-
-/*!
     \fn bool QOpenGLFunctions::isInitialized(const QOpenGLFunctionsPrivate *d)
     \internal
 */
@@ -3174,15 +3168,7 @@ static void QOPENGLF_APIENTRY qopenglfResolveGetBufferSubData(GLenum target, qop
         (target, offset, size, data);
 }
 
-#ifndef QT_OPENGL_ES_2
-// Desktop only
-
-static void QOPENGLF_APIENTRY qopenglfResolveGetTexLevelParameteriv(GLenum target, GLint level, GLenum pname, GLint *params)
-{
-    RESOLVE_FUNC_VOID(0, GetTexLevelParameteriv)(target, level, pname, params);
-}
-
-#ifndef QT_OPENGL_DYNAMIC
+#if !defined(QT_OPENGL_ES_2) && !defined(QT_OPENGL_DYNAMIC)
 // Special translation functions for ES-specific calls on desktop GL
 
 static void QOPENGLF_APIENTRY qopenglfTranslateClearDepthf(GLclampf depth)
@@ -3194,10 +3180,7 @@ static void QOPENGLF_APIENTRY qopenglfTranslateDepthRangef(GLclampf zNear, GLcla
 {
     ::glDepthRange(zNear, zFar);
 }
-
-#endif // QT_OPENGL_DYNAMIC
-
-#endif // QT_OPENGL_ES2
+#endif // !ES && !DYNAMIC
 
 QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 {
@@ -3256,8 +3239,6 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
         TexParameteriv = qopenglfResolveTexParameteriv;
         TexSubImage2D = qopenglfResolveTexSubImage2D;
         Viewport = qopenglfResolveViewport;
-
-        GetTexLevelParameteriv = qopenglfResolveGetTexLevelParameteriv;
     } else {
 #ifndef QT_OPENGL_DYNAMIC
         // Use the functions directly. This requires linking QtGui to an OpenGL implementation.
@@ -3308,8 +3289,6 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
         TexParameteriv = ::glTexParameteriv;
         TexSubImage2D = ::glTexSubImage2D;
         Viewport = ::glViewport;
-
-        GetTexLevelParameteriv = ::glGetTexLevelParameteriv;
 #else // QT_OPENGL_DYNAMIC
         // This should not happen.
         qFatal("QOpenGLFunctions: Dynamic OpenGL builds do not support platforms with insufficient function resolving capabilities");
