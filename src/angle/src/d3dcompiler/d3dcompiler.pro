@@ -1,9 +1,8 @@
-TEMPLATE = lib
-TARGET = $$qtLibraryTarget(d3dcompiler_qt)
-
+TARGET = d3dcompiler_qt
+CONFIG += installed
 include(../config.pri)
-CONFIG += qt
 
+CONFIG += qt
 QT = core
 DEFINES += QT_NO_CAST_FROM_ASCII QT_NO_CAST_TO_ASCII
 SOURCES += main.cpp
@@ -16,5 +15,3 @@ winrt:equals(WINSDK_VER, 8.1) {
 
 # __stdcall exports get mangled, so use a def file
 DEF_FILE += $${TARGET}.def
-
-load(qt_installs)

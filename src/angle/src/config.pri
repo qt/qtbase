@@ -59,16 +59,9 @@ CONFIG(debug, debug|release) {
 }
 
 # c++11 is needed by MinGW to get support for unordered_map.
-CONFIG -= qt
 CONFIG += stl exceptions c++11
 
-contains(QT_CONFIG, debug_and_release):CONFIG += debug_and_release
-contains(QT_CONFIG, build_all):CONFIG += build_all
-
 INCLUDEPATH += . .. $$PWD/../include
-
-DESTDIR = $$QT_BUILD_TREE/lib
-DLLDESTDIR = $$QT_BUILD_TREE/bin
 
 msvc {
     # Disabled Warnings:
@@ -107,3 +100,5 @@ gcc {
 
 QMAKE_CXXFLAGS_DEBUG = $$QMAKE_CFLAGS_DEBUG
 QMAKE_CXXFLAGS_RELEASE = $$QMAKE_CFLAGS_RELEASE
+
+load(qt_helper_lib)
