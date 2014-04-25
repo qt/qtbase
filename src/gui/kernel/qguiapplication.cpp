@@ -1098,6 +1098,7 @@ void QGuiApplicationPrivate::createPlatformIntegration()
             argv[j++] = argv[i];
             continue;
         }
+        const bool isXcb = platformName == "xcb";
         QByteArray arg = argv[i];
         if (arg.startsWith("--"))
             arg.remove(0, 1);
@@ -1110,13 +1111,13 @@ void QGuiApplicationPrivate::createPlatformIntegration()
         } else if (arg == "-platformtheme") {
             if (++i < argc)
                 platformThemeName = QString::fromLocal8Bit(argv[i]);
-        } else if (arg == "-qwindowgeometry" || (platformName == "xcb" && arg == "-geometry")) {
+        } else if (arg == "-qwindowgeometry" || (isXcb && arg == "-geometry")) {
             if (++i < argc)
                 windowGeometrySpecification = QWindowGeometrySpecification::fromArgument(argv[i]);
-        } else if (arg == "-qwindowtitle" || (platformName == "xcb" && arg == "-title")) {
+        } else if (arg == "-qwindowtitle" || (isXcb && arg == "-title")) {
             if (++i < argc)
                 firstWindowTitle = QString::fromLocal8Bit(argv[i]);
-        } else if (arg == "-qwindowicon" || (platformName == "xcb" && arg == "-icon")) {
+        } else if (arg == "-qwindowicon" || (isXcb && arg == "-icon")) {
             if (++i < argc) {
                 const QString icon = QString::fromLocal8Bit(argv[i]);
                 forcedWindowIcon = QDir::isAbsolutePath(icon) ? QIcon(icon) : QIcon::fromTheme(icon);
