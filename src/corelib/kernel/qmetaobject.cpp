@@ -163,11 +163,6 @@ static inline const char *rawStringData(const QMetaObject *mo, int index)
     return stringData(mo, index).data();
 }
 
-static inline int stringSize(const QMetaObject *mo, int index)
-{
-    return stringData(mo, index).size();
-}
-
 static inline QByteArray typeNameFromTypeInfo(const QMetaObject *mo, uint typeInfo)
 {
     if (typeInfo & IsUnresolvedType) {
