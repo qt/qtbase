@@ -87,6 +87,10 @@ public:
     void setGamma(float gamma);
     float gamma() const;
 
+    void setSubType(const QByteArray &type);
+    QByteArray subType() const;
+    QList<QByteArray> supportedSubTypes() const;
+
     // Obsolete as of 4.1
     void setDescription(const QString &description);
     QString description() const;

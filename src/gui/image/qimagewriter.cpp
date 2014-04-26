@@ -259,6 +259,7 @@ public:
     float gamma;
     QString description;
     QString text;
+    QByteArray subType;
 
     // error
     QImageWriter::ImageWriterError imageWriterError;
@@ -518,6 +519,47 @@ float QImageWriter::gamma() const
 }
 
 /*!
+    \since 5.4
+
+    This is an image format specific function that sets the
+    subtype of the image to \a type. Subtype can be used by
+    a handler to determine which format it should use while
+    saving the image.
+
+    For example, saving an image in DDS format with A8R8G8R8 subtype:
+
+    \snippet code/src_gui_image_qimagewriter.cpp 3
+*/
+void QImageWriter::setSubType(const QByteArray &type)
+{
+    d->subType = type;
+}
+
+/*!
+    \since 5.4
+
+    Returns the subtype of the image.
+
+    \sa setSubType()
+*/
+QByteArray QImageWriter::subType() const
+{
+    return d->subType;
+}
+
+/*!
+    \since 5.4
+
+    Returns the list of subtypes supported by an image.
+*/
+QList<QByteArray> QImageWriter::supportedSubTypes() const
+{
+    if (!supportsOption(QImageIOHandler::SupportedSubTypes))
+        return QList<QByteArray>();
+    return d->handler->option(QImageIOHandler::SupportedSubTypes).value< QList<QByteArray> >();
+}
+
+/*!
     \obsolete
 
     Use setText() instead.
@@ -618,6 +660,8 @@ bool QImageWriter::write(const QImage &image)
         d->handler->setOption(QImageIOHandler::Gamma, d->gamma);
     if (!d->description.isEmpty() && d->handler->supportsOption(QImageIOHandler::Description))
         d->handler->setOption(QImageIOHandler::Description, d->description);
+    if (!d->subType.isEmpty() && d->handler->supportsOption(QImageIOHandler::SubType))
+        d->handler->setOption(QImageIOHandler::SubType, d->subType);
 
     if (!d->handler->write(image))
         return false;

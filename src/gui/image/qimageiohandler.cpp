@@ -157,6 +157,10 @@
 
     \value ImageFormat The image's data format returned by the handler.
     This can be any of the formats listed in QImage::Format.
+
+    \value SupportedSubTypes Image formats that support different saving
+    variants should return a list of supported variant names
+    (QList<QByteArray>) in this option.
 */
 
 /*!

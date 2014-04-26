@@ -1100,6 +1100,36 @@ bool QImageReader::supportsAnimation() const
 }
 
 /*!
+    \since 5.4
+
+    Returns the subtype of the image.
+*/
+QByteArray QImageReader::subType() const
+{
+    if (!d->initHandler())
+        return QByteArray();
+
+    if (d->handler->supportsOption(QImageIOHandler::SubType))
+        return d->handler->option(QImageIOHandler::SubType).toByteArray();
+    return QByteArray();
+}
+
+/*!
+    \since 5.4
+
+    Returns the list of subtypes supported by an image.
+*/
+QList<QByteArray> QImageReader::supportedSubTypes() const
+{
+    if (!d->initHandler())
+        return QList<QByteArray>();
+
+    if (!d->handler->supportsOption(QImageIOHandler::SupportedSubTypes))
+        return d->handler->option(QImageIOHandler::SupportedSubTypes).value< QList<QByteArray> >();
+    return QList<QByteArray>();
+}
+
+/*!
     Returns \c true if an image can be read for the device (i.e., the
     image format is supported, and the device seems to contain valid
     data); otherwise returns \c false.

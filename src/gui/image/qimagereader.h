@@ -113,6 +113,9 @@ public:
 
     bool supportsAnimation() const;
 
+    QByteArray subType() const;
+    QList<QByteArray> supportedSubTypes() const;
+
     bool canRead() const;
     QImage read();
     bool read(QImage *image);

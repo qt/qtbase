@@ -90,7 +90,8 @@ public:
         Endianness,
         Animation,
         BackgroundColor,
-        ImageFormat
+        ImageFormat,
+        SupportedSubTypes
     };
     virtual QVariant option(ImageOption option) const;
     virtual void setOption(ImageOption option, const QVariant &value);
