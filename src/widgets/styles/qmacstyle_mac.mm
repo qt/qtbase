@@ -5319,7 +5319,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
         if (const QStyleOptionComboBox *combo = qstyleoption_cast<const QStyleOptionComboBox *>(opt)){
             HIThemeButtonDrawInfo bdi;
             d->initComboboxBdi(combo, &bdi, widget, d->getDrawState(opt->state));
-            if (!tds == kThemeStateInactive)
+            if (tds != kThemeStateInactive)
                 QMacStylePrivate::drawCombobox(qt_hirectForQRect(combo->rect), bdi, p);
             else
                 d->drawColorlessButton(qt_hirectForQRect(combo->rect), &bdi, p, opt);
