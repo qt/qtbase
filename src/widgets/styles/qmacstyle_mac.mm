@@ -682,7 +682,6 @@ static bool qt_macWindowMainWindow(const QWidget *window)
 const int qt_mac_hitheme_version = 0; //the HITheme version we speak
 const int macItemFrame         = 2;    // menu item frame width
 const int macItemHMargin       = 3;    // menu item hor text margin
-const int macItemVMargin       = 2;    // menu item ver text margin
 const int macRightBorder       = 12;   // right border on mac
 const ThemeWindowType QtWinType = kThemeDocumentWindow; // Window type we use for QTitleBar.
 QPixmap *qt_mac_backgroundPattern = 0; // stores the standard widget background.
