@@ -290,67 +290,6 @@ QList<QByteArray> QMacPasteboardMimeTypeName::convertFromMime(const QString &, Q
     return ret;
 }
 
-class QMacPasteboardMimePlainText : public QMacInternalPasteboardMime {
-public:
-    QMacPasteboardMimePlainText() : QMacInternalPasteboardMime(MIME_ALL) { }
-    QString convertorName();
-
-    QString flavorFor(const QString &mime);
-    QString mimeFor(QString flav);
-    bool canConvert(const QString &mime, QString flav);
-    QVariant convertToMime(const QString &mime, QList<QByteArray> data, QString flav);
-    QList<QByteArray> convertFromMime(const QString &mime, QVariant data, QString flav);
-};
-
-QString QMacPasteboardMimePlainText::convertorName()
-{
-    return QLatin1String("PlainText");
-}
-
-QString QMacPasteboardMimePlainText::flavorFor(const QString &mime)
-{
-    if (mime == QLatin1String("text/plain"))
-        return QLatin1String("com.apple.traditional-mac-plain-text");
-    return QString();
-}
-
-QString QMacPasteboardMimePlainText::mimeFor(QString flav)
-{
-    if (flav == QLatin1String("com.apple.traditional-mac-plain-text"))
-        return QLatin1String("text/plain");
-    return QString();
-}
-
-bool QMacPasteboardMimePlainText::canConvert(const QString &mime, QString flav)
-{
-    return flavorFor(mime) == flav;
-}
-
-QVariant QMacPasteboardMimePlainText::convertToMime(const QString &mimetype, QList<QByteArray> data, QString flavor)
-{
-    if (data.count() > 1)
-        qWarning("QMacPasteboardMimePlainText: Cannot handle multiple member data");
-    const QByteArray &firstData = data.first();
-    QVariant ret;
-    if (flavor == QLatin1String("com.apple.traditional-mac-plain-text")) {
-        return QString::fromCFString(CFStringCreateWithBytes(kCFAllocatorDefault,
-                                             reinterpret_cast<const UInt8 *>(firstData.constData()),
-                                             firstData.size(), CFStringGetSystemEncoding(), false));
-    } else {
-        qWarning("QMime::convertToMime: unhandled mimetype: %s", qPrintable(mimetype));
-    }
-    return ret;
-}
-
-QList<QByteArray> QMacPasteboardMimePlainText::convertFromMime(const QString &, QVariant data, QString flavor)
-{
-    QList<QByteArray> ret;
-    QString string = data.toString();
-    if (flavor == QLatin1String("com.apple.traditional-mac-plain-text"))
-        ret.append(string.toLatin1());
-    return ret;
-}
-
 class QMacPasteboardMimePlainTextFallback : public QMacInternalPasteboardMime {
 public:
     QMacPasteboardMimePlainTextFallback() : QMacInternalPasteboardMime(MIME_ALL) { }
@@ -849,7 +788,6 @@ void QMacInternalPasteboardMime::initializeMimeTypes()
         //standard types that we wrap
         new QMacPasteboardMimePlainTextFallback;
         new QMacPasteboardMimeUnicodeText;
-        new QMacPasteboardMimePlainText;
         new QMacPasteboardMimeRtfText;
         new QMacPasteboardMimeHTMLText;
         new QMacPasteboardMimeFileUri;

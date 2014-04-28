@@ -45,6 +45,67 @@
 
 QT_BEGIN_NAMESPACE
 
+class QMacPasteboardMimeTraditionalMacPlainText : public QMacInternalPasteboardMime {
+public:
+    QMacPasteboardMimeTraditionalMacPlainText() : QMacInternalPasteboardMime(MIME_ALL) { }
+    QString convertorName();
+
+    QString flavorFor(const QString &mime);
+    QString mimeFor(QString flav);
+    bool canConvert(const QString &mime, QString flav);
+    QVariant convertToMime(const QString &mime, QList<QByteArray> data, QString flav);
+    QList<QByteArray> convertFromMime(const QString &mime, QVariant data, QString flav);
+};
+
+QString QMacPasteboardMimeTraditionalMacPlainText::convertorName()
+{
+    return QLatin1String("PlainText (traditional-mac-plain-text)");
+}
+
+QString QMacPasteboardMimeTraditionalMacPlainText::flavorFor(const QString &mime)
+{
+    if (mime == QLatin1String("text/plain"))
+        return QLatin1String("com.apple.traditional-mac-plain-text");
+    return QString();
+}
+
+QString QMacPasteboardMimeTraditionalMacPlainText::mimeFor(QString flav)
+{
+    if (flav == QLatin1String("com.apple.traditional-mac-plain-text"))
+        return QLatin1String("text/plain");
+    return QString();
+}
+
+bool QMacPasteboardMimeTraditionalMacPlainText::canConvert(const QString &mime, QString flav)
+{
+    return flavorFor(mime) == flav;
+}
+
+QVariant QMacPasteboardMimeTraditionalMacPlainText::convertToMime(const QString &mimetype, QList<QByteArray> data, QString flavor)
+{
+    if (data.count() > 1)
+        qWarning("QMacPasteboardMimeTraditionalMacPlainText: Cannot handle multiple member data");
+    const QByteArray &firstData = data.first();
+    QVariant ret;
+    if (flavor == QLatin1String("com.apple.traditional-mac-plain-text")) {
+        return QString::fromCFString(CFStringCreateWithBytes(kCFAllocatorDefault,
+                                             reinterpret_cast<const UInt8 *>(firstData.constData()),
+                                             firstData.size(), CFStringGetSystemEncoding(), false));
+    } else {
+        qWarning("QMime::convertToMime: unhandled mimetype: %s", qPrintable(mimetype));
+    }
+    return ret;
+}
+
+QList<QByteArray> QMacPasteboardMimeTraditionalMacPlainText::convertFromMime(const QString &, QVariant data, QString flavor)
+{
+    QList<QByteArray> ret;
+    QString string = data.toString();
+    if (flavor == QLatin1String("com.apple.traditional-mac-plain-text"))
+        ret.append(string.toLatin1());
+    return ret;
+}
+
 class QMacPasteboardMimeTiff : public QMacInternalPasteboardMime {
 public:
     QMacPasteboardMimeTiff() : QMacInternalPasteboardMime(MIME_ALL) { }
@@ -204,6 +265,7 @@ QList<QByteArray> QMacPasteboardMimeRtfText::convertFromMime(const QString &mime
 
 void QCocoaMimeTypes::initializeMimeTypes()
 {
+    new QMacPasteboardMimeTraditionalMacPlainText;
     new QMacPasteboardMimeTiff;
     new QMacPasteboardMimeRtfText;
 }
