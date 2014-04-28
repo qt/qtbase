@@ -1749,23 +1749,7 @@ MakefileGenerator::verifyExtraCompiler(const ProString &comp, const QString &fil
         QString tmp_out = project->values(ProKey(comp + ".output")).first().toQString();
         if(tmp_out.isEmpty())
             return false;
-        QString tmp_cmd;
-        const ProKey ckey(comp + ".commands");
-        if (!project->isEmpty(ckey)) {
-            int argv0 = -1;
-            ProStringList cmdline = project->values(ckey);
-            for(int i = 0; i < cmdline.count(); ++i) {
-                if(!cmdline.at(i).contains('=')) {
-                    argv0 = i;
-                    break;
-                }
-            }
-            if(argv0 != -1) {
-                cmdline[argv0] = Option::fixPathToTargetOS(cmdline.at(argv0).toQString(), false);
-                tmp_cmd = cmdline.join(' ');
-            }
-        }
-
+        const QString tmp_cmd = project->values(ProKey(comp + ".commands")).join(' ');
         if (config.indexOf("combine") != -1) {
             QString cmd = replaceExtraCompilerVariables(tmp_cmd, QString(), tmp_out);
             if(system(cmd.toLatin1().constData()))
@@ -1829,42 +1813,10 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
     for (ProStringList::ConstIterator it = quc.begin(); it != quc.end(); ++it) {
         QString tmp_out = fileFixify(project->first(ProKey(*it + ".output")).toQString(),
                                      Option::output_dir, Option::output_dir);
-        QString tmp_cmd;
-        const ProKey ckey(*it + ".commands");
-        if (!project->isEmpty(ckey)) {
-            QStringList cmdline = project->values(ckey).toQStringList();
-            int argv0 = findExecutable(cmdline);
-            if(argv0 != -1) {
-                cmdline[argv0] = escapeFilePath(Option::fixPathToTargetOS(cmdline.at(argv0), false));
-                tmp_cmd = cmdline.join(' ');
-            }
-        }
-        QString tmp_dep_cmd;
+        const QString tmp_cmd = project->values(ProKey(*it + ".commands")).join(' ');
+        const QString tmp_dep_cmd = project->values(ProKey(*it + "depend_command")).join(' ');
         QString dep_cd_cmd;
-        const ProKey dckey(*it + ".depend_command");
-        if (!project->isEmpty(dckey)) {
-            int argv0 = -1;
-            ProStringList cmdline = project->values(dckey);
-            for(int i = 0; i < cmdline.count(); ++i) {
-                if(!cmdline.at(i).contains('=')) {
-                    argv0 = i;
-                    break;
-                }
-            }
-            if(argv0 != -1) {
-                QString arg = cmdline.at(argv0).toQString();
-                const QString c = Option::fixPathToLocalOS(arg, true);
-                if(exists(c)) {
-                    arg = escapeFilePath(Option::fixPathToLocalOS(arg, false));
-                } else {
-                    arg = escapeFilePath(arg);
-                }
-                QFileInfo cmdFileInfo(arg);
-                if (!cmdFileInfo.isAbsolute() || cmdFileInfo.exists()) {
-                    cmdline[argv0] = arg;
-                    tmp_dep_cmd = cmdline.join(' ');
-                }
-            }
+        if (!tmp_dep_cmd.isEmpty()) {
             dep_cd_cmd = QLatin1String("cd ")
                  + escapeFilePath(Option::fixPathToLocalOS(Option::output_dir, false))
                  + QLatin1String(" && ");
