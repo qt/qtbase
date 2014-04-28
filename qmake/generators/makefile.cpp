@@ -70,11 +70,6 @@
 
 QT_BEGIN_NAMESPACE
 
-// Well, Windows doesn't have this, so here's the macro
-#ifndef S_ISDIR
-#  define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
-#endif
-
 bool MakefileGenerator::canExecute(const QStringList &cmdline, int *a) const
 {
     int argv0 = -1;
