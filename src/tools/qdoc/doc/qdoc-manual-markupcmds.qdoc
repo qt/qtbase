@@ -3251,9 +3251,9 @@
     \target generatelist-command
     \section1 \\generatelist
 
-    The \\generatelist command expands to a list of various
-    documentation or links to documentation. Below is an example from
-    the Qt Reference Documentation:
+    The \\generatelist command expands to a list of links to the
+    documentation entities in a group. Below is an example from the Qt
+    Reference Documentation:
 
            \code
            / *!
@@ -3263,7 +3263,7 @@
                For a shorter list that only includes the most
                frequently used classes, see \l{Qt's Main Classes}.
 
-               \generatelist classes
+               \generatelist classes Q
            * /
            \endcode
 
@@ -3295,10 +3295,17 @@
     of the class comment's \l {brief-command} {\\brief} command.
 
     \target list example
-    \section2 \c classes
+    \section2 \c {classes <prefix>}
 
     The \c classes argument provides a complete alphabetical list of
-    the classes. Each class name is a link to the class's reference
+    the classes. The second argument, \c{<prefix>}, is the common
+    prefix for the class names. The class names will be sorted on the
+    character that follows the common prefix. e.g. The common prefix
+    for the Qt classes is \c Q. The common prefix argument is
+    optional.  If no common prefix is provided, the class names will
+    be sorted on their first character.
+
+    Each class name becomes a link to the class's reference
     documentation. This command is used to generate the
     \e {All Classes} page this way:
 
@@ -3315,7 +3322,7 @@
         Classes}. For classes that have been deprecated, see the
         \l{Obsolete Classes} list.
 
-        \generatelist classes
+        \generatelist classes Q
     * /
     \endcode
 

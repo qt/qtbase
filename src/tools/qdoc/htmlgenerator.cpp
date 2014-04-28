@@ -493,13 +493,16 @@ int HtmlGenerator::generateAtom(const Atom *atom, const Node *relative, CodeMark
             generateAnnotatedList(relative, marker, qdb_->getCppClasses());
         }
         else if (atom->string() == "classes") {
-            generateCompactList(Generic, relative, qdb_->getCppClasses(), true, QStringLiteral("Q"));
+            generateCompactList(Generic, relative, qdb_->getCppClasses(), true, QStringLiteral(""));
+        }
+        else if (atom->string().contains("classes ")) {
+            QString rootName = atom->string().mid(atom->string().indexOf("classes") + 7).trimmed();
+            generateCompactList(Generic, relative, qdb_->getCppClasses(), true, rootName);
         }
         else if (atom->string() == "qmltypes") {
             generateCompactList(Generic, relative, qdb_->getQmlTypes(), true, QStringLiteral(""));
         }
         else if (atom->string().contains("classesbymodule")) {
-            QString arg = atom->string().trimmed();
             QString moduleName = atom->string().mid(atom->string().indexOf("classesbymodule") + 15).trimmed();
             QDocDatabase* qdb = QDocDatabase::qdocDB();
             ModuleNode* mn = qdb->findModule(moduleName);

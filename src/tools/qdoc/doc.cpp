@@ -876,7 +876,13 @@ void DocParser::parse(const QString& source,
                     append(Atom::SinceList, getRestOfLine().simplified());
                     break;
                 case CMD_GENERATELIST:
-                    append(Atom::GeneratedList, getArgument());
+                    {
+                        QString arg1 = getArgument();
+                        QString arg2 = getOptionalArgument();
+                        if (!arg2.isEmpty())
+                            arg1 += " " + arg2;
+                        append(Atom::GeneratedList, arg1);
+                    }
                     break;
                 case CMD_GRANULARITY:
                     priv->constructExtra();
