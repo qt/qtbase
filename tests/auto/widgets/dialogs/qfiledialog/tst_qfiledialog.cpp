@@ -43,6 +43,7 @@
 #include <QtTest/QtTest>
 
 #include <qcoreapplication.h>
+#include <qfile.h>
 #include <qdebug.h>
 #include <qsharedpointer.h>
 #include <qfiledialog.h>
@@ -72,12 +73,26 @@
 #include <QFileSystemModel>
 
 #if defined(Q_OS_UNIX)
+#include <unistd.h> // for pathconf() on OS X
 #ifdef QT_BUILD_INTERNAL
 QT_BEGIN_NAMESPACE
 extern Q_GUI_EXPORT QString qt_tildeExpansion(const QString &path, bool *expanded = 0);
 QT_END_NAMESPACE
 #endif
 #endif
+
+static inline bool isCaseSensitiveFileSystem(const QString &path)
+{
+    Q_UNUSED(path)
+#if defined(Q_OS_MAC)
+    return pathconf(QFile::encodeName(path).constData(), _PC_CASE_SENSITIVE);
+#elif defined(Q_OS_WIN)
+    return false;
+#else
+    return true;
+#endif
+}
+
 
 class QNonNativeFileDialog : public QFileDialog
 {
@@ -130,6 +145,7 @@ private slots:
     void selectFile_data();
     void selectFile();
     void selectFiles();
+    void selectFileWrongCaseSaveAs();
     void selectFilter();
     void viewMode();
     void proxymodel();
@@ -880,6 +896,27 @@ void tst_QFiledialog::selectFile()
         QCOMPARE(model->index(fd->directory().path()), model->index(QDir::tempPath()));
     }
     fd.reset(); // Ensure the file dialog let's go of the temporary file for "temp".
+}
+
+void tst_QFiledialog::selectFileWrongCaseSaveAs()
+{
+    const QString home = QDir::homePath();
+    if (isCaseSensitiveFileSystem(home))
+        QSKIP("This test is intended for case-insensitive file systems only.");
+    // QTBUG-38162: when passing a wrongly capitalized path to selectFile()
+    // on a case-insensitive file system, the line edit should only
+    // contain the file name ("c:\PRogram files\foo.txt" -> "foo.txt").
+    const QString fileName = QStringLiteral("foo.txt");
+    const QString path = home + QLatin1Char('/') + fileName;
+    QString wrongCasePath = path;
+    for (int c = 0; c < wrongCasePath.size(); c += 2)
+        wrongCasePath[c] = wrongCasePath.at(c).isLower() ? wrongCasePath.at(c).toUpper() : wrongCasePath.at(c).toLower();
+    QNonNativeFileDialog fd(0, "QTBUG-38162", wrongCasePath);
+    fd.setAcceptMode(QFileDialog::AcceptSave);
+    fd.selectFile(wrongCasePath);
+    const QLineEdit *lineEdit = fd.findChild<QLineEdit*>("fileNameEdit");
+    QVERIFY(lineEdit);
+    QCOMPARE(lineEdit->text().compare(fileName, Qt::CaseInsensitive), 0);
 }
 
 void tst_QFiledialog::selectFiles()
