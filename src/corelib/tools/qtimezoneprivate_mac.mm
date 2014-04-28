@@ -89,7 +89,7 @@ QTimeZonePrivate *QMacTimeZonePrivate::clone()
 void QMacTimeZonePrivate::init(const QByteArray &ianaId)
 {
     if (availableTimeZoneIds().contains(ianaId)) {
-        m_nstz = [NSTimeZone timeZoneWithName:QCFString::toNSString(QString::fromUtf8(ianaId))];
+        m_nstz = [[NSTimeZone timeZoneWithName:QCFString::toNSString(QString::fromUtf8(ianaId))] retain];
         if (m_nstz)
             m_id = ianaId;
     }
