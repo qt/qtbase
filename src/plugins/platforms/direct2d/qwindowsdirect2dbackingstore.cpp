@@ -75,6 +75,16 @@ QWindowsDirect2DBackingStore::~QWindowsDirect2DBackingStore()
 {
 }
 
+void QWindowsDirect2DBackingStore::beginPaint(const QRegion &)
+{
+    platformPixmap(m_pixmap.data())->bitmap()->deviceContext()->begin();
+}
+
+void QWindowsDirect2DBackingStore::endPaint()
+{
+    platformPixmap(m_pixmap.data())->bitmap()->deviceContext()->end();
+}
+
 QPaintDevice *QWindowsDirect2DBackingStore::paintDevice()
 {
     return m_pixmap.data();
