@@ -874,6 +874,7 @@ bool QWindowsDirect2DPaintEngine::begin(QPaintDevice * pdev)
 
     D2D_TAG(D2DDebugDrawInitialStateTag);
 
+    setActive(true);
     return true;
 }
 
