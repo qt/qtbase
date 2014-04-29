@@ -87,7 +87,7 @@ INSTALLS += syncqt
 # qtPrepareTool() to find the non-installed syncqt.
 prefix_build|!equals(PWD, $$OUT_PWD) {
 
-    cmd = perl -w $$shell_path($$PWD/bin/syncqt.pl)
+    cmd = perl -w $$system_path($$PWD/bin/syncqt.pl)
 
     TOOL_PRI = $$OUT_PWD/mkspecs/modules/qt_tool_syncqt.pri
 
