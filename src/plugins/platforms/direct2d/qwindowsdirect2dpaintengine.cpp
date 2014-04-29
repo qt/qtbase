@@ -89,6 +89,11 @@ enum ClipType {
     LayerClip
 };
 
+// Since d2d is a float-based system we need to be able to snap our drawing to whole pixels.
+// Applying the magical aliasing offset to coordinates will do so, just make sure that
+// aliased painting is turned on on the d2d device context.
+static const qreal MAGICAL_ALIASING_OFFSET = 0.5;
+
 #define D2D_TAG(tag) d->dc()->SetTags(tag, tag)
 
 Q_GUI_EXPORT QImage qt_imageForBrush(int brushStyle, bool invert);
@@ -184,8 +189,11 @@ public:
 private:
     D2D1_POINT_2F adjusted(const QPointF &point)
     {
+        static const QPointF adjustment(MAGICAL_ALIASING_OFFSET,
+                                        MAGICAL_ALIASING_OFFSET);
+
         if (m_roundCoordinates)
-            return to_d2d_point_2f(point.toPoint());
+            return to_d2d_point_2f(point + adjustment);
         else
             return to_d2d_point_2f(point);
     }
