@@ -128,6 +128,20 @@ QT_BEGIN_NAMESPACE
 
     Flushes any pending data to be written and destroys the debug stream.
 */
+// Has been defined in the header / inlined before Qt 5.4
+QDebug::~QDebug()
+{
+    if (!--stream->ref) {
+        if (stream->space && stream->buffer.endsWith(QLatin1Char(' ')))
+            stream->buffer.chop(1);
+        if (stream->message_output) {
+            qt_message_output(stream->type,
+                              stream->context,
+                              stream->buffer);
+        }
+        delete stream;
+    }
+}
 
 /*!
     \fn QDebug::swap(QDebug &other)

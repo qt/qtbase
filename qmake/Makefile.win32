@@ -94,6 +94,7 @@ QTOBJS= \
 	qglobal.obj \
 	qhash.obj \
 	qiodevice.obj \
+	qdebug.obj \
 	qlist.obj \
 	qlinkedlist.obj \
 	qlocale.obj \

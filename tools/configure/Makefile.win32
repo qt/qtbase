@@ -47,6 +47,7 @@ OBJECTS = \
     qfsfileengine_win.obj \
     qfsfileengine_iterator.obj \
     qiodevice.obj \
+    qdebug.obj \
     qtextstream.obj \
     qlogging.obj \
     qtemporaryfile.obj \
@@ -121,6 +122,7 @@ qfsfileengine.obj: $(CORESRC)\io\qfsfileengine.cpp $(PCH)
 qfsfileengine_win.obj: $(CORESRC)\io\qfsfileengine_win.cpp $(PCH)
 qfsfileengine_iterator.obj: $(CORESRC)\io\qfsfileengine_iterator.cpp $(PCH)
 qiodevice.obj: $(CORESRC)\io\qiodevice.cpp $(PCH)
+qdebug.obj: $(CORESRC)\io\qdebug.cpp $(PCH)
 qtextstream.obj: $(CORESRC)\io\qtextstream.cpp $(PCH)
 qtemporaryfile.obj: $(CORESRC)\io\qtemporaryfile.cpp $(PCH)
 qstandardpaths.obj: $(CORESRC)\io\qstandardpaths.cpp $(PCH)

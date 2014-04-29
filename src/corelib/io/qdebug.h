@@ -78,18 +78,7 @@ public:
     inline QDebug(QtMsgType t) : stream(new Stream(t)) {}
     inline QDebug(const QDebug &o):stream(o.stream) { ++stream->ref; }
     inline QDebug &operator=(const QDebug &other);
-    inline ~QDebug() {
-        if (!--stream->ref) {
-            if (stream->space && stream->buffer.endsWith(QLatin1Char(' ')))
-                stream->buffer.chop(1);
-            if (stream->message_output) {
-                qt_message_output(stream->type,
-                                  stream->context,
-                                  stream->buffer);
-            }
-            delete stream;
-        }
-    }
+    ~QDebug();
     inline void swap(QDebug &other) { qSwap(stream, other.stream); }
 
     inline QDebug &space() { stream->space = true; stream->ts << ' '; return *this; }
