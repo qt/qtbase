@@ -72,8 +72,15 @@ QT_BEGIN_NAMESPACE
 // http://msdn.microsoft.com/en-us/library/windows/desktop/dd370979(v=vs.85).aspx
 enum {
     D2DDebugDrawInitialStateTag = -1,
-    D2DDebugDrawImageTag = 1,
-    D2DDebugFillTag,
+    D2DDebugFillTag = 1,
+    D2DDebugFillRectTag,
+    D2DDebugDrawRectsTag,
+    D2DDebugDrawRectFsTag,
+    D2DDebugDrawLinesTag,
+    D2DDebugDrawLineFsTag,
+    D2DDebugDrawEllipseTag,
+    D2DDebugDrawEllipseFTag,
+    D2DDebugDrawImageTag,
     D2DDebugDrawPixmapTag,
     D2DDebugDrawStaticTextItemTag,
     D2DDebugDrawTextItemTag
@@ -933,7 +940,7 @@ void QWindowsDirect2DPaintEngine::fill(const QVectorPath &path, const QBrush &br
 
     ensureBrush(brush);
 
-    if (!state()->matrix.isAffine() || d->brush.emulate) {
+    if (emulationRequired(BrushEmulation)) {
         rasterFill(path, brush);
         return;
     }
@@ -941,25 +948,13 @@ void QWindowsDirect2DPaintEngine::fill(const QVectorPath &path, const QBrush &br
     if (!d->brush.brush)
         return;
 
-    if (path.isRect()) {
-        const qreal * const points = path.points();
-        D2D_RECT_F rect = {
-            points[0], // left
-            points[1], // top
-            points[2], // right,
-            points[5]  // bottom
-        };
-
-        d->dc()->FillRectangle(rect, d->brush.brush.Get());
-    } else {
-        ComPtr<ID2D1Geometry> geometry = vectorPathToID2D1PathGeometry(path, d->antialiasMode() == D2D1_ANTIALIAS_MODE_ALIASED);
-        if (!geometry) {
-            qWarning("%s: Could not convert path to d2d geometry", __FUNCTION__);
-            return;
-        }
-
-        d->dc()->FillGeometry(geometry.Get(), d->brush.brush.Get());
+    ComPtr<ID2D1Geometry> geometry = vectorPathToID2D1PathGeometry(path, d->antialiasMode() == D2D1_ANTIALIAS_MODE_ALIASED);
+    if (!geometry) {
+        qWarning("%s: Could not convert path to d2d geometry", __FUNCTION__);
+        return;
     }
+
+    d->dc()->FillGeometry(geometry.Get(), d->brush.brush.Get());
 }
 
 void QWindowsDirect2DPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
@@ -1014,6 +1009,198 @@ void QWindowsDirect2DPaintEngine::transformChanged()
 {
     Q_D(QWindowsDirect2DPaintEngine);
     d->updateTransform(state()->transform());
+}
+
+void QWindowsDirect2DPaintEngine::fillRect(const QRectF &rect, const QBrush &brush)
+{
+    Q_D(QWindowsDirect2DPaintEngine);
+    D2D_TAG(D2DDebugFillRectTag);
+
+    ensureBrush(brush);
+
+    if (emulationRequired(BrushEmulation)) {
+        QPaintEngineEx::fillRect(rect, brush);
+    } else {
+        QRectF r = rect.normalized();
+        adjustForAliasing(&r);
+
+        if (d->brush.brush)
+            d->dc()->FillRectangle(to_d2d_rect_f(rect), d->brush.brush.Get());
+    }
+}
+
+void QWindowsDirect2DPaintEngine::drawRects(const QRect *rects, int rectCount)
+{
+    Q_D(QWindowsDirect2DPaintEngine);
+    D2D_TAG(D2DDebugDrawRectsTag);
+
+    ensureBrush();
+    ensurePen();
+
+    if (emulationRequired(BrushEmulation) || emulationRequired(PenEmulation)) {
+        QPaintEngineEx::drawRects(rects, rectCount);
+    } else {
+        QRectF rect;
+        for (int i = 0; i < rectCount; i++) {
+            rect = rects[i].normalized();
+            adjustForAliasing(&rect);
+
+            D2D1_RECT_F d2d_rect = to_d2d_rect_f(rect);
+
+            if (d->brush.brush)
+                d->dc()->FillRectangle(d2d_rect, d->brush.brush.Get());
+
+            if (d->pen.brush)
+                d->dc()->DrawRectangle(d2d_rect, d->pen.brush.Get(), d->pen.qpen.widthF(), d->pen.strokeStyle.Get());
+        }
+    }
+}
+
+void QWindowsDirect2DPaintEngine::drawRects(const QRectF *rects, int rectCount)
+{
+    Q_D(QWindowsDirect2DPaintEngine);
+    D2D_TAG(D2DDebugDrawRectFsTag);
+
+    ensureBrush();
+    ensurePen();
+
+    if (emulationRequired(BrushEmulation) || emulationRequired(PenEmulation)) {
+        QPaintEngineEx::drawRects(rects, rectCount);
+    } else {
+        QRectF rect;
+        for (int i = 0; i < rectCount; i++) {
+            rect = rects[i].normalized();
+            adjustForAliasing(&rect);
+
+            D2D1_RECT_F d2d_rect = to_d2d_rect_f(rect);
+
+            if (d->brush.brush)
+                d->dc()->FillRectangle(d2d_rect, d->brush.brush.Get());
+
+            if (d->pen.brush)
+                d->dc()->DrawRectangle(d2d_rect, d->pen.brush.Get(), d->pen.qpen.widthF(), d->pen.strokeStyle.Get());
+        }
+    }
+}
+
+void QWindowsDirect2DPaintEngine::drawLines(const QLine *lines, int lineCount)
+{
+    Q_D(QWindowsDirect2DPaintEngine);
+    D2D_TAG(D2DDebugDrawLinesTag);
+
+    ensurePen();
+
+    if (emulationRequired(PenEmulation)) {
+        QPaintEngineEx::drawLines(lines, lineCount);
+    } else if (d->pen.brush) {
+        for (int i = 0; i < lineCount; i++) {
+            QPointF p1 = lines[i].p1();
+            QPointF p2 = lines[i].p2();
+
+            // Match raster engine output
+            if (p1 == p2 && d->pen.qpen.widthF() <= 1.0) {
+                fillRect(QRectF(p1, QSizeF(d->pen.qpen.widthF(), d->pen.qpen.widthF())),
+                         d->pen.qpen.brush());
+                continue;
+            }
+
+            adjustForAliasing(&p1);
+            adjustForAliasing(&p2);
+
+            D2D1_POINT_2F d2d_p1 = to_d2d_point_2f(p1);
+            D2D1_POINT_2F d2d_p2 = to_d2d_point_2f(p2);
+
+            d->dc()->DrawLine(d2d_p1, d2d_p2, d->pen.brush.Get(), d->pen.qpen.widthF(), d->pen.strokeStyle.Get());
+        }
+    }
+}
+
+void QWindowsDirect2DPaintEngine::drawLines(const QLineF *lines, int lineCount)
+{
+    Q_D(QWindowsDirect2DPaintEngine);
+    D2D_TAG(D2DDebugDrawLineFsTag);
+
+    ensurePen();
+
+    if (emulationRequired(PenEmulation)) {
+        QPaintEngineEx::drawLines(lines, lineCount);
+    } else if (d->pen.brush) {
+        for (int i = 0; i < lineCount; i++) {
+            QPointF p1 = lines[i].p1();
+            QPointF p2 = lines[i].p2();
+
+            // Match raster engine output
+            if (p1 == p2 && d->pen.qpen.widthF() <= 1.0) {
+                fillRect(QRectF(p1, QSizeF(d->pen.qpen.widthF(), d->pen.qpen.widthF())),
+                         d->pen.qpen.brush());
+                continue;
+            }
+
+            adjustForAliasing(&p1);
+            adjustForAliasing(&p2);
+
+            D2D1_POINT_2F d2d_p1 = to_d2d_point_2f(p1);
+            D2D1_POINT_2F d2d_p2 = to_d2d_point_2f(p2);
+
+            d->dc()->DrawLine(d2d_p1, d2d_p2, d->pen.brush.Get(), d->pen.qpen.widthF(), d->pen.strokeStyle.Get());
+        }
+    }
+}
+
+void QWindowsDirect2DPaintEngine::drawEllipse(const QRectF &r)
+{
+    Q_D(QWindowsDirect2DPaintEngine);
+    D2D_TAG(D2DDebugDrawEllipseFTag);
+
+    ensureBrush();
+    ensurePen();
+
+    if (emulationRequired(BrushEmulation) || emulationRequired(PenEmulation)) {
+        QPaintEngineEx::drawEllipse(r);
+    } else {
+        QPointF p = r.center();
+        adjustForAliasing(&p);
+
+        D2D1_ELLIPSE ellipse = {
+            to_d2d_point_2f(p),
+            r.width() / 2.0,
+            r.height() / 2.0
+        };
+
+        if (d->brush.brush)
+            d->dc()->FillEllipse(ellipse, d->brush.brush.Get());
+
+        if (d->pen.brush)
+            d->dc()->DrawEllipse(ellipse, d->pen.brush.Get(), d->pen.qpen.widthF(), d->pen.strokeStyle.Get());
+    }
+}
+
+void QWindowsDirect2DPaintEngine::drawEllipse(const QRect &r)
+{
+    Q_D(QWindowsDirect2DPaintEngine);
+    D2D_TAG(D2DDebugDrawEllipseTag);
+
+    ensureBrush();
+    ensurePen();
+
+    if (emulationRequired(BrushEmulation) || emulationRequired(PenEmulation)) {
+        QPaintEngineEx::drawEllipse(r);
+    } else {
+        QPointF p = r.center();
+        adjustForAliasing(&p);
+
+        D2D1_ELLIPSE ellipse = {
+            to_d2d_point_2f(p),
+            r.width() / 2.0,
+            r.height() / 2.0
+        };
+
+        if (d->brush.brush)
+            d->dc()->FillEllipse(ellipse, d->brush.brush.Get());
+
+        if (d->pen.brush)
+            d->dc()->DrawEllipse(ellipse, d->pen.brush.Get(), d->pen.qpen.widthF(), d->pen.strokeStyle.Get());
+    }
 }
 
 void QWindowsDirect2DPaintEngine::drawImage(const QRectF &rectangle, const QImage &image,
@@ -1386,6 +1573,49 @@ void QWindowsDirect2DPaintEngine::rasterFill(const QVectorPath &path, const QBru
     } else {
         qWarning("%s: Could not fall back to QImage", __FUNCTION__);
     }
+}
+
+bool QWindowsDirect2DPaintEngine::emulationRequired(EmulationType type) const
+{
+    Q_D(const QWindowsDirect2DPaintEngine);
+
+    if (!state()->matrix.isAffine())
+        return true;
+
+    switch (type) {
+    case PenEmulation:
+        return d->pen.emulate;
+        break;
+    case BrushEmulation:
+        return d->brush.emulate;
+        break;
+    }
+
+    return false;
+}
+
+bool QWindowsDirect2DPaintEngine::antiAliasingEnabled() const
+{
+    return state()->renderHints & QPainter::Antialiasing;
+}
+
+void QWindowsDirect2DPaintEngine::adjustForAliasing(QRectF *rect)
+{
+   if (!antiAliasingEnabled()) {
+       rect->adjust(MAGICAL_ALIASING_OFFSET,
+                    MAGICAL_ALIASING_OFFSET,
+                    MAGICAL_ALIASING_OFFSET,
+                    MAGICAL_ALIASING_OFFSET);
+   }
+}
+
+void QWindowsDirect2DPaintEngine::adjustForAliasing(QPointF *point)
+{
+    static const QPointF adjustment(MAGICAL_ALIASING_OFFSET,
+                                    MAGICAL_ALIASING_OFFSET);
+
+    if (!antiAliasingEnabled())
+        (*point) += adjustment;
 }
 
 QT_END_NAMESPACE

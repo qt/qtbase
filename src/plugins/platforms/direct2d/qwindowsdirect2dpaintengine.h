@@ -79,6 +79,17 @@ public:
     void renderHintsChanged() Q_DECL_OVERRIDE;
     void transformChanged() Q_DECL_OVERRIDE;
 
+    void fillRect(const QRectF &rect, const QBrush &brush) Q_DECL_OVERRIDE;
+
+    void drawRects(const QRect *rects, int rectCount) Q_DECL_OVERRIDE;
+    void drawRects(const QRectF *rects, int rectCount) Q_DECL_OVERRIDE;
+
+    void drawLines(const QLine *lines, int lineCount) Q_DECL_OVERRIDE;
+    void drawLines(const QLineF *lines, int lineCount) Q_DECL_OVERRIDE;
+
+    void drawEllipse(const QRectF &r) Q_DECL_OVERRIDE;
+    void drawEllipse(const QRect &r) Q_DECL_OVERRIDE;
+
     void drawImage(const QRectF &rectangle, const QImage &image, const QRectF &sr, Qt::ImageConversionFlags flags = Qt::AutoColor) Q_DECL_OVERRIDE;
     void drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr) Q_DECL_OVERRIDE;
 
@@ -96,6 +107,13 @@ private:
     void ensurePen(const QPen &pen);
 
     void rasterFill(const QVectorPath &path, const QBrush &brush);
+
+    enum EmulationType { PenEmulation, BrushEmulation };
+    bool emulationRequired(EmulationType type) const;
+
+    bool antiAliasingEnabled() const;
+    void adjustForAliasing(QRectF *rect);
+    void adjustForAliasing(QPointF *point);
 };
 
 QT_END_NAMESPACE
