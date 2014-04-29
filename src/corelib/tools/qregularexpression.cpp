@@ -705,6 +705,17 @@ QT_BEGIN_NAMESPACE
         JIT-compiled) on its first usage, instead of after a certain (undefined)
         number of usages. See also \l{QRegularExpression::}{optimize()}.
         This enum value has been introduced in Qt 5.4.
+
+    \value DontAutomaticallyOptimizeOption
+        Regular expressions are automatically optimized after a
+        certain number of usages; setting this option prevents such
+        optimizations, therefore avoiding possible unpredictable spikes in
+        CPU and memory usage. If both this option and the
+        \c{OptimizeOnFirstUsageOption} option are set, then this option takes
+        precedence. Note: this option will still let the regular expression
+        to be optimized by manually calling
+        \l{QRegularExpression::}{optimize()}. This enum value has been
+        introduced in Qt 5.4.
 */
 
 /*!
@@ -1108,7 +1119,10 @@ static bool isJitEnabled()
     setting the studyData member variable to the result of the study. It gets
     called by doMatch() every time a match is performed. As of now, the
     optimizations on the pattern are performed after a certain number of usages
-    (i.e. the qt_qregularexpression_optimize_after_use_count constant).
+    (i.e. the qt_qregularexpression_optimize_after_use_count constant) unless
+    the DontAutomaticallyOptimizeOption option is set on the QRegularExpression
+    object, or anyhow by calling optimize() (which will pass
+    ImmediateOptimizeOption).
 
     Notice that although the method is protected by a mutex, one thread may
     invoke this function and return immediately (i.e. not study the pattern,
@@ -1248,13 +1262,15 @@ QRegularExpressionMatchPrivate *QRegularExpressionPrivate::doMatch(const QString
                                                                               matchType, matchOptions,
                                                                               capturingCount + 1);
 
-    const OptimizePatternOption optimizePatternOption =
-            (patternOptions & QRegularExpression::OptimizeOnFirstUsageOption)
-                ? ImmediateOptimizeOption
-                : LazyOptimizeOption;
+    if (!(patternOptions & QRegularExpression::DontAutomaticallyOptimizeOption)) {
+        const OptimizePatternOption optimizePatternOption =
+                (patternOptions & QRegularExpression::OptimizeOnFirstUsageOption)
+                    ? ImmediateOptimizeOption
+                    : LazyOptimizeOption;
 
-    // this is mutex protected
-    const_cast<QRegularExpressionPrivate *>(this)->optimizePattern(optimizePatternOption);
+        // this is mutex protected
+        const_cast<QRegularExpressionPrivate *>(this)->optimizePattern(optimizePatternOption);
+    }
 
     // work with a local copy of the study data, as we are running pcre_exec
     // potentially more than once, and we don't want to run call it
@@ -2370,6 +2386,8 @@ QDebug operator<<(QDebug debug, QRegularExpression::PatternOptions patternOption
             flags.append("UseUnicodePropertiesOption|");
         if (patternOptions & QRegularExpression::OptimizeOnFirstUsageOption)
             flags.append("OptimizeOnFirstUsageOption|");
+        if (patternOptions & QRegularExpression::DontAutomaticallyOptimizeOption)
+            flags.append("DontAutomaticallyOptimizeOption|");
         flags.chop(1);
     }
 

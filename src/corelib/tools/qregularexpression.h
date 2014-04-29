@@ -70,7 +70,8 @@ public:
         InvertedGreedinessOption       = 0x0010,
         DontCaptureOption              = 0x0020,
         UseUnicodePropertiesOption     = 0x0040,
-        OptimizeOnFirstUsageOption     = 0x0080
+        OptimizeOnFirstUsageOption     = 0x0080,
+        DontAutomaticallyOptimizeOption = 0x0100
     };
     Q_DECLARE_FLAGS(PatternOptions, PatternOption)
 
