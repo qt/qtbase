@@ -782,7 +782,7 @@ private:
 };
 
 template<typename const_iterator>
-struct IteratorOwner
+struct IteratorOwnerCommon
 {
     static void assign(void **ptr, const_iterator iterator)
     {
@@ -804,6 +804,15 @@ struct IteratorOwner
         delete static_cast<const_iterator*>(*ptr);
     }
 
+    static bool equal(void * const *it, void * const *other)
+    {
+        return *static_cast<const_iterator*>(*it) == *static_cast<const_iterator*>(*other);
+    }
+};
+
+template<typename const_iterator>
+struct IteratorOwner : IteratorOwnerCommon<const_iterator>
+{
     static const void *getData(void * const *iterator)
     {
         return &**static_cast<const_iterator*>(*iterator);
@@ -813,12 +822,30 @@ struct IteratorOwner
     {
         return &*it;
     }
+};
 
-    static bool equal(void * const *it, void * const *other)
+struct Q_CORE_EXPORT VectorBoolElements
+{
+  static bool true_element;
+  static bool false_element;
+};
+
+template<>
+struct IteratorOwner<std::vector<bool>::const_iterator> : IteratorOwnerCommon<std::vector<bool>::const_iterator>
+{
+public:
+    static const void *getData(void * const *iterator)
     {
-        return *static_cast<const_iterator*>(*it) == *static_cast<const_iterator*>(*other);
+        return **static_cast<std::vector<bool>::const_iterator*>(*iterator) ?
+            &VectorBoolElements::true_element : &VectorBoolElements::false_element;
+    }
+
+    static const void *getData(const std::vector<bool>::const_iterator& it)
+    {
+        return *it ? &VectorBoolElements::true_element : &VectorBoolElements::false_element;
     }
 };
+
 template<typename value_type>
 struct IteratorOwner<const value_type*>
 {

@@ -1360,6 +1360,17 @@ void tst_QMetaType::automaticTemplateRegistration()
   TEST_SEQUENTIAL_CONTAINER(std::list, int)
 
   {
+    std::vector<bool> vecbool;
+    vecbool.push_back(true);
+    vecbool.push_back(false);
+    vecbool.push_back(true);
+    QVERIFY(QVariant::fromValue(vecbool).value<std::vector<bool> >().front() == true);
+    QVector<std::vector<bool> > vectorList;
+    vectorList << vecbool;
+    QVERIFY(QVariant::fromValue(vectorList).value<QVector<std::vector<bool> > >().first().front() == true);
+  }
+
+  {
     QList<QByteArray> bytearrayList;
     bytearrayList << QByteArray("foo");
     QVERIFY(QVariant::fromValue(bytearrayList).value<QList<QByteArray> >().first() == QByteArray("foo"));
