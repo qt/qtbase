@@ -41,6 +41,8 @@
 
 #include "qcocoasystemsettings.h"
 
+#include "qcocoahelpers.h"
+
 #include <QtCore/private/qcore_mac_p.h>
 #include <QtGui/qfont.h>
 
@@ -48,30 +50,11 @@
 
 QT_BEGIN_NAMESPACE
 
-QColor qt_mac_colorFromCGColor(CGColorRef cgcolor)
-{
-    QColor pc;
-    CGColorSpaceModel model = CGColorSpaceGetModel(CGColorGetColorSpace(cgcolor));
-    const CGFloat *components = CGColorGetComponents(cgcolor);
-    if (model == kCGColorSpaceModelRGB) {
-        pc.setRgbF(components[0], components[1], components[2], components[3]);
-    } else if (model == kCGColorSpaceModelCMYK) {
-        pc.setCmykF(components[0], components[1], components[2], components[3]);
-    } else if (model == kCGColorSpaceModelMonochrome) {
-        pc.setRgbF(components[0], components[0], components[0], components[1]);
-    } else {
-        // Colorspace we can't deal with.
-        qWarning("Qt: qcolorFromCGColor: cannot convert from colorspace model: %d", model);
-        Q_ASSERT(false);
-    }
-    return pc;
-}
-
 QColor qt_mac_colorForTheme(ThemeBrush brush)
 {
     QCFType<CGColorRef> cgClr = 0;
     HIThemeBrushCreateCGColor(brush, &cgClr);
-    return qt_mac_colorFromCGColor(cgClr);
+    return qt_mac_toQColor(cgClr);
 }
 
 QColor qt_mac_colorForThemeTextColor(ThemeTextColor themeColor)

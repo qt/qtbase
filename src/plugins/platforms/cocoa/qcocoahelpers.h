@@ -80,6 +80,7 @@ NSRect qt_mac_toNSRect(const QRect &rect);
 QRect qt_mac_toQRect(const NSRect &rect);
 
 QColor qt_mac_toQColor(const NSColor *color);
+QColor qt_mac_toQColor(CGColorRef color);
 
 
 // Creates a mutable shape, it's the caller's responsibility to release.

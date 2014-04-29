@@ -225,6 +225,24 @@ QColor qt_mac_toQColor(const NSColor *color)
     return qtColor;
 }
 
+QColor qt_mac_toQColor(CGColorRef color)
+{
+    QColor qtColor;
+    CGColorSpaceModel model = CGColorSpaceGetModel(CGColorGetColorSpace(color));
+    const CGFloat *components = CGColorGetComponents(color);
+    if (model == kCGColorSpaceModelRGB) {
+        qtColor.setRgbF(components[0], components[1], components[2], components[3]);
+    } else if (model == kCGColorSpaceModelCMYK) {
+        qtColor.setCmykF(components[0], components[1], components[2], components[3]);
+    } else if (model == kCGColorSpaceModelMonochrome) {
+        qtColor.setRgbF(components[0], components[0], components[0], components[1]);
+    } else {
+        // Colorspace we can't deal with.
+        qWarning("Qt: qt_mac_toQColor: cannot convert from colorspace model: %d", model);
+        Q_ASSERT(false);
+    }
+    return qtColor;
+}
 
 // Use this method to keep all the information in the TextSegment. As long as it is ordered
 // we are in OK shape, and we can influence that ourselves.
