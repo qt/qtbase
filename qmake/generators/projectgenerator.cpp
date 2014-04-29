@@ -111,10 +111,8 @@ ProjectGenerator::init()
                         dir += Option::dir_sep;
                     if (Option::recursive) {
                         QStringList files = QDir(dir).entryList(QDir::Files);
-                        for(int i = 0; i < (int)files.count(); i++) {
-                            if(files[i] != "." && files[i] != "..")
-                                dirs.append(dir + files[i] + QDir::separator() + builtin_regex);
-                        }
+                        for (int i = 0; i < files.count(); i++)
+                            dirs.append(dir + files[i] + QDir::separator() + builtin_regex);
                     }
                     regex = builtin_regex;
                 } else {
@@ -183,8 +181,7 @@ ProjectGenerator::init()
                                 nd += QDir::separator();
                             nd += profiles[i];
                             fileFixify(nd);
-                            if(profiles[i] != "." && profiles[i] != ".." &&
-                               !subdirs.contains(nd, Qt::CaseInsensitive) && !out_file.endsWith(nd))
+                            if (!subdirs.contains(nd, Qt::CaseInsensitive) && !out_file.endsWith(nd))
                                 subdirs.append(nd);
                         }
                     }
