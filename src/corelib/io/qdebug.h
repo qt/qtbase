@@ -83,11 +83,9 @@ public:
             if (stream->space && stream->buffer.endsWith(QLatin1Char(' ')))
                 stream->buffer.chop(1);
             if (stream->message_output) {
-                QT_TRY {
-                    qt_message_output(stream->type,
-                                      stream->context,
-                                      stream->buffer);
-                } QT_CATCH(std::bad_alloc&) { /* We're out of memory - give up. */ }
+                qt_message_output(stream->type,
+                                  stream->context,
+                                  stream->buffer);
             }
             delete stream;
         }
