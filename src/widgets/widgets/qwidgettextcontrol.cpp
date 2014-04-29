@@ -438,7 +438,6 @@ void QWidgetTextControlPrivate::setContent(Qt::TextFormat format, const QString 
 
         QObject::connect(doc, SIGNAL(contentsChanged()), q, SLOT(_q_updateCurrentCharFormatAndSelection()));
         QObject::connect(doc, SIGNAL(cursorPositionChanged(QTextCursor)), q, SLOT(_q_emitCursorPosChanged(QTextCursor)));
-        QObject::connect(doc, SIGNAL(contentsChange(int,int,int)), q, SLOT(_q_contentsChanged(int,int,int)));
         QObject::connect(doc, SIGNAL(documentLayoutChanged()), q, SLOT(_q_documentLayoutChanged()));
 
         // convenience signal forwards
@@ -501,6 +500,8 @@ void QWidgetTextControlPrivate::setContent(Qt::TextFormat format, const QString 
 
     q->ensureCursorVisible();
     emit q->cursorPositionChanged();
+
+    QObject::connect(doc, SIGNAL(contentsChange(int,int,int)), q, SLOT(_q_contentsChanged(int,int,int)), Qt::UniqueConnection);
 }
 
 void QWidgetTextControlPrivate::startDrag()
@@ -646,7 +647,8 @@ void QWidgetTextControlPrivate::_q_contentsChanged(int from, int charsRemoved, i
 {
     Q_Q(QWidgetTextControl);
 #ifndef QT_NO_ACCESSIBILITY
-    if (QAccessible::isActive()) {
+
+    if (QAccessible::isActive() && q->parent() && q->parent()->isWidgetType()) {
         QTextCursor tmp(doc);
         tmp.setPosition(from);
         tmp.setPosition(from + charsAdded, QTextCursor::KeepAnchor);
