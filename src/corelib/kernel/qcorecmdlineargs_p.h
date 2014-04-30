@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -56,14 +56,34 @@
 #include "QtCore/qstring.h"
 #include "QtCore/qstringlist.h"
 
+#if defined(Q_OS_WIN)
+#  ifdef Q_OS_WIN32
+#    include <qt_windows.h> // first to suppress min, max macros.
+#    include <shlobj.h>
+#  else
+#    include "QtCore/qvector.h"
+#    include <qt_windows.h>
+#  endif
+
 QT_BEGIN_NAMESPACE
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+#if defined(Q_OS_WIN32)
 
-QT_BEGIN_INCLUDE_NAMESPACE
-#  include "QtCore/qvector.h"
-#  include <qt_windows.h>
-QT_END_INCLUDE_NAMESPACE
+static inline QStringList qWinCmdArgs(const QString &cmdLine)
+{
+    QStringList result;
+    int size;
+    if (wchar_t **argv = CommandLineToArgvW((const wchar_t *)cmdLine.utf16(), &size)) {
+        result.reserve(size);
+        wchar_t **argvEnd = argv + size;
+        for (wchar_t **a = argv; a < argvEnd; ++a)
+            result.append(QString::fromWCharArray(*a));
+        LocalFree(argv);
+    }
+    return result;
+}
+
+#elif defined(Q_OS_WINCE) // Q_OS_WIN32
 
 // template implementation of the parsing algorithm
 // this is used from qcoreapplication_win.cpp and the tools (rcc, uic...)
@@ -149,7 +169,7 @@ static inline QStringList qCmdLineArgs(int argc, char *argv[])
     return qWinCmdArgs(cmdLine);
 }
 
-#else  // Q_OS_WIN && !Q_OS_WINRT
+#elif defined(Q_OS_WINRT) // Q_OS_WINCE
 
 static inline QStringList qCmdLineArgs(int argc, char *argv[])
 {
@@ -159,8 +179,10 @@ static inline QStringList qCmdLineArgs(int argc, char *argv[])
     return args;
 }
 
-#endif // !Q_OS_WIN || Q_OS_WINRT
+#endif // Q_OS_WINRT
 
 QT_END_NAMESPACE
+
+#endif // Q_OS_WIN
 
 #endif // QCORECMDLINEARGS_WIN_P_H

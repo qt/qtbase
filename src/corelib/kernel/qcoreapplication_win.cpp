@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 Samuel Gaist <samuel.gaist@edeltech.ch>
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -145,14 +145,30 @@ QString QCoreApplicationPrivate::appName() const
   qWinMain() - Initializes Windows. Called from WinMain() in qtmain_win.cpp
  *****************************************************************************/
 
-#if defined(Q_OS_WINCE)
-Q_CORE_EXPORT void __cdecl qWinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR cmdParam,
-               int cmdShow, int &argc, QVector<char *> &argv)
-#else
+#if !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+
+// ### Qt6: FIXME: Remove this function. It is only there since for binary
+// compatibility for applications built with Qt 5.3 using qtmain.lib which calls it.
+// In Qt 5.4, qtmain.lib was changed to use CommandLineToArgvW() without calling into Qt5Core.
 Q_CORE_EXPORT
 void qWinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR cmdParam,
+              int cmdShow, int &argc, QVector<char *> &argv)
+{
+    Q_UNUSED(instance)
+    Q_UNUSED(prevInstance)
+    Q_UNUSED(cmdShow)
+
+    const QStringList wArgv = qWinCmdArgs(QString::fromLocal8Bit(cmdParam));
+    argv.clear();
+    argc = wArgv.size();
+    foreach (const QString &wArg, wArgv)
+        argv.append(_strdup(wArg.toLocal8Bit().constData()));
+}
+
+#elif defined(Q_OS_WINCE)
+
+Q_CORE_EXPORT void __cdecl qWinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR cmdParam,
                int cmdShow, int &argc, QVector<char *> &argv)
-#endif
 {
     static bool already_called = false;
 
@@ -171,6 +187,8 @@ void qWinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR cmdParam,
     Q_UNUSED(instance);
     Q_UNUSED(prevInstance);
 }
+
+#endif // Q_OS_WINCE
 
 #ifndef QT_NO_QOBJECT
 

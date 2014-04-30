@@ -20,6 +20,8 @@ winrt {
     SOURCES = qtmain_winrt.cpp
 } else {
     SOURCES = qtmain_win.cpp
+
+    !wince: LIBS += -lshell32
 }
 
 load(qt_installs)
