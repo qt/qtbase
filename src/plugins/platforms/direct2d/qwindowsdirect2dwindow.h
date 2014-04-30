@@ -56,16 +56,21 @@ public:
     QWindowsDirect2DWindow(QWindow *window, const QWindowsWindowData &data);
     ~QWindowsDirect2DWindow();
 
+    QPixmap *pixmap();
     void flush(QWindowsDirect2DBitmap *bitmap, const QRegion &region, const QPoint &offset);
+    void present();
+    void resizeSwapChain(const QSize &size);
+
+    QSharedPointer<QWindowsDirect2DBitmap> copyBackBuffer() const;
 
 private:
-    void resizeSwapChain(const QSize &size);
     void setupBitmap();
 
 private:
     Microsoft::WRL::ComPtr<IDXGISwapChain1> m_swapChain;
     Microsoft::WRL::ComPtr<ID2D1DeviceContext> m_deviceContext;
     QScopedPointer<QWindowsDirect2DBitmap> m_bitmap;
+    QScopedPointer<QPixmap> m_pixmap;
     bool m_needsFullFlush;
 };
 

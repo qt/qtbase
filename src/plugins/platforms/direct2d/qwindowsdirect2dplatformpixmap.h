@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -55,6 +55,9 @@ class QWindowsDirect2DPlatformPixmap : public QPlatformPixmap
     Q_DECLARE_PRIVATE(QWindowsDirect2DPlatformPixmap)
 public:
     QWindowsDirect2DPlatformPixmap(PixelType pixelType);
+
+    // We do NOT take ownership of the bitmap through this constructor!
+    QWindowsDirect2DPlatformPixmap(PixelType pixelType, QWindowsDirect2DBitmap *bitmap);
     ~QWindowsDirect2DPlatformPixmap();
 
     virtual void resize(int width, int height);
