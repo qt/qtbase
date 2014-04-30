@@ -244,8 +244,26 @@ void QWindowsShell32DLL::init()
     sHGetImageList = (SHGetImageList)library.resolve("SHGetImageList");
 }
 
+QWindowsShcoreDLL::QWindowsShcoreDLL()
+    : getProcessDpiAwareness(0)
+    , setProcessDpiAwareness(0)
+    , getDpiForMonitor(0)
+{
+}
+
+void QWindowsShcoreDLL::init()
+{
+    if (QSysInfo::windowsVersion() < QSysInfo::WV_WINDOWS8_1)
+        return;
+    QSystemLibrary library(QStringLiteral("SHCore"));
+    getProcessDpiAwareness = (GetProcessDpiAwareness)library.resolve("GetProcessDpiAwareness");
+    setProcessDpiAwareness = (SetProcessDpiAwareness)library.resolve("SetProcessDpiAwareness");
+    getDpiForMonitor = (GetDpiForMonitor)library.resolve("GetDpiForMonitor");
+}
+
 QWindowsUser32DLL QWindowsContext::user32dll;
 QWindowsShell32DLL QWindowsContext::shell32dll;
+QWindowsShcoreDLL QWindowsContext::shcoredll;
 
 #endif // !Q_OS_WINCE
 
@@ -296,9 +314,7 @@ QWindowsContextPrivate::QWindowsContextPrivate()
 #ifndef Q_OS_WINCE
     QWindowsContext::user32dll.init();
     QWindowsContext::shell32dll.init();
-    // Ensure metrics functions report correct data, QTBUG-30063.
-    if (QWindowsContext::user32dll.setProcessDPIAware)
-        QWindowsContext::user32dll.setProcessDPIAware();
+    QWindowsContext::shcoredll.init();
 
     if (hasTouchSupport(ver) && QWindowsContext::user32dll.initTouch())
         m_systemInfo |= QWindowsContext::SI_SupportsTouch;
@@ -348,6 +364,25 @@ void QWindowsContext::setTabletAbsoluteRange(int a)
         d->m_tabletSupport->setAbsoluteRange(a);
 #else
     Q_UNUSED(a)
+#endif
+}
+
+void QWindowsContext::setProcessDpiAwareness(QtWindows::ProcessDpiAwareness dpiAwareness)
+{
+#ifndef Q_OS_WINCE
+    qCDebug(lcQpaWindows) << __FUNCTION__ << dpiAwareness;
+    if (QWindowsContext::shcoredll.isValid()) {
+        const HRESULT hr = QWindowsContext::shcoredll.setProcessDpiAwareness(dpiAwareness);
+        if (FAILED(hr))
+            qWarning() << "SetProcessDpiAwareness failed:" << QWindowsContext::comErrorString(hr);
+    } else {
+        if (dpiAwareness != QtWindows::ProcessDpiUnaware && QWindowsContext::user32dll.setProcessDPIAware) {
+            if (!QWindowsContext::user32dll.setProcessDPIAware())
+                qErrnoWarning("SetProcessDPIAware() failed");
+        }
+    }
+#else // !Q_OS_WINCE
+    Q_UNUSED(dpiAwareness)
 #endif
 }
 

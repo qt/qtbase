@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 Samuel Gaist <samuel.gaist@edeltech.ch>
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -115,6 +115,14 @@ enum WindowsEventType // Simplify event types
     SettingChangedEvent = DisplayChangedEvent + 1,
     ContextMenu = 123,
     UnknownEvent = 542
+};
+
+// Matches Process_DPI_Awareness (Windows 8.1 onwards), used for SetProcessDpiAwareness()
+enum ProcessDpiAwareness
+{
+    ProcessDpiUnaware,
+    ProcessSystemDpiAware,
+    ProcessPerMonitorDpiAware
 };
 
 } // namespace QtWindows

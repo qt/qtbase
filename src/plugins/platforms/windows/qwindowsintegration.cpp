@@ -167,7 +167,8 @@ struct QWindowsIntegrationPrivate
 };
 
 static inline unsigned parseOptions(const QStringList &paramList,
-                                    int *tabletAbsoluteRange)
+                                    int *tabletAbsoluteRange,
+                                    QtWindows::ProcessDpiAwareness *dpiAwareness)
 {
     unsigned options = 0;
     foreach (const QString &param, paramList) {
@@ -191,6 +192,8 @@ static inline unsigned parseOptions(const QStringList &paramList,
             QWindowsContext::verbose = param.right(param.size() - 8).toInt();
         } else if (param.startsWith(QLatin1String("tabletabsoluterange="))) {
             *tabletAbsoluteRange = param.rightRef(param.size() - 20).toInt();
+        } else if (param.startsWith(QLatin1String("dpiawareness="))) {
+            *dpiAwareness = static_cast<QtWindows::ProcessDpiAwareness>(param.rightRef(param.size() - 13).toInt());
         }
     }
     return options;
@@ -201,9 +204,13 @@ QWindowsIntegrationPrivate::QWindowsIntegrationPrivate(const QStringList &paramL
     , m_fontDatabase(0)
 {
     int tabletAbsoluteRange = -1;
-    m_options = parseOptions(paramList, &tabletAbsoluteRange);
+    // Default to per-monitor awareness to avoid being scaled when monitors with different DPI
+    // are connected to Windows 8.1
+    QtWindows::ProcessDpiAwareness dpiAwareness = QtWindows::ProcessPerMonitorDpiAware;
+    m_options = parseOptions(paramList, &tabletAbsoluteRange, &dpiAwareness);
     if (tabletAbsoluteRange >= 0)
         m_context.setTabletAbsoluteRange(tabletAbsoluteRange);
+    m_context.setProcessDpiAwareness(dpiAwareness);
 }
 
 QWindowsIntegrationPrivate::~QWindowsIntegrationPrivate()

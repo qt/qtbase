@@ -126,6 +126,22 @@ struct QWindowsShell32DLL
     SHGetStockIconInfo sHGetStockIconInfo;
     SHGetImageList sHGetImageList;
 };
+
+// Shell scaling library (Windows 8.1 onwards)
+struct QWindowsShcoreDLL {
+    QWindowsShcoreDLL();
+    void init();
+    inline bool isValid() const { return getProcessDpiAwareness && setProcessDpiAwareness && getDpiForMonitor; }
+
+    typedef HRESULT (WINAPI *GetProcessDpiAwareness)(HANDLE,int);
+    typedef HRESULT (WINAPI *SetProcessDpiAwareness)(int);
+    typedef HRESULT (WINAPI *GetDpiForMonitor)(HMONITOR,int,UINT *,UINT *);
+
+    GetProcessDpiAwareness getProcessDpiAwareness;
+    SetProcessDpiAwareness setProcessDpiAwareness;
+    GetDpiForMonitor getDpiForMonitor;
+};
+
 #endif // Q_OS_WINCE
 
 class QWindowsContext
@@ -184,6 +200,7 @@ public:
     void setWindowCreationContext(const QSharedPointer<QWindowCreationContext> &ctx);
 
     void setTabletAbsoluteRange(int a);
+    void setProcessDpiAwareness(QtWindows::ProcessDpiAwareness dpiAwareness);
 
     // Returns a combination of SystemInfoFlags
     unsigned systemInfo() const;
@@ -197,6 +214,7 @@ public:
 #ifndef Q_OS_WINCE
     static QWindowsUser32DLL user32dll;
     static QWindowsShell32DLL shell32dll;
+    static QWindowsShcoreDLL shcoredll;
 #endif
 
     static QByteArray comErrorString(HRESULT hr);

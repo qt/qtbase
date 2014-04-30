@@ -68,6 +68,21 @@ static inline QDpi deviceDPI(HDC hdc)
     return QDpi(GetDeviceCaps(hdc, LOGPIXELSX), GetDeviceCaps(hdc, LOGPIXELSY));
 }
 
+#ifndef Q_OS_WINCE
+
+static inline QDpi monitorDPI(HMONITOR hMonitor)
+{
+    if (QWindowsContext::shcoredll.isValid()) {
+        UINT dpiX;
+        UINT dpiY;
+        if (SUCCEEDED(QWindowsContext::shcoredll.getDpiForMonitor(hMonitor, 0, &dpiX, &dpiY)))
+            return QDpi(dpiX, dpiY);
+    }
+    return QDpi(0, 0);
+}
+
+#endif // !Q_OS_WINCE
+
 static inline QSizeF deviceSizeMM(const QSize &pixels, const QDpi &dpi)
 {
     const qreal inchToMM = 25.4;
@@ -110,7 +125,12 @@ BOOL QT_WIN_CALLBACK monitorEnumCallback(HMONITOR hMonitor, HDC, LPRECT, LPARAM 
         HDC hdc = CreateDC(info.szDevice, NULL, NULL, NULL);
 #endif
         if (hdc) {
+#ifndef Q_OS_WINCE
+            const QDpi dpi = monitorDPI(hMonitor);
+            data.dpi = dpi.first ? dpi : deviceDPI(hdc);
+#else
             data.dpi = deviceDPI(hdc);
+#endif
             data.depth = GetDeviceCaps(hdc, BITSPIXEL);
             data.format = data.depth == 16 ? QImage::Format_RGB16 : QImage::Format_RGB32;
             data.physicalSizeMM = QSizeF(GetDeviceCaps(hdc, HORZSIZE), GetDeviceCaps(hdc, VERTSIZE));
