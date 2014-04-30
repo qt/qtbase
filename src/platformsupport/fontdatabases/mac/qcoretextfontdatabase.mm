@@ -196,13 +196,20 @@ void QCoreTextFontDatabase::populateFontDatabase()
     QCFType<CFArrayRef> familyNames = availableFamilyNames();
     const int numberOfFamilies = CFArrayGetCount(familyNames);
     for (int i = 0; i < numberOfFamilies; ++i) {
-        QString familyName = QCFString::toQString((CFStringRef) CFArrayGetValueAtIndex(familyNames, i));
+        CFStringRef familyNameRef = (CFStringRef) CFArrayGetValueAtIndex(familyNames, i);
+        QString familyName = QCFString::toQString(familyNameRef);
 
         // Don't populate internal fonts
         if (familyName.startsWith(QLatin1Char('.')) || familyName == QStringLiteral("LastResort"))
             continue;
 
         QPlatformFontDatabase::registerFontFamily(familyName);
+
+#if defined(Q_OS_OSX)
+        QString localizedFamilyName = QString::fromNSString([[NSFontManager sharedFontManager] localizedNameForFamily:(NSString*)familyNameRef face:nil]);
+        if (familyName != localizedFamilyName)
+            QPlatformFontDatabase::registerAliasToFontFamily(familyName, localizedFamilyName);
+#endif
     }
 }
 
