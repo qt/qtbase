@@ -60,15 +60,13 @@ public:
         UnknownError
     };
 #if QT_DEPRECATED_SINCE(5, 3)
-    QSqlError( const QString& driverText = QString(),
-                const QString& databaseText = QString(),
-                ErrorType type = NoError,
-                int number = -1);
+    QT_DEPRECATED QSqlError(const QString &driverText, const QString &databaseText,
+                            ErrorType type, int number);
 #endif
-    QSqlError(const QString &driverText,
-              const QString &databaseText,
-              ErrorType type,
-              const QString &errorCode);
+    QSqlError(const QString &driverText = QString(),
+              const QString &databaseText = QString(),
+              ErrorType type = NoError,
+              const QString &errorCode = QString());
     QSqlError(const QSqlError& other);
     QSqlError& operator=(const QSqlError& other);
     bool operator==(const QSqlError& other) const;
@@ -79,7 +77,7 @@ public:
     QString databaseText() const;
     ErrorType type() const;
 #if QT_DEPRECATED_SINCE(5, 3)
-    int number() const;
+    QT_DEPRECATED int number() const;
 #endif
     QString nativeErrorCode() const;
     QString text() const;

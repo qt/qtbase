@@ -246,7 +246,7 @@ EGLConfig QEglConfigChooser::chooseConfig()
 #ifdef EGL_VERSION_1_4
     case QSurfaceFormat::DefaultRenderableType:
 #ifndef QT_NO_OPENGL
-        if (QOpenGLContext::openGLModuleType() == QOpenGLContext::DesktopGL)
+        if (QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGL)
             configureAttributes.append(EGL_OPENGL_BIT);
         else
 #endif // QT_NO_OPENGL
@@ -380,7 +380,7 @@ QSurfaceFormat q_glFormatFromConfig(EGLDisplay display, const EGLConfig config, 
         format.setRenderableType(QSurfaceFormat::OpenGL);
     else if (referenceFormat.renderableType() == QSurfaceFormat::DefaultRenderableType
 #ifndef QT_NO_OPENGL
-             && QOpenGLContext::openGLModuleType() == QOpenGLContext::DesktopGL
+             && QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGL
 #endif
              && (renderableType & EGL_OPENGL_BIT))
         format.setRenderableType(QSurfaceFormat::OpenGL);

@@ -678,9 +678,9 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
         return [super mouseDown:theEvent];
     m_sendUpAsRightButton = false;
     if (m_platformWindow->m_activePopupWindow) {
+        Qt::WindowType type = m_platformWindow->m_activePopupWindow->type();
         QWindowSystemInterface::handleCloseEvent(m_platformWindow->m_activePopupWindow);
         QWindowSystemInterface::flushWindowSystemEvents();
-        Qt::WindowType type = m_platformWindow->m_activePopupWindow->type();
         m_platformWindow->m_activePopupWindow = 0;
         // Consume the mouse event when closing the popup, except for tool tips
         // were it's expected that the event is processed normally.

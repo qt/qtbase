@@ -1700,7 +1700,7 @@ QImage qt_gl_read_texture(const QSize &size, bool alpha_format, bool include_alp
     int w = size.width();
     int h = size.height();
 #ifndef QT_OPENGL_ES
-    if (!QOpenGLContext::currentContext()->isES()) {
+    if (!QOpenGLContext::currentContext()->isOpenGLES()) {
         //### glGetTexImage not in GL ES 2.0, need to do something else here!
         glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, img.bits());
     }
@@ -2285,7 +2285,7 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
     glTexParameteri(target, GL_TEXTURE_MAG_FILTER, filtering);
 
     QOpenGLContext *ctx = QOpenGLContext::currentContext();
-    bool genMipmap = !ctx->isES();
+    bool genMipmap = !ctx->isOpenGLES();
     if (glFormat.directRendering()
         && (qgl_extensions()->hasOpenGLExtension(QOpenGLExtensions::GenerateMipmap))
         && target == GL_TEXTURE_2D
@@ -2427,7 +2427,7 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
             printf(" - did byte swapping (%d ms)\n", time.elapsed());
 #endif
     }
-    if (ctx->isES()) {
+    if (ctx->isOpenGLES()) {
         // OpenGL/ES requires that the internal and external formats be
         // identical.
         internalFormat = externalFormat;
@@ -2440,7 +2440,7 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
     const QImage &constRef = img; // to avoid detach in bits()...
     glTexImage2D(target, 0, internalFormat, img.width(), img.height(), 0, externalFormat,
                  pixel_type, constRef.bits());
-    if (genMipmap && ctx->isES())
+    if (genMipmap && ctx->isOpenGLES())
         q->functions()->glGenerateMipmap(target);
 #ifndef QT_NO_DEBUG
     GLenum error = glGetError();
@@ -2536,7 +2536,7 @@ int QGLContextPrivate::maxTextureSize()
 
 #ifndef QT_OPENGL_ES
     Q_Q(QGLContext);
-    if (!q->contextHandle()->isES()) {
+    if (!q->contextHandle()->isOpenGLES()) {
         GLenum proxy = GL_PROXY_TEXTURE_2D;
 
         GLint size;
@@ -2714,7 +2714,7 @@ static void qDrawTextureRect(const QRectF &target, GLint textureWidth, GLint tex
     Q_UNUSED(textureHeight);
     Q_UNUSED(textureTarget);
 #else
-    if (textureTarget != GL_TEXTURE_2D && !QOpenGLContext::currentContext()->isES()) {
+    if (textureTarget != GL_TEXTURE_2D && !QOpenGLContext::currentContext()->isOpenGLES()) {
         if (textureWidth == -1 || textureHeight == -1) {
             glGetTexLevelParameteriv(textureTarget, 0, GL_TEXTURE_WIDTH, &textureWidth);
             glGetTexLevelParameteriv(textureTarget, 0, GL_TEXTURE_HEIGHT, &textureHeight);
@@ -2781,7 +2781,7 @@ void QGLContext::drawTexture(const QRectF &target, GLuint textureId, GLenum text
 #endif
 
 #ifndef QT_OPENGL_ES_2
-     if (!contextHandle()->isES()) {
+     if (!contextHandle()->isOpenGLES()) {
 #ifdef QT_OPENGL_ES
         if (textureTarget != GL_TEXTURE_2D) {
             qWarning("QGLContext::drawTexture(): texture target must be GL_TEXTURE_2D on OpenGL ES");
@@ -2843,7 +2843,7 @@ void QGLContext::drawTexture(const QPointF &point, GLuint textureId, GLenum text
     Q_UNUSED(textureId);
     Q_UNUSED(textureTarget);
 #else
-    if (!contextHandle()->isES()) {
+    if (!contextHandle()->isOpenGLES()) {
         const bool wasEnabled = glIsEnabled(GL_TEXTURE_2D);
         GLint oldTexture;
         glGetIntegerv(GL_TEXTURE_BINDING_2D, &oldTexture);
@@ -4147,7 +4147,7 @@ void QGLWidget::glDraw()
         return;
     makeCurrent();
 #ifndef QT_OPENGL_ES
-    if (d->glcx->deviceIsPixmap() && !d->glcx->contextHandle()->isES())
+    if (d->glcx->deviceIsPixmap() && !d->glcx->contextHandle()->isOpenGLES())
         glDrawBuffer(GL_FRONT);
 #endif
     QSize readback_target_size = d->glcx->d_ptr->readback_target_size;
@@ -4192,7 +4192,7 @@ void QGLWidget::qglColor(const QColor& c) const
 #else
     Q_D(const QGLWidget);
     const QGLContext *ctx = QGLContext::currentContext();
-    if (ctx && !ctx->contextHandle()->isES()) {
+    if (ctx && !ctx->contextHandle()->isOpenGLES()) {
         if (ctx->format().rgba())
             glColor4f(c.redF(), c.greenF(), c.blueF(), c.alphaF());
         else if (!d->cmap.isEmpty()) { // QGLColormap in use?
@@ -4224,7 +4224,7 @@ void QGLWidget::qglClearColor(const QColor& c) const
 #else
     Q_D(const QGLWidget);
     const QGLContext *ctx = QGLContext::currentContext();
-    if (ctx && !ctx->contextHandle()->isES()) {
+    if (ctx && !ctx->contextHandle()->isOpenGLES()) {
         if (ctx->format().rgba())
             glClearColor(c.redF(), c.greenF(), c.blueF(), c.alphaF());
         else if (!d->cmap.isEmpty()) { // QGLColormap in use?
@@ -4399,7 +4399,7 @@ void QGLWidget::renderText(int x, int y, const QString &str, const QFont &font)
 {
 #ifndef QT_OPENGL_ES
     Q_D(QGLWidget);
-    if (!d->glcx->contextHandle()->isES()) {
+    if (!d->glcx->contextHandle()->isOpenGLES()) {
         Q_D(QGLWidget);
         if (str.isEmpty() || !isValid())
             return;
@@ -4489,7 +4489,7 @@ void QGLWidget::renderText(double x, double y, double z, const QString &str, con
 {
 #ifndef QT_OPENGL_ES
     Q_D(QGLWidget);
-    if (!d->glcx->contextHandle()->isES()) {
+    if (!d->glcx->contextHandle()->isOpenGLES()) {
         Q_D(QGLWidget);
         if (str.isEmpty() || !isValid())
             return;

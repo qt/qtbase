@@ -164,7 +164,7 @@ QOpenGLEngineSharedShaders::QOpenGLEngineSharedShaders(QOpenGLContext* context)
         code[NonPremultipliedImageSrcFragmentShader] = qopenglslNonPremultipliedImageSrcFragmentShader;
         code[CustomImageSrcFragmentShader] = qopenglslCustomSrcFragmentShader; // Calls "customShader", which must be appended
         code[SolidBrushSrcFragmentShader] = qopenglslSolidBrushSrcFragmentShader;
-        if (context->isES())
+        if (context->isOpenGLES())
             code[TextureBrushSrcFragmentShader] = qopenglslTextureBrushSrcFragmentShader_ES;
         else
             code[TextureBrushSrcFragmentShader] = qopenglslTextureBrushSrcFragmentShader_desktop;

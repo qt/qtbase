@@ -2133,6 +2133,16 @@
     linked with an application so that they are available as built-in
     resources.
 
+    qmake automatically adds the plugins that are typically needed
+    by the used Qt modules (see \c QT).
+    The defaults are tuned towards an optimal out-of-the-box experience.
+    See \l{Static Plugins} for a list of available plugins, and ways
+    to override the automatic linking.
+
+    This variable currently has no effect when linking against a
+    shared/dynamic build of Qt, or when linking libraries.
+    It may be used for deployment of dynamic plugins at a later time.
+
     \target QT_VERSION_variable
     \section1 QT_VERSION
 

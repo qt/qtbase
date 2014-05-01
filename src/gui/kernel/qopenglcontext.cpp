@@ -364,7 +364,7 @@ int QOpenGLContextPrivate::maxTextureSize()
     funcs->glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
 
 #ifndef QT_OPENGL_ES
-    if (!q->isES()) {
+    if (!q->isOpenGLES()) {
         GLenum proxy = GL_PROXY_TEXTURE_2D;
 
         GLint size;
@@ -676,7 +676,7 @@ QOpenGLFunctions *QOpenGLContext::functions() const
 QAbstractOpenGLFunctions *QOpenGLContext::versionFunctions(const QOpenGLVersionProfile &versionProfile) const
 {
 #ifndef QT_OPENGL_ES_2
-    if (isES()) {
+    if (isOpenGLES()) {
         qWarning("versionFunctions: Not supported on OpenGL ES");
         return 0;
     }
@@ -1036,8 +1036,8 @@ void *QOpenGLContext::openGLModuleHandle()
   \enum QOpenGLContext::OpenGLModuleType
   This enum defines the type of the underlying OpenGL implementation.
 
-  \value DesktopGL Desktop OpenGL
-  \value GLES2 OpenGL ES 2.0 or higher
+  \value LibGL   OpenGL
+  \value LibGLES OpenGL ES 2.0 or higher
 
   \since 5.3
 */
@@ -1052,7 +1052,7 @@ void *QOpenGLContext::openGLModuleHandle()
   \note A desktop OpenGL implementation may be capable of creating
   ES-compatible contexts too. Therefore in most cases it is more
   appropriate to check QSurfaceFormat::renderableType() or using the
-  the convenience function isES().
+  the convenience function isOpenGLES().
 
   \note This function requires that the QGuiApplication instance is already created.
 
@@ -1064,9 +1064,9 @@ QOpenGLContext::OpenGLModuleType QOpenGLContext::openGLModuleType()
     Q_ASSERT(qGuiApp);
     return QGuiApplicationPrivate::instance()->platformIntegration()->openGLModuleType();
 #elif defined(QT_OPENGL_ES_2)
-    return GLES2;
+    return LibGLES;
 #else
-    return DesktopGL;
+    return LibGL;
 #endif
 }
 
@@ -1080,7 +1080,7 @@ QOpenGLContext::OpenGLModuleType QOpenGLContext::openGLModuleType()
 
   \since 5.3
   */
-bool QOpenGLContext::isES() const
+bool QOpenGLContext::isOpenGLES() const
 {
     return format().renderableType() == QSurfaceFormat::OpenGLES;
 }

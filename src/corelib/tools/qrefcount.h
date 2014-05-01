@@ -55,8 +55,10 @@ class RefCount
 public:
     inline bool ref() Q_DECL_NOTHROW {
         int count = atomic.load();
+#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
         if (count == 0) // !isSharable
             return false;
+#endif
         if (count != -1) // !isStatic
             atomic.ref();
         return true;
@@ -64,13 +66,16 @@ public:
 
     inline bool deref() Q_DECL_NOTHROW {
         int count = atomic.load();
+#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
         if (count == 0) // !isSharable
             return false;
+#endif
         if (count == -1) // isStatic
             return true;
         return atomic.deref();
     }
 
+#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
     bool setSharable(bool sharable) Q_DECL_NOTHROW
     {
         Q_ASSERT(!isShared());
@@ -80,16 +85,17 @@ public:
             return atomic.testAndSetRelaxed(1, 0);
     }
 
-    bool isStatic() const Q_DECL_NOTHROW
-    {
-        // Persistent object, never deleted
-        return atomic.load() == -1;
-    }
-
     bool isSharable() const Q_DECL_NOTHROW
     {
         // Sharable === Shared ownership.
         return atomic.load() != 0;
+    }
+#endif
+
+    bool isStatic() const Q_DECL_NOTHROW
+    {
+        // Persistent object, never deleted
+        return atomic.load() == -1;
     }
 
     bool isShared() const Q_DECL_NOTHROW

@@ -880,7 +880,7 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const QWindowsWindowData &data)
     if (aWindow->surfaceType() == QWindow::OpenGLSurface) {
         setFlag(OpenGLSurface);
 #if defined(QT_OPENGL_ES_2) || defined(QT_OPENGL_DYNAMIC)
-        if (QOpenGLContext::openGLModuleType() != QOpenGLContext::DesktopGL)
+        if (QOpenGLContext::openGLModuleType() != QOpenGLContext::LibGL)
             setFlag(OpenGL_ES2);
 #endif
     }
