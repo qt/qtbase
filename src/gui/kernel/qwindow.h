@@ -297,7 +297,7 @@ Q_SIGNALS:
     void screenChanged(QScreen *screen);
     void modalityChanged(Qt::WindowModality modality);
     void windowStateChanged(Qt::WindowState windowState);
-    void windowTitleChanged(const QString &title);
+    Q_REVISION(2) void windowTitleChanged(const QString &title);
 
     void xChanged(int arg);
     void yChanged(int arg);
