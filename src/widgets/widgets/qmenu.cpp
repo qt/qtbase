@@ -187,8 +187,8 @@ void QMenuPrivate::syncPlatformMenu()
         QPlatformMenuItem *menuItem = platformMenu->createMenuItem();
         QAction *action = it.previous();
         menuItem->setTag(reinterpret_cast<quintptr>(action));
-        QObject::connect(menuItem, SIGNAL(activated()), action, SLOT(trigger()));
-        QObject::connect(menuItem, SIGNAL(hovered()), action, SIGNAL(hovered()));
+        QObject::connect(menuItem, SIGNAL(activated()), action, SLOT(trigger()), Qt::QueuedConnection);
+        QObject::connect(menuItem, SIGNAL(hovered()), action, SIGNAL(hovered()), Qt::QueuedConnection);
         copyActionToPlatformItem(action, menuItem);
         platformMenu->insertMenuItem(menuItem, beforeItem);
         beforeItem = menuItem;
