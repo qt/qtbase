@@ -365,6 +365,11 @@ QStringList QFileSelectorPrivate::platformSelectors()
     ret << QStringLiteral("windows");
 #  if defined(Q_OS_WINCE)
     ret << QStringLiteral("wince");
+#  elif defined(Q_OS_WINRT)
+    ret << QStringLiteral("winrt");
+#    if defined(Q_OS_WINPHONE)
+    ret << QStringLiteral("winphone");
+#    endif
 #  endif
 #elif defined(Q_OS_UNIX)
     ret << QStringLiteral("unix");
