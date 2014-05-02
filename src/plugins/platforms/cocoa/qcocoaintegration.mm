@@ -520,7 +520,10 @@ NSToolbar *QCocoaIntegration::toolbar(QWindow *window) const
 
 void QCocoaIntegration::setWindow(NSWindow* nsWindow, QCocoaWindow *window)
 {
-    mWindows.insert(nsWindow, window);
+    if (window == 0)
+        mWindows.remove(nsWindow);
+    else
+        mWindows.insert(nsWindow, window);
 }
 
 QCocoaWindow *QCocoaIntegration::window(NSWindow *window)

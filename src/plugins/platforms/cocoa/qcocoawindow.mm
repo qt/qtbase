@@ -420,6 +420,9 @@ QCocoaWindow::~QCocoaWindow()
     qDebug() << "QCocoaWindow::~QCocoaWindow" << this;
 #endif
 
+    if (QCocoaIntegration *ci = QCocoaIntegration::instance())
+        ci->setWindow(m_nsWindow, 0);
+
     QCocoaAutoReleasePool pool;
     [m_nsWindow setContentView:nil];
     [m_nsWindow.helper detachFromPlatformWindow];
