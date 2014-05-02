@@ -102,6 +102,7 @@ void tst_QSqlError::construction()
    QCOMPARE(obj1.databaseText(), QString("databasetext"));
    QCOMPARE(obj1.type(), QSqlError::UnknownError);
    QCOMPARE(obj1.number(), 123);
+   QCOMPARE(obj1.nativeErrorCode(), QStringLiteral("123"));
    QVERIFY(obj1.isValid());
 
    QSqlError obj2(obj1);
@@ -109,6 +110,7 @@ void tst_QSqlError::construction()
    QCOMPARE(obj2.databaseText(), obj1.databaseText());
    QCOMPARE(obj2.type(), obj1.type());
    QCOMPARE(obj2.number(), obj1.number());
+   QCOMPARE(obj2.nativeErrorCode(), obj1.nativeErrorCode());
    QVERIFY(obj2.isValid());
 
    QSqlError obj3 = obj2;
@@ -116,10 +118,16 @@ void tst_QSqlError::construction()
    QCOMPARE(obj3.databaseText(), obj2.databaseText());
    QCOMPARE(obj3.type(), obj2.type());
    QCOMPARE(obj3.number(), obj2.number());
+   QCOMPARE(obj3.nativeErrorCode(), obj2.nativeErrorCode());
    QVERIFY(obj3.isValid());
 
    QSqlError obj4;
    QVERIFY(!obj4.isValid());
+   QCOMPARE(obj4.driverText(), QString());
+   QCOMPARE(obj4.databaseText(), QString());
+   QCOMPARE(obj4.type(), QSqlError::NoError);
+   QCOMPARE(obj4.number(), -1);
+   QCOMPARE(obj4.nativeErrorCode(), QString());
 
    QSqlError obj5(QStringLiteral("drivertext"), QStringLiteral("databasetext"),
                   QSqlError::UnknownError, QStringLiteral("123"));
@@ -138,6 +146,16 @@ void tst_QSqlError::construction()
    QCOMPARE(obj6.number(), 0);
    QCOMPARE(obj6.nativeErrorCode(), QStringLiteral("Err123"));
    QVERIFY(obj6.isValid());
+
+   // Default constructed object as constructed before Qt 5.3
+   QSqlError obj7(QString(), QString(), QSqlError::NoError, -1);
+   QVERIFY(!obj7.isValid());
+   QCOMPARE(obj7.driverText(), QString());
+   QCOMPARE(obj7.databaseText(), QString());
+   QCOMPARE(obj7.type(), QSqlError::NoError);
+   QCOMPARE(obj7.number(), -1);
+   QCOMPARE(obj7.nativeErrorCode(), QString());
+
 }
 
 void tst_QSqlError::operators()

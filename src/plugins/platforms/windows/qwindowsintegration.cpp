@@ -243,7 +243,7 @@ bool QWindowsIntegration::hasCapability(QPlatformIntegration::Capability cap) co
         return true;
     case ThreadedOpenGL:
 #if defined(QT_OPENGL_ES_2) || defined(QT_OPENGL_DYNAMIC)
-        return QOpenGLContext::openGLModuleType() != QOpenGLContext::DesktopGL
+        return QOpenGLContext::openGLModuleType() != QOpenGLContext::LibGL
             ? QWindowsEGLContext::hasThreadedOpenGLCapability() : true;
 #  else
         return true;
@@ -308,7 +308,7 @@ QPlatformOpenGLContext
 {
     qCDebug(lcQpaGl) << __FUNCTION__ << context->format();
 #if defined(QT_OPENGL_ES_2) || defined(QT_OPENGL_DYNAMIC)
-    if (QOpenGLContext::openGLModuleType() != QOpenGLContext::DesktopGL) {
+    if (QOpenGLContext::openGLModuleType() != QOpenGLContext::LibGL) {
         if (d->m_staticEGLContext.isNull()) {
             QWindowsEGLStaticContext *staticContext = QWindowsEGLStaticContext::create();
             if (!staticContext)
@@ -319,7 +319,7 @@ QPlatformOpenGLContext
     }
 #endif
 #if !defined(QT_OPENGL_ES_2)
-    if (QOpenGLContext::openGLModuleType() == QOpenGLContext::DesktopGL) {
+    if (QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGL) {
         if (d->m_staticOpenGLContext.isNull())
             d->m_staticOpenGLContext =
                 QSharedPointer<QOpenGLStaticContext>(QOpenGLStaticContext::create());

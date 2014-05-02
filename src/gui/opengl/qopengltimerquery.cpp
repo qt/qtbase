@@ -135,7 +135,7 @@ bool QOpenGLTimerQueryPrivate::create()
         return false;
     }
 
-    if (context->isES()) {
+    if (context->isOpenGLES()) {
         qWarning("QOpenGLTimerQuery: Not supported on OpenGL ES");
         return false;
     }

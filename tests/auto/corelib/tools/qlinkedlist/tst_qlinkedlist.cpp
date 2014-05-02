@@ -1018,12 +1018,14 @@ void tst_QLinkedList::initializeList() const
 template<typename T>
 void tst_QLinkedList::constSharedNull() const
 {
+    QLinkedList<T> list2;
+#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
     QLinkedList<T> list1;
     list1.setSharable(false);
     QVERIFY(list1.isDetached());
 
-    QLinkedList<T> list2;
     list2.setSharable(true);
+#endif
     QVERIFY(!list2.isDetached());
 }
 
@@ -1049,6 +1051,7 @@ void tst_QLinkedList::constSharedNullComplex() const
 
 void tst_QLinkedList::setSharableInt() const
 {
+#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
     QLinkedList<int> orglist;
     orglist << 0 << 1 << 2 << 3 << 4 << 5;
     int size = 6;
@@ -1094,6 +1097,7 @@ void tst_QLinkedList::setSharableInt() const
     }
 
     QCOMPARE(list.size(), size);
+#endif
 }
 
 QTEST_APPLESS_MAIN(tst_QLinkedList)

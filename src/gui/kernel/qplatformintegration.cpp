@@ -491,14 +491,14 @@ void QPlatformIntegration::sync()
   a desktop OpenGL implementation may be capable of creating OpenGL
   ES-compatible contexts too.
 
-  \sa QOpenGLContext::openGLModuleType(), QOpenGLContext::isES()
+  \sa QOpenGLContext::openGLModuleType(), QOpenGLContext::isOpenGLES()
 
   \since 5.3
  */
 QOpenGLContext::OpenGLModuleType QPlatformIntegration::openGLModuleType()
 {
     qWarning("This plugin does not support dynamic OpenGL loading!");
-    return QOpenGLContext::DesktopGL;
+    return QOpenGLContext::LibGL;
 }
 #endif
 

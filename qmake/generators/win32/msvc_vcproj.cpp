@@ -397,8 +397,8 @@ QString VcprojGenerator::retrievePlatformToolSet() const
         return envVar;
 
     QString suffix;
-    if (vcProject.Configuration.WinPhone)
-        suffix = "_wp80";
+    if (project->isActiveConfig("winphone"))
+        suffix = '_' + project->first("WINTARGET_VER").toQString().toLower();
     else if (project->first("QMAKE_TARGET_OS") == "xp")
         suffix = "_xp";
 

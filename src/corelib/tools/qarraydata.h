@@ -80,7 +80,9 @@ struct Q_CORE_EXPORT QArrayData
 
     enum AllocationOption {
         CapacityReserved    = 0x1,
+#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
         Unsharable          = 0x2,
+#endif
         RawData             = 0x4,
         Grow                = 0x8,
 
@@ -99,8 +101,10 @@ struct Q_CORE_EXPORT QArrayData
     AllocationOptions detachFlags() const
     {
         AllocationOptions result;
+#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
         if (!ref.isSharable())
             result |= Unsharable;
+#endif
         if (capacityReserved)
             result |= CapacityReserved;
         return result;

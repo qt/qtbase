@@ -314,7 +314,7 @@ GLuint QPlatformBackingStore::toTexture(const QRegion &dirtyRegion, QSize *textu
         funcs->glGenTextures(1, &d_ptr->textureId);
         funcs->glBindTexture(GL_TEXTURE_2D, d_ptr->textureId);
 #ifndef QT_OPENGL_ES_2
-        if (!QOpenGLContext::currentContext()->isES()) {
+        if (!QOpenGLContext::currentContext()->isOpenGLES()) {
             funcs->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
             funcs->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
         }
