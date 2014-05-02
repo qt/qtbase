@@ -85,6 +85,8 @@ public:
     NativeResourceForContextFunction nativeResourceFunctionForContext(const QByteArray &resource) Q_DECL_OVERRIDE;
     NativeResourceForScreenFunction nativeResourceFunctionForScreen(const QByteArray &resource) Q_DECL_OVERRIDE;
 
+    QFunctionPointer platformFunction(const QByteArray &function) const Q_DECL_OVERRIDE;
+
     inline const QByteArray &genericEventFilterType() const { return m_genericEventFilterType; }
 
     void *displayForWindow(QWindow *window);

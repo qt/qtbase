@@ -143,6 +143,8 @@ public:
 
     static QPlatformNativeInterface *platformNativeInterface();
 
+    static QFunctionPointer platformFunction(const QByteArray &function);
+
     static void setQuitOnLastWindowClosed(bool quit);
     static bool quitOnLastWindowClosed();
 

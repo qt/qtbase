@@ -4,6 +4,7 @@ VERSION = $$MODULE_VERSION
 MODULE_INCNAME = QtPlatformHeaders
 
 include(nativecontexts/nativecontexts.pri)
+include(xcbfunctions/xcbfunctions.pri)
 
 QMAKE_DOCS = $$PWD/doc/qtplatformheaders.qdocconf
 

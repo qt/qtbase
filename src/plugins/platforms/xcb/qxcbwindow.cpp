@@ -183,6 +183,8 @@ static inline bool positionIncludesFrame(QWindow *w)
     return qt_window_private(w)->positionPolicy == QWindowPrivate::WindowFrameInclusive;
 }
 
+static const char *wm_window_type_property_id = "_q_xcb_wm_window_type";
+
 QXcbWindow::QXcbWindow(QWindow *window)
     : QPlatformWindow(window)
     , m_window(0)
@@ -665,6 +667,9 @@ void QXcbWindow::show()
         // update _NET_WM_STATE
         updateNetWmStateBeforeMap();
     }
+
+    QXcbWindowFunctions::WmWindowTypes wmWindowTypes(window()->property(wm_window_type_property_id).value<int>());
+    setWmWindowType(wmWindowTypes);
 
     if (connection()->time() != XCB_TIME_CURRENT_TIME)
         updateNetWmUserTime(connection()->time());
@@ -1501,6 +1506,133 @@ QXcbEGLSurface *QXcbWindow::eglSurface() const
     return m_eglSurface;
 }
 #endif
+
+void QXcbWindow::setWmWindowTypeStatic(QWindow *window, QXcbWindowFunctions::WmWindowTypes windowTypes)
+{
+    if (window->handle())
+        static_cast<QXcbWindow *>(window->handle())->setWmWindowType(windowTypes);
+    else
+        window->setProperty(wm_window_type_property_id, QVariant::fromValue(static_cast<int>(windowTypes)));
+}
+
+QXcbWindowFunctions::WmWindowTypes QXcbWindow::wmWindowTypes() const
+{
+    QXcbWindowFunctions::WmWindowTypes result(0);
+
+    xcb_get_property_cookie_t get_cookie =
+        xcb_get_property_unchecked(xcb_connection(), 0, m_window, atom(QXcbAtom::_NET_WM_WINDOW_TYPE),
+                         XCB_ATOM_ATOM, 0, 1024);
+
+    xcb_get_property_reply_t *reply =
+        xcb_get_property_reply(xcb_connection(), get_cookie, NULL);
+
+    if (reply && reply->format == 32 && reply->type == XCB_ATOM_ATOM) {
+        const xcb_atom_t *types = static_cast<const xcb_atom_t *>(xcb_get_property_value(reply));
+        const xcb_atom_t *types_end = types + reply->length;
+        for (; types != types_end; types++) {
+            QXcbAtom::Atom type = connection()->qatom(*types);
+            switch (type) {
+            case QXcbAtom::_NET_WM_WINDOW_TYPE_NORMAL:
+                result |= QXcbWindowFunctions::Normal;
+                break;
+            case QXcbAtom::_NET_WM_WINDOW_TYPE_DESKTOP:
+                result |= QXcbWindowFunctions::Desktop;
+                break;
+            case QXcbAtom::_NET_WM_WINDOW_TYPE_DOCK:
+                qDebug() << "IS DOCK";
+                result |= QXcbWindowFunctions::Dock;
+                break;
+            case QXcbAtom::_NET_WM_WINDOW_TYPE_TOOLBAR:
+                result |= QXcbWindowFunctions::Toolbar;
+                break;
+            case QXcbAtom::_NET_WM_WINDOW_TYPE_MENU:
+                result |= QXcbWindowFunctions::Menu;
+                break;
+            case QXcbAtom::_NET_WM_WINDOW_TYPE_UTILITY:
+                result |= QXcbWindowFunctions::Utility;
+                break;
+            case QXcbAtom::_NET_WM_WINDOW_TYPE_SPLASH:
+                result |= QXcbWindowFunctions::Splash;
+                break;
+            case QXcbAtom::_NET_WM_WINDOW_TYPE_DIALOG:
+                result |= QXcbWindowFunctions::Dialog;
+                break;
+            case QXcbAtom::_NET_WM_WINDOW_TYPE_DROPDOWN_MENU:
+                result |= QXcbWindowFunctions::DropDownMenu;
+                break;
+            case QXcbAtom::_NET_WM_WINDOW_TYPE_POPUP_MENU:
+                result |= QXcbWindowFunctions::PopupMenu;
+                break;
+            case QXcbAtom::_NET_WM_WINDOW_TYPE_TOOLTIP:
+                result |= QXcbWindowFunctions::Tooltip;
+                break;
+            case QXcbAtom::_NET_WM_WINDOW_TYPE_NOTIFICATION:
+                result |= QXcbWindowFunctions::Notification;
+                break;
+            case QXcbAtom::_NET_WM_WINDOW_TYPE_COMBO:
+                result |= QXcbWindowFunctions::Combo;
+                break;
+            case QXcbAtom::_NET_WM_WINDOW_TYPE_DND:
+                result |= QXcbWindowFunctions::Dnd;
+                break;
+            case QXcbAtom::_KDE_NET_WM_WINDOW_TYPE_OVERRIDE:
+                result |= QXcbWindowFunctions::KdeOverride;
+                break;
+            default:
+                break;
+            }
+        }
+        free(reply);
+    }
+    return result;
+}
+
+void QXcbWindow::setWmWindowType(QXcbWindowFunctions::WmWindowTypes types)
+{
+    QVector<xcb_atom_t> atoms;
+
+    if (types & QXcbWindowFunctions::Normal)
+        atoms.append(atom(QXcbAtom::_NET_WM_WINDOW_TYPE_NORMAL));
+    if (types & QXcbWindowFunctions::Desktop)
+        atoms.append(atom(QXcbAtom::_NET_WM_WINDOW_TYPE_DESKTOP));
+    if (types & QXcbWindowFunctions::Dock) {
+        qDebug() << "setting to be dock";
+        atoms.append(atom(QXcbAtom::_NET_WM_WINDOW_TYPE_DOCK));
+    }
+    if (types & QXcbWindowFunctions::Toolbar)
+        atoms.append(atom(QXcbAtom::_NET_WM_WINDOW_TYPE_TOOLBAR));
+    if (types & QXcbWindowFunctions::Menu)
+        atoms.append(atom(QXcbAtom::_NET_WM_WINDOW_TYPE_MENU));
+    if (types & QXcbWindowFunctions::Utility)
+        atoms.append(atom(QXcbAtom::_NET_WM_WINDOW_TYPE_UTILITY));
+    if (types & QXcbWindowFunctions::Splash)
+        atoms.append(atom(QXcbAtom::_NET_WM_WINDOW_TYPE_SPLASH));
+    if (types & QXcbWindowFunctions::Dialog)
+        atoms.append(atom(QXcbAtom::_NET_WM_WINDOW_TYPE_DIALOG));
+    if (types & QXcbWindowFunctions::DropDownMenu)
+        atoms.append(atom(QXcbAtom::_NET_WM_WINDOW_TYPE_DROPDOWN_MENU));
+    if (types & QXcbWindowFunctions::PopupMenu)
+        atoms.append(atom(QXcbAtom::_NET_WM_WINDOW_TYPE_POPUP_MENU));
+    if (types & QXcbWindowFunctions::Tooltip)
+        atoms.append(atom(QXcbAtom::_NET_WM_WINDOW_TYPE_TOOLTIP));
+    if (types & QXcbWindowFunctions::Notification)
+        atoms.append(atom(QXcbAtom::_NET_WM_WINDOW_TYPE_NOTIFICATION));
+    if (types & QXcbWindowFunctions::Combo)
+        atoms.append(atom(QXcbAtom::_NET_WM_WINDOW_TYPE_COMBO));
+    if (types & QXcbWindowFunctions::Dnd)
+        atoms.append(atom(QXcbAtom::_NET_WM_WINDOW_TYPE_DND));
+    if (types & QXcbWindowFunctions::KdeOverride)
+        atoms.append(atom(QXcbAtom::_KDE_NET_WM_WINDOW_TYPE_OVERRIDE));
+
+    if (atoms.isEmpty()) {
+        Q_XCB_CALL(xcb_delete_property(xcb_connection(), m_window, atom(QXcbAtom::_NET_WM_WINDOW_TYPE)));
+    } else {
+        Q_XCB_CALL(xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window,
+                                       atom(QXcbAtom::_NET_WM_WINDOW_TYPE), XCB_ATOM_ATOM, 32,
+                                       atoms.count(), atoms.constData()));
+    }
+    xcb_flush(xcb_connection());
+}
 
 class ExposeCompressor
 {

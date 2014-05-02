@@ -61,8 +61,22 @@
     platforms a different class will be used. These classes are all placed in
     the Qt Platform Headers module.
 
+    Platform headers can be used in conjunction with
+    QGuiApplication::platformFunction() to give a type safe interface to
+    platform specific functionality. It is possible for headers defined in
+    QtPlatformHeaders to define typedefs for functions that can be returned by
+    a platform plugin from QGuiApplication::platformFunction(). Headers in
+    QtPlatformHeaders can also implement wrapper functions for the function
+    pointer, giving a static function that can be called from any context after
+    the platform integration has been created. An implementation of this
+    pattern is QXcbWindowFunctions::setWmWindowType().  This function retrieves
+    a function pointer from QGuiApplication::platformFunction, and executes
+    that function if the requested function was returned.
+
     \note Similar to the other QPA APIs, there are no binary compatibility
     guarantees for these classes, meaning that an application using these
     classes is only guaranteed to work with the Qt version it was developed
     against. Unlike QPA however, source compatibility is guaranteed.
+
+    \sa QXcbWindowFunctions
  */

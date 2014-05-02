@@ -1413,6 +1413,20 @@ QPlatformNativeInterface *QGuiApplication::platformNativeInterface()
 }
 
 /*!
+    Returns a function pointer from the platformplugin matching \a function
+*/
+QFunctionPointer QGuiApplication::platformFunction(const QByteArray &function)
+{
+    QPlatformIntegration *pi = QGuiApplicationPrivate::platformIntegration();
+    if (!pi) {
+        qWarning() << "QGuiApplication::platformFunction(): Must construct a QGuiApplication before accessing a platform function";
+        return Q_NULLPTR;
+    }
+
+    return pi->nativeInterface() ? pi->nativeInterface()->platformFunction(function) : Q_NULLPTR;
+}
+
+/*!
     Enters the main event loop and waits until exit() is called, and then
     returns the value that was set to exit() (which is 0 if exit() is called
     via quit()).

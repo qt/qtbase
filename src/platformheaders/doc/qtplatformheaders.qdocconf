@@ -12,7 +12,9 @@ project = QtPlatformHeaders
 
 headerdirs  += ..
 sourcedirs  += ..
-exampledirs += ..
+exampledirs += .. \
+               snippets
+
 imagedirs   += images
 
 depends += qtdoc qtcore qtgui qtwidgets

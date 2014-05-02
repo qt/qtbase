@@ -85,6 +85,8 @@ public:
     virtual NativeResourceForWindowFunction nativeResourceFunctionForWindow(const QByteArray &resource);
     virtual NativeResourceForBackingStoreFunction nativeResourceFunctionForBackingStore(const QByteArray &resource);
 
+    virtual QFunctionPointer platformFunction(const QByteArray &function) const;
+
     virtual QVariantMap windowProperties(QPlatformWindow *window) const;
     virtual QVariant windowProperty(QPlatformWindow *window, const QString &name) const;
     virtual QVariant windowProperty(QPlatformWindow *window, const QString &name, const QVariant &defaultValue) const;

@@ -51,6 +51,8 @@
 
 #include "qxcbobject.h"
 
+#include <QtPlatformHeaders/qxcbwindowfunctions.h>
+
 QT_BEGIN_NAMESPACE
 
 class QXcbScreen;
@@ -150,6 +152,11 @@ public:
 #if defined(XCB_USE_EGL)
     QXcbEGLSurface *eglSurface() const;
 #endif
+
+    static void setWmWindowTypeStatic(QWindow *window, QXcbWindowFunctions::WmWindowTypes windowTypes);
+
+    QXcbWindowFunctions::WmWindowTypes wmWindowTypes() const;
+    void setWmWindowType(QXcbWindowFunctions::WmWindowTypes types);
 
 private:
     void changeNetWmState(bool set, xcb_atom_t one, xcb_atom_t two = 0);

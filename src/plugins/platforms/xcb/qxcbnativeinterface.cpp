@@ -60,6 +60,8 @@
 #include "qglxintegration.h"
 #endif
 
+#include <QtPlatformHeaders/qxcbwindowfunctions.h>
+
 #ifdef XCB_USE_XLIB
 #  include <X11/Xlib.h>
 #else
@@ -241,6 +243,14 @@ QPlatformNativeInterface::NativeResourceForScreenFunction QXcbNativeInterface::n
     else if (lowerCaseResource == "setappusertime")
         return NativeResourceForScreenFunction(setAppUserTime);
     return 0;
+}
+
+QFunctionPointer QXcbNativeInterface::platformFunction(const QByteArray &function) const
+{
+    if (function == QXcbWindowFunctions::setWmWindowTypeIdentifier()) {
+        return QFunctionPointer(QXcbWindow::setWmWindowTypeStatic);
+    }
+    return Q_NULLPTR;
 }
 
 void *QXcbNativeInterface::appTime(const QXcbScreen *screen)

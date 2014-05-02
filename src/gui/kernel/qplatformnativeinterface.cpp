@@ -118,6 +118,12 @@ QPlatformNativeInterface::NativeResourceForBackingStoreFunction QPlatformNativeI
     return 0;
 }
 
+QFunctionPointer QPlatformNativeInterface::platformFunction(const QByteArray &function) const
+{
+    Q_UNUSED(function);
+    return Q_NULLPTR;
+}
+
 /*!
     Contains generic window properties that the platform may utilize.
 */
