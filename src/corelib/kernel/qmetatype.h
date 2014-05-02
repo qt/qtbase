@@ -777,6 +777,7 @@ struct VariantData
     const void *data;
     const uint flags;
 private:
+    // copy constructor allowed to be implicit to silence level 4 warning from MSVC
     VariantData &operator=(const VariantData &) Q_DECL_EQ_DELETE;
 };
 

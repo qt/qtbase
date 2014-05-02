@@ -234,6 +234,10 @@ QCocoaMenu::QCocoaMenu() :
 
 QCocoaMenu::~QCocoaMenu()
 {
+    foreach (QCocoaMenuItem *item, m_menuItems) {
+        if (COCOA_MENU_ANCESTOR(item) == this)
+            SET_COCOA_MENU_ANCESTOR(item, 0);
+    }
     QCocoaAutoReleasePool pool;
     [m_nativeItem setSubmenu:nil];
     [m_nativeMenu release];

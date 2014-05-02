@@ -89,7 +89,7 @@ QTimeZonePrivate *QMacTimeZonePrivate::clone()
 void QMacTimeZonePrivate::init(const QByteArray &ianaId)
 {
     if (availableTimeZoneIds().contains(ianaId)) {
-        m_nstz = [NSTimeZone timeZoneWithName:QCFString::toNSString(QString::fromUtf8(ianaId))];
+        m_nstz = [[NSTimeZone timeZoneWithName:QCFString::toNSString(QString::fromUtf8(ianaId))] retain];
         if (m_nstz)
             m_id = ianaId;
     }
@@ -142,7 +142,6 @@ QString QMacTimeZonePrivate::displayName(QTimeZone::TimeType timeType,
     NSString *macLocaleCode = QCFString::toNSString(locale.name());
     NSLocale *macLocale = [[NSLocale alloc] initWithLocaleIdentifier:macLocaleCode];
     const QString result = QCFString::toQString([m_nstz localizedName:style locale:macLocale]);
-    [macLocaleCode release];
     [macLocale release];
     return result;
 }
@@ -192,7 +191,6 @@ QTimeZonePrivate::Data QMacTimeZonePrivate::data(qint64 forMSecsSinceEpoch) cons
     data.daylightTimeOffset = [m_nstz daylightSavingTimeOffsetForDate:date];
     data.standardTimeOffset = data.offsetFromUtc - data.daylightTimeOffset;
     data.abbreviation = QCFString::toQString([m_nstz abbreviationForDate:date]);
-    [date release];
     return data;
 }
 
@@ -203,8 +201,6 @@ bool QMacTimeZonePrivate::hasTransitions() const
     NSDate *epoch = [NSDate dateWithTimeIntervalSince1970:0];
     const NSDate *date = [m_nstz nextDaylightSavingTimeTransitionAfterDate:epoch];
     const bool result = ([date timeIntervalSince1970] > [epoch timeIntervalSince1970]);
-    [epoch release];
-    [date release];
     return result;
 }
 
@@ -224,7 +220,6 @@ QTimeZonePrivate::Data QMacTimeZonePrivate::nextTransition(qint64 afterMSecsSinc
     tran.daylightTimeOffset = [m_nstz daylightSavingTimeOffsetForDate:nextDate];
     tran.standardTimeOffset = tran.offsetFromUtc - tran.daylightTimeOffset;
     tran.abbreviation = QCFString::toQString([m_nstz abbreviationForDate:nextDate]);
-    [nextDate release];
     return tran;
 }
 
@@ -246,7 +241,6 @@ QTimeZonePrivate::Data QMacTimeZonePrivate::previousTransition(qint64 beforeMSec
             nextDate = [m_nstz nextDaylightSavingTimeTransitionAfterDate:nextDate];
             nextSecs = [nextDate timeIntervalSince1970];
         }
-        [nextDate release];
     }
     if (secsList.size() >= 1)
         return data(qint64(secsList.last()) * 1000);

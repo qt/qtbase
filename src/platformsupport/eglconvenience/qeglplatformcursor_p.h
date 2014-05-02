@@ -68,6 +68,24 @@ private:
     int m_mouseCount;
 };
 
+class QEGLPlatformCursorUpdater : public QObject
+{
+    Q_OBJECT
+
+public:
+    QEGLPlatformCursorUpdater(QPlatformScreen *screen)
+        : m_screen(screen), m_active(false) { }
+
+    void scheduleUpdate(const QPoint &pos, const QRegion &rgn);
+
+private slots:
+    void update(const QPoint &pos, const QRegion &rgn);
+
+private:
+    QPlatformScreen *m_screen;
+    bool m_active;
+};
+
 class QEGLPlatformCursor : public QPlatformCursor
 {
 public:
@@ -130,6 +148,7 @@ private:
     int m_textureCoordEntry;
     int m_textureEntry;
     QEGLPlatformCursorDeviceListener *m_deviceListener;
+    QEGLPlatformCursorUpdater m_updater;
 };
 
 QT_END_NAMESPACE

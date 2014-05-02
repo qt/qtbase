@@ -1,16 +1,11 @@
 TARGET = qtharfbuzzng
-TEMPLATE = lib
 
 CONFIG += \
     static \
     hide_symbols \
     exceptions_off rtti_off
-CONFIG -= qt
 
-contains(QT_CONFIG, debug_and_release):CONFIG += debug_and_release
-contains(QT_CONFIG, build_all):CONFIG += build_all
-
-DESTDIR = $$QT_BUILD_TREE/lib
+load(qt_helper_lib)
 
 DEFINES += HAVE_CONFIG_H
 HEADERS += $$PWD/src/config.h
@@ -133,5 +128,3 @@ mac {
         # even in 10.8 where they were also made available stand-alone.
         LIBS_PRIVATE += -framework ApplicationServices
 }
-
-TARGET = $$TARGET$$qtPlatformTargetSuffix()

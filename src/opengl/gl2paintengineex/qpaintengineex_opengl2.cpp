@@ -224,7 +224,7 @@ void QGL2PaintEngineExPrivate::updateBrushTexture()
             currentBrushPixmap = currentBrushPixmap.scaled(max_texture_size, max_texture_size, Qt::KeepAspectRatio);
 
         GLuint wrapMode = GL_REPEAT;
-        if (ctx->contextHandle()->isES()) {
+        if (ctx->contextHandle()->isOpenGLES()) {
             // OpenGL ES does not support GL_REPEAT wrap modes for NPOT textures. So instead,
             // we emulate GL_REPEAT by only taking the fractional part of the texture coords
             // in the qopenglslTextureBrushSrcFragmentShader program.
