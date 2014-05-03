@@ -827,11 +827,16 @@ struct QRegularExpressionPrivate : QSharedData
 
     void optimizePattern(OptimizePatternOption option);
 
+    enum CheckSubjectStringOption {
+        CheckSubjectString,
+        DontCheckSubjectString
+    };
+
     QRegularExpressionMatchPrivate *doMatch(const QString &subject,
                                             int offset,
                                             QRegularExpression::MatchType matchType,
                                             QRegularExpression::MatchOptions matchOptions,
-                                            bool checkSubjectString = true,
+                                            CheckSubjectStringOption checkSubjectStringOption = CheckSubjectString,
                                             const QRegularExpressionMatchPrivate *previous = 0) const;
 
     int captureIndexForName(const QString &name) const;
@@ -1216,7 +1221,8 @@ static int pcre16SafeExec(const pcre16 *code, const pcre16_extra *extra,
     options \a matchOptions and returns the QRegularExpressionMatchPrivate of
     the result. It also advances a match if a previous result is given as \a
     previous. The \a subject string goes a Unicode validity check if
-    \a checkSubjectString is true (PCRE doesn't like illegal UTF-16 sequences).
+    \a checkSubjectString is CheckSubjectString (PCRE doesn't like illegal
+    UTF-16 sequences).
 
     Advancing a match is a tricky algorithm. If the previous match matched a
     non-empty string, we just do an ordinary match at the offset position.
@@ -1233,7 +1239,7 @@ QRegularExpressionMatchPrivate *QRegularExpressionPrivate::doMatch(const QString
                                                                    int offset,
                                                                    QRegularExpression::MatchType matchType,
                                                                    QRegularExpression::MatchOptions matchOptions,
-                                                                   bool checkSubjectString,
+                                                                   CheckSubjectStringOption checkSubjectStringOption,
                                                                    const QRegularExpressionMatchPrivate *previous) const
 {
     if (offset < 0)
@@ -1284,7 +1290,7 @@ QRegularExpressionMatchPrivate *QRegularExpressionPrivate::doMatch(const QString
     else if (matchType == QRegularExpression::PartialPreferFirstMatch)
         pcreOptions |= PCRE_PARTIAL_HARD;
 
-    if (!checkSubjectString)
+    if (checkSubjectStringOption == DontCheckSubjectString)
         pcreOptions |= PCRE_NO_UTF16_CHECK;
 
     bool previousMatchWasEmpty = false;
@@ -1396,7 +1402,7 @@ QRegularExpressionMatch QRegularExpressionMatchPrivate::nextMatch() const
     Q_ASSERT(isValid);
     Q_ASSERT(hasMatch || hasPartialMatch);
 
-    // Note the "false" passed for the check of the subject string:
+    // Note the DontCheckSubjectString passed for the check of the subject string:
     // if we're advancing a match on the same subject,
     // then that subject was already checked at least once (when this object
     // was created, or when the object that created this one was created, etc.)
@@ -1404,7 +1410,7 @@ QRegularExpressionMatch QRegularExpressionMatchPrivate::nextMatch() const
                                                                                capturedOffsets.at(1),
                                                                                matchType,
                                                                                matchOptions,
-                                                                               false,
+                                                                               QRegularExpressionPrivate::DontCheckSubjectString,
                                                                                this);
     return QRegularExpressionMatch(*nextPrivate);
 }
