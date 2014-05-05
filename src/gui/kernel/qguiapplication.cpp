@@ -466,7 +466,14 @@ static QWindowGeometrySpecification windowGeometrySpecification;
 
     \section1 Supported Command Line Options
 
-    All Qt programs automatically support the following command line options:
+    All Qt programs automatically support a set of command-line options that
+    allow modifying the way Qt will interact with the windowing system. Some of
+    the options are also accessible via environment variables, which are the
+    preferred form if the application can launch GUI sub-processes or other
+    applications (environment variables will be inherited by child processes).
+    When in doubt, use the environment variables.
+
+    The options currently supported are the following:
     \list
 
         \li \c{-platform} \e {platformName[:options]}, specifies the
