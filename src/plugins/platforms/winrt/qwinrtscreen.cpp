@@ -425,17 +425,8 @@ QWinRTScreen::QWinRTScreen(ICoreWindow *window)
 #endif
     , m_cursor(new QWinRTCursor(window))
     , m_orientation(Qt::PrimaryOrientation)
+    , m_touchDevice(Q_NULLPTR)
 {
-#ifdef Q_OS_WINPHONE // On phone, there can be only one touch device
-    QTouchDevice *touchDevice = new QTouchDevice;
-    touchDevice->setCapabilities(QTouchDevice::Position | QTouchDevice::Area | QTouchDevice::Pressure);
-    touchDevice->setType(QTouchDevice::TouchScreen);
-    touchDevice->setName(QStringLiteral("WinPhoneTouchScreen"));
-    Pointer pointer = { Pointer::TouchScreen, touchDevice };
-    m_pointers.insert(0, pointer);
-    QWindowSystemInterface::registerTouchDevice(touchDevice);
-#endif
-
     Rect rect;
     window->get_Bounds(&rect);
     m_geometry = QRect(0, 0, rect.Width, rect.Height);
@@ -762,47 +753,25 @@ HRESULT QWinRTScreen::onPointerUpdated(ICoreWindow *window, IPointerEventArgs *a
     if (FAILED(pointerPoint->get_Properties(&properties)))
         return E_INVALIDARG;
 
-#ifdef Q_OS_WINPHONE
-    quint32 pointerId = 0;
-    Pointer pointer = m_pointers.value(pointerId);
+    PointerDeviceType pointerDeviceType;
+#if defined(Q_OS_WINPHONE) && _MSC_VER <= 1700
+    pointerDeviceType = PointerDeviceType_Touch;
 #else
-    Pointer pointer = { Pointer::Unknown, 0 };
-    quint32 pointerId;
-    pointerPoint->get_PointerId(&pointerId);
-    if (m_pointers.contains(pointerId)) {
-        pointer = m_pointers.value(pointerId);
-    } else { // We have not yet enumerated this device. Do so now...
-        IPointerDevice *device;
-        if (SUCCEEDED(pointerPoint->get_PointerDevice(&device))) {
-            PointerDeviceType type;
-            device->get_PointerDeviceType(&type);
-            switch (type) {
-            case PointerDeviceType_Touch:
-                pointer.type = Pointer::TouchScreen;
-                pointer.device = new QTouchDevice;
-                pointer.device->setName(QStringLiteral("WinRT TouchScreen ") + QString::number(pointerId));
-                // TODO: We may want to probe the device usage flags for more accurate values for these next two
-                pointer.device->setType(QTouchDevice::TouchScreen);
-                pointer.device->setCapabilities(QTouchDevice::Position | QTouchDevice::Area | QTouchDevice::Pressure);
-                QWindowSystemInterface::registerTouchDevice(pointer.device);
-                break;
+    ComPtr<IPointerDevice> pointerDevice;
+    HRESULT hr = pointerPoint->get_PointerDevice(&pointerDevice);
+    if (FAILED(hr)) {
+        qErrnoWarning(hr, "Failed to get pointer device.");
+        return S_OK;
+    }
 
-            case PointerDeviceType_Pen:
-                pointer.type = Pointer::Tablet;
-                break;
-
-            case PointerDeviceType_Mouse:
-                pointer.type = Pointer::Mouse;
-                break;
-            }
-
-            m_pointers.insert(pointerId, pointer);
-            device->Release();
-        }
+    hr = pointerDevice->get_PointerDeviceType(&pointerDeviceType);
+    if (FAILED(hr)) {
+        qErrnoWarning(hr, "Failed to get pointer device type.");
+        return S_OK;
     }
 #endif
-    switch (pointer.type) {
-    case Pointer::Mouse: {
+    switch (pointerDeviceType) {
+    case PointerDeviceType_Mouse: {
         qint32 delta;
         properties->get_MouseWheelDelta(&delta);
         if (delta) {
@@ -839,7 +808,15 @@ HRESULT QWinRTScreen::onPointerUpdated(ICoreWindow *window, IPointerEventArgs *a
 
         break;
     }
-    case Pointer::TouchScreen: {
+    case PointerDeviceType_Touch: {
+        if (!m_touchDevice) {
+            m_touchDevice = new QTouchDevice;
+            m_touchDevice->setName(QStringLiteral("WinRTTouchScreen"));
+            m_touchDevice->setType(QTouchDevice::TouchScreen);
+            m_touchDevice->setCapabilities(QTouchDevice::Position | QTouchDevice::Area | QTouchDevice::Pressure | QTouchDevice::NormalizedPosition);
+            QWindowSystemInterface::registerTouchDevice(m_touchDevice);
+        }
+
         quint32 id;
         pointerPoint->get_PointerId(&id);
 
@@ -867,7 +844,7 @@ HRESULT QWinRTScreen::onPointerUpdated(ICoreWindow *window, IPointerEventArgs *a
         it.value().normalPosition = QPointF(pos.x()/m_geometry.width(), pos.y()/m_geometry.height());
         it.value().pressure = pressure;
 
-        QWindowSystemInterface::handleTouchEvent(topWindow(), pointer.device, m_touchPoints.values(), mods);
+        QWindowSystemInterface::handleTouchEvent(topWindow(), m_touchDevice, m_touchPoints.values(), mods);
 
         // Remove released points, station others
         for (QHash<quint32, QWindowSystemInterface::TouchPoint>::iterator i = m_touchPoints.begin(); i != m_touchPoints.end();) {
@@ -879,7 +856,7 @@ HRESULT QWinRTScreen::onPointerUpdated(ICoreWindow *window, IPointerEventArgs *a
 
         break;
     }
-    case Pointer::Tablet: {
+    case PointerDeviceType_Pen: {
         quint32 id;
         pointerPoint->get_PointerId(&id);
 
@@ -902,7 +879,7 @@ HRESULT QWinRTScreen::onPointerUpdated(ICoreWindow *window, IPointerEventArgs *a
         float rotation;
         properties->get_Twist(&rotation);
 
-        QWindowSystemInterface::handleTabletEvent(topWindow(), isPressed, pos, pos, pointerId,
+        QWindowSystemInterface::handleTabletEvent(topWindow(), isPressed, pos, pos, 0,
                                                   pointerType, pressure, xTilt, yTilt,
                                                   0, rotation, 0, id, mods);
 
