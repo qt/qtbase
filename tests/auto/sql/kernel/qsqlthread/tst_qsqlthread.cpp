@@ -50,7 +50,7 @@
 #include "qdebug.h"
 
 #ifdef Q_OS_LINUX
-#include <pthread.h>
+#include <sched.h>
 #endif
 
 const QString qtest(qTableName("qtest", __FILE__, QSqlDatabase()));
@@ -159,7 +159,7 @@ public:
             q.bindValue(2, 10);
             QVERIFY_SQL(q, exec());
 #ifdef Q_OS_LINUX
-            pthread_yield();
+            sched_yield();
 #endif
         }
     }
@@ -197,7 +197,7 @@ public:
             q1.clear();
             QVERIFY_SQL(q2, exec());
 #ifdef Q_OS_LINUX
-            pthread_yield();
+            sched_yield();
 #endif
         }
     }
