@@ -12,5 +12,5 @@ SUBDIRS=\
 !mac:SUBDIRS -= \
     qmacstyle \
 
-!contains( styles, motif ):SUBDIRS -= \
+ios|android|qnx|*wince*:SUBDIRS -= \
     qstylesheetstyle \
