@@ -99,7 +99,7 @@ public:
             return false;
         }
 
-        hr = dxgiDevice->GetParent(IID_PPV_ARGS(&dxgiAdapter));
+        hr = dxgiDevice->GetAdapter(&dxgiAdapter);
         if (FAILED(hr)) {
             qWarning("%s: Failed to probe DXGI Device for parent DXGI Adapter: %#x", __FUNCTION__, hr);
             return false;
