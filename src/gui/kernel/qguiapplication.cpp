@@ -497,7 +497,9 @@ static QWindowGeometrySpecification windowGeometrySpecification;
             the main window using the X11-syntax. For example:
             \c {-qwindowgeometry 100x100+50+50}
         \li \c{-reverse}, sets the application's layout direction to
-            Qt::RightToLeft
+            Qt::RightToLeft. This option is intended to aid debugging and should
+            not be used in production. The default value is automatically detected
+            from the user's locale (see also QLocale::textDirection()).
         \li \c{-session} \e session, restores the application from an earlier
             \l{Session Management}{session}.
         \li  -qwindowgeometry, sets the geometry of the first window
