@@ -323,6 +323,7 @@ private:
     friend class QGraphicsViewPrivate;
     friend class QGraphicsScene;
     friend class QGraphicsScenePrivate;
+    friend class QWidgetWindow;
 #ifndef QT_NO_GESTURES
     friend class QGestureManager;
 #endif
