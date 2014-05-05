@@ -750,6 +750,16 @@ QList<Section> CppCodeMarker::sections(const InnerNode *inner,
                               style == Detailed ? "types" : QString(),
                               "type",
                               "types");
+            FastSection variables(inner,
+                                  style == Summary ? "Variables" : "Variable Documentation",
+                                  style == Detailed ? "vars" : QString(),
+                                  "variable",
+                                  "variables");
+            FastSection staticVariables(inner,
+                                        "Static Variables",
+                                        QString(),
+                                        "static variable",
+                                        "static variables");
             FastSection functions(inner,
                                   style == Summary ?
                                       "Functions" : "Function Documentation",
@@ -788,14 +798,27 @@ QList<Section> CppCodeMarker::sections(const InnerNode *inner,
                         insert(functions, *n, style, status);
                 }
                     break;
+                case Node::Variable:
+                    {
+                        const VariableNode* var = static_cast<const VariableNode*>(*n);
+                        if (!var->doc().isEmpty()) {
+                            if (var->isStatic())
+                                insert(staticVariables,*n,style,status);
+                            else
+                                insert(variables, *n, style, status);
+                        }
+                    }
+                    break;
                 default:
-                    ;
+                    break;
                 }
                 ++n;
             }
             append(sections, namespaces);
             append(sections, classes);
             append(sections, types);
+            append(sections, variables);
+            append(sections, staticVariables);
             append(sections, functions);
             append(sections, macros);
         }
