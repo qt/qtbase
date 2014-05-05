@@ -509,6 +509,8 @@ static QWindowGeometrySpecification windowGeometrySpecification;
 
     \list
         \li \c {-display} \e {hostname:screen_number}, switches displays on X11.
+
+             Overrides the \c DISPLAY environment variable.
         \li \c {-geometry} \e geometry, same as \c {-qwindowgeometry}.
     \endlist
 
