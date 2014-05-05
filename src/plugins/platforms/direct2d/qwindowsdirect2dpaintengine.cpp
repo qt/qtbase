@@ -58,7 +58,6 @@
 #include <QtGui/private/qfontengine_p.h>
 #include <QtGui/private/qstatictext_p.h>
 
-#include <wrl.h>
 using Microsoft::WRL::ComPtr;
 
 QT_BEGIN_NAMESPACE
@@ -345,6 +344,8 @@ public:
     QStack<ClipType> pushedClips;
 
     QPointF currentBrushOrigin;
+
+    QHash< QFont, ComPtr<IDWriteFontFace> > fontCache;
 
     struct {
         bool emulate;
@@ -1291,44 +1292,6 @@ void QWindowsDirect2DPaintEngine::drawPixmap(const QRectF &r,
     }
 }
 
-static ComPtr<IDWriteFontFace> fontFaceFromFontEngine(QFontEngine *fe)
-{
-    ComPtr<IDWriteFontFace> fontFace;
-
-    switch (fe->type()) {
-    case QFontEngine::Win:
-    {
-        QWindowsFontEngine *wfe = static_cast<QWindowsFontEngine *>(fe);
-        QSharedPointer<QWindowsFontEngineData> wfed = wfe->fontEngineData();
-
-        HGDIOBJ oldfont = wfe->selectDesignFont();
-        HRESULT hr = QWindowsDirect2DContext::instance()->dwriteGdiInterop()->CreateFontFaceFromHdc(wfed->hdc, &fontFace);
-        DeleteObject(SelectObject(wfed->hdc, oldfont));
-        if (FAILED(hr))
-            qWarning("%s: Could not create DirectWrite fontface from HDC: %#x", __FUNCTION__, hr);
-
-    }
-        break;
-
-#ifndef QT_NO_DIRECTWRITE
-
-    case QFontEngine::DirectWrite:
-    {
-        QWindowsFontEngineDirectWrite *wfedw = static_cast<QWindowsFontEngineDirectWrite *>(fe);
-        fontFace = wfedw->directWriteFontFace();
-    }
-        break;
-
-#endif // QT_NO_DIRECTWRITE
-
-    default:
-        qWarning("%s: Unknown font engine!", __FUNCTION__);
-        break;
-    }
-
-    return fontFace;
-}
-
 void QWindowsDirect2DPaintEngine::drawStaticTextItem(QStaticTextItem *staticTextItem)
 {
     Q_D(QWindowsDirect2DPaintEngine);
@@ -1340,24 +1303,22 @@ void QWindowsDirect2DPaintEngine::drawStaticTextItem(QStaticTextItem *staticText
     ensurePen();
 
     // If we can't support the current configuration with Direct2D, fall back to slow path
-    // Most common cases are perspective transform and gradient brush as pen
-    if ((state()->transform().isAffine() == false) || d->pen.emulate) {
+    if (emulationRequired(PenEmulation)) {
         QPaintEngineEx::drawStaticTextItem(staticTextItem);
         return;
     }
 
-    ComPtr<IDWriteFontFace> fontFace = fontFaceFromFontEngine(staticTextItem->fontEngine());
+    ComPtr<IDWriteFontFace> fontFace = fontFaceFromFontEngine(staticTextItem->font, staticTextItem->fontEngine());
     if (!fontFace) {
         qWarning("%s: Could not find font - falling back to slow text rendering path.", __FUNCTION__);
         QPaintEngineEx::drawStaticTextItem(staticTextItem);
         return;
     }
 
-    QVector<UINT16> glyphIndices(staticTextItem->numGlyphs);
-    QVector<FLOAT> glyphAdvances(staticTextItem->numGlyphs);
-    QVector<DWRITE_GLYPH_OFFSET> glyphOffsets(staticTextItem->numGlyphs);
+    QVarLengthArray<UINT16> glyphIndices(staticTextItem->numGlyphs);
+    QVarLengthArray<FLOAT> glyphAdvances(staticTextItem->numGlyphs);
+    QVarLengthArray<DWRITE_GLYPH_OFFSET> glyphOffsets(staticTextItem->numGlyphs);
 
-    // XXX Are we generating a lot of cache misses here?
     for (int i = 0; i < staticTextItem->numGlyphs; i++) {
         glyphIndices[i] = UINT16(staticTextItem->glyphs[i]); // Imperfect conversion here
 
@@ -1390,24 +1351,22 @@ void QWindowsDirect2DPaintEngine::drawTextItem(const QPointF &p, const QTextItem
     ensurePen();
 
     // If we can't support the current configuration with Direct2D, fall back to slow path
-    // Most common cases are perspective transform and gradient brush as pen
-    if ((state()->transform().isAffine() == false) || d->pen.emulate) {
+    if (emulationRequired(PenEmulation)) {
         QPaintEngine::drawTextItem(p, textItem);
         return;
     }
 
-    ComPtr<IDWriteFontFace> fontFace = fontFaceFromFontEngine(ti.fontEngine);
+    ComPtr<IDWriteFontFace> fontFace = fontFaceFromFontEngine(*ti.f, ti.fontEngine);
     if (!fontFace) {
         qWarning("%s: Could not find font - falling back to slow text rendering path.", __FUNCTION__);
         QPaintEngine::drawTextItem(p, textItem);
         return;
     }
 
-    QVector<UINT16> glyphIndices(ti.glyphs.numGlyphs);
-    QVector<FLOAT> glyphAdvances(ti.glyphs.numGlyphs);
-    QVector<DWRITE_GLYPH_OFFSET> glyphOffsets(ti.glyphs.numGlyphs);
+    QVarLengthArray<UINT16> glyphIndices(ti.glyphs.numGlyphs);
+    QVarLengthArray<FLOAT> glyphAdvances(ti.glyphs.numGlyphs);
+    QVarLengthArray<DWRITE_GLYPH_OFFSET> glyphOffsets(ti.glyphs.numGlyphs);
 
-    // XXX Are we generating a lot of cache misses here?
     for (int i = 0; i < ti.glyphs.numGlyphs; i++) {
         glyphIndices[i] = UINT16(ti.glyphs.glyphs[i]); // Imperfect conversion here
         glyphAdvances[i] = ti.glyphs.effectiveAdvance(i).toReal();
@@ -1616,6 +1575,51 @@ void QWindowsDirect2DPaintEngine::adjustForAliasing(QPointF *point)
 
     if (!antiAliasingEnabled())
         (*point) += adjustment;
+}
+
+Microsoft::WRL::ComPtr<IDWriteFontFace> QWindowsDirect2DPaintEngine::fontFaceFromFontEngine(const QFont &font, QFontEngine *fe)
+{
+    Q_D(QWindowsDirect2DPaintEngine);
+
+    ComPtr<IDWriteFontFace> fontFace = d->fontCache.value(font);
+    if (fontFace)
+        return fontFace;
+
+    switch (fe->type()) {
+    case QFontEngine::Win:
+    {
+        QWindowsFontEngine *wfe = static_cast<QWindowsFontEngine *>(fe);
+        QSharedPointer<QWindowsFontEngineData> wfed = wfe->fontEngineData();
+
+        HGDIOBJ oldfont = wfe->selectDesignFont();
+        HRESULT hr = QWindowsDirect2DContext::instance()->dwriteGdiInterop()->CreateFontFaceFromHdc(wfed->hdc, &fontFace);
+        DeleteObject(SelectObject(wfed->hdc, oldfont));
+        if (FAILED(hr))
+            qWarning("%s: Could not create DirectWrite fontface from HDC: %#x", __FUNCTION__, hr);
+
+    }
+        break;
+
+#ifndef QT_NO_DIRECTWRITE
+
+    case QFontEngine::DirectWrite:
+    {
+        QWindowsFontEngineDirectWrite *wfedw = static_cast<QWindowsFontEngineDirectWrite *>(fe);
+        fontFace = wfedw->directWriteFontFace();
+    }
+        break;
+
+#endif // QT_NO_DIRECTWRITE
+
+    default:
+        qWarning("%s: Unknown font engine!", __FUNCTION__);
+        break;
+    }
+
+    if (fontFace)
+        d->fontCache.insert(font, fontFace);
+
+    return fontFace;
 }
 
 QT_END_NAMESPACE
