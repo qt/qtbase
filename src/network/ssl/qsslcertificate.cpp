@@ -265,6 +265,7 @@ bool QSslCertificate::isBlacklisted() const
 }
 
 /*!
+    \since 5.4
     Returns \c true if this certificate is self signed; otherwise
     returns \c false.
 
