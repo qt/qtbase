@@ -110,6 +110,8 @@ private slots:
     void verify();
     void extensions();
     void threadSafeConstMethods();
+    void version_data();
+    void version();
 
     // helper for verbose test failure messages
     QString toString(const QList<QSslError>&);
@@ -1148,6 +1150,33 @@ void tst_QSslCertificate::threadSafeConstMethods()
     QVERIFY(t1.toText == t2.toText);
     QVERIFY(t1.version == t2.version);
 
+}
+
+void tst_QSslCertificate::version_data()
+{
+    QTest::addColumn<QSslCertificate>("certificate");
+    QTest::addColumn<QByteArray>("result");
+
+    QTest::newRow("null certificate") << QSslCertificate() << QByteArray();
+
+    QList<QSslCertificate> certs;
+    certs << QSslCertificate::fromPath(testDataDir + "/verify-certs/test-ocsp-good-cert.pem");
+
+    QTest::newRow("v3 certificate") << certs.first() << QByteArrayLiteral("3");
+
+    certs.clear();
+    certs << QSslCertificate::fromPath(testDataDir + "/certificates/cert.pem");
+    QTest::newRow("v1 certificate") << certs.first() << QByteArrayLiteral("1");
+}
+
+void tst_QSslCertificate::version()
+{
+    if (!QSslSocket::supportsSsl())
+        return;
+
+    QFETCH(QSslCertificate, certificate);
+    QFETCH(QByteArray, result);
+    QCOMPARE(certificate.version(), result);
 }
 
 #endif // QT_NO_SSL
