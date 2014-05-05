@@ -282,6 +282,8 @@ private slots:
 
     void QTBUG17053_zeroDashPattern();
 
+    void QTBUG38781_NoBrushAndQBitmap();
+
     void drawTextOutsideGuiThread();
 
     void drawTextWithComplexBrush();
@@ -4471,6 +4473,26 @@ void tst_QPainter::QTBUG17053_zeroDashPattern()
     p.drawLine(0, 0, image.width(), image.height());
 
     QCOMPARE(image, original);
+}
+
+void tst_QPainter::QTBUG38781_NoBrushAndQBitmap()
+{
+    QBitmap bitmap(10, 10);
+    bitmap.fill(Qt::color0);
+    QPainter p(&bitmap);
+    p.setPen(Qt::color1);
+    p.drawLine(0, 1, 9, 1); // at horizontal line at y=1
+    p.setBrush(Qt::NoBrush);
+    p.drawRect(0, 0, 9, 9); // a rect all around
+
+    QRgb white = qRgb(0xff, 0xff, 0xff);
+    QRgb black = qRgb(0, 0, 0);
+    QImage image = bitmap.toImage();
+    QCOMPARE(image.pixel(0, 0), black);
+    QCOMPARE(image.pixel(5, 5), white);
+
+    // Check that the rect didn't overwrite the line
+    QCOMPARE(image.pixel(5, 1), black);
 }
 
 class TextDrawerThread : public QThread

@@ -250,7 +250,7 @@ private:
     QRect toNormalizedFillRect(const QRectF &rect);
 
     inline void ensureBrush(const QBrush &brush) {
-        if (!qbrush_fast_equals(state()->lastBrush, brush) || (brush.style() != Qt::NoBrush && state()->fillFlags))
+        if (!qbrush_fast_equals(state()->lastBrush, brush) || state()->fillFlags)
             updateBrush(brush);
     }
     inline void ensureBrush() { ensureBrush(state()->brush); }
