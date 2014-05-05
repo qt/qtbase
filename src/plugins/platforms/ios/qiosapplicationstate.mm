@@ -150,6 +150,7 @@
         break;
     }
     QWindowSystemInterface::handleApplicationStateChanged(state);
+    QWindowSystemInterface::flushWindowSystemEvents();
 }
 
 @end

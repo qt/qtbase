@@ -2057,7 +2057,7 @@ void QTextEngine::justify(const QScriptLine &line)
     // subtract one char more, as we can't justfy after the last character
     --line_length;
 
-    if (!line_length)
+    if (line_length <= 0)
         return;
 
     int firstItem = findItem(line.from);

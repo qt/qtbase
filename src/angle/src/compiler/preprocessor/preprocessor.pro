@@ -1,7 +1,4 @@
-TEMPLATE = lib
 CONFIG += static
-TARGET = $$qtLibraryTarget(preprocessor)
-
 include(../../config.pri)
 
 INCLUDEPATH = $$ANGLE_DIR/src/compiler/preprocessor
