@@ -147,8 +147,9 @@ static inline uint line_emulation(uint emulation)
 }
 
 #ifndef QT_NO_DEBUG
-static bool qt_painter_thread_test(int devType, const char *what)
+static bool qt_painter_thread_test(int devType, int engineType, const char *what)
 {
+    const QPlatformIntegration *platformIntegration = QGuiApplicationPrivate::platformIntegration();
     switch (devType) {
     case QInternal::Image:
     case QInternal::Printer:
@@ -157,8 +158,13 @@ static bool qt_painter_thread_test(int devType, const char *what)
         break;
     default:
         if (QThread::currentThread() != qApp->thread()
-                && (devType!=QInternal::Pixmap || !QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::ThreadedPixmaps))
-                && (devType!=QInternal::OpenGL || !QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::ThreadedOpenGL))) {
+                // pixmaps cannot be targets unless threaded pixmaps are supported
+                && (devType != QInternal::Pixmap || !platformIntegration->hasCapability(QPlatformIntegration::ThreadedPixmaps))
+                // framebuffer objects and such cannot be targets unless threaded GL is supported
+                && (devType != QInternal::OpenGL || !platformIntegration->hasCapability(QPlatformIntegration::ThreadedOpenGL))
+                // widgets cannot be targets except for QGLWidget
+                && (devType != QInternal::Widget || !platformIntegration->hasCapability(QPlatformIntegration::ThreadedOpenGL)
+                    || (engineType != QPaintEngine::OpenGL && engineType != QPaintEngine::OpenGL2))) {
             qWarning("QPainter: It is not safe to use %s outside the GUI thread", what);
             return false;
         }
@@ -5054,7 +5060,7 @@ void QPainter::drawPixmap(const QPointF &p, const QPixmap &pm)
         return;
 
 #ifndef QT_NO_DEBUG
-    qt_painter_thread_test(d->device->devType(), "drawPixmap()");
+    qt_painter_thread_test(d->device->devType(), d->engine->type(), "drawPixmap()");
 #endif
 
     if (d->extended) {
@@ -5125,7 +5131,7 @@ void QPainter::drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr)
     if (!d->engine || pm.isNull())
         return;
 #ifndef QT_NO_DEBUG
-    qt_painter_thread_test(d->device->devType(), "drawPixmap()");
+    qt_painter_thread_test(d->device->devType(), d->engine->type(), "drawPixmap()");
 #endif
 
     qreal x = r.x();
@@ -6610,7 +6616,7 @@ void QPainter::drawTiledPixmap(const QRectF &r, const QPixmap &pixmap, const QPo
         return;
 
 #ifndef QT_NO_DEBUG
-    qt_painter_thread_test(d->device->devType(), "drawTiledPixmap()");
+    qt_painter_thread_test(d->device->devType(), d->engine->type(), "drawTiledPixmap()");
 #endif
 
     qreal sw = pixmap.width();
