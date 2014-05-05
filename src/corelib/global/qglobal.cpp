@@ -2033,6 +2033,9 @@ const QSysInfo::WinVersion QSysInfo::WindowsVersion = QSysInfo::windowsVersion()
 
 #endif
 #if defined(Q_OS_UNIX)
+#  if (defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID)) || defined(Q_OS_FREEBSD)
+#    define USE_ETC_OS_RELEASE
+#  endif
 struct QUnixOSVersion
 {
     // from uname(2)
@@ -2041,13 +2044,13 @@ struct QUnixOSVersion
     QString sysRelease;
 
 #  if !defined(Q_OS_ANDROID) && !defined(Q_OS_BLACKBERRY) && !defined(Q_OS_MAC)
-    // from /etc/os-release:
+    // from /etc/os-release or guessed
     QString versionIdentifier;      // ${ID}_$VERSION_ID
     QString versionText;            // $PRETTY_NAME
 #  endif
 };
 
-#  if !defined(Q_OS_ANDROID) && !defined(Q_OS_BLACKBERRY) && !defined(Q_OS_MAC)
+#  ifdef USE_ETC_OS_RELEASE
 static QString unquote(const char *begin, const char *end)
 {
     if (*begin == '"') {
@@ -2056,36 +2059,18 @@ static QString unquote(const char *begin, const char *end)
     }
     return QString::fromLatin1(begin, end - begin);
 }
-#  endif
 
-static QUnixOSVersion detectUnixVersion()
+static bool readEtcOsRelease(QUnixOSVersion &v)
 {
-    QUnixOSVersion v;
-    struct utsname u;
-    if (uname(&u) != -1) {
-        v.sysName = QString::fromLatin1(u.sysname);
-        v.sysNameLower = v.sysName.toLower();
-        v.sysRelease = QString::fromLatin1(u.release);
-    } else {
-        v.sysName = QLatin1String("Detection failed");
-        // leave sysNameLower & sysRelease unset
-    }
-
-#  if !defined(Q_OS_ANDROID) && !defined(Q_OS_BLACKBERRY) && !defined(Q_OS_MAC)
     // we're avoiding QFile here
     int fd = qt_safe_open("/etc/os-release", O_RDONLY);
-    if (fd == -1) {
-        if (!v.sysNameLower.isEmpty()) {
-            // will produce "qnx_6.5" or "sunos_5.9"
-            v.versionIdentifier = v.sysNameLower + QLatin1Char('_') + v.sysRelease;
-        }
-        return v;
-    }
+    if (fd == -1)
+        return false;
 
     QT_STATBUF sbuf;
     if (QT_FSTAT(fd, &sbuf) == -1) {
         qt_safe_close(fd);
-        return v;
+        return false;
     }
 
     QString partialIdentifier;
@@ -2141,10 +2126,39 @@ static QUnixOSVersion detectUnixVersion()
             continue;
         }
     }
+
+    return true;
+}
+#  endif // USE_ETC_OS_RELEASE
+
+static QUnixOSVersion detectUnixVersion()
+{
+    QUnixOSVersion v;
+    struct utsname u;
+    if (uname(&u) != -1) {
+        v.sysName = QString::fromLatin1(u.sysname);
+        v.sysNameLower = v.sysName.toLower();
+        v.sysRelease = QString::fromLatin1(u.release);
+    } else {
+        v.sysName = QLatin1String("Detection failed");
+        // leave sysNameLower & sysRelease unset
+    }
+
+#  if !defined(Q_OS_ANDROID) && !defined(Q_OS_BLACKBERRY) && !defined(Q_OS_MAC)
+#    ifdef USE_ETC_OS_RELEASE
+    if (readEtcOsRelease(v))
+        return v;
+#    endif
+
+    if (!v.sysNameLower.isEmpty()) {
+        // will produce "qnx_6.5" or "sunos_5.9"
+        v.versionIdentifier = v.sysNameLower + QLatin1Char('_') + v.sysRelease;
+    }
 #  endif
+
     return v;
 }
-#endif
+#endif // Q_OS_UNIX
 
 
 /*!
