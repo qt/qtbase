@@ -81,6 +81,7 @@ private slots:
     void emptyConstructor();
     void constructor_data();
     void constructor();
+    void constructor_device();
     void constructingGarbage();
     void copyAndAssign_data();
     void copyAndAssign();
@@ -225,6 +226,47 @@ void tst_QSslCertificate::constructor()
     QByteArray encoded = readFile(absFilePath);
     QSslCertificate certificate(encoded, format);
     QVERIFY(!certificate.isNull());
+}
+
+void tst_QSslCertificate::constructor_device()
+{
+    if (!QSslSocket::supportsSsl())
+        return;
+
+    QFile f(testDataDir + "/verify-certs/test-ocsp-good-cert.pem");
+    bool ok = f.open(QIODevice::ReadOnly);
+    QVERIFY(ok);
+
+    QSslCertificate cert(&f);
+    QVERIFY(!cert.isNull());
+    f.close();
+
+    // Check opening a DER as a PEM fails
+    QFile f2(testDataDir + "/certificates/cert.der");
+    ok = f2.open(QIODevice::ReadOnly);
+    QVERIFY(ok);
+
+    QSslCertificate cert2(&f2);
+    QVERIFY(cert2.isNull());
+    f2.close();
+
+    // Check opening a DER as a DER works
+    QFile f3(testDataDir + "/certificates/cert.der");
+    ok = f3.open(QIODevice::ReadOnly);
+    QVERIFY(ok);
+
+    QSslCertificate cert3(&f3, QSsl::Der);
+    QVERIFY(!cert3.isNull());
+    f3.close();
+
+    // Check opening a PEM as a DER fails
+    QFile f4(testDataDir + "/verify-certs/test-ocsp-good-cert.pem");
+    ok = f4.open(QIODevice::ReadOnly);
+    QVERIFY(ok);
+
+    QSslCertificate cert4(&f4, QSsl::Der);
+    QVERIFY(cert4.isNull());
+    f4.close();
 }
 
 void tst_QSslCertificate::constructingGarbage()
