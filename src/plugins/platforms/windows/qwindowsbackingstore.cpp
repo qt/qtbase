@@ -145,9 +145,8 @@ void QWindowsBackingStore::resize(const QSize &size, const QRegion &region)
                 << " from: " << (m_image.isNull() ? QSize() : m_image->image().size());
         }
 #endif
-        QImage::Format format = QWindowsNativeImage::systemFormat();
-        if (format == QImage::Format_RGB32 && window()->format().hasAlpha())
-            format = QImage::Format_ARGB32_Premultiplied;
+        const QImage::Format format = window()->format().hasAlpha() ?
+            QImage::Format_ARGB32_Premultiplied : QWindowsNativeImage::systemFormat();
 
         QWindowsNativeImage *oldwni = m_image.data();
         QWindowsNativeImage *newwni = new QWindowsNativeImage(size.width(), size.height(), format);
