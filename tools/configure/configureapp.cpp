@@ -4041,6 +4041,7 @@ void Configure::buildQmake()
                     stream << "QMAKESPEC = $(SOURCE_PATH)\\mkspecs\\win32-g++" << endl
                            << "EXTRA_CFLAGS = -DUNICODE -ffunction-sections" << endl
                            << "EXTRA_CXXFLAGS = -DUNICODE -ffunction-sections" << endl
+                           << "EXTRA_LFLAGS = -Wl,--gc-sections" << endl
                            << "QTOBJS = qfilesystemengine_win.o \\" << endl
                            << "         qfilesystemiterator_win.o \\" << endl
                            << "         qfsfileengine_win.o \\" << endl
