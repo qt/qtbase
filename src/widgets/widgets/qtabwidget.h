@@ -68,6 +68,7 @@ class Q_WIDGETS_EXPORT QTabWidget : public QWidget
     Q_PROPERTY(bool documentMode READ documentMode WRITE setDocumentMode)
     Q_PROPERTY(bool tabsClosable READ tabsClosable WRITE setTabsClosable)
     Q_PROPERTY(bool movable READ isMovable WRITE setMovable)
+    Q_PROPERTY(bool tabBarAutoHide READ tabBarAutoHide WRITE setTabBarAutoHide)
 
 public:
     explicit QTabWidget(QWidget *parent = 0);
@@ -139,6 +140,9 @@ public:
 
     bool documentMode() const;
     void setDocumentMode(bool set);
+
+    bool tabBarAutoHide() const;
+    void setTabBarAutoHide(bool enabled);
 
     void clear();
 

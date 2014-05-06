@@ -99,6 +99,7 @@ private slots:
     void taskQTBUG_10052_widgetLayoutWhenMoving();
 
     void tabBarClicked();
+    void autoHide();
 };
 
 // Testing get/set functions
@@ -699,6 +700,33 @@ void tst_QTabBar::tabBarClicked()
 
         button = Qt::MouseButton(button << 1);
     }
+}
+
+void tst_QTabBar::autoHide()
+{
+    QTabBar tabBar;
+    QVERIFY(!tabBar.autoHide());
+    QVERIFY(!tabBar.isVisible());
+    tabBar.show();
+    QVERIFY(tabBar.isVisible());
+    tabBar.addTab("0");
+    QVERIFY(tabBar.isVisible());
+    tabBar.removeTab(0);
+    QVERIFY(tabBar.isVisible());
+
+    tabBar.setAutoHide(true);
+    QVERIFY(!tabBar.isVisible());
+    tabBar.addTab("0");
+    QVERIFY(!tabBar.isVisible());
+    tabBar.addTab("1");
+    QVERIFY(tabBar.isVisible());
+    tabBar.removeTab(0);
+    QVERIFY(!tabBar.isVisible());
+    tabBar.removeTab(0);
+    QVERIFY(!tabBar.isVisible());
+
+    tabBar.setAutoHide(false);
+    QVERIFY(tabBar.isVisible());
 }
 
 QTEST_MAIN(tst_QTabBar)

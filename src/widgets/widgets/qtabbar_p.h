@@ -77,7 +77,7 @@ public:
         :currentIndex(-1), pressedIndex(-1), shape(QTabBar::RoundedNorth), layoutDirty(false),
         drawBase(true), scrollOffset(0), elideModeSetByUser(false), useScrollButtonsSetByUser(false), expanding(true), closeButtonOnTabs(false),
         selectionBehaviorOnRemove(QTabBar::SelectRightTab), paintWithOffsets(true), movable(false),
-        dragInProgress(false), documentMode(false), movingTab(0)
+        dragInProgress(false), documentMode(false), autoHide(false), movingTab(0)
 #ifdef Q_WS_MAC
         , previousPressedIndex(-1)
 #endif
@@ -184,6 +184,7 @@ public:
     void updateMacBorderMetrics();
     bool isTabInMacUnifiedToolbarArea() const;
     void setupMovableTab();
+    void autoHideTabs();
 
     void makeVisible(int index);
     QSize iconSize;
@@ -201,6 +202,7 @@ public:
     bool movable;
     bool dragInProgress;
     bool documentMode;
+    bool autoHide;
 
     QWidget *movingTab;
 #ifdef Q_WS_MAC

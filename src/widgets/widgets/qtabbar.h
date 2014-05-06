@@ -70,6 +70,7 @@ class Q_WIDGETS_EXPORT QTabBar: public QWidget
     Q_PROPERTY(bool expanding READ expanding WRITE setExpanding)
     Q_PROPERTY(bool movable READ isMovable WRITE setMovable)
     Q_PROPERTY(bool documentMode READ documentMode WRITE setDocumentMode)
+    Q_PROPERTY(bool autoHide READ autoHide WRITE setAutoHide)
 
 public:
     explicit QTabBar(QWidget* parent=0);
@@ -165,6 +166,9 @@ public:
 
     bool documentMode() const;
     void setDocumentMode(bool set);
+
+    bool autoHide() const;
+    void setAutoHide(bool hide);
 
 public Q_SLOTS:
     void setCurrentIndex(int index);

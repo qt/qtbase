@@ -1351,6 +1351,29 @@ void QTabWidget::setDocumentMode(bool enabled)
 }
 
 /*!
+    \property QTabWidget::tabBarAutoHide
+    \brief If true, the tab bar is automatically hidden when it contains less
+    than 2 tabs.
+    \since 5.4
+
+    By default, this property is false.
+
+    \sa QWidget::visible
+*/
+
+bool QTabWidget::tabBarAutoHide() const
+{
+    Q_D(const QTabWidget);
+    return d->tabs->autoHide();
+}
+
+void QTabWidget::setTabBarAutoHide(bool enabled)
+{
+    Q_D(QTabWidget);
+    return d->tabs->setAutoHide(enabled);
+}
+
+/*!
     Removes all the pages, but does not delete them. Calling this function
     is equivalent to calling removeTab() until the tab widget is empty.
 */

@@ -632,6 +632,14 @@ void QTabBarPrivate::layoutWidgets(int start)
     }
 }
 
+void QTabBarPrivate::autoHideTabs()
+{
+    Q_Q(QTabBar);
+
+    if (autoHide)
+        q->setVisible(q->count() > 1);
+}
+
 void QTabBarPrivate::_q_closeTab()
 {
     Q_Q(QTabBar);
@@ -861,6 +869,7 @@ int QTabBar::insertTab(int index, const QIcon& icon, const QString &text)
     }
 
     tabInserted(index);
+    d->autoHideTabs();
     return index;
 }
 
@@ -936,6 +945,7 @@ void QTabBar::removeTab(int index)
             setCurrentIndex(d->currentIndex - 1);
         }
         d->refresh();
+        d->autoHideTabs();
         tabRemoved(index);
     }
 }
@@ -2264,6 +2274,36 @@ void QTabBar::setDocumentMode(bool enabled)
 
     d->documentMode = enabled;
     d->updateMacBorderMetrics();
+}
+
+/*!
+    \property QTabBar::autoHide
+    \brief If true, the tab bar is automatically hidden when it contains less
+    than 2 tabs.
+    \since 5.4
+
+    By default, this property is false.
+
+    \sa QWidget::visible
+*/
+
+bool QTabBar::autoHide() const
+{
+    Q_D(const QTabBar);
+    return d->autoHide;
+}
+
+void QTabBar::setAutoHide(bool hide)
+{
+    Q_D(QTabBar);
+    if (d->autoHide == hide)
+        return;
+
+    d->autoHide = hide;
+    if (hide)
+        d->autoHideTabs();
+    else
+        setVisible(true);
 }
 
 /*!
