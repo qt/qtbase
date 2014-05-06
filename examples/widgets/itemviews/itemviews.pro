@@ -17,5 +17,6 @@ SUBDIRS       = addressbook \
                 simplewidgetmapper \
                 spinboxdelegate \
                 spreadsheet \
-                stardelegate
+                stardelegate \
+                storageview
 contains(DEFINES, QT_NO_DRAGANDDROP): SUBDIRS -= puzzle
