@@ -109,6 +109,10 @@ void MainWindow::actionTriggered(QAction *action)
 
 void MainWindow::setupToolBar()
 {
+#ifdef Q_OS_OSX
+    setUnifiedTitleAndToolBarOnMac(true);
+#endif
+
     for (int i = 0; i < 3; ++i) {
         ToolBar *tb = new ToolBar(QString::fromLatin1("Tool Bar %1").arg(i + 1), this);
         toolBars.append(tb);

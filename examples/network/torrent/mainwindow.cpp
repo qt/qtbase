@@ -173,6 +173,10 @@ MainWindow::MainWindow(QWidget *parent)
     bottomBar->addWidget((uploadLimitLabel = new QLabel(tr("0 KB/s"))));
     uploadLimitLabel->setFixedSize(QSize(fm.width(tr("99999 KB/s")), fm.lineSpacing()));
 
+#ifdef Q_OS_OSX
+    setUnifiedTitleAndToolBarOnMac(true);
+#endif
+
     // Set up connections
     connect(torrentView, SIGNAL(itemSelectionChanged()),
             this, SLOT(setActionsEnabled()));

@@ -78,6 +78,10 @@ const QString rsrcPath = ":/images/win";
 TextEdit::TextEdit(QWidget *parent)
     : QMainWindow(parent)
 {
+#ifdef Q_OS_OSX
+    setUnifiedTitleAndToolBarOnMac(true);
+#endif
+
     setToolButtonStyle(Qt::ToolButtonFollowStyle);
     setupFileActions();
     setupEditActions();
