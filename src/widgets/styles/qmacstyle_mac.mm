@@ -151,13 +151,32 @@ static uint qHash(const QPointer<QObject> &ptr)
     return qHash(ptr.data());
 }
 
-// These colors specify the titlebar gradient colors on
-// Leopard. Ideally we should get them from the system.
-static const QColor titlebarGradientActiveBegin(220, 220, 220);
-static const QColor titlebarGradientActiveEnd(151, 151, 151);
+// Title bar gradient colors for Lion were determined by inspecting PSDs exported
+// using CoreUI's CoreThemeDocument; there is no public API to retrieve them
+
+static QLinearGradient titlebarGradientActive()
+{
+    static QLinearGradient gradient;
+    if (gradient == QLinearGradient()) {
+        gradient.setColorAt(0, QColor(235, 235, 235));
+        gradient.setColorAt(0.5, QColor(210, 210, 210));
+        gradient.setColorAt(0.75, QColor(195, 195, 195));
+        gradient.setColorAt(1, QColor(180, 180, 180));
+    }
+    return gradient;
+}
+
+static QLinearGradient titlebarGradientInactive()
+{
+    static QLinearGradient gradient;
+    if (gradient == QLinearGradient()) {
+        gradient.setColorAt(0, QColor(250, 250, 250));
+        gradient.setColorAt(1, QColor(225, 225, 225));
+    }
+    return gradient;
+}
+
 static const QColor titlebarSeparatorLineActive(111, 111, 111);
-static const QColor titlebarGradientInactiveBegin(241, 241, 241);
-static const QColor titlebarGradientInactiveEnd(207, 207, 207);
 static const QColor titlebarSeparatorLineInactive(131, 131, 131);
 
 // Gradient colors used for the dock widget title bar and
@@ -3244,14 +3263,15 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
         } break;
     case PE_PanelStatusBar: {
         // Fill the status bar with the titlebar gradient.
-        QLinearGradient linearGrad(0, opt->rect.top(), 0, opt->rect.bottom());
+        QLinearGradient linearGrad;
         if (w ? qt_macWindowMainWindow(w->window()) : (opt->state & QStyle::State_Active)) {
-            linearGrad.setColorAt(0, titlebarGradientActiveBegin);
-            linearGrad.setColorAt(1, titlebarGradientActiveEnd);
+            linearGrad = titlebarGradientActive();
         } else {
-            linearGrad.setColorAt(0, titlebarGradientInactiveBegin);
-            linearGrad.setColorAt(1, titlebarGradientInactiveEnd);
+            linearGrad = titlebarGradientInactive();
         }
+
+        linearGrad.setStart(0, opt->rect.top());
+        linearGrad.setFinalStop(0, opt->rect.bottom());
         p->fillRect(opt->rect, linearGrad);
 
         // Draw the black separator line at the top of the status bar.
