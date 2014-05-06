@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -134,6 +134,29 @@ void tst_QClipboard::modes()
     }
 }
 
+// A predicate to be used with a QSignalSpy / QTRY_VERIFY to ensure all delayed
+// notifications are eaten. It waits at least one cycle and returns true when
+// no new signals arrive.
+class EatSignalSpyNotificationsPredicate
+{
+public:
+    explicit EatSignalSpyNotificationsPredicate(QSignalSpy &spy) : m_spy(spy) { reset(); }
+
+    operator bool() const
+    {
+        if (m_timer.elapsed() && !m_spy.count())
+            return true;
+        m_spy.clear();
+        return false;
+    }
+
+    inline void reset() { m_timer.start(); }
+
+private:
+    QSignalSpy &m_spy;
+    QElapsedTimer m_timer;
+};
+
 /*
     Test that the appropriate signals are emitted when the clipboard
     contents is changed by calling the qt functions.
@@ -149,6 +172,13 @@ void tst_QClipboard::testSignals()
 
     QSignalSpy changedSpy(clipboard, SIGNAL(changed(QClipboard::Mode)));
     QSignalSpy dataChangedSpy(clipboard, SIGNAL(dataChanged()));
+    // Clipboard notifications are asynchronous with the new AddClipboardFormatListener
+    // in Windows Vista (5.4). Eat away all signals to ensure they don't interfere
+    // with the QTRY_COMPARE below.
+    EatSignalSpyNotificationsPredicate noLeftOverDataChanges(dataChangedSpy);
+    EatSignalSpyNotificationsPredicate noLeftOverChanges(changedSpy);
+    QTRY_VERIFY(noLeftOverChanges && noLeftOverDataChanges);
+
     QSignalSpy searchChangedSpy(clipboard, SIGNAL(findBufferChanged()));
     QSignalSpy selectionChangedSpy(clipboard, SIGNAL(selectionChanged()));
 
@@ -156,7 +186,7 @@ void tst_QClipboard::testSignals()
 
     // Test the default mode signal.
     clipboard->setText(text);
-    QCOMPARE(dataChangedSpy.count(), 1);
+    QTRY_COMPARE(dataChangedSpy.count(), 1);
     QCOMPARE(searchChangedSpy.count(), 0);
     QCOMPARE(selectionChangedSpy.count(), 0);
     QCOMPARE(changedSpy.count(), 1);
@@ -296,6 +326,11 @@ void tst_QClipboard::setMimeData()
 
     QSignalSpy spySelection(QGuiApplication::clipboard(), SIGNAL(selectionChanged()));
     QSignalSpy spyData(QGuiApplication::clipboard(), SIGNAL(dataChanged()));
+    // Clipboard notifications are asynchronous with the new AddClipboardFormatListener
+    // in Windows Vista (5.4). Eat away all signals to ensure they don't interfere
+    // with the QTRY_COMPARE below.
+    EatSignalSpyNotificationsPredicate noLeftOverDataChanges(spyData);
+    QTRY_VERIFY(noLeftOverDataChanges);
     QSignalSpy spyFindBuffer(QGuiApplication::clipboard(), SIGNAL(findBufferChanged()));
 
     QGuiApplication::clipboard()->clear(QClipboard::Clipboard);
@@ -312,7 +347,7 @@ void tst_QClipboard::setMimeData()
     else
         QCOMPARE(spyFindBuffer.count(), 0);
 
-    QCOMPARE(spyData.count(), 1);
+    QTRY_COMPARE(spyData.count(), 1);
 
     // an other crash test
     data = new QMimeData;
@@ -326,7 +361,8 @@ void tst_QClipboard::setMimeData()
     newData->setText("bar");
 
     spySelection.clear();
-    spyData.clear();
+    noLeftOverDataChanges.reset();
+    QTRY_VERIFY(noLeftOverDataChanges);
     spyFindBuffer.clear();
 
     QGuiApplication::clipboard()->setMimeData(newData, QClipboard::Clipboard);
@@ -343,7 +379,7 @@ void tst_QClipboard::setMimeData()
     else
         QCOMPARE(spyFindBuffer.count(), 0);
 
-    QCOMPARE(spyData.count(), 1);
+    QTRY_COMPARE(spyData.count(), 1);
 }
 
 void tst_QClipboard::clearBeforeSetText()

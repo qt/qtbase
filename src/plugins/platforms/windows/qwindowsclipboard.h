@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -88,6 +88,7 @@ private:
     QWindowsOleDataObject *m_data;
     HWND m_clipboardViewer;
     HWND m_nextClipboardViewer;
+    bool m_formatListenerRegistered;
 };
 
 QT_END_NAMESPACE

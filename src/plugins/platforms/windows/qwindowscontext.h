@@ -94,6 +94,8 @@ struct QWindowsUser32DLL
     typedef BOOL (WINAPI *UpdateLayeredWindowIndirect)(HWND, const UPDATELAYEREDWINDOWINFO *);
     typedef BOOL (WINAPI *IsHungAppWindow)(HWND);
     typedef BOOL (WINAPI *SetProcessDPIAware)();
+    typedef BOOL (WINAPI *AddClipboardFormatListener)(HWND);
+    typedef BOOL (WINAPI *RemoveClipboardFormatListener)(HWND);
 
     // Functions missing in Q_CC_GNU stub libraries.
     SetLayeredWindowAttributes setLayeredWindowAttributes;
@@ -111,6 +113,10 @@ struct QWindowsUser32DLL
 
     // Windows Vista onwards
     SetProcessDPIAware setProcessDPIAware;
+
+    // Clipboard listeners, Windows Vista onwards
+    AddClipboardFormatListener addClipboardFormatListener;
+    RemoveClipboardFormatListener removeClipboardFormatListener;
 };
 
 struct QWindowsShell32DLL

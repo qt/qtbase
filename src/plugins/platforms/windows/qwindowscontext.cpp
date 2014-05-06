@@ -191,7 +191,8 @@ QWindowsUser32DLL::QWindowsUser32DLL() :
     updateLayeredWindowIndirect(0),
     isHungAppWindow(0),
     registerTouchWindow(0), unregisterTouchWindow(0),
-    getTouchInputInfo(0), closeTouchInputHandle(0), setProcessDPIAware(0)
+    getTouchInputInfo(0), closeTouchInputHandle(0), setProcessDPIAware(0),
+    addClipboardFormatListener(0), removeClipboardFormatListener(0)
 {
 }
 
@@ -207,6 +208,11 @@ void QWindowsUser32DLL::init()
     updateLayeredWindowIndirect = (UpdateLayeredWindowIndirect)(library.resolve("UpdateLayeredWindowIndirect"));
     isHungAppWindow = (IsHungAppWindow)library.resolve("IsHungAppWindow");
     setProcessDPIAware = (SetProcessDPIAware)library.resolve("SetProcessDPIAware");
+
+    if (QSysInfo::windowsVersion() >= QSysInfo::WV_VISTA) {
+        addClipboardFormatListener = (AddClipboardFormatListener)library.resolve("AddClipboardFormatListener");
+        removeClipboardFormatListener = (RemoveClipboardFormatListener)library.resolve("RemoveClipboardFormatListener");
+    }
 }
 
 bool QWindowsUser32DLL::initTouch()
