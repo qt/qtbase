@@ -251,6 +251,8 @@ public:
 
     static QByteArray convertToPostscriptFontFamilyName(const QByteArray &fontFamily);
 
+    virtual bool hasUnreliableGlyphOutline() const;
+
     enum HintStyle {
         HintNone,
         HintLight,
