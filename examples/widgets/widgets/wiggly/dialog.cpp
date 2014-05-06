@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -38,32 +38,26 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-#include <QtWidgets>
+#include <QLineEdit>
+#include <QVBoxLayout>
 
 #include "dialog.h"
 #include "wigglywidget.h"
 
 //! [0]
-Dialog::Dialog(QWidget *parent, bool smallScreen)
+Dialog::Dialog(QWidget *parent)
     : QDialog(parent)
 {
     WigglyWidget *wigglyWidget = new WigglyWidget;
     QLineEdit *lineEdit = new QLineEdit;
 
-    QVBoxLayout *layout = new QVBoxLayout;
+    QVBoxLayout *layout = new QVBoxLayout(this);
     layout->addWidget(wigglyWidget);
     layout->addWidget(lineEdit);
-    setLayout(layout);
 
-    connect(lineEdit, SIGNAL(textChanged(QString)),
-            wigglyWidget, SLOT(setText(QString)));
-    if (!smallScreen){
-        lineEdit->setText(tr("Hello world!"));
-    }
-    else{
-        lineEdit->setText(tr("Hello!"));
-    }
+    connect(lineEdit, &QLineEdit::textChanged, wigglyWidget, &WigglyWidget::setText);
+    lineEdit->setText(tr("Hello world!"));
+
     setWindowTitle(tr("Wiggly"));
     resize(360, 145);
 }

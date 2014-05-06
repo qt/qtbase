@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -45,14 +45,9 @@
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-    bool smallScreen = QApplication::arguments().contains("-small-screen");
 
+    Dialog dialog;
+    dialog.show();
 
-    Dialog dialog(0, smallScreen);
-
-    if (!smallScreen)
-        dialog.show();
-    else
-        dialog.showFullScreen();
     return app.exec();
 }
