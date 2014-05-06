@@ -93,7 +93,8 @@ void QQnxNavigatorEventNotifier::start()
     errno = 0;
     m_fd = open(navigatorControlPath, O_RDWR);
     if (m_fd == -1) {
-        qWarning("QQNX: failed to open navigator pps, errno=%d", errno);
+        qNavigatorEventNotifierDebug() << Q_FUNC_INFO << ": failed to open navigator pps:"
+                                                      << strerror(errno);
         return;
     }
 
