@@ -2128,6 +2128,11 @@ QString QFileDialog::getOpenFileName(QWidget *parent,
     return QString();
 }
 
+static inline QUrl dialogResultToUrl(const QString &file)
+{
+    return file.isEmpty() ? QUrl() : QUrl::fromLocalFile(file);
+}
+
 /*!
     This is a convenience static function that returns an existing file
     selected by the user. If the user presses Cancel, it returns an
@@ -2166,7 +2171,7 @@ QUrl QFileDialog::getOpenFileUrl(QWidget *parent,
     Q_UNUSED(supportedSchemes);
 
     // Falls back to local file
-    return QUrl::fromLocalFile(getOpenFileName(parent, caption, dir.toLocalFile(), filter, selectedFilter, options));
+    return dialogResultToUrl(getOpenFileName(parent, caption, dir.toLocalFile(), filter, selectedFilter, options));
 }
 
 /*!
@@ -2424,7 +2429,7 @@ QUrl QFileDialog::getSaveFileUrl(QWidget *parent,
     Q_UNUSED(supportedSchemes);
 
     // Falls back to local file
-    return QUrl::fromLocalFile(getSaveFileName(parent, caption, dir.toLocalFile(), filter, selectedFilter, options));
+    return dialogResultToUrl(getSaveFileName(parent, caption, dir.toLocalFile(), filter, selectedFilter, options));
 }
 
 /*!
@@ -2532,7 +2537,7 @@ QUrl QFileDialog::getExistingDirectoryUrl(QWidget *parent,
     Q_UNUSED(supportedSchemes);
 
     // Falls back to local file
-    return QUrl::fromLocalFile(getExistingDirectory(parent, caption, dir.toLocalFile(), options));
+    return dialogResultToUrl(getExistingDirectory(parent, caption, dir.toLocalFile(), options));
 }
 
 inline static QString _qt_get_directory(const QString &path)
