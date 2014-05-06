@@ -1522,12 +1522,14 @@ void tst_QList::initializeList() const
 template<typename T>
 void tst_QList::constSharedNull() const
 {
+    QList<T> list2;
+#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
     QList<T> list1;
     list1.setSharable(false);
     QVERIFY(list1.isDetached());
 
-    QList<T> list2;
     list2.setSharable(true);
+#endif
     QVERIFY(!list2.isDetached());
 }
 
@@ -1553,16 +1555,19 @@ void tst_QList::constSharedNullComplex() const
 template <class T>
 void generateSetSharableData()
 {
+#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
     QTest::addColumn<QList<T> >("list");
     QTest::addColumn<int>("size");
 
     QTest::newRow("null") << QList<T>() << 0;
     QTest::newRow("non-empty") << (QList<T>() << T(0) << T(1) << T(2) << T(3) << T(4)) << 5;
+#endif
 }
 
 template <class T>
 void runSetSharableTest()
 {
+#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
     QFETCH(QList<T>, list);
     QFETCH(int, size);
 
@@ -1602,6 +1607,7 @@ void runSetSharableTest()
         QCOMPARE(int(list[i]), i);
 
     QCOMPARE(list.size(), size);
+#endif
 }
 
 void tst_QList::setSharableInt_data() const

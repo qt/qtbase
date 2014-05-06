@@ -125,7 +125,7 @@ void *QWindowsNativeInterface::nativeResourceForContext(const QByteArray &resour
         return 0;
     }
 #if defined(QT_OPENGL_ES_2) || defined(QT_OPENGL_DYNAMIC)
-    if (QOpenGLContext::openGLModuleType() != QOpenGLContext::DesktopGL) {
+    if (QOpenGLContext::openGLModuleType() != QOpenGLContext::LibGL) {
         QWindowsEGLContext *windowsEglContext = static_cast<QWindowsEGLContext *>(context->handle());
         if (resource == QByteArrayLiteral("eglDisplay"))
             return windowsEglContext->eglDisplay();
@@ -136,7 +136,7 @@ void *QWindowsNativeInterface::nativeResourceForContext(const QByteArray &resour
     }
 #endif // QT_OPENGL_ES_2 || QT_OPENGL_DYNAMIC
 #if !defined(QT_OPENGL_ES_2)
-    if (QOpenGLContext::openGLModuleType() == QOpenGLContext::DesktopGL) {
+    if (QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGL) {
         QWindowsGLContext *windowsContext = static_cast<QWindowsGLContext *>(context->handle());
         if (resource == QByteArrayLiteral("renderingContext"))
             return windowsContext->renderingContext();

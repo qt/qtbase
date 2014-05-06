@@ -134,7 +134,6 @@ void QXcbConnection::initializeXInput2()
 #ifdef XCB_USE_XINPUT21
                     case XIScrollClass: {
                         XIScrollClassInfo *sci = reinterpret_cast<XIScrollClassInfo *>(devices[i].classes[c]);
-                        scrollingDevice.deviceId = devices[i].deviceid;
                         if (sci->scroll_type == XIScrollTypeVertical) {
                             scrollingDevice.orientations |= Qt::Vertical;
                             scrollingDevice.verticalIndex = sci->number;
@@ -144,6 +143,20 @@ void QXcbConnection::initializeXInput2()
                             scrollingDevice.orientations |= Qt::Horizontal;
                             scrollingDevice.horizontalIndex = sci->number;
                             scrollingDevice.horizontalIncrement = sci->increment;
+                        }
+                        break;
+                    }
+                    case XIButtonClass: {
+                        XIButtonClassInfo *bci = reinterpret_cast<XIButtonClassInfo *>(devices[i].classes[c]);
+                        for (int i=0; i < bci->num_buttons; ++i) {
+                            const int buttonAtom = qatom(bci->labels[i]);
+                            if (buttonAtom == QXcbAtom::ButtonWheelUp
+                                || buttonAtom == QXcbAtom::ButtonWheelDown) {
+                                scrollingDevice.legacyOrientations |= Qt::Vertical;
+                            } else if (buttonAtom == QXcbAtom::ButtonHorizWheelLeft
+                                       || buttonAtom == QXcbAtom::ButtonHorizWheelRight) {
+                                scrollingDevice.legacyOrientations |= Qt::Horizontal;
+                            }
                         }
                         break;
                     }
@@ -170,7 +183,10 @@ void QXcbConnection::initializeXInput2()
 #endif // QT_NO_TABLETEVENT
 
 #ifdef XCB_USE_XINPUT21
-                if (scrollingDevice.orientations) {
+                if (scrollingDevice.orientations || scrollingDevice.legacyOrientations) {
+                    scrollingDevice.deviceId = devices[i].deviceid;
+                    // Only use legacy wheel button events when we don't have real scroll valuators.
+                    scrollingDevice.legacyOrientations &= ~scrollingDevice.orientations;
                     m_scrollingDevices.insert(scrollingDevice.deviceId, scrollingDevice);
                     if (Q_UNLIKELY(debug_xinput_devices))
                         qDebug() << "   it's a scrolling device";
@@ -256,6 +272,7 @@ void QXcbConnection::xi2Select(xcb_window_t window)
     if (!m_scrollingDevices.isEmpty()) {
         QVector<XIEventMask> xiEventMask(m_scrollingDevices.size());
         bitMask = XI_MotionMask;
+        bitMask |= XI_ButtonReleaseMask;
         int i=0;
         Q_FOREACH (const ScrollingDevice& scrollingDevice, m_scrollingDevices) {
             xiEventMask[i].deviceid = scrollingDevice.deviceId;
@@ -524,6 +541,35 @@ void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
     }
 }
 
+void QXcbConnection::handleEnterEvent(const xcb_enter_notify_event_t *)
+{
+#ifdef XCB_USE_XINPUT21
+    QHash<int, ScrollingDevice>::iterator it = m_scrollingDevices.begin();
+    const QHash<int, ScrollingDevice>::iterator end = m_scrollingDevices.end();
+    while (it != end) {
+        ScrollingDevice& scrollingDevice = it.value();
+        int nrDevices = 0;
+        XIDeviceInfo* xiDeviceInfo = XIQueryDevice(static_cast<Display *>(m_xlib_display), scrollingDevice.deviceId, &nrDevices);
+        if (nrDevices <= 0) {
+            it = m_scrollingDevices.erase(it);
+            continue;
+        }
+        for (int c = 0; c < xiDeviceInfo->num_classes; ++c) {
+            if (xiDeviceInfo->classes[c]->type == XIValuatorClass) {
+                XIValuatorClassInfo *vci = reinterpret_cast<XIValuatorClassInfo *>(xiDeviceInfo->classes[c]);
+                const int valuatorAtom = qatom(vci->label);
+                if (valuatorAtom == QXcbAtom::RelHorizScroll || valuatorAtom == QXcbAtom::RelHorizWheel)
+                    scrollingDevice.lastScrollPosition.setX(vci->value);
+                else if (valuatorAtom == QXcbAtom::RelVertScroll || valuatorAtom == QXcbAtom::RelVertWheel)
+                    scrollingDevice.lastScrollPosition.setY(vci->value);
+            }
+        }
+        XIFreeDeviceInfo(xiDeviceInfo);
+        ++it;
+    }
+#endif
+}
+
 void QXcbConnection::xi2HandleScrollEvent(void *event, ScrollingDevice &scrollingDevice)
 {
 #ifdef XCB_USE_XINPUT21
@@ -564,6 +610,31 @@ void QXcbConnection::xi2HandleScrollEvent(void *event, ScrollingDevice &scrollin
                     std::swap(rawDelta.rx(), rawDelta.ry());
                 }
                 QWindowSystemInterface::handleWheelEvent(platformWindow->window(), xiEvent->time, local, global, rawDelta, angleDelta, modifiers);
+            }
+        }
+    } else if (xiEvent->evtype == XI_ButtonRelease) {
+        xXIDeviceEvent* xiDeviceEvent = reinterpret_cast<xXIDeviceEvent *>(event);
+        if (QXcbWindow *platformWindow = platformWindowFromId(xiDeviceEvent->event)) {
+            QPoint angleDelta;
+            if (scrollingDevice.legacyOrientations & Qt::Vertical) {
+                if (xi2GetButtonState(xiDeviceEvent, 4))
+                    angleDelta.setY(120);
+                else if (xi2GetButtonState(xiDeviceEvent, 5))
+                    angleDelta.setY(-120);
+            }
+            if (scrollingDevice.legacyOrientations & Qt::Horizontal) {
+                if (xi2GetButtonState(xiDeviceEvent, 6))
+                    angleDelta.setX(120);
+                if (xi2GetButtonState(xiDeviceEvent, 7))
+                    angleDelta.setX(-120);
+            }
+            if (!angleDelta.isNull()) {
+                QPoint local(fixed1616ToReal(xiDeviceEvent->event_x), fixed1616ToReal(xiDeviceEvent->event_y));
+                QPoint global(fixed1616ToReal(xiDeviceEvent->root_x), fixed1616ToReal(xiDeviceEvent->root_y));
+                Qt::KeyboardModifiers modifiers = keyboard()->translateModifiers(xiDeviceEvent->mods.effective_mods);
+                if (modifiers & Qt::AltModifier)
+                    std::swap(angleDelta.rx(), angleDelta.ry());
+                QWindowSystemInterface::handleWheelEvent(platformWindow->window(), xiEvent->time, local, global, QPoint(), angleDelta, modifiers);
             }
         }
     }

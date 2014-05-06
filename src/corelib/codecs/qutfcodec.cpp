@@ -52,6 +52,8 @@ QT_BEGIN_NAMESPACE
 
 enum { Endian = 0, Data = 1 };
 
+static const uchar utf8bom[] = { 0xef, 0xbb, 0xbf };
+
 #if defined(__SSE2__) && defined(QT_COMPILER_SUPPORTS_SSE2)
 static inline bool simdEncodeAscii(uchar *&dst, const ushort *&nextAscii, const ushort *&src, const ushort *end)
 {
@@ -187,9 +189,9 @@ QByteArray QUtf8::convertFromUnicode(const QChar *uc, int len, QTextCodec::Conve
     int invalid = 0;
     if (state && !(state->flags & QTextCodec::IgnoreHeader)) {
         // append UTF-8 BOM
-        *cursor++ = 0xef;
-        *cursor++ = 0xbb;
-        *cursor++ = 0xbf;
+        *cursor++ = utf8bom[0];
+        *cursor++ = utf8bom[1];
+        *cursor++ = utf8bom[2];
     }
 
     const ushort *nextAscii = src;
@@ -240,19 +242,31 @@ QString QUtf8::convertToUnicode(const char *chars, int len)
     const uchar *src = reinterpret_cast<const uchar *>(chars);
     const uchar *end = src + len;
 
-    while (src < end) {
-        const uchar *nextAscii = end;
-        if (simdDecodeAscii(dst, nextAscii, src, end))
-            break;
+    // attempt to do a full decoding in SIMD
+    const uchar *nextAscii = end;
+    if (!simdDecodeAscii(dst, nextAscii, src, end)) {
+        // at least one non-ASCII entry
+        // check if we failed to decode the UTF-8 BOM; if so, skip it
+        if (Q_UNLIKELY(src == reinterpret_cast<const uchar *>(chars))
+                && end - src >= 3
+                && Q_UNLIKELY(src[0] == utf8bom[0] && src[1] == utf8bom[1] && src[2] == utf8bom[2])) {
+            src += 3;
+        }
 
-        do {
-            uchar b = *src++;
-            int res = QUtf8Functions::fromUtf8<QUtf8BaseTraits>(b, dst, src, end);
-            if (res < 0) {
-                // decoding error
-                *dst++ = QChar::ReplacementCharacter;
-            }
-        } while (src < nextAscii);
+        while (src < end) {
+            nextAscii = end;
+            if (simdDecodeAscii(dst, nextAscii, src, end))
+                break;
+
+            do {
+                uchar b = *src++;
+                int res = QUtf8Functions::fromUtf8<QUtf8BaseTraits>(b, dst, src, end);
+                if (res < 0) {
+                    // decoding error
+                    *dst++ = QChar::ReplacementCharacter;
+                }
+            } while (src < nextAscii);
+        }
     }
 
     result.truncate(dst - reinterpret_cast<const ushort *>(result.constData()));

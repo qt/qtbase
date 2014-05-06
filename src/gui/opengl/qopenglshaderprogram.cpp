@@ -176,7 +176,7 @@ public:
 #endif
     {
 #ifndef QT_OPENGL_ES_2
-        if (!ctx->isES()) {
+        if (!ctx->isOpenGLES()) {
             QSurfaceFormat f = ctx->format();
 
             // Geometry shaders require OpenGL >= 3.2
@@ -445,7 +445,7 @@ bool QOpenGLShader::compileSourceCode(const char *source)
 
 #ifdef QOpenGL_REDEFINE_HIGHP
         if (d->shaderType == Fragment && !ctx_d->workaround_missingPrecisionQualifiers
-            && QOpenGLContext::currentContext()->isES()) {
+            && QOpenGLContext::currentContext()->isOpenGLES()) {
             src.append(redefineHighp);
             srclen.append(GLint(sizeof(redefineHighp) - 1));
         }
@@ -674,7 +674,7 @@ bool QOpenGLShaderProgram::init()
 #ifndef QT_OPENGL_ES_2
     // Resolve OpenGL 4 functions for tessellation shader support
     QSurfaceFormat format = context->format();
-    if (!context->isES()
+    if (!context->isOpenGLES()
         && format.version() >= qMakePair<int, int>(4, 0)) {
         d->tessellationFuncs = context->versionFunctions<QOpenGLFunctions_4_0_Core>();
         d->tessellationFuncs->initializeOpenGLFunctions();
@@ -2236,6 +2236,10 @@ void QOpenGLShaderProgram::setUniformValue(const char *name, const QMatrix2x2& v
     Sets the uniform variable at \a location in the current context
     to a 2x3 matrix \a value.
 
+    \note This function is not aware of non square matrix support,
+    that is, GLSL types like mat2x3, that is present in modern OpenGL
+    versions. Instead, it treats the uniform as an array of vec3.
+
     \sa setAttributeValue()
 */
 void QOpenGLShaderProgram::setUniformValue(int location, const QMatrix2x3& value)
@@ -2251,6 +2255,10 @@ void QOpenGLShaderProgram::setUniformValue(int location, const QMatrix2x3& value
     Sets the uniform variable called \a name in the current context
     to a 2x3 matrix \a value.
 
+    \note This function is not aware of non square matrix support,
+    that is, GLSL types like mat2x3, that is present in modern OpenGL
+    versions. Instead, it treats the uniform as an array of vec3.
+
     \sa setAttributeValue()
 */
 void QOpenGLShaderProgram::setUniformValue(const char *name, const QMatrix2x3& value)
@@ -2261,6 +2269,10 @@ void QOpenGLShaderProgram::setUniformValue(const char *name, const QMatrix2x3& v
 /*!
     Sets the uniform variable at \a location in the current context
     to a 2x4 matrix \a value.
+
+    \note This function is not aware of non square matrix support,
+    that is, GLSL types like mat2x4, that is present in modern OpenGL
+    versions. Instead, it treats the uniform as an array of vec4.
 
     \sa setAttributeValue()
 */
@@ -2277,6 +2289,10 @@ void QOpenGLShaderProgram::setUniformValue(int location, const QMatrix2x4& value
     Sets the uniform variable called \a name in the current context
     to a 2x4 matrix \a value.
 
+    \note This function is not aware of non square matrix support,
+    that is, GLSL types like mat2x4, that is present in modern OpenGL
+    versions. Instead, it treats the uniform as an array of vec4.
+
     \sa setAttributeValue()
 */
 void QOpenGLShaderProgram::setUniformValue(const char *name, const QMatrix2x4& value)
@@ -2287,6 +2303,10 @@ void QOpenGLShaderProgram::setUniformValue(const char *name, const QMatrix2x4& v
 /*!
     Sets the uniform variable at \a location in the current context
     to a 3x2 matrix \a value.
+
+    \note This function is not aware of non square matrix support,
+    that is, GLSL types like mat3x2, that is present in modern OpenGL
+    versions. Instead, it treats the uniform as an array of vec2.
 
     \sa setAttributeValue()
 */
@@ -2302,6 +2322,10 @@ void QOpenGLShaderProgram::setUniformValue(int location, const QMatrix3x2& value
 
     Sets the uniform variable called \a name in the current context
     to a 3x2 matrix \a value.
+
+    \note This function is not aware of non square matrix support,
+    that is, GLSL types like mat3x2, that is present in modern OpenGL
+    versions. Instead, it treats the uniform as an array of vec2.
 
     \sa setAttributeValue()
 */
@@ -2340,6 +2364,10 @@ void QOpenGLShaderProgram::setUniformValue(const char *name, const QMatrix3x3& v
     Sets the uniform variable at \a location in the current context
     to a 3x4 matrix \a value.
 
+    \note This function is not aware of non square matrix support,
+    that is, GLSL types like mat3x4, that is present in modern OpenGL
+    versions. Instead, it treats the uniform as an array of vec4.
+
     \sa setAttributeValue()
 */
 void QOpenGLShaderProgram::setUniformValue(int location, const QMatrix3x4& value)
@@ -2355,6 +2383,10 @@ void QOpenGLShaderProgram::setUniformValue(int location, const QMatrix3x4& value
     Sets the uniform variable called \a name in the current context
     to a 3x4 matrix \a value.
 
+    \note This function is not aware of non square matrix support,
+    that is, GLSL types like mat3x4, that is present in modern OpenGL
+    versions. Instead, it treats the uniform as an array of vec4.
+
     \sa setAttributeValue()
 */
 void QOpenGLShaderProgram::setUniformValue(const char *name, const QMatrix3x4& value)
@@ -2365,6 +2397,10 @@ void QOpenGLShaderProgram::setUniformValue(const char *name, const QMatrix3x4& v
 /*!
     Sets the uniform variable at \a location in the current context
     to a 4x2 matrix \a value.
+
+    \note This function is not aware of non square matrix support,
+    that is, GLSL types like mat4x2, that is present in modern OpenGL
+    versions. Instead, it treats the uniform as an array of vec2.
 
     \sa setAttributeValue()
 */
@@ -2381,6 +2417,10 @@ void QOpenGLShaderProgram::setUniformValue(int location, const QMatrix4x2& value
     Sets the uniform variable called \a name in the current context
     to a 4x2 matrix \a value.
 
+    \note This function is not aware of non square matrix support,
+    that is, GLSL types like mat4x2, that is present in modern OpenGL
+    versions. Instead, it treats the uniform as an array of vec2.
+
     \sa setAttributeValue()
 */
 void QOpenGLShaderProgram::setUniformValue(const char *name, const QMatrix4x2& value)
@@ -2391,6 +2431,10 @@ void QOpenGLShaderProgram::setUniformValue(const char *name, const QMatrix4x2& v
 /*!
     Sets the uniform variable at \a location in the current context
     to a 4x3 matrix \a value.
+
+    \note This function is not aware of non square matrix support,
+    that is, GLSL types like mat4x3, that is present in modern OpenGL
+    versions. Instead, it treats the uniform as an array of vec3.
 
     \sa setAttributeValue()
 */
@@ -2406,6 +2450,10 @@ void QOpenGLShaderProgram::setUniformValue(int location, const QMatrix4x3& value
 
     Sets the uniform variable called \a name in the current context
     to a 4x3 matrix \a value.
+
+    \note This function is not aware of non square matrix support,
+    that is, GLSL types like mat4x3, that is present in modern OpenGL
+    versions. Instead, it treats the uniform as an array of vec3.
 
     \sa setAttributeValue()
 */
@@ -3280,7 +3328,7 @@ bool QOpenGLShader::hasOpenGLShaders(ShaderType type, QOpenGLContext *context)
 #ifndef QT_OPENGL_ES_2
         // Geometry shaders require OpenGL 3.2 or newer
         QSurfaceFormat format = context->format();
-        return (!context->isES())
+        return (!context->isOpenGLES())
             && (format.version() >= qMakePair<int, int>(3, 2));
 #else
         // No geometry shader support in OpenGL ES2
@@ -3288,7 +3336,7 @@ bool QOpenGLShader::hasOpenGLShaders(ShaderType type, QOpenGLContext *context)
 #endif
     } else if (type == TessellationControl || type == TessellationEvaluation) {
 #if !defined(QT_OPENGL_ES_2)
-        return (!context->isES())
+        return (!context->isOpenGLES())
             && (format.version() >= qMakePair<int, int>(4, 0));
 #else
         // No tessellation shader support in OpenGL ES2

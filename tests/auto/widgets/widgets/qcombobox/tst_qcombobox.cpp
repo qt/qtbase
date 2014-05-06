@@ -2064,7 +2064,7 @@ void tst_QComboBox::itemListPosition()
 
     topLevel.move(screen.width() - topLevel.sizeHint().width() - 10, 0); //puts the combo to the top-right corner
 
-    topLevel.show();
+    topLevel.showNormal();
 
     //wait because the window manager can move the window if there is a right panel
     QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
@@ -2232,7 +2232,7 @@ void tst_QComboBox::task190205_setModelAdjustToContents()
     box.move(100, 100);
     box.setSizeAdjustPolicy(QComboBox::AdjustToContents);
     box.addItems(initialContent);
-    box.show();
+    box.showNormal();
 
     //wait needed in order to get the combo initial size
     QTRY_VERIFY(box.isVisible());
@@ -2244,7 +2244,7 @@ void tst_QComboBox::task190205_setModelAdjustToContents()
     correctBox.move(400, 100);
 
     correctBox.addItems(finalContent);
-    correctBox.show();
+    correctBox.showNormal();
 
     QVERIFY(QTest::qWaitForWindowExposed(&box));
     QVERIFY(QTest::qWaitForWindowExposed(&correctBox));
@@ -2266,7 +2266,7 @@ void tst_QComboBox::task248169_popupWithMinimalSize()
 
     comboBox.setGeometry(desktopSize.width() - (desktopSize.width() / 4), (desktopSize.width() / 4), (desktopSize.width() / 2), (desktopSize.width() / 4));
 
-    comboBox.show();
+    comboBox.showNormal();
     QVERIFY(QTest::qWaitForWindowExposed(&comboBox));
     QTRY_VERIFY(comboBox.isVisible());
     comboBox.showPopup();
@@ -2274,7 +2274,7 @@ void tst_QComboBox::task248169_popupWithMinimalSize()
     QTest::qWaitForWindowExposed(comboBox.view());
     QTRY_VERIFY(comboBox.view()->isVisible());
 
-#ifdef QT_BUILD_INTERNAL
+#if defined QT_BUILD_INTERNAL && !defined Q_OS_BLACKBERRY
     QFrame *container = comboBox.findChild<QComboBoxPrivateContainer *>();
     QVERIFY(container);
     QTRY_VERIFY(desktop.screenGeometry(container).contains(container->geometry()));
@@ -2609,7 +2609,7 @@ void tst_QComboBox::keyBoardNavigationWithMouse()
     for (int i = 0; i < 80; i++)
         combo.addItem( QString::number(i));
 
-    combo.show();
+    combo.showNormal();
     centerCursor(&combo); // QTBUG-33973, cursor needs to be within view from start on Mac.
     QApplication::setActiveWindow(&combo);
     QVERIFY(QTest::qWaitForWindowActive(&combo));
@@ -2629,7 +2629,7 @@ void tst_QComboBox::keyBoardNavigationWithMouse()
     QCOMPARE(combo.currentText(), QLatin1String("0"));
 
     // When calling cursor function, Windows CE responds with: This function is not supported on this system.
-#ifndef Q_OS_WINCE
+#if !defined Q_OS_WINCE && !defined Q_OS_QNX
     // Force cursor movement to prevent QCursor::setPos() from returning prematurely on QPA:
     centerCursor(combo.view());
     QTest::qWait(200);

@@ -146,6 +146,7 @@ public:
     }
 
     inline bool isDetached() const { return !d->ref.isShared(); }
+#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
     inline void setSharable(bool sharable)
     {
         if (sharable == d->ref.isSharable())
@@ -155,6 +156,7 @@ public:
         if (d != &QListData::shared_null)
             d->ref.setSharable(sharable);
     }
+#endif
     inline bool isSharedWith(const QList<T> &other) const { return d == other.d; }
 
     inline bool isEmpty() const { return p.isEmpty(); }

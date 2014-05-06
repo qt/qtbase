@@ -88,6 +88,10 @@ private slots:
     void visibility();
     void mask();
     void initialSize();
+    void modalDialog();
+    void modalDialogClosingOneOfTwoModal();
+    void modalWithChildWindow();
+    void modalWindowModallity();
 
     void initTestCase()
     {
@@ -1314,6 +1318,115 @@ void tst_QWindow::initialSize()
     QTRY_COMPARE(w.height(), 42);
 #endif
     }
+}
+
+void tst_QWindow::modalDialog()
+{
+    QWindow normalWindow;
+    normalWindow.resize(400, 400);
+    normalWindow.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&normalWindow));
+
+    QWindow dialog;
+    dialog.resize(200,200);
+    dialog.setModality(Qt::ApplicationModal);
+    dialog.setFlags(Qt::Dialog);
+    dialog.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&dialog));
+
+    normalWindow.requestActivate();
+
+    QGuiApplication::sync();
+    QGuiApplication::processEvents();
+    QTRY_COMPARE(QGuiApplication::focusWindow(), &dialog);
+}
+
+void tst_QWindow::modalDialogClosingOneOfTwoModal()
+{
+    QWindow normalWindow;
+    normalWindow.resize(400, 400);
+    normalWindow.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&normalWindow));
+
+    QWindow first_dialog;
+    first_dialog.resize(200,200);
+    first_dialog.setModality(Qt::ApplicationModal);
+    first_dialog.setFlags(Qt::Dialog);
+    first_dialog.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&first_dialog));
+
+    {
+        QWindow second_dialog;
+        second_dialog.resize(200,200);
+        second_dialog.setModality(Qt::ApplicationModal);
+        second_dialog.setFlags(Qt::Dialog);
+        second_dialog.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&second_dialog));
+
+        QTRY_COMPARE(QGuiApplication::focusWindow(), &second_dialog);
+
+        second_dialog.close();
+    }
+
+    QGuiApplication::sync();
+    QGuiApplication::processEvents();
+    QTRY_COMPARE(QGuiApplication::focusWindow(), &first_dialog);
+}
+
+void tst_QWindow::modalWithChildWindow()
+{
+    QWindow normalWindow;
+    normalWindow.resize(400, 400);
+    normalWindow.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&normalWindow));
+
+    QWindow tlw_dialog;
+    tlw_dialog.resize(400,200);
+    tlw_dialog.setModality(Qt::ApplicationModal);
+    tlw_dialog.setFlags(Qt::Dialog);
+    tlw_dialog.create();
+
+    QWindow sub_window(&tlw_dialog);
+    sub_window.resize(200,300);
+    sub_window.show();
+
+    tlw_dialog.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&tlw_dialog));
+    QVERIFY(QTest::qWaitForWindowExposed(&sub_window));
+
+    QTRY_COMPARE(QGuiApplication::focusWindow(), &tlw_dialog);
+
+    sub_window.requestActivate();
+    QGuiApplication::sync();
+    QGuiApplication::processEvents();
+    QTRY_COMPARE(QGuiApplication::focusWindow(), &sub_window);
+}
+
+void tst_QWindow::modalWindowModallity()
+{
+    QWindow normal_window;
+    normal_window.resize(400, 400);
+    normal_window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&normal_window));
+
+    QWindow parent_to_modal;
+    parent_to_modal.resize(400, 400);
+    parent_to_modal.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&parent_to_modal));
+    QTRY_COMPARE(QGuiApplication::focusWindow(), &parent_to_modal);
+
+    QWindow modal_dialog;
+    modal_dialog.resize(400,200);
+    modal_dialog.setModality(Qt::WindowModal);
+    modal_dialog.setFlags(Qt::Dialog);
+    modal_dialog.setTransientParent(&parent_to_modal);
+    modal_dialog.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&modal_dialog));
+    QTRY_COMPARE(QGuiApplication::focusWindow(), &modal_dialog);
+
+    normal_window.requestActivate();
+    QTRY_COMPARE(QGuiApplication::focusWindow(), &normal_window);
+
 }
 
 #include <tst_qwindow.moc>

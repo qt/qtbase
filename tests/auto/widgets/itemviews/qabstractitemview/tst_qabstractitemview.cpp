@@ -1257,7 +1257,7 @@ void tst_QAbstractItemView::task250754_fontChange()
     tree.setModel(m);
 
     tree.setHeaderHidden(true); // The header is (in certain styles) dpi dependent
-    w.resize(160, 300); // Minimum width for windows with frame on Windows 8
+    w.resize(160, 350); // Minimum width for windows with frame on Windows 8
     centerOnScreen(&w);
     moveCursorAway(&w);
     w.showNormal();

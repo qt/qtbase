@@ -53,11 +53,7 @@ public:
     // test data:
     QTextCodec *codec;
     QString (*from8BitPtr)(const char *, int);
-#ifdef Q_COMPILER_REF_QUALIFIERS
-    QByteArray (QString:: *to8Bit)() const &;
-#else
-    QByteArray (QString:: *to8Bit)() const;
-#endif
+    static QByteArray to8Bit(const QString &);
 
     inline QString from8Bit(const QByteArray &ba)
     { return from8BitPtr(ba.constData(), ba.length()); }
@@ -97,12 +93,19 @@ void tst_Utf8::init()
     if (useLocale) {
         codec = QTextCodec::codecForLocale();
         from8BitPtr = &QString::fromLocal8Bit;
-        to8Bit = &QString::toLocal8Bit;
     } else {
         codec = QTextCodec::codecForMib(106);
         from8BitPtr = &QString::fromUtf8;
-        to8Bit = &QString::toUtf8;
     }
+}
+
+QByteArray tst_Utf8::to8Bit(const QString &s)
+{
+    QFETCH_GLOBAL(bool, useLocale);
+    if (useLocale)
+        return s.toLocal8Bit();
+    else
+        return s.toUtf8();
 }
 
 void tst_Utf8::roundTrip_data()
@@ -114,10 +117,10 @@ void tst_Utf8::roundTrip_data()
     QTest::newRow("nul") << QByteArray("", 1) << QString(QChar(QChar::Null));
 
     static const char ascii[] = "This is a standard US-ASCII message";
-    QTest::newRow("ascii") << QByteArray(ascii) << ascii;
+    QTest::newRow("ascii") << QByteArray(ascii) << QString::fromLatin1(ascii);
 
     static const char ascii2[] = "\1This\2is\3an\4US-ASCII\020 message interspersed with control chars";
-    QTest::newRow("ascii2") << QByteArray(ascii2) << ascii2;
+    QTest::newRow("ascii2") << QByteArray(ascii2) << QString::fromLatin1(ascii2);
 
     static const char utf8_1[] = "\302\240"; // NBSP
     QTest::newRow("utf8_1") << QByteArray(utf8_1) << QString(QChar(QChar::Nbsp));
@@ -161,11 +164,20 @@ void tst_Utf8::roundTrip()
     QFETCH(QByteArray, utf8);
     QFETCH(QString, utf16);
 
-    QCOMPARE((utf16.*to8Bit)(), utf8);
+    QCOMPARE(to8Bit(utf16), utf8);
     QCOMPARE(from8Bit(utf8), utf16);
 
-    QCOMPARE((from8Bit(utf8).*to8Bit)(), utf8);
-    QCOMPARE(from8Bit((utf16.*to8Bit)()), utf16);
+    QCOMPARE(to8Bit(from8Bit(utf8)), utf8);
+    QCOMPARE(from8Bit(to8Bit(utf16)), utf16);
+
+    // repeat with a longer message
+    utf8.prepend("12345678901234");
+    utf16.prepend(QLatin1String("12345678901234"));
+    QCOMPARE(to8Bit(utf16), utf8);
+    QCOMPARE(from8Bit(utf8), utf16);
+
+    QCOMPARE(to8Bit(from8Bit(utf8)), utf8);
+    QCOMPARE(from8Bit(to8Bit(utf16)), utf16);
 }
 
 void tst_Utf8::charByChar_data()

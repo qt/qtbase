@@ -139,10 +139,9 @@ void QFileDevicePrivate::setError(QFileDevice::FileError err, int errNum)
     are returned and on Windows the rights of the current user are
     returned. This behavior might change in a future Qt version.
 
-    Note that Qt does not by default check for permissions on NTFS
-    file systems, as this may decrease the performance of file
-    handling considerably. It is possible to force permission checking
-    on NTFS by including the following code in your source:
+    \note On NTFS file systems, ownership and permissions checking is
+    disabled by default for performance reasons. To enable it,
+    include the following line:
 
     \snippet ntfsp.cpp 0
 

@@ -97,9 +97,9 @@ static QSize determineScreenSize(screen_display_t display, bool primaryScreen) {
         const int envHeight = envPhySizeStrList.size() == 2 ? envPhySizeStrList[1].toInt() : -1;
 
         if (envWidth <= 0 || envHeight <= 0) {
-            qFatal("QQnxScreen: The value of QQNX_PHYSICAL_SCREEN_SIZE must be in the format "
-                   "\"width,height\" in mm, with width, height > 0. "
-                   "Example: QQNX_PHYSICAL_SCREEN_SIZE=150,90");
+            qWarning("QQnxScreen: The value of QQNX_PHYSICAL_SCREEN_SIZE must be in the format "
+                     "\"width,height\" in mm, with width, height > 0. Defaulting to 150x90. "
+                     "Example: QQNX_PHYSICAL_SCREEN_SIZE=150,90");
             return QSize(150, 90);
         }
 
@@ -114,8 +114,8 @@ static QSize determineScreenSize(screen_display_t display, bool primaryScreen) {
     return defSize;
 #else
     if (primaryScreen)
-        qFatal("QQnxScreen: QQNX_PHYSICAL_SCREEN_SIZE variable not set. "
-               "Could not determine physical screen size.");
+        qWarning("QQnxScreen: QQNX_PHYSICAL_SCREEN_SIZE variable not set. "
+                 "Could not determine physical screen size. Defaulting to 150x90.");
     return QSize(150, 90);
 #endif
 }

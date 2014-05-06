@@ -1863,7 +1863,7 @@ void tst_QByteArray::reserve()
     QCOMPARE(qba.capacity(), capacity);
     QCOMPARE(copy.capacity(), capacity);
 
-    copy = qba;
+    qba = copy;
     qba.reserve(capacity * 2);
     QCOMPARE(qba.size(), capacity);
     QCOMPARE(qba.capacity(), capacity * 2);

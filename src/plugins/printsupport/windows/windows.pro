@@ -21,4 +21,4 @@ HEADERS += \
 
 OTHER_FILES += windows.json
 
-LIBS += -lwinspool -lcomdlg32
+LIBS += -lwinspool -lcomdlg32 -lgdi32 -luser32

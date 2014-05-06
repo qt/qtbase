@@ -345,7 +345,7 @@ void renderAScene(int w, int h)
 {
     QOpenGLFunctions *funcs = QOpenGLContext::currentContext()->functions();
 
-    if (QOpenGLContext::currentContext()->isES()) {
+    if (QOpenGLContext::currentContext()->isOpenGLES()) {
         Q_UNUSED(w);
         Q_UNUSED(h);
         QGLShaderProgram program;

@@ -315,19 +315,19 @@ QString QAccessibleComboBox::text(QAccessible::Text t) const
 
 QStringList QAccessibleComboBox::actionNames() const
 {
-    return QStringList(showMenuAction());
+    return QStringList() << showMenuAction() << pressAction();
 }
 
 QString QAccessibleComboBox::localizedActionDescription(const QString &actionName) const
 {
-    if (actionName == showMenuAction())
+    if (actionName == showMenuAction() || actionName == pressAction())
         return QComboBox::tr("Open the combo box selection popup");
     return QString();
 }
 
 void QAccessibleComboBox::doAction(const QString &actionName)
 {
-    if (actionName == showMenuAction()) {
+    if (actionName == showMenuAction() || actionName == pressAction()) {
         if (comboBox()->view()->isVisible()) {
             comboBox()->hidePopup();
         } else {

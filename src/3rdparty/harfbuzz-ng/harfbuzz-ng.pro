@@ -7,6 +7,9 @@ CONFIG += \
     exceptions_off rtti_off
 CONFIG -= qt
 
+contains(QT_CONFIG, debug_and_release):CONFIG += debug_and_release
+contains(QT_CONFIG, build_all):CONFIG += build_all
+
 DESTDIR = $$QT_BUILD_TREE/lib
 
 DEFINES += HAVE_CONFIG_H

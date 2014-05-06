@@ -127,6 +127,8 @@ win32 {
     # keeps the code clean and helps in writing code that is
     # safe across all platforms.
     DEFINES *= _CRT_SECURE_NO_WARNINGS
+
+    DEFINES += _USE_MATH_DEFINES
 }
 
 aix-g++* {
@@ -166,43 +168,29 @@ android: CONFIG += qt_android_deps
 #install directives
 load(qt_installs)
 
-!isEmpty(_QMAKE_SUPER_CACHE_): \
-    rplbase = $$dirname(_QMAKE_SUPER_CACHE_)/[^/][^/]*
-else: \
-    rplbase = $$MODULE_BASE_OUTDIR
-include_replace.match = $$rplbase/include
-include_replace.replace = $$[QT_INSTALL_HEADERS/raw]
-include_replace.CONFIG = path
-lib_replace.match = $$rplbase/lib
-host_build: \
-    lib_replace.replace = $$[QT_HOST_LIBS]
-else: \
-    lib_replace.replace = $$[QT_INSTALL_LIBS/raw]
-lib_replace.CONFIG = path
-QMAKE_PRL_INSTALL_REPLACE += include_replace lib_replace
+load(qt_targets)
+load(qt_common)
 
+# this builds on top of qt_common
 unix|mingw {
-   CONFIG += create_pc
-   QMAKE_PKGCONFIG_LIBDIR = $$lib_replace.replace
-   QMAKE_PKGCONFIG_INCDIR = $$include_replace.replace
-   QMAKE_PKGCONFIG_CFLAGS = -I${includedir}/$$MODULE_INCNAME
-   QMAKE_PKGCONFIG_DESTDIR = pkgconfig
-   QMAKE_PKGCONFIG_INSTALL_REPLACE += include_replace lib_replace
-}
-
-unix {
-   CONFIG += create_libtool explicitlib
-   QMAKE_LIBTOOL_LIBDIR = $$lib_replace.replace
-   QMAKE_LIBTOOL_INSTALL_REPLACE += include_replace lib_replace
-}
-
-unix|mingw {
+    CONFIG += create_pc
+    QMAKE_PKGCONFIG_DESTDIR = pkgconfig
+    QMAKE_PKGCONFIG_LIBDIR = $$qt_libdir
+    QMAKE_PKGCONFIG_INCDIR = $$[QT_INSTALL_HEADERS/raw]
+    QMAKE_PKGCONFIG_CFLAGS = -I${includedir}/$$MODULE_INCNAME
     QMAKE_PKGCONFIG_NAME = $$replace(TARGET, ^Qt, "Qt$$section(VERSION, ., 0, 0) ")
     QMAKE_PKGCONFIG_FILE = $$replace(TARGET, ^Qt, Qt$$section(VERSION, ., 0, 0))
     for(i, MODULE_DEPENDS): \
         QMAKE_PKGCONFIG_REQUIRES += $$replace(QT.$${i}.name, ^Qt, Qt$$eval(QT.$${i}.MAJOR_VERSION))
     isEmpty(QMAKE_PKGCONFIG_DESCRIPTION): \
         QMAKE_PKGCONFIG_DESCRIPTION = $$replace(TARGET, ^Qt, "Qt ") module
+    QMAKE_PKGCONFIG_INSTALL_REPLACE += lib_replace
+
+    unix {
+        CONFIG += create_libtool explicitlib
+        QMAKE_LIBTOOL_LIBDIR = $$qt_libdir
+        QMAKE_LIBTOOL_INSTALL_REPLACE += lib_replace
+    }
 }
 
 contains(QT_PRODUCT, OpenSource.*):DEFINES *= QT_OPENSOURCE
@@ -221,9 +209,3 @@ win32 {
 }
 
 TARGET = $$qtLibraryTarget($$TARGET$$QT_LIBINFIX) #do this towards the end
-
-load(qt_targets)
-load(qt_common)
-
-win32:DEFINES+=_USE_MATH_DEFINES
-

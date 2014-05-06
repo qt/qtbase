@@ -616,7 +616,7 @@ CFG_EGL=auto
 CFG_EGL_X=auto
 CFG_FONTCONFIG=auto
 CFG_FREETYPE=auto
-CFG_HARFBUZZ=no
+CFG_HARFBUZZ=auto
 CFG_SQL_AVAILABLE=
 QT_ALL_BUILD_PARTS=" libs tools examples tests "
 QT_DEFAULT_BUILD_PARTS="libs tools examples"
@@ -781,8 +781,6 @@ QT_LIBS_GLIB=
 
 # default qpa platform
 QT_QPA_DEFAULT_PLATFORM=
-# default print support plugin
-QT_PRINTSUPPORT_DEFAULT_PLUGIN=
 
 # Android vars
 CFG_DEFAULT_ANDROID_NDK_ROOT=$ANDROID_NDK_ROOT
@@ -1806,6 +1804,20 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
+    pulseaudio)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_PULSEAUDIO="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
+    alsa)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_ALSA="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
     gtkstyle)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_QGTKSTYLE="$VAL"
@@ -2369,6 +2381,15 @@ Third Party Libraries:
 
     -no-glib ........... Do not compile Glib support.
  +  -glib .............. Compile Glib support.
+
+    -no-pulseaudio ..... Do not compile PulseAudio support.
+ +  -pulseaudio ........ Compile PulseAudio support.
+
+    -no-alsa ........... Do not compile ALSA support.
+ +  -alsa .............. Compile ALSA support.
+
+    -no-gtkstyle ....... Do not compile GTK theme support.
+ +  -gtkstyle .......... Compile GTK theme support.
 
 Additional options:
 
@@ -3104,7 +3125,7 @@ if [ "$XPLATFORM_IOS" = "yes" ]; then
     CFG_PKGCONFIG="no"
     CFG_NOBUILD_PARTS="$CFG_NOBUILD_PARTS examples"
     CFG_SHARED="no" # iOS builds should be static to be able to submit to the App Store
-    CFG_SKIP_MODULES="$CFG_SKIP_MODULES qtconnectivity qtdoc qtmacextras qtserialport qttools qtwebkit qtwebkit-examples"
+    CFG_SKIP_MODULES="$CFG_SKIP_MODULES qtconnectivity qtdoc qtmacextras qtserialport qtwebkit qtwebkit-examples"
 
     # If the user passes -sdk on the command line we build a SDK-specific Qt build.
     # Otherwise we build a joined simulator and device build, which is the default.
@@ -3179,7 +3200,7 @@ if [ "$CFG_PRECOMPILE" = "auto" ]; then
     fi
 fi
 
-# auto-detect support for separate debug info in objcopy
+# sanity-check for separate debug info
 if [ "$CFG_SEPARATE_DEBUG_INFO" = "yes" ]; then
     if [ "$CFG_SHARED" = "no" ]; then
         echo "ERROR: -separate-debug-info is incompatible with -static"
@@ -3187,13 +3208,6 @@ if [ "$CFG_SEPARATE_DEBUG_INFO" = "yes" ]; then
     fi
     if [ "$CFG_DEBUG" = "no" -a "$CFG_DEBUG_RELEASE" = "no" -a "$CFG_FORCEDEBUGINFO" = "no" ]; then
         echo "ERROR: -separate-debug-info needs -debug, -debug-and-release, or -force-debug-info"
-        exit 1
-    fi
-    TEST_OBJCOPY=`getXQMakeConf QMAKE_OBJCOPY`
-    COMPILER_WITH_FLAGS="$TEST_COMPILER $TEST_COMPILER_CXXFLAGS"
-    if "$unixtests/objcopy.test" "$COMPILER_WITH_FLAGS" "$TEST_OBJCOPY" "$OPT_VERBOSE"; then
-        echo "ERROR: -separate-debug-info was requested but this binutils does not support it."
-        echo "Re-run configure with -v for more information"
         exit 1
     fi
 fi
@@ -3937,6 +3951,15 @@ fi
 # functionality tests
 #-------------------------------------------------------------------------------
 
+# Detect objcopy support
+if [ "$CFG_SEPARATE_DEBUG_INFO" = "yes" ]; then
+    if ! compileTest unix/objcopy "objcopy"; then
+        echo "ERROR: -separate-debug-info was requested but this binutils does not support it."
+        echo "Re-run configure with -v for more information"
+        exit 1
+    fi
+fi
+
 # Detect C++11 support
 if [ "$CFG_CXX11" != "no" ]; then
     # Configure detects compiler features based on cross compiler, so we need
@@ -4618,7 +4641,7 @@ if [ "$CFG_GLIB" = "yes" -a "$CFG_QGTKSTYLE" != "no" ]; then
         QMakeVar set QT_LIBS_QGTK2 "$QT_LIBS_QGTK2"
     else
         if [ "$CFG_QGTKSTYLE" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
-            echo "Gtk theme support cannot be enabled due to functionality tests!"
+            echo "GTK theme support cannot be enabled due to functionality tests!"
             echo " Turn on verbose messaging (-v) to $0 to see the fin  al report."
             echo " If you believe this message is in error you may use the continue"
             echo " switch (-continue) to $0 to continue."
@@ -5197,15 +5220,6 @@ if [ -z "$QT_QPA_DEFAULT_PLATFORM" ]; then
     fi
 fi
 
-# Determine print support plugin belonging to the default QPA platform
-if [ "$QT_QPA_DEFAULT_PLATFORM" = "cocoa" ]; then
-    QT_PRINTSUPPORT_DEFAULT_PLUGIN=cocoaprintersupport
-elif [ "$QT_QPA_DEFAULT_PLATFORM" = "windows" ]; then
-    QT_PRINTSUPPORT_DEFAULT_PLUGIN=windowsprintersupport
-elif [ "$QT_QPA_DEFAULT_PLATFORM" = "xcb" ]; then
-    QT_PRINTSUPPORT_DEFAULT_PLUGIN=cupsprintersupport
-fi
-
 if [ -n "$QMAKE_CFLAGS_XCB" ] || [ -n "$QMAKE_LIBS_XCB" ]; then
     QMakeVar set QMAKE_CFLAGS_XCB "$QMAKE_CFLAGS_XCB"
     QMakeVar set QMAKE_LIBS_XCB "$QMAKE_LIBS_XCB"
@@ -5249,8 +5263,8 @@ if [ "$CFG_FREETYPE" = "auto" ]; then
 fi
 
 # harfbuzz support
-[ "$XPLATFORM_MINGW" = "yes" ] && [ "$CFG_HARFBUZZ" = "auto" ] && CFG_HARFBUZZ=no
 [ "$XPLATFORM_MAC" = "yes" ] && [ "$CFG_HARFBUZZ" = "auto" ] && CFG_HARFBUZZ=yes
+[ "$CFG_HARFBUZZ" = "auto" ] && CFG_HARFBUZZ=no # disable auto-detection on non-Mac for now
 if [ "$CFG_HARFBUZZ" = "auto" ]; then
     if compileTest unix/harfbuzz "HarfBuzz"; then
         CFG_HARFBUZZ=system
@@ -6165,7 +6179,6 @@ EOF
 fi
 
 echo "#define QT_QPA_DEFAULT_PLATFORM_NAME \"$QT_QPA_DEFAULT_PLATFORM\"" >>"$outpath/src/corelib/global/qconfig.h.new"
-echo "#define QT_QPA_DEFAULT_PRINTSUPPORTPLUGIN_NAME \"QT_PRINTSUPPORT_DEFAULT_PLUGIN\"" >>"$outpath/src/corelib/global/qconfig.h.new"
 
 # avoid unecessary rebuilds by copying only if qconfig.h has changed
 if cmp -s "$outpath/src/corelib/global/qconfig.h" "$outpath/src/corelib/global/qconfig.h.new"; then
@@ -6235,7 +6248,6 @@ EOF
 
 if [ "$CFG_SHARED" = "no" ]; then
     echo "QT_DEFAULT_QPA_PLUGIN = q$QT_QPA_DEFAULT_PLATFORM" >> "$QTCONFIG.tmp"
-    echo "QT_DEFAULT_PRINTSUPPORTPLUGIN = $QT_PRINTSUPPORT_DEFAULT_PLUGIN" >> "$QTCONFIG.tmp"
     echo >> "$QTCONFIG.tmp"
 fi
 

@@ -77,6 +77,9 @@ equals(TEMPLATE, app) {
                     args += $$system_quote($$arg)
                 system("cd $$system_quote($$OUT_PWD) && $$QMAKE_QMAKE $$args $$system_quote($$_PRO_FILE_) -spec macx-xcode")
 
+                check.commands = "$(MAKE) -f $(MAKEFILE).ReleaseSimulator xcode_build_check"
+                QMAKE_EXTRA_TARGETS += check
+
             } else {
                 load(resolve_config)
 
@@ -113,6 +116,9 @@ equals(TEMPLATE, app) {
                 QMAKE_EXTRA_TARGETS += xcode_build_dir_distclean
                 distclean.depends = xcode_build_dir_distclean
                 QMAKE_EXTRA_TARGETS += distclean
+
+                xcode_build_check.commands = "$(TESTRUNNER) $$title($$cfg)-$${sdk}/$(TARGET).app $(TESTARGS)"
+                QMAKE_EXTRA_TARGETS += xcode_build_check
             }
 
             CONFIG =

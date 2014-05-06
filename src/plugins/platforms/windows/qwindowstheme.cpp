@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -230,12 +230,16 @@ static inline QPalette toolTipPalette(const QPalette &systemPalette)
     result.setColor(QPalette::All, QPalette::Text, tipTextColor);
     result.setColor(QPalette::All, QPalette::WindowText, tipTextColor);
     result.setColor(QPalette::All, QPalette::ButtonText, tipTextColor);
+    result.setColor(QPalette::All, QPalette::ToolTipBase, tipBgColor);
+    result.setColor(QPalette::All, QPalette::ToolTipText, tipTextColor);
     const QColor disabled =
         mixColors(result.foreground().color(), result.button().color());
     result.setColor(QPalette::Disabled, QPalette::WindowText, disabled);
     result.setColor(QPalette::Disabled, QPalette::Text, disabled);
+    result.setColor(QPalette::Disabled, QPalette::ToolTipText, disabled);
     result.setColor(QPalette::Disabled, QPalette::Base, Qt::white);
     result.setColor(QPalette::Disabled, QPalette::BrightText, Qt::white);
+    result.setColor(QPalette::Disabled, QPalette::ToolTipBase, Qt::white);
     return result;
 }
 

@@ -223,7 +223,7 @@ QGLFunctions::QGLFunctions(const QGLContext *context)
 static int qt_gl_resolve_features()
 {
     QOpenGLContext *ctx = QOpenGLContext::currentContext();
-    if (ctx->isES()) {
+    if (ctx->isOpenGLES()) {
         // OpenGL ES 2
         int features = QGLFunctions::Multitexture |
             QGLFunctions::Shaders |

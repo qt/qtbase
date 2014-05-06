@@ -221,7 +221,7 @@ void QOpenGL2PaintEngineExPrivate::updateBrushTexture()
             currentBrushPixmap = currentBrushPixmap.scaled(max_texture_size, max_texture_size, Qt::KeepAspectRatio);
 
         GLuint wrapMode = GL_REPEAT;
-        if (QOpenGLContext::currentContext()->isES()) {
+        if (QOpenGLContext::currentContext()->isOpenGLES()) {
             // OpenGL ES does not support GL_REPEAT wrap modes for NPOT textures. So instead,
             // we emulate GL_REPEAT by only taking the fractional part of the texture coords
             // in the qopenglslTextureBrushSrcFragmentShader program.
@@ -598,7 +598,7 @@ void QOpenGL2PaintEngineExPrivate::resetGLState()
     setVertexAttribArrayEnabled(QT_TEXTURE_COORDS_ATTR, false);
     setVertexAttribArrayEnabled(QT_VERTEX_COORDS_ATTR, false);
     setVertexAttribArrayEnabled(QT_OPACITY_ATTR, false);
-    if (!QOpenGLContext::currentContext()->isES()) {
+    if (!QOpenGLContext::currentContext()->isOpenGLES()) {
         // gl_Color, corresponding to vertex attribute 3, may have been changed
         float color[] = { 1.0f, 1.0f, 1.0f, 1.0f };
         funcs.glVertexAttrib4fv(3, color);
@@ -1333,7 +1333,7 @@ void QOpenGL2PaintEngineEx::renderHintsChanged()
     state()->renderHintsChanged = true;
 
 #ifndef QT_OPENGL_ES_2
-    if (!QOpenGLContext::currentContext()->isES()) {
+    if (!QOpenGLContext::currentContext()->isOpenGLES()) {
         Q_D(QOpenGL2PaintEngineEx);
         if ((state()->renderHints & QPainter::Antialiasing)
             || (state()->renderHints & QPainter::HighQualityAntialiasing))
@@ -2011,7 +2011,7 @@ bool QOpenGL2PaintEngineEx::begin(QPaintDevice *pdev)
     d->glyphCacheFormat = QFontEngine::Format_A8;
 
 #ifndef QT_OPENGL_ES_2
-    if (!QOpenGLContext::currentContext()->isES()) {
+    if (!QOpenGLContext::currentContext()->isOpenGLES()) {
         d->funcs.glDisable(GL_MULTISAMPLE);
         d->glyphCacheFormat = QFontEngine::Format_A32;
         d->multisamplingAlwaysEnabled = false;

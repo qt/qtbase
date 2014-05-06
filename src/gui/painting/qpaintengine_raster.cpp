@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -234,21 +234,6 @@ static const QRectF boundingRect(const QPointF *points, int pointCount)
     return QRectF(QPointF(minx, miny), QPointF(maxx, maxy));
 }
 #endif
-
-template <typename T> static inline bool isRect(const T *pts, int elementCount) {
-    return (elementCount == 5 // 5-point polygon, check for closed rect
-            && pts[0] == pts[8] && pts[1] == pts[9] // last point == first point
-            && pts[0] == pts[6] && pts[2] == pts[4] // x values equal
-            && pts[1] == pts[3] && pts[5] == pts[7] // y values equal...
-            && pts[0] < pts[4] && pts[1] < pts[5]
-            ) ||
-           (elementCount == 4 // 4-point polygon, check for unclosed rect
-            && pts[0] == pts[6] && pts[2] == pts[4] // x values equal
-            && pts[1] == pts[3] && pts[5] == pts[7] // y values equal...
-            && pts[0] < pts[4] && pts[1] < pts[5]
-            );
-}
-
 
 static void qt_ft_outline_move_to(qfixed x, qfixed y, void *data)
 {
@@ -1193,22 +1178,14 @@ void QRasterPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
     Q_D(QRasterPaintEngine);
     QRasterPaintEngineState *s = state();
 
-    const qreal *points = path.points();
-    const QPainterPath::ElementType *types = path.elements();
-
     // There are some cases that are not supported by clip(QRect)
     if (op != Qt::IntersectClip || !s->clip || s->clip->hasRectClip || s->clip->hasRegionClip) {
         if (s->matrix.type() <= QTransform::TxScale
-            && ((path.shape() == QVectorPath::RectangleHint)
-                || (isRect(points, path.elementCount())
-                    && (!types || (types[0] == QPainterPath::MoveToElement
-                                   && types[1] == QPainterPath::LineToElement
-                                   && types[2] == QPainterPath::LineToElement
-                                   && types[3] == QPainterPath::LineToElement))))) {
+            && path.isRect()) {
 #ifdef QT_DEBUG_DRAW
             qDebug() << " --- optimizing vector clip to rect clip...";
 #endif
-
+            const qreal *points = path.points();
             QRectF r(points[0], points[1], points[4]-points[0], points[5]-points[1]);
             if (setClipRectInDeviceCoords(s->matrix.mapRect(r).toRect(), op))
                 return;
@@ -1939,7 +1916,7 @@ void QRasterPaintEngine::drawPolygon(const QPointF *points, int pointCount, Poly
 #endif
     Q_ASSERT(pointCount >= 2);
 
-    if (mode != PolylineMode && isRect((qreal *) points, pointCount)) {
+    if (mode != PolylineMode && QVectorPath::isRect((qreal *) points, pointCount)) {
         QRectF r(points[0], points[2]);
         drawRects(&r, 1);
         return;
@@ -1980,7 +1957,7 @@ void QRasterPaintEngine::drawPolygon(const QPoint *points, int pointCount, Polyg
         qDebug() << "   - " << points[i];
 #endif
     Q_ASSERT(pointCount >= 2);
-    if (mode != PolylineMode && isRect((int *) points, pointCount)) {
+    if (mode != PolylineMode && QVectorPath::isRect((int *) points, pointCount)) {
         QRect r(points[0].x(),
                 points[0].y(),
                 points[2].x() - points[0].x(),

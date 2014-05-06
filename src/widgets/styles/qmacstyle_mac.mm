@@ -1326,12 +1326,30 @@ void QMacStylePrivate::initComboboxBdi(const QStyleOptionComboBox *combo, HIThem
         // an extra check here before using the mini and small buttons.
         int h = combo->rect.size().height();
         if (combo->editable){
-            if (h < 21)
-                bdi->kind = kThemeComboBoxMini;
-            else if (h < 26)
-                bdi->kind = kThemeComboBoxSmall;
-            else
-                bdi->kind = kThemeComboBox;
+            if (qobject_cast<const QDateTimeEdit *>(widget)) {
+                // Except when, you know, we get a QDateTimeEdit with calendarPopup
+                // enabled. And then things get weird, basically because it's a
+                // transvestite spinbox with editable combobox tendencies. Meaning
+                // that it wants to look a combobox, except that it isn't one, so it
+                // doesn't get all those extra free margins around. (Don't know whose
+                // idea those margins were, but now it looks like we're stuck with
+                // them forever). So anyway, the height threshold should be smaller
+                // in this case, or the style gets confused when it needs to render
+                // or return any subcontrol size of the poor thing.
+                if (h < 9)
+                    bdi->kind = kThemeComboBoxMini;
+                else if (h < 22)
+                    bdi->kind = kThemeComboBoxSmall;
+                else
+                    bdi->kind = kThemeComboBox;
+            } else {
+                if (h < 21)
+                    bdi->kind = kThemeComboBoxMini;
+                else if (h < 26)
+                    bdi->kind = kThemeComboBoxSmall;
+                else
+                    bdi->kind = kThemeComboBox;
+            }
         } else {
             // Even if we specify that we want the kThemePopupButton, Carbon
             // will use the kThemePopupButtonSmall if the size matches. So we

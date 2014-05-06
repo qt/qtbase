@@ -176,6 +176,10 @@ private:
     void show();
     void hide();
 
+    bool relayFocusToModalWindow() const;
+    void doFocusIn();
+    void doFocusOut();
+
     QXcbScreen *m_screen;
 
     xcb_window_t m_window;

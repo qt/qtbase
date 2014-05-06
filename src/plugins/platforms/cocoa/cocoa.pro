@@ -2,6 +2,7 @@ TARGET = qcocoa
 
 PLUGIN_TYPE = platforms
 PLUGIN_CLASS_NAME = QCocoaIntegrationPlugin
+!equals(TARGET, $$QT_DEFAULT_QPA_PLUGIN): PLUGIN_EXTENDS = -
 load(qt_plugin)
 
 OBJECTIVE_SOURCES += main.mm \

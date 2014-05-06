@@ -574,12 +574,32 @@ bool QGLXContext::m_supportsThreading = true;
 // binary search.
 static const char *qglx_threadedgl_blacklist_renderer[] = {
     "Chromium",                             // QTBUG-32225 (initialization fails)
-    "Mesa DRI Intel(R) Sandybridge Mobile", // QTBUG-34492 (flickering in fullscreen)
     0
 };
 
+// This disables threaded rendering on anything using mesa, e.g.
+// - nvidia/nouveau
+// - amd/gallium
+// - intel
+// - some software opengl implementations
+//
+// The client glx vendor string is used to identify those setups as that seems to show the least
+// variance between the bad configurations. It's always "Mesa Project and SGI". There are some
+// configurations which don't use mesa and which can do threaded rendering (amd and nvidia chips
+// with their own proprietary drivers).
+//
+// This, of course, is very broad and disables threaded rendering on a lot of devices which would
+// be able to use it. However, the bugs listed below don't follow any easily recognizable pattern
+// and we should rather be safe.
+//
+// http://cgit.freedesktop.org/xcb/libxcb/commit/?id=be0fe56c3bcad5124dcc6c47a2fad01acd16f71a will
+// fix some of the issues. Basically, the proprietary drivers seem to have a way of working around
+// a fundamental flaw with multithreaded access to xcb, but mesa doesn't. The blacklist should be
+// reevaluated once that patch is released in some version of xcb.
 static const char *qglx_threadedgl_blacklist_vendor[] = {
-    "nouveau",                             // QTCREATORBUG-10875 (crash in creator)
+    "Mesa Project and SGI",                // QTCREATORBUG-10875 (crash in creator)
+                                           // QTBUG-34492 (flickering in fullscreen)
+                                           // QTBUG-38221
     0
 };
 
@@ -627,9 +647,9 @@ void QGLXContext::queryDummyContext()
         }
     }
 
-    if (const char *vendor = (const char *) glGetString(GL_VENDOR)) {
+    if (glxvendor) {
         for (int i = 0; qglx_threadedgl_blacklist_vendor[i]; ++i) {
-            if (strstr(vendor, qglx_threadedgl_blacklist_vendor[i]) != 0) {
+            if (strstr(glxvendor, qglx_threadedgl_blacklist_vendor[i]) != 0) {
                 m_supportsThreading = false;
                 break;
             }

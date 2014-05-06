@@ -352,8 +352,10 @@ void QHttpThreadDelegate::startRequest()
 
         connect(httpReply, SIGNAL(authenticationRequired(QHttpNetworkRequest,QAuthenticator*)),
                 this, SLOT(synchronousAuthenticationRequiredSlot(QHttpNetworkRequest,QAuthenticator*)));
+#ifndef QT_NO_NETWORKPROXY
         connect(httpReply, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
                 this, SLOT(synchronousProxyAuthenticationRequiredSlot(QNetworkProxy,QAuthenticator*)));
+#endif
 
         // Don't care about ignored SSL errors for now in the synchronous HTTP case.
     } else if (!synchronous) {
@@ -373,8 +375,10 @@ void QHttpThreadDelegate::startRequest()
         // Connect the reply signals that we can directly forward
         connect(httpReply, SIGNAL(authenticationRequired(QHttpNetworkRequest,QAuthenticator*)),
                 this, SIGNAL(authenticationRequired(QHttpNetworkRequest,QAuthenticator*)));
+#ifndef QT_NO_NETWORKPROXY
         connect(httpReply, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
                 this, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
+#endif
     }
 
     connect(httpReply, SIGNAL(cacheCredentials(QHttpNetworkRequest,QAuthenticator*)),
@@ -706,9 +710,11 @@ void  QHttpThreadDelegate::synchronousProxyAuthenticationRequiredSlot(const QNet
         a->setPassword(credential.password);
     }
 
+#ifndef QT_NO_NETWORKPROXY
     // Disconnect this connection now since we only want to ask the authentication cache once.
     QObject::disconnect(httpReply, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
         this, SLOT(synchronousProxyAuthenticationRequiredSlot(QNetworkProxy,QAuthenticator*)));
+#endif
 }
 
 #endif

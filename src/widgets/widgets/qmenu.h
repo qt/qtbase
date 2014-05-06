@@ -195,6 +195,7 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_actionTriggered())
     Q_PRIVATE_SLOT(d_func(), void _q_actionHovered())
     Q_PRIVATE_SLOT(d_func(), void _q_overrideMenuActionDestroyed())
+    Q_PRIVATE_SLOT(d_func(), void _q_platformMenuAboutToShow())
 
 protected:
     QMenu(QMenuPrivate &dd, QWidget* parent = 0);

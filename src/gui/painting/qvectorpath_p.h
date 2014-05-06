@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -165,6 +165,32 @@ public:
             e = e->next;
         }
         return 0;
+    }
+
+    template <typename T> static inline bool isRect(const T *pts, int elementCount) {
+        return (elementCount == 5 // 5-point polygon, check for closed rect
+                && pts[0] == pts[8] && pts[1] == pts[9] // last point == first point
+                && pts[0] == pts[6] && pts[2] == pts[4] // x values equal
+                && pts[1] == pts[3] && pts[5] == pts[7] // y values equal...
+                && pts[0] < pts[4] && pts[1] < pts[5]
+                ) ||
+               (elementCount == 4 // 4-point polygon, check for unclosed rect
+                && pts[0] == pts[6] && pts[2] == pts[4] // x values equal
+                && pts[1] == pts[3] && pts[5] == pts[7] // y values equal...
+                && pts[0] < pts[4] && pts[1] < pts[5]
+                );
+    }
+
+    inline bool isRect() const
+    {
+        const QPainterPath::ElementType * const types = elements();
+
+        return (shape() == QVectorPath::RectangleHint)
+                || (isRect(points(), elementCount())
+                    && (!types || (types[0] == QPainterPath::MoveToElement
+                                   && types[1] == QPainterPath::LineToElement
+                                   && types[2] == QPainterPath::LineToElement
+                                   && types[3] == QPainterPath::LineToElement)));
     }
 
 

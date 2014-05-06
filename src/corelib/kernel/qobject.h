@@ -549,7 +549,7 @@ template <class T> inline const char * qobject_interface_iid()
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QObject *);
 #endif
 
-class Q_CORE_EXPORT QSignalBlocker
+class QSignalBlocker
 {
 public:
     inline explicit QSignalBlocker(QObject *o);

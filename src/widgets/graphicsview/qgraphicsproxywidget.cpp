@@ -379,6 +379,10 @@ QWidget *QGraphicsProxyWidgetPrivate::findFocusChild(QWidget *child, bool next) 
 void QGraphicsProxyWidgetPrivate::_q_removeWidgetSlot()
 {
     Q_Q(QGraphicsProxyWidget);
+    if (!widget.isNull()) {
+        if (QWExtra *extra = widget->d_func()->extra)
+            extra->proxyWidget = 0;
+    }
     widget = 0;
     delete q;
 }

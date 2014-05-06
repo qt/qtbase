@@ -315,12 +315,15 @@
     \row \li CPU tick counter
          \li -tickcounter
          \li Windows, Mac OS X, Linux, many UNIX-like systems.
-    \row \li Valgrind Callgrind
-         \li -callgrind
-         \li Linux (if installed)
     \row \li Event Counter
          \li -eventcounter
          \li All platforms
+    \row \li Valgrind Callgrind
+         \li -callgrind
+         \li Linux (if installed)
+    \row \li Linux Perf
+         \li -perf
+         \li Linux
     \endtable
 
     In short, walltime is always available but requires many repetitions to
@@ -334,6 +337,16 @@
     Event counting is available on all platforms and it provides the number of events
     that were received by the event loop before they are sent to their corresponding
     targets (this might include non-Qt events).
+
+    The Linux Performance Monitoring solution is available only on Linux and
+    provides many different counters, which can be selected by passing an
+    additional option \c {-perfcounter countername}, such as \c {-perfcounter
+    cache-misses}, \c {-perfcounter branch-misses}, or \c {-perfcounter
+    l1d-load-misses}. The default counter is \c {cpu-cycles}. The full list of
+    counters can be obtained by running any benchmark executable with the
+    option \c -perfcounterlist.
+
+    Note that using the performance counter may require enabling access to non-privileged applications.
 
     \note Depending on the device configuration, tick counters on the
      Windows CE platform may not be as fine-grained, compared to other platforms.

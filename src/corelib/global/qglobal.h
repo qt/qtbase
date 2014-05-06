@@ -58,7 +58,10 @@
 #if !defined(QT_BUILD_QMAKE) && !defined(QT_BUILD_CONFIGURE)
 #include <QtCore/qconfig.h>
 #include <QtCore/qfeatures.h>
+#endif
 #define QT_SUPPORTS(FEATURE) (!defined(QT_NO_##FEATURE))
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+#  define QT_NO_UNSHARABLE_CONTAINERS
 #endif
 
 /* These two macros makes it possible to turn the builtin line expander into a

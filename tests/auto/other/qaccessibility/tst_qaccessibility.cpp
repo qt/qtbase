@@ -3283,7 +3283,7 @@ void tst_QAccessibility::comboBoxTest()
 
     QVERIFY(!combo.view()->isVisible());
     QVERIFY(iface->actionInterface());
-    QCOMPARE(iface->actionInterface()->actionNames(), QStringList() << QAccessibleActionInterface::showMenuAction());
+    QCOMPARE(iface->actionInterface()->actionNames(), QStringList() << QAccessibleActionInterface::showMenuAction() << QAccessibleActionInterface::pressAction());
     iface->actionInterface()->doAction(QAccessibleActionInterface::showMenuAction());
     QTRY_VERIFY(combo.view()->isVisible());
 

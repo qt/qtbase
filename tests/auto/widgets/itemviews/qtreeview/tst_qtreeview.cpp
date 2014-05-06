@@ -2488,7 +2488,7 @@ void tst_QTreeView::extendedSelection_data()
     QTest::addColumn<int>("selectedCount");
 
     QTest::newRow("select") << QPoint(10, 10) << 2;
-    QTest::newRow("unselect") << QPoint(10, 150) << 0;
+    QTest::newRow("unselect") << QPoint(10, 300) << 0;
 }
 
 void tst_QTreeView::extendedSelection()
@@ -2499,7 +2499,7 @@ void tst_QTreeView::extendedSelection()
     QStandardItemModel model(5, 2);
     QWidget topLevel;
     QTreeView view(&topLevel);
-    view.resize(qMax(mousePressPos.x() * 2, 200), qMax(mousePressPos.y() * 2, 200));
+    view.resize(qMax(mousePressPos.x() * 2, 300), qMax(mousePressPos.y() * 2, 350));
     view.setModel(&model);
     view.setSelectionMode(QAbstractItemView::ExtendedSelection);
     topLevel.show();

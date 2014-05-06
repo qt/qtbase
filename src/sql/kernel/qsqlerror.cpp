@@ -107,7 +107,8 @@ QSqlError::QSqlError(const QString& driverText, const QString& databaseText, Err
     d->driverError = driverText;
     d->databaseError = databaseText;
     d->errorType = type;
-    d->errorCode = QString::number(number);
+    if (number != -1)
+        d->errorCode = QString::number(number);
 }
 #endif
 
@@ -287,7 +288,7 @@ void QSqlError::setType(ErrorType type)
 #if QT_DEPRECATED_SINCE(5, 3)
 int QSqlError::number() const
 {
-    return d->errorCode.toInt();
+    return d->errorCode.isEmpty() ? -1 : d->errorCode.toInt();
 }
 #endif
 

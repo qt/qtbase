@@ -512,9 +512,9 @@ void QToolTip::showText(const QPoint &pos, const QString &text, QWidget *w, cons
         else if (QApplication::isEffectEnabled(Qt::UI_AnimateTooltip))
             qScrollEffect(QTipLabel::instance);
         else
-            QTipLabel::instance->show();
+            QTipLabel::instance->showNormal();
 #else
-        QTipLabel::instance->show();
+        QTipLabel::instance->showNormal();
 #endif
     }
 }
