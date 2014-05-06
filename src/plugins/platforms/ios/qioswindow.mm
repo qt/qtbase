@@ -292,19 +292,33 @@
 
 - (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    if (!touches && m_activeTouches.isEmpty())
+    if (m_activeTouches.isEmpty())
         return;
 
-    if (!touches) {
-        m_activeTouches.clear();
-    } else {
-        for (UITouch *touch in touches)
-            m_activeTouches.remove(touch);
+    // When four-finger swiping, we get a touchesCancelled callback
+    // which includes all four touch points. The swipe gesture is
+    // then active until all four touches have been released, and
+    // we start getting touchesBegan events again.
 
-        Q_ASSERT_X(m_activeTouches.isEmpty(), Q_FUNC_INFO,
-            "Subset of active touches cancelled by UIKit");
-    }
+    // When five-finger pinching, we also get a touchesCancelled
+    // callback with all five touch points, but the pinch gesture
+    // ends when the second to last finger is released from the
+    // screen. The last finger will not emit any more touch
+    // events, _but_, will contribute to starting another pinch
+    // gesture. That second pinch gesture will _not_ trigger a
+    // touchesCancelled event when starting, but as each finger
+    // is released, and we may get touchesMoved events for the
+    // remaining fingers. [event allTouches] also contains one
+    // less touch point than it should, so this behavior is
+    // likely a bug in the iOS system gesture recognizer, but we
+    // have to take it into account when maintaining the Qt state.
+    // We do this by assuming that there are no cases where a
+    // sub-set of the active touch events are intentionally cancelled.
 
+    if (touches && (static_cast<NSInteger>([touches count]) != m_activeTouches.count()))
+        qWarning("Subset of active touches cancelled by UIKit");
+
+    m_activeTouches.clear();
     m_nextTouchId = 0;
 
     NSTimeInterval timestamp = event ? event.timestamp : [[NSProcessInfo processInfo] systemUptime];
