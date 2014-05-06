@@ -2404,6 +2404,13 @@ Qt::LayoutDirection QLocale::textDirection() const
   \since 4.8
 
   Returns an uppercase copy of \a str.
+
+  If Qt Core is using the ICU libraries, they will be used to perform
+  the transformation according to the rules of the current locale.
+  Otherwise the conversion may be done in a platform-dependent manner,
+  with QString::toUpper() as a generic fallback.
+
+  \sa QString::toUpper()
 */
 QString QLocale::toUpper(const QString &str) const
 {
@@ -2421,6 +2428,13 @@ QString QLocale::toUpper(const QString &str) const
   \since 4.8
 
   Returns a lowercase copy of \a str.
+
+  If Qt Core is using the ICU libraries, they will be used to perform
+  the transformation according to the rules of the current locale.
+  Otherwise the conversion may be done in a platform-dependent manner,
+  with QString::toLower() as a generic fallback.
+
+  \sa QString::toLower()
 */
 QString QLocale::toLower(const QString &str) const
 {
