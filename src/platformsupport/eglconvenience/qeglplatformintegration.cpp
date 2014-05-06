@@ -190,7 +190,8 @@ enum ResourceType {
     EglDisplay,
     EglWindow,
     EglContext,
-    NativeDisplay
+    NativeDisplay,
+    Display
 };
 
 static int resourceType(const QByteArray &key)
@@ -199,7 +200,8 @@ static int resourceType(const QByteArray &key)
         QByteArrayLiteral("egldisplay"),
         QByteArrayLiteral("eglwindow"),
         QByteArrayLiteral("eglcontext"),
-        QByteArrayLiteral("nativedisplay")
+        QByteArrayLiteral("nativedisplay"),
+        QByteArrayLiteral("display")
     };
     const QByteArray *end = names + sizeof(names) / sizeof(names[0]);
     const QByteArray *result = std::find(names, end, key);
@@ -217,6 +219,23 @@ void *QEGLPlatformIntegration::nativeResourceForIntegration(const QByteArray &re
         result = m_screen->display();
         break;
     case NativeDisplay:
+        result = reinterpret_cast<void*>(nativeDisplay());
+        break;
+    default:
+        break;
+    }
+
+    return result;
+}
+
+void *QEGLPlatformIntegration::nativeResourceForScreen(const QByteArray &resource, QScreen *)
+{
+    void *result = 0;
+
+    switch (resourceType(resource)) {
+    case Display:
+        // Play nice when using the x11 hooks: Be compatible with xcb that allows querying
+        // the X Display pointer, which is nothing but our native display.
         result = reinterpret_cast<void*>(nativeDisplay());
         break;
     default:
