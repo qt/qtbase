@@ -1351,10 +1351,26 @@ void tst_QStyleSheetStyle::emptyStyleSheet()
     QCOMPARE(img1,img2);
 }
 
+class ApplicationStyleSetter
+{
+public:
+    explicit inline ApplicationStyleSetter(QStyle *s) : m_oldStyleName(QApplication::style()->objectName())
+     { QApplication::setStyle(s); }
+    inline ~ApplicationStyleSetter()
+     { QApplication::setStyle(QStyleFactory::create(m_oldStyleName)); }
+
+private:
+    const QString m_oldStyleName;
+};
+
 void tst_QStyleSheetStyle::toolTip()
 {
     qApp->setStyleSheet(QString());
     QWidget w;
+    // Use "Fusion" to prevent the Vista style from clobbering the tooltip palette in polish().
+    QStyle *fusionStyle = QStyleFactory::create(QLatin1String("Fusion"));
+    QVERIFY(fusionStyle);
+    ApplicationStyleSetter as(fusionStyle);
     QHBoxLayout layout(&w);
     w.setLayout(&layout);
 
@@ -1387,7 +1403,7 @@ void tst_QStyleSheetStyle::toolTip()
     qApp->setActiveWindow(&w);
     QVERIFY(QTest::qWaitForWindowActive(&w));
 
-    QColor normalToolTip = qApp->palette().toolTipBase().color();
+    const QColor normalToolTip = QToolTip::palette().color(QPalette::Inactive, QPalette::ToolTipBase);
     QList<QWidget *> widgets;
     QList<QColor> colors;
 
