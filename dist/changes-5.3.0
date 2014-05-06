@@ -309,18 +309,28 @@ QtPrintSupport
 QtSql
 -----
 
- - QSqlQuery::isNull(field) now correctly returns true for "no such field".
- - QSqlQuery::isNull(fieldname) is a new overload.
- - [QTBUG-12186] Fixed the order of values with positional binding in a
-   QSqlQuery
+ - QSqlError:
+   * Now handles alphanumeric error codes. Used by QPSQL.  Old numeric
+     code is deprecated.
+
+ - QSqlQuery:
+   * isNull(field) now correctly returns true for "no such field".
+   * isNull(fieldname) is a new overload.
+   * [QTBUG-12186] Fixed order of values with positional binding.
+
+ - QSqlTableModel:
+   * [QTBUG-38509] Fix failure to refresh in selectRow()
+
+ - QIBASE:
+   * [QTBUG-37508] Fix QByteArray memory corruption in QIBaseDriver::open().
+   * Support for prepared queries in numRowsAffected().
+
+ - QODBC:
+   * [QTBUG-37831] Fix access of tmpStorage in QODBCResult::exec().
 
  - QSQLITE:
    * Creating temporary databases is now possible
    * Empty database name now opens in-memory database.
-
- - QSqlError
-   * Now handles alphanumeric error codes. Used by QPSQL.  Old numeric
-     code is deprecated.
 
 QtTest
 ------
