@@ -125,11 +125,9 @@ QSharedMemoryPrivate::makePlatformSafeKey(const QString &key,
   or writing to the shared memory, and remember to release the lock
   with unlock() after you are done.
 
-  Unlike QtSharedMemory, QSharedMemory automatically destroys the
-  shared memory segment when the last instance of QSharedMemory is
-  detached from the segment, and no references to the segment
-  remain. Do not mix using QtSharedMemory and QSharedMemory. Port
-  everything to QSharedMemory.
+  QSharedMemory automatically destroys the shared memory segment when
+  the last instance of QSharedMemory is detached from the segment, and
+  no references to the segment remain.
 
   \warning QSharedMemory changes the key in a Qt-specific way, unless otherwise
   specified. Interoperation with non-Qt applications is achieved by first creating
