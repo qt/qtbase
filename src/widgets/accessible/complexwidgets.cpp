@@ -114,7 +114,17 @@ public:
     int childCount() const { return 0; }
     int indexOfChild(const QAccessibleInterface *) const  { return -1; }
 
-    QString text(QAccessible::Text) const { return qt_accStripAmp(m_parent->tabText(m_index)); }
+    QString text(QAccessible::Text t) const
+    {
+        if (t == QAccessible::Name)
+            return qt_accStripAmp(m_parent->tabText(m_index));
+        else if (t == QAccessible::Description)
+            return m_parent->tabToolTip(m_index);
+        else if (t == QAccessible::Help)
+            return m_parent->tabWhatsThis(m_index);
+        return QString();
+    }
+
     void setText(QAccessible::Text, const QString &) {}
 
     QAccessibleInterface *parent() const {

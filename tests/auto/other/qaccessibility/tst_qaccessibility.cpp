@@ -1189,8 +1189,11 @@ void tst_QAccessibility::tabTest()
     QVERIFY(leftButton->state().invisible);
 
     const int lots = 5;
-    for (int i = 0; i < lots; ++i)
+    for (int i = 0; i < lots; ++i) {
         tabBar->addTab("Foo");
+        tabBar->setTabToolTip(i, QLatin1String("Cool tool tip"));
+        tabBar->setTabWhatsThis(i, QLatin1String("I don't know"));
+    }
 
     QAccessibleInterface *child1 = interface->child(0);
     QAccessibleInterface *child2 = interface->child(1);
@@ -1198,6 +1201,10 @@ void tst_QAccessibility::tabTest()
     QCOMPARE(child1->role(), QAccessible::PageTab);
     QVERIFY(child2);
     QCOMPARE(child2->role(), QAccessible::PageTab);
+
+    QCOMPARE(child1->text(QAccessible::Name), QLatin1String("Foo"));
+    QCOMPARE(child1->text(QAccessible::Description), QLatin1String("Cool tool tip"));
+    QCOMPARE(child1->text(QAccessible::Help), QLatin1String("I don't know"));
 
     QVERIFY((child1->state().invisible) == false);
     tabBar->hide();
