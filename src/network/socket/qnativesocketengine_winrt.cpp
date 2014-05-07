@@ -246,8 +246,11 @@ bool QNativeSocketEngine::initialize(qintptr socketDescriptor, QAbstractSocket::
     d->tcp = handler->pendingTcpSockets.take(socketDescriptor);
     d->socketType = QAbstractSocket::TcpSocket;
 
-    if (!d->tcp || !d->fetchConnectionParameters())
+    if (!d->tcp || !d->fetchConnectionParameters()) {
+        d->setError(QAbstractSocket::UnsupportedSocketOperationError,
+            d->InvalidSocketErrorString);
         return false;
+    }
 
     d->socketState = socketState;
     return true;
