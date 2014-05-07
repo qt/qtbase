@@ -184,6 +184,8 @@ QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &specification,
 
     QString dev;
     int rotationAngle = 0;
+    bool invertx = false;
+    bool inverty = false;
     for (int i = 0; i < args.count(); ++i) {
         if (args.at(i).startsWith(QLatin1String("/dev/")) && dev.isEmpty()) {
             dev = args.at(i);
@@ -201,6 +203,10 @@ QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &specification,
                     break;
                 }
             }
+        } else if (args.at(i) == QLatin1String("invertx")) {
+            invertx = true;
+        } else if (args.at(i) == QLatin1String("inverty")) {
+            inverty = true;
         }
     }
 
@@ -325,6 +331,12 @@ QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &specification,
 
     if (rotationAngle)
         d->m_rotate = QTransform::fromTranslate(0.5, 0.5).rotate(rotationAngle).translate(-0.5, -0.5);
+
+    if (invertx)
+        d->m_rotate *= QTransform::fromTranslate(0.5, 0.5).scale(-1.0, 1.0).translate(-0.5, -0.5);
+
+    if (inverty)
+        d->m_rotate *= QTransform::fromTranslate(0.5, 0.5).scale(1.0, -1.0).translate(-0.5, -0.5);
 
     d->registerDevice();
 }
