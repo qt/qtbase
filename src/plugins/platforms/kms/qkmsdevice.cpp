@@ -85,8 +85,7 @@ QKmsDevice::~QKmsDevice()
 
 void QKmsDevice::createScreens()
 {
-    drmModeRes *resources = 0;
-    resources = drmModeGetResources(m_fd);
+    drmModeRes *resources = drmModeGetResources(m_fd);
     if (!resources)
         qFatal("drmModeGetResources failed");
 
@@ -95,7 +94,7 @@ void QKmsDevice::createScreens()
         drmModeConnector *connector = 0;
         connector = drmModeGetConnector(m_fd, resources->connectors[i]);
         if (connector && connector->connection == DRM_MODE_CONNECTED) {
-            m_integration->addScreen(new QKmsScreen(this, connector->connector_id));
+            m_integration->addScreen(new QKmsScreen(this, resources, connector));
         }
         drmModeFreeConnector(connector);
     }
