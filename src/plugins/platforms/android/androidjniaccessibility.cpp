@@ -50,7 +50,7 @@
 
 #include "qdebug.h"
 
-static const char m_qtTag[] = "QtA11y";
+static const char m_qtTag[] = "Qt A11Y";
 static const char m_classErrorMsg[] = "Can't find class \"%s\"";
 static const char m_methodErrorMsg[] = "Can't find method \"%s%s\"";
 
