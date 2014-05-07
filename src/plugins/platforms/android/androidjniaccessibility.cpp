@@ -184,8 +184,6 @@ if (!clazz) { \
             desc = iface->text(QAccessible::Name);
             if (desc.isEmpty())
                 desc = iface->text(QAccessible::Description);
-
-            desc += QChar(' ') + QString::fromUtf8(qAccessibleRoleString(iface->role()));
         }
 
         jstring jdesc = env->NewString((jchar*) desc.constData(), (jsize) desc.size());
@@ -214,12 +212,6 @@ if (!clazz) { \
                 textIface->selection(0, &startSelection, &endSelection);
                 CALL_METHOD(node, "setTextSelection", "(II)V", startSelection, endSelection)
             }
-        }
-
-        if ((iface->role() != QAccessible::NoRole) &&
-            (iface->role() != QAccessible::Client) &&
-            (iface->role() != QAccessible::Pane)) {
-            desc += QChar(' ') + QString::fromUtf8(qAccessibleRoleString(iface->role()));
         }
 
         CALL_METHOD(node, "setEnabled", "(Z)V", !state.disabled)
