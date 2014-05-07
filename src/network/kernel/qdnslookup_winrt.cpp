@@ -120,6 +120,8 @@ void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestN
 
     unsigned int size;
     endpointPairs->get_Size(&size);
+    // endpoint pairs might contain duplicates so we temporarily store addresses in a QSet
+    QSet<QHostAddress> addresses;
     for (unsigned int i = 0; i < size; ++i) {
         IEndpointPair *endpointpair;
         endpointPairs->GetAt(i, &endpointpair);
@@ -139,9 +141,12 @@ void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestN
         remoteHost->Release();
         UINT32 length;
         PCWSTR rawString = name.GetRawBuffer(&length);
+        addresses.insert(QHostAddress(QString::fromWCharArray(rawString, length)));
+    }
+    foreach (const QHostAddress &address, addresses) {
         QDnsHostAddressRecord record;
         record.d->name = aceHostname;
-        record.d->value = QHostAddress(QString::fromWCharArray(rawString, length));
+        record.d->value = address;
         reply->hostAddressRecords.append(record);
     }
 }
