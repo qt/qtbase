@@ -54,5 +54,5 @@ class QtNativeAccessibility
     static native int hitTest(float x, float y);
     static native boolean clickAction(int objectId);
 
-    static native void populateNode(int objectId, AccessibilityNodeInfo node);
+    static native boolean populateNode(int objectId, AccessibilityNodeInfo node);
 }

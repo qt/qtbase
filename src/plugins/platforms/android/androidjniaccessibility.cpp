@@ -170,7 +170,7 @@ if (!clazz) { \
     jmethodID method = env->GetMethodID(clazz, METHOD_NAME, METHOD_SIGNATURE); \
     if (!method) { \
         __android_log_print(ANDROID_LOG_WARN, m_qtTag, m_methodErrorMsg, METHOD_NAME, METHOD_SIGNATURE); \
-        return; \
+        return false; \
     } \
     env->CallVoidMethod(OBJECT, method, __VA_ARGS__); \
 }
@@ -190,12 +190,12 @@ if (!clazz) { \
         return jdesc;
     }
 
-    static void populateNode(JNIEnv *env, jobject /*thiz*/, jint objectId, jobject node)
+    static bool populateNode(JNIEnv *env, jobject /*thiz*/, jint objectId, jobject node)
     {
         QAccessibleInterface *iface = interfaceFromId(objectId);
         if (!iface || !iface->isValid()) {
             __android_log_print(ANDROID_LOG_WARN, m_qtTag, "Accessibility: populateNode for Invalid ID");
-            return;
+            return false;
         }
         QAccessible::State state = iface->state();
 
@@ -235,6 +235,8 @@ if (!clazz) { \
         jstring jdesc = env->NewString((jchar*) desc.constData(), (jsize) desc.size());
         //CALL_METHOD(node, "setText", "(Ljava/lang/CharSequence;)V", jdesc)
         CALL_METHOD(node, "setContentDescription", "(Ljava/lang/CharSequence;)V", jdesc)
+
+        return true;
     }
 
     static JNINativeMethod methods[] = {
@@ -244,7 +246,7 @@ if (!clazz) { \
         {"descriptionForAccessibleObject", "(I)Ljava/lang/String;", (jstring)descriptionForAccessibleObject},
         {"screenRect", "(I)Landroid/graphics/Rect;", (jobject)screenRect},
         {"hitTest", "(FF)I", (void*)hitTest},
-        {"populateNode", "(ILandroid/view/accessibility/AccessibilityNodeInfo;)V", (void*)populateNode},
+        {"populateNode", "(ILandroid/view/accessibility/AccessibilityNodeInfo;)Z", (void*)populateNode},
         {"clickAction", "(I)Z", (void*)clickAction},
     };
 
