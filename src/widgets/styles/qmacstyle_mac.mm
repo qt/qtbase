@@ -1696,7 +1696,7 @@ QMacStylePrivate::QMacStylePrivate()
     if (ptrHIShapeGetBounds == 0) {
         QLibrary library(QLatin1String("/System/Library/Frameworks/Carbon.framework/Carbon"));
         library.setLoadHints(QLibrary::ExportExternalSymbolsHint);
-		ptrHIShapeGetBounds = reinterpret_cast<PtrHIShapeGetBounds>(library.resolve("HIShapeGetBounds"));
+        ptrHIShapeGetBounds = reinterpret_cast<PtrHIShapeGetBounds>(library.resolve("HIShapeGetBounds"));
     }
 
 }
