@@ -137,7 +137,8 @@ bootstrap { #Qt code
     unix {
         SOURCES += qfilesystemengine_unix.cpp qfilesystemiterator_unix.cpp qfsfileengine_unix.cpp
         mac {
-          SOURCES += qcore_mac.cpp qsettings_mac.cpp qlocale_mac.mm
+          SOURCES += qcore_mac.cpp qsettings_mac.cpp
+          OBJECTIVE_SOURCES += qlocale_mac.mm
           LIBS += -framework ApplicationServices
         } else {
           SOURCES += qlocale_unix.cpp
