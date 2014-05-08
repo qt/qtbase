@@ -168,6 +168,15 @@ void MainWindow::setupMenuBar()
     for (int i = 0; i < toolBars.count(); ++i)
         toolBarMenu->addMenu(toolBars.at(i)->menu);
 
+#ifdef Q_OS_OSX
+    toolBarMenu->addSeparator();
+
+    action = toolBarMenu->addAction(tr("Unified"));
+    action->setCheckable(true);
+    action->setChecked(unifiedTitleAndToolBarOnMac());
+    connect(action, SIGNAL(toggled(bool)), this, SLOT(setUnifiedTitleAndToolBarOnMac(bool)));
+#endif
+
     dockWidgetMenu = menuBar()->addMenu(tr("&Dock Widgets"));
 }
 
