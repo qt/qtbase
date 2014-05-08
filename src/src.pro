@@ -91,13 +91,13 @@ src_gui.subdir = $$PWD/gui
 src_gui.target = sub-gui
 src_gui.depends = src_corelib
 
-src_platformsupport.subdir = $$PWD/platformsupport
-src_platformsupport.target = sub-platformsupport
-src_platformsupport.depends = src_corelib src_gui src_network
-
 src_platformheaders.subdir = $$PWD/platformheaders
 src_platformheaders.target = sub-platformheaders
 src_platformheaders.depends = src_corelib src_gui
+
+src_platformsupport.subdir = $$PWD/platformsupport
+src_platformsupport.target = sub-platformsupport
+src_platformsupport.depends = src_corelib src_gui src_network src_platformheaders
 
 src_widgets.subdir = $$PWD/widgets
 src_widgets.target = sub-widgets
