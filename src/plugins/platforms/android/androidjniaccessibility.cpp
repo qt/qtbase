@@ -215,11 +215,10 @@ if (!clazz) { \
         }
 
         CALL_METHOD(node, "setEnabled", "(Z)V", !state.disabled)
-        //CALL_METHOD(node, "setFocusable", "(Z)V", state.focusable)
-        CALL_METHOD(node, "setFocusable", "(Z)V", true)
-        //CALL_METHOD(node, "setFocused", "(Z)V", state.focused)
-        CALL_METHOD(node, "setCheckable", "(Z)V", state.checkable)
-        CALL_METHOD(node, "setChecked", "(Z)V", state.checked)
+        CALL_METHOD(node, "setFocusable", "(Z)V", (bool)state.focusable)
+        CALL_METHOD(node, "setFocused", "(Z)V", (bool)state.focused)
+        CALL_METHOD(node, "setCheckable", "(Z)V", (bool)state.checkable)
+        CALL_METHOD(node, "setChecked", "(Z)V", (bool)state.checked)
         CALL_METHOD(node, "setVisibleToUser", "(Z)V", !state.invisible)
 
         if (iface->actionInterface()) {
@@ -227,7 +226,7 @@ if (!clazz) { \
             bool clickable = actions.contains(QAccessibleActionInterface::pressAction());
             bool toggle = actions.contains(QAccessibleActionInterface::toggleAction());
             if (clickable || toggle) {
-                CALL_METHOD(node, "setClickable", "(Z)V", clickable)
+                CALL_METHOD(node, "setClickable", "(Z)V", (bool)clickable)
                 CALL_METHOD(node, "addAction", "(I)V", 16) // ACTION_CLICK defined in AccessibilityNodeInfo
             }
         }
