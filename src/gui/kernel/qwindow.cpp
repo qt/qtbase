@@ -1945,15 +1945,10 @@ bool QWindow::event(QEvent *ev)
         break;
 #endif
 
-    case QEvent::Close: {
-        Q_D(QWindow);
-        bool wasVisible = isVisible();
-        if (ev->isAccepted()) {
-            destroy();
-            if (wasVisible)
-                d->maybeQuitOnLastWindowClosed();
-        }
-        break; }
+    case QEvent::Close:
+        if (ev->isAccepted())
+            close();
+        break;
 
     case QEvent::Expose:
         exposeEvent(static_cast<QExposeEvent *>(ev));
