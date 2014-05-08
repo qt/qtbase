@@ -3265,7 +3265,7 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
     case PE_PanelStatusBar: {
         // Fill the status bar with the titlebar gradient.
         QLinearGradient linearGrad(0, opt->rect.top(), 0, opt->rect.bottom());
-        if (opt->state & QStyle::State_Active) {
+        if (w ? qt_macWindowMainWindow(w->window()) : (opt->state & QStyle::State_Active)) {
             linearGrad.setColorAt(0, titlebarGradientActiveBegin);
             linearGrad.setColorAt(1, titlebarGradientActiveEnd);
         } else {
@@ -3275,7 +3275,7 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
         p->fillRect(opt->rect, linearGrad);
 
         // Draw the black separator line at the top of the status bar.
-        if (opt->state & QStyle::State_Active)
+        if (w ? qt_macWindowMainWindow(w->window()) : (opt->state & QStyle::State_Active))
             p->setPen(titlebarSeparatorLineActive);
         else
             p->setPen(titlebarSeparatorLineInactive);
