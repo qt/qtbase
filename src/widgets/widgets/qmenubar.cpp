@@ -384,7 +384,7 @@ void QMenuBarPrivate::setCurrentAction(QAction *action, bool popup, bool activat
     QAction *previousAction = currentAction;
 #endif
     currentAction = action;
-    if (action) {
+    if (action && action->isEnabled()) {
         activateAction(action, QAction::Hover);
         if(popup)
             popupAction(action, activateFirst);
@@ -1038,7 +1038,7 @@ void QMenuBar::mousePressEvent(QMouseEvent *e)
     d->mouseDown = true;
 
     QAction *action = d->actionAt(e->pos());
-    if (!action || !d->isVisible(action)) {
+    if (!action || !d->isVisible(action) || !action->isEnabled()) {
         d->setCurrentAction(0);
 #ifndef QT_NO_WHATSTHIS
         if (QWhatsThis::inWhatsThisMode())

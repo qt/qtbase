@@ -169,6 +169,20 @@ bool QWindowsFontEngine::hasCMapTable() const
     return GetFontData(hdc, MAKE_TAG('c', 'm', 'a', 'p'), 0, 0, 0) != GDI_ERROR;
 }
 
+bool QWindowsFontEngine::hasGlyfTable() const
+{
+    HDC hdc = m_fontEngineData->hdc;
+    SelectObject(hdc, hfont);
+    return GetFontData(hdc, MAKE_TAG('g', 'l', 'y', 'f'), 0, 0, 0) != GDI_ERROR;
+}
+
+bool QWindowsFontEngine::hasEbdtTable() const
+{
+    HDC hdc = m_fontEngineData->hdc;
+    SelectObject(hdc, hfont);
+    return GetFontData(hdc, MAKE_TAG('E', 'B', 'D', 'T'), 0, 0, 0) != GDI_ERROR;
+}
+
 void QWindowsFontEngine::getCMap()
 {
     ttf = (bool)(tm.tmPitchAndFamily & TMPF_TRUETYPE) || hasCMapTable();
@@ -308,6 +322,8 @@ QWindowsFontEngine::QWindowsFontEngine(const QString &name,
     userData.insert(QStringLiteral("hFont"), QVariant::fromValue(hfont));
     userData.insert(QStringLiteral("trueType"), QVariant(bool(ttf)));
     setUserData(userData);
+
+    hasUnreliableOutline = hasGlyfTable() && hasEbdtTable();
 }
 
 QWindowsFontEngine::~QWindowsFontEngine()
@@ -661,6 +677,11 @@ void QWindowsFontEngine::getGlyphBearings(glyph_t glyph, qreal *leftBearing, qre
 #endif
 }
 #endif // Q_CC_MINGW
+
+bool QWindowsFontEngine::hasUnreliableGlyphOutline() const
+{
+    return hasUnreliableOutline;
+}
 
 qreal QWindowsFontEngine::minLeftBearing() const
 {

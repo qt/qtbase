@@ -192,12 +192,25 @@
 
 - (void)displayLayer:(CALayer *)layer
 {
-    QSize bounds = fromCGRect(layer.bounds).toRect().size();
+    Q_UNUSED(layer);
+    Q_ASSERT(layer == self.layer);
 
-    Q_ASSERT(m_qioswindow->geometry().size() == bounds);
-    Q_ASSERT(self.hidden == !m_qioswindow->window()->isVisible());
+    [self sendUpdatedExposeEvent];
+}
 
-    QRegion region = self.hidden ? QRegion() : QRect(QPoint(), bounds);
+- (void)sendUpdatedExposeEvent
+{
+    QRegion region;
+
+    if (m_qioswindow->isExposed()) {
+        QSize bounds = fromCGRect(self.layer.bounds).toRect().size();
+
+        Q_ASSERT(m_qioswindow->geometry().size() == bounds);
+        Q_ASSERT(self.hidden == !m_qioswindow->window()->isVisible());
+
+        region = QRect(QPoint(), bounds);
+    }
+
     QWindowSystemInterface::handleExposeEvent(m_qioswindow->window(), region);
     QWindowSystemInterface::flushWindowSystemEvents();
 }
@@ -279,19 +292,33 @@
 
 - (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    if (!touches && m_activeTouches.isEmpty())
+    if (m_activeTouches.isEmpty())
         return;
 
-    if (!touches) {
-        m_activeTouches.clear();
-    } else {
-        for (UITouch *touch in touches)
-            m_activeTouches.remove(touch);
+    // When four-finger swiping, we get a touchesCancelled callback
+    // which includes all four touch points. The swipe gesture is
+    // then active until all four touches have been released, and
+    // we start getting touchesBegan events again.
 
-        Q_ASSERT_X(m_activeTouches.isEmpty(), Q_FUNC_INFO,
-            "Subset of active touches cancelled by UIKit");
-    }
+    // When five-finger pinching, we also get a touchesCancelled
+    // callback with all five touch points, but the pinch gesture
+    // ends when the second to last finger is released from the
+    // screen. The last finger will not emit any more touch
+    // events, _but_, will contribute to starting another pinch
+    // gesture. That second pinch gesture will _not_ trigger a
+    // touchesCancelled event when starting, but as each finger
+    // is released, and we may get touchesMoved events for the
+    // remaining fingers. [event allTouches] also contains one
+    // less touch point than it should, so this behavior is
+    // likely a bug in the iOS system gesture recognizer, but we
+    // have to take it into account when maintaining the Qt state.
+    // We do this by assuming that there are no cases where a
+    // sub-set of the active touch events are intentionally cancelled.
 
+    if (touches && (static_cast<NSInteger>([touches count]) != m_activeTouches.count()))
+        qWarning("Subset of active touches cancelled by UIKit");
+
+    m_activeTouches.clear();
     m_nextTouchId = 0;
 
     NSTimeInterval timestamp = event ? event.timestamp : [[NSProcessInfo processInfo] systemUptime];
@@ -334,6 +361,8 @@ QIOSWindow::QIOSWindow(QWindow *window)
     , m_view([[QUIView alloc] initWithQIOSWindow:this])
     , m_windowLevel(0)
 {
+    connect(qGuiApp, &QGuiApplication::applicationStateChanged, this, &QIOSWindow::applicationStateChanged);
+
     setParent(QPlatformWindow::parent());
 
     // Resolve default window geometry in case it was not set before creating the
@@ -471,7 +500,8 @@ void QIOSWindow::applyGeometry(const QRect &rect)
 
 bool QIOSWindow::isExposed() const
 {
-    return window()->isVisible() && !window()->geometry().isEmpty();
+    return qApp->applicationState() > Qt::ApplicationHidden
+        && window()->isVisible() && !window()->geometry().isEmpty();
 }
 
 void QIOSWindow::setWindowState(Qt::WindowState state)
@@ -591,6 +621,12 @@ void QIOSWindow::handleContentOrientationChange(Qt::ScreenOrientation orientatio
     // that the task bar (and associated gestures) are aligned correctly:
     UIInterfaceOrientation uiOrientation = UIInterfaceOrientation(fromQtScreenOrientation(orientation));
     [[UIApplication sharedApplication] setStatusBarOrientation:uiOrientation animated:NO];
+}
+
+void QIOSWindow::applicationStateChanged(Qt::ApplicationState)
+{
+    if (window()->isExposed() != isExposed())
+        [m_view sendUpdatedExposeEvent];
 }
 
 qreal QIOSWindow::devicePixelRatio() const

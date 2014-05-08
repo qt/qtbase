@@ -591,19 +591,37 @@ jboolean QAndroidInputContext::endBatchEdit()
     return JNI_TRUE;
 }
 
-jboolean QAndroidInputContext::commitText(const QString &text, jint /*newCursorPosition*/)
+/*
+  Android docs say: If composing, replace compose text with \a text.
+  Otherwise insert \a text at current cursor position.
+
+  The cursor should then be moved to newCursorPosition. If > 0, this is
+  relative to the end of the text - 1; if <= 0, this is relative to the start
+  of the text. updateSelection() needs to be called.
+*/
+jboolean QAndroidInputContext::commitText(const QString &text, jint newCursorPosition)
 {
-    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery();
-    if (query.isNull())
-        return JNI_FALSE;
+    QInputMethodEvent event;
+    event.setCommitString(text);
+    sendInputMethodEvent(&event);
+    clear();
 
+    // Qt has now put the cursor at the end of the text, corresponding to newCursorPosition == 1
+    if (newCursorPosition != 1) {
+        QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery();
+        if (!query.isNull()) {
+            QList<QInputMethodEvent::Attribute> attributes;
+            const int localPos = query->value(Qt::ImCursorPosition).toInt();
+            const int newLocalPos = newCursorPosition > 0
+                                    ? localPos + newCursorPosition - 1
+                                    : localPos - text.length() + newCursorPosition;
+            //move the cursor
+            attributes.append(QInputMethodEvent::Attribute(QInputMethodEvent::Selection,
+                                                           newLocalPos, 0, QVariant()));
+        }
+    }
 
-    const int cursorPos = getAbsoluteCursorPosition(query);
-    m_composingText = text;
-    m_composingTextStart = cursorPos;
-    m_composingCursor = cursorPos + text.length();
-    finishComposingText();
-    //### move cursor to newCursorPosition and call updateCursorPosition()
+    updateCursorPosition();
     return JNI_TRUE;
 }
 
@@ -624,9 +642,24 @@ jboolean QAndroidInputContext::deleteSurroundingText(jint leftLength, jint right
     return JNI_TRUE;
 }
 
+// Android docs say the cursor must not move
 jboolean QAndroidInputContext::finishComposingText()
 {
-    QInputMethodEvent event;
+    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery();
+    if (query.isNull())
+        return JNI_FALSE;
+
+    if (m_composingText.isEmpty())
+        return JNI_TRUE; // not composing
+
+    const int blockPos = getBlockPosition(query);
+    const int localCursorPos = m_composingCursor - blockPos;
+
+    // Moving Qt's cursor to where the preedit cursor used to be
+    QList<QInputMethodEvent::Attribute> attributes;
+    attributes.append(QInputMethodEvent::Attribute(QInputMethodEvent::Selection, localCursorPos, 0, QVariant()));
+
+    QInputMethodEvent event(QString(), attributes);
     event.setCommitString(m_composingText);
     sendInputMethodEvent(&event);
     clear();

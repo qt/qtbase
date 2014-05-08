@@ -496,6 +496,7 @@ QWinRTScreen::QWinRTScreen(ICoreWindow *window)
 
         // Set initial orientation
         onOrientationChanged(0);
+        setOrientationUpdateMask(m_nativeOrientation);
 
         m_displayProperties->add_OrientationChanged(Callback<IDisplayPropertiesEventHandler>(this, &QWinRTScreen::onOrientationChanged).Get(),
                                                     &m_tokens[QEvent::OrientationChange]);

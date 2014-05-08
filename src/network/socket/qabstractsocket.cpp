@@ -509,7 +509,7 @@ static QByteArray qt_prettyDebug(const char *data, int len, int maxLength)
 {
     if (!data) return "(null)";
     QByteArray out;
-    for (int i = 0; i < len; ++i) {
+    for (int i = 0; i < qMin(len, maxLength); ++i) {
         char c = data[i];
         if (isprint(int(uchar(c)))) {
             out += c;

@@ -2606,6 +2606,9 @@ bool QMdiArea::eventFilter(QObject *object, QEvent *event)
         return QAbstractScrollArea::eventFilter(object, event);
     }
 
+    if (subWindow->mdiArea() != this)
+        return QAbstractScrollArea::eventFilter(object, event);
+
     // QMdiSubWindow events:
     switch (event->type()) {
     case QEvent::Move:

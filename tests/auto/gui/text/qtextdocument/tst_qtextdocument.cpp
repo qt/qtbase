@@ -192,6 +192,8 @@ private slots:
 
     void QTBUG28998_linkColor();
 
+    void textCursorUsageWithinContentsChange();
+
 private:
     void backgroundImage_checkExpectedHtml(const QTextDocument &doc);
 
@@ -3019,6 +3021,51 @@ void tst_QTextDocument::QTBUG28998_linkColor()
     QCOMPARE(format.anchorHref(), QStringLiteral("http://www.qt-project.org"));
 
     QCOMPARE(format.foreground(), pal.link());
+}
+
+class ContentsChangeHandler : public QObject
+{
+    Q_OBJECT
+public:
+    ContentsChangeHandler(QTextDocument *doc)
+        : verticalMovementX(-1)
+        , doc(doc)
+    {
+        connect(doc, SIGNAL(contentsChange(int,int,int)),
+                this, SLOT(saveModifiedText(int, int, int)));
+    }
+
+private slots:
+    void saveModifiedText(int from, int /*charsRemoved*/, int charsAdded)
+    {
+        QTextCursor tmp(doc);
+        tmp.setPosition(from);
+        tmp.setPosition(from + charsAdded, QTextCursor::KeepAnchor);
+        text = tmp.selectedText();
+        verticalMovementX = tmp.verticalMovementX();
+    }
+
+public:
+    QString text;
+    int verticalMovementX;
+private:
+    QTextDocument *doc;
+};
+
+void tst_QTextDocument::textCursorUsageWithinContentsChange()
+{
+    // force creation of layout
+    doc->documentLayout();
+
+    QTextCursor cursor(doc);
+    cursor.insertText("initial text");
+
+    ContentsChangeHandler handler(doc);
+
+    cursor.insertText("new text");
+
+    QCOMPARE(handler.text, QString("new text"));
+    QCOMPARE(handler.verticalMovementX, -1);
 }
 
 QTEST_MAIN(tst_QTextDocument)

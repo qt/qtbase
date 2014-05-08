@@ -1112,6 +1112,9 @@ Q_GUI_EXPORT QImage qt_gl_read_framebuffer(const QSize &size, bool alpha_format,
     \fn QImage QOpenGLFramebufferObject::toImage() const
 
     Returns the contents of this framebuffer object as a QImage.
+
+    Will try to return a premultiplied ARBG32 or RGB32 image. Since 5.2 it will fall back to
+    a premultiplied RGBA8888 or RGBx8888 image when reading to ARGB32 is not supported.
 */
 QImage QOpenGLFramebufferObject::toImage() const
 {

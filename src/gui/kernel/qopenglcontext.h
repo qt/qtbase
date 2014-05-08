@@ -199,18 +199,12 @@ public:
 
     enum OpenGLModuleType {
         LibGL,
-        LibGLES,
-
-        // ###
-        DesktopGL = LibGL,
-        GLES2 = LibGLES
+        LibGLES
     };
 
     static OpenGLModuleType openGLModuleType();
 
     bool isOpenGLES() const;
-
-    bool isES() const { return isOpenGLES(); } // ###
 
 Q_SIGNALS:
     void aboutToBeDestroyed();

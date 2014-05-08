@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -1421,15 +1421,8 @@ void QTreeViewPrivate::adjustViewOptionsForIndex(QStyleOptionViewItem *option, c
     const int right = (spanning ? header->visualIndex(0) : header->count() - 1 );
     calcLogicalIndices(&logicalIndices, &viewItemPosList, left, right);
 
-    int columnIndex = 0;
-    for (int visualIndex = 0; visualIndex < current.column(); ++visualIndex) {
-        int logicalIndex = header->logicalIndex(visualIndex);
-        if (!header->isSectionHidden(logicalIndex)) {
-            ++columnIndex;
-        }
-    }
-
-    option->viewItemPosition = viewItemPosList.at(columnIndex);
+    const int visualIndex = logicalIndices.indexOf(current.column());
+    option->viewItemPosition = viewItemPosList.at(visualIndex);
 }
 
 

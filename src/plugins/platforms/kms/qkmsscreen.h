@@ -68,7 +68,7 @@ class QKmsContext;
 class QKmsScreen : public QPlatformScreen
 {
 public:
-    QKmsScreen(QKmsDevice *device, int connectorId);
+    QKmsScreen(QKmsDevice *device, const drmModeRes *resources, const drmModeConnector *connector);
     ~QKmsScreen();
 
     QRect geometry() const;
@@ -94,7 +94,7 @@ public:
 
 private:
     void performPageFlip();
-    void initializeScreenMode();
+    void initializeScreenMode(const drmModeRes *resources, const drmModeConnector *connector);
 
     QKmsDevice *m_device;
     gbm_bo *m_current_bo;

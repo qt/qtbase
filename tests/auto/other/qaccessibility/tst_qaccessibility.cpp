@@ -1935,7 +1935,7 @@ void tst_QAccessibility::lineEditTest()
     QVERIFY(iface->state().movable);
     QVERIFY(iface->state().focusable);
     QVERIFY(iface->state().selectable);
-    QVERIFY(iface->state().hasPopup);
+    QVERIFY(!iface->state().hasPopup);
     QCOMPARE(bool(iface->state().focused), le->hasFocus());
 
     QString secret(QLatin1String("secret"));
@@ -1963,7 +1963,7 @@ void tst_QAccessibility::lineEditTest()
     QVERIFY(!(iface->state().movable));
     QVERIFY(iface->state().focusable);
     QVERIFY(iface->state().selectable);
-    QVERIFY(iface->state().hasPopup);
+    QVERIFY(!iface->state().hasPopup);
     QCOMPARE(bool(iface->state().focused), le->hasFocus());
 
     QLineEdit *le2 = new QLineEdit(toplevel);

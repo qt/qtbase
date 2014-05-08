@@ -132,7 +132,7 @@ QTextCursorPrivate::AdjustResult QTextCursorPrivate::adjustPosition(int position
 
 void QTextCursorPrivate::setX()
 {
-    if (priv->isInEditBlock()) {
+    if (priv->isInEditBlock() || priv->inContentsChange) {
         x = -1; // mark dirty
         return;
     }

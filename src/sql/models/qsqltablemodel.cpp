@@ -448,9 +448,10 @@ bool QSqlTableModel::selectRow(int row)
             // Look for changed values. Primary key fields are customarily first
             // and probably change less often than other fields, so start at the end.
             for (int f = curValues.count() - 1; f >= 0; --f) {
-                if (curValues.value(f) != newValues.value(f))
+                if (curValues.value(f) != newValues.value(f)) {
                     needsAddingToCache = true;
                     break;
+                }
             }
         }
     }

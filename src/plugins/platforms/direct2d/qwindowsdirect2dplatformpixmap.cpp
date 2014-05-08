@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -56,12 +56,27 @@ class QWindowsDirect2DPlatformPixmapPrivate
 {
 public:
     QWindowsDirect2DPlatformPixmapPrivate()
-        : bitmap(new QWindowsDirect2DBitmap)
-        , device(new QWindowsDirect2DPaintDevice(bitmap.data(), QInternal::Pixmap))
+        : owns_bitmap(true)
+        , bitmap(new QWindowsDirect2DBitmap)
+        , device(new QWindowsDirect2DPaintDevice(bitmap, QInternal::Pixmap))
         , devicePixelRatio(1.0)
     {}
 
-    QScopedPointer<QWindowsDirect2DBitmap> bitmap;
+    QWindowsDirect2DPlatformPixmapPrivate(QWindowsDirect2DBitmap *bitmap)
+        : owns_bitmap(false)
+        , bitmap(bitmap)
+        , device(new QWindowsDirect2DPaintDevice(bitmap, QInternal::Pixmap))
+        , devicePixelRatio(1.0)
+    {}
+
+    ~QWindowsDirect2DPlatformPixmapPrivate()
+    {
+        if (owns_bitmap)
+            delete bitmap;
+    }
+
+    bool owns_bitmap;
+    QWindowsDirect2DBitmap *bitmap;
     QScopedPointer<QWindowsDirect2DPaintDevice> device;
     qreal devicePixelRatio;
 };
@@ -73,6 +88,19 @@ QWindowsDirect2DPlatformPixmap::QWindowsDirect2DPlatformPixmap(PixelType pixelTy
     , d_ptr(new QWindowsDirect2DPlatformPixmapPrivate)
 {
     setSerialNumber(qt_d2dpixmap_serno++);
+}
+
+QWindowsDirect2DPlatformPixmap::QWindowsDirect2DPlatformPixmap(QPlatformPixmap::PixelType pixelType,
+                                                               QWindowsDirect2DBitmap *bitmap)
+    : QPlatformPixmap(pixelType, Direct2DClass)
+    , d_ptr(new QWindowsDirect2DPlatformPixmapPrivate(bitmap))
+{
+    setSerialNumber(qt_d2dpixmap_serno++);
+
+    is_null = false;
+    w = bitmap->size().width();
+    h = bitmap->size().height();
+    this->d = 32;
 }
 
 QWindowsDirect2DPlatformPixmap::~QWindowsDirect2DPlatformPixmap()
@@ -173,7 +201,7 @@ void QWindowsDirect2DPlatformPixmap::setDevicePixelRatio(qreal scaleFactor)
 QWindowsDirect2DBitmap *QWindowsDirect2DPlatformPixmap::bitmap() const
 {
     Q_D(const QWindowsDirect2DPlatformPixmap);
-    return d->bitmap.data();
+    return d->bitmap;
 }
 
 QT_END_NAMESPACE

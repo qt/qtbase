@@ -1116,7 +1116,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
             //all files
             const ProStringList &files = project->values(ProKey(bundle_data[i] + ".files"));
             for(int file = 0; file < files.count(); file++) {
-                QString fn = files[file].toQString();
+                QString fn = fileFixify(files[file].toQString(), Option::output_dir, input_dir);
                 QString file_ref_key = keyFor("QMAKE_PBX_BUNDLE_DATA_FILE_REF." + bundle_data[i] + "-" + fn);
                 bundle_file_refs += file_ref_key;
                 t << "\t\t" << file_ref_key << " = {\n"

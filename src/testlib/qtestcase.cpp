@@ -2863,8 +2863,6 @@ bool QTest::currentTestFailed()
 void QTest::qSleep(int ms)
 {
     QTEST_ASSERT(ms > 0);
-    QElapsedTimer timer;
-    timer.start();
 
 #if defined(Q_OS_WINRT)
     WaitForSingleObjectEx(GetCurrentThread(), ms, true);
@@ -2874,20 +2872,6 @@ void QTest::qSleep(int ms)
     struct timespec ts = { ms / 1000, (ms % 1000) * 1000 * 1000 };
     nanosleep(&ts, NULL);
 #endif
-    // Warn if the elapsed time was more than 50% longer or more than 10% shorter than the
-    // requested time.
-    qint64 requested = 1000000 * (qint64)ms;
-    qint64 diff = timer.nsecsElapsed() - requested;
-#ifndef Q_OS_WIN
-    const qint64 factor = 2; // more than 50% longer
-#else
-    const qint64 factor = 1; // Windows: 50% is quite common, warn about 100%
-#endif
-    if (diff * factor > requested || diff * 10 < -requested) {
-        QTestLog::warn(qPrintable(
-            QString::fromLatin1("QTest::qSleep() should have taken %1ns, but actually took %2ns!")
-                    .arg(requested).arg(diff + requested)), __FILE__, __LINE__);
-    }
 }
 
 /*! \internal

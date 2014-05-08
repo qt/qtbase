@@ -1655,7 +1655,7 @@ void QGraphicsView::invalidateScene(const QRectF &rect, QGraphicsScene::SceneLay
 
 /*!
     \property QGraphicsView::interactive
-    \brief whether the view allowed scene interaction.
+    \brief whether the view allows scene interaction.
 
     If enabled, this view is set to allow scene interaction. Otherwise, this
     view will not allow interaction, and any mouse or key events are ignored

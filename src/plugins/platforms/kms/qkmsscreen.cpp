@@ -63,18 +63,18 @@ static drmModeModeInfo builtin_1024x768 = {
     "1024x768"
 };
 
-QKmsScreen::QKmsScreen(QKmsDevice *device, int connectorId)
+QKmsScreen::QKmsScreen(QKmsDevice *device, const drmModeRes *resources, const drmModeConnector *connector)
     : m_device(device),
       m_current_bo(0),
       m_next_bo(0),
-      m_connectorId(connectorId),
+      m_connectorId(connector->connector_id),
       m_depth(32),
       m_format(QImage::Format_Invalid),
       m_eglWindowSurface(EGL_NO_SURFACE),
       m_modeSet(false)
 {
     m_cursor = new QKmsCursor(this);
-    initializeScreenMode();
+    initializeScreenMode(resources, connector);
 }
 
 QKmsScreen::~QKmsScreen()
@@ -114,14 +114,9 @@ QPlatformCursor *QKmsScreen::cursor() const
     return m_cursor;
 }
 
-void QKmsScreen::initializeScreenMode()
+void QKmsScreen::initializeScreenMode(const drmModeRes *resources, const drmModeConnector *connector)
 {
     //Determine optimal mode for screen
-    drmModeRes *resources = drmModeGetResources(m_device->fd());
-    if (!resources)
-        qFatal("drmModeGetResources failed");
-
-    drmModeConnector *connector = drmModeGetConnector(m_device->fd(), m_connectorId);
     drmModeModeInfo *mode = 0;
     for (int i = 0; i < connector->count_modes; ++i) {
         if (connector->modes[i].type & DRM_MODE_TYPE_PREFERRED) {
@@ -129,8 +124,12 @@ void QKmsScreen::initializeScreenMode()
             break;
         }
     }
-    if (!mode)
-        mode = &builtin_1024x768;
+    if (!mode) {
+        if (connector->count_modes > 0)
+            mode = &connector->modes[0];
+        else
+            mode = &builtin_1024x768;
+    }
 
     drmModeEncoder *encoder = drmModeGetEncoder(m_device->fd(), connector->encoders[0]);
     if (encoder == 0)
@@ -162,8 +161,6 @@ void QKmsScreen::initializeScreenMode()
     qDebug() << "created gbm surface" << m_gbmSurface << m_mode.hdisplay << m_mode.vdisplay;
     //Cleanup
     drmModeFreeEncoder(encoder);
-    drmModeFreeConnector(connector);
-    drmModeFreeResources(resources);
 }
 
 QSurfaceFormat QKmsScreen::tweakFormat(const QSurfaceFormat &format)

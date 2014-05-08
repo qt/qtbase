@@ -1,7 +1,4 @@
-TEMPLATE = lib
 CONFIG += static
-TARGET = $$qtLibraryTarget(translator)
-
 include(../config.pri)
 
 # Mingw 4.7 chokes on implicit move semantics, so disable C++11 here

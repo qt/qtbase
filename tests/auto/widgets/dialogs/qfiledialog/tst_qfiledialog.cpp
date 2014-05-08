@@ -171,6 +171,7 @@ private slots:
     void tildeExpansion();
 #endif // QT_BUILD_INTERNAL
 #endif
+    void getFileUrl();
 
 private:
     QByteArray userSettings;
@@ -1428,6 +1429,50 @@ void tst_QFiledialog::tildeExpansion()
 }
 #endif // QT_BUILD_INTERNAL
 #endif
+
+class DialogRejecter : public QObject
+{
+    Q_OBJECT
+public:
+    DialogRejecter()
+    {
+        QTimer *timer = new QTimer(this);
+        timer->setInterval(1000);
+        connect(timer, &QTimer::timeout, this, &DialogRejecter::rejectFileDialog);
+        timer->start();
+    }
+
+public slots:
+    void rejectFileDialog()
+    {
+        if (QWidget *w = QApplication::activeModalWidget())
+            if (QDialog *d = qobject_cast<QDialog *>(w))
+                d->reject();
+    }
+};
+
+void tst_QFiledialog::getFileUrl()
+{
+    // QTBUG-38672 , static functions should return empty Urls
+    const QFileDialog::Options options = QFileDialog::DontUseNativeDialog;
+    DialogRejecter dr;
+
+    QUrl url = QFileDialog::getOpenFileUrl(0, QStringLiteral("getOpenFileUrl"),
+                                           QUrl(), QString(), Q_NULLPTR, options);
+    QVERIFY(url.isEmpty());
+    QVERIFY(!url.isValid());
+
+    url = QFileDialog::getExistingDirectoryUrl(0, QStringLiteral("getExistingDirectoryUrl"),
+                                               QUrl(), options | QFileDialog::ShowDirsOnly);
+    QVERIFY(url.isEmpty());
+    QVERIFY(!url.isValid());
+
+    url = QFileDialog::getSaveFileUrl(0, QStringLiteral("getSaveFileUrl"),
+                                      QUrl(), QString(), Q_NULLPTR, options);
+    QVERIFY(url.isEmpty());
+    QVERIFY(!url.isValid());
+
+}
 
 QTEST_MAIN(tst_QFiledialog)
 #include "tst_qfiledialog.moc"

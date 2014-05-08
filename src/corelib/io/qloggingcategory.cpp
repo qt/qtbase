@@ -62,6 +62,12 @@ Q_GLOBAL_STATIC_WITH_ARGS(QLoggingCategory, qtDefaultCategory,
     by a string - at runtime. Whether a category should be actually logged or
     not can be checked with the \l isEnabled() methods.
 
+    All objects are meant to be configured by a common registry (see also
+    \l{Configuring Categories}). Different objects can also represent the same
+    category. It's therefore not recommended to export objects across module
+    boundaries, nor to manipulate the objects directly, nor to inherit from
+    QLoggingCategory.
+
     \section1 Creating category objects
 
     The Q_LOGGING_CATEGORY() and the Q_DECLARE_LOGGING_CATEGORY() macros

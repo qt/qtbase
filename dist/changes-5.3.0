@@ -446,6 +446,15 @@ Android
  - Fonts:
    * [QTBUG-36789] Fixed support for Arabic text.
 
+iOS
+---
+
+ - Support for input methods added.
+ - Support for word completion and spell checking added.
+ - Support for QClipboard added.
+ - "Hide keyboard" gesture added.
+ - Keyboard input is now sendt as input method events instead of key events.
+
 Linux
 -----
 

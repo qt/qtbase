@@ -419,7 +419,7 @@ void QGLXContext::init(QXcbScreen *screen, QPlatformOpenGLContext *share, const 
         return;
     }
     m_format = QSurfaceFormat();
-    m_format.setRenderableType(QOpenGLContext::openGLModuleType() == QOpenGLContext::DesktopGL
+    m_format.setRenderableType(QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGL
                                ? QSurfaceFormat::OpenGL : QSurfaceFormat::OpenGLES);
     updateFormatFromContext(m_format);
     if (vinfo)

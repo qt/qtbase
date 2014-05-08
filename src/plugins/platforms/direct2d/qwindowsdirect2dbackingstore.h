@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -50,6 +50,8 @@
 
 QT_BEGIN_NAMESPACE
 
+class QWindowsDirect2DWindow;
+
 class QWindowsDirect2DBackingStore : public QPlatformBackingStore
 {
     Q_DISABLE_COPY(QWindowsDirect2DBackingStore)
@@ -62,11 +64,8 @@ public:
     void endPaint();
 
     QPaintDevice *paintDevice() Q_DECL_OVERRIDE;
-    void flush(QWindow *window, const QRegion &region, const QPoint &offset) Q_DECL_OVERRIDE;
+    void flush(QWindow *targetWindow, const QRegion &region, const QPoint &offset) Q_DECL_OVERRIDE;
     void resize(const QSize &size, const QRegion &staticContents) Q_DECL_OVERRIDE;
-
-private:
-    QScopedPointer<QPixmap> m_pixmap;
 };
 
 QT_END_NAMESPACE
