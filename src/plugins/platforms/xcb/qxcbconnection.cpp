@@ -1791,6 +1791,19 @@ bool QXcbConnection::xi2GetValuatorValueIfSet(void *event, int valuatorNum, doub
     return true;
 }
 
+bool QXcbConnection::xi2GetButtonState(void *event, int buttonNum)
+{
+    xXIDeviceEvent *xideviceevent = static_cast<xXIDeviceEvent *>(event);
+    unsigned char *buttonsMaskAddr = (unsigned char*)&xideviceevent[1];
+
+    for (int i = 0; i < (xideviceevent->buttons_len * 4); i++) {
+        if (buttonNum < 8)
+            return (buttonsMaskAddr[i] & (1 << buttonNum));
+        buttonNum -= 8;
+    }
+    return false;
+}
+
 // Starting from the xcb version 1.9.3 struct xcb_ge_event_t has changed:
 // - "pad0" became "extension"
 // - "pad1" and "pad" became "pad0"

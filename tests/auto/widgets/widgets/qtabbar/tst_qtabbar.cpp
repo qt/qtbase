@@ -679,7 +679,8 @@ void tst_QTabBar::tabBarClicked()
         QCOMPARE(doubleClickSpy.count(), 0);
 
         QTest::mouseDClick(&tabBar, button, 0, tabPos);
-        QCOMPARE(clickSpy.count(), 0);
+        QCOMPARE(clickSpy.count(), 1);
+        QCOMPARE(clickSpy.takeFirst().takeFirst().toInt(), 0);
         QCOMPARE(doubleClickSpy.count(), 1);
         QCOMPARE(doubleClickSpy.takeFirst().takeFirst().toInt(), 0);
 
@@ -691,7 +692,8 @@ void tst_QTabBar::tabBarClicked()
         QCOMPARE(doubleClickSpy.count(), 0);
 
         QTest::mouseDClick(&tabBar, button, 0, barPos);
-        QCOMPARE(clickSpy.count(), 0);
+        QCOMPARE(clickSpy.count(), 1);
+        QCOMPARE(clickSpy.takeFirst().takeFirst().toInt(), -1);
         QCOMPARE(doubleClickSpy.count(), 1);
         QCOMPARE(doubleClickSpy.takeFirst().takeFirst().toInt(), -1);
 

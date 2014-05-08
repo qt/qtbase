@@ -273,10 +273,12 @@ void tst_QSslSocket::initTestCase_data()
 
 void tst_QSslSocket::initTestCase()
 {
+#ifndef QT_NO_SSL
     qDebug("Using SSL library %s (%ld)",
            qPrintable(QSslSocket::sslLibraryVersionString()),
            QSslSocket::sslLibraryVersionNumber());
     QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
+#endif
 }
 
 void tst_QSslSocket::init()

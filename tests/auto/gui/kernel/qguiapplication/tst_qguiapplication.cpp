@@ -48,6 +48,10 @@
 #include <qpa/qwindowsysteminterface.h>
 #include <qgenericplugin.h>
 
+#if defined(Q_OS_QNX)
+#include <QOpenGLContext>
+#endif
+
 #include <QDebug>
 
 #include "tst_qcoreapplication.h"
@@ -143,6 +147,9 @@ void tst_QGuiApplication::focusObject()
     const QRect screenGeometry = QGuiApplication::primaryScreen()->availableVirtualGeometry();
 
     DummyWindow window1;
+#if defined(Q_OS_QNX)
+    window1.setSurfaceType(QSurface::OpenGLSurface);
+#endif
     window1.resize(windowSize, windowSize);
     window1.setTitle(QStringLiteral("focusObject:window1"));
     window1.setFramePosition(QPoint(screenGeometry.left() + spacing, screenGeometry.top() + spacing));
@@ -152,6 +159,15 @@ void tst_QGuiApplication::focusObject()
     window2.setTitle(QStringLiteral("focusObject:window2"));
 
     window1.show();
+
+#if defined(Q_OS_QNX) // We either need to create a eglSurface or a create a backing store
+                      // and then post the window in order for screen to show the window
+    QOpenGLContext context;
+    context.create();
+    context.makeCurrent(&window1);
+    QTest::qWaitForWindowExposed(&window1); // Buffer swap only succeeds with exposed window
+    context.swapBuffers(&window1);
+#endif
 
     QSignalSpy spy(&app, SIGNAL(focusObjectChanged(QObject*)));
 
@@ -298,15 +314,35 @@ void tst_QGuiApplication::changeFocusWindow()
 
     // focus is changed between FocusAboutToChange and FocusChanged
     FocusChangeWindow window1;
+#if defined(Q_OS_QNX)
+    window1.setSurfaceType(QSurface::OpenGLSurface);
+#endif
     window1.resize(windowSize, windowSize);
     window1.setFramePosition(QPoint(screenGeometry.left() + spacing, screenGeometry.top() + spacing));
     window1.setTitle(QStringLiteral("changeFocusWindow:window1"));
     window1.show();
+#if defined(Q_OS_QNX) // We either need to create a eglSurface or a create a backing store
+                      // and then post the window in order for screen to show the window
+    QOpenGLContext context;
+    context.create();
+    context.makeCurrent(&window1);
+    QTest::qWaitForWindowExposed(&window1); // Buffer swap only succeeds with exposed window
+    context.swapBuffers(&window1);
+#endif
     FocusChangeWindow window2;
+#if defined(Q_OS_QNX)
+    window2.setSurfaceType(QSurface::OpenGLSurface);
+#endif
     window2.resize(windowSize, windowSize);
     window2.setFramePosition(QPoint(screenGeometry.left() + 2 * spacing + windowSize, screenGeometry.top() + spacing));
     window2.setTitle(QStringLiteral("changeFocusWindow:window2"));
     window2.show();
+#if defined(Q_OS_QNX) // We either need to create a eglSurface or a create a backing store
+                      // and then post the window in order for screen to show the window
+    context.makeCurrent(&window2);
+    QTest::qWaitForWindowExposed(&window2); // Buffer swap only succeeds with exposed window
+    context.swapBuffers(&window2);
+#endif
     QVERIFY(QTest::qWaitForWindowExposed(&window1));
     QVERIFY(QTest::qWaitForWindowExposed(&window2));
     window1.requestActivate();

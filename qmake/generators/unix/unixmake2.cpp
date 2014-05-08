@@ -234,14 +234,15 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
         if(!project->isEmpty("QMAKE_BUNDLE")) {
             t << "TARGETD       = " << escapeFilePath(var("TARGET_x.y")) << endl;
             t << "TARGET0       = " << escapeFilePath(var("TARGET_")) << endl;
-        } else if(project->isEmpty("QMAKE_HPUX_SHLIB")) {
-            t << "TARGETD       = " << escapeFilePath(var("TARGET_x.y.z")) << endl;
+        } else if (!project->isActiveConfig("unversioned_libname")) {
             t << "TARGET0       = " << escapeFilePath(var("TARGET_")) << endl;
-            t << "TARGET1       = " << escapeFilePath(var("TARGET_x")) << endl;
-            t << "TARGET2       = " << escapeFilePath(var("TARGET_x.y")) << endl;
-        } else {
-            t << "TARGETD       = " << escapeFilePath(var("TARGET_x")) << endl;
-            t << "TARGET0       = " << escapeFilePath(var("TARGET_")) << endl;
+            if (project->isEmpty("QMAKE_HPUX_SHLIB")) {
+                t << "TARGETD       = " << escapeFilePath(var("TARGET_x.y.z")) << endl;
+                t << "TARGET1       = " << escapeFilePath(var("TARGET_x")) << endl;
+                t << "TARGET2       = " << escapeFilePath(var("TARGET_x.y")) << endl;
+            } else {
+                t << "TARGETD       = " << escapeFilePath(var("TARGET_x")) << endl;
+            }
         }
     }
     writeExtraCompilerVariables(t);
@@ -574,22 +575,36 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                 t << "\n\t" << var("QMAKE_POST_LINK");
             t << endl << endl;
         } else if(project->isEmpty("QMAKE_HPUX_SHLIB")) {
-            t << "\n\t"
-              << "-$(DEL_FILE) $(TARGET) $(TARGET0) $(TARGET1) $(TARGET2)\n\t"
-              << var("QMAKE_LINK_SHLIB_CMD") << "\n\t";
-            t << varGlue("QMAKE_LN_SHLIB","-"," "," $(TARGET) $(TARGET0)")  << "\n\t"
-              << varGlue("QMAKE_LN_SHLIB","-"," "," $(TARGET) $(TARGET1)") << "\n\t"
-              << varGlue("QMAKE_LN_SHLIB","-"," "," $(TARGET) $(TARGET2)");
-            if(!destdir.isEmpty())
+            t << "\n\t";
+
+            if (!project->isActiveConfig("unversioned_libname"))
+                t << "-$(DEL_FILE) $(TARGET) $(TARGET0) $(TARGET1) $(TARGET2)";
+            else
+                t << "-$(DEL_FILE) $(TARGET)";
+
+            t << "\n\t" << var("QMAKE_LINK_SHLIB_CMD");
+
+            if (!project->isActiveConfig("unversioned_libname")) {
+                t << "\n\t"
+                  << varGlue("QMAKE_LN_SHLIB","-"," "," $(TARGET) $(TARGET0)") << "\n\t"
+                  << varGlue("QMAKE_LN_SHLIB","-"," "," $(TARGET) $(TARGET1)") << "\n\t"
+                  << varGlue("QMAKE_LN_SHLIB","-"," "," $(TARGET) $(TARGET2)");
+            }
+            if (!destdir.isEmpty()) {
                 t << "\n\t"
                   << "-$(DEL_FILE) " << destdir << "$(TARGET)\n\t"
-                  << "-$(DEL_FILE) " << destdir << "$(TARGET0)\n\t"
-                  << "-$(DEL_FILE) " << destdir << "$(TARGET1)\n\t"
-                  << "-$(DEL_FILE) " << destdir << "$(TARGET2)\n\t"
-                  << "-$(MOVE) $(TARGET)  " << destdir << " \n\t"
-                  << "-$(MOVE) $(TARGET0) " << destdir << " \n\t"
-                  << "-$(MOVE) $(TARGET1) " << destdir << " \n\t"
-                  << "-$(MOVE) $(TARGET2) " << destdir << " \n\t";
+                  << "-$(MOVE) $(TARGET)  " << destdir << " ";
+
+                if (!project->isActiveConfig("unversioned_libname")) {
+                    t << "\n\t"
+                      << "-$(DEL_FILE) " << destdir << "$(TARGET0)\n\t"
+                      << "-$(DEL_FILE) " << destdir << "$(TARGET1)\n\t"
+                      << "-$(DEL_FILE) " << destdir << "$(TARGET2)\n\t"
+                      << "-$(MOVE) $(TARGET0) " << destdir << " \n\t"
+                      << "-$(MOVE) $(TARGET1) " << destdir << " \n\t"
+                      << "-$(MOVE) $(TARGET2) " << destdir << " ";
+                }
+            }
             if(!project->isEmpty("QMAKE_POST_LINK"))
                 t << "\n\t" << var("QMAKE_POST_LINK");
             t << endl << endl;
@@ -924,8 +939,12 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
     } else if(!project->isActiveConfig("staticlib") && project->values("QMAKE_APP_FLAG").isEmpty() &&
        !project->isActiveConfig("plugin")) {
         t << "\t-$(DEL_FILE) " << destdir << "$(TARGET) \n";
-        t << "\t-$(DEL_FILE) " << destdir << "$(TARGET0) " << destdir << "$(TARGET1) "
-          << destdir << "$(TARGET2) $(TARGETA)\n";
+        if (!project->isActiveConfig("unversioned_libname")) {
+            t << "\t-$(DEL_FILE) " << destdir << "$(TARGET0) " << destdir << "$(TARGET1) "
+              << destdir << "$(TARGET2) $(TARGETA)\n";
+        } else {
+            t << "\t-$(DEL_FILE) $(TARGETA)\n";
+        }
     } else {
         t << "\t-$(DEL_FILE) " << destdir << "$(TARGET) \n";
     }
@@ -1165,7 +1184,10 @@ void UnixMakefileGenerator::init2()
                                                             project->first("VER_MIN") +  "." +
                                                             project->first("VER_PAT"));
             }
-            project->values("TARGET") = project->values("TARGET_x.y.z");
+            if (project->isActiveConfig("unversioned_libname"))
+                project->values("TARGET") = project->values("TARGET_");
+            else
+                project->values("TARGET") = project->values("TARGET_x.y.z");
         }
         if(project->isEmpty("QMAKE_LN_SHLIB"))
             project->values("QMAKE_LN_SHLIB").append("ln -s");

@@ -985,6 +985,7 @@ void Generator::generateMetacall()
                     fprintf(out, "        case %d: *reinterpret_cast< %s*>(_v) = %s%s; break;\n",
                             propindex, p.type.constData(), prefix.constData(), p.member.constData());
             }
+            fprintf(out, "        default: break;\n");
             fprintf(out, "        }\n");
         }
 
@@ -1033,6 +1034,7 @@ void Generator::generateMetacall()
                     fprintf(out, "            break;\n");
                 }
             }
+            fprintf(out, "        default: break;\n");
             fprintf(out, "        }\n");
         }
 
@@ -1056,6 +1058,7 @@ void Generator::generateMetacall()
                 fprintf(out, "        case %d: %s%s; break;\n",
                         propindex, prefix.constData(), p.reset.constData());
             }
+            fprintf(out, "        default: break;\n");
             fprintf(out, "        }\n");
         }
         fprintf(out,
@@ -1074,6 +1077,7 @@ void Generator::generateMetacall()
                 fprintf(out, "        case %d: *_b = %s; break;\n",
                          propindex, p.designable.constData());
             }
+            fprintf(out, "        default: break;\n");
             fprintf(out, "        }\n");
         }
         fprintf(out,
@@ -1092,6 +1096,7 @@ void Generator::generateMetacall()
                 fprintf(out, "        case %d: *_b = %s; break;\n",
                          propindex, p.scriptable.constData());
             }
+            fprintf(out, "        default: break;\n");
             fprintf(out, "        }\n");
         }
         fprintf(out,
@@ -1110,6 +1115,7 @@ void Generator::generateMetacall()
                 fprintf(out, "        case %d: *_b = %s; break;\n",
                          propindex, p.stored.constData());
             }
+            fprintf(out, "        default: break;\n");
             fprintf(out, "        }\n");
         }
         fprintf(out,
@@ -1128,6 +1134,7 @@ void Generator::generateMetacall()
                 fprintf(out, "        case %d: *_b = %s; break;\n",
                          propindex, p.editable.constData());
             }
+            fprintf(out, "        default: break;\n");
             fprintf(out, "        }\n");
         }
         fprintf(out,
@@ -1147,6 +1154,7 @@ void Generator::generateMetacall()
                 fprintf(out, "        case %d: *_b = %s; break;\n",
                          propindex, p.user.constData());
             }
+            fprintf(out, "        default: break;\n");
             fprintf(out, "        }\n");
         }
         fprintf(out,
@@ -1228,6 +1236,7 @@ void Generator::generateStaticMetacall()
             fprintf(out, ");\n");
             fprintf(out, "            if (_a[0]) *reinterpret_cast<QObject**>(_a[0]) = _r; } break;\n");
         }
+        fprintf(out, "        default: break;\n");
         fprintf(out, "        }\n");
         fprintf(out, "    }");
         needElse = true;

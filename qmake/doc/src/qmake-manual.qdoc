@@ -2133,6 +2133,16 @@
     linked with an application so that they are available as built-in
     resources.
 
+    qmake automatically adds the plugins that are typically needed
+    by the used Qt modules (see \c QT).
+    The defaults are tuned towards an optimal out-of-the-box experience.
+    See \l{Static Plugins} for a list of available plugins, and ways
+    to override the automatic linking.
+
+    This variable currently has no effect when linking against a
+    shared/dynamic build of Qt, or when linking libraries.
+    It may be used for deployment of dynamic plugins at a later time.
+
     \target QT_VERSION_variable
     \section1 QT_VERSION
 
@@ -2412,6 +2422,9 @@
         \li Specifies device capabilities to add to the capability list
             (location, webcam, and so on). This option is not available on Windows Phone.
     \row
+        \li default_language
+        \li The default language code of the application. Defaults to "en".
+    \row
         \li dependencies
         \li Specifies dependencies required by the package.
     \row
@@ -2437,6 +2450,10 @@
         \li identity
         \li The unique ID of the app. Defaults to reusing the existing generated
             manifest's UUID, or generates a new UUID if none is present.
+    \row
+        \li languages
+        \li A list of additional language codes supported by the application. This list
+            is empty by default.
     \row
         \li logo_large
         \li Large logo image file. Default provided by the mkspec.

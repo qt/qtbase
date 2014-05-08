@@ -1,0 +1,118 @@
+From 158b7642c53843ed954fa667ff23b8746f95f8eb Mon Sep 17 00:00:00 2001
+From: Andrew Knight <andrew.knight@digia.com>
+Date: Tue, 22 Apr 2014 09:13:57 +0300
+Subject: [PATCH] ANGLE WinRT: Call Trim() when application suspends
+
+This is required by Windows Store Apps to pass certification.
+
+Task-number: QTBUG-38481
+Change-Id: I6dc00431ee5f6c7d4c64111ccc38f46483d3b9a8
+---
+ .../src/libGLESv2/renderer/d3d11/Renderer11.cpp    | 47 ++++++++++++++++++++++
+ .../src/libGLESv2/renderer/d3d11/Renderer11.h      | 15 +++++++
+ 2 files changed, 62 insertions(+)
+
+diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/Renderer11.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/Renderer11.cpp
+index 2de477b..e70727c 100644
+--- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/Renderer11.cpp
++++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/Renderer11.cpp
+@@ -40,6 +40,13 @@
+ 
+ #include "libEGL/Display.h"
+ 
++#if defined(ANGLE_OS_WINRT) && !defined(ANGLE_OS_WINPHONE)
++#  include <dxgi1_3.h>
++#  include <wrl.h>
++#  include <windows.applicationmodel.core.h>
++typedef ABI::Windows::Foundation::IEventHandler<ABI::Windows::ApplicationModel::SuspendingEventArgs *> SuspendEventHandler;
++#endif
++
+ #ifdef _DEBUG
+ // this flag enables suppressing some spurious warnings that pop up in certain WebGL samples
+ // and conformance tests. to enable all warnings, remove this define.
+@@ -426,9 +433,49 @@ EGLint Renderer11::initialize()
+         }
+     }
+ 
++#if defined(ANGLE_OS_WINRT) && !defined(ANGLE_OS_WINPHONE)
++    // Monitor when the application suspends so that Trim() can be called
++    Microsoft::WRL::ComPtr<ABI::Windows::ApplicationModel::Core::ICoreApplication> application;
++    result = RoGetActivationFactory(Microsoft::WRL::Wrappers::HString::MakeReference(RuntimeClass_Windows_ApplicationModel_Core_CoreApplication).Get(),
++                                    IID_PPV_ARGS(&application));
++    if (FAILED(result))
++    {
++        ERR("Error obtaining CoreApplication: 0x%08X", result);
++        return EGL_NOT_INITIALIZED;
++    }
++
++    EventRegistrationToken cookie;
++    result = application->add_Suspending(Microsoft::WRL::Callback<SuspendEventHandler>(this, &Renderer11::onSuspend).Get(), &cookie);
++    if (FAILED(result))
++    {
++        ERR("Error setting suspend callback: 0x%08X", result);
++        return EGL_NOT_INITIALIZED;
++    }
++#endif
++
+     return EGL_SUCCESS;
+ }
+ 
++#if defined(ANGLE_OS_WINRT) && !defined(ANGLE_OS_WINPHONE)
++HRESULT Renderer11::onSuspend(IInspectable *, ABI::Windows::ApplicationModel::ISuspendingEventArgs *)
++{
++    if (!mDevice)
++        return S_OK;
++
++    Microsoft::WRL::ComPtr<IDXGIDevice3> dxgiDevice;
++    HRESULT result = mDevice->QueryInterface(IID_PPV_ARGS(&dxgiDevice));
++    if (FAILED(result))
++    {
++        ERR("Error obtaining DXGIDevice3 on suspend: 0x%08X", result);
++        return S_OK;
++    }
++
++    dxgiDevice->Trim();
++
++    return S_OK;
++}
++#endif
++
+ // do any one-time device initialization
+ // NOTE: this is also needed after a device lost/reset
+ // to reset the scene status and ensure the default states are reset.
+diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/Renderer11.h b/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/Renderer11.h
+index a8a722c..773fc26 100644
+--- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/Renderer11.h
++++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/Renderer11.h
+@@ -18,6 +18,17 @@
+ #include "libGLESv2/renderer/d3d11/InputLayoutCache.h"
+ #include "libGLESv2/renderer/RenderTarget.h"
+ 
++#if defined(ANGLE_OS_WINRT) && !defined(ANGLE_OS_WINPHONE)
++struct IInspectable;
++namespace ABI {
++    namespace Windows {
++        namespace ApplicationModel {
++            struct ISuspendingEventArgs;
++        }
++    }
++}
++#endif
++
+ namespace gl
+ {
+ class Renderbuffer;
+@@ -202,6 +213,10 @@ class Renderer11 : public Renderer
+                               RenderTarget *drawRenderTarget, bool wholeBufferCopy);
+     ID3D11Texture2D *resolveMultisampledTexture(ID3D11Texture2D *source, unsigned int subresource);
+ 
++#if defined(ANGLE_OS_WINRT) && !defined(ANGLE_OS_WINPHONE)
++    HRESULT onSuspend(IInspectable *, ABI::Windows::ApplicationModel::ISuspendingEventArgs *);
++#endif
++
+     HMODULE mD3d11Module;
+     HMODULE mDxgiModule;
+ 
+-- 
+1.9.0.msysgit.0
+

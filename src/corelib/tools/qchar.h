@@ -358,6 +358,9 @@ public:
         case QChar::Joining_Causing: return QChar::Center;
         case QChar::Joining_Dual: return QChar::Dual;
         case QChar::Joining_Right: return QChar::Right;
+        case QChar::Joining_None:
+        case QChar::Joining_Left:
+        case QChar::Joining_Transparent:
         default: return QChar::OtherJoining;
         }
     }

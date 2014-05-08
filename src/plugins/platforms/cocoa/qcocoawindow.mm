@@ -1375,7 +1375,8 @@ QCocoaNSWindow * QCocoaWindow::createNSWindow()
                                     qPlatformWindow:this];
         if ((type & Qt::Popup) == Qt::Popup)
             [window setHasShadow:YES];
-        [window setHidesOnDeactivate: NO];
+
+        [window setHidesOnDeactivate:(type & Qt::Tool) == Qt::Tool];
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
         if (QSysInfo::QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7) {

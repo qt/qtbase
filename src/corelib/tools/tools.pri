@@ -163,10 +163,10 @@ contains(QT_CONFIG,icu) {
                 LIBS_PRIVATE += -lsicuin -lsicuuc -lsicudt
             }
         } else {
-            LIBS_PRIVATE += -licuin -licuuc
+            LIBS_PRIVATE += -licuin -licuuc -licudt
         }
     } else {
-        LIBS_PRIVATE += -licui18n -licuuc
+        LIBS_PRIVATE += -licui18n -licuuc -licudata
     }
 } else: win32 {
     SOURCES += tools/qcollator_win.cpp

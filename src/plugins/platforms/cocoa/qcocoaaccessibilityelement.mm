@@ -168,6 +168,14 @@
 // TODO: multi-selection: NSAccessibilitySelectedTextRangesAttribute,
     }
 
+    if (iface->valueInterface()) {
+        [attributes addObjectsFromArray: [[NSArray alloc] initWithObjects:
+            NSAccessibilityMinValueAttribute,
+            NSAccessibilityMaxValueAttribute,
+            nil
+        ]];
+    }
+
     return [attributes autorelease];
 }
 
@@ -189,6 +197,19 @@
 
     QAccessible::Id parentId = QAccessible::uniqueId(parent);
     return [QCocoaAccessibleElement elementWithId: parentId];
+}
+
+
+- (id) minValueAttribute:(QAccessibleInterface*)iface {
+    if (QAccessibleValueInterface *val = iface->valueInterface())
+        return [NSNumber numberWithDouble: val->minimumValue().toDouble()];
+    return nil;
+}
+
+- (id) maxValueAttribute:(QAccessibleInterface*)iface {
+    if (QAccessibleValueInterface *val = iface->valueInterface())
+        return [NSNumber numberWithDouble: val->maximumValue().toDouble()];
+    return nil;
 }
 
 - (id)accessibilityAttributeValue:(NSString *)attribute {
@@ -272,6 +293,10 @@
             return [NSNumber numberWithInt: textBeforeCursor.count(QLatin1Char('\n'))];
         }
         return nil;
+    } else if ([attribute isEqualToString:NSAccessibilityMinValueAttribute]) {
+        return [self minValueAttribute:iface];
+    } else if ([attribute isEqualToString:NSAccessibilityMaxValueAttribute]) {
+        return [self maxValueAttribute:iface];
     }
 
     return nil;
@@ -332,7 +357,7 @@
             startOffset = text.indexOf(QLatin1Char('\n'), startOffset) + 1;
         if (startOffset < 0) // invalid line number, return the first line
             startOffset = 0;
-        int endOffset = text.indexOf(QLatin1Char('\n'), startOffset + 1);
+        int endOffset = text.indexOf(QLatin1Char('\n'), startOffset);
         if (endOffset == -1)
             endOffset = text.length();
         return [NSValue valueWithRange:NSMakeRange(quint32(startOffset), quint32(endOffset - startOffset))];
@@ -359,6 +384,12 @@
 
     if ([attribute isEqualToString:NSAccessibilityFocusedAttribute]) {
         return iface->state().focusable ? YES : NO;
+    } else if ([attribute isEqualToString:NSAccessibilityValueAttribute]) {
+        if (iface->textInterface() && iface->state().editable)
+            return YES;
+        if (iface->valueInterface())
+            return YES;
+        return NO;
     } else if ([attribute isEqualToString:NSAccessibilitySelectedTextRangeAttribute]) {
         return iface->textInterface() ? YES : NO;
     }
@@ -372,6 +403,14 @@
     if ([attribute isEqualToString:NSAccessibilityFocusedAttribute]) {
         if (QAccessibleActionInterface *action = iface->actionInterface())
             action->doAction(QAccessibleActionInterface::setFocusAction());
+    } else if ([attribute isEqualToString:NSAccessibilityValueAttribute]) {
+        if (iface->textInterface()) {
+            QString text = QString::fromNSString((NSString *)value);
+            iface->setText(QAccessible::Value, text);
+        } else if (QAccessibleValueInterface *valueIface = iface->valueInterface()) {
+            double val = [value doubleValue];
+            valueIface->setCurrentValue(val);
+        }
     } else if ([attribute isEqualToString:NSAccessibilitySelectedTextRangeAttribute]) {
         if (QAccessibleTextInterface *text = iface->textInterface()) {
             NSRange range = [value rangeValue];

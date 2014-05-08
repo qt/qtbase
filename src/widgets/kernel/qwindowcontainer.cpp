@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -72,7 +72,14 @@ public:
 
     void updateGeometry() {
         Q_Q(QWindowContainer);
-        if (usesNativeWidgets)
+        if (q->geometry().bottom() <= 0 || q->geometry().right() <= 0)
+            /* Qt (e.g. QSplitter) sometimes prefer to hide a widget by *not* calling
+               setVisible(false). This is often done by setting its coordinates to a sufficiently
+               negative value so that its clipped outside the parent. Since a QWindow is not clipped
+               to widgets in general, it needs to be dealt with as a special case.
+            */
+            window->setGeometry(q->geometry());
+        else if (usesNativeWidgets)
             window->setGeometry(q->rect());
         else
             window->setGeometry(QRect(q->mapTo(q->window(), QPoint()), q->size()));

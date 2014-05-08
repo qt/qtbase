@@ -309,9 +309,6 @@ void tst_QTextLayout::simpleBoundingRect()
 
 void tst_QTextLayout::threeLineBoundingRect()
 {
-#if defined(Q_OS_MAC)
-    QSKIP("QTestFontEngine on the mac does not support logclusters at the moment");
-#endif
     /* stricter check. break text into three lines */
 
     QString firstWord("hello");
@@ -430,9 +427,6 @@ void tst_QTextLayout::forcedBreaks()
 
 void tst_QTextLayout::breakAny()
 {
-#if defined(Q_OS_MAC)
-    QSKIP("QTestFontEngine on the mac does not support logclusters at the moment");
-#endif
     QString text = "ABCD";
 
     QTextLayout layout(text, testFont);
@@ -473,9 +467,6 @@ void tst_QTextLayout::breakAny()
 
 void tst_QTextLayout::noWrap()
 {
-#if defined(Q_OS_MAC)
-    QSKIP("QTestFontEngine on the mac does not support logclusters at the moment");
-#endif
     QString text = "AB CD";
 
     QTextLayout layout(text, testFont);
@@ -1048,9 +1039,6 @@ void tst_QTextLayout::charWordStopOnLineSeparator()
 
 void tst_QTextLayout::xToCursorAtEndOfLine()
 {
-#if defined(Q_OS_MAC)
-    QSKIP("QTestFontEngine on the mac does not support logclusters at the moment");
-#endif
     QString text = "FirstLine SecondLine";
     text.replace('\n', QChar::LineSeparator);
 
@@ -1112,9 +1100,6 @@ void tst_QTextLayout::graphemeBoundaryForSurrogatePairs()
 
 void tst_QTextLayout::tabStops()
 {
-#if defined(Q_OS_MAC)
-    QSKIP("QTestFontEngine on the mac does not support logclusters at the moment");
-#endif
     QString txt("Hello there\tworld");
     QTextLayout layout(txt, testFont);
     layout.beginLayout();
@@ -1931,13 +1916,16 @@ void tst_QTextLayout::textWithSurrogates_qtbug15679()
 void tst_QTextLayout::textWidthWithStackedTextEngine()
 {
     QString text = QString::fromUtf8("คลิก ถัดไป เพื่อดำเนินการต่อ");
+
     QTextLayout layout(text);
     layout.setCacheEnabled(true);
     layout.beginLayout();
     QTextLine line = layout.createLine();
     layout.endLayout();
-    QFontMetricsF fm(layout.font());
-    QCOMPARE(line.naturalTextWidth(), fm.width(text));
+
+    QStackTextEngine layout2(text, layout.font());
+
+    QVERIFY(layout2.width(0, text.size()).toReal() >= line.naturalTextWidth());
 }
 
 void tst_QTextLayout::textWidthWithLineSeparator()
@@ -1958,27 +1946,24 @@ void tst_QTextLayout::textWidthWithLineSeparator()
 
 void tst_QTextLayout::cursorInLigatureWithMultipleLines()
 {
-#if !defined(Q_OS_MAC)
-    QSKIP("This test can only be run on Mac");
-#endif
     QTextLayout layout("first line finish", QFont("Times", 20));
     layout.setCacheEnabled(true);
     layout.beginLayout();
     QTextLine line = layout.createLine();
-    line.setLineWidth(70);
-    line = layout.createLine();
+    line.setNumColumns(10);
+    QTextLine line2 = layout.createLine();
     layout.endLayout();
 
-    // The second line will be "finish", with "fi" as a ligature
-    QEXPECT_FAIL("", "QTBUG-26403", Abort);
-    QVERIFY(line.cursorToX(0) != line.cursorToX(1));
+    // The second line will be "finish"
+    QCOMPARE(layout.text().mid(line2.textStart(), line2.textLength()), QString::fromLatin1("finish"));
+
+    QVERIFY(line.cursorToX(1) != line.cursorToX(0));
+    QCOMPARE(line2.cursorToX(line2.textStart()), line.cursorToX(0));
+    QCOMPARE(line2.cursorToX(line2.textStart() + 1), line.cursorToX(1));
 }
 
 void tst_QTextLayout::xToCursorForLigatures()
 {
-#if !defined(Q_OS_MAC)
-    QSKIP("This test can only be run on Mac");
-#endif
     QTextLayout layout("fi", QFont("Times", 20));
     layout.setCacheEnabled(true);
     layout.beginLayout();
@@ -2001,9 +1986,6 @@ void tst_QTextLayout::xToCursorForLigatures()
 
 void tst_QTextLayout::cursorInNonStopChars()
 {
-#if defined(Q_OS_MAC)
-    QSKIP("This test can not be run on Mac");
-#endif
     QTextLayout layout(QString::fromUtf8("\xE0\xA4\xA4\xE0\xA5\x8D\xE0\xA4\xA8"));
     layout.setCacheEnabled(true);
     layout.beginLayout();

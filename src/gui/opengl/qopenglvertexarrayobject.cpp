@@ -60,7 +60,7 @@ public:
     QVertexArrayObjectHelper(QOpenGLContext *context)
     {
         Q_ASSERT(context);
-        if (context->isES()) {
+        if (context->isOpenGLES()) {
             GenVertexArrays = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLsizei , GLuint *)>(context->getProcAddress(QByteArrayLiteral("glGenVertexArraysOES")));
             DeleteVertexArrays = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLsizei , const GLuint *)>(context->getProcAddress(QByteArrayLiteral("glDeleteVertexArraysOES")));
             BindVertexArray = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint )>(context->getProcAddress(QByteArrayLiteral("glBindVertexArrayOES")));
@@ -159,7 +159,7 @@ bool QOpenGLVertexArrayObjectPrivate::create()
     context = ctx;
     QObject::connect(context, SIGNAL(aboutToBeDestroyed()), q, SLOT(_q_contextAboutToBeDestroyed()));
 
-    if (ctx->isES()) {
+    if (ctx->isOpenGLES()) {
         if (ctx->hasExtension(QByteArrayLiteral("GL_OES_vertex_array_object"))) {
             vaoFuncs.helper = new QVertexArrayObjectHelper(ctx);
             vaoFuncsType = OES;

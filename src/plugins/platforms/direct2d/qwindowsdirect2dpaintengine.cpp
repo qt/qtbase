@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -52,6 +52,7 @@
 #include "qwindowsfontdatabase.h"
 #include "qwindowsintegration.h"
 
+#include <QtCore/QStack>
 #include <QtGui/private/qpaintengine_p.h>
 #include <QtGui/private/qtextengine_p.h>
 #include <QtGui/private/qfontengine_p.h>
@@ -71,8 +72,15 @@ QT_BEGIN_NAMESPACE
 // http://msdn.microsoft.com/en-us/library/windows/desktop/dd370979(v=vs.85).aspx
 enum {
     D2DDebugDrawInitialStateTag = -1,
-    D2DDebugDrawImageTag = 1,
-    D2DDebugFillTag,
+    D2DDebugFillTag = 1,
+    D2DDebugFillRectTag,
+    D2DDebugDrawRectsTag,
+    D2DDebugDrawRectFsTag,
+    D2DDebugDrawLinesTag,
+    D2DDebugDrawLineFsTag,
+    D2DDebugDrawEllipseTag,
+    D2DDebugDrawEllipseFTag,
+    D2DDebugDrawImageTag,
     D2DDebugDrawPixmapTag,
     D2DDebugDrawStaticTextItemTag,
     D2DDebugDrawTextItemTag
@@ -80,9 +88,19 @@ enum {
 
 //Clipping flags
 enum {
-    UserClip = 0x1,
-    SimpleSystemClip = 0x2
+    SimpleSystemClip = 0x1
 };
+
+enum ClipType {
+    AxisAlignedClip,
+    LayerClip
+};
+
+// Since d2d is a float-based system we need to be able to snap our drawing to whole pixels.
+// Applying the magical aliasing offset to coordinates will do so, just make sure that
+// aliased painting is turned on on the d2d device context.
+static const qreal MAGICAL_ALIASING_OFFSET = 0.5;
+
 #define D2D_TAG(tag) d->dc()->SetTags(tag, tag)
 
 Q_GUI_EXPORT QImage qt_imageForBrush(int brushStyle, bool invert);
@@ -92,51 +110,127 @@ static inline ID2D1Factory1 *factory()
     return QWindowsDirect2DContext::instance()->d2dFactory();
 }
 
-// XXX reduce code duplication between painterPathToPathGeometry and
-// vectorPathToID2D1PathGeometry, the two are quite similar
-
-static ComPtr<ID2D1PathGeometry1> painterPathToPathGeometry(const QPainterPath &path)
+class Direct2DPathGeometryWriter
 {
-    ComPtr<ID2D1PathGeometry1> geometry;
-    ComPtr<ID2D1GeometrySink> sink;
+public:
+    Direct2DPathGeometryWriter()
+        : m_inFigure(false)
+        , m_roundCoordinates(false)
+    {
 
-    HRESULT hr = factory()->CreatePathGeometry(&geometry);
-    if (FAILED(hr)) {
-        qWarning("%s: Could not create path geometry: %#x", __FUNCTION__, hr);
+    }
+
+    bool begin()
+    {
+        HRESULT hr = factory()->CreatePathGeometry(&m_geometry);
+        if (FAILED(hr)) {
+            qWarning("%s: Could not create path geometry: %#x", __FUNCTION__, hr);
+            return false;
+        }
+
+        hr = m_geometry->Open(&m_sink);
+        if (FAILED(hr)) {
+            qWarning("%s: Could not create geometry sink: %#x", __FUNCTION__, hr);
+            return false;
+        }
+
+        return true;
+    }
+
+    void setWindingFillEnabled(bool enable)
+    {
+        if (enable)
+            m_sink->SetFillMode(D2D1_FILL_MODE_WINDING);
+        else
+            m_sink->SetFillMode(D2D1_FILL_MODE_ALTERNATE);
+    }
+
+    void setAliasingEnabled(bool enable)
+    {
+        m_roundCoordinates = enable;
+    }
+
+    bool isInFigure() const
+    {
+        return m_inFigure;
+    }
+
+    void moveTo(const QPointF &point)
+    {
+        if (m_inFigure)
+            m_sink->EndFigure(D2D1_FIGURE_END_OPEN);
+
+        m_sink->BeginFigure(adjusted(point), D2D1_FIGURE_BEGIN_FILLED);
+        m_inFigure = true;
+    }
+
+    void lineTo(const QPointF &point)
+    {
+        m_sink->AddLine(adjusted(point));
+    }
+
+    void curveTo(const QPointF &p1, const QPointF &p2, const QPointF &p3)
+    {
+        D2D1_BEZIER_SEGMENT segment = {
+            adjusted(p1),
+            adjusted(p2),
+            adjusted(p3)
+        };
+
+        m_sink->AddBezier(segment);
+    }
+
+    void close()
+    {
+        if (m_inFigure)
+            m_sink->EndFigure(D2D1_FIGURE_END_OPEN);
+
+        m_sink->Close();
+    }
+
+    ComPtr<ID2D1PathGeometry1> geometry() const
+    {
+        return m_geometry;
+    }
+
+private:
+    D2D1_POINT_2F adjusted(const QPointF &point)
+    {
+        static const QPointF adjustment(MAGICAL_ALIASING_OFFSET,
+                                        MAGICAL_ALIASING_OFFSET);
+
+        if (m_roundCoordinates)
+            return to_d2d_point_2f(point + adjustment);
+        else
+            return to_d2d_point_2f(point);
+    }
+
+    ComPtr<ID2D1PathGeometry1> m_geometry;
+    ComPtr<ID2D1GeometrySink> m_sink;
+
+    bool m_inFigure;
+    bool m_roundCoordinates;
+};
+
+static ComPtr<ID2D1PathGeometry1> painterPathToID2D1PathGeometry(const QPainterPath &path, bool alias)
+{
+    Direct2DPathGeometryWriter writer;
+    if (!writer.begin())
         return NULL;
-    }
 
-    hr = geometry->Open(&sink);
-    if (FAILED(hr)) {
-        qWarning("%s: Could not create geometry sink: %#x", __FUNCTION__, hr);
-        return NULL;
-    }
-
-    switch (path.fillRule()) {
-    case Qt::WindingFill:
-        sink->SetFillMode(D2D1_FILL_MODE_WINDING);
-        break;
-    case Qt::OddEvenFill:
-        sink->SetFillMode(D2D1_FILL_MODE_ALTERNATE);
-        break;
-    }
-
-    bool inFigure = false;
+    writer.setWindingFillEnabled(path.fillRule() == Qt::WindingFill);
+    writer.setAliasingEnabled(alias);
 
     for (int i = 0; i < path.elementCount(); i++) {
         const QPainterPath::Element element = path.elementAt(i);
 
         switch (element.type) {
         case QPainterPath::MoveToElement:
-            if (inFigure)
-                sink->EndFigure(D2D1_FIGURE_END_OPEN);
-
-            sink->BeginFigure(to_d2d_point_2f(element), D2D1_FIGURE_BEGIN_FILLED);
-            inFigure = true;
+            writer.moveTo(element);
             break;
 
         case QPainterPath::LineToElement:
-            sink->AddLine(to_d2d_point_2f(element));
+            writer.lineTo(element);
             break;
 
         case QPainterPath::CurveToElement:
@@ -149,13 +243,7 @@ static ComPtr<ID2D1PathGeometry1> painterPathToPathGeometry(const QPainterPath &
             Q_ASSERT(data1.type == QPainterPath::CurveToDataElement);
             Q_ASSERT(data2.type == QPainterPath::CurveToDataElement);
 
-            D2D1_BEZIER_SEGMENT segment;
-
-            segment.point1 = to_d2d_point_2f(element);
-            segment.point2 = to_d2d_point_2f(data1);
-            segment.point3 = to_d2d_point_2f(data2);
-
-            sink->AddBezier(segment);
+            writer.curveTo(element, data1, data2);
         }
             break;
 
@@ -165,55 +253,22 @@ static ComPtr<ID2D1PathGeometry1> painterPathToPathGeometry(const QPainterPath &
         }
     }
 
-    if (inFigure)
-        sink->EndFigure(D2D1_FIGURE_END_OPEN);
-
-    sink->Close();
-
-    return geometry;
+    writer.close();
+    return writer.geometry();
 }
 
 static ComPtr<ID2D1PathGeometry1> vectorPathToID2D1PathGeometry(const QVectorPath &path, bool alias)
 {
-    ComPtr<ID2D1PathGeometry1> pathGeometry;
-    HRESULT hr = factory()->CreatePathGeometry(pathGeometry.GetAddressOf());
-    if (FAILED(hr)) {
-        qWarning("%s: Could not create path geometry: %#x", __FUNCTION__, hr);
+    Direct2DPathGeometryWriter writer;
+    if (!writer.begin())
         return NULL;
-    }
 
-    if (path.isEmpty())
-        return pathGeometry;
-
-    ComPtr<ID2D1GeometrySink> sink;
-    hr = pathGeometry->Open(sink.GetAddressOf());
-    if (FAILED(hr)) {
-        qWarning("%s: Could not create geometry sink: %#x", __FUNCTION__, hr);
-        return NULL;
-    }
-
-    sink->SetFillMode(path.hasWindingFill() ? D2D1_FILL_MODE_WINDING
-                                            : D2D1_FILL_MODE_ALTERNATE);
-
-    bool inFigure = false;
+    writer.setWindingFillEnabled(path.hasWindingFill());
+    writer.setAliasingEnabled(alias);
 
     const QPainterPath::ElementType *types = path.elements();
     const int count = path.elementCount();
-    const qreal *points = 0;
-
-    QScopedArrayPointer<qreal> rounded_points;
-
-    if (alias) {
-        // Aliased painting, round to whole numbers
-        rounded_points.reset(new qreal[count * 2]);
-        points = rounded_points.data();
-
-        for (int i = 0; i < (count * 2); i++)
-            rounded_points[i] = qRound(path.points()[i]);
-    } else {
-        // Antialiased painting, keep original numbers
-        points = path.points();
-    }
+    const qreal *points = path.points();
 
     Q_ASSERT(points);
 
@@ -226,15 +281,11 @@ static ComPtr<ID2D1PathGeometry1> vectorPathToID2D1PathGeometry(const QVectorPat
 
             switch (types[i]) {
             case QPainterPath::MoveToElement:
-                if (inFigure)
-                    sink->EndFigure(D2D1_FIGURE_END_OPEN);
-
-                sink->BeginFigure(D2D1::Point2F(x, y), D2D1_FIGURE_BEGIN_FILLED);
-                inFigure = true;
+                writer.moveTo(QPointF(x, y));
                 break;
 
             case QPainterPath::LineToElement:
-                sink->AddLine(D2D1::Point2F(x, y));
+                writer.lineTo(QPointF(x, y));
                 break;
 
             case QPainterPath::CurveToElement:
@@ -251,13 +302,7 @@ static ComPtr<ID2D1PathGeometry1> vectorPathToID2D1PathGeometry(const QVectorPat
                 const qreal x3 = points[i * 2];
                 const qreal y3 = points[i * 2 + 1];
 
-                D2D1_BEZIER_SEGMENT segment = {
-                    D2D1::Point2F(x, y),
-                    D2D1::Point2F(x2, y2),
-                    D2D1::Point2F(x3, y3)
-                };
-
-                sink->AddBezier(segment);
+                writer.curveTo(QPointF(x, y), QPointF(x2, y2), QPointF(x3, y3));
             }
                 break;
 
@@ -267,23 +312,17 @@ static ComPtr<ID2D1PathGeometry1> vectorPathToID2D1PathGeometry(const QVectorPat
             }
         }
     } else {
-        sink->BeginFigure(D2D1::Point2F(points[0], points[1]), D2D1_FIGURE_BEGIN_FILLED);
-        inFigure = true;
-
+        writer.moveTo(QPointF(points[0], points[1]));
         for (int i = 1; i < count; i++)
-            sink->AddLine(D2D1::Point2F(points[i * 2], points[i * 2 + 1]));
+            writer.lineTo(QPointF(points[i * 2], points[i * 2 + 1]));
     }
 
-    if (inFigure) {
+    if (writer.isInFigure())
         if (path.hasImplicitClose())
-            sink->AddLine(D2D1::Point2F(points[0], points[1]));
+            writer.lineTo(QPointF(points[0], points[1]));
 
-        sink->EndFigure(D2D1_FIGURE_END_OPEN);
-    }
-
-    sink->Close();
-
-    return pathGeometry;
+    writer.close();
+    return writer.geometry();
 }
 
 class QWindowsDirect2DPaintEnginePrivate : public QPaintEngineExPrivate
@@ -302,8 +341,8 @@ public:
 
     QWindowsDirect2DBitmap *bitmap;
 
-    QPainterPath clipPath;
     unsigned int clipFlags;
+    QStack<ClipType> pushedClips;
 
     QPointF currentBrushOrigin;
 
@@ -354,81 +393,97 @@ public:
                                                                   : D2D1_ANTIALIAS_MODE_ALIASED;
     }
 
-    void updateTransform()
+    void updateTransform(const QTransform &transform)
     {
-        Q_Q(const QWindowsDirect2DPaintEngine);
-        // Note the loss of info going from 3x3 to 3x2 matrix here
-        dc()->SetTransform(to_d2d_matrix_3x2_f(q->state()->transform()));
+        dc()->SetTransform(to_d2d_matrix_3x2_f(transform));
     }
 
-    void updateOpacity()
+    void updateOpacity(qreal opacity)
     {
-        Q_Q(const QWindowsDirect2DPaintEngine);
-        qreal opacity = q->state()->opacity;
         if (brush.brush)
             brush.brush->SetOpacity(opacity);
         if (pen.brush)
             pen.brush->SetOpacity(opacity);
     }
 
-    void pushClip()
+    void pushClip(const QVectorPath &path)
     {
-        popClip();
+        Q_Q(QWindowsDirect2DPaintEngine);
 
-        ComPtr<ID2D1PathGeometry1> geometry = painterPathToPathGeometry(clipPath);
-        if (!geometry)
-            return;
+        if (path.isEmpty()) {
+            D2D_RECT_F rect = {0, 0, 0, 0};
+            dc()->PushAxisAlignedClip(rect, antialiasMode());
+            pushedClips.push(AxisAlignedClip);
+        } else if (path.isRect() && (q->state()->matrix.type() <= QTransform::TxScale)) {
+            const qreal * const points = path.points();
+            D2D_RECT_F rect = {
+                points[0], // left
+                points[1], // top
+                points[2], // right,
+                points[5]  // bottom
+            };
 
-        dc()->PushLayer(D2D1::LayerParameters1(D2D1::InfiniteRect(),
-                                               geometry.Get(),
-                                               antialiasMode(),
-                                               D2D1::IdentityMatrix(),
-                                               1.0,
-                                               NULL,
-                                               D2D1_LAYER_OPTIONS1_INITIALIZE_FROM_BACKGROUND),
-                        NULL);
-        clipFlags |= UserClip;
-    }
+            dc()->PushAxisAlignedClip(rect, antialiasMode());
+            pushedClips.push(AxisAlignedClip);
+        } else {
+            ComPtr<ID2D1PathGeometry1> geometry = vectorPathToID2D1PathGeometry(path, antialiasMode() == D2D1_ANTIALIAS_MODE_ALIASED);
+            if (!geometry) {
+                qWarning("%s: Could not convert vector path to painter path!", __FUNCTION__);
+                return;
+            }
 
-    void popClip()
-    {
-        if (clipFlags & UserClip) {
-            dc()->PopLayer();
-            clipFlags &= ~UserClip;
+            dc()->PushLayer(D2D1::LayerParameters1(D2D1::InfiniteRect(),
+                                                   geometry.Get(),
+                                                   antialiasMode(),
+                                                   D2D1::IdentityMatrix(),
+                                                   1.0,
+                                                   NULL,
+                                                   D2D1_LAYER_OPTIONS1_INITIALIZE_FROM_BACKGROUND),
+                            NULL);
+            pushedClips.push(LayerClip);
         }
     }
 
-    void updateClipEnabled()
+    void clearClips()
     {
-        Q_Q(const QWindowsDirect2DPaintEngine);
-        if (!q->state()->clipEnabled)
-            popClip();
-        else if (!(clipFlags & UserClip))
-            pushClip();
+        while (!pushedClips.isEmpty()) {
+            switch (pushedClips.pop()) {
+            case AxisAlignedClip:
+                dc()->PopAxisAlignedClip();
+                break;
+            case LayerClip:
+                dc()->PopLayer();
+                break;
+            }
+        }
     }
 
-    void updateClipPath(const QPainterPath &path, Qt::ClipOperation operation)
+    void updateClipEnabled(bool enabled)
+    {
+        if (!enabled)
+            clearClips();
+        else if (pushedClips.isEmpty())
+            replayClipOperations();
+    }
+
+    void clip(const QVectorPath &path, Qt::ClipOperation operation)
     {
         switch (operation) {
         case Qt::NoClip:
-            popClip();
+            clearClips();
             break;
         case Qt::ReplaceClip:
-            clipPath = path;
-            pushClip();
+            clearClips();
+            pushClip(path);
             break;
         case Qt::IntersectClip:
-            clipPath &= path;
-            pushClip();
+            pushClip(path);
             break;
         }
     }
 
-    void updateCompositionMode()
+    void updateCompositionMode(QPainter::CompositionMode mode)
     {
-        Q_Q(const QWindowsDirect2DPaintEngine);
-        QPainter::CompositionMode mode = q->state()->compositionMode();
-
         switch (mode) {
         case QPainter::CompositionMode_Source:
             dc()->SetPrimitiveBlend(D2D1_PRIMITIVE_BLEND_COPY);
@@ -447,7 +502,7 @@ public:
     {
         Q_Q(const QWindowsDirect2DPaintEngine);
 
-        if (qbrush_fast_equals(brush.qbrush, newBrush))
+        if (qbrush_fast_equals(brush.qbrush, newBrush) && (brush.brush || brush.emulate))
             return;
 
         brush.brush = to_d2d_brush(newBrush, &brush.emulate);
@@ -459,12 +514,10 @@ public:
         }
     }
 
-    void updateBrushOrigin()
+    void updateBrushOrigin(const QPointF &brushOrigin)
     {
-        Q_Q(const QWindowsDirect2DPaintEngine);
-
         negateCurrentBrushOrigin();
-        applyBrushOrigin(q->state()->brushOrigin);
+        applyBrushOrigin(brushOrigin);
     }
 
     void negateCurrentBrushOrigin()
@@ -492,12 +545,10 @@ public:
         currentBrushOrigin = origin;
     }
 
-    void updatePen()
+    void updatePen(const QPen &newPen)
     {
         Q_Q(const QWindowsDirect2DPaintEngine);
-        const QPen &newPen = q->state()->pen;
-
-        if (qpen_fast_equals(newPen, pen.qpen))
+        if (qpen_fast_equals(newPen, pen.qpen) && (pen.brush || pen.emulate))
             return;
 
         pen.reset();
@@ -658,7 +709,91 @@ public:
             break;
 
         case Qt::LinearGradientPattern:
+            if (newBrush.gradient()->spread() != QGradient::PadSpread) {
+                *needsEmulation = true;
+            } else {
+                ComPtr<ID2D1LinearGradientBrush> linear;
+                const QLinearGradient *qlinear = static_cast<const QLinearGradient *>(newBrush.gradient());
+
+                D2D1_LINEAR_GRADIENT_BRUSH_PROPERTIES linearGradientBrushProperties;
+                ComPtr<ID2D1GradientStopCollection> gradientStopCollection;
+
+                const QGradientStops &qstops = qlinear->stops();
+                QVector<D2D1_GRADIENT_STOP> stops(qstops.count());
+
+                linearGradientBrushProperties.startPoint = to_d2d_point_2f(qlinear->start());
+                linearGradientBrushProperties.endPoint = to_d2d_point_2f(qlinear->finalStop());
+
+                for (int i = 0; i < stops.size(); i++) {
+                    stops[i].position = qstops[i].first;
+                    stops[i].color = to_d2d_color_f(qstops[i].second);
+                }
+
+                hr = dc()->CreateGradientStopCollection(stops.constData(), stops.size(), &gradientStopCollection);
+                if (FAILED(hr)) {
+                    qWarning("%s: Could not create gradient stop collection for linear gradient: %#x", __FUNCTION__, hr);
+                    break;
+                }
+
+                hr = dc()->CreateLinearGradientBrush(linearGradientBrushProperties, gradientStopCollection.Get(),
+                                                     &linear);
+                if (FAILED(hr)) {
+                    qWarning("%s: Could not create Direct2D linear gradient brush: %#x", __FUNCTION__, hr);
+                    break;
+                }
+
+                hr = linear.As(&result);
+                if (FAILED(hr)) {
+                    qWarning("%s: Could not convert Direct2D linear gradient brush: %#x", __FUNCTION__, hr);
+                    break;
+                }
+            }
+            break;
+
         case Qt::RadialGradientPattern:
+            if (newBrush.gradient()->spread() != QGradient::PadSpread) {
+                *needsEmulation = true;
+            } else {
+                ComPtr<ID2D1RadialGradientBrush> radial;
+                const QRadialGradient *qradial = static_cast<const QRadialGradient *>(newBrush.gradient());
+
+                D2D1_RADIAL_GRADIENT_BRUSH_PROPERTIES radialGradientBrushProperties;
+                ComPtr<ID2D1GradientStopCollection> gradientStopCollection;
+
+                const QGradientStops &qstops = qradial->stops();
+                QVector<D2D1_GRADIENT_STOP> stops(qstops.count());
+
+                radialGradientBrushProperties.center = to_d2d_point_2f(qradial->center());
+                radialGradientBrushProperties.gradientOriginOffset = to_d2d_point_2f(qradial->focalPoint() - qradial->center());
+                radialGradientBrushProperties.radiusX = qradial->radius();
+                radialGradientBrushProperties.radiusY = qradial->radius();
+
+                for (int i = 0; i < stops.size(); i++) {
+                    stops[i].position = qstops[i].first;
+                    stops[i].color = to_d2d_color_f(qstops[i].second);
+                }
+
+                hr = dc()->CreateGradientStopCollection(stops.constData(), stops.size(), &gradientStopCollection);
+                if (FAILED(hr)) {
+                    qWarning("%s: Could not create gradient stop collection for radial gradient: %#x", __FUNCTION__, hr);
+                    break;
+                }
+
+                hr = dc()->CreateRadialGradientBrush(radialGradientBrushProperties, gradientStopCollection.Get(),
+                                                     &radial);
+                if (FAILED(hr)) {
+                    qWarning("%s: Could not create Direct2D radial gradient brush: %#x", __FUNCTION__, hr);
+                    break;
+                }
+
+                radial.As(&result);
+                if (FAILED(hr)) {
+                    qWarning("%s: Could not convert Direct2D radial gradient brush: %#x", __FUNCTION__, hr);
+                    break;
+                }
+            }
+            break;
+
         case Qt::ConicalGradientPattern:
             *needsEmulation = true;
             break;
@@ -706,16 +841,9 @@ QWindowsDirect2DPaintEngine::QWindowsDirect2DPaintEngine(QWindowsDirect2DBitmap 
     : QPaintEngineEx(*(new QWindowsDirect2DPaintEnginePrivate(bitmap)))
 {
     QPaintEngine::PaintEngineFeatures unsupported =
-            // As of 1.1 Direct2D gradient support is deficient for linear and radial gradients
-            QPaintEngine::LinearGradientFill
-            | QPaintEngine::RadialGradientFill
-
-            // As of 1.1 Direct2D does not support conical gradients at all
-            | QPaintEngine::ConicalGradientFill
-
             // As of 1.1 Direct2D does not natively support complex composition modes
             // However, using Direct2D effects that implement them should be possible
-            | QPaintEngine::PorterDuff
+            QPaintEngine::PorterDuff
             | QPaintEngine::BlendModes
             | QPaintEngine::RasterOpModes
 
@@ -739,7 +867,7 @@ bool QWindowsDirect2DPaintEngine::begin(QPaintDevice * pdev)
         QPainterPath p;
         p.addRegion(systemClip());
 
-        ComPtr<ID2D1PathGeometry1> geometry = painterPathToPathGeometry(p);
+        ComPtr<ID2D1PathGeometry1> geometry = painterPathToID2D1PathGeometry(p, d->antialiasMode() == D2D1_ANTIALIAS_MODE_ALIASED);
         if (!geometry)
             return false;
 
@@ -761,6 +889,7 @@ bool QWindowsDirect2DPaintEngine::begin(QPaintDevice * pdev)
 
     D2D_TAG(D2DDebugDrawInitialStateTag);
 
+    setActive(true);
     return true;
 }
 
@@ -768,7 +897,7 @@ bool QWindowsDirect2DPaintEngine::end()
 {
     Q_D(QWindowsDirect2DPaintEngine);
     // First pop any user-applied clipping
-    d->popClip();
+    d->clearClips();
     // Now the system clip from begin() above
     if (d->clipFlags & SimpleSystemClip) {
         d->dc()->PopAxisAlignedClip();
@@ -784,6 +913,23 @@ QPaintEngine::Type QWindowsDirect2DPaintEngine::type() const
     return QPaintEngine::Direct2D;
 }
 
+void QWindowsDirect2DPaintEngine::setState(QPainterState *s)
+{
+    Q_D(QWindowsDirect2DPaintEngine);
+
+    QPaintEngineEx::setState(s);
+    d->clearClips();
+
+    clipEnabledChanged();
+    penChanged();
+    brushChanged();
+    brushOriginChanged();
+    opacityChanged();
+    compositionModeChanged();
+    renderHintsChanged();
+    transformChanged();
+}
+
 void QWindowsDirect2DPaintEngine::fill(const QVectorPath &path, const QBrush &brush)
 {
     Q_D(QWindowsDirect2DPaintEngine);
@@ -792,28 +938,10 @@ void QWindowsDirect2DPaintEngine::fill(const QVectorPath &path, const QBrush &br
     if (path.isEmpty())
         return;
 
-    d->updateBrush(brush);
+    ensureBrush(brush);
 
-    if (d->brush.emulate) {
-        // We mostly (only?) get here when gradients are required.
-        // We could probably natively support linear and radial gradients that have pad reflect
-
-        QImage img(d->bitmap->size(), QImage::Format_ARGB32);
-        img.fill(Qt::transparent);
-
-        QPainter p;
-        QPaintEngine *engine = img.paintEngine();
-        if (engine->isExtended() && p.begin(&img)) {
-            QPaintEngineEx *extended = static_cast<QPaintEngineEx *>(engine);
-            extended->fill(path, brush);
-            if (!p.end())
-                qWarning("%s: Paint Engine end returned false", __FUNCTION__);
-
-            drawImage(img.rect(), img, img.rect());
-        } else {
-            qWarning("%s: Could not fall back to QImage", __FUNCTION__);
-        }
-
+    if (emulationRequired(BrushEmulation)) {
+        rasterFill(path, brush);
         return;
     }
 
@@ -829,46 +957,22 @@ void QWindowsDirect2DPaintEngine::fill(const QVectorPath &path, const QBrush &br
     d->dc()->FillGeometry(geometry.Get(), d->brush.brush.Get());
 }
 
-// For clipping we convert everything to painter paths since it allows
-// calculating intersections easily. It might be faster to convert to
-// ID2D1Geometry and use its operations, although that needs to measured.
-// The implementation would be more complex in any case.
-
 void QWindowsDirect2DPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
 {
-    clip(path.convertToPainterPath(), op);
-}
-
-void QWindowsDirect2DPaintEngine::clip(const QRect &rect, Qt::ClipOperation op)
-{
-    QPainterPath p;
-    p.addRect(rect);
-    clip(p, op);
-}
-
-void QWindowsDirect2DPaintEngine::clip(const QRegion &region, Qt::ClipOperation op)
-{
-    QPainterPath p;
-    p.addRegion(region);
-    clip(p, op);
-}
-
-void QWindowsDirect2DPaintEngine::clip(const QPainterPath &path, Qt::ClipOperation op)
-{
     Q_D(QWindowsDirect2DPaintEngine);
-    d->updateClipPath(path, op);
+    d->clip(path, op);
 }
 
 void QWindowsDirect2DPaintEngine::clipEnabledChanged()
 {
     Q_D(QWindowsDirect2DPaintEngine);
-    d->updateClipEnabled();
+    d->updateClipEnabled(state()->clipEnabled);
 }
 
 void QWindowsDirect2DPaintEngine::penChanged()
 {
     Q_D(QWindowsDirect2DPaintEngine);
-    d->updatePen();
+    d->updatePen(state()->pen);
 }
 
 void QWindowsDirect2DPaintEngine::brushChanged()
@@ -880,19 +984,19 @@ void QWindowsDirect2DPaintEngine::brushChanged()
 void QWindowsDirect2DPaintEngine::brushOriginChanged()
 {
     Q_D(QWindowsDirect2DPaintEngine);
-    d->updateBrushOrigin();
+    d->updateBrushOrigin(state()->brushOrigin);
 }
 
 void QWindowsDirect2DPaintEngine::opacityChanged()
 {
     Q_D(QWindowsDirect2DPaintEngine);
-    d->updateOpacity();
+    d->updateOpacity(state()->opacity);
 }
 
 void QWindowsDirect2DPaintEngine::compositionModeChanged()
 {
     Q_D(QWindowsDirect2DPaintEngine);
-    d->updateCompositionMode();
+    d->updateCompositionMode(state()->compositionMode());
 }
 
 void QWindowsDirect2DPaintEngine::renderHintsChanged()
@@ -904,7 +1008,199 @@ void QWindowsDirect2DPaintEngine::renderHintsChanged()
 void QWindowsDirect2DPaintEngine::transformChanged()
 {
     Q_D(QWindowsDirect2DPaintEngine);
-    d->updateTransform();
+    d->updateTransform(state()->transform());
+}
+
+void QWindowsDirect2DPaintEngine::fillRect(const QRectF &rect, const QBrush &brush)
+{
+    Q_D(QWindowsDirect2DPaintEngine);
+    D2D_TAG(D2DDebugFillRectTag);
+
+    ensureBrush(brush);
+
+    if (emulationRequired(BrushEmulation)) {
+        QPaintEngineEx::fillRect(rect, brush);
+    } else {
+        QRectF r = rect.normalized();
+        adjustForAliasing(&r);
+
+        if (d->brush.brush)
+            d->dc()->FillRectangle(to_d2d_rect_f(rect), d->brush.brush.Get());
+    }
+}
+
+void QWindowsDirect2DPaintEngine::drawRects(const QRect *rects, int rectCount)
+{
+    Q_D(QWindowsDirect2DPaintEngine);
+    D2D_TAG(D2DDebugDrawRectsTag);
+
+    ensureBrush();
+    ensurePen();
+
+    if (emulationRequired(BrushEmulation) || emulationRequired(PenEmulation)) {
+        QPaintEngineEx::drawRects(rects, rectCount);
+    } else {
+        QRectF rect;
+        for (int i = 0; i < rectCount; i++) {
+            rect = rects[i].normalized();
+            adjustForAliasing(&rect);
+
+            D2D1_RECT_F d2d_rect = to_d2d_rect_f(rect);
+
+            if (d->brush.brush)
+                d->dc()->FillRectangle(d2d_rect, d->brush.brush.Get());
+
+            if (d->pen.brush)
+                d->dc()->DrawRectangle(d2d_rect, d->pen.brush.Get(), d->pen.qpen.widthF(), d->pen.strokeStyle.Get());
+        }
+    }
+}
+
+void QWindowsDirect2DPaintEngine::drawRects(const QRectF *rects, int rectCount)
+{
+    Q_D(QWindowsDirect2DPaintEngine);
+    D2D_TAG(D2DDebugDrawRectFsTag);
+
+    ensureBrush();
+    ensurePen();
+
+    if (emulationRequired(BrushEmulation) || emulationRequired(PenEmulation)) {
+        QPaintEngineEx::drawRects(rects, rectCount);
+    } else {
+        QRectF rect;
+        for (int i = 0; i < rectCount; i++) {
+            rect = rects[i].normalized();
+            adjustForAliasing(&rect);
+
+            D2D1_RECT_F d2d_rect = to_d2d_rect_f(rect);
+
+            if (d->brush.brush)
+                d->dc()->FillRectangle(d2d_rect, d->brush.brush.Get());
+
+            if (d->pen.brush)
+                d->dc()->DrawRectangle(d2d_rect, d->pen.brush.Get(), d->pen.qpen.widthF(), d->pen.strokeStyle.Get());
+        }
+    }
+}
+
+void QWindowsDirect2DPaintEngine::drawLines(const QLine *lines, int lineCount)
+{
+    Q_D(QWindowsDirect2DPaintEngine);
+    D2D_TAG(D2DDebugDrawLinesTag);
+
+    ensurePen();
+
+    if (emulationRequired(PenEmulation)) {
+        QPaintEngineEx::drawLines(lines, lineCount);
+    } else if (d->pen.brush) {
+        for (int i = 0; i < lineCount; i++) {
+            QPointF p1 = lines[i].p1();
+            QPointF p2 = lines[i].p2();
+
+            // Match raster engine output
+            if (p1 == p2 && d->pen.qpen.widthF() <= 1.0) {
+                fillRect(QRectF(p1, QSizeF(d->pen.qpen.widthF(), d->pen.qpen.widthF())),
+                         d->pen.qpen.brush());
+                continue;
+            }
+
+            adjustForAliasing(&p1);
+            adjustForAliasing(&p2);
+
+            D2D1_POINT_2F d2d_p1 = to_d2d_point_2f(p1);
+            D2D1_POINT_2F d2d_p2 = to_d2d_point_2f(p2);
+
+            d->dc()->DrawLine(d2d_p1, d2d_p2, d->pen.brush.Get(), d->pen.qpen.widthF(), d->pen.strokeStyle.Get());
+        }
+    }
+}
+
+void QWindowsDirect2DPaintEngine::drawLines(const QLineF *lines, int lineCount)
+{
+    Q_D(QWindowsDirect2DPaintEngine);
+    D2D_TAG(D2DDebugDrawLineFsTag);
+
+    ensurePen();
+
+    if (emulationRequired(PenEmulation)) {
+        QPaintEngineEx::drawLines(lines, lineCount);
+    } else if (d->pen.brush) {
+        for (int i = 0; i < lineCount; i++) {
+            QPointF p1 = lines[i].p1();
+            QPointF p2 = lines[i].p2();
+
+            // Match raster engine output
+            if (p1 == p2 && d->pen.qpen.widthF() <= 1.0) {
+                fillRect(QRectF(p1, QSizeF(d->pen.qpen.widthF(), d->pen.qpen.widthF())),
+                         d->pen.qpen.brush());
+                continue;
+            }
+
+            adjustForAliasing(&p1);
+            adjustForAliasing(&p2);
+
+            D2D1_POINT_2F d2d_p1 = to_d2d_point_2f(p1);
+            D2D1_POINT_2F d2d_p2 = to_d2d_point_2f(p2);
+
+            d->dc()->DrawLine(d2d_p1, d2d_p2, d->pen.brush.Get(), d->pen.qpen.widthF(), d->pen.strokeStyle.Get());
+        }
+    }
+}
+
+void QWindowsDirect2DPaintEngine::drawEllipse(const QRectF &r)
+{
+    Q_D(QWindowsDirect2DPaintEngine);
+    D2D_TAG(D2DDebugDrawEllipseFTag);
+
+    ensureBrush();
+    ensurePen();
+
+    if (emulationRequired(BrushEmulation) || emulationRequired(PenEmulation)) {
+        QPaintEngineEx::drawEllipse(r);
+    } else {
+        QPointF p = r.center();
+        adjustForAliasing(&p);
+
+        D2D1_ELLIPSE ellipse = {
+            to_d2d_point_2f(p),
+            r.width() / 2.0,
+            r.height() / 2.0
+        };
+
+        if (d->brush.brush)
+            d->dc()->FillEllipse(ellipse, d->brush.brush.Get());
+
+        if (d->pen.brush)
+            d->dc()->DrawEllipse(ellipse, d->pen.brush.Get(), d->pen.qpen.widthF(), d->pen.strokeStyle.Get());
+    }
+}
+
+void QWindowsDirect2DPaintEngine::drawEllipse(const QRect &r)
+{
+    Q_D(QWindowsDirect2DPaintEngine);
+    D2D_TAG(D2DDebugDrawEllipseTag);
+
+    ensureBrush();
+    ensurePen();
+
+    if (emulationRequired(BrushEmulation) || emulationRequired(PenEmulation)) {
+        QPaintEngineEx::drawEllipse(r);
+    } else {
+        QPointF p = r.center();
+        adjustForAliasing(&p);
+
+        D2D1_ELLIPSE ellipse = {
+            to_d2d_point_2f(p),
+            r.width() / 2.0,
+            r.height() / 2.0
+        };
+
+        if (d->brush.brush)
+            d->dc()->FillEllipse(ellipse, d->brush.brush.Get());
+
+        if (d->pen.brush)
+            d->dc()->DrawEllipse(ellipse, d->pen.brush.Get(), d->pen.qpen.widthF(), d->pen.strokeStyle.Get());
+    }
 }
 
 void QWindowsDirect2DPaintEngine::drawImage(const QRectF &rectangle, const QImage &image,
@@ -937,6 +1233,8 @@ void QWindowsDirect2DPaintEngine::drawPixmap(const QRectF &r,
 
     QWindowsDirect2DPlatformPixmap *pp = static_cast<QWindowsDirect2DPlatformPixmap *>(pm.handle());
     QWindowsDirect2DBitmap *bitmap = pp->bitmap();
+
+    ensurePen();
 
     if (bitmap->bitmap() != d->bitmap->bitmap()) {
         // Good, src bitmap != dst bitmap
@@ -1036,11 +1334,10 @@ void QWindowsDirect2DPaintEngine::drawStaticTextItem(QStaticTextItem *staticText
     Q_D(QWindowsDirect2DPaintEngine);
     D2D_TAG(D2DDebugDrawStaticTextItemTag);
 
-    if (qpen_style(d->pen.qpen) == Qt::NoPen)
-        return;
-
     if (staticTextItem->numGlyphs == 0)
         return;
+
+    ensurePen();
 
     // If we can't support the current configuration with Direct2D, fall back to slow path
     // Most common cases are perspective transform and gradient brush as pen
@@ -1086,12 +1383,11 @@ void QWindowsDirect2DPaintEngine::drawTextItem(const QPointF &p, const QTextItem
     Q_D(QWindowsDirect2DPaintEngine);
     D2D_TAG(D2DDebugDrawTextItemTag);
 
-    if (qpen_style(d->pen.qpen) == Qt::NoPen)
-        return;
-
     const QTextItemInt &ti = static_cast<const QTextItemInt &>(textItem);
     if (ti.glyphs.numGlyphs == 0)
         return;
+
+    ensurePen();
 
     // If we can't support the current configuration with Direct2D, fall back to slow path
     // Most common cases are perspective transform and gradient brush as pen
@@ -1192,6 +1488,134 @@ void QWindowsDirect2DPaintEngine::drawGlyphRun(const D2D1_POINT_2F &pos,
                           NULL,
                           d->pen.brush.Get(),
                           DWRITE_MEASURING_MODE_GDI_CLASSIC);
+}
+
+void QWindowsDirect2DPaintEngine::ensureBrush()
+{
+    ensureBrush(state()->brush);
+}
+
+void QWindowsDirect2DPaintEngine::ensureBrush(const QBrush &brush)
+{
+    Q_D(QWindowsDirect2DPaintEngine);
+    d->updateBrush(brush);
+}
+
+void QWindowsDirect2DPaintEngine::ensurePen()
+{
+    ensurePen(state()->pen);
+}
+
+void QWindowsDirect2DPaintEngine::ensurePen(const QPen &pen)
+{
+    Q_D(QWindowsDirect2DPaintEngine);
+    d->updatePen(pen);
+}
+
+void QWindowsDirect2DPaintEngine::rasterFill(const QVectorPath &path, const QBrush &brush)
+{
+    Q_D(QWindowsDirect2DPaintEngine);
+
+    QImage img(d->bitmap->size(), QImage::Format_ARGB32);
+    img.fill(Qt::transparent);
+
+    QPainter p;
+    QPaintEngine *engine = img.paintEngine();
+
+    if (engine->isExtended() && p.begin(&img)) {
+        p.setRenderHints(state()->renderHints);
+        p.setCompositionMode(state()->compositionMode());
+        p.setOpacity(state()->opacity);
+        p.setBrushOrigin(state()->brushOrigin);
+        p.setBrush(state()->brush);
+        p.setPen(state()->pen);
+
+        QPaintEngineEx *extended = static_cast<QPaintEngineEx *>(engine);
+        foreach (const QPainterClipInfo &info, state()->clipInfo) {
+            extended->state()->matrix = info.matrix;
+            extended->transformChanged();
+
+            switch (info.clipType) {
+            case QPainterClipInfo::RegionClip:
+                extended->clip(info.region, info.operation);
+                break;
+            case QPainterClipInfo::PathClip:
+                extended->clip(info.path, info.operation);
+                break;
+            case QPainterClipInfo::RectClip:
+                extended->clip(info.rect, info.operation);
+                break;
+            case QPainterClipInfo::RectFClip:
+                qreal right = info.rectf.x() + info.rectf.width();
+                qreal bottom = info.rectf.y() + info.rectf.height();
+                qreal pts[] = { info.rectf.x(), info.rectf.y(),
+                                right, info.rectf.y(),
+                                right, bottom,
+                                info.rectf.x(), bottom };
+                QVectorPath vp(pts, 4, 0, QVectorPath::RectangleHint);
+                extended->clip(vp, info.operation);
+                break;
+            }
+        }
+
+        extended->state()->matrix = state()->matrix;
+        extended->transformChanged();
+
+        extended->fill(path, brush);
+        if (!p.end())
+            qWarning("%s: Paint Engine end returned false", __FUNCTION__);
+
+        d->updateClipEnabled(false);
+        d->updateTransform(QTransform());
+        drawImage(img.rect(), img, img.rect());
+        transformChanged();
+        clipEnabledChanged();
+    } else {
+        qWarning("%s: Could not fall back to QImage", __FUNCTION__);
+    }
+}
+
+bool QWindowsDirect2DPaintEngine::emulationRequired(EmulationType type) const
+{
+    Q_D(const QWindowsDirect2DPaintEngine);
+
+    if (!state()->matrix.isAffine())
+        return true;
+
+    switch (type) {
+    case PenEmulation:
+        return d->pen.emulate;
+        break;
+    case BrushEmulation:
+        return d->brush.emulate;
+        break;
+    }
+
+    return false;
+}
+
+bool QWindowsDirect2DPaintEngine::antiAliasingEnabled() const
+{
+    return state()->renderHints & QPainter::Antialiasing;
+}
+
+void QWindowsDirect2DPaintEngine::adjustForAliasing(QRectF *rect)
+{
+   if (!antiAliasingEnabled()) {
+       rect->adjust(MAGICAL_ALIASING_OFFSET,
+                    MAGICAL_ALIASING_OFFSET,
+                    MAGICAL_ALIASING_OFFSET,
+                    MAGICAL_ALIASING_OFFSET);
+   }
+}
+
+void QWindowsDirect2DPaintEngine::adjustForAliasing(QPointF *point)
+{
+    static const QPointF adjustment(MAGICAL_ALIASING_OFFSET,
+                                    MAGICAL_ALIASING_OFFSET);
+
+    if (!antiAliasingEnabled())
+        (*point) += adjustment;
 }
 
 QT_END_NAMESPACE

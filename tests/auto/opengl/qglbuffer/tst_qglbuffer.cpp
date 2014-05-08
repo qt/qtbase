@@ -207,6 +207,10 @@ void tst_QGLBuffer::bufferSharing()
     QSKIP("Unreproducible timeout on Windows (MSVC/MinGW) CI bots");
 #endif
 
+#if defined(Q_OS_QNX)
+    QSKIP("Crashes on QNX when destroying the second QGLWidget (see QTBUG-38275)");
+#endif
+
     QGLWidget *w1 = new QGLWidget();
     w1->makeCurrent();
 

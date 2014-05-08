@@ -984,12 +984,14 @@ void tst_QMap::qmultimap_specific()
 
 void tst_QMap::const_shared_null()
 {
+    QMap<int, QString> map2;
+#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
     QMap<int, QString> map1;
     map1.setSharable(false);
     QVERIFY(map1.isDetached());
 
-    QMap<int, QString> map2;
     map2.setSharable(true);
+#endif
     QVERIFY(!map2.isDetached());
 }
 
@@ -1046,6 +1048,7 @@ const T &const_(const T &t)
 
 void tst_QMap::setSharable()
 {
+#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
     QMap<int, QString> map;
 
     map.insert(1, "um");
@@ -1095,6 +1098,7 @@ void tst_QMap::setSharable()
         QVERIFY(!map.isDetached());
         QVERIFY(copy.isSharedWith(map));
     }
+#endif
 }
 
 void tst_QMap::insert()
@@ -1204,7 +1208,6 @@ void tst_QMap::initializerList()
 void tst_QMap::testInsertWithHint()
 {
     QMap<int, int> map;
-    map.setSharable(false);
 
     // Check with end hint();
     map.insert(map.constEnd(), 3, 1);     // size == 1
@@ -1268,7 +1271,6 @@ void tst_QMap::testInsertWithHint()
 void tst_QMap::testInsertMultiWithHint()
 {
     QMap<int, int> map;
-    map.setSharable(false);
 
     typedef QMap<int, int>::const_iterator cite; // Hack since we define QT_STRICT_ITERATORS
     map.insertMulti(cite(map.end()), 64, 65);

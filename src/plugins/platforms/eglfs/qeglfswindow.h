@@ -91,7 +91,7 @@ private:
         Created = 0x01,
         HasNativeWindow = 0x02
     };
-    Q_DECLARE_FLAGS(Flags, Flag);
+    Q_DECLARE_FLAGS(Flags, Flag)
     Flags m_flags;
 };
 

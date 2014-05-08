@@ -1007,7 +1007,7 @@ void tst_QMdiArea::activeSubWindow()
     qApp->setActiveWindow(&mainWindow);
     QCOMPARE(mdiArea->activeSubWindow(), subWindow);
 
-#if !defined(Q_OS_MAC) && !defined(Q_OS_WIN)
+#if !defined(Q_OS_MAC) && !defined(Q_OS_WIN) && !defined(Q_OS_QNX)
     qApp->setActiveWindow(0);
     QVERIFY(!mdiArea->activeSubWindow());
 #endif
@@ -1088,7 +1088,7 @@ void tst_QMdiArea::currentSubWindow()
     QVERIFY(mdiArea.activeSubWindow());
     QVERIFY(mdiArea.currentSubWindow());
 
-#if !defined(Q_OS_MAC) && !defined(Q_OS_WIN)
+#if !defined(Q_OS_MAC) && !defined(Q_OS_WIN) && !defined(Q_OS_QNX)
     qApp->setActiveWindow(0);
     QVERIFY(!mdiArea.activeSubWindow());
     QVERIFY(mdiArea.currentSubWindow());
@@ -1701,7 +1701,7 @@ void tst_QMdiArea::tileSubWindows()
     qApp->processEvents();
     QTRY_COMPARE(workspace.size(), QSize(350, 150));
 
-    const QSize minSize(300, 100);
+    const QSize minSize(600, 130);
     foreach (QMdiSubWindow *subWindow, workspace.subWindowList())
         subWindow->setMinimumSize(minSize);
 
@@ -1908,6 +1908,9 @@ void tst_QMdiArea::dontMaximizeSubWindowOnActivation()
     for (int i = 0; i < 5; ++i) {
         QMdiSubWindow *window = mdiArea.addSubWindow(new QWidget);
         window->show();
+#if defined Q_OS_QNX
+        QEXPECT_FAIL("", "QTBUG-38231", Abort);
+#endif
         QVERIFY(window->isMaximized());
         qApp->processEvents();
     }
@@ -2598,7 +2601,7 @@ void tst_QMdiArea::nativeSubWindows()
     if (platformName != QLatin1String("xcb") && platformName != QLatin1String("windows"))
         QSKIP(qPrintable(QString::fromLatin1("nativeSubWindows() does not work on this platform (%1).").arg(platformName)));
 #if defined(Q_OS_WIN) && !defined(QT_NO_OPENGL)
-    if (QOpenGLContext::openGLModuleType() != QOpenGLContext::DesktopGL)
+    if (QOpenGLContext::openGLModuleType() != QOpenGLContext::LibGL)
         QSKIP("nativeSubWindows() does not work with ANGLE on Windows, QTBUG-28545.");
 #endif
     { // Add native widgets after show.

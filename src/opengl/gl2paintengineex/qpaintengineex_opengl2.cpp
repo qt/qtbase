@@ -227,11 +227,19 @@ void QGL2PaintEngineExPrivate::updateBrushTexture()
         if (currentBrushPixmap.width() > max_texture_size || currentBrushPixmap.height() > max_texture_size)
             currentBrushPixmap = currentBrushPixmap.scaled(max_texture_size, max_texture_size, Qt::KeepAspectRatio);
 
+        GLuint wrapMode = GL_REPEAT;
+        if (ctx->contextHandle()->isOpenGLES()) {
+            // OpenGL ES does not support GL_REPEAT wrap modes for NPOT textures. So instead,
+            // we emulate GL_REPEAT by only taking the fractional part of the texture coords
+            // in the qopenglslTextureBrushSrcFragmentShader program.
+            wrapMode = GL_CLAMP_TO_EDGE;
+        }
+
         glActiveTexture(GL_TEXTURE0 + QT_BRUSH_TEXTURE_UNIT);
         QGLTexture *tex = ctx->d_func()->bindTexture(currentBrushPixmap, GL_TEXTURE_2D, GL_RGBA,
                                                      QGLContext::InternalBindOption |
                                                      QGLContext::CanFlipNativePixmapBindOption);
-        updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, q->state()->renderHints & QPainter::SmoothPixmapTransform);
+        updateTextureFilter(GL_TEXTURE_2D, wrapMode, q->state()->renderHints & QPainter::SmoothPixmapTransform);
         textureInvertedY = tex->options & QGLContext::InvertedYBindOption ? -1 : 1;
     }
     brushTextureDirty = false;
@@ -543,7 +551,7 @@ void QGL2PaintEngineEx::beginNativePainting()
         d->glDisableVertexAttribArray(i);
 
 #ifndef QT_OPENGL_ES_2
-    if (!d->ctx->contextHandle()->isES()) {
+    if (!d->ctx->contextHandle()->isOpenGLES()) {
         const QGLContext *ctx = d->ctx;
         const QGLFormat &fmt = d->device->format();
         if (fmt.majorVersion() < 3 || (fmt.majorVersion() == 3 && fmt.minorVersion() < 1)
@@ -604,7 +612,7 @@ void QGL2PaintEngineExPrivate::resetGLState()
     ctx->d_func()->setVertexAttribArrayEnabled(QT_VERTEX_COORDS_ATTR, false);
     ctx->d_func()->setVertexAttribArrayEnabled(QT_OPACITY_ATTR, false);
 #ifndef QT_OPENGL_ES_2
-    if (!ctx->contextHandle()->isES()) {
+    if (!ctx->contextHandle()->isOpenGLES()) {
         // gl_Color, corresponding to vertex attribute 3, may have been changed
         float color[] = { 1.0f, 1.0f, 1.0f, 1.0f };
         glVertexAttrib4fv(3, color);
@@ -1371,7 +1379,7 @@ void QGL2PaintEngineEx::renderHintsChanged()
     state()->renderHintsChanged = true;
 
 #if !defined(QT_OPENGL_ES_2)
-    if (!d->ctx->contextHandle()->isES()) {
+    if (!d->ctx->contextHandle()->isOpenGLES()) {
         if ((state()->renderHints & QPainter::Antialiasing)
             || (state()->renderHints & QPainter::HighQualityAntialiasing))
             d->glEnable(GL_MULTISAMPLE);
@@ -2047,14 +2055,14 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
     d->glDisable(GL_SCISSOR_TEST);
 
 #if !defined(QT_OPENGL_ES_2)
-    if (!d->ctx->contextHandle()->isES())
+    if (!d->ctx->contextHandle()->isOpenGLES())
         d->glDisable(GL_MULTISAMPLE);
 #endif
 
     d->glyphCacheFormat = QFontEngine::Format_A8;
 
 #if !defined(QT_OPENGL_ES_2)
-    if (!d->ctx->contextHandle()->isES()) {
+    if (!d->ctx->contextHandle()->isOpenGLES()) {
         d->glyphCacheFormat = QFontEngine::Format_A32;
         d->multisamplingAlwaysEnabled = false;
     } else {

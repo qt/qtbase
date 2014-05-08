@@ -91,6 +91,7 @@ NSUInteger keySequenceModifierMask(const QKeySequence &accel)
 
 QCocoaMenuItem::QCocoaMenuItem() :
     m_native(NULL),
+    m_itemView(nil),
     m_textSynced(false),
     m_menu(NULL),
     m_isVisible(true),
@@ -110,6 +111,8 @@ QCocoaMenuItem::~QCocoaMenuItem()
     } else {
         [m_native release];
     }
+
+    [m_itemView release];
 }
 
 void QCocoaMenuItem::setText(const QString &text)
@@ -176,6 +179,17 @@ void QCocoaMenuItem::setChecked(bool isChecked)
 void QCocoaMenuItem::setEnabled(bool enabled)
 {
     m_enabled = enabled;
+}
+
+void QCocoaMenuItem::setNativeContents(WId item)
+{
+    NSView *itemView = (NSView *)item;
+    [m_itemView release];
+    m_itemView = [itemView retain];
+    [m_itemView setAutoresizesSubviews:YES];
+    [m_itemView setAutoresizingMask:NSViewWidthSizable];
+    [m_itemView setHidden:NO];
+    [m_itemView setNeedsDisplay:YES];
 }
 
 NSMenuItem *QCocoaMenuItem::sync()
@@ -281,6 +295,7 @@ NSMenuItem *QCocoaMenuItem::sync()
 
     [m_native setHidden: !m_isVisible];
     [m_native setEnabled: m_enabled];
+    [m_native setView:m_itemView];
 
     QString text = mergeText();
     QKeySequence accel = mergeAccel();

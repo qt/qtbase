@@ -2,6 +2,7 @@ TARGET = qminimalegl
 
 PLUGIN_TYPE = platforms
 PLUGIN_CLASS_NAME = QMinimalEglIntegrationPlugin
+!equals(TARGET, $$QT_DEFAULT_QPA_PLUGIN): PLUGIN_EXTENDS = -
 load(qt_plugin)
 
 QT += core-private gui-private platformsupport-private

@@ -749,7 +749,9 @@ UnixMakefileGenerator::defaultInstall(const QString &t)
         target = "$(QMAKE_TARGET)";
     } else if(project->first("TEMPLATE") == "lib") {
         if(project->isEmpty("QMAKE_CYGWIN_SHLIB")) {
-            if(!project->isActiveConfig("staticlib") && !project->isActiveConfig("plugin")) {
+            if (!project->isActiveConfig("staticlib")
+                    && !project->isActiveConfig("plugin")
+                    && !project->isActiveConfig("unversioned_libname")) {
                 if(project->isEmpty("QMAKE_HPUX_SHLIB")) {
                     links << "$(TARGET0)" << "$(TARGET1)" << "$(TARGET2)";
                 } else {

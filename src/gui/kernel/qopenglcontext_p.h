@@ -127,7 +127,7 @@ private:
 
 class Q_GUI_EXPORT QOpenGLContextGroupPrivate : public QObjectPrivate
 {
-    Q_DECLARE_PUBLIC(QOpenGLContextGroup);
+    Q_DECLARE_PUBLIC(QOpenGLContextGroup)
 public:
     QOpenGLContextGroupPrivate()
         : m_context(0)

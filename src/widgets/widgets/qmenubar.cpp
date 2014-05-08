@@ -531,9 +531,6 @@ void QMenuBarPrivate::_q_actionHovered()
             QAccessibleEvent focusEvent(q, QAccessible::Focus);
             focusEvent.setChild(actionIndex);
             QAccessible::updateAccessibility(&focusEvent);
-            QAccessibleEvent selectionEvent(q, QAccessible::Selection);
-            selectionEvent.setChild(actionIndex);
-            QAccessible::updateAccessibility(&selectionEvent);
         }
 #endif //QT_NO_ACCESSIBILITY
     }

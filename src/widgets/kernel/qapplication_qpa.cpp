@@ -447,6 +447,14 @@ void QApplication::alert(QWidget *widget, int duration)
     }
 }
 
+void qt_init_tooltip_palette()
+{
+#ifndef QT_NO_TOOLTIP
+    if (const QPalette *toolTipPalette = QGuiApplicationPrivate::platformTheme()->palette(QPlatformTheme::ToolTipPalette))
+        QToolTip::setPalette(*toolTipPalette);
+#endif
+}
+
 void qt_init(QApplicationPrivate *priv, int type)
 {
     Q_UNUSED(priv);
@@ -454,10 +462,7 @@ void qt_init(QApplicationPrivate *priv, int type)
 
     QColormap::initialize();
 
-#ifndef QT_NO_TOOLTIP
-    if (const QPalette *toolTipPalette = QGuiApplicationPrivate::platformTheme()->palette(QPlatformTheme::ToolTipPalette))
-        QToolTip::setPalette(*toolTipPalette);
-#endif
+    qt_init_tooltip_palette();
 
     QApplicationPrivate::initializeWidgetFontHash();
 }

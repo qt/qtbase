@@ -80,7 +80,7 @@ AddressBook::AddressBook(QWidget *parent)
 //! [tooltip 2]
     saveButton->setEnabled(false);
 
-    dialog = new FindDialog;
+    dialog = new FindDialog(this);
 
     connect(addButton, SIGNAL(clicked()), this, SLOT(addContact()));
     connect(submitButton, SIGNAL(clicked()), this, SLOT(submitContact()));

@@ -61,7 +61,7 @@ QT_BEGIN_NAMESPACE
     width and height can be swapped using the transpose() function.
 
     The isValid() function determines if a size is valid (a valid size
-    has both width and height greater than zero). The isEmpty()
+    has both width and height greater than or equal to zero). The isEmpty()
     function returns \c true if either of the width and height is less
     than, or equal to, zero, while the isNull() function returns \c true
     only if both the width and the height is zero.

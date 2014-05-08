@@ -80,7 +80,7 @@ AddressBook::AddressBook(QWidget *parent)
     exportButton->setToolTip(tr("Export as vCard"));
     exportButton->setEnabled(false);
 
-    dialog = new FindDialog;
+    dialog = new FindDialog(this);
 
     connect(addButton, SIGNAL(clicked()), this, SLOT(addContact()));
     connect(submitButton, SIGNAL(clicked()), this, SLOT(submitContact()));

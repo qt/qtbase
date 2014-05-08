@@ -2,6 +2,7 @@ TARGET = qdirectfb
 
 PLUGIN_TYPE = platforms
 PLUGIN_CLASS_NAME = QDirectFbIntegrationPlugin
+!equals(TARGET, $$QT_DEFAULT_QPA_PLUGIN): PLUGIN_EXTENDS = -
 load(qt_plugin)
 
 QT += core-private gui-private platformsupport-private

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -476,11 +476,17 @@ void tst_QFileSystemModel::rowCount()
 void tst_QFileSystemModel::rowsInserted_data()
 {
     QTest::addColumn<int>("count");
-    QTest::addColumn<int>("assending");
+    QTest::addColumn<int>("ascending");
     for (int i = 0; i < 4; ++i) {
         QTest::newRow(QString("Qt::AscendingOrder %1").arg(i).toLocal8Bit().constData())  << i << (int)Qt::AscendingOrder;
         QTest::newRow(QString("Qt::DescendingOrder %1").arg(i).toLocal8Bit().constData()) << i << (int)Qt::DescendingOrder;
     }
+}
+
+static inline QString lastEntry(const QModelIndex &root)
+{
+    const QAbstractItemModel *model = root.model();
+    return model->index(model->rowCount(root) - 1, 0, root).data().toString();
 }
 
 void tst_QFileSystemModel::rowsInserted()
@@ -492,9 +498,9 @@ void tst_QFileSystemModel::rowsInserted()
     rowCount();
     QModelIndex root = model->index(model->rootPath());
 
-    QFETCH(int, assending);
+    QFETCH(int, ascending);
     QFETCH(int, count);
-    model->sort(0, (Qt::SortOrder)assending);
+    model->sort(0, (Qt::SortOrder)ascending);
 
     QSignalSpy spy0(model, SIGNAL(rowsInserted(QModelIndex,int,int)));
     QSignalSpy spy1(model, SIGNAL(rowsAboutToBeInserted(QModelIndex,int,int)));
@@ -505,7 +511,6 @@ void tst_QFileSystemModel::rowsInserted()
     QVERIFY(createFiles(tmp, files, 5));
     TRY_WAIT(model->rowCount(root) == oldCount + count);
     QTRY_COMPARE(model->rowCount(root), oldCount + count);
-    QTest::qWait(100); // Let the sort settle.
     int totalRowsInserted = 0;
     for (int i = 0; i < spy0.count(); ++i) {
         int start = spy0[i].value(1).toInt();
@@ -513,12 +518,9 @@ void tst_QFileSystemModel::rowsInserted()
         totalRowsInserted += end - start + 1;
     }
     QCOMPARE(totalRowsInserted, count);
-    if (assending == (Qt::SortOrder)Qt::AscendingOrder) {
-        QString letter = model->index(model->rowCount(root) - 1, 0, root).data().toString();
-        QCOMPARE(letter, QString("j"));
-    } else {
-        QCOMPARE(model->index(model->rowCount(root) - 1, 0, root).data().toString(), QString("b"));
-    }
+    const QString expected = ascending == Qt::AscendingOrder ? QStringLiteral("j") : QStringLiteral("b");
+    QTRY_COMPARE(lastEntry(root), expected);
+
     if (spy0.count() > 0) {
         if (count == 0)
             QCOMPARE(spy0.count(), 0);
@@ -548,8 +550,8 @@ void tst_QFileSystemModel::rowsRemoved()
     QModelIndex root = model->index(model->rootPath());
 
     QFETCH(int, count);
-    QFETCH(int, assending);
-    model->sort(0, (Qt::SortOrder)assending);
+    QFETCH(int, ascending);
+    model->sort(0, (Qt::SortOrder)ascending);
     QTest::qWait(WAITTIME);
 
     QSignalSpy spy0(model, SIGNAL(rowsRemoved(QModelIndex,int,int)));

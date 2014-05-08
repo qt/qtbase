@@ -72,7 +72,7 @@ public:
     {
 #ifndef QT_OPENGL_ES_2
         QOpenGLContext *ctx = QOpenGLContext::currentContext();
-        const bool isES = ctx ? ctx->isES() : QOpenGLContext::openGLModuleType() != QOpenGLContext::DesktopGL;
+        const bool isES = ctx ? ctx->isOpenGLES() : QOpenGLContext::openGLModuleType() != QOpenGLContext::LibGL;
         internal_format = isES ? GL_RGBA : GL_RGBA8;
 #else
         internal_format = GL_RGBA;

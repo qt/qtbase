@@ -63,6 +63,7 @@
 #include <qt_windows.h>
 
 #ifdef Q_OS_WINRT
+#include <qelapsedtimer.h>
 #include <thread>
 #endif
 
@@ -680,21 +681,11 @@ bool QThread::wait(unsigned long time)
         break;
     }
 #else // !Q_OS_WINRT
-    if (d->handle->joinable()) {
-        HANDLE handle = d->handle->native_handle();
-        switch (WaitForSingleObjectEx(handle, time, FALSE)) {
-        case WAIT_OBJECT_0:
-            ret = true;
-            d->handle->join();
-            break;
-        case WAIT_FAILED:
-            qErrnoWarning("QThread::wait: WaitForSingleObjectEx() failed");
-            break;
-        case WAIT_ABANDONED:
-        case WAIT_TIMEOUT:
-        default:
-            break;
-        }
+    if (!d->finished) {
+        QElapsedTimer timer;
+        timer.start();
+        while (timer.elapsed() < time && !d->finished)
+            yieldCurrentThread();
     }
 #endif // Q_OS_WINRT
 

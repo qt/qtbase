@@ -68,7 +68,7 @@ public:
         // Internal ones
         OutlineCapability               = 0x0001000
     };
-    Q_DECLARE_FLAGS (Capabilities, Capability);
+    Q_DECLARE_FLAGS (Capabilities, Capability)
 
     QBlittable(const QSize &size, Capabilities caps);
     virtual ~QBlittable();

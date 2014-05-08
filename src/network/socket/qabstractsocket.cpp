@@ -748,7 +748,7 @@ bool QAbstractSocketPrivate::canReadNotification()
         return true;
     }
 
-    if (isBuffered && socketEngine)
+    if ((isBuffered || socketType != QAbstractSocket::TcpSocket) && socketEngine)
         socketEngine->setReadNotificationEnabled(readBufferMaxSize == 0 || readBufferMaxSize > q->bytesAvailable());
 
     // reset the read socket notifier state if we reentered inside the

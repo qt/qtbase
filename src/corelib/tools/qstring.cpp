@@ -4331,14 +4331,6 @@ QByteArray QString::toLocal8Bit_helper(const QChar *data, int size)
     UTF-8 is a Unicode codec and can represent all characters in a Unicode
     string like QString.
 
-    However, in the Unicode range, there are certain codepoints that are not
-    considered characters. The Unicode standard reserves the last two
-    codepoints in each Unicode Plane (U+FFFE, U+FFFF, U+1FFFE, U+1FFFF,
-    U+2FFFE, etc.), as well as 32 codepoints in the range U+FDD0..U+FDEF,
-    inclusive, as non-characters. If any of those appear in the string, they
-    may be discarded and will not appear in the UTF-8 representation, or they
-    may be replaced by one or more replacement characters.
-
     \sa fromUtf8(), toLatin1(), toLocal8Bit(), QTextCodec
 */
 
@@ -4493,10 +4485,10 @@ QString QString::fromLocal8Bit_helper(const char *str, int size)
     sequences, non-characters, overlong sequences or surrogate codepoints
     encoded into UTF-8.
 
-    Non-characters are codepoints that the Unicode standard reserves and must
-    not be used in text interchange. They are the last two codepoints in each
-    Unicode Plane (U+FFFE, U+FFFF, U+1FFFE, U+1FFFF, U+2FFFE, etc.), as well
-    as 32 codepoints in the range U+FDD0..U+FDEF, inclusive.
+    This function can be used to process incoming data incrementally as long as
+    all UTF-8 characters are terminated within the incoming data. Any
+    unterminated characters at the end of the string will be replaced or
+    suppressed. In order to do stateful decoding, please use \l QTextDecoder.
 
     \sa toUtf8(), fromLatin1(), fromLocal8Bit()
 */
@@ -9516,14 +9508,6 @@ QByteArray QStringRef::toLocal8Bit() const
 
     UTF-8 is a Unicode codec and can represent all characters in a Unicode
     string like QString.
-
-    However, in the Unicode range, there are certain codepoints that are not
-    considered characters. The Unicode standard reserves the last two
-    codepoints in each Unicode Plane (U+FFFE, U+FFFF, U+1FFFE, U+1FFFF,
-    U+2FFFE, etc.), as well as 16 codepoints in the range U+FDD0..U+FDDF,
-    inclusive, as non-characters. If any of those appear in the string, they
-    may be discarded and will not appear in the UTF-8 representation, or they
-    may be replaced by one or more replacement characters.
 
     \sa toLatin1(), toLocal8Bit(), QTextCodec
 */

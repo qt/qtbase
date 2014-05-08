@@ -267,12 +267,15 @@ private slots:
     void initializeListCustom();
 
     void const_shared_null();
+#if 1
+    // ### Qt6 remove this section
     void setSharableInt_data();
     void setSharableInt();
     void setSharableMovable_data();
     void setSharableMovable();
     void setSharableCustom_data();
     void setSharableCustom();
+#endif
 
     void detachInt() const;
     void detachMovable() const;
@@ -398,6 +401,14 @@ void tst_QVector::copyConstructor() const
     }
     {
         QVector<T> v1;
+        v1 << value1 << value2 << value3 << value4;
+        QVector<T> v2(v1);
+        QCOMPARE(v1, v2);
+    }
+#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
+    // ### Qt6 remove this section
+    {
+        QVector<T> v1;
         v1.setSharable(false);
         QVector<T> v2(v1);
         QVERIFY(!v1.isSharedWith(v2));
@@ -406,17 +417,12 @@ void tst_QVector::copyConstructor() const
     {
         QVector<T> v1;
         v1 << value1 << value2 << value3 << value4;
-        QVector<T> v2(v1);
-        QCOMPARE(v1, v2);
-    }
-    {
-        QVector<T> v1;
-        v1 << value1 << value2 << value3 << value4;
         v1.setSharable(false);
         QVector<T> v2(v1);
         QVERIFY(!v1.isSharedWith(v2));
         QCOMPARE(v1, v2);
     }
+#endif
 }
 
 void tst_QVector::copyConstructorInt() const
@@ -517,6 +523,8 @@ void tst_QVector::append() const
         QVERIFY(v.size() == 3);
         QCOMPARE(v.at(v.size() - 1), SimpleValue<T>::at(0));
     }
+#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
+    // ### Qt6 remove this section
     {
         QVector<T> v(2);
         v.reserve(12);
@@ -525,6 +533,7 @@ void tst_QVector::append() const
         QVERIFY(v.size() == 3);
         QCOMPARE(v.last(), SimpleValue<T>::at(0));
     }
+#endif
 }
 
 void tst_QVector::appendInt() const
@@ -822,12 +831,15 @@ void tst_QVector::eraseEmpty() const
         v.erase(v.begin(), v.end());
         QCOMPARE(v.size(), 0);
     }
+#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
+    // ### Qt6 remove this section
     {
         QVector<T> v;
         v.setSharable(false);
         v.erase(v.begin(), v.end());
         QCOMPARE(v.size(), 0);
     }
+#endif
 }
 
 void tst_QVector::eraseEmptyInt() const
@@ -858,6 +870,8 @@ void tst_QVector::eraseEmptyReserved() const
         v.erase(v.begin(), v.end());
         QCOMPARE(v.size(), 0);
     }
+#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
+    // ### Qt6 remove this section
     {
         QVector<T> v;
         v.reserve(10);
@@ -865,6 +879,7 @@ void tst_QVector::eraseEmptyReserved() const
         v.erase(v.begin(), v.end());
         QCOMPARE(v.size(), 0);
     }
+#endif
 }
 
 void tst_QVector::eraseEmptyReservedInt() const
@@ -971,6 +986,8 @@ void tst_QVector::erase(bool shared) const
         if (shared)
             QCOMPARE(SimpleValue<T>::vector(12), *svc.copy);
     }
+#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
+    // ### Qt6 remove this section
     {
         QVector<T> v = SimpleValue<T>::vector(10);
         SharedVectorChecker<T> svc(v, shared);
@@ -983,6 +1000,7 @@ void tst_QVector::erase(bool shared) const
         if (shared)
             QCOMPARE(SimpleValue<T>::vector(10), *svc.copy);
     }
+#endif
 }
 
 void tst_QVector::eraseInt() const
@@ -1055,6 +1073,8 @@ template<typename T> void tst_QVector::eraseReserved() const
         v.erase(v.begin() + 1, v.end() - 1);
         QCOMPARE(v.size(), 2);
     }
+#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
+    // ### Qt6 remove this section
     {
         QVector<T> v(10);
         v.reserve(16);
@@ -1064,6 +1084,7 @@ template<typename T> void tst_QVector::eraseReserved() const
         v.erase(v.begin(), v.end() - 1);
         QCOMPARE(v.size(), 1);
     }
+#endif
 }
 
 void tst_QVector::eraseReservedInt() const
@@ -1585,6 +1606,14 @@ void tst_QVector::resizePOD_data() const
     QVERIFY(emptyReserved.capacity() >= 10);
     QVERIFY(nonEmptyReserved.capacity() >= 15);
 
+    QTest::newRow("null") << null << 10;
+    QTest::newRow("empty") << empty << 10;
+    QTest::newRow("emptyReserved") << emptyReserved << 10;
+    QTest::newRow("nonEmpty") << nonEmpty << 10;
+    QTest::newRow("nonEmptyReserved") << nonEmptyReserved << 10;
+
+#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
+    // ### Qt6 remove this section
     QVector<int> nullNotShared;
     QVector<int> emptyNotShared(0, 5);
     QVector<int> emptyReservedNotShared;
@@ -1603,16 +1632,12 @@ void tst_QVector::resizePOD_data() const
     nonEmptyNotShared.setSharable(false);
     nonEmptyReservedNotShared.setSharable(false);
 
-    QTest::newRow("null") << null << 10;
-    QTest::newRow("empty") << empty << 10;
-    QTest::newRow("emptyReserved") << emptyReserved << 10;
-    QTest::newRow("nonEmpty") << nonEmpty << 10;
-    QTest::newRow("nonEmptyReserved") << nonEmptyReserved << 10;
     QTest::newRow("nullNotShared") << nullNotShared << 10;
     QTest::newRow("emptyNotShared") << emptyNotShared << 10;
     QTest::newRow("emptyReservedNotShared") << emptyReservedNotShared << 10;
     QTest::newRow("nonEmptyNotShared") << nonEmptyNotShared << 10;
     QTest::newRow("nonEmptyReservedNotShared") << nonEmptyReservedNotShared << 10;
+#endif
 }
 
 void tst_QVector::resizePOD() const
@@ -1656,6 +1681,14 @@ void tst_QVector::resizeComplexMovable_data() const
     QVERIFY(emptyReserved.capacity() >= 10);
     QVERIFY(nonEmptyReserved.capacity() >= 15);
 
+    QTest::newRow("null") << null << 10;
+    QTest::newRow("empty") << empty << 10;
+    QTest::newRow("emptyReserved") << emptyReserved << 10;
+    QTest::newRow("nonEmpty") << nonEmpty << 10;
+    QTest::newRow("nonEmptyReserved") << nonEmptyReserved << 10;
+
+#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
+    // ### Qt6 remove this section
     QVector<Movable> nullNotShared;
     QVector<Movable> emptyNotShared(0, 'Q');
     QVector<Movable> emptyReservedNotShared;
@@ -1674,16 +1707,12 @@ void tst_QVector::resizeComplexMovable_data() const
     nonEmptyNotShared.setSharable(false);
     nonEmptyReservedNotShared.setSharable(false);
 
-    QTest::newRow("null") << null << 10;
-    QTest::newRow("empty") << empty << 10;
-    QTest::newRow("emptyReserved") << emptyReserved << 10;
-    QTest::newRow("nonEmpty") << nonEmpty << 10;
-    QTest::newRow("nonEmptyReserved") << nonEmptyReserved << 10;
     QTest::newRow("nullNotShared") << nullNotShared << 10;
     QTest::newRow("emptyNotShared") << emptyNotShared << 10;
     QTest::newRow("emptyReservedNotShared") << emptyReservedNotShared << 10;
     QTest::newRow("nonEmptyNotShared") << nonEmptyNotShared << 10;
     QTest::newRow("nonEmptyReservedNotShared") << nonEmptyReservedNotShared << 10;
+#endif
 }
 
 void tst_QVector::resizeComplexMovable() const
@@ -1731,6 +1760,14 @@ void tst_QVector::resizeComplex_data() const
     QVERIFY(emptyReserved.capacity() >= 10);
     QVERIFY(nonEmptyReserved.capacity() >= 15);
 
+    QTest::newRow("null") << null << 10;
+    QTest::newRow("empty") << empty << 10;
+    QTest::newRow("emptyReserved") << emptyReserved << 10;
+    QTest::newRow("nonEmpty") << nonEmpty << 10;
+    QTest::newRow("nonEmptyReserved") << nonEmptyReserved << 10;
+
+#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
+    // ### Qt6 remove this section
     QVector<Custom> nullNotShared;
     QVector<Custom> emptyNotShared(0, '0');
     QVector<Custom> emptyReservedNotShared;
@@ -1749,16 +1786,12 @@ void tst_QVector::resizeComplex_data() const
     nonEmptyNotShared.setSharable(false);
     nonEmptyReservedNotShared.setSharable(false);
 
-    QTest::newRow("null") << null << 10;
-    QTest::newRow("empty") << empty << 10;
-    QTest::newRow("emptyReserved") << emptyReserved << 10;
-    QTest::newRow("nonEmpty") << nonEmpty << 10;
-    QTest::newRow("nonEmptyReserved") << nonEmptyReserved << 10;
     QTest::newRow("nullNotShared") << nullNotShared << 10;
     QTest::newRow("emptyNotShared") << emptyNotShared << 10;
     QTest::newRow("emptyReservedNotShared") << emptyReservedNotShared << 10;
     QTest::newRow("nonEmptyNotShared") << nonEmptyNotShared << 10;
     QTest::newRow("nonEmptyReservedNotShared") << nonEmptyReservedNotShared << 10;
+#endif
 }
 
 void tst_QVector::resizeComplex() const
@@ -2143,15 +2176,20 @@ void tst_QVector::initializeListCustom()
 
 void tst_QVector::const_shared_null()
 {
+    QVector<int> v2;
+#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
+    // ### Qt6 remove this section
     QVector<int> v1;
     v1.setSharable(false);
     QVERIFY(v1.isDetached());
 
-    QVector<int> v2;
     v2.setSharable(true);
+#endif
     QVERIFY(!v2.isDetached());
 }
 
+#if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
+// ### Qt6 remove this section
 template<typename T>
 void tst_QVector::setSharable_data() const
 {
@@ -2180,21 +2218,6 @@ void tst_QVector::setSharable_data() const
     QTest::newRow("empty, Reserved") << emptyReserved << 0 << 10 << true;
     QTest::newRow("non-empty") << nonEmpty << 5 << 0 << false;
     QTest::newRow("non-empty, Reserved") << nonEmptyReserved << 7 << 15 << true;
-}
-
-void tst_QVector::setSharableInt_data()
-{
-    setSharable_data<int>();
-}
-
-void tst_QVector::setSharableMovable_data()
-{
-    setSharable_data<Movable>();
-}
-
-void tst_QVector::setSharableCustom_data()
-{
-    setSharable_data<Custom>();
 }
 
 template<typename T>
@@ -2257,6 +2280,30 @@ void tst_QVector::setSharable() const
                 qPrintable(QString("Capacity is %1, expected at least %2.")
                     .arg(vector.capacity())
                     .arg(capacity)));
+}
+#else
+template<typename T> void tst_QVector::setSharable_data() const
+{
+}
+
+template<typename T> void tst_QVector::setSharable() const
+{
+}
+#endif
+
+void tst_QVector::setSharableInt_data()
+{
+    setSharable_data<int>();
+}
+
+void tst_QVector::setSharableMovable_data()
+{
+    setSharable_data<Movable>();
+}
+
+void tst_QVector::setSharableCustom_data()
+{
+    setSharable_data<Custom>();
 }
 
 void tst_QVector::setSharableInt()

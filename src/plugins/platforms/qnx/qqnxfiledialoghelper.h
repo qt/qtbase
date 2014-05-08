@@ -88,7 +88,9 @@ Q_SIGNALS:
     void dialogClosed();
 
 private Q_SLOTS:
+#if !defined(Q_OS_BLACKBERRY_TABLET)
     void emitSignals();
+#endif
 
 private:
     void setNameFilter(const QString &filter);

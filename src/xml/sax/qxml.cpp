@@ -3247,7 +3247,7 @@ void QXmlSimpleReader::setFeature(const QString& name, bool enable)
                || name == QLatin1String("http://qt-project.org/xml/features/report-whitespace-only-CharData")) {
         d->reportWhitespaceCharData = enable;
     } else if (name == QLatin1String("http://trolltech.com/xml/features/report-start-end-entity") // For compat with Qt 4
-               || name == QLatin1String("http://trolltech.com/xml/features/report-start-end-entity")) {
+               || name == QLatin1String("http://qt-project.org/xml/features/report-start-end-entity")) {
         d->reportEntities = enable;
     } else {
         qWarning("Unknown feature %s", name.toLatin1().data());

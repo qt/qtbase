@@ -256,7 +256,7 @@ QOpenGLExtensions::QOpenGLExtensions(QOpenGLContext *context)
 static int qt_gl_resolve_features()
 {
     QOpenGLContext *ctx = QOpenGLContext::currentContext();
-    if (ctx->isES()) {
+    if (ctx->isOpenGLES()) {
         // OpenGL ES 2
         int features = QOpenGLFunctions::Multitexture |
             QOpenGLFunctions::Shaders |
@@ -367,7 +367,7 @@ static int qt_gl_resolve_extensions()
     if (extensionMatcher.match("GL_ARB_pixel_buffer_object"))
         extensions |= QOpenGLExtensions::PixelBufferObject;
 
-    if (ctx->isES()) {
+    if (ctx->isOpenGLES()) {
         if (format.majorVersion() >= 2)
             extensions |= QOpenGLExtensions::GenerateMipmap;
         if (extensionMatcher.match("GL_OES_mapbuffer"))
@@ -2012,12 +2012,6 @@ void QOpenGLFunctions::initializeOpenGLFunctions()
 */
 
 /*!
-    \fn void QOpenGLFunctions::glGetTexLevelParameteriv(GLenum target, GLint level, GLenum pname, GLint *params)
-
-    \internal
-*/
-
-/*!
     \fn bool QOpenGLFunctions::isInitialized(const QOpenGLFunctionsPrivate *d)
     \internal
 */
@@ -2421,7 +2415,7 @@ static void QOPENGLF_APIENTRY qopenglfResolveClearColor(GLclampf red, GLclampf g
 
 static void QOPENGLF_APIENTRY qopenglfResolveClearDepthf(GLclampf depth)
 {
-    if (QOpenGLContext::currentContext()->isES()) {
+    if (QOpenGLContext::currentContext()->isOpenGLES()) {
         RESOLVE_FUNC_VOID(0, ClearDepthf)(depth);
     } else {
         RESOLVE_FUNC_VOID(0, ClearDepth)((GLdouble) depth);
@@ -2470,7 +2464,7 @@ static void QOPENGLF_APIENTRY qopenglfResolveDepthMask(GLboolean flag)
 
 static void QOPENGLF_APIENTRY qopenglfResolveDepthRangef(GLclampf zNear, GLclampf zFar)
 {
-    if (QOpenGLContext::currentContext()->isES()) {
+    if (QOpenGLContext::currentContext()->isOpenGLES()) {
         RESOLVE_FUNC_VOID(0, DepthRangef)(zNear, zFar);
     } else {
         RESOLVE_FUNC_VOID(0, DepthRange)((GLdouble) zNear, (GLdouble) zFar);
@@ -3174,15 +3168,7 @@ static void QOPENGLF_APIENTRY qopenglfResolveGetBufferSubData(GLenum target, qop
         (target, offset, size, data);
 }
 
-#ifndef QT_OPENGL_ES_2
-// Desktop only
-
-static void QOPENGLF_APIENTRY qopenglfResolveGetTexLevelParameteriv(GLenum target, GLint level, GLenum pname, GLint *params)
-{
-    RESOLVE_FUNC_VOID(0, GetTexLevelParameteriv)(target, level, pname, params);
-}
-
-#ifndef QT_OPENGL_DYNAMIC
+#if !defined(QT_OPENGL_ES_2) && !defined(QT_OPENGL_DYNAMIC)
 // Special translation functions for ES-specific calls on desktop GL
 
 static void QOPENGLF_APIENTRY qopenglfTranslateClearDepthf(GLclampf depth)
@@ -3194,10 +3180,7 @@ static void QOPENGLF_APIENTRY qopenglfTranslateDepthRangef(GLclampf zNear, GLcla
 {
     ::glDepthRange(zNear, zFar);
 }
-
-#endif // QT_OPENGL_DYNAMIC
-
-#endif // QT_OPENGL_ES2
+#endif // !ES && !DYNAMIC
 
 QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 {
@@ -3256,8 +3239,6 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
         TexParameteriv = qopenglfResolveTexParameteriv;
         TexSubImage2D = qopenglfResolveTexSubImage2D;
         Viewport = qopenglfResolveViewport;
-
-        GetTexLevelParameteriv = qopenglfResolveGetTexLevelParameteriv;
     } else {
 #ifndef QT_OPENGL_DYNAMIC
         // Use the functions directly. This requires linking QtGui to an OpenGL implementation.
@@ -3301,15 +3282,17 @@ QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
         StencilFunc = ::glStencilFunc;
         StencilMask = ::glStencilMask;
         StencilOp = ::glStencilOp;
-        TexImage2D = ::glTexImage2D;
+#if defined(Q_OS_OSX) && MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
+        TexImage2D = reinterpret_cast<void (*)(GLenum, GLint, GLint, GLsizei, GLsizei, GLint, GLenum, GLenum, const GLvoid *)>(glTexImage2D);
+#else
+        TexImage2D = glTexImage2D;
+#endif
         TexParameterf = ::glTexParameterf;
         TexParameterfv = ::glTexParameterfv;
         TexParameteri = ::glTexParameteri;
         TexParameteriv = ::glTexParameteriv;
         TexSubImage2D = ::glTexSubImage2D;
         Viewport = ::glViewport;
-
-        GetTexLevelParameteriv = ::glGetTexLevelParameteriv;
 #else // QT_OPENGL_DYNAMIC
         // This should not happen.
         qFatal("QOpenGLFunctions: Dynamic OpenGL builds do not support platforms with insufficient function resolving capabilities");

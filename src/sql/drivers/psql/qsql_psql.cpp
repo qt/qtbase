@@ -104,6 +104,11 @@
 #define QXIDOID 28
 #define QCIDOID 29
 
+#define QBITOID 1560
+#define QVARBITOID 1562
+
+#define VARHDRSZ 4
+
 /* This is a compile time switch - if PQfreemem is declared, the compiler will use that one,
    otherwise it'll run in this template */
 template <typename T>
@@ -533,17 +538,33 @@ QSqlRecord QPSQLResult::record() const
             f.setName(QString::fromUtf8(PQfname(d->result, i)));
         else
             f.setName(QString::fromLocal8Bit(PQfname(d->result, i)));
-        f.setType(qDecodePSQLType(PQftype(d->result, i)));
+        int ptype = PQftype(d->result, i);
+        f.setType(qDecodePSQLType(ptype));
         int len = PQfsize(d->result, i);
         int precision = PQfmod(d->result, i);
-        // swap length and precision if length == -1
-        if (len == -1 && precision > -1) {
-            len = precision - 4;
+
+        switch (ptype) {
+        case QNUMERICOID:
+            if (precision != -1) {
+                len = (precision >> 16);
+                precision = ((precision - VARHDRSZ) & 0xffff);
+            }
+            break;
+        case QBITOID:
+        case QVARBITOID:
+            len = precision;
             precision = -1;
+            break;
+        default:
+            if (len == -1 && precision >= VARHDRSZ) {
+                len = precision - VARHDRSZ;
+                precision = -1;
+            }
         }
+
         f.setLength(len);
         f.setPrecision(precision);
-        f.setSqlType(PQftype(d->result, i));
+        f.setSqlType(ptype);
         info.append(f);
     }
     return info;

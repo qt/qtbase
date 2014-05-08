@@ -50,6 +50,7 @@
 #include <qevent.h>
 #include <qapplication.h>
 #include <private/qcombobox_p.h>
+#include <QDesktopWidget>
 #include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
@@ -546,8 +547,10 @@ bool QFontComboBox::event(QEvent *e)
 {
     if (e->type() == QEvent::Resize) {
         QListView *lview = qobject_cast<QListView*>(view());
-        if (lview)
-            lview->window()->setFixedWidth(width() * 5 / 3);
+        if (lview) {
+            setFixedWidth(qMin(width() * 5 / 3,
+                               QApplication::desktop()->availableGeometry(lview).width()));
+        }
     }
     return QComboBox::event(e);
 }

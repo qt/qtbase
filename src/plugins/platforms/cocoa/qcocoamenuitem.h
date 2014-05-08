@@ -57,6 +57,7 @@
 QT_FORWARD_DECLARE_OBJC_CLASS(NSMenuItem);
 QT_FORWARD_DECLARE_OBJC_CLASS(NSMenu);
 QT_FORWARD_DECLARE_OBJC_CLASS(NSObject);
+QT_FORWARD_DECLARE_OBJC_CLASS(NSView);
 
 
 QT_BEGIN_NAMESPACE
@@ -86,6 +87,8 @@ public:
     void setChecked(bool isChecked);
     void setEnabled(bool isEnabled);
 
+    void setNativeContents(WId item);
+
     inline QString text() const { return m_text; }
     inline NSMenuItem * nsItem() { return m_native; }
     NSMenuItem *sync();
@@ -105,6 +108,7 @@ private:
     QKeySequence mergeAccel();
 
     NSMenuItem *m_native;
+    NSView *m_itemView;
     QString m_text;
     bool m_textSynced;
     QIcon m_icon;

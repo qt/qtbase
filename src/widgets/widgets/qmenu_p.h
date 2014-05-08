@@ -110,6 +110,9 @@ public:
     void init();
     void setPlatformMenu(QPlatformMenu *menu);
     void syncPlatformMenu();
+#ifdef Q_OS_OSX
+    void moveWidgetToPlatformItem(QWidget *w, QPlatformMenuItem* item);
+#endif
 
     static QMenuPrivate *get(QMenu *m) { return m->d_func(); }
     int scrollerHeight() const;
@@ -223,6 +226,7 @@ public:
 
     void _q_actionTriggered();
     void _q_actionHovered();
+    void _q_platformMenuAboutToShow();
 
     bool hasMouseMoved(const QPoint &globalPos);
 

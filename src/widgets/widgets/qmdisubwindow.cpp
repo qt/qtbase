@@ -1676,15 +1676,18 @@ void QMdiSubWindowPrivate::ensureWindowState(Qt::WindowState state)
     switch (state) {
     case Qt::WindowMinimized:
         windowStates &= ~Qt::WindowMaximized;
+        windowStates &= ~Qt::WindowFullScreen;
         windowStates &= ~Qt::WindowNoState;
         break;
     case Qt::WindowMaximized:
         windowStates &= ~Qt::WindowMinimized;
+        windowStates &= ~Qt::WindowFullScreen;
         windowStates &= ~Qt::WindowNoState;
         break;
     case Qt::WindowNoState:
         windowStates &= ~Qt::WindowMinimized;
         windowStates &= ~Qt::WindowMaximized;
+        windowStates &= ~Qt::WindowFullScreen;
         break;
     default:
         break;
@@ -2732,7 +2735,7 @@ bool QMdiSubWindow::eventFilter(QObject *object, QEvent *event)
             showMinimized();
         else if (!(oldState & Qt::WindowMaximized) && (newState & Qt::WindowMaximized))
             showMaximized();
-        else if (!(newState & (Qt::WindowMaximized | Qt::WindowMinimized)))
+        else if (!(newState & (Qt::WindowMaximized | Qt::WindowMinimized | Qt::WindowFullScreen)))
             showNormal();
         break;
     }
@@ -3005,7 +3008,7 @@ void QMdiSubWindow::changeEvent(QEvent *changeEvent)
         d->setMinimizeMode();
     else if (!(oldState & Qt::WindowMaximized) && (newState & Qt::WindowMaximized))
         d->setMaximizeMode();
-    else if (!(newState & (Qt::WindowMaximized | Qt::WindowMinimized)))
+    else if (!(newState & (Qt::WindowMaximized | Qt::WindowMinimized | Qt::WindowFullScreen)))
         d->setNormalMode();
 
     if (d->isActive)
