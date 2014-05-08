@@ -155,7 +155,6 @@ public:
     void removeToolBar(QToolBar *toolbar);
     void removeToolBarBreak(QToolBar *before);
 
-    void setUnifiedTitleAndToolBarOnMac(bool set);
     bool unifiedTitleAndToolBarOnMac() const;
 
     Qt::ToolBarArea toolBarArea(QToolBar *toolbar) const;
@@ -182,11 +181,13 @@ public:
     virtual QMenu *createPopupMenu();
 #endif
 
-
-#ifndef QT_NO_DOCKWIDGET
 public Q_SLOTS:
+#ifndef QT_NO_DOCKWIDGET
     void setAnimated(bool enabled);
     void setDockNestingEnabled(bool enabled);
+#endif
+#ifndef QT_NO_TOOLBAR
+    void setUnifiedTitleAndToolBarOnMac(bool set);
 #endif
 
 Q_SIGNALS:
