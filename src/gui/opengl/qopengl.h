@@ -112,17 +112,19 @@ typedef GLfloat GLdouble;
 # endif // Q_OS_MAC
 #endif // QT_OPENGL_ES_2
 
-// Desktops, apart from Mac OS X prior to 10.7 can support OpenGL 3
-// and desktops apart from Mac can support OpenGL 4
+// Desktops, apart from Mac OS X prior to 10.7 can support OpenGL 3.
+// Desktops, apart from Mac OS X prior to 10.9 can support OpenGL 4.
 #if !defined(QT_OPENGL_ES_2)
 # if !defined(Q_OS_MAC) || (defined(Q_OS_MAC) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7)
 #  define QT_OPENGL_3
 #  define QT_OPENGL_3_2
 # endif
-#if !defined(Q_OS_MAC)
+# if !defined(Q_OS_MAC) || (defined(Q_OS_MAC) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_9)
 #  define QT_OPENGL_4
+# endif
+# if !defined(Q_OS_MAC)
 #  define QT_OPENGL_4_3
-#endif
+# endif
 #endif
 
 QT_BEGIN_NAMESPACE
