@@ -603,7 +603,8 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
 {
     if (m_window->flags() & Qt::WindowTransparentForInput)
         return NO;
-    QWindowSystemInterface::handleWindowActivated([self topLevelWindow]);
+    if (!m_platformWindow->windowIsPopupType())
+        QWindowSystemInterface::handleWindowActivated([self topLevelWindow]);
     return YES;
 }
 
