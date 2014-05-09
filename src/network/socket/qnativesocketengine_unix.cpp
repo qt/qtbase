@@ -363,7 +363,7 @@ bool QNativeSocketEnginePrivate::setOption(QNativeSocketEngine::SocketOption opt
 bool QNativeSocketEnginePrivate::nativeConnect(const QHostAddress &addr, quint16 port)
 {
 #ifdef QNATIVESOCKETENGINE_DEBUG
-    qDebug("QNativeSocketEnginePrivate::nativeConnect() : %lli", socketDescriptor);
+    qDebug() << "QNativeSocketEnginePrivate::nativeConnect() " << socketDescriptor;
 #endif
 
     struct sockaddr_in sockAddrIPv4;
