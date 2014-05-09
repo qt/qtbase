@@ -934,6 +934,33 @@ void QWindowsDirect2DPaintEngine::setState(QPainterState *s)
     transformChanged();
 }
 
+void QWindowsDirect2DPaintEngine::draw(const QVectorPath &path)
+{
+    Q_D(QWindowsDirect2DPaintEngine);
+
+    ComPtr<ID2D1Geometry> geometry = vectorPathToID2D1PathGeometry(path, d->antialiasMode() == D2D1_ANTIALIAS_MODE_ALIASED);
+    if (!geometry) {
+        qWarning("%s: Could not convert path to d2d geometry", __FUNCTION__);
+        return;
+    }
+
+    const QBrush &brush = state()->brush;
+    if (qbrush_style(brush) != Qt::NoBrush) {
+        if (emulationRequired(BrushEmulation))
+            rasterFill(path, brush);
+        else
+            fill(geometry.Get(), brush);
+    }
+
+    const QPen &pen = state()->pen;
+    if (qpen_style(pen) != Qt::NoPen && qbrush_style(qpen_brush(pen)) != Qt::NoBrush) {
+        if (emulationRequired(PenEmulation))
+            QPaintEngineEx::stroke(path, pen);
+        else
+            stroke(geometry.Get(), pen);
+    }
+}
+
 void QWindowsDirect2DPaintEngine::fill(const QVectorPath &path, const QBrush &brush)
 {
     Q_D(QWindowsDirect2DPaintEngine);
@@ -943,7 +970,6 @@ void QWindowsDirect2DPaintEngine::fill(const QVectorPath &path, const QBrush &br
         return;
 
     ensureBrush(brush);
-
     if (emulationRequired(BrushEmulation)) {
         rasterFill(path, brush);
         return;
@@ -959,6 +985,56 @@ void QWindowsDirect2DPaintEngine::fill(const QVectorPath &path, const QBrush &br
     }
 
     d->dc()->FillGeometry(geometry.Get(), d->brush.brush.Get());
+}
+
+void QWindowsDirect2DPaintEngine::fill(ID2D1Geometry *geometry, const QBrush &brush)
+{
+    Q_D(QWindowsDirect2DPaintEngine);
+    D2D_TAG(D2DDebugFillTag);
+
+    ensureBrush(brush);
+    if (!d->brush.brush)
+        return;
+
+    d->dc()->FillGeometry(geometry, d->brush.brush.Get());
+}
+
+void QWindowsDirect2DPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
+{
+    Q_D(QWindowsDirect2DPaintEngine);
+    D2D_TAG(D2DDebugFillTag);
+
+    if (path.isEmpty())
+        return;
+
+    ensurePen(pen);
+    if (emulationRequired(PenEmulation)) {
+        QPaintEngineEx::stroke(path, pen);
+        return;
+    }
+
+    if (!d->pen.brush)
+        return;
+
+    ComPtr<ID2D1Geometry> geometry = vectorPathToID2D1PathGeometry(path, d->antialiasMode() == D2D1_ANTIALIAS_MODE_ALIASED);
+    if (!geometry) {
+        qWarning("%s: Could not convert path to d2d geometry", __FUNCTION__);
+        return;
+    }
+
+    d->dc()->DrawGeometry(geometry.Get(), d->pen.brush.Get(), d->pen.qpen.widthF(), d->pen.strokeStyle.Get());
+}
+
+void QWindowsDirect2DPaintEngine::stroke(ID2D1Geometry *geometry, const QPen &pen)
+{
+    Q_D(QWindowsDirect2DPaintEngine);
+    D2D_TAG(D2DDebugFillTag);
+
+    ensurePen(pen);
+    if (!d->pen.brush)
+        return;
+
+    d->dc()->DrawGeometry(geometry, d->pen.brush.Get(), d->pen.qpen.widthF(), d->pen.strokeStyle.Get());
 }
 
 void QWindowsDirect2DPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
