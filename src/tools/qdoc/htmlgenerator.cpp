@@ -1446,6 +1446,10 @@ void HtmlGenerator::generateDocNode(DocNode* dn, CodeMarker* marker)
         // Replace the marker with a QML code marker.
         marker = CodeMarker::markerForLanguage(QLatin1String("QML"));
     }
+    else if (dn->subType() == Node::QmlClass) {
+        fullTitle = fullTitle + " QML Type";
+        htmlTitle = fullTitle;
+    }
 
     generateHeader(htmlTitle, dn, marker);
     /*
