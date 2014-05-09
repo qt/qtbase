@@ -45,6 +45,9 @@
 #include <private/qobject_p.h>
 #include "qkeymapper_p.h"
 
+#include <private/qguiapplication_p.h>
+#include <qpa/qplatformintegration.h>
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -115,6 +118,34 @@ QKeyMapper *QKeyMapper::instance()
 QKeyMapperPrivate *qt_keymapper_private()
 {
     return QKeyMapper::instance()->d_func();
+}
+
+QKeyMapperPrivate::QKeyMapperPrivate()
+{
+    keyboardInputLocale = QLocale::system();
+    keyboardInputDirection = keyboardInputLocale.textDirection();
+}
+
+QKeyMapperPrivate::~QKeyMapperPrivate()
+{
+    // clearMappings();
+}
+
+void QKeyMapperPrivate::clearMappings()
+{
+}
+
+QList<int> QKeyMapperPrivate::possibleKeys(QKeyEvent *e)
+{
+    QList<int> result = QGuiApplicationPrivate::platformIntegration()->possibleKeys(e);
+    if (!result.isEmpty())
+        return result;
+
+    if (e->key() && (e->key() != Qt::Key_unknown))
+        result << int(e->key() + e->modifiers());
+    else if (!e->text().isEmpty())
+        result << int(e->text().at(0).unicode() + e->modifiers());
+    return result;
 }
 
 QT_END_NAMESPACE

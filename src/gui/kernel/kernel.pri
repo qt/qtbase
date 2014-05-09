@@ -108,7 +108,6 @@ SOURCES += \
         kernel/qinputmethod.cpp \
         kernel/qkeysequence.cpp \
         kernel/qkeymapper.cpp \
-        kernel/qkeymapper_qpa.cpp \
         kernel/qpalette.cpp \
         kernel/qguivariant.cpp \
         kernel/qscreen.cpp \
