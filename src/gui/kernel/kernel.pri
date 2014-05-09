@@ -72,7 +72,6 @@ HEADERS += \
         kernel/qpixelformat.h
 
 SOURCES += \
-        kernel/qcursor_qpa.cpp \
         kernel/qgenericpluginfactory.cpp \
         kernel/qgenericplugin.cpp \
         kernel/qwindowsysteminterface.cpp \

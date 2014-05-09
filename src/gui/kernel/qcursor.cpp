@@ -51,6 +51,9 @@
 #include <private/qcursor_p.h>
 #include <qdebug.h>
 
+#include <qpa/qplatformcursor.h>
+#include <private/qguiapplication_p.h>
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -172,6 +175,13 @@ QT_BEGIN_NAMESPACE
 
     \sa setPos(), QWidget::mapFromGlobal(), QWidget::mapToGlobal()
 */
+QPoint QCursor::pos(const QScreen *screen)
+{
+    if (screen)
+        if (const QPlatformCursor *cursor = screen->handle()->cursor())
+            return cursor->pos();
+    return QGuiApplicationPrivate::lastCursorPosition.toPoint();
+}
 
 /*!
     \fn QPoint QCursor::pos()
@@ -191,7 +201,10 @@ QT_BEGIN_NAMESPACE
 
     \sa setPos(), QWidget::mapFromGlobal(), QWidget::mapToGlobal(), QGuiApplication::primaryScreen()
 */
-
+QPoint QCursor::pos()
+{
+    return QCursor::pos(QGuiApplication::primaryScreen());
+}
 
 /*!
     \fn void QCursor::setPos(QScreen *screen, int x, int y)
@@ -214,6 +227,19 @@ QT_BEGIN_NAMESPACE
 
     \sa pos(), QWidget::mapFromGlobal(), QWidget::mapToGlobal()
 */
+void QCursor::setPos(QScreen *screen, int x, int y)
+{
+    if (screen) {
+        if (QPlatformCursor *cursor = screen->handle()->cursor()) {
+            const QPoint pos = QPoint(x, y);
+            // Need to check, since some X servers generate null mouse move
+            // events, causing looping in applications which call setPos() on
+            // every mouse move event.
+            if (pos != cursor->pos())
+                cursor->setPos(pos);
+        }
+    }
+}
 
 /*!
     \fn void QCursor::setPos(int x, int y)
@@ -226,6 +252,10 @@ QT_BEGIN_NAMESPACE
 
     \sa pos(), QWidget::mapFromGlobal(), QWidget::mapToGlobal(), QGuiApplication::primaryScreen()
 */
+void QCursor::setPos(int x, int y)
+{
+    QCursor::setPos(QGuiApplication::primaryScreen(), x, y);
+}
 
 /*!
     \fn void QCursor::setPos (const QPoint &p)
@@ -401,34 +431,6 @@ QCursor::QCursor(const QBitmap &bitmap, const QBitmap &mask, int hotX, int hotY)
     d = QCursorData::setBitmap(bitmap, mask, hotX, hotY);
 }
 
-QCursorData *qt_cursorTable[Qt::LastCursor + 1];
-bool QCursorData::initialized = false;
-
-/*! \internal */
-void QCursorData::cleanup()
-{
-    if(!QCursorData::initialized)
-        return;
-
-    for (int shape = 0; shape <= Qt::LastCursor; ++shape) {
-        // In case someone has a static QCursor defined with this shape
-        if (!qt_cursorTable[shape]->ref.deref())
-            delete qt_cursorTable[shape];
-        qt_cursorTable[shape] = 0;
-    }
-    QCursorData::initialized = false;
-}
-
-/*! \internal */
-void QCursorData::initialize()
-{
-    if (QCursorData::initialized)
-        return;
-    for (int shape = 0; shape <= Qt::LastCursor; ++shape)
-        qt_cursorTable[shape] = new QCursorData((Qt::CursorShape)shape);
-    QCursorData::initialized = true;
-}
-
 /*!
     Constructs a cursor with the default arrow shape.
 */
@@ -601,6 +603,73 @@ QDebug operator<<(QDebug dbg, const QCursor &c)
     return dbg.space();
 }
 #endif
+
+/*****************************************************************************
+  Internal QCursorData class
+ *****************************************************************************/
+
+QCursorData *qt_cursorTable[Qt::LastCursor + 1];
+bool QCursorData::initialized = false;
+
+QCursorData::QCursorData(Qt::CursorShape s)
+    : ref(1), cshape(s), bm(0), bmm(0), hx(0), hy(0)
+{
+}
+
+QCursorData::~QCursorData()
+{
+    delete bm;
+    delete bmm;
+}
+
+/*! \internal */
+void QCursorData::cleanup()
+{
+    if(!QCursorData::initialized)
+        return;
+
+    for (int shape = 0; shape <= Qt::LastCursor; ++shape) {
+        // In case someone has a static QCursor defined with this shape
+        if (!qt_cursorTable[shape]->ref.deref())
+            delete qt_cursorTable[shape];
+        qt_cursorTable[shape] = 0;
+    }
+    QCursorData::initialized = false;
+}
+
+/*! \internal */
+void QCursorData::initialize()
+{
+    if (QCursorData::initialized)
+        return;
+    for (int shape = 0; shape <= Qt::LastCursor; ++shape)
+        qt_cursorTable[shape] = new QCursorData((Qt::CursorShape)shape);
+    QCursorData::initialized = true;
+}
+
+QCursorData *QCursorData::setBitmap(const QBitmap &bitmap, const QBitmap &mask, int hotX, int hotY)
+{
+    if (!QCursorData::initialized)
+        QCursorData::initialize();
+    if (bitmap.depth() != 1 || mask.depth() != 1 || bitmap.size() != mask.size()) {
+        qWarning("QCursor: Cannot create bitmap cursor; invalid bitmap(s)");
+        QCursorData *c = qt_cursorTable[0];
+        c->ref.ref();
+        return c;
+    }
+    QCursorData *d = new QCursorData;
+    d->bm  = new QBitmap(bitmap);
+    d->bmm = new QBitmap(mask);
+    d->cshape = Qt::BitmapCursor;
+    d->hx = hotX >= 0 ? hotX : bitmap.width() / 2;
+    d->hy = hotY >= 0 ? hotY : bitmap.height() / 2;
+
+    return d;
+}
+
+void QCursorData::update()
+{
+}
 
 QT_END_NAMESPACE
 #endif // QT_NO_CURSOR
