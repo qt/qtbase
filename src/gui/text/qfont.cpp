@@ -62,6 +62,8 @@
 #include <limits.h>
 
 #include <qpa/qplatformscreen.h>
+#include <qpa/qplatformintegration.h>
+#include <qpa/qplatformfontdatabase.h>
 #include <QtGui/private/qguiapplication_p.h>
 
 #include <QtCore/QMutexLocker>
@@ -542,79 +544,6 @@ QFontEngineData::~QFontEngineData()
     Move-assigns \a other to this QFont instance.
 
     \since 5.2
-*/
-
-/*!
-    \fn QString QFont::rawName() const
-    \deprecated
-
-    Returns the name of the font within the underlying window system.
-
-    On X11, this function will return an empty string.
-
-    Using the return value of this function is usually \e not \e
-    portable.
-
-    \sa setRawName()
-*/
-
-/*!
-    \fn void QFont::setRawName(const QString &name)
-    \deprecated
-
-    Sets a font by its system specific name.
-
-    A font set with setRawName() is still a full-featured QFont. It can
-    be queried (for example with italic()) or modified (for example with
-    setItalic()) and is therefore also suitable for rendering rich text.
-
-    If Qt's internal font database cannot resolve the raw name, the
-    font becomes a raw font with \a name as its family.
-
-    \sa rawName(), setRawMode(), setFamily()
-*/
-
-/*!
-    \fn QString QFont::lastResortFamily() const
-
-    Returns the "last resort" font family name.
-
-    The current implementation tries a wide variety of common fonts,
-    returning the first one it finds. Is is possible that no family is
-    found in which case an empty string is returned.
-
-    \sa lastResortFont()
-*/
-
-/*!
-    \fn QString QFont::defaultFamily() const
-
-    Returns the family name that corresponds to the current style
-    hint.
-
-    \sa StyleHint, styleHint(), setStyleHint()
-*/
-
-/*!
-    \fn QString QFont::lastResortFont() const
-
-    Returns a "last resort" font name for the font matching algorithm.
-    This is used if the last resort family is not available. It will
-    always return a name, if necessary returning something like
-    "fixed" or "system".
-
-    The current implementation tries a wide variety of common fonts,
-    returning the first one it finds. The implementation may change
-    at any time, but this function will always return a string
-    containing something.
-
-    It is theoretically possible that there really isn't a
-    lastResortFont() in which case Qt will abort with an error
-    message. We have not been able to identify a case where this
-    happens. Please \l{bughowto.html}{report it as a bug} if
-    it does, preferably with a list of the fonts you have installed.
-
-    \sa lastResortFamily(), rawName()
 */
 
 /*!
@@ -1913,20 +1842,6 @@ void QFont::insertSubstitutions(const QString &familyName,
     }
 }
 
-/*! \fn void QFont::initialize()
-  \internal
-
-  Internal function that initializes the font system.  The font cache
-  and font dict do not alloc the keys. The key is a QString which is
-  shared between QFontPrivate and QXFontName.
-*/
-
-/*! \fn void QFont::cleanup()
-  \internal
-
-  Internal function that cleans up the font system.
-*/
-
 /*!
     Removes all the substitutions for \a familyName.
 
@@ -2041,6 +1956,42 @@ static void set_extended_font_bits(quint8 bits, QFontPrivate *f)
 }
 #endif
 
+/*!
+    \fn QString QFont::rawName() const
+    \deprecated
+
+    Returns the name of the font within the underlying window system.
+
+    On X11, this function will return an empty string.
+
+    Using the return value of this function is usually \e not \e
+    portable.
+
+    \sa setRawName()
+*/
+QString QFont::rawName() const
+{
+    return QLatin1String("unknown");
+}
+
+/*!
+    \fn void QFont::setRawName(const QString &name)
+    \deprecated
+
+    Sets a font by its system specific name.
+
+    A font set with setRawName() is still a full-featured QFont. It can
+    be queried (for example with italic()) or modified (for example with
+    setItalic()) and is therefore also suitable for rendering rich text.
+
+    If Qt's internal font database cannot resolve the raw name, the
+    font becomes a raw font with \a name as its family.
+
+    \sa rawName(), setRawMode(), setFamily()
+*/
+void QFont::setRawName(const QString &)
+{
+}
 
 /*!
     Returns the font's key, a textual representation of a font. It is
@@ -2134,17 +2085,96 @@ bool QFont::fromString(const QString &descrip)
     return true;
 }
 
+/*! \fn void QFont::initialize()
+  \internal
+
+  Internal function that initializes the font system.  The font cache
+  and font dict do not alloc the keys. The key is a QString which is
+  shared between QFontPrivate and QXFontName.
+*/
+void QFont::initialize()
+{
+}
+
+/*! \fn void QFont::cleanup()
+  \internal
+
+  Internal function that cleans up the font system.
+*/
+void QFont::cleanup()
+{
+    QFontCache::cleanup();
+}
+
 /*! \internal
 
   Internal function that dumps font cache statistics.
 */
 void QFont::cacheStatistics()
 {
-
-
 }
 
+/*!
+    \fn QString QFont::lastResortFamily() const
 
+    Returns the "last resort" font family name.
+
+    The current implementation tries a wide variety of common fonts,
+    returning the first one it finds. Is is possible that no family is
+    found in which case an empty string is returned.
+
+    \sa lastResortFont()
+*/
+QString QFont::lastResortFamily() const
+{
+    return QString::fromLatin1("helvetica");
+}
+
+/*!
+    \fn QString QFont::defaultFamily() const
+
+    Returns the family name that corresponds to the current style
+    hint.
+
+    \sa StyleHint, styleHint(), setStyleHint()
+*/
+QString QFont::defaultFamily() const
+{
+    QPlatformFontDatabase *fontDB = QGuiApplicationPrivate::platformIntegration()->fontDatabase();
+    const QStringList fallbacks = fontDB->fallbacksForFamily(QString(), QFont::StyleNormal
+                                      , QFont::StyleHint(d->request.styleHint), QChar::Script_Common);
+    if (!fallbacks.isEmpty())
+        return fallbacks.first();
+    return QString();
+}
+
+/*!
+    \fn QString QFont::lastResortFont() const
+
+    Returns a "last resort" font name for the font matching algorithm.
+    This is used if the last resort family is not available. It will
+    always return a name, if necessary returning something like
+    "fixed" or "system".
+
+    The current implementation tries a wide variety of common fonts,
+    returning the first one it finds. The implementation may change
+    at any time, but this function will always return a string
+    containing something.
+
+    It is theoretically possible that there really isn't a
+    lastResortFont() in which case Qt will abort with an error
+    message. We have not been able to identify a case where this
+    happens. Please \l{bughowto.html}{report it as a bug} if
+    it does, preferably with a list of the fonts you have installed.
+
+    \sa lastResortFamily(), rawName()
+*/
+QString QFont::lastResortFont() const
+{
+    qFatal("QFont::lastResortFont: Cannot find any reasonable font");
+    // Shut compiler up
+    return QString();
+}
 
 /*****************************************************************************
   QFont stream functions
