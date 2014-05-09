@@ -1366,6 +1366,25 @@ void QWindowsWindow::handleResized(int wParam)
     }
 }
 
+// Return the effective screen for full screen mode in a virtual desktop.
+static QScreen *effectiveScreen(const QWindow *w)
+{
+    QRect geometry = w->geometry();
+    if (!w->isTopLevel())
+        geometry.moveTopLeft(w->mapToGlobal(geometry.topLeft()));
+
+    QScreen *screen = w->screen();
+    if (!screen->geometry().intersects(geometry)) {
+        foreach (QScreen *sibling, screen->virtualSiblings()) {
+            if (sibling->geometry().intersects(geometry)) {
+                screen = sibling;
+                break;
+            }
+        }
+    }
+    return screen;
+}
+
 void QWindowsWindow::handleGeometryChange()
 {
     //Prevent recursive resizes for Windows CE
@@ -1380,6 +1399,14 @@ void QWindowsWindow::handleGeometryChange()
     if (!testFlag(OpenGL_ES2) && isExposed()
         && !(m_data.geometry.width() > previousGeometry.width() || m_data.geometry.height() > previousGeometry.height())) {
         fireExpose(QRegion(m_data.geometry), true);
+    }
+    if (previousGeometry.topLeft() != m_data.geometry.topLeft()) {
+        QWindow *w = window();
+        if (w->isTopLevel()) {
+            QScreen *newScreen = effectiveScreen(w);
+            if (newScreen != w->screen())
+                QWindowSystemInterface::handleWindowScreenChanged(w, newScreen);
+        }
     }
     if (testFlag(SynchronousGeometryChangeEvent))
         QWindowSystemInterface::flushWindowSystemEvents();
@@ -1571,23 +1598,9 @@ void QWindowsWindow::setWindowState(Qt::WindowState state)
     }
 }
 
-// Return the effective screen for full screen mode in a virtual desktop.
-static const QScreen *effectiveScreen(const QWindow *w)
-{
-    QPoint center = w->geometry().center();
-    if (!w->isTopLevel())
-        center = w->mapToGlobal(center);
-    const QScreen *screen = w->screen();
-    if (!screen->geometry().contains(center))
-        foreach (const QScreen *sibling, screen->virtualSiblings())
-            if (sibling->geometry().contains(center))
-                return sibling;
-    return screen;
-}
-
 bool QWindowsWindow::isFullScreen_sys() const
 {
-    return window()->isTopLevel() && geometry_sys() == effectiveScreen(window())->geometry();
+    return window()->isTopLevel() && geometry_sys() == window()->screen()->geometry();
 }
 
 /*!
@@ -1667,7 +1680,7 @@ void QWindowsWindow::setWindowState_sys(Qt::WindowState newState)
             setStyle(newStyle);
             // Use geometry of QWindow::screen() within creation or the virtual screen the
             // window is in (QTBUG-31166, QTBUG-30724).
-            const QScreen *screen = testFlag(WithinCreate) ? window()->screen() : effectiveScreen(window());
+            const QScreen *screen = window()->screen();
             const QRect r = screen->geometry();
             const UINT swpf = SWP_FRAMECHANGED | SWP_NOACTIVATE;
             const bool wasSync = testFlag(SynchronousGeometryChangeEvent);
@@ -1934,7 +1947,7 @@ void QWindowsWindow::getSizeHints(MINMAXINFO *mmi) const
             && (m_data.flags & Qt::FramelessWindowHint)) {
         // This block fixes QTBUG-8361: Frameless windows shouldn't cover the
         // taskbar when maximized
-        if (const QScreen *screen = effectiveScreen(window())) {
+        if (const QScreen *screen = window()->screen()) {
             mmi->ptMaxSize.y = screen->availableGeometry().height();
 
             // Width, because you can have the taskbar on the sides too.

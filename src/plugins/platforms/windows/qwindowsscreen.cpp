@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -407,6 +407,30 @@ static inline int indexOfMonitor(const QList<QWindowsScreenData> &screenData,
     return -1;
 }
 
+void QWindowsScreenManager::removeScreen(int index)
+{
+    qCDebug(lcQpaWindows) << "Removing Monitor:" << m_screens.at(index)->data();
+    QScreen *screen = m_screens.at(index)->screen();
+    QScreen *primaryScreen = QGuiApplication::primaryScreen();
+    // QTBUG-38650: When a screen is disconnected, Windows will automatically
+    // move the Window to another screen. This will trigger a geometry change
+    // event, but unfortunately after the screen destruction signal. To prevent
+    // QtGui from automatically hiding the QWindow, pretend all Windows move to
+    // the primary screen first (which is likely the correct, final screen).
+    if (screen != primaryScreen) {
+        unsigned movedWindowCount = 0;
+        foreach (QWindow *w, QGuiApplication::topLevelWindows()) {
+            if (w->screen() == screen && w->handle() && w->type() != Qt::Desktop) {
+                QWindowSystemInterface::handleWindowScreenChanged(w, primaryScreen);
+                ++movedWindowCount;
+            }
+        }
+        if (movedWindowCount)
+            QWindowSystemInterface::flushWindowSystemEvents();
+    }
+    delete m_screens.takeAt(index);
+}
+
 /*!
     \brief Synchronizes the screen list, adds new screens, removes deleted
     ones and propagates resolution changes to QWindowSystemInterface.
@@ -432,10 +456,8 @@ bool QWindowsScreenManager::handleScreenChanges()
     // temporary lock screen to avoid window recreation (QTBUG-33062).
     if (!lockScreen) {
         for (int i = m_screens.size() - 1; i >= 0; --i) {
-            if (indexOfMonitor(newDataList, m_screens.at(i)->data().name) == -1) {
-                qCDebug(lcQpaWindows) << "Removing Monitor: " << m_screens.at(i) ->data();
-                delete m_screens.takeAt(i);
-            } // not found
+            if (indexOfMonitor(newDataList, m_screens.at(i)->data().name) == -1)
+                removeScreen(i);
         }     // for existing screens
     }     // not lock screen
     return true;

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -143,6 +143,8 @@ public:
     const WindowsScreenList &screens() const { return m_screens; }
 
 private:
+    void removeScreen(int index);
+
     WindowsScreenList m_screens;
     int m_lastDepth;
     WORD m_lastHorizontalResolution;
