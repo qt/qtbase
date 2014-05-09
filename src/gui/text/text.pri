@@ -78,8 +78,7 @@ SOURCES += \
 
 SOURCES += \
     text/qfontengine_qpa.cpp \
-    text/qplatformfontdatabase.cpp \
-    text/qrawfont_qpa.cpp
+    text/qplatformfontdatabase.cpp
 
 HEADERS += \
     text/qplatformfontdatabase.h

@@ -341,7 +341,7 @@ QFontEngine *QCoreTextFontDatabase::fontEngine(const QByteArray &fontData, qreal
 
     QFontEngine *fontEngine = NULL;
     if (cgFont == NULL) {
-        qWarning("QRawFont::platformLoadFromData: CGFontCreateWithDataProvider failed");
+        qWarning("QCoreTextFontDatabase::fontEngine: CGFontCreateWithDataProvider failed");
     } else {
         QFontDef def;
         def.pixelSize = pixelSize;

@@ -95,8 +95,7 @@ public:
     }
 
     void cleanUp();
-    void platformCleanUp();
-    void platformLoadFromData(const QByteArray &fontData,
+    void loadFromData(const QByteArray &fontData,
                               qreal pixelSize,
                               QFont::HintingPreference hintingPreference);
 

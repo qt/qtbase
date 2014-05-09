@@ -47,6 +47,10 @@
 #include "qrawfont_p.h"
 #include "qplatformfontdatabase.h"
 
+#include <private/qguiapplication_p.h>
+#include <qpa/qplatformintegration.h>
+#include <qpa/qplatformfontdatabase.h>
+
 #include <QtCore/qendian.h>
 
 QT_BEGIN_NAMESPACE
@@ -252,7 +256,7 @@ void QRawFont::loadFromData(const QByteArray &fontData,
     d->cleanUp();
     d->hintingPreference = hintingPreference;
     d->thread = QThread::currentThread();
-    d->platformLoadFromData(fontData, pixelSize, hintingPreference);
+    d->loadFromData(fontData, pixelSize, hintingPreference);
 }
 
 /*!
@@ -735,13 +739,23 @@ void QRawFont::setPixelSize(qreal pixelSize)
 */
 void QRawFontPrivate::cleanUp()
 {
-    platformCleanUp();
     if (fontEngine != 0) {
         if (!fontEngine->ref.deref())
             delete fontEngine;
         fontEngine = 0;
     }
     hintingPreference = QFont::PreferDefaultHinting;
+}
+
+void QRawFontPrivate::loadFromData(const QByteArray &fontData, qreal pixelSize,
+                                           QFont::HintingPreference hintingPreference)
+{
+    Q_ASSERT(fontEngine == 0);
+
+    QPlatformFontDatabase *pfdb = QGuiApplicationPrivate::platformIntegration()->fontDatabase();
+    fontEngine = pfdb->fontEngine(fontData, pixelSize, hintingPreference);
+    if (fontEngine != 0)
+        fontEngine->ref.ref();
 }
 
 /*!
