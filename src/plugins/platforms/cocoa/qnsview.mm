@@ -662,6 +662,19 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
     m_frameStrutButtons = Qt::NoButton;
 }
 
+- (NSPoint) screenMousePoint:(NSEvent *)theEvent
+{
+    NSPoint screenPoint;
+    if (theEvent) {
+        NSPoint windowPoint = [theEvent locationInWindow];
+        NSRect screenRect = [[theEvent window] convertRectToScreen:NSMakeRect(windowPoint.x, windowPoint.y, 1, 1)];
+        screenPoint = screenRect.origin;
+    } else {
+        screenPoint = [NSEvent mouseLocation];
+    }
+    return screenPoint;
+}
+
 - (void)handleMouseEvent:(NSEvent *)theEvent
 {
     [self handleTabletEvent: theEvent];
@@ -676,7 +689,7 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
             m_platformWindow->m_forwardWindow = 0;
     }
 
-    [targetView convertFromScreen:[NSEvent mouseLocation] toWindowPoint:&qtWindowPoint andScreenPoint:&qtScreenPoint];
+    [targetView convertFromScreen:[self screenMousePoint:theEvent] toWindowPoint:&qtWindowPoint andScreenPoint:&qtScreenPoint];
     ulong timestamp = [theEvent timestamp] * 1000;
 
     QCocoaDrag* nativeDrag = QCocoaIntegration::instance()->drag();
@@ -849,7 +862,7 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
 
     QPointF windowPoint;
     QPointF screenPoint;
-    [self convertFromScreen:[NSEvent mouseLocation] toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
+    [self convertFromScreen:[self screenMousePoint:theEvent] toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
     QWindow *childWindow = m_platformWindow->childWindowAt(windowPoint.toPoint());
 
     // Top-level windows generate enter-leave events for sub-windows.
