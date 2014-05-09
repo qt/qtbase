@@ -121,7 +121,7 @@ SOURCES += \
         kernel/qplatformdialoghelper.cpp \
         kernel/qplatformservices.cpp \
         kernel/qplatformscreenpageflipper.cpp \
-        kernel/qplatformsystemtrayicon_qpa.cpp \
+        kernel/qplatformsystemtrayicon.cpp \
         kernel/qplatformsessionmanager.cpp \
         kernel/qplatformmenu.cpp \
         kernel/qpixelformat.cpp
