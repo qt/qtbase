@@ -72,7 +72,6 @@ HEADERS += \
         kernel/qpixelformat.h
 
 SOURCES += \
-        kernel/qclipboard_qpa.cpp \
         kernel/qcursor_qpa.cpp \
         kernel/qgenericpluginfactory.cpp \
         kernel/qgenericplugin.cpp \

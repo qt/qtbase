@@ -50,6 +50,10 @@
 #include "qimage.h"
 #include "qtextcodec.h"
 
+#include "private/qguiapplication_p.h"
+#include <qpa/qplatformintegration.h>
+#include <qpa/qplatformclipboard.h>
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -438,6 +442,12 @@ void QClipboard::setPixmap(const QPixmap &pixmap, Mode mode)
 
     \sa setMimeData()
 */
+const QMimeData* QClipboard::mimeData(Mode mode) const
+{
+    QPlatformClipboard *clipboard = QGuiApplicationPrivate::platformIntegration()->clipboard();
+    if (!clipboard->supportsMode(mode)) return 0;
+    return clipboard->mimeData(mode);
+}
 
 /*!
     \fn void QClipboard::setMimeData(QMimeData *src, Mode mode)
@@ -458,6 +468,13 @@ void QClipboard::setPixmap(const QPixmap &pixmap, Mode mode)
 
     \sa mimeData()
 */
+void QClipboard::setMimeData(QMimeData* src, Mode mode)
+{
+    QPlatformClipboard *clipboard = QGuiApplicationPrivate::platformIntegration()->clipboard();
+    if (!clipboard->supportsMode(mode)) return;
+
+    clipboard->setMimeData(src,mode);
+}
 
 /*!
     \fn void QClipboard::clear(Mode mode)
@@ -472,7 +489,10 @@ void QClipboard::setPixmap(const QPixmap &pixmap, Mode mode)
 
     \sa QClipboard::Mode, supportsSelection()
 */
-
+void QClipboard::clear(Mode mode)
+{
+    setMimeData(0, mode);
+}
 
 /*!
     Returns \c true if the clipboard supports mouse selection; otherwise
@@ -527,6 +547,11 @@ bool QClipboard::ownsFindBuffer() const
     Returns \c true if the clipboard supports the clipboard mode speacified by \a mode;
     otherwise returns \c false.
 */
+bool QClipboard::supportsMode(Mode mode) const
+{
+    QPlatformClipboard *clipboard = QGuiApplicationPrivate::platformIntegration()->clipboard();
+    return clipboard->supportsMode(mode);
+}
 
 /*!
     \internal
@@ -534,6 +559,11 @@ bool QClipboard::ownsFindBuffer() const
     Returns \c true if the clipboard supports the clipboard data speacified by \a mode;
     otherwise returns \c false.
 */
+bool QClipboard::ownsMode(Mode mode) const
+{
+    QPlatformClipboard *clipboard = QGuiApplicationPrivate::platformIntegration()->clipboard();
+    return clipboard->ownsMode(mode);
+}
 
 /*!
     \internal
