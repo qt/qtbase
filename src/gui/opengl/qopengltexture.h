@@ -272,6 +272,10 @@ public:
     void setLayers(int layers);
     int layers() const;
     int faces() const;
+    void setSamples(int samples);
+    int samples() const;
+    void setFixedSamplePositions(bool fixed);
+    bool isFixedSamplePositions() const;
     void allocateStorage();
     bool isStorageAllocated() const;
 

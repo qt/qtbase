@@ -67,7 +67,7 @@ QOpenGLTexturePrivate::QOpenGLTexturePrivate(QOpenGLTexture::Target textureTarge
       mipLevels(-1),
       layers(1),
       faces(1),
-      samples(1),
+      samples(0),
       fixedSamplePositions(true),
       baseLevel(0),
       maxLevel(1000),
@@ -200,7 +200,7 @@ void QOpenGLTexturePrivate::destroy()
     mipLevels = -1;
     layers = 1;
     faces = 1;
-    samples = 1;
+    samples = 0;
     fixedSamplePositions = true,
     baseLevel = 0;
     maxLevel = 1000;
@@ -2060,6 +2060,125 @@ int QOpenGLTexture::faces() const
 {
     Q_D(const QOpenGLTexture);
     return d->faces;
+}
+
+/*!
+    Sets the number of \a samples to allocate storage for when rendering to
+    a multisample capable texture target. This function should
+    be called before storage is allocated for the texture.
+
+    For targets that do not support multisampling this function has
+    no effect.
+
+    \sa samples(), isStorageAllocated()
+*/
+void QOpenGLTexture::setSamples(int samples)
+{
+    Q_D(QOpenGLTexture);
+    d->create();
+    if (isStorageAllocated()) {
+        qWarning("Cannot set sample count on a texture that already has storage allocated.\n"
+                 "To do so, destroy() the texture and then create() and setSamples()");
+        return;
+    }
+
+    switch (d->target) {
+    case QOpenGLTexture::Target2DMultisample:
+    case QOpenGLTexture::Target2DMultisampleArray:
+        d->samples = samples;
+        break;
+
+    case QOpenGLTexture::Target1D:
+    case QOpenGLTexture::Target2D:
+    case QOpenGLTexture::Target3D:
+    case QOpenGLTexture::Target1DArray:
+    case QOpenGLTexture::Target2DArray:
+    case QOpenGLTexture::TargetCubeMap:
+    case QOpenGLTexture::TargetCubeMapArray:
+    case QOpenGLTexture::TargetBuffer:
+    case QOpenGLTexture::TargetRectangle:
+
+        qWarning("Texture target does not support multisampling");
+        break;
+    }
+}
+
+/*!
+    Returns the number of multisample sample points for this texture.
+    If storage has not yet been allocated for this texture then
+    this function returns the requested number of samples.
+
+    For texture targets that do not support multisampling this
+    will return 0.
+
+    \sa setSamples(), isStorageAllocated()
+*/
+int QOpenGLTexture::samples() const
+{
+    Q_D(const QOpenGLTexture);
+    return d->samples;
+}
+
+/*!
+    Sets whether the sample positions and number of samples used with
+    a multisample capable texture target to \a fixed. If set to \c true
+    the sample positions and number of samples used are the same for
+    all texels in the image and will not depend upon the image size or
+    internal format. This function should be called before storage is allocated
+    for the texture.
+
+    For targets that do not support multisampling this function has
+    no effect.
+
+    The default value is \c true.
+
+    \sa isFixedSamplePositions(), isStorageAllocated()
+*/
+void QOpenGLTexture::setFixedSamplePositions(bool fixed)
+{
+    Q_D(QOpenGLTexture);
+    d->create();
+    if (isStorageAllocated()) {
+        qWarning("Cannot set sample positions on a texture that already has storage allocated.\n"
+                 "To do so, destroy() the texture and then create() and setFixedSamplePositions()");
+        return;
+    }
+
+    switch (d->target) {
+    case QOpenGLTexture::Target2DMultisample:
+    case QOpenGLTexture::Target2DMultisampleArray:
+        d->fixedSamplePositions = fixed;
+        break;
+
+    case QOpenGLTexture::Target1D:
+    case QOpenGLTexture::Target2D:
+    case QOpenGLTexture::Target3D:
+    case QOpenGLTexture::Target1DArray:
+    case QOpenGLTexture::Target2DArray:
+    case QOpenGLTexture::TargetCubeMap:
+    case QOpenGLTexture::TargetCubeMapArray:
+    case QOpenGLTexture::TargetBuffer:
+    case QOpenGLTexture::TargetRectangle:
+
+        qWarning("Texture target does not support multisampling");
+        break;
+    }
+}
+
+/*!
+    Returns whether this texture uses a fixed pattern of multisample
+    samples. If storage has not yet been allocated for this texture then
+    this function returns the requested fixed sample position setting.
+
+    For texture targets that do not support multisampling this
+    will return \c true.
+
+    \sa setFixedSamplePositions(), isStorageAllocated()
+*/
+bool QOpenGLTexture::isFixedSamplePositions() const
+{
+    Q_D(const QOpenGLTexture);
+    return d->fixedSamplePositions;
 }
 
 /*!
