@@ -1,0 +1,7 @@
+The PKCS#12 bundle was created by running:
+
+openssl pkcs12 -export -in leaf.crt -inkey leaf.key \
+               -out leaf.p12 \
+               -certfile inter.crt -CAfile ca.crt
+
+No password was provided.

@@ -146,6 +146,10 @@ public:
     Q_AUTOTEST_EXPORT static bool isMatchingHostname(const QString &cn, const QString &hostname);
     static QList<QSslError> verify(QList<QSslCertificate> certificateChain, const QString &hostName);
     static QString getErrorsFromOpenSsl();
+    static bool importPKCS12(QIODevice *device,
+                             QSslKey *key, QSslCertificate *cert,
+                             QList<QSslCertificate> *caCertificates,
+                             const QByteArray &passPhrase);
 };
 
 #ifdef Q_OS_WIN

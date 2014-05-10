@@ -146,6 +146,7 @@ DEFINEFUNC(int, CRYPTO_num_locks, DUMMYARG, DUMMYARG, return 0, return)
 DEFINEFUNC(void, CRYPTO_set_locking_callback, void (*a)(int, int, const char *, int), a, return, DUMMYARG)
 DEFINEFUNC(void, CRYPTO_set_id_callback, unsigned long (*a)(), a, return, DUMMYARG)
 DEFINEFUNC(void, CRYPTO_free, void *a, a, return, DUMMYARG)
+DEFINEFUNC(DSA *, DSA_new, DUMMYARG, DUMMYARG, return 0, return)
 DEFINEFUNC(void, DSA_free, DSA *a, a, return, DUMMYARG)
 #if  OPENSSL_VERSION_NUMBER < 0x00908000L
 DEFINEFUNC3(X509 *, d2i_X509, X509 **a, a, unsigned char **b, b, long c, c, return 0, return)
@@ -186,6 +187,7 @@ DEFINEFUNC2(int, PEM_write_bio_DSA_PUBKEY, BIO *a, a, DSA *b, b, return 0, retur
 DEFINEFUNC2(int, PEM_write_bio_RSA_PUBKEY, BIO *a, a, RSA *b, b, return 0, return)
 DEFINEFUNC2(void, RAND_seed, const void *a, a, int b, b, return, DUMMYARG)
 DEFINEFUNC(int, RAND_status, void, DUMMYARG, return -1, return)
+DEFINEFUNC(RSA *, RSA_new, DUMMYARG, DUMMYARG, return 0, return)
 DEFINEFUNC(void, RSA_free, RSA *a, a, return, DUMMYARG)
 DEFINEFUNC(int, sk_num, STACK *a, a, return -1, return)
 DEFINEFUNC2(void, sk_pop_free, STACK *a, a, void (*b)(void*), b, return, DUMMYARG)
@@ -368,6 +370,11 @@ DEFINEFUNC(void, DH_free, DH *dh, dh, return, DUMMYARG)
 DEFINEFUNC3(BIGNUM *, BN_bin2bn, const unsigned char *s, s, int len, len, BIGNUM *ret, ret, return 0, return)
 DEFINEFUNC(EC_KEY *, EC_KEY_new_by_curve_name, int nid, nid, return 0, return)
 DEFINEFUNC(void, EC_KEY_free, EC_KEY *ecdh, ecdh, return, DUMMYARG)
+
+DEFINEFUNC5(int, PKCS12_parse, PKCS12 *p12, p12, const char *pass, pass, EVP_PKEY **pkey, pkey, \
+            X509 **cert, cert, STACK_OF(X509) **ca, ca, return 1, return);
+DEFINEFUNC2(PKCS12 *, d2i_PKCS12_bio, BIO *bio, bio, PKCS12 **pkcs12, pkcs12, return 0, return);
+DEFINEFUNC(void, PKCS12_free, PKCS12 *pkcs12, pkcs12, return, DUMMYARG)
 
 #define RESOLVEFUNC(func) \
     if (!(_q_##func = _q_PTR_##func(libs.first->resolve(#func)))     \
@@ -687,6 +694,7 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(CRYPTO_num_locks)
     RESOLVEFUNC(CRYPTO_set_id_callback)
     RESOLVEFUNC(CRYPTO_set_locking_callback)
+    RESOLVEFUNC(DSA_new)
     RESOLVEFUNC(DSA_free)
     RESOLVEFUNC(ERR_error_string)
     RESOLVEFUNC(ERR_get_error)
@@ -719,6 +727,7 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(PEM_write_bio_RSA_PUBKEY)
     RESOLVEFUNC(RAND_seed)
     RESOLVEFUNC(RAND_status)
+    RESOLVEFUNC(RSA_new)
     RESOLVEFUNC(RSA_free)
     RESOLVEFUNC(sk_new_null)
     RESOLVEFUNC(sk_push)
@@ -849,6 +858,9 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(BN_bin2bn)
     RESOLVEFUNC(EC_KEY_new_by_curve_name)
     RESOLVEFUNC(EC_KEY_free)
+    RESOLVEFUNC(PKCS12_parse)
+    RESOLVEFUNC(d2i_PKCS12_bio)
+    RESOLVEFUNC(PKCS12_free)
 
     symbolsResolved = true;
     delete libs.first;

@@ -96,6 +96,38 @@ void QSslKeyPrivate::clear(bool deep)
     }
 }
 
+bool QSslKeyPrivate::fromEVP_PKEY(EVP_PKEY *pkey)
+{
+    if (pkey->type == EVP_PKEY_RSA) {
+        isNull = false;
+        algorithm = QSsl::Rsa;
+        type = QSsl::PrivateKey;
+
+        rsa = q_RSA_new();
+        memcpy(rsa, q_EVP_PKEY_get1_RSA(pkey), sizeof(RSA));
+
+        return true;
+    }
+    else if (pkey->type == EVP_PKEY_DSA) {
+        isNull = false;
+        algorithm = QSsl::Dsa;
+        type = QSsl::PrivateKey;
+
+        dsa = q_DSA_new();
+        memcpy(rsa, q_EVP_PKEY_get1_DSA(pkey), sizeof(DSA));
+
+        return true;
+    }
+    else {
+        // Unknown key type. This could be handled as opaque, but then
+        // we'd eventually leak memory since we wouldn't be able to free
+        // the underlying EVP_PKEY structure. For now, we won't support
+        // this.
+    }
+
+    return false;
+}
+
 /*!
     \internal
 

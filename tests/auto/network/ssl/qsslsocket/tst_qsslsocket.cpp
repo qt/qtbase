@@ -194,6 +194,7 @@ private slots:
     void qtbug18498_peek2();
     void dhServer();
     void ecdhServer();
+    void pkcs12();
     void setEmptyDefaultConfiguration(); // this test should be last
 
     static void exitLoop()
@@ -2732,6 +2733,52 @@ void tst_QSslSocket::ecdhServer()
 
     loop.exec();
     QVERIFY(client->state() == QAbstractSocket::ConnectedState);
+}
+
+void tst_QSslSocket::pkcs12()
+{
+    if (!QSslSocket::supportsSsl()) {
+        qWarning("SSL not supported, skipping test");
+        return;
+    }
+
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return;
+
+    QFile f(QLatin1String(SRCDIR "certs/leaf.p12"));
+    bool ok = f.open(QIODevice::ReadOnly);
+    QVERIFY(ok);
+
+    QSslKey key;
+    QSslCertificate cert;
+    QList<QSslCertificate> caCerts;
+
+    ok = QSslSocket::importPKCS12(&f, &key, &cert, &caCerts);
+    QVERIFY(ok);
+    f.close();
+
+    QList<QSslCertificate> leafCert = QSslCertificate::fromPath(SRCDIR "certs/leaf.crt");
+    QVERIFY(!leafCert.isEmpty());
+
+    QCOMPARE(cert, leafCert.first());
+
+    QFile f2(QLatin1String(SRCDIR "certs/leaf.key"));
+    ok = f2.open(QIODevice::ReadOnly);
+    QVERIFY(ok);
+
+    QSslKey leafKey(&f2, QSsl::Rsa);
+    f2.close();
+
+    QVERIFY(!leafKey.isNull());
+    QCOMPARE(key, leafKey);
+
+    QList<QSslCertificate> caCert = QSslCertificate::fromPath(SRCDIR "certs/inter.crt");
+    QVERIFY(!caCert.isEmpty());
+
+    QVERIFY(!caCerts.isEmpty());
+    QCOMPARE(caCerts.first(), caCert.first());
+    QCOMPARE(caCerts, caCert);
 }
 
 void tst_QSslSocket::setEmptyDefaultConfiguration() // this test should be last, as it has some side effects

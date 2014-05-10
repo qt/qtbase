@@ -62,6 +62,7 @@
 #include "qsslsocket.h"
 #include "qsslcertificate_p.h"
 #include "qsslcipher_p.h"
+#include "qsslkey_p.h"
 
 #include <QtCore/qdatetime.h>
 #include <QtCore/qdebug.h>
@@ -1736,5 +1737,73 @@ QList<QSslError> QSslSocketBackendPrivate::verify(QList<QSslCertificate> certifi
 
     return errors;
 }
+
+bool QSslSocketBackendPrivate::importPKCS12(QIODevice *device,
+                                            QSslKey *key, QSslCertificate *cert,
+                                            QList<QSslCertificate> *caCertificates,
+                                            const QByteArray &passPhrase)
+{
+    if (!supportsSsl())
+        return false;
+
+    // These are required
+    Q_ASSERT(device);
+    Q_ASSERT(key);
+    Q_ASSERT(cert);
+
+    // Read the file into a BIO
+    QByteArray pkcs12data = device->readAll();
+    if (pkcs12data.size() == 0)
+        return false;
+
+    BIO *bio = q_BIO_new_mem_buf(const_cast<char *>(pkcs12data.constData()), pkcs12data.size());
+
+    // Create the PKCS#12 object
+    PKCS12 *p12 = q_d2i_PKCS12_bio(bio, 0);
+    if (!p12) {
+        qWarning("Unable to read PKCS#12 structure, %s", q_ERR_error_string(q_ERR_get_error(), 0));
+        q_BIO_free(bio);
+        return false;
+    }
+
+    // Extract the data
+    EVP_PKEY *pkey;
+    X509 *x509;
+    STACK_OF(X509) *ca = 0;
+
+    if (!q_PKCS12_parse(p12, passPhrase.constData(), &pkey, &x509, &ca)) {
+        qWarning("Unable to parse PKCS#12 structure, %s", q_ERR_error_string(q_ERR_get_error(), 0));
+        q_PKCS12_free(p12);
+        q_BIO_free(bio);
+        return false;
+    }
+
+    // Convert to Qt types
+    if (!key->d->fromEVP_PKEY(pkey)) {
+        qWarning("Unable to convert private key");
+        q_sk_pop_free(reinterpret_cast<STACK *>(ca), reinterpret_cast<void(*)(void*)>(q_sk_free));
+        q_X509_free(x509);
+        q_EVP_PKEY_free(pkey);
+        q_PKCS12_free(p12);
+        q_BIO_free(bio);
+
+        return false;
+    }
+
+    *cert = QSslCertificatePrivate::QSslCertificate_from_X509(x509);
+
+    if (caCertificates)
+        *caCertificates = QSslSocketBackendPrivate::STACKOFX509_to_QSslCertificates(ca);
+
+    // Clean up
+    q_sk_pop_free(reinterpret_cast<STACK *>(ca), reinterpret_cast<void(*)(void*)>(q_sk_free));
+    q_X509_free(x509);
+    q_EVP_PKEY_free(pkey);
+    q_PKCS12_free(p12);
+    q_BIO_free(bio);
+
+    return true;
+}
+
 
 QT_END_NAMESPACE
