@@ -763,6 +763,13 @@ QT_BEGIN_NAMESPACE
         The match is constrained to start exactly at the offset passed to
         match() in order to be successful, even if the pattern string does not
         contain any metacharacter that anchors the match at that point.
+
+    \value DontCheckSubjectStringMatchOption
+        The subject string is not checked for UTF-16 validity before
+        attempting a match. Use this option with extreme caution, as
+        attempting to match an invalid string may crash the program and/or
+        constitute a security issue. This enum value has been introduced in
+        Qt 5.4.
 */
 
 // after how many usages we optimize the regexp
@@ -1221,7 +1228,8 @@ static int pcre16SafeExec(const pcre16 *code, const pcre16_extra *extra,
     options \a matchOptions and returns the QRegularExpressionMatchPrivate of
     the result. It also advances a match if a previous result is given as \a
     previous. The \a subject string goes a Unicode validity check if
-    \a checkSubjectString is CheckSubjectString (PCRE doesn't like illegal
+    \a checkSubjectString is CheckSubjectString and the match options don't
+    include DontCheckSubjectStringMatchOption (PCRE doesn't like illegal
     UTF-16 sequences).
 
     Advancing a match is a tricky algorithm. If the previous match matched a
@@ -1290,8 +1298,10 @@ QRegularExpressionMatchPrivate *QRegularExpressionPrivate::doMatch(const QString
     else if (matchType == QRegularExpression::PartialPreferFirstMatch)
         pcreOptions |= PCRE_PARTIAL_HARD;
 
-    if (checkSubjectStringOption == DontCheckSubjectString)
+    if (checkSubjectStringOption == DontCheckSubjectString
+            || matchOptions & QRegularExpression::DontCheckSubjectStringMatchOption) {
         pcreOptions |= PCRE_NO_UTF16_CHECK;
+    }
 
     bool previousMatchWasEmpty = false;
     if (previous && previous->hasMatch &&

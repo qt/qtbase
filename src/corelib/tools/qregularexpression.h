@@ -110,7 +110,8 @@ public:
 
     enum MatchOption {
         NoMatchOption              = 0x0000,
-        AnchoredMatchOption        = 0x0001
+        AnchoredMatchOption        = 0x0001,
+        DontCheckSubjectStringMatchOption = 0x0002
     };
     Q_DECLARE_FLAGS(MatchOptions, MatchOption)
 
