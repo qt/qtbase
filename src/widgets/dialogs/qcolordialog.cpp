@@ -1262,9 +1262,17 @@ QColorShower::QColorShower(QColorDialog *parent)
     lblHtml->setBuddy(htEd);
 #endif
 
+#if !defined(QT_NO_REGULAREXPRESSION)
     QRegularExpression regExp(QStringLiteral("#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})"));
     QRegularExpressionValidator *validator = new QRegularExpressionValidator(regExp, this);
     htEd->setValidator(validator);
+#elif !defined(QT_NO_REGEXP)
+    QRegExp regExp(QStringLiteral("#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})"));
+    QRegExpValidator *validator = new QRegExpValidator(regExp, this);
+    htEd->setValidator(validator);
+#else
+    htEd->setReadOnly(true);
+#endif
 
     lblHtml->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
     gl->addWidget(lblHtml, 5, 1);
