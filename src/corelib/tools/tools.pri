@@ -43,7 +43,6 @@ HEADERS +=  \
         tools/qqueue.h \
         tools/qrect.h \
         tools/qregexp.h \
-        tools/qregularexpression.h \
         tools/qringbuffer_p.h \
         tools/qrefcount.h \
         tools/qscopedpointer.h \
@@ -100,7 +99,6 @@ SOURCES += \
         tools/qcontiguouscache.cpp \
         tools/qrect.cpp \
         tools/qregexp.cpp \
-        tools/qregularexpression.cpp \
         tools/qrefcount.cpp \
         tools/qshareddata.cpp \
         tools/qsharedpointer.cpp \
@@ -176,10 +174,15 @@ contains(QT_CONFIG,icu) {
     SOURCES += tools/qcollator_posix.cpp
 }
 
-pcre {
-    include($$PWD/../../3rdparty/pcre.pri)
-} else {
-    LIBS_PRIVATE += -lpcre16
+!contains(QT_DISABLED_FEATURES, regularexpression) {
+    HEADERS += tools/qregularexpression.h
+    SOURCES += tools/qregularexpression.cpp
+
+    pcre {
+        include($$PWD/../../3rdparty/pcre.pri)
+    } else {
+        LIBS_PRIVATE += -lpcre16
+    }
 }
 
 INCLUDEPATH += ../3rdparty/harfbuzz/src

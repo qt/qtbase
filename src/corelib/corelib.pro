@@ -31,6 +31,7 @@ ANDROID_PERMISSIONS = \
     android.permission.WRITE_EXTERNAL_STORAGE
 
 load(qt_module)
+load(qfeatures)
 
 include(animation/animation.pri)
 include(arch/arch.pri)
@@ -84,7 +85,6 @@ cmake_umbrella_config_version_file.input = $$PWD/../../mkspecs/features/data/cma
 cmake_umbrella_config_version_file.output = $$DESTDIR/cmake/Qt5/Qt5ConfigVersion.cmake
 
 load(cmake_functions)
-load(qfeatures)
 
 CMAKE_DISABLED_FEATURES = $$join(QT_DISABLED_FEATURES, "$$escape_expand(\\n)    ")
 
