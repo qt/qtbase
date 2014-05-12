@@ -4,7 +4,6 @@
 #define HAVE_OT
 #define HAVE_ATEXIT
 
-#define HB_NO_MT
 #define HB_NO_UNICODE_FUNCS
 
 #define HB_DISABLE_DEPRECATED
