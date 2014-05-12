@@ -53,5 +53,3 @@ SOURCES +=  qglshaderprogram.cpp \
             gl2paintengineex/qpaintengineex_opengl2.cpp \
             gl2paintengineex/qglcustomshaderstage.cpp \
             gl2paintengineex/qtextureglyphcache_gl.cpp
-
-SOURCES +=  qgl_qpa.cpp
