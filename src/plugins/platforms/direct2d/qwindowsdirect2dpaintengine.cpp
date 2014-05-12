@@ -592,9 +592,13 @@ public:
 
         props.miterLimit = newPen.miterLimit() * qreal(2.0); // D2D and Qt miter specs differ
         props.dashOffset = newPen.dashOffset();
-        props.transformType = qIsNull(newPen.widthF()) ? D2D1_STROKE_TRANSFORM_TYPE_HAIRLINE
-                                                       : newPen.isCosmetic() ? D2D1_STROKE_TRANSFORM_TYPE_FIXED
-                                                                             : D2D1_STROKE_TRANSFORM_TYPE_NORMAL;
+
+        if (newPen.widthF() == 0)
+            props.transformType = D2D1_STROKE_TRANSFORM_TYPE_HAIRLINE;
+        else if (qt_pen_is_cosmetic(newPen, q->state()->renderHints))
+            props.transformType = D2D1_STROKE_TRANSFORM_TYPE_FIXED;
+        else
+            props.transformType = D2D1_STROKE_TRANSFORM_TYPE_NORMAL;
 
         switch (newPen.style()) {
         case Qt::SolidLine:
