@@ -81,9 +81,11 @@ load(qt_common)
             qmlplugindump = qmlplugindump
         qtPrepareTool(QMLPLUGINDUMP, $$qmlplugindump)
         importpath.value =
-        for(qmod, QMAKEMODULES) {
-            qmod = $$section(qmod, /, 0, -3)/imports
-            qml1_target: qmod = $$qmod/QtDeclarative
+        for(qmod, QTREPOS) {
+            qml1_target: \
+                qmod = $$qmod/imports
+            else: \
+                qmod = $$qmod/qml
             exists($$qmod): importpath.value += $$shell_path($$qmod)
         }
         importpath.name = QML_IMPORT_PATH
