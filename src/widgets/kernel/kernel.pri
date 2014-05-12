@@ -34,7 +34,7 @@ HEADERS += \
 	kernel/qgesturerecognizer.h \
 	kernel/qgesturemanager_p.h \
         kernel/qdesktopwidget_p.h \
-        kernel/qwidgetwindow_qpa_p.h \
+        kernel/qwidgetwindow_p.h \
         kernel/qwindowcontainer_p.h
 
 SOURCES += \

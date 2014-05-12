@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "private/qwindow_p.h"
-#include "qwidgetwindow_qpa_p.h"
+#include "qwidgetwindow_p.h"
 
 #include "private/qwidget_p.h"
 #include "private/qapplication_p.h"

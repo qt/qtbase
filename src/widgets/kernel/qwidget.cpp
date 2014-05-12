@@ -69,7 +69,7 @@
 # include <private/qmainwindowlayout_p.h>
 #endif
 #include <qpa/qplatformwindow.h>
-#include "private/qwidgetwindow_qpa_p.h"
+#include "private/qwidgetwindow_p.h"
 #include "qpainter.h"
 #include "qtooltip.h"
 #include "qwhatsthis.h"

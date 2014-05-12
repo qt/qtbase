@@ -107,8 +107,7 @@ void tst_QWidget_window::cleanupTestCase()
 }
 
 /* Test if the maximum/minimum size constraints
- * are propagated from the wid  src/widgets/kernel/qwidgetwindow_qpa_p.h
-get to the QWidgetWindow
+ * are propagated from the widget to the QWidgetWindow
  * independently of whether they were set before or after
  * window creation (QTBUG-26745). */
 

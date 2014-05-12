@@ -43,7 +43,7 @@
 #include <QtDeclarative>
 
 #include <QtWidgets/QtWidgets>
-#include <private/qwidgetwindow_qpa_p.h>
+#include <private/qwidgetwindow_p.h>
 #include <QtGui/qpa/qplatformnativeinterface.h>
 
 #include <QtGui/QPixmap>

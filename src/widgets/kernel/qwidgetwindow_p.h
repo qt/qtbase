@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QWIDGETWINDOW_QPA_P_H
-#define QWIDGETWINDOW_QPA_P_H
+#ifndef QWIDGETWINDOW_P_H
+#define QWIDGETWINDOW_P_H
 
 #include <QtGui/qwindow.h>
 
@@ -122,4 +122,4 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // QWIDGETWINDOW_QPA_P_H
+#endif // QWIDGETWINDOW_P_H

@@ -51,7 +51,7 @@
 #include <private/qapplication_p.h>
 #include <private/qshortcutmap_p.h>
 #include <private/qaction_p.h>
-#include <private/qwidgetwindow_qpa_p.h>
+#include <private/qwidgetwindow_p.h>
 
 QT_BEGIN_NAMESPACE
 
