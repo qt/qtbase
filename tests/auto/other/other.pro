@@ -2,7 +2,6 @@ TEMPLATE=subdirs
 SUBDIRS=\
    # atwrapper \ # QTBUG-19452
    baselineexample \
-   collections \
    compiler \
    d3dcompiler \
    gestures \
