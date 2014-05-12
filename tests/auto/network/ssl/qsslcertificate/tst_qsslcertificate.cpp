@@ -114,6 +114,7 @@ private slots:
     void threadSafeConstMethods();
     void version_data();
     void version();
+    void pkcs12();
 
     // helper for verbose test failure messages
     QString toString(const QList<QSslError>&);
@@ -1227,6 +1228,48 @@ void tst_QSslCertificate::version()
     QFETCH(QSslCertificate, certificate);
     QFETCH(QByteArray, result);
     QCOMPARE(certificate.version(), result);
+}
+
+void tst_QSslCertificate::pkcs12()
+{
+    if (!QSslSocket::supportsSsl()) {
+        qWarning("SSL not supported, skipping test");
+        return;
+    }
+
+    QFile f(QLatin1String(SRCDIR "pkcs12/leaf.p12"));
+    bool ok = f.open(QIODevice::ReadOnly);
+    QVERIFY(ok);
+
+    QSslKey key;
+    QSslCertificate cert;
+    QList<QSslCertificate> caCerts;
+
+    ok = QSslCertificate::importPKCS12(&f, &key, &cert, &caCerts);
+    QVERIFY(ok);
+    f.close();
+
+    QList<QSslCertificate> leafCert = QSslCertificate::fromPath(QLatin1String( SRCDIR "pkcs12/leaf.crt"));
+    QVERIFY(!leafCert.isEmpty());
+
+    QCOMPARE(cert, leafCert.first());
+
+    QFile f2(QLatin1String(SRCDIR "pkcs12/leaf.key"));
+    ok = f2.open(QIODevice::ReadOnly);
+    QVERIFY(ok);
+
+    QSslKey leafKey(&f2, QSsl::Rsa);
+    f2.close();
+
+    QVERIFY(!leafKey.isNull());
+    QCOMPARE(key, leafKey);
+
+    QList<QSslCertificate> caCert = QSslCertificate::fromPath(QLatin1String(SRCDIR "pkcs12/inter.crt"));
+    QVERIFY(!caCert.isEmpty());
+
+    QVERIFY(!caCerts.isEmpty());
+    QCOMPARE(caCerts.first(), caCert.first());
+    QCOMPARE(caCerts, caCert);
 }
 
 #endif // QT_NO_SSL

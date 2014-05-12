@@ -979,6 +979,26 @@ QList<QSslError> QSslCertificate::verify(QList<QSslCertificate> certificateChain
     return QSslSocketBackendPrivate::verify(certificateChain, hostName);
 }
 
+/*!
+  \since 5.4
+
+  Imports a PKCS#12 (pfx) file from the specified \a device. A PKCS#12
+  file is a bundle that can contain a number of certificates and keys.
+  This method reads a single \a key, its \a certificate and any
+  associated \a caCertificates from the bundle. If a \a passPhrase is
+  specified then this will be used to decrypt the bundle. Returns
+  \c true if the PKCS#12 file was successfully loaded.
+
+  \note The \a device must be open and ready to be read from.
+ */
+bool QSslCertificate::importPKCS12(QIODevice *device,
+                                   QSslKey *key, QSslCertificate *certificate,
+                                   QList<QSslCertificate> *caCertificates,
+                                   const QByteArray &passPhrase)
+{
+    return QSslSocketBackendPrivate::importPKCS12(device, key, certificate, caCertificates, passPhrase);
+}
+
 void QSslCertificatePrivate::init(const QByteArray &data, QSsl::EncodingFormat format)
 {
     if (!data.isEmpty()) {

@@ -142,6 +142,11 @@ public:
 
     static QList<QSslError> verify(QList<QSslCertificate> certificateChain, const QString &hostName = QString());
 
+    static bool importPKCS12(QIODevice *device,
+                             QSslKey *key, QSslCertificate *cert,
+                             QList<QSslCertificate> *caCertificates=0,
+                             const QByteArray &passPhrase=QByteArray());
+
     Qt::HANDLE handle() const;
 
 private:

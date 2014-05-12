@@ -172,11 +172,6 @@ public:
     static QList<QSslCertificate> defaultCaCertificates();
     static QList<QSslCertificate> systemCaCertificates();
 
-    static bool importPKCS12(QIODevice *device,
-                             QSslKey *key, QSslCertificate *cert,
-                             QList<QSslCertificate> *caCertificates=0,
-                             const QByteArray &passPhrase=QByteArray());
-
     bool waitForConnected(int msecs = 30000);
     bool waitForEncrypted(int msecs = 30000);
     bool waitForReadyRead(int msecs = 30000);
