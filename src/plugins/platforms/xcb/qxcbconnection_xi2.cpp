@@ -575,7 +575,7 @@ void QXcbConnection::xi2HandleScrollEvent(void *event, ScrollingDevice &scrollin
 #ifdef XCB_USE_XINPUT21
     xXIGenericDeviceEvent *xiEvent = reinterpret_cast<xXIGenericDeviceEvent *>(event);
 
-    if (xiEvent->evtype == XI_Motion) {
+    if (xiEvent->evtype == XI_Motion && scrollingDevice.orientations) {
         xXIDeviceEvent* xiDeviceEvent = reinterpret_cast<xXIDeviceEvent *>(event);
         if (QXcbWindow *platformWindow = platformWindowFromId(xiDeviceEvent->event)) {
             QPoint rawDelta;
@@ -612,20 +612,20 @@ void QXcbConnection::xi2HandleScrollEvent(void *event, ScrollingDevice &scrollin
                 QWindowSystemInterface::handleWheelEvent(platformWindow->window(), xiEvent->time, local, global, rawDelta, angleDelta, modifiers);
             }
         }
-    } else if (xiEvent->evtype == XI_ButtonRelease) {
+    } else if (xiEvent->evtype == XI_ButtonRelease && scrollingDevice.legacyOrientations) {
         xXIDeviceEvent* xiDeviceEvent = reinterpret_cast<xXIDeviceEvent *>(event);
         if (QXcbWindow *platformWindow = platformWindowFromId(xiDeviceEvent->event)) {
             QPoint angleDelta;
             if (scrollingDevice.legacyOrientations & Qt::Vertical) {
-                if (xi2GetButtonState(xiDeviceEvent, 4))
+                if (xiDeviceEvent->detail == 4)
                     angleDelta.setY(120);
-                else if (xi2GetButtonState(xiDeviceEvent, 5))
+                else if (xiDeviceEvent->detail == 5)
                     angleDelta.setY(-120);
             }
             if (scrollingDevice.legacyOrientations & Qt::Horizontal) {
-                if (xi2GetButtonState(xiDeviceEvent, 6))
+                if (xiDeviceEvent->detail == 6)
                     angleDelta.setX(120);
-                if (xi2GetButtonState(xiDeviceEvent, 7))
+                else if (xiDeviceEvent->detail == 7)
                     angleDelta.setX(-120);
             }
             if (!angleDelta.isNull()) {
