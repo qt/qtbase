@@ -62,7 +62,7 @@
 #include <qpa/qwindowsysteminterface_p.h>
 #include <qpa/qplatformintegration.h>
 
-#include "qdesktopwidget_qpa_p.h"
+#include "qdesktopwidget_p.h"
 #include "qwidgetwindow_qpa_p.h"
 #include "qtooltip.h"
 

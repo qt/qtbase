@@ -50,8 +50,8 @@
 // We mean it.
 //
 
-#ifndef QDESKTOPWIDGET_QPA_P_H
-#define QDESKTOPWIDGET_QPA_P_H
+#ifndef QDESKTOPWIDGET_P_H
+#define QDESKTOPWIDGET_P_H
 
 #include "QDesktopWidget"
 #include "private/qwidget_p.h"
