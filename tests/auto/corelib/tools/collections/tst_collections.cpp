@@ -1238,8 +1238,6 @@ void tst_Collections::byteArray()
     QVERIFY(hello + "World" == helloWorld);
     QVERIFY("hello" + World == helloWorld);
 
-
-    QByteArray l;
     QVERIFY('h' + ello == hello);
     QVERIFY(Wor + 'l' + 'd' == "World");
     QVERIFY(hello + World == "helloWorld");
@@ -1969,8 +1967,6 @@ void tst_Collections::qstring()
     QVERIFY(hello + "World" == helloWorld);
     QVERIFY("hello" + World == helloWorld);
 
-
-    QString l;
     QVERIFY('h' + ello == hello);
     QVERIFY(Wor + 'l' + 'd' == "World");
     QVERIFY(hello + World == "helloWorld");
