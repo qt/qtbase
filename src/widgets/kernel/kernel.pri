@@ -61,7 +61,6 @@ SOURCES += \
         kernel/qdesktopwidget.cpp \
         kernel/qwidgetsvariant.cpp \
         kernel/qapplication_qpa.cpp \
-        kernel/qwidget_qpa.cpp \
         kernel/qwidgetwindow.cpp \
         kernel/qwindowcontainer.cpp
 

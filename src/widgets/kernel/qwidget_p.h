@@ -732,7 +732,7 @@ public:
 
     // *************************** Platform specific ************************************
 #if defined(Q_OS_WIN)
-    uint noPaintOnScreen : 1; // see qwidget_qpa.cpp ::paintEngine()
+    uint noPaintOnScreen : 1; // see qwidget.cpp ::paintEngine()
 #endif
 #if defined(Q_WS_X11) // <----------------------------------------------------------- X11
     Qt::HANDLE picture;
