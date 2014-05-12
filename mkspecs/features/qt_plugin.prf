@@ -24,7 +24,7 @@ tool_plugin {
     contains(QT_CONFIG, build_all):CONFIG += build_all
 }
 
-CONFIG(static, static|shared) {
+CONFIG(static, static|shared)|prefix_build {
     isEmpty(MODULE): MODULE = $$basename(TARGET)
 
     mod_work_pfx = $$MODULE_QMAKE_OUTDIR/mkspecs/modules
@@ -66,9 +66,11 @@ CONFIG(static, static|shared) {
         cache(QT_PLUGINS, transient)
     }
 
-    pritarget.path = $$[QT_HOST_DATA]/mkspecs/modules
-    pritarget.files = $$MODULE_PRI
-    INSTALLS += pritarget
+    CONFIG(static, static|shared) {
+        pritarget.path = $$[QT_HOST_DATA]/mkspecs/modules
+        pritarget.files = $$MODULE_PRI
+        INSTALLS += pritarget
+    }
 }
 
 target.path = $$[QT_INSTALL_PLUGINS]/$$PLUGIN_TYPE
