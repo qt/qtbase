@@ -148,15 +148,17 @@ void QXcbConnection::initializeXInput2()
                     }
                     case XIButtonClass: {
                         XIButtonClassInfo *bci = reinterpret_cast<XIButtonClassInfo *>(devices[i].classes[c]);
-                        for (int i=0; i < bci->num_buttons; ++i) {
-                            const int buttonAtom = qatom(bci->labels[i]);
-                            if (buttonAtom == QXcbAtom::ButtonWheelUp
-                                || buttonAtom == QXcbAtom::ButtonWheelDown) {
+                        if (bci->num_buttons >= 5) {
+                            Atom label4 = bci->labels[3];
+                            Atom label5 = bci->labels[4];
+                            if ((!label4 || qatom(label4) == QXcbAtom::ButtonWheelUp) && (!label5 || qatom(label5) == QXcbAtom::ButtonWheelDown))
                                 scrollingDevice.legacyOrientations |= Qt::Vertical;
-                            } else if (buttonAtom == QXcbAtom::ButtonHorizWheelLeft
-                                       || buttonAtom == QXcbAtom::ButtonHorizWheelRight) {
+                        }
+                        if (bci->num_buttons >= 7) {
+                            Atom label6 = bci->labels[5];
+                            Atom label7 = bci->labels[6];
+                            if ((!label6 || qatom(label6) == QXcbAtom::ButtonHorizWheelLeft) && (!label7 || qatom(label7) == QXcbAtom::ButtonHorizWheelRight))
                                 scrollingDevice.legacyOrientations |= Qt::Horizontal;
-                            }
                         }
                         break;
                     }
