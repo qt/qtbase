@@ -42,6 +42,10 @@
 #include <qdebug.h>
 #include <private/qfontengine_p.h>
 #include <private/qfontengineglyphcache_p.h>
+#include <private/qguiapplication_p.h>
+
+#include <qpa/qplatformfontdatabase.h>
+#include <qpa/qplatformintegration.h>
 
 #include "qbitmap.h"
 #include "qpainter.h"
@@ -1983,6 +1987,117 @@ QImage QFontEngineMulti::alphaRGBMapForGlyph(glyph_t glyph, QFixed subPixelPosit
     const int which = highByte(glyph);
     Q_ASSERT(which < engines.size());
     return engine(which)->alphaRGBMapForGlyph(stripped(glyph), subPixelPosition, t);
+}
+
+/*
+    Creates a new multi engine.
+
+    This function takes ownership of the QFontEngine, increasing it's refcount.
+*/
+QFontEngineMultiBasicImpl::QFontEngineMultiBasicImpl(QFontEngine *fe, int _script, const QStringList &fallbacks)
+    : QFontEngineMulti(fallbacks.size() + 1),
+      fallbackFamilies(fallbacks), script(_script)
+    , fallbacksQueried(true)
+{
+    init(fe);
+}
+
+QFontEngineMultiBasicImpl::QFontEngineMultiBasicImpl(QFontEngine *fe, int _script)
+    : QFontEngineMulti(2)
+    , script(_script)
+    , fallbacksQueried(false)
+{
+    fallbackFamilies << QString();
+    init(fe);
+}
+
+void QFontEngineMultiBasicImpl::init(QFontEngine *fe)
+{
+    Q_ASSERT(fe && fe->type() != QFontEngine::Multi);
+    engines[0] = fe;
+    fe->ref.ref();
+    fontDef = engines[0]->fontDef;
+    cache_cost = fe->cache_cost;
+}
+
+void QFontEngineMultiBasicImpl::loadEngine(int at)
+{
+    ensureFallbackFamiliesQueried();
+    Q_ASSERT(at < engines.size());
+    Q_ASSERT(engines.at(at) == 0);
+    QFontDef request = fontDef;
+    request.styleStrategy |= QFont::NoFontMerging;
+    request.family = fallbackFamilies.at(at-1);
+    engines[at] = QFontDatabase::findFont(script,
+                                          /*fontprivate = */0,
+                                          request, /*multi = */false);
+    Q_ASSERT(engines[at]);
+    engines[at]->ref.ref();
+    engines[at]->fontDef = request;
+}
+void QFontEngineMultiBasicImpl::ensureFallbackFamiliesQueried()
+{
+    if (fallbacksQueried)
+        return;
+    QStringList fallbacks = QGuiApplicationPrivate::instance()->platformIntegration()->fontDatabase()->fallbacksForFamily(engine(0)->fontDef.family, QFont::Style(engine(0)->fontDef.style)
+                                                                                                                          , QFont::AnyStyle, QChar::Script(script));
+    setFallbackFamiliesList(fallbacks);
+}
+
+void QFontEngineMultiBasicImpl::setFallbackFamiliesList(const QStringList &fallbacks)
+{
+    // Original FontEngine to restore after the fill.
+    QFontEngine *fe = engines[0];
+    fallbackFamilies = fallbacks;
+    if (!fallbackFamilies.isEmpty()) {
+        engines.fill(0, fallbackFamilies.size() + 1);
+        engines[0] = fe;
+    } else {
+        // Turns out we lied about having any fallback at all.
+        fallbackFamilies << fe->fontDef.family;
+        engines[1] = fe;
+        fe->ref.ref();
+    }
+    fallbacksQueried = true;
+}
+
+/*
+  This is used indirectly by Qt WebKit when using QTextLayout::setRawFont
+
+  The purpose of this is to provide the necessary font fallbacks when drawing complex
+  text. Since Qt WebKit ends up repeatedly creating QTextLayout instances and passing them
+  the same raw font over and over again, we want to cache the corresponding multi font engine
+  as it may contain fallback font engines already.
+*/
+QFontEngine* QFontEngineMultiBasicImpl::createMultiFontEngine(QFontEngine *fe, int script)
+{
+    QFontEngine *engine = 0;
+    QFontCache::Key key(fe->fontDef, script, /*multi = */true);
+    QFontCache *fc = QFontCache::instance();
+    //  We can't rely on the fontDef (and hence the cache Key)
+    //  alone to distinguish webfonts, since these should not be
+    //  accidentally shared, even if the resulting fontcache key
+    //  is strictly identical. See:
+    //   http://www.w3.org/TR/css3-fonts/#font-face-rule
+    const bool faceIsLocal = !fe->faceId().filename.isEmpty();
+    QFontCache::EngineCache::Iterator it = fc->engineCache.find(key),
+            end = fc->engineCache.end();
+    while (it != end && it.key() == key) {
+        Q_ASSERT(it.value().data->type() == QFontEngine::Multi);
+        QFontEngineMulti *cachedEngine = static_cast<QFontEngineMulti *>(it.value().data);
+        if (faceIsLocal || fe == cachedEngine->engine(0)) {
+            engine = cachedEngine;
+            fc->updateHitCountAndTimeStamp(it.value());
+            break;
+        }
+        it++;
+    }
+    if (!engine) {
+        engine = QGuiApplicationPrivate::instance()->platformIntegration()->fontDatabase()->fontEngineMulti(fe, QChar::Script(script));
+        QFontCache::instance()->insertEngine(key, engine, /* insertMulti */ !faceIsLocal);
+    }
+    Q_ASSERT(engine);
+    return engine;
 }
 
 QT_END_NAMESPACE

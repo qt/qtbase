@@ -1300,7 +1300,7 @@ void QWindowsFontEngine::initFontInfo(const QFontDef &request,
     Will probably be superseded by a common Free Type font engine in Qt 5.X.
 */
 QWindowsMultiFontEngine::QWindowsMultiFontEngine(QFontEngine *fe, int script)
-    : QFontEngineMultiQPA(fe, script)
+    : QFontEngineMultiBasicImpl(fe, script)
 {
 }
 

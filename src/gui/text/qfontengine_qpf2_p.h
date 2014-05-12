@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QFONTENGINE_QPA_P_H
-#define QFONTENGINE_QPA_P_H
+#ifndef QFONTENGINE_QPF2_P_H
+#define QFONTENGINE_QPF2_P_H
 
 //
 //  W A R N I N G
@@ -67,7 +67,7 @@ class QFontEngine;
 class QFreetypeFace;
 class QBuffer;
 
-class Q_GUI_EXPORT QFontEngineQPA : public QFontEngine
+class Q_GUI_EXPORT QFontEngineQPF2 : public QFontEngine
 {
 public:
     // if you add new tags please make sure to update the tables in
@@ -157,8 +157,8 @@ public:
         qint8 advance;
     };
 
-    QFontEngineQPA(const QFontDef &def, const QByteArray &data);
-    ~QFontEngineQPA();
+    QFontEngineQPF2(const QFontDef &def, const QByteArray &data);
+    ~QFontEngineQPF2();
 
     FaceId faceId() const { return face_id; }
     bool getSfntTableData(uint tag, uchar *buffer, uint *length) const;
@@ -211,20 +211,20 @@ private:
     mutable bool kerning_pairs_loaded;
 };
 
-struct QPAGenerator
+struct QPF2Generator
 {
-    QPAGenerator(QBuffer *device, QFontEngine *engine)
+    QPF2Generator(QBuffer *device, QFontEngine *engine)
         : dev(device), fe(engine) {}
 
     void generate();
     void writeHeader();
     void writeGMap();
-    void writeBlock(QFontEngineQPA::BlockTag tag, const QByteArray &data);
+    void writeBlock(QFontEngineQPF2::BlockTag tag, const QByteArray &data);
 
-    void writeTaggedString(QFontEngineQPA::HeaderTag tag, const QByteArray &string);
-    void writeTaggedUInt32(QFontEngineQPA::HeaderTag tag, quint32 value);
-    void writeTaggedUInt8(QFontEngineQPA::HeaderTag tag, quint8 value);
-    void writeTaggedQFixed(QFontEngineQPA::HeaderTag tag, QFixed value);
+    void writeTaggedString(QFontEngineQPF2::HeaderTag tag, const QByteArray &string);
+    void writeTaggedUInt32(QFontEngineQPF2::HeaderTag tag, quint32 value);
+    void writeTaggedUInt8(QFontEngineQPF2::HeaderTag tag, quint8 value);
+    void writeTaggedQFixed(QFontEngineQPF2::HeaderTag tag, QFixed value);
 
     void writeUInt16(quint16 value) { value = qToBigEndian(value); dev->write((const char *)&value, sizeof(value)); }
     void writeUInt32(quint32 value) { value = qToBigEndian(value); dev->write((const char *)&value, sizeof(value)); }
@@ -237,29 +237,6 @@ struct QPAGenerator
     QFontEngine *fe;
 };
 
-class Q_GUI_EXPORT QFontEngineMultiQPA : public QFontEngineMulti
-{
-public:
-    QFontEngineMultiQPA(QFontEngine *fe, int script, const QStringList &fallbacks);
-    QFontEngineMultiQPA(QFontEngine *fe, int script);
-
-    void loadEngine(int at);
-    static QFontEngine* createMultiFontEngine(QFontEngine *fe, int script);
-
-    int fallbackFamilyCount() const { return fallbackFamilies.size(); }
-    QString fallbackFamilyAt(int at) const { return fallbackFamilies.at(at); }
-
-    virtual void ensureFallbackFamiliesQueried();
-    virtual void setFallbackFamiliesList(const QStringList &fallbacks);
-
-private:
-    void init(QFontEngine *fe);
-
-    mutable QStringList fallbackFamilies;
-    int script;
-    mutable bool fallbacksQueried;
-};
-
 QT_END_NAMESPACE
 
-#endif // QFONTENGINE_QPA_P_H
+#endif // QFONTENGINE_QPF2_P_H

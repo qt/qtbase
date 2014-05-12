@@ -77,7 +77,7 @@ SOURCES += \
     text/qdistancefield.cpp
 
 SOURCES += \
-    text/qfontengine_qpa.cpp \
+    text/qfontengine_qpf2.cpp \
     text/qplatformfontdatabase.cpp
 
 HEADERS += \

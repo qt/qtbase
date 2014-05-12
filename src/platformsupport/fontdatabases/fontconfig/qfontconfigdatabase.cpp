@@ -51,7 +51,6 @@
 #include <qpa/qplatformservices.h>
 
 #include <QtGui/private/qfontengine_ft_p.h>
-#include <QtGui/private/qfontengine_qpa_p.h>
 #include <QtGui/private/qguiapplication_p.h>
 
 #include <QtGui/qguiapplication.h>

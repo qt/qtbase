@@ -42,12 +42,12 @@
 #ifndef QFONTENGINEMULTIFONTCONFIG_H
 #define QFONTENGINEMULTIFONTCONFIG_H
 
-#include <QtGui/private/qfontengine_qpa_p.h>
+#include <QtGui/private/qfontengine_p.h>
 #include <fontconfig/fontconfig.h>
 
 QT_BEGIN_NAMESPACE
 
-class QFontEngineMultiFontConfig : public QFontEngineMultiQPA
+class QFontEngineMultiFontConfig : public QFontEngineMultiBasicImpl
 {
 public:
     explicit QFontEngineMultiFontConfig(QFontEngine *fe, int script);

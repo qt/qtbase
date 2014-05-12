@@ -250,7 +250,7 @@ private:
     friend class QFontEngineWin;
     friend class QMacPrintEngine;
     friend class QMacPrintEnginePrivate;
-    friend class QFontEngineQPA;
+    friend class QFontEngineQPF2;
     friend class QPainter;
     friend class QPainterPrivate;
     friend class QWidget;

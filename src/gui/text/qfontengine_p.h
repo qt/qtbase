@@ -433,6 +433,29 @@ protected:
     QVector<QFontEngine *> engines;
 };
 
+class Q_GUI_EXPORT QFontEngineMultiBasicImpl : public QFontEngineMulti
+{
+public:
+    QFontEngineMultiBasicImpl(QFontEngine *fe, int script, const QStringList &fallbacks);
+    QFontEngineMultiBasicImpl(QFontEngine *fe, int script);
+
+    void loadEngine(int at);
+    static QFontEngine* createMultiFontEngine(QFontEngine *fe, int script);
+
+    int fallbackFamilyCount() const { return fallbackFamilies.size(); }
+    QString fallbackFamilyAt(int at) const { return fallbackFamilies.at(at); }
+
+    virtual void ensureFallbackFamiliesQueried();
+    virtual void setFallbackFamiliesList(const QStringList &fallbacks);
+
+private:
+    void init(QFontEngine *fe);
+
+    mutable QStringList fallbackFamilies;
+    int script;
+    mutable bool fallbacksQueried;
+};
+
 class QTestFontEngine : public QFontEngineBox
 {
 public:

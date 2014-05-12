@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qfontengine_qpa_p.h"
+#include "qfontengine_qpf2_p.h"
 
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
@@ -57,28 +57,28 @@ QT_BEGIN_NAMESPACE
 //#define DEBUG_HEADER
 //#define DEBUG_FONTENGINE
 
-static QFontEngineQPA::TagType tagTypes[QFontEngineQPA::NumTags] = {
-    QFontEngineQPA::StringType, // FontName
-    QFontEngineQPA::StringType, // FileName
-    QFontEngineQPA::UInt32Type, // FileIndex
-    QFontEngineQPA::UInt32Type, // FontRevision
-    QFontEngineQPA::StringType, // FreeText
-    QFontEngineQPA::FixedType,  // Ascent
-    QFontEngineQPA::FixedType,  // Descent
-    QFontEngineQPA::FixedType,  // Leading
-    QFontEngineQPA::FixedType,  // XHeight
-    QFontEngineQPA::FixedType,  // AverageCharWidth
-    QFontEngineQPA::FixedType,  // MaxCharWidth
-    QFontEngineQPA::FixedType,  // LineThickness
-    QFontEngineQPA::FixedType,  // MinLeftBearing
-    QFontEngineQPA::FixedType,  // MinRightBearing
-    QFontEngineQPA::FixedType,  // UnderlinePosition
-    QFontEngineQPA::UInt8Type,  // GlyphFormat
-    QFontEngineQPA::UInt8Type,  // PixelSize
-    QFontEngineQPA::UInt8Type,  // Weight
-    QFontEngineQPA::UInt8Type,  // Style
-    QFontEngineQPA::StringType, // EndOfHeader
-    QFontEngineQPA::BitFieldType// WritingSystems
+static QFontEngineQPF2::TagType tagTypes[QFontEngineQPF2::NumTags] = {
+    QFontEngineQPF2::StringType, // FontName
+    QFontEngineQPF2::StringType, // FileName
+    QFontEngineQPF2::UInt32Type, // FileIndex
+    QFontEngineQPF2::UInt32Type, // FontRevision
+    QFontEngineQPF2::StringType, // FreeText
+    QFontEngineQPF2::FixedType,  // Ascent
+    QFontEngineQPF2::FixedType,  // Descent
+    QFontEngineQPF2::FixedType,  // Leading
+    QFontEngineQPF2::FixedType,  // XHeight
+    QFontEngineQPF2::FixedType,  // AverageCharWidth
+    QFontEngineQPF2::FixedType,  // MaxCharWidth
+    QFontEngineQPF2::FixedType,  // LineThickness
+    QFontEngineQPF2::FixedType,  // MinLeftBearing
+    QFontEngineQPF2::FixedType,  // MinRightBearing
+    QFontEngineQPF2::FixedType,  // UnderlinePosition
+    QFontEngineQPF2::UInt8Type,  // GlyphFormat
+    QFontEngineQPF2::UInt8Type,  // PixelSize
+    QFontEngineQPF2::UInt8Type,  // Weight
+    QFontEngineQPF2::UInt8Type,  // Style
+    QFontEngineQPF2::StringType, // EndOfHeader
+    QFontEngineQPF2::BitFieldType// WritingSystems
 };
 
 
@@ -122,21 +122,21 @@ static inline const uchar *verifyTag(const uchar *tagPtr, const uchar *endPtr)
     quint16 tag, length;
     READ_VERIFY(quint16, tag);
     READ_VERIFY(quint16, length);
-    if (tag == QFontEngineQPA::Tag_EndOfHeader)
+    if (tag == QFontEngineQPF2::Tag_EndOfHeader)
         return endPtr;
-    if (tag < QFontEngineQPA::NumTags) {
+    if (tag < QFontEngineQPF2::NumTags) {
         switch (tagTypes[tag]) {
-            case QFontEngineQPA::BitFieldType:
-            case QFontEngineQPA::StringType:
+            case QFontEngineQPF2::BitFieldType:
+            case QFontEngineQPF2::StringType:
                 // can't do anything...
                 break;
-            case QFontEngineQPA::UInt32Type:
+            case QFontEngineQPF2::UInt32Type:
                 VERIFY_TAG(length == sizeof(quint32));
                 break;
-            case QFontEngineQPA::FixedType:
+            case QFontEngineQPF2::FixedType:
                 VERIFY_TAG(length == sizeof(quint32));
                 break;
-            case QFontEngineQPA::UInt8Type:
+            case QFontEngineQPF2::UInt8Type:
                 VERIFY_TAG(length == sizeof(quint8));
                 break;
         }
@@ -150,7 +150,7 @@ static inline const uchar *verifyTag(const uchar *tagPtr, const uchar *endPtr)
     return tagPtr + length;
 }
 
-const QFontEngineQPA::Glyph *QFontEngineQPA::findGlyph(glyph_t g) const
+const QFontEngineQPF2::Glyph *QFontEngineQPF2::findGlyph(glyph_t g) const
 {
     if (!g || g >= glyphMapEntries)
         return 0;
@@ -168,7 +168,7 @@ const QFontEngineQPA::Glyph *QFontEngineQPA::findGlyph(glyph_t g) const
     return reinterpret_cast<const Glyph *>(fontData + glyphDataOffset + glyphPos);
 }
 
-bool QFontEngineQPA::verifyHeader(const uchar *data, int size)
+bool QFontEngineQPF2::verifyHeader(const uchar *data, int size)
 {
     VERIFY(quintptr(data) % Q_ALIGNOF(Header) == 0);
     VERIFY(size >= int(sizeof(Header)));
@@ -194,7 +194,7 @@ bool QFontEngineQPA::verifyHeader(const uchar *data, int size)
     return true;
 }
 
-QVariant QFontEngineQPA::extractHeaderField(const uchar *data, HeaderTag requestedTag)
+QVariant QFontEngineQPF2::extractHeaderField(const uchar *data, HeaderTag requestedTag)
 {
     const Header *header = reinterpret_cast<const Header *>(data);
     const uchar *tagPtr = data + sizeof(Header);
@@ -226,7 +226,7 @@ QVariant QFontEngineQPA::extractHeaderField(const uchar *data, HeaderTag request
 }
 
 
-QFontEngineQPA::QFontEngineQPA(const QFontDef &def, const QByteArray &data)
+QFontEngineQPF2::QFontEngineQPF2(const QFontDef &def, const QByteArray &data)
     : QFontEngine(QPF2),
       fontData(reinterpret_cast<const uchar *>(data.constData())), dataSize(data.size())
 {
@@ -243,7 +243,7 @@ QFontEngineQPA::QFontEngineQPA(const QFontDef &def, const QByteArray &data)
     readOnly = true;
 
 #if defined(DEBUG_FONTENGINE)
-    qDebug() << "QFontEngineQPA::QFontEngineQPA( fd =" << fd << ", renderingFontEngine =" << renderingFontEngine << ')';
+    qDebug() << "QFontEngineQPF2::QFontEngineQPF2( fd =" << fd << ", renderingFontEngine =" << renderingFontEngine << ')';
 #endif
 
     if (!verifyHeader(fontData, dataSize)) {
@@ -312,11 +312,11 @@ QFontEngineQPA::QFontEngineQPA(const QFontDef &def, const QByteArray &data)
 #endif
 }
 
-QFontEngineQPA::~QFontEngineQPA()
+QFontEngineQPF2::~QFontEngineQPF2()
 {
 }
 
-bool QFontEngineQPA::getSfntTableData(uint tag, uchar *buffer, uint *length) const
+bool QFontEngineQPF2::getSfntTableData(uint tag, uchar *buffer, uint *length) const
 {
     if (tag != MAKE_TAG('c', 'm', 'a', 'p') || !cmap)
         return false;
@@ -328,7 +328,7 @@ bool QFontEngineQPA::getSfntTableData(uint tag, uchar *buffer, uint *length) con
     return true;
 }
 
-glyph_t QFontEngineQPA::glyphIndex(uint ucs4) const
+glyph_t QFontEngineQPF2::glyphIndex(uint ucs4) const
 {
     glyph_t glyph = getTrueTypeGlyphIndex(cmap, ucs4);
     if (glyph == 0 && symbol && ucs4 < 0x100)
@@ -339,7 +339,7 @@ glyph_t QFontEngineQPA::glyphIndex(uint ucs4) const
     return glyph;
 }
 
-bool QFontEngineQPA::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, QFontEngine::ShaperFlags flags) const
+bool QFontEngineQPF2::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, QFontEngine::ShaperFlags flags) const
 {
     Q_ASSERT(glyphs->numGlyphs >= *nglyphs);
     if (*nglyphs < len) {
@@ -386,7 +386,7 @@ bool QFontEngineQPA::stringToCMap(const QChar *str, int len, QGlyphLayout *glyph
     return true;
 }
 
-void QFontEngineQPA::recalcAdvances(QGlyphLayout *glyphs, QFontEngine::ShaperFlags) const
+void QFontEngineQPF2::recalcAdvances(QGlyphLayout *glyphs, QFontEngine::ShaperFlags) const
 {
     for (int i = 0; i < glyphs->numGlyphs; ++i) {
         const Glyph *g = findGlyph(glyphs->glyphs[i]);
@@ -396,7 +396,7 @@ void QFontEngineQPA::recalcAdvances(QGlyphLayout *glyphs, QFontEngine::ShaperFla
     }
 }
 
-QImage QFontEngineQPA::alphaMapForGlyph(glyph_t g)
+QImage QFontEngineQPF2::alphaMapForGlyph(glyph_t g)
 {
     const Glyph *glyph = findGlyph(g);
     if (!glyph)
@@ -409,12 +409,12 @@ QImage QFontEngineQPA::alphaMapForGlyph(glyph_t g)
     return image;
 }
 
-void QFontEngineQPA::addOutlineToPath(qreal x, qreal y, const QGlyphLayout &glyphs, QPainterPath *path, QTextItem::RenderFlags flags)
+void QFontEngineQPF2::addOutlineToPath(qreal x, qreal y, const QGlyphLayout &glyphs, QPainterPath *path, QTextItem::RenderFlags flags)
 {
     addBitmapFontToPath(x, y, glyphs, path, flags);
 }
 
-glyph_metrics_t QFontEngineQPA::boundingBox(const QGlyphLayout &glyphs)
+glyph_metrics_t QFontEngineQPF2::boundingBox(const QGlyphLayout &glyphs)
 {
     glyph_metrics_t overall;
     // initialize with line height, we get the same behaviour on all platforms
@@ -442,7 +442,7 @@ glyph_metrics_t QFontEngineQPA::boundingBox(const QGlyphLayout &glyphs)
     return overall;
 }
 
-glyph_metrics_t QFontEngineQPA::boundingBox(glyph_t glyph)
+glyph_metrics_t QFontEngineQPF2::boundingBox(glyph_t glyph)
 {
     glyph_metrics_t overall;
     const Glyph *g = findGlyph(glyph);
@@ -456,107 +456,107 @@ glyph_metrics_t QFontEngineQPA::boundingBox(glyph_t glyph)
     return overall;
 }
 
-QFixed QFontEngineQPA::ascent() const
+QFixed QFontEngineQPF2::ascent() const
 {
     return QFixed::fromReal(extractHeaderField(fontData, Tag_Ascent).value<qreal>());
 }
 
-QFixed QFontEngineQPA::descent() const
+QFixed QFontEngineQPF2::descent() const
 {
     return QFixed::fromReal(extractHeaderField(fontData, Tag_Descent).value<qreal>());
 }
 
-QFixed QFontEngineQPA::leading() const
+QFixed QFontEngineQPF2::leading() const
 {
     return QFixed::fromReal(extractHeaderField(fontData, Tag_Leading).value<qreal>());
 }
 
-qreal QFontEngineQPA::maxCharWidth() const
+qreal QFontEngineQPF2::maxCharWidth() const
 {
     return extractHeaderField(fontData, Tag_MaxCharWidth).value<qreal>();
 }
 
-qreal QFontEngineQPA::minLeftBearing() const
+qreal QFontEngineQPF2::minLeftBearing() const
 {
     return extractHeaderField(fontData, Tag_MinLeftBearing).value<qreal>();
 }
 
-qreal QFontEngineQPA::minRightBearing() const
+qreal QFontEngineQPF2::minRightBearing() const
 {
     return extractHeaderField(fontData, Tag_MinRightBearing).value<qreal>();
 }
 
-QFixed QFontEngineQPA::underlinePosition() const
+QFixed QFontEngineQPF2::underlinePosition() const
 {
     return QFixed::fromReal(extractHeaderField(fontData, Tag_UnderlinePosition).value<qreal>());
 }
 
-QFixed QFontEngineQPA::lineThickness() const
+QFixed QFontEngineQPF2::lineThickness() const
 {
     return QFixed::fromReal(extractHeaderField(fontData, Tag_LineThickness).value<qreal>());
 }
 
-bool QFontEngineQPA::isValid() const
+bool QFontEngineQPF2::isValid() const
 {
     return fontData && dataSize && cmapOffset
            && glyphMapOffset && glyphDataOffset && glyphDataSize > 0;
 }
 
-void QPAGenerator::generate()
+void QPF2Generator::generate()
 {
     writeHeader();
     writeGMap();
-    writeBlock(QFontEngineQPA::GlyphBlock, QByteArray());
+    writeBlock(QFontEngineQPF2::GlyphBlock, QByteArray());
 
     dev->seek(4); // position of header.lock
     writeUInt32(0);
 }
 
-void QPAGenerator::writeHeader()
+void QPF2Generator::writeHeader()
 {
-    QFontEngineQPA::Header header;
+    QFontEngineQPF2::Header header;
 
     header.magic[0] = 'Q';
     header.magic[1] = 'P';
     header.magic[2] = 'F';
     header.magic[3] = '2';
     header.lock = 1;
-    header.majorVersion = QFontEngineQPA::CurrentMajorVersion;
-    header.minorVersion = QFontEngineQPA::CurrentMinorVersion;
+    header.majorVersion = QFontEngineQPF2::CurrentMajorVersion;
+    header.minorVersion = QFontEngineQPF2::CurrentMinorVersion;
     header.dataSize = 0;
     dev->write((const char *)&header, sizeof(header));
 
-    writeTaggedString(QFontEngineQPA::Tag_FontName, fe->fontDef.family.toUtf8());
+    writeTaggedString(QFontEngineQPF2::Tag_FontName, fe->fontDef.family.toUtf8());
 
     QFontEngine::FaceId face = fe->faceId();
-    writeTaggedString(QFontEngineQPA::Tag_FileName, face.filename);
-    writeTaggedUInt32(QFontEngineQPA::Tag_FileIndex, face.index);
+    writeTaggedString(QFontEngineQPF2::Tag_FileName, face.filename);
+    writeTaggedUInt32(QFontEngineQPF2::Tag_FileIndex, face.index);
 
     {
         const QByteArray head = fe->getSfntTable(MAKE_TAG('h', 'e', 'a', 'd'));
         if (head.size() >= 4) {
             const quint32 revision = qFromBigEndian<quint32>(reinterpret_cast<const uchar *>(head.constData()));
-            writeTaggedUInt32(QFontEngineQPA::Tag_FontRevision, revision);
+            writeTaggedUInt32(QFontEngineQPF2::Tag_FontRevision, revision);
         }
     }
 
-    writeTaggedQFixed(QFontEngineQPA::Tag_Ascent, fe->ascent());
-    writeTaggedQFixed(QFontEngineQPA::Tag_Descent, fe->descent());
-    writeTaggedQFixed(QFontEngineQPA::Tag_Leading, fe->leading());
-    writeTaggedQFixed(QFontEngineQPA::Tag_XHeight, fe->xHeight());
-    writeTaggedQFixed(QFontEngineQPA::Tag_AverageCharWidth, fe->averageCharWidth());
-    writeTaggedQFixed(QFontEngineQPA::Tag_MaxCharWidth, QFixed::fromReal(fe->maxCharWidth()));
-    writeTaggedQFixed(QFontEngineQPA::Tag_LineThickness, fe->lineThickness());
-    writeTaggedQFixed(QFontEngineQPA::Tag_MinLeftBearing, QFixed::fromReal(fe->minLeftBearing()));
-    writeTaggedQFixed(QFontEngineQPA::Tag_MinRightBearing, QFixed::fromReal(fe->minRightBearing()));
-    writeTaggedQFixed(QFontEngineQPA::Tag_UnderlinePosition, fe->underlinePosition());
-    writeTaggedUInt8(QFontEngineQPA::Tag_PixelSize, fe->fontDef.pixelSize);
-    writeTaggedUInt8(QFontEngineQPA::Tag_Weight, fe->fontDef.weight);
-    writeTaggedUInt8(QFontEngineQPA::Tag_Style, fe->fontDef.style);
+    writeTaggedQFixed(QFontEngineQPF2::Tag_Ascent, fe->ascent());
+    writeTaggedQFixed(QFontEngineQPF2::Tag_Descent, fe->descent());
+    writeTaggedQFixed(QFontEngineQPF2::Tag_Leading, fe->leading());
+    writeTaggedQFixed(QFontEngineQPF2::Tag_XHeight, fe->xHeight());
+    writeTaggedQFixed(QFontEngineQPF2::Tag_AverageCharWidth, fe->averageCharWidth());
+    writeTaggedQFixed(QFontEngineQPF2::Tag_MaxCharWidth, QFixed::fromReal(fe->maxCharWidth()));
+    writeTaggedQFixed(QFontEngineQPF2::Tag_LineThickness, fe->lineThickness());
+    writeTaggedQFixed(QFontEngineQPF2::Tag_MinLeftBearing, QFixed::fromReal(fe->minLeftBearing()));
+    writeTaggedQFixed(QFontEngineQPF2::Tag_MinRightBearing, QFixed::fromReal(fe->minRightBearing()));
+    writeTaggedQFixed(QFontEngineQPF2::Tag_UnderlinePosition, fe->underlinePosition());
+    writeTaggedUInt8(QFontEngineQPF2::Tag_PixelSize, fe->fontDef.pixelSize);
+    writeTaggedUInt8(QFontEngineQPF2::Tag_Weight, fe->fontDef.weight);
+    writeTaggedUInt8(QFontEngineQPF2::Tag_Style, fe->fontDef.style);
 
-    writeTaggedUInt8(QFontEngineQPA::Tag_GlyphFormat, QFontEngineQPA::AlphamapGlyphs);
+    writeTaggedUInt8(QFontEngineQPF2::Tag_GlyphFormat, QFontEngineQPF2::AlphamapGlyphs);
 
-    writeTaggedString(QFontEngineQPA::Tag_EndOfHeader, QByteArray());
+    writeTaggedString(QFontEngineQPF2::Tag_EndOfHeader, QByteArray());
     align4();
 
     const quint64 size = dev->pos();
@@ -566,11 +566,11 @@ void QPAGenerator::writeHeader()
     dev->seek(size);
 }
 
-void QPAGenerator::writeGMap()
+void QPF2Generator::writeGMap()
 {
     const quint16 glyphCount = fe->glyphCount();
 
-    writeUInt16(QFontEngineQPA::GMapBlock);
+    writeUInt16(QFontEngineQPF2::GMapBlock);
     writeUInt16(0); // padding
     writeUInt32(glyphCount * 4);
 
@@ -582,7 +582,7 @@ void QPAGenerator::writeGMap()
     dev->seek(pos + numBytes);
 }
 
-void QPAGenerator::writeBlock(QFontEngineQPA::BlockTag tag, const QByteArray &data)
+void QPF2Generator::writeBlock(QFontEngineQPF2::BlockTag tag, const QByteArray &data)
 {
     writeUInt16(tag);
     writeUInt16(0); // padding
@@ -593,144 +593,32 @@ void QPAGenerator::writeBlock(QFontEngineQPA::BlockTag tag, const QByteArray &da
         writeUInt8(0);
 }
 
-void QPAGenerator::writeTaggedString(QFontEngineQPA::HeaderTag tag, const QByteArray &string)
+void QPF2Generator::writeTaggedString(QFontEngineQPF2::HeaderTag tag, const QByteArray &string)
 {
     writeUInt16(tag);
     writeUInt16(string.length());
     dev->write(string);
 }
 
-void QPAGenerator::writeTaggedUInt32(QFontEngineQPA::HeaderTag tag, quint32 value)
+void QPF2Generator::writeTaggedUInt32(QFontEngineQPF2::HeaderTag tag, quint32 value)
 {
     writeUInt16(tag);
     writeUInt16(sizeof(value));
     writeUInt32(value);
 }
 
-void QPAGenerator::writeTaggedUInt8(QFontEngineQPA::HeaderTag tag, quint8 value)
+void QPF2Generator::writeTaggedUInt8(QFontEngineQPF2::HeaderTag tag, quint8 value)
 {
     writeUInt16(tag);
     writeUInt16(sizeof(value));
     writeUInt8(value);
 }
 
-void QPAGenerator::writeTaggedQFixed(QFontEngineQPA::HeaderTag tag, QFixed value)
+void QPF2Generator::writeTaggedQFixed(QFontEngineQPF2::HeaderTag tag, QFixed value)
 {
     writeUInt16(tag);
     writeUInt16(sizeof(quint32));
     writeUInt32(value.value());
-}
-
-
-/*
-    Creates a new multi QPA engine.
-
-    This function takes ownership of the QFontEngine, increasing it's refcount.
-*/
-QFontEngineMultiQPA::QFontEngineMultiQPA(QFontEngine *fe, int _script, const QStringList &fallbacks)
-    : QFontEngineMulti(fallbacks.size() + 1),
-      fallbackFamilies(fallbacks), script(_script)
-    , fallbacksQueried(true)
-{
-    init(fe);
-}
-
-QFontEngineMultiQPA::QFontEngineMultiQPA(QFontEngine *fe, int _script)
-    : QFontEngineMulti(2)
-    , script(_script)
-    , fallbacksQueried(false)
-{
-    fallbackFamilies << QString();
-    init(fe);
-}
-
-void QFontEngineMultiQPA::init(QFontEngine *fe)
-{
-    Q_ASSERT(fe && fe->type() != QFontEngine::Multi);
-    engines[0] = fe;
-    fe->ref.ref();
-    fontDef = engines[0]->fontDef;
-    cache_cost = fe->cache_cost;
-}
-
-void QFontEngineMultiQPA::loadEngine(int at)
-{
-    ensureFallbackFamiliesQueried();
-    Q_ASSERT(at < engines.size());
-    Q_ASSERT(engines.at(at) == 0);
-    QFontDef request = fontDef;
-    request.styleStrategy |= QFont::NoFontMerging;
-    request.family = fallbackFamilies.at(at-1);
-    engines[at] = QFontDatabase::findFont(script,
-                                          /*fontprivate = */0,
-                                          request, /*multi = */false);
-    Q_ASSERT(engines[at]);
-    engines[at]->ref.ref();
-    engines[at]->fontDef = request;
-}
-void QFontEngineMultiQPA::ensureFallbackFamiliesQueried()
-{
-    if (fallbacksQueried)
-        return;
-    QStringList fallbacks = QGuiApplicationPrivate::instance()->platformIntegration()->fontDatabase()->fallbacksForFamily(engine(0)->fontDef.family, QFont::Style(engine(0)->fontDef.style)
-                                                                                                                          , QFont::AnyStyle, QChar::Script(script));
-    setFallbackFamiliesList(fallbacks);
-}
-
-void QFontEngineMultiQPA::setFallbackFamiliesList(const QStringList &fallbacks)
-{
-    // Original FontEngine to restore after the fill.
-    QFontEngine *fe = engines[0];
-    fallbackFamilies = fallbacks;
-    if (!fallbackFamilies.isEmpty()) {
-        engines.fill(0, fallbackFamilies.size() + 1);
-        engines[0] = fe;
-    } else {
-        // Turns out we lied about having any fallback at all.
-        fallbackFamilies << fe->fontDef.family;
-        engines[1] = fe;
-        fe->ref.ref();
-    }
-    fallbacksQueried = true;
-}
-
-/*
-  This is used indirectly by Qt WebKit when using QTextLayout::setRawFont
-
-  The purpose of this is to provide the necessary font fallbacks when drawing complex
-  text. Since Qt WebKit ends up repeatedly creating QTextLayout instances and passing them
-  the same raw font over and over again, we want to cache the corresponding multi font engine
-  as it may contain fallback font engines already.
-*/
-QFontEngine* QFontEngineMultiQPA::createMultiFontEngine(QFontEngine *fe, int script)
-{
-    QFontEngine *engine = 0;
-    QFontCache::Key key(fe->fontDef, script, /*multi = */true);
-    QFontCache *fc = QFontCache::instance();
-    //  We can't rely on the fontDef (and hence the cache Key)
-    //  alone to distinguish webfonts, since these should not be
-    //  accidentally shared, even if the resulting fontcache key
-    //  is strictly identical. See:
-    //   http://www.w3.org/TR/css3-fonts/#font-face-rule
-    const bool faceIsLocal = !fe->faceId().filename.isEmpty();
-    QFontCache::EngineCache::Iterator it = fc->engineCache.find(key),
-            end = fc->engineCache.end();
-    while (it != end && it.key() == key) {
-        Q_ASSERT(it.value().data->type() == QFontEngine::Multi);
-        QFontEngineMulti *cachedEngine = static_cast<QFontEngineMulti *>(it.value().data);
-        if (faceIsLocal || fe == cachedEngine->engine(0)) {
-            engine = cachedEngine;
-            fc->updateHitCountAndTimeStamp(it.value());
-            break;
-        }
-        it++;
-    }
-    if (!engine) {
-        engine = QGuiApplicationPrivate::instance()->platformIntegration()->fontDatabase()->fontEngineMulti(fe, QChar::Script(script));
-        QFontCache::instance()->insertEngine(key, engine, /* insertMulti */ !faceIsLocal);
-    }
-    Q_ASSERT(engine);
-    return engine;
 }
 
 QT_END_NAMESPACE

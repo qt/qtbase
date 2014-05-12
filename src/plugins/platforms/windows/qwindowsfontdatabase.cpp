@@ -1043,7 +1043,7 @@ QFontEngineMulti *QWindowsFontDatabase::fontEngineMulti(QFontEngine *fontEngine,
     if (script == QChar::Script_Common)
         return new QWindowsMultiFontEngine(fontEngine, script);
     // ### as long as fallbacksForFamily() does not take script parameter into account,
-    // prefer QFontEngineMultiQPA's loadEngine() implementation for complex scripts
+    // prefer QFontEngineMultiBasicImpl's loadEngine() implementation for complex scripts
     return QPlatformFontDatabase::fontEngineMulti(fontEngine, script);
 }
 

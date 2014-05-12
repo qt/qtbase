@@ -167,7 +167,7 @@ private:
     friend class QFontPrivate;
     friend class QFontDialog;
     friend class QFontDialogPrivate;
-    friend class QFontEngineMultiQPA;
+    friend class QFontEngineMultiBasicImpl;
 
     QFontDatabasePrivate *d;
 };

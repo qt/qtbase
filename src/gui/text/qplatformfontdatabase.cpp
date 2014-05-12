@@ -41,7 +41,7 @@
 
 #include "qplatformfontdatabase.h"
 #include <QtGui/private/qfontengine_p.h>
-#include <QtGui/private/qfontengine_qpa_p.h>
+#include <QtGui/private/qfontengine_qpf2_p.h>
 #include <QtCore/QLibraryInfo>
 #include <QtCore/QDir>
 
@@ -69,12 +69,12 @@ void QPlatformFontDatabase::registerQPF2Font(const QByteArray &dataArray, void *
         return;
 
     const uchar *data = reinterpret_cast<const uchar *>(dataArray.constData());
-    if (QFontEngineQPA::verifyHeader(data, dataArray.size())) {
-        QString fontName = QFontEngineQPA::extractHeaderField(data, QFontEngineQPA::Tag_FontName).toString();
-        int pixelSize = QFontEngineQPA::extractHeaderField(data, QFontEngineQPA::Tag_PixelSize).toInt();
-        QVariant weight = QFontEngineQPA::extractHeaderField(data, QFontEngineQPA::Tag_Weight);
-        QVariant style = QFontEngineQPA::extractHeaderField(data, QFontEngineQPA::Tag_Style);
-        QByteArray writingSystemBits = QFontEngineQPA::extractHeaderField(data, QFontEngineQPA::Tag_WritingSystems).toByteArray();
+    if (QFontEngineQPF2::verifyHeader(data, dataArray.size())) {
+        QString fontName = QFontEngineQPF2::extractHeaderField(data, QFontEngineQPF2::Tag_FontName).toString();
+        int pixelSize = QFontEngineQPF2::extractHeaderField(data, QFontEngineQPF2::Tag_PixelSize).toInt();
+        QVariant weight = QFontEngineQPF2::extractHeaderField(data, QFontEngineQPF2::Tag_Weight);
+        QVariant style = QFontEngineQPF2::extractHeaderField(data, QFontEngineQPF2::Tag_Style);
+        QByteArray writingSystemBits = QFontEngineQPF2::extractHeaderField(data, QFontEngineQPF2::Tag_WritingSystems).toByteArray();
 
         if (!fontName.isEmpty() && pixelSize) {
             QFont::Weight fontWeight = QFont::Normal;
@@ -322,7 +322,7 @@ void QPlatformFontDatabase::invalidate()
 */
 QFontEngineMulti *QPlatformFontDatabase::fontEngineMulti(QFontEngine *fontEngine, QChar::Script script)
 {
-    return new QFontEngineMultiQPA(fontEngine, script);
+    return new QFontEngineMultiBasicImpl(fontEngine, script);
 }
 
 /*!
@@ -332,7 +332,7 @@ QFontEngineMulti *QPlatformFontDatabase::fontEngineMulti(QFontEngine *fontEngine
 QFontEngine *QPlatformFontDatabase::fontEngine(const QFontDef &fontDef, void *handle)
 {
     QByteArray *fileDataPtr = static_cast<QByteArray *>(handle);
-    QFontEngineQPA *engine = new QFontEngineQPA(fontDef,*fileDataPtr);
+    QFontEngineQPF2 *engine = new QFontEngineQPF2(fontDef,*fileDataPtr);
     //qDebug() << fontDef.pixelSize << fontDef.weight << fontDef.style << fontDef.stretch << fontDef.styleHint << fontDef.styleStrategy << fontDef.family;
     return engine;
 }

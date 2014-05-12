@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include <QtGui/private/qfontengine_qpa_p.h>
+#include <QtGui/private/qfontengine_p.h>
 
 #include <QtGui/QImage>
 #include <QtCore/QSharedPointer>
@@ -172,7 +172,7 @@ private:
 };
 
 
-class QWindowsMultiFontEngine : public QFontEngineMultiQPA
+class QWindowsMultiFontEngine : public QFontEngineMultiBasicImpl
 {
 public:
     explicit QWindowsMultiFontEngine(QFontEngine *fe, int script);
