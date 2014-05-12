@@ -3231,18 +3231,20 @@ void tst_Collections::qtimerList()
     QFAIL("QList preallocates too much memory");
 }
 
+#define QVERIFY_TYPE(Type) QVERIFY(sizeof(Type))
+
 template <typename Container>
 void testContainerTypedefs(Container container)
 {
     Q_UNUSED(container)
-    { typedef typename Container::value_type Foo; }
-    { typedef typename Container::iterator Foo; }
-    { typedef typename Container::const_iterator Foo; }
-    { typedef typename Container::reference Foo; }
-    { typedef typename Container::const_reference Foo; }
-    { typedef typename Container::pointer Foo; }
-    { typedef typename Container::difference_type Foo; }
-    { typedef typename Container::size_type Foo; }
+    { QVERIFY_TYPE(typename Container::value_type); }
+    { QVERIFY_TYPE(typename Container::iterator); }
+    { QVERIFY_TYPE(typename Container::const_iterator); }
+    { QVERIFY_TYPE(typename Container::reference); }
+    { QVERIFY_TYPE(typename Container::const_reference); }
+    { QVERIFY_TYPE(typename Container::pointer); }
+    { QVERIFY_TYPE(typename Container::difference_type); }
+    { QVERIFY_TYPE(typename Container::size_type); }
 }
 
 template <typename Container>
@@ -3251,34 +3253,34 @@ void testPairAssociativeContainerTypedefs(Container container)
     Q_UNUSED(container)
 
 //  TODO: Not sure how to define value_type for our associative containers
-//    { typedef typename Container::value_type Foo; }
-//    { typedef typename Container::const_iterator Foo; }
-//    { typedef typename Container::reference Foo; }
-//    { typedef typename Container::const_reference Foo; }
-//    { typedef typename Container::pointer Foo; }
+//    { QVERIFY_TYPE(typename Container::value_type); }
+//    { QVERIFY_TYPE(typename Container::const_iterator); }
+//    { QVERIFY_TYPE(typename Container::reference); }
+//    { QVERIFY_TYPE(typename Container::const_reference); }
+//    { QVERIFY_TYPE(typename Container::pointer); }
 
-    { typedef typename Container::difference_type Foo; }
-    { typedef typename Container::size_type Foo; }
-    { typedef typename Container::iterator Foo; }
-    { typedef typename Container::key_type Foo; }
-    { typedef typename Container::mapped_type Foo; }
+    { QVERIFY_TYPE(typename Container::difference_type); }
+    { QVERIFY_TYPE(typename Container::size_type); }
+    { QVERIFY_TYPE(typename Container::iterator); }
+    { QVERIFY_TYPE(typename Container::key_type); }
+    { QVERIFY_TYPE(typename Container::mapped_type); }
 // TODO
-//    { typedef typename Container::key_compare Foo; }
-//    { typedef typename Container::value_comare Foo; }
+//    { QVERIFY_TYPE(typename Container::key_compare); }
+//    { QVERIFY_TYPE(typename Container::value_comare); }
 }
 
 template <typename Container>
 void testSetContainerTypedefs(Container container)
 {
     Q_UNUSED(container)
-    { typedef typename Container::iterator Foo; }
-    { typedef typename Container::const_iterator Foo; }
-    { typedef typename Container::reference Foo; }
-    { typedef typename Container::const_reference Foo; }
-    { typedef typename Container::pointer Foo; }
-    { typedef typename Container::difference_type Foo; }
-    { typedef typename Container::size_type Foo; }
-    { typedef typename Container::key_type Foo; }
+    { QVERIFY_TYPE(typename Container::iterator); }
+    { QVERIFY_TYPE(typename Container::const_iterator); }
+    { QVERIFY_TYPE(typename Container::reference); }
+    { QVERIFY_TYPE(typename Container::const_reference); }
+    { QVERIFY_TYPE(typename Container::pointer); }
+    { QVERIFY_TYPE(typename Container::difference_type); }
+    { QVERIFY_TYPE(typename Container::size_type); }
+    { QVERIFY_TYPE(typename Container::key_type); }
 }
 
 /*
