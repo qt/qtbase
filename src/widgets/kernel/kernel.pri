@@ -60,7 +60,6 @@ SOURCES += \
 	kernel/qgesturemanager.cpp \
         kernel/qdesktopwidget.cpp \
         kernel/qwidgetsvariant.cpp \
-        kernel/qapplication_qpa.cpp \
         kernel/qwidgetwindow.cpp \
         kernel/qwindowcontainer.cpp
 
