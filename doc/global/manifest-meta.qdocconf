@@ -39,15 +39,18 @@ manifestmeta.highlighted.names      =   "QtQuick/Qt Quick Demo - Same Game" \
                                         "QtQuick/Qt Quick Demo - Tweet Search" \
                                         "QtQuick/Qt Quick Demo - Maroon*" \
                                         "QtQuick/Qt Quick Demo - Calqlatr" \
-                                        "QtQuick/Qt Quick Particles Examples - Emitters" \
+                                        "QtQuick/Qt Quick Demo - StocQt" \
+                                        "QtQuick/Qt Quick Demo - Clocks" \
                                         "QtQuick/Qt Quick Examples - Shader Effects" \
-                                        "QtWebKitExamples/Fancy Browser" \
-                                        "QtWebKitExamples/Flickr View Example" \
-                                        "QtWebKitExamples/YouTube View Example" \
+                                        "QtQuick/Qt Quick Examples - Text" \
+                                        "QtQuick/Qt Quick Examples - Window and Screen" \
                                         "QtQuickControls/Qt Quick Controls - Gallery" \
                                         "QtQuickControls/Qt Quick Controls - Text Editor Example" \
                                         "QtQuickControls/Qt Quick Controls - Table View Example" \
-                                        "QtWidgets/Application Example"
+                                        "QtQuickControls/Qt Quick Controls - Calendar Example" \
+                                        "QtQuickDialogs/Qt Quick System Dialog Examples" \
+                                        "QtWidgets/Application Example" \
+                                        "QtWinExtras/Quick Player"
 
 manifestmeta.highlighted.attributes =   isHighlighted:true
 
