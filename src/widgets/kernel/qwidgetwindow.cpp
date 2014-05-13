@@ -440,11 +440,13 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
                     if (!win)
                         win = w->nativeParentWidget()->windowHandle();
                     if (win && win->geometry().contains(event->globalPos())) {
+                        // Use postEvent() to ensure the local QEventLoop terminates when called from QMenu::exec()
                         const QPoint localPos = win->mapFromGlobal(event->globalPos());
-                        QMouseEvent e(QEvent::MouseButtonPress, localPos, localPos, event->globalPos(), event->button(), event->buttons(), event->modifiers());
-                        QGuiApplicationPrivate::setMouseEventSource(&e, QGuiApplicationPrivate::mouseEventSource(event));
-                        e.setTimestamp(event->timestamp());
-                        QApplication::sendSpontaneousEvent(win, &e);
+                        QMouseEvent *e = new QMouseEvent(QEvent::MouseButtonPress, localPos, localPos, event->globalPos(), event->button(), event->buttons(), event->modifiers());
+                        e->spont = 1;
+                        QGuiApplicationPrivate::setMouseEventSource(e, QGuiApplicationPrivate::mouseEventSource(event));
+                        e->setTimestamp(event->timestamp());
+                        QCoreApplication::postEvent(win, e);
                     }
                 }
             }

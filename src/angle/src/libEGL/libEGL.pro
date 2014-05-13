@@ -1,6 +1,4 @@
-TEMPLATE = lib
-TARGET = $$qtLibraryTarget(libEGL)
-
+CONFIG += installed
 include(../common/common.pri)
 
 angle_d3d11: \
@@ -29,8 +27,6 @@ SOURCES += \
     DEF_FILE = $$ANGLE_DIR/src/libEGL/$${TARGET}.def
     mingw:equals(QT_ARCH, i386): DEF_FILE = $$ANGLE_DIR/src/libEGL/$${TARGET}_mingw32.def
 }
-
-load(qt_installs)
 
 egl_headers.files = \
     $$ANGLE_DIR/include/EGL/egl.h \

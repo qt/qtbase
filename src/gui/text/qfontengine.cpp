@@ -1335,6 +1335,15 @@ QByteArray QFontEngine::convertToPostscriptFontFamilyName(const QByteArray &fami
     return f;
 }
 
+/**
+ * Some font engines like the windows font engine
+ * can not reliable create outline paths
+ */
+bool QFontEngine::hasUnreliableGlyphOutline() const
+{
+    return false;
+}
+
 QFixed QFontEngine::lastRightBearing(const QGlyphLayout &glyphs, bool round)
 {
     if (glyphs.numGlyphs >= 1) {

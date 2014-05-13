@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -66,6 +66,16 @@ static inline QWindowsDirect2DPlatformPixmap *platformPixmap(QPixmap *p)
     return static_cast<QWindowsDirect2DPlatformPixmap *>(p->handle());
 }
 
+static inline QWindowsDirect2DBitmap *bitmap(QPixmap *p)
+{
+    return platformPixmap(p)->bitmap();
+}
+
+static inline QWindowsDirect2DWindow *nativeWindow(QWindow *window)
+{
+    return static_cast<QWindowsDirect2DWindow *>(window->handle());
+}
+
 QWindowsDirect2DBackingStore::QWindowsDirect2DBackingStore(QWindow *window)
     : QPlatformBackingStore(window)
 {
@@ -77,36 +87,40 @@ QWindowsDirect2DBackingStore::~QWindowsDirect2DBackingStore()
 
 void QWindowsDirect2DBackingStore::beginPaint(const QRegion &)
 {
-    platformPixmap(m_pixmap.data())->bitmap()->deviceContext()->begin();
+    bitmap(nativeWindow(window())->pixmap())->deviceContext()->begin();
 }
 
 void QWindowsDirect2DBackingStore::endPaint()
 {
-    platformPixmap(m_pixmap.data())->bitmap()->deviceContext()->end();
+    bitmap(nativeWindow(window())->pixmap())->deviceContext()->end();
 }
 
 QPaintDevice *QWindowsDirect2DBackingStore::paintDevice()
 {
-    return m_pixmap.data();
+    return nativeWindow(window())->pixmap();
 }
 
-void QWindowsDirect2DBackingStore::flush(QWindow *window, const QRegion &region, const QPoint &offset)
+void QWindowsDirect2DBackingStore::flush(QWindow *targetWindow, const QRegion &region, const QPoint &offset)
 {
-    QPlatformWindow *pw = window->handle();
-    if (pw && m_pixmap)
-        static_cast<QWindowsDirect2DWindow *>(pw)->flush(platformPixmap(m_pixmap.data())->bitmap(), region, offset);
+    if (targetWindow != window()) {
+        QSharedPointer<QWindowsDirect2DBitmap> copy(nativeWindow(window())->copyBackBuffer());
+        nativeWindow(targetWindow)->flush(copy.data(), region, offset);
+    }
+
+    nativeWindow(targetWindow)->present();
 }
 
 void QWindowsDirect2DBackingStore::resize(const QSize &size, const QRegion &region)
 {
-    Q_UNUSED(region);
+    QPixmap old = nativeWindow(window())->pixmap()->copy();
 
-    QScopedPointer<QPixmap> oldPixmap(m_pixmap.take());
-    m_pixmap.reset(new QPixmap(size.width(), size.height()));
+    nativeWindow(window())->resizeSwapChain(size);
+    QPixmap *newPixmap = nativeWindow(window())->pixmap();
 
-    if (oldPixmap) {
-        foreach (const QRect &rect, region.rects())
-            platformPixmap(m_pixmap.data())->copy(oldPixmap->handle(), rect);
+    if (!old.isNull()) {
+        foreach (const QRect &rect, region.rects()) {
+            platformPixmap(newPixmap)->copy(old.handle(), rect);
+        }
     }
 }
 

@@ -450,6 +450,7 @@ static void scaleOutline(FT_Face face, FT_GlyphSlot g, FT_Fixed x_scale, FT_Fixe
     }
 }
 
+#define GLYPH2PATH_DEBUG QT_NO_QDEBUG_MACRO // qDebug
 void QFreetypeFace::addGlyphToPath(FT_Face face, FT_GlyphSlot g, const QFixedPoint &point, QPainterPath *path, FT_Fixed x_scale, FT_Fixed y_scale)
 {
     const qreal factor = 1/64.;
@@ -461,22 +462,32 @@ void QFreetypeFace::addGlyphToPath(FT_Face face, FT_GlyphSlot g, const QFixedPoi
     int i = 0;
     for (int j = 0; j < g->outline.n_contours; ++j) {
         int last_point = g->outline.contours[j];
-        QPointF start = cp + QPointF(g->outline.points[i].x*factor, -g->outline.points[i].y*factor);
-        if(!(g->outline.tags[i] & 1)) {
-            start += cp + QPointF(g->outline.points[last_point].x*factor, -g->outline.points[last_point].y*factor);
-            start /= 2;
+        GLYPH2PATH_DEBUG() << "contour:" << i << "to" << last_point;
+        QPointF start = QPointF(g->outline.points[i].x*factor, -g->outline.points[i].y*factor);
+        if (!(g->outline.tags[i] & 1)) {               // start point is not on curve:
+            if (!(g->outline.tags[last_point] & 1)) {  // end point is not on curve:
+                GLYPH2PATH_DEBUG() << "  start and end point are not on curve";
+                start = (QPointF(g->outline.points[last_point].x*factor,
+                                -g->outline.points[last_point].y*factor) + start) / 2.0;
+            } else {
+                GLYPH2PATH_DEBUG() << "  end point is on curve, start is not";
+                start = QPointF(g->outline.points[last_point].x*factor,
+                               -g->outline.points[last_point].y*factor);
+            }
+            --i;   // to use original start point as control point below
         }
-//         qDebug("contour: %d -- %d", i, g->outline.contours[j]);
-//         qDebug("first point at %f %f", start.x(), start.y());
-        path->moveTo(start);
+        start += cp;
+        GLYPH2PATH_DEBUG() << "  start at" << start;
 
+        path->moveTo(start);
         QPointF c[4];
         c[0] = start;
         int n = 1;
         while (i < last_point) {
             ++i;
             c[n] = cp + QPointF(g->outline.points[i].x*factor, -g->outline.points[i].y*factor);
-//             qDebug() << "    i=" << i << " flag=" << (int)g->outline.tags[i] << "point=" << c[n];
+            GLYPH2PATH_DEBUG() << "    " << i << c[n] << "tag =" << (int)g->outline.tags[i]
+                               << ": on curve =" << (bool)(g->outline.tags[i] & 1);
             ++n;
             switch (g->outline.tags[i] & 3) {
             case 2:
@@ -498,7 +509,7 @@ void QFreetypeFace::addGlyphToPath(FT_Face face, FT_GlyphSlot g, const QFixedPoi
             case 1:
             case 3:
                 if (n == 2) {
-//                     qDebug() << "lineTo" << c[1];
+                    GLYPH2PATH_DEBUG() << "  lineTo" << c[1];
                     path->lineTo(c[1]);
                     c[0] = c[1];
                     n = 1;
@@ -510,13 +521,14 @@ void QFreetypeFace::addGlyphToPath(FT_Face face, FT_GlyphSlot g, const QFixedPoi
                 }
                 break;
             }
-//             qDebug() << "cubicTo" << c[1] << c[2] << c[3];
+            GLYPH2PATH_DEBUG() << "  cubicTo" << c[1] << c[2] << c[3];
             path->cubicTo(c[1], c[2], c[3]);
             c[0] = c[3];
             n = 1;
         }
+
         if (n == 1) {
-//             qDebug() << "closeSubpath";
+            GLYPH2PATH_DEBUG() << "  closeSubpath";
             path->closeSubpath();
         } else {
             c[3] = start;
@@ -524,7 +536,7 @@ void QFreetypeFace::addGlyphToPath(FT_Face face, FT_GlyphSlot g, const QFixedPoi
                 c[2] = (2*c[1] + c[3])/3;
                 c[1] = (2*c[1] + c[0])/3;
             }
-//             qDebug() << "cubicTo" << c[1] << c[2] << c[3];
+            GLYPH2PATH_DEBUG() << "  close cubicTo" << c[1] << c[2] << c[3];
             path->cubicTo(c[1], c[2], c[3]);
         }
         ++i;

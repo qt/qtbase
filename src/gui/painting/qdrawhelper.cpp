@@ -1709,6 +1709,163 @@ static const uint * QT_FASTCALL fetchTransformedBilinearARGB32PM(uint *buffer, c
                 }
             } else {
                 //we are zooming less than 8x, use 4bit precision
+
+                if (blendType != BlendTransformedBilinearTiled) {
+#define BILINEAR_ROTATE_BOUNDS_PROLOG \
+                    while (b < end) { \
+                        int x1 = (fx >> 16); \
+                        int x2; \
+                        int y1 = (fy >> 16); \
+                        int y2; \
+                        fetchTransformedBilinear_pixelBounds<blendType>(image_width, image_x1, image_x2, x1, x2); \
+                        fetchTransformedBilinear_pixelBounds<blendType>(image_height, image_y1, image_y2, y1, y2); \
+                        if (x1 != x2 && y1 != y2) \
+                            break; \
+                        const uint *s1 = (const uint *)data->texture.scanLine(y1); \
+                        const uint *s2 = (const uint *)data->texture.scanLine(y2); \
+                        uint tl = s1[x1]; \
+                        uint tr = s1[x2]; \
+                        uint bl = s2[x1]; \
+                        uint br = s2[x2]; \
+                        int distx = (fx & 0x0000ffff) >> 12; \
+                        int disty = (fy & 0x0000ffff) >> 12; \
+                        *b = interpolate_4_pixels_16(tl, tr, bl, br, distx, disty); \
+                        fx += fdx; \
+                        fy += fdy; \
+                        ++b; \
+                    } \
+                    uint *boundedEnd = end - 3; \
+                    boundedEnd -= 3;
+
+#if defined(__SSE2__)
+                    BILINEAR_ROTATE_BOUNDS_PROLOG
+
+                    const __m128i colorMask = _mm_set1_epi32(0x00ff00ff);
+                    const __m128i v_256 = _mm_set1_epi16(256);
+                    __m128i v_fdx = _mm_set1_epi32(fdx*4);
+                    __m128i v_fdy = _mm_set1_epi32(fdy*4);
+
+                    const uchar *textureData = data->texture.imageData;
+                    const int bytesPerLine = data->texture.bytesPerLine;
+
+                    union Vect_buffer { __m128i vect; qint32 i[4]; };
+                    Vect_buffer v_fx, v_fy;
+
+                    for (int i = 0; i < 4; i++) {
+                        v_fx.i[i] = fx;
+                        v_fy.i[i] = fy;
+                        fx += fdx;
+                        fy += fdy;
+                    }
+
+                    while (b < boundedEnd) {
+                        if (fdx > 0 && (v_fx.i[3] >> 16) >= image_x2)
+                            break;
+                        if (fdx < 0 && (v_fx.i[3] >> 16) < image_x1)
+                            break;
+                        if (fdy > 0 && (v_fy.i[3] >> 16) >= image_y2)
+                            break;
+                        if (fdy < 0 && (v_fy.i[3] >> 16) < image_y1)
+                            break;
+
+                        Vect_buffer tl, tr, bl, br;
+                        Vect_buffer v_fx_shifted, v_fy_shifted;
+                        v_fx_shifted.vect = _mm_srli_epi32(v_fx.vect, 16);
+                        v_fy_shifted.vect = _mm_srli_epi32(v_fy.vect, 16);
+
+                        for (int i = 0; i < 4; i++) {
+                            const int x1 = v_fx_shifted.i[i];
+                            const int y1 = v_fy_shifted.i[i];
+                            const uchar *sl = textureData + bytesPerLine * y1;
+                            const uint *s1 = (const uint *)sl;
+                            const uint *s2 = (const uint *)(sl + bytesPerLine);
+                            tl.i[i] = s1[x1];
+                            tr.i[i] = s1[x1+1];
+                            bl.i[i] = s2[x1];
+                            br.i[i] = s2[x1+1];
+                        }
+                        __m128i v_distx = _mm_srli_epi16(v_fx.vect, 12);
+                        __m128i v_disty = _mm_srli_epi16(v_fy.vect, 12);
+                        v_distx = _mm_shufflehi_epi16(v_distx, _MM_SHUFFLE(2,2,0,0));
+                        v_distx = _mm_shufflelo_epi16(v_distx, _MM_SHUFFLE(2,2,0,0));
+                        v_disty = _mm_shufflehi_epi16(v_disty, _MM_SHUFFLE(2,2,0,0));
+                        v_disty = _mm_shufflelo_epi16(v_disty, _MM_SHUFFLE(2,2,0,0));
+
+                        interpolate_4_pixels_16_sse2(tl.vect, tr.vect, bl.vect, br.vect, v_distx, v_disty, colorMask, v_256, b);
+                        b+=4;
+                        v_fx.vect = _mm_add_epi32(v_fx.vect, v_fdx);
+                        v_fy.vect = _mm_add_epi32(v_fy.vect, v_fdy);
+                    }
+                    fx = v_fx.i[0];
+                    fy = v_fy.i[0];
+#elif defined(__ARM_NEON__)
+                    BILINEAR_ROTATE_BOUNDS_PROLOG
+
+                    const int16x8_t colorMask = vdupq_n_s16(0x00ff);
+                    const int16x8_t invColorMask = vmvnq_s16(colorMask);
+                    const int16x8_t v_256 = vdupq_n_s16(256);
+                    int32x4_t v_fdx = vdupq_n_s32(fdx*4);
+                    int32x4_t v_fdy = vdupq_n_s32(fdy*4);
+
+                    const uchar *textureData = data->texture.imageData;
+                    const int bytesPerLine = data->texture.bytesPerLine;
+
+                    union Vect_buffer { int32x4_t vect; quint32 i[4]; };
+                    Vect_buffer v_fx, v_fy;
+
+                    for (int i = 0; i < 4; i++) {
+                        v_fx.i[i] = fx;
+                        v_fy.i[i] = fy;
+                        fx += fdx;
+                        fy += fdy;
+                    }
+
+                    const int32x4_t v_ffff_mask = vdupq_n_s32(0x0000ffff);
+
+                    while (b < boundedEnd) {
+                        if (fdx > 0 && (v_fx.i[3] >> 16) >= image_x2)
+                            break;
+                        if (fdx < 0 && (v_fx.i[3] >> 16) < image_x1)
+                            break;
+                        if (fdy > 0 && (v_fy.i[3] >> 16) >= image_y2)
+                            break;
+                        if (fdy < 0 && (v_fy.i[3] >> 16) < image_y1)
+                            break;
+
+                        Vect_buffer tl, tr, bl, br;
+
+                        Vect_buffer v_fx_shifted, v_fy_shifted;
+                        v_fx_shifted.vect = vshrq_n_s32(v_fx.vect, 16);
+                        v_fy_shifted.vect = vshrq_n_s32(v_fy.vect, 16);
+
+                        for (int i = 0; i < 4; i++) {
+                            const int x1 = v_fx_shifted.i[i];
+                            const int y1 = v_fy_shifted.i[i];
+                            const uchar *sl = textureData + bytesPerLine * y1;
+                            const uint *s1 = (const uint *)sl;
+                            const uint *s2 = (const uint *)(sl + bytesPerLine);
+                            tl.i[i] = s1[x1];
+                            tr.i[i] = s1[x1+1];
+                            bl.i[i] = s2[x1];
+                            br.i[i] = s2[x1+1];
+                        }
+
+                        int32x4_t v_distx = vshrq_n_s32(vandq_s32(v_fx.vect, v_ffff_mask), 12);
+                        int32x4_t v_disty = vshrq_n_s32(vandq_s32(v_fy.vect, v_ffff_mask), 12);
+                        v_distx = vorrq_s32(v_distx, vshlq_n_s32(v_distx, 16));
+                        v_disty = vorrq_s32(v_disty, vshlq_n_s32(v_disty, 16));
+                        int16x8_t v_disty_ = vshlq_n_s16(v_disty, 4);
+
+                        interpolate_4_pixels_16_neon(vreinterpretq_s16_s32(tl.vect), vreinterpretq_s16_s32(tr.vect), vreinterpretq_s16_s32(bl.vect), vreinterpretq_s16_s32(br.vect), vreinterpretq_s16_s32(v_distx), v_disty, v_disty_, colorMask, invColorMask, v_256, b);
+                        b+=4;
+                        v_fx.vect = vaddq_s32(v_fx.vect, v_fdx);
+                        v_fy.vect = vaddq_s32(v_fy.vect, v_fdy);
+                    }
+                    fx = v_fx.i[0];
+                    fy = v_fy.i[0];
+#endif
+                }
+
                 while (b < end) {
                     int x1 = (fx >> 16);
                     int x2;

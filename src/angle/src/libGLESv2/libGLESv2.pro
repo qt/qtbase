@@ -1,7 +1,4 @@
-TEMPLATE = lib
-TARGET = $$qtLibraryTarget(libGLESv2)
-CONFIG += simd
-
+CONFIG += simd installed
 include(../common/common.pri)
 
 INCLUDEPATH += $$OUT_PWD/.. $$ANGLE_DIR/src/libGLESv2
@@ -13,8 +10,8 @@ angle_d3d11: \
     LIBS_PRIVATE += -ld3d9
 
 LIBS_PRIVATE += -ldxguid
-STATICLIBS = translator preprocessor
 
+STATICLIBS = translator preprocessor
 for(libname, STATICLIBS) {
     # Appends 'd' to the library for debug builds and builds up the fully
     # qualified path to pass to the linker.
@@ -238,8 +235,6 @@ for (vs, VERTEX_SHADERS_CLEAR) {
     angle_d3d11: QMAKE_EXTRA_COMPILERS += fxc_vs_$${vs}
 }
 
-load(qt_installs)
-
 khr_headers.files = $$ANGLE_DIR/include/KHR/khrplatform.h
 khr_headers.path = $$[QT_INSTALL_HEADERS]/QtANGLE/KHR
 gles2_headers.files = \
@@ -248,5 +243,3 @@ gles2_headers.files = \
     $$ANGLE_DIR/include/GLES2/gl2platform.h
 gles2_headers.path = $$[QT_INSTALL_HEADERS]/QtANGLE/GLES2
 INSTALLS += khr_headers gles2_headers
-
-

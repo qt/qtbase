@@ -1,3 +1,4 @@
+CONFIG += installed
 include (../config.pri)
 
 INCLUDEPATH += \

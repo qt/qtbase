@@ -122,6 +122,7 @@ private slots:
     void boundingRectForUnsetLineWidth();
     void boundingRectForSetLineWidth();
     void glyphLessItems();
+    void justifyTrailingSpaces();
 
     // QTextLine stuff
     void setNumColumnsWrapAtWordBoundaryOrAnywhere();
@@ -1994,6 +1995,20 @@ void tst_QTextLayout::cursorInNonStopChars()
 
     QVERIFY(line.cursorToX(1) == line.cursorToX(3));
     QVERIFY(line.cursorToX(2) == line.cursorToX(3));
+}
+
+void tst_QTextLayout::justifyTrailingSpaces()
+{
+    QTextLayout layout(QStringLiteral("     t"), testFont);
+    layout.setTextOption(QTextOption(Qt::AlignJustify));
+    layout.beginLayout();
+
+    QTextLine line = layout.createLine();
+    line.setLineWidth(5);
+
+    layout.endLayout();
+
+    QVERIFY(qFuzzyIsNull(layout.lineAt(0).cursorToX(0)));
 }
 
 QTEST_MAIN(tst_QTextLayout)

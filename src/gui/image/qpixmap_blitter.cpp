@@ -59,6 +59,7 @@ static int global_ser_no = 0;
 QBlittablePlatformPixmap::QBlittablePlatformPixmap()
     : QPlatformPixmap(QPlatformPixmap::PixmapType,BlitterClass)
     , m_alpha(false)
+    , m_devicePixelRatio(1.0)
 #ifdef QT_BLITTER_RASTEROVERLAY
     ,m_rasterOverlay(0), m_unmergedCopy(0)
 #endif //QT_BLITTER_RASTEROVERLAY
@@ -121,7 +122,7 @@ int QBlittablePlatformPixmap::metric(QPaintDevice::PaintDeviceMetric metric) con
     case QPaintDevice::PdmPhysicalDpiY:
         return qt_defaultDpiY();
     case QPaintDevice::PdmDevicePixelRatio:
-        return 1;
+        return devicePixelRatio();
     default:
         qWarning("QRasterPlatformPixmap::metric(): Unhandled metric type %d", metric);
         break;
@@ -178,6 +179,7 @@ void QBlittablePlatformPixmap::fromImage(const QImage &image,
                                      Qt::ImageConversionFlags flags)
 {
     m_alpha = image.hasAlphaChannel();
+    m_devicePixelRatio = image.devicePixelRatio();
     resize(image.width(),image.height());
     markRasterOverlay(QRect(0,0,w,h));
     QImage *thisImg = buffer();

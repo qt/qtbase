@@ -147,7 +147,7 @@ void QOpenGLWidget::paintGL()
 void QOpenGLWidget::updateGL()
 {
     Q_D(QOpenGLWidget);
-    if (d->uninitialized)
+    if (d->uninitialized || !d->surface())
         return;
 
     makeCurrent();

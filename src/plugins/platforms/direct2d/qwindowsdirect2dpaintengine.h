@@ -47,6 +47,7 @@
 
 #include <d2d1_1.h>
 #include <dwrite_1.h>
+#include <wrl.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -114,6 +115,8 @@ private:
     bool antiAliasingEnabled() const;
     void adjustForAliasing(QRectF *rect);
     void adjustForAliasing(QPointF *point);
+
+    Microsoft::WRL::ComPtr<IDWriteFontFace> fontFaceFromFontEngine(const QFont &font, QFontEngine *fe);
 };
 
 QT_END_NAMESPACE

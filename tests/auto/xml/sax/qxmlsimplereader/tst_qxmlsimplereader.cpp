@@ -60,26 +60,26 @@ class XmlServer : public QThread
 {
     Q_OBJECT
 public:
-    XmlServer();
+    XmlServer(QObject *parent = 0) : QThread(parent), quit_soon(false), listening(false) {}
+
     bool quit_soon;
+    bool listening;
 
 protected:
     virtual void run();
 };
 
-XmlServer::XmlServer()
-{
-    quit_soon = false;
-}
-
-#define CHUNK_SIZE 1
+#define CHUNK_SIZE 2048
 
 void XmlServer::run()
 {
     QTcpServer srv;
 
-    if (!srv.listen(QHostAddress::Any, TEST_PORT))
+    listening = srv.listen(QHostAddress::Any, TEST_PORT);
+    if (!listening) {
+        qWarning() << "Failed to listen on" << TEST_PORT << srv.errorString();
         return;
+    }
 
     for (;;) {
         srv.waitForNewConnection(100);
@@ -168,12 +168,9 @@ class tst_QXmlSimpleReader : public QObject
         QString prefix;
 };
 
-tst_QXmlSimpleReader::tst_QXmlSimpleReader()
+tst_QXmlSimpleReader::tst_QXmlSimpleReader() : server(new XmlServer(this))
 {
-    server = new XmlServer();
-    server->setParent(this);
     server->start();
-    QTest::qSleep(1000);
 }
 
 tst_QXmlSimpleReader::~tst_QXmlSimpleReader()
@@ -568,16 +565,13 @@ void tst_QXmlSimpleReader::inputFromSocket()
 {
     QFETCH(QString, file_name);
 
+    QTRY_VERIFY(server->listening);
+
     QTcpSocket sock;
     sock.connectToHost(QHostAddress::LocalHost, TEST_PORT);
-
-    const bool connectionSuccess = sock.waitForConnected();
-    if(!connectionSuccess) {
-        QTextStream out(stderr);
-        out << "QTcpSocket::errorString()" << sock.errorString();
-    }
-
-    QVERIFY(connectionSuccess);
+    QVERIFY2(sock.waitForConnected(),
+             qPrintable(QStringLiteral("Cannot connect on port ") + QString::number(TEST_PORT)
+                        + QStringLiteral(": ") + sock.errorString()));
 
     sock.write(file_name.toLocal8Bit() + "\n");
     QVERIFY(sock.waitForBytesWritten());

@@ -122,6 +122,8 @@ public:
     virtual void getGlyphBearings(glyph_t glyph, qreal *leftBearing = 0, qreal *rightBearing = 0);
 #endif
 
+    bool hasUnreliableGlyphOutline() const Q_DECL_OVERRIDE;
+
     int getGlyphIndexes(const QChar *ch, int numChars, QGlyphLayout *glyphs) const;
     void getCMap();
 
@@ -136,6 +138,8 @@ private:
                                       QImage::Format mask_format);
     bool hasCFFTable() const;
     bool hasCMapTable() const;
+    bool hasGlyfTable() const;
+    bool hasEbdtTable() const;
 
     const QSharedPointer<QWindowsFontEngineData> m_fontEngineData;
 
@@ -146,6 +150,7 @@ private:
     uint        stockFont  : 1;
     uint        ttf        : 1;
     uint        hasOutline : 1;
+    uint        hasUnreliableOutline : 1;
     uint        cffTable   : 1;
     TEXTMETRIC  tm;
     int         lw;

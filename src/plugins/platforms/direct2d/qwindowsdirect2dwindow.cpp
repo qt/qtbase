@@ -43,6 +43,7 @@
 #include "qwindowsdirect2dwindow.h"
 #include "qwindowsdirect2ddevicecontext.h"
 #include "qwindowsdirect2dhelpers.h"
+#include "qwindowsdirect2dplatformpixmap.h"
 
 #include <d3d11.h>
 #include <d2d1_1.h>
@@ -87,6 +88,13 @@ QWindowsDirect2DWindow::~QWindowsDirect2DWindow()
 {
 }
 
+QPixmap *QWindowsDirect2DWindow::pixmap()
+{
+    setupBitmap();
+
+    return m_pixmap.data();
+}
+
 void QWindowsDirect2DWindow::flush(QWindowsDirect2DBitmap *bitmap, const QRegion &region, const QPoint &offset)
 {
     DXGI_SWAP_CHAIN_DESC1 desc;
@@ -102,32 +110,38 @@ void QWindowsDirect2DWindow::flush(QWindowsDirect2DBitmap *bitmap, const QRegion
     if (!m_bitmap)
         return;
 
-    m_bitmap->deviceContext()->begin();
+    if (bitmap != m_bitmap.data()) {
+        m_bitmap->deviceContext()->begin();
 
-    ID2D1DeviceContext *dc = m_bitmap->deviceContext()->get();
-    if (!m_needsFullFlush) {
-        QRegion clipped = region;
-        clipped &= QRect(0, 0, desc.Width, desc.Height);
+        ID2D1DeviceContext *dc = m_bitmap->deviceContext()->get();
+        if (!m_needsFullFlush) {
+            QRegion clipped = region;
+            clipped &= QRect(0, 0, desc.Width, desc.Height);
 
-        foreach (const QRect &rect, clipped.rects()) {
-            QRectF rectF(rect);
+            foreach (const QRect &rect, clipped.rects()) {
+                QRectF rectF(rect);
+                dc->DrawBitmap(bitmap->bitmap(),
+                               to_d2d_rect_f(rectF),
+                               1.0,
+                               D2D1_INTERPOLATION_MODE_LINEAR,
+                               to_d2d_rect_f(rectF.translated(offset.x(), offset.y())));
+            }
+        } else {
+            QRectF rectF(0, 0, desc.Width, desc.Height);
             dc->DrawBitmap(bitmap->bitmap(),
                            to_d2d_rect_f(rectF),
                            1.0,
                            D2D1_INTERPOLATION_MODE_LINEAR,
                            to_d2d_rect_f(rectF.translated(offset.x(), offset.y())));
+            m_needsFullFlush = false;
         }
-    } else {
-        QRectF rectF(0, 0, desc.Width, desc.Height);
-        dc->DrawBitmap(bitmap->bitmap(),
-                       to_d2d_rect_f(rectF),
-                       1.0,
-                       D2D1_INTERPOLATION_MODE_LINEAR,
-                       to_d2d_rect_f(rectF.translated(offset.x(), offset.y())));
-        m_needsFullFlush = false;
-    }
 
-    m_bitmap->deviceContext()->end();
+        m_bitmap->deviceContext()->end();
+    }
+}
+
+void QWindowsDirect2DWindow::present()
+{
     m_swapChain->Present(0, 0);
 }
 
@@ -136,6 +150,7 @@ void QWindowsDirect2DWindow::resizeSwapChain(const QSize &size)
     if (!m_swapChain)
         return;
 
+    m_pixmap.reset();
     m_bitmap.reset();
     m_deviceContext->SetTarget(Q_NULLPTR);
 
@@ -147,6 +162,43 @@ void QWindowsDirect2DWindow::resizeSwapChain(const QSize &size)
         qWarning("%s: Could not resize swap chain: %#x", __FUNCTION__, hr);
 
     m_needsFullFlush = true;
+}
+
+QSharedPointer<QWindowsDirect2DBitmap> QWindowsDirect2DWindow::copyBackBuffer() const
+{
+    const QSharedPointer<QWindowsDirect2DBitmap> null_result;
+
+    if (!m_bitmap)
+        return null_result;
+
+    D2D1_PIXEL_FORMAT format = m_bitmap->bitmap()->GetPixelFormat();
+    D2D1_SIZE_U size = m_bitmap->bitmap()->GetPixelSize();
+
+    FLOAT dpiX, dpiY;
+    m_bitmap->bitmap()->GetDpi(&dpiX, &dpiY);
+
+    D2D1_BITMAP_PROPERTIES1 properties = {
+        format,                     // D2D1_PIXEL_FORMAT pixelFormat;
+        dpiX,                       // FLOAT dpiX;
+        dpiY,                       // FLOAT dpiY;
+        D2D1_BITMAP_OPTIONS_TARGET, // D2D1_BITMAP_OPTIONS bitmapOptions;
+        Q_NULLPTR                   // _Field_size_opt_(1) ID2D1ColorContext *colorContext;
+    };
+    ComPtr<ID2D1Bitmap1> copy;
+    HRESULT hr = m_deviceContext.Get()->CreateBitmap(size, NULL, 0, properties, &copy);
+
+    if (FAILED(hr)) {
+        qWarning("%s: Could not create staging bitmap: %#x", __FUNCTION__, hr);
+        return null_result;
+    }
+
+    hr = copy.Get()->CopyFromBitmap(NULL, m_bitmap->bitmap(), NULL);
+    if (FAILED(hr)) {
+        qWarning("%s: Could not copy from bitmap! %#x", __FUNCTION__, hr);
+        return null_result;
+    }
+
+    return QSharedPointer<QWindowsDirect2DBitmap>(new QWindowsDirect2DBitmap(copy.Get(), Q_NULLPTR));
 }
 
 void QWindowsDirect2DWindow::setupBitmap()
@@ -175,6 +227,10 @@ void QWindowsDirect2DWindow::setupBitmap()
     }
 
     m_bitmap.reset(new QWindowsDirect2DBitmap(backBufferBitmap.Get(), m_deviceContext.Get()));
+
+    QWindowsDirect2DPlatformPixmap *pp = new QWindowsDirect2DPlatformPixmap(QPlatformPixmap::PixmapType,
+                                                                            m_bitmap.data());
+    m_pixmap.reset(new QPixmap(pp));
 }
 
 QT_END_NAMESPACE

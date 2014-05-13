@@ -15,7 +15,7 @@ equals(TEMPLATE, app):contains(QT, gui(-private)?) {
     # We do link and dependency resolution for the platform plugin
     # manually, since we know we always need the plugin, so we don't
     # need to generate an import for it.
-    CONFIG -= import_qpa_plugin
+    QTPLUGIN.platforms = -
 
     !no_main_wrapper {
         # We use ld to rename the _main symbol to _qt_main, so that we don't get a symbol clash
