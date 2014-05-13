@@ -78,6 +78,7 @@ static QPrint::InputSlot paperBinToInputSlot(int windowsId, const QString &name)
     }
     slot.key = inputSlotMap[i].key;
     slot.id = inputSlotMap[i].id;
+    slot.windowsId = windowsId;
     return slot;
 }
 
