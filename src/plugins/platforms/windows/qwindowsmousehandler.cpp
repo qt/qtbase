@@ -364,7 +364,7 @@ bool QWindowsMouseHandler::translateMouseWheelEvent(QWindow *window, HWND,
         delta = (int) msg.wParam;
 
     Qt::Orientation orientation = (msg.message == WM_MOUSEHWHEEL
-                                  || (buttons & Qt::AltModifier)) ?
+                                  || (mods & Qt::AltModifier)) ?
                                   Qt::Horizontal : Qt::Vertical;
 
     // according to the MSDN documentation on WM_MOUSEHWHEEL:

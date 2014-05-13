@@ -569,7 +569,9 @@ void QTextStreamPrivate::flushWriteBuffer()
 #endif
 
     // convert from unicode to raw data
-    QByteArray data = codec->fromUnicode(writeBuffer.data(), writeBuffer.size(), &writeConverterState);
+    // codec might be null if we're already inside global destructors (QTestCodec::codecForLocale returned null)
+    QByteArray data = Q_LIKELY(codec) ? codec->fromUnicode(writeBuffer.data(), writeBuffer.size(), &writeConverterState)
+                                      : writeBuffer.toLatin1();
 #else
     QByteArray data = writeBuffer.toLocal8Bit();
 #endif

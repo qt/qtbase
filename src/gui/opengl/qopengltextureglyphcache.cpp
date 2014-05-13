@@ -408,41 +408,14 @@ void QOpenGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph, QFixed
 #endif
         funcs->glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y, maskWidth, maskHeight, fmt, GL_UNSIGNED_BYTE, mask.bits());
     } else {
-        // glTexSubImage2D() might cause some garbage to appear in the texture if the mask width is
-        // not a multiple of four bytes. The bug appeared on a computer with 32-bit Windows Vista
-        // and nVidia GeForce 8500GT. GL_UNPACK_ALIGNMENT is set to four bytes, 'mask' has a
-        // multiple of four bytes per line, and most of the glyph shows up correctly in the
-        // texture, which makes me think that this is a driver bug.
-        // One workaround is to make sure the mask width is a multiple of four bytes, for instance
-        // by converting it to a format with four bytes per pixel. Another is to copy one line at a
-        // time.
-
-#if 0
-        if (!ctx->d_func()->workaround_brokenAlphaTexSubImage_init) {
-            // don't know which driver versions exhibit this bug, so be conservative for now
-            const QByteArray versionString(reinterpret_cast<const char*>(glGetString(GL_VERSION)));
-            glctx->d_func()->workaround_brokenAlphaTexSubImage = versionString.indexOf("NVIDIA") >= 0;
-            glctx->d_func()->workaround_brokenAlphaTexSubImage_init = true;
-        }
-#endif
-
-#if 0
-        if (ctx->d_func()->workaround_brokenAlphaTexSubImage) {
-            for (int i = 0; i < maskHeight; ++i)
-                funcs->glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y + i, maskWidth, 1, GL_ALPHA, GL_UNSIGNED_BYTE, mask.scanLine(i));
-        } else {
-#endif
-
+        // The scanlines in mask are 32-bit aligned, even for mono or 8-bit formats. This
+        // is good because it matches the default of 4 bytes for GL_UNPACK_ALIGNMENT.
 #if !defined(QT_OPENGL_ES_2)
         const GLenum format = isCoreProfile() ? GL_RED : GL_ALPHA;
 #else
         const GLenum format = GL_ALPHA;
 #endif
         funcs->glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y, maskWidth, maskHeight, format, GL_UNSIGNED_BYTE, mask.bits());
-
-#if 0
-        }
-#endif
     }
 }
 

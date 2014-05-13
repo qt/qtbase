@@ -715,6 +715,10 @@ void tst_QDateTime::toString_isoDate_data()
     QTest::newRow("negative OffsetFromUTC")
             << dt
             << QString("1978-11-09T13:28:34-02:00");
+    dt.setUtcOffset(-900);
+    QTest::newRow("negative non-integral OffsetFromUTC")
+            << dt
+            << QString("1978-11-09T13:28:34-00:15");
     QTest::newRow("invalid")
             << QDateTime(QDate(-1, 11, 9), QTime(13, 28, 34), Qt::UTC)
             << QString();
@@ -1895,8 +1899,12 @@ void tst_QDateTime::fromStringDateFormat_data()
     // Test Qt::ISODate format.
     QTest::newRow("ISO +01:00") << QString::fromLatin1("1987-02-13T13:24:51+01:00")
         << Qt::ISODate << QDateTime(QDate(1987, 2, 13), QTime(12, 24, 51), Qt::UTC);
+    QTest::newRow("ISO +00:01") << QString::fromLatin1("1987-02-13T13:24:51+00:01")
+        << Qt::ISODate << QDateTime(QDate(1987, 2, 13), QTime(13, 23, 51), Qt::UTC);
     QTest::newRow("ISO -01:00") << QString::fromLatin1("1987-02-13T13:24:51-01:00")
         << Qt::ISODate << QDateTime(QDate(1987, 2, 13), QTime(14, 24, 51), Qt::UTC);
+    QTest::newRow("ISO -00:01") << QString::fromLatin1("1987-02-13T13:24:51-00:01")
+        << Qt::ISODate << QDateTime(QDate(1987, 2, 13), QTime(13, 25, 51), Qt::UTC);
     QTest::newRow("ISO +0000") << QString::fromLatin1("1970-01-01T00:12:34+0000")
         << Qt::ISODate << QDateTime(QDate(1970, 1, 1), QTime(0, 12, 34), Qt::UTC);
     QTest::newRow("ISO +00:00") << QString::fromLatin1("1970-01-01T00:12:34+00:00")

@@ -533,7 +533,6 @@ private:
 #if defined(XCB_USE_XINPUT2) || defined(XCB_USE_XINPUT2_MAEMO)
     static bool xi2GetValuatorValueIfSet(void *event, int valuatorNum, double *value);
     static bool xi2PrepareXIGenericDeviceEvent(xcb_ge_event_t *event, int opCode);
-    static bool xi2GetButtonState(void *event, int buttonNum);
 #endif
 
     xcb_connection_t *m_connection;

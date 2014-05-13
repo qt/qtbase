@@ -2501,10 +2501,14 @@ QFontDatabase::findFont(int script, const QFontPrivate *fp,
 
     if (!engine) {
         if (!request.family.isEmpty()) {
+            QFont::StyleHint styleHint = QFont::StyleHint(request.styleHint);
+            if (styleHint == QFont::AnyStyle && request.fixedPitch)
+                styleHint = QFont::TypeWriter;
+
             QStringList fallbacks = request.fallBackFamilies
                                   + fallbackFamilies(request.family,
                                                      QFont::Style(request.style),
-                                                     QFont::StyleHint(request.styleHint),
+                                                     styleHint,
                                                      QChar::Script(script));
             if (script > QChar::Script_Common)
                 fallbacks += QString(); // Find the first font matching the specified script.

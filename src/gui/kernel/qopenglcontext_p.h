@@ -171,7 +171,9 @@ public:
     template <typename T>
     T *value(QOpenGLContext *context) {
         QOpenGLContextGroup *group = context->shareGroup();
-        QMutexLocker locker(&group->d_func()->m_mutex);
+        // Have to use our own mutex here, not the group's, since
+        // m_groups has to be protected too against any concurrent access.
+        QMutexLocker locker(&m_mutex);
         T *resource = static_cast<T *>(group->d_func()->m_resources.value(this, 0));
         if (!resource) {
             resource = new T(context);
@@ -183,6 +185,7 @@ public:
 private:
     QAtomicInt active;
     QList<QOpenGLContextGroup *> m_groups;
+    QMutex m_mutex;
 };
 
 class QPaintEngineEx;

@@ -67,12 +67,12 @@
 #include "qqnxvirtualkeyboardbps.h"
 #elif defined(QQNX_PPS)
 #include "qqnxnavigatorpps.h"
+#include "qqnxnavigatoreventnotifier.h"
 #include "qqnxvirtualkeyboardpps.h"
 #endif
 
 #if defined(QQNX_PPS)
 #  include "qqnxbuttoneventnotifier.h"
-#  include "qqnxnavigatoreventnotifier.h"
 #  include "qqnxclipboard.h"
 
 #  if defined(QQNX_IMF)
@@ -284,7 +284,7 @@ QQnxIntegration::~QQnxIntegration()
 #endif
 
     // Stop/destroy navigator event notifier
-#if defined(QQNX_PPS)
+#if !defined(Q_OS_BLACKBERRY) && defined(QQNX_PPS)
     delete m_navigatorEventNotifier;
 #endif
     delete m_navigatorEventHandler;

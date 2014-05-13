@@ -91,6 +91,10 @@ QtCore
  - QLibraryInfo provides information on how Qt was built.
  - Added class QMarginsF to support handling margins with floating-point
    values.
+ - The setSharable() and isSharable() functions in Qt containers has
+   been deprecated and will be removed in Qt 6. New applications should
+   not use this feature, while old applications that may be using this
+   (undocumented) feature should port away from it.
 
  - Atomic support:
    * Added more operations to the atomic classes, including operator T(),
@@ -222,6 +226,9 @@ QtGui
    EGL
  - [QTBUG-36993] Native (that is, not distance field based) text
    rendering is now functional on OpenGL 3.2+ core profiles too.
+ - The function QOpenGLShaderProgram::create() has been added. It is can
+   be used to force immediate allocation of the program's id.
+ - QFont::setRawName() and QFont::rawName() were deprecated.
 
  - Accessibility:
    * [QTBUG-37204] Implemented text attributes to enable VoiceOver to read
@@ -285,8 +292,6 @@ QtNetwork
 QtPrintSupport
 --------------
 
- - [QTBUG-29663] Made the Qt buildsystem automatically include the
-   necessary plugins so that static applications can print.
  - CUPS 1.4 is now required for print support on Linux and other *nix
    platforms.
 
@@ -309,18 +314,28 @@ QtPrintSupport
 QtSql
 -----
 
- - QSqlQuery::isNull(field) now correctly returns true for "no such field".
- - QSqlQuery::isNull(fieldname) is a new overload.
- - [QTBUG-12186] Fixed the order of values with positional binding in a
-   QSqlQuery
+ - QSqlError:
+   * Now handles alphanumeric error codes. Used by QPSQL.  Old numeric
+     code is deprecated.
+
+ - QSqlQuery:
+   * isNull(field) now correctly returns true for "no such field".
+   * isNull(fieldname) is a new overload.
+   * [QTBUG-12186] Fixed order of values with positional binding.
+
+ - QSqlTableModel:
+   * [QTBUG-38509] Fix failure to refresh in selectRow()
+
+ - QIBASE:
+   * [QTBUG-37508] Fix QByteArray memory corruption in QIBaseDriver::open().
+   * Support for prepared queries in numRowsAffected().
+
+ - QODBC:
+   * [QTBUG-37831] Fix access of tmpStorage in QODBCResult::exec().
 
  - QSQLITE:
    * Creating temporary databases is now possible
    * Empty database name now opens in-memory database.
-
- - QSqlError
-   * Now handles alphanumeric error codes. Used by QPSQL.  Old numeric
-     code is deprecated.
 
 QtTest
 ------
@@ -430,8 +445,6 @@ QtWidgets
 Android
 -------
 
- - [QTBUG-34781] Fixed regression in "make install" on library projects on
-   Android so they can be used inside subdirs projects again.
  - [QTBUG-36074] Fixed crash on populating large combo boxes or menus.
  - [QTBUG-36528] Fixed QDir::entryList() for assets scheme to no longer
    skip the first file in the directory.
@@ -513,3 +526,36 @@ qdbus
    trying to display remote interfaces that had complex types without a
    matching base Qt type.
 
+configure & build system
+------------------------
+
+ - Configure's -separate-debug-info option is now checked more strictly.
+ - Added configure [-no]-imf options for QNX.
+ - Added unsupported linux-libc++-clang and freebsd-clang mkspecs.
+ - Numerous configuration-specific build fixes.
+
+qmake
+-----
+
+ - QTPLUGIN will now be automatically populated with the plugins that are
+   typically needed by the used Qt modules.
+ - qmake will not create dependencies on system headers any more, provided it
+   detects the system include paths.
+ - Added DISTCLEAN_DEPS variable analogous to CLEAN_DEPS.
+ - Added function $$getenv() which is equivalent to using the $$() expansion,
+   but permits various qmake meta characters in the name.
+ - [MacOS] QMAKE_BUNDLEID_PREFIX is now recognized by the Makefile generator.
+ - [QTBUG-29939][MSVC2012+] Added Windows XP target support.
+ - [QTBUG-35570][VS2012+] Fixed bad ProgramDataBaseFileName.
+ - [QTBUG-38066][VS2010+] Fixed version suffix being appended to applications.
+ - [QTBUG-31185][VS] The PlatformToolset environment variable is now honored.
+ - [QTBUG-34781][Android] Fixed regression in "make install" on library projects
+   so they can be used inside subdirs projects again.
+ - [QTBUG-37113] Fixed creation of excessively long relative paths, which
+   would lead to errors with MSVC. Note that this does not fix all such cases.
+
+qlalr
+-----
+
+ - (Re-)added to Qt base. Added corresponding qmake feature file.
+   Caveat: the generated files are not scanned for dependencies.

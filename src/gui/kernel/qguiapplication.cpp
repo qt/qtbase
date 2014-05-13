@@ -466,7 +466,14 @@ static QWindowGeometrySpecification windowGeometrySpecification;
 
     \section1 Supported Command Line Options
 
-    All Qt programs automatically support the following command line options:
+    All Qt programs automatically support a set of command-line options that
+    allow modifying the way Qt will interact with the windowing system. Some of
+    the options are also accessible via environment variables, which are the
+    preferred form if the application can launch GUI sub-processes or other
+    applications (environment variables will be inherited by child processes).
+    When in doubt, use the environment variables.
+
+    The options currently supported are the following:
     \list
 
         \li \c{-platform} \e {platformName[:options]}, specifies the
@@ -489,19 +496,22 @@ static QWindowGeometrySpecification windowGeometrySpecification;
         \li \c {-qwindowgeometry} \e geometry, specifies window geometry for
             the main window using the X11-syntax. For example:
             \c {-qwindowgeometry 100x100+50+50}
+        \li \c {-qwindowicon}, sets the default window icon
+        \li \c {-qwindowtitle}, sets the title of the first window
         \li \c{-reverse}, sets the application's layout direction to
-            Qt::RightToLeft
+            Qt::RightToLeft. This option is intended to aid debugging and should
+            not be used in production. The default value is automatically detected
+            from the user's locale (see also QLocale::textDirection()).
         \li \c{-session} \e session, restores the application from an earlier
             \l{Session Management}{session}.
-        \li  -qwindowgeometry, sets the geometry of the first window
-        \li  -qwindowtitle, sets the title of the first window
-        \li  -qwindowicon, sets the default window icon
     \endlist
 
     The following standard command line options are available for X11:
 
     \list
         \li \c {-display} \e {hostname:screen_number}, switches displays on X11.
+
+             Overrides the \c DISPLAY environment variable.
         \li \c {-geometry} \e geometry, same as \c {-qwindowgeometry}.
     \endlist
 

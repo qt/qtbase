@@ -2143,18 +2143,26 @@ char *toHexRepresentation(const char *ba, int length)
 char *toPrettyUnicode(const ushort *p, int length)
 {
     // keep it simple for the vast majority of cases
-    QScopedArrayPointer<char> buffer(new char[length * 6 + 3]);
+    bool trimmed = false;
+    QScopedArrayPointer<char> buffer(new char[256]);
     const ushort *end = p + length;
     char *dst = buffer.data();
 
     *dst++ = '"';
     for ( ; p != end; ++p) {
+        if (dst - buffer.data() > 245) {
+            // plus the the quote, the three dots and NUL, it's 250, 251 or 255
+            trimmed = true;
+            break;
+        }
+
         if (*p < 0x7f && *p >= 0x20 && *p != '\\') {
             *dst++ = *p;
             continue;
         }
 
         // write as an escape sequence
+        // this means we may advance dst to buffer.data() + 246 or 250
         *dst++ = '\\';
         switch (*p) {
         case 0x22:
@@ -2186,6 +2194,11 @@ char *toPrettyUnicode(const ushort *p, int length)
     }
 
     *dst++ = '"';
+    if (trimmed) {
+        *dst++ = '.';
+        *dst++ = '.';
+        *dst++ = '.';
+    }
     *dst++ = '\0';
     return buffer.take();
 }

@@ -1,0 +1,31 @@
+From 9632c57033b514bfb10a0dfa7ba51ec27a944616 Mon Sep 17 00:00:00 2001
+From: Andrew Knight <andrew.knight@digia.com>
+Date: Tue, 6 May 2014 13:35:14 +0300
+Subject: [PATCH] ANGLE D3D11: Don't use mipmaps in level 9 textures
+
+As the mipmaps levels aren't being generated on level 9, they shouldn't
+be used. Fall back to multisampled textures instead (which is the
+behavior for non-power-of-two textures anyway). This fixes an issue in
+which textured polygons (e.g. QML Images) turn black when scaled down.
+
+Change-Id: I648b8be473dc38f4e1b26724cbaff610e586fdbd
+---
+ src/3rdparty/angle/src/libGLESv2/renderer/d3d11/TextureStorage11.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/TextureStorage11.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/TextureStorage11.cpp
+index fdfbe52..0c981ac 100644
+--- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/TextureStorage11.cpp
++++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/TextureStorage11.cpp
+@@ -257,7 +257,7 @@ TextureStorage11_2D::TextureStorage11_2D(Renderer *renderer, int levels, GLenum
+         D3D11_TEXTURE2D_DESC desc;
+         desc.Width = width;      // Compressed texture size constraints?
+         desc.Height = height;
+-        desc.MipLevels = (levels > 0) ? levels + mLodOffset : 0;
++        desc.MipLevels = mRenderer->getFeatureLevel() >= D3D_FEATURE_LEVEL_10_0 ? ((levels > 0) ? levels + mLodOffset : 0) : 1;
+         desc.ArraySize = 1;
+         desc.Format = mTextureFormat;
+         desc.SampleDesc.Count = 1;
+-- 
+1.9.0.msysgit.0
+

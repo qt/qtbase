@@ -559,6 +559,9 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition
     QImage im(br.width.ceil().toInt(), br.height.ceil().toInt(), imageFormat);
     im.fill(0);
 
+    if (!im.width() || !im.height())
+        return im;
+
 #ifndef Q_OS_IOS
     CGColorSpaceRef colorspace = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
 #else
@@ -568,9 +571,11 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition
 #ifdef kCGBitmapByteOrder32Host //only needed because CGImage.h added symbols in the minor version
     cgflags |= kCGBitmapByteOrder32Host;
 #endif
+
     CGContextRef ctx = CGBitmapContextCreate(im.bits(), im.width(), im.height(),
                                              8, im.bytesPerLine(), colorspace,
                                              cgflags);
+    Q_ASSERT(ctx);
     CGContextSetFontSize(ctx, fontDef.pixelSize);
     CGContextSetShouldAntialias(ctx, (aa || fontDef.pointSize > antialiasingThreshold)
                                  && !(fontDef.styleStrategy & QFont::NoAntialias));

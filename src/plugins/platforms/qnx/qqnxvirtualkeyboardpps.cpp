@@ -128,15 +128,16 @@ bool QQnxVirtualKeyboardPps::connect()
     m_fd = ::open(ms_PPSPath, O_RDWR);
     if (m_fd == -1)
     {
-        qCritical("QQnxVirtualKeyboard: Unable to open \"%s\" for keyboard: %s (%d).",
-                ms_PPSPath, strerror(errno), errno);
+        qVirtualKeyboardDebug() << Q_FUNC_INFO << ": Unable to open" << ms_PPSPath
+                                               << ":" << strerror(errno);
         close();
         return false;
     }
 
     m_buffer = new char[ms_bufferSize];
     if (!m_buffer) {
-        qCritical("QQnxVirtualKeyboard: Unable to allocate buffer of %d bytes. Size is unavailable.",  ms_bufferSize);
+        qCritical("QQnxVirtualKeyboard: Unable to allocate buffer of %d bytes. "
+                  "Size is unavailable.",  ms_bufferSize);
         return false;
     }
 
@@ -156,7 +157,7 @@ bool QQnxVirtualKeyboardPps::queryPPSInfo()
 
     // Request info, requires id to regenerate res message.
     pps_encoder_add_string(m_encoder, "msg", "info");
-    pps_encoder_add_string(m_encoder, "id", "libWebView");
+    pps_encoder_add_string(m_encoder, "id", "1");
 
     return writeCurrentPPSEncoder();
 }
@@ -220,7 +221,6 @@ void QQnxVirtualKeyboardPps::ppsDataReady()
 void QQnxVirtualKeyboardPps::handleKeyboardInfoMessage()
 {
     int newHeight = 0;
-    const char *value;
 
     if (pps_decoder_push(m_decoder, "dat") != PPS_DECODER_OK) {
         qCritical("QQnxVirtualKeyboard: Keyboard PPS dat object not found");
@@ -230,27 +230,9 @@ void QQnxVirtualKeyboardPps::handleKeyboardInfoMessage()
         qCritical("QQnxVirtualKeyboard: Keyboard PPS size field not found");
         return;
     }
-    if (pps_decoder_push(m_decoder, "locale") != PPS_DECODER_OK) {
-        qCritical("QQnxVirtualKeyboard: Keyboard PPS locale object not found");
-        return;
-    }
-    if (pps_decoder_get_string(m_decoder, "languageId", &value) != PPS_DECODER_OK) {
-        qCritical("QQnxVirtualKeyboard: Keyboard PPS languageId field not found");
-        return;
-    }
-    const QString languageId = QString::fromLatin1(value);
-    if (pps_decoder_get_string(m_decoder, "countryId", &value) != PPS_DECODER_OK) {
-        qCritical("QQnxVirtualKeyboard: Keyboard PPS size countryId not found");
-        return;
-    }
-    const QString countryId = QString::fromLatin1(value);
-
     setHeight(newHeight);
 
-    const QLocale locale = QLocale(languageId + QLatin1Char('_') + countryId);
-    setLocale(locale);
-
-    qVirtualKeyboardDebug() << Q_FUNC_INFO << "size=" << newHeight << "locale=" << locale;
+    qVirtualKeyboardDebug() << Q_FUNC_INFO << "size=" << newHeight;
 }
 
 bool QQnxVirtualKeyboardPps::showKeyboard()
