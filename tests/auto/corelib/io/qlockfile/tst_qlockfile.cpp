@@ -44,6 +44,9 @@
 #include <QtConcurrentRun>
 #include <qlockfile.h>
 #include <qtemporarydir.h>
+#if defined(Q_OS_UNIX) && !defined(Q_OS_VXWORKS)
+#include <unistd.h>
+#endif
 
 class tst_QLockFile : public QObject
 {
@@ -365,9 +368,12 @@ void tst_QLockFile::staleLockRace()
 
 void tst_QLockFile::noPermissions()
 {
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN)
     // A readonly directory still allows us to create files, on Windows.
     QSKIP("No permission testing on Windows");
+#elif defined(Q_OS_UNIX) && !defined(Q_OS_VXWORKS)
+    if (::geteuid() == 0)
+        QSKIP("Test is not applicable with root privileges");
 #endif
     // Restore permissions so that the QTemporaryDir cleanup can happen
     class PermissionRestorer
