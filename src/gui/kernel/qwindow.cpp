@@ -1522,6 +1522,9 @@ void QWindow::resize(const QSize &newSize)
 void QWindow::destroy()
 {
     Q_D(QWindow);
+    if (!d->platformWindow)
+        return;
+
     QObjectList childrenWindows = children();
     for (int i = 0; i < childrenWindows.size(); i++) {
         QObject *object = childrenWindows.at(i);
@@ -1790,6 +1793,9 @@ bool QWindow::close()
     // Do not close non top level windows
     if (parent())
         return false;
+
+    if (!d->platformWindow)
+        return true;
 
     if (QGuiApplicationPrivate::focus_window == this)
         QGuiApplicationPrivate::focus_window = 0;
