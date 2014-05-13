@@ -47,9 +47,8 @@
 #include <qdir.h>
 #include <qset.h>
 
-#if defined(Q_OS_UNIX)
-# include <unistd.h> // for geteuid
-# include <sys/types.h>
+#if defined(Q_OS_UNIX) && !defined(Q_OS_VXWORKS)
+#include <unistd.h> // for geteuid
 #endif
 
 #if defined(Q_OS_WIN)
@@ -199,6 +198,10 @@ void tst_QSaveFile::transactionalWriteNoPermissionsOnDir_data()
 void tst_QSaveFile::transactionalWriteNoPermissionsOnDir()
 {
 #ifdef Q_OS_UNIX
+#if !defined(Q_OS_VXWORKS)
+    if (::geteuid() == 0)
+        QSKIP("Test is not applicable with root privileges");
+#endif
     QFETCH(bool, directWriteFallback);
     QTemporaryDir dir;
     QVERIFY(dir.isValid());
@@ -253,6 +256,10 @@ void tst_QSaveFile::transactionalWriteNoPermissionsOnDir()
 
 void tst_QSaveFile::transactionalWriteNoPermissionsOnFile()
 {
+#if defined(Q_OS_UNIX) && !defined(Q_OS_VXWORKS)
+    if (::geteuid() == 0)
+        QSKIP("Test is not applicable with root privileges");
+#endif
     // Setup an existing but readonly file
     QTemporaryDir dir;
     QVERIFY(dir.isValid());
@@ -299,6 +306,10 @@ void tst_QSaveFile::transactionalWriteCanceled()
 
 void tst_QSaveFile::transactionalWriteErrorRenaming()
 {
+#if defined(Q_OS_UNIX) && !defined(Q_OS_VXWORKS)
+    if (::geteuid() == 0)
+        QSKIP("Test is not applicable with root privileges");
+#endif
     QTemporaryDir dir;
     QVERIFY(dir.isValid());
     const QString targetFile = dir.path() + QString::fromLatin1("/outfile");
