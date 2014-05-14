@@ -721,9 +721,7 @@ void QCocoaEventDispatcherPrivate::beginModalSession(QWindow *window)
 {
     // We need to start spinning the modal session. Usually this is done with
     // QDialog::exec() for Qt Widgets based applications, but for others that
-    // just call show(), we need to interrupt(). We call this here, before
-    // setting currentModalSessionCached to zero, so that interrupt() calls
-    // [NSApp abortModal] if another modal session is currently running
+    // just call show(), we need to interrupt().
     Q_Q(QCocoaEventDispatcher);
     q->interrupt();
 
@@ -759,10 +757,7 @@ void QCocoaEventDispatcherPrivate::endModalSession(QWindow *window)
             info.window = 0;
             if (i + endedSessions == stackSize-1) {
                 // The top sessions ended. Interrupt the event dispatcher to
-                // start spinning the correct session immediately. Like in
-                // beginModalSession(), we call interrupt() before clearing
-                // currentModalSessionCached to make sure we stop any currently
-                // running modal session with [NSApp abortModal]
+                // start spinning the correct session immediately.
                 q->interrupt();
                 currentModalSessionCached = 0;
                 cleanupModalSessionsNeeded = true;
@@ -935,23 +930,16 @@ void QCocoaEventDispatcher::interrupt()
 {
     Q_D(QCocoaEventDispatcher);
     d->interrupt = true;
-    if (d->currentModalSessionCached) {
-        // If a modal session is active, abort it so that we can clean it up
-        // later. We can't use [NSApp stopModal] here, because we do not know
-        // where the interrupt() came from.
-        [NSApp abortModal];
-    } else {
-        wakeUp();
+    wakeUp();
 
-        // We do nothing more here than setting d->interrupt = true, and
-        // poke the event loop if it is sleeping. Actually stopping
-        // NSApp, or the current modal session, is done inside the send
-        // posted events callback. We do this to ensure that all current pending
-        // cocoa events gets delivered before we stop. Otherwise, if we now stop
-        // the last event loop recursion, cocoa will just drop pending posted
-        // events on the floor before we get a chance to reestablish a new session.
-        d->cancelWaitForMoreEvents();
-    }
+    // We do nothing more here than setting d->interrupt = true, and
+    // poke the event loop if it is sleeping. Actually stopping
+    // NSApp, or the current modal session, is done inside the send
+    // posted events callback. We do this to ensure that all current pending
+    // cocoa events gets delivered before we stop. Otherwise, if we now stop
+    // the last event loop recursion, cocoa will just drop pending posted
+    // events on the floor before we get a chance to reestablish a new session.
+    d->cancelWaitForMoreEvents();
 }
 
 void QCocoaEventDispatcher::flush()
