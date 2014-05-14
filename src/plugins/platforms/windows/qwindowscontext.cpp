@@ -827,7 +827,7 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         // TODO: Release/regrab mouse if a popup has mouse grab.
         return false;
     case QtWindows::DestroyEvent:
-        if (!platformWindow->testFlag(QWindowsWindow::WithinDestroy)) {
+        if (platformWindow && !platformWindow->testFlag(QWindowsWindow::WithinDestroy)) {
             qWarning() << "External WM_DESTROY received for " << platformWindow->window()
                        << ", parent: " << platformWindow->window()->parent()
                        << ", transient parent: " << platformWindow->window()->transientParent();
