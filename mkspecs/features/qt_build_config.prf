@@ -34,8 +34,12 @@ QMAKE_DIR_REPLACE_SANE = PRECOMPILED_DIR OBJECTS_DIR MOC_DIR RCC_DIR UI_DIR
 
 !build_pass:!isEmpty(_QMAKE_SUPER_CACHE_):force_independent {
     # When doing a -prefix build of top-level qt5/qt.pro, we need to announce
-    # this repo's module pris' location to the other repos.
-    isEmpty(MODULE_QMAKE_OUTDIR): MODULE_QMAKE_OUTDIR = $$shadowed($$dirname(_QMAKE_CONF_))
+    # this repo's output dir to the other repos.
+    MODULE_BASE_OUTDIR = $$shadowed($$dirname(_QMAKE_CONF_))
+    !contains(QTREPOS, $$MODULE_BASE_OUTDIR): \
+        cache(QTREPOS, add super, MODULE_BASE_OUTDIR)
+    # This repo's module pris' location needs to be made known to qmake.
+    isEmpty(MODULE_QMAKE_OUTDIR): MODULE_QMAKE_OUTDIR = $$MODULE_BASE_OUTDIR
     modpath = $$MODULE_QMAKE_OUTDIR/mkspecs/modules
     !contains(QMAKEMODULES, $$modpath): \
         cache(QMAKEMODULES, add super, modpath)
