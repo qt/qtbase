@@ -89,6 +89,8 @@
 #include <QtCore/QDebug>
 #include <QtCore/QVariant>
 
+#include <limits.h>
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -166,6 +168,29 @@ struct QWindowsIntegrationPrivate
     QWindowsServices m_services;
 };
 
+template <typename IntType>
+bool parseIntOption(const QString &parameter,const QLatin1String &option,
+                    IntType minimumValue, IntType maximumValue, IntType *target)
+{
+    const int valueLength = parameter.size() - option.size() - 1;
+    if (valueLength < 1 || !parameter.startsWith(option) || parameter.at(option.size()) != QLatin1Char('='))
+        return false;
+    bool ok;
+    const QStringRef valueRef = parameter.rightRef(valueLength);
+    const int value = valueRef.toInt(&ok);
+    if (ok) {
+        if (value >= minimumValue && value <= maximumValue)
+            *target = static_cast<IntType>(value);
+        else {
+            qWarning() << "Value" << value << "for option" << option << "out of range"
+                << minimumValue << ".." << maximumValue;
+        }
+    } else {
+        qWarning() << "Invalid value" << valueRef << "for option" << option;
+    }
+    return true;
+}
+
 static inline unsigned parseOptions(const QStringList &paramList,
                                     int *tabletAbsoluteRange,
                                     QtWindows::ProcessDpiAwareness *dpiAwareness)
@@ -188,12 +213,11 @@ static inline unsigned parseOptions(const QStringList &paramList,
             options |= QWindowsIntegration::DisableArb;
         } else if (param == QLatin1String("nomousefromtouch")) {
             options |= QWindowsIntegration::DontPassOsMouseEventsSynthesizedFromTouch;
-        } else if (param.startsWith(QLatin1String("verbose="))) {
-            QWindowsContext::verbose = param.right(param.size() - 8).toInt();
-        } else if (param.startsWith(QLatin1String("tabletabsoluterange="))) {
-            *tabletAbsoluteRange = param.rightRef(param.size() - 20).toInt();
-        } else if (param.startsWith(QLatin1String("dpiawareness="))) {
-            *dpiAwareness = static_cast<QtWindows::ProcessDpiAwareness>(param.rightRef(param.size() - 13).toInt());
+        } else if (parseIntOption(param, QLatin1String("verbose"), 0, INT_MAX, &QWindowsContext::verbose)
+            || parseIntOption(param, QLatin1String("tabletabsoluterange"), 0, INT_MAX, tabletAbsoluteRange)
+            || parseIntOption(param, QLatin1String("dpiawareness"), QtWindows::ProcessDpiUnaware, QtWindows::ProcessPerMonitorDpiAware, dpiAwareness)) {
+        } else {
+            qWarning() << "Unknown option" << param;
         }
     }
     return options;
