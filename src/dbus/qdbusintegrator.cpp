@@ -42,6 +42,7 @@
 #include "qdbusintegrator_p.h"
 
 #include <qcoreapplication.h>
+#include <qelapsedtimer.h>
 #include <qdebug.h>
 #include <qmetaobject.h>
 #include <qobject.h>
@@ -1932,9 +1933,95 @@ int QDBusConnectionPrivate::send(const QDBusMessage& message)
     return serial;
 }
 
+// small helper to note long running blocking dbus calls.
+// these are generally a sign of fragile software (too long a call can either
+// lead to bad user experience, if it's running on the GUI thread for instance)
+// or break completely under load (hitting the call timeout).
+//
+// as a result, this is something we want to watch for.
+class QDBusBlockingCallWatcher
+{
+public:
+    QDBusBlockingCallWatcher(const QDBusMessage &message)
+        : m_message(message), m_maxCallTimeoutMs(0)
+    {
+#if defined(QT_NO_DEBUG)
+        // when in a release build, we default these to off.
+        // this means that we only affect code that explicitly enables the warning.
+        static int mainThreadWarningAmount = -1;
+        static int otherThreadWarningAmount = -1;
+#else
+        static int mainThreadWarningAmount = 200;
+        static int otherThreadWarningAmount = 500;
+#endif
+        static bool initializedAmounts = false;
+        static QBasicMutex initializeMutex;
+        QMutexLocker locker(&initializeMutex);
+
+        if (!initializedAmounts) {
+            int tmp = 0;
+            QByteArray env;
+            bool ok = true;
+
+            env = qgetenv("Q_DBUS_BLOCKING_CALL_MAIN_THREAD_WARNING_MS");
+            if (!env.isEmpty()) {
+                tmp = env.toInt(&ok);
+                if (ok)
+                    mainThreadWarningAmount = tmp;
+                else
+                    qWarning("QDBusBlockingCallWatcher: Q_DBUS_BLOCKING_CALL_MAIN_THREAD_WARNING_MS must be an integer; value ignored");
+            }
+
+            env = qgetenv("Q_DBUS_BLOCKING_CALL_OTHER_THREAD_WARNING_MS");
+            if (!env.isEmpty()) {
+                tmp = env.toInt(&ok);
+                if (ok)
+                    otherThreadWarningAmount = tmp;
+                else
+                    qWarning("QDBusBlockingCallWatcher: Q_DBUS_BLOCKING_CALL_OTHER_THREAD_WARNING_MS must be an integer; value ignored");
+            }
+
+            initializedAmounts = true;
+        }
+
+        locker.unlock();
+
+        // if this call is running on the main thread, we have a much lower
+        // tolerance for delay because any long-term delay will wreck user
+        // interactivity.
+        if (qApp && qApp->thread() == QThread::currentThread())
+            m_maxCallTimeoutMs = mainThreadWarningAmount;
+        else
+            m_maxCallTimeoutMs = otherThreadWarningAmount;
+
+        m_callTimer.start();
+    }
+
+    ~QDBusBlockingCallWatcher()
+    {
+        if (m_maxCallTimeoutMs < 0)
+            return; // disabled
+
+        if (m_callTimer.elapsed() >= m_maxCallTimeoutMs) {
+            qWarning("QDBusConnection: warning: blocking call took a long time (%d ms, max for this thread is %d ms) to service \"%s\" path \"%s\" interface \"%s\" member \"%s\"",
+                     int(m_callTimer.elapsed()), m_maxCallTimeoutMs,
+                     qPrintable(m_message.service()), qPrintable(m_message.path()),
+                     qPrintable(m_message.interface()), qPrintable(m_message.member()));
+        }
+    }
+
+private:
+    QDBusMessage m_message;
+    int m_maxCallTimeoutMs;
+    QElapsedTimer m_callTimer;
+};
+
+
 QDBusMessage QDBusConnectionPrivate::sendWithReply(const QDBusMessage &message,
                                                    int sendMode, int timeout)
 {
+    QDBusBlockingCallWatcher watcher(message);
+
     checkThread();
     if ((sendMode == QDBus::BlockWithGui || sendMode == QDBus::Block)
          && isServiceRegisteredByThread(message.service()))
