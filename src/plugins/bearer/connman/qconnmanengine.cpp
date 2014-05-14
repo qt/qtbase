@@ -186,7 +186,7 @@ void QConnmanEngine::connectToId(const QString &id)
 
     QConnmanServiceInterface *serv = connmanServiceInterfaces.value(id);
 
-    if (!serv->isValid()) {
+    if (!serv || !serv->isValid()) {
         emit connectionError(id, QBearerEngineImpl::InterfaceLookupError);
     } else {
         if (serv->type() == QLatin1String("cellular")) {
@@ -211,7 +211,7 @@ void QConnmanEngine::disconnectFromId(const QString &id)
     QMutexLocker locker(&mutex);
     QConnmanServiceInterface *serv = connmanServiceInterfaces.value(id);
 
-    if (!serv->isValid()) {
+    if (!serv || !serv->isValid()) {
         emit connectionError(id, DisconnectionError);
     } else {
         serv->disconnect();
@@ -263,6 +263,8 @@ QNetworkSession::State QConnmanEngine::sessionStateForId(const QString &id)
 
     QString service = id;
     QConnmanServiceInterface *serv = connmanServiceInterfaces.value(service);
+    if (!serv)
+        return QNetworkSession::Invalid;
 
     QString servState = serv->state();
 
@@ -368,6 +370,8 @@ void QConnmanEngine::serviceStateChanged(const QString &state)
 
 void QConnmanEngine::configurationChange(QConnmanServiceInterface *serv)
 {
+    if (!serv)
+        return;
     QMutexLocker locker(&mutex);
     QString id = serv->path();
 
@@ -409,8 +413,10 @@ QNetworkConfiguration::StateFlags QConnmanEngine::getStateForService(const QStri
 {
     QMutexLocker locker(&mutex);
     QConnmanServiceInterface *serv = connmanServiceInterfaces.value(service);
-    QString state = serv->state();
+    if (!serv)
+        return QNetworkConfiguration::Undefined;
 
+    QString state = serv->state();
     QNetworkConfiguration::StateFlags flag = QNetworkConfiguration::Defined;
 
     if (serv->type() == QLatin1String("cellular")) {
