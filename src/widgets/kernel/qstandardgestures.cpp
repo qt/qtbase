@@ -331,7 +331,7 @@ QGestureRecognizer::Result QSwipeGestureRecognizer::recognize(QGesture *state,
             int elapsedTime = d->time.restart();
             if (!elapsedTime)
                 elapsedTime = 1;
-            d->velocityValue = 0.9 * d->velocityValue + distance / elapsedTime;
+            d->velocityValue = 0.9 * d->velocityValue + (qreal) distance / elapsedTime;
             d->swipeAngle = QLineF(p1.startScreenPos(), p1.screenPos()).angle();
 
             static const int MoveThreshold = 50;

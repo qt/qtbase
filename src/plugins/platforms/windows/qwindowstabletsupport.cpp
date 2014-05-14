@@ -458,8 +458,8 @@ bool QWindowsTabletSupport::translateTabletPacketEvent()
             // Z = sin(altitude)
             // X Tilt = arctan(X / Z)
             // Y Tilt = arctan(Y / Z)
-            const double radAzim = (packet.pkOrientation.orAzimuth / 10) * (M_PI / 180);
-            const double tanAlt = tan((abs(packet.pkOrientation.orAltitude / 10)) * (M_PI / 180));
+            const double radAzim = (packet.pkOrientation.orAzimuth / 10.0) * (M_PI / 180);
+            const double tanAlt = tan((abs(packet.pkOrientation.orAltitude / 10.0)) * (M_PI / 180));
 
             const double degX = atan(sin(radAzim) / tanAlt);
             const double degY = atan(cos(radAzim) / tanAlt);
