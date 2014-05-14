@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -105,7 +105,7 @@ public:
     virtual QPoint pos() const { return mousePosition(); }
     virtual void setPos(const QPoint &pos);
 
-    static HCURSOR createPixmapCursor(const QPixmap &pixmap, int hotX, int hotY);
+    static HCURSOR createPixmapCursor(const QPixmap &pixmap, const QPoint &hotSpot);
     static HCURSOR createSystemCursor(const QCursor &c);
     static QPoint mousePosition();
     static CursorState cursorState();

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -98,7 +98,7 @@ QWindowsCursorCacheKey::QWindowsCursorCacheKey(const QCursor &c)
     \sa QWindowsWindowCursor
 */
 
-HCURSOR QWindowsCursor::createPixmapCursor(const QPixmap &pixmap, int hotX, int hotY)
+HCURSOR QWindowsCursor::createPixmapCursor(const QPixmap &pixmap, const QPoint &hotSpot)
 {
     HCURSOR cur = 0;
     QBitmap mask = pixmap.mask();
@@ -112,8 +112,8 @@ HCURSOR QWindowsCursor::createPixmapCursor(const QPixmap &pixmap, int hotX, int 
 
     ICONINFO ii;
     ii.fIcon     = 0;
-    ii.xHotspot  = hotX;
-    ii.yHotspot  = hotY;
+    ii.xHotspot  = hotSpot.x();
+    ii.yHotspot  = hotSpot.y();
     ii.hbmMask   = im;
     ii.hbmColor  = ic;
 
@@ -124,20 +124,120 @@ HCURSOR QWindowsCursor::createPixmapCursor(const QPixmap &pixmap, int hotX, int 
     return cur;
 }
 
-HCURSOR QWindowsCursor::createSystemCursor(const QCursor &c)
+// Create a cursor from image and mask of the format QImage::Format_Mono.
+static HCURSOR createBitmapCursor(const QImage &bbits, const QImage &mbits,
+                                  QPoint hotSpot = QPoint(),
+                                  bool invb = false, bool invm = false)
 {
-    int hx = c.hotSpot().x();
-    int hy = c.hotSpot().y();
-    const Qt::CursorShape cshape = c.shape();
-    if (cshape == Qt::BitmapCursor) {
-        const QPixmap pixmap = c.pixmap();
-        if (!pixmap.isNull())
-            if (const HCURSOR hc = createPixmapCursor(pixmap, hx, hy))
-                return hc;
+    const int width = bbits.width();
+    const int height = bbits.height();
+    if (hotSpot.isNull())
+        hotSpot = QPoint(width / 2, height / 2);
+    const int n = qMax(1, width / 8);
+#if !defined(Q_OS_WINCE)
+    QScopedArrayPointer<uchar> xBits(new uchar[height * n]);
+    QScopedArrayPointer<uchar> xMask(new uchar[height * n]);
+    int x = 0;
+    for (int i = 0; i < height; ++i) {
+        const uchar *bits = bbits.scanLine(i);
+        const uchar *mask = mbits.scanLine(i);
+        for (int j = 0; j < n; ++j) {
+            uchar b = bits[j];
+            uchar m = mask[j];
+            if (invb)
+                b ^= 0xff;
+            if (invm)
+                m ^= 0xff;
+            xBits[x] = ~m;
+            xMask[x] = b ^ m;
+            ++x;
+        }
+    }
+    return CreateCursor(GetModuleHandle(0), hotSpot.x(), hotSpot.y(), width, height,
+                        xBits.data(), xMask.data());
+#elif defined(GWES_ICONCURS) // Q_OS_WINCE
+    // Windows CE only supports fixed cursor size.
+    int sysW = GetSystemMetrics(SM_CXCURSOR);
+    int sysH = GetSystemMetrics(SM_CYCURSOR);
+    int sysN = qMax(1, sysW / 8);
+    uchar* xBits = new uchar[sysH * sysN];
+    uchar* xMask = new uchar[sysH * sysN];
+    int x = 0;
+    for (int i = 0; i < sysH; ++i) {
+        if (i >= height) {
+            memset(&xBits[x] , 255, sysN);
+            memset(&xMask[x] ,   0, sysN);
+            x += sysN;
+        } else {
+            int fillWidth = n > sysN ? sysN : n;
+            const uchar *bits = bbits.scanLine(i);
+            const uchar *mask = mbits.scanLine(i);
+            for (int j = 0; j < fillWidth; ++j) {
+                uchar b = bits[j];
+                uchar m = mask[j];
+                if (invb)
+                    b ^= 0xFF;
+                if (invm)
+                    m ^= 0xFF;
+                xBits[x] = ~m;
+                xMask[x] = b ^ m;
+                ++x;
+            }
+            for (int j = fillWidth; j < sysN; ++j ) {
+                xBits[x] = 255;
+                xMask[x] = 0;
+                ++x;
+            }
+        }
     }
 
-    // Non-standard Windows cursors are created from bitmaps
+    HCURSOR hcurs = CreateCursor(qWinAppInst(), hotSpot.x(), hotSpot.y(), sysW, sysH,
+                                 xBits, xMask);
+    delete [] xBits;
+    delete [] xMask;
+    return hcurs;
+#else
+    Q_UNUSED(n);
+    Q_UNUSED(invm);
+    Q_UNUSED(invb);
+    Q_UNUSED(mbits);
+    return 0;
+#endif
+}
 
+static HCURSOR createBitmapCursorFromData(int size, const uchar *bits, const uchar *maskBits)
+{
+    const QImage rawImage = QBitmap::fromData(QSize(size, size), bits).toImage();
+    const QImage rawMaskImage = QBitmap::fromData(QSize(size, size), maskBits).toImage();
+    return createBitmapCursor(rawImage.convertToFormat(QImage::Format_Mono),
+                              rawMaskImage.convertToFormat(QImage::Format_Mono));
+}
+
+struct QWindowsStandardCursorMapping {
+    Qt::CursorShape shape;
+    LPCWSTR resource;
+};
+
+HCURSOR QWindowsCursor::createSystemCursor(const QCursor &c)
+{
+    static const QWindowsStandardCursorMapping standardCursors[] = {
+        { Qt::ArrowCursor, IDC_ARROW},
+        { Qt::UpArrowCursor, IDC_UPARROW },
+        { Qt::CrossCursor, IDC_CROSS },
+        { Qt::WaitCursor, IDC_WAIT },
+        { Qt::IBeamCursor, IDC_IBEAM },
+        { Qt::SizeVerCursor, IDC_SIZENS },
+        { Qt::SizeHorCursor, IDC_SIZEWE },
+        { Qt::SizeBDiagCursor, IDC_SIZENESW },
+        { Qt::SizeFDiagCursor, IDC_SIZENWSE },
+        { Qt::SizeAllCursor, IDC_SIZEALL },
+        { Qt::ForbiddenCursor, IDC_NO },
+        { Qt::WhatsThisCursor, IDC_HELP },
+        { Qt::BusyCursor, IDC_APPSTARTING },
+        { Qt::PointingHandCursor, IDC_HAND }
+    };
+
+    // Non-standard Windows cursors are created from bitmaps
     static const uchar vsplit_bits[] = {
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -203,171 +303,53 @@ HCURSOR QWindowsCursor::createSystemCursor(const QCursor &c)
         0xf0,0x7f,0xf8,0x7f,0xfc,0x7f,0xfc,0x3f,0xf8,0x3f,0xf0,0x1f,
         0xe0,0x1f,0xe0,0x1f,0x00,0x00,0x00,0x00};
 
-    wchar_t *sh = 0;
-    switch (c.shape()) {                        // map to windows cursor
-    case Qt::ArrowCursor:
-        sh = IDC_ARROW;
-        break;
-    case Qt::UpArrowCursor:
-        sh = IDC_UPARROW;
-        break;
-    case Qt::CrossCursor:
-        sh = IDC_CROSS;
-        break;
-    case Qt::WaitCursor:
-        sh = IDC_WAIT;
-        break;
-    case Qt::IBeamCursor:
-        sh = IDC_IBEAM;
-        break;
-    case Qt::SizeVerCursor:
-        sh = IDC_SIZENS;
-        break;
-    case Qt::SizeHorCursor:
-        sh = IDC_SIZEWE;
-        break;
-    case Qt::SizeBDiagCursor:
-        sh = IDC_SIZENESW;
-        break;
-    case Qt::SizeFDiagCursor:
-        sh = IDC_SIZENWSE;
-        break;
-    case Qt::SizeAllCursor:
-        sh = IDC_SIZEALL;
-        break;
-    case Qt::ForbiddenCursor:
-        sh = IDC_NO;
-        break;
-    case Qt::WhatsThisCursor:
-        sh = IDC_HELP;
-        break;
-    case Qt::BusyCursor:
-        sh = IDC_APPSTARTING;
-        break;
-    case Qt::PointingHandCursor:
-        sh = IDC_HAND;
-        break;
-    case Qt::BlankCursor:
-    case Qt::SplitVCursor:
-    case Qt::SplitHCursor:
-    case Qt::OpenHandCursor:
-    case Qt::ClosedHandCursor:
+    const Qt::CursorShape cursorShape = c.shape();
+    switch (cursorShape) {
     case Qt::BitmapCursor: {
-        QImage bbits, mbits;
-        bool invb, invm;
-        if (cshape == Qt::BlankCursor) {
-            bbits = QImage(32, 32, QImage::Format_Mono);
-            bbits.fill(0);                // ignore color table
-            mbits = bbits.copy();
-            hx = hy = 16;
-            invb = invm = false;
-        } else if (cshape == Qt::OpenHandCursor || cshape == Qt::ClosedHandCursor) {
-            bool open = cshape == Qt::OpenHandCursor;
-            QBitmap cb = QBitmap::fromData(QSize(16, 16), open ? openhand_bits : closedhand_bits);
-            QBitmap cm = QBitmap::fromData(QSize(16, 16), open ? openhandm_bits : closedhandm_bits);
-            bbits = cb.toImage().convertToFormat(QImage::Format_Mono);
-            mbits = cm.toImage().convertToFormat(QImage::Format_Mono);
-            hx = hy = 8;
-            invb = invm = false;
-        } else if (cshape == Qt::BitmapCursor) {
-            bbits = c.bitmap()->toImage().convertToFormat(QImage::Format_Mono);
-            mbits = c.mask()->toImage().convertToFormat(QImage::Format_Mono);
-            invb = bbits.colorCount() > 1 && qGray(bbits.color(0)) < qGray(bbits.color(1));
-            invm = mbits.colorCount() > 1 && qGray(mbits.color(0)) < qGray(mbits.color(1));
-        } else { // Qt::SplitVCursor, Qt::SplitHCursor
-            const QBitmap cb = QBitmap::fromData(QSize(32, 32), cshape == Qt::SplitVCursor ? vsplit_bits : hsplit_bits);
-            const QBitmap cm = QBitmap::fromData(QSize(32, 32), cshape == Qt::SplitVCursor ? vsplitm_bits : hsplitm_bits);
-            bbits = cb.toImage().convertToFormat(QImage::Format_Mono);
-            mbits = cm.toImage().convertToFormat(QImage::Format_Mono);
-            hx = hy = 16;
-            invb = invm = false;
-        }
-        const int n = qMax(1, bbits.width() / 8);
-        const int h = bbits.height();
-#if !defined(Q_OS_WINCE)
-        QScopedArrayPointer<uchar> xBits(new uchar[h * n]);
-        QScopedArrayPointer<uchar> xMask(new uchar[h * n]);
-        int x = 0;
-        for (int i = 0; i < h; ++i) {
-            uchar *bits = bbits.scanLine(i);
-            uchar *mask = mbits.scanLine(i);
-            for (int j = 0; j < n; ++j) {
-                uchar b = bits[j];
-                uchar m = mask[j];
-                if (invb)
-                    b ^= 0xff;
-                if (invm)
-                    m ^= 0xff;
-                xBits[x] = ~m;
-                xMask[x] = b ^ m;
-                ++x;
-            }
-        }
-        return CreateCursor(GetModuleHandle(0), hx, hy, bbits.width(), bbits.height(),
-                            xBits.data(), xMask.data());
-#elif defined(GWES_ICONCURS) // Q_WS_WINCE
-        // Windows CE only supports fixed cursor size.
-        int sysW = GetSystemMetrics(SM_CXCURSOR);
-        int sysH = GetSystemMetrics(SM_CYCURSOR);
-        int sysN = qMax(1, sysW / 8);
-        uchar* xBits = new uchar[sysH * sysN];
-        uchar* xMask = new uchar[sysH * sysN];
-        int x = 0;
-        for (int i = 0; i < sysH; ++i) {
-            if (i >= h) {
-                memset(&xBits[x] , 255, sysN);
-                memset(&xMask[x] ,   0, sysN);
-                x += sysN;
-            } else {
-                int fillWidth = n > sysN ? sysN : n;
-                uchar *bits = bbits.scanLine(i);
-                uchar *mask = mbits.scanLine(i);
-                for (int j = 0; j < fillWidth; ++j) {
-                    uchar b = bits[j];
-                    uchar m = mask[j];
-                    if (invb)
-                        b ^= 0xFF;
-                    if (invm)
-                        m ^= 0xFF;
-                    xBits[x] = ~m;
-                    xMask[x] = b ^ m;
-                    ++x;
-                }
-                for (int j = fillWidth; j < sysN; ++j ) {
-                    xBits[x] = 255;
-                    xMask[x] = 0;
-                    ++x;
-                }
-            }
-        }
-
-        HCURSOR hcurs = CreateCursor(qWinAppInst(), hx, hy, sysW, sysH,
-                                   xBits, xMask);
-        delete [] xBits;
-        delete [] xMask;
-        return hcurs;
-#else
-        Q_UNUSED(n);
-        Q_UNUSED(h);
-        return 0;
-#endif
-
+        const QPixmap pixmap = c.pixmap();
+        if (!pixmap.isNull())
+            return QWindowsCursor::createPixmapCursor(pixmap, c.hotSpot());
+        const QImage bbits = c.bitmap()->toImage().convertToFormat(QImage::Format_Mono);
+        const QImage mbits = c.mask()->toImage().convertToFormat(QImage::Format_Mono);
+        const bool invb = bbits.colorCount() > 1 && qGray(bbits.color(0)) < qGray(bbits.color(1));
+        const bool invm = mbits.colorCount() > 1 && qGray(mbits.color(0)) < qGray(mbits.color(1));
+        return createBitmapCursor(bbits, mbits, c.hotSpot(), invb, invm);
     }
+    case Qt::BlankCursor: {
+        QImage blank = QImage(32, 32, QImage::Format_Mono);
+        blank.fill(0); // ignore color table
+        return createBitmapCursor(blank, blank);
+    }
+    case Qt::SplitVCursor:
+        return createBitmapCursorFromData(32, vsplit_bits, vsplitm_bits);
+    case Qt::SplitHCursor:
+        return createBitmapCursorFromData(32, hsplit_bits, hsplitm_bits);
+    case Qt::OpenHandCursor:
+        return createBitmapCursorFromData(16, openhand_bits, openhandm_bits);
+    case Qt::ClosedHandCursor:
+        return createBitmapCursorFromData(16, closedhand_bits, closedhandm_bits);
     case Qt::DragCopyCursor:
     case Qt::DragMoveCursor:
-    case Qt::DragLinkCursor: {
-        const QPixmap pixmap = QGuiApplicationPrivate::instance()->getPixmapCursor(cshape);
-        return createPixmapCursor(pixmap, hx, hy);
-    }
+    case Qt::DragLinkCursor:
+        return createPixmapCursor(QGuiApplicationPrivate::instance()->getPixmapCursor(cursorShape), c.hotSpot());
     default:
-        qWarning("%s: Invalid cursor shape %d", __FUNCTION__, cshape);
-        return 0;
+        break;
     }
-#ifdef Q_OS_WINCE
-    return LoadCursor(0, sh);
+
+    // Load available standard cursors from resources
+    const QWindowsStandardCursorMapping *sEnd = standardCursors + sizeof(standardCursors) / sizeof(standardCursors[0]);
+    for (const QWindowsStandardCursorMapping *s = standardCursors; s < sEnd; ++s) {
+        if (s->shape == cursorShape) {
+#ifndef Q_OS_WINCE
+            return (HCURSOR)LoadImage(0, s->resource, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
 #else
-    return (HCURSOR)LoadImage(0, sh, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
+            return LoadCursor(0, s->resource);
 #endif
+        }
+    }
+
+    qWarning("%s: Invalid cursor shape %d", __FUNCTION__, cursorShape);
+    return 0;
 }
 
 /*!
