@@ -4631,32 +4631,28 @@ void tst_QWidget::windowMoveResize()
 
         QTest::qWait(10);
         QTRY_COMPARE(widget.pos(), rect.topLeft());
-        if (m_platform == QStringLiteral("windows")) {
-            QEXPECT_FAIL("130,100 0x200, flags 0", "QTBUG-26424", Continue);
-            QEXPECT_FAIL("130,50 0x0, flags 0", "QTBUG-26424", Continue);
-        }
-        QTRY_COMPARE(widget.size(), rect.size());
+        // Windows: Minimum size of decorated windows.
+        const bool expectResizeFail = (!windowFlags && (rect.width() < 160 || rect.height() < 40))
+            && m_platform == QStringLiteral("windows");
+        if (!expectResizeFail)
+            QTRY_COMPARE(widget.size(), rect.size());
 
         // move() while shown
         foreach (const QRect &r, rects) {
-            if (m_platform == QStringLiteral("xcb")
-               && ((widget.width() == 0 || widget.height() == 0) && r.width() != 0 && r.height() != 0)) {
-                QEXPECT_FAIL("130,100 0x200, flags 0",
-                             "First resize after show of zero-sized gets wrong win_gravity.",
-                             Continue);
-                QEXPECT_FAIL("100,50 200x0, flags 0",
-                             "First resize after show of zero-sized gets wrong win_gravity.",
-                             Continue);
-                QEXPECT_FAIL("130,50 0x0, flags 0",
-                             "First resize after show of zero-sized gets wrong win_gravity.",
-                             Continue);
-            }
-
+            // XCB: First resize after show of zero-sized gets wrong win_gravity.
+            const bool expectMoveFail = !windowFlags
+                && ((widget.width() == 0 || widget.height() == 0) && r.width() != 0 && r.height() != 0)
+                && m_platform == QStringLiteral("xcb")
+                && (rect == QRect(QPoint(130, 100), QSize(0, 200))
+                    || rect == QRect(QPoint(100, 50), QSize(200, 0))
+                    || rect == QRect(QPoint(130, 50), QSize(0, 0)));
             widget.move(r.topLeft());
             widget.resize(r.size());
             QApplication::processEvents();
-            QTRY_COMPARE(widget.pos(), r.topLeft());
-            QTRY_COMPARE(widget.size(), r.size());
+            if (!expectMoveFail) {
+                QTRY_COMPARE(widget.pos(), r.topLeft());
+                QTRY_COMPARE(widget.size(), r.size());
+            }
         }
         widget.move(rect.topLeft());
         widget.resize(rect.size());

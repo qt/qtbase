@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -90,7 +90,7 @@ public:
             return false;
         }
 
-        ComPtr<IDXGIDevice> dxgiDevice;
+        ComPtr<IDXGIDevice1> dxgiDevice;
         ComPtr<IDXGIAdapter> dxgiAdapter;
 
         hr = d3dDevice.As(&dxgiDevice);
@@ -98,6 +98,9 @@ public:
             qWarning("%s: DXGI Device interface query failed on D3D Device: %#x", __FUNCTION__, hr);
             return false;
         }
+
+        // Ensure that DXGI doesn't queue more than one frame at a time.
+        dxgiDevice->SetMaximumFrameLatency(1);
 
         hr = dxgiDevice->GetAdapter(&dxgiAdapter);
         if (FAILED(hr)) {

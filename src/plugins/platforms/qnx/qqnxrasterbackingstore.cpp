@@ -41,6 +41,8 @@
 
 #include "qqnxrasterbackingstore.h"
 #include "qqnxrasterwindow.h"
+#include "qqnxscreen.h"
+#include "qqnxglobal.h"
 
 #include <QtCore/QDebug>
 
@@ -167,6 +169,25 @@ void QQnxRasterBackingStore::beginPaint(const QRegion &region)
     m_hasUnflushedPaintOperations = true;
 
     platformWindow()->adjustBufferSize();
+
+    if (window()->requestedFormat().alphaBufferSize() != 0) {
+        foreach (const QRect &r, region.rects()) {
+            // Clear transparent regions
+            const int bg[] = {
+                               SCREEN_BLIT_COLOR, 0x00000000,
+                               SCREEN_BLIT_DESTINATION_X, r.x(),
+                               SCREEN_BLIT_DESTINATION_Y, r.y(),
+                               SCREEN_BLIT_DESTINATION_WIDTH, r.width(),
+                               SCREEN_BLIT_DESTINATION_HEIGHT, r.height(),
+                               SCREEN_BLIT_END
+                              };
+            Q_SCREEN_CHECKERROR(screen_fill(platformWindow()->screen()->nativeContext(),
+                                            platformWindow()->renderBuffer().nativeBuffer(), bg),
+                                "failed to clear transparent regions");
+        }
+        Q_SCREEN_CHECKERROR(screen_flush_blits(platformWindow()->screen()->nativeContext(), 0),
+                            "failed to flush blits");
+    }
 }
 
 void QQnxRasterBackingStore::endPaint()

@@ -214,20 +214,21 @@ init_context:
     }
 
     // Add all our CAs to this store.
-    QList<QSslCertificate> expiredCerts;
     foreach (const QSslCertificate &caCertificate, sslContext->sslConfiguration.caCertificates()) {
-        // add expired certs later, so that the
-        // valid ones are used before the expired ones
-        if (caCertificate.expiryDate() < QDateTime::currentDateTime()) {
-            expiredCerts.append(caCertificate);
-        } else {
+        // From https://www.openssl.org/docs/ssl/SSL_CTX_load_verify_locations.html:
+        //
+        // If several CA certificates matching the name, key identifier, and
+        // serial number condition are available, only the first one will be
+        // examined. This may lead to unexpected results if the same CA
+        // certificate is available with different expiration dates. If a
+        // ``certificate expired'' verification error occurs, no other
+        // certificate will be searched. Make sure to not have expired
+        // certificates mixed with valid ones.
+        //
+        // See also: QSslSocketBackendPrivate::verify()
+        if (caCertificate.expiryDate() >= QDateTime::currentDateTime()) {
             q_X509_STORE_add_cert(sslContext->ctx->cert_store, (X509 *)caCertificate.handle());
         }
-    }
-
-    // now add the expired certs
-    foreach (const QSslCertificate &caCertificate, expiredCerts) {
-        q_X509_STORE_add_cert(sslContext->ctx->cert_store, reinterpret_cast<X509 *>(caCertificate.handle()));
     }
 
     if (QSslSocketPrivate::s_loadRootCertsOnDemand && allowRootCertOnDemandLoading) {

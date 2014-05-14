@@ -2177,6 +2177,7 @@ QAction *QMenu::exec()
 QAction *QMenu::exec(const QPoint &p, QAction *action)
 {
     Q_D(QMenu);
+    ensurePolished();
     createWinId();
     QEventLoop eventLoop;
     d->eventLoop = &eventLoop;

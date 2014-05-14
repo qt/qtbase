@@ -382,8 +382,7 @@ public:
     inline D2D1_INTERPOLATION_MODE interpolationMode() const
     {
         Q_Q(const QWindowsDirect2DPaintEngine);
-        // XXX are we choosing the right d2d interpolation modes?
-        return (q->state()->renderHints & QPainter::SmoothPixmapTransform) ? D2D1_INTERPOLATION_MODE_HIGH_QUALITY_CUBIC
+        return (q->state()->renderHints & QPainter::SmoothPixmapTransform) ? D2D1_INTERPOLATION_MODE_LINEAR
                                                                            : D2D1_INTERPOLATION_MODE_NEAREST_NEIGHBOR;
     }
 

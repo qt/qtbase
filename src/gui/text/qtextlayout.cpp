@@ -2810,7 +2810,6 @@ int QTextLine::xToCursor(qreal _x, CursorPosition cpos) const
                                 break;
                             glyph_pos = gs;
                             edge = pos;
-                            break;
                         }
                         pos -= glyphs.effectiveAdvance(gs);
                         ++gs;

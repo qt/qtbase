@@ -1405,7 +1405,8 @@ void QOpenGLSharedResourceGuard::freeResource(QOpenGLContext *context)
     QOpenGLMultiGroupSharedResource instance.
 */
 QOpenGLMultiGroupSharedResource::QOpenGLMultiGroupSharedResource()
-    : active(0)
+    : active(0),
+      m_mutex(QMutex::Recursive)
 {
 #ifdef QT_GL_CONTEXT_RESOURCE_DEBUG
     qDebug("Creating context group resource object %p.", this);
