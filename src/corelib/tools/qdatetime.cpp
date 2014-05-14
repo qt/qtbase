@@ -257,7 +257,7 @@ static QString toOffsetString(Qt::DateFormat format, int offset)
 }
 
 // Parse offset in [+-]HH[:]MM format
-static int fromOffsetString(const QString &offsetString, bool *valid)
+static int fromOffsetString(const QStringRef &offsetString, bool *valid)
 {
     *valid = false;
 
@@ -278,15 +278,15 @@ static int fromOffsetString(const QString &offsetString, bool *valid)
         return 0;
 
     // Split the hour and minute parts
-    QStringList parts = offsetString.mid(1).split(QLatin1Char(':'));
+    QVector<QStringRef> parts = offsetString.mid(1).split(QLatin1Char(':'));
     if (parts.count() == 1) {
         // [+-]HHMM format
-        parts.append(parts.at(0).mid(2));
-        parts[0] = parts.at(0).left(2);
+        parts.append(parts.first().mid(2));
+        parts[0] = parts.first().left(2);
     }
 
     bool ok = false;
-    const int hour = parts.at(0).toInt(&ok);
+    const int hour = parts.first().toInt(&ok);
     if (!ok)
         return 0;
 
@@ -1255,12 +1255,12 @@ QDate QDate::fromString(const QString& string, Qt::DateFormat format)
     default:
 #ifndef QT_NO_TEXTDATE
     case Qt::TextDate: {
-        QStringList parts = string.split(QLatin1Char(' '), QString::SkipEmptyParts);
+        QVector<QStringRef> parts = string.splitRef(QLatin1Char(' '), QString::SkipEmptyParts);
 
         if (parts.count() != 4)
             return QDate();
 
-        QString monthName = parts.at(1);
+        QStringRef monthName = parts.at(1);
         int month = -1;
         // Assume that English monthnames are the default
         for (int i = 0; i < 12; ++i) {
@@ -4358,7 +4358,7 @@ int QDateTime::utcOffset() const
 
 #ifndef QT_NO_DATESTRING
 
-static int fromShortMonthName(const QString &monthName)
+static int fromShortMonthName(const QStringRef &monthName)
 {
     // Assume that English monthnames are the default
     for (int i = 0; i < 12; ++i) {
@@ -4450,7 +4450,7 @@ QDateTime QDateTime::fromString(const QString& string, Qt::DateFormat format)
 
             if (found) {
                 bool ok;
-                offset = fromOffsetString(isoString.mid(signIndex).toString(), &ok);
+                offset = fromOffsetString(isoString.mid(signIndex), &ok);
                 if (!ok)
                     return QDateTime();
                 isoString = isoString.left(signIndex);
@@ -4470,7 +4470,7 @@ QDateTime QDateTime::fromString(const QString& string, Qt::DateFormat format)
     }
 #if !defined(QT_NO_TEXTDATE)
     case Qt::TextDate: {
-        QStringList parts = string.split(QLatin1Char(' '), QString::SkipEmptyParts);
+        QVector<QStringRef> parts = string.splitRef(QLatin1Char(' '), QString::SkipEmptyParts);
 
         if ((parts.count() < 5) || (parts.count() > 6))
             return QDateTime();
@@ -4489,9 +4489,9 @@ QDateTime QDateTime::fromString(const QString& string, Qt::DateFormat format)
         if (!month || !day) {
             month = fromShortMonthName(parts.at(2));
             if (month) {
-                QString dayStr = parts.at(1);
+                QStringRef dayStr = parts.at(1);
                 if (dayStr.endsWith(QLatin1Char('.'))) {
-                    dayStr.chop(1);
+                    dayStr = dayStr.left(dayStr.size() - 1);
                     day = dayStr.toInt();
                 }
             }
@@ -4524,7 +4524,7 @@ QDateTime QDateTime::fromString(const QString& string, Qt::DateFormat format)
         if (!date.isValid())
             return QDateTime();
 
-        QStringList timeParts = parts.at(timePart).split(QLatin1Char(':'));
+        QVector<QStringRef> timeParts = parts.at(timePart).split(QLatin1Char(':'));
         if (timeParts.count() < 2 || timeParts.count() > 3)
             return QDateTime();
 
@@ -4539,7 +4539,7 @@ QDateTime QDateTime::fromString(const QString& string, Qt::DateFormat format)
         int second = 0;
         int millisecond = 0;
         if (timeParts.count() > 2) {
-            QStringList secondParts = timeParts.at(2).split(QLatin1Char('.'));
+            QVector<QStringRef> secondParts = timeParts.at(2).split(QLatin1Char('.'));
             if (secondParts.size() > 2) {
                 return QDateTime();
             }
@@ -4564,10 +4564,10 @@ QDateTime QDateTime::fromString(const QString& string, Qt::DateFormat format)
         if (parts.count() == 5)
             return QDateTime(date, time, Qt::LocalTime);
 
-        QString tz = parts.at(5);
+        QStringRef tz = parts.at(5);
         if (!tz.startsWith(QLatin1String("GMT"), Qt::CaseInsensitive))
             return QDateTime();
-        tz.remove(0, 3);
+        tz = tz.mid(3);
         if (!tz.isEmpty()) {
             int offset = fromOffsetString(tz, &ok);
             if (!ok)
