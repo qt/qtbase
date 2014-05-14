@@ -705,9 +705,9 @@ static void writeProxy(const QString &filename, const QDBusIntrospection::Interf
 
             if (isNoReply)
                 hs << "        callWithArgumentList(QDBus::NoBlock, "
-                   <<  "QLatin1String(\"" << method.name << "\"), argumentList);" << endl;
+                   <<  "QStringLiteral(\"" << method.name << "\"), argumentList);" << endl;
             else
-                hs << "        return asyncCallWithArgumentList(QLatin1String(\""
+                hs << "        return asyncCallWithArgumentList(QStringLiteral(\""
                    << method.name << "\"), argumentList);" << endl;
 
             // close the function:
@@ -737,7 +737,7 @@ static void writeProxy(const QString &filename, const QDBusIntrospection::Interf
                 }
 
                 hs << "        QDBusMessage reply = callWithArgumentList(QDBus::Block, "
-                   <<  "QLatin1String(\"" << method.name << "\"), argumentList);" << endl;
+                   <<  "QStringLiteral(\"" << method.name << "\"), argumentList);" << endl;
 
                 argPos++;
                 hs << "        if (reply.type() == QDBusMessage::ReplyMessage && reply.arguments().count() == "
