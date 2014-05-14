@@ -6669,11 +6669,42 @@ QStringList QString::split(const QString &sep, SplitBehavior behavior, Qt::CaseS
 }
 
 /*!
+    Splits the string into substring references wherever \a sep occurs, and
+    returns the list of those strings. If \a sep does not match
+    anywhere in the string, splitRef() returns a single-element vector
+    containing this string reference.
+
+    \a cs specifies whether \a sep should be matched case
+    sensitively or case insensitively.
+
+    If \a behavior is QString::SkipEmptyParts, empty entries don't
+    appear in the result. By default, empty entries are kept.
+
+    \note All references are valid as long this string is alive. Destroying this
+    string will cause all references be dangling pointers.
+
+    \since 5.4
+    \sa QStringRef split()
+*/
+QVector<QStringRef> QString::splitRef(const QString &sep, SplitBehavior behavior, Qt::CaseSensitivity cs) const
+{
+    return splitString<QVector<QStringRef> >(*this, &QString::midRef, sep, behavior, cs, sep.size());
+}
+/*!
     \overload
 */
 QStringList QString::split(QChar sep, SplitBehavior behavior, Qt::CaseSensitivity cs) const
 {
     return splitString<QStringList>(*this, &QString::mid, sep, behavior, cs, 1);
+}
+
+/*!
+    \overload
+    \since 5.4
+*/
+QVector<QStringRef> QString::splitRef(QChar sep, SplitBehavior behavior, Qt::CaseSensitivity cs) const
+{
+    return splitString<QVector<QStringRef> >(*this, &QString::midRef, sep, behavior, cs, 1);
 }
 
 #ifndef QT_NO_REGEXP
@@ -6728,6 +6759,25 @@ static ResultList splitString(const QString &source, MidMethod mid, const QRegEx
 QStringList QString::split(const QRegExp &rx, SplitBehavior behavior) const
 {
     return splitString<QStringList>(*this, &QString::mid, rx, behavior);
+}
+
+/*!
+    \overload
+    \since 5.4
+
+    Splits the string into substring references wherever the regular expression
+    \a rx matches, and returns the list of those strings. If \a rx
+    does not match anywhere in the string, splitRef() returns a
+    single-element vector containing this string reference.
+
+    \note All references are valid as long this string is alive. Destroying this
+    string will cause all references be dangling pointers.
+
+    \sa QStringRef split()
+*/
+QVector<QStringRef> QString::splitRef(const QRegExp &rx, SplitBehavior behavior) const
+{
+    return splitString<QVector<QStringRef> >(*this, &QString::midRef, rx, behavior);
 }
 #endif
 
@@ -6792,6 +6842,25 @@ static ResultList splitString(const QString &source, MidMethod mid, const QRegul
 QStringList QString::split(const QRegularExpression &re, SplitBehavior behavior) const
 {
     return splitString<QStringList>(*this, &QString::mid, re, behavior);
+}
+
+/*!
+    \overload
+    \since 5.4
+
+    Splits the string into substring references wherever the regular expression
+    \a re matches, and returns the list of those strings. If \a re
+    does not match anywhere in the string, splitRef() returns a
+    single-element vector containing this string reference.
+
+    \note All references are valid as long this string is alive. Destroying this
+    string will cause all references be dangling pointers.
+
+    \sa split() QStringRef
+*/
+QVector<QStringRef> QString::splitRef(const QRegularExpression &re, SplitBehavior behavior) const
+{
+    return splitString<QVector<QStringRef> >(*this, &QString::midRef, re, behavior);
 }
 #endif // QT_BOOTSTRAPPED
 #endif // QT_NO_REGULAREXPRESSION
