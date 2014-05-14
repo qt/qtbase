@@ -738,23 +738,11 @@ void QCocoaEventDispatcherPrivate::beginModalSession(QWindow *window)
     updateChildrenWorksWhenModal();
     currentModalSessionCached = 0;
     if (currentExecIsNSAppRun) {
-        QEvent *e = new QEvent(QEvent::User);
-        qApp->postEvent(q, e, Qt::HighEventPriority);
+        modalSessionOnNSAppRun = true;
+        q->wakeUp();
     } else {
         q->interrupt();
     }
-}
-
-bool QCocoaEventDispatcher::event(QEvent *e)
-{
-    Q_D(QCocoaEventDispatcher);
-
-    if (e->type() == QEvent::User) {
-        d->q_func()->processEvents(QEventLoop::DialogExec | QEventLoop::EventLoopExec | QEventLoop::WaitForMoreEvents);
-        return true;
-    }
-
-    return QObject::event(e);
 }
 
 void QCocoaEventDispatcherPrivate::endModalSession(QWindow *window)
@@ -793,6 +781,7 @@ QCocoaEventDispatcherPrivate::QCocoaEventDispatcherPrivate()
       runLoopTimerRef(0),
       blockSendPostedEvents(false),
       currentExecIsNSAppRun(false),
+      modalSessionOnNSAppRun(false),
       nsAppRunCalledByQt(false),
       cleanupModalSessionsNeeded(false),
       processEventsCalled(0),
@@ -922,6 +911,14 @@ void QCocoaEventDispatcherPrivate::postedEventsSourceCallback(void *info)
     if (d->processEventsCalled && (d->processEventsFlags & QEventLoop::EventLoopExec) == 0) {
         // processEvents() was called "manually," ignore this source for now
         d->maybeCancelWaitForMoreEvents();
+        return;
+    } else if (d->modalSessionOnNSAppRun) {
+        // We're about to spawn the 1st modal session on top of the main runloop.
+        // Instead of calling processPostedEvents(), which would need us stop
+        // NSApp, we just re-enter processEvents(). This is equivalent to calling
+        // QDialog::exec() except that it's done in a non-blocking way.
+        d->modalSessionOnNSAppRun = false;
+        d->q_func()->processEvents(QEventLoop::DialogExec | QEventLoop::EventLoopExec | QEventLoop::WaitForMoreEvents);
         return;
     }
     d->processPostedEvents();
