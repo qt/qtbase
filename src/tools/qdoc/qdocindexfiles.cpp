@@ -536,7 +536,7 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
             }
             else {
                 qDebug() << "NODE:" << node->name() << "GROUPS:" << groupNames;
-                qDebug() << "DID NOT FIND GROUP:" << dn->name() << "for:" << node->name();
+                qDebug() << "DID NOT FIND GROUP for:" << node->name();
             }
         }
     }
