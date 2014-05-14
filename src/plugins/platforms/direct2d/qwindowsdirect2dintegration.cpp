@@ -80,12 +80,12 @@ private:
     {}
 
 public:
-    // 6.2.9200.16765 corresponds to Direct2D 1.1 on Windows 7 SP1 with Platform Update
+    // 6.2.9200.16492 corresponds to Direct2D 1.1 on Windows 7 SP1 with Platform Update
     enum {
         D2DMinVersionPart1 = 6,
         D2DMinVersionPart2 = 2,
         D2DMinVersionPart3 = 9200,
-        D2DMinVersionPart4 = 16765
+        D2DMinVersionPart4 = 16492
     };
 
     static Direct2DVersion systemVersion() {
