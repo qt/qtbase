@@ -43,7 +43,8 @@
 #include "qurl.h"
 #include "private/qurltlds_p.h"
 #include "private/qtldurl_p.h"
-#include "QtCore/qstringlist.h"
+#include "QtCore/qstring.h"
+#include "QtCore/qvector.h"
 #include "QtCore/qhash.h"
 
 QT_BEGIN_NAMESPACE
@@ -80,7 +81,8 @@ static bool containsTLDEntry(const QString &entry)
 
 Q_CORE_EXPORT QString qTopLevelDomain(const QString &domain)
 {
-    QStringList sections = domain.toLower().split(QLatin1Char('.'), QString::SkipEmptyParts);
+    const QString domainLower = domain.toLower();
+    QVector<QStringRef> sections = domainLower.splitRef(QLatin1Char('.'), QString::SkipEmptyParts);
     if (sections.isEmpty())
         return QString();
 
