@@ -93,6 +93,8 @@ private slots:
     void left();
     void right();
     void mid();
+    void split_data();
+    void split();
 };
 
 static QStringRef emptyRef()
@@ -1982,6 +1984,79 @@ void tst_QStringRef::mid()
     QVERIFY(emptyRef.mid(0).isEmpty());
     QVERIFY(emptyRef.mid(0, 3).isEmpty());
     QVERIFY(emptyRef.mid(-10, 3).isEmpty());
+}
+
+static bool operator ==(const QStringList &left, const QVector<QStringRef> &right)
+{
+    if (left.size() != right.size())
+        return false;
+
+    QStringList::const_iterator iLeft = left.constBegin();
+    QVector<QStringRef>::const_iterator iRight = right.constBegin();
+    for (; iLeft != left.end(); ++iLeft, ++iRight) {
+        if (*iLeft != *iRight)
+            return false;
+    }
+    return true;
+}
+static inline bool operator ==(const QVector<QStringRef> &left, const QStringList &right) { return right == left; }
+
+void tst_QStringRef::split_data()
+{
+    QTest::addColumn<QString>("str");
+    QTest::addColumn<QString>("sep");
+    QTest::addColumn<QStringList>("result");
+
+    QTest::newRow("a,b,c") << "a,b,c" << "," << (QStringList() << "a" << "b" << "c");
+    QTest::newRow("a,b,c,a,b,c") << "a,b,c,a,b,c" << "," << (QStringList() << "a" << "b" << "c" << "a" << "b" << "c");
+    QTest::newRow("a,b,c,,a,b,c") << "a,b,c,,a,b,c" << "," << (QStringList() << "a" << "b" << "c" << "" << "a" << "b" << "c");
+    QTest::newRow("2") << QString("-rw-r--r--  1 0  0  519240 Jul  9  2002 bigfile")
+                       << " "
+                       << (QStringList() << "-rw-r--r--" << "" << "1" << "0" << "" << "0" << ""
+                           << "519240" << "Jul" << "" << "9" << "" << "2002" << "bigfile");
+    QTest::newRow("one-empty") << "" << " " << (QStringList() << "");
+    QTest::newRow("two-empty") << " " << " " << (QStringList() << "" << "");
+    QTest::newRow("three-empty") << "  " << " " << (QStringList() << "" << "" << "");
+
+    QTest::newRow("all-empty") << "" << "" << (QStringList() << "" << "");
+    QTest::newRow("all-null") << QString() << QString() << (QStringList() << QString() << QString());
+    QTest::newRow("sep-empty") << "abc" << "" << (QStringList() << "" << "a" << "b" << "c" << "");
+}
+
+void tst_QStringRef::split()
+{
+    QFETCH(QString, str);
+    QFETCH(QString, sep);
+    QFETCH(QStringList, result);
+
+    QVector<QStringRef> list;
+    // we construct a bigger valid string to check
+    // if ref.split is using the right size
+    QString source = str + str + str;
+    QStringRef ref = source.midRef(str.size(), str.size());
+    QCOMPARE(ref.size(), str.size());
+
+    list = ref.split(sep);
+    QVERIFY(list == result);
+    if (sep.size() == 1) {
+        list = ref.split(sep.at(0));
+        QVERIFY(list == result);
+    }
+
+    list = ref.split(sep, QString::KeepEmptyParts);
+    QVERIFY(list == result);
+    if (sep.size() == 1) {
+        list = ref.split(sep.at(0), QString::KeepEmptyParts);
+        QVERIFY(list == result);
+    }
+
+    result.removeAll("");
+    list = ref.split(sep, QString::SkipEmptyParts);
+    QVERIFY(list == result);
+    if (sep.size() == 1) {
+        list = ref.split(sep.at(0), QString::SkipEmptyParts);
+        QVERIFY(list == result);
+    }
 }
 
 QTEST_APPLESS_MAIN(tst_QStringRef)

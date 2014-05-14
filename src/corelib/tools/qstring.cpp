@@ -6625,8 +6625,8 @@ QString QString::number(double n, char f, int prec)
 }
 
 namespace {
-template<class ResultList, typename MidMethod, typename Separator>
-static ResultList splitString(const QString &source, MidMethod mid, const Separator &sep,
+template<class ResultList, class StringSource, typename MidMethod, typename Separtor>
+static ResultList splitString(const StringSource &source, MidMethod mid, const Separtor &sep,
                               QString::SplitBehavior behavior, Qt::CaseSensitivity cs, const int separatorSize)
 {
     ResultList list;
@@ -6705,6 +6705,37 @@ QStringList QString::split(QChar sep, SplitBehavior behavior, Qt::CaseSensitivit
 QVector<QStringRef> QString::splitRef(QChar sep, SplitBehavior behavior, Qt::CaseSensitivity cs) const
 {
     return splitString<QVector<QStringRef> >(*this, &QString::midRef, sep, behavior, cs, 1);
+}
+
+/*!
+    Splits the string into substrings references wherever \a sep occurs, and
+    returns the list of those strings. If \a sep does not match
+    anywhere in the string, split() returns a single-element vector
+    containing this string reference.
+
+    \a cs specifies whether \a sep should be matched case
+    sensitively or case insensitively.
+
+    If \a behavior is QString::SkipEmptyParts, empty entries don't
+    appear in the result. By default, empty entries are kept.
+
+    \note All references are valid as long this string is alive. Destroying this
+    string will cause all references be dangling pointers.
+
+    \since 5.4
+*/
+QVector<QStringRef> QStringRef::split(const QString &sep, QString::SplitBehavior behavior, Qt::CaseSensitivity cs) const
+{
+    return splitString<QVector<QStringRef> >(*this, &QStringRef::mid, sep, behavior, cs, sep.size());
+}
+
+/*!
+    \overload
+    \since 5.4
+*/
+QVector<QStringRef> QStringRef::split(QChar sep, QString::SplitBehavior behavior, Qt::CaseSensitivity cs) const
+{
+    return splitString<QVector<QStringRef> >(*this, &QStringRef::mid, sep, behavior, cs, 1);
 }
 
 #ifndef QT_NO_REGEXP
