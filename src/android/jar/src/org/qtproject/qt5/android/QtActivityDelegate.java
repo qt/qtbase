@@ -170,6 +170,13 @@ public class QtActivityDelegate
         m_layout.requestLayout();
     }
 
+    public void updateFullScreen()
+    {
+        if (m_fullScreen) {
+            m_fullScreen = false;
+            setFullScreen(true);
+        }
+    }
 
     // input method hints - must be kept in sync with QTDIR/src/corelib/global/qnamespace.h
     private final int ImhHiddenText = 0x1;
@@ -213,6 +220,10 @@ public class QtActivityDelegate
             return false;
         m_keyboardIsVisible = visibility;
         QtNative.keyboardVisibilityChanged(m_keyboardIsVisible);
+
+        if (visibility == false)
+            updateFullScreen(); // Hiding the keyboard clears the immersive mode, so we need to set it again.
+
         return true;
     }
     public void resetSoftwareKeyboard()
@@ -721,12 +732,7 @@ public class QtActivityDelegate
                 QtNative.updateApplicationState(ApplicationActive);
                 QtNative.clearLostActions();
                 QtNative.updateWindow();
-
-                if (m_fullScreen) {
-                    // Suspending the app clears the immersive mode, so we need to set it again.
-                    m_fullScreen = false; // Force the setFullScreen() call below to actually do something
-                    setFullScreen(true);
-                }
+                updateFullScreen(); // Suspending the app clears the immersive mode, so we need to set it again.
             }
         }
     }
