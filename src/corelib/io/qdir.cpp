@@ -760,9 +760,13 @@ QString QDir::relativeFilePath(const QString &fileName) const
 #endif
 
     QString result;
+#if defined(Q_OS_WIN)
     QStringList dirElts = dir.split(QLatin1Char('/'), QString::SkipEmptyParts);
     QStringList fileElts = file.split(QLatin1Char('/'), QString::SkipEmptyParts);
-
+#else
+    QVector<QStringRef> dirElts = dir.splitRef(QLatin1Char('/'), QString::SkipEmptyParts);
+    QVector<QStringRef> fileElts = file.splitRef(QLatin1Char('/'), QString::SkipEmptyParts);
+#endif
     int i = 0;
     while (i < dirElts.size() && i < fileElts.size() &&
 #if defined(Q_OS_WIN)
