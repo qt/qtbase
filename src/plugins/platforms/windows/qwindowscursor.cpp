@@ -205,12 +205,33 @@ static HCURSOR createBitmapCursor(const QImage &bbits, const QImage &mbits,
 #endif
 }
 
-static HCURSOR createBitmapCursorFromData(int size, const uchar *bits, const uchar *maskBits)
+static inline QSize systemCursorSize() { return QSize(GetSystemMetrics(SM_CXCURSOR), GetSystemMetrics(SM_CYCURSOR)); }
+static inline QSize standardCursorSize() { return QSize(32, 32); }
+
+// Create pixmap cursors from data and scale the image if the cursor size is
+// higher than the standard 32. Note that bitmap cursors as produced by
+// createBitmapCursor() only work for standard sizes (32,48,64...), which does
+// not work when scaling the 16x16 openhand cursor bitmaps to 150% (resulting
+// in a non-standard 24x24 size).
+static HCURSOR createPixmapCursorFromData(const QSize &systemCursorSize,
+                                          // The cursor size the bitmap is targeted for
+                                          const QSize &bitmapTargetCursorSize,
+                                          // The actual size of the bitmap data
+                                          int bitmapSize, const uchar *bits,
+                                          const uchar *maskBits)
 {
-    const QImage rawImage = QBitmap::fromData(QSize(size, size), bits).toImage();
-    const QImage rawMaskImage = QBitmap::fromData(QSize(size, size), maskBits).toImage();
-    return createBitmapCursor(rawImage.convertToFormat(QImage::Format_Mono),
-                              rawMaskImage.convertToFormat(QImage::Format_Mono));
+    QPixmap rawImage = QPixmap::fromImage(QBitmap::fromData(QSize(bitmapSize, bitmapSize), bits).toImage());
+    rawImage.setMask(QBitmap::fromData(QSize(bitmapSize, bitmapSize), maskBits));
+
+    const qreal factor = qreal(systemCursorSize.width()) / qreal(bitmapTargetCursorSize.width());
+    // Scale images if the cursor size is significantly different, starting with 150% where the system cursor
+    // size is 48.
+    if (qAbs(factor - 1.0) > 0.4) {
+        const QTransform transform = QTransform::fromScale(factor, factor);
+        rawImage = rawImage.transformed(transform, Qt::SmoothTransformation);
+    }
+    const QPoint hotSpot(rawImage.width() / 2, rawImage.height() / 2);
+    return QWindowsCursor::createPixmapCursor(rawImage, hotSpot);
 }
 
 struct QWindowsStandardCursorMapping {
@@ -316,18 +337,18 @@ HCURSOR QWindowsCursor::createSystemCursor(const QCursor &c)
         return createBitmapCursor(bbits, mbits, c.hotSpot(), invb, invm);
     }
     case Qt::BlankCursor: {
-        QImage blank = QImage(32, 32, QImage::Format_Mono);
+        QImage blank = QImage(systemCursorSize(), QImage::Format_Mono);
         blank.fill(0); // ignore color table
         return createBitmapCursor(blank, blank);
     }
     case Qt::SplitVCursor:
-        return createBitmapCursorFromData(32, vsplit_bits, vsplitm_bits);
+        return createPixmapCursorFromData(systemCursorSize(), standardCursorSize(), 32, vsplit_bits, vsplitm_bits);
     case Qt::SplitHCursor:
-        return createBitmapCursorFromData(32, hsplit_bits, hsplitm_bits);
+        return createPixmapCursorFromData(systemCursorSize(), standardCursorSize(), 32, hsplit_bits, hsplitm_bits);
     case Qt::OpenHandCursor:
-        return createBitmapCursorFromData(16, openhand_bits, openhandm_bits);
+        return createPixmapCursorFromData(systemCursorSize(), standardCursorSize(), 16, openhand_bits, openhandm_bits);
     case Qt::ClosedHandCursor:
-        return createBitmapCursorFromData(16, closedhand_bits, closedhandm_bits);
+        return createPixmapCursorFromData(systemCursorSize(), standardCursorSize(), 16, closedhand_bits, closedhandm_bits);
     case Qt::DragCopyCursor:
     case Qt::DragMoveCursor:
     case Qt::DragLinkCursor:
