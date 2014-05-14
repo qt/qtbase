@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -67,14 +67,17 @@ void tst_QScopedValueRollback::leavingScope()
 {
     int i = 0;
     bool b = false;
+    bool b2 = false;
     QString s("This is useful");
 
     //test rollback on going out of scope
     {
         QScopedValueRollback<int> ri(i);
         QScopedValueRollback<bool> rb(b);
+        QScopedValueRollback<bool> rb2(b2, true);
         QScopedValueRollback<QString> rs(s);
         QCOMPARE(b, false);
+        QCOMPARE(b2, true);
         QCOMPARE(i, 0);
         QCOMPARE(s, QString("This is useful"));
         b = true;
@@ -85,6 +88,7 @@ void tst_QScopedValueRollback::leavingScope()
         QCOMPARE(s, QString("Useless"));
     }
     QCOMPARE(b, false);
+    QCOMPARE(b2, false);
     QCOMPARE(i, 0);
     QCOMPARE(s, QString("This is useful"));
 }

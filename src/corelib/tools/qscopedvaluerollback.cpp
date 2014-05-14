@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -67,6 +67,15 @@ QT_BEGIN_NAMESPACE
     \fn QScopedValueRollback::QScopedValueRollback(T &var)
 
     Stores the previous value of \a var internally, for revert on destruction.
+*/
+
+/*!
+    \fn QScopedValueRollback::QScopedValueRollback(T &var, T value)
+
+    Assigns \a value to \ var and stores the previous value of \a var
+    internally, for revert on destruction.
+
+    \since 5.4
 */
 
 /*!
