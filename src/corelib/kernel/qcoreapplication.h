@@ -219,7 +219,6 @@ private:
     friend class QApplicationPrivate;
     friend class QGuiApplication;
     friend class QGuiApplicationPrivate;
-    friend class QETWidget;
     friend class QWidget;
     friend class QWidgetWindow;
     friend class QWidgetPrivate;

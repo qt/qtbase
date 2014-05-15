@@ -294,7 +294,6 @@ private:
     friend QRegion qt_dirtyRegion(QWidget *);
     friend class QWidgetPrivate;
     friend class QWidget;
-    friend class QETWidget;
     friend class QBackingStore;
 };
 

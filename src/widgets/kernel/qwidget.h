@@ -694,7 +694,6 @@ private:
     friend class QPixmap; // for QPixmap::fill()
     friend class QFontMetrics;
     friend class QFontInfo;
-    friend class QETWidget;
     friend class QLayout;
     friend class QWidgetItem;
     friend class QWidgetItemV2;
