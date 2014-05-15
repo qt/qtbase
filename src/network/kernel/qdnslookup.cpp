@@ -283,8 +283,20 @@ QDnsLookup::QDnsLookup(Type type, const QString &name, QObject *parent)
 
 /*!
     \fn QDnsLookup::QDnsLookup(Type type, const QString &name, const QHostAddress &nameserver, QObject *parent)
-    \internal
+    \since 5.4
+    Constructs a QDnsLookup object for the given \a type, \a name and
+    \a nameserver and sets \a parent as the parent object.
 */
+
+QDnsLookup::QDnsLookup(Type type, const QString &name, const QHostAddress &nameserver, QObject *parent)
+    : QObject(*new QDnsLookupPrivate, parent)
+{
+    Q_D(QDnsLookup);
+    qRegisterMetaType<QDnsLookupReply>();
+    d->name = name;
+    d->type = type;
+    d->nameserver = nameserver;
+}
 
 /*!
     Destroys the QDnsLookup object.
