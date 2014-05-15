@@ -2198,14 +2198,10 @@ QList<QGlyphRun> QTextLine::glyphRuns(int from, int length) const
         if (si.analysis.flags >= QScriptAnalysis::TabOrObject)
             continue;
 
-        QPointF pos(iterator.x.toReal(), y);
-        if (from >= 0 && length >= 0 &&
-            (from >= si.position + eng->length(&si)
-             || from + length <= si.position
-             || from + length <= iterator.itemStart
-             || from >= iterator.itemEnd)) {
+        if (from >= 0 && length >= 0 && (from >= iterator.itemEnd || from + length <= iterator.itemStart))
             continue;
-        }
+
+        QPointF pos(iterator.x.toReal(), y);
 
         QFont font;
         QGlyphRun::GlyphRunFlags flags;
@@ -2226,15 +2222,13 @@ QList<QGlyphRun> QTextLine::glyphRuns(int from, int length) const
         }
 
         int relativeFrom = qMax(iterator.itemStart, from) - si.position;
-        int relativeTo = qMin(iterator.itemEnd - 1, from + length - 1) - si.position;
+        int relativeTo = qMin(iterator.itemEnd, from + length) - 1 - si.position;
 
         unsigned short *logClusters = eng->logClusters(&si);
         int glyphsStart = logClusters[relativeFrom];
-        int glyphsEnd = (relativeTo == eng->length(&si))
-                         ? si.num_glyphs - 1
-                         : logClusters[relativeTo];
+        int glyphsEnd = (relativeTo == iterator.itemLength) ? si.num_glyphs - 1 : logClusters[relativeTo];
         // the glyph index right next to the requested range
-        int nextGlyphIndex = relativeTo < eng->length(&si) - 1 ? logClusters[relativeTo + 1] : si.num_glyphs;
+        int nextGlyphIndex = (relativeTo < iterator.itemLength - 1) ? logClusters[relativeTo + 1] : si.num_glyphs;
         if (nextGlyphIndex - 1 > glyphsEnd)
             glyphsEnd = nextGlyphIndex - 1;
         bool startsInsideLigature = relativeFrom > 0 && logClusters[relativeFrom - 1] == glyphsStart;

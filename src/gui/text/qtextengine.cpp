@@ -3478,15 +3478,15 @@ QTextLineItemIterator::QTextLineItemIterator(QTextEngine *_eng, int _lineNum, co
       logicalItem(-1),
       item(-1),
       visualOrder(nItems),
-      levels(nItems),
       selection(_selection)
 {
-    pos_x = x = QFixed::fromReal(pos.x());
+    x = QFixed::fromReal(pos.x());
 
     x += line.x;
 
     x += eng->alignLine(line);
 
+    QVarLengthArray<uchar> levels(nItems);
     for (int i = 0; i < nItems; ++i)
         levels[i] = eng->layoutData->items[i+firstItem].analysis.bidiLevel;
     QTextEngine::bidiReorder(nItems, levels.data(), visualOrder.data());
@@ -3557,7 +3557,7 @@ bool QTextLineItemIterator::getSelectionBounds(QFixed *selectionX, QFixed *selec
             return false;
 
         int start_glyph = logClusters[from];
-        int end_glyph = (to == eng->length(item)) ? si->num_glyphs : logClusters[to];
+        int end_glyph = (to == itemLength) ? si->num_glyphs : logClusters[to];
         QFixed soff;
         QFixed swidth;
         if (si->analysis.bidiLevel %2) {
@@ -3582,7 +3582,7 @@ bool QTextLineItemIterator::getSelectionBounds(QFixed *selectionX, QFixed *selec
         // If the ending character is also part of a ligature, swidth does
         // not contain that part yet, we also need to find out the width of
         // that left part
-        *selectionWidth += eng->offsetInLigature(si, to, eng->length(item), end_glyph);
+        *selectionWidth += eng->offsetInLigature(si, to, itemLength, end_glyph);
     }
     return true;
 }

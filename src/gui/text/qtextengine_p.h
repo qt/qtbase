@@ -676,15 +676,14 @@ struct QTextLineItemIterator
     QTextEngine *eng;
 
     QFixed x;
-    QFixed pos_x;
     const QScriptLine &line;
     QScriptItem *si;
 
-    int lineNum;
-    int lineEnd;
-    int firstItem;
-    int lastItem;
-    int nItems;
+    const int lineNum;
+    const int lineEnd;
+    const int firstItem;
+    const int lastItem;
+    const int nItems;
     int logicalItem;
     int item;
     int itemLength;
@@ -697,7 +696,6 @@ struct QTextLineItemIterator
     QFixed itemWidth;
 
     QVarLengthArray<int> visualOrder;
-    QVarLengthArray<uchar> levels;
 
     const QTextLayout::FormatRange *selection;
 };
