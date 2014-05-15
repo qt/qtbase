@@ -870,7 +870,7 @@ void QCocoaEventDispatcherPrivate::processPostedEvents()
         return;
     }
 
-    if (interrupt) {
+    if (processEventsCalled > 0 && interrupt) {
         if (currentExecIsNSAppRun) {
             // The event dispatcher has been interrupted. But since
             // [NSApplication run] is running the event loop, we
