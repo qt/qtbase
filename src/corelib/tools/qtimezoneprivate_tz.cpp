@@ -958,7 +958,7 @@ QByteArray QTzTimeZonePrivate::systemTimeZoneId() const
 
     // Give up for now and return UTC
     if (ianaId.isEmpty())
-        ianaId = QByteArrayLiteral("UTC");
+        ianaId = utcQByteArray();
 
     return ianaId;
 }

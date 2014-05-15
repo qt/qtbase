@@ -3194,7 +3194,7 @@ QTimeZone QDateTime::timeZone() const
         return d->m_timeZone;
     case Qt::UTC:
         if (!d->m_timeZone.isValid())
-            d->m_timeZone = QTimeZone("UTC");
+            d->m_timeZone = QTimeZone(QTimeZonePrivate::utcQByteArray());
         return d->m_timeZone;
     case Qt::TimeZone :
         return d->m_timeZone;
@@ -3254,9 +3254,9 @@ QString QDateTime::timeZoneAbbreviation() const
 {
     switch (d->m_spec) {
     case Qt::UTC:
-        return QStringLiteral("UTC");
+        return QTimeZonePrivate::utcQString();
     case Qt::OffsetFromUTC:
-        return QLatin1String("UTC") + toOffsetString(Qt::ISODate, d->m_offsetFromUtc);
+        return QTimeZonePrivate::utcQString() + toOffsetString(Qt::ISODate, d->m_offsetFromUtc);
     case Qt::TimeZone:
 #ifndef QT_BOOTSTRAPPED
         return d->m_timeZone.d->abbreviation(d->toMSecsSinceEpoch());

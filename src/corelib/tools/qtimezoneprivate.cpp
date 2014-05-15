@@ -558,8 +558,8 @@ template<> QTimeZonePrivate *QSharedDataPointer<QTimeZonePrivate>::clone()
 // Create default UTC time zone
 QUtcTimeZonePrivate::QUtcTimeZonePrivate()
 {
-    const QString name = QStringLiteral("UTC");
-    init(QByteArrayLiteral("UTC"), 0, name, name, QLocale::AnyCountry, name);
+    const QString name = utcQString();
+    init(utcQByteArray(), 0, name, name, QLocale::AnyCountry, name);
 }
 
 // Create a named UTC time zone
@@ -583,7 +583,7 @@ QUtcTimeZonePrivate::QUtcTimeZonePrivate(qint32 offsetSeconds)
     QString utcId;
 
     if (offsetSeconds == 0)
-        utcId = QStringLiteral("UTC");
+        utcId = utcQString();
     else
         utcId = isoOffsetFormat(offsetSeconds);
 
@@ -675,7 +675,7 @@ qint32 QUtcTimeZonePrivate::daylightTimeOffset(qint64 atMSecsSinceEpoch) const
 
 QByteArray QUtcTimeZonePrivate::systemTimeZoneId() const
 {
-    return QByteArrayLiteral("UTC");
+    return utcQByteArray();
 }
 
 QSet<QByteArray> QUtcTimeZonePrivate::availableTimeZoneIds() const

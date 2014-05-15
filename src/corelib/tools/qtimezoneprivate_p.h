@@ -154,6 +154,17 @@ public:
     static QList<QByteArray> windowsIdToIanaIds(const QByteArray &windowsId,
                                                  QLocale::Country country);
 
+    // returns "UTC" QString and QByteArray
+    static inline QString utcQString() Q_REQUIRED_RESULT
+    {
+        return QStringLiteral("UTC");
+    }
+
+    static inline QByteArray utcQByteArray() Q_REQUIRED_RESULT
+    {
+        return QByteArrayLiteral("UTC");
+    }
+
 protected:
     QByteArray m_id;
 };

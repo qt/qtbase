@@ -249,7 +249,7 @@ static QByteArray windowsSystemZoneId()
     }
 
     // If we can't determine the current ID use UTC
-    return QByteArrayLiteral("UTC");
+    return QTimeZonePrivate::utcQByteArray();
 }
 
 static QDate calculateTransitionLocalDate(const SYSTEMTIME &rule, int year)
@@ -635,7 +635,7 @@ QByteArray QWinTimeZonePrivate::systemTimeZoneId() const
         ianaId = windowsIdToDefaultIanaId(windowsId);
         // If no global default then probably an unknown Windows ID so return UTC
         if (ianaId.isEmpty())
-            return QByteArrayLiteral("UTC");
+            return utcQByteArray();
     }
     return ianaId;
 }
