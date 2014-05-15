@@ -377,8 +377,6 @@ public:
     inline const QRegion &region() const { return m_region; }
 
 protected:
-    friend class QApplication;
-    friend class QCoreApplication;
     QRect m_rect;
     QRegion m_region;
     bool m_erased;
@@ -395,7 +393,6 @@ public:
 protected:
     QPoint p, oldp;
     friend class QApplication;
-    friend class QCoreApplication;
 };
 
 class Q_GUI_EXPORT QExposeEvent : public QEvent
@@ -421,7 +418,6 @@ public:
 protected:
     QSize s, olds;
     friend class QApplication;
-    friend class QCoreApplication;
 };
 
 
@@ -601,7 +597,6 @@ public:
     inline void ignore(const QRect & r) { ignore(); rect = r; }
 
 protected:
-    friend class QApplication;
     QRect rect;
 };
 
