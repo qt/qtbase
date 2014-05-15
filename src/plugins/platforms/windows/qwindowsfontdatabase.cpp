@@ -164,15 +164,18 @@ namespace {
     {
         Q_ASSERT(tagName.size() == 4);
         quint32 tagId = *(reinterpret_cast<const quint32 *>(tagName.constData()));
-
-        if (m_fontData.size() < sizeof(OffsetSubTable) + sizeof(TableDirectory))
+        if (Q_UNLIKELY(m_fontData.size() < sizeof(OffsetSubTable)))
             return 0;
 
         OffsetSubTable *offsetSubTable = reinterpret_cast<OffsetSubTable *>(m_fontData.data());
         TableDirectory *tableDirectory = reinterpret_cast<TableDirectory *>(offsetSubTable + 1);
 
+        quint16 tableCount = qFromBigEndian<quint16>(offsetSubTable->numTables);
+        if (Q_UNLIKELY(quint32(m_fontData.size()) < sizeof(OffsetSubTable) + sizeof(TableDirectory) * tableCount))
+            return 0;
+
         TableDirectory *nameTableDirectoryEntry = 0;
-        for (int i = 0; i < qFromBigEndian<quint16>(offsetSubTable->numTables); ++i, ++tableDirectory) {
+        for (int i = 0; i < tableCount; ++i, ++tableDirectory) {
             if (tableDirectory->identifier == tagId) {
                 nameTableDirectoryEntry = tableDirectory;
                 break;
@@ -190,19 +193,34 @@ namespace {
             nameTableDirectoryEntry = tableDirectoryEntry("name");
 
         if (nameTableDirectoryEntry != 0) {
-            NameTable *nameTable = reinterpret_cast<NameTable *>(
-                m_fontData.data() + qFromBigEndian<quint32>(nameTableDirectoryEntry->offset));
+            quint32 offset = qFromBigEndian<quint32>(nameTableDirectoryEntry->offset);
+            if (Q_UNLIKELY(quint32(m_fontData.size()) < offset + sizeof(NameTable)))
+                return QString();
+
+            NameTable *nameTable = reinterpret_cast<NameTable *>(m_fontData.data() + offset);
             NameRecord *nameRecord = reinterpret_cast<NameRecord *>(nameTable + 1);
-            for (int i = 0; i < qFromBigEndian<quint16>(nameTable->count); ++i, ++nameRecord) {
+
+            quint16 nameTableCount = qFromBigEndian<quint16>(nameTable->count);
+            if (Q_UNLIKELY(quint32(m_fontData.size()) < offset + sizeof(NameRecord) * nameTableCount))
+                return QString();
+
+            for (int i = 0; i < nameTableCount; ++i, ++nameRecord) {
                 if (qFromBigEndian<quint16>(nameRecord->nameID) == 1
                  && qFromBigEndian<quint16>(nameRecord->platformID) == 3 // Windows
                  && qFromBigEndian<quint16>(nameRecord->languageID) == 0x0409) { // US English
+                    quint16 stringOffset = qFromBigEndian<quint16>(nameTable->stringOffset);
+                    quint16 nameOffset = qFromBigEndian<quint16>(nameRecord->offset);
+                    quint16 nameLength = qFromBigEndian<quint16>(nameRecord->length);
+
+                    if (Q_UNLIKELY(quint32(m_fontData.size()) < offset + stringOffset + nameOffset + nameLength))
+                        return QString();
+
                     const void *ptr = reinterpret_cast<const quint8 *>(nameTable)
-                                                        + qFromBigEndian<quint16>(nameTable->stringOffset)
-                                                        + qFromBigEndian<quint16>(nameRecord->offset);
+                                                        + stringOffset
+                                                        + nameOffset;
 
                     const quint16 *s = reinterpret_cast<const quint16 *>(ptr);
-                    const quint16 *e = s + qFromBigEndian<quint16>(nameRecord->length) / sizeof(quint16);
+                    const quint16 *e = s + nameLength / sizeof(quint16);
                     while (s != e)
                         name += QChar( qFromBigEndian<quint16>(*s++));
                     break;
