@@ -415,6 +415,11 @@ bool QCocoaEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
                     // 'session' as well. As a result, we need to restart all internal sessions:
                     d->temporarilyStopAllModalSessions();
                 }
+
+                // Clean up the modal session list, call endModalSession.
+                if (d->cleanupModalSessionsNeeded)
+                    d->cleanupModalSessions();
+
             } else {
                 d->nsAppRunCalledByQt = true;
                 QBoolBlocker execGuard(d->currentExecIsNSAppRun, true);
@@ -441,6 +446,11 @@ bool QCocoaEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
                         // 'session' as well. As a result, we need to restart all internal sessions:
                         d->temporarilyStopAllModalSessions();
                     }
+
+                    // Clean up the modal session list, call endModalSession.
+                    if (d->cleanupModalSessionsNeeded)
+                        d->cleanupModalSessions();
+
                     retVal = true;
                 } else do {
                     // Dispatch all non-user events (but que non-user events up for later). In
@@ -859,9 +869,6 @@ void QCocoaEventDispatcherPrivate::processPostedEvents()
         CFRunLoopSourceSignal(postedEventsSource);
         return;
     }
-
-    if (cleanupModalSessionsNeeded)
-        cleanupModalSessions();
 
     if (interrupt) {
         if (currentExecIsNSAppRun) {
