@@ -94,7 +94,7 @@ public:
 public Q_SLOTS:
     void updateConfigurations();
 
-    static void addPostRoutine();
+    static void addPreAndPostRoutine();
 
 Q_SIGNALS:
     void configurationAdded(const QNetworkConfiguration &config);
