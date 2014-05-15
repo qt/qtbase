@@ -96,6 +96,7 @@ public:
     bool sendThroughApplicationEventFilters(QObject *, QEvent *);
     bool sendThroughObjectEventFilters(QObject *, QEvent *);
     bool notify_helper(QObject *, QEvent *);
+    static inline void setEventSpontaneous(QEvent *e, bool spontaneous) { e->spont = spontaneous; }
 
     virtual void createEventDispatcher();
     virtual void eventDispatcherReady();

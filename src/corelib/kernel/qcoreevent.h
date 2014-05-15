@@ -318,16 +318,10 @@ private:
     friend class QCoreApplicationPrivate;
     friend class QThreadData;
     friend class QApplication;
-    friend class QApplicationPrivate;
     friend class QShortcutMap;
     friend class QGraphicsView;
-    friend class QGraphicsViewPrivate;
     friend class QGraphicsScene;
     friend class QGraphicsScenePrivate;
-    friend class QWidgetWindow;
-#ifndef QT_NO_GESTURES
-    friend class QGestureManager;
-#endif
 };
 
 class Q_CORE_EXPORT QTimerEvent : public QEvent

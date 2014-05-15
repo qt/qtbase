@@ -3505,7 +3505,7 @@ bool QApplicationPrivate::notify_helper(QObject *receiver, QEvent * e)
 
     // deliver the event
     bool consumed = receiver->event(e);
-    e->spont = false;
+    QCoreApplicationPrivate::setEventSpontaneous(e, false);
     return consumed;
 }
 
