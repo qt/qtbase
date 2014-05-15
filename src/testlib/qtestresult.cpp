@@ -49,7 +49,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <wchar.h>
 
 static const char *currentAppName = 0;
 
@@ -257,10 +256,11 @@ bool QTestResult::compare(bool success, const char *failureMsg,
     QTEST_ASSERT(expected);
     QTEST_ASSERT(actual);
 
-    char msg[1024];
+    const size_t maxMsgLen = 1024;
+    char msg[maxMsgLen];
 
     if (QTestLog::verboseLevel() >= 2) {
-        qsnprintf(msg, 1024, "QCOMPARE(%s, %s)", actual, expected);
+        qsnprintf(msg, maxMsgLen, "QCOMPARE(%s, %s)", actual, expected);
         QTestLog::info(msg, file, line);
     }
 
@@ -268,16 +268,17 @@ bool QTestResult::compare(bool success, const char *failureMsg,
         failureMsg = "Compared values are not the same";
 
     if (success && QTest::expectFailMode) {
-        qsnprintf(msg, 1024, "QCOMPARE(%s, %s) returned TRUE unexpectedly.", actual, expected);
+        qsnprintf(msg, maxMsgLen,
+                  "QCOMPARE(%s, %s) returned TRUE unexpectedly.", actual, expected);
     } else if (val1 || val2) {
-        size_t len1 = mbstowcs(NULL, actual, 0);
-        size_t len2 = mbstowcs(NULL, expected, 0);
-        qsnprintf(msg, 1024, "%s\n   Actual   (%s)%*s %s\n   Expected (%s)%*s %s",
+        size_t len1 = mbstowcs(NULL, actual, maxMsgLen);    // Last parameter is not ignored on QNX
+        size_t len2 = mbstowcs(NULL, expected, maxMsgLen);  // (result is never larger than this).
+        qsnprintf(msg, maxMsgLen, "%s\n   Actual   (%s)%*s %s\n   Expected (%s)%*s %s",
                   failureMsg,
                   actual, qMax(len1, len2) - len1 + 1, ":", val1 ? val1 : "<null>",
                   expected, qMax(len1, len2) - len2 + 1, ":", val2 ? val2 : "<null>");
     } else
-        qsnprintf(msg, 1024, "%s", failureMsg);
+        qsnprintf(msg, maxMsgLen, "%s", failureMsg);
 
     delete [] val1;
     delete [] val2;
