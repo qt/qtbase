@@ -261,12 +261,12 @@ bool QOpenGLTextureBlitter::create()
 
     d->vertexBuffer.create();
     d->vertexBuffer.bind();
-    d->vertexBuffer.allocate(vertex_buffer_data, sizeof(vertex_buffer_data) * sizeof(vertex_buffer_data[0]));
+    d->vertexBuffer.allocate(vertex_buffer_data, sizeof(vertex_buffer_data));
     d->vertexBuffer.release();
 
     d->textureBuffer.create();
     d->textureBuffer.bind();
-    d->textureBuffer.allocate(texture_buffer_data, sizeof(texture_buffer_data) * sizeof(texture_buffer_data[0]));
+    d->textureBuffer.allocate(texture_buffer_data, sizeof(texture_buffer_data));
     d->textureBuffer.release();
 
     d->vertexCoordAttribPos = d->program->attributeLocation("vertexCoord");
