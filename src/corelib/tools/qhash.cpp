@@ -125,7 +125,7 @@ static uint crc32(const Char *ptr, size_t len, uint h)
 #  else
     p += 4;
     for ( ; p <= e; p += 4)
-        h = _mm_crc32_u32(h, *reinterpret_cast<const uint *>(p));
+        h = _mm_crc32_u32(h, *reinterpret_cast<const uint *>(p - 4));
     p -= 4;
     len = e - p;
 #  endif
