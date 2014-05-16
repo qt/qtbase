@@ -1344,7 +1344,6 @@ void HtmlGenerator::generateCollisionPages()
         ncn->clearCurrentChild();
         beginSubPage(ncn, Generator::fileName(ncn));
         QString fullTitle = ncn->fullTitle();
-        QString htmlTitle = fullTitle;
         CodeMarker* marker = CodeMarker::markerForFileName(ncn->location().filePath());
         if (ncn->isQmlNode()) {
             // Replace the marker with a QML code marker.
@@ -1352,7 +1351,7 @@ void HtmlGenerator::generateCollisionPages()
                 marker = CodeMarker::markerForLanguage(QLatin1String("QML"));
         }
 
-        generateHeader(htmlTitle, ncn, marker);
+        generateHeader(fullTitle, ncn, marker);
         if (!fullTitle.isEmpty())
             out() << "<h1 class=\"title\">" << protectEnc(fullTitle) << "</h1>\n";
 
@@ -1437,21 +1436,18 @@ void HtmlGenerator::generateDocNode(DocNode* dn, CodeMarker* marker)
     QList<Section> sections;
     QList<Section>::const_iterator s;
     QString fullTitle = dn->fullTitle();
-    QString htmlTitle = fullTitle;
 
     if (dn->subType() == Node::QmlBasicType) {
         fullTitle = "QML Basic Type: " + fullTitle;
-        htmlTitle = fullTitle;
 
         // Replace the marker with a QML code marker.
         marker = CodeMarker::markerForLanguage(QLatin1String("QML"));
     }
     else if (dn->subType() == Node::QmlClass) {
         fullTitle = fullTitle + " QML Type";
-        htmlTitle = fullTitle;
     }
 
-    generateHeader(htmlTitle, dn, marker);
+    generateHeader(fullTitle, dn, marker);
     /*
       Generate the TOC for the new doc format.
       Don't generate a TOC for the home page.
