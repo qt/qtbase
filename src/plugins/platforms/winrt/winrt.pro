@@ -3,8 +3,7 @@ CONFIG -= precompile_header
 
 # For Windows Phone 8 we have to deploy fonts together with the application as DirectWrite
 # is not supported here.
-# TODO: Add a condition/remove this block if Windows Phone 8.1 supports DirectWrite
-winphone {
+winphone:equals(WINSDK_VER, 8.0): {
     fonts.path = $$[QT_INSTALL_LIBS]/fonts
     fonts.files = $$QT_SOURCE_TREE/lib/fonts/DejaVu*.ttf
     INSTALLS += fonts
@@ -21,9 +20,10 @@ DEFINES *= QT_NO_CAST_FROM_ASCII __WRL_NO_DEFAULT_LIB__ GL_GLEXT_PROTOTYPES
 
 LIBS += $$QMAKE_LIBS_CORE
 
-!winphone {
+!if(winphone:equals(WINSDK_VER, 8.0)) {
     LIBS += -ldwrite
     INCLUDEPATH += $$QT_SOURCE_TREE/src/3rdparty/freetype/include
+    DEFINES += QT_WINRT_USE_DWRITE
 }
 
 SOURCES = \
@@ -70,7 +70,7 @@ fxc_blitvs.variable_out = HEADERS
 fxc_blitvs.CONFIG += target_predeps
 QMAKE_EXTRA_COMPILERS += fxc_blitps fxc_blitvs
 
-winphone {
+winphone:equals(WINSDK_VER, 8.0): {
     SOURCES -= qwinrtplatformmessagedialoghelper.cpp
     HEADERS -= qwinrtplatformmessagedialoghelper.h
 }

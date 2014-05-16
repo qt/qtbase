@@ -46,7 +46,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef Q_OS_WINPHONE
+#ifdef QT_WINRT_USE_DWRITE
 struct IDWriteFontFile;
 struct IDWriteFontFamily;
 
@@ -61,7 +61,7 @@ class QWinRTFontDatabase : public QBasicFontDatabase
 {
 public:
     QString fontDir() const;
-#ifndef Q_OS_WINPHONE
+#ifdef QT_WINRT_USE_DWRITE
     ~QWinRTFontDatabase();
     QFont defaultFont() const Q_DECL_OVERRIDE;
     void populateFontDatabase() Q_DECL_OVERRIDE;
@@ -71,7 +71,7 @@ public:
 private:
     QHash<IDWriteFontFile *, FontDescription> m_fonts;
     QHash<QString, IDWriteFontFamily *> m_fontFamilies;
-#endif // !Q_OS_WINPHONE
+#endif // QT_WINRT_USE_DWRITE
 };
 
 QT_END_NAMESPACE

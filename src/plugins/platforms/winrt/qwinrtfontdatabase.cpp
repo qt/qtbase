@@ -44,13 +44,13 @@
 #include <QtCore/QCoreApplication>
 #include <QtCore/QFile>
 
-#ifndef Q_OS_WINPHONE
+#ifdef QT_WINRT_USE_DWRITE
 #include <QtCore/QUuid>
 #include <QtGui/private/qfontengine_ft_p.h>
 #include <dwrite_1.h>
 #include <wrl.h>
 using namespace Microsoft::WRL;
-#endif // !Q_OS_WINPHONE
+#endif // QT_WINRT_USE_DWRITE
 
 QT_BEGIN_NAMESPACE
 
@@ -62,7 +62,7 @@ QString QWinRTFontDatabase::fontDir() const
         const QString applicationDirPath = QCoreApplication::applicationDirPath();
         fontDirectory = applicationDirPath + QLatin1String("/fonts");
         if (!QFile::exists(fontDirectory)) {
-#ifndef Q_OS_WINPHONE
+#ifdef QT_WINRT_USE_DWRITE
             if (m_fontFamilies.isEmpty())
 #endif
                 qWarning("No fonts directory found in application package.");
@@ -72,7 +72,7 @@ QString QWinRTFontDatabase::fontDir() const
     return fontDirectory;
 }
 
-#ifndef Q_OS_WINPHONE
+#ifdef QT_WINRT_USE_DWRITE
 
 QWinRTFontDatabase::~QWinRTFontDatabase()
 {
@@ -398,6 +398,6 @@ void QWinRTFontDatabase::releaseHandle(void *handle)
     QBasicFontDatabase::releaseHandle(handle);
 }
 
-#endif // !Q_OS_WINPHONE
+#endif // QT_WINRT_USE_DWRITE
 
 QT_END_NAMESPACE
