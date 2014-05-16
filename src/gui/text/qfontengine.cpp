@@ -2085,7 +2085,7 @@ QFontEngine* QFontEngineMultiBasicImpl::createMultiFontEngine(QFontEngine *fe, i
     while (it != end && it.key() == key) {
         Q_ASSERT(it.value().data->type() == QFontEngine::Multi);
         QFontEngineMulti *cachedEngine = static_cast<QFontEngineMulti *>(it.value().data);
-        if (faceIsLocal || fe == cachedEngine->engine(0)) {
+        if (fe == cachedEngine->engine(0) || (faceIsLocal && fe->faceId().filename == cachedEngine->engine(0)->faceId().filename)) {
             engine = cachedEngine;
             fc->updateHitCountAndTimeStamp(it.value());
             break;
