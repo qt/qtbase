@@ -111,11 +111,6 @@ static void resolveGetCharWidthI()
     ptrGetCharWidthI = (PtrGetCharWidthI)QSystemLibrary::resolve(QStringLiteral("gdi32"), "GetCharWidthI");
 }
 
-// defined in qtextengine_win.cpp
-typedef void *SCRIPT_CACHE;
-typedef HRESULT (WINAPI *fScriptFreeCache)(SCRIPT_CACHE *);
-extern fScriptFreeCache ScriptFreeCache;
-
 static inline quint32 getUInt(unsigned char *p)
 {
     quint32 val;
