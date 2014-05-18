@@ -572,10 +572,7 @@ public:
     ItemDecorationList overlineList;
 
     inline bool visualCursorMovement() const
-    {
-        return (visualMovement ||
-                (block.docHandle() ? block.docHandle()->defaultCursorMoveStyle == Qt::VisualMoveStyle : false));
-    }
+    { return visualMovement || (block.docHandle() && block.docHandle()->defaultCursorMoveStyle == Qt::VisualMoveStyle); }
 
     inline int preeditAreaPosition() const { return specialData ? specialData->preeditPosition : -1; }
     inline QString preeditAreaText() const { return specialData ? specialData->preeditText : QString(); }

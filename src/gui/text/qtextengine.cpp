@@ -84,7 +84,7 @@ public:
     /// The caps parameter is used to choose the algoritm of splitting text and assiging roles to the textitems
     void generate(int start, int length, QFont::Capitalization caps)
     {
-        if ((int)caps == (int)QFont::SmallCaps)
+        if (caps == QFont::SmallCaps)
             generateScriptItemsSmallCaps(reinterpret_cast<const ushort *>(m_string.unicode()), start, length);
         else if(caps == QFont::Capitalize)
             generateScriptItemsCapitalize(start, length);
@@ -118,9 +118,7 @@ private:
             return;
         const int end = start + length;
         for (int i = start + 1; i < end; ++i) {
-            if (m_analysis[i].bidiLevel == m_analysis[start].bidiLevel
-                && m_analysis[i].flags == m_analysis[start].flags
-                && m_analysis[i].script == m_analysis[start].script
+            if (m_analysis[i] == m_analysis[start]
                 && m_analysis[i].flags < QScriptAnalysis::SpaceTabOrObject
                 && i - start < MaxItemLength)
                 continue;
@@ -1885,7 +1883,7 @@ QFontEngine *QTextEngine::fontEngine(const QScriptItem &si, QFixed *ascent, QFix
                 feCache.prevScaledFontEngine = 0;
             }
         }
-        if (si.analysis.flags & QFont::SmallCaps) {
+        if (si.analysis.flags == QScriptAnalysis::SmallCaps) {
             if (feCache.prevScaledFontEngine) {
                 scaledEngine = feCache.prevScaledFontEngine;
             } else {

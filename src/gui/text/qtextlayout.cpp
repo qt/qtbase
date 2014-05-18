@@ -562,7 +562,7 @@ bool QTextLayout::cacheEnabled() const
 */
 void QTextLayout::setCursorMoveStyle(Qt::CursorMoveStyle style)
 {
-    d->visualMovement = style == Qt::VisualMoveStyle ? true : false;
+    d->visualMovement = style == Qt::VisualMoveStyle;
 }
 
 /*!
