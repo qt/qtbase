@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -1504,10 +1504,10 @@ QAbstractItemModel::~QAbstractItemModel()
 */
 
 /*!
-    \fn void QAbstractItemModel::rowsInserted(const QModelIndex &parent, int start, int end)
+    \fn void QAbstractItemModel::rowsInserted(const QModelIndex &parent, int first, int last)
 
     This signal is emitted after rows have been inserted into the
-    model. The new items are those between \a start and \a end
+    model. The new items are those between \a first and \a last
     inclusive, under the given \a parent item.
 
     \note Components connected to this signal use it to adapt to changes in the
@@ -1532,10 +1532,10 @@ QAbstractItemModel::~QAbstractItemModel()
 */
 
 /*!
-    \fn void QAbstractItemModel::rowsRemoved(const QModelIndex &parent, int start, int end)
+    \fn void QAbstractItemModel::rowsRemoved(const QModelIndex &parent, int first, int last)
 
     This signal is emitted after rows have been removed from the model. The
-    removed items are those between \a start and \a end inclusive, under the
+    removed items are those between \a first and \a last inclusive, under the
     given \a parent item.
 
     \note Components connected to this signal use it to adapt to changes
@@ -1546,10 +1546,10 @@ QAbstractItemModel::~QAbstractItemModel()
 */
 
 /*!
-    \fn void QAbstractItemModel::rowsAboutToBeRemoved(const QModelIndex &parent, int start, int end)
+    \fn void QAbstractItemModel::rowsAboutToBeRemoved(const QModelIndex &parent, int first, int last)
 
     This signal is emitted just before rows are removed from the model. The
-    items that will be removed are those between \a start and \a end inclusive,
+    items that will be removed are those between \a first and \a last inclusive,
     under the given \a parent item.
 
     \note Components connected to this signal use it to adapt to changes
@@ -1624,10 +1624,10 @@ QAbstractItemModel::~QAbstractItemModel()
 */
 
 /*!
-    \fn void QAbstractItemModel::columnsInserted(const QModelIndex &parent, int start, int end)
+    \fn void QAbstractItemModel::columnsInserted(const QModelIndex &parent, int first, int last)
 
     This signal is emitted after columns have been inserted into the model. The
-    new items are those between \a start and \a end inclusive, under the given
+    new items are those between \a first and \a last inclusive, under the given
     \a parent item.
 
     \note Components connected to this signal use it to adapt to changes in the
@@ -1638,10 +1638,10 @@ QAbstractItemModel::~QAbstractItemModel()
 */
 
 /*!
-    \fn void QAbstractItemModel::columnsAboutToBeInserted(const QModelIndex &parent, int start, int end)
+    \fn void QAbstractItemModel::columnsAboutToBeInserted(const QModelIndex &parent, int first, int last)
 
     This signal is emitted just before columns are inserted into the model. The
-    new items will be positioned between \a start and \a end inclusive, under
+    new items will be positioned between \a first and \a last inclusive, under
     the given \a parent item.
 
     \note Components connected to this signal use it to adapt to changes in the
@@ -1652,10 +1652,10 @@ QAbstractItemModel::~QAbstractItemModel()
 */
 
 /*!
-    \fn void QAbstractItemModel::columnsRemoved(const QModelIndex &parent, int start, int end)
+    \fn void QAbstractItemModel::columnsRemoved(const QModelIndex &parent, int first, int last)
 
     This signal is emitted after columns have been removed from the model.
-    The removed items are those between \a start and \a end inclusive,
+    The removed items are those between \a first and \a last inclusive,
     under the given \a parent item.
 
     \note Components connected to this signal use it to adapt to changes in
@@ -1666,10 +1666,10 @@ QAbstractItemModel::~QAbstractItemModel()
 */
 
 /*!
-    \fn void QAbstractItemModel::columnsAboutToBeRemoved(const QModelIndex &parent, int start, int end)
+    \fn void QAbstractItemModel::columnsAboutToBeRemoved(const QModelIndex &parent, int first, int last)
 
     This signal is emitted just before columns are removed from the model. The
-    items to be removed are those between \a start and \a end inclusive, under
+    items to be removed are those between \a first and \a last inclusive, under
     the given \a parent item.
 
     \note Components connected to this signal use it to adapt to changes in the
