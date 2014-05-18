@@ -463,17 +463,19 @@ static void *startMainMethod(void */*data*/)
 static jboolean startQtApplication(JNIEnv *env, jobject /*object*/, jstring paramsString, jstring environmentString)
 {
     m_mainLibraryHnd = NULL;
-    const char *nativeString = env->GetStringUTFChars(environmentString, 0);
-    QByteArray string = nativeString;
-    env->ReleaseStringUTFChars(environmentString, nativeString);
-    m_applicationParams=string.split('\t');
-    foreach (string, m_applicationParams) {
-        if (!string.isEmpty() && putenv(string.constData()))
-            qWarning() << "Can't set environment" << string;
+    { // Set env. vars
+        const char *nativeString = env->GetStringUTFChars(environmentString, 0);
+        const QList<QByteArray> envVars = QByteArray(nativeString).split('\t');
+        env->ReleaseStringUTFChars(environmentString, nativeString);
+        foreach (const QByteArray &envVar, envVars) {
+            const QList<QByteArray> envVarPair = envVar.split('=');
+            if (envVarPair.size() == 2 && ::setenv(envVarPair[0], envVarPair[1], 1) != 0)
+                qWarning() << "Can't set environment" << envVarPair;
+        }
     }
 
-    nativeString = env->GetStringUTFChars(paramsString, 0);
-    string = nativeString;
+    const char *nativeString = env->GetStringUTFChars(paramsString, 0);
+    QByteArray string = nativeString;
     env->ReleaseStringUTFChars(paramsString, nativeString);
 
     m_applicationParams=string.split('\t');
