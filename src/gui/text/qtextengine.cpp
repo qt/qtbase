@@ -1414,8 +1414,6 @@ void QTextEngine::invalidate()
     freeMemory();
     minWidth = 0;
     maxWidth = 0;
-    if (specialData)
-        specialData->resolvedFormats.clear();
 
     resetFontEngineCache();
 }
@@ -2357,6 +2355,8 @@ void QTextEngine::freeMemory()
         layoutData->haveCharAttributes = false;
         layoutData->items.clear();
     }
+    if (specialData)
+        specialData->resolvedFormats.clear();
     for (int i = 0; i < lines.size(); ++i) {
         lines[i].justified = 0;
         lines[i].gridfitted = 0;
@@ -2924,13 +2924,12 @@ public:
 
 void QTextEngine::resolveFormats() const
 {
-    if (!specialData || specialData->formats.isEmpty()
-        || !specialData->resolvedFormats.isEmpty())
+    if (!specialData || specialData->formats.isEmpty())
         return;
+    Q_ASSERT(specialData->resolvedFormats.isEmpty());
 
     QTextFormatCollection *collection = formatCollection();
 
-    specialData->resolvedFormats.clear();
     QVector<QTextCharFormat> resolvedFormats(layoutData->items.count());
 
     QVarLengthArray<int, 64> formatsSortedByStart;
