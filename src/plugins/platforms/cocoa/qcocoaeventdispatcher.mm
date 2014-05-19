@@ -622,7 +622,8 @@ NSModalSession QCocoaEventDispatcherPrivate::currentModalSession()
 
         if (!info.session) {
             QCocoaAutoReleasePool pool;
-            NSWindow *nswindow = static_cast<QCocoaWindow *>(info.window->handle())->nativeWindow();
+            QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(info.window->handle());
+            NSWindow *nswindow = cocoaWindow->nativeWindow();
             if (!nswindow)
                 continue;
 
@@ -630,7 +631,10 @@ NSModalSession QCocoaEventDispatcherPrivate::currentModalSession()
             QBoolBlocker block1(blockSendPostedEvents, true);
             info.nswindow = nswindow;
             [(NSWindow*) info.nswindow retain];
+            QRect rect = cocoaWindow->geometry();
             info.session = [NSApp beginModalSessionForWindow:nswindow];
+            if (rect != cocoaWindow->geometry())
+                cocoaWindow->setGeometry(rect);
         }
         currentModalSessionCached = info.session;
         cleanupModalSessionsNeeded = false;
