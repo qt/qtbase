@@ -93,8 +93,8 @@ public:
         TCHAR filename[bufSize];
 
         UINT i = GetSystemDirectory(filename, bufSize);
-        if (i > 0 && i < MAX_PATH) {
-            if (_tcscat_s(filename, MAX_PATH, __TEXT("\\d2d1.dll")) == 0) {
+        if (i > 0 && i < bufSize) {
+            if (_tcscat_s(filename, bufSize, __TEXT("\\d2d1.dll")) == 0) {
                 DWORD versionInfoSize = GetFileVersionInfoSize(filename, NULL);
                 if (versionInfoSize) {
                     QVector<BYTE> info(versionInfoSize);
