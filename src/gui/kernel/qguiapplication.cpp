@@ -1956,7 +1956,7 @@ void QGuiApplicationPrivate::processWindowScreenChangedEvent(QWindowSystemInterf
 {
     if (QWindow *window  = wse->window.data()) {
         if (QScreen *screen = wse->screen.data())
-            window->d_func()->setScreen(screen, false /* recreate */);
+            window->d_func()->setTopLevelScreen(screen, false /* recreate */);
         else // Fall back to default behavior, and try to find some appropriate screen
             window->setScreen(0);
     }

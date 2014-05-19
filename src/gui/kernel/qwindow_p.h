@@ -95,7 +95,7 @@ public:
         , modality(Qt::NonModal)
         , blockedByModalWindow(false)
         , transientParent(0)
-        , screen(0)
+        , topLevelScreen(0)
 #ifndef QT_NO_CURSOR
         , cursor(Qt::ArrowCursor)
         , hasCursor(false)
@@ -131,7 +131,11 @@ public:
     void updateVisibility();
     void _q_clearAlert();
 
-    void setScreen(QScreen *newScreen, bool recreate);
+    bool windowRecreationRequired(QScreen *newScreen) const;
+    void setTopLevelScreen(QScreen *newScreen, bool recreate);
+    void connectToScreen(QScreen *topLevelScreen);
+    void disconnectFromScreen();
+    void emitScreenChangedRecursion(QScreen *newScreen);
 
     virtual void clearFocusObject();
 
@@ -165,7 +169,7 @@ public:
     bool blockedByModalWindow;
 
     QPointer<QWindow> transientParent;
-    QScreen *screen;
+    QScreen *topLevelScreen;
 
 #ifndef QT_NO_CURSOR
     QCursor cursor;

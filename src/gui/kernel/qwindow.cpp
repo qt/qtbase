@@ -156,9 +156,7 @@ QWindow::QWindow(QScreen *targetScreen)
     , QSurface(QSurface::Window)
 {
     Q_D(QWindow);
-    d->screen = targetScreen;
-    if (!d->screen)
-        d->screen = QGuiApplication::primaryScreen();
+    d->connectToScreen(targetScreen ? targetScreen : QGuiApplication::primaryScreen());
     d->init();
 }
 
@@ -178,10 +176,8 @@ QWindow::QWindow(QWindow *parent)
 {
     Q_D(QWindow);
     d->parentWindow = parent;
-    if (parent)
-        d->screen = parent->screen();
-    if (!d->screen)
-        d->screen = QGuiApplication::primaryScreen();
+    if (!parent)
+        d->connectToScreen(QGuiApplication::primaryScreen());
     d->init();
 }
 
@@ -203,10 +199,8 @@ QWindow::QWindow(QWindowPrivate &dd, QWindow *parent)
 {
     Q_D(QWindow);
     d->parentWindow = parent;
-    if (parent)
-        d->screen = parent->screen();
-    if (!d->screen)
-        d->screen = QGuiApplication::primaryScreen();
+    if (!parent)
+        d->connectToScreen(QGuiApplication::primaryScreen());
     d->init();
 }
 
@@ -231,11 +225,10 @@ void QWindowPrivate::init()
 
     // If your application aborts here, you are probably creating a QWindow
     // before the screen list is populated.
-    if (!screen) {
+    if (!parentWindow && !topLevelScreen) {
         qFatal("Cannot create window: no screens available");
         exit(1);
     }
-    QObject::connect(screen, SIGNAL(destroyed(QObject*)), q, SLOT(screenDestroyed(QObject*)));
     QGuiApplicationPrivate::window_list.prepend(q);
 }
 
@@ -353,23 +346,57 @@ void QWindowPrivate::updateVisibility()
         emit q->visibilityChanged(visibility);
 }
 
-void QWindowPrivate::setScreen(QScreen *newScreen, bool recreate)
+inline bool QWindowPrivate::windowRecreationRequired(QScreen *newScreen) const
+{
+    Q_Q(const QWindow);
+    const QScreen *oldScreen = q->screen();
+    return oldScreen != newScreen && platformWindow
+        && !(oldScreen && oldScreen->virtualSiblings().contains(newScreen));
+}
+
+inline void QWindowPrivate::disconnectFromScreen()
+{
+    if (topLevelScreen) {
+        Q_Q(QWindow);
+        QObject::disconnect(topLevelScreen, &QObject::destroyed, q, &QWindow::screenDestroyed);
+        topLevelScreen = 0;
+    }
+}
+
+void QWindowPrivate::connectToScreen(QScreen *screen)
 {
     Q_Q(QWindow);
-    if (newScreen != screen) {
-        const bool shouldRecreate = recreate && platformWindow != 0
-            && !(screen && screen->virtualSiblings().contains(newScreen));
+    disconnectFromScreen();
+    topLevelScreen = screen;
+    if (topLevelScreen)
+        QObject::connect(topLevelScreen, &QObject::destroyed, q, &QWindow::screenDestroyed);
+}
+
+void QWindowPrivate::emitScreenChangedRecursion(QScreen *newScreen)
+{
+    Q_Q(QWindow);
+    emit q->screenChanged(newScreen);
+    foreach (QObject *child, q->children()) {
+        if (child->isWindowType())
+            static_cast<QWindow *>(child)->d_func()->emitScreenChangedRecursion(newScreen);
+    }
+}
+
+void QWindowPrivate::setTopLevelScreen(QScreen *newScreen, bool recreate)
+{
+    Q_Q(QWindow);
+    if (parentWindow) {
+        qWarning() << this << Q_FUNC_INFO << '(' << newScreen << "): Attempt to set a screen on a child window.";
+        return;
+    }
+    if (newScreen != topLevelScreen) {
+        const bool shouldRecreate = recreate && windowRecreationRequired(newScreen);
         if (shouldRecreate)
             q->destroy();
-        if (screen)
-            q->disconnect(screen, SIGNAL(destroyed(QObject*)), q, SLOT(screenDestroyed(QObject*)));
-        screen = newScreen;
-        if (newScreen) {
-            q->connect(screen, SIGNAL(destroyed(QObject*)), q, SLOT(screenDestroyed(QObject*)));
-            if (shouldRecreate)
-                q->create();
-        }
-        emit q->screenChanged(newScreen);
+        connectToScreen(newScreen);
+        if (newScreen && shouldRecreate)
+            q->create();
+        emitScreenChangedRecursion(newScreen);
     }
 }
 
@@ -552,8 +579,20 @@ QWindow *QWindow::parent() const
 void QWindow::setParent(QWindow *parent)
 {
     Q_D(QWindow);
+    if (d->parentWindow == parent)
+        return;
+
+    QScreen *newScreen = parent ? parent->screen() : screen();
+    if (d->windowRecreationRequired(newScreen)) {
+        qWarning() << this << Q_FUNC_INFO << '(' << parent << "): Cannot change screens (" << screen() << newScreen << ')';
+        return;
+    }
 
     QObject::setParent(parent);
+    if (parent)
+        d->disconnectFromScreen();
+    else
+        d->connectToScreen(newScreen);
 
     if (d->platformWindow) {
         if (parent && parent->d_func()->platformWindow) {
@@ -1606,15 +1645,14 @@ bool QWindow::setMouseGrabEnabled(bool grab)
 /*!
     Returns the screen on which the window is shown.
 
-    The value returned will not change when the window is moved
-    between virtual screens (as returned by QScreen::virtualSiblings()).
+    For child windows, this returns the screen of the corresponding top level window.
 
     \sa setScreen(), QScreen::virtualSiblings()
 */
 QScreen *QWindow::screen() const
 {
     Q_D(const QWindow);
-    return d->screen;
+    return d->parentWindow ? d->parentWindow->screen() : d->topLevelScreen;
 }
 
 /*!
@@ -1625,6 +1663,8 @@ QScreen *QWindow::screen() const
     Note that if the screen is part of a virtual desktop of multiple screens,
     the window can appear on any of the screens returned by QScreen::virtualSiblings().
 
+    This function only works for top level windows.
+
     \sa screen(), QScreen::virtualSiblings()
 */
 void QWindow::setScreen(QScreen *newScreen)
@@ -1632,13 +1672,15 @@ void QWindow::setScreen(QScreen *newScreen)
     Q_D(QWindow);
     if (!newScreen)
         newScreen = QGuiApplication::primaryScreen();
-    d->setScreen(newScreen, true /* recreate */);
+    d->setTopLevelScreen(newScreen, true /* recreate */);
 }
 
 void QWindow::screenDestroyed(QObject *object)
 {
     Q_D(QWindow);
-    if (object == static_cast<QObject *>(d->screen)) {
+    if (d->parentWindow)
+        return;
+    if (object == static_cast<QObject *>(d->topLevelScreen)) {
         const bool wasVisible = isVisible();
         setScreen(0);
         // destroy() might have hidden our window, show it again.
@@ -2326,7 +2368,7 @@ void QWindowPrivate::setCursor(const QCursor *newCursor)
         hasCursor = false;
     }
     // Only attempt to set cursor and emit signal if there is an actual platform cursor
-    if (screen->handle()->cursor()) {
+    if (q->screen()->handle()->cursor()) {
         applyCursor();
         QEvent event(QEvent::CursorChange);
         QGuiApplication::sendEvent(q, &event);
@@ -2337,7 +2379,7 @@ void QWindowPrivate::applyCursor()
 {
     Q_Q(QWindow);
     if (platformWindow) {
-        if (QPlatformCursor *platformCursor = screen->handle()->cursor()) {
+        if (QPlatformCursor *platformCursor = q->screen()->handle()->cursor()) {
             QCursor *c = QGuiApplication::overrideCursor();
             if (!c && hasCursor)
                 c = &cursor;
