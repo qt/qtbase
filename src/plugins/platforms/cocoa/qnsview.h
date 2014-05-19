@@ -54,6 +54,8 @@ class QCocoaBackingStore;
 class QCocoaGLContext;
 QT_END_NAMESPACE
 
+Q_FORWARD_DECLARE_OBJC_CLASS(QNSViewMouseMoveHelper);
+
 @interface QNSView : NSView <NSTextInputClient> {
     QCocoaBackingStore* m_backingStore;
     QPoint m_backingStoreOffset;
@@ -72,6 +74,7 @@ QT_END_NAMESPACE
     QCocoaGLContext *m_glContext;
     bool m_shouldSetGLContextinDrawRect;
     NSString *m_inputSource;
+    QNSViewMouseMoveHelper *m_mouseMoveHelper;
 }
 
 - (id)init;
@@ -102,9 +105,10 @@ QT_END_NAMESPACE
 - (void)mouseDown:(NSEvent *)theEvent;
 - (void)mouseDragged:(NSEvent *)theEvent;
 - (void)mouseUp:(NSEvent *)theEvent;
-- (void)mouseMoved:(NSEvent *)theEvent;
-- (void)mouseEntered:(NSEvent *)theEvent;
-- (void)mouseExited:(NSEvent *)theEvent;
+- (void)mouseMovedImpl:(NSEvent *)theEvent;
+- (void)mouseEnteredImpl:(NSEvent *)theEvent;
+- (void)mouseExitedImpl:(NSEvent *)theEvent;
+- (void)cursorUpdateImpl:(NSEvent *)theEvent;
 - (void)rightMouseDown:(NSEvent *)theEvent;
 - (void)rightMouseDragged:(NSEvent *)theEvent;
 - (void)rightMouseUp:(NSEvent *)theEvent;
