@@ -542,6 +542,7 @@ static void processQdocconfFile(const QString &fileName)
     Generator::debugSegfault("qdoc finished!");
 }
 
+extern Q_CORE_EXPORT QBasicAtomicInt qt_qhash_seed;
 QT_END_NAMESPACE
 
 int main(int argc, char **argv)
@@ -549,6 +550,7 @@ int main(int argc, char **argv)
     QT_USE_NAMESPACE
 
 #ifndef QT_BOOTSTRAPPED
+    qt_qhash_seed.testAndSetRelaxed(-1, 0); // set the hash seed to 0 if it wasn't set yet
     QCoreApplication app(argc, argv);
 #endif
 

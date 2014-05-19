@@ -222,11 +222,12 @@ uint qHash(QLatin1String key, uint seed) Q_DECL_NOTHROW
 */
 static uint qt_create_qhash_seed()
 {
+    uint seed = 0;
+
+#ifndef QT_BOOTSTRAPPED
     QByteArray envSeed = qgetenv("QT_HASH_SEED");
     if (!envSeed.isNull())
         return envSeed.toUInt();
-
-    uint seed = 0;
 
 #ifdef Q_OS_UNIX
     int randomfd = qt_safe_open("/dev/urandom", O_RDONLY);
@@ -254,17 +255,16 @@ static uint qt_create_qhash_seed()
     seed ^= timestamp;
     seed ^= (timestamp >> 32);
 
-#ifndef QT_BOOTSTRAPPED
     quint64 pid = QCoreApplication::applicationPid();
     seed ^= pid;
     seed ^= (pid >> 32);
-#endif // QT_BOOTSTRAPPED
 
     quintptr seedPtr = reinterpret_cast<quintptr>(&seed);
     seed ^= seedPtr;
 #if QT_POINTER_SIZE == 8
     seed ^= (seedPtr >> 32);
 #endif
+#endif // QT_BOOTSTRAPPED
 
     return seed;
 }

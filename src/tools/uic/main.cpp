@@ -52,9 +52,12 @@
 #include <qcommandlineparser.h>
 
 QT_BEGIN_NAMESPACE
+extern Q_CORE_EXPORT QBasicAtomicInt qt_qhash_seed;
 
 int runUic(int argc, char *argv[])
 {
+    qt_qhash_seed.testAndSetRelaxed(-1, 0); // set the hash seed to 0 if it wasn't set yet
+
     QCoreApplication app(argc, argv);
     QCoreApplication::setApplicationVersion(QString::fromLatin1(QT_VERSION_STR));
 
