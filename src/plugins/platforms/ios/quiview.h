@@ -57,6 +57,8 @@
     int m_nextTouchId;
     QString m_markedText;
     BOOL m_inSendEventToFocusObject;
+
+    NSMutableArray *m_accessibleElements;
 }
 
 @property(nonatomic, assign) id<UITextInputDelegate> inputDelegate;

@@ -45,6 +45,7 @@
 #include "qioswindow.h"
 #include "qiosbackingstore.h"
 #include "qiosscreen.h"
+#include "qiosplatformaccessibility.h"
 #include "qioscontext.h"
 #include "qiosclipboard.h"
 #include "qiosinputcontext.h"
@@ -67,6 +68,7 @@ QIOSIntegration::QIOSIntegration()
     , m_inputContext(new QIOSInputContext)
     , m_screen(new QIOSScreen(QIOSScreen::MainScreen))
     , m_platformServices(new QIOSServices)
+    , m_accessibility(0)
 {
     if (![UIApplication sharedApplication]) {
         qWarning()
@@ -106,6 +108,9 @@ QIOSIntegration::~QIOSIntegration()
 
     delete m_platformServices;
     m_platformServices = 0;
+
+    delete m_accessibility;
+    m_accessibility = 0;
 }
 
 bool QIOSIntegration::hasCapability(Capability cap) const
@@ -227,6 +232,13 @@ void *QIOSIntegration::nativeResourceForWindow(const QByteArray &resource, QWind
 QTouchDevice *QIOSIntegration::touchDevice()
 {
     return m_touchDevice;
+}
+
+QPlatformAccessibility *QIOSIntegration::accessibility() const
+{
+    if (!m_accessibility)
+        m_accessibility = new QIOSPlatformAccessibility;
+    return m_accessibility;
 }
 
 QT_END_NAMESPACE

@@ -48,7 +48,7 @@
 
 #import <AppKit/NSAccessibility.h>
 
-@implementation QCocoaAccessibleElement
+@implementation QMacAccessibilityElement
 
 - (id)initWithId:(QAccessible::Id)anId
 {
@@ -72,7 +72,7 @@
 
     QAccessibleCache *cache = QAccessibleCache::instance();
 
-    QCocoaAccessibleElement *element = cache->elementForId(anId);
+    QMacAccessibilityElement *element = cache->elementForId(anId);
     if (!element) {
         QAccessibleInterface *iface = QAccessible::accessibleInterface(anId);
         Q_ASSERT(iface);
@@ -95,8 +95,8 @@
 }
 
 - (BOOL)isEqual:(id)object {
-    if ([object isKindOfClass:[QCocoaAccessibleElement class]]) {
-        QCocoaAccessibleElement *other = object;
+    if ([object isKindOfClass:[QMacAccessibilityElement class]]) {
+        QMacAccessibilityElement *other = object;
         return other->axid == axid;
     } else {
         return NO;
@@ -196,7 +196,7 @@
     }
 
     QAccessible::Id parentId = QAccessible::uniqueId(parent);
-    return [QCocoaAccessibleElement elementWithId: parentId];
+    return [QMacAccessibilityElement elementWithId: parentId];
 }
 
 
@@ -345,7 +345,7 @@
     }
     if ([attribute isEqualToString: NSAccessibilityLineForIndexParameterizedAttribute]) {
         int index = [parameter intValue];
-        NSNumber *ln = [QCocoaAccessibleElement lineNumberForIndex: index forText: iface->text(QAccessible::Value)];
+        NSNumber *ln = [QMacAccessibilityElement lineNumberForIndex: index forText: iface->text(QAccessible::Value)];
         return ln;
     }
     if ([attribute isEqualToString: NSAccessibilityRangeForLineParameterizedAttribute]) {
@@ -504,7 +504,7 @@
 
     QAccessible::Id childId = QAccessible::uniqueId(childInterface);
     // hit a child, forward to child accessible interface.
-    QCocoaAccessibleElement *accessibleElement = [QCocoaAccessibleElement elementWithId:childId];
+    QMacAccessibilityElement *accessibleElement = [QMacAccessibilityElement elementWithId:childId];
     if (accessibleElement)
         return NSAccessibilityUnignoredAncestor(accessibleElement);
     return NSAccessibilityUnignoredAncestor(self);
@@ -521,7 +521,7 @@
     QAccessibleInterface *childInterface = iface->focusChild();
     if (childInterface) {
         QAccessible::Id childAxid = QAccessible::uniqueId(childInterface);
-        QCocoaAccessibleElement *accessibleElement = [QCocoaAccessibleElement elementWithId:childAxid];
+        QMacAccessibilityElement *accessibleElement = [QMacAccessibilityElement elementWithId:childAxid];
         return NSAccessibilityUnignoredAncestor(accessibleElement);
     }
 

@@ -3,7 +3,7 @@
 ** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -39,63 +39,20 @@
 **
 ****************************************************************************/
 
-#ifndef QACCESSIBLECACHE_P
-#define QACCESSIBLECACHE_P
+#ifndef QIOSPLATFORMACCESSIBILITY_H
+#define QIOSPLATFORMACCESSIBILITY_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include <QtCore/qglobal.h>
-#include <QtCore/qobject.h>
-#include <QtCore/qhash.h>
-
-#include "qaccessible.h"
-
-#ifdef Q_OS_MAC
-    Q_FORWARD_DECLARE_OBJC_CLASS(QMacAccessibilityElement);
-#endif
+#include <qpa/qplatformaccessibility.h>
 
 QT_BEGIN_NAMESPACE
 
-class Q_GUI_EXPORT QAccessibleCache  :public QObject
+class QIOSPlatformAccessibility: public QPlatformAccessibility
 {
-    Q_OBJECT
-
 public:
-    static QAccessibleCache *instance();
-    QAccessibleInterface *interfaceForId(QAccessible::Id id) const;
-    QAccessible::Id insert(QObject *object, QAccessibleInterface *iface) const;
-    void deleteInterface(QAccessible::Id id, QObject *obj = 0);
+    QIOSPlatformAccessibility();
+    ~QIOSPlatformAccessibility();
 
-#ifdef Q_OS_MAC
-    QMacAccessibilityElement *elementForId(QAccessible::Id axid) const;
-    void insertElement(QAccessible::Id axid, QMacAccessibilityElement *element) const;
-#endif
-
-private Q_SLOTS:
-    void objectDestroyed(QObject *obj);
-
-private:
-    QAccessible::Id acquireId() const;
-
-    mutable QHash<QAccessible::Id, QAccessibleInterface *> idToInterface;
-    mutable QHash<QObject *, QAccessible::Id> objectToId;
-
-#ifdef Q_OS_MAC
-    void removeCocoaElement(QAccessible::Id axid);
-    mutable QHash<QAccessible::Id, QMacAccessibilityElement *> cocoaElements;
-#endif
-
-    friend class QAccessible;
-    friend class QAccessibleInterface;
+    virtual void notifyAccessibilityUpdate(QAccessibleEvent *event);
 };
 
 QT_END_NAMESPACE

@@ -87,6 +87,8 @@ public:
 
     WId winId() const { return WId(m_view); };
 
+    void clearAccessibleCache();
+
 private:
     void applicationStateChanged(Qt::ApplicationState state);
     void applyGeometry(const QRect &rect);

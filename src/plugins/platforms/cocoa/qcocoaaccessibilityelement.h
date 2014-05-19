@@ -48,15 +48,15 @@
 
 #import <qaccessible.h>
 
-@class QCocoaAccessibleElement;
+Q_FORWARD_DECLARE_OBJC_CLASS(QMacAccessibilityElement);
 
-@interface QCocoaAccessibleElement : NSObject {
+@interface QMacAccessibilityElement : NSObject {
     NSString *role;
     QAccessible::Id axid;
 }
 
 - (id)initWithId:(QAccessible::Id)anId;
-+ (QCocoaAccessibleElement *)elementWithId:(QAccessible::Id)anId;
++ (QMacAccessibilityElement *)elementWithId:(QAccessible::Id)anId;
 
 @end
 

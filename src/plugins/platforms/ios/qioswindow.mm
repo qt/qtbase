@@ -52,6 +52,9 @@
 #include <QtGui/private/qwindow_p.h>
 #include <qpa/qplatformintegration.h>
 
+#include "qiosplatformaccessibility.h"
+#import "quiaccessibilityelement.h"
+
 #import <QuartzCore/CAEAGLLayer.h>
 
 #include <QtGui/QKeyEvent>
@@ -82,7 +85,72 @@
     if (self = [self initWithFrame:toCGRect(window->geometry())])
         m_qioswindow = window;
 
+    m_accessibleElements = [[NSMutableArray alloc] init];
     return self;
+}
+
+- (void)createAccessibleElement:(QAccessibleInterface *)iface
+{
+    if (!iface || iface->state().invisible)
+        return;
+    QAccessible::Id accessibleId = QAccessible::uniqueId(iface);
+    UIAccessibilityElement *elem = [[QMacAccessibilityElement alloc] initWithId: accessibleId withAccessibilityContainer: self];
+    [m_accessibleElements addObject: elem];
+}
+
+- (void)createAccessibleContainer:(QAccessibleInterface *)iface
+{
+    if (!iface)
+        return;
+
+    if (iface->childCount() == 0) {
+        [self createAccessibleElement: iface];
+    } else {
+        for (int i = 0; i < iface->childCount(); ++i)
+            [self createAccessibleContainer: iface->child(i)];
+    }
+}
+
+- (void)initAccessibility
+{
+    static bool init = false;
+    if (!init)
+        QGuiApplicationPrivate::platformIntegration()->accessibility()->setActive(true);
+    init = true;
+
+    if ([m_accessibleElements count])
+        return;
+
+    QWindow *win = m_qioswindow->window();
+    QAccessibleInterface *iface = win->accessibleRoot();
+    if (iface)
+        [self createAccessibleContainer: iface];
+}
+
+- (void)clearAccessibleCache
+{
+    [m_accessibleElements removeAllObjects];
+    UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification, @"");
+}
+
+// this is a container, returning yes here means the functions below will never be called
+- (BOOL)isAccessibilityElement {
+    return NO;
+}
+
+- (NSInteger)accessibilityElementCount {
+    [self initAccessibility];
+    return [m_accessibleElements count];
+}
+
+- (id)accessibilityElementAtIndex:(NSInteger)index {
+    [self initAccessibility];
+    return m_accessibleElements[index];
+}
+
+- (NSInteger)indexOfAccessibilityElement:(id)element {
+    [self initAccessibility];
+    return [m_accessibleElements indexOfObject:element];
 }
 
 - (id)initWithFrame:(CGRect)frame
@@ -632,6 +700,11 @@ void QIOSWindow::applicationStateChanged(Qt::ApplicationState)
 qreal QIOSWindow::devicePixelRatio() const
 {
     return m_view.contentScaleFactor;
+}
+
+void QIOSWindow::clearAccessibleCache()
+{
+    [m_view clearAccessibleCache];
 }
 
 #include "moc_qioswindow.cpp"

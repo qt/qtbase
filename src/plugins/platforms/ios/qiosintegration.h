@@ -82,6 +82,8 @@ public:
     void *nativeResourceForWindow(const QByteArray &resource, QWindow *window);
 
     QTouchDevice *touchDevice();
+    QPlatformAccessibility *accessibility() const Q_DECL_OVERRIDE;
+
 private:
     QPlatformFontDatabase *m_fontDatabase;
     QPlatformClipboard *m_clipboard;
@@ -90,6 +92,7 @@ private:
     QTouchDevice *m_touchDevice;
     QIOSApplicationState m_applicationState;
     QIOSServices *m_platformServices;
+    mutable QPlatformAccessibility *m_accessibility;
 };
 
 QT_END_NAMESPACE
