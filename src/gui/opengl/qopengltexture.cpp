@@ -2081,7 +2081,9 @@ int QOpenGLTexture::faces() const
 void QOpenGLTexture::allocateStorage()
 {
     Q_D(QOpenGLTexture);
-    d->allocateStorage();
+    if (d->create()) {
+        d->allocateStorage();
+    }
 }
 
 /*!
