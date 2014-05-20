@@ -144,12 +144,16 @@ public:
 
     void handleMouseEvent(xcb_timestamp_t time, const QPoint &local, const QPoint &global, Qt::KeyboardModifiers modifiers);
 
-    void updateSyncRequestCounter();
     void updateNetWmUserTime(xcb_timestamp_t timestamp);
 
 #if defined(XCB_USE_EGL)
     QXcbEGLSurface *eglSurface() const;
 #endif
+
+    bool needsSync() const;
+
+public Q_SLOTS:
+    void updateSyncRequestCounter();
 
 private:
     void changeNetWmState(bool set, xcb_atom_t one, xcb_atom_t two = 0);
@@ -217,8 +221,17 @@ private:
 
     xcb_visualid_t m_visualId;
     int m_lastWindowStateEvent;
+
+    enum SyncState {
+        NoSyncNeeded,
+        SyncReceived,
+        SyncAndConfigureReceived
+    };
+    SyncState m_syncState;
 };
 
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(QXcbWindow*)
 
 #endif

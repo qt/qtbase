@@ -72,7 +72,6 @@ public:
 
 private:
     QXcbShmImage *m_image;
-    bool m_syncingResize;
 };
 
 QT_END_NAMESPACE
