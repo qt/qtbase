@@ -193,7 +193,6 @@ CGImageRef qt_mac_create_imagemask(const QPixmap &pixmap, const QRectF &sr)
 
 //conversion
 inline static float qt_mac_convert_color_to_cg(int c) { return ((float)c * 1000 / 255) / 1000; }
-inline static int qt_mac_convert_color_from_cg(float c) { return qRound(c * 255); }
 CGAffineTransform qt_mac_convert_transform_to_cg(const QTransform &t) {
     return CGAffineTransformMake(t.m11(), t.m12(), t.m21(), t.m22(), t.dx(),  t.dy());
 }
@@ -972,11 +971,6 @@ void QCoreGraphicsPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pm, co
     qt_mac_drawCGImage(d->hd, &rect, image);
     if (doRestore)
         d->restoreGraphicsState();
-}
-
-static void drawImageReleaseData (void *info, const void *, size_t)
-{
-    delete static_cast<QImage *>(info);
 }
 
 void QCoreGraphicsPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRectF &sr,
