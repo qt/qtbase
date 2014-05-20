@@ -253,7 +253,7 @@ Q_GLOBAL_STATIC(StaticVariables, staticVariables);
 - (UITextRange *)selectedTextRange {
     int cursorPos = [self imValue:Qt::ImCursorPosition].toInt();
     int anchorPos = [self imValue:Qt::ImAnchorPosition].toInt();
-    return [QUITextRange rangeWithNSRange:NSMakeRange(cursorPos, (anchorPos - cursorPos))];
+    return [QUITextRange rangeWithNSRange:NSMakeRange(qMin(cursorPos, anchorPos), qAbs(anchorPos - cursorPos))];
 }
 
 - (NSString *)textInRange:(UITextRange *)range
