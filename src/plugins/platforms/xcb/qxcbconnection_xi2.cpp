@@ -251,14 +251,13 @@ void QXcbConnection::xi2Select(xcb_window_t window)
     XIEventMask mask;
     mask.mask_len = sizeof(bitMask);
     mask.mask = xiBitMask;
-    // Enable each touchscreen
-    foreach (XInput2DeviceData *dev, m_touchDevices) {
-        mask.deviceid = dev->xiDeviceInfo->deviceid;
+    if (!m_touchDevices.isEmpty()) {
+        mask.deviceid = XIAllMasterDevices;
         Status result = XISelectEvents(xDisplay, window, &mask, 1);
-        // If we have XInput >= 2.2 and successfully enable a touchscreen, then
-        // it will provide touch only. In most other cases, there will be
-        // emulated mouse events from the driver. If not, then Qt must do its
-        // own mouse emulation to enable interaction with mouse-oriented QWidgets.
+        // If we select for touch events on the master pointer, XInput2
+        // will not synthesize mouse events. This means Qt must do it,
+        // which is also preferable, since Qt can control better when
+        // to do so.
         if (m_xi2Minor >= 2 && result == Success)
             has_touch_without_mouse_emulation = true;
     }
@@ -272,10 +271,10 @@ void QXcbConnection::xi2Select(xcb_window_t window)
     // similar handlers useless and we have no intention to infect
     // all the pure xcb code with Xlib-based XI2.
     if (!m_tabletData.isEmpty()) {
-        unsigned int tabletBitMask = bitMask;
+        unsigned int tabletBitMask;
         unsigned char *xiTabletBitMask = reinterpret_cast<unsigned char *>(&tabletBitMask);
         QVector<XIEventMask> xiEventMask(m_tabletData.count());
-        tabletBitMask |= XI_ButtonPressMask;
+        tabletBitMask = XI_ButtonPressMask;
         tabletBitMask |= XI_ButtonReleaseMask;
         tabletBitMask |= XI_MotionMask;
         tabletBitMask |= XI_PropertyEventMask;
@@ -294,24 +293,18 @@ void QXcbConnection::xi2Select(xcb_window_t window)
     // Enable each scroll device
     if (!m_scrollingDevices.isEmpty()) {
         QVector<XIEventMask> xiEventMask(m_scrollingDevices.size());
-        unsigned int scrollBitMask = 0;
+        unsigned int scrollBitMask;
         unsigned char *xiScrollBitMask = reinterpret_cast<unsigned char *>(&scrollBitMask);
+
         scrollBitMask = XI_MotionMask;
         scrollBitMask |= XI_ButtonReleaseMask;
-        bitMask |= XI_MotionMask;
-        bitMask |= XI_ButtonReleaseMask;
         int i=0;
         Q_FOREACH (const ScrollingDevice& scrollingDevice, m_scrollingDevices) {
             if (tabletDevices.contains(scrollingDevice.deviceId))
                 continue; // All necessary events are already captured.
             xiEventMask[i].deviceid = scrollingDevice.deviceId;
-            if (m_touchDevices.contains(scrollingDevice.deviceId)) {
-                xiEventMask[i].mask_len = sizeof(bitMask);
-                xiEventMask[i].mask = xiBitMask;
-            } else {
-                xiEventMask[i].mask_len = sizeof(scrollBitMask);
-                xiEventMask[i].mask = xiScrollBitMask;
-            }
+            xiEventMask[i].mask_len = sizeof(scrollBitMask);
+            xiEventMask[i].mask = xiScrollBitMask;
             i++;
         }
         XISelectEvents(xDisplay, window, xiEventMask.data(), i);
@@ -458,7 +451,7 @@ void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
                     fixed1616ToReal(xiDeviceEvent->root_x), fixed1616ToReal(xiDeviceEvent->root_y) );
 
             if (QXcbWindow *platformWindow = platformWindowFromId(xiDeviceEvent->event)) {
-                XInput2DeviceData *dev = deviceForId(xiEvent->deviceid);
+                XInput2DeviceData *dev = deviceForId(xiDeviceEvent->sourceid);
                 Q_ASSERT(dev);
                 const bool firstTouch = m_touchPoints.isEmpty();
                 if (xiEvent->evtype == XI_TouchBegin) {
@@ -563,22 +556,6 @@ void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
                     qDebug() << "   touchpoint "  << touchPoint.id << " state " << touchPoint.state << " pos norm " << touchPoint.normalPosition <<
                         " area " << touchPoint.area << " pressure " << touchPoint.pressure;
                 QWindowSystemInterface::handleTouchEvent(platformWindow->window(), xiEvent->time, dev->qtTouchDevice, m_touchPoints.values());
-                if (has_touch_without_mouse_emulation) {
-                    // We need to grab the touch event to prevent mouse emulation.
-                    if (xiEvent->evtype == XI_TouchBegin) {
-                        XIEventMask xieventmask;
-                        unsigned int bitMask = 0;
-                        unsigned char *xiBitMask = reinterpret_cast<unsigned char *>(&bitMask);
-                        xieventmask.deviceid = xiEvent->deviceid;
-                        xieventmask.mask = xiBitMask;
-                        xieventmask.mask_len = sizeof(bitMask);
-                        bitMask |= XI_TouchBeginMask;
-                        bitMask |= XI_TouchUpdateMask;
-                        bitMask |= XI_TouchEndMask;
-                        XIGrabDevice(static_cast<Display *>(m_xlib_display), xiEvent->deviceid, platformWindow->winId(), xiEvent->time, None, GrabModeAsync, GrabModeAsync, true, &xieventmask);
-                    } else if (xiEvent->evtype == XI_TouchEnd)
-                        XIUngrabDevice(static_cast<Display *>(m_xlib_display), xiEvent->deviceid, xiEvent->time);
-                }
                 if (touchPoint.state == Qt::TouchPointReleased)
                     // If a touchpoint was released, we can forget it, because the ID won't be reused.
                     m_touchPoints.remove(touchPoint.id);
