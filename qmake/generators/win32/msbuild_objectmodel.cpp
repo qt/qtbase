@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the qmake application of the Qt Toolkit.
@@ -615,7 +615,8 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
         << attrTag("Label", "ProjectConfigurations");
 
     bool isWinRT = false;
-    bool isPhone = false;
+    bool isWinPhone = false;
+    bool isWinPhone80 = false; // ### Windows Phone 8.0, remove in Qt 5.4
     for (int i = 0; i < tool.SingleProjects.count(); ++i) {
         xml << tag("ProjectConfiguration")
             << attrTag("Include" , tool.SingleProjects.at(i).Configuration.Name)
@@ -623,7 +624,8 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
             << tagValue("Platform", tool.SingleProjects.at(i).PlatformName)
             << closetag();
         isWinRT = isWinRT || tool.SingleProjects.at(i).Configuration.WinRT;
-        isPhone = isPhone || tool.SingleProjects.at(i).Configuration.WinPhone;
+        isWinPhone = isWinPhone = tool.SingleProjects.at(i).Configuration.WinPhone;
+        isWinPhone80 = isWinPhone80 || tool.SingleProjects.at(i).Configuration.WinPhone80;
     }
 
     xml << closetag()
@@ -635,7 +637,7 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
 
     if (isWinRT) {
         xml << tagValue("MinimumVisualStudioVersion", tool.Version);
-        if (isPhone) {
+        if (isWinPhone80) {
             xml << tagValue("WinMDAssembly", "true");
             if (tool.SingleProjects.at(0).Configuration.ConfigurationType == typeApplication) {
                 xml << tagValue("XapOutputs", "true");
@@ -643,7 +645,7 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
             }
         } else {
             xml << tagValue("AppContainerApplication", "true")
-                << tagValue("ApplicationType", "Windows Store")
+                << tagValue("ApplicationType", isWinPhone ? "Windows Phone" : "Windows Store")
                 << tagValue("ApplicationTypeRevision", tool.SdkVersion);
         }
     }
@@ -823,7 +825,7 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
     }
     outputFilter(tool, xml, xmlFilter, "Root Files");
 
-    if (tool.SingleProjects.at(0).Configuration.WinPhone) {
+    if (isWinPhone80) {
         xml << tag("ItemGroup")
               << tag("Reference")
                 << attrTag("Include", "platform")
@@ -835,7 +837,7 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
 
     // App manifest
     if (isWinRT) {
-        QString manifest = isPhone ? QStringLiteral("WMAppManifest.xml") : QStringLiteral("Package.appxmanifest");
+        QString manifest = isWinPhone80 ? QStringLiteral("WMAppManifest.xml") : QStringLiteral("Package.appxmanifest");
 
         // Find all icons referenced in the manifest
         QSet<QString> icons;
@@ -856,7 +858,7 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
 
         // Write out manifest + icons as content items
         xml << tag(_ItemGroup)
-            << tag(isPhone ? "Xml" : "AppxManifest")
+            << tag(isWinPhone80 ? "Xml" : "AppxManifest")
             << attrTag("Include", manifest)
             << closetag();
         foreach (const QString &icon, icons) {
@@ -869,7 +871,7 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
 
     xml << import("Project", "$(VCTargetsPath)\\Microsoft.Cpp.targets");
 
-    if (isPhone)
+    if (isWinPhone80)
         xml << import("Project", "$(MSBuildExtensionsPath)\\Microsoft\\WindowsPhone\\v8.0\\Microsoft.Cpp.WindowsPhone.8.0.targets");
 
     xml << tag("ImportGroup")

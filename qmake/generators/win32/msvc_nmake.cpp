@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the qmake application of the Qt Toolkit.
@@ -166,10 +166,17 @@ NmakeMakefileGenerator::writeMakefile(QTextStream &t)
                     return false;
                 }
 
-                regKey = regKeyPrefix
-                        + (isPhone ? QStringLiteral("Microsoft\\Microsoft SDKs\\WindowsPhone\\v")
-                                   : QStringLiteral("Microsoft\\Microsoft SDKs\\Windows\\v"))
-                        + winsdkVer + QStringLiteral("\\InstallationFolder");
+                QString windowsPath;
+                if (isPhone) {
+                    if (targetVer == "WP80") // ### Windows Phone 8.0, remove in Qt 5.4
+                        windowsPath = "Microsoft\\Microsoft SDKs\\WindowsPhone\\v";
+                    else
+                        windowsPath = "Microsoft\\Microsoft SDKs\\WindowsPhoneApp\\v";
+                } else {
+                    windowsPath = "Microsoft\\Microsoft SDKs\\Windows\\v";
+                }
+
+                regKey = regKeyPrefix + windowsPath + winsdkVer + QStringLiteral("\\InstallationFolder");
                 const QString kitDir = qt_readRegistryKey(HKEY_LOCAL_MACHINE, regKey);
                 if (kitDir.isEmpty()) {
                     fprintf(stderr, "Failed to find the Windows Kit installation directory.\n");
@@ -184,7 +191,9 @@ NmakeMakefileGenerator::writeMakefile(QTextStream &t)
                 QStringList libDirs;
                 QStringList binDirs;
                 if (isPhone) {
-                    QString sdkDir = vcInstallDir + QStringLiteral("/WPSDK/") + targetVer;
+                    QString sdkDir = vcInstallDir;
+                    if (targetVer == "WP80")
+                        sdkDir += QStringLiteral("/WPSDK/") + targetVer;
                     if (!QDir(sdkDir).exists()) {
                         fprintf(stderr, "Failed to find the Windows Phone SDK in %s.\n"
                                         "Check that it is properly installed.\n",
@@ -192,7 +201,8 @@ NmakeMakefileGenerator::writeMakefile(QTextStream &t)
                         return false;
                     }
                     incDirs << sdkDir + QStringLiteral("/include");
-                    libDirs << sdkDir + QStringLiteral("/lib/") + compilerArch;
+                    libDirs << sdkDir + QStringLiteral("/lib/store/") + compilerArch
+                            << sdkDir + QStringLiteral("/lib/") + compilerArch;
                     binDirs << sdkDir + QStringLiteral("/bin/") + compiler;
                     libDirs << kitDir + QStringLiteral("/lib/") + arch;
                     incDirs << kitDir + QStringLiteral("/include")

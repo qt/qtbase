@@ -14,10 +14,12 @@
 # WINRT_MANIFEST.version: The version number of the package. Defaults to "1.0.0.0".
 # WINRT_MANIFEST.arguments: Allows arguments to be passed to the executable.
 # WINRT_MANIFEST.publisher: Display name of the publisher. Defaults to "Default publisher display name".
-# WINRT_MANIFEST.publisher_id: On Windows 8/RT, the publisher's distinguished name (default: CN=MyCN). On Windows Phone, the publisher's UUID (default: invalid UUID string).
+# WINRT_MANIFEST.publisher_id: On Windows 8/RT/Phone 8.1, the publisher's distinguished name (default: CN=MyCN). On Windows Phone 8.0, the publisher's UUID (default: invalid UUID string).
+# WINRT_MANIFEST.phone_product_id): On Windows Phone 8.1, the GUID of the product. Defaults to the value of WINRT_MANIFEST.identity.
+# WINRT_MANIFEST.phone_publisher_id: On Windows Phone 8.1, the GUID of the publiser. Defaults to an invalid GUID.
 # WINRT_MANIFEST.description: Package description. Defaults to "Default package description".
-# WINRT_MANIFEST.author: Package author (Windows Phone only). Defaults to "Default package author".
-# WINRT_MANIFEST.genre: Package genre (Windows Phone only). Defaults to "apps.normal".
+# WINRT_MANIFEST.author: Package author (Windows Phone 8.0 only). Defaults to "Default package author".
+# WINRT_MANIFEST.genre: Package genre (Windows Phone 8.0 only). Defaults to "apps.normal".
 # WINRT_MANIFEST.background: Tile background color. Defaults to "green".
 # WINRT_MANIFEST.foreground: Tile foreground (text) color (Windows 8/RT only). Defaults to "light".
 # WINRT_MANIFEST.logo_store: Logo image file for Windows Store. Default provided by the mkspec.
@@ -49,7 +51,7 @@
         BUILD_DIR = $$dirname(QMAKE_RESOLVED_TARGET)
     }
 
-    winphone: \
+    winphone:equals(WINSDK_VER, 8.0): \
         manifest_file.output = $$BUILD_DIR/WMAppManifest.xml
     else: contains(TEMPLATE, "vc.*"): \
         manifest_file.output = $$BUILD_DIR/Package.appxmanifest
@@ -77,16 +79,18 @@
             write_file($$UUID_CACHE, WINRT_UUID)|error("Unable to write the UUID cache; aborting.")
             eval($$WINRT_UUID)
         }
-        winphone: WINRT_MANIFEST.identity = {$$WINRT_MANIFEST.identity}
+        winphone:equals(WINSDK_VER, 8.0): WINRT_MANIFEST.identity = {$$WINRT_MANIFEST.identity}
     }
     isEmpty(WINRT_MANIFEST.name): WINRT_MANIFEST.name = $$TARGET
     isEmpty(WINRT_MANIFEST.architecture): WINRT_MANIFEST.architecture = $$VCPROJ_ARCH
     isEmpty(WINRT_MANIFEST.version): WINRT_MANIFEST.version = 1.0.0.0
     isEmpty(WINRT_MANIFEST.publisher): WINRT_MANIFEST.publisher = Default publisher display name
     isEmpty(WINRT_MANIFEST.publisherid) {
-        winphone: WINRT_MANIFEST.publisherid = {00000000-0000-0000-0000-000000000000}
+        winphone:equals(WINSDK_VER, 8.0): WINRT_MANIFEST.publisherid = {00000000-0000-0000-0000-000000000000}
         else: WINRT_MANIFEST.publisherid = CN=$$(USERNAME)
     }
+    isEmpty(WINRT_MANIFEST.phone_product_id): WINRT_MANIFEST.phone_product_id = $$WINRT_MANIFEST.identity
+    isEmpty(WINRT_MANIFEST.phone_publisher_id): WINRT_MANIFEST.phone_publisher_id = 00000000-0000-0000-0000-000000000000
     isEmpty(WINRT_MANIFEST.description): WINRT_MANIFEST.description = Default package description
     isEmpty(WINRT_MANIFEST.author): WINRT_MANIFEST.author = Default package author
     isEmpty(WINRT_MANIFEST.genre): WINRT_MANIFEST.genre = apps.normal
@@ -94,7 +98,7 @@
     isEmpty(WINRT_MANIFEST.foreground): WINRT_MANIFEST.foreground = light
     isEmpty(WINRT_MANIFEST.default_language): WINRT_MANIFEST.default_language = en
 
-    winphone: INDENT = "$$escape_expand(\\r\\n)    "
+    winphone:equals(WINSDK_VER, 8.0): INDENT = "$$escape_expand(\\r\\n)    "
     else: INDENT = "$$escape_expand(\\r\\n)  "
 
     # Languages are given as a string list
@@ -142,16 +146,12 @@
     ICONS_FOUND ~= s/.*\\\$\\\$\\{WINRT_MANIFEST\\.((logo|tile)_[^\}]+)\\}.*/\\1/g
     for (ICON_NAME, ICONS_FOUND) {
         ICON_FILE = $$eval(WINRT_MANIFEST.$$ICON_NAME)
-        isEmpty(ICON_FILE) {
-            icon_$${ICON_NAME}.input = $$WINRT_ASSETS_PATH/$${ICON_NAME}.png
-            icon_$${ICON_NAME}.output = $$BUILD_DIR/assets/$${ICON_NAME}.png
-            WINRT_MANIFEST.$${ICON_NAME} = assets/$${ICON_NAME}.png
-        } else {
-            icon_$${ICON_NAME}.input = $$ICON_FILE
-            icon_$${ICON_NAME}.output = $$BUILD_DIR/$$ICON_FILE
-        }
+        isEmpty(ICON_FILE): ICON_FILE = $$WINRT_ASSETS_PATH/$${ICON_NAME}.png
+        icon_$${ICON_NAME}.input = $$ICON_FILE
+        icon_$${ICON_NAME}.output = $$BUILD_DIR/assets/$$basename(ICON_FILE)
         icon_$${ICON_NAME}.CONFIG = verbatim
         QMAKE_SUBSTITUTES += icon_$${ICON_NAME}
+        WINRT_MANIFEST.$${ICON_NAME} = assets/$$basename(ICON_FILE)
     }
 
     QMAKE_SUBSTITUTES += manifest_file
