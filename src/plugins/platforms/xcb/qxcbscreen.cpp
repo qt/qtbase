@@ -44,6 +44,7 @@
 
 #include <qpa/qwindowsysteminterface.h>
 #include <private/qmath_p.h>
+#include <QtGui/private/qhighdpiscaling_p.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -49,6 +49,7 @@
 #include <qdebug.h>
 #include <qpainter.h>
 #include <qscreen.h>
+#include <QtGui/private/qhighdpiscaling_p.h>
 #include <qpa/qplatformgraphicsbuffer.h>
 
 #include <algorithm>
@@ -345,7 +346,7 @@ void QXcbBackingStore::flush(QWindow *window, const QRegion &region, const QPoin
     QSize imageSize = m_image->size();
 
     QRegion clipped = region;
-    clipped &= QRect(0, 0, window->width(), window->height());
+    clipped &= qHighDpiToDevicePixels(QRect(0, 0, window->width(), window->height()));
     clipped &= QRect(0, 0, imageSize.width(), imageSize.height()).translated(-offset);
 
     QRect bounds = clipped.boundingRect();
@@ -361,7 +362,10 @@ void QXcbBackingStore::flush(QWindow *window, const QRegion &region, const QPoin
         return;
     }
 
-    const int dpr = int(window->devicePixelRatio());
+    // Note on the qHighDpiToDeviceIndependentPixels call below: When scaling
+    // in QtGui is active this prevents xcb plugin from scalìng in addition
+    // by keeping "dpr" below at 1.
+    const int dpr = int(qHighDpiToDeviceIndependentPixels(window->devicePixelRatio(), window));
 
     QVector<QRect> rects = clipped.rects();
     for (int i = 0; i < rects.size(); ++i) {
@@ -397,7 +401,7 @@ void QXcbBackingStore::composeAndFlush(QWindow *window, const QRegion &region, c
 
 void QXcbBackingStore::resize(const QSize &size, const QRegion &)
 {
-    const int dpr = int(window()->devicePixelRatio());
+    const int dpr = int(qHighDpiToDeviceIndependentPixels(window()->devicePixelRatio(), window()));
     const QSize xSize = size * dpr;
 
     if (m_image && xSize == m_image->size())

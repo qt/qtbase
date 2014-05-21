@@ -37,6 +37,7 @@
 #include <QScreen>
 #include <QtGui/QIcon>
 #include <QtGui/QRegion>
+#include <QtGui/private/qhighdpiscaling_p.h>
 
 #include "qxcbintegration.h"
 #include "qxcbconnection.h"
@@ -317,7 +318,7 @@ void QXcbWindow::create()
     // Parameters to XCreateWindow() are frame corner + inner size.
     // This fits in case position policy is frame inclusive. There is
     // currently no way to implement it for frame-exclusive geometries.
-    QRect rect = window()->geometry();
+    QRect rect = windowGeometry();
     QPlatformWindow::setGeometry(rect);
     QXcbScreen *currentScreen = xcbScreen();
     QPlatformScreen *newScreen = screenForGeometry(rect);
@@ -327,15 +328,15 @@ void QXcbWindow::create()
 
     const int dpr = int(devicePixelRatio());
 
-    QSize minimumSize = window()->minimumSize();
+    const QSize minimumSize = windowMinimumSize();
     if (rect.width() > 0 || rect.height() > 0) {
         rect.setWidth(qBound(1, rect.width(), XCOORD_MAX/dpr));
         rect.setHeight(qBound(1, rect.height(), XCOORD_MAX/dpr));
     } else if (minimumSize.width() > 0 || minimumSize.height() > 0) {
         rect.setSize(minimumSize);
     } else {
-        rect.setWidth(defaultWindowWidth);
-        rect.setHeight(defaultWindowHeight);
+        rect.setWidth(qHighDpiToDevicePixels(int(defaultWindowWidth)));
+        rect.setHeight(qHighDpiToDevicePixels(int(defaultWindowHeight)));
     }
 
     xcb_window_t xcb_parent_id = platformScreen->root();
@@ -1222,7 +1223,7 @@ void QXcbWindow::updateMotifWmHintsBeforeMap()
         mwmhints.flags &= ~MWM_HINTS_INPUT_MODE;
     }
 
-    if (window()->minimumSize() == window()->maximumSize()) {
+    if (windowMinimumSize() == windowMaximumSize()) {
         // fixed size, remove the resize handle (since mwm/dtwm
         // isn't smart enough to do it itself)
         mwmhints.flags |= MWM_HINTS_FUNCTIONS;
@@ -1513,10 +1514,10 @@ void QXcbWindow::propagateSizeHints()
         xcb_size_hints_set_size(&hints, true, xRect.width(), xRect.height());
     xcb_size_hints_set_win_gravity(&hints, m_gravity);
 
-    QSize minimumSize = win->minimumSize() * dpr;
-    QSize maximumSize = win->maximumSize() * dpr;
-    QSize baseSize = win->baseSize() * dpr;
-    QSize sizeIncrement = win->sizeIncrement() * dpr;
+    QSize minimumSize = windowMinimumSize() * dpr;
+    QSize maximumSize = windowMaximumSize() * dpr;
+    QSize baseSize = windowBaseSize() * dpr;
+    QSize sizeIncrement = windowSizeIncrement() * dpr;
 
     if (minimumSize.width() > 0 || minimumSize.height() > 0)
         xcb_size_hints_set_min_size(&hints,
