@@ -182,6 +182,7 @@ static bool isMouseEvent(NSEvent *ev)
 
 - (void)detachFromPlatformWindow
 {
+    _platformWindow = 0;
     [self.window.delegate release];
     self.window.delegate = nil;
 }
