@@ -211,51 +211,6 @@ private:
     bool m_roundCoordinates;
 };
 
-static ComPtr<ID2D1PathGeometry1> painterPathToID2D1PathGeometry(const QPainterPath &path, bool alias)
-{
-    Direct2DPathGeometryWriter writer;
-    if (!writer.begin())
-        return NULL;
-
-    writer.setWindingFillEnabled(path.fillRule() == Qt::WindingFill);
-    writer.setAliasingEnabled(alias);
-
-    for (int i = 0; i < path.elementCount(); i++) {
-        const QPainterPath::Element element = path.elementAt(i);
-
-        switch (element.type) {
-        case QPainterPath::MoveToElement:
-            writer.moveTo(element);
-            break;
-
-        case QPainterPath::LineToElement:
-            writer.lineTo(element);
-            break;
-
-        case QPainterPath::CurveToElement:
-        {
-            const QPainterPath::Element data1 = path.elementAt(++i);
-            const QPainterPath::Element data2 = path.elementAt(++i);
-
-            Q_ASSERT(i < path.elementCount());
-
-            Q_ASSERT(data1.type == QPainterPath::CurveToDataElement);
-            Q_ASSERT(data2.type == QPainterPath::CurveToDataElement);
-
-            writer.curveTo(element, data1, data2);
-        }
-            break;
-
-        case QPainterPath::CurveToDataElement:
-            qWarning("%s: Unhandled Curve Data Element", __FUNCTION__);
-            break;
-        }
-    }
-
-    writer.close();
-    return writer.geometry();
-}
-
 struct D2DVectorPathCache {
     ComPtr<ID2D1PathGeometry1> aliased;
     ComPtr<ID2D1PathGeometry1> antiAliased;
@@ -908,7 +863,9 @@ bool QWindowsDirect2DPaintEngine::begin(QPaintDevice * pdev)
         QPainterPath p;
         p.addRegion(systemClip());
 
-        ComPtr<ID2D1PathGeometry1> geometry = painterPathToID2D1PathGeometry(p, d->antialiasMode() == D2D1_ANTIALIAS_MODE_ALIASED);
+        ComPtr<ID2D1PathGeometry1> geometry = vectorPathToID2D1PathGeometry(qtVectorPathForPath(p),
+                                                                            d->antialiasMode() == D2D1_ANTIALIAS_MODE_ALIASED,
+                                                                            this);
         if (!geometry)
             return false;
 
