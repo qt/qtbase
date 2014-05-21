@@ -84,7 +84,6 @@ static QStringList dependModules;
 static QStringList indexDirs;
 static QString currentDir;
 static QString prevCurrentDir;
-static QString documentationPath;
 
 /*!
   Print the help message to \c stdout.
@@ -154,11 +153,6 @@ static void loadIndexFiles(Config& config)
         if (singleOutputSubdir.isEmpty())
             singleOutputSubdir = "html";
     }
-
-    // Allow modules and third-party application/libraries to link
-    // to the Qt docs without having to explicitly pass --indexdir.
-    if (!indexDirs.contains(documentationPath))
-        indexDirs.append(documentationPath);
 
     if (dependModules.size() > 0) {
         if (indexDirs.size() > 0) {
