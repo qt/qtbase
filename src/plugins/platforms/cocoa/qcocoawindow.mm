@@ -262,8 +262,6 @@ static bool isMouseEvent(NSEvent *ev)
 {
     [self close];
 
-    QCocoaIntegration::instance()->setWindow(self, 0);
-
     if (self.helper.grabbingMouse) {
         self.helper.releaseOnMouseUp = YES;
     } else {
@@ -330,7 +328,6 @@ static bool isMouseEvent(NSEvent *ev)
 {
     [self.helper detachFromPlatformWindow];
     [self close];
-    QCocoaIntegration::instance()->setWindow(self, 0);
     [self release];
 }
 
@@ -1413,8 +1410,6 @@ QCocoaNSWindow * QCocoaWindow::createNSWindow()
     m_windowModality = window()->modality();
 
     applyContentBorderThickness(createdWindow);
-
-    QCocoaIntegration::instance()->setWindow(createdWindow, this);
 
     return createdWindow;
 }

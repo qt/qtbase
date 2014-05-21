@@ -159,9 +159,12 @@ qreal QCocoaScreen::devicePixelRatio() const
 QWindow *QCocoaScreen::topLevelAt(const QPoint &point) const
 {
     // Get a z-ordered list of windows. Iterate through it until
-    // we find a window which contains the point.
+    // we find a (Qt) window which contains the point.
     for (NSWindow *nsWindow in [NSApp orderedWindows]) {
-        QCocoaWindow *cocoaWindow = QCocoaIntegration::instance()->window(nsWindow);
+        if (![nsWindow isKindOfClass:[QNSWindow class]])
+            continue;
+        QNSWindow *qnsWindow = static_cast<QNSWindow *>(nsWindow);
+        QCocoaWindow *cocoaWindow = qnsWindow.helper.platformWindow;
         if (!cocoaWindow)
             continue;
         QWindow *window = cocoaWindow->window();
@@ -516,16 +519,6 @@ void QCocoaIntegration::setToolbar(QWindow *window, NSToolbar *toolbar)
 NSToolbar *QCocoaIntegration::toolbar(QWindow *window) const
 {
     return mToolbars.value(window);
-}
-
-void QCocoaIntegration::setWindow(NSWindow* nsWindow, QCocoaWindow *window)
-{
-    mWindows.insert(nsWindow, window);
-}
-
-QCocoaWindow *QCocoaIntegration::window(NSWindow *window)
-{
-    return mWindows.value(window);
 }
 
 void QCocoaIntegration::clearToolbars()

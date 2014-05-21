@@ -139,8 +139,6 @@ public:
     void setToolbar(QWindow *window, NSToolbar *toolbar);
     NSToolbar *toolbar(QWindow *window) const;
     void clearToolbars();
-    void setWindow(NSWindow* nsWindow, QCocoaWindow *window);
-    QCocoaWindow *window(NSWindow *window);
 private:
     static QCocoaIntegration *mInstance;
 
@@ -159,7 +157,6 @@ private:
     QScopedPointer<QCocoaKeyMapper> mKeyboardMapper;
 
     QHash<QWindow *, NSToolbar *> mToolbars;
-    QHash<NSWindow *, QCocoaWindow*> mWindows;
 };
 
 QT_END_NAMESPACE
