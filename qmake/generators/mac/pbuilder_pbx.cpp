@@ -681,7 +681,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
             if (!filetype.isNull())
                 t << "\t\t\t" << writeSettings("lastKnownFileType", filetype) << ";\n";
             t << "\t\t};\n";
-            if (sources.at(source).isBuildable() && sources.at(source).isObjectOutput(file)) { //build reference
+            if (sources.at(source).isBuildable()) { //build reference
                 QString build_key = keyFor(file + ".BUILDABLE");
                 t << "\t\t" << build_key << " = {\n"
                   << "\t\t\t" << writeSettings("fileRef", src_key) << ";\n"
@@ -690,7 +690,8 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                   << "\t\t\t\t" << writeSettings("ATTRIBUTES", ProStringList(), SettingsAsList, 5) << ";\n"
                   << "\t\t\t};\n"
                   << "\t\t};\n";
-                project->values("QMAKE_PBX_OBJ").append(build_key);
+                if (sources.at(source).isObjectOutput(file))
+                    project->values("QMAKE_PBX_OBJ").append(build_key);
             }
         }
         if(!src_list.isEmpty()) {
