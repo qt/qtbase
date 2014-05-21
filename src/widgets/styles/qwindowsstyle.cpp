@@ -594,6 +594,17 @@ int QWindowsStyle::styleHint(StyleHint hint, const QStyleOption *opt, const QWid
         break;
     }
 #endif // Q_OS_WIN && !Q_OS_WINRT
+    case SH_Menu_SubMenuSloppyCloseTimeout:
+    case SH_Menu_SubMenuPopupDelay: {
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+        DWORD delay;
+        if (SystemParametersInfo(SPI_GETMENUSHOWDELAY, 0, &delay, 0))
+            ret = delay;
+        else
+#endif // Q_OS_WIN && !Q_OS_WINCE && !Q_OS_WINRT
+            ret = 400;
+        break;
+    }
 #ifndef QT_NO_RUBBERBAND
     case SH_RubberBand_Mask:
         if (const QStyleOptionRubberBand *rbOpt = qstyleoption_cast<const QStyleOptionRubberBand *>(opt)) {

@@ -2547,6 +2547,19 @@ int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
     case SH_Menu_SubMenuPopupDelay:
         ret = 100;
         break;
+    case SH_Menu_SubMenuUniDirection:
+        ret = true;
+        break;
+    case SH_Menu_SubMenuSloppySelectOtherActions:
+        ret = false;
+        break;
+    case SH_Menu_SubMenuResetWhenReenteringParent:
+        ret = true;
+        break;
+    case SH_Menu_SubMenuDontStartSloppyOnLeave:
+        ret = true;
+        break;
+
     case SH_ScrollBar_LeftClickAbsolutePosition: {
         NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
         bool result = [defaults boolForKey:@"AppleScrollerPagingBehavior"];

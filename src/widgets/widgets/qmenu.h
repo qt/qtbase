@@ -188,7 +188,6 @@ protected:
 #endif
 
 private Q_SLOTS:
-    void internalSetSloppyAction();
     void internalDelayedPopup();
 
 private:

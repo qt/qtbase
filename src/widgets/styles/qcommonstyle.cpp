@@ -4927,6 +4927,25 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
         ret = true;
         break;
 
+    case SH_Menu_SubMenuUniDirection:
+        ret = false;
+        break;
+    case SH_Menu_SubMenuUniDirectionFailCount:
+        ret = 1;
+        break;
+    case SH_Menu_SubMenuSloppySelectOtherActions:
+        ret = true;
+        break;
+    case SH_Menu_SubMenuSloppyCloseTimeout:
+        ret = 1000;
+        break;
+    case SH_Menu_SubMenuResetWhenReenteringParent:
+        ret = false;
+        break;
+    case SH_Menu_SubMenuDontStartSloppyOnLeave:
+        ret = false;
+        break;
+
     case SH_ProgressDialog_TextLabelAlignment:
         ret = Qt::AlignCenter;
         break;

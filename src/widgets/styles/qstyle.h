@@ -708,6 +708,12 @@ public:
         SH_ComboBox_UseNativePopup,
         SH_LineEdit_PasswordMaskDelay,
         SH_TabBar_ChangeCurrentDelay,
+        SH_Menu_SubMenuUniDirection,
+        SH_Menu_SubMenuUniDirectionFailCount,
+        SH_Menu_SubMenuSloppySelectOtherActions,
+        SH_Menu_SubMenuSloppyCloseTimeout,
+        SH_Menu_SubMenuResetWhenReenteringParent,
+        SH_Menu_SubMenuDontStartSloppyOnLeave,
         // Add new style hint values here
 
         SH_CustomBase = 0xf0000000

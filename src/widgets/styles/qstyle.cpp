@@ -1711,6 +1711,32 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
         other items of the menu. This is supported on most modern
         desktop platforms.
 
+    \value SH_Menu_SubMenuUniDirection Since Qt 5.5. If the cursor has
+        to move towards the submenu (like it is on OS X), or if the
+        cursor can move in any direction as long as it reaches the
+        submenu before the sloppy timeout.
+
+    \value SH_Menu_SubMenuUniDirectionFailCount Since Qt 5.5.  When
+        SH_Menu_SubMenuUniDirection is defined this enum defines the
+        number of failed mouse moves before the sloppy submenu is
+        discarded.  This can be used to control the "strictness" of the
+        uni direction algorithm.
+
+    \value SH_Menu_SubMenuSloppySelectOtherActions Since Qt 5.5. Should
+        other action items be selected when the mouse moves towards a
+        sloppy submenu.
+
+    \value SH_Menu_SubMenuSloppyCloseTimeout Since Qt 5.5. The timeout
+        used to close sloppy submenus.
+
+    \value SH_Menu_SubMenuResetWhenReenteringParent Since Qt 5.5. When
+        entering parent from child submenu, should the sloppy state be
+        reset, effectively closing the child and making the current
+        submenu active.
+
+    \value SH_Menu_SubMenuDontStartSloppyOnLeave Since Qt 5.5. Do not
+        start sloppy timers when the mouse leaves a sub-menu.
+
     \value SH_ScrollView_FrameOnlyAroundContents  Whether scrollviews
         draw their frame only around contents (like Motif), or around
         contents, scroll bars and corner widgets (like Windows).
