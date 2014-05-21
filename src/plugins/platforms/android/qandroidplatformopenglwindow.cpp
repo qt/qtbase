@@ -127,11 +127,20 @@ void QAndroidPlatformOpenGLWindow::createEgl(EGLConfig config)
     m_nativeWindow = ANativeWindow_fromSurface(env, m_androidSurfaceObject.object());
     m_androidSurfaceObject = QJNIObjectPrivate();
     m_eglSurface = eglCreateWindowSurface(m_eglDisplay, config, m_nativeWindow, NULL);
+    m_format = q_glFormatFromConfig(m_eglDisplay, config, window()->requestedFormat());
     if (m_eglSurface == EGL_NO_SURFACE) {
         EGLint error = eglGetError();
         eglTerminate(m_eglDisplay);
         qFatal("EGL Error : Could not create the egl surface: error = 0x%x\n", error);
     }
+}
+
+QSurfaceFormat QAndroidPlatformOpenGLWindow::format() const
+{
+    if (m_nativeWindow == 0)
+        return window()->requestedFormat();
+    else
+        return m_format;
 }
 
 void QAndroidPlatformOpenGLWindow::clearEgl()

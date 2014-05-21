@@ -44,6 +44,8 @@
 #include "qandroidplatformopenglwindow.h"
 #include "qandroidplatformintegration.h"
 
+#include <QtPlatformSupport/private/qeglpbuffer_p.h>
+
 #include <QSurface>
 #include <QtGui/private/qopenglcontext_p.h>
 
@@ -98,7 +100,8 @@ EGLSurface QAndroidPlatformOpenGLContext::eglSurfaceForPlatformSurface(QPlatform
 {
     if (surface->surface()->surfaceClass() == QSurface::Window)
         return static_cast<QAndroidPlatformOpenGLWindow *>(surface)->eglSurface(eglConfig());
-    return EGL_NO_SURFACE;
+    else
+        return static_cast<QEGLPbuffer *>(surface)->pbuffer();
 }
 
 QT_END_NAMESPACE
