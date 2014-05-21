@@ -256,8 +256,30 @@ static ComPtr<ID2D1PathGeometry1> painterPathToID2D1PathGeometry(const QPainterP
     return writer.geometry();
 }
 
-static ComPtr<ID2D1PathGeometry1> vectorPathToID2D1PathGeometry(const QVectorPath &path, bool alias)
+struct D2DVectorPathCache {
+    ComPtr<ID2D1PathGeometry1> aliased;
+    ComPtr<ID2D1PathGeometry1> antiAliased;
+
+    static void cleanup_func(QPaintEngineEx *engine, void *data) {
+        Q_UNUSED(engine);
+        D2DVectorPathCache *e = static_cast<D2DVectorPathCache *>(data);
+        delete e;
+    }
+};
+
+static ComPtr<ID2D1PathGeometry1> vectorPathToID2D1PathGeometry(const QVectorPath &path, bool alias, QPaintEngineEx* engine)
 {
+    QVectorPath::CacheEntry *cacheEntry = path.isCacheable() ? path.lookupCacheData(engine)
+                                                             : Q_NULLPTR;
+
+    if (cacheEntry) {
+        D2DVectorPathCache *e = static_cast<D2DVectorPathCache *>(cacheEntry->data);
+        if (alias && e->aliased)
+            return e->aliased;
+        else if (!alias && e->antiAliased)
+            return e->antiAliased;
+    }
+
     Direct2DPathGeometryWriter writer;
     if (!writer.begin())
         return NULL;
@@ -321,7 +343,22 @@ static ComPtr<ID2D1PathGeometry1> vectorPathToID2D1PathGeometry(const QVectorPat
             writer.lineTo(QPointF(points[0], points[1]));
 
     writer.close();
-    return writer.geometry();
+    ComPtr<ID2D1PathGeometry1> geometry = writer.geometry();
+
+    if (path.isCacheable()) {
+        if (!cacheEntry)
+            cacheEntry = path.addCacheData(engine, new D2DVectorPathCache, D2DVectorPathCache::cleanup_func);
+
+        D2DVectorPathCache *e = static_cast<D2DVectorPathCache *>(cacheEntry->data);
+        if (alias)
+            e->aliased = geometry;
+        else
+            e->antiAliased = geometry;
+    } else {
+        path.makeCacheable();
+    }
+
+    return geometry;
 }
 
 class QWindowsDirect2DPaintEnginePrivate : public QPaintEngineExPrivate
@@ -426,7 +463,7 @@ public:
             dc()->PushAxisAlignedClip(rect, antialiasMode());
             pushedClips.push(AxisAlignedClip);
         } else {
-            ComPtr<ID2D1PathGeometry1> geometry = vectorPathToID2D1PathGeometry(path, antialiasMode() == D2D1_ANTIALIAS_MODE_ALIASED);
+            ComPtr<ID2D1PathGeometry1> geometry = vectorPathToID2D1PathGeometry(path, antialiasMode() == D2D1_ANTIALIAS_MODE_ALIASED, q);
             if (!geometry) {
                 qWarning("%s: Could not convert vector path to painter path!", __FUNCTION__);
                 return;
@@ -938,7 +975,7 @@ void QWindowsDirect2DPaintEngine::draw(const QVectorPath &path)
 {
     Q_D(QWindowsDirect2DPaintEngine);
 
-    ComPtr<ID2D1Geometry> geometry = vectorPathToID2D1PathGeometry(path, d->antialiasMode() == D2D1_ANTIALIAS_MODE_ALIASED);
+    ComPtr<ID2D1Geometry> geometry = vectorPathToID2D1PathGeometry(path, d->antialiasMode() == D2D1_ANTIALIAS_MODE_ALIASED, this);
     if (!geometry) {
         qWarning("%s: Could not convert path to d2d geometry", __FUNCTION__);
         return;
@@ -978,7 +1015,7 @@ void QWindowsDirect2DPaintEngine::fill(const QVectorPath &path, const QBrush &br
     if (!d->brush.brush)
         return;
 
-    ComPtr<ID2D1Geometry> geometry = vectorPathToID2D1PathGeometry(path, d->antialiasMode() == D2D1_ANTIALIAS_MODE_ALIASED);
+    ComPtr<ID2D1Geometry> geometry = vectorPathToID2D1PathGeometry(path, d->antialiasMode() == D2D1_ANTIALIAS_MODE_ALIASED, this);
     if (!geometry) {
         qWarning("%s: Could not convert path to d2d geometry", __FUNCTION__);
         return;
@@ -1016,7 +1053,7 @@ void QWindowsDirect2DPaintEngine::stroke(const QVectorPath &path, const QPen &pe
     if (!d->pen.brush)
         return;
 
-    ComPtr<ID2D1Geometry> geometry = vectorPathToID2D1PathGeometry(path, d->antialiasMode() == D2D1_ANTIALIAS_MODE_ALIASED);
+    ComPtr<ID2D1Geometry> geometry = vectorPathToID2D1PathGeometry(path, d->antialiasMode() == D2D1_ANTIALIAS_MODE_ALIASED, this);
     if (!geometry) {
         qWarning("%s: Could not convert path to d2d geometry", __FUNCTION__);
         return;
