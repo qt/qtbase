@@ -847,7 +847,7 @@ void QTextEngine::shapeLine(const QScriptLine &line)
     int item = findItem(line.from);
     if (item == -1)
         return;
-    for (item = findItem(line.from); item <= end; ++item) {
+    for ( ; item <= end; ++item) {
         QScriptItem &si = layoutData->items[item];
         if (si.analysis.flags == QScriptAnalysis::Tab) {
             ensureSpace(1);
@@ -1634,6 +1634,9 @@ bool QTextEngine::isRightToLeft() const
 int QTextEngine::findItem(int strPos) const
 {
     itemize();
+    if (strPos < 0 || strPos >= layoutData->string.size())
+        return -1;
+
     int left = 1;
     int right = layoutData->items.size()-1;
     while(left <= right) {
@@ -2053,7 +2056,8 @@ void QTextEngine::justify(const QScriptLine &line)
         return;
 
     int firstItem = findItem(line.from);
-    int nItems = findItem(line.from + line_length - 1) - firstItem + 1;
+    int lastItem = findItem(line.from + line_length - 1);
+    int nItems = (firstItem >= 0 && lastItem >= firstItem)? (lastItem-firstItem+1) : 0;
 
     QVarLengthArray<QJustificationPoint> justificationPoints;
     int nPoints = 0;

@@ -1730,6 +1730,7 @@ void QTextLine::layout_helper(int maxGlyphs)
 
     int item = -1;
     int newItem = eng->findItem(line.from);
+    Q_ASSERT(newItem >= 0);
 
     LB_DEBUG("from: %d: item=%d, total %d, width available %f", line.from, newItem, eng->layoutData->items.size(), line.width.toReal());
 
