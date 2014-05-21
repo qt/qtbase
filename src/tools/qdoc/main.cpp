@@ -224,8 +224,7 @@ static void loadIndexFiles(Config& config)
             }
         }
         else {
-            qDebug() << "Dependant modules specified, but no index directories or "
-                     << "install directory were set."
+            qDebug() << "Dependent modules specified, but no index directories were set."
                      << "There will probably be errors for missing links.";
         }
     }
@@ -618,7 +617,6 @@ int main(int argc, char **argv)
         }
         else if (opt == "-installdir") {
             Config::installDir = argv[i];
-            indexDirs += argv[i];
             i++;
         }
         else if (opt == "-obsoletelinks") {
