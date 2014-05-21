@@ -148,6 +148,7 @@ private Q_SLOTS:
     void longStrings();
 
     void arrayInitializerList();
+    void objectInitializerList();
 private:
     QString testDataDir;
 };
@@ -2681,19 +2682,69 @@ void tst_QtJson::arrayInitializerList()
         QCOMPARE(QJsonValue(a3[1]), QJsonValue(o));
         QCOMPARE(QJsonValue(a3[2]), QJsonValue(a2));
 
-        QJsonArray a4 { 1, QJsonArray{1,2,3}, QJsonArray{"hello", 2} };
-        QCOMPARE(a4.count(), 3);
+        QJsonArray a4 { 1, QJsonArray{1,2,3}, QJsonArray{"hello", 2}, QJsonObject{{"one", 1}} };
+        QCOMPARE(a4.count(), 4);
         QCOMPARE(QJsonValue(a4[0]), QJsonValue(1));
 
         {
             QJsonArray a41 = a4[1].toArray();
             QJsonArray a42 = a4[2].toArray();
+            QJsonObject a43 = a4[3].toObject();
             QCOMPARE(a41.count(), 3);
             QCOMPARE(a42.count(), 2);
+            QCOMPARE(a43.count(), 1);
 
             QCOMPARE(QJsonValue(a41[2]), QJsonValue(3));
             QCOMPARE(QJsonValue(a42[1]), QJsonValue(2));
+            QCOMPARE(QJsonValue(a43["one"]), QJsonValue(1));
         }
+    }
+#endif
+}
+
+void tst_QtJson::objectInitializerList()
+{
+#ifndef Q_COMPILER_INITIALIZER_LISTS
+    QSKIP("initializer_list is enabled only with c++11 support");
+#else
+    QVERIFY(QJsonObject{}.isEmpty());
+
+    {   // one property
+        QJsonObject one {{"one", 1}};
+        QCOMPARE(one.count(), 1);
+        QVERIFY(one.contains("one"));
+        QCOMPARE(QJsonValue(one["one"]), QJsonValue(1));
+    }
+    {   // two properties
+        QJsonObject two {
+                           {"one", 1},
+                           {"two", 2}
+                        };
+        QCOMPARE(two.count(), 2);
+        QVERIFY(two.contains("one"));
+        QVERIFY(two.contains("two"));
+        QCOMPARE(QJsonValue(two["one"]), QJsonValue(1));
+        QCOMPARE(QJsonValue(two["two"]), QJsonValue(2));
+    }
+    {   // nested object
+        QJsonObject object{{"nested", QJsonObject{{"innerProperty", 2}}}};
+        QCOMPARE(object.count(), 1);
+        QVERIFY(object.contains("nested"));
+        QVERIFY(object["nested"].isObject());
+
+        QJsonObject nested = object["nested"].toObject();
+        QCOMPARE(QJsonValue(nested["innerProperty"]), QJsonValue(2));
+    }
+    {   // nested array
+        QJsonObject object{{"nested", QJsonArray{"innerValue", 2.1, "bum cyk cyk"}}};
+        QCOMPARE(object.count(), 1);
+        QVERIFY(object.contains("nested"));
+        QVERIFY(object["nested"].isArray());
+
+        QJsonArray nested = object["nested"].toArray();
+        QCOMPARE(nested.count(), 3);
+        QCOMPARE(QJsonValue(nested[0]), QJsonValue("innerValue"));
+        QCOMPARE(QJsonValue(nested[1]), QJsonValue(2.1));
     }
 #endif
 }

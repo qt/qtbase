@@ -116,6 +116,20 @@ QJsonObject::QJsonObject()
 }
 
 /*!
+    \fn QJsonObject::QJsonObject(std::initializer_list<QPair<QString, QJsonValue> > args)
+    \since 5.4
+    Constructs a QJsonObject instance initialized from \a args initialization list.
+    For example:
+    \code
+    QJsonObject object
+    {
+        {"property1", 1},
+        {"property2", 2}
+    };
+    \endcode
+*/
+
+/*!
     \internal
  */
 QJsonObject::QJsonObject(QJsonPrivate::Data *data, QJsonPrivate::Object *object)
@@ -126,6 +140,19 @@ QJsonObject::QJsonObject(QJsonPrivate::Data *data, QJsonPrivate::Object *object)
     d->ref.ref();
 }
 
+/*!
+    This method replaces part of the QJsonObject(std::initializer_list<QPair<QString, QJsonValue>> args) body.
+    The constructor needs to be inline, but we do not want to leak implementation details
+    of this class.
+    \note this method is called for an uninitialized object
+    \internal
+ */
+
+void QJsonObject::initialize()
+{
+    d = 0;
+    o = 0;
+}
 
 /*!
     Destroys the object.
