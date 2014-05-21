@@ -573,7 +573,13 @@ void QWin32PrintEngine::drawPixmap(const QRectF &targetRect,
                 width = (tw - (x * txinc));
             }
 
-            QPixmap p = pixmap.copy(tileSize * x, tileSize * y, imgw, imgh);
+
+            QImage img(QSize(imgw, imgh), QImage::Format_RGB32);
+            img.fill(Qt::white);
+            QPainter painter(&img);
+            painter.drawPixmap(0,0, pixmap, tileSize * x, tileSize * y, imgw, imgh);
+            QPixmap p = QPixmap::fromImage(img);
+
             HBITMAP hbitmap = qt_pixmapToWinHBITMAP(p, HBitmapNoAlpha);
             HDC display_dc = GetDC(0);
             HDC hbitmap_hdc = CreateCompatibleDC(display_dc);

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -166,11 +166,14 @@ void QAlphaPaintEngine::drawPath(const QPainterPath &path)
 
     if (d->m_pass == 0) {
         d->m_continueCall = false;
-        if (d->m_hasalpha || d->m_advancedPen || d->m_advancedBrush
+        if (d->canSeeTroughBackground(d->m_hasalpha, tr) || d->m_advancedPen || d->m_advancedBrush
             || d->m_emulateProjectiveTransforms)
         {
             d->addAlphaRect(tr);
         }
+
+        d->addDirtyRect(tr);
+
         if (d->m_picengine)
             d->m_picengine->drawPath(path);
     } else {
@@ -192,11 +195,13 @@ void QAlphaPaintEngine::drawPolygon(const QPointF *points, int pointCount, Polyg
 
     if (d->m_pass == 0) {
         d->m_continueCall = false;
-        if (d->m_hasalpha || d->m_advancedPen || d->m_advancedBrush
+        if (d->canSeeTroughBackground(d->m_hasalpha, tr) || d->m_advancedPen || d->m_advancedBrush
             || d->m_emulateProjectiveTransforms)
         {
             d->addAlphaRect(tr);
         }
+
+        d->addDirtyRect(tr);
 
         if (d->m_picengine)
             d->m_picengine->drawPolygon(points, pointCount, mode);
@@ -212,9 +217,11 @@ void QAlphaPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pm, const QRe
     QRectF tr = d->m_transform.mapRect(r);
     if (d->m_pass == 0) {
         d->m_continueCall = false;
-        if (pm.hasAlpha() || d->m_alphaOpacity || d->m_complexTransform || pm.isQBitmap()) {
+        if (d->canSeeTroughBackground(pm.hasAlpha() || d->m_alphaOpacity, tr) || d->m_complexTransform || pm.isQBitmap()) {
             d->addAlphaRect(tr);
         }
+
+        d->addDirtyRect(tr);
 
         if (d->m_picengine)
             d->m_picengine->drawPixmap(r, pm, sr);
@@ -233,9 +240,12 @@ void QAlphaPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem
 
     if (d->m_pass == 0) {
         d->m_continueCall = false;
-        if (d->m_alphaPen || d->m_alphaOpacity || d->m_advancedPen) {
+        if (d->canSeeTroughBackground(d->m_alphaPen || d->m_alphaOpacity, tr) || d->m_advancedPen) {
             d->addAlphaRect(tr);
         }
+
+        d->addDirtyRect(tr);
+
         if (d->m_picengine) {
             d->m_picengine->drawTextItem(p, textItem);
         }
@@ -252,9 +262,12 @@ void QAlphaPaintEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pixmap, 
 
     if (d->m_pass == 0) {
         d->m_continueCall = false;
-        if (pixmap.hasAlpha() || d->m_alphaOpacity || d->m_complexTransform || pixmap.isQBitmap()) {
+        if (d->canSeeTroughBackground(pixmap.hasAlpha() || d->m_alphaOpacity, brect) || d->m_complexTransform || pixmap.isQBitmap()) {
             d->addAlphaRect(brect);
         }
+
+        d->addDirtyRect(brect);
+
         if (d->m_picengine)
             d->m_picengine->drawTiledPixmap(r, pixmap, s);
     } else {
@@ -410,19 +423,14 @@ QRectF QAlphaPaintEnginePrivate::addPenWidth(const QPainterPath &path)
     return (tmp.controlPointRect() * m_transform).boundingRect();
 }
 
-QRect QAlphaPaintEnginePrivate::toRect(const QRectF &rect) const
-{
-    QRect r;
-    r.setLeft(int(rect.left()));
-    r.setTop(int(rect.top()));
-    r.setRight(int(rect.right() + 1));
-    r.setBottom(int(rect.bottom() + 1));
-    return r;
-}
-
 void QAlphaPaintEnginePrivate::addAlphaRect(const QRectF &rect)
 {
-    m_alphargn |= toRect(rect);
+    m_alphargn |= rect.toAlignedRect();
+}
+
+bool QAlphaPaintEnginePrivate::canSeeTroughBackground(bool somethingInRectHasAlpha, const QRectF &rect) const
+{
+    return somethingInRectHasAlpha && m_dirtyrgn.intersects(rect.toAlignedRect());
 }
 
 void QAlphaPaintEnginePrivate::drawAlphaImage(const QRectF &rect)
@@ -474,7 +482,7 @@ void QAlphaPaintEnginePrivate::drawAlphaImage(const QRectF &rect)
 
 bool QAlphaPaintEnginePrivate::fullyContained(const QRectF &rect) const
 {
-    QRegion r(toRect(rect));
+    QRegion r(rect.toAlignedRect());
     return (m_cliprgn.intersected(r) == r);
 }
 
