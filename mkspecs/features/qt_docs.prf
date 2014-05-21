@@ -23,9 +23,13 @@ QDOC += -outputdir $$QMAKE_DOCS_OUTPUTDIR
 !build_online_docs: \
     QDOC += -installdir $$[QT_INSTALL_DOCS]
 DOC_INDEXES =
-for(qrep, QTREPOS): \
-    exists($$qrep/doc): \
-        DOC_INDEXES += -indexdir $$qrep/doc
+!isEmpty(QTREPOS) {
+    for(qrep, QTREPOS): \
+        exists($$qrep/doc): \
+            DOC_INDEXES += -indexdir $$qrep/doc
+} else {
+    DOC_INDEXES += -indexdir $$[QT_INSTALL_DOCS/get]
+}
 qtver.name = QT_VERSION
 qtver.value = $$VERSION
 isEmpty(qtver.value): qtver.value = $$MODULE_VERSION
