@@ -42,6 +42,8 @@
 #include <private/qguiapplication_p.h>
 #include <private/qwindow_p.h>
 
+#include <private/qhighdpiscaling_p.h>
+
 QT_BEGIN_NAMESPACE
 
 class QBackingStorePrivate
@@ -102,7 +104,7 @@ void QBackingStore::flush(const QRegion &region, QWindow *win, const QPoint &off
     }
 #endif
 
-    d_ptr->platformBackingStore->flush(win, region, offset);
+    d_ptr->platformBackingStore->flush(win, qHighDpiToDevicePixels(region), offset);
 }
 
 /*!
@@ -112,7 +114,17 @@ void QBackingStore::flush(const QRegion &region, QWindow *win, const QPoint &off
 */
 QPaintDevice *QBackingStore::paintDevice()
 {
-    return d_ptr->platformBackingStore->paintDevice();
+    QPaintDevice *device = d_ptr->platformBackingStore->paintDevice();
+    // When QtGui is applying a high-dpi scale factor we are asking
+    // the platform backing store to create a "large" backing store
+    // image. This image needs to be converted into a high-dpi image by
+    // setting the scale factor on the image:
+    if (QHighDpiScaling::isActive() && device->devType() == QInternal::Image) {
+        QImage *image = reinterpret_cast<QImage *>(device);
+        image->setDevicePixelRatio(d_ptr->window->devicePixelRatio());
+    }
+
+    return device;
 }
 
 /*!
@@ -150,7 +162,7 @@ QWindow* QBackingStore::window() const
 
 void QBackingStore::beginPaint(const QRegion &region)
 {
-    d_ptr->platformBackingStore->beginPaint(region);
+    d_ptr->platformBackingStore->beginPaint(qHighDpiToDevicePixels(region));
 }
 
 /*!
@@ -170,8 +182,8 @@ void QBackingStore::endPaint()
 */
 void QBackingStore::resize(const QSize &size)
 {
-    d_ptr->size = size;
-    d_ptr->platformBackingStore->resize(size, d_ptr->staticContents);
+    d_ptr->size = size; // QBackingStore stores size in point, QPlatformBackingStore gets it in pixel.
+    d_ptr->platformBackingStore->resize(size * QHighDpiScaling::factor(), d_ptr->staticContents);
 }
 
 /*!
@@ -194,7 +206,7 @@ bool QBackingStore::scroll(const QRegion &area, int dx, int dy)
     Q_UNUSED(dx);
     Q_UNUSED(dy);
 
-    return d_ptr->platformBackingStore->scroll(area, dx, dy);
+    return d_ptr->platformBackingStore->scroll(qHighDpiToDevicePixels(area), qHighDpiToDevicePixels(dx), qHighDpiToDevicePixels(dy));
 }
 
 void QBackingStore::setStaticContents(const QRegion &region)

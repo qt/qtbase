@@ -47,6 +47,7 @@
 
 #include <QtGui/qscreen.h>
 #include <qpa/qplatformscreen.h>
+#include "qhighdpiscaling_p.h"
 
 #include <QtCore/private/qobject_p.h>
 
@@ -60,8 +61,8 @@ public:
         , orientationUpdateMask(0)
     {
         orientation = platformScreen->orientation();
-        geometry = platformScreen->geometry();
-        availableGeometry = platformScreen->availableGeometry();
+        geometry = qHighDpiToDeviceIndependentPixels(platformScreen->geometry());
+        availableGeometry = qHighDpiToDeviceIndependentPixels(platformScreen->availableGeometry());
         logicalDpi = platformScreen->logicalDpi();
         refreshRate = platformScreen->refreshRate();
         // safeguard ourselves against buggy platform behavior...
@@ -73,6 +74,19 @@ public:
         filteredOrientation = orientation;
         if (filteredOrientation == Qt::PrimaryOrientation)
             filteredOrientation = primaryOrientation;
+
+        updateHighDpi();
+    }
+
+    void updateHighDpi()
+    {
+        geometry = qHighDpiToDeviceIndependentPixels(platformScreen->geometry());
+        availableGeometry = qHighDpiToDeviceIndependentPixels(platformScreen->availableGeometry());
+        logicalDpi = platformScreen->logicalDpi();
+        if (QHighDpiScaling::isActive()) { // Apply factor to maintain point sizes of fonts.
+            logicalDpi.first /= QHighDpiScaling::factor();
+            logicalDpi.second /= QHighDpiScaling::factor();
+        }
     }
 
     void updatePrimaryOrientation();

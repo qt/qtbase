@@ -957,9 +957,10 @@ QWindow *QGuiApplication::topLevelAt(const QPoint &pos)
     QList<QScreen *>::const_iterator screen = screens.constBegin();
     QList<QScreen *>::const_iterator end = screens.constEnd();
 
+    const QPoint devicePosition = qHighDpiToDevicePixels(pos);
     while (screen != end) {
         if ((*screen)->geometry().contains(pos))
-            return (*screen)->handle()->topLevelAt(pos);
+            return (*screen)->handle()->topLevelAt(devicePosition);
         ++screen;
     }
     return 0;
