@@ -12,7 +12,8 @@ JAVASOURCES += \
     $$PATHPREFIX/QtMessageDialogHelper.java \
     $$PATHPREFIX/QtNative.java \
     $$PATHPREFIX/QtNativeLibrariesDir.java \
-    $$PATHPREFIX/QtSurface.java
+    $$PATHPREFIX/QtSurface.java \
+    $$PATHPREFIX/ExtractStyle.java
 
 # install
 target.path = $$[QT_INSTALL_PREFIX]/jar

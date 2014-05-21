@@ -21,7 +21,9 @@ CONFIG += qpa/genericunixfontdatabase
 
 OTHER_FILES += $$PWD/android.json
 
-INCLUDEPATH += $$PWD
+INCLUDEPATH += \
+    $$PWD \
+    $$QT_SOURCE_TREE/src/3rdparty/android
 
 SOURCES += $$PWD/androidplatformplugin.cpp \
            $$PWD/androidjnimain.cpp \
@@ -48,7 +50,8 @@ SOURCES += $$PWD/androidplatformplugin.cpp \
            $$PWD/qandroidplatformrasterwindow.cpp \
            $$PWD/qandroidplatformbackingstore.cpp \
            $$PWD/qandroidplatformopenglcontext.cpp \
-           $$PWD/qandroidplatformforeignwindow.cpp
+           $$PWD/qandroidplatformforeignwindow.cpp \
+           $$PWD/extract.cpp
 
 HEADERS += $$PWD/qandroidplatformintegration.h \
            $$PWD/androidjnimain.h \

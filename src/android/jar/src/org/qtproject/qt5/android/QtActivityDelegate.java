@@ -99,6 +99,7 @@ public class QtActivityDelegate
     private static final String APPLICATION_PARAMETERS_KEY = "application.parameters";
     private static final String STATIC_INIT_CLASSES_KEY = "static.init.classes";
     private static final String NECESSITAS_API_LEVEL_KEY = "necessitas.api.level";
+    private static final String EXTRACT_STYLE_KEY = "extract.android.style";
 
     private static String m_environmentVariables = null;
     private static String m_applicationParameters = null;
@@ -425,6 +426,11 @@ public class QtActivityDelegate
         // older apps provide the main library as the last bundled library; look for this if the main library isn't provided
         if (null == m_mainLib && libraries.size() > 0)
             m_mainLib = libraries.get(libraries.size() - 1);
+
+        if (loaderParams.containsKey(EXTRACT_STYLE_KEY)) {
+            String path = loaderParams.getString(EXTRACT_STYLE_KEY);
+            new ExtractStyle(m_activity, path);
+        }
 
         try {
             m_super_dispatchKeyEvent = m_activity.getClass().getMethod("super_dispatchKeyEvent", KeyEvent.class);
