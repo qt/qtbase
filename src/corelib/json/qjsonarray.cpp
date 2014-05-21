@@ -138,6 +138,18 @@ QJsonArray::QJsonArray()
 }
 
 /*!
+    \fn QJsonArray::QJsonArray(std::initializer_list<QJsonValue> args)
+    \since 5.4
+    Creates an array initialized from \a args initialization list.
+
+    QJsonArray can be constructed in a way similar to JSON notation,
+    for example:
+    \code
+    QJsonArray array = { 1, 2.2, QString() };
+    \endcode
+ */
+
+/*!
     \internal
  */
 QJsonArray::QJsonArray(QJsonPrivate::Data *data, QJsonPrivate::Array *array)
@@ -146,6 +158,19 @@ QJsonArray::QJsonArray(QJsonPrivate::Data *data, QJsonPrivate::Array *array)
     Q_ASSERT(data);
     Q_ASSERT(array);
     d->ref.ref();
+}
+
+/*!
+    This method replaces part of QJsonArray(std::initializer_list<QJsonValue> args) .
+    The constructor needs to be inline, but we do not want to leak implementation details
+    of this class.
+    \note this method is called for an uninitialized object
+    \internal
+ */
+void QJsonArray::initialize()
+{
+    d = 0;
+    a = 0;
 }
 
 /*!

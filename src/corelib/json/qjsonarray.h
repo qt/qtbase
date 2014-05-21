@@ -44,6 +44,9 @@
 
 #include <QtCore/qjsonvalue.h>
 #include <QtCore/qiterator.h>
+#if defined(Q_COMPILER_INITIALIZER_LISTS)
+#include <initializer_list>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -56,6 +59,16 @@ class Q_CORE_EXPORT QJsonArray
 {
 public:
     QJsonArray();
+
+#if defined(Q_COMPILER_INITIALIZER_LISTS) || defined(Q_QDOC)
+    QJsonArray(std::initializer_list<QJsonValue> args)
+    {
+        initialize();
+        for (std::initializer_list<QJsonValue>::const_iterator i = args.begin(); i != args.end(); ++i)
+            append(*i);
+    }
+#endif
+
     ~QJsonArray();
 
     QJsonArray(const QJsonArray &other);
@@ -212,6 +225,7 @@ private:
     friend Q_CORE_EXPORT QDebug operator<<(QDebug, const QJsonArray &);
 
     QJsonArray(QJsonPrivate::Data *data, QJsonPrivate::Array *array);
+    void initialize();
     void compact();
     void detach(uint reserve = 0);
 

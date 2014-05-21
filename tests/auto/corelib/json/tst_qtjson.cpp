@@ -140,6 +140,8 @@ private Q_SLOTS:
     void nesting();
 
     void longStrings();
+
+    void arrayInitializerList();
 private:
     QString testDataDir;
 };
@@ -2441,6 +2443,56 @@ void tst_QtJson::testJsonValueRefDefault()
 
     QCOMPARE(empty["n/a"].toDouble(), 0.0);
     QCOMPARE(empty["n/a"].toDouble(42.0), 42.0);
+}
+
+void tst_QtJson::arrayInitializerList()
+{
+#ifndef Q_COMPILER_INITIALIZER_LISTS
+    QSKIP("initializer_list is enabled only with c++11 support");
+#else
+    QVERIFY(QJsonArray{}.isEmpty());
+    QCOMPARE(QJsonArray{"one"}.count(), 1);
+    QCOMPARE(QJsonArray{1}.count(), 1);
+
+    {
+        QJsonArray a{1.3, "hello", 0};
+        QCOMPARE(QJsonValue(a[0]), QJsonValue(1.3));
+        QCOMPARE(QJsonValue(a[1]), QJsonValue("hello"));
+        QCOMPARE(QJsonValue(a[2]), QJsonValue(0));
+        QCOMPARE(a.count(), 3);
+    }
+    {
+        QJsonObject o;
+        o["property"] = 1;
+        QJsonArray a1 {o};
+        QCOMPARE(a1.count(), 1);
+        QCOMPARE(a1[0].toObject(), o);
+
+        QJsonArray a2 {o, 23};
+        QCOMPARE(a2.count(), 2);
+        QCOMPARE(a2[0].toObject(), o);
+        QCOMPARE(QJsonValue(a2[1]), QJsonValue(23));
+
+        QJsonArray a3 { a1, o, a2 };
+        QCOMPARE(QJsonValue(a3[0]), QJsonValue(a1));
+        QCOMPARE(QJsonValue(a3[1]), QJsonValue(o));
+        QCOMPARE(QJsonValue(a3[2]), QJsonValue(a2));
+
+        QJsonArray a4 { 1, QJsonArray{1,2,3}, QJsonArray{"hello", 2} };
+        QCOMPARE(a4.count(), 3);
+        QCOMPARE(QJsonValue(a4[0]), QJsonValue(1));
+
+        {
+            QJsonArray a41 = a4[1].toArray();
+            QJsonArray a42 = a4[2].toArray();
+            QCOMPARE(a41.count(), 3);
+            QCOMPARE(a42.count(), 2);
+
+            QCOMPARE(QJsonValue(a41[2]), QJsonValue(3));
+            QCOMPARE(QJsonValue(a42[1]), QJsonValue(2));
+        }
+    }
+#endif
 }
 
 QTEST_MAIN(tst_QtJson)
