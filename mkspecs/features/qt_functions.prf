@@ -191,26 +191,30 @@ defineTest(qtAddRpathLink) {
 
 # variable, default, [suffix for variable for system() use]
 defineTest(qtPrepareTool) {
-    $$1 = $$eval(QT_TOOL.$${2}.binary)
-    isEmpty($$1) {
-        $$1 = $$[QT_HOST_BINS]/$$2
-        exists($$eval($$1).pl) {
-            $$1 = perl -w $$eval($$1).pl
+    cmd = $$eval(QT_TOOL.$${2}.binary)
+    isEmpty(cmd) {
+        cmd = $$[QT_HOST_BINS]/$$2
+        exists($${cmd}.pl) {
+            cmd = perl -w $$system_path($${cmd}.pl)
         } else: contains(QMAKE_HOST.os, Windows) {
-            $$1 = $$eval($$1).exe
+            cmd = $$system_path($${cmd}.exe)
         } else:contains(QMAKE_HOST.os, Darwin) {
-            BUNDLENAME = $$eval($$1).app/Contents/MacOS/$$2
+            BUNDLENAME = $${cmd}.app/Contents/MacOS/$$2
             exists($$BUNDLENAME) {
-                $$1 = $$BUNDLENAME
+                cmd = $$BUNDLENAME
             }
         }
     }
     QT_TOOL_ENV += $$eval(QT_TOOL.$${2}.envvars)
     !isEmpty(3) {
-        $$1$$3 = $$system_path($$eval($$1))
+        $$1$$3 =
+        for (arg, cmd): \
+            $$1$$3 += $$system_quote($$arg)
         qtAddTargetEnv($$1$$3, QT_TOOL.$${2}.depends, system)
     }
-    $$1 = $$system_path($$eval($$1))
+    $$1 =
+    for (arg, cmd): \
+        $$1 += $$shell_quote($$arg)
     qtAddTargetEnv($$1, QT_TOOL.$${2}.depends, )
 }
 
