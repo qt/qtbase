@@ -63,6 +63,7 @@
 
 #ifndef QT_OPENGL_ES_2
 #include <QOpenGLFunctions_1_0>
+#include <QOpenGLFunctions_3_2_Core>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -370,9 +371,25 @@ int QOpenGLContextPrivate::maxTextureSize()
         GLint size;
         GLint next = 64;
         funcs->glTexImage2D(proxy, 0, GL_RGBA, next, next, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-        QOpenGLFunctions_1_0 *gl1funcs = q->versionFunctions<QOpenGLFunctions_1_0>();
-        gl1funcs->initializeOpenGLFunctions();
-        gl1funcs->glGetTexLevelParameteriv(proxy, 0, GL_TEXTURE_WIDTH, &size);
+
+        QOpenGLFunctions_1_0 *gl1funcs = 0;
+        QOpenGLFunctions_3_2_Core *gl3funcs = 0;
+
+        if (q->format().profile() == QSurfaceFormat::CoreProfile) {
+            gl3funcs = q->versionFunctions<QOpenGLFunctions_3_2_Core>();
+            gl3funcs->initializeOpenGLFunctions();
+        } else {
+            gl1funcs = q->versionFunctions<QOpenGLFunctions_1_0>();
+            gl1funcs->initializeOpenGLFunctions();
+        }
+
+        Q_ASSERT(gl1funcs || gl3funcs);
+
+        if (gl1funcs)
+            gl1funcs->glGetTexLevelParameteriv(proxy, 0, GL_TEXTURE_WIDTH, &size);
+        else
+            gl3funcs->glGetTexLevelParameteriv(proxy, 0, GL_TEXTURE_WIDTH, &size);
+
         if (size == 0) {
             return max_texture_size;
         }
@@ -383,7 +400,11 @@ int QOpenGLContextPrivate::maxTextureSize()
             if (next > max_texture_size)
                 break;
             funcs->glTexImage2D(proxy, 0, GL_RGBA, next, next, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-            gl1funcs->glGetTexLevelParameteriv(proxy, 0, GL_TEXTURE_WIDTH, &next);
+            if (gl1funcs)
+                gl1funcs->glGetTexLevelParameteriv(proxy, 0, GL_TEXTURE_WIDTH, &next);
+            else
+                gl3funcs->glGetTexLevelParameteriv(proxy, 0, GL_TEXTURE_WIDTH, &next);
+
         } while (next > size);
 
         max_texture_size = size;
