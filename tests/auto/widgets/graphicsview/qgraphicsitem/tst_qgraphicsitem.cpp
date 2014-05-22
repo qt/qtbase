@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -49,6 +49,7 @@
 #include <QAbstractTextDocumentLayout>
 #include <QBitmap>
 #include <QCursor>
+#include <QScreen>
 #include <QLabel>
 #include <QDial>
 #include <QGraphicsItem>
@@ -139,6 +140,17 @@ static void sendKeyClick(QGraphicsScene *scene, Qt::Key key)
 {
     sendKeyPress(scene, key);
     sendKeyRelease(scene, key);
+}
+
+static inline void centerOnScreen(QWidget *w, const QSize &size)
+{
+    const QPoint offset = QPoint(size.width() / 2, size.height() / 2);
+    w->move(QGuiApplication::primaryScreen()->availableGeometry().center() - offset);
+}
+
+static inline void centerOnScreen(QWidget *w)
+{
+    centerOnScreen(w, w->geometry().size());
 }
 
 class EventSpy : public QGraphicsWidget
@@ -4211,14 +4223,18 @@ void tst_QGraphicsItem::cursor()
     item2->setCursor(Qt::PointingHandCursor);
 
     QWidget topLevel;
+    topLevel.resize(250, 150);
+    centerOnScreen(&topLevel);
     QGraphicsView view(&scene,&topLevel);
     view.setFixedSize(200, 100);
     topLevel.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
+
     QTest::mouseMove(&view, view.rect().center());
 
     QTest::qWait(25);
 
-    QCursor cursor = view.viewport()->cursor();
+    const Qt::CursorShape viewportShape = view.viewport()->cursor().shape();
 
     {
         QTest::mouseMove(view.viewport(), QPoint(100, 50));
@@ -4226,9 +4242,7 @@ void tst_QGraphicsItem::cursor()
         QApplication::sendEvent(view.viewport(), &event);
     }
 
-    QTest::qWait(25);
-
-    QCOMPARE(view.viewport()->cursor().shape(), cursor.shape());
+    QTRY_COMPARE(view.viewport()->cursor().shape(), viewportShape);
 
     {
         QTest::mouseMove(view.viewport(), view.mapFromScene(item1->sceneBoundingRect().center()));
@@ -4236,7 +4250,7 @@ void tst_QGraphicsItem::cursor()
         QApplication::sendEvent(view.viewport(), &event);
     }
 
-    QCOMPARE(view.viewport()->cursor().shape(), item1->cursor().shape());
+    QTRY_COMPARE(view.viewport()->cursor().shape(), item1->cursor().shape());
 
     {
         QTest::mouseMove(view.viewport(), view.mapFromScene(item2->sceneBoundingRect().center()));
@@ -4244,9 +4258,7 @@ void tst_QGraphicsItem::cursor()
         QApplication::sendEvent(view.viewport(), &event);
     }
 
-    QTest::qWait(25);
-
-    QCOMPARE(view.viewport()->cursor().shape(), item2->cursor().shape());
+    QTRY_COMPARE(view.viewport()->cursor().shape(), item2->cursor().shape());
 
     {
         QTest::mouseMove(view.viewport(), view.rect().center());
@@ -4254,9 +4266,7 @@ void tst_QGraphicsItem::cursor()
         QApplication::sendEvent(view.viewport(), &event);
     }
 
-    QTest::qWait(25);
-
-    QCOMPARE(view.viewport()->cursor().shape(), cursor.shape());
+    QTRY_COMPARE(view.viewport()->cursor().shape(), viewportShape);
 }
 #endif
 /*
