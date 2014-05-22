@@ -398,6 +398,13 @@ void QWinRTFontDatabase::releaseHandle(void *handle)
     QBasicFontDatabase::releaseHandle(handle);
 }
 
-#endif // QT_WINRT_USE_DWRITE
+#else // QT_WINRT_USE_DWRITE
+
+QFont QWinRTFontDatabase::defaultFont() const
+{
+    return QFont(QFontDatabase().families().value(0));
+}
+
+#endif // !QT_WINRT_USE_DWRITE
 
 QT_END_NAMESPACE

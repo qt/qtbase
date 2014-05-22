@@ -61,9 +61,9 @@ class QWinRTFontDatabase : public QBasicFontDatabase
 {
 public:
     QString fontDir() const;
+    QFont defaultFont() const Q_DECL_OVERRIDE;
 #ifdef QT_WINRT_USE_DWRITE
     ~QWinRTFontDatabase();
-    QFont defaultFont() const Q_DECL_OVERRIDE;
     void populateFontDatabase() Q_DECL_OVERRIDE;
     void populateFamily(const QString &familyName) Q_DECL_OVERRIDE;
     QFontEngine *fontEngine(const QFontDef &fontDef, void *handle) Q_DECL_OVERRIDE;
