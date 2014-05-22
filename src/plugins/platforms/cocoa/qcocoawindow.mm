@@ -999,9 +999,14 @@ bool QCocoaWindow::isExposed() const
 
 bool QCocoaWindow::isOpaque() const
 {
+    // OpenGL surfaces can be ordered either above(default) or below the NSWindow.
+    // When ordering below the window must be tranclucent.
+    static GLint openglSourfaceOrder = qt_mac_resolveOption(1, "QT_MAC_OPENGL_SURFACE_ORDER");
+
     bool translucent = (window()->format().alphaBufferSize() > 0
                         || window()->opacity() < 1
-                        || (m_qtView && [m_qtView hasMask]));
+                        || (m_qtView && [m_qtView hasMask]))
+                        || (surface()->supportsOpenGL() && openglSourfaceOrder == -1);
     return !translucent;
 }
 
@@ -1402,7 +1407,13 @@ QCocoaNSWindow * QCocoaWindow::createNSWindow()
     NSInteger level = windowLevel(flags);
     [createdWindow setLevel:level];
 
-    if (window()->format().alphaBufferSize() > 0) {
+    // OpenGL surfaces can be ordered either above(default) or below the NSWindow.
+    // When ordering below the window must be tranclucent and have a clear background color.
+    static GLint openglSourfaceOrder = qt_mac_resolveOption(1, "QT_MAC_OPENGL_SURFACE_ORDER");
+
+    bool isTranslucent = window()->format().alphaBufferSize() > 0
+                         || (surface()->supportsOpenGL() && openglSourfaceOrder == -1);
+    if (isTranslucent) {
         [createdWindow setBackgroundColor:[NSColor clearColor]];
         [createdWindow setOpaque:NO];
     }
