@@ -381,6 +381,10 @@ static int qt_gl_resolve_extensions()
         // TODO: Consider matching GL_APPLE_texture_format_BGRA8888 as well, but it needs testing.
         if (extensionMatcher.match("GL_IMG_texture_format_BGRA8888") || extensionMatcher.match("GL_EXT_texture_format_BGRA8888"))
             extensions |= QOpenGLExtensions::BGRATextureFormat;
+        if (extensionMatcher.match("GL_ANGLE_framebuffer_blit"))
+            extensions |= QOpenGLExtensions::FramebufferBlit;
+        if (extensionMatcher.match("GL_ANGLE_framebuffer_multisample"))
+            extensions |= QOpenGLExtensions::FramebufferMultisample;
     } else {
         extensions |= QOpenGLExtensions::ElementIndexUint | QOpenGLExtensions::MapBuffer;
 
@@ -3150,7 +3154,7 @@ static void QOPENGLF_APIENTRY qopenglfResolveBlitFramebuffer(GLint srcX0, GLint 
                        GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1,
                        GLbitfield mask, GLenum filter)
 {
-    RESOLVE_FUNC_VOID(ResolveEXT, BlitFramebuffer)
+    RESOLVE_FUNC_VOID_WITH_ALTERNATE(ResolveEXT, BlitFramebuffer, BlitFramebufferANGLE)
         (srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
 }
 
@@ -3158,7 +3162,7 @@ static void QOPENGLF_APIENTRY qopenglfResolveRenderbufferStorageMultisample(GLen
                                       GLenum internalFormat,
                                       GLsizei width, GLsizei height)
 {
-    RESOLVE_FUNC_VOID(ResolveEXT, RenderbufferStorageMultisample)
+    RESOLVE_FUNC_VOID_WITH_ALTERNATE(ResolveEXT, RenderbufferStorageMultisample, RenderbufferStorageMultisampleANGLE)
         (target, samples, internalFormat, width, height);
 }
 
