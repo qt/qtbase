@@ -44,6 +44,7 @@
 #include "qiosglobal.h"
 #include "qiosintegration.h"
 #include "qioswindow.h"
+#include "qiosmenu.h"
 
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qwindow_p.h>
@@ -345,6 +346,13 @@
     QIOSIntegration *iosIntegration = static_cast<QIOSIntegration *>(QGuiApplicationPrivate::platformIntegration());
     QWindowSystemInterface::handleTouchCancelEvent(m_qioswindow->window(), ulong(timestamp * 1000), iosIntegration->touchDevice());
     QWindowSystemInterface::flushWindowSystemEvents();
+}
+
+- (id)targetForAction:(SEL)action withSender:(id)sender
+{
+    // Check first if QIOSMenu should handle the action before continuing up the responder chain
+    id target = [QIOSMenu::menuActionTarget() targetForAction:action withSender:sender];
+    return target ? target : [super targetForAction:action withSender:sender];
 }
 
 @end

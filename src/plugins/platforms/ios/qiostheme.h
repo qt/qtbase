@@ -55,6 +55,9 @@ public:
 
     QVariant themeHint(ThemeHint hint) const;
 
+    QPlatformMenuItem* createPlatformMenuItem() const Q_DECL_OVERRIDE;
+    QPlatformMenu* createPlatformMenu() const Q_DECL_OVERRIDE;
+
     const QFont *font(Font type = SystemFont) const;
 
     static const char *name;
