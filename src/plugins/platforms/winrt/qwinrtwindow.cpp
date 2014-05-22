@@ -116,4 +116,9 @@ void QWinRTWindow::lower()
     m_screen->lower(window());
 }
 
+qreal QWinRTWindow::devicePixelRatio() const
+{
+    return screen()->devicePixelRatio();
+}
+
 QT_END_NAMESPACE

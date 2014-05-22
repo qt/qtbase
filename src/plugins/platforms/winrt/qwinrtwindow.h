@@ -63,6 +63,8 @@ public:
     void raise();
     void lower();
 
+    qreal devicePixelRatio() const Q_DECL_OVERRIDE;
+
 private:
     QWinRTScreen *m_screen;
 };
