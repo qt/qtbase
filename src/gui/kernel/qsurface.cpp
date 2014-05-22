@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qsurface.h"
+#include "qopenglcontext.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -130,6 +131,11 @@ QSurface::QSurface(SurfaceClass type)
 */
 QSurface::~QSurface()
 {
+#ifndef QT_NO_OPENGL
+    QOpenGLContext *context = QOpenGLContext::currentContext();
+    if (context && context->surface() == this)
+        context->doneCurrent();
+#endif
 }
 
 /*!
