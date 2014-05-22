@@ -1465,29 +1465,27 @@ void QWindowsDirect2DPaintEngine::drawTextItem(const QPointF &p, const QTextItem
                  rtl);
 }
 
-// Points (1/72 inches) to Microsoft's Device Independent Pixels (1/96 inches)
-inline static Q_DECL_CONSTEXPR FLOAT pointSizeToDIP(qreal pointSize)
+inline static FLOAT pointSizeToDIP(qreal pointSize, FLOAT dpiY)
 {
-    return pointSize + (pointSize / qreal(3.0));
+    return (pointSize + (pointSize / qreal(3.0))) * (dpiY / 96.0f);
 }
 
-inline static FLOAT pixelSizeToDIP(int pixelSize)
+inline static FLOAT pixelSizeToDIP(int pixelSize, FLOAT dpiY)
 {
-    FLOAT dpiX, dpiY;
-    factory()->GetDesktopDpi(&dpiX, &dpiY);
-
-    return FLOAT(pixelSize) / (dpiY / 96.0f);
+    return FLOAT(pixelSize) * 96.0f / dpiY;
 }
 
 inline static FLOAT fontSizeInDIP(const QFont &font)
 {
-    // Direct2d wants the font size in DIPs (Device Independent Pixels), each of which is 1/96 inches.
+    FLOAT dpiX, dpiY;
+    QWindowsDirect2DContext::instance()->d2dFactory()->GetDesktopDpi(&dpiX, &dpiY);
+
     if (font.pixelSize() == -1) {
         // font size was set as points
-        return pointSizeToDIP(font.pointSizeF());
+        return pointSizeToDIP(font.pointSizeF(), dpiY);
     } else {
         // font size was set as pixels
-        return pixelSizeToDIP(font.pixelSize());
+        return pixelSizeToDIP(font.pixelSize(), dpiY);
     }
 }
 
