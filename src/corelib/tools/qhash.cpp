@@ -125,7 +125,7 @@ static uint crc32(const Char *ptr, size_t len, uint h)
 #  else
     p += 4;
     for ( ; p <= e; p += 4)
-        h = _mm_crc32_u32(h, *reinterpret_cast<const uint *>(p));
+        h = _mm_crc32_u32(h, *reinterpret_cast<const uint *>(p - 4));
     p -= 4;
     len = e - p;
 #  endif
@@ -227,11 +227,12 @@ uint qHash(QLatin1String key, uint seed) Q_DECL_NOTHROW
 */
 static uint qt_create_qhash_seed()
 {
+    uint seed = 0;
+
+#ifndef QT_BOOTSTRAPPED
     QByteArray envSeed = qgetenv("QT_HASH_SEED");
     if (!envSeed.isNull())
         return envSeed.toUInt();
-
-    uint seed = 0;
 
 #ifdef Q_OS_UNIX
     int randomfd = qt_safe_open("/dev/urandom", O_RDONLY);
@@ -259,17 +260,16 @@ static uint qt_create_qhash_seed()
     seed ^= timestamp;
     seed ^= (timestamp >> 32);
 
-#ifndef QT_BOOTSTRAPPED
     quint64 pid = QCoreApplication::applicationPid();
     seed ^= pid;
     seed ^= (pid >> 32);
-#endif // QT_BOOTSTRAPPED
 
     quintptr seedPtr = reinterpret_cast<quintptr>(&seed);
     seed ^= seedPtr;
 #if QT_POINTER_SIZE == 8
     seed ^= (seedPtr >> 32);
 #endif
+#endif // QT_BOOTSTRAPPED
 
     return seed;
 }

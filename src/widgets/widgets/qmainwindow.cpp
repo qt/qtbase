@@ -1519,6 +1519,7 @@ void QMainWindow::setUnifiedTitleAndToolBarOnMac(bool set)
 
         typedef void (*SetContentBorderEnabledFunction)(QWindow *window, bool enable);
         (reinterpret_cast<SetContentBorderEnabledFunction>(function))(window()->windowHandle(), set);
+        update();
     }
 #endif
 

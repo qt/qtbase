@@ -29,6 +29,8 @@ host_build|staticlib: CONFIG += static
 
 host_build {
     QT -= gui   # no host module will ever use gui
+    QMAKE_CFLAGS += $$QMAKE_CFLAGS_SPLIT_SECTIONS
+    QMAKE_CXXFLAGS += $$QMAKE_CXXFLAGS_SPLIT_SECTIONS
     force_bootstrap {
         !build_pass: CONFIG += release
         contains(QT, core(-private)?|xml) {

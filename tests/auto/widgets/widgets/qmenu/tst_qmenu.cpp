@@ -116,6 +116,10 @@ private slots:
     void QTBUG30595_rtl_submenu();
     void QTBUG20403_nested_popup_on_shortcut_trigger();
     void QTBUG_10735_crashWithDialog();
+#ifdef Q_OS_MAC
+    void QTBUG_37933_ampersands_data();
+    void QTBUG_37933_ampersands();
+#endif
 protected slots:
     void onActivated(QAction*);
     void onHighlighted(QAction*);
@@ -1024,6 +1028,25 @@ void tst_QMenu::QTBUG_10735_crashWithDialog()
     QTimer::singleShot(1000, &menu, SLOT(activateLastAction()));
     menu.activateAction(0);
 }
+
+#ifdef Q_OS_MAC
+void tst_QMenu::QTBUG_37933_ampersands_data()
+{
+    QTest::addColumn<QString>("title");
+    QTest::addColumn<QString>("visibleTitle");
+    QTest::newRow("simple") << QString("Test") << QString("Test");
+    QTest::newRow("ampersand") << QString("&Test") << QString("Test");
+    QTest::newRow("double_ampersand") << QString("&Test && more") << QString("Test & more");
+}
+
+void tst_qmenu_QTBUG_37933_ampersands();
+
+void tst_QMenu::QTBUG_37933_ampersands()
+{
+    // external in .mm file
+    tst_qmenu_QTBUG_37933_ampersands();
+}
+#endif
 
 QTEST_MAIN(tst_QMenu)
 #include "tst_qmenu.moc"

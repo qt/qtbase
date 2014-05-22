@@ -353,7 +353,8 @@ public:
     inline Direction direction() const { return QChar::direction(ucs); }
     inline JoiningType joiningType() const { return QChar::joiningType(ucs); }
 #if QT_DEPRECATED_SINCE(5, 3)
-    QT_DEPRECATED inline Joining joining() const {
+    QT_DEPRECATED inline Joining joining() const
+    {
         switch (QChar::joiningType(ucs)) {
         case QChar::Joining_Causing: return QChar::Center;
         case QChar::Joining_Dual: return QChar::Dual;

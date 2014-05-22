@@ -82,7 +82,7 @@ QStringList QAndroidPlatformFontDatabase::fallbacksForFamily(const QString &fami
     Q_UNUSED(family);
     Q_UNUSED(style);
 
-    if (styleHint == QFont::Monospace)
+    if (styleHint == QFont::Monospace || styleHint == QFont::Courier)
         return QString(qgetenv("QT_ANDROID_FONTS_MONOSPACE")).split(";") + m_fallbacks[script];
 
     return QString(qgetenv("QT_ANDROID_FONTS")).split(";") + m_fallbacks[script];

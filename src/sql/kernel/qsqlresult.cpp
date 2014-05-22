@@ -688,7 +688,9 @@ void QSqlResult::bindValue(int index, const QVariant& val, QSql::ParamType param
 {
     Q_D(QSqlResult);
     d->binds = PositionalBinding;
-    d->indexes[d->fieldSerial(index)].append(index);
+    QList<int>& indexes = d->indexes[d->fieldSerial(index)];
+    if (!indexes.contains(index))
+        indexes.append(index);
     if (d->values.count() <= index)
         d->values.resize(index + 1);
     d->values[index] = val;

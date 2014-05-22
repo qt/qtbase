@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the Android port of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -39,20 +39,21 @@
 **
 ****************************************************************************/
 
-package org.qtproject.qt5.android.accessibility;
+#import <Cocoa/Cocoa.h>
 
-import android.graphics.Rect;
-import android.view.accessibility.AccessibilityNodeInfo;
+#include <QMenu>
+#include <QTest>
 
-class QtNativeAccessibility
+void tst_qmenu_QTBUG_37933_ampersands()
 {
-    static native void setActive(boolean enable);
-    static native int[] childIdListForAccessibleObject(int objectId);
-    static native int parentId(int objectId);
-    static native String descriptionForAccessibleObject(int objectId);
-    static native Rect screenRect(int objectId);
-    static native int hitTest(float x, float y);
-    static native boolean clickAction(int objectId);
+    QMenu m;
+    QFETCH(QString, title);
+    QFETCH(QString, visibleTitle);
+    m.addAction(title);
 
-    static native boolean populateNode(int objectId, AccessibilityNodeInfo node);
+    NSMenu* nativeMenu = m.toNSMenu();
+    Q_ASSERT(nativeMenu != 0);
+    NSMenuItem* item = [nativeMenu itemAtIndex:0];
+    Q_ASSERT(item != 0);
+    QCOMPARE(QString::fromUtf8([[item title] UTF8String]), visibleTitle);
 }

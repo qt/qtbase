@@ -80,6 +80,9 @@ private slots:
     void utf8bom_data();
     void utf8bom();
 
+    void utf8stateful_data();
+    void utf8stateful();
+
     void utfHeaders_data();
     void utfHeaders();
 
@@ -1609,6 +1612,99 @@ void tst_QTextCodec::utf8bom()
 
     QTextCodec::ConverterState state;
     QCOMPARE(codec->toUnicode(data.constData(), data.length(), &state), result);
+}
+
+void tst_QTextCodec::utf8stateful_data()
+{
+    QTest::addColumn<QByteArray>("buffer1");
+    QTest::addColumn<QByteArray>("buffer2");
+    QTest::addColumn<QString>("result");    // null QString indicates decoder error
+
+    // valid buffer continuations
+    QTest::newRow("1of2+valid") << QByteArray("\xc2") << QByteArray("\xa0") << "\xc2\xa0";
+    QTest::newRow("1of3+valid") << QByteArray("\xe0") << QByteArray("\xa0\x80") << "\xe0\xa0\x80";
+    QTest::newRow("2of3+valid") << QByteArray("\xe0\xa0") << QByteArray("\x80") << "\xe0\xa0\x80";
+    QTest::newRow("1of4+valid") << QByteArray("\360") << QByteArray("\220\210\203") << "\360\220\210\203";
+    QTest::newRow("2of4+valid") << QByteArray("\360\220") << QByteArray("\210\203") << "\360\220\210\203";
+    QTest::newRow("3of4+valid") << QByteArray("\360\220\210") << QByteArray("\203") << "\360\220\210\203";
+    QTest::newRow("1ofBom+valid") << QByteArray("\xef") << QByteArray("\xbb\xbf") << "";
+    QTest::newRow("2ofBom+valid") << QByteArray("\xef\xbb") << QByteArray("\xbf") << "";
+
+    // invalid continuation
+    QTest::newRow("1of2+invalid") << QByteArray("\xc2") << QByteArray("a") << QString();
+    QTest::newRow("1of3+invalid") << QByteArray("\xe0") << QByteArray("a") << QString();
+    QTest::newRow("2of3+invalid") << QByteArray("\xe0\xa0") << QByteArray("a") << QString();
+    QTest::newRow("1of4+invalid") << QByteArray("\360") << QByteArray("a") << QString();
+    QTest::newRow("2of4+invalid") << QByteArray("\360\220") << QByteArray("a") << QString();
+    QTest::newRow("3of4+invalid") << QByteArray("\360\220\210") << QByteArray("a") << QString();
+
+    // invalid: sequence too short (the empty second buffer causes a state reset)
+    QTest::newRow("1of2+empty") << QByteArray("\xc2") << QByteArray() << QString();
+    QTest::newRow("1of3+empty") << QByteArray("\xe0") << QByteArray() << QString();
+    QTest::newRow("2of3+empty") << QByteArray("\xe0\xa0") << QByteArray() << QString();
+    QTest::newRow("1of4+empty") << QByteArray("\360") << QByteArray() << QString();
+    QTest::newRow("2of4+empty") << QByteArray("\360\220") << QByteArray() << QString();
+    QTest::newRow("3of4+empty") << QByteArray("\360\220\210") << QByteArray() << QString();
+
+    // overlong sequence:
+    QTest::newRow("overlong-1of2") << QByteArray("\xc1") << QByteArray("\x81") << QString();
+    QTest::newRow("overlong-1of3") << QByteArray("\xe0") << QByteArray("\x81\x81") << QString();
+    QTest::newRow("overlong-2of3") << QByteArray("\xe0\x81") << QByteArray("\x81") << QString();
+    QTest::newRow("overlong-1of4") << QByteArray("\xf0") << QByteArray("\x80\x81\x81") << QString();
+    QTest::newRow("overlong-2of4") << QByteArray("\xf0\x80") << QByteArray("\x81\x81") << QString();
+    QTest::newRow("overlong-3of4") << QByteArray("\xf0\x80\x81") << QByteArray("\x81") << QString();
+
+    // out of range:
+    // leading byte 0xF4 can produce codepoints above U+10FFFF, which aren't valid
+    QTest::newRow("outofrange1-1of4") << QByteArray("\xf4") << QByteArray("\x90\x80\x80") << QString();
+    QTest::newRow("outofrange1-2of4") << QByteArray("\xf4\x90") << QByteArray("\x80\x80") << QString();
+    QTest::newRow("outofrange1-3of4") << QByteArray("\xf4\x90\x80") << QByteArray("\x80") << QString();
+    QTest::newRow("outofrange2-1of4") << QByteArray("\xf5") << QByteArray("\x90\x80\x80") << QString();
+    QTest::newRow("outofrange2-2of4") << QByteArray("\xf5\x90") << QByteArray("\x80\x80") << QString();
+    QTest::newRow("outofrange2-3of4") << QByteArray("\xf5\x90\x80") << QByteArray("\x80") << QString();
+    QTest::newRow("outofrange-1of5") << QByteArray("\xf8") << QByteArray("\x88\x80\x80\x80") << QString();
+    QTest::newRow("outofrange-2of5") << QByteArray("\xf8\x88") << QByteArray("\x80\x80\x80") << QString();
+    QTest::newRow("outofrange-3of5") << QByteArray("\xf8\x88\x80") << QByteArray("\x80\x80") << QString();
+    QTest::newRow("outofrange-4of5") << QByteArray("\xf8\x88\x80\x80") << QByteArray("\x80") << QString();
+    QTest::newRow("outofrange-1of6") << QByteArray("\xfc") << QByteArray("\x84\x80\x80\x80\x80") << QString();
+    QTest::newRow("outofrange-2of6") << QByteArray("\xfc\x84") << QByteArray("\x80\x80\x80\x80") << QString();
+    QTest::newRow("outofrange-3of6") << QByteArray("\xfc\x84\x80") << QByteArray("\x80\x80\x80") << QString();
+    QTest::newRow("outofrange-4of6") << QByteArray("\xfc\x84\x80\x80") << QByteArray("\x80\x80") << QString();
+    QTest::newRow("outofrange-5of6") << QByteArray("\xfc\x84\x80\x80\x80") << QByteArray("\x80") << QString();
+}
+
+void tst_QTextCodec::utf8stateful()
+{
+    QFETCH(QByteArray, buffer1);
+    QFETCH(QByteArray, buffer2);
+    QFETCH(QString, result);
+
+    QTextCodec *utf8codec = QTextCodec::codecForName("utf-8");
+    QVERIFY(utf8codec);
+
+    QTextCodec::ConverterState state;
+    memset(&state, 0, sizeof state);
+
+    QString decoded1 = utf8codec->toUnicode(buffer1, buffer1.size(), &state);
+    if (result.isNull()) {
+        // the decoder may have found an early error (invalidChars > 0):
+        // if it has, remainingChars == 0;
+        // if it hasn't, then it must have a state
+        QVERIFY2((state.remainingChars == 0) != (state.invalidChars == 0),
+                 "remainingChars = " + QByteArray::number(state.remainingChars) +
+                 "; invalidChars = " + QByteArray::number(state.invalidChars));
+    } else {
+        QVERIFY(state.remainingChars > 0);
+        QCOMPARE(state.invalidChars, 0);
+    }
+
+    QString decoded2 = utf8codec->toUnicode(buffer2, buffer2.size(), &state);
+    QCOMPARE(state.remainingChars, 0);
+    if (result.isNull()) {
+        QVERIFY(state.invalidChars > 0);
+    } else {
+        QCOMPARE(decoded1 + decoded2, result);
+    }
 }
 
 void tst_QTextCodec::utfHeaders_data()

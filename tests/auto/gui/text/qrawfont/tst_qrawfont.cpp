@@ -99,6 +99,8 @@ private slots:
     void rawFontSetPixelSize();
 
     void multipleRawFontsFromData();
+
+    void rawFontFromInvalidData();
 private:
     QString testFont;
     QString testFontBoldItalic;
@@ -940,6 +942,15 @@ void tst_QRawFont::multipleRawFontsFromData()
 
     QVERIFY(testFont.familyName() != (testFontBoldItalic.familyName())
             || testFont.style() != (testFontBoldItalic.style()));
+}
+
+void tst_QRawFont::rawFontFromInvalidData()
+{
+    QByteArray invalidData("foobar");
+    QRawFont font;
+    font.loadFromData(invalidData, 10, QFont::PreferDefaultHinting);
+
+    QVERIFY(!font.isValid());
 }
 
 #endif // QT_NO_RAWFONT

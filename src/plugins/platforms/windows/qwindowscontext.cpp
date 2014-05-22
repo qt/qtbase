@@ -741,6 +741,27 @@ HWND QWindowsContext::createDummyWindow(const QString &classNameIn,
                           HWND_MESSAGE, NULL, (HINSTANCE)GetModuleHandle(0), NULL);
 }
 
+#ifndef Q_OS_WINCE
+// Re-engineered from the inline function _com_error::ErrorMessage().
+// We cannot use it directly since it uses swprintf_s(), which is not
+// present in the MSVCRT.DLL found on Windows XP (QTBUG-35617).
+static inline QString errorMessageFromComError(const _com_error &comError)
+{
+     TCHAR *message = Q_NULLPTR;
+     FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+                   NULL, comError.Error(), MAKELANGID(LANG_NEUTRAL,SUBLANG_DEFAULT),
+                   message, 0, NULL);
+     if (message) {
+         const QString result = QString::fromWCharArray(message).trimmed();
+         LocalFree((HLOCAL)message);
+         return result;
+     }
+     if (const WORD wCode = comError.WCode())
+         return QStringLiteral("IDispatch error #") + QString::number(wCode);
+     return QStringLiteral("Unknown error 0x0") + QString::number(comError.Error(), 16);
+}
+#endif // !Q_OS_WINCE
+
 /*!
     \brief Common COM error strings.
 */
@@ -807,7 +828,7 @@ QByteArray QWindowsContext::comErrorString(HRESULT hr)
 #ifndef Q_OS_WINCE
     _com_error error(hr);
     result += QByteArrayLiteral(" (");
-    result += QString::fromWCharArray(error.ErrorMessage()).toLocal8Bit();
+    result += errorMessageFromComError(error);
     result += ')';
 #endif // !Q_OS_WINCE
     return result;
@@ -876,7 +897,7 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         // TODO: Release/regrab mouse if a popup has mouse grab.
         return false;
     case QtWindows::DestroyEvent:
-        if (!platformWindow->testFlag(QWindowsWindow::WithinDestroy)) {
+        if (platformWindow && !platformWindow->testFlag(QWindowsWindow::WithinDestroy)) {
             qWarning() << "External WM_DESTROY received for " << platformWindow->window()
                        << ", parent: " << platformWindow->window()->parent()
                        << ", transient parent: " << platformWindow->window()->transientParent();

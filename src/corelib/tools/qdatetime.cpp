@@ -2405,6 +2405,9 @@ static bool qt_localtime(qint64 msecsSinceEpoch, QDate *localDate, QTime *localT
         local.tm_year = sysTime.wYear - 1900;
     }
 #elif !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
+    // localtime() is required to work as if tzset() was called before it.
+    // localtime_r() does not have this requirement, so make an explicit call.
+    qt_tzset();
     // Use the reentrant version of localtime() where available
     // as is thread-safe and doesn't use a shared static data area
     tm *res = 0;

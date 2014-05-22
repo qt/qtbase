@@ -296,6 +296,7 @@ char * q_sk_value(STACK *a, int b);
 int q_SSL_accept(SSL *a);
 int q_SSL_clear(SSL *a);
 char *q_SSL_CIPHER_description(SSL_CIPHER *a, char *b, int c);
+int q_SSL_CIPHER_get_bits(SSL_CIPHER *a, int *b);
 int q_SSL_connect(SSL *a);
 #if OPENSSL_VERSION_NUMBER >= 0x00908000L
 // 0.9.8 broke SC and BC by changing this function's signature.

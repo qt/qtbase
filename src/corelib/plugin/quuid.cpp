@@ -50,11 +50,11 @@
 #endif
 QT_BEGIN_NAMESPACE
 
+static const char digits[] = "0123456789abcdef";
+
 template <class Char, class Integral>
 void _q_toHex(Char *&dst, Integral value)
 {
-    static const char digits[] = "0123456789abcdef";
-
     value = qToBigEndian(value);
 
     const char* p = reinterpret_cast<const char*>(&value);
