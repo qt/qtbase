@@ -3663,9 +3663,9 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
         echo "########################################################################" >> "$mkfile"
         EXTRA_OBJS=
         EXTRA_SRCS=
-        EXTRA_CFLAGS="\$(QMAKE_CFLAGS)"
-        EXTRA_CXXFLAGS="\$(QMAKE_CXXFLAGS)"
-        EXTRA_LFLAGS="\$(QMAKE_LFLAGS)"
+        EXTRA_CFLAGS="\$(QMAKE_CFLAGS) \$(QMAKE_CFLAGS_SPLIT_SECTIONS)"
+        EXTRA_CXXFLAGS="\$(QMAKE_CXXFLAGS) \$(QMAKE_CXXFLAGS_SPLIT_SECTIONS)"
+        EXTRA_LFLAGS="\$(QMAKE_LFLAGS) \$(QMAKE_LFLAGS_GCSECTIONS)"
 
         if [ "$PLATFORM" = "irix-cc" ] || [ "$PLATFORM" = "irix-cc-64" ]; then
 	    EXTRA_LFLAGS="$EXTRA_LFLAGS -lm"
@@ -3675,8 +3675,11 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
         setBootstrapVariable QMAKE_CC CC "$CC_TRANSFORM"
         setBootstrapVariable QMAKE_CXX CXX "$CC_TRANSFORM"
         setBootstrapVariable QMAKE_CFLAGS
+        setBootstrapVariable QMAKE_CFLAGS_SPLIT_SECTIONS
         setBootstrapVariable QMAKE_CXXFLAGS
+        setBootstrapVariable QMAKE_CXXFLAGS_SPLIT_SECTIONS
         setBootstrapVariable QMAKE_LFLAGS
+        setBootstrapVariable QMAKE_LFLAGS_GCSECTIONS
 
         if [ "$CFG_RELEASE_QMAKE" = "yes" ]; then
             setBootstrapVariable QMAKE_CFLAGS_RELEASE

@@ -315,6 +315,8 @@ void tst_QAccessibility::initTestCase()
 {
     QTestAccessibility::initialize();
     QPlatformIntegration *pfIntegration = QGuiApplicationPrivate::platformIntegration();
+    if (!pfIntegration->accessibility())
+        QSKIP("This platform does not support accessibility");
     pfIntegration->accessibility()->setActive(true);
 }
 

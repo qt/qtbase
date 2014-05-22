@@ -1024,15 +1024,28 @@ void AtSpiAdaptor::notify(QAccessibleEvent *event)
     case QAccessible::ValueChanged: {
         if (sendObject || sendObject_value_changed || sendObject_property_change_accessible_value) {
             QAccessibleInterface * iface = event->accessibleInterface();
-            if (!iface || !iface->valueInterface()) {
-                qWarning() << "ValueChanged event from invalid accessible: " << iface;
+            if (!iface) {
+                qWarning() << "ValueChanged event from invalid accessible.";
                 return;
             }
-
-            QString path = pathForInterface(iface);
-            QVariantList args = packDBusSignalArguments(QLatin1String("accessible-value"), 0, 0, variantForPath(path));
-            sendDBusSignal(path, QLatin1String(ATSPI_DBUS_INTERFACE_EVENT_OBJECT),
-                           QLatin1String("PropertyChange"), args);
+            if (iface->valueInterface()) {
+                QString path = pathForInterface(iface);
+                QVariantList args = packDBusSignalArguments(QLatin1String("accessible-value"), 0, 0, variantForPath(path));
+                sendDBusSignal(path, QLatin1String(ATSPI_DBUS_INTERFACE_EVENT_OBJECT),
+                               QLatin1String("PropertyChange"), args);
+            } else if (iface->role() == QAccessible::ComboBox) {
+                // Combo Box with AT-SPI likes to be special
+                // It requires a name-change to update caches and then selection-changed
+                QString path = pathForInterface(iface);
+                QVariantList args1 = packDBusSignalArguments(QLatin1String("accessible-name"), 0, 0, variantForPath(path));
+                sendDBusSignal(path, QLatin1String(ATSPI_DBUS_INTERFACE_EVENT_OBJECT),
+                               QLatin1String("PropertyChange"), args1);
+                QVariantList args2 = packDBusSignalArguments(QString(), 0, 0, QVariant::fromValue(QDBusVariant(QVariant(0))));
+                sendDBusSignal(path, QLatin1String(ATSPI_DBUS_INTERFACE_EVENT_OBJECT),
+                               QLatin1String("SelectionChanged"), args2);
+            } else {
+                qWarning() << "ValueChanged event and no ValueInterface or ComboBox: " << iface;
+            }
         }
         break;
     }

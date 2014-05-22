@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the qmake application of the Qt Toolkit.
@@ -732,6 +732,8 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
         //copy the plist
         QString info_plist = escapeFilePath(fileFixify(project->first("QMAKE_INFO_PLIST").toQString())),
             info_plist_out = escapeFilePath(project->first("QMAKE_INFO_PLIST_OUT").toQString());
+        if (info_plist.isEmpty())
+            info_plist = specdir() + QDir::separator() + "Info.plist." + project->first("TEMPLATE");
         bundledFiles << info_plist_out;
         QString destdir = info_plist_out.section(Option::dir_sep, 0, -2);
         t << info_plist_out << ": \n\t";
@@ -1269,8 +1271,6 @@ void UnixMakefileGenerator::init2()
         if(plist.isEmpty())
             plist = specdir() + QDir::separator() + "Info.plist." + project->first("TEMPLATE");
         if(exists(Option::fixPathToLocalOS(plist))) {
-            if(project->isEmpty("QMAKE_INFO_PLIST"))
-                project->values("QMAKE_INFO_PLIST").append(plist);
             project->values("QMAKE_INFO_PLIST_OUT").append(project->first("DESTDIR") +
                                                                 project->first("QMAKE_BUNDLE") +
                                                                 "/Contents/Info.plist");

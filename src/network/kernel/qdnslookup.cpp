@@ -282,6 +282,11 @@ QDnsLookup::QDnsLookup(Type type, const QString &name, QObject *parent)
 }
 
 /*!
+    \fn QDnsLookup::QDnsLookup(Type type, const QString &name, const QHostAddress &nameserver, QObject *parent)
+    \internal
+*/
+
+/*!
     Destroys the QDnsLookup object.
 
     It is safe to delete a QDnsLookup object even if it is not finished, you

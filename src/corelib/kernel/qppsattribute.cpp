@@ -127,8 +127,7 @@ QPpsAttribute QPpsAttributePrivate::createPpsAttribute(const QPpsAttributeMap &v
 //
 ///////////////////////////
 
-QPpsAttribute::QPpsAttribute():
-    d(new QPpsAttributePrivate())
+QPpsAttribute::QPpsAttribute() : d(new QPpsAttributePrivate())
 {
 }
 
@@ -136,7 +135,7 @@ QPpsAttribute::~QPpsAttribute()
 {
 }
 
-QPpsAttribute::QPpsAttribute(const QPpsAttribute &other): d(other.d)
+QPpsAttribute::QPpsAttribute(const QPpsAttribute &other) : d(other.d)
 {
 }
 
@@ -147,7 +146,7 @@ QPpsAttribute &QPpsAttribute::operator=(const QPpsAttribute &other)
 }
 
 #ifdef Q_COMPILER_RVALUE_REFS
-QPpsAttribute::QPpsAttribute(QPpsAttribute &&other): d(other.d)
+QPpsAttribute::QPpsAttribute(QPpsAttribute &&other) : d(other.d)
 {
     other.d->type = QPpsAttribute::None;
 }

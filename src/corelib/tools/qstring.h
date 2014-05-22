@@ -949,7 +949,8 @@ public:
     QChar::Direction direction() const { return QChar(*this).direction(); }
     QChar::JoiningType joiningType() const { return QChar(*this).joiningType(); }
 #if QT_DEPRECATED_SINCE(5, 3)
-    QT_DEPRECATED QChar::Joining joining() const {
+    QT_DEPRECATED QChar::Joining joining() const
+    {
         switch (QChar(*this).joiningType()) {
         case QChar::Joining_Causing: return QChar::Center;
         case QChar::Joining_Dual: return QChar::Dual;

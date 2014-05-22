@@ -148,15 +148,17 @@ void QXcbConnection::initializeXInput2()
                     }
                     case XIButtonClass: {
                         XIButtonClassInfo *bci = reinterpret_cast<XIButtonClassInfo *>(devices[i].classes[c]);
-                        for (int i=0; i < bci->num_buttons; ++i) {
-                            const int buttonAtom = qatom(bci->labels[i]);
-                            if (buttonAtom == QXcbAtom::ButtonWheelUp
-                                || buttonAtom == QXcbAtom::ButtonWheelDown) {
+                        if (bci->num_buttons >= 5) {
+                            Atom label4 = bci->labels[3];
+                            Atom label5 = bci->labels[4];
+                            if ((!label4 || qatom(label4) == QXcbAtom::ButtonWheelUp) && (!label5 || qatom(label5) == QXcbAtom::ButtonWheelDown))
                                 scrollingDevice.legacyOrientations |= Qt::Vertical;
-                            } else if (buttonAtom == QXcbAtom::ButtonHorizWheelLeft
-                                       || buttonAtom == QXcbAtom::ButtonHorizWheelRight) {
+                        }
+                        if (bci->num_buttons >= 7) {
+                            Atom label6 = bci->labels[5];
+                            Atom label7 = bci->labels[6];
+                            if ((!label6 || qatom(label6) == QXcbAtom::ButtonHorizWheelLeft) && (!label7 || qatom(label7) == QXcbAtom::ButtonHorizWheelRight))
                                 scrollingDevice.legacyOrientations |= Qt::Horizontal;
-                            }
                         }
                         break;
                     }
@@ -246,6 +248,7 @@ void QXcbConnection::xi2Select(xcb_window_t window)
     }
 #endif // XCB_USE_XINPUT22
 
+    QSet<int> tabletDevices;
 #ifndef QT_NO_TABLETEVENT
     // For each tablet, select some additional event types.
     // Press, motion, etc. events must never be selected for _all_ devices
@@ -253,15 +256,19 @@ void QXcbConnection::xi2Select(xcb_window_t window)
     // similar handlers useless and we have no intention to infect
     // all the pure xcb code with Xlib-based XI2.
     if (!m_tabletData.isEmpty()) {
+        unsigned int tabletBitMask = bitMask;
+        unsigned char *xiTabletBitMask = reinterpret_cast<unsigned char *>(&tabletBitMask);
         QVector<XIEventMask> xiEventMask(m_tabletData.count());
-        bitMask |= XI_ButtonPressMask;
-        bitMask |= XI_ButtonReleaseMask;
-        bitMask |= XI_MotionMask;
-        bitMask |= XI_PropertyEventMask;
+        tabletBitMask |= XI_ButtonPressMask;
+        tabletBitMask |= XI_ButtonReleaseMask;
+        tabletBitMask |= XI_MotionMask;
+        tabletBitMask |= XI_PropertyEventMask;
         for (int i = 0; i < m_tabletData.count(); ++i) {
-            xiEventMask[i].deviceid = m_tabletData.at(i).deviceId;
-            xiEventMask[i].mask_len = sizeof(bitMask);
-            xiEventMask[i].mask = xiBitMask;
+            int deviceId = m_tabletData.at(i).deviceId;
+            tabletDevices.insert(deviceId);
+            xiEventMask[i].deviceid = deviceId;
+            xiEventMask[i].mask_len = sizeof(tabletBitMask);
+            xiEventMask[i].mask = xiTabletBitMask;
         }
         XISelectEvents(xDisplay, window, xiEventMask.data(), m_tabletData.count());
     }
@@ -271,17 +278,30 @@ void QXcbConnection::xi2Select(xcb_window_t window)
     // Enable each scroll device
     if (!m_scrollingDevices.isEmpty()) {
         QVector<XIEventMask> xiEventMask(m_scrollingDevices.size());
-        bitMask = XI_MotionMask;
+        unsigned int scrollBitMask = 0;
+        unsigned char *xiScrollBitMask = reinterpret_cast<unsigned char *>(&scrollBitMask);
+        scrollBitMask = XI_MotionMask;
+        scrollBitMask |= XI_ButtonReleaseMask;
+        bitMask |= XI_MotionMask;
         bitMask |= XI_ButtonReleaseMask;
         int i=0;
         Q_FOREACH (const ScrollingDevice& scrollingDevice, m_scrollingDevices) {
+            if (tabletDevices.contains(scrollingDevice.deviceId))
+                continue; // All necessary events are already captured.
             xiEventMask[i].deviceid = scrollingDevice.deviceId;
-            xiEventMask[i].mask_len = sizeof(bitMask);
-            xiEventMask[i].mask = xiBitMask;
+            if (m_touchDevices.contains(scrollingDevice.deviceId)) {
+                xiEventMask[i].mask_len = sizeof(bitMask);
+                xiEventMask[i].mask = xiBitMask;
+            } else {
+                xiEventMask[i].mask_len = sizeof(scrollBitMask);
+                xiEventMask[i].mask = xiScrollBitMask;
+            }
             i++;
         }
-        XISelectEvents(xDisplay, window, xiEventMask.data(), m_scrollingDevices.size());
+        XISelectEvents(xDisplay, window, xiEventMask.data(), i);
     }
+#else
+    Q_UNUSED(xiBitMask);
 #endif
 }
 
@@ -655,13 +675,15 @@ bool QXcbConnection::xi2HandleTabletEvent(void *event, TabletData *tabletData)
         if (reinterpret_cast<xXIDeviceEvent *>(event)->detail == 1) { // ignore the physical buttons on the stylus
             tabletData->down = true;
             xi2ReportTabletEvent(*tabletData, xiEvent);
-        }
+        } else
+            handled = false;
         break;
     case XI_ButtonRelease: // stylus up
         if (reinterpret_cast<xXIDeviceEvent *>(event)->detail == 1) {
             tabletData->down = false;
             xi2ReportTabletEvent(*tabletData, xiEvent);
-        }
+        } else
+            handled = false;
         break;
     case XI_Motion:
         // Report TabletMove only when the stylus is touching the tablet.

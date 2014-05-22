@@ -1620,6 +1620,7 @@ void QCocoaWindow::applyContentBorderThickness(NSWindow *window)
 
     if (!m_drawContentBorderGradient) {
         [window setStyleMask:[window styleMask] & ~NSTexturedBackgroundWindowMask];
+        [[[window contentView] superview] setNeedsDisplay:YES];
         return;
     }
 
@@ -1650,6 +1651,8 @@ void QCocoaWindow::applyContentBorderThickness(NSWindow *window)
 
     [window setContentBorderThickness:effectiveBottomContentBorderThickness forEdge:NSMinYEdge];
     [window setAutorecalculatesContentBorderThickness:NO forEdge:NSMinYEdge];
+
+    [[[window contentView] superview] setNeedsDisplay:YES];
 }
 
 void QCocoaWindow::updateNSToolbar()

@@ -171,7 +171,7 @@ void QEGLPlatformCursor::createShaderPrograms()
 
     m_vertexCoordEntry = m_program->attributeLocation("vertexCoordEntry");
     m_textureCoordEntry = m_program->attributeLocation("textureCoordEntry");
-    m_textureEntry = m_program->attributeLocation("texture");
+    m_textureEntry = m_program->uniformLocation("texture");
 }
 
 void QEGLPlatformCursor::createCursorTexture(uint *texture, const QImage &image)

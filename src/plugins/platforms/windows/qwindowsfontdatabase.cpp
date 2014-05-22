@@ -165,6 +165,9 @@ namespace {
         Q_ASSERT(tagName.size() == 4);
         quint32 tagId = *(reinterpret_cast<const quint32 *>(tagName.constData()));
 
+        if (m_fontData.size() < sizeof(OffsetSubTable) + sizeof(TableDirectory))
+            return 0;
+
         OffsetSubTable *offsetSubTable = reinterpret_cast<OffsetSubTable *>(m_fontData.data());
         TableDirectory *tableDirectory = reinterpret_cast<TableDirectory *>(offsetSubTable + 1);
 

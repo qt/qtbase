@@ -531,9 +531,11 @@ static QProcessEnvironment processEnvironment()
         const QProcessEnvironment systemEnvironment = QProcessEnvironment::systemEnvironment();
         foreach (const QString &key, systemEnvironment.keys()) {
             const bool useVariable = key == QLatin1String("PATH") || key == QLatin1String("QT_QPA_PLATFORM")
-#ifdef Q_OS_UNIX
+#if defined(Q_OS_QNX)
+                || key == QLatin1String("GRAPHICS_ROOT") || key == QLatin1String("TZ")
+#elif defined(Q_OS_UNIX)
                 || key == QLatin1String("HOME") || key == QLatin1String("USER") // Required for X11 on openSUSE
-#  ifndef Q_OS_MAC
+#  if !defined(Q_OS_MAC)
                 || key == QLatin1String("DISPLAY") || key == QLatin1String("XAUTHLOCALHOSTNAME")
                 || key.startsWith(QLatin1String("XDG_"))
 #  endif // !Q_OS_MAC

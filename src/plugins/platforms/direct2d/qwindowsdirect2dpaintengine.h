@@ -68,7 +68,14 @@ public:
 
     void setState(QPainterState *s) Q_DECL_OVERRIDE;
 
+    void draw(const QVectorPath &path) Q_DECL_OVERRIDE;
+
     void fill(const QVectorPath &path, const QBrush &brush) Q_DECL_OVERRIDE;
+    void fill(ID2D1Geometry *geometry, const QBrush &brush);
+
+    void stroke(const QVectorPath &path, const QPen &pen) Q_DECL_OVERRIDE;
+    void stroke(ID2D1Geometry *geometry, const QPen &pen);
+
     void clip(const QVectorPath &path, Qt::ClipOperation op) Q_DECL_OVERRIDE;
 
     void clipEnabledChanged() Q_DECL_OVERRIDE;

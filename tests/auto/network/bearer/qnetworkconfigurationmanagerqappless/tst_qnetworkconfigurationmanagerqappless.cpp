@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the Android port of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -39,20 +39,35 @@
 **
 ****************************************************************************/
 
-package org.qtproject.qt5.android.accessibility;
+#include <QtTest/QtTest>
+#include <QtNetwork/qnetworkaccessmanager.h>
 
-import android.graphics.Rect;
-import android.view.accessibility.AccessibilityNodeInfo;
+QT_USE_NAMESPACE
 
-class QtNativeAccessibility
+class tst_QNetworkConfigurationManager : public QObject
 {
-    static native void setActive(boolean enable);
-    static native int[] childIdListForAccessibleObject(int objectId);
-    static native int parentId(int objectId);
-    static native String descriptionForAccessibleObject(int objectId);
-    static native Rect screenRect(int objectId);
-    static native int hitTest(float x, float y);
-    static native boolean clickAction(int objectId);
+    Q_OBJECT
 
-    static native boolean populateNode(int objectId, AccessibilityNodeInfo node);
+private slots:
+    void staticsInitialization();
+};
+
+void tst_QNetworkConfigurationManager::staticsInitialization()
+{
+    // This code should not crash. The test was introduced as
+    // a fix for https://bugreports.qt-project.org/browse/QTBUG-36897
+    for (int i = 0; i < 2; i++)
+    {
+        int argc = 1;
+        const char *testName = "tst_qnetworkconfigurationmanagerqappless";
+        char **argv = const_cast<char **>(&testName);
+        QCoreApplication app(argc, argv);
+        QNetworkAccessManager qnam;
+        Q_UNUSED(app);
+        Q_UNUSED(qnam);
+    }
+    QVERIFY(true);
 }
+
+QTEST_APPLESS_MAIN(tst_QNetworkConfigurationManager)
+#include "tst_qnetworkconfigurationmanagerqappless.moc"

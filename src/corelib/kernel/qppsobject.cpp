@@ -94,12 +94,12 @@ Q_GLOBAL_STATIC(QPpsMaxSize, ppsMaxSize)
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-QPpsObjectPrivate::QPpsObjectPrivate(const QString &path) :
-    notifier(0),
-    path(path),
-    error(EOK),
-    fd(-1),
-    readyReadEnabled(true)
+QPpsObjectPrivate::QPpsObjectPrivate(const QString &path)
+    : notifier(0),
+      path(path),
+      error(EOK),
+      fd(-1),
+      readyReadEnabled(true)
 {
 }
 
@@ -490,9 +490,9 @@ void QPpsObjectPrivate::encodeObject(pps_encoder_t *encoder, const QVariantMap &
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-QPpsObject::QPpsObject(const QString &path, QObject *parent) :
-    QObject(parent),
-    d_ptr(new QPpsObjectPrivate(path))
+QPpsObject::QPpsObject(const QString &path, QObject *parent)
+    : QObject(parent),
+      d_ptr(new QPpsObjectPrivate(path))
 {
 }
 

@@ -240,8 +240,12 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
         node.setClassName(m_view.getClass().getName() + DEFAULT_CLASS_NAME);
         node.setPackageName(m_view.getContext().getPackageName());
 
+        if (!QtNativeAccessibility.populateNode(virtualViewId, node))
+            return node;
+
+        // set only if valid, otherwise we return a node that is invalid and will crash when accessed
         node.setSource(m_view, virtualViewId);
-        QtNativeAccessibility.populateNode(virtualViewId, node);
+
         if (TextUtils.isEmpty(node.getText()) && TextUtils.isEmpty(node.getContentDescription()))
             Log.w(TAG, "AccessibilityNodeInfo with empty contentDescription: " + virtualViewId);
 

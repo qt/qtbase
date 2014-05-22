@@ -57,7 +57,7 @@
     system:
 
     \code
-        ./configure -openssl-linked OPENSSL_LIBS='-L/opt/ssl/lib -lssl -lcrypto'
+        OPENSSL_LIBS='-L/opt/ssl/lib -lssl -lcrypto' ./configure -openssl-linked
     \endcode
 
     To disable SSL support in a Qt build, configure Qt with the \c{-no-openssl}
