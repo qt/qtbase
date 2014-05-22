@@ -15,7 +15,7 @@ CONFIG -= debug_and_release_target
 contains(QT_CONFIG, c++11): CONFIG += c++11
 contains(TEMPLATE, .*lib) {
     # module and plugins
-    contains(QT_CONFIG, reduce_exports): CONFIG += hide_symbols
+    !host_build:contains(QT_CONFIG, reduce_exports): CONFIG += hide_symbols
     unix:contains(QT_CONFIG, reduce_relocations): CONFIG += bsymbolic_functions
     contains(QT_CONFIG, largefile): CONFIG += largefile
     contains(QT_CONFIG, separate_debug_info): CONFIG += separate_debug_info
