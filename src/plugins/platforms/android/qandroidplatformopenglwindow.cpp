@@ -47,7 +47,8 @@
 #include <QSurfaceFormat>
 
 #include <qpa/qwindowsysteminterface.h>
-
+#include <qpa/qplatformscreen.h>
+#include <QtPlatformSupport/private/qeglconvenience_p.h>
 #include <android/native_window.h>
 #include <android/native_window_jni.h>
 
@@ -77,8 +78,20 @@ void QAndroidPlatformOpenGLWindow::setGeometry(const QRect &rect)
     if (rect == geometry())
         return;
 
+    QRect oldGeometry = geometry();
+
     QAndroidPlatformWindow::setGeometry(rect);
     QtAndroid::setSurfaceGeometry(m_nativeSurfaceId, rect);
+
+    QRect availableGeometry = screen()->availableGeometry();
+    if (oldGeometry.width() == 0
+            && oldGeometry.height() == 0
+            && rect.width() > 0
+            && rect.height() > 0
+            && availableGeometry.width() > 0
+            && availableGeometry.height() > 0) {
+        QWindowSystemInterface::handleExposeEvent(window(), QRegion(rect));
+    }
 }
 
 EGLSurface QAndroidPlatformOpenGLWindow::eglSurface(EGLConfig config)
@@ -100,8 +113,11 @@ void QAndroidPlatformOpenGLWindow::checkNativeSurface(EGLConfig config)
 
     createEgl(config);
 
+
     // we've create another surface, the window should be repainted
-    QWindowSystemInterface::handleExposeEvent(window(), QRegion(geometry()));
+    QRect availableGeometry = screen()->availableGeometry();
+    if (geometry().width() > 0 && geometry().height() > 0 && availableGeometry.width() > 0 && availableGeometry.height() > 0)
+        QWindowSystemInterface::handleExposeEvent(window(), QRegion(geometry()));
 }
 
 void QAndroidPlatformOpenGLWindow::createEgl(EGLConfig config)
@@ -143,7 +159,9 @@ void QAndroidPlatformOpenGLWindow::surfaceChanged(JNIEnv *jniEnv, jobject surfac
     unlockSurface();
 
     // repaint the window
-    QWindowSystemInterface::handleExposeEvent(window(), QRegion(geometry()));
+    QRect availableGeometry = screen()->availableGeometry();
+    if (geometry().width() > 0 && geometry().height() > 0 && availableGeometry.width() > 0 && availableGeometry.height() > 0)
+        QWindowSystemInterface::handleExposeEvent(window(), QRegion(geometry()));
 }
 
 QT_END_NAMESPACE

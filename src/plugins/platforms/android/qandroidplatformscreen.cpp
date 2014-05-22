@@ -55,6 +55,9 @@
 #include <android/bitmap.h>
 #include <android/native_window_jni.h>
 
+#include <QtGui/QGuiApplication>
+#include <QtGui/QWindow>
+
 QT_BEGIN_NAMESPACE
 
 #ifdef QANDROIDPLATFORMSCREEN_DEBUG
@@ -217,10 +220,22 @@ void QAndroidPlatformScreen::setGeometry(const QRect &rect)
     if (m_geometry == rect)
         return;
 
+    QRect oldGeometry = m_geometry;
+
     m_geometry = rect;
     QWindowSystemInterface::handleScreenGeometryChange(QPlatformScreen::screen(), geometry());
     QWindowSystemInterface::handleScreenAvailableGeometryChange(QPlatformScreen::screen(), availableGeometry());
     resizeMaximizedWindows();
+
+    if (oldGeometry.width() == 0 && oldGeometry.height() == 0 && rect.width() > 0 && rect.height() > 0) {
+        QList<QWindow *> windows = QGuiApplication::allWindows();
+        for (int i = 0; i < windows.size(); ++i) {
+            QWindow *w = windows.at(i);
+            QRect geometry = w->handle()->geometry();
+            if (geometry.width() > 0 && geometry.height() > 0)
+                QWindowSystemInterface::handleExposeEvent(w, QRegion(geometry));
+        }
+    }
 
     if (m_id != -1) {
         if (m_nativeSurface) {

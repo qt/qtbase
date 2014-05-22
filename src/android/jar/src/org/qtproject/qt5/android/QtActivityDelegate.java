@@ -118,6 +118,7 @@ public class QtActivityDelegate
     private InputMethodManager m_imm = null;
     private boolean m_quitApp = true;
     private Process m_debuggerProcess = null; // debugger process
+    private View m_dummyView = null;
 
     private boolean m_keyboardIsVisible = false;
     public boolean m_backKeyPressedSent = false;
@@ -667,7 +668,7 @@ public class QtActivityDelegate
             DisplayMetrics metrics = new DisplayMetrics();
             m_activity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
             QtNative.setApplicationDisplayMetrics(metrics.widthPixels, metrics.heightPixels,
-                                                  metrics.widthPixels, metrics.heightPixels,
+                                                  0, 0,
                                                   metrics.xdpi, metrics.ydpi, metrics.scaledDensity);
         }
         m_layout = new QtLayout(m_activity);
@@ -676,6 +677,10 @@ public class QtActivityDelegate
         m_surfaces =  new HashMap<Integer, QtSurface>();
         m_nativeViews = new HashMap<Integer, View>();
         m_activity.registerForContextMenu(m_layout);
+
+        m_activity.setContentView(m_layout,
+                                  new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                                                             ViewGroup.LayoutParams.MATCH_PARENT));
 
         int orientation = m_activity.getResources().getConfiguration().orientation;
         int rotation = m_activity.getWindowManager().getDefaultDisplay().getRotation();
@@ -1001,6 +1006,11 @@ public class QtActivityDelegate
     }
 
     public void insertNativeView(int id, View view, int x, int y, int w, int h) {
+        if (m_dummyView != null) {
+            m_layout.removeView(m_dummyView);
+            m_dummyView = null;
+        }
+
         if (m_nativeViews.containsKey(id))
             m_layout.removeView(m_nativeViews.remove(id));
 
@@ -1026,9 +1036,10 @@ public class QtActivityDelegate
                 m_activity.getWindow().setBackgroundDrawable(m_activity.getResources().getDrawable(attr.resourceId));
             }
 
-            m_activity.setContentView(m_layout,
-                    new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                            ViewGroup.LayoutParams.MATCH_PARENT));
+            if (m_dummyView != null) {
+                m_layout.removeView(m_dummyView);
+                m_dummyView = null;
+            }
         }
 
         if (m_surfaces.containsKey(id))
@@ -1065,12 +1076,22 @@ public class QtActivityDelegate
     }
 
     public void destroySurface(int id) {
+        View view = null;
+
         if (m_surfaces.containsKey(id)) {
-            m_layout.removeView(m_surfaces.remove(id));
+            view = m_surfaces.remove(id);
         } else if (m_nativeViews.containsKey(id)) {
-            m_layout.removeView(m_nativeViews.remove(id));
+            view = m_nativeViews.remove(id);
         } else {
             Log.e(QtNative.QtTAG, "Surface " + id +" not found!");
+        }
+
+        // Keep last frame in stack until it is replaced to get correct
+        // shutdown transition
+        if (m_surfaces.size() == 0 && m_nativeViews.size() == 0) {
+            m_dummyView = view;
+        } else if (view != null) {
+            m_layout.removeView(view);
         }
     }
 }

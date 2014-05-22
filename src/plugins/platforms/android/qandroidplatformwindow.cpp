@@ -88,7 +88,9 @@ void QAndroidPlatformWindow::setVisible(bool visible)
             setGeometry(platformScreen()->availableGeometry());
     }
 
-    QPlatformWindow::setVisible(visible);
+    QRect availableGeometry = screen()->availableGeometry();
+    if (geometry().width() > 0 && geometry().height() > 0 && availableGeometry.width() > 0 && availableGeometry.height() > 0)
+        QPlatformWindow::setVisible(visible);
 
     if (visible)
         platformScreen()->addWindow(this);
