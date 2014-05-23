@@ -81,7 +81,7 @@ struct QFreeListElement
 
 /*! \internal
 
-    Element in a QFreeList without a paylout. ConstReferenceType and
+    Element in a QFreeList without a payload. ConstReferenceType and
     ReferenceType are void, the t() functions return void and are empty.
 */
 template <>
