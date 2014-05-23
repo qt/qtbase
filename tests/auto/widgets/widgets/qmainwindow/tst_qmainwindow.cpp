@@ -1726,9 +1726,8 @@ void tst_QMainWindow::addToolbarAfterShow()
 
     QToolBar toolBar;
     mainWindow.addToolBar(&toolBar);
-    QTest::qWait(100);
 
-    QVERIFY(!toolBar.isHidden());
+    QTRY_VERIFY(!toolBar.isHidden());
 }
 
 void tst_QMainWindow::centralWidgetSize()
@@ -1743,8 +1742,7 @@ void tst_QMainWindow::centralWidgetSize()
     mainWindow.setCentralWidget(&widget);
 
     mainWindow.show();
-    QTest::qWait(100);
-    QCOMPARE(widget.size(), widget.sizeHint());
+    QTRY_COMPARE(widget.size(), widget.sizeHint());
 }
 
 void tst_QMainWindow::dockWidgetSize()
@@ -1789,19 +1787,15 @@ void tst_QMainWindow::QTBUG2774_stylechange()
 
 
     {
-        QTest::qWait(1000);
         mw.setStyleSheet("QMainWindow::separator {  width: 50px; height:50px; }");
-        QTest::qWait(5000);
-        QApplication::processEvents();
-        QVERIFY(central->width() < centralOriginalWidth);
+        QTRY_VERIFY(central->width() < centralOriginalWidth);
         QVERIFY( mw.isSeparator(QPoint(4, dockw->pos().y() + dockw->size().height())));
         QVERIFY( mw.isSeparator(QPoint(4, dockw->pos().y() + dockw->size().height() + 49)));
     }
 
     {
         mw.setStyleSheet("QMainWindow::separator {  width: 0px; height: 0px; }");
-        QApplication::processEvents();
-        QVERIFY(central->width() > centralOriginalWidth);
+        QTRY_VERIFY(central->width() > centralOriginalWidth);
         QVERIFY(!mw.isSeparator(QPoint(4, dockw->pos().y() + dockw->size().height())));
         QVERIFY(!mw.isSeparator(QPoint(4, dockw->pos().y() + dockw->size().height() + 1)));
     }
