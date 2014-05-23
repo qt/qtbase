@@ -4783,6 +4783,13 @@ QSize QCommonStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
             sz.setHeight(margin + qMax(iconSize, txt.height()) + margin);
             sz.setWidth((nullIcon ? 0 : margin) + iconSize
                         + (hdr->text.isNull() ? 0 : margin) + txt.width() + margin);
+            if (hdr->sortIndicator != QStyleOptionHeader::None) {
+                int margin = proxy()->pixelMetric(QStyle::PM_HeaderMargin, hdr, widget);
+                if (hdr->orientation == Qt::Horizontal)
+                    sz.rwidth() += sz.height() + margin;
+                else
+                    sz.rheight() += sz.width() + margin;
+            }
         }
         break;
     case CT_TabWidget:

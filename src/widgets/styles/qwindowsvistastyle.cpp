@@ -1970,6 +1970,19 @@ QSize QWindowsVistaStyle::sizeFromContents(ContentsType type, const QStyleOption
             sz -= QSize(2*border, 2*border);
         }
         return sz;
+    case CT_HeaderSection:
+        {
+            // When there is a sort indicator it adds to the width but it is shown
+            // above the text natively and not on the side
+            if (QStyleOptionHeader *hdr = qstyleoption_cast<QStyleOptionHeader *>(const_cast<QStyleOption *>(option))) {
+                QStyleOptionHeader::SortIndicator sortInd = hdr->sortIndicator;
+                hdr->sortIndicator = QStyleOptionHeader::None;
+                sz = QWindowsXPStyle::sizeFromContents(type, hdr, size, widget);
+                hdr->sortIndicator = sortInd;
+                return sz;
+            }
+            break;
+        }
     default:
         break;
     }
