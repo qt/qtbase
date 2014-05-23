@@ -25,8 +25,7 @@ QDOC += -outputdir $$QMAKE_DOCS_OUTPUTDIR
 DOC_INDEXES =
 !isEmpty(QTREPOS) {
     for(qrep, QTREPOS): \
-        exists($$qrep/doc): \
-            DOC_INDEXES += -indexdir $$qrep/doc
+        DOC_INDEXES += -indexdir $$qrep/doc
 } else {
     DOC_INDEXES += -indexdir $$[QT_INSTALL_DOCS/get]
 }
