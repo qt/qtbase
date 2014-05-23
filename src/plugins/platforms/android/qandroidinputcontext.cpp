@@ -472,12 +472,24 @@ void QAndroidInputContext::updateCursorPosition()
         if (m_composingText.isEmpty() != (m_composingTextStart == -1))
             qWarning() << "Input method out of sync" << m_composingText << m_composingTextStart;
 
-
-        // Qt's idea of the cursor position is the start of the preedit area, so we have to maintain our own preedit cursor pos
         int realCursorPosition = cursorPos;
+        int realAnchorPosition = cursorPos;
+
+        int cpos = query->value(Qt::ImCursorPosition).toInt();
+        int anchor = query->value(Qt::ImAnchorPosition).toInt();
+        if (cpos != anchor) {
+            if (!m_composingText.isEmpty()) {
+                qWarning("Selecting text while preediting may give unpredictable results.");
+                finishComposingText();
+            }
+            int blockPos = getBlockPosition(query);
+            realCursorPosition = blockPos + cpos;
+            realAnchorPosition = blockPos + anchor;
+        }
+        // Qt's idea of the cursor position is the start of the preedit area, so we maintain our own preedit cursor pos
         if (!m_composingText.isEmpty())
-            realCursorPosition = m_composingCursor;
-        QtAndroidInput::updateSelection(realCursorPosition, realCursorPosition, //empty selection
+            realCursorPosition = realAnchorPosition = m_composingCursor;
+        QtAndroidInput::updateSelection(realCursorPosition, realAnchorPosition,
                                         m_composingTextStart, m_composingTextStart + composeLength); // pre-edit text
     }
 }
