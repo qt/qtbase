@@ -211,9 +211,6 @@ void QDialogButtonBoxPrivate::initLayout()
         q->setSizePolicy(sp);
         q->setAttribute(Qt::WA_WState_OwnSizePolicy, false);
     }
-
-    // ### move to a real init() function
-    q->setFocusPolicy(Qt::TabFocus);
 }
 
 void QDialogButtonBoxPrivate::resetLayout()
