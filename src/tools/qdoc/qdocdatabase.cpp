@@ -286,6 +286,16 @@ void QDocForest::setSearchOrder()
         }
         forest_.clear();
     }
+
+    /*
+      Rebuild the forest after constructing the search order.
+      It was destroyed during construction of the search order,
+      but it is needed for module-specific searches.
+     */
+    for (int i=0; i<searchOrder_.size(); ++i) {
+        forest_.insert(moduleNames_.at(i).toLower(), searchOrder_.at(i));
+    }
+
 #if 0
     qDebug() << "  SEARCH ORDER:";
     for (int i=0; i<moduleNames_.size(); ++i)
@@ -498,9 +508,12 @@ void QDocDatabase::destroyQdocDB()
   include \c array and \c data, which are just generic names
   used as place holders in function signatures that appear in
   the documentation.
+
+  Also calls Node::initialize() to initialize the search goal map.
  */
 void QDocDatabase::initializeDB()
 {
+    Node::initialize();
     typeNodeMap_.insert( "accepted", 0);
     typeNodeMap_.insert( "actionPerformed", 0);
     typeNodeMap_.insert( "activated", 0);
@@ -776,14 +789,14 @@ QmlClassNode* QDocDatabase::findQmlType(const QString& qmid, const QString& name
     }
 
     QStringList path(name);
-    Node* n = forest_.findNodeByNameAndType(path, Node::Document, Node::QmlClass, true);
+    Node* n = forest_.findNodeByNameAndType(path, Node::QmlType);
     if (n) {
-        if (n->subType() == Node::QmlClass)
+        if (n->isQmlType())
             return static_cast<QmlClassNode*>(n);
-        else if (n->subType() == Node::Collision) {
+        else if (n->isCollisionNode()) {
             NameCollisionNode* ncn;
             ncn = static_cast<NameCollisionNode*>(n);
-            return static_cast<QmlClassNode*>(ncn->findAny(Node::Document,Node::QmlClass));
+            return static_cast<QmlClassNode*>(ncn->findAny(Node::QmlType, Node::NoSubType));
         }
     }
     return 0;
@@ -992,9 +1005,7 @@ void QDocDatabase::findAllClasses(InnerNode* node)
                     serviceClasses_.insert(serviceName, *c);
                 }
             }
-            else if ((*c)->type() == Node::Document &&
-                     (*c)->subType() == Node::QmlClass &&
-                     !(*c)->doc().isEmpty()) {
+            else if ((*c)->isQmlType() && !(*c)->doc().isEmpty()) {
                 QString qmlTypeName = (*c)->name();
                 if (qmlTypeName.startsWith(QLatin1String("QML:")))
                     qmlClasses_.insert(qmlTypeName.mid(4),*c);
@@ -1103,7 +1114,7 @@ void QDocDatabase::findAllObsoleteThings(InnerNode* node)
                         name = (*c)->parent()->name() + "::" + name;
                     obsoleteClasses_.insert(name, *c);
                 }
-                else if ((*c)->type() == Node::Document && (*c)->subType() == Node::QmlClass) {
+                else if ((*c)->isQmlType()) {
                     if (name.startsWith(QLatin1String("QML:")))
                         name = name.mid(4);
                     name = (*c)->qmlModuleName() + "::" + name;
@@ -1139,7 +1150,7 @@ void QDocDatabase::findAllObsoleteThings(InnerNode* node)
                     ++p;
                 }
             }
-            else if ((*c)->type() == Node::Document && (*c)->subType() == Node::QmlClass) {
+            else if ((*c)->isQmlType()) {
                 InnerNode* n = static_cast<InnerNode*>(*c);
                 bool inserted = false;
                 NodeList::const_iterator p = n->childNodes().constBegin();
@@ -1154,7 +1165,7 @@ void QDocDatabase::findAllObsoleteThings(InnerNode* node)
                                 Node* parent = (*c)->parent();
                                 if (parent->type() == Node::QmlPropertyGroup && parent->parent())
                                     parent = parent->parent();
-                                if (parent && parent->subType() == Node::QmlClass && !parent->name().isEmpty())
+                                if (parent && parent->isQmlType() && !parent->name().isEmpty())
                                     name = parent->name() + "::" + name;
                             }
                             qmlTypesWithObsoleteMembers_.insert(name,*c);
@@ -1223,7 +1234,7 @@ void QDocDatabase::findAllSince(InnerNode* node)
                     nsmap.value().insert(className,(*child));
                     ncmap.value().insert(className,(*child));
                 }
-                else if ((*child)->subType() == Node::QmlClass) {
+                else if ((*child)->isQmlType()) {
                     // Insert QML elements into the since and element maps.
                     QString className = (*child)->name();
                     if ((*child)->parent() && !(*child)->parent()->name().isEmpty()) {
@@ -1344,7 +1355,7 @@ const Node* QDocDatabase::findNodeForTarget(const QString& target, const Node* r
     if (target.isEmpty())
         node = relative;
     else if (target.endsWith(".html")) {
-        node = findNodeByNameAndType(QStringList(target), Node::Document, Node::NoSubType);
+        node = findNodeByNameAndType(QStringList(target), Node::Document);
     }
     else {
         node = resolveTarget(target, relative);
@@ -1366,7 +1377,7 @@ void QDocDatabase::resolveQmlInheritance(InnerNode* root)
     NodeMap previousSearches;
     // Do we need recursion?
     foreach (Node* child, root->childNodes()) {
-        if (child->type() == Node::Document && child->subType() == Node::QmlClass) {
+        if (child->isQmlType()) {
             QmlClassNode* qcn = static_cast<QmlClassNode*>(child);
             if (qcn->qmlBaseNodeNotSet() && !qcn->qmlBaseName().isEmpty()) {
                 QmlClassNode* bqcn = static_cast<QmlClassNode*>(previousSearches.value(qcn->qmlBaseName()));
@@ -1463,18 +1474,16 @@ FunctionNode* QDocDatabase::findNodeInOpenNamespace(const QStringList& parentPat
 }
 
 /*!
-  Find a node of the specified \a type and \a subtype that is
-  reached with the specified \a path qualified with the name
-  of one of the open namespaces (might not be any open ones).
-  If the node is found in an open namespace, prefix \a path
-  with the name of the open namespace and "::" and return a
-  pointer to the node. Othewrwise return 0.
+  Find a node of the specified \a type that is reached with
+  the specified \a path qualified with the name of one of the
+  open namespaces (might not be any open ones). If the node
+  is found in an open namespace, prefix \a path with the name
+  of the open namespace and "::" and return a pointer to the
+  node. Othewrwise return 0.
 
   This function only searches in the current primary tree.
  */
-Node* QDocDatabase::findNodeInOpenNamespace(QStringList& path,
-                                            Node::Type type,
-                                            Node::SubType subtype)
+Node* QDocDatabase::findNodeInOpenNamespace(QStringList& path, Node::Type type)
 {
     if (path.isEmpty())
         return 0;
@@ -1486,7 +1495,7 @@ Node* QDocDatabase::findNodeInOpenNamespace(QStringList& path,
                 p = t.split("::") + path;
             else
                 p = path;
-            n = primaryTree()->findNodeByNameAndType(p, type, subtype);
+            n = primaryTree()->findNodeByNameAndType(p, type);
             if (n) {
                 path = p;
                 break;

@@ -102,6 +102,8 @@ protected:
                              const Node *relative,
                              CodeMarker *marker);
     virtual void generateClassLikeNode(InnerNode* inner, CodeMarker* marker);
+    virtual void generateQmlTypePage(QmlClassNode* qcn, CodeMarker* marker);
+    virtual void generateQmlBasicTypePage(QmlBasicTypeNode* qbtn, CodeMarker* marker);
     virtual void generateDocNode(DocNode* dn, CodeMarker* marker);
     virtual void generateCollectionNode(CollectionNode* cn, CodeMarker* marker);
     virtual QString fileExtension() const;
@@ -215,6 +217,7 @@ private:
     static int hOffset(const Node *node);
     static bool isThreeColumnEnumValueTable(const Atom *atom);
     QString getLink(const Atom *atom, const Node *relative, const Node** node);
+    QString getAutoLink(const Atom *atom, const Node *relative, const Node** node);
 #ifdef GENERATE_MAC_REFS
     void generateMacRef(const Node *node, CodeMarker *marker);
 #endif

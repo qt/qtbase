@@ -408,17 +408,13 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
           without including the namespace qualifier.
          */
         Node::Type type =  nodeTypeMap[command];
-        Node::SubType subtype = Node::NoSubType;
-        if (type == Node::Document)
-            subtype = Node::QmlClass;
-
         QStringList paths = arg.first.split(QLatin1Char(' '));
         QStringList path = paths[0].split("::");
         Node *node = 0;
 
-        node = qdb_->findNodeInOpenNamespace(path, type, subtype);
+        node = qdb_->findNodeInOpenNamespace(path, type);
         if (node == 0)
-            node = qdb_->findNodeByNameAndType(path, type, subtype);
+            node = qdb_->findNodeByNameAndType(path, type);
         if (node == 0) {
             doc.location().warning(tr("Cannot find '%1' specified with '\\%2' in any header file")
                                    .arg(arg.first).arg(command));
@@ -971,14 +967,14 @@ void CppCodeParser::processOtherMetaCommand(const Doc& doc,
     else if (command == COMMAND_QMLINHERITS) {
         if (node->name() == arg)
             doc.location().warning(tr("%1 tries to inherit itself").arg(arg));
-        else if (node->subType() == Node::QmlClass) {
+        else if (node->isQmlType()) {
             QmlClassNode *qmlClass = static_cast<QmlClassNode*>(node);
             qmlClass->setQmlBaseName(arg);
             QmlClassNode::addInheritedBy(arg,node);
         }
     }
     else if (command == COMMAND_QMLINSTANTIATES) {
-        if ((node->type() == Node::Document) && (node->subType() == Node::QmlClass)) {
+        if (node->isQmlType()) {
             ClassNode* classNode = qdb_->findClassNode(arg.split("::"));
             if (classNode)
                 node->setClassNode(classNode);
@@ -1023,9 +1019,8 @@ void CppCodeParser::processOtherMetaCommand(const Doc& doc,
         }
     }
     else if (command == COMMAND_QMLABSTRACT) {
-        if ((node->type() == Node::Document) && (node->subType() == Node::QmlClass)) {
+        if (node->isQmlType())
             node->setAbstract(true);
-        }
     }
     else {
         processCommonMetaCommand(doc.location(),command,argLocPair,node);

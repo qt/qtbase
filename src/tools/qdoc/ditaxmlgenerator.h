@@ -315,6 +315,7 @@ protected:
                              const Node* relative,
                              CodeMarker* marker);
     virtual void generateClassLikeNode(InnerNode* inner, CodeMarker* marker);
+    virtual void generateQmlBasicTypePage(QmlBasicTypeNode* qbtn, CodeMarker* marker);
     virtual void generateDocNode(DocNode* dn, CodeMarker* marker);
     virtual void generateCollectionNode(CollectionNode* cn, CodeMarker* marker);
     virtual QString fileExtension() const;

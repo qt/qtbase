@@ -91,9 +91,7 @@ class Tree
     Node* findNodeRecursive(const QStringList& path,
                             int pathIndex,
                             const Node* start,
-                            Node::Type type,
-                            Node::SubType subtype,
-                            bool acceptCollision = false) const;
+                            Node::Type type) const;
     Node* findNodeRecursive(const QStringList& path,
                             int pathIndex,
                             Node* start,
@@ -110,12 +108,7 @@ class Tree
 
     QmlClassNode* findQmlTypeNode(const QStringList& path);
 
-    Node* findNodeByNameAndType(const QStringList& path,
-                                Node::Type type,
-                                Node::SubType subtype,
-                                bool acceptCollision = false) const;
-
-
+    Node* findNodeByNameAndType(const QStringList& path, Node::Type type) const;
     InnerNode* findRelatesNode(const QStringList& path);
     NameCollisionNode* checkForCollision(const QString& name);
     NameCollisionNode* findCollisionNode(const QString& name) const;

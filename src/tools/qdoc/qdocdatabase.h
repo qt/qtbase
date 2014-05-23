@@ -46,6 +46,7 @@
 #include <qmap.h>
 #include "tree.h"
 #include "config.h"
+#include "text.h"
 #include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
@@ -79,6 +80,7 @@ class QDocForest
     Tree* firstTree();
     Tree* nextTree();
     Tree* primaryTree() { return primaryTree_; }
+    Tree* findTree(const QString& t) { return forest_.value(t); }
     NamespaceNode* primaryTreeRoot() { return (primaryTree_ ? primaryTree_->root() : 0); }
     bool isEmpty() { return searchOrder().isEmpty(); }
     bool done() { return (currentIndex_ >= searchOrder().size()); }
@@ -93,20 +95,15 @@ class QDocForest
                 return n;
             relative = 0;
         }
-        //qDebug() << "FAILED SEARCH 1" << path;
         return 0;
     }
 
-    Node* findNodeByNameAndType(const QStringList& path,
-                                Node::Type type,
-                                Node::SubType subtype,
-                                bool acceptCollision = false) {
+    Node* findNodeByNameAndType(const QStringList& path, Node::Type type) {
         foreach (Tree* t, searchOrder()) {
-            Node* n = t->findNodeByNameAndType(path, type, subtype, acceptCollision);
+            Node* n = t->findNodeByNameAndType(path, type);
             if (n)
                 return n;
         }
-        //qDebug() << "FAILED SEARCH 2" << path << type << subtype;
         return 0;
     }
 
@@ -116,7 +113,6 @@ class QDocForest
             if (n)
                 return n;
         }
-        //qDebug() << "FAILED SEARCH 3" << path;
         return 0;
     }
 
@@ -126,7 +122,6 @@ class QDocForest
             if (n)
                 return n;
         }
-        //qDebug() << "FAILED SEARCH 4" << path;
         return 0;
     }
 
@@ -149,19 +144,7 @@ class QDocForest
                 return n;
             relative = 0;
         }
-        //qDebug() << "FAILED SEARCH 5" << path;
         return 0;
-    }
-
-    QString findTarget(const QString& target, const Node* node)
-    {
-        foreach (Tree* t, searchOrder()) {
-            QString ref = t->findTarget(target, node);
-            if (!ref.isEmpty())
-                return ref;
-        }
-        //qDebug() << "FAILED SEARCH 7" << target;
-        return QString();
     }
 
     const Node* findUnambiguousTarget(const QString& target, QString& ref)
@@ -171,7 +154,6 @@ class QDocForest
             if (n)
                 return n;
         }
-        //qDebug() << "FAILED SEARCH 8" << target;
         return 0;
     }
 
@@ -182,7 +164,6 @@ class QDocForest
             if (n)
                 return n;
         }
-        //qDebug() << "FAILED SEARCH 9" << title;
         return 0;
     }
 
@@ -229,6 +210,7 @@ class QDocDatabase
     static void destroyQdocDB();
     ~QDocDatabase();
 
+    Tree* findTree(const QString& t) { return forest_.findTree(t); }
     const CNMap& groups() { return primaryTree()->groups(); }
     const CNMap& modules() { return primaryTree()->modules(); }
     const CNMap& qmlModules() { return primaryTree()->qmlModules(); }
@@ -307,7 +289,7 @@ class QDocDatabase
         return primaryTree()->findFunctionNode(parentPath, clone);
     }
     FunctionNode* findNodeInOpenNamespace(const QStringList& parentPath, const FunctionNode* clone);
-    Node* findNodeInOpenNamespace(QStringList& path, Node::Type type, Node::SubType subtype);
+    Node* findNodeInOpenNamespace(QStringList& path, Node::Type type);
     NameCollisionNode* findCollisionNode(const QString& name) {
         return primaryTree()->findCollisionNode(name);
     }
@@ -321,9 +303,6 @@ class QDocDatabase
     ********************************************************************/
     ClassNode* findClassNode(const QStringList& path) { return forest_.findClassNode(path); }
     InnerNode* findRelatesNode(const QStringList& path) { return forest_.findRelatesNode(path); }
-    QString findTarget(const QString& target, const Node* node) {
-        return forest_.findTarget(target, node);
-    }
     const Node* resolveTarget(const QString& target, const Node* relative) {
         return forest_.resolveTarget(target, relative);
     }
@@ -338,11 +317,14 @@ class QDocDatabase
     const Node* findUnambiguousTarget(const QString& target, QString& ref) {
         return forest_.findUnambiguousTarget(target, ref);
     }
-    Node* findNodeByNameAndType(const QStringList& path, Node::Type type, Node::SubType subtype){
-        return forest_.findNodeByNameAndType(path, type, subtype, false);
+    Node* findNodeByNameAndType(const QStringList& path, Node::Type type) {
+        return forest_.findNodeByNameAndType(path, type);
     }
     /*******************************************************************/
 
+    QString findTarget(const QString& target, const Node* node) {
+        return node->root()->tree()->findTarget(target, node);
+    }
     void addPropertyFunction(PropertyNode* property,
                              const QString& funcName,
                              PropertyNode::FunctionRole funcRole) {

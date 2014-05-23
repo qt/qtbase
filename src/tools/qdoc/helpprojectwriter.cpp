@@ -139,6 +139,8 @@ void HelpProjectWriter::readSelectors(SubProject &subproject, const QStringList 
     typeHash["qmlsignalhandler"] = Node::QmlSignalHandler;
     typeHash["qmlmethod"] = Node::QmlMethod;
     typeHash["qmlpropertygroup"] = Node::QmlPropertyGroup;
+    typeHash["qmlclass"] = Node::QmlType;
+    typeHash["qmlbasictype"] = Node::QmlBasicType;
 
     QHash<QString, Node::SubType> subTypeHash;
     subTypeHash["example"] = Node::Example;
@@ -146,8 +148,6 @@ void HelpProjectWriter::readSelectors(SubProject &subproject, const QStringList 
     subTypeHash["file"] = Node::File;
     subTypeHash["page"] = Node::Page;
     subTypeHash["externalpage"] = Node::ExternalPage;
-    subTypeHash["qmlclass"] = Node::QmlClass;
-    subTypeHash["qmlbasictype"] = Node::QmlBasicType;
 
     QSet<Node::SubType> allSubTypes = QSet<Node::SubType>::fromList(subTypeHash.values());
 
@@ -211,16 +211,14 @@ QStringList HelpProjectWriter::keywordDetails(const Node *node) const
         // "id"
         details << node->parent()->name()+"::"+node->name();
     }
-    else if (node->type() == Node::Document) {
+    else if (node->isQmlType() || node->isQmlBasicType()) {
+        details << node->name();
+        details << "QML." + node->name();
+    }
+    else if (node->isDocNode()) {
         const DocNode *fake = static_cast<const DocNode *>(node);
-        if (fake->subType() == Node::QmlClass) {
-            details << (QmlClassNode::qmlOnly ? fake->name() : fake->fullTitle());
-            details << "QML." + fake->name();
-        }
-        else {
-            details << fake->fullTitle();
-            details << fake->fullTitle();
-        }
+        details << fake->fullTitle();
+        details << fake->fullTitle();
     }
     else {
         details << node->name();
@@ -248,7 +246,7 @@ bool HelpProjectWriter::generateSection(HelpProject &project,
         return false;
 
     QString objName;
-    if (node->type() == Node::Document) {
+    if (node->isDocNode()) {
         const DocNode *fake = static_cast<const DocNode *>(node);
         objName = fake->fullTitle();
     }
@@ -285,6 +283,25 @@ bool HelpProjectWriter::generateSection(HelpProject &project,
     switch (node->type()) {
 
     case Node::Class:
+        project.keywords.append(keywordDetails(node));
+        project.files.insert(gen_->fullDocumentLocation(node,Generator::useOutputSubdirs()));
+        break;
+    case Node::QmlType:
+    case Node::QmlBasicType:
+        if (node->doc().hasKeywords()) {
+            foreach (const Atom* keyword, node->doc().keywords()) {
+                if (!keyword->string().isEmpty()) {
+                    QStringList details;
+                    details << keyword->string()
+                            << keyword->string()
+                            << gen_->fullDocumentLocation(node,Generator::useOutputSubdirs()) +
+                        QLatin1Char('#') + Doc::canonicalTitle(keyword->string());
+                    project.keywords.append(details);
+                }
+                else
+                    node->doc().location().warning(tr("Bad keyword in %1").arg(gen_->fullDocumentLocation(node,Generator::useOutputSubdirs())));
+            }
+        }
         project.keywords.append(keywordDetails(node));
         project.files.insert(gen_->fullDocumentLocation(node,Generator::useOutputSubdirs()));
         break;
@@ -558,17 +575,14 @@ void HelpProjectWriter::addMembers(HelpProject &project, QXmlStreamWriter &write
     if (href.isEmpty())
         return;
 
-    Node::SubType subType = static_cast<const DocNode*>(node)->subType();
-
     bool derivedClass = false;
     if (node->type() == Node::Class)
         derivedClass = !(static_cast<const ClassNode *>(node)->baseClasses().isEmpty());
 
     // Do not generate a 'List of all members' for namespaces or header files,
     // but always generate it for derived classes and QML classes
-    if (node->type() != Node::Namespace && subType != Node::HeaderFile &&
-            (derivedClass || subType == Node::QmlClass ||
-             !project.memberStatus[node].isEmpty())) {
+    if (!node->isNamespace() && !node->isHeaderFile() &&
+        (derivedClass || node->isQmlType() || !project.memberStatus[node].isEmpty())) {
         QString membersPath = href + QStringLiteral("-members.html");
         project.files.insert(membersPath);
         if (writeSections)
@@ -612,6 +626,14 @@ void HelpProjectWriter::writeNode(HelpProject &project, QXmlStreamWriter &writer
         writeSection(writer, href, objName);
         break;
 
+    case Node::QmlType:
+        writer.writeStartElement("section");
+        writer.writeAttribute("ref", href);
+        writer.writeAttribute("title", tr("%1 Type Reference").arg(node->fullTitle()));
+        addMembers(project, writer, node);
+        writer.writeEndElement(); // section
+        break;
+
     case Node::Document: {
         // Document nodes (such as manual pages) contain subtypes, titles and other
         // attributes.
@@ -619,12 +641,9 @@ void HelpProjectWriter::writeNode(HelpProject &project, QXmlStreamWriter &writer
 
         writer.writeStartElement("section");
         writer.writeAttribute("ref", href);
-        if (docNode->subType() == Node::QmlClass)
-            writer.writeAttribute("title", tr("%1 Type Reference").arg(docNode->fullTitle()));
-        else
-            writer.writeAttribute("title", docNode->fullTitle());
+        writer.writeAttribute("title", docNode->fullTitle());
 
-        if ((docNode->subType() == Node::HeaderFile) || (docNode->subType() == Node::QmlClass))
+        if (docNode->subType() == Node::HeaderFile)
             addMembers(project, writer, node);
 
         writer.writeEndElement(); // section
@@ -695,7 +714,7 @@ void HelpProjectWriter::generateProject(HelpProject &project)
     writer.writeStartElement("section");
     const Node* node = qdb_->findDocNodeByTitle(project.indexTitle);
     if (node == 0)
-        node = qdb_->findNodeByNameAndType(QStringList("index.html"), Node::Document, Node::Page);
+        node = qdb_->findNodeByNameAndType(QStringList("index.html"), Node::Document);
     QString indexPath;
     // Never use a collision node as a landing page
     if (node && !node->isCollisionNode())

@@ -42,30 +42,11 @@
 #include <qregexp.h>
 #include "atom.h"
 #include "location.h"
+#include "qdocdatabase.h"
 #include <stdio.h>
+#include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
-
-QLatin1String Atom::BOLD_          ("bold");
-QLatin1String Atom::INDEX_         ("index");
-QLatin1String Atom::ITALIC_        ("italic");
-QLatin1String Atom::LINK_          ("link");
-QLatin1String Atom::PARAMETER_     ("parameter");
-QLatin1String Atom::SPAN_          ("span");
-QLatin1String Atom::SUBSCRIPT_     ("subscript");
-QLatin1String Atom::SUPERSCRIPT_   ("superscript");
-QLatin1String Atom::TELETYPE_      ("teletype");
-QLatin1String Atom::UICONTROL_     ("uicontrol");
-QLatin1String Atom::UNDERLINE_     ("underline");
-
-QLatin1String Atom::BULLET_        ("bullet");
-QLatin1String Atom::TAG_           ("tag");
-QLatin1String Atom::VALUE_         ("value");
-QLatin1String Atom::LOWERALPHA_    ("loweralpha");
-QLatin1String Atom::LOWERROMAN_    ("lowerroman");
-QLatin1String Atom::NUMERIC_       ("numeric");
-QLatin1String Atom::UPPERALPHA_    ("upperalpha");
-QLatin1String Atom::UPPERROMAN_    ("upperroman");
 
 /*! \class Atom
     \brief The Atom class is the fundamental unit for representing
@@ -385,6 +366,30 @@ void Atom::dump() const
             "    %-15s%s\n",
             typeString().toLatin1().data(),
             str.toLatin1().data());
+}
+
+/*!
+  The only constructor for LinkAtom. It only create an Atom
+  of type Atom::Link with \a p1 being the link text. \a p2
+  contains some search parameters.
+ */
+LinkAtom::LinkAtom(const QString& p1, const QString& p2)
+    : Atom(Link, p1), qml_(false), goal_(Node::NoType), domain_(0)
+{
+    QStringList params = p2.toLower().split(QLatin1Char(' '));
+    foreach (const QString& p, params) {
+        if (p == "qml")
+            qml_ = true;
+        else {
+            if (!domain_) {
+                domain_ = QDocDatabase::qdocDB()->findTree(p);
+                if (domain_)
+                    continue;
+            }
+            if (goal_ == Node::NoType)
+                goal_ = Node::goal(p);
+        }
+    }
 }
 
 QT_END_NAMESPACE

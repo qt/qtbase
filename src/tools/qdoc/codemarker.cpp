@@ -273,7 +273,7 @@ QString CodeMarker::taggedNode(const Node* node)
     case Node::Property:
         tag = QLatin1String("@property");
         break;
-    case Node::Document:
+    case Node::QmlType:
         /*
           Remove the "QML:" prefix, if present.
           There shouldn't be any of these "QML:"
@@ -282,10 +282,11 @@ QString CodeMarker::taggedNode(const Node* node)
           qualifiers, but this code is kept to
           be backward compatible.
         */
-        if (node->subType() == Node::QmlClass) {
-            if (node->name().startsWith(QLatin1String("QML:")))
-                name = name.mid(4);
-        }
+        if (node->name().startsWith(QLatin1String("QML:")))
+            name = name.mid(4);
+        tag = QLatin1String("@property");
+        break;
+    case Node::Document:
         tag = QLatin1String("@property");
         break;
     case Node::QmlMethod:
@@ -400,9 +401,8 @@ void CodeMarker::insert(FastSection &fastSection,
         InnerNode* p = node->parent();
         if (p->type() == Node::QmlPropertyGroup)
             p = p->parent();
-        if (p != fastSection.parent_) { // && !node->parent()->isAbstract()) {
-            if (p->subType() != Node::QmlClass || !p->isAbstract()) {
-                //if (node->type() != Node::QmlProperty) {
+        if (p != fastSection.parent_) {
+            if (!p->isQmlType() || !p->isAbstract()) {
                 inheritedMember = true;
             }
         }
@@ -622,6 +622,7 @@ QStringList CodeMarker::macRefsForNode(Node *node)
     }
     case Node::Namespace:
     case Node::Document:
+    case Node::QmlType:
     default:
         return QStringList();
     }

@@ -206,8 +206,7 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
             abstract = true;
         node->setAbstract(abstract);
     }
-    else if ((element.nodeName() == "qmlclass") ||
-             ((element.nodeName() == "page") && (element.attribute("subtype") == "qmlclass"))) {
+    else if (element.nodeName() == "qmlclass") {
         QmlClassNode* qcn = new QmlClassNode(parent, name);
         qcn->setTitle(element.attribute("title"));
         QString qmlModuleName = element.attribute("qml-module-name");
@@ -260,11 +259,11 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
         if (element.attribute("writable") == "false")
             readonly = true;
         QmlPropertyNode* qpn = 0;
-        if (parent->type() == Node::Document) {
+        if (parent->isQmlType()) {
             QmlClassNode* qcn = static_cast<QmlClassNode*>(parent);
             qpn = new QmlPropertyNode(qcn, name, type, attached);
         }
-        else if (parent->type() == Node::QmlPropertyGroup) {
+        else if (parent->isQmlPropertyGroup()) {
             QmlPropertyGroupNode* qpgn = static_cast<QmlPropertyGroupNode*>(parent);
             qpn = new QmlPropertyNode(qpgn, name, type, attached);
         }
@@ -331,14 +330,6 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
         else if (attr == "externalpage") {
             subtype = Node::ExternalPage;
             ptype = Node::ArticlePage;
-        }
-        else if (attr == "qmlclass") {
-            subtype = Node::QmlClass;
-            ptype = Node::ApiPage;
-        }
-        else if (attr == "qmlbasictype") {
-            subtype = Node::QmlBasicType;
-            ptype = Node::ApiPage;
         }
         else
             return;
@@ -614,7 +605,7 @@ void QDocIndexFiles::resolveIndex()
     foreach (pair, basesList_) {
         foreach (const QString& base, pair.second.split(QLatin1Char(','))) {
             QStringList basePath = base.split(QString("::"));
-            Node* n = qdb_->findNodeByNameAndType(basePath, Node::Class, Node::NoSubType);
+            Node* n = qdb_->findClassNode(basePath);
             if (n)
                 pair.first->addResolvedBaseClass(Node::Public, static_cast<ClassNode*>(n));
             else
@@ -661,17 +652,20 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
     case Node::Class:
         nodeName = "class";
         break;
-    case Node::Document:
-        nodeName = "page";
-        if (node->subType() == Node::QmlClass) {
+    case Node::QmlType:
+        {
             nodeName = "qmlclass";
             QmlModuleNode* qmn = node->qmlModule();
             if (qmn)
                 qmlModuleName = qmn->qmlModuleName();
             qmlFullBaseName = node->qmlFullBaseName();
         }
-        else if (node->subType() == Node::QmlBasicType)
-            nodeName = "qmlbasictype";
+        break;
+    case Node::QmlBasicType:
+        nodeName = "qmlbasictype";
+        break;
+    case Node::Document:
+        nodeName = "page";
         break;
     case Node::Group:
         nodeName = "group";
@@ -755,10 +749,7 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
 
     QXmlStreamAttributes attributes;
 
-    if ((node->type() != Node::Document) &&
-        (node->type() != Node::Group) &&
-        (node->type() != Node::Module) &&
-        (node->type() != Node::QmlModule)) {
+    if (!node->isDocNode() && !node->isGroup() && !node->isModule() && !node->isQmlModule()) {
         QString threadSafety;
         switch (node->threadSafeness()) {
         case Node::NonReentrant:
@@ -843,10 +834,7 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
         writer.writeAttribute("href", href);
 
     writer.writeAttribute("status", status);
-    if ((node->type() != Node::Document) &&
-        (node->type() != Node::Group) &&
-        (node->type() != Node::Module) &&
-        (node->type() != Node::QmlModule)) {
+    if (!node->isDocNode() && !node->isGroup() && !node->isModule() && !node->isQmlModule()) {
         writer.writeAttribute("access", access);
         if (node->isAbstract())
             writer.writeAttribute("abstract", "true");
@@ -896,6 +884,18 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
                 writer.writeAttribute("brief", brief);
         }
         break;
+    case Node::QmlType:
+        {
+            const QmlClassNode* qcn = static_cast<const QmlClassNode*>(node);
+            writer.writeAttribute("title", qcn->title());
+            writer.writeAttribute("fulltitle", qcn->fullTitle());
+            writer.writeAttribute("subtitle", qcn->subTitle());
+            if (!qcn->groupNames().isEmpty())
+                writer.writeAttribute("groups", qcn->groupNames().join(","));
+            if (!brief.isEmpty())
+                writer.writeAttribute("brief", brief);
+        }
+        break;
     case Node::Document:
         {
             /*
@@ -922,12 +922,6 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
                 break;
             case Node::ExternalPage:
                 writer.writeAttribute("subtype", "externalpage");
-                break;
-            case Node::QmlClass:
-                //writer.writeAttribute("subtype", "qmlclass");
-                break;
-            case Node::QmlBasicType:
-                //writer.writeAttribute("subtype", "qmlbasictype");
                 break;
             default:
                 break;
@@ -1289,7 +1283,7 @@ bool compareNodes(const Node* n1, const Node* n2)
             return false;
     }
 
-    if (n1->type() == Node::Document && n2->type() == Node::Document) {
+    if (n1->isDocNode() && n2->isDocNode()) {
         const DocNode* f1 = static_cast<const DocNode*>(n1);
         const DocNode* f2 = static_cast<const DocNode*>(n2);
         if (f1->fullTitle() < f2->fullTitle())

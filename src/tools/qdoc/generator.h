@@ -114,6 +114,8 @@ protected:
     virtual int generateAtom(const Atom *atom, const Node *relative, CodeMarker *marker);
     virtual void generateBody(const Node *node, CodeMarker *marker);
     virtual void generateClassLikeNode(InnerNode* inner, CodeMarker* marker);
+    virtual void generateQmlTypePage(QmlClassNode* , CodeMarker* ) { }
+    virtual void generateQmlBasicTypePage(QmlBasicTypeNode* , CodeMarker* ) { }
     virtual void generateDocNode(DocNode* dn, CodeMarker* marker);
     virtual void generateCollectionNode(CollectionNode* cn, CodeMarker* marker);
     virtual void generateInheritedBy(const ClassNode *classe, CodeMarker *marker);
@@ -155,7 +157,7 @@ protected:
     void generateSince(const Node *node, CodeMarker *marker);
     void generateStatus(const Node *node, CodeMarker *marker);
     void generateThreadSafeness(const Node *node, CodeMarker *marker);
-    QString getCollisionLink(const Atom* atom);
+    //QString getCollisionLink(const Atom* atom);
     QString getMetadataElement(const InnerNode* inner, const QString& t);
     QStringList getMetadataElements(const InnerNode* inner, const QString& t);
     QString indent(int level, const QString& markedCode);

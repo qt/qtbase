@@ -51,6 +51,38 @@ QT_BEGIN_NAMESPACE
 
 int Node::propertyGroupCount_ = 0;
 QStringMap Node::operators_;
+QMap<QString,Node::Type> Node::goals_;
+
+/*!
+  Initialize the map of search goals. This is called once
+  by QDocDatabase::initializeDB(). The map key is a string
+  representing a value in the enum Node::Type. The map value
+  is the enum value.
+
+  There should be an entry in the map for each value in the
+  Type enum.
+ */
+void Node::initialize()
+{
+    goals_.insert("class", Node::Class);
+    goals_.insert("qmltype", Node::QmlType);
+    goals_.insert("page", Node::Document);
+    goals_.insert("function", Node::Function);
+    goals_.insert("property", Node::Property);
+    goals_.insert("variable", Node::Variable);
+    goals_.insert("group", Node::Group);
+    goals_.insert("module", Node::Module);
+    goals_.insert("qmlmodule", Node::QmlModule);
+    goals_.insert("qmppropertygroup", Node::QmlPropertyGroup);
+    goals_.insert("qmlproperty", Node::QmlProperty);
+    goals_.insert("qmlsignal", Node::QmlSignal);
+    goals_.insert("qmlsignalhandler", Node::QmlSignalHandler);
+    goals_.insert("qmlmethod", Node::QmlMethod);
+    goals_.insert("qmlbasictype", Node::QmlBasicType);
+    goals_.insert("enum", Node::Enum);
+    goals_.insert("typedef", Node::Typedef);
+    goals_.insert("namespace", Node::Namespace);
+}
 
 /*!
   Increment the number of property groups seen in the current
@@ -328,6 +360,10 @@ QString Node::nodeTypeString(unsigned t)
         return "group";
     case Module:
         return "module";
+    case QmlType:
+        return "QML type";
+    case QmlBasicType:
+        return "QML basic type";
     case QmlModule:
         return "QML module";
     case QmlProperty:
@@ -376,10 +412,6 @@ QString Node::nodeSubtypeString(unsigned t)
         return "page";
     case ExternalPage:
         return "external page";
-    case QmlClass:
-        return "QML type";
-    case QmlBasicType:
-        return "QML basic type";
     case DitaMap:
         return "ditamap";
     case Collision:
@@ -616,9 +648,9 @@ QmlClassNode* Node::qmlClassNode()
 {
     if (isQmlNode()) {
         Node* n = this;
-        while (n && n->subType() != Node::QmlClass)
+        while (n && !n->isQmlType())
             n = n->parent();
-        if (n && n->subType() == Node::QmlClass)
+        if (n && n->isQmlType())
             return static_cast<QmlClassNode*>(n);
     }
     return 0;
@@ -652,6 +684,14 @@ bool Node::isInternal() const
     if (relates() && relates()->status() == Internal)
         return true;
     return false;
+}
+
+/*!
+  Returns a pointer to the root of the Tree this node is in.
+ */
+const Node* Node::root() const
+{
+    return (parent() ? parent()->root() : this);
 }
 
 /*!
@@ -1072,6 +1112,7 @@ InnerNode::InnerNode(Type type, InnerNode *parent, const QString& name)
 {
     switch (type) {
     case Class:
+    case QmlType:
     case Namespace:
         setPageType(ApiPage);
         break;
@@ -1313,6 +1354,7 @@ LeafNode::LeafNode(Type type, InnerNode *parent, const QString& name)
     case QmlSignal:
     case QmlSignalHandler:
     case QmlMethod:
+    case QmlBasicType:
         setPageType(ApiPage);
         break;
     default:
@@ -1356,7 +1398,7 @@ LeafNode::LeafNode(InnerNode* parent, Type type, const QString& name)
   Constructs a namespace node.
  */
 NamespaceNode::NamespaceNode(InnerNode *parent, const QString& name)
-    : InnerNode(Namespace, parent, name)
+    : InnerNode(Namespace, parent, name), tree_(0)
 {
     setPageType(ApiPage);
 }
@@ -1561,10 +1603,6 @@ DocNode::DocNode(InnerNode* parent, const QString& name, SubType subtype, Node::
         break;
     case DitaMap:
         setPageType(ptype);
-        break;
-    case QmlClass:
-    case QmlBasicType:
-        setPageType(ApiPage);
         break;
     case Example:
         setPageType(ExamplePage);
@@ -2051,12 +2089,11 @@ bool QmlClassNode::qmlOnly = false;
 QMultiMap<QString,Node*> QmlClassNode::inheritedBy;
 
 /*!
-  Constructs a Qml class node (i.e. a Document node with the
-  subtype QmlClass. The new node has the given \a parent
-  and \a name.
+  Constructs a Qml class node. The new node has the given
+  \a parent and \a name.
  */
 QmlClassNode::QmlClassNode(InnerNode *parent, const QString& name)
-    : DocNode(parent, name, QmlClass, Node::ApiPage),
+    : InnerNode(QmlType, parent, name),
       abstract_(false),
       cnodeRequired_(false),
       wrapper_(false),
@@ -2070,6 +2107,7 @@ QmlClassNode::QmlClassNode(InnerNode *parent, const QString& name)
         i = 4;
     }
     setTitle(name.mid(i));
+    setPageType(Node::ApiPage);
 }
 
 /*!
@@ -2187,13 +2225,12 @@ QString QmlClassNode::qmlModuleIdentifier() const
 }
 
 /*!
-  Constructs a Qml basic type node (i.e. a Document node with
-  the subtype QmlBasicType. The new node has the given
+  Constructs a Qml basic type node. The new node has the given
   \a parent and \a name.
  */
 QmlBasicTypeNode::QmlBasicTypeNode(InnerNode *parent,
                                    const QString& name)
-    : DocNode(parent, name, QmlBasicType, Node::ApiPage)
+    : InnerNode(QmlBasicType, parent, name)
 {
     setTitle(name);
 }
@@ -2293,7 +2330,7 @@ PropertyNode* QmlPropertyNode::findCorrespondingCppProperty()
 {
     PropertyNode* pn;
     Node* n = parent();
-    while (n && n->subType() != Node::QmlClass)
+    while (n && !n->isQmlType())
         n = n->parent();
     if (n) {
         QmlClassNode* qcn = static_cast<QmlClassNode*>(n);
@@ -2489,11 +2526,13 @@ QString Node::fullDocumentName() const
         if (!n->name().isEmpty() && !n->isQmlPropertyGroup())
             pieces.insert(0, n->name());
 
-        if (n->type() == Node::Document) {
-            if ((n->subType() == Node::QmlClass) && !n->qmlModuleName().isEmpty())
-                pieces.insert(0, n->qmlModuleName());
+        if (n->isQmlType() && !n->qmlModuleName().isEmpty()) {
+            pieces.insert(0, n->qmlModuleName());
             break;
         }
+
+        if (n->isDocNode())
+            break;
 
         // Examine the parent node if one exists.
         if (n->parent())
@@ -2504,7 +2543,7 @@ QString Node::fullDocumentName() const
 
     // Create a name based on the type of the ancestor node.
     QString concatenator = "::";
-    if ((n->type() == Node::Document) && (n->subType() != Node::QmlClass))
+    if (n->isDocNode())
         concatenator = QLatin1Char('#');
 
     return pieces.join(concatenator);
@@ -2679,16 +2718,15 @@ QString Node::idForNode() const
                 }
             }
             else if (parent_) {
-                if (parent_->type() == Class)
+                if (parent_->isClass())
                     str = "class-member-" + func->name();
-                else if (parent_->type() == Namespace)
+                else if (parent_->isNamespace())
                     str = "namespace-member-" + func->name();
+                else if (parent_->isQmlType())
+                    str = "qml-method-" + parent_->name().toLower() + "-" + func->name();
                 else if (parent_->type() == Document) {
-                    if (parent_->subType() == QmlClass)
-                        str = "qml-method-" + parent_->name().toLower() + "-" + func->name();
-                    else
-                        qDebug() << "qdoc internal error: Node subtype not handled:"
-                                 << parent_->subType() << func->name();
+                    qDebug() << "qdoc internal error: Node subtype not handled:"
+                             << parent_->subType() << func->name();
                 }
                 else
                     qDebug() << "qdoc internal error: Node type not handled:"
@@ -2699,12 +2737,15 @@ QString Node::idForNode() const
                 str += QLatin1Char('-') + QString::number(func->overloadNumber());
         }
         break;
+    case Node::QmlType:
+        str = "qml-class-" + name();
+        break;
+    case Node::QmlBasicType:
+        str = "qml-basic-type-" + name();
+        break;
     case Node::Document:
         {
             switch (subType()) {
-            case Node::QmlClass:
-                str = "qml-class-" + name();
-                break;
             case Node::Page:
             case Node::HeaderFile:
                 str = title();
@@ -2722,9 +2763,6 @@ QString Node::idForNode() const
             case Node::Example:
                 str = name();
                 str.replace(QLatin1Char('/'), QLatin1Char('-'));
-                break;
-            case Node::QmlBasicType:
-                str = "qml-basic-type-" + name();
                 break;
             case Node::Collision:
                 str = title();

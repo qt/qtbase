@@ -365,7 +365,7 @@ void QmlDocVisitor::applyMetacommands(QQmlJS::AST::SourceLocation,
             QString command = *i;
             ArgList args = doc.metaCommandArgs(command);
             if (command == COMMAND_QMLABSTRACT) {
-                if ((node->type() == Node::Document) && (node->subType() == Node::QmlClass)) {
+                if (node->isQmlType()) {
                     node->setAbstract(true);
                 }
             }
@@ -378,7 +378,7 @@ void QmlDocVisitor::applyMetacommands(QQmlJS::AST::SourceLocation,
             else if (command == COMMAND_QMLINHERITS) {
                 if (node->name() == args[0].first)
                     doc.location().warning(tr("%1 tries to inherit itself").arg(args[0].first));
-                else if (node->subType() == Node::QmlClass) {
+                else if (node->isQmlType()) {
                     QmlClassNode *qmlClass = static_cast<QmlClassNode*>(node);
                     qmlClass->setQmlBaseName(args[0].first);
                     QmlClassNode::addInheritedBy(args[0].first,node);
@@ -541,7 +541,7 @@ bool QmlDocVisitor::visit(QQmlJS::AST::UiPublicMember *member)
     switch (member->type) {
     case QQmlJS::AST::UiPublicMember::Signal:
     {
-        if (current->type() == Node::Document) {
+        if (current->isQmlType()) {
             QmlClassNode *qmlClass = static_cast<QmlClassNode *>(current);
             if (qmlClass) {
 
@@ -564,7 +564,7 @@ bool QmlDocVisitor::visit(QQmlJS::AST::UiPublicMember *member)
     {
         QString type = member->memberType.toString();
         QString name = member->name.toString();
-        if (current->type() == Node::Document) {
+        if (current->isQmlType()) {
             QmlClassNode *qmlClass = static_cast<QmlClassNode *>(current);
             if (qmlClass) {
                 QString name = member->name.toString();
@@ -608,7 +608,7 @@ bool QmlDocVisitor::visit(QQmlJS::AST::FunctionDeclaration* fd)
     if (nestingLevel > 1) {
         return true;
     }
-    if (current->type() == Node::Document) {
+    if (current->isQmlType()) {
         QmlClassNode* qmlClass = static_cast<QmlClassNode*>(current);
         if (qmlClass) {
             QString name = fd->name.toString();
@@ -661,7 +661,7 @@ bool QmlDocVisitor::visit(QQmlJS::AST::UiScriptBinding* )
     if (nestingLevel > 1) {
         return true;
     }
-    if (current->type() == Node::Document) {
+    if (current->isQmlType()) {
         QString handler = sb->qualifiedId->name.toString();
         if (handler.length() > 2 && handler.startsWith("on") && handler.at(2).isUpper()) {
             QmlClassNode* qmlClass = static_cast<QmlClassNode*>(current);

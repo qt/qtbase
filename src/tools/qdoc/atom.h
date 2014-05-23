@@ -39,16 +39,15 @@
 **
 ****************************************************************************/
 
-/*
-  atom.h
-*/
-
 #ifndef ATOM_H
 #define ATOM_H
 
 #include <qstringlist.h>
+#include "node.h"
 
 QT_BEGIN_NAMESPACE
+
+class Tree;
 
 class Atom
 {
@@ -169,6 +168,8 @@ public:
         previous->next_ = this;
     }
 
+    virtual ~Atom() { }
+
     void appendChar(QChar ch) { strs[0] += ch; }
     void appendString(const QString& string) { strs[0] += string; }
     void chopString() { strs[0].chop(1); }
@@ -186,31 +187,32 @@ public:
     int count() const { return strs.size(); }
     void dump() const;
 
-    static QLatin1String BOLD_;
-    static QLatin1String INDEX_;
-    static QLatin1String ITALIC_;
-    static QLatin1String LINK_;
-    static QLatin1String PARAMETER_;
-    static QLatin1String SPAN_;
-    static QLatin1String SUBSCRIPT_;
-    static QLatin1String SUPERSCRIPT_;
-    static QLatin1String TELETYPE_;
-    static QLatin1String UICONTROL_;
-    static QLatin1String UNDERLINE_;
+    virtual bool qml() const { return false; }
+    virtual bool specifiesDomain() const { return false; }
+    virtual Tree* domain() const { return 0; }
+    virtual Node::Type goal() const { return Node::NoType; }
 
-    static QLatin1String BULLET_;
-    static QLatin1String TAG_;
-    static QLatin1String VALUE_;
-    static QLatin1String LOWERALPHA_;
-    static QLatin1String LOWERROMAN_;
-    static QLatin1String NUMERIC_;
-    static QLatin1String UPPERALPHA_;
-    static QLatin1String UPPERROMAN_;
-
-private:
+ protected:
     Atom* next_;
     Type type_;
     QStringList strs;
+};
+
+class LinkAtom : public Atom
+{
+ public:
+    LinkAtom(const QString& p1, const QString& p2);
+    virtual ~LinkAtom() { }
+
+    virtual bool qml() const { return qml_; }
+    virtual bool specifiesDomain() const { return (domain_ != 0); }
+    virtual Tree* domain() const { return domain_; }
+    virtual Node::Type goal() const { return goal_; }
+
+ protected:
+    bool        qml_;
+    Node::Type  goal_;
+    Tree*       domain_;
 };
 
 #define ATOM_FORMATTING_BOLD            "bold"

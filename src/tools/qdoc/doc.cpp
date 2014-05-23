@@ -46,6 +46,7 @@
 #include "openedlist.h"
 #include "quoter.h"
 #include "text.h"
+#include "atom.h"
 #include "tokenizer.h"
 #include <qdatetime.h>
 #include <qfile.h>
@@ -63,7 +64,6 @@ Q_GLOBAL_STATIC(QSet<QString>, null_Set_QString)
 Q_GLOBAL_STATIC(TopicList, nullTopicList)
 Q_GLOBAL_STATIC(QStringList, null_QStringList)
 Q_GLOBAL_STATIC(QList<Text>, null_QList_Text)
-//Q_GLOBAL_STATIC(QStringMap, null_QStringMap)
 Q_GLOBAL_STATIC(QStringMultiMap, null_QStringMultiMap)
 
 struct Macro
@@ -477,6 +477,7 @@ private:
     void parseAlso();
     void append(Atom::Type type, const QString& string = QString());
     void append(Atom::Type type, const QString& p1, const QString& p2);
+    void append(const QString& p1, const QString& p2);
     void appendChar(QChar ch);
     void appendWord(const QString &word);
     void appendToCode(const QString &code);
@@ -495,6 +496,7 @@ private:
     Doc::Sections getSectioningUnit();
     QString getArgument(bool verbatim = false);
     QString getBracedArgument(bool verbatim);
+    QString getBracketedArgument();
     QString getOptionalArgument();
     QString getRestOfLine();
     QString getMetaCommandArgument(const QString &cmdStr);
@@ -504,6 +506,7 @@ private:
 
     bool isBlankLine();
     bool isLeftBraceAhead();
+    bool isLeftBracketAhead();
     void skipSpacesOnLine();
     void skipSpacesOrOneEndl();
     void skipAllSpaces();
@@ -965,9 +968,11 @@ void DocParser::parse(const QString& source,
                     break;
                 case CMD_L:
                     enterPara();
+                    if (isLeftBracketAhead())
+                        p2 = getBracketedArgument();
                     if (isLeftBraceAhead()) {
                         p1 = getArgument();
-                        append(Atom::Link, p1);
+                        append(p1, p2);
                         if (isLeftBraceAhead()) {
                             currentLinkAtom = priv->text.lastAtom();
                             startFormat(ATOM_FORMATTING_LINK, cmd);
@@ -980,7 +985,7 @@ void DocParser::parse(const QString& source,
                     }
                     else {
                         p1 = getArgument();
-                        append(Atom::Link, p1);
+                        append(p1, p2);
                         append(Atom::FormattingLeft, ATOM_FORMATTING_LINK);
                         append(Atom::String, cleanLink(p1));
                         append(Atom::FormattingRight, ATOM_FORMATTING_LINK);
@@ -1984,6 +1989,17 @@ void DocParser::append(Atom::Type type, const QString& p1, const QString& p2)
     priv->text << Atom(type, p1, p2);
 }
 
+void DocParser::append(const QString& p1, const QString& p2)
+{
+    Atom::Type lastType = priv->text.lastAtom()->type();
+    if ((lastType == Atom::Code) && priv->text.lastAtom()->string().endsWith(QLatin1String("\n\n")))
+        priv->text.lastAtom()->chopString();
+    if (p2.isEmpty())
+        priv->text << Atom(Atom::Link, p1, p2);
+    else
+        priv->text << LinkAtom(p1, p2);
+}
+
 void DocParser::appendChar(QChar ch)
 {
     if (priv->text.lastAtom()->type() != Atom::String)
@@ -2245,10 +2261,10 @@ Doc::Sections DocParser::getSectioningUnit()
   Gets an argument that is enclosed in braces and returns it
   without the enclosing braces. On entry, the current character
   is the left brace. On exit, the current character is the one
-  that comes afterr the right brace.
+  that comes after the right brace.
 
   If \a verbatim is true, extra whitespace is retained in the
-  returned string. Otherwise, extr whitespace is removed.
+  returned string. Otherwise, extra whitespace is removed.
  */
 QString DocParser::getBracedArgument(bool verbatim)
 {
@@ -2377,6 +2393,47 @@ QString DocParser::getArgument(bool verbatim)
         }
     }
     return arg.simplified();
+}
+
+/*!
+  Gets an argument that is enclosed in brackets and returns it
+  without the enclosing brackets. On entry, the current character
+  is the left bracket. On exit, the current character is the one
+  that comes after the right bracket.
+ */
+QString DocParser::getBracketedArgument()
+{
+    QString arg;
+    int delimDepth = 0;
+    skipSpacesOrOneEndl();
+    if (pos < in.length() && in[pos] == '[') {
+        pos++;
+        while (pos < in.length() && delimDepth >= 0) {
+            switch (in[pos].unicode()) {
+            case '[':
+                delimDepth++;
+                arg += QLatin1Char('[');
+                pos++;
+                break;
+            case ']':
+                delimDepth--;
+                if (delimDepth >= 0)
+                    arg += QLatin1Char(']');
+                pos++;
+                break;
+            case '\\':
+                arg += in[pos];
+                pos++;
+                break;
+            default:
+                arg += in[pos];
+                pos++;
+            }
+        }
+        if (delimDepth > 0)
+            location().warning(tr("Missing ']'"));
+    }
+    return arg;
 }
 
 QString DocParser::getOptionalArgument()
@@ -2525,6 +2582,20 @@ bool DocParser::isLeftBraceAhead()
         i++;
     }
     return numEndl < 2 && i < len && in[i] == '{';
+}
+
+bool DocParser::isLeftBracketAhead()
+{
+    int numEndl = 0;
+    int i = pos;
+
+    while (i < len && in[i].isSpace() && numEndl < 2) {
+        // ### bug with '\\'
+        if (in[i] == '\n')
+            numEndl++;
+        i++;
+    }
+    return numEndl < 2 && i < len && in[i] == '[';
 }
 
 /*!

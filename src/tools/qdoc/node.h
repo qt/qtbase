@@ -49,12 +49,11 @@
 
 #include "codechunk.h"
 #include "doc.h"
-#include "location.h"
-#include "text.h"
 
 QT_BEGIN_NAMESPACE
 
 class Node;
+class Tree;
 class EnumNode;
 class ClassNode;
 class InnerNode;
@@ -83,6 +82,7 @@ class Node
 
 public:
     enum Type {
+        NoType,
         Namespace,
         Class,
         Document,
@@ -93,12 +93,14 @@ public:
         Variable,
         Group,
         Module,
+        QmlType,
         QmlModule,
         QmlPropertyGroup,
         QmlProperty,
         QmlSignal,
         QmlSignalHandler,
         QmlMethod,
+        QmlBasicType,
         LastType
     };
 
@@ -110,8 +112,6 @@ public:
         Image,
         Page,
         ExternalPage,
-        QmlClass,
-        QmlBasicType,
         DitaMap,
         Collision,
         LastSubtype
@@ -248,11 +248,13 @@ public:
     virtual bool wasSeen() const { return false; }
     virtual void appendGroupName(const QString& ) { }
     virtual QString element() const { return QString(); }
+    virtual Tree* tree() const { return 0; }
     bool isIndexNode() const { return indexNodeFlag_; }
     Type type() const { return nodeType_; }
     virtual SubType subType() const { return NoSubType; }
     bool match(const NodeTypeList& types) const;
     InnerNode* parent() const { return parent_; }
+    const Node* root() const;
     InnerNode* relates() const { return relatesTo_; }
     const QString& name() const { return name_; }
     QString moduleName() const;
@@ -318,6 +320,8 @@ public:
     static QString nodeSubtypeString(unsigned t);
     static int incPropertyGroupCount();
     static void clearPropertyGroupCount();
+    static void initialize();
+    static Type goal(const QString& t) { return goals_.value(t); }
 
 protected:
     Node(Type type, InnerNode* parent, const QString& name);
@@ -347,6 +351,7 @@ private:
     QString outSubDir_;
     static QStringMap operators_;
     static int propertyGroupCount_;
+    static QMap<QString,Node::Type> goals_;
 };
 
 class InnerNode : public Node
@@ -435,6 +440,11 @@ public:
     NamespaceNode(InnerNode* parent, const QString& name);
     virtual ~NamespaceNode() { }
     virtual bool isNamespace() const { return true; }
+    virtual Tree* tree() const { return tree_; }
+    void setTree(Tree* t) { tree_ = t; }
+
+ private:
+    Tree*       tree_;
 };
 
 struct RelatedClass
@@ -583,7 +593,7 @@ struct ImportRec {
 
 typedef QList<ImportRec> ImportList;
 
-class QmlClassNode : public DocNode
+class QmlClassNode : public InnerNode
 {
 public:
     QmlClassNode(InnerNode* parent, const QString& name);
@@ -635,7 +645,7 @@ private:
     ImportList          importList_;
 };
 
-class QmlBasicTypeNode : public DocNode
+class QmlBasicTypeNode : public InnerNode
 {
 public:
     QmlBasicTypeNode(InnerNode* parent,
@@ -719,17 +729,13 @@ public:
     EnumItem() { }
     EnumItem(const QString& name, const QString& value)
         : nam(name), val(value) { }
-    EnumItem(const QString& name, const QString& value, const Text &txt)
-        : nam(name), val(value), txt(txt) { }
 
     const QString& name() const { return nam; }
     const QString& value() const { return val; }
-    const Text &text() const { return txt; }
 
 private:
     QString nam;
     QString val;
-    Text txt;
 };
 
 class EnumNode : public LeafNode

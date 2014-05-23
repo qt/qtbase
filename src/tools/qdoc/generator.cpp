@@ -325,19 +325,6 @@ QString Generator::fileBase(const Node *node) const
         if (base.endsWith(".html"))
             base.truncate(base.length() - 5);
 
-        if (node->isQmlNode()) {
-            if (!node->qmlModuleName().isEmpty()) {
-                base.prepend(node->qmlModuleName() + QLatin1Char('-'));
-            }
-            /*
-              To avoid file name conflicts in the html directory,
-              we prepend a prefix (by default, "qml-") to the file name of QML
-              element doc files.
-            */
-            if ((node->subType() == Node::QmlClass) || (node->subType() == Node::QmlBasicType)) {
-                base.prepend(outputPrefix(QLatin1String("QML")));
-            }
-        }
         if (node->isExample() || node->isExampleFile()) {
             QString modPrefix(node->moduleName());
             if (modPrefix.isEmpty()) {
@@ -348,6 +335,18 @@ QString Generator::fileBase(const Node *node) const
         if (node->isExample()) {
             base.append(QLatin1String("-example"));
         }
+    }
+    else if (node->isQmlType() || node->isQmlBasicType()) {
+        base = node->name();
+        if (!node->qmlModuleName().isEmpty()) {
+            base.prepend(node->qmlModuleName() + QLatin1Char('-'));
+        }
+        /*
+          To avoid file name conflicts in the html directory,
+          we prepend a prefix (by default, "qml-") to the file name of QML
+          element doc files.
+        */
+        base.prepend(outputPrefix(QLatin1String("QML")));
     }
     else if (node->isCollectionNode()) {
         base = node->name();
@@ -367,7 +366,7 @@ QString Generator::fileBase(const Node *node) const
         forever {
             const Node *pp = p->parent();
             base.prepend(p->name());
-            if (!pp || pp->name().isEmpty() || pp->type() == Node::Document)
+            if (!pp || pp->name().isEmpty() || pp->isDocNode())
                 break;
             base.prepend(QLatin1Char('-'));
             p = pp;
@@ -467,24 +466,22 @@ QString Generator::fullDocumentLocation(const Node *node, bool useSubdir)
         else
             return QString();
     }
-    else if (node->isDocNode() || node->isCollectionNode()) {
-        if (node->isQmlType() || node->isQmlBasicType()) {
-            QString fb = fileBase(node);
-            if (fb.startsWith(Generator::outputPrefix(QLatin1String("QML"))))
-                return fb + QLatin1Char('.') + currentGenerator()->fileExtension();
-            else {
-                QString mq;
-                if (!node->qmlModuleName().isEmpty()) {
-                    mq = node->qmlModuleName().replace(QChar('.'),QChar('-'));
-                    mq = mq.toLower() + QLatin1Char('-');
-                }
-                return fdl+ Generator::outputPrefix(QLatin1String("QML")) + mq +
-                        fileBase(node) + QLatin1Char('.') + currentGenerator()->fileExtension();
-            }
-        }
+    else if (node->isQmlType() || node->isQmlBasicType()) {
+        QString fb = fileBase(node);
+        if (fb.startsWith(Generator::outputPrefix(QLatin1String("QML"))))
+            return fb + QLatin1Char('.') + currentGenerator()->fileExtension();
         else {
-            parentName = fileBase(node) + QLatin1Char('.') + currentGenerator()->fileExtension();
+            QString mq;
+            if (!node->qmlModuleName().isEmpty()) {
+                mq = node->qmlModuleName().replace(QChar('.'),QChar('-'));
+                mq = mq.toLower() + QLatin1Char('-');
+            }
+            return fdl+ Generator::outputPrefix(QLatin1String("QML")) + mq +
+                fileBase(node) + QLatin1Char('.') + currentGenerator()->fileExtension();
         }
+    }
+    else if (node->isDocNode() || node->isCollectionNode()) {
+        parentName = fileBase(node) + QLatin1Char('.') + currentGenerator()->fileExtension();
     }
     else if (fileBase(node).isEmpty())
         return QString();
@@ -562,6 +559,7 @@ QString Generator::fullDocumentLocation(const Node *node, bool useSubdir)
     case Node::Variable:
         anchorRef = QLatin1Char('#') + node->name() + "-var";
         break;
+    case Node::QmlType:
     case Node::Document:
     case Node::Group:
     case Node::Module:
@@ -577,7 +575,8 @@ QString Generator::fullDocumentLocation(const Node *node, bool useSubdir)
     }
 
     // Various objects can be compat (deprecated) or obsolete.
-    if (node->type() != Node::Class && node->type() != Node::Namespace) {
+    // Is this even correct?
+    if (!node->isClass() && !node->isNamespace()) {
         switch (node->status()) {
         case Node::Compat:
             parentName.replace(QLatin1Char('.') + currentGenerator()->fileExtension(),
@@ -682,6 +681,10 @@ const Atom *Generator::generateAtomList(const Atom *atom,
     return 0;
 }
 
+/*!
+  Generate the body of the documentation from the qdoc comment
+  found with the entity represented by the \a node.
+ */
 void Generator::generateBody(const Node *node, CodeMarker *marker)
 {
     bool quiet = false;
@@ -812,9 +815,9 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
         }
     }
 
-    if (node->type() == Node::Document) {
+    if (node->isDocNode()) {
         const DocNode *dn = static_cast<const DocNode *>(node);
-        if (dn->subType() == Node::Example) {
+        if (dn->isExample()) {
             generateExampleFiles(dn, marker);
         }
         else if (dn->subType() == Node::File) {
@@ -968,6 +971,9 @@ void Generator::generateInherits(const ClassNode *classe, CodeMarker *marker)
 /*!
   Recursive writing of HTML files from the root \a node.
 
+  \note DitaXmlGenerator overrides this function, but
+  HtmlGenerator does not.
+
   \note NameCollisionNodes are skipped here and processed
   later. See HtmlGenerator::generateCollisionPages() for
   more on this.
@@ -981,7 +987,7 @@ void Generator::generateInnerNode(InnerNode* node)
     if (node->isInternal() && !showInternal_)
         return;
 
-    if (node->type() == Node::Document) {
+    if (node->isDocNode()) {
         DocNode* docNode = static_cast<DocNode*>(node);
         if (docNode->subType() == Node::ExternalPage)
             return;
@@ -992,7 +998,7 @@ void Generator::generateInnerNode(InnerNode* node)
                 qDebug("PAGE %s HAS CHILDREN", qPrintable(docNode->title()));
         }
     }
-    else if (node->type() == Node::QmlPropertyGroup)
+    else if (node->isQmlPropertyGroup())
         return;
 
     /*
@@ -1016,9 +1022,21 @@ void Generator::generateInnerNode(InnerNode* node)
                 generateClassLikeNode(node, marker);
                 endSubPage();
             }
+            if (node->isQmlType()) {
+                beginSubPage(node, fileName(node));
+                QmlClassNode* qcn = static_cast<QmlClassNode*>(node);
+                generateQmlTypePage(qcn, marker);
+                endSubPage();
+            }
             else if (node->isDocNode()) {
                 beginSubPage(node, fileName(node));
                 generateDocNode(static_cast<DocNode*>(node), marker);
+                endSubPage();
+            }
+            else if (node->isQmlBasicType()) {
+                beginSubPage(node, fileName(node));
+                QmlBasicTypeNode* qbtn = static_cast<QmlBasicTypeNode*>(node);
+                generateQmlBasicTypePage(qbtn, marker);
                 endSubPage();
             }
             else if (node->isCollectionNode()) {
@@ -1243,6 +1261,11 @@ void Generator::generateStatus(const Node *node, CodeMarker *marker)
     generateText(text, node, marker);
 }
 
+/*!
+  Generate the documentation for \a relative. i.e. \a relative
+  is the node that reporesentas the entity where a qdoc comment
+  was found, and \a text represents the qdoc comment.
+ */
 bool Generator::generateText(const Text& text,
                              const Node *relative,
                              CodeMarker *marker)
@@ -1420,7 +1443,14 @@ Generator *Generator::generatorForFormat(const QString& format)
     return 0;
 }
 
+#if 0
 /*!
+  This function might be useless now with the addition of
+  multiple node trees. It is called a few hundred times,
+  but it never finds a collision node. The single call has
+  been commented out by mws (19/05/2014). If it is no
+  longer needed, it will be removed.
+
   This function can be called if getLink() returns an empty
   string. It tests the \a atom string to see if it is a link
   of the form <element> :: <name>, where <element> is a QML
@@ -1452,7 +1482,7 @@ QString Generator::getCollisionLink(const Atom* atom)
     }
     return link;
 }
-
+#endif
 
 /*!
   Looks up the tag \a t in the map of metadata values for the
@@ -1982,17 +2012,12 @@ QString Generator::typeString(const Node *node)
         return "namespace";
     case Node::Class:
         return "class";
+    case Node::QmlType:
+        return "type";
+    case Node::QmlBasicType:
+        return "type";
     case Node::Document:
-    {
-        switch (node->subType()) {
-        case Node::QmlClass:
-            return "type";
-        case Node::QmlBasicType:
-            return "type";
-        default:
-            return "documentation";
-        }
-    }
+        return "documentation";
     case Node::Enum:
         return "enum";
     case Node::Typedef:

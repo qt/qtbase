@@ -298,7 +298,8 @@ static void processQdocconfFile(const QString &fileName)
     currentDir = QFileInfo(fileName).path();
     Location::initialize(config);
     config.load(fileName);
-    //qDebug() << "\nSTART PROJECT:" << config.getString(CONFIG_PROJECT).toLower();
+    QString project = config.getString(CONFIG_PROJECT).toLower();
+    //qDebug() << "\nSTART PROJECT:" << project;
     /*
       Add the defines to the configuration variables.
      */
@@ -372,9 +373,11 @@ static void processQdocconfFile(const QString &fileName)
     Location outputFormatsLocation = config.lastLocation();
 
     //if (!Generator::runPrepareOnly())
+    Generator::debug("  loading index files");
     loadIndexFiles(config);
     qdb->newPrimaryTree(config.getString(CONFIG_PROJECT));
     qdb->setSearchOrder();
+    Generator::debug("  done loading index files");
 
     QSet<QString> excludedDirs;
     QSet<QString> excludedFiles;
@@ -458,7 +461,6 @@ static void processQdocconfFile(const QString &fileName)
       to the big tree.
      */
     QSet<CodeParser *> usedParsers;
-    //Config::debug_ = true;
 
     Generator::debug("Parsing header files");
     int parsed = 0;
@@ -528,6 +530,8 @@ static void processQdocconfFile(const QString &fileName)
 
     //Generator::writeOutFileNames();
     Generator::debug("Shutting down qdoc");
+    if (Generator::debugging())
+        Generator::stopDebugging(project);
 
     QDocDatabase::qdocDB()->setVersion(QString());
     Generator::terminate();
