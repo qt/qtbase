@@ -1084,10 +1084,10 @@ static QString windowsConfigPath(int type)
         ComPtr<IStorageItem> localFolderItem;
         if (FAILED(localFolder.As(&localFolderItem)))
             return result;
-        HSTRING path;
-        if (FAILED(localFolderItem->get_Path(&path)))
+        HString path;
+        if (FAILED(localFolderItem->get_Path(path.GetAddressOf())))
             return result;
-        result = QString::fromWCharArray(WindowsGetStringRawBuffer(path, nullptr));
+        result = QString::fromWCharArray(path.GetRawBuffer(nullptr));
     }
 
     switch (type) {

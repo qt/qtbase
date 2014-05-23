@@ -89,10 +89,10 @@ QString QStandardPaths::writableLocation(StandardLocation type)
         ComPtr<IStorageItem> settingsFolderItem;
         if (FAILED(settingsFolder.As(&settingsFolderItem)))
             break;
-        HSTRING path;
-        if (FAILED(settingsFolderItem->get_Path(&path)))
+        HString path;
+        if (FAILED(settingsFolderItem->get_Path(path.GetAddressOf())))
             break;
-        result = convertCharArray(WindowsGetStringRawBuffer(path, nullptr));
+        result = convertCharArray(path.GetRawBuffer(nullptr));
         if (isTestModeEnabled())
             result += QLatin1String("/qttest");
         break;

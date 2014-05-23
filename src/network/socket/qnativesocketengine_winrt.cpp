@@ -124,10 +124,10 @@ struct SocketHandler
 
 Q_GLOBAL_STATIC(SocketHandler, gSocketHandler)
 
-QString qt_QStringFromHSTRING(HSTRING string)
+static inline QString qt_QStringFromHString(const HString &string)
 {
     UINT32 length;
-    PCWSTR rawString = WindowsGetStringRawBuffer(string, &length);
+    PCWSTR rawString = string.GetRawBuffer(&length);
     return QString::fromWCharArray(rawString, length);
 }
 
@@ -604,13 +604,13 @@ qint64 QNativeSocketEngine::readDatagram(char *data, qint64 maxlen, QHostAddress
     for (int i = 0; i < d->pendingDatagrams.size(); ++i) {
         IDatagramSocketMessageReceivedEventArgs *arg = d->pendingDatagrams.at(i);
         ComPtr<IHostName> remoteHost;
-        HSTRING remoteHostString;
-        HSTRING remotePort;
+        HString remoteHostString;
+        HString remotePort;
         arg->get_RemoteAddress(&remoteHost);
-        arg->get_RemotePort(&remotePort);
-        remoteHost->get_CanonicalName(&remoteHostString);
-        returnAddress.setAddress(qt_QStringFromHSTRING(remoteHostString));
-        returnPort = qt_QStringFromHSTRING(remotePort).toInt();
+        arg->get_RemotePort(remotePort.GetAddressOf());
+        remoteHost->get_CanonicalName(remoteHostString.GetAddressOf());
+        returnAddress.setAddress(qt_QStringFromHString(remoteHostString));
+        returnPort = qt_QStringFromHString(remotePort).toInt();
         ComPtr<IDataReader> reader;
         arg->GetDataReader(&reader);
         if (!reader)
@@ -1097,7 +1097,7 @@ bool QNativeSocketEnginePrivate::fetchConnectionParameters()
 
     if (socketType == QAbstractSocket::TcpSocket) {
         ComPtr<IHostName> hostName;
-        HSTRING tmpHString;
+        HString tmpHString;
         ComPtr<IStreamSocketInformation> info;
         if (FAILED(tcp->get_Information(&info))) {
             qWarning("QNativeSocketEnginePrivate::fetchConnectionParameters: Could not obtain socket info");
@@ -1105,28 +1105,28 @@ bool QNativeSocketEnginePrivate::fetchConnectionParameters()
         }
         info->get_LocalAddress(&hostName);
         if (hostName) {
-            hostName->get_CanonicalName(&tmpHString);
-            localAddress.setAddress(qt_QStringFromHSTRING(tmpHString));
-            info->get_LocalPort(&tmpHString);
-            localPort = qt_QStringFromHSTRING(tmpHString).toInt();
+            hostName->get_CanonicalName(tmpHString.GetAddressOf());
+            localAddress.setAddress(qt_QStringFromHString(tmpHString));
+            info->get_LocalPort(tmpHString.GetAddressOf());
+            localPort = qt_QStringFromHString(tmpHString).toInt();
         }
         if (!localPort && tcpListener) {
             ComPtr<IStreamSocketListenerInformation> listenerInfo = 0;
             tcpListener->get_Information(&listenerInfo);
-            listenerInfo->get_LocalPort(&tmpHString);
-            localPort = qt_QStringFromHSTRING(tmpHString).toInt();
+            listenerInfo->get_LocalPort(tmpHString.GetAddressOf());
+            localPort = qt_QStringFromHString(tmpHString).toInt();
             localAddress == QHostAddress::Any;
         }
         info->get_RemoteAddress(&hostName);
         if (hostName) {
-            hostName->get_CanonicalName(&tmpHString);
-            peerAddress.setAddress(qt_QStringFromHSTRING(tmpHString));
-            info->get_RemotePort(&tmpHString);
-            peerPort = qt_QStringFromHSTRING(tmpHString).toInt();
+            hostName->get_CanonicalName(tmpHString.GetAddressOf());
+            peerAddress.setAddress(qt_QStringFromHString(tmpHString));
+            info->get_RemotePort(tmpHString.GetAddressOf());
+            peerPort = qt_QStringFromHString(tmpHString).toInt();
         }
     } else if (socketType == QAbstractSocket::UdpSocket) {
         ComPtr<IHostName> hostName;
-        HSTRING tmpHString;
+        HString tmpHString;
         ComPtr<IDatagramSocketInformation> info;
         if (FAILED(udp->get_Information(&info))) {
             qWarning("QNativeSocketEnginePrivate::fetchConnectionParameters: Could not obtain socket information");
@@ -1134,18 +1134,18 @@ bool QNativeSocketEnginePrivate::fetchConnectionParameters()
         }
         info->get_LocalAddress(&hostName);
         if (hostName) {
-            hostName->get_CanonicalName(&tmpHString);
-            localAddress.setAddress(qt_QStringFromHSTRING(tmpHString));
-            info->get_LocalPort(&tmpHString);
-            localPort = qt_QStringFromHSTRING(tmpHString).toInt();
+            hostName->get_CanonicalName(tmpHString.GetAddressOf());
+            localAddress.setAddress(qt_QStringFromHString(tmpHString));
+            info->get_LocalPort(tmpHString.GetAddressOf());
+            localPort = qt_QStringFromHString(tmpHString).toInt();
         }
 
         info->get_RemoteAddress(&hostName);
         if (hostName) {
-            hostName->get_CanonicalName(&tmpHString);
-            peerAddress.setAddress(qt_QStringFromHSTRING(tmpHString));
-            info->get_RemotePort(&tmpHString);
-            peerPort = qt_QStringFromHSTRING(tmpHString).toInt();
+            hostName->get_CanonicalName(tmpHString.GetAddressOf());
+            peerAddress.setAddress(qt_QStringFromHString(tmpHString));
+            info->get_RemotePort(tmpHString.GetAddressOf());
+            peerPort = qt_QStringFromHString(tmpHString).toInt();
         }
     }
     return true;

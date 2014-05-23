@@ -81,9 +81,11 @@ bool QWinRTServices::openUrl(const QUrl &url)
         return QPlatformServices::openUrl(url);
 
     IUriRuntimeClass *uri;
-    QString urlString = url.toString(); HSTRING uriString; HSTRING_HEADER header;
-    WindowsCreateStringReference((const wchar_t*)urlString.utf16(), urlString.length(), &header, &uriString);
-    m_uriFactory->CreateUri(uriString, &uri);
+    QString urlString = url.toString();
+    // ### TODO: Replace with HStringReference when WP8.0 support is removed
+    HString uriString;
+    uriString.Set((const wchar_t*)urlString.utf16(), urlString.length());
+    m_uriFactory->CreateUri(uriString.Get(), &uri);
     if (!uri)
         return false;
 
@@ -107,10 +109,11 @@ bool QWinRTServices::openDocument(const QUrl &url)
         return QPlatformServices::openDocument(url);
 
     const QString pathString = QDir::toNativeSeparators(url.toLocalFile());
-    HSTRING_HEADER header; HSTRING path;
-    WindowsCreateStringReference((const wchar_t*)pathString.utf16(), pathString.length(), &header, &path);
+    // ### TODO: Replace with HStringReference when WP8.0 support is removed
+    HString path;
+    path.Set((const wchar_t*)pathString.utf16(), pathString.length());
     IAsyncOperation<StorageFile*> *fileOp;
-    m_fileFactory->GetFileFromPathAsync(path, &fileOp);
+    m_fileFactory->GetFileFromPathAsync(path.Get(), &fileOp);
     if (!fileOp)
         return false;
 
