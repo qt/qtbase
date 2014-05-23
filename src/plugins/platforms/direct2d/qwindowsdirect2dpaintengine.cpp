@@ -469,6 +469,7 @@ public:
             break;
         case Qt::RoundCap:
             props.startCap = props.endCap = props.dashCap = D2D1_CAP_STYLE_ROUND;
+            break;
         case Qt::FlatCap:
         default:
             props.startCap = props.endCap = props.dashCap = D2D1_CAP_STYLE_FLAT;
