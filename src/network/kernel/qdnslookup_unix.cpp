@@ -160,9 +160,11 @@ void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestN
                 Q_CHECK_PTR(ns);
                 state._u._ext.nsaddrs[0] = ns;
             }
+#ifndef __UCLIBC__
             // Set nsmap[] to indicate that nsaddrs[0] is an IPv6 address
             // See: https://sourceware.org/ml/libc-hacker/2002-05/msg00035.html
             state._u._ext.nsmap[0] = MAXNS + 1;
+#endif
             state._u._ext.nscount6 = 1;
             ns->sin6_family = AF_INET6;
             ns->sin6_port = htons(53);
