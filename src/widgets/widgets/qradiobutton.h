@@ -73,6 +73,7 @@ protected:
 private:
     Q_DECLARE_PRIVATE(QRadioButton)
     Q_DISABLE_COPY(QRadioButton)
+    friend class QAccessibleButton;
 };
 
 QT_END_NAMESPACE

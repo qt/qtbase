@@ -63,6 +63,7 @@ public:
 
     QString text(QAccessible::Text t) const Q_DECL_OVERRIDE;
     QAccessible::State state() const Q_DECL_OVERRIDE;
+    QRect rect() const Q_DECL_OVERRIDE;
 
     QStringList actionNames() const Q_DECL_OVERRIDE;
     void doAction(const QString &actionName) Q_DECL_OVERRIDE;

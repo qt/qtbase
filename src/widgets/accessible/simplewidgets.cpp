@@ -158,6 +158,26 @@ QAccessible::State QAccessibleButton::state() const
     return state;
 }
 
+QRect QAccessibleButton::rect() const
+{
+    QAbstractButton *ab = button();
+    if (!ab->isVisible())
+        return QRect();
+
+    if (QCheckBox *cb = qobject_cast<QCheckBox *>(ab)) {
+        QPoint wpos = cb->mapToGlobal(QPoint(0, 0));
+        QStyleOptionButton opt;
+        cb->initStyleOption(&opt);
+        return cb->style()->subElementRect(QStyle::SE_CheckBoxClickRect, &opt, cb).translated(wpos);
+    } else if (QRadioButton *rb = qobject_cast<QRadioButton *>(ab)) {
+        QPoint wpos = rb->mapToGlobal(QPoint(0, 0));
+        QStyleOptionButton opt;
+        rb->initStyleOption(&opt);
+        return rb->style()->subElementRect(QStyle::SE_RadioButtonClickRect, &opt, rb).translated(wpos);
+    }
+    return QAccessibleWidget::rect();
+}
+
 QStringList QAccessibleButton::actionNames() const
 {
     QStringList names;
