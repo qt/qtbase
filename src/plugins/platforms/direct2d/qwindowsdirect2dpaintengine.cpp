@@ -1160,6 +1160,25 @@ void QWindowsDirect2DPaintEngine::drawRects(const QRectF *rects, int rectCount)
     }
 }
 
+static bool isLinePositivelySloped(const QPointF &p1, const QPointF &p2)
+{
+    if (p2.x() > p1.x())
+        return p2.y() < p1.y();
+
+    if (p1.x() > p2.x())
+        return p1.y() < p2.y();
+
+    return false;
+}
+
+static void adjustLine(QPointF *p1, QPointF *p2)
+{
+    if (isLinePositivelySloped(*p1, *p2)) {
+        p1->ry() -= qreal(1.0);
+        p2->ry() -= qreal(1.0);
+    }
+}
+
 void QWindowsDirect2DPaintEngine::drawLines(const QLine *lines, int lineCount)
 {
     Q_D(QWindowsDirect2DPaintEngine);
@@ -1180,6 +1199,10 @@ void QWindowsDirect2DPaintEngine::drawLines(const QLine *lines, int lineCount)
                          d->pen.qpen.brush());
                 continue;
             }
+
+            // Match raster engine output
+            if (!antiAliasingEnabled())
+                adjustLine(&p1, &p2);
 
             adjustForAliasing(&p1);
             adjustForAliasing(&p2);
@@ -1212,6 +1235,10 @@ void QWindowsDirect2DPaintEngine::drawLines(const QLineF *lines, int lineCount)
                          d->pen.qpen.brush());
                 continue;
             }
+
+            // Match raster engine output
+            if (!antiAliasingEnabled())
+                adjustLine(&p1, &p2);
 
             adjustForAliasing(&p1);
             adjustForAliasing(&p2);
