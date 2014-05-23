@@ -748,8 +748,10 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
             QString icon = fileFixify(var("ICON"));
             QString bundlePrefix = project->first("QMAKE_TARGET_BUNDLE_PREFIX").toQString();
             if (bundlePrefix.isEmpty())
-                bundlePrefix = "com.yourcompany.";
-            QString bundleIdentifier =  bundlePrefix + var("QMAKE_BUNDLE");
+                bundlePrefix = "com.yourcompany";
+            if (bundlePrefix.endsWith("."))
+                bundlePrefix.chop(1);
+            QString bundleIdentifier =  bundlePrefix + "." + var("QMAKE_BUNDLE");
             if (bundleIdentifier.endsWith(".app"))
                 bundleIdentifier.chop(4);
             t << "@$(DEL_FILE) " << info_plist_out << "\n\t"
