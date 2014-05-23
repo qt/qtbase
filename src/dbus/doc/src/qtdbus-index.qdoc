@@ -211,5 +211,6 @@
     \li \l{The Qt D-Bus Type System}
     \li \l{Qt D-Bus XML compiler (qdbusxml2cpp)}
     \li \l{Qt D-Bus C++ Classes}
+    \li \l{Qt D-Bus Examples}
     \endlist
 */
