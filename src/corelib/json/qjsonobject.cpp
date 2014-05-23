@@ -254,7 +254,7 @@ bool QJsonObject::isEmpty() const
 QJsonValue QJsonObject::value(const QString &key) const
 {
     if (!d)
-        return QJsonValue();
+        return QJsonValue(QJsonValue::Undefined);
 
     bool keyExists;
     int i = o->indexOf(key, &keyExists);

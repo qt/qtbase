@@ -90,6 +90,7 @@ private Q_SLOTS:
     void nullValues();
     void nullArrays();
     void nullObject();
+    void constNullObject();
 
     void keySorting();
 
@@ -1004,6 +1005,23 @@ void tst_QtJson::nullObject()
     QCOMPARE(nullObject, QJsonObject());
     QCOMPARE(nullObject.take("foo"), QJsonValue(QJsonValue::Undefined));
     QCOMPARE(nullObject.contains("foo"), false);
+}
+
+void tst_QtJson::constNullObject()
+{
+    const QJsonObject nullObject;
+    QJsonObject nonNull;
+    nonNull.insert(QLatin1String("foo"), QLatin1String("bar"));
+
+    QCOMPARE(nullObject, QJsonObject());
+    QVERIFY(nullObject != nonNull);
+    QVERIFY(nonNull != nullObject);
+
+    QCOMPARE(nullObject.size(), 0);
+    QCOMPARE(nullObject.keys(), QStringList());
+    QCOMPARE(nullObject, QJsonObject());
+    QCOMPARE(nullObject.contains("foo"), false);
+    QCOMPARE(nullObject["foo"], QJsonValue(QJsonValue::Undefined));
 }
 
 void tst_QtJson::keySorting()
