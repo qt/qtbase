@@ -74,6 +74,7 @@ import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.GradientDrawable.Orientation;
 import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.NinePatchDrawable;
+import android.graphics.drawable.RotateDrawable;
 import android.graphics.drawable.ScaleDrawable;
 import android.graphics.drawable.StateListDrawable;
 import android.os.Build;
@@ -610,6 +611,39 @@ public class ExtractStyle {
         return json;
     }
 
+    private JSONObject getRotateDrawable(RotateDrawable drawable, String filename) {
+        JSONObject json = new JSONObject();
+        try {
+            json.put("type", "rotate");
+            Object obj = drawable.getConstantState();
+            Class<?> rotateStateClass = obj.getClass();
+            Field f = rotateStateClass.getDeclaredField("mDrawable");
+            f.setAccessible(true);
+            json.put("drawable", getDrawable(f.get(obj), filename));
+            f = rotateStateClass.getDeclaredField("mPivotX");
+            f.setAccessible(true);
+            json.put("pivotX", f.getFloat(obj));
+            f = rotateStateClass.getDeclaredField("mPivotXRel");
+            f.setAccessible(true);
+            json.put("pivotXRel", f.getBoolean(obj));
+            f = rotateStateClass.getDeclaredField("mPivotY");
+            f.setAccessible(true);
+            json.put("pivotY", f.getFloat(obj));
+            f = rotateStateClass.getDeclaredField("mPivotYRel");
+            f.setAccessible(true);
+            json.put("pivotYRel", f.getBoolean(obj));
+            f = rotateStateClass.getDeclaredField("mFromDegrees");
+            f.setAccessible(true);
+            json.put("fromDegrees", f.getFloat(obj));
+            f = rotateStateClass.getDeclaredField("mToDegrees");
+            f.setAccessible(true);
+            json.put("toDegrees", f.getFloat(obj));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return json;
+    }
+
     private JSONObject getJsonRect(Rect rect) throws JSONException
     {
         JSONObject jsonRect = new JSONObject();
@@ -694,6 +728,10 @@ public class ExtractStyle {
                 if (drawable instanceof GradientDrawable)
                 {
                     return getGradientDrawable((GradientDrawable) drawable);
+                }
+                if (drawable instanceof RotateDrawable)
+                {
+                    return getRotateDrawable((RotateDrawable) drawable, filename);
                 }
                 if (drawable instanceof ClipDrawable)
                 {
