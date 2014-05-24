@@ -100,6 +100,8 @@ public:
     explicit QOpenGLTexture(const QImage& image, MipMapGeneration genMipMaps = GenerateMipMaps);
     ~QOpenGLTexture();
 
+    Target target() const;
+
     // Creation and destruction
     bool create();
     void destroy();

@@ -1483,6 +1483,17 @@ QOpenGLTexture::~QOpenGLTexture()
 }
 
 /*!
+    Returns the binding target of this texture.
+
+    \since 5.4
+*/
+QOpenGLTexture::Target QOpenGLTexture::target() const
+{
+    Q_D(const QOpenGLTexture);
+    return d->target;
+}
+
+/*!
     Creates the underlying OpenGL texture object. This requires a current valid
     OpenGL context. If the texture object already exists, this function does
     nothing.
