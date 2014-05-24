@@ -2201,6 +2201,25 @@ MakefileGenerator::writeMakefile(QTextStream &t)
     return true;
 }
 
+void
+MakefileGenerator::writeDefaultVariables(QTextStream &t)
+{
+    t << "QMAKE         = " << var("QMAKE_QMAKE") << endl;
+    t << "DEL_FILE      = " << var("QMAKE_DEL_FILE") << endl;
+    t << "CHK_DIR_EXISTS= " << var("QMAKE_CHK_DIR_EXISTS") << endl;
+    t << "MKDIR         = " << var("QMAKE_MKDIR") << endl;
+    t << "COPY          = " << var("QMAKE_COPY") << endl;
+    t << "COPY_FILE     = " << var("QMAKE_COPY_FILE") << endl;
+    t << "COPY_DIR      = " << var("QMAKE_COPY_DIR") << endl;
+    t << "INSTALL_FILE  = " << var("QMAKE_INSTALL_FILE") << endl;
+    t << "INSTALL_PROGRAM = " << var("QMAKE_INSTALL_PROGRAM") << endl;
+    t << "INSTALL_DIR   = " << var("QMAKE_INSTALL_DIR") << endl;
+    t << "DEL_FILE      = " << var("QMAKE_DEL_FILE") << endl;
+    t << "SYMLINK       = " << var("QMAKE_SYMBOLIC_LINK") << endl;
+    t << "DEL_DIR       = " << var("QMAKE_DEL_DIR") << endl;
+    t << "MOVE          = " << var("QMAKE_MOVE") << endl;
+}
+
 QString MakefileGenerator::fixifySpecdir(const QString &spec, const QString &outdir)
 {
     if (QFileInfo(spec).isAbsolute())
@@ -2411,20 +2430,7 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
         t << "include " << (*qeui_it) << endl;
 
     if (!(flags & SubTargetSkipDefaultVariables)) {
-        t << "QMAKE         = " << var("QMAKE_QMAKE") << endl;
-        t << "DEL_FILE      = " << var("QMAKE_DEL_FILE") << endl;
-        t << "CHK_DIR_EXISTS= " << var("QMAKE_CHK_DIR_EXISTS") << endl;
-        t << "MKDIR         = " << var("QMAKE_MKDIR") << endl;
-        t << "COPY          = " << var("QMAKE_COPY") << endl;
-        t << "COPY_FILE     = " << var("QMAKE_COPY_FILE") << endl;
-        t << "COPY_DIR      = " << var("QMAKE_COPY_DIR") << endl;
-        t << "INSTALL_FILE  = " << var("QMAKE_INSTALL_FILE") << endl;
-        t << "INSTALL_PROGRAM = " << var("QMAKE_INSTALL_PROGRAM") << endl;
-        t << "INSTALL_DIR   = " << var("QMAKE_INSTALL_DIR") << endl;
-        t << "DEL_FILE      = " << var("QMAKE_DEL_FILE") << endl;
-        t << "SYMLINK       = " << var("QMAKE_SYMBOLIC_LINK") << endl;
-        t << "DEL_DIR       = " << var("QMAKE_DEL_DIR") << endl;
-        t << "MOVE          = " << var("QMAKE_MOVE") << endl;
+        writeDefaultVariables(t);
         t << "SUBTARGETS    = ";     // subtargets are sub-directory
         for(int target = 0; target < targets.size(); ++target)
             t << " \\\n\t\t" << targets.at(target)->target;

@@ -107,6 +107,7 @@ protected:
     bool writeDummyMakefile(QTextStream &t);
     virtual bool writeStubMakefile(QTextStream &t);
     virtual bool writeMakefile(QTextStream &t);
+    void writeDefaultVariables(QTextStream &t);
 
     QString pkgConfigPrefix() const;
     QString pkgConfigFileName(bool fixify=true);
