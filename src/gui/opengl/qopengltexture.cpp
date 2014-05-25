@@ -2441,33 +2441,49 @@ bool QOpenGLTexture::hasFeature(Feature feature)
     if (!ctx->isOpenGLES()) {
         switch (feature) {
         case ImmutableMultisampleStorage:
+            supported = f.version() >= qMakePair(4, 3)
+                    || ctx->hasExtension(QByteArrayLiteral("GL_ARB_texture_storage_multisample"));
+            break;
+
         case TextureBuffer:
+            supported = f.version() >= qMakePair(4, 3)
+                    || (ctx->hasExtension(QByteArrayLiteral("GL_ARB_texture_buffer_object"))
+                        && ctx->hasExtension(QByteArrayLiteral("GL_ARB_texture_buffer_range")));
+            break;
+
         case StencilTexturing:
-            supported = f.version() >= qMakePair(4, 3);
+            supported = f.version() >= qMakePair(4, 3)
+                    || ctx->hasExtension(QByteArrayLiteral("GL_ARB_stencil_texturing"));
             break;
 
         case ImmutableStorage:
-            supported = f.version() >= qMakePair(4, 2);
+            supported = f.version() >= qMakePair(4, 2)
+                    || ctx->hasExtension(QByteArrayLiteral("GL_ARB_texture_storage"));
             break;
 
         case TextureCubeMapArrays:
-            supported = f.version() >= qMakePair(4, 0);
+            supported = f.version() >= qMakePair(4, 0)
+                    || ctx->hasExtension(QByteArrayLiteral("ARB_texture_cube_map_array"));
             break;
 
         case Swizzle:
-            supported = f.version() >= qMakePair(3, 3);
+            supported = f.version() >= qMakePair(3, 3)
+                    || ctx->hasExtension(QByteArrayLiteral("GL_ARB_texture_swizzle"));
             break;
 
         case TextureMultisample:
-            supported = f.version() >= qMakePair(3, 2);
+            supported = f.version() >= qMakePair(3, 2)
+                    || ctx->hasExtension(QByteArrayLiteral("GL_ARB_texture_multisample"));
             break;
 
         case TextureArrays:
-            supported = f.version() >= qMakePair(3, 0);
+            supported = f.version() >= qMakePair(3, 0)
+                    || ctx->hasExtension(QByteArrayLiteral("GL_EXT_texture_array"));
             break;
 
         case TextureRectangle:
-            supported = f.version() >= qMakePair(2, 1);
+            supported = f.version() >= qMakePair(2, 1)
+                    || ctx->hasExtension(QByteArrayLiteral("ARB_texture_rectangle"));
             break;
 
         case Texture3D:
@@ -2798,7 +2814,7 @@ void QOpenGLTexture::setDepthStencilMode(QOpenGLTexture::DepthStencilMode mode)
         Q_ASSERT(d->texFuncs);
         Q_ASSERT(d->textureId);
         if (!d->features.testFlag(StencilTexturing)) {
-            qWarning("QOpenGLTexture::setDepthStencilMode() requires OpenGL >= 4.3");
+            qWarning("QOpenGLTexture::setDepthStencilMode() requires OpenGL >= 4.3 or GL_ARB_stencil_texturing");
             return;
         }
         d->depthStencilMode = mode;
