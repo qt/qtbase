@@ -203,6 +203,7 @@ public:
         D32                    = 0x81A7,    // GL_DEPTH_COMPONENT32
         D32F                   = 0x8CAC,    // GL_DEPTH_COMPONENT32F
         D32FS8X24              = 0x8CAD,    // GL_DEPTH32F_STENCIL8
+        S8                     = 0x8D48,    // GL_STENCIL_INDEX8
 
         // Compressed formats
         RGB_DXT1               = 0x83F0,    // GL_COMPRESSED_RGB_S3TC_DXT1_EXT
@@ -310,6 +311,7 @@ public:
         BGR_Integer    = 0x8D9A,    // GL_BGR_INTEGER
         RGBA_Integer   = 0x8D99,    // GL_RGBA_INTEGER
         BGRA_Integer   = 0x8D9B,    // GL_BGRA_INTEGER
+        Stencil        = 0x1901,    // GL_STENCIL_INDEX
         Depth          = 0x1902,    // GL_DEPTH_COMPONENT
         DepthStencil   = 0x84F9,    // GL_DEPTH_STENCIL
         Alpha          = 0x1906,    // GL_ALPHA
@@ -339,7 +341,9 @@ public:
         UInt16_RGBA4       = 0x8033,    // GL_UNSIGNED_SHORT_4_4_4_4
         UInt16_RGBA4_Rev   = 0x8365,    // GL_UNSIGNED_SHORT_4_4_4_4_REV
         UInt32_RGB10A2     = 0x8036,    // GL_UNSIGNED_INT_10_10_10_2
-        UInt32_RGB10A2_Rev = 0x8368     // GL_UNSIGNED_INT_2_10_10_10_REV
+        UInt32_RGB10A2_Rev = 0x8368,    // GL_UNSIGNED_INT_2_10_10_10_REV
+        UInt32_D24S8       = 0x84FA,    // GL_UNSIGNED_INT_24_8
+        Float32_D32_UInt32_S8_X24 = 0x8DAD // GL_FLOAT_32_UNSIGNED_INT_24_8_REV
     };
 
     // Pixel transfer
