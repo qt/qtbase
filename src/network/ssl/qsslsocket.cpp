@@ -777,6 +777,8 @@ void QSslSocket::close()
     qDebug() << "QSslSocket::close()";
 #endif
     Q_D(QSslSocket);
+    if (encryptedBytesToWrite())
+        flush();
     if (d->plainSocket)
         d->plainSocket->close();
     QTcpSocket::close();
