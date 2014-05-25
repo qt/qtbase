@@ -111,13 +111,15 @@ static inline void qt_socket_getPortAndAddress(const qt_sockaddr *s, quint16 *po
             QHostAddress tmpAddress;
             tmpAddress.setAddress(tmp);
             *addr = tmpAddress;
+            if (s->a6.sin6_scope_id) {
 #ifndef QT_NO_IPV6IFNAME
-            char scopeid[IFNAMSIZ];
-            if (::if_indextoname(s->a6.sin6_scope_id, scopeid)) {
-                addr->setScopeId(QLatin1String(scopeid));
-            } else
+                char scopeid[IFNAMSIZ];
+                if (::if_indextoname(s->a6.sin6_scope_id, scopeid)) {
+                    addr->setScopeId(QLatin1String(scopeid));
+                } else
 #endif
-            addr->setScopeId(QString::number(s->a6.sin6_scope_id));
+                    addr->setScopeId(QString::number(s->a6.sin6_scope_id));
+            }
         }
         if (port)
             *port = ntohs(s->a6.sin6_port);
