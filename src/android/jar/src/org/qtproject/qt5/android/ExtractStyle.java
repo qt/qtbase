@@ -1273,6 +1273,12 @@ public class ExtractStyle {
             if (d != null)
                 json.put("SeekBar_thumb", getDrawable(d, styleName + "_SeekBar_thumb"));
 
+            try {
+                json.put("SeekBar_thumbOffset", styleableClass.getDeclaredField("SeekBar_thumbOffset").getInt(null));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
             a.recycle();
             parentObject.put(styleName, json);
         } catch (Exception e) {
