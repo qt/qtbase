@@ -239,6 +239,10 @@ mac {
         CMAKE_LIB_FILE_LOCATION_RELEASE = lib$${CMAKE_QT_STEM}.a
         CMAKE_PRL_FILE_LOCATION_DEBUG = lib$${CMAKE_QT_STEM}.prl
         CMAKE_PRL_FILE_LOCATION_RELEASE = lib$${CMAKE_QT_STEM}.prl
+    } else:unversioned_libname {
+        CMAKE_LIB_FILE_LOCATION_DEBUG = lib$${CMAKE_QT_STEM}.so
+        CMAKE_LIB_FILE_LOCATION_RELEASE = lib$${CMAKE_QT_STEM}.so
+        CMAKE_LIB_SONAME = lib$${CMAKE_QT_STEM}.so
     } else {
         CMAKE_LIB_FILE_LOCATION_DEBUG = lib$${CMAKE_QT_STEM}.so.$$eval(QT.$${MODULE}.VERSION)
         CMAKE_LIB_FILE_LOCATION_RELEASE = lib$${CMAKE_QT_STEM}.so.$$eval(QT.$${MODULE}.VERSION)
