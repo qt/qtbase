@@ -532,8 +532,11 @@ public class ExtractStyle {
             JSONArray array =new JSONArray();
             for (int i = 0; i < nr; i++)
             {
-                JSONObject layerJsonObject=getDrawable(layers.getDrawable(i), filename+"__"+layers.getId(i));
-                layerJsonObject.put("id", layers.getId(i));
+                int id = layers.getId(i);
+                if (id == -1)
+                    id = i;
+                JSONObject layerJsonObject=getDrawable(layers.getDrawable(i), filename+"__"+id);
+                layerJsonObject.put("id", id);
                 array.put(layerJsonObject);
             }
             json.put("type", "layer");
