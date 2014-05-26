@@ -170,7 +170,7 @@ void QQnxRasterBackingStore::beginPaint(const QRegion &region)
 
     platformWindow()->adjustBufferSize();
 
-    if (window()->requestedFormat().alphaBufferSize() != 0) {
+    if (window()->requestedFormat().alphaBufferSize() > 0) {
         foreach (const QRect &r, region.rects()) {
             // Clear transparent regions
             const int bg[] = {
