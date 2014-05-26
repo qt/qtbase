@@ -1363,6 +1363,9 @@ public class ExtractStyle {
             json.put("buttonStyle", extractTextAppearanceInformations("buttonStyle", "QPushButton", null, -1));
             json.put("spinnerStyle", extractTextAppearanceInformations("spinnerStyle", "QComboBox", null, -1));
             extractProgressBar(json, "progressBarStyleHorizontal", "QProgressBar");
+            extractProgressBar(json, "progressBarStyleLarge", null);
+            extractProgressBar(json, "progressBarStyleSmall", null);
+            extractProgressBar(json, "progressBarStyle", null);
             extractAbsSeekBar(json, "seekBarStyle", "QSlider");
             extractCompoundButton(json, "checkboxStyle", "QCheckBox");
             json.put("editTextStyle", extractTextAppearanceInformations("editTextStyle", "QLineEdit", null, -1));
