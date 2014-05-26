@@ -798,6 +798,8 @@ bool QBmpHandler::write(const QImage &img)
     case QImage::Format_ARGB4444_Premultiplied:
     case QImage::Format_RGBA8888:
     case QImage::Format_RGBA8888_Premultiplied:
+    case QImage::Format_A2BGR30_Premultiplied:
+    case QImage::Format_A2RGB30_Premultiplied:
         image = img.convertToFormat(QImage::Format_ARGB32);
         break;
     case QImage::Format_RGB16:
@@ -806,6 +808,8 @@ bool QBmpHandler::write(const QImage &img)
     case QImage::Format_RGB555:
     case QImage::Format_RGB444:
     case QImage::Format_RGBX8888:
+    case QImage::Format_BGR30:
+    case QImage::Format_RGB30:
         image = img.convertToFormat(QImage::Format_RGB32);
         break;
     default:

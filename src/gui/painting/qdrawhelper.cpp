@@ -575,6 +575,42 @@ static const uint *QT_FASTCALL convertRGBXFromARGB32PM(uint *buffer, const uint 
     return buffer;
 }
 
+template<QtPixelOrder PixelOrder>
+static const uint *QT_FASTCALL convertA2RGB30PMToARGB32PM(uint *buffer, const uint *src, int count,
+                                                          const QPixelLayout *, const QRgb *)
+{
+    for (int i = 0; i < count; ++i)
+        buffer[i] = qConvertA2rgb30ToArgb32<PixelOrder>(src[i]);
+    return buffer;
+}
+
+template<QtPixelOrder PixelOrder>
+static const uint *QT_FASTCALL convertA2RGB30PMFromARGB32PM(uint *buffer, const uint *src, int count,
+                                                            const QPixelLayout *, const QRgb *)
+{
+    for (int i = 0; i < count; ++i)
+        buffer[i] = qConvertArgb32ToA2rgb30<PixelOrder>(src[i]);
+    return buffer;
+}
+
+template<QtPixelOrder PixelOrder>
+static const uint *QT_FASTCALL convertRGB30FromRGB32(uint *buffer, const uint *src, int count,
+                                                     const QPixelLayout *, const QRgb *)
+{
+    for (int i = 0; i < count; ++i)
+        buffer[i] = qConvertRgb32ToRgb30<PixelOrder>(src[i]);
+    return buffer;
+}
+
+template<QtPixelOrder PixelOrder>
+static const uint *QT_FASTCALL convertRGB30FromARGB32PM(uint *buffer, const uint *src, int count,
+                                                        const QPixelLayout *, const QRgb *)
+{
+    for (int i = 0; i < count; ++i)
+        buffer[i] = qConvertRgb32ToRgb30<PixelOrder>(qUnpremultiply(src[i]));
+    return buffer;
+}
+
 template <QPixelLayout::BPP bpp> static
 uint QT_FASTCALL fetchPixel(const uchar *src, int index);
 
@@ -722,8 +758,12 @@ QPixelLayout qPixelLayouts[QImage::NImageFormats] = {
 #else
     { 8,  0, 8,  8, 8, 16, 0, 24, false, QPixelLayout::BPP32, convertRGBA8888PMToARGB32PM, convertRGBXFromARGB32PM, convertRGBXFromRGB32 }, // Format_RGBX8888
     { 8,  0, 8,  8, 8, 16, 8, 24, false, QPixelLayout::BPP32, convertRGBA8888ToARGB32PM, convertRGBA8888FromARGB32PM, 0 }, // Format_RGBA8888 (ABGR32)
-    { 8,  0, 8,  8, 8, 16, 8, 24,  true, QPixelLayout::BPP32, convertRGBA8888PMToARGB32PM, convertRGBA8888PMFromARGB32PM, 0 }  // Format_RGBA8888_Premultiplied
+    { 8,  0, 8,  8, 8, 16, 8, 24,  true, QPixelLayout::BPP32, convertRGBA8888PMToARGB32PM, convertRGBA8888PMFromARGB32PM, 0 },  // Format_RGBA8888_Premultiplied
 #endif
+    { 10,  20, 10,  10, 10, 0, 0, 30, false, QPixelLayout::BPP32, convertA2RGB30PMToARGB32PM<PixelOrderBGR>, convertRGB30FromARGB32PM<PixelOrderBGR>, convertRGB30FromRGB32<PixelOrderBGR> }, // Format_BGR30
+    { 10,  20, 10,  10, 10, 0, 2, 30,  true, QPixelLayout::BPP32, convertA2RGB30PMToARGB32PM<PixelOrderBGR>, convertA2RGB30PMFromARGB32PM<PixelOrderBGR>, 0 },  // Format_A2BGR30_Premultiplied
+    { 10,  0, 10,  10, 10, 20, 0, 30, false, QPixelLayout::BPP32, convertA2RGB30PMToARGB32PM<PixelOrderRGB>, convertRGB30FromARGB32PM<PixelOrderRGB>, convertRGB30FromRGB32<PixelOrderRGB> }, // Format_RGB30
+    { 10,  0, 10,  10, 10, 20, 2, 30,  true, QPixelLayout::BPP32, convertA2RGB30PMToARGB32PM<PixelOrderRGB>, convertA2RGB30PMFromARGB32PM<PixelOrderRGB>, 0 },  // Format_A2RGB30_Premultiplied
 };
 
 FetchPixelsFunc qFetchPixels[QPixelLayout::BPPCount] = {
@@ -831,6 +871,10 @@ static DestFetchProc destFetchProc[QImage::NImageFormats] =
     destFetch,          // Format_RGBX8888
     destFetch,          // Format_RGBA8888
     destFetch,          // Format_RGBA8888_Premultiplied
+    destFetch,          // Format_BGR30
+    destFetch,          // Format_A2BGR30_Premultiplied
+    destFetch,          // Format_RGB30
+    destFetch,          // Format_A2RGB30_Premultiplied
 };
 
 /*
@@ -970,7 +1014,11 @@ static DestStoreProc destStoreProc[QImage::NImageFormats] =
     destStore,          // Format_ARGB4444_Premultiplied
     destStore,          // Format_RGBX8888
     destStore,          // Format_RGBA8888
-    destStore           // Format_RGBA8888_Premultiplied
+    destStore,          // Format_RGBA8888_Premultiplied
+    destStore,          // Format_BGR30
+    destStore,          // Format_A2BGR30_Premultiplied
+    destStore,          // Format_RGB30
+    destStore,          // Format_A2RGB30_Premultiplied
 };
 
 /*
@@ -2221,7 +2269,11 @@ static SourceFetchProc sourceFetch[NBlendTypes][QImage::NImageFormats] = {
         fetchUntransformed,         // ARGB4444_Premultiplied
         fetchUntransformed,         // RGBX8888
         fetchUntransformed,         // RGBA8888
-        fetchUntransformed          // RGBA8888_Premultiplied
+        fetchUntransformed,         // RGBA8888_Premultiplied
+        fetchUntransformed,         // Format_BGR30
+        fetchUntransformed,         // Format_A2BGR30_Premultiplied
+        fetchUntransformed,         // Format_RGB30
+        fetchUntransformed,         // Format_A2RGB30_Premultiplied
     },
     // Tiled
     {
@@ -2243,7 +2295,11 @@ static SourceFetchProc sourceFetch[NBlendTypes][QImage::NImageFormats] = {
         fetchUntransformed,         // ARGB4444_Premultiplied
         fetchUntransformed,         // RGBX8888
         fetchUntransformed,         // RGBA8888
-        fetchUntransformed          // RGBA8888_Premultiplied
+        fetchUntransformed,         // RGBA8888_Premultiplied
+        fetchUntransformed,         // BGR30
+        fetchUntransformed,         // A2BGR30_Premultiplied
+        fetchUntransformed,         // RGB30
+        fetchUntransformed          // A2RGB30_Premultiplied
     },
     // Transformed
     {
@@ -2266,6 +2322,10 @@ static SourceFetchProc sourceFetch[NBlendTypes][QImage::NImageFormats] = {
         fetchTransformed<BlendTransformed>,         // RGBX8888
         fetchTransformed<BlendTransformed>,         // RGBA8888
         fetchTransformed<BlendTransformed>,         // RGBA8888_Premultiplied
+        fetchTransformed<BlendTransformed>,         // BGR30
+        fetchTransformed<BlendTransformed>,         // A2BGR30_Premultiplied
+        fetchTransformed<BlendTransformed>,         // RGB30
+        fetchTransformed<BlendTransformed>,         // A2RGB30_Premultiplied
     },
     {
         0, // TransformedTiled
@@ -2287,6 +2347,10 @@ static SourceFetchProc sourceFetch[NBlendTypes][QImage::NImageFormats] = {
         fetchTransformed<BlendTransformedTiled>,            // RGBX8888
         fetchTransformed<BlendTransformedTiled>,            // RGBA8888
         fetchTransformed<BlendTransformedTiled>,            // RGBA8888_Premultiplied
+        fetchTransformed<BlendTransformedTiled>,            // BGR30
+        fetchTransformed<BlendTransformedTiled>,            // A2BGR30_Premultiplied
+        fetchTransformed<BlendTransformedTiled>,            // RGB30
+        fetchTransformed<BlendTransformedTiled>,            // A2RGB30_Premultiplied
     },
     {
         0, // Bilinear
@@ -2307,7 +2371,11 @@ static SourceFetchProc sourceFetch[NBlendTypes][QImage::NImageFormats] = {
         fetchTransformedBilinear<BlendTransformedBilinear>,         // ARGB4444_Premultiplied
         fetchTransformedBilinear<BlendTransformedBilinear>,         // RGBX8888
         fetchTransformedBilinear<BlendTransformedBilinear>,         // RGBA8888
-        fetchTransformedBilinear<BlendTransformedBilinear>          // RGBA8888_Premultiplied
+        fetchTransformedBilinear<BlendTransformedBilinear>,         // RGBA8888_Premultiplied
+        fetchTransformedBilinear<BlendTransformedBilinear>,         // BGR30
+        fetchTransformedBilinear<BlendTransformedBilinear>,         // A2BGR30_Premultiplied
+        fetchTransformedBilinear<BlendTransformedBilinear>,         // RGB30
+        fetchTransformedBilinear<BlendTransformedBilinear>,         // A2RGB30_Premultiplied
     },
     {
         0, // BilinearTiled
@@ -2328,7 +2396,11 @@ static SourceFetchProc sourceFetch[NBlendTypes][QImage::NImageFormats] = {
         fetchTransformedBilinear<BlendTransformedBilinearTiled>,            // ARGB4444_Premultiplied
         fetchTransformedBilinear<BlendTransformedBilinearTiled>,            // RGBX8888
         fetchTransformedBilinear<BlendTransformedBilinearTiled>,            // RGBA8888
-        fetchTransformedBilinear<BlendTransformedBilinearTiled>             // RGBA8888_Premultiplied
+        fetchTransformedBilinear<BlendTransformedBilinearTiled>,            // RGBA8888_Premultiplied
+        fetchTransformedBilinear<BlendTransformedBilinearTiled>,            // BGR30
+        fetchTransformedBilinear<BlendTransformedBilinearTiled>,            // A2BGR30_Premultiplied
+        fetchTransformedBilinear<BlendTransformedBilinearTiled>,            // RGB30
+        fetchTransformedBilinear<BlendTransformedBilinearTiled>             // A2RGB30_Premultiplied
     },
 };
 
@@ -5749,6 +5821,10 @@ static const ProcessSpans processTextureSpans[NBlendTypes][QImage::NImageFormats
         blend_untransformed_generic,
         blend_untransformed_generic,
         blend_untransformed_generic,
+        blend_untransformed_generic,
+        blend_untransformed_generic,
+        blend_untransformed_generic,
+        blend_untransformed_generic,
     },
     // Tiled
     {
@@ -5760,6 +5836,10 @@ static const ProcessSpans processTextureSpans[NBlendTypes][QImage::NImageFormats
         blend_tiled_generic, // ARGB32
         blend_tiled_argb, // ARGB32_Premultiplied
         blend_tiled_rgb565,
+        blend_tiled_generic,
+        blend_tiled_generic,
+        blend_tiled_generic,
+        blend_tiled_generic,
         blend_tiled_generic,
         blend_tiled_generic,
         blend_tiled_generic,
@@ -5793,6 +5873,10 @@ static const ProcessSpans processTextureSpans[NBlendTypes][QImage::NImageFormats
         blend_src_generic,
         blend_src_generic,
         blend_src_generic,
+        blend_src_generic,
+        blend_src_generic,
+        blend_src_generic,
+        blend_src_generic,
     },
      // TransformedTiled
     {
@@ -5804,6 +5888,10 @@ static const ProcessSpans processTextureSpans[NBlendTypes][QImage::NImageFormats
         blend_src_generic, // ARGB32
         blend_transformed_tiled_argb, // ARGB32_Premultiplied
         blend_transformed_tiled_rgb565,
+        blend_src_generic,
+        blend_src_generic,
+        blend_src_generic,
+        blend_src_generic,
         blend_src_generic,
         blend_src_generic,
         blend_src_generic,
@@ -5837,6 +5925,10 @@ static const ProcessSpans processTextureSpans[NBlendTypes][QImage::NImageFormats
         blend_src_generic,
         blend_src_generic,
         blend_src_generic,
+        blend_src_generic,
+        blend_src_generic,
+        blend_src_generic,
+        blend_src_generic,
     },
     // BilinearTiled
     {
@@ -5859,6 +5951,10 @@ static const ProcessSpans processTextureSpans[NBlendTypes][QImage::NImageFormats
         blend_src_generic, // RGBX8888
         blend_src_generic, // RGBA8888
         blend_src_generic, // RGBA8888_Premultiplied
+        blend_src_generic, // BGR30
+        blend_src_generic, // A2BGR30_Premultiplied
+        blend_src_generic, // RGB30
+        blend_src_generic, // A2RGB30_Premultiplied
     }
 };
 
@@ -6379,7 +6475,6 @@ static void qt_rectfill_nonpremul_rgba(QRasterBuffer *rasterBuffer,
                          ARGB2RGBA(qUnpremultiply(color)), x, y, width, height, rasterBuffer->bytesPerLine());
 }
 
-
 // Map table for destination image format. Contains function pointers
 // for blends of various types unto the destination
 
@@ -6527,7 +6622,43 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
 #endif
         0,
         qt_rectfill_rgba
-    }
+    },
+    // Format_BGR30
+    {
+        blend_color_generic,
+        blend_src_generic,
+        0,
+        0,
+        0,
+        0
+    },
+    // Format_A2BGR30_Premultiplied
+    {
+        blend_color_generic,
+        blend_src_generic,
+        0,
+        0,
+        0,
+        0
+    },
+    // Format_RGB30
+    {
+        blend_color_generic,
+        blend_src_generic,
+        0,
+        0,
+        0,
+        0
+    },
+    // Format_A2RGB30_Premultiplied
+    {
+        blend_color_generic,
+        blend_src_generic,
+        0,
+        0,
+        0,
+        0
+    },
 };
 
 #if defined(Q_CC_MSVC) && !defined(_MIPS_)

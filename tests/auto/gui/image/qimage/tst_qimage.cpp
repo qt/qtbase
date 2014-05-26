@@ -766,6 +766,13 @@ void tst_QImage::convertToFormat_data()
                                          << int(QImage::Format_ARGB32_Premultiplied) << 0x7f7f7f7fu;
     QTest::newRow("semiblack rgba8888 -> argb pm") << int(QImage::Format_RGBA8888) << 0x7f000000u
                                          << int(QImage::Format_ARGB32_Premultiplied) << 0x7f000000u;
+
+    QTest::newRow("red rgb30 -> argb32") << int(QImage::Format_RGB30) << 0xffff0000
+                                         << int(QImage::Format_ARGB32) << 0xffff0000;
+    QTest::newRow("green rgb30 -> argb32") << int(QImage::Format_RGB30) << 0xff00ff00
+                                           << int(QImage::Format_ARGB32) << 0xff00ff00;
+    QTest::newRow("blue rgb30 -> argb32") << int(QImage::Format_RGB30) << 0xff0000ff
+                                          << int(QImage::Format_ARGB32) << 0xff0000ff;
 }
 
 
@@ -1218,6 +1225,18 @@ void tst_QImage::setPixel_data()
     QTest::newRow("RGBA8888 blue") << int(QImage::Format_RGBA8888)
                                  << 0xff0000ffu << 0xffff0000u;
 #endif
+    QTest::newRow("A2BGR30_Premultiplied red") << int(QImage::Format_A2BGR30_Premultiplied)
+                                 << 0xffff0000u << 0xc00003ffu;
+    QTest::newRow("A2BGR30_Premultiplied green") << int(QImage::Format_A2BGR30_Premultiplied)
+                                   << 0xff00ff00u << 0xc00ffc00u;
+    QTest::newRow("A2BGR30_Premultiplied blue") << int(QImage::Format_A2BGR30_Premultiplied)
+                                 << 0xff0000ffu << 0xfff00000u;
+    QTest::newRow("RGB30 red") << int(QImage::Format_RGB30)
+                               << 0xffff0000u << 0xfff00000u;
+    QTest::newRow("RGB30 green") << int(QImage::Format_RGB30)
+                                 << 0xff00ff00u << 0xc00ffc00u;
+    QTest::newRow("RGB30 blue") << int(QImage::Format_RGB30)
+                                << 0xff0000ffu << 0xc00003ffu;
 }
 
 void tst_QImage::setPixel()
@@ -1244,6 +1263,8 @@ void tst_QImage::setPixel()
     case int(QImage::Format_RGBX8888):
     case int(QImage::Format_RGBA8888):
     case int(QImage::Format_RGBA8888_Premultiplied):
+    case int(QImage::Format_A2BGR30_Premultiplied):
+    case int(QImage::Format_RGB30):
     {
         for (int y = 0; y < h; ++y) {
             const quint32 *row = (const quint32*)(img.scanLine(y));
@@ -1963,6 +1984,8 @@ void tst_QImage::fillColor_data()
         "ARGB4444pm",
         "RGBx8888",
         "RGBA8888pm",
+        "BGR30",
+        "A2RGB30pm",
         0
     };
 
@@ -1982,6 +2005,8 @@ void tst_QImage::fillColor_data()
         QImage::Format_ARGB4444_Premultiplied,
         QImage::Format_RGBX8888,
         QImage::Format_RGBA8888_Premultiplied,
+        QImage::Format_BGR30,
+        QImage::Format_A2RGB30_Premultiplied,
     };
 
     for (int i=0; names[i] != 0; ++i) {
@@ -2000,6 +2025,7 @@ void tst_QImage::fillColor_data()
     QTest::newRow("ARGB32, transparent") << QImage::Format_ARGB32 << Qt::transparent << 0x00000000u;
     QTest::newRow("ARGB32pm, transparent") << QImage::Format_ARGB32_Premultiplied << Qt::transparent << 0x00000000u;
     QTest::newRow("RGBA8888pm, transparent") << QImage::Format_RGBA8888_Premultiplied << Qt::transparent << 0x00000000u;
+    QTest::newRow("A2RGB30pm, transparent") << QImage::Format_A2RGB30_Premultiplied << Qt::transparent << 0x00000000u;
 }
 
 void tst_QImage::fillColor()
@@ -2116,6 +2142,8 @@ void tst_QImage::rgbSwapped_data()
     QTest::newRow("Format_RGB444") << QImage::Format_RGB444;
     QTest::newRow("Format_RGBX8888") << QImage::Format_RGBX8888;
     QTest::newRow("Format_RGBA8888_Premultiplied") << QImage::Format_RGBA8888_Premultiplied;
+    QTest::newRow("Format_A2BGR30_Premultiplied") << QImage::Format_A2BGR30_Premultiplied;
+    QTest::newRow("Format_RGB30") << QImage::Format_RGB30;
 }
 
 void tst_QImage::rgbSwapped()
@@ -2184,6 +2212,8 @@ void tst_QImage::mirrored_data()
     QTest::newRow("Format_RGB444, vertical") << QImage::Format_RGB444 << true << false << 16 << 16;
     QTest::newRow("Format_RGBX8888, vertical") << QImage::Format_RGBX8888 << true << false << 16 << 16;
     QTest::newRow("Format_RGBA8888_Premultiplied, vertical") << QImage::Format_RGBA8888_Premultiplied << true << false << 16 << 16;
+    QTest::newRow("Format_A2BGR30_Premultiplied, vertical") << QImage::Format_A2BGR30_Premultiplied << true << false << 16 << 16;
+    QTest::newRow("Format_RGB30, vertical") << QImage::Format_RGB30 << true << false << 16 << 16;
     QTest::newRow("Format_Indexed8, vertical") << QImage::Format_Indexed8 << true << false << 16 << 16;
     QTest::newRow("Format_Mono, vertical") << QImage::Format_Mono << true << false << 16 << 16;
     QTest::newRow("Format_MonoLSB, vertical") << QImage::Format_MonoLSB << true << false << 16 << 16;
@@ -2283,6 +2313,7 @@ void tst_QImage::inplaceRgbSwapped_data()
 
     QTest::newRow("Format_ARGB32_Premultiplied") << QImage::Format_ARGB32_Premultiplied;
     QTest::newRow("Format_RGBA8888") << QImage::Format_RGBA8888;
+    QTest::newRow("Format_A2RGB30_Premultiplied") << QImage::Format_A2RGB30_Premultiplied;
     QTest::newRow("Format_RGB888") << QImage::Format_RGB888;
     QTest::newRow("Format_RGB16") << QImage::Format_RGB16;
     QTest::newRow("Format_Indexed8") << QImage::Format_Indexed8;

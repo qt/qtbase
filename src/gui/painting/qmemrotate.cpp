@@ -532,7 +532,10 @@ MemRotateFunc qMemRotateFunctions[QImage::NImageFormats][3] =
     { 0, 0, 0 },      // Format_ARGB4444_Premultiplied,
     { qt_memrotate90_32, qt_memrotate180_32, qt_memrotate270_32 },      // Format_RGBX8888,
     { qt_memrotate90_32, qt_memrotate180_32, qt_memrotate270_32 },      // Format_RGBA8888,
-    { qt_memrotate90_32, qt_memrotate180_32, qt_memrotate270_32 }       // Format_RGBA8888_Premultiplied,
+    { qt_memrotate90_32, qt_memrotate180_32, qt_memrotate270_32 },      // Format_RGBA8888_Premultiplied,
+    { qt_memrotate90_32, qt_memrotate180_32, qt_memrotate270_32 },      // Format_RGB30,
+    { qt_memrotate90_32, qt_memrotate180_32, qt_memrotate270_32 },      // Format_A2RGB30,
+    { qt_memrotate90_32, qt_memrotate180_32, qt_memrotate270_32 }       // Format_A2RGB30_Premultiplied,
 };
 
 QT_END_NAMESPACE

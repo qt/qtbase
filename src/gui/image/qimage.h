@@ -124,6 +124,10 @@ public:
         Format_Grayscale2,
         Format_Grayscale2LSB
 #endif
+        Format_BGR30,
+        Format_A2BGR30_Premultiplied,
+        Format_RGB30,
+        Format_A2RGB30_Premultiplied,
 #ifndef Q_QDOC
         NImageFormats
 #endif

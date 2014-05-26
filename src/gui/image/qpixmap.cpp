@@ -1511,7 +1511,8 @@ QBitmap QPixmap::mask() const
         return QBitmap();
 
     const QImage img = toImage();
-    const QImage image = (img.depth() < 32 ? img.convertToFormat(QImage::Format_ARGB32_Premultiplied) : img);
+    bool shouldConvert = (img.format() != QImage::Format_ARGB32 && img.format() != QImage::Format_ARGB32_Premultiplied);
+    const QImage image = (shouldConvert ? img.convertToFormat(QImage::Format_ARGB32_Premultiplied) : img);
     const int w = image.width();
     const int h = image.height();
 

@@ -222,6 +222,16 @@ bool QImageData::checkForAlphaPixels() const
         }
     } break;
 
+    case QImage::Format_A2BGR30_Premultiplied:
+    case QImage::Format_A2RGB30_Premultiplied: {
+        uchar *bits = data;
+        for (int y=0; y<height && !has_alpha_pixels; ++y) {
+            for (int x=0; x<width; ++x)
+                has_alpha_pixels |= (((uint *)bits)[x] & 0xc0000000) != 0xc0000000;
+            bits += bytes_per_line;
+        }
+    } break;
+
     case QImage::Format_ARGB8555_Premultiplied:
     case QImage::Format_ARGB8565_Premultiplied: {
         uchar *bits = data;
@@ -701,12 +711,19 @@ bool QImageData::checkForAlphaPixels() const
                              is the same on any architecture if read as bytes 0xRR,0xGG,0xBB,0xAA.
     \value Format_RGBA8888_Premultiplied    The image is stored using a
                             premultiplied 32-bit byte-ordered RGBA format (8-8-8-8).
+    \value Format_BGR30      The image is stored using a 32-bit BGR format (x-10-10-10).
+    \value Format_A2BGR30_Premultiplied    The image is stored using a 32-bit premultiplied ABGR format (2-10-10-10).
+    \value Format_RGB30      The image is stored using a 32-bit RGB format (x-10-10-10).
+    \value Format_A2RGB30_Premultiplied    The image is stored using a 32-bit premultiplied ARGB format (2-10-10-10).
 
     \note Drawing into a QImage with QImage::Format_Indexed8 is not
     supported.
 
     \note Do not render into ARGB32 images using QPainter.  Using
     QImage::Format_ARGB32_Premultiplied is significantly faster.
+
+    \note Formats with more than 8 bit per color channel will only be processed by the raster engine using 8 bit
+    per color.
 
     \sa format(), convertToFormat()
 */
@@ -1670,6 +1687,8 @@ void QImage::fill(uint pixel)
 #else
         pixel |= 0x000000ff;
 #endif
+    if (d->format == Format_BGR30 || d->format == Format_RGB30)
+        pixel |= 0xc0000000;
 
     qt_rectfill<uint>(reinterpret_cast<uint*>(d->data), pixel,
                       0, 0, d->width, d->height, d->bytes_per_line);
@@ -1735,6 +1754,14 @@ void QImage::fill(const QColor &color)
         break;
     case QImage::Format_RGBA8888_Premultiplied:
         fill(ARGB2RGBA(qPremultiply(color.rgba())));
+        break;
+    case QImage::Format_BGR30:
+    case QImage::Format_A2BGR30_Premultiplied:
+        fill(qConvertArgb32ToA2rgb30<PixelOrderBGR>(color.rgba()));
+        break;
+    case QImage::Format_RGB30:
+    case QImage::Format_A2RGB30_Premultiplied:
+        fill(qConvertArgb32ToA2rgb30<PixelOrderRGB>(color.rgba()));
         break;
     case QImage::Format_RGB16:
         fill((uint) qConvertRgb32To16(color.rgba()));
@@ -2142,6 +2169,12 @@ QRgb QImage::pixel(int x, int y) const
     case Format_RGBA8888: // Match ARGB32 behavior.
     case Format_RGBA8888_Premultiplied:
         return RGBA2ARGB(reinterpret_cast<const quint32 *>(s)[x]);
+    case Format_BGR30:
+    case Format_A2BGR30_Premultiplied:
+        return qConvertA2rgb30ToArgb32<PixelOrderBGR>(reinterpret_cast<const quint32 *>(s)[x]);
+    case Format_RGB30:
+    case Format_A2RGB30_Premultiplied:
+        return qConvertA2rgb30ToArgb32<PixelOrderRGB>(reinterpret_cast<const quint32 *>(s)[x]);
     case Format_RGB16:
         return qConvertRgb16To32(reinterpret_cast<const quint16 *>(s)[x]);
     default:
@@ -2231,6 +2264,18 @@ void QImage::setPixel(int x, int y, uint index_or_rgb)
     case Format_RGBA8888:
     case Format_RGBA8888_Premultiplied:
         ((uint *)s)[x] = ARGB2RGBA(index_or_rgb);
+        return;
+    case Format_BGR30:
+        ((uint *)s)[x] = qConvertRgb32ToRgb30<PixelOrderBGR>(index_or_rgb);
+        return;
+    case Format_A2BGR30_Premultiplied:
+        ((uint *)s)[x] = qConvertArgb32ToA2rgb30<PixelOrderBGR>(index_or_rgb);
+        return;
+    case Format_RGB30:
+        ((uint *)s)[x] = qConvertRgb32ToRgb30<PixelOrderRGB>(index_or_rgb);
+        return;
+    case Format_A2RGB30_Premultiplied:
+        ((uint *)s)[x] = qConvertArgb32ToA2rgb30<PixelOrderRGB>(index_or_rgb);
         return;
     case Format_Invalid:
     case NImageFormats:
@@ -2959,6 +3004,23 @@ QImage QImage::rgbSwapped_helper() const
             }
         }
         break;
+    case Format_BGR30:
+    case Format_A2BGR30_Premultiplied:
+    case Format_RGB30:
+    case Format_A2RGB30_Premultiplied:
+        res = QImage(d->width, d->height, d->format);
+        QIMAGE_SANITYCHECK_MEMORY(res);
+        for (int i = 0; i < d->height; i++) {
+            uint *q = (uint*)res.scanLine(i);
+            const uint *p = (const uint*)constScanLine(i);
+            const uint *end = p + d->width;
+            while (p < end) {
+                *q = qRgbSwapRgb30(*p);
+                p++;
+                q++;
+            }
+        }
+        break;
     default:
         res = QImage(d->width, d->height, d->format);
         rgbSwapped_generic(d->width, d->height, this, &res, &qPixelLayouts[d->format]);
@@ -3015,6 +3077,19 @@ void QImage::rgbSwapped_inplace()
             while (p < end) {
                 ushort c = *p;
                 *p = ((c << 11) & 0xf800) | ((c >> 11) & 0x1f) | (c & 0x07e0);
+                p++;
+            }
+        }
+        break;
+    case Format_BGR30:
+    case Format_A2BGR30_Premultiplied:
+    case Format_RGB30:
+    case Format_A2RGB30_Premultiplied:
+        for (int i = 0; i < d->height; i++) {
+            uint *p = (uint*)scanLine(i);
+            uint *end = p + d->width;
+            while (p < end) {
+                *p = qRgbSwapRgb30(*p);
                 p++;
             }
         }
@@ -4044,6 +4119,8 @@ bool QImage::hasAlphaChannel() const
                  || d->format == Format_ARGB4444_Premultiplied
                  || d->format == Format_RGBA8888
                  || d->format == Format_RGBA8888_Premultiplied
+                 || d->format == Format_A2BGR30_Premultiplied
+                 || d->format == Format_A2RGB30_Premultiplied
                  || (d->has_alpha_clut && (d->format == Format_Indexed8
                                            || d->format == Format_Mono
                                            || d->format == Format_MonoLSB)));
@@ -4068,6 +4145,10 @@ int QImage::bitPlaneCount() const
     int bpc = 0;
     switch (d->format) {
     case QImage::Format_Invalid:
+        break;
+    case QImage::Format_BGR30:
+    case QImage::Format_RGB30:
+        bpc = 30;
         break;
     case QImage::Format_RGB32:
     case QImage::Format_RGBX8888:
@@ -4122,6 +4203,10 @@ static QImage rotated90(const QImage &image) {
     case QImage::Format_RGBX8888:
     case QImage::Format_RGBA8888:
     case QImage::Format_RGBA8888_Premultiplied:
+    case QImage::Format_BGR30:
+    case QImage::Format_A2BGR30_Premultiplied:
+    case QImage::Format_RGB30:
+    case QImage::Format_A2RGB30_Premultiplied:
         qt_memrotate270(reinterpret_cast<const quint32*>(image.bits()),
                         w, h, image.bytesPerLine(),
                         reinterpret_cast<quint32*>(out.bits()),
@@ -4184,6 +4269,10 @@ static QImage rotated270(const QImage &image) {
     case QImage::Format_RGBX8888:
     case QImage::Format_RGBA8888:
     case QImage::Format_RGBA8888_Premultiplied:
+    case QImage::Format_BGR30:
+    case QImage::Format_A2BGR30_Premultiplied:
+    case QImage::Format_RGB30:
+    case QImage::Format_A2RGB30_Premultiplied:
         qt_memrotate90(reinterpret_cast<const quint32*>(image.bits()),
                        w, h, image.bytesPerLine(),
                        reinterpret_cast<quint32*>(out.bits()),
@@ -4331,6 +4420,12 @@ QImage QImage::transformed(const QTransform &matrix, Qt::TransformationMode mode
                 break;
             case QImage::Format_RGBX8888:
                 target_format = Format_RGBA8888_Premultiplied;
+                break;
+            case QImage::Format_BGR30:
+                target_format = Format_A2BGR30_Premultiplied;
+                break;
+            case QImage::Format_RGB30:
+                target_format = Format_A2RGB30_Premultiplied;
                 break;
             default:
                 target_format = Format_ARGB32_Premultiplied;
@@ -4740,6 +4835,58 @@ static const QPixelFormat pixelformats[] = {
                      /*ALPHA POSITION*/    QPixelFormat::AtEnd,
                      /*PREMULTIPLIED*/     QPixelFormat::Premultiplied,
                      /*INTERPRETATION*/    QPixelFormat::UnsignedByte,
+                     /*BYTE ORDER*/        QPixelFormat::CurrentSystemEndian),
+        //QImage::Format_BGR30:
+         QPixelFormat(QPixelFormat::BGR,
+                     /*RED*/                10,
+                     /*GREEN*/              10,
+                     /*BLUE*/               10,
+                     /*FOURTH*/             0,
+                     /*FIFTH*/              0,
+                     /*ALPHA*/              2,
+                     /*ALPHA USAGE*/       QPixelFormat::IgnoresAlpha,
+                     /*ALPHA POSITION*/    QPixelFormat::AtBeginning,
+                     /*PREMULTIPLIED*/     QPixelFormat::NotPremultiplied,
+                     /*INTERPRETATION*/    QPixelFormat::UnsignedInteger,
+                     /*BYTE ORDER*/        QPixelFormat::CurrentSystemEndian),
+        //QImage::Format_A2BGR30_Premultiplied:
+         QPixelFormat(QPixelFormat::BGR,
+                     /*RED*/                10,
+                     /*GREEN*/              10,
+                     /*BLUE*/               10,
+                     /*FOURTH*/             0,
+                     /*FIFTH*/              0,
+                     /*ALPHA*/              2,
+                     /*ALPHA USAGE*/       QPixelFormat::UsesAlpha,
+                     /*ALPHA POSITION*/    QPixelFormat::AtBeginning,
+                     /*PREMULTIPLIED*/     QPixelFormat::Premultiplied,
+                     /*INTERPRETATION*/    QPixelFormat::UnsignedInteger,
+                     /*BYTE ORDER*/        QPixelFormat::CurrentSystemEndian),
+        //QImage::Format_RGB30:
+         QPixelFormat(QPixelFormat::RGB,
+                     /*RED*/                10,
+                     /*GREEN*/              10,
+                     /*BLUE*/               10,
+                     /*FOURTH*/             0,
+                     /*FIFTH*/              0,
+                     /*ALPHA*/              2,
+                     /*ALPHA USAGE*/       QPixelFormat::IgnoresAlpha,
+                     /*ALPHA POSITION*/    QPixelFormat::AtBeginning,
+                     /*PREMULTIPLIED*/     QPixelFormat::NotPremultiplied,
+                     /*INTERPRETATION*/    QPixelFormat::UnsignedInteger,
+                     /*BYTE ORDER*/        QPixelFormat::CurrentSystemEndian),
+        //QImage::Format_A2RGB30_Premultiplied:
+         QPixelFormat(QPixelFormat::RGB,
+                     /*RED*/                10,
+                     /*GREEN*/              10,
+                     /*BLUE*/               10,
+                     /*FOURTH*/             0,
+                     /*FIFTH*/              0,
+                     /*ALPHA*/              2,
+                     /*ALPHA USAGE*/       QPixelFormat::UsesAlpha,
+                     /*ALPHA POSITION*/    QPixelFormat::AtBeginning,
+                     /*PREMULTIPLIED*/     QPixelFormat::Premultiplied,
+                     /*INTERPRETATION*/    QPixelFormat::UnsignedInteger,
                      /*BYTE ORDER*/        QPixelFormat::CurrentSystemEndian),
 };
 Q_STATIC_ASSERT(sizeof(pixelformats) / sizeof(*pixelformats) == QImage::NImageFormats);

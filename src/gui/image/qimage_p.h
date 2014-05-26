@@ -130,7 +130,7 @@ inline int qt_depthForFormat(QImage::Format format)
     switch(format) {
     case QImage::Format_Invalid:
     case QImage::NImageFormats:
-        Q_ASSERT(false);
+        Q_UNREACHABLE();
     case QImage::Format_Mono:
     case QImage::Format_MonoLSB:
         depth = 1;
@@ -144,6 +144,10 @@ inline int qt_depthForFormat(QImage::Format format)
     case QImage::Format_RGBX8888:
     case QImage::Format_RGBA8888:
     case QImage::Format_RGBA8888_Premultiplied:
+    case QImage::Format_BGR30:
+    case QImage::Format_A2BGR30_Premultiplied:
+    case QImage::Format_RGB30:
+    case QImage::Format_A2RGB30_Premultiplied:
         depth = 32;
         break;
     case QImage::Format_RGB555:

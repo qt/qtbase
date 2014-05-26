@@ -1136,6 +1136,8 @@ void tst_QPainter::fillRect2_data()
     QTest::newRow("argb32pm") << QImage::Format_ARGB32_Premultiplied;
     QTest::newRow("rgba8888") << QImage::Format_RGBA8888;
     QTest::newRow("rgba8888pm") << QImage::Format_RGBA8888_Premultiplied;
+    QTest::newRow("a2rgb30pm") << QImage::Format_A2RGB30_Premultiplied;
+    QTest::newRow("a2bgr30pm") << QImage::Format_A2BGR30_Premultiplied;
 }
 
 void tst_QPainter::fillRect2()
@@ -1528,6 +1530,8 @@ void tst_QPainter::qimageFormats_data()
     QTest::newRow("Qimage::Format_RGB555") << QImage::Format_RGB555;
     QTest::newRow("Qimage::Format_ARGB8555_Premultiplied") << QImage::Format_ARGB8555_Premultiplied;
     QTest::newRow("Qimage::Format_RGB888") << QImage::Format_RGB888;
+    QTest::newRow("Qimage::Format_A2RGB30_Premultiplied") << QImage::Format_A2RGB30_Premultiplied;
+    QTest::newRow("Qimage::Format_RGB30") << QImage::Format_RGB30;
 }
 
 /*
@@ -2344,6 +2348,26 @@ void tst_QPainter::setOpacity_data()
 
     QTest::newRow("RGB32 on RGBx8888") << QImage::Format_RGB32
                                        << QImage::Format_RGBX8888;
+
+    QTest::newRow("A2RGB30P on A2RGB30P") << QImage::Format_A2RGB30_Premultiplied
+                                          << QImage::Format_A2RGB30_Premultiplied;
+
+    QTest::newRow("ARGB32P on A2RGB30P") << QImage::Format_ARGB32_Premultiplied
+                                         << QImage::Format_A2RGB30_Premultiplied;
+
+
+    QTest::newRow("RGB32 on A2BGR30P") << QImage::Format_ARGB32_Premultiplied
+                                       << QImage::Format_A2BGR30_Premultiplied;
+
+    QTest::newRow("A2RGB30P on A2BGR30P") << QImage::Format_A2RGB30_Premultiplied
+                                          << QImage::Format_A2BGR30_Premultiplied;
+
+    QTest::newRow("ARGB32P on BGR30") << QImage::Format_ARGB32_Premultiplied
+                                      << QImage::Format_BGR30;
+
+    QTest::newRow("ARGB32P on RGB30") << QImage::Format_A2RGB30_Premultiplied
+                                      << QImage::Format_RGB30;
+
 }
 
 void tst_QPainter::setOpacity()
@@ -2432,7 +2456,9 @@ void tst_QPainter::drawhelper_blend_untransformed()
                              dest.bytesPerLine(), dest.format());
 
         if (dest.format() == QImage::Format_ARGB8565_Premultiplied ||
-            dest.format() == QImage::Format_ARGB8555_Premultiplied) {
+            dest.format() == QImage::Format_ARGB8555_Premultiplied ||
+            dest.format() == QImage::Format_A2BGR30_Premultiplied ||
+            dest.format() == QImage::Format_A2RGB30_Premultiplied ) {
             // Test skipped due to rounding errors...
             continue;
         }

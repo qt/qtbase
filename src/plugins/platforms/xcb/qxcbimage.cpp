@@ -68,6 +68,14 @@ QImage::Format qt_xcb_imageFormatForVisual(QXcbConnection *connection, uint8_t d
         && visual->green_mask == 0xff00 && visual->blue_mask == 0xff)
         return QImage::Format_ARGB32_Premultiplied;
 
+    if (depth == 30 && format->bits_per_pixel == 32 && visual->red_mask == 0x3ff
+        && visual->green_mask == 0x0ffc00 && visual->blue_mask == 0x3ff00000)
+        return QImage::Format_BGR30;
+
+    if (depth == 30 && format->bits_per_pixel == 32 && visual->blue_mask == 0x3ff
+        && visual->green_mask == 0x0ffc00 && visual->red_mask == 0x3ff00000)
+        return QImage::Format_RGB30;
+
     if (depth == 24 && format->bits_per_pixel == 32 && visual->red_mask == 0xff0000
         && visual->green_mask == 0xff00 && visual->blue_mask == 0xff)
         return QImage::Format_RGB32;
@@ -145,6 +153,13 @@ QPixmap qt_xcb_pixmapFromXPixmap(QXcbConnection *connection, xcb_pixmap_t pixmap
             for (int y = 0; y < height; ++y) {
                 for (int x = 0; x < width; ++x)
                     p[x] |= 0xff000000;
+                p += bytes_per_line / 4;
+            }
+        } else if (format == QImage::Format_BGR30 || format == QImage::Format_RGB30) {
+            QRgb *p = (QRgb *)image.bits();
+            for (int y = 0; y < height; ++y) {
+                for (int x = 0; x < width; ++x)
+                    p[x] |= 0xc0000000;
                 p += bytes_per_line / 4;
             }
         }

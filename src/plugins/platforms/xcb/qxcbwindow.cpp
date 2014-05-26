@@ -166,16 +166,36 @@ static inline bool isTransient(const QWindow *w)
            || w->type() == Qt::Popup;
 }
 
-static inline QImage::Format imageFormatForDepth(int depth)
+static inline QImage::Format imageFormatForVisual(int depth, quint32 red_mask, quint32 blue_mask)
 {
     switch (depth) {
-        case 32: return QImage::Format_ARGB32_Premultiplied;
-        case 24: return QImage::Format_RGB32;
-        case 16: return QImage::Format_RGB16;
-        default:
-                 qWarning("Unsupported screen depth: %d", depth);
-                 return QImage::Format_Invalid;
+    case 32:
+        if (blue_mask == 0xff)
+            return QImage::Format_ARGB32_Premultiplied;
+        if (red_mask == 0x3ff)
+            return QImage::Format_A2BGR30_Premultiplied;
+        if (blue_mask == 0x3ff)
+            return QImage::Format_A2RGB30_Premultiplied;
+        break;
+    case 30:
+        if (red_mask == 0x3ff)
+            return QImage::Format_BGR30;
+        if (blue_mask == 0x3ff)
+            return QImage::Format_RGB30;
+        break;
+    case 24:
+        if (blue_mask == 0xff)
+            return QImage::Format_RGB32;
+        break;
+    case 16:
+        if (blue_mask == 0x1f)
+            return QImage::Format_RGB16;
+        break;
+    default:
+        break;
     }
+    qWarning("Unsupported screen format: depth: %d, red_mask: %x, blue_mask: %x", depth, red_mask, blue_mask);
+    return QImage::Format_Invalid;
 }
 
 static inline bool positionIncludesFrame(QWindow *w)
@@ -227,7 +247,9 @@ void QXcbWindow::create()
     if (type == Qt::Desktop) {
         m_window = m_screen->root();
         m_depth = m_screen->screen()->root_depth;
-        m_imageFormat = imageFormatForDepth(m_depth);
+        m_visualId = m_screen->screen()->root_visual;
+        const xcb_visualtype_t *visual = m_screen->visualForId(m_visualId);
+        m_imageFormat = imageFormatForVisual(m_depth, visual->red_mask, visual->blue_mask);
         connection()->addWindowEventListener(m_window, this);
         return;
     }
@@ -317,7 +339,7 @@ void QXcbWindow::create()
         }
         if (visualInfo) {
             m_depth = visualInfo->depth;
-            m_imageFormat = imageFormatForDepth(m_depth);
+            m_imageFormat = imageFormatForVisual(visualInfo->depth, visualInfo->red_mask, visualInfo->blue_mask);
             Colormap cmap = XCreateColormap(DISPLAY_FROM_XCB(this), xcb_parent_id, visualInfo->visual, AllocNone);
 
             XSetWindowAttributes a;
@@ -367,7 +389,8 @@ void QXcbWindow::create()
             }
         }
 
-        m_imageFormat = imageFormatForDepth(m_depth);
+        const xcb_visualtype_t *visual = m_screen->visualForId(m_visualId);
+        m_imageFormat = imageFormatForVisual(m_depth, visual->red_mask, visual->blue_mask);
 
         Q_XCB_CALL(xcb_create_window(xcb_connection(),
                                      m_depth,
