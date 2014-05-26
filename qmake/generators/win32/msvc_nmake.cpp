@@ -270,10 +270,7 @@ QString NmakeMakefileGenerator::defaultInstall(const QString &t)
         targetdir += Option::dir_sep;
 
     if (project->isActiveConfig("debug_info")) {
-        if (t == "dlltarget"
-            || project->first("TEMPLATE") != "lib"
-            || (project->isActiveConfig("shared")
-                && project->values(ProKey(t + ".CONFIG")).indexOf("no_dll") == -1)) {
+        if (t == "dlltarget" || project->values(ProKey(t + ".CONFIG")).indexOf("no_dll") == -1) {
             QString pdb_target = getPdbTarget();
             pdb_target.remove('"');
             QString src_targ = (project->isEmpty("DESTDIR") ? QString("$(DESTDIR)") : project->first("DESTDIR")) + pdb_target;
