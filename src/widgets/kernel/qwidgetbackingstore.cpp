@@ -168,6 +168,9 @@ static void showYellowThing_win(QWidget *widget, const QRegion &region, int msec
 
 void QWidgetBackingStore::showYellowThing(QWidget *widget, const QRegion &toBePainted, int msec, bool unclipped)
 {
+#ifdef Q_OS_WINRT
+    Q_UNUSED(msec)
+#endif
     QRegion paintRegion = toBePainted;
     QRect widgetRect = widget->rect();
 

@@ -53,6 +53,8 @@ bool QWinRTPlatformTheme::usePlatformNativeDialog(QPlatformTheme::DialogType typ
 #if !(defined(Q_OS_WINPHONE) && _MSC_VER<=1700)
     if (type == QPlatformTheme::MessageDialog)
         return true;
+#else
+    Q_UNUSED(type)
 #endif // !(Q_OS_WINPHONE && _MSC_VER<=1700)
     return false;
 }

@@ -84,7 +84,7 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
 
     HStringReference classId(RuntimeClass_Windows_Networking_HostName);
     if (FAILED(GetActivationFactory(classId.Get(), &hostnameFactory)))
-        Q_ASSERT(false, "Could not obtain hostname factory.");
+        Q_ASSERT_X(false, "QHostInfoAgent", "Could not obtain hostname factory.");
 
     IHostName *host;
     HStringReference hostNameRef((const wchar_t*)hostName.utf16());

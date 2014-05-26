@@ -1159,7 +1159,7 @@ HRESULT QNativeSocketEnginePrivate::handleBindCompleted(IAsyncAction *, AsyncSta
 HRESULT QNativeSocketEnginePrivate::handleClientConnection(IStreamSocketListener *listener, IStreamSocketListenerConnectionReceivedEventArgs *args)
 {
     Q_Q(QNativeSocketEngine);
-    Q_ASSERT(tcpListener.Get() == listener);
+    Q_UNUSED(listener)
     IStreamSocket *socket;
     args->get_Socket(&socket);
     pendingConnections.append(socket);
@@ -1253,7 +1253,7 @@ HRESULT QNativeSocketEnginePrivate::handleWriteCompleted(IAsyncOperationWithProg
 HRESULT QNativeSocketEnginePrivate::handleNewDatagram(IDatagramSocket *socket, IDatagramSocketMessageReceivedEventArgs *args)
 {
     Q_Q(QNativeSocketEngine);
-    Q_ASSERT(udp == socket);
+    Q_UNUSED(socket)
     pendingDatagrams.append(args);
     emit q->readReady();
 

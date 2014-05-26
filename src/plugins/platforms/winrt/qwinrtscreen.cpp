@@ -960,6 +960,8 @@ HRESULT QWinRTScreen::onAutomationProviderRequested(ICoreWindow *, IAutomationPr
 {
 #ifndef Q_OS_WINPHONE
     args->put_AutomationProvider(m_inputContext);
+#else
+    Q_UNUSED(args)
 #endif
     return S_OK;
 }
