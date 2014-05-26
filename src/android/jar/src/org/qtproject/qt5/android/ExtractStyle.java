@@ -149,6 +149,12 @@ public class ExtractStyle {
     final int View_scrollbars = getField(styleableClass,"View_scrollbars");
     final int View_fadingEdge = getField(styleableClass,"View_fadingEdge");
     final int View_scrollbarStyle = getField(styleableClass,"View_scrollbarStyle");
+    final int View_scrollbarFadeDuration = getField(styleableClass,"View_scrollbarFadeDuration");
+    final int View_scrollbarSize = getField(styleableClass,"View_scrollbarSize");
+    final int View_scrollbarThumbHorizontal = getField(styleableClass,"View_scrollbarThumbHorizontal");
+    final int View_scrollbarThumbVertical = getField(styleableClass,"View_scrollbarThumbVertical");
+    final int View_scrollbarTrackHorizontal = getField(styleableClass,"View_scrollbarTrackHorizontal");
+    final int View_scrollbarTrackVertical = getField(styleableClass,"View_scrollbarTrackVertical");
     final int View_isScrollContainer = getField(styleableClass,"View_isScrollContainer");
     final int View_keepScreenOn = getField(styleableClass,"View_keepScreenOn");
     final int View_filterTouchesWhenObscured = getField(styleableClass,"View_filterTouchesWhenObscured");
@@ -888,6 +894,18 @@ public class ExtractStyle {
                     json.put("View_fadingEdge", a.getInt(attr, 0));
                 else if (attr == View_scrollbarStyle)
                     json.put("View_scrollbarStyle", a.getInt(attr, 0));
+                else if (attr == View_scrollbarFadeDuration)
+                    json.put("View_scrollbarFadeDuration", a.getInt(attr, 0));
+                else if (attr == View_scrollbarSize)
+                    json.put("View_scrollbarSize", a.getDimensionPixelSize(attr, -1));
+                else if (attr == View_scrollbarThumbHorizontal)
+                    json.put("View_scrollbarThumbHorizontal", getDrawable(a.getDrawable(attr), styleName + "_View_scrollbarThumbHorizontal"));
+                else if (attr == View_scrollbarThumbVertical)
+                    json.put("View_scrollbarThumbVertical", getDrawable(a.getDrawable(attr), styleName + "_View_scrollbarThumbVertical"));
+                else if (attr == View_scrollbarTrackHorizontal)
+                    json.put("View_scrollbarTrackHorizontal", getDrawable(a.getDrawable(attr), styleName + "_View_scrollbarTrackHorizontal"));
+                else if (attr == View_scrollbarTrackVertical)
+                    json.put("View_scrollbarTrackVertical", getDrawable(a.getDrawable(attr), styleName + "_View_scrollbarTrackVertical"));
                 else if (attr == View_isScrollContainer)
                     json.put("View_isScrollContainer", a.getBoolean(attr, false));
                 else if (attr == View_keepScreenOn)
@@ -1380,6 +1398,7 @@ public class ExtractStyle {
             json.put("editTextStyle", extractTextAppearanceInformations("editTextStyle", "QLineEdit", null, -1));
             extractCompoundButton(json, "radioButtonStyle", "QRadioButton");
             json.put("textViewStyle", extractTextAppearanceInformations("textViewStyle", "QWidget", null, -1));
+            json.put("scrollViewStyle", extractTextAppearanceInformations("scrollViewStyle", "QAbstractScrollArea", null, -1));
             extractItemsStyle(json);
             extractCompoundButton(json, "buttonStyleToggle", null);
             OutputStreamWriter jsonWriter;
