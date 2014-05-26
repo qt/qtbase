@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the tools applications of the Qt Toolkit.
@@ -123,6 +123,11 @@ int runRcc(int argc, char *argv[])
     outputOption.setValueName(QStringLiteral("file"));
     parser.addOption(outputOption);
 
+    QCommandLineOption tempOption(QStringList() << QStringLiteral("t") << QStringLiteral("temp"));
+    tempOption.setDescription(QStringLiteral("Use temporary <file> for big resources."));
+    tempOption.setValueName(QStringLiteral("file"));
+    parser.addOption(tempOption);
+
     QCommandLineOption nameOption(QStringLiteral("name"), QStringLiteral("Create an external initialization function with <name>."), QStringLiteral("name"));
     parser.addOption(nameOption);
 
@@ -140,6 +145,9 @@ int runRcc(int argc, char *argv[])
 
     QCommandLineOption binaryOption(QStringLiteral("binary"), QStringLiteral("Output a binary file for use as a dynamic resource."));
     parser.addOption(binaryOption);
+
+    QCommandLineOption passOption(QStringLiteral("pass"), QStringLiteral("Pass number for big resources"), QStringLiteral("number"));
+    parser.addOption(passOption);
 
     QCommandLineOption namespaceOption(QStringLiteral("namespace"), QStringLiteral("Turn off namespace macros."));
     parser.addOption(namespaceOption);
@@ -161,7 +169,6 @@ int runRcc(int argc, char *argv[])
 
     QString errorMsg;
     RCCResourceLibrary library;
-    QString outFilename = parser.value(outputOption);
     if (parser.isSet(nameOption))
         library.setInitName(parser.value(nameOption));
     if (parser.isSet(rootOption)) {
@@ -178,6 +185,14 @@ int runRcc(int argc, char *argv[])
         library.setCompressThreshold(parser.value(thresholdOption).toInt());
     if (parser.isSet(binaryOption))
         library.setFormat(RCCResourceLibrary::Binary);
+    if (parser.isSet(passOption)) {
+        if (parser.value(passOption) == QStringLiteral("1"))
+            library.setFormat(RCCResourceLibrary::Pass1);
+        else if (parser.value(passOption) == QStringLiteral("2"))
+            library.setFormat(RCCResourceLibrary::Pass2);
+        else
+            errorMsg = QLatin1String("Pass number must be 1 or 2");
+    }
     if (parser.isSet(namespaceOption))
         library.setUseNameSpace(!library.useNameSpace());
     if (parser.isSet(verboseOption))
@@ -193,6 +208,9 @@ int runRcc(int argc, char *argv[])
             return 1;
         }
     }
+
+    QString outFilename = parser.value(outputOption);
+    QString tempFilename = parser.value(tempOption);
 
     if (projectRequested) {
         return createProject(outFilename);
@@ -217,11 +235,21 @@ int runRcc(int argc, char *argv[])
     if (!library.readFiles(list, errorDevice))
         return 1;
 
-    // open output
     QFile out;
-    QIODevice::OpenMode mode = QIODevice::WriteOnly;
-    if (library.format() == RCCResourceLibrary::C_Code)
-        mode |= QIODevice::Text;
+
+    // open output
+    QIODevice::OpenMode mode = QIODevice::NotOpen;
+    switch (library.format()) {
+        case RCCResourceLibrary::C_Code:
+        case RCCResourceLibrary::Pass1:
+            mode = QIODevice::WriteOnly | QIODevice::Text;
+            break;
+        case RCCResourceLibrary::Pass2:
+        case RCCResourceLibrary::Binary:
+            mode = QIODevice::WriteOnly;
+            break;
+    }
+
 
     if (outFilename.isEmpty() || outFilename == QLatin1String("-")) {
         // using this overload close() only flushes.
@@ -245,7 +273,17 @@ int runRcc(int argc, char *argv[])
         return 0;
     }
 
-    return library.output(out, errorDevice) ? 0 : 1;
+    QFile temp;
+    if (!tempFilename.isEmpty()) {
+        temp.setFileName(tempFilename);
+        if (!temp.open(QIODevice::ReadOnly)) {
+            const QString msg = QString::fromUtf8("Unable to open temporary file %1 for reading: %2\n")
+                    .arg(outFilename).arg(out.errorString());
+            errorDevice.write(msg.toUtf8());
+            return 1;
+        }
+    }
+    return library.output(out, temp, errorDevice) ? 0 : 1;
 }
 
 Q_CORE_EXPORT extern QBasicAtomicInt qt_qhash_seed; // from qhash.cpp

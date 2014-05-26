@@ -1,12 +1,10 @@
 /****************************************************************************
 ** Resource object code
 **
-IGNORE: ** Created by: The Resource Compiler for Qt version 5.0.0
+IGNORE: ** Created by: The Resource Compiler for Qt version 5.3.1
 **
 ** WARNING! All changes made in this file will be lost!
 *****************************************************************************/
-
-#include <QtCore/qglobal.h>
 
 static const unsigned char qt_resource_data[] = {
 IGNORE:   // /dev/qt5/qtbase/tests/auto/tools/rcc/data/images/images/circle.png
@@ -94,16 +92,29 @@ static const unsigned char qt_resource_struct[] = {
 
 };
 
-QT_BEGIN_NAMESPACE
+#ifdef QT_NAMESPACE
+#  define QT_PREPEND_NAMESPACE(name) ::QT_NAMESPACE::name
+#  define QT_MANGLE_NAMESPACE0(x) x
+#  define QT_MANGLE_NAMESPACE1(a, b) a##_##b
+#  define QT_MANGLE_NAMESPACE2(a, b) QT_MANGLE_NAMESPACE1(a,b)
+#  define QT_MANGLE_NAMESPACE(name) QT_MANGLE_NAMESPACE2( \
+        QT_MANGLE_NAMESPACE0(name), QT_MANGLE_NAMESPACE0(QT_NAMESPACE))
+#else
+#   define QT_PREPEND_NAMESPACE(name) name
+#   define QT_MANGLE_NAMESPACE(name) name
+#endif
 
-extern Q_CORE_EXPORT bool qRegisterResourceData
-    (int, const unsigned char *, const unsigned char *, const unsigned char *);
+#ifdef QT_NAMESPACE
+namespace QT_NAMESPACE {
+#endif
 
-extern Q_CORE_EXPORT bool qUnregisterResourceData
-    (int, const unsigned char *, const unsigned char *, const unsigned char *);
+bool qRegisterResourceData(int, const unsigned char *, const unsigned char *, const unsigned char *);
 
-QT_END_NAMESPACE
+bool qUnregisterResourceData(int, const unsigned char *, const unsigned char *, const unsigned char *);
 
+#ifdef QT_NAMESPACE
+}
+#endif
 
 int QT_MANGLE_NAMESPACE(qInitResources)()
 {
@@ -112,8 +123,6 @@ int QT_MANGLE_NAMESPACE(qInitResources)()
     return 1;
 }
 
-Q_CONSTRUCTOR_FUNCTION(QT_MANGLE_NAMESPACE(qInitResources))
-
 int QT_MANGLE_NAMESPACE(qCleanupResources)()
 {
     QT_PREPEND_NAMESPACE(qUnregisterResourceData)
@@ -121,5 +130,9 @@ int QT_MANGLE_NAMESPACE(qCleanupResources)()
     return 1;
 }
 
-Q_DESTRUCTOR_FUNCTION(QT_MANGLE_NAMESPACE(qCleanupResources))
-
+namespace {
+   struct initializer {
+       initializer() { QT_MANGLE_NAMESPACE(qInitResources)(); }
+       ~initializer() { QT_MANGLE_NAMESPACE(qCleanupResources)(); }
+   } dummy;
+}

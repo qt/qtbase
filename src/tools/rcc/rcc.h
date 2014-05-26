@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the tools applications of the Qt Toolkit.
@@ -64,11 +64,11 @@ public:
     RCCResourceLibrary();
     ~RCCResourceLibrary();
 
-    bool output(QIODevice &out, QIODevice &errorDevice);
+    bool output(QIODevice &outDevice, QIODevice &tempDevice, QIODevice &errorDevice);
 
     bool readFiles(bool ignoreErrors, QIODevice &errorDevice);
 
-    enum Format { Binary, C_Code };
+    enum Format { Binary, C_Code, Pass1, Pass2 };
     void setFormat(Format f) { m_format = f; }
     Format format() const { return m_format; }
 
@@ -86,6 +86,9 @@ public:
 
     void setInitName(const QString &name) { m_initName = name; }
     QString initName() const { return m_initName; }
+
+    void setOutputName(const QString &name) { m_outputName = name; }
+    QString outputName() const { return m_outputName; }
 
     void setCompressLevel(int c) { m_compressLevel = c; }
     int compressLevel() const { return m_compressLevel; }
@@ -137,6 +140,7 @@ private:
     QStringList m_fileNames;
     QString m_resourceRoot;
     QString m_initName;
+    QString m_outputName;
     Format m_format;
     bool m_verbose;
     int m_compressLevel;
@@ -147,6 +151,7 @@ private:
     bool m_useNameSpace;
     QStringList m_failedResources;
     QIODevice *m_errorDevice;
+    QIODevice *m_outDevice;
     QByteArray m_out;
 };
 
