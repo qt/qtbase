@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -1027,11 +1027,11 @@ void QWidgetPrivate::setWindowOpacity_sys(qreal level)
         q->windowHandle()->setOpacity(level);
 }
 
-void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &oldRect)
+void QWidgetPrivate::setWSGeometry()
 {
-    Q_UNUSED(dontShow);
-    Q_UNUSED(oldRect);
-    // XXX
+    Q_Q(QWidget);
+    if (QWindow *window = q->windowHandle())
+        window->setGeometry(data.crect);
 }
 
 QPaintEngine *QWidget::paintEngine() const

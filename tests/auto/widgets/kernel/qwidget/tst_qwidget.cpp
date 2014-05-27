@@ -288,6 +288,7 @@ private slots:
 
 #ifndef Q_OS_MAC
     void scroll();
+    void scrollNativeChildren();
 #endif
 
     // tests QWidget::setGeometry()
@@ -4336,7 +4337,30 @@ void tst_QWidget::scroll()
         QTRY_COMPARE(updateWidget.paintedRegion, dirty);
     }
 }
-#endif
+
+// QTBUG-38999, scrolling a widget with native child widgets should move the children.
+void tst_QWidget::scrollNativeChildren()
+{
+    QWidget parent;
+    parent.setWindowTitle(QLatin1String(__FUNCTION__));
+    parent.resize(400, 400);
+    centerOnScreen(&parent);
+    QLabel *nativeLabel = new QLabel(QStringLiteral("nativeLabel"), &parent);
+    const QPoint oldLabelPos(100, 100);
+    nativeLabel->move(oldLabelPos);
+    QVERIFY(nativeLabel->winId());
+    parent.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&parent));
+    const QPoint delta(50, 50);
+    parent.scroll(delta.x(), delta.y());
+    const QPoint newLabelPos = oldLabelPos + delta;
+    QWindow *labelWindow = nativeLabel->windowHandle();
+    QVERIFY(labelWindow);
+    QTRY_COMPARE(labelWindow->geometry().topLeft(), newLabelPos);
+    QTRY_COMPARE(nativeLabel->geometry().topLeft(), newLabelPos);
+}
+
+#endif // Mac OS
 
 class DestroyedSlotChecker : public QObject
 {

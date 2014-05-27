@@ -609,7 +609,7 @@ public:
         }
     }
 
-    void setWSGeometry(bool dontShow=false, const QRect &oldRect = QRect());
+    void setWSGeometry();
 
     inline QPoint mapToWS(const QPoint &p) const
     { return p - data.wrect.topLeft(); }
