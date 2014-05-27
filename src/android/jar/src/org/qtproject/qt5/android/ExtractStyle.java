@@ -150,6 +150,7 @@ public class ExtractStyle {
     final int View_fadingEdge = getField(styleableClass,"View_fadingEdge");
     final int View_scrollbarStyle = getField(styleableClass,"View_scrollbarStyle");
     final int View_scrollbarFadeDuration = getField(styleableClass,"View_scrollbarFadeDuration");
+    final int View_scrollbarDefaultDelayBeforeFade = getField(styleableClass,"View_scrollbarDefaultDelayBeforeFade");
     final int View_scrollbarSize = getField(styleableClass,"View_scrollbarSize");
     final int View_scrollbarThumbHorizontal = getField(styleableClass,"View_scrollbarThumbHorizontal");
     final int View_scrollbarThumbVertical = getField(styleableClass,"View_scrollbarThumbVertical");
@@ -896,6 +897,8 @@ public class ExtractStyle {
                     json.put("View_scrollbarStyle", a.getInt(attr, 0));
                 else if (attr == View_scrollbarFadeDuration)
                     json.put("View_scrollbarFadeDuration", a.getInt(attr, 0));
+                else if (attr == View_scrollbarDefaultDelayBeforeFade)
+                    json.put("View_scrollbarDefaultDelayBeforeFade", a.getInt(attr, 0));
                 else if (attr == View_scrollbarSize)
                     json.put("View_scrollbarSize", a.getDimensionPixelSize(attr, -1));
                 else if (attr == View_scrollbarThumbHorizontal)
