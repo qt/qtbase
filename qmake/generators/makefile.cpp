@@ -1809,7 +1809,7 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
         QString tmp_out = fileFixify(project->first(ProKey(*it + ".output")).toQString(),
                                      Option::output_dir, Option::output_dir);
         const QString tmp_cmd = project->values(ProKey(*it + ".commands")).join(' ');
-        const QString tmp_dep_cmd = project->values(ProKey(*it + "depend_command")).join(' ');
+        const QString tmp_dep_cmd = project->values(ProKey(*it + ".depend_command")).join(' ');
         QString dep_cd_cmd;
         if (!tmp_dep_cmd.isEmpty()) {
             dep_cd_cmd = QLatin1String("cd ")
