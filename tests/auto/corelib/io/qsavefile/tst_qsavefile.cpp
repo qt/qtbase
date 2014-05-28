@@ -94,6 +94,7 @@ private slots:
     void transactionalWriteCanceled();
     void transactionalWriteErrorRenaming();
     void symlink();
+    void directory();
 };
 
 static inline QByteArray msgCannotOpen(const QFileDevice &f)
@@ -450,6 +451,30 @@ void tst_QSaveFile::symlink()
         QFile file(cyclicLink + QLatin1Char('1'));
         QVERIFY2(file.open(QIODevice::ReadOnly), msgCannotOpen(file).constData());
         QCOMPARE(file.readAll(), someData);
+    }
+#endif
+}
+
+void tst_QSaveFile::directory()
+{
+    QTemporaryDir dir;
+    QVERIFY(dir.isValid());
+
+    const QString subdir = dir.path() + QLatin1String("/subdir");
+    QVERIFY(QDir(dir.path()).mkdir(QStringLiteral("subdir")));
+    {
+        QFile sf(subdir);
+        QVERIFY(!sf.open(QIODevice::WriteOnly));
+    }
+
+#ifdef Q_OS_UNIX
+    //link to a directory
+    const QString linkToDir = dir.path() + QLatin1String("/linkToDir");
+    QVERIFY(QFile::link(subdir, linkToDir));
+
+    {
+        QFile sf(linkToDir);
+        QVERIFY(!sf.open(QIODevice::WriteOnly));
     }
 #endif
 }

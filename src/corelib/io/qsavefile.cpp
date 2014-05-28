@@ -206,6 +206,12 @@ bool QSaveFile::open(OpenMode mode)
         return false;
     }
 
+    if (existingFile.isDir()) {
+        d->setError(QFileDevice::WriteError, QSaveFile::tr("Filename refers to a directory"));
+        d->writeError = QFileDevice::WriteError;
+        return false;
+    }
+
     // Resolve symlinks. Don't use QFileInfo::canonicalFilePath so it still give the expected
     // target even if the file does not exist
     d->finalFileName = d->fileName;
