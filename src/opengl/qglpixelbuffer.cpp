@@ -338,7 +338,7 @@ void QGLPixelBuffer::updateDynamicTexture(GLuint texture_id) const
     if (d->invalid || !d->fbo)
         return;
 
-    QOpenGLContext *ctx = QOpenGLContext::currentContext();
+    const QGLContext *ctx = QGLContext::currentContext();
     if (!ctx)
         return;
 
@@ -352,19 +352,19 @@ void QGLPixelBuffer::updateDynamicTexture(GLuint texture_id) const
 #define GL_DRAW_FRAMEBUFFER 0x8CA9
 #endif
 
-    QOpenGLExtensions extensions(ctx);
+    QOpenGLExtensions extensions(ctx->contextHandle());
 
     if (d->blit_fbo) {
         QOpenGLFramebufferObject::blitFramebuffer(d->blit_fbo, d->fbo);
         extensions.glBindFramebuffer(GL_READ_FRAMEBUFFER, d->blit_fbo->handle());
     }
 
-    ctx->functions()->glBindTexture(GL_TEXTURE_2D, texture_id);
+    extensions.glBindTexture(GL_TEXTURE_2D, texture_id);
 #ifndef QT_OPENGL_ES
-    GLenum format = ctx->isOpenGLES() ? GL_RGBA : GL_RGBA8;
-    ctx->functions()->glCopyTexImage2D(GL_TEXTURE_2D, 0, format, 0, 0, d->req_size.width(), d->req_size.height(), 0);
+    GLenum format = ctx->contextHandle()->isOpenGLES() ? GL_RGBA : GL_RGBA8;
+    extensions.glCopyTexImage2D(GL_TEXTURE_2D, 0, format, 0, 0, d->req_size.width(), d->req_size.height(), 0);
 #else
-    ctx->functions()->glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, d->req_size.width(), d->req_size.height(), 0);
+    extensions.glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, d->req_size.width(), d->req_size.height(), 0);
 #endif
 
     if (d->blit_fbo)

@@ -205,7 +205,6 @@ public:
         , surface(0)
         , functions(0)
         , textureFunctions(0)
-        , current_fbo(0)
         , max_texture_size(-1)
         , workaround_brokenFBOReadBack(false)
         , workaround_brokenTexSubImage(false)
@@ -236,7 +235,6 @@ public:
     mutable QSet<QByteArray> extensionNames;
     QOpenGLTextureHelper* textureFunctions;
 
-    GLuint current_fbo;
     GLint max_texture_size;
 
     bool workaround_brokenFBOReadBack;

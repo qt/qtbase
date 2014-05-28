@@ -475,7 +475,6 @@ void QOpenGLFramebufferObjectPrivate::init(QOpenGLFramebufferObject *, const QSi
 
     initAttachments(ctx, attachment);
 
-    funcs.glBindFramebuffer(GL_FRAMEBUFFER, ctx->d_func()->current_fbo);
     if (valid) {
         fbo_guard = new QOpenGLSharedResourceGuard(ctx, fbo, freeFramebufferFunc);
     } else {
@@ -959,8 +958,6 @@ bool QOpenGLFramebufferObject::bind()
         d->valid = d->checkFramebufferStatus(current);
     else
         d->initTexture(d->format.textureTarget(), d->format.internalTextureFormat(), d->size, d->format.mipmap());
-    if (d->valid && current)
-        current->d_func()->current_fbo = d->fbo();
     return d->valid;
 }
 
@@ -988,10 +985,8 @@ bool QOpenGLFramebufferObject::release()
         qWarning("QOpenGLFramebufferObject::release() called from incompatible context");
 #endif
 
-    if (current) {
-        current->d_func()->current_fbo = current->defaultFramebufferObject();
-        d->funcs.glBindFramebuffer(GL_FRAMEBUFFER, current->d_func()->current_fbo);
-    }
+    if (current)
+        d->funcs.glBindFramebuffer(GL_FRAMEBUFFER, current->defaultFramebufferObject());
 
     return true;
 }
@@ -1038,7 +1033,7 @@ GLuint QOpenGLFramebufferObject::takeTexture()
     GLuint id = 0;
     if (isValid() && d->texture_guard) {
         QOpenGLContext *current = QOpenGLContext::currentContext();
-        if (current && current->shareGroup() == d->fbo_guard->group() && current->d_func()->current_fbo == d->fbo())
+        if (current && current->shareGroup() == d->fbo_guard->group() && isBound())
             release();
         id = d->texture_guard->id();
         // Do not call free() on texture_guard, just null it out.
@@ -1154,16 +1149,13 @@ QImage QOpenGLFramebufferObject::toImage() const
 bool QOpenGLFramebufferObject::bindDefault()
 {
     QOpenGLContext *ctx = const_cast<QOpenGLContext *>(QOpenGLContext::currentContext());
-    QOpenGLFunctions functions(ctx);
 
-    if (ctx) {
-        ctx->d_func()->current_fbo = ctx->defaultFramebufferObject();
-        functions.glBindFramebuffer(GL_FRAMEBUFFER, ctx->d_func()->current_fbo);
+    if (ctx)
+        ctx->functions()->glBindFramebuffer(GL_FRAMEBUFFER, ctx->defaultFramebufferObject());
 #ifdef QT_DEBUG
-    } else {
+    else
         qWarning("QOpenGLFramebufferObject::bindDefault() called without current context.");
 #endif
-    }
 
     return ctx != 0;
 }
@@ -1176,7 +1168,7 @@ bool QOpenGLFramebufferObject::bindDefault()
 */
 bool QOpenGLFramebufferObject::hasOpenGLFramebufferObjects()
 {
-    return QOpenGLFunctions(QOpenGLContext::currentContext()).hasOpenGLFeature(QOpenGLFunctions::Framebuffers);
+    return QOpenGLContext::currentContext()->functions()->hasOpenGLFeature(QOpenGLFunctions::Framebuffers);
 }
 
 /*!
@@ -1227,20 +1219,21 @@ void QOpenGLFramebufferObject::setAttachment(QOpenGLFramebufferObject::Attachmen
 #endif
     d->funcs.glBindFramebuffer(GL_FRAMEBUFFER, d->fbo());
     d->initAttachments(current, attachment);
-    if (current->d_func()->current_fbo != d->fbo())
-        d->funcs.glBindFramebuffer(GL_FRAMEBUFFER, current->d_func()->current_fbo);
 }
 
 /*!
-    Returns \c true if the framebuffer object is currently bound to a context,
+    Returns \c true if the framebuffer object is currently bound to the current context,
     otherwise false is returned.
 */
-
 bool QOpenGLFramebufferObject::isBound() const
 {
     Q_D(const QOpenGLFramebufferObject);
-    QOpenGLContext *current = QOpenGLContext::currentContext();
-    return current ? current->d_func()->current_fbo == d->fbo() : false;
+    QOpenGLContext *ctx = QOpenGLContext::currentContext();
+    if (!ctx)
+        return false;
+    GLint fbo = 0;
+    ctx->functions()->glGetIntegerv(GL_FRAMEBUFFER_BINDING, &fbo);
+    return GLuint(fbo) == d->fbo();
 }
 
 /*!
@@ -1346,8 +1339,6 @@ void QOpenGLFramebufferObject::blitFramebuffer(QOpenGLFramebufferObject *target,
     extensions.glBlitFramebuffer(sx0, sy0, sx1, sy1,
                                  tx0, ty0, tx1, ty1,
                                  buffers, filter);
-
-    extensions.glBindFramebuffer(GL_FRAMEBUFFER, ctx->d_func()->current_fbo);
 }
 
 QT_END_NAMESPACE
