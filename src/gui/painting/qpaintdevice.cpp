@@ -41,6 +41,8 @@ QPaintDevice::QPaintDevice()
     painters = 0;
 }
 
+qreal QPaintDevice::devicePixelRatioFScale = 10000000.0;
+
 QPaintDevice::~QPaintDevice()
 {
     if (paintingActive())
@@ -79,7 +81,13 @@ Q_GUI_EXPORT int qt_paint_device_metric(const QPaintDevice *device, QPaintDevice
 
 int QPaintDevice::metric(PaintDeviceMetric m) const
 {
+    // Fallback: A subclass has not implemented PdmDevicePixelRatioScaled but might
+    // have implemented PdmDevicePixelRatio.
+    if (m == PdmDevicePixelRatioScaled)
+        return this->metric(PdmDevicePixelRatio) * devicePixelRatioFScale;
+
     qWarning("QPaintDevice::metrics: Device has no metric information");
+
     if (m == PdmDpiX) {
         return 72;
     } else if (m == PdmDpiY) {
@@ -94,5 +102,6 @@ int QPaintDevice::metric(PaintDeviceMetric m) const
         return 0;
     }
 }
+
 
 QT_END_NAMESPACE

@@ -4493,7 +4493,7 @@ QImage QGLWidget::grabFrameBuffer(bool withAlpha)
 {
     makeCurrent();
     QImage res;
-    qreal pixelRatio = devicePixelRatio();
+    qreal pixelRatio = devicePixelRatioF();
     int w = pixelRatio * width();
     int h = pixelRatio * height();
     if (format().rgba())

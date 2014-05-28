@@ -219,7 +219,7 @@ QTransform QPainterPrivate::viewTransform() const
     return QTransform();
 }
 
-int QPainterPrivate::effectiveDevicePixelRatio() const
+qreal QPainterPrivate::effectiveDevicePixelRatio() const
 {
     // Special cases for devices that does not support PdmDevicePixelRatio go here:
     if (device->devType() == QInternal::Printer)
