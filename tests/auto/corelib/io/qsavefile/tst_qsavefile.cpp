@@ -93,6 +93,7 @@ private slots:
     void transactionalWriteNoPermissionsOnFile();
     void transactionalWriteCanceled();
     void transactionalWriteErrorRenaming();
+    void symlink();
 };
 
 static inline QByteArray msgCannotOpen(const QFileDevice &f)
@@ -338,6 +339,119 @@ void tst_QSaveFile::transactionalWriteErrorRenaming()
     QVERIFY(!QFile::exists(targetFile)); // renaming failed
 #endif
     QCOMPARE(file.error(), QFile::RenameError);
+}
+
+void tst_QSaveFile::symlink()
+{
+#ifdef Q_OS_UNIX
+    QByteArray someData = "some data";
+    QTemporaryDir dir;
+    QVERIFY(dir.isValid());
+
+    const QString targetFile = dir.path() + QLatin1String("/outfile");
+    const QString linkFile = dir.path() + QLatin1String("/linkfile");
+    {
+        QFile file(targetFile);
+        QVERIFY2(file.open(QIODevice::WriteOnly), msgCannotOpen(file).constData());
+        QCOMPARE(file.write("Hello"), Q_INT64_C(5));
+        file.close();
+    }
+
+    QVERIFY(QFile::link(targetFile, linkFile));
+
+    QString canonical = QFileInfo(linkFile).canonicalFilePath();
+    QCOMPARE(canonical, QFileInfo(targetFile).canonicalFilePath());
+
+    // Try saving into it
+    {
+        QSaveFile saveFile(linkFile);
+        QVERIFY(saveFile.open(QIODevice::WriteOnly));
+        QCOMPARE(saveFile.write(someData), someData.size());
+        saveFile.commit();
+
+        //Check that the linkFile is still a link and still has the same canonical path
+        QFileInfo info(linkFile);
+        QVERIFY(info.isSymLink());
+        QCOMPARE(QFileInfo(linkFile).canonicalFilePath(), canonical);
+
+        QFile file(targetFile);
+        QVERIFY2(file.open(QIODevice::ReadOnly), msgCannotOpen(file).constData());
+        QCOMPARE(file.readAll(), someData);
+        file.remove();
+    }
+
+    // Save into a symbolic link that point to a removed file
+    someData = "more stuff";
+    {
+        QSaveFile saveFile(linkFile);
+        QVERIFY(saveFile.open(QIODevice::WriteOnly));
+        QCOMPARE(saveFile.write(someData), someData.size());
+        saveFile.commit();
+
+        QFileInfo info(linkFile);
+        QVERIFY(info.isSymLink());
+        QCOMPARE(QFileInfo(linkFile).canonicalFilePath(), canonical);
+
+        QFile file(targetFile);
+        QVERIFY2(file.open(QIODevice::ReadOnly), msgCannotOpen(file).constData());
+        QCOMPARE(file.readAll(), someData);
+    }
+
+    // link to a link in another directory
+    QTemporaryDir dir2;
+    QVERIFY(dir2.isValid());
+
+    const QString linkFile2 = dir2.path() + QLatin1String("/linkfile");
+    QVERIFY(QFile::link(linkFile, linkFile2));
+    QCOMPARE(QFileInfo(linkFile2).canonicalFilePath(), canonical);
+
+
+    someData = "hello everyone";
+
+    {
+        QSaveFile saveFile(linkFile2);
+        QVERIFY(saveFile.open(QIODevice::WriteOnly));
+        QCOMPARE(saveFile.write(someData), someData.size());
+        saveFile.commit();
+
+        QFile file(targetFile);
+        QVERIFY2(file.open(QIODevice::ReadOnly), msgCannotOpen(file).constData());
+        QCOMPARE(file.readAll(), someData);
+    }
+
+    //cyclic link
+    const QString cyclicLink = dir.path() + QLatin1String("/cyclic");
+    QVERIFY(QFile::link(cyclicLink, cyclicLink));
+    {
+        QSaveFile saveFile(cyclicLink);
+        QVERIFY(saveFile.open(QIODevice::WriteOnly));
+        QCOMPARE(saveFile.write(someData), someData.size());
+        saveFile.commit();
+
+        QFile file(cyclicLink);
+        QVERIFY2(file.open(QIODevice::ReadOnly), msgCannotOpen(file).constData());
+        QCOMPARE(file.readAll(), someData);
+    }
+
+    //cyclic link2
+    QVERIFY(QFile::link(cyclicLink + QLatin1Char('1'), cyclicLink + QLatin1Char('2')));
+    QVERIFY(QFile::link(cyclicLink + QLatin1Char('2'), cyclicLink + QLatin1Char('1')));
+
+    {
+        QSaveFile saveFile(cyclicLink + QLatin1Char('1'));
+        QVERIFY(saveFile.open(QIODevice::WriteOnly));
+        QCOMPARE(saveFile.write(someData), someData.size());
+        saveFile.commit();
+
+        // the explicit file becomes a file instead of a link
+        QVERIFY(!QFileInfo(cyclicLink + QLatin1Char('1')).isSymLink());
+        QVERIFY(QFileInfo(cyclicLink + QLatin1Char('2')).isSymLink());
+
+        QFile file(cyclicLink + QLatin1Char('1'));
+        QVERIFY2(file.open(QIODevice::ReadOnly), msgCannotOpen(file).constData());
+        QCOMPARE(file.readAll(), someData);
+    }
+#endif
 }
 
 QTEST_MAIN(tst_QSaveFile)

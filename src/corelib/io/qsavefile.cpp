@@ -205,14 +205,26 @@ bool QSaveFile::open(OpenMode mode)
         d->writeError = QFileDevice::WriteError;
         return false;
     }
-    d->fileEngine = new QTemporaryFileEngine(d->fileName);
+
+    // Resolve symlinks. Don't use QFileInfo::canonicalFilePath so it still give the expected
+    // target even if the file does not exist
+    d->finalFileName = d->fileName;
+    if (existingFile.isSymLink()) {
+        int maxDepth = 128;
+        while (--maxDepth && existingFile.isSymLink())
+            existingFile.setFile(existingFile.symLinkTarget());
+        if (maxDepth > 0)
+            d->finalFileName = existingFile.filePath();
+    }
+
+    d->fileEngine = new QTemporaryFileEngine(d->finalFileName);
     // Same as in QFile: QIODevice provides the buffering, so there's no need to request it from the file engine.
     if (!d->fileEngine->open(mode | QIODevice::Unbuffered)) {
         QFileDevice::FileError err = d->fileEngine->error();
 #ifdef Q_OS_UNIX
         if (d->directWriteFallback && err == QFileDevice::OpenError && errno == EACCES) {
             delete d->fileEngine;
-            d->fileEngine = QAbstractFileEngine::create(d->fileName);
+            d->fileEngine = QAbstractFileEngine::create(d->finalFileName);
             if (d->fileEngine->open(mode | QIODevice::Unbuffered)) {
                 d->useTemporaryFile = false;
                 QFileDevice::open(mode);
@@ -285,7 +297,7 @@ bool QSaveFile::commit()
         // atomically replace old file with new file
         // Can't use QFile::rename for that, must use the file engine directly
         Q_ASSERT(d->fileEngine);
-        if (!d->fileEngine->renameOverwrite(d->fileName)) {
+        if (!d->fileEngine->renameOverwrite(d->finalFileName)) {
             d->setError(d->fileEngine->error(), d->fileEngine->errorString());
             d->fileEngine->remove();
             delete d->fileEngine;
