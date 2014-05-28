@@ -78,9 +78,79 @@
 #define Q_NO_SYMLINKS
 #endif
 
-QT_BEGIN_NAMESPACE
-extern Q_AUTOTEST_EXPORT bool qIsLikelyToBeNfs(int /* handle */);
-QT_END_NAMESPACE
+
+#if defined(Q_OS_UNIX) && !defined(Q_OS_VXWORKS)
+inline bool qt_isEvilFsTypeName(const char *name)
+{
+    return (qstrncmp(name, "nfs", 3) == 0
+            || qstrncmp(name, "autofs", 6) == 0
+            || qstrncmp(name, "cachefs", 7) == 0);
+}
+
+#if defined(Q_OS_BSD4) && !defined(Q_OS_NETBSD)
+# include <sys/param.h>
+# include <sys/mount.h>
+
+bool qIsLikelyToBeNfs(int handle)
+{
+    struct statfs buf;
+    if (fstatfs(handle, &buf) != 0)
+        return false;
+    return qt_isEvilFsTypeName(buf.f_fstypename);
+}
+
+#elif defined(Q_OS_LINUX) || defined(Q_OS_HURD)
+
+# include <sys/vfs.h>
+# ifdef QT_LINUXBASE
+   // LSB 3.2 has fstatfs in sys/statfs.h, sys/vfs.h is just an empty dummy header
+#  include <sys/statfs.h>
+# endif
+
+# ifndef NFS_SUPER_MAGIC
+#  define NFS_SUPER_MAGIC       0x00006969
+# endif
+# ifndef AUTOFS_SUPER_MAGIC
+#  define AUTOFS_SUPER_MAGIC    0x00000187
+# endif
+# ifndef AUTOFSNG_SUPER_MAGIC
+#  define AUTOFSNG_SUPER_MAGIC  0x7d92b1a0
+# endif
+
+bool qIsLikelyToBeNfs(int handle)
+{
+    struct statfs buf;
+    if (fstatfs(handle, &buf) != 0)
+        return false;
+    return buf.f_type == NFS_SUPER_MAGIC
+           || buf.f_type == AUTOFS_SUPER_MAGIC
+           || buf.f_type == AUTOFSNG_SUPER_MAGIC;
+}
+
+#elif defined(Q_OS_SOLARIS) || defined(Q_OS_IRIX) || defined(Q_OS_AIX) || defined(Q_OS_HPUX) \
+      || defined(Q_OS_OSF) || defined(Q_OS_QNX) || defined(Q_OS_SCO) \
+      || defined(Q_OS_UNIXWARE) || defined(Q_OS_RELIANT) || defined(Q_OS_NETBSD)
+
+# include <sys/statvfs.h>
+
+bool qIsLikelyToBeNfs(int handle)
+{
+    struct statvfs buf;
+    if (fstatvfs(handle, &buf) != 0)
+        return false;
+#if defined(Q_OS_NETBSD)
+    return qt_isEvilFsTypeName(buf.f_fstypename);
+#else
+    return qt_isEvilFsTypeName(buf.f_basetype);
+#endif
+}
+#else
+inline bool qIsLikelyToBeNfs(int /* handle */)
+{
+    return false;
+}
+#endif
+#endif
 
 class tst_QFileInfo : public QObject
 {
