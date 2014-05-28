@@ -91,11 +91,12 @@ static Window createDummyWindow(Display *dpy, XVisualInfo *visualInfo, int scree
     a.background_pixel = WhitePixel(dpy, screenNumber);
     a.border_pixel = BlackPixel(dpy, screenNumber);
     a.colormap = cmap;
+    a.override_redirect = true;
 
     Window window = XCreateWindow(dpy, rootWin,
                                   0, 0, 100, 100,
                                   0, visualInfo->depth, InputOutput, visualInfo->visual,
-                                  CWBackPixel|CWBorderPixel|CWColormap, &a);
+                                  CWBackPixel|CWBorderPixel|CWColormap|CWOverrideRedirect, &a);
 #ifndef QT_NO_DEBUG
     XStoreName(dpy, window, "Qt GLX dummy window");
 #endif
