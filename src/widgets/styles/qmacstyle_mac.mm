@@ -3148,7 +3148,8 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
         [triangleCell setButtonType:NSOnOffButton];
         [triangleCell setState:(opt->state & State_Open) ? NSOnState : NSOffState];
         [triangleCell setBezelStyle:NSDisclosureBezelStyle];
-        [triangleCell setBackgroundStyle:((opt->state & State_Selected) && w->hasFocus()) ? NSBackgroundStyleDark : NSBackgroundStyleLight];
+        bool viewHasFocus = (w && w->hasFocus()) || (opt->state & State_HasFocus);
+        [triangleCell setBackgroundStyle:((opt->state & State_Selected) && viewHasFocus) ? NSBackgroundStyleDark : NSBackgroundStyleLight];
 
         CGContextSaveGState(cg);
         [NSGraphicsContext saveGraphicsState];
