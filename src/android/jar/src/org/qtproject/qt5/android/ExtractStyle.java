@@ -1490,6 +1490,10 @@ public class ExtractStyle {
               jsonWriter.name("scrollViewStyle").value(extractTextAppearanceInformations("scrollViewStyle", "QAbstractScrollArea", null, -1));
               extractItemsStyle(jsonWriter);
               extractCompoundButton(jsonWriter, "buttonStyleToggle", null);
+              if (Build.VERSION.SDK_INT > 10) {
+                  jsonWriter.name("actionBarStyle").value(extractTextAppearanceInformations("actionBarStyle", "QToolBar", null, -1));
+                  jsonWriter.name("actionButtonStyle").value(extractTextAppearanceInformations("actionButtonStyle", "QToolButton", null, -1));
+              }
           } catch (Exception e) {
               e.printStackTrace();
           }
