@@ -590,3 +590,66 @@ err_free:
     freeInfo(header, info);
     return -1;
 }
+
+#ifdef _POSIX_SPAWN
+int spawnfd(int flags, pid_t *ppid, const char *path, const posix_spawn_file_actions_t *file_actions,
+            posix_spawnattr_t *attrp, char *const argv[], char *const envp[])
+{
+    Header *header;
+    ProcessInfo *info;
+    siginfo_t si;
+    pid_t pid;
+    int death_pipe[2];
+    int ret = -1;
+    /* we can only do work if we have a way to start the child in stopped mode;
+     * otherwise, we have a major race condition. */
+
+    (void) pthread_once(&forkfd_initialization, forkfd_initialize);
+
+    info = allocateInfo(&header);
+    if (info == NULL) {
+        errno = ENOMEM;
+        goto out;
+    }
+
+    /* create the pipe before we spawn */
+    if (create_pipe(death_pipe, flags) == -1)
+        goto err_free; /* failed to create the pipes, pass errno */
+
+    /* start the process */
+    if (flags & FFD_SPAWN_SEARCH_PATH) {
+        /* use posix_spawnp */
+        if (posix_spawnp(&pid, path, file_actions, attrp, argv, envp) != 0)
+            goto err_close;
+    } else {
+        if (posix_spawn(&pid, path, file_actions, attrp, argv, envp) != 0)
+            goto err_close;
+    }
+
+    if (ppid)
+        *ppid = pid;
+
+    /* Store the child's PID in the info structure.
+     */
+    info->deathPipe = death_pipe[1];
+    ffd_atomic_store(&info->pid, pid, FFD_ATOMIC_RELEASE);
+
+    /* check if the child has already exited */
+    if (tryReaping(pid, &si))
+        notifyAndFreeInfo(header, info, &si);
+
+    ret = death_pipe[0];
+    return ret;
+
+err_close:
+    EINTR_LOOP(ret, close(death_pipe[0]));
+    EINTR_LOOP(ret, close(death_pipe[1]));
+
+err_free:
+    /* free the info pointer */
+    freeInfo(header, info);
+
+out:
+    return -1;
+}
+#endif // _POSIX_SPAWN

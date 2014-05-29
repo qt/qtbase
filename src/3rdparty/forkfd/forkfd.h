@@ -39,6 +39,11 @@
 #define FORKFD_H
 
 #include <fcntl.h>
+#include <unistd.h> // to get the POSIX flags
+
+#ifdef _POSIX_SPAWN
+#  include <spawn.h>
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -50,6 +55,14 @@ extern "C" {
 #define FFD_CHILD_PROCESS (-2)
 
 int forkfd(int flags, pid_t *ppid);
+
+#ifdef _POSIX_SPAWN
+/* only for spawnfd: */
+#  define FFD_SPAWN_SEARCH_PATH   O_RDWR
+
+int spawnfd(int flags, pid_t *ppid, const char *path, const posix_spawn_file_actions_t *file_actions,
+            posix_spawnattr_t *attrp, char *const argv[], char *const envp[]);
+#endif
 
 #ifdef __cplusplus
 }
