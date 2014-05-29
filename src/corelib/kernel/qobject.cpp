@@ -513,7 +513,7 @@ void QMetaCallEvent::placeMetaCall(QObject *object)
     \code
     const bool wasBlocked = someQObject->blockSignals(true);
     // no signals here
-    someQObject->blockSignals(false);
+    someQObject->blockSignals(wasBlocked);
     \endcode
 
     except the code using QSignalBlocker is safe in the face of
