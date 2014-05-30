@@ -136,6 +136,7 @@ public:
         MV_10_7 = 0x0009,
         MV_10_8 = 0x000A,
         MV_10_9 = 0x000B,
+        MV_10_10 = 0x000C,
 
         /* codenames */
         MV_CHEETAH = MV_10_0,
@@ -148,6 +149,7 @@ public:
         MV_LION = MV_10_7,
         MV_MOUNTAINLION = MV_10_8,
         MV_MAVERICKS = MV_10_9,
+        MV_YOSEMITE = MV_10_10,
 
         /* iOS */
         MV_IOS     = 1 << 8,
@@ -157,7 +159,8 @@ public:
         MV_IOS_6_0 = Q_MV_IOS(6, 0),
         MV_IOS_6_1 = Q_MV_IOS(6, 1),
         MV_IOS_7_0 = Q_MV_IOS(7, 0),
-        MV_IOS_7_1 = Q_MV_IOS(7, 1)
+        MV_IOS_7_1 = Q_MV_IOS(7, 1),
+        MV_IOS_8_0 = Q_MV_IOS(8, 0)
     };
     static const MacVersion MacintoshVersion;
     static MacVersion macVersion();
