@@ -652,6 +652,7 @@ QAccessibleTextWidget::QAccessibleTextWidget(QWidget *o, QAccessible::Role r, co
 QAccessible::State QAccessibleTextWidget::state() const
 {
     QAccessible::State s = QAccessibleWidget::state();
+    s.selectableText = true;
     s.multiLine = true;
     return s;
 }

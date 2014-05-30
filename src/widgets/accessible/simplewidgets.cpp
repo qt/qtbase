@@ -663,10 +663,8 @@ QAccessible::State QAccessibleLineEdit::state() const
 
     if (l->echoMode() != QLineEdit::Normal)
         state.passwordEdit = true;
-    state.selectable = true;
-    if (l->hasSelectedText())
-        state.selected = true;
 
+    state.selectableText = true;
     return state;
 }
 

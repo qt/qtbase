@@ -176,7 +176,7 @@ QT_BEGIN_NAMESPACE
     \value readOnly                The object can usually be edited, but is explicitly set to read-only.
     \value selectable              The object is selectable.
     \value selectableText          The object has text which can be selected. This is different from selectable which refers to the object's children.
-    \value selected                The object is selected.
+    \value selected                The object is selected, this is independent of text selection.
     \value selfVoicing             The object describes itself through speech or sound.
     \value sizeable                The object can be resized, e.g. top-level windows.
     \value summaryElement          The object summarizes the state of the window and should be treated with priority.
