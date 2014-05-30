@@ -66,6 +66,7 @@ import android.graphics.NinePatch;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ClipDrawable;
 import android.graphics.drawable.ColorDrawable;
@@ -654,6 +655,27 @@ public class ExtractStyle {
         return json;
     }
 
+    private JSONObject getAnimationDrawable(AnimationDrawable drawable, String filename) {
+        JSONObject json = new JSONObject();
+        try {
+            json.put("type", "animation");
+            json.put("oneshot", drawable.isOneShot());
+            final int count = drawable.getNumberOfFrames();
+            JSONArray frames = new JSONArray();
+            for (int i = 0; i < count; ++i)
+            {
+                JSONObject frame = new JSONObject();
+                frame.put("duration", drawable.getDuration(i));
+                frame.put("drawable", getDrawable(drawable.getFrame(i), filename+"__"+i));
+                frames.put(frame);
+            }
+            json.put("frames", frames);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return json;
+    }
+
     private JSONObject getJsonRect(Rect rect) throws JSONException
     {
         JSONObject jsonRect = new JSONObject();
@@ -742,6 +764,10 @@ public class ExtractStyle {
                 if (drawable instanceof RotateDrawable)
                 {
                     return getRotateDrawable((RotateDrawable) drawable, filename);
+                }
+                if (drawable instanceof AnimationDrawable)
+                {
+                    return getAnimationDrawable((AnimationDrawable) drawable, filename);
                 }
                 if (drawable instanceof ClipDrawable)
                 {
