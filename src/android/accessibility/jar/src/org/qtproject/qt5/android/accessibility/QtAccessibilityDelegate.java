@@ -335,13 +335,24 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
     {
 //        Log.i(TAG, "ACTION " + action + " on " + virtualViewId);
 //        dumpNodes(virtualViewId);
+        boolean success = false;
         switch (action) {
         case AccessibilityNodeInfo.ACTION_CLICK:
-            boolean success = QtNativeAccessibility.clickAction(virtualViewId);
+            success = QtNativeAccessibility.clickAction(virtualViewId);
             if (success)
                 sendEventForVirtualViewId(virtualViewId, AccessibilityEvent.TYPE_VIEW_CLICKED);
-            return success;
+            break;
+        case AccessibilityNodeInfo.ACTION_SCROLL_FORWARD:
+            success = QtNativeAccessibility.scrollForward(virtualViewId);
+            if (success)
+                sendEventForVirtualViewId(virtualViewId, AccessibilityEvent.TYPE_VIEW_SCROLLED);
+            break;
+        case AccessibilityNodeInfo.ACTION_SCROLL_BACKWARD:
+            success = QtNativeAccessibility.scrollBackward(virtualViewId);
+            if (success)
+                sendEventForVirtualViewId(virtualViewId, AccessibilityEvent.TYPE_VIEW_SCROLLED);
+            break;
         }
-        return false;
+        return success;
     }
 }

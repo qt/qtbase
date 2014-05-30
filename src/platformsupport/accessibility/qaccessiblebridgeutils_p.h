@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the Android port of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -39,22 +39,23 @@
 **
 ****************************************************************************/
 
-package org.qtproject.qt5.android.accessibility;
+#ifndef QACCESSIBLEBRIDGEUTILS_H
+#define QACCESSIBLEBRIDGEUTILS_H
 
-import android.graphics.Rect;
-import android.view.accessibility.AccessibilityNodeInfo;
+#ifndef QT_NO_ACCESSIBILITY
 
-class QtNativeAccessibility
-{
-    static native void setActive(boolean enable);
-    static native int[] childIdListForAccessibleObject(int objectId);
-    static native int parentId(int objectId);
-    static native String descriptionForAccessibleObject(int objectId);
-    static native Rect screenRect(int objectId);
-    static native int hitTest(float x, float y);
-    static native boolean clickAction(int objectId);
-    static native boolean scrollForward(int objectId);
-    static native boolean scrollBackward(int objectId);
+#include <QtCore/qstringlist.h>
+#include <QtGui/qaccessible.h>
 
-    static native boolean populateNode(int objectId, AccessibilityNodeInfo node);
+QT_BEGIN_NAMESPACE
+
+namespace QAccessibleBridgeUtils {
+    QStringList effectiveActionNames(QAccessibleInterface *iface);
+    bool performEffectiveAction(QAccessibleInterface *iface, const QString &actionName);
 }
+
+QT_END_NAMESPACE
+
+#endif
+
+#endif //QACCESSIBLEBRIDGEUTILS_H

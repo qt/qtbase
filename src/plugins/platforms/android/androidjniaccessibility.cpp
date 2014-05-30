@@ -43,10 +43,12 @@
 #include "androidjnimain.h"
 #include "qandroidplatformintegration.h"
 #include "qpa/qplatformaccessibility.h"
+#include <QtPlatformSupport/private/qaccessiblebridgeutils_p.h>
 #include "qguiapplication.h"
 #include "qwindow.h"
 #include "qrect.h"
 #include "QtGui/qaccessible.h"
+#include <QtCore/qmath.h>
 
 #include "qdebug.h"
 
@@ -64,6 +66,7 @@ namespace QtAndroidAccessibility
     static jmethodID m_setEnabledMethodID = 0;
     static jmethodID m_setFocusableMethodID = 0;
     static jmethodID m_setFocusedMethodID = 0;
+    static jmethodID m_setScrollableMethodID = 0;
     static jmethodID m_setTextSelectionMethodID = 0;
     static jmethodID m_setVisibleToUserMethodID = 0;
 
@@ -166,6 +169,18 @@ namespace QtAndroidAccessibility
         return false;
     }
 
+    static jboolean scrollForward(JNIEnv */*env*/, jobject /*thiz*/, jint objectId)
+    {
+        QAccessibleInterface *iface = interfaceFromId(objectId);
+        return QAccessibleBridgeUtils::performEffectiveAction(iface, QAccessibleActionInterface::increaseAction());
+    }
+
+    static jboolean scrollBackward(JNIEnv */*env*/, jobject /*thiz*/, jint objectId)
+    {
+        QAccessibleInterface *iface = interfaceFromId(objectId);
+        return QAccessibleBridgeUtils::performEffectiveAction(iface, QAccessibleActionInterface::decreaseAction());
+    }
+
 
 #define FIND_AND_CHECK_CLASS(CLASS_NAME) \
 clazz = env->FindClass(CLASS_NAME); \
@@ -199,6 +214,11 @@ if (!clazz) { \
             return false;
         }
         QAccessible::State state = iface->state();
+        const QStringList actions = QAccessibleBridgeUtils::effectiveActionNames(iface);
+        const bool hasClickableAction = actions.contains(QAccessibleActionInterface::pressAction())
+                                        || actions.contains(QAccessibleActionInterface::toggleAction());
+        const bool hasIncreaseAction = actions.contains(QAccessibleActionInterface::increaseAction());
+        const bool hasDecreaseAction = actions.contains(QAccessibleActionInterface::decreaseAction());
 
         // try to fill in the text property, this is what the screen reader reads
         QString desc = iface->text(QAccessible::Value);
@@ -216,21 +236,26 @@ if (!clazz) { \
         }
 
         env->CallVoidMethod(node, m_setEnabledMethodID, !state.disabled);
+        env->CallVoidMethod(node, m_setCheckableMethodID, (bool)state.checkable);
         env->CallVoidMethod(node, m_setCheckedMethodID, (bool)state.checked);
         env->CallVoidMethod(node, m_setFocusableMethodID, (bool)state.focusable);
         env->CallVoidMethod(node, m_setFocusedMethodID, (bool)state.focused);
-        env->CallVoidMethod(node, m_setCheckableMethodID, (bool)state.checkable);
         env->CallVoidMethod(node, m_setVisibleToUserMethodID, !state.invisible);
+        env->CallVoidMethod(node, m_setScrollableMethodID, hasIncreaseAction || hasDecreaseAction);
+        env->CallVoidMethod(node, m_setClickableMethodID, hasClickableAction);
 
-        if (iface->actionInterface()) {
-            QStringList actions = iface->actionInterface()->actionNames();
-            bool clickable = actions.contains(QAccessibleActionInterface::pressAction());
-            bool toggle = actions.contains(QAccessibleActionInterface::toggleAction());
-            if (clickable || toggle) {
-                env->CallVoidMethod(node, m_setClickableMethodID, (bool)clickable);
-                env->CallVoidMethod(node, m_addActionMethodID, (int)16);    // ACTION_CLICK defined in AccessibilityNodeInfo
-            }
-        }
+        // Add ACTION_CLICK
+        if (hasClickableAction)
+            env->CallVoidMethod(node, m_addActionMethodID, (int)16);    // ACTION_CLICK defined in AccessibilityNodeInfo
+
+        // Add ACTION_SCROLL_FORWARD
+        if (hasIncreaseAction)
+            env->CallVoidMethod(node, m_addActionMethodID, (int)4096);    // ACTION_SCROLL_FORWARD defined in AccessibilityNodeInfo
+
+        // Add ACTION_SCROLL_BACKWARD
+        if (hasDecreaseAction)
+            env->CallVoidMethod(node, m_addActionMethodID, (int)8192);    // ACTION_SCROLL_BACKWARD defined in AccessibilityNodeInfo
+
 
         jstring jdesc = env->NewString((jchar*) desc.constData(), (jsize) desc.size());
         //CALL_METHOD(node, "setText", "(Ljava/lang/CharSequence;)V", jdesc)
@@ -248,6 +273,8 @@ if (!clazz) { \
         {"hitTest", "(FF)I", (void*)hitTest},
         {"populateNode", "(ILandroid/view/accessibility/AccessibilityNodeInfo;)Z", (void*)populateNode},
         {"clickAction", "(I)Z", (void*)clickAction},
+        {"scrollForward", "(I)Z", (void*)scrollForward},
+        {"scrollBackward", "(I)Z", (void*)scrollBackward},
     };
 
 #define GET_AND_CHECK_STATIC_METHOD(VAR, CLASS, METHOD_NAME, METHOD_SIGNATURE) \
@@ -277,6 +304,7 @@ if (!clazz) { \
         GET_AND_CHECK_STATIC_METHOD(m_setEnabledMethodID, nodeInfoClass, "setEnabled", "(Z)V");
         GET_AND_CHECK_STATIC_METHOD(m_setFocusableMethodID, nodeInfoClass, "setFocusable", "(Z)V");
         GET_AND_CHECK_STATIC_METHOD(m_setFocusedMethodID, nodeInfoClass, "setFocused", "(Z)V");
+        GET_AND_CHECK_STATIC_METHOD(m_setScrollableMethodID, nodeInfoClass, "setScrollable", "(Z)V");
         GET_AND_CHECK_STATIC_METHOD(m_setTextSelectionMethodID, nodeInfoClass, "setTextSelection", "(II)V");
         GET_AND_CHECK_STATIC_METHOD(m_setVisibleToUserMethodID, nodeInfoClass, "setVisibleToUser", "(Z)V");
 
