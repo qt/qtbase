@@ -1023,6 +1023,11 @@ public class ExtractStyle {
 
     public JSONObject extractTextAppearanceInformations(String styleName, String qtClass, AttributeSet attribSet, int textAppearance )
     {
+        return extractTextAppearanceInformations(styleName, qtClass, attribSet, textAppearance, -1);
+    }
+
+    public JSONObject extractTextAppearanceInformations(String styleName, String qtClass, AttributeSet attribSet, int textAppearance, int styleId)
+    {
         JSONObject json = new JSONObject();
         try
         {
@@ -1035,8 +1040,10 @@ public class ExtractStyle {
             int styleIndex = -1;
             boolean allCaps = false;
 
-            Class<?> attrClass= Class.forName("android.R$attr");
-            int styleId = attrClass.getDeclaredField(styleName).getInt(null);
+            if (-1==styleId) {
+                Class<?> attrClass= Class.forName("android.R$attr");
+                styleId = attrClass.getDeclaredField(styleName).getInt(null);
+            }
 
             extractViewInformations(styleName, styleId, json, qtClass, attribSet);
 
@@ -1393,6 +1400,40 @@ public class ExtractStyle {
         }
     }
 
+    void extractSwitch(SimpleJsonWriter jsonWriter, String styleName, String qtClass)
+    {
+        JSONObject json = new JSONObject();
+        try {
+            Class<?> attrClass = Class.forName("com.android.internal.R$attr");
+            int styleId = attrClass.getDeclaredField(styleName).getInt(null);
+
+            int[] switchAttrs = (int[]) styleableClass.getDeclaredField("Switch").get(null);
+            TypedArray a = m_theme.obtainStyledAttributes(null, switchAttrs, styleId, 0);
+
+            Drawable thumb = a.getDrawable(getField(styleableClass,"Switch_thumb"));
+            if (thumb != null)
+                json.put("Switch_thumb", getDrawable(thumb, styleName + "_Switch_thumb"));
+
+            Drawable track = a.getDrawable(getField(styleableClass,"Switch_track"));
+            if (track != null)
+                json.put("Switch_track", getDrawable(track, styleName + "_Switch_track"));
+
+            int textAppearance = a.getResourceId(styleableClass.getDeclaredField("Switch_switchTextAppearance").getInt(null), -1);
+            json.put("Switch_switchTextAppearance", extractTextAppearanceInformations(styleName, null, null, textAppearance, styleId));
+
+            json.put("Switch_textOn", a.getText(getField(styleableClass, "Switch_textOn")));
+            json.put("Switch_textOff", a.getText(getField(styleableClass, "Switch_textOff")));
+            json.put("Switch_switchMinWidth", a.getDimensionPixelSize(getField(styleableClass, "Switch_switchMinWidth"), 0));
+            json.put("Switch_switchPadding", a.getDimensionPixelSize(getField(styleableClass, "Switch_switchPadding"), 0));
+            json.put("Switch_thumbTextPadding", a.getDimensionPixelSize(getField(styleableClass, "Switch_thumbTextPadding"), 0));
+
+            a.recycle();
+            jsonWriter.name(styleName).value(json);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     JSONObject extractCheckedTextView(AttributeSet attribSet, String itemName)
     {
         JSONObject json = extractTextAppearanceInformations("textViewStyle", itemName, attribSet, -1);
@@ -1483,6 +1524,9 @@ public class ExtractStyle {
               extractProgressBar(jsonWriter, "progressBarStyleSmall", null);
               extractProgressBar(jsonWriter, "progressBarStyle", null);
               extractAbsSeekBar(jsonWriter, "seekBarStyle", "QSlider");
+              if (Build.VERSION.SDK_INT > 13) {
+                  extractSwitch(jsonWriter, "switchStyle", null);
+              }
               extractCompoundButton(jsonWriter, "checkboxStyle", "QCheckBox");
               jsonWriter.name("editTextStyle").value(extractTextAppearanceInformations("editTextStyle", "QLineEdit", null, -1));
               extractCompoundButton(jsonWriter, "radioButtonStyle", "QRadioButton");
