@@ -368,8 +368,10 @@ QString QFileIconProvider::type(const QFileInfo &info) const
     if (info.isRoot())
         return QApplication::translate("QFileDialog", "Drive");
     if (info.isFile()) {
-        if (!info.suffix().isEmpty())
-            return info.suffix() + QLatin1Char(' ') + QApplication::translate("QFileDialog", "File");
+        if (!info.suffix().isEmpty()) {
+            //: %1 is a file name suffix, for example txt
+            return QApplication::translate("QFileDialog", "%1 File").arg(info.suffix());
+        }
         return QApplication::translate("QFileDialog", "File");
     }
 
