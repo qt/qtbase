@@ -75,7 +75,7 @@ typedef struct
 typedef struct
 {
     quint16 idReserved;   // Reserved
-    quint16 idType;       // resource type (1 for icons)
+    quint16 idType;       // resource type (1 for icons, 2 for cursors)
     quint16 idCount;      // how many images?
     ICONDIRENTRY    idEntries[1]; // the entries for each image
 } ICONDIR, *LPICONDIR;
@@ -275,10 +275,10 @@ bool ICOReader::canRead(QIODevice *iodev)
                 readBytes += ICONDIRENTRY_SIZE;
                 // ICO format does not have a magic identifier, so we read 6 different values, which will hopefully be enough to identify the file.
                 if (   ikonDir.idReserved == 0
-                    && ikonDir.idType == 1
+                    && (ikonDir.idType == 1 || ikonDir.idType == 2)
                     && ikonDir.idEntries[0].bReserved == 0
-                    && ikonDir.idEntries[0].wPlanes <= 1
-                    && ikonDir.idEntries[0].wBitCount <= 32     // Bits per pixel
+                    && (ikonDir.idEntries[0].wPlanes <= 1 || ikonDir.idType == 2)
+                    && (ikonDir.idEntries[0].wBitCount <= 32 || ikonDir.idType == 2)     // Bits per pixel
                     && ikonDir.idEntries[0].dwBytesInRes >= 40  // Must be over 40, since sizeof (infoheader) == 40
                     ) {
                     isProbablyICO = true;
@@ -339,7 +339,7 @@ bool ICOReader::readHeader()
     if (iod && !headerRead) {
         startpos = iod->pos();
         if (readIconDir(iod, &iconDir)) {
-            if (iconDir.idReserved == 0 || iconDir.idType == 1)
+            if (iconDir.idReserved == 0 && (iconDir.idType == 1 || iconDir.idType == 2))
             headerRead = true;
         }
     }

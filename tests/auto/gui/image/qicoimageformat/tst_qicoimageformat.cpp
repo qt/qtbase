@@ -111,9 +111,17 @@ void tst_QIcoImageFormat::cleanupTestCase()
 
 void tst_QIcoImageFormat::format()
 {
-    QImageReader reader(m_IconPath + "/valid/35FLOPPY.ICO", "ico");
-    QByteArray fmt = reader.format();
-    QCOMPARE(const_cast<const char*>(fmt.data()), "ico" );
+    {
+        QImageReader reader(m_IconPath + "/valid/35FLOPPY.ICO", "ico");
+        QByteArray fmt = reader.format();
+        QCOMPARE(const_cast<const char*>(fmt.data()), "ico" );
+    }
+
+    {
+        QImageReader reader(m_IconPath + "/valid/yellow.cur", "ico");
+        QByteArray fmt = reader.format();
+        QCOMPARE(const_cast<const char*>(fmt.data()), "ico" );
+    }
 }
 
 void tst_QIcoImageFormat::canRead_data()
@@ -133,6 +141,7 @@ void tst_QIcoImageFormat::canRead_data()
     QTest::newRow("103x16px, 24BPP") << "valid/trolltechlogo_tiny.ico" << 1;
     QTest::newRow("includes 32BPP w/alpha") << "valid/semitransparent.ico" << 1;
     QTest::newRow("PNG compression") << "valid/Qt.ico" << 1;
+    QTest::newRow("CUR file") << "valid/yellow.cur" << 1;
 }
 
 void tst_QIcoImageFormat::canRead()
@@ -203,7 +212,7 @@ void tst_QIcoImageFormat::imageCount_data()
     QTest::newRow("invalid floppy (first 8 bytes = 0xff)") << "invalid/35floppy.ico" << 0;
     QTest::newRow("includes 32BPP w/alpha") << "valid/semitransparent.ico" << 9;
     QTest::newRow("PNG compression") << "valid/Qt.ico" << 4;
-
+    QTest::newRow("CUR file") << "valid/yellow.cur" << 1;
 }
 
 void tst_QIcoImageFormat::imageCount()
@@ -231,6 +240,7 @@ void tst_QIcoImageFormat::jumpToNextImage_data()
     QTest::newRow("16px16c, 32px32c, 32px256c 2") << "valid/WORLDH.ico" << 3;
     QTest::newRow("includes 32BPP w/alpha") << "valid/semitransparent.ico" << 9;
     QTest::newRow("PNG compression") << "valid/Qt.ico" << 4;
+    QTest::newRow("CUR file") << "valid/yellow.cur" << 1;
 }
 
 void tst_QIcoImageFormat::jumpToNextImage()
@@ -281,6 +291,7 @@ void tst_QIcoImageFormat::nextImageDelay_data()
     QTest::newRow("invalid floppy (first 8 bytes = 0xff)") << "invalid/35floppy.ico" << -1;
     QTest::newRow("includes 32BPP w/alpha") << "valid/semitransparent.ico" << 9;
     QTest::newRow("PNG compression") << "valid/Qt.ico" << 4;
+    QTest::newRow("CUR file") << "valid/yellow.cur" << 1;
 }
 
 void tst_QIcoImageFormat::nextImageDelay()

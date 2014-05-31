@@ -47,7 +47,7 @@ QT_BEGIN_NAMESPACE
 
 QImageIOPlugin::Capabilities QICOPlugin::capabilities(QIODevice *device, const QByteArray &format) const
 {
-    if (format == "ico")
+    if (format == "ico" || format == "cur")
         return Capabilities(CanRead | CanWrite);
     if (!format.isEmpty())
         return 0;
