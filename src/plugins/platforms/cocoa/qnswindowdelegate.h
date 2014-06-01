@@ -46,7 +46,7 @@
 
 #include "qcocoawindow.h"
 
-@interface QNSWindowDelegate : NSObject <NSWindowDelegate>
+@interface QT_MANGLE_NAMESPACE(QNSWindowDelegate) : NSObject <NSWindowDelegate>
 {
     QCocoaWindow *m_cocoaWindow;
 }
@@ -61,5 +61,7 @@
 - (BOOL)windowShouldZoom:(NSWindow *)window toFrame:(NSRect)newFrame;
 
 @end
+
+QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSWindowDelegate);
 
 #endif // QNSWINDOWDELEGATE_H

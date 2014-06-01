@@ -100,13 +100,14 @@
 
 QT_USE_NAMESPACE
 
-@interface NotificationReceiver : NSObject {
+@interface QT_MANGLE_NAMESPACE(NotificationReceiver) : NSObject {
 QMacStylePrivate *mPrivate;
 }
 - (id)initWithPrivate:(QMacStylePrivate *)priv;
 - (void)scrollBarStyleDidChange:(NSNotification *)notification;
 @end
 
+QT_NAMESPACE_ALIAS_OBJC_CLASS(NotificationReceiver);
 
 @implementation NotificationReceiver
 - (id)initWithPrivate:(QMacStylePrivate *)priv
