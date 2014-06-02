@@ -261,6 +261,63 @@ public class ExtractStyle {
     final int defaultBackgroundColor;
     final int defaultTextColor;
 
+    class SimpleJsonWriter
+    {
+        private OutputStreamWriter m_writer;
+        private boolean m_addComma = false;
+        private int m_indentLevel = 0;
+        public SimpleJsonWriter(String filePath) throws FileNotFoundException
+        {
+            m_writer = new OutputStreamWriter(new FileOutputStream(filePath));
+        }
+
+        public void close() throws IOException
+        {
+            m_writer.close();
+        }
+
+        private void writeIndent() throws IOException
+        {
+           m_writer.write(" ", 0, m_indentLevel);
+        }
+
+        SimpleJsonWriter beginObject() throws IOException
+        {
+            writeIndent();
+            m_writer.write("{\n");
+            ++m_indentLevel;
+            m_addComma = false;
+            return this;
+        }
+
+        SimpleJsonWriter endObject() throws IOException
+        {
+            m_writer.write("\n");
+            writeIndent();
+            m_writer.write("}\n");
+            --m_indentLevel;
+            m_addComma = false;
+            return this;
+        }
+
+        SimpleJsonWriter name(String name) throws IOException
+        {
+            if (m_addComma) {
+                m_writer.write(",\n");
+            }
+            writeIndent();
+            m_writer.write(JSONObject.quote(name) + ": ");
+            m_addComma = true;
+            return this;
+        }
+
+        SimpleJsonWriter value(JSONObject value) throws IOException
+        {
+            m_writer.write(value.toString());
+            return this;
+        }
+    }
+
     class FakeCanvas extends Canvas {
         int[] chunkData = null;
         class Size {
@@ -1232,7 +1289,7 @@ public class ExtractStyle {
 
     }
 
-    void extractCompoundButton(JSONObject parentObject, String styleName, String qtClass)
+    void extractCompoundButton(SimpleJsonWriter jsonWriter, String styleName, String qtClass)
     {
         JSONObject json = extractTextAppearanceInformations(styleName, qtClass, null, -1);
         Class<?> attrClass;
@@ -1249,7 +1306,7 @@ public class ExtractStyle {
                 json.put("CompoundButton_button", getDrawable(d, styleName + "_CompoundButton_button"));
 
             a.recycle();
-            parentObject.put(styleName, json);
+            jsonWriter.name(styleName).value(json);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1295,18 +1352,18 @@ public class ExtractStyle {
         }
     }
 
-    void extractProgressBar(JSONObject parentObject, String styleName, String qtClass)
+    void extractProgressBar(SimpleJsonWriter writer, String styleName, String qtClass)
     {
         JSONObject json = extractTextAppearanceInformations(styleName, qtClass, null, -1);
         try {
             extractProgressBarInfo(json, styleName);
-            parentObject.put(styleName, json);
-        } catch (JSONException e) {
+            writer.name(styleName).value(json);
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    void extractAbsSeekBar(JSONObject parentObject, String styleName, String qtClass)
+    void extractAbsSeekBar(SimpleJsonWriter jsonWriter, String styleName, String qtClass)
     {
         JSONObject json = extractTextAppearanceInformations(styleName, qtClass, null, -1);
         extractProgressBarInfo(json, styleName);
@@ -1330,7 +1387,7 @@ public class ExtractStyle {
             }
 
             a.recycle();
-            parentObject.put(styleName, json);
+            jsonWriter.name(styleName).value(json);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1383,16 +1440,16 @@ public class ExtractStyle {
         return null;
     }
 
-    private void extractItemsStyle(JSONObject json) {
+    private void extractItemsStyle(SimpleJsonWriter jsonWriter) {
         try
         {
-            json.put("simple_list_item",extractItemStyle(android.R.layout.simple_list_item_1, "simple_list_item", android.R.style.TextAppearance_Large));
-            json.put("simple_list_item_checked",extractItemStyle(android.R.layout.simple_list_item_checked, "simple_list_item_checked", android.R.style.TextAppearance_Large));
-            json.put("simple_list_item_multiple_choice",extractItemStyle(android.R.layout.simple_list_item_multiple_choice, "simple_list_item_multiple_choice", android.R.style.TextAppearance_Large));
-            json.put("simple_list_item_single_choice",extractItemStyle(android.R.layout.simple_list_item_single_choice, "simple_list_item_single_choice", android.R.style.TextAppearance_Large));
-            json.put("simple_spinner_item",extractItemStyle(android.R.layout.simple_spinner_item, "simple_spinner_item", -1));
-            json.put("simple_spinner_dropdown_item",extractItemStyle(android.R.layout.simple_spinner_dropdown_item, "simple_spinner_dropdown_item",android.R.style.TextAppearance_Large));
-            json.put("simple_dropdown_item_1line",extractItemStyle(android.R.layout.simple_dropdown_item_1line, "simple_dropdown_item_1line",android.R.style.TextAppearance_Large));
+            jsonWriter.name("simple_list_item").value(extractItemStyle(android.R.layout.simple_list_item_1, "simple_list_item", android.R.style.TextAppearance_Large));
+            jsonWriter.name("simple_list_item_checked").value(extractItemStyle(android.R.layout.simple_list_item_checked, "simple_list_item_checked", android.R.style.TextAppearance_Large));
+            jsonWriter.name("simple_list_item_multiple_choice").value(extractItemStyle(android.R.layout.simple_list_item_multiple_choice, "simple_list_item_multiple_choice", android.R.style.TextAppearance_Large));
+            jsonWriter.name("simple_list_item_single_choice").value(extractItemStyle(android.R.layout.simple_list_item_single_choice, "simple_list_item_single_choice", android.R.style.TextAppearance_Large));
+            jsonWriter.name("simple_spinner_item").value(extractItemStyle(android.R.layout.simple_spinner_item, "simple_spinner_item", -1));
+            jsonWriter.name("simple_spinner_dropdown_item").value(extractItemStyle(android.R.layout.simple_spinner_dropdown_item, "simple_spinner_dropdown_item",android.R.style.TextAppearance_Large));
+            jsonWriter.name("simple_dropdown_item_1line").value(extractItemStyle(android.R.layout.simple_dropdown_item_1line, "simple_dropdown_item_1line",android.R.style.TextAppearance_Large));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1414,29 +1471,34 @@ public class ExtractStyle {
         defaultTextColor = array.getColor(1, 0xFFFFFF);
         array.recycle();
 
-        JSONObject json = new JSONObject();
-        try {
-            json.put("buttonStyle", extractTextAppearanceInformations("buttonStyle", "QPushButton", null, -1));
-            json.put("spinnerStyle", extractTextAppearanceInformations("spinnerStyle", "QComboBox", null, -1));
-            extractProgressBar(json, "progressBarStyleHorizontal", "QProgressBar");
-            extractProgressBar(json, "progressBarStyleLarge", null);
-            extractProgressBar(json, "progressBarStyleSmall", null);
-            extractProgressBar(json, "progressBarStyle", null);
-            extractAbsSeekBar(json, "seekBarStyle", "QSlider");
-            extractCompoundButton(json, "checkboxStyle", "QCheckBox");
-            json.put("editTextStyle", extractTextAppearanceInformations("editTextStyle", "QLineEdit", null, -1));
-            extractCompoundButton(json, "radioButtonStyle", "QRadioButton");
-            json.put("textViewStyle", extractTextAppearanceInformations("textViewStyle", "QWidget", null, -1));
-            json.put("scrollViewStyle", extractTextAppearanceInformations("scrollViewStyle", "QAbstractScrollArea", null, -1));
-            extractItemsStyle(json);
-            extractCompoundButton(json, "buttonStyleToggle", null);
-            OutputStreamWriter jsonWriter;
-            jsonWriter = new OutputStreamWriter(new FileOutputStream(m_extractPath+"style.json"));
-            jsonWriter.write(json.toString(1));
-            jsonWriter.close();
-//            MinistroActivity.nativeChmode(m_extractPath+"style.json", 0644);
-        } catch (Exception e) {
-            e.printStackTrace();
+        try
+        {
+          SimpleJsonWriter jsonWriter = new SimpleJsonWriter(m_extractPath+"style.json");
+          jsonWriter.beginObject();
+          try {
+              jsonWriter.name("buttonStyle").value(extractTextAppearanceInformations("buttonStyle", "QPushButton", null, -1));
+              jsonWriter.name("spinnerStyle").value(extractTextAppearanceInformations("spinnerStyle", "QComboBox", null, -1));
+              extractProgressBar(jsonWriter, "progressBarStyleHorizontal", "QProgressBar");
+              extractProgressBar(jsonWriter, "progressBarStyleLarge", null);
+              extractProgressBar(jsonWriter, "progressBarStyleSmall", null);
+              extractProgressBar(jsonWriter, "progressBarStyle", null);
+              extractAbsSeekBar(jsonWriter, "seekBarStyle", "QSlider");
+              extractCompoundButton(jsonWriter, "checkboxStyle", "QCheckBox");
+              jsonWriter.name("editTextStyle").value(extractTextAppearanceInformations("editTextStyle", "QLineEdit", null, -1));
+              extractCompoundButton(jsonWriter, "radioButtonStyle", "QRadioButton");
+              jsonWriter.name("textViewStyle").value(extractTextAppearanceInformations("textViewStyle", "QWidget", null, -1));
+              jsonWriter.name("scrollViewStyle").value(extractTextAppearanceInformations("scrollViewStyle", "QAbstractScrollArea", null, -1));
+              extractItemsStyle(jsonWriter);
+              extractCompoundButton(jsonWriter, "buttonStyleToggle", null);
+          } catch (Exception e) {
+              e.printStackTrace();
+          }
+          jsonWriter.endObject();
+          jsonWriter.close();
+//          MinistroActivity.nativeChmode(m_extractPath+"style.json", 0644);
+        }
+        catch (Exception e) {
+          e.printStackTrace();
         }
     }
 }
