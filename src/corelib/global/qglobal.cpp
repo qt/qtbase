@@ -1922,6 +1922,8 @@ QSysInfo::WinVersion QSysInfo::windowsVersion()
             winver = QSysInfo::WV_WINDOWS7;
         else if (override == "WINDOWS8")
             winver = QSysInfo::WV_WINDOWS8;
+        else if (override == "WINDOWS8_1")
+            winver = QSysInfo::WV_WINDOWS8_1;
     }
 #endif
 #endif // !Q_OS_WINRT
