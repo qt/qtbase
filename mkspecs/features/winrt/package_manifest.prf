@@ -61,6 +61,7 @@
     # Provide the C-runtime dependency
     equals(TEMPLATE, "app") {
         VCLIBS = Microsoft.VCLibs.$$replace(MSVC_VER, \\., ).00
+        winphone: VCLIBS = $${VCLIBS}.Phone
         CONFIG(debug, debug|release): \
             WINRT_MANIFEST.dependencies += $${VCLIBS}.Debug
         else: \
