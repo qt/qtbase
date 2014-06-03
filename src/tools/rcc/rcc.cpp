@@ -968,11 +968,12 @@ bool RCCResourceLibrary::writeInitializer()
 {
     if (m_format == C_Code) {
         //write("\nQT_BEGIN_NAMESPACE\n");
-        QString initName = m_initName;
-        if (!initName.isEmpty()) {
-            initName.prepend(QLatin1Char('_'));
-            initName.replace(QRegExp(QLatin1String("[^a-zA-Z0-9_]")), QLatin1String("_"));
+        QString initNameStr = m_initName;
+        if (!initNameStr.isEmpty()) {
+            initNameStr.prepend(QLatin1Char('_'));
+            initNameStr.replace(QRegExp(QLatin1String("[^a-zA-Z0-9_]")), QLatin1String("_"));
         }
+        QByteArray initName = initNameStr.toLatin1();
 
         //init
         if (m_useNameSpace)
@@ -987,10 +988,10 @@ bool RCCResourceLibrary::writeInitializer()
         }
         if (m_useNameSpace)
             writeString("QT_END_NAMESPACE\n\n\n");
-        QString initResources = QLatin1String("qInitResources");
+        QByteArray initResources = "qInitResources";
         initResources += initName;
         writeString("int ");
-        writeMangleNamespaceFunction(initResources.toLatin1());
+        writeMangleNamespaceFunction(initResources);
         writeString("()\n{\n");
 
         if (m_root) {
@@ -1002,14 +1003,14 @@ bool RCCResourceLibrary::writeInitializer()
         writeString("    return 1;\n");
         writeString("}\n\n");
         writeString("Q_CONSTRUCTOR_FUNCTION(");
-        writeMangleNamespaceFunction(initResources.toLatin1());
+        writeMangleNamespaceFunction(initResources);
         writeString(")\n\n");
 
         //cleanup
-        QString cleanResources = QLatin1String("qCleanupResources");
+        QByteArray cleanResources = "qCleanupResources";
         cleanResources += initName;
         writeString("int ");
-        writeMangleNamespaceFunction(cleanResources.toLatin1());
+        writeMangleNamespaceFunction(cleanResources);
         writeString("()\n{\n");
         if (m_root) {
             writeString("    ");
@@ -1020,7 +1021,7 @@ bool RCCResourceLibrary::writeInitializer()
         writeString("    return 1;\n");
         writeString("}\n\n");
         writeString("Q_DESTRUCTOR_FUNCTION(");
-        writeMangleNamespaceFunction(cleanResources.toLatin1());
+        writeMangleNamespaceFunction(cleanResources);
         writeString(")\n\n");
     } else if (m_format == Binary) {
         int i = 4;
