@@ -1110,6 +1110,14 @@ Q_GUI_EXPORT QImage qt_gl_read_framebuffer(const QSize &size, bool alpha_format,
 
     Will try to return a premultiplied ARBG32 or RGB32 image. Since 5.2 it will fall back to
     a premultiplied RGBA8888 or RGBx8888 image when reading to ARGB32 is not supported.
+
+    For multisampled framebuffer objects the samples are resolved using the
+    \c{GL_EXT_framebuffer_blit} extension. If the extension is not available, the contents
+    of the returned image is undefined.
+
+    For singlesampled framebuffers the contents is retrieved via \c glReadPixels. This is
+    a potentially expensive and inefficient operation. Therefore it is recommended that
+    this function is used as seldom as possible.
 */
 QImage QOpenGLFramebufferObject::toImage() const
 {
@@ -1117,6 +1125,19 @@ QImage QOpenGLFramebufferObject::toImage() const
     if (!d->valid)
         return QImage();
 
+    QOpenGLContext *ctx = QOpenGLContext::currentContext();
+    if (!ctx) {
+        qWarning("QOpenGLFramebufferObject::toImage() called without a current context");
+        return QImage();
+    }
+
+    GLuint prevFbo = 0;
+    ctx->functions()->glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint *) &prevFbo);
+
+    if (prevFbo != d->fbo())
+        const_cast<QOpenGLFramebufferObject *>(this)->bind();
+
+    QImage image;
     // qt_gl_read_framebuffer doesn't work on a multisample FBO
     if (format().samples() != 0) {
         QOpenGLFramebufferObject temp(size(), QOpenGLFramebufferObjectFormat());
@@ -1124,15 +1145,13 @@ QImage QOpenGLFramebufferObject::toImage() const
         QRect rect(QPoint(0, 0), size());
         blitFramebuffer(&temp, rect, const_cast<QOpenGLFramebufferObject *>(this), rect);
 
-        return temp.toImage();
+        image = temp.toImage();
+    } else {
+        image = qt_gl_read_framebuffer(d->size, format().internalTextureFormat() != GL_RGB, true);
     }
 
-    bool wasBound = isBound();
-    if (!wasBound)
-        const_cast<QOpenGLFramebufferObject *>(this)->bind();
-    QImage image = qt_gl_read_framebuffer(d->size, format().internalTextureFormat() != GL_RGB, true);
-    if (!wasBound)
-        const_cast<QOpenGLFramebufferObject *>(this)->release();
+    if (prevFbo != d->fbo())
+        ctx->functions()->glBindFramebuffer(GL_FRAMEBUFFER, prevFbo);
 
     return image;
 }
@@ -1204,6 +1223,8 @@ QOpenGLFramebufferObject::Attachment QOpenGLFramebufferObject::attachment() cons
 
     This can be used to free or reattach the depth and stencil buffer
     attachments as needed.
+
+    \note This function alters the current framebuffer binding.
  */
 void QOpenGLFramebufferObject::setAttachment(QOpenGLFramebufferObject::Attachment attachment)
 {
@@ -1287,6 +1308,9 @@ void QOpenGLFramebufferObject::blitFramebuffer(QOpenGLFramebufferObject *target,
     If \a source or \a target is 0, the default framebuffer will be used
     instead of a framebuffer object as source or target respectively.
 
+    This function will have no effect unless hasOpenGLFramebufferBlit() returns
+    true.
+
     The \a buffers parameter should be a mask consisting of any combination of
     \c GL_COLOR_BUFFER_BIT, \c GL_DEPTH_BUFFER_BIT, and
     \c GL_STENCIL_BUFFER_BIT.  Any buffer type that is not present both
@@ -1303,10 +1327,7 @@ void QOpenGLFramebufferObject::blitFramebuffer(QOpenGLFramebufferObject *target,
     have different sizes. The sizes must also be the same if any of the
     framebuffer objects are multisample framebuffers.
 
-    Note that the scissor test will restrict the blit area if enabled.
-
-    This function will have no effect unless hasOpenGLFramebufferBlit() returns
-    true.
+    \note The scissor test will restrict the blit area if enabled.
 
     \sa hasOpenGLFramebufferBlit()
 */
@@ -1322,6 +1343,9 @@ void QOpenGLFramebufferObject::blitFramebuffer(QOpenGLFramebufferObject *target,
     QOpenGLExtensions extensions(ctx);
     if (!extensions.hasOpenGLExtension(QOpenGLExtensions::FramebufferBlit))
         return;
+
+    GLuint prevFbo = 0;
+    ctx->functions()->glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint *) &prevFbo);
 
     const int sx0 = sourceRect.left();
     const int sx1 = sourceRect.left() + sourceRect.width();
@@ -1339,6 +1363,8 @@ void QOpenGLFramebufferObject::blitFramebuffer(QOpenGLFramebufferObject *target,
     extensions.glBlitFramebuffer(sx0, sy0, sx1, sy1,
                                  tx0, ty0, tx1, ty1,
                                  buffers, filter);
+
+    ctx->functions()->glBindFramebuffer(GL_FRAMEBUFFER, prevFbo); // sets both READ and DRAW
 }
 
 QT_END_NAMESPACE
