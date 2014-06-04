@@ -593,6 +593,11 @@ void tst_QMessageBox::detailsText()
     QString text("This is the details text.");
     box.setDetailedText(text);
     QCOMPARE(box.detailedText(), text);
+    box.show();
+    QTest::qWaitForWindowExposed(&box);
+    // QTBUG-39334, the box should now have the default "Ok" button as well as
+    // the "Show Details.." button.
+    QCOMPARE(box.findChildren<QAbstractButton *>().size(), 2);
 }
 
 void tst_QMessageBox::detailsButtonText()
