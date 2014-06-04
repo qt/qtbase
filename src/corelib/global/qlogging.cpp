@@ -171,89 +171,15 @@ static inline void convert_to_wchar_t_elided(wchar_t *d, size_t space, const cha
 }
 #endif
 
-#if !defined(QT_NO_EXCEPTIONS)
-/*!
-    \internal
-    Uses a local buffer to output the message. Not locale safe + cuts off
-    everything after character 255, but will work in out of memory situations.
-    Stop the execution afterwards.
-*/
-static void qEmergencyOut(QtMsgType msgType, const char *msg, va_list ap) Q_DECL_NOEXCEPT
-{
-    char emergency_buf[256] = { '\0' };
-    emergency_buf[sizeof emergency_buf - 1] = '\0';
-#if defined(Q_OS_WIN) && defined(QT_BUILD_CORE_LIB) && (defined(Q_OS_WINCE) || defined(Q_OS_WINRT)) \
-    || defined(Q_CC_MSVC) && defined(QT_DEBUG) && defined(_DEBUG) && defined(_CRT_ERROR)
-    wchar_t emergency_bufL[sizeof emergency_buf];
-#endif
-
-    if (msg)
-        qvsnprintf(emergency_buf, sizeof emergency_buf - 1, msg, ap);
-
-#if defined(Q_OS_WIN) && defined(QT_BUILD_CORE_LIB)
-# if defined(Q_OS_WINCE) || defined(Q_OS_WINRT)
-    convert_to_wchar_t_elided(emergency_bufL, sizeof emergency_buf, emergency_buf);
-    OutputDebugStringW(emergency_bufL);
-# else
-    if (qWinLogToStderr()) {
-        fprintf(stderr, "%s\n", emergency_buf);
-        fflush(stderr);
-    } else {
-        OutputDebugStringA(emergency_buf);
-    }
-# endif
-#else
-    fprintf(stderr, "%s\n", emergency_buf);
-    fflush(stderr);
-#endif
-
-    if (isFatal(msgType)) {
-#if defined(Q_CC_MSVC) && defined(QT_DEBUG) && defined(_DEBUG) && defined(_CRT_ERROR)
-        // get the current report mode
-        int reportMode = _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_WNDW);
-        _CrtSetReportMode(_CRT_ERROR, reportMode);
-# ifndef Q_OS_WINCE // otherwise already converted to wchar_t above
-        convert_to_wchar_t_elided(emergency_bufL, sizeof emergency_buf, emergency_buf);
-# endif
-        int ret = _CrtDbgReportW(_CRT_ERROR, _CRT_WIDE(__FILE__), __LINE__,
-                                 _CRT_WIDE(QT_VERSION_STR),
-                                 emergency_bufL);
-        if (ret == 1)
-            _CrtDbgBreak();
-#endif
-
-#if (defined(Q_OS_UNIX) || defined(Q_CC_MINGW))
-        abort(); // trap; generates core dump
-#else
-        exit(1); // goodbye cruel world
-#endif
-    }
-}
-#endif
-
 /*!
     \internal
 */
 static void qt_message(QtMsgType msgType, const QMessageLogContext &context, const char *msg,
                        va_list ap, QString &buf)
 {
-#if !defined(QT_NO_EXCEPTIONS)
-    if (std::uncaught_exception()) {
-        qEmergencyOut(msgType, msg, ap);
-        return;
-    }
-#endif
-    if (msg) {
-        QT_TRY {
-            buf = QString().vsprintf(msg, ap);
-        } QT_CATCH(const std::bad_alloc &) {
-#if !defined(QT_NO_EXCEPTIONS)
-            qEmergencyOut(msgType, msg, ap);
-            // don't rethrow - we use qWarning and friends in destructors.
-            return;
-#endif
-        }
-    }
+
+    if (msg)
+        buf = QString().vsprintf(msg, ap);
     qt_message_print(msgType, context, buf);
 }
 
