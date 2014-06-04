@@ -2267,7 +2267,7 @@ QDBusConnectionPrivate::disconnectSignal(SignalHookHash::Iterator &it)
                     watchedServices.erase(sit);
                     disconnectSignal(dbusServiceString(), QString(), dbusInterfaceString(),
                                   QLatin1String("NameOwnerChanged"), QStringList() << hook.service, QString(),
-                                  this, SLOT(_q_serviceOwnerChanged(QString,QString,QString)));
+                                  this, SLOT(serviceOwnerChangedNoLock(QString,QString,QString)));
                 }
             }
         }
