@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -1330,6 +1330,13 @@
     QDoc expects to find stylesheets in the directory containing the
     \l qtgui.qdocconf file, and it will copy those specified to the output
     directory alongside the HTML pages.
+
+    \target HTML.tocdepth
+    \section1 HTML.tocdepth
+
+    The HTML.tocdepth variable defines how many document sections are printed in
+    the table of contents. Setting tocdepth to \c 0 disables the table of
+    contents while not setting the variable prints all document sections.
 
 */
 

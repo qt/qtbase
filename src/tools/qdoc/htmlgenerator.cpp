@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the tools applications of the Qt Toolkit.
@@ -169,6 +169,9 @@ void HtmlGenerator::initializeGenerator(const Config &config)
     noNavigationBar = config.getBool(HtmlGenerator::format() +
                                    Config::dot +
                                    HTMLGENERATOR_NONAVIGATIONBAR);
+    tocDepth = config.getInt(HtmlGenerator::format() +
+                              Config::dot +
+                              HTMLGENERATOR_TOCDEPTH);
 
     project = config.getString(CONFIG_PROJECT);
 
@@ -2243,6 +2246,10 @@ void HtmlGenerator::generateTableOfContents(const Node *node,
     if (toc.isEmpty() && !sections && !node->isModule())
         return;
 
+    //turn off table of contents if HTML.tocdepth is set to 0
+    if (tocDepth == 0)
+        return;
+
     QStringList sectionNumber;
     int detailsBase = 0;
 
@@ -2324,18 +2331,23 @@ void HtmlGenerator::generateTableOfContents(const Node *node,
                 sectionNumber.last() = QString::number(sectionNumber.last().toInt() + 1);
             }
         }
-        int numAtoms;
-        Text headingText = Text::sectionHeading(atom);
-        QString s = headingText.toString();
-        out() << "<li class=\"level"
-              << sectionNumber.size()
-              << "\">";
-        out() << "<a href=\""
-              << '#'
-              << Doc::canonicalTitle(s)
-              << "\">";
-        generateAtomList(headingText.firstAtom(), node, marker, true, numAtoms);
-        out() << "</a></li>\n";
+
+        //restrict the ToC depth to the one set by the HTML.tocdepth variable or
+        //print all levels if tocDepth is not set.
+        if (sectionNumber.size() <= tocDepth || tocDepth < 0) {
+            int numAtoms;
+            Text headingText = Text::sectionHeading(atom);
+            QString s = headingText.toString();
+            out() << "<li class=\"level"
+                  << sectionNumber.size()
+                  << "\">";
+            out() << "<a href=\""
+                  << '#'
+                  << Doc::canonicalTitle(s)
+                  << "\">";
+            generateAtomList(headingText.firstAtom(), node, marker, true, numAtoms);
+            out() << "</a></li>\n";
+        }
     }
     while (!sectionNumber.isEmpty()) {
         sectionNumber.removeLast();

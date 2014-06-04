@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the tools applications of the Qt Toolkit.
@@ -328,11 +328,14 @@ bool Config::getBool(const QString& var) const
   Looks up the configuration variable \a var in the string list
   map. Iterates through the string list found, interpreting each
   string in the list as an integer and adding it to a total sum.
-  Returns the sum.
+  Returns the sum or \c -1 if \a var is not set.
  */
 int Config::getInt(const QString& var) const
 {
     QStringList strs = getStringList(var);
+    if (strs.isEmpty())
+        return -1;
+
     QStringList::ConstIterator s = strs.constBegin();
     int sum = 0;
 

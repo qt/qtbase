@@ -2,6 +2,8 @@
 
 HTML.nonavigationbar      = "false"
 
+HTML.tocdepth = 2
+
 HTML.extraimages += template/images/arrow_bc.png \
                     template/images/home.png \
                     template/images/ico_out.png \
