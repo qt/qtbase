@@ -166,6 +166,7 @@ private slots:
 
     void testByteArray_data();
     void testByteArray();
+    void iniCodec();
 
 private:
     const bool m_canWriteNativeSystemSettings;
@@ -693,6 +694,28 @@ void tst_QSettings::testByteArray()
         QByteArray ret = settings.value("byteArray", data).toByteArray();
         QCOMPARE(ret, data);
     }
+}
+
+void tst_QSettings::iniCodec()
+{
+    {
+        QSettings settings("QtProject", "tst_qsettings");
+        settings.setIniCodec("cp1251");
+        QByteArray ba;
+        ba.resize(256);
+        for (int i = 0; i < ba.size(); i++)
+            ba[i] = i;
+        settings.setValue("array",ba);
+    }
+    {
+        QSettings settings("QtProject", "tst_qsettings");
+        settings.setIniCodec("cp1251");
+        QByteArray ba = settings.value("array").toByteArray();
+        QCOMPARE(ba.size(), 256);
+        for (int i = 0; i < ba.size(); i++)
+            QCOMPARE((uchar)ba.at(i), (uchar)i);
+    }
+
 }
 
 void tst_QSettings::testErrorHandling_data()

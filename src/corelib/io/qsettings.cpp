@@ -696,6 +696,9 @@ void QSettingsPrivate::iniEscapedString(const QString &str, QByteArray &result, 
 {
     bool needsQuotes = false;
     bool escapeNextIfDigit = false;
+    bool useCodec = codec && !str.startsWith(QLatin1String("@ByteArray("))
+                    && !str.startsWith(QLatin1String("@Variant("));
+
     int i;
     int startPos = result.size();
 
@@ -748,12 +751,12 @@ void QSettingsPrivate::iniEscapedString(const QString &str, QByteArray &result, 
             result += (char)ch;
             break;
         default:
-            if (ch <= 0x1F || (ch >= 0x7F && !codec)) {
+            if (ch <= 0x1F || (ch >= 0x7F && !useCodec)) {
                 result += "\\x";
                 result += QByteArray::number(ch, 16);
                 escapeNextIfDigit = true;
 #ifndef QT_NO_TEXTCODEC
-            } else if (codec) {
+            } else if (useCodec) {
                 // slow
                 result += codec->fromUnicode(str.at(i));
 #endif
