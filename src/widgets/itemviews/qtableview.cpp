@@ -1821,8 +1821,15 @@ QModelIndex QTableView::moveCursor(CursorAction cursorAction, Qt::KeyboardModifi
         return QModelIndex();
 
     QModelIndex result = d->model->index(logicalRow, logicalColumn, d->root);
-    if (!d->isRowHidden(logicalRow) && !d->isColumnHidden(logicalColumn) && d->isIndexEnabled(result))
+    if (!d->isRowHidden(logicalRow) && !d->isColumnHidden(logicalColumn) && d->isIndexEnabled(result)) {
+        if (d->hasSpans()) {
+            QSpanCollection::Span span = d->span(result.row(), result.column());
+            if (span.width() > 1 || span.height() > 1) {
+                result = d->model->sibling(span.top(), span.left(), result);
+            }
+        }
         return result;
+    }
 
     return QModelIndex();
 }
