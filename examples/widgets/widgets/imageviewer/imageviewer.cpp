@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -61,38 +61,60 @@ ImageViewer::ImageViewer()
     createActions();
     createMenus();
 
-    setWindowTitle(tr("Image Viewer"));
-    resize(500, 400);
+    resize(QGuiApplication::primaryScreen()->availableSize() * 3 / 5);
 }
+
 //! [0]
+//! [2]
+
+bool ImageViewer::loadFile(const QString &fileName)
+{
+    QImage image(fileName);
+    if (image.isNull()) {
+        QMessageBox::information(this, QGuiApplication::applicationDisplayName(),
+                                 tr("Cannot load %1.").arg(QDir::toNativeSeparators(fileName)));
+        setWindowFilePath(QString());
+        imageLabel->setPixmap(QPixmap());
+        imageLabel->adjustSize();
+        return false;
+    }
+//! [2] //! [3]
+    imageLabel->setPixmap(QPixmap::fromImage(image));
+//! [3] //! [4]
+    scaleFactor = 1.0;
+
+    printAct->setEnabled(true);
+    fitToWindowAct->setEnabled(true);
+    updateActions();
+
+    if (!fitToWindowAct->isChecked())
+        imageLabel->adjustSize();
+
+    setWindowFilePath(fileName);
+    return true;
+}
+
+//! [4]
+
+//! [2]
 
 //! [1]
 void ImageViewer::open()
-//! [1] //! [2]
 {
-    QString fileName = QFileDialog::getOpenFileName(this,
-                                    tr("Open File"), QDir::currentPath());
-    if (!fileName.isEmpty()) {
-        QImage image(fileName);
-        if (image.isNull()) {
-            QMessageBox::information(this, tr("Image Viewer"),
-                                     tr("Cannot load %1.").arg(fileName));
-            return;
-        }
-//! [2] //! [3]
-        imageLabel->setPixmap(QPixmap::fromImage(image));
-//! [3] //! [4]
-        scaleFactor = 1.0;
+    QStringList mimeTypeFilters;
+    foreach (const QByteArray &mimeTypeName, QImageReader::supportedMimeTypes())
+        mimeTypeFilters.append(mimeTypeName);
+    mimeTypeFilters.sort();
+    const QStringList picturesLocations = QStandardPaths::standardLocations(QStandardPaths::PicturesLocation);
+    QFileDialog dialog(this, tr("Open File"),
+                       picturesLocations.isEmpty() ? QDir::currentPath() : picturesLocations.first());
+    dialog.setAcceptMode(QFileDialog::AcceptOpen);
+    dialog.setMimeTypeFilters(mimeTypeFilters);
+    dialog.selectMimeTypeFilter("image/jpeg");
 
-        printAct->setEnabled(true);
-        fitToWindowAct->setEnabled(true);
-        updateActions();
-
-        if (!fitToWindowAct->isChecked())
-            imageLabel->adjustSize();
-    }
+    while (dialog.exec() == QDialog::Accepted && !loadFile(dialog.selectedFiles().first())) {}
 }
-//! [4]
+//! [1]
 
 //! [5]
 void ImageViewer::print()

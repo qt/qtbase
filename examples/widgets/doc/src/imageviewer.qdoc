@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -112,15 +112,19 @@
     {ImageViewer}'s appearance.
 
     \snippet widgets/imageviewer/imageviewer.cpp 1
+
+    In the \c open() slot, we show a file dialog to the user. We compile
+    a list of mime types for use as a filter by querying QImageReader
+    for the available mime type names.
+
+    We show the file dialog until a valid file name is entered or
+    the user cancels.
+
+    The function \c loadFile() is used to load the image.
+
     \snippet widgets/imageviewer/imageviewer.cpp 2
 
-    In the \c open() slot, we show a file dialog to the user. The
-    easiest way to create a QFileDialog is to use the static
-    convenience functions. QFileDialog::getOpenFileName() returns an
-    existing file selected by the user. If the user presses \uicontrol
-    Cancel, QFileDialog returns an empty string.
-
-    Unless the file name is a empty string, we check if the file's
+    In the \c loadFile() function, we check if the file's
     format is an image format by constructing a QImage which tries to
     load the image from the file. If the constructor returns a null
     image, we use a QMessageBox to alert the user.
@@ -135,7 +139,6 @@
     information message with an \uicontrol OK button (the default) is
     sufficient, since the message is part of a normal operation.
 
-    \snippet widgets/imageviewer/imageviewer.cpp 3
     \snippet widgets/imageviewer/imageviewer.cpp 4
 
     If the format is supported, we display the image in \c imageLabel
