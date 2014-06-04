@@ -1687,6 +1687,33 @@ public class ExtractStyle {
         }
     }
 
+    private void extractWindow(SimpleJsonWriter writer, String styleName) {
+        JSONObject json = new JSONObject();
+        try
+        {
+            Class<?> attrClass = Class.forName("android.R$attr");
+            int[] windowAttrs = (int[]) styleableClass.getDeclaredField("Window").get(null);
+
+            int backgroundId = attrClass.getDeclaredField("windowBackground").getInt(null);
+            TypedArray a = m_theme.obtainStyledAttributes(null, windowAttrs, backgroundId, 0);
+            Drawable background = a.getDrawable(getField(styleableClass, "Window_windowBackground"));
+            if (background != null)
+                json.put("Window_windowBackground", getDrawable(background, styleName + "_Window_windowBackground"));
+            a.recycle();
+
+            int frameId = attrClass.getDeclaredField("windowFrame").getInt(null);
+            a = m_theme.obtainStyledAttributes(null, windowAttrs, frameId, 0);
+            Drawable frame = a.getDrawable(getField(styleableClass, "Window_windowFrame"));
+            if (frame != null)
+                json.put("Window_windowFrame", getDrawable(frame, styleName + "_Window_windowFrame"));
+            a.recycle();
+
+            writer.name(styleName).value(json);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public ExtractStyle(Context context, String extractPath)
     {
 //        Log.i(MinistroService.TAG, "Extract " + extractPath);
@@ -1708,6 +1735,7 @@ public class ExtractStyle {
           SimpleJsonWriter jsonWriter = new SimpleJsonWriter(m_extractPath+"style.json");
           jsonWriter.beginObject();
           try {
+              extractWindow(jsonWriter, "windowStyle");
               jsonWriter.name("buttonStyle").value(extractTextAppearanceInformations("buttonStyle", "QPushButton", null, -1));
               jsonWriter.name("spinnerStyle").value(extractTextAppearanceInformations("spinnerStyle", "QComboBox", null, -1));
               extractProgressBar(jsonWriter, "progressBarStyleHorizontal", "QProgressBar");
