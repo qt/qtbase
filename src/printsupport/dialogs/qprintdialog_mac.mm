@@ -121,19 +121,22 @@ QT_USE_NAMESPACE
             if (dialog->maxPage() < dialog->toPage())
                 dialog->setFromTo(dialog->fromPage(), dialog->maxPage());
         }
-        // Keep us in sync with file output
-        PMDestinationType dest;
 
-        // If the user selected print to file, the session has been
-        // changed behind our back and our d->ep->session object is a
-        // dangling pointer. Update it based on the "current" session
+        // Keep us in sync with chosen destination
+        PMDestinationType dest;
         PMSessionGetDestinationType(session, settings, &dest);
         if (dest == kPMDestinationFile) {
+            // QTBUG-38820
+            // If user selected Print to File, leave OSX to generate the PDF,
+            // otherwise setting PdfFormat would prevent us showing dialog again.
+            // TODO Restore this when QTBUG-36112 is fixed.
+            /*
             QCFType<CFURLRef> file;
             PMSessionCopyDestinationLocation(session, settings, &file);
             UInt8 localFile[2048];  // Assuming there's a POSIX file system here.
             CFURLGetFileSystemRepresentation(file, true, localFile, sizeof(localFile));
             printer->setOutputFileName(QString::fromUtf8(reinterpret_cast<const char *>(localFile)));
+            */
         } else {
             PMPrinter macPrinter;
             PMSessionGetCurrentPrinter(session, &macPrinter);
