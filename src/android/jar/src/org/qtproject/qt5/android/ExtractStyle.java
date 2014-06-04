@@ -1496,6 +1496,41 @@ public class ExtractStyle {
         }
     }
 
+    void extractToolBar(SimpleJsonWriter writer, String styleName, String qtClass)
+    {
+        JSONObject json = extractTextAppearanceInformations(styleName, qtClass, null, -1);
+        try {
+            Class<?> attrClass = Class.forName("com.android.internal.R$attr");
+            int styleId = attrClass.getDeclaredField(styleName).getInt(null);
+
+            int[] styleAttrs = (int[]) styleableClass.getDeclaredField("ActionBar").get(null);
+            TypedArray a = m_theme.obtainStyledAttributes(null, styleAttrs, styleId, 0);
+
+            Drawable d = a.getDrawable(getField(styleableClass,"ActionBar_background"));
+            if (d != null)
+                json.put("ActionBar_background", getDrawable(d, styleName + "_ActionBar_background"));
+
+            d = a.getDrawable(getField(styleableClass,"ActionBar_backgroundStacked"));
+            if (d != null)
+                json.put("ActionBar_backgroundStacked", getDrawable(d, styleName + "_ActionBar_backgroundStacked"));
+
+            d = a.getDrawable(getField(styleableClass,"ActionBar_backgroundSplit"));
+            if (d != null)
+                json.put("ActionBar_backgroundSplit", getDrawable(d, styleName + "_ActionBar_backgroundSplit"));
+
+            d = a.getDrawable(getField(styleableClass,"ActionBar_divider"));
+            if (d != null)
+                json.put("ActionBar_divider", getDrawable(d, styleName + "_ActionBar_divider"));
+
+            json.put("ActionBar_itemPadding", a.getDimensionPixelSize(getField(styleableClass, "ActionBar_itemPadding"), 0));
+
+            a.recycle();
+            writer.name(styleName).value(json);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public ExtractStyle(Context context, String extractPath)
     {
 //        Log.i(MinistroService.TAG, "Extract " + extractPath);
@@ -1535,7 +1570,7 @@ public class ExtractStyle {
               extractItemsStyle(jsonWriter);
               extractCompoundButton(jsonWriter, "buttonStyleToggle", null);
               if (Build.VERSION.SDK_INT > 10) {
-                  jsonWriter.name("actionBarStyle").value(extractTextAppearanceInformations("actionBarStyle", "QToolBar", null, -1));
+                  extractToolBar(jsonWriter, "actionBarStyle", "QToolBar");
                   jsonWriter.name("actionButtonStyle").value(extractTextAppearanceInformations("actionButtonStyle", "QToolButton", null, -1));
               }
           } catch (Exception e) {
