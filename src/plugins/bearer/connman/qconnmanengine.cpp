@@ -513,7 +513,7 @@ void QConnmanEngine::addServiceConfiguration(const QString &servicePath)
 {
     QMutexLocker locker(&mutex);
     if (!connmanServiceInterfaces.contains(servicePath)) {
-        QConnmanServiceInterface *serv = new QConnmanServiceInterface(servicePath);
+        QConnmanServiceInterface *serv = new QConnmanServiceInterface(servicePath, this);
         connmanServiceInterfaces.insert(serv->path(),serv);
     }
 
