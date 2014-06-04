@@ -308,7 +308,7 @@ void QAndroidPlatformScreen::doRedraw()
             QRect windowRect = targetRect.translated(-window->geometry().topLeft());
             QAndroidPlatformBackingStore *backingStore = static_cast<QAndroidPlatformRasterWindow *>(window)->backingStore();
             if (backingStore)
-                compositePainter.drawImage(targetRect.topLeft(), backingStore->image(), windowRect);
+                compositePainter.drawImage(targetRect.topLeft(), backingStore->toImage(), windowRect);
         }
     }
 
