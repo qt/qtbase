@@ -202,7 +202,17 @@ qint64 QLocalSocket::readData(char *data, qint64 maxSize)
     if (!maxSize)
         return 0;
 
-    return d->pipeReader->read(data, maxSize);
+    qint64 ret = d->pipeReader->read(data, maxSize);
+
+    // QWindowsPipeReader::read() returns error codes that don't match what we need
+    switch (ret) {
+    case 0:     // EOF -> transform to error
+        return -1;
+    case -2:    // EWOULDBLOCK -> no error, just no bytes
+        return 0;
+    default:
+        return ret;
+    }
 }
 
 qint64 QLocalSocket::writeData(const char *data, qint64 maxSize)

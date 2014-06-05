@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Intel Corporation
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -907,24 +908,33 @@ bool QProcessPrivate::tryReadFromChannel(Channel *channel)
         return false;
 
     qint64 available = bytesAvailableInChannel(channel);
-    if (available == 0) {
-        if (channel->notifier)
-            channel->notifier->setEnabled(false);
-        closeChannel(channel);
-#if defined QPROCESS_DEBUG
-        qDebug("QProcessPrivate::tryReadFromChannel(%d), 0 bytes available", channel - &stdinChannel);
-#endif
-        return false;
-    }
+    if (available == 0)
+        available = 1;      // always try to read at least one byte
 
     char *ptr = channel->buffer.reserve(available);
     qint64 readBytes = readFromChannel(channel, ptr, available);
+    if (readBytes <= 0)
+        channel->buffer.chop(available);
+    if (readBytes == -2) {
+        // EWOULDBLOCK
+        return false;
+    }
     if (readBytes == -1) {
         processError = QProcess::ReadError;
         q->setErrorString(QProcess::tr("Error reading from process"));
         emit q->error(processError);
 #if defined QPROCESS_DEBUG
         qDebug("QProcessPrivate::tryReadFromChannel(%d), failed to read from the process", channel - &stdinChannel);
+#endif
+        return false;
+    }
+    if (readBytes == 0) {
+        // EOF
+        if (channel->notifier)
+            channel->notifier->setEnabled(false);
+        closeChannel(channel);
+#if defined QPROCESS_DEBUG
+        qDebug("QProcessPrivate::tryReadFromChannel(%d), 0 bytes available", channel - &stdinChannel);
 #endif
         return false;
     }

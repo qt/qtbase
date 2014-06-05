@@ -981,10 +981,14 @@ qint64 QProcessPrivate::readFromChannel(const Channel *channel, char *data, qint
     Q_ASSERT(channel->pipe[0] != INVALID_Q_PIPE);
     qint64 bytesRead = qt_safe_read(channel->pipe[0], data, maxlen);
 #if defined QPROCESS_DEBUG
+    int save_errno = errno;
     qDebug("QProcessPrivate::readFromChannel(%d, %p \"%s\", %lld) == %lld",
            channel - &stdinChannel,
            data, qt_prettyDebug(data, bytesRead, 16).constData(), maxlen, bytesRead);
+    errno = save_errno;
 #endif
+    if (bytesRead == -1 && errno == EWOULDBLOCK)
+        return -2;
     return bytesRead;
 }
 
