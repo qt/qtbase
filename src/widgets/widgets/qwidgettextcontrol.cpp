@@ -1692,9 +1692,6 @@ void QWidgetTextControlPrivate::mouseMoveEvent(QEvent *e, Qt::MouseButton button
             return;
         }
 
-        if (!mousePressed)
-            return;
-
         const qreal mouseX = qreal(mousePos.x());
 
         int newCursorPos = q->hitTest(mousePos, Qt::FuzzyHit);
