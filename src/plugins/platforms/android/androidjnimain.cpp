@@ -573,8 +573,11 @@ static void updateWindow(JNIEnv */*env*/, jobject /*thiz*/)
         return;
 
     if (QGuiApplication::instance() != 0) {
-        foreach (QWindow *w, QGuiApplication::topLevelWindows())
-            QWindowSystemInterface::handleExposeEvent(w, QRegion(w->geometry()));
+        foreach (QWindow *w, QGuiApplication::topLevelWindows()) {
+            QRect availableGeometry = w->screen()->availableGeometry();
+            if (w->geometry().width() > 0 && w->geometry().height() > 0 && availableGeometry.width() > 0 && availableGeometry.height() > 0)
+                QWindowSystemInterface::handleExposeEvent(w, QRegion(w->geometry()));
+        }
     }
 
     QAndroidPlatformScreen *screen = static_cast<QAndroidPlatformScreen *>(m_androidPlatformIntegration->screen());

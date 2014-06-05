@@ -128,6 +128,7 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters, int &argc, char 
     : m_services(new QGenericUnixServices)
     , m_instanceName(0)
 {
+    qRegisterMetaType<QXcbWindow*>();
 #ifdef XCB_USE_XLIB
     XInitThreads();
 #endif

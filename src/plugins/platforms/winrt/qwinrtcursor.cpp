@@ -135,6 +135,8 @@ void QWinRTCursor::changeCursor(QCursor *windowCursor, QWindow *)
     ICoreCursor *cursor;
     if (SUCCEEDED(m_cursorFactory->CreateCursor(type, 0, &cursor)))
         m_window->put_PointerCursor(cursor);
+#else // Q_OS_WINPHONE
+    Q_UNUSED(windowCursor)
 #endif // Q_OS_WINPHONE
 }
 #endif // QT_NO_CURSOR

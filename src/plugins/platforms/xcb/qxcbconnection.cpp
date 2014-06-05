@@ -1833,6 +1833,11 @@ QXcbSystemTrayTracker *QXcbConnection::systemTrayTracker()
     return m_systemTrayTracker;
 }
 
+void QXcbConnection::syncWindow(QXcbWindow *window)
+{
+    window->updateSyncRequestCounter();
+}
+
 QXcbConnectionGrabber::QXcbConnectionGrabber(QXcbConnection *connection)
     :m_connection(connection)
 {

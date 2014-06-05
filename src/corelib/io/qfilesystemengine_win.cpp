@@ -1219,11 +1219,11 @@ QString QFileSystemEngine::rootPath()
     if (FAILED(installedLocation.As(&item)))
         return ret;
 
-    HSTRING finalWinPath;
-    if (FAILED(item->get_Path(&finalWinPath)))
+    HString finalWinPath;
+    if (FAILED(item->get_Path(finalWinPath.GetAddressOf())))
         return ret;
 
-    ret = QDir::fromNativeSeparators(QString::fromWCharArray(WindowsGetStringRawBuffer(finalWinPath, nullptr)));
+    ret = QDir::fromNativeSeparators(QString::fromWCharArray(finalWinPath.GetRawBuffer(nullptr)));
 
 #else
     QString ret = QString::fromLatin1(qgetenv("SystemDrive").constData());
@@ -1319,10 +1319,10 @@ QString QFileSystemEngine::tempPath()
     ComPtr<IStorageItem> tempFolderItem;
     if (FAILED(tempFolder.As(&tempFolderItem)))
         return ret;
-    HSTRING path;
-    if (FAILED(tempFolderItem->get_Path(&path)))
+    HString path;
+    if (FAILED(tempFolderItem->get_Path(path.GetAddressOf())))
         return ret;
-    ret = QDir::fromNativeSeparators(QString::fromWCharArray(WindowsGetStringRawBuffer(path, nullptr)));
+    ret = QDir::fromNativeSeparators(QString::fromWCharArray(path.GetRawBuffer(nullptr)));
 #endif // Q_OS_WINRT
     if (ret.isEmpty()) {
 #if !defined(Q_OS_WINCE)

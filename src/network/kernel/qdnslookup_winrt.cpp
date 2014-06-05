@@ -98,9 +98,9 @@ void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestN
     GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Networking_Sockets_DatagramSocket).Get(), &datagramSocketStatics);
 
     IAsyncOperation<IVectorView<EndpointPair*> *> *op;
-    HSTRING proto;
-    WindowsCreateString(L"0", 1, &proto);
-    datagramSocketStatics->GetEndpointPairsAsync(host, proto, &op);
+    datagramSocketStatics->GetEndpointPairsAsync(host,
+                                                 HString::MakeReference(L"0").Get(),
+                                                 &op);
     datagramSocketStatics->Release();
     host->Release();
 
@@ -134,11 +134,11 @@ void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestN
                 || (type == HostNameType_Ipv6 && requestType == QDnsLookup::A))))
             continue;
 
-        HSTRING name;
-        remoteHost->get_CanonicalName(&name);
+        HString name;
+        remoteHost->get_CanonicalName(name.GetAddressOf());
         remoteHost->Release();
         UINT32 length;
-        PCWSTR rawString = WindowsGetStringRawBuffer(name, &length);
+        PCWSTR rawString = name.GetRawBuffer(&length);
         QDnsHostAddressRecord record;
         record.d->name = aceHostname;
         record.d->value = QHostAddress(QString::fromWCharArray(rawString, length));

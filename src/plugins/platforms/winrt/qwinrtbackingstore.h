@@ -60,18 +60,19 @@ public:
     void endPaint();
     void flush(QWindow *window, const QRegion &region, const QPoint &offset);
     void resize(const QSize &size, const QRegion &staticContents);
+    QImage toImage() const Q_DECL_OVERRIDE { return m_paintDevice; }
 
 private:
     bool initialize();
     bool m_initialized;
     QSize m_size;
-    QScopedPointer<QPaintDevice> m_paintDevice;
     QScopedPointer<QOpenGLContext> m_context;
     quint32 m_shaderProgram;
     quint32 m_fbo;
     quint32 m_rbo;
     quint32 m_texture;
     QWinRTScreen *m_screen;
+    QImage m_paintDevice;
 };
 
 QT_END_NAMESPACE

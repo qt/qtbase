@@ -93,6 +93,11 @@ typedef ITypedEventHandler<CoreWindow*, PointerEventArgs*> PointerHandler;
 typedef ITypedEventHandler<CoreWindow*, WindowSizeChangedEventArgs*> SizeChangedHandler;
 typedef ITypedEventHandler<CoreWindow*, VisibilityChangedEventArgs*> VisibilityChangedHandler;
 typedef ITypedEventHandler<CoreWindow*, AutomationProviderRequestedEventArgs*> AutomationProviderRequestedHandler;
+#if _MSC_VER <=1700
+typedef IDisplayPropertiesEventHandler DisplayInformationHandler;
+#else
+typedef ITypedEventHandler<DisplayInformation*, IInspectable*> DisplayInformationHandler;
+#endif
 #ifdef Q_OS_WINPHONE
 typedef IEventHandler<BackPressedEventArgs*> BackPressedHandler;
 #endif
@@ -424,12 +429,13 @@ QWinRTScreen::QWinRTScreen(ICoreWindow *window)
     , m_inputContext(Make<QWinRTInputContext>(m_coreWindow).Detach())
 #endif
     , m_cursor(new QWinRTCursor(window))
+    , m_devicePixelRatio(1.0)
     , m_orientation(Qt::PrimaryOrientation)
     , m_touchDevice(Q_NULLPTR)
 {
     Rect rect;
     window->get_Bounds(&rect);
-    m_geometry = QRect(0, 0, rect.Width, rect.Height);
+    m_geometry = QRectF(0, 0, rect.Width, rect.Height);
 
     m_surfaceFormat.setAlphaBufferSize(0);
     m_surfaceFormat.setRedBufferSize(8);
@@ -478,26 +484,63 @@ QWinRTScreen::QWinRTScreen(ICoreWindow *window)
     m_coreWindow->add_AutomationProviderRequested(Callback<AutomationProviderRequestedHandler>(this, &QWinRTScreen::onAutomationProviderRequested).Get(), &m_tokens[QEvent::InputMethodQuery]);
 
     // Orientation handling
-    if (SUCCEEDED(GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Graphics_Display_DisplayProperties).Get(),
-                                       &m_displayProperties))) {
-        // Set native orientation
-        DisplayOrientations displayOrientation;
-        m_displayProperties->get_NativeOrientation(&displayOrientation);
-        m_nativeOrientation = static_cast<Qt::ScreenOrientation>(static_cast<int>(qtOrientationsFromNative(displayOrientation)));
-
-        // Set initial orientation
-        onOrientationChanged(0);
-        setOrientationUpdateMask(m_nativeOrientation);
-
-        m_displayProperties->add_OrientationChanged(Callback<IDisplayPropertiesEventHandler>(this, &QWinRTScreen::onOrientationChanged).Get(),
-                                                    &m_tokens[QEvent::OrientationChange]);
+#if _MSC_VER<=1700
+    HRESULT hr = GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Graphics_Display_DisplayProperties).Get(),
+                                      &m_displayInformation);
+#else
+    HRESULT hr = GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Graphics_Display_DisplayInformation).Get(),
+                                      &m_displayInformationFactory);
+    if (FAILED(hr)) {
+        qErrnoWarning(hr, "Failed to get display information factory.");
+        return;
     }
 
-#ifndef Q_OS_WINPHONE
-    GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_UI_ViewManagement_ApplicationView).Get(),
-                         &m_applicationView);
+    hr = m_displayInformationFactory->GetForCurrentView(&m_displayInformation);
 #endif
 
+    if (FAILED(hr)) {
+        qErrnoWarning(hr, "Failed to get display information for the current view.");
+        return;
+    }
+
+    // Set native orientation
+    DisplayOrientations displayOrientation;
+    hr = m_displayInformation->get_NativeOrientation(&displayOrientation);
+    if (FAILED(hr)) {
+        qErrnoWarning(hr, "Failed to get native orientation.");
+        return;
+    }
+
+    m_nativeOrientation = static_cast<Qt::ScreenOrientation>(static_cast<int>(qtOrientationsFromNative(displayOrientation)));
+
+    hr = m_displayInformation->add_OrientationChanged(Callback<DisplayInformationHandler>(this, &QWinRTScreen::onOrientationChanged).Get(),
+                                                      &m_tokens[QEvent::OrientationChange]);
+    if (FAILED(hr)) {
+        qErrnoWarning(hr, "Failed to add orientation change callback.");
+        return;
+    }
+
+#if _MSC_VER<=1700
+    hr = m_displayInformation->add_LogicalDpiChanged(Callback<DisplayInformationHandler>(this, &QWinRTScreen::onDpiChanged).Get(),
+                                                     &m_tokens[QEvent::Type(QEvent::User + 1)]);
+#else
+    hr = m_displayInformation->add_DpiChanged(Callback<DisplayInformationHandler>(this, &QWinRTScreen::onDpiChanged).Get(),
+                                              &m_tokens[QEvent::Type(QEvent::User + 1)]);
+#endif
+    if (FAILED(hr)) {
+        qErrnoWarning(hr, "Failed to add logical dpi change callback.");
+        return;
+    }
+
+    // Set initial orientation & pixel density
+#if _MSC_VER<=1700
+    onOrientationChanged(Q_NULLPTR);
+    onDpiChanged(Q_NULLPTR);
+#else
+    onOrientationChanged(Q_NULLPTR, Q_NULLPTR);
+    onDpiChanged(Q_NULLPTR, Q_NULLPTR);
+#endif
+    setOrientationUpdateMask(m_nativeOrientation);
 
     if (SUCCEEDED(RoGetActivationFactory(Wrappers::HString::MakeReference(RuntimeClass_Windows_ApplicationModel_Core_CoreApplication).Get(),
                                          IID_PPV_ARGS(&m_application)))) {
@@ -508,7 +551,7 @@ QWinRTScreen::QWinRTScreen(ICoreWindow *window)
 
 QRect QWinRTScreen::geometry() const
 {
-    return m_geometry;
+    return m_geometry.toRect();
 }
 
 int QWinRTScreen::depth() const
@@ -524,6 +567,21 @@ QImage::Format QWinRTScreen::format() const
 QSurfaceFormat QWinRTScreen::surfaceFormat() const
 {
     return m_surfaceFormat;
+}
+
+QSizeF QWinRTScreen::physicalSize() const
+{
+    return m_geometry.size() / m_dpi * qreal(25.4);
+}
+
+QDpi QWinRTScreen::logicalDpi() const
+{
+    return QDpi(m_dpi, m_dpi);
+}
+
+qreal QWinRTScreen::devicePixelRatio() const
+{
+    return m_devicePixelRatio;
 }
 
 QWinRTInputContext *QWinRTScreen::inputContext() const
@@ -572,7 +630,11 @@ Qt::ScreenOrientation QWinRTScreen::orientation() const
 
 void QWinRTScreen::setOrientationUpdateMask(Qt::ScreenOrientations mask)
 {
-    m_displayProperties->put_AutoRotationPreferences(nativeOrientationsFromQt(mask));
+#if _MSC_VER<=1700
+    m_displayInformation->put_AutoRotationPreferences(nativeOrientationsFromQt(mask));
+#else
+    m_displayInformationFactory->put_AutoRotationPreferences(nativeOrientationsFromQt(mask));
+#endif
 }
 
 ICoreWindow *QWinRTScreen::coreWindow() const
@@ -637,7 +699,7 @@ void QWinRTScreen::handleExpose()
     if (m_visibleWindows.isEmpty())
         return;
     QList<QWindow *>::const_iterator it = m_visibleWindows.constBegin();
-    QWindowSystemInterface::handleExposeEvent(*it, m_geometry);
+    QWindowSystemInterface::handleExposeEvent(*it, m_geometry.toRect());
     while (++it != m_visibleWindows.constEnd())
         QWindowSystemInterface::handleExposeEvent(*it, QRegion());
     QWindowSystemInterface::flushWindowSystemEvents();
@@ -898,6 +960,8 @@ HRESULT QWinRTScreen::onAutomationProviderRequested(ICoreWindow *, IAutomationPr
 {
 #ifndef Q_OS_WINPHONE
     args->put_AutomationProvider(m_inputContext);
+#else
+    Q_UNUSED(args)
 #endif
     return S_OK;
 }
@@ -914,9 +978,9 @@ HRESULT QWinRTScreen::onSizeChanged(ICoreWindow *window, IWindowSizeChangedEvent
 
     // Regardless of state, all top-level windows are viewport-sized - this might change if
     // a more advanced compositor is written.
-    m_geometry.setSize(QSize(size.Width, size.Height));
-    QWindowSystemInterface::handleScreenGeometryChange(screen(), m_geometry);
-    QWindowSystemInterface::handleScreenAvailableGeometryChange(screen(), m_geometry);
+    m_geometry.setSize(QSizeF(size.Width, size.Height));
+    QWindowSystemInterface::handleScreenGeometryChange(screen(), m_geometry.toRect());
+    QWindowSystemInterface::handleScreenAvailableGeometryChange(screen(), m_geometry.toRect());
     QPlatformScreen::resizeMaximizedWindows();
     handleExpose();
 
@@ -981,15 +1045,60 @@ HRESULT QWinRTScreen::onVisibilityChanged(ICoreWindow *window, IVisibilityChange
     return S_OK;
 }
 
+#if _MSC_VER<=1700
 HRESULT QWinRTScreen::onOrientationChanged(IInspectable *)
+#else
+HRESULT QWinRTScreen::onOrientationChanged(IDisplayInformation *, IInspectable *)
+#endif
 {
     DisplayOrientations displayOrientation;
-    m_displayProperties->get_CurrentOrientation(&displayOrientation);
+    m_displayInformation->get_CurrentOrientation(&displayOrientation);
     Qt::ScreenOrientation newOrientation = static_cast<Qt::ScreenOrientation>(static_cast<int>(qtOrientationsFromNative(displayOrientation)));
     if (m_orientation != newOrientation) {
         m_orientation = newOrientation;
         QWindowSystemInterface::handleScreenOrientationChange(screen(), m_orientation);
     }
+
+    return S_OK;
+}
+
+#if _MSC_VER<=1700
+HRESULT QWinRTScreen::onDpiChanged(IInspectable *)
+#else
+HRESULT QWinRTScreen::onDpiChanged(IDisplayInformation *, IInspectable *)
+#endif
+{
+#if defined(Q_OS_WINPHONE) && _MSC_VER>=1800 // WP 8.1
+    ComPtr<IDisplayInformation2> displayInformation;
+    HRESULT hr = m_displayInformation->QueryInterface(IID_IDisplayInformation2, &displayInformation);
+    if (FAILED(hr)) {
+        qErrnoWarning(hr, "Failed to cast display information.");
+        return S_OK;
+    }
+    hr = displayInformation->get_RawPixelsPerViewPixel(&m_devicePixelRatio);
+#else
+    ResolutionScale resolutionScale;
+    HRESULT hr = m_displayInformation->get_ResolutionScale(&resolutionScale);
+#endif
+    if (FAILED(hr)) {
+        qErrnoWarning(hr, "Failed to get display resolution scale.");
+        return S_OK;
+    }
+#if !(defined(Q_OS_WINPHONE) && _MSC_VER>=1800) // !WP8.1
+    m_devicePixelRatio = qreal(resolutionScale) / 100;
+#endif
+
+    // Correct the scale factor for integer window size
+    m_devicePixelRatio = m_devicePixelRatio * ((m_geometry.width()/qRound(m_geometry.width()) +
+                                                m_geometry.height()/qRound(m_geometry.height())) / 2.0);
+
+    FLOAT dpi;
+    hr = m_displayInformation->get_LogicalDpi(&dpi);
+    if (FAILED(hr)) {
+        qErrnoWarning(hr, "Failed to get logical DPI.");
+        return S_OK;
+    }
+    m_dpi = dpi;
 
     return S_OK;
 }

@@ -951,6 +951,11 @@ void tst_QRawFont::rawFontFromInvalidData()
     font.loadFromData(invalidData, 10, QFont::PreferDefaultHinting);
 
     QVERIFY(!font.isValid());
+
+    invalidData.fill(255, 1024);
+    font.loadFromData(invalidData, 10, QFont::PreferDefaultHinting);
+
+    QVERIFY(!font.isValid());
 }
 
 #endif // QT_NO_RAWFONT

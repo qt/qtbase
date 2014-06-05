@@ -777,6 +777,8 @@ void QSslSocket::close()
     qDebug() << "QSslSocket::close()";
 #endif
     Q_D(QSslSocket);
+    if (encryptedBytesToWrite())
+        flush();
     if (d->plainSocket)
         d->plainSocket->close();
     QTcpSocket::close();
@@ -1810,7 +1812,8 @@ void QSslSocket::ignoreSslErrors()
     This method tells QSslSocket to ignore only the errors given in \a
     errors.
 
-    Note that you can set the expected certificate in the SSL error:
+    \note Because most SSL errors are associated with a certificate, for most
+    of them you must set the expected certificate this SSL error is related to.
     If, for instance, you want to connect to a server that uses
     a self-signed certificate, consider the following snippet:
 

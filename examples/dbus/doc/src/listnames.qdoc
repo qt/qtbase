@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -28,4 +28,12 @@
 /*!
     \example listnames
     \title D-Bus List Names Example
+    \ingroup examples-dbus
+    \brief Shows how to access the D-Bus bus daemon service.
+
+    \e{List Names} is a command-line example which shows how to
+    access the \l{Qt D-Bus} bus daemon service. The example prints various
+    information about the bus daemon service.
+
+    \include examples-run.qdocinc
 */

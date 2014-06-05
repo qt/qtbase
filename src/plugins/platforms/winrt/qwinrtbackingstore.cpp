@@ -284,7 +284,7 @@ QWinRTBackingStore::~QWinRTBackingStore()
 
 QPaintDevice *QWinRTBackingStore::paintDevice()
 {
-    return m_paintDevice.data();
+    return &m_paintDevice;
 }
 
 void QWinRTBackingStore::flush(QWindow *window, const QRegion &region, const QPoint &offset)
@@ -292,8 +292,6 @@ void QWinRTBackingStore::flush(QWindow *window, const QRegion &region, const QPo
     Q_UNUSED(offset)
     if (m_size.isEmpty())
         return;
-
-    const QImage *image = static_cast<QImage *>(m_paintDevice.data());
 
     m_context->makeCurrent(window);
 
@@ -307,7 +305,7 @@ void QWinRTBackingStore::flush(QWindow *window, const QRegion &region, const QPo
     glBindTexture(GL_TEXTURE_2D, m_texture);
     QRect bounds = region.boundingRect();
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, bounds.y(), m_size.width(), bounds.height(),
-                    GL_BGRA_EXT, GL_UNSIGNED_BYTE, image->scanLine(bounds.y()));
+                    GL_BGRA_EXT, GL_UNSIGNED_BYTE, m_paintDevice.constScanLine(bounds.y()));
     // TODO: Implement GL_EXT_unpack_subimage in ANGLE for more minimal uploads
     //glPixelStorei(GL_UNPACK_ROW_LENGTH, image->bytesPerLine());
     //glTexSubImage2D(GL_TEXTURE_2D, 0, bounds.x(), bounds.y(), bounds.width(), bounds.height(),
@@ -325,7 +323,8 @@ void QWinRTBackingStore::flush(QWindow *window, const QRegion &region, const QPo
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, quadCoords);
 
     // Render
-    glViewport(0, 0, m_size.width(), m_size.height());
+    const QSize blitSize = m_size * window->devicePixelRatio();
+    glViewport(0, 0, blitSize.width(), blitSize.height());
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
     // Unbind
@@ -338,8 +337,8 @@ void QWinRTBackingStore::flush(QWindow *window, const QRegion &region, const QPo
     // fast blit - TODO: perform the blit inside swap buffers instead
     glBindFramebuffer(GL_READ_FRAMEBUFFER_ANGLE, m_fbo);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER_ANGLE, 0);
-    glBlitFramebufferANGLE(0, 0, m_size.width(), m_size.height(), // TODO: blit only the changed rectangle
-                           0, 0, m_size.width(), m_size.height(),
+    glBlitFramebufferANGLE(0, 0, blitSize.width(), blitSize.height(), // TODO: blit only the changed rectangle
+                           0, 0, blitSize.width(), blitSize.height(),
                            GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
     m_context->swapBuffers(window);
@@ -359,21 +358,22 @@ void QWinRTBackingStore::resize(const QSize &size, const QRegion &staticContents
     if (m_size.isEmpty())
         return;
 
-    m_paintDevice.reset(new QImage(m_size, QImage::Format_ARGB32_Premultiplied));
+    m_paintDevice = QImage(m_size, QImage::Format_ARGB32_Premultiplied);
 
     m_context->makeCurrent(window());
     // Input texture
     glBindTexture(GL_TEXTURE_2D, m_texture);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_BGRA_EXT, m_size.width(), m_size.height(),
                  0, GL_BGRA_EXT, GL_UNSIGNED_BYTE, NULL);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glBindTexture(GL_TEXTURE_2D, 0);
     // Render buffer
     glBindRenderbuffer(GL_RENDERBUFFER, m_rbo);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_BGRA8_EXT, m_size.width(), m_size.height());
+    const QSize blitSize = m_size * window()->devicePixelRatio();
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_BGRA8_EXT, blitSize.width(), blitSize.height());
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
     m_context->doneCurrent();
 }

@@ -69,6 +69,7 @@ import android.content.res.Resources.Theme;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -889,6 +890,8 @@ public class QtActivity extends Activity
             // if splash screen is defined, then show it
             if (m_activityInfo.metaData.containsKey("android.app.splash_screen_drawable"))
                 getWindow().setBackgroundDrawableResource(m_activityInfo.metaData.getInt("android.app.splash_screen_drawable"));
+            else
+                getWindow().setBackgroundDrawable(new ColorDrawable(0xff000000));
             startApp(true);
         }
     }

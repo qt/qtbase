@@ -211,118 +211,16 @@ private:
     bool m_roundCoordinates;
 };
 
-static ComPtr<ID2D1PathGeometry1> painterPathToID2D1PathGeometry(const QPainterPath &path, bool alias)
-{
-    Direct2DPathGeometryWriter writer;
-    if (!writer.begin())
-        return NULL;
+struct D2DVectorPathCache {
+    ComPtr<ID2D1PathGeometry1> aliased;
+    ComPtr<ID2D1PathGeometry1> antiAliased;
 
-    writer.setWindingFillEnabled(path.fillRule() == Qt::WindingFill);
-    writer.setAliasingEnabled(alias);
-
-    for (int i = 0; i < path.elementCount(); i++) {
-        const QPainterPath::Element element = path.elementAt(i);
-
-        switch (element.type) {
-        case QPainterPath::MoveToElement:
-            writer.moveTo(element);
-            break;
-
-        case QPainterPath::LineToElement:
-            writer.lineTo(element);
-            break;
-
-        case QPainterPath::CurveToElement:
-        {
-            const QPainterPath::Element data1 = path.elementAt(++i);
-            const QPainterPath::Element data2 = path.elementAt(++i);
-
-            Q_ASSERT(i < path.elementCount());
-
-            Q_ASSERT(data1.type == QPainterPath::CurveToDataElement);
-            Q_ASSERT(data2.type == QPainterPath::CurveToDataElement);
-
-            writer.curveTo(element, data1, data2);
-        }
-            break;
-
-        case QPainterPath::CurveToDataElement:
-            qWarning("%s: Unhandled Curve Data Element", __FUNCTION__);
-            break;
-        }
+    static void cleanup_func(QPaintEngineEx *engine, void *data) {
+        Q_UNUSED(engine);
+        D2DVectorPathCache *e = static_cast<D2DVectorPathCache *>(data);
+        delete e;
     }
-
-    writer.close();
-    return writer.geometry();
-}
-
-static ComPtr<ID2D1PathGeometry1> vectorPathToID2D1PathGeometry(const QVectorPath &path, bool alias)
-{
-    Direct2DPathGeometryWriter writer;
-    if (!writer.begin())
-        return NULL;
-
-    writer.setWindingFillEnabled(path.hasWindingFill());
-    writer.setAliasingEnabled(alias);
-
-    const QPainterPath::ElementType *types = path.elements();
-    const int count = path.elementCount();
-    const qreal *points = path.points();
-
-    Q_ASSERT(points);
-
-    if (types) {
-        qreal x, y;
-
-        for (int i = 0; i < count; i++) {
-            x = points[i * 2];
-            y = points[i * 2 + 1];
-
-            switch (types[i]) {
-            case QPainterPath::MoveToElement:
-                writer.moveTo(QPointF(x, y));
-                break;
-
-            case QPainterPath::LineToElement:
-                writer.lineTo(QPointF(x, y));
-                break;
-
-            case QPainterPath::CurveToElement:
-            {
-                Q_ASSERT((i + 2) < count);
-                Q_ASSERT(types[i+1] == QPainterPath::CurveToDataElement);
-                Q_ASSERT(types[i+2] == QPainterPath::CurveToDataElement);
-
-                i++;
-                const qreal x2 = points[i * 2];
-                const qreal y2 = points[i * 2 + 1];
-
-                i++;
-                const qreal x3 = points[i * 2];
-                const qreal y3 = points[i * 2 + 1];
-
-                writer.curveTo(QPointF(x, y), QPointF(x2, y2), QPointF(x3, y3));
-            }
-                break;
-
-            case QPainterPath::CurveToDataElement:
-                qWarning("%s: Unhandled Curve Data Element", __FUNCTION__);
-                break;
-            }
-        }
-    } else {
-        writer.moveTo(QPointF(points[0], points[1]));
-        for (int i = 1; i < count; i++)
-            writer.lineTo(QPointF(points[i * 2], points[i * 2 + 1]));
-    }
-
-    if (writer.isInFigure())
-        if (path.hasImplicitClose())
-            writer.lineTo(QPointF(points[0], points[1]));
-
-    writer.close();
-    return writer.geometry();
-}
+};
 
 class QWindowsDirect2DPaintEnginePrivate : public QPaintEngineExPrivate
 {
@@ -426,7 +324,7 @@ public:
             dc()->PushAxisAlignedClip(rect, antialiasMode());
             pushedClips.push(AxisAlignedClip);
         } else {
-            ComPtr<ID2D1PathGeometry1> geometry = vectorPathToID2D1PathGeometry(path, antialiasMode() == D2D1_ANTIALIAS_MODE_ALIASED);
+            ComPtr<ID2D1PathGeometry1> geometry = vectorPathToID2D1PathGeometry(path);
             if (!geometry) {
                 qWarning("%s: Could not convert vector path to painter path!", __FUNCTION__);
                 return;
@@ -571,6 +469,7 @@ public:
             break;
         case Qt::RoundCap:
             props.startCap = props.endCap = props.dashCap = D2D1_CAP_STYLE_ROUND;
+            break;
         case Qt::FlatCap:
         default:
             props.startCap = props.endCap = props.dashCap = D2D1_CAP_STYLE_FLAT;
@@ -835,6 +734,104 @@ public:
         return result;
     }
 
+    ComPtr<ID2D1PathGeometry1> vectorPathToID2D1PathGeometry(const QVectorPath &path)
+    {
+        Q_Q(QWindowsDirect2DPaintEngine);
+
+        const bool alias = !q->antiAliasingEnabled();
+
+        QVectorPath::CacheEntry *cacheEntry = path.isCacheable() ? path.lookupCacheData(q)
+                                                                 : Q_NULLPTR;
+
+        if (cacheEntry) {
+            D2DVectorPathCache *e = static_cast<D2DVectorPathCache *>(cacheEntry->data);
+            if (alias && e->aliased)
+                return e->aliased;
+            else if (!alias && e->antiAliased)
+                return e->antiAliased;
+        }
+
+        Direct2DPathGeometryWriter writer;
+        if (!writer.begin())
+            return NULL;
+
+        writer.setWindingFillEnabled(path.hasWindingFill());
+        writer.setAliasingEnabled(alias);
+
+        const QPainterPath::ElementType *types = path.elements();
+        const int count = path.elementCount();
+        const qreal *points = path.points();
+
+        Q_ASSERT(points);
+
+        if (types) {
+            qreal x, y;
+
+            for (int i = 0; i < count; i++) {
+                x = points[i * 2];
+                y = points[i * 2 + 1];
+
+                switch (types[i]) {
+                case QPainterPath::MoveToElement:
+                    writer.moveTo(QPointF(x, y));
+                    break;
+
+                case QPainterPath::LineToElement:
+                    writer.lineTo(QPointF(x, y));
+                    break;
+
+                case QPainterPath::CurveToElement:
+                {
+                    Q_ASSERT((i + 2) < count);
+                    Q_ASSERT(types[i+1] == QPainterPath::CurveToDataElement);
+                    Q_ASSERT(types[i+2] == QPainterPath::CurveToDataElement);
+
+                    i++;
+                    const qreal x2 = points[i * 2];
+                    const qreal y2 = points[i * 2 + 1];
+
+                    i++;
+                    const qreal x3 = points[i * 2];
+                    const qreal y3 = points[i * 2 + 1];
+
+                    writer.curveTo(QPointF(x, y), QPointF(x2, y2), QPointF(x3, y3));
+                }
+                    break;
+
+                case QPainterPath::CurveToDataElement:
+                    qWarning("%s: Unhandled Curve Data Element", __FUNCTION__);
+                    break;
+                }
+            }
+        } else {
+            writer.moveTo(QPointF(points[0], points[1]));
+            for (int i = 1; i < count; i++)
+                writer.lineTo(QPointF(points[i * 2], points[i * 2 + 1]));
+        }
+
+        if (writer.isInFigure())
+            if (path.hasImplicitClose())
+                writer.lineTo(QPointF(points[0], points[1]));
+
+        writer.close();
+        ComPtr<ID2D1PathGeometry1> geometry = writer.geometry();
+
+        if (path.isCacheable()) {
+            if (!cacheEntry)
+                cacheEntry = path.addCacheData(q, new D2DVectorPathCache, D2DVectorPathCache::cleanup_func);
+
+            D2DVectorPathCache *e = static_cast<D2DVectorPathCache *>(cacheEntry->data);
+            if (alias)
+                e->aliased = geometry;
+            else
+                e->antiAliased = geometry;
+        } else {
+            path.makeCacheable();
+        }
+
+        return geometry;
+    }
+
     void updateHints()
     {
         dc()->SetAntialiasMode(antialiasMode());
@@ -871,7 +868,7 @@ bool QWindowsDirect2DPaintEngine::begin(QPaintDevice * pdev)
         QPainterPath p;
         p.addRegion(systemClip());
 
-        ComPtr<ID2D1PathGeometry1> geometry = painterPathToID2D1PathGeometry(p, d->antialiasMode() == D2D1_ANTIALIAS_MODE_ALIASED);
+        ComPtr<ID2D1PathGeometry1> geometry = d->vectorPathToID2D1PathGeometry(qtVectorPathForPath(p));
         if (!geometry)
             return false;
 
@@ -938,7 +935,7 @@ void QWindowsDirect2DPaintEngine::draw(const QVectorPath &path)
 {
     Q_D(QWindowsDirect2DPaintEngine);
 
-    ComPtr<ID2D1Geometry> geometry = vectorPathToID2D1PathGeometry(path, d->antialiasMode() == D2D1_ANTIALIAS_MODE_ALIASED);
+    ComPtr<ID2D1Geometry> geometry = d->vectorPathToID2D1PathGeometry(path);
     if (!geometry) {
         qWarning("%s: Could not convert path to d2d geometry", __FUNCTION__);
         return;
@@ -978,7 +975,7 @@ void QWindowsDirect2DPaintEngine::fill(const QVectorPath &path, const QBrush &br
     if (!d->brush.brush)
         return;
 
-    ComPtr<ID2D1Geometry> geometry = vectorPathToID2D1PathGeometry(path, d->antialiasMode() == D2D1_ANTIALIAS_MODE_ALIASED);
+    ComPtr<ID2D1Geometry> geometry = d->vectorPathToID2D1PathGeometry(path);
     if (!geometry) {
         qWarning("%s: Could not convert path to d2d geometry", __FUNCTION__);
         return;
@@ -1016,7 +1013,7 @@ void QWindowsDirect2DPaintEngine::stroke(const QVectorPath &path, const QPen &pe
     if (!d->pen.brush)
         return;
 
-    ComPtr<ID2D1Geometry> geometry = vectorPathToID2D1PathGeometry(path, d->antialiasMode() == D2D1_ANTIALIAS_MODE_ALIASED);
+    ComPtr<ID2D1Geometry> geometry = d->vectorPathToID2D1PathGeometry(path);
     if (!geometry) {
         qWarning("%s: Could not convert path to d2d geometry", __FUNCTION__);
         return;
@@ -1163,6 +1160,25 @@ void QWindowsDirect2DPaintEngine::drawRects(const QRectF *rects, int rectCount)
     }
 }
 
+static bool isLinePositivelySloped(const QPointF &p1, const QPointF &p2)
+{
+    if (p2.x() > p1.x())
+        return p2.y() < p1.y();
+
+    if (p1.x() > p2.x())
+        return p1.y() < p2.y();
+
+    return false;
+}
+
+static void adjustLine(QPointF *p1, QPointF *p2)
+{
+    if (isLinePositivelySloped(*p1, *p2)) {
+        p1->ry() -= qreal(1.0);
+        p2->ry() -= qreal(1.0);
+    }
+}
+
 void QWindowsDirect2DPaintEngine::drawLines(const QLine *lines, int lineCount)
 {
     Q_D(QWindowsDirect2DPaintEngine);
@@ -1183,6 +1199,10 @@ void QWindowsDirect2DPaintEngine::drawLines(const QLine *lines, int lineCount)
                          d->pen.qpen.brush());
                 continue;
             }
+
+            // Match raster engine output
+            if (!antiAliasingEnabled())
+                adjustLine(&p1, &p2);
 
             adjustForAliasing(&p1);
             adjustForAliasing(&p2);
@@ -1215,6 +1235,10 @@ void QWindowsDirect2DPaintEngine::drawLines(const QLineF *lines, int lineCount)
                          d->pen.qpen.brush());
                 continue;
             }
+
+            // Match raster engine output
+            if (!antiAliasingEnabled())
+                adjustLine(&p1, &p2);
 
             adjustForAliasing(&p1);
             adjustForAliasing(&p2);
@@ -1468,29 +1492,27 @@ void QWindowsDirect2DPaintEngine::drawTextItem(const QPointF &p, const QTextItem
                  rtl);
 }
 
-// Points (1/72 inches) to Microsoft's Device Independent Pixels (1/96 inches)
-inline static Q_DECL_CONSTEXPR FLOAT pointSizeToDIP(qreal pointSize)
+inline static FLOAT pointSizeToDIP(qreal pointSize, FLOAT dpiY)
 {
-    return pointSize + (pointSize / qreal(3.0));
+    return (pointSize + (pointSize / qreal(3.0))) * (dpiY / 96.0f);
 }
 
-inline static FLOAT pixelSizeToDIP(int pixelSize)
+inline static FLOAT pixelSizeToDIP(int pixelSize, FLOAT dpiY)
 {
-    FLOAT dpiX, dpiY;
-    factory()->GetDesktopDpi(&dpiX, &dpiY);
-
-    return FLOAT(pixelSize) / (dpiY / 96.0f);
+    return FLOAT(pixelSize) * 96.0f / dpiY;
 }
 
 inline static FLOAT fontSizeInDIP(const QFont &font)
 {
-    // Direct2d wants the font size in DIPs (Device Independent Pixels), each of which is 1/96 inches.
+    FLOAT dpiX, dpiY;
+    QWindowsDirect2DContext::instance()->d2dFactory()->GetDesktopDpi(&dpiX, &dpiY);
+
     if (font.pixelSize() == -1) {
         // font size was set as points
-        return pointSizeToDIP(font.pointSizeF());
+        return pointSizeToDIP(font.pointSizeF(), dpiY);
     } else {
         // font size was set as pixels
-        return pixelSizeToDIP(font.pixelSize());
+        return pixelSizeToDIP(font.pixelSize(), dpiY);
     }
 }
 

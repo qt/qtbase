@@ -45,11 +45,14 @@
 #include <QGuiApplication>
 #include <QOpenGLContext>
 #include <QThread>
+#include <QOffscreenSurface>
 
 #include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
+#include <QtPlatformSupport/private/qeglpbuffer_p.h>
 
 #include <qpa/qwindowsysteminterface.h>
 #include <qpa/qplatformwindow.h>
+#include <qpa/qplatformoffscreensurface.h>
 
 #include "androidjnimain.h"
 #include "qabstracteventdispatcher.h"
@@ -205,6 +208,17 @@ QPlatformOpenGLContext *QAndroidPlatformIntegration::createPlatformOpenGLContext
     format.setGreenBufferSize(8);
     format.setBlueBufferSize(8);
     return new QAndroidPlatformOpenGLContext(format, context->shareHandle(), m_eglDisplay);
+}
+
+QPlatformOffscreenSurface *QAndroidPlatformIntegration::createPlatformOffscreenSurface(QOffscreenSurface *surface) const
+{
+    QSurfaceFormat format(surface->requestedFormat());
+    format.setAlphaBufferSize(8);
+    format.setRedBufferSize(8);
+    format.setGreenBufferSize(8);
+    format.setBlueBufferSize(8);
+
+    return new QEGLPbuffer(m_eglDisplay, format, surface);
 }
 
 QPlatformWindow *QAndroidPlatformIntegration::createPlatformWindow(QWindow *window) const

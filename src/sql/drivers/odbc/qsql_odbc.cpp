@@ -963,7 +963,7 @@ bool QODBCResult::reset (const QString& query)
     if(r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO)
         QSqlResult::setForwardOnly(isScrollable==SQL_NONSCROLLABLE);
 
-    SQLSMALLINT count;
+    SQLSMALLINT count = 0;
     SQLNumResultCols(d->hStmt, &count);
     if (count) {
         setSelect(true);
@@ -1591,7 +1591,7 @@ bool QODBCResult::exec()
     if(r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO)
         QSqlResult::setForwardOnly(isScrollable==SQL_NONSCROLLABLE);
 
-    SQLSMALLINT count;
+    SQLSMALLINT count = 0;
     SQLNumResultCols(d->hStmt, &count);
     if (count) {
         setSelect(true);
@@ -1723,7 +1723,7 @@ bool QODBCResult::nextResult()
         }
     }
 
-    SQLSMALLINT count;
+    SQLSMALLINT count = 0;
     SQLNumResultCols(d->hStmt, &count);
     if (count) {
         setSelect(true);

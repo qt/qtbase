@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -978,6 +978,24 @@ void QWin32PrintEnginePrivate::doReinit()
     }
 }
 
+static int indexOfId(const QList<QPrint::InputSlot> &inputSlots, QPrint::InputSlotId id)
+{
+    for (int i = 0; i < inputSlots.size(); ++i) {
+        if (inputSlots.at(i).id == id)
+            return i;
+    }
+    return -1;
+}
+
+static int indexOfWindowsId(const QList<QPrint::InputSlot> &inputSlots, int windowsId)
+{
+    for (int i = 0; i < inputSlots.size(); ++i) {
+        if (inputSlots.at(i).windowsId == windowsId)
+            return i;
+    }
+    return -1;
+}
+
 void QWin32PrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &value)
 {
     Q_D(QWin32PrintEngine);
@@ -1120,14 +1138,12 @@ void QWin32PrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &
     case PPK_PaperSource: {
         if (!d->devMode)
             break;
-        QPrint::InputSlotId inputSlotId = QPrint::InputSlotId(value.toInt());
-        foreach (const QPrint::InputSlot &inputSlot, d->m_printDevice.supportedInputSlots()) {
-            if (inputSlot.id == inputSlotId) {
-                d->devMode->dmDefaultSource = inputSlot.windowsId;
-                d->doReinit();
-                break;
-            }
-        }
+        const QList<QPrint::InputSlot> inputSlots = d->m_printDevice.supportedInputSlots();
+        const int paperSource = value.toInt();
+        const int index = paperSource >= DMBIN_USER ?
+            indexOfWindowsId(inputSlots, paperSource) : indexOfId(inputSlots, QPrint::InputSlotId(paperSource));
+        d->devMode->dmDefaultSource = index >= 0 ? inputSlots.at(index).windowsId : DMBIN_AUTO;
+        d->doReinit();
         break;
     }
 
@@ -1343,12 +1359,12 @@ QVariant QWin32PrintEngine::property(PrintEnginePropertyKey key) const
         if (!d->devMode) {
             value = d->m_printDevice.defaultInputSlot().id;
         } else {
-            value = QPrint::Auto;
-            foreach (const QPrint::InputSlot inputSlot, d->m_printDevice.supportedInputSlots()) {
-                if (inputSlot.windowsId == d->devMode->dmDefaultSource) {
-                    value = inputSlot.id;
-                    break;
-                }
+            if (d->devMode->dmDefaultSource >= DMBIN_USER) {
+                value = int(d->devMode->dmDefaultSource);
+            } else {
+                const QList<QPrint::InputSlot> inputSlots = d->m_printDevice.supportedInputSlots();
+                const int index = indexOfWindowsId(inputSlots, d->devMode->dmDefaultSource);
+                value = index >= 0 ? inputSlots.at(index).id : QPrint::Auto;
             }
         }
         break;
@@ -1377,7 +1393,7 @@ QVariant QWin32PrintEngine::property(PrintEnginePropertyKey key) const
     case PPK_PaperSources: {
         QList<QVariant> out;
         foreach (const QPrint::InputSlot inputSlot, d->m_printDevice.supportedInputSlots())
-            out << inputSlot.id;
+            out << QVariant(inputSlot.id == QPrint::CustomInputSlot ? inputSlot.windowsId : int(inputSlot.id));
         value = out;
         break;
     }

@@ -87,6 +87,7 @@ QOpenGLTextureGlyphCache::~QOpenGLTextureGlyphCache()
 #ifdef QT_GL_TEXTURE_GLYPH_CACHE_DEBUG
     qDebug(" -> ~QOpenGLTextureGlyphCache() %p.", this);
 #endif
+    clear();
 }
 
 static inline bool isCoreProfile()
@@ -447,7 +448,8 @@ int QOpenGLTextureGlyphCache::maxTextureHeight() const
 
 void QOpenGLTextureGlyphCache::clear()
 {
-    m_textureResource->free();
+    if (m_textureResource)
+        m_textureResource->free();
     m_textureResource = 0;
 
     m_w = 0;

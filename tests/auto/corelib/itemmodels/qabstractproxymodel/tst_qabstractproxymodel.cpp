@@ -71,6 +71,7 @@ private slots:
     void submit_data();
     void submit();
     void testRoleNames();
+    void testSwappingRowsProxy();
 };
 
 // Subclass that exposes the protected functions.
@@ -395,6 +396,103 @@ void tst_QAbstractProxyModel::testRoleNames()
     QVERIFY( proxy2RoleNames.contains(StandardItemModelWithCustomRoleNames::CustomRole2));
     QVERIFY( proxy2RoleNames.value(StandardItemModelWithCustomRoleNames::CustomRole1) == "custom1" );
     QVERIFY( proxy2RoleNames.value(StandardItemModelWithCustomRoleNames::CustomRole2) == "custom2" );
+}
+
+// This class only supports very simple table models
+class SwappingProxy : public QAbstractProxyModel
+{
+    static int swapRow(const int row)
+    {
+        if (row == 2) {
+            return 3;
+        } else if (row == 3) {
+            return 2;
+        } else {
+            return row;
+        }
+    }
+public:
+    virtual QModelIndex index(int row, int column, const QModelIndex &parentIdx) const
+    {
+        if (!sourceModel())
+            return QModelIndex();
+        if (row < 0 || column < 0)
+            return QModelIndex();
+        if (row >= sourceModel()->rowCount())
+            return QModelIndex();
+        if (column >= sourceModel()->columnCount())
+            return QModelIndex();
+        return createIndex(row, column, parentIdx.internalPointer());
+    }
+
+    virtual QModelIndex parent(const QModelIndex &parentIdx) const
+    {
+        // well, we're a 2D model
+        Q_UNUSED(parentIdx);
+        return QModelIndex();
+    }
+
+    virtual int rowCount(const QModelIndex &parentIdx) const
+    {
+        if (parentIdx.isValid() || !sourceModel())
+            return 0;
+        return sourceModel()->rowCount();
+    }
+
+    virtual int columnCount(const QModelIndex &parentIdx) const
+    {
+        if (parentIdx.isValid() || !sourceModel())
+            return 0;
+        return sourceModel()->rowCount();
+    }
+
+    virtual QModelIndex mapToSource(const QModelIndex &proxyIndex) const
+    {
+        if (!proxyIndex.isValid())
+            return QModelIndex();
+        if (!sourceModel())
+            return QModelIndex();
+        Q_ASSERT(!proxyIndex.parent().isValid());
+        return sourceModel()->index(swapRow(proxyIndex.row()), proxyIndex.column(), QModelIndex());
+    }
+
+    virtual QModelIndex mapFromSource(const QModelIndex &sourceIndex) const
+    {
+        if (!sourceIndex.isValid())
+            return QModelIndex();
+        if (!sourceModel())
+            return QModelIndex();
+        Q_ASSERT(!sourceIndex.parent().isValid());
+        return index(swapRow(sourceIndex.row()), sourceIndex.column(), QModelIndex());
+    }
+};
+
+void tst_QAbstractProxyModel::testSwappingRowsProxy()
+{
+    QStandardItemModel defaultModel;
+    defaultModel.setRowCount(4);
+    defaultModel.setColumnCount(2);
+    for (int row = 0; row < defaultModel.rowCount(); ++row) {
+        defaultModel.setItem(row, 0, new QStandardItem(QString::number(row) + QLatin1Char('A')));
+        defaultModel.setItem(row, 1, new QStandardItem(QString::number(row) + QLatin1Char('B')));
+    }
+    SwappingProxy proxy;
+    proxy.setSourceModel(&defaultModel);
+    QCOMPARE(proxy.data(proxy.index(0, 0, QModelIndex())), QVariant("0A"));
+    QCOMPARE(proxy.data(proxy.index(0, 1, QModelIndex())), QVariant("0B"));
+    QCOMPARE(proxy.data(proxy.index(1, 0, QModelIndex())), QVariant("1A"));
+    QCOMPARE(proxy.data(proxy.index(1, 1, QModelIndex())), QVariant("1B"));
+    QCOMPARE(proxy.data(proxy.index(2, 0, QModelIndex())), QVariant("3A"));
+    QCOMPARE(proxy.data(proxy.index(2, 1, QModelIndex())), QVariant("3B"));
+    QCOMPARE(proxy.data(proxy.index(3, 0, QModelIndex())), QVariant("2A"));
+    QCOMPARE(proxy.data(proxy.index(3, 1, QModelIndex())), QVariant("2B"));
+
+    for (int row = 0; row < defaultModel.rowCount(); ++row) {
+        QModelIndex left = proxy.index(row, 0, QModelIndex());
+        QModelIndex right = proxy.index(row, 1, QModelIndex());
+        QCOMPARE(left.sibling(left.row(), 1), right);
+        QCOMPARE(right.sibling(right.row(), 0), left);
+    }
 }
 
 QTEST_MAIN(tst_QAbstractProxyModel)

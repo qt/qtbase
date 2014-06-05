@@ -60,6 +60,7 @@ public:
 
     void setGeometry(const QRect &rect);
     EGLSurface eglSurface(EGLConfig config);
+    QSurfaceFormat format() const;
 
     void checkNativeSurface(EGLConfig config);
 
@@ -76,6 +77,7 @@ private:
     int m_nativeSurfaceId = -1;
     QJNIObjectPrivate m_androidSurfaceObject;
     QWaitCondition m_surfaceWaitCondition;
+    QSurfaceFormat m_format;
 };
 
 QT_END_NAMESPACE

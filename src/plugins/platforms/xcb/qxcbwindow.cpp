@@ -202,6 +202,7 @@ QXcbWindow::QXcbWindow(QWindow *window)
     , m_eglSurface(0)
 #endif
     , m_lastWindowStateEvent(-1)
+    , m_syncState(NoSyncNeeded)
 {
     m_screen = static_cast<QXcbScreen *>(window->screen()->handle());
 
@@ -369,7 +370,12 @@ void QXcbWindow::create()
     properties[propertyCount++] = atom(QXcbAtom::WM_TAKE_FOCUS);
     properties[propertyCount++] = atom(QXcbAtom::_NET_WM_PING);
 
-    m_usingSyncProtocol = m_screen->syncRequestSupported() && window()->surfaceType() != QSurface::OpenGLSurface;
+    m_usingSyncProtocol = m_screen->syncRequestSupported();
+#if !defined(XCB_USE_GLX)
+    // synced resize only implemented on GLX
+    if (window()->supportsOpenGL())
+        m_usingSyncProtocol = false;
+#endif
 
     if (m_usingSyncProtocol)
         properties[propertyCount++] = atom(QXcbAtom::_NET_WM_SYNC_REQUEST);
@@ -1728,6 +1734,8 @@ void QXcbWindow::handleClientMessageEvent(const xcb_client_message_event_t *even
             connection()->setTime(event->data.data32[1]);
             m_syncValue.lo = event->data.data32[2];
             m_syncValue.hi = event->data.data32[3];
+            if (m_usingSyncProtocol)
+                m_syncState = SyncReceived;
 #ifndef QT_NO_WHATSTHIS
         } else if (event->data.data32[0] == atom(QXcbAtom::_NET_WM_CONTEXT_HELP)) {
             QWindowSystemInterface::handleEnterWhatsThisEvent();
@@ -1800,6 +1808,9 @@ void QXcbWindow::handleConfigureNotifyEvent(const xcb_configure_notify_event_t *
         m_deferredExpose = false;
         QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(), geometry().size()));
     }
+
+    if (m_usingSyncProtocol && m_syncState == SyncReceived)
+        m_syncState = SyncAndConfigureReceived;
 
     m_dirtyFrameMargins = true;
 }
@@ -2077,12 +2088,17 @@ void QXcbWindow::handleFocusOutEvent(const xcb_focus_out_event_t *)
 
 void QXcbWindow::updateSyncRequestCounter()
 {
+    if (m_syncState != SyncAndConfigureReceived) {
+        // window manager does not expect a sync event yet.
+        return;
+    }
     if (m_usingSyncProtocol && (m_syncValue.lo != 0 || m_syncValue.hi != 0)) {
         Q_XCB_CALL(xcb_sync_set_counter(xcb_connection(), m_syncCounter, m_syncValue));
-        connection()->sync();
+        xcb_flush(xcb_connection());
 
         m_syncValue.lo = 0;
         m_syncValue.hi = 0;
+        m_syncState = NoSyncNeeded;
     }
 }
 
@@ -2303,6 +2319,11 @@ void QXcbWindow::setAlertState(bool enabled)
     } else {
         setNetWmStates(oldState & ~NetWmStateDemandsAttention);
     }
+}
+
+bool QXcbWindow::needsSync() const
+{
+    return m_syncState == SyncAndConfigureReceived;
 }
 
 QT_END_NAMESPACE

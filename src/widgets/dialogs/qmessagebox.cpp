@@ -2565,8 +2565,10 @@ void QMessageBox::setDetailedText(const QString &text)
             d->detailsText->hide();
         }
         if (!d->detailsButton) {
+            const bool autoAddOkButton = d->autoAddOkButton; // QTBUG-39334, addButton() clears the flag.
             d->detailsButton = new DetailButton(this);
             addButton(d->detailsButton, QMessageBox::ActionRole);
+            d->autoAddOkButton = autoAddOkButton;
         }
         d->detailsText->setText(text);
     }

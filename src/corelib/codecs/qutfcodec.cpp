@@ -74,25 +74,22 @@ static inline bool simdEncodeAscii(uchar *&dst, const ushort *&nextAscii, const 
         __m128i packed = _mm_packus_epi16(data1, data2);
         __m128i nonAscii = _mm_cmpgt_epi8(packed, _mm_setzero_si128());
 
+        // store, even if there are non-ASCII characters here
+        _mm_storeu_si128((__m128i*)dst, packed);
+
         // n will contain 1 bit set per character in [data1, data2] that is non-ASCII (or NUL)
         ushort n = ~_mm_movemask_epi8(nonAscii);
         if (n) {
-            // copy the front part that is still ASCII
-            while (!(n & 1)) {
-                *dst++ = *src++;
-                n >>= 1;
-            }
-
             // find the next probable ASCII character
             // we don't want to load 32 bytes again in this loop if we know there are non-ASCII
             // characters still coming
-            n = _bit_scan_reverse(n);
-            nextAscii = src + n + 1;
+            nextAscii = src + _bit_scan_reverse(n) + 1;
+
+            n = _bit_scan_forward(n);
+            dst += n;
+            src += n;
             return false;
         }
-
-        // pack
-        _mm_storeu_si128((__m128i*)dst, packed);
     }
     return src == end;
 }

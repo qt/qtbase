@@ -663,10 +663,10 @@ QVariant QSystemLocalePrivate::uiLanguages()
     unsigned int size;
     languageList->get_Size(&size);
     for (unsigned int i = 0; i < size; ++i) {
-        HSTRING language;
-        languageList->GetAt(i, &language);
+        HString language;
+        languageList->GetAt(i, language.GetAddressOf());
         UINT32 length;
-        PCWSTR rawString = WindowsGetStringRawBuffer(language, &length);
+        PCWSTR rawString = language.GetRawBuffer(&length);
         result << QString::fromWCharArray(rawString, length);
     }
 #else // !Q_OS_WINPHONE

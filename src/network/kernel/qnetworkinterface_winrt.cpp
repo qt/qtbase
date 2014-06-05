@@ -114,11 +114,11 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
                 || (type == HostNameType_Ipv6 && hostInfo.prefixLength > 128))
             continue;
 
-        HSTRING name;
-        hostName->get_CanonicalName(&name);
+        HString name;
+        hostName->get_CanonicalName(name.GetAddressOf());
         hostName->Release();
         UINT32 length;
-        PCWSTR rawString = WindowsGetStringRawBuffer(name, &length);
+        PCWSTR rawString = name.GetRawBuffer(&length);
         hostInfo.address = QString::fromWCharArray(rawString, length);
 
         hostList << hostInfo;

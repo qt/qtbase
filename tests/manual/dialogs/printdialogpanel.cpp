@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -473,6 +473,15 @@ void PrintDialogPanel::retrieveSettings(const QPrinter *printer)
     setComboBoxValue(m_panel.m_paperSourceCombo, printer->paperSource());
     setComboBoxValue(m_panel.m_colorModeCombo, printer->colorMode());
     m_panel.m_resolution->setValue(printer->resolution());
+
+#ifdef Q_OS_WIN
+    QString availPaperSources;
+    foreach (QPrinter::PaperSource ps, printer->supportedPaperSources())
+        availPaperSources += QString::number(int(ps)) + QLatin1Char(' ');
+    m_panel.availPaperSourceLabel->setText(availPaperSources);
+#else
+    m_panel.availPaperSourceLabel->setText(QLatin1String("N/A"));
+#endif
 
 #if QT_VERSION >= 0x050300
     m_pageLayout = printer->pageLayout();

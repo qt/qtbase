@@ -82,6 +82,7 @@ public:
     QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
     QAbstractEventDispatcher *createEventDispatcher() const;
     QAndroidPlatformScreen *screen() { return m_primaryScreen; }
+    QPlatformOffscreenSurface *createPlatformOffscreenSurface(QOffscreenSurface *surface) const;
 
     virtual void setDesktopSize(int width, int height);
     virtual void setDisplayMetrics(int width, int height);

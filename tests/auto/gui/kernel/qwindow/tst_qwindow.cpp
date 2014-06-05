@@ -92,6 +92,7 @@ private slots:
     void modalDialogClosingOneOfTwoModal();
     void modalWithChildWindow();
     void modalWindowModallity();
+    void modalWindowPosition();
 
     void initTestCase()
     {
@@ -1427,6 +1428,18 @@ void tst_QWindow::modalWindowModallity()
     normal_window.requestActivate();
     QTRY_COMPARE(QGuiApplication::focusWindow(), &normal_window);
 
+}
+
+void tst_QWindow::modalWindowPosition()
+{
+    QWindow window;
+    window.setGeometry(QRect(100, 100, 400, 400));
+    // Allow for any potential resizing due to constraints
+    QRect origGeo = window.geometry();
+    window.setModality(Qt::WindowModal);
+    window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+    QCOMPARE(window.geometry(), origGeo);
 }
 
 #include <tst_qwindow.moc>

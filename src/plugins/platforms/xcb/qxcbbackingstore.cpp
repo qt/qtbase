@@ -261,7 +261,6 @@ void QXcbShmImage::preparePaint(const QRegion &region)
 QXcbBackingStore::QXcbBackingStore(QWindow *window)
     : QPlatformBackingStore(window)
     , m_image(0)
-    , m_syncingResize(false)
 {
     QXcbScreen *screen = static_cast<QXcbScreen *>(window->screen()->handle());
     setConnection(screen->connection());
@@ -330,13 +329,10 @@ void QXcbBackingStore::flush(QWindow *window, const QRegion &region, const QPoin
 
     Q_XCB_NOOP(connection());
 
-    if (m_syncingResize) {
-        connection()->sync();
-        m_syncingResize = false;
+    if (platformWindow->needsSync())
         platformWindow->updateSyncRequestCounter();
-    } else {
+    else
         xcb_flush(xcb_connection());
-    }
 }
 
 #ifndef QT_NO_OPENGL
@@ -347,10 +343,8 @@ void QXcbBackingStore::composeAndFlush(QWindow *window, const QRegion &region, c
 
     Q_XCB_NOOP(connection());
 
-    if (m_syncingResize) {
-        QXcbWindow *platformWindow = static_cast<QXcbWindow *>(window->handle());
-        connection()->sync();
-        m_syncingResize = false;
+    QXcbWindow *platformWindow = static_cast<QXcbWindow *>(window->handle());
+    if (platformWindow->needsSync()) {
         platformWindow->updateSyncRequestCounter();
     } else {
         xcb_flush(xcb_connection());
@@ -376,8 +370,6 @@ void QXcbBackingStore::resize(const QSize &size, const QRegion &)
     delete m_image;
     m_image = new QXcbShmImage(screen, size, win->depth(), win->imageFormat());
     Q_XCB_NOOP(connection());
-
-    m_syncingResize = true;
 }
 
 extern void qt_scrollRectInImage(QImage &img, const QRect &rect, const QPoint &offset);
