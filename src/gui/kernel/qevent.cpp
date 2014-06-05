@@ -2072,11 +2072,73 @@ QVariant QInputMethodQueryEvent::value(Qt::InputMethodQuery query) const
   The \a tangentialPressure parameter contins the tangential pressure of an air
   brush. If the device does not support tangential pressure, pass 0 here.
 
+  \a rotation contains the device's rotation in degrees. 4D mice and the Wacom
+  Art Pen support rotation. If the device does not support rotation, pass 0 here.
+
+  The \a button that caused the event is given as a value from the
+  \l Qt::MouseButton enum. If the event \a type is not \l TabletPress or
+  \l TabletRelease, the appropriate button for this event is \l Qt::NoButton.
+
+  \a buttons is the state of all buttons at the time of the event.
+
+  \sa pos(), globalPos(), device(), pressure(), xTilt(), yTilt(), uniqueId(), rotation(),
+      tangentialPressure(), z()
+*/
+
+QTabletEvent::QTabletEvent(Type type, const QPointF &pos, const QPointF &globalPos,
+                           int device, int pointerType,
+                           qreal pressure, int xTilt, int yTilt, qreal tangentialPressure,
+                           qreal rotation, int z, Qt::KeyboardModifiers keyState, qint64 uniqueID,
+                           Qt::MouseButton button, Qt::MouseButtons buttons)
+    : QInputEvent(type, keyState),
+      mPos(pos),
+      mGPos(globalPos),
+      mDev(device),
+      mPointerType(pointerType),
+      mXT(xTilt),
+      mYT(yTilt),
+      mZ(z),
+      mPress(pressure),
+      mTangential(tangentialPressure),
+      mRot(rotation),
+      mUnique(uniqueID),
+      mExtra(new QTabletEventPrivate(button, buttons))
+{
+}
+
+/*!
+  Construct a tablet event of the given \a type.
+
+  The \a pos parameter indicates where the event occurred in the
+  widget; \a globalPos is the corresponding position in absolute
+  coordinates.
+
+  \a pressure contains the pressure exerted on the \a device.
+
+  \a pointerType describes the type of pen that is being used.
+
+  \a xTilt and \a yTilt contain the device's degree of tilt from the
+  x and y axes respectively.
+
+  \a keyState specifies which keyboard modifiers are pressed (e.g.,
+  \uicontrol{Ctrl}).
+
+  The \a uniqueID parameter contains the unique ID for the current device.
+
+  The \a z parameter contains the coordinate of the device on the tablet, this
+  is usually given by a wheel on 4D mouse. If the device does not support a
+  Z-axis, pass zero here.
+
+  The \a tangentialPressure parameter contins the tangential pressure of an air
+  brush. If the device does not support tangential pressure, pass 0 here.
+
   \a rotation contains the device's rotation in degrees. 4D mice support
   rotation. If the device does not support rotation, pass 0 here.
 
   \sa pos(), globalPos(), device(), pressure(), xTilt(), yTilt(), uniqueId(), rotation(),
       tangentialPressure(), z()
+
+  \deprecated in 5.4: use the constructor with MouseButton status
 */
 
 QTabletEvent::QTabletEvent(Type type, const QPointF &pos, const QPointF &globalPos,
@@ -2095,7 +2157,7 @@ QTabletEvent::QTabletEvent(Type type, const QPointF &pos, const QPointF &globalP
       mTangential(tangentialPressure),
       mRot(rotation),
       mUnique(uniqueID),
-      mExtra(0)
+      mExtra(new QTabletEventPrivate(Qt::NoButton, Qt::NoButton))
 {
 }
 
@@ -2104,6 +2166,34 @@ QTabletEvent::QTabletEvent(Type type, const QPointF &pos, const QPointF &globalP
 */
 QTabletEvent::~QTabletEvent()
 {
+}
+
+/*!
+    Returns the button that caused the event.
+
+    Note that the returned value is always Qt::NoButton for \l TabletMove,
+    \l TabletEnterProximity and \l TabletLeaveProximity events.
+
+    \sa buttons(), Qt::MouseButton
+*/
+Qt::MouseButton QTabletEvent::button() const
+{
+    return static_cast<QTabletEventPrivate *>(mExtra)->b;
+}
+
+/*!
+    Returns the button state when the event was generated. The button state is
+    a combination of buttons from the \l Qt::MouseButton enum using the OR
+    operator. For \l TabletMove events, this is all buttons that are pressed
+    down. For \l TabletPress events this includes the button that caused the
+    event. For \l TabletRelease events this excludes the button that caused the
+    event.
+
+    \sa button(), Qt::MouseButton
+*/
+Qt::MouseButtons QTabletEvent::buttons() const
+{
+    return static_cast<QTabletEventPrivate *>(mExtra)->buttonState;
 }
 
 /*!

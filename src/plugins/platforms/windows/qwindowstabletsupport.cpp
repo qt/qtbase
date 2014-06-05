@@ -479,8 +479,9 @@ bool QWindowsTabletSupport::translateTabletPacketEvent()
                 << tiltY << "tanP:" << tangentialPressure << "rotation:" << rotation;
         }
 
-        QWindowSystemInterface::handleTabletEvent(target, packet.pkButtons, localPos, globalPosF,
+        QWindowSystemInterface::handleTabletEvent(target, QPointF(localPos), globalPosF,
                                                   currentDevice, currentPointer,
+                                                  static_cast<Qt::MouseButtons>(packet.pkButtons),
                                                   pressureNew, tiltX, tiltY,
                                                   tangentialPressure, rotation, z,
                                                   m_devices.at(m_currentDevice).uniqueId,

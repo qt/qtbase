@@ -230,7 +230,12 @@ public:
     QTabletEvent(Type t, const QPointF &pos, const QPointF &globalPos,
                  int device, int pointerType, qreal pressure, int xTilt, int yTilt,
                  qreal tangentialPressure, qreal rotation, int z,
-                 Qt::KeyboardModifiers keyState, qint64 uniqueID);
+                 Qt::KeyboardModifiers keyState, qint64 uniqueID); // ### remove in Qt 6
+    QTabletEvent(Type t, const QPointF &pos, const QPointF &globalPos,
+                 int device, int pointerType, qreal pressure, int xTilt, int yTilt,
+                 qreal tangentialPressure, qreal rotation, int z,
+                 Qt::KeyboardModifiers keyState, qint64 uniqueID,
+                 Qt::MouseButton button, Qt::MouseButtons buttons);
     ~QTabletEvent();
 
     inline QPoint pos() const { return mPos.toPoint(); }
@@ -257,6 +262,8 @@ public:
     inline qreal rotation() const { return mRot; }
     inline int xTilt() const { return mXT; }
     inline int yTilt() const { return mYT; }
+    Qt::MouseButton button() const;
+    Qt::MouseButtons buttons() const;
 
 protected:
     QPointF mPos, mGPos;
@@ -264,9 +271,8 @@ protected:
     qreal mPress, mTangential, mRot;
     qint64 mUnique;
 
-    // I don't know what the future holds for tablets but there could be some
-    // new devices coming along, and there seem to be "holes" in the
-    // OS-specific events for this.
+    // QTabletEventPrivate for extra storage.
+    // ### Qt 6: QPointingEvent will have Buttons, QTabletEvent will inherit
     void *mExtra;
 };
 #endif // QT_NO_TABLETEVENT

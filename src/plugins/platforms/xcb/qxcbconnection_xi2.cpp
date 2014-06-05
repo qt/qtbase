@@ -685,6 +685,19 @@ void QXcbConnection::xi2HandleScrollEvent(void *event, ScrollingDevice &scrollin
 #endif // XCB_USE_XINPUT21
 }
 
+static Qt::MouseButton xiToQtMouseButton(uint32_t b) {
+    switch (b) {
+    case 1: return Qt::LeftButton;
+    case 2: return Qt::MiddleButton;
+    case 3: return Qt::RightButton;
+    // 4-7 are for scrolling
+    default: break;
+    }
+    if (b >= 8 && b <= Qt::MaxMouseButton)
+        return static_cast<Qt::MouseButton>(Qt::BackButton << (b - 8));
+    return Qt::NoButton;
+}
+
 static QTabletEvent::TabletDevice toolIdToTabletDevice(quint32 toolId) {
     // keep in sync with wacom_intuos_inout() in Linux kernel driver wacom_wac.c
     switch (toolId) {
@@ -725,24 +738,22 @@ bool QXcbConnection::xi2HandleTabletEvent(void *event, TabletData *tabletData)
     Display *xDisplay = static_cast<Display *>(m_xlib_display);
     xXIGenericDeviceEvent *xiEvent = static_cast<xXIGenericDeviceEvent *>(event);
     switch (xiEvent->evtype) {
-    case XI_ButtonPress: // stylus down
-        if (reinterpret_cast<xXIDeviceEvent *>(event)->detail == 1) { // ignore the physical buttons on the stylus
-            tabletData->down = true;
-            xi2ReportTabletEvent(*tabletData, xiEvent);
-        } else
-            handled = false;
+    case XI_ButtonPress: {
+        Qt::MouseButton b = xiToQtMouseButton(reinterpret_cast<xXIDeviceEvent *>(event)->detail);
+        tabletData->buttons |= b;
+        xi2ReportTabletEvent(*tabletData, xiEvent);
         break;
-    case XI_ButtonRelease: // stylus up
-        if (reinterpret_cast<xXIDeviceEvent *>(event)->detail == 1) {
-            tabletData->down = false;
-            xi2ReportTabletEvent(*tabletData, xiEvent);
-        } else
-            handled = false;
+    }
+    case XI_ButtonRelease: {
+        Qt::MouseButton b = xiToQtMouseButton(reinterpret_cast<xXIDeviceEvent *>(event)->detail);
+        tabletData->buttons ^= b;
+        xi2ReportTabletEvent(*tabletData, xiEvent);
         break;
+    }
     case XI_Motion:
-        // Report TabletMove only when the stylus is touching the tablet.
-        // No possibility to report proximity motion (no suitable Qt event exists yet).
-        if (tabletData->down)
+        // Report TabletMove only when the stylus is touching the tablet or any button is pressed.
+        // TODO: report proximity (hover) motion (no suitable Qt event exists yet).
+        if (tabletData->buttons != Qt::NoButton)
             xi2ReportTabletEvent(*tabletData, xiEvent);
         break;
     case XI_PropertyEvent: {
@@ -862,15 +873,16 @@ void QXcbConnection::xi2ReportTabletEvent(TabletData &tabletData, void *event)
     }
 
     if (Q_UNLIKELY(debug_xinput))
-        qDebug("XI2 event on tablet %d with tool %d type %d seq %d detail %d pos %6.1f, %6.1f root pos %6.1f, %6.1f pressure %4.2lf tilt %d, %d rotation %6.2lf",
-            ev->deviceid, tabletData.tool, ev->type, ev->sequenceNumber, ev->detail,
+        qDebug("XI2 event on tablet %d with tool %d type %d seq %d detail %d pos %6.1f, %6.1f root pos %6.1f, %6.1f buttons 0x%x pressure %4.2lf tilt %d, %d rotation %6.2lf",
+            ev->deviceid, tabletData.tool, ev->evtype, ev->sequenceNumber, ev->detail,
             fixed1616ToReal(ev->event_x), fixed1616ToReal(ev->event_y),
             fixed1616ToReal(ev->root_x), fixed1616ToReal(ev->root_y),
-            pressure, xTilt, yTilt, rotation);
+            (int)tabletData.buttons, pressure, xTilt, yTilt, rotation);
 
-    QWindowSystemInterface::handleTabletEvent(window, tabletData.down, local, global,
+    QWindowSystemInterface::handleTabletEvent(window, local, global,
                                               tabletData.tool, tabletData.pointerType,
-                                              pressure, xTilt, yTilt, tangentialPressure,
+                                              tabletData.buttons, pressure,
+                                              xTilt, yTilt, tangentialPressure,
                                               rotation, 0, tabletData.serialId);
 }
 #endif // QT_NO_TABLETEVENT

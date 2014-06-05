@@ -92,6 +92,20 @@ public:
     QVector<QPointF> rawScreenPositions;
 };
 
+#ifndef QT_NO_TABLETEVENT
+class QTabletEventPrivate
+{
+public:
+    inline QTabletEventPrivate(Qt::MouseButton button, Qt::MouseButtons buttons)
+        : b(button),
+          buttonState(buttons)
+    { }
+
+    Qt::MouseButton b;
+    Qt::MouseButtons buttonState;
+};
+#endif // QT_NO_TABLETEVENT
+
 QT_END_NAMESPACE
 
 #endif // QEVENT_P_H

@@ -338,19 +338,19 @@ public:
 
     class TabletEvent : public InputEvent {
     public:
-        static void handleTabletEvent(QWindow *w, bool down, const QPointF &local, const QPointF &global,
-                                      int device, int pointerType, qreal pressure, int xTilt, int yTilt,
+        static void handleTabletEvent(QWindow *w, const QPointF &local, const QPointF &global,
+                                      int device, int pointerType, Qt::MouseButtons buttons, qreal pressure, int xTilt, int yTilt,
                                       qreal tangentialPressure, qreal rotation, int z, qint64 uid,
                                       Qt::KeyboardModifiers modifiers = Qt::NoModifier);
 
-        TabletEvent(QWindow *w, ulong time, bool down, const QPointF &local, const QPointF &global,
-                    int device, int pointerType, qreal pressure, int xTilt, int yTilt, qreal tpressure,
+        TabletEvent(QWindow *w, ulong time, const QPointF &local, const QPointF &global,
+                    int device, int pointerType, Qt::MouseButtons b, qreal pressure, int xTilt, int yTilt, qreal tpressure,
                     qreal rotation, int z, qint64 uid, Qt::KeyboardModifiers mods)
             : InputEvent(w, time, Tablet, mods),
-              down(down), local(local), global(global), device(device), pointerType(pointerType),
+              buttons(b), local(local), global(global), device(device), pointerType(pointerType),
               pressure(pressure), xTilt(xTilt), yTilt(yTilt), tangentialPressure(tpressure),
               rotation(rotation), z(z), uid(uid) { }
-        bool down;
+        Qt::MouseButtons buttons;
         QPointF local;
         QPointF global;
         int device;

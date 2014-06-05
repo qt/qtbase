@@ -795,7 +795,7 @@ void QWidgetWindow::handleTabletEvent(QTabletEvent *event)
         QPointF mapped = qt_tablet_target->mapFromGlobal(event->globalPos()) + delta;
         QTabletEvent ev(event->type(), mapped, event->globalPosF(), event->device(), event->pointerType(),
                         event->pressure(), event->xTilt(), event->yTilt(), event->tangentialPressure(),
-                        event->rotation(), event->z(), event->modifiers(), event->uniqueId());
+                        event->rotation(), event->z(), event->modifiers(), event->uniqueId(), event->button(), event->buttons());
         ev.setTimestamp(event->timestamp());
         QGuiApplication::sendSpontaneousEvent(qt_tablet_target, &ev);
     }

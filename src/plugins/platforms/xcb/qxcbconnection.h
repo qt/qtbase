@@ -509,11 +509,11 @@ private:
 #ifndef QT_NO_TABLETEVENT
     struct TabletData {
         TabletData() : deviceId(0), pointerType(QTabletEvent::UnknownPointer),
-            tool(QTabletEvent::Stylus), down(false), serialId(0), inProximity(false) { }
+            tool(QTabletEvent::Stylus), buttons(0), serialId(0), inProximity(false) { }
         int deviceId;
         QTabletEvent::PointerType pointerType;
         QTabletEvent::TabletDevice tool;
-        bool down;
+        Qt::MouseButtons buttons;
         qint64 serialId;
         bool inProximity;
         struct ValuatorClassInfo {

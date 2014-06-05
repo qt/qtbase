@@ -629,15 +629,34 @@ void QWindowSystemInterface::handleFileOpenEvent(const QUrl &url)
     QGuiApplicationPrivate::processWindowSystemEvent(&e);
 }
 
+void QWindowSystemInterface::handleTabletEvent(QWindow *w, ulong timestamp, const QPointF &local, const QPointF &global,
+                                               int device, int pointerType, Qt::MouseButtons buttons, qreal pressure, int xTilt, int yTilt,
+                                               qreal tangentialPressure, qreal rotation, int z, qint64 uid,
+                                               Qt::KeyboardModifiers modifiers)
+{
+    QWindowSystemInterfacePrivate::TabletEvent *e =
+            new QWindowSystemInterfacePrivate::TabletEvent(w, timestamp, local, global, device, pointerType, buttons, pressure,
+                                                           xTilt, yTilt, tangentialPressure, rotation, z, uid, modifiers);
+    QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
+}
+
+void QWindowSystemInterface::handleTabletEvent(QWindow *w, const QPointF &local, const QPointF &global,
+                                               int device, int pointerType, Qt::MouseButtons buttons, qreal pressure, int xTilt, int yTilt,
+                                               qreal tangentialPressure, qreal rotation, int z, qint64 uid,
+                                               Qt::KeyboardModifiers modifiers)
+{
+    ulong time = QWindowSystemInterfacePrivate::eventTime.elapsed();
+    handleTabletEvent(w, time, local, global, device, pointerType, buttons, pressure,
+                      xTilt, yTilt, tangentialPressure, rotation, z, uid, modifiers);
+}
+
 void QWindowSystemInterface::handleTabletEvent(QWindow *w, ulong timestamp, bool down, const QPointF &local, const QPointF &global,
                                                int device, int pointerType, qreal pressure, int xTilt, int yTilt,
                                                qreal tangentialPressure, qreal rotation, int z, qint64 uid,
                                                Qt::KeyboardModifiers modifiers)
 {
-    QWindowSystemInterfacePrivate::TabletEvent *e =
-            new QWindowSystemInterfacePrivate::TabletEvent(w, timestamp, down, local, global, device, pointerType, pressure,
-                                                           xTilt, yTilt, tangentialPressure, rotation, z, uid, modifiers);
-    QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
+    handleTabletEvent(w, timestamp, local, global, device, pointerType, (down ? Qt::LeftButton : Qt::NoButton), pressure,
+                      xTilt, yTilt, tangentialPressure, rotation, z, uid, modifiers);
 }
 
 void QWindowSystemInterface::handleTabletEvent(QWindow *w, bool down, const QPointF &local, const QPointF &global,
@@ -645,8 +664,7 @@ void QWindowSystemInterface::handleTabletEvent(QWindow *w, bool down, const QPoi
                                                qreal tangentialPressure, qreal rotation, int z, qint64 uid,
                                                Qt::KeyboardModifiers modifiers)
 {
-    ulong time = QWindowSystemInterfacePrivate::eventTime.elapsed();
-    handleTabletEvent(w, time, down, local, global, device, pointerType, pressure,
+    handleTabletEvent(w, local, global, device, pointerType, (down ? Qt::LeftButton : Qt::NoButton), pressure,
                       xTilt, yTilt, tangentialPressure, rotation, z, uid, modifiers);
 }
 

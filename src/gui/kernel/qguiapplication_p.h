@@ -207,7 +207,7 @@ public:
     static int mousePressY;
     static int mouse_double_click_distance;
     static QPointF lastCursorPosition;
-    static bool tabletState;
+    static Qt::MouseButtons tabletState;
     static QWindow *tabletPressTarget;
     static QWindow *currentMouseWindow;
     static Qt::ApplicationState applicationState;
