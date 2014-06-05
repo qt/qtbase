@@ -898,49 +898,51 @@ void QProcessPrivate::cleanup()
 
 /*!
     \internal
+    Returns true if we emitted readyRead().
 */
-bool QProcessPrivate::_q_canReadStandardOutput()
+bool QProcessPrivate::tryReadFromChannel(Channel *channel)
 {
     Q_Q(QProcess);
-    qint64 available = bytesAvailableFromStdout();
+    qint64 available = bytesAvailableInChannel(channel);
     if (available == 0) {
-        if (stdoutChannel.notifier)
-            stdoutChannel.notifier->setEnabled(false);
-        closeChannel(&stdoutChannel);
+        if (channel->notifier)
+            channel->notifier->setEnabled(false);
+        closeChannel(channel);
 #if defined QPROCESS_DEBUG
-        qDebug("QProcessPrivate::canReadStandardOutput(), 0 bytes available");
+        qDebug("QProcessPrivate::tryReadFromChannel(%d), 0 bytes available", channel - &stdinChannel);
 #endif
         return false;
     }
 
-    char *ptr = stdoutChannel.buffer.reserve(available);
-    qint64 readBytes = readFromStdout(ptr, available);
+    char *ptr = channel->buffer.reserve(available);
+    qint64 readBytes = readFromChannel(channel, ptr, available);
     if (readBytes == -1) {
         processError = QProcess::ReadError;
         q->setErrorString(QProcess::tr("Error reading from process"));
         emit q->error(processError);
 #if defined QPROCESS_DEBUG
-        qDebug("QProcessPrivate::canReadStandardOutput(), failed to read from the process");
+        qDebug("QProcessPrivate::tryReadFromChannel(%d), failed to read from the process", channel - &stdinChannel);
 #endif
         return false;
     }
 #if defined QPROCESS_DEBUG
-    qDebug("QProcessPrivate::canReadStandardOutput(), read %d bytes from the process' output",
+    qDebug("QProcessPrivate::tryReadFromChannel(%d), read %d bytes from the process' output", channel - &stdinChannel
             int(readBytes));
 #endif
 
-    if (stdoutChannel.closed) {
-        stdoutChannel.buffer.chop(readBytes);
+    if (channel->closed) {
+        channel->buffer.chop(readBytes);
         return false;
     }
 
-    stdoutChannel.buffer.chop(available - readBytes);
+    channel->buffer.chop(available - readBytes);
 
     bool didRead = false;
+    bool isStdout = channel == &stdoutChannel;
     if (readBytes == 0) {
-        if (stdoutChannel.notifier)
-            stdoutChannel.notifier->setEnabled(false);
-    } else if (processChannel == QProcess::StandardOutput) {
+        if (channel->notifier)
+            channel->notifier->setEnabled(false);
+    } else if ((processChannel == QProcess::StandardOutput) == isStdout) {
         didRead = true;
         if (!emittedReadyRead) {
             emittedReadyRead = true;
@@ -948,8 +950,19 @@ bool QProcessPrivate::_q_canReadStandardOutput()
             emittedReadyRead = false;
         }
     }
-    emit q->readyReadStandardOutput(QProcess::QPrivateSignal());
+    if (isStdout)
+        emit q->readyReadStandardOutput(QProcess::QPrivateSignal());
+    else
+        emit q->readyReadStandardError(QProcess::QPrivateSignal());
     return didRead;
+}
+
+/*!
+    \internal
+*/
+bool QProcessPrivate::_q_canReadStandardOutput()
+{
+    return tryReadFromChannel(&stdoutChannel);
 }
 
 /*!
@@ -957,44 +970,7 @@ bool QProcessPrivate::_q_canReadStandardOutput()
 */
 bool QProcessPrivate::_q_canReadStandardError()
 {
-    Q_Q(QProcess);
-    qint64 available = bytesAvailableFromStderr();
-    if (available == 0) {
-        if (stderrChannel.notifier)
-            stderrChannel.notifier->setEnabled(false);
-        closeChannel(&stderrChannel);
-        return false;
-    }
-
-    char *ptr = stderrChannel.buffer.reserve(available);
-    qint64 readBytes = readFromStderr(ptr, available);
-    if (readBytes == -1) {
-        processError = QProcess::ReadError;
-        q->setErrorString(QProcess::tr("Error reading from process"));
-        emit q->error(processError);
-        return false;
-    }
-    if (stderrChannel.closed) {
-        stderrChannel.buffer.chop(readBytes);
-        return false;
-    }
-
-    stderrChannel.buffer.chop(available - readBytes);
-
-    bool didRead = false;
-    if (readBytes == 0) {
-        if (stderrChannel.notifier)
-            stderrChannel.notifier->setEnabled(false);
-    } else if (processChannel == QProcess::StandardError) {
-        didRead = true;
-        if (!emittedReadyRead) {
-            emittedReadyRead = true;
-            emit q->readyRead();
-            emittedReadyRead = false;
-        }
-    }
-    emit q->readyReadStandardError(QProcess::QPrivateSignal());
-    return didRead;
+    return tryReadFromChannel(&stderrChannel);
 }
 
 /*!

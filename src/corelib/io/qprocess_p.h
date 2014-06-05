@@ -329,6 +329,7 @@ public:
     bool openChannel(Channel &channel);
     void closeChannel(Channel *channel);
     void closeWriteChannel();
+    bool tryReadFromChannel(Channel *channel); // obviously, only stdout and stderr
 
     QString program;
     QStringList arguments;
@@ -386,10 +387,8 @@ public:
     bool waitForFinished(int msecs = 30000);
     bool waitForWrite(int msecs = 30000);
 
-    qint64 bytesAvailableFromStdout() const;
-    qint64 bytesAvailableFromStderr() const;
-    qint64 readFromStdout(char *data, qint64 maxlen);
-    qint64 readFromStderr(char *data, qint64 maxlen);
+    qint64 bytesAvailableInChannel(const Channel *channel) const;
+    qint64 readFromChannel(const Channel *channel, char *data, qint64 maxlen);
     qint64 writeToStdin(const char *data, qint64 maxlen);
 
     void cleanup();

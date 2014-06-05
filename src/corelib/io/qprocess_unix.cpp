@@ -963,45 +963,24 @@ bool QProcessPrivate::processStarted()
     return i <= 0;
 }
 
-qint64 QProcessPrivate::bytesAvailableFromStdout() const
+qint64 QProcessPrivate::bytesAvailableInChannel(const Channel *channel) const
 {
     int nbytes = 0;
     qint64 available = 0;
-    if (::ioctl(stdoutChannel.pipe[0], FIONREAD, (char *) &nbytes) >= 0)
+    if (::ioctl(channel->pipe[0], FIONREAD, (char *) &nbytes) >= 0)
         available = (qint64) nbytes;
 #if defined (QPROCESS_DEBUG)
-    qDebug("QProcessPrivate::bytesAvailableFromStdout() == %lld", available);
+    qDebug("QProcessPrivate::bytesAvailableInChannel(%d) == %lld", channel - &stdinChannel, available);
 #endif
     return available;
 }
 
-qint64 QProcessPrivate::bytesAvailableFromStderr() const
+qint64 QProcessPrivate::readFromChannel(const Channel *channel, char *data, qint64 maxlen)
 {
-    int nbytes = 0;
-    qint64 available = 0;
-    if (::ioctl(stderrChannel.pipe[0], FIONREAD, (char *) &nbytes) >= 0)
-        available = (qint64) nbytes;
-#if defined (QPROCESS_DEBUG)
-    qDebug("QProcessPrivate::bytesAvailableFromStderr() == %lld", available);
-#endif
-    return available;
-}
-
-qint64 QProcessPrivate::readFromStdout(char *data, qint64 maxlen)
-{
-    qint64 bytesRead = qt_safe_read(stdoutChannel.pipe[0], data, maxlen);
+    qint64 bytesRead = qt_safe_read(channel->pipe[0], data, maxlen);
 #if defined QPROCESS_DEBUG
-    qDebug("QProcessPrivate::readFromStdout(%p \"%s\", %lld) == %lld",
-           data, qt_prettyDebug(data, bytesRead, 16).constData(), maxlen, bytesRead);
-#endif
-    return bytesRead;
-}
-
-qint64 QProcessPrivate::readFromStderr(char *data, qint64 maxlen)
-{
-    qint64 bytesRead = qt_safe_read(stderrChannel.pipe[0], data, maxlen);
-#if defined QPROCESS_DEBUG
-    qDebug("QProcessPrivate::readFromStderr(%p \"%s\", %lld) == %lld",
+    qDebug("QProcessPrivate::readFromChannel(%d, %p \"%s\", %lld) == %lld",
+           channel - &stdinChannel,
            data, qt_prettyDebug(data, bytesRead, 16).constData(), maxlen, bytesRead);
 #endif
     return bytesRead;

@@ -564,46 +564,25 @@ bool QProcessPrivate::processStarted()
     return processState == QProcess::Running;
 }
 
-qint64 QProcessPrivate::bytesAvailableFromStdout() const
+qint64 QProcessPrivate::bytesAvailableInChannel(const Channel *channel) const
 {
-    if (stdoutChannel.pipe[0] == INVALID_Q_PIPE)
+    if (channel->pipe[0] == INVALID_Q_PIPE)
         return 0;
 
-    if (!stdoutChannel.reader)
+    if (!channel->reader)
         return 0;
 
-    DWORD bytesAvail = stdoutChannel.reader->bytesAvailable();
+    DWORD bytesAvail = channel->reader->bytesAvailable();
 #if defined QPROCESS_DEBUG
-    qDebug("QProcessPrivate::bytesAvailableFromStdout() == %d", bytesAvail);
+    qDebug("QProcessPrivate::bytesAvailableInChannel(%d) == %d", channel - &stdinChannel, bytesAvail);
 #endif
     return bytesAvail;
 }
 
-qint64 QProcessPrivate::bytesAvailableFromStderr() const
+qint64 QProcessPrivate::readFromChannel(const Channel *channel, char *data, qint64 maxlen)
 {
-    if (stderrChannel.pipe[0] == INVALID_Q_PIPE)
-        return 0;
-
-    if (!stderrChannel.reader)
-        return 0;
-
-    DWORD bytesAvail = stderrChannel.reader->bytesAvailable();
-#if defined QPROCESS_DEBUG
-    qDebug("QProcessPrivate::bytesAvailableFromStderr() == %d", bytesAvail);
-#endif
-    return bytesAvail;
+    return channel->reader ? channel->reader->read(data, maxlen) : 0;
 }
-
-qint64 QProcessPrivate::readFromStdout(char *data, qint64 maxlen)
-{
-    return stdoutChannel.reader ? stdoutChannel.reader->read(data, maxlen) : 0;
-}
-
-qint64 QProcessPrivate::readFromStderr(char *data, qint64 maxlen)
-{
-    return stderrChannel.reader ? stderrChannel.reader->read(data, maxlen) : 0;
-}
-
 
 static BOOL QT_WIN_CALLBACK qt_terminateApp(HWND hwnd, LPARAM procId)
 {
@@ -740,14 +719,14 @@ bool QProcessPrivate::waitForBytesWritten(int msecs)
             return true;
 
         // If we wouldn't write anything, check if we can read stdout.
-        if (bytesAvailableFromStdout() != 0) {
-            _q_canReadStandardOutput();
+        if (bytesAvailableInChannel(&stdoutChannel) != 0) {
+            tryReadFromChannel(&stdoutChannel);
             timer.resetIncrements();
         }
 
         // Check if we can read stderr.
-        if (bytesAvailableFromStderr() != 0) {
-            _q_canReadStandardError();
+        if (bytesAvailableInChannel(&stderrChannel) != 0) {
+            tryReadFromChannel(&stderrChannel);
             timer.resetIncrements();
         }
 
