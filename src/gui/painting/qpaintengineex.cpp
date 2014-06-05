@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -830,6 +830,8 @@ void QPaintEngineEx::drawEllipse(const QRectF &r)
 
     int point_count = 0;
     x.points[0] = qt_curves_for_arc(r, 0, -360, x.points + 1, &point_count);
+    if (point_count == 0)
+        return;
     QVectorPath vp((qreal *) pts, point_count + 1, qpaintengineex_ellipse_types, QVectorPath::EllipseHint);
     draw(vp);
 }
