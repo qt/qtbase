@@ -690,7 +690,7 @@ bool QProcessPrivate::waitForReadyRead(int msecs)
     QIncrementalSleepTimer timer(msecs);
 
     forever {
-        if (!writeBuffer.isEmpty() && !_q_canWrite())
+        if (!stdinChannel.buffer.isEmpty() && !_q_canWrite())
             return false;
         if (pipeWriter && pipeWriter->waitForWrite(0))
             timer.resetIncrements();
@@ -731,7 +731,7 @@ bool QProcessPrivate::waitForBytesWritten(int msecs)
 
         // If we don't have pending data, and our write buffer is
         // empty, we fail.
-        if (!pendingDataInPipe && writeBuffer.isEmpty())
+        if (!pendingDataInPipe && stdinChannel.buffer.isEmpty())
             return false;
 
         // If we don't have pending data and we do have data in our
@@ -795,7 +795,7 @@ bool QProcessPrivate::waitForFinished(int msecs)
     QIncrementalSleepTimer timer(msecs);
 
     forever {
-        if (!writeBuffer.isEmpty() && !_q_canWrite())
+        if (!stdinChannel.buffer.isEmpty() && !_q_canWrite())
             return false;
         if (pipeWriter && pipeWriter->waitForWrite(0))
             timer.resetIncrements();
@@ -875,7 +875,7 @@ void QProcessPrivate::_q_notified()
 {
     notifier->stop();
 
-    if (!writeBuffer.isEmpty() && (!pipeWriter || pipeWriter->waitForWrite(0)))
+    if (!stdinChannel.buffer.isEmpty() && (!pipeWriter || pipeWriter->waitForWrite(0)))
         _q_canWrite();
 
     if (processState != QProcess::NotRunning)

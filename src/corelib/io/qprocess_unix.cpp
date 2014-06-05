@@ -1126,7 +1126,7 @@ bool QProcessPrivate::waitForReadyRead(int msecs)
         if (stderrChannel.pipe[0] != -1)
             add_fd(nfds, stderrChannel.pipe[0], &fdread);
 
-        if (!writeBuffer.isEmpty() && stdinChannel.pipe[1] != -1)
+        if (!stdinChannel.buffer.isEmpty() && stdinChannel.pipe[1] != -1)
             add_fd(nfds, stdinChannel.pipe[1], &fdwrite);
 
         int timeout = qt_timeout_value(msecs, stopWatch.elapsed());
@@ -1188,7 +1188,7 @@ bool QProcessPrivate::waitForBytesWritten(int msecs)
     QList<QSocketNotifier *> notifiers = defaultNotifiers();
 #endif
 
-    while (!writeBuffer.isEmpty()) {
+    while (!stdinChannel.buffer.isEmpty()) {
         fd_set fdread;
         fd_set fdwrite;
 
@@ -1207,7 +1207,7 @@ bool QProcessPrivate::waitForBytesWritten(int msecs)
             add_fd(nfds, stderrChannel.pipe[0], &fdread);
 
 
-        if (!writeBuffer.isEmpty() && stdinChannel.pipe[1] != -1)
+        if (!stdinChannel.buffer.isEmpty() && stdinChannel.pipe[1] != -1)
             add_fd(nfds, stdinChannel.pipe[1], &fdwrite);
 
         int timeout = qt_timeout_value(msecs, stopWatch.elapsed());
@@ -1282,7 +1282,7 @@ bool QProcessPrivate::waitForFinished(int msecs)
         if (processState == QProcess::Running)
             add_fd(nfds, deathPipe[0], &fdread);
 
-        if (!writeBuffer.isEmpty() && stdinChannel.pipe[1] != -1)
+        if (!stdinChannel.buffer.isEmpty() && stdinChannel.pipe[1] != -1)
             add_fd(nfds, stdinChannel.pipe[1], &fdwrite);
 
         int timeout = qt_timeout_value(msecs, stopWatch.elapsed());

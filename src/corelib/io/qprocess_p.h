@@ -282,6 +282,7 @@ public:
         QString file;
         QProcessPrivate *process;
         QSocketNotifier *notifier;
+        QRingBuffer buffer;
         Q_PIPE pipe[2];
 
         unsigned type : 2;
@@ -325,10 +326,6 @@ public:
     QString nativeArguments;
 #endif
     QProcessEnvironment environment;
-
-    QRingBuffer outputReadBuffer;
-    QRingBuffer errorReadBuffer;
-    QRingBuffer writeBuffer;
 
     Q_PIPE childStartedPipe[2];
     Q_PIPE deathPipe[2];
