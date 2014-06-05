@@ -1496,6 +1496,42 @@ public class ExtractStyle {
         }
     }
 
+    void extractCalendar(SimpleJsonWriter writer, String styleName, String qtClass)
+    {
+        JSONObject json = extractTextAppearanceInformations(styleName, qtClass, null, -1);
+        try {
+            Class<?> attrClass = Class.forName("android.R$attr");
+            int styleId = attrClass.getDeclaredField(styleName).getInt(null);
+
+            int[] styleAttrs = (int[]) styleableClass.getDeclaredField("CalendarView").get(null);
+            TypedArray a = m_theme.obtainStyledAttributes(null, styleAttrs, styleId, 0);
+
+            Drawable d = a.getDrawable(getField(styleableClass,"CalendarView_selectedDateVerticalBar"));
+            if (d != null)
+                json.put("CalendarView_selectedDateVerticalBar", getDrawable(d, styleName + "_CalendarView_selectedDateVerticalBar"));
+
+            int dateTextAppearance = a.getResourceId(styleableClass.getDeclaredField("CalendarView_dateTextAppearance").getInt(null), -1);
+            json.put("CalendarView_dateTextAppearance", extractTextAppearanceInformations(styleName, null, null, dateTextAppearance, styleId));
+
+            int weekDayTextAppearance = a.getResourceId(styleableClass.getDeclaredField("CalendarView_weekDayTextAppearance").getInt(null), -1);
+            json.put("CalendarView_weekDayTextAppearance", extractTextAppearanceInformations(styleName, null, null, weekDayTextAppearance, styleId));
+
+            json.put("CalendarView_firstDayOfWeek", a.getInt(getField(styleableClass, "CalendarView_firstDayOfWeek"), 0));
+            json.put("CalendarView_focusedMonthDateColor", a.getColor(getField(styleableClass, "CalendarView_focusedMonthDateColor"), 0));
+            json.put("CalendarView_selectedWeekBackgroundColor", a.getColor(getField(styleableClass, "CalendarView_selectedWeekBackgroundColor"), 0));
+            json.put("CalendarView_showWeekNumber", a.getBoolean(getField(styleableClass, "CalendarView_showWeekNumber"), true));
+            json.put("CalendarView_shownWeekCount", a.getInt(getField(styleableClass, "CalendarView_shownWeekCount"), 6));
+            json.put("CalendarView_unfocusedMonthDateColor", a.getColor(getField(styleableClass, "CalendarView_unfocusedMonthDateColor"), 0));
+            json.put("CalendarView_weekNumberColor", a.getColor(getField(styleableClass, "CalendarView_weekNumberColor"), 0));
+            json.put("CalendarView_weekSeparatorLineColor", a.getColor(getField(styleableClass, "CalendarView_weekSeparatorLineColor"), 0));
+
+            a.recycle();
+            writer.name(styleName).value(json);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     void extractToolBar(SimpleJsonWriter writer, String styleName, String qtClass)
     {
         JSONObject json = extractTextAppearanceInformations(styleName, qtClass, null, -1);
@@ -1570,6 +1606,7 @@ public class ExtractStyle {
               extractItemsStyle(jsonWriter);
               extractCompoundButton(jsonWriter, "buttonStyleToggle", null);
               if (Build.VERSION.SDK_INT > 10) {
+                  extractCalendar(jsonWriter, "calendarViewStyle", "QCalendarWidget");
                   extractToolBar(jsonWriter, "actionBarStyle", "QToolBar");
                   jsonWriter.name("actionButtonStyle").value(extractTextAppearanceInformations("actionButtonStyle", "QToolButton", null, -1));
               }
