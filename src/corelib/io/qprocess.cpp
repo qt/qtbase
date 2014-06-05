@@ -819,9 +819,6 @@ QProcessPrivate::QProcessPrivate()
     emittedBytesWritten = false;
 #ifdef Q_OS_WIN
     notifier = 0;
-    stdoutReader = 0;
-    stderrReader = 0;
-    pipeWriter = 0;
     processFinishedNotifier = 0;
 #endif // Q_OS_WIN
 #ifdef Q_OS_UNIX

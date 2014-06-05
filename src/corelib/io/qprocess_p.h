@@ -253,6 +253,9 @@ public:
         {
             pipe[0] = INVALID_Q_PIPE;
             pipe[1] = INVALID_Q_PIPE;
+#ifdef Q_OS_WIN
+            reader = 0;
+#endif
         }
 
         void clear();
@@ -282,6 +285,12 @@ public:
         QString file;
         QProcessPrivate *process;
         QSocketNotifier *notifier;
+#ifdef Q_OS_WIN
+        union {
+            QWindowsPipeReader *reader;
+            QWindowsPipeWriter *writer;
+        };
+#endif
         QRingBuffer buffer;
         Q_PIPE pipe[2];
 
@@ -338,9 +347,6 @@ public:
 #ifdef Q_OS_WIN
     // the wonderful windows notifier
     QTimer *notifier;
-    QWindowsPipeReader *stdoutReader;
-    QWindowsPipeReader *stderrReader;
-    QWindowsPipeWriter *pipeWriter;
     QWinEventNotifier *processFinishedNotifier;
 #endif
 
