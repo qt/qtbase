@@ -89,6 +89,7 @@ struct QPixmapIconEngineEntry
         :pixmap(pm), size(pm.size()), mode(m), state(s){}
     QPixmapIconEngineEntry(const QString &file, const QSize &sz = QSize(), QIcon::Mode m = QIcon::Normal, QIcon::State s = QIcon::Off)
         :fileName(file), size(sz), mode(m), state(s){}
+    QPixmapIconEngineEntry(const QString &file, const QImage &image, QIcon::Mode m = QIcon::Normal, QIcon::State s = QIcon::Off);
     QPixmap pixmap;
     QString fileName;
     QSize size;
@@ -97,7 +98,14 @@ struct QPixmapIconEngineEntry
     bool isNull() const {return (fileName.isEmpty() && pixmap.isNull()); }
 };
 
-
+inline QPixmapIconEngineEntry::QPixmapIconEngineEntry(const QString &file, const QImage &image, QIcon::Mode m, QIcon::State s)
+    : fileName(file), size(image.size()), mode(m), state(s)
+{
+    pixmap.convertFromImage(image);
+    // Reset the devicePixelRatio. The pixmap may be loaded from a @2x file,
+    // but be used as a 1x pixmap by QIcon.
+    pixmap.setDevicePixelRatio(1.0);
+}
 
 class QPixmapIconEngine : public QIconEngine {
 public:

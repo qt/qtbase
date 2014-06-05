@@ -517,6 +517,8 @@ void ICOReader::read16_24_32BMP(QImage & image)
     }
 }
 
+static const char icoOrigDepthKey[] = "_q_icoOrigDepth";
+
 QImage ICOReader::iconAt(int index)
 {
     QImage img;
@@ -535,7 +537,9 @@ QImage ICOReader::iconAt(int index)
 
             if (isPngImage) {
                 iod->seek(iconEntry.dwImageOffset);
-                return QImage::fromData(iod->read(iconEntry.dwBytesInRes), "png");
+                QImage image = QImage::fromData(iod->read(iconEntry.dwBytesInRes), "png");
+                image.setText(QLatin1String(icoOrigDepthKey), QString::number(iconEntry.wBitCount));
+                return image;
             }
 
             BMP_INFOHDR header;
@@ -598,6 +602,7 @@ QImage ICOReader::iconAt(int index)
                         }
                     }
                 }
+                img.setText(QLatin1String(icoOrigDepthKey), QString::number(iconEntry.wBitCount));
             }
         }
     }
