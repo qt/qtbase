@@ -86,6 +86,7 @@ public:
 
     virtual void setDesktopSize(int width, int height);
     virtual void setDisplayMetrics(int width, int height);
+    void setScreenSize(int width, int height);
     bool isVirtualDesktop() { return true; }
 
     QPlatformFontDatabase *fontDatabase() const;
@@ -108,7 +109,7 @@ public:
     QStringList themeNames() const;
     QPlatformTheme *createPlatformTheme(const QString &name) const;
 
-    static void setDefaultDisplayMetrics(int gw, int gh, int sw, int sh);
+    static void setDefaultDisplayMetrics(int gw, int gh, int sw, int sh, int width, int height);
     static void setDefaultDesktopSize(int gw, int gh);
     static void setScreenOrientation(Qt::ScreenOrientation currentOrientation,
                                      Qt::ScreenOrientation nativeOrientation);
@@ -135,6 +136,8 @@ private:
     static int m_defaultGeometryHeight;
     static int m_defaultPhysicalSizeWidth;
     static int m_defaultPhysicalSizeHeight;
+    static int m_defaultScreenWidth;
+    static int m_defaultScreenHeight;
 
     static Qt::ScreenOrientation m_orientation;
     static Qt::ScreenOrientation m_nativeOrientation;
