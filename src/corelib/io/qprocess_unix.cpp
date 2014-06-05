@@ -377,7 +377,7 @@ void QProcessPrivate::destroyPipe(int *pipe)
     }
 }
 
-void QProcessPrivate::destroyChannel(Channel *channel)
+void QProcessPrivate::closeChannel(Channel *channel)
 {
     destroyPipe(channel->pipe);
 }
@@ -387,7 +387,7 @@ void QProcessPrivate::destroyChannel(Channel *channel)
 
     This function must be called in order: stdin, stdout, stderr
 */
-bool QProcessPrivate::createChannel(Channel &channel)
+bool QProcessPrivate::openChannel(Channel &channel)
 {
     Q_Q(QProcess);
 
@@ -573,9 +573,9 @@ void QProcessPrivate::startProcess()
     processManager()->start();
 
     // Initialize pipes
-    if (!createChannel(stdinChannel) ||
-        !createChannel(stdoutChannel) ||
-        !createChannel(stderrChannel) ||
+    if (!openChannel(stdinChannel) ||
+        !openChannel(stdoutChannel) ||
+        !openChannel(stderrChannel) ||
         qt_create_pipe(childStartedPipe) != 0 ||
         qt_create_pipe(deathPipe) != 0) {
         processError = QProcess::FailedToStart;

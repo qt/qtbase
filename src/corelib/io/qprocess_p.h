@@ -326,7 +326,8 @@ public:
     Channel stdinChannel;
     Channel stdoutChannel;
     Channel stderrChannel;
-    bool createChannel(Channel &channel);
+    bool openChannel(Channel &channel);
+    void closeChannel(Channel *channel);
     void closeWriteChannel();
 
     QString program;
@@ -339,7 +340,6 @@ public:
     Q_PIPE childStartedPipe[2];
     Q_PIPE deathPipe[2];
     void destroyPipe(Q_PIPE pipe[2]);
-    void destroyChannel(Channel *channel);
 
     QSocketNotifier *startupSocketNotifier;
     QSocketNotifier *deathNotifier;

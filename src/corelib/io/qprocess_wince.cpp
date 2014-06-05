@@ -62,7 +62,7 @@ void QProcessPrivate::destroyPipe(Q_PIPE pipe[2])
     Q_UNUSED(pipe);
 }
 
-void QProcessPrivate::destroyChannel(Channel *channel)
+void QProcessPrivate::closeChannel(Channel *channel)
 {
     Q_UNUSED(channel);
 }

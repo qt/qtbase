@@ -158,7 +158,7 @@ static void duplicateStdWriteChannel(Q_PIPE *pipe, DWORD nStdHandle)
 
     This function must be called in order: stdin, stdout, stderr
 */
-bool QProcessPrivate::createChannel(Channel &channel)
+bool QProcessPrivate::openChannel(Channel &channel)
 {
     Q_Q(QProcess);
 
@@ -329,7 +329,7 @@ void QProcessPrivate::destroyPipe(Q_PIPE pipe[2])
     }
 }
 
-void QProcessPrivate::destroyChannel(Channel *channel)
+void QProcessPrivate::closeChannel(Channel *channel)
 {
     if (channel == &stdinChannel) {
         delete stdinChannel.writer;
@@ -473,9 +473,9 @@ void QProcessPrivate::startProcess()
 
     q->setProcessState(QProcess::Starting);
 
-    if (!createChannel(stdinChannel) ||
-        !createChannel(stdoutChannel) ||
-        !createChannel(stderrChannel))
+    if (!openChannel(stdinChannel) ||
+        !openChannel(stdoutChannel) ||
+        !openChannel(stderrChannel))
         return;
 
     QString args = qt_create_commandline(program, arguments);

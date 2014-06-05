@@ -886,9 +886,9 @@ void QProcessPrivate::cleanup()
         notifier = 0;
     }
 #endif
-    destroyChannel(&stdoutChannel);
-    destroyChannel(&stderrChannel);
-    destroyChannel(&stdinChannel);
+    closeChannel(&stdoutChannel);
+    closeChannel(&stderrChannel);
+    closeChannel(&stdinChannel);
     destroyPipe(childStartedPipe);
     destroyPipe(deathPipe);
 #ifdef Q_OS_UNIX
@@ -906,7 +906,7 @@ bool QProcessPrivate::_q_canReadStandardOutput()
     if (available == 0) {
         if (stdoutChannel.notifier)
             stdoutChannel.notifier->setEnabled(false);
-        destroyChannel(&stdoutChannel);
+        closeChannel(&stdoutChannel);
 #if defined QPROCESS_DEBUG
         qDebug("QProcessPrivate::canReadStandardOutput(), 0 bytes available");
 #endif
@@ -962,7 +962,7 @@ bool QProcessPrivate::_q_canReadStandardError()
     if (available == 0) {
         if (stderrChannel.notifier)
             stderrChannel.notifier->setEnabled(false);
-        destroyChannel(&stderrChannel);
+        closeChannel(&stderrChannel);
         return false;
     }
 
@@ -1016,7 +1016,7 @@ bool QProcessPrivate::_q_canWrite()
     qint64 written = writeToStdin(stdinChannel.buffer.readPointer(),
                                       stdinChannel.buffer.nextDataBlockSize());
     if (written < 0) {
-        destroyChannel(&stdinChannel);
+        closeChannel(&stdinChannel);
         processError = QProcess::WriteError;
         q->setErrorString(QProcess::tr("Error writing to process"));
         emit q->error(processError);
@@ -1160,7 +1160,7 @@ void QProcessPrivate::closeWriteChannel()
     // instead.
     flushPipeWriter();
 #endif
-    destroyChannel(&stdinChannel);
+    closeChannel(&stdinChannel);
 }
 
 /*!
