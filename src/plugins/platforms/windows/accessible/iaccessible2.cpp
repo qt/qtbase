@@ -43,7 +43,7 @@
 
 #include "iaccessible2.h"
 #include "qwindowsaccessibility.h"
-
+#include <QtPlatformSupport/private/qaccessiblebridgeutils_p.h>
 #include <QtGui/qaccessible.h>
 #include <QtGui/qclipboard.h>
 #include <QtWidgets/qapplication.h>
@@ -546,10 +546,7 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::nActions(long *nActions)
     accessibleDebugClientCalls(accessible);
     if (!accessible)
         return E_FAIL;
-    *nActions = 0;
-
-    if (QAccessibleActionInterface *actionIface = actionInterface())
-        *nActions = actionIface->actionNames().count();
+    *nActions = QAccessibleBridgeUtils::effectiveActionNames(accessible).count();
     return S_OK;
 }
 
@@ -559,15 +556,11 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::doAction(long actionIndex)
     accessibleDebugClientCalls(accessible);
     if (!accessible)
         return E_FAIL;
-    if (QAccessibleActionInterface *actionIface = actionInterface()) {
-        const QStringList actionNames = actionIface->actionNames();
-        if (actionIndex < 0 || actionIndex >= actionNames.count())
-            return E_INVALIDARG;
-        const QString actionName = actionNames.at(actionIndex);
-        actionIface->doAction(actionName);
-        return S_OK;
-    }
-    return S_FALSE;
+    const QStringList actionNames = QAccessibleBridgeUtils::effectiveActionNames(accessible);
+    if (actionIndex < 0 || actionIndex >= actionNames.count())
+        return E_INVALIDARG;
+    const QString actionName = actionNames.at(actionIndex);
+    return QAccessibleBridgeUtils::performEffectiveAction(accessible, actionName) ? S_OK : S_FALSE;
 }
 
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_description(long actionIndex, BSTR *description)
@@ -577,13 +570,15 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_description(long actionInde
     if (!accessible)
         return E_FAIL;
     *description = 0;
-    if (QAccessibleActionInterface *actionIface = actionInterface()) {
-        const QStringList actionNames = actionIface->actionNames();
-        if (actionIndex < 0 || actionIndex >= actionNames.count())
-            return E_INVALIDARG;
-        const QString actionName = actionNames.at(actionIndex);
+    const QStringList actionNames = QAccessibleBridgeUtils::effectiveActionNames(accessible);
+    if (actionIndex < 0 || actionIndex >= actionNames.count())
+        return E_INVALIDARG;
+    const QString actionName = actionNames.at(actionIndex);
+    if (QAccessibleActionInterface *actionIface = actionInterface())
         *description = QStringToBSTR(actionIface->localizedActionDescription(actionName));
-    }
+    else
+        *description = QStringToBSTR(qAccessibleLocalizedActionDescription(actionName));
+
     return *description ? S_OK : S_FALSE;
 }
 
@@ -623,13 +618,11 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_name(long actionIndex, BSTR
     if (!accessible)
         return E_FAIL;
     *name = 0;
-    if (QAccessibleActionInterface *actionIface = actionInterface()) {
-        const QStringList actionNames = actionIface->actionNames();
-        if (actionIndex < 0 || actionIndex >= actionNames.count())
-            return E_INVALIDARG;
-        const QString actionName = actionNames.at(actionIndex);
-        *name = QStringToBSTR(actionName);
-    }
+    const QStringList actionNames = QAccessibleBridgeUtils::effectiveActionNames(accessible);
+    if (actionIndex < 0 || actionIndex >= actionNames.count())
+        return E_INVALIDARG;
+    const QString actionName = actionNames.at(actionIndex);
+    *name = QStringToBSTR(actionName);
     return *name ? S_OK : S_FALSE;
 }
 
@@ -640,14 +633,16 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_localizedName(long actionIn
     if (!accessible)
         return E_FAIL;
     *localizedName = 0;
-    if (QAccessibleActionInterface *actionIface = actionInterface()) {
-        const QStringList actionNames = actionIface->actionNames();
-        if (actionIndex < 0 || actionIndex >= actionNames.count())
-            return E_INVALIDARG;
+    const QStringList actionNames = QAccessibleBridgeUtils::effectiveActionNames(accessible);
+    if (actionIndex < 0 || actionIndex >= actionNames.count())
+        return E_INVALIDARG;
 
-        const QString actionName = actionNames.at(actionIndex);
+    const QString actionName = actionNames.at(actionIndex);
+    if (QAccessibleActionInterface *actionIface = actionInterface())
         *localizedName = QStringToBSTR(actionIface->localizedActionName(actionName));
-    }
+    else
+        *localizedName = QStringToBSTR(QAccessibleActionInterface::tr(qPrintable(actionName)));
+
     return *localizedName ? S_OK : S_FALSE;
 }
 

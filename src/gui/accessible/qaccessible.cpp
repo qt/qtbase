@@ -2491,6 +2491,23 @@ struct QAccessibleActionStrings
     const QString showMenuAction;
     const QString setFocusAction;
     const QString toggleAction;
+
+    QString localizedDescription(const QString &actionName)
+    {
+        if (actionName == pressAction)
+            return QAccessibleActionInterface::tr("Triggers the action");
+        else if (actionName == increaseAction)
+            return QAccessibleActionInterface::tr("Increase the value");
+        else if (actionName == decreaseAction)
+            return QAccessibleActionInterface::tr("Decrease the value");
+        else if (actionName == showMenuAction)
+            return QAccessibleActionInterface::tr("Shows the menu");
+        else if (actionName == setFocusAction)
+            return QAccessibleActionInterface::tr("Sets the focus");
+        else if (actionName == toggleAction)
+            return QAccessibleActionInterface::tr("Toggles the state");
+        return QString();
+    }
 };
 
 Q_GLOBAL_STATIC(QAccessibleActionStrings, accessibleActionStrings)
@@ -2502,21 +2519,7 @@ QString QAccessibleActionInterface::localizedActionName(const QString &actionNam
 
 QString QAccessibleActionInterface::localizedActionDescription(const QString &actionName) const
 {
-    const QAccessibleActionStrings *strings = accessibleActionStrings();
-    if (actionName == strings->pressAction)
-        return tr("Triggers the action");
-    else if (actionName == strings->increaseAction)
-        return tr("Increase the value");
-    else if (actionName == strings->decreaseAction)
-        return tr("Decrease the value");
-    else if (actionName == strings->showMenuAction)
-        return tr("Shows the menu");
-    else if (actionName == strings->setFocusAction)
-        return tr("Sets the focus");
-    else if (actionName == strings->toggleAction)
-        return tr("Toggles the state");
-
-    return QString();
+    return accessibleActionStrings()->localizedDescription(actionName);
 }
 
 /*!
@@ -2572,6 +2575,13 @@ const QString &QAccessibleActionInterface::toggleAction()
 {
     return accessibleActionStrings()->toggleAction;
 }
+
+/*! \internal */
+QString qAccessibleLocalizedActionDescription(const QString &actionName)
+{
+    return accessibleActionStrings()->localizedDescription(actionName);
+}
+
 
 #endif
 

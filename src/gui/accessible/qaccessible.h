@@ -889,6 +889,7 @@ Q_DECLARE_INTERFACE(QAccessibleInterface, QAccessibleInterface_iid)
 
 Q_GUI_EXPORT const char *qAccessibleRoleString(QAccessible::Role role);
 Q_GUI_EXPORT const char *qAccessibleEventString(QAccessible::Event event);
+Q_GUI_EXPORT QString qAccessibleLocalizedActionDescription(const QString &actionName);
 
 #ifndef QT_NO_DEBUG_STREAM
 Q_GUI_EXPORT QDebug operator<<(QDebug d, const QAccessibleInterface *iface);
