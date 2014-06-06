@@ -903,6 +903,9 @@ void QProcessPrivate::cleanup()
 bool QProcessPrivate::tryReadFromChannel(Channel *channel)
 {
     Q_Q(QProcess);
+    if (channel->pipe[0] == INVALID_Q_PIPE)
+        return false;
+
     qint64 available = bytesAvailableInChannel(channel);
     if (available == 0) {
         if (channel->notifier)

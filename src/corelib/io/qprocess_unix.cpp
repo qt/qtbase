@@ -965,6 +965,7 @@ bool QProcessPrivate::processStarted()
 
 qint64 QProcessPrivate::bytesAvailableInChannel(const Channel *channel) const
 {
+    Q_ASSERT(channel->pipe[0] != INVALID_Q_PIPE);
     int nbytes = 0;
     qint64 available = 0;
     if (::ioctl(channel->pipe[0], FIONREAD, (char *) &nbytes) >= 0)
@@ -977,6 +978,7 @@ qint64 QProcessPrivate::bytesAvailableInChannel(const Channel *channel) const
 
 qint64 QProcessPrivate::readFromChannel(const Channel *channel, char *data, qint64 maxlen)
 {
+    Q_ASSERT(channel->pipe[0] != INVALID_Q_PIPE);
     qint64 bytesRead = qt_safe_read(channel->pipe[0], data, maxlen);
 #if defined QPROCESS_DEBUG
     qDebug("QProcessPrivate::readFromChannel(%d, %p \"%s\", %lld) == %lld",

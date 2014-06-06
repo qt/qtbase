@@ -566,11 +566,8 @@ bool QProcessPrivate::processStarted()
 
 qint64 QProcessPrivate::bytesAvailableInChannel(const Channel *channel) const
 {
-    if (channel->pipe[0] == INVALID_Q_PIPE)
-        return 0;
-
-    if (!channel->reader)
-        return 0;
+    Q_ASSERT(channel->pipe[0] != INVALID_Q_PIPE);
+    Q_ASSERT(channel->reader);
 
     DWORD bytesAvail = channel->reader->bytesAvailable();
 #if defined QPROCESS_DEBUG
@@ -581,7 +578,9 @@ qint64 QProcessPrivate::bytesAvailableInChannel(const Channel *channel) const
 
 qint64 QProcessPrivate::readFromChannel(const Channel *channel, char *data, qint64 maxlen)
 {
-    return channel->reader ? channel->reader->read(data, maxlen) : 0;
+    Q_ASSERT(channel->pipe[0] != INVALID_Q_PIPE);
+    Q_ASSERT(channel->reader);
+    return channel->reader->read(data, maxlen);
 }
 
 static BOOL QT_WIN_CALLBACK qt_terminateApp(HWND hwnd, LPARAM procId)
