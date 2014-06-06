@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -117,6 +117,21 @@ generate_inline_return_func4(getenv_s, errno_t, size_t *, char *, size_t, const 
 generate_inline_return_func2(_putenv_s, errno_t, const char *, const char *)
 generate_inline_return_func0(tzset, void)
 generate_inline_return_func0(_tzset, void)
+
+// Convenience macros for handling HRESULT values
+#define RETURN_IF_FAILED(msg, ret) \
+    if (FAILED(hr)) { \
+        qErrnoWarning(hr, msg); \
+        ret; \
+    }
+
+#define RETURN_HR_IF_FAILED(msg) RETURN_IF_FAILED(msg, return hr)
+#define RETURN_OK_IF_FAILED(msg) RETURN_IF_FAILED(msg, return S_OK)
+#define RETURN_FALSE_IF_FAILED(msg) RETURN_IF_FAILED(msg, return false)
+#define RETURN_VOID_IF_FAILED(msg) RETURN_IF_FAILED(msg, return)
+
+#define Q_ASSERT_SUCCEEDED(hr) \
+    Q_ASSERT_X(SUCCEEDED(hr), Q_FUNC_INFO, qPrintable(qt_error_string(hr)));
 
 #endif // Q_OS_WINRT
 #endif // QFUNCTIONS_WINRT_H
