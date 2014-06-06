@@ -46,6 +46,10 @@
 
 #ifdef Q_OS_WINRT
 
+#include <QtCore/QThread>
+#include <QtCore/QAbstractEventDispatcher>
+#include <QtCore/qt_windows.h>
+
 QT_BEGIN_NAMESPACE
 
 #ifdef QT_BUILD_CORE_LIB
@@ -132,6 +136,80 @@ generate_inline_return_func0(_tzset, void)
 
 #define Q_ASSERT_SUCCEEDED(hr) \
     Q_ASSERT_X(SUCCEEDED(hr), Q_FUNC_INFO, qPrintable(qt_error_string(hr)));
+
+
+namespace Microsoft { namespace WRL { template <typename T> class ComPtr; } }
+
+namespace QWinRTFunctions {
+
+// Synchronization methods
+enum AwaitStyle
+{
+    YieldThread = 0,
+    ProcessThreadEvents = 1,
+    ProcessMainThreadEvents = 2
+};
+
+template <typename T>
+static inline HRESULT _await_impl(const Microsoft::WRL::ComPtr<T> &asyncOp, AwaitStyle awaitStyle)
+{
+    Microsoft::WRL::ComPtr<IAsyncInfo> asyncInfo;
+    HRESULT hr = asyncOp.As(&asyncInfo);
+    if (FAILED(hr))
+        return hr;
+
+    AsyncStatus status;
+    switch (awaitStyle) {
+    case ProcessMainThreadEvents:
+        while (SUCCEEDED(hr = asyncInfo->get_Status(&status)) && status == Started)
+            QCoreApplication::processEvents();
+        break;
+    case ProcessThreadEvents:
+        if (QAbstractEventDispatcher *dispatcher = QThread::currentThread()->eventDispatcher()) {
+            while (SUCCEEDED(hr = asyncInfo->get_Status(&status)) && status == Started)
+                dispatcher->processEvents(QEventLoop::AllEvents);
+            break;
+        }
+        // fall through
+    default:
+    case YieldThread:
+        while (SUCCEEDED(hr = asyncInfo->get_Status(&status)) && status == Started)
+            QThread::yieldCurrentThread();
+        break;
+    }
+
+    if (FAILED(hr) || status != Completed) {
+        HRESULT ec;
+        hr = asyncInfo->get_ErrorCode(&ec);
+        if (FAILED(hr))
+            return hr;
+        return ec;
+    }
+
+    return hr;
+}
+
+template <typename T>
+static inline HRESULT await(const Microsoft::WRL::ComPtr<T> &asyncOp, AwaitStyle awaitStyle = YieldThread)
+{
+    HRESULT hr = _await_impl(asyncOp, awaitStyle);
+    if (FAILED(hr))
+        return hr;
+
+    return asyncOp->GetResults();
+}
+
+template <typename T, typename U>
+static inline HRESULT await(const Microsoft::WRL::ComPtr<T> &asyncOp, U *results, AwaitStyle awaitStyle = YieldThread)
+{
+    HRESULT hr = _await_impl(asyncOp, awaitStyle);
+    if (FAILED(hr))
+        return hr;
+
+    return asyncOp->GetResults(results);
+}
+
+} // QWinRTFunctions
 
 #endif // Q_OS_WINRT
 #endif // QFUNCTIONS_WINRT_H
