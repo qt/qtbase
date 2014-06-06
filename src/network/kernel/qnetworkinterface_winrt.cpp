@@ -73,12 +73,11 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
 
     QList<HostNameInfo> hostList;
 
-    INetworkInformationStatics *hostNameStatics;
+    ComPtr<INetworkInformationStatics> hostNameStatics;
     GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Networking_Connectivity_NetworkInformation).Get(), &hostNameStatics);
 
-    IVectorView<HostName*> *hostNames = 0;
+    ComPtr<IVectorView<HostName *>> hostNames;
     hostNameStatics->GetHostNames(&hostNames);
-    hostNameStatics->Release();
     if (!hostNames)
         return interfaces;
 
@@ -86,7 +85,7 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
     hostNames->get_Size(&hostNameCount);
     for (unsigned i = 0; i < hostNameCount; ++i) {
         HostNameInfo hostInfo;
-        IHostName *hostName;
+        ComPtr<IHostName> hostName;
         hostNames->GetAt(i, &hostName);
 
         HostNameType type;
@@ -94,20 +93,17 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
         if (type == HostNameType_DomainName)
             continue;
 
-        IIPInformation *ipInformation;
+        ComPtr<IIPInformation> ipInformation;
         hostName->get_IPInformation(&ipInformation);
-        INetworkAdapter *currentAdapter;
+        ComPtr<INetworkAdapter> currentAdapter;
         ipInformation->get_NetworkAdapter(&currentAdapter);
 
         currentAdapter->get_NetworkAdapterId(&hostInfo.adapterId);
-        currentAdapter->Release();
 
-        IReference<unsigned char> *prefixLengthReference;
+        ComPtr<IReference<unsigned char>> prefixLengthReference;
         ipInformation->get_PrefixLength(&prefixLengthReference);
-        ipInformation->Release();
 
         prefixLengthReference->get_Value(&hostInfo.prefixLength);
-        prefixLengthReference->Release();
 
         // invalid prefixes
         if ((type == HostNameType_Ipv4 && hostInfo.prefixLength > 32)
@@ -116,20 +112,17 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
 
         HString name;
         hostName->get_CanonicalName(name.GetAddressOf());
-        hostName->Release();
         UINT32 length;
         PCWSTR rawString = name.GetRawBuffer(&length);
         hostInfo.address = QString::fromWCharArray(rawString, length);
 
         hostList << hostInfo;
     }
-    hostNames->Release();
 
     INetworkInformationStatics *networkInfoStatics;
     GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Networking_Connectivity_NetworkInformation).Get(), &networkInfoStatics);
-    IVectorView<ConnectionProfile *> *connectionProfiles = 0;
+    ComPtr<IVectorView<ConnectionProfile *>> connectionProfiles;
     networkInfoStatics->GetConnectionProfiles(&connectionProfiles);
-    networkInfoStatics->Release();
     if (!connectionProfiles)
         return interfaces;
 
@@ -139,7 +132,7 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
         QNetworkInterfacePrivate *iface = new QNetworkInterfacePrivate;
         interfaces << iface;
 
-        IConnectionProfile *profile;
+        ComPtr<IConnectionProfile> profile;
         connectionProfiles->GetAt(i, &profile);
 
         NetworkConnectivityLevel connectivityLevel;
@@ -147,16 +140,14 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
         if (connectivityLevel != NetworkConnectivityLevel_None)
             iface->flags = QNetworkInterface::IsUp | QNetworkInterface::IsRunning;
 
-        INetworkAdapter *adapter;
+        ComPtr<INetworkAdapter> adapter;
         profile->get_NetworkAdapter(&adapter);
-        profile->Release();
         UINT32 type;
         adapter->get_IanaInterfaceType(&type);
         if (type == 23)
             iface->flags |= QNetworkInterface::IsPointToPoint;
         GUID id;
         adapter->get_NetworkAdapterId(&id);
-        adapter->Release();
         OLECHAR adapterName[39]={0};
         StringFromGUID2(id, adapterName, 39);
         iface->name = QString::fromWCharArray(adapterName);
@@ -179,7 +170,6 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
             --i;
         }
     }
-    connectionProfiles->Release();
     return interfaces;
 }
 

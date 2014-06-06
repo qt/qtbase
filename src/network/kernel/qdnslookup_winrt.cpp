@@ -81,31 +81,28 @@ void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestN
         return;
     }
 
-    IHostNameFactory *hostnameFactory;
-
-    HStringReference classId(RuntimeClass_Windows_Networking_HostName);
-    if (FAILED(GetActivationFactory(classId.Get(), &hostnameFactory))) {
+    ComPtr<IHostNameFactory> hostnameFactory;
+    HRESULT hr = RoGetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Networking_HostName).Get(),
+                                        IID_PPV_ARGS(&hostnameFactory));
+    if (FAILED(hr)) {
         reply->error = QDnsLookup::ResolverError;
         reply->errorString = QLatin1String("Could not obtain hostname factory");
         return;
     }
-    IHostName *host;
+    ComPtr<IHostName> host;
     HStringReference hostNameRef((const wchar_t*)aceHostname.utf16());
     hostnameFactory->CreateHostName(hostNameRef.Get(), &host);
-    hostnameFactory->Release();
 
-    IDatagramSocketStatics *datagramSocketStatics;
+    ComPtr<IDatagramSocketStatics> datagramSocketStatics;
     GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Networking_Sockets_DatagramSocket).Get(), &datagramSocketStatics);
 
-    IAsyncOperation<IVectorView<EndpointPair*> *> *op;
-    datagramSocketStatics->GetEndpointPairsAsync(host,
+    ComPtr<IAsyncOperation<IVectorView<EndpointPair *> *>> op;
+    datagramSocketStatics->GetEndpointPairsAsync(host.Get(),
                                                  HString::MakeReference(L"0").Get(),
                                                  &op);
-    datagramSocketStatics->Release();
-    host->Release();
 
-    IVectorView<EndpointPair*> *endpointPairs = 0;
-    HRESULT hr = op->GetResults(&endpointPairs);
+    ComPtr<IVectorView<EndpointPair *>> endpointPairs;
+    hr = op->GetResults(&endpointPairs);
     int waitCount = 0;
     while (hr == E_ILLEGAL_METHOD_CALL) {
         WaitForSingleObjectEx(GetCurrentThread(), 50, FALSE);
@@ -113,7 +110,6 @@ void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestN
         if (++waitCount > 1200) // Wait for 1 minute max
             return;
     }
-    op->Release();
 
     if (!endpointPairs)
         return;
@@ -121,11 +117,10 @@ void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestN
     unsigned int size;
     endpointPairs->get_Size(&size);
     for (unsigned int i = 0; i < size; ++i) {
-        IEndpointPair *endpointpair;
+        ComPtr<IEndpointPair> endpointpair;
         endpointPairs->GetAt(i, &endpointpair);
-        IHostName *remoteHost;
+        ComPtr<IHostName> remoteHost;
         endpointpair->get_RemoteHostName(&remoteHost);
-        endpointpair->Release();
         HostNameType type;
         remoteHost->get_Type(&type);
         if (type == HostNameType_Bluetooth || type == HostNameType_DomainName
@@ -136,7 +131,6 @@ void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestN
 
         HString name;
         remoteHost->get_CanonicalName(name.GetAddressOf());
-        remoteHost->Release();
         UINT32 length;
         PCWSTR rawString = name.GetRawBuffer(&length);
         QDnsHostAddressRecord record;

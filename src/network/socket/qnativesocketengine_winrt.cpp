@@ -474,16 +474,15 @@ void QNativeSocketEngine::close()
 {
     Q_D(QNativeSocketEngine);
     if (d->socketDescriptor != -1) {
-        IClosable *socket = 0;
+        ComPtr<IClosable> socket;
         if (d->socketType == QAbstractSocket::TcpSocket)
-            d->tcp->QueryInterface(IID_PPV_ARGS(&socket));
+            d->tcp.As(&socket);
         else if (d->socketType == QAbstractSocket::UdpSocket)
-            d->udp->QueryInterface(IID_PPV_ARGS(&socket));
+            d->udp.As(&socket);
 
         if (socket) {
             d->closingDown = true;
             socket->Close();
-            socket->Release();
             d->socketDescriptor = -1;
         }
         d->socketDescriptor = -1;
@@ -621,11 +620,10 @@ qint64 QNativeSocketEngine::readDatagram(char *data, qint64 maxlen, QHostAddress
         *addr = returnAddress;
         *port = returnPort;
         arg = d->pendingDatagrams.takeFirst();
+        arg->Release();
 
         // TODO: fill data
         Q_UNUSED(data);
-        arg->Release();
-        delete arg;
         --i;
         return maxlen;
     }
@@ -830,8 +828,8 @@ bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType soc
     SocketHandler *handler = gSocketHandler();
     switch (socketType) {
     case QAbstractSocket::TcpSocket: {
-        if (FAILED(RoActivateInstance(HString::MakeReference(RuntimeClass_Windows_Networking_Sockets_StreamSocket).Get(),
-                                      reinterpret_cast<IInspectable **>(&tcp)))) {
+        HRESULT hr = RoActivateInstance(HString::MakeReference(RuntimeClass_Windows_Networking_Sockets_StreamSocket).Get(), &tcp);
+        if (FAILED(hr)) {
             qWarning("Failed to create StreamSocket instance");
             return false;
         }
@@ -839,8 +837,8 @@ bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType soc
         return true;
     }
     case QAbstractSocket::UdpSocket: {
-        if (FAILED(RoActivateInstance(HString::MakeReference(RuntimeClass_Windows_Networking_Sockets_DatagramSocket).Get(),
-                                      reinterpret_cast<IInspectable **>(&udp)))) {
+        HRESULT hr = RoActivateInstance(HString::MakeReference(RuntimeClass_Windows_Networking_Sockets_DatagramSocket).Get(), &udp);
+        if (FAILED(hr)) {
             qWarning("Failed to create stream socket");
             return false;
         }
@@ -1253,7 +1251,7 @@ HRESULT QNativeSocketEnginePrivate::handleWriteCompleted(IAsyncOperationWithProg
 HRESULT QNativeSocketEnginePrivate::handleNewDatagram(IDatagramSocket *socket, IDatagramSocketMessageReceivedEventArgs *args)
 {
     Q_Q(QNativeSocketEngine);
-    Q_UNUSED(socket)
+    Q_UNUSED(socket);
     pendingDatagrams.append(args);
     emit q->readReady();
 

@@ -80,29 +80,25 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
         return results;
     }
 
-    IHostNameFactory *hostnameFactory;
+    ComPtr<IHostNameFactory> hostnameFactory;
+    HRESULT hr = RoGetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Networking_HostName).Get(),
+                                        IID_PPV_ARGS(&hostnameFactory));
+    Q_ASSERT_X(SUCCEEDED(hr), Q_FUNC_INFO, qPrintable(qt_error_string(hr)));
 
-    HStringReference classId(RuntimeClass_Windows_Networking_HostName);
-    if (FAILED(GetActivationFactory(classId.Get(), &hostnameFactory)))
-        Q_ASSERT_X(false, "QHostInfoAgent", "Could not obtain hostname factory.");
-
-    IHostName *host;
+    ComPtr<IHostName> host;
     HStringReference hostNameRef((const wchar_t*)hostName.utf16());
     hostnameFactory->CreateHostName(hostNameRef.Get(), &host);
-    hostnameFactory->Release();
 
-    IDatagramSocketStatics *datagramSocketStatics;
+    ComPtr<IDatagramSocketStatics> datagramSocketStatics;
     GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Networking_Sockets_DatagramSocket).Get(), &datagramSocketStatics);
 
-    IAsyncOperation<IVectorView<EndpointPair*> *> *op;
-    datagramSocketStatics->GetEndpointPairsAsync(host,
+    ComPtr<IAsyncOperation<IVectorView<EndpointPair *> *>> op;
+    datagramSocketStatics->GetEndpointPairsAsync(host.Get(),
                                                  HString::MakeReference(L"0").Get(),
                                                  &op);
-    datagramSocketStatics->Release();
-    host->Release();
 
-    IVectorView<EndpointPair*> *endpointPairs = 0;
-    HRESULT hr = op->GetResults(&endpointPairs);
+    ComPtr<IVectorView<EndpointPair *>> endpointPairs;
+    hr = op->GetResults(&endpointPairs);
     int waitCount = 0;
     while (hr == E_ILLEGAL_METHOD_CALL) {
         WaitForSingleObjectEx(GetCurrentThread(), 50, FALSE);
@@ -110,7 +106,6 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
         if (++waitCount > 1200) // Wait for 1 minute max
             return results;
     }
-    op->Release();
 
     if (!endpointPairs)
         return results;
@@ -119,11 +114,10 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
     endpointPairs->get_Size(&size);
     QList<QHostAddress> addresses;
     for (unsigned int i = 0; i < size; ++i) {
-        IEndpointPair *endpointpair;
+        ComPtr<IEndpointPair> endpointpair;
         endpointPairs->GetAt(i, &endpointpair);
-        IHostName *remoteHost;
+        ComPtr<IHostName> remoteHost;
         endpointpair->get_RemoteHostName(&remoteHost);
-        endpointpair->Release();
         if (!remoteHost)
             continue;
         HostNameType type;
@@ -133,7 +127,6 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
 
         HString name;
         remoteHost->get_CanonicalName(name.GetAddressOf());
-        remoteHost->Release();
         UINT32 length;
         PCWSTR rawString = name.GetRawBuffer(&length);
         QHostAddress addr;
@@ -148,12 +141,11 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
 
 QString QHostInfo::localHostName()
 {
-    INetworkInformationStatics *statics;
+    ComPtr<INetworkInformationStatics> statics;
     GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Networking_Connectivity_NetworkInformation).Get(), &statics);
 
-    IVectorView<HostName*> *hostNames = 0;
+    ComPtr<IVectorView<HostName *>> hostNames;
     statics->GetHostNames(&hostNames);
-    statics->Release();
     if (!hostNames)
         return QString();
 
@@ -163,7 +155,7 @@ QString QHostInfo::localHostName()
         return QString();
 
     for (unsigned int i = 0; i < size; ++i) {
-        IHostName *hostName;
+        ComPtr<IHostName> hostName;
         hostNames->GetAt(i, &hostName);
         HostNameType type;
         hostName->get_Type(&type);
@@ -172,18 +164,15 @@ QString QHostInfo::localHostName()
 
         HString name;
         hostName->get_CanonicalName(name.GetAddressOf());
-        hostName->Release();
         UINT32 length;
         PCWSTR rawString = name.GetRawBuffer(&length);
         return QString::fromWCharArray(rawString, length);
     }
-    IHostName *firstHost;
+    ComPtr<IHostName> firstHost;
     hostNames->GetAt(0, &firstHost);
-    hostNames->Release();
 
     HString name;
     firstHost->get_CanonicalName(name.GetAddressOf());
-    firstHost->Release();
     UINT32 length;
     PCWSTR rawString = name.GetRawBuffer(&length);
     return QString::fromWCharArray(rawString, length);

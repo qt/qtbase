@@ -193,10 +193,8 @@ public:
     bool checkProxy(const QHostAddress &address);
     bool fetchConnectionParameters();
 private:
-    union {
-        ABI::Windows::Networking::Sockets::IStreamSocket *tcp;
-        ABI::Windows::Networking::Sockets::IDatagramSocket *udp;
-    };
+    Microsoft::WRL::ComPtr<ABI::Windows::Networking::Sockets::IStreamSocket> tcp;
+    Microsoft::WRL::ComPtr<ABI::Windows::Networking::Sockets::IDatagramSocket> udp;
     Microsoft::WRL::ComPtr<ABI::Windows::Networking::Sockets::IStreamSocketListener> tcpListener;
     Microsoft::WRL::ComPtr<ABI::Windows::Storage::Streams::IBuffer> readBuffer;
     QBuffer readBytes;
