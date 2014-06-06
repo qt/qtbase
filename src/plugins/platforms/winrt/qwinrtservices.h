@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -43,23 +43,11 @@
 #define QWINRTSERVICES_H
 
 #include <qpa/qplatformservices.h>
+#include <QtCore/QScopedPointer>
 
-namespace ABI {
-    namespace Windows {
-        namespace Foundation {
-            struct IUriRuntimeClassFactory;
-        }
-        namespace Storage {
-            struct IStorageFileStatics;
-        }
-        namespace System {
-            struct ILauncherStatics;
-        }
-    }
-}
+QT_USE_NAMESPACE
 
-QT_BEGIN_NAMESPACE
-
+class QWinRTServicesPrivate;
 class QWinRTServices : public QPlatformServices
 {
 public:
@@ -70,11 +58,8 @@ public:
     bool openDocument(const QUrl &url);
 
 private:
-    ABI::Windows::Foundation::IUriRuntimeClassFactory *m_uriFactory;
-    ABI::Windows::Storage::IStorageFileStatics *m_fileFactory;
-    ABI::Windows::System::ILauncherStatics *m_launcher;
+    QScopedPointer<QWinRTServicesPrivate> d_ptr;
+    Q_DECLARE_PRIVATE(QWinRTServices)
 };
-
-QT_END_NAMESPACE
 
 #endif // QWINRTSERVICES_H

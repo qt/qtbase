@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -43,6 +43,7 @@
 #include <QtCore/QUrl>
 #include <QtCore/QDir>
 #include <QtCore/QCoreApplication>
+#include <QtCore/qfunctions_winrt.h>
 
 #include <wrl.h>
 #include <windows.foundation.h>
@@ -56,83 +57,84 @@ using namespace ABI::Windows::System;
 
 QT_BEGIN_NAMESPACE
 
-QWinRTServices::QWinRTServices()
+class QWinRTServicesPrivate
 {
-    GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Foundation_Uri).Get(), &m_uriFactory);
-    GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Storage_StorageFile).Get(), &m_fileFactory);
-    GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_System_Launcher).Get(), &m_launcher);
+public:
+    ComPtr<IUriRuntimeClassFactory> uriFactory;
+    ComPtr<IStorageFileStatics> fileFactory;
+    ComPtr<ILauncherStatics> launcher;
+};
+
+QWinRTServices::QWinRTServices()
+    : d_ptr(new QWinRTServicesPrivate)
+{
+    Q_D(QWinRTServices);
+
+    HRESULT hr;
+    hr = RoGetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Foundation_Uri).Get(),
+                                IID_PPV_ARGS(&d->uriFactory));
+    Q_ASSERT_X(SUCCEEDED(hr), Q_FUNC_INFO, qPrintable(qt_error_string(hr)));
+
+    hr = RoGetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Storage_StorageFile).Get(),
+                                IID_PPV_ARGS(&d->fileFactory));
+    Q_ASSERT_X(SUCCEEDED(hr), Q_FUNC_INFO, qPrintable(qt_error_string(hr)));
+
+    hr = RoGetActivationFactory(HString::MakeReference(RuntimeClass_Windows_System_Launcher).Get(),
+                                IID_PPV_ARGS(&d->launcher));
+    Q_ASSERT_X(SUCCEEDED(hr), Q_FUNC_INFO, qPrintable(qt_error_string(hr)));
 }
 
 QWinRTServices::~QWinRTServices()
 {
-    if (m_uriFactory)
-        m_uriFactory->Release();
-
-    if (m_fileFactory)
-        m_fileFactory->Release();
-
-    if (m_launcher)
-        m_launcher->Release();
 }
 
 bool QWinRTServices::openUrl(const QUrl &url)
 {
-    if (!(m_uriFactory && m_launcher))
-        return QPlatformServices::openUrl(url);
+    Q_D(QWinRTServices);
 
-    IUriRuntimeClass *uri;
+    ComPtr<IUriRuntimeClass> uri;
     QString urlString = url.toString();
-    // ### TODO: Replace with HStringReference when WP8.0 support is removed
-    HString uriString;
-    uriString.Set((const wchar_t*)urlString.utf16(), urlString.length());
-    m_uriFactory->CreateUri(uriString.Get(), &uri);
-    if (!uri)
-        return false;
+    HStringReference uriString(reinterpret_cast<LPCWSTR>(urlString.utf16()), urlString.length());
+    HRESULT hr = d->uriFactory->CreateUri(uriString.Get(), &uri);
+    RETURN_FALSE_IF_FAILED("Failed to create URI from QUrl.");
 
-    IAsyncOperation<bool> *launchOp;
-    m_launcher->LaunchUriAsync(uri, &launchOp);
-    uri->Release();
-    if (!launchOp)
-        return false;
+    ComPtr<IAsyncOperation<bool>> op;
+    hr = d->launcher->LaunchUriAsync(uri.Get(), &op);
+    RETURN_FALSE_IF_FAILED("Failed to start URI launch.");
 
-    boolean result = false;
-    while (launchOp->GetResults(&result) == E_ILLEGAL_METHOD_CALL)
-        QCoreApplication::processEvents();
-    launchOp->Release();
+    boolean result;
+    hr = QWinRTFunctions::await(op, &result);
+    RETURN_FALSE_IF_FAILED("Failed to launch URI.");
 
     return result;
 }
 
 bool QWinRTServices::openDocument(const QUrl &url)
 {
-    if (!(m_fileFactory && m_launcher))
-        return QPlatformServices::openDocument(url);
+    Q_D(QWinRTServices);
 
-    const QString pathString = QDir::toNativeSeparators(url.toLocalFile());
-    // ### TODO: Replace with HStringReference when WP8.0 support is removed
-    HString path;
-    path.Set((const wchar_t*)pathString.utf16(), pathString.length());
-    IAsyncOperation<StorageFile*> *fileOp;
-    m_fileFactory->GetFileFromPathAsync(path.Get(), &fileOp);
-    if (!fileOp)
-        return false;
+    HRESULT hr;
+    ComPtr<IStorageFile> file;
+    {
+        const QString pathString = QDir::toNativeSeparators(url.toLocalFile());
+        HStringReference path(reinterpret_cast<LPCWSTR>(pathString.utf16()), pathString.length());
+        ComPtr<IAsyncOperation<StorageFile *>> op;
+        hr = d->fileFactory->GetFileFromPathAsync(path.Get(), &op);
+        RETURN_FALSE_IF_FAILED("Failed to initialize file URI.");
 
-    IStorageFile *file = nullptr;
-    while (fileOp->GetResults(&file) == E_ILLEGAL_METHOD_CALL)
-        QCoreApplication::processEvents();
-    fileOp->Release();
-    if (!file)
-        return false;
+        hr = QWinRTFunctions::await(op, file.GetAddressOf());
+        RETURN_FALSE_IF_FAILED("Failed to get file URI.");
+    }
 
-    IAsyncOperation<bool> *launchOp;
-    m_launcher->LaunchFileAsync(file, &launchOp);
-    if (!launchOp)
-        return false;
+    boolean result;
+    {
+        ComPtr<IAsyncOperation<bool>> op;
+        hr = d->launcher->LaunchFileAsync(file.Get(), &op);
+        RETURN_FALSE_IF_FAILED("Failed to start file launch.");
 
-    boolean result = false;
-    while (launchOp->GetResults(&result) == E_ILLEGAL_METHOD_CALL)
-        QCoreApplication::processEvents();
-    launchOp->Release();
+        hr = QWinRTFunctions::await(op, &result);
+        RETURN_FALSE_IF_FAILED("Failed to launch file.");
+    }
 
     return result;
 }
