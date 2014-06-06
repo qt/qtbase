@@ -43,7 +43,7 @@
 #include "qcocoahelpers.h"
 #include "qcocoawindow.h"
 #include "private/qaccessiblecache_p.h"
-
+#include <QtPlatformSupport/private/qaccessiblebridgeutils_p.h>
 #include <QtGui/qaccessible.h>
 
 #import <AppKit/NSAccessibility.h>
@@ -430,15 +430,11 @@
     if (!iface)
         return nsActions;
 
-    QAccessibleActionInterface *actionInterface = iface->actionInterface();
-    if (actionInterface) {
-        QStringList supportedActionNames = actionInterface->actionNames();
-
-        foreach (const QString &qtAction, supportedActionNames) {
-            NSString *nsAction = QCocoaAccessible::getTranslatedAction(qtAction);
-            if (nsAction)
-                [nsActions addObject : nsAction];
-        }
+    const QStringList &supportedActionNames = QAccessibleBridgeUtils::effectiveActionNames(iface);
+    foreach (const QString &qtAction, supportedActionNames) {
+        NSString *nsAction = QCocoaAccessible::getTranslatedAction(qtAction);
+        if (nsAction)
+            [nsActions addObject : nsAction];
     }
 
     return nsActions;
@@ -448,27 +444,25 @@
     QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
     if (!iface)
         return nil; // FIXME is that the right return type??
-    QAccessibleActionInterface *actionInterface = iface->actionInterface();
-    if (actionInterface) {
-        QString qtAction = QCocoaAccessible::translateAction(action);
-
-        // Return a description from the action interface if this action is not known to the OS.
-        if (qtAction.isEmpty()) {
-            QString description = actionInterface->localizedActionDescription(qtAction);
-            return QCFString::toNSString(description);
+    QString qtAction = QCocoaAccessible::translateAction(action);
+    QString description;
+    // Return a description from the action interface if this action is not known to the OS.
+    if (qtAction.isEmpty()) {
+        if (QAccessibleActionInterface *actionInterface = iface->actionInterface()) {
+            qtAction = QString::fromNSString((NSString *)action);
+            description = actionInterface->localizedActionDescription(qtAction);
         }
+    } else {
+        description = qAccessibleLocalizedActionDescription(qtAction);
     }
-
-    return NSAccessibilityActionDescription(action);
+    return QCFString::toNSString(description);
 }
 
 - (void)accessibilityPerformAction:(NSString *)action {
     QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
     if (iface) {
-        QAccessibleActionInterface *actionInterface = iface->actionInterface();
-        if (actionInterface) {
-            actionInterface->doAction(QCocoaAccessible::translateAction(action));
-        }
+        const QString qtAction = QCocoaAccessible::translateAction(action);
+        QAccessibleBridgeUtils::performEffectiveAction(iface, qtAction);
     }
 }
 
