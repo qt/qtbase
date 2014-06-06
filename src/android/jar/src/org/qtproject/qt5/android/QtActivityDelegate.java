@@ -893,7 +893,7 @@ public class QtActivityDelegate
         return false;
     }
 
-    private boolean m_opionsMenuIsVisible = false;
+    private boolean m_optionsMenuIsVisible = false;
     public boolean onCreateOptionsMenu(Menu menu)
     {
         menu.clear();
@@ -901,7 +901,7 @@ public class QtActivityDelegate
     }
     public boolean onPrepareOptionsMenu(Menu menu)
     {
-        m_opionsMenuIsVisible = true;
+        m_optionsMenuIsVisible = true;
         boolean res = QtNative.onPrepareOptionsMenu(menu);
         setActionBarVisibility(res && menu.size() > 0);
         return res;
@@ -914,7 +914,7 @@ public class QtActivityDelegate
 
     public void onOptionsMenuClosed(Menu menu)
     {
-        m_opionsMenuIsVisible = false;
+        m_optionsMenuIsVisible = false;
         QtNative.onOptionsMenuClosed(menu);
     }
 
@@ -928,7 +928,7 @@ public class QtActivityDelegate
             }
         }
         else
-            if (m_opionsMenuIsVisible)
+            if (m_optionsMenuIsVisible)
                 m_activity.closeOptionsMenu();
     }
     private boolean m_contextMenuVisible = false;
