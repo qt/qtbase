@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the qmake application of the Qt Toolkit.
@@ -902,7 +902,7 @@ void VcprojGenerator::initProject()
     initResourceFiles();
     initExtraCompilerOutputs();
     if (vcProject.Configuration.WinRT) {
-        if (vcProject.Configuration.WinPhone
+        if (vcProject.Configuration.WinPhone80
                 && vcProject.Configuration.ConfigurationType == typeApplication)
             initWMAppManifest();
     }
@@ -1012,6 +1012,7 @@ void VcprojGenerator::initConfiguration()
         conf.WinRT = project->isActiveConfig("winrt");
         if (conf.WinRT) {
             conf.WinPhone = project->isActiveConfig("winphone");
+            conf.WinPhone80 = project->first("WINTARGET_VER") == "WP80";
             // Saner defaults
             conf.compiler.UsePrecompiledHeader = pchNone;
             conf.compiler.CompileAsWinRT = _False;

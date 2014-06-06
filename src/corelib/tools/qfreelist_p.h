@@ -73,7 +73,7 @@ struct QFreeListElement
     typedef T &ReferenceType;
 
     T _t;
-    int next;
+    QAtomicInt next;
 
     inline ConstReferenceType t() const { return _t; }
     inline ReferenceType t() { return _t; }
@@ -81,7 +81,7 @@ struct QFreeListElement
 
 /*! \internal
 
-    Element in a QFreeList without a paylout. ConstReferenceType and
+    Element in a QFreeList without a payload. ConstReferenceType and
     ReferenceType are void, the t() functions return void and are empty.
 */
 template <>
@@ -90,7 +90,7 @@ struct QFreeListElement<void>
     typedef void ConstReferenceType;
     typedef void ReferenceType;
 
-    int next;
+    QAtomicInt next;
 
     inline void t() const { }
     inline void t() { }
@@ -172,7 +172,7 @@ class QFreeList
         // qDebug("QFreeList: allocating %d elements (%ld bytes) with offset %d", size, size * sizeof(ElementType), offset);
         ElementType *v = new ElementType[size];
         for (int i = 0; i < size; ++i)
-            v[i].next = offset + i + 1;
+            v[i].next.store(offset + i + 1);
         return v;
     }
 
@@ -254,7 +254,7 @@ inline int QFreeList<T, ConstantsType>::next()
             }
         }
 
-        newid = v[at].next | (id & ~ConstantsType::IndexMask);
+        newid = v[at].next.load() | (id & ~ConstantsType::IndexMask);
     } while (!_next.testAndSetRelaxed(id, newid));
     // qDebug("QFreeList::next(): returning %d (_next now %d, serial %d)",
     //        id & ConstantsType::IndexMask,
@@ -273,7 +273,7 @@ inline void QFreeList<T, ConstantsType>::release(int id)
     int x, newid;
     do {
         x = _next.loadAcquire();
-        v[at].next = x & ConstantsType::IndexMask;
+        v[at].next.store(x & ConstantsType::IndexMask);
 
         newid = incrementserial(x, id);
     } while (!_next.testAndSetRelease(x, newid));

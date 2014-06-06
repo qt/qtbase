@@ -657,7 +657,8 @@ void QNetworkReply::setSslConfiguration(const QSslConfiguration &config)
     If this function is called, the SSL errors given in \a errors
     will be ignored.
 
-    Note that you can set the expected certificate in the SSL error:
+    \note Because most SSL errors are associated with a certificate, for most
+    of them you must set the expected certificate this SSL error is related to.
     If, for instance, you want to issue a request to a server that uses
     a self-signed certificate, consider the following snippet:
 

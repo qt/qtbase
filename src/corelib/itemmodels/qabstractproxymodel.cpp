@@ -377,8 +377,7 @@ bool QAbstractProxyModel::hasChildren(const QModelIndex &parent) const
  */
 QModelIndex QAbstractProxyModel::sibling(int row, int column, const QModelIndex &idx) const
 {
-    Q_D(const QAbstractProxyModel);
-    return mapFromSource(d->model->sibling(row, column, mapToSource(idx)));
+    return index(row, column, idx.parent());
 }
 
 /*!

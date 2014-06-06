@@ -2762,15 +2762,9 @@ QSize QHeaderView::sectionSizeFromContents(int logicalIndex) const
     opt.icon = qvariant_cast<QIcon>(variant);
     if (opt.icon.isNull())
         opt.icon = qvariant_cast<QPixmap>(variant);
-    QSize size = style()->sizeFromContents(QStyle::CT_HeaderSection, &opt, QSize(), this);
-    if (isSortIndicatorShown()) {
-        int margin = style()->pixelMetric(QStyle::PM_HeaderMargin, &opt, this);
-        if (d->orientation == Qt::Horizontal)
-            size.rwidth() += size.height() + margin;
-        else
-            size.rheight() += size.width() + margin;
-    }
-    return size;
+    if (isSortIndicatorShown())
+        opt.sortIndicator = QStyleOptionHeader::SortDown;
+    return style()->sizeFromContents(QStyle::CT_HeaderSection, &opt, QSize(), this);
 }
 
 /*!

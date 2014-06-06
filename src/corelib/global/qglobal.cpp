@@ -1841,8 +1841,9 @@ QSysInfo::MacVersion QSysInfo::macVersion()
 {
 #if defined(Q_OS_OSX)
     SInt32 gestalt_version;
-    if (Gestalt(gestaltSystemVersion, &gestalt_version) == noErr) {
-        return QSysInfo::MacVersion(((gestalt_version & 0x00F0) >> 4) + 2);
+    if (Gestalt(gestaltSystemVersionMinor, &gestalt_version) == noErr) {
+        // add 2 because OS X 10.0 is 0x02 in the enum
+        return QSysInfo::MacVersion(gestalt_version + 2);
     }
 #elif defined(Q_OS_IOS)
     return qt_ios_version(); // qtcore_mac_objc.mm
@@ -1992,6 +1993,8 @@ QSysInfo::WinVersion QSysInfo::windowsVersion()
             winver = QSysInfo::WV_WINDOWS7;
         else if (override == "WINDOWS8")
             winver = QSysInfo::WV_WINDOWS8;
+        else if (override == "WINDOWS8_1")
+            winver = QSysInfo::WV_WINDOWS8_1;
     }
 #endif
 #endif // !Q_OS_WINRT

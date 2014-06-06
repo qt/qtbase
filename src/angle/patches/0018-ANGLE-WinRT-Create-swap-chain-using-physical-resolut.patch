@@ -1,0 +1,145 @@
+From 59c6d4c94acb4735a73f50f46f91a6cce7389f94 Mon Sep 17 00:00:00 2001
+From: Andrew Knight <andrew.knight@digia.com>
+Date: Wed, 21 May 2014 00:58:21 +0300
+Subject: [PATCH] ANGLE WinRT: Create swap chain using physical resolution
+
+ANGLE has been creating the framebuffer in logical pixels instead of
+physical pixels, which leads to unexpected results and side effects like
+smudged anti-aliased text. This fixes the issue by multiplying the DIP
+resolution by the scale factor, making the framebuffer match the physical
+pixel resolution of the screen.
+
+Change-Id: I3594995ce8e18a31b47e27165f72bc6a391b97b6
+---
+ src/3rdparty/angle/src/libEGL/Surface.cpp | 97 ++++++++++++++++++++++++++-----
+ 1 file changed, 83 insertions(+), 14 deletions(-)
+
+diff --git a/src/3rdparty/angle/src/libEGL/Surface.cpp b/src/3rdparty/angle/src/libEGL/Surface.cpp
+index 3443355..a2e2306 100644
+--- a/src/3rdparty/angle/src/libEGL/Surface.cpp
++++ b/src/3rdparty/angle/src/libEGL/Surface.cpp
+@@ -24,8 +24,83 @@
+ #include "libEGL/Display.h"
+ 
+ #if defined(ANGLE_OS_WINRT)
++#include <wrl.h>
+ #include <windows.foundation.h>
+ #include <windows.ui.core.h>
++#include <windows.graphics.display.h>
++
++static bool getCoreWindowSize(const EGLNativeWindowType win, int *width, int *height)
++{
++    Microsoft::WRL::ComPtr<ABI::Windows::UI::Core::ICoreWindow> window;
++    HRESULT hr = win->QueryInterface(IID_PPV_ARGS(&window));
++    if (FAILED(hr))
++    {
++        ERR("Failed to cast native display pointer to ICoreWindow *.");
++        return false;
++    }
++
++#if _MSC_VER<=1700
++    Microsoft::WRL::ComPtr<ABI::Windows::Graphics::Display::IDisplayPropertiesStatics> displayInformation;
++    hr = RoGetActivationFactory(Microsoft::WRL::Wrappers::HString::MakeReference(RuntimeClass_Windows_Graphics_Display_DisplayProperties).Get(),
++                                IID_PPV_ARGS(&displayInformation));
++#else
++    Microsoft::WRL::ComPtr<ABI::Windows::Graphics::Display::IDisplayInformationStatics> displayInformationFactory;
++    hr = RoGetActivationFactory(Microsoft::WRL::Wrappers::HString::MakeReference(RuntimeClass_Windows_Graphics_Display_DisplayInformation).Get(),
++                                IID_PPV_ARGS(&displayInformationFactory));
++    if (FAILED(hr))
++    {
++        ERR("Failed to get display information factory.");
++        return false;
++    }
++
++    Microsoft::WRL::ComPtr<ABI::Windows::Graphics::Display::IDisplayInformation> displayInformation;
++    hr = displayInformationFactory->GetForCurrentView(&displayInformation);
++#endif
++    if (FAILED(hr))
++    {
++        ERR("Failed to get display information.");
++        return false;
++    }
++
++#if defined(ANGLE_OS_WINPHONE) && _MSC_VER>=1800 // Windows Phone 8.1
++    Microsoft::WRL::ComPtr<ABI::Windows::Graphics::Display::IDisplayInformation2> displayInformation2;
++    hr = displayInformation.As(&displayInformation2);
++    if (FAILED(hr))
++    {
++        ERR("Failed to get extended display information.");
++        return false;
++    }
++
++    DOUBLE scaleFactor;
++    hr = displayInformation2->get_RawPixelsPerViewPixel(&scaleFactor);
++    if (FAILED(hr))
++    {
++        ERR("Failed to get raw pixels per view pixel.");
++        return false;
++    }
++#else
++    ABI::Windows::Graphics::Display::ResolutionScale resolutionScale;
++    hr = displayInformation->get_ResolutionScale(&resolutionScale);
++    if (FAILED(hr))
++    {
++        ERR("Failed to get resolution scale.");
++        return false;
++    }
++    DOUBLE scaleFactor = DOUBLE(resolutionScale) / 100.0;
++#endif
++
++    ABI::Windows::Foundation::Rect windowRect;
++    hr = window->get_Bounds(&windowRect);
++    if (FAILED(hr))
++    {
++        ERR("Failed to get ICoreWindow bounds.");
++        return false;
++    }
++
++    *width = std::floor(windowRect.Width * scaleFactor + 0.5);
++    *height = std::floor(windowRect.Height * scaleFactor + 0.5);
++    return true;
++}
+ #endif
+ 
+ namespace egl
+@@ -117,14 +192,10 @@ bool Surface::resetSwapChain()
+         width = windowRect.right - windowRect.left;
+         height = windowRect.bottom - windowRect.top;
+ #else
+-        ABI::Windows::Foundation::Rect windowRect;
+-        ABI::Windows::UI::Core::ICoreWindow *window;
+-        HRESULT hr = mWindow->QueryInterface(IID_PPV_ARGS(&window));
+-        if (FAILED(hr))
++        if (!getCoreWindowSize(mWindow, &width, &height))
++        {
+             return false;
+-        window->get_Bounds(&windowRect);
+-        width = windowRect.Width;
+-        height = windowRect.Height;
++        }
+ #endif
+     }
+     else
+@@ -336,14 +407,12 @@ bool Surface::checkForOutOfDateSwapChain()
+     int clientWidth = client.right - client.left;
+     int clientHeight = client.bottom - client.top;
+ #else
+-    ABI::Windows::Foundation::Rect windowRect;
+-    ABI::Windows::UI::Core::ICoreWindow *window;
+-    HRESULT hr = mWindow->QueryInterface(IID_PPV_ARGS(&window));
+-    if (FAILED(hr))
++    int clientWidth;
++    int clientHeight;
++    if (!getCoreWindowSize(mWindow, &clientWidth, &clientHeight))
++    {
+         return false;
+-    window->get_Bounds(&windowRect);
+-    int clientWidth = windowRect.Width;
+-    int clientHeight = windowRect.Height;
++    }
+ #endif
+     bool sizeDirty = clientWidth != getWidth() || clientHeight != getHeight();
+ 
+-- 
+1.9.0.msysgit.0
+

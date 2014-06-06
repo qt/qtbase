@@ -127,9 +127,7 @@ void tst_QStatusBar::tempMessage()
     QCOMPARE(testWidget->currentMessage(), QString("Ready"));
     QCOMPARE(testWidget->currentMessage(), currentMessage);
 
-    QTest::qWait(1000);
-
-    QVERIFY(testWidget->currentMessage().isNull());
+    QTRY_VERIFY(testWidget->currentMessage().isNull());
     QVERIFY(currentMessage.isNull());
 
     testWidget->showMessage("Ready again", 500);
@@ -294,10 +292,10 @@ void tst_QStatusBar::QTBUG25492_msgtimeout()
     QCOMPARE(testWidget->currentMessage(), QString("Ready"));
     QCOMPARE(testWidget->currentMessage(), currentMessage);
 
-    QTest::qWait(3000);
+    QTest::qWait(1500);
 
     // Message disappears after 2 seconds
-    QVERIFY(testWidget->currentMessage().isNull());
+    QTRY_VERIFY(testWidget->currentMessage().isNull());
     QVERIFY(currentMessage.isNull());
 
     // Set display message for 2 seconds first

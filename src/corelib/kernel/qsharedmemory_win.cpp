@@ -148,6 +148,7 @@ bool QSharedMemoryPrivate::create(int size)
     // Create the file mapping.
 #if defined(Q_OS_WINPHONE)
     Q_UNIMPLEMENTED();
+    Q_UNUSED(size)
     hand = 0;
 #elif defined(Q_OS_WINRT)
     hand = CreateFileMappingFromApp(INVALID_HANDLE_VALUE, 0, PAGE_READWRITE, size, (PCWSTR)nativeKey.utf16());
@@ -169,6 +170,7 @@ bool QSharedMemoryPrivate::attach(QSharedMemory::AccessMode mode)
     int permissions = (mode == QSharedMemory::ReadOnly ? FILE_MAP_READ : FILE_MAP_ALL_ACCESS);
 #if defined(Q_OS_WINPHONE)
     Q_UNIMPLEMENTED();
+    Q_UNUSED(mode)
     memory = 0;
 #elif defined(Q_OS_WINRT)
     memory = (void *)MapViewOfFileFromApp(handle(), permissions, 0, 0);

@@ -152,6 +152,20 @@ static void clearSystemPalette()
     QApplicationPrivate::sys_pal = 0;
 }
 
+static QByteArray get_style_class_name()
+{
+    QScopedPointer<QStyle> s(QStyleFactory::create(QApplicationPrivate::desktopStyleKey()));
+    if (!s.isNull())
+        return s->metaObject()->className();
+    return QByteArray();
+}
+
+static QByteArray nativeStyleClassName()
+{
+    static QByteArray name = get_style_class_name();
+    return name;
+}
+
 #ifdef Q_OS_WINCE
 int QApplicationPrivate::autoMaximizeThreshold = -1;
 bool QApplicationPrivate::autoSipEnabled = false;
@@ -392,6 +406,8 @@ void qt_init_tooltip_palette();
 void qt_cleanup();
 
 QStyle *QApplicationPrivate::app_style = 0;        // default application style
+bool QApplicationPrivate::overrides_native_style = false; // whether native QApplication style is
+                                                          // overridden, i.e. not native
 QString QApplicationPrivate::styleOverride;        // style override
 
 #ifndef QT_NO_STYLE_STYLESHEET
@@ -1153,6 +1169,8 @@ QStyle *QApplication::style()
             Q_ASSERT(!"No styles available!");
             return 0;
         }
+        QApplicationPrivate::overrides_native_style =
+            app_style->objectName() != QApplicationPrivate::desktopStyleKey();
     }
     // take ownership of the style
     QApplicationPrivate::app_style->setParent(qApp);
@@ -1216,6 +1234,9 @@ void QApplication::setStyle(QStyle *style)
     }
 
     QStyle *old = QApplicationPrivate::app_style; // save
+
+    QApplicationPrivate::overrides_native_style =
+        nativeStyleClassName() == QByteArray(style->metaObject()->className());
 
 #ifndef QT_NO_STYLE_STYLESHEET
     if (!QApplicationPrivate::styleSheet.isEmpty() && !qobject_cast<QStyleSheetStyle *>(style)) {

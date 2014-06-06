@@ -2603,7 +2603,7 @@ void QRasterPaintEngine::alphaPenBlt(const void* src, int bpl, int depth, int rx
                     return;
                 }
             }
-        } else if (d->deviceDepth == 32 && (depth == 8 || depth == 32)) {
+        } else if (d->deviceDepth == 32 && ((depth == 8 && s->penData.alphamapBlit) || (depth == 32 && s->penData.alphaRGBBlit))) {
             // (A)RGB Alpha mask where the alpha component is not used.
             if (!clip) {
                 int nx = qMax(0, rx);
@@ -2626,13 +2626,12 @@ void QRasterPaintEngine::alphaPenBlt(const void* src, int bpl, int depth, int rx
                 rx = nx;
                 ry = ny;
             }
-            if (depth == 8 && s->penData.alphamapBlit) {
+            if (depth == 8)
                 s->penData.alphamapBlit(rb, rx, ry, s->penData.solid.color,
                                         scanline, w, h, bpl, clip);
-            } else if (depth == 32 && s->penData.alphaRGBBlit) {
+            else if (depth == 32)
                 s->penData.alphaRGBBlit(rb, rx, ry, s->penData.solid.color,
                                         (const uint *) scanline, w, h, bpl / 4, clip);
-            }
             return;
         }
     }

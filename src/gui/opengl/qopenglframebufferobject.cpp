@@ -453,10 +453,19 @@ void QOpenGLFramebufferObjectPrivate::init(QOpenGLFramebufferObject *, const QSi
     if (samples == 0) {
         initTexture(texture_target, internal_format, size, mipmap);
     } else {
+        GLenum storageFormat = internal_format;
+#ifdef GL_RGBA8_OES
+        // Correct the internal format used by the render buffer when using ANGLE
+        if (QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGLES && internal_format == GL_RGBA
+                && strstr((const char *)funcs.glGetString(GL_RENDERER), "ANGLE") != 0) {
+            storageFormat = GL_RGBA8_OES;
+        }
+#endif
+
         mipmap = false;
         funcs.glGenRenderbuffers(1, &color_buffer);
         funcs.glBindRenderbuffer(GL_RENDERBUFFER, color_buffer);
-        funcs.glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, internal_format, size.width(), size.height());
+        funcs.glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, storageFormat, size.width(), size.height());
         funcs.glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                                              GL_RENDERBUFFER, color_buffer);
         QT_CHECK_GLERROR();

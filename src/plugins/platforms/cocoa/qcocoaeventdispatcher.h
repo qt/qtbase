@@ -134,8 +134,6 @@ public:
     void interrupt();
     void flush();
 
-    bool event(QEvent *);
-
     friend void qt_mac_maybeCancelWaitForMoreEventsForwarder(QAbstractEventDispatcher *eventDispatcher);
 };
 
@@ -179,6 +177,8 @@ public:
     void cancelWaitForMoreEvents();
     void maybeCancelWaitForMoreEvents();
     void ensureNSAppInitialized();
+
+    void removeQueuedUserInputEvents(int nsWinNumber);
 
     QCFSocketNotifier cfSocketNotifier;
     QList<void *> queuedUserInputEvents; // NSEvent *

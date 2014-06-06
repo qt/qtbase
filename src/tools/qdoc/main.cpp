@@ -85,7 +85,6 @@ static QStringList dependModules;
 static QStringList indexDirs;
 static QString currentDir;
 static QString prevCurrentDir;
-static QString documentationPath;
 
 /*!
   Print the help message to \c stdout.
@@ -155,11 +154,6 @@ static void loadIndexFiles(Config& config)
         if (singleOutputSubdir.isEmpty())
             singleOutputSubdir = "html";
     }
-
-    // Allow modules and third-party application/libraries to link
-    // to the Qt docs without having to explicitly pass --indexdir.
-    if (!indexDirs.contains(documentationPath))
-        indexDirs.append(documentationPath);
 
     if (dependModules.size() > 0) {
         if (indexDirs.size() > 0) {
@@ -231,8 +225,7 @@ static void loadIndexFiles(Config& config)
             }
         }
         else {
-            qDebug() << "Dependant modules specified, but no index directories or "
-                     << "install directory were set."
+            qDebug() << "Dependent modules specified, but no index directories were set."
                      << "There will probably be errors for missing links.";
         }
     }
@@ -637,7 +630,6 @@ int main(int argc, char **argv)
         }
         else if (opt == "-installdir") {
             Config::installDir = argv[i];
-            indexDirs += argv[i];
             i++;
         }
         else if (opt == "-obsoletelinks") {

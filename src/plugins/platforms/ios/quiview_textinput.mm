@@ -495,13 +495,13 @@ Q_GLOBAL_STATIC(StaticVariables, staticVariables);
         return;
 
     if ([text isEqualToString:@"\n"]) {
+        if (self.returnKeyType == UIReturnKeyDone)
+            qApp->inputMethod()->hide();
+
         QKeyEvent press(QEvent::KeyPress, Qt::Key_Return, Qt::NoModifier);
         QKeyEvent release(QEvent::KeyRelease, Qt::Key_Return, Qt::NoModifier);
         [self sendEventToFocusObject:press];
         [self sendEventToFocusObject:release];
-
-        if (self.returnKeyType == UIReturnKeyDone)
-            [self resignFirstResponder];
 
         return;
     }

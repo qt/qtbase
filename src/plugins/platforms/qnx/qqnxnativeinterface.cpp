@@ -41,7 +41,10 @@
 
 #include "qqnxnativeinterface.h"
 
+#if !defined(QT_NO_OPENGL)
 #include "qqnxglcontext.h"
+#endif
+
 #include "qqnxscreen.h"
 #include "qqnxwindow.h"
 #if defined(QQNX_IMF)
@@ -50,7 +53,10 @@
 
 #include "qqnxintegration.h"
 
+#if !defined(QT_NO_OPENGL)
 #include <QtGui/QOpenGLContext>
+#endif
+
 #include <QtGui/QScreen>
 #include <QtGui/QWindow>
 
@@ -95,6 +101,7 @@ void *QQnxNativeInterface::nativeResourceForIntegration(const QByteArray &resour
     return 0;
 }
 
+#if !defined(QT_NO_OPENGL)
 void *QQnxNativeInterface::nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context)
 {
     if (resource == "eglcontext" && context)
@@ -102,6 +109,7 @@ void *QQnxNativeInterface::nativeResourceForContext(const QByteArray &resource, 
 
     return 0;
 }
+#endif
 
 void QQnxNativeInterface::setWindowProperty(QPlatformWindow *window, const QString &name, const QVariant &value)
 {

@@ -76,6 +76,8 @@ void QAndroidPlatformRasterWindow::setGeometry(const QRect &rect)
 {
     m_oldGeometry = geometry();
     QAndroidPlatformWindow::setGeometry(rect);
+    if (rect.topLeft() != m_oldGeometry.topLeft())
+        repaint(QRegion(rect));
 }
 
 QT_END_NAMESPACE

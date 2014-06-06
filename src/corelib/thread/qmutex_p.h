@@ -92,7 +92,7 @@ public:
     bool wait(int timeout = -1);
     void wakeUp() Q_DECL_NOTHROW;
 
-    // Conrol the lifetime of the privates
+    // Control the lifetime of the privates
     QAtomicInt refCount;
     int id;
 

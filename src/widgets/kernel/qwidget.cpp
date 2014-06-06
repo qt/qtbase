@@ -357,11 +357,11 @@ void QWidgetPrivate::scrollChildren(int dx, int dy)
     }
 }
 
-void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &oldRect)
+void QWidgetPrivate::setWSGeometry()
 {
-    Q_UNUSED(dontShow);
-    Q_UNUSED(oldRect);
-    // XXX
+    Q_Q(QWidget);
+    if (QWindow *window = q->windowHandle())
+        window->setGeometry(data.crect);
 }
 
 void QWidgetPrivate::updateWidgetTransform(QEvent *event)

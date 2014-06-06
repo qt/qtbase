@@ -2015,15 +2015,12 @@ QByteArray QProcess::readAllStandardError()
 }
 
 /*!
-    Starts the given \a program in a new process, if none is already
-    running, passing the command line arguments in \a arguments. The OpenMode
-    is set to \a mode.
+    Starts the given \a program in a new process, passing the command line
+    arguments in \a arguments.
 
     The QProcess object will immediately enter the Starting state. If the
     process starts successfully, QProcess will emit started(); otherwise,
-    error() will be emitted. If the QProcess object is already running a
-    process, a warning may be printed at the console, and the existing
-    process will continue running.
+    error() will be emitted.
 
     \note Processes are started asynchronously, which means the started()
     and error() signals may be delayed. Call waitForStarted() to make
@@ -2032,9 +2029,18 @@ QByteArray QProcess::readAllStandardError()
 
     \note No further splitting of the arguments is performed.
 
-    \b{Windows:} Arguments that contain spaces are wrapped in quotes.
+    \b{Windows:} The arguments are quoted and joined into a command line
+    that is compatible with the CommandLineToArgvW() Windows function.
+    For programs that have different command line quoting requirements,
+    you need to use setNativeArguments().
 
-    \sa pid(), started(), waitForStarted()
+    The OpenMode is set to \a mode.
+
+    If the QProcess object is already running a process, a warning may be
+    printed at the console, and the existing process will continue running
+    unaffected.
+
+    \sa pid(), started(), waitForStarted(), setNativeArguments()
 */
 void QProcess::start(const QString &program, const QStringList &arguments, OpenMode mode)
 {
@@ -2057,8 +2063,6 @@ void QProcess::start(const QString &program, const QStringList &arguments, OpenM
     Starts the program set by setProgram() with arguments set by setArguments().
     The OpenMode is set to \a mode.
 
-    This method is a convenient alias to open().
-
     \sa open(), setProgram(), setArguments()
  */
 void QProcess::start(OpenMode mode)
@@ -2077,22 +2081,13 @@ void QProcess::start(OpenMode mode)
 }
 
 /*!
-    Starts the program set by setProgram() in a new process, if none is already
-    running, passing the command line arguments set by setArguments(). The OpenMode
-    is set to \a mode.
+    Starts the program set by setProgram() with arguments set by setArguments().
+    The OpenMode is set to \a mode.
 
-    The QProcess object will immediately enter the Starting state. If the
-    process starts successfully, QProcess will emit started(); otherwise,
-    error() will be emitted. If the QProcess object is already running a
-    process, a warning may be printed at the console, the function will return false,
-    and the existing process will continue running.
+    This method is an alias for start(), and exists only to fully implement
+    the interface defined by QIODevice.
 
-    \note Processes are started asynchronously, which means the started()
-    and error() signals may be delayed. Call waitForStarted() to make
-    sure the process has started (or has failed to start) and those signals
-    have been emitted. In this regard, a true return value merly means the process
-    was correcty initialized, not that the program was actually started.
-
+    \sa start(), setProgram(), setArguments()
 */
 bool QProcess::open(OpenMode mode)
 {
@@ -2185,29 +2180,28 @@ static QStringList parseCombinedArgString(const QString &program)
 /*!
     \overload
 
-    Starts the command \a command in a new process, if one is not already
-    running. \a command is a single string of text containing both the
-    program name and its arguments. The arguments are separated by one or
-    more spaces. For example:
+    Starts the command \a command in a new process.
+    The OpenMode is set to \a mode.
+
+    \a command is a single string of text containing both the program name
+    and its arguments. The arguments are separated by one or more spaces.
+    For example:
 
     \snippet code/src_corelib_io_qprocess.cpp 5
 
-    The \a command string can also contain quotes, to ensure that arguments
-    containing spaces are correctly supplied to the new process. For example:
+    Arguments containing spaces must be quoted to be correctly supplied to
+    the new process. For example:
 
     \snippet code/src_corelib_io_qprocess.cpp 6
 
-    If the QProcess object is already running a process, a warning may be
-    printed at the console, and the existing process will continue running.
-
-    Note that, on Windows, quotes need to be both escaped and quoted.
-    For example, the above code would be specified in the following
-    way to ensure that \c{"My Documents"} is used as the argument to
-    the \c dir executable:
+    Literal quotes in the \a command string are represented by triple quotes.
+    For example:
 
     \snippet code/src_corelib_io_qprocess.cpp 7
 
-    The OpenMode is set to \a mode.
+    After the \a command string has been split and unquoted, this function
+    behaves like the overload which takes the arguments as a string list.
+
 */
 void QProcess::start(const QString &command, OpenMode mode)
 {
@@ -2243,7 +2237,7 @@ QString QProcess::program() const
     \since 5.1
 
     Set the \a program to use when starting the process.
-    That function must be call before open()
+    This function must be called before start().
 
     \sa start(), setArguments(), program()
 */
@@ -2274,7 +2268,7 @@ QStringList QProcess::arguments() const
     \since 5.1
 
     Set the \a arguments to pass to the called program when starting the process.
-    That function must be call before  open()
+    This function must be called before start().
 
     \sa start(), setProgram(), arguments()
 */
@@ -2359,11 +2353,13 @@ QProcess::ExitStatus QProcess::exitStatus() const
     The environment and working directory are inherited from the calling
     process.
 
-    On Windows, arguments that contain spaces are wrapped in quotes.
+    Argument handling is identical to the respective start() overload.
 
     If the process cannot be started, -2 is returned. If the process
     crashes, -1 is returned. Otherwise, the process' exit code is
     returned.
+
+    \sa start()
 */
 int QProcess::execute(const QString &program, const QStringList &arguments)
 {
@@ -2378,15 +2374,21 @@ int QProcess::execute(const QString &program, const QStringList &arguments)
 /*!
     \overload
 
-    Starts the program \a program in a new process. \a program is a
-    single string of text containing both the program name and its
-    arguments. The arguments are separated by one or more spaces.
+    Starts the program \a command in a new process, waits for it to finish,
+    and then returns the exit code.
+
+    Argument handling is identical to the respective start() overload.
+
+    After the \a command string has been split and unquoted, this function
+    behaves like the overload which takes the arguments as a string list.
+
+    \sa start()
 */
-int QProcess::execute(const QString &program)
+int QProcess::execute(const QString &command)
 {
     QProcess process;
     process.setReadChannelMode(ForwardedChannels);
-    process.start(program);
+    process.start(command);
     if (!process.waitForFinished(-1))
         return -2;
     return process.exitStatus() == QProcess::NormalExit ? process.exitCode() : -1;
@@ -2396,24 +2398,24 @@ int QProcess::execute(const QString &program)
     Starts the program \a program with the arguments \a arguments in a
     new process, and detaches from it. Returns \c true on success;
     otherwise returns \c false. If the calling process exits, the
-    detached process will continue to live.
+    detached process will continue to run unaffected.
 
-    Note that arguments that contain spaces are not passed to the
-    process as separate arguments.
+    Argument handling is identical to the respective start() overload.
 
     \b{Unix:} The started process will run in its own session and act
     like a daemon.
 
-    \b{Windows:} Arguments that contain spaces are wrapped in quotes.
-    The started process will run as a regular standalone process.
-
     The process will be started in the directory \a workingDirectory.
+    If \a workingDirectory is empty, the working directory is inherited
+    from the calling process.
 
     \note On QNX, this may cause all application threads to
     temporarily freeze.
 
     If the function is successful then *\a pid is set to the process
     identifier of the started process.
+
+    \sa start()
 */
 bool QProcess::startDetached(const QString &program,
                              const QStringList &arguments,
@@ -2427,19 +2429,7 @@ bool QProcess::startDetached(const QString &program,
 }
 
 /*!
-    Starts the program \a program with the given \a arguments in a
-    new process, and detaches from it. Returns \c true on success;
-    otherwise returns \c false. If the calling process exits, the
-    detached process will continue to live.
-
-    \note Arguments that contain spaces are not passed to the
-    process as separate arguments.
-
-    \b{Unix:} The started process will run in its own session and act
-    like a daemon.
-
-    \b{Windows:} Arguments that contain spaces are wrapped in quotes.
-    The started process will run as a regular standalone process.
+    \internal
 */
 bool QProcess::startDetached(const QString &program,
                              const QStringList &arguments)
@@ -2450,16 +2440,19 @@ bool QProcess::startDetached(const QString &program,
 /*!
     \overload
 
-    Starts the program \a program in a new process. \a program is a
-    single string of text containing both the program name and its
-    arguments. The arguments are separated by one or more spaces.
+    Starts the command \a command in a new process, and detaches from it.
+    Returns \c true on success; otherwise returns \c false.
 
-    The \a program string can also contain quotes, to ensure that arguments
-    containing spaces are correctly supplied to the new process.
+    Argument handling is identical to the respective start() overload.
+
+    After the \a command string has been split and unquoted, this function
+    behaves like the overload which takes the arguments as a string list.
+
+    \sa start()
 */
-bool QProcess::startDetached(const QString &program)
+bool QProcess::startDetached(const QString &command)
 {
-    QStringList args = parseCombinedArgString(program);
+    QStringList args = parseCombinedArgString(command);
     if (args.isEmpty())
         return false;
 

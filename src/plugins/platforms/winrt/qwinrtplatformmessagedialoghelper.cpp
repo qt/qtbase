@@ -171,10 +171,11 @@ void QWinRTPlatformMessageDialogHelper::hide()
 
 HRESULT QWinRTPlatformMessageDialogHelper::onInvoked(ABI::Windows::UI::Popups::IUICommand *command)
 {
-    HSTRING hLabel;
+    HString hLabel;
     UINT32 labelLength;
-    command->get_Label(&hLabel);
-    QString label = QString::fromWCharArray(::WindowsGetStringRawBuffer(hLabel, &labelLength));
+    command->get_Label(hLabel.GetAddressOf());
+    PCWSTR rawString = hLabel.GetRawBuffer(&labelLength);
+    QString label = QString::fromWCharArray(rawString, labelLength);
     int buttonId = -1;
     for (int i = QPlatformDialogHelper::FirstButton; i < QPlatformDialogHelper::LastButton; i<<=1) {
         if ( options()->standardButtons() & i ) {

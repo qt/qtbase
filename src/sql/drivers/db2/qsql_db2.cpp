@@ -555,7 +555,7 @@ bool QDB2Result::reset (const QString& query)
                                 "Unable to execute statement"), QSqlError::StatementError, d));
         return false;
     }
-    SQLSMALLINT count;
+    SQLSMALLINT count = 0;
     r = SQLNumResultCols(d->hStmt, &count);
     if (count) {
         setSelect(true);
@@ -795,7 +795,7 @@ bool QDB2Result::exec()
                                 "Unable to execute statement"), QSqlError::StatementError, d));
         return false;
     }
-    SQLSMALLINT count;
+    SQLSMALLINT count = 0;
     r = SQLNumResultCols(d->hStmt, &count);
     if (count) {
         setSelect(true);
@@ -1105,7 +1105,7 @@ bool QDB2Result::nextResult()
         return false;
     }
 
-    SQLSMALLINT fieldCount;
+    SQLSMALLINT fieldCount = 0;
     r = SQLNumResultCols(d->hStmt, &fieldCount);
     setSelect(fieldCount > 0);
     for (int i = 0; i < fieldCount; ++i)

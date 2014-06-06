@@ -465,6 +465,9 @@ public:
     void handleEnterEvent(const xcb_enter_notify_event_t *);
 #endif
 
+public slots:
+    void syncWindow(QXcbWindow *window);
+
 private slots:
     void processXcbEvents();
 

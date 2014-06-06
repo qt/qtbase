@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -28,4 +28,16 @@
 /*!
     \example complexpingpong
     \title D-Bus Complex Ping Pong Example
+    \ingroup examples-dbus
+    \brief Demonstrates usage of the Qt D-Bus typesystem.
+
+    \e{Complex Ping Pong Example} demonstrates the use of \l{Qt D-Bus}
+    typesystem with QDBusVariant and QDBusReply. The example consists of the
+    main application \c complexping which starts the other application, \c
+    complexpong. Entering keywords such as \c hello and \c ping is handled by
+    complexpong and the reply is printed to the standard output.
+
+    \include examples-run.qdocinc
+
+    To run, execute the \c complexping application.
 */

@@ -155,6 +155,7 @@ QCollatorSortKey QCollator::sortKey(const QString &string) const
 #elif defined(Q_OS_WINPHONE)
     int size = 0;
     Q_UNIMPLEMENTED();
+    Q_UNUSED(string)
 #else // Q_OS_WINPHONE
     int size = LCMapStringEx(LOCALE_NAME_USER_DEFAULT, LCMAP_SORTKEY | d->collator,
                            reinterpret_cast<LPCWSTR>(string.constData()), string.size(),

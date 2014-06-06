@@ -209,12 +209,18 @@ public:
     bool atEnd() const;
 
     static int execute(const QString &program, const QStringList &arguments);
-    static int execute(const QString &program);
+    static int execute(const QString &command);
 
-    static bool startDetached(const QString &program, const QStringList &arguments, const QString &workingDirectory,
-                              qint64 *pid = 0);
-    static bool startDetached(const QString &program, const QStringList &arguments);
-    static bool startDetached(const QString &program);
+    static bool startDetached(const QString &program, const QStringList &arguments,
+                              const QString &workingDirectory
+#if defined(Q_QDOC)
+                              = QString()
+#endif
+                              , qint64 *pid = 0);
+#if !defined(Q_QDOC)
+    static bool startDetached(const QString &program, const QStringList &arguments); // ### Qt6: merge overloads
+#endif
+    static bool startDetached(const QString &command);
 
     static QStringList systemEnvironment();
 

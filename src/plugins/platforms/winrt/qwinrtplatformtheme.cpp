@@ -50,25 +50,27 @@ QWinRTPlatformTheme::QWinRTPlatformTheme()
 
 bool QWinRTPlatformTheme::usePlatformNativeDialog(QPlatformTheme::DialogType type) const
 {
-#ifndef Q_OS_WINPHONE
+#if !(defined(Q_OS_WINPHONE) && _MSC_VER<=1700)
     if (type == QPlatformTheme::MessageDialog)
         return true;
-#endif // Q_OS_WINPHONE
+#else
+    Q_UNUSED(type)
+#endif // !(Q_OS_WINPHONE && _MSC_VER<=1700)
     return false;
 }
 
 QPlatformDialogHelper *QWinRTPlatformTheme::createPlatformDialogHelper(QPlatformTheme::DialogType type) const
 {
-#ifndef Q_OS_WINPHONE
+#if !(defined(Q_OS_WINPHONE) && _MSC_VER<=1700)
     switch (type) {
     case QPlatformTheme::MessageDialog:
         return new QWinRTPlatformMessageDialogHelper();
     default:
         return QPlatformTheme::createPlatformDialogHelper(type);
     }
-#else
+#else // !(Q_OS_WINPHONE && _MSC_VER<=1700)
     return QPlatformTheme::createPlatformDialogHelper(type);
-#endif // Q_OS_WINPHONE
+#endif // Q_OS_WINPHONE && _MSC_VER<=1700
 }
 
 QT_END_NAMESPACE

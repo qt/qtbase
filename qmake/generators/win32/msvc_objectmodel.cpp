@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the qmake application of the Qt Toolkit.
@@ -2129,6 +2129,7 @@ VCPreLinkEventTool::VCPreLinkEventTool()
 VCConfiguration::VCConfiguration()
     :   WinRT(false),
         WinPhone(false),
+        WinPhone80(false),
         ATLMinimizesCRunTimeLibraryUsage(unset),
         BuildBrowserInformation(unset),
         CharacterSet(charSetNotSet),
