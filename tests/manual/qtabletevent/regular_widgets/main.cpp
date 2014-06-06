@@ -54,16 +54,20 @@
 enum TabletPointType {
     TabletButtonPress,
     TabletButtonRelease,
-    TabletMove,
-    TabletDraw
+    TabletMove
 };
 
 struct TabletPoint
 {
-    TabletPoint(const QPoint &p = QPoint(), TabletPointType t = TabletMove) : pos(p), type(t) {}
+    TabletPoint(const QPointF &p = QPointF(), TabletPointType t = TabletMove,
+                Qt::MouseButton b = Qt::LeftButton, QTabletEvent::PointerType pt = QTabletEvent::UnknownPointer, qreal prs = 0) :
+        pos(p), type(t), button(b), ptype(pt), pressure(prs) {}
 
-    QPoint pos;
+    QPointF pos;
     TabletPointType type;
+    Qt::MouseButton button;
+    QTabletEvent::PointerType ptype;
+    qreal pressure;
 };
 
 class EventReportWidget : public QWidget
@@ -90,36 +94,47 @@ private:
 
     bool m_lastIsMouseMove;
     bool m_lastIsTabletMove;
+    Qt::MouseButton m_lastButton;
     QVector<TabletPoint> m_points;
 };
 
 EventReportWidget::EventReportWidget()
     : m_lastIsMouseMove(false)
     , m_lastIsTabletMove(false)
+    , m_lastButton(Qt::NoButton)
 { }
 
 void EventReportWidget::paintEvent(QPaintEvent *)
 {
     QPainter p(this);
-    const QRect geom = QRect(QPoint(0, 0), size());
+    const QRectF geom = QRectF(QPoint(0, 0), size());
     p.fillRect(geom, Qt::white);
-    p.drawRect(QRect(geom.topLeft(), geom.bottomRight() - QPoint(1,1)));
+    p.drawRect(QRectF(geom.topLeft(), geom.bottomRight() - QPointF(1,1)));
+    p.setPen(Qt::white);
     foreach (const TabletPoint &t, m_points) {
         if (geom.contains(t.pos)) {
               QPainterPath pp;
-              pp.addEllipse(t.pos, 5, 5);
+              pp.addEllipse(t.pos, 8, 8);
+              QRectF pointBounds(t.pos.x() - 10, t.pos.y() - 10, 20, 20);
               switch (t.type) {
               case TabletButtonPress:
-                  p.fillPath(pp, Qt::black);
+                  p.fillPath(pp, Qt::darkGreen);
+                  if (t.button != Qt::NoButton)
+                    p.drawText(pointBounds, Qt::AlignCenter, QString::number(t.button));
                   break;
               case TabletButtonRelease:
                   p.fillPath(pp, Qt::red);
+                  if (t.button != Qt::NoButton)
+                    p.drawText(pointBounds, Qt::AlignCenter, QString::number(t.button));
                   break;
               case TabletMove:
-                  p.drawPath(pp);
-                  break;
-              case TabletDraw:
-                  p.fillPath(pp, Qt::blue);
+                  if (t.pressure > 0.0) {
+                      p.setPen(t.ptype == QTabletEvent::Eraser ? Qt::red : Qt::black);
+                      p.drawEllipse(t.pos, t.pressure * 10.0, t.pressure * 10.0);
+                      p.setPen(Qt::white);
+                  } else {
+                      p.fillRect(t.pos.x() - 2, t.pos.y() - 2, 4, 4, Qt::black);
+                  }
                   break;
               }
           }
@@ -128,37 +143,30 @@ void EventReportWidget::paintEvent(QPaintEvent *)
 
 void EventReportWidget::tabletEvent(QTabletEvent *event)
 {
-    QWidget::tabletEvent(event);
 
+    QWidget::tabletEvent(event);
     QString type;
     switch (event->type()) {
     case QEvent::TabletEnterProximity:
-        m_lastIsTabletMove = false;
         type = QString::fromLatin1("TabletEnterProximity");
         break;
     case QEvent::TabletLeaveProximity:
-        m_lastIsTabletMove = false;
         type = QString::fromLatin1("TabletLeaveProximity");
         break;
     case QEvent::TabletMove:
-        if (m_lastIsTabletMove)
-            return;
-
-        m_lastIsTabletMove = true;
         type = QString::fromLatin1("TabletMove");
-        m_points.push_back(TabletPoint(event->pos(), event->pressure() ? TabletDraw : TabletMove));
+        m_points.push_back(TabletPoint(event->pos(), TabletMove, m_lastButton, event->pointerType(), event->pressure()));
         update();
         break;
     case QEvent::TabletPress:
-        m_lastIsTabletMove = false;
         type = QString::fromLatin1("TabletPress");
-        m_points.push_back(TabletPoint(event->pos(), TabletButtonPress));
+        m_points.push_back(TabletPoint(event->pos(), TabletButtonPress, event->button(), event->pointerType()));
+        m_lastButton = event->button();
         update();
         break;
     case QEvent::TabletRelease:
-        m_lastIsTabletMove = false;
         type = QString::fromLatin1("TabletRelease");
-        m_points.push_back(TabletPoint(event->pos(), TabletButtonRelease));
+        m_points.push_back(TabletPoint(event->pos(), TabletButtonRelease, event->button(), event->pointerType()));
         update();
         break;
     default:
@@ -166,10 +174,51 @@ void EventReportWidget::tabletEvent(QTabletEvent *event)
         break;
     }
 
-    qDebug() << "Tablet event, type = " << type
-             << " position = " << event->pos()
-             << " global position = " << event->globalPos()
-             << " cursor at " << QCursor::pos();
+    QString pointerType = "UNKNOWN";
+    switch (event->pointerType()) {
+    case QTabletEvent::Pen:
+        pointerType = "Pen";
+        break;
+    case QTabletEvent::Cursor:
+        pointerType = "Cursor";
+        break;
+    case QTabletEvent::Eraser:
+        pointerType = "Eraser";
+        break;
+    default:
+        break;
+    }
+
+    QString device = "UNKNOWN";
+    switch (event->device()) {
+    case QTabletEvent::Puck:
+        pointerType = "Puck";
+        break;
+    case QTabletEvent::Stylus:
+        pointerType = "Stylus";
+        break;
+    case QTabletEvent::Airbrush:
+        pointerType = "Airbrush";
+        break;
+    case QTabletEvent::FourDMouse:
+        pointerType = "FourDMouse";
+        break;
+    case QTabletEvent::RotationStylus:
+        pointerType = "RotationStylus";
+        break;
+    default:
+        break;
+    }
+
+    if (!m_lastIsTabletMove)
+        qDebug() << "Tablet event, type = " << type
+                 << " position = " << event->pos()
+                 << " global position = " << event->globalPos()
+                 << " cursor at " << QCursor::pos()
+                 << " buttons " << event->buttons() << " changed " << event->button()
+                 << " pointer type " << pointerType << " device " << device;
+
+    m_lastIsTabletMove = (event->type() == QEvent::TabletMove);
 }
 
 void EventReportWidget::outputMouseEvent(QMouseEvent *event)

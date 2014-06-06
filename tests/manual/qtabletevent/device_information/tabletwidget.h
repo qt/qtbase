@@ -49,11 +49,13 @@
 class TabletWidget : public QWidget
 {
 public:
-    TabletWidget();
+    TabletWidget(bool mouseToo);
 protected:
     bool eventFilter(QObject *obj, QEvent *ev);
     void tabletEvent(QTabletEvent *event);
     void paintEvent(QPaintEvent *event);
+    const char *buttonToString(Qt::MouseButton b);
+    QString buttonsToString(Qt::MouseButtons bs);
 private:
     void resetAttributes() {
         mType = mDev = mPointerType = mXT = mYT = mZ = 0;
@@ -66,8 +68,11 @@ private:
     QPoint mPos, mGPos;
     QPointF mHiResGlobalPos;
     int mDev, mPointerType, mXT, mYT, mZ;
+    Qt::MouseButton mButton;
+    Qt::MouseButtons mButtons;
     qreal mPress, mTangential, mRot;
     qint64 mUnique;
+    bool mMouseToo;
 };
 
 #endif // TABLETWIDGET_H

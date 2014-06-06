@@ -42,8 +42,11 @@
 #include "tabletwidget.h"
 #include <QPainter>
 #include <QApplication>
+#include <QDebug>
+#include <QMetaObject>
+#include <QMetaEnum>
 
-TabletWidget::TabletWidget()
+TabletWidget::TabletWidget(bool mouseToo) : mMouseToo(mouseToo)
 {
     QPalette newPalette = palette();
     newPalette.setColor(QPalette::Window, Qt::white);
@@ -76,12 +79,14 @@ bool TabletWidget::eventFilter(QObject *, QEvent *ev)
             mPress = event->pressure();
             mTangential = event->tangentialPressure();
             mRot = event->rotation();
+            mButton = event->button();
+            mButtons = event->buttons();
             if (isVisible())
                 update();
             break;
         }
     case QEvent::MouseMove:
-        {
+        if (mMouseToo) {
             resetAttributes();
             QMouseEvent *event = static_cast<QMouseEvent*>(ev);
             mType = event->type();
@@ -129,7 +134,7 @@ void TabletWidget::paintEvent(QPaintEvent *)
         || mType == QEvent::TabletMove || mType == QEvent::TabletPress
         || mType == QEvent::TabletRelease) {
 
-        eventInfo << QString("Hight res global position: %1 %2").arg(QString::number(mHiResGlobalPos.x()), QString::number(mHiResGlobalPos.y()));
+        eventInfo << QString("High res global position: %1 %2").arg(QString::number(mHiResGlobalPos.x()), QString::number(mHiResGlobalPos.y()));
 
         QString pointerType("Pointer type: ");
         switch (mPointerType) {
@@ -147,7 +152,6 @@ void TabletWidget::paintEvent(QPaintEvent *)
             break;
         }
         eventInfo << pointerType;
-
 
         QString deviceString = "Device type: ";
         switch (mDev) {
@@ -172,6 +176,8 @@ void TabletWidget::paintEvent(QPaintEvent *)
         }
         eventInfo << deviceString;
 
+        eventInfo << QString("Button: %1 (0x%2)").arg(buttonToString(mButton)).arg(mButton, 0, 16);
+        eventInfo << QString("Buttons currently pressed: %1 (0x%2)").arg(buttonsToString(mButtons)).arg(mButtons, 0, 16);
         eventInfo << QString("Pressure: %1").arg(QString::number(mPress));
         eventInfo << QString("Tangential pressure: %1").arg(QString::number(mTangential));
         eventInfo << QString("Rotation: %1").arg(QString::number(mRot));
@@ -182,7 +188,25 @@ void TabletWidget::paintEvent(QPaintEvent *)
         eventInfo << QString("Unique Id: %1").arg(QString::number(mUnique));
     }
 
-    painter.drawText(rect(), eventInfo.join("\n"));
+    QString text = eventInfo.join("\n");
+    painter.drawText(rect(), text);
+}
+
+const char *TabletWidget::buttonToString(Qt::MouseButton b)
+{
+    static int enumIdx = QObject::staticQtMetaObject.indexOfEnumerator("MouseButtons");
+    return QObject::staticQtMetaObject.enumerator(enumIdx).valueToKey(b);
+}
+
+QString TabletWidget::buttonsToString(Qt::MouseButtons bs)
+{
+    QStringList ret;
+    for (int i = 0; (uint)(1 << i) <= Qt::MaxMouseButton; ++i) {
+        Qt::MouseButton b = static_cast<Qt::MouseButton>(1 << i);
+        if (bs.testFlag(b))
+            ret << buttonToString(b);
+    }
+    return ret.join("|");
 }
 
 void TabletWidget::tabletEvent(QTabletEvent *event)
