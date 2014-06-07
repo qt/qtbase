@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -45,19 +45,12 @@
 #include <qpa/qplatformscreen.h>
 #include <qpa/qwindowsysteminterface.h>
 
-#include <QtCore/QHash>
-#include <QtGui/QSurfaceFormat>
 #include <EGL/egl.h>
-
-#include <EventToken.h>
 
 namespace ABI {
     namespace Windows {
         namespace ApplicationModel {
             struct ISuspendingEventArgs;
-            namespace Core {
-                struct ICoreApplication;
-            }
         }
         namespace UI {
             namespace Core {
@@ -71,14 +64,9 @@ namespace ABI {
                 struct IWindowActivatedEventArgs;
                 struct IWindowSizeChangedEventArgs;
             }
-            namespace ViewManagement {
-                struct IApplicationViewStatics;
-            }
         }
         namespace Graphics {
             namespace Display {
-                struct IDisplayPropertiesStatics;
-                struct IDisplayInformationStatics;
                 struct IDisplayInformation;
             }
         }
@@ -99,14 +87,14 @@ QT_BEGIN_NAMESPACE
 
 class QTouchDevice;
 class QWinRTEGLContext;
-class QWinRTPageFlipper;
 class QWinRTCursor;
 class QWinRTInputContext;
-
+class QWinRTScreenPrivate;
 class QWinRTScreen : public QPlatformScreen
 {
 public:
-    explicit QWinRTScreen(ABI::Windows::UI::Core::ICoreWindow *window);
+    explicit QWinRTScreen();
+    ~QWinRTScreen();
     QRect geometry() const;
     int depth() const;
     QImage::Format format() const;
@@ -135,69 +123,31 @@ public:
 private:
     void handleExpose();
 
-    // Event handlers
-    QHash<QEvent::Type, EventRegistrationToken> m_tokens;
-    QHash<Qt::ApplicationState, EventRegistrationToken> m_suspendTokens;
+    HRESULT onKeyDown(ABI::Windows::UI::Core::ICoreWindow *, ABI::Windows::UI::Core::IKeyEventArgs *);
+    HRESULT onKeyUp(ABI::Windows::UI::Core::ICoreWindow *, ABI::Windows::UI::Core::IKeyEventArgs *);
+    HRESULT onCharacterReceived(ABI::Windows::UI::Core::ICoreWindow *, ABI::Windows::UI::Core::ICharacterReceivedEventArgs *);
+    HRESULT onPointerEntered(ABI::Windows::UI::Core::ICoreWindow *, ABI::Windows::UI::Core::IPointerEventArgs *);
+    HRESULT onPointerExited(ABI::Windows::UI::Core::ICoreWindow *, ABI::Windows::UI::Core::IPointerEventArgs *);
+    HRESULT onPointerUpdated(ABI::Windows::UI::Core::ICoreWindow *, ABI::Windows::UI::Core::IPointerEventArgs *);
+    HRESULT onSizeChanged(ABI::Windows::UI::Core::ICoreWindow *, ABI::Windows::UI::Core::IWindowSizeChangedEventArgs *);
 
-    HRESULT onKeyDown(ABI::Windows::UI::Core::ICoreWindow *window, ABI::Windows::UI::Core::IKeyEventArgs *args);
-    HRESULT onKeyUp(ABI::Windows::UI::Core::ICoreWindow *window, ABI::Windows::UI::Core::IKeyEventArgs *args);
-    HRESULT onCharacterReceived(ABI::Windows::UI::Core::ICoreWindow *window, ABI::Windows::UI::Core::ICharacterReceivedEventArgs *args);
-    HRESULT onPointerEntered(ABI::Windows::UI::Core::ICoreWindow *window, ABI::Windows::UI::Core::IPointerEventArgs *args);
-    HRESULT onPointerExited(ABI::Windows::UI::Core::ICoreWindow *window, ABI::Windows::UI::Core::IPointerEventArgs *args);
-    HRESULT onPointerUpdated(ABI::Windows::UI::Core::ICoreWindow *window, ABI::Windows::UI::Core::IPointerEventArgs *args);
-    HRESULT onSizeChanged(ABI::Windows::UI::Core::ICoreWindow *window, ABI::Windows::UI::Core::IWindowSizeChangedEventArgs *args);
-
-    HRESULT onActivated(ABI::Windows::UI::Core::ICoreWindow *, ABI::Windows::UI::Core::IWindowActivatedEventArgs *args);
+    HRESULT onActivated(ABI::Windows::UI::Core::ICoreWindow *, ABI::Windows::UI::Core::IWindowActivatedEventArgs *);
     HRESULT onSuspended(IInspectable *, ABI::Windows::ApplicationModel::ISuspendingEventArgs *);
     HRESULT onResume(IInspectable *, IInspectable *);
 
-    HRESULT onClosed(ABI::Windows::UI::Core::ICoreWindow *, ABI::Windows::UI::Core::ICoreWindowEventArgs *args);
-    HRESULT onVisibilityChanged(ABI::Windows::UI::Core::ICoreWindow *, ABI::Windows::UI::Core::IVisibilityChangedEventArgs *args);
-    HRESULT onAutomationProviderRequested(ABI::Windows::UI::Core::ICoreWindow *, ABI::Windows::UI::Core::IAutomationProviderRequestedEventArgs *args);
+    HRESULT onClosed(ABI::Windows::UI::Core::ICoreWindow *, ABI::Windows::UI::Core::ICoreWindowEventArgs *);
+    HRESULT onVisibilityChanged(ABI::Windows::UI::Core::ICoreWindow *, ABI::Windows::UI::Core::IVisibilityChangedEventArgs *);
+    HRESULT onAutomationProviderRequested(ABI::Windows::UI::Core::ICoreWindow *, ABI::Windows::UI::Core::IAutomationProviderRequestedEventArgs *);
 
-#if _MSC_VER<=1700
-    HRESULT onOrientationChanged(IInspectable *);
-    HRESULT onDpiChanged(IInspectable *);
-#else
     HRESULT onOrientationChanged(ABI::Windows::Graphics::Display::IDisplayInformation *, IInspectable *);
     HRESULT onDpiChanged(ABI::Windows::Graphics::Display::IDisplayInformation *, IInspectable *);
-#endif
 
 #ifdef Q_OS_WINPHONE
     HRESULT onBackButtonPressed(IInspectable *, ABI::Windows::Phone::UI::Input::IBackPressedEventArgs *args);
 #endif
 
-    ABI::Windows::UI::Core::ICoreWindow *m_coreWindow;
-    ABI::Windows::UI::ViewManagement::IApplicationViewStatics *m_applicationView;
-    ABI::Windows::ApplicationModel::Core::ICoreApplication *m_application;
-
-    QRectF m_geometry;
-    QImage::Format m_format;
-    QSurfaceFormat m_surfaceFormat;
-    qreal m_dpi;
-    int m_depth;
-    QWinRTInputContext *m_inputContext;
-    QWinRTCursor *m_cursor;
-    QList<QWindow *> m_visibleWindows;
-
-    EGLDisplay m_eglDisplay;
-    EGLSurface m_eglSurface;
-
-#if _MSC_VER<=1700
-    ABI::Windows::Graphics::Display::IDisplayPropertiesStatics *m_displayInformation;
-#else
-    ABI::Windows::Graphics::Display::IDisplayInformationStatics *m_displayInformationFactory;
-    ABI::Windows::Graphics::Display::IDisplayInformation *m_displayInformation;
-#endif
-    qreal m_devicePixelRatio;
-    Qt::ScreenOrientation m_nativeOrientation;
-    Qt::ScreenOrientation m_orientation;
-
-#ifndef Q_OS_WINPHONE
-    QHash<quint32, QPair<Qt::Key, QString> > m_activeKeys;
-#endif
-    QTouchDevice *m_touchDevice;
-    QHash<quint32, QWindowSystemInterface::TouchPoint> m_touchPoints;
+    QScopedPointer<QWinRTScreenPrivate> d_ptr;
+    Q_DECLARE_PRIVATE(QWinRTScreen)
 };
 
 QT_END_NAMESPACE

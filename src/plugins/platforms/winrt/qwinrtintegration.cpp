@@ -82,26 +82,7 @@ QWinRTIntegration::QWinRTIntegration()
     , m_fontDatabase(new QWinRTFontDatabase)
     , m_services(new QWinRTServices)
 {
-    // Obtain the WinRT Application, view, and window
-    ICoreApplication *application;
-    if (FAILED(RoGetActivationFactory(Wrappers::HString::MakeReference(RuntimeClass_Windows_ApplicationModel_Core_CoreApplication).Get(),
-                                      IID_PPV_ARGS(&application))))
-        qCritical("Could not attach to the application factory.");
-
-    ICoreApplicationView *view;
-    if (FAILED(application->GetCurrentView(&view))) {
-        qCritical("Could not obtain the application view - have you started outside of WinRT?");
-        return;
-    }
-
-    // Get core window (will act as our screen)
-    ICoreWindow *window;
-    if (FAILED(view->get_CoreWindow(&window))) {
-        qCritical("Could not obtain the application window - have you started outside of WinRT?");
-        return;
-    }
-    window->Activate();
-    m_screen = new QWinRTScreen(window);
+    m_screen = new QWinRTScreen;
     screenAdded(m_screen);
 
     m_success = true;
