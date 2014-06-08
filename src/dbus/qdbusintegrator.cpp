@@ -2488,12 +2488,15 @@ void QDBusConnectionPrivate::unregisterServiceNoLock(const QString &serviceName)
     serviceNames.removeAll(serviceName);
 }
 
-bool QDBusConnectionPrivate::isServiceRegisteredByThread(const QString &serviceName) const
+bool QDBusConnectionPrivate::isServiceRegisteredByThread(const QString &serviceName)
 {
     if (!serviceName.isEmpty() && serviceName == baseService)
         return true;
-    QStringList copy = serviceNames;
-    return copy.contains(serviceName);
+    if (serviceName == dbusServiceString())
+        return false;
+
+    QDBusReadLocker locker(UnregisterServiceAction, this);
+    return serviceNames.contains(serviceName);
 }
 
 void QDBusConnectionPrivate::postEventToThread(int action, QObject *object, QEvent *ev)
