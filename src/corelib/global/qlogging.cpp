@@ -1148,8 +1148,13 @@ typedef void (*QtMsgHandler)(QtMsgType, const char *);
 Q_CORE_EXPORT QtMsgHandler qInstallMsgHandler(QtMsgHandler);
 #endif
 
-static QtMsgHandler msgHandler = 0;                // pointer to debug handler (without context)
-static QtMessageHandler messageHandler = 0;         // pointer to debug handler (with context)
+static void qDefaultMsgHandler(QtMsgType type, const char *buf);
+static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &buf);
+
+// pointer to QtMsgHandler debug handler (without context)
+static QBasicAtomicPointer<void (QtMsgType, const char*)> msgHandler = Q_BASIC_ATOMIC_INITIALIZER(qDefaultMsgHandler);
+// pointer to QtMessageHandler debug handler (with context)
+static QBasicAtomicPointer<void (QtMsgType, const QMessageLogContext &, const QString &)> messageHandler = Q_BASIC_ATOMIC_INITIALIZER(qDefaultMessageHandler);
 
 #if defined(QT_USE_JOURNALD) && !defined(QT_BOOTSTRAPPED)
 static void systemd_default_message_handler(QtMsgType type,
@@ -1315,20 +1320,15 @@ static void qt_message_print(QtMsgType msgType, const QMessageLogContext &contex
     }
 #endif
 
-    if (!msgHandler)
-        msgHandler = qDefaultMsgHandler;
-    if (!messageHandler)
-        messageHandler = qDefaultMessageHandler;
-
     // prevent recursion in case the message handler generates messages
     // itself, e.g. by using Qt API
     if (grabMessageHandler()) {
         // prefer new message handler over the old one
-        if (msgHandler == qDefaultMsgHandler
-                || messageHandler != qDefaultMessageHandler) {
-            (*messageHandler)(msgType, context, message);
+        if (msgHandler.load() == qDefaultMsgHandler
+                || messageHandler.load() != qDefaultMessageHandler) {
+            (*messageHandler.load())(msgType, context, message);
         } else {
-            (*msgHandler)(msgType, message.toLocal8Bit().constData());
+            (*msgHandler.load())(msgType, message.toLocal8Bit().constData());
         }
         ungrabMessageHandler();
     } else {
@@ -1530,22 +1530,18 @@ void qErrnoWarning(int code, const char *msg, ...)
 
 QtMessageHandler qInstallMessageHandler(QtMessageHandler h)
 {
-    if (!messageHandler)
-        messageHandler = qDefaultMessageHandler;
-    QtMessageHandler old = messageHandler;
-    messageHandler = h;
-    return old;
+    if (!h)
+        h = qDefaultMessageHandler;
+    //set 'h' and return old message handler
+    return messageHandler.fetchAndStoreRelaxed(h);
 }
 
 QtMsgHandler qInstallMsgHandler(QtMsgHandler h)
 {
-    //if handler is 0, set it to the
-    //default message handler
-    if (!msgHandler)
-        msgHandler = qDefaultMsgHandler;
-    QtMsgHandler old = msgHandler;
-    msgHandler = h;
-    return old;
+    if (!h)
+        h = qDefaultMsgHandler;
+    //set 'h' and return old message handler
+    return msgHandler.fetchAndStoreRelaxed(h);
 }
 
 void qSetMessagePattern(const QString &pattern)
