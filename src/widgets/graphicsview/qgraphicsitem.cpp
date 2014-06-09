@@ -9911,7 +9911,7 @@ void QGraphicsTextItem::setDefaultTextColor(const QColor &col)
 }
 
 /*!
-    Returns the default text color that is used to for unformatted text.
+    Returns the default text color that is used for unformatted text.
 */
 QColor QGraphicsTextItem::defaultTextColor() const
 {
