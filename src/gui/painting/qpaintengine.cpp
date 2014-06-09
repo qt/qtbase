@@ -761,7 +761,7 @@ void QPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
                                  bool((painter()->renderHints() & QPainter::TextAntialiasing)
                                       && !(painter()->font().styleStrategy() & QFont::NoAntialias)));
         painter()->translate(p.x(), p.y());
-        painter()->fillPath(path, state->pen().brush());
+        painter()->fillPath(path, painter()->pen().brush());
         painter()->restore();
     }
 }
