@@ -91,7 +91,7 @@ public:
     the list using the addWidget() function, or inserted at a given
     index using the insertWidget() function. The removeWidget()
     function removes a widget from the stacked widget. The number of
-    widgets contained in the stacked widget, can
+    widgets contained in the stacked widget can
     be obtained using the count() function.
 
     The widget() function returns the widget at a given index
