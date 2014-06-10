@@ -347,10 +347,10 @@ XInput2DeviceData *QXcbConnection::deviceForId(int id)
                 if (Q_UNLIKELY(debug_xinput_devices))
                     qDebug("   has touch class with mode %d", tci->mode);
                 switch (tci->mode) {
-                case XIModeRelative:
+                case XIDependentTouch:
                     type = QTouchDevice::TouchPad;
                     break;
-                case XIModeAbsolute:
+                case XIDirectTouch:
                     type = QTouchDevice::TouchScreen;
                     break;
                 }
