@@ -170,6 +170,12 @@ public:
     QJsonArray toArray() const;
     QJsonObject toObject() const;
 
+    // ### Qt 6: Add default values
+    inline bool toBool(bool defaultValue) const { return toValue().toBool(defaultValue); }
+    inline int toInt(int defaultValue) const { return toValue().toInt(defaultValue); }
+    inline double toDouble(double defaultValue) const { return toValue().toDouble(defaultValue); }
+    inline QString toString(const QString &defaultValue) const { return toValue().toString(defaultValue); }
+
     inline bool operator==(const QJsonValue &other) const { return toValue() == other; }
     inline bool operator!=(const QJsonValue &other) const { return toValue() != other; }
 

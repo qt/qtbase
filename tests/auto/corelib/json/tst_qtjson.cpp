@@ -132,6 +132,7 @@ private Q_SLOTS:
 
     void testTrailingComma();
     void testDetachBug();
+    void testJsonValueRefDefault();
 
     void valueEquals();
 
@@ -2423,6 +2424,23 @@ void tst_QtJson::longStrings()
         QByteArray a2 = d2.toJson();
         QVERIFY(a1 == a2);
     }
+}
+
+void tst_QtJson::testJsonValueRefDefault()
+{
+    QJsonObject empty;
+
+    QCOMPARE(empty["n/a"].toString(), QString());
+    QCOMPARE(empty["n/a"].toString("default"), QStringLiteral("default"));
+
+    QCOMPARE(empty["n/a"].toBool(), false);
+    QCOMPARE(empty["n/a"].toBool(true), true);
+
+    QCOMPARE(empty["n/a"].toInt(), 0);
+    QCOMPARE(empty["n/a"].toInt(42), 42);
+
+    QCOMPARE(empty["n/a"].toDouble(), 0.0);
+    QCOMPARE(empty["n/a"].toDouble(42.0), 42.0);
 }
 
 QTEST_MAIN(tst_QtJson)
