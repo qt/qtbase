@@ -443,7 +443,6 @@ struct QBasicAtomicBitField {
 
 } // unnamed namespace
 
-static const int UserEventRegistrationBitFieldSize = QEvent::MaxUser - QEvent::User + 1;
 typedef QBasicAtomicBitField<QEvent::MaxUser - QEvent::User + 1> UserEventTypeRegistry;
 
 static UserEventTypeRegistry userEventTypeRegistry;
