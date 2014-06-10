@@ -765,7 +765,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
     case Atom::AutoLink:
         if (!noLinks && !inLink_ && !inContents_ && !inSectionHeading_) {
             const Node* node = 0;
-            QString link = getLink(atom, relative, &node);
+            QString link = getAutoLink(atom, relative, &node);
             if (!link.isEmpty()) {
                 beginLink(link);
                 generateLink(atom, marker);
@@ -1308,13 +1308,11 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
     case Atom::Link:
         {
             const Node *node = 0;
-            QString myLink = getLink(atom, relative, &node);
-            //if (myLink.isEmpty())
-                //myLink = getCollisionLink(atom);
-            if (myLink.isEmpty() && !noLinkErrors())
+            QString link = getLink(atom, relative, &node);
+            if (link.isEmpty() && !noLinkErrors())
                 relative->doc().location().warning(tr("Can't link to '%1'").arg(atom->string()));
             else if (!inSectionHeading_)
-                beginLink(myLink);
+                beginLink(link);
             skipAhead = 1;
         }
         break;
@@ -3722,6 +3720,129 @@ QString DitaXmlGenerator::fileName(const Node* node)
     return Generator::fileName(node);
 }
 
+/*!
+  This function is called for links, i.e. for words that
+  are marked with the qdoc link command. For autolinks
+  that are not marked with the qdoc link command, qdoc
+  calls getAutoLink().
+
+  Return the link represented by the \a atom, and set \a node
+  to point to the target node for that link. \a relative points
+  to the node holding the qdoc comment where the link command
+  was found.
+ */
+QString DitaXmlGenerator::getLink(const Atom *atom, const Node *relative, const Node** node)
+{
+    if (atom->string().contains(QLatin1Char(':')) && (atom->string().startsWith("file:") ||
+                                                      atom->string().startsWith("http:") ||
+                                                      atom->string().startsWith("https:") ||
+                                                      atom->string().startsWith("ftp:") ||
+                                                      atom->string().startsWith("mailto:"))) {
+        return atom->string(); // It's some kind of protocol.
+    }
+
+    QString ref;
+    QString link;
+    QStringList path = atom->string().split("#");
+    QString first = path.first().trimmed();
+
+    *node = 0;
+    if (first.isEmpty())
+        *node = relative; // search for a target on the current page.
+    else {
+        if (first.endsWith(".html")) { // The target is an html file.
+            *node = qdb_->findNodeByNameAndType(QStringList(first), Node::Document);
+        }
+        else if (first.endsWith("()")) { // The target is a C++ function or QML method.
+            *node = qdb_->resolveFunctionTarget(first, relative);
+        }
+        else {
+            *node = qdb_->resolveTarget(first, relative);
+            if (!(*node))
+                *node = qdb_->findDocNodeByTitle(first);
+            if (!(*node)) {
+                *node = qdb_->findUnambiguousTarget(first, ref);
+                if (*node && !(*node)->url().isEmpty() && !ref.isEmpty()) {
+                    QString final = (*node)->url() + "#" + ref;
+                    return final;
+                }
+            }
+        }
+    }
+    if (!(*node))
+        return link; // empty
+
+    if (!(*node)->url().isEmpty())
+        return (*node)->url();
+
+    if (!path.isEmpty()) {
+        ref = qdb_->findTarget(path.first(), *node);
+        if (ref.isEmpty())
+            return link; // empty
+    }
+
+    /*
+      Given that *node is not null, we now cconstruct a link
+      to the page that *node represents, and then if we found
+      a target on that page, we connect the target to the link
+      with '#'.
+    */
+    link = linkForNode(*node, relative);
+    if (*node && (*node)->subType() == Node::Image)
+        link = "images/used-in-examples/" + link;
+    if (!ref.isEmpty())
+        link += QLatin1Char('#') + ref;
+    return link;
+}
+
+/*!
+  This function is called for autolinks, i.e. for words that
+  are not marked with the qdoc link command that qdoc has
+  reason to believe should be links. For links marked with
+  the qdoc link command, qdoc calls getLink().
+
+  Return the link represented by the \a atom, and set \a node
+  to point to the target node for that link. \a relative points
+  to the node holding the qdoc comment where the link command
+  was found.
+ */
+QString DitaXmlGenerator::getAutoLink(const Atom *atom, const Node *relative, const Node** node)
+{
+    QString ref;
+    QString link;
+    QString target = atom->string().trimmed();
+    *node = 0;
+
+    if (target.endsWith("()")) { // The target is a C++ function or QML method.
+        *node = qdb_->resolveFunctionTarget(target, relative);
+    }
+    else {
+        *node = qdb_->resolveTarget(target, relative);
+        if (!(*node)) {
+            *node = qdb_->findDocNodeByTitle(target);
+        }
+        if (!(*node)) {
+            *node = qdb_->findUnambiguousTarget(target, ref);
+            if (*node && !(*node)->url().isEmpty() && !ref.isEmpty()) {
+                QString final = (*node)->url() + "#" + ref;
+                return final;
+            }
+        }
+    }
+
+    if (!(*node))
+        return link; // empty
+
+    if (!(*node)->url().isEmpty())
+        return (*node)->url();
+
+    link = linkForNode(*node, relative);
+    if (!ref.isEmpty())
+        link += QLatin1Char('#') + ref;
+    return link;
+}
+
+
 QString DitaXmlGenerator::linkForNode(const Node* node, const Node* relative)
 {
     if (node == 0 || node == relative)
@@ -3830,103 +3951,6 @@ const QPair<QString,QString> DitaXmlGenerator::anchorForNode(const Node* node)
     }
 
     return anchorPair;
-}
-
-QString DitaXmlGenerator::getLink(const Atom* atom, const Node* relative, const Node** node)
-{
-    QString link;
-    *node = 0;
-    inObsoleteLink = false;
-
-    if (atom->string().contains(QLatin1Char(':')) &&
-            (atom->string().startsWith("file:")
-             || atom->string().startsWith("http:")
-             || atom->string().startsWith("https:")
-             || atom->string().startsWith("ftp:")
-             || atom->string().startsWith("mailto:"))) {
-
-        link = atom->string();
-    }
-    else {
-        QStringList path;
-        if (atom->string().contains('#'))
-            path = atom->string().split('#');
-        else
-            path.append(atom->string());
-
-        QString ref;
-        QString first = path.first().trimmed();
-
-        if (first.isEmpty())
-            *node = relative;
-        else if (first.endsWith(".html"))
-            *node = qdb_->findNodeByNameAndType(QStringList(first), Node::Document);
-        else if (first.endsWith("()")) // The target is a C++ function or QML method.
-            *node = qdb_->resolveFunctionTarget(first, relative);
-        else {
-            *node = qdb_->resolveTarget(first, relative);
-            if (!(*node))
-                *node = qdb_->findDocNodeByTitle(first);
-            if (!*node)
-                *node = qdb_->findUnambiguousTarget(first, ref);
-        }
-
-        if (*node) {
-            if (!(*node)->url().isEmpty())
-                return (*node)->url();
-            else
-                path.removeFirst();
-        }
-        else
-            *node = relative;
-
-        if (*node && (*node)->status() == Node::Obsolete) {
-            if (relative && (relative->parent() != *node) &&
-                    (relative->status() != Node::Obsolete)) {
-                bool porting = false;
-                if (relative->isDocNode()) {
-                    const DocNode* fake = static_cast<const DocNode*>(relative);
-                    if (fake->title().startsWith("Porting"))
-                        porting = true;
-                }
-                QString name = relative->plainFullName();
-                if (!porting && !name.startsWith("Q3")) {
-                    if (obsoleteLinks) {
-                        relative->doc().location().warning(tr("Link to obsolete item '%1' in %2")
-                                                           .arg(atom->string())
-                                                           .arg(name));
-                    }
-                    inObsoleteLink = true;
-                }
-            }
-        }
-
-        while (!path.isEmpty()) {
-            ref = qdb_->findTarget(path.first(), *node);
-            if (ref.isEmpty())
-                break;
-            path.removeFirst();
-        }
-
-        if (path.isEmpty()) {
-            link = linkForNode(*node, relative);
-            if (*node && (*node)->subType() == Node::Image)
-                link = "images/used-in-examples/" + link;
-            if (!ref.isEmpty()) {
-                if (link.isEmpty())
-                    link = outFileName();
-                QString guid = lookupGuid(link, ref);
-                link += QLatin1Char('#') + guid;
-            }
-            else if (!link.isEmpty() && *node && (link.endsWith(".xml") || link.endsWith(".dita"))) {
-                link += QLatin1Char('#') + (*node)->guid();
-            }
-        }
-    }
-    if (!link.isEmpty() && link[0] == '#') {
-        link.prepend(outFileName());
-    }
-    return link;
 }
 
 void DitaXmlGenerator::generateStatus(const Node* node, CodeMarker* marker)

@@ -384,7 +384,7 @@ void QDocForest::newPrimaryTree(const QString& module)
   point, but it only makes sense in the primary tree, which is
   searched first. After the primary tree is searched, \a relative
   is set to 0 for searching the index trees. When relative is 0,
-  the root node of the index tree is the starting point.
+  the root nodes of the index trees are the starting points.
  */
 const Node* QDocForest::resolveTarget(const QString& target, const Node* relative)
 {
@@ -395,11 +395,6 @@ const Node* QDocForest::resolveTarget(const QString& target, const Node* relativ
         const Node* n = t->findNode(path, relative, flags);
         if (n)
             return n;
-#if 0
-        n = t->findDocNodeByTitle(target);
-        if (n)
-            return n;
-#endif
         relative = 0;
     }
     return 0;
@@ -1567,67 +1562,86 @@ void QDocDatabase::mergeCollections(CollectionNode* cn)
     }
 }
 
+
+/*!
+  This function is called when the \a{atom} might be a link
+  atom. It handles the optional, square bracket parameters
+  for the link command.
+ */
+Node* QDocDatabase::findNode(const Atom* atom)
+{
+    QStringList path(atom->string());
+    if (atom->specifiesDomain()) {
+        return atom->domain()->findNodeByNameAndType(path, atom->goal());
+    }
+    qDebug() << "FINDNODE:" << path << atom->goal();
+    return forest_.findNodeByNameAndType(path, atom->goal());
+}
+
+const DocNode* QDocDatabase::findDocNodeByTitle(const Atom* atom)
+{
+    return forest_.findDocNodeByTitle(atom->string());
+}
+
+/*!
+  Searches for the node that matches the path in \a atom. The
+  \a relative node is used if the first leg of the path is
+  empty, i.e. if the path begins with a hashtag. The function
+  also sets \a ref if there remains an unused leg in the path
+  after the node is found. The node is returned as well as the
+  \a ref. If the returned node pointer is null, \a ref is not
+  valid.
+ */
+const Node* QDocDatabase::findNode(const Atom* atom, const Node* relative, QString& ref)
+{
+    const Node* node = 0;
+    QStringList path = atom->string().split("#");
+    QString first = path.first().trimmed();
+    path.removeFirst();
+
+    if (first.isEmpty())
+        node = relative; // search for a target on the current page.
+    else if (atom->specifiesDomain()) {
+        qDebug() << "Processing LinkAtom";
+        if (first.endsWith(".html")) { // The target is an html file.
+            node = atom->domain()->findNodeByNameAndType(QStringList(first), Node::Document);
+        }
+        else if (first.endsWith("()")) { // The target is a C++ function or QML method.
+            node = atom->domain()->resolveFunctionTarget(first, 0); //relative);
+        }
+        else {
+            node = atom->domain()->resolveTarget(first, 0); // relative);
+            if (!node)
+                node = atom->domain()->findUnambiguousTarget(first, ref); // ref
+            if (!node && path.isEmpty())
+                node = atom->domain()->findDocNodeByTitle(first);
+        }
+    }
+    else {
+        if (first.endsWith(".html")) { // The target is an html file.
+            node = findNodeByNameAndType(QStringList(first), Node::Document); // ref
+        }
+        else if (first.endsWith("()")) { // The target is a C++ function or QML method.
+            node = resolveFunctionTarget(first, relative);
+        }
+        else {
+            node = resolveTarget(first, relative); // ref
+            if (!node)
+                node = findUnambiguousTarget(first, ref); // ref
+            if (!node && path.isEmpty())
+                node = findDocNodeByTitle(first);
+        }
+    }
+    if (node && ref.isEmpty()) {
+        if (!node->url().isEmpty())
+            return node;
+        if (!path.isEmpty()) {
+            ref = findTarget(path.first(), node);
+            if (ref.isEmpty())
+                node = 0;
+        }
+    }
+    return node;
+}
+
 QT_END_NAMESPACE
-
-#if 0
-    void getAllGroups(CNMM& t);
-    void getAllModules(CNMM& t);
-    void getAllQmlModules(CNMM& t);
-
-/*!
-  For each tree in the forest, get the group map from the tree.
-  Insert each pair from the group map into the collection node
-  multimap \a t.
- */
-void QDocForest::getAllGroups(CNMM& t)
-{
-    foreach (Tree* t, searchOrder()) {
-        const GroupMap& gm = t->groups();
-        if (!gm.isEmpty()) {
-            GroupMap::const_iterator i = gm.begin();
-            while (i != gm.end()) {
-                t.insert(i.key(), i.value());
-                ++i;
-            }
-        }
-    }
-}
-
-/*!
-  For each tree in the forest, get the module map from the tree.
-  Insert each pair from the module map into the collection node
-  multimap \a t.
- */
-void QDocForest::getAllModules(CNMM& t)
-{
-    foreach (Tree* t, searchOrder()) {
-        const ModuleMap& mm = t->modules();
-        if (!mm.isEmpty()) {
-            ModuleMap::const_iterator i = mm.begin();
-            while (i != mm.end()) {
-                t.insert(i.key(), i.value());
-                ++i;
-            }
-        }
-    }
-}
-
-/*!
-  For each tree in the forest, get the QML module map from the
-  tree. Insert each pair from the QML module map into the
-  collection node multimap \a t.
- */
-void QDocForest::getAllQmlModules(CNMM& t)
-{
-    foreach (Tree* t, searchOrder()) {
-        const QmlModuleMap& qmm = t->groups();
-        if (!qmm.isEmpty()) {
-            QmlModuleMap::const_iterator i = qmm.begin();
-            while (i != qmm.end()) {
-                t.insert(i.key(), i.value());
-                ++i;
-            }
-        }
-    }
-}
-#endif

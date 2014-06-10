@@ -72,7 +72,7 @@ class QDocIndexFiles
                        bool generateInternalNodes = false);
 
     void readIndexFile(const QString& path);
-    void readIndexSection(const QDomElement& element, InnerNode* parent, const QString& indexUrl);
+    void readIndexSection(const QDomElement& element, Node* current, const QString& indexUrl);
     void resolveIndex();
     bool generateIndexSection(QXmlStreamWriter& writer, Node* node, bool generateInternalNodes = false);
     void generateIndexSections(QXmlStreamWriter& writer, Node* node, bool generateInternalNodes = false);

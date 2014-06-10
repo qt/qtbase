@@ -374,22 +374,51 @@ void Atom::dump() const
   contains some search parameters.
  */
 LinkAtom::LinkAtom(const QString& p1, const QString& p2)
-    : Atom(Link, p1), qml_(false), goal_(Node::NoType), domain_(0)
+    : Atom(p1), genus_(DontCare), goal_(Node::NoType), domain_(0)
 {
     QStringList params = p2.toLower().split(QLatin1Char(' '));
     foreach (const QString& p, params) {
-        if (p == "qml")
-            qml_ = true;
-        else {
-            if (!domain_) {
-                domain_ = QDocDatabase::qdocDB()->findTree(p);
-                if (domain_)
-                    continue;
-            }
-            if (goal_ == Node::NoType)
-                goal_ = Node::goal(p);
+        if (!domain_) {
+            domain_ = QDocDatabase::qdocDB()->findTree(p);
+            if (domain_)
+                continue;
         }
+        if (goal_ == Node::NoType) {
+            goal_ = Node::goal(p);
+            if (goal_ != Node::NoType)
+                continue;
+        }
+        if (p == "qml")
+            genus_ = QML;
+        else if (p == "cpp")
+            genus_ = CPP;
     }
+}
+
+/*!
+  Standard copy constructor of LinkAtom \a t.
+ */
+LinkAtom::LinkAtom(const LinkAtom& t)
+    : Atom(Link, t.string()),
+      genus_(t.genus_),
+      goal_(t.goal_),
+      domain_(t.domain_)
+{
+    // nothing
+}
+
+/*!
+  Special copy constructor of LinkAtom \a t, where
+  where the new LinkAtom will not be the first one
+  in the list.
+ */
+LinkAtom::LinkAtom(Atom* previous, const LinkAtom& t)
+    : Atom(previous, Link, t.string()),
+      genus_(t.genus_),
+      goal_(t.goal_),
+      domain_(t.domain_)
+{
+    previous->next_ = this;
 }
 
 QT_END_NAMESPACE

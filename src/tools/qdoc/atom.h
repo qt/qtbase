@@ -44,10 +44,12 @@
 
 #include <qstringlist.h>
 #include "node.h"
+#include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
 
 class Tree;
+class LinkAtom;
 
 class Atom
 {
@@ -63,7 +65,7 @@ public:
         BriefRight,
         C,
         CaptionLeft,
-        CaptionRight,
+        CaptionRight,           // 10
         Code,
         CodeBad,
         CodeNew,
@@ -73,7 +75,7 @@ public:
         DivLeft,
         DivRight,
         EndQmlText,
-        FootnoteLeft,
+        FootnoteLeft,           // 20
         FootnoteRight,
         FormatElse,
         FormatEndif,
@@ -83,7 +85,7 @@ public:
         GeneratedList,
         GuidLink,
         HR,
-        Image,
+        Image,                  // 30
         ImageText,
         ImportantLeft,
         ImportantRight,
@@ -93,7 +95,7 @@ public:
         LegaleseLeft,
         LegaleseRight,
         LineBreak,
-        Link,
+        Link,                   // 40
         LinkNode,
         ListLeft,
         ListItemNumber,
@@ -103,7 +105,7 @@ public:
         ListItemRight,
         ListRight,
         Nop,
-        NoteLeft,
+        NoteLeft,               // 50
         NoteRight,
         ParaLeft,
         ParaRight,
@@ -113,7 +115,7 @@ public:
         QuotationRight,
         RawString,
         SectionLeft,
-        SectionRight,
+        SectionRight,           // 60
         SectionHeadingLeft,
         SectionHeadingRight,
         SidebarLeft,
@@ -123,7 +125,7 @@ public:
         SnippetIdentifier,
         SnippetLocation,
         String,
-        TableLeft,
+        TableLeft,              // 70
         TableRight,
         TableHeaderLeft,
         TableHeaderRight,
@@ -133,10 +135,20 @@ public:
         TableItemRight,
         TableOfContents,
         Target,
-        UnhandledFormat,
+        UnhandledFormat,        // 80
         UnknownCommand,
         Last = UnknownCommand
     };
+
+    enum NodeGenus { DontCare, CPP, QML };
+
+    friend class LinkAtom;
+
+    Atom(const QString& string)
+        : next_(0), type_(Link)
+    {
+        strs << string;
+    }
 
     Atom(Type type, const QString& string = "")
         : next_(0), type_(type)
@@ -186,8 +198,10 @@ public:
     const QString& string(int i) const { return strs[i]; }
     int count() const { return strs.size(); }
     void dump() const;
+    const QStringList& strings() const { return strs; }
 
-    virtual bool qml() const { return false; }
+    virtual bool isLinkAtom() const { return false; }
+    virtual NodeGenus genus() const { return DontCare; }
     virtual bool specifiesDomain() const { return false; }
     virtual Tree* domain() const { return 0; }
     virtual Node::Type goal() const { return Node::NoType; }
@@ -202,15 +216,18 @@ class LinkAtom : public Atom
 {
  public:
     LinkAtom(const QString& p1, const QString& p2);
+    LinkAtom(const LinkAtom& t);
+    LinkAtom(Atom* previous, const LinkAtom& t);
     virtual ~LinkAtom() { }
 
-    virtual bool qml() const { return qml_; }
+    virtual bool isLinkAtom() const { return true; }
+    virtual NodeGenus genus() const { return genus_; }
     virtual bool specifiesDomain() const { return (domain_ != 0); }
     virtual Tree* domain() const { return domain_; }
     virtual Node::Type goal() const { return goal_; }
 
  protected:
-    bool        qml_;
+    NodeGenus   genus_;
     Node::Type  goal_;
     Tree*       domain_;
 };

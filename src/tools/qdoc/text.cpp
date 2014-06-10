@@ -111,6 +111,22 @@ Text& Text::operator<<(const Atom& atom)
     return *this;
 }
 
+/*!
+  Special output operator for LinkAtom. It makes a copy of
+  the LinkAtom \a atom and connects the cop;y to the list
+  in this Text.
+ */
+Text& Text::operator<<(const LinkAtom& atom)
+{
+    if (first == 0) {
+        first = new LinkAtom(atom);
+        last = first;
+    }
+    else
+        last = new LinkAtom(last, atom);
+    return *this;
+}
+
 Text& Text::operator<<(const Text& text)
 {
     const Atom* atom = text.firstAtom();

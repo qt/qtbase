@@ -114,6 +114,7 @@ class Tree
     NameCollisionNode* findCollisionNode(const QString& name) const;
     QString findTarget(const QString& target, const Node* node) const;
     void insertTarget(const QString& name, TargetRec::Type type, Node* node, int priority);
+    const Node* resolveTarget(const QString& target, const Node* start);
     void resolveTargets(InnerNode* root);
     const Node* findUnambiguousTarget(const QString& target, QString& ref);
     const DocNode* findDocNodeByTitle(const QString& title) const;

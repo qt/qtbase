@@ -687,6 +687,14 @@ bool Node::isInternal() const
 }
 
 /*!
+  Returns a pointer to the Tree this node is in.
+ */
+Tree* Node::tree() const
+{
+    return (parent() ? parent()->tree() : 0);
+}
+
+/*!
   Returns a pointer to the root of the Tree this node is in.
  */
 const Node* Node::root() const

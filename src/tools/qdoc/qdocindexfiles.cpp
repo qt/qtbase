@@ -54,6 +54,8 @@
 
 QT_BEGIN_NAMESPACE
 
+static Node* top = 0;
+
 /*!
   \class QDocIndexFiles
 
@@ -110,10 +112,12 @@ void QDocIndexFiles::readIndexes(const QStringList& indexFiles)
     foreach (const QString& indexFile, indexFiles) {
         QString msg = "Loading index file: " + indexFile;
         Location::logToStdErr(msg);
-        //qDebug() << "  LOAD INDEX FILE:" << indexFile;
+        //qDebug() << msg;
         readIndexFile(indexFile);
     }
 }
+
+static bool readingRoot = true;
 
 /*!
   Reads and parses the index file at \a path.
@@ -146,6 +150,7 @@ void QDocIndexFiles::readIndexFile(const QString& path)
         basesList_.clear();
         relatedList_.clear();
 
+        readingRoot = true;
         NamespaceNode* root = qdb_->newIndexTree(project_);
 
         // Scan all elements in the XML file, constructing a map that contains
@@ -154,6 +159,7 @@ void QDocIndexFiles::readIndexFile(const QString& path)
         while (!child.isNull()) {
             readIndexSection(child, root, indexUrl);
             child = child.nextSiblingElement();
+            readingRoot = true;
         }
 
         // Now that all the base classes have been found for this index,
@@ -167,13 +173,16 @@ void QDocIndexFiles::readIndexFile(const QString& path)
   appropriate node(s).
  */
 void QDocIndexFiles::readIndexSection(const QDomElement& element,
-                                      InnerNode* parent,
+                                      Node* current,
                                       const QString& indexUrl)
 {
     QString name = element.attribute("name");
     QString href = element.attribute("href");
     Node* node;
     Location location;
+    InnerNode* parent = 0;
+    if (current->isInnerNode())
+        parent = static_cast<InnerNode*>(current);
 
     QString filePath;
     int lineNo = 0;
@@ -462,15 +471,15 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
             location = Location(parent->name().toLower() + ".html");
     }
     else if (element.nodeName() == "keyword") {
-        qdb_->insertTarget(name, TargetRec::Keyword, parent, 1);
+        qdb_->insertTarget(name, TargetRec::Keyword, current, 1);
         return;
     }
     else if (element.nodeName() == "target") {
-        qdb_->insertTarget(name, TargetRec::Target, parent, 2);
+        qdb_->insertTarget(name, TargetRec::Target, current, 2);
         return;
     }
     else if (element.nodeName() == "contents") {
-        qdb_->insertTarget(name, TargetRec::Contents, parent, 3);
+        qdb_->insertTarget(name, TargetRec::Contents, current, 3);
         return;
     }
     else
@@ -560,26 +569,15 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
         node->setReconstitutedBrief(briefAttr);
     }
 
-    if (node->isInnerNode()) {
-        InnerNode* inner = static_cast<InnerNode*>(node);
+    // zzz
+    bool useParent = (element.nodeName() == "namespace" && name.isEmpty());
+    if (element.hasChildNodes()) {
         QDomElement child = element.firstChildElement();
         while (!child.isNull()) {
-            if (element.nodeName() == "class") {
-                readIndexSection(child, inner, indexUrl);
-            }
-            else if (element.nodeName() == "qmlclass") {
-                readIndexSection(child, inner, indexUrl);
-            }
-            else if (element.nodeName() == "page") {
-                readIndexSection(child, inner, indexUrl);
-            }
-            else if (element.nodeName() == "namespace" && !name.isEmpty()) {
-                // The root node in the index is a namespace with an empty name.
-                readIndexSection(child, inner, indexUrl);
-            }
-            else {
+            if (useParent)
                 readIndexSection(child, parent, indexUrl);
-            }
+            else
+                readIndexSection(child, node, indexUrl);
             child = child.nextSiblingElement();
         }
     }
@@ -1143,6 +1141,42 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
         break;
     }
 
+    /*
+      For our pages, we canonicalize the target, keyword and content
+      item names so that they can be used by qdoc for other sets of
+      documentation.
+
+      The reason we do this here is that we don't want to ruin
+      externally composed indexes, containing non-qdoc-style target names
+      when reading in indexes.
+
+      targets and keywords are now allowed in any node, not just inner nodes.
+    */
+
+    if (node->doc().hasTargets()) {
+        bool external = false;
+        if (node->type() == Node::Document) {
+            const DocNode* docNode = static_cast<const DocNode*>(node);
+            if (docNode->subType() == Node::ExternalPage)
+                external = true;
+        }
+        foreach (const Atom* target, node->doc().targets()) {
+            QString targetName = target->string();
+            if (!external)
+                targetName = Doc::canonicalTitle(targetName);
+            writer.writeStartElement("target");
+            writer.writeAttribute("name", targetName);
+            writer.writeEndElement(); // target
+        }
+    }
+    if (node->doc().hasKeywords()) {
+        foreach (const Atom* keyword, node->doc().keywords()) {
+            writer.writeStartElement("keyword");
+            writer.writeAttribute("name", Doc::canonicalTitle(keyword->string()));
+            writer.writeEndElement(); // keyword
+        }
+    }
+
     // Inner nodes and function nodes contain child nodes of some sort, either
     // actual child nodes or function parameters. For these, we close the
     // opening tag, create child elements, then add a closing tag for the
@@ -1151,36 +1185,6 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
     if (node->isInnerNode()) {
         const InnerNode* inner = static_cast<const InnerNode*>(node);
 
-        // For internal pages, we canonicalize the target, keyword and content
-        // item names so that they can be used by qdoc for other sets of
-        // documentation.
-        // The reason we do this here is that we don't want to ruin
-        // externally composed indexes, containing non-qdoc-style target names
-        // when reading in indexes.
-
-        if (inner->doc().hasTargets()) {
-            bool external = false;
-            if (inner->type() == Node::Document) {
-                const DocNode* docNode = static_cast<const DocNode*>(inner);
-                if (docNode->subType() == Node::ExternalPage)
-                    external = true;
-            }
-            foreach (const Atom* target, inner->doc().targets()) {
-                QString targetName = target->string();
-                if (!external)
-                    targetName = Doc::canonicalTitle(targetName);
-                writer.writeStartElement("target");
-                writer.writeAttribute("name", targetName);
-                writer.writeEndElement(); // target
-            }
-        }
-        if (inner->doc().hasKeywords()) {
-            foreach (const Atom* keyword, inner->doc().keywords()) {
-                writer.writeStartElement("keyword");
-                writer.writeAttribute("name", Doc::canonicalTitle(keyword->string()));
-                writer.writeEndElement(); // keyword
-            }
-        }
         if (inner->doc().hasTableOfContents()) {
             for (int i = 0; i < inner->doc().tableOfContents().size(); ++i) {
                 Atom* item = inner->doc().tableOfContents()[i];
@@ -1336,6 +1340,47 @@ void QDocIndexFiles::generateIndexSections(QXmlStreamWriter& writer,
                     generateIndexSections(writer, child, generateInternalNodes);
             }
         }
+
+        if (node == top) {
+            /*
+              We wait until the end of the index file to output the group, module,
+              and QML module elements. By outputting them at the end, when we read
+              the index file back in, all the group, module, and QML module member
+              elements will have already been created. It is then only necessary to
+              create the group, module, or QML module element and add each member to
+              its member list.
+            */
+            const CNMap& groups = qdb_->groups();
+            if (!groups.isEmpty()) {
+                CNMap::ConstIterator g = groups.constBegin();
+                while (g != groups.constEnd()) {
+                    if (generateIndexSection(writer, g.value(), generateInternalNodes))
+                        writer.writeEndElement();
+                    ++g;
+                }
+            }
+
+            const CNMap& modules = qdb_->modules();
+            if (!modules.isEmpty()) {
+                CNMap::ConstIterator g = modules.constBegin();
+                while (g != modules.constEnd()) {
+                    if (generateIndexSection(writer, g.value(), generateInternalNodes))
+                        writer.writeEndElement();
+                    ++g;
+                }
+            }
+
+            const CNMap& qmlModules = qdb_->qmlModules();
+            if (!qmlModules.isEmpty()) {
+                CNMap::ConstIterator g = qmlModules.constBegin();
+                while (g != qmlModules.constEnd()) {
+                    if (generateIndexSection(writer, g.value(), generateInternalNodes))
+                        writer.writeEndElement();
+                    ++g;
+                }
+            }
+        }
+
         writer.writeEndElement();
     }
 }
@@ -1368,45 +1413,8 @@ void QDocIndexFiles::generateIndex(const QString& fileName,
     writer.writeAttribute("version", qdb_->version());
     writer.writeAttribute("project", g->config()->getString(CONFIG_PROJECT));
 
-    generateIndexSections(writer, qdb_->primaryTreeRoot(), generateInternalNodes);
-
-    /*
-      We wait until the end of the index file to output the group, module,
-      and QML module elements. By outputting them at the end, when we read
-      the index file back in, all the group, module, and QML module member
-      elements will have already been created. It is then only necessary to
-      create the group, module, or QML module element and add each member to
-      its member list.
-     */
-    const CNMap& groups = qdb_->groups();
-    if (!groups.isEmpty()) {
-        CNMap::ConstIterator g = groups.constBegin();
-        while (g != groups.constEnd()) {
-            if (generateIndexSection(writer, g.value(), generateInternalNodes))
-                writer.writeEndElement();
-            ++g;
-        }
-    }
-
-    const CNMap& modules = qdb_->modules();
-    if (!modules.isEmpty()) {
-        CNMap::ConstIterator g = modules.constBegin();
-        while (g != modules.constEnd()) {
-            if (generateIndexSection(writer, g.value(), generateInternalNodes))
-                writer.writeEndElement();
-            ++g;
-        }
-    }
-
-    const CNMap& qmlModules = qdb_->qmlModules();
-    if (!qmlModules.isEmpty()) {
-        CNMap::ConstIterator g = qmlModules.constBegin();
-        while (g != qmlModules.constEnd()) {
-            if (generateIndexSection(writer, g.value(), generateInternalNodes))
-                writer.writeEndElement();
-            ++g;
-        }
-    }
+    top = qdb_->primaryTreeRoot();
+    generateIndexSections(writer, top, generateInternalNodes);
 
     writer.writeEndElement(); // INDEX
     writer.writeEndElement(); // QDOCINDEX

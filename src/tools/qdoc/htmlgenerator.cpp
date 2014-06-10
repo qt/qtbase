@@ -3649,6 +3649,112 @@ QString HtmlGenerator::refForNode(const Node *node)
 #define DEBUG_ABSTRACT 0
 
 /*!
+  This function is called for links, i.e. for words that
+  are marked with the qdoc link command. For autolinks
+  that are not marked with the qdoc link command, the
+  getAutoLink() function is called
+
+  It returns the string for a link found by using the data
+  in the \a atom to search the database. It also sets \a node
+  to point to the target node for that link. \a relative points
+  to the node holding the qdoc comment where the link command
+  was found.
+ */
+QString HtmlGenerator::getLink(const Atom *atom, const Node *relative, const Node** node)
+{
+    const QString& t = atom->string();
+    if (t.at(0) == QChar('h')) {
+        if (t.startsWith("http:") || t.startsWith("https:"))
+            return t;
+    }
+    else if (t.at(0) == QChar('f')) {
+        if (t.startsWith("file:") || t.startsWith("ftp:"))
+            return t;
+    }
+    else if (t.at(0) == QChar('m')) {
+        if (t.startsWith("mailto:"))
+            return t;
+    }
+
+    QString ref;
+
+    *node = qdb_->findNode(atom, relative, ref);
+    if (!(*node))
+        return QString();
+
+    QString url = (*node)->url();
+    if (!url.isEmpty()) {
+        if (ref.isEmpty())
+            return url;
+        int hashtag = url.lastIndexOf(QChar('#'));
+        if (hashtag != -1)
+            url.truncate(hashtag);
+        return url + "#" + ref;
+    }
+    /*
+      Given that *node is not null, we now cconstruct a link
+      to the page that *node represents, and then if we found
+      a target on that page, we connect the target to the link
+      with '#'.
+    */
+    QString link = linkForNode(*node, relative);
+    if (*node && (*node)->subType() == Node::Image)
+        link = "images/used-in-examples/" + link;
+    if (!ref.isEmpty())
+        link += QLatin1Char('#') + ref;
+    return link;
+}
+
+/*!
+  This function is called for autolinks, i.e. for words that
+  are not marked with the qdoc link command that qdoc has
+  reason to believe should be links. For links marked with
+  the qdoc link command, the getLink() function is called.
+
+  It returns the string for a link found by using the data
+  in the \a atom to search the database. It also sets \a node
+  to point to the target node for that link. \a relative points
+  to the node holding the qdoc comment where the link command
+  was found.
+ */
+QString HtmlGenerator::getAutoLink(const Atom *atom, const Node *relative, const Node** node)
+{
+    QString ref;
+    QString link;
+    QString target = atom->string().trimmed();
+    *node = 0;
+
+    if (target.endsWith("()")) { // The target is a C++ function or QML method.
+        *node = qdb_->resolveFunctionTarget(target, relative);
+    }
+    else {
+        *node = qdb_->resolveTarget(target, relative);
+        if (!(*node)) {
+            *node = qdb_->findDocNodeByTitle(target);
+        }
+        if (!(*node)) {
+            *node = qdb_->findUnambiguousTarget(target, ref);
+            if (*node && !(*node)->url().isEmpty() && !ref.isEmpty()) {
+                QString final = (*node)->url() + "#" + ref;
+                return final;
+            }
+        }
+    }
+
+    if (!(*node))
+        return link; // empty
+
+    if (!(*node)->url().isEmpty())
+        return (*node)->url();
+
+    link = linkForNode(*node, relative);
+    if (!ref.isEmpty())
+        link += QLatin1Char('#') + ref;
+    return link;
+}
+
+
+/*!
   Construct the link string for the \a node and return it.
   The \a relative node is use to decide the link we are
   generating is in the same file as the target. Note the
@@ -3845,137 +3951,6 @@ const QPair<QString,QString> HtmlGenerator::anchorForNode(const Node *node)
     }
 
     return anchorPair;
-}
-
-/*!
-  This function is called for links, i.e. for words that
-  are marked with the qdoc link command. For autolinks
-  that are not marked with the qdoc link command, qdoc
-  calls getAutoLink().
-
-  Return the link represented by the \a atom, and set \a node
-  to point to the target node for that link. \a relative points
-  to the node holding the qdoc comment where the link command
-  was found.
- */
-QString HtmlGenerator::getLink(const Atom *atom, const Node *relative, const Node** node)
-{
-    if (atom->string().contains(QLatin1Char(':')) && (atom->string().startsWith("file:") ||
-                                                      atom->string().startsWith("http:") ||
-                                                      atom->string().startsWith("https:") ||
-                                                      atom->string().startsWith("ftp:") ||
-                                                      atom->string().startsWith("mailto:"))) {
-        return atom->string(); // It's some kind of protocol.
-    }
-
-    QString ref;
-    QString link;
-    QString first;
-    QStringList path;
-
-    *node = 0;
-    if (atom->string().contains('#')) {
-        path = atom->string().split('#');
-        first = path.first().trimmed();
-        path.removeFirst();
-    }
-    else
-        first = atom->string();
-
-    if (first.isEmpty())
-        *node = relative; // search for a target on the current page.
-    else {
-        if (first.endsWith(".html")) { // The target is an html file.
-            *node = qdb_->findNodeByNameAndType(QStringList(first), Node::Document);
-            //Node* n = qdb_->findHtmlFileNode(atom);
-        }
-        else if (first.endsWith("()")) { // The target is a C++ function or QML method.
-            *node = qdb_->resolveFunctionTarget(first, relative);
-        }
-        else {
-            *node = qdb_->resolveTarget(first, relative);
-            if (!(*node))
-                *node = qdb_->findDocNodeByTitle(first);
-            if (!(*node)) {
-                *node = qdb_->findUnambiguousTarget(first, ref);
-                if (*node && !(*node)->url().isEmpty() && !ref.isEmpty()) {
-                    QString final = (*node)->url() + "#" + ref;
-                    return final;
-                }
-            }
-        }
-    }
-    if (!(*node))
-        return link; // empty
-
-    if (!(*node)->url().isEmpty())
-        return (*node)->url();
-
-    if (!path.isEmpty()) {
-        ref = qdb_->findTarget(path.first(), *node);
-        if (ref.isEmpty())
-            return link; // empty
-    }
-
-    /*
-      Given that *node is not null, we now cconstruct a link
-      to the page that *node represents, and then if we found
-      a target on that page, we connect the target to the link
-      with '#'.
-    */
-    link = linkForNode(*node, relative);
-    if (*node && (*node)->subType() == Node::Image)
-        link = "images/used-in-examples/" + link;
-    if (!ref.isEmpty())
-        link += QLatin1Char('#') + ref;
-    return link;
-}
-
-/*!
-  This function is called for autolinks, i.e. for words that
-  are not marked with the qdoc link command that qdoc has
-  reason to believe should be links. For links marked with
-  the qdoc link command, qdoc calls getLink().
-
-  Return the link represented by the \a atom, and set \a node
-  to point to the target node for that link. \a relative points
-  to the node holding the qdoc comment where the link command
-  was found.
- */
-QString HtmlGenerator::getAutoLink(const Atom *atom, const Node *relative, const Node** node)
-{
-    QString ref;
-    QString link;
-    QString path = atom->string().trimmed();
-    *node = 0;
-
-    if (path.endsWith("()")) { // The target is a C++ function or QML method.
-        *node = qdb_->resolveFunctionTarget(path, relative);
-    }
-    else {
-        *node = qdb_->resolveTarget(path, relative);
-        if (!(*node)) {
-            *node = qdb_->findDocNodeByTitle(path);
-        }
-        if (!(*node)) {
-            *node = qdb_->findUnambiguousTarget(path, ref);
-            if (*node && !(*node)->url().isEmpty() && !ref.isEmpty()) {
-                QString final = (*node)->url() + "#" + ref;
-                return final;
-            }
-        }
-    }
-
-    if (!(*node))
-        return link; // empty
-
-    if (!(*node)->url().isEmpty())
-        return (*node)->url();
-
-    link = linkForNode(*node, relative);
-    if (!ref.isEmpty())
-        link += QLatin1Char('#') + ref;
-    return link;
 }
 
 void HtmlGenerator::generateStatus(const Node *node, CodeMarker *marker)

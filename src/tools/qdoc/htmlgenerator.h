@@ -211,13 +211,14 @@ private:
     void generateLink(const Atom *atom, CodeMarker *marker);
     void generateStatus(const Node *node, CodeMarker *marker);
 
+    QString getLink(const Atom *atom, const Node *relative, const Node** node);
+    QString getAutoLink(const Atom *atom, const Node *relative, const Node** node);
+
     QString registerRef(const QString& ref);
     virtual QString fileBase(const Node *node) const;
     QString fileName(const Node *node);
     static int hOffset(const Node *node);
     static bool isThreeColumnEnumValueTable(const Atom *atom);
-    QString getLink(const Atom *atom, const Node *relative, const Node** node);
-    QString getAutoLink(const Atom *atom, const Node *relative, const Node** node);
 #ifdef GENERATE_MAC_REFS
     void generateMacRef(const Node *node, CodeMarker *marker);
 #endif

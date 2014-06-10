@@ -292,7 +292,7 @@ static void processQdocconfFile(const QString &fileName)
     Location::initialize(config);
     config.load(fileName);
     QString project = config.getString(CONFIG_PROJECT).toLower();
-    //qDebug() << "\nSTART PROJECT:" << project;
+    //qDebug() << "\nStart project:" << project;
     /*
       Add the defines to the configuration variables.
      */

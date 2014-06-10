@@ -248,7 +248,7 @@ public:
     virtual bool wasSeen() const { return false; }
     virtual void appendGroupName(const QString& ) { }
     virtual QString element() const { return QString(); }
-    virtual Tree* tree() const { return 0; }
+    virtual Tree* tree() const;
     bool isIndexNode() const { return indexNodeFlag_; }
     Type type() const { return nodeType_; }
     virtual SubType subType() const { return NoSubType; }
@@ -440,7 +440,7 @@ public:
     NamespaceNode(InnerNode* parent, const QString& name);
     virtual ~NamespaceNode() { }
     virtual bool isNamespace() const { return true; }
-    virtual Tree* tree() const { return tree_; }
+    virtual Tree* tree() const { return (parent() ? parent()->tree() : tree_); }
     void setTree(Tree* t) { tree_ = t; }
 
  private:

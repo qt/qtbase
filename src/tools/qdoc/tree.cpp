@@ -563,20 +563,6 @@ Node* Tree::findNodeByNameAndType(const QStringList& path, Node::Type type) cons
 {
     return findNodeRecursive(path, 0, root(), type);
 }
-#if 0
-/*!
-  Find the node with the specified \a path name that is of
-  the specified \a type and \a subtype. Begin the search at
-  the \a start node. If the \a start node is 0, begin the
-  search at the tree root. \a subtype is not used unless
-  \a type is \c{Document}.
- */
-Node* Tree::findHtmlFileNode(const QStringList& path) const
-{
-    return findNodeRecursive(path, 0, root());
-}
-#endif
-/* internal members */
 
 /*!
   Recursive search for a node identified by \a path. Each
@@ -624,7 +610,7 @@ Node* Tree::findNodeRecursive(const QStringList& path,
         }
         else if (n->name() == name) {
             if (pathIndex+1 >= path.size()) {
-                if (n->type() == type)
+                if ((n->type() == type) || (type == Node::NoType))
                     return n;
                 continue;
             }
@@ -813,6 +799,23 @@ void Tree::insertTarget(const QString& name, TargetRec::Type type, Node* node, i
     target.priority_ = priority;
     target.ref_ = Doc::canonicalTitle(name);
     nodesByTarget_.insert(name, target);
+}
+
+/*!
+  Searches this tree for a node named \a target and returns
+  a pointer to it if found. The \a start node is the starting
+  point, but it only makes sense if \a start is in this tree.
+  If \a start is not in this tree, \a start is set to 0 before
+  beginning the search to ensure that the search starts at the
+  root.
+ */
+const Node* Tree::resolveTarget(const QString& target, const Node* start)
+{
+    QStringList path = target.split("::");
+    int flags = SearchBaseClasses | SearchEnumValues | NonFunction;
+    if (start && start->tree() != this)
+        start = 0;
+    return findNode(path, start, flags);
 }
 
 /*!

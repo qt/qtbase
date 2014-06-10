@@ -249,7 +249,9 @@ class QDocDatabase
     void findAllSince(InnerNode *node);
 
  public:
-    // special collection access functions
+    /*******************************************************************
+     special collection access functions
+    ********************************************************************/
     NodeMap& getCppClasses();
     NodeMap& getMainClasses();
     NodeMap& getCompatibilityClasses();
@@ -266,9 +268,9 @@ class QDocDatabase
     const NodeMap& getQmlTypeMap(const QString& key);
     const NodeMultiMap& getSinceMap(const QString& key);
 
-    /* convenience functions
-       Many of these will be either eliminated or replaced.
-    */
+    /*******************************************************************
+      Many of these will be either eliminated or replaced.
+    ********************************************************************/
     void resolveInheritance() { primaryTree()->resolveInheritance(); }
     void resolveQmlInheritance(InnerNode* root);
     void resolveIssues();
@@ -296,6 +298,14 @@ class QDocDatabase
     NameCollisionNode* checkForCollision(const QString& name) {
         return primaryTree()->checkForCollision(name);
     }
+    /*******************************************************************/
+
+    /*******************************************************************
+      The functions declared below handle the parameters in '[' ']'.
+    ********************************************************************/
+    Node* findNode(const Atom* atom);
+    const Node* findNode(const Atom* atom, const Node* relative, QString& ref);
+    const DocNode* findDocNodeByTitle(const Atom* atom);
     /*******************************************************************/
 
     /*******************************************************************
