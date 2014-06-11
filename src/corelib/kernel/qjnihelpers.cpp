@@ -113,10 +113,8 @@ jint QtAndroidPrivate::initJNI(JavaVM *vm, JNIEnv *env)
 {
     jclass jQtNative = env->FindClass("org/qtproject/qt5/android/QtNative");
 
-    if (env->ExceptionCheck()) {
-        env->ExceptionClear();
+    if (exceptionCheck(env))
         return JNI_ERR;
-    }
 
     jmethodID activityMethodID = env->GetStaticMethodID(jQtNative,
                                                         "activity",

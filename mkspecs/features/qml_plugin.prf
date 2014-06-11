@@ -75,10 +75,13 @@ load(qt_common)
         }
 
         load(resolve_target)
-        qml1_target: \
+        qml1_target {
             qmlplugindump = qml1plugindump
-        else: \
+            importpath.name = QML_IMPORT_PATH
+        } else {
             qmlplugindump = qmlplugindump
+            importpath.name = QML2_IMPORT_PATH
+        }
         qtPrepareTool(QMLPLUGINDUMP, $$qmlplugindump)
         importpath.value =
         for(qmod, QTREPOS) {
@@ -88,7 +91,6 @@ load(qt_common)
                 qmod = $$qmod/qml
             exists($$qmod): importpath.value += $$shell_path($$qmod)
         }
-        importpath.name = QML_IMPORT_PATH
         importpath.value = $$unique(importpath.value)
         qtAddToolEnv(QMLPLUGINDUMP, importpath)
         TARGETPATHBASE = $$replace(TARGETPATH, \\.\\d+\$, )

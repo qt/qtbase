@@ -158,23 +158,42 @@ qreal QCocoaScreen::devicePixelRatio() const
 
 QWindow *QCocoaScreen::topLevelAt(const QPoint &point) const
 {
-    // Get a z-ordered list of windows. Iterate through it until
-    // we find a (Qt) window which contains the point.
-    for (NSWindow *nsWindow in [NSApp orderedWindows]) {
-        if (![nsWindow isKindOfClass:[QNSWindow class]])
+    NSPoint screenPoint = qt_mac_flipPoint(point);
+
+    // Search (hit test) for the top-level window. [NSWidow windowNumberAtPoint:
+    // belowWindowWithWindowNumber] may return windows that are not interesting
+    // to Qt. The search iterates until a suitable window or no window is found.
+    NSInteger topWindowNumber = 0;
+    QWindow *window = 0;
+    do {
+        // Get the top-most window, below any previously rejected window.
+        topWindowNumber = [NSWindow windowNumberAtPoint:screenPoint
+                                    belowWindowWithWindowNumber:topWindowNumber];
+
+        // Continue the search if the window does not belong to this process.
+        NSWindow *nsWindow = [NSApp windowWithWindowNumber:topWindowNumber];
+        if (nsWindow == 0)
             continue;
-        QNSWindow *qnsWindow = static_cast<QNSWindow *>(nsWindow);
-        QCocoaWindow *cocoaWindow = qnsWindow.helper.platformWindow;
+
+        // Continue the search if the window does not belong to Qt.
+        if (![nsWindow conformsToProtocol:@protocol(QNSWindowProtocol)])
+            continue;
+
+        id<QNSWindowProtocol> proto = static_cast<id<QNSWindowProtocol> >(nsWindow);
+        QCocoaWindow *cocoaWindow = proto.helper.platformWindow;
         if (!cocoaWindow)
             continue;
-        QWindow *window = cocoaWindow->window();
+        window = cocoaWindow->window();
+
+        // Continue the search if the window is not a top-level window.
         if (!window->isTopLevel())
              continue;
-        if (window->geometry().contains(point))
-            return window;
-    }
 
-    return QPlatformScreen::topLevelAt(point);
+        // Stop searching. The current window is the correct window.
+        break;
+    } while (topWindowNumber > 0);
+
+    return window;
 }
 
 extern CGContextRef qt_mac_cg_context(const QPaintDevice *pdev);

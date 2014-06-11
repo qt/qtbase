@@ -2485,7 +2485,7 @@ void tst_QTcpSocket::increaseReadBufferSizeFromSlot() // like KIO's socketconnec
     QVERIFY2(passive->waitForBytesWritten(5000), "Network timeout");
 
     // set the read buffer size to less than what was written,
-    // and increase it from the slot, first to 384 then to 1024.
+    // and increase it from the slot, first to 384 then to 512.
     active->setReadBufferSize(256);
     enterLoop(10);
     QVERIFY2(!timeout(), "Network timeout");

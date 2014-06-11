@@ -45,9 +45,12 @@ class StaticVariables
 {
 public:
     QInputMethodQueryEvent inputMethodQueryEvent;
+    bool inUpdateKeyboardLayout;
     QTextCharFormat markedTextFormat;
 
-    StaticVariables() : inputMethodQueryEvent(Qt::ImQueryInput)
+    StaticVariables()
+        : inputMethodQueryEvent(Qt::ImQueryInput)
+        , inUpdateKeyboardLayout(false)
     {
         // There seems to be no way to query how the preedit text
         // should be drawn. So we need to hard-code the color.
@@ -152,6 +155,47 @@ Q_GLOBAL_STATIC(StaticVariables, staticVariables);
     return [super resignFirstResponder];
 }
 
++ (bool)inUpdateKeyboardLayout
+{
+    return staticVariables()->inUpdateKeyboardLayout;
+}
+
+- (void)updateKeyboardLayout
+{
+    if (![self isFirstResponder])
+        return;
+
+    // There seems to be no API to inform that the keyboard layout needs to update.
+    // As a work-around, we quickly resign first responder just to reassign it again.
+    QScopedValueRollback<bool> rollback(staticVariables()->inUpdateKeyboardLayout);
+    staticVariables()->inUpdateKeyboardLayout = true;
+    [super resignFirstResponder];
+    [self updateTextInputTraits];
+    [super becomeFirstResponder];
+}
+
+- (void)updateUITextInputDelegate:(NSNumber *)intQuery
+{
+    // As documented, we should not report textWillChange/textDidChange unless the text
+    // was changed externally. That will cause spell checking etc to fail. But we don't
+    // really know if the text/selection was changed by UITextInput or Qt/app when getting
+    // update calls from Qt. We therefore use a less ideal approach where we always assume
+    // that UITextView caused the change if we're currently processing an event sendt from it.
+    if (m_inSendEventToFocusObject)
+        return;
+
+    Qt::InputMethodQueries query = Qt::InputMethodQueries([intQuery intValue]);
+    if (query & (Qt::ImCursorPosition | Qt::ImAnchorPosition)) {
+        [self.inputDelegate selectionWillChange:id<UITextInput>(self)];
+        [self.inputDelegate selectionDidChange:id<UITextInput>(self)];
+    }
+
+    if (query & Qt::ImSurroundingText) {
+        [self.inputDelegate textWillChange:id<UITextInput>(self)];
+        [self.inputDelegate textDidChange:id<UITextInput>(self)];
+    }
+}
+
 - (void)updateInputMethodWithQuery:(Qt::InputMethodQueries)query
 {
     Q_UNUSED(query);
@@ -160,26 +204,13 @@ Q_GLOBAL_STATIC(StaticVariables, staticVariables);
     if (!focusObject)
         return;
 
-    if (!m_inSendEventToFocusObject) {
-        if (query & (Qt::ImCursorPosition | Qt::ImAnchorPosition))
-            [self.inputDelegate selectionWillChange:id<UITextInput>(self)];
-        if (query & Qt::ImSurroundingText)
-            [self.inputDelegate textWillChange:id<UITextInput>(self)];
-    }
-
     // Note that we ignore \a query, and instead update using Qt::ImQueryInput. This enables us to just
     // store the event without copying out the result from the event each time. Besides, we seem to be
     // called with Qt::ImQueryInput when only changing selection, and always if typing text. So there would
     // not be any performance gain by only updating \a query.
     staticVariables()->inputMethodQueryEvent = QInputMethodQueryEvent(Qt::ImQueryInput);
     QCoreApplication::sendEvent(focusObject, &staticVariables()->inputMethodQueryEvent);
-
-    if (!m_inSendEventToFocusObject) {
-        if (query & (Qt::ImCursorPosition | Qt::ImAnchorPosition))
-            [self.inputDelegate selectionDidChange:id<UITextInput>(self)];
-        if (query & Qt::ImSurroundingText)
-            [self.inputDelegate textDidChange:id<UITextInput>(self)];
-    }
+    [self updateUITextInputDelegate:[NSNumber numberWithInt:int(query)]];
 }
 
 - (void)sendEventToFocusObject:(QEvent &)e
@@ -189,35 +220,31 @@ Q_GLOBAL_STATIC(StaticVariables, staticVariables);
         return;
 
     // While sending the event, we will receive back updateInputMethodWithQuery calls.
-    // To not confuse iOS, we cannot not call textWillChange/textDidChange at that
-    // point since it will cause spell checking etc to fail. So we use a guard.
+    // Note that it would be more correct to post the event instead, but UITextInput expects
+    // callbacks to take effect immediately (it will query us for information after a callback).
+    QScopedValueRollback<BOOL> rollback(m_inSendEventToFocusObject);
     m_inSendEventToFocusObject = YES;
     QCoreApplication::sendEvent(focusObject, &e);
-    m_inSendEventToFocusObject = NO;
 }
 
 - (void)reset
 {
-    [self.inputDelegate textWillChange:id<UITextInput>(self)];
     [self setMarkedText:@"" selectedRange:NSMakeRange(0, 0)];
     [self updateInputMethodWithQuery:Qt::ImQueryInput];
-
-    if ([self isFirstResponder]) {
-        // There seem to be no way to inform that the keyboard needs to update (since
-        // text input traits might have changed). As a work-around, we quickly resign
-        // first responder status just to reassign it again:
-        [super resignFirstResponder];
-        [self updateTextInputTraits];
-        [super becomeFirstResponder];
-    }
-    [self.inputDelegate textDidChange:id<UITextInput>(self)];
+    // Guard agains recursive callbacks by posting calls to UITextInput
+    [self performSelectorOnMainThread:@selector(updateKeyboardLayout) withObject:nil waitUntilDone:NO];
+    [self performSelectorOnMainThread:@selector(updateUITextInputDelegate:)
+      withObject:[NSNumber numberWithInt:int(Qt::ImQueryInput)]
+      waitUntilDone:NO];
 }
 
 - (void)commit
 {
-    [self.inputDelegate textWillChange:id<UITextInput>(self)];
     [self unmarkText];
-    [self.inputDelegate textDidChange:id<UITextInput>(self)];
+    // Guard agains recursive callbacks by posting calls to UITextInput
+    [self performSelectorOnMainThread:@selector(updateUITextInputDelegate:)
+      withObject:[NSNumber numberWithInt:int(Qt::ImSurroundingText)]
+      waitUntilDone:NO];
 }
 
 - (QVariant)imValue:(Qt::InputMethodQuery)query

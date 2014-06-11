@@ -84,32 +84,22 @@ VisualID QXlibEglIntegration::getCompatibleVisualId(Display *display, EGLDisplay
             int visualRedSize = qPopulationCount(chosenVisualInfo->red_mask);
             int visualGreenSize = qPopulationCount(chosenVisualInfo->green_mask);
             int visualBlueSize = qPopulationCount(chosenVisualInfo->blue_mask);
-            int visualAlphaSize = -1; // Need XRender to tell us the alpha channel size
+            int visualAlphaSize = chosenVisualInfo->depth == 32 ? 8 : 0;
 
-            bool visualMatchesConfig = false;
-            if ( visualRedSize == configRedSize &&
-                 visualGreenSize == configGreenSize &&
-                 visualBlueSize == configBlueSize )
-            {
-                // We need XRender to check the alpha channel size of the visual. If we don't have
-                // the alpha size, we don't check it against the EGL config's alpha size.
-                if (visualAlphaSize >= 0)
-                    visualMatchesConfig = visualAlphaSize == configAlphaSize;
-                else
-                    visualMatchesConfig = true;
-            }
+            const bool visualMatchesConfig = visualRedSize == configRedSize
+                && visualGreenSize == configGreenSize
+                && visualBlueSize == configBlueSize
+                && visualAlphaSize == configAlphaSize;
 
+            // In some cases EGL tends to suggest a 24-bit visual for 8888
+            // configs. In such a case we have to fall back to XGetVisualInfo.
             if (!visualMatchesConfig) {
-                if (visualAlphaSize >= 0) {
-                    qWarning("Warning: EGL suggested using X Visual ID %d (ARGB%d%d%d%d) for EGL config %d (ARGB%d%d%d%d), but this is incompatable",
-                             (int)visualId, visualAlphaSize, visualRedSize, visualGreenSize, visualBlueSize,
-                             configId, configAlphaSize, configRedSize, configGreenSize, configBlueSize);
-                } else {
-                    qWarning("Warning: EGL suggested using X Visual ID %d (RGB%d%d%d) for EGL config %d (RGB%d%d%d), but this is incompatable",
-                             (int)visualId, visualRedSize, visualGreenSize, visualBlueSize,
-                             configId, configRedSize, configGreenSize, configBlueSize);
-                }
                 visualId = 0;
+#ifdef QT_DEBUG_X11_VISUAL_SELECTION
+                qWarning("Warning: EGL suggested using X Visual ID %d (%d %d %d depth %d) for EGL config %d (%d %d %d %d), but this is incompatible",
+                         (int)visualId, visualRedSize, visualGreenSize, visualBlueSize, chosenVisualInfo->depth,
+                         configId, configRedSize, configGreenSize, configBlueSize, configAlphaSize);
+#endif
             }
         } else {
             qWarning("Warning: EGL suggested using X Visual ID %d for EGL config %d, but that isn't a valid ID",
@@ -133,8 +123,7 @@ VisualID QXlibEglIntegration::getCompatibleVisualId(Display *display, EGLDisplay
         return visualId;
     }
 
-    // Finally, try to
-    // use XGetVisualInfo and only use the bit depths to match on:
+    // Finally, try to use XGetVisualInfo and only use the bit depths to match on:
     if (!visualId) {
         XVisualInfo visualInfoTemplate;
         memset(&visualInfoTemplate, 0, sizeof(XVisualInfo));

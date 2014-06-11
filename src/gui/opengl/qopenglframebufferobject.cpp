@@ -436,9 +436,9 @@ void QOpenGLFramebufferObjectPrivate::init(QOpenGLFramebufferObject *, const QSi
     samples = qBound(0, int(samples), int(maxSamples));
 #endif
 
+    requestedSamples = samples;
     size = sz;
     target = texture_target;
-    // texture dimensions
 
     QT_RESET_GLERROR(); // reset error state
     GLuint fbo = 0;
@@ -472,6 +472,9 @@ void QOpenGLFramebufferObjectPrivate::init(QOpenGLFramebufferObject *, const QSi
         valid = checkFramebufferStatus(ctx);
 
         if (valid) {
+            // Query the actual number of samples. This can be greater than the requested
+            // value since the typically supported values are 0, 4, 8, ..., and the
+            // requests are mapped to the next supported value.
             funcs.glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_SAMPLES, &samples);
             color_buffer_guard = new QOpenGLSharedResourceGuard(ctx, color_buffer, freeRenderbufferFunc);
         }
@@ -542,7 +545,10 @@ void QOpenGLFramebufferObjectPrivate::initTexture(GLenum target, GLenum internal
 
 void QOpenGLFramebufferObjectPrivate::initAttachments(QOpenGLContext *ctx, QOpenGLFramebufferObject::Attachment attachment)
 {
-    int samples = format.samples();
+    // Use the same sample count for all attachments. format.samples() already contains
+    // the actual number of samples for the color attachment and is not suitable. Use
+    // requestedSamples instead.
+    const int samples = requestedSamples;
 
     // free existing attachments
     if (depth_buffer_guard) {
