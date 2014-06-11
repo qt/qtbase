@@ -238,9 +238,11 @@ void QAndroidPlatformScreen::setAvailableGeometry(const QRect &rect)
         QList<QWindow *> windows = QGuiApplication::allWindows();
         for (int i = 0; i < windows.size(); ++i) {
             QWindow *w = windows.at(i);
-            QRect geometry = w->handle()->geometry();
-            if (geometry.width() > 0 && geometry.height() > 0)
-                QWindowSystemInterface::handleExposeEvent(w, QRegion(geometry));
+            if (w->handle()) {
+                QRect geometry = w->handle()->geometry();
+                if (geometry.width() > 0 && geometry.height() > 0)
+                    QWindowSystemInterface::handleExposeEvent(w, QRegion(geometry));
+            }
         }
     }
 
