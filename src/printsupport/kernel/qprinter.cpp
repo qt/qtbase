@@ -120,9 +120,9 @@ QPrinterInfo QPrinterPrivate::findValidPrinter(const QPrinterInfo &printer)
     if (printerToUse.isNull()) {
         printerToUse = QPrinterInfo::defaultPrinter();
         if (printerToUse.isNull()) {
-            QList<QPrinterInfo> availablePrinters = QPrinterInfo::availablePrinters();
-            if (!availablePrinters.isEmpty())
-                printerToUse = availablePrinters.at(0);
+            QStringList availablePrinterNames = QPrinterInfo::availablePrinterNames();
+            if (!availablePrinterNames.isEmpty())
+                printerToUse = QPrinterInfo::printerInfo(availablePrinterNames.at(0));
         }
     }
     return printerToUse;

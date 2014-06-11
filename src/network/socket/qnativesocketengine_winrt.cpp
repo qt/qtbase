@@ -246,8 +246,11 @@ bool QNativeSocketEngine::initialize(qintptr socketDescriptor, QAbstractSocket::
     d->tcp = handler->pendingTcpSockets.take(socketDescriptor);
     d->socketType = QAbstractSocket::TcpSocket;
 
-    if (!d->tcp || !d->fetchConnectionParameters())
+    if (!d->tcp || !d->fetchConnectionParameters()) {
+        d->setError(QAbstractSocket::UnsupportedSocketOperationError,
+            d->InvalidSocketErrorString);
         return false;
+    }
 
     d->socketState = socketState;
     return true;
@@ -475,9 +478,9 @@ void QNativeSocketEngine::close()
     Q_D(QNativeSocketEngine);
     if (d->socketDescriptor != -1) {
         IClosable *socket = 0;
-        if (d->socketType == QAbstractSocket::TcpSocket)
+        if (d->socketType == QAbstractSocket::TcpSocket && d->tcp)
             d->tcp->QueryInterface(IID_PPV_ARGS(&socket));
-        else if (d->socketType == QAbstractSocket::UdpSocket)
+        else if (d->socketType == QAbstractSocket::UdpSocket && d->udp)
             d->udp->QueryInterface(IID_PPV_ARGS(&socket));
 
         if (socket) {

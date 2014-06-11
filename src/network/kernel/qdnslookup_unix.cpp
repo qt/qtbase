@@ -370,11 +370,11 @@ void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestN
 }
 
 #else
-
-void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestName, QDnsLookupReply *reply)
+void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestName, const QHostAddress &nameserver, QDnsLookupReply *reply)
 {
     Q_UNUSED(requestType)
     Q_UNUSED(requestName)
+    Q_UNUSED(nameserver)
     reply->error = QDnsLookup::ResolverError;
     reply->errorString = tr("Resolver library can't be loaded: No runtime library loading support");
     return;

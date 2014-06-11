@@ -253,11 +253,13 @@ defineTest(qtAddTargetEnv) {
     deps = $$replace($$2, -private$, _private)
     deps = $$resolve_depends(deps, "QT.", ".depends" ".private_depends" ".run_depends")
     !isEmpty(deps) {
+        ptypes =
         for(dep, deps) {
             isEmpty(3): \
                 deppath += $$shell_path($$eval(QT.$${dep}.libs))
             else: \
                 deppath += $$system_path($$eval(QT.$${dep}.libs))
+            ptypes += $$eval(QT.$${dep}.plugin_types)
         }
         equals(QMAKE_HOST.os, Windows) {
             deppath.name = PATH
@@ -277,14 +279,16 @@ defineTest(qtAddTargetEnv) {
         deppath.CONFIG = prepend
 
         pluginpath.value =
-        for(qmod, QMAKEMODULES) {
-            qmod = $$section(qmod, /, 0, -3)/plugins
-            exists($$qmod) {
-                isEmpty(3): \
-                    pluginpath.value += $$shell_path($$qmod)
-                else: \
-                    pluginpath.value += $$system_path($$qmod)
-            }
+        ppaths = $$[QT_INSTALL_PLUGINS/get]
+        for(qplug, QT_PLUGINS): \
+            contains(ptypes, QT_PLUGIN.$${qplug}.TYPE): \
+                ppaths += $$eval(QT_PLUGIN.$${qplug}.PATH)
+        ppaths = $$unique(ppaths)
+        for(qplug, ppaths) {
+            isEmpty(3): \
+                pluginpath.value += $$shell_path($$qplug)
+            else: \
+                pluginpath.value += $$system_path($$qplug)
         }
         pluginpath.name = QT_PLUGIN_PATH
 

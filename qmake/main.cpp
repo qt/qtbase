@@ -252,8 +252,10 @@ int runQMake(int argc, char **argv)
 #endif
         if(!dir.isNull() && dir != ".")
             Option::output_dir = dir;
-        if(QDir::isRelativePath(Option::output_dir))
+        if (QDir::isRelativePath(Option::output_dir)) {
+            Option::output.setFileName(fi.fileName());
             Option::output_dir.prepend(oldpwd + QLatin1Char('/'));
+        }
         Option::output_dir = QDir::cleanPath(Option::output_dir);
     }
 

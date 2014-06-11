@@ -58,6 +58,7 @@
     \inmodule QtCore
     \brief The QAtomicInteger class provides platform-independent atomic operations on integers.
     \ingroup thread
+    \since 5.3
 
     For atomic operations on pointers, see the QAtomicPointer class.
 

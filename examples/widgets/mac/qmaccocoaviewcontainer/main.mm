@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
 #include <Cocoa/Cocoa.h>
+#include <QtWidgets>
 #include <QMacCocoaViewContainer>
 
 class WindowWidget : public QWidget

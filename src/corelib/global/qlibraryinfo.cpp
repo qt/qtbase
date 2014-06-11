@@ -537,7 +537,7 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
 
 QStringList QLibraryInfo::platformPluginArguments(const QString &platformName)
 {
-#ifndef QT_BOOTSTRAPPED
+#if !defined(QT_BOOTSTRAPPED) && !defined(QT_NO_SETTINGS)
     if (const QSettings *settings = QLibraryInfoPrivate::findConfiguration()) {
         QString key = QLatin1String(platformsSection);
         key += QLatin1Char('/');
@@ -545,7 +545,7 @@ QStringList QLibraryInfo::platformPluginArguments(const QString &platformName)
         key += QLatin1String("Arguments");
         return settings->value(key).toStringList();
     }
-#endif // !QT_BOOTSTRAPPED
+#endif // !QT_BOOTSTRAPPED && !QT_NO_SETTINGS
     return QStringList();
 }
 

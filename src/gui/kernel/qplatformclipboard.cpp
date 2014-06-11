@@ -123,7 +123,8 @@ bool QPlatformClipboard::ownsMode(QClipboard::Mode mode) const
 
 void QPlatformClipboard::emitChanged(QClipboard::Mode mode)
 {
-    QGuiApplication::clipboard()->emitChanged(mode);
+    if (!QGuiApplicationPrivate::is_app_closing) // QTBUG-39317, prevent emission when closing down.
+        QGuiApplication::clipboard()->emitChanged(mode);
 }
 
 QT_END_NAMESPACE

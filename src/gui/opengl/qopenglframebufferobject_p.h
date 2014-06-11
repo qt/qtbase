@@ -131,6 +131,7 @@ public:
     GLenum target;
     QSize size;
     QOpenGLFramebufferObjectFormat format;
+    int requestedSamples;
     uint valid : 1;
     QOpenGLFramebufferObject::Attachment fbo_attachment;
     QOpenGLExtensions funcs;
