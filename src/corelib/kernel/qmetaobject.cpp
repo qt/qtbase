@@ -1339,6 +1339,27 @@ QByteArray QMetaObject::normalizedSignature(const char *method)
 enum { MaximumParamCount = 11 }; // up to 10 arguments + 1 return value
 
 /*!
+    Returns the signatures of all methods whose name matches \a nonExistentMember,
+    or an empty QByteArray if there are no matches.
+*/
+static inline QByteArray findMethodCandidates(const QMetaObject *metaObject, const char *nonExistentMember)
+{
+    QByteArray candidateMessage;
+    // Prevent full string comparison in every iteration.
+    const QByteArray memberByteArray = nonExistentMember;
+    for (int i = 0; i < metaObject->methodCount(); ++i) {
+        const QMetaMethod method = metaObject->method(i);
+        if (method.name() == memberByteArray)
+            candidateMessage.append("    " + method.methodSignature() + '\n');
+    }
+    if (!candidateMessage.isEmpty()) {
+        candidateMessage.prepend("\nCandidates are:\n");
+        candidateMessage.chop(1);
+    }
+    return candidateMessage;
+}
+
+/*!
     Invokes the \a member (a signal or a slot name) on the object \a
     obj. Returns \c true if the member could be invoked. Returns \c false
     if there is no such member or the parameters did not match.
@@ -1455,8 +1476,9 @@ bool QMetaObject::invokeMethod(QObject *obj,
     }
 
     if (idx < 0 || idx >= meta->methodCount()) {
-        qWarning("QMetaObject::invokeMethod: No such method %s::%s",
-                 meta->className(), sig.constData());
+        // This method doesn't belong to us; print out a nice warning with candidates.
+        qWarning("QMetaObject::invokeMethod: No such method %s::%s%s",
+                 meta->className(), sig.constData(), findMethodCandidates(meta, member).constData());
         return false;
     }
     QMetaMethod method = meta->method(idx);
