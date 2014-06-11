@@ -111,21 +111,17 @@ void TableGenerator::findComposeFile()
     }
     // check for the system provided compose files
     if (!found && cleanState()) {
-        QByteArray loc = locale().toUpper().toUtf8();
-        QString table = readLocaleMappings(loc);
-        if (table.isEmpty())
-            table = readLocaleMappings(readLocaleAliases(loc));
-
+        QString table = composeTableForLocale();
         if (cleanState()) {
             if (table.isEmpty())
                 // no table mappings for the system's locale in the compose.dir
                 m_state = UnsupportedLocale;
             else
-                found = processFile(systemComposeDir() + QLatin1String("/") + table);
+                found = processFile(systemComposeDir() + QLatin1Char('/') + table);
 #ifdef DEBUG_GENERATOR
             if (found)
                 qDebug() << "Using Compose file from: " <<
-                            systemComposeDir() + QLatin1String("/") + table;
+                            systemComposeDir() + QLatin1Char('/') + table;
 #endif
         }
     }
@@ -135,6 +131,15 @@ void TableGenerator::findComposeFile()
 
     if (!found)
         m_state = MissingComposeFile;
+}
+
+QString TableGenerator::composeTableForLocale()
+{
+    QByteArray loc = locale().toUpper().toUtf8();
+    QString table = readLocaleMappings(loc);
+    if (table.isEmpty())
+        table = readLocaleMappings(readLocaleAliases(loc));
+    return table;
 }
 
 bool TableGenerator::findSystemComposeDir()
@@ -311,7 +316,7 @@ void TableGenerator::parseIncludeInstruction(QString line)
 
     // expand substitutions if present
     line.replace(QLatin1String("%H"), QString(qgetenv("HOME")));
-    line.replace(QLatin1String("%L"), locale());
+    line.replace(QLatin1String("%L"), systemComposeDir() +  QLatin1Char('/')  + composeTableForLocale());
     line.replace(QLatin1String("%S"), systemComposeDir());
 
     processFile(line);
