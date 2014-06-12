@@ -1460,7 +1460,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 
     if (m_sendKeyEvent && m_composingText.isEmpty())
         QWindowSystemInterface::handleExtendedKeyEvent(focusWindow, timestamp, QEvent::Type(eventType), keyCode, modifiers,
-                                                       nativeScanCode, nativeVirtualKey, nativeModifiers, text, [nsevent isARepeat]);
+                                                       nativeScanCode, nativeVirtualKey, nativeModifiers, text, [nsevent isARepeat], false);
 
     m_sendKeyEvent = false;
     m_resendKeyEvent = false;

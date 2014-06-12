@@ -220,6 +220,28 @@ bool QWindowSystemInterface::tryHandleShortcutEvent(QWindow *w, ulong timestamp,
 #endif
 }
 
+// used by QTestLib to directly send shortcuts to objects
+bool QWindowSystemInterface::tryHandleShortcutEventToObject(QObject *o, ulong timestamp, int k, Qt::KeyboardModifiers mods,
+                                   const QString &text, bool autorep, ushort count)
+{
+#ifndef QT_NO_SHORTCUT
+    QGuiApplicationPrivate::modifier_buttons = mods;
+
+    QKeyEvent qevent(QEvent::ShortcutOverride, k, mods, text, autorep, count);
+    qevent.setTimestamp(timestamp);
+    return QGuiApplicationPrivate::instance()->shortcutMap.tryShortcutEvent(o, &qevent);
+#else
+    Q_UNUSED(w)
+    Q_UNUSED(timestamp)
+    Q_UNUSED(k)
+    Q_UNUSED(mods)
+    Q_UNUSED(text)
+    Q_UNUSED(autorep)
+    Q_UNUSED(count)
+    return false;
+#endif
+}
+
 bool QWindowSystemInterface::tryHandleExtendedShortcutEvent(QWindow *w, int k, Qt::KeyboardModifiers mods,
                                                                        quint32 nativeScanCode, quint32 nativeVirtualKey, quint32 nativeModifiers,
                                                                        const QString &text, bool autorep, ushort count)
@@ -265,6 +287,9 @@ void QWindowSystemInterface::handleKeyEvent(QWindow *w, QEvent::Type t, int k, Q
 
 void QWindowSystemInterface::handleKeyEvent(QWindow *tlw, ulong timestamp, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text, bool autorep, ushort count)
 {
+    if (t == QEvent::KeyPress && QWindowSystemInterface::tryHandleShortcutEvent(tlw, timestamp, k, mods, text))
+            return;
+
     QWindowSystemInterfacePrivate::KeyEvent * e =
             new QWindowSystemInterfacePrivate::KeyEvent(tlw, timestamp, t, k, mods, text, autorep, count);
     QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
@@ -286,8 +311,12 @@ void QWindowSystemInterface::handleExtendedKeyEvent(QWindow *tlw, ulong timestam
                                                     quint32 nativeScanCode, quint32 nativeVirtualKey,
                                                     quint32 nativeModifiers,
                                                     const QString& text, bool autorep,
-                                                    ushort count)
+                                                    ushort count, bool tryShortcutOverride)
 {
+    // on OS X we try the shortcut override even earlier and thus shouldn't handle it here
+    if (tryShortcutOverride && type == QEvent::KeyPress && QWindowSystemInterface::tryHandleShortcutEvent(tlw, timestamp, key, modifiers, text))
+            return;
+
     QWindowSystemInterfacePrivate::KeyEvent * e =
             new QWindowSystemInterfacePrivate::KeyEvent(tlw, timestamp, type, key, modifiers,
                 nativeScanCode, nativeVirtualKey, nativeModifiers, text, autorep, count);
@@ -758,6 +787,11 @@ Q_GUI_EXPORT void qt_handleMouseEvent(QWindow *w, const QPointF & local, const Q
 Q_GUI_EXPORT void qt_handleKeyEvent(QWindow *w, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text = QString(), bool autorep = false, ushort count = 1)
 {
     QWindowSystemInterface::handleKeyEvent(w, t, k, mods, text, autorep, count);
+}
+
+Q_GUI_EXPORT bool qt_sendShortcutOverrideEvent(QObject *o, ulong timestamp, int k, Qt::KeyboardModifiers mods, const QString &text = QString(), bool autorep = false, ushort count = 1)
+{
+    return QWindowSystemInterface::tryHandleShortcutEventToObject(o, timestamp, k, mods, text, autorep, count);
 }
 
 static QWindowSystemInterface::TouchPoint touchPoint(const QTouchEvent::TouchPoint& pt)

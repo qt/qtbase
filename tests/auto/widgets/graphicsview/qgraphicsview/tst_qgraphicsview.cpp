@@ -2105,8 +2105,7 @@ void tst_QGraphicsView::sendEvent()
     QCOMPARE(item->events.at(item->events.size() - 2), QEvent::GraphicsSceneMouseRelease);
     QCOMPARE(item->events.at(item->events.size() - 1), QEvent::UngrabMouse);
 
-    QKeyEvent keyPress(QEvent::KeyPress, Qt::Key_Space, 0);
-    QApplication::sendEvent(view.viewport(), &keyPress);
+    QTest::keyPress(view.viewport(), Qt::Key_Space);
     QCOMPARE(item->events.size(), 9);
     QCOMPARE(item->events.at(item->events.size() - 2), QEvent::ShortcutOverride);
     QCOMPARE(item->events.last(), QEvent::KeyPress);

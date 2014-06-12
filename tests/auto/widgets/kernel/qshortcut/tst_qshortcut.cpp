@@ -42,6 +42,7 @@
 #include <qdebug.h>
 #include <qstring.h>
 #include <qshortcut.h>
+#include <qscreen.h>
 
 class AccelForm;
 QT_BEGIN_NAMESPACE
@@ -119,6 +120,7 @@ private slots:
     void keypressConsumption();
     void unicodeCompare();
     void context();
+    void duplicatedShortcutOverride();
 
 protected:
     static Qt::KeyboardModifiers toButtons( int key );
@@ -1082,6 +1084,36 @@ void tst_QShortcut::context()
     clearAllShortcuts();
 }
 
+// QTBUG-38986, do not generate duplicated QEvent::ShortcutOverride in event processing.
+class OverrideCountingWidget : public QWidget
+{
+public:
+    OverrideCountingWidget(QWidget *parent = 0) : QWidget(parent), overrideCount(0) {}
+
+    int overrideCount;
+
+    bool event(QEvent *e) Q_DECL_OVERRIDE
+    {
+        if (e->type() == QEvent::ShortcutOverride)
+            overrideCount++;
+        return QWidget::event(e);
+    }
+};
+
+void tst_QShortcut::duplicatedShortcutOverride()
+{
+    OverrideCountingWidget w;
+    w.setWindowTitle(Q_FUNC_INFO);
+    w.resize(200, 200);
+    w.move(QGuiApplication::primaryScreen()->availableGeometry().center() - QPoint(100, 100));
+    w.show();
+    QApplication::setActiveWindow(&w);
+    QVERIFY(QTest::qWaitForWindowActive(&w));
+    QTest::keyPress(w.windowHandle(), Qt::Key_A);
+    QCoreApplication::processEvents();
+    QCOMPARE(w.overrideCount, 1);
+}
+
 // ------------------------------------------------------------------
 // Element Testing helper functions ---------------------------------
 // ------------------------------------------------------------------
@@ -1226,7 +1258,7 @@ void tst_QShortcut::testElement()
         setupShortcut(testWidget, txt, k1, k2, k3, k4);
     } else {
         sendKeyEvents(k1, c1, k2, c2, k3, c3, k4, c4);
-        QCOMPARE(currentResult, result);
+        QCOMPARE((int)currentResult, (int)result);
     }
 }
 

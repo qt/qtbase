@@ -1538,18 +1538,6 @@ int QGuiApplication::exec()
 */
 bool QGuiApplication::notify(QObject *object, QEvent *event)
 {
-#ifndef QT_NO_SHORTCUT
-    if (event->type() == QEvent::KeyPress) {
-        // Try looking for a Shortcut before sending key events
-        QWindow *w = qobject_cast<QWindow *>(object);
-        QObject *focus = w ? w->focusObject() : 0;
-        if (!focus)
-            focus = object;
-        if (QGuiApplicationPrivate::instance()->shortcutMap.tryShortcutEvent(focus, static_cast<QKeyEvent *>(event)))
-            return true;
-    }
-#endif
-
     if (object->isWindowType())
         QGuiApplicationPrivate::sendQWindowEventToQPlatformWindow(static_cast<QWindow *>(object), event);
     return QCoreApplication::notify(object, event);

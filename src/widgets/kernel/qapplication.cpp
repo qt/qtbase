@@ -3126,39 +3126,15 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
     }
 
     switch (e->type()) {
-        case QEvent::KeyPress:
-            {
-                bool isWidget = receiver->isWidgetType();
-                bool isWindow = receiver->isWindowType();
-                bool isGraphicsWidget = false;
-#ifndef QT_NO_GRAPHICSVIEW
-                isGraphicsWidget = !isWidget && !isWindow && qobject_cast<QGraphicsWidget *>(receiver);
-#endif
-                if (!isWidget && !isGraphicsWidget && !isWindow) {
-                    return d->notify_helper(receiver, e);
-                }
-
-                QKeyEvent* key = static_cast<QKeyEvent*>(e);
-#ifndef QT_NO_SHORTCUT
-                // Try looking for a Shortcut before sending key events
-                QObject *shortcutReceiver = receiver;
-                if (!isWidget && isWindow) {
-                    QWindow *w = qobject_cast<QWindow *>(receiver);
-                    QObject *focus = w ? w->focusObject() : 0;
-                    if (focus)
-                        shortcutReceiver = focus;
-                }
-                if (qApp->d_func()->shortcutMap.tryShortcutEvent(shortcutReceiver, key))
-                    return true;
-#endif
-                qt_in_tab_key_event = (key->key() == Qt::Key_Backtab
-                        || key->key() == Qt::Key_Tab
-                        || key->key() == Qt::Key_Left
-                        || key->key() == Qt::Key_Up
-                        || key->key() == Qt::Key_Right
-                        || key->key() == Qt::Key_Down);
-
-            }
+        case QEvent::KeyPress: {
+                int key = static_cast<QKeyEvent*>(e)->key();
+                qt_in_tab_key_event = (key == Qt::Key_Backtab
+                        || key == Qt::Key_Tab
+                        || key == Qt::Key_Left
+                        || key == Qt::Key_Up
+                        || key == Qt::Key_Right
+                        || key == Qt::Key_Down);
+        }
         default:
             break;
     }

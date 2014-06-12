@@ -57,6 +57,7 @@
 QT_BEGIN_NAMESPACE
 
 Q_GUI_EXPORT void qt_handleKeyEvent(QWindow *w, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text = QString(), bool autorep = false, ushort count = 1);
+Q_GUI_EXPORT bool qt_sendShortcutOverrideEvent(QObject *o, ulong timestamp, int k, Qt::KeyboardModifiers mods, const QString &text = QString(), bool autorep = false, ushort count = 1);
 
 namespace QTest
 {
@@ -170,6 +171,9 @@ namespace QTest
 
         QKeyEvent a(press ? QEvent::KeyPress : QEvent::KeyRelease, code, modifier, text, repeat);
         QSpontaneKeyEvent::setSpontaneous(&a);
+
+        if (press && qt_sendShortcutOverrideEvent(widget, a.timestamp(), code, modifier, text, repeat))
+            return;
         if (!qApp->notify(widget, &a))
             QTest::qWarn("Keyboard event not accepted by receiving widget");
     }

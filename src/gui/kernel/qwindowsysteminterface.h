@@ -83,6 +83,9 @@ public:
     static bool tryHandleShortcutEvent(QWindow *w, ulong timestamp, int k, Qt::KeyboardModifiers mods,
                                                   const QString & text = QString(), bool autorep = false, ushort count = 1);
 
+    static bool tryHandleShortcutEventToObject(QObject *o, ulong timestamp, int k, Qt::KeyboardModifiers mods,
+                                       const QString & text = QString(), bool autorep = false, ushort count = 1);
+
     static bool tryHandleExtendedShortcutEvent(QWindow *w, int k, Qt::KeyboardModifiers mods,
                                                           quint32 nativeScanCode, quint32 nativeVirtualKey, quint32 nativeModifiers,
                                                           const QString & text = QString(), bool autorep = false, ushort count = 1);
@@ -102,7 +105,7 @@ public:
                                        quint32 nativeScanCode, quint32 nativeVirtualKey,
                                        quint32 nativeModifiers,
                                        const QString& text = QString(), bool autorep = false,
-                                       ushort count = 1);
+                                       ushort count = 1, bool tryShortcutOverride = true);
     static void handleWheelEvent(QWindow *w, const QPointF & local, const QPointF & global, QPoint pixelDelta, QPoint angleDelta, Qt::KeyboardModifiers mods = Qt::NoModifier, Qt::ScrollPhase phase = Qt::ScrollUpdate);
     static void handleWheelEvent(QWindow *w, ulong timestamp, const QPointF & local, const QPointF & global, QPoint pixelDelta, QPoint angleDelta, Qt::KeyboardModifiers mods = Qt::NoModifier, Qt::ScrollPhase phase = Qt::ScrollUpdate);
 
