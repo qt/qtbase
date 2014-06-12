@@ -1173,8 +1173,8 @@ QIcon QIcon::fromTheme(const QString &name, const QIcon &fallback)
         QIconEngine * const engine = platformTheme ? platformTheme->createIconEngine(name)
                                                    : new QIconLoaderEngine(name);
         QIcon *cachedIcon  = new QIcon(engine);
-        qtIconCache()->insert(name, cachedIcon);
         icon = *cachedIcon;
+        qtIconCache()->insert(name, cachedIcon);
     }
 
     // Note the qapp check is to allow lazy loading of static icons
