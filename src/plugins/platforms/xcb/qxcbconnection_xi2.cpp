@@ -228,6 +228,11 @@ void QXcbConnection::xi2SetupDevices()
 
 void QXcbConnection::finalizeXInput2()
 {
+    foreach (XInput2DeviceData *dev, m_touchDevices) {
+        if (dev->xiDeviceInfo)
+            XIFreeDeviceInfo(dev->xiDeviceInfo);
+        delete dev;
+    }
 }
 
 void QXcbConnection::xi2Select(xcb_window_t window)
@@ -393,6 +398,7 @@ XInput2DeviceData *QXcbConnection::deviceForId(int id)
             m_touchDevices[id] = dev;
         } else {
             m_touchDevices.remove(id);
+            XIFreeDeviceInfo(dev->xiDeviceInfo);
             delete dev;
             dev = 0;
         }
