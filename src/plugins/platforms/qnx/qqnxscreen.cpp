@@ -286,6 +286,18 @@ Qt::ScreenOrientation QQnxScreen::orientation() const
     return orient;
 }
 
+QWindow *QQnxScreen::topLevelAt(const QPoint &point) const
+{
+    QListIterator<QQnxWindow*> it(m_childWindows);
+    it.toBack();
+    while (it.hasPrevious()) {
+        QWindow *win = it.previous()->window();
+        if (win->geometry().contains(point))
+            return win;
+    }
+    return 0;
+}
+
 /*!
     Check if the supplied angles are perpendicular to each other.
 */
@@ -765,19 +777,6 @@ void QQnxScreen::setRootWindow(QQnxWindow *window)
             qWarning("QQnxRootWindow: failed to disable power saving mode");
     }
     m_rootWindow = window;
-}
-
-QWindow * QQnxScreen::topMostChildWindow() const
-{
-    if (!m_childWindows.isEmpty()) {
-
-        // We're picking up the last window of the list here
-        // because this list is ordered by stacking order.
-        // Last window is effectively the one on top.
-        return m_childWindows.last()->window();
-    }
-
-    return 0;
 }
 
 QT_END_NAMESPACE
