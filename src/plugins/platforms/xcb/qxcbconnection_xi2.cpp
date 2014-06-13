@@ -190,17 +190,43 @@ void QXcbConnection::xi2SetupDevices()
         }
         bool isTablet = false;
 #ifndef QT_NO_TABLETEVENT
-        // If we have found the valuators which we expect a tablet to have, assume it's a tablet.
+        // If we have found the valuators which we expect a tablet to have, it might be a tablet.
         if (tabletData.valuatorInfo.contains(QXcbAtom::AbsX) &&
                 tabletData.valuatorInfo.contains(QXcbAtom::AbsY) &&
-                tabletData.valuatorInfo.contains(QXcbAtom::AbsPressure)) {
-            tabletData.deviceId = devices[i].deviceid;
-            tabletData.pointerType = QTabletEvent::Pen;
-            if (QByteArray(devices[i].name).toLower().contains("eraser"))
-                tabletData.pointerType = QTabletEvent::Eraser;
-            m_tabletData.append(tabletData);
+                tabletData.valuatorInfo.contains(QXcbAtom::AbsPressure))
             isTablet = true;
-            qCDebug(lcQpaXInputDevices) << "   it's a tablet with pointer type" << tabletData.pointerType;
+
+        // But we need to be careful not to take the touch and tablet-button devices as tablets.
+        QByteArray name = QByteArray(devices[i].name).toLower();
+        QString dbgType = QLatin1String("UNKNOWN");
+        if (name.contains("eraser")) {
+            isTablet = true;
+            tabletData.pointerType = QTabletEvent::Eraser;
+            dbgType = QLatin1String("eraser");
+        } else if (name.contains("cursor")) {
+            isTablet = true;
+            tabletData.pointerType = QTabletEvent::Cursor;
+            dbgType = QLatin1String("cursor");
+        } else if ((name.contains("pen") || name.contains("stylus")) && isTablet) {
+            tabletData.pointerType = QTabletEvent::Pen;
+            dbgType = QLatin1String("pen");
+        } else if (name.contains("wacom") && isTablet && !name.contains("touch")) {
+            // combined device (evdev) rather than separate pen/eraser (wacom driver)
+            tabletData.pointerType = QTabletEvent::Pen;
+            dbgType = QLatin1String("pen");
+        } else if (name.contains("aiptek") /* && device == QXcbAtom::KEYBOARD */) {
+            // some "Genius" tablets
+            isTablet = true;
+            tabletData.pointerType = QTabletEvent::Pen;
+            dbgType = QLatin1String("pen");
+        } else {
+            isTablet = false;
+        }
+
+        if (isTablet) {
+            tabletData.deviceId = devices[i].deviceid;
+            m_tabletData.append(tabletData);
+            qCDebug(lcQpaXInputDevices) << "   it's a tablet with pointer type" << dbgType;
         }
 #endif // QT_NO_TABLETEVENT
 
@@ -378,6 +404,10 @@ XInput2TouchDeviceData *QXcbConnection::touchDeviceForId(int id)
                 } else if (vci->label == atom(QXcbAtom::RelY)) {
                     hasRelativeCoords = true;
                     dev->size.setHeight((vci->max - vci->min) * 1000.0 / vci->resolution);
+                } else if (vci->label == atom(QXcbAtom::AbsX)) {
+                    dev->size.setHeight((vci->max - vci->min) * 1000.0 / vci->resolution);
+                } else if (vci->label == atom(QXcbAtom::AbsY)) {
+                    dev->size.setWidth((vci->max - vci->min) * 1000.0 / vci->resolution);
                 }
                 break;
             }
@@ -491,6 +521,10 @@ void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
                         if (vci->label == atom(QXcbAtom::RelX)) {
                             nx = valuatorNormalized(value, vci);
                         } else if (vci->label == atom(QXcbAtom::RelY)) {
+                            ny = valuatorNormalized(value, vci);
+                        } else if (vci->label == atom(QXcbAtom::AbsX)) {
+                            nx = valuatorNormalized(value, vci);
+                        } else if (vci->label == atom(QXcbAtom::AbsY)) {
                             ny = valuatorNormalized(value, vci);
                         } else if (vci->label == atom(QXcbAtom::AbsMTPositionX)) {
                             nx = valuatorNormalized(value, vci);
