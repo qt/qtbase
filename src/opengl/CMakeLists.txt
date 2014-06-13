@@ -98,6 +98,9 @@ qt_extend_target(OpenGL CONDITION QT_FEATURE_egl
         qopenglcompositor.cpp qopenglcompositor_p.h
         qopenglcompositorbackingstore.cpp qopenglcompositorbackingstore_p.h
 )
+
+
+qt_create_tracepoints(OpenGL qtopengl.tracepoints)
 qt_add_docs(OpenGL
     doc/qtopengl.qdocconf
 )

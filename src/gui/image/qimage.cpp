@@ -73,6 +73,8 @@
 #include "qthreadpool.h"
 #endif
 
+#include <qtgui_tracepoints_p.h>
+
 QT_BEGIN_NAMESPACE
 
 static inline bool isLocked(QImageData *data)
@@ -126,6 +128,8 @@ QImageData * QImageData::create(const QSize &size, QImage::Format format)
 {
     if (size.isEmpty() || format == QImage::Format_Invalid)
         return nullptr;                             // invalid parameter(s)
+
+    Q_TRACE_SCOPE(QImageData_create, size, format);
 
     int width = size.width();
     int height = size.height();
@@ -1166,6 +1170,7 @@ static void copyMetadata(QImage *dst, const QImage &src)
 */
 QImage QImage::copy(const QRect& r) const
 {
+    Q_TRACE_SCOPE(QImage_copy, r);
     if (!d)
         return QImage();
 
@@ -2794,6 +2799,8 @@ QImage QImage::scaled(const QSize& s, Qt::AspectRatioMode aspectMode, Qt::Transf
     if (newSize == size())
         return *this;
 
+    Q_TRACE_SCOPE(QImage_scaled, s, aspectMode, mode);
+
     QTransform wm = QTransform::fromScale((qreal)newSize.width() / width(), (qreal)newSize.height() / height());
     QImage img = transformed(wm, mode);
     return img;
@@ -2822,6 +2829,8 @@ QImage QImage::scaledToWidth(int w, Qt::TransformationMode mode) const
     if (w <= 0)
         return QImage();
 
+    Q_TRACE_SCOPE(QImage_scaledToWidth, w, mode);
+
     qreal factor = (qreal) w / width();
     QTransform wm = QTransform::fromScale(factor, factor);
     return transformed(wm, mode);
@@ -2849,6 +2858,8 @@ QImage QImage::scaledToHeight(int h, Qt::TransformationMode mode) const
     }
     if (h <= 0)
         return QImage();
+
+    Q_TRACE_SCOPE(QImage_scaledToHeight, h, mode);
 
     qreal factor = (qreal) h / height();
     QTransform wm = QTransform::fromScale(factor, factor);
@@ -3303,6 +3314,8 @@ QImage QImage::rgbSwapped_helper() const
 {
     if (isNull())
         return *this;
+
+    Q_TRACE_SCOPE(QImage_rgbSwapped_helper);
 
     QImage res;
 
@@ -4506,6 +4519,8 @@ QImage QImage::transformed(const QTransform &matrix, Qt::TransformationMode mode
 {
     if (!d)
         return QImage();
+
+    Q_TRACE_SCOPE(QImage_transformed, matrix, mode);
 
     // source image data
     int ws = width();

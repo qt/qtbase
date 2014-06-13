@@ -66,6 +66,8 @@
 #include "qpixmap_raster_p.h"
 #include "private/qhexstring_p.h"
 
+#include <qtgui_tracepoints_p.h>
+
 QT_BEGIN_NAMESPACE
 
 static bool qt_pixmap_thread_test()
@@ -1053,6 +1055,8 @@ QPixmap QPixmap::scaled(const QSize& s, Qt::AspectRatioMode aspectMode, Qt::Tran
     if (newSize == size())
         return *this;
 
+    Q_TRACE_SCOPE(QPixmap_scaled, s, aspectMode, mode);
+
     QTransform wm = QTransform::fromScale((qreal)newSize.width() / width(),
                                           (qreal)newSize.height() / height());
     QPixmap pix = transformed(wm, mode);
@@ -1082,6 +1086,8 @@ QPixmap QPixmap::scaledToWidth(int w, Qt::TransformationMode mode) const
     if (w <= 0)
         return QPixmap();
 
+    Q_TRACE_SCOPE(QPixmap_scaledToWidth, w, mode);
+
     qreal factor = (qreal) w / width();
     QTransform wm = QTransform::fromScale(factor, factor);
     return transformed(wm, mode);
@@ -1109,6 +1115,8 @@ QPixmap QPixmap::scaledToHeight(int h, Qt::TransformationMode mode) const
     }
     if (h <= 0)
         return QPixmap();
+
+    Q_TRACE_SCOPE(QPixmap_scaledToHeight, h, mode);
 
     qreal factor = (qreal) h / height();
     QTransform wm = QTransform::fromScale(factor, factor);
