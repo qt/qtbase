@@ -3302,6 +3302,8 @@ QDebug operator<<(QDebug dbg, const QEvent *e) {
                       << ", " << hex << (int)me->modifiers() << dec;
         if (const Qt::MouseEventSource source = me->source())
             nsp << ", source = " << source;
+        if (const Qt::MouseEventFlags flags = me->flags())
+            nsp << ", flags = " << hex << int(flags) << dec;
         nsp << ')';
     }
     return dbg.space();
@@ -3355,11 +3357,13 @@ QDebug operator<<(QDebug dbg, const QEvent *e) {
         }
         return dbg.space();
     case QEvent::FocusIn:
-        n = "FocusIn";
-        break;
+        dbg.nospace() << "QFocusEvent(FocusIn, reason="
+            << static_cast<const QFocusEvent *>(e)->reason() << ')';
+        return dbg.space();
     case QEvent::FocusOut:
-        n = "FocusOut";
-        break;
+        dbg.nospace() << "QFocusEvent(FocusOut, reason="
+            << static_cast<const QFocusEvent *>(e)->reason() << ')';
+        return dbg.space();
     case QEvent::Enter:
         n = "Enter";
         break;
@@ -3381,12 +3385,24 @@ QDebug operator<<(QDebug dbg, const QEvent *e) {
     case QEvent::Paint:
         n = "Paint";
         break;
-    case QEvent::Move:
-        n = "Move";
-        break;
-    case QEvent::Resize:
-        n = "Resize";
-        break;
+    case QEvent::Move: {
+        const QMoveEvent *me = static_cast<const QMoveEvent *>(e);
+        QDebug nospace = dbg.nospace();
+        nospace << "QMoveEvent(" << me->pos();
+        if (!me->spontaneous())
+            nospace << ", non-spontaneous";
+        nospace << ')';
+    }
+        return dbg.space();
+    case QEvent::Resize: {
+        const QResizeEvent *re = static_cast<const QResizeEvent *>(e);
+        QDebug nospace = dbg.nospace();
+        nospace << "QResizeEvent(" << re->size();
+        if (!re->spontaneous())
+            nospace << ", non-spontaneous";
+        nospace << ')';
+    }
+        return dbg.space();
     case QEvent::Create:
         n = "Create";
         break;
@@ -3551,7 +3567,23 @@ QDebug operator<<(QDebug dbg, const QEvent *e) {
     case QEvent::Gesture:
         n = "Gesture";
         break;
+    case QEvent::GestureOverride:
+        n = "GestureOverride";
+        break;
 #endif
+    case QEvent::MetaCall:
+        n = "MetaCall";
+        break;
+    case QEvent::ApplicationStateChange:
+        dbg.nospace() << "QApplicationStateChangeEvent("
+            << static_cast<const QApplicationStateChangeEvent *>(e)->applicationState() << ')';
+        return dbg.space();
+    case QEvent::WindowTitleChange:
+        n = "WindowTitleChange";
+        break;
+    case QEvent::Expose:
+        n = "Expose";
+        break;
     default:
         dbg.nospace() << "QEvent(" << (const void *)e << ", type = " << e->type() << ')';
         return dbg.space();
