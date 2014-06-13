@@ -120,6 +120,7 @@ public:
 
 #endif
 #ifdef Q_OS_MAC
+#  define Q_MV_OSX(major, minor) (major == 10 ? minor + 2 : (major == 9 ? 1 : 0))
 #  define Q_MV_IOS(major, minor) (QSysInfo::MV_IOS | major << 4 | minor)
     enum MacVersion {
         MV_Unknown = 0x0000,

@@ -1854,16 +1854,14 @@ Q_CORE_EXPORT QString qt_mac_from_pascal_string(const Str255 pstr) {
 
 QSysInfo::MacVersion QSysInfo::macVersion()
 {
+    const QAppleOperatingSystemVersion version = qt_apple_os_version(); // qtcore_mac_objc.mm
 #if defined(Q_OS_OSX)
-    SInt32 gestalt_version;
-    if (Gestalt(gestaltSystemVersionMinor, &gestalt_version) == noErr) {
-        // add 2 because OS X 10.0 is 0x02 in the enum
-        return QSysInfo::MacVersion(gestalt_version + 2);
-    }
+    return QSysInfo::MacVersion(Q_MV_OSX(version.major, version.minor));
 #elif defined(Q_OS_IOS)
-    return qt_ios_version(); // qtcore_mac_objc.mm
-#endif
+    return QSysInfo::MacVersion(Q_MV_IOS(version.major, version.minor));
+#else
     return QSysInfo::MV_Unknown;
+#endif
 }
 const QSysInfo::MacVersion QSysInfo::MacintoshVersion = QSysInfo::macVersion();
 
@@ -2502,25 +2500,9 @@ QString QSysInfo::productType()
 */
 QString QSysInfo::productVersion()
 {
-#if defined(Q_OS_IOS)
-    int major = (int(MacintoshVersion) >> 4) & 0xf;
-    int minor = int(MacintoshVersion) & 0xf;
-    if (Q_LIKELY(major < 10 && minor < 10)) {
-        char buf[4] = { char(major + '0'), '.', char(minor + '0'), '\0' };
-        return QString::fromLatin1(buf, 3);
-    }
-    return QString::number(major) + QLatin1Char('.') + QString::number(minor);
-#elif defined(Q_OS_OSX)
-    int minor = int(MacintoshVersion) - 2;  // we're not running on Mac OS 9
-    Q_ASSERT(minor < 100);
-    char buf[] = "10.0\0";
-    if (Q_LIKELY(minor < 10)) {
-        buf[3] += minor;
-    } else {
-        buf[3] += minor / 10;
-        buf[4] = '0' + minor % 10;
-    }
-    return QString::fromLatin1(buf);
+#if defined(Q_OS_MAC)
+    const QAppleOperatingSystemVersion version = qt_apple_os_version();
+    return QString::number(version.major) + QLatin1Char('.') + QString::number(version.minor);
 #elif defined(Q_OS_WIN)
     const char *version = winVer_helper();
     if (version)

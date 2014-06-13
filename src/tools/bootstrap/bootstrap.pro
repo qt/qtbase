@@ -130,9 +130,15 @@ win32:SOURCES += ../../corelib/io/qfilesystemengine_win.cpp \
                  ../../corelib/plugin/qsystemlibrary.cpp \
 
 mac {
-   SOURCES += ../../corelib/kernel/qcoreapplication_mac.cpp \
-              ../../corelib/kernel/qcore_mac.cpp
-   LIBS += -framework CoreServices
+    SOURCES += \
+        ../../corelib/kernel/qcoreapplication_mac.cpp \
+        ../../corelib/kernel/qcore_mac.cpp
+    OBJECTIVE_SOURCES += \
+        ../../corelib/kernel/qcore_mac_objc.mm
+
+    LIBS += -framework Foundation
+    osx: LIBS_PRIVATE += -framework CoreServices
+    ios: LIBS_PRIVATE += -framework UIKit
 }
 
 macx {

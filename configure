@@ -3751,17 +3751,21 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
             EXEEXT=
         fi
         if [ "$BUILD_ON_MAC" = "yes" ]; then
+            echo "COCOA_LFLAGS =-framework Foundation -framework CoreServices" >>"$mkfile"
             echo "CARBON_LFLAGS =-framework ApplicationServices" >>"$mkfile"
             echo "CARBON_CFLAGS =-fconstant-cfstrings" >>"$mkfile"
+            EXTRA_LFLAGS="$EXTRA_LFLAGS \$(COCOA_LFLAGS)"
             EXTRA_LFLAGS="$EXTRA_LFLAGS \$(CARBON_LFLAGS)"
             EXTRA_CFLAGS="$EXTRA_CFLAGS \$(CARBON_CFLAGS)"
             EXTRA_CXXFLAGS="$EXTRA_CXXFLAGS \$(CARBON_CFLAGS)"
             EXTRA_OBJS="$EXTRA_OBJS \
                         qsettings_mac.o \
-                        qcore_mac.o"
+                        qcore_mac.o \
+                        qcore_mac_objc.o"
             EXTRA_SRCS="$EXTRA_SRCS \
                         \"\$(SOURCE_PATH)/src/corelib/io/qsettings_mac.cpp\" \
-                        \"\$(SOURCE_PATH)/src/corelib/kernel/qcore_mac.cpp\""
+                        \"\$(SOURCE_PATH)/src/corelib/kernel/qcore_mac.cpp\" \
+                        \"\$(SOURCE_PATH)/src/corelib/kernel/qcore_mac_objc.mm\""
         fi
         if [ '!' -z "$D_FLAGS" ]; then
             EXTRA_CFLAGS="$EXTRA_CFLAGS $D_FLAGS"

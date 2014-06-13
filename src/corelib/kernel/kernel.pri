@@ -99,20 +99,22 @@ winrt {
 }
 
 mac {
+    HEADERS += \
+        kernel/qcore_mac_p.h
+
     SOURCES += \
-        kernel/qcoreapplication_mac.cpp
-}
+        kernel/qcoreapplication_mac.cpp \
+        kernel/qcore_mac.cpp
 
-mac:!nacl {
-       HEADERS += \
-                kernel/qcore_mac_p.h
-       SOURCES += \
-                kernel/qcore_mac.cpp
-       OBJECTIVE_SOURCES += \
-                kernel/qcore_mac_objc.mm
+    OBJECTIVE_SOURCES += \
+        kernel/qcore_mac_objc.mm
 
-       # We need UIKit for UIDevice
-       ios: LIBS_PRIVATE += -framework UIKit
+    LIBS_PRIVATE += -framework Foundation
+
+    osx: LIBS_PRIVATE += -framework CoreServices
+
+    # We need UIKit for UIDevice
+    ios: LIBS_PRIVATE += -framework UIKit
 }
 
 nacl {

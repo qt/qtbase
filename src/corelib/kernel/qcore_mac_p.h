@@ -143,9 +143,11 @@ private:
     QString string;
 };
 
-#ifdef Q_OS_IOS
-QSysInfo::MacVersion qt_ios_version();
-#endif
+typedef struct {
+    int major, minor, patch;
+} QAppleOperatingSystemVersion;
+
+QAppleOperatingSystemVersion qt_apple_os_version();
 
 QT_END_NAMESPACE
 

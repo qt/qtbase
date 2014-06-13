@@ -74,6 +74,7 @@ DEPEND_SRC = \
 	   $(SOURCE_PATH)/src/corelib/tools/qlocale_win.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qlinkedlist.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qhash.cpp $(SOURCE_PATH)/src/corelib/kernel/qcore_mac.cpp \
+	   $(SOURCE_PATH)/src/corelib/kernel/qcore_mac_objc.mm \
 	   $(SOURCE_PATH)/src/corelib/io/qtemporaryfile.cpp $(SOURCE_PATH)/src/corelib/kernel/qmetatype.cpp \
 	   $(SOURCE_PATH)/src/corelib/io/qsettings.cpp $(SOURCE_PATH)/src/corelib/kernel/qvariant.cpp \
 	   $(SOURCE_PATH)/src/corelib/global/qlibraryinfo.cpp $(SOURCE_PATH)/src/corelib/tools/qcryptographichash.cpp \
@@ -268,6 +269,9 @@ qmetatype.o: $(SOURCE_PATH)/src/corelib/kernel/qmetatype.cpp
 
 qcore_mac.o: $(SOURCE_PATH)/src/corelib/kernel/qcore_mac.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/kernel/qcore_mac.cpp
+
+qcore_mac_objc.o: $(SOURCE_PATH)/src/corelib/kernel/qcore_mac_objc.mm
+	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/kernel/qcore_mac_objc.mm
 
 qutfcodec.o: $(SOURCE_PATH)/src/corelib/codecs/qutfcodec.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/codecs/qutfcodec.cpp
