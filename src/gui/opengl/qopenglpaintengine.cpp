@@ -87,6 +87,8 @@
 
 #include <QDebug>
 
+#include <qtgui_tracepoints_p.h>
+
 #ifndef GL_KHR_blend_equation_advanced
 #define GL_KHR_blend_equation_advanced 1
 #define GL_MULTIPLY_KHR                   0x9294
@@ -635,6 +637,8 @@ static inline void setCoords(GLfloat *coords, const QOpenGLRect &rect)
 
 void QOpenGL2PaintEngineExPrivate::drawTexture(const QOpenGLRect& dest, const QOpenGLRect& src, const QSize &textureSize, bool opaque, bool pattern)
 {
+    Q_TRACE_SCOPE(QOpenGL2PaintEngineExPrivate_drawTexture, dest, src, textureSize, opaque, pattern);
+
     // Setup for texture drawing
     currentBrush = noBrush;
 

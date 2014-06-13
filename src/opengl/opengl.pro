@@ -55,3 +55,6 @@ qtConfig(graphicseffect) {
 }
 
 load(qt_module)
+
+TRACEPOINT_PROVIDER = $$PWD/qtopengl.tracepoints
+CONFIG += qt_tracepoints

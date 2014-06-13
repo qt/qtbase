@@ -50,6 +50,8 @@
 #include <qimage.h>
 #include <QtCore/qbytearray.h>
 
+#include <qtgui_tracepoints_p.h>
+
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_DEBUG
@@ -467,11 +469,14 @@ namespace
     }
 }
 
-void QOpenGLFramebufferObjectPrivate::init(QOpenGLFramebufferObject *, const QSize &size,
+void QOpenGLFramebufferObjectPrivate::init(QOpenGLFramebufferObject *qfbo, const QSize &size,
                                            QOpenGLFramebufferObject::Attachment attachment,
                                            GLenum texture_target, GLenum internal_format,
                                            GLint samples, bool mipmap)
 {
+    Q_TRACE_SCOPE(QOpenGLFramebufferObjectPrivate_init, qfbo, size, attachment, texture_target, internal_format, samples, mipmap);
+    Q_UNUSED(qfbo);
+
     QOpenGLContext *ctx = QOpenGLContext::currentContext();
 
     funcs.initializeOpenGLFunctions();

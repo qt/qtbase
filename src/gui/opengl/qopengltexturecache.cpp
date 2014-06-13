@@ -44,6 +44,8 @@
 #include <private/qimagepixmapcleanuphooks_p.h>
 #include <qpa/qplatformpixmap.h>
 
+#include <qtgui_tracepoints_p.h>
+
 QT_BEGIN_NAMESPACE
 
 class QOpenGLTextureCacheWrapper
@@ -157,6 +159,8 @@ GLuint QOpenGLTextureCache::bindTexture(QOpenGLContext *context, const QImage &i
 
 GLuint QOpenGLTextureCache::bindTexture(QOpenGLContext *context, qint64 key, const QImage &image, QOpenGLTextureUploader::BindOptions options)
 {
+    Q_TRACE_SCOPE(QOpenGLTextureCache_bindTexture, context, key, image, options);
+
     GLuint id;
     QOpenGLFunctions *funcs = context->functions();
     funcs->glGenTextures(1, &id);

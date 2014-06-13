@@ -1,0 +1,3 @@
+QOpenGLFramebufferObjectPrivate_init(QOpenGLFramebufferObject *qfbo, const QSize &size, QOpenGLFramebufferObject::Attachment attachment, GLenum texture_target, GLenum internal_format, GLint samples, bool mipmap)
+QOpenGL2PaintEngineExPrivate_drawTexture(const QOpenGLRect& dest, const QOpenGLRect& src, const QSize &textureSize, bool opaque, bool pattern)
+QOpenGLTextureCache_bindTexture(QOpenGLContext *context, qint64 key, const QImage &image, QOpenGLTextureUploader::BindOptions options)
