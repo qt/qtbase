@@ -391,6 +391,10 @@ static int qt_gl_resolve_extensions()
             extensions |= QOpenGLExtensions::FramebufferBlit;
         if (extensionMatcher.match("GL_ANGLE_framebuffer_multisample"))
             extensions |= QOpenGLExtensions::FramebufferMultisample;
+        if (extensionMatcher.match("GL_NV_framebuffer_blit"))
+            extensions |= QOpenGLExtensions::FramebufferBlit;
+        if (extensionMatcher.match("GL_NV_framebuffer_multisample"))
+            extensions |= QOpenGLExtensions::FramebufferMultisample;
     } else {
         extensions |= QOpenGLExtensions::ElementIndexUint | QOpenGLExtensions::MapBuffer;
 
@@ -2031,7 +2035,9 @@ namespace {
 enum ResolvePolicy
 {
     ResolveOES = 0x1,
-    ResolveEXT = 0x2
+    ResolveEXT = 0x2,
+    ResolveANGLE = 0x4,
+    ResolveNV = 0x8
 };
 
 template <typename Base, typename FuncType, int Policy, typename ReturnType>
@@ -2153,6 +2159,12 @@ private:
     if ((Policy & ResolveEXT) && !(funcs->*funcPointerName)) \
         funcs->*funcPointerName = (FuncType)context->getProcAddress(funcName + "EXT"); \
  \
+    if ((Policy & ResolveANGLE) && !(funcs->*funcPointerName)) \
+        funcs->*funcPointerName = (FuncType)context->getProcAddress(funcName + "ANGLE"); \
+ \
+    if ((Policy & ResolveNV) && !(funcs->*funcPointerName)) \
+        funcs->*funcPointerName = (FuncType)context->getProcAddress(funcName + "NV"); \
+ \
     if (!alternateFuncName.isEmpty() && !(funcs->*funcPointerName)) { \
         funcs->*funcPointerName = (FuncType)context->getProcAddress(alternateFuncName); \
  \
@@ -2164,6 +2176,12 @@ private:
  \
         if ((Policy & ResolveEXT) && !(funcs->*funcPointerName)) \
             funcs->*funcPointerName = (FuncType)context->getProcAddress(alternateFuncName + "EXT"); \
+ \
+        if ((Policy & ResolveANGLE) && !(funcs->*funcPointerName)) \
+            funcs->*funcPointerName = (FuncType)context->getProcAddress(funcName + "ANGLE"); \
+ \
+        if ((Policy & ResolveNV) && !(funcs->*funcPointerName)) \
+            funcs->*funcPointerName = (FuncType)context->getProcAddress(funcName + "NV"); \
     }
 
 #define RESOLVER_COMMON_NON_VOID \
@@ -3160,7 +3178,7 @@ static void QOPENGLF_APIENTRY qopenglfResolveBlitFramebuffer(GLint srcX0, GLint 
                        GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1,
                        GLbitfield mask, GLenum filter)
 {
-    RESOLVE_FUNC_VOID_WITH_ALTERNATE(ResolveEXT, BlitFramebuffer, BlitFramebufferANGLE)
+    RESOLVE_FUNC_VOID(ResolveEXT | ResolveANGLE | ResolveNV, BlitFramebuffer)
         (srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
 }
 
@@ -3168,7 +3186,7 @@ static void QOPENGLF_APIENTRY qopenglfResolveRenderbufferStorageMultisample(GLen
                                       GLenum internalFormat,
                                       GLsizei width, GLsizei height)
 {
-    RESOLVE_FUNC_VOID_WITH_ALTERNATE(ResolveEXT, RenderbufferStorageMultisample, RenderbufferStorageMultisampleANGLE)
+    RESOLVE_FUNC_VOID(ResolveEXT | ResolveANGLE | ResolveNV, RenderbufferStorageMultisample)
         (target, samples, internalFormat, width, height);
 }
 

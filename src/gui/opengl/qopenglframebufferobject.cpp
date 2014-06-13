@@ -427,18 +427,21 @@ void QOpenGLFramebufferObjectPrivate::init(QOpenGLFramebufferObject *, const QSi
     if (!funcs.hasOpenGLFeature(QOpenGLFunctions::Framebuffers))
         return;
 
-
     // Fall back to using a normal non-msaa FBO if we don't have support for MSAA
     if (!funcs.hasOpenGLExtension(QOpenGLExtensions::FramebufferMultisample)
             || !funcs.hasOpenGLExtension(QOpenGLExtensions::FramebufferBlit)) {
         samples = 0;
     }
 
-#ifndef QT_OPENGL_ES_2
-    GLint maxSamples;
-    funcs.glGetIntegerv(GL_MAX_SAMPLES, &maxSamples);
-    samples = qBound(0, int(samples), int(maxSamples));
-#endif
+    // On GLES 2.0 multisampled framebuffers are available through vendor-specific extensions
+    const bool msaaES2 = ctx->isOpenGLES() && (ctx->hasExtension("GL_ANGLE_framebuffer_multisample")
+                                               || ctx->hasExtension("GL_NV_framebuffer_multisample"));
+
+    if (!ctx->isOpenGLES() || msaaES2) {
+        GLint maxSamples;
+        funcs.glGetIntegerv(GL_MAX_SAMPLES, &maxSamples);
+        samples = qBound(0, int(samples), int(maxSamples));
+    }
 
     size = sz;
     target = texture_target;
@@ -459,11 +462,9 @@ void QOpenGLFramebufferObjectPrivate::init(QOpenGLFramebufferObject *, const QSi
     } else {
         GLenum storageFormat = internal_format;
 #ifdef GL_RGBA8_OES
-        // Correct the internal format used by the render buffer when using ANGLE
-        if (QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGLES && internal_format == GL_RGBA
-                && strstr((const char *)funcs.glGetString(GL_RENDERER), "ANGLE") != 0) {
+        // Correct the internal format used by the render buffer when using ES with extensions
+        if (msaaES2 && internal_format == GL_RGBA)
             storageFormat = GL_RGBA8_OES;
-        }
 #endif
 
         mipmap = false;
