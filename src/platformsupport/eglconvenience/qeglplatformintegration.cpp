@@ -195,6 +195,7 @@ enum ResourceType {
     EglDisplay,
     EglWindow,
     EglContext,
+    EglConfig,
     NativeDisplay,
     Display
 };
@@ -205,6 +206,7 @@ static int resourceType(const QByteArray &key)
         QByteArrayLiteral("egldisplay"),
         QByteArrayLiteral("eglwindow"),
         QByteArrayLiteral("eglcontext"),
+        QByteArrayLiteral("eglconfig"),
         QByteArrayLiteral("nativedisplay"),
         QByteArrayLiteral("display")
     };
@@ -280,6 +282,10 @@ void *QEGLPlatformIntegration::nativeResourceForContext(const QByteArray &resour
     case EglContext:
         if (context->handle())
             result = static_cast<QEGLPlatformContext *>(context->handle())->eglContext();
+        break;
+    case EglConfig:
+        if (context->handle())
+            result = static_cast<QEGLPlatformContext *>(context->handle())->eglConfig();
         break;
     default:
         break;
