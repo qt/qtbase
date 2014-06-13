@@ -82,6 +82,10 @@ public:
 
     Q_INVOKABLE void beep() { MessageBeep(MB_OK); } // For QApplication
 
+    Q_INVOKABLE void registerWindowsMime(void *mimeIn);
+    Q_INVOKABLE void unregisterWindowsMime(void *mime);
+    Q_INVOKABLE int registerMimeType(const QString &mimeType);
+
     bool asyncExpose() const;
     void setAsyncExpose(bool value);
 

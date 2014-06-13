@@ -44,6 +44,7 @@
 #include "qwindowscontext.h"
 #include "qwindowsopenglcontext.h"
 #include "qwindowsintegration.h"
+#include "qwindowsmime.h"
 
 #include <QtGui/QWindow>
 #include <QtGui/QOpenGLContext>
@@ -170,6 +171,21 @@ bool QWindowsNativeInterface::asyncExpose() const
 void QWindowsNativeInterface::setAsyncExpose(bool value)
 {
     QWindowsContext::instance()->setAsyncExpose(value);
+}
+
+void QWindowsNativeInterface::registerWindowsMime(void *mimeIn)
+{
+    QWindowsContext::instance()->mimeConverter().registerMime(reinterpret_cast<QWindowsMime *>(mimeIn));
+}
+
+void QWindowsNativeInterface::unregisterWindowsMime(void *mimeIn)
+{
+    QWindowsContext::instance()->mimeConverter().unregisterMime(reinterpret_cast<QWindowsMime *>(mimeIn));
+}
+
+int QWindowsNativeInterface::registerMimeType(const QString &mimeType)
+{
+    return QWindowsMime::registerMimeType(mimeType);
 }
 
 QT_END_NAMESPACE

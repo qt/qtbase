@@ -89,12 +89,14 @@ public:
     QVariant convertToMime(const QStringList &mimeTypes, IDataObject *pDataObj, QVariant::Type preferredType,
                            QString *format = 0) const;
 
-private:
-    typedef QSharedPointer<QWindowsMime> MimePtr;
+    void registerMime(QWindowsMime *mime);
+    void unregisterMime(QWindowsMime *mime) { m_mimes.removeOne(mime); }
 
+private:
     void ensureInitialized() const;
 
     mutable QList<QWindowsMime *> m_mimes;
+    mutable int m_internalMimeCount;
 };
 
 QT_END_NAMESPACE

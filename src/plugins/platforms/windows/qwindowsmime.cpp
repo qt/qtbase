@@ -1442,13 +1442,13 @@ QString QLastResortMimes::mimeForFormat(const FORMATETC &formatetc) const
     \sa QWindowsMime
 */
 
-QWindowsMimeConverter::QWindowsMimeConverter()
+QWindowsMimeConverter::QWindowsMimeConverter() : m_internalMimeCount(0)
 {
 }
 
 QWindowsMimeConverter::~QWindowsMimeConverter()
 {
-    qDeleteAll(m_mimes);
+    qDeleteAll(m_mimes.begin(), m_mimes.begin() + m_internalMimeCount);
 }
 
 QWindowsMime * QWindowsMimeConverter::converterToMime(const QString &mimeType, IDataObject *pDataObj) const
@@ -1526,6 +1526,7 @@ void QWindowsMimeConverter::ensureInitialized() const
         m_mimes << new QWindowsMimeImage << new QLastResortMimes
                 << new QWindowsMimeText << new QWindowsMimeURI
                 << new QWindowsMimeHtml << new QBuiltInMimes;
+        m_internalMimeCount = m_mimes.size();
     }
 }
 
@@ -1550,6 +1551,12 @@ QVariant QWindowsMimeConverter::convertToMime(const QStringList &mimeTypes,
     }
     qCDebug(lcQpaMime) << __FUNCTION__ << "fails" << mimeTypes << pDataObj << preferredType;
     return QVariant();
+}
+
+void QWindowsMimeConverter::registerMime(QWindowsMime *mime)
+{
+    ensureInitialized();
+    m_mimes.append(mime);
 }
 
 QT_END_NAMESPACE
