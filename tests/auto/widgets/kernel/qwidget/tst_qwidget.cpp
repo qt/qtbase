@@ -262,7 +262,6 @@ private slots:
     void optimizedResizeMove();
     void optimizedResize_topLevel();
     void resizeEvent();
-    void moveEvent();
     void task110173();
 
     void testDeletionInEventHandlers();
@@ -2115,53 +2114,41 @@ void tst_QWidget::showFullScreen()
 
 class ResizeWidget : public QWidget {
 public:
-    ResizeWidget(QWidget *p = 0)
-        : QWidget(p)
-        , m_spontaneousResizeEventCount(0)
-        , m_synthesizedResizeEventCount(0)
-        , m_spontaneousMoveEventCount(0)
-        , m_synthesizedMoveEventCount(0)
+    ResizeWidget(QWidget *p = 0) : QWidget(p)
     {
         setObjectName(QLatin1String("ResizeWidget"));
         setWindowTitle(objectName());
+        m_resizeEventCount = 0;
     }
 protected:
     void resizeEvent(QResizeEvent *e){
         QCOMPARE(size(), e->size());
-        (e->spontaneous() ? m_spontaneousResizeEventCount : m_synthesizedResizeEventCount)++;
-    }
-    void moveEvent(QMoveEvent *e)
-    {
-        (e->spontaneous() ? m_spontaneousMoveEventCount : m_synthesizedMoveEventCount)++;
+        ++m_resizeEventCount;
     }
 
 public:
-    int m_spontaneousResizeEventCount;
-    int m_synthesizedResizeEventCount;
-    int m_spontaneousMoveEventCount;
-    int m_synthesizedMoveEventCount;
+    int m_resizeEventCount;
 };
 
 void tst_QWidget::resizeEvent()
 {
+    QSKIP("QTBUG-30744");
+
     {
         QWidget wParent;
         wParent.resize(200, 200);
         ResizeWidget wChild(&wParent);
         wParent.show();
         QTest::qWaitForWindowExposed(&wParent);
-        QCOMPARE (wChild.m_synthesizedResizeEventCount, 1); // initial resize event before paint
-        QCOMPARE (wChild.m_spontaneousResizeEventCount, 0);
+        QCOMPARE (wChild.m_resizeEventCount, 1); // initial resize event before paint
         wParent.hide();
         QSize safeSize(640,480);
         if (wChild.size() == safeSize)
             safeSize.setWidth(639);
         wChild.resize(safeSize);
-        QCOMPARE (wChild.m_synthesizedResizeEventCount, 1);
-        QCOMPARE (wChild.m_spontaneousResizeEventCount, 0);
+        QCOMPARE (wChild.m_resizeEventCount, 1);
         wParent.show();
-        QCOMPARE (wChild.m_synthesizedResizeEventCount, 2);
-        QCOMPARE (wChild.m_spontaneousResizeEventCount, 0);
+        QCOMPARE (wChild.m_resizeEventCount, 2);
     }
 
     {
@@ -2169,37 +2156,17 @@ void tst_QWidget::resizeEvent()
         wTopLevel.resize(200, 200);
         wTopLevel.show();
         QTest::qWaitForWindowExposed(&wTopLevel);
-        const int synthesizedResizeEventCountAfterShow = wTopLevel.m_synthesizedResizeEventCount;
-        QCOMPARE (synthesizedResizeEventCountAfterShow, 1); // initial resize event before paint for toplevels
-        QCOMPARE (wTopLevel.m_spontaneousResizeEventCount, 0);
+        QCOMPARE (wTopLevel.m_resizeEventCount, 1); // initial resize event before paint for toplevels
         wTopLevel.hide();
         QSize safeSize(640,480);
         if (wTopLevel.size() == safeSize)
             safeSize.setWidth(639);
         wTopLevel.resize(safeSize);
-        QCOMPARE (wTopLevel.m_synthesizedResizeEventCount, synthesizedResizeEventCountAfterShow);
-        QCOMPARE (wTopLevel.m_spontaneousResizeEventCount, 0);
+        QCOMPARE (wTopLevel.m_resizeEventCount, 1);
         wTopLevel.show();
         QTest::qWaitForWindowExposed(&wTopLevel);
-#ifdef Q_OS_OSX
-        QEXPECT_FAIL("", "QTBUG-30744", Abort);
-#endif
-        QCOMPARE (wTopLevel.m_synthesizedResizeEventCount, synthesizedResizeEventCountAfterShow + 1);
-        QCOMPARE (wTopLevel.m_spontaneousResizeEventCount, 0);
+        QCOMPARE (wTopLevel.m_resizeEventCount, 2);
     }
-}
-
-void tst_QWidget::moveEvent()
-{
-    ResizeWidget wTopLevel;
-    wTopLevel.resize(200, 200);
-    centerOnScreen(&wTopLevel);
-    wTopLevel.show();
-    QTest::qWaitForWindowExposed(&wTopLevel);
-    const int synthesizedMoveEventCountAfterShow = wTopLevel.m_synthesizedMoveEventCount;
-    wTopLevel.move(wTopLevel.pos() + QPoint(20, 20));
-    QTRY_COMPARE (wTopLevel.m_synthesizedMoveEventCount, synthesizedMoveEventCountAfterShow + 1);
-    QCOMPARE (wTopLevel.m_spontaneousMoveEventCount, 0);
 }
 
 void tst_QWidget::showMinimized()

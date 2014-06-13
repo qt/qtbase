@@ -591,24 +591,16 @@ void QWidgetWindow::updateNormalGeometry()
 
 void QWidgetWindow::handleMoveEvent(QMoveEvent *event)
 {
-    // If the widget's position already matches that of the event, this is a
-    // result of call to QWidget::move(), which already sends an event.
-    const bool spontaneous = m_widget->geometry().topLeft() != event->pos();
     updateGeometry();
-    if (spontaneous)
-        QGuiApplication::sendSpontaneousEvent(m_widget, event);
+    QGuiApplication::sendSpontaneousEvent(m_widget, event);
 }
 
 void QWidgetWindow::handleResizeEvent(QResizeEvent *event)
 {
     QSize oldSize = m_widget->data->crect.size();
-    // If the widget's size already matches that of the event, this is a
-    // result of call to QWidget::resize(), which already sends an event.
-    const bool spontaneous = oldSize != event->size();
 
     updateGeometry();
-    if (spontaneous)
-        QGuiApplication::sendSpontaneousEvent(m_widget, event);
+    QGuiApplication::sendSpontaneousEvent(m_widget, event);
 
     if (m_widget->d_func()->paintOnScreen()) {
         QRegion updateRegion(geometry());
