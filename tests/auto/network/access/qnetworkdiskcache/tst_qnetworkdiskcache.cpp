@@ -85,6 +85,9 @@ private slots:
     void oldCacheVersionFile_data();
     void oldCacheVersionFile();
 
+    void streamVersion_data();
+    void streamVersion();
+
     void sync();
 
     void crashWhenParentingCache();
@@ -565,6 +568,74 @@ void tst_QNetworkDiskCache::oldCacheVersionFile()
         QIODevice *device = cache.data(url);
         QVERIFY(!device);
         QVERIFY(!QFile::exists(cacheFile));
+    }
+}
+
+void tst_QNetworkDiskCache::streamVersion_data()
+{
+    QTest::addColumn<int>("version");
+    QTest::newRow("Qt 5.1") << int(QDataStream::Qt_5_1);
+    QDataStream ds;
+    QTest::newRow("current") << ds.version();
+    QTest::newRow("higher than current") << ds.version() + 1;
+}
+
+void tst_QNetworkDiskCache::streamVersion()
+{
+    SubQNetworkDiskCache cache;
+    QUrl url(EXAMPLE_URL);
+    cache.setupWithOne(tempDir.path(), url);
+
+    QString cacheFile;
+    // find the file
+    QStringList files = countFiles(cache.cacheDirectory());
+    foreach (const QString &file, files) {
+        QFileInfo info(file);
+        if (info.isFile()) {
+            cacheFile = file;
+            break;
+        }
+    }
+
+    QFile file(cacheFile);
+    QVERIFY(file.open(QFile::ReadWrite|QIODevice::Truncate));
+    QDataStream out(&file);
+    QFETCH(int, version);
+    if (version < out.version())
+        out.setVersion(version);
+    out << qint32(0xe8);    // cache magic
+    // Following code works only for cache file version 8 and should be updated on version change
+    out << qint32(8);
+    out << qint32(version);
+
+    QNetworkCacheMetaData md;
+    md.setUrl(url);
+    QNetworkCacheMetaData::RawHeader header("content-type", "text/html");
+    QNetworkCacheMetaData::RawHeaderList list;
+    list.append(header);
+    md.setRawHeaders(list);
+    md.setLastModified(QDateTime::currentDateTimeUtc().toOffsetFromUtc(3600));
+    out << md;
+
+    bool compressed = true;
+    out << compressed;
+
+    QByteArray data("Hello World!");
+    out << qCompress(data);
+
+    file.close();
+
+    QNetworkCacheMetaData cachedMetaData = cache.call_fileMetaData(cacheFile);
+    if (version > out.version()) {
+        QVERIFY(!cachedMetaData.isValid());
+        QVERIFY(!QFile::exists(cacheFile));
+    } else {
+        QVERIFY(cachedMetaData.isValid());
+        QVERIFY(QFile::exists(cacheFile));
+        QIODevice *dataDevice = cache.data(url);
+        QVERIFY(dataDevice != 0);
+        QByteArray cachedData = dataDevice->readAll();
+        QCOMPARE(cachedData, data);
     }
 }
 

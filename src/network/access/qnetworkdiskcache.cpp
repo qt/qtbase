@@ -56,7 +56,7 @@
 
 #define CACHE_POSTFIX QLatin1String(".d")
 #define PREPARED_SLASH QLatin1String("prepared/")
-#define CACHE_VERSION 7
+#define CACHE_VERSION 8
 #define DATA_DIR QLatin1String("data")
 
 #define MAX_COMPRESSION_SIZE (1024 * 1024 * 3)
@@ -686,6 +686,7 @@ void QCacheItem::writeHeader(QFile *device) const
 
     out << qint32(CacheMagic);
     out << qint32(CurrentCacheVersion);
+    out << static_cast<qint32>(out.version());
     out << metaData;
     bool compressed = canCompress();
     out << compressed;
@@ -718,6 +719,13 @@ bool QCacheItem::read(QFile *device, bool readData)
     // If the cache magic is correct, but the version is not we should remove it
     if (v != CurrentCacheVersion)
         return false;
+
+    qint32 streamVersion;
+    in >> streamVersion;
+    // Default stream version is also the highest we can handle
+    if (streamVersion > in.version())
+        return false;
+    in.setVersion(streamVersion);
 
     bool compressed;
     QByteArray dataBA;
