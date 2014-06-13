@@ -92,6 +92,17 @@ public:
         ReadWrite           = 0x88BA  // GL_READ_WRITE
     };
 
+    enum RangeAccessFlag
+    {
+        RangeRead             = 0x0001, // GL_MAP_READ_BIT
+        RangeWrite            = 0x0002, // GL_MAP_WRITE_BIT
+        RangeInvalidate       = 0x0004, // GL_MAP_INVALIDATE_RANGE_BIT
+        RangeInvalidateBuffer = 0x0008, // GL_MAP_INVALIDATE_BUFFER_BIT
+        RangeFlushExplicit    = 0x0010, // GL_MAP_FLUSH_EXPLICIT_BIT
+        RangeUnsynchronized   = 0x0020  // GL_MAP_UNSYNCHRONIZED_BIT
+    };
+    Q_DECLARE_FLAGS(RangeAccessFlags, RangeAccessFlag)
+
     QOpenGLBuffer::Type type() const;
 
     QOpenGLBuffer::UsagePattern usagePattern() const;
@@ -118,6 +129,7 @@ public:
     inline void allocate(int count) { allocate(0, count); }
 
     void *map(QOpenGLBuffer::Access access);
+    void *mapRange(int offset, int count, QOpenGLBuffer::RangeAccessFlags access);
     bool unmap();
 
 private:
@@ -125,6 +137,8 @@ private:
 
     Q_DECLARE_PRIVATE(QOpenGLBuffer)
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(QOpenGLBuffer::RangeAccessFlags)
 
 QT_END_NAMESPACE
 

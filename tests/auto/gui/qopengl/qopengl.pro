@@ -11,4 +11,4 @@ SOURCES   += tst_qopengl.cpp
 
 win32-msvc2010:contains(QT_CONFIG, angle):CONFIG += insignificant_test # QTBUG-31611
 
-linux:contains(QT_CONFIG, xcb-glx):contains(QT_CONFIG, xcb-xlib):!contains(QT_CONFIG, opengles2): DEFINES += USE_GLX
+linux:contains(QT_CONFIG, xcb-glx):contains(QT_CONFIG, xcb-xlib):!contains(QT_CONFIG, egl): DEFINES += USE_GLX

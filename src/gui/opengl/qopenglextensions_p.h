@@ -99,7 +99,8 @@ public:
         Depth24                 = 0x00010000,
         SRGBFrameBuffer         = 0x00020000,
         MapBuffer               = 0x00040000,
-        GeometryShaders         = 0x00080000
+        GeometryShaders         = 0x00080000,
+        MapBufferRange          = 0x00100000
     };
     Q_DECLARE_FLAGS(OpenGLExtensions, OpenGLExtension)
 
@@ -107,6 +108,7 @@ public:
     bool hasOpenGLExtension(QOpenGLExtensions::OpenGLExtension extension) const;
 
     GLvoid *glMapBuffer(GLenum target, GLenum access);
+    GLvoid *glMapBufferRange(GLenum target, qopengl_GLintptr offset, qopengl_GLsizeiptr length, GLbitfield access);
     GLboolean glUnmapBuffer(GLenum target);
 
     void glBlitFramebuffer(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1,
@@ -131,6 +133,8 @@ public:
     explicit QOpenGLExtensionsPrivate(QOpenGLContext *ctx);
 
     GLvoid* (QOPENGLF_APIENTRYP MapBuffer)(GLenum target, GLenum access);
+    GLvoid* (QOPENGLF_APIENTRYP MapBufferRange)(GLenum target, qopengl_GLintptr offset,
+                                                qopengl_GLsizeiptr length, GLbitfield access);
     GLboolean (QOPENGLF_APIENTRYP UnmapBuffer)(GLenum target);
     void (QOPENGLF_APIENTRYP BlitFramebuffer)(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1,
                            GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1,
@@ -146,6 +150,16 @@ inline GLvoid *QOpenGLExtensions::glMapBuffer(GLenum target, GLenum access)
     Q_D(QOpenGLExtensions);
     Q_ASSERT(QOpenGLExtensions::isInitialized(d));
     GLvoid *result = d->MapBuffer(target, access);
+    Q_OPENGL_FUNCTIONS_DEBUG
+    return result;
+}
+
+inline GLvoid *QOpenGLExtensions::glMapBufferRange(GLenum target, qopengl_GLintptr offset,
+                                                   qopengl_GLsizeiptr length, GLbitfield access)
+{
+    Q_D(QOpenGLExtensions);
+    Q_ASSERT(QOpenGLExtensions::isInitialized(d));
+    GLvoid *result = d->MapBufferRange(target, offset, length, access);
     Q_OPENGL_FUNCTIONS_DEBUG
     return result;
 }

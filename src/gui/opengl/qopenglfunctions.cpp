@@ -388,7 +388,8 @@ static int qt_gl_resolve_extensions()
         if (format.majorVersion() >= 3)
             extensions |= QOpenGLExtensions::PackedDepthStencil
                 | QOpenGLExtensions::Depth24
-                | QOpenGLExtensions::ElementIndexUint;
+                | QOpenGLExtensions::ElementIndexUint
+                | QOpenGLExtensions::MapBufferRange;
 
         if (extensionMatcher.match("GL_OES_mapbuffer"))
             extensions |= QOpenGLExtensions::MapBuffer;
@@ -429,6 +430,8 @@ static int qt_gl_resolve_extensions()
             if (extensionMatcher.match("GL_EXT_packed_depth_stencil"))
                 extensions |= QOpenGLExtensions::PackedDepthStencil;
         }
+        if (extensionMatcher.match("GL_ARB_map_buffer_range"))
+            extensions |= QOpenGLExtensions::MapBufferRange;
     }
 
     if (format.renderableType() == QSurfaceFormat::OpenGL && format.version() >= qMakePair(3, 2))
@@ -3182,11 +3185,36 @@ static void QOPENGLF_APIENTRY qopenglfResolveVertexAttribPointer(GLuint indx, GL
 
 static GLvoid *QOPENGLF_APIENTRY qopenglfResolveMapBuffer(GLenum target, GLenum access)
 {
+#ifdef QT_OPENGL_ES_3
+    // It is possible that GL_OES_map_buffer is present, but then having to
+    // differentiate between glUnmapBufferOES and glUnmapBuffer causes extra
+    // headache. QOpenGLBuffer::map() will handle this automatically, while direct
+    // calls are better off with migrating to the standard glMapBufferRange.
+    if (QOpenGLContext::currentContext()->format().majorVersion() >= 3) {
+        qWarning("QOpenGLFunctions: glMapBuffer is not available in OpenGL ES 3.0 and up. Use glMapBufferRange instead.");
+        return 0;
+    } else
+#endif
     RESOLVE_FUNC(GLvoid *, ResolveOES, MapBuffer)(target, access);
+}
+
+static GLvoid *QOPENGLF_APIENTRY qopenglfResolveMapBufferRange(GLenum target, qopengl_GLintptr offset, qopengl_GLsizeiptr length, GLbitfield access)
+{
+#ifdef QT_OPENGL_ES_3
+    if (QOpenGLContext::currentContext()->format().majorVersion() >= 3)
+        return ::glMapBufferRange(target, offset, length, access);
+    else
+#endif
+    RESOLVE_FUNC(GLvoid *, 0, MapBufferRange)(target, offset, length, access);
 }
 
 static GLboolean QOPENGLF_APIENTRY qopenglfResolveUnmapBuffer(GLenum target)
 {
+#ifdef QT_OPENGL_ES_3
+    if (QOpenGLContext::currentContext()->format().majorVersion() >= 3)
+        return ::glUnmapBuffer(target);
+    else
+#endif
     RESOLVE_FUNC(GLboolean, ResolveOES, UnmapBuffer)(target);
 }
 
@@ -3455,6 +3483,7 @@ QOpenGLExtensionsPrivate::QOpenGLExtensionsPrivate(QOpenGLContext *ctx)
     : QOpenGLFunctionsPrivate(ctx)
 {
     MapBuffer = qopenglfResolveMapBuffer;
+    MapBufferRange = qopenglfResolveMapBufferRange;
     UnmapBuffer = qopenglfResolveUnmapBuffer;
     BlitFramebuffer = qopenglfResolveBlitFramebuffer;
     RenderbufferStorageMultisample = qopenglfResolveRenderbufferStorageMultisample;

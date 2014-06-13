@@ -45,6 +45,7 @@
 #include <QtGui/QOpenGLFunctions>
 #include <QtGui/QOpenGLFunctions_4_2_Core>
 #include <QtGui/QOpenGLVertexArrayObject>
+#include <QtGui/QOpenGLBuffer>
 #include <QtGui/QOpenGLPaintDevice>
 #include <QtGui/QPainter>
 #include <QtGui/QScreen>
@@ -54,6 +55,7 @@
 #include <QtGui/QMatrix4x4>
 #include <QtGui/private/qopengltextureblitter_p.h>
 #include <QtGui/private/qguiapplication_p.h>
+#include <QtGui/private/qopenglextensions_p.h>
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformnativeinterface.h>
 
@@ -113,6 +115,8 @@ private slots:
 #endif
 
     void vaoCreate();
+    void bufferCreate();
+    void bufferMapRange();
 };
 
 struct SharedResourceTracker
@@ -1240,6 +1244,70 @@ void tst_QOpenGL::vaoCreate()
     }
 
     vao.destroy();
+    ctx->doneCurrent();
+}
+
+void tst_QOpenGL::bufferCreate()
+{
+    QScopedPointer<QSurface> surface(createSurface(QSurface::Window));
+    QOpenGLContext *ctx = new QOpenGLContext;
+    ctx->create();
+    ctx->makeCurrent(surface.data());
+
+    QOpenGLBuffer buf;
+
+    QVERIFY(!buf.isCreated());
+
+    QVERIFY(buf.create());
+    QVERIFY(buf.isCreated());
+
+    QCOMPARE(buf.type(), QOpenGLBuffer::VertexBuffer);
+
+    buf.bind();
+    buf.allocate(128);
+    QCOMPARE(buf.size(), 128);
+
+    buf.release();
+
+    buf.destroy();
+    QVERIFY(!buf.isCreated());
+
+    ctx->doneCurrent();
+}
+
+void tst_QOpenGL::bufferMapRange()
+{
+    QScopedPointer<QSurface> surface(createSurface(QSurface::Window));
+    QOpenGLContext *ctx = new QOpenGLContext;
+    ctx->create();
+    ctx->makeCurrent(surface.data());
+
+    QOpenGLExtensions funcs(ctx);
+    if (!funcs.hasOpenGLExtension(QOpenGLExtensions::MapBufferRange))
+        QSKIP("glMapBufferRange not supported");
+
+    QOpenGLBuffer buf;
+    QVERIFY(buf.create());
+    buf.bind();
+    const char data[] = "some data";
+    buf.allocate(data, sizeof(data));
+
+    char *p = (char *) buf.mapRange(0, sizeof(data), QOpenGLBuffer::RangeRead | QOpenGLBuffer::RangeWrite);
+    QVERIFY(p);
+    QVERIFY(!strcmp(p, data));
+    p[1] = 'O';
+    buf.unmap();
+
+    p = (char *) buf.mapRange(1, 2, QOpenGLBuffer::RangeWrite);
+    QVERIFY(p);
+    p[1] = 'M';
+    buf.unmap();
+
+    p = (char *) buf.mapRange(0, sizeof(data), QOpenGLBuffer::RangeRead);
+    QVERIFY(!strcmp(p, "sOMe data"));
+    buf.unmap();
+
+    buf.destroy();
     ctx->doneCurrent();
 }
 
