@@ -1149,6 +1149,23 @@ while [ "$#" -gt 0 ]; do
         ;;
     qreal)
         CFG_QREAL="$VAL"
+        if [ "$CFG_QREAL" = "float" ]; then
+           CFG_QREAL_STRING="\"float\""
+        elif [ "$CFG_QREAL" != "double" ]; then
+            if [ -z "$PERL" ]; then
+                echo "configure needs perl in \$PATH if the -qreal option is used with" >&2
+                echo "a value different from \"float\"" >&2
+                exit 1
+            fi
+            CFG_QREAL_STRING=`perl -e '$_ = $ARGV[0];
+                                       s/ +/ /g; s/^ +//; s/ +$//;
+                                       while (/(.)/g) {
+                                           $c = $1;
+                                           if ($c =~ /[a-zA-Z0-9]/) { $result .= $c; }
+                                           else { $result .= "_" . unpack("H*", $c); }
+                                       }
+                                       print "\"$result\"";' "$CFG_QREAL"`
+        fi
         ;;
     sysroot)
         CFG_SYSROOT="$VAL"
@@ -6002,6 +6019,7 @@ fi
 
 if [ "$CFG_QREAL" != double ]; then
     echo "#define QT_COORD_TYPE $CFG_QREAL" >>"$outpath/src/corelib/global/qconfig.h.new"
+    echo "#define QT_COORD_TYPE_STRING $CFG_QREAL_STRING" >>"$outpath/src/corelib/global/qconfig.h.new"
 fi
 
 if [ "$CFG_FRAMEWORK" = "yes" ]; then

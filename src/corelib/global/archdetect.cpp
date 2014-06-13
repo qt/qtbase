@@ -87,6 +87,13 @@
 #  define ARCH_POINTER "ilp32"
 #endif
 
+// qreal type, if not double (includes the dash)
+#ifdef QT_COORD_TYPE_STRING
+#  define ARCH_COORD_TYPE   "-qreal_" QT_COORD_TYPE_STRING
+#else
+#  define ARCH_COORD_TYPE  ""
+#endif
+
 // secondary: ABI string (includes the dash)
 #if defined(__ARM_EABI__) || defined(__mips_eabi)
 #  define ARCH_ABI1 "-eabi"
@@ -111,4 +118,4 @@
 
 #define ARCH_ABI ARCH_ABI1 ARCH_ABI2
 
-#define ARCH_FULL ARCH_PROCESSOR "-" ARCH_ENDIANNESS "-" ARCH_POINTER ARCH_ABI
+#define ARCH_FULL ARCH_PROCESSOR "-" ARCH_ENDIANNESS "-" ARCH_POINTER ARCH_COORD_TYPE ARCH_ABI

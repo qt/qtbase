@@ -2221,6 +2221,11 @@ QString QSysInfo::cpuArchitecture()
                                         component is the main ABI (such as "eabi", "o32", "n32", "o64"); another is
                                         whether the calling convention is using hardware floating point registers ("hardfloat"
                                         is present).
+
+                                        Additionally, if Qt was configured with \c{-qreal float}, the ABI option tag "qreal_float"
+                                        will be present. If Qt was configured with another type as qreal, that type is present after
+                                        "qreal_", with all characters other than letters and digits escaped by an underscore, followed
+                                        by two hex digits. For example, \c{-qreal long double} becomes "qreal_long_20double".
     \endtable
 
     \sa QSysInfo::cpuArchitecture()

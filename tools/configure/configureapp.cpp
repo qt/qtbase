@@ -431,7 +431,15 @@ void Configure::parseCmdLine()
             ++i;
             if (i == argCount)
                 break;
-            dictionary[ "QREAL" ] = configCmdLine.at(i);
+            QString s = dictionary[ "QREAL" ] = configCmdLine.at(i);
+            if (s == "float") {
+                dictionary[ "QREAL_STRING" ] = "\"float\"";
+            } else {
+                // escape
+                s = s.simplified();
+                s = '"' + s.toLatin1().toPercentEncoding(QByteArray(), "-._~", '_') + '"';
+                dictionary[ "QREAL_STRING" ] = s;
+            }
         }
 
         else if (configCmdLine.at(i) == "-release") {
@@ -3492,8 +3500,10 @@ void Configure::generateConfigfiles()
         if (dictionary[ "IWMMXT" ] == "yes")
             tmpStream << "#define QT_COMPILER_SUPPORTS_IWMMXT 1" << endl;
 
-        if (dictionary["QREAL"] != "double")
+        if (dictionary["QREAL"] != "double") {
             tmpStream << "#define QT_COORD_TYPE " << dictionary["QREAL"] << endl;
+            tmpStream << "#define QT_COORD_TYPE_STRING " << dictionary["QREAL_STRING"] << endl;
+        }
 
         tmpStream << endl << "// Compile time features" << endl;
 
