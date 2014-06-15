@@ -441,54 +441,48 @@
 /*
  * C++11 support
  *
- *  Paper           Macro
+ *  Paper           Macro                               SD-6 macro
  *  N2341           Q_COMPILER_ALIGNAS
  *  N2341           Q_COMPILER_ALIGNOF
  *  N2427           Q_COMPILER_ATOMICS
- *  N2761           Q_COMPILER_ATTRIBUTES
+ *  N2761           Q_COMPILER_ATTRIBUTES               __cpp_attributes = 200809
  *  N2541           Q_COMPILER_AUTO_FUNCTION
  *  N1984 N2546     Q_COMPILER_AUTO_TYPE
  *  N2437           Q_COMPILER_CLASS_ENUM
- *  N2235           Q_COMPILER_CONSTEXPR
- *  N2343 N3276     Q_COMPILER_DECLTYPE
+ *  N2235           Q_COMPILER_CONSTEXPR                __cpp_constexpr = 200704
+ *  N2343 N3276     Q_COMPILER_DECLTYPE                 __cpp_decltype = 200707
  *  N2346           Q_COMPILER_DEFAULT_MEMBERS
  *  N2346           Q_COMPILER_DELETE_MEMBERS
  *  N1986           Q_COMPILER_DELEGATING_CONSTRUCTORS
  *  N2437           Q_COMPILER_EXPLICIT_CONVERSIONS
- *  N3206 N3272     Q_COMPILER_EXPLICIT_OVERRIDES   (v0.9 and above only)
+ *  N3206 N3272     Q_COMPILER_EXPLICIT_OVERRIDES
  *  N1987           Q_COMPILER_EXTERN_TEMPLATES
  *  N2540           Q_COMPILER_INHERITING_CONSTRUCTORS
  *  N2672           Q_COMPILER_INITIALIZER_LISTS
- *  N2658 N2927     Q_COMPILER_LAMBDA   (v1.0 and above only)
+ *  N2658 N2927     Q_COMPILER_LAMBDA                   __cpp_lambdas = 200907
  *  N2756           Q_COMPILER_NONSTATIC_MEMBER_INIT
  *  N2855 N3050     Q_COMPILER_NOEXCEPT
  *  N2431           Q_COMPILER_NULLPTR
  *  N2930           Q_COMPILER_RANGE_FOR
- *  N2442           Q_COMPILER_RAW_STRINGS
+ *  N2442           Q_COMPILER_RAW_STRINGS              __cpp_raw_strings = 200710
  *  N2439           Q_COMPILER_REF_QUALIFIERS
- *  N2118 N2844 N3053 Q_COMPILER_RVALUE_REFS   (Note: GCC 4.3 implements only the oldest)
- *  N1720           Q_COMPILER_STATIC_ASSERT
+ *  N2118 N2844 N3053 Q_COMPILER_RVALUE_REFS            __cpp_rvalue_references = 200610
+ *  N1720           Q_COMPILER_STATIC_ASSERT            __cpp_static_assert = 200410
  *  N2258           Q_COMPILER_TEMPLATE_ALIAS
  *  N2659           Q_COMPILER_THREAD_LOCAL
- *  N2765           Q_COMPILER_UDL
- *  N2442           Q_COMPILER_UNICODE_STRINGS
+ *  N2765           Q_COMPILER_UDL                      __cpp_user_defined_literals = 200809
+ *  N2442           Q_COMPILER_UNICODE_STRINGS          __cpp_unicode_literals = 200710
  *  N2640           Q_COMPILER_UNIFORM_INIT
  *  N2544           Q_COMPILER_UNRESTRICTED_UNIONS
  *  N1653           Q_COMPILER_VARIADIC_MACROS
- *  N2242 N2555     Q_COMPILER_VARIADIC_TEMPLATES
+ *  N2242 N2555     Q_COMPILER_VARIADIC_TEMPLATES       __cpp_variadic_templates = 200704
  *
- * C++1y proposed features
+ * For any future version of the C++ standard, we use only the SD-6 macro.
+ * For full listing, see
+ *  http://isocpp.org/std/standing-documents/sd-6-sg10-feature-test-recommendations
  *
- *  N3472           Q_COMPILER_BINARY_LITERALS
- *  N3649           Q_COMPILER_GENERIC_LAMBDA
- *  N3638           Q_COMPILER_LAMBDA_CAPTURES
- *  N3652           Q_COMPILER_RELAXED_CONSTEXPR_FUNCTIONS
- *  N3386 N3638     Q_COMPILER_RETURN_TYPE_DEDUCTION
- *  N3651           Q_COMPILER_VARIABLE_TEMPLATES
- *
- * C++14 Technical Specifications / C++17:
- *  N3639           Q_COMPILER_VLA  (see also Q_COMPILER_RESTRICTED_VLA)
- *
+ * C++ extensions:
+ *  Q_COMPILER_RESTRICTED_VLA       variable-length arrays, prior to __cpp_runtime_arrays
  */
 
 #ifdef Q_CC_INTEL
@@ -681,8 +675,7 @@
 #    endif
 #  endif
 
-/* C++1y features, see http://clang.llvm.org/cxx_status.html and
- * http://clang.llvm.org/docs/LanguageExtensions.html#checks-for-standard-language-features */
+/* C++1y features, deprecated macros. Do not update this list. */
 #  if __cplusplus > 201103L
 //#    if __has_feature(cxx_binary_literals)
 //#      define Q_COMPILER_BINARY_LITERALS  // see above
@@ -783,7 +776,7 @@
 #  endif
 #  if __cplusplus > 201103L
 #    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 409
-     /* C++1y features in GCC 4.9 */
+     /* C++1y features in GCC 4.9 - deprecated, do not update this list */
 //#    define Q_COMPILER_BINARY_LITERALS   // already supported since GCC 4.3 as an extension
 #      define Q_COMPILER_LAMBDA_CAPTURES
 #      define Q_COMPILER_RETURN_TYPE_DEDUCTION
