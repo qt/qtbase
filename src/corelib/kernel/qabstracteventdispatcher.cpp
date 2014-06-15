@@ -90,7 +90,14 @@ Q_GLOBAL_STATIC(QtTimerIdFreeList, timerIdFreeList)
 
 int QAbstractEventDispatcherPrivate::allocateTimerId()
 {
-    return timerIdFreeList()->next();
+    // This function may be called after timerIdFreeList() has been destructed
+    // for example in case when application exits without waiting for
+    // running threads to exit and running thread finished() has been connected
+    // to a slot which triggers a sequence that registers new timer.
+    // See https://bugreports.qt-project.org/browse/QTBUG-38957.
+    if (QtTimerIdFreeList *fl = timerIdFreeList())
+        return fl->next();
+    return 0; // Note! returning 0 generates a warning
 }
 
 void QAbstractEventDispatcherPrivate::releaseTimerId(int timerId)
