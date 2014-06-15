@@ -874,7 +874,24 @@
 #    if _MSC_FULL_VER >= 180030324 // VC 12 SP 2 RC
 #      define Q_COMPILER_INITIALIZER_LISTS
 #    endif /* VC 12 SP 2 RC */
-
+#    if _MSC_VER >= 1900
+       /* C++11 features in VC14 = VC2015 */
+#      define Q_COMPILER_ALIGNAS
+#      define Q_COMPILER_ALIGNOF
+// Partial support, insufficient for Qt
+//#      define Q_COMPILER_CONSTEXPR
+#      define Q_COMPILER_INHERITING_CONSTRUCTORS
+#      define Q_COMPILER_NOEXCEPT
+#      define Q_COMPILER_RANGE_FOR
+#      define Q_COMPILER_REF_QUALIFIERS
+#      define Q_COMPILER_THREAD_LOCAL
+#      define Q_COMPILER_THREADSAFE_STATICS
+#      define Q_COMPILER_UDL
+#      define Q_COMPILER_UNICODE_STRINGS
+// Uniform initialization is not working yet -- build errors with QUuid
+//#      define Q_COMPILER_UNIFORM_INIT
+#      define Q_COMPILER_UNRESTRICTED_UNIONS
+#    endif
 #  endif /* __cplusplus */
 #endif /* Q_CC_MSVC */
 
