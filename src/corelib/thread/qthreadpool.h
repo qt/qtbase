@@ -77,6 +77,7 @@ public:
     bool waitForDone(int msecs = -1);
 
     void clear();
+    void cancel(QRunnable *runnable);
 };
 
 QT_END_NAMESPACE

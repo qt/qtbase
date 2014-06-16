@@ -311,14 +311,12 @@ void QThreadPoolPrivate::clear()
 /*!
     \internal
     Searches for \a runnable in the queue, removes it from the queue and
-    runs it if found. This function does not return until the runnable
-    has completed.
+    returns \c true if it was found in the queue
 */
-void QThreadPoolPrivate::stealRunnable(QRunnable *runnable)
+bool QThreadPoolPrivate::stealRunnable(QRunnable *runnable)
 {
     if (runnable == 0)
-        return;
-    bool found = false;
+        return false;
     {
         QMutexLocker locker(&mutex);
         QList<QPair<QRunnable *, int> >::iterator it = queue.begin();
@@ -326,17 +324,26 @@ void QThreadPoolPrivate::stealRunnable(QRunnable *runnable)
 
         while (it != end) {
             if (it->first == runnable) {
-                found = true;
                 queue.erase(it);
-                break;
+                return true;
             }
             ++it;
         }
     }
 
-    if (!found)
-        return;
+    return false;
+}
 
+    /*!
+     \internal
+     Searches for \a runnable in the queue, removes it from the queue and
+     runs it if found. This function does not return until the runnable
+     has completed.
+     */
+void QThreadPoolPrivate::stealAndRunRunnable(QRunnable *runnable)
+{
+    if (!stealRunnable(runnable))
+        return;
     const bool autoDelete = runnable->autoDelete();
     bool del = autoDelete && !--runnable->ref;
 
@@ -626,6 +633,25 @@ void QThreadPool::clear()
 {
     Q_D(QThreadPool);
     d->clear();
+}
+
+/*!
+    \since 5.5
+
+    Removes the specified \a runnable from the queue if it is not yet started.
+    The runnables for which \l{QRunnable::autoDelete()}{runnable->autoDelete()}
+    returns \c true are deleted.
+
+    \sa start()
+*/
+void QThreadPool::cancel(QRunnable *runnable)
+{
+    Q_D(QThreadPool);
+    if (!d->stealRunnable(runnable))
+        return;
+    if (runnable->autoDelete() && !--runnable->ref) {
+        delete runnable;
+    }
 }
 
 QT_END_NAMESPACE
