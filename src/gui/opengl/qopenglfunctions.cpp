@@ -395,6 +395,8 @@ static int qt_gl_resolve_extensions()
             extensions |= QOpenGLExtensions::FramebufferBlit;
         if (extensionMatcher.match("GL_NV_framebuffer_multisample"))
             extensions |= QOpenGLExtensions::FramebufferMultisample;
+        if (format.majorVersion() >= 3)
+            extensions |= QOpenGLExtensions::FramebufferBlit | QOpenGLExtensions::FramebufferMultisample;
     } else {
         extensions |= QOpenGLExtensions::ElementIndexUint | QOpenGLExtensions::MapBuffer;
 
@@ -3178,16 +3180,24 @@ static void QOPENGLF_APIENTRY qopenglfResolveBlitFramebuffer(GLint srcX0, GLint 
                        GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1,
                        GLbitfield mask, GLenum filter)
 {
+#ifdef QT_OPENGL_ES_3
+    ::glBlitFramebuffer(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
+#else
     RESOLVE_FUNC_VOID(ResolveEXT | ResolveANGLE | ResolveNV, BlitFramebuffer)
         (srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
+#endif
 }
 
 static void QOPENGLF_APIENTRY qopenglfResolveRenderbufferStorageMultisample(GLenum target, GLsizei samples,
                                       GLenum internalFormat,
                                       GLsizei width, GLsizei height)
 {
+#ifdef QT_OPENGL_ES_3
+    ::glRenderbufferStorageMultisample(target, samples, internalFormat, width, height);
+#else
     RESOLVE_FUNC_VOID(ResolveEXT | ResolveANGLE | ResolveNV, RenderbufferStorageMultisample)
         (target, samples, internalFormat, width, height);
+#endif
 }
 
 static void QOPENGLF_APIENTRY qopenglfResolveGetBufferSubData(GLenum target, qopengl_GLintptr offset, qopengl_GLsizeiptr size, GLvoid *data)
