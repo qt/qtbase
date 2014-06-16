@@ -507,22 +507,25 @@ private:
     int m_xiOpCode, m_xiEventBase, m_xiErrorBase;
 #ifndef QT_NO_TABLETEVENT
     struct TabletData {
-        TabletData() : deviceId(0), down(false), serialId(0), inProximity(false) { }
+        TabletData() : deviceId(0), pointerType(QTabletEvent::UnknownPointer),
+            tool(QTabletEvent::Stylus), down(false), serialId(0), inProximity(false) { }
         int deviceId;
         QTabletEvent::PointerType pointerType;
+        QTabletEvent::TabletDevice tool;
         bool down;
         qint64 serialId;
         bool inProximity;
         struct ValuatorClassInfo {
-            ValuatorClassInfo() : minVal(0), maxVal(0) { }
+            ValuatorClassInfo() : minVal(0.), maxVal(0.), curVal(0.) { }
             double minVal;
             double maxVal;
+            double curVal;
             int number;
         };
         QHash<int, ValuatorClassInfo> valuatorInfo;
     };
     bool xi2HandleTabletEvent(void *event, TabletData *tabletData);
-    void xi2ReportTabletEvent(const TabletData &tabletData, void *event);
+    void xi2ReportTabletEvent(TabletData &tabletData, void *event);
     QVector<TabletData> m_tabletData;
 #endif
     struct ScrollingDevice {
