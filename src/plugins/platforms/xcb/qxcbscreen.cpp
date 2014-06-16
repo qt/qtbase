@@ -106,6 +106,11 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *scr,
     qDebug("  root ID........: %x", screen()->root);
 #endif
 
+    QScopedPointer<xcb_get_window_attributes_reply_t, QScopedPointerPodDeleter> rootAttribs(
+        xcb_get_window_attributes_reply(xcb_connection(),
+            xcb_get_window_attributes_unchecked(xcb_connection(), screen()->root), NULL));
+    const quint32 existingEventMask = rootAttribs.isNull() ? 0 : rootAttribs->your_event_mask;
+
     const quint32 mask = XCB_CW_EVENT_MASK;
     const quint32 values[] = {
         // XCB_CW_EVENT_MASK
@@ -113,6 +118,7 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *scr,
         | XCB_EVENT_MASK_LEAVE_WINDOW
         | XCB_EVENT_MASK_PROPERTY_CHANGE
         | XCB_EVENT_MASK_STRUCTURE_NOTIFY // for the "MANAGER" atom (system tray notification).
+        | existingEventMask // don't overwrite the event mask on the root window
     };
 
     xcb_change_window_attributes(xcb_connection(), screen()->root, mask, values);
