@@ -47,9 +47,6 @@
 extern const char msg[];
 const char msg[] = "==Qt=magic=Qt== Architecture:" ARCH_PROCESSOR;
 
-extern const char msgfull[];
-const char msgfull[] = "==Qt=magic=Qt== Full Architecture:" ARCH_FULL;
-
 extern const char msg2[];
 const char msg2[] = "==Qt=magic=Qt== Sub-architecture:"
         // This is the list of features found in GCC or MSVC
@@ -239,6 +236,5 @@ const char msg2[] = "==Qt=magic=Qt== Sub-architecture:"
 int main()
 {
     puts(msg);
-    puts(msgfull);
     puts(msg2);
 }
