@@ -929,6 +929,15 @@ int QXcbKeyboard::keysymToQtKey(xcb_keysym_t key) const
         i += 2;
     }
 
+    if (rmod_masks.meta) {
+        // translate Super/Hyper keys to Meta if we're using them as the MetaModifier
+        if (rmod_masks.meta == rmod_masks.super && (code == Qt::Key_Super_L || code == Qt::Key_Super_R)) {
+            code = Qt::Key_Meta;
+        } else if (rmod_masks.meta == rmod_masks.hyper && (code == Qt::Key_Hyper_L || code == Qt::Key_Hyper_R)) {
+            code = Qt::Key_Meta;
+        }
+    }
+
     return code;
 }
 
