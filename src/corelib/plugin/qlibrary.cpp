@@ -359,7 +359,7 @@ class QLibraryStore
 {
 public:
     inline ~QLibraryStore();
-    static inline QLibraryPrivate *findOrCreate(const QString &fileName, const QString &version);
+    static inline QLibraryPrivate *findOrCreate(const QString &fileName, const QString &version, QLibrary::LoadHints loadHints);
     static inline void releaseLibrary(QLibraryPrivate *lib);
 
     static inline void cleanup();
@@ -438,17 +438,21 @@ QLibraryStore *QLibraryStore::instance()
     return qt_library_data;
 }
 
-inline QLibraryPrivate *QLibraryStore::findOrCreate(const QString &fileName, const QString &version)
+inline QLibraryPrivate *QLibraryStore::findOrCreate(const QString &fileName, const QString &version,
+                                                    QLibrary::LoadHints loadHints)
 {
     QMutexLocker locker(&qt_library_mutex);
     QLibraryStore *data = instance();
 
     // check if this library is already loaded
     QLibraryPrivate *lib = 0;
-    if (Q_LIKELY(data))
+    if (Q_LIKELY(data)) {
         lib = data->libraryMap.value(fileName);
+        if (lib)
+            lib->mergeLoadHints(loadHints);
+    }
     if (!lib)
-        lib = new QLibraryPrivate(fileName, version);
+        lib = new QLibraryPrivate(fileName, version, loadHints);
 
     // track this library
     if (Q_LIKELY(data))
@@ -479,19 +483,32 @@ inline void QLibraryStore::releaseLibrary(QLibraryPrivate *lib)
     delete lib;
 }
 
-QLibraryPrivate::QLibraryPrivate(const QString &canonicalFileName, const QString &version)
+QLibraryPrivate::QLibraryPrivate(const QString &canonicalFileName, const QString &version, QLibrary::LoadHints loadHints)
     : pHnd(0), fileName(canonicalFileName), fullVersion(version), instance(0),
-      loadHints(0),
+      loadHints(loadHints),
       libraryRefCount(0), libraryUnloadCount(0), pluginState(MightBeAPlugin)
-{ }
-
-QLibraryPrivate *QLibraryPrivate::findOrCreate(const QString &fileName, const QString &version)
 {
-    return QLibraryStore::findOrCreate(fileName, version);
+    if (canonicalFileName.isEmpty())
+        errorString = QLibrary::tr("The shared library was not found.");
+}
+
+QLibraryPrivate *QLibraryPrivate::findOrCreate(const QString &fileName, const QString &version,
+                                               QLibrary::LoadHints loadHints)
+{
+    return QLibraryStore::findOrCreate(fileName, version, loadHints);
 }
 
 QLibraryPrivate::~QLibraryPrivate()
 {
+}
+
+void QLibraryPrivate::mergeLoadHints(QLibrary::LoadHints lh)
+{
+    // if the library is already loaded, we can't change the load hints
+    if (pHnd)
+        return;
+
+    loadHints = lh;
 }
 
 QFunctionPointer QLibraryPrivate::resolve(const char *symbol)

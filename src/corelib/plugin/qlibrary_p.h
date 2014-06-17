@@ -94,7 +94,8 @@ public:
     void release();
     QFunctionPointer resolve(const char *);
 
-    static QLibraryPrivate *findOrCreate(const QString &fileName, const QString &version = QString());
+    static QLibraryPrivate *findOrCreate(const QString &fileName, const QString &version = QString(),
+                                         QLibrary::LoadHints loadHints = 0);
     static QStringList suffixes_sys(const QString &fullVersion);
     static QStringList prefixes_sys();
 
@@ -117,8 +118,9 @@ public:
     }
 
 private:
-    explicit QLibraryPrivate(const QString &canonicalFileName, const QString &version);
+    explicit QLibraryPrivate(const QString &canonicalFileName, const QString &version, QLibrary::LoadHints loadHints);
     ~QLibraryPrivate();
+    void mergeLoadHints(QLibrary::LoadHints loadHints);
 
     bool load_sys();
     bool unload_sys();
