@@ -1010,9 +1010,6 @@ void QXcbDrag::handleFinished(const xcb_client_message_event_t *event)
 //            current_target = 0;
 //            current_proxy_target = 0;
 
-            if (t.drag)
-                t.drag->deleteLater();
-
 //            current_target = target;
 //            current_proxy_target = proxy_target;
 //            current_embedding_widget = embedding_widget;
