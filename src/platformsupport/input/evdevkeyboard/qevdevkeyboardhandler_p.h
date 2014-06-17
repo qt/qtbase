@@ -145,7 +145,9 @@ public:
         SwitchConsoleMask  = 0x0000007f
     };
 
-    static QEvdevKeyboardHandler *create(const QString &device, const QString &specification);
+    static QEvdevKeyboardHandler *create(const QString &device,
+                                         const QString &specification,
+                                         const QString &defaultKeymapFile = QString());
 
     static Qt::KeyboardModifiers toQtModifiers(quint8 mod)
     {
@@ -161,13 +163,14 @@ public:
         return qtmod;
     }
 
+    bool loadKeymap(const QString &file);
+    void unloadKeymap();
+
 private slots:
     void readKeycode();
     KeycodeAction processKeycode(quint16 keycode, bool pressed, bool autorepeat);
 
 private:
-    void unloadKeymap();
-    bool loadKeymap(const QString &file);
     void processKeyEvent(int nativecode, int unicode, int qtcode,
                          Qt::KeyboardModifiers modifiers, bool isPress, bool autoRepeat);
     void switchLed(int, bool);

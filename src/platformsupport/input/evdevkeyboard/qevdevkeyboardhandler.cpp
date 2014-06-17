@@ -93,13 +93,15 @@ QEvdevKeyboardHandler::~QEvdevKeyboardHandler()
         qt_safe_close(m_fd);
 }
 
-QEvdevKeyboardHandler *QEvdevKeyboardHandler::create(const QString &device, const QString &specification)
+QEvdevKeyboardHandler *QEvdevKeyboardHandler::create(const QString &device,
+                                                     const QString &specification,
+                                                     const QString &defaultKeymapFile)
 {
 #ifdef QT_QPA_KEYMAP_DEBUG
     qWarning() << "Try to create keyboard handler for" << device << specification;
 #endif
 
-    QString keymapFile;
+    QString keymapFile = defaultKeymapFile;
     int repeatDelay = 400;
     int repeatRate = 80;
     bool disableZap = false;

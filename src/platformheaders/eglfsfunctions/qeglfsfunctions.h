@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -39,39 +39,29 @@
 **
 ****************************************************************************/
 
-#ifndef QEVDEVKEYBOARDMANAGER_P_H
-#define QEVDEVKEYBOARDMANAGER_P_H
+#ifndef QEGLFSFUNCTIONS_H
+#define QEGLFSFUNCTIONS_H
 
-#include "qevdevkeyboardhandler_p.h"
-
-#include <QtPlatformSupport/private/qdevicediscovery_p.h>
-
-#include <QObject>
-#include <QHash>
-#include <QSocketNotifier>
+#include <QtCore/QByteArray>
+#include <QtGui/QGuiApplication>
 
 QT_BEGIN_NAMESPACE
 
-class QEvdevKeyboardManager : public QObject
+class QEglFSFunctions
 {
-    Q_OBJECT
 public:
-    QEvdevKeyboardManager(const QString &key, const QString &specification, QObject *parent = 0);
-    ~QEvdevKeyboardManager();
+    typedef void (*LoadKeymapType)(const QString &filename);
+    static QByteArray loadKeymapTypeIdentifier() { return QByteArrayLiteral("EglFSLoadKeymap"); }
 
-    void loadKeymap(const QString &file);
-
-private slots:
-    void addKeyboard(const QString &deviceNode = QString());
-    void removeKeyboard(const QString &deviceNode);
-
-private:
-    QString m_spec;
-    QHash<QString,QEvdevKeyboardHandler*> m_keyboards;
-    QDeviceDiscovery *m_deviceDiscovery;
-    QString m_defaultKeymapFile;
+    static void loadKeymap(const QString &filename)
+    {
+        LoadKeymapType func = reinterpret_cast<LoadKeymapType>(QGuiApplication::platformFunction(loadKeymapTypeIdentifier()));
+        if (func)
+            func(filename);
+    }
 };
+
 
 QT_END_NAMESPACE
 
-#endif // QEVDEVKEYBOARDMANAGER_P_H
+#endif // QEGLFSFUNCTIONS_H

@@ -53,6 +53,7 @@ class QEGLPlatformScreen;
 class QEGLPlatformWindow;
 class QEGLPlatformContext;
 class QFbVtHandler;
+class QEvdevKeyboardManager;
 
 class QEGLPlatformIntegration : public QPlatformIntegration, public QPlatformNativeInterface
 {
@@ -85,6 +86,8 @@ public:
     void *nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context) Q_DECL_OVERRIDE;
     NativeResourceForContextFunction nativeResourceFunctionForContext(const QByteArray &resource) Q_DECL_OVERRIDE;
 
+    QFunctionPointer platformFunction(const QByteArray &function) const Q_DECL_OVERRIDE;
+
 protected:
     virtual QEGLPlatformScreen *createScreen() const = 0;
     virtual QEGLPlatformWindow *createWindow(QWindow *window) const = 0;
@@ -101,12 +104,15 @@ protected:
     void createInputHandlers();
 
 private:
+    static void loadKeymapStatic(const QString &filename);
+
     QEGLPlatformScreen *m_screen;
     EGLDisplay m_display;
     QPlatformInputContext *m_inputContext;
     QScopedPointer<QPlatformFontDatabase> m_fontDb;
     QScopedPointer<QPlatformServices> m_services;
     QScopedPointer<QFbVtHandler> m_vtHandler;
+    QEvdevKeyboardManager *m_kbdMgr;
 };
 
 QT_END_NAMESPACE

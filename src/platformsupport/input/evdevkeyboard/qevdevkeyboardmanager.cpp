@@ -113,7 +113,7 @@ void QEvdevKeyboardManager::addKeyboard(const QString &deviceNode)
 #endif
 
     QEvdevKeyboardHandler *keyboard;
-    keyboard = QEvdevKeyboardHandler::create(deviceNode, m_spec);
+    keyboard = QEvdevKeyboardHandler::create(deviceNode, m_spec, m_defaultKeymapFile);
     if (keyboard)
         m_keyboards.insert(deviceNode, keyboard);
     else
@@ -129,6 +129,30 @@ void QEvdevKeyboardManager::removeKeyboard(const QString &deviceNode)
         QEvdevKeyboardHandler *keyboard = m_keyboards.value(deviceNode);
         m_keyboards.remove(deviceNode);
         delete keyboard;
+    }
+}
+
+void QEvdevKeyboardManager::loadKeymap(const QString &file)
+{
+    m_defaultKeymapFile = file;
+
+    if (file.isEmpty()) {
+        // Restore the default, which is either the built-in keymap or
+        // the one given in the plugin spec.
+        QString keymapFromSpec;
+        foreach (const QString &arg, m_spec.split(QLatin1Char(':'))) {
+            if (arg.startsWith(QLatin1String("keymap=")))
+                keymapFromSpec = arg.mid(7);
+        }
+        foreach (QEvdevKeyboardHandler *handler, m_keyboards) {
+            if (keymapFromSpec.isEmpty())
+                handler->unloadKeymap();
+            else
+                handler->loadKeymap(keymapFromSpec);
+        }
+    } else {
+        foreach (QEvdevKeyboardHandler *handler, m_keyboards)
+            handler->loadKeymap(file);
     }
 }
 

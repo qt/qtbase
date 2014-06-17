@@ -43,6 +43,7 @@
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QOffscreenSurface>
 #include <QtGui/QGuiApplication>
+#include <QtGui/private/qguiapplication_p.h>
 #include <qpa/qwindowsysteminterface.h>
 #include <qpa/qplatforminputcontextfactory_p.h>
 
@@ -56,6 +57,8 @@
 #include <QtPlatformSupport/private/qevdevkeyboardmanager_p.h>
 #include <QtPlatformSupport/private/qevdevtouch_p.h>
 #endif
+
+#include <QtPlatformHeaders/qeglfsfunctions.h>
 
 #include "qeglplatformintegration_p.h"
 #include "qeglplatformcontext_p.h"
@@ -93,7 +96,8 @@ QEGLPlatformIntegration::QEGLPlatformIntegration()
       m_display(EGL_NO_DISPLAY),
       m_inputContext(0),
       m_fontDb(new QGenericUnixFontDatabase),
-      m_services(new QGenericUnixServices)
+      m_services(new QGenericUnixServices),
+      m_kbdMgr(0)
 {
 }
 
@@ -314,10 +318,33 @@ QPlatformNativeInterface::NativeResourceForContextFunction QEGLPlatformIntegrati
     return 0;
 }
 
+QFunctionPointer QEGLPlatformIntegration::platformFunction(const QByteArray &function) const
+{
+#if !defined(QT_NO_EVDEV) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_NO_SDK))
+    if (function == QEglFSFunctions::loadKeymapTypeIdentifier())
+        return QFunctionPointer(loadKeymapStatic);
+#endif
+
+    return 0;
+}
+
+void QEGLPlatformIntegration::loadKeymapStatic(const QString &filename)
+{
+#if !defined(QT_NO_EVDEV) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_NO_SDK))
+    QEGLPlatformIntegration *self = static_cast<QEGLPlatformIntegration *>(QGuiApplicationPrivate::platformIntegration());
+    if (self->m_kbdMgr)
+        self->m_kbdMgr->loadKeymap(filename);
+    else
+        qWarning("QEGLPlatformIntegration: Cannot load keymap, no keyboard handler found");
+#else
+    Q_UNUSED(filename);
+#endif
+}
+
 void QEGLPlatformIntegration::createInputHandlers()
 {
 #if !defined(QT_NO_EVDEV) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_NO_SDK))
-    new QEvdevKeyboardManager(QLatin1String("EvdevKeyboard"), QString() /* spec */, this);
+    m_kbdMgr = new QEvdevKeyboardManager(QLatin1String("EvdevKeyboard"), QString() /* spec */, this);
     QEvdevMouseManager *mouseMgr = new QEvdevMouseManager(QLatin1String("EvdevMouse"), QString() /* spec */, this);
     Q_FOREACH (QScreen *screen, QGuiApplication::screens()) {
         QEGLPlatformCursor *cursor = static_cast<QEGLPlatformCursor *>(screen->handle()->cursor());
