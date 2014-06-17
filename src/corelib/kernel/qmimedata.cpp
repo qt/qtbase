@@ -294,7 +294,7 @@ QVariant QMimeDataPrivate::retrieveTypedData(const QString &format, QVariant::Ty
     data is encoded.
 
     On Windows, the MIME format does not always map directly to the
-    clipboard formats. Qt provides QWindowsMime to map clipboard
+    clipboard formats. Qt provides QWinMime to map clipboard
     formats to open-standard MIME formats. Similarly, the
     QMacPasteboardMime maps MIME to Mac flavors.
 
