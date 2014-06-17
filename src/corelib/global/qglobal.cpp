@@ -1909,7 +1909,7 @@ QSysInfo::WinVersion QSysInfo::windowsVersion()
     if (winver)
         return winver;
 #ifdef Q_OS_WINRT
-    winver = QSysInfo::WV_WINDOWS8;
+    winver = QSysInfo::WV_WINDOWS8_1;
 #else
     winver = QSysInfo::WV_NT;
     const OSVERSIONINFO osver = winOsVersion();
