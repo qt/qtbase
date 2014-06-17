@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -2055,7 +2055,7 @@ void QComboBoxPrivate::setCurrentIndex(const QModelIndex &mi)
     if (indexChanged)
         currentIndex = QPersistentModelIndex(normalized);
     if (lineEdit) {
-        QString newText = q->itemText(normalized.row());
+        const QString newText = itemText(normalized);
         if (lineEdit->text() != newText)
             lineEdit->setText(newText);
         updateLineEditGeometry();
