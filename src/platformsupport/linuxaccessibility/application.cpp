@@ -47,6 +47,7 @@
 #include <qdebug.h>
 
 #include "deviceeventcontroller_adaptor.h"
+#include "atspi/atspi-constants.h"
 
 //#define KEYBOARD_DEBUG
 
@@ -62,7 +63,7 @@ QT_BEGIN_NAMESPACE
 */
 
 QSpiApplicationAdaptor::QSpiApplicationAdaptor(const QDBusConnection &connection, QObject *parent)
-    : QObject(parent), dbusConnection(connection)
+    : QObject(parent), dbusConnection(connection), inCapsLock(false)
 {
 }
 
@@ -107,13 +108,14 @@ bool QSpiApplicationAdaptor::eventFilter(QObject *target, QEvent *event)
         de.id = keyEvent->nativeVirtualKey();
         de.hardwareCode = keyEvent->nativeScanCode();
 
-        de.modifiers = keyEvent->nativeModifiers();
         de.timestamp = QDateTime::currentMSecsSinceEpoch();
 
         if (keyEvent->key() == Qt::Key_Tab)
             de.text = QStringLiteral("Tab");
         else if (keyEvent->key() == Qt::Key_Backtab)
             de.text = QStringLiteral("Backtab");
+        else if (keyEvent->key() == Qt::Key_Control)
+            de.text = QStringLiteral("Control_L");
         else if (keyEvent->key() == Qt::Key_Left)
             de.text = (keyEvent->modifiers() & Qt::KeypadModifier) ? QStringLiteral("KP_Left") : QStringLiteral("Left");
         else if (keyEvent->key() == Qt::Key_Right)
@@ -142,9 +144,13 @@ bool QSpiApplicationAdaptor::eventFilter(QObject *target, QEvent *event)
             de.text = QStringLiteral("Escape");
         else if (keyEvent->key() == Qt::Key_Space)
             de.text = QStringLiteral("space");
-        else if (keyEvent->key() == Qt::Key_CapsLock)
+        else if (keyEvent->key() == Qt::Key_CapsLock) {
             de.text = QStringLiteral("Caps_Lock");
-        else if (keyEvent->key() == Qt::Key_NumLock)
+            if (event->type() == QEvent::KeyPress)
+                inCapsLock = true;
+            else
+                inCapsLock = false;
+        } else if (keyEvent->key() == Qt::Key_NumLock)
             de.text = QStringLiteral("Num_Lock");
         else if (keyEvent->key() == Qt::Key_Insert)
             de.text = QStringLiteral("Insert");
@@ -155,18 +161,28 @@ bool QSpiApplicationAdaptor::eventFilter(QObject *target, QEvent *event)
         // Long term the spec will hopefully change to just use keycodes.
         de.isText = !de.text.isEmpty();
 
+        de.modifiers = 0;
+        if (!inCapsLock && keyEvent->modifiers() & Qt::ShiftModifier)
+            de.modifiers |= 1 << ATSPI_MODIFIER_SHIFT;
+        if (inCapsLock && (keyEvent->key() != Qt::Key_CapsLock))
+            de.modifiers |= 1 << ATSPI_MODIFIER_SHIFTLOCK;
+        if ((keyEvent->modifiers() & Qt::ControlModifier) && (keyEvent->key() != Qt::Key_Control))
+            de.modifiers |= 1 << ATSPI_MODIFIER_CONTROL;
+        if ((keyEvent->modifiers() & Qt::AltModifier) && (keyEvent->key() != Qt::Key_Alt))
+            de.modifiers |= 1 << ATSPI_MODIFIER_ALT;
+
 #ifdef KEYBOARD_DEBUG
-        qDebug() << QStringLiteral("Key event text: ") << event->type() << de.isText << QStringLiteral(" ") << de.text
-                 << QStringLiteral(" hardware code: ") << de.hardwareCode
-                 << QStringLiteral(" native sc: ") << keyEvent->nativeScanCode()
-                 << QStringLiteral(" native mod: ") << keyEvent->nativeModifiers()
-                 << QStringLiteral("native virt: ") << keyEvent->nativeVirtualKey();
+        qDebug() << QStringLiteral("Key event text:") << event->type() << de.text
+                 << QStringLiteral("native virtual key:") << de.id
+                 << QStringLiteral("hardware code/scancode:") << de.hardwareCode
+                 << QStringLiteral("modifiers:") << de.modifiers
+                 << QStringLiteral("text:") << de.text;
 #endif
 
         QDBusMessage m = QDBusMessage::createMethodCall(QStringLiteral("org.a11y.atspi.Registry"),
                                                         QStringLiteral("/org/a11y/atspi/registry/deviceeventcontroller"),
                                                         QStringLiteral("org.a11y.atspi.DeviceEventController"), QStringLiteral("NotifyListenersSync"));
-        m.setArguments(QVariantList() <<QVariant::fromValue(de));
+        m.setArguments(QVariantList() << QVariant::fromValue(de));
 
         // FIXME: this is critical, the timeout should probably be pretty low to allow normal processing
         int timeout = 100;
@@ -175,9 +191,6 @@ bool QSpiApplicationAdaptor::eventFilter(QObject *target, QEvent *event)
         if (sent) {
             //queue the event and send it after callback
             keyEvents.enqueue(QPair<QPointer<QObject>, QKeyEvent*> (QPointer<QObject>(target), copyKeyEvent(keyEvent)));
-#ifdef KEYBOARD_DEBUG
-            qDebug() << QStringLiteral("Sent key: ") << de.text;
-#endif
             return true;
         }
     }

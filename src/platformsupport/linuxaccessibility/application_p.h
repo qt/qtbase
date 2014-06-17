@@ -78,6 +78,7 @@ private:
 
     QQueue<QPair<QPointer<QObject>, QKeyEvent*> > keyEvents;
     QDBusConnection dbusConnection;
+    bool inCapsLock;
 };
 
 QT_END_NAMESPACE
