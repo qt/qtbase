@@ -421,14 +421,22 @@ void tst_QAccessibilityLinux::testTextEdit()
     QCOMPARE(callResult.at(2).toInt(), 17);
 
     // Check if at least CharacterExtents and RangeExtents give a consistent result
-    QDBusReply<QRect> replyRect20 = textInterface->call(QDBus::Block, "GetCharacterExtents", 20, ATSPI_COORD_TYPE_SCREEN);
-    QVERIFY(replyRect20.isValid());
-    QRect r1 = replyRect20.value();
-    QDBusReply<QRect> replyRect21  = textInterface->call(QDBus::Block, "GetCharacterExtents", 21, ATSPI_COORD_TYPE_SCREEN);
-    QRect r2 = replyRect21.value();
-    QDBusReply<QRect> reply = textInterface->call(QDBus::Block, "GetRangeExtents", 20, 21, ATSPI_COORD_TYPE_SCREEN);
-    QRect rect = reply.value();
-    QCOMPARE(rect, r1|r2);
+
+    QDBusMessage replyRect20 = textInterface->call(QDBus::Block, "GetCharacterExtents", 20, ATSPI_COORD_TYPE_SCREEN);
+    QCOMPARE(replyRect20.type(), QDBusMessage::ReplyMessage);
+    QCOMPARE(replyRect20.signature(), QStringLiteral("iiii"));
+    callResult = replyRect20.arguments();
+    QRect r1 = QRect(callResult.at(0).toInt(), callResult.at(1).toInt(), callResult.at(2).toInt(), callResult.at(3).toInt());
+    QDBusMessage replyRect21  = textInterface->call(QDBus::Block, "GetCharacterExtents", 21, ATSPI_COORD_TYPE_SCREEN);
+    QCOMPARE(replyRect21.type(), QDBusMessage::ReplyMessage);
+    QCOMPARE(replyRect21.signature(), QStringLiteral("iiii"));
+    callResult = replyRect21.arguments();
+    QRect r2 = QRect(callResult.at(0).toInt(), callResult.at(1).toInt(), callResult.at(2).toInt(), callResult.at(3).toInt());
+
+    QDBusMessage replyRange = textInterface->call(QDBus::Block, "GetRangeExtents", 20, 21, ATSPI_COORD_TYPE_SCREEN);
+    callResult = replyRange.arguments();
+    QRect rectRangeExtents = QRect(callResult.at(0).toInt(), callResult.at(1).toInt(), callResult.at(2).toInt(), callResult.at(3).toInt());
+    QCOMPARE(rectRangeExtents, r1|r2);
 
     m_window->clearChildren();
     delete textInterface;

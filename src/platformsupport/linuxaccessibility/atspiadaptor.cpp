@@ -1952,17 +1952,17 @@ QVariantList AtSpiAdaptor::getAttributeValue(QAccessibleInterface *interface, in
     return list;
 }
 
-QRect AtSpiAdaptor::getCharacterExtents(QAccessibleInterface *interface, int offset, uint coordType) const
+QList<QVariant> AtSpiAdaptor::getCharacterExtents(QAccessibleInterface *interface, int offset, uint coordType) const
 {
     QRect rect = interface->textInterface()->characterRect(offset);
 
     if (coordType == ATSPI_COORD_TYPE_WINDOW)
         rect = translateRectToWindowCoordinates(interface, rect);
 
-    return rect;
+    return QList<QVariant>() << rect.x() << rect.y() << rect.width() << rect.height();
 }
 
-QRect AtSpiAdaptor::getRangeExtents(QAccessibleInterface *interface,
+QList<QVariant> AtSpiAdaptor::getRangeExtents(QAccessibleInterface *interface,
                                             int startOffset, int endOffset, uint coordType) const
 {
     if (endOffset == -1)
@@ -1970,7 +1970,7 @@ QRect AtSpiAdaptor::getRangeExtents(QAccessibleInterface *interface,
 
     QAccessibleTextInterface *textInterface = interface->textInterface();
     if (endOffset <= startOffset || !textInterface)
-        return QRect();
+        return QList<QVariant>() << -1 << -1 << 0 << 0;
 
     QRect rect = textInterface->characterRect(startOffset);
     for (int i=startOffset + 1; i <= endOffset; i++)
@@ -1980,7 +1980,7 @@ QRect AtSpiAdaptor::getRangeExtents(QAccessibleInterface *interface,
     if (coordType == ATSPI_COORD_TYPE_WINDOW)
         rect = translateRectToWindowCoordinates(interface, rect);
 
-    return rect;
+    return QList<QVariant>() << rect.x() << rect.y() << rect.width() << rect.height();
 }
 
 QRect AtSpiAdaptor::translateRectToWindowCoordinates(QAccessibleInterface *interface, const QRect &rect)
