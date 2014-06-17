@@ -166,8 +166,6 @@ contains(CONFIG, plugin) {
     return()
 }
 
-contains($$list(network sql widgets gui), $$MODULE): CMAKE_LOAD_PLUGINS = true
-
 unix:contains(QT_CONFIG, reduce_relocations):CMAKE_ADD_FPIE_FLAGS = "true"
 
 CMAKE_MKSPEC = $$[QMAKE_XSPEC]
