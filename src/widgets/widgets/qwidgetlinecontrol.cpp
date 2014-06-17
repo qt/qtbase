@@ -187,6 +187,7 @@ void QWidgetLineControl::paste(QClipboard::Mode clipboardMode)
 */
 void QWidgetLineControl::commitPreedit()
 {
+#ifndef QT_NO_IM
     if (!composeMode())
         return;
 
@@ -198,6 +199,7 @@ void QWidgetLineControl::commitPreedit()
     setPreeditArea(-1, QString());
     m_textLayout.clearAdditionalFormats();
     updateDisplayText(/*force*/ true);
+#endif
 }
 
 

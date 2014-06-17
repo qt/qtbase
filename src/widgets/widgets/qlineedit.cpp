@@ -1528,13 +1528,16 @@ void QLineEdit::mouseMoveEvent(QMouseEvent * e)
 #else
             const bool select = (d->imHints & Qt::ImhNoPredictiveText);
 #endif
+#ifndef QT_NO_IM
             if (d->control->composeMode() && select) {
                 int startPos = d->xToPos(d->mousePressPos.x());
                 int currentPos = d->xToPos(e->pos().x());
                 if (startPos != currentPos)
                     d->control->setSelection(startPos, currentPos - startPos);
 
-            } else {
+            } else
+#endif
+            {
                 d->control->moveCursor(d->xToPos(e->pos().x()), select);
             }
         }
@@ -1585,6 +1588,7 @@ void QLineEdit::mouseDoubleClickEvent(QMouseEvent* e)
         int position = d->xToPos(e->pos().x());
 
         // exit composition mode
+#ifndef QT_NO_IM
         if (d->control->composeMode()) {
             int preeditPos = d->control->cursor();
             int posInPreedit = position - d->control->cursor();
@@ -1609,6 +1613,7 @@ void QLineEdit::mouseDoubleClickEvent(QMouseEvent* e)
                 position += (sizeChange - preeditLength);
             }
         }
+#endif
 
         if (position >= 0)
             d->control->selectWordAtPos(position);
