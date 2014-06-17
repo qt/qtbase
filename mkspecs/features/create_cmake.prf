@@ -291,3 +291,5 @@ exists($$cmake_macros_file.input) {
 }
 
 cmake_qt5_module_files.path = $$[QT_INSTALL_LIBS]/cmake/Qt5$${CMAKE_MODULE_NAME}
+
+!exists($$MODULE_BASE_INDIR/tests/auto/cmake): error("Missing CMake tests.")
