@@ -1662,11 +1662,14 @@ void QImage::fill(uint pixel)
         return;
     }
 
-    if (d->format == Format_RGB32 || d->format == Format_RGBX8888)
+    if (d->format == Format_RGB32)
         pixel |= 0xff000000;
-
-    if (d->format == Format_RGBX8888 || d->format == Format_RGBA8888 || d->format == Format_RGBA8888_Premultiplied)
-        pixel = ARGB2RGBA(pixel);
+    if (d->format == Format_RGBX8888)
+#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
+        pixel |= 0xff000000;
+#else
+        pixel |= 0x000000ff;
+#endif
 
     qt_rectfill<uint>(reinterpret_cast<uint*>(d->data), pixel,
                       0, 0, d->width, d->height, d->bytes_per_line);
@@ -1716,22 +1719,27 @@ void QImage::fill(const QColor &color)
     if (!d)
         return;
 
-    if (d->depth == 32) {
-        uint pixel = color.rgba();
-        if (d->format == QImage::Format_ARGB32_Premultiplied || d->format == QImage::Format_RGBA8888_Premultiplied)
-            pixel = qPremultiply(pixel);
-        fill((uint) pixel);
-
-    } else if (d->format == QImage::Format_RGB16) {
+    switch (d->format) {
+    case QImage::Format_RGB32:
+    case QImage::Format_ARGB32:
+        fill(color.rgba());
+        break;
+    case QImage::Format_ARGB32_Premultiplied:
+        fill(qPremultiply(color.rgba()));
+        break;
+    case QImage::Format_RGBX8888:
+        fill(ARGB2RGBA(color.rgba() | 0xff000000));
+        break;
+    case QImage::Format_RGBA8888:
+        fill(ARGB2RGBA(color.rgba()));
+        break;
+    case QImage::Format_RGBA8888_Premultiplied:
+        fill(ARGB2RGBA(qPremultiply(color.rgba())));
+        break;
+    case QImage::Format_RGB16:
         fill((uint) qConvertRgb32To16(color.rgba()));
-
-    } else if (d->depth == 1) {
-        if (color == Qt::color1)
-            fill((uint) 1);
-        else
-            fill((uint) 0);
-
-    } else if (d->depth == 8) {
+        break;
+    case QImage::Format_Indexed8: {
         uint pixel = 0;
         for (int i=0; i<d->colortable.size(); ++i) {
             if (color.rgba() == d->colortable.at(i)) {
@@ -1740,17 +1748,21 @@ void QImage::fill(const QColor &color)
             }
         }
         fill(pixel);
-
-    } else {
+        break;
+    }
+    case QImage::Format_Mono:
+    case QImage::Format_MonoLSB:
+        if (color == Qt::color1)
+            fill((uint) 1);
+        else
+            fill((uint) 0);
+        break;
+    default: {
         QPainter p(this);
         p.setCompositionMode(QPainter::CompositionMode_Source);
         p.fillRect(rect(), color);
-    }
-
+    }}
 }
-
-
-
 
 
 

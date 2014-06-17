@@ -146,6 +146,9 @@ private slots:
 
     void fillRGB888();
 
+    void fillPixel_data();
+    void fillPixel();
+
     void rgbSwapped_data();
     void rgbSwapped();
 
@@ -2052,6 +2055,42 @@ void tst_QImage::fillRGB888()
 
         QCOMPARE(actual.pixel(0, 0), expected.pixel(0, 0));
     }
+}
+
+void tst_QImage::fillPixel_data()
+{
+    QTest::addColumn<QImage::Format>("format");
+    QTest::addColumn<uint>("color");
+    QTest::addColumn<uint>("pixelValue");
+
+    QTest::newRow("RGB16, transparent") << QImage::Format_RGB16 << 0x0u << 0xff000000u;
+    QTest::newRow("RGB32, transparent") << QImage::Format_RGB32 << 0x0u << 0xff000000u;
+    QTest::newRow("RGBx8888, transparent") << QImage::Format_RGBX8888 << 0x0u << 0xff000000u;
+    QTest::newRow("ARGB32, transparent") << QImage::Format_ARGB32 << 0x0u << 0x00000000u;
+    QTest::newRow("ARGB32pm, transparent") << QImage::Format_ARGB32_Premultiplied << 0x0u << 0x00000000u;
+    QTest::newRow("RGBA8888pm, transparent") << QImage::Format_RGBA8888_Premultiplied << 0x0u << 0x00000000u;
+
+    QTest::newRow("RGB16, red") << QImage::Format_RGB16 << (uint)qConvertRgb32To16(0xffff0000) << 0xffff0000u;
+    QTest::newRow("RGB32, red") << QImage::Format_RGB32 << 0xffff0000u << 0xffff0000u;
+    QTest::newRow("ARGB32, red") << QImage::Format_ARGB32 << 0xffff0000u << 0xffff0000u;
+    QTest::newRow("RGBA8888, red") << QImage::Format_RGBA8888 << 0xff0000ffu << 0xffff0000u;
+
+    QTest::newRow("RGB32, semi-red") << QImage::Format_RGB32 << 0x80ff0000u << 0xffff0000u;
+    QTest::newRow("ARGB32, semi-red") << QImage::Format_ARGB32 << 0x80ff0000u << 0x80ff0000u;
+    QTest::newRow("ARGB32pm, semi-red") << QImage::Format_ARGB32 << 0x80800000u << 0x80800000u;
+    QTest::newRow("RGBA8888pm, semi-red") << QImage::Format_RGBA8888_Premultiplied << 0x80000080u << 0x80800000u;
+}
+
+void tst_QImage::fillPixel()
+{
+    QFETCH(QImage::Format, format);
+    QFETCH(uint, color);
+    QFETCH(uint, pixelValue);
+
+    QImage image(1, 1, format);
+
+    image.fill(color);
+    QCOMPARE(image.pixel(0, 0), pixelValue);
 }
 
 void tst_QImage::rgbSwapped_data()
