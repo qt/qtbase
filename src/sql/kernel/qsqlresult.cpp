@@ -704,12 +704,6 @@ void QSqlResult::bindValue(int index, const QVariant& val, QSql::ParamType param
     Binds the value \a val of parameter type \a paramType to the \a
     placeholder name in the current record (row).
 
-   Values cannot be bound to multiple locations in the query, eg:
-   \code
-   INSERT INTO testtable (id, name, samename) VALUES (:id, :name, :name)
-   \endcode
-   Binding to name will bind to the first :name, but not the second.
-
     \note Binding an undefined placeholder will result in undefined behavior.
 
     \sa QSqlQuery::bindValue()
