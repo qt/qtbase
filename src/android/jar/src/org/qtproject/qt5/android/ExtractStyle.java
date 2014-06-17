@@ -168,6 +168,8 @@ public class ExtractStyle {
     final int View_minHeight = getField(styleableClass,"View_minHeight");
     final int View_onClick = getField(styleableClass,"View_onClick");
     final int View_overScrollMode = getField(styleableClass,"View_overScrollMode");
+    final int View_paddingStart = getField(styleableClass,"View_paddingStart");
+    final int View_paddingEnd = getField(styleableClass,"View_paddingEnd");
 
     final int TextAppearance_textColorHighlight = getField(styleableClass,"TextAppearance_textColorHighlight");
     final int TextAppearance_textColor = getField(styleableClass,"TextAppearance_textColor");
@@ -1014,6 +1016,10 @@ public class ExtractStyle {
                     json.put("View_onClick", a.getString(attr));
                 else if (attr == View_overScrollMode)
                     json.put("View_overScrollMode", a.getInt(attr, 1));
+                else if (attr == View_paddingStart)
+                    json.put("View_paddingStart", a.getDimensionPixelSize(attr, 0));
+                else if (attr == View_paddingEnd)
+                    json.put("View_paddingEnd", a.getDimensionPixelSize(attr, 0));
             }
             a.recycle();
         } catch (Exception e) {
@@ -1567,6 +1573,29 @@ public class ExtractStyle {
         }
     }
 
+    void extractTabBar(SimpleJsonWriter writer, String styleName, String qtClass)
+    {
+        JSONObject json = extractTextAppearanceInformations(styleName, qtClass, null, -1);
+        try {
+            Class<?> attrClass = Class.forName("android.R$attr");
+            int styleId = attrClass.getDeclaredField(styleName).getInt(null);
+
+            int[] styleAttrs = (int[]) styleableClass.getDeclaredField("LinearLayout").get(null);
+            TypedArray a = m_theme.obtainStyledAttributes(null, styleAttrs, styleId, 0);
+
+            Drawable d = a.getDrawable(getField(styleableClass,"LinearLayout_divider"));
+            if (d != null)
+                json.put("LinearLayout_divider", getDrawable(d, styleName + "_LinearLayout_divider"));
+            json.put("LinearLayout_showDividers", a.getInt(getField(styleableClass, "LinearLayout_showDividers"), 0));
+            json.put("LinearLayout_dividerPadding", a.getDimensionPixelSize(getField(styleableClass, "LinearLayout_dividerPadding"), 0));
+
+            a.recycle();
+            writer.name(styleName).value(json);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public ExtractStyle(Context context, String extractPath)
     {
 //        Log.i(MinistroService.TAG, "Extract " + extractPath);
@@ -1609,6 +1638,9 @@ public class ExtractStyle {
                   extractCalendar(jsonWriter, "calendarViewStyle", "QCalendarWidget");
                   extractToolBar(jsonWriter, "actionBarStyle", "QToolBar");
                   jsonWriter.name("actionButtonStyle").value(extractTextAppearanceInformations("actionButtonStyle", "QToolButton", null, -1));
+                  jsonWriter.name("actionBarTabTextStyle").value(extractTextAppearanceInformations("actionBarTabTextStyle", null, null, -1));
+                  jsonWriter.name("actionBarTabStyle").value(extractTextAppearanceInformations("actionBarTabStyle", null, null, -1));
+                  extractTabBar(jsonWriter, "actionBarTabBarStyle", "QTabBar");
               }
           } catch (Exception e) {
               e.printStackTrace();
