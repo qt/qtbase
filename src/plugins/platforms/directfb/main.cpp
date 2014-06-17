@@ -75,7 +75,8 @@ QPlatformIntegration * QDirectFbIntegrationPlugin::create(const QString& system,
     if (!integration)
         return 0;
 
-    integration->initialize();
+    integration->connectToDirectFb();
+
     return integration;
 }
 
