@@ -171,6 +171,7 @@ bool QGuiApplicationPrivate::noGrab = false;
 static qreal fontSmoothingGamma = 1.7;
 
 extern void qRegisterGuiVariant();
+extern void qRegisterGuiGetInterpolator();
 extern void qInitDrawhelperAsm();
 extern void qInitImageConversions();
 
@@ -1273,6 +1274,9 @@ void QGuiApplicationPrivate::init()
 
     // trigger registering of QVariant's GUI types
     qRegisterGuiVariant();
+
+    // trigger registering of animation interpolators
+    qRegisterGuiGetInterpolator();
 
     QWindowSystemInterfacePrivate::eventTime.start();
 
