@@ -1,0 +1,62 @@
+Qt 5.3.1 is a bug-fix release. It maintains both forward and backward
+compatibility (source and binary) with Qt 5.3.0.
+
+For more details, refer to the online documentation included in this
+distribution. The documentation is also available online:
+
+  http://qt-project.org/doc/qt-5.3
+
+The Qt version 5.3 series is binary compatible with the 5.2.x series.
+Applications compiled for 5.2 will continue to run with 5.3.
+
+Some of the changes listed in this file include issue tracking numbers
+corresponding to tasks in the Qt Bug Tracker:
+
+  http://bugreports.qt-project.org/
+
+Each of these identifiers can be entered in the bug tracker to obtain more
+information about a particular change.
+
+****************************************************************************
+*                          Library                                         *
+****************************************************************************
+
+QtCore
+------
+
+ - QAbstractProxyModel:
+   * Fixed QAbstractProxyModel::sibling to work in the same manner as the
+     Qt4 code used to behave. Previously, Qt5's implementation would treat
+     the row and column as positions in the source model instead of a
+     position in the proxy itself.
+
+QtGui
+-----
+
+ - Text:
+   * [QTBUG-36083] Respect QFont::fixedPitch() for fallbacks when font
+     family cannot be matched.
+   * [QTBUG-37190] Fixed crash when trying to load a font from invalid
+     data.
+
+QtWidgets
+---------
+
+ - QMenu:
+   * [QTBUG-38498] Accessibility: Menus are now read by screen readers
+     with more reliability.
+
+****************************************************************************
+*                      Platform Specific Changes                           *
+****************************************************************************
+
+Android
+-------
+
+ - [QTBUG-38960] Fixed regression where there would be flickering on
+   startup and shutdown of the application.
+ - [QTBUG-35975] Fixed repaint issues in drag and drop.
+
+ - Text:
+   * [QTBUG-37844] Fall back to Droid Sans Mono for QFont::Courier style
+     hint.
