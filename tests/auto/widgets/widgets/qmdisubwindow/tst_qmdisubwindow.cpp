@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -58,6 +58,7 @@
 #include <QStyle>
 #include <QStyleOptionTitleBar>
 #include <QPushButton>
+#include <QScreen>
 #include <QSizeGrip>
 
 #include "../../../qtest-config.h"
@@ -182,6 +183,7 @@ private slots:
     void mouseDoubleClick();
     void setSystemMenu();
     void restoreFocus();
+    void restoreFocusOverCreation();
     void changeFocusWithTab();
     void closeEvent();
     void setWindowTitle();
@@ -1126,6 +1128,7 @@ void tst_QMdiSubWindow::restoreFocus()
     expectedFocusWindow->showMinimized();
     qApp->processEvents();
     QVERIFY(expectedFocusWindow->isMinimized());
+    qDebug() << expectedFocusWindow<< qApp->focusWidget();
     QCOMPARE(qApp->focusWidget(), static_cast<QWidget *>(expectedFocusWindow));
 
     // Minimized -> normal
@@ -1176,6 +1179,48 @@ void tst_QMdiSubWindow::restoreFocus()
     qApp->processEvents();
     QVERIFY(!complexWindow->isMinimized());
     QCOMPARE(qApp->focusWidget(), static_cast<QWidget *>(expectedFocusWindow));
+}
+
+class MultiWidget : public QWidget {
+public:
+    explicit MultiWidget(QWidget *parent = 0) : QWidget(parent)
+        , m_lineEdit1(new QLineEdit(this)), m_lineEdit2(new QLineEdit(this))
+    {
+        QVBoxLayout *lt = new QVBoxLayout(this);
+        lt->addWidget(m_lineEdit1);
+        lt->addWidget(m_lineEdit2);
+    }
+
+    QLineEdit *m_lineEdit1;
+    QLineEdit *m_lineEdit2;
+};
+
+void tst_QMdiSubWindow::restoreFocusOverCreation()
+{
+    // QTBUG-38378, verify that the focus child of a subwindow
+    // is not "forgotten" when adding yet another subwindow.
+    QMdiArea mdiArea;
+    mdiArea.resize(800, 800);
+    mdiArea.move(QGuiApplication::primaryScreen()->availableGeometry().center() - QPoint(400, 400));
+    mdiArea.setWindowTitle(QStringLiteral("restoreFocusOverCreation"));
+
+    MultiWidget *subWidget1 = new MultiWidget;
+    MultiWidget *subWidget2 = new MultiWidget;
+
+    QMdiSubWindow *subWindow1 = mdiArea.addSubWindow(subWidget1);
+    subWidget1->m_lineEdit2->setFocus();
+    subWindow1->show();
+    mdiArea.show();
+    QApplication::setActiveWindow(&mdiArea);
+    QVERIFY(QTest::qWaitForWindowActive(&mdiArea));
+    QCOMPARE(QApplication::focusWidget(), subWidget1->m_lineEdit2);
+
+    QMdiSubWindow *subWindow2 = mdiArea.addSubWindow(subWidget2);
+    subWindow2->show();
+    QTRY_COMPARE(QApplication::focusWidget(), subWidget2->m_lineEdit1);
+
+    mdiArea.setActiveSubWindow(subWindow1);
+    QTRY_COMPARE(QApplication::focusWidget(), subWidget1->m_lineEdit2);
 }
 
 void tst_QMdiSubWindow::changeFocusWithTab()

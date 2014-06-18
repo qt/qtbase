@@ -266,7 +266,8 @@ public:
     QPalette desktopPalette() const;
     void updateActions();
     void setFocusWidget();
-    void restoreFocus();
+    bool restoreFocus();
+    void storeFocusWidget();
     void setWindowFlags(Qt::WindowFlags windowFlags);
     void setVisible(WindowStateAction, bool visible = true);
 #ifndef QT_NO_ACTION

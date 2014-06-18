@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -1321,6 +1321,14 @@ void QMdiSubWindowPrivate::setNormalMode()
     updateMask();
 }
 
+inline void QMdiSubWindowPrivate::storeFocusWidget()
+{
+    if (QWidget *focus = QApplication::focusWidget()) {
+        if (!restoreFocusWidget && q_func()->isAncestorOf(focus))
+            restoreFocusWidget = focus;
+    }
+}
+
 /*!
     \internal
 */
@@ -1333,8 +1341,7 @@ void QMdiSubWindowPrivate::setMaximizeMode()
     isShadeMode = false;
     isMaximizeMode = true;
 
-    if (!restoreFocusWidget && q->isAncestorOf(QApplication::focusWidget()))
-        restoreFocusWidget = QApplication::focusWidget();
+    storeFocusWidget();
 
 #ifndef QT_NO_SIZEGRIP
     setSizeGripVisible(false);
@@ -1436,6 +1443,7 @@ void QMdiSubWindowPrivate::setActive(bool activate, bool changeFocus)
         Qt::WindowStates oldWindowState = q->windowState();
         q->overrideWindowState(q->windowState() & ~Qt::WindowActive);
         if (changeFocus) {
+            storeFocusWidget();
             QWidget *focusWidget = QApplication::focusWidget();
             if (focusWidget && (focusWidget == q || q->isAncestorOf(focusWidget)))
                 focusWidget->clearFocus();
@@ -2026,6 +2034,9 @@ void QMdiSubWindowPrivate::setFocusWidget()
         return;
     }
 
+    if (!(q->windowState() & Qt::WindowMinimized) && restoreFocus())
+        return;
+
     if (QWidget *focusWidget = baseWidget->focusWidget()) {
         if (!focusWidget->hasFocus() && q->isAncestorOf(focusWidget)
                 && focusWidget->isVisible() && !q->isMinimized()
@@ -2048,16 +2059,19 @@ void QMdiSubWindowPrivate::setFocusWidget()
         q->setFocus();
 }
 
-void QMdiSubWindowPrivate::restoreFocus()
+bool QMdiSubWindowPrivate::restoreFocus()
 {
-    if (!restoreFocusWidget)
-        return;
-    if (!restoreFocusWidget->hasFocus() && q_func()->isAncestorOf(restoreFocusWidget)
-            && restoreFocusWidget->isVisible()
-            && restoreFocusWidget->focusPolicy() != Qt::NoFocus) {
-        restoreFocusWidget->setFocus();
+    if (restoreFocusWidget.isNull())
+        return false;
+    QWidget *candidate = restoreFocusWidget;
+    restoreFocusWidget.clear();
+    if (!candidate->hasFocus() && q_func()->isAncestorOf(candidate)
+        && candidate->isVisible()
+        && candidate->focusPolicy() != Qt::NoFocus) {
+        candidate->setFocus();
+        return true;
     }
-    restoreFocusWidget = 0;
+    return candidate->hasFocus();
 }
 
 /*!
@@ -2605,9 +2619,7 @@ void QMdiSubWindow::showShaded()
 
     d->isMaximizeMode = false;
 
-    QWidget *currentFocusWidget = QApplication::focusWidget();
-    if (!d->restoreFocusWidget && isAncestorOf(currentFocusWidget))
-        d->restoreFocusWidget = currentFocusWidget;
+    d->storeFocusWidget();
 
     if (!d->isShadeRequestFromMinimizeMode) {
         d->isShadeMode = true;
@@ -2621,7 +2633,7 @@ void QMdiSubWindow::showShaded()
     // showMinimized() will reset Qt::WindowActive, which makes sense
     // for top level widgets, but in MDI it makes sense to have an
     // active window which is minimized.
-    if (hasFocus() || isAncestorOf(currentFocusWidget))
+    if (hasFocus() || isAncestorOf(QApplication::focusWidget()))
         d->ensureWindowState(Qt::WindowActive);
 
 #ifndef QT_NO_SIZEGRIP
