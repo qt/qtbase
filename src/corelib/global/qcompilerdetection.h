@@ -472,6 +472,7 @@
  *  N1720           Q_COMPILER_STATIC_ASSERT            __cpp_static_assert = 200410
  *  N2258           Q_COMPILER_TEMPLATE_ALIAS
  *  N2659           Q_COMPILER_THREAD_LOCAL
+ *  N2660           Q_COMPILER_THREADSAFE_STATICS
  *  N2765           Q_COMPILER_UDL                      __cpp_user_defined_literals = 200809
  *  N2442           Q_COMPILER_UNICODE_STRINGS          __cpp_unicode_literals = 200710
  *  N2640           Q_COMPILER_UNIFORM_INIT
@@ -490,6 +491,7 @@
 #ifdef Q_CC_INTEL
 #  define Q_COMPILER_RESTRICTED_VLA
 #  define Q_COMPILER_VARIADIC_MACROS // C++11 feature supported as an extension in other modes, too
+#  define Q_COMPILER_THREADSAFE_STATICS
 #  if __INTEL_COMPILER < 1200
 #    define Q_NO_TEMPLATE_FRIENDS
 #  endif
@@ -551,6 +553,7 @@
 #if defined(Q_CC_CLANG) && !defined(Q_CC_INTEL)
 /* General C++ features */
 #  define Q_COMPILER_RESTRICTED_VLA
+#  define Q_COMPILER_THREADSAFE_STATICS
 #  if !__has_feature(cxx_exceptions)
 #    ifndef QT_NO_EXCEPTIONS
 #      define QT_NO_EXCEPTIONS
@@ -705,6 +708,7 @@
 
 #if defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && !defined(Q_CC_CLANG)
 #  define Q_COMPILER_RESTRICTED_VLA
+#  define Q_COMPILER_THREADSAFE_STATICS
 #  if (__GNUC__ * 100 + __GNUC_MINOR__) >= 403
 //   GCC supports binary literals in C, C++98 and C++11 modes
 #    define Q_COMPILER_BINARY_LITERALS
@@ -871,6 +875,13 @@
 #  undef Q_COMPILER_INITIALIZER_LISTS
 #  undef Q_COMPILER_RVALUE_REFS
 #  undef Q_COMPILER_REF_QUALIFIERS
+# endif
+# if defined(Q_COMPILER_THREADSAFE_STATICS) && defined(Q_OS_MAC)
+// Mac OS X: Apple's low-level implementation of the C++ support library
+// (libc++abi.dylib, shared between libstdc++ and libc++) has deadlocks. The
+// C++11 standard requires the deadlocks to be removed, so this will eventually
+// be fixed; for now, let's disable this.
+#  undef Q_COMPILER_THREADSAFE_STATICS
 # endif
 #endif
 
