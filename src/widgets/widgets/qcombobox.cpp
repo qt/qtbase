@@ -2377,6 +2377,16 @@ QSize QComboBox::sizeHint() const
 }
 
 #ifdef Q_OS_OSX
+
+namespace {
+struct IndexSetter {
+    int index;
+    QComboBox *cb;
+
+    void operator()(void) { cb->setCurrentIndex(index); }
+};
+}
+
 /*!
  * \internal
  *
@@ -2390,13 +2400,6 @@ bool QComboBoxPrivate::showNativePopup()
     QPlatformTheme *theme = QGuiApplicationPrivate::instance()->platformTheme();
     if (QPlatformMenu *menu = theme->createPlatformMenu()) {
         int itemsCount = q->count();
-
-        struct IndexSetter {
-            int index;
-            QComboBox *cb;
-
-            void operator()(void) { cb->setCurrentIndex(index); }
-        };
 
         QList<QPlatformMenuItem *> items;
         items.reserve(itemsCount);
