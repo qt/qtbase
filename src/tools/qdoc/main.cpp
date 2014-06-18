@@ -462,6 +462,7 @@ static void processQdocconfFile(const QString &fileName)
         CodeParser *codeParser = CodeParser::parserForHeaderFile(h.key());
         if (codeParser) {
             ++parsed;
+            Generator::debug(QString("Parsing " + h.key()));
             codeParser->parseHeaderFile(config.location(), h.key());
             usedParsers.insert(codeParser);
         }
