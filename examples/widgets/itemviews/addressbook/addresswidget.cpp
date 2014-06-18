@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -163,24 +163,23 @@ void AddressWidget::setupTabs()
 
     for (int i = 0; i < groups.size(); ++i) {
         QString str = groups.at(i);
+        QString regExp = QString("^[%1].*").arg(str);
 
         proxyModel = new QSortFilterProxyModel(this);
         proxyModel->setSourceModel(table);
+        proxyModel->setFilterRegExp(QRegExp(regExp, Qt::CaseInsensitive));
+        proxyModel->setFilterKeyColumn(0);
 
         QTableView *tableView = new QTableView;
         tableView->setModel(proxyModel);
-        tableView->setSortingEnabled(true);
+
         tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
         tableView->horizontalHeader()->setStretchLastSection(true);
         tableView->verticalHeader()->hide();
         tableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
         tableView->setSelectionMode(QAbstractItemView::SingleSelection);
 
-        QString newStr = QString("^[%1].*").arg(str);
-
-        proxyModel->setFilterRegExp(QRegExp(newStr, Qt::CaseInsensitive));
-        proxyModel->setFilterKeyColumn(0);
-        proxyModel->sort(0, Qt::AscendingOrder);
+        tableView->setSortingEnabled(true);
 
         connect(tableView->selectionModel(),
             SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
