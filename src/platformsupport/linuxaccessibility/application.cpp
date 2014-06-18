@@ -170,6 +170,8 @@ bool QSpiApplicationAdaptor::eventFilter(QObject *target, QEvent *event)
             de.modifiers |= 1 << ATSPI_MODIFIER_CONTROL;
         if ((keyEvent->modifiers() & Qt::AltModifier) && (keyEvent->key() != Qt::Key_Alt))
             de.modifiers |= 1 << ATSPI_MODIFIER_ALT;
+        if ((keyEvent->modifiers() & Qt::MetaModifier) && (keyEvent->key() != Qt::Key_Meta))
+            de.modifiers |= 1 << ATSPI_MODIFIER_META;
 
 #ifdef KEYBOARD_DEBUG
         qDebug() << QStringLiteral("Key event text:") << event->type() << de.text
