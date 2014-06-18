@@ -139,8 +139,10 @@
     || (defined(Q_CC_CLANG) && (__clang_major__ * 100 + __clang_minor__ >= 208)) \
     || defined(Q_CC_INTEL))
 #  define QT_COMPILER_SUPPORTS_X86INTRIN
-#  ifndef Q_CC_INTEL
+#  ifdef Q_CC_INTEL
 // The Intel compiler has no <x86intrin.h> -- all intrinsics are in <immintrin.h>;
+#    include <immintrin.h>
+#  else
 // GCC 4.4 and Clang 2.8 added a few more intrinsics there
 #    include <x86intrin.h>
 #  endif
