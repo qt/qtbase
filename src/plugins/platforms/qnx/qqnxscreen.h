@@ -62,6 +62,8 @@ public:
     QQnxScreen(screen_context_t context, screen_display_t display, bool primaryScreen);
     ~QQnxScreen();
 
+    QPixmap grabWindow(WId window, int x, int y, int width, int height) const;
+
     QRect geometry() const { return m_currentGeometry; }
     QRect availableGeometry() const;
     int depth() const;
@@ -86,7 +88,7 @@ public:
     screen_context_t nativeContext() const { return m_screenContext; }
     const char *windowGroupName() const { return m_rootWindow ? m_rootWindow->groupName().constData() : 0; }
 
-    QQnxWindow *findWindow(screen_window_t windowHandle);
+    QQnxWindow *findWindow(screen_window_t windowHandle) const;
 
     /* Window hierarchy management */
     void addWindow(QQnxWindow *child);

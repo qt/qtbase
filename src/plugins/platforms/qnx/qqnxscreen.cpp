@@ -209,6 +209,103 @@ QQnxScreen::~QQnxScreen()
     delete m_cursor;
 }
 
+QPixmap QQnxScreen::grabWindow(WId window, int x, int y, int width, int height) const
+{
+    QQnxWindow *qnxWin = findWindow(reinterpret_cast<screen_window_t>(window));
+    if (!qnxWin) {
+        qWarning("grabWindow: unknown window");
+        return QPixmap();
+    }
+
+    QRect bound = qnxWin->geometry();
+
+    if (width < 0)
+        width = bound.width();
+    if (height < 0)
+        height = bound.height();
+
+    bound &= QRect(x + bound.x(), y + bound.y(), width, height);
+
+    if (bound.width() <= 0 || bound.height() <= 0) {
+        qWarning("grabWindow: size is null");
+        return QPixmap();
+    }
+
+    // Create new context, only SCREEN_DISPLAY_MANAGER_CONTEXT can read from screen
+    screen_context_t context;
+    if (screen_create_context(&context, SCREEN_DISPLAY_MANAGER_CONTEXT)) {
+        if (errno == EPERM)
+            qWarning("grabWindow: root privileges required");
+        else
+            qWarning("grabWindow: cannot create context");
+        return QPixmap();
+    }
+
+    // Find corresponding display in SCREEN_DISPLAY_MANAGER_CONTEXT
+    int count = 0;
+    screen_display_t display = 0;
+    screen_get_context_property_iv(context, SCREEN_PROPERTY_DISPLAY_COUNT, &count);
+    if (count > 0) {
+        const size_t idLen = 30;
+        char matchId[idLen];
+        char id[idLen];
+        bool found = false;
+
+        screen_display_t *displays = static_cast<screen_display_t*>
+                                     (calloc(count, sizeof(screen_display_t)));
+        screen_get_context_property_pv(context, SCREEN_PROPERTY_DISPLAYS, (void **)displays);
+        screen_get_display_property_cv(m_display,  SCREEN_PROPERTY_ID_STRING, idLen, matchId);
+
+        while (count && !found) {
+            --count;
+            screen_get_display_property_cv(displays[count], SCREEN_PROPERTY_ID_STRING, idLen, id);
+            found = !strncmp(id, matchId, idLen);
+        }
+
+        if (found)
+            display = displays[count];
+
+        free(displays);
+    }
+
+    // Create screen and Qt pixmap
+    screen_pixmap_t pixmap;
+    QPixmap result;
+    if (display && !screen_create_pixmap(&pixmap, context)) {
+        screen_buffer_t buffer;
+        void *pointer;
+        int stride;
+        const int rect[4] = { bound.x(), bound.y(), bound.width(), bound.height() };
+
+        int val = SCREEN_USAGE_READ | SCREEN_USAGE_NATIVE;
+        screen_set_pixmap_property_iv(pixmap, SCREEN_PROPERTY_USAGE, &val);
+        val = SCREEN_FORMAT_RGBA8888;
+        screen_set_pixmap_property_iv(pixmap, SCREEN_PROPERTY_FORMAT, &val);
+
+        int err =    screen_set_pixmap_property_iv(pixmap, SCREEN_PROPERTY_BUFFER_SIZE, rect+2);
+        err = err || screen_create_pixmap_buffer(pixmap);
+        err = err || screen_get_pixmap_property_pv(pixmap, SCREEN_PROPERTY_RENDER_BUFFERS,
+                                                   reinterpret_cast<void**>(&buffer));
+        err = err || screen_get_buffer_property_pv(buffer, SCREEN_PROPERTY_POINTER, &pointer);
+        err = err || screen_get_buffer_property_iv(buffer, SCREEN_PROPERTY_STRIDE, &stride);
+        err = err || screen_read_display(display, buffer, 1, rect, 0);
+
+        if (!err) {
+            const QImage img(static_cast<unsigned char*>(pointer),
+                             bound.width(), bound.height(), stride, QImage::Format_ARGB32);
+            result = QPixmap::fromImage(img);
+        } else {
+            qWarning("grabWindow: capture error");
+        }
+        screen_destroy_pixmap(pixmap);
+    } else {
+        qWarning("grabWindow: display/pixmap error ");
+    }
+    screen_destroy_context(context);
+
+    return result;
+}
+
 static int defaultDepth()
 {
     qScreenDebug() << Q_FUNC_INFO;
@@ -463,7 +560,7 @@ void QQnxScreen::resizeWindows(const QRect &previousScreenGeometry)
     }
 }
 
-QQnxWindow *QQnxScreen::findWindow(screen_window_t windowHandle)
+QQnxWindow *QQnxScreen::findWindow(screen_window_t windowHandle) const
 {
     Q_FOREACH (QQnxWindow *window, m_childWindows) {
         QQnxWindow * const result = window->findWindow(windowHandle);
