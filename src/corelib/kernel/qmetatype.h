@@ -826,8 +826,8 @@ struct IteratorOwner : IteratorOwnerCommon<const_iterator>
 
 struct Q_CORE_EXPORT VectorBoolElements
 {
-  static bool true_element;
-  static bool false_element;
+  static const bool true_element;
+  static const bool false_element;
 };
 
 template<>

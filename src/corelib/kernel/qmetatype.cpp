@@ -2406,8 +2406,8 @@ const QMetaObject *metaObjectForQWidget()
 }
 
 namespace QtMetaTypePrivate {
-bool VectorBoolElements::true_element = true;
-bool VectorBoolElements::false_element = false;
+const bool VectorBoolElements::true_element = true;
+const bool VectorBoolElements::false_element = false;
 }
 
 QT_END_NAMESPACE
