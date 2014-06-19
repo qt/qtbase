@@ -60,3 +60,27 @@ Android
  - Text:
    * [QTBUG-37844] Fall back to Droid Sans Mono for QFont::Courier style
      hint.
+
+****************************************************************************
+*                          Tools                                           *
+****************************************************************************
+
+configure & build system
+------------------------
+
+ - [QTBUG-38445] Fixed build against static ICU on Unix
+ - [QTBUG-38544] Fixed LLVM build with SIMD features
+ - [QTBUG-39253] PDB files are now installed also for static libraries
+ - Added support for -separate-debug-info on Windows
+ - Added [-no]-pulseaudio and [-no]-alsa options on Unix
+ - Several fixes to installed .pc and .prl files
+ - Fixed MinGW build under MSYS
+ - Fixed installation of unneeded static libraries in dynamic builds
+
+qmake
+-----
+
+ - [QTBUG-37054] Fixed use of relative paths in QMAKE_BUNDLE_DATA with Xcode
+ - [QTBUG-38260] Custom Info.plist supplied via QMAKE_INFO_PLIST is now used
+   as-is, without placeholder replacement
+ - QMAKE_TARGET_BUNDLE_PREFIX does not need a trailing dot any more
