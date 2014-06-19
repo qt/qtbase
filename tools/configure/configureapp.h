@@ -49,8 +49,6 @@
 
 QT_BEGIN_NAMESPACE
 
-class MakeItem;
-
 class Configure
 {
 public:
@@ -73,7 +71,6 @@ public:
     void generateCachefile();
     void displayConfig();
     void generateMakefiles();
-    void appendMakeItem(int inList, const QString &item);
     void generateConfigfiles();
     void detectArch();
     void generateQConfigPri();
@@ -129,10 +126,6 @@ private:
 
     QStringList qmakeVars;
     QStringList qmakeDefines;
-    //  makeList[0] for qt and qtmain
-    //  makeList[1] for subdirs and libs
-    //  makeList[2] for the rest
-    QList<MakeItem*> makeList[3];
     QStringList qmakeIncludes;
     QStringList qmakeLibs;
     QString opensslLibs;
@@ -175,22 +168,6 @@ private:
     void desc(const char *option, const char *description, bool skipIndent = false, char fillChar = '.');
     void desc(const char *mark_option, const char *mark, const char *option, const char *description, char fillChar = '.');
     void applySpecSpecifics();
-};
-
-class MakeItem
-{
-public:
-    MakeItem( const QString &d, const QString &p, const QString &t, Configure::ProjectType qt )
-        : directory( d ),
-          proFile( p ),
-          target( t ),
-          qmakeTemplate( qt )
-    { }
-
-    QString directory;
-    QString proFile;
-    QString target;
-    Configure::ProjectType qmakeTemplate;
 };
 
 class FileWriter : public QTextStream

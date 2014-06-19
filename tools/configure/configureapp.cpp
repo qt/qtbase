@@ -311,11 +311,6 @@ Configure::Configure(int& argc, char** argv)
 
 Configure::~Configure()
 {
-    for (int i=0; i<3; ++i) {
-        QList<MakeItem*> items = makeList[i];
-        for (int j=0; j<items.size(); ++j)
-            delete items[j];
-    }
 }
 
 QString Configure::formatPath(const QString &path)
@@ -4131,16 +4126,6 @@ void Configure::buildQmake()
         confFile.close();
     }
 
-}
-
-void Configure::appendMakeItem(int inList, const QString &item)
-{
-    QString dir;
-    if (item != "src")
-        dir = "/" + item;
-    dir.prepend("/src");
-    makeList[inList].append(new MakeItem(sourcePath + dir,
-        item + ".pro", buildPath + dir + "/Makefile", Lib));
 }
 
 void Configure::generateMakefiles()
