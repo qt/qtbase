@@ -158,7 +158,6 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "EMBEDDED" ]        = "no";
     dictionary[ "BUILD_QMAKE" ]     = "yes";
     dictionary[ "QMAKE_INTERNAL" ]  = "no";
-    dictionary[ "PROCESS" ]         = "partial";
     dictionary[ "WIDGETS" ]         = "yes";
     dictionary[ "GUI" ]             = "yes";
     dictionary[ "RTTI" ]            = "yes";
@@ -942,13 +941,6 @@ void Configure::parseCmdLine()
             dictionary[ "BUILD_QMAKE" ] = "no";
         else if (configCmdLine.at(i) == "-qmake")
             dictionary[ "BUILD_QMAKE" ] = "yes";
-
-        else if (configCmdLine.at(i) == "-dont-process")
-            dictionary[ "PROCESS" ] = "no";
-        else if (configCmdLine.at(i) == "-process")
-            dictionary[ "PROCESS" ] = "partial";
-        else if (configCmdLine.at(i) == "-fully-process")
-            dictionary[ "PROCESS" ] = "full";
 
         else if (configCmdLine.at(i) == "-qtnamespace") {
             ++i;
@@ -1947,10 +1939,6 @@ bool Configure::displayHelp()
         desc("PLUGIN_MANIFESTS", "yes", "-plugin-manifests",   "Embed manifests in plugins.\n");
         desc("BUILD_QMAKE", "no", "-no-qmake",          "Do not compile qmake.");
         desc("BUILD_QMAKE", "yes", "-qmake",            "Compile qmake.\n");
-
-        desc("PROCESS", "partial", "-process",          "Generate only top-level Makefile.");
-        desc("PROCESS", "full", "-fully-process",       "Generate Makefiles for the entire Qt tree.");
-        desc("PROCESS", "no", "-dont-process",          "Do not generate Makefiles.\n");
 
         desc(                  "-qreal [double|float]", "typedef qreal to the specified type. The default is double.\n"
                                                         "Note that changing this flag affects binary compatibility.\n");
@@ -4157,7 +4145,6 @@ void Configure::appendMakeItem(int inList, const QString &item)
 
 void Configure::generateMakefiles()
 {
-    if (dictionary[ "PROCESS" ] != "no") {
         QString pwd = QDir::currentPath();
         {
             QString sourcePathMangled = sourcePath;
@@ -4167,24 +4154,15 @@ void Configure::generateMakefiles()
                 buildPathMangled = QFileInfo(buildPath).path();
             }
             QStringList args;
-            args << buildPath + "/bin/qmake";
-            if (dictionary[ "PROCESS" ] == "full")
-                args << "-r";
-            args << sourcePathMangled;
+            args << buildPath + "/bin/qmake" << sourcePathMangled;
 
             QDir::setCurrent(buildPathMangled);
-            cout << "Generating Makefiles...\n";
             if (int exitCode = Environment::execute(args, QStringList(), QStringList())) {
                 cout << "Qmake failed, return code " << exitCode  << endl << endl;
                 dictionary[ "DONE" ] = "error";
             }
         }
         QDir::setCurrent(pwd);
-    } else {
-        cout << "Processing of project files have been disabled." << endl;
-        cout << "Only use this option if you really know what you're doing." << endl << endl;
-        return;
-    }
 }
 
 void Configure::showSummary()
