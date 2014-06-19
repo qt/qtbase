@@ -1078,16 +1078,14 @@ void AtSpiAdaptor::notify(QAccessibleEvent *event)
                 QAccessibleInterface * iface = event->accessibleInterface();
                 if (!iface || !(iface->role() == QAccessible::Window && (sendWindow || sendWindow_activate)))
                     return;
+                int isActive = iface->state().active;
                 QString windowTitle = iface->text(QAccessible::Name);
                 QDBusVariant data;
                 data.setVariant(windowTitle);
                 QVariantList args = packDBusSignalArguments(QString(), 0, 0, QVariant::fromValue(data));
-
-                QString status = iface->state().active ? QLatin1String("Activate") : QLatin1String("Deactivate");
+                QString status = isActive ? QLatin1String("Activate") : QLatin1String("Deactivate");
                 QString path = pathForInterface(iface);
                 sendDBusSignal(path, QLatin1String(ATSPI_DBUS_INTERFACE_EVENT_WINDOW), status, args);
-
-                int isActive = iface->state().active;
                 notifyStateChange(iface, QLatin1String("active"), isActive);
             } else if (stateChange.disabled) {
                 QAccessibleInterface *iface = event->accessibleInterface();
