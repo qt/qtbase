@@ -61,9 +61,9 @@ class Q_CORE_EXPORT QDebug
     friend class QMessageLogger;
     friend class QDebugStateSaverPrivate;
     struct Stream {
-        Stream(QIODevice *device) : ts(device), ref(1), type(QtDebugMsg), space(true), message_output(false) {}
-        Stream(QString *string) : ts(string, QIODevice::WriteOnly), ref(1), type(QtDebugMsg), space(true), message_output(false) {}
-        Stream(QtMsgType t) : ts(&buffer, QIODevice::WriteOnly), ref(1), type(t), space(true), message_output(true) {}
+        Stream(QIODevice *device) : ts(device), ref(1), type(QtDebugMsg), space(true), message_output(false), flags(0) {}
+        Stream(QString *string) : ts(string, QIODevice::WriteOnly), ref(1), type(QtDebugMsg), space(true), message_output(false), flags(0) {}
+        Stream(QtMsgType t) : ts(&buffer, QIODevice::WriteOnly), ref(1), type(t), space(true), message_output(true), flags(0) {}
         QTextStream ts;
         QString buffer;
         int ref;
@@ -71,6 +71,18 @@ class Q_CORE_EXPORT QDebug
         bool space;
         bool message_output;
         QMessageLogContext context;
+
+        enum FormatFlag {
+            NoQuotes = 0x1
+        };
+
+        // ### Qt 6: unify with space, introduce own version member
+        bool testFlag(FormatFlag flag) const { return (context.version > 1) ? (flags & flag) : false; }
+        void setFlag(FormatFlag flag) { if (context.version > 1) { flags |= flag; } }
+        void unsetFlag(FormatFlag flag) { if (context.version > 1) { flags &= ~flag; } }
+
+        // added in 5.4
+        int flags;
     } *stream;
 public:
     inline QDebug(QIODevice *device) : stream(new Stream(device)) {}
@@ -88,7 +100,11 @@ public:
     bool autoInsertSpaces() const { return stream->space; }
     void setAutoInsertSpaces(bool b) { stream->space = b; }
 
-    inline QDebug &operator<<(QChar t) { stream->ts << '\'' << t << '\''; return maybeSpace(); }
+    inline QDebug &quote() { stream->unsetFlag(Stream::NoQuotes); return *this; }
+    inline QDebug &noquote() { stream->setFlag(Stream::NoQuotes); return *this; }
+    inline QDebug &maybeQuote(char c = '"') { if (!(stream->testFlag(Stream::NoQuotes))) stream->ts << c; return *this; }
+
+    inline QDebug &operator<<(QChar t) { maybeQuote('\''); stream->ts << t; maybeQuote('\''); return maybeSpace(); }
     inline QDebug &operator<<(bool t) { stream->ts << (t ? "true" : "false"); return maybeSpace(); }
     inline QDebug &operator<<(char t) { stream->ts << t; return maybeSpace(); }
     inline QDebug &operator<<(signed short t) { stream->ts << t; return maybeSpace(); }
@@ -102,10 +118,10 @@ public:
     inline QDebug &operator<<(float t) { stream->ts << t; return maybeSpace(); }
     inline QDebug &operator<<(double t) { stream->ts << t; return maybeSpace(); }
     inline QDebug &operator<<(const char* t) { stream->ts << QString::fromUtf8(t); return maybeSpace(); }
-    inline QDebug &operator<<(const QString & t) { stream->ts << '\"' << t  << '\"'; return maybeSpace(); }
+    inline QDebug &operator<<(const QString & t) { maybeQuote(); stream->ts << t; maybeQuote(); return maybeSpace(); }
     inline QDebug &operator<<(const QStringRef & t) { return operator<<(t.toString()); }
-    inline QDebug &operator<<(QLatin1String t) { stream->ts << '\"'  << t << '\"'; return maybeSpace(); }
-    inline QDebug &operator<<(const QByteArray & t) { stream->ts  << '\"' << t << '\"'; return maybeSpace(); }
+    inline QDebug &operator<<(QLatin1String t) { maybeQuote(); stream->ts << t; maybeQuote(); return maybeSpace(); }
+    inline QDebug &operator<<(const QByteArray & t) { maybeQuote(); stream->ts << t; maybeQuote(); return maybeSpace(); }
     inline QDebug &operator<<(const void * t) { stream->ts << t; return maybeSpace(); }
     inline QDebug &operator<<(QTextStreamFunction f) {
         stream->ts << f;
@@ -137,6 +153,9 @@ public:
     inline QNoDebug &space() { return *this; }
     inline QNoDebug &nospace() { return *this; }
     inline QNoDebug &maybeSpace() { return *this; }
+    inline QNoDebug &quote() { return *this; }
+    inline QNoDebug &noquote() { return *this; }
+    inline QNoDebug &maybeQuote(const char = '"') { return *this; }
 
     template<typename T>
     inline QNoDebug &operator<<(const T &) { return *this; }

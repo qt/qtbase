@@ -202,6 +202,41 @@ QDebug::~QDebug()
     \sa QDebugStateSaver
 */
 
+
+/*!
+    \fn QDebug &QDebug::quote()
+    \since 5.4
+
+    Enables automatic insertion of quotation characters around QChar, QString and QByteArray
+    contents and returns a reference to the stream.
+
+    Quoting is enabled by default.
+
+    \sa noquote(), maybeQuote()
+*/
+
+/*!
+    \fn QDebug &QDebug::noquote()
+    \since 5.4
+
+    Disables automatic insertion of quotation characters around QChar, QString and QByteArray
+    contents and returns a reference to the stream.
+
+    \sa quote(), maybeQuote()
+*/
+
+/*!
+    \fn QDebug &QDebug::maybeQuote(char c)
+    \since 5.4
+
+    Writes a character \a c to the debug stream, depending on the
+    current setting for automatic insertion of quotes, and returns a reference to the stream.
+
+    The default character is a double quote \c{"}.
+
+    \sa quote(), noquote()
+*/
+
 /*!
     \fn QDebug &QDebug::operator<<(QChar t)
 
@@ -368,19 +403,25 @@ public:
     QDebugStateSaverPrivate(QDebug &dbg)
         : m_dbg(dbg),
           m_spaces(dbg.autoInsertSpaces()),
+          m_flags(0),
           m_streamParams(dbg.stream->ts.d_ptr->params)
     {
+        if (m_dbg.stream->context.version > 1)
+            m_flags = m_dbg.stream->flags;
     }
     void restoreState()
     {
         m_dbg.setAutoInsertSpaces(m_spaces);
         m_dbg.stream->ts.d_ptr->params = m_streamParams;
+        if (m_dbg.stream->context.version > 1)
+            m_dbg.stream->flags = m_flags;
     }
 
     QDebug &m_dbg;
 
     // QDebug state
     const bool m_spaces;
+    int m_flags;
 
     // QTextStream state
     const QTextStreamPrivate::Params m_streamParams;

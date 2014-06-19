@@ -56,10 +56,13 @@ private slots:
     void criticalWithoutDebug() const;
     void debugWithBool() const;
     void debugSpaceHandling() const;
+    void debugNoQuotes() const;
     void stateSaver() const;
     void veryLongWarningMessage() const;
+    void qDebugQChar() const;
     void qDebugQStringRef() const;
     void qDebugQLatin1String() const;
+    void qDebugQByteArray() const;
     void textStreamModifiers() const;
     void defaultMessagehandler() const;
     void threadSafety() const;
@@ -219,6 +222,32 @@ void tst_QDebug::debugSpaceHandling() const
     QCOMPARE(s_msg, QString::fromLatin1("QMimeType(invalid) QMimeType(\"application/pdf\") foo"));
 }
 
+void tst_QDebug::debugNoQuotes() const
+{
+    MessageHandlerSetter mhs(myMessageHandler);
+    {
+        QDebug d = qDebug();
+        d << QStringLiteral("Hello");
+        d.noquote();
+        d << QStringLiteral("Hello");
+        d.quote();
+        d << QStringLiteral("Hello");
+    }
+    QCOMPARE(s_msg, QString::fromLatin1("\"Hello\" Hello \"Hello\""));
+
+    {
+        QDebug d = qDebug();
+        d << QChar('H');
+        d << QLatin1String("Hello");
+        d << QByteArray("Hello");
+        d.noquote();
+        d << QChar('H');
+        d << QLatin1String("Hello");
+        d << QByteArray("Hello");
+    }
+    QCOMPARE(s_msg, QString::fromLatin1("'H' \"Hello\" \"Hello\" H Hello Hello"));
+}
+
 void tst_QDebug::stateSaver() const
 {
     MessageHandlerSetter mhs(myMessageHandler);
@@ -231,6 +260,16 @@ void tst_QDebug::stateSaver() const
         d << 42;
     }
     QCOMPARE(s_msg, QString::fromLatin1("02a 42"));
+
+    {
+        QDebug d = qDebug();
+        {
+            QDebugStateSaver saver(d);
+            d.nospace().noquote() << QStringLiteral("Hello");
+        }
+        d << QStringLiteral("World");
+    }
+    QCOMPARE(s_msg, QString::fromLatin1("Hello \"World\""));
 }
 
 void tst_QDebug::veryLongWarningMessage() const
@@ -249,6 +288,23 @@ void tst_QDebug::veryLongWarningMessage() const
     QCOMPARE(QString::fromLatin1(s_file), file);
     QCOMPARE(s_line, line);
     QCOMPARE(QString::fromLatin1(s_function), function);
+}
+
+void tst_QDebug::qDebugQChar() const
+{
+    MessageHandlerSetter mhs(myMessageHandler);
+    {
+        QDebug d = qDebug();
+        d << QChar('f');
+        d.nospace().noquote() << QChar('o') << QChar('o');
+    }
+    QString file = __FILE__; int line = __LINE__ - 4; QString function = Q_FUNC_INFO;
+    QCOMPARE(s_msgType, QtDebugMsg);
+    QCOMPARE(s_msg, QString::fromLatin1("'f' oo"));
+    QCOMPARE(QString::fromLatin1(s_file), file);
+    QCOMPARE(s_line, line);
+    QCOMPARE(QString::fromLatin1(s_function), function);
+
 }
 
 void tst_QDebug::qDebugQStringRef() const
@@ -286,10 +342,30 @@ void tst_QDebug::qDebugQStringRef() const
 void tst_QDebug::qDebugQLatin1String() const
 {
     MessageHandlerSetter mhs(myMessageHandler);
-    { qDebug() << QLatin1String("foo") << QLatin1String("") << QLatin1String("barbaz", 3); }
-    QString file = __FILE__; int line = __LINE__ - 1; QString function = Q_FUNC_INFO;
+    {
+        QDebug d = qDebug();
+        d << QLatin1String("foo") << QLatin1String("") << QLatin1String("barbaz", 3);
+        d.nospace().noquote() << QLatin1String("baz");
+    }
+    QString file = __FILE__; int line = __LINE__ - 4; QString function = Q_FUNC_INFO;
     QCOMPARE(s_msgType, QtDebugMsg);
-    QCOMPARE(s_msg, QString::fromLatin1("\"foo\" \"\" \"bar\""));
+    QCOMPARE(s_msg, QString::fromLatin1("\"foo\" \"\" \"bar\" baz"));
+    QCOMPARE(QString::fromLatin1(s_file), file);
+    QCOMPARE(s_line, line);
+    QCOMPARE(QString::fromLatin1(s_function), function);
+}
+
+void tst_QDebug::qDebugQByteArray() const
+{
+    MessageHandlerSetter mhs(myMessageHandler);
+    {
+        QDebug d = qDebug();
+        d << QByteArrayLiteral("foo") << QByteArrayLiteral("") << QByteArray("barbaz", 3);
+        d.nospace().noquote() << QByteArrayLiteral("baz");
+    }
+    QString file = __FILE__; int line = __LINE__ - 4; QString function = Q_FUNC_INFO;
+    QCOMPARE(s_msgType, QtDebugMsg);
+    QCOMPARE(s_msg, QString::fromLatin1("\"foo\" \"\" \"bar\" baz"));
     QCOMPARE(QString::fromLatin1(s_file), file);
     QCOMPARE(s_line, line);
     QCOMPARE(QString::fromLatin1(s_function), function);
