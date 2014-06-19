@@ -107,7 +107,11 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
                            QLatin1String("/sqldrivers")))
 #endif
 
-QT_STATIC_CONST_IMPL char *QSqlDatabase::defaultConnection = "qt_sql_default_connection";
+#if !defined(Q_CC_MSVC) || _MSC_VER >= 1900
+// ### Qt6: remove the #ifdef
+const
+#endif
+char *QSqlDatabase::defaultConnection = const_cast<char *>("qt_sql_default_connection");
 
 typedef QHash<QString, QSqlDriverCreatorBase*> DriverDict;
 
