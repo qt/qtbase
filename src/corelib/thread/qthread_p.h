@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -64,11 +64,6 @@
 #include "private/qobject_p.h"
 
 #include <algorithm>
-
-
-#ifdef Q_OS_WINRT
-#include <thread>
-#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -138,6 +133,10 @@ private:
 
 #ifndef QT_NO_THREAD
 
+#ifdef Q_OS_WINRT
+namespace ABI { namespace Windows { namespace Foundation { struct IAsyncAction; } } }
+#endif
+
 class QThreadPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QThread)
@@ -174,19 +173,23 @@ public:
 #endif // Q_OS_UNIX
 
 #ifdef Q_OS_WIN
+#  ifndef Q_OS_WINRT
     static unsigned int __stdcall start(void *);
     static void finish(void *, bool lockAnyway=true);
+#  else
+    HRESULT start(ABI::Windows::Foundation::IAsyncAction *);
+    void finish(bool lockAnyway = true);
+#  endif
 
 #  ifndef Q_OS_WINRT
     Qt::HANDLE handle;
-    unsigned int id;
 #  else
-    std::thread *handle;
-    std::thread::id id;
+    ABI::Windows::Foundation::IAsyncAction *handle;
 #  endif
+    unsigned int id;
     int waiters;
     bool terminationEnabled, terminatePending;
-# endif
+#endif // Q_OS_WIN
     QThreadData *data;
 
     static void createEventDispatcher(QThreadData *data);

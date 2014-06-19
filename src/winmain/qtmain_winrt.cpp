@@ -67,6 +67,7 @@ extern "C" {
 #include <qvector.h>
 #include <qdir.h>
 #include <qstandardpaths.h>
+#include <qthread.h>
 
 #include <wrl.h>
 #include <Windows.ApplicationModel.core.h>
@@ -236,6 +237,9 @@ int __stdcall WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     if (FAILED(RoInitialize(RO_INIT_MULTITHREADED)))
         return 1;
+
+    // Mark the main thread
+    QThread::currentThread();
 
     Core::ICoreApplication *appFactory;
     if (FAILED(RoGetActivationFactory(qHString(CoreApplicationClass), IID_PPV_ARGS(&appFactory))))
