@@ -52,7 +52,7 @@
 
 QT_BEGIN_NAMESPACE
 
-QT_STATIC_CONST_IMPL Location Location::null;
+const Location Location::null;
 
 int Location::tabSize;
 QString Location::programName;

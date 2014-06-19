@@ -90,7 +90,7 @@ public:
     void fatal(const QString& message,
                const QString& details = QString()) const;
 
-    QT_STATIC_CONST Location null;
+    static const Location null;
 
     static void initialize(const Config& config);
     static void terminate();

@@ -242,7 +242,7 @@ QStringList MetaStack::getExpanded(const Location& location)
     return top().accum;
 }
 
-QT_STATIC_CONST_IMPL QString Config::dot = QLatin1String(".");
+const QString Config::dot = QLatin1String(".");
 bool Config::debug_ = false;
 bool Config::generateExamples = true;
 QString Config::overrideOutputDir;

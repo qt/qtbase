@@ -141,7 +141,7 @@ public:
     static void pushWorkingDir(const QString& dir);
     static QString popWorkingDir();
 
-    QT_STATIC_CONST QString dot;
+    static const QString dot;
 
     static bool generateExamples;
     static QString installDir;

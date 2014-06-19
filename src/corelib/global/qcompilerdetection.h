@@ -1016,18 +1016,6 @@
 #endif
 
 /*
-   Workaround for static const members on MSVC++.
-*/
-
-#if defined(Q_CC_MSVC)
-#  define QT_STATIC_CONST static
-#  define QT_STATIC_CONST_IMPL
-#else
-#  define QT_STATIC_CONST static const
-#  define QT_STATIC_CONST_IMPL const
-#endif
-
-/*
    Proper for-scoping in MIPSpro CC
 */
 #ifndef QT_NO_KEYWORDS
