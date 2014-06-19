@@ -202,19 +202,14 @@ Q_DECLARE_TYPEINFO_BODY(QFlags<T>, Q_PRIMITIVE_TYPE);
    types must define a member-swap, and be defined in the same
    namespace as Qt for this to work.
 */
-#define Q_DECLARE_SHARED_STL(TYPE) \
-QT_END_NAMESPACE \
-namespace std { \
-    template<> inline void swap< QT_PREPEND_NAMESPACE(TYPE) >(QT_PREPEND_NAMESPACE(TYPE) &value1, QT_PREPEND_NAMESPACE(TYPE) &value2) \
-    { value1.swap(value2); } \
-} \
-QT_BEGIN_NAMESPACE
 
 #define Q_DECLARE_SHARED(TYPE)                                          \
 Q_DECLARE_TYPEINFO(TYPE, Q_MOVABLE_TYPE); \
 template <> inline void qSwap<TYPE>(TYPE &value1, TYPE &value2) \
 { value1.swap(value2); } \
-Q_DECLARE_SHARED_STL(TYPE)
+inline void swap(TYPE &value1, TYPE &value2) \
+    Q_DECL_NOEXCEPT_EXPR(noexcept(value1.swap(value2))) \
+{ value1.swap(value2); }
 
 /*
    QTypeInfo primitive specializations
