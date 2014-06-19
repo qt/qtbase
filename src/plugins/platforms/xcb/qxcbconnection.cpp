@@ -466,7 +466,7 @@ break;
     if (QXcbWindowEventListener *eventListener = windowEventListenerFromId(e->event)) { \
         handled = eventListener->handleGenericEvent(event, &result); \
         if (!handled) \
-            m_keyboard->handler(m_focusWindow ? m_focusWindow : eventListener, e); \
+            m_keyboard->handler(e); \
     } \
 } \
 break;

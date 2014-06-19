@@ -64,8 +64,8 @@ public:
 
     ~QXcbKeyboard();
 
-    void handleKeyPressEvent(QXcbWindowEventListener *eventListener, const xcb_key_press_event_t *event);
-    void handleKeyReleaseEvent(QXcbWindowEventListener *eventListener, const xcb_key_release_event_t *event);
+    void handleKeyPressEvent(const xcb_key_press_event_t *event);
+    void handleKeyReleaseEvent(const xcb_key_release_event_t *event);
     void handleMappingNotifyEvent(const void *event);
 
     Qt::KeyboardModifiers translateModifiers(int s) const;
@@ -83,7 +83,7 @@ public:
 #endif
 
 protected:
-    void handleKeyEvent(QWindow *window, QEvent::Type type, xcb_keycode_t code, quint16 state, xcb_timestamp_t time);
+    void handleKeyEvent(xcb_window_t sourceWindow, QEvent::Type type, xcb_keycode_t code, quint16 state, xcb_timestamp_t time);
 
     void resolveMaskConflicts();
     QString lookupString(struct xkb_state *state, xcb_keycode_t code) const;
