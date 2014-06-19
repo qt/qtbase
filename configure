@@ -6643,7 +6643,7 @@ rm -f "$QMAKE_VARS_FILE" 2>/dev/null
 
     "$outpath/bin/qmake" "$relpathMangled"
 
-)
+) || exit
 
 #-------------------------------------------------------------------------------
 # check for platforms that we don't yet know about
