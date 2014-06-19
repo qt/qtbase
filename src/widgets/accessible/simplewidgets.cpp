@@ -69,7 +69,7 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_ACCESSIBILITY
 
-extern QList<QWidget*> childWidgets(const QWidget *widget, bool includeTopLevel = false);
+extern QList<QWidget*> childWidgets(const QWidget *widget);
 
 QString qt_accStripAmp(const QString &text);
 QString qt_accHotKey(const QString &text);

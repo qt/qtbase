@@ -74,7 +74,7 @@ QT_BEGIN_NAMESPACE
 
 QString qt_accStripAmp(const QString &text);
 
-QList<QWidget*> childWidgets(const QWidget *widget, bool includeTopLevel)
+QList<QWidget*> childWidgets(const QWidget *widget)
 {
     if (widget == 0)
         return QList<QWidget*>();
@@ -85,7 +85,7 @@ QList<QWidget*> childWidgets(const QWidget *widget, bool includeTopLevel)
         if (!w)
             continue;
         QString objectName = w->objectName();
-        if ((includeTopLevel || !w->isWindow())
+        if (!w->isWindow()
               && !qobject_cast<QFocusFrame*>(w)
               && !qobject_cast<QMenu*>(w)
               && objectName != QLatin1String("qt_rubberband")
@@ -970,7 +970,7 @@ QAccessibleMainWindow::QAccessibleMainWindow(QWidget *widget)
 
 QAccessibleInterface *QAccessibleMainWindow::child(int index) const
 {
-    QList<QWidget*> kids = childWidgets(mainWindow(), true);
+    QList<QWidget*> kids = childWidgets(mainWindow());
     if (index >= 0 && index < kids.count()) {
         return QAccessible::queryAccessibleInterface(kids.at(index));
     }
@@ -979,13 +979,13 @@ QAccessibleInterface *QAccessibleMainWindow::child(int index) const
 
 int QAccessibleMainWindow::childCount() const
 {
-    QList<QWidget*> kids = childWidgets(mainWindow(), true);
+    QList<QWidget*> kids = childWidgets(mainWindow());
     return kids.count();
 }
 
 int QAccessibleMainWindow::indexOfChild(const QAccessibleInterface *iface) const
 {
-    QList<QWidget*> kids = childWidgets(mainWindow(), true);
+    QList<QWidget*> kids = childWidgets(mainWindow());
     return kids.indexOf(static_cast<QWidget*>(iface->object()));
 }
 
@@ -998,7 +998,7 @@ QAccessibleInterface *QAccessibleMainWindow::childAt(int x, int y) const
     if (!QRect(gp.x(), gp.y(), w->width(), w->height()).contains(x, y))
         return 0;
 
-    QWidgetList kids = childWidgets(mainWindow(), true);
+    QWidgetList kids = childWidgets(mainWindow());
     QPoint rp = mainWindow()->mapFromGlobal(QPoint(x, y));
     for (int i = 0; i < kids.size(); ++i) {
         QWidget *child = kids.at(i);

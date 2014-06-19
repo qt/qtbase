@@ -251,6 +251,7 @@ private slots:
 
     void applicationTest();
     void mainWindowTest();
+    void subWindowTest();
     void buttonTest();
     void scrollBarTest();
     void tabTest();
@@ -1001,6 +1002,66 @@ void tst_QAccessibility::mainWindowTest()
     QAccessibleStateChangeEvent activeChild(&child, activeState);
     QVERIFY_EVENT(&activeChild);
     }
+}
+
+// Dialogs and other sub-windows must appear in the
+// accessibility hierarchy exactly once as top level objects
+void tst_QAccessibility::subWindowTest()
+{
+    {
+    QWidget mainWidget;
+    mainWidget.setGeometry(100, 100, 100, 100);
+    mainWidget.show();
+    QLabel label(QStringLiteral("Window Contents"), &mainWidget);
+    mainWidget.setLayout(new QHBoxLayout());
+    mainWidget.layout()->addWidget(&label);
+
+    QDialog d(&mainWidget);
+    d.show();
+
+    QAccessibleInterface *app = QAccessible::queryAccessibleInterface(qApp);
+    QVERIFY(app);
+    QCOMPARE(app->childCount(), 2);
+
+    QAccessibleInterface *windowIface = QAccessible::queryAccessibleInterface(&mainWidget);
+    QVERIFY(windowIface);
+    QCOMPARE(windowIface->childCount(), 1);
+    QCOMPARE(app->child(0), windowIface);
+    QCOMPARE(windowIface->parent(), app);
+
+    QAccessibleInterface *dialogIface = QAccessible::queryAccessibleInterface(&d);
+    QVERIFY(dialogIface);
+    QCOMPARE(app->child(1), dialogIface);
+    QCOMPARE(dialogIface->parent(), app);
+    QCOMPARE(dialogIface->parent(), app);
+    }
+
+    {
+    QMainWindow mainWindow;
+    mainWindow.setGeometry(100, 100, 100, 100);
+    mainWindow.show();
+    QLabel label(QStringLiteral("Window Contents"), &mainWindow);
+    mainWindow.setCentralWidget(&label);
+
+    QDialog d(&mainWindow);
+    d.show();
+
+    QAccessibleInterface *app = QAccessible::queryAccessibleInterface(qApp);
+    QVERIFY(app);
+    QCOMPARE(app->childCount(), 2);
+
+    QAccessibleInterface *windowIface = QAccessible::queryAccessibleInterface(&mainWindow);
+    QVERIFY(windowIface);
+    QCOMPARE(windowIface->childCount(), 1);
+    QCOMPARE(app->child(0), windowIface);
+
+    QAccessibleInterface *dialogIface = QAccessible::queryAccessibleInterface(&d);
+    QVERIFY(dialogIface);
+    QCOMPARE(app->child(1), dialogIface);
+    QCOMPARE(dialogIface->parent(), app);
+    QCOMPARE(windowIface->parent(), app);
+    }
+    QTestAccessibility::clearEvents();
 }
 
 class CounterButton : public QPushButton {
