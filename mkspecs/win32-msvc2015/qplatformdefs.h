@@ -3,7 +3,7 @@
 ** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the tools applications of the Qt Toolkit.
+** This file is part of the qmake spec of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL21$
 ** Commercial License Usage
@@ -31,49 +31,4 @@
 **
 ****************************************************************************/
 
-#include <qstringlist.h>
-
-QT_BEGIN_NAMESPACE
-
-
-enum Compiler {
-    CC_UNKNOWN = 0,
-    CC_BORLAND = 0x01,
-    CC_MINGW   = 0x02,
-    CC_INTEL   = 0x03,
-    CC_MSVC2005 = 0x80,
-    CC_MSVC2008 = 0x90,
-    CC_MSVC2010 = 0xA0,
-    CC_MSVC2012 = 0xB0,
-    CC_MSVC2013 = 0xC0,
-    CC_MSVC2015 = 0xD0
-};
-
-struct CompilerInfo;
-class Environment
-{
-public:
-    static Compiler detectCompiler();
-    static QString detectQMakeSpec();
-    static Compiler compilerFromQMakeSpec(const QString &qmakeSpec);
-
-    static int execute(QStringList arguments, const QStringList &additionalEnv, const QStringList &removeEnv);
-    static QString execute(const QString &command, int *returnCode = 0);
-    static bool cpdir(const QString &srcDir, const QString &destDir);
-    static bool rmdir(const QString &name);
-
-    static QString findFileInPaths(const QString &fileName, const QStringList &paths);
-    static QStringList path();
-
-    static QString detectDirectXSdk();
-    static QStringList headerPaths(Compiler compiler);
-    static QStringList libraryPaths(Compiler compiler);
-
-private:
-    static Compiler detectedCompiler;
-
-    static CompilerInfo *compilerInfo(Compiler compiler);
-};
-
-
-QT_END_NAMESPACE
+#include "../win32-msvc2005/qplatformdefs.h"

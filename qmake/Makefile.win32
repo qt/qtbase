@@ -1,4 +1,4 @@
-!IF "$(QMAKESPEC)" == "win32-msvc" || "$(QMAKESPEC)" == "win32-msvc.net" || "$(QMAKESPEC)" == "win32-msvc2002" || "$(QMAKESPEC)" == "win32-msvc2003" || "$(QMAKESPEC)" == "win32-msvc2005" || "$(QMAKESPEC)" == "win32-msvc2008" || "$(QMAKESPEC)" == "win32-msvc2010" || "$(QMAKESPEC)" == "win32-msvc2012" || "$(QMAKESPEC)" == "win32-msvc2013" || "$(QMAKESPEC)" == "win32-icc"
+!IF "$(QMAKESPEC)" == "win32-msvc" || "$(QMAKESPEC)" == "win32-msvc.net" || "$(QMAKESPEC)" == "win32-msvc2002" || "$(QMAKESPEC)" == "win32-msvc2003" || "$(QMAKESPEC)" == "win32-msvc2005" || "$(QMAKESPEC)" == "win32-msvc2008" || "$(QMAKESPEC)" == "win32-msvc2010" || "$(QMAKESPEC)" == "win32-msvc2012" || "$(QMAKESPEC)" == "win32-msvc2013" || "$(QMAKESPEC)" == "win32-msvc2015" || "$(QMAKESPEC)" == "win32-icc"
 
 !if "$(SOURCE_PATH)" == ""
 SOURCE_PATH = ..
@@ -28,6 +28,8 @@ LINKER  = link
 CFLAGS_EXTRA      = /Zc:wchar_t-
 !elseif "$(QMAKESPEC)" == "win32-msvc2008" || "$(QMAKESPEC)" == "win32-msvc2010" || "$(QMAKESPEC)" == "win32-msvc2012" || "$(QMAKESPEC)" == "win32-msvc2013"
 CFLAGS_EXTRA      = /MP /D_CRT_SECURE_NO_WARNINGS $(CFLAGS_CRT)
+!elseif "$(QMAKESPEC)" == "win32-msvc2015"
+CFLAGS_EXTRA      = /MP /D_CRT_SECURE_NO_WARNINGS /Zc:strictStrings /w44456 /w44457 /w44458 $(CFLAGS_CRT)
 !endif
 
 CFLAGS_BARE = -c -Fo./ -Fdqmake.pdb \
