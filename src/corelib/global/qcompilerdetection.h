@@ -785,6 +785,7 @@
 #endif
 
 #if defined(Q_CC_MSVC) && !defined(Q_CC_INTEL)
+#  if defined(__cplusplus)
 #    if _MSC_VER >= 1400
        /* C++11 features supported in VC8 = VC2005: */
 #      define Q_COMPILER_VARIADIC_MACROS
@@ -843,6 +844,7 @@
 #      define Q_COMPILER_INITIALIZER_LISTS
 #    endif /* VC 12 SP 2 RC */
 
+#  endif /* __cplusplus */
 #endif /* Q_CC_MSVC */
 
 #ifdef __cplusplus
