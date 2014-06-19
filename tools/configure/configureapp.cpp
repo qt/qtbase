@@ -157,7 +157,6 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "QCONFIG" ]         = "full";
     dictionary[ "EMBEDDED" ]        = "no";
     dictionary[ "BUILD_QMAKE" ]     = "yes";
-    dictionary[ "VCPROJFILES" ]     = "yes";
     dictionary[ "QMAKE_INTERNAL" ]  = "no";
     dictionary[ "PROCESS" ]         = "partial";
     dictionary[ "WIDGETS" ]         = "yes";
@@ -239,7 +238,6 @@ Configure::Configure(int& argc, char** argv)
     }
 
     dictionary[ "REDO" ]            = "no";
-    dictionary[ "DEPENDENCIES" ]    = "no";
 
     dictionary[ "BUILD" ]           = "debug";
     dictionary[ "BUILDALL" ]        = "auto"; // Means yes, but not explicitly
@@ -796,12 +794,6 @@ void Configure::parseCmdLine()
                  imageFormats.contains(configCmdLine.at(i).section('-', 3)))
             dictionary[ configCmdLine.at(i).section('-', 3).toUpper() ] = "no";
 
-        // IDE project generation -----------------------------------
-        else if (configCmdLine.at(i) == "-no-vcproj")
-            dictionary[ "VCPROJFILES" ] = "no";
-        else if (configCmdLine.at(i) == "-vcproj")
-            dictionary[ "VCPROJFILES" ] = "yes";
-
         else if (configCmdLine.at(i) == "-no-incredibuild-xge")
             dictionary[ "INCREDIBUILD_XGE" ] = "no";
         else if (configCmdLine.at(i) == "-incredibuild-xge")
@@ -957,12 +949,6 @@ void Configure::parseCmdLine()
             dictionary[ "PROCESS" ] = "partial";
         else if (configCmdLine.at(i) == "-fully-process")
             dictionary[ "PROCESS" ] = "full";
-
-        else if (configCmdLine.at(i) == "-no-qmake-deps")
-            dictionary[ "DEPENDENCIES" ] = "no";
-        else if (configCmdLine.at(i) == "-qmake-deps")
-            dictionary[ "DEPENDENCIES" ] = "yes";
-
 
         else if (configCmdLine.at(i) == "-qtnamespace") {
             ++i;
@@ -1954,9 +1940,6 @@ bool Configure::displayHelp()
         // Qt\Windows only options go below here --------------------------------------------------------------------------------
         desc("\nQt for Windows only:\n\n");
 
-        desc("VCPROJFILES", "no", "-no-vcproj",         "Do not generate VC++ .vcproj files.");
-        desc("VCPROJFILES", "yes", "-vcproj",           "Generate VC++ .vcproj files, only if platform \"win32-msvc.net\".\n");
-
         desc("INCREDIBUILD_XGE", "no", "-no-incredibuild-xge", "Do not add IncrediBuild XGE distribution commands to custom build steps.");
         desc("INCREDIBUILD_XGE", "yes", "-incredibuild-xge",   "Add IncrediBuild XGE distribution commands to custom build steps. This will distribute MOC and UIC steps, and other custom buildsteps which are added to the INCREDIBUILD_XGE variable.\n(The IncrediBuild distribution commands are only added to Visual Studio projects)\n");
 
@@ -1966,8 +1949,8 @@ bool Configure::displayHelp()
         desc("BUILD_QMAKE", "yes", "-qmake",            "Compile qmake.\n");
 
         desc("PROCESS", "partial", "-process",          "Generate only top-level Makefile.");
-        desc("PROCESS", "full", "-fully-process",       "Generate Makefiles/Project files for the entire Qt\ntree.");
-        desc("PROCESS", "no", "-dont-process",          "Do not generate Makefiles/Project files.\n");
+        desc("PROCESS", "full", "-fully-process",       "Generate Makefiles for the entire Qt tree.");
+        desc("PROCESS", "no", "-dont-process",          "Do not generate Makefiles.\n");
 
         desc(                  "-qreal [double|float]", "typedef qreal to the specified type. The default is double.\n"
                                                         "Note that changing this flag affects binary compatibility.\n");
@@ -4170,19 +4153,11 @@ void Configure::appendMakeItem(int inList, const QString &item)
     dir.prepend("/src");
     makeList[inList].append(new MakeItem(sourcePath + dir,
         item + ".pro", buildPath + dir + "/Makefile", Lib));
-    if (dictionary[ "VCPROJFILES" ] == "yes") {
-        makeList[inList].append(new MakeItem(sourcePath + dir,
-            item + ".pro", buildPath + dir + "/" + item + ".vcproj", Lib));
-    }
 }
 
 void Configure::generateMakefiles()
 {
     if (dictionary[ "PROCESS" ] != "no") {
-        QString spec = dictionary.contains("XQMAKESPEC") ? dictionary[ "XQMAKESPEC" ] : dictionary[ "QMAKESPEC" ];
-        if (spec != "win32-msvc.net" && !spec.startsWith("win32-msvc2") && !spec.startsWith(QLatin1String("wince")) && !spec.startsWith("winphone") && !spec.startsWith("winrt") )
-            dictionary[ "VCPROJFILES" ] = "no";
-
         QString pwd = QDir::currentPath();
         {
             QString sourcePathMangled = sourcePath;
@@ -4191,32 +4166,17 @@ void Configure::generateMakefiles()
                 sourcePathMangled = QFileInfo(sourcePath).path();
                 buildPathMangled = QFileInfo(buildPath).path();
             }
-            bool generate = true;
-            bool doDsp = (dictionary["VCPROJFILES"] == "yes"
-                          && dictionary["PROCESS"] == "full");
-            while (generate) {
-                QStringList args;
-                args << buildPath + "/bin/qmake";
+            QStringList args;
+            args << buildPath + "/bin/qmake";
+            if (dictionary[ "PROCESS" ] == "full")
+                args << "-r";
+            args << sourcePathMangled;
 
-                if (doDsp) {
-                    if (dictionary[ "DEPENDENCIES" ] == "no")
-                        args << "-nodepend";
-                    args << "-tp" <<  "vc";
-                    doDsp = false; // DSP files will be done
-                    printf("Generating Visual Studio project files...\n");
-                } else {
-                    printf("Generating Makefiles...\n");
-                    generate = false; // Now Makefiles will be done
-                }
-                if (dictionary[ "PROCESS" ] == "full")
-                    args << "-r";
-                args << sourcePathMangled;
-
-                QDir::setCurrent(buildPathMangled);
-                if (int exitCode = Environment::execute(args, QStringList(), QStringList())) {
-                    cout << "Qmake failed, return code " << exitCode  << endl << endl;
-                    dictionary[ "DONE" ] = "error";
-                }
+            QDir::setCurrent(buildPathMangled);
+            cout << "Generating Makefiles...\n";
+            if (int exitCode = Environment::execute(args, QStringList(), QStringList())) {
+                cout << "Qmake failed, return code " << exitCode  << endl << endl;
+                dictionary[ "DONE" ] = "error";
             }
         }
         QDir::setCurrent(pwd);
