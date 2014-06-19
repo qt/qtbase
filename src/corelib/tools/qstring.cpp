@@ -6960,15 +6960,18 @@ static ArgEscapeData findArgEscapes(const QString &s)
                 break;
         }
 
-        if (c->digitValue() == -1)
+        int escape = c->digitValue();
+        if (escape == -1)
             continue;
 
-        int escape = c->digitValue();
         ++c;
 
-        if (c != uc_end && c->digitValue() != -1) {
-            escape = (10 * escape) + c->digitValue();
-            ++c;
+        if (c != uc_end) {
+            int next_escape = c->digitValue();
+            if (next_escape != -1) {
+                escape = (10 * escape) + next_escape;
+                ++c;
+            }
         }
 
         if (escape > d.min_escape)
