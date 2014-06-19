@@ -67,6 +67,7 @@ private slots:
     void mapGlobal();
     void positioning_data();
     void positioning();
+    void positioningDuringMinimized();
     void isExposed();
     void isActive();
     void testInputEvents();
@@ -304,6 +305,28 @@ void tst_QWindow::positioning()
         QTRY_VERIFY(window.received(QEvent::Move));
         QTRY_COMPARE(originalPos, window.position());
     }
+}
+
+void tst_QWindow::positioningDuringMinimized()
+{
+    // QTBUG-39544, setting a geometry in minimized state should work as well.
+    if (QGuiApplication::platformName().compare("windows", Qt::CaseInsensitive))
+        QSKIP("Not supported on this platform");
+    Window window;
+    window.setTitle(QStringLiteral("positioningDuringMinimized"));
+    const QRect initialGeometry(QGuiApplication::primaryScreen()->availableGeometry().topLeft() + QPoint(100, 100),
+                                QSize(200, 200));
+    window.setGeometry(initialGeometry);
+    window.showNormal();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+    QCOMPARE(window.geometry(), initialGeometry);
+    window.setWindowState(Qt::WindowMinimized);
+    QCOMPARE(window.geometry(), initialGeometry);
+    const QRect newGeometry(initialGeometry.topLeft() + QPoint(50, 50), initialGeometry.size() + QSize(50, 50));
+    window.setGeometry(newGeometry);
+    QTRY_COMPARE(window.geometry(), newGeometry);
+    window.setWindowState(Qt::WindowNoState);
+    QTRY_COMPARE(window.geometry(), newGeometry);
 }
 
 void tst_QWindow::isExposed()

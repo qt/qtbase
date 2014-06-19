@@ -181,6 +181,14 @@ QDebug operator<<(QDebug d, const NCCALCSIZE_PARAMS &p)
 static inline QRect frameGeometry(HWND hwnd, bool topLevel)
 {
     RECT rect = { 0, 0, 0, 0 };
+#ifndef Q_OS_WINCE
+    if (topLevel) {
+        WINDOWPLACEMENT windowPlacement;
+        GetWindowPlacement(hwnd, &windowPlacement);
+        if (windowPlacement.showCmd == SW_SHOWMINIMIZED)
+            return qrectFromRECT(windowPlacement.rcNormalPosition);
+    }
+#endif // !Q_OS_WINCE
     GetWindowRect(hwnd, &rect); // Screen coordinates.
     const HWND parent = GetParent(hwnd);
     if (parent && !topLevel) {
@@ -1424,15 +1432,29 @@ void QWindowsWindow::setGeometry_sys(const QRect &rect) const
                  << margins << " to " <<rect
                  << " new frame: " << frameGeometry;
 
-    const bool rc = MoveWindow(m_data.hwnd, frameGeometry.x(), frameGeometry.y(),
-                               frameGeometry.width(), frameGeometry.height(), true);
+    bool result = false;
+#ifndef Q_OS_WINCE
+    WINDOWPLACEMENT windowPlacement;
+    GetWindowPlacement(m_data.hwnd, &windowPlacement);
+    // If the window is hidden and in maximized state or minimized, instead of moving the
+    // window, set the normal position of the window.
+    if ((windowPlacement.showCmd == SW_MAXIMIZE && !IsWindowVisible(m_data.hwnd))
+        || windowPlacement.showCmd == SW_SHOWMINIMIZED) {
+        windowPlacement.rcNormalPosition = RECTfromQRect(frameGeometry);
+        windowPlacement.showCmd = windowPlacement.showCmd == SW_SHOWMINIMIZED ? SW_SHOWMINIMIZED : SW_HIDE;
+        result = SetWindowPlacement(m_data.hwnd, &windowPlacement);
+    } else
+#endif // !Q_OS_WINCE
+    {
+        result = MoveWindow(m_data.hwnd, frameGeometry.x(), frameGeometry.y(),
+                            frameGeometry.width(), frameGeometry.height(), true);
+    }
     qCDebug(lcQpaWindows) << '<' << __FUNCTION__ << this << window()
-        << "    \n resulting " << rc << geometry_sys();
+        << "    \n resulting " << result << geometry_sys();
 }
 
 QRect QWindowsWindow::frameGeometry_sys() const
 {
-    // Warning: Returns bogus values when minimized.
     bool isRealTopLevel = window()->isTopLevel() && !m_data.embedded;
     return frameGeometry(m_data.hwnd, isRealTopLevel);
 }
