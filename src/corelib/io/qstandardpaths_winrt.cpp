@@ -103,14 +103,23 @@ QString QStandardPaths::writableLocation(StandardLocation type)
     case GenericCacheLocation:
         return writableLocation(GenericDataLocation) + QLatin1String("/cache");
 
-    case RuntimeLocation:
-    case HomeLocation:
-        result = QDir::homePath();
-        break;
-
     case TempLocation:
         result = QDir::tempPath();
         break;
+
+    case ApplicationsLocation:
+    case DesktopLocation:
+    case FontsLocation:
+    case HomeLocation:
+    case RuntimeLocation:
+        // these are read-only
+        break;
+
+    case DocumentsLocation:
+    case MusicLocation:
+    case MoviesLocation:
+    case PicturesLocation:
+    case DownloadLocation:
     default:
         Q_UNIMPLEMENTED();
     }
