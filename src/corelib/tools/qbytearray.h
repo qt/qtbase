@@ -50,6 +50,8 @@
 #include <string.h>
 #include <stdarg.h>
 
+#include <string>
+
 #ifdef truncate
 #error qbytearray.h must be included before any header file that defines truncate
 #endif
@@ -397,6 +399,9 @@ public:
     void push_front(const char *c);
     void push_front(const QByteArray &a);
 
+    static inline QByteArray fromStdString(const std::string &s);
+    inline std::string toStdString() const;
+
     inline int count() const { return d->size; }
     int length() const { return d->size; }
     bool isNull() const;
@@ -620,6 +625,11 @@ inline QByteArray &QByteArray::setNum(uint n, int base)
 inline QByteArray &QByteArray::setNum(float n, char f, int prec)
 { return setNum(double(n),f,prec); }
 
+inline std::string QByteArray::toStdString() const
+{ return std::string(constData(), length()); }
+
+inline QByteArray QByteArray::fromStdString(const std::string &s)
+{ return QByteArray(s.data(), int(s.size())); }
 
 #if !defined(QT_NO_DATASTREAM) || (defined(QT_BOOTSTRAPPED) && !defined(QT_BUILD_QMAKE))
 Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QByteArray &);

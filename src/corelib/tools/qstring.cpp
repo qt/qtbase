@@ -1330,7 +1330,7 @@ const QString::Null QString::null = { };
     This constructor is only available if Qt is configured with STL
     compatibility enabled.
 
-    \sa fromLatin1(), fromLocal8Bit(), fromUtf8()
+    \sa fromLatin1(), fromLocal8Bit(), fromUtf8(), QByteArray::fromStdString()
 */
 
 /*! \fn QString QString::fromStdWString(const std::wstring &str)
@@ -7748,7 +7748,7 @@ bool QString::isRightToLeft() const
     If the QString contains non-Latin1 Unicode characters, using this
     can lead to loss of information.
 
-    \sa toLatin1(), toUtf8(), toLocal8Bit()
+    \sa toLatin1(), toUtf8(), toLocal8Bit(), QByteArray::toStdString()
 */
 
 /*!

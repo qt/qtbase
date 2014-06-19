@@ -153,6 +153,8 @@ private slots:
 #endif
 
     void macTypes();
+
+    void stdString();
 };
 
 static const struct StaticByteArrays {
@@ -2006,6 +2008,23 @@ void tst_QByteArray::macTypes()
     tst_QByteArray_macTypes();
 #endif
 }
+
+void tst_QByteArray::stdString()
+{
+    std::string stdstr( "QByteArray" );
+
+    const QByteArray stlqt = QByteArray::fromStdString(stdstr);
+    QCOMPARE(stlqt.length(), int(stdstr.length()));
+    QCOMPARE(stlqt.data(), stdstr.c_str());
+    QCOMPARE(stlqt.toStdString(), stdstr);
+
+    std::string utf8str( "Nøt æscii" );
+    const QByteArray u8 = QByteArray::fromStdString(utf8str);
+    const QByteArray l1 = QString::fromUtf8(u8).toLatin1();
+    std::string l1str = l1.toStdString();
+    QVERIFY(l1str.length() < utf8str.length());
+}
+
 
 const char globalChar = '1';
 

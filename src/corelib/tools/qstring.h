@@ -1222,7 +1222,7 @@ inline QT_ASCII_CAST_WARN const QString operator+(const QString &s, const QByteA
 #endif // QT_USE_QSTRINGBUILDER
 
 inline std::string QString::toStdString() const
-{ const QByteArray asc = toUtf8(); return std::string(asc.constData(), asc.length()); }
+{ return toUtf8().toStdString(); }
 
 inline QString QString::fromStdString(const std::string &s)
 { return fromUtf8(s.data(), int(s.size())); }
