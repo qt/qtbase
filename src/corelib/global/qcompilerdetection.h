@@ -89,7 +89,9 @@
 #  define Q_CC_MSVC
 #  define Q_CC_MSVC_NET
 #  define Q_OUTOFLINE_TEMPLATE inline
-#  define Q_NO_TEMPLATE_FRIENDS
+#  if _MSC_VER < 1600
+#    define Q_NO_TEMPLATE_FRIENDS
+#  endif
 #  define Q_COMPILER_MANGLES_RETURN_TYPE
 #  define Q_FUNC_INFO __FUNCSIG__
 #  define Q_ALIGNOF(type) __alignof(type)
@@ -808,8 +810,10 @@
        /* C++11 features supported in VC10 = VC2010: */
 #      define Q_COMPILER_AUTO_FUNCTION
 #      define Q_COMPILER_AUTO_TYPE
-#      define Q_COMPILER_LAMBDA
 #      define Q_COMPILER_DECLTYPE
+#      define Q_COMPILER_EXTERN_TEMPLATES
+#      define Q_COMPILER_LAMBDA
+#      define Q_COMPILER_NULLPTR
 #      define Q_COMPILER_RVALUE_REFS
 #      define Q_COMPILER_STATIC_ASSERT
 //  MSVC's library has std::initializer_list, but the compiler does not support the braces initialization
@@ -821,7 +825,6 @@
 #       undef Q_DECL_OVERRIDE               /* undo 2005/2008 settings... */
 #       undef Q_DECL_FINAL                  /* undo 2005/2008 settings... */
 #      define Q_COMPILER_EXPLICIT_OVERRIDES /* ...and use std C++11 now   */
-#      define Q_COMPILER_RANGE_FOR
 #      define Q_COMPILER_CLASS_ENUM
 #      define Q_COMPILER_ATOMICS
 #    endif /* VC 11 */
