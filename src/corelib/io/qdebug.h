@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -92,6 +92,8 @@ public:
     inline QDebug &operator=(const QDebug &other);
     ~QDebug();
     inline void swap(QDebug &other) { qSwap(stream, other.stream); }
+
+    QDebug &resetFormat();
 
     inline QDebug &space() { stream->space = true; stream->ts << ' '; return *this; }
     inline QDebug &nospace() { stream->space = false; return *this; }

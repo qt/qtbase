@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -150,6 +150,21 @@ QDebug::~QDebug()
     Swaps this debug stream instance with \a other. This function is
     very fast and never fails.
 */
+
+/*!
+    Resets the stream formatting options, bringing it back to its original constructed state.
+
+    \sa space(), quote()
+    \since 5.4
+*/
+QDebug &QDebug::resetFormat()
+{
+    stream->ts.reset();
+    stream->space = true;
+    if (stream->context.version > 1)
+        stream->flags = 0;
+    return *this;
+}
 
 /*!
     \fn QDebug &QDebug::space()

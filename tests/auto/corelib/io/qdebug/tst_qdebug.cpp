@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -64,6 +64,7 @@ private slots:
     void qDebugQLatin1String() const;
     void qDebugQByteArray() const;
     void textStreamModifiers() const;
+    void resetFormat() const;
     void defaultMessagehandler() const;
     void threadSafety() const;
 };
@@ -378,6 +379,22 @@ void tst_QDebug::textStreamModifiers() const
     QString file = __FILE__; int line = __LINE__ - 1; QString function = Q_FUNC_INFO;
     QCOMPARE(s_msgType, QtDebugMsg);
     QCOMPARE(s_msg, QString::fromLatin1("f f f f f f"));
+    QCOMPARE(QString::fromLatin1(s_file), file);
+    QCOMPARE(s_line, line);
+    QCOMPARE(QString::fromLatin1(s_function), function);
+}
+
+void tst_QDebug::resetFormat() const
+{
+    MessageHandlerSetter mhs(myMessageHandler);
+    {
+        QDebug d = qDebug();
+        d.nospace().noquote() << hex <<  int(0xf);
+        d.resetFormat() << int(0xf) << QStringLiteral("foo");
+    }
+    QString file = __FILE__; int line = __LINE__ - 4; QString function = Q_FUNC_INFO;
+    QCOMPARE(s_msgType, QtDebugMsg);
+    QCOMPARE(s_msg, QString::fromLatin1("f15 \"foo\""));
     QCOMPARE(QString::fromLatin1(s_file), file);
     QCOMPARE(s_line, line);
     QCOMPARE(QString::fromLatin1(s_function), function);
