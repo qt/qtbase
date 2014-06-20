@@ -259,21 +259,21 @@ inline QDebug operator<<(QDebug debug, const QContiguousCache<T> &cache)
 template <class T>
 inline QDebug operator<<(QDebug debug, const QFlags<T> &flags)
 {
-    const bool oldSetting = debug.autoInsertSpaces();
-    debug.nospace() << "QFlags(";
+    QDebugStateSaver saver(debug);
+    debug.resetFormat();
+    debug.nospace() << "QFlags(" << hex << showbase;
     bool needSeparator = false;
     for (uint i = 0; i < sizeof(T) * 8; ++i) {
         if (flags.testFlag(T(1 << i))) {
             if (needSeparator)
-                debug.nospace() << '|';
+                debug << '|';
             else
                 needSeparator = true;
-            debug.nospace() << "0x" << QByteArray::number(typename QFlags<T>::Int(1) << i, 16).constData();
+            debug << (typename QFlags<T>::Int(1) << i);
         }
     }
     debug << ')';
-    debug.setAutoInsertSpaces(oldSetting);
-    return debug.maybeSpace();
+    return debug;
 }
 
 QT_END_NAMESPACE

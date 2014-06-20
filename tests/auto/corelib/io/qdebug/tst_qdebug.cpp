@@ -63,6 +63,7 @@ private slots:
     void qDebugQStringRef() const;
     void qDebugQLatin1String() const;
     void qDebugQByteArray() const;
+    void qDebugQFlags() const;
     void textStreamModifiers() const;
     void resetFormat() const;
     void defaultMessagehandler() const;
@@ -393,6 +394,28 @@ void tst_QDebug::qDebugQByteArray() const
     QCOMPARE(QString::fromLatin1(s_file), file);
     QCOMPARE(s_line, line);
     QCOMPARE(QString::fromLatin1(s_function), function);
+}
+
+enum TestEnum {
+    Flag1 = 0x1,
+    Flag2 = 0x10
+};
+
+Q_DECLARE_FLAGS(TestFlags, TestEnum)
+
+void tst_QDebug::qDebugQFlags() const
+{
+    QFlags<TestEnum> flags(Flag1 | Flag2);
+
+    MessageHandlerSetter mhs(myMessageHandler);
+    { qDebug() << flags; }
+    QString file = __FILE__; int line = __LINE__ - 1; QString function = Q_FUNC_INFO;
+    QCOMPARE(s_msgType, QtDebugMsg);
+    QCOMPARE(s_msg, QString::fromLatin1("QFlags(0x1|0x10)"));
+    QCOMPARE(QString::fromLatin1(s_file), file);
+    QCOMPARE(s_line, line);
+    QCOMPARE(QString::fromLatin1(s_function), function);
+
 }
 
 void tst_QDebug::textStreamModifiers() const
