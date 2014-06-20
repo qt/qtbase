@@ -234,6 +234,8 @@ private slots:
     void mapResource();
     void mapOpenMode_data();
     void mapOpenMode();
+    void mapWrittenFile_data();
+    void mapWrittenFile();
 
 #ifndef Q_OS_WINCE
     void openStandardStreamsFileDescriptors();
@@ -3077,6 +3079,44 @@ void tst_QFile::mapOpenMode()
     }
 
     file.close();
+}
+
+void tst_QFile::mapWrittenFile_data()
+{
+    QTest::addColumn<int>("mode");
+    QTest::newRow("buffered") << 0;
+    QTest::newRow("unbuffered") << int(QIODevice::Unbuffered);
+}
+
+void tst_QFile::mapWrittenFile()
+{
+    static const char data[128] = "Some data padded with nulls\n";
+    QFETCH(int, mode);
+
+    QString fileName = QDir::currentPath() + '/' + "qfile_map_testfile";
+
+#ifdef Q_OS_WINCE
+     fileName = QFileInfo(fileName).absoluteFilePath();
+#endif
+
+    if (QFile::exists(fileName)) {
+        QVERIFY(QFile::setPermissions(fileName,
+            QFile::WriteOwner | QFile::ReadOwner | QFile::WriteUser | QFile::ReadUser));
+        QFile::remove(fileName);
+    }
+    QFile file(fileName);
+    QVERIFY(file.open(QIODevice::ReadWrite | QFile::OpenMode(mode)));
+    QCOMPARE(file.write(data, sizeof data), qint64(sizeof data));
+    if ((mode & QIODevice::Unbuffered) == 0)
+        file.flush();
+
+    // test that we can read the data we've just written, without closing the file
+    uchar *memory = file.map(0, sizeof data);
+    QVERIFY(memory);
+    QVERIFY(memcmp(memory, data, sizeof data) == 0);
+
+    file.close();
+    file.remove();
 }
 
 void tst_QFile::openDirectory()

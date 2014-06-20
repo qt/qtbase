@@ -742,6 +742,9 @@ qint64 QFSFileEnginePrivate::writeFdFh(const char *data, qint64 len)
     if (len &&  writtenBytes == 0) {
         writtenBytes = -1;
         q->setError(errno == ENOSPC ? QFile::ResourceError : QFile::WriteError, qt_error_string(errno));
+    } else {
+        // reset the cached size, if any
+        metaData.clearFlags(QFileSystemMetaData::SizeAttribute);
     }
 
     return writtenBytes;
