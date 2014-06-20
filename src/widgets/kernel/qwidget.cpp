@@ -12175,6 +12175,7 @@ QPoint QWidget::mapFromGlobal(const QPoint &pos) const
 
 QWidget *qt_pressGrab = 0;
 QWidget *qt_mouseGrb = 0;
+static bool mouseGrabWithCursor = false;
 static QWidget *keyboardGrb = 0;
 
 static inline QWindow *grabberWindow(const QWidget *w)
@@ -12184,6 +12185,46 @@ static inline QWindow *grabberWindow(const QWidget *w)
         if (const QWidget *nativeParent = w->nativeParentWidget())
             window = nativeParent->windowHandle();
     return window;
+}
+
+#ifndef QT_NO_CURSOR
+static void grabMouseForWidget(QWidget *widget, const QCursor *cursor = 0)
+#else
+static void grabMouseForWidget(QWidget *widget)
+#endif
+{
+    if (qt_mouseGrb)
+        qt_mouseGrb->releaseMouse();
+
+    mouseGrabWithCursor = false;
+    if (QWindow *window = grabberWindow(widget)) {
+#ifndef QT_NO_CURSOR
+        if (cursor) {
+            mouseGrabWithCursor = true;
+            QGuiApplication::setOverrideCursor(*cursor);
+        }
+#endif // !QT_NO_CURSOR
+        window->setMouseGrabEnabled(true);
+    }
+
+    qt_mouseGrb = widget;
+    qt_pressGrab = 0;
+}
+
+static void releaseMouseGrabOfWidget(QWidget *widget)
+{
+    if (qt_mouseGrb == widget) {
+        if (QWindow *window = grabberWindow(widget)) {
+#ifndef QT_NO_CURSOR
+            if (mouseGrabWithCursor) {
+                QGuiApplication::restoreOverrideCursor();
+                mouseGrabWithCursor = false;
+            }
+#endif // !QT_NO_CURSOR
+            window->setMouseGrabEnabled(false);
+        }
+    }
+    qt_mouseGrb = 0;
 }
 
 /*!
@@ -12217,14 +12258,7 @@ static inline QWindow *grabberWindow(const QWidget *w)
 */
 void QWidget::grabMouse()
 {
-    if (qt_mouseGrb)
-        qt_mouseGrb->releaseMouse();
-
-    if (QWindow *window = grabberWindow(this))
-        window->setMouseGrabEnabled(true);
-
-    qt_mouseGrb = this;
-    qt_pressGrab = 0;
+    grabMouseForWidget(this);
 }
 
 /*!
@@ -12246,8 +12280,7 @@ void QWidget::grabMouse()
 #ifndef QT_NO_CURSOR
 void QWidget::grabMouse(const QCursor &cursor)
 {
-    Q_UNUSED(cursor);
-    grabMouse();
+    grabMouseForWidget(this, &cursor);
 }
 #endif
 
@@ -12269,11 +12302,7 @@ bool QWidgetPrivate::stealMouseGrab(bool grab)
 */
 void QWidget::releaseMouse()
 {
-    if (qt_mouseGrb == this) {
-        if (QWindow *window = grabberWindow(this))
-            window->setMouseGrabEnabled(false);
-        qt_mouseGrb = 0;
-    }
+    releaseMouseGrabOfWidget(this);
 }
 
 /*!

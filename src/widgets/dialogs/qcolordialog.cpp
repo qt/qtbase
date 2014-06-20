@@ -1553,12 +1553,10 @@ void QColorDialogPrivate::_q_pickScreenColor()
     q->installEventFilter(colorPickingEventFilter);
     // If user pushes Escape, the last color before picking will be restored.
     beforeScreenColorPicking = cs->currentColor();
-    /*For some reason, q->grabMouse(Qt::CrossCursor) doesn't change
-     * the cursor, and therefore I have to change it manually.
-     */
-    q->grabMouse();
 #ifndef QT_NO_CURSOR
-    q->setCursor(Qt::CrossCursor);
+    q->grabMouse(Qt::CrossCursor);
+#else
+    q->grabMouse();
 #endif
     q->grabKeyboard();
     /* With setMouseTracking(true) the desired color can be more precisedly picked up,
@@ -1583,9 +1581,6 @@ void QColorDialogPrivate::releaseColorPicking()
     q->removeEventFilter(colorPickingEventFilter);
     q->releaseMouse();
     q->releaseKeyboard();
-#ifndef QT_NO_CURSOR
-    q->setCursor(Qt::ArrowCursor);
-#endif
     q->setMouseTracking(false);
     lblScreenColorInfo->setText(QLatin1String("\n"));
     addCusBt->setDisabled(false);
