@@ -151,13 +151,8 @@ inline QDebug &QDebug::operator=(const QDebug &other)
     return *this;
 }
 
-#if defined(FORCE_UREF)
-template <class T>
-inline QDebug &operator<<(QDebug debug, const QList<T> &list)
-#else
 template <class T>
 inline QDebug operator<<(QDebug debug, const QList<T> &list)
-#endif
 {
     const bool oldSetting = debug.autoInsertSpaces();
     debug.nospace() << '(';
@@ -171,13 +166,8 @@ inline QDebug operator<<(QDebug debug, const QList<T> &list)
     return debug.maybeSpace();
 }
 
-#if defined(FORCE_UREF)
-template <typename T>
-inline QDebug &operator<<(QDebug debug, const QVector<T> &vec)
-#else
 template <typename T>
 inline QDebug operator<<(QDebug debug, const QVector<T> &vec)
-#endif
 {
     const bool oldSetting = debug.autoInsertSpaces();
     debug.nospace() << "QVector";
@@ -185,13 +175,8 @@ inline QDebug operator<<(QDebug debug, const QVector<T> &vec)
     return operator<<(debug, vec.toList());
 }
 
-#if defined(FORCE_UREF)
-template <class aKey, class aT>
-inline QDebug &operator<<(QDebug debug, const QMap<aKey, aT> &map)
-#else
 template <class aKey, class aT>
 inline QDebug operator<<(QDebug debug, const QMap<aKey, aT> &map)
-#endif
 {
     const bool oldSetting = debug.autoInsertSpaces();
     debug.nospace() << "QMap(";
@@ -204,13 +189,8 @@ inline QDebug operator<<(QDebug debug, const QMap<aKey, aT> &map)
     return debug.maybeSpace();
 }
 
-#if defined(FORCE_UREF)
-template <class aKey, class aT>
-inline QDebug &operator<<(QDebug debug, const QHash<aKey, aT> &hash)
-#else
 template <class aKey, class aT>
 inline QDebug operator<<(QDebug debug, const QHash<aKey, aT> &hash)
-#endif
 {
     const bool oldSetting = debug.autoInsertSpaces();
     debug.nospace() << "QHash(";
@@ -222,13 +202,8 @@ inline QDebug operator<<(QDebug debug, const QHash<aKey, aT> &hash)
     return debug.maybeSpace();
 }
 
-#if defined(FORCE_UREF)
-template <class T1, class T2>
-inline QDebug &operator<<(QDebug debug, const QPair<T1, T2> &pair)
-#else
 template <class T1, class T2>
 inline QDebug operator<<(QDebug debug, const QPair<T1, T2> &pair)
-#endif
 {
     const bool oldSetting = debug.autoInsertSpaces();
     debug.nospace() << "QPair(" << pair.first << ',' << pair.second << ')';
@@ -245,13 +220,8 @@ inline QDebug operator<<(QDebug debug, const QSet<T> &set)
     return operator<<(debug, set.toList());
 }
 
-#if defined(FORCE_UREF)
-template <class T>
-inline QDebug &operator<<(QDebug debug, const QContiguousCache<T> &cache)
-#else
 template <class T>
 inline QDebug operator<<(QDebug debug, const QContiguousCache<T> &cache)
-#endif
 {
     const bool oldSetting = debug.autoInsertSpaces();
     debug.nospace() << "QContiguousCache(";
@@ -265,13 +235,8 @@ inline QDebug operator<<(QDebug debug, const QContiguousCache<T> &cache)
     return debug.maybeSpace();
 }
 
-#if defined(FORCE_UREF)
-template <class T>
-inline QDebug &operator<<(QDebug debug, const QFlags<T> &flags)
-#else
 template <class T>
 inline QDebug operator<<(QDebug debug, const QFlags<T> &flags)
-#endif
 {
     const bool oldSetting = debug.autoInsertSpaces();
     debug.nospace() << "QFlags(";
