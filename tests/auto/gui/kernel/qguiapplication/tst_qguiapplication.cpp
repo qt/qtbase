@@ -45,6 +45,7 @@
 #include <QtGui/QWindow>
 #include <QtGui/QScreen>
 #include <QtGui/QCursor>
+#include <QtGui/QPalette>
 #include <qpa/qwindowsysteminterface.h>
 #include <qgenericplugin.h>
 
@@ -72,6 +73,7 @@ private slots:
     void abortQuitOnShow();
     void changeFocusWindow();
     void keyboardModifiers();
+    void palette();
     void modalWindow();
     void quitOnLastWindowClosed();
     void genericPluginsAndWindowSystemEvents();
@@ -432,6 +434,31 @@ void tst_QGuiApplication::keyboardModifiers()
     }
 
     window->close();
+}
+
+void tst_QGuiApplication::palette()
+{
+    int argc = 1;
+    char *argv[] = { const_cast<char*>("tst_qguiapplication") };
+    QGuiApplication app(argc, argv);
+    QSignalSpy signalSpy(&app, SIGNAL(paletteChanged(QPalette)));
+
+    QPalette oldPalette = QGuiApplication::palette();
+    QPalette newPalette = QPalette(Qt::red);
+
+    QGuiApplication::setPalette(newPalette);
+    QCOMPARE(QGuiApplication::palette(), newPalette);
+    QCOMPARE(signalSpy.count(), 1);
+    QCOMPARE(signalSpy.at(0).at(0), QVariant(newPalette));
+
+    QGuiApplication::setPalette(oldPalette);
+    QCOMPARE(QGuiApplication::palette(), oldPalette);
+    QCOMPARE(signalSpy.count(), 2);
+    QCOMPARE(signalSpy.at(1).at(0), QVariant(oldPalette));
+
+    QGuiApplication::setPalette(oldPalette);
+    QCOMPARE(QGuiApplication::palette(), oldPalette);
+    QCOMPARE(signalSpy.count(), 2);
 }
 
 class BlockableWindow : public QWindow

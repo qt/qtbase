@@ -174,6 +174,7 @@ Q_SIGNALS:
     void commitDataRequest(QSessionManager &sessionManager);
     void saveStateRequest(QSessionManager &sessionManager);
 #endif
+    void paletteChanged(const QPalette &pal);
 
 protected:
     bool event(QEvent *);

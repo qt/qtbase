@@ -2653,6 +2653,15 @@ QClipboard * QGuiApplication::clipboard()
 #endif
 
 /*!
+    \since 5.4
+    \fn void QGuiApplication::paletteChanged(const QPalette &palette)
+
+    This signal is emitted when the \a palette of the application changes.
+
+    \sa palette()
+*/
+
+/*!
     Returns the default application palette.
 
     \sa setPalette()
@@ -2678,6 +2687,7 @@ void QGuiApplication::setPalette(const QPalette &pal)
     else
         *QGuiApplicationPrivate::app_pal = pal;
     applicationResourceFlags |= ApplicationPaletteExplicitlySet;
+    emit qGuiApp->paletteChanged(*QGuiApplicationPrivate::app_pal);
 }
 
 QRect QGuiApplicationPrivate::applyWindowGeometrySpecification(const QRect &windowGeometry, const QWindow *window)
