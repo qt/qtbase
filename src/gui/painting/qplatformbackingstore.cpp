@@ -90,6 +90,7 @@ struct QBackingstoreTextureInfo
 {
     GLuint textureId;
     QRect rect;
+    bool stacksOnTop;
 };
 
 Q_DECLARE_TYPEINFO(QBackingstoreTextureInfo, Q_MOVABLE_TYPE);
@@ -127,6 +128,12 @@ GLuint QPlatformTextureList::textureId(int index) const
     return d->textures.at(index).textureId;
 }
 
+bool QPlatformTextureList::stacksOnTop(int index) const
+{
+    Q_D(const QPlatformTextureList);
+    return d->textures.at(index).stacksOnTop;
+}
+
 QRect QPlatformTextureList::geometry(int index) const
 {
     Q_D(const QPlatformTextureList);
@@ -148,12 +155,13 @@ bool QPlatformTextureList::isLocked() const
     return d->locked;
 }
 
-void QPlatformTextureList::appendTexture(GLuint textureId, const QRect &geometry)
+void QPlatformTextureList::appendTexture(GLuint textureId, const QRect &geometry, bool stacksOnTop)
 {
     Q_D(QPlatformTextureList);
     QBackingstoreTextureInfo bi;
     bi.textureId = textureId;
     bi.rect = geometry;
+    bi.stacksOnTop = stacksOnTop;
     d->textures.append(bi);
 }
 
@@ -238,29 +246,39 @@ void QPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &regi
 
     QRect windowRect(QPoint(), window->size() * window->devicePixelRatio());
 
+    // Textures for renderToTexture widgets.
     for (int i = 0; i < textures->count(); ++i) {
-        GLuint textureId = textures->textureId(i);
-        funcs->glBindTexture(GL_TEXTURE_2D, textureId);
-
-        QRect targetRect = deviceRect(textures->geometry(i), window);
-        QMatrix4x4 target = QOpenGLTextureBlitter::targetTransform(targetRect, windowRect);
-        d_ptr->blitter->blit(textureId, target, QOpenGLTextureBlitter::OriginBottomLeft);
+        if (!textures->stacksOnTop(i)) {
+            QRect targetRect = deviceRect(textures->geometry(i), window);
+            QMatrix4x4 target = QOpenGLTextureBlitter::targetTransform(targetRect, windowRect);
+            d_ptr->blitter->blit(textures->textureId(i), target, QOpenGLTextureBlitter::OriginBottomLeft);
+        }
     }
-
-    GLuint textureId = toTexture(deviceRegion(region, window), &d_ptr->textureSize);
-    if (!textureId)
-        return;
 
     funcs->glEnable(GL_BLEND);
     funcs->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    QMatrix4x4 target = QOpenGLTextureBlitter::targetTransform(QRect(QPoint(), d_ptr->textureSize), windowRect);
-    d_ptr->blitter->setSwizzleRB(true);
-    d_ptr->blitter->blit(textureId, target, QOpenGLTextureBlitter::OriginTopLeft);
-    d_ptr->blitter->setSwizzleRB(false);
+    // Backingstore texture with the normal widgets.
+    GLuint textureId = toTexture(deviceRegion(region, window), &d_ptr->textureSize);
+    if (textureId) {
+        QMatrix4x4 target = QOpenGLTextureBlitter::targetTransform(QRect(QPoint(), d_ptr->textureSize), windowRect);
+        d_ptr->blitter->setSwizzleRB(true);
+        d_ptr->blitter->blit(textureId, target, QOpenGLTextureBlitter::OriginTopLeft);
+        d_ptr->blitter->setSwizzleRB(false);
+    }
+
+    // Textures for renderToTexture widgets that have WA_AlwaysStackOnTop set.
+    for (int i = 0; i < textures->count(); ++i) {
+        if (textures->stacksOnTop(i)) {
+            QRect targetRect = deviceRect(textures->geometry(i), window);
+            QMatrix4x4 target = QOpenGLTextureBlitter::targetTransform(targetRect, windowRect);
+            d_ptr->blitter->blit(textures->textureId(i), target, QOpenGLTextureBlitter::OriginBottomLeft);
+        }
+    }
 
     funcs->glDisable(GL_BLEND);
     d_ptr->blitter->release();
+
     context->swapBuffers(window);
 }
 

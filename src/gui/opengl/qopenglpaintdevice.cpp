@@ -63,9 +63,9 @@ QT_BEGIN_NAMESPACE
 
     \ingroup painting-3D
 
-    The QOpenGLPaintDevice uses the current QOpenGL context to render
-    QPainter draw commands. It requires OpenGL (ES) 2.0 support or
-    higher.
+    The QOpenGLPaintDevice uses the \b current QOpenGL context to render
+    QPainter draw commands. The context is captured upon construction. It
+    requires support for OpenGL (ES) 2.0 or higher.
 
     \section1 Performance
 
@@ -359,9 +359,9 @@ bool QOpenGLPaintDevice::paintFlipped() const
 }
 
 /*!
-    This virtual method is provided as a callback to allow re-binding a
-    target frame buffer object when different QOpenGLPaintDevice instances
-    are issuing draw calls alternately on the same OpenGL context.
+    This virtual method is provided as a callback to allow re-binding a target
+    frame buffer object or context when different QOpenGLPaintDevice instances
+    are issuing draw calls alternately.
 
     QPainter::beginNativePainting will also trigger this method.
 */

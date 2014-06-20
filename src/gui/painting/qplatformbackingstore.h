@@ -84,10 +84,11 @@ public:
     bool isEmpty() const { return count() == 0; }
     GLuint textureId(int index) const;
     QRect geometry(int index) const;
+    bool stacksOnTop(int index) const;
     void lock(bool on);
     bool isLocked() const;
 
-    void appendTexture(GLuint textureId, const QRect &geometry);
+    void appendTexture(GLuint textureId, const QRect &geometry, bool stacksOnTop = false);
     void clear();
 
  Q_SIGNALS:

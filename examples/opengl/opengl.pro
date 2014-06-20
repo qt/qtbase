@@ -5,10 +5,9 @@ TEMPLATE      = subdirs
 contains(QT_CONFIG, dynamicgl) {
     SUBDIRS = hellowindow \
               contextinfo \
-              hellogl_es2
-} else: contains(QT_CONFIG, opengles2){
-    SUBDIRS   = hellogl_es2
-} else {
+              qopenglwidget \
+              threadedqopenglwidget
+} else: !contains(QT_CONFIG, opengles2) {
     SUBDIRS   = 2dpainting \
                 grabber \
                 hellogl \
@@ -22,6 +21,8 @@ contains(QT_CONFIG, dynamicgl) {
            paintedwindow \
            contextinfo \
            cube \
-           textures
+           textures \
+           qopenglwidget \
+           threadedqopenglwidget
 
 EXAMPLE_FILES = shared

@@ -58,7 +58,7 @@
 #include <QtCore/qmath.h>
 #include <qopengl.h>
 
-class OpenGLWidgetPrivate
+class OpenGLWidgetPrivate : protected QOpenGLFunctions
 {
 public:
     OpenGLWidgetPrivate(QWidget *q)
@@ -91,7 +91,7 @@ OpenGLWidget::OpenGLWidget(QWidget *parent)
 {
     d = new OpenGLWidgetPrivate(this);
     QTimer *timer = new QTimer(this);
-    connect(timer, SIGNAL(timeout()), this, SLOT(updateGL()));
+    connect(timer, SIGNAL(timeout()), this, SLOT(update()));
     timer->start(30);
 }
 
@@ -137,6 +137,7 @@ static const char *fragmentShaderSource =
 
 void OpenGLWidgetPrivate::initialize()
 {
+    initializeOpenGLFunctions();
     m_program = new QOpenGLShaderProgram;
     m_program->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSource);
     m_program->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSource);
@@ -157,7 +158,7 @@ void OpenGLWidgetPrivate::render()
     m_program->bind();
 
     QMatrix4x4 matrix;
-    matrix.perspective(60, 4.0/3.0, 0.1, 100.0);
+    matrix.perspective(60.0f, 4.0f/3.0f, 0.1f, 100.0f);
     matrix.translate(0, 0, -2);
     matrix.rotate(100.0f * m_frame / 30/*screen()->refreshRate()*/, 0, 1, 0);
 

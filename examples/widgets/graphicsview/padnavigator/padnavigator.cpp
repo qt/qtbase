@@ -292,7 +292,7 @@ PadNavigator::PadNavigator(const QSize &size, QWidget *parent)
                    | QPainter::SmoothPixmapTransform
                    | QPainter::TextAntialiasing);
 #ifndef QT_NO_OPENGL
-    setViewport(new QGLWidget(QGLFormat(QGL::SampleBuffers)));
+    setViewport(new QOpenGLWidget);
 #endif
 
     stateMachine->start();

@@ -1191,6 +1191,10 @@ bool QAbstractScrollArea::viewportEvent(QEvent *e)
     case QEvent::DragMove:
     case QEvent::DragLeave:
 #endif
+        // QOpenGLWidget needs special support because it has to know
+        // its size has changed, so that it can resize its fbo.
+        if (e->type() == QEvent::Resize)
+            QWidgetPrivate::get(viewport())->resizeViewportFramebuffer();
         return QFrame::event(e);
     case QEvent::LayoutRequest:
 #ifndef QT_NO_GESTURES

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -38,39 +38,75 @@
 **
 ****************************************************************************/
 
-#ifndef BUBBLE_H
-#define BUBBLE_H
+#ifndef GLWIDGET_H
+#define GLWIDGET_H
 
-#include <QBrush>
-#include <QColor>
-#include <QPointF>
-#include <QRect>
-#include <QRectF>
+#include <QOpenGLWidget>
+#include <QOpenGLFunctions>
+#include <QOpenGLShaderProgram>
+#include <QVector3D>
+#include <QMatrix4x4>
+#include <QTime>
+#include <QVector>
+#include <QPushButton>
 
-QT_FORWARD_DECLARE_CLASS(QPainter)
+class Bubble;
+class MainWindow;
 
-class Bubble
+class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
+    Q_OBJECT
 public:
-    Bubble(const QPointF &position, qreal radius, const QPointF &velocity);
-    ~Bubble();
+    GLWidget(MainWindow *mw, bool button, const QColor &background);
+    ~GLWidget();
 
-    void drawBubble(QPainter *painter);
-    void updateBrush();
-    void move(const QRect &bbox);
-    void updateCache();
-    QRectF rect();
+public slots:
+    void setScaling(int scale);
+    void setLogo();
+    void setTexture();
+    void showBubbles(bool);
+    void setTransparent(bool transparent);
+
+private slots:
+    void handleButtonPress();
+
+protected:
+    void resizeGL(int w, int h) Q_DECL_OVERRIDE;
+    void paintGL() Q_DECL_OVERRIDE;
+    void initializeGL() Q_DECL_OVERRIDE;
 
 private:
-    QColor randomColor();
-
-    QBrush brush;
-    QPointF position;
-    QPointF vel;
-    qreal radius;
-    QColor innerColor;
-    QColor outerColor;
-    QImage *cache;
+    MainWindow *m_mainWindow;
+    GLuint m_uiTexture;
+    qreal m_fAngle;
+    qreal m_fScale;
+    bool m_showBubbles;
+    void paintTexturedCube();
+    void paintQtLogo();
+    void createGeometry();
+    void createBubbles(int number);
+    void quad(qreal x1, qreal y1, qreal x2, qreal y2, qreal x3, qreal y3, qreal x4, qreal y4);
+    void extrude(qreal x1, qreal y1, qreal x2, qreal y2);
+    QVector<QVector3D> vertices;
+    QVector<QVector3D> normals;
+    bool qtLogo;
+    QList<Bubble*> bubbles;
+    int frames;
+    QTime time;
+    QOpenGLShaderProgram program1;
+    QOpenGLShaderProgram program2;
+    int vertexAttr1;
+    int normalAttr1;
+    int matrixUniform1;
+    int vertexAttr2;
+    int normalAttr2;
+    int texCoordAttr2;
+    int matrixUniform2;
+    int textureUniform2;
+    bool m_transparent;
+    QPushButton *m_btn;
+    bool m_hasButton;
+    QColor m_background;
 };
 
 #endif

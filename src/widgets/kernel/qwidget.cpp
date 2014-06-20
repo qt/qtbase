@@ -5492,18 +5492,22 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
                 //paint the background
                 if ((asRoot || q->autoFillBackground() || onScreen || q->testAttribute(Qt::WA_StyledBackground))
                     && !q->testAttribute(Qt::WA_OpaquePaintEvent) && !q->testAttribute(Qt::WA_NoSystemBackground)) {
+                    beginBackingStorePainting();
                     QPainter p(q);
                     paintBackground(&p, toBePainted, (asRoot || onScreen) ? flags | DrawAsRoot : 0);
+                    endBackingStorePainting();
                 }
 
                 if (!sharedPainter)
                     setSystemClip(pdev, toBePainted.translated(offset));
 
                 if (!onScreen && !asRoot && !isOpaque && q->testAttribute(Qt::WA_TintedBackground)) {
+                    beginBackingStorePainting();
                     QPainter p(q);
                     QColor tint = q->palette().window().color();
                     tint.setAlphaF(qreal(.6));
                     p.fillRect(toBePainted.boundingRect(), tint);
+                    endBackingStorePainting();
                 }
             }
 
@@ -5513,24 +5517,30 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
                      << "geometry ==" << QRect(q->mapTo(q->window(), QPoint(0, 0)), q->size());
 #endif
 
+            bool grabbed = false;
+#ifndef QT_NO_OPENGL
             if (renderToTexture) {
                 // This widget renders into a texture which is composed later. We just need to
                 // punch a hole in the backingstore, so the texture will be visible.
-#ifndef QT_NO_OPENGL
-                QPainter p(q);
-
-                if (backingStore) {
-                    p.setCompositionMode(QPainter::CompositionMode_Source);
-                    p.fillRect(q->rect(), Qt::transparent);
-                } else {
-                    // We are not drawing to a backingstore: fall back to QImage
-                    p.drawImage(q->rect(), grabFramebuffer());
+                if (!q->testAttribute(Qt::WA_AlwaysStackOnTop)) {
+                    beginBackingStorePainting();
+                    QPainter p(q);
+                    if (backingStore) {
+                        p.setCompositionMode(QPainter::CompositionMode_Source);
+                        p.fillRect(q->rect(), Qt::transparent);
+                    } else {
+                        // We are not drawing to a backingstore: fall back to QImage
+                        p.drawImage(q->rect(), grabFramebuffer());
+                        grabbed = true;
+                    }
+                    endBackingStorePainting();
                 }
-#endif
-            } else {
+            }
+#endif // QT_NO_OPENGL
+
+            if (!grabbed) {
                 //actually send the paint event
-                QPaintEvent e(toBePainted);
-                QCoreApplication::sendSpontaneousEvent(q, &e);
+                sendPaintEvent(toBePainted);
             }
 
             // Native widgets need to be marked dirty on screen so painting will be done in correct context
@@ -5584,6 +5594,13 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
         paintSiblingsRecursive(pdev, children, children.size() - 1, rgn, offset, flags & ~DrawAsRoot
                                 , sharedPainter, backingStore);
     }
+}
+
+void QWidgetPrivate::sendPaintEvent(const QRegion &toBePainted)
+{
+    Q_Q(QWidget);
+    QPaintEvent e(toBePainted);
+    QCoreApplication::sendSpontaneousEvent(q, &e);
 }
 
 void QWidgetPrivate::render(QPaintDevice *target, const QPoint &targetOffset,
@@ -11968,7 +11985,7 @@ QOpenGLContext *QWidgetPrivate::shareContext() const
     }
     QWidgetPrivate *that = const_cast<QWidgetPrivate *>(this);
     if (!extra->topextra->shareContext) {
-        QOpenGLContext *ctx = new QOpenGLContext();
+        QOpenGLContext *ctx = new QOpenGLContext;
         ctx->setShareContext(QOpenGLContextPrivate::globalShareContext());
         ctx->setFormat(extra->topextra->window->format());
         ctx->create();
@@ -11977,6 +11994,24 @@ QOpenGLContext *QWidgetPrivate::shareContext() const
     return that->extra->topextra->shareContext;
 #endif // QT_NO_OPENGL
 }
+
+#ifndef QT_NO_OPENGL
+void QWidgetPrivate::sendComposeStatus(QWidget *w, bool end)
+{
+    QWidgetPrivate *wd = QWidgetPrivate::get(w);
+    if (!wd->textureChildSeen)
+        return;
+    if (end)
+        wd->endCompose();
+    else
+        wd->beginCompose();
+    for (int i = 0; i < wd->children.size(); ++i) {
+        w = qobject_cast<QWidget *>(wd->children.at(i));
+        if (w && !w->isWindow() && !w->isHidden() && QWidgetPrivate::get(w)->textureChildSeen)
+            sendComposeStatus(w, end);
+    }
+}
+#endif // QT_NO_OPENGL
 
 Q_WIDGETS_EXPORT QWidgetData *qt_qwidget_data(QWidget *widget)
 {

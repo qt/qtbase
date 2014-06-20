@@ -45,20 +45,32 @@
 #include <QMdiArea>
 #include <QLCDNumber>
 #include <QTimer>
-
+#include <QSurfaceFormat>
+#include <QDebug>
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
 
+    QSurfaceFormat format;
+    if (QCoreApplication::arguments().contains(QLatin1String("--multisample")))
+        format.setSamples(4);
+    if (QCoreApplication::arguments().contains(QLatin1String("--coreprofile"))) {
+        format.setVersion(3, 2);
+        format.setProfile(QSurfaceFormat::CoreProfile);
+    }
+    qDebug() << "Requesting" << format;
+
     QMdiArea w;
     w.resize(400,400);
 
     OpenGLWidget *glw = new OpenGLWidget;
+    glw->setFormat(format);
     w.addSubWindow(glw);
     glw->setMinimumSize(100,100);
 
     OpenGLWidget *glw2 = new OpenGLWidget;
+    glw2->setFormat(format);
     glw2->setMinimumSize(100,100);
     w.addSubWindow(glw2);
 
@@ -68,6 +80,9 @@ int main(int argc, char *argv[])
     w.addSubWindow(lcd);
 
     w.show();
+
+    if (glw->isValid())
+        qDebug() << "Got" << glw->format();
 
     return a.exec();
 }

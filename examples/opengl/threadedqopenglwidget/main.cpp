@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -38,58 +38,32 @@
 **
 ****************************************************************************/
 
-#ifndef GLWIDGET_H
-#define GLWIDGET_H
+#include <QApplication>
+#include <QMainWindow>
+#include "mainwindow.h"
+#include "glwidget.h"
 
-#include <QGLWidget>
-#include <QOpenGLFunctions>
-#include <QGLShaderProgram>
-#include <QVector3D>
-#include <QMatrix4x4>
-#include <QTime>
-#include <QVector>
-
-class Bubble;
-class GLWidget : public QGLWidget, protected QOpenGLFunctions
+int main( int argc, char ** argv )
 {
-    Q_OBJECT
-public:
-    GLWidget(QWidget *parent = 0);
-    ~GLWidget();
-public slots:
-    void setScaling(int scale);
-    void setLogo();
-    void setTexture();
-    void showBubbles(bool);
-protected:
-    void paintGL ();
-    void initializeGL ();
-private:
-    GLuint  m_uiTexture;
-    qreal   m_fAngle;
-    qreal   m_fScale;
-    bool m_showBubbles;
-    void paintTexturedCube();
-    void paintQtLogo();
-    void createGeometry();
-    void createBubbles(int number);
-    void quad(qreal x1, qreal y1, qreal x2, qreal y2, qreal x3, qreal y3, qreal x4, qreal y4);
-    void extrude(qreal x1, qreal y1, qreal x2, qreal y2);
-    QVector<QVector3D> vertices;
-    QVector<QVector3D> normals;
-    bool qtLogo;
-    QList<Bubble*> bubbles;
-    int frames;
-    QTime time;
-    QGLShaderProgram program1;
-    QGLShaderProgram program2;
-    int vertexAttr1;
-    int normalAttr1;
-    int matrixUniform1;
-    int vertexAttr2;
-    int normalAttr2;
-    int texCoordAttr2;
-    int matrixUniform2;
-    int textureUniform2;
-};
-#endif
+    QApplication a( argc, argv );
+
+    // Two top-level windows with two QOpenGLWidget children in each.
+    // The rendering for the four QOpenGLWidgets happens on four separate threads.
+    MainWindow mw1;
+    mw1.setMinimumSize(800, 400);
+    mw1.show();
+
+    QScopedPointer<MainWindow> mw2;
+    if (!QApplication::arguments().contains(QStringLiteral("--single"))) {
+        mw2.reset(new MainWindow);
+        mw2->setMinimumSize(800, 400);
+        mw2->show();
+
+        // And a top-level.
+        GLWidget *bonus = new GLWidget(0);
+        bonus->resize(200, 200);
+        bonus->show();
+    }
+
+    return a.exec();
+}

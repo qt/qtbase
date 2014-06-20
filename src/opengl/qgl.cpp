@@ -3612,6 +3612,11 @@ void QGLContext::doneCurrent()
     except that you have the choice between using QPainter and
     standard OpenGL rendering commands.
 
+    \note This class is part of the legacy \l {Qt OpenGL} module and,
+    like the other \c QGL classes, should be avoided in the new
+    applications. Instead, starting from Qt 5.4, prefer using
+    QOpenGLWidget and the \c QOpenGL classes.
+
     QGLWidget provides three convenient virtual functions that you can
     reimplement in your subclass to perform the typical OpenGL tasks:
 
@@ -3807,7 +3812,7 @@ void QGLContext::doneCurrent()
     \e{OpenGL is a trademark of Silicon Graphics, Inc. in the United States and other
     countries.}
 
-    \sa QGLPixelBuffer, {Hello GL Example}, {2D Painting Example}, {Overpainting Example},
+    \sa QOpenGLWidget, QGLPixelBuffer, {Hello GL Example}, {2D Painting Example}, {Overpainting Example},
         {Grabber Example}
 */
 

@@ -181,11 +181,8 @@ void QEGLPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &r
     screen->compositingContext()->makeCurrent(dstWin->window());
 
     m_textures->clear();
-    for (int i = 0; i < textures->count(); ++i) {
-        uint textureId = textures->textureId(i);
-        QRect geom = textures->geometry(i);
-        m_textures->appendTexture(textureId, geom);
-    }
+    for (int i = 0; i < textures->count(); ++i)
+        m_textures->appendTexture(textures->textureId(i), textures->geometry(i), textures->stacksOnTop(i));
 
     updateTexture();
     m_textures->appendTexture(m_bsTexture, window->geometry());

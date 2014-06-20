@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -43,19 +43,25 @@
 #include <QPaintEngine>
 #include <math.h>
 
+#include "mainwindow.h"
 #include "bubble.h"
-
 
 const int bubbleNum = 8;
 
-GLWidget::GLWidget(QWidget *parent)
-    : QGLWidget(parent)
+GLWidget::GLWidget(MainWindow *mw, bool button, const QColor &background)
+    : m_mainWindow(mw),
+      m_transparent(false),
+      m_btn(0),
+      m_hasButton(button),
+      m_background(background)
 {
+    QSurfaceFormat format;
+    format.setDepthBufferSize(24);
+    format.setStencilBufferSize(8);
+    setFormat(format);
+
     qtLogo = true;
     frames = 0;
-    setAttribute(Qt::WA_PaintOnScreen);
-    setAttribute(Qt::WA_NoSystemBackground);
-    setAutoBufferSwap(false);
     m_showBubbles = true;
     setMinimumSize(300, 250);
 }
@@ -66,10 +72,10 @@ GLWidget::~GLWidget()
 
 void GLWidget::setScaling(int scale) {
 
-    if (scale > 50)
-        m_fScale = 1 + qreal(scale -50) / 50 * 0.5;
-    else if (scale < 50)
-        m_fScale =  1- (qreal(50 - scale) / 50 * 1/2);
+    if (scale > 30)
+        m_fScale = 1 + qreal(scale - 30) / 30 * 0.25;
+    else if (scale < 30)
+        m_fScale =  1 - (qreal(30 - scale) / 30 * 0.25);
     else
       m_fScale = 1;
 }
@@ -173,12 +179,14 @@ void GLWidget::initializeGL ()
 {
     initializeOpenGLFunctions();
 
-    glClearColor(0.1f, 0.1f, 0.2f, 1.0f);
-
     glGenTextures(1, &m_uiTexture);
-    m_uiTexture = bindTexture(QImage(":/qt.png"));
+    QImage img = QImage(":/qt.png").convertToFormat(QImage::Format_RGBA8888);
+    glBindTexture(GL_TEXTURE_2D, m_uiTexture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img.width(), img.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, img.constBits());
 
-    QGLShader *vshader1 = new QGLShader(QGLShader::Vertex, this);
+    QOpenGLShader *vshader1 = new QOpenGLShader(QOpenGLShader::Vertex, this);
     const char *vsrc1 =
         "attribute highp vec4 vertex;\n"
         "attribute mediump vec3 normal;\n"
@@ -195,7 +203,7 @@ void GLWidget::initializeGL ()
         "}\n";
     vshader1->compileSourceCode(vsrc1);
 
-    QGLShader *fshader1 = new QGLShader(QGLShader::Fragment, this);
+    QOpenGLShader *fshader1 = new QOpenGLShader(QOpenGLShader::Fragment, this);
     const char *fsrc1 =
         "varying mediump vec4 color;\n"
         "void main(void)\n"
@@ -212,7 +220,7 @@ void GLWidget::initializeGL ()
     normalAttr1 = program1.attributeLocation("normal");
     matrixUniform1 = program1.uniformLocation("matrix");
 
-    QGLShader *vshader2 = new QGLShader(QGLShader::Vertex);
+    QOpenGLShader *vshader2 = new QOpenGLShader(QOpenGLShader::Vertex);
     const char *vsrc2 =
         "attribute highp vec4 vertex;\n"
         "attribute highp vec4 texCoord;\n"
@@ -229,7 +237,7 @@ void GLWidget::initializeGL ()
         "}\n";
     vshader2->compileSourceCode(vsrc2);
 
-    QGLShader *fshader2 = new QGLShader(QGLShader::Fragment);
+    QOpenGLShader *fshader2 = new QOpenGLShader(QOpenGLShader::Fragment);
     const char *fsrc2 =
         "varying highp vec4 texc;\n"
         "uniform sampler2D tex;\n"
@@ -252,9 +260,6 @@ void GLWidget::initializeGL ()
     matrixUniform2 = program2.uniformLocation("matrix");
     textureUniform2 = program2.uniformLocation("tex");
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-
     m_fAngle = 0;
     m_fScale = 1;
     createGeometry();
@@ -270,11 +275,9 @@ void GLWidget::paintGL()
 
     painter.beginNativePainting();
 
-    glClearColor(0.1f, 0.1f, 0.2f, 1.0f);
+    glClearColor(m_background.red() / 255.0f, m_background.green() / 255.0f,
+                 m_background.blue() / 255.0f, m_transparent ? 0.0f : 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 
     glFrontFace(GL_CW);
     glCullFace(GL_FRONT);
@@ -313,13 +316,11 @@ void GLWidget::paintGL()
     if (const int elapsed = time.elapsed()) {
         QString framesPerSecond;
         framesPerSecond.setNum(frames /(elapsed / 1000.0), 'f', 2);
-        painter.setPen(Qt::white);
-        painter.drawText(20, 40, framesPerSecond + " fps");
+        painter.setPen(m_transparent ? Qt::black : Qt::white);
+        painter.drawText(20, 40, framesPerSecond + " paintGL calls / s");
     }
 
     painter.end();
-
-    swapBuffers();
 
     QMutableListIterator<Bubble*> iter(bubbles);
 
@@ -460,4 +461,29 @@ void GLWidget::extrude(qreal x1, qreal y1, qreal x2, qreal y2)
     normals << n;
     normals << n;
     normals << n;
+}
+
+void GLWidget::setTransparent(bool transparent)
+{
+    setAttribute(Qt::WA_AlwaysStackOnTop, transparent);
+    m_transparent = transparent;
+    // Call update() on the top-level window after toggling AlwayStackOnTop to make sure
+    // the entire backingstore is updated accordingly.
+    window()->update();
+}
+
+void GLWidget::resizeGL(int w, int h)
+{
+    if (m_hasButton) {
+        if (!m_btn) {
+            m_btn = new QPushButton("A widget on top.\nPress me!", this);
+            connect(m_btn, &QPushButton::clicked, this, &GLWidget::handleButtonPress);
+        }
+        m_btn->move(w / 2, h / 2);
+    }
+}
+
+void GLWidget::handleButtonPress()
+{
+    m_mainWindow->addNew();
 }

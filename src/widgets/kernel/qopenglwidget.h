@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -39,21 +39,11 @@
 **
 ****************************************************************************/
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API. It may change from version to version
-// without notice, or even be removed.
-//
-// We mean it.
-//
 #ifndef QOPENGLWIDGET_H
 #define QOPENGLWIDGET_H
 
-#include <QWidget>
-#include <QSurfaceFormat>
-
+#include <QtWidgets/QWidget>
+#include <QtGui/QSurfaceFormat>
 #include <QtGui/qopengl.h>
 
 QT_BEGIN_NAMESPACE
@@ -66,68 +56,43 @@ class Q_WIDGETS_EXPORT QOpenGLWidget : public QWidget
     Q_DECLARE_PRIVATE(QOpenGLWidget)
 
 public:
-    explicit QOpenGLWidget(QWidget* parent=0,
-                       Qt::WindowFlags f=0);
-
-// This API is not finalized yet. The commented-out functions below are
-// QGLWidget functions that have not been implemented for QOpenGLWidget.
-// Some of them may not end up in the final version (which is planned for a
-// future release of Qt).
-
-//    explicit QOpenGLWidget(const QSurfaceFormat& format, QWidget* parent=0,
-//                       Qt::WindowFlags f=0);
+    explicit QOpenGLWidget(QWidget* parent = 0, Qt::WindowFlags f = 0);
     ~QOpenGLWidget();
 
-//    void qglClearColor(const QColor& c) const;
+    void setFormat(const QSurfaceFormat &format);
+    QSurfaceFormat format() const;
 
     bool isValid() const;
-//    bool isSharing() const;
 
     void makeCurrent();
     void doneCurrent();
 
-//    void swapBuffers();
-
-    QSurfaceFormat format() const;
+    QOpenGLContext *context() const;
     GLuint defaultFramebufferObject() const;
 
-//    QPixmap renderPixmap(int w = 0, int h = 0, bool useContext = false);
-    QImage grabFrameBuffer(bool withAlpha = false);
+    QImage grabFramebuffer();
 
-//    static QImage convertToGLFormat(const QImage& img);
-
-//    QPaintEngine *paintEngine() const;
-
-//    void drawTexture(const QRectF &target, GLuint textureId, GLenum textureTarget = GL_TEXTURE_2D);
-//    void drawTexture(const QPointF &point, GLuint textureId, GLenum textureTarget = GL_TEXTURE_2D);
-
-public Q_SLOTS:
-    void updateGL();
+Q_SIGNALS:
+    void aboutToCompose();
+    void frameSwapped();
+    void aboutToResize();
+    void resized();
 
 protected:
-//    bool event(QEvent *);
     virtual void initializeGL();
     virtual void resizeGL(int w, int h);
     virtual void paintGL();
 
-//    void setAutoBufferSwap(bool on);
-//    bool autoBufferSwap() const;
+    void paintEvent(QPaintEvent *e) Q_DECL_OVERRIDE;
+    void resizeEvent(QResizeEvent *e) Q_DECL_OVERRIDE;
+    bool event(QEvent *e) Q_DECL_OVERRIDE;
 
-    void paintEvent(QPaintEvent*);
-    void resizeEvent(QResizeEvent*);
+    int metric(QPaintDevice::PaintDeviceMetric metric) const Q_DECL_OVERRIDE;
+    QPaintDevice *redirected(QPoint *p) const Q_DECL_OVERRIDE;
+    QPaintEngine *paintEngine() const Q_DECL_OVERRIDE;
 
-//    virtual void glInit();
-//    virtual void glDraw();
-
-//    QOpenGLWidget(QOpenGLWidgetPrivate &dd,
-//              const QGLFormat &format = QGLFormat(),
-//              QWidget *parent = 0,
-//              const QOpenGLWidget* shareWidget = 0,
-//              Qt::WindowFlags f = 0);
 private:
     Q_DISABLE_COPY(QOpenGLWidget)
-
-
 };
 
 QT_END_NAMESPACE

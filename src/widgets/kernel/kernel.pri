@@ -78,6 +78,6 @@ wince*: {
 }
 
 contains(QT_CONFIG, opengl) {
-    HEADERS += kernel/qopenglwidget_p.h
+    HEADERS += kernel/qopenglwidget.h
     SOURCES += kernel/qopenglwidget.cpp
 }

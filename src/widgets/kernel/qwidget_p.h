@@ -61,6 +61,7 @@
 #include "QtGui/qregion.h"
 #include "QtGui/qinputmethod.h"
 #include "QtGui/qopengl.h"
+#include "QtGui/qsurfaceformat.h"
 #include "QtWidgets/qsizepolicy.h"
 #include "QtWidgets/qstyle.h"
 #include "QtWidgets/qapplication.h"
@@ -392,6 +393,7 @@ public:
                 QWidget::RenderFlags renderFlags);
     void drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QPoint &offset, int flags,
                     QPainter *sharedPainter = 0, QWidgetBackingStore *backingStore = 0);
+    void sendPaintEvent(const QRegion &toBePainted);
 
 
     void paintSiblingsRecursive(QPaintDevice *pdev, const QObjectList& children, int index,
@@ -627,7 +629,11 @@ public:
 
 #ifndef QT_NO_OPENGL
     virtual GLuint textureId() const { return 0; }
-    virtual QImage grabFramebuffer() const { return QImage(); }
+    virtual QImage grabFramebuffer() { return QImage(); }
+    virtual void beginBackingStorePainting() { }
+    virtual void endBackingStorePainting() { }
+    virtual void beginCompose() { }
+    virtual void endCompose() { }
     void setRenderToTexture() { renderToTexture = true; setTextureChildSeen(); }
     void setTextureChildSeen()
     {
@@ -642,6 +648,11 @@ public:
                 get(parent)->setTextureChildSeen();
         }
     }
+    static void sendComposeStatus(QWidget *w, bool end);
+    // When using a QOpenGLWidget as viewport with QAbstractScrollArea, resize events are
+    // filtered away from the widget. This is fine for QGLWidget but bad for QOpenGLWidget
+    // since the fbo must be resized. We need an alternative way to notify.
+    virtual void resizeViewportFramebuffer() { }
 #endif
 
     // Variables.

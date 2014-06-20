@@ -42,7 +42,7 @@
 #ifndef OPENGLWIDGET_H
 #define OPENGLWIDGET_H
 
-#include <QtWidgets/private/qopenglwidget_p.h>
+#include <QtWidgets/QOpenGLWidget>
 
 class OpenGLWidgetPrivate;
 class OpenGLWidget : public QOpenGLWidget

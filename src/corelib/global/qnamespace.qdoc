@@ -1203,6 +1203,13 @@
     to this top level window. This attribute has no effect on non-X11
     platforms.
 
+    \value WA_AlwaysStackOnTop Since Qt 5.4, this value forces QOpenGLWidget and
+    QQuickWidget to be drawn last, on top of other widgets. Ignored for other
+    type of widgets. Setting this attribute breaks the stacking order, but
+    allows having a semi-transparent OpenGL widget with other widgets visible
+    underneath. It is strongly recommended to call update() on the widget's
+    top-level window after enabling or disabling this attribute.
+
     \omitvalue WA_SetLayoutDirection
     \omitvalue WA_InputMethodTransparent
     \omitvalue WA_WState_CompressKeys

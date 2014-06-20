@@ -133,6 +133,7 @@ private:
     QRegion dirty; // needsRepaint
     QRegion dirtyFromPreviousSync;
     QVector<QWidget *> dirtyWidgets;
+    QVector<QWidget *> dirtyRenderToTextureWidgets;
     QVector<QWidget *> *dirtyOnScreenWidgets;
     QList<QWidget *> staticWidgets;
     QPlatformTextureList *widgetTextures;
@@ -143,6 +144,8 @@ private:
     QPoint tlwOffset;
 
     QPlatformTextureListWatcher *textureListWatcher;
+    QElapsedTimer perfTime;
+    int perfFrames;
 
     void sendUpdateRequest(QWidget *widget, UpdateTime updateTime);
 
@@ -150,7 +153,8 @@ private:
     static void unflushPaint(QWidget *widget, const QRegion &rgn);
     static void qt_flush(QWidget *widget, const QRegion &region, QBackingStore *backingStore,
                          QWidget *tlw, const QPoint &tlwOffset,
-                         QPlatformTextureList *widgetTextures = 0);
+                         QPlatformTextureList *widgetTextures,
+                         QWidgetBackingStore *widgetBackingStore);
 
     void doSync();
     bool bltRect(const QRect &rect, int dx, int dy, QWidget *widget);
@@ -180,6 +184,16 @@ private:
 #endif //QT_NO_GRAPHICSEFFECT
                 widgetPrivate->dirty = rgn;
             dirtyWidgets.append(widget);
+            widgetPrivate->inDirtyList = true;
+        }
+    }
+
+    inline void addDirtyRenderToTextureWidget(QWidget *widget)
+    {
+        if (widget && !widget->d_func()->inDirtyList && !widget->data->in_destructor) {
+            QWidgetPrivate *widgetPrivate = widget->d_func();
+            Q_ASSERT(widgetPrivate->renderToTexture);
+            dirtyRenderToTextureWidgets.append(widget);
             widgetPrivate->inDirtyList = true;
         }
     }

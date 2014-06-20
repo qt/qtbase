@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -38,19 +38,15 @@
 **
 ****************************************************************************/
 
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
-
+#include <QApplication>
 #include <QMainWindow>
+#include "mainwindow.h"
 
-class MainWindow : public QMainWindow
+int main( int argc, char ** argv )
 {
-    Q_OBJECT
-
-public:
-    MainWindow();
-
-private:
-};
-
-#endif
+    Q_INIT_RESOURCE(texture);
+    QApplication a( argc, argv );
+    MainWindow mw;
+    mw.showMaximized();
+    return a.exec();
+}

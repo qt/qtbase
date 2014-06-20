@@ -2762,7 +2762,7 @@ void QGraphicsView::setupViewport(QWidget *widget)
         return;
     }
 
-    const bool isGLWidget = widget->inherits("QGLWidget");
+    const bool isGLWidget = widget->inherits("QGLWidget") || widget->inherits("QOpenGLWidget");
 
     d->accelerateScrolling = !(isGLWidget);
 

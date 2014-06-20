@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -38,15 +38,15 @@
 **
 ****************************************************************************/
 
-#include <QApplication>
-#include <QMainWindow>
 #include "mainwindow.h"
+#include "glwidget.h"
 
-int main( int argc, char ** argv )
+MainWindow::MainWindow()
 {
-    Q_INIT_RESOURCE(texture);
-    QApplication a( argc, argv );
-    MainWindow mw;
-    mw.showMaximized();
-    return a.exec();
+    GLWidget *glwidget1 = new GLWidget(this);
+    glwidget1->resize(400, 400);
+
+    GLWidget *glwidget2 = new GLWidget(this);
+    glwidget2->resize(400, 400);
+    glwidget2->move(400, 0);
 }
