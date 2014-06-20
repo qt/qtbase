@@ -79,6 +79,18 @@ QT_BEGIN_NAMESPACE
     used to write debugging information to files and other devices. The constructor
     that accepts a QString is used to write to a string for display or serialization.
 
+    \section1 Formatting Options
+
+    QDebug formats output so that it's easily readable. It automatically adds spaces
+    between arguments, and adds quotes around QString, QByteArray, QChar arguments.
+
+    You can tweak these options through the space(), nospace() and quote(), noquote()
+    methods. Furthermore, \l{QTextStream manipulators} can be piped into a QDebug
+    stream.
+
+    QDebugStateSaver limits changes to the formatting to the current scope.
+    resetFormat() resets the options to the default ones.
+
     \section1 Writing Custom Types to a Stream
 
     Many standard types can be written to QDebug objects, and Qt provides support for
