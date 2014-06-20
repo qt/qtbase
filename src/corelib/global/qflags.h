@@ -53,16 +53,22 @@ class QFlag
 {
     int i;
 public:
-#if !defined(__LP64__) && !defined(Q_QDOC)
+    Q_DECL_CONSTEXPR inline QFlag(int ai) : i(ai) {}
+    Q_DECL_CONSTEXPR inline operator int() const { return i; }
+
+#if !defined(Q_CC_MSVC)
+    // Microsoft Visual Studio has buggy behavior when it comes to
+    // unsigned enums: even if the enum is unsigned, the enum tags are
+    // always signed
+#  if !defined(__LP64__) && !defined(Q_QDOC)
     Q_DECL_CONSTEXPR inline QFlag(long ai) : i(int(ai)) {}
     Q_DECL_CONSTEXPR inline QFlag(ulong ai) : i(int(long(ai))) {}
-#endif
-    Q_DECL_CONSTEXPR inline QFlag(int ai) : i(ai) {}
+#  endif
     Q_DECL_CONSTEXPR inline QFlag(uint ai) : i(int(ai)) {}
     Q_DECL_CONSTEXPR inline QFlag(short ai) : i(int(ai)) {}
     Q_DECL_CONSTEXPR inline QFlag(ushort ai) : i(int(uint(ai))) {}
-    Q_DECL_CONSTEXPR inline operator int() const { return i; }
     Q_DECL_CONSTEXPR inline operator uint() const { return uint(i); }
+#endif
 };
 Q_DECLARE_TYPEINFO(QFlag, Q_PRIMITIVE_TYPE);
 
@@ -89,7 +95,11 @@ class QFlags
     struct Private;
     typedef int (Private::*Zero);
 public:
-#ifndef Q_QDOC
+#if defined(Q_CC_MSVC) || defined(Q_QDOC)
+    // see above for MSVC
+    // the definition below is too complex for qdoc
+    typedef int Int;
+#else
     typedef typename QtPrivate::if_<
             QtPrivate::is_unsigned<Enum>::value,
             unsigned int,
@@ -99,7 +109,6 @@ public:
     typedef Enum enum_type;
     // compiler-generated copy/move ctor/assignment operators are fine!
 #ifdef Q_QDOC
-    typedef int Int; // the real typedef above is too complex for qdoc
     inline QFlags(const QFlags &other);
     inline QFlags &operator=(const QFlags &other);
 #endif
