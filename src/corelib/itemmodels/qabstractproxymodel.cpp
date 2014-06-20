@@ -394,6 +394,30 @@ QMimeData* QAbstractProxyModel::mimeData(const QModelIndexList &indexes) const
 
 /*!
     \reimp
+    \since 5.4
+ */
+bool QAbstractProxyModel::canDropMimeData(const QMimeData *data, Qt::DropAction action,
+                                          int row, int column, const QModelIndex &parent) const
+{
+    Q_D(const QAbstractProxyModel);
+    const QModelIndex source = mapToSource(index(row, column, parent));
+    return d->model->canDropMimeData(data, action, source.row(), source.column(), source.parent());
+}
+
+/*!
+    \reimp
+    \since 5.4
+ */
+bool QAbstractProxyModel::dropMimeData(const QMimeData *data, Qt::DropAction action,
+                                       int row, int column, const QModelIndex &parent)
+{
+    Q_D(QAbstractProxyModel);
+    const QModelIndex source = mapToSource(index(row, column, parent));
+    return d->model->dropMimeData(data, action, source.row(), source.column(), source.parent());
+}
+
+/*!
+    \reimp
  */
 QStringList QAbstractProxyModel::mimeTypes() const
 {

@@ -150,6 +150,8 @@ private slots:
     void chainedProxyModelRoleNames();
 
     void noMapAfterSourceDelete();
+    void forwardDropApi();
+
 protected:
     void buildHierarchy(const QStringList &data, QAbstractItemModel *model);
     void checkHierarchy(const QStringList &data, const QAbstractItemModel *model);
@@ -3873,6 +3875,36 @@ void tst_QSortFilterProxyModel::noMapAfterSourceDelete()
     delete model;
 
     QVERIFY(!persistent.isValid());
+}
+
+// QTBUG-39549, test whether canDropMimeData(), dropMimeData() are proxied as well
+// by invoking them on a QSortFilterProxyModel proxying a QStandardItemModel that allows drops
+// on row #1, filtering for that row.
+class DropTestModel : public QStandardItemModel {
+public:
+    explicit DropTestModel(QObject *parent = 0) : QStandardItemModel(0, 1, parent)
+    {
+        appendRow(new QStandardItem(QStringLiteral("Row0")));
+        appendRow(new QStandardItem(QStringLiteral("Row1")));
+    }
+
+    bool canDropMimeData(const QMimeData *, Qt::DropAction,
+                         int row, int /* column */, const QModelIndex & /* parent */) const Q_DECL_OVERRIDE
+    { return row == 1; }
+
+    bool dropMimeData(const QMimeData *, Qt::DropAction,
+                      int row, int /* column */, const QModelIndex & /* parent */) Q_DECL_OVERRIDE
+    { return row == 1; }
+};
+
+void tst_QSortFilterProxyModel::forwardDropApi()
+{
+    QSortFilterProxyModel model;
+    model.setSourceModel(new DropTestModel(&model));
+    model.setFilterFixedString(QStringLiteral("Row1"));
+    QCOMPARE(model.rowCount(), 1);
+    QVERIFY(model.canDropMimeData(0, Qt::CopyAction, 0, 0, QModelIndex()));
+    QVERIFY(model.dropMimeData(0, Qt::CopyAction, 0, 0, QModelIndex()));
 }
 
 QTEST_MAIN(tst_QSortFilterProxyModel)

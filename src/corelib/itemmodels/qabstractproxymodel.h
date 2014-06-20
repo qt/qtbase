@@ -91,6 +91,10 @@ public:
     QModelIndex sibling(int row, int column, const QModelIndex &idx) const;
 
     QMimeData* mimeData(const QModelIndexList &indexes) const;
+    bool canDropMimeData(const QMimeData *data, Qt::DropAction action,
+                         int row, int column, const QModelIndex &parent) const Q_DECL_OVERRIDE;
+    bool dropMimeData(const QMimeData *data, Qt::DropAction action,
+                      int row, int column, const QModelIndex &parent) Q_DECL_OVERRIDE;
     QStringList mimeTypes() const;
     Qt::DropActions supportedDropActions() const;
 
