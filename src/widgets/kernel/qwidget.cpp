@@ -11310,12 +11310,21 @@ QString QWidget::whatsThis() const
 
   \brief the widget's name as seen by assistive technologies
 
-  This property is used by accessible clients to identify, find, or announce
-  the widget for accessible clients.
+  This is the primary name by which assistive technology such as screen readers
+  announce this widget. For most widgets setting this property is not required.
+  For example for QPushButton the button's text will be used.
+
+  It is important to set this property when the widget does not provide any
+  text. For example a button that only contains an icon needs to set this
+  property to work with screen readers.
+  The name should be short and equivalent to the visual information conveyed
+  by the widget.
+
+  This property has to be \l{Internationalization with Qt}{localized}.
 
   By default, this property contains an empty string.
 
-  \sa QAccessibleInterface::text()
+  \sa QWidget::accessibleDescription, QAccessibleInterface::text()
 */
 void QWidget::setAccessibleName(const QString &name)
 {
@@ -11336,9 +11345,16 @@ QString QWidget::accessibleName() const
 
   \brief the widget's description as seen by assistive technologies
 
-  By default, this property contains an empty string.
+  The accessible description of a widget should convey what a widget does.
+  While the \l accessibleName should be a short and consise string (e.g. \gui{Save}),
+  the description should give more context, such as \gui{Saves the current document}.
 
-  \sa QAccessibleInterface::text()
+  This property has to be \l{Internationalization with Qt}{localized}.
+
+  By default, this property contains an empty string and Qt falls back
+  to using the tool tip to provide this information.
+
+  \sa QWidget::accessibleName, QAccessibleInterface::text()
 */
 void QWidget::setAccessibleDescription(const QString &description)
 {
