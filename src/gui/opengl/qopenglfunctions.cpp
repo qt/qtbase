@@ -370,6 +370,12 @@ static int qt_gl_resolve_extensions()
     if (ctx->isOpenGLES()) {
         if (format.majorVersion() >= 2)
             extensions |= QOpenGLExtensions::GenerateMipmap;
+
+        if (format.majorVersion() >= 3)
+            extensions |= QOpenGLExtensions::PackedDepthStencil
+                | QOpenGLExtensions::Depth24
+                | QOpenGLExtensions::ElementIndexUint;
+
         if (extensionMatcher.match("GL_OES_mapbuffer"))
             extensions |= QOpenGLExtensions::MapBuffer;
         if (extensionMatcher.match("GL_OES_packed_depth_stencil"))

@@ -67,8 +67,13 @@
 
 #if defined(QT_OPENGL_ES_2)
 # if defined(Q_OS_MAC) // iOS
-#  include <OpenGLES/ES2/gl.h>
-#  include <OpenGLES/ES2/glext.h>
+#  if defined(QT_OPENGL_ES_3)
+#   include <OpenGLES/ES3/gl.h>
+#   include <OpenGLES/ES3/glext.h>
+#  else
+#   include <OpenGLES/ES2/gl.h>
+#   include <OpenGLES/ES2/glext.h>
+#  endif
 
 /*
    OES_EGL_image_external is not included in the Apple provided

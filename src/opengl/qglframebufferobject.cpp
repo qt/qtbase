@@ -94,6 +94,10 @@ extern QImage qt_gl_read_frame_buffer(const QSize&, bool, bool);
 #define GL_DEPTH_COMPONENT24 0x81A6
 #endif
 
+#ifndef GL_DEPTH_COMPONENT24_OES
+#define GL_DEPTH_COMPONENT24_OES 0x81A6
+#endif
+
 #ifndef GL_READ_FRAMEBUFFER
 #define GL_READ_FRAMEBUFFER 0x8CA8
 #endif
