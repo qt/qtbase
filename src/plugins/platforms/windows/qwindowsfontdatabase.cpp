@@ -1639,9 +1639,12 @@ QStringList QWindowsFontDatabase::fallbacksForFamily(const QString &family, QFon
             result << QString::fromLatin1("Old English");
             break;
         case QFont::Helvetica:
+            result << QString::fromLatin1("Arial");
+            break;
         case QFont::System:
         default:
-            result << QString::fromLatin1("Arial");
+            result << QString::fromLatin1("MS Sans Serif");
+            break;
     }
 
     result.append(QWindowsFontDatabase::extraTryFontsForFamily(family));
