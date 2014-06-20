@@ -3077,6 +3077,8 @@ void QGuiApplicationPrivate::saveState()
     On system start-up, the default layout direction depends on the
     application's language.
 
+    The notifier signal was introduced in Qt 5.4.
+
     \sa QWidget::layoutDirection, isLeftToRight(), isRightToLeft()
  */
 
@@ -3087,7 +3089,10 @@ void QGuiApplication::setLayoutDirection(Qt::LayoutDirection direction)
 
     layout_direction = direction;
 
-    QGuiApplicationPrivate::self->notifyLayoutDirectionChange();
+    if (qGuiApp) {
+        emit qGuiApp->layoutDirectionChanged(direction);
+        QGuiApplicationPrivate::self->notifyLayoutDirectionChange();
+    }
 }
 
 Qt::LayoutDirection QGuiApplication::layoutDirection()

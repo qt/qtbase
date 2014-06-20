@@ -75,7 +75,7 @@ class Q_GUI_EXPORT QGuiApplication : public QCoreApplication
     Q_OBJECT
     Q_PROPERTY(QIcon windowIcon READ windowIcon WRITE setWindowIcon)
     Q_PROPERTY(QString applicationDisplayName READ applicationDisplayName WRITE setApplicationDisplayName)
-    Q_PROPERTY(Qt::LayoutDirection layoutDirection READ layoutDirection WRITE setLayoutDirection)
+    Q_PROPERTY(Qt::LayoutDirection layoutDirection READ layoutDirection WRITE setLayoutDirection NOTIFY layoutDirectionChanged)
     Q_PROPERTY(QString platformName READ platformName STORED false)
     Q_PROPERTY(bool quitOnLastWindowClosed  READ quitOnLastWindowClosed WRITE setQuitOnLastWindowClosed)
 
@@ -169,6 +169,7 @@ Q_SIGNALS:
     void focusObjectChanged(QObject *focusObject);
     void focusWindowChanged(QWindow *focusWindow);
     void applicationStateChanged(Qt::ApplicationState state);
+    void layoutDirectionChanged(Qt::LayoutDirection direction);
 #ifndef QT_NO_SESSIONMANAGER
     void commitDataRequest(QSessionManager &sessionManager);
     void saveStateRequest(QSessionManager &sessionManager);

@@ -75,6 +75,7 @@ private slots:
     void modalWindow();
     void quitOnLastWindowClosed();
     void genericPluginsAndWindowSystemEvents();
+    void layoutDirection();
 };
 
 void tst_QGuiApplication::displayName()
@@ -846,6 +847,32 @@ void tst_QGuiApplication::genericPluginsAndWindowSystemEvents()
     QCOMPARE(testReceiver.customEvents, 0);
     QCoreApplication::sendPostedEvents(&testReceiver);
     QCOMPARE(testReceiver.customEvents, 1);
+}
+
+Q_DECLARE_METATYPE(Qt::LayoutDirection)
+void tst_QGuiApplication::layoutDirection()
+{
+    qRegisterMetaType<Qt::LayoutDirection>();
+
+    Qt::LayoutDirection oldDirection = QGuiApplication::layoutDirection();
+    Qt::LayoutDirection newDirection = oldDirection == Qt::LeftToRight ? Qt::RightToLeft : Qt::LeftToRight;
+
+    QGuiApplication::setLayoutDirection(newDirection);
+    QCOMPARE(QGuiApplication::layoutDirection(), newDirection);
+
+    int argc = 1;
+    char *argv[] = { const_cast<char*>("tst_qguiapplication") };
+    QGuiApplication app(argc, argv);
+    QSignalSpy signalSpy(&app, SIGNAL(layoutDirectionChanged(Qt::LayoutDirection)));
+
+    QGuiApplication::setLayoutDirection(oldDirection);
+    QCOMPARE(QGuiApplication::layoutDirection(), oldDirection);
+    QCOMPARE(signalSpy.count(), 1);
+    QCOMPARE(signalSpy.at(0).at(0).toInt(), static_cast<int>(oldDirection));
+
+    QGuiApplication::setLayoutDirection(oldDirection);
+    QCOMPARE(QGuiApplication::layoutDirection(), oldDirection);
+    QCOMPARE(signalSpy.count(), 1);
 }
 
 QTEST_APPLESS_MAIN(tst_QGuiApplication)
