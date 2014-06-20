@@ -51,6 +51,7 @@
 
 #include "socket_interface.h"
 #include "constant_mappings_p.h"
+#include "../accessibility/qaccessiblebridgeutils_p.h"
 
 #include "application_p.h"
 /*!
@@ -1485,7 +1486,7 @@ QStringList AtSpiAdaptor::accessibleInterfaces(QAccessibleInterface *interface) 
     if (interface->role() == QAccessible::Application)
         ifaces << QLatin1String(ATSPI_DBUS_INTERFACE_APPLICATION);
 
-    if (interface->actionInterface())
+    if (interface->actionInterface() || interface->valueInterface())
         ifaces << QLatin1String(ATSPI_DBUS_INTERFACE_ACTION);
 
     if (interface->textInterface())
@@ -1695,36 +1696,44 @@ QRect AtSpiAdaptor::getExtents(QAccessibleInterface *interface, uint coordType)
 // Action interface
 bool AtSpiAdaptor::actionInterface(QAccessibleInterface *interface, const QString &function, const QDBusMessage &message, const QDBusConnection &connection)
 {
-    QAccessibleActionInterface *actionIface = interface->actionInterface();
-    if (!actionIface)
-        return false;
-
     if (function == QLatin1String("GetNActions")) {
-        sendReply(connection, message, QVariant::fromValue(QDBusVariant(QVariant::fromValue(actionIface->actionNames().count()))));
+        int count = QAccessibleBridgeUtils::effectiveActionNames(interface).count();
+        sendReply(connection, message, QVariant::fromValue(QDBusVariant(QVariant::fromValue(count))));
     } else if (function == QLatin1String("DoAction")) {
         int index = message.arguments().at(0).toInt();
-        if (index < 0 || index >= actionIface->actionNames().count())
+        const QStringList actionNames = QAccessibleBridgeUtils::effectiveActionNames(interface);
+        if (index < 0 || index >= actionNames.count())
             return false;
-        interface->actionInterface()->doAction(actionIface->actionNames().at(index));
-        sendReply(connection, message, true);
+        const QString actionName = actionNames.at(index);
+        bool success = QAccessibleBridgeUtils::performEffectiveAction(interface, actionName);
+        sendReply(connection, message, success);
     } else if (function == QLatin1String("GetActions")) {
-        sendReply(connection, message, QVariant::fromValue(getActions(actionIface)));
+        sendReply(connection, message, QVariant::fromValue(getActions(interface)));
     } else if (function == QLatin1String("GetName")) {
         int index = message.arguments().at(0).toInt();
-        if (index < 0 || index >= actionIface->actionNames().count())
+        const QStringList actionNames = QAccessibleBridgeUtils::effectiveActionNames(interface);
+        if (index < 0 || index >= actionNames.count())
             return false;
-        sendReply(connection, message, actionIface->actionNames().at(index));
+        sendReply(connection, message, actionNames.at(index));
     } else if (function == QLatin1String("GetDescription")) {
         int index = message.arguments().at(0).toInt();
-        if (index < 0 || index >= actionIface->actionNames().count())
+        const QStringList actionNames = QAccessibleBridgeUtils::effectiveActionNames(interface);
+        if (index < 0 || index >= actionNames.count())
             return false;
-        sendReply(connection, message, actionIface->localizedActionDescription(actionIface->actionNames().at(index)));
+        QString description;
+        if (QAccessibleActionInterface *actionIface = interface->actionInterface())
+            description = actionIface->localizedActionDescription(actionNames.at(index));
+        else
+            description = qAccessibleLocalizedActionDescription(actionNames.at(index));
+        sendReply(connection, message, description);
     } else if (function == QLatin1String("GetKeyBinding")) {
         int index = message.arguments().at(0).toInt();
-        if (index < 0 || index >= actionIface->actionNames().count())
+        const QStringList actionNames = QAccessibleBridgeUtils::effectiveActionNames(interface);
+        if (index < 0 || index >= actionNames.count())
             return false;
         QStringList keyBindings;
-        keyBindings = actionIface->keyBindingsForAction(actionIface->actionNames().value(index));
+        if (QAccessibleActionInterface *actionIface = interface->actionInterface())
+            keyBindings = actionIface->keyBindingsForAction(actionNames.at(index));
         if (keyBindings.isEmpty()) {
             QString acc = interface->text(QAccessible::Accelerator);
             if (!acc.isEmpty())
@@ -1741,20 +1750,24 @@ bool AtSpiAdaptor::actionInterface(QAccessibleInterface *interface, const QStrin
     return true;
 }
 
-QSpiActionArray AtSpiAdaptor::getActions(QAccessibleActionInterface *actionInterface) const
+QSpiActionArray AtSpiAdaptor::getActions(QAccessibleInterface *interface) const
 {
+    QAccessibleActionInterface *actionInterface = interface->actionInterface();
     QSpiActionArray actions;
-    Q_FOREACH (const QString &actionName, actionInterface->actionNames()) {
+    Q_FOREACH (const QString &actionName, QAccessibleBridgeUtils::effectiveActionNames(interface)) {
         QSpiAction action;
         QStringList keyBindings;
 
         action.name = actionName;
-        action.description = actionInterface->localizedActionDescription(actionName);
-
-        keyBindings = actionInterface->keyBindingsForAction(actionName);
+        if (actionInterface) {
+            action.description = actionInterface->localizedActionDescription(actionName);
+            keyBindings = actionInterface->keyBindingsForAction(actionName);
+        } else {
+            action.description = qAccessibleLocalizedActionDescription(actionName);
+        }
 
         if (keyBindings.length() > 0)
-                action.keyBinding = keyBindings[0];
+            action.keyBinding = keyBindings[0];
         else
             action.keyBinding = QString();
 
