@@ -53,8 +53,8 @@ class QHistoryStatePrivate;
 class Q_CORE_EXPORT QHistoryState : public QAbstractState
 {
     Q_OBJECT
-    Q_PROPERTY(QAbstractState* defaultState READ defaultState WRITE setDefaultState)
-    Q_PROPERTY(HistoryType historyType READ historyType WRITE setHistoryType)
+    Q_PROPERTY(QAbstractState* defaultState READ defaultState WRITE setDefaultState NOTIFY defaultStateChanged)
+    Q_PROPERTY(HistoryType historyType READ historyType WRITE setHistoryType NOTIFY historyTypeChanged)
     Q_ENUMS(HistoryType)
 public:
     enum HistoryType {
@@ -71,6 +71,18 @@ public:
 
     HistoryType historyType() const;
     void setHistoryType(HistoryType type);
+
+Q_SIGNALS:
+    void defaultStateChanged(
+#if !defined(Q_QDOC)
+      QPrivateSignal
+#endif
+    );
+    void historyTypeChanged(
+#if !defined(Q_QDOC)
+      QPrivateSignal
+#endif
+    );
 
 protected:
     void onEntry(QEvent *event);

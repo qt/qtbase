@@ -181,7 +181,10 @@ void QHistoryState::setDefaultState(QAbstractState *state)
                  "to this history state's group (%p)", state, parentState());
         return;
     }
-    d->defaultState = state;
+    if (d->defaultState != state) {
+        d->defaultState = state;
+        emit defaultStateChanged(QHistoryState::QPrivateSignal());
+    }
 }
 
 /*!
@@ -199,7 +202,10 @@ QHistoryState::HistoryType QHistoryState::historyType() const
 void QHistoryState::setHistoryType(HistoryType type)
 {
     Q_D(QHistoryState);
-    d->historyType = type;
+    if (d->historyType != type) {
+        d->historyType = type;
+        emit historyTypeChanged(QHistoryState::QPrivateSignal());
+    }
 }
 
 /*!
@@ -225,6 +231,24 @@ bool QHistoryState::event(QEvent *e)
 {
     return QAbstractState::event(e);
 }
+
+/*!
+  \fn QHistoryState::defaultStateChanged()
+  \since 5.4
+
+  This signal is emitted when the defaultState property is changed.
+
+  \sa QHistoryState::defaultState
+*/
+
+/*!
+  \fn QHistoryState::historyTypeChanged()
+  \since 5.4
+
+  This signal is emitted when the historyType property is changed.
+
+  \sa QHistoryState::historyType
+*/
 
 QT_END_NAMESPACE
 
