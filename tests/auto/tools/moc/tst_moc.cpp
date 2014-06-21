@@ -1828,6 +1828,12 @@ void tst_Moc::warnings_data()
         << QString("IGNORE_ALL_STDOUT")
         << QString(":3: Warning: Macro argument mismatch.\n:4: Warning: Macro argument mismatch.");
 
+    QTest::newRow("Class declaration lacks Q_OBJECT macro.")
+        << QByteArray("class X : public QObject \n { \n public slots: \n void foo() {} \n };")
+        << QStringList()
+        << 1
+        << QString()
+        << QString("standard input:5: Error: Class declaration lacks Q_OBJECT macro.");
 }
 
 void tst_Moc::warnings()
