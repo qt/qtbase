@@ -269,6 +269,7 @@ private:
     QScopedPointer<QXmlSimpleReaderPrivate> d_ptr;
 
     friend class QXmlSimpleReaderLocator;
+    friend class QDomHandler;
 };
 
 //

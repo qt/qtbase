@@ -100,10 +100,6 @@ static const signed char cltDq      = 12; // "
 static const signed char cltSq      = 13; // '
 static const signed char cltUnknown = 14;
 
-// Hack for letting QDom know where the skipped entity occurred
-// ### the use of this variable means the code isn't reentrant.
-bool qt_xml_skipped_entity_in_content;
-
 // character lookup table
 static const signed char charLookupTable[256]={
     cltUnknown, cltUnknown, cltUnknown, cltUnknown, cltUnknown, cltUnknown, cltUnknown, cltUnknown, // 0x00 - 0x07
@@ -3230,7 +3226,7 @@ bool QXmlSimpleReader::parse(const QXmlInputSource *input, bool incremental)
             return false;
         }
     }
-    qt_xml_skipped_entity_in_content = false;
+    d->skipped_entity_in_content = false;
     return d->parseBeginOrContinue(0, incremental);
 }
 
@@ -7594,13 +7590,13 @@ bool QXmlSimpleReaderPrivate::processReference()
                     }
 
                     if (contentHnd) {
-                        qt_xml_skipped_entity_in_content = parseReference_context == InContent;
+                        skipped_entity_in_content = parseReference_context == InContent;
                         if (!contentHnd->skippedEntity(reference)) {
-                            qt_xml_skipped_entity_in_content = false;
+                            skipped_entity_in_content = false;
                             reportParseError(contentHnd->errorString());
                             return false; // error
                         }
-                        qt_xml_skipped_entity_in_content = false;
+                        skipped_entity_in_content = false;
                     }
                 }
             } else if ((*itExtern).notation.isNull()) {
@@ -7630,13 +7626,13 @@ bool QXmlSimpleReaderPrivate::processReference()
                                 }
                             }
                             if (skipIt && contentHnd) {
-                                qt_xml_skipped_entity_in_content = true;
+                                skipped_entity_in_content = true;
                                 if (!contentHnd->skippedEntity(reference)) {
-                                    qt_xml_skipped_entity_in_content = false;
+                                    skipped_entity_in_content = false;
                                     reportParseError(contentHnd->errorString());
                                     return false; // error
                                 }
-                                qt_xml_skipped_entity_in_content = false;
+                                skipped_entity_in_content = false;
                             }
                             parseReference_charDataRead = false;
                         } break;

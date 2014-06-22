@@ -148,6 +148,8 @@ private:
     // used in QXmlSimpleReader::parseContent() to decide whether character
     // data was read
     bool contentCharDataRead;
+    // Hack for letting QDom know where the skipped entity occurred
+    bool skipped_entity_in_content;
 
     // helper classes
     QScopedPointer<QXmlLocator> locator;
