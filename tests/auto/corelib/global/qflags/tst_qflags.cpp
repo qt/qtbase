@@ -50,6 +50,7 @@ private slots:
     void constExpr();
     void signedness();
     void classEnum();
+    void initializerLists();
 };
 
 void tst_QFlags::testFlag() const
@@ -142,6 +143,9 @@ void tst_QFlags::signedness()
 enum class MyStrictEnum { StrictZero, StrictOne, StrictTwo, StrictFour=4 };
 Q_DECLARE_FLAGS( MyStrictFlags, MyStrictEnum )
 Q_DECLARE_OPERATORS_FOR_FLAGS( MyStrictFlags )
+
+enum class MyStrictNoOpEnum { StrictZero, StrictOne, StrictTwo, StrictFour=4 };
+Q_DECLARE_FLAGS( MyStrictNoOpFlags, MyStrictNoOpEnum )
 
 Q_STATIC_ASSERT( !QTypeInfo<MyStrictFlags>::isComplex );
 Q_STATIC_ASSERT( !QTypeInfo<MyStrictFlags>::isStatic );
@@ -251,6 +255,26 @@ void tst_QFlags::classEnum()
     if (false)
         qDebug() << f3;
 #endif
+}
+
+void tst_QFlags::initializerLists()
+{
+#if defined(Q_COMPILER_INITIALIZER_LISTS)
+    Qt::MouseButtons bts = { Qt::LeftButton, Qt::RightButton };
+    QVERIFY(bts.testFlag(Qt::LeftButton));
+    QVERIFY(bts.testFlag(Qt::RightButton));
+    QVERIFY(!bts.testFlag(Qt::MiddleButton));
+
+#if defined(Q_COMPILER_CLASS_ENUM)
+    MyStrictNoOpFlags flags = { MyStrictNoOpEnum::StrictOne, MyStrictNoOpEnum::StrictFour };
+    QVERIFY(flags.testFlag(MyStrictNoOpEnum::StrictOne));
+    QVERIFY(flags.testFlag(MyStrictNoOpEnum::StrictFour));
+    QVERIFY(!flags.testFlag(MyStrictNoOpEnum::StrictTwo));
+#endif // Q_COMPILER_CLASS_ENUM
+
+#else
+    QSKIP("This test requires C++11 initializer_list support.");
+#endif // Q_COMPILER_INITIALIZER_LISTS
 }
 
 // (statically) check QTypeInfo for QFlags instantiations:

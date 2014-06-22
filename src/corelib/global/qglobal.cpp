@@ -270,6 +270,16 @@ Q_STATIC_ASSERT_X(UCHAR_MAX == 255, "Qt assumes that char is 8 bits");
 */
 
 /*!
+    \fn QFlags::QFlags(std::initializer_list<Enum> flags)
+    \since 5.4
+
+    Constructs a QFlags object initialized with all \a flags
+    combined using the bitwise OR operator.
+
+    \sa operator|=(), operator|()
+*/
+
+/*!
     \fn QFlags &QFlags::operator=(const QFlags &other)
 
     Assigns \a other to this object and returns a reference to this

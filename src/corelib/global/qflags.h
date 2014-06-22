@@ -47,6 +47,10 @@
 #include <QtCore/qtypeinfo.h>
 #include <QtCore/qtypetraits.h>
 
+#ifdef Q_COMPILER_INITIALIZER_LISTS
+#include <initializer_list>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QFlag
@@ -107,6 +111,11 @@ public:
     Q_DECL_CONSTEXPR inline QFlags(Zero = 0) : i(0) {}
     Q_DECL_CONSTEXPR inline QFlags(QFlag f) : i(f) {}
 
+#ifdef Q_COMPILER_INITIALIZER_LISTS
+    Q_DECL_CONSTEXPR inline QFlags(std::initializer_list<Enum> flags)
+        : i(initializer_list_helper(flags.begin(), flags.end())) {}
+#endif
+
     inline QFlags &operator&=(int mask) { i &= mask; return *this; }
     inline QFlags &operator&=(uint mask) { i &= mask; return *this; }
     inline QFlags &operator&=(Enum mask) { i &= Int(mask); return *this; }
@@ -130,6 +139,14 @@ public:
 
     Q_DECL_CONSTEXPR inline bool testFlag(Enum f) const { return (i & Int(f)) == Int(f) && (Int(f) != 0 || i == Int(f) ); }
 private:
+#ifdef Q_COMPILER_INITIALIZER_LISTS
+    Q_DECL_CONSTEXPR static inline Int initializer_list_helper(typename std::initializer_list<Enum>::const_iterator it,
+                                                               typename std::initializer_list<Enum>::const_iterator end)
+    {
+        return (it == end ? Int(0) : (Int(*it) | initializer_list_helper(it + 1, end)));
+    }
+#endif
+
     Int i;
 };
 
