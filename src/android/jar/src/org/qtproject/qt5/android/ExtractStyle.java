@@ -1640,6 +1640,7 @@ public class ExtractStyle {
                   jsonWriter.name("actionButtonStyle").value(extractTextAppearanceInformations("actionButtonStyle", "QToolButton", null, -1));
                   jsonWriter.name("actionBarTabTextStyle").value(extractTextAppearanceInformations("actionBarTabTextStyle", null, null, -1));
                   jsonWriter.name("actionBarTabStyle").value(extractTextAppearanceInformations("actionBarTabStyle", null, null, -1));
+                  jsonWriter.name("actionOverflowButtonStyle").value(extractImageViewInformations("actionOverflowButtonStyle", null));
                   extractTabBar(jsonWriter, "actionBarTabBarStyle", "QTabBar");
               }
           } catch (Exception e) {
