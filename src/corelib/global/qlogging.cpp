@@ -1443,8 +1443,7 @@ void qErrnoWarning(int code, const char *msg, ...)
     \since 5.0
 
     Installs a Qt message \a handler which has been defined
-    previously. Returns a pointer to the previous message handler
-    (which may be 0).
+    previously. Returns a pointer to the previous message handler.
 
     The message handler is a function that prints out debug messages,
     warnings, critical and fatal error messages. The Qt library (debug
