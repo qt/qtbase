@@ -65,6 +65,10 @@ class NSTimeZone;
 #include <qt_windows.h>
 #endif // Q_OS_WIN
 
+#ifdef Q_OS_ANDROID
+#include <QtCore/private/qjni_p.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class Q_CORE_EXPORT QTimeZonePrivate : public QSharedData
@@ -256,7 +260,7 @@ private:
 };
 #endif // QT_USE_ICU
 
-#if defined Q_OS_UNIX && !defined Q_OS_MAC
+#if defined Q_OS_UNIX && !defined Q_OS_MAC && !defined Q_OS_ANDROID
 class Q_AUTOTEST_EXPORT QTzTimeZonePrivate Q_DECL_FINAL : public QTimeZonePrivate
 {
 public:
@@ -423,6 +427,48 @@ private:
     QList<QWinTransitionRule> m_tranRules;
 };
 #endif // Q_OS_WIN
+
+#ifdef Q_OS_ANDROID
+class QAndroidTimeZonePrivate Q_DECL_FINAL : public QTimeZonePrivate
+{
+public:
+    // Create default time zone
+    QAndroidTimeZonePrivate();
+    // Create named time zone
+    QAndroidTimeZonePrivate(const QByteArray &ianaId);
+    QAndroidTimeZonePrivate(const QAndroidTimeZonePrivate &other);
+    ~QAndroidTimeZonePrivate();
+
+    QTimeZonePrivate *clone();
+
+    QString displayName(QTimeZone::TimeType timeType, QTimeZone::NameType nameType,
+                        const QLocale &locale) const Q_DECL_OVERRIDE;
+    QString abbreviation(qint64 atMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+
+    int offsetFromUtc(qint64 atMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+    int standardTimeOffset(qint64 atMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+    int daylightTimeOffset(qint64 atMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+
+    bool hasDaylightTime() const Q_DECL_OVERRIDE;
+    bool isDaylightTime(qint64 atMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+
+    Data data(qint64 forMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+
+    bool hasTransitions() const Q_DECL_OVERRIDE;
+    Data nextTransition(qint64 afterMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+    Data previousTransition(qint64 beforeMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+
+    QByteArray systemTimeZoneId() const Q_DECL_OVERRIDE;
+
+    QSet<QByteArray> availableTimeZoneIds() const Q_DECL_OVERRIDE;
+
+private:
+    void init(const QByteArray &zoneId);
+
+    QJNIObjectPrivate androidTimeZone;
+
+};
+#endif // Q_OS_ANDROID
 
 QT_END_NAMESPACE
 

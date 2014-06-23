@@ -56,6 +56,8 @@ static QTimeZonePrivate *newBackendTimeZone()
 #else
 #if defined Q_OS_MAC
     return new QMacTimeZonePrivate();
+#elif defined Q_OS_ANDROID
+    return new QAndroidTimeZonePrivate();
 #elif defined Q_OS_UNIX
     return new QTzTimeZonePrivate();
     // Registry based timezone backend not available on WinRT
@@ -81,6 +83,8 @@ static QTimeZonePrivate *newBackendTimeZone(const QByteArray &ianaId)
 #else
 #if defined Q_OS_MAC
     return new QMacTimeZonePrivate(ianaId);
+#elif defined Q_OS_ANDROID
+    return new QAndroidTimeZonePrivate(ianaId);
 #elif defined Q_OS_UNIX
     return new QTzTimeZonePrivate(ianaId);
     // Registry based timezone backend not available on WinRT
