@@ -135,7 +135,9 @@ void QEvdevMouseManager::handleMouseEvent(int x, int y, bool abs, Qt::MouseButto
         m_y = g.bottom() - m_yoffset;
 
     QPoint pos(m_x + m_xoffset, m_y + m_yoffset);
-    QWindowSystemInterface::handleMouseEvent(0, pos, pos, buttons);
+    // Cannot track the keyboard modifiers ourselves here. Instead, report the
+    // modifiers from the last key event that has been seen by QGuiApplication.
+    QWindowSystemInterface::handleMouseEvent(0, pos, pos, buttons, QGuiApplication::keyboardModifiers());
 
 #ifdef QT_QPA_MOUSEMANAGER_DEBUG
     qDebug("mouse event %d %d %d", pos.x(), pos.y(), int(buttons));
@@ -145,7 +147,7 @@ void QEvdevMouseManager::handleMouseEvent(int x, int y, bool abs, Qt::MouseButto
 void QEvdevMouseManager::handleWheelEvent(int delta, Qt::Orientation orientation)
 {
     QPoint pos(m_x + m_xoffset, m_y + m_yoffset);
-    QWindowSystemInterface::handleWheelEvent(0, pos, pos, delta, orientation);
+    QWindowSystemInterface::handleWheelEvent(0, pos, pos, delta, orientation, QGuiApplication::keyboardModifiers());
 
 #ifdef QT_QPA_MOUSEMANAGER_DEBUG
     qDebug("mouse wheel event %dx%d %d %d", pos.x(), pos.y(), delta, int(orientation));
