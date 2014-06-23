@@ -85,8 +85,8 @@ template <typename T> struct QAtomicOps: QGenericAtomicOps<QAtomicOps<T> >
         return tmp;
     }
 
-    static
-    T fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
+    template <typename AdditiveType> static
+    T fetchAndAddRelaxed(T &_q_value, AdditiveType valueToAdd) Q_DECL_NOTHROW
     {
         T returnValue = _q_value;
         _q_value += valueToAdd;
