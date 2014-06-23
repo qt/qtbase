@@ -2405,13 +2405,6 @@
         \li architecture
         \li The target architecture. Defaults to \c VCPROJ_ARCH.
     \row
-        \li arguments
-        \li Allows arguments to be passed to the executable.
-    \row
-        \li author
-        \li Package author. Defaults to \c{Default package author}.
-            This option is only available for Windows Phone.
-    \row
         \li background
         \li Tile background color. Defaults to \c{green}.
     \row
@@ -2420,7 +2413,7 @@
     \row
         \li capabilities_device
         \li Specifies device capabilities to add to the capability list
-            (location, webcam, and so on). This option is not available on Windows Phone.
+            (location, webcam, and so on).
     \row
         \li default_language
         \li The default language code of the application. Defaults to "en".
@@ -2435,10 +2428,6 @@
         \li Tile foreground (text) color. Defaults to \c{light}.
             This option is only available for Windows Store apps on Windows 8 and Windows RT.
     \row
-        \li genre
-        \li Package genre. Defaults to \c{apps.normal}.
-            This option is only available for Windows Phone.
-    \row
         \li iconic_tile_icon
         \li Image file for the \c{iconic} tile template icon. Default provided by
             the mkspec.
@@ -2450,10 +2439,6 @@
         \li identity
         \li The unique ID of the app. Defaults to reusing the existing generated
             manifest's UUID, or generates a new UUID if none is present.
-    \row
-        \li languages
-        \li A list of additional language codes supported by the application. This list
-            is empty by default.
     \row
         \li logo_large
         \li Large logo image file. Default provided by the mkspec.
@@ -2470,12 +2455,17 @@
         \li name
         \li The name of the package as displayed to the user. Defaults to TARGET.
     \row
+        \li phone_product_id
+        \li The GUID of the product. Defaults to the value of WINRT_MANIFEST.identity. (Windows Phone only)
+    \row
+        \li phone_publisher_id
+        \li The GUID of the publisher. Defaults to an invalid GUID. (Windows Phone only)
+    \row
         \li publisher
         \li Display name of the publisher. Defaults to \c{Default publisher display name}.
     \row
         \li publisher_id
-        \li On Windows 8 or Windows RT, the publisher's distinguished name (default: \c{CN=MyCN}).
-            On Windows Phone, the publisher's UUID (default: invalid UUID string).
+        \li The publisher's distinguished name (default: \c{CN=MyCN}).
     \row
         \li splash_screen
         \li Splash screen image file. Default provided by the mkspec.
@@ -2494,12 +2484,8 @@
     \code
     WINRT_MANIFEST.publisher = MyCompany
     WINRT_MANIFEST.logo_store = someImage.png
-    winphone {
-        WINRT_MANIFEST.capabilities += ID_CAP_LOCATION ID_CAP_NETWORKING
-    } else {
-        WINRT_MANIFEST.capabilities += internetClient
-        WINRT_MANIFEST.device_capabilities += location
-    }
+    WINRT_MANIFEST.capabilities += internetClient
+    WINRT_MANIFEST.device_capabilities += location
     \endcode
 
     Additionally, an input manifest file can be specified by using WINRT_MANIFEST.

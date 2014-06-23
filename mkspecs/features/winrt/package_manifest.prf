@@ -12,14 +12,11 @@
 # WINRT_MANIFEST.name: The name of the package as displayed to the user. Defaults to TARGET.
 # WINRT_MANIFEST.architecture: The target architecture. Defaults to VCPROJ_ARCH.
 # WINRT_MANIFEST.version: The version number of the package. Defaults to "1.0.0.0".
-# WINRT_MANIFEST.arguments: Allows arguments to be passed to the executable.
 # WINRT_MANIFEST.publisher: Display name of the publisher. Defaults to "Default publisher display name".
-# WINRT_MANIFEST.publisher_id: On Windows 8/RT/Phone 8.1, the publisher's distinguished name (default: CN=MyCN). On Windows Phone 8.0, the publisher's UUID (default: invalid UUID string).
-# WINRT_MANIFEST.phone_product_id): On Windows Phone 8.1, the GUID of the product. Defaults to the value of WINRT_MANIFEST.identity.
-# WINRT_MANIFEST.phone_publisher_id: On Windows Phone 8.1, the GUID of the publiser. Defaults to an invalid GUID.
+# WINRT_MANIFEST.publisher_id: The publisher's distinguished name (default: CN=MyCN).
+# WINRT_MANIFEST.phone_product_id: The GUID of the product. Defaults to the value of WINRT_MANIFEST.identity. (Windows Phone only)
+# WINRT_MANIFEST.phone_publisher_id: The GUID of the publisher. Defaults to an invalid GUID. (Windows Phone only)
 # WINRT_MANIFEST.description: Package description. Defaults to "Default package description".
-# WINRT_MANIFEST.author: Package author (Windows Phone 8.0 only). Defaults to "Default package author".
-# WINRT_MANIFEST.genre: Package genre (Windows Phone 8.0 only). Defaults to "apps.normal".
 # WINRT_MANIFEST.background: Tile background color. Defaults to "green".
 # WINRT_MANIFEST.foreground: Tile foreground (text) color (Windows 8/RT only). Defaults to "light".
 # WINRT_MANIFEST.logo_store: Logo image file for Windows Store. Default provided by the mkspec.
@@ -30,7 +27,6 @@
 # WINRT_MANIFEST.iconic_tile_icon: Image file for the "iconic" tile template icon. Default provided by the mkspec.
 # WINRT_MANIFEST.iconic_tile_small: Image file for the small "iconic" tile template logo. Default provided by the mkspec.
 # WINRT_MANIFEST.default_language: Specifies the default language of the application
-# WINRT_MANIFEST.languages: Specifies the languages the application supports
 # WINRT_MANIFEST.capabilities: Specifies capabilities to add to the capability list.
 # WINRT_MANIFEST.capabilities_device: Specifies device capabilities to add to the capability list. (location, webcam...)
 # WINRT_MANIFEST.dependencies: Specifies dependencies required by the package.
@@ -51,9 +47,7 @@
         BUILD_DIR = $$dirname(QMAKE_RESOLVED_TARGET)
     }
 
-    winphone:equals(WINSDK_VER, 8.0): \
-        manifest_file.output = $$BUILD_DIR/WMAppManifest.xml
-    else: contains(TEMPLATE, "vc.*"): \
+    contains(TEMPLATE, "vc.*"): \
         manifest_file.output = $$BUILD_DIR/Package.appxmanifest
     else: \
         manifest_file.output = $$BUILD_DIR/AppxManifest.xml
@@ -80,49 +74,30 @@
             write_file($$UUID_CACHE, WINRT_UUID)|error("Unable to write the UUID cache; aborting.")
             eval($$WINRT_UUID)
         }
-        winphone:equals(WINSDK_VER, 8.0): WINRT_MANIFEST.identity = {$$WINRT_MANIFEST.identity}
     }
     isEmpty(WINRT_MANIFEST.name): WINRT_MANIFEST.name = $$TARGET
     isEmpty(WINRT_MANIFEST.architecture): WINRT_MANIFEST.architecture = $$VCPROJ_ARCH
     isEmpty(WINRT_MANIFEST.version): WINRT_MANIFEST.version = 1.0.0.0
     isEmpty(WINRT_MANIFEST.publisher): WINRT_MANIFEST.publisher = Default publisher display name
-    isEmpty(WINRT_MANIFEST.publisherid) {
-        winphone:equals(WINSDK_VER, 8.0): WINRT_MANIFEST.publisherid = {00000000-0000-0000-0000-000000000000}
-        else: WINRT_MANIFEST.publisherid = CN=$$(USERNAME)
-    }
+    isEmpty(WINRT_MANIFEST.publisherid): WINRT_MANIFEST.publisherid = CN=$$(USERNAME)
     isEmpty(WINRT_MANIFEST.phone_product_id): WINRT_MANIFEST.phone_product_id = $$WINRT_MANIFEST.identity
     isEmpty(WINRT_MANIFEST.phone_publisher_id): WINRT_MANIFEST.phone_publisher_id = 00000000-0000-0000-0000-000000000000
     isEmpty(WINRT_MANIFEST.description): WINRT_MANIFEST.description = Default package description
-    isEmpty(WINRT_MANIFEST.author): WINRT_MANIFEST.author = Default package author
-    isEmpty(WINRT_MANIFEST.genre): WINRT_MANIFEST.genre = apps.normal
     isEmpty(WINRT_MANIFEST.background): WINRT_MANIFEST.background = green
     isEmpty(WINRT_MANIFEST.foreground): WINRT_MANIFEST.foreground = light
     isEmpty(WINRT_MANIFEST.default_language): WINRT_MANIFEST.default_language = en
 
-    winphone:equals(WINSDK_VER, 8.0): INDENT = "$$escape_expand(\\r\\n)    "
-    else: INDENT = "$$escape_expand(\\r\\n)  "
-
-    # Languages are given as a string list
-    WINRT_MANIFEST.languages = $$unique(WINRT_MANIFEST.languages)
-    winphone:equals(WINSDK_VER, 8.0):!isEmpty(WINRT_MANIFEST.languages) {
-        for(LANGUAGE, WINRT_MANIFEST.languages): \
-            MANIFEST_LANGUAGES += "<Language code=\"$$LANGUAGE\" />"
-
-        WINRT_MANIFEST.languages = \
-            $$join(MANIFEST_LANGUAGES, $$INDENT, \
-                   "$$escape_expand(\\r\\n)  <Languages xmlns=\"\">$$INDENT", \
-                   "$$escape_expand(\\r\\n)  </Languages>")
-    }
+    INDENT = "$$escape_expand(\\r\\n)  "
 
     # Capabilities are given as a string list and may change with the configuration (network, sensors, etc.)
     WINRT_MANIFEST.capabilities = $$unique(WINRT_MANIFEST.capabilities)
     WINRT_MANIFEST.capabilities_device = $$unique(WINRT_MANIFEST.capabilities_device)
 
-    !isEmpty(WINRT_MANIFEST.capabilities)|!isEmpty(WINRT_MANIFEST.capabilities_device)|winphone {
+    !isEmpty(WINRT_MANIFEST.capabilities)|!isEmpty(WINRT_MANIFEST.capabilities_device) {
         MANIFEST_CAPABILITIES += "<Capabilities>"
         for(CAPABILITY, WINRT_MANIFEST.capabilities): \
             MANIFEST_CAPABILITIES += "  <Capability Name=\"$$CAPABILITY\" />"
-        !winphone:for(CAPABILITY, WINRT_MANIFEST.capabilities_device): \
+        for(CAPABILITY, WINRT_MANIFEST.capabilities_device): \
             MANIFEST_CAPABILITIES += "  <DeviceCapability Name=\"$$CAPABILITY\" />"
         MANIFEST_CAPABILITIES += "</Capabilities>"
 
