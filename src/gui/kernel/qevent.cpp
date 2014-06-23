@@ -1189,7 +1189,7 @@ Qt::FocusReason QFocusEvent::reason() const
 
     The event contains a region() that needs to be updated, and a
     rect() that is the bounding rectangle of that region. Both are
-    provided because many widgets can't make much use of region(),
+    provided because many widgets cannot make much use of region(),
     and rect() can be much faster than region().boundingRect().
 
     \section1 Automatic Clipping
@@ -1981,40 +1981,63 @@ QVariant QInputMethodQueryEvent::value(Qt::InputMethodQuery query) const
 
     \ingroup events
 
-    Tablet Events are generated from a Wacom tablet. Most of the time you will
-    want to deal with events from the tablet as if they were events from a
-    mouse; for example, you would retrieve the cursor position with x(), y(),
-    pos(), globalX(), globalY(), and globalPos(). In some situations you may
-    wish to retrieve the extra information provided by the tablet device
-    driver; for example, you might want to do subpixeling with higher
-    resolution coordinates or you may want to adjust color brightness based on
-    pressure.  QTabletEvent allows you to read the pressure(), the xTilt(), and
-    yTilt(), as well as the type of device being used with device() (see
-    \l{TabletDevice}). It can also give you the minimum and maximum values for
-    each device's pressure and high resolution coordinates.
+    \e{Tablet events} are generated from tablet peripherals such as Wacom
+    tablets and various other brands, and electromagnetic stylus devices
+    included with some types of tablet computers. (It is not the same as
+    \l QTouchEvent which a touchscreen generates, even when a passive stylus is
+    used on a touchscreen.)
 
-    A tablet event contains a special accept flag that indicates whether the
-    receiver wants the event. You should call QTabletEvent::accept() if you
-    handle the tablet event; otherwise it will be sent to the parent widget.
-    The exception are TabletEnterProximity and TabletLeaveProximity events,
-    these are only sent to QApplication and don't check whether or not they are
-    accepted.
+    Tablet events are similar to mouse events; for example, the \l x(), \l y(),
+    \l pos(), \l globalX(), \l globalY(), and \l globalPos() accessors provide
+    the cursor position, and you can see which \l buttons() are pressed
+    (pressing the stylus tip against the tablet surface is equivalent to a left
+    mouse button). But tablet events also pass through some extra information
+    that the tablet device driver provides; for example, you might want to do
+    subpixel rendering with higher resolution coordinates (\l hiResGlobalX()
+    and \l hiResGlobalY()), adjust color brightness based on the \l pressure()
+    of the tool against the tablet surface, use different brushes depending on
+    the type of tool in use (\l device()), modulate the brush shape in some way
+    according to the X-axis and Y-axis tilt of the tool with respect to the
+    tablet surface (\l xTilt() and \l yTilt()), and use a virtual eraser
+    instead of a brush if the user switches to the other end of a double-ended
+    stylus (\l pointerType()).
 
-    The QWidget::setEnabled() function can be used to enable or
-    disable mouse and keyboard events for a widget.
+    Every event contains an accept flag that indicates whether the receiver
+    wants the event. You should call QTabletEvent::accept() if you handle the
+    tablet event; otherwise it will be sent to the parent widget. The exception
+    are TabletEnterProximity and TabletLeaveProximity events: these are only
+    sent to QApplication and do not check whether or not they are accepted.
 
-    The event handler QWidget::tabletEvent() receives all three types of
-    tablet events. Qt will first send a tabletEvent then, if it is not
-    accepted, it will send a mouse event. This allows applications that
-    don't utilize tablets to use a tablet like a mouse, while also
-    enabling those who want to use both tablets and mouses differently.
+    The QWidget::setEnabled() function can be used to enable or disable
+    mouse, tablet and keyboard events for a widget.
+
+    The event handler QWidget::tabletEvent() receives TabletPress,
+    TabletRelease and TabletMove events. Qt will first send a
+    tablet event, then if it is not accepted by any widget, it will send a
+    mouse event. This allows users of applications that are not designed for
+    tablets to use a tablet like a mouse. However high-resolution drawing
+    applications should handle the tablet events, because they can occur at a
+    higher frequency, which is a benefit for smooth and accurate drawing.
+    If the tablet events are rejected, the synthetic mouse events may be
+    compressed for efficiency.
+
+    New in Qt 5.4: QTabletEvent includes all information available from the
+    device, including \l QTabletEvent::buttons(). Previously it was not
+    possible to accept all tablet events and also know which stylus buttons
+    were pressed.
+
+    Note that pressing the stylus button while the stylus hovers over the
+    tablet will generate a button press on some types of tablets, while on
+    other types it will be necessary to press the stylus against the tablet
+    surface in order to register the simultaneous stylus button press.
 
     \section1 Notes for X11 Users
 
-    Qt uses the following hard-coded names to identify tablet
-    devices from the xorg.conf file on X11 (apart from IRIX):
-    'stylus', 'pen', and 'eraser'. If the devices have other names,
-    they will not be picked up Qt.
+    If the tablet is configured in xorg.conf to use the Wacom driver, there
+    will be separate XInput "devices" for the stylus, eraser, and (optionally)
+    cursor and touchpad. Qt recognizes these by their names. Otherwise, if the
+    tablet is configured to use the evdev driver, there will be only one device
+    and applications may not be able to distinguish the stylus from the eraser.
 */
 
 /*!
@@ -2226,7 +2249,7 @@ Qt::MouseButtons QTabletEvent::buttons() const
     \fn qreal QTabletEvent::rotation() const
 
     Returns the rotation of the current device in degress. This is usually
-    given by a 4D Mouse. If the device doesn't support rotation this value is
+    given by a 4D Mouse. If the device does not support rotation this value is
     always 0.0.
 
 */
@@ -3130,7 +3153,7 @@ QActionEvent::~QActionEvent()
     If spontaneous() is true, the event originated outside the
     application. In this case, the user hid the window using the
     window manager controls, either by iconifying the window or by
-    switching to another virtual desktop where the window isn't
+    switching to another virtual desktop where the window is not
     visible. The window will become hidden but not withdrawn. If the
     window was iconified, QWidget::isMinimized() returns \c true.
 
@@ -3696,7 +3719,7 @@ QDebug operator<<(QDebug dbg, const QEvent *e) {
     \ingroup events
     \inmodule QtGui
 
-    Normally you don't need to use this class directly; QShortcut
+    Normally you do not need to use this class directly; QShortcut
     provides a higher-level interface to handle shortcut keys.
 
     \sa QShortcut
