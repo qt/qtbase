@@ -706,51 +706,48 @@ QString QAccessibleTextWidget::attributes(int offset, int *startOffset, int *end
      http://linuxfoundation.org/collaborate/workgroups/accessibility/iaccessible2/textattributes
     */
 
-    if (offset >= characterCount()) {
+    // IAccessible2 defines -1 as length and -2 as cursor position
+    if (offset == -2)
+        offset = cursorPosition();
+
+    const int charCount = characterCount();
+
+    // -1 doesn't make much sense here, but it's better to return something
+    // screen readers may ask for text attributes at the cursor pos which may be equal to length
+    if (offset == -1 || offset == charCount)
+        offset = charCount - 1;
+
+    if (offset < 0 || offset > charCount) {
         *startOffset = -1;
         *endOffset = -1;
         return QString();
     }
 
-    QMap<QByteArray, QString> attrs;
 
     QTextCursor cursor = textCursor();
-
-    //cursor.charFormat returns the format of the previous character
-    cursor.setPosition(offset + 1);
-    QTextCharFormat charFormat = cursor.charFormat();
-
     cursor.setPosition(offset);
+    QTextBlock block = cursor.block();
+
+    int blockStart = block.position();
+    int blockEnd = blockStart + block.length();
+
+    QTextBlock::iterator iter = block.begin();
+    while (!iter.fragment().contains(offset))
+        ++iter;
+
+    QTextFragment fragment = iter.fragment();
+    int pos = fragment.position();
+
+    // text block and fragment may overlap, use the smallest common range
+    *startOffset = qMax(pos, blockStart);
+    Q_ASSERT(*startOffset <= offset);
+    *endOffset = qMin(pos + fragment.length(), blockEnd);
+    Q_ASSERT(*endOffset >= offset);
+
+    QTextCharFormat charFormat = fragment.charFormat();
     QTextBlockFormat blockFormat = cursor.blockFormat();
 
-    QTextCharFormat charFormatComp;
-    QTextBlockFormat blockFormatComp;
-
-    *startOffset = offset;
-    cursor.setPosition(*startOffset);
-    while (*startOffset > 0) {
-        charFormatComp = cursor.charFormat();
-        cursor.setPosition(*startOffset - 1);
-        blockFormatComp = cursor.blockFormat();
-        if ((charFormat == charFormatComp) && (blockFormat == blockFormatComp))
-            (*startOffset)--;
-        else
-            break;
-    }
-
-    int limit = characterCount() + 1;
-    *endOffset = offset + 1;
-    cursor.setPosition(*endOffset);
-    while (*endOffset < limit) {
-        blockFormatComp = cursor.blockFormat();
-        cursor.setPosition(*endOffset + 1);
-        charFormatComp = cursor.charFormat();
-        if ((charFormat == charFormatComp) && (cursor.blockFormat() == blockFormatComp))
-            (*endOffset)++;
-        else
-            break;
-    }
-
+    QMap<QByteArray, QString> attrs;
     QString family = charFormat.fontFamily();
     if (!family.isEmpty()) {
         family = family.replace('\\',QStringLiteral("\\\\"));

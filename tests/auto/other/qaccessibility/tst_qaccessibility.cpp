@@ -243,6 +243,7 @@ private slots:
     void statesStructTest();
     void navigateHierarchy();
     void sliderTest();
+    void textAttributes_data();
     void textAttributes();
     void hideShowTest();
 
@@ -698,58 +699,118 @@ void tst_QAccessibility::accessibleName()
     QTestAccessibility::clearEvents();
 }
 
-void tst_QAccessibility::textAttributes()
+// note: color should probably always be part of the attributes
+void tst_QAccessibility::textAttributes_data()
 {
-    QTextEdit textEdit;
-    int startOffset;
-    int endOffset;
-    QString attributes;
-    QString text("<html><head></head><body>"
+    QTest::addColumn<QString>("text");
+    QTest::addColumn<int>("offset");
+    QTest::addColumn<int>("startOffsetResult");
+    QTest::addColumn<int>("endOffsetResult");
+    QTest::addColumn<QStringList>("attributeResult");
+
+    static QStringList defaults = QString("font-style:normal;font-weight:normal;text-align:left;text-position:baseline;text-underline-style:none").split(';');
+    static QStringList bold = defaults;
+    bold[1] = QString::fromLatin1("font-weight:bold");
+
+    static QStringList italic = defaults;
+    italic[0] = QString::fromLatin1("font-style:italic");
+
+    static QStringList boldItalic = defaults;
+    boldItalic[0] = QString::fromLatin1("font-style:italic");
+    boldItalic[1] = QString::fromLatin1("font-weight:bold");
+
+    static QStringList monospace = defaults;
+    monospace.append(QLatin1String("font-family:\"monospace\""));
+
+    static QStringList font8pt = defaults;
+    font8pt.append(QLatin1String("font-size:8pt"));
+
+    static QStringList color = defaults;
+    color << QLatin1String("color:rgb(240,241,242)") << QLatin1String("background-color:rgb(20,240,30)");
+
+    static QStringList rightAlign = defaults;
+    rightAlign[2] = QStringLiteral("text-align:right");
+
+    QTest::newRow("defaults 1") << "hello" << 0 << 0 << 5 << defaults;
+    QTest::newRow("defaults 2") << "hello" << 1 << 0 << 5 << defaults;
+    QTest::newRow("defaults 3") << "hello" << 4 << 0 << 5 << defaults;
+    QTest::newRow("defaults 4") << "hello" << 5 << 0 << 5 << defaults;
+    QTest::newRow("offset -1 length") << "hello" << -1 << 0 << 5 << defaults;
+    QTest::newRow("offset -2 cursor pos") << "hello" << -2 << 0 << 5 << defaults;
+    QTest::newRow("offset -3") << "hello" << -3 << -1 << -1 << QStringList();
+    QTest::newRow("invalid offset 2") << "hello" << 6 << -1 << -1 << QStringList();
+    QTest::newRow("invalid offset 3") << "" << 1 << -1 << -1 << QStringList();
+
+    QString boldText = QLatin1String("<html><b>bold</b>text");
+    QTest::newRow("bold 0") << boldText << 0 << 0 << 4 << bold;
+    QTest::newRow("bold 2") << boldText << 2 << 0 << 4 << bold;
+    QTest::newRow("bold 3") << boldText << 3 << 0 << 4 << bold;
+    QTest::newRow("bold 4") << boldText << 4 << 4 << 8 << defaults;
+    QTest::newRow("bold 6") << boldText << 6 << 4 << 8 << defaults;
+
+    QString longText = QLatin1String("<html>"
                  "Hello, <b>this</b> is an <i><b>example</b> text</i>."
                  "<span style=\"font-family: monospace\">Multiple fonts are used.</span>"
                  "Multiple <span style=\"font-size: 8pt\">text sizes</span> are used."
-                 "Let's give some color to <span style=\"color:#f0f1f2; background-color:#14f01e\">Qt</span>."
-                 "</body></html>");
+                 "Let's give some color to <span style=\"color:#f0f1f2; background-color:#14f01e\">Qt</span>.");
 
+    QTest::newRow("default 5") << longText << 6 << 0 << 7 << defaults;
+    QTest::newRow("default 6") << longText << 7 << 7 << 11 << bold;
+    QTest::newRow("bold 7") << longText << 10 << 7 << 11 << bold;
+    QTest::newRow("bold 8") << longText << 10 << 7 << 11 << bold;
+    QTest::newRow("bold italic") << longText << 18 << 18 << 25 << boldItalic;
+    QTest::newRow("monospace") << longText << 34 << 31 << 55 << monospace;
+    QTest::newRow("8pt") << longText << 65 << 64 << 74 << font8pt;
+    QTest::newRow("color") << longText << 110 << 109 << 111 << color;
+
+    QString rightAligned = QLatin1String("<html><p align=\"right\">right</p>");
+    QTest::newRow("right aligned 1") << rightAligned << 0 << 0 << 5 << rightAlign;
+    QTest::newRow("right aligned 2") << rightAligned << 1 << 0 << 5 << rightAlign;
+    QTest::newRow("right aligned 3") << rightAligned << 5 << 0 << 5 << rightAlign;
+
+    // left \n right \n left, make sure bold and alignment borders coincide
+    QString leftRightLeftAligned = QLatin1String("<html><p><b>left</b></p><p align=\"right\">right</p><p><b>left</b></p>");
+    QTest::newRow("left right left aligned 1") << leftRightLeftAligned << 1 << 0 << 4 << bold;
+    QTest::newRow("left right left aligned 3") << leftRightLeftAligned << 3 << 0 << 4 << bold;
+    QTest::newRow("left right left aligned 4") << leftRightLeftAligned << 4 << 4 << 5 << defaults;
+    QTest::newRow("left right left aligned 5") << leftRightLeftAligned << 5 << 5 << 10 << rightAlign;
+    QTest::newRow("left right left aligned 8") << leftRightLeftAligned << 8 << 5 << 10 << rightAlign;
+    QTest::newRow("left right left aligned 9") << leftRightLeftAligned << 9 << 5 << 10 << rightAlign;
+    QTest::newRow("left right left aligned 10") << leftRightLeftAligned << 10 << 10 << 11 << rightAlign;
+    QTest::newRow("left right left aligned 11") << leftRightLeftAligned << 11 << 11 << 15 << bold;
+    QTest::newRow("left right left aligned 15") << leftRightLeftAligned << 15 << 11 << 15 << bold;
+}
+
+void tst_QAccessibility::textAttributes()
+{
+    {
+    QFETCH(QString, text);
+    QFETCH(int, offset);
+    QFETCH(int, startOffsetResult);
+    QFETCH(int, endOffsetResult);
+    QFETCH(QStringList, attributeResult);
+
+    QTextEdit textEdit;
     textEdit.setText(text);
+    if (textEdit.document()->characterCount() > 1)
+        textEdit.textCursor().setPosition(1);
     QAccessibleInterface *interface = QAccessible::queryAccessibleInterface(&textEdit);
-
     QAccessibleTextInterface *textInterface=interface->textInterface();
-
     QVERIFY(textInterface);
-    QCOMPARE(textInterface->characterCount(), 112);
+    QCOMPARE(textInterface->characterCount(), textEdit.toPlainText().length());
 
-    attributes = textInterface->attributes(10, &startOffset, &endOffset);
-    QCOMPARE(startOffset, 7);
-    QCOMPARE(endOffset, 11);
-    attributes.prepend(';');
-    QVERIFY(attributes.contains(QLatin1String(";font-weight:bold;")));
+    int startOffset = -1;
+    int endOffset = -1;
+    QString attributes = textInterface->attributes(offset, &startOffset, &endOffset);
 
-    attributes = textInterface->attributes(18, &startOffset, &endOffset);
-    QCOMPARE(startOffset, 18);
-    QCOMPARE(endOffset, 25);
-    attributes.prepend(';');
-    QVERIFY(attributes.contains(QLatin1String(";font-weight:bold;")));
-    QVERIFY(attributes.contains(QLatin1String(";font-style:italic;")));
-
-    attributes = textInterface->attributes(34, &startOffset, &endOffset);
-    QCOMPARE(startOffset, 31);
-    QCOMPARE(endOffset, 55);
-    attributes.prepend(';');
-    QVERIFY(attributes.contains(QLatin1String(";font-family:\"monospace\";")));
-
-    attributes = textInterface->attributes(65, &startOffset, &endOffset);
-    QCOMPARE(startOffset, 64);
-    QCOMPARE(endOffset, 74);
-    attributes.prepend(';');
-    QVERIFY(attributes.contains(QLatin1String(";font-size:8pt;")));
-
-    attributes = textInterface->attributes(110, &startOffset, &endOffset);
-    QCOMPARE(startOffset, 109);
-    QCOMPARE(endOffset, 111);
-    attributes.prepend(';');
-    QVERIFY(attributes.contains(QLatin1String(";background-color:rgb(20,240,30);")));
-    QVERIFY(attributes.contains(QLatin1String(";color:rgb(240,241,242);")));
+    QCOMPARE(startOffset, startOffsetResult);
+    QCOMPARE(endOffset, endOffsetResult);
+    QStringList attrList = attributes.split(QChar(';'), QString::SkipEmptyParts);
+    attributeResult.sort();
+    attrList.sort();
+    QCOMPARE(attrList, attributeResult);
+    }
+    QTestAccessibility::clearEvents();
 }
 
 void tst_QAccessibility::hideShowTest()
@@ -1763,8 +1824,6 @@ void tst_QAccessibility::textEditTest()
         QAccessibleTextRemoveEvent remove(&edit, 0, "  ");
         QVERIFY_EVENT(&remove);
 
-        // FIXME the new text is not there yet
-        QEXPECT_FAIL("", "Inserting should always contain the new text", Continue);
         QAccessibleTextInsertEvent insert(&edit, 0, "Accessibility rocks");
         QVERIFY_EVENT(&insert);
         }

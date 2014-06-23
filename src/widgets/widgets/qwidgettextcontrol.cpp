@@ -651,7 +651,9 @@ void QWidgetTextControlPrivate::_q_contentsChanged(int from, int charsRemoved, i
     if (QAccessible::isActive() && q->parent() && q->parent()->isWidgetType()) {
         QTextCursor tmp(doc);
         tmp.setPosition(from);
-        tmp.setPosition(from + charsAdded, QTextCursor::KeepAnchor);
+        // when setting a new text document the length is off
+        // QTBUG-32583 - characterCount is off by 1 requires the -1
+        tmp.setPosition(qMin(doc->characterCount() - 1, from + charsAdded), QTextCursor::KeepAnchor);
         QString newText = tmp.selectedText();
 
         // always report the right number of removed chars, but in lack of the real string use spaces
