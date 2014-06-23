@@ -1220,7 +1220,7 @@ void QNetworkReplyHttpImplPrivate::httpAuthenticationRequired(const QHttpNetwork
 void QNetworkReplyHttpImplPrivate::proxyAuthenticationRequired(const QNetworkProxy &proxy,
                                                         QAuthenticator *authenticator)
 {
-    managerPrivate->proxyAuthenticationRequired(proxy, synchronous, authenticator, &lastProxyAuthentication);
+    managerPrivate->proxyAuthenticationRequired(request.url(), proxy, synchronous, authenticator, &lastProxyAuthentication);
 }
 #endif
 

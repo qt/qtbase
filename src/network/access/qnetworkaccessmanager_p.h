@@ -113,7 +113,8 @@ public:
                                                              const QAuthenticator *auth = 0);
 
 #ifndef QT_NO_NETWORKPROXY
-    void proxyAuthenticationRequired(const QNetworkProxy &proxy,
+    void proxyAuthenticationRequired(const QUrl &url,
+                                const QNetworkProxy &proxy,
                                 bool synchronous,
                                 QAuthenticator *authenticator,
                                 QNetworkProxy *lastProxyAuthentication);
