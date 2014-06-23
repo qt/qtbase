@@ -1819,13 +1819,48 @@ void HtmlGenerator::generateHeader(const QString& title,
     QString shortVersion = qdb_->version();
     if (shortVersion.count(QChar('.')) == 2)
         shortVersion.truncate(shortVersion.lastIndexOf(QChar('.')));
-    if (!project.isEmpty())
-        shortVersion = QLatin1String(" | ") + project + QLatin1Char(' ') + shortVersion;
+
+    //determine the rest of the <title> element content: "title | titleSuffix version"
+    QString titleSuffix;
+    if (!landingpage.isEmpty()) {
+        //for normal pages: "title | landingpage version"
+        titleSuffix = landingpage;
+    }
+    else if (!homepage.isEmpty()) {
+        //for pages that set the homepage but not landing page: "title | homepage version"
+        if (title != homepage)
+            titleSuffix = homepage;
+    }
+    else if (!project.isEmpty()) {
+        //for projects outside of Qt or Qt 5: "title | project version"
+        if (title != project)
+            titleSuffix = project;
+    }
     else
-        shortVersion = QLatin1String(" | ") + QLatin1String("Qt ") + shortVersion ;
+        //default: "title | Qt version"
+        titleSuffix = QLatin1String("Qt ");
+
+    //for pages that duplicate the title and suffix (landing pages, home pages,
+    // and module landing pages, clear the duplicate
+    if (title == titleSuffix)
+        titleSuffix.clear();
+
+    //for pages that duplicate the version, clear the duplicate
+    if (title.contains(shortVersion) || titleSuffix.contains(shortVersion))
+        shortVersion.clear();
+
+    QString divider;
+    if (!titleSuffix.isEmpty() && !title.isEmpty())
+        divider = QLatin1String(" | ");
 
     // Generating page title
-    out() << "  <title>" << protectEnc(title) << shortVersion << "</title>\n";
+    out() << "  <title>"
+          << protectEnc(title)
+          << divider
+          << titleSuffix
+          << QLatin1Char(' ')
+          << shortVersion
+          << "</title>\n";
 
     // Include style sheet and script links.
     out() << headerStyles;
