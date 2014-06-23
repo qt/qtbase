@@ -309,7 +309,10 @@ void QState::setErrorState(QAbstractState *state)
         return;
     }
 
-    d->errorState = state;
+    if (d->errorState != state) {
+        d->errorState = state;
+        emit errorStateChanged(QState::QPrivateSignal());
+    }
 }
 
 /*!
@@ -491,7 +494,10 @@ void QState::setInitialState(QAbstractState *state)
                  state, this);
         return;
     }
-    d->initialState = state;
+    if (d->initialState != state) {
+        d->initialState = state;
+        emit initialStateChanged(QState::QPrivateSignal());
+    }
 }
 
 /*!
@@ -509,7 +515,10 @@ QState::ChildMode QState::childMode() const
 void QState::setChildMode(ChildMode mode)
 {
     Q_D(QState);
-    d->childMode = mode;
+    if (d->childMode != mode) {
+        d->childMode = mode;
+        emit childModeChanged(QState::QPrivateSignal());
+    }
 }
 
 /*!
@@ -547,6 +556,33 @@ bool QState::event(QEvent *e)
   the signal will be emitted immediately before the state is entered.
 
   \sa QState::assignProperty(), QAbstractTransition::addAnimation()
+*/
+
+/*!
+  \fn QState::childModeChanged()
+  \since 5.4
+
+  This signal is emitted when the childMode property is changed.
+
+  \sa QState::childMode
+*/
+
+/*!
+  \fn QState::initialStateChanged()
+  \since 5.4
+
+  This signal is emitted when the initialState property is changed.
+
+  \sa QState::initialState
+*/
+
+/*!
+  \fn QState::errorStateChanged()
+  \since 5.4
+
+  This signal is emitted when the errorState property is changed.
+
+  \sa QState::errorState
 */
 
 QT_END_NAMESPACE

@@ -58,9 +58,9 @@ class QStatePrivate;
 class Q_CORE_EXPORT QState : public QAbstractState
 {
     Q_OBJECT
-    Q_PROPERTY(QAbstractState* initialState READ initialState WRITE setInitialState)
-    Q_PROPERTY(QAbstractState* errorState READ errorState WRITE setErrorState)
-    Q_PROPERTY(ChildMode childMode READ childMode WRITE setChildMode)
+    Q_PROPERTY(QAbstractState* initialState READ initialState WRITE setInitialState NOTIFY initialStateChanged)
+    Q_PROPERTY(QAbstractState* errorState READ errorState WRITE setErrorState NOTIFY errorStateChanged)
+    Q_PROPERTY(ChildMode childMode READ childMode WRITE setChildMode NOTIFY childModeChanged)
     Q_ENUMS(ChildMode RestorePolicy)
 public:
     enum ChildMode {
@@ -104,6 +104,21 @@ Q_SIGNALS:
 #endif
     );
     void propertiesAssigned(
+#if !defined(Q_QDOC)
+      QPrivateSignal
+#endif
+    );
+    void childModeChanged(
+#if !defined(Q_QDOC)
+      QPrivateSignal
+#endif
+    );
+    void initialStateChanged(
+#if !defined(Q_QDOC)
+      QPrivateSignal
+#endif
+    );
+    void errorStateChanged(
 #if !defined(Q_QDOC)
       QPrivateSignal
 #endif
