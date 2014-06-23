@@ -1427,10 +1427,15 @@ void QNetworkAccessManagerPrivate::proxyAuthenticationRequired(const QUrl &url,
     QString username;
     QString password;
     if (getProxyAuth(proxy.hostName(), url.scheme(), username, password)) {
-        authenticator->setUser(username);
-        authenticator->setPassword(password);
-        authenticationManager->cacheProxyCredentials(proxy, authenticator);
-        return;
+        // only cache the system credentials if they are correct (or if they have changed)
+        // to not run into an endless loop in case they are wrong
+        QNetworkAuthenticationCredential cred = authenticationManager->fetchCachedProxyCredentials(proxy);
+        if (!priv->hasFailed || cred.user != username || cred.password != password) {
+            authenticator->setUser(username);
+            authenticator->setPassword(password);
+            authenticationManager->cacheProxyCredentials(proxy, authenticator);
+            return;
+        }
     }
 #else
     Q_UNUSED(url);
