@@ -258,6 +258,7 @@ public:
 
 private:
     inline void releaseDCs();
+    bool updateObtainedParams(HDC hdc, int *obtainedSwapInterval = 0);
 
     QOpenGLStaticContext *m_staticContext;
     QOpenGLContext *m_context;
@@ -268,6 +269,7 @@ private:
     int m_pixelFormat;
     bool m_extensionsUsed;
     int m_swapInterval;
+    bool m_ownsContext;
 };
 
 QT_END_NAMESPACE

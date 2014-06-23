@@ -48,6 +48,7 @@
 #include <QtCore/QSysInfo>
 #include <QtGui/QGuiApplication>
 #include <qpa/qplatformnativeinterface.h>
+#include <QtPlatformHeaders/QWGLNativeContext>
 
 #include <algorithm>
 
@@ -1038,10 +1039,53 @@ QWindowsGLContext::QWindowsGLContext(QOpenGLStaticContext *staticContext,
     m_renderingContext(0),
     m_pixelFormat(0),
     m_extensionsUsed(false),
-    m_swapInterval(-1)
+    m_swapInterval(-1),
+    m_ownsContext(true)
 {
     if (!m_staticContext) // Something went very wrong. Stop here, isValid() will return false.
         return;
+
+    QVariant nativeHandle = context->nativeHandle();
+    if (!nativeHandle.isNull()) {
+        // Adopt and existing context.
+        if (!nativeHandle.canConvert<QWGLNativeContext>()) {
+            qWarning("QWindowsGLContext: Requires a QWGLNativeContext");
+            return;
+        }
+        QWGLNativeContext handle = nativeHandle.value<QWGLNativeContext>();
+        HGLRC wglcontext = handle.context();
+        HWND wnd = handle.window();
+        if (!wglcontext || !wnd) {
+            qWarning("QWindowsGLContext: No context and window given");
+            return;
+        }
+
+        HDC dc = GetDC(wnd);
+        // A window with an associated pixel format is mandatory.
+        // When no SetPixelFormat() call has been made, the following will fail.
+        m_pixelFormat = GetPixelFormat(dc);
+        bool ok = m_pixelFormat != 0;
+        if (!ok)
+            qWarning("QWindowsGLContext: Failed to get pixel format");
+        ok = DescribePixelFormat(dc, m_pixelFormat, sizeof(PIXELFORMATDESCRIPTOR), &m_obtainedPixelFormatDescriptor);
+        if (!ok) {
+            qWarning("QWindowsGLContext: Failed to describe pixel format");
+        } else {
+            QWindowsOpenGLAdditionalFormat obtainedAdditional;
+            m_obtainedFormat = GDI::qSurfaceFormatFromPixelFormat(m_obtainedPixelFormatDescriptor, &obtainedAdditional);
+            m_renderingContext = wglcontext;
+            ok = updateObtainedParams(dc);
+        }
+
+        ReleaseDC(wnd, dc);
+
+        if (ok)
+            m_ownsContext = false;
+        else
+            m_renderingContext = 0;
+
+        return;
+    }
 
     QSurfaceFormat format = context->format();
     if (format.renderableType() == QSurfaceFormat::DefaultRenderableType)
@@ -1065,7 +1109,7 @@ QWindowsGLContext::QWindowsGLContext(QOpenGLStaticContext *staticContext,
     HWND dummyWindow = 0;
     HDC hdc = 0;
     bool tryExtensions = false;
-    int obtainedSwapInternal = -1;
+    int obtainedSwapInterval = -1;
     do {
         dummyWindow = createDummyGLWindow();
         if (!dummyWindow)
@@ -1131,18 +1175,16 @@ QWindowsGLContext::QWindowsGLContext(QOpenGLStaticContext *staticContext,
         }
 
         // Query obtained parameters and apply swap interval.
-        if (!QOpenGLStaticContext::opengl32.wglMakeCurrent(hdc, m_renderingContext)) {
-            qWarning("Failed to make context current.");
+        if (!updateObtainedParams(hdc, &obtainedSwapInterval))
             break;
-        }
 
-        QWindowsOpenGLContextFormat::current().apply(&m_obtainedFormat);
-
-        if (m_staticContext->wglGetSwapInternalExt)
-            obtainedSwapInternal = m_staticContext->wglGetSwapInternalExt();
-
-        QOpenGLStaticContext::opengl32.wglMakeCurrent(0, 0);
     } while (false);
+
+    // Make the HGLRC retrievable via QOpenGLContext::nativeHandle().
+    // Do not provide the window since it is the dummy one and it is about to disappear.
+    if (m_renderingContext)
+        context->setNativeHandle(QVariant::fromValue<QWGLNativeContext>(QWGLNativeContext(m_renderingContext, 0)));
+
     if (hdc)
         ReleaseDC(dummyWindow, hdc);
     if (dummyWindow)
@@ -1151,16 +1193,32 @@ QWindowsGLContext::QWindowsGLContext(QOpenGLStaticContext *staticContext,
     qCDebug(lcQpaGl) << __FUNCTION__ << this << (tryExtensions ? "ARB" : "GDI")
         << " requested: " << context->format()
         << "\n    obtained #" << m_pixelFormat << (m_extensionsUsed ? "ARB" : "GDI") << m_obtainedFormat
-        << "\n    " << m_obtainedPixelFormatDescriptor << " swap interval: " << obtainedSwapInternal
+        << "\n    " << m_obtainedPixelFormatDescriptor << " swap interval: " << obtainedSwapInterval
         << "\n    default: " << m_staticContext->defaultFormat
         << "\n    HGLRC=" << m_renderingContext;
 }
 
 QWindowsGLContext::~QWindowsGLContext()
 {
-    if (m_renderingContext)
+    if (m_renderingContext && m_ownsContext)
         QOpenGLStaticContext::opengl32.wglDeleteContext(m_renderingContext);
     releaseDCs();
+}
+
+bool QWindowsGLContext::updateObtainedParams(HDC hdc, int *obtainedSwapInterval)
+{
+    if (!QOpenGLStaticContext::opengl32.wglMakeCurrent(hdc, m_renderingContext)) {
+        qWarning("Failed to make context current.");
+        return false;
+    }
+
+    QWindowsOpenGLContextFormat::current().apply(&m_obtainedFormat);
+
+    if (m_staticContext->wglGetSwapInternalExt && obtainedSwapInterval)
+        *obtainedSwapInterval = m_staticContext->wglGetSwapInternalExt();
+
+    QOpenGLStaticContext::opengl32.wglMakeCurrent(0, 0);
+    return true;
 }
 
 void QWindowsGLContext::releaseDCs()

@@ -65,6 +65,10 @@
 #include <QtPlatformHeaders/QGLXNativeContext>
 #endif
 
+#if defined(Q_OS_WIN32) && !defined(QT_OPENGL_ES_2)
+#include <QtPlatformHeaders/QWGLNativeContext>
+#endif
+
 Q_DECLARE_METATYPE(QImage::Format)
 
 class tst_QOpenGL : public QObject
@@ -98,6 +102,10 @@ private slots:
 
 #ifdef USE_GLX
     void glxContextWrap();
+#endif
+
+#if defined(Q_OS_WIN32) && !defined(QT_OPENGL_ES_2)
+    void wglContextWrap();
 #endif
 
     void vaoCreate();
@@ -1032,6 +1040,61 @@ void tst_QOpenGL::glxContextWrap()
     delete window;
 }
 #endif // USE_GLX
+
+#if defined(Q_OS_WIN32) && !defined(QT_OPENGL_ES_2)
+void tst_QOpenGL::wglContextWrap()
+{
+    QScopedPointer<QOpenGLContext> ctx(new QOpenGLContext);
+    QVERIFY(ctx->create());
+    if (ctx->isOpenGLES())
+        QSKIP("Not applicable to EGL");
+
+    QScopedPointer<QWindow> window(new QWindow);
+    window->setSurfaceType(QWindow::OpenGLSurface);
+    window->setGeometry(0, 0, 256, 256);
+    window->show();
+    QTest::qWaitForWindowExposed(window.data());
+
+    QVariant v = ctx->nativeHandle();
+    QVERIFY(!v.isNull());
+    QVERIFY(v.canConvert<QWGLNativeContext>());
+    QWGLNativeContext nativeContext = v.value<QWGLNativeContext>();
+    QVERIFY(nativeContext.context());
+
+    // Now do a makeCurrent() do make sure the pixel format on the native
+    // window (the HWND we are going to retrieve below) is set.
+    QVERIFY(ctx->makeCurrent(window.data()));
+    ctx->doneCurrent();
+
+    HWND wnd = (HWND) qGuiApp->platformNativeInterface()->nativeResourceForWindow(QByteArrayLiteral("handle"), window.data());
+    QVERIFY(wnd);
+
+    QScopedPointer<QOpenGLContext> adopted(new QOpenGLContext);
+    adopted->setNativeHandle(QVariant::fromValue<QWGLNativeContext>(QWGLNativeContext(nativeContext.context(), wnd)));
+    QVERIFY(adopted->create());
+
+    // This tests two things: that a regular, non-adopted QOpenGLContext is
+    // able to return a QSurfaceFormat containing the real values after
+    // create(), and that the adopted context got the correct pixel format from
+    // window and was able to update its format accordingly.
+    QCOMPARE(adopted->format().version(), ctx->format().version());
+    QCOMPARE(adopted->format().profile(), ctx->format().profile());
+    QVERIFY(ctx->format().redBufferSize() > 0);
+    QCOMPARE(adopted->format().redBufferSize(), ctx->format().redBufferSize());
+    QVERIFY(ctx->format().greenBufferSize() > 0);
+    QCOMPARE(adopted->format().greenBufferSize(), ctx->format().greenBufferSize());
+    QVERIFY(ctx->format().blueBufferSize() > 0);
+    QCOMPARE(adopted->format().blueBufferSize(), ctx->format().blueBufferSize());
+    QVERIFY(ctx->format().depthBufferSize() > 0);
+    QCOMPARE(adopted->format().depthBufferSize(), ctx->format().depthBufferSize());
+    QVERIFY(ctx->format().stencilBufferSize() > 0);
+    QCOMPARE(adopted->format().stencilBufferSize(), ctx->format().stencilBufferSize());
+
+    // This must work since we are using the exact same window.
+    QVERIFY(adopted->makeCurrent(window.data()));
+    adopted->doneCurrent();
+}
+#endif // Q_OS_WIN32 && !QT_OPENGL_ES_2
 
 void tst_QOpenGL::vaoCreate()
 {
