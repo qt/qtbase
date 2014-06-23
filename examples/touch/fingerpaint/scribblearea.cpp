@@ -46,6 +46,9 @@
 
 #include "scribblearea.h"
 
+static const qreal MinimumDiameter = 3.0;
+static const qreal MaximumDiameter = 50.0;
+
 //! [0]
 ScribbleArea::ScribbleArea(QWidget *parent)
     : QWidget(parent)
@@ -179,6 +182,7 @@ bool ScribbleArea::event(QEvent *event)
     case QEvent::TouchUpdate:
     case QEvent::TouchEnd:
     {
+        QTouchEvent *touch = static_cast<QTouchEvent *>(event);
         QList<QTouchEvent::TouchPoint> touchPoints = static_cast<QTouchEvent *>(event)->touchPoints();
         foreach (const QTouchEvent::TouchPoint &touchPoint, touchPoints) {
             switch (touchPoint.state()) {
@@ -189,7 +193,9 @@ bool ScribbleArea::event(QEvent *event)
                 {
                     QRectF rect = touchPoint.rect();
                     if (rect.isEmpty()) {
-                        qreal diameter = qreal(50) * touchPoint.pressure();
+                        qreal diameter = MinimumDiameter;
+                        if (touch->device()->capabilities() & QTouchDevice::Pressure)
+                            diameter = MinimumDiameter + (MaximumDiameter - MinimumDiameter) * touchPoint.pressure();
                         rect.setSize(QSizeF(diameter, diameter));
                     }
 
