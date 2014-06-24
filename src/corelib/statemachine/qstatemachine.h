@@ -62,6 +62,7 @@ class Q_CORE_EXPORT QStateMachine : public QState
     Q_OBJECT
     Q_PROPERTY(QString errorString READ errorString)
     Q_PROPERTY(QState::RestorePolicy globalRestorePolicy READ globalRestorePolicy WRITE setGlobalRestorePolicy)
+    Q_PROPERTY(bool running READ isRunning WRITE setRunning NOTIFY runningChanged)
 #ifndef QT_NO_ANIMATION
     Q_PROPERTY(bool animated READ isAnimated WRITE setAnimated)
 #endif
@@ -149,6 +150,7 @@ public:
 public Q_SLOTS:
     void start();
     void stop();
+    void setRunning(bool running);
 
 Q_SIGNALS:
     void started(
@@ -161,6 +163,8 @@ Q_SIGNALS:
       QPrivateSignal
 #endif
     );
+    void runningChanged(bool running);
+
 
 protected:
     void onEntry(QEvent *event);

@@ -163,6 +163,13 @@ QT_BEGIN_NAMESPACE
     QState::DontRestoreProperties.
 */
 
+/*!
+    \property QStateMachine::running
+    \since 5.4
+
+    \brief the running state of this state machine
+*/
+
 #ifndef QT_NO_ANIMATION
 /*!
     \property QStateMachine::animated
@@ -1409,6 +1416,7 @@ void QStateMachinePrivate::_q_start()
 #endif
 
     emit q->started(QStateMachine::QPrivateSignal());
+    emit q->runningChanged(true);
 
     if (stopProcessingReason == Finished) {
         // The state machine immediately reached a final state.
@@ -1416,6 +1424,7 @@ void QStateMachinePrivate::_q_start()
         state = NotRunning;
         unregisterAllTransitions();
         emitFinished();
+        emit q->runningChanged(false);
     } else {
         _q_process();
     }
@@ -1498,12 +1507,14 @@ void QStateMachinePrivate::_q_process()
         cancelAllDelayedEvents();
         unregisterAllTransitions();
         emitFinished();
+        emit q->runningChanged(false);
         break;
     case Stopped:
         state = NotRunning;
         cancelAllDelayedEvents();
         unregisterAllTransitions();
         emit q->stopped(QStateMachine::QPrivateSignal());
+        emit q->runningChanged(false);
         break;
     }
 }
@@ -2117,7 +2128,7 @@ bool QStateMachine::isRunning() const
   the main application event loop started with QCoreApplication::exec() or
   QApplication::exec().
 
-  \sa started(), finished(), stop(), initialState()
+  \sa started(), finished(), stop(), initialState(), setRunning()
 */
 void QStateMachine::start()
 {
@@ -2145,7 +2156,7 @@ void QStateMachine::start()
   Stops this state machine. The state machine will stop processing events and
   then emit the stopped() signal.
 
-  \sa stopped(), start()
+  \sa stopped(), start(), setRunning()
 */
 void QStateMachine::stop()
 {
@@ -2162,6 +2173,19 @@ void QStateMachine::stop()
         d->processEvents(QStateMachinePrivate::QueuedProcessing);
         break;
     }
+}
+
+/*!
+    Convenience functions to start/stop this state machine.
+
+    \sa start(), stop(), started(), finished(), stopped()
+*/
+void QStateMachine::setRunning(bool running)
+{
+    if (running)
+        start();
+    else
+        stop();
 }
 
 /*!
@@ -2710,6 +2734,15 @@ QStateMachine::WrappedEvent::~WrappedEvent()
   \fn QStateMachine::WrappedEvent::event() const
 
   Returns a clone of the original event.
+*/
+
+/*!
+  \fn QStateMachine::runningChanged(bool running)
+  \since 5.4
+
+  This signal is emitted when the running property is changed.
+
+  \sa QStateMachine::running
 */
 
 QT_END_NAMESPACE
