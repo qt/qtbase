@@ -674,7 +674,7 @@ void QGIFFormat::scan(QIODevice *device, QVector<QSize> *imageSizes, int *loopCo
         return;
 
     qint64 oldPos = device->pos();
-    if (!device->seek(0))
+    if (device->isSequential() || !device->seek(0))
         return;
 
     int colorCount = 0;
