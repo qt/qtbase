@@ -62,6 +62,7 @@ public slots:
     void cleanupTestCase();
     void init();
     void cleanup();
+    void accessAfterRemoveReadyReadSlot();
 
 private slots:
     void qnetworkdiskcache_data();
@@ -74,6 +75,7 @@ private slots:
     void data();
     void metaData();
     void remove();
+    void accessAfterRemove(); // QTBUG-17400
     void setCacheDirectory_data();
     void setCacheDirectory();
     void updateMetaData();
@@ -89,6 +91,8 @@ private slots:
 
 private:
     QTemporaryDir tempDir;
+    QUrl url; // used by accessAfterRemove()
+    QNetworkDiskCache *diskCache; // used by accessAfterRemove()
 };
 
 // FIXME same as in tst_qnetworkreply.cpp .. could be unified
@@ -368,6 +372,40 @@ void tst_QNetworkDiskCache::remove()
     QCOMPARE(countFiles(cacheDirectory).count(), NUM_SUBDIRECTORIES + 3);
     cache.remove(url);
     QCOMPARE(countFiles(cacheDirectory).count(), NUM_SUBDIRECTORIES + 2);
+}
+
+void tst_QNetworkDiskCache::accessAfterRemove() // QTBUG-17400
+{
+    QByteArray data("HTTP/1.1 200 OK\r\n"
+                    "Content-Length: 1\r\n"
+                    "\r\n"
+                    "a");
+
+    MiniHttpServer server(data);
+
+    QNetworkAccessManager *manager = new QNetworkAccessManager();
+    SubQNetworkDiskCache subCache;
+    subCache.setCacheDirectory(QLatin1String("cacheDir"));
+    diskCache = &subCache;
+    manager->setCache(&subCache);
+
+    url = QUrl("http://127.0.0.1:" + QString::number(server.serverPort()));
+    QNetworkRequest request(url);
+
+    QNetworkReply *reply = manager->get(request);
+    connect(reply, SIGNAL(readyRead()), this, SLOT(accessAfterRemoveReadyReadSlot()));
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+
+    QTestEventLoop::instance().enterLoop(5);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    reply->deleteLater();
+    manager->deleteLater();
+}
+
+void tst_QNetworkDiskCache::accessAfterRemoveReadyReadSlot()
+{
+    diskCache->remove(url); // this used to cause a crash later on
 }
 
 void tst_QNetworkDiskCache::setCacheDirectory_data()

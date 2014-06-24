@@ -130,6 +130,7 @@ public:
     Q_PRIVATE_SLOT(d_func(), void wantUploadDataSlot(qint64))
     Q_PRIVATE_SLOT(d_func(), void sentUploadDataSlot(qint64))
     Q_PRIVATE_SLOT(d_func(), void emitReplyUploadProgress(qint64, qint64))
+    Q_PRIVATE_SLOT(d_func(), void _q_cacheSaveDeviceAboutToClose())
 
 
 #ifndef QT_NO_SSL
@@ -178,6 +179,8 @@ public:
 
     void _q_bufferOutgoingData();
     void _q_bufferOutgoingDataFinished();
+
+    void _q_cacheSaveDeviceAboutToClose();
 
 #ifndef QT_NO_BEARERMANAGEMENT
     void _q_networkSessionConnected();

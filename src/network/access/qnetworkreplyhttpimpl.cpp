@@ -975,6 +975,9 @@ void QNetworkReplyHttpImplPrivate::initCacheSaveDevice()
 
     cacheSaveDevice = managerPrivate->networkCache->prepare(metaData);
 
+    if (cacheSaveDevice)
+        q->connect(cacheSaveDevice, SIGNAL(aboutToClose()), SLOT(_q_cacheSaveDeviceAboutToClose()));
+
     if (!cacheSaveDevice || (cacheSaveDevice && !cacheSaveDevice->isOpen())) {
         if (cacheSaveDevice && !cacheSaveDevice->isOpen())
             qCritical("QNetworkReplyImpl: network cache returned a device that is not open -- "
@@ -1706,6 +1709,13 @@ void QNetworkReplyHttpImplPrivate::_q_bufferOutgoingDataFinished()
 
     // finally, start the request
     QMetaObject::invokeMethod(q, "_q_startOperation", Qt::QueuedConnection);
+}
+
+void QNetworkReplyHttpImplPrivate::_q_cacheSaveDeviceAboutToClose()
+{
+    // do not keep a dangling pointer to the device around (device
+    // is closing because e.g. QAbstractNetworkCache::remove() was called).
+    cacheSaveDevice = 0;
 }
 
 void QNetworkReplyHttpImplPrivate::_q_bufferOutgoingData()
