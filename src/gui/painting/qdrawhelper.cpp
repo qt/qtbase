@@ -6253,6 +6253,7 @@ static void qt_alphamapblit_argb32(QRasterBuffer *rasterBuffer,
     }
 }
 
+#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
 static void qt_alphamapblit_rgba8888(QRasterBuffer *rasterBuffer,
                                      int x, int y, quint32 color,
                                      const uchar *map,
@@ -6261,6 +6262,7 @@ static void qt_alphamapblit_rgba8888(QRasterBuffer *rasterBuffer,
 {
     qt_alphamapblit_argb32(rasterBuffer, x, y, ARGB2RGBA(color), map, mapWidth, mapHeight, mapStride, clip);
 }
+#endif
 
 static void qt_alphargbblit_argb32(QRasterBuffer *rasterBuffer,
                                    int x, int y, quint32 color,
