@@ -290,11 +290,18 @@ void QBitArray::resize(int size)
 /*!
     \overload
 
-    Sets bits at index positions \a begin up to and excluding \a end
+    Sets bits at index positions \a begin up to (but not including) \a end
     to \a value.
 
-    \a begin and \a end must be a valid index position in the bit
-    array (i.e., 0 <= \a begin <= size() and 0 <= \a end <= size()).
+    \a begin must be a valid index position in the bit array
+    (0 <= \a begin < size()).
+
+    \a end must be either a valid index position or equal to size(), in
+    which case the fill operation runs until the end of the array
+    (0 <= \a end <= size()).
+
+    Example:
+    \snippet code/src_corelib_tools_qbitarray.cpp 15
 */
 
 void QBitArray::fill(bool value, int begin, int end)
