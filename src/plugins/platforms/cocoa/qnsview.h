@@ -65,6 +65,7 @@ Q_FORWARD_DECLARE_OBJC_CLASS(QNSViewMouseMoveHelper);
     QWindow *m_window;
     QCocoaWindow *m_platformWindow;
     Qt::MouseButtons m_buttons;
+    Qt::MouseButtons m_frameStrutButtons;
     QString m_composingText;
     bool m_sendKeyEvent;
     QStringList *currentCustomDragTypes;

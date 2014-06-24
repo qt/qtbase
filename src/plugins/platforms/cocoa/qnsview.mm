@@ -140,6 +140,7 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
         m_shouldInvalidateWindowShadow = false;
         m_window = 0;
         m_buttons = Qt::NoButton;
+        m_frameStrutButtons = Qt::NoButton;
         m_sendKeyEvent = false;
         m_subscribesForGlobalFrameNotifications = false;
         m_glContext = 0;
@@ -653,6 +654,7 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
 - (void)resetMouseButtons
 {
     m_buttons = Qt::NoButton;
+    m_frameStrutButtons = Qt::NoButton;
 }
 
 - (void)handleMouseEvent:(NSEvent *)theEvent
@@ -685,22 +687,22 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
     NSEventType ty = [theEvent type];
     switch (ty) {
     case NSLeftMouseDown:
-        m_buttons |= Qt::LeftButton;
+        m_frameStrutButtons |= Qt::LeftButton;
         break;
     case NSLeftMouseUp:
-         m_buttons &= ~Qt::LeftButton;
+         m_frameStrutButtons &= ~Qt::LeftButton;
          break;
     case NSRightMouseDown:
-        m_buttons |= Qt::RightButton;
+        m_frameStrutButtons |= Qt::RightButton;
         break;
     case NSRightMouseUp:
-        m_buttons &= ~Qt::RightButton;
+        m_frameStrutButtons &= ~Qt::RightButton;
         break;
     case NSOtherMouseDown:
-        m_buttons |= cocoaButton2QtButton([theEvent buttonNumber]);
+        m_frameStrutButtons |= cocoaButton2QtButton([theEvent buttonNumber]);
         break;
     case NSOtherMouseUp:
-        m_buttons &= ~cocoaButton2QtButton([theEvent buttonNumber]);
+        m_frameStrutButtons &= ~cocoaButton2QtButton([theEvent buttonNumber]);
     default:
         break;
     }
@@ -718,7 +720,7 @@ static NSString *_q_NSWindowDidChangeOcclusionStateNotification = nil;
     QPoint qtScreenPoint = QPoint(screenPoint.x, qt_mac_flipYCoordinate(screenPoint.y));
 
     ulong timestamp = [theEvent timestamp] * 1000;
-    QWindowSystemInterface::handleFrameStrutMouseEvent(m_window, timestamp, qtWindowPoint, qtScreenPoint, m_buttons);
+    QWindowSystemInterface::handleFrameStrutMouseEvent(m_window, timestamp, qtWindowPoint, qtScreenPoint, m_frameStrutButtons);
 }
 
 - (void)mouseDown:(NSEvent *)theEvent
