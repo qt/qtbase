@@ -105,6 +105,29 @@ void QEGLCompositor::renderAll()
         windows.at(i)->composited();
 }
 
+struct BlendStateBinder
+{
+    BlendStateBinder() : m_blend(false) {
+        glDisable(GL_BLEND);
+    }
+    void set(bool blend) {
+        if (blend != m_blend) {
+            if (blend) {
+                glEnable(GL_BLEND);
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            } else {
+                glDisable(GL_BLEND);
+            }
+            m_blend = blend;
+        }
+    }
+    ~BlendStateBinder() {
+        if (m_blend)
+            glDisable(GL_BLEND);
+    }
+    bool m_blend;
+};
+
 void QEGLCompositor::render(QEGLPlatformWindow *window)
 {
     const QPlatformTextureList *textures = window->textures();
@@ -114,29 +137,37 @@ void QEGLCompositor::render(QEGLPlatformWindow *window)
     const QRect targetWindowRect(QPoint(0, 0), window->screen()->geometry().size());
     glViewport(0, 0, targetWindowRect.width(), targetWindowRect.height());
 
+    float currentOpacity = 1.0f;
+    BlendStateBinder blend;
+
     for (int i = 0; i < textures->count(); ++i) {
         uint textureId = textures->textureId(i);
         glBindTexture(GL_TEXTURE_2D, textureId);
         QMatrix4x4 target = QOpenGLTextureBlitter::targetTransform(textures->geometry(i),
                                                                    targetWindowRect);
+        const float opacity = window->window()->opacity();
+        if (opacity != currentOpacity) {
+            currentOpacity = opacity;
+            m_blitter->setOpacity(currentOpacity);
+        }
 
         if (textures->count() > 1 && i == textures->count() - 1) {
             // Backingstore for a widget with QOpenGLWidget subwidgets
-            m_blitter->setSwizzleRB(true);
-            glEnable(GL_BLEND);
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            blend.set(true);
             m_blitter->blit(textureId, target, QOpenGLTextureBlitter::OriginTopLeft);
-            glDisable(GL_BLEND);
         } else if (textures->count() == 1) {
             // A regular QWidget window
-            m_blitter->setSwizzleRB(true);
+            const bool translucent = window->window()->requestedFormat().alphaBufferSize() > 0;
+            blend.set(translucent);
             m_blitter->blit(textureId, target, QOpenGLTextureBlitter::OriginTopLeft);
         } else {
             // Texture from an FBO belonging to a QOpenGLWidget
-            m_blitter->setSwizzleRB(false);
+            blend.set(false);
             m_blitter->blit(textureId, target, QOpenGLTextureBlitter::OriginBottomLeft);
         }
     }
+
+    m_blitter->setOpacity(1.0f);
 }
 
 QEGLCompositor *QEGLCompositor::instance()

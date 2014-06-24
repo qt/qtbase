@@ -64,6 +64,7 @@ public:
     bool isRaster() const;
 
     WId winId() const Q_DECL_OVERRIDE;
+    void setOpacity(qreal opacity) Q_DECL_OVERRIDE;
 
     virtual EGLNativeWindowType eglWindow() const = 0;
 

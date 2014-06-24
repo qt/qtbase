@@ -69,6 +69,7 @@ public:
     void release();
 
     void setSwizzleRB(bool swizzle);
+    void setOpacity(float opacity);
 
     void blit(GLuint texture, const QMatrix4x4 &targetTransform, Origin sourceOrigin);
     void blit(GLuint texture, const QMatrix4x4 &targetTransform, const QMatrix3x3 &sourceTransform);

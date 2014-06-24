@@ -82,8 +82,10 @@ void QEglFSWindow::create()
     // they will be composited onto the root window's surface.
     QEglFSScreen *screen = this->screen();
     if (screen->primarySurface() != EGL_NO_SURFACE) {
-        if (isRaster() && screen->compositingWindow())
+        if (isRaster() && screen->compositingWindow()) {
+            m_format = screen->compositingWindow()->format();
             return;
+        }
 
 #if !defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_NO_SDK)
         // We can have either a single OpenGL window or multiple raster windows.

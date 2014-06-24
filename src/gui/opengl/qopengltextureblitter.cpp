@@ -67,8 +67,10 @@ static const char fragment_shader150[] =
     "out vec4 fragcolor;"
     "uniform sampler2D textureSampler;"
     "uniform bool swizzle;"
+    "uniform float opacity;"
     "void main() {"
     "   vec4 tmpFragColor = texture(textureSampler, uv);"
+    "   tmpFragColor.a *= opacity;"
     "   fragcolor = swizzle ? tmpFragColor.bgra : tmpFragColor;"
     "}";
 
@@ -87,8 +89,10 @@ static const char fragment_shader[] =
     "varying highp vec2 uv;"
     "uniform sampler2D textureSampler;"
     "uniform bool swizzle;"
+    "uniform highp float opacity;"
     "void main() {"
     "   highp vec4 tmpFragColor = texture2D(textureSampler,uv);"
+    "   tmpFragColor.a *= opacity;"
     "   gl_FragColor = swizzle ? tmpFragColor.bgra : tmpFragColor;"
     "}";
 
@@ -140,6 +144,8 @@ public:
         , textureTransformUniformPos(0)
         , swizzle(false)
         , swizzleOld(false)
+        , opacity(1.0f)
+        , opacityOld(0.0f)
         , textureMatrixUniformState(User)
         , vao(new QOpenGLVertexArrayObject())
     { }
@@ -165,6 +171,11 @@ public:
             program->setUniformValue(swizzleUniformPos, swizzle);
             swizzleOld = swizzle;
         }
+
+        if (opacity != opacityOld) {
+            program->setUniformValue(opacityUniformPos, opacity);
+            opacityOld = opacity;
+        }
     }
 
     QOpenGLBuffer vertexBuffer;
@@ -175,8 +186,11 @@ public:
     GLuint textureCoordAttribPos;
     GLuint textureTransformUniformPos;
     GLuint swizzleUniformPos;
+    GLuint opacityUniformPos;
     bool swizzle;
     bool swizzleOld;
+    float opacity;
+    float opacityOld;
     TextureMatrixUniform textureMatrixUniformState;
     QScopedPointer<QOpenGLVertexArrayObject> vao;
 };
@@ -274,6 +288,7 @@ bool QOpenGLTextureBlitter::create()
     d->textureCoordAttribPos = d->program->attributeLocation("textureCoord");
     d->textureTransformUniformPos = d->program->uniformLocation("textureTransform");
     d->swizzleUniformPos = d->program->uniformLocation("swizzle");
+    d->opacityUniformPos = d->program->uniformLocation("opacity");
 
     d->program->setUniformValue(d->swizzleUniformPos,false);
 
@@ -327,6 +342,12 @@ void QOpenGLTextureBlitter::setSwizzleRB(bool swizzle)
 {
     Q_D(QOpenGLTextureBlitter);
     d->swizzle = swizzle;
+}
+
+void QOpenGLTextureBlitter::setOpacity(float opacity)
+{
+    Q_D(QOpenGLTextureBlitter);
+    d->opacity = opacity;
 }
 
 void QOpenGLTextureBlitter::blit(GLuint texture,
