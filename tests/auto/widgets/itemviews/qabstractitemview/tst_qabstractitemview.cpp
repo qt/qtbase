@@ -248,6 +248,7 @@ private slots:
     void testFocusPolicy_data();
     void testFocusPolicy();
     void QTBUG31411_noSelection();
+    void QTBUG39324_settingSameInstanceOfIndexWidget();
 };
 
 class MyAbstractItemDelegate : public QAbstractItemDelegate
@@ -1828,6 +1829,23 @@ void tst_QAbstractItemView::QTBUG31411_noSelection()
     QTest::keyClick(editor2, Qt::Key_Escape, Qt::NoModifier);
 
     QCOMPARE(selectionChangeSpy.count(), 0);
+}
+
+void tst_QAbstractItemView::QTBUG39324_settingSameInstanceOfIndexWidget()
+{
+    QStringList list;
+    list << "FOO" << "bar";
+    QScopedPointer<QStringListModel> model(new QStringListModel(list));
+
+    QScopedPointer<QTableView> table(new QTableView());
+    table->setModel(model.data());
+
+    QModelIndex index = model->index(0,0);
+    QLineEdit *lineEdit = new QLineEdit();
+    table->setIndexWidget(index, lineEdit);
+    table->setIndexWidget(index, lineEdit);
+    QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
+    table->show();
 }
 
 QTEST_MAIN(tst_QAbstractItemView)

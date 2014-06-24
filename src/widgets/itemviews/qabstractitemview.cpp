@@ -3126,6 +3126,8 @@ void QAbstractItemView::setIndexWidget(const QModelIndex &index, QWidget *widget
     Q_D(QAbstractItemView);
     if (!d->isIndexValid(index))
         return;
+    if (indexWidget(index) == widget)
+        return;
     if (QWidget *oldWidget = indexWidget(index)) {
         d->persistent.remove(oldWidget);
         d->removeEditor(oldWidget);
