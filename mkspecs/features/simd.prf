@@ -198,7 +198,7 @@ gcc {       # includes intel_icc and clang variants
         QMAKE_EXTRA_COMPILERS += mips_dspr2_compiler
         QMAKE_EXTRA_COMPILERS += mips_dspr2_assembler
     }
-} else:win32-msvc*|winrt {
+} else:msvc {
     sse2 {
         HEADERS += $$SSE2_HEADERS
 
