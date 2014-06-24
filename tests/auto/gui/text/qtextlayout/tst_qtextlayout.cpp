@@ -139,6 +139,7 @@ private slots:
     void cursorInLigatureWithMultipleLines();
     void xToCursorForLigatures();
     void cursorInNonStopChars();
+    void nbsp();
 
 private:
     QFont testFont;
@@ -2009,6 +2010,29 @@ void tst_QTextLayout::justifyTrailingSpaces()
     layout.endLayout();
 
     QVERIFY(qFuzzyIsNull(layout.lineAt(0).cursorToX(0)));
+}
+
+void tst_QTextLayout::nbsp()
+{
+    QString s = QString() + QChar(' ') + QChar('a') + QString(10, QChar::Nbsp) + QChar('a') + QChar(' ') + QChar('A');
+    QString text = s + s + s + s + s + s + s + s + s + s + s + s + s + s;
+    QTextLayout layout(text);
+    layout.setCacheEnabled(true);
+    layout.beginLayout();
+    layout.createLine();
+    layout.endLayout();
+
+    int naturalWidth = qCeil(layout.lineAt(0).naturalTextWidth());
+    int lineWidth = naturalWidth;
+
+    layout.beginLayout();
+    QTextLine line = layout.createLine();
+    while (lineWidth-- > naturalWidth / 2) {
+        line.setLineWidth(lineWidth);
+        QVERIFY(text.at(line.textLength()-1).unicode() != QChar::Nbsp);
+    }
+
+    layout.endLayout();
 }
 
 QTEST_MAIN(tst_QTextLayout)
