@@ -95,9 +95,18 @@ static void loadIndexFiles(Config& config)
     /*
       Read some XML indexes containing definitions from other documentation sets.
      */
-    QStringList indexFiles = config.getStringList(CONFIG_INDEXES);
+    QStringList indexFiles;
+    QStringList configIndexes = config.getStringList(CONFIG_INDEXES);
+    foreach (const QString &index, configIndexes) {
+        QFileInfo fi(index);
+        if (fi.exists() && fi.isFile())
+            indexFiles << index;
+        else if (Generator::runGenerateOnly())
+            qDebug() << "warning: Index file not found:" << index;
+    }
 
     dependModules += config.getStringList(CONFIG_DEPENDS);
+    dependModules.removeDuplicates();
 
     bool noOutputSubdirs = false;
     QString singleOutputSubdir;
