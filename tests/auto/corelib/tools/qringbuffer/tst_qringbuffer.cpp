@@ -111,6 +111,13 @@ void tst_QRingBuffer::readPointerAtPositionWithHead()
     buf2 = ringBuffer.readPointerAtPosition(0, length);
     QCOMPARE(length, qint64(0));
     QVERIFY(buf2 == 0);
+
+    // check buffer with 2 blocks
+    memcpy(ringBuffer.reserve(4), "0123", 4);
+    ringBuffer.append(QByteArray("45678", 5));
+    ringBuffer.free(3);
+    buf2 = ringBuffer.readPointerAtPosition(1, length);
+    QCOMPARE(length, qint64(5));
 }
 
 void tst_QRingBuffer::readPointerAtPositionEmptyRead()
