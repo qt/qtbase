@@ -502,13 +502,11 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_indexInParent(long *indexIn
     if (!indexInParent)
       return E_INVALIDARG;
     QAccessibleInterface *par = accessible->parent();
-    if (!par) {
-        *indexInParent = -1;
+    *indexInParent = par ? par->indexOfChild(accessible) : -1;
+    if (*indexInParent < 0) {
+        qCWarning(lcQpaAccessibility) << "index in parent invalid:" << accessible << "parent:" << par;
         return S_FALSE;
     }
-    int indexOfChild = par->indexOfChild(accessible);
-    Q_ASSERT(indexOfChild >= 0);
-    *indexInParent = indexOfChild;
     return S_OK;
 }
 
