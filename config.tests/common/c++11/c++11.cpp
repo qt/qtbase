@@ -39,10 +39,10 @@
 **
 ****************************************************************************/
 
-#if __cplusplus >= 201103L || defined(__GXX_EXPERIMENTAL_CXX0X__)
+#if __cplusplus >= 201103L || defined(__GXX_EXPERIMENTAL_CXX0X__) || defined(__INTEL_CXX11_MODE__)
 // Compiler claims to support C++11, trust it
 #else
-#  error "__cplusplus must be >= 201103L, or __GXX_EXPERIMENTAL_CXX0X__ must be defined"
+#  error "__cplusplus must be >= 201103L, or one of __GXX_EXPERIMENTAL_CXX0X__ or __INTEL_CXX11_MODE__ must be defined"
 #endif
 
 #include <utility>
