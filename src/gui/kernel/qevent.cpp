@@ -287,6 +287,8 @@ QMouseEvent::~QMouseEvent()
   \l Qt::MouseEventNotSynthesized is returned always.
 
   \sa Qt::MouseEventSource
+  \sa QGraphicsSceneMouseEvent::source()
+  \sa QGraphicsSceneMouseEvent::setSource()
  */
 Qt::MouseEventSource QMouseEvent::source() const
 {
@@ -301,6 +303,8 @@ Qt::MouseEventSource QMouseEvent::source() const
      The mouse event flags provide additional information about a mouse event.
 
      \sa Qt::MouseEventFlag
+     \sa QGraphicsSceneMouseEvent::flags()
+     \sa QGraphicsSceneMouseEvent::setFlags()
  */
 Qt::MouseEventFlags QMouseEvent::flags() const
 {

@@ -312,6 +312,8 @@ static QEvent *cloneEvent(QEvent *e)
         me2->setButtons(me->buttons());
         me2->setButton(me->button());
         me2->setModifiers(me->modifiers());
+        me2->setSource(me->source());
+        me2->setFlags(me->flags());
         return me2;
     }
 

@@ -655,6 +655,8 @@ void QGraphicsViewPrivate::mouseMoveEventHandler(QMouseEvent *event)
     mouseEvent.setButtons(event->buttons());
     mouseEvent.setButton(event->button());
     mouseEvent.setModifiers(event->modifiers());
+    mouseEvent.setSource(event->source());
+    mouseEvent.setFlags(event->flags());
     lastMouseMoveScenePoint = mouseEvent.scenePos();
     lastMouseMoveScreenPoint = mouseEvent.screenPos();
     mouseEvent.setAccepted(false);
@@ -3217,6 +3219,8 @@ void QGraphicsView::mouseDoubleClickEvent(QMouseEvent *event)
     mouseEvent.setAccepted(false);
     mouseEvent.setButton(event->button());
     mouseEvent.setModifiers(event->modifiers());
+    mouseEvent.setSource(event->source());
+    mouseEvent.setFlags(event->flags());
     if (event->spontaneous())
         qt_sendSpontaneousEvent(d->scene, &mouseEvent);
     else
@@ -3265,6 +3269,8 @@ void QGraphicsView::mousePressEvent(QMouseEvent *event)
             mouseEvent.setButtons(event->buttons());
             mouseEvent.setButton(event->button());
             mouseEvent.setModifiers(event->modifiers());
+            mouseEvent.setSource(event->source());
+            mouseEvent.setFlags(event->flags());
             mouseEvent.setAccepted(false);
             if (event->spontaneous())
                 qt_sendSpontaneousEvent(d->scene, &mouseEvent);
@@ -3392,6 +3398,8 @@ void QGraphicsView::mouseReleaseEvent(QMouseEvent *event)
     mouseEvent.setButtons(event->buttons());
     mouseEvent.setButton(event->button());
     mouseEvent.setModifiers(event->modifiers());
+    mouseEvent.setSource(event->source());
+    mouseEvent.setFlags(event->flags());
     mouseEvent.setAccepted(false);
     if (event->spontaneous())
         qt_sendSpontaneousEvent(d->scene, &mouseEvent);

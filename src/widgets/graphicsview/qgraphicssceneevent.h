@@ -121,6 +121,12 @@ public:
     Qt::KeyboardModifiers modifiers() const;
     void setModifiers(Qt::KeyboardModifiers modifiers);
 
+    Qt::MouseEventSource source() const;
+    void setSource(Qt::MouseEventSource source);
+
+    Qt::MouseEventFlags flags() const;
+    void setFlags(Qt::MouseEventFlags);
+
 private:
     Q_DECLARE_PRIVATE(QGraphicsSceneMouseEvent)
     Q_DISABLE_COPY(QGraphicsSceneMouseEvent)

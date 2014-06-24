@@ -348,7 +348,7 @@ class QGraphicsSceneMouseEventPrivate : public QGraphicsSceneEventPrivate
 public:
     inline QGraphicsSceneMouseEventPrivate()
         : button(Qt::NoButton),
-          buttons(0), modifiers(0)
+          buttons(0), modifiers(0), source(Qt::MouseEventNotSynthesized), flags(0)
     { }
 
     QPointF pos;
@@ -363,6 +363,8 @@ public:
     Qt::MouseButton button;
     Qt::MouseButtons buttons;
     Qt::KeyboardModifiers modifiers;
+    Qt::MouseEventSource source;
+    Qt::MouseEventFlags flags;
 };
 
 /*!
@@ -623,6 +625,60 @@ Qt::KeyboardModifiers QGraphicsSceneMouseEvent::modifiers() const
 {
     Q_D(const QGraphicsSceneMouseEvent);
     return d->modifiers;
+}
+
+/*!
+  \since 5.4
+
+  Returns information about the mouse event source.
+
+  The mouse event source can be used to distinguish between genuine
+  and artificial mouse events. The latter are events that are
+  synthesized from touch events by the operating system or Qt itself.
+
+  \sa Qt::MouseEventSource
+  \sa QMouseEvent::source()
+ */
+Qt::MouseEventSource QGraphicsSceneMouseEvent::source() const
+{
+    Q_D(const QGraphicsSceneMouseEvent);
+    return d->source;
+}
+
+/*!
+    \since 5.4
+    \internal
+ */
+void QGraphicsSceneMouseEvent::setSource(Qt::MouseEventSource source)
+{
+    Q_D(QGraphicsSceneMouseEvent);
+    d->source = source;
+}
+
+/*!
+     \since 5.4
+
+     Returns the mouse event flags.
+
+     The mouse event flags provide additional information about a mouse event.
+
+     \sa Qt::MouseEventFlag
+     \sa QMouseEvent::flags()
+ */
+Qt::MouseEventFlags QGraphicsSceneMouseEvent::flags() const
+{
+    Q_D(const QGraphicsSceneMouseEvent);
+    return d->flags;
+}
+
+/*!
+    \since 5.4
+    \internal
+ */
+void QGraphicsSceneMouseEvent::setFlags(Qt::MouseEventFlags flags)
+{
+    Q_D(QGraphicsSceneMouseEvent);
+    d->flags = flags;
 }
 
 /*!

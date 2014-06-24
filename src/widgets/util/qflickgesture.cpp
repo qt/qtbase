@@ -101,6 +101,8 @@ static QMouseEvent *copyMouseEvent(QEvent *e)
         copy->setButtons(me->buttons());
         copy->setButton(me->button());
         copy->setModifiers(me->modifiers());
+        copy->setSource(me->source());
+        copy->setFlags(me->flags());
         return copy;
 #endif
     }
