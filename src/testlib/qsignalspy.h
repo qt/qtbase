@@ -176,10 +176,9 @@ private:
 
     void initArgs(const QMetaMethod &member, const QObject *obj)
     {
-        const QList<QByteArray> params = member.parameterTypes();
-        args.reserve(params.size());
-        for (int i = 0; i < params.count(); ++i) {
-            int tp = QMetaType::type(params.at(i).constData());
+        args.reserve(member.parameterCount());
+        for (int i = 0; i < member.parameterCount(); ++i) {
+            int tp = member.parameterType(i);
             if (tp == QMetaType::UnknownType && obj) {
                 void *argv[] = { &tp, &i };
                 QMetaObject::metacall(const_cast<QObject*>(obj),
@@ -191,7 +190,7 @@ private:
             if (tp == QMetaType::UnknownType) {
                 Q_ASSERT(tp != QMetaType::Void); // void parameter => metaobject is corrupt
                 qWarning("Don't know how to handle '%s', use qRegisterMetaType to register it.",
-                         params.at(i).constData());
+                         member.parameterNames().at(i).constData());
             }
             args << tp;
         }
