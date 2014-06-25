@@ -752,6 +752,10 @@ QString QAccessibleLineEdit::textBeforeOffset(int offset, QAccessible::TextBound
         *startOffset = *endOffset = -1;
         return QString();
     }
+    if (offset == -1)
+        offset = lineEdit()->text().length();
+    if (offset == -2)
+        offset = cursorPosition();
     return QAccessibleTextInterface::textBeforeOffset(offset, boundaryType, startOffset, endOffset);
 }
 
@@ -762,6 +766,10 @@ QString QAccessibleLineEdit::textAfterOffset(int offset, QAccessible::TextBounda
         *startOffset = *endOffset = -1;
         return QString();
     }
+    if (offset == -1)
+        offset = lineEdit()->text().length();
+    if (offset == -2)
+        offset = cursorPosition();
     return QAccessibleTextInterface::textAfterOffset(offset, boundaryType, startOffset, endOffset);
 }
 
@@ -772,6 +780,10 @@ QString QAccessibleLineEdit::textAtOffset(int offset, QAccessible::TextBoundaryT
         *startOffset = *endOffset = -1;
         return QString();
     }
+    if (offset == -1)
+        offset = lineEdit()->text().length();
+    if (offset == -2)
+        offset = cursorPosition();
     return QAccessibleTextInterface::textAtOffset(offset, boundaryType, startOffset, endOffset);
 }
 

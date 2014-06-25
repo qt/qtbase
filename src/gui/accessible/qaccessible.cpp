@@ -1917,14 +1917,9 @@ QString QAccessibleTextInterface::textBeforeOffset(int offset, QAccessible::Text
 {
     const QString txt = text(0, characterCount());
 
-    if (txt.isEmpty() || offset < 0 || offset > txt.length()) {
-        *startOffset = *endOffset = -1;
+    *startOffset = *endOffset = -1;
+    if (txt.isEmpty() || offset <= 0 || offset > txt.length())
         return QString();
-    }
-    if (offset == 0) {
-        *startOffset = *endOffset = offset;
-        return QString();
-    }
 
     QTextBoundaryFinder::BoundaryType type;
     switch (boundaryType) {
@@ -1938,10 +1933,8 @@ QString QAccessibleTextInterface::textBeforeOffset(int offset, QAccessible::Text
         type = QTextBoundaryFinder::Sentence;
         break;
     default:
-        // in any other case return the whole line
-        *startOffset = 0;
-        *endOffset = txt.length();
-        return txt;
+        // return empty, this function currently only supports single lines, so there can be no line before
+        return QString();
     }
 
     // keep behavior in sync with QTextCursor::movePosition()!
@@ -1977,14 +1970,9 @@ QString QAccessibleTextInterface::textAfterOffset(int offset, QAccessible::TextB
 {
     const QString txt = text(0, characterCount());
 
-    if (txt.isEmpty() || offset < 0 || offset > txt.length()) {
-        *startOffset = *endOffset = -1;
+    *startOffset = *endOffset = -1;
+    if (txt.isEmpty() || offset < 0 || offset >= txt.length())
         return QString();
-    }
-    if (offset == txt.length()) {
-        *startOffset = *endOffset = offset;
-        return QString();
-    }
 
     QTextBoundaryFinder::BoundaryType type;
     switch (boundaryType) {
@@ -1998,10 +1986,8 @@ QString QAccessibleTextInterface::textAfterOffset(int offset, QAccessible::TextB
         type = QTextBoundaryFinder::Sentence;
         break;
     default:
-        // in any other case return the whole line
-        *startOffset = 0;
-        *endOffset = txt.length();
-        return txt;
+        // return empty, this function currently only supports single lines, so there can be no line after
+        return QString();
     }
 
     // keep behavior in sync with QTextCursor::movePosition()!
@@ -2009,19 +1995,30 @@ QString QAccessibleTextInterface::textAfterOffset(int offset, QAccessible::TextB
     QTextBoundaryFinder boundary(type, txt);
     boundary.setPosition(offset);
 
-    while (boundary.toNextBoundary() < txt.length()) {
+    while (true) {
+        int toNext = boundary.toNextBoundary();
         if ((boundary.boundaryReasons() & (QTextBoundaryFinder::StartOfItem | QTextBoundaryFinder::EndOfItem)))
             break;
+        if (toNext < 0 || toNext >= txt.length())
+            break; // not found, the boundary might not exist
     }
     Q_ASSERT(boundary.position() <= txt.length());
     *startOffset = boundary.position();
 
-    while (boundary.toNextBoundary() < txt.length()) {
+    while (true) {
+        int toNext = boundary.toNextBoundary();
         if ((boundary.boundaryReasons() & (QTextBoundaryFinder::StartOfItem | QTextBoundaryFinder::EndOfItem)))
             break;
+        if (toNext < 0 || toNext >= txt.length())
+            break; // not found, the boundary might not exist
     }
     Q_ASSERT(boundary.position() <= txt.length());
     *endOffset = boundary.position();
+
+    if ((*startOffset == -1) || (*endOffset == -1) || (*startOffset == *endOffset)) {
+        *endOffset = -1;
+        *startOffset = -1;
+    }
 
     return txt.mid(*startOffset, *endOffset - *startOffset);
 }
@@ -2037,14 +2034,12 @@ QString QAccessibleTextInterface::textAtOffset(int offset, QAccessible::TextBoun
 {
     const QString txt = text(0, characterCount());
 
-    if (txt.isEmpty() || offset < 0 || offset > txt.length()) {
-        *startOffset = *endOffset = -1;
+    *startOffset = *endOffset = -1;
+    if (txt.isEmpty() || offset < 0 || offset > txt.length())
         return QString();
-    }
-    if (offset == txt.length()) {
-        *startOffset = *endOffset = offset;
+
+    if (offset == txt.length() && boundaryType == QAccessible::CharBoundary)
         return QString();
-    }
 
     QTextBoundaryFinder::BoundaryType type;
     switch (boundaryType) {
@@ -2058,7 +2053,7 @@ QString QAccessibleTextInterface::textAtOffset(int offset, QAccessible::TextBoun
         type = QTextBoundaryFinder::Sentence;
         break;
     default:
-        // in any other case return the whole line
+        // return the whole line
         *startOffset = 0;
         *endOffset = txt.length();
         return txt;
