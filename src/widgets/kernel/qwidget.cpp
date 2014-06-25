@@ -12553,10 +12553,6 @@ void QWidget::setMask(const QRegion &newMask)
 
 void QWidgetPrivate::setMask_sys(const QRegion &region)
 {
-    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowMasks)) {
-        qWarning("%s: Not supported on %s.", Q_FUNC_INFO, qPrintable(QGuiApplication::platformName()));
-        return;
-    }
     Q_Q(QWidget);
     if (const QWindow *window = q->windowHandle())
         if (QPlatformWindow *platformWindow = window->handle())
