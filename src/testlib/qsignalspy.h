@@ -169,11 +169,6 @@ public:
     }
 
 private:
-    void initArgs(const QMetaMethod &member)
-    {
-        initArgs(member, 0);
-    }
-
     void initArgs(const QMetaMethod &member, const QObject *obj)
     {
         args.reserve(member.parameterCount());
