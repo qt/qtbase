@@ -86,19 +86,18 @@ static inline uint detectProcessorFeatures()
     uint features = 0;
 
 #if defined (ARM)
-    if (IsProcessorFeaturePresent(PF_ARM_INTEL_WMMX)) {
-        features = IWMMXT;
-        return features;
-    }
+    if (IsProcessorFeaturePresent(PF_ARM_INTEL_WMMX))
+        features |= IWMMXT;
+#  ifdef PF_ARM_NEON
+    if (IsProcessorFeaturePresent(PF_ARM_NEON))
+        features |= ARM_NEON;
+#  endif
 #elif defined(_X86_)
-    features = 0;
     if (IsProcessorFeaturePresent(PF_XMMI64_INSTRUCTIONS_AVAILABLE))
         features |= SSE2;
     if (IsProcessorFeaturePresent(PF_SSE3_INSTRUCTIONS_AVAILABLE))
         features |= SSE3;
-    return features;
 #endif
-    features = 0;
     return features;
 }
 
