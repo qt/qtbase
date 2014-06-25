@@ -49,6 +49,9 @@
 
 int i = 0;
 
+typedef QHash<QScreen*, PropertyWatcher*> ScreensHash;
+Q_GLOBAL_STATIC(ScreensHash, props);
+
 void updateSiblings(PropertyWatcher* w)
 {
     QLineEdit *siblingsField = w->findChild<QLineEdit *>("siblings");
@@ -88,10 +91,17 @@ void screenAdded(QScreen* screen)
     geom.moveCenter(screen->geometry().center());
     w->move(geom.topLeft());
 
+    props->insert(screen, w);
+
     // workaround for the fact that virtualSiblings is not a property,
     // thus there is no change notification:
     // allow the user to update the field manually
     QObject::connect(w, &PropertyWatcher::updatedAllFields, &updateSiblings);
+}
+
+void screenRemoved(QScreen* screen)
+{
+    delete props->take(screen);
 }
 
 int main(int argc, char *argv[])
@@ -101,5 +111,6 @@ int main(int argc, char *argv[])
     foreach (QScreen *screen, screens)
         screenAdded(screen);
     QObject::connect((const QGuiApplication*)QGuiApplication::instance(), &QGuiApplication::screenAdded, &screenAdded);
+    QObject::connect((const QGuiApplication*)QGuiApplication::instance(), &QGuiApplication::screenRemoved, &screenRemoved);
     return a.exec();
 }

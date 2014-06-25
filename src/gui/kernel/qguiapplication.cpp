@@ -897,7 +897,19 @@ QList<QScreen *> QGuiApplication::screens()
 
     This signal is emitted whenever a new screen \a screen has been added to the system.
 
-    \sa screens(), primaryScreen()
+    \sa screens(), primaryScreen(), screenRemoved()
+*/
+
+/*!
+    \fn void QGuiApplication::screenRemoved(QScreen *screen)
+
+    This signal is emitted whenever a \a screen is removed from the system. It
+    provides an opportunity to manage the windows on the screen before Qt falls back
+    to moving them to the primary screen.
+
+    \sa screens(), screenAdded(), QObject::destroyed(), QWindow::setScreen()
+
+    \since 5.4
 */
 
 

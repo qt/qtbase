@@ -82,6 +82,5 @@ void PropertyWatcher::updateAllFields()
 
 void PropertyWatcher::subjectDestroyed()
 {
-    hide();
-    deleteLater();
+    qDebug("screen destroyed");
 }

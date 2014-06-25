@@ -165,6 +165,7 @@ public:
 Q_SIGNALS:
     void fontDatabaseChanged();
     void screenAdded(QScreen *screen);
+    void screenRemoved(QScreen *screen);
     void lastWindowClosed();
     void focusObjectChanged(QObject *focusObject);
     void focusWindowChanged(QWindow *focusWindow);

@@ -89,6 +89,7 @@ class Q_GUI_EXPORT QScreen : public QObject
     Q_PROPERTY(qreal refreshRate READ refreshRate NOTIFY refreshRateChanged)
 
 public:
+    ~QScreen();
     QPlatformScreen *handle() const;
 
     QString name() const;

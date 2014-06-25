@@ -74,6 +74,16 @@ QScreen::QScreen(QPlatformScreen *screen)
 {
 }
 
+
+/*!
+    Destroys the screen.
+ */
+QScreen::~QScreen()
+{
+    if (qApp)
+        Q_EMIT qApp->screenRemoved(this);
+}
+
 /*!
   Get the platform screen handle.
 */
