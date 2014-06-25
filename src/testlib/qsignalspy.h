@@ -183,7 +183,6 @@ private:
                     tp = QMetaType::UnknownType;
             }
             if (tp == QMetaType::UnknownType) {
-                Q_ASSERT(tp != QMetaType::Void); // void parameter => metaobject is corrupt
                 qWarning("Don't know how to handle '%s', use qRegisterMetaType to register it.",
                          member.parameterNames().at(i).constData());
             }
