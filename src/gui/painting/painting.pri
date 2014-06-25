@@ -98,6 +98,7 @@ contains(QT_CPU_FEATURES.$$QT_ARCH, sse2) {
 IWMMXT_SOURCES += painting/qdrawhelper_iwmmxt.cpp
 
 !ios:contains(QT_CPU_FEATURES.$$QT_ARCH, neon) {
+    CONFIG += no_clang_integrated_as
     SOURCES += painting/qdrawhelper_neon.cpp
     HEADERS += painting/qdrawhelper_neon_p.h
     NEON_ASM += ../3rdparty/pixman/pixman-arm-neon-asm.S painting/qdrawhelper_neon_asm.S

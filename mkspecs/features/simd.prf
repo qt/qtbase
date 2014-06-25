@@ -132,6 +132,7 @@ gcc {       # includes intel_icc and clang variants
         neon_assembler.commands = $$QMAKE_CC -c $(CFLAGS)
         !contains(QT_CPU_FEATURES, neon):neon_assembler.commands += $$QMAKE_CFLAGS_NEON
         neon_assembler.commands += $(INCPATH) ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
+        clang:no_clang_integrated_as:neon_assembler.commands += -fno-integrated-as
         neon_assembler.dependency_type = TYPE_C
         neon_assembler.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJ)}
         neon_assembler.input = NEON_ASM
