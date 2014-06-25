@@ -1069,7 +1069,6 @@
 #  undef QT_COMPILER_SUPPORTS_AVX2
 #endif
 #if !defined(Q_PROCESSOR_ARM)
-#  undef QT_COMPILER_SUPPORTS_IWMMXT
 #  undef QT_COMPILER_SUPPORTS_NEON
 #endif
 #if !defined(Q_PROCESSOR_MIPS)

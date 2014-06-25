@@ -170,7 +170,6 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "SSE4_2" ]          = "auto";
     dictionary[ "AVX" ]             = "auto";
     dictionary[ "AVX2" ]            = "auto";
-    dictionary[ "IWMMXT" ]          = "auto";
     dictionary[ "SYNCQT" ]          = "auto";
     dictionary[ "CE_CRT" ]          = "no";
     dictionary[ "CETEST" ]          = "auto";
@@ -858,10 +857,6 @@ void Configure::parseCmdLine()
             dictionary[ "AVX2" ] = "no";
         else if (configCmdLine.at(i) == "-avx2")
             dictionary[ "AVX2" ] = "yes";
-        else if (configCmdLine.at(i) == "-no-iwmmxt")
-            dictionary[ "IWMMXT" ] = "no";
-        else if (configCmdLine.at(i) == "-iwmmxt")
-            dictionary[ "IWMMXT" ] = "yes";
 
         else if (configCmdLine.at(i) == "-no-openssl") {
               dictionary[ "OPENSSL"] = "no";
@@ -1657,15 +1652,12 @@ void Configure::applySpecSpecifics()
         dictionary[ "SSE4_2" ]              = "no";
         dictionary[ "AVX" ]                 = "no";
         dictionary[ "AVX2" ]                = "no";
-        dictionary[ "IWMMXT" ]              = "no";
         dictionary[ "CE_CRT" ]              = "yes";
         dictionary[ "LARGE_FILE" ]          = "no";
         dictionary[ "ANGLE" ]               = "no";
         dictionary[ "DYNAMICGL" ]           = "no";
-        // We only apply MMX/IWMMXT for mkspecs we know they work
         if (dictionary[ "XQMAKESPEC" ].startsWith("wincewm")) {
             dictionary[ "MMX" ]    = "yes";
-            dictionary[ "IWMMXT" ] = "yes";
         }
     } else if (dictionary.value("XQMAKESPEC").startsWith("linux")) { //TODO actually wrong.
       //TODO
@@ -2006,8 +1998,6 @@ bool Configure::displayHelp()
 
         // Qt\Windows CE only options go below here -----------------------------------------------------------------------------
         desc("Qt for Windows CE only:\n\n");
-        desc("IWMMXT", "no",       "-no-iwmmxt",           "Do not compile with use of IWMMXT instructions.");
-        desc("IWMMXT", "yes",      "-iwmmxt",              "Do compile with use of IWMMXT instructions. (Qt for Windows CE on Arm only)\n");
         desc("CE_CRT", "no",       "-no-crt" ,             "Do not add the C runtime to default deployment rules.");
         desc("CE_CRT", "yes",      "-qt-crt",              "Qt identifies C runtime during project generation.");
         desc(                      "-crt <path>",          "Specify path to C runtime used for project generation.\n");
@@ -2208,8 +2198,6 @@ bool Configure::checkAvailability(const QString &part)
         available = findFile("sqlite.h") && findFile("sqlite.lib");
     else if (part == "SQL_IBASE")
         available = findFile("ibase.h") && (findFile("gds32_ms.lib") || findFile("gds32.lib"));
-    else if (part == "IWMMXT")
-        available = (dictionary.value("XQMAKESPEC").startsWith("wince"));
     else if (part == "OPENGL_ES_2")
         available = (dictionary.value("XQMAKESPEC").startsWith("wince"));
     else if (part == "SSE2")
@@ -2383,8 +2371,6 @@ void Configure::autoDetection()
         dictionary["AVX"] = checkAvailability("AVX") ? "yes" : "no";
     if (dictionary["AVX2"] == "auto")
         dictionary["AVX2"] = checkAvailability("AVX2") ? "yes" : "no";
-    if (dictionary["IWMMXT"] == "auto")
-        dictionary["IWMMXT"] = checkAvailability("IWMMXT") ? "yes" : "no";
     if (dictionary["NEON"] == "auto")
         dictionary["NEON"] = checkAvailability("NEON") ? "yes" : "no";
     if (dictionary["OPENSSL"] == "auto")
@@ -3059,8 +3045,6 @@ void Configure::generateCachefile()
             moduleStream << " avx";
         if (dictionary[ "AVX2" ] == "yes")
             moduleStream << " avx2";
-        if (dictionary[ "IWMMXT" ] == "yes")
-            moduleStream << " iwmmxt";
         if (dictionary[ "NEON" ] == "yes")
             moduleStream << " neon";
         if (dictionary[ "LARGE_FILE" ] == "yes")
@@ -3500,8 +3484,6 @@ void Configure::generateConfigfiles()
             tmpStream << "#define QT_COMPILER_SUPPORTS_AVX 1" << endl;
         if (dictionary[ "AVX2" ] == "yes")
             tmpStream << "#define QT_COMPILER_SUPPORTS_AVX2 1" << endl;
-        if (dictionary[ "IWMMXT" ] == "yes")
-            tmpStream << "#define QT_COMPILER_SUPPORTS_IWMMXT 1" << endl;
 
         if (dictionary["QREAL"] != "double") {
             tmpStream << "#define QT_COORD_TYPE " << dictionary["QREAL"] << endl;
@@ -3663,7 +3645,6 @@ void Configure::displayConfig()
     sout << "AVX support................." << dictionary[ "AVX" ] << endl;
     sout << "AVX2 support................" << dictionary[ "AVX2" ] << endl;
     sout << "NEON support................" << dictionary[ "NEON" ] << endl;
-    sout << "IWMMXT support.............." << dictionary[ "IWMMXT" ] << endl;
     sout << "OpenGL support.............." << dictionary[ "OPENGL" ] << endl;
     sout << "Large File support.........." << dictionary[ "LARGE_FILE" ] << endl;
     sout << "NIS support................." << dictionary[ "NIS" ] << endl;

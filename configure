@@ -683,7 +683,6 @@ CFG_AVX2=auto
 CFG_REDUCE_RELOCATIONS=auto
 CFG_ACCESSIBILITY=auto
 CFG_ACCESSIBILITY_ATSPI_BRIDGE=no # will be enabled depending on dbus and accessibility being enabled
-CFG_IWMMXT=no
 CFG_NEON=auto
 CFG_MIPS_DSP=auto
 CFG_MIPS_DSPR2=auto
@@ -1569,9 +1568,6 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
-    iwmmxt)
-	CFG_IWMMXT="yes"
-	;;
     mips_dsp)
         if [ "$VAL" = "no" ]; then
             CFG_MIPS_DSP="$VAL"
@@ -4117,16 +4113,6 @@ if [ "${CFG_AVX2}" = "auto" ]; then
     fi
 fi
 
-# check iWMMXt support
-if [ "$CFG_IWMMXT" = "yes" ]; then
-    compileTest unix/iwmmxt "iwmmxt"
-    if [ $? != "0" ]; then
-        echo "The iWMMXt functionality test failed!"
-	echo " Please make sure your compiler supports iWMMXt intrinsics!"
-	exit 1
-    fi
-fi
-
 # check Neon support
 if [ "$CFG_NEON" = "auto" ]; then
     # no compile test, just check what the compiler has
@@ -5651,7 +5637,6 @@ fi
 [ "$CFG_SSE4_2" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG sse4_2"
 [ "$CFG_AVX" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG avx"
 [ "$CFG_AVX2" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG avx2"
-[ "$CFG_IWMMXT" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG iwmmxt"
 [ "$CFG_NEON" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG neon"
 if [ "$CFG_ARCH" = "mips" ]; then
     [ "$CFG_MIPS_DSP" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG mips_dsp"
@@ -6079,7 +6064,6 @@ fi
 echo "" >>"$outpath/src/corelib/global/qconfig.h.new"
 echo "// Compiler sub-arch support" >>"$outpath/src/corelib/global/qconfig.h.new"
 for SUBARCH in SSE2 SSE3 SSSE3 SSE4_1 SSE4_2 AVX AVX2 \
-    IWMMXT \
     MIPS_DSP MIPS_DSPR2; do
     eval "VAL=\$CFG_$SUBARCH"
     case "$VAL" in
@@ -6524,7 +6508,7 @@ if [ "$CFG_ARCH" = "i386" -o "$CFG_ARCH" = "x86_64" ]; then
     echo "    SSE4.1/SSE4.2 ........ ${CFG_SSE4_1}/${CFG_SSE4_2}"
     echo "    AVX/AVX2 ............. ${CFG_AVX}/${CFG_AVX2}"
 elif [ "$CFG_ARCH" = "arm" ]; then
-    echo "    iWMMXt/Neon .......... ${CFG_IWMMXT}/${CFG_NEON}"
+    echo "    Neon ................. ${CFG_NEON}"
 elif [ "$CFG_ARCH" = "mips" ]; then
     echo "    DSP/DSPr2 ............ ${CFG_MIPS_DSP}/${CFG_MIPS_DSPR2}"
 fi

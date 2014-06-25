@@ -54,14 +54,13 @@
 #      include <intrin.h>
 #    endif
 #  endif
-#elif defined(Q_OS_LINUX) && (defined(Q_PROCESSOR_ARM) || defined(Q_PROCESSOR_MIPS_32) || defined(QT_COMPILER_SUPPORTS_IWMMXT))
+#elif defined(Q_OS_LINUX) && (defined(Q_PROCESSOR_ARM) || defined(Q_PROCESSOR_MIPS_32))
 #include "private/qcore_unix_p.h"
 
 // the kernel header definitions for HWCAP_*
 // (the ones we need/may need anyway)
 
 // copied from <asm/hwcap.h> (ARM)
-#define HWCAP_IWMMXT    512
 #define HWCAP_CRUNCH    1024
 #define HWCAP_THUMBEE   2048
 #define HWCAP_NEON      4096
@@ -86,8 +85,6 @@ static inline uint detectProcessorFeatures()
     uint features = 0;
 
 #if defined (ARM)
-    if (IsProcessorFeaturePresent(PF_ARM_INTEL_WMMX))
-        features |= IWMMXT;
 #  ifdef PF_ARM_NEON
     if (IsProcessorFeaturePresent(PF_ARM_NEON))
         features |= ARM_NEON;
@@ -101,7 +98,7 @@ static inline uint detectProcessorFeatures()
     return features;
 }
 
-#elif defined(Q_PROCESSOR_ARM) || defined(QT_COMPILER_SUPPORTS_IWMMXT)
+#elif defined(Q_PROCESSOR_ARM)
 static inline uint detectProcessorFeatures()
 {
     uint features = 0;
@@ -121,8 +118,6 @@ static inline uint detectProcessorFeatures()
             int max = nread / (sizeof vector[0]);
             for (int i = 0; i < max; i += 2)
                 if (vector[i] == AT_HWCAP) {
-                    if (vector[i+1] & HWCAP_IWMMXT)
-                        features |= IWMMXT;
                     if (vector[i+1] & HWCAP_NEON)
                         features |= NEON;
                     break;
@@ -135,10 +130,7 @@ static inline uint detectProcessorFeatures()
     // fall back if /proc/self/auxv wasn't found
 #endif
 
-#if defined(QT_COMPILER_SUPPORTS_IWMMXT)
-    // runtime detection only available when running as a previlegied process
-    features = IWMMXT;
-#elif defined(__ARM_NEON__)
+#if defined(__ARM_NEON__)
     features = NEON;
 #endif
 
@@ -470,7 +462,7 @@ static inline uint detectProcessorFeatures()
 /*
  * Use kdesdk/scripts/generate_string_table.pl to update the table below.
  * Here's the data (don't forget the ONE leading space):
- iwmmxt
+
  neon
  sse2
  sse3
@@ -487,7 +479,7 @@ static inline uint detectProcessorFeatures()
 
 // begin generated
 static const char features_string[] =
-    " iwmmxt\0"
+    "\0"
     " neon\0"
     " sse2\0"
     " sse3\0"
@@ -503,8 +495,8 @@ static const char features_string[] =
     "\0";
 
 static const int features_indices[] = {
-    0,    8,   14,   20,   26,   33,   41,   49,
-   54,   60,   65,   70,   75,   -1
+    0,    1,    7,   13,   19,   26,   34,   42,
+   47,   53,   58,   63,   68,   -1
 };
 // end generated
 

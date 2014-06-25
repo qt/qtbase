@@ -93,7 +93,6 @@ SOURCES += \
 
 SSE2_SOURCES += painting/qdrawhelper_sse2.cpp
 SSSE3_SOURCES += painting/qdrawhelper_ssse3.cpp
-IWMMXT_SOURCES += painting/qdrawhelper_iwmmxt.cpp
 
 !ios {
     CONFIG += no_clang_integrated_as

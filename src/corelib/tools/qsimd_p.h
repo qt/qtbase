@@ -63,7 +63,6 @@
  * Supported XXX are:
  *   Flag    | Arch |  GCC  | Intel CC |  MSVC  |
  *  ARM_NEON | ARM  | I & C | None     |   ?    |
- *  IWMMXT   | ARM  | I & C | None     | I & C  |
  *  SSE2     | x86  | I & C | I & C    | I & C  |
  *  SSE3     | x86  | I & C | I & C    | I only |
  *  SSSE3    | x86  | I & C | I & C    | I only |
@@ -236,31 +235,12 @@
 #define QT_FUNCTION_TARGET_STRING_ARM_NEON      "neon"
 #endif
 
-
-// IWMMXT intrinsics
-#if defined(QT_COMPILER_SUPPORTS_IWMMXT)
-#include <mmintrin.h>
-#if defined(Q_OS_WINCE)
-#  include "qplatformdefs.h"
-#endif
-#endif
-
-#if defined(QT_COMPILER_SUPPORTS_IWMMXT)
-#if !defined(__IWMMXT__) && !defined(Q_OS_WINCE)
-#  include <xmmintrin.h>
-#elif defined(Q_OS_WINCE_STD) && defined(_X86_)
-#  pragma warning(disable: 4391)
-#  include <xmmintrin.h>
-#endif
-#endif
-
 #undef QT_COMPILER_SUPPORTS_SIMD_ALWAYS
 
 QT_BEGIN_NAMESPACE
 
 
 enum CPUFeatures {
-    IWMMXT      = 0x1,
     NEON        = 0x2,  ARM_NEON = NEON,
     SSE2        = 0x4,
     SSE3        = 0x8,
@@ -309,9 +289,6 @@ static const uint qCompilerCpuFeatures = 0
 #if defined __ARM_NEON__
         | NEON
 #endif
-#if defined __IWMMXT__
-        | IWMMXT
-#endif
 #if defined __mips_dsp
         | DSP
 #endif
@@ -319,7 +296,6 @@ static const uint qCompilerCpuFeatures = 0
         | DSPR2
 #endif
         ;
-
 
 extern Q_CORE_EXPORT QBasicAtomicInt qt_cpu_features;
 Q_CORE_EXPORT void qDetectCpuFeatures();
