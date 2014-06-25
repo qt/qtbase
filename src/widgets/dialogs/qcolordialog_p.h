@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -77,6 +77,12 @@ class QColorDialogPrivate : public QDialogPrivate
     Q_DECLARE_PUBLIC(QColorDialog)
 
 public:
+    enum SetColorMode {
+        ShowColor = 0x1,
+        SelectColor = 0x2,
+        SetColorAll = ShowColor | SelectColor
+    };
+
     QColorDialogPrivate() : options(new QColorDialogOptions) {}
 
     QPlatformColorDialogHelper *platformColorDialogHelper() const
@@ -86,7 +92,8 @@ public:
     void initWidgets();
     QRgb currentColor() const;
     QColor currentQColor() const;
-    void setCurrentColor(QRgb rgb);
+    void setCurrentColor(const QColor &color, SetColorMode setColorMode = SetColorAll);
+    void setCurrentRgbColor(QRgb rgb);
     void setCurrentQColor(const QColor &color);
     bool selectColor(const QColor &color);
     QColor grabScreenColor(const QPoint &p);

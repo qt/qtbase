@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -1442,7 +1442,7 @@ void QColorDialogPrivate::_q_newHsv(int h, int s, int v)
 }
 
 //sets all widgets to display rgb
-void QColorDialogPrivate::setCurrentColor(QRgb rgb)
+void QColorDialogPrivate::setCurrentRgbColor(QRgb rgb)
 {
     if (!nativeDialogInUse) {
         cs->setRgb(rgb);
@@ -1525,14 +1525,14 @@ void QColorDialogPrivate::_q_nextCustom(int r, int c)
 void QColorDialogPrivate::_q_newCustom(int r, int c)
 {
     const int i = r + 2 * c;
-    setCurrentColor(QColorDialogOptions::customColor(i));
+    setCurrentRgbColor(QColorDialogOptions::customColor(i));
     if (standard)
         standard->setSelected(-1,-1);
 }
 
 void QColorDialogPrivate::_q_newStandard(int r, int c)
 {
-    setCurrentColor(QColorDialogOptions::standardColor(r + c * 6));
+    setCurrentRgbColor(QColorDialogOptions::standardColor(r + c * 6));
     if (custom)
         custom->setSelected(-1,-1);
 }
@@ -1873,6 +1873,21 @@ QColorDialog::QColorDialog(const QColor &initial, QWidget *parent)
     d->init(initial);
 }
 
+void QColorDialogPrivate::setCurrentColor(const QColor &color,  SetColorMode setColorMode)
+{
+    if (nativeDialogInUse) {
+        platformColorDialogHelper()->setCurrentColor(color);
+        return;
+    }
+
+    if (setColorMode & ShowColor) {
+        setCurrentRgbColor(color.rgb());
+        setCurrentAlpha(color.alpha());
+    }
+    if (setColorMode & SelectColor)
+        selectColor(color);
+}
+
 /*!
     \property QColorDialog::currentColor
     \brief the currently selected color in the dialog
@@ -1881,13 +1896,7 @@ QColorDialog::QColorDialog(const QColor &initial, QWidget *parent)
 void QColorDialog::setCurrentColor(const QColor &color)
 {
     Q_D(QColorDialog);
-    if (d->nativeDialogInUse)
-        d->platformColorDialogHelper()->setCurrentColor(color);
-    else {
-        d->setCurrentColor(color.rgb());
-        d->selectColor(color);
-        d->setCurrentAlpha(color.alpha());
-    }
+    d->setCurrentColor(color);
 }
 
 QColor QColorDialog::currentColor() const
@@ -2162,10 +2171,11 @@ void QColorDialog::changeEvent(QEvent *e)
 
 bool QColorDialogPrivate::handleColorPickingMouseMove(QMouseEvent *e)
 {
-    Q_Q(QColorDialog);
     const QPoint globalPos = e->globalPos();
     const QColor color = grabScreenColor(globalPos);
-    q->setCurrentColor(color);
+    // QTBUG-39792, do not change standard, custom color selectors while moving as
+    // otherwise it is not possible to pre-select a custom cell for assignment.
+    setCurrentColor(color, ShowColor);
     lblScreenColorInfo->setText(QColorDialog::tr("Cursor at %1, %2, color: %3\nPress ESC to cancel")
                                 .arg(globalPos.x()).arg(globalPos.y()).arg(color.name()));
     return true;
@@ -2173,8 +2183,7 @@ bool QColorDialogPrivate::handleColorPickingMouseMove(QMouseEvent *e)
 
 bool QColorDialogPrivate::handleColorPickingMouseButtonRelease(QMouseEvent *e)
 {
-    Q_Q(QColorDialog);
-    q->setCurrentColor(grabScreenColor(e->globalPos()));
+    setCurrentColor(grabScreenColor(e->globalPos()), SetColorAll);
     releaseColorPicking();
     return true;
 }
