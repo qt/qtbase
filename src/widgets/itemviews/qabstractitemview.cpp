@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -1949,7 +1949,7 @@ void QAbstractItemView::dragMoveEvent(QDragMoveEvent *event)
             case AboveItem:
                 if (d->isIndexDropEnabled(index.parent())) {
                     d->dropIndicatorRect = QRect(rect.left(), rect.top(), rect.width(), 0);
-                    event->accept();
+                    event->acceptProposedAction();
                 } else {
                     d->dropIndicatorRect = QRect();
                 }
@@ -1957,7 +1957,7 @@ void QAbstractItemView::dragMoveEvent(QDragMoveEvent *event)
             case BelowItem:
                 if (d->isIndexDropEnabled(index.parent())) {
                     d->dropIndicatorRect = QRect(rect.left(), rect.bottom(), rect.width(), 0);
-                    event->accept();
+                    event->acceptProposedAction();
                 } else {
                     d->dropIndicatorRect = QRect();
                 }
@@ -1965,7 +1965,7 @@ void QAbstractItemView::dragMoveEvent(QDragMoveEvent *event)
             case OnItem:
                 if (d->isIndexDropEnabled(index)) {
                     d->dropIndicatorRect = rect;
-                    event->accept();
+                    event->acceptProposedAction();
                 } else {
                     d->dropIndicatorRect = QRect();
                 }
@@ -1973,7 +1973,7 @@ void QAbstractItemView::dragMoveEvent(QDragMoveEvent *event)
             case OnViewport:
                 d->dropIndicatorRect = QRect();
                 if (d->isIndexDropEnabled(rootIndex())) {
-                    event->accept(); // allow dropping in empty areas
+                    event->acceptProposedAction(); // allow dropping in empty areas
                 }
                 break;
             }
@@ -1981,7 +1981,7 @@ void QAbstractItemView::dragMoveEvent(QDragMoveEvent *event)
             d->dropIndicatorRect = QRect();
             d->dropIndicatorPosition = OnViewport;
             if (d->isIndexDropEnabled(rootIndex())) {
-                event->accept(); // allow dropping in empty areas
+                event->acceptProposedAction(); // allow dropping in empty areas
             }
         }
         d->viewport->update();
@@ -2050,11 +2050,14 @@ void QAbstractItemView::dropEvent(QDropEvent *event)
     int col = -1;
     int row = -1;
     if (d->dropOn(event, &row, &col, &index)) {
-        if (d->model->dropMimeData(event->mimeData(),
-            dragDropMode() == InternalMove ? Qt::MoveAction : event->dropAction(), row, col, index)) {
-                if (dragDropMode() == InternalMove)
-                    event->setDropAction(Qt::MoveAction);
+        const Qt::DropAction action = dragDropMode() == InternalMove ? Qt::MoveAction : event->dropAction();
+        if (d->model->dropMimeData(event->mimeData(), action, row, col, index)) {
+            if (action != event->dropAction()) {
+                event->setDropAction(action);
                 event->accept();
+            } else {
+                event->acceptProposedAction();
+            }
         }
     }
     stopAutoScroll();
