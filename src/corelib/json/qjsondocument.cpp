@@ -331,7 +331,7 @@ QByteArray QJsonDocument::toJson() const
 
     \value Compact Defines a compact output as follows:
         \code
-        {"Array": [true,999,"string"],"Key": "Value","null": null}
+        {"Array":[true,999,"string"],"Key":"Value","null":null}
         \endcode
   */
 
