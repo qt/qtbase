@@ -40,40 +40,54 @@
 ****************************************************************************/
 
 #include "qwinrtcursor.h"
+#include "qwinrtscreen.h"
+
+#include <QtCore/qfunctions_winrt.h>
+#include <QtGui/QGuiApplication>
+#include <QtGui/QScreen>
 
 #include <wrl.h>
 #include <windows.ui.core.h>
 #include <windows.foundation.h>
+using namespace Microsoft::WRL;
 using namespace Microsoft::WRL::Wrappers;
 using namespace ABI::Windows::UI::Core;
 using namespace ABI::Windows::Foundation;
 
-QT_BEGIN_NAMESPACE
+QT_USE_NAMESPACE
 
-QWinRTCursor::QWinRTCursor(ICoreWindow *window) : m_window(window), m_cursorFactory(nullptr)
+class QWinRTCursorPrivate
 {
-#ifndef Q_OS_WINPHONE
-    GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_UI_Core_CoreCursor).Get(), &m_cursorFactory);
-#endif
+public:
+    ComPtr<ICoreCursorFactory> cursorFactory;
+};
+
+QWinRTCursor::QWinRTCursor()
+  : d_ptr(new QWinRTCursorPrivate)
+{
+    Q_D(QWinRTCursor);
+
+    HRESULT hr;
+    hr = RoGetActivationFactory(HString::MakeReference(RuntimeClass_Windows_UI_Core_CoreCursor).Get(),
+                                IID_PPV_ARGS(&d->cursorFactory));
+    Q_ASSERT_SUCCEEDED(hr);
 }
 
 QWinRTCursor::~QWinRTCursor()
 {
-    if (m_cursorFactory)
-        m_cursorFactory->Release();
 }
 
 #ifndef QT_NO_CURSOR
-void QWinRTCursor::changeCursor(QCursor *windowCursor, QWindow *)
+void QWinRTCursor::changeCursor(QCursor *windowCursor, QWindow *window)
 {
-#ifndef Q_OS_WINPHONE
-    if (!m_cursorFactory)
-        return;
+    Q_D(QWinRTCursor);
+
+    ICoreWindow *coreWindow = static_cast<QWinRTScreen *>(window->screen()->handle())->coreWindow();
 
     CoreCursorType type;
     switch (windowCursor ? windowCursor->shape() : Qt::ArrowCursor) {
     case Qt::BlankCursor:
-        m_window->put_PointerCursor(nullptr);
+        coreWindow->put_PointerCursor(Q_NULLPTR);
         return;
     default:
     case Qt::OpenHandCursor:
@@ -132,24 +146,20 @@ void QWinRTCursor::changeCursor(QCursor *windowCursor, QWindow *)
         break;
     }
 
-    ICoreCursor *cursor;
-    if (SUCCEEDED(m_cursorFactory->CreateCursor(type, 0, &cursor)))
-        m_window->put_PointerCursor(cursor);
-#else // Q_OS_WINPHONE
-    Q_UNUSED(windowCursor)
-#endif // Q_OS_WINPHONE
+    ComPtr<ICoreCursor> cursor;
+    HRESULT hr = d->cursorFactory->CreateCursor(type, 0, &cursor);
+    RETURN_VOID_IF_FAILED("Failed to create native cursor.");
+
+    hr = coreWindow->put_PointerCursor(cursor.Get());
+    RETURN_VOID_IF_FAILED("Failed to set native cursor.");
 }
 #endif // QT_NO_CURSOR
 
 QPoint QWinRTCursor::pos() const
 {
-#ifdef Q_OS_WINPHONE
-    return QPlatformCursor::pos();
-#else
+    ICoreWindow *coreWindow =
+            static_cast<QWinRTScreen *>(QGuiApplication::primaryScreen()->handle())->coreWindow();
     Point point;
-    m_window->get_PointerPosition(&point);
+    coreWindow->get_PointerPosition(&point);
     return QPoint(point.X, point.Y);
-#endif
 }
-
-QT_END_NAMESPACE

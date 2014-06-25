@@ -428,7 +428,7 @@ QWinRTScreen::QWinRTScreen(ICoreWindow *window)
 #else
     , m_inputContext(Make<QWinRTInputContext>(m_coreWindow).Detach())
 #endif
-    , m_cursor(new QWinRTCursor(window))
+    , m_cursor(new QWinRTCursor)
     , m_devicePixelRatio(1.0)
     , m_orientation(Qt::PrimaryOrientation)
     , m_touchDevice(Q_NULLPTR)

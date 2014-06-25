@@ -44,34 +44,22 @@
 
 #include <qpa/qplatformcursor.h>
 
-namespace ABI {
-    namespace Windows {
-        namespace UI {
-            namespace Core {
-                struct ICoreWindow;
-                struct ICoreCursorFactory;
-            }
-        }
-    }
-}
+QT_USE_NAMESPACE
 
-QT_BEGIN_NAMESPACE
-
+class QWinRTCursorPrivate;
 class QWinRTCursor : public QPlatformCursor
 {
 public:
-    explicit QWinRTCursor(ABI::Windows::UI::Core::ICoreWindow *window);
+    explicit QWinRTCursor();
     ~QWinRTCursor();
 #ifndef QT_NO_CURSOR
-    void changeCursor(QCursor * windowCursor, QWindow *);
+    void changeCursor(QCursor * windowCursor, QWindow *window);
 #endif
     QPoint pos() const;
 
 private:
-    ABI::Windows::UI::Core::ICoreWindow *m_window;
-    ABI::Windows::UI::Core::ICoreCursorFactory *m_cursorFactory;
+    QScopedPointer<QWinRTCursorPrivate> d_ptr;
+    Q_DECLARE_PRIVATE(QWinRTCursor)
 };
-
-QT_END_NAMESPACE
 
 #endif // QWINRTCURSOR_H
