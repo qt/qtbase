@@ -2280,7 +2280,7 @@ bool Configure::checkAvailability(const QString &part)
         available = (platform() == QNX || platform() == BLACKBERRY)
                     && tryCompileProject("unix/lgmon");
     } else if (part == "NEON") {
-        available = (dictionary["QT_ARCH"] == "arm") && tryCompileProject("unix/neon");
+        available = dictionary["QT_CPU_FEATURES"].contains("neon");
     } else if (part == "FONT_CONFIG") {
         available = tryCompileProject("unix/fontconfig");
     }

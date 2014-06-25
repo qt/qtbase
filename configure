@@ -4127,6 +4127,16 @@ if [ "$CFG_IWMMXT" = "yes" ]; then
     fi
 fi
 
+# check Neon support
+if [ "$CFG_NEON" = "auto" ]; then
+    # no compile test, just check what the compiler has
+    case "$CFG_CPUFEATURES" in
+        *neon*)
+            CFG_NEON=yes
+            ;;
+    esac
+fi
+
 # detect mips_dsp support
 if [ "$CFG_ARCH" = "mips" ] && [ "${CFG_MIPS_DSP}" = "auto" ]; then
     if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/mips_dsp "mips_dsp" $L_FLAGS $I_FLAGS $D_FLAGS $l_FLAGS; then
@@ -5634,6 +5644,7 @@ fi
 [ "$CFG_AVX" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG avx"
 [ "$CFG_AVX2" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG avx2"
 [ "$CFG_IWMMXT" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG iwmmxt"
+[ "$CFG_NEON" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG neon"
 if [ "$CFG_ARCH" = "mips" ]; then
     [ "$CFG_MIPS_DSP" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG mips_dsp"
     [ "$CFG_MIPS_DSPR2" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG mips_dspr2"
