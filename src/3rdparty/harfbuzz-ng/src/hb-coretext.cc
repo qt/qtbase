@@ -738,7 +738,8 @@ _hb_coretext_shape (hb_shape_plan_t    *shape_plan,
     if (num_glyphs == 0)
       continue;
 
-    buffer->ensure (buffer->len + num_glyphs + (endWithPDF ? 1 : 0));
+    const long ensureCount = DIV_CEIL(sizeof(CGGlyph) + sizeof(CGPoint) + sizeof(CFIndex), sizeof(*scratch));
+    buffer->ensure (buffer->len + ensureCount * (num_glyphs + (endWithPDF ? 1 : 0)));
 
     scratch = buffer->get_scratch_buffer (&scratch_size);
 
