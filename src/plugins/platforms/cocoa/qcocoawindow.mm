@@ -699,7 +699,7 @@ void QCocoaWindow::setVisible(bool visible)
         exposeWindow();
 
         if (m_nsWindow) {
-            QWindowSystemInterface::flushWindowSystemEvents();
+            QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ExcludeUserInputEvents);
 
             // setWindowState might have been called while the window was hidden and
             // will not change the NSWindow state in that case. Sync up here:
