@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -121,7 +121,7 @@ private:
     QPixmapIconEngineEntry *tryMatch(const QSize &size, QIcon::Mode mode, QIcon::State state);
     QVector<QPixmapIconEngineEntry> pixmaps;
 
-    friend QDataStream &operator<<(QDataStream &s, const QIcon &icon);
+    friend Q_GUI_EXPORT QDataStream &operator<<(QDataStream &s, const QIcon &icon);
     friend class QIconThemeEngine;
 };
 
