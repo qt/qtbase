@@ -323,6 +323,8 @@ QFunctionPointer QEGLPlatformIntegration::platformFunction(const QByteArray &fun
 #if !defined(QT_NO_EVDEV) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_NO_SDK))
     if (function == QEglFSFunctions::loadKeymapTypeIdentifier())
         return QFunctionPointer(loadKeymapStatic);
+#else
+    Q_UNUSED(function)
 #endif
 
     return 0;
