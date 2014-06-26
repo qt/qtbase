@@ -418,7 +418,7 @@ class ProjectBuilderSources
     bool buildable, object_output;
     QString key, group, compiler;
 public:
-    ProjectBuilderSources(const QString &key, bool buildable=false, const QString &group=QString(), const QString &compiler=QString(), bool producesObject=false);
+    ProjectBuilderSources(const QString &key, bool buildable = false, const QString &compiler = QString(), bool producesObject = false);
     QStringList files(QMakeProject *project) const;
     inline bool isBuildable() const { return buildable; }
     inline QString keyName() const { return key; }
@@ -442,8 +442,8 @@ public:
     }
 };
 
-ProjectBuilderSources::ProjectBuilderSources(const QString &k, bool b,
-                                             const QString &g, const QString &c, bool o) : buildable(b), object_output(o), key(k), group(g), compiler(c)
+ProjectBuilderSources::ProjectBuilderSources(const QString &k, bool b, const QString &c, bool o) :
+    buildable(b), object_output(o), key(k), compiler(c)
 {
     // Override group name for a few common keys
     if (k == "SOURCES" || k == "OBJECTIVE_SOURCES" || k == "HEADERS")
@@ -606,7 +606,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                         }
                     }
                     sources.append(ProjectBuilderSources(inputs.at(input).toQString(), true,
-                            QString(), (*it).toQString(), isObj));
+                                                         (*it).toQString(), isObj));
 
                     if (isObj) {
                         inputs.removeAt(input);
