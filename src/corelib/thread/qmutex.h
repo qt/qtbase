@@ -77,7 +77,7 @@ public:
         return fastTryLock();
     }
 
-    bool isRecursive();
+    bool isRecursive(); //### Qt6: mark const
 
 private:
     inline bool fastTryLock() Q_DECL_NOTHROW {
