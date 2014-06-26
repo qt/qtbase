@@ -3186,17 +3186,15 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
                 fdi.version = qt_mac_hitheme_version;
                 fdi.state = tds;
                 SInt32 frame_size;
-                if (pe == PE_FrameLineEdit) {
-                    fdi.kind = frame->features & QStyleOptionFrame::Rounded ? kHIThemeFrameTextFieldRound :
-                                                                              kHIThemeFrameTextFieldSquare;
-                    GetThemeMetric(kThemeMetricEditTextFrameOutset, &frame_size);
-                    if ((frame->state & State_ReadOnly) || !(frame->state & State_Enabled))
-                        fdi.state = kThemeStateInactive;
-                } else {
-                    baseColor = QColor(150, 150, 150); //hardcoded since no query function --Sam
-                    fdi.kind = kHIThemeFrameListBox;
-                    GetThemeMetric(kThemeMetricListBoxFrameOutset, &frame_size);
-                }
+                fdi.kind = frame->features & QStyleOptionFrame::Rounded ? kHIThemeFrameTextFieldRound :
+                                                                          kHIThemeFrameTextFieldSquare;
+                GetThemeMetric(kThemeMetricEditTextFrameOutset, &frame_size);
+                if ((frame->state & State_ReadOnly) || !(frame->state & State_Enabled))
+                    fdi.state = kThemeStateInactive;
+                else if (fdi.state == kThemeStatePressed)
+                    // This pressed state doesn't make sense for a line edit frame.
+                    // And Yosemite agrees with us. Otherwise it starts showing yellow pixels.
+                    fdi.state = kThemeStateActive;
                 fdi.isFocused = (frame->state & State_HasFocus);
                 int lw = frame->lineWidth;
                 if (lw <= 0)
