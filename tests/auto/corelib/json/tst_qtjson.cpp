@@ -92,6 +92,7 @@ private Q_SLOTS:
     void nullObject();
     void constNullObject();
 
+    void undefinedKeys();
     void keySorting();
 
     void undefinedValues();
@@ -136,6 +137,8 @@ private Q_SLOTS:
     void testJsonValueRefDefault();
 
     void valueEquals();
+    void objectEquals_data();
+    void objectEquals();
 
     void bom();
     void nesting();
@@ -713,6 +716,28 @@ void tst_QtJson::testValueRef()
 void tst_QtJson::testObjectIteration()
 {
     QJsonObject object;
+
+    for (QJsonObject::iterator it = object.begin(); it != object.end(); ++it)
+        QVERIFY(false);
+
+    object["undefined"];
+    for (QJsonObject::iterator it = object.begin(); it != object.end(); ++it)
+        QVERIFY(false);
+
+    const QString property = "kkk";
+    object.insert(property, 11);
+    object.take(property);
+    for (QJsonObject::iterator it = object.begin(); it != object.end(); ++it)
+        QVERIFY(false);
+
+    object.insert(property, 11);
+    object["aaa"]; // before "kkk"
+    object["zzz"]; // after "kkk"
+    for (QJsonObject::iterator it = object.begin(); it != object.end(); ++it)
+        QCOMPARE(it.key(), property);
+
+    object = QJsonObject();
+
     for (int i = 0; i < 10; ++i)
         object[QString::number(i)] = (double)i;
 
@@ -986,6 +1011,7 @@ void tst_QtJson::nullObject()
     nonNull.insert(QLatin1String("foo"), QLatin1String("bar"));
 
     QCOMPARE(nullObject, QJsonObject());
+    QCOMPARE(nullObject.size(), 0);
     QVERIFY(nullObject != nonNull);
     QVERIFY(nonNull != nullObject);
 
@@ -1003,8 +1029,27 @@ void tst_QtJson::nullObject()
     QCOMPARE(nullObject.keys(), QStringList());
     nullObject.remove("foo");
     QCOMPARE(nullObject, QJsonObject());
+    QCOMPARE(QJsonValue(nullObject["foo"]), QJsonValue(QJsonValue::Undefined));
     QCOMPARE(nullObject.take("foo"), QJsonValue(QJsonValue::Undefined));
     QCOMPARE(nullObject.contains("foo"), false);
+    QCOMPARE(nullObject, QJsonObject());
+    QCOMPARE(nullObject.size(), 0);
+
+    // There is not way to check if internal temporary storage for QJsonValueRef is removed correctly by
+    // remove, take or compaction but at least we should not crash
+    nullObject["foo"];
+    QCOMPARE(nullObject.size(), 0);
+    nullObject.remove("foo");
+    QCOMPARE(nullObject.size(), 0);
+    nullObject["foo"];
+    QCOMPARE(nullObject.size(), 0);
+    nullObject.take("foo");
+    QCOMPARE(nullObject.size(), 0);
+    QString property("foo");
+    for (int i = 0; i < 128; ++i)
+        nullObject[property + QString::number(i)];
+
+    QCOMPARE(nullObject.size(), 0);
 }
 
 void tst_QtJson::constNullObject()
@@ -1022,6 +1067,16 @@ void tst_QtJson::constNullObject()
     QCOMPARE(nullObject, QJsonObject());
     QCOMPARE(nullObject.contains("foo"), false);
     QCOMPARE(nullObject["foo"], QJsonValue(QJsonValue::Undefined));
+}
+
+void tst_QtJson::undefinedKeys()
+{
+    QJsonObject null;
+    QVERIFY(null.keys().isEmpty());
+
+    // check that an internal udefined doesn't show up
+    null["undefined"];
+    QVERIFY(null.keys().isEmpty());
 }
 
 void tst_QtJson::keySorting()
@@ -1158,6 +1213,11 @@ void tst_QtJson::toVariantMap()
     QJsonObject object;
     QVariantMap map = object.toVariantMap();
     QVERIFY(map.isEmpty());
+
+    // check an empty object with an internal undefined
+    QJsonValueRef unused = object["undefined"];
+    Q_UNUSED(unused);
+    QVERIFY(object.toVariantMap().isEmpty());
 
     object.insert("Key", QString("Value"));
     object.insert("null", QJsonValue());
@@ -2328,6 +2388,70 @@ void tst_QtJson::valueEquals()
     QVERIFY(QJsonValue(UNICODE_NON_CHARACTER) == QJsonValue(QString(UNICODE_NON_CHARACTER)));
     QVERIFY(QJsonValue(UNICODE_DJE) == QJsonValue(QString(UNICODE_DJE)));
     QVERIFY(QJsonValue("\xc3\xa9") == QJsonValue(QString("\xc3\xa9")));
+}
+
+void tst_QtJson::objectEquals_data()
+{
+    QTest::addColumn<QJsonObject>("left");
+    QTest::addColumn<QJsonObject>("right");
+    QTest::addColumn<bool>("result");
+
+    QTest::newRow("two defaults") << QJsonObject() << QJsonObject() << true;
+
+    QJsonObject object1;
+    object1.insert("property", 1);
+    QJsonObject object2;
+    object2["property"] = 1;
+    QJsonObject object3;
+    object3.insert("property1", 1);
+    object3.insert("property2", 2);
+
+    QTest::newRow("the same object (1 vs 2)") << object1 << object2 << true;
+    QTest::newRow("the same object (3 vs 3)") << object3 << object3 << true;
+    QTest::newRow("different objects (2 vs 3)") << object2 << object3 << false;
+    QTest::newRow("object vs default") << object1 << QJsonObject() << false;
+
+    QJsonObject empty;
+    empty.insert("property", 1);
+    empty.take("property");
+    QTest::newRow("default vs empty") << QJsonObject() << empty << true;
+    QTest::newRow("empty vs empty") << empty << empty << true;
+    QTest::newRow("object vs empty") << object1 << empty << false;
+
+    QJsonObject referencedEmpty;
+    referencedEmpty["undefined"];
+    QTest::newRow("referenced empty vs default") << referencedEmpty << QJsonObject() << true;
+    QTest::newRow("referenced empty vs referenced empty") << referencedEmpty << referencedEmpty << true;
+    QTest::newRow("referenced empty vs object") << referencedEmpty << object1 << false;
+
+    QJsonObject referencedObject1;
+    referencedObject1.insert("property", 1);
+    referencedObject1["undefined"];
+    QJsonObject referencedObject2;
+    referencedObject2.insert("property", 1);
+    referencedObject2["aaaaaaaaa"]; // earlier then "property"
+    referencedObject2["zzzzzzzzz"]; // after "property"
+    QTest::newRow("referenced object vs default") << referencedObject1 << QJsonObject() << false;
+    QTest::newRow("referenced object vs referenced object") << referencedObject1 << referencedObject1 << true;
+    QTest::newRow("referenced object vs object (same)") << referencedObject1 << object1 << true;
+    QTest::newRow("referenced object vs object (different)") << referencedObject1 << object3 << false;
+    QTest::newRow("referenced object vs referenced object (same)") << referencedObject1 << referencedObject2 << true;
+}
+
+void tst_QtJson::objectEquals()
+{
+    QFETCH(QJsonObject, left);
+    QFETCH(QJsonObject, right);
+    QFETCH(bool, result);
+
+    QVERIFY((left == right) == result);
+    QVERIFY((right == left) == result);
+
+    // invariants checks
+    QCOMPARE(left, left);
+    QCOMPARE(right, right);
+    QVERIFY((left != right) != result);
+    QVERIFY((right != left) != result);
 }
 
 void tst_QtJson::bom()

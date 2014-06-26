@@ -149,6 +149,7 @@ public:
         : a(array), is_object(false), index(idx) {}
     QJsonValueRef(QJsonObject *object, int idx)
         : o(object), is_object(true), index(idx) {}
+    inline QJsonValueRef(QJsonObject *object, const QString &key);
 
     inline operator QJsonValue() const { return toValue(); }
     QJsonValueRef &operator = (const QJsonValue &val);
@@ -188,6 +189,7 @@ private:
     };
     uint is_object : 1;
     uint index : 31;
+    struct UnionHelper;
 };
 
 #if !defined(QT_NO_DEBUG_STREAM) && !defined(QT_JSON_READONLY)

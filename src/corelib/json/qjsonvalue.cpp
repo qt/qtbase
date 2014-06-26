@@ -669,11 +669,10 @@ void QJsonValue::detach()
     However, they are not explicitly documented here.
 */
 
-
 QJsonValueRef &QJsonValueRef::operator =(const QJsonValue &val)
 {
     if (is_object)
-        o->setValueAt(index, val);
+        UnionHelper::setValueAt(this, val);
     else
         a->replace(index, val);
 
@@ -683,7 +682,7 @@ QJsonValueRef &QJsonValueRef::operator =(const QJsonValue &val)
 QJsonValueRef &QJsonValueRef::operator =(const QJsonValueRef &ref)
 {
     if (is_object)
-        o->setValueAt(index, ref);
+        UnionHelper::setValueAt(this, ref);
     else
         a->replace(index, ref);
 
@@ -704,7 +703,7 @@ QJsonValue QJsonValueRef::toValue() const
 {
     if (!is_object)
         return a->at(index);
-    return o->valueAt(index);
+    return UnionHelper::valueAt(this);
 }
 
 #if !defined(QT_NO_DEBUG_STREAM) && !defined(QT_JSON_READONLY)
