@@ -613,8 +613,10 @@ bool QJsonValue::operator==(const QJsonValue &other) const
     case Object:
         if (base == other.base)
             return true;
-        if (!base || !other.base)
-            return false;
+        if (!base)
+            return !other.base->length;
+        if (!other.base)
+            return !base->length;
         return QJsonObject(d, static_cast<QJsonPrivate::Object *>(base))
                 == QJsonObject(other.d, static_cast<QJsonPrivate::Object *>(other.base));
     }

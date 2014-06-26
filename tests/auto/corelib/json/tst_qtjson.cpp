@@ -2444,14 +2444,20 @@ void tst_QtJson::objectEquals()
     QFETCH(QJsonObject, right);
     QFETCH(bool, result);
 
-    QVERIFY((left == right) == result);
-    QVERIFY((right == left) == result);
+    QCOMPARE(left == right, result);
+    QCOMPARE(right == left, result);
 
     // invariants checks
     QCOMPARE(left, left);
     QCOMPARE(right, right);
-    QVERIFY((left != right) != result);
-    QVERIFY((right != left) != result);
+    QCOMPARE(left != right, !result);
+    QCOMPARE(right != left, !result);
+
+    // The same but from QJsonValue perspective
+    QCOMPARE(QJsonValue(left) == QJsonValue(right), result);
+    QCOMPARE(QJsonValue(left) != QJsonValue(right), !result);
+    QCOMPARE(QJsonValue(right) == QJsonValue(left), result);
+    QCOMPARE(QJsonValue(right) != QJsonValue(left), !result);
 }
 
 void tst_QtJson::bom()
