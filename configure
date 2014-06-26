@@ -364,6 +364,7 @@ filterDefaultPaths()
 {
     local path
     path=`cat`
+    path=`"$relpath/config.tests/unix/makeabs" "$path"`
     echo "$1" | grep "^$path\$" > /dev/null || echo "$path"
 }
 
