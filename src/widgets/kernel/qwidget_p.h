@@ -627,7 +627,7 @@ public:
 
 #ifndef QT_NO_OPENGL
     virtual GLuint textureId() const { return 0; }
-
+    virtual QImage grabFramebuffer() const { return QImage(); }
     void setRenderToTexture() { renderToTexture = true; setTextureChildSeen(); }
     void setTextureChildSeen()
     {
