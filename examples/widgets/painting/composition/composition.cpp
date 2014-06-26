@@ -127,7 +127,7 @@ CompositionWidget::CompositionWidget(QWidget *parent)
 
     QPushButton *showSourceButton = new QPushButton(mainGroup);
     showSourceButton->setText(tr("Show Source"));
-#if defined(QT_OPENGL_SUPPORT) && !defined(QT_OPENGL_ES)
+#if defined(USE_OPENGL) && !defined(QT_OPENGL_ES)
     QPushButton *enableOpenGLButton = new QPushButton(mainGroup);
     enableOpenGLButton->setText(tr("Use OpenGL"));
     enableOpenGLButton->setCheckable(true);
@@ -157,7 +157,7 @@ CompositionWidget::CompositionWidget(QWidget *parent)
     mainGroupLayout->addWidget(animateButton);
     mainGroupLayout->addWidget(whatsThisButton);
     mainGroupLayout->addWidget(showSourceButton);
-#if defined(QT_OPENGL_SUPPORT) && !defined(QT_OPENGL_ES)
+#if defined(USE_OPENGL) && !defined(QT_OPENGL_ES)
     mainGroupLayout->addWidget(enableOpenGLButton);
 #endif
 
@@ -201,7 +201,7 @@ CompositionWidget::CompositionWidget(QWidget *parent)
     connect(whatsThisButton, SIGNAL(clicked(bool)), view, SLOT(setDescriptionEnabled(bool)));
     connect(view, SIGNAL(descriptionEnabledChanged(bool)), whatsThisButton, SLOT(setChecked(bool)));
     connect(showSourceButton, SIGNAL(clicked()), view, SLOT(showSource()));
-#if defined(QT_OPENGL_SUPPORT) && !defined(QT_OPENGL_ES)
+#if defined(USE_OPENGL) && !defined(QT_OPENGL_ES)
     connect(enableOpenGLButton, SIGNAL(clicked(bool)), view, SLOT(enableOpenGL(bool)));
 #endif
     connect(animateButton, SIGNAL(toggled(bool)), view, SLOT(setAnimationEnabled(bool)));
@@ -249,7 +249,7 @@ CompositionRenderer::CompositionRenderer(QWidget *parent)
     m_circle_pos = QPoint(200, 100);
 
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-#ifdef QT_OPENGL_SUPPORT
+#ifdef USE_OPENGL
     m_pbuffer = 0;
     m_pbuffer_size = 1024;
 #endif
@@ -341,7 +341,7 @@ void CompositionRenderer::drawSource(QPainter &p)
 
 void CompositionRenderer::paint(QPainter *painter)
 {
-#if defined(QT_OPENGL_SUPPORT) && !defined(QT_OPENGL_ES)
+#if defined(USE_OPENGL) && !defined(QT_OPENGL_ES)
     if (usesOpenGL()) {
 
         int new_pbuf_size = m_pbuffer_size;
@@ -511,7 +511,7 @@ void CompositionRenderer::setCirclePos(const QPointF &pos)
     const QRect oldRect = rectangle_around(m_circle_pos).toAlignedRect();
     m_circle_pos = pos;
     const QRect newRect = rectangle_around(m_circle_pos).toAlignedRect();
-#if defined(QT_OPENGL_SUPPORT) && !defined(QT_OPENGL_ES)
+#if defined(USE_OPENGL) && !defined(QT_OPENGL_ES)
     if (usesOpenGL()) {
         update();
         return;

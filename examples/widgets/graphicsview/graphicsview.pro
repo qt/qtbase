@@ -15,6 +15,6 @@ SUBDIRS       = \
 
 contains(DEFINES, QT_NO_CURSOR)|contains(DEFINES, QT_NO_DRAGANDDROP): SUBDIRS -= dragdroprobot
 
-qtHaveModule(opengl):!contains(QT_CONFIG, opengles.) {
+qtHaveModule(opengl):!contains(QT_CONFIG, opengles.):!contains(QT_CONFIG,dynamicgl) {
     SUBDIRS += boxes
 }

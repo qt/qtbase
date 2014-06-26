@@ -6,9 +6,9 @@ SHARED_FOLDER = ../shared
 include($$SHARED_FOLDER/shared.pri)
 
 RESOURCES += composition.qrc
-qtHaveModule(opengl) {
-	DEFINES += QT_OPENGL_SUPPORT
-	QT += opengl
+qtHaveModule(opengl): !contains(QT_CONFIG,dynamicgl) {
+    DEFINES += USE_OPENGL
+    QT += opengl
 }
 QT += widgets
 
