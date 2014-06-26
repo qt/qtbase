@@ -283,7 +283,13 @@ int runRcc(int argc, char *argv[])
             return 1;
         }
     }
-    return library.output(out, temp, errorDevice) ? 0 : 1;
+    bool success = library.output(out, temp, errorDevice);
+    if (!success) {
+        // erase the output file if we failed
+        out.remove();
+        return 1;
+    }
+    return 0;
 }
 
 Q_CORE_EXPORT extern QBasicAtomicInt qt_qhash_seed; // from qhash.cpp
