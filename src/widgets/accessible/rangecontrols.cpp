@@ -89,15 +89,7 @@ void *QAccessibleAbstractSpinBox::interface_cast(QAccessible::InterfaceType t)
 
 QVariant QAccessibleAbstractSpinBox::currentValue() const
 {
-    QVariant result = abstractSpinBox()->property("value");
-    QVariant::Type type = result.type();
-
-    // IA2 only allows numeric types
-    if (type == QVariant::Int || type == QVariant::UInt || type == QVariant::LongLong
-        || type == QVariant::ULongLong || type == QVariant::Double)
-        return result;
-
-    return QVariant();
+    return abstractSpinBox()->property("value");
 }
 
 void QAccessibleAbstractSpinBox::setCurrentValue(const QVariant &value)

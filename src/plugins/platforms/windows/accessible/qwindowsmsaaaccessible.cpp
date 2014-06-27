@@ -1039,7 +1039,7 @@ HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::get_accValue(VARIANT varID, BS
 
     QString value;
     if (accessible->valueInterface()) {
-        value = QString::number(accessible->valueInterface()->currentValue().toDouble());
+        value = accessible->valueInterface()->currentValue().toString();
     } else {
         value = accessible->text(QAccessible::Value);
     }

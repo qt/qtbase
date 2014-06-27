@@ -343,7 +343,7 @@ id getValueAttribute(QAccessibleInterface *interface)
     }
 
     if (QAccessibleValueInterface *valueInterface = interface->valueInterface()) {
-        return QCFString::toNSString(QString::number(valueInterface->currentValue().toDouble()));
+        return QCFString::toNSString(valueInterface->currentValue().toString());
     }
 
     if (interface->state().checkable) {
