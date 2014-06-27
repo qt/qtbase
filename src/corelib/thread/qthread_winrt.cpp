@@ -197,6 +197,7 @@ QThreadData *QThreadData::current(bool createIfNecessary)
 
         if (winmainThread) {
             g->dispatch();
+            threadData->thread->d_func()->createEventDispatcher(threadData);
             winmainThread = false;
         }
     }
@@ -210,7 +211,6 @@ void QAdoptedThread::init()
 
     d->handle = Q_NULLPTR;
     d->id = 0;
-    d->createEventDispatcher(d->data);
 }
 
 /**************************************************************************
