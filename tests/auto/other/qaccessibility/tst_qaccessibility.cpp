@@ -2012,13 +2012,13 @@ void tst_QAccessibility::lineEditTest()
     QCOMPARE(iface->text(QAccessible::Value), secret);
     le->setEchoMode(QLineEdit::NoEcho);
     QVERIFY(iface->state().passwordEdit);
-    QVERIFY(iface->text(QAccessible::Value).isEmpty());
+    QCOMPARE(iface->text(QAccessible::Value), QString());
     le->setEchoMode(QLineEdit::Password);
     QVERIFY(iface->state().passwordEdit);
-    QVERIFY(iface->text(QAccessible::Value).isEmpty());
+    QCOMPARE(iface->text(QAccessible::Value), QString(secret.length(), QLatin1Char('*')));
     le->setEchoMode(QLineEdit::PasswordEchoOnEdit);
     QVERIFY(iface->state().passwordEdit);
-    QVERIFY(iface->text(QAccessible::Value).isEmpty());
+    QCOMPARE(iface->text(QAccessible::Value), QString(secret.length(), QLatin1Char('*')));
     le->setEchoMode(QLineEdit::Normal);
     QVERIFY(!(iface->state().passwordEdit));
     QCOMPARE(iface->text(QAccessible::Value), secret);

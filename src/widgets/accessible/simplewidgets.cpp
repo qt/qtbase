@@ -626,6 +626,8 @@ QString QAccessibleLineEdit::text(QAccessible::Text t) const
     case QAccessible::Value:
         if (lineEdit()->echoMode() == QLineEdit::Normal)
             str = lineEdit()->text();
+        else if (lineEdit()->echoMode() != QLineEdit::NoEcho)
+            str = QString(lineEdit()->text().length(), QChar::fromLatin1('*'));
         break;
     default:
         break;
