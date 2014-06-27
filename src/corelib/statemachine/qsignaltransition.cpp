@@ -185,6 +185,7 @@ void QSignalTransition::setSenderObject(const QObject *sender)
     d->unregister();
     d->sender = sender;
     d->maybeRegister();
+    emit senderObjectChanged(QPrivateSignal());
 }
 
 /*!
@@ -207,6 +208,7 @@ void QSignalTransition::setSignal(const QByteArray &signal)
     d->unregister();
     d->signal = signal;
     d->maybeRegister();
+    emit signalChanged(QPrivateSignal());
 }
 
 /*!
@@ -245,6 +247,24 @@ bool QSignalTransition::event(QEvent *e)
     return QAbstractTransition::event(e);
 }
 
+/*!
+  \fn QSignalTransition::senderObjectChanged()
+  \since 5.4
+
+  This signal is emitted when the senderObject property is changed.
+
+  \sa QSignalTransition::senderObject
+*/
+
+/*!
+  \fn QSignalTransition::signalChanged()
+  \since 5.4
+
+  This signal is emitted when the signal property is changed.
+
+  \sa QSignalTransition::signal
+*/
+
 void QSignalTransitionPrivate::callOnTransition(QEvent *e)
 {
     Q_Q(QSignalTransition);
@@ -259,6 +279,7 @@ void QSignalTransitionPrivate::callOnTransition(QEvent *e)
         q->onTransition(e);
     }
 }
+
 
 QT_END_NAMESPACE
 
