@@ -174,6 +174,7 @@ public:
     void replaceText(int startOffset, int endOffset, const QString &text) Q_DECL_OVERRIDE;
 protected:
     QLineEdit *lineEdit() const;
+    friend class QAccessibleAbstractSpinBox;
 };
 #endif // QT_NO_LINEEDIT
 

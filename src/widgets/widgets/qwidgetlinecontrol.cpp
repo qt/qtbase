@@ -737,15 +737,15 @@ void QWidgetLineControl::internalSetText(const QString &txt, int pos, bool edite
 #ifndef QT_NO_ACCESSIBILITY
     if (changed) {
         if (oldText.isEmpty()) {
-            QAccessibleTextInsertEvent event(parent(), 0, txt);
+            QAccessibleTextInsertEvent event(accessibleObject(), 0, txt);
             event.setCursorPosition(m_cursor);
             QAccessible::updateAccessibility(&event);
         } else if (txt.isEmpty()) {
-            QAccessibleTextRemoveEvent event(parent(), 0, oldText);
+            QAccessibleTextRemoveEvent event(accessibleObject(), 0, oldText);
             event.setCursorPosition(m_cursor);
             QAccessible::updateAccessibility(&event);
         } else {
-            QAccessibleTextUpdateEvent event(parent(), 0, oldText, txt);
+            QAccessibleTextUpdateEvent event(accessibleObject(), 0, oldText, txt);
             event.setCursorPosition(m_cursor);
             QAccessible::updateAccessibility(&event);
         }
@@ -803,7 +803,7 @@ void QWidgetLineControl::internalInsert(const QString &s)
     if (m_maskData) {
         QString ms = maskString(m_cursor, s);
 #ifndef QT_NO_ACCESSIBILITY
-        QAccessibleTextInsertEvent insertEvent(parent(), m_cursor, ms);
+        QAccessibleTextInsertEvent insertEvent(accessibleObject(), m_cursor, ms);
         QAccessible::updateAccessibility(&insertEvent);
 #endif
         for (int i = 0; i < (int) ms.length(); ++i) {
@@ -815,14 +815,14 @@ void QWidgetLineControl::internalInsert(const QString &s)
         m_cursor = nextMaskBlank(m_cursor);
         m_textDirty = true;
 #ifndef QT_NO_ACCESSIBILITY
-        QAccessibleTextCursorEvent event(parent(), m_cursor);
+        QAccessibleTextCursorEvent event(accessibleObject(), m_cursor);
         QAccessible::updateAccessibility(&event);
 #endif
     } else {
         int remaining = m_maxLength - m_text.length();
         if (remaining != 0) {
 #ifndef QT_NO_ACCESSIBILITY
-            QAccessibleTextInsertEvent insertEvent(parent(), m_cursor, s);
+            QAccessibleTextInsertEvent insertEvent(accessibleObject(), m_cursor, s);
             QAccessible::updateAccessibility(&insertEvent);
 #endif
             m_text.insert(m_cursor, s.left(remaining));
@@ -853,7 +853,7 @@ void QWidgetLineControl::internalDelete(bool wasBackspace)
         addCommand(Command((CommandType)((m_maskData ? 2 : 0) + (wasBackspace ? Remove : Delete)),
                    m_cursor, m_text.at(m_cursor), -1, -1));
 #ifndef QT_NO_ACCESSIBILITY
-        QAccessibleTextRemoveEvent event(parent(), m_cursor, m_text.at(m_cursor));
+        QAccessibleTextRemoveEvent event(accessibleObject(), m_cursor, m_text.at(m_cursor));
         QAccessible::updateAccessibility(&event);
 #endif
         if (m_maskData) {
@@ -894,7 +894,7 @@ void QWidgetLineControl::removeSelectedText()
                 addCommand (Command(RemoveSelection, i, m_text.at(i), -1, -1));
         }
 #ifndef QT_NO_ACCESSIBILITY
-        QAccessibleTextRemoveEvent event(parent(), m_selstart, m_text.mid(m_selstart, m_selend - m_selstart));
+        QAccessibleTextRemoveEvent event(accessibleObject(), m_selstart, m_text.mid(m_selstart, m_selend - m_selstart));
         QAccessible::updateAccessibility(&event);
 #endif
         if (m_maskData) {
@@ -1384,7 +1384,7 @@ void QWidgetLineControl::emitCursorPositionChanged()
 #ifndef QT_NO_ACCESSIBILITY
         // otherwise we send a selection update which includes the cursor
         if (!hasSelectedText()) {
-            QAccessibleTextCursorEvent event(parent(), m_cursor);
+            QAccessibleTextCursorEvent event(accessibleObject(), m_cursor);
             QAccessible::updateAccessibility(&event);
         }
 #endif

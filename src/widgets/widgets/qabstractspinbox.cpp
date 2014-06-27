@@ -699,6 +699,7 @@ void QAbstractSpinBox::setLineEdit(QLineEdit *lineEdit)
     }
     d->updateEditFieldGeometry();
     d->edit->setContextMenuPolicy(Qt::NoContextMenu);
+    d->edit->d_func()->control->setAccessibleObject(this);
 
     if (isVisible())
         d->edit->show();

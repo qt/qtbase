@@ -70,7 +70,8 @@ static QList<QWidget*> childWidgets(const QWidget *widget)
 #if !defined(QT_NO_MENU)
             && !qobject_cast<QMenu*>(w)
 #endif
-            && w->objectName() != QLatin1String("qt_rubberband"))
+            && w->objectName() != QLatin1String("qt_rubberband")
+            && w->objectName() != QLatin1String("qt_spinbox_lineedit"))
             widgets.append(w);
     }
     return widgets;
