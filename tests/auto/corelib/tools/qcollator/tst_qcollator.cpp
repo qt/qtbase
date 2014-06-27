@@ -121,10 +121,12 @@ void tst_QCollator::compare_data()
         diaresis (E4), which comes before o diaresis (F6), which
         all come after z.
     */
+#if !defined(Q_OS_WIN) || defined(QT_USE_ICU)
     QTest::newRow("swedish1") << QString("sv_SE") << QString::fromLatin1("\xe5") << QString::fromLatin1("\xe4") << -1 << -1;
+#endif
     QTest::newRow("swedish2") << QString("sv_SE") << QString::fromLatin1("\xe4") << QString::fromLatin1("\xf6") << -1 << -1;
     QTest::newRow("swedish3") << QString("sv_SE") << QString::fromLatin1("\xe5") << QString::fromLatin1("\xf6") << -1 << -1;
-#ifndef Q_OS_MAC
+#if !defined(Q_OS_OSX) && (!defined(Q_OS_WIN) || defined(QT_USE_ICU))
     QTest::newRow("swedish4") << QString("sv_SE") << QString::fromLatin1("z") << QString::fromLatin1("\xe5") << -1 << -1;
 #endif
 
@@ -133,11 +135,12 @@ void tst_QCollator::compare_data()
         comes before a with ring above (E5).
     */
     QTest::newRow("norwegian1") << QString("no_NO") << QString::fromLatin1("\xe6") << QString::fromLatin1("\xd8") << -1 << -1;
-#ifndef Q_OS_MAC
+#if !defined(Q_OS_WIN) || defined(QT_USE_ICU)
+#  ifndef Q_OS_OSX
     QTest::newRow("norwegian2") << QString("no_NO") << QString::fromLatin1("\xd8") << QString::fromLatin1("\xe5") << -1 << -1;
-#endif
+#  endif
     QTest::newRow("norwegian3") << QString("no_NO") << QString::fromLatin1("\xe6") << QString::fromLatin1("\xe5") << -1 << -1;
-
+#endif // !Q_OS_WIN || QT_USE_ICU
     /*
         In German, z comes *after* a with diaresis (E4),
         which comes before o diaresis (F6).
