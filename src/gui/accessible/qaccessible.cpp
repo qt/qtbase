@@ -1704,10 +1704,6 @@ Q_GUI_EXPORT QDebug operator<<(QDebug d, const QAccessibleInterface *iface)
 /*! \internal */
 QDebug operator<<(QDebug d, const QAccessibleEvent &ev)
 {
-    if (!&ev) {
-        d << "QAccessibleEvent(null)";
-        return d;
-    }
     d.nospace() << "QAccessibleEvent(";
     if (ev.object()) {
         d.nospace() << "object=" << hex << ev.object() << dec;
