@@ -530,7 +530,8 @@
 #      define Q_COMPILER_NOEXCEPT
 #    endif
 #    if __INTEL_COMPILER >= 1400
-#      define Q_COMPILER_CONSTEXPR
+//       causes issues with QArrayData and QtPrivate::RefCount - Intel issue ID 6000056211, bug DPD200534796
+//#      define Q_COMPILER_CONSTEXPR
 #      define Q_COMPILER_DELEGATING_CONSTRUCTORS
 #      define Q_COMPILER_EXPLICIT_OVERRIDES
 #      define Q_COMPILER_NONSTATIC_MEMBER_INIT
