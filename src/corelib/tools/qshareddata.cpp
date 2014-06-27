@@ -538,10 +538,34 @@ QT_BEGIN_NAMESPACE
 /*! \fn QExplicitlySharedDataPointer::QExplicitlySharedDataPointer(const QExplicitlySharedDataPointer<X>& other)
     This copy constructor is different in that it allows \a other to be
     a different type of explicitly shared data pointer but one that has
-    a compatible shared data object. It performs a static cast of the
-    \e{d pointer} in \a other and sets the \e {d pointer} of \e this to
-    the converted \e{d pointer}. It increments the reference count of
-    the shared data object.
+    a compatible shared data object.
+
+    By default, the \e{d pointer} of \a other (of type \c{X *}) gets
+    implicitly converted to the type \c{T *}; the result of this
+    conversion is set as the \e{d pointer} of \e{this}, and the
+    reference count of the shared data object is incremented.
+
+    However, if the macro
+    \c{QT_ENABLE_QEXPLICITLYSHAREDDATAPOINTER_STATICCAST} is defined
+    before including the \c{QExplicitlySharedDataPointer} header, then
+    the \e{d pointer} of \a other undergoes a \c{static_cast} to the
+    type \c{T *}. The result of the cast is then set as the
+    \e{d pointer} of \e{this}, and the reference count of the shared data
+    object is incremented.
+
+    \warning relying on such \c{static_cast} is potentially dangerous,
+    because it allows code like this to compile:
+
+    \code
+        QExplicitlySharedDataPointer<Base> base(new Base);
+        QExplicitlySharedDataPointer<Derived> derived(base); // !!! DANGER !!!
+    \endcode
+
+    Starting from Qt 5.4 the cast is disabled by default. It is
+    possible to enable it back by defining the
+    \c{QT_ENABLE_QEXPLICITLYSHAREDDATAPOINTER_STATICCAST} macro, and
+    therefore to allow old code (that relied on this feature) to
+    compile without modifications.
 */
 
 /*! \fn QExplicitlySharedDataPointer<T>& QExplicitlySharedDataPointer::operator=(const QExplicitlySharedDataPointer<T>& other)

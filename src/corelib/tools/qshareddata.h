@@ -167,7 +167,12 @@ public:
     inline QExplicitlySharedDataPointer(const QExplicitlySharedDataPointer<T> &o) : d(o.d) { if (d) d->ref.ref(); }
 
     template<class X>
-    inline QExplicitlySharedDataPointer(const QExplicitlySharedDataPointer<X> &o) : d(static_cast<T *>(o.data()))
+    inline QExplicitlySharedDataPointer(const QExplicitlySharedDataPointer<X> &o)
+#ifdef QT_ENABLE_QEXPLICITLYSHAREDDATAPOINTER_STATICCAST
+        : d(static_cast<T *>(o.data()))
+#else
+        : d(o.data())
+#endif
     {
         if(d)
             d->ref.ref();
