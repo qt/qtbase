@@ -42,6 +42,7 @@
 #ifndef QCOCOANATIVECONTEXT_H
 #define QCOCOANATIVECONTEXT_H
 
+#include <QtCore/QMetaType>
 #include <AppKit/NSOpenGL.h>
 
 QT_BEGIN_NAMESPACE

@@ -42,6 +42,7 @@
 #ifndef QGLXNATIVECONTEXT_H
 #define QGLXNATIVECONTEXT_H
 
+#include <QtCore/QMetaType>
 #include <X11/Xlib.h>
 #include <GL/glx.h>
 

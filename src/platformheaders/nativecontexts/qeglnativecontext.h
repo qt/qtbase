@@ -42,6 +42,7 @@
 #ifndef QEGLNATIVECONTEXT_H
 #define QEGLNATIVECONTEXT_H
 
+#include <QtCore/QMetaType>
 #include <EGL/egl.h>
 
 QT_BEGIN_NAMESPACE
