@@ -1976,9 +1976,9 @@ public slots:
         attemptedToConnect = true;
         sock->connectToHost(QtNetworkSettings::serverName(), 80);
 
-#ifdef Q_OS_MAC
+#if defined(Q_OS_MAC)
         pthread_yield_np();
-#elif defined Q_OS_LINUX
+#elif defined Q_OS_LINUX && !defined Q_OS_ANDROID
         pthread_yield();
 #endif
         if (!sock->waitForConnected()) {
