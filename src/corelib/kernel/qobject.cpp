@@ -3230,7 +3230,7 @@ QObjectPrivate::Connection *QMetaObjectPrivate::connect(const QObject *sender,
             int method_index_absolute = method_index + method_offset;
 
             while (c2) {
-                if (c2->receiver == receiver && c2->method() == method_index_absolute)
+                if (!c2->isSlotObject && c2->receiver == receiver && c2->method() == method_index_absolute)
                     return 0;
                 c2 = c2->nextConnectionList;
             }
