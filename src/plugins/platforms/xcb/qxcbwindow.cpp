@@ -1342,6 +1342,7 @@ void QXcbWindow::setWindowTitle(const QString &title)
                                    8,
                                    ba.length(),
                                    ba.constData()));
+    xcb_flush(xcb_connection());
 }
 
 void QXcbWindow::setWindowIcon(const QIcon &icon)
