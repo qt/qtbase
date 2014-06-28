@@ -2493,7 +2493,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
             QColor arrowColor = option->palette.foreground().color();
             arrowColor.setAlpha(220);
 
-            const QColor bgColor = option->palette.color(QPalette::Base);
+            const QColor bgColor = QStyleHelper::backgroundColor(option->palette, widget);
             const bool isDarkBg = bgColor.red() < 128 && bgColor.green() < 128 && bgColor.blue() < 128;
 
             if (transient) {

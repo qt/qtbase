@@ -5133,7 +5133,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                 [scroller initWithFrame:NSMakeRect(0, 0, slider->rect.width(), slider->rect.height())];
                 // mac os behaviour: as soon as one color channel is >= 128,
                 // the bg is considered bright, scroller is dark
-                const QColor bgColor = opt->palette.color(QPalette::Base);
+                const QColor bgColor = QStyleHelper::backgroundColor(opt->palette, widget);
                 const bool isDarkBg = bgColor.red() < 128 && bgColor.green() < 128 &&
                                       bgColor.blue() < 128;
                 if (isDarkBg)
