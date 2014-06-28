@@ -171,6 +171,9 @@ void QOffscreenSurface::create()
             if (QThread::currentThread() != qGuiApp->thread())
                 qWarning("Attempting to create QWindow-based QOffscreenSurface outside the gui thread. Expect failures.");
             d->offscreenWindow = new QWindow(d->screen);
+            // Remove this window from the global list since we do not want it to be destroyed when closing the app.
+            // The QOffscreenSurface has to be usable even after exiting the event loop.
+            QGuiApplicationPrivate::window_list.removeOne(d->offscreenWindow);
             d->offscreenWindow->setSurfaceType(QWindow::OpenGLSurface);
             d->offscreenWindow->setFormat(d->requestedFormat);
             d->offscreenWindow->setGeometry(0, 0, d->size.width(), d->size.height());
