@@ -136,9 +136,9 @@ int roundedValueB = qRound(valueB);
 qreal valueA = 42949672960.3;
 qreal valueB = 42949672960.7;
 
-int roundedValueA = qRound(valueA);
+qint64 roundedValueA = qRound64(valueA);
 // roundedValueA = 42949672960
-int roundedValueB = qRound(valueB);
+qint64 roundedValueB = qRound64(valueB);
 // roundedValueB = 42949672961
 //! [12]
 
