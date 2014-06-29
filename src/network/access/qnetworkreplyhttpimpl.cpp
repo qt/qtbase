@@ -277,6 +277,10 @@ void QNetworkReplyHttpImpl::abort()
         // call finished which will emit signals
         // FIXME shouldn't this be emitted Queued?
         d->error(OperationCanceledError, tr("Operation canceled"));
+
+        // If state is WaitingForSession, calling finished has no effect
+        if (d->state == QNetworkReplyHttpImplPrivate::WaitingForSession)
+            d->state = QNetworkReplyHttpImplPrivate::Working;
         d->finished();
     }
 
