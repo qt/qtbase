@@ -191,7 +191,7 @@ class QFreeList
     Q_DISABLE_COPY(QFreeList)
 
 public:
-    inline QFreeList();
+    Q_DECL_CONSTEXPR inline QFreeList();
     inline ~QFreeList();
 
     // returns the payload for the given index \a x
@@ -207,7 +207,7 @@ public:
 };
 
 template <typename T, typename ConstantsType>
-inline QFreeList<T, ConstantsType>::QFreeList()
+Q_DECL_CONSTEXPR inline QFreeList<T, ConstantsType>::QFreeList()
     : _next(ConstantsType::InitialNextValue)
 { }
 
