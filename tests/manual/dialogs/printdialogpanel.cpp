@@ -422,8 +422,9 @@ QSizeF PrintDialogPanel::customPageSize() const
 // Apply the settings to the QPrinter
 void PrintDialogPanel::applySettings(QPrinter *printer) const
 {
-    QString printerName = m_panel.m_printerCombo->currentData().toString();
-    if (printerName == QStringLiteral("PdfFormat"))
+    const int currentIndex = m_panel.m_printerCombo->currentIndex();
+    QString printerName = m_panel.m_printerCombo->itemData(currentIndex).toString();
+    if (printerName == QLatin1String("PdfFormat"))
         printer->setOutputFileName(m_panel.m_fileName->text());
     else
         printer->setPrinterName(printerName);
@@ -459,7 +460,7 @@ void PrintDialogPanel::retrieveSettings(const QPrinter *printer)
         m_panel.m_printerCombo->setCurrentIndex(m_panel.m_printerCombo->findData(QVariant(printer->printerName())));
         m_panel.m_fileName->setEnabled(false);
     } else {
-        m_panel.m_printerCombo->setCurrentIndex(m_panel.m_printerCombo->findData(QVariant(QStringLiteral("PdfFormat"))));
+        m_panel.m_printerCombo->setCurrentIndex(m_panel.m_printerCombo->findData(QVariant(QLatin1String("PdfFormat"))));
         m_panel.m_fileName->setEnabled(true);
     }
     m_panel.m_fileName->setText(printer->outputFileName());
@@ -662,10 +663,11 @@ void PrintDialogPanel::layoutModeChanged()
 
 void PrintDialogPanel::printerChanged()
 {
-    bool isPdf = (m_panel.m_printerCombo->currentData().toString() == QStringLiteral("PdfFormat"));
+    const int currentIndex = m_panel.m_printerCombo->currentIndex();
+    const bool isPdf = (m_panel.m_printerCombo->itemData(currentIndex).toString() == QLatin1String("PdfFormat"));
     m_panel.m_fileName->setEnabled(isPdf);
     if (isPdf && m_panel.m_fileName->text().isEmpty())
-        m_panel.m_fileName->setText(QDir::homePath() + QDir::separator() + QStringLiteral("print.pdf"));
+        m_panel.m_fileName->setText(QDir::homePath() + QDir::separator() + QLatin1String("print.pdf"));
 }
 
 void PrintDialogPanel::showPrintDialog()
