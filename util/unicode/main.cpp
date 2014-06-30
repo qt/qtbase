@@ -2401,24 +2401,24 @@ static QByteArray createPropertyInfo()
     out += "\n};\n\n";
 
 
-    out += "static inline const Properties *qGetProp(uint ucs4)\n"
+    out += "Q_DECL_CONST_FUNCTION static inline const Properties *qGetProp(uint ucs4)\n"
            "{\n"
            "    const int index = GET_PROP_INDEX(ucs4);\n"
            "    return uc_properties + index;\n"
            "}\n"
            "\n"
-           "static inline const Properties *qGetProp(ushort ucs2)\n"
+           "Q_DECL_CONST_FUNCTION static inline const Properties *qGetProp(ushort ucs2)\n"
            "{\n"
            "    const int index = GET_PROP_INDEX_UCS2(ucs2);\n"
            "    return uc_properties + index;\n"
            "}\n"
            "\n"
-           "Q_CORE_EXPORT const Properties * QT_FASTCALL properties(uint ucs4)\n"
+           "Q_DECL_CONST_FUNCTION Q_CORE_EXPORT const Properties * QT_FASTCALL properties(uint ucs4)\n"
            "{\n"
            "    return qGetProp(ucs4);\n"
            "}\n"
            "\n"
-           "Q_CORE_EXPORT const Properties * QT_FASTCALL properties(ushort ucs2)\n"
+           "Q_DECL_CONST_FUNCTION Q_CORE_EXPORT const Properties * QT_FASTCALL properties(ushort ucs2)\n"
            "{\n"
            "    return qGetProp(ucs2);\n"
            "}\n\n";

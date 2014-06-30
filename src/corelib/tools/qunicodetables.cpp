@@ -6920,24 +6920,24 @@ static const Properties uc_properties[] = {
     { 12, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 12, 0 }
 };
 
-static inline const Properties *qGetProp(uint ucs4)
+Q_DECL_CONST_FUNCTION static inline const Properties *qGetProp(uint ucs4)
 {
     const int index = GET_PROP_INDEX(ucs4);
     return uc_properties + index;
 }
 
-static inline const Properties *qGetProp(ushort ucs2)
+Q_DECL_CONST_FUNCTION static inline const Properties *qGetProp(ushort ucs2)
 {
     const int index = GET_PROP_INDEX_UCS2(ucs2);
     return uc_properties + index;
 }
 
-Q_CORE_EXPORT const Properties * QT_FASTCALL properties(uint ucs4)
+Q_DECL_CONST_FUNCTION Q_CORE_EXPORT const Properties * QT_FASTCALL properties(uint ucs4)
 {
     return qGetProp(ucs4);
 }
 
-Q_CORE_EXPORT const Properties * QT_FASTCALL properties(ushort ucs2)
+Q_DECL_CONST_FUNCTION Q_CORE_EXPORT const Properties * QT_FASTCALL properties(ushort ucs2)
 {
     return qGetProp(ucs2);
 }

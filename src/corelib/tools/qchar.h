@@ -450,50 +450,50 @@ public:
         return ushort(ucs4%0x400 + 0xdc00);
     }
 
-    static Category QT_FASTCALL category(uint ucs4);
-    static Direction QT_FASTCALL direction(uint ucs4);
-    static JoiningType QT_FASTCALL joiningType(uint ucs4);
+    static Category QT_FASTCALL category(uint ucs4) Q_DECL_CONST_FUNCTION;
+    static Direction QT_FASTCALL direction(uint ucs4) Q_DECL_CONST_FUNCTION;
+    static JoiningType QT_FASTCALL joiningType(uint ucs4) Q_DECL_CONST_FUNCTION;
 #if QT_DEPRECATED_SINCE(5, 3)
-    QT_DEPRECATED static Joining QT_FASTCALL joining(uint ucs4);
+    QT_DEPRECATED static Joining QT_FASTCALL joining(uint ucs4) Q_DECL_CONST_FUNCTION;
 #endif
-    static unsigned char QT_FASTCALL combiningClass(uint ucs4);
+    static unsigned char QT_FASTCALL combiningClass(uint ucs4) Q_DECL_CONST_FUNCTION;
 
-    static uint QT_FASTCALL mirroredChar(uint ucs4);
-    static bool QT_FASTCALL hasMirrored(uint ucs4);
+    static uint QT_FASTCALL mirroredChar(uint ucs4) Q_DECL_CONST_FUNCTION;
+    static bool QT_FASTCALL hasMirrored(uint ucs4) Q_DECL_CONST_FUNCTION;
 
     static QString QT_FASTCALL decomposition(uint ucs4);
-    static Decomposition QT_FASTCALL decompositionTag(uint ucs4);
+    static Decomposition QT_FASTCALL decompositionTag(uint ucs4) Q_DECL_CONST_FUNCTION;
 
-    static int QT_FASTCALL digitValue(uint ucs4);
-    static uint QT_FASTCALL toLower(uint ucs4);
-    static uint QT_FASTCALL toUpper(uint ucs4);
-    static uint QT_FASTCALL toTitleCase(uint ucs4);
-    static uint QT_FASTCALL toCaseFolded(uint ucs4);
+    static int QT_FASTCALL digitValue(uint ucs4) Q_DECL_CONST_FUNCTION;
+    static uint QT_FASTCALL toLower(uint ucs4) Q_DECL_CONST_FUNCTION;
+    static uint QT_FASTCALL toUpper(uint ucs4) Q_DECL_CONST_FUNCTION;
+    static uint QT_FASTCALL toTitleCase(uint ucs4) Q_DECL_CONST_FUNCTION;
+    static uint QT_FASTCALL toCaseFolded(uint ucs4) Q_DECL_CONST_FUNCTION;
 
-    static Script QT_FASTCALL script(uint ucs4);
+    static Script QT_FASTCALL script(uint ucs4) Q_DECL_CONST_FUNCTION;
 
-    static UnicodeVersion QT_FASTCALL unicodeVersion(uint ucs4);
+    static UnicodeVersion QT_FASTCALL unicodeVersion(uint ucs4) Q_DECL_CONST_FUNCTION;
 
-    static UnicodeVersion QT_FASTCALL currentUnicodeVersion();
+    static UnicodeVersion QT_FASTCALL currentUnicodeVersion() Q_DECL_CONST_FUNCTION;
 
-    static bool QT_FASTCALL isPrint(uint ucs4);
-    static inline bool isSpace(uint ucs4);
-    static bool QT_FASTCALL isMark(uint ucs4);
-    static bool QT_FASTCALL isPunct(uint ucs4);
-    static bool QT_FASTCALL isSymbol(uint ucs4);
-    static inline bool isLetter(uint ucs4);
-    static inline bool isNumber(uint ucs4);
-    static inline bool isLetterOrNumber(uint ucs4);
-    static inline bool isDigit(uint ucs4);
-    static inline bool isLower(uint ucs4);
-    static inline bool isUpper(uint ucs4);
-    static inline bool isTitleCase(uint ucs4);
+    static bool QT_FASTCALL isPrint(uint ucs4) Q_DECL_CONST_FUNCTION;
+    static inline bool isSpace(uint ucs4) Q_DECL_CONST_FUNCTION;
+    static bool QT_FASTCALL isMark(uint ucs4) Q_DECL_CONST_FUNCTION;
+    static bool QT_FASTCALL isPunct(uint ucs4) Q_DECL_CONST_FUNCTION;
+    static bool QT_FASTCALL isSymbol(uint ucs4) Q_DECL_CONST_FUNCTION;
+    static inline bool isLetter(uint ucs4) Q_DECL_CONST_FUNCTION;
+    static inline bool isNumber(uint ucs4) Q_DECL_CONST_FUNCTION;
+    static inline bool isLetterOrNumber(uint ucs4) Q_DECL_CONST_FUNCTION;
+    static inline bool isDigit(uint ucs4) Q_DECL_CONST_FUNCTION;
+    static inline bool isLower(uint ucs4) Q_DECL_CONST_FUNCTION;
+    static inline bool isUpper(uint ucs4) Q_DECL_CONST_FUNCTION;
+    static inline bool isTitleCase(uint ucs4) Q_DECL_CONST_FUNCTION;
 
 private:
-    static bool QT_FASTCALL isSpace_helper(uint ucs4);
-    static bool QT_FASTCALL isLetter_helper(uint ucs4);
-    static bool QT_FASTCALL isNumber_helper(uint ucs4);
-    static bool QT_FASTCALL isLetterOrNumber_helper(uint ucs4);
+    static bool QT_FASTCALL isSpace_helper(uint ucs4) Q_DECL_CONST_FUNCTION;
+    static bool QT_FASTCALL isLetter_helper(uint ucs4) Q_DECL_CONST_FUNCTION;
+    static bool QT_FASTCALL isNumber_helper(uint ucs4) Q_DECL_CONST_FUNCTION;
+    static bool QT_FASTCALL isLetterOrNumber_helper(uint ucs4) Q_DECL_CONST_FUNCTION;
 
 #ifdef QT_NO_CAST_FROM_ASCII
     QChar(char c);

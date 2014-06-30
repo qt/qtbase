@@ -1398,7 +1398,7 @@ QChar::UnicodeVersion QChar::currentUnicodeVersion()
 
 
 template <typename T>
-static inline T toLowerCase_helper(T uc)
+Q_DECL_CONST_FUNCTION static inline T toLowerCase_helper(T uc)
 {
     const QUnicodeTables::Properties *p = qGetProp(uc);
     if (p->lowerCaseSpecial) {
@@ -1409,7 +1409,7 @@ static inline T toLowerCase_helper(T uc)
 }
 
 template <typename T>
-static inline T toUpperCase_helper(T uc)
+Q_DECL_CONST_FUNCTION static inline T toUpperCase_helper(T uc)
 {
     const QUnicodeTables::Properties *p = qGetProp(uc);
     if (p->upperCaseSpecial) {
@@ -1420,7 +1420,7 @@ static inline T toUpperCase_helper(T uc)
 }
 
 template <typename T>
-static inline T toTitleCase_helper(T uc)
+Q_DECL_CONST_FUNCTION static inline T toTitleCase_helper(T uc)
 {
     const QUnicodeTables::Properties *p = qGetProp(uc);
     if (p->titleCaseSpecial) {
@@ -1431,7 +1431,7 @@ static inline T toTitleCase_helper(T uc)
 }
 
 template <typename T>
-static inline T toCaseFolded_helper(T uc)
+Q_DECL_CONST_FUNCTION static inline T toCaseFolded_helper(T uc)
 {
     const QUnicodeTables::Properties *p = qGetProp(uc);
     if (p->caseFoldSpecial) {
