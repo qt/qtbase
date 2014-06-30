@@ -1,0 +1,26 @@
+Qt 5.4 introduces many new features and improvements as well as bugfixes
+over the 5.3.x series. For more details, refer to the online documentation
+included in this distribution. The documentation is also available online:
+
+  http://qt-project.org/doc/qt-5.4
+
+The Qt version 5.4 series is binary compatible with the 5.3.x series.
+Applications compiled for 5.3 will continue to run with 5.4.
+
+Some of the changes listed in this file include issue tracking numbers
+corresponding to tasks in the Qt Bug Tracker:
+
+  http://bugreports.qt-project.org/
+
+Each of these identifiers can be entered in the bug tracker to obtain more
+information about a particular change.
+
+****************************************************************************
+*                          Library                                         *
+****************************************************************************
+
+QtCore
+------
+
+ - Added QEnableSharedFromThis, a class that allows obtaining a
+   QSharedPointer for an object already managed by a shared pointer.

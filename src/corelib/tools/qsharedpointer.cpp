@@ -374,12 +374,12 @@
 /*!
     \class QEnableSharedFromThis
     \inmodule QtCore
-    \brief A base class that allows to obtain a QSharedPointer for an object already managed by a shared pointer
+    \brief A base class that allows obtaining a QSharedPointer for an object already managed by a shared pointer
     \since 5.4
 
     You can inherit this class when you need to create a QSharedPointer
-    from any instance of a class -- for instance, from within the
-    object itself. The key point is that the "obvious" technique of
+    from any instance of a class; for instance, from within the
+    object itself. The key point is that the technique of
     just returning QSharedPointer<T>(this) can not be used, because
     this winds up creating multiple distinct QSharedPointer objects
     with separate reference counts. For this reason you must never
@@ -405,6 +405,27 @@
         QSharedPointer<Y> y = p->f();
         Q_ASSERT(p == y); // p and q must share ownership
     }
+    \endcode
+
+    It is also possible to get a shared pointer from an object outside of
+    the class itself. This is especially useful in code that provides an
+    interface to scripts, where it is currently not possible to use shared
+    pointers. For example:
+
+    \code
+    class ScriptInterface : public QObject
+    {
+        Q_OBJECT
+
+        // ...
+
+    public slots:
+        void slotCalledByScript(Y *managedBySharedPointer)
+        {
+            QSharedPointer<Y> yPtr = managedBySharedPointer->sharedFromThis();
+            // Some other code unrelated to scripts that expects a QSharedPointer<Y> ...
+        }
+    };
     \endcode
 */
 
