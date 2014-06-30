@@ -77,15 +77,21 @@ QT_BEGIN_NAMESPACE
 static QBasicAtomicInt isDebugging = Q_BASIC_ATOMIC_INITIALIZER(-1);
 #define qDBusDebug              if (::isDebugging == 0); else qDebug
 
-Q_GLOBAL_STATIC_WITH_ARGS(const QString, orgFreedesktopDBusString, (QLatin1String(DBUS_SERVICE_DBUS)))
+static inline QString orgFreedesktopDBusString()
+{
+    return QStringLiteral(DBUS_SERVICE_DBUS);
+}
 
 static inline QString dbusServiceString()
-{ return *orgFreedesktopDBusString(); }
+{
+    return orgFreedesktopDBusString();
+}
+
 static inline QString dbusInterfaceString()
 {
     // it's the same string, but just be sure
-    Q_ASSERT(*orgFreedesktopDBusString() == QLatin1String(DBUS_INTERFACE_DBUS));
-    return *orgFreedesktopDBusString();
+    Q_ASSERT(orgFreedesktopDBusString() == QLatin1String(DBUS_INTERFACE_DBUS));
+    return orgFreedesktopDBusString();
 }
 
 static inline QDebug operator<<(QDebug dbg, const QThread *th)
