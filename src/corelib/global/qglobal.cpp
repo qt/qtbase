@@ -2183,7 +2183,8 @@ static QUnixOSVersion detectUnixVersion()
     Returns the architecture of the CPU that Qt was compiled for, in text
     format. Note that this may not match the actual CPU that the application is
     running on if there's an emulation layer or if the CPU supports multiple
-    architectures (like x86-64 processors supporting i386 applications).
+    architectures (like x86-64 processors supporting i386 applications). To
+    detect that, use currentCpuArchitecture().
 
     Values returned by this function are stable and will not change over time,
     so applications can rely on the returned value as an identifier, except
@@ -2199,11 +2200,98 @@ static QUnixOSVersion detectUnixVersion()
         \li "sparc"
     \endlist
 
-    \sa QSysInfo::buildAbi()
+    \sa QSysInfo::buildAbi(), QSysInfo::currentCpuArchitecture()
 */
 QString QSysInfo::buildCpuArchitecture()
 {
     return QStringLiteral(ARCH_PROCESSOR);
+}
+
+/*!
+    \since 5.4
+
+    Returns the architecture of the CPU that the application is running on, in
+    text format. Note that this function depends on what the OS will report and
+    may not detect the actual CPU architecture if the OS hides that information
+    or is unable to provide it. For example, a 32-bit OS running on a 64-bit
+    CPU is usually unable to determine the CPU is actually capable of running
+    64-bit programs.
+
+    Values returned by this function are mostly stable: an attempt will be made
+    to ensure that they stay constant over time and match the values returned
+    by QSysInfo::builldCpuArchitecture(). However, due to the nature of the
+    operating system functions being used, there may be discrepancies.
+
+    Typical returned values are (note: list not exhaustive):
+    \list
+        \li "arm"
+        \li "i386"
+        \li "mips"
+        \li "x86_64"
+        \li "power"
+        \li "sparc"
+    \endlist
+
+    \sa QSysInfo::buildAbi(), QSysInfo::buildCpuArchitecture()
+ */
+QString QSysInfo::currentCpuArchitecture()
+{
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+    // We don't need to catch all the CPU architectures in this function;
+    // only those where the host CPU might be different than the build target
+    // (usually, 64-bit platforms).
+    SYSTEM_INFO info;
+    GetNativeSystemInfo(&info);
+    switch (info.wProcessorArchitecture) {
+#  ifdef PROCESSOR_ARCHITECTURE_AMD64
+    case PROCESSOR_ARCHITECTURE_AMD64:
+        return QStringLiteral("x86_64");
+#  endif
+#  ifdef PROCESSOR_ARCHITECTURE_IA32_ON_WIN64
+    case PROCESSOR_ARCHITECTURE_IA32_ON_WIN64:
+#  endif
+    case PROCESSOR_ARCHITECTURE_IA64:
+        return QStringLiteral("ia64");
+    }
+#elif defined(Q_OS_UNIX)
+    // we could use detectUnixVersion() above, but we only need a field no other function does
+    struct utsname u;
+    if (uname(&u) != -1) {
+        // the use of QT_BUILD_INTERNAL here is simply to ensure all branches build
+        // as we don't often build on some of the less common platforms
+#  if defined(Q_PROCESSOR_ARM) || defined(QT_BUILD_INTERNAL)
+        if (strcmp(u.machine, "aarch64") == 0)
+            return QStringLiteral("arm64");
+        if (strncmp(u.machine, "armv", 4) == 0)
+            return QStringLiteral("arm");
+#  endif
+#  if defined(Q_PROCESSOR_POWER) || defined(QT_BUILD_INTERNAL)
+        // harmonize "powerpc" and "ppc" to "power"
+        if (strncmp(u.machine, "ppc", 3) == 0)
+            return QLatin1String("power") + QLatin1String(u.machine + 3);
+        if (strncmp(u.machine, "powerpc", 7) == 0)
+            return QLatin1String("power") + QLatin1String(u.machine + 7);
+        if (strcmp(u.machine, "Power Macintosh") == 0)
+            return QLatin1String("power");
+#  endif
+#  if defined(Q_PROCESSOR_SPARC) || defined(QT_BUILD_INTERNAL)
+        // Solaris psrinfo -v says "sparcv9", but uname -m says "sun4u"
+        // Linux says "sparc64"
+        if (strcmp(u.machine, "sun4u") == 0 || strcmp(u.machine, "sparc64") == 0)
+            return QStringLiteral("sparcv9");
+        if (strcmp(u.machine, "sparc32") == 0)
+            return QStringLiteral("sparc");
+#  endif
+#  if defined(Q_PROCESSOR_X86) || defined(QT_BUILD_INTERNAL)
+        // harmonize all "i?86" to "i386"
+        if (strlen(u.machine) == 4 && u.machine[0] == 'i'
+                && u.machine[2] == '8' && u.machine[3] == '6')
+            return QStringLiteral("i386");
+#  endif
+        return QString::fromLatin1(u.machine);
+    }
+#endif
+    return buildCpuArchitecture();
 }
 
 /*!

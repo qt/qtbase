@@ -167,6 +167,7 @@ public:
 #endif
 
     static QString buildCpuArchitecture();
+    static QString currentCpuArchitecture();
     static QString buildAbi();
     static QString osType();
     static QString osKernelVersion();
