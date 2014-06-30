@@ -65,8 +65,8 @@ class Q_CORE_EXPORT QAbstractTransition : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QState* sourceState READ sourceState)
-    Q_PROPERTY(QAbstractState* targetState READ targetState WRITE setTargetState)
-    Q_PROPERTY(QList<QAbstractState*> targetStates READ targetStates WRITE setTargetStates)
+    Q_PROPERTY(QAbstractState* targetState READ targetState WRITE setTargetState NOTIFY targetStateChanged)
+    Q_PROPERTY(QList<QAbstractState*> targetStates READ targetStates WRITE setTargetStates NOTIFY targetStatesChanged)
 public:
     QAbstractTransition(QState *sourceState = 0);
     virtual ~QAbstractTransition();
@@ -87,6 +87,16 @@ public:
 
 Q_SIGNALS:
     void triggered(
+#if !defined(Q_QDOC)
+      QPrivateSignal
+#endif
+    );
+    void targetStateChanged(
+#if !defined(Q_QDOC)
+      QPrivateSignal
+#endif
+    );
+    void targetStatesChanged(
 #if !defined(Q_QDOC)
       QPrivateSignal
 #endif

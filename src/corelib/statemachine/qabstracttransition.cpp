@@ -201,10 +201,15 @@ QAbstractState *QAbstractTransition::targetState() const
 void QAbstractTransition::setTargetState(QAbstractState* target)
 {
     Q_D(QAbstractTransition);
+    if ((d->targetStates.size() == 1 && target == d->targetStates.at(0).data()) ||
+         (d->targetStates.isEmpty() && target == 0)) {
+        return;
+    }
     if (!target)
         d->targetStates.clear();
     else
         setTargetStates(QList<QAbstractState*>() << target);
+    emit targetStateChanged(QPrivateSignal());
 }
 
 /*!
@@ -229,18 +234,26 @@ QList<QAbstractState*> QAbstractTransition::targetStates() const
 void QAbstractTransition::setTargetStates(const QList<QAbstractState*> &targets)
 {
     Q_D(QAbstractTransition);
-
+    QList<QPointer<QAbstractState> > copy(d->targetStates);
+    bool sameList = true;
     for (int i = 0; i < targets.size(); ++i) {
         QAbstractState *target = targets.at(i);
         if (!target) {
             qWarning("QAbstractTransition::setTargetStates: target state(s) cannot be null");
             return;
+        } else {
+            sameList &= copy.removeOne(target);
         }
     }
+
+    sameList &= copy.isEmpty();
 
     d->targetStates.clear();
     for (int i = 0; i < targets.size(); ++i)
         d->targetStates.append(targets.at(i));
+
+    if (!sameList)
+        emit targetStatesChanged(QPrivateSignal());
 }
 
 /*!
@@ -321,6 +334,24 @@ QList<QAbstractAnimation*> QAbstractTransition::animations() const
 
   This signal is emitted when the transition has been triggered (after
   onTransition() has been called).
+*/
+
+/*!
+  \fn QAbstractTransition::targetStateChanged()
+  \since 5.4
+
+  This signal is emitted when the targetState property is changed.
+
+  \sa QAbstractTransition::targetState
+*/
+
+/*!
+  \fn QAbstractTransition::targetStatesChanged()
+  \since 5.4
+
+  This signal is emitted when the targetStates property is changed.
+
+  \sa QAbstractTransition::targetStates
 */
 
 /*!
