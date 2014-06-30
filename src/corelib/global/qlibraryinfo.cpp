@@ -305,7 +305,7 @@ QLibraryInfo::buildDate()
 #  elif _MSC_VER < 1900
 #    define COMPILER_STRING "MSVC 2013"
 #  else
-#    define COMPILER_STRING "MSVC <unknown version>"
+#    define COMPILER_STRING "MSVC _MSC_VER " QT_STRINGIFY(_MSC_VER)
 #  endif
 #else
 #  define COMPILER_STRING "<unknown compiler>"
