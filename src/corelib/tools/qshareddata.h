@@ -44,6 +44,7 @@
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qatomic.h>
+#include <QtCore/qhash.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -273,6 +274,17 @@ namespace std {
     { p1.swap(p2); }
 }
 QT_BEGIN_NAMESPACE
+
+template <class T>
+Q_INLINE_TEMPLATE uint qHash(const QSharedDataPointer<T> &ptr, uint seed = 0)
+{
+    return qHash(ptr.data(), seed);
+}
+template <class T>
+Q_INLINE_TEMPLATE uint qHash(const QExplicitlySharedDataPointer<T> &ptr, uint seed = 0)
+{
+    return qHash(ptr.data(), seed);
+}
 
 template<typename T> Q_DECLARE_TYPEINFO_BODY(QSharedDataPointer<T>, Q_MOVABLE_TYPE);
 template<typename T> Q_DECLARE_TYPEINFO_BODY(QExplicitlySharedDataPointer<T>, Q_MOVABLE_TYPE);
