@@ -3337,7 +3337,7 @@ void QTableView::selectionChanged(const QItemSelection &selected,
         QModelIndex sel = selected.indexes().value(0);
         if (sel.isValid()) {
             int entry = d->accessibleTable2Index(sel);
-            QAccessibleEvent event(this, QAccessible::Selection);
+            QAccessibleEvent event(this, QAccessible::SelectionAdd);
             event.setChild(entry);
             QAccessible::updateAccessibility(&event);
         }

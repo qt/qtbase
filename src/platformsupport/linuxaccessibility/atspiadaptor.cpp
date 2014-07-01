@@ -1047,6 +1047,8 @@ void AtSpiAdaptor::notify(QAccessibleEvent *event)
         }
         break;
     }
+    case QAccessible::SelectionAdd:
+    case QAccessible::SelectionRemove:
     case QAccessible::Selection: {
         QAccessibleInterface * iface = event->accessibleInterface();
         if (!iface) {
@@ -1104,7 +1106,6 @@ void AtSpiAdaptor::notify(QAccessibleEvent *event)
     case QAccessible::ParentChanged:
     case QAccessible::DialogStart:
     case QAccessible::DialogEnd:
-    case QAccessible::SelectionRemove:
     case QAccessible::PopupMenuStart:
     case QAccessible::PopupMenuEnd:
     case QAccessible::SoundPlayed:
@@ -1146,7 +1147,6 @@ void AtSpiAdaptor::notify(QAccessibleEvent *event)
     case QAccessible::TextAttributeChanged:
     case QAccessible::TextColumnChanged:
     case QAccessible::VisibleDataChanged:
-    case QAccessible::SelectionAdd:
     case QAccessible::SelectionWithin:
     case QAccessible::LocationChanged:
     case QAccessible::HelpChanged:
