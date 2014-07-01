@@ -649,7 +649,7 @@ CFG_USE_GNUMAKE=no
 CFG_XINPUT2=auto
 CFG_XINPUT=runtime
 CFG_XKB=auto
-CFG_XKBCOMMON=auto
+CFG_XKBCOMMON=yes
 CFG_XKB_CONFIG_ROOT=auto
 CFG_XCB=auto
 CFG_XCB_XLIB=auto
@@ -5124,10 +5124,10 @@ fi
 
 # Detect libxkbcommon
 MIN_REQ_XKBCOMMON="0.4.1"
-ORIG_CFG_XKBCOMMON="$CFG_XKBCOMMON"
 # currently only xcb platform plugin supports building xkbcommon
 if [ "$CFG_XCB" != "no" ]; then
-    if [ "$CFG_XKBCOMMON" = "auto" ] || [ "$CFG_XKBCOMMON" = "system" ]; then
+    if [ "$CFG_XKBCOMMON" != "no" ] && [ "$CFG_XKBCOMMON" != "qt" ]; then
+        # Check if there is a suitable system-wide xkbcommon
         if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists "xkbcommon xkbcommon-x11 >= $MIN_REQ_XKBCOMMON" 2>/dev/null; then
             QMAKE_CFLAGS_XKBCOMMON="`$PKG_CONFIG --cflags xkbcommon xkbcommon-x11 2>/dev/null`"
             QMAKE_LIBS_XKBCOMMON="`$PKG_CONFIG --libs xkbcommon xkbcommon-x11 2>/dev/null`"
@@ -5135,6 +5135,13 @@ if [ "$CFG_XCB" != "no" ]; then
             QMakeVar set QMAKE_CFLAGS_XKBCOMMON "$QMAKE_CFLAGS_XKBCOMMON"
             QMakeVar set QMAKE_LIBS_XKBCOMMON "$QMAKE_LIBS_XKBCOMMON"
             CFG_XKBCOMMON=system
+        elif [ "$CFG_XKBCOMMON" = "system" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
+            echo " xkbcommon support cannot be enabled because either xkbcommon or "
+            echo " xkbcommon-x11 >= $MIN_REQ_XKBCOMMON was not found via pkg-config!"
+            echo " Turn on verbose messaging (-v) to $0 to see the final report."
+            echo " If you believe this message is in error you may use the continue"
+            echo " switch (-continue) to $0 to continue."
+            exit 101
         else
             # use the bundled version instead
             CFG_XKBCOMMON=qt
@@ -6624,10 +6631,6 @@ if [ "$CFG_OPENSSL" = "linked" ] && [ "$OPENSSL_LIBS" = "" ]; then
     echo "For example:"
     echo "    OPENSSL_LIBS='-L/opt/ssl/lib -lssl -lcrypto' ./configure -openssl-linked"
     echo
-fi
-if [ "$ORIG_CFG_XKBCOMMON" != qt ] && [ "$CFG_XKBCOMMON" = qt ]; then
-    echo "NOTE: libxkbcommon and libxkbcommon-x11 $MIN_REQ_XKBCOMMON or higher not found on the system, will use "
-    echo "the bundled version from 3rd party directory."
 fi
 if [ "$CFG_XKBCOMMON" = "qt" ] && [ "$CFG_XKB_CONFIG_ROOT" = "not found" ]; then
     echo "WARNING: Could not find XKB config root, use -xkb-config-root to set a path to "
