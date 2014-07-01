@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -1035,17 +1035,14 @@ bool QWindowsMimeImage::canConvertToMime(const QString &mimeType, IDataObject *p
 bool QWindowsMimeImage::canConvertFromMime(const FORMATETC &formatetc, const QMimeData *mimeData) const
 {
     int cf = getCf(formatetc);
-    if (mimeData->hasImage()) {
-        if (cf == CF_DIB)
-            return true;
-        else if (cf == CF_DIBV5) {
-            //support DIBV5 conversion only if the image has alpha channel
-            QImage image = qvariant_cast<QImage>(mimeData->imageData());
-            if (!image.isNull() && image.hasAlphaChannel())
-                return true;
-        }
-    }
-    return false;
+    if (!mimeData->hasImage())
+        return false;
+    const QImage image = qvariant_cast<QImage>(mimeData->imageData());
+    if (image.isNull())
+        return false;
+    // QTBUG-11463, deny CF_DIB support for images with alpha to prevent loss of
+    // transparency in conversion.
+    return cf == CF_DIBV5 || (cf == CF_DIB && !image.hasAlphaChannel());
 }
 
 bool QWindowsMimeImage::convertFromMime(const FORMATETC &formatetc, const QMimeData *mimeData, STGMEDIUM * pmedium) const

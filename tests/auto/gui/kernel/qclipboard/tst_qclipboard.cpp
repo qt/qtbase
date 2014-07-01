@@ -46,6 +46,8 @@
 #include <QtCore/QDir>
 #include <QtGui/QGuiApplication>
 #include <QtGui/QClipboard>
+#include <QtGui/QImage>
+#include <QtGui/QColor>
 #include "../../../shared/platformclipboard.h"
 
 class tst_QClipboard : public QObject
@@ -59,6 +61,7 @@ private slots:
     void init();
 #if defined(Q_OS_WIN) || defined(Q_OS_MAC) || defined(Q_OS_QNX)
     void copy_exit_paste();
+    void copyImage();
 #endif
     void capabilityFunctions();
     void modes();
@@ -278,18 +281,42 @@ void tst_QClipboard::copy_exit_paste()
     // ### It's still possible to test copy/paste - just keep the apps running
     if (!PlatformClipboard::isAvailable())
         QSKIP("Native clipboard not working in this setup");
-    const QStringList stringArgument(QStringLiteral("Test string."));
+    const QString stringArgument(QStringLiteral("Test string."));
     QByteArray errorMessage;
-    QVERIFY2(runHelper(QStringLiteral("copier/copier"), stringArgument, &errorMessage),
+    QVERIFY2(runHelper(QStringLiteral("copier/copier"), QStringList(stringArgument), &errorMessage),
              errorMessage.constData());
 #ifdef Q_OS_MAC
     // The Pasteboard needs a moment to breathe (at least on older Macs).
     QTest::qWait(100);
 #endif // Q_OS_MAC
-    QVERIFY2(runHelper(QStringLiteral("paster/paster"), stringArgument, &errorMessage),
+    QVERIFY2(runHelper(QStringLiteral("paster/paster"),
+                       QStringList() << QStringLiteral("--text") << stringArgument,
+                       &errorMessage),
              errorMessage.constData());
 #endif // QT_NO_PROCESS
 }
+
+void tst_QClipboard::copyImage()
+{
+#ifndef QT_NO_PROCESS
+    if (!PlatformClipboard::isAvailable())
+        QSKIP("Native clipboard not working in this setup");
+    QImage image(100, 100, QImage::Format_ARGB32);
+    image.fill(QColor(Qt::transparent));
+    image.setPixel(QPoint(1, 0), QColor(Qt::blue).rgba());
+    QGuiApplication::clipboard()->setImage(image);
+#ifdef Q_OS_OSX
+    // The Pasteboard needs a moment to breathe (at least on older Macs).
+    QTest::qWait(100);
+#endif // Q_OS_OSX
+    // paster will perform hard-coded checks on the copied image.
+    QByteArray errorMessage;
+    QVERIFY2(runHelper(QStringLiteral("paster/paster"),
+                       QStringList(QStringLiteral("--image")), &errorMessage),
+             errorMessage.constData());
+#endif // QT_NO_PROCESS
+}
+
 #endif // Q_OS_WIN || Q_OS_MAC || Q_OS_QNX
 
 void tst_QClipboard::setMimeData()

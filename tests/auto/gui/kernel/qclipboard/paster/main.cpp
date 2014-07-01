@@ -40,20 +40,59 @@
 ****************************************************************************/
 #include <QtGui/QGuiApplication>
 #include <QtGui/QClipboard>
+#include <QtGui/QImage>
+#include <QtGui/QColor>
 #include <QtCore/QStringList>
+#include <QtCore/QCommandLineParser>
 
 int main(int argc, char **argv)
 {
     QGuiApplication app(argc, argv);
-    QString expected = QStringLiteral("testString.!");
-#ifndef Q_OS_WINCE
-    const QStringList arguments = app.arguments();
-    if (arguments.size() > 1)
-        expected = arguments.at(1);
-#endif
-    QString actual;
+    QCommandLineParser parser;
+    parser.addHelpOption();
+    QCommandLineOption textOption(QStringLiteral("text"),
+                                  QStringLiteral("Text to compare"),
+                                  QStringLiteral("text"));
+    parser.addOption(textOption);
+    QCommandLineOption imageOption(QStringLiteral("image"),
+                                   QStringLiteral("Perform image check"));
+    parser.addOption(imageOption);
+    parser.process(QCoreApplication::arguments());
+
+    if (parser.isSet(imageOption)) {
 #ifndef QT_NO_CLIPBOARD
-    actual = QGuiApplication::clipboard()->text();
+        const QImage actual = QGuiApplication::clipboard()->image();
+#else
+        const QImage actual;
 #endif
-    return actual == expected ? 0 : 1;
+        // Perform hard-coded checks on copied image (size, pixel 0,0: transparent,
+        // pixel 1,0: blue). Note: Windows sets RGB of transparent to 0xFF when converting
+        // to DIB5.
+        if (actual.size() != QSize(100, 100))
+            return 1;
+        const QRgb pixel00 = actual.pixel(QPoint(0, 0));
+        if (qAlpha(pixel00))
+            return 2;
+        const QRgb pixel01 = actual.pixel(QPoint(1, 0));
+        if (pixel01 != QColor(Qt::blue).rgba())
+            return 3;
+        return 0;
+    }
+
+#ifndef Q_OS_WINCE
+    QString expected;
+    if (parser.isSet(textOption))
+        expected = parser.value(textOption);
+#else // !Q_OS_WINCE
+    const QString expected = QStringLiteral("testString.!");
+#endif // Q_OS_WINCE
+    if (!expected.isEmpty()) {
+#ifndef QT_NO_CLIPBOARD
+        const QString actual = QGuiApplication::clipboard()->text();
+#else
+        const QString actual;
+#endif
+        return actual == expected ? 0 : 1;
+    }
+    return -2;
 }
