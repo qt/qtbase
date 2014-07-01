@@ -49,12 +49,15 @@
 #include "qrect.h"
 #include "QtGui/qaccessible.h"
 #include <QtCore/qmath.h>
+#include <QtCore/private/qjnihelpers_p.h>
 
 #include "qdebug.h"
 
 static const char m_qtTag[] = "Qt A11Y";
 static const char m_classErrorMsg[] = "Can't find class \"%s\"";
 static const char m_methodErrorMsg[] = "Can't find method \"%s%s\"";
+
+QT_BEGIN_NAMESPACE
 
 namespace QtAndroidAccessibility
 {
@@ -227,7 +230,7 @@ if (!clazz) { \
         if (desc.isEmpty())
             desc = iface->text(QAccessible::Description);
         if (QAccessibleTextInterface *textIface = iface->textInterface()) {
-            if (textIface->selectionCount() > 0) {
+            if (m_setTextSelectionMethodID && textIface->selectionCount() > 0) {
                 int startSelection;
                 int endSelection;
                 textIface->selection(0, &startSelection, &endSelection);
@@ -286,12 +289,15 @@ if (!clazz) { \
 
     bool registerNatives(JNIEnv *env)
     {
+        if (QtAndroidPrivate::androidSdkVersion() < 16)
+            return true; // We need API level 16 or higher
+
         jclass clazz;
         FIND_AND_CHECK_CLASS("org/qtproject/qt5/android/accessibility/QtNativeAccessibility");
         jclass appClass = static_cast<jclass>(env->NewGlobalRef(clazz));
 
         if (env->RegisterNatives(appClass, methods, sizeof(methods) / sizeof(methods[0])) < 0) {
-            __android_log_print(ANDROID_LOG_FATAL,"Qt", "RegisterNatives failed");
+            __android_log_print(ANDROID_LOG_FATAL,"Qt A11y", "RegisterNatives failed");
             return false;
         }
 
@@ -305,9 +311,14 @@ if (!clazz) { \
         GET_AND_CHECK_STATIC_METHOD(m_setFocusableMethodID, nodeInfoClass, "setFocusable", "(Z)V");
         GET_AND_CHECK_STATIC_METHOD(m_setFocusedMethodID, nodeInfoClass, "setFocused", "(Z)V");
         GET_AND_CHECK_STATIC_METHOD(m_setScrollableMethodID, nodeInfoClass, "setScrollable", "(Z)V");
-        GET_AND_CHECK_STATIC_METHOD(m_setTextSelectionMethodID, nodeInfoClass, "setTextSelection", "(II)V");
         GET_AND_CHECK_STATIC_METHOD(m_setVisibleToUserMethodID, nodeInfoClass, "setVisibleToUser", "(Z)V");
+
+        if (QtAndroidPrivate::androidSdkVersion() >= 18) {
+            GET_AND_CHECK_STATIC_METHOD(m_setTextSelectionMethodID, nodeInfoClass, "setTextSelection", "(II)V");
+        }
 
         return true;
     }
 }
+
+QT_END_NAMESPACE

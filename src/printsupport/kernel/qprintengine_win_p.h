@@ -125,6 +125,7 @@ public:
         globalDevMode(0),
         devMode(0),
         pInfo(0),
+        hMem(0),
         hdc(0),
         mode(QPrinter::ScreenResolution),
         state(QPrinter::Idle),

@@ -77,4 +77,5 @@
 - (void)updateInputMethodWithQuery:(Qt::InputMethodQueries)query;
 - (void)reset;
 - (void)commit;
++ (bool)inUpdateKeyboardLayout;
 @end

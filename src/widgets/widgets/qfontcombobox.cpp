@@ -548,7 +548,7 @@ bool QFontComboBox::event(QEvent *e)
     if (e->type() == QEvent::Resize) {
         QListView *lview = qobject_cast<QListView*>(view());
         if (lview) {
-            setFixedWidth(qMin(width() * 5 / 3,
+            lview->window()->setFixedWidth(qMin(width() * 5 / 3,
                                QApplication::desktop()->availableGeometry(lview).width()));
         }
     }

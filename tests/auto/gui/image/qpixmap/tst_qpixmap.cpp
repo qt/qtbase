@@ -91,6 +91,7 @@ private slots:
 
     void convertFromImage_data();
     void convertFromImage();
+    void convertFromImageShouldDetach();
 
     void testMetrics();
 
@@ -341,6 +342,20 @@ void tst_QPixmap::convertFromImage()
 
     QPixmap res = QPixmap::fromImage(img2);
     QCOMPARE(pix, res);
+}
+
+void tst_QPixmap::convertFromImageShouldDetach()
+{
+    const QString prefix = QFINDTESTDATA("convertFromImage");
+    QImage img1;
+    QImage img2;
+    QVERIFY(img1.load(prefix + "/task31722_0/img1.png"));
+    QVERIFY(img2.load(prefix + "/task31722_0/img2.png"));
+    QPixmap pix = QPixmap::fromImage(img1);
+    QPixmap pix1 = pix;
+    pix.convertFromImage(img2);
+    QCOMPARE(pix, QPixmap::fromImage(img2));
+    QCOMPARE(pix1, QPixmap::fromImage(img1)); // unchanged
 }
 
 void tst_QPixmap::scroll_data()

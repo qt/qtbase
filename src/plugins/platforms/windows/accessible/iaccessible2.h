@@ -329,7 +329,7 @@ public:
 private:
     static BSTR relationToBSTR(QAccessible::Relation relation)
     {
-        wchar_t *constRelationString = 0;
+        const wchar_t *constRelationString = 0;
         switch (relation) {
         case QAccessible::Label:
             constRelationString = IA2_RELATION_LABEL_FOR;

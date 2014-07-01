@@ -339,12 +339,38 @@ void QXcbWindow::create()
 #endif //defined(XCB_USE_GLX) || defined(XCB_USE_EGL)
     {
         m_window = xcb_generate_id(xcb_connection());
-        m_depth = m_screen->screen()->root_depth;
-        m_imageFormat = imageFormatForDepth(m_depth);
         m_visualId = m_screen->screen()->root_visual;
+        m_depth = m_screen->screen()->root_depth;
+
+        uint32_t mask = 0;
+        uint32_t values[3];
+
+        if (m_format.alphaBufferSize() == 8) {
+            xcb_depth_iterator_t depthIter = xcb_screen_allowed_depths_iterator(m_screen->screen());
+            while (depthIter.rem) {
+                if (depthIter.data->depth == 32) {
+                    xcb_visualtype_iterator_t visualIter = xcb_depth_visuals_iterator(depthIter.data);
+                    if (visualIter.rem) {
+                        m_visualId = visualIter.data->visual_id;
+                        m_depth = 32;
+                        uint32_t colormap = xcb_generate_id(xcb_connection());
+                        xcb_create_colormap(xcb_connection(), XCB_COLORMAP_ALLOC_NONE, colormap,
+                                            xcb_parent_id, m_visualId);
+                        mask |= XCB_CW_BACK_PIXEL | XCB_CW_BORDER_PIXEL | XCB_CW_COLORMAP;
+                        values[0] = m_screen->screen()->white_pixel;
+                        values[1] = m_screen->screen()->black_pixel;
+                        values[2] = colormap;
+                        break;
+                    }
+                }
+                xcb_depth_next(&depthIter);
+            }
+        }
+
+        m_imageFormat = imageFormatForDepth(m_depth);
 
         Q_XCB_CALL(xcb_create_window(xcb_connection(),
-                                     XCB_COPY_FROM_PARENT,            // depth -- same as root
+                                     m_depth,
                                      m_window,                        // window id
                                      xcb_parent_id,                   // parent window id
                                      rect.x(),
@@ -354,8 +380,8 @@ void QXcbWindow::create()
                                      0,                               // border width
                                      XCB_WINDOW_CLASS_INPUT_OUTPUT,   // window class
                                      m_visualId,                      // visual
-                                     0,                               // value mask
-                                     0));                             // value list
+                                     mask,
+                                     values));
     }
 
     connection()->addWindowEventListener(m_window, this);

@@ -90,7 +90,7 @@ public:
 
         // special case: it is in the first buffer
         int nextDataBlockSizeValue = nextDataBlockSize();
-        if (pos - head < nextDataBlockSizeValue) {
+        if (pos < nextDataBlockSizeValue) {
             length = nextDataBlockSizeValue - pos;
             return buffers.at(0).constData() + head + pos;
         }

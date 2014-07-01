@@ -1098,6 +1098,7 @@ bool QPixmap::isDetached() const
 */
 bool QPixmap::convertFromImage(const QImage &image, Qt::ImageConversionFlags flags)
 {
+    detach();
     if (image.isNull() || !data)
         *this = QPixmap::fromImage(image, flags);
     else

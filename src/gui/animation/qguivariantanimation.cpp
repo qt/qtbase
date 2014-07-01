@@ -64,7 +64,7 @@ template<> Q_INLINE_TEMPLATE QQuaternion _q_interpolate(const QQuaternion &f,con
     return QQuaternion::slerp(f, t, progress);
 }
 
-static void qRegisterGuiGetInterpolator()
+void qRegisterGuiGetInterpolator()
 {
     qRegisterAnimationInterpolator<QColor>(_q_interpolateVariant<QColor>);
     qRegisterAnimationInterpolator<QVector2D>(_q_interpolateVariant<QVector2D>);

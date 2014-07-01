@@ -73,8 +73,8 @@
 
 QT_BEGIN_NAMESPACE
 
-static bool isDebugging;
-#define qDBusDebug              if (!::isDebugging); else qDebug
+static QBasicAtomicInt isDebugging = Q_BASIC_ATOMIC_INITIALIZER(-1);
+#define qDBusDebug              if (::isDebugging == 0); else qDebug
 
 Q_GLOBAL_STATIC_WITH_ARGS(const QString, orgFreedesktopDBusString, (QLatin1String(DBUS_SERVICE_DBUS)))
 
@@ -1022,13 +1022,12 @@ QDBusConnectionPrivate::QDBusConnectionPrivate(QObject *p)
       anonymousAuthenticationAllowed(false)
 {
     static const bool threads = q_dbus_threads_init_default();
-    static const int debugging = qgetenv("QDBUS_DEBUG").toInt();
-    ::isDebugging = debugging;
+    if (::isDebugging == -1)
+       ::isDebugging = qgetenv("QDBUS_DEBUG").toInt();
     Q_UNUSED(threads)
-    Q_UNUSED(debugging)
 
 #ifdef QDBUS_THREAD_DEBUG
-    if (debugging > 1)
+    if (::isDebugging > 1)
         qdbusThreadDebug = qdbusDefaultThreadDebug;
 #endif
 
@@ -2488,12 +2487,15 @@ void QDBusConnectionPrivate::unregisterServiceNoLock(const QString &serviceName)
     serviceNames.removeAll(serviceName);
 }
 
-bool QDBusConnectionPrivate::isServiceRegisteredByThread(const QString &serviceName) const
+bool QDBusConnectionPrivate::isServiceRegisteredByThread(const QString &serviceName)
 {
     if (!serviceName.isEmpty() && serviceName == baseService)
         return true;
-    QStringList copy = serviceNames;
-    return copy.contains(serviceName);
+    if (serviceName == dbusServiceString())
+        return false;
+
+    QDBusReadLocker locker(UnregisterServiceAction, this);
+    return serviceNames.contains(serviceName);
 }
 
 void QDBusConnectionPrivate::postEventToThread(int action, QObject *object, QEvent *ev)

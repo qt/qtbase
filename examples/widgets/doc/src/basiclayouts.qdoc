@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -28,19 +28,23 @@
 /*!
     \example layouts/basiclayouts
     \title Basic Layouts Example
+    \brief Shows how to use the standard layout managers.
 
-    \brief The Basic Layouts example shows how to use the standard layout
-    managers that are available in Qt: QBoxLayout, QGridLayout and
-    QFormLayout.
+    \e{Basic Layouts} shows how to use the standard layout managers that are
+    available in Qt: QBoxLayout, QGridLayout, and QFormLayout.
 
     \image basiclayouts-example.png Screenshot of the Basic Layouts example
 
     The QBoxLayout class lines up widgets horizontally or vertically.
     QHBoxLayout and QVBoxLayout are convenience subclasses of QBoxLayout.
     QGridLayout lays out widgets in cells by dividing the available space
-    into rows and columns. QFormLayout, on the other hand, lays out its
+    into rows and columns. QFormLayout, on the other hand, sets its
     children in a two-column form with labels in the left column and
     input fields in the right column.
+
+    For more information, visit the \l{Layout Management} page.
+
+    \include examples-run.qdocinc
 
     \section1 Dialog Class Definition
 
@@ -48,11 +52,11 @@
 
     The \c Dialog class inherits QDialog. It is a custom widget that
     displays its child widgets using the geometry managers:
-    QHBoxLayout, QVBoxLayout, QGridLayout and QFormLayout.
+    QHBoxLayout, QVBoxLayout, QGridLayout, and QFormLayout.
 
-    We declare four private functions to simplify the class
-    constructor: The \c createMenu(), \c createHorizontalGroupBox(),
-    \c createGridGroupBox() and \c createFormGroupBox() functions create
+    There are four private functions to simplify the class
+    constructor: the \c createMenu(), \c createHorizontalGroupBox(),
+    \c createGridGroupBox(), and \c createFormGroupBox() functions create
     several widgets that the example uses to demonstrate how the layout
     affects their appearances.
 

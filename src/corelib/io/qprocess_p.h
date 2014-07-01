@@ -253,6 +253,9 @@ public:
         {
             pipe[0] = INVALID_Q_PIPE;
             pipe[1] = INVALID_Q_PIPE;
+#ifdef Q_OS_WIN
+            reader = 0;
+#endif
         }
 
         void clear();
@@ -282,6 +285,13 @@ public:
         QString file;
         QProcessPrivate *process;
         QSocketNotifier *notifier;
+#ifdef Q_OS_WIN
+        union {
+            QWindowsPipeReader *reader;
+            QWindowsPipeWriter *writer;
+        };
+#endif
+        QRingBuffer buffer;
         Q_PIPE pipe[2];
 
         unsigned type : 2;
@@ -316,8 +326,10 @@ public:
     Channel stdinChannel;
     Channel stdoutChannel;
     Channel stderrChannel;
-    bool createChannel(Channel &channel);
+    bool openChannel(Channel &channel);
+    void closeChannel(Channel *channel);
     void closeWriteChannel();
+    bool tryReadFromChannel(Channel *channel); // obviously, only stdout and stderr
 
     QString program;
     QStringList arguments;
@@ -326,14 +338,9 @@ public:
 #endif
     QProcessEnvironment environment;
 
-    QRingBuffer outputReadBuffer;
-    QRingBuffer errorReadBuffer;
-    QRingBuffer writeBuffer;
-
     Q_PIPE childStartedPipe[2];
     Q_PIPE deathPipe[2];
     void destroyPipe(Q_PIPE pipe[2]);
-    void destroyChannel(Channel *channel);
 
     QSocketNotifier *startupSocketNotifier;
     QSocketNotifier *deathNotifier;
@@ -341,9 +348,6 @@ public:
 #ifdef Q_OS_WIN
     // the wonderful windows notifier
     QTimer *notifier;
-    QWindowsPipeReader *stdoutReader;
-    QWindowsPipeReader *stderrReader;
-    QWindowsPipeWriter *pipeWriter;
     QWinEventNotifier *processFinishedNotifier;
 #endif
 
@@ -383,10 +387,8 @@ public:
     bool waitForFinished(int msecs = 30000);
     bool waitForWrite(int msecs = 30000);
 
-    qint64 bytesAvailableFromStdout() const;
-    qint64 bytesAvailableFromStderr() const;
-    qint64 readFromStdout(char *data, qint64 maxlen);
-    qint64 readFromStderr(char *data, qint64 maxlen);
+    qint64 bytesAvailableInChannel(const Channel *channel) const;
+    qint64 readFromChannel(const Channel *channel, char *data, qint64 maxlen);
     qint64 writeToStdin(const char *data, qint64 maxlen);
 
     void cleanup();

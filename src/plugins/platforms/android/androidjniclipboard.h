@@ -45,6 +45,8 @@
 #include <jni.h>
 #include <QString>
 
+QT_BEGIN_NAMESPACE
+
 class QAndroidPlatformClipboard;
 namespace QtAndroidClipboard
 {
@@ -57,5 +59,7 @@ namespace QtAndroidClipboard
 
     bool registerNatives(JNIEnv *env);
 }
+
+QT_END_NAMESPACE
 
 #endif // ANDROIDJNICLIPBOARD_H

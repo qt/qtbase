@@ -54,7 +54,6 @@
     QIOSInputContext *m_context;
     BOOL m_keyboardVisible;
     BOOL m_keyboardVisibleAndDocked;
-    BOOL m_ignoreKeyboardChanges;
     BOOL m_touchPressWhileKeyboardVisible;
     BOOL m_keyboardHiddenByGesture;
     QRectF m_keyboardRect;
@@ -74,7 +73,6 @@
         m_context = context;
         m_keyboardVisible = NO;
         m_keyboardVisibleAndDocked = NO;
-        m_ignoreKeyboardChanges = NO;
         m_touchPressWhileKeyboardVisible = NO;
         m_keyboardHiddenByGesture = NO;
         m_duration = 0;
@@ -160,7 +158,7 @@
 
 - (void) keyboardWillShow:(NSNotification *)notification
 {
-    if (m_ignoreKeyboardChanges)
+    if ([QUIView inUpdateKeyboardLayout])
         return;
     // Note that UIKeyboardWillShowNotification is only sendt when the keyboard is docked.
     m_keyboardVisibleAndDocked = YES;
@@ -175,7 +173,7 @@
 
 - (void) keyboardWillHide:(NSNotification *)notification
 {
-    if (m_ignoreKeyboardChanges)
+    if ([QUIView inUpdateKeyboardLayout])
         return;
     // Note that UIKeyboardWillHideNotification is also sendt when the keyboard is undocked.
     m_keyboardVisibleAndDocked = NO;
@@ -407,11 +405,7 @@ void QIOSInputContext::update(Qt::InputMethodQueries query)
 
 void QIOSInputContext::reset()
 {
-    // Since the call to reset will cause a 'keyboardWillHide'
-    // notification to be sendt, we block keyboard nofifications to avoid artifacts:
-    m_keyboardListener->m_ignoreKeyboardChanges = true;
     [m_focusView reset];
-    m_keyboardListener->m_ignoreKeyboardChanges = false;
 }
 
 void QIOSInputContext::commit()

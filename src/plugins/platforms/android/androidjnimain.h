@@ -50,6 +50,8 @@
 
 #include <QImage>
 
+QT_BEGIN_NAMESPACE
+
 class QRect;
 class QPoint;
 class QThread;
@@ -119,4 +121,7 @@ namespace QtAndroid
 
     QString deviceName();
 }
+
+QT_END_NAMESPACE
+
 #endif // ANDROID_APP_H

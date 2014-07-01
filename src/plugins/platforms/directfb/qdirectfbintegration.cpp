@@ -64,7 +64,7 @@ QDirectFbIntegration::QDirectFbIntegration()
 {
 }
 
-void QDirectFbIntegration::initialize()
+void QDirectFbIntegration::connectToDirectFb()
 {
     initializeDirectFB();
     initializeScreen();

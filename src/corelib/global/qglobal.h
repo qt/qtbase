@@ -59,7 +59,11 @@
 #include <QtCore/qconfig.h>
 #include <QtCore/qfeatures.h>
 #endif
-#define QT_SUPPORTS(FEATURE) (!defined(QT_NO_##FEATURE))
+#if defined(Q_CC_MSVC) && _MSC_VER <= 1500 /* VS2008 */
+#  define QT_SUPPORTS(FEATURE) (!defined QT_NO_##FEATURE)
+#else
+#  define QT_SUPPORTS(FEATURE) (!defined(QT_NO_##FEATURE))
+#endif
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 #  define QT_NO_UNSHARABLE_CONTAINERS
 #endif

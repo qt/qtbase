@@ -55,6 +55,10 @@
 #  endif
 #endif
 
+#ifdef Q_OS_ANDROID
+#  include <netinet/in.h>
+#endif
+
 class tst_QHostAddress : public QObject
 {
     Q_OBJECT

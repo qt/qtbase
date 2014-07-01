@@ -50,6 +50,8 @@
 #include <private/qguiapplication_p.h>
 #include <qandroidplatformintegration.h>
 
+QT_BEGIN_NAMESPACE
+
 QAndroidPlatformTheme::QAndroidPlatformTheme(QAndroidPlatformNativeInterface *androidPlatformNativeInterface)
 {
     m_androidPlatformNativeInterface = androidPlatformNativeInterface;
@@ -240,3 +242,5 @@ QPlatformDialogHelper *QAndroidPlatformTheme::createPlatformDialogHelper(QPlatfo
         return 0;
     }
 }
+
+QT_END_NAMESPACE

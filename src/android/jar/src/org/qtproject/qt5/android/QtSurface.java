@@ -110,24 +110,6 @@ public class QtSurface extends SurfaceView implements SurfaceHolder.Callback
         }
     }
 
-    public boolean dispatchHoverEvent(MotionEvent event) {
-        // Always attempt to dispatch hover events to accessibility first.
-        if (m_accessibilityDelegate != null) {
-            try {
-                Method dispHoverA11y = m_accessibilityDelegate.getClass().getMethod("dispatchHoverEvent", MotionEvent.class);
-                boolean ret = (Boolean) dispHoverA11y.invoke(m_accessibilityDelegate, event);
-                if (ret)
-                    return true;
-                SurfaceView view = (SurfaceView) this;
-                Method dispHoverView = view.getClass().getMethod("dispatchHoverEvent", MotionEvent.class);
-                return (Boolean) dispHoverView.invoke(view, event);
-            } catch (Exception e) {
-                Log.w("Qt A11y", "EXCEPTION in dispatchHoverEvent for Accessibility: " + e);
-            }
-        }
-        return false;
-    }
-
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height)
     {

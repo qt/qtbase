@@ -271,14 +271,19 @@ typedef struct tagTTPOLYCURVE
 #define WM_DRAWCLIPBOARD 0x0308
 #endif
 
+#include <QFileInfo>
+
 inline bool IsIconic( HWND /*hWnd*/ )
 {
     return false;
 }
 
-inline int AddFontResourceExW( LPCWSTR /*name*/, DWORD /*fl*/, PVOID /*res*/)
+inline int AddFontResourceExW( LPCWSTR name, DWORD /*fl*/, PVOID /*res*/)
 {
-    return 0;
+    QString fName = QString::fromWCharArray(name);
+    QFileInfo fileinfo(fName);
+    fName = fileinfo.absoluteFilePath();
+    return AddFontResource((LPCWSTR)fName.utf16());
 }
 
 inline bool RemoveFontResourceExW( LPCWSTR /*name*/, DWORD /*fl*/, PVOID /*pdv*/)

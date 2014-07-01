@@ -870,6 +870,9 @@ void QCocoaEventDispatcherPrivate::processPostedEvents()
         return;
     }
 
+    if (cleanupModalSessionsNeeded && currentExecIsNSAppRun)
+        cleanupModalSessions();
+
     if (processEventsCalled > 0 && interrupt) {
         if (currentExecIsNSAppRun) {
             // The event dispatcher has been interrupted. But since

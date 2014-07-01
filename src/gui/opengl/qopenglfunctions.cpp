@@ -283,46 +283,48 @@ static int qt_gl_resolve_features()
         QSurfaceFormat format = QOpenGLContext::currentContext()->format();
         QOpenGLExtensionMatcher extensions;
 
-        // Recognize features by extension name.
-        if (extensions.match("GL_ARB_multitexture"))
-            features |= QOpenGLFunctions::Multitexture;
-        if (extensions.match("GL_ARB_shader_objects"))
-            features |= QOpenGLFunctions::Shaders;
-        if (extensions.match("GL_EXT_framebuffer_object") ||
-            extensions.match("GL_ARB_framebuffer_object"))
-            features |= QOpenGLFunctions::Framebuffers;
-        if (extensions.match("GL_EXT_blend_color"))
-            features |= QOpenGLFunctions::BlendColor;
-        if (extensions.match("GL_EXT_blend_equation_separate"))
-            features |= QOpenGLFunctions::BlendEquationSeparate;
-        if (extensions.match("GL_EXT_blend_func_separate"))
-            features |= QOpenGLFunctions::BlendFuncSeparate;
-        if (extensions.match("GL_EXT_blend_subtract"))
-            features |= QOpenGLFunctions::BlendSubtract;
-        if (extensions.match("GL_ARB_texture_compression"))
-            features |= QOpenGLFunctions::CompressedTextures;
-        if (extensions.match("GL_ARB_multisample"))
-            features |= QOpenGLFunctions::Multisample;
-        if (extensions.match("GL_ARB_texture_non_power_of_two"))
-            features |= QOpenGLFunctions::NPOTTextures |
-                QOpenGLFunctions::NPOTTextureRepeat;
-
-        // assume version 2.0 or higher
-        features |= QOpenGLFunctions::BlendColor |
-            QOpenGLFunctions::BlendEquation |
-            QOpenGLFunctions::Multitexture |
-            QOpenGLFunctions::CompressedTextures |
-            QOpenGLFunctions::Multisample |
-            QOpenGLFunctions::BlendFuncSeparate |
-            QOpenGLFunctions::Buffers |
-            QOpenGLFunctions::Shaders |
-            QOpenGLFunctions::StencilSeparate |
-            QOpenGLFunctions::BlendEquationSeparate |
-            QOpenGLFunctions::NPOTTextures |
-            QOpenGLFunctions::NPOTTextureRepeat;
-
         if (format.majorVersion() >= 3)
             features |= QOpenGLFunctions::Framebuffers;
+        else if (extensions.match("GL_EXT_framebuffer_object") ||
+                extensions.match("GL_ARB_framebuffer_object"))
+                features |= QOpenGLFunctions::Framebuffers;
+
+        if (format.majorVersion() >= 2) {
+            features |= QOpenGLFunctions::BlendColor |
+                QOpenGLFunctions::BlendEquation |
+                QOpenGLFunctions::BlendSubtract |
+                QOpenGLFunctions::Multitexture |
+                QOpenGLFunctions::CompressedTextures |
+                QOpenGLFunctions::Multisample |
+                QOpenGLFunctions::BlendFuncSeparate |
+                QOpenGLFunctions::Buffers |
+                QOpenGLFunctions::Shaders |
+                QOpenGLFunctions::StencilSeparate |
+                QOpenGLFunctions::BlendEquationSeparate |
+                QOpenGLFunctions::NPOTTextures |
+                QOpenGLFunctions::NPOTTextureRepeat;
+        } else {
+            // Recognize features by extension name.
+            if (extensions.match("GL_ARB_multitexture"))
+                features |= QOpenGLFunctions::Multitexture;
+            if (extensions.match("GL_ARB_shader_objects"))
+                features |= QOpenGLFunctions::Shaders;
+            if (extensions.match("GL_EXT_blend_color"))
+                features |= QOpenGLFunctions::BlendColor;
+            if (extensions.match("GL_EXT_blend_equation_separate"))
+                features |= QOpenGLFunctions::BlendEquationSeparate;
+            if (extensions.match("GL_EXT_blend_subtract"))
+                features |= QOpenGLFunctions::BlendSubtract;
+            if (extensions.match("GL_EXT_blend_func_separate"))
+                features |= QOpenGLFunctions::BlendFuncSeparate;
+            if (extensions.match("GL_ARB_texture_compression"))
+                features |= QOpenGLFunctions::CompressedTextures;
+            if (extensions.match("GL_ARB_multisample"))
+                features |= QOpenGLFunctions::Multisample;
+            if (extensions.match("GL_ARB_texture_non_power_of_two"))
+                features |= QOpenGLFunctions::NPOTTextures |
+                    QOpenGLFunctions::NPOTTextureRepeat;
+        }
 
         const QPair<int, int> version = format.version();
         if (version < qMakePair(3, 0)

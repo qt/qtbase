@@ -42,10 +42,15 @@
 #ifndef ANDROIDJNIACCESSIBILITY_H
 #define ANDROIDJNIACCESSIBILITY_H
 #include <jni.h>
+#include <QtCore/qglobal.h>
+
+QT_BEGIN_NAMESPACE
 
 namespace QtAndroidAccessibility
 {
     bool registerNatives(JNIEnv *env);
 }
+
+QT_END_NAMESPACE
 
 #endif // ANDROIDJNIINPUT_H

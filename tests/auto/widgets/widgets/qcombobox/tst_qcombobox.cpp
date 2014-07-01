@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -72,6 +72,7 @@
 #include <qstylefactory.h>
 #include <qabstractitemview.h>
 #include <qstyleditemdelegate.h>
+#include <qstandarditemmodel.h>
 #include <qproxystyle.h>
 
 static inline void setFrameless(QWidget *w)
@@ -163,6 +164,7 @@ private slots:
     void itemData();
     void task_QTBUG_31146_popupCompletion();
     void keyboardSelection();
+    void setCustomModelAndView();
 };
 
 class MyAbstractItemDelegate : public QAbstractItemDelegate
@@ -1578,6 +1580,45 @@ void tst_QComboBox::setModel()
     box.setModel(new QStandardItemModel(2,1, &box));
     QCOMPARE(box.currentIndex(), 0);
     QVERIFY(box.model() != oldModel);
+}
+
+void tst_QComboBox::setCustomModelAndView()
+{
+    // QTBUG-27597, ensure the correct text is returned when using custom view and a tree model.
+    QComboBox combo;
+    combo.setWindowTitle("QTBUG-27597, setCustomModelAndView");
+    combo.setEditable(true);
+    combo.setMinimumWidth(400);
+    const QRect availableGeometry = QGuiApplication::primaryScreen()->availableGeometry();
+    combo.move(availableGeometry.center() - QPoint(200, 20));
+
+    QStandardItemModel *model = new QStandardItemModel(0, 1, &combo);
+
+    QStandardItem *item = new QStandardItem(QStringLiteral("Item1"));
+    item->appendRow(new QStandardItem(QStringLiteral("Item11")));
+    model->appendRow(item);
+
+    item = new QStandardItem(QStringLiteral("Item2"));
+    model->appendRow(item);
+    const QString subItem21Text = QStringLiteral("Item21");
+    QStandardItem *subItem = new QStandardItem(subItem21Text);
+    item->appendRow(subItem);
+
+    QTreeView* view = new QTreeView(&combo);
+    view->setHeaderHidden(true);
+    view->setSelectionMode(QAbstractItemView::SingleSelection);
+    view->setModel(model);
+    view->expandAll();
+    combo.setModel(model);
+    combo.setView(view);
+    combo.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&combo));
+    combo.showPopup();
+    QTRY_VERIFY(combo.view()->isVisible());
+    const QRect subItemRect = view->visualRect(model->indexFromItem(subItem));
+    QWidget *window = view->window();
+    QTest::mouseClick(window->windowHandle(), Qt::LeftButton, 0, view->mapTo(window, subItemRect.center()));
+    QTRY_COMPARE(combo.currentText(), subItem21Text);
 }
 
 void tst_QComboBox::modelDeleted()

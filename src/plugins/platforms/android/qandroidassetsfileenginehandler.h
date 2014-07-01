@@ -49,6 +49,8 @@
 
 #include <android/asset_manager.h>
 
+QT_BEGIN_NAMESPACE
+
 struct AndroidAssetDir;
 class AndroidAssetsFileEngineHandler: public QAbstractFileEngineHandler
 {
@@ -66,5 +68,7 @@ private:
     mutable bool m_hasPrepopulatedCache;
     mutable bool m_hasTriedPrepopulatingCache;
 };
+
+QT_END_NAMESPACE
 
 #endif // QANDROIDASSETSFILEENGINEHANDLER_H

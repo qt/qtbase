@@ -316,7 +316,10 @@ bool QXcbIntegration::hasCapability(QPlatformIntegration::Capability cap) const
 
 QAbstractEventDispatcher *QXcbIntegration::createEventDispatcher() const
 {
-    return createUnixEventDispatcher();
+    QAbstractEventDispatcher *dispatcher = createUnixEventDispatcher();
+    for (int i = 0; i < m_connections.size(); i++)
+        m_connections[i]->eventReader()->registerEventDispatcher(dispatcher);
+    return dispatcher;
 }
 
 void QXcbIntegration::initialize()

@@ -4,7 +4,7 @@ CONFIG  += ordered
 SUBDIRS	=	lib \
                 theplugin \
 		tst
-!win32: !mac: SUBDIRS += almostplugin
+!android: !win32: !mac: SUBDIRS += almostplugin
 macx-*: SUBDIRS += machtest
 TARGET = tst_qpluginloader
 

@@ -110,8 +110,8 @@ public:
                            ConnectionType connectionType = ConnectionTypeHTTP);
 #else
     explicit QHttpNetworkConnection(const QString &hostName, quint16 port = 80, bool encrypt = false,
-                                    QObject *parent = 0,
-                                    ConnectionType connectionType = ConnectionTypeHTTP);
+                                    ConnectionType connectionType = ConnectionTypeHTTP,
+                                    QObject *parent = 0);
     QHttpNetworkConnection(quint16 channelCount, const QString &hostName, quint16 port = 80,
                            bool encrypt = false, QObject *parent = 0,
                            ConnectionType connectionType = ConnectionTypeHTTP);

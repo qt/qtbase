@@ -118,13 +118,14 @@ protected:
     void findComposeFile();
     bool findSystemComposeDir();
     QString systemComposeDir();
+    QString composeTableForLocale();
 
     ushort keysymToUtf8(quint32 sym);
 
     QString readLocaleMappings(const QByteArray &locale);
     QByteArray readLocaleAliases(const QByteArray &locale);
     void initPossibleLocations();
-    bool cleanState() const { return ((m_state & NoErrors) == NoErrors); }
+    bool cleanState() const { return m_state == NoErrors; }
     QString locale() const;
 
 private:

@@ -1219,8 +1219,8 @@ QHttpNetworkConnection::QHttpNetworkConnection(quint16 connectionCount, const QS
     d->init();
 }
 #else
-QHttpNetworkConnection::QHttpNetworkConnection(const QString &hostName, quint16 port, bool encrypt, QObject *parent,
-                                               QHttpNetworkConnection::ConnectionType connectionType)
+QHttpNetworkConnection::QHttpNetworkConnection(const QString &hostName, quint16 port, bool encrypt,
+                                               QHttpNetworkConnection::ConnectionType connectionType, QObject *parent)
     : QObject(*(new QHttpNetworkConnectionPrivate(hostName, port, encrypt , connectionType)), parent)
 {
     Q_D(QHttpNetworkConnection);

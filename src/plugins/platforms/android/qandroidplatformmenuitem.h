@@ -43,6 +43,8 @@
 #define QANDROIDPLATFORMMENUITEM_H
 #include <qpa/qplatformmenu.h>
 
+QT_BEGIN_NAMESPACE
+
 class QAndroidPlatformMenu;
 
 class QAndroidPlatformMenuItem: public QPlatformMenuItem
@@ -95,5 +97,7 @@ private:
     bool m_isChecked;
     bool m_isEnabled;
 };
+
+QT_END_NAMESPACE
 
 #endif // QANDROIDPLATFORMMENUITEM_H

@@ -53,6 +53,7 @@
 // We mean it.
 //
 
+#include <QtCore/qglobal.h>
 #include <winsock2.h>
 #include <qt_windows.h>
 #include <time.h>

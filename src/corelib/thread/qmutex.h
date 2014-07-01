@@ -77,7 +77,7 @@ public:
         return fastTryLock();
     }
 
-    bool isRecursive();
+    bool isRecursive(); //### Qt6: mark const
 
 private:
     inline bool fastTryLock() Q_DECL_NOTHROW {
@@ -186,10 +186,10 @@ public:
 
     inline explicit QMutex(RecursionMode mode = NonRecursive) { Q_UNUSED(mode); }
 
-    static inline void lock() {}
-    static inline bool tryLock(int timeout = 0) { Q_UNUSED(timeout); return true; }
-    static inline void unlock() {}
-    static inline bool isRecursive() { return true; }
+    inline void lock() {}
+    inline bool tryLock(int timeout = 0) { Q_UNUSED(timeout); return true; }
+    inline void unlock() {}
+    inline bool isRecursive() { return true; }
 
 private:
     Q_DISABLE_COPY(QMutex)
@@ -201,9 +201,9 @@ public:
     inline explicit QMutexLocker(QMutex *) {}
     inline ~QMutexLocker() {}
 
-    static inline void unlock() {}
-    static void relock() {}
-    static inline QMutex *mutex() { return 0; }
+    inline void unlock() {}
+    void relock() {}
+    inline QMutex *mutex() const { return 0; }
 
 private:
     Q_DISABLE_COPY(QMutexLocker)

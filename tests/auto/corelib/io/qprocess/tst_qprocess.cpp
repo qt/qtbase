@@ -1953,7 +1953,7 @@ void tst_QProcess::setStandardOutputFile2()
     process.start("testProcessEcho2/testProcessEcho2");
     process.write(testdata, sizeof testdata);
     QPROCESS_VERIFY(process,waitForFinished());
-    QVERIFY(!process.bytesAvailable());
+    QCOMPARE(process.bytesAvailable(), Q_INT64_C(0));
 
     QVERIFY(!QFileInfo(QProcess::nullDevice()).isFile());
 }

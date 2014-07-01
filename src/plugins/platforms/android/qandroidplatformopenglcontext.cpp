@@ -74,6 +74,7 @@ bool QAndroidPlatformOpenGLContext::needsFBOReadBackWorkaroud()
         needsWorkaround =
                 qstrcmp(rendererString, "Mali-400 MP") == 0
                 || qstrcmp(rendererString, "Adreno (TM) 200") == 0
+                || qstrcmp(rendererString, "Adreno (TM) 205") == 0
                 || qstrcmp(rendererString, "GC1000 core") == 0;
         set = true;
     }

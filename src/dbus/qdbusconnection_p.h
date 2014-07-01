@@ -256,7 +256,7 @@ private:
     void deliverCall(QObject *object, int flags, const QDBusMessage &msg,
                      const QVector<int> &metaTypes, int slotIdx);
 
-    bool isServiceRegisteredByThread(const QString &serviceName) const;
+    bool isServiceRegisteredByThread(const QString &serviceName);
 
     QString getNameOwnerNoCache(const QString &service);
 

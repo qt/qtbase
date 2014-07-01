@@ -50,7 +50,7 @@ QT_BEGIN_NAMESPACE
     \since 4.8
     \ingroup misc
 
-    The QScopedAssignment class can be used to revert state when an
+    The QScopedValueRollback class can be used to revert state when an
     exception is thrown without needing to write try-catch blocks.
 
     It can also be used to manage variables that are temporarily set,

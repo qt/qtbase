@@ -45,6 +45,8 @@
 #include <private/qmath_p.h>
 #include <private/qstyle_p.h>
 #include <qmath.h>
+#include <qscrollbar.h>
+#include <qabstractscrollarea.h>
 
 #include "qstylehelper_p.h"
 #include <qstringbuilder.h>
@@ -386,6 +388,14 @@ void drawBorderPixmap(const QPixmap &pixmap, QPainter *painter, const QRect &rec
                                 QRect(size.width() - right, size.height() - bottom, right, bottom));
 
     }
+}
+
+QColor backgroundColor(const QPalette &pal, const QWidget* widget)
+{
+    if (qobject_cast<const QScrollBar *>(widget) && widget->parent() &&
+            qobject_cast<const QAbstractScrollArea *>(widget->parent()->parent()))
+        return widget->parentWidget()->parentWidget()->palette().color(QPalette::Base);
+    return pal.color(QPalette::Base);
 }
 }
 QT_END_NAMESPACE

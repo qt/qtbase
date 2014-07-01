@@ -178,10 +178,11 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
     // since we do not want to ignore mouse events coming from a tablet.
     const quint64 extraInfo = GetMessageExtraInfo();
     if ((extraInfo & signatureMask) == miWpSignature) {
-        source = Qt::MouseEventSynthesizedBySystem;
-        const bool fromTouch = extraInfo & 0x80; // (else: Tablet PC)
-        if (fromTouch && !passSynthesizedMouseEvents)
-            return false;
+        if (extraInfo & 0x80) { // Bit 7 indicates touch event, else tablet pen.
+            source = Qt::MouseEventSynthesizedBySystem;
+            if (!passSynthesizedMouseEvents)
+                return false;
+        }
     }
 #endif // !Q_OS_WINCE
 

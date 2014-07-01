@@ -49,6 +49,8 @@
 
 #include <QDebug>
 
+QT_BEGIN_NAMESPACE
+
 using namespace QtAndroid;
 
 namespace QtAndroidInput
@@ -758,3 +760,5 @@ namespace QtAndroidInput
         return true;
     }
 }
+
+QT_END_NAMESPACE

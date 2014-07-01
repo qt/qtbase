@@ -44,6 +44,9 @@
 #include <QtCore/QtDebug>
 #include <QtTest/QtTest>
 
+#include <QtConcurrentRun>
+#include <QFutureSynchronizer>
+
 class tst_QDebug: public QObject
 {
     Q_OBJECT
@@ -59,6 +62,7 @@ private slots:
     void qDebugQLatin1String() const;
     void textStreamModifiers() const;
     void defaultMessagehandler() const;
+    void threadSafety() const;
 };
 
 void tst_QDebug::assignment() const
@@ -313,6 +317,42 @@ void tst_QDebug::defaultMessagehandler() const
     QtMessageHandler messageHandler = qInstallMessageHandler((QtMessageHandler)0);
     same = (*messageHandler == *myMessageHandler);
     QVERIFY(same);
+}
+
+QMutex s_mutex;
+QStringList s_messages;
+QSemaphore s_sema;
+
+static void threadSafeMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+{
+    QMutexLocker lock(&s_mutex);
+    s_messages.append(msg);
+    Q_UNUSED(type);
+    Q_UNUSED(context);
+}
+
+static void doDebug() // called in each thread
+{
+    s_sema.acquire();
+    qDebug() << "doDebug";
+}
+
+void tst_QDebug::threadSafety() const
+{
+    MessageHandlerSetter mhs(threadSafeMessageHandler);
+    const int numThreads = 10;
+    QThreadPool::globalInstance()->setMaxThreadCount(numThreads);
+    QFutureSynchronizer<void> sync;
+    for (int i = 0; i < numThreads; ++i) {
+        sync.addFuture(QtConcurrent::run(&doDebug));
+    }
+    s_sema.release(numThreads);
+    sync.waitForFinished();
+    QMutexLocker lock(&s_mutex);
+    QCOMPARE(s_messages.count(), numThreads);
+    for (int i = 0; i < numThreads; ++i) {
+        QCOMPARE(s_messages.at(i), QStringLiteral("doDebug"));
+    }
 }
 
 QTEST_MAIN(tst_QDebug);

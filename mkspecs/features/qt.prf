@@ -128,7 +128,7 @@ contains(qt_module_deps, qml): \
         QML_IMPORT_CPP = $$OUT_PWD/$$lower($$basename(TARGET))_qml_plugin_import.cpp
         write_file($$QML_IMPORT_CPP, IMPORT_FILE_CONT)|error("Aborting.")
         SOURCES += $$QML_IMPORT_CPP
-        QMAKE_CLEAN += $$QML_IMPORT_CPP
+        QMAKE_DISTCLEAN += $$QML_IMPORT_CPP
 
         # copy qml files. this part is platform spesific.
         mac {
