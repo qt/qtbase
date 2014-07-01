@@ -243,6 +243,27 @@ QMutex QOpenGLContextPrivate::makeCurrentTrackerMutex;
 #endif
 
 /*!
+    \internal
+
+    This function is used by the Qt WebEngine to set up context sharing
+    across multiple windows. Do not use it for any other purpose.
+
+    Please maintain the binary compatibility of these functions.
+*/
+void qt_gl_set_global_share_context(QOpenGLContext *context)
+{
+    global_share_context = context;
+}
+
+/*!
+    \internal
+*/
+QOpenGLContext *qt_gl_global_share_context()
+{
+    return global_share_context;
+}
+
+/*!
     \class QOpenGLContext
     \inmodule QtGui
     \since 5.0
@@ -336,23 +357,14 @@ QOpenGLContext *QOpenGLContextPrivate::setCurrentContext(QOpenGLContext *context
     return previous;
 }
 
-/*!
-    \internal
-
-    This function is used by the Qt WebEngine to set up context sharing
-    across multiple windows. Do not use it for any other purpose.
-*/
 void QOpenGLContextPrivate::setGlobalShareContext(QOpenGLContext *context)
 {
-    global_share_context = context;
+    qt_gl_set_global_share_context(context);
 }
 
-/*!
-    \internal
-*/
 QOpenGLContext *QOpenGLContextPrivate::globalShareContext()
 {
-    return global_share_context;
+    return qt_gl_global_share_context();
 }
 
 int QOpenGLContextPrivate::maxTextureSize()

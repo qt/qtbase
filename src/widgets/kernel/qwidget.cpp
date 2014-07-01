@@ -11986,7 +11986,7 @@ QOpenGLContext *QWidgetPrivate::shareContext() const
     QWidgetPrivate *that = const_cast<QWidgetPrivate *>(this);
     if (!extra->topextra->shareContext) {
         QOpenGLContext *ctx = new QOpenGLContext;
-        ctx->setShareContext(QOpenGLContextPrivate::globalShareContext());
+        ctx->setShareContext(qt_gl_global_share_context());
         ctx->setFormat(extra->topextra->window->format());
         ctx->create();
         that->extra->topextra->shareContext = ctx;

@@ -275,6 +275,9 @@ public:
 #endif
 };
 
+Q_GUI_EXPORT void qt_gl_set_global_share_context(QOpenGLContext *context);
+Q_GUI_EXPORT QOpenGLContext *qt_gl_global_share_context();
+
 QT_END_NAMESPACE
 
 #endif // QT_NO_OPENGL
