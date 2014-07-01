@@ -2203,7 +2203,7 @@ void QTextStreamPrivate::putNumber(qulonglong number, bool negative)
 
     // add thousands group separators. For backward compatibility we
     // don't add a group separator for C locale.
-    if (locale != QLocale::c())
+    if (locale != QLocale::c() && !locale.numberOptions().testFlag(QLocale::OmitGroupSeparator))
         flags |= QLocaleData::ThousandsGroup;
 
     const QLocaleData *dd = locale.d->m_data;

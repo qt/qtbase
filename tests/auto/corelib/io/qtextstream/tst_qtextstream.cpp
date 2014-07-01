@@ -2147,14 +2147,36 @@ void tst_QTextStream::byteArray_read_operator_FromDevice()
     { \
         QFETCH(qulonglong, number); \
         QFETCH(QByteArray, data); \
+        QFETCH(QByteArray, dataWithSeparators); \
         \
         QBuffer buffer; \
         buffer.open(QBuffer::WriteOnly); \
         QTextStream stream(&buffer); \
+        stream.setLocale(QLocale::c()); \
         stream << (type)number; \
         stream.flush(); \
-        \
         QCOMPARE(buffer.data().constData(), data.constData()); \
+        \
+        QLocale locale("en-US"); \
+        buffer.reset(); buffer.buffer().clear(); \
+        stream.setLocale(locale); \
+        stream << (type)number; \
+        stream.flush(); \
+        QCOMPARE(buffer.data(), dataWithSeparators); \
+        \
+        locale.setNumberOptions(QLocale::OmitGroupSeparator); \
+        buffer.reset(); buffer.buffer().clear(); \
+        stream.setLocale(locale); \
+        stream << (type)number; \
+        stream.flush(); \
+        QCOMPARE(buffer.data().constData(), data.constData()); \
+        \
+        locale = QLocale("de-DE"); \
+        buffer.reset(); buffer.buffer().clear(); \
+        stream.setLocale(locale); \
+        stream << (type)number; \
+        stream.flush(); \
+        QCOMPARE(buffer.data(), dataWithSeparators.replace(',', '.')); \
     }
 
 // ------------------------------------------------------------------------------
@@ -2162,16 +2184,17 @@ void tst_QTextStream::signedShort_write_operator_ToDevice_data()
 {
     QTest::addColumn<qulonglong>("number");
     QTest::addColumn<QByteArray>("data");
+    QTest::addColumn<QByteArray>("dataWithSeparators");
 
-    QTest::newRow("0") << Q_UINT64_C(0) << QByteArray("0");
-    QTest::newRow("1") << Q_UINT64_C(1) << QByteArray("1");
-    QTest::newRow("-1") << Q_UINT64_C(-1) << QByteArray("-1");
-    QTest::newRow("32767") << Q_UINT64_C(32767) << QByteArray("32767");
-    QTest::newRow("32768") << Q_UINT64_C(32768) << QByteArray("-32768");
-    QTest::newRow("32769") << Q_UINT64_C(32769) << QByteArray("-32767");
-    QTest::newRow("65535") << Q_UINT64_C(65535) << QByteArray("-1");
-    QTest::newRow("65536") << Q_UINT64_C(65536) << QByteArray("0");
-    QTest::newRow("65537") << Q_UINT64_C(65537) << QByteArray("1");
+    QTest::newRow("0") << Q_UINT64_C(0) << QByteArray("0") << QByteArray("0");
+    QTest::newRow("1") << Q_UINT64_C(1) << QByteArray("1") << QByteArray("1");
+    QTest::newRow("-1") << Q_UINT64_C(-1) << QByteArray("-1") << QByteArray("-1");
+    QTest::newRow("32767") << Q_UINT64_C(32767) << QByteArray("32767") << QByteArray("32,767");
+    QTest::newRow("32768") << Q_UINT64_C(32768) << QByteArray("-32768") << QByteArray("-32,768");
+    QTest::newRow("32769") << Q_UINT64_C(32769) << QByteArray("-32767") << QByteArray("-32,767");
+    QTest::newRow("65535") << Q_UINT64_C(65535) << QByteArray("-1") << QByteArray("-1");
+    QTest::newRow("65536") << Q_UINT64_C(65536) << QByteArray("0") << QByteArray("0");
+    QTest::newRow("65537") << Q_UINT64_C(65537) << QByteArray("1") << QByteArray("1");
 }
 IMPLEMENT_STREAM_LEFT_INT_OPERATOR_TEST(signedShort, signed short)
     ;
@@ -2181,16 +2204,17 @@ void tst_QTextStream::unsignedShort_write_operator_ToDevice_data()
 {
     QTest::addColumn<qulonglong>("number");
     QTest::addColumn<QByteArray>("data");
+    QTest::addColumn<QByteArray>("dataWithSeparators");
 
-    QTest::newRow("0") << Q_UINT64_C(0) << QByteArray("0");
-    QTest::newRow("1") << Q_UINT64_C(1) << QByteArray("1");
-    QTest::newRow("-1") << Q_UINT64_C(-1) << QByteArray("65535");
-    QTest::newRow("32767") << Q_UINT64_C(32767) << QByteArray("32767");
-    QTest::newRow("32768") << Q_UINT64_C(32768) << QByteArray("32768");
-    QTest::newRow("32769") << Q_UINT64_C(32769) << QByteArray("32769");
-    QTest::newRow("65535") << Q_UINT64_C(65535) << QByteArray("65535");
-    QTest::newRow("65536") << Q_UINT64_C(65536) << QByteArray("0");
-    QTest::newRow("65537") << Q_UINT64_C(65537) << QByteArray("1");
+    QTest::newRow("0") << Q_UINT64_C(0) << QByteArray("0") << QByteArray("0");
+    QTest::newRow("1") << Q_UINT64_C(1) << QByteArray("1") << QByteArray("1");
+    QTest::newRow("-1") << Q_UINT64_C(-1) << QByteArray("65535") << QByteArray("65,535");
+    QTest::newRow("32767") << Q_UINT64_C(32767) << QByteArray("32767") << QByteArray("32,767");
+    QTest::newRow("32768") << Q_UINT64_C(32768) << QByteArray("32768") << QByteArray("32,768");
+    QTest::newRow("32769") << Q_UINT64_C(32769) << QByteArray("32769") << QByteArray("32,769");
+    QTest::newRow("65535") << Q_UINT64_C(65535) << QByteArray("65535") << QByteArray("65,535");
+    QTest::newRow("65536") << Q_UINT64_C(65536) << QByteArray("0") << QByteArray("0");
+    QTest::newRow("65537") << Q_UINT64_C(65537) << QByteArray("1") << QByteArray("1");
 }
 IMPLEMENT_STREAM_LEFT_INT_OPERATOR_TEST(unsignedShort, unsigned short)
     ;
@@ -2200,22 +2224,23 @@ void tst_QTextStream::signedInt_write_operator_ToDevice_data()
 {
     QTest::addColumn<qulonglong>("number");
     QTest::addColumn<QByteArray>("data");
+    QTest::addColumn<QByteArray>("dataWithSeparators");
 
-    QTest::newRow("0") << Q_UINT64_C(0) << QByteArray("0");
-    QTest::newRow("1") << Q_UINT64_C(1) << QByteArray("1");
-    QTest::newRow("-1") << Q_UINT64_C(-1) << QByteArray("-1");
-    QTest::newRow("32767") << Q_UINT64_C(32767) << QByteArray("32767");
-    QTest::newRow("32768") << Q_UINT64_C(32768) << QByteArray("32768");
-    QTest::newRow("32769") << Q_UINT64_C(32769) << QByteArray("32769");
-    QTest::newRow("65535") << Q_UINT64_C(65535) << QByteArray("65535");
-    QTest::newRow("65536") << Q_UINT64_C(65536) << QByteArray("65536");
-    QTest::newRow("65537") << Q_UINT64_C(65537) << QByteArray("65537");
-    QTest::newRow("2147483647") << Q_UINT64_C(2147483647) << QByteArray("2147483647");
-    QTest::newRow("2147483648") << Q_UINT64_C(2147483648) << QByteArray("-2147483648");
-    QTest::newRow("2147483649") << Q_UINT64_C(2147483649) << QByteArray("-2147483647");
-    QTest::newRow("4294967295") << Q_UINT64_C(4294967295) << QByteArray("-1");
-    QTest::newRow("4294967296") << Q_UINT64_C(4294967296) << QByteArray("0");
-    QTest::newRow("4294967297") << Q_UINT64_C(4294967297) << QByteArray("1");
+    QTest::newRow("0") << Q_UINT64_C(0) << QByteArray("0") << QByteArray("0");
+    QTest::newRow("1") << Q_UINT64_C(1) << QByteArray("1") << QByteArray("1");
+    QTest::newRow("-1") << Q_UINT64_C(-1) << QByteArray("-1") << QByteArray("-1");
+    QTest::newRow("32767") << Q_UINT64_C(32767) << QByteArray("32767") << QByteArray("32,767");
+    QTest::newRow("32768") << Q_UINT64_C(32768) << QByteArray("32768") << QByteArray("32,768");
+    QTest::newRow("32769") << Q_UINT64_C(32769) << QByteArray("32769") << QByteArray("32,769");
+    QTest::newRow("65535") << Q_UINT64_C(65535) << QByteArray("65535") << QByteArray("65,535");
+    QTest::newRow("65536") << Q_UINT64_C(65536) << QByteArray("65536") << QByteArray("65,536");
+    QTest::newRow("65537") << Q_UINT64_C(65537) << QByteArray("65537") << QByteArray("65,537");
+    QTest::newRow("2147483647") << Q_UINT64_C(2147483647) << QByteArray("2147483647") << QByteArray("2,147,483,647");
+    QTest::newRow("2147483648") << Q_UINT64_C(2147483648) << QByteArray("-2147483648") << QByteArray("-2,147,483,648");
+    QTest::newRow("2147483649") << Q_UINT64_C(2147483649) << QByteArray("-2147483647") << QByteArray("-2,147,483,647");
+    QTest::newRow("4294967295") << Q_UINT64_C(4294967295) << QByteArray("-1") << QByteArray("-1");
+    QTest::newRow("4294967296") << Q_UINT64_C(4294967296) << QByteArray("0") << QByteArray("0");
+    QTest::newRow("4294967297") << Q_UINT64_C(4294967297) << QByteArray("1") << QByteArray("1");
 }
 IMPLEMENT_STREAM_LEFT_INT_OPERATOR_TEST(signedInt, signed int)
     ;
@@ -2225,22 +2250,23 @@ void tst_QTextStream::unsignedInt_write_operator_ToDevice_data()
 {
     QTest::addColumn<qulonglong>("number");
     QTest::addColumn<QByteArray>("data");
+    QTest::addColumn<QByteArray>("dataWithSeparators");
 
-    QTest::newRow("0") << Q_UINT64_C(0) << QByteArray("0");
-    QTest::newRow("1") << Q_UINT64_C(1) << QByteArray("1");
-    QTest::newRow("-1") << Q_UINT64_C(-1) << QByteArray("4294967295");
-    QTest::newRow("32767") << Q_UINT64_C(32767) << QByteArray("32767");
-    QTest::newRow("32768") << Q_UINT64_C(32768) << QByteArray("32768");
-    QTest::newRow("32769") << Q_UINT64_C(32769) << QByteArray("32769");
-    QTest::newRow("65535") << Q_UINT64_C(65535) << QByteArray("65535");
-    QTest::newRow("65536") << Q_UINT64_C(65536) << QByteArray("65536");
-    QTest::newRow("65537") << Q_UINT64_C(65537) << QByteArray("65537");
-    QTest::newRow("2147483647") << Q_UINT64_C(2147483647) << QByteArray("2147483647");
-    QTest::newRow("2147483648") << Q_UINT64_C(2147483648) << QByteArray("2147483648");
-    QTest::newRow("2147483649") << Q_UINT64_C(2147483649) << QByteArray("2147483649");
-    QTest::newRow("4294967295") << Q_UINT64_C(4294967295) << QByteArray("4294967295");
-    QTest::newRow("4294967296") << Q_UINT64_C(4294967296) << QByteArray("0");
-    QTest::newRow("4294967297") << Q_UINT64_C(4294967297) << QByteArray("1");
+    QTest::newRow("0") << Q_UINT64_C(0) << QByteArray("0") << QByteArray("0");
+    QTest::newRow("1") << Q_UINT64_C(1) << QByteArray("1") << QByteArray("1");
+    QTest::newRow("-1") << Q_UINT64_C(-1) << QByteArray("4294967295") << QByteArray("4,294,967,295");
+    QTest::newRow("32767") << Q_UINT64_C(32767) << QByteArray("32767") << QByteArray("32,767");
+    QTest::newRow("32768") << Q_UINT64_C(32768) << QByteArray("32768") << QByteArray("32,768");
+    QTest::newRow("32769") << Q_UINT64_C(32769) << QByteArray("32769") << QByteArray("32,769");
+    QTest::newRow("65535") << Q_UINT64_C(65535) << QByteArray("65535") << QByteArray("65,535");
+    QTest::newRow("65536") << Q_UINT64_C(65536) << QByteArray("65536") << QByteArray("65,536");
+    QTest::newRow("65537") << Q_UINT64_C(65537) << QByteArray("65537") << QByteArray("65,537");
+    QTest::newRow("2147483647") << Q_UINT64_C(2147483647) << QByteArray("2147483647") << QByteArray("2,147,483,647");
+    QTest::newRow("2147483648") << Q_UINT64_C(2147483648) << QByteArray("2147483648") << QByteArray("2,147,483,648");
+    QTest::newRow("2147483649") << Q_UINT64_C(2147483649) << QByteArray("2147483649") << QByteArray("2,147,483,649");
+    QTest::newRow("4294967295") << Q_UINT64_C(4294967295) << QByteArray("4294967295") << QByteArray("4,294,967,295");
+    QTest::newRow("4294967296") << Q_UINT64_C(4294967296) << QByteArray("0") << QByteArray("0");
+    QTest::newRow("4294967297") << Q_UINT64_C(4294967297) << QByteArray("1") << QByteArray("1");
 }
 IMPLEMENT_STREAM_LEFT_INT_OPERATOR_TEST(unsignedInt, unsigned int)
     ;
@@ -2250,26 +2276,27 @@ void tst_QTextStream::qlonglong_write_operator_ToDevice_data()
 {
     QTest::addColumn<qulonglong>("number");
     QTest::addColumn<QByteArray>("data");
+    QTest::addColumn<QByteArray>("dataWithSeparators");
 
-    QTest::newRow("0") << Q_UINT64_C(0) << QByteArray("0");
-    QTest::newRow("1") << Q_UINT64_C(1) << QByteArray("1");
-    QTest::newRow("-1") << Q_UINT64_C(-1) << QByteArray("-1");
-    QTest::newRow("32767") << Q_UINT64_C(32767) << QByteArray("32767");
-    QTest::newRow("32768") << Q_UINT64_C(32768) << QByteArray("32768");
-    QTest::newRow("32769") << Q_UINT64_C(32769) << QByteArray("32769");
-    QTest::newRow("65535") << Q_UINT64_C(65535) << QByteArray("65535");
-    QTest::newRow("65536") << Q_UINT64_C(65536) << QByteArray("65536");
-    QTest::newRow("65537") << Q_UINT64_C(65537) << QByteArray("65537");
-    QTest::newRow("2147483647") << Q_UINT64_C(2147483647) << QByteArray("2147483647");
-    QTest::newRow("2147483648") << Q_UINT64_C(2147483648) << QByteArray("2147483648");
-    QTest::newRow("2147483649") << Q_UINT64_C(2147483649) << QByteArray("2147483649");
-    QTest::newRow("4294967295") << Q_UINT64_C(4294967295) << QByteArray("4294967295");
-    QTest::newRow("4294967296") << Q_UINT64_C(4294967296) << QByteArray("4294967296");
-    QTest::newRow("4294967297") << Q_UINT64_C(4294967297) << QByteArray("4294967297");
-    QTest::newRow("9223372036854775807") << Q_UINT64_C(9223372036854775807) << QByteArray("9223372036854775807");
-    QTest::newRow("9223372036854775808") << Q_UINT64_C(9223372036854775808) << QByteArray("-9223372036854775808");
-    QTest::newRow("9223372036854775809") << Q_UINT64_C(9223372036854775809) << QByteArray("-9223372036854775807");
-    QTest::newRow("18446744073709551615") << Q_UINT64_C(18446744073709551615) << QByteArray("-1");
+    QTest::newRow("0") << Q_UINT64_C(0) << QByteArray("0") << QByteArray("0");
+    QTest::newRow("1") << Q_UINT64_C(1) << QByteArray("1") << QByteArray("1");
+    QTest::newRow("-1") << Q_UINT64_C(-1) << QByteArray("-1") << QByteArray("-1");
+    QTest::newRow("32767") << Q_UINT64_C(32767) << QByteArray("32767") << QByteArray("32,767");
+    QTest::newRow("32768") << Q_UINT64_C(32768) << QByteArray("32768") << QByteArray("32,768");
+    QTest::newRow("32769") << Q_UINT64_C(32769) << QByteArray("32769") << QByteArray("32,769");
+    QTest::newRow("65535") << Q_UINT64_C(65535) << QByteArray("65535") << QByteArray("65,535");
+    QTest::newRow("65536") << Q_UINT64_C(65536) << QByteArray("65536") << QByteArray("65,536");
+    QTest::newRow("65537") << Q_UINT64_C(65537) << QByteArray("65537") << QByteArray("65,537");
+    QTest::newRow("2147483647") << Q_UINT64_C(2147483647) << QByteArray("2147483647") << QByteArray("2,147,483,647");
+    QTest::newRow("2147483648") << Q_UINT64_C(2147483648) << QByteArray("2147483648") << QByteArray("2,147,483,648");
+    QTest::newRow("2147483649") << Q_UINT64_C(2147483649) << QByteArray("2147483649") << QByteArray("2,147,483,649");
+    QTest::newRow("4294967295") << Q_UINT64_C(4294967295) << QByteArray("4294967295") << QByteArray("4,294,967,295");
+    QTest::newRow("4294967296") << Q_UINT64_C(4294967296) << QByteArray("4294967296") << QByteArray("4,294,967,296");
+    QTest::newRow("4294967297") << Q_UINT64_C(4294967297) << QByteArray("4294967297") << QByteArray("4,294,967,297");
+    QTest::newRow("9223372036854775807") << Q_UINT64_C(9223372036854775807) << QByteArray("9223372036854775807") << QByteArray("9,223,372,036,854,775,807");
+    QTest::newRow("9223372036854775808") << Q_UINT64_C(9223372036854775808) << QByteArray("-9223372036854775808") << QByteArray("-9,223,372,036,854,775,808");
+    QTest::newRow("9223372036854775809") << Q_UINT64_C(9223372036854775809) << QByteArray("-9223372036854775807") << QByteArray("-9,223,372,036,854,775,807");
+    QTest::newRow("18446744073709551615") << Q_UINT64_C(18446744073709551615) << QByteArray("-1") << QByteArray("-1");
 }
 IMPLEMENT_STREAM_LEFT_INT_OPERATOR_TEST(qlonglong, qlonglong)
     ;
@@ -2279,26 +2306,27 @@ void tst_QTextStream::qulonglong_write_operator_ToDevice_data()
 {
     QTest::addColumn<qulonglong>("number");
     QTest::addColumn<QByteArray>("data");
+    QTest::addColumn<QByteArray>("dataWithSeparators");
 
-    QTest::newRow("0") << Q_UINT64_C(0) << QByteArray("0");
-    QTest::newRow("1") << Q_UINT64_C(1) << QByteArray("1");
-    QTest::newRow("-1") << Q_UINT64_C(-1) << QByteArray("18446744073709551615");
-    QTest::newRow("32767") << Q_UINT64_C(32767) << QByteArray("32767");
-    QTest::newRow("32768") << Q_UINT64_C(32768) << QByteArray("32768");
-    QTest::newRow("32769") << Q_UINT64_C(32769) << QByteArray("32769");
-    QTest::newRow("65535") << Q_UINT64_C(65535) << QByteArray("65535");
-    QTest::newRow("65536") << Q_UINT64_C(65536) << QByteArray("65536");
-    QTest::newRow("65537") << Q_UINT64_C(65537) << QByteArray("65537");
-    QTest::newRow("2147483647") << Q_UINT64_C(2147483647) << QByteArray("2147483647");
-    QTest::newRow("2147483648") << Q_UINT64_C(2147483648) << QByteArray("2147483648");
-    QTest::newRow("2147483649") << Q_UINT64_C(2147483649) << QByteArray("2147483649");
-    QTest::newRow("4294967295") << Q_UINT64_C(4294967295) << QByteArray("4294967295");
-    QTest::newRow("4294967296") << Q_UINT64_C(4294967296) << QByteArray("4294967296");
-    QTest::newRow("4294967297") << Q_UINT64_C(4294967297) << QByteArray("4294967297");
-    QTest::newRow("9223372036854775807") << Q_UINT64_C(9223372036854775807) << QByteArray("9223372036854775807");
-    QTest::newRow("9223372036854775808") << Q_UINT64_C(9223372036854775808) << QByteArray("9223372036854775808");
-    QTest::newRow("9223372036854775809") << Q_UINT64_C(9223372036854775809) << QByteArray("9223372036854775809");
-    QTest::newRow("18446744073709551615") << Q_UINT64_C(18446744073709551615) << QByteArray("18446744073709551615");
+    QTest::newRow("0") << Q_UINT64_C(0) << QByteArray("0") << QByteArray("0");
+    QTest::newRow("1") << Q_UINT64_C(1) << QByteArray("1") << QByteArray("1");
+    QTest::newRow("-1") << Q_UINT64_C(-1) << QByteArray("18446744073709551615") << QByteArray("18,446,744,073,709,551,615");
+    QTest::newRow("32767") << Q_UINT64_C(32767) << QByteArray("32767") << QByteArray("32,767");
+    QTest::newRow("32768") << Q_UINT64_C(32768) << QByteArray("32768") << QByteArray("32,768");
+    QTest::newRow("32769") << Q_UINT64_C(32769) << QByteArray("32769") << QByteArray("32,769");
+    QTest::newRow("65535") << Q_UINT64_C(65535) << QByteArray("65535") << QByteArray("65,535");
+    QTest::newRow("65536") << Q_UINT64_C(65536) << QByteArray("65536") << QByteArray("65,536");
+    QTest::newRow("65537") << Q_UINT64_C(65537) << QByteArray("65537") << QByteArray("65,537");
+    QTest::newRow("2147483647") << Q_UINT64_C(2147483647) << QByteArray("2147483647") << QByteArray("2,147,483,647");
+    QTest::newRow("2147483648") << Q_UINT64_C(2147483648) << QByteArray("2147483648") << QByteArray("2,147,483,648");
+    QTest::newRow("2147483649") << Q_UINT64_C(2147483649) << QByteArray("2147483649") << QByteArray("2,147,483,649");
+    QTest::newRow("4294967295") << Q_UINT64_C(4294967295) << QByteArray("4294967295") << QByteArray("4,294,967,295");
+    QTest::newRow("4294967296") << Q_UINT64_C(4294967296) << QByteArray("4294967296") << QByteArray("4,294,967,296");
+    QTest::newRow("4294967297") << Q_UINT64_C(4294967297) << QByteArray("4294967297") << QByteArray("4,294,967,297");
+    QTest::newRow("9223372036854775807") << Q_UINT64_C(9223372036854775807) << QByteArray("9223372036854775807") << QByteArray("9,223,372,036,854,775,807");
+    QTest::newRow("9223372036854775808") << Q_UINT64_C(9223372036854775808) << QByteArray("9223372036854775808") << QByteArray("9,223,372,036,854,775,808");
+    QTest::newRow("9223372036854775809") << Q_UINT64_C(9223372036854775809) << QByteArray("9223372036854775809") << QByteArray("9,223,372,036,854,775,809");
+    QTest::newRow("18446744073709551615") << Q_UINT64_C(18446744073709551615) << QByteArray("18446744073709551615") << QByteArray("18,446,744,073,709,551,615");
 }
 IMPLEMENT_STREAM_LEFT_INT_OPERATOR_TEST(qulonglong, qulonglong)
     ;
