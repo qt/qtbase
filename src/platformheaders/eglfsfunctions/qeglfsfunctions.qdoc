@@ -32,6 +32,10 @@
     \brief The QEglFSFunctions class is an inline class containing
     platform-specific functionality for the eglfs platform plugin that is
     typically used on systems running Embedded Linux or Android.
+
+    \note There is no binary compatibility guarantee for this class,
+    meaning that an application using it is only guaranteed to work with the Qt
+    version it was developed against.
 */
 
 /*!

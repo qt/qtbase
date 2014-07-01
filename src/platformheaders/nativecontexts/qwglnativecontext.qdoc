@@ -32,7 +32,7 @@
 
   \brief A class encapsulating a WGL context on Windows with desktop OpenGL (opengl32.dll)
 
-  \note As of Qt 5.4 there is no binary compatibility guarantee for this class,
+  \note There is no binary compatibility guarantee for this class,
   meaning that an application using it is only guaranteed to work with the Qt
   version it was developed against.
 

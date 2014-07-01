@@ -34,6 +34,10 @@
 
     A commen usage pattern is as follows:
     \snippet qxcbwindowfunctions/main.cpp 0
+
+    \note There is no binary compatibility guarantee for this class,
+    meaning that an application using it is only guaranteed to work with the Qt
+    version it was developed against.
 */
 
 /*!

@@ -32,7 +32,7 @@
 
   \brief A class encapsulating an EGL context and display handle
 
-  \note As of Qt 5.4 there is no binary compatibility guarantee for this class, meaning
+  \note There is no binary compatibility guarantee for this class, meaning
   that an application using it is only guaranteed to work with the Qt version it was
   developed against.
 
