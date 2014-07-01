@@ -194,6 +194,9 @@ void tst_QIODevice::unget()
 #if defined(Q_OS_WINCE) && defined(WINCE_EMULATOR_TEST)
     QSKIP("Networking tests in a WinCE emulator are unstable");
 #endif
+#if defined(Q_OS_MAC)
+    QSKIP("The unget network test is unstable on Mac. See QTBUG-39983.");
+#endif
     QBuffer buffer;
     buffer.open(QBuffer::ReadWrite);
     buffer.write("ZXCV");
