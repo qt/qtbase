@@ -2414,6 +2414,8 @@ QTextStream &QTextStream::operator<<(double f)
         flags |= QLocaleData::CapitalEorX;
     if (numberFlags() & ForcePoint)
         flags |= QLocaleData::Alternate;
+    if (locale() != QLocale::c() && !(locale().numberOptions() & QLocale::OmitGroupSeparator))
+        flags |= QLocaleData::ThousandsGroup;
 
     const QLocaleData *dd = d->locale.d->m_data;
     QString num = dd->doubleToString(f, d->params.realNumberPrecision, form, -1, flags);

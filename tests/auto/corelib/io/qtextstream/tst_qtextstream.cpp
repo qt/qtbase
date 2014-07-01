@@ -1788,8 +1788,6 @@ void tst_QTextStream::writeSeekWriteNoBOM()
     QCOMPARE(out16.buffer(), first);
 }
 
-
-
 // ------------------------------------------------------------------------------
 void tst_QTextStream::generateOperatorCharData(bool for_QString)
 {
@@ -2304,12 +2302,14 @@ void tst_QTextStream::generateRealNumbersDataWrite()
 {
     QTest::addColumn<double>("number");
     QTest::addColumn<QByteArray>("data");
+    QTest::addColumn<QByteArray>("dataWithSeparators");
 
-    QTest::newRow("0") << 0.0 << QByteArray("0");
-    QTest::newRow("3.14") << 3.14 << QByteArray("3.14");
-    QTest::newRow("-3.14") << -3.14 << QByteArray("-3.14");
-    QTest::newRow("1.2e+10") << 1.2e+10 << QByteArray("1.2e+10");
-    QTest::newRow("-1.2e+10") << -1.2e+10 << QByteArray("-1.2e+10");
+    QTest::newRow("0") << 0.0 << QByteArray("0") << QByteArray("0");
+    QTest::newRow("3.14") << 3.14 << QByteArray("3.14") << QByteArray("3.14");
+    QTest::newRow("-3.14") << -3.14 << QByteArray("-3.14") << QByteArray("-3.14");
+    QTest::newRow("1.2e+10") << 1.2e+10 << QByteArray("1.2e+10") << QByteArray("1.2e+10");
+    QTest::newRow("-1.2e+10") << -1.2e+10 << QByteArray("-1.2e+10") << QByteArray("-1.2e+10");
+    QTest::newRow("12345") << 12345. << QByteArray("12345") << QByteArray("12,345");
 }
 
 // ------------------------------------------------------------------------------
@@ -2320,14 +2320,22 @@ void tst_QTextStream::generateRealNumbersDataWrite()
     { \
         QFETCH(double, number); \
         QFETCH(QByteArray, data); \
+        QFETCH(QByteArray, dataWithSeparators); \
         \
         QBuffer buffer; \
         buffer.open(QBuffer::WriteOnly); \
         QTextStream stream(&buffer); \
+        stream.setLocale(QLocale::c()); \
         float f = (float)number; \
         stream << f; \
         stream.flush(); \
         QCOMPARE(buffer.data().constData(), data.constData()); \
+        \
+        buffer.reset(); \
+        stream.setLocale(QLocale("en-US")); \
+        stream << f; \
+        stream.flush(); \
+        QCOMPARE(buffer.data(), dataWithSeparators); \
     }
 IMPLEMENT_STREAM_LEFT_REAL_OPERATOR_TEST(float, float)
 IMPLEMENT_STREAM_LEFT_REAL_OPERATOR_TEST(double, float)
