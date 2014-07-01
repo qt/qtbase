@@ -45,8 +45,10 @@
 // main part: processor type
 #if defined(Q_PROCESSOR_ALPHA)
 #  define ARCH_PROCESSOR "alpha"
-#elif defined(Q_PROCESSOR_ARM)
+#elif defined(Q_PROCESSOR_ARM_32)
 #  define ARCH_PROCESSOR "arm"
+#elif defined(Q_PROCESSOR_ARM_64)
+#  define ARCH_PROCESSOR "arm64"
 #elif defined(Q_PROCESSOR_AVR32)
 #  define ARCH_PROCESSOR "avr32"
 #elif defined(Q_PROCESSOR_BLACKFIN)
@@ -57,14 +59,22 @@
 #  define ARCH_PROCESSOR "x86_64"
 #elif defined(Q_PROCESSOR_IA64)
 #  define ARCH_PROCESSOR "ia64"
+#elif defined(Q_PROCESSOR_MIPS_64)
+#  define ARCH_PROCESSOR "mips64"
 #elif defined(Q_PROCESSOR_MIPS)
 #  define ARCH_PROCESSOR "mips"
-#elif defined(Q_PROCESSOR_POWER)
+#elif defined(Q_PROCESSOR_POWER_32)
 #  define ARCH_PROCESSOR "power"
+#elif defined(Q_PROCESSOR_POWER_64)
+#  define ARCH_PROCESSOR "power64"
+#elif defined(Q_PROCESSOR_S390_X)
+#  define ARCH_PROCESSOR "s390x"
 #elif defined(Q_PROCESSOR_S390)
 #  define ARCH_PROCESSOR "s390"
 #elif defined(Q_PROCESSOR_SH)
 #  define ARCH_PROCESSOR "sh"
+#elif defined(Q_PROCESSOR_SPARC_V9)
+#  define ARCH_PROCESSOR "sparcv9"
 #elif defined(Q_PROCESSOR_SPARC)
 #  define ARCH_PROCESSOR "sparc"
 #else
