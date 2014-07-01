@@ -1210,6 +1210,12 @@ void tst_QWidget::isEnabledTo()
     QVERIFY( !childWidget->isEnabledTo( testWidget ) );
     QVERIFY( grandChildWidget->isEnabledTo( childWidget ) );
     QVERIFY( !grandChildWidget->isEnabledTo( testWidget ) );
+
+    QMainWindow* childDialog = new QMainWindow(testWidget);
+    testWidget->setEnabled(false);
+    QVERIFY(!childDialog->isEnabled());
+    QVERIFY(childDialog->isEnabledTo(0));
+    testWidget->setEnabled(true);
 }
 
 void tst_QWidget::visible()

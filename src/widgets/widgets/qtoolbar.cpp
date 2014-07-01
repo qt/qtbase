@@ -59,6 +59,10 @@
 #include <private/qwidgetaction_p.h>
 #include <private/qmainwindowlayout_p.h>
 
+#ifdef Q_OS_OSX
+#include <qpa/qplatformnativeinterface.h>
+#endif
+
 #include "qtoolbar_p.h"
 #include "qtoolbarseparator_p.h"
 #include "qtoolbarlayout_p.h"

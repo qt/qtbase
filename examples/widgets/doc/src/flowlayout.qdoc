@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -28,18 +28,19 @@
 /*!
     \example layouts/flowlayout
     \title Flow Layout Example
+    \brief Shows how to arrange widgets for different window sizes.
 
-    \brief The Flow Layout example demonstrates a custom layout that arranges child
-    widgets from left to right and top to bottom in a top-level widget.
+    \e{Flow Layout} implements a layout that handles different window sizes. The
+    widget placement changes depending on the width of the application window.
 
     \image flowlayout-example.png Screenshot of the Flow Layout example
 
-    The items are first laid out horizontally and then vertically when each line
-    in the layout runs out of space.
-
     The Flowlayout class mainly uses QLayout and QWidgetItem, while the
-    Window uses QWidget and QLabel. We will only document the definition
-    and implementation of \c FlowLayout below.
+    Window uses QWidget and QLabel.
+
+    For more information, visit the \l{Layout Management} page.
+
+    \include examples-run.qdocinc
 
     \section1 FlowLayout Class Definition
 

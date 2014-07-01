@@ -325,8 +325,6 @@ QEventDispatcherWin32Private::~QEventDispatcherWin32Private()
 {
     if (internalHwnd)
         DestroyWindow(internalHwnd);
-    QString className = QLatin1String("QEventDispatcherWin32_Internal_Widget") + QString::number(quintptr(qt_internal_proc));
-    UnregisterClass((wchar_t*)className.utf16(), qWinAppInst());
 }
 
 void QEventDispatcherWin32Private::activateEventNotifier(QWinEventNotifier * wen)
@@ -486,10 +484,26 @@ LRESULT QT_WIN_CALLBACK qt_GetMessageHook(int code, WPARAM wp, LPARAM lp)
 #endif
 }
 
-static HWND qt_create_internal_window(const QEventDispatcherWin32 *eventDispatcher)
+// Provide class name and atom for the message window used by
+// QEventDispatcherWin32Private via Q_GLOBAL_STATIC shared between threads.
+struct QWindowsMessageWindowClassContext
+{
+    QWindowsMessageWindowClassContext();
+    ~QWindowsMessageWindowClassContext();
+
+    ATOM atom;
+    wchar_t *className;
+};
+
+QWindowsMessageWindowClassContext::QWindowsMessageWindowClassContext()
+    : atom(0), className(0)
 {
     // make sure that multiple Qt's can coexist in the same process
-    QString className = QLatin1String("QEventDispatcherWin32_Internal_Widget") + QString::number(quintptr(qt_internal_proc));
+    const QString qClassName = QStringLiteral("QEventDispatcherWin32_Internal_Widget")
+        + QString::number(quintptr(qt_internal_proc));
+    className = new wchar_t[qClassName.size() + 1];
+    qClassName.toWCharArray(className);
+    className[qClassName.size()] = 0;
 
     WNDCLASS wc;
     wc.style = 0;
@@ -501,16 +515,37 @@ static HWND qt_create_internal_window(const QEventDispatcherWin32 *eventDispatch
     wc.hCursor = 0;
     wc.hbrBackground = 0;
     wc.lpszMenuName = NULL;
-    wc.lpszClassName = reinterpret_cast<const wchar_t *> (className.utf16());
+    wc.lpszClassName = className;
+    atom = RegisterClass(&wc);
+    if (!atom) {
+        qErrnoWarning("%s: RegisterClass() failed", Q_FUNC_INFO, qPrintable(qClassName));
+        delete [] className;
+        className = 0;
+    }
+}
 
-    RegisterClass(&wc);
+QWindowsMessageWindowClassContext::~QWindowsMessageWindowClassContext()
+{
+    if (className) {
+        UnregisterClass(className, qWinAppInst());
+        delete [] className;
+    }
+}
+
+Q_GLOBAL_STATIC(QWindowsMessageWindowClassContext, qWindowsMessageWindowClassContext)
+
+static HWND qt_create_internal_window(const QEventDispatcherWin32 *eventDispatcher)
+{
+    QWindowsMessageWindowClassContext *ctx = qWindowsMessageWindowClassContext();
+    if (!ctx->atom)
+        return 0;
 #ifdef Q_OS_WINCE
     HWND parent = 0;
 #else
     HWND parent = HWND_MESSAGE;
 #endif
-    HWND wnd = CreateWindow(wc.lpszClassName,  // classname
-                            wc.lpszClassName,  // window name
+    HWND wnd = CreateWindow(ctx->className,    // classname
+                            ctx->className,    // window name
                             0,                 // style
                             0, 0, 0, 0,        // geometry
                             parent,            // parent
@@ -519,7 +554,8 @@ static HWND qt_create_internal_window(const QEventDispatcherWin32 *eventDispatch
                             0);                // windows creation data.
 
     if (!wnd) {
-        qWarning("QEventDispatcher: Failed to create QEventDispatcherWin32 internal window: %d\n", (int)GetLastError());
+        qErrnoWarning("%s: CreateWindow() for QEventDispatcherWin32 internal window failed", Q_FUNC_INFO);
+        return 0;
     }
 
 #ifdef GWLP_USERDATA
@@ -620,7 +656,9 @@ void QEventDispatcherWin32::createInternalHwnd()
     // setup GetMessage hook needed to drive our posted events
     d->getMessageHook = SetWindowsHookEx(WH_GETMESSAGE, (HOOKPROC) qt_GetMessageHook, NULL, GetCurrentThreadId());
     if (!d->getMessageHook) {
-        qFatal("Qt: INTERNALL ERROR: failed to install GetMessage hook");
+        int errorCode = GetLastError();
+        qFatal("Qt: INTERNAL ERROR: failed to install GetMessage hook: %d, %s",
+               errorCode, qPrintable(qt_error_string(errorCode)));
     }
 #endif
 

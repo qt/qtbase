@@ -128,12 +128,15 @@ bool QCollator::ignorePunctuation() const
 int QCollator::compare(const QChar *s1, int len1, const QChar *s2, int len2) const
 {
     SInt32 result;
-    return UCCompareText(d->collator.collator,
+    Boolean equivalent;
+    UCCompareText(d->collator.collator,
                          reinterpret_cast<const UniChar *>(s1), len1,
                          reinterpret_cast<const UniChar *>(s2), len2,
-                         NULL,
+                         &equivalent,
                          &result);
-    return result;
+    if (equivalent)
+        return 0;
+    return result < 0 ? -1 : 1;
 }
 int QCollator::compare(const QString &str1, const QString &str2) const
 {

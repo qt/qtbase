@@ -46,6 +46,8 @@
 #include <qvector.h>
 #include <qmutex.h>
 
+QT_BEGIN_NAMESPACE
+
 class QAndroidPlatformMenuItem;
 class QAndroidPlatformMenu: public QPlatformMenu
 {
@@ -88,5 +90,7 @@ private:
     bool m_isVisible;
     QMutex m_menuItemsMutex;
 };
+
+QT_END_NAMESPACE
 
 #endif // QANDROIDPLATFORMMENU_H

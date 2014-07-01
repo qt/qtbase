@@ -352,11 +352,8 @@ void QPluginLoader::setFileName(const QString &fileName)
     else
         fn = locatePlugin(fileName);
 
-    d = QLibraryPrivate::findOrCreate(fn);
-    d->loadHints = lh;
-    if (fn.isEmpty())
-        d->errorString = QLibrary::tr("The shared library was not found.");
-    else
+    d = QLibraryPrivate::findOrCreate(fn, QString(), lh);
+    if (!fn.isEmpty())
         d->updatePluginState();
 
 #else

@@ -181,9 +181,13 @@ static const HB_FontClass hb_fontClass = {
 
 static HB_Error hb_getSFntTable(void *font, HB_Tag tableTag, HB_Byte *buffer, HB_UInt *length)
 {
-    QFontEngine *fe = (QFontEngine *)font;
-    Q_ASSERT(fe->faceData.get_font_table);
-    if (!fe->faceData.get_font_table(fe->faceData.user_data, tableTag, buffer, length))
+    QFontEngine::FaceData *data = (QFontEngine::FaceData *)font;
+    Q_ASSERT(data);
+
+    qt_get_font_table_func_t get_font_table = data->get_font_table;
+    Q_ASSERT(get_font_table);
+
+    if (!get_font_table(data->user_data, tableTag, buffer, length))
         return HB_Err_Invalid_Argument;
     return HB_Err_Ok;
 }
@@ -291,8 +295,11 @@ void *QFontEngine::harfbuzzFont() const
 #endif
     if (!font_) {
         HB_Face hbFace = (HB_Face)harfbuzzFace();
-        if (hbFace->font_for_init != 0)
+        if (hbFace->font_for_init) {
+            void *data = hbFace->font_for_init;
             q_check_ptr(qHBLoadFace(hbFace));
+            free(data);
+        }
 
         HB_FontRec *hbFont = (HB_FontRec *) malloc(sizeof(HB_FontRec));
         Q_CHECK_PTR(hbFont);
@@ -323,7 +330,12 @@ void *QFontEngine::harfbuzzFace() const
         return hb_qt_face_get_for_engine(const_cast<QFontEngine *>(this));
 #endif
     if (!face_) {
-        HB_Face hbFace = qHBNewFace(const_cast<QFontEngine *>(this), hb_getSFntTable);
+        QFontEngine::FaceData *data = (QFontEngine::FaceData *)malloc(sizeof(QFontEngine::FaceData));
+        Q_CHECK_PTR(data);
+        data->user_data = faceData.user_data;
+        data->get_font_table = faceData.get_font_table;
+
+        HB_Face hbFace = qHBNewFace(data, hb_getSFntTable);
         Q_CHECK_PTR(hbFace);
         hbFace->isSymbolFont = symbol;
 
@@ -376,8 +388,11 @@ bool QFontEngine::supportsScript(QChar::Script script) const
     }
 #endif
     HB_Face hbFace = (HB_Face)harfbuzzFace();
-    if (hbFace->font_for_init != 0)
+    if (hbFace->font_for_init) {
+        void *data = hbFace->font_for_init;
         q_check_ptr(qHBLoadFace(hbFace));
+        free(data);
+    }
     return hbFace->supported_scripts[script_to_hbscript(script)];
 }
 

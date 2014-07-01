@@ -9894,9 +9894,7 @@ QString QString::toHtmlEscaped() const
   the read-only segment of the compiled object file.
 
   For compilers not supporting the creation of compile time strings, QStringLiteral will fall back to
-  QLatin1String.
-
-  The result of the QStringLiteral expression can be cast into a QString.
+  QString::fromUtf8().
 
   If you have code looking like:
   \code

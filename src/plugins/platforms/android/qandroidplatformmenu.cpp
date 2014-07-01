@@ -43,6 +43,8 @@
 #include "qandroidplatformmenuitem.h"
 #include "androidjnimenu.h"
 
+QT_BEGIN_NAMESPACE
+
 QAndroidPlatformMenu::QAndroidPlatformMenu()
 {
     m_tag = reinterpret_cast<quintptr>(this); // QMenu will overwrite this later, but we need a unique ID for QtQuick
@@ -175,3 +177,5 @@ QMutex *QAndroidPlatformMenu::menuItemsMutex()
 {
     return &m_menuItemsMutex;
 }
+
+QT_END_NAMESPACE

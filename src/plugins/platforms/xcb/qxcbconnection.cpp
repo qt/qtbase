@@ -1028,6 +1028,15 @@ void QXcbEventReader::registerForEvents()
     connect(dispatcher, SIGNAL(awake()), m_connection, SLOT(processXcbEvents()));
 }
 
+void QXcbEventReader::registerEventDispatcher(QAbstractEventDispatcher *dispatcher)
+{
+    // flush the xcb connection before the EventDispatcher is going to block
+    // In the non-threaded case processXcbEvents is called before going to block,
+    // which flushes the connection.
+    if (m_xcb_poll_for_queued_event)
+        connect(dispatcher, SIGNAL(aboutToBlock()), m_connection, SLOT(flush()));
+}
+
 void QXcbEventReader::run()
 {
     xcb_generic_event_t *event;

@@ -75,10 +75,17 @@ void QCollator::setCaseSensitivity(Qt::CaseSensitivity cs)
 {
     detach();
 
-    UColAttributeValue val = (cs == Qt::CaseSensitive) ? UCOL_UPPER_FIRST : UCOL_OFF;
+    // The strength attribute in ICU is rather badly documented. Basically UCOL_PRIMARY
+    // ignores differences between base characters and accented characters as well as case.
+    // So A and A-umlaut would compare equal.
+    // UCOL_SECONDARY ignores case differences. UCOL_TERTIARY is the default in most languages
+    // and does case sensitive comparison.
+    // UCOL_QUATERNARY is used as default in a few languages such as Japanese to take care of some
+    // additional differences in those languages.
+    UColAttributeValue val = (cs == Qt::CaseSensitive) ? UCOL_DEFAULT_STRENGTH : UCOL_SECONDARY;
 
     UErrorCode status = U_ZERO_ERROR;
-    ucol_setAttribute(d->collator, UCOL_CASE_FIRST, val, &status);
+    ucol_setAttribute(d->collator, UCOL_STRENGTH, val, &status);
     if (U_FAILURE(status))
         qWarning("ucol_setAttribute: Case First failed: %d", status);
 }

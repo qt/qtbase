@@ -22,6 +22,7 @@ SUBDIRS=\
    qobjectperformance \
    qobjectrace \
    qsharedpointer_and_qwidget \
+   qprocess_and_guieventloop \
    qtokenautomaton \
    windowsmobile \
 
@@ -70,3 +71,5 @@ wince*|!contains(QT_CONFIG, accessibility): SUBDIRS -= qaccessibility
 !embedded|wince*: SUBDIRS -= \
            qdirectpainter
 
+winrt: SUBDIRS -= \
+   qprocess_and_guieventloop

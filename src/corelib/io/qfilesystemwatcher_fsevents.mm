@@ -64,6 +64,25 @@
 
 QT_BEGIN_NAMESPACE
 
+namespace {
+class RaiiAutoreleasePool
+{
+    Q_DISABLE_COPY(RaiiAutoreleasePool)
+
+public:
+    RaiiAutoreleasePool()
+        : pool([[NSAutoreleasePool alloc] init])
+    {}
+
+    ~RaiiAutoreleasePool()
+    { [pool release]; }
+
+private:
+    NSAutoreleasePool *pool;
+};
+#define Q_AUTORELEASE_POOL(pool) RaiiAutoreleasePool pool; Q_UNUSED(pool);
+}
+
 static void callBackFunction(ConstFSEventStreamRef streamRef,
                              void *clientCallBackInfo,
                              size_t numEvents,
@@ -71,6 +90,8 @@ static void callBackFunction(ConstFSEventStreamRef streamRef,
                              const FSEventStreamEventFlags eventFlags[],
                              const FSEventStreamEventId eventIds[])
 {
+    Q_AUTORELEASE_POOL(pool)
+
     char **paths = static_cast<char **>(eventPaths);
     QFseventsFileSystemWatcherEngine *engine = static_cast<QFseventsFileSystemWatcherEngine *>(clientCallBackInfo);
     engine->processEvent(streamRef, numEvents, paths, eventFlags, eventIds);
@@ -283,6 +304,7 @@ void QFseventsFileSystemWatcherEngine::doEmitDirectoryChanged(const QString path
 
 void QFseventsFileSystemWatcherEngine::restartStream()
 {
+    Q_AUTORELEASE_POOL(pool)
     QMutexLocker locker(&lock);
     stopStream();
     startStream();
@@ -313,6 +335,8 @@ QFseventsFileSystemWatcherEngine::QFseventsFileSystemWatcherEngine(QObject *pare
 
 QFseventsFileSystemWatcherEngine::~QFseventsFileSystemWatcherEngine()
 {
+    Q_AUTORELEASE_POOL(pool)
+
     if (stream)
         FSEventStreamStop(stream);
 
@@ -327,6 +351,8 @@ QStringList QFseventsFileSystemWatcherEngine::addPaths(const QStringList &paths,
                                                        QStringList *files,
                                                        QStringList *directories)
 {
+    Q_AUTORELEASE_POOL(pool)
+
     if (stream) {
         DEBUG("Flushing, last id is %llu", FSEventStreamGetLatestEventId(stream));
         FSEventStreamFlushSync(stream);
@@ -413,6 +439,8 @@ QStringList QFseventsFileSystemWatcherEngine::removePaths(const QStringList &pat
                                                           QStringList *files,
                                                           QStringList *directories)
 {
+    Q_AUTORELEASE_POOL(pool)
+
     QMutexLocker locker(&lock);
 
     bool needsRestart = false;

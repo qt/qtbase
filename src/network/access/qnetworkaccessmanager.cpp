@@ -99,13 +99,13 @@ bool getProxyAuth(const QString& proxyHostname, const QString &scheme, QString& 
     bool retValue = false;
     SecProtocolType protocolType = kSecProtocolTypeAny;
     if (scheme.compare(QLatin1String("ftp"),Qt::CaseInsensitive)==0) {
-        protocolType = kSecProtocolTypeFTP;
+        protocolType = kSecProtocolTypeFTPProxy;
     } else if (scheme.compare(QLatin1String("http"),Qt::CaseInsensitive)==0
                || scheme.compare(QLatin1String("preconnect-http"),Qt::CaseInsensitive)==0) {
-        protocolType = kSecProtocolTypeHTTP;
+        protocolType = kSecProtocolTypeHTTPProxy;
     } else if (scheme.compare(QLatin1String("https"),Qt::CaseInsensitive)==0
                || scheme.compare(QLatin1String("preconnect-https"),Qt::CaseInsensitive)==0) {
-        protocolType = kSecProtocolTypeHTTPS;
+        protocolType = kSecProtocolTypeHTTPSProxy;
     }
     QByteArray proxyHostnameUtf8(proxyHostname.toUtf8());
     err = SecKeychainFindInternetPassword(NULL,
@@ -1392,21 +1392,6 @@ void QNetworkAccessManagerPrivate::authenticationRequired(QAuthenticator *authen
         }
     }
 
-#ifndef QT_NO_NETWORKPROXY
-#if defined(Q_OS_MACX)
-    //now we try to get the username and password from keychain
-    //if not successful signal will be emitted
-    QString username;
-    QString password;
-    if (getProxyAuth(proxy.hostName(),reply->request().url().scheme(),username,password)) {
-        authenticator->setUser(username);
-        authenticator->setPassword(password);
-        authenticationManager->cacheProxyCredentials(proxy, authenticator);
-        return;
-    }
-#endif
-#endif //QT_NO_NETWORKPROXY
-
     // if we emit a signal here in synchronous mode, the user might spin
     // an event loop, which might recurse and lead to problems
     if (synchronous)
@@ -1419,7 +1404,8 @@ void QNetworkAccessManagerPrivate::authenticationRequired(QAuthenticator *authen
 }
 
 #ifndef QT_NO_NETWORKPROXY
-void QNetworkAccessManagerPrivate::proxyAuthenticationRequired(const QNetworkProxy &proxy,
+void QNetworkAccessManagerPrivate::proxyAuthenticationRequired(const QUrl &url,
+                                                               const QNetworkProxy &proxy,
                                                                bool synchronous,
                                                                QAuthenticator *authenticator,
                                                                QNetworkProxy *lastProxyAuthentication)
@@ -1434,6 +1420,26 @@ void QNetworkAccessManagerPrivate::proxyAuthenticationRequired(const QNetworkPro
             return;
         }
     }
+
+#if defined(Q_OS_OSX)
+    //now we try to get the username and password from keychain
+    //if not successful signal will be emitted
+    QString username;
+    QString password;
+    if (getProxyAuth(proxy.hostName(), url.scheme(), username, password)) {
+        // only cache the system credentials if they are correct (or if they have changed)
+        // to not run into an endless loop in case they are wrong
+        QNetworkAuthenticationCredential cred = authenticationManager->fetchCachedProxyCredentials(proxy);
+        if (!priv->hasFailed || cred.user != username || cred.password != password) {
+            authenticator->setUser(username);
+            authenticator->setPassword(password);
+            authenticationManager->cacheProxyCredentials(proxy, authenticator);
+            return;
+        }
+    }
+#else
+    Q_UNUSED(url);
+#endif
 
     // if we emit a signal here in synchronous mode, the user might spin
     // an event loop, which might recurse and lead to problems

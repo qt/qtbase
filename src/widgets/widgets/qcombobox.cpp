@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -1085,6 +1085,19 @@ void QComboBoxPrivate::updateViewContainerPaletteAndOpacity()
         lineEdit->setPalette(q->palette());
 }
 
+void QComboBoxPrivate::updateFocusPolicy()
+{
+#ifdef Q_OS_OSX
+    Q_Q(QComboBox);
+
+    // See comment in QComboBoxPrivate::init()
+    if (q->isEditable())
+        q->setFocusPolicy(Qt::WheelFocus);
+    else
+        q->setFocusPolicy(Qt::TabFocus);
+#endif
+}
+
 /*!
     Initialize \a option with the values from this QComboBox. This method
     is useful for subclasses when they need a QStyleOptionComboBox, but don't want
@@ -1691,10 +1704,6 @@ void QComboBox::setEditable(bool editable)
         }
         QLineEdit *le = new QLineEdit(this);
         setLineEdit(le);
-#ifdef Q_OS_MAC
-        // See comment in QComboBoxPrivate::init()
-        setFocusPolicy(Qt::WheelFocus);
-#endif
     } else {
         if (style()->styleHint(QStyle::SH_ComboBox_Popup, &opt, this)) {
             d->viewContainer()->updateScrollers();
@@ -1704,11 +1713,9 @@ void QComboBox::setEditable(bool editable)
         d->lineEdit->hide();
         d->lineEdit->deleteLater();
         d->lineEdit = 0;
-#ifdef Q_OS_MAC
-        // See comment in QComboBoxPrivate::init()
-        setFocusPolicy(Qt::TabFocus);
-#endif
     }
+
+    d->updateFocusPolicy();
 
     d->viewContainer()->updateTopBottomMargin();
     if (!testAttribute(Qt::WA_Resized))
@@ -1743,6 +1750,7 @@ void QComboBox::setLineEdit(QLineEdit *edit)
     connect(d->lineEdit, SIGNAL(textChanged(QString)), this, SIGNAL(currentTextChanged(QString)));
     d->lineEdit->setFrame(false);
     d->lineEdit->setContextMenuPolicy(Qt::NoContextMenu);
+    d->updateFocusPolicy();
     d->lineEdit->setFocusProxy(this);
     d->lineEdit->setAttribute(Qt::WA_MacShowFocusRect, false);
 #ifndef QT_NO_COMPLETER
@@ -2055,7 +2063,7 @@ void QComboBoxPrivate::setCurrentIndex(const QModelIndex &mi)
     if (indexChanged)
         currentIndex = QPersistentModelIndex(normalized);
     if (lineEdit) {
-        QString newText = q->itemText(normalized.row());
+        const QString newText = itemText(normalized);
         if (lineEdit->text() != newText)
             lineEdit->setText(newText);
         updateLineEditGeometry();
@@ -2377,6 +2385,16 @@ QSize QComboBox::sizeHint() const
 }
 
 #ifdef Q_OS_OSX
+
+namespace {
+struct IndexSetter {
+    int index;
+    QComboBox *cb;
+
+    void operator()(void) { cb->setCurrentIndex(index); }
+};
+}
+
 /*!
  * \internal
  *
@@ -2390,13 +2408,6 @@ bool QComboBoxPrivate::showNativePopup()
     QPlatformTheme *theme = QGuiApplicationPrivate::instance()->platformTheme();
     if (QPlatformMenu *menu = theme->createPlatformMenu()) {
         int itemsCount = q->count();
-
-        struct IndexSetter {
-            int index;
-            QComboBox *cb;
-
-            void operator()(void) { cb->setCurrentIndex(index); }
-        };
 
         QList<QPlatformMenuItem *> items;
         items.reserve(itemsCount);

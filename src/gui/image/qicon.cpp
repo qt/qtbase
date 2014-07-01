@@ -363,44 +363,93 @@ void QPixmapIconEngine::addPixmap(const QPixmap &pixmap, QIcon::Mode mode, QIcon
     }
 }
 
-void QPixmapIconEngine::addFile(const QString &fileName, const QSize &_size, QIcon::Mode mode, QIcon::State state)
+// Read out original image depth as set by ICOReader
+static inline int origIcoDepth(const QImage &image)
 {
-    if (!fileName.isEmpty()) {
-        QString abs = fileName;
-        if (fileName.at(0) != QLatin1Char(':'))
-            abs = QFileInfo(fileName).absoluteFilePath();
-        QImageReader reader(abs);
+    const QString s = image.text(QStringLiteral("_q_icoOrigDepth"));
+    return s.isEmpty() ? 32 : s.toInt();
+}
 
-        do {
-            QSize size = _size;
-            QPixmap pixmap;
-
-            for (int i = 0; i < pixmaps.count(); ++i) {
-                if (pixmaps.at(i).mode == mode && pixmaps.at(i).state == state) {
-                    QPixmapIconEngineEntry *pe = &pixmaps[i];
-                    if (size == QSize()) {
-                        pixmap.convertFromImage(reader.read());
-                        size = pixmap.size();
-                    }
-                    if (pe->size == QSize() && pe->pixmap.isNull()) {
-                        pe->pixmap = QPixmap(pe->fileName);
-                        // Reset the devicePixelRatio. The pixmap may be loaded from a @2x file,
-                        // but be used as a 1x pixmap by QIcon.
-                        pe->pixmap.setDevicePixelRatio(1.0);
-                        pe->size = pe->pixmap.size();
-                    }
-                    if (pe->size == size) {
-                        pe->pixmap = pixmap;
-                        pe->fileName = abs;
-                        return;
-                    }
-                }
-            }
-            QPixmapIconEngineEntry e(abs, size, mode, state);
-            e.pixmap = pixmap;
-            pixmaps += e;
-        } while (reader.jumpToNextImage());
+static inline int findBySize(const QList<QImage> &images, const QSize &size)
+{
+    for (int i = 0; i < images.size(); ++i) {
+        if (images.at(i).size() == size)
+            return i;
     }
+    return -1;
+}
+
+// Convenience class providing a bool read() function.
+namespace {
+class ImageReader
+{
+public:
+    ImageReader(const QString &fileName) : m_reader(fileName), m_atEnd(false) {}
+
+    QByteArray format() const { return m_reader.format(); }
+
+    bool read(QImage *image)
+    {
+        if (m_atEnd)
+            return false;
+        *image = m_reader.read();
+        if (!image->size().isValid()) {
+            m_atEnd = true;
+            return false;
+        }
+        m_atEnd = !m_reader.jumpToNextImage();
+        return true;
+    }
+
+private:
+    QImageReader m_reader;
+    bool m_atEnd;
+};
+} // namespace
+
+void QPixmapIconEngine::addFile(const QString &fileName, const QSize &size, QIcon::Mode mode, QIcon::State state)
+{
+    if (fileName.isEmpty())
+        return;
+    const QString abs = fileName.startsWith(QLatin1Char(':')) ? fileName : QFileInfo(fileName).absoluteFilePath();
+    const bool ignoreSize = !size.isValid();
+    ImageReader imageReader(abs);
+    const QByteArray format = imageReader.format();
+    if (format.isEmpty()) // Device failed to open or unsupported format.
+        return;
+    QImage image;
+    if (format != "ico") {
+        if (ignoreSize) { // No size specified: Add all images.
+            while (imageReader.read(&image))
+                pixmaps += QPixmapIconEngineEntry(abs, image, mode, state);
+        } else {
+            // Try to match size. If that fails, add a placeholder with the filename and empty pixmap for the size.
+            while (imageReader.read(&image) && image.size() != size) {}
+            pixmaps += image.size() == size ?
+                QPixmapIconEngineEntry(abs, image, mode, state) : QPixmapIconEngineEntry(abs, size, mode, state);
+        }
+        return;
+    }
+    // Special case for reading Windows ".ico" files. Historically (QTBUG-39287),
+    // these files may contain low-resolution images. As this information is lost,
+    // ICOReader sets the original format as an image text key value. Read all matching
+    // images into a list trying to find the highest quality per size.
+    QList<QImage> icoImages;
+    while (imageReader.read(&image)) {
+        if (ignoreSize || image.size() == size) {
+            const int position = findBySize(icoImages, image.size());
+            if (position >= 0) { // Higher quality available? -> replace.
+                if (origIcoDepth(image) > origIcoDepth(icoImages.at(position)))
+                    icoImages[position] = image;
+            } else {
+                icoImages.append(image);
+            }
+        }
+    }
+    foreach (const QImage &i, icoImages)
+        pixmaps += QPixmapIconEngineEntry(abs, i, mode, state);
+    if (icoImages.isEmpty() && !ignoreSize) // Add placeholder with the filename and empty pixmap for the size.
+        pixmaps += QPixmapIconEngineEntry(abs, size, mode, state);
 }
 
 QString QPixmapIconEngine::key() const

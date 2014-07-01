@@ -44,6 +44,8 @@
 #include <QDir>
 #include <QDebug>
 
+QT_BEGIN_NAMESPACE
+
 QAndroidPlatformServices::QAndroidPlatformServices()
 {
     QtAndroid::AttachedJNIEnv env;
@@ -77,3 +79,5 @@ QByteArray QAndroidPlatformServices::desktopEnvironment() const
 {
     return QByteArray("Android");
 }
+
+QT_END_NAMESPACE

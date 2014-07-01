@@ -46,6 +46,8 @@
 #include <QEventLoop>
 #include <private/qjni_p.h>
 
+QT_BEGIN_NAMESPACE
+
 namespace QtAndroidDialogHelpers {
 
 class QAndroidPlatformMessageDialogHelper: public QPlatformMessageDialogHelper
@@ -73,5 +75,7 @@ private:
 bool registerNatives(JNIEnv *env);
 
 }
+
+QT_END_NAMESPACE
 
 #endif // QANDROIDPLATFORMDIALOGHELPERS_H

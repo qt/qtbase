@@ -50,6 +50,18 @@ const char qtDefaultCategoryName[] = "default";
 Q_GLOBAL_STATIC_WITH_ARGS(QLoggingCategory, qtDefaultCategory,
                           (qtDefaultCategoryName))
 
+#ifndef Q_ATOMIC_INT8_IS_SUPPORTED
+static void setBoolLane(QBasicAtomicInt *atomic, bool enable, int shift)
+{
+    const int bit = 1 << shift;
+
+    if (enable)
+        atomic->fetchAndOrRelaxed(bit);
+    else
+        atomic->fetchAndAndRelaxed(~bit);
+}
+#endif
+
 /*!
     \class QLoggingCategory
     \inmodule QtCore
@@ -129,13 +141,13 @@ Q_GLOBAL_STATIC_WITH_ARGS(QLoggingCategory, qtDefaultCategory,
 
     Order of evaluation:
     \list
-    \li Rules from QtProject/qlogging.ini
+    \li Rules from QtProject/qtlogging.ini
     \li Rules set by \l setFilterRules()
     \li Rules from file in \c QT_LOGGING_CONF
     \li Rules from environment variable QT_LOGGING_RULES
     \endlist
 
-    The \c QtProject/qlogging.ini file is looked up in all directories returned
+    The \c QtProject/qtlogging.ini file is looked up in all directories returned
     by QStandardPaths::GenericConfigLocation, e.g.
 
     \list
@@ -171,13 +183,11 @@ Q_GLOBAL_STATIC_WITH_ARGS(QLoggingCategory, qtDefaultCategory,
 */
 QLoggingCategory::QLoggingCategory(const char *category)
     : d(0),
-      name(0),
-      enabledDebug(true),
-      enabledWarning(true),
-      enabledCritical(true)
+      name(0)
 {
     Q_UNUSED(d);
     Q_UNUSED(placeholder);
+    enabled.store(0x01010101);   // enabledDebug = enabledWarning = enabledCritical = true;
 
     const bool isDefaultCategory
             = (category == 0) || (strcmp(category, qtDefaultCategoryName) == 0);
@@ -249,9 +259,9 @@ QLoggingCategory::~QLoggingCategory()
 bool QLoggingCategory::isEnabled(QtMsgType msgtype) const
 {
     switch (msgtype) {
-    case QtDebugMsg: return enabledDebug;
-    case QtWarningMsg: return enabledWarning;
-    case QtCriticalMsg: return enabledCritical;
+    case QtDebugMsg: return isDebugEnabled();
+    case QtWarningMsg: return isWarningEnabled();
+    case QtCriticalMsg: return isCriticalEnabled();
     case QtFatalMsg: return true;
     }
     return false;
@@ -270,9 +280,15 @@ bool QLoggingCategory::isEnabled(QtMsgType msgtype) const
 void QLoggingCategory::setEnabled(QtMsgType type, bool enable)
 {
     switch (type) {
-    case QtDebugMsg: enabledDebug = enable; break;
-    case QtWarningMsg: enabledWarning = enable; break;
-    case QtCriticalMsg: enabledCritical = enable; break;
+#ifdef Q_ATOMIC_INT8_IS_SUPPORTED
+    case QtDebugMsg: bools.enabledDebug.store(enable); break;
+    case QtWarningMsg: bools.enabledWarning.store(enable); break;
+    case QtCriticalMsg: bools.enabledCritical.store(enable); break;
+#else
+    case QtDebugMsg: setBoolLane(&enabled, enable, DebugShift); break;
+    case QtWarningMsg: setBoolLane(&enabled, enable, WarningShift); break;
+    case QtCriticalMsg: setBoolLane(&enabled, enable, CriticalShift); break;
+#endif
     case QtFatalMsg: break;
     }
 }

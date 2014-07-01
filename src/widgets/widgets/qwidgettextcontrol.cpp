@@ -1694,9 +1694,6 @@ void QWidgetTextControlPrivate::mouseMoveEvent(QEvent *e, Qt::MouseButton button
             return;
         }
 
-        if (!mousePressed)
-            return;
-
         const qreal mouseX = qreal(mousePos.x());
 
         int newCursorPos = q->hitTest(mousePos, Qt::FuzzyHit);
@@ -1717,7 +1714,7 @@ void QWidgetTextControlPrivate::mouseMoveEvent(QEvent *e, Qt::MouseButton button
         if (newCursorPos == -1)
             return;
 
-        if (wordSelectionEnabled && !selectedWordOnDoubleClick.hasSelection()) {
+        if (mousePressed && wordSelectionEnabled && !selectedWordOnDoubleClick.hasSelection()) {
             selectedWordOnDoubleClick = cursor;
             selectedWordOnDoubleClick.select(QTextCursor::WordUnderCursor);
         }
@@ -1726,7 +1723,7 @@ void QWidgetTextControlPrivate::mouseMoveEvent(QEvent *e, Qt::MouseButton button
             extendBlockwiseSelection(newCursorPos);
         else if (selectedWordOnDoubleClick.hasSelection())
             extendWordwiseSelection(newCursorPos, mouseX);
-        else if (!isPreediting())
+        else if (mousePressed && !isPreediting())
             setCursorPosition(newCursorPos, QTextCursor::KeepAnchor);
 
         if (interactionFlags & Qt::TextEditable) {

@@ -1226,7 +1226,9 @@ Qt::DockWidgetArea QMainWindow::dockWidgetArea(QDockWidget *dockwidget) const
 
 /*!
     Saves the current state of this mainwindow's toolbars and
-    dockwidgets. The \a version number is stored as part of the data.
+    dockwidgets. This includes the corner settings which can
+    be set with setCorner(). The \a version number is stored
+    as part of the data.
 
     The \l{QObject::objectName}{objectName} property is used
     to identify each QToolBar and QDockWidget.  You should make sure
@@ -1255,8 +1257,9 @@ QByteArray QMainWindow::saveState(int version) const
 
 /*!
     Restores the \a state of this mainwindow's toolbars and
-    dockwidgets. The \a version number is compared with that stored
-    in \a state. If they do not match, the mainwindow's state is left
+    dockwidgets. Also restores the corner settings too. The
+    \a version number is compared with that stored in \a state.
+    If they do not match, the mainwindow's state is left
     unchanged, and this function returns \c false; otherwise, the state
     is restored, and this function returns \c true.
 

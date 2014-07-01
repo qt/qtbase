@@ -85,7 +85,7 @@ public:
     explicit QHostAddress(quint32 ip4Addr);
     explicit QHostAddress(quint8 *ip6Addr);
     explicit QHostAddress(const Q_IPV6ADDR &ip6Addr);
-    explicit QHostAddress(const sockaddr *sockaddr);
+    explicit QHostAddress(const sockaddr *address);
     explicit QHostAddress(const QString &address);
     QHostAddress(const QHostAddress &copy);
     QHostAddress(SpecialAddress address);
@@ -97,7 +97,7 @@ public:
     void setAddress(quint32 ip4Addr);
     void setAddress(quint8 *ip6Addr);
     void setAddress(const Q_IPV6ADDR &ip6Addr);
-    void setAddress(const sockaddr *sockaddr);
+    void setAddress(const sockaddr *address);
     bool setAddress(const QString &address);
 
     QAbstractSocket::NetworkLayerProtocol protocol() const;

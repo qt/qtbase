@@ -62,7 +62,7 @@ void QProcessPrivate::destroyPipe(Q_PIPE pipe[2])
     Q_UNUSED(pipe);
 }
 
-void QProcessPrivate::destroyChannel(Channel *channel)
+void QProcessPrivate::closeChannel(Channel *channel)
 {
     Q_UNUSED(channel);
 }
@@ -174,22 +174,12 @@ bool QProcessPrivate::processStarted()
     return processState == QProcess::Running;
 }
 
-qint64 QProcessPrivate::bytesAvailableFromStdout() const
+qint64 QProcessPrivate::bytesAvailableInChannel(const Channel *) const
 {
     return 0;
 }
 
-qint64 QProcessPrivate::bytesAvailableFromStderr() const
-{
-    return 0;
-}
-
-qint64 QProcessPrivate::readFromStdout(char *data, qint64 maxlen)
-{
-    return -1;
-}
-
-qint64 QProcessPrivate::readFromStderr(char *data, qint64 maxlen)
+qint64 QProcessPrivate::readFromChannel(const Channel *, char *data, qint64 maxlen)
 {
     return -1;
 }

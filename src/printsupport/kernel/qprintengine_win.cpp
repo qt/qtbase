@@ -850,14 +850,13 @@ void QWin32PrintEngine::drawPolygon(const QPointF *points, int pointCount, Polyg
 
 QWin32PrintEnginePrivate::~QWin32PrintEnginePrivate()
 {
-    if (hdc)
-        release();
+    release();
 }
 
 void QWin32PrintEnginePrivate::initialize()
 {
-    if (hdc)
-        release();
+    release();
+
     Q_ASSERT(!hPrinter);
     Q_ASSERT(!hdc);
     Q_ASSERT(!devMode);
@@ -884,17 +883,18 @@ void QWin32PrintEnginePrivate::initialize()
 
     if (!ok) {
         qErrnoWarning("QWin32PrintEngine::initialize: GetPrinter failed");
-        GlobalUnlock(pInfo);
-        GlobalFree(hMem);
-        ClosePrinter(hPrinter);
-        pInfo = 0;
-        hMem = 0;
-        hPrinter = 0;
+        release();
         return;
     }
 
     devMode = pInfo->pDevMode;
     hdc = CreateDC(NULL, reinterpret_cast<const wchar_t *>(m_printDevice.id().utf16()), 0, devMode);
+
+    if (!hdc) {
+        qErrnoWarning("QWin32PrintEngine::initialize: CreateDC failed");
+        release();
+        return;
+    }
 
     Q_ASSERT(hPrinter);
     Q_ASSERT(pInfo);
@@ -947,19 +947,17 @@ void QWin32PrintEnginePrivate::initHDC()
 
 void QWin32PrintEnginePrivate::release()
 {
-    if (hdc == 0)
-        return;
-
     if (globalDevMode) { // Devmode comes from print dialog
         GlobalUnlock(globalDevMode);
-    } else {            // Devmode comes from initialize...
+    } else if (hMem) {            // Devmode comes from initialize...
         // devMode is a part of the same memory block as pInfo so one free is enough...
         GlobalUnlock(hMem);
         GlobalFree(hMem);
     }
     if (hPrinter)
         ClosePrinter(hPrinter);
-    DeleteDC(hdc);
+    if (hdc)
+        DeleteDC(hdc);
 
     hdc = 0;
     hPrinter = 0;

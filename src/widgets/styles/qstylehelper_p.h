@@ -86,6 +86,7 @@ namespace QStyleHelper
     bool isInstanceOf(QObject *obj, QAccessible::Role role);
     bool hasAncestor(QObject *obj, QAccessible::Role role);
 #endif
+    QColor backgroundColor(const QPalette &pal, const QWidget* widget = 0);
 }
 
 

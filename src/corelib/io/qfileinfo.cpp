@@ -530,7 +530,8 @@ void QFileInfo::setFile(const QDir &dir, const QString &file)
     is true. In contrast to canonicalFilePath(), symbolic links or
     redundant "." or ".." elements are not necessarily removed.
 
-    If the QFileInfo is empty it returns QDir::currentPath().
+    \warning If filePath() is empty the behavior of this function
+            is undefined.
 
     \sa filePath(), canonicalFilePath(), isRelative()
 */
@@ -572,8 +573,8 @@ QString QFileInfo::canonicalFilePath() const
     In contrast to canonicalPath() symbolic links or redundant "." or
     ".." elements are not necessarily removed.
 
-    \warning If the QFileInfo object was created with an empty QString,
-              the behavior of this function is undefined.
+    \warning If filePath() is empty the behavior of this function
+             is undefined.
 
     \sa absoluteFilePath(), path(), canonicalPath(), fileName(), isRelative()
 */

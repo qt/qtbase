@@ -43,6 +43,7 @@
 #include "qandroidplatformmenu.h"
 #include "androidjnimenu.h"
 
+QT_BEGIN_NAMESPACE
 
 QAndroidPlatformMenuBar::QAndroidPlatformMenuBar()
 {
@@ -109,3 +110,5 @@ QMutex *QAndroidPlatformMenuBar::menusListMutex()
 {
     return &m_menusListMutex;
 }
+
+QT_END_NAMESPACE

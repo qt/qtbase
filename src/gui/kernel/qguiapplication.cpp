@@ -171,6 +171,7 @@ bool QGuiApplicationPrivate::noGrab = false;
 static qreal fontSmoothingGamma = 1.7;
 
 extern void qRegisterGuiVariant();
+extern void qRegisterGuiGetInterpolator();
 extern void qInitDrawhelperAsm();
 extern void qInitImageConversions();
 
@@ -489,6 +490,12 @@ static QWindowGeometrySpecification windowGeometrySpecification;
         \li \c{-platformtheme} \e platformTheme, specifies the platform theme.
 
             Overridden by the \c QT_QPA_PLATFORMTHEME environment variable.
+
+        \li \c{-plugin} \e plugin, specifies additional plugins to load. The argument
+            may appear multiple times.
+
+            Overridden by the \c QT_QPA_GENERIC_PLUGINS environment variable.
+
         \li \c{-qmljsdebugger=}, activates the QML/JS debugger with a specified port.
             The value must be of format \c{port:1234}\e{[,block]}, where
             \e block is optional
@@ -1280,6 +1287,9 @@ void QGuiApplicationPrivate::init()
 
     // trigger registering of QVariant's GUI types
     qRegisterGuiVariant();
+
+    // trigger registering of animation interpolators
+    qRegisterGuiGetInterpolator();
 
     QWindowSystemInterfacePrivate::eventTime.start();
 

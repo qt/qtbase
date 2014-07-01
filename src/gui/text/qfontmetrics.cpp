@@ -295,8 +295,7 @@ int QFontMetrics::descent() const
 /*!
     Returns the height of the font.
 
-    This is always equal to ascent()+descent()+1 (the 1 is for the
-    base line).
+    This is always equal to ascent()+descent().
 
     \sa leading(), lineSpacing()
 */
@@ -1159,8 +1158,7 @@ qreal QFontMetricsF::descent() const
 /*!
     Returns the height of the font.
 
-    This is always equal to ascent()+descent()+1 (the 1 is for the
-    base line).
+    This is always equal to ascent()+descent().
 
     \sa leading(), lineSpacing()
 */

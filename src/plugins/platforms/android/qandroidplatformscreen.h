@@ -66,7 +66,8 @@ public:
     QAndroidPlatformScreen();
     ~QAndroidPlatformScreen();
 
-    QRect geometry() const { return m_geometry; }
+    QRect geometry() const { return QRect(QPoint(), m_size); }
+    QRect availableGeometry() const { return m_availableGeometry; }
     int depth() const { return m_depth; }
     QImage::Format format() const { return m_format; }
     QSizeF physicalSize() const { return m_physicalSize; }
@@ -87,7 +88,8 @@ public:
 public slots:
     void setDirty(const QRect &rect);
     void setPhysicalSize(const QSize &size);
-    void setGeometry(const QRect &rect);
+    void setAvailableGeometry(const QRect &rect);
+    void setSize(const QSize &size);
 
 protected:
     typedef QList<QAndroidPlatformWindow *> WindowStackType;
@@ -95,7 +97,7 @@ protected:
     QRect m_dirtyRect;
     QTimer m_redrawTimer;
 
-    QRect m_geometry;
+    QRect m_availableGeometry;
     int m_depth;
     QImage::Format m_format;
     QSizeF m_physicalSize;
@@ -114,6 +116,7 @@ private:
     QAtomicInt m_rasterSurfaces = 0;
     ANativeWindow* m_nativeSurface = nullptr;
     QWaitCondition m_surfaceWaitCondition;
+    QSize m_size;
 };
 
 QT_END_NAMESPACE

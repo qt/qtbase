@@ -166,8 +166,6 @@ contains(CONFIG, plugin) {
     return()
 }
 
-contains($$list(network sql widgets gui), $$MODULE): CMAKE_LOAD_PLUGINS = true
-
 unix:contains(QT_CONFIG, reduce_relocations):CMAKE_ADD_FPIE_FLAGS = "true"
 
 CMAKE_MKSPEC = $$[QMAKE_XSPEC]
@@ -293,3 +291,14 @@ exists($$cmake_macros_file.input) {
 }
 
 cmake_qt5_module_files.path = $$[QT_INSTALL_LIBS]/cmake/Qt5$${CMAKE_MODULE_NAME}
+
+# We are generating cmake files. Most developers of Qt are not aware of cmake,
+# so we require automatic tests to be available. The only module which should
+# set CMAKE_MODULE_TESTS to '-' is enginio because that is known to be broken.
+# Other modules should either create proper tests in tests/auto/cmake or, as
+# a temporary measure, disable the generation of cmake files
+# with 'CONFIG -= create_cmake'
+!equals(CMAKE_MODULE_TESTS, -) {
+    isEmpty(CMAKE_MODULE_TESTS): CMAKE_MODULE_TESTS = $$MODULE_BASE_INDIR/tests/auto/cmake
+    !exists($$CMAKE_MODULE_TESTS): error("Missing CMake tests.")
+}

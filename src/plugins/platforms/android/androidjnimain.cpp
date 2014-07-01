@@ -76,6 +76,8 @@
 
 Q_IMPORT_PLUGIN(QAndroidPlatformIntegrationPlugin)
 
+QT_BEGIN_NAMESPACE
+
 static JavaVM *m_javaVM = NULL;
 static jclass m_applicationClass  = NULL;
 static jobject m_classLoaderObject = NULL;
@@ -423,6 +425,7 @@ namespace QtAndroid
                                      m_destroySurfaceMethodID,
                                      surfaceId);
     }
+
 } // namespace QtAndroid
 
 
@@ -548,7 +551,7 @@ static void setSurface(JNIEnv *env, jobject /*thiz*/, jint id, jobject jSurface,
 }
 
 static void setDisplayMetrics(JNIEnv */*env*/, jclass /*clazz*/,
-                            jint /*widthPixels*/, jint /*heightPixels*/,
+                            jint widthPixels, jint heightPixels,
                             jint desktopWidthPixels, jint desktopHeightPixels,
                             jdouble xdpi, jdouble ydpi, jdouble scaledDensity)
 {
@@ -557,13 +560,17 @@ static void setDisplayMetrics(JNIEnv */*env*/, jclass /*clazz*/,
     m_scaledDensity = scaledDensity;
 
     if (!m_androidPlatformIntegration) {
-        QAndroidPlatformIntegration::setDefaultDisplayMetrics(desktopWidthPixels,desktopHeightPixels,
-                                                                qRound(double(desktopWidthPixels)  / xdpi * 25.4),
-                                                                qRound(double(desktopHeightPixels) / ydpi * 25.4));
+        QAndroidPlatformIntegration::setDefaultDisplayMetrics(desktopWidthPixels,
+                                                              desktopHeightPixels,
+                                                              qRound(double(desktopWidthPixels)  / xdpi * 25.4),
+                                                              qRound(double(desktopHeightPixels) / ydpi * 25.4),
+                                                              widthPixels,
+                                                              heightPixels);
     } else {
         m_androidPlatformIntegration->setDisplayMetrics(qRound(double(desktopWidthPixels)  / xdpi * 25.4),
                                                         qRound(double(desktopHeightPixels) / ydpi * 25.4));
         m_androidPlatformIntegration->setDesktopSize(desktopWidthPixels, desktopHeightPixels);
+        m_androidPlatformIntegration->setScreenSize(widthPixels, heightPixels);
     }
 }
 
@@ -743,17 +750,11 @@ static int registerNatives(JNIEnv *env)
     return JNI_TRUE;
 }
 
-jint androidApiLevel(JNIEnv *env)
-{
-    jclass clazz;
-    FIND_AND_CHECK_CLASS("android/os/Build$VERSION");
-    jfieldID fieldId;
-    GET_AND_CHECK_STATIC_FIELD(fieldId, clazz, "SDK_INT", "I");
-    return env->GetStaticIntField(clazz, fieldId);
-}
+QT_END_NAMESPACE
 
 Q_DECL_EXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void */*reserved*/)
 {
+    QT_USE_NAMESPACE
     typedef union {
         JNIEnv *nativeEnvironment;
         void *venv;
@@ -774,14 +775,9 @@ Q_DECL_EXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void */*reserved*/)
             || !QtAndroidInput::registerNatives(env)
             || !QtAndroidClipboard::registerNatives(env)
             || !QtAndroidMenu::registerNatives(env)
+            || !QtAndroidAccessibility::registerNatives(env)
             || !QtAndroidDialogHelpers::registerNatives(env)) {
         __android_log_print(ANDROID_LOG_FATAL, "Qt", "registerNatives failed");
-        return -1;
-    }
-
-    jint apiLevel = androidApiLevel(env);
-    if (apiLevel >= 16 && !QtAndroidAccessibility::registerNatives(env)) {
-        __android_log_print(ANDROID_LOG_FATAL, "Qt A11y", "registerNatives failed");
         return -1;
     }
 

@@ -67,8 +67,10 @@ template <typename T> struct QAtomicOps: QGenericAtomicOps<QAtomicOps<T> >
         return --_q_value != 0;
     }
 
-    static bool testAndSetRelaxed(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
+    static bool testAndSetRelaxed(T &_q_value, T expectedValue, T newValue, T *currentValue = 0) Q_DECL_NOTHROW
     {
+        if (currentValue)
+            *currentValue = _q_value;
         if (_q_value == expectedValue) {
             _q_value = newValue;
             return true;
@@ -83,8 +85,8 @@ template <typename T> struct QAtomicOps: QGenericAtomicOps<QAtomicOps<T> >
         return tmp;
     }
 
-    static
-    T fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
+    template <typename AdditiveType> static
+    T fetchAndAddRelaxed(T &_q_value, AdditiveType valueToAdd) Q_DECL_NOTHROW
     {
         T returnValue = _q_value;
         _q_value += valueToAdd;

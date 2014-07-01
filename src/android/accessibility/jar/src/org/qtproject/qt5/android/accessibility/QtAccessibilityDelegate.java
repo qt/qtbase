@@ -53,6 +53,7 @@ import android.text.TextUtils;
 
 import android.view.accessibility.*;
 import android.view.MotionEvent;
+import android.view.View.OnHoverListener;
 
 import android.content.Context;
 
@@ -85,9 +86,19 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
     // the offset of the view on screen into account (eg status bar on top)
     private final int[] m_globalOffset = new int[2];
 
+    private class HoverEventListener implements View.OnHoverListener
+    {
+        @Override
+        public boolean onHover(View v, MotionEvent event)
+        {
+            return dispatchHoverEvent(event);
+        }
+    }
+
     public QtAccessibilityDelegate(View host)
     {
         m_view = host;
+        m_view.setOnHoverListener(new HoverEventListener());
         m_manager = (AccessibilityManager) host.getContext()
                 .getSystemService(Context.ACCESSIBILITY_SERVICE);
 
@@ -103,7 +114,7 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
 
     // For "explore by touch" we need all movement events here first
     // (user moves finger over screen to discover items on screen).
-    public boolean dispatchHoverEvent(MotionEvent event)
+    private boolean dispatchHoverEvent(MotionEvent event)
     {
         if (!m_manager.isTouchExplorationEnabled()) {
             return false;

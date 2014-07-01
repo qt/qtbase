@@ -44,6 +44,8 @@
 
 #include <QtPlatformSupport/private/qbasicfontdatabase_p.h>
 
+QT_BEGIN_NAMESPACE
+
 class QAndroidPlatformFontDatabase: public QBasicFontDatabase
 {
 public:
@@ -57,5 +59,7 @@ public:
 private:
     QHash<QChar::Script, QStringList> m_fallbacks;
 };
+
+QT_END_NAMESPACE
 
 #endif // QANDROIDPLATFORMFONTDATABASE_H

@@ -522,6 +522,7 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_locale(IA2Locale *locale)
     QLocale l;
     res.country = QStringToBSTR(QLocale::countryToString(l.country()));
     res.language = QStringToBSTR(QLocale::languageToString(l.language()));
+    res.variant = QStringToBSTR(QString());
     *locale = res;
     return S_OK;
 }

@@ -60,7 +60,7 @@ QMakeProject::QMakeProject()
 QMakeProject::QMakeProject(QMakeProject *p)
     : QMakeEvaluator(Option::globals, Option::parser, Option::vfs, &Option::evalHandler)
 {
-    initFrom(*p);
+    initFrom(p);
 }
 
 bool QMakeProject::boolRet(VisitReturn vr)

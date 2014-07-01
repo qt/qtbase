@@ -380,7 +380,7 @@ bool QBasicMutex::isRecursive()
 */
 
 /*!
-    \fn QMutex *QMutexLocker::mutex()
+    \fn QMutex *QMutexLocker::mutex() const
 
     Returns the mutex on which the QMutexLocker is operating.
 

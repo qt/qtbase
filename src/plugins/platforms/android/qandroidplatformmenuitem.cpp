@@ -42,6 +42,8 @@
 #include "qandroidplatformmenuitem.h"
 #include "qandroidplatformmenu.h"
 
+QT_BEGIN_NAMESPACE
+
 QAndroidPlatformMenuItem::QAndroidPlatformMenuItem()
 {
     m_tag = reinterpret_cast<quintptr>(this); // QMenu will overwrite this later, but we need a unique ID for QtQuick
@@ -178,3 +180,5 @@ bool QAndroidPlatformMenuItem::isEnabled() const
 {
     return m_isEnabled;
 }
+
+QT_END_NAMESPACE

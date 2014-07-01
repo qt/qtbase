@@ -42,6 +42,8 @@
 #include "androidjniclipboard.h"
 #include "androidjnimain.h"
 
+QT_BEGIN_NAMESPACE
+
 using namespace QtAndroid;
 namespace QtAndroidClipboard
 {
@@ -118,3 +120,5 @@ namespace QtAndroidClipboard
         return true;
     }
 }
+
+QT_END_NAMESPACE

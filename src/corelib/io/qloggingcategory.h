@@ -57,10 +57,15 @@ public:
     bool isEnabled(QtMsgType type) const;
     void setEnabled(QtMsgType type, bool enable);
 
-    bool isDebugEnabled() const { return enabledDebug; }
-    bool isWarningEnabled() const { return enabledWarning; }
-    bool isCriticalEnabled() const { return enabledCritical; }
-
+#ifdef Q_ATOMIC_INT8_IS_SUPPORTED
+    bool isDebugEnabled() const { return bools.enabledDebug.load(); }
+    bool isWarningEnabled() const { return bools.enabledWarning.load(); }
+    bool isCriticalEnabled() const { return bools.enabledCritical.load(); }
+#else
+    bool isDebugEnabled() const { return enabled.load() >> DebugShift & 1; }
+    bool isWarningEnabled() const { return enabled.load() >> WarningShift & 1; }
+    bool isCriticalEnabled() const { return enabled.load() >> CriticalShift & 1; }
+#endif
     const char *categoryName() const { return name; }
 
     // allows usage of both factory method and variable in qCX macros
@@ -78,10 +83,24 @@ private:
     void *d; // reserved for future use
     const char *name;
 
-    bool enabledDebug;
-    bool enabledWarning;
-    bool enabledCritical;
-    bool placeholder[5]; // reserve for future use
+#ifdef Q_BIG_ENDIAN
+    enum { DebugShift = 0, WarningShift = 8, CriticalShift = 16 };
+#else
+    enum { DebugShift = 24, WarningShift = 16, CriticalShift = 8 };
+#endif
+
+    struct AtomicBools {
+#ifdef Q_ATOMIC_INT8_IS_SUPPORTED
+        QBasicAtomicInteger<bool> enabledDebug;
+        QBasicAtomicInteger<bool> enabledWarning;
+        QBasicAtomicInteger<bool> enabledCritical;
+#endif
+    };
+    union {
+        AtomicBools bools;
+        QBasicAtomicInt enabled;
+    };
+    bool placeholder[4]; // reserve for future use
 };
 
 #define Q_DECLARE_LOGGING_CATEGORY(name) \

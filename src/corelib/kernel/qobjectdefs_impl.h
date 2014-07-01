@@ -622,7 +622,7 @@ namespace QtPrivate {
         static char test(...);
         enum {
             Ok = sizeof(test(dummy<Functor>())) == sizeof(int),
-            Value = Ok ? sizeof...(ArgList) : int(ComputeFunctorArgumentCountHelper<Functor, List<ArgList...>, Ok>::Value)
+            Value = Ok ? int(sizeof...(ArgList)) : int(ComputeFunctorArgumentCountHelper<Functor, List<ArgList...>, Ok>::Value)
         };
     };
 

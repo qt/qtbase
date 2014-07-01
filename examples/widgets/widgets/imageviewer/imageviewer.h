@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -61,6 +61,7 @@ class ImageViewer : public QMainWindow
 
 public:
     ImageViewer();
+    bool loadFile(const QString &);
 
 private slots:
     void open();

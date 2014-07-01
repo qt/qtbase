@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -55,6 +55,7 @@ public:
     tst_QIcon();
 
 private slots:
+    void initTestCase();
     void actualSize_data(); // test with 1 pixmap
     void actualSize();
     void actualSize2_data(); // test with 2 pixmaps with different aspect ratio
@@ -79,6 +80,10 @@ private slots:
 private:
     bool haveImageFormat(QByteArray const&);
 
+    const QString m_pngImageFileName;
+    const QString m_pngRectFileName;
+    const QString m_sourceFileName;
+
     const static QIcon staticIcon;
 };
 
@@ -92,7 +97,17 @@ bool tst_QIcon::haveImageFormat(QByteArray const& desiredFormat)
 }
 
 tst_QIcon::tst_QIcon()
+    : m_pngImageFileName(QFINDTESTDATA("image.png"))
+    , m_pngRectFileName(QFINDTESTDATA("rect.png"))
+    , m_sourceFileName(QFINDTESTDATA(__FILE__))
 {
+}
+
+void tst_QIcon::initTestCase()
+{
+    QVERIFY(!m_pngImageFileName.isEmpty());
+    QVERIFY(!m_pngRectFileName.isEmpty());
+    QVERIFY(!m_sourceFileName.isEmpty());
 }
 
 void tst_QIcon::actualSize_data()
@@ -115,14 +130,13 @@ void tst_QIcon::actualSize_data()
     QTest::newRow("resource9") << ":/rect.png" << QSize( 15,  50) << QSize( 15,  30);
     QTest::newRow("resource10") << ":/rect.png" << QSize( 25,  50) << QSize( 20,  40);
 
-    const QString prefix = QFileInfo(QFINDTESTDATA("icons")).absolutePath() + "/";
-    QTest::newRow("external0") << prefix + "image.png" << QSize(128, 128) << QSize(128, 128);
-    QTest::newRow("external1") << prefix + "image.png" << QSize( 64,  64) << QSize( 64,  64);
-    QTest::newRow("external2") << prefix + "image.png" << QSize( 32,  64) << QSize( 32,  32);
-    QTest::newRow("external3") << prefix + "image.png" << QSize( 16,  64) << QSize( 16,  16);
-    QTest::newRow("external4") << prefix + "image.png" << QSize( 16,  128) << QSize( 16,  16);
-    QTest::newRow("external5") << prefix + "image.png" << QSize( 128,  16) << QSize( 16,  16);
-    QTest::newRow("external6") << prefix + "image.png" << QSize( 150,  150) << QSize( 128,  128);
+    QTest::newRow("external0") << m_pngImageFileName << QSize(128, 128) << QSize(128, 128);
+    QTest::newRow("external1") << m_pngImageFileName << QSize( 64,  64) << QSize( 64,  64);
+    QTest::newRow("external2") << m_pngImageFileName << QSize( 32,  64) << QSize( 32,  32);
+    QTest::newRow("external3") << m_pngImageFileName << QSize( 16,  64) << QSize( 16,  16);
+    QTest::newRow("external4") << m_pngImageFileName << QSize( 16, 128) << QSize( 16,  16);
+    QTest::newRow("external5") << m_pngImageFileName << QSize(128,  16) << QSize( 16,  16);
+    QTest::newRow("external6") << m_pngImageFileName << QSize(150, 150) << QSize(128,  128);
     // rect image
     QTest::newRow("external7") << ":/rect.png" << QSize( 20,  40) << QSize( 20,  40);
     QTest::newRow("external8") << ":/rect.png" << QSize( 10,  20) << QSize( 10,  20);
@@ -170,10 +184,8 @@ void tst_QIcon::actualSize2_data()
 void tst_QIcon::actualSize2()
 {
     QIcon icon;
-    const QString prefix = QFileInfo(QFINDTESTDATA("icons")).absolutePath() + "/";
-
-    icon.addPixmap(QPixmap(prefix + "image.png"));
-    icon.addPixmap(QPixmap(prefix + "rect.png"));
+    icon.addPixmap(m_pngImageFileName);
+    icon.addPixmap(m_pngRectFileName);
 
     QFETCH(QSize, argument);
     QFETCH(QSize, result);
@@ -209,14 +221,13 @@ void tst_QIcon::isNull() {
     QVERIFY(!iconNoFileSuffix.isNull());
     QVERIFY(!iconNoFileSuffix.actualSize(QSize(32, 32)).isValid());
 
-    const QString prefix = QFileInfo(QFINDTESTDATA("icons")).absolutePath() + "/";
     // test string constructor with existing file but unsupported format
-    QIcon iconUnsupportedFormat = QIcon(prefix + "tst_qicon.cpp");
+    QIcon iconUnsupportedFormat = QIcon(m_sourceFileName);
     QVERIFY(!iconUnsupportedFormat.isNull());
     QVERIFY(!iconUnsupportedFormat.actualSize(QSize(32, 32)).isValid());
 
     // test string constructor with existing file and supported format
-    QIcon iconSupportedFormat = QIcon(prefix + "image.png");
+    QIcon iconSupportedFormat = QIcon(m_pngImageFileName);
     QVERIFY(!iconSupportedFormat.isNull());
     QVERIFY(iconSupportedFormat.actualSize(QSize(32, 32)).isValid());
 }
@@ -347,7 +358,7 @@ void tst_QIcon::bestMatch()
 
 void tst_QIcon::cacheKey()
 {
-    QIcon icon1("image.png");
+    QIcon icon1(m_pngImageFileName);
     qint64 icon1_key = icon1.cacheKey();
     QIcon icon2 = icon1;
 
@@ -363,7 +374,7 @@ void tst_QIcon::detach()
     img.fill(0xffff0000);
     QIcon icon1(QPixmap::fromImage(img));
     QIcon icon2 = icon1;
-    icon2.addFile(QFINDTESTDATA("image.png"), QSize(64, 64));
+    icon2.addFile(m_pngImageFileName, QSize(64, 64));
 
     QImage img1 = icon1.pixmap(64, 64).toImage();
     QImage img2 = icon2.pixmap(64, 64).toImage();
@@ -415,11 +426,11 @@ void tst_QIcon::availableSizes()
 {
     {
         QIcon icon;
-        icon.addFile("image.png", QSize(32,32));
-        icon.addFile("image.png", QSize(64,64));
-        icon.addFile("image.png", QSize(128,128));
-        icon.addFile("image.png", QSize(256,256), QIcon::Disabled);
-        icon.addFile("image.png", QSize(16,16), QIcon::Normal, QIcon::On);
+        icon.addFile(m_pngImageFileName, QSize(32,32));
+        icon.addFile(m_pngImageFileName, QSize(64,64));
+        icon.addFile(m_pngImageFileName, QSize(128,128));
+        icon.addFile(m_pngImageFileName, QSize(256,256), QIcon::Disabled);
+        icon.addFile(m_pngImageFileName, QSize(16,16), QIcon::Normal, QIcon::On);
 
         QList<QSize> availableSizes = icon.availableSizes();
         QCOMPARE(availableSizes.size(), 3);
@@ -542,7 +553,7 @@ static inline bool operator<(const QSize &lhs, const QSize &rhs)
 #ifndef QT_NO_WIDGETS
 void tst_QIcon::task184901_badCache()
 {
-    QPixmap pm(QFINDTESTDATA("image.png"));
+    QPixmap pm(m_pngImageFileName);
     QIcon icon(pm);
 
     //the disabled icon must have an effect (grayed)

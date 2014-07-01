@@ -363,10 +363,12 @@ void QRasterPlatformPixmap::createPixmapForImage(QImage &sourceImage, Qt::ImageC
     }
     is_null = (w <= 0 || h <= 0);
 
-    image.d->devicePixelRatio = sourceImage.devicePixelRatio();
+    if (image.d)
+        image.d->devicePixelRatio = sourceImage.devicePixelRatio();
     //ensure the pixmap and the image resulting from toImage() have the same cacheKey();
     setSerialNumber(image.cacheKey() >> 32);
-    setDetachNumber(image.d->detach_no);
+    if (image.d)
+        setDetachNumber(image.d->detach_no);
 }
 
 QImage* QRasterPlatformPixmap::buffer()

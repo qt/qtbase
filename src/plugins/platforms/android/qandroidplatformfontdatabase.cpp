@@ -43,6 +43,8 @@
 
 #include "qandroidplatformfontdatabase.h"
 
+QT_BEGIN_NAMESPACE
+
 QString QAndroidPlatformFontDatabase::fontDir() const
 {
     return QLatin1String("/system/fonts");
@@ -87,3 +89,5 @@ QStringList QAndroidPlatformFontDatabase::fallbacksForFamily(const QString &fami
 
     return QString(qgetenv("QT_ANDROID_FONTS")).split(";") + m_fallbacks[script];
 }
+
+QT_END_NAMESPACE

@@ -311,6 +311,8 @@ public:
 
     void start();
 
+    void registerEventDispatcher(QAbstractEventDispatcher *dispatcher);
+
 signals:
     void eventPending();
 
@@ -410,7 +412,6 @@ public:
 
 
     void sync();
-    void flush() { xcb_flush(m_connection); }
 
     void handleXcbError(xcb_generic_error_t *error);
     void handleXcbEvent(xcb_generic_event_t *event);
@@ -465,8 +466,11 @@ public:
     void handleEnterEvent(const xcb_enter_notify_event_t *);
 #endif
 
+    QXcbEventReader *eventReader() const { return m_reader; }
+
 public slots:
     void syncWindow(QXcbWindow *window);
+    void flush() { xcb_flush(m_connection); }
 
 private slots:
     void processXcbEvents();
@@ -497,8 +501,10 @@ private:
 #ifdef XCB_USE_XINPUT2
     void initializeXInput2();
     void finalizeXInput2();
+    void xi2SetupDevices();
     XInput2DeviceData *deviceForId(int id);
     void xi2HandleEvent(xcb_ge_event_t *event);
+    void xi2HandleHierachyEvent(void *event);
     int m_xiOpCode, m_xiEventBase, m_xiErrorBase;
 #ifndef QT_NO_TABLETEVENT
     struct TabletData {

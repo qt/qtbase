@@ -50,6 +50,8 @@
 #include <QQueue>
 #include <QWindow>
 
+QT_BEGIN_NAMESPACE
+
 using namespace QtAndroid;
 
 namespace QtAndroidMenu
@@ -428,3 +430,5 @@ namespace QtAndroidMenu
         return true;
     }
 }
+
+QT_END_NAMESPACE

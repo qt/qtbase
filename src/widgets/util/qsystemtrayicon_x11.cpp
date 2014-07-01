@@ -86,6 +86,7 @@ protected:
     virtual void mouseDoubleClickEvent(QMouseEvent *ev);
     virtual bool event(QEvent *);
     virtual void paintEvent(QPaintEvent *);
+    virtual void resizeEvent(QResizeEvent *);
 
 private slots:
     void systemTrayWindowChanged(QScreen *screen);
@@ -206,6 +207,11 @@ void QSystemTrayIconSys::paintEvent(QPaintEvent *)
     painter.fillRect(rect, Qt::transparent);
     painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
     q->icon().paint(&painter, rect);
+}
+
+void QSystemTrayIconSys::resizeEvent(QResizeEvent *)
+{
+    update();
 }
 
 ////////////////////////////////////////////////////////////////////////////

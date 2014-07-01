@@ -376,6 +376,7 @@ public:
     void keyboardSearchString(const QString &text);
     void modelChanged();
     void updateViewContainerPaletteAndOpacity();
+    void updateFocusPolicy();
 
 #ifdef Q_OS_OSX
     bool showNativePopup();

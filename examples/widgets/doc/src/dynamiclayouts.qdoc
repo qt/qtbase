@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -28,7 +28,13 @@
 /*!
     \example layouts/dynamiclayouts
     \title Dynamic Layouts Example
+    \brief Shows how to re-orient widgets in running applications.
 
-    \brief The Dynamic Layouts example shows how to move widgets around in
-    existing layouts.
+    \e{Dynamic Layouts} implements dynamically placed widgets within running
+    applications. The widget placement depends on whether \c Horizontal or \c
+    Vertical is chosen.
+
+    For more information, visit the \l{Layout Management} page.
+
+    \include examples-run.qdocinc
 */

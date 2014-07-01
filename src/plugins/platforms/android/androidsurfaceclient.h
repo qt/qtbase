@@ -44,6 +44,8 @@
 #include <QMutex>
 #include <jni.h>
 
+QT_BEGIN_NAMESPACE
+
 class AndroidSurfaceClient
 {
 public:
@@ -54,5 +56,7 @@ public:
 protected:
     QMutex m_surfaceMutex;
 };
+
+QT_END_NAMESPACE
 
 #endif // ANDROIDSURFACECLIENT_H

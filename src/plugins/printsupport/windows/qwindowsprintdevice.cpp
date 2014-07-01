@@ -252,6 +252,9 @@ QMarginsF QWindowsPrintDevice::printableMargins(const QPageSize &pageSize,
     if (GetPrinter(m_hPrinter, 2, buffer.data(), needed, &needed)) {
         PPRINTER_INFO_2 info = reinterpret_cast<PPRINTER_INFO_2>(buffer.data());
         DEVMODE *devMode = info->pDevMode;
+        if (!devMode)
+            return margins;
+
         HDC pDC = CreateDC(NULL, (LPWSTR)m_id.utf16(), NULL, devMode);
         if (pageSize.id() == QPageSize::Custom || pageSize.windowsId() <= 0 || pageSize.windowsId() > DMPAPER_LAST) {
             devMode->dmPaperSize =  0;
