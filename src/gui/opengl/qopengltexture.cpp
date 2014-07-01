@@ -2446,9 +2446,8 @@ bool QOpenGLTexture::hasFeature(Feature feature)
             break;
 
         case TextureBuffer:
-            supported = f.version() >= qMakePair(4, 3)
-                    || (ctx->hasExtension(QByteArrayLiteral("GL_ARB_texture_buffer_object"))
-                        && ctx->hasExtension(QByteArrayLiteral("GL_ARB_texture_buffer_range")));
+            supported = f.version() >= qMakePair(3, 0)
+                    || ctx->hasExtension(QByteArrayLiteral("GL_ARB_texture_buffer_object"));
             break;
 
         case StencilTexturing:
