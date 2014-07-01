@@ -698,6 +698,7 @@ CFG_INOTIFY=auto
 CFG_EVENTFD=auto
 CFG_RPATH=yes
 CFG_FRAMEWORK=auto
+CFG_USE_GOLD_LINKER=auto
 DEFINES=
 INCLUDES=
 D_FLAGS=
@@ -1592,6 +1593,13 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
+    use-gold-linker)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_USE_GOLD_LINKER="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
     zlib)
         [ "$VAL" = "qt" ] && VAL=yes
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ] || [ "$VAL" = "system" ]; then
@@ -2465,6 +2473,9 @@ Additional options:
                               linker optimizations (Qt/X11 and Qt for Embedded Linux only;
                               experimental; needs GNU ld >= 2.18).
 
+    -no-use-gold-linker ..... Do not link using the GNU gold linker.
+ +  -use-gold-linker ........ Link using the GNU gold linker if available.
+
     -force-asserts ........ Force Q_ASSERT to be enabled even in release builds.
 
     -device <name> ............... Cross-compile for device <name> (experimental)
@@ -3227,6 +3238,19 @@ if [ "$CFG_REDUCE_EXPORTS" != "no" ]; then
        CFG_REDUCE_EXPORTS=no
     else
        CFG_REDUCE_EXPORTS=yes
+    fi
+fi
+
+# auto-detect -fuse-ld=gold support
+if [ "$CFG_USE_GOLD_LINKER" != "no" ]; then
+    if linkerSupportsFlag $TEST_COMPILER -fuse-ld=gold; then
+       CFG_USE_GOLD_LINKER=yes
+    else
+        if [ "$CFG_USE_GOLD_LINKER" = "yes" ]; then
+            echo "-use-gold-linker was requested but this compiler does not support it"
+            exit 1
+        fi
+        CFG_USE_GOLD_LINKER=no
     fi
 fi
 
@@ -5598,6 +5622,7 @@ fi
 [ "$CFG_REDUCE_RELOCATIONS" = "yes" ] && QT_CONFIG="$QT_CONFIG reduce_relocations"
 [ "$CFG_STRIP" = "no" ] && QMAKE_CONFIG="$QMAKE_CONFIG nostrip"
 [ "$CFG_PRECOMPILE" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG precompile_header"
+[ "$CFG_USE_GOLD_LINKER" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG use_gold_linker"
 if [ "$CFG_SEPARATE_DEBUG_INFO" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG separate_debug_info"
 fi
@@ -6472,6 +6497,7 @@ else
 fi
 unset build_mode release
 echo "  Using C++11 ............ $CFG_CXX11"
+echo "  Using gold linker....... $CFG_USE_GOLD_LINKER"
 echo "  Using PCH .............. $CFG_PRECOMPILE"
 echo "  Target compiler supports:"
 if [ "$CFG_ARCH" = "i386" -o "$CFG_ARCH" = "x86_64" ]; then

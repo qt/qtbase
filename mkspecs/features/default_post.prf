@@ -61,6 +61,8 @@ debug {
     QMAKE_LIBFLAGS += $$QMAKE_LIBFLAGS_RELEASE
 }
 
+use_gold_linker: QMAKE_LFLAGS += $$QMAKE_LFLAGS_USE_GOLD
+
 dll:win32: QMAKE_LFLAGS += $$QMAKE_LFLAGS_DLL
 static:mac: QMAKE_LFLAGS += $$QMAKE_LFLAGS_STATIC_LIB
 staticlib:unix {

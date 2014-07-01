@@ -250,6 +250,8 @@ Configure::Configure(int& argc, char** argv)
 
     dictionary[ "C++11" ]           = "auto";
 
+    dictionary[ "USE_GOLD_LINKER" ] = "no";
+
     dictionary[ "SHARED" ]          = "yes";
 
     dictionary[ "ZLIB" ]            = "auto";
@@ -461,6 +463,10 @@ void Configure::parseCmdLine()
             dictionary[ "C++11" ] = "yes";
         else if (configCmdLine.at(i) == "-no-c++11")
             dictionary[ "C++11" ] = "no";
+        else if (configCmdLine.at(i) == "-use-gold-linker")
+            dictionary[ "USE_GOLD_LINKER" ] = "yes";
+        else if (configCmdLine.at(i) == "-no-use-gold-linker")
+            dictionary[ "USE_GOLD_LINKER" ] = "no";
         else if (configCmdLine.at(i) == "-shared")
             dictionary[ "SHARED" ] = "yes";
         else if (configCmdLine.at(i) == "-static")
@@ -1762,6 +1768,9 @@ bool Configure::displayHelp()
         desc("C++11", "yes", "-c++11",                  "Compile Qt with C++11 support enabled.");
         desc("C++11", "no", "-no-c++11",                "Do not compile Qt with C++11 support enabled.\n");
 
+        desc("USE_GOLD_LINKER", "yes", "-use-gold-linker",                  "Link using the GNU gold linker (gcc only).");
+        desc("USE_GOLD_LINKER", "no", "-no-use-gold-linker",                "Do not link using the GNU gold linker.\n");
+
         desc("SHARED", "yes",   "-shared",              "Create and use shared Qt libraries.");
         desc("SHARED", "no",    "-static",              "Create and use static Qt libraries.\n");
 
@@ -2608,6 +2617,9 @@ void Configure::generateOutputVars()
 
     if (dictionary[ "C++11" ] == "yes")
         qtConfig += "c++11";
+
+    if (dictionary[ "USE_GOLD_LINKER" ] == "yes")
+        qmakeConfig += "use_gold_linker";
 
     if (dictionary[ "SHARED" ] == "no")
         qtConfig += "static";
