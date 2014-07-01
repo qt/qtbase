@@ -70,6 +70,7 @@ public:
     void setPassword(const QString &password);
 
     QString realm() const;
+    void setRealm(const QString &realm);
 
     QVariant option(const QString &opt) const;
     QVariantHash options() const;

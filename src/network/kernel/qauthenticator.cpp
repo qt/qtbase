@@ -282,6 +282,15 @@ QString QAuthenticator::realm() const
 }
 
 /*!
+  \internal
+*/
+void QAuthenticator::setRealm(const QString &realm)
+{
+    detach();
+    d->realm = realm;
+}
+
+/*!
     \since 4.7
     Returns the value related to option \a opt if it was set by the server.
     See \l{QAuthenticator#Options} for more information on incoming options.
