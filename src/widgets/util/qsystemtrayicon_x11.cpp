@@ -104,11 +104,24 @@ QSystemTrayIconSys::QSystemTrayIconSys(QSystemTrayIcon *qIn)
     setObjectName(QStringLiteral("QSystemTrayIconSys"));
     setToolTip(q->toolTip());
     setAttribute(Qt::WA_AlwaysShowToolTips, true);
-    setAttribute(Qt::WA_TranslucentBackground, true);
     setAttribute(Qt::WA_QuitOnClose, false);
     const QSize size(22, 22); // Gnome, standard size
     setGeometry(QRect(QPoint(0, 0), size));
     setMinimumSize(size);
+
+    // We need two different behaviors depending on whether the X11 visual for the system tray
+    // (a) exists and (b) supports an alpha channel, i.e. is 32 bits.
+    // If we have a visual that has an alpha channel, we can paint this widget with a transparent
+    // background and it will work.
+    // However, if there's no alpha channel visual, in order for transparent tray icons to work,
+    // we do not have a transparent background on the widget, but call xcb_clear_region before
+    // painting the icon
+    bool hasAlphaChannel = false;
+    QMetaObject::invokeMethod(QGuiApplication::platformNativeInterface(),
+                              "systrayVisualHasAlphaChannel", Qt::DirectConnection,
+                              Q_RETURN_ARG(bool, hasAlphaChannel));
+    setAttribute(Qt::WA_TranslucentBackground, hasAlphaChannel);
+
     addToTray();
 }
 
@@ -199,12 +212,21 @@ bool QSystemTrayIconSys::event(QEvent *e)
 
 void QSystemTrayIconSys::paintEvent(QPaintEvent *)
 {
-    // Note: Transparent pixels require a particular Visual which XCB
-    // currently does not support yet.
     const QRect rect(QPoint(0, 0), geometry().size());
     QPainter painter(this);
-    painter.setCompositionMode(QPainter::CompositionMode_Source);
-    painter.fillRect(rect, Qt::transparent);
+
+    // If we have Qt::WA_TranslucentBackground set, during widget creation
+    // we detected the systray visual supported an alpha channel
+    if (testAttribute(Qt::WA_TranslucentBackground)) {
+        painter.setCompositionMode(QPainter::CompositionMode_Source);
+        painter.fillRect(rect, Qt::transparent);
+    } else {
+        QMetaObject::invokeMethod(QGuiApplication::platformNativeInterface(),
+                                    "clearRegion", Qt::DirectConnection,
+                                    Q_ARG(const QWindow *, windowHandle()),
+                                    Q_ARG(const QRect&, rect)
+                                 );
+    }
     painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
     q->icon().paint(&painter, rect);
 }

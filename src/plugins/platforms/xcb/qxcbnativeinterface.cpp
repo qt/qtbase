@@ -93,7 +93,9 @@ static int resourceType(const QByteArray &key)
 }
 
 QXcbNativeInterface::QXcbNativeInterface() :
-    m_genericEventFilterType(QByteArrayLiteral("xcb_generic_event_t"))
+    m_genericEventFilterType(QByteArrayLiteral("xcb_generic_event_t")),
+    m_sysTraySelectionAtom(XCB_ATOM_NONE),
+    m_systrayVisualId(XCB_NONE)
 
 {
 }
@@ -133,6 +135,82 @@ QRect QXcbNativeInterface::systemTrayWindowGlobalGeometry(const QWindow *window)
         if (const QXcbSystemTrayTracker *trayTracker = systemTrayTracker(window->screen()))
             return trayTracker->systemTrayWindowGlobalGeometry(static_cast<const QXcbWindow *>(platformWindow)->xcb_window());
     return QRect();
+}
+
+xcb_window_t QXcbNativeInterface::locateSystemTray(xcb_connection_t *conn, const QXcbScreen *screen)
+{
+    if (m_sysTraySelectionAtom == XCB_ATOM_NONE) {
+        const QByteArray net_sys_tray = QString::fromLatin1("_NET_SYSTEM_TRAY_S%1").arg(screen->screenNumber()).toLatin1();
+        xcb_intern_atom_cookie_t intern_c =
+            xcb_intern_atom_unchecked(conn, true, net_sys_tray.length(), net_sys_tray);
+
+        xcb_intern_atom_reply_t *intern_r = xcb_intern_atom_reply(conn, intern_c, 0);
+
+        if (!intern_r)
+            return XCB_WINDOW_NONE;
+
+        m_sysTraySelectionAtom = intern_r->atom;
+        free(intern_r);
+    }
+
+    xcb_get_selection_owner_cookie_t sel_owner_c = xcb_get_selection_owner_unchecked(conn, m_sysTraySelectionAtom);
+    xcb_get_selection_owner_reply_t *sel_owner_r = xcb_get_selection_owner_reply(conn, sel_owner_c, 0);
+
+    if (!sel_owner_r)
+        return XCB_WINDOW_NONE;
+
+    xcb_window_t selection_window = sel_owner_r->owner;
+    free(sel_owner_r);
+
+    return selection_window;
+}
+
+bool QXcbNativeInterface::systrayVisualHasAlphaChannel() {
+    const QXcbScreen *screen = static_cast<QXcbScreen *>(QGuiApplication::primaryScreen()->handle());
+
+    if (m_systrayVisualId == XCB_NONE) {
+        xcb_connection_t *xcb_conn = screen->xcb_connection();
+        xcb_atom_t tray_atom = screen->atom(QXcbAtom::_NET_SYSTEM_TRAY_VISUAL);
+
+        xcb_window_t systray_window = locateSystemTray(xcb_conn, screen);
+        if (systray_window == XCB_WINDOW_NONE)
+            return false;
+
+        // Get the xcb property for the _NET_SYSTEM_TRAY_VISUAL atom
+        xcb_get_property_cookie_t systray_atom_cookie;
+        xcb_get_property_reply_t *systray_atom_reply;
+
+        systray_atom_cookie = xcb_get_property_unchecked(xcb_conn, false, systray_window,
+                                                        tray_atom, XCB_ATOM_VISUALID, 0, 1);
+        systray_atom_reply = xcb_get_property_reply(xcb_conn, systray_atom_cookie, 0);
+
+        if (!systray_atom_reply)
+            return false;
+
+        if (systray_atom_reply->value_len > 0 && xcb_get_property_value_length(systray_atom_reply) > 0) {
+            xcb_visualid_t * vids = (uint32_t *)xcb_get_property_value(systray_atom_reply);
+            m_systrayVisualId = vids[0];
+        }
+
+        free(systray_atom_reply);
+    }
+
+    if (m_systrayVisualId != XCB_NONE) {
+        quint8 depth = screen->depthOfVisual(m_systrayVisualId);
+        return depth == 32;
+    } else {
+        return false;
+    }
+}
+
+void QXcbNativeInterface::clearRegion(const QWindow *qwindow, const QRect& rect)
+{
+    if (const QPlatformWindow *platformWindow = qwindow->handle()) {
+        const QXcbWindow *qxwindow = static_cast<const QXcbWindow *>(platformWindow);
+        xcb_connection_t *xcb_conn = qxwindow->xcb_connection();
+
+        xcb_clear_area(xcb_conn, false, qxwindow->xcb_window(), rect.x(), rect.y(), rect.width(), rect.height());
+    }
 }
 
 void *QXcbNativeInterface::nativeResourceForIntegration(const QByteArray &resourceString)

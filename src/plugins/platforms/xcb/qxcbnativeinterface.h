@@ -107,6 +107,8 @@ public:
 
     Q_INVOKABLE void beep();
     Q_INVOKABLE bool systemTrayAvailable(const QScreen *screen) const;
+    Q_INVOKABLE void clearRegion(const QWindow *qwindow, const QRect& rect);
+    Q_INVOKABLE bool systrayVisualHasAlphaChannel();
     Q_INVOKABLE bool requestSystemTrayWindowDock(const QWindow *window);
     Q_INVOKABLE QRect systemTrayWindowGlobalGeometry(const QWindow *window);
 
@@ -114,7 +116,12 @@ signals:
     void systemTrayWindowChanged(QScreen *screen);
 
 private:
+    xcb_window_t locateSystemTray(xcb_connection_t *conn, const QXcbScreen *screen);
+
     const QByteArray m_genericEventFilterType;
+
+    xcb_atom_t m_sysTraySelectionAtom;
+    xcb_visualid_t m_systrayVisualId;
 
     static QXcbScreen *qPlatformScreenForWindow(QWindow *window);
 };

@@ -200,6 +200,7 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *scr,
         while (visualtype_iterator.rem) {
             xcb_visualtype_t *visualtype = visualtype_iterator.data;
             m_visuals.insert(visualtype->visual_id, *visualtype);
+            m_visualDepths.insert(visualtype->visual_id, depth->depth);
             xcb_visualtype_next(&visualtype_iterator);
         }
 
@@ -294,6 +295,14 @@ const xcb_visualtype_t *QXcbScreen::visualForId(xcb_visualid_t visualid) const
     if (it == m_visuals.constEnd())
         return 0;
     return &*it;
+}
+
+quint8 QXcbScreen::depthOfVisual(xcb_visualid_t visualid) const
+{
+    QMap<xcb_visualid_t, quint8>::const_iterator it = m_visualDepths.find(visualid);
+    if (it == m_visualDepths.constEnd())
+        return 0;
+    return *it;
 }
 
 QImage::Format QXcbScreen::format() const

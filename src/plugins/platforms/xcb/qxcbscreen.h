@@ -93,6 +93,7 @@ public:
     bool syncRequestSupported() const { return m_syncRequestSupported; }
 
     const xcb_visualtype_t *visualForId(xcb_visualid_t) const;
+    quint8 depthOfVisual(xcb_visualid_t) const;
 
     QString name() const { return m_outputName; }
 
@@ -127,6 +128,7 @@ private:
     bool m_syncRequestSupported;
     xcb_window_t m_clientLeader;
     QMap<xcb_visualid_t, xcb_visualtype_t> m_visuals;
+    QMap<xcb_visualid_t, quint8> m_visualDepths;
     QXcbCursor *m_cursor;
     int m_refreshRate;
     int m_forcedDpi;
