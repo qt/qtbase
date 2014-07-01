@@ -1102,6 +1102,8 @@ void QGuiApplicationPrivate::createPlatformIntegration()
 
     // Get command line params
 
+    QString icon;
+
     int j = argc ? 1 : 0;
     for (int i=1; i<argc; i++) {
         if (argv[i] && *argv[i] != '-') {
@@ -1129,8 +1131,7 @@ void QGuiApplicationPrivate::createPlatformIntegration()
                 firstWindowTitle = QString::fromLocal8Bit(argv[i]);
         } else if (arg == "-qwindowicon" || (isXcb && arg == "-icon")) {
             if (++i < argc) {
-                const QString icon = QString::fromLocal8Bit(argv[i]);
-                forcedWindowIcon = QDir::isAbsolutePath(icon) ? QIcon(icon) : QIcon::fromTheme(icon);
+                icon = QString::fromLocal8Bit(argv[i]);
             }
         } else {
             argv[j++] = argv[i];
@@ -1144,6 +1145,8 @@ void QGuiApplicationPrivate::createPlatformIntegration()
 
     init_platform(QLatin1String(platformName), platformPluginPath, platformThemeName, argc, argv);
 
+    if (!icon.isEmpty())
+        forcedWindowIcon = QDir::isAbsolutePath(icon) ? QIcon(icon) : QIcon::fromTheme(icon);
 }
 
 /*!
