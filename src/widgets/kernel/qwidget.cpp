@@ -5511,7 +5511,9 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
             if (renderToTexture) {
                 // This widget renders into a texture which is composed later. We just need to
                 // punch a hole in the backingstore, so the texture will be visible.
+#ifndef QT_NO_OPENGL
                 QPainter p(q);
+
                 if (backingStore) {
                     p.setCompositionMode(QPainter::CompositionMode_Source);
                     p.fillRect(q->rect(), Qt::transparent);
@@ -5519,6 +5521,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
                     // We are not drawing to a backingstore: fall back to QImage
                     p.drawImage(q->rect(), grabFramebuffer());
                 }
+#endif
             } else {
                 //actually send the paint event
                 QPaintEvent e(toBePainted);
