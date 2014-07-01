@@ -57,7 +57,7 @@ void QDirectFBEGLHooks::platformInit()
 
 void QDirectFBEGLHooks::platformDestroy()
 {
-    DBPL_UnregisterDirectFBDisplayPlatform(&dbpl_handle);
+    DBPL_UnregisterDirectFBDisplayPlatform(dbpl_handle);
     dbpl_handle = 0;
 }
 
