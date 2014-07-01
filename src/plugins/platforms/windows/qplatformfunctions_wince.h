@@ -86,8 +86,10 @@
 #define HWND_MESSAGE 0
 #endif
 
+// Real Value would be 0x40000000, but if we pass this to Windows Embedded Compact
+// he blits it wrongly, so lets not do any harm and define it to 0
 #ifndef CAPTUREBLT
-#define CAPTUREBLT                   (DWORD)0x40000000
+#define CAPTUREBLT                   (DWORD)0x0
 #endif
 
 #define SW_SHOWMINIMIZED SW_MINIMIZE
