@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "specparser.h"
+#include "legacyspecparser.h"
 
 #include <QDebug>
 #include <QFile>
@@ -48,39 +48,36 @@
 #include <QTextStream>
 
 #ifdef SPECPARSER_DEBUG
-#define qSpecParserDebug qDebug
+#define qLegacySpecParserDebug qDebug
 #else
-#define qSpecParserDebug QT_NO_QDEBUG_MACRO
+#define qLegacySpecParserDebug QT_NO_QDEBUG_MACRO
 #endif
 
-SpecParser::SpecParser()
-{
-}
-
-void SpecParser::parse()
+bool LegacySpecParser::parse()
 {
     // Get the mapping form generic types to specific types suitable for use in C-headers
     if (!parseTypeMap())
-        return;
+        return false;
 
     // Open up a stream on the actual OpenGL function spec file
-    QFile file(m_specFileName);
+    QFile file(specFileName());
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        qWarning() << "Failed to open spec file:" << m_specFileName << "Aborting";
-        return;
+        qWarning() << "Failed to open spec file:" << specFileName() << "Aborting";
+        return false;
     }
 
     QTextStream stream(&file);
 
     // Extract the info that we need
     parseFunctions(stream);
+    return true;
 }
 
-bool SpecParser::parseTypeMap()
+bool LegacySpecParser::parseTypeMap()
 {
-    QFile file(m_typeMapFileName);
+    QFile file(typeMapFileName());
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        qWarning() << "Failed to open spec file:" << m_specFileName << "Aborting";
+        qWarning() << "Failed to open type file:" << typeMapFileName() << "Aborting";
         return false;
     }
 
@@ -103,18 +100,18 @@ bool SpecParser::parseTypeMap()
                 value = QStringLiteral("void");
 
             m_typeMap.insert(key, value);
-            qSpecParserDebug() << "Found type mapping from" << key << "=>" << value;
+            qLegacySpecParserDebug() << "Found type mapping from" << key << "=>" << value;
         }
     }
 
     return true;
 }
 
-void SpecParser::parseEnums()
+void LegacySpecParser::parseEnums()
 {
 }
 
-void SpecParser::parseFunctions(QTextStream &stream)
+void LegacySpecParser::parseFunctions(QTextStream &stream)
 {
     static QRegExp functionRegExp("^(\\w+)\\(.*\\)");
     static QRegExp returnRegExp("^\\treturn\\s+(\\S+)");
@@ -168,8 +165,12 @@ void SpecParser::parseFunctions(QTextStream &stream)
                     versions.insert(currentVersionProfile.version);
                 }
 
-                if (acceptCurrentFunctionInExtension)
-                    m_extensionFunctions.insert(currentCategory, currentFunction);
+                if (acceptCurrentFunctionInExtension) {
+                    FunctionProfile fp;
+                    fp.profile = currentVersionProfile.profile;
+                    fp.function = currentFunction;
+                    m_extensionFunctions.insert(currentCategory, fp);
+                }
             }
 
             // Start a new function
@@ -187,7 +188,7 @@ void SpecParser::parseFunctions(QTextStream &stream)
             // Extract the function name
             QString functionName = functionRegExp.cap(1);
             currentFunction.name = functionName;
-            qSpecParserDebug() << "Found function:" << functionName;
+            qLegacySpecParserDebug() << "Found function:" << functionName;
 
         } else if (argumentRegExp.indexIn(line) != -1) {
             // Extract info about this function argument
@@ -219,7 +220,7 @@ void SpecParser::parseFunctions(QTextStream &stream)
                 acceptCurrentFunctionInCore = false;
             }
 
-            qSpecParserDebug() << "    argument:" << arg.type << arg.name;
+            qLegacySpecParserDebug() << "    argument:" << arg.type << arg.name;
             currentFunction.arguments.append(arg);
 
         } else if (returnRegExp.indexIn(line) != -1) {
@@ -230,13 +231,13 @@ void SpecParser::parseFunctions(QTextStream &stream)
                 acceptCurrentFunctionInCore = false;
             }
             QString returnType = m_typeMap.value(returnTypeKey);
-            qSpecParserDebug() << "    return type:" << returnType;
+            qLegacySpecParserDebug() << "    return type:" << returnType;
             currentFunction.returnType = returnType;
 
         } else if (versionRegExp.indexIn(line) != -1 && !haveVersionInfo) { // Only use version line if no other source
             // Extract the OpenGL version in which this function was introduced
             QString version = versionRegExp.cap(1);
-            qSpecParserDebug() << "    version:" << version;
+            qLegacySpecParserDebug() << "    version:" << version;
             QStringList parts = version.split(QLatin1Char('.'));
             if (parts.size() != 2) {
                 qWarning() << "Found invalid version number";
@@ -259,7 +260,7 @@ void SpecParser::parseFunctions(QTextStream &stream)
         } else if (categoryRegExp.indexIn(line) != -1) {
             // Extract the category for this function
             QString category = categoryRegExp.cap(1).simplified();
-            qSpecParserDebug() << "    category:" << category;
+            qLegacySpecParserDebug() << "    category:" << category;
 
             if (categoryVersionRegExp.indexIn(category) != -1) {
                 // Use the version info in the category in preference to the version
@@ -275,7 +276,7 @@ void SpecParser::parseFunctions(QTextStream &stream)
 
             } else {
                 // Make a note of the extension name and tag this function as being part of an extension
-                qSpecParserDebug() << "Found category =" << category;
+                qLegacySpecParserDebug() << "Found category =" << category;
                 currentCategory = category;
                 acceptCurrentFunctionInExtension = true;
 
@@ -290,7 +291,7 @@ void SpecParser::parseFunctions(QTextStream &stream)
             }
 
         } else if (extToCoreVersionRegExp.indexIn(line) != -1) {
-            qSpecParserDebug() << line;
+            qLegacySpecParserDebug() << line;
             int majorVersion = extToCoreVersionRegExp.cap(1).toInt();
             int minorVersion = extToCoreVersionRegExp.cap(2).toInt();
             extToCoreCurrentVersion.major = majorVersion;
@@ -306,7 +307,7 @@ void SpecParser::parseFunctions(QTextStream &stream)
     qSort(m_versions);
 }
 
-bool SpecParser::inDeprecationException(const QString &functionName) const
+bool LegacySpecParser::inDeprecationException(const QString &functionName) const
 {
     return (functionName == QStringLiteral("TexImage3D"));
 }

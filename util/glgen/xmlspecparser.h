@@ -39,40 +39,45 @@
 **
 ****************************************************************************/
 
-#include "codegenerator.h"
-#include "legacyspecparser.h"
-#include "xmlspecparser.h"
+#ifndef XMLSPECPARSER_H
+#define XMLSPECPARSER_H
 
-#include <QCommandLineParser>
+#include "specparser.h"
 
-int main(int argc, char *argv[])
+#include <QStringList>
+#include <QVariant>
+
+class QXmlStreamReader;
+
+class XmlSpecParser : public SpecParser
 {
-    QCoreApplication app(argc, argv);
-    QCommandLineParser cmdParser;
+public:
+    virtual QList<Version> versions() const { return m_versions; }
 
-    // flag whether to use legacy or not
-    QCommandLineOption legacyOption(QStringList() << "l" << "legacy", "Use legacy parser.");
-    cmdParser.addOption(legacyOption);
-    cmdParser.process(app);
+    virtual bool parse();
 
-    SpecParser *parser;
+protected:
+    const QMultiHash<VersionProfile, Function> &versionFunctions() const { return m_functions; }
+    const QMultiMap<QString, FunctionProfile> &extensionFunctions() const { return m_extensionFunctions; }
 
-    if (cmdParser.isSet(legacyOption)) {
-        parser = new LegacySpecParser();
-        parser->setTypeMapFileName(QStringLiteral("gl.tm"));
-        parser->setSpecFileName(QStringLiteral("gl.spec"));
-    } else {
-        parser = new XmlSpecParser();
-        parser->setSpecFileName(QStringLiteral("gl.xml"));
-    }
+private:
+    void parseFunctions(QXmlStreamReader &stream);
+    void parseCommands(QXmlStreamReader &stream);
+    void parseCommand(QXmlStreamReader &stream);
+    void parseParam(QXmlStreamReader &stream, Function &func);
+    void parseFeature(QXmlStreamReader &stream);
+    void parseExtension(QXmlStreamReader &stream);
+    void parseRequire(QXmlStreamReader &stream, FunctionList& profile);
+    void parseRemoveCore(QXmlStreamReader &stream);
 
-    parser->parse();
+    QMultiHash<VersionProfile, Function> m_functions;
 
-    CodeGenerator generator;
-    generator.setParser(parser);
-    generator.generateCoreClasses(QStringLiteral("qopenglversionfunctions"));
-    generator.generateExtensionClasses(QStringLiteral("qopenglextensions"));
+    QList<Version> m_versions;
 
-    delete parser;
-    return 0;
-}
+    // Extension support
+    QMultiMap<QString, FunctionProfile> m_extensionFunctions;
+
+    QMap<QString, Function> m_functionList;
+};
+
+#endif // XMLSPECPARSER_H

@@ -9,11 +9,14 @@ TEMPLATE  = app
 TARGET    = glgen
 
 SOURCES      += main.cpp \
-                specparser.cpp \
+                xmlspecparser.cpp \
+                legacyspecparser.cpp \
                 codegenerator.cpp
 
 HEADERS      += \
                 specparser.h \
+                xmlspecparser.h \
+                legacyspecparser.h \
                 codegenerator.h
 
 OTHER_FILES  += \
