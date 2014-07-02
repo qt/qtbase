@@ -3089,6 +3089,15 @@ void Configure::generateCachefile()
     }
 }
 
+void Configure::addSysroot(QString *command)
+{
+    const QString &sysroot = dictionary["CFG_SYSROOT"];
+    if (!sysroot.isEmpty() && dictionary["CFG_GCC_SYSROOT"] == "yes") {
+        command->append(" QMAKE_LFLAGS+=--sysroot=" + sysroot);
+        command->append(" QMAKE_CXXFLAGS+=--sysroot=" + sysroot);
+    }
+}
+
 struct ArchData {
     bool isHost;
     const char *qmakespec;
@@ -3142,6 +3151,7 @@ void Configure::detectArch()
         if (!data.isHost) {
             if (qmakespec.startsWith("winrt") || qmakespec.startsWith("winphone"))
                 command.append(" QMAKE_LFLAGS+=/ENTRY:main");
+            addSysroot(&command);
         }
 
         int returnValue = 0;
@@ -3249,6 +3259,7 @@ bool Configure::tryCompileProject(const QString &projectPath, const QString &ext
         const QString qmakespec = dictionary["XQMAKESPEC"];
         if (qmakespec.startsWith("winrt") || qmakespec.startsWith("winphone"))
             command.append(" QMAKE_LFLAGS+=/ENTRY:main");
+        addSysroot(&command);
     }
 
     int code = 0;

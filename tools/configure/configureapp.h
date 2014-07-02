@@ -169,6 +169,7 @@ private:
     void reloadCmdLine();
     void saveCmdLine();
 
+    void addSysroot(QString *command);
     bool tryCompileProject(const QString &projectPath, const QString &extraOptions = QString());
     bool compilerSupportsFlag(const QString &compilerAndArgs);
 
