@@ -58,6 +58,10 @@ QT_BEGIN_NAMESPACE
 static bool resizeHorizontalDirectionFixed = false;
 static bool resizeVerticalDirectionFixed = false;
 
+// ### fixme: Qt 6: No longer export QWidgetResizeHandler and remove "Move"
+// functionality. Currently, only the resize functionality is used by QDockWidget.
+// Historically, the class was used in Qt 3's QWorkspace (predecessor to QMdiArea).
+
 QWidgetResizeHandler::QWidgetResizeHandler(QWidget *parent, QWidget *cw)
     : QObject(parent), widget(parent), childWidget(cw ? cw : parent),
       fw(0), extrahei(0), buttonDown(false), moveResizeMode(false), sizeprotect(true), movingEnabled(true)
