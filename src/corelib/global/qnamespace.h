@@ -1014,6 +1014,15 @@ public:
         Key_Info     = 0x0100011b,
         Key_Settings = 0x0100011c,
 
+        Key_MicVolumeUp   = 0x0100011d,
+        Key_MicVolumeDown = 0x0100011e,
+
+        Key_New      = 0x01000120,
+        Key_Open     = 0x01000121,
+        Key_Find     = 0x01000122,
+        Key_Undo     = 0x01000123,
+        Key_Redo     = 0x01000124,
+
         Key_MediaLast = 0x0100ffff,
 
         // Keypad navigation keys

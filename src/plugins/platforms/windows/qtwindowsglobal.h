@@ -103,6 +103,7 @@ enum WindowsEventType // Simplify event types
     AccessibleObjectFromWindowRequest = ApplicationEventFlag + 3,
     QueryEndSessionApplicationEvent = ApplicationEventFlag + 4,
     EndSessionApplicationEvent = ApplicationEventFlag + 5,
+    AppCommandEvent = ApplicationEventFlag + 6,
     InputMethodStartCompositionEvent = InputMethodEventFlag + 1,
     InputMethodCompositionEvent = InputMethodEventFlag + 2,
     InputMethodEndCompositionEvent = InputMethodEventFlag + 3,
@@ -241,6 +242,10 @@ inline QtWindows::WindowsEventType windowsEventType(UINT message, WPARAM wParamI
         return QtWindows::QueryEndSessionApplicationEvent;
     case WM_ENDSESSION:
         return QtWindows::EndSessionApplicationEvent;
+#endif
+#if defined(WM_APPCOMMAND)
+    case WM_APPCOMMAND:
+        return QtWindows::AppCommandEvent;
 #endif
     default:
         break;

@@ -962,6 +962,7 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
     case QtWindows::InputMethodKeyEvent:
     case QtWindows::InputMethodKeyDownEvent:
     case QtWindows::KeyboardLayoutChangeEvent:
+    case QtWindows::AppCommandEvent:
 #if !defined(Q_OS_WINCE) && !defined(QT_NO_SESSIONMANAGER)
         return platformSessionManager()->isInteractionBlocked() ? true : d->m_keyMapper.translateKeyEvent(platformWindow->window(), hwnd, msg, result);
 #else

@@ -198,8 +198,10 @@
 #define XF86XK_MenuKB              0x1008FF65
 #define XF86XK_MenuPB              0x1008FF66
 #define XF86XK_MySites             0x1008FF67
+#define XF86XK_New                 0x1008FF68
 #define XF86XK_News                0x1008FF69
 #define XF86XK_OfficeHome          0x1008FF6A
+#define XF86XK_Open                0x1008FF6B
 #define XF86XK_Option              0x1008FF6C
 #define XF86XK_Paste               0x1008FF6D
 #define XF86XK_Phone               0x1008FF6E
@@ -497,8 +499,10 @@ static const unsigned int KeyTbl[] = {
     XF86XK_MenuKB,              Qt::Key_MenuKB,
     XF86XK_MenuPB,              Qt::Key_MenuPB,
     XF86XK_MySites,             Qt::Key_MySites,
+    XF86XK_New,                 Qt::Key_New,
     XF86XK_News,                Qt::Key_News,
     XF86XK_OfficeHome,          Qt::Key_OfficeHome,
+    XF86XK_Open,                Qt::Key_Open,
     XF86XK_Option,              Qt::Key_Option,
     XF86XK_Paste,               Qt::Key_Paste,
     XF86XK_Phone,               Qt::Key_Phone,

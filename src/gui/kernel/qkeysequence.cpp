@@ -490,7 +490,7 @@ static const struct {
     { Qt::Key_BrightnessAdjust,           QT_TRANSLATE_NOOP("QShortcut", "Adjust Brightness") },
     { Qt::Key_Finance,                    QT_TRANSLATE_NOOP("QShortcut", "Finance") },
     { Qt::Key_Community,                  QT_TRANSLATE_NOOP("QShortcut", "Community") },
-    { Qt::Key_AudioRewind,                QT_TRANSLATE_NOOP("QShortcut", "Audio Rewind") },
+    { Qt::Key_AudioRewind,                QT_TRANSLATE_NOOP("QShortcut", "Media Rewind") },
     { Qt::Key_BackForward,                QT_TRANSLATE_NOOP("QShortcut", "Back Forward") },
     { Qt::Key_ApplicationLeft,            QT_TRANSLATE_NOOP("QShortcut", "Application Left") },
     { Qt::Key_ApplicationRight,           QT_TRANSLATE_NOOP("QShortcut", "Application Right") },
@@ -550,17 +550,40 @@ static const struct {
     { Qt::Key_Bluetooth,                  QT_TRANSLATE_NOOP("QShortcut", "Bluetooth") },
     { Qt::Key_WLAN,                       QT_TRANSLATE_NOOP("QShortcut", "Wireless") },
     { Qt::Key_UWB,                        QT_TRANSLATE_NOOP("QShortcut", "Ultra Wide Band") },
-    { Qt::Key_AudioForward,               QT_TRANSLATE_NOOP("QShortcut", "Audio Forward") },
+    { Qt::Key_AudioForward,               QT_TRANSLATE_NOOP("QShortcut", "Media Fast Forward") },
     { Qt::Key_AudioRepeat,                QT_TRANSLATE_NOOP("QShortcut", "Audio Repeat") },
     { Qt::Key_AudioRandomPlay,            QT_TRANSLATE_NOOP("QShortcut", "Audio Random Play") },
     { Qt::Key_Subtitle,                   QT_TRANSLATE_NOOP("QShortcut", "Subtitle") },
     { Qt::Key_AudioCycleTrack,            QT_TRANSLATE_NOOP("QShortcut", "Audio Cycle Track") },
     { Qt::Key_Time,                       QT_TRANSLATE_NOOP("QShortcut", "Time") },
-    { Qt::Key_Select,                     QT_TRANSLATE_NOOP("QShortcut", "Select") },
+    { Qt::Key_Hibernate,                  QT_TRANSLATE_NOOP("QShortcut", "Hibernate") },
     { Qt::Key_View,                       QT_TRANSLATE_NOOP("QShortcut", "View") },
     { Qt::Key_TopMenu,                    QT_TRANSLATE_NOOP("QShortcut", "Top Menu") },
+    { Qt::Key_PowerDown,                  QT_TRANSLATE_NOOP("QShortcut", "Power Down") },
     { Qt::Key_Suspend,                    QT_TRANSLATE_NOOP("QShortcut", "Suspend") },
-    { Qt::Key_Hibernate,                  QT_TRANSLATE_NOOP("QShortcut", "Hibernate") },
+
+    { Qt::Key_MicMute,                    QT_TRANSLATE_NOOP("QShortcut", "Microphone Mute") },
+
+    { Qt::Key_Red,                        QT_TRANSLATE_NOOP("QShortcut", "Red") },
+    { Qt::Key_Green,                      QT_TRANSLATE_NOOP("QShortcut", "Green") },
+    { Qt::Key_Yellow,                     QT_TRANSLATE_NOOP("QShortcut", "Yellow") },
+    { Qt::Key_Blue,                       QT_TRANSLATE_NOOP("QShortcut", "Blue") },
+
+    { Qt::Key_ChannelUp,                  QT_TRANSLATE_NOOP("QShortcut", "Channel Up") },
+    { Qt::Key_ChannelDown,                QT_TRANSLATE_NOOP("QShortcut", "Channel Down") },
+
+    { Qt::Key_Guide,                      QT_TRANSLATE_NOOP("QShortcut", "Guide") },
+    { Qt::Key_Info,                       QT_TRANSLATE_NOOP("QShortcut", "Info") },
+    { Qt::Key_Settings,                   QT_TRANSLATE_NOOP("QShortcut", "Settings") },
+
+    { Qt::Key_MicVolumeUp,                QT_TRANSLATE_NOOP("QShortcut", "Microphone Volume Up") },
+    { Qt::Key_MicVolumeDown,              QT_TRANSLATE_NOOP("QShortcut", "Microphone Volume Down") },
+
+    { Qt::Key_New,                        QT_TRANSLATE_NOOP("QShortcut", "New") },
+    { Qt::Key_Open,                       QT_TRANSLATE_NOOP("QShortcut", "Open") },
+    { Qt::Key_Find,                       QT_TRANSLATE_NOOP("QShortcut", "Find") },
+    { Qt::Key_Undo,                       QT_TRANSLATE_NOOP("QShortcut", "Undo") },
+    { Qt::Key_Redo,                       QT_TRANSLATE_NOOP("QShortcut", "Redo") },
 
     // --------------------------------------------------------------
     // More consistent namings
@@ -647,6 +670,7 @@ static const struct {
     { Qt::Key_Execute,  QT_TRANSLATE_NOOP("QShortcut", "Execute") },
     { Qt::Key_Play,  QT_TRANSLATE_NOOP("QShortcut", "Play") },
     { Qt::Key_Zoom,  QT_TRANSLATE_NOOP("QShortcut", "Zoom") },
+    { Qt::Key_Exit,  QT_TRANSLATE_NOOP("QShortcut", "Exit") },
 
     { 0, 0 }
 };

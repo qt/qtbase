@@ -115,6 +115,9 @@ messageDebugEntries[] = {
     {WM_SYSCOMMAND, "WM_SYSCOMMAND", true},
     {WM_KEYUP, "WM_KEYUP", true},
     {WM_SYSKEYUP, "WM_SYSKEYUP", true},
+#if defined(WM_APPCOMMAND)
+    {WM_APPCOMMAND, "WM_APPCOMMAND", true},
+#endif
     {WM_IME_CHAR, "WM_IMECHAR", true},
     {WM_IME_KEYDOWN, "WM_IMECHAR", true},
     {WM_CANCELMODE,  "WM_CANCELMODE", true},

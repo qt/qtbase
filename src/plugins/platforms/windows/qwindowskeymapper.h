@@ -93,6 +93,7 @@ public:
 
 private:
     bool translateKeyEventInternal(QWindow *receiver, const MSG &msg, bool grab);
+    bool translateMultimediaKeyEventInternal(QWindow *receiver, const MSG &msg);
     void updateKeyMap(const MSG &msg);
 
     bool m_useRTLExtensions;
