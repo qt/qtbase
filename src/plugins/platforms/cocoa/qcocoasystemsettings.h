@@ -50,7 +50,6 @@ QT_BEGIN_NAMESPACE
 
 QPalette * qt_mac_createSystemPalette();
 QHash<QPlatformTheme::Palette, QPalette*> qt_mac_createRolePalettes();
-QHash<QPlatformTheme::Font, QFont *>  qt_mac_createRoleFonts();
 
 QT_END_NAMESPACE
 

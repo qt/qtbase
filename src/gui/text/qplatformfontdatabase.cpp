@@ -402,6 +402,16 @@ QString QPlatformFontDatabase::fontDir() const
 }
 
 /*!
+    Returns true if the font family is private. For any given family name,
+    the result is platform dependent.
+*/
+bool QPlatformFontDatabase::isPrivateFontFamily(const QString &family) const
+{
+    Q_UNUSED(family);
+    return false;
+}
+
+/*!
     Returns the default system font.
 
     \sa QGuiApplication::font()

@@ -110,6 +110,7 @@ public:
     virtual QString fontDir() const;
 
     virtual QFont defaultFont() const;
+    virtual bool isPrivateFontFamily(const QString &family) const;
 
     virtual QString resolveFontFamilyAlias(const QString &family) const;
     virtual bool fontsAlwaysScalable() const;
