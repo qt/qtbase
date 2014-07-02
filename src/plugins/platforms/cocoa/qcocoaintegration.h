@@ -141,6 +141,14 @@ public:
     void setToolbar(QWindow *window, NSToolbar *toolbar);
     NSToolbar *toolbar(QWindow *window) const;
     void clearToolbars();
+
+    void setWindow(NSWindow* nsWindow, QCocoaWindow *window);
+    QCocoaWindow *window(NSWindow *window);
+
+#ifndef QT_NO_SESSIONMANAGER
+    QPlatformSessionManager *createPlatformSessionManager(const QString &id, const QString &key) const;
+#endif
+
 private:
     static QCocoaIntegration *mInstance;
 

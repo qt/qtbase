@@ -144,7 +144,12 @@ void tst_QSystemTrayIcon::lastWindowClosed()
     QTimer::singleShot(2500, &window, SLOT(close()));
     QTimer::singleShot(20000, qApp, SLOT(quit())); // in case the test fails
     qApp->exec();
+
+#ifdef Q_OS_OSX
+    QVERIFY(spy.count() == 2);
+#else
     QVERIFY(spy.count() == 1);
+#endif
 }
 
 QTEST_MAIN(tst_QSystemTrayIcon)

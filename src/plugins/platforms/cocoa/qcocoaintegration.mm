@@ -54,6 +54,7 @@
 #include "qcocoainputcontext.h"
 #include "qcocoamimetypes.h"
 #include "qcocoaaccessibility.h"
+#include "qcocoasessionmanager.h"
 
 #include <qpa/qplatformaccessibility.h>
 #include <QtCore/qcoreapplication.h>
@@ -415,6 +416,13 @@ QCocoaScreen *QCocoaIntegration::screenAtIndex(int index)
 
     return mScreens.at(index);
 }
+
+#ifndef QT_NO_SESSIONMANAGER
+QPlatformSessionManager *QCocoaIntegration::createPlatformSessionManager(const QString &id, const QString &key) const
+{
+    return new QCocoaSessionManager(id, key);
+}
+#endif
 
 bool QCocoaIntegration::hasCapability(QPlatformIntegration::Capability cap) const
 {

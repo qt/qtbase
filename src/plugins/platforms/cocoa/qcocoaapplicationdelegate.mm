@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2013 Samuel Gaist <samuel.gaist@edeltech.ch>
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
@@ -78,11 +79,13 @@
 #import "qnswindowdelegate.h"
 #import "qcocoamenuloader.h"
 #include "qcocoaintegration.h"
+#include "qcocoasessionmanager.h"
 #include <qevent.h>
 #include <qurl.h>
 #include <qdebug.h>
 #include <qguiapplication.h>
 #include <private/qguiapplication_p.h>
+#include <private/qsessionmanager_p.h>
 #include "qt_mac_p.h"
 #include <qpa/qwindowsysteminterface.h>
 
@@ -216,6 +219,17 @@ static void cleanupCocoaApplicationDelegate()
         return NSTerminateNow;
     }
 
+    QGuiApplicationPrivate *qGuiAppPriv = QGuiApplicationPrivate::instance();
+
+#ifndef QT_NO_SESSIONMANAGER
+    QSessionManagerPrivate *managerPrivate = static_cast<QSessionManagerPrivate*>(QObjectPrivate::get(qGuiAppPriv->session_manager));
+    QCocoaSessionManager *cocoaSessionManager = static_cast<QCocoaSessionManager *>(managerPrivate->platformSessionManager);
+    cocoaSessionManager->appCommitData();
+
+    if (cocoaSessionManager->wasCanceled())
+        return NSTerminateCancel;
+#endif
+
     if ([self canQuit]) {
         if (!startedQuit) {
             startedQuit = true;
@@ -239,7 +253,7 @@ static void cleanupCocoaApplicationDelegate()
         }
     }
 
-    if (QGuiApplicationPrivate::instance()->threadData->eventLoops.isEmpty()) {
+    if (qGuiAppPriv->threadData->eventLoops.isEmpty()) {
         // INVARIANT: No event loop is executing. This probably
         // means that Qt is used as a plugin, or as a part of a native
         // Cocoa application. In any case it should be fine to
@@ -270,10 +284,6 @@ static void cleanupCocoaApplicationDelegate()
      */
     NSAppleEventManager *eventManager = [NSAppleEventManager sharedAppleEventManager];
     [eventManager setEventHandler:self
-                      andSelector:@selector(appleEventQuit:withReplyEvent:)
-                    forEventClass:kCoreEventClass
-                       andEventID:kAEQuitApplication];
-    [eventManager setEventHandler:self
                       andSelector:@selector(getUrl:withReplyEvent:)
                     forEventClass:kInternetEventClass
                        andEventID:kAEGetURL];
@@ -283,7 +293,6 @@ static void cleanupCocoaApplicationDelegate()
 - (void) removeAppleEventHandlers
 {
     NSAppleEventManager *eventManager = [NSAppleEventManager sharedAppleEventManager];
-    [eventManager removeEventHandlerForEventClass:kCoreEventClass andEventID:kAEQuitApplication];
     [eventManager removeEventHandlerForEventClass:kInternetEventClass andEventID:kAEGetURL];
 }
 
@@ -330,7 +339,8 @@ static void cleanupCocoaApplicationDelegate()
         && [reflectionDelegate respondsToSelector:
                             @selector(applicationShouldTerminateAfterLastWindowClosed:)])
         return [reflectionDelegate applicationShouldTerminateAfterLastWindowClosed:sender];
-    return NO; // Someday qApp->quitOnLastWindowClosed(); when QApp and NSApp work closer together.
+
+    return qApp->quitOnLastWindowClosed();
 }
 
 
@@ -434,13 +444,6 @@ static void cleanupCocoaApplicationDelegate()
     Q_UNUSED(replyEvent);
     NSString *urlString = [[event paramDescriptorForKeyword:keyDirectObject] stringValue];
     QWindowSystemInterface::handleFileOpenEvent(QUrl(QCFString::toQString(urlString)));
-}
-
-- (void)appleEventQuit:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent
-{
-    Q_UNUSED(event);
-    Q_UNUSED(replyEvent);
-    [NSApp terminate:self];
 }
 
 - (void)qtDispatcherToQAction:(id)sender
