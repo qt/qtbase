@@ -245,9 +245,19 @@ void QCoreTextFontDatabase::populateFromDescriptor(CTFontDescriptorRef font)
     if (styles) {
         if (CFNumberRef weightValue = (CFNumberRef) CFDictionaryGetValue(styles, kCTFontWeightTrait)) {
             Q_ASSERT(CFNumberIsFloatType(weightValue));
-            double d;
-            if (CFNumberGetValue(weightValue, kCFNumberDoubleType, &d))
-                weight = (d > 0.0) ? QFont::Bold : QFont::Normal;
+            double normalizedWeight;
+            if (CFNumberGetValue(weightValue, kCFNumberDoubleType, &normalizedWeight)) {
+                if (normalizedWeight >= 0.62)
+                    weight = QFont::Black;
+                else if (normalizedWeight >= 0.4)
+                    weight = QFont::Bold;
+                else if (normalizedWeight >= 0.3)
+                    weight = QFont::DemiBold;
+                else if (normalizedWeight == 0.0)
+                    weight = QFont::Normal;
+                else if (normalizedWeight <= -0.4)
+                    weight = QFont::Light;
+            }
         }
         if (CFNumberRef italic = (CFNumberRef) CFDictionaryGetValue(styles, kCTFontSlantTrait)) {
             Q_ASSERT(CFNumberIsFloatType(italic));
