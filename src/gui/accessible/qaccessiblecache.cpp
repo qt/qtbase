@@ -41,6 +41,8 @@
 
 #include "qaccessiblecache_p.h"
 
+#ifndef QT_NO_ACCESSIBILITY
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -127,3 +129,5 @@ void QAccessibleCache::deleteInterface(QAccessible::Id id, QObject *obj)
 }
 
 QT_END_NAMESPACE
+
+#endif

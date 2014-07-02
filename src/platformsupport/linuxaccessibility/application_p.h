@@ -47,6 +47,8 @@
 #include <QtDBus/QDBusConnection>
 #include <QtGui/QAccessibleInterface>
 
+#ifndef QT_NO_ACCESSIBILITY
+
 QT_BEGIN_NAMESPACE
 
 /*
@@ -82,5 +84,7 @@ private:
 };
 
 QT_END_NAMESPACE
+
+#endif //QT_NO_ACCESSIBILITY
 
 #endif

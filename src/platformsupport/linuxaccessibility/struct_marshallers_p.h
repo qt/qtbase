@@ -49,6 +49,7 @@
 #include <QtDBus/QDBusConnection>
 #include <QtDBus/QDBusObjectPath>
 
+#ifndef QT_NO_ACCESSIBILITY
 QT_BEGIN_NAMESPACE
 
 typedef QList <int> QSpiIntList;
@@ -172,4 +173,5 @@ Q_DECLARE_METATYPE(QSpiAttributeSet)
 Q_DECLARE_METATYPE(QSpiAppUpdate)
 Q_DECLARE_METATYPE(QSpiDeviceEvent)
 
+#endif //QT_NO_ACCESSIBILITY
 #endif /* Q_SPI_STRUCT_MARSHALLERS_H */

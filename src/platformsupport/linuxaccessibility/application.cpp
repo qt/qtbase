@@ -46,6 +46,7 @@
 #include <QtDBus/qdbuspendingreply.h>
 #include <qdebug.h>
 
+#ifndef QT_NO_ACCESSIBILITY
 #include "deviceeventcontroller_adaptor.h"
 #include "atspi/atspi-constants.h"
 
@@ -235,3 +236,5 @@ void QSpiApplicationAdaptor::notifyKeyboardListenerError(const QDBusError& error
 }
 
 QT_END_NAMESPACE
+
+#endif //QT_NO_ACCESSIBILITY

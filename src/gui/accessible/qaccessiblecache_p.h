@@ -59,6 +59,8 @@
 
 #include "qaccessible.h"
 
+#ifndef QT_NO_ACCESSIBILITY
+
 Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QMacAccessibilityElement));
 
 QT_BEGIN_NAMESPACE
@@ -97,5 +99,7 @@ private:
 };
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_ACCESSIBILITY
 
 #endif

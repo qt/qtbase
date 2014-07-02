@@ -42,10 +42,10 @@
 #ifndef QACCESSIBLEBRIDGEUTILS_H
 #define QACCESSIBLEBRIDGEUTILS_H
 
-#ifndef QT_NO_ACCESSIBILITY
-
 #include <QtCore/qstringlist.h>
 #include <QtGui/qaccessible.h>
+
+#ifndef QT_NO_ACCESSIBILITY
 
 QT_BEGIN_NAMESPACE
 

@@ -53,6 +53,7 @@
 //  "ruler"    "autocomplete"  "edit bar" "embedded component"  "entry"    "caption"
 //  "heading"  "page"  "section"  "redundant object"  "form"  "input method window"  "menu"
 
+#ifndef QT_NO_ACCESSIBILITY
 QT_BEGIN_NAMESPACE
 
 QHash <QAccessible::Role, RoleNames> qSpiRoleMapping;
@@ -150,3 +151,4 @@ AtspiRelationType qAccessibleRelationToAtSpiRelation(QAccessible::Relation relat
 }
 
 QT_END_NAMESPACE
+#endif //QT_NO_ACCESSIBILITY

@@ -41,9 +41,10 @@
 
 
 #include "cache_p.h"
-#include "cache_adaptor.h"
-
 #include "bridge_p.h"
+
+#ifndef QT_NO_ACCESSIBILITY
+#include "cache_adaptor.h"
 
 #define QSPI_OBJECT_PATH_CACHE "/org/a11y/atspi/cache"
 
@@ -90,3 +91,4 @@ QSpiAccessibleCacheArray QSpiDBusCache::GetItems()
 }
 
 QT_END_NAMESPACE
+#endif //QT_NO_ACCESSIBILITY

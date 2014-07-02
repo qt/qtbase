@@ -48,6 +48,7 @@
 
 #include "bridge_p.h"
 
+#ifndef QT_NO_ACCESSIBILITY
 QT_BEGIN_NAMESPACE
 
 QSpiObjectReference::QSpiObjectReference()
@@ -235,3 +236,4 @@ void qSpiInitializeStructTypes()
 }
 
 QT_END_NAMESPACE
+#endif //QT_NO_ACCESSIBILITY

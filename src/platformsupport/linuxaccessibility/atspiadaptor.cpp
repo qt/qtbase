@@ -49,6 +49,7 @@
 
 #include <qdebug.h>
 
+#ifndef QT_NO_ACCESSIBILITY
 #include "socket_interface.h"
 #include "constant_mappings_p.h"
 
@@ -2351,3 +2352,4 @@ bool AtSpiAdaptor::tableInterface(QAccessibleInterface *interface, const QString
 }
 
 QT_END_NAMESPACE
+#endif //QT_NO_ACCESSIBILITY

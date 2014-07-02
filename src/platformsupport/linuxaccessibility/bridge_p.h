@@ -48,6 +48,7 @@
 
 class DeviceEventControllerAdaptor;
 
+#ifndef QT_NO_ACCESSIBILITY
 QT_BEGIN_NAMESPACE
 
 class DBusConnection;
@@ -79,5 +80,6 @@ private:
 };
 
 QT_END_NAMESPACE
+#endif //QT_NO_ACCESSIBILITY
 
 #endif

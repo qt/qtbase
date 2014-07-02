@@ -52,6 +52,7 @@
 #include "dbusconnection_p.h"
 #include "struct_marshallers_p.h"
 
+#ifndef QT_NO_ACCESSIBILITY
 QT_BEGIN_NAMESPACE
 
 class QAccessibleInterface;
@@ -212,5 +213,6 @@ private:
 };
 
 QT_END_NAMESPACE
+#endif //QT_NO_ACCESSIBILITY
 
 #endif

@@ -52,6 +52,7 @@
 #include "dbusconnection_p.h"
 #include "struct_marshallers_p.h"
 
+#ifndef QT_NO_ACCESSIBILITY
 #include "deviceeventcontroller_adaptor.h"
 
 QT_BEGIN_NAMESPACE
@@ -272,3 +273,4 @@ void QSpiAccessibleBridge::initializeConstantMappings()
 }
 
 QT_END_NAMESPACE
+#endif //QT_NO_ACCESSIBILITY

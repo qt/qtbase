@@ -462,13 +462,12 @@ QT_BEGIN_NAMESPACE
     Synonym for unsigned, used by the QAccessibleInterface cache.
 */
 
+#ifndef QT_NO_ACCESSIBILITY
 
 /* accessible widgets plugin discovery stuff */
-#ifndef QT_NO_ACCESSIBILITY
 #ifndef QT_NO_LIBRARY
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
     (QAccessibleFactoryInterface_iid, QLatin1String("/accessible")))
-#endif
 #endif
 
 // FIXME turn this into one global static struct
@@ -482,13 +481,11 @@ QAccessible::RootObjectHandler QAccessible::rootObjectHandler = 0;
 
 static bool cleanupAdded = false;
 
-#ifndef QT_NO_ACCESSIBILITY
 static QPlatformAccessibility *platformAccessibility()
 {
     QPlatformIntegration *pfIntegration = QGuiApplicationPrivate::platformIntegration();
     return pfIntegration ? pfIntegration->accessibility() : 0;
 }
-#endif
 
 /*!
     \fn QAccessible::QAccessible()
@@ -504,10 +501,8 @@ static QPlatformAccessibility *platformAccessibility()
 */
 void QAccessible::cleanup()
 {
-#ifndef QT_NO_ACCESSIBILITY
     if (QPlatformAccessibility *pfAccessibility = platformAccessibility())
         pfAccessibility->cleanup();
-#endif
 }
 
 static void qAccessibleCleanup()
@@ -691,7 +686,6 @@ QAccessibleInterface *QAccessible::queryAccessibleInterface(QObject *object)
                 return iface;
             }
         }
-#ifndef QT_NO_ACCESSIBILITY
 #ifndef QT_NO_LIBRARY
         // Find a QAccessiblePlugin (factory) for the class name. If there's
         // no entry in the cache try to create it using the plugin loader.
@@ -715,18 +709,15 @@ QAccessibleInterface *QAccessible::queryAccessibleInterface(QObject *object)
             return result;
         }
 #endif
-#endif
         mo = mo->superClass();
     }
 
-#ifndef QT_NO_ACCESSIBILITY
     if (object == qApp) {
         QAccessibleInterface *appInterface = new QAccessibleApplication;
         QAccessibleCache::instance()->insert(object, appInterface);
         Q_ASSERT(QAccessibleCache::instance()->objectToId.contains(qApp));
         return appInterface;
     }
-#endif
 
     return 0;
 }
@@ -796,10 +787,8 @@ QAccessibleInterface *QAccessible::accessibleInterface(Id id)
 */
 bool QAccessible::isActive()
 {
-#ifndef QT_NO_ACCESSIBILITY
     if (QPlatformAccessibility *pfAccessibility = platformAccessibility())
         return pfAccessibility->isActive();
-#endif
     return false;
 }
 
@@ -834,10 +823,8 @@ void QAccessible::setRootObject(QObject *object)
         return;
     }
 
-#ifndef QT_NO_ACCESSIBILITY
     if (QPlatformAccessibility *pfAccessibility = platformAccessibility())
         pfAccessibility->setRootObject(object);
-#endif
 }
 
 /*!
@@ -864,7 +851,6 @@ void QAccessible::updateAccessibility(QAccessibleEvent *event)
     if (!isActive())
         return;
 
-#ifndef QT_NO_ACCESSIBILITY
     if (event->type() == QAccessible::TableModelChanged) {
         if (QAccessibleInterface *iface = event->accessibleInterface()) {
             if (iface->tableInterface())
@@ -879,7 +865,6 @@ void QAccessible::updateAccessibility(QAccessibleEvent *event)
 
     if (QPlatformAccessibility *pfAccessibility = platformAccessibility())
         pfAccessibility->notifyAccessibilityUpdate(event);
-#endif
 }
 
 #if QT_DEPRECATED_SINCE(5, 0)
@@ -1826,7 +1811,7 @@ QDebug operator<<(QDebug d, const QAccessibleEvent &ev)
     d.nospace() << ")";
     return d.space();
 }
-
+#endif // QT_NO_DEBUGSTREAM
 
 /*!
     \class QAccessibleTextInterface
@@ -2630,8 +2615,7 @@ QString qAccessibleLocalizedActionDescription(const QString &actionName)
     return accessibleActionStrings()->localizedDescription(actionName);
 }
 
-
-#endif
+#endif // QT_NO_ACCESSIBILITY
 
 QT_END_NAMESPACE
 
