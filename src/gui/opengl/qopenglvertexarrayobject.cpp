@@ -60,20 +60,34 @@ public:
     QVertexArrayObjectHelper(QOpenGLContext *context)
     {
         Q_ASSERT(context);
+        bool tryARB = true;
+
         if (context->isOpenGLES()) {
-            GenVertexArrays = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLsizei , GLuint *)>(context->getProcAddress(QByteArrayLiteral("glGenVertexArraysOES")));
-            DeleteVertexArrays = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLsizei , const GLuint *)>(context->getProcAddress(QByteArrayLiteral("glDeleteVertexArraysOES")));
-            BindVertexArray = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint )>(context->getProcAddress(QByteArrayLiteral("glBindVertexArrayOES")));
-        } else {
-            if (context->hasExtension(QByteArrayLiteral("GL_APPLE_vertex_array_object"))) {
-                GenVertexArrays = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLsizei , GLuint *)>(context->getProcAddress(QByteArrayLiteral("glGenVertexArraysAPPLE")));
-                DeleteVertexArrays = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLsizei , const GLuint *)>(context->getProcAddress(QByteArrayLiteral("glDeleteVertexArraysAPPLE")));
-                BindVertexArray = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint )>(context->getProcAddress(QByteArrayLiteral("glBindVertexArrayAPPLE")));
-            } else {
-                GenVertexArrays = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLsizei , GLuint *)>(context->getProcAddress(QByteArrayLiteral("glGenVertexArrays")));
-                DeleteVertexArrays = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLsizei , const GLuint *)>(context->getProcAddress(QByteArrayLiteral("glDeleteVertexArrays")));
-                BindVertexArray = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint )>(context->getProcAddress(QByteArrayLiteral("glBindVertexArray")));
+#ifdef QT_OPENGL_ES_3
+            GenVertexArrays = ::glGenVertexArrays;
+            DeleteVertexArrays = ::glDeleteVertexArrays;
+            BindVertexArray = ::glBindVertexArray;
+            tryARB = false;
+#else
+            if (context->hasExtension(QByteArrayLiteral("GL_OES_vertex_array_object"))) {
+                GenVertexArrays = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLsizei , GLuint *)>(context->getProcAddress(QByteArrayLiteral("glGenVertexArraysOES")));
+                DeleteVertexArrays = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLsizei , const GLuint *)>(context->getProcAddress(QByteArrayLiteral("glDeleteVertexArraysOES")));
+                BindVertexArray = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint )>(context->getProcAddress(QByteArrayLiteral("glBindVertexArrayOES")));
+                tryARB = false;
             }
+#endif
+        } else if (!context->hasExtension(QByteArrayLiteral("GL_ARB_vertex_array_object"))
+                   && context->hasExtension(QByteArrayLiteral("GL_APPLE_vertex_array_object"))) {
+            GenVertexArrays = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLsizei , GLuint *)>(context->getProcAddress(QByteArrayLiteral("glGenVertexArraysAPPLE")));
+            DeleteVertexArrays = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLsizei , const GLuint *)>(context->getProcAddress(QByteArrayLiteral("glDeleteVertexArraysAPPLE")));
+            BindVertexArray = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint )>(context->getProcAddress(QByteArrayLiteral("glBindVertexArrayAPPLE")));
+            tryARB = false;
+        }
+
+        if (tryARB) {
+            GenVertexArrays = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLsizei , GLuint *)>(context->getProcAddress(QByteArrayLiteral("glGenVertexArrays")));
+            DeleteVertexArrays = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLsizei , const GLuint *)>(context->getProcAddress(QByteArrayLiteral("glDeleteVertexArrays")));
+            BindVertexArray = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint )>(context->getProcAddress(QByteArrayLiteral("glBindVertexArray")));
         }
     }
 
@@ -93,7 +107,7 @@ public:
     }
 
 private:
-    // Function signatures are equivalent between desktop core, ARB, APPLE and ES 2 extensions
+    // Function signatures are equivalent between desktop core, ARB, APPLE, ES3 and ES 2 extensions
     void (QOPENGLF_APIENTRYP GenVertexArrays)(GLsizei n, GLuint *arrays);
     void (QOPENGLF_APIENTRYP DeleteVertexArrays)(GLsizei n, const GLuint *arrays);
     void (QOPENGLF_APIENTRYP BindVertexArray)(GLuint array);
@@ -160,7 +174,7 @@ bool QOpenGLVertexArrayObjectPrivate::create()
     QObject::connect(context, SIGNAL(aboutToBeDestroyed()), q, SLOT(_q_contextAboutToBeDestroyed()));
 
     if (ctx->isOpenGLES()) {
-        if (ctx->hasExtension(QByteArrayLiteral("GL_OES_vertex_array_object"))) {
+        if (ctx->format().majorVersion() >= 3 || ctx->hasExtension(QByteArrayLiteral("GL_OES_vertex_array_object"))) {
             vaoFuncs.helper = new QVertexArrayObjectHelper(ctx);
             vaoFuncsType = OES;
             vaoFuncs.helper->glGenVertexArrays(1, &vao);

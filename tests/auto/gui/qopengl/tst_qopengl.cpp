@@ -43,6 +43,7 @@
 #include <QtGui/private/qopenglcontext_p.h>
 #include <QtGui/QOpenGLFramebufferObject>
 #include <QtGui/QOpenGLFunctions>
+#include <QtGui/QOpenGLVertexArrayObject>
 #include <QtGui/QOpenGLPaintDevice>
 #include <QtGui/QPainter>
 #include <QtGui/QScreen>
@@ -96,6 +97,8 @@ private slots:
 #ifdef USE_GLX
     void glxContextWrap();
 #endif
+
+    void vaoCreate();
 };
 
 struct SharedResourceTracker
@@ -1019,6 +1022,27 @@ void tst_QOpenGL::glxContextWrap()
     delete window;
 }
 #endif // USE_GLX
+
+void tst_QOpenGL::vaoCreate()
+{
+    QScopedPointer<QSurface> surface(createSurface(QSurface::Window));
+    QOpenGLContext *ctx = new QOpenGLContext;
+    ctx->create();
+    ctx->makeCurrent(surface.data());
+
+    QOpenGLVertexArrayObject vao;
+    bool success = vao.create();
+    if (ctx->isOpenGLES()) {
+        if (ctx->format().majorVersion() >= 3 || ctx->hasExtension(QByteArrayLiteral("GL_OES_vertex_array_object")))
+            QVERIFY(success);
+    } else {
+        if (ctx->format().majorVersion() >= 3 || ctx->hasExtension(QByteArrayLiteral("GL_ARB_vertex_array_object")))
+            QVERIFY(success);
+    }
+
+    vao.destroy();
+    ctx->doneCurrent();
+}
 
 QTEST_MAIN(tst_QOpenGL)
 
