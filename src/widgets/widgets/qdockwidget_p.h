@@ -88,7 +88,7 @@ public:
           features(QDockWidget::DockWidgetClosable
                    | QDockWidget::DockWidgetMovable
                    | QDockWidget::DockWidgetFloatable),
-          allowedAreas(Qt::AllDockWidgetAreas)
+          allowedAreas(Qt::AllDockWidgetAreas), resizer(0)
     { }
 
     void init();
@@ -100,8 +100,6 @@ public:
 
     QDockWidget::DockWidgetFeatures features;
     Qt::DockWidgetAreas allowedAreas;
-
-    QWidgetResizeHandler *resizer;
 
 #ifndef QT_NO_ACTION
     QAction *toggleViewAction;
@@ -124,8 +122,12 @@ public:
 
     void unplug(const QRect &rect);
     void plug(const QRect &rect);
+    void setResizerActive(bool active);
 
     bool isAnimating() const;
+
+private:
+    QWidgetResizeHandler *resizer;
 };
 
 class Q_WIDGETS_EXPORT QDockWidgetLayout : public QLayout

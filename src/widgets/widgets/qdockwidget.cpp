@@ -591,10 +591,6 @@ void QDockWidgetPrivate::init()
     QObject::connect(button, SIGNAL(clicked()), q, SLOT(close()));
     layout->setWidgetForRole(QDockWidgetLayout::CloseButton, button);
 
-    resizer = new QWidgetResizeHandler(q);
-    resizer->setMovingEnabled(false);
-    resizer->setActive(false);
-
 #ifndef QT_NO_ACTION
     toggleViewAction = new QAction(q);
     toggleViewAction->setCheckable(true);
@@ -760,13 +756,12 @@ void QDockWidgetPrivate::endDrag(bool abort)
                     Qt::WindowFlags flags = q->windowFlags();
                     flags &= ~Qt::X11BypassWindowManagerHint;
                     q->setWindowFlags(flags);
-                    resizer->setActive(QWidgetResizeHandler::Resize, true);
+                    setResizerActive(true);
                     q->show();
                 } else {
                     QDockWidgetLayout *myLayout
                             = qobject_cast<QDockWidgetLayout*>(layout);
-                    resizer->setActive(QWidgetResizeHandler::Resize,
-                                       myLayout->widgetForRole(QDockWidgetLayout::TitleBar) != 0);
+                    setResizerActive(myLayout->widgetForRole(QDockWidgetLayout::TitleBar) != 0);
                 }
                 undockedGeometry = q->geometry();
                 q->activateWindow();
@@ -777,6 +772,17 @@ void QDockWidgetPrivate::endDrag(bool abort)
     }
     delete state;
     state = 0;
+}
+
+void QDockWidgetPrivate::setResizerActive(bool active)
+{
+    Q_Q(QDockWidget);
+    if (active && !resizer) {
+        resizer = new QWidgetResizeHandler(q);
+        resizer->setMovingEnabled(false);
+    }
+    if (resizer)
+        resizer->setActive(QWidgetResizeHandler::Resize, active);
 }
 
 bool QDockWidgetPrivate::isAnimating() const
@@ -1052,7 +1058,7 @@ void QDockWidgetPrivate::setWindowState(bool floating, bool unplug, const QRect 
         }
     }
 
-    resizer->setActive(QWidgetResizeHandler::Resize, !unplug && floating && !nativeDeco);
+    setResizerActive(!unplug && floating && !nativeDeco);
 }
 
 /*!
