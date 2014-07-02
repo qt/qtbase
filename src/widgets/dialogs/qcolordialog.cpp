@@ -1468,38 +1468,46 @@ void QColorDialogPrivate::setCurrentQColor(const QColor &color)
     }
 }
 
+// size of standard and custom color selector
+enum {
+    colorColumns = 8,
+    standardColorRows = 6,
+    customColorRows = 2
+};
+
 bool QColorDialogPrivate::selectColor(const QColor &col)
 {
     QRgb color = col.rgb();
-    int i = 0, j = 0;
     // Check standard colors
     if (standard) {
         const QRgb *standardColors = QColorDialogOptions::standardColors();
-        for (i = 0; i < 6; i++) {
-            for (j = 0; j < 8; j++) {
-                if (color == standardColors[i + j*6]) {
-                    _q_newStandard(i, j);
-                    standard->setCurrent(i, j);
-                    standard->setSelected(i, j);
-                    standard->setFocus();
-                    return true;
-                }
-            }
+        const QRgb *standardColorsEnd = standardColors + standardColorRows * colorColumns;
+        const QRgb *match = std::find(standardColors, standardColorsEnd, color);
+        if (match != standardColorsEnd) {
+            const int index = int(match - standardColors);
+            const int row = index / standardColorRows;
+            const int column = index % standardColorRows;
+            _q_newStandard(row, column);
+            standard->setCurrent(row, column);
+            standard->setSelected(row, column);
+            standard->setFocus();
+            return true;
         }
     }
     // Check custom colors
     if (custom) {
         const QRgb *customColors = QColorDialogOptions::customColors();
-        for (i = 0; i < 2; i++) {
-            for (j = 0; j < 8; j++) {
-                if (color == customColors[i + j*2]) {
-                    _q_newCustom(i, j);
-                    custom->setCurrent(i, j);
-                    custom->setSelected(i, j);
-                    custom->setFocus();
-                    return true;
-                }
-            }
+        const QRgb *customColorsEnd = customColors + customColorRows * colorColumns;
+        const QRgb *match = std::find(customColors, customColorsEnd, color);
+        if (match != customColorsEnd) {
+            const int index = int(match - customColors);
+            const int row = index / customColorRows;
+            const int column = index % customColorRows;
+            _q_newCustom(row, column);
+            custom->setCurrent(row, column);
+            custom->setSelected(row, column);
+            custom->setFocus();
+            return true;
         }
     }
     return false;
@@ -1527,12 +1535,12 @@ void QColorDialogPrivate::_q_newColorTypedIn(QRgb rgb)
 
 void QColorDialogPrivate::_q_nextCustom(int r, int c)
 {
-    nextCust = r + 2 * c;
+    nextCust = r + customColorRows * c;
 }
 
 void QColorDialogPrivate::_q_newCustom(int r, int c)
 {
-    const int i = r + 2 * c;
+    const int i = r + customColorRows * c;
     setCurrentRgbColor(QColorDialogOptions::customColor(i));
     if (standard)
         standard->setSelected(-1,-1);
@@ -1638,7 +1646,7 @@ void QColorDialogPrivate::initWidgets()
     }
 
     if (!smallDisplay) {
-        standard = new QColorWell(q, 6, 8, QColorDialogOptions::standardColors());
+        standard = new QColorWell(q, standardColorRows, colorColumns, QColorDialogOptions::standardColors());
         lblBasicColors = new QLabel(q);
 #ifndef QT_NO_SHORTCUT
         lblBasicColors->setBuddy(standard);
@@ -1660,7 +1668,7 @@ void QColorDialogPrivate::initWidgets()
         leftLay->addStretch();
 #endif
 
-        custom = new QColorWell(q, 2, 8, QColorDialogOptions::customColors());
+        custom = new QColorWell(q, customColorRows, colorColumns, QColorDialogOptions::customColors());
         custom->setAcceptDrops(true);
 
         q->connect(custom, SIGNAL(selected(int,int)), SLOT(_q_newCustom(int,int)));
