@@ -175,6 +175,7 @@ public:
 
     uchar *map(qint64 offset, qint64 size, QFile::MemoryMapFlags flags);
     bool unmap(uchar *ptr);
+    void unmapAll();
 
     mutable QFileSystemMetaData metaData;
 

@@ -179,9 +179,7 @@ QFSFileEngine::~QFSFileEngine()
             } while (ret == -1 && errno == EINTR);
         }
     }
-    QList<uchar*> keys = d->maps.keys();
-    for (int i = 0; i < keys.count(); ++i)
-        unmap(keys.at(i));
+    d->unmapAll();
 }
 
 /*!
@@ -461,6 +459,18 @@ qint64 QFSFileEngine::size() const
 {
     Q_D(const QFSFileEngine);
     return d->nativeSize();
+}
+
+/*!
+    \internal
+*/
+void QFSFileEnginePrivate::unmapAll()
+{
+    if (!maps.isEmpty()) {
+        const QList<uchar*> keys = maps.keys(); // Make a copy since unmap() modifies the map.
+        for (int i = 0; i < keys.count(); ++i)
+            unmap(keys.at(i));
+    }
 }
 
 #ifndef Q_OS_WIN

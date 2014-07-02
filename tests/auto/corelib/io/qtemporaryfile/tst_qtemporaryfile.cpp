@@ -251,6 +251,11 @@ void tst_QTemporaryFile::autoRemove()
         QTemporaryFile file("tempXXXXXX");
         QVERIFY(file.open());
         fileName = file.fileName();
+        // QTBUG-39976, file mappings should be cleared as well.
+        QVERIFY(file.write("test"));
+        QVERIFY(file.flush());
+        uchar *mapped = file.map(0, file.size());
+        QVERIFY(mapped);
         file.close();
     }
     QVERIFY(!QFile::exists(fileName));

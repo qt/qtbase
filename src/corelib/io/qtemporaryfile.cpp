@@ -235,6 +235,8 @@ static bool createFileFromTemplate(NativeFileHandle &file,
 //************* QTemporaryFileEngine
 QTemporaryFileEngine::~QTemporaryFileEngine()
 {
+    Q_D(QFSFileEngine);
+    d->unmapAll();
     QFSFileEngine::close();
 }
 
@@ -363,6 +365,7 @@ bool QTemporaryFileEngine::remove()
     Q_D(QFSFileEngine);
     // Since the QTemporaryFileEngine::close() does not really close the file,
     // we must explicitly call QFSFileEngine::close() before we remove it.
+    d->unmapAll();
     QFSFileEngine::close();
     if (QFSFileEngine::remove()) {
         d->fileEntry.clear();
