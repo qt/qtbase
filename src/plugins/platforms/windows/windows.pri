@@ -113,6 +113,10 @@ contains(QT_CONFIG,dynamicgl) {
     HEADERS += $$PWD/qwindowssessionmanager.h
 }
 
+!wince*:!contains( DEFINES, QT_NO_IMAGEFORMAT_PNG ) {
+    RESOURCES += $$PWD/cursors.qrc
+}
+
 contains(QT_CONFIG, freetype) {
     DEFINES *= QT_NO_FONTCONFIG
     QT_FREETYPE_DIR = $$QT_SOURCE_TREE/src/3rdparty/freetype

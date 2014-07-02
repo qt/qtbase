@@ -107,6 +107,7 @@ public:
 
     static HCURSOR createPixmapCursor(const QPixmap &pixmap, const QPoint &hotSpot);
     static HCURSOR createSystemCursor(const QCursor &c);
+    static QCursor customCursor(Qt::CursorShape cursorShape);
     static QPoint mousePosition();
     static CursorState cursorState();
 
