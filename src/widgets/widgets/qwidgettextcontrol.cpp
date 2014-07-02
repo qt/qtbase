@@ -645,8 +645,8 @@ void QWidgetTextControlPrivate::_q_emitCursorPosChanged(const QTextCursor &someC
 
 void QWidgetTextControlPrivate::_q_contentsChanged(int from, int charsRemoved, int charsAdded)
 {
-    Q_Q(QWidgetTextControl);
 #ifndef QT_NO_ACCESSIBILITY
+    Q_Q(QWidgetTextControl);
 
     if (QAccessible::isActive() && q->parent() && q->parent()->isWidgetType()) {
         QTextCursor tmp(doc);
@@ -670,6 +670,10 @@ void QWidgetTextControlPrivate::_q_contentsChanged(int from, int charsRemoved, i
         QAccessible::updateAccessibility(ev);
         delete ev;
     }
+#else
+    Q_UNUSED(from)
+    Q_UNUSED(charsRemoved)
+    Q_UNUSED(charsAdded)
 #endif
 }
 

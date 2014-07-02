@@ -1,7 +1,9 @@
-INCLUDEPATH += $$PWD
+contains(QT_CONFIG, accessibility) {
+    INCLUDEPATH += $$PWD
 
-HEADERS += \
-    $$PWD/qaccessiblebridgeutils_p.h
+    HEADERS += \
+        $$PWD/qaccessiblebridgeutils_p.h
 
-SOURCES += \
-    $$PWD/qaccessiblebridgeutils.cpp
+    SOURCES += \
+        $$PWD/qaccessiblebridgeutils.cpp
+}
