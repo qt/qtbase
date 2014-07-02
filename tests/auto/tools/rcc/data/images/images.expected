@@ -93,15 +93,15 @@ static const unsigned char qt_resource_struct[] = {
 };
 
 #ifdef QT_NAMESPACE
-#  define QT_PREPEND_NAMESPACE(name) ::QT_NAMESPACE::name
-#  define QT_MANGLE_NAMESPACE0(x) x
-#  define QT_MANGLE_NAMESPACE1(a, b) a##_##b
-#  define QT_MANGLE_NAMESPACE2(a, b) QT_MANGLE_NAMESPACE1(a,b)
-#  define QT_MANGLE_NAMESPACE(name) QT_MANGLE_NAMESPACE2( \
-        QT_MANGLE_NAMESPACE0(name), QT_MANGLE_NAMESPACE0(QT_NAMESPACE))
+#  define QT_RCC_PREPEND_NAMESPACE(name) ::QT_NAMESPACE::name
+#  define QT_RCC_MANGLE_NAMESPACE0(x) x
+#  define QT_RCC_MANGLE_NAMESPACE1(a, b) a##_##b
+#  define QT_RCC_MANGLE_NAMESPACE2(a, b) QT_RCC_MANGLE_NAMESPACE1(a,b)
+#  define QT_RCC_MANGLE_NAMESPACE(name) QT_RCC_MANGLE_NAMESPACE2( \
+        QT_RCC_MANGLE_NAMESPACE0(name), QT_RCC_MANGLE_NAMESPACE0(QT_NAMESPACE))
 #else
-#   define QT_PREPEND_NAMESPACE(name) name
-#   define QT_MANGLE_NAMESPACE(name) name
+#   define QT_RCC_PREPEND_NAMESPACE(name) name
+#   define QT_RCC_MANGLE_NAMESPACE(name) name
 #endif
 
 #ifdef QT_NAMESPACE
@@ -116,23 +116,23 @@ bool qUnregisterResourceData(int, const unsigned char *, const unsigned char *, 
 }
 #endif
 
-int QT_MANGLE_NAMESPACE(qInitResources)()
+int QT_RCC_MANGLE_NAMESPACE(qInitResources)()
 {
-    QT_PREPEND_NAMESPACE(qRegisterResourceData)
+    QT_RCC_PREPEND_NAMESPACE(qRegisterResourceData)
         (0x01, qt_resource_struct, qt_resource_name, qt_resource_data);
     return 1;
 }
 
-int QT_MANGLE_NAMESPACE(qCleanupResources)()
+int QT_RCC_MANGLE_NAMESPACE(qCleanupResources)()
 {
-    QT_PREPEND_NAMESPACE(qUnregisterResourceData)
+    QT_RCC_PREPEND_NAMESPACE(qUnregisterResourceData)
        (0x01, qt_resource_struct, qt_resource_name, qt_resource_data);
     return 1;
 }
 
 namespace {
    struct initializer {
-       initializer() { QT_MANGLE_NAMESPACE(qInitResources)(); }
-       ~initializer() { QT_MANGLE_NAMESPACE(qCleanupResources)(); }
+       initializer() { QT_RCC_MANGLE_NAMESPACE(qInitResources)(); }
+       ~initializer() { QT_RCC_MANGLE_NAMESPACE(qCleanupResources)(); }
    } dummy;
 }

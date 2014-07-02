@@ -995,7 +995,7 @@ bool RCCResourceLibrary::writeDataStructure()
 void RCCResourceLibrary::writeMangleNamespaceFunction(const QByteArray &name)
 {
     if (m_useNameSpace) {
-        writeString("QT_MANGLE_NAMESPACE(");
+        writeString("QT_RCC_MANGLE_NAMESPACE(");
         writeByteArray(name);
         writeChar(')');
     } else {
@@ -1006,7 +1006,7 @@ void RCCResourceLibrary::writeMangleNamespaceFunction(const QByteArray &name)
 void RCCResourceLibrary::writeAddNamespaceFunction(const QByteArray &name)
 {
     if (m_useNameSpace) {
-        writeString("QT_PREPEND_NAMESPACE(");
+        writeString("QT_RCC_PREPEND_NAMESPACE(");
         writeByteArray(name);
         writeChar(')');
     } else {
@@ -1028,15 +1028,15 @@ bool RCCResourceLibrary::writeInitializer()
         //init
         if (m_useNameSpace) {
             writeString("#ifdef QT_NAMESPACE\n"
-                        "#  define QT_PREPEND_NAMESPACE(name) ::QT_NAMESPACE::name\n"
-                        "#  define QT_MANGLE_NAMESPACE0(x) x\n"
-                        "#  define QT_MANGLE_NAMESPACE1(a, b) a##_##b\n"
-                        "#  define QT_MANGLE_NAMESPACE2(a, b) QT_MANGLE_NAMESPACE1(a,b)\n"
-                        "#  define QT_MANGLE_NAMESPACE(name) QT_MANGLE_NAMESPACE2( \\\n"
-                        "        QT_MANGLE_NAMESPACE0(name), QT_MANGLE_NAMESPACE0(QT_NAMESPACE))\n"
+                        "#  define QT_RCC_PREPEND_NAMESPACE(name) ::QT_NAMESPACE::name\n"
+                        "#  define QT_RCC_MANGLE_NAMESPACE0(x) x\n"
+                        "#  define QT_RCC_MANGLE_NAMESPACE1(a, b) a##_##b\n"
+                        "#  define QT_RCC_MANGLE_NAMESPACE2(a, b) QT_RCC_MANGLE_NAMESPACE1(a,b)\n"
+                        "#  define QT_RCC_MANGLE_NAMESPACE(name) QT_RCC_MANGLE_NAMESPACE2( \\\n"
+                        "        QT_RCC_MANGLE_NAMESPACE0(name), QT_RCC_MANGLE_NAMESPACE0(QT_NAMESPACE))\n"
                         "#else\n"
-                        "#   define QT_PREPEND_NAMESPACE(name) name\n"
-                        "#   define QT_MANGLE_NAMESPACE(name) name\n"
+                        "#   define QT_RCC_PREPEND_NAMESPACE(name) name\n"
+                        "#   define QT_RCC_MANGLE_NAMESPACE(name) name\n"
                         "#endif\n\n");
 
             writeString("#ifdef QT_NAMESPACE\n"
@@ -1089,8 +1089,8 @@ bool RCCResourceLibrary::writeInitializer()
         writeByteArray(
                     "namespace {\n"
                   "   struct initializer {\n"
-                  "       initializer() { QT_MANGLE_NAMESPACE(" + initResources + ")(); }\n"
-                  "       ~initializer() { QT_MANGLE_NAMESPACE(" + cleanResources + ")(); }\n"
+                  "       initializer() { QT_RCC_MANGLE_NAMESPACE(" + initResources + ")(); }\n"
+                  "       ~initializer() { QT_RCC_MANGLE_NAMESPACE(" + cleanResources + ")(); }\n"
                   "   } dummy;\n"
                   "}\n");
 
