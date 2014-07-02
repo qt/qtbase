@@ -3139,8 +3139,10 @@ void Configure::detectArch()
                  QDir::toNativeSeparators(sourcePath + "/config.tests/arch/arch"
                                           + (data.isHost ? "_host" : "") + ".pro"));
 
-        if (qmakespec.startsWith("winrt") || qmakespec.startsWith("winphone"))
-            command.append(" QMAKE_LFLAGS+=/ENTRY:main");
+        if (!data.isHost) {
+            if (qmakespec.startsWith("winrt") || qmakespec.startsWith("winphone"))
+                command.append(" QMAKE_LFLAGS+=/ENTRY:main");
+        }
 
         int returnValue = 0;
         Environment::execute(command, &returnValue);
