@@ -100,6 +100,23 @@ QT_BEGIN_NAMESPACE
 #define GL_DRAW_FRAMEBUFFER 0x8CA9
 #endif
 
+#ifndef GL_RGB8
+#define GL_RGB8                           0x8051
+#endif
+
+#ifndef GL_RGBA8
+#define GL_RGBA8                          0x8058
+#endif
+
+#ifndef GL_BGRA
+#define GL_BGRA                           0x80E1
+#endif
+
+#ifndef GL_UNSIGNED_INT_8_8_8_8_REV
+#define GL_UNSIGNED_INT_8_8_8_8_REV       0x8367
+#endif
+
+
 /*!
     \class QOpenGLFramebufferObjectFormat
     \brief The QOpenGLFramebufferObjectFormat class specifies the format of an OpenGL
@@ -1097,37 +1114,67 @@ QOpenGLFramebufferObjectFormat QOpenGLFramebufferObject::format() const
     return d->format;
 }
 
-Q_GUI_EXPORT QImage qt_gl_read_framebuffer(const QSize &size, bool alpha_format, bool include_alpha)
+static inline QImage qt_gl_read_framebuffer_rgba8(const QSize &size, bool include_alpha, QOpenGLContext *context)
 {
-    int w = size.width();
-    int h = size.height();
-
-    QOpenGLFunctions *funcs = QOpenGLContext::currentContext()->functions();
-    while (funcs->glGetError());
+    QOpenGLFunctions *funcs = context->functions();
+    const int w = size.width();
+    const int h = size.height();
+    bool isOpenGL12orBetter = !context->isOpenGLES() && (context->format().majorVersion() >= 2 || context->format().minorVersion() >= 2);
+    if (isOpenGL12orBetter) {
+        QImage img(size, include_alpha ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32);
+        funcs->glReadPixels(0, 0, w, h, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, img.bits());
+        return img;
+    }
 
 #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
-    QImage img(size, (alpha_format && include_alpha) ? QImage::Format_ARGB32_Premultiplied
-                                                     : QImage::Format_RGB32);
-#ifdef QT_OPENGL_ES
-    GLint fmt = GL_BGRA_EXT;
-#else
-    GLint fmt = GL_BGRA;
+    // Without GL_UNSIGNED_INT_8_8_8_8_REV, GL_BGRA only makes sense on little endian.
+    const bool supports_bgra = context->isOpenGLES()
+            ? context->hasExtension(QByteArrayLiteral("GL_EXT_read_format_bgra"))
+            : context->hasExtension(QByteArrayLiteral("GL_EXT_bgra"));
+    if (supports_bgra) {
+        QImage img(size, include_alpha ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32);
+        funcs->glReadPixels(0, 0, w, h, GL_BGRA, GL_UNSIGNED_BYTE, img.bits());
+        return img;
+    }
 #endif
-    funcs->glReadPixels(0, 0, w, h, fmt, GL_UNSIGNED_BYTE, img.bits());
-    if (!funcs->glGetError())
-        return img.mirrored();
-#endif
-
-    QImage rgbaImage(size, (alpha_format && include_alpha) ? QImage::Format_RGBA8888_Premultiplied
-                                                           : QImage::Format_RGBX8888);
+    QImage rgbaImage(size, include_alpha ? QImage::Format_RGBA8888_Premultiplied : QImage::Format_RGBX8888);
     funcs->glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, rgbaImage.bits());
-    return rgbaImage.mirrored();
+    return rgbaImage;
+}
+
+static QImage qt_gl_read_framebuffer(const QSize &size, GLenum internal_format, bool include_alpha, bool flip)
+{
+    QOpenGLContext *ctx = QOpenGLContext::currentContext();
+    QOpenGLFunctions *funcs = ctx->functions();
+    while (funcs->glGetError());
+
+    switch (internal_format) {
+    case GL_RGB:
+    case GL_RGB8:
+        return qt_gl_read_framebuffer_rgba8(size, false, ctx).mirrored(false, flip);
+    case GL_RGBA:
+    case GL_RGBA8:
+    default:
+        return qt_gl_read_framebuffer_rgba8(size, include_alpha, ctx).mirrored(false, flip);
+    }
+
+    Q_UNREACHABLE();
+    return QImage();
+}
+
+Q_GUI_EXPORT QImage qt_gl_read_framebuffer(const QSize &size, bool alpha_format, bool include_alpha)
+{
+    return qt_gl_read_framebuffer(size, alpha_format ? GL_RGBA : GL_RGB, include_alpha, true);
 }
 
 /*!
-    \fn QImage QOpenGLFramebufferObject::toImage() const
+    \fn QImage QOpenGLFramebufferObject::toImage(bool flipped) const
 
     Returns the contents of this framebuffer object as a QImage.
+
+    If \a flipped is true the image is flipped from OpenGL coordinates to raster coordinates.
+    If used together with QOpenGLPaintDevice, \a flipped should be the opposite of the value
+    of QOpenGLPaintDevice::paintFlipped().
 
     Will try to return a premultiplied ARBG32 or RGB32 image. Since 5.2 it will fall back to
     a premultiplied RGBA8888 or RGBx8888 image when reading to ARGB32 is not supported.
@@ -1139,8 +1186,11 @@ Q_GUI_EXPORT QImage qt_gl_read_framebuffer(const QSize &size, bool alpha_format,
     For singlesampled framebuffers the contents is retrieved via \c glReadPixels. This is
     a potentially expensive and inefficient operation. Therefore it is recommended that
     this function is used as seldom as possible.
+
+    \sa QOpenGLPaintDevice::paintFlipped()
 */
-QImage QOpenGLFramebufferObject::toImage() const
+
+QImage QOpenGLFramebufferObject::toImage(bool flipped) const
 {
     Q_D(const QOpenGLFramebufferObject);
     if (!d->valid)
@@ -1166,15 +1216,28 @@ QImage QOpenGLFramebufferObject::toImage() const
         QRect rect(QPoint(0, 0), size());
         blitFramebuffer(&temp, rect, const_cast<QOpenGLFramebufferObject *>(this), rect);
 
-        image = temp.toImage();
+        image = temp.toImage(flipped);
     } else {
-        image = qt_gl_read_framebuffer(d->size, format().internalTextureFormat() != GL_RGB, true);
+        image = qt_gl_read_framebuffer(d->size, format().internalTextureFormat(), true, flipped);
     }
 
     if (prevFbo != d->fbo())
         ctx->functions()->glBindFramebuffer(GL_FRAMEBUFFER, prevFbo);
 
     return image;
+}
+
+/*!
+    \fn QImage QOpenGLFramebufferObject::toImage() const
+    \overload
+
+    Returns the contents of this framebuffer object as a QImage. This method flips
+    the image from OpenGL coordinates to raster coordinates.
+*/
+// ### Qt 6: Remove this method and make it a default argument instead.
+QImage QOpenGLFramebufferObject::toImage() const
+{
+    return toImage(true);
 }
 
 /*!

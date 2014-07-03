@@ -94,6 +94,7 @@ public:
     GLuint takeTexture();
     QSize size() const;
     QImage toImage() const;
+    QImage toImage(bool flipped) const;
     Attachment attachment() const;
 
     void setAttachment(Attachment attachment);
