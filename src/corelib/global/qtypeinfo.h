@@ -64,7 +64,7 @@ public:
         isComplex = true,
         isStatic = true,
         isLarge = (sizeof(T)>sizeof(void*)),
-        isDummy = false,
+        isDummy = false, //### Qt6: remove
         sizeOf = sizeof(T)
     };
 };
