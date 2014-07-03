@@ -160,7 +160,7 @@ void QAbstractOpenGLFunctionsPrivate::removeFunctionsBackend(QOpenGLContext *con
 
     A pointer to an object of the class corresponding to the version and
     profile of OpenGL in use can be obtained from
-    QOpenGLFunctions::versionFunctions(). If obtained in this way, note that
+    QOpenGLContext::versionFunctions(). If obtained in this way, note that
     the QOpenGLContext retains ownership of the object. This is so that only
     one instance need be created.
 
