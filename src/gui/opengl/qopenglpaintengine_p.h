@@ -288,7 +288,7 @@ public:
     QBrush currentBrush; // May not be the state's brush!
     const QBrush noBrush;
 
-    QPixmap currentBrushPixmap;
+    QImage currentBrushImage;
 
     QOpenGL2PEXVertexArray vertexCoordinateArray;
     QOpenGL2PEXVertexArray textureCoordinateArray;

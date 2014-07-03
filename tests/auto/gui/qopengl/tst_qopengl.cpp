@@ -65,6 +65,8 @@
 #include <QtPlatformHeaders/QGLXNativeContext>
 #endif
 
+Q_DECLARE_METATYPE(QImage::Format)
+
 class tst_QOpenGL : public QObject
 {
 Q_OBJECT
@@ -605,7 +607,14 @@ void tst_QOpenGL::fboHandleNulledAfterContextDestroyed()
 
 void tst_QOpenGL::openGLPaintDevice_data()
 {
-    common_data();
+    QTest::addColumn<int>("surfaceClass");
+    QTest::addColumn<QImage::Format>("imageFormat");
+
+    QTest::newRow("Using QWindow - RGB32") << int(QSurface::Window) << QImage::Format_RGB32;
+    QTest::newRow("Using QOffscreenSurface - RGB32") << int(QSurface::Offscreen) << QImage::Format_RGB32;
+    QTest::newRow("Using QOffscreenSurface - RGBx8888") << int(QSurface::Offscreen) << QImage::Format_RGBX8888;
+    QTest::newRow("Using QOffscreenSurface - RGB888") << int(QSurface::Offscreen) << QImage::Format_RGB888;
+    QTest::newRow("Using QOffscreenSurface - RGB16") << int(QSurface::Offscreen) << QImage::Format_RGB16;
 }
 
 void tst_QOpenGL::openGLPaintDevice()
@@ -615,6 +624,7 @@ void tst_QOpenGL::openGLPaintDevice()
 #endif
 
     QFETCH(int, surfaceClass);
+    QFETCH(QImage::Format, imageFormat);
     QScopedPointer<QSurface> surface(createSurface(surfaceClass));
 
     QOpenGLContext ctx;
@@ -627,7 +637,7 @@ void tst_QOpenGL::openGLPaintDevice()
 
     const QSize size(128, 128);
 
-    QImage image(size, QImage::Format_RGB32);
+    QImage image(size, imageFormat);
     QPainter p(&image);
     p.fillRect(0, 0, image.width() / 2, image.height() / 2, Qt::red);
     p.fillRect(image.width() / 2, 0, image.width() / 2, image.height() / 2, Qt::green);
@@ -646,7 +656,7 @@ void tst_QOpenGL::openGLPaintDevice()
     p.fillRect(0, image.height() / 2, image.width() / 2, image.height() / 2, Qt::white);
     p.end();
 
-    QImage actual = fbo.toImage().convertToFormat(QImage::Format_RGB32);
+    QImage actual = fbo.toImage().convertToFormat(imageFormat);
     QCOMPARE(image.size(), actual.size());
     QCOMPARE(image, actual);
 
@@ -655,7 +665,7 @@ void tst_QOpenGL::openGLPaintDevice()
     p.drawImage(0, 0, image);
     p.end();
 
-    actual = fbo.toImage().convertToFormat(QImage::Format_RGB32);
+    actual = fbo.toImage().convertToFormat(imageFormat);
     QCOMPARE(image.size(), actual.size());
     QCOMPARE(image, actual);
 
@@ -664,7 +674,7 @@ void tst_QOpenGL::openGLPaintDevice()
     p.fillRect(0, 0, image.width(), image.height(), QBrush(image));
     p.end();
 
-    actual = fbo.toImage().convertToFormat(QImage::Format_RGB32);
+    actual = fbo.toImage().convertToFormat(imageFormat);
     QCOMPARE(image.size(), actual.size());
     QCOMPARE(image, actual);
 }

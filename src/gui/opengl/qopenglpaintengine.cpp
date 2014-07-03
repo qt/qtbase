@@ -154,8 +154,8 @@ void QOpenGL2PaintEngineExPrivate::setBrush(const QBrush& brush)
     Q_ASSERT(newStyle != Qt::NoBrush);
 
     currentBrush = brush;
-    if (!currentBrushPixmap.isNull())
-        currentBrushPixmap = QPixmap();
+    if (!currentBrushImage.isNull())
+        currentBrushImage = QImage();
     brushUniformsDirty = true; // All brushes have at least one uniform
 
     if (newStyle > Qt::SolidPattern)
@@ -214,11 +214,11 @@ void QOpenGL2PaintEngineExPrivate::updateBrushTexture()
             updateTextureFilter(GL_TEXTURE_2D, GL_CLAMP_TO_EDGE, q->state()->renderHints & QPainter::SmoothPixmapTransform);
     }
     else if (style == Qt::TexturePattern) {
-        currentBrushPixmap = currentBrush.texture();
+        currentBrushImage = currentBrush.textureImage();
 
         int max_texture_size = ctx->d_func()->maxTextureSize();
-        if (currentBrushPixmap.width() > max_texture_size || currentBrushPixmap.height() > max_texture_size)
-            currentBrushPixmap = currentBrushPixmap.scaled(max_texture_size, max_texture_size, Qt::KeepAspectRatio);
+        if (currentBrushImage.width() > max_texture_size || currentBrushImage.height() > max_texture_size)
+            currentBrushImage = currentBrushImage.scaled(max_texture_size, max_texture_size, Qt::KeepAspectRatio);
 
         GLuint wrapMode = GL_REPEAT;
         if (QOpenGLContext::currentContext()->isOpenGLES()) {
@@ -229,7 +229,7 @@ void QOpenGL2PaintEngineExPrivate::updateBrushTexture()
         }
 
         funcs.glActiveTexture(GL_TEXTURE0 + QT_BRUSH_TEXTURE_UNIT);
-        QOpenGLTextureCache::cacheForContext(ctx)->bindTexture(ctx, currentBrushPixmap);
+        QOpenGLTextureCache::cacheForContext(ctx)->bindTexture(ctx, currentBrushImage);
         updateTextureFilter(GL_TEXTURE_2D, wrapMode, q->state()->renderHints & QPainter::SmoothPixmapTransform);
         textureInvertedY = false;
     }

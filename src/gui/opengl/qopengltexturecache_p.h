@@ -64,13 +64,15 @@ QT_BEGIN_NAMESPACE
 class QOpenGLCachedTexture
 {
 public:
-    QOpenGLCachedTexture(GLuint id, QOpenGLContext *context);
+    QOpenGLCachedTexture(GLuint id, int options, QOpenGLContext *context);
     ~QOpenGLCachedTexture() { m_resource->free(); }
 
     GLuint id() const { return m_resource->id(); }
+    int options() const { return m_options; }
 
 private:
     QOpenGLSharedResourceGuard *m_resource;
+    int m_options;
 };
 
 class Q_GUI_EXPORT QOpenGLTextureCache : public QOpenGLSharedResource
@@ -81,8 +83,14 @@ public:
     QOpenGLTextureCache(QOpenGLContext *);
     ~QOpenGLTextureCache();
 
-    GLuint bindTexture(QOpenGLContext *context, const QPixmap &pixmap);
-    GLuint bindTexture(QOpenGLContext *context, const QImage &image);
+    enum BindOption {
+        NoBindOption                            = 0x0000,
+        PremultipliedAlphaBindOption            = 0x0001,
+    };
+    Q_DECLARE_FLAGS(BindOptions, BindOption)
+
+    GLuint bindTexture(QOpenGLContext *context, const QPixmap &pixmap, QOpenGLTextureCache::BindOptions options = PremultipliedAlphaBindOption);
+    GLuint bindTexture(QOpenGLContext *context, const QImage &image, QOpenGLTextureCache::BindOptions options = PremultipliedAlphaBindOption);
 
     void invalidate(qint64 key);
 
@@ -90,11 +98,13 @@ public:
     void freeResource(QOpenGLContext *ctx);
 
 private:
-    GLuint bindTexture(QOpenGLContext *context, qint64 key, const QImage &image);
+    GLuint bindTexture(QOpenGLContext *context, qint64 key, const QImage &image, QOpenGLTextureCache::BindOptions options);
 
     QMutex m_mutex;
     QCache<quint64, QOpenGLCachedTexture> m_cache;
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(QOpenGLTextureCache::BindOptions)
 
 QT_END_NAMESPACE
 
