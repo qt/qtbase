@@ -2071,7 +2071,10 @@ bool AtSpiAdaptor::editableTextInterface(QAccessibleInterface *interface, const 
         connection.send(message.createReply(true));
     } else if (function == QLatin1String("SetTextContents")) {
         QString newContents = message.arguments().at(0).toString();
-        interface->editableTextInterface()->replaceText(0, interface->textInterface()->characterCount(), newContents);
+        if (QAccessibleEditableTextInterface *editableTextIface = interface->editableTextInterface())
+            editableTextIface->replaceText(0, interface->textInterface()->characterCount(), newContents);
+        else
+            replaceTextFallback(interface, 0, -1, newContents);
         connection.send(message.createReply(true));
     } else if (function == QLatin1String("")) {
         connection.send(message.createReply());
@@ -2085,23 +2088,27 @@ bool AtSpiAdaptor::editableTextInterface(QAccessibleInterface *interface, const 
 // Value interface
 bool AtSpiAdaptor::valueInterface(QAccessibleInterface *interface, const QString &function, const QDBusMessage &message, const QDBusConnection &connection)
 {
+    QAccessibleValueInterface *valueIface = interface->valueInterface();
+    if (!valueIface)
+        return false;
+
     if (function == QLatin1String("SetCurrentValue")) {
         QDBusVariant v = message.arguments().at(2).value<QDBusVariant>();
         double value = v.variant().toDouble();
         //Temporary fix
         //See https://bugzilla.gnome.org/show_bug.cgi?id=652596
-        interface->valueInterface()->setCurrentValue(value);
+        valueIface->setCurrentValue(value);
         connection.send(message.createReply()); // FIXME is the reply needed?
     } else {
         QVariant value;
         if (function == QLatin1String("GetCurrentValue"))
-            value = interface->valueInterface()->currentValue();
+            value = valueIface->currentValue();
         else if (function == QLatin1String("GetMaximumValue"))
-            value = interface->valueInterface()->maximumValue();
+            value = valueIface->maximumValue();
         else if (function == QLatin1String("GetMinimumIncrement"))
-            value = interface->valueInterface()->minimumStepSize();
+            value = valueIface->minimumStepSize();
         else if (function == QLatin1String("GetMinimumValue"))
-            value = interface->valueInterface()->minimumValue();
+            value = valueIface->minimumValue();
         else {
             qAtspiDebug() << "WARNING: AtSpiAdaptor::valueInterface does not implement " << function << message.path();
             return false;
