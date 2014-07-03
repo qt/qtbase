@@ -39,6 +39,8 @@
 **
 ****************************************************************************/
 
+#include "qiosinputcontext.h"
+
 #include <QtGui/qtextformat.h>
 
 class StaticVariables

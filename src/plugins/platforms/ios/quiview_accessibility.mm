@@ -39,59 +39,77 @@
 **
 ****************************************************************************/
 
-#import <UIKit/UIKit.h>
+#include "qiosplatformaccessibility.h"
+#include "quiaccessibilityelement.h"
 
-#include <qhash.h>
-#include <qstring.h>
+@implementation QUIView (Accessibility)
 
-#include <qpa/qwindowsysteminterface.h>
-
-class QIOSWindow;
-
-@interface QUIView : UIView
+- (void)createAccessibleElement:(QAccessibleInterface *)iface
 {
-  @public
-    QIOSWindow *m_qioswindow;
-  @private
-    QHash<UITouch *, QWindowSystemInterface::TouchPoint> m_activeTouches;
-    int m_nextTouchId;
-
-  @public
-    UITextAutocapitalizationType autocapitalizationType;
-    UITextAutocorrectionType autocorrectionType;
-    BOOL enablesReturnKeyAutomatically;
-    UIKeyboardAppearance keyboardAppearance;
-    UIKeyboardType keyboardType;
-    UIReturnKeyType returnKeyType;
-    BOOL secureTextEntry;
-    QString m_markedText;
-    BOOL m_inSendEventToFocusObject;
-
-  @private
-    NSMutableArray *m_accessibleElements;
+    if (!iface || iface->state().invisible)
+        return;
+    QAccessible::Id accessibleId = QAccessible::uniqueId(iface);
+    UIAccessibilityElement *elem = [[QMacAccessibilityElement alloc] initWithId: accessibleId withAccessibilityContainer: self];
+    [m_accessibleElements addObject: elem];
 }
 
-@property(nonatomic, assign) id<UITextInputDelegate> inputDelegate;
-@property(nonatomic) UITextAutocapitalizationType autocapitalizationType;
-@property(nonatomic) UITextAutocorrectionType autocorrectionType;
-@property(nonatomic) UITextSpellCheckingType spellCheckingType;
-@property(nonatomic) BOOL enablesReturnKeyAutomatically;
-@property(nonatomic) UIKeyboardAppearance keyboardAppearance;
-@property(nonatomic) UIKeyboardType keyboardType;
-@property(nonatomic) UIReturnKeyType returnKeyType;
-@property(nonatomic, getter=isSecureTextEntry) BOOL secureTextEntry;
+- (void)createAccessibleContainer:(QAccessibleInterface *)iface
+{
+    if (!iface)
+        return;
 
-- (id)initWithQIOSWindow:(QIOSWindow *)window;
-- (void)sendUpdatedExposeEvent;
-@end
+    if (iface->childCount() == 0) {
+        [self createAccessibleElement: iface];
+    } else {
+        for (int i = 0; i < iface->childCount(); ++i)
+            [self createAccessibleContainer: iface->child(i)];
+    }
+}
 
-@interface QUIView (TextInput) <UITextInput>
-- (void)updateInputMethodWithQuery:(Qt::InputMethodQueries)query;
-- (void)reset;
-- (void)commit;
-+ (bool)inUpdateKeyboardLayout;
-@end
+- (void)initAccessibility
+{
+    static bool init = false;
+    if (!init)
+        QGuiApplicationPrivate::platformIntegration()->accessibility()->setActive(true);
+    init = true;
 
-@interface QUIView (Accessibility)
-- (void)clearAccessibleCache;
+    if ([m_accessibleElements count])
+        return;
+
+    QWindow *win = m_qioswindow->window();
+    QAccessibleInterface *iface = win->accessibleRoot();
+    if (iface)
+        [self createAccessibleContainer: iface];
+}
+
+- (void)clearAccessibleCache
+{
+    [m_accessibleElements removeAllObjects];
+    UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification, @"");
+}
+
+// this is a container, returning yes here means the functions below will never be called
+- (BOOL)isAccessibilityElement
+{
+    return NO;
+}
+
+- (NSInteger)accessibilityElementCount
+{
+    [self initAccessibility];
+    return [m_accessibleElements count];
+}
+
+- (id)accessibilityElementAtIndex:(NSInteger)index
+{
+    [self initAccessibility];
+    return m_accessibleElements[index];
+}
+
+- (NSInteger)indexOfAccessibilityElement:(id)element
+{
+    [self initAccessibility];
+    return [m_accessibleElements indexOfObject:element];
+}
+
 @end
