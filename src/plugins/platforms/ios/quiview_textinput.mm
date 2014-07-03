@@ -42,6 +42,7 @@
 #include "qiosinputcontext.h"
 
 #include <QtGui/qtextformat.h>
+#include <QtGui/private/qguiapplication_p.h>
 
 class StaticVariables
 {

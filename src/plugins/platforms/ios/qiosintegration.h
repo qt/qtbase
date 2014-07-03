@@ -84,6 +84,8 @@ public:
     QTouchDevice *touchDevice();
     QPlatformAccessibility *accessibility() const Q_DECL_OVERRIDE;
 
+    static QIOSIntegration *instance();
+
 private:
     QPlatformFontDatabase *m_fontDatabase;
     QPlatformClipboard *m_clipboard;

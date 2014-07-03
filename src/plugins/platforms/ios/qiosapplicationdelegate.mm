@@ -46,7 +46,6 @@
 #include "qiosviewcontroller.h"
 #include "qioswindow.h"
 
-#include <QtGui/private/qguiapplication_p.h>
 #include <qpa/qplatformintegration.h>
 
 #include <QtCore/QtCore>
@@ -96,7 +95,9 @@
     if (!QGuiApplication::instance())
         return NO;
 
-    QIOSIntegration *iosIntegration = static_cast<QIOSIntegration *>(QGuiApplicationPrivate::platformIntegration());
+    QIOSIntegration *iosIntegration = QIOSIntegration::instance();
+    Q_ASSERT(iosIntegration);
+
     QIOSServices *iosServices = static_cast<QIOSServices *>(iosIntegration->services());
 
     return iosServices->handleUrl(QUrl::fromNSURL(url));

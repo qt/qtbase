@@ -52,6 +52,8 @@
 #include "qiostheme.h"
 #include "qiosservices.h"
 
+#include <QtGui/private/qguiapplication_p.h>
+
 #include <qpa/qplatformoffscreensurface.h>
 
 #include <QtPlatformSupport/private/qcoretextfontdatabase_p.h>
@@ -61,6 +63,11 @@
 #include <QtDebug>
 
 QT_BEGIN_NAMESPACE
+
+QIOSIntegration *QIOSIntegration::instance()
+{
+    return static_cast<QIOSIntegration *>(QGuiApplicationPrivate::platformIntegration());
+}
 
 QIOSIntegration::QIOSIntegration()
     : m_fontDatabase(new QCoreTextFontDatabase)

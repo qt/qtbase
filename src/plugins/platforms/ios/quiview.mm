@@ -46,7 +46,6 @@
 #include "qioswindow.h"
 
 #include <QtGui/private/qwindow_p.h>
-#include <QtGui/private/qguiapplication_p.h>
 
 // Include category as an alternative to using -ObjC (Apple QA1490)
 #include "quiview_textinput.mm"
@@ -235,7 +234,7 @@
 - (void) sendTouchEventWithTimestamp:(ulong)timeStamp
 {
     // Send touch event synchronously
-    QIOSIntegration *iosIntegration = static_cast<QIOSIntegration *>(QGuiApplicationPrivate::platformIntegration());
+    QIOSIntegration *iosIntegration = QIOSIntegration::instance();
     QWindowSystemInterface::handleTouchEvent(m_qioswindow->window(), timeStamp, iosIntegration->touchDevice(), m_activeTouches.values());
     QWindowSystemInterface::flushWindowSystemEvents();
 }

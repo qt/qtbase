@@ -42,6 +42,8 @@
 #include "qiosplatformaccessibility.h"
 #include "quiaccessibilityelement.h"
 
+#include <QtGui/private/qguiapplication_p.h>
+
 @implementation QUIView (Accessibility)
 
 - (void)createAccessibleElement:(QAccessibleInterface *)iface
