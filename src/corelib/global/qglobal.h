@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
-** Copyright (C) 2012 Intel Corporation.
+** Copyright (C) 2014 Intel Corporation.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -59,7 +59,7 @@
 #include <QtCore/qconfig.h>
 #include <QtCore/qfeatures.h>
 #endif
-#if defined(Q_CC_MSVC) && _MSC_VER <= 1500 /* VS2008 */
+#ifdef _MSC_VER
 #  define QT_SUPPORTS(FEATURE) (!defined QT_NO_##FEATURE)
 #else
 #  define QT_SUPPORTS(FEATURE) (!defined(QT_NO_##FEATURE))

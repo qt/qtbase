@@ -43,19 +43,19 @@
 
 QT_BEGIN_NAMESPACE
 
-void QAccessibleCache::insertElement(QAccessible::Id axid, QMacAccessibilityElement *element) const
+void QAccessibleCache::insertElement(QAccessible::Id axid, QT_MANGLE_NAMESPACE(QMacAccessibilityElement) *element) const
 {
     cocoaElements[axid] = element;
 }
 
 void QAccessibleCache::removeCocoaElement(QAccessible::Id axid)
 {
-    QMacAccessibilityElement *element = elementForId(axid);
+    QT_MANGLE_NAMESPACE(QMacAccessibilityElement) *element = elementForId(axid);
     [element invalidate];
     cocoaElements.remove(axid);
 }
 
-QMacAccessibilityElement *QAccessibleCache::elementForId(QAccessible::Id axid) const
+QT_MANGLE_NAMESPACE(QMacAccessibilityElement) *QAccessibleCache::elementForId(QAccessible::Id axid) const
 {
     return cocoaElements.value(axid);
 }

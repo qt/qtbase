@@ -39,36 +39,80 @@
 **
 ****************************************************************************/
 
-#include "qdirectfbeglhooks.h"
-#include "qdirectfbconvenience.h"
+#include "qeglfshooks.h"
+#include <EGL/fbdev_window.h>
 
-#include "default_directfb.h"
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/ioctl.h>
+#include <linux/fb.h>
+
+#include <private/qcore_unix_p.h>
 
 QT_BEGIN_NAMESPACE
 
-// Exported to the directfb plugin
-QDirectFBEGLHooks platform_hook;
-static void *dbpl_handle;
-
-void QDirectFBEGLHooks::platformInit()
+class QEglFSHiX5Hd2Hooks : public QEglFSHooks
 {
-    DBPL_RegisterDirectFBDisplayPlatform(&dbpl_handle, QDirectFbConvenience::dfbInterface());
+private:
+    void fbInit();
+public:
+    void platformInit() Q_DECL_OVERRIDE;
+    EGLNativeWindowType createNativeWindow(QPlatformWindow *window, const QSize &size, const QSurfaceFormat &format) Q_DECL_OVERRIDE;
+    void destroyNativeWindow(EGLNativeWindowType window) Q_DECL_OVERRIDE;
+};
+
+void QEglFSHiX5Hd2Hooks::fbInit()
+{
+    int fd = qt_safe_open("/dev/fb0", O_RDWR, 0);
+    if (fd == -1)
+        qWarning("Failed to open fb to detect screen resolution!");
+
+    struct fb_var_screeninfo vinfo;
+    memset(&vinfo, 0, sizeof(vinfo));
+    if (ioctl(fd, FBIOGET_VSCREENINFO, &vinfo) == -1)
+        qWarning("Could not get variable screen info");
+
+    vinfo.bits_per_pixel   = 32;
+    vinfo.red.length       = 8;
+    vinfo.green.length     = 8;
+    vinfo.blue.length      = 8;
+    vinfo.transp.length    = 8;
+    vinfo.blue.offset      = 0;
+    vinfo.green.offset     = 8;
+    vinfo.red.offset       = 16;
+    vinfo.transp.offset    = 24;
+    vinfo.yres_virtual     = 2 * vinfo.yres;
+
+    if (ioctl(fd, FBIOPUT_VSCREENINFO, &vinfo) == -1)
+        qErrnoWarning(errno, "Unable to set double buffer mode!");
+
+    qt_safe_close(fd);
+    return;
 }
 
-void QDirectFBEGLHooks::platformDestroy()
+void QEglFSHiX5Hd2Hooks::platformInit()
 {
-    DBPL_UnregisterDirectFBDisplayPlatform(dbpl_handle);
-    dbpl_handle = 0;
+    QEglFSHooks::platformInit();
+    fbInit();
 }
 
-bool QDirectFBEGLHooks::hasCapability(QPlatformIntegration::Capability cap) const
+EGLNativeWindowType QEglFSHiX5Hd2Hooks::createNativeWindow(QPlatformWindow *window, const QSize &size, const QSurfaceFormat &format)
 {
-    switch (cap) {
-    case QPlatformIntegration::ThreadedOpenGL:
-        return true;
-    default:
-        return false;
-    }
+    fbdev_window *fbwin = reinterpret_cast<fbdev_window *>(malloc(sizeof(fbdev_window)));
+    if (NULL == fbwin)
+        return 0;
+
+    fbwin->width = size.width();
+    fbwin->height = size.height();
+    return (EGLNativeWindowType)fbwin;
 }
+
+void QEglFSHiX5Hd2Hooks::destroyNativeWindow(EGLNativeWindowType window)
+{
+    free(window);
+}
+
+QEglFSHiX5Hd2Hooks eglFSHiX5Hd2Hooks;
+QEglFSHooks *platformHooks = &eglFSHiX5Hd2Hooks;
 
 QT_END_NAMESPACE

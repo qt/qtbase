@@ -329,12 +329,13 @@ NSMenuItem *QCocoaMenuItem::sync()
         [m_native setKeyEquivalentModifierMask:NSCommandKeyMask];
     }
 
+    NSImage *img = nil;
     if (!m_icon.isNull()) {
-        NSImage *img = qt_mac_create_nsimage(m_icon);
+        img = qt_mac_create_nsimage(m_icon);
         [img setSize:NSMakeSize(16, 16)];
-        [m_native setImage: img];
-        [img release];
     }
+    [m_native setImage:img];
+    [img release];
 
     [m_native setState:m_checked ?  NSOnState : NSOffState];
     return m_native;

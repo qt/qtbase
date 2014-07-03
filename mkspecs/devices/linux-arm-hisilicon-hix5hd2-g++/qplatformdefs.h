@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the qmake spec of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -39,29 +39,4 @@
 **
 ****************************************************************************/
 
-#ifndef QNSWINDOWDELEGATE_H
-#define QNSWINDOWDELEGATE_H
-
-#include <Cocoa/Cocoa.h>
-
-#include "qcocoawindow.h"
-
-@interface QT_MANGLE_NAMESPACE(QNSWindowDelegate) : NSObject <NSWindowDelegate>
-{
-    QCocoaWindow *m_cocoaWindow;
-}
-
-- (id)initWithQCocoaWindow: (QCocoaWindow *) cocoaWindow;
-
-- (void)windowDidBecomeKey:(NSNotification *)notification;
-- (void)windowDidResize:(NSNotification *)notification;
-- (void)windowDidMove:(NSNotification *)notification;
-- (void)windowWillMove:(NSNotification *)notification;
-- (BOOL)windowShouldClose:(NSNotification *)notification;
-- (BOOL)windowShouldZoom:(NSWindow *)window toFrame:(NSRect)newFrame;
-
-@end
-
-QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSWindowDelegate);
-
-#endif // QNSWINDOWDELEGATE_H
+#include "../../linux-g++/qplatformdefs.h"
