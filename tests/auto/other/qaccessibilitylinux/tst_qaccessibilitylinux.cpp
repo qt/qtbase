@@ -47,6 +47,7 @@
 #include <QtWidgets/QListWidget>
 #include <QtWidgets/QTreeWidget>
 #include <QtWidgets/QTextEdit>
+#include <QtWidgets/QPushButton>
 
 #include <QDBusArgument>
 #include <QDBusConnection>
@@ -102,6 +103,7 @@ private slots:
     void testTreeWidget();
     void testTextEdit();
     void testSlider();
+    void testFocus();
 
     void cleanupTestCase();
 
@@ -463,6 +465,54 @@ void tst_QAccessibilityLinux::testSlider()
 
     valueInterface->setProperty("CurrentValue", 4);
     QCOMPARE(valueInterface->property("CurrentValue").toInt(), 4);
+}
+
+quint64 getAtspiState(QDBusInterface *interface)
+{
+    QDBusMessage msg = interface->call(QDBus::Block, "GetState");
+    const QDBusArgument arg = msg.arguments().at(0).value<QDBusArgument>();
+    quint32 state1 = 0;
+    quint64 state2 = 0;
+    arg.beginArray();
+    arg >> state1;
+    arg >> state2;
+    arg.endArray();
+
+    state2 = state2 << 32;
+    return state2 | state1;
+}
+
+void tst_QAccessibilityLinux::testFocus()
+{
+    QLineEdit *lineEdit1 = new QLineEdit(m_window);
+    lineEdit1->setText("lineEdit 1");
+    QLineEdit *lineEdit2 = new QLineEdit(m_window);
+    lineEdit2->setText("lineEdit 2");
+
+    m_window->addWidget(lineEdit1);
+    m_window->addWidget(lineEdit2);
+    lineEdit1->setFocus();
+
+    QStringList children = getChildren(mainWindow);
+    QCOMPARE(children.length(), 2);
+    QDBusInterface *accessibleInterfaceLineEdit1 = getInterface(children.at(0), "org.a11y.atspi.Accessible");
+    QVERIFY(accessibleInterfaceLineEdit1->isValid());
+    QDBusInterface *accessibleInterfaceLineEdit2 = getInterface(children.at(1), "org.a11y.atspi.Accessible");
+    QVERIFY(accessibleInterfaceLineEdit2->isValid());
+    QDBusInterface *componentInterfaceLineEdit1 = getInterface(children.at(0), "org.a11y.atspi.Component");
+    QVERIFY(componentInterfaceLineEdit1->isValid());
+    QDBusInterface *componentInterfaceLineEdit2 = getInterface(children.at(1), "org.a11y.atspi.Component");
+    QVERIFY(componentInterfaceLineEdit2->isValid());
+
+    quint64 focusedState = quint64(1) << ATSPI_STATE_FOCUSED;
+    QVERIFY(getAtspiState(accessibleInterfaceLineEdit1) & focusedState);
+    QVERIFY(!(getAtspiState(accessibleInterfaceLineEdit2) & focusedState));
+
+    QDBusMessage focusReply = componentInterfaceLineEdit2->call(QDBus::Block, "GrabFocus");
+    QVERIFY(focusReply.arguments().at(0).toBool());
+    QVERIFY(lineEdit2->hasFocus());
+    QVERIFY(!(getAtspiState(accessibleInterfaceLineEdit1) & focusedState));
+    QVERIFY(getAtspiState(accessibleInterfaceLineEdit2) & focusedState);
 }
 
 QTEST_MAIN(tst_QAccessibilityLinux)

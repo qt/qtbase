@@ -1639,13 +1639,13 @@ bool AtSpiAdaptor::componentInterface(QAccessibleInterface *interface, const QSt
         size << rect.width() << rect.height();
         connection.send(message.createReply(size));
     } else if (function == QLatin1String("GrabFocus")) {
-// FIXME: implement focus grabbing
-//        if (interface->object() && interface->object()->isWidgetType()) {
-//            QWidget* w = static_cast<QWidget*>(interface->object());
-//            w->setFocus(Qt::OtherFocusReason);
-//            sendReply(connection, message, true);
-//        }
-        sendReply(connection, message, false);
+        QAccessibleActionInterface *actionIface = interface->actionInterface();
+        if (actionIface && actionIface->actionNames().contains(QAccessibleActionInterface::setFocusAction())) {
+            actionIface->doAction(QAccessibleActionInterface::setFocusAction());
+            sendReply(connection, message, true);
+        } else {
+            sendReply(connection, message, false);
+        }
     } else if (function == QLatin1String("SetExtents")) {
 //        int x = message.arguments().at(0).toInt();
 //        int y = message.arguments().at(1).toInt();
