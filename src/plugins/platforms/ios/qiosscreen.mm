@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qiosglobal.h"
+#include "qiosintegration.h"
 #include "qiosscreen.h"
 #include "qioswindow.h"
 #include <qpa/qwindowsysteminterface.h>
@@ -47,6 +48,63 @@
 #include "qiosviewcontroller.h"
 
 #include <sys/sysctl.h>
+
+// -------------------------------------------------------------------------
+
+static QIOSScreen* qtPlatformScreenFor(UIScreen *uiScreen)
+{
+    foreach (QScreen *screen, QGuiApplication::screens()) {
+        QIOSScreen *platformScreen = static_cast<QIOSScreen *>(screen->handle());
+        if (platformScreen->uiScreen() == uiScreen)
+            return platformScreen;
+    }
+
+    return 0;
+}
+
+@interface QIOSScreenTracker : NSObject
+@end
+
+@implementation QIOSScreenTracker
+
++ (void)load
+{
+    NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+    [center addObserver:self selector:@selector(screenConnected:)
+            name:UIScreenDidConnectNotification object:nil];
+    [center addObserver:self selector:@selector(screenDisconnected:)
+            name:UIScreenDidDisconnectNotification object:nil];
+    [center addObserver:self selector:@selector(screenModeChanged:)
+            name:UIScreenModeDidChangeNotification object:nil];
+}
+
++ (void)screenConnected:(NSNotification*)notification
+{
+    QIOSIntegration *integration = QIOSIntegration::instance();
+    Q_ASSERT_X(integration, Q_FUNC_INFO, "Screen connected before QIOSIntegration creation");
+
+    integration->addScreen(new QIOSScreen([notification object]));
+}
+
++ (void)screenDisconnected:(NSNotification*)notification
+{
+    QIOSScreen *screen = qtPlatformScreenFor([notification object]);
+    Q_ASSERT_X(screen, Q_FUNC_INFO, "Screen disconnected that we didn't know about");
+
+    delete screen;
+}
+
++ (void)screenModeChanged:(NSNotification*)notification
+{
+    QIOSScreen *screen = qtPlatformScreenFor([notification object]);
+    Q_ASSERT_X(screen, Q_FUNC_INFO, "Screen changed that we didn't know about");
+
+    screen->updateProperties();
+}
+
+@end
+
+// -------------------------------------------------------------------------
 
 @interface QIOSOrientationListener : NSObject {
     @public
@@ -99,6 +157,8 @@
 
 @end
 
+// -------------------------------------------------------------------------
+
 /*!
     Returns the model identifier of the device.
 
@@ -118,27 +178,31 @@ static QString deviceModelIdentifier()
     return QString::fromLatin1(value);
 }
 
-QIOSScreen::QIOSScreen(unsigned int screenIndex)
+QIOSScreen::QIOSScreen(UIScreen *screen)
     : QPlatformScreen()
-    , m_uiScreen([[UIScreen screens] count] > screenIndex
-        ? [[UIScreen screens] objectAtIndex:screenIndex]
-        : [UIScreen mainScreen])
+    , m_uiScreen(screen)
     , m_orientationListener(0)
 {
-    QString deviceIdentifier = deviceModelIdentifier();
+    if (screen == [UIScreen mainScreen]) {
+        QString deviceIdentifier = deviceModelIdentifier();
 
-    if (deviceIdentifier == QStringLiteral("iPhone2,1") /* iPhone 3GS */
-        || deviceIdentifier == QStringLiteral("iPod3,1") /* iPod touch 3G */) {
-        m_depth = 18;
+        if (deviceIdentifier == QStringLiteral("iPhone2,1") /* iPhone 3GS */
+            || deviceIdentifier == QStringLiteral("iPod3,1") /* iPod touch 3G */) {
+            m_depth = 18;
+        } else {
+            m_depth = 24;
+        }
+
+        if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad
+            && !deviceIdentifier.contains(QRegularExpression("^iPad2,[567]$")) /* excluding iPad Mini */) {
+            m_unscaledDpi = 132;
+        } else {
+            m_unscaledDpi = 163; // Regular iPhone DPI
+        }
     } else {
+        // External display, hard to say
         m_depth = 24;
-    }
-
-    if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad
-        && !deviceIdentifier.contains(QRegularExpression("^iPad2,[567]$")) /* excluding iPad Mini */) {
-        m_unscaledDpi = 132;
-    } else {
-        m_unscaledDpi = 163; // Regular iPhone DPI
+        m_unscaledDpi = 96;
     }
 
     connect(qGuiApp, &QGuiApplication::focusWindowChanged, this, &QIOSScreen::updateStatusBarVisibility);

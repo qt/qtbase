@@ -84,13 +84,14 @@ public:
     QTouchDevice *touchDevice();
     QPlatformAccessibility *accessibility() const Q_DECL_OVERRIDE;
 
+    void addScreen(QPlatformScreen *screen) { screenAdded(screen); }
+
     static QIOSIntegration *instance();
 
 private:
     QPlatformFontDatabase *m_fontDatabase;
     QPlatformClipboard *m_clipboard;
     QPlatformInputContext *m_inputContext;
-    QPlatformScreen *m_screen;
     QTouchDevice *m_touchDevice;
     QIOSApplicationState m_applicationState;
     QIOSServices *m_platformServices;

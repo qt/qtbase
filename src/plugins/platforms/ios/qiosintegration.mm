@@ -73,7 +73,6 @@ QIOSIntegration::QIOSIntegration()
     : m_fontDatabase(new QCoreTextFontDatabase)
     , m_clipboard(new QIOSClipboard)
     , m_inputContext(new QIOSInputContext)
-    , m_screen(new QIOSScreen(QIOSScreen::MainScreen))
     , m_platformServices(new QIOSServices)
     , m_accessibility(0)
 {
@@ -89,7 +88,8 @@ QIOSIntegration::QIOSIntegration()
     // Set current directory to app bundle folder
     QDir::setCurrent(QString::fromUtf8([[[NSBundle mainBundle] bundlePath] UTF8String]));
 
-    screenAdded(m_screen);
+    for (UIScreen *screen in [UIScreen screens])
+        addScreen(new QIOSScreen(screen));
 
     m_touchDevice = new QTouchDevice;
     m_touchDevice->setType(QTouchDevice::TouchScreen);
@@ -110,8 +110,8 @@ QIOSIntegration::~QIOSIntegration()
     delete m_inputContext;
     m_inputContext = 0;
 
-    delete m_screen;
-    m_screen = 0;
+    foreach (QScreen *screen, QGuiApplication::screens())
+        delete screen->handle();
 
     delete m_platformServices;
     m_platformServices = 0;

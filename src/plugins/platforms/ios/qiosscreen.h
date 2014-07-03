@@ -55,10 +55,8 @@ class QIOSScreen : public QObject, public QPlatformScreen
     Q_OBJECT
 
 public:
-    QIOSScreen(unsigned int screenIndex);
+    QIOSScreen(UIScreen *screen);
     ~QIOSScreen();
-
-    enum ScreenIndex { MainScreen = 0 };
 
     QRect geometry() const;
     QRect availableGeometry() const;
