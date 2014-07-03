@@ -65,8 +65,7 @@
 
     QMacAccessibilityElement *element = cache->elementForId(anId);
     if (!element) {
-        QAccessibleInterface *iface = QAccessible::accessibleInterface(anId);
-        Q_ASSERT(iface);
+        Q_ASSERT(QAccessible::accessibleInterface(anId));
         element = [[self alloc] initWithId:anId withAccessibilityContainer: view];
         cache->insertElement(anId, element);
     }
