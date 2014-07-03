@@ -66,7 +66,8 @@ if (NOT _qt5gui_OPENGL_INCLUDE_DIR)
 endif()
 unset(_GL_INCDIRS)
 
-_qt5_Gui_check_file_exists(${_qt5gui_OPENGL_INCLUDE_DIR})
+# Don\'t check for existence of the "_qt5gui_OPENGL_INCLUDE_DIR" because it is
+# optional.
 
 list(APPEND Qt5Gui_INCLUDE_DIRS ${_qt5gui_OPENGL_INCLUDE_DIR})
 set_property(TARGET Qt5::Gui APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${_qt5gui_OPENGL_INCLUDE_DIR})
@@ -105,13 +106,18 @@ macro(_qt5gui_find_extra_libs Name Libs LibDir IncDirs)
             )
 !!IF mac
             set(Qt5Gui_${_cmake_lib_name}_LIBRARY "${Qt5Gui_${_cmake_lib_name}_LIBRARY}/${_lib}")
+            if (NOT EXISTS "${Qt5Gui_${_cmake_lib_name}_LIBRARY}")
+                set(Qt5Gui_${_cmake_lib_name}_LIBRARY)
+            endif()
 !!ENDIF
-            if (WIN32 AND NOT Qt5Gui_${_cmake_lib_name}_LIBRARY)
+            if (NOT Qt5Gui_${_cmake_lib_name}_LIBRARY)
                 # The above find_library call doesn\'t work for finding
                 # libraries in Windows SDK paths outside of the proper
-                # environment.  Just add the library name to the result
-                # variable instead.
-                # We avoid doing this in the first case because Qt may be
+                # environment, even if the libraries are present.  In other
+                # cases it is OK for the libraries to not be found
+                # because they are optional dependencies of Qt5Gui, needed
+                # only if the qopengl.h header is used.
+                # We try to find the libraries in the first place because Qt may be
                 # compiled with another set of GL libraries (such as coming
                 # from ANGLE).  The point of these find calls is to try to
                 # find the same binaries as Qt is compiled with (as they are
@@ -119,7 +125,6 @@ macro(_qt5gui_find_extra_libs Name Libs LibDir IncDirs)
                 # above with paths known to qmake.
                 set(_Qt5Gui_${_cmake_lib_name}_LIBRARY_DONE TRUE)
                 unset(Qt5Gui_${_cmake_lib_name}_LIBRARY CACHE)
-                list(APPEND Qt5Gui_${Name}_LIBRARIES ${_lib})
             else()
                 add_library(Qt5::Gui_${_cmake_lib_name} SHARED IMPORTED)
                 set_property(TARGET Qt5::Gui_${_cmake_lib_name} APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${Qt5Gui_${Name}_INCLUDE_DIRS})
@@ -152,11 +157,6 @@ macro(_qt5gui_find_extra_libs Name Libs LibDir IncDirs)
             endif()
         endif()
     endforeach()
-    if (NOT CMAKE_CROSSCOMPILING)
-        foreach(_dir ${Qt5Gui_${Name}_INCLUDE_DIRS})
-            _qt5_Gui_check_file_exists(${_dir})
-        endforeach()
-    endif()
 endmacro()
 
 
