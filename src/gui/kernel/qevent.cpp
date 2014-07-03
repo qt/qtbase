@@ -3541,7 +3541,7 @@ QDebug operator<<(QDebug dbg, const QEvent *e) {
     case QEvent::TouchEnd:
         n = n ? n : "TouchEnd";
         formatTouchEvent(dbg.nospace(), n, *static_cast<const QTouchEvent*>(e));
-        return dbg.nospace();
+        return dbg.space();
     case QEvent::ChildAdded: n = n ? n : "ChildAdded";
     case QEvent::ChildPolished: n = n ? n : "ChildPolished";
     case QEvent::ChildRemoved: n = n ? n : "ChildRemoved";
