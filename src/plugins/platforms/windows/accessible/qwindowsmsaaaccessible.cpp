@@ -890,6 +890,11 @@ HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::get_accName(VARIANT varID, BST
             }
         }
     }
+
+    QString shortcut = accessible->text(QAccessible::Accelerator);
+    if (!shortcut.isEmpty())
+        name.append(QLatin1Char(' ') + shortcut);
+
     if (name.size()) {
         *pszName = QStringToBSTR(name);
         return S_OK;
