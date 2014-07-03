@@ -1070,6 +1070,25 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
             writer.writeAttribute("type", functionNode->returnType());
             if (!brief.isEmpty())
                 writer.writeAttribute("brief", brief);
+
+            /*
+              Note: The "signature" attribute is written to the
+              index file, but it is not read back in. Is that ok?
+            */
+            QString signature = functionNode->signature();
+            if (functionNode->isConst())
+                signature += " const";
+            writer.writeAttribute("signature", signature);
+
+            for (int i = 0; i < functionNode->parameters().size(); ++i) {
+                Parameter parameter = functionNode->parameters()[i];
+                writer.writeStartElement("parameter");
+                writer.writeAttribute("left", parameter.leftType());
+                writer.writeAttribute("right", parameter.rightType());
+                writer.writeAttribute("name", parameter.name());
+                writer.writeAttribute("default", parameter.defaultValue());
+                writer.writeEndElement(); // parameter
+            }
         }
         break;
     case Node::QmlProperty:
@@ -1137,6 +1156,28 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
                 writer.writeAttribute("brief", brief);
         }
         break;
+    case Node::Enum:
+        {
+            const EnumNode* enumNode = static_cast<const EnumNode*>(node);
+            if (enumNode->flagsType()) {
+                writer.writeAttribute("typedef",enumNode->flagsType()->fullDocumentName());
+            }
+            foreach (const EnumItem& item, enumNode->items()) {
+                writer.writeStartElement("value");
+                writer.writeAttribute("name", item.name());
+                writer.writeAttribute("value", item.value());
+                writer.writeEndElement(); // value
+            }
+        }
+        break;
+    case Node::Typedef:
+        {
+            const TypedefNode* typedefNode = static_cast<const TypedefNode*>(node);
+            if (typedefNode->associatedEnum()) {
+                writer.writeAttribute("enum",typedefNode->associatedEnum()->fullDocumentName());
+            }
+        }
+        break;
     default:
         break;
     }
@@ -1196,45 +1237,6 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
                 writer.writeAttribute("level", QString::number(level));
                 writer.writeEndElement(); // contents
             }
-        }
-    }
-    else if (node->type() == Node::Function) {
-        const FunctionNode* functionNode = static_cast<const FunctionNode*>(node);
-        /*
-          Note: The "signature" attribute is written to the
-          index file, but it is not read back in. Is that ok?
-         */
-        QString signature = functionNode->signature();
-        if (functionNode->isConst())
-            signature += " const";
-        writer.writeAttribute("signature", signature);
-
-        for (int i = 0; i < functionNode->parameters().size(); ++i) {
-            Parameter parameter = functionNode->parameters()[i];
-            writer.writeStartElement("parameter");
-            writer.writeAttribute("left", parameter.leftType());
-            writer.writeAttribute("right", parameter.rightType());
-            writer.writeAttribute("name", parameter.name());
-            writer.writeAttribute("default", parameter.defaultValue());
-            writer.writeEndElement(); // parameter
-        }
-    }
-    else if (node->type() == Node::Enum) {
-        const EnumNode* enumNode = static_cast<const EnumNode*>(node);
-        if (enumNode->flagsType()) {
-            writer.writeAttribute("typedef",enumNode->flagsType()->fullDocumentName());
-        }
-        foreach (const EnumItem& item, enumNode->items()) {
-            writer.writeStartElement("value");
-            writer.writeAttribute("name", item.name());
-            writer.writeAttribute("value", item.value());
-            writer.writeEndElement(); // value
-        }
-    }
-    else if (node->type() == Node::Typedef) {
-        const TypedefNode* typedefNode = static_cast<const TypedefNode*>(node);
-        if (typedefNode->associatedEnum()) {
-            writer.writeAttribute("enum",typedefNode->associatedEnum()->fullDocumentName());
         }
     }
     return true;
