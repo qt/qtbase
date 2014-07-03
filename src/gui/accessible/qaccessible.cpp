@@ -1912,15 +1912,64 @@ QDebug operator<<(QDebug d, const QAccessibleEvent &ev)
 */
 
 /*!
+    \internal
+    Helper for finding line breaks in textBeforeOffset/textAtOffset/textAfterOffset.
+    \a beforeAtAfter is the line we look for. -1 for before, 0 for at and 1 for after.
+*/
+static QString textLineBoundary(int beforeAtAfter, const QString &text, int offset, int *startOffset, int *endOffset)
+{
+    Q_ASSERT(beforeAtAfter >= -1 && beforeAtAfter <= 1);
+    Q_ASSERT(*startOffset == -1 && *endOffset == -1);
+    int length = text.length();
+    Q_ASSERT(offset >= 0 && offset <= length);
+
+    // move offset into the right range (if asking for line before or after
+    if (beforeAtAfter == 1) {
+        offset = text.indexOf(QChar::LineFeed, qMin(offset, length - 1));
+        if (offset < 0)
+            return QString(); // after the last line comes nothing
+        ++offset; // move after the newline
+    } else if (beforeAtAfter == -1) {
+        offset = text.lastIndexOf(QChar::LineFeed, qMax(offset - 1, 0));
+        if (offset < 0)
+            return QString(); // before first line comes nothing
+    }
+
+    if (offset > 0)
+        *startOffset = text.lastIndexOf(QChar::LineFeed, offset - 1);
+    ++*startOffset; // move to the char after the newline (0 if lastIndexOf returned -1)
+
+    *endOffset = text.indexOf(QChar::LineFeed, qMin(offset, length - 1)) + 1; // include newline char
+    if (*endOffset <= 0 || *endOffset > length)
+        *endOffset = length; // if the text doesn't end with a newline it ends at length
+
+    return text.mid(*startOffset, *endOffset - *startOffset);
+}
+
+/*!
     Returns the text item of type \a boundaryType that is close to offset \a offset
     and sets \a startOffset and \a endOffset values to the start and end positions
     of that item; returns an empty string if there is no such an item.
     Sets \a startOffset and \a endOffset values to -1 on error.
+
+    This default implementation is provided for small text edits. A word processor or
+    text editor should provide their own efficient implementations. This function makes no
+    distinction between paragraphs and lines.
+
+    \note this function can not take the cursor position into account. By convention
+    an \a offset of -2 means that this function should use the cursor position as offset.
+    Thus an offset of -2 must be converted to the cursor position before calling this
+    function.
+    An offset of -1 is used for the text length and custom implementations of this function
+    have to return the result as if the length was passed in as offset.
 */
 QString QAccessibleTextInterface::textBeforeOffset(int offset, QAccessible::TextBoundaryType boundaryType,
                                                    int *startOffset, int *endOffset) const
 {
     const QString txt = text(0, characterCount());
+
+    if (offset == -1)
+        offset = txt.length();
 
     *startOffset = *endOffset = -1;
     if (txt.isEmpty() || offset <= 0 || offset > txt.length())
@@ -1937,7 +1986,11 @@ QString QAccessibleTextInterface::textBeforeOffset(int offset, QAccessible::Text
     case QAccessible::SentenceBoundary:
         type = QTextBoundaryFinder::Sentence;
         break;
-    default:
+    case QAccessible::LineBoundary:
+    case QAccessible::ParagraphBoundary:
+        // Lines can not use QTextBoundaryFinder since Line there means any potential line-break.
+        return textLineBoundary(-1, txt, offset, startOffset, endOffset);
+    case QAccessible::NoBoundary:
         // return empty, this function currently only supports single lines, so there can be no line before
         return QString();
     }
@@ -1969,11 +2022,25 @@ QString QAccessibleTextInterface::textBeforeOffset(int offset, QAccessible::Text
     and sets \a startOffset and \a endOffset values to the start and end positions
     of that item; returns an empty string if there is no such an item.
     Sets \a startOffset and \a endOffset values to -1 on error.
+
+    This default implementation is provided for small text edits. A word processor or
+    text editor should provide their own efficient implementations. This function makes no
+    distinction between paragraphs and lines.
+
+    \note this function can not take the cursor position into account. By convention
+    an \a offset of -2 means that this function should use the cursor position as offset.
+    Thus an offset of -2 must be converted to the cursor position before calling this
+    function.
+    An offset of -1 is used for the text length and custom implementations of this function
+    have to return the result as if the length was passed in as offset.
 */
 QString QAccessibleTextInterface::textAfterOffset(int offset, QAccessible::TextBoundaryType boundaryType,
                                                   int *startOffset, int *endOffset) const
 {
     const QString txt = text(0, characterCount());
+
+    if (offset == -1)
+        offset = txt.length();
 
     *startOffset = *endOffset = -1;
     if (txt.isEmpty() || offset < 0 || offset >= txt.length())
@@ -1990,7 +2057,11 @@ QString QAccessibleTextInterface::textAfterOffset(int offset, QAccessible::TextB
     case QAccessible::SentenceBoundary:
         type = QTextBoundaryFinder::Sentence;
         break;
-    default:
+    case QAccessible::LineBoundary:
+    case QAccessible::ParagraphBoundary:
+        // Lines can not use QTextBoundaryFinder since Line there means any potential line-break.
+        return textLineBoundary(1, txt, offset, startOffset, endOffset);
+    case QAccessible::NoBoundary:
         // return empty, this function currently only supports single lines, so there can be no line after
         return QString();
     }
@@ -2033,11 +2104,25 @@ QString QAccessibleTextInterface::textAfterOffset(int offset, QAccessible::TextB
     and sets \a startOffset and \a endOffset values to the start and end positions
     of that item; returns an empty string if there is no such an item.
     Sets \a startOffset and \a endOffset values to -1 on error.
+
+    This default implementation is provided for small text edits. A word processor or
+    text editor should provide their own efficient implementations. This function makes no
+    distinction between paragraphs and lines.
+
+    \note this function can not take the cursor position into account. By convention
+    an \a offset of -2 means that this function should use the cursor position as offset.
+    Thus an offset of -2 must be converted to the cursor position before calling this
+    function.
+    An offset of -1 is used for the text length and custom implementations of this function
+    have to return the result as if the length was passed in as offset.
 */
 QString QAccessibleTextInterface::textAtOffset(int offset, QAccessible::TextBoundaryType boundaryType,
                                                int *startOffset, int *endOffset) const
 {
     const QString txt = text(0, characterCount());
+
+    if (offset == -1)
+        offset = txt.length();
 
     *startOffset = *endOffset = -1;
     if (txt.isEmpty() || offset < 0 || offset > txt.length())
@@ -2057,8 +2142,11 @@ QString QAccessibleTextInterface::textAtOffset(int offset, QAccessible::TextBoun
     case QAccessible::SentenceBoundary:
         type = QTextBoundaryFinder::Sentence;
         break;
-    default:
-        // return the whole line
+    case QAccessible::LineBoundary:
+    case QAccessible::ParagraphBoundary:
+        // Lines can not use QTextBoundaryFinder since Line there means any potential line-break.
+        return textLineBoundary(0, txt, offset, startOffset, endOffset);
+    case QAccessible::NoBoundary:
         *startOffset = 0;
         *endOffset = txt.length();
         return txt;

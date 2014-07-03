@@ -75,6 +75,8 @@
 
 #include <algorithm>
 
+#include "accessiblewidgets.h"
+
 // Make a widget frameless to prevent size constraints of title bars
 // from interfering (Windows).
 static inline void setFrameless(QWidget *w)
@@ -266,6 +268,8 @@ private slots:
     void lineEditTest();
     void lineEditTextFunctions_data();
     void lineEditTextFunctions();
+    void textInterfaceTest_data();
+    void textInterfaceTest();
     void groupBoxTest();
     void dialogButtonBoxTest();
     void dialTest();
@@ -395,43 +399,6 @@ void tst_QAccessibility::eventTest()
     QTestAccessibility::clearEvents();
 }
 
-
-class QtTestAccessibleWidget: public QWidget
-{
-    Q_OBJECT
-public:
-    QtTestAccessibleWidget(QWidget *parent, const char *name): QWidget(parent)
-    {
-        setObjectName(name);
-    }
-};
-
-class QtTestAccessibleWidgetIface: public QAccessibleWidget
-{
-public:
-    QtTestAccessibleWidgetIface(QtTestAccessibleWidget *w): QAccessibleWidget(w) {}
-    QString text(QAccessible::Text t) const
-    {
-        if (t == QAccessible::Help)
-            return QString::fromLatin1("Help yourself");
-        return QAccessibleWidget::text(t);
-    }
-    static QAccessibleInterface *ifaceFactory(const QString &key, QObject *o)
-    {
-        if (key == "QtTestAccessibleWidget")
-            return new QtTestAccessibleWidgetIface(static_cast<QtTestAccessibleWidget*>(o));
-        return 0;
-    }
-};
-
-class QtTestAccessibleWidgetSubclass: public QtTestAccessibleWidget
-{
-    Q_OBJECT
-public:
-    QtTestAccessibleWidgetSubclass(QWidget *parent, const char *name): QtTestAccessibleWidget(parent, name)
-    {}
-};
-
 void tst_QAccessibility::customWidget()
 {
     {
@@ -490,14 +457,6 @@ void tst_QAccessibility::deletedWidget()
     widget = 0;
     // fixme: QVERIFY(!iface->isValid());
 }
-
-class KFooButton: public QPushButton
-{
-    Q_OBJECT
-public:
-    KFooButton(const QString &text, QWidget* parent = 0) : QPushButton(text, parent)
-    {}
-};
 
 void tst_QAccessibility::subclassedWidget()
 {
@@ -2378,6 +2337,98 @@ void tst_QAccessibility::lineEditTextFunctions()
     QCOMPARE(start, expectedStart);
     QCOMPARE(end, expectedEnd);
     }
+    QTestAccessibility::clearEvents();
+}
+
+void tst_QAccessibility::textInterfaceTest_data()
+{
+    lineEditTextFunctions_data();
+    QString hello = QStringLiteral("hello\nworld\nend");
+    QTest::newRow("multi line at 0") << hello << 1 << (int) QAccessible::LineBoundary << 0 << 0 << 0 << 6 << "hello\n";
+    QTest::newRow("multi line at 1") << hello << 1 << (int) QAccessible::LineBoundary << 0 << 1 << 0 << 6 << "hello\n";
+    QTest::newRow("multi line at 2") << hello << 1 << (int) QAccessible::LineBoundary << 0 << 2 << 0 << 6 << "hello\n";
+    QTest::newRow("multi line at 5") << hello << 1 << (int) QAccessible::LineBoundary << 0 << 5 << 0 << 6 << "hello\n";
+    QTest::newRow("multi line at 6") << hello << 1 << (int) QAccessible::LineBoundary << 0 << 6 << 6 << 12 << "world\n";
+    QTest::newRow("multi line at 7") << hello << 1 << (int) QAccessible::LineBoundary << 0 << 7 << 6 << 12 << "world\n";
+    QTest::newRow("multi line at 8") << hello << 1 << (int) QAccessible::LineBoundary << 0 << 8 << 6 << 12 << "world\n";
+    QTest::newRow("multi line at 10") << hello << 1 << (int) QAccessible::LineBoundary << 0 << 10 << 6 << 12 << "world\n";
+    QTest::newRow("multi line at 11") << hello << 1 << (int) QAccessible::LineBoundary << 0 << 11 << 6 << 12 << "world\n";
+    QTest::newRow("multi line at 12") << hello << 1 << (int) QAccessible::LineBoundary << 0 << 12 << 12 << 15 << "end";
+
+    QTest::newRow("multi line before 0") << hello << 0 << (int) QAccessible::LineBoundary << 0 << 0 << -1 << -1 << "";
+    QTest::newRow("multi line before 1") << hello << 0 << (int) QAccessible::LineBoundary << 0 << 1 << -1 << -1 << "";
+    QTest::newRow("multi line before 2") << hello << 0 << (int) QAccessible::LineBoundary << 0 << 2 << -1 << -1 << "";
+    QTest::newRow("multi line before 5") << hello << 0 << (int) QAccessible::LineBoundary << 0 << 5 << -1 << -1 << "";
+    QTest::newRow("multi line before 6") << hello << 0 << (int) QAccessible::LineBoundary << 0 << 6 << 0 << 6 << "hello\n";
+    QTest::newRow("multi line before 7") << hello << 0 << (int) QAccessible::LineBoundary << 0 << 7 << 0 << 6 << "hello\n";
+    QTest::newRow("multi line before 8") << hello << 0 << (int) QAccessible::LineBoundary << 0 << 8 << 0 << 6 << "hello\n";
+    QTest::newRow("multi line before 10") << hello << 0 << (int) QAccessible::LineBoundary << 0 << 10 << 0 << 6 << "hello\n";
+    QTest::newRow("multi line before 11") << hello << 0 << (int) QAccessible::LineBoundary << 0 << 11 << 0 << 6 << "hello\n";
+    QTest::newRow("multi line before 12") << hello << 0 << (int) QAccessible::LineBoundary << 0 << 12 << 6 << 12 << "world\n";
+
+    QTest::newRow("multi line after 0") << hello << 2 << (int) QAccessible::LineBoundary << 0 << 0 << 6 << 12 << "world\n";
+    QTest::newRow("multi line after 1") << hello << 2 << (int) QAccessible::LineBoundary << 0 << 1 << 6 << 12 << "world\n";
+    QTest::newRow("multi line after 2") << hello << 2 << (int) QAccessible::LineBoundary << 0 << 2 << 6 << 12 << "world\n";
+    QTest::newRow("multi line after 5") << hello << 2 << (int) QAccessible::LineBoundary << 0 << 5 << 6 << 12 << "world\n";
+    QTest::newRow("multi line after 6") << hello << 2 << (int) QAccessible::LineBoundary << 0 << 6 << 12 << 15 << "end";
+    QTest::newRow("multi line after 7") << hello << 2 << (int) QAccessible::LineBoundary << 0 << 7 << 12 << 15 << "end";
+    QTest::newRow("multi line after 8") << hello << 2 << (int) QAccessible::LineBoundary << 0 << 8 << 12 << 15 << "end";
+    QTest::newRow("multi line after 10") << hello << 2 << (int) QAccessible::LineBoundary << 0 << 10 << 12 << 15 << "end";
+    QTest::newRow("multi line after 11") << hello << 2 << (int) QAccessible::LineBoundary << 0 << 11 << 12 << 15 << "end";
+    QTest::newRow("multi line after 12") << hello << 2 << (int) QAccessible::LineBoundary << 0 << 12 << -1 << -1 << "";
+
+    QTest::newRow("before 4 \\nFoo\\n") << QStringLiteral("\nFoo\n") << 0 << (int) QAccessible::LineBoundary << 0 << 4 << 0 << 1 << "\n";
+    QTest::newRow("at 4 \\nFoo\\n") << QStringLiteral("\nFoo\n") << 1 << (int) QAccessible::LineBoundary << 0 << 4 << 1 << 5 << "Foo\n";
+    QTest::newRow("after 4 \\nFoo\\n") << QStringLiteral("\nFoo\n") << 2 << (int) QAccessible::LineBoundary << 0 << 4 << 5 << 5 << "";
+    QTest::newRow("before 4 Foo\\nBar\\n") << QStringLiteral("Foo\nBar\n") << 0 << (int) QAccessible::LineBoundary << 0 << 7 << 0 << 4 << "Foo\n";
+    QTest::newRow("at 4 Foo\\nBar\\n") << QStringLiteral("Foo\nBar\n") << 1 << (int) QAccessible::LineBoundary << 0 << 7 << 4 << 8 << "Bar\n";
+    QTest::newRow("after 4 Foo\\nBar\\n") << QStringLiteral("Foo\nBar\n") << 2 << (int) QAccessible::LineBoundary << 0 << 7 << 8 << 8 << "";
+    QTest::newRow("at 0 Foo\\n") << QStringLiteral("Foo\n") << 1 << (int) QAccessible::LineBoundary << 0 << 0 << 0 << 4 << "Foo\n";
+}
+
+void tst_QAccessibility::textInterfaceTest()
+{
+    QFETCH(QString, text);
+    QFETCH(int, textFunction);
+    QFETCH(int, boundaryType);
+    QFETCH(int, cursorPosition);
+    QFETCH(int, offset);
+    QFETCH(int, expectedStart);
+    QFETCH(int, expectedEnd);
+    QFETCH(QString, expectedText);
+
+    QAccessible::installFactory(CustomTextWidgetIface::ifaceFactory);
+    CustomTextWidget *w = new CustomTextWidget();
+    w->text = text;
+    w->cursorPosition = cursorPosition;
+
+    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(w);
+    QVERIFY(iface);
+    QCOMPARE(iface->text(QAccessible::Value), text);
+    QAccessibleTextInterface *textIface = iface->textInterface();
+    QVERIFY(textIface);
+
+    int start = -33;
+    int end = -33;
+    QString result;
+    switch (textFunction) {
+    case 0:
+        result = textIface->textBeforeOffset(offset, (QAccessible::TextBoundaryType) boundaryType, &start, &end);
+        break;
+    case 1:
+        result = textIface->textAtOffset(offset, (QAccessible::TextBoundaryType) boundaryType, &start, &end);
+        break;
+    case 2:
+        result = textIface->textAfterOffset(offset, (QAccessible::TextBoundaryType) boundaryType, &start, &end);
+        break;
+    }
+
+    QCOMPARE(result, expectedText);
+    QCOMPARE(start, expectedStart);
+    QCOMPARE(end, expectedEnd);
+
+    delete w;
+    QAccessible::removeFactory(CustomTextWidgetIface::ifaceFactory);
     QTestAccessibility::clearEvents();
 }
 
