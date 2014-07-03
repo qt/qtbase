@@ -12,3 +12,5 @@ navigation.homepage = "Qt $QT_VER"
 buildversion = "Qt $QT_VERSION Reference Documentation"
 
 sourcedirs += includes
+
+url = http://qt-project.org/doc/qt-$QT_VER
