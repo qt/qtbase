@@ -956,10 +956,12 @@ void QWindowsWindow::destroyWindow()
         if (hasMouseCapture())
             setMouseGrabEnabled(false);
         setDropSiteEnabled(false);
+#ifndef QT_NO_OPENGL
         if (m_surface) {
             m_data.staticOpenGLContext->destroyWindowSurface(m_surface);
             m_surface = 0;
         }
+#endif
 #ifdef Q_OS_WINCE
         if ((m_windowState & Qt::WindowFullScreen) && !m_previouslyHidden) {
             HWND handle = FindWindow(L"HHTaskBar", L"");
@@ -2287,10 +2289,14 @@ void QWindowsWindow::setCustomMargins(const QMargins &newCustomMargins)
 
 void *QWindowsWindow::surface(void *nativeConfig)
 {
+#ifdef QT_NO_OPENGL
+    return 0;
+#else
     if (!m_surface)
         m_surface = m_data.staticOpenGLContext->createWindowSurface(m_data.hwnd, nativeConfig);
 
     return m_surface;
+#endif
 }
 
 QT_END_NAMESPACE
