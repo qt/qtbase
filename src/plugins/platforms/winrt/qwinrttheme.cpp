@@ -43,10 +43,13 @@
 #include "qwinrtplatformmessagedialoghelper.h"
 
 #include <QtCore/qfunctions_winrt.h>
+#include <QtGui/QPalette>
 
 #include <wrl.h>
+#include <windows.ui.h>
 #include <windows.ui.viewmanagement.h>
 using namespace Microsoft::WRL;
+using namespace ABI::Windows::UI;
 using namespace ABI::Windows::UI::ViewManagement;
 
 QT_BEGIN_NAMESPACE
@@ -63,8 +66,67 @@ static IUISettings *uiSettings()
     return settings.Get();
 }
 
-QWinRTTheme::QWinRTTheme()
+class QWinRTThemePrivate
 {
+public:
+    QPalette palette;
+};
+
+QWinRTTheme::QWinRTTheme()
+    : d_ptr(new QWinRTThemePrivate)
+{
+    Q_D(QWinRTTheme);
+
+    HRESULT hr;
+    union { Color ui; QRgb qt; } color;
+
+    hr = uiSettings()->UIElementColor(UIElementType_ActiveCaption, &color.ui);
+    Q_ASSERT_SUCCEEDED(hr);
+    d->palette.setColor(QPalette::ToolTipBase, color.qt);
+
+    hr = uiSettings()->UIElementColor(UIElementType_Background, &color.ui);
+    Q_ASSERT_SUCCEEDED(hr);
+    d->palette.setColor(QPalette::AlternateBase, color.qt);
+
+    hr = uiSettings()->UIElementColor(UIElementType_ButtonFace, &color.ui);
+    Q_ASSERT_SUCCEEDED(hr);
+    d->palette.setColor(QPalette::Button, color.qt);
+    d->palette.setColor(QPalette::Midlight, QColor(color.qt).lighter(110));
+    d->palette.setColor(QPalette::Light, QColor(color.qt).lighter(150));
+    d->palette.setColor(QPalette::Mid, QColor(color.qt).dark(130));
+    d->palette.setColor(QPalette::Dark, QColor(color.qt).dark(150));
+
+    hr = uiSettings()->UIElementColor(UIElementType_ButtonText, &color.ui);
+    Q_ASSERT_SUCCEEDED(hr);
+    d->palette.setColor(QPalette::ButtonText, color.qt);
+    d->palette.setColor(QPalette::Text, color.qt);
+
+    hr = uiSettings()->UIElementColor(UIElementType_CaptionText, &color.ui);
+    Q_ASSERT_SUCCEEDED(hr);
+    d->palette.setColor(QPalette::ToolTipText, color.qt);
+
+    hr = uiSettings()->UIElementColor(UIElementType_Highlight, &color.ui);
+    Q_ASSERT_SUCCEEDED(hr);
+    d->palette.setColor(QPalette::Highlight, color.qt);
+
+    hr = uiSettings()->UIElementColor(UIElementType_HighlightText, &color.ui);
+    Q_ASSERT_SUCCEEDED(hr);
+    d->palette.setColor(QPalette::HighlightedText, color.qt);
+
+    hr = uiSettings()->UIElementColor(UIElementType_Window, &color.ui);
+    Q_ASSERT_SUCCEEDED(hr);
+    d->palette.setColor(QPalette::Window, color.qt);
+    d->palette.setColor(QPalette::Base, color.qt);
+
+#ifdef Q_OS_WINPHONE
+    hr = uiSettings()->UIElementColor(UIElementType_TextHigh, &color.ui);
+    Q_ASSERT_SUCCEEDED(hr);
+    d->palette.setColor(QPalette::BrightText, color.qt);
+#else
+    hr = uiSettings()->UIElementColor(UIElementType_Hotlight, &color.ui);
+    Q_ASSERT_SUCCEEDED(hr);
+    d->palette.setColor(QPalette::BrightText, color.qt);
+#endif
 }
 
 bool QWinRTTheme::usePlatformNativeDialog(DialogType type) const
@@ -133,6 +195,14 @@ QVariant QWinRTTheme::styleHint(QPlatformIntegration::StyleHint hint)
         break;
     }
     return QVariant();
+}
+
+const QPalette *QWinRTTheme::palette(Palette type) const
+{
+    Q_D(const QWinRTTheme);
+    if (type == SystemPalette)
+        return &d->palette;
+    return QPlatformTheme::palette(type);
 }
 
 QT_END_NAMESPACE

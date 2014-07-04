@@ -47,6 +47,7 @@
 
 QT_BEGIN_NAMESPACE
 
+class QWinRTThemePrivate;
 class QWinRTTheme : public QPlatformTheme
 {
 public:
@@ -55,7 +56,13 @@ public:
     bool usePlatformNativeDialog(DialogType type) const;
     QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const;
 
+    const QPalette *palette(Palette type = SystemPalette) const Q_DECL_OVERRIDE;
+
     static QVariant styleHint(QPlatformIntegration::StyleHint hint);
+
+private:
+    QScopedPointer<QWinRTThemePrivate> d_ptr;
+    Q_DECLARE_PRIVATE(QWinRTTheme)
 };
 
 QT_END_NAMESPACE
