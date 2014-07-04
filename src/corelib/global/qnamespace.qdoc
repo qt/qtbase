@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -306,7 +306,7 @@
     This enum provides shorter names for the keyboard modifier keys
     supported by Qt.
 
-    \b{Note:} On Mac OS X, the \c CTRL value corresponds to
+    \note On Mac OS X, the \c CTRL value corresponds to
     the Command keys on the Macintosh keyboard, and the \c META value
     corresponds to the Control keys.
 
@@ -986,7 +986,7 @@
 
     \value WA_NoSystemBackground Indicates that the widget has no background,
     i.e. when the widget receives paint events, the background is not
-    automatically repainted. \note Unlike WA_OpaquePaintEvent, newly exposed
+    automatically repainted. \b Note: Unlike WA_OpaquePaintEvent, newly exposed
     areas are \b never filled with the background (e.g., after showing a
     window for the first time the user can see "through" it until the
     application processes the paint events). This flag is set or cleared by the
@@ -998,7 +998,7 @@
     before generating paint events. The use of WA_OpaquePaintEvent provides a
     small optimization by helping to reduce flicker on systems that do not
     support double buffering and avoiding computational cycles necessary to
-    erase the background prior to painting. \note Unlike
+    erase the background prior to painting. \b Note: Unlike
     WA_NoSystemBackground, WA_OpaquePaintEvent makes an effort to avoid
     transparent window backgrounds. This flag is set or cleared by the widget's
     author.
@@ -1011,7 +1011,7 @@
     \value WA_PaintOnScreen Indicates that the widget wants to draw directly
     onto the screen. Widgets with this attribute set do not participate in
     composition management, i.e. they cannot be semi-transparent or shine
-    through semi-transparent overlapping widgets. \note This flag is only
+    through semi-transparent overlapping widgets. \b Note: This flag is only
     supported on X11 and it disables double buffering. On Qt for Embedded
     Linux, the flag only works when set on a top-level widget and it relies on
     support from the active screen driver. This flag is set or cleared by the
@@ -1082,7 +1082,7 @@
 
     \value WA_UpdatesDisabled Indicates that updates are blocked (including the
     system background). This flag is set or cleared by the Qt kernel.
-    \warning This flag must \e never be set or cleared by the widget's author.
+    \b Warning: This flag must \e never be set or cleared by the widget's author.
 
     \value WA_WindowModified Indicates that the window is marked as modified.
     On some platforms this flag will do nothing, on others (including Mac OS X
@@ -1124,50 +1124,50 @@
     \value WA_X11NetWmWindowTypeToolBar Adds _NET_WM_WINDOW_TYPE_TOOLBAR to the
     window's _NET_WM_WINDOW_TYPE X11 window property. See
     http://standards.freedesktop.org/wm-spec/ for more details. This attribute
-    has no effect on non-X11 platforms. \note Qt automatically sets this
+    has no effect on non-X11 platforms. \b Note: Qt automatically sets this
     attribute for QToolBar.
 
     \value WA_X11NetWmWindowTypeMenu Adds _NET_WM_WINDOW_TYPE_MENU to the
     window's _NET_WM_WINDOW_TYPE X11 window property. See
     http://standards.freedesktop.org/wm-spec/ for more details. This attribute
-    has no effect on non-X11 platforms. \note Qt automatically sets this
+    has no effect on non-X11 platforms. \b Note: Qt automatically sets this
     attribute for QMenu when torn-off.
 
     \value WA_X11NetWmWindowTypeUtility Adds _NET_WM_WINDOW_TYPE_UTILITY to the
     window's _NET_WM_WINDOW_TYPE X11 window property. See
     http://standards.freedesktop.org/wm-spec/ for more details. This attribute
-    has no effect on non-X11 platforms. \note Qt automatically sets this
+    has no effect on non-X11 platforms. \b Note: Qt automatically sets this
     attribute for the Qt::Tool window type.
 
     \value WA_X11NetWmWindowTypeSplash Adds _NET_WM_WINDOW_TYPE_SPLASH to the
     window's _NET_WM_WINDOW_TYPE X11 window property. See
     http://standards.freedesktop.org/wm-spec/ for more details. This attribute
-    has no effect on non-X11 platforms. \note Qt automatically sets this
+    has no effect on non-X11 platforms. \b Note: Qt automatically sets this
     attribute for the Qt::SplashScreen window type.
 
     \value WA_X11NetWmWindowTypeDialog Adds _NET_WM_WINDOW_TYPE_DIALOG
     to the window's _NET_WM_WINDOW_TYPE X11 window property. See
     http://standards.freedesktop.org/wm-spec/ for more details. This
-    attribute has no effect on non-X11 platforms. \note Qt automatically sets
+    attribute has no effect on non-X11 platforms. \b Note: Qt automatically sets
     this attribute for the Qt::Dialog and Qt::Sheet window types.
 
     \value WA_X11NetWmWindowTypeDropDownMenu Adds
     _NET_WM_WINDOW_TYPE_DROPDOWN_MENU to the window's
     _NET_WM_WINDOW_TYPE X11 window property. See
     http://standards.freedesktop.org/wm-spec/ for more details. This
-    attribute has no effect on non-X11 platforms. \note Qt
+    attribute has no effect on non-X11 platforms. \b Note: Qt
     automatically sets this attribute for QMenus added to a QMenuBar.
 
     \value WA_X11NetWmWindowTypePopupMenu Adds _NET_WM_WINDOW_TYPE_POPUP_MENU
     to the window's _NET_WM_WINDOW_TYPE X11 window property. See
     http://standards.freedesktop.org/wm-spec/ for more details. This attribute
-    has no effect on non-X11 platforms. \note Qt automatically sets this
+    has no effect on non-X11 platforms. \b Note: Qt automatically sets this
     attribute for QMenu.
 
     \value WA_X11NetWmWindowTypeToolTip Adds _NET_WM_WINDOW_TYPE_TOOLTIP to the
     window's _NET_WM_WINDOW_TYPE X11 window property. See
     http://standards.freedesktop.org/wm-spec/ for more details. This attribute
-    has no effect on non-X11 platforms. \note Qt automatically sets this
+    has no effect on non-X11 platforms. \b Note: Qt automatically sets this
     attribute for the Qt::ToolTip window type.
 
     \value WA_X11NetWmWindowTypeNotification Adds
@@ -1178,13 +1178,13 @@
     \value WA_X11NetWmWindowTypeCombo Adds _NET_WM_WINDOW_TYPE_COMBO
     to the window's _NET_WM_WINDOW_TYPE X11 window property. See
     http://standards.freedesktop.org/wm-spec/ for more details. This attribute
-    has no effect on non-X11 platforms. \note Qt automatically sets this
+    has no effect on non-X11 platforms. \b Note: Qt automatically sets this
     attribute for the QComboBox pop-up.
 
     \value WA_X11NetWmWindowTypeDND Adds _NET_WM_WINDOW_TYPE_DND to
     the window's _NET_WM_WINDOW_TYPE X11 window property. See
     http://standards.freedesktop.org/wm-spec/ for more details. This attribute
-    has no effect on non-X11 platforms. \note Qt automatically sets this
+    has no effect on non-X11 platforms. \b Note: Qt automatically sets this
     attribute on the feedback widget used during a drag.
 
     \value WA_MacFrameworkScaled Enables resolution independence aware mode
@@ -1255,7 +1255,7 @@
     \value Key_Enter     Typically located on the keypad.
     \value Key_Insert
     \value Key_Delete
-    \value Key_Pause    The Pause/Break key (\note Not anything to do with pausing media)
+    \value Key_Pause    The Pause/Break key (\b Note: Not related to pausing media)
     \value Key_Print
     \value Key_SysReq
     \value Key_Clear
@@ -1526,7 +1526,7 @@
     \value Key_MediaPrevious
     \value Key_MediaNext
     \value Key_MediaRecord
-    \value Key_MediaPause   A key setting the state of the media player to pause (\note not the pause/break key)
+    \value Key_MediaPause   A key setting the state of the media player to pause (\b Note: not the pause/break key)
     \value Key_MediaTogglePlayPause   A key to toggle the play/pause state in the media player (rather than setting an absolute state)
     \value Key_HomePage
     \value Key_Favorites
@@ -2868,7 +2868,7 @@
                                              The keypad is used to implement a virtual cursor, unless
                                              the device has an analog mouse type of input device (e.g. touchpad)
 
-    \note: in 4.6, cursor navigation is only implemented for Symbian OS.
+    \note In 4.6, cursor navigation is only implemented for Symbian OS.
            On other platforms, it behaves as NavigationModeNone.
     \sa QApplication::setNavigationMode()
     \sa QApplication::navigationMode()

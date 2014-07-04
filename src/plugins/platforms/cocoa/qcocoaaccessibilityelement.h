@@ -43,22 +43,25 @@
 
 #include <QtCore/qglobal.h>
 
+#include "qt_mac_p.h"
+
 #import <Cocoa/Cocoa.h>
 #import <AppKit/NSAccessibility.h>
 
 #import <qaccessible.h>
 
-Q_FORWARD_DECLARE_OBJC_CLASS(QMacAccessibilityElement);
+@class QT_MANGLE_NAMESPACE(QMacAccessibilityElement);
 
-@interface QMacAccessibilityElement : NSObject {
+@interface QT_MANGLE_NAMESPACE(QMacAccessibilityElement) : NSObject {
     NSString *role;
     QAccessible::Id axid;
 }
 
 - (id)initWithId:(QAccessible::Id)anId;
-+ (QMacAccessibilityElement *)elementWithId:(QAccessible::Id)anId;
++ (QT_MANGLE_NAMESPACE(QMacAccessibilityElement) *)elementWithId:(QAccessible::Id)anId;
 
 @end
 
-#endif
+QT_NAMESPACE_ALIAS_OBJC_CLASS(QMacAccessibilityElement);
 
+#endif

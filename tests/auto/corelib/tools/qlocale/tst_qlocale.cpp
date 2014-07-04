@@ -1389,10 +1389,23 @@ void tst_QLocale::toDateTime()
 }
 
 #ifdef Q_OS_MAC
+
+// Format number string according to system locale settings.
+// Expected in format is US "1,234.56".
+QString systemLocaleFormatNumber(const QString &numberString)
+{
+    QLocale locale = QLocale::system();
+    QString numberStringCopy = numberString;
+    return numberStringCopy.replace(QChar(','), QChar('G'))
+                           .replace(QChar('.'), QChar('D'))
+                           .replace(QChar('G'), locale.groupSeparator())
+                           .replace(QChar('D'), locale.decimalPoint());
+}
+
 void tst_QLocale::macDefaultLocale()
 {
-
     QLocale locale = QLocale::system();
+
     if (locale.name() != QLatin1String("en_US"))
         QSKIP("This test only tests for en_US");
 
@@ -1404,20 +1417,20 @@ void tst_QLocale::macDefaultLocale()
     QCOMPARE(locale.toString(invalidDate, QLocale::NarrowFormat), QString());
     QCOMPARE(locale.toString(invalidTime, QLocale::LongFormat), QString());
     QCOMPARE(locale.toString(invalidDate, QLocale::LongFormat), QString());
-    QCOMPARE(locale.decimalPoint(), QChar('.'));
-    QCOMPARE(locale.groupSeparator(), QChar(','));
-    QCOMPARE(locale.dateFormat(QLocale::ShortFormat), QString("M/d/yy"));
-    QCOMPARE(locale.dateFormat(QLocale::LongFormat), QString("MMMM d, yyyy"));
-    QCOMPARE(locale.timeFormat(QLocale::ShortFormat), QString("h:mm AP"));
-    QCOMPARE(locale.timeFormat(QLocale::LongFormat), QString("h:mm:ss AP t"));
+
+    // On OS X the decimal point and group separator are configurable
+    // independently of the locale. Verify that they have one of the
+    // allowed values and are not the same.
+    QVERIFY(locale.decimalPoint() == QChar('.') || locale.decimalPoint() == QChar(','));
+    QVERIFY(locale.groupSeparator() == QChar(',')
+        || locale.groupSeparator() == QChar('.')
+        || locale.groupSeparator() == QChar('\xA0') // no-breaking space
+        || locale.groupSeparator() == QChar('\'')
+        || locale.groupSeparator() == QChar());
+    QVERIFY(locale.decimalPoint() != locale.groupSeparator());
 
     // make sure we are using the system to parse them
-    QCOMPARE(locale.toString(1234.56), QString("1,234.56"));
-    QCOMPARE(locale.toString(QDate(1974, 12, 1), QLocale::ShortFormat), QString("12/1/74"));
-    QCOMPARE(locale.toString(QDate(1974, 12, 1), QLocale::NarrowFormat), locale.toString(QDate(1974, 12, 1), QLocale::ShortFormat));
-    QCOMPARE(locale.toString(QDate(1974, 12, 1), QLocale::LongFormat), QString("December 1, 1974"));
-    QCOMPARE(locale.toString(QTime(1,2,3), QLocale::ShortFormat), QString("1:02 AM"));
-    QCOMPARE(locale.toString(QTime(1,2,3), QLocale::NarrowFormat), locale.toString(QTime(1,2,3), QLocale::ShortFormat));
+    QCOMPARE(locale.toString(1234.56), systemLocaleFormatNumber(QString("1,234.56")));
 
     QTime currentTime = QTime::currentTime();
     QTime utcTime = QDateTime::currentDateTime().toUTC().time();
@@ -1433,35 +1446,38 @@ void tst_QLocale::macDefaultLocale()
     const QString timeString = locale.toString(QTime(1,2,3), QLocale::LongFormat);
     QVERIFY(timeString.contains(QString("1:02:03")));
 
-    // System Preferences->Language & Text, Region Tab, should choose "United States" for Region field
-    QCOMPARE(locale.toCurrencyString(qulonglong(1234)), QString("$1,234.00"));
-    QCOMPARE(locale.toCurrencyString(qlonglong(-1234)), QString("($1,234.00)"));
-    QCOMPARE(locale.toCurrencyString(double(1234.56)), QString("$1,234.56"));
-    QCOMPARE(locale.toCurrencyString(double(-1234.56)), QString("($1,234.56)"));
+    // To run this test make sure "Curreny" is US Dollar in System Preferences->Language & Region->Advanced.
+    if (locale.currencySymbol() == QString("$")) {
+        QCOMPARE(locale.toCurrencyString(qulonglong(1234)), systemLocaleFormatNumber(QString("$1,234.00")));
+        QCOMPARE(locale.toCurrencyString(qlonglong(-1234)), systemLocaleFormatNumber(QString("($1,234.00)")));
+        QCOMPARE(locale.toCurrencyString(double(1234.56)), systemLocaleFormatNumber(QString("$1,234.56")));
+        QCOMPARE(locale.toCurrencyString(double(-1234.56)), systemLocaleFormatNumber(QString("($1,234.56)")));
+    }
 
     // Depending on the configured time zone, the time string might not
     // contain a GMT specifier. (Sometimes it just names the zone, like "CEST")
     if (timeString.contains(QString("GMT"))) {
-        QString expectedGMTSpecifier("GMT");
+        QString expectedGMTSpecifierBase("GMT");
         if (diff >= 0)
-            expectedGMTSpecifier.append("+");
+            expectedGMTSpecifierBase.append("+");
         else
-            expectedGMTSpecifier.append("-");
-        if (qAbs(diff) < 10)
-            expectedGMTSpecifier.append(QString("0%1").arg(qAbs(diff)));
-        else
-            expectedGMTSpecifier.append(QString("%1").arg(qAbs(diff)));
-        QVERIFY2(timeString.contains(expectedGMTSpecifier), qPrintable(
-            QString("timeString `%1', expectedGMTSpecifier `%2'")
+            expectedGMTSpecifierBase.append("-");
+
+        QString expectedGMTSpecifier = expectedGMTSpecifierBase + QString("%1").arg(qAbs(diff));
+        QString expectedGMTSpecifierZeroExtended = expectedGMTSpecifierBase + QString("0%1").arg(qAbs(diff));
+
+        QVERIFY2(timeString.contains(expectedGMTSpecifier)
+            || timeString.contains(expectedGMTSpecifierZeroExtended),
+            qPrintable(QString("timeString `%1', expectedGMTSpecifier `%2' or `%3'")
             .arg(timeString)
             .arg(expectedGMTSpecifier)
+            .arg(expectedGMTSpecifierZeroExtended)
         ));
     }
     QCOMPARE(locale.dayName(1), QString("Monday"));
     QCOMPARE(locale.dayName(7), QString("Sunday"));
     QCOMPARE(locale.monthName(1), QString("January"));
     QCOMPARE(locale.monthName(12), QString("December"));
-    QCOMPARE(locale.firstDayOfWeek(), Qt::Sunday);
     QCOMPARE(locale.quoteString("string"), QString::fromUtf8("\xe2\x80\x9c" "string" "\xe2\x80\x9d"));
     QCOMPARE(locale.quoteString("string", QLocale::AlternateQuotation), QString::fromUtf8("\xe2\x80\x98" "string" "\xe2\x80\x99"));
 

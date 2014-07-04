@@ -576,6 +576,9 @@ protected:
 #ifndef QT_NO_PROCESS
 void tst_QTcpServer::addressReusable()
 {
+#ifdef Q_OS_LINUX
+    QSKIP("The addressReusable test is unstable on Linux. See QTBUG-39985.");
+#endif
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy) {
 #ifndef QT_NO_NETWORKPROXY

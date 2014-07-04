@@ -73,6 +73,8 @@ public:
     Qt::ScreenOrientation nativeOrientation() const;
     Qt::ScreenOrientation orientation() const;
 
+    QWindow *topLevelAt(const QPoint &point) const;
+
     bool isPrimaryScreen() const { return m_primaryScreen; }
 
     int rotation() const { return m_currentRotation; }
@@ -123,8 +125,6 @@ private:
     void addUnderlayWindow(screen_window_t window);
     void addMultimediaWindow(const QByteArray &id, screen_window_t window);
     void removeOverlayOrUnderlayWindow(screen_window_t window);
-
-    QWindow *topMostChildWindow() const;
 
     screen_context_t m_screenContext;
     screen_display_t m_display;

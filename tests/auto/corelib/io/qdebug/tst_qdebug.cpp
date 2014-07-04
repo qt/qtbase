@@ -309,12 +309,13 @@ void tst_QDebug::textStreamModifiers() const
 
 void tst_QDebug::defaultMessagehandler() const
 {
-    MessageHandlerSetter mhs(0);
-    QtMessageHandler defaultMessageHandler1 = qInstallMessageHandler((QtMessageHandler)0);
-    QtMessageHandler defaultMessageHandler2 = qInstallMessageHandler(myMessageHandler);
+    MessageHandlerSetter mhs(0); // set 0, should set default handler
+    QtMessageHandler defaultMessageHandler1 = qInstallMessageHandler((QtMessageHandler)0); // set 0, should set and return default handler
+    QVERIFY(defaultMessageHandler1);
+    QtMessageHandler defaultMessageHandler2 = qInstallMessageHandler(myMessageHandler); // set myMessageHandler and return default handler
     bool same = (*defaultMessageHandler1 == *defaultMessageHandler2);
     QVERIFY(same);
-    QtMessageHandler messageHandler = qInstallMessageHandler((QtMessageHandler)0);
+    QtMessageHandler messageHandler = qInstallMessageHandler((QtMessageHandler)0); // set 0, should set default and return myMessageHandler
     same = (*messageHandler == *myMessageHandler);
     QVERIFY(same);
 }

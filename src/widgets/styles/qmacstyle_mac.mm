@@ -100,13 +100,14 @@
 
 QT_USE_NAMESPACE
 
-@interface NotificationReceiver : NSObject {
+@interface QT_MANGLE_NAMESPACE(NotificationReceiver) : NSObject {
 QMacStylePrivate *mPrivate;
 }
 - (id)initWithPrivate:(QMacStylePrivate *)priv;
 - (void)scrollBarStyleDidChange:(NSNotification *)notification;
 @end
 
+QT_NAMESPACE_ALIAS_OBJC_CLASS(NotificationReceiver);
 
 @implementation NotificationReceiver
 - (id)initWithPrivate:(QMacStylePrivate *)priv
@@ -4045,11 +4046,20 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
         }
         break;
     case CE_FocusFrame: {
-        int xOff = proxy()->pixelMetric(PM_FocusFrameHMargin, opt, w) + 1;
-        int yOff = proxy()->pixelMetric(PM_FocusFrameVMargin, opt, w) + 1;
-        HIRect hirect = CGRectMake(xOff+opt->rect.x(), yOff+opt->rect.y(), opt->rect.width() - 2 * xOff,
-                                   opt->rect.height() - 2 * yOff);
-        HIThemeDrawFocusRect(&hirect, true, QMacCGContext(p), kHIThemeOrientationNormal);
+        int xOff = proxy()->pixelMetric(PM_FocusFrameHMargin, opt, w);
+        int yOff = proxy()->pixelMetric(PM_FocusFrameVMargin, opt, w);
+        NSRect rect = NSMakeRect(xOff+opt->rect.x(), yOff+opt->rect.y(), opt->rect.width() - 2 * xOff,
+                                 opt->rect.height() - 2 * yOff);
+        CGContextSaveGState(cg);
+        [NSGraphicsContext setCurrentContext:[NSGraphicsContext
+             graphicsContextWithGraphicsPort:(CGContextRef)cg flipped:NO]];
+        [NSGraphicsContext saveGraphicsState];
+        NSSetFocusRingStyle(NSFocusRingOnly);
+        NSBezierPath *focusFramePath = [NSBezierPath bezierPathWithRect:rect];
+        [focusFramePath setClip]; // Clear clip path to avoid artifacts when rendering the cursor at zero pos
+        [focusFramePath fill];
+        [NSGraphicsContext restoreGraphicsState];
+        CGContextRestoreGState(cg);
         break; }
     case CE_MenuItem:
     case CE_MenuEmptyArea:

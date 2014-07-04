@@ -51,14 +51,15 @@
 #include "qcocoaglcontext.h"
 #endif
 #include "qnsview.h"
+#include "qt_mac_p.h"
 
 QT_FORWARD_DECLARE_CLASS(QCocoaWindow)
 
-@class QNSWindowHelper;
+@class QT_MANGLE_NAMESPACE(QNSWindowHelper);
 
 @protocol QNSWindowProtocol
 
-@property (nonatomic, readonly) QNSWindowHelper *helper;
+@property (nonatomic, readonly) QT_MANGLE_NAMESPACE(QNSWindowHelper) *helper;
 
 - (void)superSendEvent:(NSEvent *)theEvent;
 - (void)closeAndRelease;
@@ -67,7 +68,7 @@ QT_FORWARD_DECLARE_CLASS(QCocoaWindow)
 
 typedef NSWindow<QNSWindowProtocol> QCocoaNSWindow;
 
-@interface QNSWindowHelper : NSObject
+@interface QT_MANGLE_NAMESPACE(QNSWindowHelper) : NSObject
 {
     QCocoaNSWindow *_window;
     QCocoaWindow *_platformWindow;
@@ -86,7 +87,9 @@ typedef NSWindow<QNSWindowProtocol> QCocoaNSWindow;
 
 @end
 
-@interface QNSWindow : NSWindow<QNSWindowProtocol>
+QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSWindowHelper);
+
+@interface QT_MANGLE_NAMESPACE(QNSWindow) : NSWindow<QNSWindowProtocol>
 {
     QNSWindowHelper *_helper;
 }
@@ -99,7 +102,9 @@ typedef NSWindow<QNSWindowProtocol> QCocoaNSWindow;
 
 @end
 
-@interface QNSPanel : NSPanel<QNSWindowProtocol>
+QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSWindow);
+
+@interface QT_MANGLE_NAMESPACE(QNSPanel) : NSPanel<QNSWindowProtocol>
 {
     QNSWindowHelper *_helper;
 }
@@ -112,7 +117,9 @@ typedef NSWindow<QNSWindowProtocol> QCocoaNSWindow;
 
 @end
 
-@class QNSWindowDelegate;
+QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSPanel);
+
+@class QT_MANGLE_NAMESPACE(QNSWindowDelegate);
 
 QT_BEGIN_NAMESPACE
 // QCocoaWindow
@@ -227,6 +234,7 @@ public:
     void obscureWindow();
     void updateExposedGeometry();
     QWindow *childWindowAt(QPoint windowPoint);
+    bool shouldRefuseKeyWindowAndFirstResponder();
 protected:
     void recreateWindow(const QPlatformWindow *parentWindow);
     QCocoaNSWindow *createNSWindow();
@@ -267,6 +275,7 @@ public: // for QNSView
     bool m_windowUnderMouse;
 
     bool m_inConstructor;
+    bool m_inSetVisible;
 #ifndef QT_NO_OPENGL
     QCocoaGLContext *m_glContext;
 #endif
