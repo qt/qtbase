@@ -321,8 +321,8 @@ GLuint QPlatformBackingStore::toTexture(const QRegion &dirtyRegion, QSize *textu
 #endif
         funcs->glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         funcs->glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        funcs->glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        funcs->glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        funcs->glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        funcs->glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
         funcs->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imageSize.width(), imageSize.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
                             const_cast<uchar*>(image.constBits()));
@@ -334,29 +334,32 @@ GLuint QPlatformBackingStore::toTexture(const QRegion &dirtyRegion, QSize *textu
         QRect rect = dirtyRegion.boundingRect() & imageRect;
 
 #ifndef QT_OPENGL_ES_2
-        funcs->glPixelStorei(GL_UNPACK_ROW_LENGTH, image.width());
-        funcs->glTexSubImage2D(GL_TEXTURE_2D, 0, rect.x(), rect.y(), rect.width(), rect.height(), GL_RGBA, GL_UNSIGNED_BYTE,
-                               image.constScanLine(rect.y()) + rect.x() * 4);
-        funcs->glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-#else
-        // if the rect is wide enough it's cheaper to just
-        // extend it instead of doing an image copy
-        if (rect.width() >= imageRect.width() / 2) {
-            rect.setX(0);
-            rect.setWidth(imageRect.width());
-        }
-
-        // if the sub-rect is full-width we can pass the image data directly to
-        // OpenGL instead of copying, since there's no gap between scanlines
-
-        if (rect.width() == imageRect.width()) {
-            funcs->glTexSubImage2D(GL_TEXTURE_2D, 0, 0, rect.y(), rect.width(), rect.height(), GL_RGBA, GL_UNSIGNED_BYTE,
-                                   image.constScanLine(rect.y()));
-        } else {
+        if (!QOpenGLContext::currentContext()->isOpenGLES()) {
+            funcs->glPixelStorei(GL_UNPACK_ROW_LENGTH, image.width());
             funcs->glTexSubImage2D(GL_TEXTURE_2D, 0, rect.x(), rect.y(), rect.width(), rect.height(), GL_RGBA, GL_UNSIGNED_BYTE,
-                                   image.copy(rect).constBits());
-        }
+                                   image.constScanLine(rect.y()) + rect.x() * 4);
+            funcs->glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+        } else
 #endif
+        {
+            // if the rect is wide enough it's cheaper to just
+            // extend it instead of doing an image copy
+            if (rect.width() >= imageRect.width() / 2) {
+                rect.setX(0);
+                rect.setWidth(imageRect.width());
+            }
+
+            // if the sub-rect is full-width we can pass the image data directly to
+            // OpenGL instead of copying, since there's no gap between scanlines
+
+            if (rect.width() == imageRect.width()) {
+                funcs->glTexSubImage2D(GL_TEXTURE_2D, 0, 0, rect.y(), rect.width(), rect.height(), GL_RGBA, GL_UNSIGNED_BYTE,
+                                       image.constScanLine(rect.y()));
+            } else {
+                funcs->glTexSubImage2D(GL_TEXTURE_2D, 0, rect.x(), rect.y(), rect.width(), rect.height(), GL_RGBA, GL_UNSIGNED_BYTE,
+                                       image.copy(rect).constBits());
+            }
+        }
     }
 
     return d_ptr->textureId;
