@@ -474,6 +474,29 @@ QString QPlatformWindow::formatWindowTitle(const QString &title, const QString &
 }
 
 /*!
+    Helper function for finding the new screen for \a newGeometry in response to
+    a geometry changed event. Returns the new screen if the window was moved to
+    another virtual sibling. If the screen changes, the platform plugin should call
+    QWindowSystemInterface::handleWindowScreenChanged().
+    \note: The current screen will always be returned for child windows since
+    they should never signal screen changes.
+
+    \since 5.4
+    \sa QWindowSystemInterface::handleWindowScreenChanged()
+*/
+QPlatformScreen *QPlatformWindow::screenForGeometry(const QRect &newGeometry) const
+{
+    QPlatformScreen *currentScreen = screen();
+    if (!parent() && !currentScreen->geometry().intersects(newGeometry)) {
+        Q_FOREACH (QPlatformScreen* screen, currentScreen->virtualSiblings()) {
+            if (screen->geometry().intersects(newGeometry))
+                return screen;
+        }
+    }
+    return currentScreen;
+}
+
+/*!
     Reimplement this method to set whether the window demands attention
     (for example, by flashing the taskbar icon) depending on \a enabled.
 

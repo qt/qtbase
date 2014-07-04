@@ -1376,25 +1376,6 @@ void QWindowsWindow::handleResized(int wParam)
     }
 }
 
-// Return the effective screen for full screen mode in a virtual desktop.
-static QScreen *effectiveScreen(const QWindow *w)
-{
-    QRect geometry = w->geometry();
-    if (!w->isTopLevel())
-        geometry.moveTopLeft(w->mapToGlobal(geometry.topLeft()));
-
-    QScreen *screen = w->screen();
-    if (!screen->geometry().intersects(geometry)) {
-        foreach (QScreen *sibling, screen->virtualSiblings()) {
-            if (sibling->geometry().intersects(geometry)) {
-                screen = sibling;
-                break;
-            }
-        }
-    }
-    return screen;
-}
-
 void QWindowsWindow::handleGeometryChange()
 {
     //Prevent recursive resizes for Windows CE
@@ -1411,12 +1392,9 @@ void QWindowsWindow::handleGeometryChange()
         fireExpose(QRegion(m_data.geometry), true);
     }
     if (previousGeometry.topLeft() != m_data.geometry.topLeft()) {
-        QWindow *w = window();
-        if (w->isTopLevel()) {
-            QScreen *newScreen = effectiveScreen(w);
-            if (newScreen != w->screen())
-                QWindowSystemInterface::handleWindowScreenChanged(w, newScreen);
-        }
+        QPlatformScreen *newScreen = screenForGeometry(m_data.geometry);
+        if (newScreen != screen())
+            QWindowSystemInterface::handleWindowScreenChanged(window(), newScreen->screen());
     }
     if (testFlag(SynchronousGeometryChangeEvent))
         QWindowSystemInterface::flushWindowSystemEvents();
