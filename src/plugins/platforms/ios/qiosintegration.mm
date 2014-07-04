@@ -72,7 +72,7 @@ QIOSIntegration *QIOSIntegration::instance()
 QIOSIntegration::QIOSIntegration()
     : m_fontDatabase(new QCoreTextFontDatabase)
     , m_clipboard(new QIOSClipboard)
-    , m_inputContext(new QIOSInputContext)
+    , m_inputContext(0)
     , m_platformServices(new QIOSServices)
     , m_accessibility(0)
 {
@@ -90,6 +90,9 @@ QIOSIntegration::QIOSIntegration()
 
     for (UIScreen *screen in [UIScreen screens])
         addScreen(new QIOSScreen(screen));
+
+    // Depends on a primary screen being present
+    m_inputContext = new QIOSInputContext;
 
     m_touchDevice = new QTouchDevice;
     m_touchDevice->setType(QTouchDevice::TouchScreen);

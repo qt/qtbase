@@ -53,6 +53,35 @@
 
 @implementation QIOSViewController
 
+- (id)initWithQIOSScreen:(QIOSScreen *)screen
+{
+    if (self = [self init]) {
+        m_screen = screen;
+
+#if QT_IOS_DEPLOYMENT_TARGET_BELOW(__IPHONE_7_0)
+        QSysInfo::MacVersion iosVersion = QSysInfo::MacintoshVersion;
+
+        // We prefer to keep the root viewcontroller in fullscreen layout, so that
+        // we don't have to compensate for the viewcontroller position. This also
+        // gives us the same behavior on iOS 5/6 as on iOS 7, where full screen layout
+        // is the only way.
+        if (iosVersion < QSysInfo::MV_IOS_7_0)
+            self.wantsFullScreenLayout = YES;
+
+        // Use translucent statusbar by default on iOS6 iPhones (unless the user changed
+        // the default in the Info.plist), so that windows placed under the stausbar are
+        // still visible, just like on iOS7.
+        if (screen->uiScreen() == [UIScreen mainScreen]
+            && iosVersion >= QSysInfo::MV_IOS_6_0 && iosVersion < QSysInfo::MV_IOS_7_0
+            && [UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPhone
+            && [UIApplication sharedApplication].statusBarStyle == UIStatusBarStyleDefault)
+            [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleBlackTranslucent];
+#endif
+    }
+
+    return self;
+}
+
 -(BOOL)shouldAutorotate
 {
     // Until a proper orientation and rotation API is in place, we always auto rotate.
@@ -85,8 +114,7 @@
     if (!QCoreApplication::instance())
         return; // FIXME: Store orientation for later (?)
 
-    QIOSScreen *qiosScreen = static_cast<QIOSScreen *>(QGuiApplication::primaryScreen()->handle());
-    qiosScreen->updateProperties();
+    m_screen->updateProperties();
 }
 
 #if QT_IOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__IPHONE_7_0)

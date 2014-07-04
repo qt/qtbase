@@ -52,40 +52,6 @@
 
 @implementation QIOSApplicationDelegate
 
-@synthesize window;
-
-- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
-{
-    Q_UNUSED(application);
-    Q_UNUSED(launchOptions);
-
-    self.window = [[[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]] autorelease];
-    self.window.rootViewController = [[[QIOSViewController alloc] init] autorelease];
-
-#if QT_IOS_DEPLOYMENT_TARGET_BELOW(__IPHONE_7_0)
-    QSysInfo::MacVersion iosVersion = QSysInfo::MacintoshVersion;
-
-    // We prefer to keep the root viewcontroller in fullscreen layout, so that
-    // we don't have to compensate for the viewcontroller position. This also
-    // gives us the same behavior on iOS 5/6 as on iOS 7, where full screen layout
-    // is the only way.
-    if (iosVersion < QSysInfo::MV_IOS_7_0)
-        self.window.rootViewController.wantsFullScreenLayout = YES;
-
-    // Use translucent statusbar by default on iOS6 iPhones (unless the user changed
-    // the default in the Info.plist), so that windows placed under the stausbar are
-    // still visible, just like on iOS7.
-    if (iosVersion >= QSysInfo::MV_IOS_6_0 && iosVersion < QSysInfo::MV_IOS_7_0
-        && [UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPhone
-        && [UIApplication sharedApplication].statusBarStyle == UIStatusBarStyleDefault)
-        [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleBlackTranslucent];
-#endif
-
-    self.window.hidden = NO;
-
-    return YES;
-}
-
 - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation
 {
     Q_UNUSED(application);
@@ -101,12 +67,6 @@
     QIOSServices *iosServices = static_cast<QIOSServices *>(iosIntegration->services());
 
     return iosServices->handleUrl(QUrl::fromNSURL(url));
-}
-
-- (void)dealloc
-{
-    [window release];
-    [super dealloc];
 }
 
 @end

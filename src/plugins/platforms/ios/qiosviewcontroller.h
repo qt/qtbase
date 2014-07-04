@@ -41,7 +41,13 @@
 
 #import <UIKit/UIKit.h>
 
-@interface QIOSViewController : UIViewController
+class QIOSScreen;
+
+@interface QIOSViewController : UIViewController {
+    QIOSScreen *m_screen;
+}
+
+- (id)initWithQIOSScreen:(QIOSScreen *)screen;
 - (BOOL)prefersStatusBarHidden;
 @end
 

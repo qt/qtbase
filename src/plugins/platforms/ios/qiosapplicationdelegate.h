@@ -45,7 +45,4 @@
 #import "qiosviewcontroller.h"
 
 @interface QIOSApplicationDelegate : UIResponder <UIApplicationDelegate>
-
-@property (strong, nonatomic) UIWindow *window;
-
 @end

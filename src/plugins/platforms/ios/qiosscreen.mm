@@ -181,8 +181,28 @@ static QString deviceModelIdentifier()
 QIOSScreen::QIOSScreen(UIScreen *screen)
     : QPlatformScreen()
     , m_uiScreen(screen)
+    , m_uiWindow(0)
     , m_orientationListener(0)
 {
+    for (UIWindow *existingWindow in [[UIApplication sharedApplication] windows]) {
+        if (existingWindow.screen == m_uiScreen) {
+            m_uiWindow = [m_uiWindow retain];
+            break;
+        }
+    }
+
+    if (!m_uiWindow) {
+        // Create a window and associated view-controller that we can use
+        m_uiWindow = [[UIWindow alloc] initWithFrame:[m_uiScreen bounds]];
+        m_uiWindow.rootViewController = [[[QIOSViewController alloc] initWithQIOSScreen:this] autorelease];
+
+        // FIXME: Only do once windows are added to the screen, and for any screen
+        if (screen == [UIScreen mainScreen]) {
+            m_uiWindow.screen = m_uiScreen;
+            m_uiWindow.hidden = NO;
+        }
+    }
+
     if (screen == [UIScreen mainScreen]) {
         QString deviceIdentifier = deviceModelIdentifier();
 
@@ -213,17 +233,12 @@ QIOSScreen::QIOSScreen(UIScreen *screen)
 QIOSScreen::~QIOSScreen()
 {
     [m_orientationListener release];
+    [m_uiWindow release];
 }
 
 void QIOSScreen::updateProperties()
 {
-    UIWindow *uiWindow = 0;
-    for (uiWindow in [[UIApplication sharedApplication] windows]) {
-        if (uiWindow.screen == m_uiScreen)
-            break;
-    }
-
-    bool inPortrait = UIInterfaceOrientationIsPortrait(uiWindow.rootViewController.interfaceOrientation);
+    bool inPortrait = UIInterfaceOrientationIsPortrait(m_uiWindow.rootViewController.interfaceOrientation);
     QRect geometry = inPortrait ? fromCGRect(m_uiScreen.bounds).toRect()
         : QRect(m_uiScreen.bounds.origin.x, m_uiScreen.bounds.origin.y,
             m_uiScreen.bounds.size.height, m_uiScreen.bounds.size.width);

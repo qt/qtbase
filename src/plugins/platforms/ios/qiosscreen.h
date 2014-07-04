@@ -80,6 +80,7 @@ public slots:
 
 private:
     UIScreen *m_uiScreen;
+    UIWindow *m_uiWindow;
     QRect m_geometry;
     QRect m_availableGeometry;
     int m_depth;
