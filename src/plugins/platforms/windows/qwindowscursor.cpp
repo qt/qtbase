@@ -303,6 +303,104 @@ QCursor QWindowsCursor::customCursor(Qt::CursorShape cursorShape)
         0xf0,0x7f,0xf8,0x7f,0xfc,0x7f,0xfc,0x3f,0xf8,0x3f,0xf0,0x1f,
         0xe0,0x1f,0xe0,0x1f,0x00,0x00,0x00,0x00};
 
+    static const char * const moveDragCursorXpmC[] = {
+    "11 20 3 1",
+    ".        c None",
+    "a        c #FFFFFF",
+    "X        c #000000", // X11 cursor is traditionally black
+    "aa.........",
+    "aXa........",
+    "aXXa.......",
+    "aXXXa......",
+    "aXXXXa.....",
+    "aXXXXXa....",
+    "aXXXXXXa...",
+    "aXXXXXXXa..",
+    "aXXXXXXXXa.",
+    "aXXXXXXXXXa",
+    "aXXXXXXaaaa",
+    "aXXXaXXa...",
+    "aXXaaXXa...",
+    "aXa..aXXa..",
+    "aa...aXXa..",
+    "a.....aXXa.",
+    "......aXXa.",
+    ".......aXXa",
+    ".......aXXa",
+    "........aa."};
+
+    static const char * const copyDragCursorXpmC[] = {
+    "24 30 3 1",
+    ".        c None",
+    "a        c #000000",
+    "X        c #FFFFFF",
+    "XX......................",
+    "XaX.....................",
+    "XaaX....................",
+    "XaaaX...................",
+    "XaaaaX..................",
+    "XaaaaaX.................",
+    "XaaaaaaX................",
+    "XaaaaaaaX...............",
+    "XaaaaaaaaX..............",
+    "XaaaaaaaaaX.............",
+    "XaaaaaaXXXX.............",
+    "XaaaXaaX................",
+    "XaaXXaaX................",
+    "XaX..XaaX...............",
+    "XX...XaaX...............",
+    "X.....XaaX..............",
+    "......XaaX..............",
+    ".......XaaX.............",
+    ".......XaaX.............",
+    "........XX...aaaaaaaaaaa",
+    ".............aXXXXXXXXXa",
+    ".............aXXXXXXXXXa",
+    ".............aXXXXaXXXXa",
+    ".............aXXXXaXXXXa",
+    ".............aXXaaaaaXXa",
+    ".............aXXXXaXXXXa",
+    ".............aXXXXaXXXXa",
+    ".............aXXXXXXXXXa",
+    ".............aXXXXXXXXXa",
+    ".............aaaaaaaaaaa"};
+
+    static const char * const linkDragCursorXpmC[] = {
+    "24 30 3 1",
+    ".        c None",
+    "a        c #000000",
+    "X        c #FFFFFF",
+    "XX......................",
+    "XaX.....................",
+    "XaaX....................",
+    "XaaaX...................",
+    "XaaaaX..................",
+    "XaaaaaX.................",
+    "XaaaaaaX................",
+    "XaaaaaaaX...............",
+    "XaaaaaaaaX..............",
+    "XaaaaaaaaaX.............",
+    "XaaaaaaXXXX.............",
+    "XaaaXaaX................",
+    "XaaXXaaX................",
+    "XaX..XaaX...............",
+    "XX...XaaX...............",
+    "X.....XaaX..............",
+    "......XaaX..............",
+    ".......XaaX.............",
+    ".......XaaX.............",
+    "........XX...aaaaaaaaaaa",
+    ".............aXXXXXXXXXa",
+    ".............aXXXaaaaXXa",
+    ".............aXXXXaaaXXa",
+    ".............aXXXaaaaXXa",
+    ".............aXXaaaXaXXa",
+    ".............aXXaaXXXXXa",
+    ".............aXXaXXXXXXa",
+    ".............aXXXaXXXXXa",
+    ".............aXXXXXXXXXa",
+    ".............aaaaaaaaaaa"};
+
     switch (cursorShape) {
     case Qt::SplitVCursor:
         return createPixmapCursorFromData(systemCursorSize(), standardCursorSize(), 32, vsplit_bits, vsplitm_bits);
@@ -313,9 +411,11 @@ QCursor QWindowsCursor::customCursor(Qt::CursorShape cursorShape)
     case Qt::ClosedHandCursor:
         return createPixmapCursorFromData(systemCursorSize(), standardCursorSize(), 16, closedhand_bits, closedhandm_bits);
     case Qt::DragCopyCursor:
+        return QCursor(QPixmap(copyDragCursorXpmC), 0, 0);
     case Qt::DragMoveCursor:
+        return QCursor(QPixmap(moveDragCursorXpmC), 0, 0);
     case Qt::DragLinkCursor:
-        return QCursor(QGuiApplicationPrivate::instance()->getPixmapCursor(cursorShape), 0, 0);
+        return QCursor(QPixmap(linkDragCursorXpmC), 0, 0);
     }
 
     return QCursor();

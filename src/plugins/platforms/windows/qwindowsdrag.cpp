@@ -69,146 +69,6 @@
 
 QT_BEGIN_NAMESPACE
 
-// These pixmaps approximate the images in the Windows User Interface Guidelines.
-// XPM
-
-static const char * const moveDragCursorXpmC[] = {
-"11 20 3 1",
-".        c None",
-"a        c #FFFFFF",
-"X        c #000000", // X11 cursor is traditionally black
-"aa.........",
-"aXa........",
-"aXXa.......",
-"aXXXa......",
-"aXXXXa.....",
-"aXXXXXa....",
-"aXXXXXXa...",
-"aXXXXXXXa..",
-"aXXXXXXXXa.",
-"aXXXXXXXXXa",
-"aXXXXXXaaaa",
-"aXXXaXXa...",
-"aXXaaXXa...",
-"aXa..aXXa..",
-"aa...aXXa..",
-"a.....aXXa.",
-"......aXXa.",
-".......aXXa",
-".......aXXa",
-"........aa."};
-
-
-/* XPM */
-static const char * const copyDragCursorXpmC[] = {
-"24 30 3 1",
-".        c None",
-"a        c #000000",
-"X        c #FFFFFF",
-"XX......................",
-"XaX.....................",
-"XaaX....................",
-"XaaaX...................",
-"XaaaaX..................",
-"XaaaaaX.................",
-"XaaaaaaX................",
-"XaaaaaaaX...............",
-"XaaaaaaaaX..............",
-"XaaaaaaaaaX.............",
-"XaaaaaaXXXX.............",
-"XaaaXaaX................",
-"XaaXXaaX................",
-"XaX..XaaX...............",
-"XX...XaaX...............",
-"X.....XaaX..............",
-"......XaaX..............",
-".......XaaX.............",
-".......XaaX.............",
-"........XX...aaaaaaaaaaa",
-".............aXXXXXXXXXa",
-".............aXXXXXXXXXa",
-".............aXXXXaXXXXa",
-".............aXXXXaXXXXa",
-".............aXXaaaaaXXa",
-".............aXXXXaXXXXa",
-".............aXXXXaXXXXa",
-".............aXXXXXXXXXa",
-".............aXXXXXXXXXa",
-".............aaaaaaaaaaa"};
-
-/* XPM */
-static const char * const linkDragCursorXpmC[] = {
-"24 30 3 1",
-".        c None",
-"a        c #000000",
-"X        c #FFFFFF",
-"XX......................",
-"XaX.....................",
-"XaaX....................",
-"XaaaX...................",
-"XaaaaX..................",
-"XaaaaaX.................",
-"XaaaaaaX................",
-"XaaaaaaaX...............",
-"XaaaaaaaaX..............",
-"XaaaaaaaaaX.............",
-"XaaaaaaXXXX.............",
-"XaaaXaaX................",
-"XaaXXaaX................",
-"XaX..XaaX...............",
-"XX...XaaX...............",
-"X.....XaaX..............",
-"......XaaX..............",
-".......XaaX.............",
-".......XaaX.............",
-"........XX...aaaaaaaaaaa",
-".............aXXXXXXXXXa",
-".............aXXXaaaaXXa",
-".............aXXXXaaaXXa",
-".............aXXXaaaaXXa",
-".............aXXaaaXaXXa",
-".............aXXaaXXXXXa",
-".............aXXaXXXXXXa",
-".............aXXXaXXXXXa",
-".............aXXXXXXXXXa",
-".............aaaaaaaaaaa"};
-
-static const char * const ignoreDragCursorXpmC[] = {
-"24 30 3 1",
-".        c None",
-"a        c #000000",
-"X        c #FFFFFF",
-"aa......................",
-"aXa.....................",
-"aXXa....................",
-"aXXXa...................",
-"aXXXXa..................",
-"aXXXXXa.................",
-"aXXXXXXa................",
-"aXXXXXXXa...............",
-"aXXXXXXXXa..............",
-"aXXXXXXXXXa.............",
-"aXXXXXXaaaa.............",
-"aXXXaXXa................",
-"aXXaaXXa................",
-"aXa..aXXa...............",
-"aa...aXXa...............",
-"a.....aXXa..............",
-"......aXXa.....XXXX.....",
-".......aXXa..XXaaaaXX...",
-".......aXXa.XaaaaaaaaX..",
-"........aa.XaaaXXXXaaaX.",
-"...........XaaaaX..XaaX.",
-"..........XaaXaaaX..XaaX",
-"..........XaaXXaaaX.XaaX",
-"..........XaaX.XaaaXXaaX",
-"..........XaaX..XaaaXaaX",
-"...........XaaX..XaaaaX.",
-"...........XaaaXXXXaaaX.",
-"............XaaaaaaaaX..",
-".............XXaaaaXX...",
-"...............XXXX....."};
-
 /*!
     \class QWindowsDragCursorWindow
     \brief A toplevel window showing the drag icon in case of touch drag.
@@ -864,22 +724,86 @@ QPixmap QWindowsDrag::defaultCursor(Qt::DropAction action) const
     switch (action) {
     case Qt::CopyAction:
         if (m_copyDragCursor.isNull())
-            m_copyDragCursor = QPixmap(copyDragCursorXpmC);
+            m_copyDragCursor = QWindowsCursor::customCursor(Qt::DragCopyCursor).pixmap();
         return m_copyDragCursor;
     case Qt::TargetMoveAction:
     case Qt::MoveAction:
         if (m_moveDragCursor.isNull())
-            m_moveDragCursor = QPixmap(moveDragCursorXpmC);
+            m_moveDragCursor = QWindowsCursor::customCursor(Qt::DragMoveCursor).pixmap();
         return m_moveDragCursor;
     case Qt::LinkAction:
         if (m_linkDragCursor.isNull())
-            m_linkDragCursor = QPixmap(linkDragCursorXpmC);
+            m_linkDragCursor = QWindowsCursor::customCursor(Qt::DragLinkCursor).pixmap();
         return m_linkDragCursor;
     default:
         break;
     }
-    if (m_ignoreDragCursor.isNull())
+
+    static const char * const ignoreDragCursorXpmC[] = {
+    "24 30 3 1",
+    ".        c None",
+    "a        c #000000",
+    "X        c #FFFFFF",
+    "aa......................",
+    "aXa.....................",
+    "aXXa....................",
+    "aXXXa...................",
+    "aXXXXa..................",
+    "aXXXXXa.................",
+    "aXXXXXXa................",
+    "aXXXXXXXa...............",
+    "aXXXXXXXXa..............",
+    "aXXXXXXXXXa.............",
+    "aXXXXXXaaaa.............",
+    "aXXXaXXa................",
+    "aXXaaXXa................",
+    "aXa..aXXa...............",
+    "aa...aXXa...............",
+    "a.....aXXa..............",
+    "......aXXa.....XXXX.....",
+    ".......aXXa..XXaaaaXX...",
+    ".......aXXa.XaaaaaaaaX..",
+    "........aa.XaaaXXXXaaaX.",
+    "...........XaaaaX..XaaX.",
+    "..........XaaXaaaX..XaaX",
+    "..........XaaXXaaaX.XaaX",
+    "..........XaaX.XaaaXXaaX",
+    "..........XaaX..XaaaXaaX",
+    "...........XaaX..XaaaaX.",
+    "...........XaaaXXXXaaaX.",
+    "............XaaaaaaaaX..",
+    ".............XXaaaaXX...",
+    "...............XXXX....."};
+
+    if (m_ignoreDragCursor.isNull()) {
+#if !defined (Q_OS_WINCE)
+        HCURSOR cursor = LoadCursor(NULL, IDC_NO);
+        ICONINFO iconInfo = {0, 0, 0, 0, 0};
+        GetIconInfo(cursor, &iconInfo);
+        BITMAP bmColor = {0, 0, 0, 0, 0, 0, 0};
+
+        if (iconInfo.hbmColor
+            && GetObject(iconInfo.hbmColor, sizeof(BITMAP), &bmColor)
+            && bmColor.bmWidth == bmColor.bmWidthBytes / 4) {
+            const int colorBitsLength = bmColor.bmHeight * bmColor.bmWidthBytes;
+            uchar *colorBits = new uchar[colorBitsLength];
+            GetBitmapBits(iconInfo.hbmColor, colorBitsLength, colorBits);
+            const QImage colorImage(colorBits, bmColor.bmWidth, bmColor.bmHeight,
+                                    bmColor.bmWidthBytes, QImage::Format_ARGB32);
+
+            m_ignoreDragCursor = QPixmap::fromImage(colorImage);
+            delete [] colorBits;
+        } else {
+            m_ignoreDragCursor = QPixmap(ignoreDragCursorXpmC);
+        }
+
+        DeleteObject(iconInfo.hbmMask);
+        DeleteObject(iconInfo.hbmColor);
+        DestroyCursor(cursor);
+#else // !Q_OS_WINCE
         m_ignoreDragCursor = QPixmap(ignoreDragCursorXpmC);
+#endif // !Q_OS_WINCE
+    }
     return m_ignoreDragCursor;
 }
 
