@@ -36,9 +36,9 @@ SOURCES = \
     qwinrtinputcontext.cpp \
     qwinrtintegration.cpp \
     qwinrtplatformmessagedialoghelper.cpp \
-    qwinrtplatformtheme.cpp \
     qwinrtscreen.cpp \
     qwinrtservices.cpp \
+    qwinrttheme.cpp \
     qwinrtwindow.cpp
 
 HEADERS = \
@@ -50,9 +50,9 @@ HEADERS = \
     qwinrtinputcontext.h \
     qwinrtintegration.h \
     qwinrtplatformmessagedialoghelper.h \
-    qwinrtplatformtheme.h \
     qwinrtscreen.h \
     qwinrtservices.h \
+    qwinrttheme.h \
     qwinrtwindow.h
 
 BLIT_INPUT = $$PWD/blit.hlsl

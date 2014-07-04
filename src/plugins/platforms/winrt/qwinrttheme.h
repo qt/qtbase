@@ -39,38 +39,25 @@
 **
 ****************************************************************************/
 
-#include "qwinrtplatformtheme.h"
-#include "qwinrtplatformmessagedialoghelper.h"
+#ifndef QWINRTTHEME_H
+#define QWINRTTHEME_H
+
+#include <qpa/qplatformtheme.h>
+#include <qpa/qplatformintegration.h>
 
 QT_BEGIN_NAMESPACE
 
-QWinRTPlatformTheme::QWinRTPlatformTheme()
+class QWinRTTheme : public QPlatformTheme
 {
-}
+public:
+    QWinRTTheme();
 
-bool QWinRTPlatformTheme::usePlatformNativeDialog(QPlatformTheme::DialogType type) const
-{
-#if !(defined(Q_OS_WINPHONE) && _MSC_VER<=1700)
-    if (type == QPlatformTheme::MessageDialog)
-        return true;
-#else
-    Q_UNUSED(type)
-#endif // !(Q_OS_WINPHONE && _MSC_VER<=1700)
-    return false;
-}
+    bool usePlatformNativeDialog(DialogType type) const;
+    QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const;
 
-QPlatformDialogHelper *QWinRTPlatformTheme::createPlatformDialogHelper(QPlatformTheme::DialogType type) const
-{
-#if !(defined(Q_OS_WINPHONE) && _MSC_VER<=1700)
-    switch (type) {
-    case QPlatformTheme::MessageDialog:
-        return new QWinRTPlatformMessageDialogHelper();
-    default:
-        return QPlatformTheme::createPlatformDialogHelper(type);
-    }
-#else // !(Q_OS_WINPHONE && _MSC_VER<=1700)
-    return QPlatformTheme::createPlatformDialogHelper(type);
-#endif // Q_OS_WINPHONE && _MSC_VER<=1700
-}
+    static QVariant styleHint(QPlatformIntegration::StyleHint hint);
+};
 
 QT_END_NAMESPACE
+
+#endif // QWINRTTHEME_H

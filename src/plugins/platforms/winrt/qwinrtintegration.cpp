@@ -48,7 +48,7 @@
 #include "qwinrtservices.h"
 #include "qwinrteglcontext.h"
 #include "qwinrtfontdatabase.h"
-#include "qwinrtplatformtheme.h"
+#include "qwinrttheme.h"
 
 #include <QtGui/QOpenGLContext>
 
@@ -62,18 +62,6 @@ using namespace ABI::Windows::Foundation;
 using namespace ABI::Windows::UI::Core;
 using namespace ABI::Windows::UI::ViewManagement;
 using namespace ABI::Windows::ApplicationModel::Core;
-
-static IUISettings *getSettings()
-{
-    static IUISettings *settings = 0;
-    if (!settings) {
-        if (FAILED(RoActivateInstance(Wrappers::HString::MakeReference(RuntimeClass_Windows_UI_ViewManagement_UISettings).Get(),
-                                      reinterpret_cast<IInspectable **>(&settings)))) {
-            qWarning("Could not activate UISettings.");
-        }
-    }
-    return settings;
-}
 
 QT_BEGIN_NAMESPACE
 
@@ -114,26 +102,7 @@ bool QWinRTIntegration::hasCapability(QPlatformIntegration::Capability cap) cons
 
 QVariant QWinRTIntegration::styleHint(StyleHint hint) const
 {
-    switch (hint) {
-    case CursorFlashTime:
-        if (IUISettings *settings = getSettings()) {
-            quint32 blinkRate;
-            settings->get_CaretBlinkRate(&blinkRate);
-            return blinkRate;
-        }
-        break;
-    case MouseDoubleClickInterval:
-        if (IUISettings *settings = getSettings()) {
-            quint32 doubleClickTime;
-            settings->get_DoubleClickTime(&doubleClickTime);
-            return doubleClickTime;
-        }
-    case ShowIsFullScreen:
-        return true;
-    default:
-        break;
-    }
-    return QPlatformIntegration::styleHint(hint);
+    return QWinRTTheme::styleHint(hint);
 }
 
 QPlatformWindow *QWinRTIntegration::createPlatformWindow(QWindow *window) const
@@ -181,7 +150,7 @@ QPlatformTheme *QWinRTIntegration::createPlatformTheme(const QString &
 name) const
 {
     if (name == QLatin1String("winrt"))
-        return new QWinRTPlatformTheme();
+        return new QWinRTTheme();
 
     return 0;
 }
