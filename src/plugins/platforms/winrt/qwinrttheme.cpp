@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "qwinrttheme.h"
-#include "qwinrtplatformmessagedialoghelper.h"
+#include "qwinrtmessagedialoghelper.h"
 
 #include <QtCore/qfunctions_winrt.h>
 #include <QtGui/QPalette>
@@ -131,8 +131,11 @@ QWinRTTheme::QWinRTTheme()
 
 bool QWinRTTheme::usePlatformNativeDialog(DialogType type) const
 {
+    static bool useNativeDialogs = qEnvironmentVariableIsSet("QT_USE_WINRT_NATIVE_DIALOGS")
+            ? qgetenv("QT_USE_WINRT_NATIVE_DIALOGS").toInt() : true;
+
     if (type == MessageDialog)
-        return true;
+        return useNativeDialogs;
     return false;
 }
 
@@ -140,7 +143,7 @@ QPlatformDialogHelper *QWinRTTheme::createPlatformDialogHelper(DialogType type) 
 {
     switch (type) {
     case MessageDialog:
-        return new QWinRTPlatformMessageDialogHelper;
+        return new QWinRTMessageDialogHelper(this);
     default:
         break;
     }

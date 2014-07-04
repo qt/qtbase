@@ -35,11 +35,12 @@ SOURCES = \
     qwinrtfontdatabase.cpp \
     qwinrtinputcontext.cpp \
     qwinrtintegration.cpp \
-    qwinrtplatformmessagedialoghelper.cpp \
+    qwinrtmessagedialoghelper.cpp \
     qwinrtscreen.cpp \
     qwinrtservices.cpp \
     qwinrttheme.cpp \
     qwinrtwindow.cpp
+
 
 HEADERS = \
     qwinrtbackingstore.h \
@@ -49,11 +50,12 @@ HEADERS = \
     qwinrtfontdatabase.h \
     qwinrtinputcontext.h \
     qwinrtintegration.h \
-    qwinrtplatformmessagedialoghelper.h \
+    qwinrtmessagedialoghelper.h \
     qwinrtscreen.h \
     qwinrtservices.h \
     qwinrttheme.h \
     qwinrtwindow.h
+
 
 BLIT_INPUT = $$PWD/blit.hlsl
 fxc_blitps.commands = fxc.exe /nologo /T ps_4_0_level_9_1 /E blitps /Vn q_blitps /Fh ${QMAKE_FILE_OUT} ${QMAKE_FILE_NAME}

@@ -39,11 +39,10 @@
 **
 ****************************************************************************/
 
-#ifndef QWINRTPLATFORMMESSAGEDIALOGHELPER_H
-#define QWINRTPLATFORMMESSAGEDIALOGHELPER_H
+#ifndef QWINRTMESSAGEDIALOGHELPER_H
+#define QWINRTMESSAGEDIALOGHELPER_H
 
 #include <qpa/qplatformdialoghelper.h>
-#include <QtCore/QEventLoop>
 #include <QtCore/qt_windows.h>
 
 namespace ABI {
@@ -53,19 +52,24 @@ namespace ABI {
                 struct IUICommand;
             }
         }
+        namespace Foundation {
+            enum class AsyncStatus;
+            template <typename T> struct IAsyncOperation;
+        }
     }
 }
 
 QT_BEGIN_NAMESPACE
 
-struct QWinRTPlatformMessageDialogInfo;
+class QWinRTTheme;
 
-class QWinRTPlatformMessageDialogHelper : public QPlatformMessageDialogHelper
+class QWinRTMessageDialogHelperPrivate;
+class QWinRTMessageDialogHelper : public QPlatformMessageDialogHelper
 {
     Q_OBJECT
 public:
-    explicit QWinRTPlatformMessageDialogHelper();
-    ~QWinRTPlatformMessageDialogHelper();
+    explicit QWinRTMessageDialogHelper(const QWinRTTheme *theme);
+    ~QWinRTMessageDialogHelper();
 
     void exec();
     bool show(Qt::WindowFlags windowFlags,
@@ -73,13 +77,14 @@ public:
               QWindow *parent);
     void hide();
 
-    HRESULT onInvoked(ABI::Windows::UI::Popups::IUICommand *command);
 private:
-    QWinRTPlatformMessageDialogInfo *m_info;
-    QEventLoop m_loop;
-    bool m_shown;
+    HRESULT onCompleted(ABI::Windows::Foundation::IAsyncOperation<ABI::Windows::UI::Popups::IUICommand *> *asyncInfo,
+                        ABI::Windows::Foundation::AsyncStatus status);
+
+    QScopedPointer<QWinRTMessageDialogHelperPrivate> d_ptr;
+    Q_DECLARE_PRIVATE(QWinRTMessageDialogHelper)
 };
 
 QT_END_NAMESPACE
 
-#endif // QWINRTPLATFORMMESSAGEDIALOGHELPER_H
+#endif // QWINRTMESSAGEDIALOGHELPER_H
