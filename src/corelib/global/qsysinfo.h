@@ -166,8 +166,8 @@ public:
     static MacVersion macVersion();
 #endif
 
-    static QString cpuArchitecture();
-    static QString fullCpuArchitecture();
+    static QString buildCpuArchitecture();
+    static QString buildAbi();
     static QString osType();
     static QString osKernelVersion();
     static QString osVersion();
