@@ -3512,7 +3512,8 @@ void QMetaObject::connectSlotsByName(QObject *o)
 
     \a signal must be in the signal index range (see QObjectPrivate::signalIndex()).
 */
-static void queued_activate(QObject *sender, int signal, QObjectPrivate::Connection *c, void **argv)
+static void queued_activate(QObject *sender, int signal, QObjectPrivate::Connection *c, void **argv,
+                            QMutexLocker &locker)
 {
     const int *argumentTypes = c->argumentTypes.load();
     if (!argumentTypes && argumentTypes != &DIRECT_CONNECTION_ONLY) {
@@ -3537,8 +3538,28 @@ static void queued_activate(QObject *sender, int signal, QObjectPrivate::Connect
     Q_CHECK_PTR(args);
     types[0] = 0; // return type
     args[0] = 0; // return value
-    for (int n = 1; n < nargs; ++n)
-        args[n] = QMetaType::create((types[n] = argumentTypes[n-1]), argv[n]);
+
+    if (nargs > 1) {
+        for (int n = 1; n < nargs; ++n)
+            types[n] = argumentTypes[n-1];
+
+        locker.unlock();
+        for (int n = 1; n < nargs; ++n)
+            args[n] = QMetaType::create(types[n], argv[n]);
+        locker.relock();
+
+        if (!c->receiver) {
+            locker.unlock();
+            // we have been disconnected while the mutex was unlocked
+            for (int n = 1; n < nargs; ++n)
+                QMetaType::destroy(types[n], args[n]);
+            free(types);
+            free(args);
+            locker.relock();
+            return;
+        }
+    }
+
     QMetaCallEvent *ev = c->isSlotObject ?
         new QMetaCallEvent(c->slotObj, sender, signal, nargs, types, args) :
         new QMetaCallEvent(c->method_offset, c->method_relative, c->callFunction, sender, signal, nargs, types, args);
@@ -3638,7 +3659,7 @@ void QMetaObject::activate(QObject *sender, int signalOffset, int local_signal_i
             // put into the event queue
             if ((c->connectionType == Qt::AutoConnection && !receiverInSameThread)
                 || (c->connectionType == Qt::QueuedConnection)) {
-                queued_activate(sender, signal_index, c, argv ? argv : empty_argv);
+                queued_activate(sender, signal_index, c, argv ? argv : empty_argv, locker);
                 continue;
 #ifndef QT_NO_THREAD
             } else if (c->connectionType == Qt::BlockingQueuedConnection) {

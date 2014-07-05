@@ -172,14 +172,18 @@ void tst_QObjectRace::moveToThreadRace()
 
 class MyObject : public QObject
 {   Q_OBJECT
+        bool ok;
+    public:
+        MyObject() : ok(true) {}
+        ~MyObject() { Q_ASSERT(ok); ok = false; }
     public slots:
-        void slot1() { emit signal1(); }
-        void slot2() { emit signal2(); }
-        void slot3() { emit signal3(); }
-        void slot4() { emit signal4(); }
-        void slot5() { emit signal5(); }
-        void slot6() { emit signal6(); }
-        void slot7() { emit signal7(); }
+        void slot1() { Q_ASSERT(ok); }
+        void slot2() { Q_ASSERT(ok); }
+        void slot3() { Q_ASSERT(ok); }
+        void slot4() { Q_ASSERT(ok); }
+        void slot5() { Q_ASSERT(ok); }
+        void slot6() { Q_ASSERT(ok); }
+        void slot7() { Q_ASSERT(ok); }
     signals:
         void signal1();
         void signal2();
@@ -237,6 +241,10 @@ public:
             disconnect(objects[((i+4)*41) % nAlive], _signalsPMF[(18*i)%7], objects[((i+5)*43) % nAlive],  _slotsPMF[(19*i+2)%7] );
 
             QMetaObject::Connection c = connect(objects[((i+5)*43) % nAlive], _signalsPMF[(9*i+1)%7], Functor());
+
+            for (int f = 0; f < 7; ++f)
+                emit (objects[i]->*_signalsPMF[f])();
+
             disconnect(c);
 
             disconnect(objects[i], _signalsPMF[(10*i+5)%7], 0, 0);
@@ -249,6 +257,9 @@ public:
 
             delete objects[i];
         }
+
+        //run the possible queued slots
+        qApp->processEvents();
     }
 };
 

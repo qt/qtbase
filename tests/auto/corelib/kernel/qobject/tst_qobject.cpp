@@ -270,6 +270,21 @@ public slots:
 
 int ReceiverObject::sequence = 0;
 
+static void playWithObjects()
+{
+    // Do operations that will lock the internal signalSlotLock mutex on many QObjects.
+    // The more QObjects, the higher the chance that the signalSlotLock mutex used
+    // is already in use. If the number of objects is higher than the number of mutexes in
+    // the pool (currently 131), the deadlock should always trigger. Use an even higher number
+    // to be on the safe side.
+    const int objectCount = 1024;
+    SenderObject lotsOfObjects[objectCount];
+    for (int i = 0; i < objectCount; ++i) {
+        QObject::connect(&lotsOfObjects[i], &SenderObject::signal1,
+                         &lotsOfObjects[i], &SenderObject::aPublicSlot);
+    }
+}
+
 void tst_QObject::initTestCase()
 {
     const QString testDataDir = QFileInfo(QFINDTESTDATA("signalbug")).absolutePath();
@@ -1368,10 +1383,10 @@ struct CheckInstanceCount
 struct CustomType
 {
     CustomType(int l1 = 0, int l2 = 0, int l3 = 0): i1(l1), i2(l2), i3(l3)
-    { ++instanceCount; }
+    { ++instanceCount; playWithObjects(); }
     CustomType(const CustomType &other): i1(other.i1), i2(other.i2), i3(other.i3)
-    { ++instanceCount; }
-    ~CustomType() { --instanceCount; }
+    { ++instanceCount; playWithObjects(); }
+    ~CustomType() { --instanceCount; playWithObjects(); }
 
     int i1, i2, i3;
     int value() { return i1 + i2 + i3; }
@@ -5749,17 +5764,7 @@ public:
     {}
 
     ~MyFunctor() {
-        // Do operations that will lock the internal signalSlotLock mutex on many QObjects.
-        // The more QObjects, the higher the chance that the signalSlotLock mutex used
-        // is already in use. If the number of objects is higher than the number of mutexes in
-        // the pool (currently 131), the deadlock should always trigger. Use an even higher number
-        // to be on the safe side.
-        const int objectCount = 1024;
-        SenderObject lotsOfObjects[objectCount];
-        for (int i = 0; i < objectCount; ++i) {
-            QObject::connect(&lotsOfObjects[i], &SenderObject::signal1,
-                             &lotsOfObjects[i], &SenderObject::aPublicSlot);
-        }
+        playWithObjects();
     }
 
     void operator()() {
