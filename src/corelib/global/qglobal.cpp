@@ -85,6 +85,10 @@
 #  include <bps/deviceinfo.h>
 #endif
 
+#if defined(Q_OS_SOLARIS)
+#  include <sys/systeminfo.h>
+#endif
+
 #ifdef Q_OS_UNIX
 #include <sys/utsname.h>
 #include <private/qcore_unix_p.h>
@@ -2211,9 +2215,24 @@ QString QSysInfo::currentCpuArchitecture()
         return QStringLiteral("ia64");
     }
 #elif defined(Q_OS_UNIX)
-    // we could use detectUnixVersion() above, but we only need a field no other function does
+    long ret = -1;
     struct utsname u;
-    if (uname(&u) != -1) {
+
+#  if defined(Q_OS_SOLARIS)
+    // We need a special call for Solaris because uname(2) on x86 returns "i86pc" for
+    // both 32- and 64-bit CPUs. Reference:
+    // http://docs.oracle.com/cd/E18752_01/html/816-5167/sysinfo-2.html#REFMAN2sysinfo-2
+    // http://fxr.watson.org/fxr/source/common/syscall/systeminfo.c?v=OPENSOLARIS
+    // http://fxr.watson.org/fxr/source/common/conf/param.c?v=OPENSOLARIS;im=10#L530
+    if (ret == -1)
+        ret = sysinfo(SI_ARCHITECTURE_64, u.machine, sizeof u.machine);
+#  endif
+
+    if (ret == -1)
+        ret = uname(&u);
+
+    // we could use detectUnixVersion() above, but we only need a field no other function does
+    if (ret != -1) {
         // the use of QT_BUILD_INTERNAL here is simply to ensure all branches build
         // as we don't often build on some of the less common platforms
 #  if defined(Q_PROCESSOR_ARM) || defined(QT_BUILD_INTERNAL)
@@ -2232,7 +2251,7 @@ QString QSysInfo::currentCpuArchitecture()
             return QLatin1String("power");
 #  endif
 #  if defined(Q_PROCESSOR_SPARC) || defined(QT_BUILD_INTERNAL)
-        // Solaris psrinfo -v says "sparcv9", but uname -m says "sun4u"
+        // Solaris sysinfo(2) (above) uses "sparcv9", but uname -m says "sun4u";
         // Linux says "sparc64"
         if (strcmp(u.machine, "sun4u") == 0 || strcmp(u.machine, "sparc64") == 0)
             return QStringLiteral("sparcv9");
@@ -2244,6 +2263,8 @@ QString QSysInfo::currentCpuArchitecture()
         if (strlen(u.machine) == 4 && u.machine[0] == 'i'
                 && u.machine[2] == '8' && u.machine[3] == '6')
             return QStringLiteral("i386");
+        if (strcmp(u.machine, "amd64") == 0) // Solaris
+            return QStringLiteral("x86_64");
 #  endif
         return QString::fromLatin1(u.machine);
     }
