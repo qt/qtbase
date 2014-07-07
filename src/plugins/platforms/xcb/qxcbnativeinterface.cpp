@@ -79,6 +79,7 @@ static int resourceType(const QByteArray &key)
         QByteArrayLiteral("display"),  QByteArrayLiteral("egldisplay"),
         QByteArrayLiteral("connection"), QByteArrayLiteral("screen"),
         QByteArrayLiteral("eglcontext"),
+        QByteArrayLiteral("eglconfig"),
         QByteArrayLiteral("glxconfig"),
         QByteArrayLiteral("glxcontext"), QByteArrayLiteral("apptime"),
         QByteArrayLiteral("appusertime"), QByteArrayLiteral("hintstyle"),
@@ -240,6 +241,9 @@ void *QXcbNativeInterface::nativeResourceForContext(const QByteArray &resourceSt
     switch (resourceType(resourceString)) {
     case EglContext:
         result = eglContextForContext(context);
+        break;
+    case EglConfig:
+        result = eglConfigForContext(context);
         break;
     case GLXConfig:
         result = glxConfigForContext(context);
@@ -456,6 +460,18 @@ void * QXcbNativeInterface::eglContextForContext(QOpenGLContext *context)
 #if defined(XCB_USE_EGL)
     QEGLPlatformContext *eglPlatformContext = static_cast<QEGLPlatformContext *>(context->handle());
     return eglPlatformContext->eglContext();
+#else
+    Q_UNUSED(context);
+    return 0;
+#endif
+}
+
+void * QXcbNativeInterface::eglConfigForContext(QOpenGLContext *context)
+{
+    Q_ASSERT(context);
+#if defined(XCB_USE_EGL)
+    QEGLPlatformContext *eglPlatformContext = static_cast<QEGLPlatformContext *>(context->handle());
+    return eglPlatformContext->eglConfig();
 #else
     Q_UNUSED(context);
     return 0;

@@ -63,6 +63,7 @@ public:
         Connection,
         Screen,
         EglContext,
+        EglConfig,
         GLXConfig,
         GLXContext,
         AppTime,
@@ -104,6 +105,7 @@ public:
     static void setAppTime(QScreen *screen, xcb_timestamp_t time);
     static void setAppUserTime(QScreen *screen, xcb_timestamp_t time);
     static void *eglContextForContext(QOpenGLContext *context);
+    static void *eglConfigForContext(QOpenGLContext *context);
     static void *glxContextForContext(QOpenGLContext *context);
     static void *glxConfigForContext(QOpenGLContext *context);
 
