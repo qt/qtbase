@@ -140,7 +140,7 @@ static void populateRoleMap()
     roleMap[QAccessible::Row] = NSAccessibilityRowRole;
     roleMap[QAccessible::RowHeader] = NSAccessibilityRowRole;
     roleMap[QAccessible::Cell] = NSAccessibilityTextFieldRole;
-    roleMap[QAccessible::PushButton] = NSAccessibilityButtonRole;
+    roleMap[QAccessible::Button] = NSAccessibilityButtonRole;
     roleMap[QAccessible::EditableText] = NSAccessibilityTextFieldRole;
     roleMap[QAccessible::Link] = NSAccessibilityLinkRole;
     roleMap[QAccessible::Indicator] = NSAccessibilityValueIndicatorRole;
