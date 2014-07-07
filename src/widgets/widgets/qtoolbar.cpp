@@ -720,6 +720,10 @@ void QToolBar::setIconSize(const QSize &iconSize)
     as \l{QAction}s. Note that if you add a QToolButton with the
     addWidget() method, it will not get this button style.
 
+    To have the style of toolbuttons follow the system settings, set this property to Qt::ToolButtonFollowStyle.
+    On Unix, the user settings from the desktop environment will be used.
+    On other platforms, Qt::ToolButtonFollowStyle means icon only.
+
     The default is Qt::ToolButtonIconOnly.
 */
 
