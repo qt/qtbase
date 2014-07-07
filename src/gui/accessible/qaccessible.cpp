@@ -2069,7 +2069,6 @@ QString QAccessibleTextInterface::textAtOffset(int offset, QAccessible::TextBoun
     \class QAccessibleEditableTextInterface
     \ingroup accessibility
     \inmodule QtGui
-    \internal
 
     \brief The QAccessibleEditableTextInterface class implements support for objects with editable text.
 
