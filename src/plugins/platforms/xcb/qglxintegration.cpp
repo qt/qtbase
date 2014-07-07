@@ -166,6 +166,7 @@ QGLXContext::QGLXContext(QXcbScreen *screen, const QSurfaceFormat &format, QPlat
                          const QVariant &nativeHandle)
     : QPlatformOpenGLContext()
     , m_screen(screen)
+    , m_config(0)
     , m_context(0)
     , m_shareContext(0)
     , m_format(format)
@@ -190,6 +191,7 @@ void QGLXContext::init(QXcbScreen *screen, QPlatformOpenGLContext *share)
         m_shareContext = static_cast<const QGLXContext*>(share)->glxContext();
 
     GLXFBConfig config = qglx_findConfig(DISPLAY_FROM_XCB(screen),screen->screenNumber(),m_format);
+    m_config = config;
     XVisualInfo *visualInfo = 0;
     Window window = 0; // Temporary window used to query OpenGL context
 
@@ -399,6 +401,8 @@ void QGLXContext::init(QXcbScreen *screen, QPlatformOpenGLContext *share, const 
             qWarning("QGLXContext: Multiple configs for FBConfig ID %d", configId);
 
         config = configs[0];
+        // Store the config.
+        m_config = config;
     }
 
     Q_ASSERT(vinfo || config);

@@ -72,6 +72,7 @@ public:
     bool isValid() const;
 
     GLXContext glxContext() const { return m_context; }
+    GLXFBConfig glxConfig() const { return m_config; }
 
     QVariant nativeHandle() const;
 
@@ -83,6 +84,7 @@ private:
     void init(QXcbScreen *screen, QPlatformOpenGLContext *share, const QVariant &nativeHandle);
 
     QXcbScreen *m_screen;
+    GLXFBConfig m_config;
     GLXContext m_context;
     GLXContext m_shareContext;
     QSurfaceFormat m_format;

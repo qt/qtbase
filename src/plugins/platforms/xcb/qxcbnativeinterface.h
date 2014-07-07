@@ -63,6 +63,7 @@ public:
         Connection,
         Screen,
         EglContext,
+        GLXConfig,
         GLXContext,
         AppTime,
         AppUserTime,
@@ -104,6 +105,7 @@ public:
     static void setAppUserTime(QScreen *screen, xcb_timestamp_t time);
     static void *eglContextForContext(QOpenGLContext *context);
     static void *glxContextForContext(QOpenGLContext *context);
+    static void *glxConfigForContext(QOpenGLContext *context);
 
     Q_INVOKABLE void beep();
     Q_INVOKABLE bool systemTrayAvailable(const QScreen *screen) const;

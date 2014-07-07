@@ -79,6 +79,7 @@ static int resourceType(const QByteArray &key)
         QByteArrayLiteral("display"),  QByteArrayLiteral("egldisplay"),
         QByteArrayLiteral("connection"), QByteArrayLiteral("screen"),
         QByteArrayLiteral("eglcontext"),
+        QByteArrayLiteral("glxconfig"),
         QByteArrayLiteral("glxcontext"), QByteArrayLiteral("apptime"),
         QByteArrayLiteral("appusertime"), QByteArrayLiteral("hintstyle"),
         QByteArrayLiteral("startupid"), QByteArrayLiteral("traywindow"),
@@ -239,6 +240,9 @@ void *QXcbNativeInterface::nativeResourceForContext(const QByteArray &resourceSt
     switch (resourceType(resourceString)) {
     case EglContext:
         result = eglContextForContext(context);
+        break;
+    case GLXConfig:
+        result = glxConfigForContext(context);
         break;
     case GLXContext:
         result = glxContextForContext(context);
@@ -464,6 +468,19 @@ void *QXcbNativeInterface::glxContextForContext(QOpenGLContext *context)
 #if defined(XCB_USE_GLX)
     QGLXContext *glxPlatformContext = static_cast<QGLXContext *>(context->handle());
     return glxPlatformContext->glxContext();
+#else
+    Q_UNUSED(context);
+    return 0;
+#endif
+
+}
+
+void *QXcbNativeInterface::glxConfigForContext(QOpenGLContext *context)
+{
+    Q_ASSERT(context);
+#if defined(XCB_USE_GLX)
+    QGLXContext *glxPlatformContext = static_cast<QGLXContext *>(context->handle());
+    return glxPlatformContext->glxConfig();
 #else
     Q_UNUSED(context);
     return 0;
