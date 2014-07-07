@@ -565,8 +565,8 @@ void QCoreApplicationPrivate::initLocale()
 /*!
     \class QCoreApplication
     \inmodule QtCore
-    \brief The QCoreApplication class provides an event loop for console Qt
-    applications.
+    \brief The QCoreApplication class provides an event loop for Qt
+    applications without UI.
 
     This class is used by non-GUI applications to provide their event
     loop. For non-GUI application that uses Qt, there should be exactly
