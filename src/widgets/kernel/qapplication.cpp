@@ -3648,6 +3648,9 @@ bool QApplication::keypadNavigationEnabled()
 
     We recommend that widgets do not cache this value as it may change at any
     time if the user changes the global desktop settings.
+
+    \note This property may hold a negative value, for instance if cursor
+    blinking is disabled.
 */
 void QApplication::setCursorFlashTime(int msecs)
 {
