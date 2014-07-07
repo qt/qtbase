@@ -2154,11 +2154,16 @@ static bool readEtcOsRelease(QUnixOSVersion &v)
     Typical returned values are (note: list not exhaustive):
     \list
         \li "arm"
+        \li "arm64"
         \li "i386"
+        \li "ia64"
         \li "mips"
-        \li "x86_64"
+        \li "mips64"
         \li "power"
+        \li "power64"
         \li "sparc"
+        \li "sparcv9"
+        \li "x86_64"
     \endlist
 
     \sa QSysInfo::buildAbi(), QSysInfo::currentCpuArchitecture()
@@ -2186,11 +2191,16 @@ QString QSysInfo::buildCpuArchitecture()
     Typical returned values are (note: list not exhaustive):
     \list
         \li "arm"
+        \li "arm64"
         \li "i386"
+        \li "ia64"
         \li "mips"
-        \li "x86_64"
+        \li "mips64"
         \li "power"
+        \li "power64"
         \li "sparc"
+        \li "sparcv9"
+        \li "x86_64"
     \endlist
 
     \sa QSysInfo::buildAbi(), QSysInfo::buildCpuArchitecture()
