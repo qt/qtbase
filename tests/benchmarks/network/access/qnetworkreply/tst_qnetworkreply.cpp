@@ -52,7 +52,9 @@
 
 #ifdef QT_BUILD_INTERNAL
 #include <QtNetwork/private/qhostinfo_p.h>
+#ifndef QT_NO_OPENSSL
 #include <QtNetwork/private/qsslsocket_openssl_p.h>
+#endif
 #endif
 
 Q_DECLARE_METATYPE(QSharedPointer<char>)
