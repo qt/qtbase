@@ -209,14 +209,8 @@ QWindow::QWindow(QWindowPrivate &dd, QWindow *parent)
 */
 QWindow::~QWindow()
 {
-    if (QGuiApplicationPrivate::focus_window == this)
-        QGuiApplicationPrivate::focus_window = 0;
-    if (QGuiApplicationPrivate::currentMouseWindow == this)
-        QGuiApplicationPrivate::currentMouseWindow = 0;
-    if (QGuiApplicationPrivate::tabletPressTarget == this)
-        QGuiApplicationPrivate::tabletPressTarget = 0;
-    QGuiApplicationPrivate::window_list.removeAll(this);
     destroy();
+    QGuiApplicationPrivate::window_list.removeAll(this);
 }
 
 void QWindowPrivate::init()
@@ -1569,16 +1563,28 @@ void QWindow::destroy()
         QObject *object = childrenWindows.at(i);
         if (object->isWindowType()) {
             QWindow *w = static_cast<QWindow*>(object);
-            QGuiApplicationPrivate::window_list.removeAll(w);
             w->destroy();
         }
     }
+
+    if (QGuiApplicationPrivate::focus_window == this)
+        QGuiApplicationPrivate::focus_window = parent();
+    if (QGuiApplicationPrivate::currentMouseWindow == this)
+        QGuiApplicationPrivate::currentMouseWindow = parent();
+    if (QGuiApplicationPrivate::tabletPressTarget == this)
+        QGuiApplicationPrivate::tabletPressTarget = parent();
+
+    bool wasVisible = isVisible();
+
     setVisible(false);
     delete d->platformWindow;
     d->resizeEventPending = true;
     d->receivedExpose = false;
     d->exposed = false;
     d->platformWindow = 0;
+
+    if (wasVisible)
+        d->maybeQuitOnLastWindowClosed();
 }
 
 /*!
@@ -1839,15 +1845,10 @@ bool QWindow::close()
     if (!d->platformWindow)
         return true;
 
-    if (QGuiApplicationPrivate::focus_window == this)
-        QGuiApplicationPrivate::focus_window = 0;
-    if (QGuiApplicationPrivate::currentMouseWindow == this)
-        QGuiApplicationPrivate::currentMouseWindow = 0;
-
-    QGuiApplicationPrivate::window_list.removeAll(this);
-    destroy();
-    d->maybeQuitOnLastWindowClosed();
-    return true;
+    bool accepted = false;
+    QWindowSystemInterface::handleCloseEvent(this, &accepted);
+    QWindowSystemInterface::flushWindowSystemEvents();
+    return accepted;
 }
 
 /*!
@@ -1995,7 +1996,7 @@ bool QWindow::event(QEvent *ev)
 
     case QEvent::Close:
         if (ev->isAccepted())
-            close();
+            destroy();
         break;
 
     case QEvent::Expose:
@@ -2208,8 +2209,10 @@ Q_GUI_EXPORT QWindowPrivate *qt_window_private(QWindow *window)
 
 void QWindowPrivate::maybeQuitOnLastWindowClosed()
 {
-    Q_Q(QWindow);
+    if (!QCoreApplication::instance())
+        return;
 
+    Q_Q(QWindow);
     // Attempt to close the application only if this has WA_QuitOnClose set and a non-visible parent
     bool quitOnClose = QGuiApplication::quitOnLastWindowClosed() && !q->parent();
 
