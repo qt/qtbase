@@ -2664,7 +2664,16 @@ void QOpenGLTexture::setData(PixelFormat sourceFormat, PixelType sourceType,
 */
 void QOpenGLTexture::setData(const QImage& image, MipMapGeneration genMipMaps)
 {
-    setFormat(QOpenGLTexture::RGBA8_UNorm);
+    QOpenGLContext *context = QOpenGLContext::currentContext();
+    if (!context) {
+        qWarning("QOpenGLTexture::setData() requires a valid current context");
+        return;
+    }
+    if (context->isOpenGLES() && context->format().majorVersion() < 3)
+        setFormat(QOpenGLTexture::RGBAFormat);
+    else
+        setFormat(QOpenGLTexture::RGBA8_UNorm);
+
     setSize(image.width(), image.height());
     setMipLevels(genMipMaps == GenerateMipMaps ? maximumMipLevels() : 1);
     allocateStorage();
