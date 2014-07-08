@@ -9,6 +9,7 @@ win32-msvc*|win32-icc:QMAKE_LFLAGS += /BASE:0x65000000
 irix-cc*:QMAKE_CXXFLAGS += -no_prelink -ptused
 
 MODULE_PLUGIN_TYPES += \
+    styles \
     accessible/libqtaccessiblewidgets.so
 
 QMAKE_DOCS = $$PWD/doc/qtwidgets.qdocconf
