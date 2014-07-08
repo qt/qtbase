@@ -268,7 +268,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "LIBJPEG" ]         = "auto";
     dictionary[ "LIBPNG" ]          = "auto";
     dictionary[ "FREETYPE" ]        = "yes";
-    dictionary[ "HARFBUZZ" ]        = "no";
+    dictionary[ "HARFBUZZ" ]        = "qt";
 
     dictionary[ "ACCESSIBILITY" ]   = "yes";
     dictionary[ "OPENGL" ]          = "yes";
@@ -607,7 +607,7 @@ void Configure::parseCmdLine()
         else if (configCmdLine.at(i) == "-no-harfbuzz")
             dictionary[ "HARFBUZZ" ] = "no";
         else if (configCmdLine.at(i) == "-qt-harfbuzz")
-            dictionary[ "HARFBUZZ" ] = "yes";
+            dictionary[ "HARFBUZZ" ] = "qt";
         else if (configCmdLine.at(i) == "-system-harfbuzz")
             dictionary[ "HARFBUZZ" ] = "system";
 
@@ -1911,12 +1911,13 @@ bool Configure::displayHelp()
         desc("FREETYPE", "system","-system-freetype",   "Use the libfreetype provided by the system.");
 
         desc("HARFBUZZ", "no",   "-no-harfbuzz",        "Do not compile in HarfBuzz-NG support.");
-        desc("HARFBUZZ", "yes",  "-qt-harfbuzz",        "(experimental) Use HarfBuzz-NG bundled with Qt\n"
+        desc("HARFBUZZ", "qt",   "-qt-harfbuzz",        "Use HarfBuzz-NG bundled with Qt to do text shaping.\n"
+                                                        "It can still be disabled by setting\n"
+                                                        "the QT_HARFBUZZ environment variable to \"old\".");
+        desc("HARFBUZZ", "system","-system-harfbuzz",   "Use HarfBuzz-NG from the operating system\n"
                                                         "to do text shaping. It can still be disabled\n"
-                                                        "by setting QT_HARFBUZZ environment variable to \"old\".");
-        desc("HARFBUZZ", "system","-system-harfbuzz",   "(experimental) Use HarfBuzz-NG from the operating system\n"
-                                                        "to do text shaping. It can still be disabled\n"
-                                                        "by setting QT_HARFBUZZ environment variable to \"old\".\n");
+                                                        "by setting the QT_HARFBUZZ environment variable to \"old\".\n"
+                                                        "See http://www.harfbuzz.org\n");
 
         if ((platform() == QNX) || (platform() == BLACKBERRY)) {
             desc("SLOG2", "yes",  "-slog2",             "Compile with slog2 support.");
@@ -2696,7 +2697,7 @@ void Configure::generateOutputVars()
     else if (dictionary[ "FREETYPE" ] == "system")
         qtConfig += "system-freetype";
 
-    if (dictionary[ "HARFBUZZ" ] == "yes")
+    if (dictionary[ "HARFBUZZ" ] == "qt")
         qtConfig += "harfbuzz";
     else if (dictionary[ "HARFBUZZ" ] == "system")
         qtConfig += "system-harfbuzz";
@@ -3700,7 +3701,7 @@ void Configure::displayConfig()
     sout << "    PNG support............." << dictionary[ "PNG" ] << endl;
     sout << "    FreeType support........" << dictionary[ "FREETYPE" ] << endl;
     sout << "    Fontconfig support......" << dictionary[ "FONT_CONFIG" ] << endl;
-    sout << "    HarfBuzz-NG support....." << dictionary[ "HARFBUZZ" ] << endl;
+    sout << "    HarfBuzz support........" << dictionary[ "HARFBUZZ" ] << endl;
     sout << "    PCRE support............" << dictionary[ "PCRE" ] << endl;
     sout << "    ICU support............." << dictionary[ "ICU" ] << endl;
     if ((platform() == QNX) || (platform() == BLACKBERRY)) {

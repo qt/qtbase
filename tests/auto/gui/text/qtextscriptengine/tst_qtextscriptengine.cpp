@@ -1105,9 +1105,8 @@ void tst_QTextScriptEngine::mirroredChars()
 
 void tst_QTextScriptEngine::controlInSyllable_qtbug14204()
 {
-#ifdef Q_OS_MAC
     QSKIP("Result differs for HarfBuzz-NG, skip test.");
-#endif
+
     QFontDatabase db;
     if (!db.families().contains(QStringLiteral("Aparajita")))
         QSKIP("couldn't find 'Aparajita' font");
@@ -1146,9 +1145,7 @@ void tst_QTextScriptEngine::combiningMarks_qtbug15675_data()
     QTest::addColumn<QFont>("font");
     QTest::addColumn<QString>("string");
 
-#ifdef Q_OS_MAC
     QSKIP("Result differs for HarfBuzz-NG, skip test.");
-#endif
 
     bool hasTests = false;
 
@@ -1273,23 +1270,15 @@ void tst_QTextScriptEngine::thaiWithZWJ()
         QCOMPARE(logClusters[i], ushort(i));
     QCOMPARE(logClusters[15], ushort(0));
     QCOMPARE(logClusters[16], ushort(0));
-#ifndef Q_OS_MAC
-    // ### Result differs for HarfBuzz-NG
-    QCOMPARE(logClusters[17], ushort(1));
-#endif
 
     // A thai implementation could either remove the ZWJ and ZWNJ characters, or hide them.
     // The current implementation hides them, so we test for that.
     // The only characters that we should be hiding are the ZWJ and ZWNJ characters in position 1 and 3.
     const QGlyphLayout glyphLayout = e->layoutData->glyphLayout;
     for (int i = 0; i < 18; i++) {
-#ifdef Q_OS_MAC
-        // ### Result differs for HarfBuzz-NG
         if (i == 17)
             QCOMPARE(glyphLayout.advances[i].toInt(), 0);
-        else
-#endif
-        if (i == 1 || i == 3)
+        else if (i == 1 || i == 3)
             QCOMPARE(glyphLayout.advances[i].toInt(), 0);
         else
             QVERIFY(glyphLayout.advances[i].toInt() != 0);
