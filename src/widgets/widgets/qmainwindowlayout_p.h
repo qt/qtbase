@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -67,15 +67,6 @@
 
 #include "qdockarealayout_p.h"
 #include "qtoolbararealayout_p.h"
-
-//#define Q_DEBUG_MAINWINDOW_LAYOUT
-
-#if defined(Q_DEBUG_MAINWINDOW_LAYOUT) && !defined(QT_NO_DOCKWIDGET)
-QT_BEGIN_NAMESPACE
-class QTextStream;
-Q_WIDGETS_EXPORT void qt_dumpLayout(QTextStream &qout, QMainWindow *window);
-QT_END_NAMESPACE
-#endif // Q_DEBUG_MAINWINDOW_LAYOUT && !QT_NO_DOCKWIDGET
 
 #ifdef Q_WS_MAC
 // Forward defs to make avoid including Carbon.h (faster compile you know ;).
@@ -344,6 +335,13 @@ public:
 
 #endif // Q_WS_MAC
 };
+
+#if !defined(QT_NO_DOCKWIDGET) && !defined(QT_NO_DEBUG_STREAM)
+class QDebug;
+QDebug operator<<(QDebug debug, const QDockAreaLayout &layout);
+QDebug operator<<(QDebug debug, const QMainWindowLayout *layout);
+#endif
+
 QT_END_NAMESPACE
 
 #endif // QT_NO_MAINWINDOW
