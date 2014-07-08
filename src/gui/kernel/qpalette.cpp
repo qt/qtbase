@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -1141,9 +1141,33 @@ Q_GUI_EXPORT QPalette qt_fusionPalette()
 }
 
 #ifndef QT_NO_DEBUG_STREAM
-QDebug operator<<(QDebug dbg, const QPalette &)
+QDebug operator<<(QDebug dbg, const QPalette &p)
 {
-    dbg.nospace() << "QPalette()";
+    const char *colorGroupNames[] = {"Active", "Disabled", "Inactive"};
+    const char *colorRoleNames[] =
+        {"WindowText", "Button", "Light", "Midlight", "Dark", "Mid", "Text",
+         "BrightText", "ButtonText", "Base", "Window", "Shadow", "Highlight",
+         "HighlightedText", "Link", "LinkVisited", "AlternateBase", "NoRole",
+         "ToolTipBase","ToolTipText" };
+    QDebug nospace = dbg.nospace();
+    const uint mask = p.resolve();
+    nospace << "QPalette(resolve=" << hex << showbase << mask << ',';
+    for (int role = 0; role < (int)QPalette::NColorRoles; ++role) {
+        if (mask & (1<<role)) {
+            if (role)
+                nospace << ',';
+            nospace << colorRoleNames[role] << ":[";
+            for (int group = 0; group < (int)QPalette::NColorGroups; ++group) {
+                if (group)
+                    nospace << ',';
+                const QRgb color = p.color(static_cast<QPalette::ColorGroup>(group),
+                                           static_cast<QPalette::ColorRole>(role)).rgba();
+                nospace << colorGroupNames[group] << ':' << color;
+            }
+            nospace << ']';
+        }
+    }
+    nospace << ')' << noshowbase << dec;
     return dbg.space();
 }
 #endif
