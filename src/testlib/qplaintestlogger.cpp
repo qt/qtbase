@@ -202,7 +202,7 @@ namespace QTest {
 }
 
 #if defined(Q_OS_WIN)
-Q_CORE_EXPORT bool qWinLogToStderr(); // defined in qlogging.cpp
+Q_CORE_EXPORT bool qt_logging_to_console(); // defined in qlogging.cpp
 #endif
 
 void QPlainTestLogger::outputMessage(const char *str)
@@ -218,7 +218,7 @@ void QPlainTestLogger::outputMessage(const char *str)
     if (stream != stdout)
 #elif defined(Q_OS_WIN)
     // log to system log only if output is not redirected, and no console is attached
-    if (!qWinLogToStderr() && stream == stdout) {
+    if (!qt_logging_to_console() && stream == stdout) {
         OutputDebugStringA(str);
         return;
     }

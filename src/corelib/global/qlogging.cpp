@@ -2,6 +2,7 @@
 **
 ** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Copyright (C) 2014 Olivier Goffart <ogoffart@woboq.com>
+** Copyright (C) 2014 Intel Corporation.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -46,6 +47,7 @@
 #include "qcoreapplication.h"
 #include "qthread.h"
 #include "private/qloggingregistry_p.h"
+#include "private/qcoreapplication_p.h"
 #endif
 #ifdef Q_OS_WIN
 #include <qt_windows.h>
@@ -62,7 +64,12 @@
 # define SD_JOURNAL_SUPPRESS_LOCATION
 # include <systemd/sd-journal.h>
 # include <syslog.h>
+#endif
+#ifdef Q_OS_UNIX
+# include <sys/types.h>
+# include <sys/stat.h>
 # include <unistd.h>
+# include "private/qcore_unix_p.h"
 #endif
 
 #if !defined QT_NO_REGULAREXPRESSION && !defined(QT_BOOTSTRAPPED)
@@ -109,32 +116,54 @@ static bool isFatal(QtMsgType msgType)
     return false;
 }
 
-#ifdef Q_OS_WIN
-
-// Do we have stderr for QDebug? - Either there is a console or we are running
-// with redirected stderr.
-#  if !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
-static inline bool hasStdErr()
+static bool willLogToConsole()
 {
-    if (GetConsoleWindow())
-        return true;
-    STARTUPINFO info;
-    GetStartupInfo(&info);
-    return (info.dwFlags & STARTF_USESTDHANDLES) && info.hStdError
-        && info.hStdError != INVALID_HANDLE_VALUE;
-}
-#  endif // !Q_OS_WINCE && !Q_OS_WINRT
-
-Q_CORE_EXPORT bool qWinLogToStderr()
-{
-#  if !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
-    static const bool result = hasStdErr();
-    return result;
-#  else
+#if defined(Q_OS_WINCE) || defined(Q_OS_WINRT)
+    // these systems have no stderr, so always log to the system log
     return false;
+#elif defined(QT_BOOTSTRAPPED)
+    return true;
+#else
+    // rules to determine if we'll log preferably to the console:
+    //  1) if QT_LOGGING_TO_CONSOLE is set, it determines behavior:
+    //    - if it's set to 0, we will not log to console
+    //    - if it's set to 1, we will log to console
+    //  2) otherwise, we will log to console if we have a console window (Windows)
+    //     or a controlling TTY (Unix). This is done even if stderr was redirected
+    //     to the blackhole device (NUL or /dev/null).
+
+    bool ok = true;
+    uint envcontrol = qgetenv("QT_LOGGING_TO_CONSOLE").toUInt(&ok);
+    if (ok)
+        return envcontrol;
+
+#  ifdef Q_OS_WIN
+    return GetConsoleWindow();
+#  elif defined(Q_OS_UNIX)
+    // if /dev/tty exists, we can only open it if we have a controlling TTY
+    int devtty = qt_safe_open("/dev/tty", O_RDONLY);
+    if (devtty == -1 && (errno == ENOENT || errno == EPERM)) {
+        // no /dev/tty, fall back to isatty on stderr
+        return isatty(STDERR_FILENO);
+    } else if (devtty != -1) {
+        // there is a /dev/tty and we could open it: we have a controlling TTY
+        qt_safe_close(devtty);
+        return true;
+    }
+
+    // no controlling TTY
+    return false;
+#  else
+#    error "Not Unix and not Windows?"
 #  endif
+#endif
 }
-#endif // Q_OS_WIN
+
+Q_CORE_EXPORT bool qt_logging_to_console()
+{
+    static const bool logToConsole = willLogToConsole();
+    return logToConsole;
+}
 
 /*!
     \class QMessageLogContext
@@ -977,7 +1006,7 @@ void QMessagePattern::setPattern(const QString &pattern)
         OutputDebugString(reinterpret_cast<const wchar_t*>(error.utf16()));
         if (0)
 #elif defined(Q_OS_WIN) && defined(QT_BUILD_CORE_LIB)
-        if (!qWinLogToStderr()) {
+        if (!qt_logging_to_console()) {
             OutputDebugString(reinterpret_cast<const wchar_t*>(error.utf16()));
         } else
 #endif
@@ -1269,44 +1298,25 @@ static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &con
 {
     QString logMessage = qFormatLogMessage(type, context, buf);
 
-#if defined(Q_OS_WIN) && defined(QT_BUILD_CORE_LIB)
-    if (!qWinLogToStderr()) {
+    if (!qt_logging_to_console()) {
+#if defined(Q_OS_WIN)
         OutputDebugString(reinterpret_cast<const wchar_t *>(logMessage.utf16()));
         return;
-    }
-#endif // Q_OS_WIN
-
-    static const bool logToConsole = qEnvironmentVariableIsSet("QT_LOGGING_TO_CONSOLE");
-#if defined(QT_USE_SLOG2)
-    if (!logToConsole) {
+#elif defined(QT_USE_SLOG2)
         slog2_default_handler(type, logMessage.toLocal8Bit().constData());
-    } else {
-        fprintf(stderr, "%s", logMessage.toLocal8Bit().constData());
-        fflush(stderr);
-    }
+        return;
 #elif defined(QT_USE_JOURNALD) && !defined(QT_BOOTSTRAPPED)
-    // We support environment variables for Qt Creator use, or more complicated cases
-    // like subprocesses.
-    if (!logToConsole) {
         // remove trailing \n, systemd appears to want them newline-less
         logMessage.chop(1);
         systemd_default_message_handler(type, context, logMessage);
-    } else {
-        fprintf(stderr, "%s", logMessage.toLocal8Bit().constData());
-        fflush(stderr);
-    }
+        return;
 #elif defined(Q_OS_ANDROID)
-    if (!logToConsole) {
         android_default_message_handler(type, context, logMessage);
-    } else {
-        fprintf(stderr, "%s", logMessage.toLocal8Bit().constData());
-        fflush(stderr);
+        return;
+#endif
     }
-#else
     fprintf(stderr, "%s", logMessage.toLocal8Bit().constData());
     fflush(stderr);
-#endif
-    Q_UNUSED(logToConsole);
 }
 
 /*!
