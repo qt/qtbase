@@ -231,14 +231,7 @@ void QEGLPlatformBackingStore::resize(const QSize &size, const QRegion &staticCo
     if (!dstWin || (!dstWin->isRaster() && dstWin->window()->surfaceType() != QSurface::RasterGLSurface))
         return;
 
-    // Child windows do not get real native surfaces and so share the same
-    // format as the parent, regardless of what has been requested. The
-    // exception is WA_TranslucentBackground that sets alphaBufferSize in the
-    // requested format, this has to be taken into account when compositing.
-    const bool translucent = m_window->window()->requestedFormat().alphaBufferSize() > 0;
-    const QImage::Format format = translucent ? QImage::Format_RGBA8888 : QImage::Format_RGBX8888;
-
-    m_image = QImage(size, format);
+    m_image = QImage(size, QImage::Format_RGBA8888);
 
     m_window->create();
 
