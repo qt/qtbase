@@ -299,7 +299,7 @@ sub classNames {
                 push @symbols, $1;
             } elsif($definition =~ m/^ *typedef +(.*) +([^ ]*);$/) {
                 push @symbols, $2;
-            } elsif($definition =~ m/^ *(template *<.*> *)?(class|struct) +([^ ]* +)?((?!$post_kw)[^<\s]+) ?(<[^>]*> ?)?\s*(?:$post_kw)?\s*((,|:)\s*(public|protected|private) *.*)? *\{\}$/o) {
+            } elsif($definition =~ m/^ *(template *<.*> *)?(class|struct) +([^ <>]* +)?((?!$post_kw)[^<\s]+) ?(<[^>]*> ?)?\s*(?:$post_kw)?\s*((,|:)\s*(public|protected|private) *.*)? *\{\}$/o) {
                 push @symbols, $4;
             } elsif($definition =~ m/^ *Q_DECLARE_.*ITERATOR\((.*)\);$/) {
                 push @symbols, "Q" . $1 . "Iterator";
