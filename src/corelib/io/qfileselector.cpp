@@ -145,7 +145,9 @@ QFileSelectorPrivate::QFileSelectorPrivate()
     Selectors normally available are
     \list
     \li platform, any of the following strings which match the platform the application is running
-        on: android, blackberry, ios, osx, darwin, mac, linux, wince, unix, windows.
+        on (list not exhaustive): android, blackberry, ios, osx, darwin, mac, linux, wince, unix,
+        windows. On Linux, if it can be determined, the name of the distribution too, like debian,
+        fedora or opensuse.
     \li locale, same as QLocale::system().name().
     \endlist
 
@@ -351,10 +353,10 @@ QStringList QFileSelectorPrivate::platformSelectors()
     // similar, but not identical to QSysInfo::osType
     QStringList ret;
 #if defined(Q_OS_WIN)
+    // can't fall back to QSysInfo because we need both "winphone" and "winrt" for the Windows Phone case
     ret << QStringLiteral("windows");
-#  if defined(Q_OS_WINCE)
-    ret << QStringLiteral("wince");
-#  elif defined(Q_OS_WINRT)
+    ret << QSysInfo::kernelType();  // "wince" and "winnt"
+#  if defined(Q_OS_WINRT)
     ret << QStringLiteral("winrt");
 #    if defined(Q_OS_WINPHONE)
     ret << QStringLiteral("winphone");
@@ -362,25 +364,16 @@ QStringList QFileSelectorPrivate::platformSelectors()
 #  endif
 #elif defined(Q_OS_UNIX)
     ret << QStringLiteral("unix");
-#  if defined(Q_OS_ANDROID)
-    ret << QStringLiteral("android");
-#  elif defined(Q_OS_BLACKBERRY)
-    ret << QStringLiteral("blackberry");
-#  elif defined(Q_OS_QNX)
-    ret << QStringLiteral("qnx");
-#  elif defined(Q_OS_LINUX)
-    ret << QStringLiteral("linux");
-#  elif defined(Q_OS_DARWIN)
-    ret << QStringLiteral("darwin");
-    ret << QStringLiteral("mac"); // compatibility synonym
-#    if defined(Q_OS_IOS)
-    ret << QStringLiteral("ios");
-#    elif defined(Q_OS_OSX)
-    ret << QStringLiteral("osx");
-#    endif
-#  else
+#  if !defined(Q_OS_ANDROID) && !defined(Q_OS_BLACKBERRY)
+    // we don't want "linux" for Android or "qnx" for Blackberry here
     ret << QSysInfo::kernelType();
+#     ifdef Q_OS_MAC
+    ret << QStringLiteral("mac"); // compatibility, since kernelType() is "darwin"
+#     endif
 #  endif
+    QString productName = QSysInfo::productType();
+    if (productName != QLatin1String("unknown"))
+        ret << productName; // "opensuse", "fedora", "osx", "ios", "blackberry", "android"
 #endif
     return ret;
 }

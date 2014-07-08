@@ -10,6 +10,8 @@
    <file>extras/+custom3/+custom4/test</file>
    <file>extras/+custom3/+custom5/test</file>
    <file>extras/+custom5/+custom3/test</file>
+
+   <!-- platforms/test: deepest possible selection -->
    <file>platforms/test</file>
    <file>platforms/+unix/+android/test</file>
    <file>platforms/+unix/+blackberry/test</file>
@@ -17,18 +19,11 @@
    <file>platforms/+unix/+darwin/+mac/+osx/test</file>
    <file>platforms/+unix/+darwin/+mac/test</file>
    <file>platforms/+unix/+darwin/test</file>
-   <file>platforms/+windows/+wince/test</file>
-   <file>platforms/+windows/test</file>
-   <file>platforms/+windows/test2</file>
    <file>platforms/+unix/+linux/test</file>
    <file>platforms/+unix/test</file>
-   <file>platforms/test2</file>
-   <file>platforms/+android/test2</file>
-   <file>platforms/+blackberry/test2</file>
-   <file>platforms/+ios/test2</file>
-   <file>platforms/+osx/test2</file>
-   <file>platforms/+linux/test2</file>
-   <file>platforms/+wince/test2</file>
+   <file>platforms/+windows/+wince/test</file>
+   <file>platforms/+windows/+winnt/test</file>
+   <file>platforms/+windows/test</file>
    <file>platforms/+android/test</file>
    <file>platforms/+blackberry/test</file>
    <file>platforms/+ios/test</file>
@@ -37,5 +32,20 @@
    <file>platforms/+mac/test</file>
    <file>platforms/+linux/test</file>
    <file>platforms/+wince/test</file>
+
+   <!-- platforms/test2: shallow selection for the deepest selector -->
+   <file>platforms/test2</file>
+   <file>platforms/+android/test2</file>
+   <file>platforms/+blackberry/test2</file>
+   <file>platforms/+ios/test2</file>
+   <file>platforms/+osx/test2</file>
+   <file>platforms/+linux/test2</file>
+   <file>platforms/+wince/test2</file>
+   <file>platforms/+winnt/test2</file>
+
+   <!-- platforms/test3: selection for the family only -->
+   <file>platforms/test3</file>
+   <file>platforms/+windows/test3</file>
+   <file>platforms/+unix/test3</file>
 </qresource>
 </RCC>
