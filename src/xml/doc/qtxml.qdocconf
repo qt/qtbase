@@ -31,11 +31,9 @@ depends                 += qtcore qtnetwork qtdoc
 
 headerdirs  += ..
 
-sourcedirs  += .. \
-               ../../../examples/xml/doc/src
+sourcedirs  += ..
 
 exampledirs += ../../../examples/xml \
-               ../ \
                snippets
 
 imagedirs   += images \
