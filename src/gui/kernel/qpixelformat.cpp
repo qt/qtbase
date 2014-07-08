@@ -85,7 +85,7 @@ QT_BEGIN_NAMESPACE
 
     \value Indexed The color model uses a color palette.
 
-    \value GrayScale The color model is GrayScale.
+    \value Grayscale The color model is Grayscale.
 
     \value CMYK The color model is CMYK.
 
@@ -302,7 +302,7 @@ Q_STATIC_ASSERT(sizeof(QPixelFormatGrayScale) == sizeof(QPixelFormat));
     \fn QPixelFormatGrayScale::QPixelFormatGrayScale(uchar channelSize,
                                                      TypeInterpretation typeInterpretation = UnsignedInteger)
 
-    Constructor for creating a GrayScale format. Monochrome formats can be
+    Constructor for creating a Grayscale format. Monochrome formats can be
     described by passing 1 to \a channelSize. Its also possible to define very
     accurate greyscale formats using doubles to describe each pixel by passing 8
     as \a channelSize and FloatingPoint as \a typeInterpretation.

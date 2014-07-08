@@ -53,7 +53,7 @@ public:
         RGB,
         BGR,
         Indexed,
-        GrayScale,
+        Grayscale,
         CMYK,
         HSL,
         HSV,
@@ -360,7 +360,7 @@ QPixelFormatRgb::QPixelFormatRgb(uchar red,
 Q_DECL_CONSTEXPR
 QPixelFormatGrayScale::QPixelFormatGrayScale(uchar channelSize,
                                              TypeInterpretation typeInt) Q_DECL_NOTHROW
-    : QPixelFormat(GrayScale,
+    : QPixelFormat(Grayscale,
                    channelSize,
                    0,
                    0,

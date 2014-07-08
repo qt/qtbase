@@ -4603,7 +4603,7 @@ static const QPixelFormat pixelformats[] = {
         //QImage::Format_Invalid:
         QPixelFormat(),
         //QImage::Format_Mono:
-        QPixelFormat(QPixelFormat::GrayScale,
+        QPixelFormat(QPixelFormat::Grayscale,
                         /*RED*/            1,
                         /*GREEN*/          0,
                         /*BLUE*/           0,
@@ -4616,7 +4616,7 @@ static const QPixelFormat pixelformats[] = {
                         /*INTERPRETATION*/ QPixelFormat::UnsignedByte,
                         /*BYTE ORDER*/     QPixelFormat::CurrentSystemEndian),
         //QImage::Format_MonoLSB:
-        QPixelFormat(QPixelFormat::GrayScale,
+        QPixelFormat(QPixelFormat::Grayscale,
                         /*RED*/            1,
                         /*GREEN*/          0,
                         /*BLUE*/           0,
