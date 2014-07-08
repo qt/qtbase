@@ -387,7 +387,7 @@ QStringList QFileSelectorPrivate::platformSelectors()
     ret << QStringLiteral("osx");
 #    endif
 #  else
-    ret << QSysInfo::osType();
+    ret << QSysInfo::kernelType();
 #  endif
 #endif
     return ret;

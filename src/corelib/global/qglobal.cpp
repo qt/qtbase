@@ -2059,10 +2059,11 @@ struct QUnixOSVersion
     QString sysNameLower;
     QString sysRelease;
 
-#  if !defined(Q_OS_ANDROID) && !defined(Q_OS_BLACKBERRY) && !defined(Q_OS_MAC)
-    // from /etc/os-release or guessed
-    QString versionIdentifier;      // ${ID}_$VERSION_ID
-    QString versionText;            // $PRETTY_NAME
+#  ifdef USE_ETC_OS_RELEASE
+    // from /etc/os-release
+    QString productType;            // $ID
+    QString productVersion;         // $VERSION_ID
+    QString prettyName;             // $PRETTY_NAME
 #  endif
 };
 
@@ -2089,7 +2090,6 @@ static bool readEtcOsRelease(QUnixOSVersion &v)
         return false;
     }
 
-    QString partialIdentifier;
     QByteArray buffer(sbuf.st_size, Qt::Uninitialized);
     buffer.resize(qt_safe_read(fd, buffer.data(), sbuf.st_size));
     qt_safe_close(fd);
@@ -2107,16 +2107,14 @@ static bool readEtcOsRelease(QUnixOSVersion &v)
         if (!eol)
             eol = end - 1;
 
+        // note: we're doing a binary search here, so comparison
+        // must always be sorted
         int cmp = strncmp(ptr, idString, strlen(idString));
         if (cmp < 0)
             continue;
         if (cmp == 0) {
             ptr += strlen(idString);
-            QString id = unquote(ptr, eol);
-            if (partialIdentifier.isNull())
-                partialIdentifier = id;
-            else
-                v.versionIdentifier = id + QLatin1Char('_') + partialIdentifier;
+            v.productType = unquote(ptr, eol);
             continue;
         }
 
@@ -2125,7 +2123,7 @@ static bool readEtcOsRelease(QUnixOSVersion &v)
             continue;
         if (cmp == 0) {
             ptr += strlen(prettyNameString);
-            v.versionText = unquote(ptr, eol);
+            v.prettyName = unquote(ptr, eol);
             continue;
         }
 
@@ -2134,11 +2132,7 @@ static bool readEtcOsRelease(QUnixOSVersion &v)
             continue;
         if (cmp == 0) {
             ptr += strlen(versionIdString);
-            QString id = unquote(ptr, eol);
-            if (partialIdentifier.isNull())
-                partialIdentifier = id;
-            else
-                v.versionIdentifier = partialIdentifier + QLatin1Char('_') + id;
+            v.productVersion = unquote(ptr, eol);
             continue;
         }
     }
@@ -2160,16 +2154,9 @@ static QUnixOSVersion detectUnixVersion()
         // leave sysNameLower & sysRelease unset
     }
 
-#  if !defined(Q_OS_ANDROID) && !defined(Q_OS_BLACKBERRY) && !defined(Q_OS_MAC)
-#    ifdef USE_ETC_OS_RELEASE
+#  ifdef USE_ETC_OS_RELEASE
     if (readEtcOsRelease(v))
         return v;
-#    endif
-
-    if (!v.sysNameLower.isEmpty()) {
-        // will produce "qnx_6.5" or "sunos_5.9"
-        v.versionIdentifier = v.sysNameLower + QLatin1Char('_') + v.sysRelease;
-    }
 #  endif
 
     return v;
@@ -2349,17 +2336,85 @@ static QString unknownText()
 /*!
     \since 5.4
 
-    Returns the type of the operating system Qt was compiled for. It's also the
-    operating system the application is running on, unless the host operating
-    system is running a form of compatibility layer.
+    Returns the type of the operating system kernel Qt was compiled for. It's
+    also the kernel the application is running on, unless the host operating
+    system is running a form of compatibility or virtualization layer.
+
+    Values returned by this function are stable and will not change over time,
+    so applications can rely on the returned value as an identifier, except
+    that new OS kernel types may be added over time.
+
+    On Windows, this function returns the type of Windows kernel, like "wince"
+    or "winnt". On Unix systems, it returns the same as the output of \c{uname
+    -s} (lowercased).
+
+    Note that this function may return surprising values: it returns "linux"
+    for all operating systems running Linux (including Android), "qnx" for all
+    operating systems running QNX (including BlackBerry 10), "freebsd" for
+    Debian/kFreeBSD, and "darwin" for OS X and iOS. For information on the type
+    of product the application is running on, see productType().
+
+    \sa QFileSelector, kernelVersion(), productType(), productVersion(), prettyProductName()
+*/
+QString QSysInfo::kernelType()
+{
+#if defined(Q_OS_WINCE)
+    return QStringLiteral("wince");
+#elif defined(Q_OS_WIN)
+    return QStringLiteral("winnt");
+#elif defined(Q_OS_UNIX)
+    QUnixOSVersion unixOsVersion = detectUnixVersion();
+    if (!unixOsVersion.sysNameLower.isEmpty())
+        return unixOsVersion.sysNameLower;
+#endif
+    return unknownText();
+}
+
+/*!
+    \since 5.4
+
+    Returns the release version of the operating system kernel. On Windows, it
+    returns the version of the NT or CE kernel. On Unix systems, including
+    Android, BlackBerry and OS X, it returns the same as the \c{uname -r}
+    command would return.
+
+    If the version could not be determined, this function may return an empty
+    string.
+
+    \sa kernelType(), productType(), productVersion(), prettyProductName()
+*/
+QString QSysInfo::kernelVersion()
+{
+#ifdef Q_OS_WINRT
+    // TBD
+    return QString();
+#elif defined(Q_OS_WIN)
+    const OSVERSIONINFO osver = winOsVersion();
+    return QString::number(int(osver.dwMajorVersion)) + QLatin1Char('.') + QString::number(int(osver.dwMinorVersion))
+            + QLatin1Char('.') + QString::number(int(osver.dwBuildNumber));
+#else
+    return detectUnixVersion().sysRelease;
+#endif
+}
+
+
+/*!
+    \since 5.4
+
+    Returns the product name of the operating system this application is
+    running in. If the application is running on some sort of emulation or
+    virtualization layer (such as WINE on a Unix system), this function will
+    inspect the emulation / virtualization layer.
 
     Values returned by this function are stable and will not change over time,
     so applications can rely on the returned value as an identifier, except
     that new OS types may be added over time.
 
-    \b{Android note}: this function returns "android" for Linux systems running
-    Android userspace, notably when using the Bionic library. For all other
-    Linux systems, regardless of C library being used, it returns "linux".
+    \b{Linux and Android note}: this function returns "android" for Linux
+    systems running Android userspace, notably when using the Bionic library.
+    For all other Linux systems, regardless of C library being used, it tries
+    to determine the distribution name and returns that. If determining the
+    distribution name failed, it returns "unknown".
 
     \b{BlackBerry note}: this function returns "blackberry" for QNX systems
     running the BlackBerry userspace, but "qnx" for all other QNX-based
@@ -2369,13 +2424,18 @@ static QString unknownText()
     systems, "ios" for iOS systems and "darwin" in case the system could not be
     determined.
 
-    \b{FreeBSD note}: this function returns "freebsd" for systems running the
-    FreeBSD kernel, regardless of whether the userspace runs the traditional
-    BSD code or whether it's the GNU system (Debian GNU/kFreeBSD).
+    \b{FreeBSD note}: this function returns "debian" for Debian/kFreeBSD and
+    "unknown" otherwise.
 
-    \sa QFileSelector, prettyOsName()
+    \b{Windows note}: this function returns "winphone" for builds for Windows
+    Phone, "winrt" for WinRT builds, "wince" for Windows CE and Embedded
+    Compact builds, and "windows" for normal desktop builds.
+
+    For other Unix-type systems, this function usually returns "unknown".
+
+    \sa QFileSelector, kernelType(), kernelVersion(), productVersion(), prettyProductName()
 */
-QString QSysInfo::osType()
+QString QSysInfo::productType()
 {
     // similar, but not identical to QFileSelectorPrivate::platformSelectors
 #if defined(Q_OS_WINPHONE)
@@ -2394,8 +2454,6 @@ QString QSysInfo::osType()
 
 #elif defined(Q_OS_ANDROID)
     return QStringLiteral("android");
-#elif defined(Q_OS_LINUX)
-    return QStringLiteral("linux");
 
 #elif defined(Q_OS_IOS)
     return QStringLiteral("ios");
@@ -2404,12 +2462,10 @@ QString QSysInfo::osType()
 #elif defined(Q_OS_DARWIN)
     return QStringLiteral("darwin");
 
-#elif defined(Q_OS_FREEBSD_KERNEL)
-    return QStringLiteral("freebsd");
-#elif defined(Q_OS_UNIX)
+#elif defined(USE_ETC_OS_RELEASE) // Q_OS_UNIX
     QUnixOSVersion unixOsVersion = detectUnixVersion();
-    if (!unixOsVersion.sysNameLower.isEmpty())
-        return unixOsVersion.sysNameLower;
+    if (!unixOsVersion.productType.isEmpty())
+        return unixOsVersion.productType;
 #endif
     return unknownText();
 }
@@ -2417,19 +2473,28 @@ QString QSysInfo::osType()
 /*!
     \since 5.4
 
-    Returns the version of the host operating system in string form. For both
-    OS X and iOS systems, this returns just the main OS version, such as "7.1",
-    "10.6" and "10.7". For Windows systems, this returns the same types
-    detected by winVersion(), without the word "Windows". For Linux-based
-    systems, it will try to determine the Linux distribution and version.
+    Returns the product version of the operating system in string form. If the
+    version could not be determined, this function returns "unknown".
 
-    If the version could not be determined, this function returns "unknown" for
-    Windows and a combination of the osType() and osKernelVersion() for Unix
-    systems.
+    It will return the Android, BlackBerry, iOS, OS X, Windows full-product
+    versions on those systems. In particular, on OS X, iOS and Windows, the
+    returned string is similar to the macVersion() or windowsVersion() enums.
 
-    \sa prettyOsName(), osKernelVersion()
+    On Linux systems, it will try to determine the distribution version and will
+    return that. This is also done on Debian/kFreeBSD, so this function will
+    return Debian version in that case.
+
+    In all other Unix-type systems, this function always returns "unknown".
+
+    \note The version string returned from this function is only guaranteed to
+    be orderable on Android, BlackBerry, OS X and iOS. On Windows, some Windows
+    versions are text ("XP" and "Vista", for example). On Linux, the version of
+    the distribution may jump unexpectedly, please refer to the distribution's
+    documentation for versioning practices.
+
+    \sa kernelType(), kernelVersion(), productType(), prettyProductName()
 */
-QString QSysInfo::osVersion()
+QString QSysInfo::productVersion()
 {
 #if defined(Q_OS_IOS)
     int major = (int(MacintoshVersion) >> 4) & 0xf;
@@ -2466,10 +2531,10 @@ QString QSysInfo::osVersion()
         deviceinfo_free_details(&deviceInfo);
         return bbVersion;
     }
-#elif defined(Q_OS_UNIX)
+#elif defined(USE_ETC_OS_RELEASE) // Q_OS_UNIX
     QUnixOSVersion unixOsVersion = detectUnixVersion();
-    if (!unixOsVersion.versionIdentifier.isEmpty())
-        return unixOsVersion.versionIdentifier;
+    if (!unixOsVersion.productVersion.isEmpty())
+        return unixOsVersion.productVersion;
 #endif
 
     // fallback
@@ -2479,17 +2544,21 @@ QString QSysInfo::osVersion()
 /*!
     \since 5.4
 
-    Returns a prettier form of osVersion(), containing other information like
-    the operating system type, codenames and other information. The result of
-    this function is suitable for displaying to the user, but not for long-term
-    storage, as the string may change with updates to Qt.
+    Returns a prettier form of productType() and productVersion(), containing
+    other tokens like the operating system type, codenames and other
+    information. The result of this function is suitable for displaying to the
+    user, but not for long-term storage, as the string may change with updates
+    to Qt.
 
-    \sa osType(), osVersion()
+    If productType() is "unknown", this function will instead use the
+    kernelType() and kernelVersion() functions.
+
+    \sa kernelType(), kernelVersion(), productType(), productVersion()
 */
-QString QSysInfo::prettyOsName()
+QString QSysInfo::prettyProductName()
 {
 #if defined(Q_OS_IOS)
-    return QLatin1String("iOS ") + osVersion();
+    return QLatin1String("iOS ") + productVersion();
 #elif defined(Q_OS_OSX)
     // get the known codenames
     const char *basename = 0;
@@ -2523,55 +2592,28 @@ QString QSysInfo::prettyOsName()
         break;
     }
     if (basename)
-        return QLatin1String(basename) + osVersion() + QLatin1Char(')');
+        return QLatin1String(basename) + productVersion() + QLatin1Char(')');
 
     // a future version of OS X
-    return QLatin1String("OS X ") + osVersion();
+    return QLatin1String("OS X ") + productVersion();
 #elif defined(Q_OS_WINPHONE)
     return QLatin1String("Windows Phone ") + QLatin1String(winVer_helper());
 #elif defined(Q_OS_WIN)
     return QLatin1String("Windows ") + QLatin1String(winVer_helper());
 #elif defined(Q_OS_ANDROID)
-    return QLatin1String("Android ") + osVersion();
+    return QLatin1String("Android ") + productVersion();
 #elif defined(Q_OS_BLACKBERRY)
-    return QLatin1String("BlackBerry ") + osVersion();
+    return QLatin1String("BlackBerry ") + productVersion();
 #elif defined(Q_OS_UNIX)
     QUnixOSVersion unixOsVersion = detectUnixVersion();
-    if (unixOsVersion.versionText.isEmpty())
-        return unixOsVersion.sysName;
-    else
-        return unixOsVersion.sysName + QLatin1String(" (") + unixOsVersion.versionText + QLatin1Char(')');
-#else
+#  ifdef USE_ETC_OS_RELEASE
+    if (!unixOsVersion.prettyName.isEmpty())
+        return unixOsVersion.prettyName;
+#  endif
+    if (!unixOsVersion.sysName.isEmpty())
+        return unixOsVersion.sysName + QLatin1Char(' ') + unixOsVersion.sysRelease;
+#endif
     return unknownText();
-#endif
-}
-
-/*!
-    \since 5.4
-
-    Returns the release version of the operating system. On Windows, it returns
-    the version of the kernel, which does not match the version number of the
-    OS (e.g., Windows 8 has NT kernel version 6.2). On Unix systems, including
-    Android, BlackBerry and OS X, it returns the same as the \c{uname -r}
-    command would return.
-
-    If the version could not be determined, this function may return an empty
-    string.
-
-    \sa osVersion(), prettyOsName()
-*/
-QString QSysInfo::osKernelVersion()
-{
-#ifdef Q_OS_WINRT
-    // TBD
-    return QString();
-#elif defined(Q_OS_WIN)
-    const OSVERSIONINFO osver = winOsVersion();
-    return QString::number(int(osver.dwMajorVersion)) + QLatin1Char('.') + QString::number(int(osver.dwMinorVersion))
-            + QLatin1Char('.') + QString::number(int(osver.dwBuildNumber));
-#else
-    return detectUnixVersion().sysRelease;
-#endif
 }
 
 /*!

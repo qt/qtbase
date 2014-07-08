@@ -169,10 +169,12 @@ public:
     static QString buildCpuArchitecture();
     static QString currentCpuArchitecture();
     static QString buildAbi();
-    static QString osType();
-    static QString osKernelVersion();
-    static QString osVersion();
-    static QString prettyOsName();
+
+    static QString kernelType();
+    static QString kernelVersion();
+    static QString productType();
+    static QString productVersion();
+    static QString prettyProductName();
 };
 
 QT_END_NAMESPACE
