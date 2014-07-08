@@ -1334,14 +1334,13 @@ void HtmlGenerator::generateQmlTypePage(QmlClassNode* qcn, CodeMarker* marker)
 {
     SubTitleSize subTitleSize = LargeSubTitle;
     QList<Section>::const_iterator s;
-    QString fullTitle = qcn->fullTitle();
-    QString htmlTitle = fullTitle;
+    QString htmlTitle = qcn->fullTitle() + " QML Type";
 
     generateHeader(htmlTitle, qcn, marker);
     QList<Section> sections = marker->qmlSections(qcn, CodeMarker::Summary);
     generateTableOfContents(qcn, marker, &sections);
     marker = CodeMarker::markerForLanguage(QLatin1String("QML"));
-    generateTitle(fullTitle, Text() << qcn->subTitle(), subTitleSize, qcn, marker);
+    generateTitle(htmlTitle, Text() << qcn->subTitle(), subTitleSize, qcn, marker);
     generateBrief(qcn, marker);
     generateQmlRequisites(qcn, marker);
 
@@ -1396,13 +1395,12 @@ void HtmlGenerator::generateQmlBasicTypePage(QmlBasicTypeNode* qbtn, CodeMarker*
 {
     SubTitleSize subTitleSize = LargeSubTitle;
     QList<Section>::const_iterator s;
-    QString htmlTitle = qbtn->fullTitle();
-    QString fullTitle = "QML Basic Type: " + htmlTitle;
+    QString htmlTitle = qbtn->fullTitle() + " QML Basic Type";
 
     marker = CodeMarker::markerForLanguage(QLatin1String("QML"));
 
     generateHeader(htmlTitle, qbtn, marker);
-    generateTitle(fullTitle,
+    generateTitle(htmlTitle,
                   Text() << qbtn->subTitle(),
                   subTitleSize,
                   qbtn,
@@ -1639,9 +1637,8 @@ void HtmlGenerator::generateCollectionNode(CollectionNode* cn, CodeMarker* marke
     QList<Section> sections;
     QList<Section>::const_iterator s;
     QString fullTitle = cn->fullTitle();
-    QString htmlTitle = fullTitle;
 
-    generateHeader(htmlTitle, cn, marker);
+    generateHeader(fullTitle, cn, marker);
     generateTableOfContents(cn,marker,0);
     generateTitle(fullTitle, Text() << cn->subTitle(), subTitleSize, cn, marker);
 
