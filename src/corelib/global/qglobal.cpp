@@ -2051,23 +2051,14 @@ const QSysInfo::WinVersion QSysInfo::WindowsVersion = QSysInfo::windowsVersion()
 #if defined(Q_OS_UNIX)
 #  if (defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID)) || defined(Q_OS_FREEBSD)
 #    define USE_ETC_OS_RELEASE
-#  endif
 struct QUnixOSVersion
 {
-    // from uname(2)
-    QString sysName;
-    QString sysNameLower;
-    QString sysRelease;
-
-#  ifdef USE_ETC_OS_RELEASE
     // from /etc/os-release
     QString productType;            // $ID
     QString productVersion;         // $VERSION_ID
     QString prettyName;             // $PRETTY_NAME
-#  endif
 };
 
-#  ifdef USE_ETC_OS_RELEASE
 static QString unquote(const char *begin, const char *end)
 {
     if (*begin == '"') {
@@ -2140,27 +2131,6 @@ static bool readEtcOsRelease(QUnixOSVersion &v)
     return true;
 }
 #  endif // USE_ETC_OS_RELEASE
-
-static QUnixOSVersion detectUnixVersion()
-{
-    QUnixOSVersion v;
-    struct utsname u;
-    if (uname(&u) != -1) {
-        v.sysName = QString::fromLatin1(u.sysname);
-        v.sysNameLower = v.sysName.toLower();
-        v.sysRelease = QString::fromLatin1(u.release);
-    } else {
-        v.sysName = QLatin1String("Detection failed");
-        // leave sysNameLower & sysRelease unset
-    }
-
-#  ifdef USE_ETC_OS_RELEASE
-    if (readEtcOsRelease(v))
-        return v;
-#  endif
-
-    return v;
-}
 #endif // Q_OS_UNIX
 
 
@@ -2363,9 +2333,9 @@ QString QSysInfo::kernelType()
 #elif defined(Q_OS_WIN)
     return QStringLiteral("winnt");
 #elif defined(Q_OS_UNIX)
-    QUnixOSVersion unixOsVersion = detectUnixVersion();
-    if (!unixOsVersion.sysNameLower.isEmpty())
-        return unixOsVersion.sysNameLower;
+    struct utsname u;
+    if (uname(&u) == 0)
+        return QString::fromLatin1(u.sysname).toLower();
 #endif
     return unknownText();
 }
@@ -2393,7 +2363,10 @@ QString QSysInfo::kernelVersion()
     return QString::number(int(osver.dwMajorVersion)) + QLatin1Char('.') + QString::number(int(osver.dwMinorVersion))
             + QLatin1Char('.') + QString::number(int(osver.dwBuildNumber));
 #else
-    return detectUnixVersion().sysRelease;
+    struct utsname u;
+    if (uname(&u) == 0)
+        return QString::fromLatin1(u.release);
+    return QString();
 #endif
 }
 
@@ -2463,7 +2436,8 @@ QString QSysInfo::productType()
     return QStringLiteral("darwin");
 
 #elif defined(USE_ETC_OS_RELEASE) // Q_OS_UNIX
-    QUnixOSVersion unixOsVersion = detectUnixVersion();
+    QUnixOSVersion unixOsVersion;
+    readEtcOsRelease(unixOsVersion);
     if (!unixOsVersion.productType.isEmpty())
         return unixOsVersion.productType;
 #endif
@@ -2532,7 +2506,8 @@ QString QSysInfo::productVersion()
         return bbVersion;
     }
 #elif defined(USE_ETC_OS_RELEASE) // Q_OS_UNIX
-    QUnixOSVersion unixOsVersion = detectUnixVersion();
+    QUnixOSVersion unixOsVersion;
+    readEtcOsRelease(unixOsVersion);
     if (!unixOsVersion.productVersion.isEmpty())
         return unixOsVersion.productVersion;
 #endif
@@ -2605,13 +2580,15 @@ QString QSysInfo::prettyProductName()
 #elif defined(Q_OS_BLACKBERRY)
     return QLatin1String("BlackBerry ") + productVersion();
 #elif defined(Q_OS_UNIX)
-    QUnixOSVersion unixOsVersion = detectUnixVersion();
 #  ifdef USE_ETC_OS_RELEASE
+    QUnixOSVersion unixOsVersion;
+    readEtcOsRelease(unixOsVersion);
     if (!unixOsVersion.prettyName.isEmpty())
         return unixOsVersion.prettyName;
 #  endif
-    if (!unixOsVersion.sysName.isEmpty())
-        return unixOsVersion.sysName + QLatin1Char(' ') + unixOsVersion.sysRelease;
+    struct utsname u;
+    if (uname(&u) == 0)
+        return QString::fromLatin1(u.sysname) + QLatin1Char(' ') + QString::fromLatin1(u.release);
 #endif
     return unknownText();
 }
