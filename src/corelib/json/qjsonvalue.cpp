@@ -606,8 +606,10 @@ bool QJsonValue::operator==(const QJsonValue &other) const
     case Array:
         if (base == other.base)
             return true;
-        if (!base || !other.base)
-            return false;
+        if (!base)
+            return !other.base->length;
+        if (!other.base)
+            return !base->length;
         return QJsonArray(d, static_cast<QJsonPrivate::Array *>(base))
                 == QJsonArray(other.d, static_cast<QJsonPrivate::Array *>(other.base));
     case Object:

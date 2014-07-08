@@ -139,6 +139,8 @@ private Q_SLOTS:
     void valueEquals();
     void objectEquals_data();
     void objectEquals();
+    void arrayEquals_data();
+    void arrayEquals();
 
     void bom();
     void nesting();
@@ -2442,6 +2444,59 @@ void tst_QtJson::objectEquals()
 {
     QFETCH(QJsonObject, left);
     QFETCH(QJsonObject, right);
+    QFETCH(bool, result);
+
+    QCOMPARE(left == right, result);
+    QCOMPARE(right == left, result);
+
+    // invariants checks
+    QCOMPARE(left, left);
+    QCOMPARE(right, right);
+    QCOMPARE(left != right, !result);
+    QCOMPARE(right != left, !result);
+
+    // The same but from QJsonValue perspective
+    QCOMPARE(QJsonValue(left) == QJsonValue(right), result);
+    QCOMPARE(QJsonValue(left) != QJsonValue(right), !result);
+    QCOMPARE(QJsonValue(right) == QJsonValue(left), result);
+    QCOMPARE(QJsonValue(right) != QJsonValue(left), !result);
+}
+
+void tst_QtJson::arrayEquals_data()
+{
+    QTest::addColumn<QJsonArray>("left");
+    QTest::addColumn<QJsonArray>("right");
+    QTest::addColumn<bool>("result");
+
+    QTest::newRow("two defaults") << QJsonArray() << QJsonArray() << true;
+
+    QJsonArray array1;
+    array1.append(1);
+    QJsonArray array2;
+    array2.append(2111);
+    array2[0] = 1;
+    QJsonArray array3;
+    array3.insert(0, 1);
+    array3.insert(1, 2);
+
+    QTest::newRow("the same array (1 vs 2)") << array1 << array2 << true;
+    QTest::newRow("the same array (3 vs 3)") << array3 << array3 << true;
+    QTest::newRow("different arrays (2 vs 3)") << array2 << array3 << false;
+    QTest::newRow("array vs default") << array1 << QJsonArray() << false;
+
+    QJsonArray empty;
+    empty.append(1);
+    empty.takeAt(0);
+    QTest::newRow("default vs empty") << QJsonArray() << empty << true;
+    QTest::newRow("empty vs default") << empty << QJsonArray() << true;
+    QTest::newRow("empty vs empty") << empty << empty << true;
+    QTest::newRow("array vs empty") << array1 << empty << false;
+}
+
+void tst_QtJson::arrayEquals()
+{
+    QFETCH(QJsonArray, left);
+    QFETCH(QJsonArray, right);
     QFETCH(bool, result);
 
     QCOMPARE(left == right, result);
