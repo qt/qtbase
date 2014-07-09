@@ -39,6 +39,8 @@
 **
 ****************************************************************************/
 
+#define QT_NO_URL_CAST_FROM_STRING
+
 #include <qvariant.h>
 #include <private/qwidgetitemdata_p.h>
 #include "qfiledialog.h"

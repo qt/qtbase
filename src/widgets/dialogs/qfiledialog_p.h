@@ -369,7 +369,7 @@ inline QUrl QFileDialogPrivate::directory_sys() const
 {
     if (QPlatformFileDialogHelper *helper = platformFileDialogHelper())
         return helper->directory();
-    return QString();
+    return QUrl();
 }
 
 inline void QFileDialogPrivate::selectFile_sys(const QUrl &filename)
