@@ -2028,26 +2028,6 @@ QString QFileDialog::labelText(DialogLabel label) const
     return QString();
 }
 
-/*
-    For the native file dialogs
-*/
-
-#if defined(Q_WS_WIN)
-extern QString qt_win_get_open_file_name(const QFileDialogArgs &args,
-                                         QString *initialDirectory,
-                                         QString *selectedFilter);
-
-extern QString qt_win_get_save_file_name(const QFileDialogArgs &args,
-                                         QString *initialDirectory,
-                                         QString *selectedFilter);
-
-extern QStringList qt_win_get_open_file_names(const QFileDialogArgs &args,
-                                              QString *initialDirectory,
-                                              QString *selectedFilter);
-
-extern QString qt_win_get_existing_directory(const QFileDialogArgs &args);
-#endif
-
 /*!
     This is a convenience static function that returns an existing file
     selected by the user. If the user presses Cancel, it returns a null string.
@@ -2110,13 +2090,7 @@ QString QFileDialog::getOpenFileName(QWidget *parent,
     args.filter = filter;
     args.mode = ExistingFile;
     args.options = options;
-#if defined(Q_WS_WIN)
-    if (QGuiApplicationPrivate::platformIntegration()->usePlatformNativeDialog() && !(args.options & DontUseNativeDialog)) {
-        return qt_win_get_open_file_name(args, &(args.directory), selectedFilter);
-    }
-#endif
 
-    // create a qt dialog
     QFileDialog dialog(args);
     if (selectedFilter && !selectedFilter->isEmpty())
         dialog.selectNameFilter(*selectedFilter);
@@ -2239,13 +2213,6 @@ QStringList QFileDialog::getOpenFileNames(QWidget *parent,
     args.mode = ExistingFiles;
     args.options = options;
 
-#if defined(Q_WS_WIN)
-    if (QGuiApplicationPrivate::platformIntegration()->usePlatformNativeDialog() && !(args.options & DontUseNativeDialog)) {
-        return qt_win_get_open_file_names(args, &(args.directory), selectedFilter);
-    }
-#endif
-
-    // create a qt dialog
     QFileDialog dialog(args);
     if (selectedFilter && !selectedFilter->isEmpty())
         dialog.selectNameFilter(*selectedFilter);
@@ -2371,13 +2338,6 @@ QString QFileDialog::getSaveFileName(QWidget *parent,
     args.mode = AnyFile;
     args.options = options;
 
-#if defined(Q_WS_WIN)
-    if (QGuiApplicationPrivate::platformIntegration()->usePlatformNativeDialog() && !(args.options & DontUseNativeDialog)) {
-        return qt_win_get_save_file_name(args, &(args.directory), selectedFilter);
-    }
-#endif
-
-    // create a qt dialog
     QFileDialog dialog(args);
     dialog.setAcceptMode(AcceptSave);
     if (selectedFilter && !selectedFilter->isEmpty())
@@ -2483,17 +2443,6 @@ QString QFileDialog::getExistingDirectory(QWidget *parent,
     args.mode = (options & ShowDirsOnly ? DirectoryOnly : Directory);
     args.options = options;
 
-#if defined(Q_WS_WIN)
-    if (QGuiApplicationPrivate::platformIntegration()->usePlatformNativeDialog() && !(args.options & DontUseNativeDialog) && (options & ShowDirsOnly)
-#if defined(Q_OS_WINCE)
-        && qt_priv_ptr_valid
-#endif
-        ) {
-        return qt_win_get_existing_directory(args);
-    }
-#endif
-
-    // create a qt dialog
     QFileDialog dialog(args);
     if (dialog.exec() == QDialog::Accepted) {
         return dialog.selectedFiles().value(0);
