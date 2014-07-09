@@ -663,7 +663,7 @@ void QFontEngineMultiQPA::loadEngine(int at)
     request.family = fallbackFamilies.at(at-1);
     engines[at] = QFontDatabase::findFont(script,
                                           /*fontprivate = */0,
-                                          request, /*multi = */false);
+                                          request, /*multi = */false, true);
     Q_ASSERT(engines[at]);
     engines[at]->ref.ref();
     engines[at]->fontDef = request;
