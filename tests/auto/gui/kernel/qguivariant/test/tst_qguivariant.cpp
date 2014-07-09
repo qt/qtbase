@@ -145,18 +145,16 @@ void tst_QGuiVariant::constructor_invalid()
 
     QFETCH(uint, typeId);
     {
-        MessageHandlerInvalidType msg;
+        QTest::ignoreMessage(QtWarningMsg, QRegularExpression("^Trying to construct an instance of an invalid type, type id:"));
         QVariant variant(static_cast<QVariant::Type>(typeId));
         QVERIFY(!variant.isValid());
         QVERIFY(variant.userType() == QMetaType::UnknownType);
-        QVERIFY(msg.ok);
     }
     {
-        MessageHandlerInvalidType msg;
+        QTest::ignoreMessage(QtWarningMsg, QRegularExpression("^Trying to construct an instance of an invalid type, type id:"));
         QVariant variant(typeId, /* copy */ 0);
         QVERIFY(!variant.isValid());
         QVERIFY(variant.userType() == QMetaType::UnknownType);
-        QVERIFY(msg.ok);
     }
 }
 

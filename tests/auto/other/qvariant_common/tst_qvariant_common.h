@@ -44,33 +44,6 @@
 
 #include <QString>
 
-struct MessageHandlerInvalidType
-{
-    MessageHandlerInvalidType()
-        : oldMsgHandler(qInstallMessageHandler(handler))
-    {
-        ok = false;
-    }
-
-    ~MessageHandlerInvalidType()
-    {
-        qInstallMessageHandler(oldMsgHandler);
-    }
-
-    QtMessageHandler oldMsgHandler;
-
-    static void handler(QtMsgType type, const QMessageLogContext & /*ctxt*/, const QString &msg)
-    {
-        Q_UNUSED(type);
-        // uint(-1) can be platform dependent so we check only beginning of the message.
-        ok = msg.startsWith("Trying to construct an instance of an invalid type, type id:");
-        QVERIFY2(ok, (QString::fromLatin1("Message is not started correctly: '") + msg + '\'').toLatin1().constData());
-    }
-    static bool ok;
-};
-bool MessageHandlerInvalidType::ok;
-
-
 class MessageHandler {
 public:
     MessageHandler(const int typeId, QtMessageHandler msgHandler = handler)
