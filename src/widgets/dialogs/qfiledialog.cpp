@@ -2736,7 +2736,7 @@ void QFileDialogPrivate::createWidgets()
     qFileDialogUi->setupUi(q);
 
     QList<QUrl> initialBookmarks;
-    initialBookmarks << QUrl::fromLocalFile(QLatin1String(""))
+    initialBookmarks << QUrl(QLatin1String("file:"))
                      << QUrl::fromLocalFile(QDir::homePath());
     qFileDialogUi->sidebar->setModelAndUrls(model, initialBookmarks);
     QFileDialog::connect(qFileDialogUi->sidebar, SIGNAL(goToUrl(QUrl)),
@@ -3713,7 +3713,7 @@ void QFileDialogComboBox::showPopup()
         idx = idx.parent();
     }
     // add "my computer"
-    list.append(QUrl::fromLocalFile(QLatin1String("")));
+    list.append(QUrl(QLatin1String("file:")));
     urlModel->addUrls(list, 0);
     idx = model()->index(model()->rowCount() - 1, 0);
 

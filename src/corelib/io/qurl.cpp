@@ -3738,11 +3738,15 @@ bool QUrl::isDetached() const
     "//servername/path/to/file.txt". Note that only certain platforms can
     actually open this file using QFile::open().
 
+    An empty \a localFile leads to an empty URL (since Qt 5.4).
+
     \sa toLocalFile(), isLocalFile(), QDir::toNativeSeparators()
 */
 QUrl QUrl::fromLocalFile(const QString &localFile)
 {
     QUrl url;
+    if (localFile.isEmpty())
+        return url;
     url.setScheme(fileScheme());
     QString deslashified = QDir::fromNativeSeparators(localFile);
 

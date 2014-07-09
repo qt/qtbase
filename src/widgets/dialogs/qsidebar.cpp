@@ -249,7 +249,8 @@ void QUrlModel::addUrls(const QList<QUrl> &list, int row, bool move)
             continue;
         //this makes sure the url is clean
         const QString cleanUrl = QDir::cleanPath(url.toLocalFile());
-        url = QUrl::fromLocalFile(cleanUrl);
+        if (!cleanUrl.isEmpty())
+            url = QUrl::fromLocalFile(cleanUrl);
 
         for (int j = 0; move && j < rowCount(); ++j) {
             QString local = index(j, 0).data(UrlRole).toUrl().toLocalFile();

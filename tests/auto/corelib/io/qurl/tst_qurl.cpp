@@ -237,6 +237,11 @@ void tst_QUrl::constructing()
     QVERIFY(url == url);
     QVERIFY(!(url < url));
 
+    QUrl fromLocal = QUrl::fromLocalFile(QString());
+    QVERIFY(!fromLocal.isValid());
+    QVERIFY(fromLocal.isEmpty());
+    QCOMPARE(fromLocal.toString(), QString());
+
     QUrl justHost("qt-project.org");
     QVERIFY(!justHost.isEmpty());
     QVERIFY(justHost.host().isEmpty());
