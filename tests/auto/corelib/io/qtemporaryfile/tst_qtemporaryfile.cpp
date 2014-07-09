@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -446,13 +446,15 @@ void tst_QTemporaryFile::rename()
 void tst_QTemporaryFile::renameFdLeak()
 {
 #ifdef Q_OS_UNIX
+    const QByteArray sourceFile = QFile::encodeName(QFINDTESTDATA(__FILE__));
+    QVERIFY(!sourceFile.isEmpty());
     // Test this on Unix only
 
     // Open a bunch of files to force the fd count to go up
     static const int count = 10;
     int bunch_of_files[count];
     for (int i = 0; i < count; ++i) {
-        bunch_of_files[i] = ::open(qPrintable(QFINDTESTDATA("tst_qtemporaryfile.cpp")), O_RDONLY);
+        bunch_of_files[i] = ::open(sourceFile.constData(), O_RDONLY);
         QVERIFY(bunch_of_files[i] != -1);
     }
 
@@ -647,8 +649,10 @@ void tst_QTemporaryFile::createNativeFile_data()
     QTest::addColumn<bool>("valid");
     QTest::addColumn<QByteArray>("content");
 
-    QTest::newRow("nativeFile") << QFINDTESTDATA("resources/test.txt") << (qint64)-1 << false << QByteArray();
-    QTest::newRow("nativeFileWithPos") << QFINDTESTDATA("resources/test.txt") << (qint64)5 << false << QByteArray();
+    const QString nativeFilePath = QFINDTESTDATA("resources/test.txt");
+
+    QTest::newRow("nativeFile") << nativeFilePath << (qint64)-1 << false << QByteArray();
+    QTest::newRow("nativeFileWithPos") << nativeFilePath << (qint64)5 << false << QByteArray();
     QTest::newRow("resourceFile") << ":/resources/test.txt" << (qint64)-1 << true << QByteArray("This is a test");
     QTest::newRow("resourceFileWithPos") << ":/resources/test.txt" << (qint64)5 << true << QByteArray("This is a test");
 }

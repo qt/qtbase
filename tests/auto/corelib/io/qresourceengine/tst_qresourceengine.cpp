@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -47,6 +47,9 @@ class tst_QResourceEngine: public QObject
 {
     Q_OBJECT
 
+public:
+    tst_QResourceEngine() : m_runtimeResourceRcc(QFINDTESTDATA("runtime_resource.rcc")) {}
+
 private slots:
     void initTestCase();
     void cleanupTestCase();
@@ -59,20 +62,24 @@ private slots:
     void searchPath();
     void doubleSlashInRoot();
     void setLocale();
+
+private:
+    const QString m_runtimeResourceRcc;
 };
 
 
 void tst_QResourceEngine::initTestCase()
 {
-    QVERIFY(QResource::registerResource(QFINDTESTDATA("runtime_resource.rcc")));
-    QVERIFY(QResource::registerResource(QFINDTESTDATA("runtime_resource.rcc"), "/secondary_root/"));
+    QVERIFY(!m_runtimeResourceRcc.isEmpty());
+    QVERIFY(QResource::registerResource(m_runtimeResourceRcc));
+    QVERIFY(QResource::registerResource(m_runtimeResourceRcc, "/secondary_root/"));
 }
 
 void tst_QResourceEngine::cleanupTestCase()
 {
     // make sure we don't leak memory
-    QVERIFY(QResource::unregisterResource(QFINDTESTDATA("runtime_resource.rcc")));
-    QVERIFY(QResource::unregisterResource(QFINDTESTDATA("runtime_resource.rcc"), "/secondary_root/"));
+    QVERIFY(QResource::unregisterResource(m_runtimeResourceRcc));
+    QVERIFY(QResource::unregisterResource(m_runtimeResourceRcc, "/secondary_root/"));
 }
 
 void tst_QResourceEngine::checkStructure_data()

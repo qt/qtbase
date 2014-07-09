@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -114,7 +114,7 @@ private slots:
     void uniqueKey();
 
 protected:
-    QString helperBinary();
+    static QString helperBinary();
     int remove(const QString &key);
 
     QString rememberKey(const QString &key)
@@ -131,10 +131,14 @@ protected:
     QStringList keys;
     QList<QSharedMemory*> jail;
     QSharedMemory *existingSharedMemory;
+
+private:
+    const QString m_helperBinary;
 };
 
-tst_QSharedMemory::tst_QSharedMemory() :
-    existingSharedMemory(0)
+tst_QSharedMemory::tst_QSharedMemory()
+    : existingSharedMemory(0)
+    , m_helperBinary(tst_QSharedMemory::helperBinary())
 {
 }
 
@@ -144,7 +148,7 @@ tst_QSharedMemory::~tst_QSharedMemory()
 
 void tst_QSharedMemory::initTestCase()
 {
-    QVERIFY2(!helperBinary().isEmpty(), "Could not find helper binary");
+    QVERIFY2(!m_helperBinary.isEmpty(), "Could not find helper binary");
 }
 
 void tst_QSharedMemory::init()
@@ -455,7 +459,7 @@ void tst_QSharedMemory::readOnly()
     rememberKey("readonly_segfault");
     // ### on windows disable the popup somehow
     QProcess p;
-    p.start(helperBinary(), QStringList("readonly_segfault"));
+    p.start(m_helperBinary, QStringList("readonly_segfault"));
     p.setProcessChannelMode(QProcess::ForwardedChannels);
     p.waitForFinished();
     QCOMPARE(p.error(), QProcess::Crashed);
@@ -753,7 +757,7 @@ void tst_QSharedMemory::simpleProcessProducerConsumer()
     rememberKey("market");
 
     QProcess producer;
-    producer.start(helperBinary(), QStringList("producer"));
+    producer.start(m_helperBinary, QStringList("producer"));
     QVERIFY2(producer.waitForStarted(), "Could not start helper binary");
     QVERIFY2(producer.waitForReadyRead(), "Helper process failed to create shared memory segment: " +
              producer.readAllStandardError());
@@ -764,7 +768,7 @@ void tst_QSharedMemory::simpleProcessProducerConsumer()
     for (int i = 0; i < processes; ++i) {
         QProcess *p = new QProcess;
         p->setProcessChannelMode(QProcess::ForwardedChannels);
-        p->start(helperBinary(), consumerArguments);
+        p->start(m_helperBinary, consumerArguments);
         if (p->waitForStarted(2000))
             consumers.append(p);
         else

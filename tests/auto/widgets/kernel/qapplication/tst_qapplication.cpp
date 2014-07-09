@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -916,10 +916,10 @@ bool isPathListIncluded(const QStringList &l, const QStringList &r)
 #define QT_TST_QAPP_DEBUG
 void tst_QApplication::libraryPaths()
 {
-    {
 #ifndef Q_OS_WINCE
-        QString testDir = QFileInfo(QFINDTESTDATA("test/test.pro")).absolutePath();
-#else
+        const QString testDir = QFileInfo(QFINDTESTDATA("test/test.pro")).absolutePath();
+        QVERIFY(!testDir.isEmpty());
+#else // !Q_OS_WINCE
         // On Windows CE we need QApplication object to have valid
         // current Path. Therefore we need to identify it ourselves
         // here for the test.
@@ -927,8 +927,9 @@ void tst_QApplication::libraryPaths()
         wchar_t module_name[MAX_PATH];
         GetModuleFileName(0, module_name, MAX_PATH);
         filePath = QString::fromWCharArray(module_name);
-        QString testDir = filePath.path() + "/test";
-#endif
+        const QString testDir = filePath.path() + "/test";
+#endif // Q_OS_WINCE
+    {
         QApplication::setLibraryPaths(QStringList() << testDir);
         QCOMPARE(QApplication::libraryPaths(), (QStringList() << testDir));
 
@@ -964,8 +965,7 @@ void tst_QApplication::libraryPaths()
                             "\nexpected:\n - " + expected.join("\n - ")));
 
         // setting the library paths overrides everything
-        QString testDir = QFileInfo(QFINDTESTDATA("test/test.pro")).absolutePath();
-        QApplication::setLibraryPaths(QStringList() << testDir);
+         QApplication::setLibraryPaths(QStringList() << testDir);
         QVERIFY2(isPathListIncluded(QApplication::libraryPaths(), (QStringList() << testDir)),
                  qPrintable("actual:\n - " + QApplication::libraryPaths().join("\n - ") +
                             "\nexpected:\n - " + testDir));
@@ -987,7 +987,6 @@ void tst_QApplication::libraryPaths()
         qDebug() << "After adding plugins path:" << QApplication::libraryPaths();
 #endif
         QCOMPARE(QApplication::libraryPaths().count(), count);
-        QString testDir = QFileInfo(QFINDTESTDATA("test/test.pro")).absolutePath();
         QApplication::addLibraryPath(testDir);
         QCOMPARE(QApplication::libraryPaths().count(), count + 1);
 

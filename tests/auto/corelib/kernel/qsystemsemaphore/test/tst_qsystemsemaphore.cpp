@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -80,17 +80,20 @@ private slots:
 #endif // QT_NO_PROCESS
 
 private:
-    QString helperBinary();
+    static QString helperBinary();
     QSystemSemaphore *existingLock;
+
+    const QString m_helperBinary;
 };
 
 tst_QSystemSemaphore::tst_QSystemSemaphore()
+    : m_helperBinary(helperBinary())
 {
 }
 
 void tst_QSystemSemaphore::initTestCase()
 {
-  QVERIFY2(!helperBinary().isEmpty(), "Could not find helper binary");
+  QVERIFY2(!m_helperBinary.isEmpty(), "Could not find helper binary");
 }
 
 void tst_QSystemSemaphore::init()
@@ -193,12 +196,12 @@ void tst_QSystemSemaphore::basicProcesses()
     QProcess release;
     release.setProcessChannelMode(QProcess::ForwardedChannels);
 
-    acquire.start(helperBinary(), QStringList("acquire"));
+    acquire.start(m_helperBinary, QStringList("acquire"));
     QVERIFY2(acquire.waitForStarted(), "Could not start helper binary");
     acquire.waitForFinished(HELPERWAITTIME);
     QVERIFY(acquire.state() == QProcess::Running);
     acquire.kill();
-    release.start(helperBinary(), QStringList("release"));
+    release.start(m_helperBinary, QStringList("release"));
     QVERIFY2(release.waitForStarted(), "Could not start helper binary");
     acquire.waitForFinished(HELPERWAITTIME);
     release.waitForFinished(HELPERWAITTIME);
@@ -227,7 +230,7 @@ void tst_QSystemSemaphore::processes()
         QProcess *p = new QProcess;
         p->setProcessChannelMode(QProcess::ForwardedChannels);
         consumers.append(p);
-        p->start(helperBinary(), QStringList(scripts.at(i)));
+        p->start(m_helperBinary, QStringList(scripts.at(i)));
     }
 
     while (!consumers.isEmpty()) {
@@ -247,14 +250,14 @@ void tst_QSystemSemaphore::undo()
     QStringList acquireArguments = QStringList("acquire");
     QProcess acquire;
     acquire.setProcessChannelMode(QProcess::ForwardedChannels);
-    acquire.start(helperBinary(), acquireArguments);
+    acquire.start(m_helperBinary, acquireArguments);
     QVERIFY2(acquire.waitForStarted(), "Could not start helper binary");
     acquire.waitForFinished(HELPERWAITTIME);
     QVERIFY(acquire.state()== QProcess::NotRunning);
 
     // At process exit the kernel should auto undo
 
-    acquire.start(helperBinary(), acquireArguments);
+    acquire.start(m_helperBinary, acquireArguments);
     QVERIFY2(acquire.waitForStarted(), "Could not start helper binary");
     acquire.waitForFinished(HELPERWAITTIME);
     QVERIFY(acquire.state()== QProcess::NotRunning);
@@ -273,18 +276,18 @@ void tst_QSystemSemaphore::initialValue()
     QProcess release;
     release.setProcessChannelMode(QProcess::ForwardedChannels);
 
-    acquire.start(helperBinary(), acquireArguments);
+    acquire.start(m_helperBinary, acquireArguments);
     QVERIFY2(acquire.waitForStarted(), "Could not start helper binary");
     acquire.waitForFinished(HELPERWAITTIME);
     QVERIFY(acquire.state()== QProcess::NotRunning);
 
-    acquire.start(helperBinary(), acquireArguments << QLatin1String("2"));
+    acquire.start(m_helperBinary, acquireArguments << QLatin1String("2"));
     QVERIFY2(acquire.waitForStarted(), "Could not start helper binary");
     acquire.waitForFinished(HELPERWAITTIME);
     QVERIFY(acquire.state()== QProcess::Running);
     acquire.kill();
 
-    release.start(helperBinary(), releaseArguments);
+    release.start(m_helperBinary, releaseArguments);
     QVERIFY2(release.waitForStarted(), "Could not start helper binary");
     acquire.waitForFinished(HELPERWAITTIME);
     release.waitForFinished(HELPERWAITTIME);

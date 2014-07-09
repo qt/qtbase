@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -62,6 +62,7 @@ public:
     tst_QImage();
 
 private slots:
+    void initTestCase();
     void swap();
     void create();
     void createInvalidXPM();
@@ -178,11 +179,19 @@ private slots:
     void convertToImageFormat();
 
     void cleanupFunctions();
+
+private:
+    const QString m_prefix;
 };
 
 tst_QImage::tst_QImage()
-
+    : m_prefix(QFINDTESTDATA("images/"))
 {
+}
+
+void tst_QImage::initTestCase()
+{
+    QVERIFY(!m_prefix.isEmpty());
 }
 
 void tst_QImage::swap()
@@ -291,21 +300,17 @@ void tst_QImage::formatHandlersInput_data()
     QTest::addColumn<QString>("testFormat");
     QTest::addColumn<QString>("testFile");
 
-    const QString prefix = QFINDTESTDATA("images/");
-    if (prefix.isEmpty())
-        QFAIL("can not find images directory!");
-
     // add a new line here when a file is added
-    QTest::newRow("ICO") << "ICO" << prefix + "image.ico";
-    QTest::newRow("PNG") << "PNG" << prefix + "image.png";
-    QTest::newRow("GIF") << "GIF" << prefix + "image.gif";
-    QTest::newRow("BMP") << "BMP" << prefix + "image.bmp";
-    QTest::newRow("JPEG") << "JPEG" << prefix + "image.jpg";
-    QTest::newRow("PBM") << "PBM" << prefix + "image.pbm";
-    QTest::newRow("PGM") << "PGM" << prefix + "image.pgm";
-    QTest::newRow("PPM") << "PPM" << prefix + "image.ppm";
-    QTest::newRow("XBM") << "XBM" << prefix + "image.xbm";
-    QTest::newRow("XPM") << "XPM" << prefix + "image.xpm";
+    QTest::newRow("ICO") << "ICO" << m_prefix + "image.ico";
+    QTest::newRow("PNG") << "PNG" << m_prefix + "image.png";
+    QTest::newRow("GIF") << "GIF" << m_prefix + "image.gif";
+    QTest::newRow("BMP") << "BMP" << m_prefix + "image.bmp";
+    QTest::newRow("JPEG") << "JPEG" << m_prefix + "image.jpg";
+    QTest::newRow("PBM") << "PBM" << m_prefix + "image.pbm";
+    QTest::newRow("PGM") << "PGM" << m_prefix + "image.pgm";
+    QTest::newRow("PPM") << "PPM" << m_prefix + "image.ppm";
+    QTest::newRow("XBM") << "XBM" << m_prefix + "image.xbm";
+    QTest::newRow("XPM") << "XPM" << m_prefix + "image.xpm";
 }
 
 void tst_QImage::formatHandlersInput()
@@ -1085,10 +1090,7 @@ void tst_QImage::copy()
 
 void tst_QImage::load()
 {
-    const QString prefix = QFINDTESTDATA("images/");
-    if (prefix.isEmpty())
-        QFAIL("can not find images directory!");
-    const QString filePath = prefix + QLatin1String("image.jpg");
+    const QString filePath = m_prefix + QLatin1String("image.jpg");
 
     QImage dest(filePath);
     QVERIFY(!dest.isNull());
@@ -1100,10 +1102,7 @@ void tst_QImage::load()
 
 void tst_QImage::loadFromData()
 {
-    const QString prefix = QFINDTESTDATA("images/");
-    if (prefix.isEmpty())
-        QFAIL("can not find images directory!");
-    const QString filePath = prefix + QLatin1String("image.jpg");
+    const QString filePath = m_prefix + QLatin1String("image.jpg");
 
     QImage original(filePath);
     QVERIFY(!original.isNull());
@@ -1129,10 +1128,7 @@ void tst_QImage::loadFromData()
 #if !defined(QT_NO_DATASTREAM)
 void tst_QImage::loadFromDataStream()
 {
-    const QString prefix = QFINDTESTDATA("images/");
-    if (prefix.isEmpty())
-        QFAIL("can not find images directory!");
-    const QString filePath = prefix + QLatin1String("image.jpg");
+    const QString filePath = m_prefix + QLatin1String("image.jpg");
 
     QImage original(filePath);
     QVERIFY(!original.isNull());

@@ -85,6 +85,7 @@ private:
     QNetworkAccessManager m_manager;
     int m_multipleRequestsCount;
     int m_multipleRepliesFinishedCount;
+    const QString m_rfc3252FilePath;
 
 protected Q_SLOTS:
     void proxyAuthenticationRequired(const QNetworkProxy &, QAuthenticator *authenticator);
@@ -92,6 +93,7 @@ protected Q_SLOTS:
 };
 
 tst_Spdy::tst_Spdy()
+    : m_rfc3252FilePath(QFINDTESTDATA("../qnetworkreply/rfc3252.txt"))
 {
 #if defined(QT_BUILD_INTERNAL) && !defined(QT_NO_SSL) && OPENSSL_VERSION_NUMBER >= 0x1000100fL && !defined(OPENSSL_NO_TLSEXT) && !defined(OPENSSL_NO_NEXTPROTONEG)
     qRegisterMetaType<QNetworkReply *>(); // for QSignalSpy
@@ -110,6 +112,7 @@ tst_Spdy::~tst_Spdy()
 
 void tst_Spdy::initTestCase()
 {
+    QVERIFY(!m_rfc3252FilePath.isEmpty());
     QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
 }
 
@@ -215,7 +218,7 @@ void tst_Spdy::download_data()
 
     QTest::newRow("mediumfile") << QUrl("https://" + QtNetworkSettings::serverName()
                                         + "/qtest/rfc3252.txt")
-                                << QFINDTESTDATA("../qnetworkreply/rfc3252.txt")
+                                << m_rfc3252FilePath
                                 << QNetworkProxy();
 
     QHostInfo hostInfo = QHostInfo::fromName(QtNetworkSettings::serverName());
@@ -223,23 +226,23 @@ void tst_Spdy::download_data()
 
     QTest::newRow("mediumfile-http-proxy") << QUrl("https://" + QtNetworkSettings::serverName()
                                                    + "/qtest/rfc3252.txt")
-                                           << QFINDTESTDATA("../qnetworkreply/rfc3252.txt")
+                                           << m_rfc3252FilePath
                                            << QNetworkProxy(QNetworkProxy::HttpProxy, proxyserver, 3128);
 
     QTest::newRow("mediumfile-http-proxy-auth") << QUrl("https://" + QtNetworkSettings::serverName()
                                                         + "/qtest/rfc3252.txt")
-                                                << QFINDTESTDATA("../qnetworkreply/rfc3252.txt")
+                                                << m_rfc3252FilePath
                                                 << QNetworkProxy(QNetworkProxy::HttpProxy,
                                                                  proxyserver, 3129);
 
     QTest::newRow("mediumfile-socks-proxy") << QUrl("https://" + QtNetworkSettings::serverName()
                                                     + "/qtest/rfc3252.txt")
-                                            << QFINDTESTDATA("../qnetworkreply/rfc3252.txt")
+                                            << m_rfc3252FilePath
                                             << QNetworkProxy(QNetworkProxy::Socks5Proxy, proxyserver, 1080);
 
     QTest::newRow("mediumfile-socks-proxy-auth") << QUrl("https://" + QtNetworkSettings::serverName()
                                                          + "/qtest/rfc3252.txt")
-                                                 << QFINDTESTDATA("../qnetworkreply/rfc3252.txt")
+                                                 << m_rfc3252FilePath
                                                  << QNetworkProxy(QNetworkProxy::Socks5Proxy,
                                                                   proxyserver, 1081);
 
@@ -408,7 +411,7 @@ void tst_Spdy::upload_data()
 
     // 2. test uploading of files
 
-    QFile *file = new QFile(QFINDTESTDATA("../qnetworkreply/rfc3252.txt"));
+    QFile *file = new QFile(m_rfc3252FilePath);
     file->open(QIODevice::ReadOnly);
     QTest::newRow("file-26K") << md5Url << QByteArray() << QByteArray("POST")
                               << static_cast<QObject *>(file)

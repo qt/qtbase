@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -245,6 +245,8 @@ private:
 
     QTemporaryDir tempDir;
     QString testFileName;
+    const QString m_rfc3261FilePath;
+    const QString m_shiftJisFilePath;
 };
 
 void runOnExit()
@@ -256,11 +258,16 @@ Q_DESTRUCTOR_FUNCTION(runOnExit)
 
 tst_QTextStream::tst_QTextStream()
     : tempDir(QDir::tempPath() + "/tst_qtextstream.XXXXXX")
+    , m_rfc3261FilePath(QFINDTESTDATA("rfc3261.txt"))
+    , m_shiftJisFilePath(QFINDTESTDATA("shift-jis.txt"))
 {
 }
 
 void tst_QTextStream::initTestCase()
 {
+    QVERIFY(!m_rfc3261FilePath.isEmpty());
+    QVERIFY(!m_shiftJisFilePath.isEmpty());
+
     testFileName = tempDir.path() + "/testfile";
 
     // chdir into the testdata dir and refer to our helper apps with relative paths
@@ -768,7 +775,7 @@ void tst_QTextStream::generateAllData(bool for_QString)
 // ------------------------------------------------------------------------------
 void tst_QTextStream::readLineUntilNull()
 {
-    QFile file(QFINDTESTDATA("rfc3261.txt"));
+    QFile file(m_rfc3261FilePath);
     QVERIFY(file.open(QFile::ReadOnly));
 
     QTextStream stream(&file);
@@ -887,7 +894,7 @@ void tst_QTextStream::lineCount_data()
     QTest::newRow("buffersize+1 line") << QByteArray(16384, '\n') << 16384;
     QTest::newRow("buffersize+2 line") << QByteArray(16385, '\n') << 16385;
 
-    QFile file(QFINDTESTDATA("rfc3261.txt")); file.open(QFile::ReadOnly);
+    QFile file(m_rfc3261FilePath); file.open(QFile::ReadOnly);
     QTest::newRow("rfc3261") << file.readAll() << 15067;
 }
 
@@ -923,7 +930,7 @@ void tst_QTextStream::performance()
 
         stopWatch.restart();
         int nlines1 = 0;
-        QFile file(QFINDTESTDATA("rfc3261.txt"));
+        QFile file(m_rfc3261FilePath);
         QVERIFY(file.open(QFile::ReadOnly));
 
         while (!file.atEnd()) {
@@ -935,7 +942,7 @@ void tst_QTextStream::performance()
         stopWatch.restart();
 
         int nlines2 = 0;
-        QFile file2(QFINDTESTDATA("rfc3261.txt"));
+        QFile file2(m_rfc3261FilePath);
         QVERIFY(file2.open(QFile::ReadOnly));
 
         QTextStream stream(&file2);
@@ -1155,7 +1162,7 @@ void tst_QTextStream::readNewlines()
 // ------------------------------------------------------------------------------
 void tst_QTextStream::seek()
 {
-    QFile file(QFINDTESTDATA("rfc3261.txt"));
+    QFile file(m_rfc3261FilePath);
     QVERIFY(file.open(QFile::ReadOnly));
 
     QTextStream stream(&file);
@@ -1248,7 +1255,7 @@ void tst_QTextStream::pos()
     }
     {
         // Latin1 device
-        QFile file(QFINDTESTDATA("rfc3261.txt"));
+        QFile file(m_rfc3261FilePath);
         QVERIFY(file.open(QIODevice::ReadOnly));
 
         QTextStream stream(&file);
@@ -1280,7 +1287,7 @@ void tst_QTextStream::pos()
     {
         // Shift-JIS device
         for (int i = 0; i < 2; ++i) {
-            QFile file(QFINDTESTDATA("shift-jis.txt"));
+            QFile file(m_shiftJisFilePath);
             if (i == 0)
                 QVERIFY(file.open(QIODevice::ReadOnly));
             else
