@@ -11,7 +11,7 @@ qtHaveModule(script):!pcre {
     QT += script
 }
 
-exists( /usr/include/boost/regex.hpp ){
+exists($$[QT_SYSROOT]/usr/include/boost/regex.hpp) {
 DEFINES+=HAVE_BOOST
 LIBS+=-lboost_regex
 }
