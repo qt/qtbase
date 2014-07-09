@@ -276,6 +276,8 @@ static inline QTabletEvent::TabletDevice deviceType(const UINT cursorType)
 {
     if (((cursorType & 0x0006) == 0x0002) && ((cursorType & CursorTypeBitMask) != 0x0902))
         return QTabletEvent::Stylus;
+    if (cursorType == 0x4020) // Surface Pro 2 tablet device
+        return QTabletEvent::Stylus;
     switch (cursorType & CursorTypeBitMask) {
     case 0x0802:
         return QTabletEvent::Stylus;
