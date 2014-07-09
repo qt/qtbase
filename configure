@@ -4584,11 +4584,19 @@ if [ "$CFG_DBUS" != "no" ]; then
     if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --atleast-version="$MIN_DBUS_1_VERSION" dbus-1 2>/dev/null; then
         QT_CFLAGS_DBUS=`$PKG_CONFIG --cflags dbus-1 2>/dev/null`
         QT_LIBS_DBUS=`$PKG_CONFIG --libs dbus-1 2>/dev/null`
+    else
+        QT_LIBS_DBUS="-ldbus-1"
     fi
     if compileTest unix/dbus "D-Bus" $QT_CFLAGS_DBUS $QT_LIBS_DBUS; then
         [ "$CFG_DBUS" = "auto" ] && CFG_DBUS=yes
-        QMakeVar set QT_CFLAGS_DBUS "$QT_CFLAGS_DBUS"
         QMakeVar set QT_LIBS_DBUS "$QT_LIBS_DBUS"
+        QMakeVar set QT_CFLAGS_DBUS "$QT_CFLAGS_DBUS"
+        # Try find correct host configuration for dbus tools when cross-compiling
+        if [ "$QT_CROSS_COMPILE" = "yes" ] && env -i PATH="$PATH" \
+                pkg-config --atleast-version="$MIN_DBUS_1_VERSION" dbus-1 2>/dev/null; then
+            QT_CFLAGS_DBUS=`env -i PATH="$PATH" pkg-config --cflags dbus-1 2>/dev/null`
+        fi
+        QMakeVar set QT_HOST_CFLAGS_DBUS "$QT_CFLAGS_DBUS"
     else
         if [ "$CFG_DBUS" = "auto" ]; then
             CFG_DBUS=no
