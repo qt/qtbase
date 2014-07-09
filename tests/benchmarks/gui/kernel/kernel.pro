@@ -1,4 +1,6 @@
 TEMPLATE = subdirs
 qtHaveModule(widgets): SUBDIRS = \
         qapplication \
-        qwidget
+        qwidget \
+        qguimetatype \
+        qguivariant
