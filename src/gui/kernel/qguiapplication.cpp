@@ -1755,7 +1755,7 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
     }
     if (doubleClick) {
         mousePressButton = Qt::NoButton;
-        if (!e->window.isNull()) { // QTBUG-36364, check if window closed in response to press
+        if (!e->window.isNull() || e->nullWindow) { // QTBUG-36364, check if window closed in response to press
             const QEvent::Type doubleClickType = frameStrut ? QEvent::NonClientAreaMouseButtonDblClick : QEvent::MouseButtonDblClick;
             QMouseEvent dblClickEvent(doubleClickType, localPoint, localPoint, globalPoint,
                                       button, buttons, e->modifiers);
