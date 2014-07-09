@@ -210,8 +210,8 @@ public:
     void _q_updateOkButton();
     void _q_currentChanged(const QModelIndex &index);
     void _q_enterDirectory(const QModelIndex &index);
-    void _q_nativeFileSelected(const QUrl &file);
-    void _q_nativeFilesSelected(const QList<QUrl> &files);
+    void _q_emitUrlSelected(const QUrl &file);
+    void _q_emitUrlsSelected(const QList<QUrl> &files);
     void _q_nativeCurrentChanged(const QUrl &file);
     void _q_nativeEnterDirectory(const QUrl &directory);
     void _q_goToDirectory(const QString &);

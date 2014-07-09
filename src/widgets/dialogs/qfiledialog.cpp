@@ -581,8 +581,8 @@ QFileDialogPrivate::~QFileDialogPrivate()
 void QFileDialogPrivate::initHelper(QPlatformDialogHelper *h)
 {
     QFileDialog *d = q_func();
-    QObject::connect(h, SIGNAL(fileSelected(QUrl)), d, SLOT(_q_nativeFileSelected(QUrl)));
-    QObject::connect(h, SIGNAL(filesSelected(QList<QUrl>)), d, SLOT(_q_nativeFilesSelected(QList<QUrl>)));
+    QObject::connect(h, SIGNAL(fileSelected(QUrl)), d, SLOT(_q_emitUrlSelected(QUrl)));
+    QObject::connect(h, SIGNAL(filesSelected(QList<QUrl>)), d, SLOT(_q_emitUrlsSelected(QList<QUrl>)));
     QObject::connect(h, SIGNAL(currentChanged(QUrl)), d, SLOT(_q_nativeCurrentChanged(QUrl)));
     QObject::connect(h, SIGNAL(directoryEntered(QUrl)), d, SLOT(_q_nativeEnterDirectory(QUrl)));
     QObject::connect(h, SIGNAL(filterSelected(QString)), d, SIGNAL(filterSelected(QString)));
@@ -2560,15 +2560,20 @@ void QFileDialog::done(int result)
 void QFileDialog::accept()
 {
     Q_D(QFileDialog);
-    QStringList files = selectedFiles();
-    if (files.isEmpty())
-        return;
     if (!d->usingWidgets()) {
-        d->emitFilesSelected(files);
+        const QList<QUrl> urls = selectedUrls();
+        if (urls.isEmpty())
+            return;
+        d->_q_emitUrlsSelected(urls);
+        if (urls.count() == 1)
+            d->_q_emitUrlSelected(urls.first());
         QDialog::accept();
         return;
     }
 
+    QStringList files = selectedFiles();
+    if (files.isEmpty())
+        return;
     QString lineEditText = d->lineEdit()->text();
     // "hidden feature" type .. and then enter, and it will move up a dir
     // special case for ".."
@@ -3599,7 +3604,7 @@ void QFileDialogPrivate::_q_fileRenamed(const QString &path, const QString oldNa
     }
 }
 
-void QFileDialogPrivate::_q_nativeFileSelected(const QUrl &file)
+void QFileDialogPrivate::_q_emitUrlSelected(const QUrl &file)
 {
     Q_Q(QFileDialog);
     emit q->urlSelected(file);
@@ -3607,7 +3612,7 @@ void QFileDialogPrivate::_q_nativeFileSelected(const QUrl &file)
         emit q->fileSelected(file.toLocalFile());
 }
 
-void QFileDialogPrivate::_q_nativeFilesSelected(const QList<QUrl> &files)
+void QFileDialogPrivate::_q_emitUrlsSelected(const QList<QUrl> &files)
 {
     Q_Q(QFileDialog);
     emit q->urlsSelected(files);
