@@ -100,7 +100,7 @@ struct QFileDialogArgs
 
     QWidget *parent;
     QString caption;
-    QString directory;
+    QUrl directory;
     QString selection;
     QString filter;
     QFileDialog::FileMode mode;
@@ -123,12 +123,12 @@ public:
     void createMenuActions();
     void createWidgets();
 
-    void init(const QString &directory = QString(), const QString &nameFilter = QString(),
+    void init(const QUrl &directory = QUrl(), const QString &nameFilter = QString(),
               const QString &caption = QString());
     bool itemViewKeyboardEvent(QKeyEvent *event);
     QString getEnvironmentVariable(const QString &string);
-    static QString workingDirectory(const QString &path);
-    static QString initialSelection(const QString &path);
+    static QUrl workingDirectory(const QUrl &path);
+    static QString initialSelection(const QUrl &path);
     QStringList typedFiles() const;
     QList<QUrl> userSelectedFiles() const;
     QStringList addDefaultSuffixToFiles(const QStringList filesToFix) const;
@@ -189,7 +189,7 @@ public:
 #endif
     }
 
-    void setLastVisitedDirectory(const QString &dir);
+    void setLastVisitedDirectory(const QUrl &dir);
     void retranslateWindowTitle();
     void retranslateStrings();
     void emitFilesSelected(const QStringList &files);
