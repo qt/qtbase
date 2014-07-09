@@ -4170,11 +4170,17 @@ void tst_QString::arg()
     QCOMPARE( s4.arg(Q_INT64_C(9223372036854775807)), // LLONG_MAX
              QString("[9223372036854775807]") );
 
+    QTest::ignoreMessage(QtWarningMsg, "QString::arg: Argument missing: \"\" , 0");
     QCOMPARE( QString().arg(0), QString() );
+    QTest::ignoreMessage(QtWarningMsg, "QString::arg: Argument missing: \"\" , 0");
     QCOMPARE( QString("").arg(0), QString("") );
+    QTest::ignoreMessage(QtWarningMsg, "QString::arg: Argument missing: \" \" , 0");
     QCOMPARE( QString(" ").arg(0), QString(" ") );
+    QTest::ignoreMessage(QtWarningMsg, "QString::arg: Argument missing: \"%\" , 0");
     QCOMPARE( QString("%").arg(0), QString("%") );
+    QTest::ignoreMessage(QtWarningMsg, "QString::arg: Argument missing: \"%%\" , 0");
     QCOMPARE( QString("%%").arg(0), QString("%%") );
+    QTest::ignoreMessage(QtWarningMsg, "QString::arg: Argument missing: \"%%%\" , 0");
     QCOMPARE( QString("%%%").arg(0), QString("%%%") );
     QCOMPARE( QString("%%%1%%%2").arg("foo").arg("bar"), QString("%%foo%%bar") );
 
