@@ -55,16 +55,17 @@ QOpenGLExtensionMatcher::QOpenGLExtensionMatcher()
 {
     QOpenGLContext *ctx = QOpenGLContext::currentContext();
     QOpenGLFunctions *funcs = ctx->functions();
-    const char *extensionStr = reinterpret_cast<const char *>(funcs->glGetString(GL_EXTENSIONS));
+    const char *extensionStr = 0;
+
+    if (ctx->isOpenGLES() || ctx->format().majorVersion() < 3)
+        extensionStr = reinterpret_cast<const char *>(funcs->glGetString(GL_EXTENSIONS));
 
     if (extensionStr) {
         QByteArray ba(extensionStr);
         QList<QByteArray> extensions = ba.split(' ');
         m_extensions = extensions.toSet();
-#if !defined(QT_OPENGL_3)
-    }
-#else
     } else {
+#ifdef QT_OPENGL_3
         // clear error state
         while (funcs->glGetError()) {}
 
@@ -82,8 +83,8 @@ QOpenGLExtensionMatcher::QOpenGLExtensionMatcher()
                 m_extensions.insert(str);
             }
         }
+#endif // QT_OPENGL_3
     }
-#endif
 }
 
 QT_END_NAMESPACE
