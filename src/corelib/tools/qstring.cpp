@@ -6624,6 +6624,27 @@ QString QString::number(double n, char f, int prec)
     return s;
 }
 
+namespace {
+template<class ResultList, typename MidMethod, typename Separator>
+static ResultList splitString(const QString &source, MidMethod mid, const Separator &sep,
+                              QString::SplitBehavior behavior, Qt::CaseSensitivity cs, const int separatorSize)
+{
+    ResultList list;
+    int start = 0;
+    int end;
+    int extra = 0;
+    while ((end = source.indexOf(sep, start + extra, cs)) != -1) {
+        if (start != end || behavior == QString::KeepEmptyParts)
+            list.append((source.*mid)(start, end - start));
+        start = end + separatorSize;
+        extra = (separatorSize == 0 ? 1 : 0);
+    }
+    if (start != source.size() || behavior == QString::KeepEmptyParts)
+        list.append((source.*mid)(start, -1));
+    return list;
+}
+} // namespace
+
 /*!
     Splits the string into substrings wherever \a sep occurs, and
     returns the list of those strings. If \a sep does not match
@@ -6644,19 +6665,7 @@ QString QString::number(double n, char f, int prec)
 */
 QStringList QString::split(const QString &sep, SplitBehavior behavior, Qt::CaseSensitivity cs) const
 {
-    QStringList list;
-    int start = 0;
-    int extra = 0;
-    int end;
-    while ((end = indexOf(sep, start + extra, cs)) != -1) {
-        if (start != end || behavior == KeepEmptyParts)
-            list.append(mid(start, end - start));
-        start = end + sep.size();
-        extra = (sep.size() == 0 ? 1 : 0);
-    }
-    if (start != size() || behavior == KeepEmptyParts)
-        list.append(mid(start));
-    return list;
+    return splitString<QStringList>(*this, &QString::mid, sep, behavior, cs, sep.size());
 }
 
 /*!
@@ -6664,20 +6673,32 @@ QStringList QString::split(const QString &sep, SplitBehavior behavior, Qt::CaseS
 */
 QStringList QString::split(QChar sep, SplitBehavior behavior, Qt::CaseSensitivity cs) const
 {
-    QStringList list;
-    int start = 0;
-    int end;
-    while ((end = indexOf(sep, start, cs)) != -1) {
-        if (start != end || behavior == KeepEmptyParts)
-            list.append(mid(start, end - start));
-        start = end + 1;
-    }
-    if (start != size() || behavior == KeepEmptyParts)
-        list.append(mid(start));
-    return list;
+    return splitString<QStringList>(*this, &QString::mid, sep, behavior, cs, 1);
 }
 
 #ifndef QT_NO_REGEXP
+namespace {
+template<class ResultList, typename MidMethod>
+static ResultList splitString(const QString &source, MidMethod mid, const QRegExp &rx, QString::SplitBehavior behavior)
+{
+    QRegExp rx2(rx);
+    ResultList list;
+    int start = 0;
+    int extra = 0;
+    int end;
+    while ((end = rx2.indexIn(source, start + extra)) != -1) {
+        int matchedLen = rx2.matchedLength();
+        if (start != end || behavior == QString::KeepEmptyParts)
+            list.append((source.*mid)(start, end - start));
+        start = end + matchedLen;
+        extra = (matchedLen == 0) ? 1 : 0;
+    }
+    if (start != source.size() || behavior == QString::KeepEmptyParts)
+        list.append((source.*mid)(start, -1));
+    return list;
+}
+} // namespace
+
 /*!
     \overload
 
@@ -6706,26 +6727,41 @@ QStringList QString::split(QChar sep, SplitBehavior behavior, Qt::CaseSensitivit
 */
 QStringList QString::split(const QRegExp &rx, SplitBehavior behavior) const
 {
-    QRegExp rx2(rx);
-    QStringList list;
-    int start = 0;
-    int extra = 0;
-    int end;
-    while ((end = rx2.indexIn(*this, start + extra)) != -1) {
-        int matchedLen = rx2.matchedLength();
-        if (start != end || behavior == KeepEmptyParts)
-            list.append(mid(start, end - start));
-        start = end + matchedLen;
-        extra = (matchedLen == 0) ? 1 : 0;
-    }
-    if (start != size() || behavior == KeepEmptyParts)
-        list.append(mid(start));
-    return list;
+    return splitString<QStringList>(*this, &QString::mid, rx, behavior);
 }
 #endif
 
 #ifndef QT_NO_REGULAREXPRESSION
 #ifndef QT_BOOTSTRAPPED
+namespace {
+template<class ResultList, typename MidMethod>
+static ResultList splitString(const QString &source, MidMethod mid, const QRegularExpression &re,
+                              QString::SplitBehavior behavior)
+{
+    ResultList list;
+    if (!re.isValid()) {
+        qWarning("QString::split: invalid QRegularExpression object");
+        return list;
+    }
+
+    int start = 0;
+    int end = 0;
+    QRegularExpressionMatchIterator iterator = re.globalMatch(source);
+    while (iterator.hasNext()) {
+        QRegularExpressionMatch match = iterator.next();
+        end = match.capturedStart();
+        if (start != end || behavior == QString::KeepEmptyParts)
+            list.append((source.*mid)(start, end - start));
+        start = match.capturedEnd();
+    }
+
+    if (start != source.size() || behavior == QString::KeepEmptyParts)
+        list.append((source.*mid)(start, -1));
+
+    return list;
+}
+} // namespace
+
 /*!
     \overload
     \since 5.0
@@ -6755,27 +6791,7 @@ QStringList QString::split(const QRegExp &rx, SplitBehavior behavior) const
 */
 QStringList QString::split(const QRegularExpression &re, SplitBehavior behavior) const
 {
-    QStringList list;
-    if (!re.isValid()) {
-        qWarning("QString::split: invalid QRegularExpression object");
-        return list;
-    }
-
-    int start = 0;
-    int end = 0;
-    QRegularExpressionMatchIterator iterator = re.globalMatch(*this);
-    while (iterator.hasNext()) {
-        QRegularExpressionMatch match = iterator.next();
-        end = match.capturedStart();
-        if (start != end || behavior == KeepEmptyParts)
-            list.append(mid(start, end - start));
-        start = match.capturedEnd();
-    }
-
-    if (start != size() || behavior == KeepEmptyParts)
-        list.append(mid(start));
-
-    return list;
+    return splitString<QStringList>(*this, &QString::mid, re, behavior);
 }
 #endif // QT_BOOTSTRAPPED
 #endif // QT_NO_REGULAREXPRESSION
