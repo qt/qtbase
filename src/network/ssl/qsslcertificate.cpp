@@ -1219,6 +1219,9 @@ static const char *certificate_blacklist[] = {
     "08:64",                                           "e-islem.kktcmerkezbankasi.org", // Turktrust mis-issued intermediate certificate
 
     "03:1d:a7",                                        "AC DG Tr\xC3\xA9sor SSL", // intermediate certificate linking back to ANSSI French National Security Agency
+    "27:83",                                           "NIC Certifying Authority", // intermediate certificate from NIC India (2007)
+    "27:92",                                           "NIC CA 2011", // intermediate certificate from NIC India (2011)
+    "27:b1",                                           "NIC CA 2014", // intermediate certificate from NIC India (2014)
     0
 };
 
