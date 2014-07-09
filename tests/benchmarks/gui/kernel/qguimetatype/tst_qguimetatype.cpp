@@ -46,77 +46,27 @@ class tst_QGuiMetaType : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QGuiMetaType();
-    virtual ~tst_QGuiMetaType();
-
 private slots:
-    void constructGuiType_data();
-    void constructGuiType();
-    void constructGuiTypeCopy_data();
-    void constructGuiTypeCopy();
-
     void constructInPlace_data();
     void constructInPlace();
     void constructInPlaceCopy_data();
     void constructInPlaceCopy();
+private:
+    void constructableGuiTypes();
 };
 
-tst_QGuiMetaType::tst_QGuiMetaType()
-{
-}
 
-tst_QGuiMetaType::~tst_QGuiMetaType()
-{
-}
-
-void tst_QGuiMetaType::constructGuiType_data()
+void tst_QGuiMetaType::constructableGuiTypes()
 {
     QTest::addColumn<int>("typeId");
     for (int i = QMetaType::FirstGuiType; i <= QMetaType::LastGuiType; ++i)
         QTest::newRow(QMetaType::typeName(i)) << i;
 }
 
-// Tests how fast QMetaType can default-construct and destroy a Qt GUI
-// type. The purpose of this benchmark is to measure the overhead of
-// using type id-based creation compared to creating the type directly
-// (i.e. "T *t = new T(); delete t;").
-void tst_QGuiMetaType::constructGuiType()
-{
-    QFETCH(int, typeId);
-    QBENCHMARK {
-        for (int i = 0; i < 100000; ++i) {
-            void *data = QMetaType::create(typeId, (void *)0);
-            QMetaType::destroy(typeId, data);
-        }
-    }
-}
-
-void tst_QGuiMetaType::constructGuiTypeCopy_data()
-{
-    constructGuiType_data();
-}
-
-// Tests how fast QMetaType can copy-construct and destroy a Qt GUI
-// type. The purpose of this benchmark is to measure the overhead of
-// using type id-based creation compared to creating the type directly
-// (i.e. "T *t = new T(other); delete t;").
-void tst_QGuiMetaType::constructGuiTypeCopy()
-{
-    QFETCH(int, typeId);
-    QVariant other(typeId, (void *)0);
-    const void *copy = other.constData();
-    QBENCHMARK {
-        for (int i = 0; i < 100000; ++i) {
-            void *data = QMetaType::create(typeId, copy);
-            QMetaType::destroy(typeId, data);
-        }
-    }
-}
 
 void tst_QGuiMetaType::constructInPlace_data()
 {
-    constructGuiType_data();
+    constructableGuiTypes();
 }
 
 void tst_QGuiMetaType::constructInPlace()
@@ -137,7 +87,7 @@ void tst_QGuiMetaType::constructInPlace()
 
 void tst_QGuiMetaType::constructInPlaceCopy_data()
 {
-    constructGuiType_data();
+    constructableGuiTypes();
 }
 
 void tst_QGuiMetaType::constructInPlaceCopy()

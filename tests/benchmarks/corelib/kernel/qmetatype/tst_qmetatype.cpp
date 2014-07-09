@@ -70,16 +70,6 @@ private slots:
     void isRegisteredCustom();
     void isRegisteredNotRegistered();
 
-    void constructCoreType_data();
-    void constructCoreType();
-    void constructCoreTypeStaticLess_data();
-    void constructCoreTypeStaticLess();
-    void constructCoreTypeCopy_data();
-    void constructCoreTypeCopy();
-
-    void constructCustomType_data();
-    void constructCustomType();
-
     void constructInPlace_data();
     void constructInPlace();
     void constructInPlaceCopy_data();
@@ -250,91 +240,15 @@ void tst_QMetaType::isRegisteredNotRegistered()
     }
 }
 
-void tst_QMetaType::constructCoreType_data()
+void tst_QMetaType::constructInPlace_data()
 {
     QTest::addColumn<int>("typeId");
     for (int i = QMetaType::FirstCoreType; i <= QMetaType::LastCoreType; ++i)
         if (i != QMetaType::Void)
             QTest::newRow(QMetaType::typeName(i)) << i;
-    // GUI types are tested in tst_QGuiMetaType.
-}
 
-// Tests how fast QMetaType can default-construct and destroy a Qt
-// core type. The purpose of this benchmark is to measure the overhead
-// of using type id-based creation compared to creating the type
-// directly (i.e. "T *t = new T(); delete t;").
-void tst_QMetaType::constructCoreType()
-{
-    QFETCH(int, typeId);
-    QBENCHMARK {
-        for (int i = 0; i < 100000; ++i) {
-            void *data = QMetaType::create(typeId, (void *)0);
-            QMetaType::destroy(typeId, data);
-        }
-    }
-}
-
-void tst_QMetaType::constructCoreTypeStaticLess_data()
-{
-    constructCoreType_data();
-}
-
-void tst_QMetaType::constructCoreTypeStaticLess()
-{
-    QFETCH(int, typeId);
-    QBENCHMARK {
-        QMetaType type(typeId);
-        for (int i = 0; i < 100000; ++i) {
-            void *data = type.create((void *)0);
-            type.destroy(data);
-        }
-    }
-}
-
-void tst_QMetaType::constructCoreTypeCopy_data()
-{
-    constructCoreType_data();
-}
-
-// Tests how fast QMetaType can copy-construct and destroy a Qt core
-// type. The purpose of this benchmark is to measure the overhead of
-// using type id-based creation compared to creating the type directly
-// (i.e. "T *t = new T(other); delete t;").
-void tst_QMetaType::constructCoreTypeCopy()
-{
-    QFETCH(int, typeId);
-    QVariant other(typeId, (void *)0);
-    const void *copy = other.constData();
-    QBENCHMARK {
-        for (int i = 0; i < 100000; ++i) {
-            void *data = QMetaType::create(typeId, copy);
-            QMetaType::destroy(typeId, data);
-        }
-    }
-}
-
-void tst_QMetaType::constructCustomType_data()
-{
-    QTest::addColumn<int>("typeId");
-
-    QTest::newRow("BigClass") << qMetaTypeId<BigClass>();
-}
-
-void tst_QMetaType::constructCustomType()
-{
-    QFETCH(int, typeId);
-    QBENCHMARK {
-        for (int i = 0; i < 100000; ++i) {
-            void *data = QMetaType::create(typeId, (void *)0);
-            QMetaType::destroy(typeId, data);
-        }
-    }
-}
-
-void tst_QMetaType::constructInPlace_data()
-{
-    constructCoreType_data();
     QTest::newRow("custom") << qMetaTypeId<BigClass>();
+    // GUI types are tested in tst_QGuiMetaType.
 }
 
 void tst_QMetaType::constructInPlace()
