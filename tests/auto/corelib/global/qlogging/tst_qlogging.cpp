@@ -688,6 +688,19 @@ void tst_qmessagehandler::qMessagePattern_data()
             << "QT_MESSAGE_PATTERN: %{if-*} cannot be nested"
             << "A DEBUG qDebug  "
             << "A  qWarning  ");
+
+    // This test won't work when midnight is too close... wait a bit
+    while (QTime::currentTime() > QTime(23, 59, 30))
+        QTest::qWait(10000);
+    QTest::newRow("time") << "/%{time yyyy - MM - d}/%{message}"
+        << true << (QList<QByteArray>()
+            << ('/' + QDateTime::currentDateTime().toString("yyyy - MM - d").toUtf8() + "/qDebug"));
+
+    // %{time}  should have a padding of 6 so if it takes less than 10 seconds to show
+    // the first message, there should be 5 spaces
+    QTest::newRow("time") << "<%{time}>%{message}" << true << (QList<QByteArray>()
+            << "<     ");
+
 }
 
 
