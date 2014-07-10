@@ -1072,7 +1072,7 @@
 
     \code
     qhp.Qt.file                = qt.qhp
-    qhp.Qt.namespace           = com.trolltech.qt.440
+    qhp.Qt.namespace           = org.qt-project.qtcore.$QT_VERSION_TAG
     qhp.Qt.virtualFolder       = qdoc
     qhp.Qt.indexTitle          = Qt Reference Documentation
     qhp.Qt.indexRoot           =

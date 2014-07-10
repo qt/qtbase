@@ -1325,6 +1325,11 @@ void QListWidgetPrivate::_q_dataChanged(const QModelIndex &topLeft,
     \fn void QListWidget::removeItemWidget(QListWidgetItem *item)
 
     Removes the widget set on the given \a item.
+
+    To remove an item (row) from the list entirely, either delete the item or
+    use takeItem().
+
+    \sa itemWidget(), setItemWidget()
 */
 
 /*!
@@ -1620,6 +1625,8 @@ void QListWidget::closePersistentEditor(QListWidgetItem *item)
     \since 4.1
 
     Returns the widget displayed in the given \a item.
+
+    \sa setItemWidget(), removeItemWidget()
 */
 QWidget *QListWidget::itemWidget(QListWidgetItem *item) const
 {
@@ -1638,7 +1645,7 @@ QWidget *QListWidget::itemWidget(QListWidgetItem *item) const
     implement a custom editor widget, use QListView and subclass QItemDelegate
     instead.
 
-    \sa {Delegate Classes}
+    \sa itemWidget(), removeItemWidget(), {Delegate Classes}
 */
 void QListWidget::setItemWidget(QListWidgetItem *item, QWidget *widget)
 {
