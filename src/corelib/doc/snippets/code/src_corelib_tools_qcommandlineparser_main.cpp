@@ -59,7 +59,8 @@ int main(int argc, char *argv[])
     parser.addOption(showProgressOption);
 
     // A boolean option with multiple names (-f, --force)
-    QCommandLineOption forceOption(QStringList() << "f" << "force", "Overwrite existing files.");
+    QCommandLineOption forceOption(QStringList() << "f" << "force",
+            QCoreApplication::translate("main", "Overwrite existing files."));
     parser.addOption(forceOption);
 
     // An option with a value

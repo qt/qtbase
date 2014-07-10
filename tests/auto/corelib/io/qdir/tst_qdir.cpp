@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -72,8 +72,12 @@ class tst_QDir : public QObject
 {
 Q_OBJECT
 
+public:
+    tst_QDir();
+
 private slots:
     void init();
+    void initTestCase();
     void cleanupTestCase();
 
     void getSetCheck();
@@ -198,17 +202,23 @@ private slots:
     void cdBelowRoot();
 
 private:
-    QString m_dataPath;
+    const QString m_dataPath;
 };
+
+tst_QDir::tst_QDir()
+    : m_dataPath(QFileInfo(QFINDTESTDATA("testData")).absolutePath())
+{
+}
 
 void tst_QDir::init()
 {
-    // Directory under which testdata can be found.
-    m_dataPath = QFileInfo(QFINDTESTDATA("testData")).absolutePath();
-    QVERIFY2(!m_dataPath.isEmpty(), "test data not found");
-
     // Some tests want to use "." as relative path to data.
     QVERIFY2(QDir::setCurrent(m_dataPath), qPrintable("Could not chdir to " + m_dataPath));
+}
+
+void tst_QDir::initTestCase()
+{
+    QVERIFY2(!m_dataPath.isEmpty(), "test data not found");
 }
 
 void tst_QDir::cleanupTestCase()

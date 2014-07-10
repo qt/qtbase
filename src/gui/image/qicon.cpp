@@ -1026,7 +1026,8 @@ void QIcon::addFile(const QString &fileName, const QSize &size, Mode mode, State
     d->engine->addFile(fileName, size, mode, state);
 
     // Check if a "@2x" file exists and add it.
-    if (qApp->devicePixelRatio() > 1.0) {
+    static bool disable2xImageLoading = !qgetenv("QT_HIGHDPI_DISABLE_2X_IMAGE_LOADING").isEmpty();
+    if (!disable2xImageLoading && qApp->devicePixelRatio() > 1.0) {
         int dotIndex = fileName.lastIndexOf(QLatin1Char('.'));
         if (dotIndex != -1) {
             QString at2xfileName = fileName;

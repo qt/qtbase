@@ -2710,6 +2710,13 @@ QString QTest::qFindTestData(const QString& base, const char *file, int line, co
         }
     }
 
+    // 4. Try resources
+    if (found.isEmpty()) {
+        QString candidate = QString::fromLatin1(":/%1").arg(base);
+        if (QFileInfo(candidate).exists())
+            found = candidate;
+    }
+
     if (found.isEmpty()) {
         QTest::qWarn(qPrintable(
             QString::fromLatin1("testdata %1 could not be located!").arg(base)),

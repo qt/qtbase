@@ -1292,8 +1292,12 @@ int QTextEngine::shapeTextWithHarfbuzz(const QScriptItem &si, const ushort *stri
             attrs.justification = hbAttrs.justification;
         }
 
-        for (quint32 i = 0; i < shaper_item.item.length; ++i)
+        for (quint32 i = 0; i < shaper_item.item.length; ++i) {
+            // Workaround wrong log_clusters for surrogates (i.e. QTBUG-39875)
+            if (shaper_item.log_clusters[i] >= shaper_item.num_glyphs)
+                shaper_item.log_clusters[i] = shaper_item.num_glyphs - 1;
             shaper_item.log_clusters[i] += glyph_pos;
+        }
 
         if (kerningEnabled && !shaper_item.kerning_applied)
             actualFontEngine->doKerning(&g, option.useDesignMetrics() ? QFontEngine::DesignMetrics : QFontEngine::ShaperFlags(0));
