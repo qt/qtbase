@@ -60,7 +60,7 @@ void tst_qapplication::ctor()
 {
     // simulate reasonable argc, argv
     int argc = 1;
-    char *argv[] = { "tst_qapplication" };
+    char *argv[] = { const_cast<char*>("tst_qapplication") };
     QBENCHMARK {
         QApplication app(argc, argv);
     }
