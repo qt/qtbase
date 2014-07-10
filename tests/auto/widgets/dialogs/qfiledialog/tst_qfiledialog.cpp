@@ -114,8 +114,8 @@ public:
     virtual ~tst_QFiledialog();
 
 public slots:
+    void initTestCase();
     void init();
-    void cleanup();
 
 private slots:
     void currentChangedSignal();
@@ -185,26 +185,23 @@ tst_QFiledialog::~tst_QFiledialog()
 {
 }
 
+void tst_QFiledialog::initTestCase()
+{
+    QStandardPaths::setTestModeEnabled(true);
+}
+
 void tst_QFiledialog::init()
 {
-    // Save the developers settings so they don't get mad when their sidebar folders are gone.
+    // clean up the sidebar between each test
     QSettings settings(QSettings::UserScope, QLatin1String("QtProject"));
     settings.beginGroup(QLatin1String("Qt"));
-    userSettings = settings.value(QLatin1String("filedialog")).toByteArray();
     settings.remove(QLatin1String("filedialog"));
 
-    // populate it with some default settings
+    // populate the sidebar with some default settings
     QNonNativeFileDialog fd;
 #if defined(Q_OS_WINCE)
     QTest::qWait(1000);
 #endif
-}
-
-void tst_QFiledialog::cleanup()
-{
-    QSettings settings(QSettings::UserScope, QLatin1String("QtProject"));
-    settings.beginGroup(QLatin1String("Qt"));
-    settings.setValue(QLatin1String("filedialog"), userSettings);
 }
 
 class MyAbstractItemDelegate : public QAbstractItemDelegate
