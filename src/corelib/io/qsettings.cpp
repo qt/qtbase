@@ -53,6 +53,7 @@
 #include "qmutex.h"
 #include "qlibraryinfo.h"
 #include "qtemporaryfile.h"
+#include "qstandardpaths.h"
 
 #ifndef QT_NO_TEXTCODEC
 #  include "qtextcodec.h"
@@ -1140,6 +1141,8 @@ static void initDefaultPaths(QMutexLocker *locker)
         pathHash->insert(pathHashKey(QSettings::IniFormat, QSettings::SystemScope),
                          windowsConfigPath(CSIDL_COMMON_APPDATA) + QDir::separator());
 #else
+
+#ifdef QT_NO_STANDARDPATHS
         QString userPath;
         char *env = getenv("XDG_CONFIG_HOME");
         if (env == 0) {
@@ -1153,6 +1156,9 @@ static void initDefaultPaths(QMutexLocker *locker)
             userPath += QLatin1Char('/');
             userPath += QFile::decodeName(env);
         }
+#else
+        QString userPath = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation);
+#endif
         userPath += QLatin1Char('/');
 
         pathHash->insert(pathHashKey(QSettings::IniFormat, QSettings::UserScope), userPath);
