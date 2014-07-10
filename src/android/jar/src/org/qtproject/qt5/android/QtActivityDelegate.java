@@ -447,6 +447,7 @@ public class QtActivityDelegate
 
         m_environmentVariables = loaderParams.getString(ENVIRONMENT_VARIABLES_KEY);
         String additionalEnvironmentVariables = "QT_ANDROID_FONTS_MONOSPACE=Droid Sans Mono;Droid Sans;Droid Sans Fallback"
+                                              + "\tQT_ANDROID_FONTS_SERIF=Droid Serif"
                                               + "\tNECESSITAS_API_LEVEL=" + necessitasApiLevel
                                               + "\tHOME=" + m_activity.getFilesDir().getAbsolutePath()
                                               + "\tTMPDIR=" + m_activity.getFilesDir().getAbsolutePath();

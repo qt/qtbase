@@ -624,11 +624,11 @@ void tst_QFont::defaultFamily_data()
     QTest::addColumn<QFont::StyleHint>("styleHint");
     QTest::addColumn<QStringList>("acceptableFamilies");
 
-    QTest::newRow("serif") << QFont::Serif << (QStringList() << "Times New Roman" << "Times" << getPlatformGenericFont("serif"));
-    QTest::newRow("monospace") << QFont::Monospace << (QStringList() << "Courier New" << "Monaco" << getPlatformGenericFont("monospace"));
-    QTest::newRow("cursive") << QFont::Cursive << (QStringList() << "Comic Sans MS" << "Apple Chancery" << getPlatformGenericFont("cursive"));
-    QTest::newRow("fantasy") << QFont::Fantasy << (QStringList() << "Impact" << "Zapfino"  << getPlatformGenericFont("fantasy"));
-    QTest::newRow("sans-serif") << QFont::SansSerif << (QStringList() << "Arial" << "Lucida Grande" << getPlatformGenericFont("sans-serif"));
+    QTest::newRow("serif") << QFont::Serif << (QStringList() << "Times New Roman" << "Times" << "Droid Serif" << getPlatformGenericFont("serif"));
+    QTest::newRow("monospace") << QFont::Monospace << (QStringList() << "Courier New" << "Monaco" << "Droid Sans Mono" << getPlatformGenericFont("monospace"));
+    QTest::newRow("cursive") << QFont::Cursive << (QStringList() << "Comic Sans MS" << "Apple Chancery" << "Roboto" << "Droid Sans" << getPlatformGenericFont("cursive"));
+    QTest::newRow("fantasy") << QFont::Fantasy << (QStringList() << "Impact" << "Zapfino"  << "Roboto" << "Droid Sans" << getPlatformGenericFont("fantasy"));
+    QTest::newRow("sans-serif") << QFont::SansSerif << (QStringList() << "Arial" << "Lucida Grande" << "Roboto" << "Droid Sans" << getPlatformGenericFont("sans-serif"));
 }
 
 void tst_QFont::defaultFamily()
