@@ -252,7 +252,10 @@ void tst_QFiledialog::directoryEnteredSignal()
 
     // sidebar
     QSidebar *sidebar = fd.findChild<QSidebar*>("sidebar");
-    sidebar->setCurrentIndex(sidebar->model()->index(1, 0));
+    QVERIFY(sidebar->model()->rowCount() >= 2);
+    QModelIndex secondItem = sidebar->model()->index(1, 0);
+    QVERIFY(secondItem.isValid());
+    sidebar->setCurrentIndex(secondItem);
     QTest::keyPress(sidebar->viewport(), Qt::Key_Return);
     QCOMPARE(spyDirectoryEntered.count(), 1);
     spyDirectoryEntered.clear();
