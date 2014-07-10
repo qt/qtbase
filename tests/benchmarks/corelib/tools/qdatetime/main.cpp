@@ -48,7 +48,11 @@ class tst_QDateTime : public QObject
 {
     Q_OBJECT
 
-    enum {
+    enum
+#if defined(Q_COMPILER_CLASS_ENUM) || (defined(Q_CC_MSVC) && _MSC_VER >= 1700)
+        : qint64
+#endif
+    {
         SECS_PER_DAY = 86400,
         MSECS_PER_DAY = 86400000,
         JULIAN_DAY_1950 = 2433283,

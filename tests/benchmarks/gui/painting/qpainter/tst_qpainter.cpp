@@ -1290,7 +1290,7 @@ void tst_QPainter::drawScaledAntialiasedRoundedRect_data()
 {
     QTest::addColumn<float>("scale");
 
-    for (float i = 0; i < 3; i += .1)
+    for (float i = 0; i < 3; i += .1f)
         QTest::newRow(QString(QLatin1String("scale=%1")).arg(i).toLatin1()) << i;
 }
 
@@ -1471,7 +1471,7 @@ void tst_QPainter::drawScaledBorderPixmapRoundedRect_data()
     QTest::addColumn<float>("scale");
     QTest::addColumn<int>("imageType");
 
-    for (float i = 0; i < 3; i += .1)
+    for (float i = 0; i < 3; i += .1f)
         QTest::newRow(QString(QLatin1String("scale=%1; imagetype=ARGB32_Pre")).arg(i).toLatin1()) << i << (int)QImage::Format_ARGB32_Premultiplied;
     //for (float i = 0; i < 3; i += .1)
     //    QTest::newRow(QString(QLatin1String("scale=%1; imagetype=ARGB8565_Pre")).arg(i).toLatin1()) << i << (int)QImage::Format_ARGB8565_Premultiplied;

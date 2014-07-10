@@ -152,7 +152,7 @@ private slots:
 QString makeString(int length)
 {
     const char chars[] = "abcd efgh ijkl mnop qrst uvwx yz!$. ABCD 1234";
-    int len = strlen(chars);
+    const int len = int(strlen(chars));
 
     QString ret;
     for (int j = 0; j < length; j++) {
