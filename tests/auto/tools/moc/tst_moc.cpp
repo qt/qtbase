@@ -1792,6 +1792,14 @@ void tst_Moc::warnings_data()
         << QString("IGNORE_ALL_STDOUT")
         << QString("standard input:1: Warning: Property declaration x has no READ accessor function or associated MEMBER variable. The property will be invalid.");
 
+    // This should output a warning
+    QTest::newRow("Duplicate property warning")
+        << QByteArray("class X : public QObject { Q_OBJECT Q_PROPERTY(int x READ x) Q_PROPERTY(int x READ y) };")
+        << QStringList()
+        << 0
+        << QString("IGNORE_ALL_STDOUT")
+        << QString("standard input:1: Warning: The property 'x' is defined multiple times in class X.");
+
     // Passing "-nn" should NOT suppress the warning
     QTest::newRow("Invalid property warning with -nn")
         << QByteArray("class X : public QObject { Q_OBJECT Q_PROPERTY(int x) };")

@@ -1552,10 +1552,17 @@ void Moc::checkProperties(ClassDef *cdef)
     // specify get function, for compatibiliy we accept functions
     // returning pointers, or const char * for QByteArray.
     //
+    QSet<QByteArray> definedProperties;
     for (int i = 0; i < cdef->propertyList.count(); ++i) {
         PropertyDef &p = cdef->propertyList[i];
         if (p.read.isEmpty() && p.member.isEmpty())
             continue;
+        if (definedProperties.contains(p.name)) {
+            QByteArray msg = "The property '" + p.name + "' is defined multiple times in class " + cdef->classname + ".";
+            warning(msg.constData());
+        }
+        definedProperties.insert(p.name);
+
         for (int j = 0; j < cdef->publicList.count(); ++j) {
             const FunctionDef &f = cdef->publicList.at(j);
             if (f.name != p.read)
