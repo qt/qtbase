@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>testdata/symlink.zip</file>
+        <file>testdata/test.zip</file>
+    </qresource>
+</RCC>
