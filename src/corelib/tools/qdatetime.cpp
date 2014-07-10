@@ -4976,7 +4976,7 @@ QDataStream &operator>>(QDataStream &in, QDateTime &dateTime)
 #if !defined(QT_NO_DEBUG_STREAM) && !defined(QT_NO_DATESTRING)
 QDebug operator<<(QDebug dbg, const QDate &date)
 {
-    dbg.nospace() << "QDate(" << date.toString(QStringLiteral("yyyy-MM-dd")) << ')';
+    dbg.nospace() << "QDate(" << date.toString(Qt::ISODate) << ')';
     return dbg.space();
 }
 

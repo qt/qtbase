@@ -104,6 +104,7 @@ private slots:
     void longMonthName() const;
     void standaloneLongMonthName() const;
     void roundtrip() const;
+    void qdebug() const;
 private:
     QDate defDate() const { return QDate(1900, 1, 1); }
     QDate invalidDate() const { return QDate(); }
@@ -1474,6 +1475,14 @@ void tst_QDate::roundtrip() const
         QCOMPARE(loopDate.toJulianDay(), testDate.toJulianDay());
         loopDate = loopDate.addDays(1);
     }
+}
+
+void tst_QDate::qdebug() const
+{
+    QTest::ignoreMessage(QtDebugMsg, "QDate(\"\")");
+    qDebug() << QDate();
+    QTest::ignoreMessage(QtDebugMsg, "QDate(\"1983-08-07\")");
+    qDebug() << QDate(1983, 8, 7);
 }
 
 QTEST_APPLESS_MAIN(tst_QDate)
