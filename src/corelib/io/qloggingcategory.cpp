@@ -101,13 +101,21 @@ static void setBoolLane(QBasicAtomicInt *atomic, bool enable, int shift)
 
     \section1 Default category configuration
 
-    In the default configuration \l isWarningEnabled() , \l isDebugEnabled() and
-    \l isCriticalEnabled() will return \c true.
+    Both the QLoggingCategory constructor and the Q_LOGGING_CATEGORY() macro
+    accept an optional QtMsgType argument, which disables all message types with
+    a lower severity. That is, a category declared with
+
+    \snippet qloggingcategory/main.cpp 5
+
+    will log messages of type \c QtWarningMsg, \c QtCriticalMsg, \c QtFatalMsg, but will
+    ignore messages of type \c QtDebugMsg.
+
+    If no argument is passed, all messages will be logged.
 
     \section1 Configuring Categories
 
-    Categories can be centrally configured by either setting logging rules,
-    or by installing a custom filter.
+    The default configuration of categories can be overridden either by setting logging
+    rules, or by installing a custom filter.
 
     \section2 Logging Rules
 
@@ -183,13 +191,33 @@ static void setBoolLane(QBasicAtomicInt *atomic, bool enable, int shift)
 
 /*!
     Constructs a QLoggingCategory object with the provided \a category name.
-    The object becomes the local identifier for the category.
+    All message types for this category are enabled by default.
 
     If \a category is \c{0}, the category name is changed to \c "default".
 */
 QLoggingCategory::QLoggingCategory(const char *category)
     : d(0),
       name(0)
+{
+    init(category, QtDebugMsg);
+}
+
+/*!
+    Constructs a QLoggingCategory object with the provided \a category name,
+    and enables all messages with types more severe or equal than \a enableForLevel.
+
+    If \a category is \c{0}, the category name is changed to \c "default".
+
+    \since 5.4
+*/
+QLoggingCategory::QLoggingCategory(const char *category, QtMsgType enableForLevel)
+    : d(0),
+      name(0)
+{
+    init(category, enableForLevel);
+}
+
+void QLoggingCategory::init(const char *category, QtMsgType severityLevel)
 {
     enabled.store(0x01010101);   // enabledDebug = enabledWarning = enabledCritical = true;
 
@@ -198,14 +226,13 @@ QLoggingCategory::QLoggingCategory(const char *category)
 
     // normalize "default" category name, so that we can just do
     // pointer comparison in QLoggingRegistry::updateCategory
-    if (isDefaultCategory) {
+    if (isDefaultCategory)
         name = qtDefaultCategoryName;
-    } else {
+    else
         name = category;
-    }
 
     if (QLoggingRegistry *reg = QLoggingRegistry::instance())
-        reg->registerCategory(this);
+        reg->registerCategory(this, severityLevel);
 }
 
 /*!
@@ -522,12 +549,29 @@ void QLoggingCategory::setFilterRules(const QString &rules)
     \since 5.2
 
     Defines a logging category \a name, and makes it configurable under the
-    \a string identifier.
+    \a string identifier. By default, all message types are enabled.
 
     Only one translation unit in a library or executable can define a category
     with a specific name.
 
     This macro must be used outside of a class or method.
+*/
+
+/*!
+    \macro Q_LOGGING_CATEGORY(name, string, msgType)
+    \sa Q_DECLARE_LOGGING_CATEGORY()
+    \relates QLoggingCategory
+    \since 5.4
+
+    Defines a logging category \a name, and makes it configurable under the
+    \a string identifier. By default, messages of QtMsgType \a msgType
+    and more severe are enabled, types with a lower severity are disabled.
+
+    Only one translation unit in a library or executable can define a category
+    with a specific name.
+
+    This macro must be used outside of a class or method. It is only defined
+    if variadic macros are supported.
 */
 
 QT_END_NAMESPACE

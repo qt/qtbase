@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -307,12 +307,12 @@ void QLoggingRegistry::init()
 
     This method might be called concurrently for the same category object.
 */
-void QLoggingRegistry::registerCategory(QLoggingCategory *cat)
+void QLoggingRegistry::registerCategory(QLoggingCategory *cat, QtMsgType enableForLevel)
 {
     QMutexLocker locker(&registryMutex);
 
     if (!categories.contains(cat)) {
-        categories.append(cat);
+        categories.insert(cat, enableForLevel);
         (*categoryFilter)(cat);
     }
 }
@@ -324,8 +324,7 @@ void QLoggingRegistry::registerCategory(QLoggingCategory *cat)
 void QLoggingRegistry::unregisterCategory(QLoggingCategory *cat)
 {
     QMutexLocker locker(&registryMutex);
-
-    categories.removeOne(cat);
+    categories.remove(cat);
 }
 
 /*!
@@ -361,7 +360,7 @@ void QLoggingRegistry::updateRules()
 
     rules = configRules + apiRules + envRules;
 
-    foreach (QLoggingCategory *cat, categories)
+    foreach (QLoggingCategory *cat, categories.keys())
         (*categoryFilter)(cat);
 }
 
@@ -380,7 +379,7 @@ QLoggingRegistry::installFilter(QLoggingCategory::CategoryFilter filter)
     QLoggingCategory::CategoryFilter old = categoryFilter;
     categoryFilter = filter;
 
-    foreach (QLoggingCategory *cat, categories)
+    foreach (QLoggingCategory *cat, categories.keys())
         (*categoryFilter)(cat);
 
     return old;
@@ -397,18 +396,22 @@ QLoggingRegistry *QLoggingRegistry::instance()
 */
 void QLoggingRegistry::defaultCategoryFilter(QLoggingCategory *cat)
 {
-    // QLoggingCategory() normalizes "default" strings
-    // to qtDefaultCategoryName
-    bool debug = true;
+    QLoggingRegistry *reg = QLoggingRegistry::instance();
+    Q_ASSERT(reg->categories.contains(cat));
+    QtMsgType enableForLevel = reg->categories.value(cat);
+
+    bool debug = (enableForLevel == QtDebugMsg) ? true : false;
+    bool warning = (enableForLevel <= QtWarningMsg) ? true : false;
+    bool critical = (enableForLevel <= QtCriticalMsg) ? true : false;
+
+    // hard-wired implementation of
+    //   qt.*.debug=false
+    //   qt.debug=false
     char c;
     if (!memcmp(cat->categoryName(), "qt", 2) && (!(c = cat->categoryName()[2]) || c == '.'))
         debug = false;
 
-    bool warning = true;
-    bool critical = true;
-
     QString categoryName = QLatin1String(cat->categoryName());
-    QLoggingRegistry *reg = QLoggingRegistry::instance();
     foreach (const QLoggingRule &item, reg->rules) {
         int filterpass = item.pass(categoryName, QtDebugMsg);
         if (filterpass != 0)

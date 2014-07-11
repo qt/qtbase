@@ -49,6 +49,9 @@ Q_DECLARE_LOGGING_CATEGORY(driverUsb)
 Q_LOGGING_CATEGORY(driverUsb, "driver.usb")
 //![1]
 
+//![5]
+Q_LOGGING_CATEGORY(driverUsbEvents, "driver.usb.events", QtWarningMsg)
+//![5]
 
 // Completely made up example, inspired by en.wikipedia.org/wiki/USB :)
 struct UsbEntry {

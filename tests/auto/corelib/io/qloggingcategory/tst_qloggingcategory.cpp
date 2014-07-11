@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -44,7 +44,6 @@
 #include <QLoggingCategory>
 
 Q_LOGGING_CATEGORY(TST_LOG, "tst.log")
-Q_LOGGING_CATEGORY(TST_LOG1, "tst.log1")
 Q_LOGGING_CATEGORY(Digia_Oslo_Office_com, "Digia.Oslo.Office.com")
 Q_LOGGING_CATEGORY(Digia_Oulu_Office_com, "Digia.Oulu.Office.com")
 Q_LOGGING_CATEGORY(Digia_Berlin_Office_com, "Digia.Berlin.Office.com")
@@ -278,6 +277,14 @@ private slots:
         QCOMPARE(customCategory.isCriticalEnabled(), true);
         QCOMPARE(customCategory.isEnabled(QtCriticalMsg), true);
 
+        QLoggingCategory onlyWarningsCategory("withType", QtWarningMsg);
+        QCOMPARE(onlyWarningsCategory.isDebugEnabled(), false);
+        QCOMPARE(onlyWarningsCategory.isEnabled(QtDebugMsg), false);
+        QCOMPARE(onlyWarningsCategory.isWarningEnabled(), true);
+        QCOMPARE(onlyWarningsCategory.isEnabled(QtWarningMsg), true);
+        QCOMPARE(onlyWarningsCategory.isCriticalEnabled(), true);
+        QCOMPARE(onlyWarningsCategory.isEnabled(QtCriticalMsg), true);
+
         // make sure nothing has printed warnings
         QVERIFY(logMessage.isEmpty());
     }
@@ -365,6 +372,35 @@ private slots:
         buf = QStringLiteral("default.debug: Check debug with no filter active");
         qDebug("%s", "Check debug with no filter active");
         QCOMPARE(logMessage, buf);
+    }
+
+    Q_LOGGING_CATEGORY(TST_MACRO_1, "tst.macro.1")
+#ifdef Q_COMPILER_VARIADIC_MACROS
+    Q_LOGGING_CATEGORY(TST_MACRO_2, "tst.macro.2", QtDebugMsg)
+    Q_LOGGING_CATEGORY(TST_MACRO_3, "tst.macro.3", QtFatalMsg)
+#endif
+
+    void QLoggingCategoryMacro()
+    {
+        const QLoggingCategory &cat1 = TST_MACRO_1();
+        QCOMPARE(cat1.categoryName(), "tst.macro.1");
+        QCOMPARE(cat1.isDebugEnabled(), true);
+        QCOMPARE(cat1.isWarningEnabled(), true);
+        QCOMPARE(cat1.isCriticalEnabled(), true);
+
+#ifdef Q_COMPILER_VARIADIC_MACROS
+        const QLoggingCategory &cat2 = TST_MACRO_2();
+        QCOMPARE(cat2.categoryName(), "tst.macro.2");
+        QCOMPARE(cat2.isDebugEnabled(), true);
+        QCOMPARE(cat2.isWarningEnabled(), true);
+        QCOMPARE(cat2.isCriticalEnabled(), true);
+
+        const QLoggingCategory &cat3 = TST_MACRO_3();
+        QCOMPARE(cat3.categoryName(), "tst.macro.3");
+        QCOMPARE(cat3.isDebugEnabled(), false);
+        QCOMPARE(cat3.isWarningEnabled(), false);
+        QCOMPARE(cat3.isCriticalEnabled(), false);
+#endif
     }
 
     void qCDebugMacros()

@@ -51,7 +51,9 @@ class Q_CORE_EXPORT QLoggingCategory
 {
     Q_DISABLE_COPY(QLoggingCategory)
 public:
+    // ### Qt 6: Merge constructors
     explicit QLoggingCategory(const char *category);
+    QLoggingCategory(const char *category, QtMsgType severityLevel);
     ~QLoggingCategory();
 
     bool isEnabled(QtMsgType type) const;
@@ -80,6 +82,8 @@ public:
     static void setFilterRules(const QString &rules);
 
 private:
+    void init(const char *category, QtMsgType severityLevel);
+
     Q_DECL_UNUSED_MEMBER void *d; // reserved for future use
     const char *name;
 
@@ -106,16 +110,14 @@ private:
 #define Q_DECLARE_LOGGING_CATEGORY(name) \
     extern const QLoggingCategory &name();
 
-// relies on QLoggingCategory(QString) being thread safe!
-#define Q_LOGGING_CATEGORY(name, string) \
+#if defined(Q_COMPILER_VARIADIC_MACROS) || defined(Q_MOC_RUN)
+
+#define Q_LOGGING_CATEGORY(name, ...) \
     const QLoggingCategory &name() \
     { \
-        static const QLoggingCategory category(string); \
+        static const QLoggingCategory category(__VA_ARGS__); \
         return category; \
     }
-
-#ifdef Q_COMPILER_VARIADIC_MACROS
-
 #define qCDebug(category, ...) \
     for (bool qt_category_enabled = category().isDebugEnabled(); qt_category_enabled; qt_category_enabled = false) \
         QMessageLogger(__FILE__, __LINE__, Q_FUNC_INFO, category().categoryName()).debug(__VA_ARGS__)
@@ -126,14 +128,22 @@ private:
     for (bool qt_category_enabled = category().isCriticalEnabled(); qt_category_enabled; qt_category_enabled = false) \
         QMessageLogger(__FILE__, __LINE__, Q_FUNC_INFO, category().categoryName()).critical(__VA_ARGS__)
 
-#else
+#else // defined(Q_COMPILER_VARIADIC_MACROS) || defined(Q_MOC_RUN)
+
+// Optional msgType argument not supported
+#define Q_LOGGING_CATEGORY(name, string) \
+    const QLoggingCategory &name() \
+    { \
+        static const QLoggingCategory category(string); \
+        return category; \
+    }
 
 // check for enabled category inside QMessageLogger.
 #define qCDebug qDebug
 #define qCWarning qWarning
 #define qCCritical qCritical
 
-#endif // Q_COMPILER_VARIADIC_MACROS
+#endif // Q_COMPILER_VARIADIC_MACROS || defined(Q_MOC_RUN)
 
 #if defined(QT_NO_DEBUG_OUTPUT)
 #  undef qCDebug
