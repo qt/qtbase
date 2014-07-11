@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -80,7 +80,7 @@ public:
     static void setFilterRules(const QString &rules);
 
 private:
-    void *d; // reserved for future use
+    Q_DECL_UNUSED_MEMBER void *d; // reserved for future use
     const char *name;
 
 #ifdef Q_BIG_ENDIAN
@@ -100,7 +100,7 @@ private:
         AtomicBools bools;
         QBasicAtomicInt enabled;
     };
-    bool placeholder[4]; // reserve for future use
+    Q_DECL_UNUSED_MEMBER bool placeholder[4]; // reserved for future use
 };
 
 #define Q_DECLARE_LOGGING_CATEGORY(name) \

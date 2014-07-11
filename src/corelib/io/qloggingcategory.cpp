@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -191,8 +191,6 @@ QLoggingCategory::QLoggingCategory(const char *category)
     : d(0),
       name(0)
 {
-    Q_UNUSED(d);
-    Q_UNUSED(placeholder);
     enabled.store(0x01010101);   // enabledDebug = enabledWarning = enabledCritical = true;
 
     const bool isDefaultCategory

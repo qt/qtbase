@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Copyright (C) 2012 Intel Corporation
 ** Contact: http://www.qt-project.org/legal
 **
@@ -705,6 +705,13 @@
 #      define Q_COMPILER_VLA
 #    endif
 #  endif
+
+#  if defined(__has_warning)
+#    if __has_warning("-Wunused-private-field")
+#      define Q_DECL_UNUSED_MEMBER Q_DECL_UNUSED
+#    endif
+#  endif
+
 #endif // Q_CC_CLANG
 
 #if defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && !defined(Q_CC_CLANG)
@@ -995,6 +1002,9 @@
 #endif
 #ifndef Q_DECL_UNUSED
 #  define Q_DECL_UNUSED
+#endif
+#ifndef Q_DECL_UNUSED_MEMBER
+#  define Q_DECL_UNUSED_MEMBER
 #endif
 #ifndef Q_FUNC_INFO
 #  if defined(Q_OS_SOLARIS) || defined(Q_CC_XLC)
