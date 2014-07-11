@@ -51,7 +51,6 @@ HEADERS +=  \
         io/qfileselector.h \
         io/qfileselector_p.h \
         io/qloggingcategory.h \
-        io/qloggingcategory_p.h \
         io/qloggingregistry_p.h
 
 SOURCES += \

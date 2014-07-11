@@ -40,7 +40,6 @@
 ****************************************************************************/
 
 #include "qloggingregistry_p.h"
-#include "qloggingcategory_p.h"
 
 #include <QtCore/qfile.h>
 #include <QtCore/qstandardpaths.h>

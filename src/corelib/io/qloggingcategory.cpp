@@ -40,7 +40,6 @@
 ****************************************************************************/
 
 #include "qloggingcategory.h"
-#include "qloggingcategory_p.h"
 #include "qloggingregistry_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -221,15 +220,10 @@ void QLoggingCategory::init(const char *category, QtMsgType severityLevel)
 {
     enabled.store(0x01010101);   // enabledDebug = enabledWarning = enabledCritical = true;
 
-    const bool isDefaultCategory
-            = (category == 0) || (strcmp(category, qtDefaultCategoryName) == 0);
-
-    // normalize "default" category name, so that we can just do
-    // pointer comparison in QLoggingRegistry::updateCategory
-    if (isDefaultCategory)
-        name = qtDefaultCategoryName;
-    else
+    if (category)
         name = category;
+    else
+        name = qtDefaultCategoryName;
 
     if (QLoggingRegistry *reg = QLoggingRegistry::instance())
         reg->registerCategory(this, severityLevel);
