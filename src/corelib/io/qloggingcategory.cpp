@@ -82,7 +82,7 @@ static void setBoolLane(QBasicAtomicInt *atomic, bool enable, int shift)
 
     \section1 Creating category objects
 
-    The Q_LOGGING_CATEGORY() and the Q_DECLARE_LOGGING_CATEGORY() macros
+    The Q_DECLARE_LOGGING_CATEGORY() and Q_LOGGING_CATEGORY() macros
     conveniently declare and create QLoggingCategory objects:
 
     \snippet qloggingcategory/main.cpp 1
@@ -501,6 +501,7 @@ void QLoggingCategory::setFilterRules(const QString &rules)
 */
 /*!
     \macro Q_DECLARE_LOGGING_CATEGORY(name)
+    \sa Q_LOGGING_CATEGORY()
     \relates QLoggingCategory
     \since 5.2
 
@@ -512,6 +513,7 @@ void QLoggingCategory::setFilterRules(const QString &rules)
 
 /*!
     \macro Q_LOGGING_CATEGORY(name, string)
+    \sa Q_DECLARE_LOGGING_CATEGORY()
     \relates QLoggingCategory
     \since 5.2
 
