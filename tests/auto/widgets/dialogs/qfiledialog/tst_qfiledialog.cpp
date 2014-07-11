@@ -171,7 +171,7 @@ private slots:
     void tildeExpansion();
 #endif // QT_BUILD_INTERNAL
 #endif
-    void getFileUrl();
+    void rejectModalDialogs();
 
 private:
     QByteArray userSettings;
@@ -1451,7 +1451,7 @@ public slots:
     }
 };
 
-void tst_QFiledialog::getFileUrl()
+void tst_QFiledialog::rejectModalDialogs()
 {
     // QTBUG-38672 , static functions should return empty Urls
     const QFileDialog::Options options = QFileDialog::DontUseNativeDialog;
@@ -1472,6 +1472,18 @@ void tst_QFiledialog::getFileUrl()
     QVERIFY(url.isEmpty());
     QVERIFY(!url.isValid());
 
+    // Same test with local files
+    QString file = QFileDialog::getOpenFileName(0, QStringLiteral("getOpenFileName"),
+                                                QString(), QString(), Q_NULLPTR, options);
+    QVERIFY(file.isEmpty());
+
+    file = QFileDialog::getExistingDirectory(0, QStringLiteral("getExistingDirectory"),
+                                             QString(), options | QFileDialog::ShowDirsOnly);
+    QVERIFY(file.isEmpty());
+
+    file = QFileDialog::getSaveFileName(0, QStringLiteral("getSaveFileName"),
+                                             QString(), QString(), Q_NULLPTR, options);
+    QVERIFY(file.isEmpty());
 }
 
 QTEST_MAIN(tst_QFiledialog)
