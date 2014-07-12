@@ -81,14 +81,20 @@ struct QWindowsLibEGL
     __eglMustCastToProperFunctionPointerType (EGLAPIENTRY * eglGetProcAddress)(const char *procname);
 
 private:
+#ifndef QT_STATIC
     void *resolve(const char *name);
     HMODULE m_lib;
+#endif
 };
 
 struct QWindowsLibGLESv2
 {
     bool init();
+#ifndef QT_STATIC
     void *moduleHandle() const { return m_lib; }
+#else
+    void *moduleHandle() const { return Q_NULLPTR; }
+#endif
 
     // GL1+GLES2 common
     void (APIENTRY * glBindTexture)(GLenum target, GLuint texture);
@@ -239,8 +245,10 @@ struct QWindowsLibGLESv2
     void (APIENTRY * glDepthRangef)(GLclampf nearVal, GLclampf farVal);
 
 private:
+#ifndef QT_STATIC
     void *resolve(const char *name);
     HMODULE m_lib;
+#endif
 };
 
 class QWindowsEGLStaticContext : public QWindowsStaticOpenGLContext

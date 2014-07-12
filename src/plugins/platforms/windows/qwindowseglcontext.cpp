@@ -67,6 +67,8 @@ QT_BEGIN_NAMESPACE
 QWindowsLibEGL QWindowsEGLStaticContext::libEGL;
 QWindowsLibGLESv2 QWindowsEGLStaticContext::libGLESv2;
 
+#ifndef QT_STATIC
+
 #ifdef Q_CC_MINGW
 static void *resolveFunc(HMODULE lib, const char *name)
 {
@@ -110,6 +112,14 @@ void *QWindowsLibEGL::resolve(const char *name)
     return proc;
 }
 
+#endif // !QT_STATIC
+
+#ifndef QT_STATIC
+#  define RESOLVE(signature, name) signature(resolve( #name ));
+#else
+#  define RESOLVE(signature, name) signature(&::name);
+#endif
+
 bool QWindowsLibEGL::init()
 {
 #ifdef QT_DEBUG
@@ -120,35 +130,38 @@ bool QWindowsLibEGL::init()
 
     qCDebug(lcQpaGl) << "Qt: Using EGL from" << dllName;
 
+#ifndef QT_STATIC
     m_lib = ::LoadLibraryW((const wchar_t *) QString::fromLatin1(dllName).utf16());
     if (!m_lib) {
         qErrnoWarning(::GetLastError(), "Failed to load %s", dllName);
         return false;
     }
+#endif
 
-    eglGetError = reinterpret_cast<EGLint (EGLAPIENTRY *)(void)>(resolve("eglGetError"));
-    eglGetDisplay = reinterpret_cast<EGLDisplay (EGLAPIENTRY *)(EGLNativeDisplayType)>(resolve("eglGetDisplay"));
-    eglInitialize = reinterpret_cast<EGLBoolean (EGLAPIENTRY *)(EGLDisplay, EGLint *, EGLint *)>(resolve("eglInitialize"));
-    eglTerminate = reinterpret_cast<EGLBoolean (EGLAPIENTRY *)(EGLDisplay)>(resolve("eglTerminate"));
-    eglChooseConfig = reinterpret_cast<EGLBoolean (EGLAPIENTRY *)(EGLDisplay, const EGLint *, EGLConfig *, EGLint, EGLint *)>(resolve("eglChooseConfig"));
-    eglGetConfigAttrib = reinterpret_cast<EGLBoolean (EGLAPIENTRY *)(EGLDisplay, EGLConfig, EGLint, EGLint *)>(resolve("eglGetConfigAttrib"));
-    eglCreateWindowSurface = reinterpret_cast<EGLSurface (EGLAPIENTRY *)(EGLDisplay, EGLConfig, EGLNativeWindowType, const EGLint *)>(resolve("eglCreateWindowSurface"));
-    eglCreatePbufferSurface = reinterpret_cast<EGLSurface (EGLAPIENTRY *)(EGLDisplay , EGLConfig, const EGLint *)>(resolve("eglCreatePbufferSurface"));
-    eglDestroySurface = reinterpret_cast<EGLBoolean (EGLAPIENTRY *)(EGLDisplay , EGLSurface )>(resolve("eglDestroySurface"));
-    eglBindAPI = reinterpret_cast<EGLBoolean (EGLAPIENTRY * )(EGLenum )>(resolve("eglBindAPI"));
-    eglSwapInterval = reinterpret_cast<EGLBoolean (EGLAPIENTRY *)(EGLDisplay , EGLint )>(resolve("eglSwapInterval"));
-    eglCreateContext = reinterpret_cast<EGLContext (EGLAPIENTRY *)(EGLDisplay , EGLConfig , EGLContext , const EGLint *)>(resolve("eglCreateContext"));
-    eglDestroyContext = reinterpret_cast<EGLBoolean (EGLAPIENTRY *)(EGLDisplay, EGLContext)>(resolve("eglDestroyContext"));
-    eglMakeCurrent  = reinterpret_cast<EGLBoolean (EGLAPIENTRY *)(EGLDisplay , EGLSurface , EGLSurface , EGLContext )>(resolve("eglMakeCurrent"));
-    eglGetCurrentContext = reinterpret_cast<EGLContext (EGLAPIENTRY *)(void)>(resolve("eglGetCurrentContext"));
-    eglGetCurrentSurface = reinterpret_cast<EGLSurface (EGLAPIENTRY *)(EGLint )>(resolve("eglGetCurrentSurface"));
-    eglGetCurrentDisplay = reinterpret_cast<EGLDisplay (EGLAPIENTRY *)(void)>(resolve("eglGetCurrentDisplay"));
-    eglSwapBuffers = reinterpret_cast<EGLBoolean (EGLAPIENTRY *)(EGLDisplay , EGLSurface)>(resolve("eglSwapBuffers"));
-    eglGetProcAddress = reinterpret_cast<__eglMustCastToProperFunctionPointerType (EGLAPIENTRY * )(const char *)>(resolve("eglGetProcAddress"));
+    eglGetError = RESOLVE((EGLint (EGLAPIENTRY *)(void)), eglGetError);
+    eglGetDisplay = RESOLVE((EGLDisplay (EGLAPIENTRY *)(EGLNativeDisplayType)), eglGetDisplay);
+    eglInitialize = RESOLVE((EGLBoolean (EGLAPIENTRY *)(EGLDisplay, EGLint *, EGLint *)), eglInitialize);
+    eglTerminate = RESOLVE((EGLBoolean (EGLAPIENTRY *)(EGLDisplay)), eglTerminate);
+    eglChooseConfig = RESOLVE((EGLBoolean (EGLAPIENTRY *)(EGLDisplay, const EGLint *, EGLConfig *, EGLint, EGLint *)), eglChooseConfig);
+    eglGetConfigAttrib = RESOLVE((EGLBoolean (EGLAPIENTRY *)(EGLDisplay, EGLConfig, EGLint, EGLint *)), eglGetConfigAttrib);
+    eglCreateWindowSurface = RESOLVE((EGLSurface (EGLAPIENTRY *)(EGLDisplay, EGLConfig, EGLNativeWindowType, const EGLint *)), eglCreateWindowSurface);
+    eglCreatePbufferSurface = RESOLVE((EGLSurface (EGLAPIENTRY *)(EGLDisplay , EGLConfig, const EGLint *)), eglCreatePbufferSurface);
+    eglDestroySurface = RESOLVE((EGLBoolean (EGLAPIENTRY *)(EGLDisplay , EGLSurface )), eglDestroySurface);
+    eglBindAPI = RESOLVE((EGLBoolean (EGLAPIENTRY * )(EGLenum )), eglBindAPI);
+    eglSwapInterval = RESOLVE((EGLBoolean (EGLAPIENTRY *)(EGLDisplay , EGLint )), eglSwapInterval);
+    eglCreateContext = RESOLVE((EGLContext (EGLAPIENTRY *)(EGLDisplay , EGLConfig , EGLContext , const EGLint *)), eglCreateContext);
+    eglDestroyContext = RESOLVE((EGLBoolean (EGLAPIENTRY *)(EGLDisplay, EGLContext)), eglDestroyContext);
+    eglMakeCurrent  = RESOLVE((EGLBoolean (EGLAPIENTRY *)(EGLDisplay , EGLSurface , EGLSurface , EGLContext )), eglMakeCurrent);
+    eglGetCurrentContext = RESOLVE((EGLContext (EGLAPIENTRY *)(void)), eglGetCurrentContext);
+    eglGetCurrentSurface = RESOLVE((EGLSurface (EGLAPIENTRY *)(EGLint )), eglGetCurrentSurface);
+    eglGetCurrentDisplay = RESOLVE((EGLDisplay (EGLAPIENTRY *)(void)), eglGetCurrentDisplay);
+    eglSwapBuffers = RESOLVE((EGLBoolean (EGLAPIENTRY *)(EGLDisplay , EGLSurface)), eglSwapBuffers);
+    eglGetProcAddress = RESOLVE((__eglMustCastToProperFunctionPointerType (EGLAPIENTRY * )(const char *)), eglGetProcAddress);
 
     return eglGetError && eglGetDisplay && eglInitialize;
 }
 
+#ifndef QT_STATIC
 void *QWindowsLibGLESv2::resolve(const char *name)
 {
     void *proc = m_lib ? resolveFunc(m_lib, name) : 0;
@@ -157,6 +170,7 @@ void *QWindowsLibGLESv2::resolve(const char *name)
 
     return proc;
 }
+#endif // !QT_STATIC
 
 bool QWindowsLibGLESv2::init()
 {
@@ -167,157 +181,158 @@ bool QWindowsLibGLESv2::init()
 #endif
 
     qCDebug(lcQpaGl) << "Qt: Using OpenGL ES 2.0 from" << dllName;
-
+#ifndef QT_STATIC
     m_lib = ::LoadLibraryW((const wchar_t *) QString::fromLatin1(dllName).utf16());
     if (!m_lib) {
         qErrnoWarning(::GetLastError(), "Failed to load %s", dllName);
         return false;
     }
+#endif // !QT_STATIC
 
-    glBindTexture = reinterpret_cast<void (APIENTRY *)(GLenum , GLuint )>(resolve("glBindTexture"));
-    glBlendFunc = reinterpret_cast<void (APIENTRY *)(GLenum , GLenum )>(resolve("glBlendFunc"));
-    glClear = reinterpret_cast<void (APIENTRY *)(GLbitfield )>(resolve("glClear"));
-    glClearColor = reinterpret_cast<void (APIENTRY *)(GLfloat , GLfloat , GLfloat , GLfloat )>(resolve("glClearColor"));
-    glClearStencil = reinterpret_cast<void (APIENTRY *)(GLint )>(resolve("glClearStencil"));
-    glColorMask = reinterpret_cast<void (APIENTRY *)(GLboolean , GLboolean , GLboolean , GLboolean )>(resolve("glColorMask"));
-    glCopyTexImage2D = reinterpret_cast<void (APIENTRY *)(GLenum , GLint , GLenum , GLint , GLint , GLsizei , GLsizei , GLint )>(resolve("glCopyTexImage2D"));
-    glCopyTexSubImage2D = reinterpret_cast<void (APIENTRY *)(GLenum , GLint , GLint , GLint , GLint , GLint , GLsizei , GLsizei )>(resolve("glCopyTexSubImage2D"));
-    glCullFace = reinterpret_cast<void (APIENTRY *)(GLenum )>(resolve("glCullFace"));
-    glDeleteTextures = reinterpret_cast<void (APIENTRY *)(GLsizei , const GLuint *)>(resolve("glDeleteTextures"));
-    glDepthFunc = reinterpret_cast<void (APIENTRY *)(GLenum )>(resolve("glDepthFunc"));
-    glDepthMask = reinterpret_cast<void (APIENTRY *)(GLboolean )>(resolve("glDepthMask"));
-    glDisable = reinterpret_cast<void (APIENTRY *)(GLenum )>(resolve("glDisable"));
-    glDrawArrays = reinterpret_cast<void (APIENTRY *)(GLenum , GLint , GLsizei )>(resolve("glDrawArrays"));
-    glDrawElements = reinterpret_cast<void (APIENTRY *)(GLenum , GLsizei , GLenum , const GLvoid *)>(resolve("glDrawElements"));
-    glEnable = reinterpret_cast<void (APIENTRY *)(GLenum )>(resolve("glEnable"));
-    glFinish = reinterpret_cast<void (APIENTRY *)()>(resolve("glFinish"));
-    glFlush = reinterpret_cast<void (APIENTRY *)()>(resolve("glFlush"));
-    glFrontFace = reinterpret_cast<void (APIENTRY *)(GLenum )>(resolve("glFrontFace"));
-    glGenTextures = reinterpret_cast<void (APIENTRY *)(GLsizei , GLuint *)>(resolve("glGenTextures"));
-    glGetBooleanv = reinterpret_cast<void (APIENTRY *)(GLenum , GLboolean *)>(resolve("glGetBooleanv"));
-    glGetError = reinterpret_cast<GLenum (APIENTRY *)()>(resolve("glGetError"));
-    glGetFloatv = reinterpret_cast<void (APIENTRY *)(GLenum , GLfloat *)>(resolve("glGetFloatv"));
-    glGetIntegerv = reinterpret_cast<void (APIENTRY *)(GLenum , GLint *)>(resolve("glGetIntegerv"));
-    glGetString = reinterpret_cast<const GLubyte * (APIENTRY *)(GLenum )>(resolve("glGetString"));
-    glGetTexParameterfv = reinterpret_cast<void (APIENTRY *)(GLenum , GLenum , GLfloat *)>(resolve("glGetTexParameterfv"));
-    glGetTexParameteriv = reinterpret_cast<void (APIENTRY *)(GLenum , GLenum , GLint *)>(resolve("glGetTexParameteriv"));
-    glHint = reinterpret_cast<void (APIENTRY *)(GLenum , GLenum )>(resolve("glHint"));
-    glIsEnabled = reinterpret_cast<GLboolean (APIENTRY *)(GLenum )>(resolve("glIsEnabled"));
-    glIsTexture = reinterpret_cast<GLboolean (APIENTRY *)(GLuint )>(resolve("glIsTexture"));
-    glLineWidth = reinterpret_cast<void (APIENTRY *)(GLfloat )>(resolve("glLineWidth"));
-    glPixelStorei = reinterpret_cast<void (APIENTRY *)(GLenum , GLint )>(resolve("glPixelStorei"));
-    glPolygonOffset = reinterpret_cast<void (APIENTRY *)(GLfloat , GLfloat )>(resolve("glPolygonOffset"));
-    glReadPixels = reinterpret_cast<void (APIENTRY *)(GLint , GLint , GLsizei , GLsizei , GLenum , GLenum , GLvoid *)>(resolve("glReadPixels"));
-    glScissor = reinterpret_cast<void (APIENTRY *)(GLint , GLint , GLsizei , GLsizei )>(resolve("glScissor"));
-    glStencilFunc = reinterpret_cast<void (APIENTRY *)(GLenum , GLint , GLuint )>(resolve("glStencilFunc"));
-    glStencilMask = reinterpret_cast<void (APIENTRY *)(GLuint )>(resolve("glStencilMask"));
-    glStencilOp = reinterpret_cast<void (APIENTRY *)(GLenum , GLenum , GLenum )>(resolve("glStencilOp"));
-    glTexImage2D = reinterpret_cast<void (APIENTRY *)(GLenum , GLint , GLint , GLsizei , GLsizei , GLint , GLenum , GLenum , const GLvoid *)>(resolve("glTexImage2D"));
-    glTexParameterf = reinterpret_cast<void (APIENTRY *)(GLenum , GLenum , GLfloat )>(resolve("glTexParameterf"));
-    glTexParameterfv = reinterpret_cast<void (APIENTRY *)(GLenum , GLenum , const GLfloat *)>(resolve("glTexParameterfv"));
-    glTexParameteri = reinterpret_cast<void (APIENTRY *)(GLenum , GLenum , GLint )>(resolve("glTexParameteri"));
-    glTexParameteriv = reinterpret_cast<void (APIENTRY *)(GLenum , GLenum , const GLint *)>(resolve("glTexParameteriv"));
-    glTexSubImage2D = reinterpret_cast<void (APIENTRY *)(GLenum , GLint , GLint , GLint , GLsizei , GLsizei , GLenum , GLenum , const GLvoid *)>(resolve("glTexSubImage2D"));
-    glViewport = reinterpret_cast<void (APIENTRY *)(GLint , GLint , GLsizei , GLsizei )>(resolve("glViewport"));
+    glBindTexture = RESOLVE((void (APIENTRY *)(GLenum , GLuint )), glBindTexture);
+    glBlendFunc = RESOLVE((void (APIENTRY *)(GLenum , GLenum )), glBlendFunc);
+    glClear = RESOLVE((void (APIENTRY *)(GLbitfield )), glClear);
+    glClearColor = RESOLVE((void (APIENTRY *)(GLfloat , GLfloat , GLfloat , GLfloat )), glClearColor);
+    glClearStencil = RESOLVE((void (APIENTRY *)(GLint )), glClearStencil);
+    glColorMask = RESOLVE((void (APIENTRY *)(GLboolean , GLboolean , GLboolean , GLboolean )), glColorMask);
+    glCopyTexImage2D = RESOLVE((void (APIENTRY *)(GLenum , GLint , GLenum , GLint , GLint , GLsizei , GLsizei , GLint )), glCopyTexImage2D);
+    glCopyTexSubImage2D = RESOLVE((void (APIENTRY *)(GLenum , GLint , GLint , GLint , GLint , GLint , GLsizei , GLsizei )), glCopyTexSubImage2D);
+    glCullFace = RESOLVE((void (APIENTRY *)(GLenum )), glCullFace);
+    glDeleteTextures = RESOLVE((void (APIENTRY *)(GLsizei , const GLuint *)), glDeleteTextures);
+    glDepthFunc = RESOLVE((void (APIENTRY *)(GLenum )), glDepthFunc);
+    glDepthMask = RESOLVE((void (APIENTRY *)(GLboolean )), glDepthMask);
+    glDisable = RESOLVE((void (APIENTRY *)(GLenum )), glDisable);
+    glDrawArrays = RESOLVE((void (APIENTRY *)(GLenum , GLint , GLsizei )), glDrawArrays);
+    glDrawElements = RESOLVE((void (APIENTRY *)(GLenum , GLsizei , GLenum , const GLvoid *)), glDrawElements);
+    glEnable = RESOLVE((void (APIENTRY *)(GLenum )), glEnable);
+    glFinish = RESOLVE((void (APIENTRY *)()), glFinish);
+    glFlush = RESOLVE((void (APIENTRY *)()), glFlush);
+    glFrontFace = RESOLVE((void (APIENTRY *)(GLenum )), glFrontFace);
+    glGenTextures = RESOLVE((void (APIENTRY *)(GLsizei , GLuint *)), glGenTextures);
+    glGetBooleanv = RESOLVE((void (APIENTRY *)(GLenum , GLboolean *)), glGetBooleanv);
+    glGetError = RESOLVE((GLenum (APIENTRY *)()), glGetError);
+    glGetFloatv = RESOLVE((void (APIENTRY *)(GLenum , GLfloat *)), glGetFloatv);
+    glGetIntegerv = RESOLVE((void (APIENTRY *)(GLenum , GLint *)), glGetIntegerv);
+    glGetString = RESOLVE((const GLubyte * (APIENTRY *)(GLenum )), glGetString);
+    glGetTexParameterfv = RESOLVE((void (APIENTRY *)(GLenum , GLenum , GLfloat *)), glGetTexParameterfv);
+    glGetTexParameteriv = RESOLVE((void (APIENTRY *)(GLenum , GLenum , GLint *)), glGetTexParameteriv);
+    glHint = RESOLVE((void (APIENTRY *)(GLenum , GLenum )), glHint);
+    glIsEnabled = RESOLVE((GLboolean (APIENTRY *)(GLenum )), glIsEnabled);
+    glIsTexture = RESOLVE((GLboolean (APIENTRY *)(GLuint )), glIsTexture);
+    glLineWidth = RESOLVE((void (APIENTRY *)(GLfloat )), glLineWidth);
+    glPixelStorei = RESOLVE((void (APIENTRY *)(GLenum , GLint )), glPixelStorei);
+    glPolygonOffset = RESOLVE((void (APIENTRY *)(GLfloat , GLfloat )), glPolygonOffset);
+    glReadPixels = RESOLVE((void (APIENTRY *)(GLint , GLint , GLsizei , GLsizei , GLenum , GLenum , GLvoid *)), glReadPixels);
+    glScissor = RESOLVE((void (APIENTRY *)(GLint , GLint , GLsizei , GLsizei )), glScissor);
+    glStencilFunc = RESOLVE((void (APIENTRY *)(GLenum , GLint , GLuint )), glStencilFunc);
+    glStencilMask = RESOLVE((void (APIENTRY *)(GLuint )), glStencilMask);
+    glStencilOp = RESOLVE((void (APIENTRY *)(GLenum , GLenum , GLenum )), glStencilOp);
+    glTexImage2D = RESOLVE((void (APIENTRY *)(GLenum , GLint , GLint , GLsizei , GLsizei , GLint , GLenum , GLenum , const GLvoid *)), glTexImage2D);
+    glTexParameterf = RESOLVE((void (APIENTRY *)(GLenum , GLenum , GLfloat )), glTexParameterf);
+    glTexParameterfv = RESOLVE((void (APIENTRY *)(GLenum , GLenum , const GLfloat *)), glTexParameterfv);
+    glTexParameteri = RESOLVE((void (APIENTRY *)(GLenum , GLenum , GLint )), glTexParameteri);
+    glTexParameteriv = RESOLVE((void (APIENTRY *)(GLenum , GLenum , const GLint *)), glTexParameteriv);
+    glTexSubImage2D = RESOLVE((void (APIENTRY *)(GLenum , GLint , GLint , GLint , GLsizei , GLsizei , GLenum , GLenum , const GLvoid *)), glTexSubImage2D);
+    glViewport = RESOLVE((void (APIENTRY *)(GLint , GLint , GLsizei , GLsizei )), glViewport);
 
-    glActiveTexture = reinterpret_cast<void (APIENTRY *)(GLenum)>(resolve("glActiveTexture"));
-    glAttachShader = reinterpret_cast<void (APIENTRY *)(GLuint , GLuint )>(resolve("glAttachShader"));
-    glBindAttribLocation = reinterpret_cast<void (APIENTRY *)(GLuint , GLuint , const GLchar* )>(resolve("glBindAttribLocation"));
-    glBindBuffer = reinterpret_cast<void (APIENTRY *)(GLenum , GLuint )>(resolve("glBindBuffer"));
-    glBindFramebuffer = reinterpret_cast<void (APIENTRY *)(GLenum , GLuint )>(resolve("glBindFramebuffer"));
-    glBindRenderbuffer = reinterpret_cast<void (APIENTRY *)(GLenum , GLuint )>(resolve("glBindRenderbuffer"));
-    glBlendColor = reinterpret_cast<void (APIENTRY *)(GLclampf , GLclampf , GLclampf , GLclampf )>(resolve("glBlendColor"));
-    glBlendEquation = reinterpret_cast<void (APIENTRY *)(GLenum )>(resolve("glBlendEquation"));
-    glBlendEquationSeparate = reinterpret_cast<void (APIENTRY *)(GLenum , GLenum )>(resolve("glBlendEquationSeparate"));
-    glBlendFuncSeparate = reinterpret_cast<void (APIENTRY *)(GLenum , GLenum , GLenum , GLenum )>(resolve("glBlendFuncSeparate"));
-    glBufferData = reinterpret_cast<void (APIENTRY *)(GLenum , qopengl_GLsizeiptr , const GLvoid* , GLenum )>(resolve("glBufferData"));
-    glBufferSubData = reinterpret_cast<void (APIENTRY *)(GLenum , qopengl_GLintptr , qopengl_GLsizeiptr , const GLvoid* )>(resolve("glBufferSubData"));
-    glCheckFramebufferStatus = reinterpret_cast<GLenum (APIENTRY *)(GLenum )>(resolve("glCheckFramebufferStatus"));
-    glCompileShader = reinterpret_cast<void (APIENTRY *)(GLuint )>(resolve("glCompileShader"));
-    glCompressedTexImage2D = reinterpret_cast<void (APIENTRY *)(GLenum , GLint , GLenum , GLsizei , GLsizei, GLint, GLsizei, const GLvoid* )>(resolve("glCompressedTexImage2D"));
-    glCompressedTexSubImage2D = reinterpret_cast<void (APIENTRY *)(GLenum , GLint , GLint , GLint, GLsizei, GLsizei, GLenum, GLsizei, const GLvoid* )>(resolve("glCompressedTexSubImage2D"));
-    glCreateProgram = reinterpret_cast<GLuint (APIENTRY *)(void)>(resolve("glCreateProgram"));
-    glCreateShader = reinterpret_cast<GLuint (APIENTRY *)(GLenum )>(resolve("glCreateShader"));
-    glDeleteBuffers = reinterpret_cast<void (APIENTRY *)(GLsizei , const GLuint*)>(resolve("glDeleteBuffers"));
-    glDeleteFramebuffers = reinterpret_cast<void (APIENTRY *)(GLsizei , const GLuint* )>(resolve("glDeleteFramebuffers"));
-    glDeleteProgram = reinterpret_cast<void (APIENTRY *)(GLuint )>(resolve("glDeleteProgram"));
-    glDeleteRenderbuffers = reinterpret_cast<void (APIENTRY *)(GLsizei , const GLuint* )>(resolve("glDeleteRenderbuffers"));
-    glDeleteShader = reinterpret_cast<void (APIENTRY *)(GLuint )>(resolve("glDeleteShader"));
-    glDetachShader = reinterpret_cast<void (APIENTRY *)(GLuint , GLuint )>(resolve("glDetachShader"));
-    glDisableVertexAttribArray = reinterpret_cast<void (APIENTRY *)(GLuint )>(resolve("glDisableVertexAttribArray"));
-    glEnableVertexAttribArray = reinterpret_cast<void (APIENTRY *)(GLuint )>(resolve("glEnableVertexAttribArray"));
-    glFramebufferRenderbuffer = reinterpret_cast<void (APIENTRY *)(GLenum , GLenum , GLenum , GLuint )>(resolve("glFramebufferRenderbuffer"));
-    glFramebufferTexture2D = reinterpret_cast<void (APIENTRY *)(GLenum , GLenum , GLenum , GLuint , GLint )>(resolve("glFramebufferTexture2D"));
-    glGenBuffers = reinterpret_cast<void (APIENTRY *)(GLsizei , GLuint* )>(resolve("glGenBuffers"));
-    glGenerateMipmap = reinterpret_cast<void (APIENTRY *)(GLenum )>(resolve("glGenerateMipmap"));
-    glGenFramebuffers = reinterpret_cast<void (APIENTRY *)(GLsizei , GLuint* )>(resolve("glGenFramebuffers"));
-    glGenRenderbuffers = reinterpret_cast<void (APIENTRY *)(GLsizei , GLuint* )>(resolve("glGenRenderbuffers"));
-    glGetActiveAttrib = reinterpret_cast<void (APIENTRY *)(GLuint , GLuint , GLsizei , GLsizei* , GLint* , GLenum* , GLchar* )>(resolve("glGetActiveAttrib"));
-    glGetActiveUniform = reinterpret_cast<void (APIENTRY *)(GLuint , GLuint , GLsizei , GLsizei* , GLint* , GLenum* , GLchar* )>(resolve("glGetActiveUniform"));
-    glGetAttachedShaders = reinterpret_cast<void (APIENTRY *)(GLuint , GLsizei , GLsizei*, GLuint* )>(resolve("glGetAttachedShaders"));
-    glGetAttribLocation = reinterpret_cast<int (APIENTRY *)(GLuint , const GLchar* )>(resolve("glGetAttribLocation"));
-    glGetBufferParameteriv = reinterpret_cast<void (APIENTRY *)(GLenum , GLenum , GLint* )>(resolve("glGetBufferParameteriv"));
-    glGetFramebufferAttachmentParameteriv = reinterpret_cast<void (APIENTRY *)(GLenum , GLenum, GLenum , GLint* )>(resolve("glGetFramebufferAttachmentParameteriv"));
-    glGetProgramiv = reinterpret_cast<void (APIENTRY *)(GLuint , GLenum , GLint* )>(resolve("glGetProgramiv"));
-    glGetProgramInfoLog = reinterpret_cast<void (APIENTRY *)(GLuint , GLsizei , GLsizei* , GLchar* )>(resolve("glGetProgramInfoLog"));
-    glGetRenderbufferParameteriv = reinterpret_cast<void (APIENTRY *)(GLenum , GLenum , GLint* )>(resolve("glGetRenderbufferParameteriv"));
-    glGetShaderiv = reinterpret_cast<void (APIENTRY *)(GLuint , GLenum , GLint* )>(resolve("glGetShaderiv"));
-    glGetShaderInfoLog = reinterpret_cast<void (APIENTRY *)(GLuint , GLsizei , GLsizei*, GLchar*)>(resolve("glGetShaderInfoLog"));
-    glGetShaderPrecisionFormat = reinterpret_cast<void (APIENTRY *)(GLenum , GLenum , GLint* , GLint* )>(resolve("glGetShaderPrecisionFormat"));
-    glGetShaderSource = reinterpret_cast<void (APIENTRY *)(GLuint , GLsizei , GLsizei* , GLchar* )>(resolve("glGetShaderSource"));
-    glGetUniformfv = reinterpret_cast<void (APIENTRY *)(GLuint , GLint , GLfloat*)>(resolve("glGetUniformfv"));
-    glGetUniformiv = reinterpret_cast<void (APIENTRY *)(GLuint , GLint , GLint*)>(resolve("glGetUniformiv"));
-    glGetUniformLocation = reinterpret_cast<int (APIENTRY *)(GLuint , const GLchar* )>(resolve("glGetUniformLocation"));
-    glGetVertexAttribfv = reinterpret_cast<void (APIENTRY *)(GLuint , GLenum , GLfloat* )>(resolve("glGetVertexAttribfv"));
-    glGetVertexAttribiv = reinterpret_cast<void (APIENTRY *)(GLuint , GLenum , GLint* )>(resolve("glGetVertexAttribiv"));
-    glGetVertexAttribPointerv = reinterpret_cast<void (APIENTRY *)(GLuint , GLenum , GLvoid** pointer)>(resolve("glGetVertexAttribPointerv"));
-    glIsBuffer = reinterpret_cast<GLboolean (APIENTRY *)(GLuint )>(resolve("glIsBuffer"));
-    glIsFramebuffer = reinterpret_cast<GLboolean (APIENTRY *)(GLuint )>(resolve("glIsFramebuffer"));
-    glIsProgram = reinterpret_cast<GLboolean (APIENTRY *)(GLuint )>(resolve("glIsProgram"));
-    glIsRenderbuffer = reinterpret_cast<GLboolean (APIENTRY *)(GLuint )>(resolve("glIsRenderbuffer"));
-    glIsShader = reinterpret_cast<GLboolean (APIENTRY *)(GLuint )>(resolve("glIsShader"));
-    glLinkProgram = reinterpret_cast<void (APIENTRY *)(GLuint )>(resolve("glLinkProgram"));
-    glReleaseShaderCompiler = reinterpret_cast<void (APIENTRY *)(void)>(resolve("glReleaseShaderCompiler"));
-    glRenderbufferStorage = reinterpret_cast<void (APIENTRY *)(GLenum , GLenum , GLsizei , GLsizei )>(resolve("glRenderbufferStorage"));
-    glSampleCoverage = reinterpret_cast<void (APIENTRY *)(GLclampf , GLboolean )>(resolve("glSampleCoverage"));
-    glShaderBinary = reinterpret_cast<void (APIENTRY *)(GLsizei , const GLuint*, GLenum , const GLvoid* , GLsizei )>(resolve("glShaderBinary"));
-    glShaderSource = reinterpret_cast<void (APIENTRY *)(GLuint , GLsizei , const GLchar* *, const GLint* )>(resolve("glShaderSource"));
-    glStencilFuncSeparate = reinterpret_cast<void (APIENTRY *)(GLenum , GLenum , GLint , GLuint )>(resolve("glStencilFuncSeparate"));
-    glStencilMaskSeparate = reinterpret_cast<void (APIENTRY *)(GLenum , GLuint )>(resolve("glStencilMaskSeparate"));
-    glStencilOpSeparate = reinterpret_cast<void (APIENTRY *)(GLenum , GLenum , GLenum , GLenum )>(resolve("glStencilOpSeparate"));
-    glUniform1f = reinterpret_cast<void (APIENTRY *)(GLint , GLfloat )>(resolve("glUniform1f"));
-    glUniform1fv = reinterpret_cast<void (APIENTRY *)(GLint , GLsizei , const GLfloat* )>(resolve("glUniform1fv"));
-    glUniform1i = reinterpret_cast<void (APIENTRY *)(GLint , GLint )>(resolve("glUniform1i"));
-    glUniform1iv = reinterpret_cast<void (APIENTRY *)(GLint , GLsizei , const GLint* )>(resolve("glUniform1iv"));
-    glUniform2f = reinterpret_cast<void (APIENTRY *)(GLint , GLfloat , GLfloat )>(resolve("glUniform2f"));
-    glUniform2fv = reinterpret_cast<void (APIENTRY *)(GLint , GLsizei , const GLfloat* )>(resolve("glUniform2fv"));
-    glUniform2i = reinterpret_cast<void (APIENTRY *)(GLint , GLint , GLint )>(resolve("glUniform2i"));
-    glUniform2iv = reinterpret_cast<void (APIENTRY *)(GLint , GLsizei , const GLint* )>(resolve("glUniform2iv"));
-    glUniform3f = reinterpret_cast<void (APIENTRY *)(GLint , GLfloat , GLfloat , GLfloat )>(resolve("glUniform3f"));
-    glUniform3fv = reinterpret_cast<void (APIENTRY *)(GLint , GLsizei , const GLfloat* )>(resolve("glUniform3fv"));
-    glUniform3i = reinterpret_cast<void (APIENTRY *)(GLint , GLint , GLint , GLint )>(resolve("glUniform3i"));
-    glUniform3iv = reinterpret_cast<void (APIENTRY *)(GLint , GLsizei , const GLint* )>(resolve("glUniform3iv"));
-    glUniform4f = reinterpret_cast<void (APIENTRY *)(GLint , GLfloat , GLfloat , GLfloat , GLfloat )>(resolve("glUniform4f"));
-    glUniform4fv = reinterpret_cast<void (APIENTRY *)(GLint , GLsizei , const GLfloat* )>(resolve("glUniform4fv"));
-    glUniform4i = reinterpret_cast<void (APIENTRY *)(GLint , GLint , GLint , GLint , GLint )>(resolve("glUniform4i"));
-    glUniform4iv = reinterpret_cast<void (APIENTRY *)(GLint , GLsizei , const GLint* )>(resolve("glUniform4iv"));
-    glUniformMatrix2fv = reinterpret_cast<void (APIENTRY *)(GLint , GLsizei , GLboolean , const GLfloat* )>(resolve("glUniformMatrix2fv"));
-    glUniformMatrix3fv = reinterpret_cast<void (APIENTRY *)(GLint , GLsizei , GLboolean , const GLfloat* )>(resolve("glUniformMatrix3fv"));
-    glUniformMatrix4fv = reinterpret_cast<void (APIENTRY *)(GLint , GLsizei , GLboolean , const GLfloat* )>(resolve("glUniformMatrix4fv"));
-    glUseProgram = reinterpret_cast<void (APIENTRY *)(GLuint )>(resolve("glUseProgram"));
-    glValidateProgram = reinterpret_cast<void (APIENTRY *)(GLuint )>(resolve("glValidateProgram"));
-    glVertexAttrib1f = reinterpret_cast<void (APIENTRY *)(GLuint , GLfloat )>(resolve("glVertexAttrib1f"));
-    glVertexAttrib1fv = reinterpret_cast<void (APIENTRY *)(GLuint , const GLfloat* )>(resolve("glVertexAttrib1fv"));
-    glVertexAttrib2f = reinterpret_cast<void (APIENTRY *)(GLuint , GLfloat , GLfloat )>(resolve("glVertexAttrib2f"));
-    glVertexAttrib2fv = reinterpret_cast<void (APIENTRY *)(GLuint , const GLfloat* )>(resolve("glVertexAttrib2fv"));
-    glVertexAttrib3f = reinterpret_cast<void (APIENTRY *)(GLuint , GLfloat , GLfloat , GLfloat )>(resolve("glVertexAttrib3f"));
-    glVertexAttrib3fv = reinterpret_cast<void (APIENTRY *)(GLuint , const GLfloat* )>(resolve("glVertexAttrib3fv"));
-    glVertexAttrib4f = reinterpret_cast<void (APIENTRY *)(GLuint , GLfloat , GLfloat , GLfloat , GLfloat )>(resolve("glVertexAttrib4f"));
-    glVertexAttrib4fv = reinterpret_cast<void (APIENTRY *)(GLuint , const GLfloat* )>(resolve("glVertexAttrib4fv"));
-    glVertexAttribPointer = reinterpret_cast<void (APIENTRY *)(GLuint , GLint, GLenum, GLboolean, GLsizei, const GLvoid* )>(resolve("glVertexAttribPointer"));
+    glActiveTexture = RESOLVE((void (APIENTRY *)(GLenum)), glActiveTexture);
+    glAttachShader = RESOLVE((void (APIENTRY *)(GLuint , GLuint )), glAttachShader);
+    glBindAttribLocation = RESOLVE((void (APIENTRY *)(GLuint , GLuint , const GLchar* )), glBindAttribLocation);
+    glBindBuffer = RESOLVE((void (APIENTRY *)(GLenum , GLuint )), glBindBuffer);
+    glBindFramebuffer = RESOLVE((void (APIENTRY *)(GLenum , GLuint )), glBindFramebuffer);
+    glBindRenderbuffer = RESOLVE((void (APIENTRY *)(GLenum , GLuint )), glBindRenderbuffer);
+    glBlendColor = RESOLVE((void (APIENTRY *)(GLclampf , GLclampf , GLclampf , GLclampf )), glBlendColor);
+    glBlendEquation = RESOLVE((void (APIENTRY *)(GLenum )), glBlendEquation);
+    glBlendEquationSeparate = RESOLVE((void (APIENTRY *)(GLenum , GLenum )), glBlendEquationSeparate);
+    glBlendFuncSeparate = RESOLVE((void (APIENTRY *)(GLenum , GLenum , GLenum , GLenum )), glBlendFuncSeparate);
+    glBufferData = RESOLVE((void (APIENTRY *)(GLenum , qopengl_GLsizeiptr , const GLvoid* , GLenum )), glBufferData);
+    glBufferSubData = RESOLVE((void (APIENTRY *)(GLenum , qopengl_GLintptr , qopengl_GLsizeiptr , const GLvoid* )), glBufferSubData);
+    glCheckFramebufferStatus = RESOLVE((GLenum (APIENTRY *)(GLenum )), glCheckFramebufferStatus);
+    glCompileShader = RESOLVE((void (APIENTRY *)(GLuint )), glCompileShader);
+    glCompressedTexImage2D = RESOLVE((void (APIENTRY *)(GLenum , GLint , GLenum , GLsizei , GLsizei, GLint, GLsizei, const GLvoid* )), glCompressedTexImage2D);
+    glCompressedTexSubImage2D = RESOLVE((void (APIENTRY *)(GLenum , GLint , GLint , GLint, GLsizei, GLsizei, GLenum, GLsizei, const GLvoid* )), glCompressedTexSubImage2D);
+    glCreateProgram = RESOLVE((GLuint (APIENTRY *)(void)), glCreateProgram);
+    glCreateShader = RESOLVE((GLuint (APIENTRY *)(GLenum )), glCreateShader);
+    glDeleteBuffers = RESOLVE((void (APIENTRY *)(GLsizei , const GLuint*)), glDeleteBuffers);
+    glDeleteFramebuffers = RESOLVE((void (APIENTRY *)(GLsizei , const GLuint* )), glDeleteFramebuffers);
+    glDeleteProgram = RESOLVE((void (APIENTRY *)(GLuint )), glDeleteProgram);
+    glDeleteRenderbuffers = RESOLVE((void (APIENTRY *)(GLsizei , const GLuint* )), glDeleteRenderbuffers);
+    glDeleteShader = RESOLVE((void (APIENTRY *)(GLuint )), glDeleteShader);
+    glDetachShader = RESOLVE((void (APIENTRY *)(GLuint , GLuint )), glDetachShader);
+    glDisableVertexAttribArray = RESOLVE((void (APIENTRY *)(GLuint )), glDisableVertexAttribArray);
+    glEnableVertexAttribArray = RESOLVE((void (APIENTRY *)(GLuint )), glEnableVertexAttribArray);
+    glFramebufferRenderbuffer = RESOLVE((void (APIENTRY *)(GLenum , GLenum , GLenum , GLuint )), glFramebufferRenderbuffer);
+    glFramebufferTexture2D = RESOLVE((void (APIENTRY *)(GLenum , GLenum , GLenum , GLuint , GLint )), glFramebufferTexture2D);
+    glGenBuffers = RESOLVE((void (APIENTRY *)(GLsizei , GLuint* )), glGenBuffers);
+    glGenerateMipmap = RESOLVE((void (APIENTRY *)(GLenum )), glGenerateMipmap);
+    glGenFramebuffers = RESOLVE((void (APIENTRY *)(GLsizei , GLuint* )), glGenFramebuffers);
+    glGenRenderbuffers = RESOLVE((void (APIENTRY *)(GLsizei , GLuint* )), glGenRenderbuffers);
+    glGetActiveAttrib = RESOLVE((void (APIENTRY *)(GLuint , GLuint , GLsizei , GLsizei* , GLint* , GLenum* , GLchar* )), glGetActiveAttrib);
+    glGetActiveUniform = RESOLVE((void (APIENTRY *)(GLuint , GLuint , GLsizei , GLsizei* , GLint* , GLenum* , GLchar* )), glGetActiveUniform);
+    glGetAttachedShaders = RESOLVE((void (APIENTRY *)(GLuint , GLsizei , GLsizei*, GLuint* )), glGetAttachedShaders);
+    glGetAttribLocation = RESOLVE((int (APIENTRY *)(GLuint , const GLchar* )), glGetAttribLocation);
+    glGetBufferParameteriv = RESOLVE((void (APIENTRY *)(GLenum , GLenum , GLint* )), glGetBufferParameteriv);
+    glGetFramebufferAttachmentParameteriv = RESOLVE((void (APIENTRY *)(GLenum , GLenum, GLenum , GLint* )), glGetFramebufferAttachmentParameteriv);
+    glGetProgramiv = RESOLVE((void (APIENTRY *)(GLuint , GLenum , GLint* )), glGetProgramiv);
+    glGetProgramInfoLog = RESOLVE((void (APIENTRY *)(GLuint , GLsizei , GLsizei* , GLchar* )), glGetProgramInfoLog);
+    glGetRenderbufferParameteriv = RESOLVE((void (APIENTRY *)(GLenum , GLenum , GLint* )), glGetRenderbufferParameteriv);
+    glGetShaderiv = RESOLVE((void (APIENTRY *)(GLuint , GLenum , GLint* )), glGetShaderiv);
+    glGetShaderInfoLog = RESOLVE((void (APIENTRY *)(GLuint , GLsizei , GLsizei*, GLchar*)), glGetShaderInfoLog);
+    glGetShaderPrecisionFormat = RESOLVE((void (APIENTRY *)(GLenum , GLenum , GLint* , GLint* )), glGetShaderPrecisionFormat);
+    glGetShaderSource = RESOLVE((void (APIENTRY *)(GLuint , GLsizei , GLsizei* , GLchar* )), glGetShaderSource);
+    glGetUniformfv = RESOLVE((void (APIENTRY *)(GLuint , GLint , GLfloat*)), glGetUniformfv);
+    glGetUniformiv = RESOLVE((void (APIENTRY *)(GLuint , GLint , GLint*)), glGetUniformiv);
+    glGetUniformLocation = RESOLVE((int (APIENTRY *)(GLuint , const GLchar* )), glGetUniformLocation);
+    glGetVertexAttribfv = RESOLVE((void (APIENTRY *)(GLuint , GLenum , GLfloat* )), glGetVertexAttribfv);
+    glGetVertexAttribiv = RESOLVE((void (APIENTRY *)(GLuint , GLenum , GLint* )), glGetVertexAttribiv);
+    glGetVertexAttribPointerv = RESOLVE((void (APIENTRY *)(GLuint , GLenum , GLvoid** pointer)), glGetVertexAttribPointerv);
+    glIsBuffer = RESOLVE((GLboolean (APIENTRY *)(GLuint )), glIsBuffer);
+    glIsFramebuffer = RESOLVE((GLboolean (APIENTRY *)(GLuint )), glIsFramebuffer);
+    glIsProgram = RESOLVE((GLboolean (APIENTRY *)(GLuint )), glIsProgram);
+    glIsRenderbuffer = RESOLVE((GLboolean (APIENTRY *)(GLuint )), glIsRenderbuffer);
+    glIsShader = RESOLVE((GLboolean (APIENTRY *)(GLuint )), glIsShader);
+    glLinkProgram = RESOLVE((void (APIENTRY *)(GLuint )), glLinkProgram);
+    glReleaseShaderCompiler = RESOLVE((void (APIENTRY *)(void)), glReleaseShaderCompiler);
+    glRenderbufferStorage = RESOLVE((void (APIENTRY *)(GLenum , GLenum , GLsizei , GLsizei )), glRenderbufferStorage);
+    glSampleCoverage = RESOLVE((void (APIENTRY *)(GLclampf , GLboolean )), glSampleCoverage);
+    glShaderBinary = RESOLVE((void (APIENTRY *)(GLsizei , const GLuint*, GLenum , const GLvoid* , GLsizei )), glShaderBinary);
+    glShaderSource = RESOLVE((void (APIENTRY *)(GLuint , GLsizei , const GLchar* *, const GLint* )), glShaderSource);
+    glStencilFuncSeparate = RESOLVE((void (APIENTRY *)(GLenum , GLenum , GLint , GLuint )), glStencilFuncSeparate);
+    glStencilMaskSeparate = RESOLVE((void (APIENTRY *)(GLenum , GLuint )), glStencilMaskSeparate);
+    glStencilOpSeparate = RESOLVE((void (APIENTRY *)(GLenum , GLenum , GLenum , GLenum )), glStencilOpSeparate);
+    glUniform1f = RESOLVE((void (APIENTRY *)(GLint , GLfloat )), glUniform1f);
+    glUniform1fv = RESOLVE((void (APIENTRY *)(GLint , GLsizei , const GLfloat* )), glUniform1fv);
+    glUniform1i = RESOLVE((void (APIENTRY *)(GLint , GLint )), glUniform1i);
+    glUniform1iv = RESOLVE((void (APIENTRY *)(GLint , GLsizei , const GLint* )), glUniform1iv);
+    glUniform2f = RESOLVE((void (APIENTRY *)(GLint , GLfloat , GLfloat )), glUniform2f);
+    glUniform2fv = RESOLVE((void (APIENTRY *)(GLint , GLsizei , const GLfloat* )), glUniform2fv);
+    glUniform2i = RESOLVE((void (APIENTRY *)(GLint , GLint , GLint )), glUniform2i);
+    glUniform2iv = RESOLVE((void (APIENTRY *)(GLint , GLsizei , const GLint* )), glUniform2iv);
+    glUniform3f = RESOLVE((void (APIENTRY *)(GLint , GLfloat , GLfloat , GLfloat )), glUniform3f);
+    glUniform3fv = RESOLVE((void (APIENTRY *)(GLint , GLsizei , const GLfloat* )), glUniform3fv);
+    glUniform3i = RESOLVE((void (APIENTRY *)(GLint , GLint , GLint , GLint )), glUniform3i);
+    glUniform3iv = RESOLVE((void (APIENTRY *)(GLint , GLsizei , const GLint* )), glUniform3iv);
+    glUniform4f = RESOLVE((void (APIENTRY *)(GLint , GLfloat , GLfloat , GLfloat , GLfloat )), glUniform4f);
+    glUniform4fv = RESOLVE((void (APIENTRY *)(GLint , GLsizei , const GLfloat* )), glUniform4fv);
+    glUniform4i = RESOLVE((void (APIENTRY *)(GLint , GLint , GLint , GLint , GLint )), glUniform4i);
+    glUniform4iv = RESOLVE((void (APIENTRY *)(GLint , GLsizei , const GLint* )), glUniform4iv);
+    glUniformMatrix2fv = RESOLVE((void (APIENTRY *)(GLint , GLsizei , GLboolean , const GLfloat* )), glUniformMatrix2fv);
+    glUniformMatrix3fv = RESOLVE((void (APIENTRY *)(GLint , GLsizei , GLboolean , const GLfloat* )), glUniformMatrix3fv);
+    glUniformMatrix4fv = RESOLVE((void (APIENTRY *)(GLint , GLsizei , GLboolean , const GLfloat* )), glUniformMatrix4fv);
+    glUseProgram = RESOLVE((void (APIENTRY *)(GLuint )), glUseProgram);
+    glValidateProgram = RESOLVE((void (APIENTRY *)(GLuint )), glValidateProgram);
+    glVertexAttrib1f = RESOLVE((void (APIENTRY *)(GLuint , GLfloat )), glVertexAttrib1f);
+    glVertexAttrib1fv = RESOLVE((void (APIENTRY *)(GLuint , const GLfloat* )), glVertexAttrib1fv);
+    glVertexAttrib2f = RESOLVE((void (APIENTRY *)(GLuint , GLfloat , GLfloat )), glVertexAttrib2f);
+    glVertexAttrib2fv = RESOLVE((void (APIENTRY *)(GLuint , const GLfloat* )), glVertexAttrib2fv);
+    glVertexAttrib3f = RESOLVE((void (APIENTRY *)(GLuint , GLfloat , GLfloat , GLfloat )), glVertexAttrib3f);
+    glVertexAttrib3fv = RESOLVE((void (APIENTRY *)(GLuint , const GLfloat* )), glVertexAttrib3fv);
+    glVertexAttrib4f = RESOLVE((void (APIENTRY *)(GLuint , GLfloat , GLfloat , GLfloat , GLfloat )), glVertexAttrib4f);
+    glVertexAttrib4fv = RESOLVE((void (APIENTRY *)(GLuint , const GLfloat* )), glVertexAttrib4fv);
+    glVertexAttribPointer = RESOLVE((void (APIENTRY *)(GLuint , GLint, GLenum, GLboolean, GLsizei, const GLvoid* )), glVertexAttribPointer);
 
-    glClearDepthf = reinterpret_cast<void (APIENTRY *)(GLclampf )>(resolve("glClearDepthf"));
-    glDepthRangef = reinterpret_cast<void (APIENTRY *)(GLclampf , GLclampf )>(resolve("glDepthRangef"));
+    glClearDepthf = RESOLVE((void (APIENTRY *)(GLclampf )), glClearDepthf);
+    glDepthRangef = RESOLVE((void (APIENTRY *)(GLclampf , GLclampf )), glDepthRangef);
 
     return glBindTexture && glCreateShader && glClearDepthf;
 }
