@@ -1526,6 +1526,34 @@ public class ExtractStyle {
             jsonWriter.name("simple_spinner_item").value(extractItemStyle(android.R.layout.simple_spinner_item, "simple_spinner_item", -1));
             jsonWriter.name("simple_spinner_dropdown_item").value(extractItemStyle(android.R.layout.simple_spinner_dropdown_item, "simple_spinner_dropdown_item",android.R.style.TextAppearance_Large));
             jsonWriter.name("simple_dropdown_item_1line").value(extractItemStyle(android.R.layout.simple_dropdown_item_1line, "simple_dropdown_item_1line",android.R.style.TextAppearance_Large));
+            if (Build.VERSION.SDK_INT > 10) {
+                Class<?> layoutClass = Class.forName("android.R$layout");
+                int styleId = layoutClass.getDeclaredField("simple_selectable_list_item").getInt(null);
+                jsonWriter.name("simple_selectable_list_item").value(extractItemStyle(styleId, "simple_selectable_list_item",android.R.style.TextAppearance_Large));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    void extractListView(SimpleJsonWriter writer, String styleName, String qtClass)
+    {
+        JSONObject json = extractTextAppearanceInformations(styleName, qtClass, null, -1);
+        try {
+            Class<?> attrClass = Class.forName("android.R$attr");
+            int styleId = attrClass.getDeclaredField(styleName).getInt(null);
+
+            int[] styleAttrs = (int[]) styleableClass.getDeclaredField("ListView").get(null);
+            TypedArray a = m_theme.obtainStyledAttributes(null, styleAttrs, styleId, 0);
+
+            Drawable divider = a.getDrawable(getField(styleableClass,"ListView_divider"));
+            if (divider != null)
+                json.put("ListView_divider", getDrawable(divider, styleName + "_ListView_divider"));
+
+            json.put("ListView_dividerHeight", a.getDimensionPixelSize(getField(styleableClass, "ListView_dividerHeight"), 0));
+
+            a.recycle();
+            writer.name(styleName).value(json);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1661,6 +1689,7 @@ public class ExtractStyle {
               extractCompoundButton(jsonWriter, "radioButtonStyle", "QRadioButton");
               jsonWriter.name("textViewStyle").value(extractTextAppearanceInformations("textViewStyle", "QWidget", null, -1));
               jsonWriter.name("scrollViewStyle").value(extractTextAppearanceInformations("scrollViewStyle", "QAbstractScrollArea", null, -1));
+              extractListView(jsonWriter, "listViewStyle", "QListView");
               extractItemsStyle(jsonWriter);
               extractCompoundButton(jsonWriter, "buttonStyleToggle", null);
               if (Build.VERSION.SDK_INT > 10) {
