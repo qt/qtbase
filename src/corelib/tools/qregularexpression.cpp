@@ -1731,7 +1731,7 @@ QRegularExpressionMatchIterator QRegularExpression::globalMatch(const QString &s
 
     \sa QRegularExpression::OptimizeOnFirstUsageOption
 */
-void QRegularExpression::optimize()
+void QRegularExpression::optimize() const
 {
     if (!isValid()) // will compile the pattern
         return;

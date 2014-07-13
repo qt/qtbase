@@ -125,7 +125,7 @@ public:
                                                 MatchType matchType       = NormalMatch,
                                                 MatchOptions matchOptions = NoMatchOption) const;
 
-    void optimize();
+    void optimize() const;
 
     static QString escape(const QString &str);
 
