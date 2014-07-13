@@ -41,8 +41,7 @@ OBJECTIVE_SOURCES += main.mm \
     qcocoakeymapper.mm \
     qcocoamimetypes.mm
 
-SOURCES += messages.cpp \
-    qcocoasessionmanager.cpp
+SOURCES += messages.cpp
 
 HEADERS += qcocoaintegration.h \
     qcocoatheme.h \
@@ -77,8 +76,7 @@ HEADERS += qcocoaintegration.h \
     qcocoaintrospection.h \
     qcocoakeymapper.h \
     messages.h \
-    qcocoamimetypes.h \
-    qcocoasessionmanager.h
+    qcocoamimetypes.h
 
 contains(QT_CONFIG, opengl.*) {
     OBJECTIVE_SOURCES += qcocoaglcontext.mm
