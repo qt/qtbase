@@ -1149,10 +1149,10 @@ void QRegularExpressionPrivate::optimizePattern(OptimizePatternOption option)
 {
     Q_ASSERT(compiledPattern);
 
+    QMutexLocker lock(&mutex);
+
     if (studyData.load()) // already optimized
         return;
-
-    QMutexLocker lock(&mutex);
 
     if ((option == LazyOptimizeOption) && (++usedCount != qt_qregularexpression_optimize_after_use_count))
         return;
