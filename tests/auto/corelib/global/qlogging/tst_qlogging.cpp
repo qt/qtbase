@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -650,14 +651,15 @@ void tst_qmessagehandler::qMessagePattern_data()
 
     // %{file} is tricky because of shadow builds
     QTest::newRow("basic") << "%{type} %{appname} %{line} %{function} %{message}" << true << (QList<QByteArray>()
-            << "debug  46 T::T static constructor"
+            << "debug  52 T::T static constructor"
             //  we can't be sure whether the QT_MESSAGE_PATTERN is already destructed
             << "static destructor"
-            << "debug tst_qlogging 57 main qDebug"
-            << "warning tst_qlogging 58 main qWarning"
-            << "critical tst_qlogging 59 main qCritical"
-            << "warning tst_qlogging 62 main qDebug with category"
-            << "debug tst_qlogging 66 main qDebug2");
+            << "debug tst_qlogging 73 MyClass::myFunction from_a_function 34"
+            << "debug tst_qlogging 83 main qDebug"
+            << "warning tst_qlogging 84 main qWarning"
+            << "critical tst_qlogging 85 main qCritical"
+            << "warning tst_qlogging 88 main qDebug with category"
+            << "debug tst_qlogging 92 main qDebug2");
 
 
     QTest::newRow("invalid") << "PREFIX: %{unknown} %{message}" << false << (QList<QByteArray>()
@@ -701,6 +703,23 @@ void tst_qmessagehandler::qMessagePattern_data()
     QTest::newRow("time") << "<%{time}>%{message}" << true << (QList<QByteArray>()
             << "<     ");
 
+#ifdef __GLIBC__
+#ifdef QT_NAMESPACE
+#define QT_NAMESPACE_STR QT_STRINGIFY(QT_NAMESPACE::)
+#else
+#define QT_NAMESPACE_STR ""
+#endif
+
+#ifndef QT_NO_DEBUG
+    QTest::newRow("backtrace") << "[%{backtrace}] %{message}" << true << (QList<QByteArray>()
+            // MyClass::qt_static_metacall is explicitly marked as hidden in the Q_OBJECT macro
+            << "[MyClass::myFunction|MyClass::mySlot1|?app?|" QT_NAMESPACE_STR "QMetaMethod::invoke|" QT_NAMESPACE_STR "QMetaObject::invokeMethod] from_a_function 34");
+#endif
+
+    QTest::newRow("backtrace depth,separator") << "[%{backtrace depth=2 separator=\"\n\"}] %{message}" << true << (QList<QByteArray>()
+            << "[MyClass::myFunction\nMyClass::mySlot1] from_a_function 34");
+#endif
+
 }
 
 
@@ -734,7 +753,11 @@ void tst_qmessagehandler::qMessagePattern()
     QCOMPARE(!output.contains("QT_MESSAGE_PATTERN"), valid);
 
     foreach (const QByteArray &e, expected) {
-        QVERIFY(output.contains(e));
+        if (!output.contains(e)) {
+            qDebug() << output;
+            qDebug() << "expected: " << e;
+            QVERIFY(output.contains(e));
+        }
     }
 #endif
 }

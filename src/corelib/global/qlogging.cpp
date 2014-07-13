@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -70,6 +71,22 @@
 # include <systemd/sd-journal.h>
 # include <syslog.h>
 # include <unistd.h>
+#endif
+
+#if !defined QT_NO_REGULAREXPRESSION && !defined(QT_BOOTSTRAPPED)
+#ifdef __has_include
+#if __has_include(<cxxabi.h>) && __has_include(<execinfo.h>)
+#define QLOGGING_HAVE_BACKTRACE
+#endif
+#elif defined(__GLIBCXX__) && defined(__GLIBC__) // (because older version of gcc don't have __has_include)
+#define QLOGGING_HAVE_BACKTRACE
+#endif
+
+#ifdef QLOGGING_HAVE_BACKTRACE
+#include <qregularexpression.h>
+#include <cxxabi.h>
+#include <execinfo.h>
+#endif
 #endif
 
 #include <stdio.h>
@@ -763,6 +780,7 @@ static const char pidTokenC[] = "%{pid}";
 static const char appnameTokenC[] = "%{appname}";
 static const char threadidTokenC[] = "%{threadid}";
 static const char timeTokenC[] = "%{time"; //not a typo: this command has arguments
+static const char backtraceTokenC[] = "%{backtrace"; //ditto
 static const char ifCategoryTokenC[] = "%{if-category}";
 static const char ifDebugTokenC[] = "%{if-debug}";
 static const char ifWarningTokenC[] = "%{if-warning}";
@@ -784,6 +802,10 @@ struct QMessagePattern {
     const char **literals;
     const char **tokens;
     QString timeFormat;
+#ifdef QLOGGING_HAVE_BACKTRACE
+    int backtraceDepth;
+    QString backtraceSeparator;
+#endif
 
     bool fromEnvironment;
     static QBasicMutex mutex;
@@ -798,6 +820,10 @@ QBasicMutex QMessagePattern::mutex;
 QMessagePattern::QMessagePattern()
     : literals(0)
     , tokens(0)
+#ifdef QLOGGING_HAVE_BACKTRACE
+    , backtraceDepth(5)
+    , backtraceSeparator(QLatin1Char('|'))
+#endif
     , fromEnvironment(false)
 #ifndef QT_BOOTSTRAPPED
     , startTime(QDateTime::currentDateTime())
@@ -898,6 +924,25 @@ void QMessagePattern::setPattern(const QString &pattern)
                 int spaceIdx = lexeme.indexOf(QChar::fromLatin1(' '));
                 if (spaceIdx > 0)
                     timeFormat = lexeme.mid(spaceIdx + 1, lexeme.length() - spaceIdx - 2);
+            } else if (lexeme.startsWith(QLatin1String(backtraceTokenC))) {
+#ifdef QLOGGING_HAVE_BACKTRACE
+                tokens[i] = backtraceTokenC;
+                QRegularExpression depthRx(QStringLiteral(" depth=(?|\"([^\"]*)\"|([^ }]*))"));
+                QRegularExpression separatorRx(QStringLiteral(" separator=(?|\"([^\"]*)\"|([^ }]*))"));
+                QRegularExpressionMatch m = depthRx.match(lexeme);
+                if (m.hasMatch()) {
+                    int depth = m.capturedRef(1).toInt();
+                    if (depth <= 0)
+                        error += QStringLiteral("QT_MESSAGE_PATTERN: %{backtrace} depth must be a number greater than 0\n");
+                    else
+                        backtraceDepth = depth;
+                }
+                m = separatorRx.match(lexeme);
+                if (m.hasMatch())
+                    backtraceSeparator = m.captured(1);
+#else
+                error += QStringLiteral("QT_MESSAGE_PATTERN: %{backtrace} is not supported by this Qt build\n");
+#endif
             }
 
 #define IF_TOKEN(LEVEL) \
@@ -1068,6 +1113,58 @@ Q_CORE_EXPORT QString qMessageFormatString(QtMsgType type, const QMessageLogCont
         } else if (token == threadidTokenC) {
             message.append(QLatin1String("0x"));
             message.append(QString::number(qlonglong(QThread::currentThread()->currentThread()), 16));
+#ifdef QLOGGING_HAVE_BACKTRACE
+        } else if (token == backtraceTokenC) {
+            QVarLengthArray<void*, 32> buffer(15 + pattern->backtraceDepth);
+            int n = backtrace(buffer.data(), buffer.size());
+            if (n > 0) {
+                QScopedPointer<char*, QScopedPointerPodDeleter> strings(backtrace_symbols(buffer.data(), n));
+                int numberPrinted = 0;
+                for (int i = 0; i < n && numberPrinted < pattern->backtraceDepth; ++i) {
+                    QString trace = QString::fromLatin1(strings.data()[i]);
+                    // The results of backtrace_symbols looks like this:
+                    //    /lib/libc.so.6(__libc_start_main+0xf3) [0x4a937413]
+                    // The offset and function name are optional.
+                    // This regexp tries to extract the librry name (without the path) and the function name.
+                    // This code is protected by QMessagePattern::mutex so it is thread safe on all compilers
+                    static QRegularExpression rx(QStringLiteral("^(?:[^(]*/)?([^(/]+)\\(([^+]*)(?:[\\+[a-f0-9x]*)?\\) \\[[a-f0-9x]*\\]$"),
+                                                 QRegularExpression::OptimizeOnFirstUsageOption);
+
+                    QRegularExpressionMatch m = rx.match(trace);
+                    if (m.hasMatch()) {
+                        // skip the trace from QtCore that are because of the qDebug itself
+                        QString library = m.captured(1);
+                        QString function = m.captured(2);
+                        if (!numberPrinted && library.contains(QLatin1String("Qt5Core"))
+                            && (function.isEmpty() || function.contains(QLatin1String("Message"), Qt::CaseInsensitive)
+                                || function.contains(QLatin1String("QDebug")))) {
+                            continue;
+                        }
+
+                        if (function.startsWith(QLatin1String("_Z"))) {
+                            QScopedPointer<char, QScopedPointerPodDeleter> demangled(
+                                abi::__cxa_demangle(function.toUtf8(), 0, 0, 0));
+                            if (demangled)
+                                function = QString::fromUtf8(qCleanupFuncinfo(demangled.data()));
+                        }
+
+                        if (numberPrinted > 0)
+                            message.append(pattern->backtraceSeparator);
+
+                        if (function.isEmpty())
+                            message += QLatin1Char('?') + library + QLatin1Char('?');
+                        else
+                            message += function;
+
+                    } else {
+                        if (numberPrinted == 0)
+                            continue;
+                        message += pattern->backtraceSeparator + QLatin1String("???");
+                    }
+                    numberPrinted++;
+                }
+            }
+#endif
         } else if (token == timeTokenC) {
             quint64 ms = pattern->timer.elapsed();
             if (pattern->timeFormat.isEmpty())
@@ -1458,6 +1555,14 @@ void qErrnoWarning(int code, const char *msg, ...)
     \row \li \c %{time} \li time of the message, in seconds since the process started
     \row \li \c %{time format} \li system time when the message occurred, formatted by
         passing the \c format to \l QDateTime::toString()
+    \row \li \c{%{backtrace [depth=N] [separator="..."]}} \li A backtrace with the number of frames
+        specified by the optional \c depth parameter (defaults to 5), and separated by the optional
+        \c separator parameter (defaults to "|").
+        This expansion is available only on some platforms (currently only platfoms using glibc).
+        Names are only known for exported functions. If you want to see the name of every function
+        in your application, use \c{QMAKE_LFLAGS += -rdynamic}.
+        When reading backtraces, take into account that frames might be missing due to inlining or
+        tail call optimization.
     \endtable
 
     You can also use conditionals on the type of the message using \c %{if-debug},

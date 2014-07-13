@@ -10,3 +10,6 @@ CONFIG += console
 
 SOURCES += main.cpp
 DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0
+
+gcc:!mingw: QMAKE_LFLAGS += -rdynamic
+
