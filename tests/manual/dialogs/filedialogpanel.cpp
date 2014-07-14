@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -292,6 +292,11 @@ QString FileDialogPanel::filterString() const
     return m_nameFilters->toPlainText().trimmed().replace(QLatin1String("\n"), QLatin1String(";;"));
 }
 
+QUrl FileDialogPanel::currentDirectoryUrl() const
+{
+    return QUrl::fromUserInput(m_directory->text().trimmed());
+}
+
 QFileDialog::Options FileDialogPanel::options() const
 {
     QFileDialog::Options result;
@@ -338,7 +343,7 @@ void FileDialogPanel::getOpenFileUrls()
     QString selectedFilter = m_selectedNameFilter->text().trimmed();
     const QList<QUrl> files =
         QFileDialog::getOpenFileUrls(this, tr("getOpenFileNames Qt %1").arg(QLatin1String(QT_VERSION_STR)),
-                                      QUrl(m_directory->text()), filterString(), &selectedFilter, options(),
+                                     currentDirectoryUrl(), filterString(), &selectedFilter, options(),
                                       allowedSchemes());
     if (!files.isEmpty()) {
         QString result;
@@ -371,7 +376,7 @@ void FileDialogPanel::getOpenFileUrl()
     QString selectedFilter = m_selectedNameFilter->text().trimmed();
     const QUrl file =
         QFileDialog::getOpenFileUrl(this, tr("getOpenFileUrl Qt %1").arg(QLatin1String(QT_VERSION_STR)),
-                                      QUrl(m_directory->text()), filterString(), &selectedFilter, options(),
+                                    currentDirectoryUrl(), filterString(), &selectedFilter, options(),
                                       allowedSchemes());
     if (file.isValid()) {
         QString result;
@@ -404,7 +409,7 @@ void FileDialogPanel::getSaveFileUrl()
     QString selectedFilter = m_selectedNameFilter->text().trimmed();
     const QUrl file =
         QFileDialog::getSaveFileUrl(this, tr("getSaveFileName Qt %1").arg(QLatin1String(QT_VERSION_STR)),
-                                    QUrl(m_directory->text()), filterString(), &selectedFilter, options(),
+                                    currentDirectoryUrl(), filterString(), &selectedFilter, options(),
                                     allowedSchemes());
     if (file.isValid()) {
         QString result;
@@ -430,7 +435,7 @@ void FileDialogPanel::getExistingDirectoryUrl()
 #if QT_VERSION >= 0x050000
     const QUrl dir =
         QFileDialog::getExistingDirectoryUrl(this, tr("getExistingDirectory Qt %1").arg(QLatin1String(QT_VERSION_STR)),
-                                          QUrl(m_directory->text()), options() | QFileDialog::ShowDirsOnly,
+                                             currentDirectoryUrl(), options() | QFileDialog::ShowDirsOnly,
                                           allowedSchemes());
     if (!dir.isEmpty())
         QMessageBox::information(this, tr("getExistingDirectory"), QLatin1String("Directory: ") + dir.toString(), QMessageBox::Ok);

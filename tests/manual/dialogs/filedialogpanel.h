@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -86,6 +86,7 @@ private slots:
     void useMimeTypeFilters(bool);
 
 private:
+    QUrl currentDirectoryUrl() const;
     QString filterString() const;
     QFileDialog::Options options() const;
     QStringList allowedSchemes() const;
