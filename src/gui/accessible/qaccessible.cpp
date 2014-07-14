@@ -326,8 +326,8 @@ QT_BEGIN_NAMESPACE
     \value Desktop          The object represents the desktop or workspace.
     \value Dial             An object that represents a dial or knob.
     \value Dialog           A dialog box.
-    \value Document         A document window, usually in an MDI environment.
-    \value EditableText     Editable text
+    \value Document         A document, for example in an office application.
+    \value EditableText     Editable text such as a line or text edit.
     \value Equation         An object that represents a mathematical equation.
     \value Graphic          A graphic or picture, e.g. an icon.
     \value Grip             A grip that the user can drag to change the size of widgets.
