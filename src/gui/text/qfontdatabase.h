@@ -160,7 +160,7 @@ private:
     static void createDatabase();
     static void parseFontName(const QString &name, QString &foundry, QString &family);
     static QString resolveFontFamilyAlias(const QString &family);
-    static QFontEngine *findFont(int script, const QFontPrivate *fp, const QFontDef &request, bool multi = false);
+    static QFontEngine *findFont(int script, const QFontPrivate *fp, const QFontDef &request, bool multi = false, bool fallback = false);
     static void load(const QFontPrivate *d, int script);
 
     friend struct QFontDef;

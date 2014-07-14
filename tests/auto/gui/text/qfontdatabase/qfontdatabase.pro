@@ -9,3 +9,8 @@ wince* {
     additionalFiles.path = .
     DEPLOYMENT += additionalFiles
 }
+
+android {
+    RESOURCES += testdata.qrc
+}
+
