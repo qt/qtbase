@@ -519,10 +519,6 @@ QList<QAbstractState*> QStateMachinePrivate::computeStatesToEnter(const QList<QA
                 QAbstractState *s = lst.at(j);
                 addStatesToEnter(s, lca, statesToEnter, statesForDefaultEntry);
             }
-            for (int j = src ? 1 : 0; j < lst.size(); ++j) {
-                QAbstractState *s = lst.at(j);
-                addAncestorStatesToEnter(s, lca, statesToEnter, statesForDefaultEntry);
-            }
             if (isParallel(lca)) {
                 QList<QAbstractState*> lcac = QStatePrivate::get(lca)->childStates();
                 foreach (QAbstractState* child,lcac) {
@@ -720,6 +716,7 @@ void QStateMachinePrivate::addStatesToEnter(QAbstractState *s, QState *root,
                 return;
             }
         }
+        addAncestorStatesToEnter(s, root, statesToEnter, statesForDefaultEntry);
     }
 }
 
@@ -1088,7 +1085,6 @@ void QStateMachinePrivate::setError(QStateMachine::Error errorCode, QAbstractSta
     if (currentErrorState != 0) {
         QState *lca = findLCA(QList<QAbstractState*>() << currentErrorState << currentContext);
         addStatesToEnter(currentErrorState, lca, pendingErrorStates, pendingErrorStatesForDefaultEntry);
-        addAncestorStatesToEnter(currentErrorState, lca, pendingErrorStates, pendingErrorStatesForDefaultEntry);
     } else {
         qWarning("Unrecoverable error detected in running state machine: %s",
                  qPrintable(errorString));
