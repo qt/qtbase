@@ -935,6 +935,8 @@ HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::get_accRole(VARIANT varID, VAR
             // does not support IAccessible2, since it should prefer IA2::role() then.
             if (role == QAccessible::LayeredPane)
                 role = QAccessible::Pane;
+            else if (role == QAccessible::WebDocument)
+                role = QAccessible::Document;
             else
                 role = QAccessible::Client;
         }

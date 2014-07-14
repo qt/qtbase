@@ -344,6 +344,7 @@ QT_BEGIN_NAMESPACE
     \value NoRole           The object has no role. This usually indicates an invalid object.
     \value PageTab          A page tab that the user can select to switch to a different page in a dialog.
     \value PageTabList      A list of page tabs.
+    \value Paragraph        A paragraph of text (usually found in documents).
     \value Pane             A generic container.
     \value PopupMenu        A menu which lists options that the user can select to perform an action.
     \value ProgressBar      The object displays the progress of an operation in progress.
@@ -353,6 +354,7 @@ QT_BEGIN_NAMESPACE
     \value Row              A row of cells, usually within a table.
     \value RowHeader        A header for a row of data.
     \value ScrollBar        A scroll bar, which allows the user to scroll the visible area.
+    \value Section          A section (in a document).
     \value Separator        A separator that divides space into logical areas.
     \value Slider           A slider that allows the user to select a value within a given range.
     \value Sound            An object that represents a sound.
@@ -368,6 +370,7 @@ QT_BEGIN_NAMESPACE
     \value Tree             A list of items in a tree structure.
     \value TreeItem         An item in a tree structure.
     \value UserRole         The first value to be used for user defined roles.
+    \value WebDocument      HTML document, usually in a browser.
     \value Whitespace       Blank space between other objects.
     \value Window           A top level window.
 */

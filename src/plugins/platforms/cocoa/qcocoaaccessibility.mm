@@ -149,6 +149,9 @@ static void populateRoleMap()
     roleMap[QAccessible::ListItem] = NSAccessibilityStaticTextRole;
     roleMap[QAccessible::Cell] = NSAccessibilityStaticTextRole;
     roleMap[QAccessible::Client] = NSAccessibilityGroupRole;
+    roleMap[QAccessible::Paragraph] = NSAccessibilityGroupRole;
+    roleMap[QAccessible::Section] = NSAccessibilityGroupRole;
+    roleMap[QAccessible::WebDocument] = NSAccessibilityGroupRole;
 }
 
 /*

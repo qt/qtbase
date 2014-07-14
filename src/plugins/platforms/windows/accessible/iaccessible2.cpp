@@ -358,6 +358,8 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::role(long *ia2role)
     case QAccessible::LayeredPane: r = IA2_ROLE_LAYERED_PANE; break;
     case QAccessible::Terminal: r = IA2_ROLE_TERMINAL; break;
     case QAccessible::Desktop: r = IA2_ROLE_DESKTOP_PANE; break;
+    case QAccessible::Paragraph: r = IA2_ROLE_PARAGRAPH; break;
+    case QAccessible::Section: r = IA2_ROLE_SECTION; break;
     default: break;
     }
 

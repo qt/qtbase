@@ -296,6 +296,9 @@ public:
         LayeredPane    = 0x00000080,
         Terminal       = 0x00000081,
         Desktop        = 0x00000082,
+        Paragraph      = 0x00000083,
+        WebDocument    = 0x00000084,
+        Section        = 0x00000085,
         UserRole       = 0x0000ffff
     };
 
