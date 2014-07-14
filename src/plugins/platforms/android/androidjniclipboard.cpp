@@ -41,83 +41,39 @@
 
 #include "androidjniclipboard.h"
 #include "androidjnimain.h"
+#include <QtCore/private/qjni_p.h>
 
 QT_BEGIN_NAMESPACE
 
 using namespace QtAndroid;
 namespace QtAndroidClipboard
 {
-    // Clipboard support
-    static jmethodID m_registerClipboardManagerMethodID = 0;
-    static jmethodID m_setClipboardTextMethodID = 0;
-    static jmethodID m_hasClipboardTextMethodID = 0;
-    static jmethodID m_getClipboardTextMethodID = 0;
-    // Clipboard support
-
     void setClipboardListener(QAndroidPlatformClipboard *listener)
     {
         Q_UNUSED(listener);
-
-        AttachedJNIEnv env;
-        if (!env.jniEnv)
-            return;
-
-        env.jniEnv->CallStaticVoidMethod(applicationClass(), m_registerClipboardManagerMethodID);
+        QJNIObjectPrivate::callStaticMethod<void>(applicationClass(), "registerClipboardManager");
     }
 
     void setClipboardText(const QString &text)
     {
-        AttachedJNIEnv env;
-        if (!env.jniEnv)
-            return;
-
-        jstring jtext = env.jniEnv->NewString(reinterpret_cast<const jchar *>(text.data()),
-                                              text.length());
-        env.jniEnv->CallStaticVoidMethod(applicationClass(), m_setClipboardTextMethodID, jtext);
-        env.jniEnv->DeleteLocalRef(jtext);
+        QJNIObjectPrivate::callStaticMethod<void>(applicationClass(),
+                                                  "setClipboardText",
+                                                  "(Ljava/lang/String;)V",
+                                                  QJNIObjectPrivate::fromString(text).object());
     }
 
     bool hasClipboardText()
     {
-        AttachedJNIEnv env;
-        if (!env.jniEnv)
-            return false;
-
-        return env.jniEnv->CallStaticBooleanMethod(applicationClass(), m_hasClipboardTextMethodID);
+        return QJNIObjectPrivate::callStaticMethod<jboolean>(applicationClass(),
+                                                             "hasClipboardText");
     }
 
     QString clipboardText()
     {
-        AttachedJNIEnv env;
-        if (!env.jniEnv)
-            return QString();
-
-        jstring text = reinterpret_cast<jstring>(env.jniEnv->CallStaticObjectMethod(applicationClass(),
-                                                                                    m_getClipboardTextMethodID));
-        const jchar *jstr = env.jniEnv->GetStringChars(text, 0);
-        QString str(reinterpret_cast<const QChar *>(jstr), env.jniEnv->GetStringLength(text));
-        env.jniEnv->ReleaseStringChars(text, jstr);
-        return str;
-    }
-
-
-#define GET_AND_CHECK_STATIC_METHOD(VAR, CLASS, METHOD_NAME, METHOD_SIGNATURE) \
-    VAR = env->GetStaticMethodID(CLASS, METHOD_NAME, METHOD_SIGNATURE); \
-    if (!VAR) { \
-        __android_log_print(ANDROID_LOG_FATAL, qtTagText(), methodErrorMsgFmt(), METHOD_NAME, METHOD_SIGNATURE); \
-        return false; \
-    }
-
-    bool registerNatives(JNIEnv *env)
-    {
-        jclass appClass = QtAndroid::applicationClass();
-
-        GET_AND_CHECK_STATIC_METHOD(m_registerClipboardManagerMethodID, appClass, "registerClipboardManager", "()V");
-        GET_AND_CHECK_STATIC_METHOD(m_setClipboardTextMethodID, appClass, "setClipboardText", "(Ljava/lang/String;)V");
-        GET_AND_CHECK_STATIC_METHOD(m_hasClipboardTextMethodID, appClass, "hasClipboardText", "()Z");
-        GET_AND_CHECK_STATIC_METHOD(m_getClipboardTextMethodID, appClass, "getClipboardText", "()Ljava/lang/String;");
-
-        return true;
+        QJNIObjectPrivate text = QJNIObjectPrivate::callStaticObjectMethod(applicationClass(),
+                                                                           "getClipboardText",
+                                                                           "()Ljava/lang/String;");
+        return text.toString();
     }
 }
 

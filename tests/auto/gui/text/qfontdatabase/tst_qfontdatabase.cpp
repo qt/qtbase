@@ -44,6 +44,8 @@
 #include <qfontdatabase.h>
 #include <qfontinfo.h>
 #include <qfontmetrics.h>
+#include <qtextlayout.h>
+#include <private/qrawfont_p.h>
 #include <qpa/qplatformfontdatabase.h>
 
 class tst_QFontDatabase : public QObject
@@ -77,6 +79,7 @@ private slots:
     void addAppFont();
 
     void aliases();
+    void fallbackFonts();
 
 private:
     const QString m_testFont;
@@ -283,6 +286,27 @@ void tst_QFontDatabase::aliases()
     QVERIFY(!db.hasFamily(alias));
     QPlatformFontDatabase::registerAliasToFontFamily(firstFont, alias);
     QVERIFY(db.hasFamily(alias));
+}
+
+void tst_QFontDatabase::fallbackFonts()
+{
+    QTextLayout layout;
+    QString s;
+    s.append(QChar(0x31));
+    s.append(QChar(0x05D0));
+    layout.setText(s);
+    layout.beginLayout();
+    layout.createLine();
+    layout.endLayout();
+
+    QList<QGlyphRun> runs = layout.glyphRuns(0, 1);
+    foreach (QGlyphRun run, runs) {
+        QRawFont rawFont = run.rawFont();
+        QVERIFY(rawFont.isValid());
+
+        QCOMPARE(run.glyphIndexes().size(), 1);
+        QVERIFY(run.glyphIndexes().at(0) != 0);
+    }
 }
 
 QTEST_MAIN(tst_QFontDatabase)

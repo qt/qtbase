@@ -685,6 +685,39 @@ void QXcbConnection::xi2HandleScrollEvent(void *event, ScrollingDevice &scrollin
 #endif // XCB_USE_XINPUT21
 }
 
+static QTabletEvent::TabletDevice toolIdToTabletDevice(quint32 toolId) {
+    // keep in sync with wacom_intuos_inout() in Linux kernel driver wacom_wac.c
+    switch (toolId) {
+    case 0xd12:
+    case 0x912:
+    case 0x112:
+    case 0x913: /* Intuos3 Airbrush */
+    case 0x91b: /* Intuos3 Airbrush Eraser */
+    case 0x902: /* Intuos4/5 13HD/24HD Airbrush */
+    case 0x90a: /* Intuos4/5 13HD/24HD Airbrush Eraser */
+    case 0x100902: /* Intuos4/5 13HD/24HD Airbrush */
+    case 0x10090a: /* Intuos4/5 13HD/24HD Airbrush Eraser */
+        return QTabletEvent::Airbrush;
+    case 0x007: /* Mouse 4D and 2D */
+    case 0x09c:
+    case 0x094:
+        return QTabletEvent::FourDMouse;
+    case 0x017: /* Intuos3 2D Mouse */
+    case 0x806: /* Intuos4 Mouse */
+    case 0x096: /* Lens cursor */
+    case 0x097: /* Intuos3 Lens cursor */
+    case 0x006: /* Intuos4 Lens cursor */
+        return QTabletEvent::Puck;
+    case 0x885:    /* Intuos3 Art Pen (Marker Pen) */
+    case 0x100804: /* Intuos4/5 13HD/24HD Art Pen */
+    case 0x10080c: /* Intuos4/5 13HD/24HD Art Pen Eraser */
+        return QTabletEvent::RotationStylus;
+    case 0:
+        return QTabletEvent::NoDevice;
+    }
+    return QTabletEvent::Stylus;  // Safe default assumption if nonzero
+}
+
 #ifndef QT_NO_TABLETEVENT
 bool QXcbConnection::xi2HandleTabletEvent(void *event, TabletData *tabletData)
 {
@@ -713,9 +746,19 @@ bool QXcbConnection::xi2HandleTabletEvent(void *event, TabletData *tabletData)
             xi2ReportTabletEvent(*tabletData, xiEvent);
         break;
     case XI_PropertyEvent: {
+        // This is the wacom driver's way of reporting tool proximity.
+        // The evdev driver doesn't do it this way.
         xXIPropertyEvent *ev = reinterpret_cast<xXIPropertyEvent *>(event);
         if (ev->what == XIPropertyModified) {
             if (ev->property == atom(QXcbAtom::WacomSerialIDs)) {
+                enum WacomSerialIndex {
+                    _WACSER_USB_ID = 0,
+                    _WACSER_LAST_TOOL_SERIAL,
+                    _WACSER_LAST_TOOL_ID,
+                    _WACSER_TOOL_SERIAL,
+                    _WACSER_TOOL_ID,
+                    _WACSER_COUNT
+                };
                 Atom propType;
                 int propFormat;
                 unsigned long numItems, bytesAfter;
@@ -723,26 +766,43 @@ bool QXcbConnection::xi2HandleTabletEvent(void *event, TabletData *tabletData)
                 if (XIGetProperty(xDisplay, tabletData->deviceId, ev->property, 0, 100,
                                   0, AnyPropertyType, &propType, &propFormat,
                                   &numItems, &bytesAfter, &data) == Success) {
-                    if (propType == atom(QXcbAtom::INTEGER) && propFormat == 32) {
-                        int *ptr = reinterpret_cast<int *>(data);
-                        for (unsigned long i = 0; i < numItems; ++i)
-                            tabletData->serialId |= qint64(ptr[i]) << (i * 32);
+                    if (propType == atom(QXcbAtom::INTEGER) && propFormat == 32 && numItems == _WACSER_COUNT) {
+                        quint32 *ptr = reinterpret_cast<quint32 *>(data);
+                        quint32 tool = ptr[_WACSER_TOOL_ID];
+                        // Workaround for http://sourceforge.net/p/linuxwacom/bugs/246/
+                        // e.g. on Thinkpad Helix, tool ID will be 0 and serial will be 1
+                        if (!tool && ptr[_WACSER_TOOL_SERIAL])
+                            tool = ptr[_WACSER_TOOL_SERIAL];
+
+                        // The property change event informs us which tool is in proximity or which one left proximity.
+                        if (tool) {
+                            tabletData->inProximity = true;
+                            tabletData->tool = toolIdToTabletDevice(tool);
+                            tabletData->serialId = qint64(ptr[_WACSER_USB_ID]) << 32 | qint64(ptr[_WACSER_TOOL_SERIAL]);
+                            QWindowSystemInterface::handleTabletEnterProximityEvent(tabletData->tool,
+                                                                                    tabletData->pointerType,
+                                                                                    tabletData->serialId);
+                        } else {
+                            tabletData->inProximity = false;
+                            tabletData->tool = toolIdToTabletDevice(ptr[_WACSER_LAST_TOOL_ID]);
+                            // Workaround for http://sourceforge.net/p/linuxwacom/bugs/246/
+                            // e.g. on Thinkpad Helix, tool ID will be 0 and serial will be 1
+                            if (!tabletData->tool)
+                                tabletData->tool = toolIdToTabletDevice(ptr[_WACSER_LAST_TOOL_SERIAL]);
+                            tabletData->serialId = qint64(ptr[_WACSER_USB_ID]) << 32 | qint64(ptr[_WACSER_LAST_TOOL_SERIAL]);
+                            QWindowSystemInterface::handleTabletLeaveProximityEvent(tabletData->tool,
+                                                                                    tabletData->pointerType,
+                                                                                    tabletData->serialId);
+                        }
+                        if (Q_UNLIKELY(debug_xinput)) {
+                            // TODO maybe have a hash of tabletData->deviceId to device data so we can
+                            // look up the tablet name here, and distinguish multiple tablets
+                            qDebug("XI2 proximity change on tablet %d (USB %x): last tool: %x id %x current tool: %x id %x TabletDevice %d",
+                                ev->deviceid, ptr[_WACSER_USB_ID], ptr[_WACSER_LAST_TOOL_SERIAL], ptr[_WACSER_LAST_TOOL_ID],
+                                ptr[_WACSER_TOOL_SERIAL], ptr[_WACSER_TOOL_ID], tabletData->tool);
+                        }
                     }
                     XFree(data);
-                }
-                // With recent-enough X drivers this property change event seems to come always
-                // when entering and leaving proximity. Due to the lack of other options hook up
-                // the enter/leave events to it.
-                if (tabletData->inProximity) {
-                    tabletData->inProximity = false;
-                    QWindowSystemInterface::handleTabletLeaveProximityEvent(QTabletEvent::Stylus,
-                                                                            tabletData->pointerType,
-                                                                            tabletData->serialId);
-                } else {
-                    tabletData->inProximity = true;
-                    QWindowSystemInterface::handleTabletEnterProximityEvent(QTabletEvent::Stylus,
-                                                                            tabletData->pointerType,
-                                                                            tabletData->serialId);
                 }
             }
         }
@@ -755,7 +815,7 @@ bool QXcbConnection::xi2HandleTabletEvent(void *event, TabletData *tabletData)
     return handled;
 }
 
-void QXcbConnection::xi2ReportTabletEvent(const TabletData &tabletData, void *event)
+void QXcbConnection::xi2ReportTabletEvent(TabletData &tabletData, void *event)
 {
     xXIDeviceEvent *ev = reinterpret_cast<xXIDeviceEvent *>(event);
     QXcbWindow *xcbWindow = platformWindowFromId(ev->event);
@@ -765,45 +825,52 @@ void QXcbConnection::xi2ReportTabletEvent(const TabletData &tabletData, void *ev
     const double scale = 65536.0;
     QPointF local(ev->event_x / scale, ev->event_y / scale);
     QPointF global(ev->root_x / scale, ev->root_y / scale);
-    double pressure = 0, rotation = 0;
+    double pressure = 0, rotation = 0, tangentialPressure = 0;
     int xTilt = 0, yTilt = 0;
 
-    for (QHash<int, TabletData::ValuatorClassInfo>::const_iterator it = tabletData.valuatorInfo.constBegin(),
-            ite = tabletData.valuatorInfo.constEnd(); it != ite; ++it) {
+    for (QHash<int, TabletData::ValuatorClassInfo>::iterator it = tabletData.valuatorInfo.begin(),
+            ite = tabletData.valuatorInfo.end(); it != ite; ++it) {
         int valuator = it.key();
-        const TabletData::ValuatorClassInfo &classInfo(it.value());
-        double value;
-        if (xi2GetValuatorValueIfSet(event, classInfo.number, &value)) {
-            double normalizedValue = (value - classInfo.minVal) / double(classInfo.maxVal - classInfo.minVal);
-            switch (valuator) {
-            case QXcbAtom::AbsPressure:
-                pressure = normalizedValue;
+        TabletData::ValuatorClassInfo &classInfo(it.value());
+        xi2GetValuatorValueIfSet(event, classInfo.number, &classInfo.curVal);
+        double normalizedValue = (classInfo.curVal - classInfo.minVal) / (classInfo.maxVal - classInfo.minVal);
+        switch (valuator) {
+        case QXcbAtom::AbsPressure:
+            pressure = normalizedValue;
+            break;
+        case QXcbAtom::AbsTiltX:
+            xTilt = classInfo.curVal;
+            break;
+        case QXcbAtom::AbsTiltY:
+            yTilt = classInfo.curVal;
+            break;
+        case QXcbAtom::AbsWheel:
+            switch (tabletData.tool) {
+            case QTabletEvent::Airbrush:
+                tangentialPressure = normalizedValue * 2.0 - 1.0; // Convert 0..1 range to -1..+1 range
                 break;
-            case QXcbAtom::AbsTiltX:
-                xTilt = value;
+            case QTabletEvent::RotationStylus:
+                rotation = normalizedValue * 360.0 - 180.0; // Convert 0..1 range to -180..+180 degrees
                 break;
-            case QXcbAtom::AbsTiltY:
-                yTilt = value;
-                break;
-            case QXcbAtom::AbsWheel:
-                rotation = value / 64.0;
-                break;
-            default:
+            default:    // Other types of styli do not use this valuator
                 break;
             }
+            break;
+        default:
+            break;
         }
     }
 
     if (Q_UNLIKELY(debug_xinput))
-        qDebug("XI2 tablet event type %d seq %d detail %d pos %6.1f, %6.1f root pos %6.1f, %6.1f pressure %4.2lf tilt %d, %d rotation %6.2lf",
-            ev->type, ev->sequenceNumber, ev->detail,
+        qDebug("XI2 event on tablet %d with tool %d type %d seq %d detail %d pos %6.1f, %6.1f root pos %6.1f, %6.1f pressure %4.2lf tilt %d, %d rotation %6.2lf",
+            ev->deviceid, tabletData.tool, ev->type, ev->sequenceNumber, ev->detail,
             fixed1616ToReal(ev->event_x), fixed1616ToReal(ev->event_y),
             fixed1616ToReal(ev->root_x), fixed1616ToReal(ev->root_y),
             pressure, xTilt, yTilt, rotation);
 
     QWindowSystemInterface::handleTabletEvent(window, tabletData.down, local, global,
-                                              QTabletEvent::Stylus, tabletData.pointerType,
-                                              pressure, xTilt, yTilt, 0,
+                                              tabletData.tool, tabletData.pointerType,
+                                              pressure, xTilt, yTilt, tangentialPressure,
                                               rotation, 0, tabletData.serialId);
 }
 #endif // QT_NO_TABLETEVENT
