@@ -432,7 +432,6 @@ class QWinRTScreenPrivate
 public:
     ComPtr<ICoreApplication> application;
     ComPtr<ICoreWindow> coreWindow;
-    ComPtr<IDisplayInformationStatics> displayInformationStatics;
     ComPtr<IDisplayInformation> displayInformation;
 #ifdef Q_OS_WINPHONE
     ComPtr<IHardwareButtonsStatics> hardwareButtons;
@@ -552,11 +551,12 @@ QWinRTScreen::QWinRTScreen()
 #endif // Q_OS_WINPHONE
 
     // Orientation handling
+    ComPtr<IDisplayInformationStatics> displayInformationStatics;
     hr = RoGetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Graphics_Display_DisplayInformation).Get(),
-                                IID_PPV_ARGS(&d->displayInformationStatics));
+                                IID_PPV_ARGS(&displayInformationStatics));
     Q_ASSERT_SUCCEEDED(hr);
 
-    hr = d->displayInformationStatics->GetForCurrentView(&d->displayInformation);
+    hr = displayInformationStatics->GetForCurrentView(&d->displayInformation);
     Q_ASSERT_SUCCEEDED(hr);
 
     // Set native orientation
@@ -572,9 +572,9 @@ QWinRTScreen::QWinRTScreen()
     Q_ASSERT_SUCCEEDED(hr);
 
     // Set initial orientation & pixel density
-    onOrientationChanged(Q_NULLPTR, Q_NULLPTR);
     onDpiChanged(Q_NULLPTR, Q_NULLPTR);
-    setOrientationUpdateMask(d->nativeOrientation);
+    d->orientation = d->nativeOrientation;
+    onOrientationChanged(Q_NULLPTR, Q_NULLPTR);
 
     d->eglDisplay = eglGetDisplay(d->displayInformation.Get());
     if (d->eglDisplay == EGL_NO_DISPLAY)
@@ -694,14 +694,6 @@ Qt::ScreenOrientation QWinRTScreen::orientation() const
 {
     Q_D(const QWinRTScreen);
     return d->orientation;
-}
-
-void QWinRTScreen::setOrientationUpdateMask(Qt::ScreenOrientations mask)
-{
-    Q_D(QWinRTScreen);
-
-    HRESULT hr = d->displayInformationStatics->put_AutoRotationPreferences(nativeOrientationsFromQt(mask));
-    RETURN_VOID_IF_FAILED("Failed to set display auto rotation preferences.");
 }
 
 ICoreWindow *QWinRTScreen::coreWindow() const
