@@ -1083,6 +1083,11 @@ Qt::WindowState QWindow::windowState() const
 void QWindow::setTransientParent(QWindow *parent)
 {
     Q_D(QWindow);
+    if (parent && !parent->isTopLevel()) {
+        qWarning() << Q_FUNC_INFO << parent << "must be a top level window.";
+        return;
+    }
+
     d->transientParent = parent;
 
     QGuiApplicationPrivate::updateBlockedStatus(this);
