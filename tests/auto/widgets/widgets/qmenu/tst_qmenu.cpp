@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -55,6 +55,7 @@
 
 #include <qmenu.h>
 #include <qstyle.h>
+#include <QTimer>
 #include <qdebug.h>
 
 Q_DECLARE_METATYPE(Qt::Key);
@@ -132,6 +133,7 @@ private:
     enum { num_builtins = 10 };
     QAction *activated, *highlighted, *builtins[num_builtins];
     QString statustip;
+    bool m_onStatusTipTimerExecuted;
 };
 
 // Testing get/set functions
@@ -158,6 +160,7 @@ void tst_QMenu::getSetCheck()
 }
 
 tst_QMenu::tst_QMenu()
+    : m_onStatusTipTimerExecuted(false)
 {
     QApplication::setEffectEnabled(Qt::UI_AnimateMenu, false);
 }
@@ -193,6 +196,7 @@ void tst_QMenu::init()
 {
     activated = highlighted = 0;
     lastMenu = 0;
+    m_onStatusTipTimerExecuted = false;
 }
 
 void tst_QMenu::createActions()
@@ -492,8 +496,13 @@ void tst_QMenu::statusTip()
 
     //because showMenu calls QMenu::exec, we need to use a singleshot
     //to continue the test
-    QTimer::singleShot(200,this, SLOT(onStatusTipTimer()));
+    QTimer timer;
+    timer.setSingleShot(true);
+    connect(&timer, &QTimer::timeout, this, &tst_QMenu::onStatusTipTimer);
+    timer.setInterval(200);
+    timer.start();
     btn->showMenu();
+    QVERIFY(m_onStatusTipTimerExecuted);
     QVERIFY(statustip.isEmpty());
 }
 
@@ -513,6 +522,7 @@ void tst_QMenu::onStatusTipTimer()
 
     QCOMPARE(st, QString("sub action"));
     QVERIFY(menu->isVisible() == false);
+    m_onStatusTipTimerExecuted = true;
 }
 
 void tst_QMenu::widgetActionFocus()
