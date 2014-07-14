@@ -51,6 +51,7 @@
 #include "qwindowsintegration.h"
 #include "qt_windows.h"
 #include "qwindowsfontdatabase.h"
+#include "qwindowsscaling.h"
 #ifdef Q_OS_WINCE
 #  include "qplatformfunctions_wince.h"
 #  include "winuser.h"
@@ -491,6 +492,8 @@ static QPixmap loadIconFromShell32(int resourceId, QSizeF size)
 
 QPixmap QWindowsTheme::standardPixmap(StandardPixmap sp, const QSizeF &size) const
 {
+    const int scaleFactor = QWindowsScaling::factor();
+    const QSizeF pixmapSize = size * scaleFactor;
     int resourceId = -1;
     LPCTSTR iconName = 0;
     switch (sp) {
@@ -557,9 +560,10 @@ QPixmap QWindowsTheme::standardPixmap(StandardPixmap sp, const QSizeF &size) con
             SHSTOCKICONINFO iconInfo;
             memset(&iconInfo, 0, sizeof(iconInfo));
             iconInfo.cbSize = sizeof(iconInfo);
-            const int iconSize = size.width() > 16 ? SHGFI_LARGEICON : SHGFI_SMALLICON;
+            const int iconSize = pixmapSize.width() > 16 ? SHGFI_LARGEICON : SHGFI_SMALLICON;
             if (QWindowsContext::shell32dll.sHGetStockIconInfo(SIID_SHIELD, SHGFI_ICON | iconSize, &iconInfo) == S_OK) {
                 pixmap = qt_pixmapFromWinHICON(iconInfo.hIcon);
+                pixmap.setDevicePixelRatio(scaleFactor);
                 DestroyIcon(iconInfo.hIcon);
                 return pixmap;
             }
@@ -571,13 +575,14 @@ QPixmap QWindowsTheme::standardPixmap(StandardPixmap sp, const QSizeF &size) con
     }
 
     if (resourceId != -1) {
-        QPixmap pixmap = loadIconFromShell32(resourceId, size);
+        QPixmap pixmap = loadIconFromShell32(resourceId, pixmapSize);
         if (!pixmap.isNull()) {
             if (sp == FileLinkIcon || sp == DirLinkIcon || sp == DirLinkOpenIcon) {
                 QPainter painter(&pixmap);
-                QPixmap link = loadIconFromShell32(30, size);
-                painter.drawPixmap(0, 0, size.width(), size.height(), link);
+                QPixmap link = loadIconFromShell32(30, pixmapSize);
+                painter.drawPixmap(0, 0, pixmapSize.width(), pixmapSize.height(), link);
             }
+            pixmap.setDevicePixelRatio(scaleFactor);
             return pixmap;
         }
     }
@@ -585,6 +590,7 @@ QPixmap QWindowsTheme::standardPixmap(StandardPixmap sp, const QSizeF &size) con
     if (iconName) {
         HICON iconHandle = LoadIcon(NULL, iconName);
         QPixmap pixmap = qt_pixmapFromWinHICON(iconHandle);
+        pixmap.setDevicePixelRatio(scaleFactor);
         DestroyIcon(iconHandle);
         if (!pixmap.isNull())
             return pixmap;
