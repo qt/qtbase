@@ -64,7 +64,7 @@ public:
         setFlag(QGraphicsItem::ItemClipsToShape, true);
     }
 
-    QRectF boundingRect() const
+    QRectF boundingRect() const Q_DECL_OVERRIDE
     {
         // here we only want the size of the children and not the size of the children of the children...
         qreal halfpw = m_pen.widthF() / 2;
@@ -75,7 +75,7 @@ public:
         return rect;
     }
 
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) Q_DECL_OVERRIDE
     {
         Q_UNUSED(option);
         Q_UNUSED(widget);
@@ -104,7 +104,7 @@ public:
         : QGraphicsObject(parent)
     { }
 
-    QRectF boundingRect() const
+    QRectF boundingRect() const Q_DECL_OVERRIDE
     {
         QRectF rect;
         foreach (QGraphicsItem *item, childItems())
@@ -112,7 +112,7 @@ public:
         return rect;
     }
 
-    void paint(QPainter*, const QStyleOptionGraphicsItem*, QWidget*)
+    void paint(QPainter*, const QStyleOptionGraphicsItem*, QWidget*) Q_DECL_OVERRIDE
     { }
 };
 
@@ -140,7 +140,7 @@ public:
         return m_viewport;
     }
 
-    bool event(QEvent *e)
+    bool event(QEvent *e) Q_DECL_OVERRIDE
     {
         switch (e->type()) {
 // ![2]
@@ -169,7 +169,7 @@ public:
         return QGraphicsObject::event(e);
     }
 
-    bool sceneEvent(QEvent *e)
+    bool sceneEvent(QEvent *e) Q_DECL_OVERRIDE
     {
         switch (e->type()) {
         case QEvent::TouchBegin: {
@@ -194,12 +194,12 @@ public:
         return QGraphicsObject::sceneEvent(e);
     }
 
-    QRectF boundingRect() const
+    QRectF boundingRect() const Q_DECL_OVERRIDE
     {
         return QRectF(0, 0, m_size.width() + 3, m_size.height());
     }
 
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) Q_DECL_OVERRIDE
     {
         Q_UNUSED(option);
         Q_UNUSED(widget);
@@ -265,7 +265,7 @@ public:
 
 
 protected:
-    void resizeEvent(QResizeEvent *e)
+    void resizeEvent(QResizeEvent *e) Q_DECL_OVERRIDE
     {
         // resize the scene according to our own size to prevent scrolling
         m_scene->setSceneRect(0, 0, m_view->viewport()->width(), m_view->viewport()->height());

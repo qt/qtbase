@@ -72,7 +72,7 @@ public:
     {
     }
 protected:
-    virtual bool eventTest(QEvent *event)
+    virtual bool eventTest(QEvent *event) Q_DECL_OVERRIDE
     {
         if (!QKeyEventTransition::eventTest(event))
             return false;
@@ -91,13 +91,13 @@ public:
     {
     }
 protected:
-    virtual bool eventTest(QEvent *event)
+    virtual bool eventTest(QEvent *event) Q_DECL_OVERRIDE
     {
         if (!QKeyEventTransition::eventTest(event))
             return false;
         return (boat->currentSpeed() >= 0);
     }
-    void onTransition(QEvent *)
+    void onTransition(QEvent *) Q_DECL_OVERRIDE
     {
         //We decrease the speed if needed
         if (key == Qt::Key_Left && boat->currentDirection() == Boat::Right)
@@ -122,7 +122,7 @@ public:
     {
     }
 protected:
-    virtual bool eventTest(QEvent *event)
+    virtual bool eventTest(QEvent *event) Q_DECL_OVERRIDE
     {
         if (!QKeyEventTransition::eventTest(event))
             return false;
@@ -141,7 +141,7 @@ public:
     {
     }
 protected:
-    void onEntry(QEvent *)
+    void onEntry(QEvent *) Q_DECL_OVERRIDE
     {
         boat->setCurrentDirection(Boat::Right);
         boat->updateBoatMovement();
@@ -158,7 +158,7 @@ public:
     {
     }
 protected:
-    void onEntry(QEvent *)
+    void onEntry(QEvent *) Q_DECL_OVERRIDE
     {
         boat->setCurrentDirection(Boat::Left);
         boat->updateBoatMovement();
@@ -175,7 +175,7 @@ public:
     {
     }
 protected:
-    void onEntry(QEvent *)
+    void onEntry(QEvent *) Q_DECL_OVERRIDE
     {
         boat->setCurrentSpeed(0);
         boat->setCurrentDirection(Boat::None);
@@ -193,7 +193,7 @@ public:
     {
     }
 protected:
-    void onEntry(QEvent *)
+    void onEntry(QEvent *) Q_DECL_OVERRIDE
     {
         Bomb *b = new Bomb();
         b->setPos(boat->x()+boat->size().width(),boat->y());
@@ -214,7 +214,7 @@ public:
     {
     }
 protected:
-    void onEntry(QEvent *)
+    void onEntry(QEvent *) Q_DECL_OVERRIDE
     {
         Bomb *b = new Bomb();
         b->setPos(boat->x() - b->size().width(), boat->y());

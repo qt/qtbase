@@ -59,7 +59,7 @@ public:
     MainWindow();
 
 protected:
-    void contextMenuEvent(QContextMenuEvent *event);
+    void contextMenuEvent(QContextMenuEvent *event) Q_DECL_OVERRIDE;
 //! [0]
 
 //! [1]

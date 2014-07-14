@@ -60,7 +60,7 @@ public:
     MainWindow(const QString &fileName);
 
 protected:
-    void closeEvent(QCloseEvent *event);
+    void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
 
 private slots:
     void newFile();

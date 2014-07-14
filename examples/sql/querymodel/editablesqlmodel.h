@@ -50,8 +50,8 @@ class EditableSqlModel : public QSqlQueryModel
 public:
     EditableSqlModel(QObject *parent = 0);
 
-    Qt::ItemFlags flags(const QModelIndex &index) const;
-    bool setData(const QModelIndex &index, const QVariant &value, int role);
+    Qt::ItemFlags flags(const QModelIndex &index) const Q_DECL_OVERRIDE;
+    bool setData(const QModelIndex &index, const QVariant &value, int role) Q_DECL_OVERRIDE;
 
 private:
     bool setFirstName(int personId, const QString &firstName);

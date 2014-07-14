@@ -51,8 +51,8 @@ public:
     GraphicsView(QWidget *parent = 0);
 
 protected:
-    virtual void resizeEvent(QResizeEvent *event);
-    void keyPressEvent(QKeyEvent *);
+    virtual void resizeEvent(QResizeEvent *event) Q_DECL_OVERRIDE;
+    void keyPressEvent(QKeyEvent *) Q_DECL_OVERRIDE;
 
 signals:
     void keyPressed(int key);

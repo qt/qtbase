@@ -57,10 +57,10 @@ public slots:
     void renderNow();
 
 protected:
-    bool event(QEvent *event);
+    bool event(QEvent *event) Q_DECL_OVERRIDE;
 
-    void resizeEvent(QResizeEvent *event);
-    void exposeEvent(QExposeEvent *event);
+    void resizeEvent(QResizeEvent *event) Q_DECL_OVERRIDE;
+    void exposeEvent(QExposeEvent *event) Q_DECL_OVERRIDE;
 
 private:
     QBackingStore *m_backingStore;

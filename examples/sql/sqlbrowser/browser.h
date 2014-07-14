@@ -108,7 +108,7 @@ class CustomModel: public QSqlTableModel
     Q_OBJECT
 public:
     explicit CustomModel(QObject *parent = 0, QSqlDatabase db = QSqlDatabase()):QSqlTableModel(parent, db) {}
-    QVariant data(const QModelIndex &idx, int role) const
+    QVariant data(const QModelIndex &idx, int role) const Q_DECL_OVERRIDE
     {
         if (role == Qt::BackgroundRole && isDirty(idx))
             return QBrush(QColor(Qt::yellow));

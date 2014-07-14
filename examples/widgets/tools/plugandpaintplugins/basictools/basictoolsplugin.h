@@ -68,22 +68,22 @@ class BasicToolsPlugin : public QObject,
 public:
 //! [1]
     // BrushInterface
-    QStringList brushes() const;
+    QStringList brushes() const Q_DECL_OVERRIDE;
     QRect mousePress(const QString &brush, QPainter &painter,
-                     const QPoint &pos);
+                     const QPoint &pos) Q_DECL_OVERRIDE;
     QRect mouseMove(const QString &brush, QPainter &painter,
-                    const QPoint &oldPos, const QPoint &newPos);
+                    const QPoint &oldPos, const QPoint &newPos) Q_DECL_OVERRIDE;
     QRect mouseRelease(const QString &brush, QPainter &painter,
-                       const QPoint &pos);
+                       const QPoint &pos) Q_DECL_OVERRIDE;
 
     // ShapeInterface
-    QStringList shapes() const;
-    QPainterPath generateShape(const QString &shape, QWidget *parent);
+    QStringList shapes() const Q_DECL_OVERRIDE;
+    QPainterPath generateShape(const QString &shape, QWidget *parent) Q_DECL_OVERRIDE;
 
     // FilterInterface
-    QStringList filters() const;
+    QStringList filters() const Q_DECL_OVERRIDE;
     QImage filterImage(const QString &filter, const QImage &image,
-                       QWidget *parent);
+                       QWidget *parent) Q_DECL_OVERRIDE;
 //! [3]
 };
 //! [2] //! [3]

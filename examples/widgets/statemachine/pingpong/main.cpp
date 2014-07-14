@@ -65,7 +65,7 @@ public:
         : QState(parent) {}
 
 protected:
-    virtual void onEntry(QEvent *)
+    virtual void onEntry(QEvent *) Q_DECL_OVERRIDE
     {
         machine()->postEvent(new PingEvent());
         fprintf(stdout, "ping?\n");
@@ -80,10 +80,10 @@ public:
     PongTransition() {}
 
 protected:
-    virtual bool eventTest(QEvent *e) {
+    virtual bool eventTest(QEvent *e) Q_DECL_OVERRIDE {
         return (e->type() == QEvent::User+3);
     }
-    virtual void onTransition(QEvent *)
+    virtual void onTransition(QEvent *) Q_DECL_OVERRIDE
     {
         machine()->postDelayedEvent(new PingEvent(), 500);
         fprintf(stdout, "ping?\n");
@@ -98,10 +98,10 @@ public:
     PingTransition() {}
 
 protected:
-    virtual bool eventTest(QEvent *e) {
+    virtual bool eventTest(QEvent *e) Q_DECL_OVERRIDE {
         return (e->type() == QEvent::User+2);
     }
-    virtual void onTransition(QEvent *)
+    virtual void onTransition(QEvent *) Q_DECL_OVERRIDE
     {
         machine()->postDelayedEvent(new PongEvent(), 500);
         fprintf(stdout, "pong!\n");

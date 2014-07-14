@@ -67,7 +67,7 @@ public:
                 QWidget *parent = 0, Qt::WindowFlags flags = 0);
 
 protected:
-    void showEvent(QShowEvent *event);
+    void showEvent(QShowEvent *event) Q_DECL_OVERRIDE;
 
 public slots:
     void actionTriggered(QAction *action);

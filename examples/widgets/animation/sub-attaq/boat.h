@@ -77,7 +77,7 @@ public:
 
     void updateBoatMovement();
 
-    virtual int type() const;
+    virtual int type() const Q_DECL_OVERRIDE;
 
 signals:
     void boatDestroyed();

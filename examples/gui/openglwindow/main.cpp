@@ -53,8 +53,8 @@ class TriangleWindow : public OpenGLWindow
 public:
     TriangleWindow();
 
-    void initialize();
-    void render();
+    void initialize() Q_DECL_OVERRIDE;
+    void render() Q_DECL_OVERRIDE;
 
 private:
     GLuint loadShader(GLenum type, const char *source);

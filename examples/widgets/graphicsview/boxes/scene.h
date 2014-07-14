@@ -72,13 +72,13 @@ class ColorEdit : public ParameterEdit
 public:
     ColorEdit(QRgb initialColor, int id);
     QRgb color() const {return m_color;}
-    virtual void emitChange() {emit colorChanged(m_color, m_id);}
+    virtual void emitChange() Q_DECL_OVERRIDE {emit colorChanged(m_color, m_id);}
 public slots:
     void editDone();
 signals:
     void colorChanged(QRgb color, int id);
 protected:
-    virtual void mousePressEvent(QMouseEvent *event);
+    virtual void mousePressEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
     void setColor(QRgb color); // also emits colorChanged()
 private:
     QGraphicsScene *m_dialogParentScene;
@@ -94,7 +94,7 @@ class FloatEdit : public ParameterEdit
 public:
     FloatEdit(float initialValue, int id);
     float value() const {return m_value;}
-    virtual void emitChange() {emit valueChanged(m_value, m_id);}
+    virtual void emitChange() Q_DECL_OVERRIDE {emit valueChanged(m_value, m_id);}
 public slots:
     void editDone();
 signals:
@@ -111,9 +111,9 @@ class GraphicsWidget : public QGraphicsProxyWidget
 public:
     GraphicsWidget() : QGraphicsProxyWidget(0, Qt::Window) {}
 protected:
-    virtual QVariant itemChange(GraphicsItemChange change, const QVariant &value);
-    virtual void resizeEvent(QGraphicsSceneResizeEvent *event);
-    virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+    virtual QVariant itemChange(GraphicsItemChange change, const QVariant &value) Q_DECL_OVERRIDE;
+    virtual void resizeEvent(QGraphicsSceneResizeEvent *event) Q_DECL_OVERRIDE;
+    virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) Q_DECL_OVERRIDE;
 };
 
 class TwoSidedGraphicsWidget : public QObject
@@ -153,7 +153,7 @@ signals:
     void shaderChanged(int);
     void doubleClicked();
 protected:
-    virtual void mouseDoubleClickEvent(QMouseEvent *event);
+    virtual void mouseDoubleClickEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
 
     QVector<QByteArray> m_parameterNames;
     QComboBox *m_textureCombo;
@@ -180,7 +180,7 @@ signals:
     void doubleClicked();
     void newItemTriggered(ItemDialog::ItemType type);
 protected:
-    virtual void mouseDoubleClickEvent(QMouseEvent *event);
+    virtual void mouseDoubleClickEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
 };
 
 class Scene : public QGraphicsScene
@@ -189,7 +189,7 @@ class Scene : public QGraphicsScene
 public:
     Scene(int width, int height, int maxTextureSize);
     ~Scene();
-    virtual void drawBackground(QPainter *painter, const QRectF &rect);
+    virtual void drawBackground(QPainter *painter, const QRectF &rect) Q_DECL_OVERRIDE;
 
 public slots:
     void setShader(int index);
@@ -205,10 +205,10 @@ protected:
     void defaultStates();
     void renderCubemaps();
 
-    virtual void mousePressEvent(QGraphicsSceneMouseEvent *event);
-    virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
-    virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
-    virtual void wheelEvent(QGraphicsSceneWheelEvent * event);
+    virtual void mousePressEvent(QGraphicsSceneMouseEvent *event) Q_DECL_OVERRIDE;
+    virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) Q_DECL_OVERRIDE;
+    virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *event) Q_DECL_OVERRIDE;
+    virtual void wheelEvent(QGraphicsSceneWheelEvent * event) Q_DECL_OVERRIDE;
 private:
     void initGL();
     QPointF pixelPosToViewPos(const QPointF& p);

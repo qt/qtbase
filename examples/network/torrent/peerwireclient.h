@@ -112,14 +112,14 @@ public:
     qint64 uploadSpeed() const;
 
     bool canTransferMore() const;
-    qint64 bytesAvailable() const { return incomingBuffer.size() + QTcpSocket::bytesAvailable(); }
+    qint64 bytesAvailable() const Q_DECL_OVERRIDE { return incomingBuffer.size() + QTcpSocket::bytesAvailable(); }
     qint64 socketBytesAvailable() const { return socket.bytesAvailable(); }
     qint64 socketBytesToWrite() const { return socket.bytesToWrite(); }
 
-    void setReadBufferSize(qint64 size);
+    void setReadBufferSize(qint64 size) Q_DECL_OVERRIDE;
 
     void connectToHost(const QHostAddress &address,
-                       quint16 port, OpenMode openMode = ReadWrite);
+                       quint16 port, OpenMode openMode = ReadWrite) Q_DECL_OVERRIDE;
     void diconnectFromHost();
 
 signals:
@@ -138,11 +138,11 @@ signals:
     void bytesReceived(qint64 size);
 
 protected:
-    void timerEvent(QTimerEvent *event);
+    void timerEvent(QTimerEvent *event) Q_DECL_OVERRIDE;
 
-    qint64 readData(char *data, qint64 maxlen);
-    qint64 readLineData(char *data, qint64 maxlen);
-    qint64 writeData(const char *data, qint64 len);
+    qint64 readData(char *data, qint64 maxlen) Q_DECL_OVERRIDE;
+    qint64 readLineData(char *data, qint64 maxlen) Q_DECL_OVERRIDE;
+    qint64 writeData(const char *data, qint64 len) Q_DECL_OVERRIDE;
 
 private slots:
     void sendHandShake();

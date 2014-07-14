@@ -56,7 +56,7 @@ public:
     View(const QString &items, const QString &images, QWidget *parent = 0);
 
 protected:
-    void mouseReleaseEvent(QMouseEvent *event);
+    void mouseReleaseEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
 //! [0]
 
 //! [1]

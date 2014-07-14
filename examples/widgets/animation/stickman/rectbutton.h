@@ -50,13 +50,13 @@ public:
     RectButton(QString buttonText);
     ~RectButton();
 
-    virtual QRectF boundingRect() const;
-    virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+    virtual QRectF boundingRect() const Q_DECL_OVERRIDE;
+    virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) Q_DECL_OVERRIDE;
 
 protected:
     QString m_ButtonText;
 
-    virtual void mousePressEvent (QGraphicsSceneMouseEvent *event);
+    virtual void mousePressEvent (QGraphicsSceneMouseEvent *event) Q_DECL_OVERRIDE;
 
 signals:
     void clicked();

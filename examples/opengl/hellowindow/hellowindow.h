@@ -98,10 +98,10 @@ public:
     QColor color() const;
     void updateColor();
 
-    void exposeEvent(QExposeEvent *event);
+    void exposeEvent(QExposeEvent *event) Q_DECL_OVERRIDE;
 
 private:
-    void mousePressEvent(QMouseEvent *);
+    void mousePressEvent(QMouseEvent *) Q_DECL_OVERRIDE;
 
     int m_colorIndex;
     QColor m_color;

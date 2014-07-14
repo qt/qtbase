@@ -67,9 +67,9 @@ public slots:
     void renderNow();
 
 protected:
-    bool event(QEvent *event);
+    bool event(QEvent *event) Q_DECL_OVERRIDE;
 
-    void exposeEvent(QExposeEvent *event);
+    void exposeEvent(QExposeEvent *event) Q_DECL_OVERRIDE;
 
 private:
     bool m_update_pending;

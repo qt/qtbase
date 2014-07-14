@@ -59,7 +59,7 @@ public:
 
 //![1]
 protected:
-    bool eventTest(QEvent *event) {
+    bool eventTest(QEvent *event) Q_DECL_OVERRIDE {
         if (event->type() == QEvent::StateMachineWrapped &&
             static_cast<QStateMachine::WrappedEvent *>(event)->event()->type() == QEvent::KeyPress) {
             QEvent *wrappedEvent = static_cast<QStateMachine::WrappedEvent *>(event)->event();
@@ -76,7 +76,7 @@ protected:
 //![1]
 
 //![2]
-    void onTransition(QEvent *event) {
+    void onTransition(QEvent *event) Q_DECL_OVERRIDE {
         QKeyEvent *keyEvent = static_cast<QKeyEvent *>(
             static_cast<QStateMachine::WrappedEvent *>(event)->event());
 

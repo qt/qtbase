@@ -58,7 +58,7 @@ public:
     }
 
 protected:
-    void resizeEvent(QResizeEvent *event) {
+    void resizeEvent(QResizeEvent *event) Q_DECL_OVERRIDE {
         if (scene())
             scene()->setSceneRect(QRect(QPoint(0, 0), event->size()));
         QGraphicsView::resizeEvent(event);

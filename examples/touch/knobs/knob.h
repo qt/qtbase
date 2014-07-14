@@ -48,7 +48,7 @@ class Knob : public QGraphicsEllipseItem
 public:
     Knob();
 
-    bool sceneEvent(QEvent *event);
+    bool sceneEvent(QEvent *event) Q_DECL_OVERRIDE;
 };
 
 #endif // KNOB_H

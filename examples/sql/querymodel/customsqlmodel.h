@@ -51,7 +51,7 @@ class CustomSqlModel : public QSqlQueryModel
 public:
     CustomSqlModel(QObject *parent = 0);
 
-    QVariant data(const QModelIndex &item, int role) const;
+    QVariant data(const QModelIndex &item, int role) const Q_DECL_OVERRIDE;
 };
 //! [0]
 

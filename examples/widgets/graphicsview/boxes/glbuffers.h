@@ -101,8 +101,8 @@ public:
     GLTexture2D(int width, int height);
     explicit GLTexture2D(const QString& fileName, int width = 0, int height = 0);
     void load(int width, int height, QRgb *data);
-    virtual void bind();
-    virtual void unbind();
+    virtual void bind() Q_DECL_OVERRIDE;
+    virtual void unbind() Q_DECL_OVERRIDE;
 };
 
 class GLTexture3D : public GLTexture
@@ -112,8 +112,8 @@ public:
     // TODO: Implement function below
     //GLTexture3D(const QString& fileName, int width = 0, int height = 0);
     void load(int width, int height, int depth, QRgb *data);
-    virtual void bind();
-    virtual void unbind();
+    virtual void bind() Q_DECL_OVERRIDE;
+    virtual void unbind() Q_DECL_OVERRIDE;
 };
 
 class GLTextureCube : public GLTexture
@@ -122,8 +122,8 @@ public:
     GLTextureCube(int size);
     explicit GLTextureCube(const QStringList& fileNames, int size = 0);
     void load(int size, int face, QRgb *data);
-    virtual void bind();
-    virtual void unbind();
+    virtual void bind() Q_DECL_OVERRIDE;
+    virtual void unbind() Q_DECL_OVERRIDE;
 };
 
 // TODO: Define and implement class below
@@ -137,7 +137,7 @@ public:
     void begin(int face);
     // end rendering
     void end();
-    virtual bool failed() const {return m_failed || m_fbo.failed();}
+    virtual bool failed() const Q_DECL_OVERRIDE {return m_failed || m_fbo.failed();}
 
     static void getViewMatrix(QMatrix4x4& mat, int face);
     static void getProjectionMatrix(QMatrix4x4& mat, float nearZ, float farZ);

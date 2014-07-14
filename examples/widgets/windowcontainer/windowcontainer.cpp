@@ -63,7 +63,7 @@ public:
     {
     }
 
-    void render(QPainter *p) {
+    void render(QPainter *p) Q_DECL_OVERRIDE {
         QLinearGradient g(0, 0, 0, height());
         g.setColorAt(0, QColor("lightsteelblue"));
         g.setColorAt(1, Qt::black);
@@ -91,43 +91,43 @@ public:
         p->drawPolyline(m_polygon);
     }
 
-    void mousePressEvent(QMouseEvent *e) {
+    void mousePressEvent(QMouseEvent *e) Q_DECL_OVERRIDE {
         m_mouseDown = true;
         m_polygon.clear();
         m_polygon.append(e->pos());
         renderLater();
     }
 
-    void mouseMoveEvent(QMouseEvent *e) {
+    void mouseMoveEvent(QMouseEvent *e) Q_DECL_OVERRIDE {
         if (m_mouseDown) {
             m_polygon.append(e->pos());
             renderLater();
         }
     }
 
-    void mouseReleaseEvent(QMouseEvent *e) {
+    void mouseReleaseEvent(QMouseEvent *e) Q_DECL_OVERRIDE {
         m_mouseDown = false;
         m_polygon.append(e->pos());
         renderLater();
     }
 
-    void focusInEvent(QFocusEvent *) {
+    void focusInEvent(QFocusEvent *) Q_DECL_OVERRIDE {
         m_focus = true;
         renderLater();
     }
 
-    void focusOutEvent(QFocusEvent *) {
+    void focusOutEvent(QFocusEvent *) Q_DECL_OVERRIDE {
         m_focus = false;
         m_polygon.clear();
         renderLater();
     }
 
-    void keyPressEvent(QKeyEvent *e) {
+    void keyPressEvent(QKeyEvent *e) Q_DECL_OVERRIDE {
         m_key = e->text();
         renderLater();
     }
 
-    void keyReleaseEvent(QKeyEvent *) {
+    void keyReleaseEvent(QKeyEvent *) Q_DECL_OVERRIDE {
         m_key = QString();
         renderLater();
     }

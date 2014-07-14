@@ -49,8 +49,8 @@ class AddShapeCommand : public QUndoCommand
 {
 public:
     AddShapeCommand(Document *doc, const Shape &shape, QUndoCommand *parent = 0);
-    void undo();
-    void redo();
+    void undo() Q_DECL_OVERRIDE;
+    void redo() Q_DECL_OVERRIDE;
 
 private:
     Document *m_doc;
@@ -62,8 +62,8 @@ class RemoveShapeCommand : public QUndoCommand
 {
 public:
     RemoveShapeCommand(Document *doc, const QString &shapeName, QUndoCommand *parent = 0);
-    void undo();
-    void redo();
+    void undo() Q_DECL_OVERRIDE;
+    void redo() Q_DECL_OVERRIDE;
 
 private:
     Document *m_doc;
@@ -77,11 +77,11 @@ public:
     SetShapeColorCommand(Document *doc, const QString &shapeName, const QColor &color,
                             QUndoCommand *parent = 0);
 
-    void undo();
-    void redo();
+    void undo() Q_DECL_OVERRIDE;
+    void redo() Q_DECL_OVERRIDE;
 
-    bool mergeWith(const QUndoCommand *command);
-    int id() const;
+    bool mergeWith(const QUndoCommand *command) Q_DECL_OVERRIDE;
+    int id() const Q_DECL_OVERRIDE;
 
 private:
     Document *m_doc;
@@ -96,11 +96,11 @@ public:
     SetShapeRectCommand(Document *doc, const QString &shapeName, const QRect &rect,
                             QUndoCommand *parent = 0);
 
-    void undo();
-    void redo();
+    void undo() Q_DECL_OVERRIDE;
+    void redo() Q_DECL_OVERRIDE;
 
-    bool mergeWith(const QUndoCommand *command);
-    int id() const;
+    bool mergeWith(const QUndoCommand *command) Q_DECL_OVERRIDE;
+    int id() const Q_DECL_OVERRIDE;
 
 private:
     Document *m_doc;

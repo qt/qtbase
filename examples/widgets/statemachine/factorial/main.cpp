@@ -93,7 +93,7 @@ public:
         : QSignalTransition(fact, SIGNAL(xChanged(int))), m_fact(fact)
     {}
 
-    virtual bool eventTest(QEvent *e)
+    virtual bool eventTest(QEvent *e) Q_DECL_OVERRIDE
     {
         if (!QSignalTransition::eventTest(e))
             return false;
@@ -101,7 +101,7 @@ public:
         return se->arguments().at(0).toInt() > 1;
     }
 
-    virtual void onTransition(QEvent *e)
+    virtual void onTransition(QEvent *e) Q_DECL_OVERRIDE
     {
         QStateMachine::SignalEvent *se = static_cast<QStateMachine::SignalEvent*>(e);
         int x = se->arguments().at(0).toInt();
@@ -123,7 +123,7 @@ public:
         : QSignalTransition(fact, SIGNAL(xChanged(int))), m_fact(fact)
     {}
 
-    virtual bool eventTest(QEvent *e)
+    virtual bool eventTest(QEvent *e) Q_DECL_OVERRIDE
     {
         if (!QSignalTransition::eventTest(e))
             return false;
@@ -131,7 +131,7 @@ public:
         return se->arguments().at(0).toInt() <= 1;
     }
 
-    virtual void onTransition(QEvent *)
+    virtual void onTransition(QEvent *) Q_DECL_OVERRIDE
     {
         fprintf(stdout, "%d\n", m_fact->property("fac").toInt());
     }

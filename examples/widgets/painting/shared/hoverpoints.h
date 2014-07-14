@@ -76,7 +76,7 @@ public:
 
     HoverPoints(QWidget *widget, PointShape shape);
 
-    bool eventFilter(QObject *object, QEvent *event);
+    bool eventFilter(QObject *object, QEvent *event) Q_DECL_OVERRIDE;
 
     void paintPoints();
 

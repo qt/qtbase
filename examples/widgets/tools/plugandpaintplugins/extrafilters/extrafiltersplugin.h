@@ -56,9 +56,9 @@ class ExtraFiltersPlugin : public QObject, public FilterInterface
     Q_INTERFACES(FilterInterface)
 
 public:
-    QStringList filters() const;
+    QStringList filters() const Q_DECL_OVERRIDE;
     QImage filterImage(const QString &filter, const QImage &image,
-                       QWidget *parent);
+                       QWidget *parent) Q_DECL_OVERRIDE;
 };
 //! [0]
 

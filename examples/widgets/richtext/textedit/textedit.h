@@ -64,7 +64,7 @@ public:
     TextEdit(QWidget *parent = 0);
 
 protected:
-    virtual void closeEvent(QCloseEvent *e);
+    virtual void closeEvent(QCloseEvent *e) Q_DECL_OVERRIDE;
 
 private:
     void setupFileActions();

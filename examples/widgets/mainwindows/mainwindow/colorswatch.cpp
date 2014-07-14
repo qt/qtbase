@@ -101,8 +101,8 @@ class ColorDock : public QFrame
 public:
     ColorDock(const QString &c, QWidget *parent);
 
-    virtual QSize sizeHint() const;
-    virtual QSize minimumSizeHint() const;
+    virtual QSize sizeHint() const Q_DECL_OVERRIDE;
+    virtual QSize minimumSizeHint() const Q_DECL_OVERRIDE;
 
     void setCustomSizeHint(const QSize &size);
 
@@ -110,7 +110,7 @@ public slots:
     void changeSizeHints();
 
 protected:
-    void paintEvent(QPaintEvent *);
+    void paintEvent(QPaintEvent *) Q_DECL_OVERRIDE;
     QString color;
     QSize szHint, minSzHint;
 };

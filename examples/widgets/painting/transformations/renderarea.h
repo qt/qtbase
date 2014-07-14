@@ -65,11 +65,11 @@ public:
     void setOperations(const QList<Operation> &operations);
     void setShape(const QPainterPath &shape);
 
-    QSize minimumSizeHint() const;
-    QSize sizeHint() const;
+    QSize minimumSizeHint() const Q_DECL_OVERRIDE;
+    QSize sizeHint() const Q_DECL_OVERRIDE;
 
 protected:
-    void paintEvent(QPaintEvent *event);
+    void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
 //! [1]
 
 //! [2]

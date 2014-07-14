@@ -60,8 +60,8 @@ public:
     QCompleter *completer() const;
 
 protected:
-    void keyPressEvent(QKeyEvent *e);
-    void focusInEvent(QFocusEvent *e);
+    void keyPressEvent(QKeyEvent *e) Q_DECL_OVERRIDE;
+    void focusInEvent(QFocusEvent *e) Q_DECL_OVERRIDE;
 
 private slots:
     void insertCompletion(const QString &completion);

@@ -58,16 +58,16 @@ class PiecesModel : public QAbstractListModel
 public:
     explicit PiecesModel(int pieceSize, QObject *parent = 0);
 
-    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
-    Qt::ItemFlags flags(const QModelIndex &index) const;
-    bool removeRows(int row, int count, const QModelIndex &parent);
+    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
+    Qt::ItemFlags flags(const QModelIndex &index) const Q_DECL_OVERRIDE;
+    bool removeRows(int row, int count, const QModelIndex &parent) Q_DECL_OVERRIDE;
 
     bool dropMimeData(const QMimeData *data, Qt::DropAction action,
-                      int row, int column, const QModelIndex &parent);
-    QMimeData *mimeData(const QModelIndexList &indexes) const;
-    QStringList mimeTypes() const;
-    int rowCount(const QModelIndex &parent) const;
-    Qt::DropActions supportedDropActions() const;
+                      int row, int column, const QModelIndex &parent) Q_DECL_OVERRIDE;
+    QMimeData *mimeData(const QModelIndexList &indexes) const Q_DECL_OVERRIDE;
+    QStringList mimeTypes() const Q_DECL_OVERRIDE;
+    int rowCount(const QModelIndex &parent) const Q_DECL_OVERRIDE;
+    Qt::DropActions supportedDropActions() const Q_DECL_OVERRIDE;
 
     void addPiece(const QPixmap &pixmap, const QPoint &location);
     void addPieces(const QPixmap& pixmap);

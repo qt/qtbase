@@ -48,7 +48,7 @@ class GraphicsView : public QGraphicsView
 public:
     GraphicsView(QGraphicsScene *scene = 0, QWidget *parent = 0);
 
-    bool viewportEvent(QEvent *event);
+    bool viewportEvent(QEvent *event) Q_DECL_OVERRIDE;
 
 private:
     qreal totalScaleFactor;

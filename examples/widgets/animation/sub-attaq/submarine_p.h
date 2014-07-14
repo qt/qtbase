@@ -84,7 +84,7 @@ protected slots:
     }
 
 protected:
-    void onEntry(QEvent *e)
+    void onEntry(QEvent *e) Q_DECL_OVERRIDE
     {
         if (submarine->currentDirection() == SubMarine::Left) {
             movementAnimation->setEndValue(QPointF(0,submarine->y()));
@@ -116,14 +116,14 @@ public:
     }
 
 protected:
-    void onEntry(QEvent *e)
+    void onEntry(QEvent *e) Q_DECL_OVERRIDE
     {
         returnAnimation->stop();
         returnAnimation->setEndValue(submarine->currentDirection() == SubMarine::Right ? 360. : 180.);
         QAnimationState::onEntry(e);
     }
 
-    void onExit(QEvent *e)
+    void onExit(QEvent *e) Q_DECL_OVERRIDE
     {
         submarine->currentDirection() == SubMarine::Right ? submarine->setCurrentDirection(SubMarine::Left) : submarine->setCurrentDirection(SubMarine::Right);
         QAnimationState::onExit(e);

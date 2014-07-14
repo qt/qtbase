@@ -52,7 +52,7 @@ public:
     AnalogClock(QWidget *parent = 0);
 
 protected:
-    void paintEvent(QPaintEvent *event);
+    void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
 };
 //! [0]
 

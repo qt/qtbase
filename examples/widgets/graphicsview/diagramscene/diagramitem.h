@@ -75,11 +75,11 @@ public:
     QPolygonF polygon() const { return myPolygon; }
     void addArrow(Arrow *arrow);
     QPixmap image() const;
-    int type() const { return Type;}
+    int type() const Q_DECL_OVERRIDE { return Type;}
 
 protected:
-    void contextMenuEvent(QGraphicsSceneContextMenuEvent *event);
-    QVariant itemChange(GraphicsItemChange change, const QVariant &value);
+    void contextMenuEvent(QGraphicsSceneContextMenuEvent *event) Q_DECL_OVERRIDE;
+    QVariant itemChange(GraphicsItemChange change, const QVariant &value) Q_DECL_OVERRIDE;
 
 private:
     DiagramType myDiagramType;

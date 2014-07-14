@@ -52,8 +52,8 @@ public:
     RandomListModel(QObject *parent = 0);
     ~RandomListModel();
 
-    int rowCount(const QModelIndex & = QModelIndex()) const;
-    QVariant data(const QModelIndex &, int) const;
+    int rowCount(const QModelIndex & = QModelIndex()) const Q_DECL_OVERRIDE;
+    QVariant data(const QModelIndex &, int) const Q_DECL_OVERRIDE;
 
 private:
     void cacheRows(int, int) const;

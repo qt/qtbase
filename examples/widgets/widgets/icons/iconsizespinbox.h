@@ -51,8 +51,8 @@ class IconSizeSpinBox : public QSpinBox
 public:
     IconSizeSpinBox(QWidget *parent = 0);
 
-    int valueFromText(const QString &text) const;
-    QString textFromValue(int value) const;
+    int valueFromText(const QString &text) const Q_DECL_OVERRIDE;
+    QString textFromValue(int value) const Q_DECL_OVERRIDE;
 };
 //! [0]
 

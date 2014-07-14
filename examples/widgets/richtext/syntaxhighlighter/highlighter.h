@@ -57,7 +57,7 @@ public:
     Highlighter(QTextDocument *parent = 0);
 
 protected:
-    void highlightBlock(const QString &text);
+    void highlightBlock(const QString &text) Q_DECL_OVERRIDE;
 
 private:
     struct HighlightingRule

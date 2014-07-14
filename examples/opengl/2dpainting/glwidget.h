@@ -57,7 +57,7 @@ public slots:
     void animate();
 
 protected:
-    void paintEvent(QPaintEvent *event);
+    void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
 
 private:
     Helper *helper;

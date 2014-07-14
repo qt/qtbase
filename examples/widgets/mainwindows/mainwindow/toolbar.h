@@ -84,8 +84,8 @@ public:
     QMenu *menu;
 
 protected:
-    void enterEvent(QEvent*);
-    void leaveEvent(QEvent*);
+    void enterEvent(QEvent*) Q_DECL_OVERRIDE;
+    void leaveEvent(QEvent*) Q_DECL_OVERRIDE;
 
 private:
     void allow(Qt::ToolBarArea area, bool allow);

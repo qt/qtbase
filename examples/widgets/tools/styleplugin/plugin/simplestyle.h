@@ -54,7 +54,7 @@ class SimpleStyle : public QProxyStyle
 public:
     SimpleStyle() {};
 
-    void polish(QPalette &palette);
+    void polish(QPalette &palette) Q_DECL_OVERRIDE;
 };
 
 #endif

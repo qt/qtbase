@@ -60,14 +60,14 @@ class PathDeformRenderer : public ArthurFrame
 public:
     explicit PathDeformRenderer(QWidget *widget, bool smallScreen = false);
 
-    void paint(QPainter *painter);
+    void paint(QPainter *painter) Q_DECL_OVERRIDE;
 
-    void mousePressEvent(QMouseEvent *e);
-    void mouseReleaseEvent(QMouseEvent *e);
-    void mouseMoveEvent(QMouseEvent *e);
-    void timerEvent(QTimerEvent *e);
+    void mousePressEvent(QMouseEvent *e) Q_DECL_OVERRIDE;
+    void mouseReleaseEvent(QMouseEvent *e) Q_DECL_OVERRIDE;
+    void mouseMoveEvent(QMouseEvent *e) Q_DECL_OVERRIDE;
+    void timerEvent(QTimerEvent *e) Q_DECL_OVERRIDE;
 
-    QSize sizeHint() const { return QSize(600, 500); }
+    QSize sizeHint() const Q_DECL_OVERRIDE { return QSize(600, 500); }
 
     bool animated() const { return m_animated; }
     int radius() const { return int(m_radius); }

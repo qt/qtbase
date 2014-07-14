@@ -59,7 +59,7 @@ public:
     QString currentFile() { return curFile; }
 
 protected:
-    void closeEvent(QCloseEvent *event);
+    void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
 
 private slots:
     void documentWasModified();

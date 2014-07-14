@@ -85,8 +85,8 @@ public:
     void setCustomSizeHint(const QSize &size);
 
 protected:
-    virtual void contextMenuEvent(QContextMenuEvent *event);
-    virtual void resizeEvent(QResizeEvent *e);
+    virtual void contextMenuEvent(QContextMenuEvent *event) Q_DECL_OVERRIDE;
+    virtual void resizeEvent(QResizeEvent *e) Q_DECL_OVERRIDE;
 
 private:
     void allow(Qt::DockWidgetArea area, bool allow);
@@ -120,11 +120,11 @@ class BlueTitleBar : public QWidget
 public:
     BlueTitleBar(QWidget *parent = 0);
 
-    QSize sizeHint() const { return minimumSizeHint(); }
-    QSize minimumSizeHint() const;
+    QSize sizeHint() const Q_DECL_OVERRIDE { return minimumSizeHint(); }
+    QSize minimumSizeHint() const Q_DECL_OVERRIDE;
 protected:
-    void paintEvent(QPaintEvent *event);
-    void mouseReleaseEvent(QMouseEvent *event);
+    void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
+    void mouseReleaseEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
 public slots:
     void updateMask();
 

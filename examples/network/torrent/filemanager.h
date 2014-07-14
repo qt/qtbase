@@ -90,7 +90,7 @@ signals:
     void pieceVerified(int pieceIndex, bool verified);
 
 protected:
-    void run();
+    void run() Q_DECL_OVERRIDE;
 
 private slots:
     bool verifySinglePiece(int pieceIndex);

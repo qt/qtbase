@@ -58,7 +58,7 @@ private:
     void setupScene();
 
 protected:
-    void resizeEvent(QResizeEvent *event);
+    void resizeEvent(QResizeEvent *event) Q_DECL_OVERRIDE;
 
 private:
     qreal angle;

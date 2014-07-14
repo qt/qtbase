@@ -61,7 +61,7 @@ public:
 
 protected:
 #ifndef QT_NO_WHEELEVENT
-    void wheelEvent(QWheelEvent *);
+    void wheelEvent(QWheelEvent *) Q_DECL_OVERRIDE;
 #endif
 
 private:

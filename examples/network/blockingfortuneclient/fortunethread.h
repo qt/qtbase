@@ -55,7 +55,7 @@ public:
     ~FortuneThread();
 
     void requestNewFortune(const QString &hostName, quint16 port);
-    void run();
+    void run() Q_DECL_OVERRIDE;
 
 signals:
     void newFortune(const QString &fortune);

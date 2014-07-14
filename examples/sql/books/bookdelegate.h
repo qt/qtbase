@@ -55,16 +55,16 @@ public:
     BookDelegate(QObject *parent);
 
     void paint(QPainter *painter, const QStyleOptionViewItem &option,
-               const QModelIndex &index) const;
+               const QModelIndex &index) const Q_DECL_OVERRIDE;
 
-    QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const;
+    QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const Q_DECL_OVERRIDE;
 
     bool editorEvent(QEvent *event, QAbstractItemModel *model,
                      const QStyleOptionViewItem &option,
-                     const QModelIndex &index);
+                     const QModelIndex &index) Q_DECL_OVERRIDE;
 
     QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option,
-                                        const QModelIndex &index) const;
+                                        const QModelIndex &index) const Q_DECL_OVERRIDE;
 
 private:
     QPixmap star;

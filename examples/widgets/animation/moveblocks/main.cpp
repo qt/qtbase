@@ -70,7 +70,7 @@ class QGraphicsRectWidget : public QGraphicsWidget
 {
 public:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *,
-               QWidget *)
+               QWidget *) Q_DECL_OVERRIDE
     {
         painter->fillRect(rect(), Qt::blue);
     }
@@ -88,14 +88,14 @@ public:
 
 protected:
 //![14]
-    virtual bool eventTest(QEvent *event)
+    virtual bool eventTest(QEvent *event) Q_DECL_OVERRIDE
     {
         return (event->type() == QEvent::Type(StateSwitchEvent::StateSwitchType))
             && (static_cast<StateSwitchEvent *>(event)->rand() == m_rand);
     }
 //![14]
 
-    virtual void onTransition(QEvent *) {}
+    virtual void onTransition(QEvent *) Q_DECL_OVERRIDE {}
 
 private:
     int m_rand;
@@ -112,7 +112,7 @@ public:
 //![10]
 
 //![11]
-    virtual void onEntry(QEvent *)
+    virtual void onEntry(QEvent *) Q_DECL_OVERRIDE
     {
         int n;
         while ((n = (qrand() % m_stateCount + 1)) == m_lastIndex)
@@ -120,7 +120,7 @@ public:
         m_lastIndex = n;
         machine()->postEvent(new StateSwitchEvent(n));
     }
-    virtual void onExit(QEvent *) {}
+    virtual void onExit(QEvent *) Q_DECL_OVERRIDE {}
 //![11]
 
 //![12]
@@ -164,7 +164,7 @@ public:
     }
 
 protected:
-    virtual void resizeEvent(QResizeEvent *event)
+    virtual void resizeEvent(QResizeEvent *event) Q_DECL_OVERRIDE
     {
         fitInView(scene()->sceneRect());
         QGraphicsView::resizeEvent(event);

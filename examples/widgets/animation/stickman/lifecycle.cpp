@@ -60,7 +60,7 @@ public:
         setTargetState(target);
     }
 
-    virtual bool eventTest(QEvent *e)
+    virtual bool eventTest(QEvent *e) Q_DECL_OVERRIDE
     {
         if (QSignalTransition::eventTest(e)) {
             QVariant key = static_cast<QStateMachine::SignalEvent*>(e)->arguments().at(0);
@@ -85,7 +85,7 @@ public:
         startTimer(1000);
     }
 
-    virtual bool eventTest(QEvent *e)
+    virtual bool eventTest(QEvent *e) Q_DECL_OVERRIDE
     {
         return QEventTransition::eventTest(e) && ((qrand() % 50) == 0);
     }

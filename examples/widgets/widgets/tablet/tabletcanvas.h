@@ -86,9 +86,9 @@ public:
         { return a > b ? a : b; }
 
 protected:
-    void tabletEvent(QTabletEvent *event);
-    void paintEvent(QPaintEvent *event);
-    void resizeEvent(QResizeEvent *event);
+    void tabletEvent(QTabletEvent *event) Q_DECL_OVERRIDE;
+    void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
+    void resizeEvent(QResizeEvent *event) Q_DECL_OVERRIDE;
 
 private:
     void initPixmap();

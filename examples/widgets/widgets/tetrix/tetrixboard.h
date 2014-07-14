@@ -60,8 +60,8 @@ public:
     TetrixBoard(QWidget *parent = 0);
 
     void setNextPieceLabel(QLabel *label);
-    QSize sizeHint() const;
-    QSize minimumSizeHint() const;
+    QSize sizeHint() const Q_DECL_OVERRIDE;
+    QSize minimumSizeHint() const Q_DECL_OVERRIDE;
 
 public slots:
     void start();
@@ -73,9 +73,9 @@ signals:
     void linesRemovedChanged(int numLines);
 
 protected:
-    void paintEvent(QPaintEvent *event);
-    void keyPressEvent(QKeyEvent *event);
-    void timerEvent(QTimerEvent *event);
+    void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
+    void keyPressEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
+    void timerEvent(QTimerEvent *event) Q_DECL_OVERRIDE;
 //! [0]
 
 //! [1]

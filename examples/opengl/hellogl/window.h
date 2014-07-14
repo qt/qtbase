@@ -57,7 +57,7 @@ public:
     Window();
 
 protected:
-    void keyPressEvent(QKeyEvent *event);
+    void keyPressEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
 
 private:
     QSlider *createSlider();

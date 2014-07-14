@@ -56,8 +56,8 @@ public:
     QPixmap pixmap() const;
     void setPixmap(const QPixmap &pixmap);
 
-    QRectF boundingRect() const;
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0);
+    QRectF boundingRect() const Q_DECL_OVERRIDE;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0) Q_DECL_OVERRIDE;
 
     bool fill() const;
     void setFill(bool fill);

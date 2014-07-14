@@ -65,10 +65,10 @@ public:
     void grabGestures(const QList<Qt::GestureType> &gestures);
 
 protected:
-    bool event(QEvent *event);
-    void paintEvent(QPaintEvent *event);
-    void resizeEvent(QResizeEvent *event);
-    void mouseDoubleClickEvent(QMouseEvent *event);
+    bool event(QEvent *event) Q_DECL_OVERRIDE;
+    void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
+    void resizeEvent(QResizeEvent *event) Q_DECL_OVERRIDE;
+    void mouseDoubleClickEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
 
 private:
     bool gestureEvent(QGestureEvent *event);

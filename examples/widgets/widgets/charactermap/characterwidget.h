@@ -59,7 +59,7 @@ class CharacterWidget : public QWidget
 
 public:
     CharacterWidget(QWidget *parent = 0);
-    QSize sizeHint() const;
+    QSize sizeHint() const Q_DECL_OVERRIDE;
 
 public slots:
     void updateFont(const QFont &font);
@@ -71,9 +71,9 @@ signals:
     void characterSelected(const QString &character);
 
 protected:
-    void mouseMoveEvent(QMouseEvent *event);
-    void mousePressEvent(QMouseEvent *event);
-    void paintEvent(QPaintEvent *event);
+    void mouseMoveEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
+    void mousePressEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
+    void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
 
 private:
     QFont displayFont;

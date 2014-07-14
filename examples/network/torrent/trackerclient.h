@@ -78,7 +78,7 @@ signals:
     void stopped();
 
 protected:
-    void timerEvent(QTimerEvent *event);
+    void timerEvent(QTimerEvent *event) Q_DECL_OVERRIDE;
 
 private slots:
     void fetchPeerList();

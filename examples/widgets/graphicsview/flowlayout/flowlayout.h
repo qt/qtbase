@@ -50,14 +50,14 @@ public:
     qreal spacing(Qt::Orientation o) const;
 
     // inherited functions
-    void setGeometry(const QRectF &geom);
+    void setGeometry(const QRectF &geom) Q_DECL_OVERRIDE;
 
-    int count() const;
-    QGraphicsLayoutItem *itemAt(int index) const;
-    void removeAt(int index);
+    int count() const Q_DECL_OVERRIDE;
+    QGraphicsLayoutItem *itemAt(int index) const Q_DECL_OVERRIDE;
+    void removeAt(int index) Q_DECL_OVERRIDE;
 
 protected:
-    QSizeF sizeHint(Qt::SizeHint which, const QSizeF &constraint = QSizeF()) const;
+    QSizeF sizeHint(Qt::SizeHint which, const QSizeF &constraint = QSizeF()) const Q_DECL_OVERRIDE;
 
 private:
     qreal doLayout(const QRectF &geom, bool applyNewGeometry) const;

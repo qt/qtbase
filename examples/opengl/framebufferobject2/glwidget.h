@@ -45,12 +45,12 @@ class GLWidget : public QGLWidget
 public:
     GLWidget(QWidget *parent);
     ~GLWidget();
-    void initializeGL();
-    void resizeGL(int w, int h);
-    void paintGL();
-    void timerEvent(QTimerEvent *) { update(); }
-    void mousePressEvent(QMouseEvent *) { killTimer(timerId); }
-    void mouseReleaseEvent(QMouseEvent *) { timerId = startTimer(20); }
+    void initializeGL() Q_DECL_OVERRIDE;
+    void resizeGL(int w, int h) Q_DECL_OVERRIDE;
+    void paintGL() Q_DECL_OVERRIDE;
+    void timerEvent(QTimerEvent *) Q_DECL_OVERRIDE { update(); }
+    void mousePressEvent(QMouseEvent *) Q_DECL_OVERRIDE { killTimer(timerId); }
+    void mouseReleaseEvent(QMouseEvent *) Q_DECL_OVERRIDE { timerId = startTimer(20); }
 
     void drawCube(int i, GLfloat z, GLfloat ri, GLfloat jmp, GLfloat amp);
 

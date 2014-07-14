@@ -56,8 +56,8 @@ public slots:
     void setText(const QString &newText) { text = newText; }
 
 protected:
-    void paintEvent(QPaintEvent *event);
-    void timerEvent(QTimerEvent *event);
+    void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
+    void timerEvent(QTimerEvent *event) Q_DECL_OVERRIDE;
 
 private:
     QBasicTimer timer;

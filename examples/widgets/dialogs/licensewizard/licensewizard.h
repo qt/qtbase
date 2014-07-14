@@ -78,7 +78,7 @@ class IntroPage : public QWizardPage
 public:
     IntroPage(QWidget *parent = 0);
 
-    int nextId() const;
+    int nextId() const Q_DECL_OVERRIDE;
 
 private:
     QLabel *topLabel;
@@ -95,7 +95,7 @@ class EvaluatePage : public QWizardPage
 public:
     EvaluatePage(QWidget *parent = 0);
 
-    int nextId() const;
+    int nextId() const Q_DECL_OVERRIDE;
 
 private:
     QLabel *nameLabel;
@@ -112,7 +112,7 @@ class RegisterPage : public QWizardPage
 public:
     RegisterPage(QWidget *parent = 0);
 
-    int nextId() const;
+    int nextId() const Q_DECL_OVERRIDE;
 
 private:
     QLabel *nameLabel;
@@ -128,7 +128,7 @@ class DetailsPage : public QWizardPage
 public:
     DetailsPage(QWidget *parent = 0);
 
-    int nextId() const;
+    int nextId() const Q_DECL_OVERRIDE;
 
 private:
     QLabel *companyLabel;
@@ -147,9 +147,9 @@ class ConclusionPage : public QWizardPage
 public:
     ConclusionPage(QWidget *parent = 0);
 
-    void initializePage();
-    int nextId() const;
-    void setVisible(bool visible);
+    void initializePage() Q_DECL_OVERRIDE;
+    int nextId() const Q_DECL_OVERRIDE;
+    void setVisible(bool visible) Q_DECL_OVERRIDE;
 
 private slots:
     void printButtonClicked();
