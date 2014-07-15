@@ -52,6 +52,10 @@
 #include <qcommandlineoption.h>
 #include <qcommandlineparser.h>
 
+#ifdef Q_OS_WIN
+#  include <fcntl.h>
+#  include <io.h>
+#endif // Q_OS_WIN
 
 QT_BEGIN_NAMESPACE
 
@@ -252,6 +256,11 @@ int runRcc(int argc, char *argv[])
 
 
     if (outFilename.isEmpty() || outFilename == QLatin1String("-")) {
+#ifdef Q_OS_WIN
+        // Make sure fwrite to stdout doesn't do LF->CRLF
+        if (library.format() == RCCResourceLibrary::Binary)
+            _setmode(_fileno(stdout), _O_BINARY);
+#endif // Q_OS_WIN
         // using this overload close() only flushes.
         out.open(stdout, mode);
     } else {
