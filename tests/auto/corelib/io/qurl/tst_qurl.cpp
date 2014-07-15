@@ -1027,6 +1027,13 @@ void tst_QUrl::toString_data()
     QTest::newRow("underscore") << QString::fromLatin1("http://foo_bar.host.com/rss.php")
                          << uint(QUrl::None)
                          << QString::fromLatin1("http://foo_bar.host.com/rss.php");
+
+    QTest::newRow("mailto-brackets") << QString::fromLatin1("mailto:test[at]gmail[dot]com")
+                                     << uint(QUrl::PrettyDecoded)
+                                     << QString::fromLatin1("mailto:test[at]gmail[dot]com");
+    QTest::newRow("mailto-query")    << QString::fromLatin1("mailto:?to=test@example.com")
+                                     << uint(QUrl::PrettyDecoded)
+                                     << QString::fromLatin1("mailto:?to=test@example.com");
 }
 
 void tst_QUrl::toString()
