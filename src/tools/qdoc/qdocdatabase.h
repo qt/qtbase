@@ -261,6 +261,7 @@ class QDocDatabase
     NodeMap& getQmlTypesWithObsoleteMembers();
     NodeMap& getNamespaces();
     NodeMap& getServiceClasses();
+    NodeMap& getQmlBasicTypes();
     NodeMap& getQmlTypes();
     NodeMapMap& getFunctionIndex();
     TextToNodeMap& getLegaleseTexts();
@@ -401,6 +402,7 @@ class QDocDatabase
     NodeMap                 qmlTypesWithObsoleteMembers_;
     NodeMap                 namespaceIndex_;
     NodeMap                 serviceClasses_;
+    NodeMap                 qmlBasicTypes_;
     NodeMap                 qmlClasses_;
     NodeMapMap              newClassMaps_;
     NodeMapMap              newQmlTypeMaps_;

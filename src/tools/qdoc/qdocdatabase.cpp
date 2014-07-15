@@ -908,6 +908,18 @@ NodeMap& QDocDatabase::getServiceClasses()
 }
 
 /*!
+  Construct the data structures for QML basic types, if they
+  have not already been constructed. Returns a reference to
+  the map of QML basic types.
+ */
+NodeMap& QDocDatabase::getQmlBasicTypes()
+{
+    if (nonCompatClasses_.isEmpty() && qmlBasicTypes_.isEmpty())
+        processForest(&QDocDatabase::findAllClasses);
+    return qmlBasicTypes_;
+}
+
+/*!
   Construct the data structures for obsolete things, if they
   have not already been constructed. Returns a reference to
   the map of obsolete QML types.
@@ -1000,12 +1012,16 @@ void QDocDatabase::findAllClasses(InnerNode* node)
                     serviceClasses_.insert(serviceName, *c);
                 }
             }
-            else if ((*c)->isQmlType() && !(*c)->doc().isEmpty()) {
+            else if (((*c)->isQmlType() || (*c)->isQmlBasicType())&& !(*c)->doc().isEmpty()) {
                 QString qmlTypeName = (*c)->name();
                 if (qmlTypeName.startsWith(QLatin1String("QML:")))
                     qmlClasses_.insert(qmlTypeName.mid(4),*c);
                 else
                     qmlClasses_.insert(qmlTypeName,*c);
+
+                //also add to the QML basic type map
+                if ((*c)->isQmlBasicType())
+                    qmlBasicTypes_.insert(qmlTypeName,*c);
             }
             else if ((*c)->isInnerNode()) {
                 findAllClasses(static_cast<InnerNode*>(*c));

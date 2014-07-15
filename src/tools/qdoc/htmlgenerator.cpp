@@ -506,6 +506,9 @@ int HtmlGenerator::generateAtom(const Atom *atom, const Node *relative, CodeMark
             QString rootName = atom->string().mid(atom->string().indexOf("classes") + 7).trimmed();
             generateCompactList(Generic, relative, qdb_->getCppClasses(), true, rootName);
         }
+        else if (atom->string() == "qmlbasictypes") {
+            generateCompactList(Generic, relative, qdb_->getQmlBasicTypes(), true, QStringLiteral(""));
+        }
         else if (atom->string() == "qmltypes") {
             generateCompactList(Generic, relative, qdb_->getQmlTypes(), true, QStringLiteral(""));
         }
