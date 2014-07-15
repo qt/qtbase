@@ -46,6 +46,7 @@
 #include <QStyleOptionGroupBox>
 #include <QVBoxLayout>
 #include <QRadioButton>
+#include <QDialog>
 
 #include "qgroupbox.h"
 
@@ -71,6 +72,7 @@ private slots:
     void setChecked_data();
     void setChecked();
     void enabledPropagation();
+    void enabledChildPropagation();
     void sizeHint();
     void toggled();
     void clicked_data();
@@ -288,6 +290,23 @@ void tst_QGroupBox::enabledPropagation()
     delete testWidget;
 }
 
+void tst_QGroupBox::enabledChildPropagation()
+{
+    QGroupBox testWidget;
+    testWidget.setCheckable(true);
+    testWidget.setChecked(true);
+    // The value of isChecked() should be reflected in the isEnabled() of newly
+    // added child widgets, but not in top level widgets.
+    QWidget *childWidget = new QWidget(&testWidget);
+    QVERIFY(childWidget->isEnabled());
+    QDialog *dialog = new QDialog(&testWidget);
+    QVERIFY(dialog->isEnabled());
+    testWidget.setChecked(false);
+    childWidget = new QWidget(&testWidget);
+    QVERIFY(!childWidget->isEnabled());
+    dialog = new QDialog(&testWidget);
+    QVERIFY(dialog->isEnabled());
+}
 
 void tst_QGroupBox::sizeHint()
 {

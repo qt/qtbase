@@ -405,6 +405,8 @@ void QGroupBox::childEvent(QChildEvent *c)
     if (c->type() != QEvent::ChildAdded || !c->child()->isWidgetType())
         return;
     QWidget *w = (QWidget*)c->child();
+    if (w->isWindow())
+        return;
     if (d->checkable) {
         if (d->checked) {
             if (!w->testAttribute(Qt::WA_ForceDisabled))
