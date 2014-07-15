@@ -65,7 +65,6 @@ class QAccessibleEvent;
 class QWindow;
 class QTextCursor;
 
-// We need to inherit QObject to expose the enums to QML.
 class Q_GUI_EXPORT QAccessible
 {
     Q_GADGET
