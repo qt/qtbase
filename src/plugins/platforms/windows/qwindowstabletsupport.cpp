@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -347,7 +347,13 @@ QWindowsTabletDeviceData QWindowsTabletSupport::tabletInit(const quint64 uniqueI
 
 bool QWindowsTabletSupport::translateTabletProximityEvent(WPARAM /* wParam */, LPARAM lParam)
 {
-    const bool enteredProximity = LOWORD(lParam) != 0;
+    if (!LOWORD(lParam)) {
+        qCDebug(lcQpaTablet) << "leave proximity for device #" << m_currentDevice;
+        QWindowSystemInterface::handleTabletLeaveProximityEvent(m_devices.at(m_currentDevice).currentDevice,
+                                                                m_devices.at(m_currentDevice).currentPointerType,
+                                                                m_devices.at(m_currentDevice).uniqueId);
+        return true;
+    }
     PACKET proximityBuffer[1]; // we are only interested in the first packet in this case
     const int totalPacks = QWindowsTabletSupport::m_winTab32DLL.wTPacketsGet(m_context, 1, proximityBuffer);
     if (!totalPacks)
@@ -367,17 +373,11 @@ bool QWindowsTabletSupport::translateTabletProximityEvent(WPARAM /* wParam */, L
         m_devices.push_back(tabletInit(uniqueId, cursorType));
     }
     m_devices[m_currentDevice].currentPointerType = pointerType(currentCursor);
-    qCDebug(lcQpaTablet) << __FUNCTION__ << (enteredProximity ? "enter" : "leave")
-        << " proximity for device #" << m_currentDevice << m_devices.at(m_currentDevice);
-    if (enteredProximity) {
-        QWindowSystemInterface::handleTabletEnterProximityEvent(m_devices.at(m_currentDevice).currentDevice,
-                                                                m_devices.at(m_currentDevice).currentPointerType,
-                                                                m_devices.at(m_currentDevice).uniqueId);
-    } else {
-        QWindowSystemInterface::handleTabletLeaveProximityEvent(m_devices.at(m_currentDevice).currentDevice,
-                                                                m_devices.at(m_currentDevice).currentPointerType,
-                                                                m_devices.at(m_currentDevice).uniqueId);
-    }
+    qCDebug(lcQpaTablet) << "enter proximity for device #"
+        << m_currentDevice << m_devices.at(m_currentDevice);
+    QWindowSystemInterface::handleTabletEnterProximityEvent(m_devices.at(m_currentDevice).currentDevice,
+                                                            m_devices.at(m_currentDevice).currentPointerType,
+                                                            m_devices.at(m_currentDevice).uniqueId);
     return true;
 }
 
