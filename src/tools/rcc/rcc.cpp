@@ -86,7 +86,7 @@ void RCCResourceLibrary::writeByteArray(const QByteArray &other)
 
 static inline QString msgOpenReadFailed(const QString &fname, const QString &why)
 {
-    return QString::fromUtf8("Unable to open %1 for reading: %2\n").arg(fname).arg(why);
+    return QString::fromLatin1("Unable to open %1 for reading: %2\n").arg(fname).arg(why);
 }
 
 
@@ -576,7 +576,7 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
     }
 
     if (m_root == 0) {
-        const QString msg = QString::fromUtf8("RCC: Warning: No resources in '%1'.\n").arg(fname);
+        const QString msg = QString::fromLatin1("RCC: Warning: No resources in '%1'.\n").arg(fname);
         m_errorDevice->write(msg.toUtf8());
         if (!ignoreErrors && m_format == Binary) {
             // create dummy entry, otherwise loading with QResource will crash
@@ -592,7 +592,7 @@ bool RCCResourceLibrary::addFile(const QString &alias, const RCCFileInfo &file)
 {
     Q_ASSERT(m_errorDevice);
     if (file.m_fileInfo.size() > 0xffffffff) {
-        const QString msg = QString::fromUtf8("File too big: %1\n").arg(file.m_fileInfo.absoluteFilePath());
+        const QString msg = QString::fromLatin1("File too big: %1\n").arg(file.m_fileInfo.absoluteFilePath());
         m_errorDevice->write(msg.toUtf8());
         return false;
     }
@@ -644,7 +644,7 @@ bool RCCResourceLibrary::readFiles(bool ignoreErrors, QIODevice &errorDevice)
     m_errorDevice = &errorDevice;
     //read in data
     if (m_verbose) {
-        const QString msg = QString::fromUtf8("Processing %1 files [%2]\n")
+        const QString msg = QString::fromLatin1("Processing %1 files [%2]\n")
             .arg(m_fileNames.size()).arg(static_cast<int>(ignoreErrors));
         m_errorDevice->write(msg.toUtf8());
     }
@@ -669,7 +669,7 @@ bool RCCResourceLibrary::readFiles(bool ignoreErrors, QIODevice &errorDevice)
             }
         }
         if (m_verbose) {
-            const QString msg = QString::fromUtf8("Interpreting %1\n").arg(fname);
+            const QString msg = QString::fromLatin1("Interpreting %1\n").arg(fname);
             m_errorDevice->write(msg.toUtf8());
         }
 

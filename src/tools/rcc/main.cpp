@@ -112,13 +112,13 @@ int createProject(const QString &outFileName)
 int runRcc(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
-    QCoreApplication::setApplicationVersion(QString::fromLatin1(QT_VERSION_STR));
+    QCoreApplication::setApplicationVersion(QStringLiteral(QT_VERSION_STR));
 
     // Note that rcc isn't translated.
     // If you use this code as an example for a translated app, make sure to translate the strings.
     QCommandLineParser parser;
     parser.setSingleDashWordOptionMode(QCommandLineParser::ParseAsLongOptions);
-    parser.setApplicationDescription(QStringLiteral("Qt Resource Compiler version %1").arg(QString::fromLatin1(QT_VERSION_STR)));
+    parser.setApplicationDescription(QLatin1String("Qt Resource Compiler version " QT_VERSION_STR));
     parser.addHelpOption();
     parser.addVersionOption();
 
@@ -266,7 +266,7 @@ int runRcc(int argc, char *argv[])
     } else {
         out.setFileName(outFilename);
         if (!out.open(mode)) {
-            const QString msg = QString::fromUtf8("Unable to open %1 for writing: %2\n").arg(outFilename).arg(out.errorString());
+            const QString msg = QString::fromLatin1("Unable to open %1 for writing: %2\n").arg(outFilename).arg(out.errorString());
             errorDevice.write(msg.toUtf8());
             return 1;
         }
