@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -44,6 +44,7 @@
 #include "QtWidgets/qtabbar.h"
 #include "QtWidgets/qstyle.h"
 #include "QtWidgets/qdesktopwidget.h"
+#include "QtWidgets/qapplication.h"
 #include "QtCore/qvariant.h"
 #include "qdockarealayout_p.h"
 #include "qdockwidget.h"
@@ -2978,8 +2979,9 @@ bool QDockAreaLayout::restoreDockWidget(QDockWidget *dockWidget)
     item.widgetItem = new QDockWidgetItem(dockWidget);
 
     if (placeHolder->window) {
-        QDesktopWidget desktop;
-        QRect r = constrainedRect(placeHolder->topLevelRect, desktop.screenGeometry(dockWidget));
+        const QRect screenGeometry =
+            QApplication::desktop()->screenGeometry(placeHolder->topLevelRect.center());
+        const QRect r = constrainedRect(placeHolder->topLevelRect, screenGeometry);
         dockWidget->d_func()->setWindowState(true, true, r);
     }
     dockWidget->setVisible(!placeHolder->hidden);
