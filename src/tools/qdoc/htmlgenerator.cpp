@@ -2730,7 +2730,7 @@ void HtmlGenerator::generateCompactList(ListType listType,
 
         paragraphName[paragraphNr] = key[0].toUpper();
         usedParagraphNames.insert(key[0].toLower().cell());
-        paragraph[paragraphNr].insert(key, c.value());
+        paragraph[paragraphNr].insert(c.key(), c.value());
         ++c;
     }
 
