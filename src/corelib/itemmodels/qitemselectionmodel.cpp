@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -979,6 +979,22 @@ static QItemSelection mergeIndexes(const QVector<QPersistentModelIndex> &indexes
 /*!
     \internal
 
+    Sort predicate function for QItemSelectionModelPrivate::_q_layoutChanged(),
+    sorting by parent first in addition to operator<(). This is to prevent
+    fragmentation of the selection by grouping indexes with the same row, column
+    of different parents next to each other, which may happen when a selection
+    spans sub-trees.
+*/
+static bool qt_PersistentModelIndexLessThan(const QPersistentModelIndex &i1, const QPersistentModelIndex &i2)
+{
+    const QModelIndex parent1 = i1.parent();
+    const QModelIndex parent2 = i2.parent();
+    return parent1 == parent2 ? i1 < i2 : parent1 < parent2;
+}
+
+/*!
+    \internal
+
     Merge the selected indexes into selection ranges again.
 */
 void QItemSelectionModelPrivate::_q_layoutChanged(const QList<QPersistentModelIndex> &, QAbstractItemModel::LayoutChangeHint hint)
@@ -1011,8 +1027,10 @@ void QItemSelectionModelPrivate::_q_layoutChanged(const QList<QPersistentModelIn
 
     if (hint != QAbstractItemModel::VerticalSortHint) {
         // sort the "new" selection, as preparation for merging
-        std::stable_sort(savedPersistentIndexes.begin(), savedPersistentIndexes.end());
-        std::stable_sort(savedPersistentCurrentIndexes.begin(), savedPersistentCurrentIndexes.end());
+        std::stable_sort(savedPersistentIndexes.begin(), savedPersistentIndexes.end(),
+                         qt_PersistentModelIndexLessThan);
+        std::stable_sort(savedPersistentCurrentIndexes.begin(), savedPersistentCurrentIndexes.end(),
+                         qt_PersistentModelIndexLessThan);
 
         // update the selection by merging the individual indexes
         ranges = mergeIndexes(savedPersistentIndexes);
