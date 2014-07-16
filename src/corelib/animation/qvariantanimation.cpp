@@ -206,11 +206,11 @@ void QVariantAnimationPrivate::convertValues(int t)
     //this ensures that all the keyValues are of type t
     for (int i = 0; i < keyValues.count(); ++i) {
         QVariantAnimation::KeyValue &pair = keyValues[i];
-        pair.second.convert(static_cast<QVariant::Type>(t));
+        pair.second.convert(t);
     }
     //we also need update to the current interval if needed
-    currentInterval.start.second.convert(static_cast<QVariant::Type>(t));
-    currentInterval.end.second.convert(static_cast<QVariant::Type>(t));
+    currentInterval.start.second.convert(t);
+    currentInterval.end.second.convert(t);
 
     //... and the interpolator
     updateInterpolator();
