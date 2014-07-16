@@ -854,21 +854,24 @@ int HtmlGenerator::generateAtom(const Atom *atom, const Node *relative, CodeMark
             out() << "<dl>\n";
         }
         else if (atom->string() == ATOM_LIST_VALUE) {
+            out() << "<table class=\"valuelist\">";
             threeColumnEnumValueTable_ = isThreeColumnEnumValueTable(atom);
             if (threeColumnEnumValueTable_) {
-                out() << "<table class=\"valuelist\">";
                 if (++numTableRows_ % 2 == 1)
                     out() << "<tr valign=\"top\" class=\"odd\">";
                 else
                     out() << "<tr valign=\"top\" class=\"even\">";
 
-                out() << "<th class=\"tblConst\">Constant</th>"
-                      << "<th class=\"tblval\">Value</th>"
-                      << "<th class=\"tbldscr\">Description</th></tr>\n";
+                out() << "<th class=\"tblConst\">Constant</th>";
+
+                // If not in \enum topic, skip the value column
+                if (relative->type() == Node::Enum)
+                    out() << "<th class=\"tblval\">Value</th>";
+
+                out() << "<th class=\"tbldscr\">Description</th></tr>\n";
             }
             else {
-                out() << "<table class=\"valuelist\">"
-                      << "<tr><th class=\"tblConst\">Constant</th><th class=\"tblVal\">Value</th></tr>\n";
+                out() << "<tr><th class=\"tblConst\">Constant</th><th class=\"tblVal\">Value</th></tr>\n";
             }
         }
         else {
@@ -903,19 +906,18 @@ int HtmlGenerator::generateAtom(const Atom *atom, const Node *relative, CodeMark
             // ### Trenton
 
             QString t= protectEnc(plainCode(marker->markedUpEnumValue(atom->next()->string(),relative)));
-            out() << "<tr><td class=\"topAlign\"><tt>" << t << "</tt></td><td class=\"topAlign\">";
+            out() << "<tr><td class=\"topAlign\"><tt>" << t << "</tt>";
 
-            QString itemValue;
             if (relative->type() == Node::Enum) {
+                out() << "</td><td class=\"topAlign\">";
                 const EnumNode *enume = static_cast<const EnumNode *>(relative);
-                itemValue = enume->itemValue(atom->next()->string());
+                QString itemValue = enume->itemValue(atom->next()->string());
+
+                if (itemValue.isEmpty())
+                    out() << '?';
+                else
+                    out() << "<tt>" << protectEnc(itemValue) << "</tt>";
             }
-
-            if (itemValue.isEmpty())
-                out() << '?';
-            else
-                out() << "<tt>" << protectEnc(itemValue) << "</tt>";
-
             skipAhead = 1;
         }
         break;

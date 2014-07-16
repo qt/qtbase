@@ -1315,6 +1315,10 @@
     \l {http://qt-project.org/doc/qt-4.7/qml-translate.html} {Translate}
     element.
 
+    If the QML property is of enumeration type, or it holds a bit-wise
+    combination of flags, the \l{value-command}{\\value} command can
+    be used to document the acceptable values.
+
     \target qmlsignal-command
     \section1 \\qmlsignal
 

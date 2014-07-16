@@ -2543,6 +2543,13 @@
     file or namespace documentation. See the \l {enum-command}
     {\\enum} documentation for an example.
 
+    \note Since Qt 5.4, \\value command can also be used outside the
+    \l {enum-command} {\\enum} topic. In this case, QDoc renders a
+    two-column table listing the constant name (taken as-is from the
+    first argument) and its description. This can be used, for
+    example, in \l {qmlproperty-command}{\\qmlproperty} topic for
+    documenting acceptable values for a QML enumeration property.
+
     See also \l {enum-command} {\\enum} and \l {omitvalue-command} {\\omitvalue}.
 
     \target omitvalue-command
