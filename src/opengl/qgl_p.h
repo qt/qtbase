@@ -242,6 +242,7 @@ public:
     void swapRegion(const QRegion &region);
 
     QOpenGLContext *guiGlContext;
+    // true if QGLContext owns the QOpenGLContext (for who deletes who)
     bool ownContext;
 
     void setupSharing();

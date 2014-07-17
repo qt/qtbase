@@ -538,6 +538,7 @@ bool QOpenGLContext::create()
 */
 void QOpenGLContext::destroy()
 {
+    deleteQGLContext();
     Q_D(QOpenGLContext);
     if (d->platformGLContext)
         emit aboutToBeDestroyed();
@@ -984,6 +985,9 @@ void *QOpenGLContext::qGLContextHandle() const
 }
 
 /*!
+    internal: If the delete function is specified QOpenGLContext "owns"
+    the passed context handle and will use the delete function to destroy it.
+
     \internal
 */
 void QOpenGLContext::setQGLContextHandle(void *handle,void (*qGLContextDeleteFunction)(void *))
