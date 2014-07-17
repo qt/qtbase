@@ -837,6 +837,81 @@ enum JustificationClass {
     Justification_Arabic_Kashida  = 13   // User-inserted Kashida(U+0640)
 };
 
+#ifdef QT_ENABLE_HARFBUZZ_NG
+
+/*
+    Adds an inter character justification opportunity after the number or letter
+    character and a space justification opportunity after the space character.
+*/
+static inline void qt_getDefaultJustificationOpportunities(const ushort *string, int length, QGlyphLayout g, ushort *log_clusters, int spaceAs)
+{
+    int str_pos = 0;
+    while (str_pos < length) {
+        int glyph_pos = log_clusters[str_pos];
+
+        Q_ASSERT(glyph_pos < g.numGlyphs && g.attributes[glyph_pos].clusterStart);
+
+        uint ucs4 = string[str_pos];
+        if (QChar::isHighSurrogate(ucs4) && str_pos + 1 < length) {
+            ushort low = string[str_pos + 1];
+            if (QChar::isLowSurrogate(low)) {
+                ++str_pos;
+                ucs4 = QChar::surrogateToUcs4(ucs4, low);
+            }
+        }
+
+        // skip whole cluster
+        do {
+            ++str_pos;
+        } while (str_pos < length && log_clusters[str_pos] == glyph_pos);
+        do {
+            ++glyph_pos;
+        } while (glyph_pos < g.numGlyphs && !g.attributes[glyph_pos].clusterStart);
+        --glyph_pos;
+
+        // justification opportunity at the end of cluster
+        if (Q_LIKELY(QChar::isLetterOrNumber(ucs4)))
+            g.attributes[glyph_pos].justification = Justification_Character;
+        else if (Q_LIKELY(QChar::isSpace(ucs4)))
+            g.attributes[glyph_pos].justification = spaceAs;
+    }
+}
+
+static inline void qt_getJustificationOpportunities(const ushort *string, int length, const QScriptItem &si, QGlyphLayout g, ushort *log_clusters)
+{
+    Q_ASSERT(length > 0 && g.numGlyphs > 0);
+
+    for (int glyph_pos = 0; glyph_pos < g.numGlyphs; ++glyph_pos)
+        g.attributes[glyph_pos].justification = Justification_Prohibited;
+
+    int spaceAs;
+
+    switch (si.analysis.script) {
+    case QChar::Script_Nko:
+    case QChar::Script_Mandaic:
+    case QChar::Script_Mongolian:
+    case QChar::Script_PhagsPa:
+        // same as default but inter character justification takes precedence
+        spaceAs = Justification_Arabic_Space;
+        break;
+
+    case QChar::Script_Hiragana:
+    case QChar::Script_Katakana:
+    case QChar::Script_Han:
+        // same as default but inter character justification is the only option
+        spaceAs = Justification_Character;
+        break;
+
+    default:
+        spaceAs = Justification_Space;
+        break;
+    }
+
+    qt_getDefaultJustificationOpportunities(string, length, g, log_clusters, spaceAs);
+}
+
+#endif // QT_ENABLE_HARFBUZZ_NG
+
 
 // shape all the items that intersect with the line, taking tab widths into account to find out what text actually fits in the line.
 void QTextEngine::shapeLine(const QScriptLine &line)
@@ -996,6 +1071,11 @@ void QTextEngine::shapeText(int item) const
     layoutData->used += si.num_glyphs;
 
     QGlyphLayout glyphs = shapedGlyphs(&si);
+
+#ifdef QT_ENABLE_HARFBUZZ_NG
+    if (useHarfbuzzNG)
+        qt_getJustificationOpportunities(string, itemLength, si, glyphs, logClusters(&si));
+#endif
 
     if (letterSpacing != 0) {
         for (int i = 1; i < si.num_glyphs; ++i) {
