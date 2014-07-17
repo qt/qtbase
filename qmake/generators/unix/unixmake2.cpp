@@ -278,6 +278,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
     if(do_incremental && !src_incremental)
         do_incremental = false;
     t << "DIST          = " << valList(fileFixify(project->values("DISTFILES").toQStringList())) << " "
+                            << valList(escapeFilePaths(project->values("HEADERS"))) << " "
                             << valList(escapeFilePaths(project->values("SOURCES"))) << endl;
     t << "QMAKE_TARGET  = " << var("QMAKE_ORIG_TARGET") << endl;
     // The comment is important for mingw32-make.exe on Windows as otherwise trailing slashes

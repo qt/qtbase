@@ -111,6 +111,8 @@ UnixMakefileGenerator::init()
 
     QString sroot = project->sourceRoot();
     foreach (const ProString &iif, project->values("QMAKE_INTERNAL_INCLUDED_FILES")) {
+        if (iif == project->cacheFile())
+            continue;
         if (iif.startsWith(sroot) && iif.at(sroot.length()) == QLatin1Char('/'))
             project->values("DISTFILES") += fileFixify(iif.toQString(), FileFixifyRelative);
     }

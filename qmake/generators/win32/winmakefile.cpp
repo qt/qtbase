@@ -678,7 +678,9 @@ void Win32MakefileGenerator::writeStandardParts(QTextStream &t)
     writeExtraCompilerVariables(t);
     writeExtraVariables(t);
 
-    t << "DIST          = " << varList("DISTFILES") << endl;
+    t << "DIST          = " << varList("DISTFILES") << " "
+      << varList("HEADERS") << " "
+      << varList("SOURCES") << endl;
     t << "QMAKE_TARGET  = " << var("QMAKE_ORIG_TARGET") << endl;
     // The comment is important to maintain variable compatibility with Unix
     // Makefiles, while not interpreting a trailing-slash as a linebreak
