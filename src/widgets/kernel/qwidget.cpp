@@ -7203,8 +7203,12 @@ QByteArray QWidget::saveGeometry() const
     QDataStream stream(&array, QIODevice::WriteOnly);
     stream.setVersion(QDataStream::Qt_4_0);
     const quint32 magicNumber = 0x1D9D0CB;
+    // Version history:
+    // - Qt 4.2 - 4.8.6, 5.0 - 5.3    : Version 1.0
+    // - Qt 4.8.6 - today, 5.4 - today: Version 1.1, save screen width in addition to check for high DPI scaling.
     quint16 majorVersion = 1;
-    quint16 minorVersion = 0;
+    quint16 minorVersion = 1;
+    const int screenNumber = QApplication::desktop()->screenNumber(this);
     stream << magicNumber
            << majorVersion
            << minorVersion
@@ -7215,9 +7219,10 @@ QByteArray QWidget::saveGeometry() const
            << frameGeometry()
            << normalGeometry()
 #endif // Q_WS_MAC
-           << qint32(QApplication::desktop()->screenNumber(this))
+           << qint32(screenNumber)
            << quint8(windowState() & Qt::WindowMaximized)
-           << quint8(windowState() & Qt::WindowFullScreen);
+           << quint8(windowState() & Qt::WindowFullScreen)
+           << qint32(QApplication::desktop()->screenGeometry(screenNumber).width()); // 1.1 onwards
     return array;
 }
 
@@ -7272,12 +7277,31 @@ bool QWidget::restoreGeometry(const QByteArray &geometry)
     qint32 restoredScreenNumber;
     quint8 maximized;
     quint8 fullScreen;
+    qint32 restoredScreenWidth = 0;
 
     stream >> restoredFrameGeometry
            >> restoredNormalGeometry
            >> restoredScreenNumber
            >> maximized
            >> fullScreen;
+
+    if (majorVersion > 1 || minorVersion >= 1)
+        stream >> restoredScreenWidth;
+
+    const QDesktopWidget * const desktop = QApplication::desktop();
+    const qreal screenWidthF = qreal(desktop->screenGeometry(restoredScreenNumber).width());
+    // Sanity check bailing out when large variations of screen sizes occur due to
+    // high DPI scaling or different levels of DPI awareness.
+    if (restoredScreenWidth) {
+        const qreal factor = qreal(restoredScreenWidth) / screenWidthF;
+        if (factor < 0.8 || factor > 1.25)
+            return false;
+    } else {
+        // Saved by Qt 5.3 and earlier, try to prevent too large windows
+        // unless the size will be adapted by maximized or fullscreen.
+        if (!maximized && !fullScreen && qreal(restoredFrameGeometry.width()) / screenWidthF > 1.5)
+            return false;
+    }
 
     const int frameHeight = 20;
     if (!restoredFrameGeometry.isValid())
@@ -7292,7 +7316,6 @@ bool QWidget::restoreGeometry(const QByteArray &geometry)
                                        .expandedTo(d_func()->adjustedSize()));
     }
 
-    const QDesktopWidget * const desktop = QApplication::desktop();
     if (restoredScreenNumber >= desktop->numScreens())
         restoredScreenNumber = desktop->primaryScreen();
 
