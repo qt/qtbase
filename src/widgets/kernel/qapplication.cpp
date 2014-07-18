@@ -377,16 +377,9 @@ void QApplicationPrivate::createEventDispatcher()
 */
 QWidget *QApplication::topLevelAt(const QPoint &pos)
 {
-    QList<QScreen *> screens = QGuiApplication::screens();
-    QList<QScreen *>::const_iterator screen = screens.constBegin();
-    QList<QScreen *>::const_iterator end = screens.constEnd();
-
-    while (screen != end) {
-        if ((*screen)->geometry().contains(pos)) {
-            QWidgetWindow *w = qobject_cast<QWidgetWindow *>((*screen)->handle()->topLevelAt(pos));
-            return w ? w->widget() : 0;
-        }
-        ++screen;
+    if (const QWindow *window = QGuiApplication::topLevelAt(pos)) {
+        if (const QWidgetWindow *widgetWindow = qobject_cast<const QWidgetWindow *>(window))
+            return widgetWindow->widget();
     }
     return 0;
 }
