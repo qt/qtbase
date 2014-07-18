@@ -41,7 +41,7 @@
 
 #include <harfbuzz/hb.h>
 
-#if ((HB_VERSION_MAJOR*10000 + HB_VERSION_MINOR*100 + HB_VERSION_MICRO) < 912)
+#if !HB_VERSION_ATLEAST(0, 9, 31)
 #  error "This version of harfbuzz is too old."
 #endif
 

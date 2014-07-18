@@ -1076,7 +1076,7 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si, const ushort *st
         hb_buffer_set_segment_properties(buffer, &props);
         hb_buffer_guess_segment_properties(buffer);
 
-        uint buffer_flags = 0; // HB_BUFFER_FLAG_DEFAULT
+        uint buffer_flags = HB_BUFFER_FLAG_DEFAULT;
         // Symbol encoding used to encode various crap in the 32..255 character code range,
         // and thus might override U+00AD [SHY]; avoid hiding default ignorables
         if (actualFontEngine->symbol)
