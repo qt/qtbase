@@ -328,17 +328,6 @@ public:
         return readSoFar;
     }
 
-    inline QByteArray read(int maxLength) {
-        QByteArray tmp;
-        tmp.resize(qMin(maxLength, size()));
-        read(tmp.data(), tmp.size());
-        return tmp;
-    }
-
-    inline QByteArray readAll() {
-        return read(size());
-    }
-
     // read an unspecified amount (will read the first buffer)
     inline QByteArray read() {
         if (bufferSize == 0)
@@ -385,28 +374,6 @@ public:
         ++tailBuffer;
         tail = qba.length();
         bufferSize += qba.length();
-    }
-
-    inline QByteArray peek(int maxLength) const {
-        int bytesToRead = qMin(size(), maxLength);
-        if(maxLength <= 0)
-            return QByteArray();
-        QByteArray ret;
-        ret.resize(bytesToRead);
-        int readSoFar = 0;
-        for (int i = 0; readSoFar < bytesToRead && i < buffers.size(); ++i) {
-            int start = 0;
-            int end = buffers.at(i).size();
-            if (i == 0)
-                start = head;
-            if (i == tailBuffer)
-                end = tail;
-            const int len = qMin(ret.size()-readSoFar, end-start);
-            memcpy(ret.data()+readSoFar, buffers.at(i).constData()+start, len);
-            readSoFar += len;
-        }
-        Q_ASSERT(readSoFar == ret.size());
-        return ret;
     }
 
     inline int skip(int length) {
