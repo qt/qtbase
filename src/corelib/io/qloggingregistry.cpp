@@ -341,7 +341,7 @@ void QLoggingRegistry::setApiRules(const QString &content)
     QMutexLocker locker(&registryMutex);
 
     if (qtLoggingDebug())
-        debugMsg("Loading logging rules set by Qt API ...");
+        debugMsg("Loading logging rules set by QLoggingCategory::setFilterRules ...");
 
     apiRules = parser.rules();
 
