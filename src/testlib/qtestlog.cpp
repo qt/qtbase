@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtTest module of the Qt Toolkit.
@@ -58,8 +58,6 @@
 #include <limits.h>
 
 QT_BEGIN_NAMESPACE
-
-Q_CORE_EXPORT QString qMessageFormatString(QtMsgType type, const QMessageLogContext &context, const QString& msg);
 
 static void saveCoverageTool(const char * appname, bool testfailed, bool installedTestCoverage)
 {
@@ -287,7 +285,7 @@ namespace QTest {
             // the message is expected, so just swallow it.
             return;
 
-        QString msg = qMessageFormatString(type, context, message);
+        QString msg = qFormatLogMessage(type, context, message);
         msg.chop(1); // remove trailing newline
 
         if (type != QtFatalMsg) {

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Copyright (C) 2014 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: http://www.qt-project.org/legal
 **
@@ -67,6 +67,9 @@ private slots:
     void qMessagePattern_data();
     void qMessagePattern();
     void setMessagePattern();
+
+    void formatLogMessage_data();
+    void formatLogMessage();
 
 private:
     QString m_appDir;
@@ -801,6 +804,63 @@ void tst_qmessagehandler::setMessagePattern()
 #endif
     QCOMPARE(QString::fromLatin1(output), QString::fromLatin1(expected));
 #endif // !QT_NO_PROCESS
+}
+
+Q_DECLARE_METATYPE(QtMsgType)
+
+void tst_qmessagehandler::formatLogMessage_data()
+{
+    QTest::addColumn<QString>("pattern");
+    QTest::addColumn<QString>("result");
+
+    QTest::addColumn<QtMsgType>("type");
+    QTest::addColumn<QByteArray>("file");
+    QTest::addColumn<int>("line");
+    QTest::addColumn<QByteArray>("function");
+    QTest::addColumn<QByteArray>("category");
+    QTest::addColumn<QString>("message");
+
+#define BA QByteArrayLiteral
+
+    QTest::newRow("basic") << "%{type} %{file} %{line} %{function} %{message}"
+                           << "debug main.cpp 1 func msg\n"
+                           << QtDebugMsg << BA("main.cpp") << 1 << BA("func") << BA("") << "msg";
+
+    // test the if conditions
+    QString format = "[%{if-debug}D%{endif}%{if-warning}W%{endif}%{if-critical}C%{endif}%{if-fatal}F%{endif}] %{if-category}%{category}: %{endif}%{message}";
+    QTest::newRow("if-debug")
+            << format << "[D] msg\n"
+            << QtDebugMsg << BA("") << 0 << BA("func") << QByteArray() << "msg";
+    QTest::newRow("if_warning")
+            << format << "[W] msg\n"
+            << QtWarningMsg << BA("") << 0 << BA("func") << QByteArray() << "msg";
+    QTest::newRow("if_critical")
+            << format << "[C] msg\n"
+            << QtCriticalMsg << BA("") << 0 << BA("func") << QByteArray() << "msg";
+    QTest::newRow("if_fatal")
+            << format << "[F] msg\n"
+            << QtFatalMsg << BA("") << 0 << BA("func") << QByteArray() << "msg";
+    QTest::newRow("if_cat")
+            << format << "[F] cat: msg\n"
+            << QtFatalMsg << BA("") << 0 << BA("func") << BA("cat") << "msg";
+}
+
+void tst_qmessagehandler::formatLogMessage()
+{
+    QFETCH(QString, pattern);
+    QFETCH(QString, result);
+
+    QFETCH(QtMsgType, type);
+    QFETCH(QByteArray, file);
+    QFETCH(int, line);
+    QFETCH(QByteArray, function);
+    QFETCH(QByteArray, category);
+    QFETCH(QString, message);
+
+    qSetMessagePattern(pattern);
+    QMessageLogContext ctxt(file, line, function, category.isEmpty() ? 0 : category.data());
+    QString r = qFormatLogMessage(type, ctxt, message);
+    QCOMPARE(r, result);
 }
 
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -167,6 +167,8 @@ typedef void (*QtMessageHandler)(QtMsgType, const QMessageLogContext &, const QS
 Q_CORE_EXPORT QtMessageHandler qInstallMessageHandler(QtMessageHandler);
 
 Q_CORE_EXPORT void qSetMessagePattern(const QString &messagePattern);
+Q_CORE_EXPORT QString qFormatLogMessage(QtMsgType type, const QMessageLogContext &context,
+                                        const QString &buf);
 
 QT_END_NAMESPACE
 #endif // QLOGGING_H

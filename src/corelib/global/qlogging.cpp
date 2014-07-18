@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Copyright (C) 2014 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: http://www.qt-project.org/legal
 **
@@ -1052,10 +1052,20 @@ static void slog2_default_handler(QtMsgType msgType, const char *message)
 Q_GLOBAL_STATIC(QMessagePattern, qMessagePattern)
 
 /*!
-    \internal
-*/
-Q_CORE_EXPORT QString qMessageFormatString(QtMsgType type, const QMessageLogContext &context,
-                                              const QString &str)
+    \relates <QtGlobal>
+    \since 5.4
+
+    Generates a formatted string out of the \a type, \a context, \a str arguments.
+
+    qFormatLogMessage returns a QString that is formatted according to the current message pattern.
+    It can be used by custom message handlers to format output similar to Qt's default message
+    handler.
+
+    The function is thread-safe.
+
+    \sa qInstallMessageHandler(), qSetMessagePattern()
+ */
+QString qFormatLogMessage(QtMsgType type, const QMessageLogContext &context, const QString &str)
 {
     QString message;
 
@@ -1278,7 +1288,7 @@ static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &con
         bool toConsole;
     };
 
-    QString logMessage = qMessageFormatString(type, context, buf);
+    QString logMessage = qFormatLogMessage(type, context, buf);
 
 #if defined(Q_OS_WIN) && defined(QT_BUILD_CORE_LIB)
     if (!qWinLogToStderr()) {
@@ -1583,7 +1593,7 @@ void qErrnoWarning(int code, const char *msg, ...)
     environment variable; if both qSetMessagePattern() is called and QT_MESSAGE_PATTERN is
     set, the environment variable takes precedence.
 
-    qSetMessagePattern() has no effect if a custom message handler is installed.
+    Custom message handlers can use qFormatLogMessage() to take \a pattern into account.
 
     \sa qInstallMessageHandler(), {Debugging Techniques}
  */
