@@ -91,6 +91,7 @@ private:
     void sendFocusChanged(QAccessibleInterface *interface) const;
     void notifyAboutCreation(QAccessibleInterface *interface) const;
     void notifyAboutDestruction(QAccessibleInterface *interface) const;
+    void childrenChanged(QAccessibleInterface *interface) const;
 
     // handlers for the different accessible interfaces
     bool applicationInterface(QAccessibleInterface *interface, const QString &function, const QDBusMessage &message, const QDBusConnection &connection);

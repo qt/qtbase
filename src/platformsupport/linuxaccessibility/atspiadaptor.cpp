@@ -910,6 +910,11 @@ void AtSpiAdaptor::notify(QAccessibleEvent *event)
             notifyAboutDestruction(event->accessibleInterface());
         break;
     }
+    case QAccessible::ObjectReorder: {
+        if (sendObject || sendObject_children_changed)
+            childrenChanged(event->accessibleInterface());
+        break;
+    }
     case QAccessible::NameChanged: {
         if (sendObject || sendObject_property_change || sendObject_property_change_accessible_name) {
             QString path = pathForInterface(event->accessibleInterface());
@@ -1148,7 +1153,6 @@ void AtSpiAdaptor::notify(QAccessibleEvent *event)
     case QAccessible::TextAttributeChanged:
     case QAccessible::TextColumnChanged:
     case QAccessible::VisibleDataChanged:
-    case QAccessible::ObjectReorder:
     case QAccessible::SelectionAdd:
     case QAccessible::SelectionWithin:
     case QAccessible::LocationChanged:
@@ -1181,6 +1185,17 @@ void AtSpiAdaptor::sendFocusChanged(QAccessibleInterface *interface) const
         sendDBusSignal(path, QLatin1String(ATSPI_DBUS_INTERFACE_EVENT_FOCUS),
                        QLatin1String("Focus"), focusArgs);
         lastFocusPath = path;
+    }
+}
+
+void AtSpiAdaptor::childrenChanged(QAccessibleInterface *interface) const
+{
+    QString parentPath = pathForInterface(interface);
+    int childCount = interface->childCount();
+    for (int i = 0; i < interface->childCount(); ++i) {
+        QString childPath = pathForInterface(interface->child(i));
+        QVariantList args = packDBusSignalArguments(QLatin1String("add"), childCount, 0, childPath);
+        sendDBusSignal(parentPath, QLatin1String(ATSPI_DBUS_INTERFACE_EVENT_OBJECT), QLatin1String("ChildrenChanged"), args);
     }
 }
 
