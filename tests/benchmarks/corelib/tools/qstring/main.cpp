@@ -2388,7 +2388,7 @@ int fromUtf8_sse2_trusted_no_bom(ushort *qch, const char *chars, int len)
 }
 #endif
 
-#ifdef __ARM_NEON__
+#if defined(__ARM_NEON__) && (defined(Q_PROCESSOR_ARM_V7) || defined(__ARM_ARCH_6T2__))
 int fromUtf8_latin1_neon(ushort *dst, const char *chars, int len)
 {
     fromLatin1_neon_improved(dst, chars, len);
@@ -2521,7 +2521,7 @@ void tst_QString::fromUtf8Alternatives_data() const
     QTest::newRow("sse2-optimized-for-ascii") << &fromUtf8_sse2_optimised_for_ascii;
     QTest::newRow("sse2-trusted-no-bom") << &fromUtf8_sse2_trusted_no_bom;
 #endif
-#ifdef __ARM_NEON__
+#if defined(__ARM_NEON__) && (defined(Q_PROCESSOR_ARM_V7) || defined(__ARM_ARCH_6T2__))
     QTest::newRow("neon") << &fromUtf8_neon;
     QTest::newRow("neon-trusted-no-bom") << &fromUtf8_neon_trusted;
 #endif
@@ -2531,7 +2531,7 @@ void tst_QString::fromUtf8Alternatives_data() const
     QTest::newRow("latin1-sse2-qt4.7") << &fromUtf8_latin1_qt47;
     QTest::newRow("latin1-sse2-improved") << &fromUtf8_latin1_sse2_improved;
 #endif
-#ifdef __ARM_NEON__
+#if defined(__ARM_NEON__) && (defined(Q_PROCESSOR_ARM_V7) || defined(__ARM_ARCH_6T2__))
     QTest::newRow("latin1-neon-improved") << &fromUtf8_latin1_neon;
 #endif
 }
