@@ -194,42 +194,75 @@ private:
     {
         QAccessibleEvent *ev;
         if (event->type() == QAccessible::StateChanged) {
-            ev = new QAccessibleStateChangeEvent(event->object(),
+            if (event->object())
+                ev = new QAccessibleStateChangeEvent(event->object(),
+                        static_cast<QAccessibleStateChangeEvent*>(event)->changedStates());
+            else
+                ev = new QAccessibleStateChangeEvent(event->accessibleInterface(),
                         static_cast<QAccessibleStateChangeEvent*>(event)->changedStates());
         } else if (event->type() == QAccessible::TextCaretMoved) {
-            ev =  new QAccessibleTextCursorEvent(event->object(), static_cast<QAccessibleTextCursorEvent*>(event)->cursorPosition());
+            if (event->object())
+                ev = new QAccessibleTextCursorEvent(event->object(), static_cast<QAccessibleTextCursorEvent*>(event)->cursorPosition());
+            else
+                ev = new QAccessibleTextCursorEvent(event->accessibleInterface(), static_cast<QAccessibleTextCursorEvent*>(event)->cursorPosition());
         } else if (event->type() == QAccessible::TextSelectionChanged) {
             const QAccessibleTextSelectionEvent *original = static_cast<QAccessibleTextSelectionEvent*>(event);
-            QAccessibleTextSelectionEvent *sel = new QAccessibleTextSelectionEvent(event->object(), original->selectionStart(), original->selectionEnd());
+            QAccessibleTextSelectionEvent *sel;
+            if (event->object())
+                sel = new QAccessibleTextSelectionEvent(event->object(), original->selectionStart(), original->selectionEnd());
+            else
+                sel = new QAccessibleTextSelectionEvent(event->accessibleInterface(), original->selectionStart(), original->selectionEnd());
             sel->setCursorPosition(original->cursorPosition());
             ev = sel;
         } else if (event->type() == QAccessible::TextInserted) {
             const QAccessibleTextInsertEvent *original = static_cast<QAccessibleTextInsertEvent*>(event);
-            QAccessibleTextInsertEvent *ins = new QAccessibleTextInsertEvent(event->object(), original->changePosition(), original->textInserted());
+            QAccessibleTextInsertEvent *ins;
+            if (original->object())
+                ins = new QAccessibleTextInsertEvent(event->object(), original->changePosition(), original->textInserted());
+            else
+                ins = new QAccessibleTextInsertEvent(event->accessibleInterface(), original->changePosition(), original->textInserted());
             ins->setCursorPosition(original->cursorPosition());
             ev = ins;
         } else if (event->type() == QAccessible::TextRemoved) {
             const QAccessibleTextRemoveEvent *original = static_cast<QAccessibleTextRemoveEvent*>(event);
-            QAccessibleTextRemoveEvent *rem = new QAccessibleTextRemoveEvent(event->object(), original->changePosition(), original->textRemoved());
+            QAccessibleTextRemoveEvent *rem;
+            if (event->object())
+                rem = new QAccessibleTextRemoveEvent(event->object(), original->changePosition(), original->textRemoved());
+            else
+                rem = new QAccessibleTextRemoveEvent(event->accessibleInterface(), original->changePosition(), original->textRemoved());
             rem->setCursorPosition(original->cursorPosition());
             ev = rem;
         } else if (event->type() == QAccessible::TextUpdated) {
             const QAccessibleTextUpdateEvent *original = static_cast<QAccessibleTextUpdateEvent*>(event);
-            QAccessibleTextUpdateEvent *upd = new QAccessibleTextUpdateEvent(event->object(), original->changePosition(), original->textRemoved(), original->textInserted());
+            QAccessibleTextUpdateEvent *upd;
+            if (event->object())
+                upd = new QAccessibleTextUpdateEvent(event->object(), original->changePosition(), original->textRemoved(), original->textInserted());
+            else
+                upd = new QAccessibleTextUpdateEvent(event->accessibleInterface(), original->changePosition(), original->textRemoved(), original->textInserted());
             upd->setCursorPosition(original->cursorPosition());
             ev = upd;
         } else if (event->type() == QAccessible::ValueChanged) {
-            ev = new QAccessibleValueChangeEvent(event->object(), static_cast<QAccessibleValueChangeEvent*>(event)->value());
+            if (event->object())
+                ev = new QAccessibleValueChangeEvent(event->object(), static_cast<QAccessibleValueChangeEvent*>(event)->value());
+            else
+                ev = new QAccessibleValueChangeEvent(event->accessibleInterface(), static_cast<QAccessibleValueChangeEvent*>(event)->value());
         } else if (event->type() == QAccessible::TableModelChanged) {
             QAccessibleTableModelChangeEvent *oldEvent = static_cast<QAccessibleTableModelChangeEvent*>(event);
-            QAccessibleTableModelChangeEvent *newEvent = new QAccessibleTableModelChangeEvent(event->object(), oldEvent->modelChangeType());
+            QAccessibleTableModelChangeEvent *newEvent;
+            if (event->object())
+                newEvent = new QAccessibleTableModelChangeEvent(event->object(), oldEvent->modelChangeType());
+            else
+                newEvent = new QAccessibleTableModelChangeEvent(event->accessibleInterface(), oldEvent->modelChangeType());
             newEvent->setFirstRow(oldEvent->firstRow());
             newEvent->setFirstColumn(oldEvent->firstColumn());
             newEvent->setLastRow(oldEvent->lastRow());
             newEvent->setLastColumn(oldEvent->lastColumn());
             ev = newEvent;
         } else {
-            ev = new QAccessibleEvent(event->object(), event->type());
+            if (event->object())
+                ev = new QAccessibleEvent(event->object(), event->type());
+            else
+                ev = new QAccessibleEvent(event->accessibleInterface(), event->type());
         }
         ev->setChild(event->child());
         return ev;
