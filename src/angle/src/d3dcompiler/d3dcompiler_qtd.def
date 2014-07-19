@@ -1,3 +1,0 @@
-LIBRARY d3dcompiler_qtd
-EXPORTS
-    D3DCompile @1
