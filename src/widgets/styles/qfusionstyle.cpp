@@ -749,6 +749,7 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
             painter->drawRect(rect);
 
             QColor checkMarkColor = option->palette.text().color().darker(120);
+            const int checkMarkPadding = QStyleHelper::dpiScaled(3);
 
             if (checkbox->state & State_NoChange) {
                 gradient = QLinearGradient(rect.topLeft(), rect.bottomLeft());
@@ -759,10 +760,10 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
                 checkMarkColor.setAlpha(180);
                 painter->setPen(QPen(checkMarkColor, 1));
                 painter->setBrush(gradient);
-                painter->drawRect(rect.adjusted(3, 3, -3, -3));
+                painter->drawRect(rect.adjusted(checkMarkPadding, checkMarkPadding, -checkMarkPadding, -checkMarkPadding));
 
             } else if (checkbox->state & (State_On)) {
-                QPen checkPen = QPen(checkMarkColor, 1.8);
+                QPen checkPen = QPen(checkMarkColor, QStyleHelper::dpiScaled(1.8));
                 checkMarkColor.setAlpha(210);
                 painter->translate(-1, 0.5);
                 painter->setPen(checkPen);
@@ -771,9 +772,9 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
 
                 // Draw checkmark
                 QPainterPath path;
-                path.moveTo(5, rect.height() / 2.0);
-                path.lineTo(rect.width() / 2.0 - 0, rect.height() - 3);
-                path.lineTo(rect.width() - 2.5, 3);
+                path.moveTo(2 + checkMarkPadding, rect.height() / 2.0);
+                path.lineTo(rect.width() / 2.0, rect.height() - checkMarkPadding);
+                path.lineTo(rect.width() - checkMarkPadding - 0.5, checkMarkPadding);
                 painter->drawPath(path.translated(rect.topLeft()));
             }
         }
@@ -786,7 +787,9 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
         painter->setBrush((state & State_Sunken) ? pressedColor : option->palette.base().color());
         painter->setRenderHint(QPainter::Antialiasing, true);
         QPainterPath circle;
-        circle.addEllipse(rect.center() + QPoint(1.0, 1.0), 6.5, 6.5);
+        const QPointF circleCenter = rect.center() + QPoint(1, 1);
+        const qreal outlineRadius = (rect.width() + (rect.width() + 1) % 2) / 2.0 - 1;
+        circle.addEllipse(circleCenter, outlineRadius, outlineRadius);
         painter->setPen(QPen(option->palette.background().color().darker(150)));
         if (option->state & State_HasFocus && option->state & State_KeyboardFocusChange)
             painter->setPen(QPen(highlightedOutline));
@@ -794,7 +797,8 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
 
         if (state & (State_On )) {
             circle = QPainterPath();
-            circle.addEllipse(rect.center() + QPoint(1, 1), 2.8, 2.8);
+            const qreal checkmarkRadius = outlineRadius / 2.32;
+            circle.addEllipse(circleCenter, checkmarkRadius, checkmarkRadius);
             QColor checkMarkColor = option->palette.text().color().darker(120);
             checkMarkColor.setAlpha(200);
             painter->setPen(checkMarkColor);
@@ -3016,97 +3020,120 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
 */
 int QFusionStyle::pixelMetric(PixelMetric metric, const QStyleOption *option, const QWidget *widget) const
 {
+    int val = -1;
     switch (metric) {
     case PM_SliderTickmarkOffset:
-        return 4;
+        val = 4;
+        break;
     case PM_HeaderMargin:
-        return 2;
     case PM_ToolTipLabelFrameWidth:
-        return 2;
+        val = 2;
+        break;
     case PM_ButtonDefaultIndicator:
-        return 0;
     case PM_ButtonShiftHorizontal:
     case PM_ButtonShiftVertical:
-        return 0;
+        val = 0;
+        break;
     case PM_MessageBoxIconSize:
-        return 48;
+        val = 48;
+        break;
     case PM_ListViewIconSize:
-        return 24;
+        val = 24;
+        break;
     case PM_DialogButtonsSeparator:
     case PM_ScrollBarSliderMin:
-        return 26;
+        val = 26;
+        break;
     case PM_TitleBarHeight:
-        return 24;
+        val = 24;
+        break;
     case PM_ScrollBarExtent:
-        return 14;
+        val = 14;
+        break;
     case PM_SliderThickness:
-        return 15;
     case PM_SliderLength:
-        return 15;
+        val = 15;
+        break;
     case PM_DockWidgetTitleMargin:
-        return 1;
-    case PM_DefaultFrameWidth:
-        return 1;
+        val = 1;
+        break;
     case PM_SpinBoxFrameWidth:
-        return 3;
+        val = 3;
+        break;
     case PM_MenuVMargin:
     case PM_MenuHMargin:
-        return 0;
     case PM_MenuPanelWidth:
-        return 0;
+        val = 0;
+        break;
     case PM_MenuBarItemSpacing:
-        return 6;
+        val = 6;
+        break;
     case PM_MenuBarVMargin:
-        return 0;
     case PM_MenuBarHMargin:
-        return 0;
     case PM_MenuBarPanelWidth:
-        return 0;
+        val = 0;
+        break;
     case PM_ToolBarHandleExtent:
-        return 9;
+        val = 9;
+        break;
     case PM_ToolBarItemSpacing:
-        return 1;
+        val = 1;
+        break;
     case PM_ToolBarFrameWidth:
-        return 2;
     case PM_ToolBarItemMargin:
-        return 2;
+        val = 2;
+        break;
     case PM_SmallIconSize:
-        return 16;
     case PM_ButtonIconSize:
-        return 16;
+        val = 16;
+        break;
     case PM_DockWidgetTitleBarButtonMargin:
-        return 2;
+        val = 2;
+        break;
     case PM_MaximumDragDistance:
-        return -1;
+        val = -1;
+        break;
     case PM_TabCloseIndicatorWidth:
     case PM_TabCloseIndicatorHeight:
-        return 20;
+        val = 20;
+        break;
     case PM_TabBarTabVSpace:
-        return 12;
+        val = 12;
+        break;
     case PM_TabBarTabOverlap:
-        return 1;
+        val = 1;
+        break;
     case PM_TabBarBaseOverlap:
-        return 2;
+        val = 2;
+        break;
     case PM_SubMenuOverlap:
-        return -1;
+        val = -1;
+        break;
     case PM_DockWidgetHandleExtent:
     case PM_SplitterWidth:
-        return 4;
+        val = 4;
+        break;
     case PM_IndicatorHeight:
     case PM_IndicatorWidth:
     case PM_ExclusiveIndicatorHeight:
     case PM_ExclusiveIndicatorWidth:
-        return 14;
+        val = 14;
+        break;
     case PM_ScrollView_ScrollBarSpacing:
-        return 0;
+        val = 0;
+        break;
     case PM_ScrollView_ScrollBarOverlap:
         if (proxy()->styleHint(SH_ScrollBar_Transient, option, widget))
             return proxy()->pixelMetric(PM_ScrollBarExtent, option, widget);
-        return 0;
-    default:
+        val = 0;
         break;
+    case PM_DefaultFrameWidth:
+        return 1; // Do not dpi-scale because the drawn frame is always exactly 1 pixel thick
+        break;
+    default:
+        return QCommonStyle::pixelMetric(metric, option, widget);
     }
-    return QCommonStyle::pixelMetric(metric, option, widget);
+    return QStyleHelper::dpiScaled(val);
 }
 
 /*!
@@ -3309,14 +3336,15 @@ QRect QFusionStyle::subControlRect(ComplexControl control, const QStyleOptionCom
                 break;
             case SC_SliderGroove: {
                 QPoint grooveCenter = slider->rect.center();
+                const int grooveThickness = QStyleHelper::dpiScaled(7);
                 if (slider->orientation == Qt::Horizontal) {
-                    rect.setHeight(7);
+                    rect.setHeight(grooveThickness);
                     if (slider->tickPosition & QSlider::TicksAbove)
                         grooveCenter.ry() += tickSize;
                     if (slider->tickPosition & QSlider::TicksBelow)
                         grooveCenter.ry() -= tickSize;
                 } else {
-                    rect.setWidth(7);
+                    rect.setWidth(grooveThickness);
                     if (slider->tickPosition & QSlider::TicksAbove)
                         grooveCenter.rx() += tickSize;
                     if (slider->tickPosition & QSlider::TicksBelow)
@@ -3332,27 +3360,25 @@ QRect QFusionStyle::subControlRect(ComplexControl control, const QStyleOptionCom
         break;
     case CC_SpinBox:
         if (const QStyleOptionSpinBox *spinbox = qstyleoption_cast<const QStyleOptionSpinBox *>(option)) {
-            QSize bs;
             int center = spinbox->rect.height() / 2;
-            int fw = spinbox->frame ? proxy()->pixelMetric(PM_SpinBoxFrameWidth, spinbox, widget) : 0;
+            int fw = spinbox->frame ? 3 : 0; // Is drawn with 3 pixels width in drawComplexControl, independently from PM_SpinBoxFrameWidth
             int y = fw;
-            bs.setHeight(qMax(8, spinbox->rect.height()/2 - y));
-            bs.setWidth(14);
+            const int buttonWidth = QStyleHelper::dpiScaled(14);
             int x, lx, rx;
-            x = spinbox->rect.width() - y - bs.width() + 2;
+            x = spinbox->rect.width() - y - buttonWidth + 2;
             lx = fw;
             rx = x - fw;
             switch (subControl) {
             case SC_SpinBoxUp:
                 if (spinbox->buttonSymbols == QAbstractSpinBox::NoButtons)
                     return QRect();
-                rect = QRect(x, fw, bs.width(), center - fw);
+                rect = QRect(x, fw, buttonWidth, center - fw);
                 break;
             case SC_SpinBoxDown:
                 if (spinbox->buttonSymbols == QAbstractSpinBox::NoButtons)
                     return QRect();
 
-                rect = QRect(x, center, bs.width(), spinbox->rect.bottom() - center - fw + 1);
+                rect = QRect(x, center, buttonWidth, spinbox->rect.bottom() - center - fw + 1);
                 break;
             case SC_SpinBoxEditField:
                 if (spinbox->buttonSymbols == QAbstractSpinBox::NoButtons) {
