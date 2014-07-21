@@ -1406,6 +1406,8 @@ void HtmlGenerator::generateQmlBasicTypePage(QmlBasicTypeNode* qbtn, CodeMarker*
     marker = CodeMarker::markerForLanguage(QLatin1String("QML"));
 
     generateHeader(htmlTitle, qbtn, marker);
+    QList<Section> sections = marker->sections(qbtn, CodeMarker::Summary, CodeMarker::Okay);
+    generateTableOfContents(qbtn,marker,&sections);
     generateTitle(htmlTitle,
                   Text() << qbtn->subTitle(),
                   subTitleSize,
