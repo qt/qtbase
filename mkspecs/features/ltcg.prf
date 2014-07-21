@@ -15,16 +15,10 @@ CONFIG(release, debug|release) {
                 QMAKE_CFLAGS_LTCG   += -fno-fat-lto-objects
                 QMAKE_CXXFLAGS_LTCG += -fno-fat-lto-objects
             }
-            linux {
-                # Get the number of online processors, like _SC_NPROCESSORS_ONLN
-                isEmpty(QMAKE_NPROCESSORS_ONLN) {
-                    QMAKE_NPROCESSORS_ONLN = $$system("grep -c '^processor' /proc/cpuinfo 2>/dev/null || echo 1")
-                    cache(QMAKE_NPROCESSORS_ONLN, set stash)
-                }
-
+            greaterThan(QMAKE_HOST.cpu_count, 1) {
                 # Override LTO number of jobs
                 QMAKE_LFLAGS_LTCG -= -flto
-                QMAKE_LFLAGS_LTCG += -flto=$$QMAKE_NPROCESSORS_ONLN
+                QMAKE_LFLAGS_LTCG += -flto=$$QMAKE_HOST.cpu_count
             }
         } else: static {
             QMAKE_CFLAGS_LTCG =
