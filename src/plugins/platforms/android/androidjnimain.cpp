@@ -40,21 +40,10 @@
 **
 ****************************************************************************/
 
-#include <QtGui/private/qguiapplication_p.h>
-
 #include <dlfcn.h>
 #include <pthread.h>
-#include <qcoreapplication.h>
-#include <qimage.h>
-#include <qpoint.h>
 #include <qplugin.h>
-#include <qsemaphore.h>
-#include <qmutex.h>
 #include <qdebug.h>
-#include <qglobal.h>
-#include <qobjectdefs.h>
-#include <QtCore/private/qjni_p.h>
-#include <stdlib.h>
 
 #include "androidjnimain.h"
 #include "androidjniaccessibility.h"
@@ -63,15 +52,16 @@
 #include "androidjnimenu.h"
 #include "qandroidplatformdialoghelpers.h"
 #include "qandroidplatformintegration.h"
-
-#include <qabstracteventdispatcher.h>
+#include "qandroidassetsfileenginehandler.h"
 
 #include <android/bitmap.h>
 #include <android/asset_manager_jni.h>
-#include "qandroidassetsfileenginehandler.h"
 #include "qandroideventdispatcher.h"
 #include <android/api-level.h>
+
 #include <QtCore/private/qjnihelpers_p.h>
+#include <QtCore/private/qjni_p.h>
+#include <QtGui/private/qguiapplication_p.h>
 
 #include <qpa/qwindowsysteminterface.h>
 
@@ -79,42 +69,42 @@ Q_IMPORT_PLUGIN(QAndroidPlatformIntegrationPlugin)
 
 QT_BEGIN_NAMESPACE
 
-static JavaVM *m_javaVM = NULL;
-static jclass m_applicationClass  = NULL;
-static jobject m_classLoaderObject = NULL;
-static jmethodID m_loadClassMethodID = NULL;
-static AAssetManager *m_assetManager = NULL;
-static jobject m_resourcesObj;
-static jobject m_activityObject = NULL;
-static jmethodID m_createSurfaceMethodID = 0;
-static jmethodID m_insertNativeViewMethodID = 0;
-static jmethodID m_setSurfaceGeometryMethodID = 0;
-static jmethodID m_destroySurfaceMethodID = 0;
+static JavaVM *m_javaVM = Q_NULLPTR;
+static jclass m_applicationClass  = Q_NULLPTR;
+static jobject m_classLoaderObject = Q_NULLPTR;
+static jmethodID m_loadClassMethodID = Q_NULLPTR;
+static AAssetManager *m_assetManager = Q_NULLPTR;
+static jobject m_resourcesObj = Q_NULLPTR;
+static jobject m_activityObject = Q_NULLPTR;
+static jmethodID m_createSurfaceMethodID = Q_NULLPTR;
+static jmethodID m_insertNativeViewMethodID = Q_NULLPTR;
+static jmethodID m_setSurfaceGeometryMethodID = Q_NULLPTR;
+static jmethodID m_destroySurfaceMethodID = Q_NULLPTR;
 
 static bool m_activityActive = true; // defaults to true because when the platform plugin is
                                      // initialized, QtActivity::onResume() has already been called
 
-static jclass m_bitmapClass  = 0;
-static jmethodID m_createBitmapMethodID = 0;
-static jobject m_ARGB_8888_BitmapConfigValue = 0;
-static jobject m_RGB_565_BitmapConfigValue = 0;
+static jclass m_bitmapClass  = Q_NULLPTR;
+static jmethodID m_createBitmapMethodID = Q_NULLPTR;
+static jobject m_ARGB_8888_BitmapConfigValue = Q_NULLPTR;
+static jobject m_RGB_565_BitmapConfigValue = Q_NULLPTR;
 
-jmethodID m_setFullScreenMethodID = 0;
+jmethodID m_setFullScreenMethodID = Q_NULLPTR;
 static bool m_statusBarShowing = true;
 
-static jclass m_bitmapDrawableClass = 0;
-static jmethodID m_bitmapDrawableConstructorMethodID = 0;
+static jclass m_bitmapDrawableClass = Q_NULLPTR;
+static jmethodID m_bitmapDrawableConstructorMethodID = Q_NULLPTR;
 
 extern "C" typedef int (*Main)(int, char **); //use the standard main method to start the application
-static Main m_main = NULL;
-static void *m_mainLibraryHnd = NULL;
+static Main m_main = Q_NULLPTR;
+static void *m_mainLibraryHnd = Q_NULLPTR;
 static QList<QByteArray> m_applicationParams;
 
 struct SurfaceData
 {
     ~SurfaceData() { delete surface; }
-    QJNIObjectPrivate *surface = 0;
-    AndroidSurfaceClient *client = 0;
+    QJNIObjectPrivate *surface = Q_NULLPTR;
+    AndroidSurfaceClient *client = Q_NULLPTR;
 };
 
 QHash<int, AndroidSurfaceClient *> m_surfaces;
@@ -122,11 +112,8 @@ QHash<int, AndroidSurfaceClient *> m_surfaces;
 static QMutex m_surfacesMutex;
 static int m_surfaceId = 1;
 
-static QSemaphore m_quitAppSemaphore;
-static QSemaphore m_pauseApplicationSemaphore;
-static QMutex m_pauseApplicationMutex;
 
-static QAndroidPlatformIntegration *m_androidPlatformIntegration = 0;
+static QAndroidPlatformIntegration *m_androidPlatformIntegration = Q_NULLPTR;
 
 static int m_desktopWidthPixels  = 0;
 static int m_desktopHeightPixels = 0;
@@ -134,7 +121,7 @@ static double m_scaledDensity = 0;
 
 static volatile bool m_pauseApplication;
 
-static AndroidAssetsFileEngineHandler *m_androidAssetsFileEngineHandler = 0;
+static AndroidAssetsFileEngineHandler *m_androidAssetsFileEngineHandler = Q_NULLPTR;
 
 
 
@@ -213,7 +200,7 @@ namespace QtAndroid
             return;
 
         QtAndroid::AttachedJNIEnv env;
-        if (env.jniEnv == 0) {
+        if (!env.jniEnv) {
             qWarning("Failed to get JNI Environment.");
             return;
         }
@@ -228,7 +215,7 @@ namespace QtAndroid
             return;
 
         QtAndroid::AttachedJNIEnv env;
-        if (env.jniEnv == 0) {
+        if (!env.jniEnv) {
             qWarning("Failed to get JNI Environment.");
             return;
         }
@@ -441,7 +428,7 @@ namespace QtAndroid
 
 static jboolean startQtAndroidPlugin(JNIEnv* /*env*/, jobject /*object*//*, jobject applicationAssetManager*/)
 {
-    m_androidPlatformIntegration = 0;
+    m_androidPlatformIntegration = Q_NULLPTR;
     m_androidAssetsFileEngineHandler = new AndroidAssetsFileEngineHandler();
     return true;
 }
@@ -460,7 +447,8 @@ static void *startMainMethod(void */*data*/)
         if (res < 0)
             qWarning() << "dlclose failed:" << dlerror();
     }
-
+    m_mainLibraryHnd = Q_NULLPTR;
+    m_main = Q_NULLPTR;
     QtAndroid::AttachedJNIEnv env;
     if (!env.jniEnv)
         return 0;
@@ -475,7 +463,7 @@ static void *startMainMethod(void */*data*/)
 
 static jboolean startQtApplication(JNIEnv *env, jobject /*object*/, jstring paramsString, jstring environmentString)
 {
-    m_mainLibraryHnd = NULL;
+    m_mainLibraryHnd = Q_NULLPTR;
     { // Set env. vars
         const char *nativeString = env->GetStringUTFChars(environmentString, 0);
         const QList<QByteArray> envVars = QByteArray(nativeString).split('\t');
@@ -501,7 +489,7 @@ static jboolean startQtApplication(JNIEnv *env, jobject /*object*/, jstring para
         // Obtain a handle to the main library (the library that contains the main() function).
         // This library should already be loaded, and calling dlopen() will just return a reference to it.
         m_mainLibraryHnd = dlopen(m_applicationParams.first().data(), 0);
-        if (m_mainLibraryHnd == NULL) {
+        if (m_mainLibraryHnd == Q_NULLPTR) {
             qCritical() << "dlopen failed:" << dlerror();
             return false;
         }
@@ -518,15 +506,16 @@ static jboolean startQtApplication(JNIEnv *env, jobject /*object*/, jstring para
     }
 
     pthread_t appThread;
-    return pthread_create(&appThread, NULL, startMainMethod, NULL) == 0;
+    return pthread_create(&appThread, Q_NULLPTR, startMainMethod, Q_NULLPTR) == 0;
 }
 
 
 static void quitQtAndroidPlugin(JNIEnv *env, jclass /*clazz*/)
 {
     Q_UNUSED(env);
-    m_androidPlatformIntegration = 0;
+    m_androidPlatformIntegration = Q_NULLPTR;
     delete m_androidAssetsFileEngineHandler;
+    m_androidAssetsFileEngineHandler = Q_NULLPTR;
 }
 
 static void terminateQt(JNIEnv *env, jclass /*clazz*/)
@@ -545,8 +534,9 @@ static void terminateQt(JNIEnv *env, jclass /*clazz*/)
         env->DeleteGlobalRef(m_RGB_565_BitmapConfigValue);
     if (m_bitmapDrawableClass)
         env->DeleteGlobalRef(m_bitmapDrawableClass);
-    m_androidPlatformIntegration = 0;
+    m_androidPlatformIntegration = Q_NULLPTR;
     delete m_androidAssetsFileEngineHandler;
+    m_androidAssetsFileEngineHandler = Q_NULLPTR;
 }
 
 static void setSurface(JNIEnv *env, jobject /*thiz*/, jint id, jobject jSurface, jint w, jint h)
@@ -589,7 +579,7 @@ static void updateWindow(JNIEnv */*env*/, jobject /*thiz*/)
     if (!m_androidPlatformIntegration)
         return;
 
-    if (QGuiApplication::instance() != 0) {
+    if (QGuiApplication::instance() != Q_NULLPTR) {
         foreach (QWindow *w, QGuiApplication::topLevelWindows()) {
             QRect availableGeometry = w->screen()->availableGeometry();
             if (w->geometry().width() > 0 && w->geometry().height() > 0 && availableGeometry.width() > 0 && availableGeometry.height() > 0)
@@ -784,8 +774,8 @@ Q_DECL_EXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void */*reserved*/)
 
     __android_log_print(ANDROID_LOG_INFO, "Qt", "qt start");
     UnionJNIEnvToVoid uenv;
-    uenv.venv = NULL;
-    m_javaVM = 0;
+    uenv.venv = Q_NULLPTR;
+    m_javaVM = Q_NULLPTR;
 
     if (vm->GetEnv(&uenv.venv, JNI_VERSION_1_4) != JNI_OK) {
         __android_log_print(ANDROID_LOG_FATAL, "Qt", "GetEnv failed");

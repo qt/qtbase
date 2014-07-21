@@ -100,7 +100,7 @@ namespace QtAndroid
             if (QtAndroid::javaVM()->GetEnv((void**)&jniEnv, JNI_VERSION_1_6) < 0) {
                 if (QtAndroid::javaVM()->AttachCurrentThread(&jniEnv, NULL) < 0) {
                     __android_log_print(ANDROID_LOG_ERROR, "Qt", "AttachCurrentThread failed");
-                    jniEnv = 0;
+                    jniEnv = Q_NULLPTR;
                     return;
                 }
                 attached = true;
