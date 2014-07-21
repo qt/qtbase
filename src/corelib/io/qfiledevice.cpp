@@ -680,6 +680,13 @@ bool QFileDevice::setPermissions(Permissions permissions)
     function.
 
     \value NoOptions        No options.
+    \value MapPrivateOption The mapped memory will be private, so any
+    modifications will not be visible to other processes and will not
+    be written to disk.  Any such modifications will be lost when the
+    memory is unmapped.  It is unspecified whether modifications made
+    to the file made after the mapping is created will be visible through
+    the mapped memory.  This flag is not supported on Windows CE.
+    This enum value was introduced in Qt 5.4.
 */
 
 /*!
@@ -688,6 +695,10 @@ bool QFileDevice::setPermissions(Permissions permissions)
     open after the memory has been mapped.  When the QFile is destroyed
     or a new file is opened with this object, any maps that have not been
     unmapped will automatically be unmapped.
+
+    The mapping will have the same open mode as the file (read and/or write),
+    except when using MapPrivateOption, in which case it is always possible
+    to write to the mapped memory.
 
     Any mapping options can be passed through \a flags.
 

@@ -112,8 +112,10 @@ public:
     virtual Permissions permissions() const;
     virtual bool setPermissions(Permissions permissionSpec);
 
+    // ### Qt 6: rename to MemoryMapFlag & make it a QFlags
     enum MemoryMapFlags {
-        NoOptions = 0
+        NoOptions = 0,
+        MapPrivateOption = 0x0001
     };
 
     uchar *map(qint64 offset, qint64 size, MemoryMapFlags flags = NoOptions);

@@ -965,6 +965,21 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size,
         return 0;
     }
 
+    // check/setup args to map
+    DWORD access = 0;
+    if (flags & QFileDevice::MapPrivateOption) {
+#ifdef FILE_MAP_COPY
+        access = FILE_MAP_COPY;
+#else
+        q->setError(QFile::UnspecifiedError, "MapPrivateOption unsupported");
+        return 0;
+#endif
+    } else if (openMode & QIODevice::WriteOnly) {
+        access = FILE_MAP_WRITE;
+    } else if (openMode & QIODevice::ReadOnly) {
+        access = FILE_MAP_READ;
+    }
+
     if (mapHandle == NULL) {
         // get handle to the file
         HANDLE handle = fileHandle;
@@ -1010,11 +1025,6 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size,
             return 0;
         }
     }
-
-    // setup args to map
-    DWORD access = 0;
-    if (openMode & QIODevice::ReadOnly) access = FILE_MAP_READ;
-    if (openMode & QIODevice::WriteOnly) access = FILE_MAP_WRITE;
 
     DWORD offsetHi = offset >> 32;
     DWORD offsetLo = offset & Q_UINT64_C(0xffffffff);

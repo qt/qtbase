@@ -713,6 +713,12 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size, QFile::MemoryMapFla
     if (openMode & QIODevice::ReadOnly) access |= PROT_READ;
     if (openMode & QIODevice::WriteOnly) access |= PROT_WRITE;
 
+    int sharemode = MAP_SHARED;
+    if (flags & QFileDevice::MapPrivateOption) {
+        sharemode = MAP_PRIVATE;
+        access |= PROT_WRITE;
+    }
+
 #if defined(Q_OS_INTEGRITY)
     int pageSize = sysconf(_SC_PAGESIZE);
 #else
@@ -730,7 +736,7 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size, QFile::MemoryMapFla
     realOffset &= ~(QT_OFF_T(pageSize - 1));
 
     void *mapAddress = QT_MMAP((void*)0, realSize,
-                   access, MAP_SHARED, nativeHandle(), realOffset);
+                   access, sharemode, nativeHandle(), realOffset);
     if (MAP_FAILED != mapAddress) {
         uchar *address = extra + static_cast<uchar*>(mapAddress);
         maps[address] = QPair<int,size_t>(extra, realSize);

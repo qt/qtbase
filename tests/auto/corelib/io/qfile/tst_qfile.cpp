@@ -3028,17 +3028,21 @@ void tst_QFile::mapResource()
 void tst_QFile::mapOpenMode_data()
 {
     QTest::addColumn<int>("openMode");
+    QTest::addColumn<int>("flags");
 
-    QTest::newRow("ReadOnly") << int(QIODevice::ReadOnly);
+    QTest::newRow("ReadOnly") << int(QIODevice::ReadOnly) << int(QFileDevice::NoOptions);
     //QTest::newRow("WriteOnly") << int(QIODevice::WriteOnly); // this doesn't make sense
-    QTest::newRow("ReadWrite") << int(QIODevice::ReadWrite);
-    QTest::newRow("ReadOnly,Unbuffered") << int(QIODevice::ReadOnly | QIODevice::Unbuffered);
-    QTest::newRow("ReadWrite,Unbuffered") << int(QIODevice::ReadWrite | QIODevice::Unbuffered);
+    QTest::newRow("ReadWrite") << int(QIODevice::ReadWrite) << int(QFileDevice::NoOptions);
+    QTest::newRow("ReadOnly,Unbuffered") << int(QIODevice::ReadOnly | QIODevice::Unbuffered) << int(QFileDevice::NoOptions);
+    QTest::newRow("ReadWrite,Unbuffered") << int(QIODevice::ReadWrite | QIODevice::Unbuffered) << int(QFileDevice::NoOptions);
+    QTest::newRow("ReadOnly + MapPrivate") << int(QIODevice::ReadOnly) << int(QFileDevice::MapPrivateOption);
+    QTest::newRow("ReadWrite + MapPrivate") << int(QIODevice::ReadWrite) << int(QFileDevice::MapPrivateOption);
 }
 
 void tst_QFile::mapOpenMode()
 {
     QFETCH(int, openMode);
+    QFETCH(int, flags);
     static const qint64 fileSize = 4096;
 
     QByteArray pattern(fileSize, 'A');
@@ -3060,11 +3064,15 @@ void tst_QFile::mapOpenMode()
     // open according to our mode
     QVERIFY(file.open(QIODevice::OpenMode(openMode)));
 
-    uchar *memory = file.map(0, fileSize);
+    uchar *memory = file.map(0, fileSize, QFileDevice::MemoryMapFlags(flags));
+#if defined(Q_OS_WINCE)
+    QEXPECT_FAIL("ReadOnly + MapPrivate" , "Windows CE does not support MapPrivateOption.", Abort);
+    QEXPECT_FAIL("ReadWrite + MapPrivate", "Windows CE does not support MapPrivateOption.", Abort);
+#endif
     QVERIFY(memory);
     QVERIFY(memcmp(memory, pattern, fileSize) == 0);
 
-    if (openMode & QIODevice::WriteOnly) {
+    if ((openMode & QIODevice::WriteOnly) || (flags & QFileDevice::MapPrivateOption)) {
         // try to write to the file
         *memory = 'a';
         file.unmap(memory);
@@ -3073,7 +3081,7 @@ void tst_QFile::mapOpenMode()
         file.seek(0);
         char c;
         QVERIFY(file.getChar(&c));
-        QCOMPARE(c, 'a');
+        QCOMPARE(c, (flags & QFileDevice::MapPrivateOption) ? 'A' : 'a');
     }
 
     file.close();
