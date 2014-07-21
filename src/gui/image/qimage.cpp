@@ -4550,7 +4550,18 @@ bool QImageData::convertInPlace(QImage::Format newFormat, Qt::ImageConversionFla
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QImage &i)
 {
-    dbg.nospace() << "QImage(" << i.size() << ')';
+    QDebug nospace = dbg.nospace();
+    nospace << "QImage(";
+    if (i.isNull()) {
+        nospace << "null";
+    } else {
+        nospace << i.size() << ",format=" << i.format() << ",depth=" << i.depth();
+        if (i.colorCount())
+            nospace << ",colorCount=" << i.colorCount();
+        nospace << ",devicePixelRatio=" << i.devicePixelRatio()
+            << ",bytesPerLine=" << i.bytesPerLine() << ",byteCount=" << i.byteCount();
+    }
+    nospace << ')';
     return dbg.space();
 }
 #endif

@@ -1321,7 +1321,17 @@ QDataStream &operator>>(QDataStream &s, QIcon &icon)
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QIcon &i)
 {
-    dbg.nospace() << "QIcon(" << i.name() << ')';
+    QDebug nospace = dbg.nospace();
+    nospace << "QIcon(";
+    if (i.isNull()) {
+        nospace << "null";
+    } else {
+        if (!i.name().isEmpty())
+            nospace << i.name() << ',';
+        nospace << "availableSizes[normal,Off]=" << i.availableSizes()
+            << ",cacheKey=" << showbase << hex << i.cacheKey() << dec << noshowbase;
+    }
+    nospace << ')';
     return dbg.space();
 }
 #endif

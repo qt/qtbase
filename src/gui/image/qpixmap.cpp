@@ -1724,7 +1724,16 @@ QPlatformPixmap* QPixmap::handle() const
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QPixmap &r)
 {
-    dbg.nospace() << "QPixmap(" << r.size() << ')';
+    QDebug nospace = dbg.nospace();
+    nospace << "QPixmap(";
+    if (r.isNull()) {
+        nospace << "null";
+    } else {
+        nospace << r.size() << ",depth=" << r.depth()
+            << ",devicePixelRatio=" << r.devicePixelRatio()
+            << ",cacheKey=" << showbase << hex << r.cacheKey() << dec << noshowbase;
+    }
+    nospace << ')';
     return dbg.space();
 }
 #endif
