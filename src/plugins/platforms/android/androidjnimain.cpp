@@ -593,7 +593,7 @@ static void updateWindow(JNIEnv */*env*/, jobject /*thiz*/)
         foreach (QWindow *w, QGuiApplication::topLevelWindows()) {
             QRect availableGeometry = w->screen()->availableGeometry();
             if (w->geometry().width() > 0 && w->geometry().height() > 0 && availableGeometry.width() > 0 && availableGeometry.height() > 0)
-                QWindowSystemInterface::handleExposeEvent(w, QRegion(w->geometry()));
+                QWindowSystemInterface::handleExposeEvent(w, QRegion(QRect(QPoint(), w->geometry().size())));
         }
     }
 
