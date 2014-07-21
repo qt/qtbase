@@ -79,8 +79,17 @@ QT_BEGIN_NAMESPACE
   function to perform custom processing when the state is exited.
 */
 
+/*!
+    \property QAbstractState::active
+    \since 5.4
+
+    \brief the active property of this state. A state is active between
+    entered() and exited() signals.
+*/
+
+
 QAbstractStatePrivate::QAbstractStatePrivate(StateType type)
-    : stateType(type), isMachine(false), parentState(0)
+    : stateType(type), isMachine(false), active(false), parentState(0)
 {
 }
 
@@ -121,11 +130,19 @@ void QAbstractStatePrivate::emitEntered()
 {
     Q_Q(QAbstractState);
     emit q->entered(QAbstractState::QPrivateSignal());
+    if (!active) {
+        active = true;
+        emit q->activeChanged(true);
+    }
 }
 
 void QAbstractStatePrivate::emitExited()
 {
     Q_Q(QAbstractState);
+    if (active) {
+        active = false;
+        emit q->activeChanged(false);
+    }
     emit q->exited(QAbstractState::QPrivateSignal());
 }
 
@@ -174,6 +191,17 @@ QStateMachine *QAbstractState::machine() const
 }
 
 /*!
+  Returns whether this state is active.
+
+  \sa activeChanged(bool), entered(), exited()
+*/
+bool QAbstractState::active() const
+{
+    Q_D(const QAbstractState);
+    return d->active;
+}
+
+/*!
   \fn QAbstractState::onExit(QEvent *event)
 
   This function is called when the state is exited. The given \a event is what
@@ -201,6 +229,15 @@ QStateMachine *QAbstractState::machine() const
 
   This signal is emitted when the state has been exited (after onExit() has
   been called).
+*/
+
+/*!
+  \fn QAbstractState::activeChanged(bool active)
+  \since 5.4
+
+  This signal is emitted when the active property is changed.
+
+  \sa QAbstractState::active, entered(), exited()
 */
 
 /*!

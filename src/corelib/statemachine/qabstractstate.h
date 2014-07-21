@@ -56,11 +56,14 @@ class QAbstractStatePrivate;
 class Q_CORE_EXPORT QAbstractState : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(bool active READ active NOTIFY activeChanged)
 public:
     ~QAbstractState();
 
     QState *parentState() const;
     QStateMachine *machine() const;
+
+    bool active() const;
 
 Q_SIGNALS:
     void entered(
@@ -73,6 +76,7 @@ Q_SIGNALS:
       QPrivateSignal
 #endif
     );
+    void activeChanged(bool active);
 
 protected:
     QAbstractState(QState *parent = 0);

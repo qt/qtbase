@@ -1369,6 +1369,11 @@ void QStateMachinePrivate::_q_start()
 {
     Q_Q(QStateMachine);
     Q_ASSERT(state == Starting);
+    foreach (QAbstractState *state, configuration) {
+        QAbstractStatePrivate *abstractStatePrivate = QAbstractStatePrivate::get(state);
+        abstractStatePrivate->active = false;
+        emit state->activeChanged(false);
+    }
     configuration.clear();
     qDeleteAll(internalEventQueue);
     internalEventQueue.clear();
