@@ -1613,6 +1613,8 @@ QOpenGLTexture *QOpenGLTexturePrivate::createTextureView(QOpenGLTexture::Target 
     \value UInt16_R5G6B5_Rev Equivalent to GL_UNSIGNED_SHORT_5_6_5_REV
     \value UInt16_RGBA4 Equivalent to GL_UNSIGNED_SHORT_4_4_4_4
     \value UInt16_RGBA4_Rev Equivalent to GL_UNSIGNED_SHORT_4_4_4_4_REV
+    \value UInt32_RGBA8 Equivalent to GL_UNSIGNED_INT_8_8_8_8
+    \value UInt32_RGBA8_Rev Equivalent to GL_UNSIGNED_INT_8_8_8_8_REV
     \value UInt32_RGB10A2 Equivalent to GL_UNSIGNED_INT_10_10_10_2
     \value UInt32_RGB10A2_Rev Equivalent to GL_UNSIGNED_INT_2_10_10_10_REV
     \value UInt32_D24S8 Equivalent to GL_UNSIGNED_INT_24_8. Introduced in Qt 5.4

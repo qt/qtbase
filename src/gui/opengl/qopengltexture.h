@@ -340,6 +340,8 @@ public:
         UInt16_R5G6B5_Rev  = 0x8364,    // GL_UNSIGNED_SHORT_5_6_5_REV
         UInt16_RGBA4       = 0x8033,    // GL_UNSIGNED_SHORT_4_4_4_4
         UInt16_RGBA4_Rev   = 0x8365,    // GL_UNSIGNED_SHORT_4_4_4_4_REV
+        UInt32_RGBA8       = 0x8035,    // GL_UNSIGNED_INT_8_8_8_8
+        UInt32_RGBA8_Rev   = 0x8367,    // GL_UNSIGNED_INT_8_8_8_8_REV
         UInt32_RGB10A2     = 0x8036,    // GL_UNSIGNED_INT_10_10_10_2
         UInt32_RGB10A2_Rev = 0x8368,    // GL_UNSIGNED_INT_2_10_10_10_REV
         UInt32_D24S8       = 0x84FA,    // GL_UNSIGNED_INT_24_8
