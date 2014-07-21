@@ -369,9 +369,13 @@ public:
 
     // append a new buffer to the end
     inline void append(const QByteArray &qba) {
-        buffers[tailBuffer].resize(tail);
-        buffers << qba;
-        ++tailBuffer;
+        if (tail == 0) {
+            buffers.last() = qba;
+        } else {
+            buffers.last().resize(tail);
+            buffers << qba;
+            ++tailBuffer;
+        }
         tail = qba.length();
         bufferSize += qba.length();
     }

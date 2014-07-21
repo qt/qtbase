@@ -54,6 +54,7 @@ private slots:
     void sizeWhenEmpty();
     void sizeWhenReservedAndChopped();
     void sizeWhenReserved();
+    void appendAndRead();
 };
 
 void tst_QRingBuffer::sizeWhenReserved()
@@ -179,6 +180,20 @@ void tst_QRingBuffer::readPointerAtPositionWriteRead()
     QVERIFY(outData.buffer().startsWith(inData.buffer()));
 }
 
+void tst_QRingBuffer::appendAndRead()
+{
+    QRingBuffer ringBuffer;
+    QByteArray ba1("Hello world!");
+    QByteArray ba2("Test string.");
+    QByteArray ba3("0123456789");
+    ringBuffer.append(ba1);
+    ringBuffer.append(ba2);
+    ringBuffer.append(ba3);
+
+    QVERIFY(ringBuffer.read() == ba1);
+    QVERIFY(ringBuffer.read() == ba2);
+    QVERIFY(ringBuffer.read() == ba3);
+}
 
 QTEST_APPLESS_MAIN(tst_QRingBuffer)
 #include "tst_qringbuffer.moc"
