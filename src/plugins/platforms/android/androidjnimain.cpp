@@ -418,6 +418,9 @@ namespace QtAndroid
             return;
 
         m_surfaces.remove(surfaceId);
+        if (m_surfaces.isEmpty())
+            m_surfaceId = 1;
+
         QJNIEnvironmentPrivate env;
         if (!env)
             return;

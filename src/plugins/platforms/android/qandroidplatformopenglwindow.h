@@ -64,6 +64,8 @@ public:
 
     void checkNativeSurface(EGLConfig config);
 
+    void applicationStateChanged(Qt::ApplicationState);
+
 protected:
     virtual void surfaceChanged(JNIEnv *jniEnv, jobject surface, int w, int h);
     void createEgl(EGLConfig config);

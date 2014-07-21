@@ -45,6 +45,8 @@
 #include "qandroidplatformscreen.h"
 
 #include "androidjnimain.h"
+
+#include <qguiapplication.h>
 #include <qpa/qwindowsysteminterface.h>
 
 QT_BEGIN_NAMESPACE
@@ -160,5 +162,21 @@ void QAndroidPlatformWindow::updateStatusBarVisibility()
     }
 }
 
+bool QAndroidPlatformWindow::isExposed() const
+{
+    return qApp->applicationState() > Qt::ApplicationHidden
+            && window()->isVisible()
+            && !window()->geometry().isEmpty();
+}
+
+void QAndroidPlatformWindow::applicationStateChanged(Qt::ApplicationState)
+{
+    QRegion region;
+    if (isExposed())
+        region = QRect(QPoint(), geometry().size());
+
+    QWindowSystemInterface::handleExposeEvent(window(), region);
+    QWindowSystemInterface::flushWindowSystemEvents();
+}
 
 QT_END_NAMESPACE

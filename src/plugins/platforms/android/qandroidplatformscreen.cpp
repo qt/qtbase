@@ -54,6 +54,7 @@
 
 #include <android/bitmap.h>
 #include <android/native_window_jni.h>
+#include <qguiapplication.h>
 
 #include <QtGui/QGuiApplication>
 #include <QtGui/QWindow>
@@ -102,6 +103,7 @@ QAndroidPlatformScreen::QAndroidPlatformScreen():QObject(),QPlatformScreen()
     m_redrawTimer.setSingleShot(true);
     m_redrawTimer.setInterval(0);
     connect(&m_redrawTimer, SIGNAL(timeout()), this, SLOT(doRedraw()));
+    connect(qGuiApp, &QGuiApplication::applicationStateChanged, this, &QAndroidPlatformScreen::applicationStateChanged);
 }
 
 QAndroidPlatformScreen::~QAndroidPlatformScreen()
@@ -109,8 +111,7 @@ QAndroidPlatformScreen::~QAndroidPlatformScreen()
     if (m_id != -1) {
         QtAndroid::destroySurface(m_id);
         m_surfaceWaitCondition.wakeOne();
-        if (m_nativeSurface)
-            ANativeWindow_release(m_nativeSurface);
+        releaseSurface();
     }
 }
 
@@ -133,7 +134,7 @@ QWindow *QAndroidPlatformScreen::topLevelAt(const QPoint &p) const
 
 void QAndroidPlatformScreen::addWindow(QAndroidPlatformWindow *window)
 {
-    if (window->parent())
+    if (window->parent() && window->isRaster())
         return;
 
     m_windowStack.prepend(window);
@@ -149,10 +150,11 @@ void QAndroidPlatformScreen::addWindow(QAndroidPlatformWindow *window)
 
 void QAndroidPlatformScreen::removeWindow(QAndroidPlatformWindow *window)
 {
-    if (window->parent())
+    if (window->parent() && window->isRaster())
         return;
 
     m_windowStack.removeOne(window);
+
     if (window->isRaster()) {
         m_rasterSurfaces.deref();
         setDirty(window->geometry());
@@ -165,7 +167,7 @@ void QAndroidPlatformScreen::removeWindow(QAndroidPlatformWindow *window)
 
 void QAndroidPlatformScreen::raise(QAndroidPlatformWindow *window)
 {
-    if (window->parent())
+    if (window->parent() && window->isRaster())
         return;
 
     int index = m_windowStack.indexOf(window);
@@ -182,7 +184,7 @@ void QAndroidPlatformScreen::raise(QAndroidPlatformWindow *window)
 
 void QAndroidPlatformScreen::lower(QAndroidPlatformWindow *window)
 {
-    if (window->parent())
+    if (window->parent() && window->isRaster())
         return;
 
     int index = m_windowStack.indexOf(window);
@@ -247,11 +249,22 @@ void QAndroidPlatformScreen::setAvailableGeometry(const QRect &rect)
     }
 
     if (m_id != -1) {
-        if (m_nativeSurface) {
-            ANativeWindow_release(m_nativeSurface);
-            m_nativeSurface = 0;
-        }
+        releaseSurface();
         QtAndroid::setSurfaceGeometry(m_id, rect);
+    }
+}
+
+void QAndroidPlatformScreen::applicationStateChanged(Qt::ApplicationState state)
+{
+    foreach (QAndroidPlatformWindow *w, m_windowStack)
+        w->applicationStateChanged(state);
+
+    if (state <=  Qt::ApplicationHidden && QtAndroid::blockEventLoopsWhenSuspended()) {
+        lockSurface();
+        QtAndroid::destroySurface(m_id);
+        m_id = -1;
+        releaseSurface();
+        unlockSurface();
     }
 }
 
@@ -365,18 +378,22 @@ void QAndroidPlatformScreen::surfaceChanged(JNIEnv *env, jobject surface, int w,
 {
     lockSurface();
     if (surface && w && h) {
-        if (m_nativeSurface)
-            ANativeWindow_release(m_nativeSurface);
+        releaseSurface();
         m_nativeSurface = ANativeWindow_fromSurface(env, surface);
         QMetaObject::invokeMethod(this, "setDirty", Qt::QueuedConnection, Q_ARG(QRect, QRect(0, 0, w, h)));
     } else {
-        if (m_nativeSurface) {
-            ANativeWindow_release(m_nativeSurface);
-            m_nativeSurface = 0;
-        }
+        releaseSurface();
     }
     unlockSurface();
     m_surfaceWaitCondition.wakeOne();
+}
+
+void QAndroidPlatformScreen::releaseSurface()
+{
+    if (m_nativeSurface) {
+        ANativeWindow_release(m_nativeSurface);
+        m_nativeSurface = 0;
+    }
 }
 
 QT_END_NAMESPACE

@@ -107,6 +107,8 @@ private:
     Qt::ScreenOrientation orientation() const;
     Qt::ScreenOrientation nativeOrientation() const;
     void surfaceChanged(JNIEnv *env, jobject surface, int w, int h);
+    void releaseSurface();
+    void applicationStateChanged(Qt::ApplicationState);
 
 private slots:
     void doRedraw();

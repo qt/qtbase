@@ -72,7 +72,9 @@ public:
     void requestActivateWindow();
     void updateStatusBarVisibility();
     inline bool isRaster() const { return window()->surfaceType() == QSurface::RasterSurface; }
+    bool isExposed() const;
 
+    virtual void applicationStateChanged(Qt::ApplicationState);
 protected:
     void setGeometry(const QRect &rect);
 
