@@ -300,6 +300,7 @@ sub waitForProcess
 my $src_dir_qt=abs_path(dirname($0)."/../../..");
 my $quadruplor_dir="$src_dir_qt/tests/auto/android";
 my $qmake_path="$src_dir_qt/bin/qmake";
+my $androiddeployqt_path="$src_dir_qt/bin/androiddeployqt";
 my $tests_dir="$src_dir_qt/tests$testsubset";
 my $temp_dir=tempdir(CLEANUP => 1);
 my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time);
@@ -389,9 +390,9 @@ foreach (split("\n",$testsFiles))
     print $res if (!$silent);
     my $application=basename(cwd);
     if ($silent) {
-        $cmd="androiddeployqt --install ${deployqt_device_serial} --output ${temp_dir} --deployment debug --verbose --input android-libtst_${application}.so-deployment-settings.json >/dev/null 2>&1";
+        $cmd="$androiddeployqt_path --install ${deployqt_device_serial} --output ${temp_dir} --deployment debug --verbose --input android-libtst_${application}.so-deployment-settings.json >/dev/null 2>&1";
     } else {
-        $cmd="androiddeployqt --install ${deployqt_device_serial} --output ${temp_dir} --deployment debug --verbose --input android-libtst_${application}.so-deployment-settings.json";
+        $cmd="$androiddeployqt_path --install ${deployqt_device_serial} --output ${temp_dir} --deployment debug --verbose --input android-libtst_${application}.so-deployment-settings.json";
     }
     $res = qx(${cmd});
     print $res if (!$silent);
