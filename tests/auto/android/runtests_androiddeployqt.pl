@@ -79,6 +79,7 @@ my $total_failed = 0;
 my $failed_insignificants = 0;
 my $ci_use = 0;
 my $start = time();
+my $uninstall = 0;
 
 GetOptions('h|help' => \$help
             , man => \$man
@@ -98,6 +99,7 @@ GetOptions('h|help' => \$help
             , 'testcase=s' => \$testcase
             , 'silent' => sub { $silent = 1 }
             , 'ci' => sub { $ci_use = 1 }
+            , 'uninstall' => sub { $uninstall = 1 }
             ) or pod2usage(2);
 pod2usage(1) if $help;
 pod2usage(-verbose => 2) if $man;
@@ -350,6 +352,7 @@ sub startTest
     {
         #killProcess($packageName);
         print "Someone should kill $packageName\n";
+        system("$adb_tool $device_serial uninstall $packageName") if ($uninstall);
         return 1;
     }
 
@@ -363,6 +366,7 @@ sub startTest
        my $insig =
        print_output("$output_dir/$output_file.txt", $packageName, $insignificance);
     }
+    system("$adb_tool $device_serial uninstall $packageName") if ($uninstall);
     return 1;
 }
 
@@ -496,6 +500,10 @@ Suppress output of system commands.
 
 Enables checking if test is insignificant or not. Also prints test
 summary after all tests has been executed.
+
+=item B<-uninstall>
+
+Uninstalls the test after has been executed.
 
 =item B<-h  --help>
 
