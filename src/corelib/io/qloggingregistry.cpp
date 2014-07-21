@@ -261,12 +261,12 @@ void QLoggingRegistry::init()
     if (!rulesFilePath.isEmpty()) {
         QFile file(QFile::decodeName(rulesFilePath));
         if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-            QTextStream stream(&file);
-            QLoggingSettingsParser parser;
-            parser.setContent(stream);
             if (qtLoggingDebug())
                 debugMsg("Loading \"%s\" ...",
                          QDir::toNativeSeparators(file.fileName()).toUtf8().constData());
+            QTextStream stream(&file);
+            QLoggingSettingsParser parser;
+            parser.setContent(stream);
             envRules = parser.rules();
         }
     }
@@ -285,12 +285,12 @@ void QLoggingRegistry::init()
     if (!envPath.isEmpty()) {
         QFile file(envPath);
         if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-            QTextStream stream(&file);
-            QLoggingSettingsParser parser;
-            parser.setContent(stream);
             if (qtLoggingDebug())
                 debugMsg("Loading \"%s\" ...",
                          QDir::toNativeSeparators(envPath).toUtf8().constData());
+            QTextStream stream(&file);
+            QLoggingSettingsParser parser;
+            parser.setContent(stream);
             configRules = parser.rules();
         }
     }
