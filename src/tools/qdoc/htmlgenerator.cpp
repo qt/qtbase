@@ -3922,6 +3922,7 @@ int HtmlGenerator::hOffset(const Node *node)
     case Node::Namespace:
     case Node::Class:
         return 2;
+    case Node::QmlBasicType:
     case Node::QmlType:
     case Node::Document:
         return 1;
