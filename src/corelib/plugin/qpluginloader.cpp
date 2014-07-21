@@ -339,7 +339,7 @@ void QPluginLoader::setFileName(const QString &fileName)
 #if defined(QT_SHARED)
     QLibrary::LoadHints lh;
     if (d) {
-        lh = d->loadHints;
+        lh = d->loadHints();
         d->release();
         d = 0;
         did_load = false;
@@ -405,17 +405,12 @@ void QPluginLoader::setLoadHints(QLibrary::LoadHints loadHints)
         d = QLibraryPrivate::findOrCreate(QString());   // ugly, but we need a d-ptr
         d->errorString.clear();
     }
-    d->loadHints = loadHints;
+    d->setLoadHints(loadHints);
 }
 
 QLibrary::LoadHints QPluginLoader::loadHints() const
 {
-    if (!d) {
-        QPluginLoader *that = const_cast<QPluginLoader *>(this);
-        that->d = QLibraryPrivate::findOrCreate(QString());   // ugly, but we need a d-ptr
-        that->d->errorString.clear();
-    }
-    return d->loadHints;
+    return d ? d->loadHints() : QLibrary::LoadHints();
 }
 
 /*!

@@ -485,9 +485,9 @@ inline void QLibraryStore::releaseLibrary(QLibraryPrivate *lib)
 
 QLibraryPrivate::QLibraryPrivate(const QString &canonicalFileName, const QString &version, QLibrary::LoadHints loadHints)
     : pHnd(0), fileName(canonicalFileName), fullVersion(version), instance(0),
-      loadHints(loadHints),
       libraryRefCount(0), libraryUnloadCount(0), pluginState(MightBeAPlugin)
 {
+    loadHintsInt.store(loadHints);
     if (canonicalFileName.isEmpty())
         errorString = QLibrary::tr("The shared library was not found.");
 }
@@ -508,7 +508,7 @@ void QLibraryPrivate::mergeLoadHints(QLibrary::LoadHints lh)
     if (pHnd)
         return;
 
-    loadHints = lh;
+    loadHintsInt.store(lh);
 }
 
 QFunctionPointer QLibraryPrivate::resolve(const char *symbol)
@@ -518,6 +518,12 @@ QFunctionPointer QLibraryPrivate::resolve(const char *symbol)
     return resolve_sys(symbol);
 }
 
+void QLibraryPrivate::setLoadHints(QLibrary::LoadHints lh)
+{
+    // this locks a global mutex
+    QMutexLocker lock(&qt_library_mutex);
+    mergeLoadHints(lh);
+}
 
 bool QLibraryPrivate::load()
 {
@@ -914,13 +920,12 @@ void QLibrary::setFileName(const QString &fileName)
 {
     QLibrary::LoadHints lh;
     if (d) {
-        lh = d->loadHints;
+        lh = d->loadHints();
         d->release();
         d = 0;
         did_load = false;
     }
-    d = QLibraryPrivate::findOrCreate(fileName);
-    d->loadHints = lh;
+    d = QLibraryPrivate::findOrCreate(fileName, QString(), lh);
 }
 
 QString QLibrary::fileName() const
@@ -943,13 +948,12 @@ void QLibrary::setFileNameAndVersion(const QString &fileName, int verNum)
 {
     QLibrary::LoadHints lh;
     if (d) {
-        lh = d->loadHints;
+        lh = d->loadHints();
         d->release();
         d = 0;
         did_load = false;
     }
-    d = QLibraryPrivate::findOrCreate(fileName, verNum >= 0 ? QString::number(verNum) : QString());
-    d->loadHints = lh;
+    d = QLibraryPrivate::findOrCreate(fileName, verNum >= 0 ? QString::number(verNum) : QString(), lh);
 }
 
 /*!
@@ -965,13 +969,12 @@ void QLibrary::setFileNameAndVersion(const QString &fileName, const QString &ver
 {
     QLibrary::LoadHints lh;
     if (d) {
-        lh = d->loadHints;
+        lh = d->loadHints();
         d->release();
         d = 0;
         did_load = false;
     }
-    d = QLibraryPrivate::findOrCreate(fileName, version);
-    d->loadHints = lh;
+    d = QLibraryPrivate::findOrCreate(fileName, version, lh);
 }
 
 /*!
@@ -1102,6 +1105,12 @@ QString QLibrary::errorString() const
     By default, none of these flags are set, so libraries will be loaded with
     lazy symbol resolution, and will not export external symbols for resolution
     in other dynamically-loaded libraries.
+
+    \note Setting this property after the library has been loaded has no effect
+    and loadHints() will not reflect those changes.
+
+    \note This property is shared among all QLibrary instances that refer to
+    the same library.
 */
 void QLibrary::setLoadHints(LoadHints hints)
 {
@@ -1109,12 +1118,12 @@ void QLibrary::setLoadHints(LoadHints hints)
         d = QLibraryPrivate::findOrCreate(QString());   // ugly, but we need a d-ptr
         d->errorString.clear();
     }
-    d->loadHints = hints;
+    d->setLoadHints(hints);
 }
 
 QLibrary::LoadHints QLibrary::loadHints() const
 {
-    return d ? d->loadHints : (QLibrary::LoadHints)0;
+    return d ? d->loadHints() : QLibrary::LoadHints();
 }
 
 /* Internal, for debugging */

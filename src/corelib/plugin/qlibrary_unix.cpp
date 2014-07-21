@@ -162,6 +162,7 @@ bool QLibraryPrivate::load_sys()
         dlFlags |= BIND_DEFERRED;
     }
 #else
+    int loadHints = this->loadHints();
     if (loadHints & QLibrary::ResolveAllSymbolsHint) {
         dlFlags |= RTLD_NOW;
     } else {

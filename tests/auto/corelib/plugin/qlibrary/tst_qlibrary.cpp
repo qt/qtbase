@@ -460,6 +460,14 @@ void tst_QLibrary::loadHints()
     library.setFileName(lib);
     QCOMPARE(library.loadHints(), lh);
     bool ok = library.load();
+
+    // we can't change the hints anymore
+    library.setLoadHints(QLibrary::LoadHints());
+    QCOMPARE(library.loadHints(), lh);
+
+    // confirm that a new QLibrary inherits the hints too
+    QCOMPARE(QLibrary(lib).loadHints(), lh);
+
     if ( result ) {
         QVERIFY( ok );
         QVERIFY(library.unload());

@@ -94,6 +94,10 @@ public:
     void release();
     QFunctionPointer resolve(const char *);
 
+    QLibrary::LoadHints loadHints() const
+    { return QLibrary::LoadHints(loadHintsInt.load()); }
+    void setLoadHints(QLibrary::LoadHints lh);
+
     static QLibraryPrivate *findOrCreate(const QString &fileName, const QString &version = QString(),
                                          QLibrary::LoadHints loadHints = 0);
     static QStringList suffixes_sys(const QString &fullVersion);
@@ -104,7 +108,6 @@ public:
     QJsonObject metaData;
 
     QString errorString;
-    QLibrary::LoadHints loadHints;
 
     void updatePluginState();
     bool isPlugin();
@@ -125,6 +128,8 @@ private:
     bool load_sys();
     bool unload_sys();
     QFunctionPointer resolve_sys(const char *);
+
+    QAtomicInt loadHintsInt;
 
     /// counts how many QLibrary or QPluginLoader are attached to us, plus 1 if it's loaded
     QAtomicInt libraryRefCount;
