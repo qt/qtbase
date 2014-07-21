@@ -1643,7 +1643,7 @@ QStringList QWindowsFontDatabase::fallbacksForFamily(const QString &family, QFon
             break;
         case QFont::System:
         default:
-            result << QString::fromLatin1("MS Sans Serif");
+            result << QString::fromLatin1("MS Shell Dlg 2");
             break;
     }
 
