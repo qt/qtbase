@@ -131,7 +131,13 @@ static void setBoolLane(QBasicAtomicInt *atomic, bool enable, int shift)
     are automatically loaded from the \c [Rules] section of a logging
     configuration file. Such configuration files are looked up in the QtProject
     configuration directory, or explicitly set in a \c QT_LOGGING_CONF
-    environment variable.
+    environment variable:
+
+    \code
+    [Rules]
+    *.debug=false
+    driver.usb.debug=true
+    \endcode
 
     Rules set by \l setFilterRules() take precedence over rules specified
     in the QtProject configuration directory, and can, in turn, be
