@@ -1027,12 +1027,43 @@ public class ExtractStyle {
         }
     }
 
-    public JSONObject extractTextAppearanceInformations(String styleName, String qtClass, AttributeSet attribSet, int textAppearance )
+    public JSONObject extractTextAppearance(int styleId)
     {
-        return extractTextAppearanceInformations(styleName, qtClass, attribSet, textAppearance, -1);
+        JSONObject json = new JSONObject();
+        try
+        {
+            TypedArray a = m_theme.obtainStyledAttributes(styleId, (int[]) styleableClass.getDeclaredField("TextAppearance").get(null));
+            int n = a.getIndexCount();
+            for (int i = 0; i < n; i++)
+            {
+                int attr = a.getIndex(i);
+                if (attr == TextAppearance_textColorHighlight)
+                    json.put("TextAppearance_textColorHighlight", a.getColor(attr, 0));
+                else if (attr == TextAppearance_textColor)
+                    json.put("TextAppearance_textColor", getColorStateList(a.getColorStateList(attr)));
+                else if (attr == TextAppearance_textColorHint)
+                    json.put("TextAppearance_textColorHint", getColorStateList(a.getColorStateList(attr)));
+                else if (attr == TextAppearance_textColorLink)
+                    json.put("TextAppearance_textColorLink", getColorStateList(a.getColorStateList(attr)));
+                else if (attr == TextAppearance_textSize)
+                    json.put("TextAppearance_textSize", a.getDimensionPixelSize(attr, 15));
+                else if (attr == TextAppearance_typeface)
+                    json.put("TextAppearance_typeface", a.getInt(attr, -1));
+                else if (attr == TextAppearance_textStyle)
+                    json.put("TextAppearance_textStyle", a.getInt(attr, -1));
+                else if (attr == TextAppearance_textAllCaps)
+                    json.put("TextAppearance_textAllCaps", a.getBoolean(attr, false));
+            }
+            a.recycle();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        return json;
     }
 
-    public JSONObject extractTextAppearanceInformations(String styleName, String qtClass, AttributeSet attribSet, int textAppearance, int styleId)
+    public JSONObject extractTextAppearanceInformations(String styleName, String qtClass, AttributeSet attribSet, int textAppearance)
     {
         JSONObject json = new JSONObject();
         try
@@ -1046,10 +1077,8 @@ public class ExtractStyle {
             int styleIndex = -1;
             boolean allCaps = false;
 
-            if (-1==styleId) {
-                Class<?> attrClass= Class.forName("android.R$attr");
-                styleId = attrClass.getDeclaredField(styleName).getInt(null);
-            }
+            Class<?> attrClass= Class.forName("android.R$attr");
+            int styleId = attrClass.getDeclaredField(styleName).getInt(null);
 
             extractViewInformations(styleName, styleId, json, qtClass, attribSet);
 
@@ -1425,7 +1454,7 @@ public class ExtractStyle {
                 json.put("Switch_track", getDrawable(track, styleName + "_Switch_track"));
 
             int textAppearance = a.getResourceId(styleableClass.getDeclaredField("Switch_switchTextAppearance").getInt(null), -1);
-            json.put("Switch_switchTextAppearance", extractTextAppearanceInformations(styleName, null, null, textAppearance, styleId));
+            json.put("Switch_switchTextAppearance", extractTextAppearance(textAppearance));
 
             json.put("Switch_textOn", a.getText(getField(styleableClass, "Switch_textOn")));
             json.put("Switch_textOff", a.getText(getField(styleableClass, "Switch_textOff")));
@@ -1517,10 +1546,10 @@ public class ExtractStyle {
                 json.put("CalendarView_selectedDateVerticalBar", getDrawable(d, styleName + "_CalendarView_selectedDateVerticalBar"));
 
             int dateTextAppearance = a.getResourceId(styleableClass.getDeclaredField("CalendarView_dateTextAppearance").getInt(null), -1);
-            json.put("CalendarView_dateTextAppearance", extractTextAppearanceInformations(styleName, null, null, dateTextAppearance, styleId));
+            json.put("CalendarView_dateTextAppearance", extractTextAppearance(dateTextAppearance));
 
             int weekDayTextAppearance = a.getResourceId(styleableClass.getDeclaredField("CalendarView_weekDayTextAppearance").getInt(null), -1);
-            json.put("CalendarView_weekDayTextAppearance", extractTextAppearanceInformations(styleName, null, null, weekDayTextAppearance, styleId));
+            json.put("CalendarView_weekDayTextAppearance", extractTextAppearance(weekDayTextAppearance));
 
             json.put("CalendarView_firstDayOfWeek", a.getInt(getField(styleableClass, "CalendarView_firstDayOfWeek"), 0));
             json.put("CalendarView_focusedMonthDateColor", a.getColor(getField(styleableClass, "CalendarView_focusedMonthDateColor"), 0));
