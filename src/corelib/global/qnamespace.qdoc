@@ -488,7 +488,7 @@
            the underlines.
     \value TextDontPrint Treat this text as "hidden" and don't print it.
     \value TextIncludeTrailingSpaces When this option is set,
-           QTextLine::naturalTextWidth() and naturalTextRect() will
+           QTextLine::naturalTextWidth() and QTextLine::naturalTextRect() will
            return a value that includes the width of trailing spaces in the
            text; otherwise this width is excluded.
     \value TextJustificationForced Ensures that text lines are justified.
@@ -1880,7 +1880,7 @@
     menu, and in contrast to \c NoContextMenu, the handling is \e not
     deferred to the widget's parent. This means that all right mouse
     button events are guaranteed to be delivered to the widget itself
-    through mousePressEvent(), and mouseReleaseEvent().
+    through QWidget::mousePressEvent(), and QWidget::mouseReleaseEvent().
     \value DefaultContextMenu  the widget's QWidget::contextMenuEvent() handler is called.
     \value ActionsContextMenu  the widget displays its QWidget::actions() as context menu.
     \value CustomContextMenu  the widget emits the QWidget::customContextMenuRequested() signal.
@@ -2236,9 +2236,9 @@
     \enum Qt::TextFormat
 
     This enum is used in widgets that can display both plain text and
-    rich text, e.g. QLabel. It is used for deciding whether a text
+    rich text, for example QLabel. It is used for deciding whether a text
     string should be interpreted as one or the other. This is normally
-    done by passing one of the enum values to a setTextFormat()
+    done by passing one of the enum values to a QTextEdit::setTextFormat()
     function.
 
     \value PlainText  The text string is interpreted as a plain text
@@ -2438,7 +2438,7 @@
     \value ImSurroundingText    The plain text around the input area, for example the current paragraph.
     \value ImCurrentSelection   The currently selected text.
     \value ImMaximumTextLength  The maximum number of characters that the widget can hold. If there is no limit,
-                                QVariant() is returned.
+                                QVariant::QVariant() is returned.
     \value ImAnchorPosition     The position of the selection anchor. This may be less or greater than
                                 \c ImCursorPosition, depending on which side of selection the cursor is.
                                 If there is no selection, it returns the same as \c ImCursorPosition.
