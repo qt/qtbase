@@ -131,15 +131,15 @@ void QLoggingRule::parse(const QStringRef &pattern)
     // strip trailing ".messagetype"
     if (pattern.endsWith(QLatin1String(".debug"))) {
         p = QStringRef(pattern.string(), pattern.position(),
-                       pattern.length() - strlen(".debug"));
+                       pattern.length() - 6); // strlen(".debug")
         messageType = QtDebugMsg;
     } else if (pattern.endsWith(QLatin1String(".warning"))) {
         p = QStringRef(pattern.string(), pattern.position(),
-                       pattern.length() - strlen(".warning"));
+                       pattern.length() - 8); // strlen(".warning")
         messageType = QtWarningMsg;
     } else if (pattern.endsWith(QLatin1String(".critical"))) {
         p = QStringRef(pattern.string(), pattern.position(),
-                       pattern.length() - strlen(".critical"));
+                       pattern.length() - 9); // strlen(".critical")
         messageType = QtCriticalMsg;
     } else {
         p = pattern;
