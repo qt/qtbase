@@ -986,8 +986,8 @@ uint qHash(long double key, uint seed) Q_DECL_NOTHROW
 
     A QHash's key type has additional requirements other than being an
     assignable data type: it must provide operator==(), and there must also be
-    a global qHash() function that returns a hash value for an argument of the
-    key's type.
+    a qHash() function in the type's namespace that returns a hash value for an
+    argument of the key's type.
 
     The qHash() function computes a numeric value based on a key. It
     can use any algorithm imaginable, as long as it always returns
@@ -2152,8 +2152,8 @@ uint qHash(long double key, uint seed) Q_DECL_NOTHROW
     QMultiHash's key and value data types must be \l{assignable data
     types}. You cannot, for example, store a QWidget as a value;
     instead, store a QWidget *. In addition, QMultiHash's key type
-    must provide operator==(), and there must also be a global
-    qHash() function that returns a hash value for an argument of the
+    must provide operator==(), and there must also be a qHash() function
+   in the type's namespace that returns a hash value for an argument of the
     key's type. See the QHash documentation for details.
 
     \sa QHash, QHashIterator, QMutableHashIterator, QMultiMap
