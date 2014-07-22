@@ -54,6 +54,13 @@ contains(TEMPLATE, ".*app"):!build_pass:!android-no-sdk {
     !isEmpty(ANDROID_EXTRA_LIBS): \
         FILE_CONTENT += "   \"android-extra-libs\": $$emitString($$join(ANDROID_EXTRA_LIBS, ",")),"
 
+    !isEmpty(QML_IMPORT_PATH): \
+        FILE_CONTENT += "   \"qml-import-paths\": $$emitString($$join(QML_IMPORT_PATH, ",")),"
+
+    isEmpty(QML_ROOT_PATH): \
+        QML_ROOT_PATH = $$_PRO_FILE_PWD_
+    FILE_CONTENT += "   \"qml-root-path\": $$emitString($$QML_ROOT_PATH),"
+
     FILE_CONTENT += "   \"application-binary\": $$emitString($$absolute_path($$DESTDIR, $$OUT_PWD)/$$TARGET)"
     FILE_CONTENT += "}"
 
