@@ -1029,9 +1029,9 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
           << "\t\t\t" << writeSettings("files", ProStringList(), SettingsAsList, 4) << ";\n"
           // The build phases are not executed in the order they are defined, but by their
           // resolved dependenices, so we have to ensure that this phase is run after the
-          // compilation phase, and before the link phase. Making the phase depend on all the
-          // object files, and "write" to the list of files to link achieves that.
-          << "\t\t\t" << writeSettings("inputPaths", ProStringList("$(OBJECT_FILE_DIR_$(CURRENT_VARIANT))/$(CURRENT_ARCH)/*" + Option::obj_ext), SettingsAsList, 4) << ";\n"
+          // compilation phase, and before the link phase. Making the phase depend on the
+          // object file directory, and "write" to the list of files to link achieves that.
+          << "\t\t\t" << writeSettings("inputPaths", ProStringList("$(OBJECT_FILE_DIR_$(CURRENT_VARIANT))/$(CURRENT_ARCH)/"), SettingsAsList, 4) << ";\n"
           << "\t\t\t" << writeSettings("outputPaths", ProStringList("$(LINK_FILE_LIST_$(CURRENT_VARIANT)_$(CURRENT_ARCH))"), SettingsAsList, 4) << ";\n"
           << "\t\t\t" << writeSettings("isa", "PBXShellScriptBuildPhase", SettingsNoQuote) << ";\n"
           << "\t\t\t" << writeSettings("runOnlyForDeploymentPostprocessing", "0", SettingsNoQuote) << ";\n"
