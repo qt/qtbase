@@ -43,6 +43,8 @@
 
 //#define QT_DEBUG_SQL
 
+#include "qdebug.h"
+#include "qelapsedtimer.h"
 #include "qatomic.h"
 #include "qsqlrecord.h"
 #include "qsqlresult.h"
@@ -370,6 +372,10 @@ bool QSqlQuery::isNull(const QString &name) const
 
 bool QSqlQuery::exec(const QString& query)
 {
+#ifdef QT_DEBUG_SQL
+    QElapsedTimer t;
+    t.start();
+#endif
     if (d->ref.load() != 1) {
         bool fo = isForwardOnly();
         *this = QSqlQuery(driver()->createResult());
@@ -391,10 +397,14 @@ bool QSqlQuery::exec(const QString& query)
         qWarning("QSqlQuery::exec: empty query");
         return false;
     }
+
+    bool retval = d->sqlResult->reset(query);
 #ifdef QT_DEBUG_SQL
-    qDebug("\n QSqlQuery: %s", query.toLocal8Bit().constData());
+    qDebug().nospace() << "Executed query (" << t.elapsed() << "ms, " << d->sqlResult->size()
+                       << " results, " << d->sqlResult->numRowsAffected()
+                       << " affected): " << d->sqlResult->lastQuery();
 #endif
-    return d->sqlResult->reset(query);
+    return retval;
 }
 
 /*!
@@ -989,12 +999,22 @@ bool QSqlQuery::prepare(const QString& query)
 */
 bool QSqlQuery::exec()
 {
+#ifdef QT_DEBUG_SQL
+    QElapsedTimer t;
+    t.start();
+#endif
     d->sqlResult->resetBindCount();
 
     if (d->sqlResult->lastError().isValid())
         d->sqlResult->setLastError(QSqlError());
 
-    return d->sqlResult->exec();
+    bool retval = d->sqlResult->exec();
+#ifdef QT_DEBUG_SQL
+    qDebug().nospace() << "Executed prepared query (" << t.elapsed() << "ms, "
+                       << d->sqlResult->size() << " results, " << d->sqlResult->numRowsAffected()
+                       << " affected): " << d->sqlResult->lastQuery();
+#endif
+    return retval;
 }
 
 /*! \enum QSqlQuery::BatchExecutionMode
