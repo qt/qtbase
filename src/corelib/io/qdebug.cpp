@@ -438,10 +438,18 @@ public:
     }
     void restoreState()
     {
+        const bool currentSpaces = m_dbg.autoInsertSpaces();
+        if (currentSpaces && !m_spaces)
+            if (m_dbg.stream->buffer.endsWith(QLatin1Char(' ')))
+                m_dbg.stream->buffer.chop(1);
+
         m_dbg.setAutoInsertSpaces(m_spaces);
         m_dbg.stream->ts.d_ptr->params = m_streamParams;
         if (m_dbg.stream->context.version > 1)
             m_dbg.stream->flags = m_flags;
+
+        if (!currentSpaces && m_spaces)
+            m_dbg.stream->ts << ' ';
     }
 
     QDebug &m_dbg;
@@ -475,7 +483,6 @@ QDebugStateSaver::QDebugStateSaver(QDebug &dbg)
 QDebugStateSaver::~QDebugStateSaver()
 {
     d->restoreState();
-    d->m_dbg.maybeSpace();
 }
 
 QT_END_NAMESPACE

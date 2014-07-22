@@ -254,6 +254,17 @@ void tst_QDebug::stateSaver() const
     MessageHandlerSetter mhs(myMessageHandler);
     {
         QDebug d = qDebug();
+        d << 42;
+        {
+            QDebugStateSaver saver(d);
+            d << 43;
+        }
+        d << 44;
+    }
+    QCOMPARE(s_msg, QString::fromLatin1("42 43 44"));
+
+    {
+        QDebug d = qDebug();
         {
             QDebugStateSaver saver(d);
             d.nospace() << hex << right << qSetFieldWidth(3) << qSetPadChar('0') << 42;
@@ -271,6 +282,18 @@ void tst_QDebug::stateSaver() const
         d << QStringLiteral("World");
     }
     QCOMPARE(s_msg, QString::fromLatin1("Hello \"World\""));
+
+    {
+        QDebug d = qDebug();
+        d.noquote().nospace() << QStringLiteral("Hello") << hex << 42;
+        {
+            QDebugStateSaver saver(d);
+            d.resetFormat();
+            d << QStringLiteral("World") << 42;
+        }
+        d << QStringLiteral("!") << 42;
+    }
+    QCOMPARE(s_msg, QString::fromLatin1("Hello2a\"World\" 42!2a"));
 }
 
 void tst_QDebug::veryLongWarningMessage() const
