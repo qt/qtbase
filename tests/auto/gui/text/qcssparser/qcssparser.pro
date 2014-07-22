@@ -15,3 +15,8 @@ wince* {
    DEPLOYMENT += addFiles timesFont
 }
 
+android {
+    RESOURCES += \
+        testdata.qrc
+
+}

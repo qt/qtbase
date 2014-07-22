@@ -50,6 +50,7 @@
 #include <QVBoxLayout>
 #include <QSizeGrip>
 #include <QDesktopWidget>
+#include <QWindow>
 #include <private/qguiapplication_p.h>
 #include <qpa/qplatformtheme.h>
 #include <qpa/qplatformtheme_p.h>
@@ -85,6 +86,8 @@ private slots:
     void setVisible();
     void reject();
     void snapToDefaultButton();
+    void transientParent_data();
+    void transientParent();
 
 private:
     QDialog *testWidget;
@@ -582,6 +585,35 @@ void tst_QDialog::snapToDefaultButton()
         }
     }
 #endif // !QT_NO_CURSOR
+}
+
+void tst_QDialog::transientParent_data()
+{
+    QTest::addColumn<bool>("nativewidgets");
+    QTest::newRow("Non-native") << false;
+    QTest::newRow("Native") << true;
+}
+
+void tst_QDialog::transientParent()
+{
+    QFETCH(bool, nativewidgets);
+    testWidget->hide();
+    QWidget topLevel;
+    topLevel.resize(200, 200);
+    topLevel.move(QGuiApplication::primaryScreen()->availableGeometry().center() - QPoint(100, 100));
+    QVBoxLayout *layout = new QVBoxLayout(&topLevel);
+    QWidget *innerWidget = new QWidget(&topLevel);
+    layout->addWidget(innerWidget);
+    if (nativewidgets)
+        innerWidget->winId();
+    topLevel.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
+    QDialog dialog(innerWidget);
+    dialog.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&dialog));
+    // Transient parent should always be the top level, also when using
+    // native child widgets.
+    QCOMPARE(dialog.windowHandle()->transientParent(), topLevel.windowHandle());
 }
 
 QTEST_MAIN(tst_QDialog)

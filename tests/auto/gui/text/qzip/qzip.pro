@@ -7,7 +7,9 @@ wince* {
    addFiles.files = testdata
    addFiles.path = .
    DEPLOYMENT += addFiles
-   DEFINES += SRCDIR=\\\".\\\"
-} else {
-   DEFINES += SRCDIR=\\\"$$PWD\\\"
+}
+
+android {
+    RESOURCES += \
+        testdata.qrc
 }
