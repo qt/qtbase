@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -4550,19 +4550,21 @@ bool QImageData::convertInPlace(QImage::Format newFormat, Qt::ImageConversionFla
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QImage &i)
 {
-    QDebug nospace = dbg.nospace();
-    nospace << "QImage(";
+    QDebugStateSaver saver(dbg);
+    dbg.resetFormat();
+    dbg.nospace();
+    dbg << "QImage(";
     if (i.isNull()) {
-        nospace << "null";
+        dbg << "null";
     } else {
-        nospace << i.size() << ",format=" << i.format() << ",depth=" << i.depth();
+        dbg << i.size() << ",format=" << i.format() << ",depth=" << i.depth();
         if (i.colorCount())
-            nospace << ",colorCount=" << i.colorCount();
-        nospace << ",devicePixelRatio=" << i.devicePixelRatio()
+            dbg << ",colorCount=" << i.colorCount();
+        dbg << ",devicePixelRatio=" << i.devicePixelRatio()
             << ",bytesPerLine=" << i.bytesPerLine() << ",byteCount=" << i.byteCount();
     }
-    nospace << ')';
-    return dbg.space();
+    dbg << ')';
+    return dbg;
 }
 #endif
 

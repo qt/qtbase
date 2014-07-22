@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -1321,18 +1321,20 @@ QDataStream &operator>>(QDataStream &s, QIcon &icon)
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QIcon &i)
 {
-    QDebug nospace = dbg.nospace();
-    nospace << "QIcon(";
+    QDebugStateSaver saver(dbg);
+    dbg.resetFormat();
+    dbg.nospace();
+    dbg << "QIcon(";
     if (i.isNull()) {
-        nospace << "null";
+        dbg << "null";
     } else {
         if (!i.name().isEmpty())
-            nospace << i.name() << ',';
-        nospace << "availableSizes[normal,Off]=" << i.availableSizes()
+            dbg << i.name() << ',';
+        dbg << "availableSizes[normal,Off]=" << i.availableSizes()
             << ",cacheKey=" << showbase << hex << i.cacheKey() << dec << noshowbase;
     }
-    nospace << ')';
-    return dbg.space();
+    dbg << ')';
+    return dbg;
 }
 #endif
 

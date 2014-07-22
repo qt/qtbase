@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -1724,17 +1724,19 @@ QPlatformPixmap* QPixmap::handle() const
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QPixmap &r)
 {
-    QDebug nospace = dbg.nospace();
-    nospace << "QPixmap(";
+    QDebugStateSaver saver(dbg);
+    dbg.resetFormat();
+    dbg.nospace();
+    dbg << "QPixmap(";
     if (r.isNull()) {
-        nospace << "null";
+        dbg << "null";
     } else {
-        nospace << r.size() << ",depth=" << r.depth()
+        dbg << r.size() << ",depth=" << r.depth()
             << ",devicePixelRatio=" << r.devicePixelRatio()
             << ",cacheKey=" << showbase << hex << r.cacheKey() << dec << noshowbase;
     }
-    nospace << ')';
-    return dbg.space();
+    dbg << ')';
+    return dbg;
 }
 #endif
 
