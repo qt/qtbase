@@ -455,7 +455,7 @@ inline QLibraryPrivate *QLibraryStore::findOrCreate(const QString &fileName, con
         lib = new QLibraryPrivate(fileName, version, loadHints);
 
     // track this library
-    if (Q_LIKELY(data))
+    if (Q_LIKELY(data) && !fileName.isEmpty())
         data->libraryMap.insert(fileName, lib);
 
     lib->libraryRefCount.ref();
@@ -475,7 +475,7 @@ inline void QLibraryStore::releaseLibrary(QLibraryPrivate *lib)
     // no one else is using
     Q_ASSERT(lib->libraryUnloadCount.load() == 0);
 
-    if (Q_LIKELY(data)) {
+    if (Q_LIKELY(data) && !lib->fileName.isEmpty()) {
         QLibraryPrivate *that = data->libraryMap.take(lib->fileName);
         Q_ASSERT(lib == that);
         Q_UNUSED(that);

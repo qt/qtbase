@@ -456,6 +456,9 @@ void tst_QLibrary::loadHints()
     if (int(loadHints) != 0) {
         lh |= library.loadHints();
         library.setLoadHints(lh);
+
+        // confirm that another QLibrary doesn't get affected - QTBUG-39642
+        QCOMPARE(QLibrary().loadHints(), QLibrary::LoadHints());
     }
     library.setFileName(lib);
     QCOMPARE(library.loadHints(), lh);
