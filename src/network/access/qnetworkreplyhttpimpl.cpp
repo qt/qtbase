@@ -863,6 +863,11 @@ void QNetworkReplyHttpImplPrivate::postRequest()
             forwardUploadDevice->setParent(delegate); // needed to make sure it is moved on moveToThread()
             delegate->httpRequest.setUploadByteDevice(forwardUploadDevice);
 
+            // If the device in the user thread claims it has more data, keep the flow to HTTP thread going
+            QObject::connect(uploadByteDevice.data(), SIGNAL(readyRead()),
+                             q, SLOT(uploadByteDeviceReadyReadSlot()),
+                             Qt::QueuedConnection);
+
             // From main thread to user thread:
             QObject::connect(q, SIGNAL(haveUploadData(QByteArray,bool,qint64)),
                              forwardUploadDevice, SLOT(haveDataSlot(QByteArray,bool,qint64)), Qt::QueuedConnection);
@@ -1284,12 +1289,26 @@ void QNetworkReplyHttpImplPrivate::wantUploadDataSlot(qint64 maxSize)
     // call readPointer
     qint64 currentUploadDataLength = 0;
     char *data = const_cast<char*>(uploadByteDevice->readPointer(maxSize, currentUploadDataLength));
+
+    if (currentUploadDataLength == 0) {
+        // No bytes from upload byte device. There will be bytes later, it will emit readyRead()
+        // and our uploadByteDeviceReadyReadSlot() is called.
+        return;
+    }
+
     // Let's make a copy of this data
     QByteArray dataArray(data, currentUploadDataLength);
 
     // Communicate back to HTTP thread
     emit q->haveUploadData(dataArray, uploadByteDevice->atEnd(), uploadByteDevice->size());
 }
+
+void QNetworkReplyHttpImplPrivate::uploadByteDeviceReadyReadSlot()
+{
+    // Start the flow between this thread and the HTTP thread again by triggering a upload.
+    wantUploadDataSlot(1024);
+}
+
 
 /*
     A simple web page that can be used to test us: http://www.procata.com/cachetest/
