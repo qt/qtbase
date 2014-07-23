@@ -46,9 +46,26 @@ if [ $# -eq 0 ]; then
 else
     for f in $(find $1 -name '*.o'); do
         # Skip object files without the _main symbol
-        nm $f | grep -q 'T _main$' || continue
+        nm $f 2>/dev/null | grep -q 'T _main$' || continue
 
-        echo "Found main() in ${f#$1/}"
+        fname=${f#$1/}
+
+        file -b $f | grep -qi 'llvm bit-code' && \
+            (cat \
+<<EOF >&2
+$f:: error: The file '$fname' contains LLVM bitcode, not object code. Automatic main() redirection could not be applied.
+note: This is most likely due to the use of link-time optimization (-flto). Please disable LTO, or work around the \
+issue by manually renaming your main() function to qtmn():
+
+#ifdef Q_OS_IOS
+extern "C" int qtmn(int argc, char *argv[])
+#else
+int main(int argc, char *argv[])
+#endif
+EOF
+            ) && exit 1
+
+        echo "Found main() in $fname"
 
         strings -t d - $f | grep '_main\(\.eh\)\?$' | while read match; do
             offset=$(echo $match | cut -d ' ' -f 1)
