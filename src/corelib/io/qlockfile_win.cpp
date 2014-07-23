@@ -50,6 +50,11 @@
 
 QT_BEGIN_NAMESPACE
 
+static inline QByteArray localHostName()
+{
+    return qgetenv("COMPUTERNAME");
+}
+
 QLockFile::LockError QLockFilePrivate::tryLock_sys()
 {
     const QFileSystemEntry fileEntry(fileName);
@@ -98,7 +103,7 @@ QLockFile::LockError QLockFilePrivate::tryLock_sys()
     fileData += '\n';
     fileData += qAppName().toUtf8();
     fileData += '\n';
-    //fileData += localHostname(); // gethostname requires winsock init, see QHostInfo...
+    fileData += localHostName();
     fileData += '\n';
     DWORD bytesWritten = 0;
     QLockFile::LockError error = QLockFile::NoError;
@@ -123,14 +128,16 @@ bool QLockFilePrivate::isApparentlyStale() const
     // On WinRT there seems to be no way of obtaining information about other
     // processes due to sandboxing
 #ifndef Q_OS_WINRT
-    HANDLE procHandle = ::OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, pid);
-    if (!procHandle)
-        return true;
-    // We got a handle but check if process is still alive
-    DWORD dwR = ::WaitForSingleObject(procHandle, 0);
-    ::CloseHandle(procHandle);
-    if (dwR == WAIT_TIMEOUT)
-        return true;
+    if (hostname == QString::fromLocal8Bit(localHostName())) {
+        HANDLE procHandle = ::OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, pid);
+        if (!procHandle)
+            return true;
+        // We got a handle but check if process is still alive
+        DWORD dwR = ::WaitForSingleObject(procHandle, 0);
+        ::CloseHandle(procHandle);
+        if (dwR == WAIT_TIMEOUT)
+            return true;
+    }
 #endif // !Q_OS_WINRT
     const qint64 age = QFileInfo(fileName).lastModified().msecsTo(QDateTime::currentDateTime());
     return staleLockTime > 0 && age > staleLockTime;
