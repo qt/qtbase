@@ -429,6 +429,23 @@ static inline int indexOfMonitor(const QList<QWindowsScreenData> &screenData,
     return -1;
 }
 
+// Move a window to a new virtual screen, accounting for varying sizes.
+static void moveToVirtualScreen(QWindow *w, const QScreen *newScreen)
+{
+    QRect geometry = w->geometry();
+    const QRect oldScreenGeometry = w->screen()->geometry();
+    const QRect newScreenGeometry = newScreen->geometry();
+    QPoint relativePosition = geometry.topLeft() - oldScreenGeometry.topLeft();
+    if (oldScreenGeometry.size() != newScreenGeometry.size()) {
+        const qreal factor =
+            qreal(QPoint(newScreenGeometry.width(), newScreenGeometry.height()).manhattanLength()) /
+            qreal(QPoint(oldScreenGeometry.width(), oldScreenGeometry.height()).manhattanLength());
+        relativePosition = (QPointF(relativePosition) * factor).toPoint();
+    }
+    geometry.moveTopLeft(relativePosition);
+    w->setGeometry(geometry);
+}
+
 void QWindowsScreenManager::removeScreen(int index)
 {
     qCDebug(lcQpaWindows) << "Removing Monitor:" << m_screens.at(index)->data();
@@ -439,11 +456,18 @@ void QWindowsScreenManager::removeScreen(int index)
     // event, but unfortunately after the screen destruction signal. To prevent
     // QtGui from automatically hiding the QWindow, pretend all Windows move to
     // the primary screen first (which is likely the correct, final screen).
+    // QTBUG-39320: Windows does not automatically move WS_EX_TOOLWINDOW (dock) windows;
+    // move those manually.
     if (screen != primaryScreen) {
         unsigned movedWindowCount = 0;
         foreach (QWindow *w, QGuiApplication::topLevelWindows()) {
             if (w->screen() == screen && w->handle() && w->type() != Qt::Desktop) {
-                QWindowSystemInterface::handleWindowScreenChanged(w, primaryScreen);
+                if (w->isVisible() && w->windowState() != Qt::WindowMinimized
+                    && (QWindowsWindow::baseWindowOf(w)->exStyle() & WS_EX_TOOLWINDOW)) {
+                    moveToVirtualScreen(w, primaryScreen);
+                } else {
+                    QWindowSystemInterface::handleWindowScreenChanged(w, primaryScreen);
+                }
                 ++movedWindowCount;
             }
         }
