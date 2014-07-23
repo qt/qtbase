@@ -9516,7 +9516,7 @@ QByteArray QStringRef::toUtf8() const
     if (isNull())
         return QByteArray();
 
-    return QUtf8::convertFromUnicode(constData(), length(), 0);
+    return QUtf8::convertFromUnicode(constData(), length());
 }
 
 /*!
