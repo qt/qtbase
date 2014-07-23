@@ -49,6 +49,10 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef GL_RGB10_A2
+#define GL_RGB10_A2                       0x8059
+#endif
+
 #ifndef GL_BGR
 #define GL_BGR 0x80E0
 #endif
@@ -59,6 +63,10 @@ QT_BEGIN_NAMESPACE
 
 #ifndef GL_UNSIGNED_INT_8_8_8_8_REV
 #define GL_UNSIGNED_INT_8_8_8_8_REV       0x8367
+#endif
+
+#ifndef GL_UNSIGNED_INT_2_10_10_10_REV
+#define GL_UNSIGNED_INT_2_10_10_10_REV    0x8368
 #endif
 
 class QOpenGLTextureCacheWrapper
@@ -227,6 +235,29 @@ GLuint QOpenGLTextureCache::bindTexture(QOpenGLContext *context, qint64 key, con
             }
         }
         targetFormat = image.format();
+        break;
+    case QImage::Format_BGR30:
+    case QImage::Format_A2BGR30_Premultiplied:
+        if (isOpenGL12orBetter || (context->isOpenGLES() && context->format().majorVersion() >= 3)) {
+            pixelType = GL_UNSIGNED_INT_2_10_10_10_REV;
+            externalFormat = GL_RGBA;
+            internalFormat = GL_RGB10_A2;
+            targetFormat =  image.format();
+        }
+        break;
+    case QImage::Format_RGB30:
+    case QImage::Format_A2RGB30_Premultiplied:
+        if (isOpenGL12orBetter) {
+            pixelType = GL_UNSIGNED_INT_2_10_10_10_REV;
+            externalFormat = GL_BGRA;
+            internalFormat = GL_RGB10_A2;
+            targetFormat = image.format();
+        } else if (context->isOpenGLES() && context->format().majorVersion() >= 3) {
+            pixelType = GL_UNSIGNED_INT_2_10_10_10_REV;
+            externalFormat = GL_RGBA;
+            internalFormat = GL_RGB10_A2;
+            targetFormat = QImage::Format_A2BGR30_Premultiplied;
+        }
         break;
     case QImage::Format_RGB444:
     case QImage::Format_RGB555:

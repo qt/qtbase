@@ -43,6 +43,7 @@
 #include <QtGui/private/qopenglcontext_p.h>
 #include <QtGui/QOpenGLFramebufferObject>
 #include <QtGui/QOpenGLFunctions>
+#include <QtGui/QOpenGLFunctions_4_2_Core>
 #include <QtGui/QOpenGLVertexArrayObject>
 #include <QtGui/QOpenGLPaintDevice>
 #include <QtGui/QPainter>
@@ -88,6 +89,8 @@ private slots:
     void fboTextureOwnership();
     void fboRendering_data();
     void fboRendering();
+    void fboRenderingRGB30_data();
+    void fboRenderingRGB30();
     void fboHandleNulledAfterContextDestroyed();
     void openGLPaintDevice_data();
     void openGLPaintDevice();
@@ -563,7 +566,7 @@ void tst_QOpenGL::fboRendering()
     QOpenGLFramebufferObjectFormat fboFormat;
     fboFormat.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
 
-    // Uncomplicate things by using NPOT:
+    // Uncomplicate things by using POT:
     const QSize size(256, 128);
     QOpenGLFramebufferObject fbo(size, fboFormat);
 
@@ -585,6 +588,111 @@ void tst_QOpenGL::fboRendering()
     QCOMPARE(fb.size(), size);
 
     qt_opengl_check_test_pattern(fb);
+}
+
+void tst_QOpenGL::fboRenderingRGB30_data()
+{
+    common_data();
+}
+
+#ifndef GL_RGB10_A2
+#define GL_RGB10_A2                       0x8059
+#endif
+
+#ifndef GL_FRAMEBUFFER_RENDERABLE
+#define GL_FRAMEBUFFER_RENDERABLE         0x8289
+#endif
+
+#ifndef GL_FULL_SUPPORT
+#define GL_FULL_SUPPORT                   0x82B7
+#endif
+
+void tst_QOpenGL::fboRenderingRGB30()
+{
+#if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(__x86_64__)
+    QSKIP("QTBUG-22617");
+#endif
+
+    QFETCH(int, surfaceClass);
+    QScopedPointer<QSurface> surface(createSurface(surfaceClass));
+
+    QOpenGLContext ctx;
+    QVERIFY(ctx.create());
+
+    QVERIFY(ctx.makeCurrent(surface.data()));
+
+    if (!QOpenGLFramebufferObject::hasOpenGLFramebufferObjects())
+        QSKIP("QOpenGLFramebufferObject not supported on this platform");
+
+    if (ctx.format().majorVersion() < 3)
+        QSKIP("An internal RGB30_A2 format is not guaranteed on this platform");
+
+#if !defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)
+    // NVidia currently only supports RGB30 and RGB30_A2 in their Quadro drivers,
+    // but they do provide an extension for querying the support. We use the query
+    // in case they implement the required formats later.
+    if (!ctx.isOpenGLES() && ctx.format().majorVersion() >= 4) {
+        GLint value = -1;
+        QOpenGLFunctions_4_2_Core* vFuncs = ctx.versionFunctions<QOpenGLFunctions_4_2_Core>();
+        if (vFuncs && vFuncs->initializeOpenGLFunctions()) {
+            vFuncs->glGetInternalformativ(GL_TEXTURE_2D, GL_RGB10_A2, GL_FRAMEBUFFER_RENDERABLE, 1, &value);
+            if (value != GL_FULL_SUPPORT)
+                QSKIP("The required RGB30_A2 format is not supported by this driver");
+        }
+    }
+#endif
+
+    // No multisample with combined depth/stencil attachment:
+    QOpenGLFramebufferObjectFormat fboFormat;
+    fboFormat.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
+    fboFormat.setInternalTextureFormat(GL_RGB10_A2);
+
+    // Uncomplicate things by using POT:
+    const QSize size(256, 128);
+    QOpenGLFramebufferObject fbo(size, fboFormat);
+
+    if (fbo.attachment() != QOpenGLFramebufferObject::CombinedDepthStencil)
+        QSKIP("FBOs missing combined depth~stencil support");
+
+    QVERIFY(fbo.bind());
+
+    QPainter fboPainter;
+    QOpenGLPaintDevice device(fbo.width(), fbo.height());
+    bool painterBegun = fboPainter.begin(&device);
+    QVERIFY(painterBegun);
+
+    qt_opengl_draw_test_pattern(&fboPainter, fbo.width(), fbo.height());
+
+    fboPainter.end();
+
+    QImage fb = fbo.toImage();
+    QCOMPARE(fb.format(), QImage::Format_A2BGR30_Premultiplied);
+    QCOMPARE(fb.size(), size);
+
+    qt_opengl_check_test_pattern(fb);
+
+    // Check rendering can handle color values below 1/256.
+    fboPainter.begin(&device);
+    fboPainter.fillRect(QRect(0, 0, 256, 128), QColor::fromRgbF(1.0/512, 1.0/512, 1.0/512));
+    fboPainter.end();
+    fb = fbo.toImage();
+    uint pixel = ((uint*)fb.bits())[0];
+    QVERIFY((pixel & 0x3f) > 0);
+    QVERIFY(((pixel >> 10) & 0x3f) > 0);
+    QVERIFY(((pixel >> 20) & 0x3f) > 0);
+
+    pixel = (3U << 30) | (2U << 20) | (2U << 10) | 2U;
+    fb.fill(pixel);
+
+    fboPainter.begin(&device);
+    fboPainter.setCompositionMode(QPainter::CompositionMode_Source);
+    fboPainter.drawImage(0, 0, fb);
+    fboPainter.end();
+    fb = fbo.toImage();
+    pixel = ((uint*)fb.bits())[0];
+    QVERIFY((pixel & 0x3f) > 0);
+    QVERIFY(((pixel >> 10) & 0x3f) > 0);
+    QVERIFY(((pixel >> 20) & 0x3f) > 0);
 }
 
 void tst_QOpenGL::fboHandleNulledAfterContextDestroyed()

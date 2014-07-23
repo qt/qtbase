@@ -104,8 +104,16 @@ QT_BEGIN_NAMESPACE
 #define GL_RGB8                           0x8051
 #endif
 
+#ifndef GL_RGB10
+#define GL_RGB10                          0x8052
+#endif
+
 #ifndef GL_RGBA8
 #define GL_RGBA8                          0x8058
+#endif
+
+#ifndef GL_RGB10_A2
+#define GL_RGB10_A2                       0x8059
 #endif
 
 #ifndef GL_BGRA
@@ -114,6 +122,10 @@ QT_BEGIN_NAMESPACE
 
 #ifndef GL_UNSIGNED_INT_8_8_8_8_REV
 #define GL_UNSIGNED_INT_8_8_8_8_REV       0x8367
+#endif
+
+#ifndef GL_UNSIGNED_INT_2_10_10_10_REV
+#define GL_UNSIGNED_INT_2_10_10_10_REV    0x8368
 #endif
 
 
@@ -539,8 +551,12 @@ void QOpenGLFramebufferObjectPrivate::initTexture(GLenum target, GLenum internal
     funcs.glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     funcs.glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
+    GLuint pixelType = GL_UNSIGNED_BYTE;
+    if (internal_format == GL_RGB10_A2 || internal_format == GL_RGB10)
+        pixelType = GL_UNSIGNED_INT_2_10_10_10_REV;
+
     funcs.glTexImage2D(target, 0, internal_format, size.width(), size.height(), 0,
-                       GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+                       GL_RGBA, pixelType, NULL);
     if (mipmap) {
         int width = size.width();
         int height = size.height();
@@ -550,7 +566,7 @@ void QOpenGLFramebufferObjectPrivate::initTexture(GLenum target, GLenum internal
             height = qMax(1, height >> 1);
             ++level;
             funcs.glTexImage2D(target, level, internal_format, width, height, 0,
-                               GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+                               GL_RGBA, pixelType, NULL);
         }
     }
     funcs.glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
@@ -1142,6 +1158,14 @@ static inline QImage qt_gl_read_framebuffer_rgba8(const QSize &size, bool includ
     return rgbaImage;
 }
 
+static inline QImage qt_gl_read_framebuffer_rgb10a2(const QSize &size, bool include_alpha, QOpenGLContext *context)
+{
+    // We assume OpenGL 1.2+ or ES 3.0+ here.
+    QImage img(size, include_alpha ? QImage::Format_A2BGR30_Premultiplied : QImage::Format_BGR30);
+    context->functions()->glReadPixels(0, 0, size.width(), size.height(), GL_RGBA, GL_UNSIGNED_INT_2_10_10_10_REV, img.bits());
+    return img;
+}
+
 static QImage qt_gl_read_framebuffer(const QSize &size, GLenum internal_format, bool include_alpha, bool flip)
 {
     QOpenGLContext *ctx = QOpenGLContext::currentContext();
@@ -1152,6 +1176,10 @@ static QImage qt_gl_read_framebuffer(const QSize &size, GLenum internal_format, 
     case GL_RGB:
     case GL_RGB8:
         return qt_gl_read_framebuffer_rgba8(size, false, ctx).mirrored(false, flip);
+    case GL_RGB10:
+        return qt_gl_read_framebuffer_rgb10a2(size, false, ctx).mirrored(false, flip);
+    case GL_RGB10_A2:
+        return qt_gl_read_framebuffer_rgb10a2(size, include_alpha, ctx).mirrored(false, flip);
     case GL_RGBA:
     case GL_RGBA8:
     default:
@@ -1177,7 +1205,8 @@ Q_GUI_EXPORT QImage qt_gl_read_framebuffer(const QSize &size, bool alpha_format,
     of QOpenGLPaintDevice::paintFlipped().
 
     Will try to return a premultiplied ARBG32 or RGB32 image. Since 5.2 it will fall back to
-    a premultiplied RGBA8888 or RGBx8888 image when reading to ARGB32 is not supported.
+    a premultiplied RGBA8888 or RGBx8888 image when reading to ARGB32 is not supported. Since 5.4 an
+    A2BGR30 image is returned if the internal format is RGB10_A2.
 
     For multisampled framebuffer objects the samples are resolved using the
     \c{GL_EXT_framebuffer_blit} extension. If the extension is not available, the contents
