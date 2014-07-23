@@ -195,6 +195,7 @@ public:
     void drag();
 #endif
     void _q_textChanged(const QString &);
+    void _q_clearButtonClicked();
 
     int leftTextMargin; // use effectiveLeftTextMargin() in case of icon.
     int topTextMargin;

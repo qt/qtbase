@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -261,6 +261,7 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_selectionChanged())
     Q_PRIVATE_SLOT(d_func(), void _q_updateNeeded(const QRect &))
     Q_PRIVATE_SLOT(d_func(), void _q_textChanged(const QString &))
+    Q_PRIVATE_SLOT(d_func(), void _q_clearButtonClicked())
 };
 
 #endif // QT_NO_LINEEDIT

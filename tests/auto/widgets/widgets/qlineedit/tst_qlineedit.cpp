@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -4185,8 +4185,14 @@ void tst_QLineEdit::clearButton()
     QTRY_COMPARE(filterModel->rowCount(), 2); // matches 'aa', 'ab'
     QTest::keyClick(filterLineEdit, 'b');
     QTRY_COMPARE(filterModel->rowCount(), 1); // matches 'ab'
-    QTest::mouseClick(clearButton, Qt::LeftButton, 0, QRect(QPoint(0, 0), clearButton->size()).center());
+    QSignalSpy spyEdited(filterLineEdit, &QLineEdit::textEdited);
+    const QPoint clearButtonCenterPos = QRect(QPoint(0, 0), clearButton->size()).center();
+    QTest::mouseClick(clearButton, Qt::LeftButton, 0, clearButtonCenterPos);
+    QCOMPARE(spyEdited.count(), 1);
+    QTest::mouseClick(clearButton, Qt::LeftButton, 0, clearButtonCenterPos);
     QTRY_COMPARE(filterModel->rowCount(), 3);
+    QCoreApplication::processEvents();
+    QCOMPARE(spyEdited.count(), 1);
 
     filterLineEdit->setReadOnly(true); // QTBUG-34315
     QVERIFY(!clearButton->isEnabled());

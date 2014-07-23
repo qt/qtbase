@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -373,6 +373,15 @@ void QLineEditPrivate::_q_textChanged(const QString &text)
     }
 }
 
+void QLineEditPrivate::_q_clearButtonClicked()
+{
+    Q_Q(QLineEdit);
+    if (!q->text().isEmpty()) {
+        q->clear();
+        emit q->textEdited(QString());
+    }
+}
+
 QSize QLineEditPrivate::iconSize() const
 {
     if (!m_iconSize.isValid()) // This might require style-specific handling (pixel metric).
@@ -448,7 +457,7 @@ QWidget *QLineEditPrivate::addAction(QAction *newAction, QAction *before, QLineE
         toolButton->setIcon(newAction->icon());
         toolButton->setOpacity(lastTextSize > 0 || !(flags & SideWidgetFadeInWithText) ? 1 : 0);
         if (flags & SideWidgetClearButton)
-            QObject::connect(toolButton, SIGNAL(clicked()), q, SLOT(clear()));
+            QObject::connect(toolButton, SIGNAL(clicked()), q, SLOT(_q_clearButtonClicked()));
         toolButton->setDefaultAction(newAction);
         w = toolButton;
     }
