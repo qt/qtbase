@@ -141,7 +141,6 @@ clean::
 	-del $(OBJS)
 	-del qmake_pch.obj
 	-del qmake_pch.pch
-	-del qsystemlibrary.obj
 	-del qmake.pdb
 	-del qmake.ilk
 	-del qmake.tds
