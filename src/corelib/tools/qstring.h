@@ -724,7 +724,6 @@ private:
 
     void reallocData(uint alloc, bool grow = false);
     void expand(int i);
-    void updateProperties() const;
     QString multiArg(int numArgs, const QString **args) const;
     static int compare_helper(const QChar *data1, int length1,
                               const QChar *data2, int length2,
