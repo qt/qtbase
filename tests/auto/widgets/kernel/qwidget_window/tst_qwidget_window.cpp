@@ -61,7 +61,7 @@ static inline void setFrameless(QWidget *w)
     w->setWindowFlags(flags);
 }
 
-class tst_QWidget_window : public QWidget
+class tst_QWidget_window : public QObject
 {
     Q_OBJECT
 
@@ -71,6 +71,7 @@ public:
 public slots:
     void initTestCase();
     void cleanupTestCase();
+    void cleanup();
 
 private slots:
     void tst_min_max_size();
@@ -104,6 +105,11 @@ void tst_QWidget_window::initTestCase()
 
 void tst_QWidget_window::cleanupTestCase()
 {
+}
+
+void tst_QWidget_window::cleanup()
+{
+    QVERIFY(QApplication::topLevelWidgets().isEmpty());
 }
 
 /* Test if the maximum/minimum size constraints

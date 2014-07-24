@@ -260,6 +260,7 @@ void tst_QApplication::cleanup()
 {
 // TODO: Add cleanup code here.
 // This will be executed immediately after each test is run.
+    QVERIFY(QApplication::topLevelWidgets().isEmpty());
 }
 
 void tst_QApplication::staticSetup()

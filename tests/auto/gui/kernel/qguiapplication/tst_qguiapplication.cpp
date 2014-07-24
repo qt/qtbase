@@ -64,6 +64,7 @@ class tst_QGuiApplication: public tst_QCoreApplication
     Q_OBJECT
 
 private slots:
+    void cleanup();
     void displayName();
     void firstWindowTitle();
     void windowIcon();
@@ -79,6 +80,11 @@ private slots:
     void genericPluginsAndWindowSystemEvents();
     void layoutDirection();
 };
+
+void tst_QGuiApplication::cleanup()
+{
+    QVERIFY(QGuiApplication::allWindows().isEmpty());
+}
 
 void tst_QGuiApplication::displayName()
 {

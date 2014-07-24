@@ -101,10 +101,16 @@ private slots:
         touchDevice->setType(QTouchDevice::TouchScreen);
         QWindowSystemInterface::registerTouchDevice(touchDevice);
     }
+    void cleanup();
 
 private:
     QTouchDevice *touchDevice;
 };
+
+void tst_QWindow::cleanup()
+{
+    QVERIFY(QGuiApplication::allWindows().isEmpty());
+}
 
 void tst_QWindow::mapGlobal()
 {
