@@ -1305,6 +1305,7 @@ QFont::StyleHint QFont::styleHint() const
     \value PreferOutline prefers outline fonts (as opposed to bitmap fonts).
     \value ForceOutline forces the use of outline fonts.
     \value NoAntialias don't antialias the fonts.
+    \value NoSubpixelAntialias avoid subpixel antialiasing on the fonts if possible.
     \value PreferAntialias antialias if possible.
     \value OpenGLCompatible forces the use of OpenGL compatible
            fonts.

@@ -83,6 +83,7 @@ public:
         NoAntialias         = 0x0100,
         OpenGLCompatible    = 0x0200,
         ForceIntegerMetrics = 0x0400,
+        NoSubpixelAntialias = 0x0800,
         NoFontMerging       = 0x8000
     };
 

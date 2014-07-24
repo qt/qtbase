@@ -1520,13 +1520,15 @@ LOGFONT QWindowsFontDatabase::fontDefToLOGFONT(const QFontDef &request)
 #endif
 
     if (request.styleStrategy & QFont::PreferAntialias) {
-        if (QSysInfo::WindowsVersion >= QSysInfo::WV_XP) {
+        if (QSysInfo::WindowsVersion >= QSysInfo::WV_XP && !(request.styleStrategy & QFont::NoSubpixelAntialias)) {
             qual = CLEARTYPE_QUALITY;
         } else {
             qual = ANTIALIASED_QUALITY;
         }
     } else if (request.styleStrategy & QFont::NoAntialias) {
         qual = NONANTIALIASED_QUALITY;
+    } else if ((request.styleStrategy & QFont::NoSubpixelAntialias) && sharedFontData()->clearTypeEnabled) {
+        qual = ANTIALIASED_QUALITY;
     }
 
     lf.lfQuality        = qual;

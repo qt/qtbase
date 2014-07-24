@@ -1084,6 +1084,10 @@ void QCoreGraphicsPaintEngine::drawTextItem(const QPointF &pos, const QTextItem 
     if (textAA != lineAA)
         CGContextSetShouldAntialias(d->hd, textAA);
 
+    const bool smoothing = textAA && !(fe->fontDef.styleStrategy & QFont::NoSubpixelAntialias);
+    if (d->disabledSmoothFonts == smoothing)
+        CGContextSetShouldSmoothFonts(d->hd, smoothing);
+
     if (ti.glyphs.numGlyphs) {
         switch (fe->type()) {
         case QFontEngine::Mac:
@@ -1099,6 +1103,9 @@ void QCoreGraphicsPaintEngine::drawTextItem(const QPointF &pos, const QTextItem 
 
     if (textAA != lineAA)
         CGContextSetShouldAntialias(d->hd, !textAA);
+
+    if (smoothing == d->disabledSmoothFonts)
+        CGContextSetShouldSmoothFonts(d->hd, !d->disabledSmoothFonts);
 
     updatePen(oldPen);
     updateBrush(oldBrush, oldBrushOrigin);

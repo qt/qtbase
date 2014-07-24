@@ -633,7 +633,9 @@ QFontEngine *QFontconfigDatabase::fontEngine(const QFontDef &f, void *usrPtr)
         }
 
         if (antialias) {
-            QFontEngineFT::SubpixelAntialiasingType subpixelType = subpixelTypeFromMatch(match);
+            QFontEngineFT::SubpixelAntialiasingType subpixelType = QFontEngineFT::Subpixel_None;
+            if (!(f.styleStrategy & QFont::NoSubpixelAntialias))
+                subpixelType = subpixelTypeFromMatch(match);
             engine->subpixelType = subpixelType;
 
             format = (subpixelType == QFontEngineFT::Subpixel_None)
