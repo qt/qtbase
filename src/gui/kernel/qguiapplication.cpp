@@ -1708,7 +1708,7 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
     QPointF localPoint = e->localPos;
     QPointF globalPoint = e->globalPos;
 
-    if (e->nullWindow) {
+    if (e->nullWindow()) {
         window = QGuiApplication::topLevelAt(globalPoint.toPoint());
         if (window) {
             QPointF delta = globalPoint - globalPoint.toPoint();
@@ -1761,7 +1761,7 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
     ev.setTimestamp(e->timestamp);
     setMouseEventSource(&ev, e->source);
 #ifndef QT_NO_CURSOR
-    if (!e->synthetic) {
+    if (!e->synthetic()) {
         if (const QScreen *screen = window->screen())
             if (QPlatformCursor *cursor = screen->handle()->cursor())
                 cursor->pointerEvent(ev);
@@ -1779,7 +1779,7 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
     }
 
     QGuiApplication::sendSpontaneousEvent(window, &ev);
-    if (!e->synthetic && !ev.isAccepted()
+    if (!e->synthetic() && !ev.isAccepted()
         && !frameStrut
         && qApp->testAttribute(Qt::AA_SynthesizeTouchForUnhandledMouseEvents)) {
         if (!m_fakeTouchDevice) {
@@ -1810,12 +1810,12 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
         QList<QTouchEvent::TouchPoint> touchPoints = QWindowSystemInterfacePrivate::convertTouchPoints(points, &type);
 
         QWindowSystemInterfacePrivate::TouchEvent fake(window, e->timestamp, type, m_fakeTouchDevice, touchPoints, e->modifiers);
-        fake.synthetic = true;
+        fake.flags |= QWindowSystemInterfacePrivate::WindowSystemEvent::Synthetic;
         processTouchEvent(&fake);
     }
     if (doubleClick) {
         mousePressButton = Qt::NoButton;
-        if (!e->window.isNull() || e->nullWindow) { // QTBUG-36364, check if window closed in response to press
+        if (!e->window.isNull() || e->nullWindow()) { // QTBUG-36364, check if window closed in response to press
             const QEvent::Type doubleClickType = frameStrut ? QEvent::NonClientAreaMouseButtonDblClick : QEvent::MouseButtonDblClick;
             QMouseEvent dblClickEvent(doubleClickType, localPoint, localPoint, globalPoint,
                                       button, buttons, e->modifiers);
@@ -1833,7 +1833,7 @@ void QGuiApplicationPrivate::processWheelEvent(QWindowSystemInterfacePrivate::Wh
     QPointF globalPoint = e->globalPos;
     QPointF localPoint = e->localPos;
 
-    if (e->nullWindow) {
+    if (e->nullWindow()) {
         window = QGuiApplication::topLevelAt(globalPoint.toPoint());
         if (window) {
             QPointF delta = globalPoint - globalPoint.toPoint();
@@ -1864,7 +1864,7 @@ void QGuiApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyE
 {
     QWindow *window = e->window.data();
     modifier_buttons = e->modifiers;
-    if (e->nullWindow
+    if (e->nullWindow()
 #if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
            || e->key == Qt::Key_Back || e->key == Qt::Key_Menu
 #endif
@@ -2105,7 +2105,7 @@ void QGuiApplicationPrivate::processTabletEvent(QWindowSystemInterfacePrivate::T
     // subsequent events up to the release are delivered to that same window.
     // If window is given, just send to that.
     if (type == QEvent::TabletPress) {
-        if (e->nullWindow) {
+        if (e->nullWindow()) {
             window = QGuiApplication::topLevelAt(e->global.toPoint());
             localValid = false;
         }
@@ -2113,7 +2113,7 @@ void QGuiApplicationPrivate::processTabletEvent(QWindowSystemInterfacePrivate::T
             return;
         tabletPressTarget = window;
     } else {
-        if (e->nullWindow) {
+        if (e->nullWindow()) {
             window = tabletPressTarget;
             localValid = false;
         }
@@ -2247,7 +2247,7 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
             touchEvent.setWindow(*winIt);
             QGuiApplication::sendSpontaneousEvent(*winIt, &touchEvent);
         }
-        if (!self->synthesizedMousePoints.isEmpty() && !e->synthetic) {
+        if (!self->synthesizedMousePoints.isEmpty() && !e->synthetic()) {
             for (QHash<QWindow *, SynthesizedMouseData>::const_iterator synthIt = self->synthesizedMousePoints.constBegin(),
                  synthItEnd = self->synthesizedMousePoints.constEnd(); synthIt != synthItEnd; ++synthIt) {
                 if (!synthIt->window)
@@ -2259,7 +2259,7 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
                                                                Qt::NoButton,
                                                                e->modifiers,
                                                                Qt::MouseEventSynthesizedByQt);
-                fake.synthetic = true;
+                fake.flags |= QWindowSystemInterfacePrivate::WindowSystemEvent::Synthetic;
                 processMouseEvent(&fake);
             }
             self->synthesizedMousePoints.clear();
@@ -2438,7 +2438,7 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
         }
 
         QGuiApplication::sendSpontaneousEvent(w, &touchEvent);
-        if (!e->synthetic && !touchEvent.isAccepted() && synthesizeMouseFromTouchEventsEnabled()) {
+        if (!e->synthetic() && !touchEvent.isAccepted() && synthesizeMouseFromTouchEventsEnabled()) {
             // exclude touchpads as those generate their own mouse events
             if (touchEvent.device()->type() != QTouchDevice::TouchPad) {
                 Qt::MouseButtons b = eventType == QEvent::TouchEnd ? Qt::NoButton : Qt::LeftButton;
@@ -2459,7 +2459,7 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
                                                                        touchPoint.pos(),
                                                                        touchPoint.screenPos(),
                                                                        b, e->modifiers);
-                        fake.synthetic = true;
+                        fake.flags |= QWindowSystemInterfacePrivate::WindowSystemEvent::Synthetic;
                         processMouseEvent(&fake);
                         break;
                     }

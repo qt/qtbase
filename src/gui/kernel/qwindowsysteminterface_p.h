@@ -101,11 +101,20 @@ public:
 
     class WindowSystemEvent {
     public:
+        enum {
+            Synthetic = 0x1,
+            NullWindow = 0x2
+        };
+
         explicit WindowSystemEvent(EventType t)
-            : type(t), synthetic(false) { }
+            : type(t), flags(0) { }
         virtual ~WindowSystemEvent() { }
+
+        bool synthetic() const  { return flags & Synthetic; }
+        bool nullWindow() const { return flags & NullWindow; }
+
         EventType type;
-        bool synthetic;
+        int flags;
     };
 
     class CloseEvent : public WindowSystemEvent {
@@ -194,9 +203,12 @@ public:
     class UserEvent : public WindowSystemEvent {
     public:
         UserEvent(QWindow * w, ulong time, EventType t)
-            : WindowSystemEvent(t), window(w), nullWindow(w == 0), timestamp(time) { }
+            : WindowSystemEvent(t), window(w), timestamp(time)
+        {
+            if (!w)
+                flags |= NullWindow;
+        }
         QPointer<QWindow> window;
-        bool nullWindow;
         unsigned long timestamp;
     };
 
