@@ -1078,6 +1078,17 @@ bool QProcessPrivate::_q_processDied()
         processError = QProcess::Crashed;
         q->setErrorString(QProcess::tr("Process crashed"));
         emit q->error(processError);
+    } else {
+#ifdef QPROCESS_USE_SPAWN
+        // if we're using posix_spawn, waitForStarted always succeeds.
+        // POSIX documents that the sub-process launched by posix_spawn will exit with code
+        // 127 if anything prevents the target program from starting.
+        // http://pubs.opengroup.org/onlinepubs/009695399/functions/posix_spawn.html
+        if (exitStatus == QProcess::NormalExit && exitCode == 127) {
+            processError = QProcess::FailedToStart;
+            q->setErrorString(QProcess::tr("Process failed to start (spawned process exited with code 127)"));
+        }
+#endif
     }
 
     bool wasRunning = (processState == QProcess::Running);
@@ -1753,6 +1764,9 @@ QProcessEnvironment QProcess::processEnvironment() const
 
     If msecs is -1, this function will not time out.
 
+    \note On some UNIX operating systems, this function may return true but
+    the process may later report a QProcess::FailedToStart error.
+
     \sa started(), waitForReadyRead(), waitForBytesWritten(), waitForFinished()
 */
 bool QProcess::waitForStarted(int msecs)
@@ -2347,7 +2361,7 @@ int QProcess::execute(const QString &program, const QStringList &arguments)
     QProcess process;
     process.setReadChannelMode(ForwardedChannels);
     process.start(program, arguments);
-    if (!process.waitForFinished(-1))
+    if (!process.waitForFinished(-1) || process.error() == FailedToStart)
         return -2;
     return process.exitStatus() == QProcess::NormalExit ? process.exitCode() : -1;
 }
@@ -2370,7 +2384,7 @@ int QProcess::execute(const QString &command)
     QProcess process;
     process.setReadChannelMode(ForwardedChannels);
     process.start(command);
-    if (!process.waitForFinished(-1))
+    if (!process.waitForFinished(-1) || process.error() == FailedToStart)
         return -2;
     return process.exitStatus() == QProcess::NormalExit ? process.exitCode() : -1;
 }

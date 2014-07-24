@@ -317,9 +317,6 @@ void tst_QProcess::execute()
 {
     QCOMPARE(QProcess::execute("testProcessNormal/testProcessNormal",
                                QStringList() << "arg1" << "arg2"), 0);
-#ifdef QPROCESS_USE_SPAWN
-    QEXPECT_FAIL("", "QProcess cannot detect failure to start when using posix_spawn()", Continue);
-#endif
     QCOMPARE(QProcess::execute("nonexistingexe"), -2);
 }
 
@@ -1527,6 +1524,11 @@ void tst_QProcess::nativeArguments()
 void tst_QProcess::exitCodeTest()
 {
     for (int i = 0; i < 255; ++i) {
+#ifdef QPROCESS_USE_SPAWN
+        // POSIX reserves exit code 127 when using posix_spawn
+        if (i == 127)
+            continue;
+#endif
         QProcess process;
         process.start("testExitCodes/testExitCodes " + QString::number(i));
         QVERIFY(process.waitForFinished(5000));
