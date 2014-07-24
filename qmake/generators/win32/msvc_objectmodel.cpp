@@ -916,6 +916,8 @@ bool VCCLCompilerTool::parseOption(const char* option)
                     ForceConformanceInForLoopScope = ((*c) == '-' ? _False : _True);
                 else if(fourth == 'w')
                     TreatWChar_tAsBuiltInType = ((*c) == '-' ? _False : _True);
+                else if (config->CompilerVersion >= NET2013 && strncmp(option + 4, "strictStrings", 13) == 0)
+                    AdditionalOptions += option;
                 else
                     found = false;
             } else {
