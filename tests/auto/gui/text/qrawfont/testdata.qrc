@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>testfont_bold_italic.ttf</file>
+        <file>testfont.ttf</file>
+    </qresource>
+</RCC>

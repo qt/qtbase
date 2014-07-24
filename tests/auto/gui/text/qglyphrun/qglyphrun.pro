@@ -8,8 +8,14 @@ linux: CONFIG += insignificant_test
 SOURCES += \
     tst_qglyphrun.cpp
 
-wince* {
-    DEFINES += SRCDIR=\\\"\\\"
-} else {
-    DEFINES += SRCDIR=\\\"$$PWD/\\\"
+android {
+    RESOURCES += \
+        testdata.qrc
 }
+
+wince* {
+    additionalFiles.files = test.ttf
+    additionalFiles.path = .
+    DEPLOYMENT += additionalFiles
+}
+

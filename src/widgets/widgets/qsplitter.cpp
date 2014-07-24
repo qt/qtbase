@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -1224,7 +1224,9 @@ void QSplitter::childEvent(QChildEvent *c)
         return;
     }
     QWidget *w = static_cast<QWidget*>(c->child());
-    if (c->added() && !d->blockChildAdd && !w->isWindow() && !d->findWidget(w)) {
+    if (w->isWindow())
+        return;
+    if (c->added() && !d->blockChildAdd && !d->findWidget(w)) {
         d->insertWidget_helper(d->list.count(), w, false);
     } else if (c->polished() && !d->blockChildAdd) {
         if (isVisible() && !(w->isHidden() && w->testAttribute(Qt::WA_WState_ExplicitShowHide)))

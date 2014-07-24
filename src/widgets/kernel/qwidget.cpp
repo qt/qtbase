@@ -1435,7 +1435,7 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
     if (QWidget *nativeParent = q->nativeParentWidget()) {
         if (nativeParent->windowHandle()) {
             if (flags & Qt::Window) {
-                win->setTransientParent(nativeParent->windowHandle());
+                win->setTransientParent(nativeParent->window()->windowHandle());
                 win->setParent(0);
             } else {
                 win->setTransientParent(0);

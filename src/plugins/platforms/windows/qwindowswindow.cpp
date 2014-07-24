@@ -1709,8 +1709,11 @@ void QWindowsWindow::setWindowState_sys(Qt::WindowState newState)
             if (!wasSync)
                 clearFlag(SynchronousGeometryChangeEvent);
             // preserve maximized state
-            if (visible)
+            if (visible) {
+                setFlag(WithinMaximize);
                 ShowWindow(m_data.hwnd, (newState == Qt::WindowMaximized) ? SW_MAXIMIZE : SW_SHOWNOACTIVATE);
+                clearFlag(WithinMaximize);
+            }
             m_savedStyle = 0;
             m_savedFrameGeometry = QRect();
         }

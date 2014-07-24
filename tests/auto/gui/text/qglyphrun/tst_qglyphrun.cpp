@@ -94,7 +94,7 @@ void tst_QGlyphRun::initTestCase()
 {
     m_testFont_ok = false;
 
-    m_testFontId = QFontDatabase::addApplicationFont(SRCDIR "test.ttf");
+    m_testFontId = QFontDatabase::addApplicationFont(QFINDTESTDATA("test.ttf"));
     QVERIFY(m_testFontId >= 0);
 
     m_testFont = QFont("QtsSpecialTestFont");
