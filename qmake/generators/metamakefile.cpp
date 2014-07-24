@@ -444,7 +444,11 @@ MetaMakefileGenerator::createMakefileGenerator(QMakeProject *proj, bool noIO)
     } else if(gen == "MINGW") {
         mkfile = new MingwMakefileGenerator;
     } else if(gen == "PROJECTBUILDER" || gen == "XCODE") {
+#ifdef Q_CC_MSVC
+        fprintf(stderr, "Generating Xcode projects is not supported with an MSVC build of Qt.\n");
+#else
         mkfile = new ProjectBuilderMakefileGenerator;
+#endif
     } else if(gen == "MSVC.NET") {
         if (proj->first("TEMPLATE").startsWith("vc"))
             mkfile = new VcprojGenerator;

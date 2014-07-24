@@ -61,7 +61,7 @@ OBJS        = project.obj main.obj ioutils.obj proitems.obj qmakevfs.obj \
               qmakeglobals.obj qmakeparser.obj qmakeevaluator.obj qmakebuiltins.obj \
               makefile.obj unixmake.obj unixmake2.obj mingw_make.obj \
               option.obj winmakefile.obj projectgenerator.obj property.obj meta.obj \
-              makefiledeps.obj metamakefile.obj xmloutput.obj pbuilder_pbx.obj \
+              makefiledeps.obj metamakefile.obj xmloutput.obj \
               msvc_nmake.obj msvc_vcproj.obj msvc_vcxproj.obj \
               msvc_objectmodel.obj msbuild_objectmodel.obj registry.obj \
               gbuild.obj cesdkhandler.obj
