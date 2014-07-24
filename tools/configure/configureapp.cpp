@@ -2569,8 +2569,9 @@ bool Configure::verifyConfiguration()
     }
 
     if (dictionary["DYNAMICGL"] == "yes") {
-        if (dictionary["OPENGL_ES_2"] == "yes" || dictionary["ANGLE"] != "no") {
-            cout << "ERROR: Dynamic OpenGL cannot be used together with native Angle (GLES2) builds." << endl;
+        // Note that d3d11 is still allowed for ANGLE, hence the check for == "yes".
+        if (dictionary["OPENGL_ES_2"] == "yes" || dictionary["ANGLE"] == "yes") {
+            cout << "ERROR: Dynamic OpenGL cannot be used with -angle." << endl;
             dictionary[ "DONE" ] = "error";
         }
     }
@@ -2656,8 +2657,11 @@ void Configure::generateOutputVars()
     }
 
     // Dynamic OpenGL loading ---------------------------------------
-    if (dictionary[ "DYNAMICGL" ] != "no")
+    if (dictionary[ "DYNAMICGL" ] != "no") {
         qtConfig += "dynamicgl";
+        if (dictionary[ "ANGLE" ] == "d3d11")
+            qmakeConfig += "angle_d3d11";
+    }
 
     // Image formates -----------------------------------------------
     if (dictionary[ "GIF" ] == "no")
