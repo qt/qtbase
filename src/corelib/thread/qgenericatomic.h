@@ -294,9 +294,9 @@ template <typename BaseClass> struct QGenericAtomicOps
     T fetchAndAndRelaxed(T &_q_value, typename QtPrivate::QEnableIf<QTypeInfo<T>::isIntegral, T>::Type operand) Q_DECL_NOTHROW
     {
         // implement fetchAndAnd on top of testAndSet
+        T tmp = BaseClass::load(_q_value);
         Q_FOREVER {
-            T tmp = BaseClass::load(_q_value);
-            if (BaseClass::testAndSetRelaxed(_q_value, tmp, T(tmp & operand)))
+            if (BaseClass::testAndSetRelaxed(_q_value, tmp, T(tmp & operand), &tmp))
                 return tmp;
         }
     }
@@ -327,9 +327,9 @@ template <typename BaseClass> struct QGenericAtomicOps
     T fetchAndOrRelaxed(T &_q_value, typename QtPrivate::QEnableIf<QTypeInfo<T>::isIntegral, T>::Type operand) Q_DECL_NOTHROW
     {
         // implement fetchAndOr on top of testAndSet
+        T tmp = BaseClass::load(_q_value);
         Q_FOREVER {
-            T tmp = BaseClass::load(_q_value);
-            if (BaseClass::testAndSetRelaxed(_q_value, tmp, T(tmp | operand)))
+            if (BaseClass::testAndSetRelaxed(_q_value, tmp, T(tmp | operand), &tmp))
                 return tmp;
         }
     }
@@ -360,9 +360,9 @@ template <typename BaseClass> struct QGenericAtomicOps
     T fetchAndXorRelaxed(T &_q_value, typename QtPrivate::QEnableIf<QTypeInfo<T>::isIntegral, T>::Type operand) Q_DECL_NOTHROW
     {
         // implement fetchAndXor on top of testAndSet
+        T tmp = BaseClass::load(_q_value);
         Q_FOREVER {
-            T tmp = BaseClass::load(_q_value);
-            if (BaseClass::testAndSetRelaxed(_q_value, tmp, T(tmp ^ operand)))
+            if (BaseClass::testAndSetRelaxed(_q_value, tmp, T(tmp ^ operand), &tmp))
                 return tmp;
         }
     }
