@@ -463,10 +463,16 @@ ProjectBuilderSources::files(QMakeProject *project) const
 {
     QStringList ret = project->values(ProKey(key)).toQStringList();
     if(key == "QMAKE_INTERNAL_INCLUDED_FILES") {
+        QString qtPrefix(QLibraryInfo::rawLocation(QLibraryInfo::PrefixPath, QLibraryInfo::EffectivePaths) + '/');
+        QString qtSrcPrefix(QLibraryInfo::rawLocation(QLibraryInfo::PrefixPath, QLibraryInfo::EffectiveSourcePaths) + '/');
+
         QStringList newret;
         for(int i = 0; i < ret.size(); ++i) {
-            if(!ret.at(i).endsWith(Option::prf_ext))
-                newret.append(ret.at(i));
+            // Don't show files "internal" to Qt in Xcode
+            if (ret.at(i).startsWith(qtPrefix) || ret.at(i).startsWith(qtSrcPrefix))
+                continue;
+
+            newret.append(ret.at(i));
         }
         ret = newret;
     }
@@ -566,6 +572,9 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
     // FIXME: Move all file resolving logic out of ProjectBuilderSources::files(), as it
     // doesn't have access to any of the information it needs to resolve relative paths.
     project->values("QMAKE_INTERNAL_INCLUDED_FILES").prepend(fileFixify(project->projectFile(), qmake_getpwd(), input_dir));
+
+    // Since we can't fileFixify inside ProjectBuilderSources::files(), we resolve the absolute paths here
+    project->values("QMAKE_INTERNAL_INCLUDED_FILES") = ProStringList(fileFixify(project->values("QMAKE_INTERNAL_INCLUDED_FILES").toQStringList(), FileFixifyAbsolute));
 
     //DUMP SOURCES
     QMap<QString, ProStringList> groups;
