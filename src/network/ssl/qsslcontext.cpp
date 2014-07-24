@@ -315,11 +315,13 @@ init_context:
     q_SSL_CTX_set_tmp_dh(sslContext->ctx, dh);
     q_DH_free(dh);
 
+#ifndef OPENSSL_NO_EC
     // Set temp ECDH params
     EC_KEY *ecdh = 0;
     ecdh = q_EC_KEY_new_by_curve_name(NID_X9_62_prime256v1);
     q_SSL_CTX_set_tmp_ecdh(sslContext->ctx, ecdh);
     q_EC_KEY_free(ecdh);
+#endif // OPENSSL_NO_EC
 
     return sslContext;
 }
