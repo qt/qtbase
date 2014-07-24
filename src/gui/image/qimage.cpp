@@ -1806,6 +1806,9 @@ void QImage::fill(const QColor &color)
     is the case for a 1-bit image. Note that the color table is \e not
     changed.
 
+    If the image has a premultiplied alpha channel, the image is first
+    converted to ARGB32 to be inverted and then converted back.
+
     \sa {QImage#Image Transformations}{Image Transformations}
 */
 
@@ -1820,8 +1823,15 @@ void QImage::invertPixels(InvertMode mode)
     if (!d)
         return;
 
-    if (depth() != 32) {
-        // number of used bytes pr line
+    QImage::Format originalFormat = d->format;
+    // Inverting premultiplied pixels would produce invalid image data.
+    if (hasAlphaChannel() && qPixelLayouts[d->format].premultiplied) {
+        if (!d->convertInPlace(QImage::Format_ARGB32, 0))
+            *this = convertToFormat(QImage::Format_ARGB32);
+    }
+
+    if (depth() < 32) {
+        // This assumes no alpha-channel as the only formats with non-premultipled alpha are 32bit.
         int bpl = (d->width * d->depth + 7) / 8;
         int pad = d->bytes_per_line - bpl;
         uchar *sl = d->data;
@@ -1833,9 +1843,43 @@ void QImage::invertPixels(InvertMode mode)
     } else {
         quint32 *p = (quint32*)d->data;
         quint32 *end = (quint32*)(d->data + d->nbytes);
-        uint xorbits = (mode == InvertRgba) ? 0xffffffff : 0x00ffffff;
+        quint32 xorbits = 0xffffffff;
+        switch (d->format) {
+        case QImage::Format_RGBA8888:
+            if (mode == InvertRgba)
+                break;
+            // no break
+        case QImage::Format_RGBX8888:
+#if Q_BYTE_ORDER == Q_BIG_ENDIAN
+            xorbits = 0xffffff00;
+            break;
+#else
+            xorbits = 0x00ffffff;
+            break;
+#endif
+        case QImage::Format_ARGB32:
+            if (mode == InvertRgba)
+                break;
+            // no break
+        case QImage::Format_RGB32:
+            xorbits = 0x00ffffff;
+            break;
+        case QImage::Format_BGR30:
+        case QImage::Format_RGB30:
+            xorbits = 0x3fffffff;
+            break;
+        default:
+            Q_UNREACHABLE();
+            xorbits = 0;
+            break;
+        }
         while (p < end)
             *p++ ^= xorbits;
+    }
+
+    if (originalFormat != d->format) {
+        if (!d->convertInPlace(originalFormat, 0))
+            *this = convertToFormat(originalFormat);
     }
 }
 

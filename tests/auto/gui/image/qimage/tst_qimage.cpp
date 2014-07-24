@@ -178,6 +178,9 @@ private slots:
     void convertToImageFormat_data();
     void convertToImageFormat();
 
+    void invertPixelsRGB_data();
+    void invertPixelsRGB();
+
     void cleanupFunctions();
 
 private:
@@ -2585,6 +2588,7 @@ void tst_QImage::convertToImageFormat_data()
     QTest::newRow("Convert Format_RGBA8888") << QImage::Format_RGBA8888;
     QTest::newRow("Convert Format_RGBA8888_Premultiplied") << QImage::Format_RGBA8888_Premultiplied;
 }
+
 void tst_QImage::convertToImageFormat()
 {
     QFETCH(QImage::Format, image_format);
@@ -2592,6 +2596,40 @@ void tst_QImage::convertToImageFormat()
     QPixelFormat pixel_format = QImage::toPixelFormat(image_format);
     QImage::Format format = QImage::toImageFormat(pixel_format);
     QCOMPARE(format, image_format);
+}
+
+void tst_QImage::invertPixelsRGB_data()
+{
+    QTest::addColumn<QImage::Format>("image_format");
+
+    QTest::newRow("invertPixels RGB16") << QImage::Format_RGB16;
+    QTest::newRow("invertPixels RGB32") << QImage::Format_RGB32;
+    QTest::newRow("invertPixels BGR30") << QImage::Format_BGR30;
+    QTest::newRow("invertPixels RGB444") << QImage::Format_RGB444;
+    QTest::newRow("invertPixels RGB555") << QImage::Format_RGB555;
+    QTest::newRow("invertPixels RGB888") << QImage::Format_RGB888;
+
+    QTest::newRow("invertPixels ARGB32") << QImage::Format_ARGB32;
+    QTest::newRow("invertPixels ARGB32pm") << QImage::Format_ARGB32_Premultiplied;
+    QTest::newRow("invertPixels RGBA8888") << QImage::Format_RGBA8888;
+    QTest::newRow("invertPixels RGBA8888pm") << QImage::Format_RGBA8888_Premultiplied;
+    QTest::newRow("invertPixels RGBA4444pm") << QImage::Format_ARGB4444_Premultiplied;
+}
+
+void tst_QImage::invertPixelsRGB()
+{
+    QFETCH(QImage::Format, image_format);
+
+    QImage image(1, 1, image_format);
+    image.fill(QColor::fromRgb(32, 64, 96));
+    image.invertPixels();
+
+    QCOMPARE(image.format(), image_format);
+
+    uint pixel = image.pixel(0, 0);
+    QCOMPARE(qRed(pixel) >> 4, (255 - 32) >> 4);
+    QCOMPARE(qGreen(pixel) >> 4, (255 - 64) >> 4);
+    QCOMPARE(qBlue(pixel) >> 4, (255 - 96) >> 4);
 }
 
 static void cleanupFunction(void* info)
