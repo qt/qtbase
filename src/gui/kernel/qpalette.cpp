@@ -643,11 +643,22 @@ QPalette::QPalette(const QPalette &p)
 }
 
 /*!
+    \fn QPalette::QPalette(QPalette &&other)
+    \since 5.4
+
+    Move-constructs a QPalette instance, making it point at the same
+    object that \a other was pointing to.
+
+    After being moved from, you can only assign to or destroy \a other.
+    Any other operation will result in undefined behavior.
+*/
+
+/*!
     Destroys the palette.
 */
 QPalette::~QPalette()
 {
-    if(!d->ref.deref())
+    if (d && !d->ref.deref())
         delete d;
 }
 
@@ -668,7 +679,7 @@ QPalette &QPalette::operator=(const QPalette &p)
 {
     p.d->ref.ref();
     data = p.data;
-    if(!d->ref.deref())
+    if (d && !d->ref.deref())
         delete d;
     d = p.d;
     return *this;

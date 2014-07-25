@@ -70,6 +70,8 @@ public:
     ~QPalette();
     QPalette &operator=(const QPalette &palette);
 #ifdef Q_COMPILER_RVALUE_REFS
+    QPalette(QPalette &&other) Q_DECL_NOTHROW
+        : d(other.d), data(other.data) { other.d = Q_NULLPTR; }
     inline QPalette &operator=(QPalette &&other)
     {
         for_faster_swapping_dont_use = other.for_faster_swapping_dont_use;

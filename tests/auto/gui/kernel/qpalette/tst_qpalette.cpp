@@ -106,6 +106,14 @@ void tst_QPalette::moveSemantics()
     src = control; // check moved-from 'src' can still be assigned to (doesn't crash)
     QVERIFY(src.isCopyOf(dst));
     QVERIFY(src.isCopyOf(control));
+    QPalette dst2(qMove(src)); // move construction
+    QVERIFY(!src.isCopyOf(dst));
+    QVERIFY(!src.isCopyOf(dst2));
+    QVERIFY(!src.isCopyOf(control));
+    QCOMPARE(dst2, control);
+    QVERIFY(dst2.isCopyOf(dst));
+    QVERIFY(dst2.isCopyOf(control));
+    // check moved-from 'src' can still be destroyed (doesn't crash)
 #else
     QSKIP("Compiler doesn't support C++11 move semantics");
 #endif
