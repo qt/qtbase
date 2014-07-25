@@ -37,6 +37,9 @@
 #include <unicode/ucal.h>
 
 #include <qdebug.h>
+#include <qlist.h>
+
+#include <algorithm>
 
 QT_BEGIN_NAMESPACE
 
@@ -234,19 +237,21 @@ static QTimeZonePrivate::Data ucalTimeZoneTransition(UCalendar *m_ucal,
 #endif // U_ICU_VERSION_SHORT
 
 // Convert a uenum to a QList<QByteArray>
-static QSet<QByteArray> uenumToIdSet(UEnumeration *uenum)
+static QList<QByteArray> uenumToIdList(UEnumeration *uenum)
 {
-    QSet<QByteArray> set;
+    QList<QByteArray> list;
     int32_t size = 0;
     UErrorCode status = U_ZERO_ERROR;
     // TODO Perhaps use uenum_unext instead?
     QByteArray result = uenum_next(uenum, &size, &status);
     while (U_SUCCESS(status) && !result.isEmpty()) {
-        set << result;
+        list << result;
         status = U_ZERO_ERROR;
         result = uenum_next(uenum, &size, &status);
     }
-    return set;
+    std::sort(list.begin(), list.end());
+    list.erase(std::unique(list.begin(), list.end()), list.end());
+    return list;
 }
 
 // Qt wrapper around ucal_getDSTSavings()
@@ -453,41 +458,41 @@ QByteArray QIcuTimeZonePrivate::systemTimeZoneId() const
     return ucalDefaultTimeZoneId();
 }
 
-QSet<QByteArray> QIcuTimeZonePrivate::availableTimeZoneIds() const
+QList<QByteArray> QIcuTimeZonePrivate::availableTimeZoneIds() const
 {
     UErrorCode status = U_ZERO_ERROR;
     UEnumeration *uenum = ucal_openTimeZones(&status);
-    QSet<QByteArray> set;
+    QList<QByteArray> result;
     if (U_SUCCESS(status))
-        set = uenumToIdSet(uenum);
+        result = uenumToIdList(uenum);
     uenum_close(uenum);
-    return set;
+    return result;
 }
 
-QSet<QByteArray> QIcuTimeZonePrivate::availableTimeZoneIds(QLocale::Country country) const
+QList<QByteArray> QIcuTimeZonePrivate::availableTimeZoneIds(QLocale::Country country) const
 {
     QByteArray regionCode = QLocalePrivate::countryToCode(country).toUtf8();
     UErrorCode status = U_ZERO_ERROR;
     UEnumeration *uenum = ucal_openCountryTimeZones(regionCode, &status);
-    QSet<QByteArray> set;
+    QList<QByteArray> result;
     if (U_SUCCESS(status))
-        set = uenumToIdSet(uenum);
+        result = uenumToIdList(uenum);
     uenum_close(uenum);
-    return set;
+    return result;
 }
 
-QSet<QByteArray> QIcuTimeZonePrivate::availableTimeZoneIds(int offsetFromUtc) const
+QList<QByteArray> QIcuTimeZonePrivate::availableTimeZoneIds(int offsetFromUtc) const
 {
 // TODO Available directly in C++ api but not C api, from 4.8 onwards new filter method works
 #if U_ICU_VERSION_MAJOR_NUM >= 49 || (U_ICU_VERSION_MAJOR_NUM == 4 && U_ICU_VERSION_MINOR_NUM == 8)
     UErrorCode status = U_ZERO_ERROR;
     UEnumeration *uenum = ucal_openTimeZoneIDEnumeration(UCAL_ZONE_TYPE_ANY, 0,
                                                          &offsetFromUtc, &status);
-    QSet<QByteArray> set;
+    QList<QByteArray> result;
     if (U_SUCCESS(status))
-        set = uenumToIdSet(uenum);
+        result = uenumToIdList(uenum);
     uenum_close(uenum);
-    return set;
+    return result;
 #else
     return QTimeZonePrivate::availableTimeZoneIds(offsetFromUtc);
 #endif

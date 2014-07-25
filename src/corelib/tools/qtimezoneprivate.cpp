@@ -39,6 +39,8 @@
 #include <qdatastream.h>
 #include <qdebug.h>
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 
 enum {
@@ -341,36 +343,38 @@ QByteArray QTimeZonePrivate::systemTimeZoneId() const
     return QByteArray();
 }
 
-QSet<QByteArray> QTimeZonePrivate::availableTimeZoneIds() const
+QList<QByteArray> QTimeZonePrivate::availableTimeZoneIds() const
 {
-    return QSet<QByteArray>();
+    return QList<QByteArray>();
 }
 
-QSet<QByteArray> QTimeZonePrivate::availableTimeZoneIds(QLocale::Country country) const
+QList<QByteArray> QTimeZonePrivate::availableTimeZoneIds(QLocale::Country country) const
 {
     // Default fall-back mode, use the zoneTable to find Region of know Zones
-    QSet<QByteArray> regionSet;
+    QList<QByteArray> regions;
 
     // First get all Zones in the Zones table belonging to the Region
     for (int i = 0; i < zoneDataTableSize; ++i) {
         if (zoneData(i)->country == country)
-            regionSet += ianaId(zoneData(i)).split(' ').toSet();
+            regions += ianaId(zoneData(i)).split(' ');
     }
+
+    std::sort(regions.begin(), regions.end());
+    regions.erase(std::unique(regions.begin(), regions.end()), regions.end());
 
     // Then select just those that are available
-    QSet<QByteArray> set;
-    foreach (const QByteArray &ianaId, availableTimeZoneIds()) {
-        if (regionSet.contains(ianaId))
-            set << ianaId;
-    }
-
-    return set;
+    const QList<QByteArray> all = availableTimeZoneIds();
+    QList<QByteArray> result;
+    result.reserve(qMin(all.size(), regions.size()));
+    std::set_intersection(all.begin(), all.end(), regions.cbegin(), regions.cend(),
+                          std::back_inserter(result));
+    return result;
 }
 
-QSet<QByteArray> QTimeZonePrivate::availableTimeZoneIds(int offsetFromUtc) const
+QList<QByteArray> QTimeZonePrivate::availableTimeZoneIds(int offsetFromUtc) const
 {
     // Default fall-back mode, use the zoneTable to find Offset of know Zones
-    QSet<QByteArray> offsetSet;
+    QList<QByteArray> offsets;
     // First get all Zones in the table using the Offset
     for (int i = 0; i < windowsDataTableSize; ++i) {
         const QWindowsData *winData = windowsData(i);
@@ -378,19 +382,21 @@ QSet<QByteArray> QTimeZonePrivate::availableTimeZoneIds(int offsetFromUtc) const
             for (int j = 0; j < zoneDataTableSize; ++j) {
                 const QZoneData *data = zoneData(j);
                 if (data->windowsIdKey == winData->windowsIdKey)
-                    offsetSet += ianaId(data).split(' ').toSet();
+                    offsets += ianaId(data).split(' ');
             }
         }
     }
 
-    // Then select just those that are available
-    QSet<QByteArray> set;
-    foreach (const QByteArray &ianaId, availableTimeZoneIds()) {
-        if (offsetSet.contains(ianaId))
-            set << ianaId;
-    }
+    std::sort(offsets.begin(), offsets.end());
+    offsets.erase(std::unique(offsets.begin(), offsets.end()), offsets.end());
 
-    return set;
+    // Then select just those that are available
+    const QList<QByteArray> all = availableTimeZoneIds();
+    QList<QByteArray> result;
+    result.reserve(qMin(all.size(), offsets.size()));
+    std::set_intersection(all.begin(), all.end(), offsets.cbegin(), offsets.cend(),
+                          std::back_inserter(result));
+    return result;
 }
 
 #ifndef QT_NO_DATASTREAM
@@ -682,31 +688,35 @@ QByteArray QUtcTimeZonePrivate::systemTimeZoneId() const
     return utcQByteArray();
 }
 
-QSet<QByteArray> QUtcTimeZonePrivate::availableTimeZoneIds() const
+QList<QByteArray> QUtcTimeZonePrivate::availableTimeZoneIds() const
 {
-    QSet<QByteArray> set;
+    QList<QByteArray> result;
     for (int i = 0; i < utcDataTableSize; ++i)
-        set << utcId(utcData(i));
-    return set;
+        result << utcId(utcData(i));
+    std::sort(result.begin(), result.end()); // ### or already sorted??
+    // ### assuming no duplicates
+    return result;
 }
 
-QSet<QByteArray> QUtcTimeZonePrivate::availableTimeZoneIds(QLocale::Country country) const
+QList<QByteArray> QUtcTimeZonePrivate::availableTimeZoneIds(QLocale::Country country) const
 {
     // If AnyCountry then is request for all non-region offset codes
     if (country == QLocale::AnyCountry)
         return availableTimeZoneIds();
-    return QSet<QByteArray>();
+    return QList<QByteArray>();
 }
 
-QSet<QByteArray> QUtcTimeZonePrivate::availableTimeZoneIds(qint32 offsetSeconds) const
+QList<QByteArray> QUtcTimeZonePrivate::availableTimeZoneIds(qint32 offsetSeconds) const
 {
-    QSet<QByteArray> set;
+    QList<QByteArray> result;
     for (int i = 0; i < utcDataTableSize; ++i) {
         const QUtcData *data = utcData(i);
         if (data->offsetFromUtc == offsetSeconds)
-            set << utcId(data);
+            result << utcId(data);
     }
-    return set;
+    std::sort(result.begin(), result.end()); // ### or already sorted??
+    // ### assuming no duplicates
+    return result;
 }
 
 #ifndef QT_NO_DATASTREAM

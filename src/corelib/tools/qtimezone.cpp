@@ -378,12 +378,10 @@ QTimeZone::QTimeZone(int offsetSeconds)
 
 QTimeZone::QTimeZone(const QByteArray &ianaId, int offsetSeconds, const QString &name,
                      const QString &abbreviation, QLocale::Country country, const QString &comment)
+    : d()
 {
-    // ianaId must be a valid ID and must not clash with the standard system names
-    if (QTimeZonePrivate::isValidId(ianaId) && !availableTimeZoneIds().contains(ianaId))
+    if (!isTimeZoneIdAvailable(ianaId))
         d = new QUtcTimeZonePrivate(ianaId, offsetSeconds, name, abbreviation, country, comment);
-    else
-        d = 0;
 }
 
 /*!
@@ -821,7 +819,20 @@ bool QTimeZone::isTimeZoneIdAvailable(const QByteArray &ianaId)
 {
     // isValidId is not strictly required, but faster to weed out invalid
     // IDs as availableTimeZoneIds() may be slow
-    return (QTimeZonePrivate::isValidId(ianaId) && (availableTimeZoneIds().contains(ianaId)));
+    if (!QTimeZonePrivate::isValidId(ianaId))
+        return false;
+    const QList<QByteArray> tzIds = availableTimeZoneIds();
+    return std::binary_search(tzIds.begin(), tzIds.end(), ianaId);
+}
+
+static QList<QByteArray> set_union(const QList<QByteArray> &l1, const QList<QByteArray> &l2)
+{
+    QList<QByteArray> result;
+    result.reserve(l1.size() + l2.size());
+    std::set_union(l1.begin(), l1.end(),
+                   l2.begin(), l2.end(),
+                   std::back_inserter(result));
+    return result;
 }
 
 /*!
@@ -832,11 +843,8 @@ bool QTimeZone::isTimeZoneIdAvailable(const QByteArray &ianaId)
 
 QList<QByteArray> QTimeZone::availableTimeZoneIds()
 {
-    QSet<QByteArray> set = QUtcTimeZonePrivate().availableTimeZoneIds()
-                           + global_tz->backend->availableTimeZoneIds();
-    QList<QByteArray> list = set.toList();
-    std::sort(list.begin(), list.end());
-    return list;
+    return set_union(QUtcTimeZonePrivate().availableTimeZoneIds(),
+                     global_tz->backend->availableTimeZoneIds());
 }
 
 /*!
@@ -852,11 +860,8 @@ QList<QByteArray> QTimeZone::availableTimeZoneIds()
 
 QList<QByteArray> QTimeZone::availableTimeZoneIds(QLocale::Country country)
 {
-    QSet<QByteArray> set = QUtcTimeZonePrivate().availableTimeZoneIds(country)
-                           + global_tz->backend->availableTimeZoneIds(country);
-    QList<QByteArray> list = set.toList();
-    std::sort(list.begin(), list.end());
-    return list;
+    return set_union(QUtcTimeZonePrivate().availableTimeZoneIds(country),
+                     global_tz->backend->availableTimeZoneIds(country));
 }
 
 /*!
@@ -868,11 +873,8 @@ QList<QByteArray> QTimeZone::availableTimeZoneIds(QLocale::Country country)
 
 QList<QByteArray> QTimeZone::availableTimeZoneIds(int offsetSeconds)
 {
-    QSet<QByteArray> set = QUtcTimeZonePrivate().availableTimeZoneIds(offsetSeconds)
-                           + global_tz->backend->availableTimeZoneIds(offsetSeconds);
-    QList<QByteArray> list = set.toList();
-    std::sort(list.begin(), list.end());
-    return list;
+    return set_union(QUtcTimeZonePrivate().availableTimeZoneIds(offsetSeconds),
+                     global_tz->backend->availableTimeZoneIds(offsetSeconds));
 }
 
 /*!
