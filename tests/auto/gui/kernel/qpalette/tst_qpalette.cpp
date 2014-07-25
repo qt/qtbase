@@ -46,46 +46,11 @@
 
 class tst_QPalette : public QObject
 {
-Q_OBJECT
-
-public:
-    tst_QPalette();
-    virtual ~tst_QPalette();
-
-public slots:
-    void initTestCase();
-    void cleanupTestCase();
-    void init();
-    void cleanup();
-
-private slots:
+    Q_OBJECT
+private Q_SLOTS:
     void roleValues_data();
     void roleValues();
 };
-
-tst_QPalette::tst_QPalette()
-{
-}
-
-tst_QPalette::~tst_QPalette()
-{
-}
-
-void tst_QPalette::initTestCase()
-{
-}
-
-void tst_QPalette::cleanupTestCase()
-{
-}
-
-void tst_QPalette::init()
-{
-}
-
-void tst_QPalette::cleanup()
-{
-}
 
 void tst_QPalette::roleValues_data()
 {
