@@ -104,6 +104,7 @@ public:
     static LOGFONT fontDefToLOGFONT(const QFontDef &fontDef);
 
     static QStringList extraTryFontsForFamily(const QString &family);
+    static QString familyForStyleHint(QFont::StyleHint styleHint);
 
 private:
     void populate(const QString &family = QString());

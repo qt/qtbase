@@ -1613,40 +1613,36 @@ QStringList QWindowsFontDatabase::extraTryFontsForFamily(const QString &family)
     return result;
 }
 
+QString QWindowsFontDatabase::familyForStyleHint(QFont::StyleHint styleHint)
+{
+    switch (styleHint) {
+    case QFont::Times:
+        return QStringLiteral("Times New Roman");
+    case QFont::Courier:
+        return QStringLiteral("Courier New");
+    case QFont::Monospace:
+        return QStringLiteral("Courier New");
+    case QFont::Cursive:
+        return QStringLiteral("Comic Sans MS");
+    case QFont::Fantasy:
+        return QStringLiteral("Impact");
+    case QFont::Decorative:
+        return QStringLiteral("Old English");
+    case QFont::Helvetica:
+        return QStringLiteral("Arial");
+    case QFont::System:
+    default:
+        break;
+    }
+    return QStringLiteral("MS Shell Dlg 2");
+}
+
 QStringList QWindowsFontDatabase::fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const
 {
     QStringList result = QPlatformFontDatabase::fallbacksForFamily(family, style, styleHint, script);
     if (!result.isEmpty())
         return result;
-
-    switch (styleHint) {
-        case QFont::Times:
-            result << QString::fromLatin1("Times New Roman");
-            break;
-        case QFont::Courier:
-            result << QString::fromLatin1("Courier New");
-            break;
-        case QFont::Monospace:
-            result << QString::fromLatin1("Courier New");
-            break;
-        case QFont::Cursive:
-            result << QString::fromLatin1("Comic Sans MS");
-            break;
-        case QFont::Fantasy:
-            result << QString::fromLatin1("Impact");
-            break;
-        case QFont::Decorative:
-            result << QString::fromLatin1("Old English");
-            break;
-        case QFont::Helvetica:
-            result << QString::fromLatin1("Arial");
-            break;
-        case QFont::System:
-        default:
-            result << QString::fromLatin1("MS Shell Dlg 2");
-            break;
-    }
-
+    result.append(QWindowsFontDatabase::familyForStyleHint(styleHint));
     result.append(QWindowsFontDatabase::extraTryFontsForFamily(family));
 
     qCDebug(lcQpaFonts) << __FUNCTION__ << family << style << styleHint

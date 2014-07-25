@@ -442,30 +442,7 @@ QStringList QWindowsFontDatabaseFT::fallbacksForFamily(const QString &family, QF
     if (!result.isEmpty())
         return result;
 
-    switch (styleHint) {
-        case QFont::Times:
-            result << QString::fromLatin1("Times New Roman");
-            break;
-        case QFont::Courier:
-            result << QString::fromLatin1("Courier New");
-            break;
-        case QFont::Monospace:
-            result << QString::fromLatin1("Courier New");
-            break;
-        case QFont::Cursive:
-            result << QString::fromLatin1("Comic Sans MS");
-            break;
-        case QFont::Fantasy:
-            result << QString::fromLatin1("Impact");
-            break;
-        case QFont::Decorative:
-            result << QString::fromLatin1("Old English");
-            break;
-        case QFont::Helvetica:
-        case QFont::System:
-        default:
-            result << QString::fromLatin1("Arial");
-    }
+    result.append(QWindowsFontDatabase::familyForStyleHint(styleHint));
 
 #ifdef Q_OS_WINCE
     QSettings settings(QLatin1String("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\FontLink\\SystemLink"), QSettings::NativeFormat);
