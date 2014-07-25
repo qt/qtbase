@@ -1329,8 +1329,8 @@ void tst_QHash::initializerList()
 #ifdef Q_COMPILER_INITIALIZER_LISTS
     QHash<int, QString> hash = {{1, "bar"}, {1, "hello"}, {2, "initializer_list"}};
     QCOMPARE(hash.count(), 2);
-    QVERIFY(hash[1] == "hello");
-    QVERIFY(hash[2] == "initializer_list");
+    QCOMPARE(hash[1], QString("hello"));
+    QCOMPARE(hash[2], QString("initializer_list"));
 
     // note the difference to std::unordered_map:
     // std::unordered_map<int, QString> stdh = {{1, "bar"}, {1, "hello"}, {2, "initializer_list"}};
