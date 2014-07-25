@@ -1327,10 +1327,15 @@ void tst_QHash::twoArguments_qHash()
 void tst_QHash::initializerList()
 {
 #ifdef Q_COMPILER_INITIALIZER_LISTS
-    QHash<int, QString> hash{{1, "hello"}, {2, "initializer_list"}};
+    QHash<int, QString> hash = {{1, "bar"}, {1, "hello"}, {2, "initializer_list"}};
     QCOMPARE(hash.count(), 2);
     QVERIFY(hash[1] == "hello");
     QVERIFY(hash[2] == "initializer_list");
+
+    // note the difference to std::unordered_map:
+    // std::unordered_map<int, QString> stdh = {{1, "bar"}, {1, "hello"}, {2, "initializer_list"}};
+    // QCOMPARE(stdh.size(), 2UL);
+    // QCOMPARE(stdh[1], QString("bar"));
 
     QMultiHash<QString, int> multiHash{{"il", 1}, {"il", 2}, {"il", 3}};
     QCOMPARE(multiHash.count(), 3);
