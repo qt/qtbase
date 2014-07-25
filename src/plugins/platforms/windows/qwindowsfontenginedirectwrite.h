@@ -74,7 +74,7 @@ public:
     bool getSfntTableData(uint tag, uchar *buffer, uint *length) const;
     QFixed emSquareSize() const;
 
-    virtual glyph_t glyphIndex(uint ucs4) const;
+    glyph_t glyphIndex(uint ucs4) const Q_DECL_OVERRIDE;
     bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, ShaperFlags flags) const;
     void recalcAdvances(QGlyphLayout *glyphs, ShaperFlags) const;
 

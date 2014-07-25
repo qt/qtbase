@@ -59,8 +59,8 @@ public:
 
     static const char *windowsMessageName(UINT msg);
 
-    virtual bool QT_ENSURE_STACK_ALIGNED_FOR_SSE processEvents(QEventLoop::ProcessEventsFlags flags);
-    virtual void sendPostedEvents();
+    bool QT_ENSURE_STACK_ALIGNED_FOR_SSE processEvents(QEventLoop::ProcessEventsFlags flags) Q_DECL_OVERRIDE;
+    void sendPostedEvents() Q_DECL_OVERRIDE;
 
 private:
     QEventLoop::ProcessEventsFlags m_flags;

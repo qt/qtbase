@@ -151,46 +151,46 @@ public:
     QWindowsWindow(QWindow *window, const QWindowsWindowData &data);
     ~QWindowsWindow();
 
-    virtual QSurfaceFormat format() const { return m_format; }
-    virtual void setGeometry(const QRect &rect);
-    virtual QRect geometry() const { return m_data.geometry; }
+    QSurfaceFormat format() const Q_DECL_OVERRIDE { return m_format; }
+    void setGeometry(const QRect &rect) Q_DECL_OVERRIDE;
+    QRect geometry() const Q_DECL_OVERRIDE { return m_data.geometry; }
     QRect normalGeometry() const Q_DECL_OVERRIDE;
 
-    virtual void setVisible(bool visible);
+    void setVisible(bool visible) Q_DECL_OVERRIDE;
     bool isVisible() const;
-    virtual bool isExposed() const { return testFlag(Exposed); }
-    virtual bool isActive() const;
-    virtual bool isEmbedded(const QPlatformWindow *parentWindow) const;
-    virtual QPoint mapToGlobal(const QPoint &pos) const;
-    virtual QPoint mapFromGlobal(const QPoint &pos) const;
+    bool isExposed() const Q_DECL_OVERRIDE { return testFlag(Exposed); }
+    bool isActive() const Q_DECL_OVERRIDE;
+    bool isEmbedded(const QPlatformWindow *parentWindow) const Q_DECL_OVERRIDE;
+    QPoint mapToGlobal(const QPoint &pos) const Q_DECL_OVERRIDE;
+    QPoint mapFromGlobal(const QPoint &pos) const Q_DECL_OVERRIDE;
 
-    virtual void setWindowFlags(Qt::WindowFlags flags);
-    virtual void setWindowState(Qt::WindowState state);
+    void setWindowFlags(Qt::WindowFlags flags) Q_DECL_OVERRIDE;
+    void setWindowState(Qt::WindowState state) Q_DECL_OVERRIDE;
 
     HWND handle() const { return m_data.hwnd; }
 
-    virtual WId winId() const { return WId(m_data.hwnd); }
-    virtual void setParent(const QPlatformWindow *window);
+    WId winId() const Q_DECL_OVERRIDE { return WId(m_data.hwnd); }
+    void setParent(const QPlatformWindow *window) Q_DECL_OVERRIDE;
 
-    virtual void setWindowTitle(const QString &title);
-    virtual void raise();
-    virtual void lower();
+    void setWindowTitle(const QString &title) Q_DECL_OVERRIDE;
+    void raise() Q_DECL_OVERRIDE;
+    void lower() Q_DECL_OVERRIDE;
 
     void windowEvent(QEvent *event);
 
-    virtual void propagateSizeHints();
-    virtual QMargins frameMargins() const;
+    void propagateSizeHints() Q_DECL_OVERRIDE;
+    QMargins frameMargins() const Q_DECL_OVERRIDE;
 
-    virtual void setOpacity(qreal level);
-    virtual void setMask(const QRegion &region);
+    void setOpacity(qreal level) Q_DECL_OVERRIDE;
+    void setMask(const QRegion &region) Q_DECL_OVERRIDE;
     qreal opacity() const { return m_opacity; }
-    virtual void requestActivateWindow();
+    void requestActivateWindow() Q_DECL_OVERRIDE;
 
-    virtual bool setKeyboardGrabEnabled(bool grab);
-    virtual bool setMouseGrabEnabled(bool grab);
+    bool setKeyboardGrabEnabled(bool grab) Q_DECL_OVERRIDE;
+    bool setMouseGrabEnabled(bool grab) Q_DECL_OVERRIDE;
     inline bool hasMouseCapture() const { return GetCapture() == m_data.hwnd; }
 
-    virtual bool startSystemResize(const QPoint &pos, Qt::Corner corner);
+    bool startSystemResize(const QPoint &pos, Qt::Corner corner) Q_DECL_OVERRIDE;
 
     void setFrameStrutEventsEnabled(bool enabled);
     bool frameStrutEventsEnabled() const { return testFlag(FrameStrutEventsEnabled); }

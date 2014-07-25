@@ -88,24 +88,24 @@ public:
 
     static QWindowsScreen *screenOf(const QWindow *w = 0);
 
-    virtual QRect geometry() const { return m_data.geometry; }
-    virtual QRect availableGeometry() const { return m_data.availableGeometry; }
-    virtual int depth() const { return m_data.depth; }
-    virtual QImage::Format format() const { return m_data.format; }
-    virtual QSizeF physicalSize() const { return m_data.physicalSizeMM; }
-    virtual QDpi logicalDpi() const { return m_data.dpi; }
-    virtual qreal refreshRate() const { return m_data.refreshRateHz; }
-    virtual QString name() const { return m_data.name; }
-    virtual Qt::ScreenOrientation primaryOrientation() { return m_data.orientation; }
-    virtual QList<QPlatformScreen *> virtualSiblings() const;
-    virtual QWindow *topLevelAt(const QPoint &point) const
+    QRect geometry() const Q_DECL_OVERRIDE { return m_data.geometry; }
+    QRect availableGeometry() const Q_DECL_OVERRIDE { return m_data.availableGeometry; }
+    int depth() const Q_DECL_OVERRIDE { return m_data.depth; }
+    QImage::Format format() const Q_DECL_OVERRIDE { return m_data.format; }
+    QSizeF physicalSize() const Q_DECL_OVERRIDE { return m_data.physicalSizeMM; }
+    QDpi logicalDpi() const Q_DECL_OVERRIDE { return m_data.dpi; }
+    qreal refreshRate() const Q_DECL_OVERRIDE { return m_data.refreshRateHz; }
+    QString name() const Q_DECL_OVERRIDE { return m_data.name; }
+    Qt::ScreenOrientation orientation() const Q_DECL_OVERRIDE { return m_data.orientation; }
+    QList<QPlatformScreen *> virtualSiblings() const Q_DECL_OVERRIDE;
+    QWindow *topLevelAt(const QPoint &point) const Q_DECL_OVERRIDE
         {  return QWindowsScreen::findTopLevelAt(point, CWP_SKIPINVISIBLE);  }
 
     static QWindow *findTopLevelAt(const QPoint &point, unsigned flags);
     static QWindow *windowAt(const QPoint &point, unsigned flags = CWP_SKIPINVISIBLE);
     static QWindow *windowUnderMouse(unsigned flags = CWP_SKIPINVISIBLE);
 
-    virtual QPixmap grabWindow(WId window, int x, int y, int width, int height) const;
+    QPixmap grabWindow(WId window, int x, int y, int width, int height) const Q_DECL_OVERRIDE;
 
     inline void handleChanges(const QWindowsScreenData &newData);
 

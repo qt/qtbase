@@ -53,7 +53,7 @@ QT_BEGIN_NAMESPACE
 class QWindowsDropMimeData : public QWindowsInternalMimeData {
 public:
     QWindowsDropMimeData() {}
-    virtual IDataObject *retrieveDataObject() const;
+    IDataObject *retrieveDataObject() const Q_DECL_OVERRIDE;
 };
 
 class QWindowsOleDropTarget : public IDropTarget
@@ -90,9 +90,9 @@ public:
     QWindowsDrag();
     virtual ~QWindowsDrag();
 
-    virtual QMimeData *platformDropData() { return &m_dropData; }
+    QMimeData *platformDropData() Q_DECL_OVERRIDE { return &m_dropData; }
 
-    virtual Qt::DropAction drag(QDrag *drag);
+    Qt::DropAction drag(QDrag *drag) Q_DECL_OVERRIDE;
 
     static QWindowsDrag *instance();
 

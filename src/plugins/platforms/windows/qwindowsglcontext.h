@@ -238,19 +238,19 @@ class QWindowsGLContext : public QWindowsOpenGLContext
 {
 public:
     explicit QWindowsGLContext(QOpenGLStaticContext *staticContext, QOpenGLContext *context);
-    virtual ~QWindowsGLContext();
+    ~QWindowsGLContext();
     bool isSharing() const Q_DECL_OVERRIDE { return m_context->shareHandle(); }
     bool isValid() const Q_DECL_OVERRIDE { return m_renderingContext; }
-    virtual QSurfaceFormat format() const Q_DECL_OVERRIDE { return m_obtainedFormat; }
+    QSurfaceFormat format() const Q_DECL_OVERRIDE { return m_obtainedFormat; }
 
-    virtual void swapBuffers(QPlatformSurface *surface) Q_DECL_OVERRIDE;
+    void swapBuffers(QPlatformSurface *surface) Q_DECL_OVERRIDE;
 
-    virtual bool makeCurrent(QPlatformSurface *surface) Q_DECL_OVERRIDE;
-    virtual void doneCurrent() Q_DECL_OVERRIDE;
+    bool makeCurrent(QPlatformSurface *surface) Q_DECL_OVERRIDE;
+    void doneCurrent() Q_DECL_OVERRIDE;
 
     typedef void (*GL_Proc) ();
 
-    virtual QFunctionPointer getProcAddress(const QByteArray &procName) Q_DECL_OVERRIDE;
+    QFunctionPointer getProcAddress(const QByteArray &procName) Q_DECL_OVERRIDE;
 
     HGLRC renderingContext() const { return m_renderingContext; }
 

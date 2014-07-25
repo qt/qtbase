@@ -74,30 +74,30 @@ public:
     QWindowsWindowData createWindowData(QWindow *window) const;
     QPlatformWindow *createPlatformWindow(QWindow *window) const;
 #ifndef QT_NO_OPENGL
-    virtual QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
+    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const Q_DECL_OVERRIDE;
     QOpenGLContext::OpenGLModuleType openGLModuleType();
     static QWindowsStaticOpenGLContext *staticOpenGLContext();
 #endif
-    virtual QAbstractEventDispatcher *createEventDispatcher() const;
+    QAbstractEventDispatcher *createEventDispatcher() const Q_DECL_OVERRIDE;
     void initialize() Q_DECL_OVERRIDE;
 #ifndef QT_NO_CLIPBOARD
-    virtual QPlatformClipboard *clipboard() const;
+    QPlatformClipboard *clipboard() const Q_DECL_OVERRIDE;
 #  ifndef QT_NO_DRAGANDDROP
-    virtual QPlatformDrag *drag() const;
+    QPlatformDrag *drag() const Q_DECL_OVERRIDE;
 #  endif
 #endif // !QT_NO_CLIPBOARD
-    virtual QPlatformInputContext *inputContext() const;
+    QPlatformInputContext *inputContext() const Q_DECL_OVERRIDE;
 #ifndef QT_NO_ACCESSIBILITY
-    virtual QPlatformAccessibility *accessibility() const;
+    QPlatformAccessibility *accessibility() const Q_DECL_OVERRIDE;
 #endif
-    virtual QPlatformFontDatabase *fontDatabase() const;
-    virtual QStringList themeNames() const;
-    virtual QPlatformTheme *createPlatformTheme(const QString &name) const;
+    QPlatformFontDatabase *fontDatabase() const Q_DECL_OVERRIDE;
+    QStringList themeNames() const Q_DECL_OVERRIDE;
+    QPlatformTheme *createPlatformTheme(const QString &name) const Q_DECL_OVERRIDE;
     QPlatformServices *services() const;
-    virtual QVariant styleHint(StyleHint hint) const;
+    QVariant styleHint(StyleHint hint) const Q_DECL_OVERRIDE;
 
-    virtual Qt::KeyboardModifiers queryKeyboardModifiers() const;
-    virtual QList<int> possibleKeys(const QKeyEvent *e) const;
+    Qt::KeyboardModifiers queryKeyboardModifiers() const Q_DECL_OVERRIDE;
+    QList<int> possibleKeys(const QKeyEvent *e) const Q_DECL_OVERRIDE;
 
     static QWindowsIntegration *instance();
 
@@ -106,7 +106,7 @@ public:
     unsigned options() const;
 
 #if !defined(Q_OS_WINCE) && !defined(QT_NO_SESSIONMANAGER)
-    virtual QPlatformSessionManager *createPlatformSessionManager(const QString &id, const QString &key) const;
+    QPlatformSessionManager *createPlatformSessionManager(const QString &id, const QString &key) const Q_DECL_OVERRIDE;
 #endif
 
 private:

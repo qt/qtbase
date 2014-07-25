@@ -54,8 +54,8 @@ class QWindowsClipboardRetrievalMimeData : public QWindowsInternalMimeData {
 public:
 
 protected:
-    virtual IDataObject *retrieveDataObject() const;
-    virtual void releaseDataObject(IDataObject *) const;
+    IDataObject *retrieveDataObject() const Q_DECL_OVERRIDE;
+    void releaseDataObject(IDataObject *) const Q_DECL_OVERRIDE;
 };
 
 class QWindowsClipboard : public QPlatformClipboard
@@ -66,10 +66,10 @@ public:
     void registerViewer(); // Call in initialization, when context is up.
     void cleanup();
 
-    virtual QMimeData *mimeData(QClipboard::Mode mode = QClipboard::Clipboard);
-    virtual void setMimeData(QMimeData *data, QClipboard::Mode mode = QClipboard::Clipboard);
-    virtual bool supportsMode(QClipboard::Mode mode) const;
-    virtual bool ownsMode(QClipboard::Mode mode) const;
+    QMimeData *mimeData(QClipboard::Mode mode = QClipboard::Clipboard) Q_DECL_OVERRIDE;
+    void setMimeData(QMimeData *data, QClipboard::Mode mode = QClipboard::Clipboard) Q_DECL_OVERRIDE;
+    bool supportsMode(QClipboard::Mode mode) const Q_DECL_OVERRIDE;
+    bool ownsMode(QClipboard::Mode mode) const Q_DECL_OVERRIDE;
 
     inline bool clipboardViewerWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam, LRESULT *result);
 

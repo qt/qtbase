@@ -59,17 +59,17 @@ public:
 
     static QWindowsTheme *instance() { return m_instance; }
 
-    virtual bool usePlatformNativeDialog(DialogType type) const;
-    virtual QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const;
-    virtual QVariant themeHint(ThemeHint) const;
+    bool usePlatformNativeDialog(DialogType type) const Q_DECL_OVERRIDE;
+    QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const Q_DECL_OVERRIDE;
+    QVariant themeHint(ThemeHint) const Q_DECL_OVERRIDE;
     virtual const QPalette *palette(Palette type = SystemPalette) const
         { return m_palettes[type]; }
     virtual const QFont *font(Font type = SystemFont) const
         { return m_fonts[type]; }
 
-    virtual QPixmap standardPixmap(StandardPixmap sp, const QSizeF &size) const;
-    virtual QPixmap fileIconPixmap(const QFileInfo &fileInfo, const QSizeF &size,
-                                   QPlatformTheme::IconOptions iconOptions = 0) const;
+    QPixmap standardPixmap(StandardPixmap sp, const QSizeF &size) const Q_DECL_OVERRIDE;
+    QPixmap fileIconPixmap(const QFileInfo &fileInfo, const QSizeF &size,
+                           QPlatformTheme::IconOptions iconOptions = 0) const Q_DECL_OVERRIDE;
 
     void windowsThemeChanged(QWindow *window);
 

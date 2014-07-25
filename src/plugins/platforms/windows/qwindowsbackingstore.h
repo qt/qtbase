@@ -59,11 +59,11 @@ public:
     QWindowsBackingStore(QWindow *window);
     ~QWindowsBackingStore();
 
-    virtual QPaintDevice *paintDevice();
-    virtual void flush(QWindow *window, const QRegion &region, const QPoint &offset);
-    virtual void resize(const QSize &size, const QRegion &r);
-    virtual bool scroll(const QRegion &area, int dx, int dy);
-    virtual void beginPaint(const QRegion &);
+    QPaintDevice *paintDevice() Q_DECL_OVERRIDE;
+    void flush(QWindow *window, const QRegion &region, const QPoint &offset) Q_DECL_OVERRIDE;
+    void resize(const QSize &size, const QRegion &r) Q_DECL_OVERRIDE;
+    bool scroll(const QRegion &area, int dx, int dy) Q_DECL_OVERRIDE;
+    void beginPaint(const QRegion &) Q_DECL_OVERRIDE;
 
     HDC getDC() const;
 

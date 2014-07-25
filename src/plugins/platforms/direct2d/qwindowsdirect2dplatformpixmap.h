@@ -60,22 +60,22 @@ public:
     QWindowsDirect2DPlatformPixmap(PixelType pixelType, QWindowsDirect2DBitmap *bitmap);
     ~QWindowsDirect2DPlatformPixmap();
 
-    virtual void resize(int width, int height);
+    void resize(int width, int height) Q_DECL_OVERRIDE;
     virtual void fromImage(const QImage &image,
                            Qt::ImageConversionFlags flags);
 
-    virtual int metric(QPaintDevice::PaintDeviceMetric metric) const;
-    virtual void fill(const QColor &color);
+    int metric(QPaintDevice::PaintDeviceMetric metric) const Q_DECL_OVERRIDE;
+    void fill(const QColor &color) Q_DECL_OVERRIDE;
 
-    virtual bool hasAlphaChannel() const;
+    bool hasAlphaChannel() const Q_DECL_OVERRIDE;
 
-    virtual QImage toImage() const;
-    virtual QImage toImage(const QRect &rect) const;
+    QImage toImage() const Q_DECL_OVERRIDE;
+    QImage toImage(const QRect &rect) const Q_DECL_OVERRIDE;
 
-    virtual QPaintEngine* paintEngine() const;
+    QPaintEngine* paintEngine() const Q_DECL_OVERRIDE;
 
-    virtual qreal devicePixelRatio() const;
-    virtual void setDevicePixelRatio(qreal scaleFactor);
+    qreal devicePixelRatio() const Q_DECL_OVERRIDE;
+    void setDevicePixelRatio(qreal scaleFactor) Q_DECL_OVERRIDE;
 
     QWindowsDirect2DBitmap *bitmap() const;
 

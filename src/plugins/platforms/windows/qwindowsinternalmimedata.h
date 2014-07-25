@@ -54,9 +54,9 @@ class QDebug;
 // Implementation in qwindowsclipboard.cpp.
 class QWindowsInternalMimeData : public QInternalMimeData {
 public:
-    virtual bool hasFormat_sys(const QString &mimetype) const;
-    virtual QStringList formats_sys() const;
-    virtual QVariant retrieveData_sys(const QString &mimetype, QVariant::Type preferredType) const;
+    bool hasFormat_sys(const QString &mimetype) const Q_DECL_OVERRIDE;
+    QStringList formats_sys() const Q_DECL_OVERRIDE;
+    QVariant retrieveData_sys(const QString &mimetype, QVariant::Type preferredType) const Q_DECL_OVERRIDE;
 
 protected:
     virtual IDataObject *retrieveDataObject() const = 0;

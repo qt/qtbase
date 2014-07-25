@@ -68,9 +68,9 @@ public:
     explicit QWindowsInputContext();
     ~QWindowsInputContext();
 
-    virtual void reset();
-    virtual void update(Qt::InputMethodQueries);
-    virtual void invokeAction(QInputMethod::Action, int cursorPosition);
+    void reset() Q_DECL_OVERRIDE;
+    void update(Qt::InputMethodQueries) Q_DECL_OVERRIDE;
+    void invokeAction(QInputMethod::Action, int cursorPosition) Q_DECL_OVERRIDE;
 
     static QWindowsInputContext *instance();
 

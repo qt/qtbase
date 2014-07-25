@@ -57,8 +57,8 @@ public:
 
     QStringList fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const;
 
-    virtual QString fontDir() const;
-    virtual QFont defaultFont() const;
+    QString fontDir() const Q_DECL_OVERRIDE;
+    QFont defaultFont() const Q_DECL_OVERRIDE;
 
 private:
     void populate(const QString &family = QString());

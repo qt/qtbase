@@ -77,17 +77,17 @@ public:
     QWindowsFontDatabase();
     ~QWindowsFontDatabase();
 
-    virtual void populateFontDatabase();
-    virtual QFontEngineMulti *fontEngineMulti(QFontEngine *fontEngine, QChar::Script script);
-    virtual QFontEngine *fontEngine(const QFontDef &fontDef, void *handle);
-    virtual QFontEngine *fontEngine(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference);
-    virtual QStringList fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const;
-    virtual QStringList addApplicationFont(const QByteArray &fontData, const QString &fileName);
-    virtual void releaseHandle(void *handle);
-    virtual QString fontDir() const;
+    void populateFontDatabase() Q_DECL_OVERRIDE;
+    QFontEngineMulti *fontEngineMulti(QFontEngine *fontEngine, QChar::Script script) Q_DECL_OVERRIDE;
+    QFontEngine *fontEngine(const QFontDef &fontDef, void *handle) Q_DECL_OVERRIDE;
+    QFontEngine *fontEngine(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference) Q_DECL_OVERRIDE;
+    QStringList fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const Q_DECL_OVERRIDE;
+    QStringList addApplicationFont(const QByteArray &fontData, const QString &fileName) Q_DECL_OVERRIDE;
+    void releaseHandle(void *handle) Q_DECL_OVERRIDE;
+    QString fontDir() const Q_DECL_OVERRIDE;
 
-    virtual QFont defaultFont() const { return systemDefaultFont(); }
-    virtual bool fontsAlwaysScalable() const;
+    QFont defaultFont() const  Q_DECL_OVERRIDE { return systemDefaultFont(); }
+    bool fontsAlwaysScalable() const Q_DECL_OVERRIDE;
     void derefUniqueFont(const QString &uniqueFont);
     void refUniqueFont(const QString &uniqueFont);
 
