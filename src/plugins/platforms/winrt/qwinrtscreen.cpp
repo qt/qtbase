@@ -448,6 +448,7 @@ public:
     QSizeF logicalSize;
     QSurfaceFormat surfaceFormat;
     qreal logicalDpi;
+    QDpi physicalDpi;
     qreal scaleFactor;
     Qt::ScreenOrientation nativeOrientation;
     Qt::ScreenOrientation orientation;
@@ -629,7 +630,8 @@ QSurfaceFormat QWinRTScreen::surfaceFormat() const
 QSizeF QWinRTScreen::physicalSize() const
 {
     Q_D(const QWinRTScreen);
-    return d->logicalSize / d->logicalDpi * qreal(25.4);
+    return QSizeF(d->logicalSize.width() * d->scaleFactor / d->physicalDpi.first * qreal(25.4),
+                  d->logicalSize.height() * d->scaleFactor / d->physicalDpi.second * qreal(25.4));
 }
 
 QDpi QWinRTScreen::logicalDpi() const
@@ -1136,6 +1138,14 @@ HRESULT QWinRTScreen::onDpiChanged(IDisplayInformation *, IInspectable *)
     hr = d->displayInformation->get_LogicalDpi(&dpi);
     RETURN_OK_IF_FAILED("Failed to get logical DPI.");
     d->logicalDpi = dpi;
+
+    hr = d->displayInformation->get_RawDpiX(&dpi);
+    RETURN_OK_IF_FAILED("Failed to get x raw DPI.");
+    d->physicalDpi.first = dpi ? dpi : 96.0;
+
+    hr = d->displayInformation->get_RawDpiY(&dpi);
+    RETURN_OK_IF_FAILED("Failed to get y raw DPI.");
+    d->physicalDpi.second = dpi ? dpi : 96.0;
 
     return S_OK;
 }
