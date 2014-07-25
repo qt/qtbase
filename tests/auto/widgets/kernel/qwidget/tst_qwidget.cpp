@@ -667,6 +667,8 @@ void tst_QWidget::init()
 
 void tst_QWidget::cleanup()
 {
+    // Only 'testwidget', do not leak any other widgets.
+    QCOMPARE(QApplication::topLevelWidgets().size(), 1);
 }
 
 // Helper class...
@@ -1211,7 +1213,7 @@ void tst_QWidget::isEnabledTo()
     QVERIFY( grandChildWidget->isEnabledTo( childWidget ) );
     QVERIFY( !grandChildWidget->isEnabledTo( testWidget ) );
 
-    QMainWindow* childDialog = new QMainWindow(testWidget);
+    QScopedPointer<QMainWindow> childDialog(new QMainWindow(testWidget));
     testWidget->setEnabled(false);
     QVERIFY(!childDialog->isEnabled());
     QVERIFY(childDialog->isEnabledTo(0));
@@ -2275,6 +2277,7 @@ void tst_QWidget::showMinimizedKeepsFocus()
         QTRY_COMPARE(qApp->focusWidget(), child);
 
         child->setParent(0);
+        QScopedPointer<QWidget> childGuard(child);
         QCOMPARE(window.focusWidget(), static_cast<QWidget*>(0));
         QCOMPARE(qApp->focusWidget(), static_cast<QWidget*>(0));
     }
@@ -10211,11 +10214,11 @@ public:
 
 void tst_QWidget::keyboardModifiers()
 {
-    KeyboardWidget* w = new KeyboardWidget;
-    QTest::mouseClick(w, Qt::LeftButton, Qt::ControlModifier);
-    QCOMPARE(w->m_eventCounter, 1);
-    QCOMPARE(int(w->m_modifiers), int(Qt::ControlModifier));
-    QCOMPARE(int(w->m_appModifiers), int(Qt::ControlModifier));
+    KeyboardWidget w;
+    QTest::mouseClick(&w, Qt::LeftButton, Qt::ControlModifier);
+    QCOMPARE(w.m_eventCounter, 1);
+    QCOMPARE(int(w.m_modifiers), int(Qt::ControlModifier));
+    QCOMPARE(int(w.m_appModifiers), int(Qt::ControlModifier));
 }
 
 class DClickWidget : public QWidget
