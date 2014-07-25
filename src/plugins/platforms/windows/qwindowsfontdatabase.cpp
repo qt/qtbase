@@ -164,25 +164,24 @@ namespace {
     {
         Q_ASSERT(tagName.size() == 4);
         quint32 tagId = *(reinterpret_cast<const quint32 *>(tagName.constData()));
-        if (Q_UNLIKELY(m_fontData.size() < sizeof(OffsetSubTable)))
+        const size_t fontDataSize = m_fontData.size();
+        if (Q_UNLIKELY(fontDataSize < sizeof(OffsetSubTable)))
             return 0;
 
         OffsetSubTable *offsetSubTable = reinterpret_cast<OffsetSubTable *>(m_fontData.data());
         TableDirectory *tableDirectory = reinterpret_cast<TableDirectory *>(offsetSubTable + 1);
 
-        quint16 tableCount = qFromBigEndian<quint16>(offsetSubTable->numTables);
-        if (Q_UNLIKELY(quint32(m_fontData.size()) < sizeof(OffsetSubTable) + sizeof(TableDirectory) * tableCount))
+        const size_t tableCount = qFromBigEndian<quint16>(offsetSubTable->numTables);
+        if (Q_UNLIKELY(fontDataSize < sizeof(OffsetSubTable) + sizeof(TableDirectory) * tableCount))
             return 0;
 
-        TableDirectory *nameTableDirectoryEntry = 0;
-        for (int i = 0; i < tableCount; ++i, ++tableDirectory) {
-            if (tableDirectory->identifier == tagId) {
-                nameTableDirectoryEntry = tableDirectory;
-                break;
-            }
+        TableDirectory *tableDirectoryEnd = tableDirectory + tableCount;
+        for (TableDirectory *entry = tableDirectory; entry < tableDirectoryEnd; ++entry) {
+            if (entry->identifier == tagId)
+                return entry;
         }
 
-        return nameTableDirectoryEntry;
+        return 0;
     }
 
     QString EmbeddedFont::familyName(TableDirectory *nameTableDirectoryEntry)
