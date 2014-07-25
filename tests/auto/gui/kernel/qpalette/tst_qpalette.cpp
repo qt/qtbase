@@ -50,6 +50,7 @@ class tst_QPalette : public QObject
 private Q_SLOTS:
     void roleValues_data();
     void roleValues();
+    void moveSemantics();
 };
 
 void tst_QPalette::roleValues_data()
@@ -87,6 +88,27 @@ void tst_QPalette::roleValues()
     QFETCH(int, role);
     QFETCH(int, value);
     QCOMPARE(role, value);
+}
+
+void tst_QPalette::moveSemantics()
+{
+#ifdef Q_COMPILER_RVALUE_REFS
+    QPalette src(Qt::red), dst;
+    const QPalette control = src;
+    QVERIFY(src != dst);
+    QCOMPARE(src, control);
+    QVERIFY(!dst.isCopyOf(src));
+    QVERIFY(!dst.isCopyOf(control));
+    dst = qMove(src); // move assignment
+    QVERIFY(!dst.isCopyOf(src)); // isCopyOf() works on moved-from palettes, too
+    QVERIFY(dst.isCopyOf(control));
+    QCOMPARE(dst, control);
+    src = control; // check moved-from 'src' can still be assigned to (doesn't crash)
+    QVERIFY(src.isCopyOf(dst));
+    QVERIFY(src.isCopyOf(control));
+#else
+    QSKIP("Compiler doesn't support C++11 move semantics");
+#endif
 }
 
 QTEST_MAIN(tst_QPalette)
