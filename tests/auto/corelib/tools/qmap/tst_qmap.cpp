@@ -1179,10 +1179,15 @@ void tst_QMap::checkMostLeftNode()
 void tst_QMap::initializerList()
 {
 #ifdef Q_COMPILER_INITIALIZER_LISTS
-    QMap<int, QString> map{{1, "hello"}, {2, "initializer_list"}};
+    QMap<int, QString> map = {{1, "bar"}, {1, "hello"}, {2, "initializer_list"}};
     QCOMPARE(map.count(), 2);
     QVERIFY(map[1] == "hello");
     QVERIFY(map[2] == "initializer_list");
+
+    // note the difference to std::map:
+    // std::map<int, QString> stdm = {{1, "bar"}, {1, "hello"}, {2, "initializer_list"}};
+    // QCOMPARE(stdm.size(), 2UL);
+    // QCOMPARE(stdm[1], QString("bar"));
 
     QMultiMap<QString, int> multiMap{{"il", 1}, {"il", 2}, {"il", 3}};
     QCOMPARE(multiMap.count(), 3);
