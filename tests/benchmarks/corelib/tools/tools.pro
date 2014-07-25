@@ -11,6 +11,7 @@ SUBDIRS = \
         qmap \
         qrect \
         qregexp \
+        qringbuffer \
         qstring \
         qstringbuilder \
         qstringlist \
