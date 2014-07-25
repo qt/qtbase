@@ -252,9 +252,6 @@ void QIOSScreen::updateProperties()
 
         QWindowSystemInterface::handleScreenGeometryChange(screen(), m_geometry, m_availableGeometry);
     }
-
-    if (screen())
-        layoutWindows();
 }
 
 void QIOSScreen::updateStatusBarVisibility()
@@ -292,36 +289,6 @@ void QIOSScreen::updateStatusBarVisibility()
             withAnimation:UIStatusBarAnimationNone];
 
         updateProperties();
-    }
-}
-
-void QIOSScreen::layoutWindows()
-{
-    QList<QWindow*> windows = QGuiApplication::topLevelWindows();
-
-    const QRect oldGeometry = screen()->geometry();
-    const QRect oldAvailableGeometry = screen()->availableGeometry();
-    const QRect newGeometry = geometry();
-    const QRect newAvailableGeometry = availableGeometry();
-
-    for (int i = 0; i < windows.size(); ++i) {
-        QWindow *window = windows.at(i);
-
-        if (platformScreenForWindow(window) != this)
-            continue;
-
-        QIOSWindow *platformWindow = static_cast<QIOSWindow *>(window->handle());
-        if (!platformWindow)
-            continue;
-
-        // FIXME: Handle more complex cases of no-state and/or child windows when rotating
-
-        if (window->windowState() & Qt::WindowFullScreen
-                || (window->windowState() & Qt::WindowNoState && window->geometry() == oldGeometry))
-            platformWindow->applyGeometry(newGeometry);
-        else if (window->windowState() & Qt::WindowMaximized
-                || (window->windowState() & Qt::WindowNoState && window->geometry() == oldAvailableGeometry))
-            platformWindow->applyGeometry(newAvailableGeometry);
     }
 }
 

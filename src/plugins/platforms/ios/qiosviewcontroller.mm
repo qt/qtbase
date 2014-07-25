@@ -50,6 +50,39 @@
 #include "qiosscreen.h"
 #include "qiosglobal.h"
 #include "qioswindow.h"
+#include "quiview.h"
+
+// -------------------------------------------------------------------------
+
+@interface QIOSDesktopManagerView : UIView
+@end
+
+@implementation QIOSDesktopManagerView
+
+- (void)layoutSubviews
+{
+    for (int i = int(self.subviews.count) - 1; i >= 0; --i) {
+        UIView *view = static_cast<UIView *>([self.subviews objectAtIndex:i]);
+        if (![view isKindOfClass:[QUIView class]])
+            continue;
+
+        [self layoutView: static_cast<QUIView *>(view)];
+    }
+}
+
+- (void)layoutView:(QUIView *)view
+{
+    QWindow *window = view.qwindow;
+    Q_ASSERT(window->handle());
+
+    // Re-apply window states to update geometry
+    if (window->windowState() & (Qt::WindowFullScreen | Qt::WindowMaximized))
+        window->handle()->setWindowState(window->windowState());
+}
+
+@end
+
+// -------------------------------------------------------------------------
 
 @implementation QIOSViewController
 
@@ -80,6 +113,11 @@
     }
 
     return self;
+}
+
+- (void)loadView
+{
+    self.view = [[[QIOSDesktopManagerView alloc] init] autorelease];
 }
 
 -(BOOL)shouldAutorotate
