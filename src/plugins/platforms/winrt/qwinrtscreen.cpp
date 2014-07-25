@@ -445,10 +445,10 @@ public:
     ComPtr<QWinRTInputContext> inputContext;
 #endif
 
-    QRectF geometry;
+    QSizeF logicalSize;
     QSurfaceFormat surfaceFormat;
-    qreal dpi;
-    qreal devicePixelRatio;
+    qreal logicalDpi;
+    qreal scaleFactor;
     Qt::ScreenOrientation nativeOrientation;
     Qt::ScreenOrientation orientation;
     QList<QWindow *> visibleWindows;
@@ -501,8 +501,9 @@ QWinRTScreen::QWinRTScreen()
 #endif
 
     Rect rect;
-    d->coreWindow->get_Bounds(&rect);
-    d->geometry = QRectF(0, 0, rect.Width, rect.Height);
+    hr = d->coreWindow->get_Bounds(&rect);
+    Q_ASSERT_SUCCEEDED(hr);
+    d->logicalSize = QSizeF(rect.Width, rect.Height);
 
     d->surfaceFormat.setAlphaBufferSize(0);
     d->surfaceFormat.setRedBufferSize(8);
@@ -513,18 +514,6 @@ QWinRTScreen::QWinRTScreen()
     d->surfaceFormat.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
     d->surfaceFormat.setDepthBufferSize(24);
     d->surfaceFormat.setStencilBufferSize(8);
-
-    d->eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-    if (d->eglDisplay == EGL_NO_DISPLAY)
-        qFatal("Qt WinRT platform plugin: failed to initialize EGL display.");
-
-    if (!eglInitialize(d->eglDisplay, NULL, NULL))
-        qFatal("Qt WinRT platform plugin: failed to initialize EGL. This can happen if you haven't included the D3D compiler DLL in your application package.");
-
-    // TODO: move this to Window
-    d->eglSurface = eglCreateWindowSurface(d->eglDisplay, q_configFromGLFormat(d->eglDisplay, d->surfaceFormat), d->coreWindow.Get(), NULL);
-    if (d->eglSurface == EGL_NO_SURFACE)
-        qFatal("Could not create EGL surface, error 0x%X", eglGetError());
 
     hr = d->coreWindow->add_KeyDown(Callback<KeyHandler>(this, &QWinRTScreen::onKeyDown).Get(), &d->windowTokens[&ICoreWindow::remove_KeyDown]);
     Q_ASSERT_SUCCEEDED(hr);
@@ -585,6 +574,17 @@ QWinRTScreen::QWinRTScreen()
     onOrientationChanged(Q_NULLPTR, Q_NULLPTR);
     onDpiChanged(Q_NULLPTR, Q_NULLPTR);
     setOrientationUpdateMask(d->nativeOrientation);
+
+    d->eglDisplay = eglGetDisplay(d->displayInformation.Get());
+    if (d->eglDisplay == EGL_NO_DISPLAY)
+        qCritical("Failed to initialize EGL display: 0x%x", eglGetError());
+
+    if (!eglInitialize(d->eglDisplay, NULL, NULL))
+        qCritical("Failed to initialize EGL: 0x%x", eglGetError());
+
+    d->eglSurface = eglCreateWindowSurface(d->eglDisplay, q_configFromGLFormat(d->eglDisplay, d->surfaceFormat), d->coreWindow.Get(), NULL);
+    if (d->eglSurface == EGL_NO_SURFACE)
+        qCritical("Failed to create EGL window surface: 0x%x", eglGetError());
 }
 
 QWinRTScreen::~QWinRTScreen()
@@ -607,7 +607,7 @@ QWinRTScreen::~QWinRTScreen()
 QRect QWinRTScreen::geometry() const
 {
     Q_D(const QWinRTScreen);
-    return d->geometry.toRect();
+    return QRect(QPoint(), (d->logicalSize * d->scaleFactor).toSize());
 }
 
 int QWinRTScreen::depth() const
@@ -629,19 +629,13 @@ QSurfaceFormat QWinRTScreen::surfaceFormat() const
 QSizeF QWinRTScreen::physicalSize() const
 {
     Q_D(const QWinRTScreen);
-    return d->geometry.size() / d->dpi * qreal(25.4);
+    return d->logicalSize / d->logicalDpi * qreal(25.4);
 }
 
 QDpi QWinRTScreen::logicalDpi() const
 {
     Q_D(const QWinRTScreen);
-    return QDpi(d->dpi, d->dpi);
-}
-
-qreal QWinRTScreen::devicePixelRatio() const
-{
-    Q_D(const QWinRTScreen);
-    return d->devicePixelRatio;
+    return QDpi(d->logicalDpi, d->logicalDpi);
 }
 
 QWinRTInputContext *QWinRTScreen::inputContext() const
@@ -779,10 +773,9 @@ void QWinRTScreen::handleExpose()
     if (d->visibleWindows.isEmpty())
         return;
     QList<QWindow *>::const_iterator it = d->visibleWindows.constBegin();
-    QWindowSystemInterface::handleExposeEvent(*it, d->geometry.toRect());
+    QWindowSystemInterface::handleExposeEvent(*it, geometry());
     while (++it != d->visibleWindows.constEnd())
         QWindowSystemInterface::handleExposeEvent(*it, QRegion());
-    QWindowSystemInterface::flushWindowSystemEvents();
 }
 
 HRESULT QWinRTScreen::onKeyDown(ABI::Windows::UI::Core::ICoreWindow *, ABI::Windows::UI::Core::IKeyEventArgs *args)
@@ -967,8 +960,9 @@ HRESULT QWinRTScreen::onPointerUpdated(ICoreWindow *, IPointerEventArgs *args)
             it.value().state = Qt::TouchPointPressed;
             it.value().id = id;
         }
-        it.value().area = QRectF(area.X, area.Y, area.Width, area.Height);
-        it.value().normalPosition = QPointF(pos.x()/d->geometry.width(), pos.y()/d->geometry.height());
+        it.value().area = QRectF(area.X * d->scaleFactor, area.Y * d->scaleFactor,
+                                 area.Width * d->scaleFactor, area.Height * d->scaleFactor);
+        it.value().normalPosition = QPointF(pos.x()/d->logicalSize.width(), pos.y()/d->logicalSize.height());
         it.value().pressure = pressure;
 
         QWindowSystemInterface::handleTouchEvent(topWindow(), d->touchDevice, d->touchPoints.values(), mods);
@@ -1036,11 +1030,16 @@ HRESULT QWinRTScreen::onSizeChanged(ICoreWindow *, IWindowSizeChangedEventArgs *
     HRESULT hr = args->get_Size(&size);
     RETURN_OK_IF_FAILED("Failed to get window size.");
 
+    QSizeF logicalSize = QSizeF(size.Width, size.Height);
+    if (d->logicalSize == logicalSize)
+        return S_OK;
+
     // Regardless of state, all top-level windows are viewport-sized - this might change if
     // a more advanced compositor is written.
-    d->geometry.setSize(QSizeF(size.Width, size.Height));
-    QWindowSystemInterface::handleScreenGeometryChange(screen(), d->geometry.toRect());
-    QWindowSystemInterface::handleScreenAvailableGeometryChange(screen(), d->geometry.toRect());
+    d->logicalSize = logicalSize;
+    const QRect newGeometry = geometry();
+    QWindowSystemInterface::handleScreenGeometryChange(screen(), newGeometry);
+    QWindowSystemInterface::handleScreenAvailableGeometryChange(screen(), newGeometry);
     QPlatformScreen::resizeMaximizedWindows();
     handleExpose();
 
@@ -1125,22 +1124,18 @@ HRESULT QWinRTScreen::onDpiChanged(IDisplayInformation *, IInspectable *)
     ComPtr<IDisplayInformation2> displayInformation;
     hr = d->displayInformation.As(&displayInformation);
     RETURN_OK_IF_FAILED("Failed to cast display information.");
-    hr = displayInformation->get_RawPixelsPerViewPixel(&d->devicePixelRatio);
+    hr = displayInformation->get_RawPixelsPerViewPixel(&d->scaleFactor);
 #else
     ResolutionScale resolutionScale;
     hr = d->displayInformation->get_ResolutionScale(&resolutionScale);
-    d->devicePixelRatio = qreal(resolutionScale) / 100;
+    d->scaleFactor = qreal(resolutionScale) / 100;
 #endif
-    RETURN_OK_IF_FAILED("Failed to get resolution scale");
-
-    // Correct the scale factor for integer window size
-    d->devicePixelRatio = d->devicePixelRatio * ((d->geometry.width()/qRound(d->geometry.width()) +
-                                                  d->geometry.height()/qRound(d->geometry.height())) / 2.0);
+    RETURN_OK_IF_FAILED("Failed to get scale factor");
 
     FLOAT dpi;
     hr = d->displayInformation->get_LogicalDpi(&dpi);
     RETURN_OK_IF_FAILED("Failed to get logical DPI.");
-    d->dpi = dpi;
+    d->logicalDpi = dpi;
 
     return S_OK;
 }

@@ -101,7 +101,6 @@ public:
     QSurfaceFormat surfaceFormat() const;
     QSizeF physicalSize() const Q_DECL_OVERRIDE;
     QDpi logicalDpi() const Q_DECL_OVERRIDE;
-    qreal devicePixelRatio() const Q_DECL_OVERRIDE;
     QWinRTInputContext *inputContext() const;
     QPlatformCursor *cursor() const;
     Qt::KeyboardModifiers keyboardModifiers() const;
