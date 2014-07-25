@@ -237,6 +237,8 @@ public:
     tst_QMdiArea();
 public slots:
     void initTestCase();
+    void cleanup();
+
 protected slots:
     void activeChanged(QMdiSubWindow *child);
 
@@ -304,6 +306,11 @@ void tst_QMdiArea::initTestCase()
 #ifdef Q_OS_WINCE //disable magic for WindowsCE
     qApp->setAutoMaximizeThreshold(-1);
 #endif
+}
+
+void tst_QMdiArea::cleanup()
+{
+    QVERIFY(QApplication::topLevelWidgets().isEmpty());
 }
 
 // Old QWorkspace tests
@@ -1271,6 +1278,7 @@ void tst_QMdiArea::removeSubWindow_2()
     mdiArea.addSubWindow(subWindow);
     QVERIFY(numberOfConnectedSignals(subWindow) >= 2);
     subWindow->setParent(0);
+    QScopedPointer<MySubWindow> subWindowGuard(subWindow);
     QCOMPARE(numberOfConnectedSignals(subWindow), 0);
 }
 
@@ -2340,7 +2348,7 @@ void tst_QMdiArea::setViewMode()
     QVERIFY(QTest::qWaitForWindowExposed(&mdiArea));
 
     QMdiSubWindow *activeSubWindow = mdiArea.activeSubWindow();
-    const QList<QMdiSubWindow *> subWindows = mdiArea.subWindowList();
+    QList<QMdiSubWindow *> subWindows = mdiArea.subWindowList();
 
     // Default.
     QVERIFY(!activeSubWindow->isMaximized());
@@ -2410,9 +2418,12 @@ void tst_QMdiArea::setViewMode()
 
     // Remove sub-windows and make sure the tab is removed.
     foreach (QMdiSubWindow *subWindow, subWindows) {
-        if (subWindow != activeSubWindow)
+        if (subWindow != activeSubWindow) {
             mdiArea.removeSubWindow(subWindow);
+            delete subWindow;
+        }
     }
+    subWindows.clear();
     QCOMPARE(tabBar->count(), 1);
 
     // Go back to default (QMdiArea::SubWindowView).
