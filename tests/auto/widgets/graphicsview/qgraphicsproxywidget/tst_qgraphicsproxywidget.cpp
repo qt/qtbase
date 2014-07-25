@@ -282,6 +282,9 @@ void tst_QGraphicsProxyWidget::initTestCase()
 #ifdef Q_OS_WINCE //disable magic for WindowsCE
     qApp->setAutoMaximizeThreshold(-1);
 #endif
+    // Disable menu animations to prevent the alpha widget from getting in the way
+    // in actionsContextMenu().
+    QApplication::setEffectEnabled(Qt::UI_AnimateMenu, false);
 }
 
 // This will be called after the last test function is executed.
@@ -298,6 +301,7 @@ void tst_QGraphicsProxyWidget::init()
 // This will be called after every test function.
 void tst_QGraphicsProxyWidget::cleanup()
 {
+    QVERIFY(QApplication::topLevelWidgets().isEmpty());
 }
 
 void tst_QGraphicsProxyWidget::qgraphicsproxywidget_data()
@@ -840,10 +844,11 @@ void tst_QGraphicsProxyWidget::focusOutEvent()
     QTRY_VERIFY(view.isVisible());
     QTRY_COMPARE(QApplication::activeWindow(), (QWidget*)&view);
 
-    QWidget *widget = new QWidget;
+    QScopedPointer<QWidget> widgetGuard(new QWidget);
+    QWidget *widget = widgetGuard.data();
     widget->setFocusPolicy(Qt::WheelFocus);
     if (hasWidget)
-        proxy->setWidget(widget);
+        proxy->setWidget(widgetGuard.take());
     proxy->show();
     proxy->setFocus();
     QVERIFY(proxy->hasFocus());
@@ -970,13 +975,14 @@ void tst_QGraphicsProxyWidget::hoverEnterLeaveEvent()
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
     SubQGraphicsProxyWidget *proxy = new SubQGraphicsProxyWidget;
-    EventLogger *widget = new EventLogger;
+    QScopedPointer<EventLogger> widgetGuard(new EventLogger);
+    EventLogger *widget = widgetGuard.data();
     widget->resize(50, 50);
     widget->setAttribute(Qt::WA_Hover, hoverEnabled);
     widget->setMouseTracking(true);
     view.resize(100, 100);
     if (hasWidget)
-        proxy->setWidget(widget);
+        proxy->setWidget(widgetGuard.take());
     proxy->setPos(50, 0);
     scene.addItem(proxy);
     QTest::qWait(30);
@@ -1001,9 +1007,6 @@ void tst_QGraphicsProxyWidget::hoverEnterLeaveEvent()
     QTRY_COMPARE(widget->hoverLeave, (hasWidget && hoverEnabled) ? 1 : 0);
     // does not work on all platforms
     //QCOMPARE(widget->moveCount, 0);
-
-    if (!hasWidget)
-        delete widget;
 }
 #endif
 
@@ -2447,6 +2450,13 @@ void tst_QGraphicsProxyWidget::setFocus_complexTwoWidgets()
 
 void tst_QGraphicsProxyWidget::popup_basic()
 {
+    QScopedPointer<QComboBox> box(new QComboBox);
+    QStyleOptionComboBox opt;
+    opt.initFrom(box.data());
+    opt.editable = box->isEditable();
+    if (box->style()->styleHint(QStyle::SH_ComboBox_Popup, &opt))
+        QSKIP("Does not work due to SH_Combobox_Popup");
+
     // ProxyWidget should automatically create proxy's when the widget creates a child
     QGraphicsScene *scene = new QGraphicsScene;
     QGraphicsView view(scene);
@@ -2455,12 +2465,11 @@ void tst_QGraphicsProxyWidget::popup_basic()
     view.show();
 
     SubQGraphicsProxyWidget *proxy = new SubQGraphicsProxyWidget;
-    QComboBox *box = new QComboBox;
     box->setGeometry(0, 0, 320, 40);
     box->addItems(QStringList() << "monday" << "tuesday" << "wednesday"
                   << "thursday" << "saturday" << "sunday");
     QCOMPARE(proxy->childItems().count(), 0);
-    proxy->setWidget(box);
+    proxy->setWidget(box.data());
     proxy->show();
     scene->addItem(proxy);
 
@@ -2480,12 +2489,7 @@ void tst_QGraphicsProxyWidget::popup_basic()
     QGraphicsProxyWidget *child = (QGraphicsProxyWidget*)(proxy->childItems())[0];
     QVERIFY(child->isWidget());
     QVERIFY(child->widget());
-    QStyleOptionComboBox opt;
-    opt.initFrom(box);
-    opt.editable = box->isEditable();
-    if (box->style()->styleHint(QStyle::SH_ComboBox_Popup, &opt))
-        QSKIP("Does not work due to SH_Combobox_Popup");
-    QCOMPARE(child->widget()->parent(), static_cast<QObject*>(box));
+    QCOMPARE(child->widget()->parent(), static_cast<QObject*>(box.data()));
 
     QTRY_COMPARE(proxy->pos(), QPointF(box->pos()));
     QCOMPARE(child->x(), qreal(box->x()));
@@ -2975,6 +2979,8 @@ void tst_QGraphicsProxyWidget::dontCrashWhenDie()
 
     QApplication::processEvents();
     delete w;
+    // This leaves an invisible proxy widget behind.
+    qDeleteAll(QApplication::topLevelWidgets());
 }
 
 void tst_QGraphicsProxyWidget::createProxyForChildWidget()
@@ -3472,7 +3478,8 @@ void tst_QGraphicsProxyWidget::clickFocus()
 {
     QGraphicsScene scene;
     scene.setItemIndexMethod(QGraphicsScene::NoIndex);
-    QGraphicsProxyWidget *proxy = scene.addWidget(new QLineEdit);
+    QLineEdit *le1 = new QLineEdit;
+    QGraphicsProxyWidget *proxy = scene.addWidget(le1);
 
     QGraphicsView view(&scene);
 
@@ -3524,6 +3531,7 @@ void tst_QGraphicsProxyWidget::clickFocus()
 
     scene.setFocusItem(0);
     proxy->setWidget(new QLineEdit); // resets focusWidget
+    delete le1;
 
     {
         QPointF lineEditCenter = proxy->mapToScene(proxy->boundingRect().center());
