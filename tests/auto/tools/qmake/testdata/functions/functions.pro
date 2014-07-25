@@ -173,3 +173,12 @@ testReplace($$shell_quote($$in), $$out, "shell_quote")
 testReplace($$reverse($$list(one two three)), three two one, "reverse")
 
 testReplace($$cat(textfile), hi '"holla he"' 'hu!')
+
+MOD.a.depends =
+MOD.b.depends =
+MOD.b.priority = 1
+MOD.c.depends = a b
+testReplace($$resolve_depends($$list(c), "MOD."), c b a)
+MOD.a.priority = 1
+MOD.b.priority = 0
+testReplace($$resolve_depends($$list(c), "MOD."), c a b)
