@@ -50,6 +50,7 @@ class tst_QPalette : public QObject
 private Q_SLOTS:
     void roleValues_data();
     void roleValues();
+    void copySemantics();
     void moveSemantics();
 };
 
@@ -88,6 +89,27 @@ void tst_QPalette::roleValues()
     QFETCH(int, role);
     QFETCH(int, value);
     QCOMPARE(role, value);
+}
+
+void tst_QPalette::copySemantics()
+{
+    QPalette src(Qt::red), dst;
+    const QPalette control = src; // copy construction
+    QVERIFY(src != dst);
+    QVERIFY(!src.isCopyOf(dst));
+    QCOMPARE(src, control);
+    QVERIFY(src.isCopyOf(control));
+    dst = src; // copy assignment
+    QCOMPARE(dst, src);
+    QCOMPARE(dst, control);
+    QVERIFY(dst.isCopyOf(src));
+
+    dst = QPalette(Qt::green);
+    QVERIFY(dst != src);
+    QVERIFY(dst != control);
+    QCOMPARE(src, control);
+    QVERIFY(!dst.isCopyOf(src));
+    QVERIFY(src.isCopyOf(control));
 }
 
 void tst_QPalette::moveSemantics()
