@@ -78,7 +78,20 @@ public:
     QTime startTime() const;
     void setStartTime(const QTime &time);
 
+    enum FrameRate {
+        DefaultFps,
+        SixtyFps,
+        ThirtyFps,
+        TwentyFps
+    };
+
+    FrameRate frameRate() const;
+    void setFrameRate(FrameRate fps);
+
     void updateTarget();
+
+public Q_SLOTS:
+    void start();
 
 protected:
     virtual bool isUpdateNeeded() const;
@@ -88,6 +101,8 @@ private:
     int _delay;
     int _duration;
     QTime _startTime;
+    FrameRate _fps;
+    int _skip;
 };
 
 class QProgressStyleAnimation : public QStyleAnimation

@@ -50,7 +50,7 @@ static const qreal ScrollBarFadeOutDuration = 200.0;
 static const qreal ScrollBarFadeOutDelay = 450.0;
 
 QStyleAnimation::QStyleAnimation(QObject *target) : QAbstractAnimation(target),
-    _delay(0), _duration(-1), _startTime(QTime::currentTime())
+    _delay(0), _duration(-1), _startTime(QTime::currentTime()), _fps(ThirtyFps), _skip(0)
 {
 }
 
@@ -93,6 +93,16 @@ void QStyleAnimation::setStartTime(const QTime &time)
     _startTime = time;
 }
 
+QStyleAnimation::FrameRate QStyleAnimation::frameRate() const
+{
+    return _fps;
+}
+
+void QStyleAnimation::setFrameRate(FrameRate fps)
+{
+    _fps = fps;
+}
+
 void QStyleAnimation::updateTarget()
 {
     QEvent event(QEvent::StyleAnimationUpdate);
@@ -102,6 +112,12 @@ void QStyleAnimation::updateTarget()
         stop();
 }
 
+void QStyleAnimation::start()
+{
+    _skip = 0;
+    QAbstractAnimation::start(DeleteWhenStopped);
+}
+
 bool QStyleAnimation::isUpdateNeeded() const
 {
     return currentTime() > _delay;
@@ -109,8 +125,11 @@ bool QStyleAnimation::isUpdateNeeded() const
 
 void QStyleAnimation::updateCurrentTime(int)
 {
-    if (target() && isUpdateNeeded())
-        updateTarget();
+    if (++_skip >= _fps) {
+        _skip = 0;
+        if (target() && isUpdateNeeded())
+            updateTarget();
+    }
 }
 
 QProgressStyleAnimation::QProgressStyleAnimation(int speed, QObject *target) :

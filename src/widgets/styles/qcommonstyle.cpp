@@ -1155,7 +1155,7 @@ void QCommonStylePrivate::startAnimation(QStyleAnimation *animation) const
     stopAnimation(animation->target());
     q->connect(animation, SIGNAL(destroyed()), SLOT(_q_removeAnimation()), Qt::UniqueConnection);
     animations.insert(animation->target(), animation);
-    animation->start(QAbstractAnimation::DeleteWhenStopped);
+    animation->start();
 }
 
 /*! \internal */
