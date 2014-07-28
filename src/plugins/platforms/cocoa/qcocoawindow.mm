@@ -516,7 +516,7 @@ void QCocoaWindow::setCocoaGeometry(const QRect &rect)
 
         // call this here: updateGeometry in qnsview.mm is a no-op for this case
         QWindowSystemInterface::handleGeometryChange(window(), rect);
-        QWindowSystemInterface::handleExposeEvent(window(), rect);
+        QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(0, 0), rect.size()));
     } else if (m_nsWindow) {
         NSRect bounds = qt_mac_flipRect(rect);
         [m_nsWindow setFrame:[m_nsWindow frameRectForContentRect:bounds] display:YES animate:NO];
@@ -1749,7 +1749,7 @@ void QCocoaWindow::exposeWindow()
         m_isExposed = true;
         m_exposedGeometry = geometry();
         m_exposedDevicePixelRatio = devicePixelRatio();
-        QWindowSystemInterface::handleExposeEvent(window(), QRegion(geometry()));
+        QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(0, 0), m_exposedGeometry.size()));
     }
 }
 
@@ -1780,7 +1780,7 @@ void QCocoaWindow::updateExposedGeometry()
     m_isExposed = true;
     m_exposedGeometry = geometry();
     m_exposedDevicePixelRatio = devicePixelRatio();
-    QWindowSystemInterface::handleExposeEvent(window(), QRegion(geometry()));
+    QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(0, 0), m_exposedGeometry.size()));
 }
 
 QWindow *QCocoaWindow::childWindowAt(QPoint windowPoint)

@@ -1389,7 +1389,7 @@ void QWindowsWindow::handleGeometryChange()
     // expose events when shrinking, synthesize.
     if (!testFlag(OpenGL_ES2) && isExposed()
         && !(m_data.geometry.width() > previousGeometry.width() || m_data.geometry.height() > previousGeometry.height())) {
-        fireExpose(QRegion(m_data.geometry), true);
+        fireExpose(QRect(QPoint(0, 0), m_data.geometry.size()), true);
     }
     if (previousGeometry.topLeft() != m_data.geometry.topLeft()) {
         QPlatformScreen *newScreen = screenForGeometry(m_data.geometry);
