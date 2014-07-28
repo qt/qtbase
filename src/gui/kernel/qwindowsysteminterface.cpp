@@ -493,17 +493,10 @@ void QWindowSystemInterface::handleScreenOrientationChange(QScreen *screen, Qt::
     QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 
-void QWindowSystemInterface::handleScreenGeometryChange(QScreen *screen, const QRect &geometry)
+void QWindowSystemInterface::handleScreenGeometryChange(QScreen *screen, const QRect &geometry, const QRect &availableGeometry)
 {
     QWindowSystemInterfacePrivate::ScreenGeometryEvent *e =
-            new QWindowSystemInterfacePrivate::ScreenGeometryEvent(screen, geometry);
-    QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
-}
-
-void QWindowSystemInterface::handleScreenAvailableGeometryChange(QScreen *screen, const QRect &availableGeometry)
-{
-    QWindowSystemInterfacePrivate::ScreenAvailableGeometryEvent *e =
-            new QWindowSystemInterfacePrivate::ScreenAvailableGeometryEvent(screen, availableGeometry);
+            new QWindowSystemInterfacePrivate::ScreenGeometryEvent(screen, geometry, availableGeometry);
     QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 

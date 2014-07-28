@@ -137,10 +137,9 @@ void QCocoaScreen::updateGeometry()
         m_name = QString::fromUtf8([[localizedNames objectForKey:[[localizedNames allKeys] objectAtIndex:0]] UTF8String]);
     [deviceInfo release];
 
-    QWindowSystemInterface::handleScreenGeometryChange(screen(), geometry());
+    QWindowSystemInterface::handleScreenGeometryChange(screen(), geometry(), availableGeometry());
     QWindowSystemInterface::handleScreenLogicalDotsPerInchChange(screen(), m_logicalDpi.first, m_logicalDpi.second);
     QWindowSystemInterface::handleScreenRefreshRateChange(screen(), m_refreshRate);
-    QWindowSystemInterface::handleScreenAvailableGeometryChange(screen(), availableGeometry());
 }
 
 qreal QCocoaScreen::devicePixelRatio() const

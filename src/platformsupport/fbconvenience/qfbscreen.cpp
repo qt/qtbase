@@ -171,8 +171,7 @@ void QFbScreen::setGeometry(const QRect &rect)
     mGeometry = rect;
     mScreenImage = new QImage(mGeometry.size(), mFormat);
     invalidateRectCache();
-    QWindowSystemInterface::handleScreenGeometryChange(QPlatformScreen::screen(), geometry());
-    QWindowSystemInterface::handleScreenAvailableGeometryChange(QPlatformScreen::screen(), availableGeometry());
+    QWindowSystemInterface::handleScreenGeometryChange(QPlatformScreen::screen(), geometry(), availableGeometry());
     resizeMaximizedWindows();
 }
 

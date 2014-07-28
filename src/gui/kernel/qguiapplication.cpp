@@ -1646,10 +1646,6 @@ void QGuiApplicationPrivate::processWindowSystemEvent(QWindowSystemInterfacePriv
         QGuiApplicationPrivate::reportGeometryChange(
                 static_cast<QWindowSystemInterfacePrivate::ScreenGeometryEvent *>(e));
         break;
-    case QWindowSystemInterfacePrivate::ScreenAvailableGeometry:
-        QGuiApplicationPrivate::reportAvailableGeometryChange(
-                static_cast<QWindowSystemInterfacePrivate::ScreenAvailableGeometryEvent *>(e));
-        break;
     case QWindowSystemInterfacePrivate::ScreenLogicalDotsPerInch:
         QGuiApplicationPrivate::reportLogicalDotsPerInchChange(
                 static_cast<QWindowSystemInterfacePrivate::ScreenLogicalDotsPerInchEvent *>(e));
@@ -2546,40 +2542,36 @@ void QGuiApplicationPrivate::reportGeometryChange(QWindowSystemInterfacePrivate:
         return;
 
     QScreen *s = e->screen.data();
+
+    bool geometryChanged = e->geometry != s->d_func()->geometry;
     s->d_func()->geometry = e->geometry;
 
-    Qt::ScreenOrientation primaryOrientation = s->primaryOrientation();
-    s->d_func()->updatePrimaryOrientation();
-
-    emit s->geometryChanged(s->geometry());
-    emit s->physicalSizeChanged(s->physicalSize());
-    emit s->physicalDotsPerInchChanged(s->physicalDotsPerInch());
-    emit s->logicalDotsPerInchChanged(s->logicalDotsPerInch());
-    foreach (QScreen* sibling, s->virtualSiblings())
-        emit sibling->virtualGeometryChanged(sibling->virtualGeometry());
-
-    if (s->primaryOrientation() != primaryOrientation)
-        emit s->primaryOrientationChanged(s->primaryOrientation());
-
-    if (s->d_func()->orientation == Qt::PrimaryOrientation)
-        updateFilteredScreenOrientation(s);
-}
-
-void QGuiApplicationPrivate::reportAvailableGeometryChange(
-        QWindowSystemInterfacePrivate::ScreenAvailableGeometryEvent *e)
-{
-    // This operation only makes sense after the QGuiApplication constructor runs
-    if (QCoreApplication::startingUp())
-        return;
-
-    if (!e->screen)
-        return;
-
-    QScreen *s = e->screen.data();
+    bool availableGeometryChanged = e->availableGeometry != s->d_func()->availableGeometry;
     s->d_func()->availableGeometry = e->availableGeometry;
 
-    foreach (QScreen* sibling, s->virtualSiblings())
-        emit sibling->virtualGeometryChanged(sibling->virtualGeometry());
+    if (geometryChanged) {
+        Qt::ScreenOrientation primaryOrientation = s->primaryOrientation();
+        s->d_func()->updatePrimaryOrientation();
+
+        emit s->geometryChanged(s->geometry());
+        emit s->physicalSizeChanged(s->physicalSize());
+        emit s->physicalDotsPerInchChanged(s->physicalDotsPerInch());
+        emit s->logicalDotsPerInchChanged(s->logicalDotsPerInch());
+
+        if (s->primaryOrientation() != primaryOrientation)
+            emit s->primaryOrientationChanged(s->primaryOrientation());
+
+        if (s->d_func()->orientation == Qt::PrimaryOrientation)
+            updateFilteredScreenOrientation(s);
+    }
+
+    if (availableGeometryChanged)
+        emit s->availableGeometryChanged(s->geometry());
+
+    if (geometryChanged || availableGeometryChanged) {
+        foreach (QScreen* sibling, s->virtualSiblings())
+            emit sibling->virtualGeometryChanged(sibling->virtualGeometry());
+    }
 }
 
 void QGuiApplicationPrivate::reportLogicalDotsPerInchChange(QWindowSystemInterfacePrivate::ScreenLogicalDotsPerInchEvent *e)

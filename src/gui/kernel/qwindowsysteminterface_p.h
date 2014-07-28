@@ -279,17 +279,10 @@ public:
 
     class ScreenGeometryEvent : public WindowSystemEvent {
     public:
-        ScreenGeometryEvent(QScreen *s, const QRect &g)
-            : WindowSystemEvent(ScreenGeometry), screen(s), geometry(g) { }
+        ScreenGeometryEvent(QScreen *s, const QRect &g, const QRect &ag)
+            : WindowSystemEvent(ScreenGeometry), screen(s), geometry(g), availableGeometry(ag) { }
         QPointer<QScreen> screen;
         QRect geometry;
-    };
-
-    class ScreenAvailableGeometryEvent : public WindowSystemEvent {
-    public:
-        ScreenAvailableGeometryEvent(QScreen *s, const QRect &g)
-            : WindowSystemEvent(ScreenAvailableGeometry), screen(s), availableGeometry(g) { }
-        QPointer<QScreen> screen;
         QRect availableGeometry;
     };
 

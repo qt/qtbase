@@ -346,15 +346,11 @@ void QWindowsScreen::handleChanges(const QWindowsScreenData &newData)
 {
     m_data.physicalSizeMM = newData.physicalSizeMM;
 
-    if (m_data.geometry != newData.geometry) {
+    if (m_data.geometry != newData.geometry || m_data.availableGeometry != newData.availableGeometry) {
         m_data.geometry = newData.geometry;
-        QWindowSystemInterface::handleScreenGeometryChange(screen(),
-                                                           newData.geometry);
-    }
-    if (m_data.availableGeometry != newData.availableGeometry) {
         m_data.availableGeometry = newData.availableGeometry;
-        QWindowSystemInterface::handleScreenAvailableGeometryChange(screen(),
-                                                                    newData.availableGeometry);
+        QWindowSystemInterface::handleScreenGeometryChange(screen(),
+                                                           newData.geometry, newData.availableGeometry);
     }
     if (!qFuzzyCompare(m_data.dpi.first, newData.dpi.first)
         || !qFuzzyCompare(m_data.dpi.second, newData.dpi.second)) {

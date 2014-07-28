@@ -238,30 +238,26 @@ QIOSScreen::~QIOSScreen()
 
 void QIOSScreen::updateProperties()
 {
+    QRect previousGeometry = m_geometry;
+    QRect previousAvailableGeometry = m_availableGeometry;
+
     bool inPortrait = UIInterfaceOrientationIsPortrait(m_uiWindow.rootViewController.interfaceOrientation);
-    QRect geometry = inPortrait ? fromCGRect(m_uiScreen.bounds).toRect()
+    m_geometry = inPortrait ? fromCGRect(m_uiScreen.bounds).toRect()
         : QRect(m_uiScreen.bounds.origin.x, m_uiScreen.bounds.origin.y,
             m_uiScreen.bounds.size.height, m_uiScreen.bounds.size.width);
 
-    if (geometry != m_geometry) {
-        m_geometry = geometry;
+    m_availableGeometry = m_geometry;
 
+    CGSize applicationFrameSize = m_uiScreen.applicationFrame.size;
+    int statusBarHeight = m_geometry.height() - (inPortrait ? applicationFrameSize.height : applicationFrameSize.width);
+
+    m_availableGeometry.adjust(0, statusBarHeight, 0, 0);
+
+    if (m_geometry != previousGeometry || m_availableGeometry != previousAvailableGeometry) {
         const qreal millimetersPerInch = 25.4;
         m_physicalSize = QSizeF(m_geometry.size()) / m_unscaledDpi * millimetersPerInch;
 
-        QWindowSystemInterface::handleScreenGeometryChange(screen(), m_geometry);
-    }
-
-    QRect availableGeometry = geometry;
-
-    CGSize applicationFrameSize = m_uiScreen.applicationFrame.size;
-    int statusBarHeight = geometry.height() - (inPortrait ? applicationFrameSize.height : applicationFrameSize.width);
-
-    availableGeometry.adjust(0, statusBarHeight, 0, 0);
-
-    if (availableGeometry != m_availableGeometry) {
-        m_availableGeometry = availableGeometry;
-        QWindowSystemInterface::handleScreenAvailableGeometryChange(screen(), m_availableGeometry);
+        QWindowSystemInterface::handleScreenGeometryChange(screen(), m_geometry, m_availableGeometry);
     }
 
     if (screen())

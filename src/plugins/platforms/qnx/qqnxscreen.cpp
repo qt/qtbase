@@ -445,7 +445,7 @@ void QQnxScreen::setRotation(int rotation)
         // Rotating only the primary screen is what we had in the navigator event handler before refactoring
         if (m_primaryScreen) {
             QWindowSystemInterface::handleScreenOrientationChange(screen(), orientation());
-            QWindowSystemInterface::handleScreenGeometryChange(screen(), m_currentGeometry);
+            QWindowSystemInterface::handleScreenGeometryChange(screen(), m_currentGeometry, availableGeometry());
         }
 
         // Flush everything, so that the windows rotations are applied properly.
@@ -705,7 +705,7 @@ void QQnxScreen::keyboardHeightChanged(int height)
 
     m_keyboardHeight = height;
 
-    QWindowSystemInterface::handleScreenAvailableGeometryChange(screen(), availableGeometry());
+    QWindowSystemInterface::handleScreenGeometryChange(screen(), geometry(), availableGeometry());
 }
 
 void QQnxScreen::addOverlayWindow(screen_window_t window)

@@ -1032,8 +1032,7 @@ HRESULT QWinRTScreen::onSizeChanged(ICoreWindow *, IWindowSizeChangedEventArgs *
     // a more advanced compositor is written.
     d->logicalSize = logicalSize;
     const QRect newGeometry = geometry();
-    QWindowSystemInterface::handleScreenGeometryChange(screen(), newGeometry);
-    QWindowSystemInterface::handleScreenAvailableGeometryChange(screen(), newGeometry);
+    QWindowSystemInterface::handleScreenGeometryChange(screen(), newGeometry, newGeometry);
     QPlatformScreen::resizeMaximizedWindows();
     handleExpose();
 

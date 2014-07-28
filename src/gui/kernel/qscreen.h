@@ -69,11 +69,11 @@ class Q_GUI_EXPORT QScreen : public QObject
     Q_PROPERTY(QString name READ name CONSTANT)
     Q_PROPERTY(int depth READ depth CONSTANT)
     Q_PROPERTY(QSize size READ size NOTIFY geometryChanged)
-    Q_PROPERTY(QSize availableSize READ availableSize NOTIFY virtualGeometryChanged)
+    Q_PROPERTY(QSize availableSize READ availableSize NOTIFY availableGeometryChanged)
     Q_PROPERTY(QSize virtualSize READ virtualSize NOTIFY virtualGeometryChanged)
     Q_PROPERTY(QSize availableVirtualSize READ availableVirtualSize NOTIFY virtualGeometryChanged)
     Q_PROPERTY(QRect geometry READ geometry NOTIFY geometryChanged)
-    Q_PROPERTY(QRect availableGeometry READ availableGeometry NOTIFY virtualGeometryChanged)
+    Q_PROPERTY(QRect availableGeometry READ availableGeometry NOTIFY availableGeometryChanged)
     Q_PROPERTY(QRect virtualGeometry READ virtualGeometry NOTIFY virtualGeometryChanged)
     Q_PROPERTY(QRect availableVirtualGeometry READ availableVirtualGeometry NOTIFY virtualGeometryChanged)
     Q_PROPERTY(QSizeF physicalSize READ physicalSize NOTIFY physicalSizeChanged)
@@ -142,6 +142,7 @@ public:
 
 Q_SIGNALS:
     void geometryChanged(const QRect &geometry);
+    void availableGeometryChanged(const QRect &geometry);
     void physicalSizeChanged(const QSizeF &size);
     void physicalDotsPerInchChanged(qreal dpi);
     void logicalDotsPerInchChanged(qreal dpi);
