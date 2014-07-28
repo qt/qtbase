@@ -155,6 +155,22 @@
     self.view = [[[QIOSDesktopManagerView alloc] init] autorelease];
 }
 
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+
+    NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+    [center addObserver:self selector:@selector(willChangeStatusBarFrame:)
+            name:UIApplicationWillChangeStatusBarFrameNotification
+            object:[UIApplication sharedApplication]];
+}
+
+- (void)viewDidUnload
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:nil object:nil];
+    [super viewDidUnload];
+}
+
 -(BOOL)shouldAutorotate
 {
     // Until a proper orientation and rotation API is in place, we always auto rotate.
@@ -178,6 +194,26 @@
     return YES;
 }
 #endif
+
+- (void)willChangeStatusBarFrame:(NSNotification*)notification
+{
+    Q_UNUSED(notification);
+
+    if (self.view.window.screen != [UIScreen mainScreen])
+        return;
+
+    // UIKit doesn't have a delegate callback for statusbar changes that's run inside the
+    // animation block, like UIViewController's willAnimateRotationToInterfaceOrientation,
+    // nor does it expose a constant for the duration and easing of the animation. However,
+    // though poking at the various UIStatusBar methods, we can observe that the animation
+    // uses the default easing curve, and runs with a duration of 0.35 seconds.
+    static qreal kUIStatusBarAnimationDuration = 0.35;
+
+    [UIView animateWithDuration:kUIStatusBarAnimationDuration animations:^{
+        [self.view setNeedsLayout];
+        [self.view layoutIfNeeded];
+    }];
+}
 
 - (void)viewWillLayoutSubviews
 {
