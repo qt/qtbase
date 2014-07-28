@@ -109,10 +109,24 @@
 
     \snippet hellogl/glwidget.cpp 5
 
-    In the above slot, the \c xRot variable is updated only if the new angle
-    is different to the old one, the \c xRotationChanged() signal is emitted to
-    allow other components to be updated, and the widget's
-    \l{QGLWidget::updateGL()}{updateGL()} handler function is called.
+    In the above slot, the \c xRot variable is updated only if the new angle is
+    different to the old one, the \c xRotationChanged() signal is emitted to
+    allow other components to be updated, and an update is scheduled.
+
+    Note that the widget's \l{QGLWidget::updateGL()}{updateGL()} function is not
+    called directly from here. Triggering rendering and buffer swaps directly
+    from the input event handlers is not desirable. Such events may, depending
+    on the platform, occur at a high frequency, and calling a potentially
+    blocking function like \l{QOpenGLContext::swapBuffers()}{swapBuffers} may
+    lead to unexpected results due to the main thread not being able to process
+    the input events at a proper rate.
+
+    Instead, update() is used. This will eventually lead to a paint event, which
+    will in turn invoke paintGL(). Multiple calls to update() in a row will make
+    no difference while the event is still pending. This way the UI will perform
+    equally well with blocking swaps, that is, a a
+    \l{QGLFormat::swapInterval()}{swap interval} of 1, and non-vsynced
+    configurations.
 
     The \c setYRotation() and \c setZRotation() slots perform the same task for
     rotations measured by the \c yRot and \c zRot variables.
