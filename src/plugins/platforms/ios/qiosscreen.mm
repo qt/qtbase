@@ -294,8 +294,15 @@ qreal QIOSScreen::devicePixelRatio() const
 
 Qt::ScreenOrientation QIOSScreen::nativeOrientation() const
 {
-    // A UIScreen stays in the native orientation, regardless of rotation
-    return m_uiScreen.bounds.size.width >= m_uiScreen.bounds.size.height ?
+    CGRect nativeBounds =
+#if QT_IOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__IPHONE_8_0)
+        QSysInfo::MacintoshVersion >= QSysInfo::MV_IOS_8_0 ? m_uiScreen.nativeBounds :
+#endif
+        m_uiScreen.bounds;
+
+    // All known iOS devices have a native orientation of portrait, but to
+    // be on the safe side we compare the width and height of the bounds.
+    return nativeBounds.size.width >= nativeBounds.size.height ?
         Qt::LandscapeOrientation : Qt::PortraitOrientation;
 }
 
