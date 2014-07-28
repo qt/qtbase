@@ -136,7 +136,7 @@ protected:
 
     virtual int select(int nfds,
                        fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
-                       timespec *timeout) Q_DECL_FINAL;
+                       timespec *timeout);
 };
 
 class Q_CORE_EXPORT QEventDispatcherUNIXPrivate : public QAbstractEventDispatcherPrivate

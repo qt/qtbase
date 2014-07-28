@@ -120,6 +120,7 @@ namespace QtAndroid
     const char *qtTagText();
 
     QString deviceName();
+    bool blockEventLoopsWhenSuspended();
 }
 
 QT_END_NAMESPACE

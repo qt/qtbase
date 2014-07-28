@@ -47,15 +47,14 @@
 #include <QThread>
 #include <QOffscreenSurface>
 
-#include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
 #include <QtPlatformSupport/private/qeglpbuffer_p.h>
-
 #include <qpa/qwindowsysteminterface.h>
 #include <qpa/qplatformwindow.h>
 #include <qpa/qplatformoffscreensurface.h>
 
 #include "androidjnimain.h"
 #include "qabstracteventdispatcher.h"
+#include "qandroideventdispatcher.h"
 #include "qandroidplatformbackingstore.h"
 #include "qandroidplatformaccessibility.h"
 #include "qandroidplatformclipboard.h"
@@ -236,7 +235,7 @@ QPlatformWindow *QAndroidPlatformIntegration::createPlatformWindow(QWindow *wind
 
 QAbstractEventDispatcher *QAndroidPlatformIntegration::createEventDispatcher() const
 {
-    return createUnixEventDispatcher();
+    return new QAndroidEventDispatcher;
 }
 
 QAndroidPlatformIntegration::~QAndroidPlatformIntegration()

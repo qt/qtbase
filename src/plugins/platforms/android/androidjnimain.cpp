@@ -69,6 +69,7 @@
 #include <android/bitmap.h>
 #include <android/asset_manager_jni.h>
 #include "qandroidassetsfileenginehandler.h"
+#include "qandroideventdispatcher.h"
 #include <android/api-level.h>
 #include <QtCore/private/qjnihelpers_p.h>
 
@@ -426,6 +427,12 @@ namespace QtAndroid
                                      surfaceId);
     }
 
+    bool blockEventLoopsWhenSuspended()
+    {
+        static bool block = qgetenv("QT_BLOCK_EVENT_LOOPS_WHEN_SUSPENDED").toInt();
+        return block;
+    }
+
 } // namespace QtAndroid
 
 
@@ -596,10 +603,22 @@ static void updateApplicationState(JNIEnv */*env*/, jobject /*thiz*/, jint state
 {
     m_activityActive = (state == Qt::ApplicationActive);
 
-    if (!m_androidPlatformIntegration || !QGuiApplicationPrivate::platformIntegration())
+    if (!m_main || !m_androidPlatformIntegration || !QGuiApplicationPrivate::platformIntegration())
         return;
 
-    QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationState(state));
+    if (state <= Qt::ApplicationInactive) {
+        // Don't send timers and sockets events anymore if we are going to hide all windows
+        QAndroidEventDispatcherStopper::instance()->goingToStop(true);
+        QCoreApplication::processEvents();
+        QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationState(state));
+        QWindowSystemInterface::flushWindowSystemEvents();
+        if (state == Qt::ApplicationSuspended)
+            QAndroidEventDispatcherStopper::instance()->stopAll();
+    } else {
+        QAndroidEventDispatcherStopper::instance()->startAll();
+        QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationState(state));
+        QAndroidEventDispatcherStopper::instance()->goingToStop(false);
+    }
 }
 
 static void handleOrientationChanged(JNIEnv */*env*/, jobject /*thiz*/, jint newRotation, jint nativeOrientation)

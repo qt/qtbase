@@ -892,6 +892,13 @@ public class QtActivity extends Activity
                 getWindow().setBackgroundDrawableResource(m_activityInfo.metaData.getInt("android.app.splash_screen_drawable"));
             else
                 getWindow().setBackgroundDrawable(new ColorDrawable(0xff000000));
+
+            if (m_activityInfo.metaData.containsKey("android.app.background_running")
+                && m_activityInfo.metaData.getBoolean("android.app.background_running")) {
+                ENVIRONMENT_VARIABLES += "QT_BLOCK_EVENT_LOOPS_WHEN_SUSPENDED=0\t";
+            } else {
+                ENVIRONMENT_VARIABLES += "QT_BLOCK_EVENT_LOOPS_WHEN_SUSPENDED=1\t";
+            }
             startApp(true);
         }
     }
