@@ -1,0 +1,97 @@
+From f506d5b7f03110fd31466ca20e46375f1316ac41 Mon Sep 17 00:00:00 2001
+From: Andrew Knight <andrew.knight@digia.com>
+Date: Mon, 28 Jul 2014 10:14:09 +0300
+Subject: [PATCH] ANGLE: Add support for querying platform device
+
+The EGL_EXT_device_base extension allows for querying the platform
+device of the graphics hardware via eglQueryDisplayAttribEXT().
+As that extension is not supported by ANGLE, this patch adds similar
+functionality to the existing eglQuerySurfacePointerANGLE API. When
+EGL_DEVICE_EXT is passed as the queried attribute, the underlying
+D3D/DXGI device pointer is passed back to the caller via the value
+argument.
+
+The D3D device is needed for video support in QtMultimedia as well as
+the IDXGIDevice3::Trim() calls required by the Windows Store.
+
+Change-Id: Ibdf228d81d6604e56db9dd8597d7cd2983ebc428
+---
+ src/3rdparty/angle/src/libEGL/libEGL.cpp | 47 +++++++++++++++++++++++++-------
+ 1 file changed, 37 insertions(+), 10 deletions(-)
+
+diff --git a/src/3rdparty/angle/src/libEGL/libEGL.cpp b/src/3rdparty/angle/src/libEGL/libEGL.cpp
+index a08e1ed..c236d52 100644
+--- a/src/3rdparty/angle/src/libEGL/libEGL.cpp
++++ b/src/3rdparty/angle/src/libEGL/libEGL.cpp
+@@ -15,6 +15,9 @@
+ #include "libGLESv2/Texture.h"
+ #include "libGLESv2/main.h"
+ #include "libGLESv2/renderer/SwapChain.h"
++#if defined(ANGLE_ENABLE_D3D11)
++#  include "libGLESv2/renderer/d3d/d3d11/Renderer11.h"
++#endif
+ 
+ #include "libEGL/main.h"
+ #include "libEGL/Display.h"
+@@ -481,24 +484,48 @@ EGLBoolean __stdcall eglQuerySurfacePointerANGLE(EGLDisplay dpy, EGLSurface surf
+     egl::Display *display = static_cast<egl::Display*>(dpy);
+     egl::Surface *eglSurface = (egl::Surface*)surface;
+ 
+-    if (!validateSurface(display, eglSurface))
+-    {
+-        return EGL_FALSE;
+-    }
+-
+-    if (surface == EGL_NO_SURFACE)
+-    {
+-        return egl::error(EGL_BAD_SURFACE, EGL_FALSE);
+-    }
+-
+     switch (attribute)
+     {
+       case EGL_D3D_TEXTURE_2D_SHARE_HANDLE_ANGLE:
+         {
++            if (!validateSurface(display, eglSurface))
++            {
++                return EGL_FALSE;
++            }
++
++            if (surface == EGL_NO_SURFACE)
++            {
++                return egl::error(EGL_BAD_SURFACE, EGL_FALSE);
++            }
++
+             rx::SwapChain *swapchain = eglSurface->getSwapChain();
+             *value = (void*) (swapchain ? swapchain->getShareHandle() : NULL);
+         }
+         break;
++#if defined(ANGLE_ENABLE_D3D11)
++      case EGL_DEVICE_EXT:
++        {
++            if (!validateDisplay(display))
++            {
++                return EGL_FALSE;
++            }
++
++            rx::Renderer *renderer = display->getRenderer();
++            if (!renderer)
++            {
++                *value = NULL;
++                break;
++            }
++
++            if (renderer->getMajorShaderModel() < 4)
++            {
++                return egl::error(EGL_BAD_CONTEXT, EGL_FALSE);
++            }
++
++            *value = static_cast<rx::Renderer11*>(renderer)->getDevice();
++        }
++        break;
++#endif
+       default:
+         return egl::error(EGL_BAD_ATTRIBUTE, EGL_FALSE);
+     }
+-- 
+1.9.0.msysgit.0
+

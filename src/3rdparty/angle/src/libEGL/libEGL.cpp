@@ -15,6 +15,9 @@
 #include "libGLESv2/Texture.h"
 #include "libGLESv2/main.h"
 #include "libGLESv2/renderer/SwapChain.h"
+#if defined(ANGLE_ENABLE_D3D11)
+#  include "libGLESv2/renderer/d3d/d3d11/Renderer11.h"
+#endif
 
 #include "libEGL/main.h"
 #include "libEGL/Display.h"
@@ -481,24 +484,48 @@ EGLBoolean __stdcall eglQuerySurfacePointerANGLE(EGLDisplay dpy, EGLSurface surf
     egl::Display *display = static_cast<egl::Display*>(dpy);
     egl::Surface *eglSurface = (egl::Surface*)surface;
 
-    if (!validateSurface(display, eglSurface))
-    {
-        return EGL_FALSE;
-    }
-
-    if (surface == EGL_NO_SURFACE)
-    {
-        return egl::error(EGL_BAD_SURFACE, EGL_FALSE);
-    }
-
     switch (attribute)
     {
       case EGL_D3D_TEXTURE_2D_SHARE_HANDLE_ANGLE:
         {
+            if (!validateSurface(display, eglSurface))
+            {
+                return EGL_FALSE;
+            }
+
+            if (surface == EGL_NO_SURFACE)
+            {
+                return egl::error(EGL_BAD_SURFACE, EGL_FALSE);
+            }
+
             rx::SwapChain *swapchain = eglSurface->getSwapChain();
             *value = (void*) (swapchain ? swapchain->getShareHandle() : NULL);
         }
         break;
+#if defined(ANGLE_ENABLE_D3D11)
+      case EGL_DEVICE_EXT:
+        {
+            if (!validateDisplay(display))
+            {
+                return EGL_FALSE;
+            }
+
+            rx::Renderer *renderer = display->getRenderer();
+            if (!renderer)
+            {
+                *value = NULL;
+                break;
+            }
+
+            if (renderer->getMajorShaderModel() < 4)
+            {
+                return egl::error(EGL_BAD_CONTEXT, EGL_FALSE);
+            }
+
+            *value = static_cast<rx::Renderer11*>(renderer)->getDevice();
+        }
+        break;
+#endif
       default:
         return egl::error(EGL_BAD_ATTRIBUTE, EGL_FALSE);
     }
