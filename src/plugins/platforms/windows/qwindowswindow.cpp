@@ -1952,7 +1952,7 @@ void QWindowsWindow::getSizeHints(MINMAXINFO *mmi) const
             mmi->ptMaxPosition.x = screen->availableGeometry().x();
             mmi->ptMaxPosition.y = screen->availableGeometry().y();
         } else if (!screen){
-            qWarning() << "effectiveScreen() returned a null screen";
+            qWarning() << "window()->screen() returned a null screen";
         }
     }
 
