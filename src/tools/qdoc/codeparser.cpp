@@ -340,8 +340,8 @@ void CodeParser::extractPageLinkAndDesc(const QString& arg,
     else {
         int spaceAt = arg.indexOf(QLatin1Char(' '));
         if (arg.contains(QLatin1String(".html")) && spaceAt != -1) {
-            *link = arg.left(spaceAt).trimmed();
-            *desc = arg.mid(spaceAt).trimmed();
+            *link = arg.leftRef(spaceAt).trimmed().toString();
+            *desc = arg.midRef(spaceAt).trimmed().toString();
         }
         else {
             *link = arg;
