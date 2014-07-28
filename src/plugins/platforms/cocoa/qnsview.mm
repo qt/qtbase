@@ -1006,7 +1006,9 @@ Q_GLOBAL_STATIC(QCocoaTabletDeviceDataHash, tabletDeviceDataHash)
     if (deviceData.capabilityMask & 0x0800)
         tangentialPressure = ([theEvent tangentialPressure] * 2.0) - 1.0;
 
-    rotation = [theEvent rotation];
+    rotation = 360.0 - [theEvent rotation];
+    if (rotation > 180.0)
+        rotation -= 360.0;
 
     Qt::KeyboardModifiers keyboardModifiers = [QNSView convertKeyModifiers:[theEvent modifierFlags]];
 
