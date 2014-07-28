@@ -135,20 +135,7 @@
     // from what we end up with after applying window constraints.
     QRect requestedGeometry = m_qioswindow->geometry();
 
-    QRect actualGeometry;
-    if (m_qioswindow->window()->isTopLevel()) {
-        UIWindow *uiWindow = self.window;
-        UIView *rootView = uiWindow.rootViewController.view;
-        CGRect rootViewPositionInRelationToRootViewController =
-            [rootView convertRect:uiWindow.bounds fromView:uiWindow];
-
-        actualGeometry = fromCGRect(CGRectOffset([self.superview convertRect:self.frame toView:rootView],
-                                    -rootViewPositionInRelationToRootViewController.origin.x,
-                                    -rootViewPositionInRelationToRootViewController.origin.y
-                                    + rootView.bounds.origin.y)).toRect();
-    } else {
-        actualGeometry = fromCGRect(self.frame).toRect();
-    }
+    QRect actualGeometry = fromCGRect(self.frame).toRect();
 
     // Persist the actual/new geometry so that QWindow::geometry() can
     // be queried on the resize event.

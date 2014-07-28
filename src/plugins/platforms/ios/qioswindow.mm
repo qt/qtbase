@@ -178,24 +178,7 @@ void QIOSWindow::applyGeometry(const QRect &rect)
     // The baseclass takes care of persisting this for us.
     QPlatformWindow::setGeometry(rect);
 
-    if (window()->isTopLevel()) {
-        // The QWindow is in QScreen coordinates, which maps to a possibly rotated root-view-controller.
-        // Since the root-view-controller might be translated in relation to the UIWindow, we need to
-        // check specifically for that and compensate. Also check if the root view has been scrolled
-        // as a result of the keyboard being open.
-        UIWindow *uiWindow = m_view.window;
-        UIView *rootView = uiWindow.rootViewController.view;
-        CGRect rootViewPositionInRelationToRootViewController =
-            [rootView convertRect:uiWindow.bounds fromView:uiWindow];
-
-        m_view.frame = CGRectOffset([m_view.superview convertRect:toCGRect(rect) fromView:rootView],
-                rootViewPositionInRelationToRootViewController.origin.x,
-                rootViewPositionInRelationToRootViewController.origin.y
-                + rootView.bounds.origin.y);
-    } else {
-        // Easy, in parent's coordinates
-        m_view.frame = toCGRect(rect);
-    }
+    m_view.frame = toCGRect(rect);
 
     // iOS will automatically trigger -[layoutSubviews:] for resize,
     // but not for move, so we force it just in case.
