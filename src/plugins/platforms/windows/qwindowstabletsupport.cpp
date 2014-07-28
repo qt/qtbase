@@ -465,7 +465,9 @@ bool QWindowsTabletSupport::translateTabletPacketEvent()
             const double degY = atan(cos(radAzim) / tanAlt);
             tiltX = int(degX * (180 / M_PI));
             tiltY = int(-degY * (180 / M_PI));
-            rotation = packet.pkOrientation.orTwist;
+            rotation = 360.0 - (packet.pkOrientation.orTwist / 10.0);
+            if (rotation > 180.0)
+                rotation -= 360.0;
         }
 
         if (QWindowsContext::verbose > 1)  {
