@@ -1480,10 +1480,7 @@ void VcprojGenerator::initFormFiles()
     vcProject.FormFiles.ParseFiles = _False;
     vcProject.FormFiles.Filter = "ui";
     vcProject.FormFiles.Guid = _GUIDFormFiles;
-
     vcProject.FormFiles.addFiles(project->values("FORMS"));
-    vcProject.FormFiles.addFiles(project->values("FORMS3"));
-
     vcProject.FormFiles.Project = this;
     vcProject.FormFiles.Config = &(vcProject.Configuration);
     vcProject.FormFiles.CustomBuild = none;
@@ -1543,7 +1540,6 @@ void VcprojGenerator::initExtraCompilerOutputs()
 {
     ProStringList otherFilters;
     otherFilters << "FORMS"
-                 << "FORMS3"
                  << "GENERATED_FILES"
                  << "GENERATED_SOURCES"
                  << "HEADERS"
