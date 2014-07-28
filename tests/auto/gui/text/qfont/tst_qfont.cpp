@@ -535,20 +535,6 @@ void tst_QFont::insertAndRemoveSubstitutions()
     QVERIFY(QFont::substitutes("bogusfontfamily").isEmpty());
 }
 
-static QFont copyFont(const QFont &font1) // copy using a QDataStream
-{
-    QBuffer buffer;
-    buffer.open(QIODevice::WriteOnly);
-    QDataStream ds(&buffer);
-    ds << font1;
-    buffer.close();
-
-    buffer.open(QIODevice::ReadOnly);
-    QFont font2;
-    ds >> font2;
-    return font2;
-}
-
 Q_DECLARE_METATYPE(QDataStream::Version)
 
 void tst_QFont::serialize_data()
