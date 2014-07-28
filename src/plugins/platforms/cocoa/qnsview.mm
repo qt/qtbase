@@ -66,6 +66,8 @@
 #include <accessibilityinspector.h>
 #endif
 
+Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.tabletsupport")
+
 static QTouchDevice *touchDevice = 0;
 
 // ### HACK Remove once 10.8 is unsupported
@@ -994,6 +996,7 @@ Q_GLOBAL_STATIC(QCocoaTabletDeviceDataHash, tabletDeviceDataHash)
     NSPoint tilt = [theEvent tilt];
     int xTilt = qRound(tilt.x * 60.0);
     int yTilt = qRound(tilt.y * -60.0);
+    Qt::MouseButtons buttons = static_cast<Qt::MouseButtons>(static_cast<uint>([theEvent buttonMask]));
     qreal tangentialPressure = 0;
     qreal rotation = 0;
     int z = 0;
@@ -1007,8 +1010,13 @@ Q_GLOBAL_STATIC(QCocoaTabletDeviceDataHash, tabletDeviceDataHash)
 
     Qt::KeyboardModifiers keyboardModifiers = [QNSView convertKeyModifiers:[theEvent modifierFlags]];
 
-    QWindowSystemInterface::handleTabletEvent(m_window, timestamp, down, windowPoint, screenPoint,
-                                              deviceData.device, deviceData.pointerType, pressure, xTilt, yTilt,
+    qCDebug(lcQpaTablet, "event on tablet %d with tool %d type %d unique ID %lld pos %6.1f, %6.1f root pos %6.1f, %6.1f buttons 0x%x pressure %4.2lf tilt %d, %d rotation %6.2lf",
+        deviceId, deviceData.device, deviceData.pointerType, deviceData.uid,
+        windowPoint.x(), windowPoint.y(), screenPoint.x(), screenPoint.y(),
+        static_cast<uint>(buttons), pressure, xTilt, yTilt, rotation);
+
+    QWindowSystemInterface::handleTabletEvent(m_window, timestamp, windowPoint, screenPoint,
+                                              deviceData.device, deviceData.pointerType, buttons, pressure, xTilt, yTilt,
                                               tangentialPressure, rotation, z, deviceData.uid,
                                               keyboardModifiers);
 }
@@ -1099,6 +1107,9 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     } else {
         tabletDeviceDataHash->remove(deviceId);
     }
+
+    qCDebug(lcQpaTablet, "proximity change on tablet %d: current tool %d type %d unique ID %lld",
+        deviceId, deviceData.device, deviceData.pointerType, deviceData.uid);
 
     if (entering) {
         QWindowSystemInterface::handleTabletEnterProximityEvent(timestamp, deviceData.device, deviceData.pointerType, deviceData.uid);
