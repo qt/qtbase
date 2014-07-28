@@ -723,8 +723,10 @@ void QXcbWindow::show()
         updateNetWmStateBeforeMap();
     }
 
-    QXcbWindowFunctions::WmWindowTypes wmWindowTypes(window()->property(wm_window_type_property_id).value<int>());
-    setWmWindowType(wmWindowTypes);
+    if (window()->metaObject()->indexOfProperty(wm_window_type_property_id) >= 0) {
+        QXcbWindowFunctions::WmWindowTypes wmWindowTypes(window()->property(wm_window_type_property_id).value<int>());
+        setWmWindowType(wmWindowTypes);
+    }
 
     if (connection()->time() != XCB_TIME_CURRENT_TIME)
         updateNetWmUserTime(connection()->time());
