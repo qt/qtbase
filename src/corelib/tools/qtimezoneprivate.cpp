@@ -446,32 +446,43 @@ QTimeZone::OffsetData QTimeZonePrivate::toOffsetData(const QTimeZonePrivate::Dat
 bool QTimeZonePrivate::isValidId(const QByteArray &ianaId)
 {
     // Rules for defining TZ/IANA names as per ftp://ftp.iana.org/tz/code/Theory
-    // * Use only valid POSIX file name components
-    // * Within a file name component, use only ASCII letters, `.', `-' and `_'.
-    // * Do not use digits
-    // * A file name component must not exceed 14 characters or start with `-'
-    // Aliases such as "Etc/GMT+7" and "SystemV/EST5EDT" are valid so we need to accept digits
-    if (ianaId.contains(' '))
-        return false;
-    QList<QByteArray> parts = ianaId.split('/');
-    foreach (const QByteArray &part, parts) {
-        if (part.size() > 14 || part.size() < 1)
-            return false;
-        if (part.at(0) == '-')
-            return false;
-        for (int i = 0; i < part.size(); ++i) {
-            QChar ch = part.at(i);
-            if (!(ch >= 'a' && ch <= 'z')
+    // 1. Use only valid POSIX file name components
+    // 2. Within a file name component, use only ASCII letters, `.', `-' and `_'.
+    // 3. Do not use digits
+    // 4. A file name component must not exceed 14 characters or start with `-'
+    // Aliases such as "Etc/GMT+7" and "SystemV/EST5EDT" are valid so we need to accept digits, ':', and '+'.
+
+    // The following would be preferable if QRegExp would work on QByteArrays directly:
+    // const QRegExp rx(QStringLiteral("[a-z0-9:+._][a-z0-9:+._-]{,13}(?:/[a-z0-9:+._][a-z0-9:+._-]{,13})*"),
+    //                  Qt::CaseInsensitive);
+    // return rx.exactMatch(ianaId);
+
+    // hand-rolled version:
+    const int MinSectionLength = 1;
+    const int MaxSectionLength = 14;
+    int sectionLength = 0;
+    for (const char *it = ianaId.begin(), * const end = ianaId.end(); it != end; ++it, ++sectionLength) {
+        const char ch = *it;
+        if (ch == '/') {
+            if (sectionLength < MinSectionLength || sectionLength > MaxSectionLength)
+                return false; // violates (4)
+            sectionLength = -1;
+        } else if (ch == '-') {
+            if (sectionLength == 0)
+                return false; // violates (4)
+        } else if (!(ch >= 'a' && ch <= 'z')
                 && !(ch >= 'A' && ch <= 'Z')
                 && !(ch == '_')
                 && !(ch >= '0' && ch <= '9')
                 && !(ch == '-')
                 && !(ch == '+')
                 && !(ch == ':')
-                && !(ch == '.'))
-                return false;
+                && !(ch == '.')) {
+            return false; // violates (2)
         }
     }
+    if (sectionLength < MinSectionLength || sectionLength > MaxSectionLength)
+        return false; // violates (4)
     return true;
 }
 
