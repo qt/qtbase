@@ -60,6 +60,8 @@ private slots:
     void availableTimeZoneIds();
     void stressTest();
     void windowsId();
+    void isValidId_data();
+    void isValidId();
     // Backend tests
     void utcTest();
     void icuTest();
@@ -519,6 +521,65 @@ void tst_QTimeZone::windowsId()
     list.clear();
     QCOMPARE(QTimeZone::windowsIdToIanaIds(QByteArray()), list);
     QCOMPARE(QTimeZone::windowsIdToIanaIds(QByteArray(), QLocale::AnyCountry), list);
+}
+
+void tst_QTimeZone::isValidId_data()
+{
+#ifdef QT_BUILD_INTERNAL
+    QTest::addColumn<QByteArray>("input");
+    QTest::addColumn<bool>("valid");
+
+#define TESTSET(name, section, valid) \
+    QTest::newRow(name " front")  << QByteArray(section "/xyz/xyz")    << valid; \
+    QTest::newRow(name " middle") << QByteArray("xyz/" section "/xyz") << valid; \
+    QTest::newRow(name " back")   << QByteArray("xyz/xyz/" section)    << valid
+
+    TESTSET("empty", "", false);
+    TESTSET("minimal", "m", true);
+    TESTSET("maximal", "12345678901234", true);
+    TESTSET("too long", "123456789012345", false);
+
+    TESTSET("bad hyphen", "-hyphen", false);
+    TESTSET("good hyphen", "hy-phen", true);
+
+    TESTSET("valid char _", "_", true);
+    TESTSET("valid char .", ".", true);
+    TESTSET("valid char :", ":", true);
+    TESTSET("valid char +", "+", true);
+    TESTSET("valid char A", "A", true);
+    TESTSET("valid char Z", "Z", true);
+    TESTSET("valid char a", "a", true);
+    TESTSET("valid char z", "z", true);
+    TESTSET("valid char 0", "0", true);
+    TESTSET("valid char 9", "9", true);
+
+    TESTSET("invalid char ^", "^", false);
+    TESTSET("invalid char \"", "\"", false);
+    TESTSET("invalid char $", "$", false);
+    TESTSET("invalid char %", "%", false);
+    TESTSET("invalid char &", "&", false);
+    TESTSET("invalid char (", "(", false);
+    TESTSET("invalid char )", ")", false);
+    TESTSET("invalid char =", "=", false);
+    TESTSET("invalid char ?", "?", false);
+    TESTSET("invalid char ß", "ß", false);
+    TESTSET("invalid char \\x01", "\x01", false);
+    TESTSET("invalid char ' '", " ", false);
+
+#undef TESTSET
+#endif // QT_BUILD_INTERNAL
+}
+
+void tst_QTimeZone::isValidId()
+{
+#ifdef QT_BUILD_INTERNAL
+    QFETCH(QByteArray, input);
+    QFETCH(bool, valid);
+
+    QCOMPARE(QTimeZonePrivate::isValidId(input), valid);
+#else
+    QSKIP("This test requires a Qt -developer-build.");
+#endif
 }
 
 void tst_QTimeZone::utcTest()
