@@ -1001,7 +1001,7 @@ Q_GLOBAL_STATIC(QCocoaTabletDeviceDataHash, tabletDeviceDataHash)
         z = [theEvent absoluteZ];
 
     if (deviceData.capabilityMask & 0x0800)
-        tangentialPressure = [theEvent tangentialPressure];
+        tangentialPressure = ([theEvent tangentialPressure] * 2.0) - 1.0;
 
     rotation = [theEvent rotation];
 
