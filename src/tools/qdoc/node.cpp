@@ -46,6 +46,7 @@
 #include <quuid.h>
 #include "qdocdatabase.h"
 #include <qdebug.h>
+#include "generator.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -717,22 +718,38 @@ InnerNode::~InnerNode()
 }
 
 /*!
-  Find the node in this node's children that has the
-  given \a name. If this node is a QML class node, be
-  sure to also look in the children of its property
-  group nodes. Return the matching node or 0.
+  If \a genus is \c{Node::DontCare}, find the first node in
+  this node's child list that has the given \a name. If this
+  node is a QML type, be sure to also look in the children
+  of its property group nodes. Return the matching node or 0.
+
+  If \a genus is either \c{Node::CPP} or \c {Node::QML}, then
+  find all this node's children that have the given \a name,
+  and return the one that satisfies the \a genus requirement.
  */
-Node *InnerNode::findChildNode(const QString& name) const
+Node *InnerNode::findChildNode(const QString& name, Node::Genus genus) const
 {
-    Node *node = childMap.value(name);
-    if (node && !node->isQmlPropertyGroup())
-        return node;
-    if (isQmlType()) {
-        for (int i=0; i<children_.size(); ++i) {
-            Node* n = children_.at(i);
-            if (n->isQmlPropertyGroup()) {
-                node = static_cast<InnerNode*>(n)->findChildNode(name);
-                if (node)
+    if (genus == Node::DontCare) {
+        Node *node = childMap.value(name);
+        if (node && !node->isQmlPropertyGroup()) // mws asks: Why not property group?
+            return node;
+        if (isQmlType()) {
+            for (int i=0; i<children_.size(); ++i) {
+                Node* n = children_.at(i);
+                if (n->isQmlPropertyGroup()) {
+                    node = static_cast<InnerNode*>(n)->findChildNode(name, genus);
+                    if (node)
+                        return node;
+                }
+            }
+        }
+    }
+    else {
+        NodeList nodes = childMap.values(name);
+        if (!nodes.isEmpty()) {
+            for (int i=0; i<nodes.size(); ++i) {
+                Node* node = nodes.at(i);
+                if (genus == node->genus() || genus == Node::DontCare)
                     return node;
             }
         }
@@ -740,6 +757,39 @@ Node *InnerNode::findChildNode(const QString& name) const
     return primaryFunctionMap.value(name);
 }
 
+/*!
+  Find all the child nodes of this node that are named
+  \a name and return them in \a nodes.
+ */
+void InnerNode::findChildren(const QString& name, NodeList& nodes) const
+{
+    nodes = childMap.values(name);
+    Node* n = primaryFunctionMap.value(name);
+    if (n) {
+        nodes.append(n);
+        NodeList t = secondaryFunctionMap.value(name);
+        if (!t.isEmpty())
+            nodes.append(t);
+    }
+    if (!nodes.isEmpty() || !isQmlNode())
+        return;
+    int i = name.indexOf(QChar('.'));
+    if (i < 0)
+        return;
+    QString qmlPropGroup = name.left(i);
+    NodeList t = childMap.values(qmlPropGroup);
+    if (t.isEmpty())
+        return;
+    foreach (Node* n, t) {
+        if (n->isQmlPropertyGroup()) {
+            n->findChildren(name, nodes);
+            if (!nodes.isEmpty())
+                break;
+        }
+    }
+}
+
+#if 0
 /*!
   Find the node in this node's children that has the given \a name. If
   this node is a QML class node, be sure to also look in the children
@@ -752,7 +802,7 @@ Node *InnerNode::findChildNode(const QString& name) const
  */
 Node* InnerNode::findChildNode(const QString& name, bool qml) const
 {
-    QList<Node*> nodes = childMap.values(name);
+    NodeList nodes = childMap.values(name);
     if (!nodes.isEmpty()) {
         for (int i=0; i<nodes.size(); ++i) {
             Node* node = nodes.at(i);
@@ -776,6 +826,7 @@ Node* InnerNode::findChildNode(const QString& name, bool qml) const
     }
     return primaryFunctionMap.value(name);
 }
+#endif
 
 /*!
   This function is like findChildNode(), but if a node
@@ -793,7 +844,7 @@ Node* InnerNode::findChildNode(const QString& name, Type type)
     if (type == Function)
         return primaryFunctionMap.value(name);
     else {
-        QList<Node*> nodes = childMap.values(name);
+        NodeList nodes = childMap.values(name);
         for (int i=0; i<nodes.size(); ++i) {
             Node* node = nodes.at(i);
             if (node->type() == type)
@@ -803,13 +854,14 @@ Node* InnerNode::findChildNode(const QString& name, Type type)
     return 0;
 }
 
+#if 0
 /*!
  */
-void InnerNode::findNodes(const QString& name, QList<Node*>& n)
+void InnerNode::findNodes(const QString& name, NodeList& n)
 {
     n.clear();
     Node* node = 0;
-    QList<Node*> nodes = childMap.values(name);
+    NodeList nodes = childMap.values(name);
     /*
       <sigh> If this node's child map contains no nodes named
       name, then if this node is a QML class, search each of its
@@ -857,6 +909,7 @@ void InnerNode::findNodes(const QString& name, QList<Node*>& n)
     if (node)
         n.append(node);
 }
+#endif
 
 /*!
   Find a function node that is a child of this nose, such

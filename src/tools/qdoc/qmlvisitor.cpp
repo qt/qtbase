@@ -249,7 +249,7 @@ bool QmlDocVisitor::applyDocumentation(QQmlJS::AST::SourceLocation location, Nod
         nodes.append(node);
         if (topicsUsed.size() > 0) {
             for (int i=0; i<topicsUsed.size(); ++i) {
-                if (topicsUsed.at(i).topic == QString("qmlpropertygroup")) {
+                if (topicsUsed.at(i).topic == COMMAND_QMLPROPERTYGROUP) {
                     qDebug() << "PROPERTY GROUP COMMAND SEEN:" <<  topicsUsed.at(i).args << filePath_;
                     break;
                 }

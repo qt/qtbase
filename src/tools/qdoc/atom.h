@@ -140,8 +140,6 @@ public:
         Last = UnknownCommand
     };
 
-    enum NodeGenus { DontCare, CPP, QML };
-
     friend class LinkAtom;
 
     Atom(const QString& string)
@@ -201,7 +199,7 @@ public:
     const QStringList& strings() const { return strs; }
 
     virtual bool isLinkAtom() const { return false; }
-    virtual NodeGenus genus() const { return DontCare; }
+    virtual Node::Genus genus() const { return Node::DontCare; }
     virtual bool specifiesDomain() const { return false; }
     virtual Tree* domain() const { return 0; }
     virtual Node::Type goal() const { return Node::NoType; }
@@ -221,13 +219,13 @@ class LinkAtom : public Atom
     virtual ~LinkAtom() { }
 
     virtual bool isLinkAtom() const { return true; }
-    virtual NodeGenus genus() const { return genus_; }
+    virtual Node::Genus genus() const { return genus_; }
     virtual bool specifiesDomain() const { return (domain_ != 0); }
     virtual Tree* domain() const { return domain_; }
     virtual Node::Type goal() const { return goal_; }
 
  protected:
-    NodeGenus   genus_;
+    Node::Genus genus_;
     Node::Type  goal_;
     Tree*       domain_;
 };

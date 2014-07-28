@@ -471,15 +471,18 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
             location = Location(parent->name().toLower() + ".html");
     }
     else if (element.nodeName() == "keyword") {
-        qdb_->insertTarget(name, TargetRec::Keyword, current, 1);
+        QString title = element.attribute("title");
+        qdb_->insertTarget(name, title, TargetRec::Keyword, current, 1);
         return;
     }
     else if (element.nodeName() == "target") {
-        qdb_->insertTarget(name, TargetRec::Target, current, 2);
+        QString title = element.attribute("title");
+        qdb_->insertTarget(name, title, TargetRec::Target, current, 2);
         return;
     }
     else if (element.nodeName() == "contents") {
-        qdb_->insertTarget(name, TargetRec::Contents, current, 3);
+        QString title = element.attribute("title");
+        qdb_->insertTarget(name, title, TargetRec::Contents, current, 3);
         return;
     }
     else
@@ -1202,18 +1205,26 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
                 external = true;
         }
         foreach (const Atom* target, node->doc().targets()) {
-            QString targetName = target->string();
-            if (!external)
-                targetName = Doc::canonicalTitle(targetName);
+            QString title = target->string();
+            QString name =  Doc::canonicalTitle(title);
             writer.writeStartElement("target");
-            writer.writeAttribute("name", targetName);
+            if (!external)
+                writer.writeAttribute("name", name);
+            else
+                writer.writeAttribute("name", title);
+            if (name != title)
+                writer.writeAttribute("title", title);
             writer.writeEndElement(); // target
         }
     }
     if (node->doc().hasKeywords()) {
         foreach (const Atom* keyword, node->doc().keywords()) {
+            QString title = keyword->string();
+            QString name =  Doc::canonicalTitle(title);
             writer.writeStartElement("keyword");
-            writer.writeAttribute("name", Doc::canonicalTitle(keyword->string()));
+            writer.writeAttribute("name", name);
+            if (name != title)
+                writer.writeAttribute("title", title);
             writer.writeEndElement(); // keyword
         }
     }

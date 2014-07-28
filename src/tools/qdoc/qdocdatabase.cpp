@@ -379,39 +379,39 @@ void QDocForest::newPrimaryTree(const QString& module)
 }
 
 /*!
-  Searches the trees for a node named \a target and returns
-  a pointer to it if found. The \a relative node is the starting
-  point, but it only makes sense in the primary tree, which is
-  searched first. After the primary tree is searched, \a relative
-  is set to 0 for searching the index trees. When relative is 0,
-  the root nodes of the index trees are the starting points.
+  Searches through the forest for a node named \a targetPath
+  and returns a pointer to it if found. The \a relative node
+  is the starting point. It only makes sense for the primary
+  tree, which is searched first. After the primary tree has
+  been searched, \a relative is set to 0 for searching the
+  other trees, which are all index trees. With relative set
+  to 0, the starting point for each index tree is the root
+  of the index tree.
  */
-const Node* QDocForest::resolveTarget(const QString& target, const Node* relative)
+const Node* QDocForest::findNodeForTarget(QStringList& targetPath,
+                                          const Node* relative,
+                                          Node::Genus genus,
+                                          QString& ref)
 {
-    QStringList path = target.split("::");
-    int flags = SearchBaseClasses | SearchEnumValues | NonFunction;
+    int flags = SearchBaseClasses | SearchEnumValues;
+
+    QString entity = targetPath.at(0);
+    targetPath.removeFirst();
+    QStringList entityPath = entity.split("::");
+
+    QString target;
+    if (!targetPath.isEmpty()) {
+        target = targetPath.at(0);
+        targetPath.removeFirst();
+    }
 
     foreach (Tree* t, searchOrder()) {
-        const Node* n = t->findNode(path, relative, flags);
+        const Node* n = t->findNodeForTarget(entityPath, target, relative, flags, genus, ref);
         if (n)
             return n;
         relative = 0;
     }
     return 0;
-}
-
-/*!
-  Searches the Tree \a t for a type node named by the \a path
-  and returns a pointer to it if found. The \a relative node
-  is the starting point, but it only makes sense when searching
-  the primary tree. Therefore, when this function is called with
-  \a t being an index tree, \a relative is 0. When relative is 0,
-  the root node of \a t is the starting point.
- */
-const Node* QDocForest::resolveTypeHelper(const QStringList& path, const Node* relative, Tree* t)
-{
-    int flags = SearchBaseClasses | SearchEnumValues | NonFunction;
-    return t->findNode(path, relative, flags);
 }
 
 /*!
@@ -1343,7 +1343,7 @@ void QDocDatabase::resolveIssues() {
   When searching the index trees, the search begins at the
   root.
  */
-const Node* QDocDatabase::resolveType(const QString& type, const Node* relative)
+const Node* QDocDatabase::findTypeNode(const QString& type, const Node* relative)
 {
     QStringList path = type.split("::");
     if ((path.size() == 1) && (path.at(0)[0].isLower() || path.at(0) == QString("T"))) {
@@ -1351,7 +1351,7 @@ const Node* QDocDatabase::resolveType(const QString& type, const Node* relative)
         if (i != typeNodeMap_.end())
             return i.value();
     }
-    return forest_.resolveType(path, relative);
+    return forest_.findTypeNode(path, relative);
 }
 
 /*!
@@ -1369,9 +1369,15 @@ const Node* QDocDatabase::findNodeForTarget(const QString& target, const Node* r
         node = findNodeByNameAndType(QStringList(target), Node::Document);
     }
     else {
-        node = resolveTarget(target, relative);
-        if (!node)
-            node = findDocNodeByTitle(target);
+        QStringList path = target.split("::");
+        int flags = SearchBaseClasses | SearchEnumValues; // | NonFunction;
+        foreach (Tree* t, searchOrder()) {
+            const Node* n = t->findNode(path, relative, flags, Node::DontCare);
+            if (n)
+                return n;
+            relative = 0;
+        }
+        node = findDocNodeByTitle(target);
     }
     return node;
 }
@@ -1578,27 +1584,6 @@ void QDocDatabase::mergeCollections(CollectionNode* cn)
     }
 }
 
-
-/*!
-  This function is called when the \a{atom} might be a link
-  atom. It handles the optional, square bracket parameters
-  for the link command.
- */
-Node* QDocDatabase::findNode(const Atom* atom)
-{
-    QStringList path(atom->string());
-    if (atom->specifiesDomain()) {
-        return atom->domain()->findNodeByNameAndType(path, atom->goal());
-    }
-    qDebug() << "FINDNODE:" << path << atom->goal();
-    return forest_.findNodeByNameAndType(path, atom->goal());
-}
-
-const DocNode* QDocDatabase::findDocNodeByTitle(const Atom* atom)
-{
-    return forest_.findDocNodeByTitle(atom->string());
-}
-
 /*!
   Searches for the node that matches the path in \a atom. The
   \a relative node is used if the first leg of the path is
@@ -1608,51 +1593,62 @@ const DocNode* QDocDatabase::findDocNodeByTitle(const Atom* atom)
   \a ref. If the returned node pointer is null, \a ref is not
   valid.
  */
-const Node* QDocDatabase::findNode(const Atom* atom, const Node* relative, QString& ref)
+const Node* QDocDatabase::findNodeForAtom(const Atom* atom, const Node* relative, QString& ref)
 {
     const Node* node = 0;
-    QStringList path = atom->string().split("#");
-    QString first = path.first().trimmed();
-    path.removeFirst();
+
+    QStringList targetPath = atom->string().split("#");
+    QString first = targetPath.first().trimmed();
+
+    Tree* domain = 0;
+    Node::Genus genus = Node::DontCare;
+    // Reserved for future use
+    //Node::Type goal = Node::NoType;
+
+    if (atom->isLinkAtom()) {
+        domain = atom->domain();
+        genus = atom->genus();
+        // Reserved for future use
+        //goal = atom->goal();
+    }
 
     if (first.isEmpty())
         node = relative; // search for a target on the current page.
-    else if (atom->specifiesDomain()) {
-        qDebug() << "Processing LinkAtom";
-        if (first.endsWith(".html")) { // The target is an html file.
-            node = atom->domain()->findNodeByNameAndType(QStringList(first), Node::Document);
-        }
-        else if (first.endsWith("()")) { // The target is a C++ function or QML method.
-            node = atom->domain()->resolveFunctionTarget(first, 0); //relative);
-        }
+    else if (domain) {
+        if (first.endsWith(".html"))
+            node = domain->findNodeByNameAndType(QStringList(first), Node::Document);
+        else if (first.endsWith("()"))
+            node = domain->findFunctionNode(first, 0, genus);
         else {
-            node = atom->domain()->resolveTarget(first, 0); // relative);
-            if (!node)
-                node = atom->domain()->findUnambiguousTarget(first, ref); // ref
-            if (!node && path.isEmpty())
-                node = atom->domain()->findDocNodeByTitle(first);
+            int flags = SearchBaseClasses | SearchEnumValues;
+            QStringList nodePath = first.split("::");
+            QString target;
+            targetPath.removeFirst();
+            if (!targetPath.isEmpty()) {
+                target = targetPath.at(0);
+                targetPath.removeFirst();
+            }
+            node = domain->findNodeForTarget(nodePath, target, relative, flags, genus, ref);
+            return node;
         }
     }
     else {
-        if (first.endsWith(".html")) { // The target is an html file.
-            node = findNodeByNameAndType(QStringList(first), Node::Document); // ref
-        }
-        else if (first.endsWith("()")) { // The target is a C++ function or QML method.
-            node = resolveFunctionTarget(first, relative);
-        }
+        if (first.endsWith(".html"))
+            node = findNodeByNameAndType(QStringList(first), Node::Document);
+        else if (first.endsWith("()"))
+            node = findFunctionNode(first, relative, genus);
         else {
-            node = resolveTarget(first, relative); // ref
-            if (!node)
-                node = findUnambiguousTarget(first, ref); // ref
-            if (!node && path.isEmpty())
-                node = findDocNodeByTitle(first);
+            node = findNodeForTarget(targetPath, relative, genus, ref);
+            return node;
         }
     }
+
     if (node && ref.isEmpty()) {
         if (!node->url().isEmpty())
             return node;
-        if (!path.isEmpty()) {
-            ref = findTarget(path.first(), node);
+        targetPath.removeFirst();
+        if (!targetPath.isEmpty()) {
+            ref = node->root()->tree()->getRef(targetPath.first(), node);
             if (ref.isEmpty())
                 node = 0;
         }

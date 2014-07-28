@@ -58,15 +58,24 @@ struct TargetRec
 {
   public:
     enum Type { Unknown, Target, Keyword, Contents, Class, Function, Page, Subtitle };
-    TargetRec() : node_(0), priority_(INT_MAX), type_(Unknown) { }
+
+    TargetRec(const QString& name,
+              const QString& title,
+              TargetRec::Type type,
+              Node* node,
+              int priority)
+    : node_(node), ref_(name), title_(title), priority_(priority), type_(type) { }
+
     bool isEmpty() const { return ref_.isEmpty(); }
+
     Node* node_;
     QString ref_;
+    QString title_;
     int priority_;
     Type type_;
 };
 
-typedef QMultiMap<QString, TargetRec> TargetMap;
+typedef QMultiMap<QString, TargetRec*> TargetMap;
 typedef QMultiMap<QString, DocNode*> DocNodeMultiMap;
 typedef QMap<QString, QmlClassNode*> QmlTypeMap;
 typedef QMultiMap<QString, const ExampleNode*> ExampleNodeMap;
@@ -83,10 +92,11 @@ class Tree
     Tree(const QString& module, QDocDatabase* qdb);
     ~Tree();
 
-    ClassNode* findClassNode(const QStringList& path, Node* start = 0) const;
+    Node* findNodeForInclude(const QStringList& path) const;
+    ClassNode* findClassNode(const QStringList& path, const Node* start = 0) const;
     NamespaceNode* findNamespaceNode(const QStringList& path) const;
     FunctionNode* findFunctionNode(const QStringList& parentPath, const FunctionNode* clone);
-    const Node* resolveFunctionTarget(const QString& target, const Node* relative);
+    const Node* findFunctionNode(const QString& target, const Node* relative, Node::Genus genus);
 
     Node* findNodeRecursive(const QStringList& path,
                             int pathIndex,
@@ -97,14 +107,24 @@ class Tree
                             Node* start,
                             const NodeTypeList& types) const;
 
-    const Node* findNode(const QStringList &path,
-                         const Node* relative = 0,
-                         int findFlags = 0) const;
+    const Node* findNodeForTarget(const QStringList& path,
+                                  const QString& target,
+                                  const Node* node,
+                                  int flags,
+                                  Node::Genus genus,
+                                  QString& ref) const;
+    const Node* matchPathAndTarget(const QStringList& path,
+                                   int idx,
+                                   const QString& target,
+                                   const Node* node,
+                                   int flags,
+                                   Node::Genus genus,
+                                   QString& ref) const;
 
-    const Node* findNode(const QStringList& path,
-                         const Node* start,
-                         int findFlags,
-                         bool qml) const;
+    const Node* findNode(const QStringList &path,
+                         const Node* relative,     // = 0,
+                         int findFlags,            // = 0,
+                         Node::Genus genus) const; // = Node::DontCare) const;
 
     QmlClassNode* findQmlTypeNode(const QStringList& path);
 
@@ -112,11 +132,14 @@ class Tree
     InnerNode* findRelatesNode(const QStringList& path);
     NameCollisionNode* checkForCollision(const QString& name);
     NameCollisionNode* findCollisionNode(const QString& name) const;
-    QString findTarget(const QString& target, const Node* node) const;
-    void insertTarget(const QString& name, TargetRec::Type type, Node* node, int priority);
-    const Node* resolveTarget(const QString& target, const Node* start);
+    QString getRef(const QString& target, const Node* node) const;
+    void insertTarget(const QString& name,
+                      const QString& title,
+                      TargetRec::Type type,
+                      Node* node,
+                      int priority);
     void resolveTargets(InnerNode* root);
-    const Node* findUnambiguousTarget(const QString& target, QString& ref);
+    const Node* findUnambiguousTarget(const QString& target, QString& ref) const;
     const DocNode* findDocNodeByTitle(const QString& title) const;
 
     void addPropertyFunction(PropertyNode *property,
@@ -131,7 +154,8 @@ class Tree
 
     const FunctionNode *findFunctionNode(const QStringList &path,
                                          const Node *relative = 0,
-                                         int findFlags = 0) const;
+                                         int findFlags = 0,
+                                         Node::Genus genus = Node::DontCare) const;
     const NamespaceNode *root() const { return &root_; }
 
     FunctionNode *findVirtualFunctionInBaseClasses(ClassNode *classe,
@@ -182,7 +206,8 @@ private:
     NamespaceNode root_;
     PropertyMap unresolvedPropertyMap;
     DocNodeMultiMap         docNodesByTitle_;
-    TargetMap               nodesByTarget_;
+    TargetMap               nodesByTargetRef_;
+    TargetMap               nodesByTargetTitle_;
     CNMap                   groups_;
     CNMap                   modules_;
     CNMap                   qmlModules_;

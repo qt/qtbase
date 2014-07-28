@@ -816,7 +816,7 @@ int HtmlGenerator::generateAtom(const Atom *atom, const Node *relative, CodeMark
         inObsoleteLink = false;
         const Node *node = 0;
         QString link = getLink(atom, relative, &node);
-        if (link.isEmpty() && !noLinkErrors()) {
+        if (link.isEmpty() && (node != relative) && !noLinkErrors()) {
             relative->doc().location().warning(tr("Can't link to '%1'").arg(atom->string()));
         }
         else {
@@ -1493,7 +1493,7 @@ void HtmlGenerator::generateCollisionPages()
                 int count = 0;
                 for (int i=0; i<collisions.size(); ++i) {
                     InnerNode* n = static_cast<InnerNode*>(collisions.at(i));
-                    if (n->findChildNode(t.key())) {
+                    if (n->findChildNode(t.key(), Node::DontCare)) {
                         ++count;
                         if (count > 1) {
                             targets.append(t.key());
@@ -1512,7 +1512,7 @@ void HtmlGenerator::generateCollisionPages()
                 out() << "<ul>\n";
                 for (int i=0; i<collisions.size(); ++i) {
                     InnerNode* n = static_cast<InnerNode*>(collisions.at(i));
-                    Node* p = n->findChildNode(*t);
+                    Node* p = n->findChildNode(*t, Node::DontCare);
                     if (p) {
                         QString link = linkForNode(p,0);
                         QString label;
@@ -3287,7 +3287,7 @@ QString HtmlGenerator::highlightedCode(const QString& markedCode,
         if (src.at(i) == charLangle && src.at(i + 1) == charAt) {
             i += 2;
             if (parseArg(src, funcTag, &i, srcSize, &arg, &par1)) {
-                const Node* n = qdb_->resolveFunctionTarget(par1.toString(), relative);
+                const Node* n = qdb_->findFunctionNode(par1.toString(), relative, Node::DontCare);
                 QString link = linkForNode(n, relative);
                 addLink(link, arg, &html);
                 par1 = QStringRef();
@@ -3312,7 +3312,7 @@ QString HtmlGenerator::highlightedCode(const QString& markedCode,
             bool handled = false;
             if (parseArg(src, typeTag, &i, srcSize, &arg, &par1)) {
                 par1 = QStringRef();
-                const Node* n = qdb_->resolveType(arg.toString(), relative);
+                const Node* n = qdb_->findTypeNode(arg.toString(), relative);
                 html += QLatin1String("<span class=\"type\">");
                 if (n && n->isQmlBasicType()) {
                     if (relative && relative->isQmlType())
@@ -3330,9 +3330,8 @@ QString HtmlGenerator::highlightedCode(const QString& markedCode,
                 if (arg.at(0) == QChar('&'))
                     html += arg;
                 else {
-                    // zzz resolveClassTarget()
-                    const Node* n = qdb_->resolveTarget(arg.toString(), relative);
-                    if (n)
+                    const Node* n = qdb_->findNodeForInclude(QStringList(arg.toString()));
+                    if (n && n != relative)
                         addLink(linkForNode(n,relative), arg, &html);
                     else
                         html += arg;
@@ -3659,8 +3658,6 @@ QString HtmlGenerator::refForNode(const Node *node)
     return registerRef(ref);
 }
 
-#define DEBUG_ABSTRACT 0
-
 /*!
   This function is called for links, i.e. for words that
   are marked with the qdoc link command. For autolinks
@@ -3691,7 +3688,7 @@ QString HtmlGenerator::getLink(const Atom *atom, const Node *relative, const Nod
 
     QString ref;
 
-    *node = qdb_->findNode(atom, relative, ref);
+    *node = qdb_->findNodeForAtom(atom, relative, ref);
     if (!(*node))
         return QString();
 
@@ -3734,31 +3731,20 @@ QString HtmlGenerator::getAutoLink(const Atom *atom, const Node *relative, const
 {
     QString ref;
     QString link;
-    QString target = atom->string().trimmed();
-    *node = 0;
 
-    if (target.endsWith("()")) { // The target is a C++ function or QML method.
-        *node = qdb_->resolveFunctionTarget(target, relative);
-    }
-    else {
-        *node = qdb_->resolveTarget(target, relative);
-        if (!(*node)) {
-            *node = qdb_->findDocNodeByTitle(target);
-        }
-        if (!(*node)) {
-            *node = qdb_->findUnambiguousTarget(target, ref);
-            if (*node && !(*node)->url().isEmpty() && !ref.isEmpty()) {
-                QString final = (*node)->url() + "#" + ref;
-                return final;
-            }
-        }
-    }
-
+    *node = qdb_->findNodeForAtom(atom, relative, ref);
     if (!(*node))
-        return link; // empty
+        return QString();
 
-    if (!(*node)->url().isEmpty())
-        return (*node)->url();
+    QString url = (*node)->url();
+    if (!url.isEmpty()) {
+        if (ref.isEmpty())
+            return url;
+        int hashtag = url.lastIndexOf(QChar('#'));
+        if (hashtag != -1)
+            url.truncate(hashtag);
+        return url + "#" + ref;
+    }
 
     link = linkForNode(*node, relative);
     if (!ref.isEmpty())
@@ -3776,7 +3762,7 @@ QString HtmlGenerator::getAutoLink(const Atom *atom, const Node *relative, const
   */
 QString HtmlGenerator::linkForNode(const Node *node, const Node *relative)
 {
-    if (node == 0 || node == relative)
+    if (node == 0)
         return QString();
     if (!node->url().isEmpty())
         return node->url();
@@ -3977,26 +3963,7 @@ void HtmlGenerator::generateStatus(const Node *node, CodeMarker *marker)
             Generator::generateStatus(node, marker);
         break;
     case Node::Compat:
-        if (node->isInnerNode()) {
-            text << Atom::ParaLeft
-                 << Atom(Atom::FormattingLeft,ATOM_FORMATTING_BOLD)
-                 << "This "
-                 << typeString(node)
-                 << " is part of the Qt 3 support library."
-                 << Atom(Atom::FormattingRight, ATOM_FORMATTING_BOLD)
-                 << " It is provided to keep old source code working. "
-                 << "We strongly advise against "
-                 << "using it in new code. See ";
-
-            text << Atom(Atom::Link, "Porting to Qt 4");
-
-            text << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
-                 << Atom(Atom::String, "Porting to Qt 4")
-                 << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK)
-                 << " for more information."
-                 << Atom::ParaRight;
-        }
-        generateText(text, node, marker);
+        // Porting to Qt 4 no longer supported
         break;
     default:
         Generator::generateStatus(node, marker);
