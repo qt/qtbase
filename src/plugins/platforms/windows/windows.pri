@@ -39,7 +39,8 @@ SOURCES += \
     $$PWD/qwindowsdialoghelpers.cpp \
     $$PWD/qwindowsservices.cpp \
     $$PWD/qwindowsnativeimage.cpp \
-    $$PWD/qwindowsnativeinterface.cpp
+    $$PWD/qwindowsnativeinterface.cpp \
+    $$PWD/qwindowsscaling.cpp
 
 HEADERS += \
     $$PWD/qwindowswindow.h \
@@ -64,7 +65,8 @@ HEADERS += \
     $$PWD/qwindowsservices.h \
     $$PWD/qplatformfunctions_wince.h \
     $$PWD/qwindowsnativeimage.h \
-    $$PWD/qwindowsnativeinterface.h
+    $$PWD/qwindowsnativeinterface.h \
+    $$PWD/qwindowsscaling.h
 
 !wince: HEADERS += $$PWD/qwindowsopengltester.h
 

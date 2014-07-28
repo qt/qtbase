@@ -46,6 +46,7 @@
 #ifdef Q_OS_WINCE
 #  include "qplatformfunctions_wince.h"
 #endif
+#include "qwindowsscaling.h"
 #include "qwindowscursor.h"
 #include "qwindowsopenglcontext.h"
 
@@ -152,18 +153,28 @@ public:
     ~QWindowsWindow();
 
     QSurfaceFormat format() const Q_DECL_OVERRIDE { return m_format; }
-    void setGeometry(const QRect &rect) Q_DECL_OVERRIDE;
-    QRect geometry() const Q_DECL_OVERRIDE { return m_data.geometry; }
-    QRect normalGeometry() const Q_DECL_OVERRIDE;
-
+    void setGeometryDp(const QRect &rectIn);
+    void setGeometry(const QRect &rect) Q_DECL_OVERRIDE
+        { setGeometryDp(QWindowsScaling::mapToNative(rect)); }
+    QRect geometryDp() const { return m_data.geometry; }
+    QRect geometry() const Q_DECL_OVERRIDE
+        { return QWindowsScaling::mapFromNative(geometryDp()); }
+    QRect normalGeometryDp() const;
+    QRect normalGeometry() const Q_DECL_OVERRIDE
+        { return QWindowsScaling::mapFromNative(normalGeometryDp()); }
+    qreal devicePixelRatio() const Q_DECL_OVERRIDE
+        { return qreal(QWindowsScaling::factor()); }
     void setVisible(bool visible) Q_DECL_OVERRIDE;
     bool isVisible() const;
     bool isExposed() const Q_DECL_OVERRIDE { return testFlag(Exposed); }
     bool isActive() const Q_DECL_OVERRIDE;
     bool isEmbedded(const QPlatformWindow *parentWindow) const Q_DECL_OVERRIDE;
-    QPoint mapToGlobal(const QPoint &pos) const Q_DECL_OVERRIDE;
-    QPoint mapFromGlobal(const QPoint &pos) const Q_DECL_OVERRIDE;
-
+    QPoint mapToGlobalDp(const QPoint &pos) const;
+    QPoint mapToGlobal(const QPoint &pos) const Q_DECL_OVERRIDE
+        { return mapToGlobalDp(pos * QWindowsScaling::factor()) / QWindowsScaling::factor(); }
+    QPoint mapFromGlobalDp(const QPoint &pos) const;
+    QPoint mapFromGlobal(const QPoint &pos) const Q_DECL_OVERRIDE
+        { return mapFromGlobalDp(pos * QWindowsScaling::factor()) / QWindowsScaling::factor(); }
     void setWindowFlags(Qt::WindowFlags flags) Q_DECL_OVERRIDE;
     void setWindowState(Qt::WindowState state) Q_DECL_OVERRIDE;
 
@@ -179,7 +190,8 @@ public:
     void windowEvent(QEvent *event);
 
     void propagateSizeHints() Q_DECL_OVERRIDE;
-    QMargins frameMargins() const Q_DECL_OVERRIDE;
+    QMargins frameMarginsDp() const;
+    QMargins frameMargins() const Q_DECL_OVERRIDE { return frameMarginsDp() / QWindowsScaling::factor(); }
 
     void setOpacity(qreal level) Q_DECL_OVERRIDE;
     void setMask(const QRegion &region) Q_DECL_OVERRIDE;
@@ -190,7 +202,7 @@ public:
     bool setMouseGrabEnabled(bool grab) Q_DECL_OVERRIDE;
     inline bool hasMouseCapture() const { return GetCapture() == m_data.hwnd; }
 
-    bool startSystemResize(const QPoint &pos, Qt::Corner corner) Q_DECL_OVERRIDE;
+    bool startSystemResize(const QPoint &, Qt::Corner corner) Q_DECL_OVERRIDE;
 
     void setFrameStrutEventsEnabled(bool enabled);
     bool frameStrutEventsEnabled() const { return testFlag(FrameStrutEventsEnabled); }

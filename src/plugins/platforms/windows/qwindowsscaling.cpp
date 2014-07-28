@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -39,46 +39,41 @@
 **
 ****************************************************************************/
 
-#ifndef QWINDOWSNATIVEIMAGE_H
-#define QWINDOWSNATIVEIMAGE_H
+#include  "qwindowsscaling.h"
+#include  "qwindowsscreen.h"
 
-#include "qtwindows_additional.h"
-
-#include <QtGui/QImage>
-
-#include <QtCore/QtGlobal>
+#include <QtCore/QDebug>
+#include <QtCore/QCoreApplication>
 
 QT_BEGIN_NAMESPACE
 
-class QWindowsNativeImage
+/*!
+    \class QWindowsScaling
+    \brief Windows scaling utilities
+
+    \internal
+    \ingroup qt-lighthouse-win
+*/
+
+int QWindowsScaling::m_factor = 1;
+
+static const char devicePixelRatioEnvVar[] = "QT_DEVICE_PIXEL_RATIO";
+
+// Suggest a scale factor by checking monitor sizes.
+int QWindowsScaling::determineUiScaleFactor()
 {
-    Q_DISABLE_COPY(QWindowsNativeImage)
-public:
-    QWindowsNativeImage(int width, int height,
-                        QImage::Format format);
-
-    ~QWindowsNativeImage();
-
-    inline int width() const  { return m_image.width(); }
-    inline int height() const { return m_image.height(); }
-
-    QImage &image() { return m_image; }
-    const QImage &image() const { return m_image; }
-
-    HDC hdc() const { return m_hdc; }
-
-    void setDevicePixelRatio(qreal scaleFactor) { m_image.setDevicePixelRatio(scaleFactor); }
-
-    static QImage::Format systemFormat();
-
-private:
-    const HDC m_hdc;
-    QImage m_image;
-
-    HBITMAP m_bitmap;
-    HBITMAP m_null_bitmap;
-};
+    if (!qEnvironmentVariableIsSet(devicePixelRatioEnvVar))
+        return 1;
+    const QByteArray envDevicePixelRatioEnv = qgetenv(devicePixelRatioEnvVar);
+    // Auto: Suggest a scale factor by checking monitor resolution.
+    if (envDevicePixelRatioEnv == QByteArrayLiteral("auto")) {
+        const int maxResolution = QWindowsScreen::maxMonitorHorizResolution();
+        return maxResolution > 180 ? maxResolution / 96 : 1;
+    }
+    // Get factor from environment
+    bool ok = false;
+    const int envFactor = envDevicePixelRatioEnv.toInt(&ok);
+    return ok && envFactor > 0 ? envFactor : 1;
+}
 
 QT_END_NAMESPACE
-
-#endif // QWINDOWSNATIVEIMAGE_H

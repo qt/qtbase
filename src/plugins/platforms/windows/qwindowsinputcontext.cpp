@@ -44,6 +44,7 @@
 #include "qwindowswindow.h"
 #include "qwindowsintegration.h"
 #include "qwindowsmousehandler.h"
+#include "qwindowsscaling.h"
 
 #include <QtCore/QDebug>
 #include <QtCore/QObject>
@@ -214,9 +215,10 @@ void QWindowsInputContext::cursorRectChanged()
     if (!m_compositionContext.hwnd)
         return;
     const QInputMethod *inputMethod = QGuiApplication::inputMethod();
-    QRect cursorRectangle = inputMethod->cursorRectangle().toRect();
-    if (!cursorRectangle.isValid())
+    const QRect cursorRectangleDip = inputMethod->cursorRectangle().toRect();
+    if (!cursorRectangleDip.isValid())
         return;
+    const QRect cursorRectangle = QWindowsScaling::mapToNative(cursorRectangleDip);
 
     qCDebug(lcQpaInputMethods) << __FUNCTION__<< cursorRectangle;
 

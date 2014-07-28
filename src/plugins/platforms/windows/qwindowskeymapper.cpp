@@ -43,6 +43,7 @@
 #include "qwindowscontext.h"
 #include "qwindowswindow.h"
 #include "qwindowsguieventdispatcher.h"
+#include "qwindowsscaling.h"
 
 #include <QtGui/QWindow>
 #include <qpa/qwindowsysteminterface.h>
@@ -767,11 +768,10 @@ static void showSystemMenu(QWindow* w)
 #undef enabled
 #undef disabled
 #endif // !Q_OS_WINCE
+    const QPoint topLeft = topLevel->geometry().topLeft() * QWindowsScaling::factor();
     const int ret = TrackPopupMenuEx(menu,
                                TPM_LEFTALIGN  | TPM_TOPALIGN | TPM_NONOTIFY | TPM_RETURNCMD,
-                               topLevel->geometry().x(), topLevel->geometry().y(),
-                               topLevelHwnd,
-                               0);
+                               topLeft.x(), topLeft.y(), topLevelHwnd, 0);
     if (ret)
         qWindowsWndProc(topLevelHwnd, WM_SYSCOMMAND, ret, 0);
 }

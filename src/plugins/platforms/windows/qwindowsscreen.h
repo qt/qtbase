@@ -43,11 +43,13 @@
 #define QWINDOWSSCREEN_H
 
 #include "qwindowscursor.h"
+#include "qwindowsscaling.h"
 #ifdef Q_OS_WINCE
 #  include "qplatformfunctions_wince.h"
 #endif
 
 #include <QtCore/QList>
+#include <QtCore/QVector>
 #include <QtCore/QPair>
 #include <QtCore/QSharedPointer>
 #include <qpa/qplatformscreen.h>
@@ -88,24 +90,28 @@ public:
 
     static QWindowsScreen *screenOf(const QWindow *w = 0);
 
-    QRect geometry() const Q_DECL_OVERRIDE { return m_data.geometry; }
-    QRect availableGeometry() const Q_DECL_OVERRIDE { return m_data.availableGeometry; }
+    QRect geometryDp() const { return m_data.geometry; }
+    QRect geometry() const Q_DECL_OVERRIDE { return QWindowsScaling::mapFromNative(geometryDp()); }
+    QRect availableGeometryDp() const { return m_data.availableGeometry; }
+    QRect availableGeometry() const Q_DECL_OVERRIDE { return QWindowsScaling::mapFromNative(availableGeometryDp()); }
     int depth() const Q_DECL_OVERRIDE { return m_data.depth; }
     QImage::Format format() const Q_DECL_OVERRIDE { return m_data.format; }
     QSizeF physicalSize() const Q_DECL_OVERRIDE { return m_data.physicalSizeMM; }
-    QDpi logicalDpi() const Q_DECL_OVERRIDE { return m_data.dpi; }
+    QDpi logicalDpi() const Q_DECL_OVERRIDE
+        { return QDpi(m_data.dpi.first / QWindowsScaling::factor(), m_data.dpi.second / QWindowsScaling::factor()); }
+    qreal devicePixelRatio() const Q_DECL_OVERRIDE { return QWindowsScaling::factor(); }
     qreal refreshRate() const Q_DECL_OVERRIDE { return m_data.refreshRateHz; }
     QString name() const Q_DECL_OVERRIDE { return m_data.name; }
     Qt::ScreenOrientation orientation() const Q_DECL_OVERRIDE { return m_data.orientation; }
     QList<QPlatformScreen *> virtualSiblings() const Q_DECL_OVERRIDE;
     QWindow *topLevelAt(const QPoint &point) const Q_DECL_OVERRIDE
-        {  return QWindowsScreen::findTopLevelAt(point, CWP_SKIPINVISIBLE);  }
+        {  return QWindowsScreen::findTopLevelAt(point * QWindowsScaling::factor() , CWP_SKIPINVISIBLE);  }
 
     static QWindow *findTopLevelAt(const QPoint &point, unsigned flags);
     static QWindow *windowAt(const QPoint &point, unsigned flags = CWP_SKIPINVISIBLE);
     static QWindow *windowUnderMouse(unsigned flags = CWP_SKIPINVISIBLE);
 
-    QPixmap grabWindow(WId window, int x, int y, int width, int height) const Q_DECL_OVERRIDE;
+    QPixmap grabWindow(WId window, int qX, int qY, int qWidth, int qHeight) const Q_DECL_OVERRIDE;
 
     inline void handleChanges(const QWindowsScreenData &newData);
 
@@ -117,6 +123,7 @@ public:
 #endif // !QT_NO_CURSOR
 
     const QWindowsScreenData &data() const  { return m_data; }
+    static int maxMonitorHorizResolution();
 
 private:
     QWindowsScreenData m_data;
