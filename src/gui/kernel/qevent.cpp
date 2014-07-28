@@ -3382,6 +3382,61 @@ static inline void formatTouchEvent(QDebug d, const char *name, const QTouchEven
     d << ')';
 }
 
+static void formatUnicodeString(QDebug d, const QString &s)
+{
+    d << '"' << hex;
+    for (int i = 0; i < s.size(); ++i) {
+        if (i)
+            d << ',';
+        d << "U+" << s.at(i).unicode();
+    }
+    d << dec << '"';
+}
+
+static inline void formatInputMethodEvent(QDebug d, const QInputMethodEvent *e)
+{
+    d << "QInputMethodEvent(";
+    if (!e->preeditString().isEmpty()) {
+        d << "preedit=";
+        formatUnicodeString(d, e->preeditString());
+    }
+    if (!e->commitString().isEmpty()) {
+        d << ", commit=";
+        formatUnicodeString(d, e->commitString());
+    }
+    if (e->replacementLength()) {
+        d << ", replacementStart=" << e->replacementStart() << ", replacementLength="
+          << e->replacementLength();
+    }
+    if (const int attributeCount = e->attributes().size()) {
+        d << ", attributes= {";
+        for (int a = 0; a < attributeCount; ++a) {
+            const QInputMethodEvent::Attribute &at = e->attributes().at(a);
+            if (a)
+                d << ',';
+            d << "[type= " << at.type << ", start=" << at.start << ", length=" << at.length
+              << ", value=" << at.value << ']';
+        }
+        d << '}';
+    }
+    d << ')';
+}
+
+static inline void formatInputMethodQueryEvent(QDebug d, const QInputMethodQueryEvent *e)
+{
+    const Qt::InputMethodQueries queries = e->queries();
+    d << "QInputMethodQueryEvent(queries=" << showbase << hex << int(queries)
+      << noshowbase << dec << ", {";
+    for (unsigned mask = 1; mask <= Qt::ImTextAfterCursor; mask<<=1) {
+        if (queries & mask) {
+            const QVariant value = e->value(static_cast<Qt::InputMethodQuery>(mask));
+            if (value.isValid())
+                d << '[' << showbase << hex << mask <<  noshowbase << dec << '=' << value << "],";
+        }
+    }
+    d << "})";
+}
+
 QDebug operator<<(QDebug dbg, const QEvent *e) {
     // More useful event output could be added here
     if (!e)
@@ -3631,6 +3686,18 @@ QDebug operator<<(QDebug dbg, const QEvent *e) {
     case QEvent::GraphicsSceneMove:
         n = "GraphicsSceneMove";
         break;
+    case QEvent::InputMethod: {
+        QDebugStateSaver saver(dbg);
+        dbg.nospace();
+        formatInputMethodEvent(dbg, static_cast<const QInputMethodEvent *>(e));
+    }
+        return dbg;
+    case QEvent::InputMethodQuery: {
+        QDebugStateSaver saver(dbg);
+        dbg.nospace();
+        formatInputMethodQueryEvent(dbg, static_cast<const QInputMethodQueryEvent *>(e));
+    }
+        return dbg;
     case QEvent::CursorChange:
         n = "CursorChange";
         break;
