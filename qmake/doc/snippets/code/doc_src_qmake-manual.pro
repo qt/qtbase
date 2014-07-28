@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -216,13 +216,6 @@ FORMS = mydialog.ui \
     mywidget.ui \
         myconfig.ui
 #! [32]
-
-
-#! [33]
-FORMS3 = my_uic3_dialog.ui \
-     my_uic3_widget.ui \
-         my_uic3_config.ui
-#! [33]
 
 
 #! [34]
