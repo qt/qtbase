@@ -84,6 +84,7 @@ public:
     void init(const QString &labelText, const QString &cancelText, int min, int max);
     void layout();
     void retranslateStrings();
+    void setCancelButtonText(const QString &cancelButtonText);
     void _q_disconnectOnClose();
 
     QLabel *label;
@@ -458,19 +459,25 @@ void QProgressDialog::setCancelButtonText(const QString &cancelButtonText)
 {
     Q_D(QProgressDialog);
     d->useDefaultCancelText = false;
+    d->setCancelButtonText(cancelButtonText);
+}
+
+void QProgressDialogPrivate::setCancelButtonText(const QString &cancelButtonText)
+{
+    Q_Q(QProgressDialog);
 
     if (!cancelButtonText.isNull()) {
-        if (d->cancel) {
-            d->cancel->setText(cancelButtonText);
+        if (cancel) {
+            cancel->setText(cancelButtonText);
         } else {
-            setCancelButton(new QPushButton(cancelButtonText, this));
+            q->setCancelButton(new QPushButton(cancelButtonText, q));
         }
     } else {
-        setCancelButton(0);
+        q->setCancelButton(0);
     }
-    int w = qMax(isVisible() ? width() : 0, sizeHint().width());
-    int h = qMax(isVisible() ? height() : 0, sizeHint().height());
-    resize(w, h);
+    int w = qMax(q->isVisible() ? q->width() : 0, q->sizeHint().width());
+    int h = qMax(q->isVisible() ? q->height() : 0, q->sizeHint().height());
+    q->resize(w, h);
 }
 
 
