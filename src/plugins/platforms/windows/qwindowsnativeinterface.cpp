@@ -51,6 +51,36 @@
 
 QT_BEGIN_NAMESPACE
 
+enum ResourceType {
+    RenderingContextType,
+    EglContextType,
+    EglDisplayType,
+    EglConfigType,
+    HandleType,
+    GlHandleType,
+    GetDCType,
+    ReleaseDCType
+};
+
+static int resourceType(const QByteArray &key)
+{
+    static const QByteArray names[] = { // match ResourceType
+        "renderingcontext",
+        "eglcontext",
+        "egldisplay",
+        "eglconfig",
+        "handle",
+        "glhandle",
+        "getdc",
+        "releasedc"
+    };
+    const QByteArray *end = names + sizeof(names) / sizeof(names[0]);
+    const QByteArray *result = std::find(names, end, key);
+    if (result == end)
+        result = std::find(names, end, key.toLower());
+    return int(result - names);
+}
+
 void *QWindowsNativeInterface::nativeResourceForWindow(const QByteArray &resource, QWindow *window)
 {
     if (!window || !window->handle()) {
@@ -58,14 +88,15 @@ void *QWindowsNativeInterface::nativeResourceForWindow(const QByteArray &resourc
         return 0;
     }
     QWindowsWindow *bw = static_cast<QWindowsWindow *>(window->handle());
-    if (resource == "handle")
+    int type = resourceType(resource);
+    if (type == HandleType)
         return bw->handle();
     switch (window->surfaceType()) {
     case QWindow::RasterSurface:
     case QWindow::RasterGLSurface:
-        if (resource == "getDC")
+        if (type == GetDCType)
             return bw->getDC();
-        if (resource == "releaseDC") {
+        if (type == ReleaseDCType) {
             bw->releaseDC();
             return 0;
         }
@@ -111,7 +142,7 @@ QVariantMap QWindowsNativeInterface::windowProperties(QPlatformWindow *window) c
 void *QWindowsNativeInterface::nativeResourceForIntegration(const QByteArray &resource)
 {
 #ifndef QT_NO_OPENGL
-    if (resource == QByteArrayLiteral("glhandle"))
+    if (resourceType(resource) == GlHandleType)
         return QWindowsIntegration::staticOpenGLContext()->moduleHandle();
 #endif
 
@@ -127,12 +158,17 @@ void *QWindowsNativeInterface::nativeResourceForContext(const QByteArray &resour
     }
 
     QWindowsOpenGLContext *glcontext = static_cast<QWindowsOpenGLContext *>(context->handle());
-    if (resource == QByteArrayLiteral("renderingContext") || resource == QByteArrayLiteral("eglContext"))
+    switch (resourceType(resource)) {
+    case RenderingContextType: // Fall through.
+    case EglContextType:
         return glcontext->nativeContext();
-    if (resource == QByteArrayLiteral("eglDisplay"))
+    case EglDisplayType:
         return glcontext->nativeDisplay();
-    if (resource == QByteArrayLiteral("eglConfig"))
+    case EglConfigType:
         return glcontext->nativeConfig();
+    default:
+        break;
+    }
 
     qWarning("%s: Invalid key '%s' requested.", __FUNCTION__, resource.constData());
     return 0;
