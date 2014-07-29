@@ -39,11 +39,12 @@
 **
 ****************************************************************************/
 
-#if defined(QSTRING_H)
+#if defined(QSTRING_H) || defined(QBYTEARRAY_H)
 #  error "This file cannot be compiled with pre-compiled headers"
 #endif
 #define QT_COMPILING_QSTRING_COMPAT_CPP
 
+#include "qbytearray.h"
 #include "qstring.h"
 
 QT_BEGIN_NAMESPACE
@@ -62,6 +63,17 @@ QByteArray QString::toLocal8Bit() const
 QByteArray QString::toUtf8() const
 {
     return toUtf8_helper(*this);
+}
+
+// ditto, for qbytearray.h (because we're lazy)
+QByteArray QByteArray::toLower() const
+{
+    return toLower_helper(*this);
+}
+
+QByteArray QByteArray::toUpper() const
+{
+    return toUpper_helper(*this);
 }
 
 QT_END_NAMESPACE

@@ -2777,10 +2777,10 @@ static QByteArray toCase_template(T &input, const uchar * table)
     }
 
     if (firstBad == e)
-        return input;
+        return qMove(input);
 
     // transform the rest
-    QByteArray s = input;
+    QByteArray s = qMove(input);    // will copy if T is const QByteArray
     char *b = s.begin();            // will detach if necessary
     char *p = b + (firstBad - orig_begin);
     e = b + s.size();
@@ -2790,13 +2790,19 @@ static QByteArray toCase_template(T &input, const uchar * table)
     return s;
 }
 
-
-QByteArray QByteArray::toLower() const
+QByteArray QByteArray::toLower_helper(const QByteArray &a)
 {
-    return toCase_template(*this, latin1_lowercased);
+    return toCase_template(a, latin1_lowercased);
+}
+
+QByteArray QByteArray::toLower_helper(QByteArray &a)
+{
+    return toCase_template(a, latin1_lowercased);
 }
 
 /*!
+    \fn QByteArray QByteArray::toUpper() const
+
     Returns an uppercase copy of the byte array. The bytearray is
     interpreted as a Latin-1 encoded string.
 
@@ -2805,9 +2811,15 @@ QByteArray QByteArray::toLower() const
 
     \sa toLower(), {8-bit Character Comparisons}
 */
-QByteArray QByteArray::toUpper() const
+
+QByteArray QByteArray::toUpper_helper(const QByteArray &a)
 {
-    return toCase_template(*this, latin1_uppercased);
+    return toCase_template(a, latin1_uppercased);
+}
+
+QByteArray QByteArray::toUpper_helper(QByteArray &a)
+{
+    return toCase_template(a, latin1_uppercased);
 }
 
 /*! \fn void QByteArray::clear()

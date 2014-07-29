@@ -2008,6 +2008,9 @@ void tst_QByteArray::toUpperLower_data()
     QTest::addColumn<QByteArray>("lower");
 
     QTest::newRow("empty") << QByteArray() << QByteArray() << QByteArray();
+    QTest::newRow("literal") << QByteArrayLiteral("Hello World")
+                             << QByteArrayLiteral("HELLO WORLD")
+                             << QByteArrayLiteral("hello world");
     QTest::newRow("ascii") << QByteArray("Hello World, this is a STRING")
                            << QByteArray("HELLO WORLD, THIS IS A STRING")
                            << QByteArray("hello world, this is a string");
@@ -2026,6 +2029,30 @@ void tst_QByteArray::toUpperLower()
     QCOMPARE(upper.toUpper(), upper);
     QCOMPARE(input.toUpper(), upper);
     QCOMPARE(input.toLower(), lower);
+
+    QByteArray copy = input;
+    QCOMPARE(qMove(copy).toUpper(), upper);
+    copy = input;
+    copy.detach();
+    QCOMPARE(qMove(copy).toUpper(), upper);
+
+    copy = input;
+    QCOMPARE(qMove(copy).toLower(), lower);
+    copy = input;
+    copy.detach();
+    QCOMPARE(qMove(copy).toLower(), lower);
+
+    copy = lower;
+    QCOMPARE(qMove(copy).toLower(), lower);
+    copy = lower;
+    copy.detach();
+    QCOMPARE(qMove(copy).toLower(), lower);
+
+    copy = upper;
+    QCOMPARE(qMove(copy).toUpper(), upper);
+    copy = upper;
+    copy.detach();
+    QCOMPARE(qMove(copy).toUpper(), upper);
 }
 
 void tst_QByteArray::macTypes()

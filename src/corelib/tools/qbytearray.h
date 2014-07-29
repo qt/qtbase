@@ -264,8 +264,29 @@ public:
     void truncate(int pos);
     void chop(int n);
 
+#if defined(Q_COMPILER_REF_QUALIFIERS) && !defined(QT_COMPILING_QSTRING_COMPAT_CPP)
+#  if defined(Q_CC_GNU)
+    // required due to https://gcc.gnu.org/bugzilla/show_bug.cgi?id=61941
+#    pragma push_macro("Q_REQUIRED_RESULT")
+#    undef Q_REQUIRED_RESULT
+#    define Q_REQUIRED_RESULT
+#    define Q_REQUIRED_RESULT_pushed
+#  endif
+    QByteArray toLower() const & Q_REQUIRED_RESULT
+    { return toLower_helper(*this); }
+    QByteArray toLower() && Q_REQUIRED_RESULT
+    { return toLower_helper(*this); }
+    QByteArray toUpper() const & Q_REQUIRED_RESULT
+    { return toUpper_helper(*this); }
+    QByteArray toUpper() && Q_REQUIRED_RESULT
+    { return toUpper_helper(*this); }
+#  ifdef Q_REQUIRED_RESULT_pushed
+#    pragma pop_macro("Q_REQUIRED_RESULT")
+#  endif
+#else
     QByteArray toLower() const Q_REQUIRED_RESULT;
     QByteArray toUpper() const Q_REQUIRED_RESULT;
+#endif
 
     QByteArray trimmed() const Q_REQUIRED_RESULT;
     QByteArray simplified() const Q_REQUIRED_RESULT;
@@ -422,6 +443,10 @@ private:
     void expand(int i);
     QByteArray nulTerminated() const;
 
+    static QByteArray toLower_helper(const QByteArray &a);
+    static QByteArray toLower_helper(QByteArray &a);
+    static QByteArray toUpper_helper(const QByteArray &a);
+    static QByteArray toUpper_helper(QByteArray &a);
     friend class QByteRef;
     friend class QString;
     friend Q_CORE_EXPORT QByteArray qUncompress(const uchar *data, int nbytes);
