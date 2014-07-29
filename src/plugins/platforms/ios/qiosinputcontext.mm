@@ -166,7 +166,7 @@
     self.enabled = YES;
     if (!m_duration) {
         m_duration = [[notification.userInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey] doubleValue];
-        m_curve = UIViewAnimationCurve([[notification.userInfo objectForKey:UIKeyboardAnimationCurveUserInfoKey] integerValue] << 16);
+        m_curve = UIViewAnimationCurve([[notification.userInfo objectForKey:UIKeyboardAnimationCurveUserInfoKey] integerValue]);
     }
     m_context->scrollToCursor();
 }
@@ -389,7 +389,7 @@ void QIOSInputContext::scroll(int y)
     newBounds.origin.y = y;
     QPointer<QIOSInputContext> self = this;
     [UIView animateWithDuration:m_keyboardListener->m_duration delay:0
-        options:m_keyboardListener->m_curve | UIViewAnimationOptionBeginFromCurrentState
+        options:(m_keyboardListener->m_curve << 16) | UIViewAnimationOptionBeginFromCurrentState
         animations:^{ view.bounds = newBounds; }
         completion:^(BOOL){
             if (self)
