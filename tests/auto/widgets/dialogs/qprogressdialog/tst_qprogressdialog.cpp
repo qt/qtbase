@@ -50,6 +50,7 @@
 #include <qlabel.h>
 #include <qpointer.h>
 #include <qthread.h>
+#include <qtranslator.h>
 
 class tst_QProgressDialog : public QObject
 {
@@ -63,6 +64,7 @@ private Q_SLOTS:
     void task198202();
     void QTBUG_31046();
     void settingCustomWidgets();
+    void i18n();
 };
 
 void tst_QProgressDialog::cleanup()
@@ -232,6 +234,49 @@ void tst_QProgressDialog::settingCustomWidgets()
     // make cleanup() pass
     delete bar;
 #endif
+}
+
+class QTestTranslator : public QTranslator
+{
+    const QString m_str;
+public:
+    explicit QTestTranslator(QString str) : m_str(qMove(str)) {}
+
+    QString translate(const char *, const char *sourceText, const char *, int) const Q_DECL_OVERRIDE
+    { return m_str + sourceText + m_str; }
+
+    bool isEmpty() const Q_DECL_OVERRIDE { return false; }
+};
+
+template <typename Translator>
+class QTranslatorGuard {
+    Translator t;
+public:
+    template <typename Arg>
+    explicit QTranslatorGuard(Arg a) : t(qMove(a))
+    { qApp->installTranslator(&t); }
+    ~QTranslatorGuard()
+    { qApp->removeTranslator(&t); }
+};
+
+void tst_QProgressDialog::i18n()
+{
+    QProgressDialog dlg;
+    QPushButton *btn = dlg.findChild<QPushButton*>();
+    QVERIFY(btn);
+    const QString xxx = QStringLiteral("xxx");
+    {
+        QTranslatorGuard<QTestTranslator> guard(xxx);
+        {
+            QPushButton *btn = dlg.findChild<QPushButton*>();
+            QVERIFY(btn);
+            QTRY_COMPARE(btn->text(), QProgressDialog::tr("Cancel"));
+            QVERIFY(btn->text().startsWith(xxx));
+        }
+    }
+    QVERIFY(btn);
+    QTRY_COMPARE(btn->text(), QProgressDialog::tr("Cancel"));
+    QVERIFY(!btn->text().startsWith(xxx));
 }
 
 QTEST_MAIN(tst_QProgressDialog)

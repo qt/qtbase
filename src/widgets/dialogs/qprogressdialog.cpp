@@ -179,9 +179,8 @@ void QProgressDialogPrivate::layout()
 
 void QProgressDialogPrivate::retranslateStrings()
 {
-    Q_Q(QProgressDialog);
     if (useDefaultCancelText)
-        q->setCancelButtonText(QProgressDialog::tr("Cancel"));
+        setCancelButtonText(QProgressDialog::tr("Cancel"));
 }
 
 void QProgressDialogPrivate::_q_disconnectOnClose()
