@@ -42,7 +42,7 @@
 
 #include <QtTest/QtTest>
 
-#include <qcoreapplication.h>
+#include <qapplication.h>
 #include <qdebug.h>
 #include <qprogressdialog.h>
 #include <qlabel.h>
@@ -53,12 +53,18 @@ class tst_QProgressDialog : public QObject
     Q_OBJECT
 
 private Q_SLOTS:
+    void cleanup();
     void autoShow_data();
     void autoShow();
     void getSetCheck();
     void task198202();
     void QTBUG_31046();
 };
+
+void tst_QProgressDialog::cleanup()
+{
+    QVERIFY(QApplication::topLevelWindows().empty());
+}
 
 void tst_QProgressDialog::autoShow_data()
 {
