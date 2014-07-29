@@ -5510,6 +5510,8 @@ QString QString::rightJustified(int width, QChar fill, bool truncate) const
 }
 
 /*!
+    \fn QString QString::toLower() const
+
     Returns a lowercase copy of the string.
 
     \snippet qstring/main.cpp 75
@@ -5520,61 +5522,91 @@ QString QString::rightJustified(int width, QChar fill, bool truncate) const
     \sa toUpper(), QLocale::toLower()
 */
 
-QString QString::toLower() const
+namespace QUnicodeTables {
+struct LowercaseTraits
 {
-    const ushort *p = d->data();
-    if (!p)
-        return *this;
+    static signed short caseDiff(const Properties *prop)
+    { return prop->lowerCaseDiff; }
+    static bool caseSpecial(const Properties *prop)
+    { return prop->lowerCaseSpecial; }
+};
 
-    const ushort *e = p + d->size;
+struct UppercaseTraits
+{
+    static signed short caseDiff(const Properties *prop)
+    { return prop->upperCaseDiff; }
+    static bool caseSpecial(const Properties *prop)
+    { return prop->upperCaseSpecial; }
+};
+
+struct CasefoldTraits
+{
+    static signed short caseDiff(const Properties *prop)
+    { return prop->caseFoldDiff; }
+    static bool caseSpecial(const Properties *prop)
+    { return prop->caseFoldSpecial; }
+};
+
+template <typename Traits>
+#ifdef Q_CC_MSVC
+__declspec(noinline)
+#elif defined(Q_CC_GNU)
+__attribute__((noinline))
+#endif
+static QString detachAndConvertCase(const QString &str, QStringIterator it)
+{
+    QString s(str);
+    QChar *pp = s.begin() + it.index();
+    uint uc = it.nextUnchecked();
+    forever {
+        const QUnicodeTables::Properties *prop = qGetProp(uc);
+        signed short caseDiff = Traits::caseDiff(prop);
+
+        if (Q_UNLIKELY(Traits::caseSpecial(prop))) {
+            // slow path
+            const ushort *specialCase = specialCaseMap + caseDiff;
+            ushort length = *specialCase++;
+            int pos = pp - s.constBegin();
+            s.replace(pos, 1, reinterpret_cast<const QChar *>(specialCase), length);
+            pp = const_cast<QChar *>(s.constBegin()) + pos + length;
+        } else if (QChar::requiresSurrogates(uc)) {
+            *pp++ = QChar::highSurrogate(uc + caseDiff);
+            *pp++ = QChar::lowSurrogate(uc + caseDiff);
+        } else {
+            *pp++ = QChar(uc + caseDiff);
+        }
+
+        if (!it.hasNext())
+            return s;
+
+        uc = it.nextUnchecked();
+    }
+}
+
+template <typename Traits>
+static inline QString convertCase(const QString &str)
+{
+    const QChar *p = str.constBegin();
+    const QChar *e = p + str.size();
+
     // this avoids out of bounds check in the loop
-    while (e != p && QChar::isHighSurrogate(*(e - 1)))
+    while (e != p && e[-1].isHighSurrogate())
         --e;
 
     const QUnicodeTables::Properties *prop;
-    while (p != e) {
-        if (QChar::isHighSurrogate(*p) && QChar::isLowSurrogate(p[1])) {
-            ushort high = *p++;
-            prop = qGetProp(QChar::surrogateToUcs4(high, *p));
-        } else {
-            prop = qGetProp(*p);
-        }
-        if (prop->lowerCaseDiff) {
-            if (QChar::isLowSurrogate(*p))
-                --p; // safe; diff is 0 for surrogates
-            QString s(d->size, Qt::Uninitialized);
-            memcpy(s.d->data(), d->data(), (p - d->data())*sizeof(ushort));
-            ushort *pp = s.d->data() + (p - d->data());
-            while (p != e) {
-                if (QChar::isHighSurrogate(*p) && QChar::isLowSurrogate(p[1])) {
-                    *pp = *p++;
-                    prop = qGetProp(QChar::surrogateToUcs4(*pp++, *p));
-                } else {
-                    prop = qGetProp(*p);
-                }
-                if (prop->lowerCaseSpecial) {
-                    const ushort *specialCase = specialCaseMap + prop->lowerCaseDiff;
-                    ushort length = *specialCase++;
-                    int pos = pp - s.d->data();
-                    s.resize(s.d->size + length - 1);
-                    pp = s.d->data() + pos;
-                    while (length--)
-                        *pp++ = *specialCase++;
-                } else {
-                    *pp++ = *p + prop->lowerCaseDiff;
-                }
-                ++p;
-            }
-
-            // this restores high surrogate parts eaten above, if any
-            while (e != d->data() + d->size)
-                *pp++ = *e++;
-
-            return s;
-        }
-        ++p;
+    QStringIterator it(p, e);
+    for ( ; it.hasNext(); it.advanceUnchecked()) {
+        prop = qGetProp(it.peekNextUnchecked());
+        if (Traits::caseDiff(prop))
+            return detachAndConvertCase<Traits>(str, it);
     }
-    return *this;
+    return str;
+}
+} // namespace QUnicodeTables
+
+QString QString::toLower() const
+{
+    return QUnicodeTables::convertCase<QUnicodeTables::LowercaseTraits>(*this);
 }
 
 /*!
@@ -5583,66 +5615,7 @@ QString QString::toLower() const
 */
 QString QString::toCaseFolded() const
 {
-    const ushort *p = d->data();
-    if (!p)
-        return *this;
-
-    const ushort *e = p + d->size;
-    // this avoids out of bounds check in the loop
-    while (e != p && QChar::isHighSurrogate(*(e - 1)))
-        --e;
-
-    const QUnicodeTables::Properties *prop;
-    while (p != e) {
-        if (QChar::isHighSurrogate(*p) && QChar::isLowSurrogate(p[1])) {
-            ushort high = *p++;
-            prop = qGetProp(QChar::surrogateToUcs4(high, *p));
-        } else {
-            prop = qGetProp(*p);
-        }
-        if (prop->caseFoldDiff) {
-            if (QChar::isLowSurrogate(*p))
-                --p; // safe; diff is 0 for surrogates
-            QString s(d->size, Qt::Uninitialized);
-            memcpy(s.d->data(), d->data(), (p - d->data())*sizeof(ushort));
-            ushort *pp = s.d->data() + (p - d->data());
-            while (p != e) {
-                if (QChar::isHighSurrogate(*p) && QChar::isLowSurrogate(p[1])) {
-                    *pp = *p++;
-                    prop = qGetProp(QChar::surrogateToUcs4(*pp++, *p));
-                } else {
-                    prop = qGetProp(*p);
-                }
-                if (prop->caseFoldSpecial) {
-                    const ushort *specialCase = specialCaseMap + prop->caseFoldDiff;
-                    ushort length = *specialCase++;
-#if 0
-                    int pos = pp - s.d->data;
-                    s.resize(s.d->size + length - 1);
-                    pp = s.d->data + pos;
-                    while (length--)
-                        *pp++ = *specialCase++;
-#else
-                    //### we currently don't support full case foldings
-                    Q_ASSERT(length == 1);
-                    Q_UNUSED(length)
-                    *pp++ = *specialCase;
-#endif
-                } else {
-                    *pp++ = *p + prop->caseFoldDiff;
-                }
-                ++p;
-            }
-
-            // this restores high surrogate parts eaten above, if any
-            while (e != d->data() + d->size)
-                *pp++ = *e++;
-
-            return s;
-        }
-        ++p;
-    }
-    return *this;
+    return QUnicodeTables::convertCase<QUnicodeTables::CasefoldTraits>(*this);
 }
 
 /*!
@@ -5657,59 +5630,7 @@ QString QString::toCaseFolded() const
 */
 QString QString::toUpper() const
 {
-    const ushort *p = d->data();
-    if (!p)
-        return *this;
-
-    const ushort *e = p + d->size;
-    // this avoids out of bounds check in the loop
-    while (e != p && QChar::isHighSurrogate(*(e - 1)))
-        --e;
-
-    const QUnicodeTables::Properties *prop;
-    while (p != e) {
-        if (QChar::isHighSurrogate(*p) && QChar::isLowSurrogate(p[1])) {
-            ushort high = *p++;
-            prop = qGetProp(QChar::surrogateToUcs4(high, *p));
-        } else {
-            prop = qGetProp(*p);
-        }
-        if (prop->upperCaseDiff) {
-            if (QChar::isLowSurrogate(*p))
-                --p; // safe; diff is 0 for surrogates
-            QString s(d->size, Qt::Uninitialized);
-            memcpy(s.d->data(), d->data(), (p - d->data())*sizeof(ushort));
-            ushort *pp = s.d->data() + (p - d->data());
-            while (p != e) {
-                if (QChar::isHighSurrogate(*p) && QChar::isLowSurrogate(p[1])) {
-                    *pp = *p++;
-                    prop = qGetProp(QChar::surrogateToUcs4(*pp++, *p));
-                } else {
-                    prop = qGetProp(*p);
-                }
-                if (prop->upperCaseSpecial) {
-                    const ushort *specialCase = specialCaseMap + prop->upperCaseDiff;
-                    ushort length = *specialCase++;
-                    int pos = pp - s.d->data();
-                    s.resize(s.d->size + length - 1);
-                    pp = s.d->data() + pos;
-                    while (length--)
-                        *pp++ = *specialCase++;
-                } else {
-                    *pp++ = *p + prop->upperCaseDiff;
-                }
-                ++p;
-            }
-
-            // this restores high surrogate parts eaten above, if any
-            while (e != d->data() + d->size)
-                *pp++ = *e++;
-
-            return s;
-        }
-        ++p;
-    }
-    return *this;
+    return QUnicodeTables::convertCase<QUnicodeTables::UppercaseTraits>(*this);
 }
 
 // ### Qt 6: Consider whether this function shouldn't be removed See task 202871.

@@ -71,6 +71,11 @@ public:
         return pos;
     }
 
+    inline int index() const
+    {
+        return pos - i;
+    }
+
     inline void setPosition(QString::const_iterator position)
     {
         Q_ASSERT_X(i <= position && position <= e, Q_FUNC_INFO, "position out of bounds");
