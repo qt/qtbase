@@ -253,6 +253,22 @@ static void xgetbv(uint in, uint &eax, uint &edx)
 
 static inline uint detectProcessorFeatures()
 {
+    // Flags from the CR0 / XCR0 state register
+    enum XCR0Flags {
+        X87             = 1 << 0,
+        XMM0_15         = 1 << 1,
+        YMM0_15Hi128    = 1 << 2,
+        BNDRegs         = 1 << 3,
+        BNDCSR          = 1 << 4,
+        OpMask          = 1 << 5,
+        ZMM0_15Hi256    = 1 << 6,
+        ZMM16_31        = 1 << 7,
+
+        SSEState        = XMM0_15,
+        AVXState        = XMM0_15 | YMM0_15Hi128,
+        AVX512State     = AVXState | OpMask | ZMM0_15Hi256 | ZMM16_31
+    };
+
     uint features = 0;
     int cpuidLevel = maxBasicCpuidSupported();
     if (cpuidLevel < 1)
@@ -264,6 +280,7 @@ static inline uint detectProcessorFeatures()
     // x86 might not have SSE2 support
     if (cpuid01EDX & (1u << 26))
         features |= SSE2;
+    // we should verify that the OS enabled saving of the SSE state...
 #else
     // x86-64 or x32
     features = SSE2;
@@ -291,7 +308,7 @@ static inline uint detectProcessorFeatures()
     if (cpuidLevel >= 7)
         cpuidFeatures07_00(cpuid0700EBX);
 
-    if ((xgetbvA & 6) == 6) {
+    if ((xgetbvA & AVXState) == AVXState) {
         // support for YMM and XMM registers is enabled
         if (cpuid01ECX & (1u << 28))
             features |= AVX;
