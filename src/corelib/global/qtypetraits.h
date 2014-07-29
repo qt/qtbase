@@ -82,11 +82,15 @@
 //   is_pointer
 //   is_enum
 //   is_reference
+//   is_const
+//   is_volatile
 //   is_pod
 //   has_trivial_constructor
 //   has_trivial_copy
 //   has_trivial_assign
 //   has_trivial_destructor
+//   is_signed
+//   is_unsigned
 //   remove_const
 //   remove_volatile
 //   remove_cv
@@ -325,6 +329,11 @@ template <class T> struct is_enum<const volatile T> : is_enum<T> { };
 template<typename T> struct is_reference : false_type {};
 template<typename T> struct is_reference<T&> : true_type {};
 
+// Specified by TR1 [4.5.3] Type Properties
+template <typename T> struct is_const : false_type {};
+template <typename T> struct is_const<const T> : true_type {};
+template <typename T> struct is_volatile : false_type {};
+template <typename T> struct is_volatile<volatile T> : true_type {};
 
 // We can't get is_pod right without compiler help, so fail conservatively.
 // We will assume it's false except for arithmetic types, enumerations,
