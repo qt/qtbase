@@ -160,6 +160,8 @@ public:
     void postSyncWindowRequest();
     void clearSyncWindowRequest() { m_pendingSyncRequest = 0; }
 
+    qreal devicePixelRatio() const;
+
 public Q_SLOTS:
     void updateSyncRequestCounter();
 

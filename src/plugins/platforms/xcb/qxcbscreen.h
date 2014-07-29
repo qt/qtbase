@@ -75,6 +75,7 @@ public:
     QImage::Format format() const;
     QSizeF physicalSize() const { return m_sizeMillimeters; }
     QDpi logicalDpi() const;
+    qreal devicePixelRatio() const;
     QPlatformCursor *cursor() const;
     qreal refreshRate() const { return m_refreshRate; }
     Qt::ScreenOrientation orientation() const { return m_orientation; }
@@ -134,6 +135,7 @@ private:
     QXcbCursor *m_cursor;
     int m_refreshRate;
     int m_forcedDpi;
+    int m_devicePixelRatio;
     QFontEngine::HintStyle m_hintStyle;
     QFontEngine::SubpixelAntialiasingType m_subpixelType;
     int m_antialiasingEnabled;
