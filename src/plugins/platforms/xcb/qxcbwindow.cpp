@@ -101,7 +101,7 @@
 #include <X11/Xutil.h>
 #endif
 
-#if defined(XCB_USE_XINPUT2_MAEMO) || defined(XCB_USE_XINPUT2)
+#if defined(XCB_USE_XINPUT2)
 #include <X11/extensions/XInput2.h>
 #endif
 
@@ -492,22 +492,7 @@ void QXcbWindow::create()
                                    32, 2, (void *)data));
 
 
-#ifdef XCB_USE_XINPUT2_MAEMO
-    if (connection()->isUsingXInput2Maemo()) {
-        XIEventMask xieventmask;
-        uchar bitmask[2] = { 0, 0 };
-
-        xieventmask.deviceid = XIAllMasterDevices;
-        xieventmask.mask = bitmask;
-        xieventmask.mask_len = sizeof(bitmask);
-
-        XISetMask(bitmask, XI_ButtonPress);
-        XISetMask(bitmask, XI_ButtonRelease);
-        XISetMask(bitmask, XI_Motion);
-
-        XISelectEvents(DISPLAY_FROM_XCB(this), m_window, &xieventmask, 1);
-    }
-#elif defined(XCB_USE_XINPUT2)
+#if defined(XCB_USE_XINPUT2)
     connection()->xi2Select(m_window);
 #endif
 
@@ -1530,23 +1515,6 @@ void QXcbWindow::requestActivateWindow()
 
     connection()->sync();
 }
-
-#if XCB_USE_MAEMO_WINDOW_PROPERTIES
-void QXcbWindow::handleContentOrientationChange(Qt::ScreenOrientation orientation)
-{
-    int angle = 0;
-    switch (orientation) {
-        case Qt::PortraitOrientation: angle = 270; break;
-        case Qt::LandscapeOrientation: angle = 0; break;
-        case Qt::InvertedPortraitOrientation: angle = 90; break;
-        case Qt::InvertedLandscapeOrientation: angle = 180; break;
-        case Qt::PrimaryOrientation: break;
-    }
-    Q_XCB_CALL(xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window,
-                                   atom(QXcbAtom::MeegoTouchOrientationAngle), XCB_ATOM_CARDINAL, 32,
-                                   1, &angle));
-}
-#endif
 
 QSurfaceFormat QXcbWindow::format() const
 {

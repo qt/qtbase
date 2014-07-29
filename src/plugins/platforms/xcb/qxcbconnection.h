@@ -65,9 +65,7 @@
 #include <QTabletEvent>
 #endif
 
-#ifdef XCB_USE_XINPUT2_MAEMO
-struct XInput2MaemoData;
-#elif XCB_USE_XINPUT2
+#if XCB_USE_XINPUT2
 #include <X11/extensions/XI2.h>
 #ifdef XIScrollClass
 #define XCB_USE_XINPUT21    // XI 2.1 adds smooth scrolling support
@@ -279,9 +277,6 @@ namespace QXcbAtom {
         RelHorizScroll,
         RelVertScroll,
 
-#if XCB_USE_MAEMO_WINDOW_PROPERTIES
-        MeegoTouchOrientationAngle,
-#endif
         _XSETTINGS_SETTINGS,
 
         _COMPIZ_DECOR_PENDING,
@@ -411,9 +406,7 @@ public:
 #if defined(XCB_USE_EGL)
     void *egl_display() const { return m_egl_display; }
 #endif
-#ifdef XCB_USE_XINPUT2_MAEMO
-    bool isUsingXInput2Maemo();
-#elif defined(XCB_USE_XINPUT2)
+#if defined(XCB_USE_XINPUT2)
     void xi2Select(xcb_window_t window);
 #endif
 #ifdef XCB_USE_XINPUT21
@@ -498,11 +491,6 @@ private:
     void initializeXRandr();
     void initializeXShape();
     void initializeXKB();
-#ifdef XCB_USE_XINPUT2_MAEMO
-    void initializeXInput2Maemo();
-    void finalizeXInput2Maemo();
-    void handleGenericEventMaemo(xcb_ge_event_t *event);
-#endif
     void handleClientMessageEvent(const xcb_client_message_event_t *event);
     QXcbScreen* findOrCreateScreen(QList<QXcbScreen *>& newScreens, int screenNumber,
         xcb_screen_t* xcbScreen, xcb_randr_get_output_info_reply_t *output = NULL);
@@ -556,7 +544,7 @@ private:
     QHash<int, ScrollingDevice> m_scrollingDevices;
 #endif // XCB_USE_XINPUT2
 
-#if defined(XCB_USE_XINPUT2) || defined(XCB_USE_XINPUT2_MAEMO)
+#if defined(XCB_USE_XINPUT2)
     static bool xi2GetValuatorValueIfSet(void *event, int valuatorNum, double *value);
     static bool xi2PrepareXIGenericDeviceEvent(xcb_ge_event_t *event, int opCode);
 #endif
@@ -589,9 +577,7 @@ private:
     void *m_xlib_display;
 #endif
     QXcbEventReader *m_reader;
-#ifdef XCB_USE_XINPUT2_MAEMO
-    XInput2MaemoData *m_xinputData;
-#elif defined(XCB_USE_XINPUT2)
+#if defined(XCB_USE_XINPUT2)
     QHash<int, QWindowSystemInterface::TouchPoint> m_touchPoints;
     QHash<int, XInput2DeviceData*> m_touchDevices;
 #endif

@@ -711,7 +711,6 @@ XPLATFORM_MAC=no
 XPLATFORM_IOS=no
 XPLATFORM_ANDROID=no
 XPLATFORM_MINGW=no      # Whether target platform is MinGW (win32-g++*)
-XPLATFORM_MAEMO=no
 XPLATFORM_QNX=no
 PLATFORM=$QMAKESPEC
 QT_CROSS_COMPILE=no
@@ -2754,9 +2753,6 @@ fi
 case "$XPLATFORM" in
     *win32-g++*)
         XPLATFORM_MINGW=yes
-        ;;
-    *-maemo*)
-        XPLATFORM_MAEMO=yes
         ;;
     *qnx-*|*blackberry-*)
         XPLATFORM_QNX=yes

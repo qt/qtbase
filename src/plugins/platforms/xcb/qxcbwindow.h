@@ -102,10 +102,6 @@ public:
 
     void requestActivateWindow();
 
-#if XCB_USE_MAEMO_WINDOW_PROPERTIES
-    void handleContentOrientationChange(Qt::ScreenOrientation orientation);
-#endif
-
     bool setKeyboardGrabEnabled(bool grab);
     bool setMouseGrabEnabled(bool grab);
 

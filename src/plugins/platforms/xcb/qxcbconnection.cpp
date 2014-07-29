@@ -73,7 +73,7 @@
 #include <X11/Xlibint.h>
 #endif
 
-#if defined(XCB_USE_XINPUT2) || defined(XCB_USE_XINPUT2_MAEMO)
+#if defined(XCB_USE_XINPUT2)
 #include <X11/extensions/XInput2.h>
 #include <X11/extensions/XI2proto.h>
 #endif
@@ -314,9 +314,6 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
     , m_primaryScreen(0)
     , m_displayName(displayName ? QByteArray(displayName) : qgetenv("DISPLAY"))
     , m_nativeInterface(nativeInterface)
-#ifdef XCB_USE_XINPUT2_MAEMO
-    , m_xinputData(0)
-#endif
     , xfixes_first_event(0)
     , xrandr_first_event(0)
     , xkb_first_event(0)
@@ -396,9 +393,7 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
     initializeXFixes();
     initializeXRender();
     m_xi2Enabled = false;
-#ifdef XCB_USE_XINPUT2_MAEMO
-    initializeXInput2Maemo();
-#elif defined(XCB_USE_XINPUT2)
+#if defined(XCB_USE_XINPUT2)
     initializeXInput2();
 #endif
     initializeXShape();
@@ -429,9 +424,7 @@ QXcbConnection::~QXcbConnection()
     delete m_drag;
 #endif
 
-#ifdef XCB_USE_XINPUT2_MAEMO
-    finalizeXInput2Maemo();
-#elif defined(XCB_USE_XINPUT2)
+#if defined(XCB_USE_XINPUT2)
     finalizeXInput2();
 #endif
 
@@ -935,11 +928,7 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
         case XCB_PROPERTY_NOTIFY:
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_property_notify_event_t, window, handlePropertyNotifyEvent);
             break;
-#ifdef XCB_USE_XINPUT2_MAEMO
-        case GenericEvent:
-            handleGenericEventMaemo((xcb_ge_event_t*)event);
-            break;
-#elif defined(XCB_USE_XINPUT2)
+#if defined(XCB_USE_XINPUT2)
         case GenericEvent:
             if (m_xi2Enabled)
                 xi2HandleEvent(reinterpret_cast<xcb_ge_event_t *>(event));
@@ -1543,9 +1532,6 @@ static const char * xcb_atomnames = {
     "Rel Vert Wheel\0"
     "Rel Horiz Scroll\0"
     "Rel Vert Scroll\0"
-#if XCB_USE_MAEMO_WINDOW_PROPERTIES
-    "_MEEGOTOUCH_ORIENTATION_ANGLE\0"
-#endif
     "_XSETTINGS_SETTINGS\0"
     "_COMPIZ_DECOR_PENDING\0"
     "_COMPIZ_DECOR_REQUEST\0"
@@ -1828,7 +1814,7 @@ bool QXcbConnection::hasEgl() const
 }
 #endif // defined(XCB_USE_EGL)
 
-#if defined(XCB_USE_XINPUT2) || defined(XCB_USE_XINPUT2_MAEMO)
+#if defined(XCB_USE_XINPUT2)
 static int xi2ValuatorOffset(unsigned char *maskPtr, int maskLen, int number)
 {
     int offset = 0;
@@ -1893,7 +1879,7 @@ bool QXcbConnection::xi2PrepareXIGenericDeviceEvent(xcb_ge_event_t *ev, int opCo
     }
     return false;
 }
-#endif // defined(XCB_USE_XINPUT2) || defined(XCB_USE_XINPUT2_MAEMO)
+#endif // defined(XCB_USE_XINPUT2)
 
 QXcbSystemTrayTracker *QXcbConnection::systemTrayTracker()
 {
