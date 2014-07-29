@@ -1397,7 +1397,7 @@ QFunctionPointer QWindowsGLContext::getProcAddress(const QByteArray &procName)
     QFunctionPointer procAddress = reinterpret_cast<QFunctionPointer>(QOpenGLStaticContext::opengl32.wglGetProcAddress(procName.constData()));
     if (QWindowsContext::verbose > 1)
         qCDebug(lcQpaGl) << __FUNCTION__ <<  procName << QOpenGLStaticContext::opengl32.wglGetCurrentContext() << "returns" << procAddress;
-    if (!procAddress)
+    if (!procAddress && QWindowsContext::verbose)
         qWarning("%s: Unable to resolve '%s'", __FUNCTION__, procName.constData());
     return procAddress;
 }

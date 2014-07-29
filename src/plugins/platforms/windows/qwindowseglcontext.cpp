@@ -751,7 +751,7 @@ QFunctionPointer QWindowsEGLContext::getProcAddress(const QByteArray &procName)
     QFunctionPointer procAddress = reinterpret_cast<QFunctionPointer>(QWindowsEGLStaticContext::libEGL.eglGetProcAddress(procName.constData()));
     if (QWindowsContext::verbose > 1)
         qCDebug(lcQpaGl) << __FUNCTION__ <<  procName << QWindowsEGLStaticContext::libEGL.eglGetCurrentContext() << "returns" << procAddress;
-    if (!procAddress)
+    if (!procAddress && QWindowsContext::verbose)
         qWarning("%s: Unable to resolve '%s'", __FUNCTION__, procName.constData());
     return procAddress;
 }
