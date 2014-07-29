@@ -291,6 +291,10 @@ void *QEGLPlatformIntegration::nativeResourceForContext(const QByteArray &resour
         if (context->handle())
             result = static_cast<QEGLPlatformContext *>(context->handle())->eglConfig();
         break;
+    case EglDisplay:
+        if (context->handle())
+            result = static_cast<QEGLPlatformContext *>(context->handle())->eglDisplay();
+        break;
     default:
         break;
     }
