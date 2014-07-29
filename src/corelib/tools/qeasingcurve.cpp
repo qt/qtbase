@@ -355,9 +355,7 @@ typedef QVector<TCBPoint> TCBPoints;
 class QEasingCurveFunction
 {
 public:
-    enum Type { In, Out, InOut, OutIn };
-
-    QEasingCurveFunction(QEasingCurveFunction::Type type = In, qreal period = 0.3, qreal amplitude = 1.0,
+    QEasingCurveFunction(QEasingCurve::Type type, qreal period = 0.3, qreal amplitude = 1.0,
         qreal overshoot = 1.70158)
         : _t(type), _p(period), _a(amplitude), _o(overshoot)
     { }
@@ -366,7 +364,7 @@ public:
     virtual QEasingCurveFunction *copy() const;
     bool operator==(const QEasingCurveFunction &other) const;
 
-    Type _t;
+    QEasingCurve::Type _t;
     qreal _p;
     qreal _a;
     qreal _o;
@@ -438,8 +436,8 @@ struct BezierEase : public QEasingCurveFunction
     bool _init;
     bool _valid;
 
-    BezierEase()
-        : QEasingCurveFunction(InOut), _curves(10), _intervals(10), _init(false), _valid(false)
+    BezierEase(QEasingCurve::Type type = QEasingCurve::BezierSpline)
+        : QEasingCurveFunction(type), _curves(10), _intervals(10), _init(false), _valid(false)
     { }
 
     void init()
@@ -822,6 +820,10 @@ struct BezierEase : public QEasingCurveFunction
 
 struct TCBEase : public BezierEase
 {
+    TCBEase()
+        : BezierEase(QEasingCurve::TCBSpline)
+    { }
+
     qreal value(qreal x)
     {
         Q_ASSERT(_bezierCurves.count() % 3 == 0);
@@ -838,7 +840,7 @@ struct TCBEase : public BezierEase
 
 struct ElasticEase : public QEasingCurveFunction
 {
-    ElasticEase(Type type)
+    ElasticEase(QEasingCurve::Type type)
         : QEasingCurveFunction(type, qreal(0.3), qreal(1.0))
     { }
 
@@ -857,13 +859,13 @@ struct ElasticEase : public QEasingCurveFunction
         qreal p = (_p < 0) ? qreal(0.3) : _p;
         qreal a = (_a < 0) ? qreal(1.0) : _a;
         switch(_t) {
-        case In:
+        case QEasingCurve::InElastic:
             return easeInElastic(t, a, p);
-        case Out:
+        case QEasingCurve::OutElastic:
             return easeOutElastic(t, a, p);
-        case InOut:
+        case QEasingCurve::InOutElastic:
             return easeInOutElastic(t, a, p);
-        case OutIn:
+        case QEasingCurve::OutInElastic:
             return easeOutInElastic(t, a, p);
         default:
             return t;
@@ -873,7 +875,7 @@ struct ElasticEase : public QEasingCurveFunction
 
 struct BounceEase : public QEasingCurveFunction
 {
-    BounceEase(Type type)
+    BounceEase(QEasingCurve::Type type)
         : QEasingCurveFunction(type, qreal(0.3), qreal(1.0))
     { }
 
@@ -890,13 +892,13 @@ struct BounceEase : public QEasingCurveFunction
     {
         qreal a = (_a < 0) ? qreal(1.0) : _a;
         switch(_t) {
-        case In:
+        case QEasingCurve::InBounce:
             return easeInBounce(t, a);
-        case Out:
+        case QEasingCurve::OutBounce:
             return easeOutBounce(t, a);
-        case InOut:
+        case QEasingCurve::InOutBounce:
             return easeInOutBounce(t, a);
-        case OutIn:
+        case QEasingCurve::OutInBounce:
             return easeOutInBounce(t, a);
         default:
             return t;
@@ -906,7 +908,7 @@ struct BounceEase : public QEasingCurveFunction
 
 struct BackEase : public QEasingCurveFunction
 {
-    BackEase(Type type)
+    BackEase(QEasingCurve::Type type)
         : QEasingCurveFunction(type, qreal(0.3), qreal(1.0), qreal(1.70158))
     { }
 
@@ -923,13 +925,13 @@ struct BackEase : public QEasingCurveFunction
     {
         qreal o = (_o < 0) ? qreal(1.70158) : _o;
         switch(_t) {
-        case In:
+        case QEasingCurve::InBack:
             return easeInBack(t, o);
-        case Out:
+        case QEasingCurve::OutBack:
             return easeOutBack(t, o);
-        case InOut:
+        case QEasingCurve::InOutBack:
             return easeInOutBack(t, o);
-        case OutIn:
+        case QEasingCurve::OutInBack:
             return easeOutInBack(t, o);
         default:
             return t;
@@ -1014,55 +1016,31 @@ static QEasingCurve::EasingFunction curveToFunc(QEasingCurve::Type curve)
 
 static QEasingCurveFunction *curveToFunctionObject(QEasingCurve::Type type)
 {
-    QEasingCurveFunction *curveFunc = 0;
     switch(type) {
     case QEasingCurve::InElastic:
-        curveFunc = new ElasticEase(ElasticEase::In);
-        break;
     case QEasingCurve::OutElastic:
-        curveFunc = new ElasticEase(ElasticEase::Out);
-        break;
     case QEasingCurve::InOutElastic:
-        curveFunc = new ElasticEase(ElasticEase::InOut);
-        break;
     case QEasingCurve::OutInElastic:
-        curveFunc = new ElasticEase(ElasticEase::OutIn);
-        break;
+        return new ElasticEase(type);
     case QEasingCurve::OutBounce:
-        curveFunc = new BounceEase(BounceEase::Out);
-        break;
     case QEasingCurve::InBounce:
-        curveFunc = new BounceEase(BounceEase::In);
-        break;
     case QEasingCurve::OutInBounce:
-        curveFunc = new BounceEase(BounceEase::OutIn);
-        break;
     case QEasingCurve::InOutBounce:
-        curveFunc = new BounceEase(BounceEase::InOut);
-        break;
+        return new BounceEase(type);
     case QEasingCurve::InBack:
-        curveFunc = new BackEase(BackEase::In);
-        break;
     case QEasingCurve::OutBack:
-        curveFunc = new BackEase(BackEase::Out);
-        break;
     case QEasingCurve::InOutBack:
-        curveFunc = new BackEase(BackEase::InOut);
-        break;
     case QEasingCurve::OutInBack:
-        curveFunc = new BackEase(BackEase::OutIn);
-        break;
+        return new BackEase(type);
     case QEasingCurve::BezierSpline:
-        curveFunc = new BezierEase();
-        break;
+        return new BezierEase;
     case QEasingCurve::TCBSpline:
-        curveFunc = new TCBEase();
-        break;
+        return new TCBEase;
     default:
-        curveFunc = new QEasingCurveFunction(QEasingCurveFunction::In, qreal(0.3), qreal(1.0), qreal(1.70158));
+        return new QEasingCurveFunction(type, qreal(0.3), qreal(1.0), qreal(1.70158));
     }
 
-    return curveFunc;
+    return 0;
 }
 
 /*!
