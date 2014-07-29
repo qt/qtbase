@@ -39,75 +39,81 @@
 **
 ****************************************************************************/
 
-#ifndef QOPENGLVERTEXARRAYOBJECT_H
-#define QOPENGLVERTEXARRAYOBJECT_H
+#ifndef QOPENGLVERTEXARRAYOBJECT_P_H
+#define QOPENGLVERTEXARRAYOBJECT_P_H
+
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists for the convenience
+// of the Qt OpenGL classes.  This header file may change from
+// version to version without notice, or even be removed.
+//
+// We mean it.
+//
 
 #include <QtCore/qglobal.h>
 
 #ifndef QT_NO_OPENGL
 
-#include <QtCore/QObject>
 #include <QtGui/qopengl.h>
 
 QT_BEGIN_NAMESPACE
 
-class QOpenGLVertexArrayObjectPrivate;
+class QOpenGLVertexArrayObjectHelper;
+class QOpenGLContext;
 
-class Q_GUI_EXPORT QOpenGLVertexArrayObject : public QObject
+void Q_GUI_EXPORT qtInitializeVertexArrayObjectHelper(QOpenGLVertexArrayObjectHelper *helper, QOpenGLContext *context);
+
+class QOpenGLVertexArrayObjectHelper
 {
-    Q_OBJECT
+    Q_DISABLE_COPY(QOpenGLVertexArrayObjectHelper)
 
 public:
-    explicit QOpenGLVertexArrayObject(QObject* parent = 0);
-    ~QOpenGLVertexArrayObject();
-
-    bool create();
-    void destroy();
-    bool isCreated() const;
-    GLuint objectId() const;
-    void bind();
-    void release();
-
-    class Q_GUI_EXPORT Binder
+    explicit inline QOpenGLVertexArrayObjectHelper(QOpenGLContext *context)
+        : GenVertexArrays(Q_NULLPTR)
+        , DeleteVertexArrays(Q_NULLPTR)
+        , BindVertexArray(Q_NULLPTR)
     {
-    public:
-        inline Binder(QOpenGLVertexArrayObject *v)
-            : vao(v)
-        {
-            Q_ASSERT(v);
-            if (vao->isCreated() || vao->create())
-                vao->bind();
-        }
+        qtInitializeVertexArrayObjectHelper(this, context);
+    }
 
-        inline ~Binder()
-        {
-            release();
-        }
+    inline bool isValid() const
+    {
+        return GenVertexArrays && DeleteVertexArrays && BindVertexArray;
+    }
 
-        inline void release()
-        {
-            vao->release();
-        }
+    inline void glGenVertexArrays(GLsizei n, GLuint *arrays) const
+    {
+        GenVertexArrays(n, arrays);
+    }
 
-        inline void rebind()
-        {
-            vao->bind();
-        }
+    inline void glDeleteVertexArrays(GLsizei n, const GLuint *arrays) const
+    {
+        DeleteVertexArrays(n, arrays);
+    }
 
-    private:
-        Q_DISABLE_COPY(Binder)
-        QOpenGLVertexArrayObject *vao;
-    };
+    inline void glBindVertexArray(GLuint array) const
+    {
+        BindVertexArray(array);
+    }
 
 private:
-    Q_DISABLE_COPY(QOpenGLVertexArrayObject)
-    Q_DECLARE_PRIVATE(QOpenGLVertexArrayObject)
-    Q_PRIVATE_SLOT(d_func(), void _q_contextAboutToBeDestroyed())
-    QOpenGLVertexArrayObject(QOpenGLVertexArrayObjectPrivate &dd);
+    friend void Q_GUI_EXPORT qtInitializeVertexArrayObjectHelper(QOpenGLVertexArrayObjectHelper *helper, QOpenGLContext *context);
+
+    // Function signatures are equivalent between desktop core, ARB, APPLE, ES 3 and ES 2 extensions
+    typedef void (QOPENGLF_APIENTRYP qt_GenVertexArrays_t)(GLsizei n, GLuint *arrays);
+    typedef void (QOPENGLF_APIENTRYP qt_DeleteVertexArrays_t)(GLsizei n, const GLuint *arrays);
+    typedef void (QOPENGLF_APIENTRYP qt_BindVertexArray_t)(GLuint array);
+
+    qt_GenVertexArrays_t GenVertexArrays;
+    qt_DeleteVertexArrays_t DeleteVertexArrays;
+    qt_BindVertexArray_t BindVertexArray;
 };
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QT_NO_OPENGL
 
-#endif // QOPENGLVERTEXARRAYOBJECT_H
+#endif // QOPENGLVERTEXARRAYOBJECT_P_H
