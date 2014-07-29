@@ -370,18 +370,39 @@ void QIOSInputContext::scrollToCursor()
 
 void QIOSInputContext::scroll(int y)
 {
-    // Scroll the view the same way a UIScrollView
-    // works: by changing bounds.origin:
-    UIView *view = m_keyboardListener->m_viewController.view;
-    if (y == view.bounds.origin.y)
+    UIView *rootView = m_keyboardListener->m_viewController.view;
+
+    CATransform3D translationTransform = CATransform3DMakeTranslation(0.0, -y, 0.0);
+    if (CATransform3DEqualToTransform(translationTransform, rootView.layer.sublayerTransform))
         return;
 
-    CGRect newBounds = view.bounds;
-    newBounds.origin.y = y;
     QPointer<QIOSInputContext> self = this;
     [UIView animateWithDuration:m_keyboardListener->m_duration delay:0
         options:(m_keyboardListener->m_curve << 16) | UIViewAnimationOptionBeginFromCurrentState
-        animations:^{ view.bounds = newBounds; }
+        animations:^{
+            // The sublayerTransform property of CALayer is not implicitly animated for a
+            // layer-backed view, even inside a UIView animation block, so we need to set up
+            // an explicit CoreAnimation animation. Since there is no predefined media timing
+            // function that matches the custom keyboard animation curve we cheat by asking
+            // the view for an animation of another property, which will give us an animation
+            // that matches the parameters we passed to [UIView animateWithDuration] above.
+            // The reason we ask for the animation of 'backgroundColor' is that it's a simple
+            // property that will not return a compound animation, like eg. bounds will.
+            NSObject *action = (NSObject*)[rootView actionForLayer:rootView.layer forKey:@"backgroundColor"];
+
+            CABasicAnimation *animation;
+            if ([action isKindOfClass:[CABasicAnimation class]]) {
+                animation = static_cast<CABasicAnimation*>(action);
+                animation.keyPath = @"sublayerTransform"; // Instead of backgroundColor
+            } else {
+                animation = [CABasicAnimation animationWithKeyPath:@"sublayerTransform"];
+            }
+
+            animation.fromValue = [NSValue valueWithCATransform3D:rootView.layer.sublayerTransform];
+            animation.toValue = [NSValue valueWithCATransform3D:translationTransform];
+            [rootView.layer addAnimation:animation forKey:@"AnimateSubLayerTransform"];
+            rootView.layer.sublayerTransform = translationTransform;
+        }
         completion:^(BOOL){
             if (self)
                 [m_keyboardListener handleKeyboardRectChanged];
