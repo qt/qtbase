@@ -2067,6 +2067,13 @@ void tst_QString::trimmed()
     QCOMPARE(a,(QString)" ");
     a=" a   ";
     QCOMPARE(a.trimmed(),(QString)"a");
+
+    a="Text";
+    QCOMPARE(qMove(a).trimmed(),(QString)"Text");
+    a=" ";
+    QCOMPARE(qMove(a).trimmed(),(QString)"");
+    a=" a   ";
+    QCOMPARE(qMove(a).trimmed(),(QString)"a");
 }
 
 void tst_QString::simplified_data()
@@ -2112,6 +2119,11 @@ void tst_QString::simplified()
     } else {
         QCOMPARE(result, simple);
     }
+
+    // force a detach
+    if (!full.isEmpty())
+        full[0] = full[0];
+    QCOMPARE(qMove(full).simplified(), simple);
 }
 
 void tst_QString::insert()

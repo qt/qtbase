@@ -395,6 +395,14 @@ public:
     { return toCaseFolded_helper(*this); }
     QString toCaseFolded() && Q_REQUIRED_RESULT
     { return toCaseFolded_helper(*this); }
+    QString trimmed() const & Q_REQUIRED_RESULT
+    { return trimmed_helper(*this); }
+    QString trimmed() && Q_REQUIRED_RESULT
+    { return trimmed_helper(*this); }
+    QString simplified() const & Q_REQUIRED_RESULT
+    { return simplified_helper(*this); }
+    QString simplified() && Q_REQUIRED_RESULT
+    { return simplified_helper(*this); }
 #  ifdef Q_REQUIRED_RESULT_pushed
 #    pragma pop_macro("Q_REQUIRED_RESULT")
 #  endif
@@ -402,10 +410,9 @@ public:
     QString toLower() const Q_REQUIRED_RESULT;
     QString toUpper() const Q_REQUIRED_RESULT;
     QString toCaseFolded() const Q_REQUIRED_RESULT;
-#endif
-
     QString trimmed() const Q_REQUIRED_RESULT;
     QString simplified() const Q_REQUIRED_RESULT;
+#endif
     QString toHtmlEscaped() const Q_REQUIRED_RESULT;
 
     QString &insert(int i, QChar c);
@@ -780,6 +787,10 @@ private:
     static QString toUpper_helper(QString &str);
     static QString toCaseFolded_helper(const QString &str);
     static QString toCaseFolded_helper(QString &str);
+    static QString trimmed_helper(const QString &str);
+    static QString trimmed_helper(QString &str);
+    static QString simplified_helper(const QString &str);
+    static QString simplified_helper(QString &str);
     static Data *fromLatin1_helper(const char *str, int size = -1);
     static Data *fromAscii_helper(const char *str, int size = -1);
     static QString fromUtf8_helper(const char *str, int size);

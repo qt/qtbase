@@ -4682,6 +4682,8 @@ QString& QString::setUnicode(const QChar *unicode, int size)
 */
 
 /*!
+    \fn QString QString::simplified() const
+
     Returns a string that has whitespace removed from the start
     and the end, and that has each sequence of internal whitespace
     replaced with a single space.
@@ -4696,12 +4698,19 @@ QString& QString::setUnicode(const QChar *unicode, int size)
 
     \sa trimmed()
 */
-QString QString::simplified() const
+QString QString::simplified_helper(const QString &str)
 {
-    return QStringAlgorithms<const QString>::simplified_helper(*this);
+    return QStringAlgorithms<const QString>::simplified_helper(str);
+}
+
+QString QString::simplified_helper(QString &str)
+{
+    return QStringAlgorithms<QString>::simplified_helper(str);
 }
 
 /*!
+    \fn QString QString::trimmed() const
+
     Returns a string that has whitespace removed from the start and
     the end.
 
@@ -4717,9 +4726,14 @@ QString QString::simplified() const
 
     \sa simplified()
 */
-QString QString::trimmed() const
+QString QString::trimmed_helper(const QString &str)
 {
-    return QStringAlgorithms<const QString>::trimmed_helper(*this);
+    return QStringAlgorithms<const QString>::trimmed_helper(str);
+}
+
+QString QString::trimmed_helper(QString &str)
+{
+    return QStringAlgorithms<QString>::trimmed_helper(str);
 }
 
 /*! \fn const QChar QString::at(int position) const

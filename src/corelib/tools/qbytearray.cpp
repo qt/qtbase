@@ -3196,6 +3196,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 */
 
 /*!
+    \fn QByteArray QByteArray::simplified() const
+
     Returns a byte array that has whitespace removed from the start
     and the end, and which has each sequence of internal whitespace
     replaced with a single space.
@@ -3209,12 +3211,19 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
     \sa trimmed()
 */
-QByteArray QByteArray::simplified() const
+QByteArray QByteArray::simplified_helper(const QByteArray &a)
 {
-    return QStringAlgorithms<const QByteArray>::simplified_helper(*this);
+    return QStringAlgorithms<const QByteArray>::simplified_helper(a);
+}
+
+QByteArray QByteArray::simplified_helper(QByteArray &a)
+{
+    return QStringAlgorithms<QByteArray>::simplified_helper(a);
 }
 
 /*!
+    \fn QByteArray QByteArray::trimmed() const
+
     Returns a byte array that has whitespace removed from the start
     and the end.
 
@@ -3229,10 +3238,16 @@ QByteArray QByteArray::simplified() const
 
     \sa simplified()
 */
-QByteArray QByteArray::trimmed() const
+QByteArray QByteArray::trimmed_helper(const QByteArray &a)
 {
-    return QStringAlgorithms<const QByteArray>::trimmed_helper(*this);
+    return QStringAlgorithms<const QByteArray>::trimmed_helper(a);
 }
+
+QByteArray QByteArray::trimmed_helper(QByteArray &a)
+{
+    return QStringAlgorithms<QByteArray>::trimmed_helper(a);
+}
+
 
 /*!
     Returns a byte array of size \a width that contains this byte

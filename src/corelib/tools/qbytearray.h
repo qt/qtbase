@@ -272,16 +272,24 @@ public:
     { return toUpper_helper(*this); }
     QByteArray toUpper() && Q_REQUIRED_RESULT
     { return toUpper_helper(*this); }
+    QByteArray trimmed() const & Q_REQUIRED_RESULT
+    { return trimmed_helper(*this); }
+    QByteArray trimmed() && Q_REQUIRED_RESULT
+    { return trimmed_helper(*this); }
+    QByteArray simplified() const & Q_REQUIRED_RESULT
+    { return simplified_helper(*this); }
+    QByteArray simplified() && Q_REQUIRED_RESULT
+    { return simplified_helper(*this); }
 #  ifdef Q_REQUIRED_RESULT_pushed
 #    pragma pop_macro("Q_REQUIRED_RESULT")
 #  endif
 #else
     QByteArray toLower() const Q_REQUIRED_RESULT;
     QByteArray toUpper() const Q_REQUIRED_RESULT;
-#endif
-
     QByteArray trimmed() const Q_REQUIRED_RESULT;
     QByteArray simplified() const Q_REQUIRED_RESULT;
+#endif
+
     QByteArray leftJustified(int width, char fill = ' ', bool truncate = false) const Q_REQUIRED_RESULT;
     QByteArray rightJustified(int width, char fill = ' ', bool truncate = false) const Q_REQUIRED_RESULT;
 
@@ -439,6 +447,11 @@ private:
     static QByteArray toLower_helper(QByteArray &a);
     static QByteArray toUpper_helper(const QByteArray &a);
     static QByteArray toUpper_helper(QByteArray &a);
+    static QByteArray trimmed_helper(const QByteArray &a);
+    static QByteArray trimmed_helper(QByteArray &a);
+    static QByteArray simplified_helper(const QByteArray &a);
+    static QByteArray simplified_helper(QByteArray &a);
+
     friend class QByteRef;
     friend class QString;
     friend Q_CORE_EXPORT QByteArray qUncompress(const uchar *data, int nbytes);

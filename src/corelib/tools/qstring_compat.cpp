@@ -42,6 +42,16 @@
 QT_BEGIN_NAMESPACE
 
 // all these implementations must be the same as the inline versions in qstring.h
+QString QString::trimmed() const
+{
+    return trimmed_helper(*this);
+}
+
+QString QString::simplified() const
+{
+    return simplified_helper(*this);
+}
+
 QString QString::toLower() const
 {
     return toLower_helper(*this);
@@ -81,6 +91,16 @@ QByteArray QByteArray::toLower() const
 QByteArray QByteArray::toUpper() const
 {
     return toUpper_helper(*this);
+}
+
+QByteArray QByteArray::trimmed() const
+{
+    return trimmed_helper(*this);
+}
+
+QByteArray QByteArray::simplified() const
+{
+    return simplified_helper(*this);
 }
 
 QT_END_NAMESPACE

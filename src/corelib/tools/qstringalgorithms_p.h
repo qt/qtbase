@@ -72,6 +72,23 @@ template <typename StringType> struct QStringAlgorithms
     // not a problem because there are no space characters (Zs, Zl, Zp) outside the
     // Basic Multilingual Plane.
 
+    static inline StringType trimmed_helper_inplace(NakedStringType &str, const Char *begin, const Char *end)
+    {
+        // in-place trimming:
+        Char *data = const_cast<Char *>(str.cbegin());
+        if (begin != data)
+            memmove(data, begin, (end - begin) * sizeof(Char));
+        str.resize(end - begin);
+        return qMove(str);
+    }
+
+    static inline StringType trimmed_helper_inplace(const NakedStringType &, const Char *, const Char *)
+    {
+        // can't happen
+        Q_UNREACHABLE();
+        return StringType();
+    }
+
     static inline void trimmed_helper_positions(const Char *&begin, const Char *&end)
     {
         // skip white space from start
@@ -94,6 +111,8 @@ template <typename StringType> struct QStringAlgorithms
             return str;
         if (begin == end)
             return StringType();
+        if (!isConst && str.isDetached())
+            return trimmed_helper_inplace(str, begin, end);
         return StringType(begin, end - begin);
     }
 
@@ -103,7 +122,9 @@ template <typename StringType> struct QStringAlgorithms
             return str;
         const Char *src = str.cbegin();
         const Char *end = str.cend();
-        NakedStringType result(str.size(), Qt::Uninitialized);
+        NakedStringType result = isConst ?
+                                     StringType(str.size(), Qt::Uninitialized) :
+                                     qMove(str);
 
         Char *dst = const_cast<Char *>(result.cbegin());
         Char *ptr = dst;
@@ -121,12 +142,12 @@ template <typename StringType> struct QStringAlgorithms
             --ptr;
 
         int newlen = ptr - dst;
-        if (newlen == str.size()) {
+        if (isConst && newlen == str.size()) {
             // nothing happened, return the original
             return str;
         }
         result.resize(ptr - dst);
-        return qMove(result);
+        return result;
     }
 };
 
