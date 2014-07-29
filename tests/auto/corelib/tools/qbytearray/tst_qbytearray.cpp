@@ -2022,6 +2022,8 @@ void tst_QByteArray::toUpperLower()
     QFETCH(QByteArray, input);
     QFETCH(QByteArray, upper);
     QFETCH(QByteArray, lower);
+    QCOMPARE(lower.toLower(), lower);
+    QCOMPARE(upper.toUpper(), upper);
     QCOMPARE(input.toUpper(), upper);
     QCOMPARE(input.toLower(), lower);
 }
