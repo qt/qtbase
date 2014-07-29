@@ -151,6 +151,8 @@ private slots:
 #if defined(Q_COMPILER_LAMBDA)
     void literals();
 #endif
+    void toUpperLower_data();
+    void toUpperLower();
 
     void macTypes();
 
@@ -1998,6 +2000,31 @@ void tst_QByteArray::literals()
     QVERIFY(str2.data() != s);
 }
 #endif
+
+void tst_QByteArray::toUpperLower_data()
+{
+    QTest::addColumn<QByteArray>("input");
+    QTest::addColumn<QByteArray>("upper");
+    QTest::addColumn<QByteArray>("lower");
+
+    QTest::newRow("empty") << QByteArray() << QByteArray() << QByteArray();
+    QTest::newRow("ascii") << QByteArray("Hello World, this is a STRING")
+                           << QByteArray("HELLO WORLD, THIS IS A STRING")
+                           << QByteArray("hello world, this is a string");
+    QTest::newRow("latin1") << QByteArray("R\311sum\351")
+                            << QByteArray("R\311SUM\311")
+                            << QByteArray("r\351sum\351");
+    QTest::newRow("nul") << QByteArray("a\0B", 3) << QByteArray("A\0B", 3) << QByteArray("a\0b", 3);
+}
+
+void tst_QByteArray::toUpperLower()
+{
+    QFETCH(QByteArray, input);
+    QFETCH(QByteArray, upper);
+    QFETCH(QByteArray, lower);
+    QCOMPARE(input.toUpper(), upper);
+    QCOMPARE(input.toLower(), lower);
+}
 
 void tst_QByteArray::macTypes()
 {
