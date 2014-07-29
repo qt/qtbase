@@ -354,6 +354,11 @@ QProgressDialog::~QProgressDialog()
 void QProgressDialog::setLabel(QLabel *label)
 {
     Q_D(QProgressDialog);
+    if (label == d->label) {
+        if (label)
+            qWarning("QProgressDialog::setLabel: Attempt to set the same label again");
+        return;
+    }
     delete d->label;
     d->label = label;
     if (label) {
@@ -411,6 +416,11 @@ void QProgressDialog::setLabelText(const QString &text)
 void QProgressDialog::setCancelButton(QPushButton *cancelButton)
 {
     Q_D(QProgressDialog);
+    if (d->cancel == cancelButton) {
+        if (cancelButton)
+            qWarning("QProgressDialog::setCancelButton: Attempt to set the same button again");
+        return;
+    }
     delete d->cancel;
     d->cancel = cancelButton;
     if (cancelButton) {
@@ -483,6 +493,10 @@ void QProgressDialog::setBar(QProgressBar *bar)
         qWarning("QProgressDialog::setBar: Cannot set a new progress bar "
                   "while the old one is active");
 #endif
+    if (bar == d->bar) {
+        qWarning("QProgressDialog::setBar: Attempt to set the same progress bar again");
+        return;
+    }
     delete d->bar;
     d->bar = bar;
     int w = qMax(isVisible() ? width() : 0, sizeHint().width());

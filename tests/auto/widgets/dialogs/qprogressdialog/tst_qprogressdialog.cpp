@@ -44,8 +44,11 @@
 
 #include <qapplication.h>
 #include <qdebug.h>
+#include <qprogressbar.h>
 #include <qprogressdialog.h>
+#include <qpushbutton.h>
 #include <qlabel.h>
+#include <qpointer.h>
 #include <qthread.h>
 
 class tst_QProgressDialog : public QObject
@@ -59,6 +62,7 @@ private Q_SLOTS:
     void getSetCheck();
     void task198202();
     void QTBUG_31046();
+    void settingCustomWidgets();
 };
 
 void tst_QProgressDialog::cleanup()
@@ -182,6 +186,52 @@ void tst_QProgressDialog::QTBUG_31046()
     QThread::msleep(200);
     dlg.setValue(50);
     QCOMPARE(50, dlg.value());
+}
+
+void tst_QProgressDialog::settingCustomWidgets()
+{
+    QPointer<QLabel> l = new QLabel;
+    QPointer<QPushButton> btn = new QPushButton;
+    QPointer<QProgressBar> bar = new QProgressBar;
+    QVERIFY(!l->parent());
+    QVERIFY(!btn->parent());
+    QVERIFY(!bar->parent());
+
+    {
+        QProgressDialog dlg;
+
+        QVERIFY(!dlg.isAncestorOf(l));
+        dlg.setLabel(l);
+        QVERIFY(dlg.isAncestorOf(l));
+        QTest::ignoreMessage(QtWarningMsg, "QProgressDialog::setLabel: Attempt to set the same label again");
+        dlg.setLabel(l);          // setting the same widget again should not crash
+        QVERIFY(l);               // and not delete the (old == new) widget
+
+        QVERIFY(!dlg.isAncestorOf(btn));
+        dlg.setCancelButton(btn);
+        QVERIFY(dlg.isAncestorOf(btn));
+        QTest::ignoreMessage(QtWarningMsg, "QProgressDialog::setCancelButton: Attempt to set the same button again");
+        dlg.setCancelButton(btn); // setting the same widget again should not crash
+        QVERIFY(btn);             // and not delete the (old == new) widget
+
+        QVERIFY(!dlg.isAncestorOf(bar));
+        dlg.setBar(bar);
+        QEXPECT_FAIL("", "QProgressBar doesn't adopt custom progress bar as children", Continue);
+        QVERIFY(dlg.isAncestorOf(bar));
+        QTest::ignoreMessage(QtWarningMsg, "QProgressDialog::setBar: Attempt to set the same progress bar again");
+        dlg.setBar(bar);          // setting the same widget again should not crash
+        QVERIFY(bar);             // and not delete the (old == new) widget
+    }
+
+    QVERIFY(!l);
+    QVERIFY(!btn);
+#if 0
+    QEXPECT_FAIL("", "QProgressBar doesn't clean up custom progress bars", Continue);
+    QVERIFY(!bar);
+#else
+    // make cleanup() pass
+    delete bar;
+#endif
 }
 
 QTEST_MAIN(tst_QProgressDialog)
