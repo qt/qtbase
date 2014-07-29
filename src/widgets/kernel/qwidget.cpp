@@ -2028,17 +2028,11 @@ QRegion QWidgetPrivate::clipRegion() const
 void QWidgetPrivate::setSystemClip(QPaintDevice *paintDevice, const QRegion &region)
 {
 // Transform the system clip region from device-independent pixels to device pixels
-// Qt 5.0.0: This is a Mac-only code path for now, can be made cross-platform once
-// it has been tested.
     QPaintEngine *paintEngine = paintDevice->paintEngine();
-#ifdef Q_OS_MAC
     QTransform scaleTransform;
     const qreal devicePixelRatio = paintDevice->devicePixelRatio();
     scaleTransform.scale(devicePixelRatio, devicePixelRatio);
     paintEngine->d_func()->systemClip = scaleTransform.map(region);
-#else
-    paintEngine->d_func()->systemClip = region;
-#endif
 }
 
 #ifndef QT_NO_GRAPHICSEFFECT

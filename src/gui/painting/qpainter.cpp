@@ -229,16 +229,11 @@ QTransform QPainterPrivate::viewTransform() const
 
 int QPainterPrivate::effectiveDevicePixelRatio() const
 {
-    // Limited feature introduction for Qt 5.0.0, remove ifdef in a later release.
-#ifdef Q_OS_MAC
     // Special cases for devices that does not support PdmDevicePixelRatio go here:
     if (device->devType() == QInternal::Printer)
         return 1;
 
     return qMax(1, device->metric(QPaintDevice::PdmDevicePixelRatio));
-#else
-    return 1;
-#endif
 }
 
 QTransform QPainterPrivate::hidpiScaleTransform() const
