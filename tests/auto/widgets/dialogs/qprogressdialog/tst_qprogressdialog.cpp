@@ -218,7 +218,6 @@ void tst_QProgressDialog::settingCustomWidgets()
 
         QVERIFY(!dlg.isAncestorOf(bar));
         dlg.setBar(bar);
-        QEXPECT_FAIL("", "QProgressBar doesn't adopt custom progress bar as children", Continue);
         QVERIFY(dlg.isAncestorOf(bar));
         QTest::ignoreMessage(QtWarningMsg, "QProgressDialog::setBar: Attempt to set the same progress bar again");
         dlg.setBar(bar);          // setting the same widget again should not crash
@@ -227,13 +226,7 @@ void tst_QProgressDialog::settingCustomWidgets()
 
     QVERIFY(!l);
     QVERIFY(!btn);
-#if 0
-    QEXPECT_FAIL("", "QProgressBar doesn't clean up custom progress bars", Continue);
     QVERIFY(!bar);
-#else
-    // make cleanup() pass
-    delete bar;
-#endif
 }
 
 class QTestTranslator : public QTranslator

@@ -505,9 +505,17 @@ void QProgressDialog::setBar(QProgressBar *bar)
     }
     delete d->bar;
     d->bar = bar;
+    if (bar) {
+        if (bar->parentWidget() == this)
+            bar->hide(); // until we resize
+        else
+            bar->setParent(this, 0);
+    }
     int w = qMax(isVisible() ? width() : 0, sizeHint().width());
     int h = qMax(isVisible() ? height() : 0, sizeHint().height());
     resize(w, h);
+    if (bar)
+        bar->show();
 }
 
 
