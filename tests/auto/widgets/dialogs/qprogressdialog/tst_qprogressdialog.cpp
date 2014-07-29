@@ -50,27 +50,15 @@
 
 class tst_QProgressDialog : public QObject
 {
-Q_OBJECT
+    Q_OBJECT
 
-public:
-    tst_QProgressDialog();
-    virtual ~tst_QProgressDialog();
-
-private slots:
+private Q_SLOTS:
     void autoShow_data();
     void autoShow();
     void getSetCheck();
     void task198202();
     void QTBUG_31046();
 };
-
-tst_QProgressDialog::tst_QProgressDialog()
-{
-}
-
-tst_QProgressDialog::~tst_QProgressDialog()
-{
-}
 
 void tst_QProgressDialog::autoShow_data()
 {
