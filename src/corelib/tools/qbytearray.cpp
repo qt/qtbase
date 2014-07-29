@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Intel Corporation.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -46,6 +47,7 @@
 #include "qlist.h"
 #include "qlocale.h"
 #include "qlocale_p.h"
+#include "qstringalgorithms_p.h"
 #include "qscopedpointer.h"
 #include <qdatastream.h>
 #include <qmath.h>
@@ -3214,27 +3216,7 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 */
 QByteArray QByteArray::simplified() const
 {
-    if (d->size == 0)
-        return *this;
-    QByteArray result(d->size, Qt::Uninitialized);
-    const char *from = d->data();
-    const char *fromend = from + d->size;
-    int outc=0;
-    char *to = result.d->data();
-    for (;;) {
-        while (from!=fromend && ascii_isspace(uchar(*from)))
-            from++;
-        while (from!=fromend && !ascii_isspace(uchar(*from)))
-            to[outc++] = *from++;
-        if (from!=fromend)
-            to[outc++] = ' ';
-        else
-            break;
-    }
-    if (outc > 0 && to[outc-1] == ' ')
-        outc--;
-    result.resize(outc);
-    return result;
+    return QStringAlgorithms<const QByteArray>::simplified_helper(*this);
 }
 
 /*!
@@ -3254,25 +3236,7 @@ QByteArray QByteArray::simplified() const
 */
 QByteArray QByteArray::trimmed() const
 {
-    if (d->size == 0)
-        return *this;
-    const char *s = d->data();
-    if (!ascii_isspace(uchar(*s)) && !ascii_isspace(uchar(s[d->size-1])))
-        return *this;
-    int start = 0;
-    int end = d->size - 1;
-    while (start<=end && ascii_isspace(uchar(s[start])))  // skip white space from start
-        start++;
-    if (start <= end) {                          // only white space
-        while (end && ascii_isspace(uchar(s[end])))           // skip white space from end
-            end--;
-    }
-    int l = end - start + 1;
-    if (l <= 0) {
-        QByteArrayDataPtr empty = { Data::allocate(0) };
-        return QByteArray(empty);
-    }
-    return QByteArray(s+start, l);
+    return QStringAlgorithms<const QByteArray>::trimmed_helper(*this);
 }
 
 /*!

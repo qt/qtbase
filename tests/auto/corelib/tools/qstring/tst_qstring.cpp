@@ -2073,8 +2073,6 @@ void tst_QString::simplified()
         QVERIFY2(result.isEmpty() && !result.isNull(), qPrintable("'" + full + "' did not yield empty: " + result));
     } else {
         QCOMPARE(result, simple);
-        if (full == simple)
-            QVERIFY(result.isSharedWith(full));
     }
 }
 

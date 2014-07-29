@@ -78,6 +78,7 @@
 #include "qchar.cpp"
 #include "qstringmatcher.cpp"
 #include "qstringiterator_p.h"
+#include "qstringalgorithms_p.h"
 #include "qthreadstorage.h"
 
 #ifdef Q_OS_WIN
@@ -4633,78 +4634,7 @@ QString& QString::setUnicode(const QChar *unicode, int size)
 */
 QString QString::simplified() const
 {
-    if (d->size == 0)
-        return *this;
-
-    const QChar * const start = reinterpret_cast<QChar *>(d->data());
-    const QChar *from = start;
-    const QChar *fromEnd = start + d->size;
-    forever {
-        QChar ch = *from;
-        if (!ch.isSpace())
-            break;
-        if (++from == fromEnd) {
-            // All-whitespace string
-            QStringDataPtr empty = { Data::allocate(0) };
-            return QString(empty);
-        }
-    }
-    // This loop needs no underflow check, as we already determined that
-    // the string contains non-whitespace. If the string has exactly one
-    // non-whitespace, it will be checked twice - we can live with that.
-    while (fromEnd[-1].isSpace())
-        fromEnd--;
-    // The rest of the function depends on the fact that we already know
-    // that the last character in the source is no whitespace.
-    const QChar *copyFrom = from;
-    int copyCount;
-    forever {
-        if (++from == fromEnd) {
-            // Only leading and/or trailing whitespace, if any at all
-            return mid(copyFrom - start, from - copyFrom);
-        }
-        QChar ch = *from;
-        if (!ch.isSpace())
-            continue;
-        if (ch != QLatin1Char(' ')) {
-            copyCount = from - copyFrom;
-            break;
-        }
-        ch = *++from;
-        if (ch.isSpace()) {
-            copyCount = from - copyFrom - 1;
-            break;
-        }
-    }
-    // 'from' now points at the non-trailing whitespace which made the
-    // string not simplified in the first place. 'copyCount' is the number
-    // of already simplified characters - at least one, obviously -
-    // without a trailing space.
-    QString result((fromEnd - from) + copyCount, Qt::Uninitialized);
-    QChar *to = reinterpret_cast<QChar *>(result.d->data());
-    ::memcpy(to, copyFrom, copyCount * 2);
-    to += copyCount;
-    fromEnd--;
-    QChar ch;
-    forever {
-        *to++ = QLatin1Char(' ');
-        do {
-            ch = *++from;
-        } while (ch.isSpace());
-        if (from == fromEnd)
-            break;
-        do {
-            *to++ = ch;
-            ch = *++from;
-            if (from == fromEnd)
-                goto done;
-        } while (!ch.isSpace());
-
-    }
-  done:
-    *to++ = ch;
-    result.truncate(to - reinterpret_cast<QChar *>(result.d->data()));
-    return result;
+    return QStringAlgorithms<const QString>::simplified_helper(*this);
 }
 
 /*!
@@ -4725,25 +4655,7 @@ QString QString::simplified() const
 */
 QString QString::trimmed() const
 {
-    if (d->size == 0)
-        return *this;
-    const QChar *s = (const QChar*)d->data();
-    if (!s->isSpace() && !s[d->size-1].isSpace())
-        return *this;
-    int start = 0;
-    int end = d->size - 1;
-    while (start<=end && s[start].isSpace())  // skip white space from start
-        start++;
-    if (start <= end) {                          // only white space
-        while (end && s[end].isSpace())           // skip white space from end
-            end--;
-    }
-    int l = end - start + 1;
-    if (l <= 0) {
-        QStringDataPtr empty = { Data::allocate(0) };
-        return QString(empty);
-    }
-    return QString(s + start, l);
+    return QStringAlgorithms<const QString>::trimmed_helper(*this);
 }
 
 /*! \fn const QChar QString::at(int position) const
@@ -9696,20 +9608,15 @@ QVector<uint> QStringRef::toUcs4() const
 */
 QStringRef QStringRef::trimmed() const
 {
-    if (m_size == 0 || m_string == 0)
+    const QChar *begin = cbegin();
+    const QChar *end = cend();
+    QStringAlgorithms<const QStringRef>::trimmed_helper_positions(begin, end);
+    if (begin == cbegin() && end == cend())
         return *this;
-    const QChar *s = m_string->constData() + m_position;
-    int start = 0;
-    int end = m_size - 1;
-    while (start <= end && s[start].isSpace())  // skip white space from start
-        start++;
-    if (start <= end) {                         // only white space
-        while (end && s[end].isSpace())         // skip white space from end
-            end--;
-    }
-    int l = end - start + 1;
-    Q_ASSERT(l >= 0);
-    return QStringRef(m_string, m_position + start, l);
+    if (begin == end)
+        return QStringRef();
+    int position = m_position + (begin - cbegin());
+    return QStringRef(m_string, position, end - begin);
 }
 
 /*!
