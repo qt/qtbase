@@ -593,24 +593,58 @@ pid_t QProcessPrivate::spawnChild(pid_t *ppid, const char *workingDir, char **ar
     posix_spawn_file_actions_t file_actions;
     posix_spawn_file_actions_init(&file_actions);
 
+#   ifdef Q_OS_QNX
+    static const bool OS_QNX = true;
+#   else
+    static const bool OS_QNX = false;
+#endif
+
+    int fdmax = -1;
+
     if (processChannelMode == QProcess::MergedChannels) {
         // managed stderr == stdout
         posix_spawn_file_actions_adddup2(&file_actions, stdoutChannel.pipe[1], STDERR_FILENO);
+
+        if (OS_QNX)
+            fdmax = qMax(fdmax, stdoutChannel.pipe[1]);
     } else if (processChannelMode != QProcess::ForwardedChannels && processChannelMode != QProcess::ForwardedErrorChannel) {
         // managed stderr
         posix_spawn_file_actions_adddup2(&file_actions, stderrChannel.pipe[1], STDERR_FILENO);
-        posix_spawn_file_actions_addclose(&file_actions, stderrChannel.pipe[1]);
+
+        if (OS_QNX)
+            fdmax = qMax(fdmax, stderrChannel.pipe[1]);
+        else
+            posix_spawn_file_actions_addclose(&file_actions, stderrChannel.pipe[1]);
+
     }
 
     if (processChannelMode != QProcess::ForwardedChannels && processChannelMode != QProcess::ForwardedOutputChannel) {
         // managed stdout
         posix_spawn_file_actions_adddup2(&file_actions, stdoutChannel.pipe[1], STDOUT_FILENO);
-        posix_spawn_file_actions_addclose(&file_actions, stdoutChannel.pipe[1]);
+
+        if (OS_QNX)
+            fdmax = qMax(fdmax, stdoutChannel.pipe[1]);
+        else
+            posix_spawn_file_actions_addclose(&file_actions, stdoutChannel.pipe[1]);
+
     }
 
     if (inputChannelMode == QProcess::ManagedInputChannel) {
         posix_spawn_file_actions_adddup2(&file_actions, stdinChannel.pipe[0], STDIN_FILENO);
-        posix_spawn_file_actions_addclose(&file_actions, stdinChannel.pipe[0]);
+
+        if (OS_QNX)
+            fdmax = qMax(fdmax, stdinChannel.pipe[0]);
+        else
+            posix_spawn_file_actions_addclose(&file_actions, stdinChannel.pipe[0]);
+    }
+
+    // Workaround: QNX's spawn implementation will actually dup all FD values
+    // LESS than fdmax - regardless of the FD_CLOEEXEC flag. So we need to add
+    // those to the list of files to close, otherwise dup will fail when some
+    // other thread closes the FD.
+    for (int i = 3; i <= fdmax; i++) {
+        if (::fcntl(i, F_GETFD) & FD_CLOEXEC)
+            posix_spawn_file_actions_addclose(&file_actions, i);
     }
 
     int retval = doSpawn(ppid, &file_actions, argv, envp, workingDir, false);
