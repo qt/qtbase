@@ -147,7 +147,7 @@ void qt_scale_image_16bit(uchar *destPixels, int dbpl,
 
     while (h--) {
         const SRC *src = (const SRC *) (srcPixels + (srcy >> 16) * sbpl);
-        int srcx = basex;
+        quint32 srcx = basex;
         int x = 0;
         for (; x<w-7; x+=8) {
             blender.write(&dst[x], src[srcx >> 16]); srcx += ix;
@@ -258,7 +258,7 @@ template <typename T> void qt_scale_image_32bit(uchar *destPixels, int dbpl,
 
     while (h--) {
         const uint *src = (const quint32 *) (srcPixels + (srcy >> 16) * sbpl);
-        int srcx = basex;
+        quint32 srcx = basex;
         int x = 0;
         for (; x<w; ++x) {
             blender.write(&dst[x], src[srcx >> 16]);
