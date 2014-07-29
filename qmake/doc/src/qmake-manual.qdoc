@@ -321,6 +321,12 @@
     \header \li Template      \li qmake Output
     \row    \li app (default) \li Makefile to build an application.
     \row    \li lib           \li Makefile to build a library.
+    \row    \li aux           \li Makefile to build nothing. Use this if no compiler needs to
+                                  be invoked to create the target, for instance because your
+                                  project is written in an interpreted language.
+                                  \note This template type is only available for Makefile-based
+                                  generators. In particular, it will not work with the vcxproj and
+                                  Xcode generators.
     \row    \li subdirs       \li Makefile containing rules for the
     subdirectories specified using the \l{SUBDIRS}
     variable. Each subdirectory must contain its own project file.
@@ -2324,6 +2330,12 @@
     \row    \li subdirs \li Creates a Makefile for building targets in subdirectories.
             The subdirectories are specified using the \l{#SUBDIRS}{SUBDIRS}
             variable.
+    \row    \li aux     \li Creates a Makefile for not building anything. Use this if no compiler
+                            needs to be invoked to create the target, for instance because your
+                            project is written in an interpreted language.
+                            \note This template type is only available for Makefile-based
+                            generators. In particular, it will not work with the vcxproj and
+                            Xcode generators.
     \row    \li vcapp  \li Windows only. Creates an application project for
             Visual Studio. See \l{Creating Visual Studio Project Files} for more
             information.

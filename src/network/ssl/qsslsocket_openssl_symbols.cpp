@@ -369,8 +369,10 @@ DEFINEFUNC3(void, SSL_get0_next_proto_negotiated, const SSL *s, s,
 DEFINEFUNC(DH *, DH_new, DUMMYARG, DUMMYARG, return 0, return)
 DEFINEFUNC(void, DH_free, DH *dh, dh, return, DUMMYARG)
 DEFINEFUNC3(BIGNUM *, BN_bin2bn, const unsigned char *s, s, int len, len, BIGNUM *ret, ret, return 0, return)
+#ifndef OPENSSL_NO_EC
 DEFINEFUNC(EC_KEY *, EC_KEY_new_by_curve_name, int nid, nid, return 0, return)
 DEFINEFUNC(void, EC_KEY_free, EC_KEY *ecdh, ecdh, return, DUMMYARG)
+#endif // OPENSSL_NO_EC
 
 DEFINEFUNC5(int, PKCS12_parse, PKCS12 *p12, p12, const char *pass, pass, EVP_PKEY **pkey, pkey, \
             X509 **cert, cert, STACK_OF(X509) **ca, ca, return 1, return);
@@ -858,8 +860,10 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(DH_new)
     RESOLVEFUNC(DH_free)
     RESOLVEFUNC(BN_bin2bn)
+#ifndef OPENSSL_NO_EC
     RESOLVEFUNC(EC_KEY_new_by_curve_name)
     RESOLVEFUNC(EC_KEY_free)
+#endif // OPENSSL_NO_EC
     RESOLVEFUNC(PKCS12_parse)
     RESOLVEFUNC(d2i_PKCS12_bio)
     RESOLVEFUNC(PKCS12_free)

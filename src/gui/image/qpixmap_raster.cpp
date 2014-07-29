@@ -343,6 +343,7 @@ void QRasterPlatformPixmap::createPixmapForImage(QImage &sourceImage, Qt::ImageC
     if (format == QImage::Format_RGB32 && (sourceImage.format() == QImage::Format_ARGB32
         || sourceImage.format() == QImage::Format_ARGB32_Premultiplied))
     {
+        inPlace = inPlace && sourceImage.isDetached();
         image = sourceImage;
         if (!inPlace)
             image.detach();

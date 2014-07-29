@@ -568,9 +568,6 @@ void QHttpSocketEngine::slotSocketReadNotification()
         char dummybuffer[4096];
         while (d->pendingResponseData) {
             int read = d->socket->read(dummybuffer, qMin(sizeof(dummybuffer), (size_t)d->pendingResponseData));
-            if (read >= 0)
-                dummybuffer[read] = 0;
-
             if (read == 0)
                 return;
             if (read == -1) {

@@ -133,6 +133,7 @@ private:
     QString opensslLibsRelease;
     QString opensslPath;
     QString dbusPath;
+    QString dbusHostPath;
     QString mysqlPath;
     QString psqlLibs;
     QString zlibLibs;

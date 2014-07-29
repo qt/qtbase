@@ -922,7 +922,7 @@ void tst_QSet::makeSureTheComfortFunctionsCompile()
 void tst_QSet::initializerList()
 {
 #ifdef Q_COMPILER_INITIALIZER_LISTS
-    QSet<int> set{1, 2, 3, 4, 5};
+    QSet<int> set = {1, 1, 2, 3, 4, 5};
     QCOMPARE(set.count(), 5);
     QVERIFY(set.contains(1));
     QVERIFY(set.contains(2));
