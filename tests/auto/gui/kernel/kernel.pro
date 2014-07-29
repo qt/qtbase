@@ -21,7 +21,8 @@ SUBDIRS=\
    qwindow \
    qguiapplication \
    qpixelformat \
-   qopenglwindow
+   qopenglwindow \
+   qrasterwindow
 
 !qtHaveModule(widgets): SUBDIRS -= \
    qmouseevent_modal \
