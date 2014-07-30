@@ -88,18 +88,6 @@ static inline void imeNotifyCancelComposition(HWND hwnd)
     ImmReleaseContext(hwnd, himc);
 }
 
-// Query a QObject for an InputMethod-related value
-// by sending a QInputMethodQueryEvent.
-template <class T>
-    bool inputMethodQuery(QObject *fo, Qt::InputMethodQuery query, T *result)
-{
-    QInputMethodQueryEvent queryEvent(query);
-    if (!QCoreApplication::sendEvent(fo, &queryEvent))
-        return false;
-    *result = qvariant_cast<T>(queryEvent.value(query));
-    return true;
-}
-
 /*!
     \class QWindowsInputContext
     \brief Windows Input context implementation
@@ -170,7 +158,7 @@ QWindowsInputContext::QWindowsInputContext() :
     m_WM_MSIME_MOUSE(RegisterWindowMessage(L"MSIMEMouseOperation")),
     m_endCompositionRecursionGuard(false)
 {
-    connect(qApp->inputMethod(), SIGNAL(cursorRectangleChanged()),
+    connect(QGuiApplication::inputMethod(), SIGNAL(cursorRectangleChanged()),
             this, SLOT(cursorRectChanged()));
 }
 
@@ -215,7 +203,7 @@ void QWindowsInputContext::cursorRectChanged()
 {
     if (!m_compositionContext.hwnd)
         return;
-    const QInputMethod *inputMethod = qApp->inputMethod();
+    const QInputMethod *inputMethod = QGuiApplication::inputMethod();
     QRect cursorRectangle = inputMethod->cursorRectangle().toRect();
     if (!cursorRectangle.isValid())
         return;
@@ -536,9 +524,10 @@ int QWindowsInputContext::reconvertString(RECONVERTSTRING *reconv)
     if (!fo)
         return false;
 
-    QString surroundingText;
-    if (!inputMethodQuery(fo, Qt::ImSurroundingText, &surroundingText))
+    const QVariant surroundingTextV = QInputMethod::queryFocusObject(Qt::ImSurroundingText, QVariant());
+    if (!surroundingTextV.isValid())
         return -1;
+    const QString surroundingText = surroundingTextV.toString();
     const DWORD memSize = sizeof(RECONVERTSTRING)
             + (surroundingText.length() + 1) * sizeof(ushort);
     qCDebug(lcQpaInputMethods) << __FUNCTION__ << " reconv=" << reconv
@@ -547,8 +536,8 @@ int QWindowsInputContext::reconvertString(RECONVERTSTRING *reconv)
     if (!reconv)
         return surroundingText.isEmpty() ? -1 : int(memSize);
 
-    int pos = 0;
-    inputMethodQuery(fo, Qt::ImCursorPosition, &pos);
+    const QVariant posV = QInputMethod::queryFocusObject(Qt::ImCursorPosition, QVariant());
+    const int pos = posV.isValid() ? posV.toInt() : 0;
     // Find the word in the surrounding text.
     QTextBoundaryFinder bounds(QTextBoundaryFinder::Word, surroundingText);
     bounds.setPosition(pos);
