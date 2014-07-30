@@ -505,9 +505,10 @@ void QProgressDialogPrivate::ensureSizeIsAtLeastSizeHint()
 {
     Q_Q(QProgressDialog);
 
-    int w = qMax(q->isVisible() ? q->width()  : 0, q->sizeHint().width());
-    int h = qMax(q->isVisible() ? q->height() : 0, q->sizeHint().height());
-    q->resize(w, h);
+    QSize size = q->sizeHint();
+    if (q->isVisible())
+        size = size.expandedTo(q->size());
+    q->resize(size);
 }
 
 
