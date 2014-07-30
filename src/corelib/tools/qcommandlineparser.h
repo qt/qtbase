@@ -66,6 +66,7 @@ public:
     void setSingleDashWordOptionMode(SingleDashWordOptionMode parsingMode);
 
     bool addOption(const QCommandLineOption &commandLineOption);
+    bool addOptions(const QList<QCommandLineOption> &options);
 
     QCommandLineOption addVersionOption();
     QCommandLineOption addHelpOption();

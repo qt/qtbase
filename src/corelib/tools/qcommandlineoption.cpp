@@ -96,6 +96,41 @@ public:
 */
 
 /*!
+    Constructs a command line option object with the name \a name.
+
+    The name can be either short or long. If the name is one character in
+    length, it is considered a short name. Option names must not be empty,
+    must not start with a dash or a slash character, must not contain a \c{=}
+    and cannot be repeated.
+
+    \sa setDescription(), setValueName(), setDefaultValues()
+*/
+QCommandLineOption::QCommandLineOption(const QString &name)
+    : d(new QCommandLineOptionPrivate)
+{
+    d->setNames(QStringList(name));
+}
+
+/*!
+    Constructs a command line option object with the names \a names.
+
+    This overload allows to set multiple names for the option, for instance
+    \c{o} and \c{output}.
+
+    The names can be either short or long. Any name in the list that is one
+    character in length is a short name. Option names must not be empty,
+    must not start with a dash or a slash character, must not contain a \c{=}
+    and cannot be repeated.
+
+    \sa setDescription(), setValueName(), setDefaultValues()
+*/
+QCommandLineOption::QCommandLineOption(const QStringList &names)
+    : d(new QCommandLineOptionPrivate)
+{
+    d->setNames(names);
+}
+
+/*!
     Constructs a command line option object with the given arguments.
 
     The name of the option is set to \a name.
@@ -109,6 +144,12 @@ public:
 
     In addition, the \a valueName can be set if the option expects a value.
     The default value for the option is set to \a defaultValue.
+
+    In Qt versions before 5.4, this constructor was \c explicit. In Qt 5.4
+    and later, it no longer is and can be used for C++11-style uniform
+    initialization:
+
+    \snippet code/src_corelib_tools_qcommandlineoption.cpp cxx11-init
 
     \sa setDescription(), setValueName(), setDefaultValues()
 */
@@ -140,6 +181,12 @@ QCommandLineOption::QCommandLineOption(const QString &name, const QString &descr
 
     In addition, the \a valueName can be set if the option expects a value.
     The default value for the option is set to \a defaultValue.
+
+    In Qt versions before 5.4, this constructor was \c explicit. In Qt 5.4
+    and later, it no longer is and can be used for C++11-style uniform
+    initialization:
+
+    \snippet code/src_corelib_tools_qcommandlineoption.cpp cxx11-init-list
 
     \sa setDescription(), setValueName(), setDefaultValues()
 */

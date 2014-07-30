@@ -77,6 +77,7 @@ private slots:
     void testStdinArgument();
     void testSingleDashWordOptionModes_data();
     void testSingleDashWordOptionModes();
+    void testCpp11StyleInitialization();
 
     // QProcess-based tests using qcommandlineparser_test_helper
     void testVersionOption();
@@ -448,6 +449,27 @@ void tst_QCommandLineParser::testSingleDashWordOptionModes()
     for (int i = 0; i < expectedOptionValues.count(); ++i)
         QCOMPARE(parser.value(parser.optionNames().at(i)), expectedOptionValues.at(i));
     QCOMPARE(parser.unknownOptionNames(), QStringList());
+}
+
+void tst_QCommandLineParser::testCpp11StyleInitialization()
+{
+#if defined(Q_COMPILER_INITIALIZER_LISTS) && defined(Q_COMPILER_UNIFORM_INIT)
+    QCoreApplication app(empty_argc, empty_argv);
+
+    QCommandLineParser parser;
+    // primarily check that this compiles:
+    parser.addOptions({
+        { "a",                "The A option." },
+        { { "v", "verbose" }, "The verbose option." },
+        { { "i", "infile" },  "The input file.", "value" },
+    });
+    // but do a very basic functionality test, too:
+    QVERIFY(parser.parse({"tst_QCommandLineParser", "-a", "-vvv", "--infile=in.txt"}));
+    QCOMPARE(parser.optionNames(), (QStringList{"a", "v", "v", "v", "infile"}));
+    QCOMPARE(parser.value("infile"), QString("in.txt"));
+#else
+    QSKIP("This test requires C++11 uniform initialization support in the compiler.");
+#endif
 }
 
 void tst_QCommandLineParser::testVersionOption()

@@ -179,6 +179,10 @@ QStringList QCommandLineParserPrivate::aliases(const QString &optionName) const
     Example:
     \snippet code/src_corelib_tools_qcommandlineparser_main.cpp 0
 
+    If your compiler supports the C++11 standard, the three addOption() calls in
+    the above example can be simplified:
+    \snippet code/src_corelib_tools_qcommandlineparser_main.cpp cxx11
+
     Known limitation: the parsing of Qt options inside QCoreApplication and subclasses
     happens before QCommandLineParser exists, so it can't take it into account. This
     means any option value that looks like a builtin Qt option, will be treated by
@@ -339,6 +343,24 @@ bool QCommandLineParser::addOption(const QCommandLineOption &option)
     }
 
     return false;
+}
+
+/*!
+    \since 5.4
+
+    Adds the options \a options to look for while parsing.
+
+    Returns \c false if adding any of the options failed; otherwise returns \c false.
+
+    Cf. addOption() for when it may fail.
+*/
+bool QCommandLineParser::addOptions(const QList<QCommandLineOption> &options)
+{
+    // should be optimized (but it's no worse than what was possible before)
+    bool result = true;
+    for (QList<QCommandLineOption>::const_iterator it = options.begin(), end = options.end(); it != end; ++it)
+        result &= addOption(*it);
+    return result;
 }
 
 /*!
