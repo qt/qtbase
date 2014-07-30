@@ -3315,7 +3315,7 @@ QString HtmlGenerator::highlightedCode(const QString& markedCode,
                     if (relative && relative->isQmlType())
                         addLink(linkForNode(n,relative), arg, &html);
                     else
-                        html += arg.toString();
+                        html += arg;
                 }
                 else
                     addLink(linkForNode(n,relative), arg, &html);
@@ -3325,14 +3325,14 @@ QString HtmlGenerator::highlightedCode(const QString& markedCode,
             else if (parseArg(src, headerTag, &i, srcSize, &arg, &par1)) {
                 par1 = QStringRef();
                 if (arg.at(0) == QChar('&'))
-                    html += arg.toString();
+                    html += arg;
                 else {
                     // zzz resolveClassTarget()
                     const Node* n = qdb_->resolveTarget(arg.toString(), relative);
                     if (n)
                         addLink(linkForNode(n,relative), arg, &html);
                     else
-                        html += arg.toString();
+                        html += arg;
                 }
                 handled = true;
             }
