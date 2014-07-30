@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -792,8 +793,28 @@ public class ExtractStyle {
         }
     }
 
+    class DrawableCache
+    {
+        public DrawableCache(JSONObject json, Object drawable)
+        {
+            object = json;
+            this.drawable = drawable;
+        }
+        JSONObject object;
+        Object drawable;
+    }
+    private HashMap<String, DrawableCache> m_drawableCache = new HashMap<String, DrawableCache>();
+
     public JSONObject getDrawable(Object drawable, String filename)
     {
+        DrawableCache dc = m_drawableCache.get(filename);
+        if (dc != null)
+        {
+            if (dc.drawable.equals(drawable))
+                return dc.object;
+            else
+                Log.e(QtNative.QtTAG, "Different drawable objects points to the same file name \"" + filename +"\"");
+        }
         JSONObject json = new JSONObject();
         Bitmap bmp;
         if (drawable instanceof Bitmap)
@@ -909,6 +930,7 @@ public class ExtractStyle {
             json.put("path", filename);
             json.put("width", bmp.getWidth());
             json.put("height", bmp.getHeight());
+            m_drawableCache.put(filename, new DrawableCache(json, drawable));
 //            MinistroActivity.nativeChmode(filename, 0644);
         } catch (JSONException e) {
             e.printStackTrace();
