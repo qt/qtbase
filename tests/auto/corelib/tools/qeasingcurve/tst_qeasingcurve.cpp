@@ -59,6 +59,7 @@ private slots:
     void operators();
     void properties();
     void metaTypes();
+    void propertyOrderIsNotImportant();
     void bezierSpline_data();
     void bezierSpline();
     void tcbSpline_data();
@@ -558,6 +559,25 @@ void tst_QEasingCurve::metaTypes()
     QVERIFY(QMetaType::isRegistered(QMetaType::QEasingCurve));
 
     QVERIFY(qMetaTypeId<QEasingCurve>() == QMetaType::QEasingCurve);
+}
+
+/*
+  Test to ensure that regardless of what order properties are set, they should produce the same
+  behavior.
+ */
+void tst_QEasingCurve::propertyOrderIsNotImportant()
+{
+
+    QEasingCurve c1;
+    c1.setPeriod(1);
+    c1.setType(QEasingCurve::OutSine);
+    QVERIFY(c1.valueForProgress(0.75) > 0.9);
+
+    QEasingCurve c2;
+    c2.setType(QEasingCurve::OutSine);
+    c2.setPeriod(1);
+
+    QCOMPARE(c1.valueForProgress(0.75), c2.valueForProgress(0.75));
 }
 
 void tst_QEasingCurve::bezierSpline_data()

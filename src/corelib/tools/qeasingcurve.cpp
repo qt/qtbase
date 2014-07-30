@@ -373,9 +373,12 @@ public:
 
 };
 
+static QEasingCurve::EasingFunction curveToFunc(QEasingCurve::Type curve);
+
 qreal QEasingCurveFunction::value(qreal t)
 {
-    return t;
+    QEasingCurve::EasingFunction func = curveToFunc(_t);
+    return func(t);
 }
 
 QEasingCurveFunction *QEasingCurveFunction::copy() const
