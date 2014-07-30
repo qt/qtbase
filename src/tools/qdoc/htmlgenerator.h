@@ -89,7 +89,6 @@ public:
     virtual void terminateGenerator();
     virtual QString format();
     virtual void generateDocs();
-    void generateCollisionPages();
     void generateManifestFiles();
 
     QString protectEnc(const QString &string);

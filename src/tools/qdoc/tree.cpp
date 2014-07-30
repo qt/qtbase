@@ -194,47 +194,6 @@ QmlClassNode* Tree::findQmlTypeNode(const QStringList& path)
 }
 
 /*!
-  First, search for a node with the specified \a name. If a matching
-  node is found, if it is a collision node, another collision with
-  this name has been found, so return the collision node. If the
-  matching node is not a collision node, the first collision for this
-  name has been found, so create a NameCollisionNode with the matching
-  node as its first child, and return a pointer to the new
-  NameCollisionNode. Otherwise return 0.
- */
-NameCollisionNode* Tree::checkForCollision(const QString& name)
-{
-    Node* n = const_cast<Node*>(findNode(QStringList(name), 0, 0, Node::DontCare));
-    if (n) {
-        if (n->subType() == Node::Collision) {
-            NameCollisionNode* ncn = static_cast<NameCollisionNode*>(n);
-            return ncn;
-        }
-        if (n->isInnerNode())
-            return new NameCollisionNode(static_cast<InnerNode*>(n));
-    }
-    return 0;
-}
-
-/*!
-  This function is like checkForCollision() in that it searches
-  for a collision node with the specified \a name. But it doesn't
-  create anything. If it finds a match, it returns the pointer.
-  Otherwise it returns 0.
- */
-NameCollisionNode* Tree::findCollisionNode(const QString& name) const
-{
-    Node* n = const_cast<Node*>(findNode(QStringList(name), 0, 0, Node::DontCare));
-    if (n) {
-        if (n->subType() == Node::Collision) {
-            NameCollisionNode* ncn = static_cast<NameCollisionNode*>(n);
-            return ncn;
-        }
-    }
-    return 0;
-}
-
-/*!
   This function begins searching the tree at \a relative for
   the \l {FunctionNode} {function node} identified by \a path.
   The \a findFlags are used to restrict the search. If a node
@@ -252,15 +211,8 @@ const FunctionNode* Tree::findFunctionNode(const QStringList& path,
         if (!qcn) {
             QStringList p(path[1]);
             Node* n = findNodeByNameAndType(p, Node::QmlType);
-            if (n) {
-                if (n->isQmlType())
-                    qcn = static_cast<QmlClassNode*>(n);
-                else if (n->subType() == Node::Collision) {
-                    NameCollisionNode* ncn;
-                    ncn = static_cast<NameCollisionNode*>(n);
-                    qcn = static_cast<QmlClassNode*>(ncn->findAny(Node::QmlType, Node::NoSubType));
-                }
-            }
+            if (n && n->isQmlType())
+                qcn = static_cast<QmlClassNode*>(n);
         }
         if (qcn)
             return static_cast<const FunctionNode*>(qcn->findFunctionNode(path[2]));
@@ -1017,9 +969,6 @@ void Tree::resolveTargets(InnerNode* root)
                 }
                 if (!alreadyThere)
                     docNodesByTitle_.insert(key, node);
-            }
-            if (node->subType() == Node::Collision) {
-                resolveTargets(node);
             }
         }
 

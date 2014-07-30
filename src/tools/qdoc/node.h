@@ -66,7 +66,6 @@ class PropertyNode;
 class QmlModuleNode;
 class CollectionNode;
 class QmlPropertyNode;
-class NameCollisionNode;
 
 typedef QList<Node*> NodeList;
 typedef QMap<QString, Node*> NodeMap;
@@ -113,7 +112,6 @@ public:
         Page,
         ExternalPage,
         DitaMap,
-        Collision,
         LastSubtype
     };
 
@@ -223,7 +221,6 @@ public:
     virtual bool isQtQuickNode() const { return false; }
     virtual bool isAbstract() const { return false; }
     virtual bool isQmlPropertyGroup() const { return false; }
-    virtual bool isCollisionNode() const { return false; }
     virtual bool isAttached() const { return false; }
     virtual bool isAlias() const { return false; }
     virtual bool isWrapper() const;
@@ -410,7 +407,6 @@ protected:
 
 private:
     friend class Node;
-    friend class NameCollisionNode;
 
     static bool isSameSignature(const FunctionNode* f1, const FunctionNode* f2);
     void addChild(Node* child);
@@ -553,24 +549,6 @@ protected:
     SubType nodeSubtype_;
     QString title_;
     QString subtitle_;
-};
-
-class NameCollisionNode : public DocNode
-{
-public:
-    NameCollisionNode(InnerNode* child);
-    ~NameCollisionNode();
-    virtual bool isQmlNode() const;
-    virtual bool isCollisionNode() const { return true; }
-    virtual const Node* applyModuleName(const Node* origin) const;
-    virtual Node* disambiguate(Type t, SubType st);
-    InnerNode* findAny(Node::Type t, Node::SubType st);
-    void addCollision(InnerNode* child);
-    const QMap<QString,QString>& linkTargets() const { return targets; }
-    void addLinkTarget(const QString& t, const QString& v) { targets.insert(t,v); }
-
-private:
-    QMap<QString,QString> targets;
 };
 
 class ExampleNode : public DocNode

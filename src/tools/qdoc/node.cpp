@@ -144,8 +144,7 @@ QString Node::plainFullName(const Node* relative) const
     const Node* node = this;
     while (node) {
         fullName.prepend(node->plainName());
-        if (node->parent() == relative || node->parent()->subType() == Node::Collision ||
-            node->parent()->name().isEmpty())
+        if (node->parent() == relative || node->parent()->name().isEmpty())
             break;
         fullName.prepend(QLatin1String("::"));
         node = node->parent();
@@ -154,18 +153,12 @@ QString Node::plainFullName(const Node* relative) const
 }
 
 /*!
-  Constructs and returns this node's full name. The \a relative
-  node is either null or is a collision node.
+  Constructs and returns this node's full name.
  */
 QString Node::fullName(const Node* relative) const
 {
-    if (isDocNode() || isCollectionNode()) {
-        const DocNode* dn = static_cast<const DocNode*>(this);
-        // Only print modulename::type on collision pages.
-        if (!dn->qmlModuleName().isEmpty() && relative != 0 && relative->isCollisionNode())
-            return dn->qmlModuleName() + "::" + dn->title();
-        return dn->title();
-    }
+    if (isDocNode())
+        return title();
     else if (isClass()) {
         const ClassNode* cn = static_cast<const ClassNode*>(this);
         if (!cn->serviceName().isEmpty())
@@ -415,8 +408,6 @@ QString Node::nodeSubtypeString(unsigned t)
         return "external page";
     case DitaMap:
         return "ditamap";
-    case Collision:
-        return "collision";
     case NoSubType:
     default:
         break;
@@ -832,12 +823,6 @@ Node* InnerNode::findChildNode(const QString& name, bool qml) const
   This function is like findChildNode(), but if a node
   with the specified \a name is found but it is not of the
   specified \a type, 0 is returned.
-
-  This function is not recursive and therefore can't handle
-  collisions. If it finds a collision node named \a name, it
-  will return that node. But it might not find the collision
-  node because it looks up \a name in the child map, not the
-  list.
  */
 Node* InnerNode::findChildNode(const QString& name, Type type)
 {
@@ -1007,18 +992,13 @@ void InnerNode::setOverload(const FunctionNode *func, bool overlode)
   Mark all child nodes that have no documentation as having
   private access and internal status. qdoc will then ignore
   them for documentation purposes.
-
-  \note Exception: Name collision nodes are not marked
-  private/internal.
  */
 void InnerNode::makeUndocumentedChildrenInternal()
 {
     foreach (Node *child, childNodes()) {
         if (child->doc().isEmpty()) {
-            if (child->subType() != Node::Collision) {
-                child->setAccess(Node::Private);
-                child->setStatus(Node::Internal);
-            }
+            child->setAccess(Node::Private);
+            child->setStatus(Node::Internal);
         }
     }
 }
@@ -1689,9 +1669,6 @@ DocNode::DocNode(InnerNode* parent, const QString& name, SubType subtype, Node::
     case Example:
         setPageType(ExamplePage);
         break;
-    case Collision:
-        setPageType(ptype);
-        break;
     default:
         break;
     }
@@ -1734,9 +1711,6 @@ QString DocNode::fullTitle() const
             return name();
         else
             return name() + " - " + title();
-    }
-    else if (nodeSubtype_ == Collision) {
-        return title();
     }
     else {
         return title();
@@ -2465,137 +2439,6 @@ QString QmlPropertyNode::element() const
     return parent()->name();
 }
 
-/*! \class NameCollisionNode
-
-  An instance of this node is inserted in the tree
-  whenever qdoc discovers that two nodes have the
-  same name.
- */
-
-/*!
-  Constructs a name collision node containing \a child
-  as its first child. The parent of \a child becomes
-  this node's parent.
- */
-NameCollisionNode::NameCollisionNode(InnerNode* child)
-    : DocNode(child->parent(), child->name(), Collision, Node::NoPageType)
-{
-    setTitle("Name Collision: " + child->name());
-    addCollision(child);
-}
-
-/*!
-  Add a collision to this collision node. \a child has
-  the same name as the other children in this collision
-  node. \a child becomes the current child.
- */
-void NameCollisionNode::addCollision(InnerNode* child)
-{
-    if (child) {
-        if (child->parent())
-            child->parent()->removeChild(child);
-        child->setParent((InnerNode*)this);
-        children_.append(child);
-    }
-}
-
-/*!
-  The destructor does nothing.
- */
-NameCollisionNode::~NameCollisionNode()
-{
-    // nothing.
-}
-
-/*!
-  Returns \c true if this collision node's current node is a QML node.
- */
-bool NameCollisionNode::isQmlNode() const
-{
-    return false;
-}
-
-/*!
-  Find any of this collision node's children that has type \a t
-  and subtype \a st and return a pointer to it.
-*/
-InnerNode* NameCollisionNode::findAny(Node::Type t, Node::SubType st)
-{
-    const NodeList& cn = childNodes();
-    NodeList::ConstIterator i = cn.constBegin();
-    while (i != cn.constEnd()) {
-        if ((*i)->type() == t && (*i)->subType() == st)
-            return static_cast<InnerNode*>(*i);
-        ++i;
-    }
-    return 0;
-}
-
-/*!
-  This node is a name collision node. Find a child of this node
-  such that the child's QML module name matches origin's QML module
-  Name. Return the matching node, or return this node if there is
-  no matching node.
- */
-const Node* NameCollisionNode::applyModuleName(const Node* origin) const
-{
-    if (origin && !origin->qmlModuleName().isEmpty()) {
-        const NodeList& cn = childNodes();
-        NodeList::ConstIterator i = cn.constBegin();
-        while (i != cn.constEnd()) {
-            if ((*i)->isQmlType()) {
-                if (origin->qmlModuleName() == (*i)->qmlModuleName())
-                    return (*i);
-            }
-            ++i;
-        }
-    }
-    return this;
-}
-
-/*!
-  First, find all the colliding nodes that have the correct
-  type \a t and subtype \a st. If there is only one node
-  having the correct type and subtype, return that one.
-  If there is more than one node having the correct type
-  and subtype, then, in that subset, if there is only one
-  non-index node, return that one. If there are multiple
-  non-index nodes, return this collision node because we
-  can't disambiguate. Otherwise, if there are multiple
-  nodes having the correct type and subtype, return this
-  collision node because, again, we can't disambiguate.
-  But if there are no nodes at all that have the correct
-  type and subtype, return 0.
- */
-Node* NameCollisionNode::disambiguate(Type t, SubType st)
-{
-    NodeList nl;
-    const NodeList& cn = childNodes();
-    NodeList::ConstIterator i = cn.constBegin();
-    while (i != cn.constEnd()) {
-        if ((*i)->type() == t) {
-            if ((st == NoSubType) || ((*i)->subType() == st))
-                nl.append((*i));
-        }
-        ++i;
-    }
-    Node* n = 0;
-    if (!nl.isEmpty()) {
-        i = nl.constBegin();
-        if (nl.size() == 1)
-            return (*i);
-        while (i != nl.constEnd()) {
-            if (!(*i)->isIndexNode()) {
-                if (n)
-                    return this;
-                n = (*i);
-            }
-            ++i;
-        }
-    }
-    return n;
-}
-
 /*!
   Construct the full document name for this node and return it.
  */
@@ -2848,10 +2691,6 @@ QString Node::idForNode() const
             case Node::Example:
                 str = name();
                 str.replace(QLatin1Char('/'), QLatin1Char('-'));
-                break;
-            case Node::Collision:
-                str = title();
-                str.replace(": ","-");
                 break;
             default:
                 qDebug() << "ERROR: A case was not handled in Node::idForNode():"

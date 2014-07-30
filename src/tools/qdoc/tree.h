@@ -130,8 +130,6 @@ class Tree
 
     Node* findNodeByNameAndType(const QStringList& path, Node::Type type) const;
     InnerNode* findRelatesNode(const QStringList& path);
-    NameCollisionNode* checkForCollision(const QString& name);
-    NameCollisionNode* findCollisionNode(const QString& name) const;
     QString getRef(const QString& target, const Node* node) const;
     void insertTarget(const QString& name,
                       const QString& title,

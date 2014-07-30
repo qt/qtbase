@@ -716,8 +716,7 @@ void HelpProjectWriter::generateProject(HelpProject &project)
     if (node == 0)
         node = qdb_->findNodeByNameAndType(QStringList("index.html"), Node::Document);
     QString indexPath;
-    // Never use a collision node as a landing page
-    if (node && !node->isCollisionNode())
+    if (node)
         indexPath = gen_->fullDocumentLocation(node,Generator::useOutputSubdirs());
     else
         indexPath = "index.html";

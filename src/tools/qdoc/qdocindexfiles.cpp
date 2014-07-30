@@ -1337,20 +1337,7 @@ void QDocIndexFiles::generateIndexSections(QXmlStreamWriter& writer,
             std::sort(cnodes.begin(), cnodes.end(), compareNodes);
 
             foreach (Node* child, cnodes) {
-                /*
-                  Don't generate anything for a collision node. We want
-                  children of collision nodes in the index, but leaving
-                  out the parent collision page will make searching for
-                  nodes easier.
-                 */
-                if (child->subType() == Node::Collision) {
-                    const InnerNode* pgn = static_cast<const InnerNode*>(child);
-                    foreach (Node* c, pgn->childNodes()) {
-                        generateIndexSections(writer, c, generateInternalNodes);
-                    }
-                }
-                else
-                    generateIndexSections(writer, child, generateInternalNodes);
+                generateIndexSections(writer, child, generateInternalNodes);
             }
         }
 

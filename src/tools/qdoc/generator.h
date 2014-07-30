@@ -157,7 +157,6 @@ protected:
     void generateSince(const Node *node, CodeMarker *marker);
     void generateStatus(const Node *node, CodeMarker *marker);
     void generateThreadSafeness(const Node *node, CodeMarker *marker);
-    //QString getCollisionLink(const Atom* atom);
     QString getMetadataElement(const InnerNode* inner, const QString& t);
     QStringList getMetadataElements(const InnerNode* inner, const QString& t);
     QString indent(int level, const QString& markedCode);
@@ -175,7 +174,6 @@ protected:
     void unknownAtom(const Atom *atom);
     void appendSortedQmlNames(Text& text, const Node* base, const NodeList& subs);
 
-    QList<NameCollisionNode*> collisionNodes;
     QMap<QString, QStringList> editionGroupMap;
     QMap<QString, QStringList> editionModuleMap;
     QString naturalLanguage;

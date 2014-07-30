@@ -785,15 +785,8 @@ QmlClassNode* QDocDatabase::findQmlType(const QString& qmid, const QString& name
 
     QStringList path(name);
     Node* n = forest_.findNodeByNameAndType(path, Node::QmlType);
-    if (n) {
-        if (n->isQmlType())
-            return static_cast<QmlClassNode*>(n);
-        else if (n->isCollisionNode()) {
-            NameCollisionNode* ncn;
-            ncn = static_cast<NameCollisionNode*>(n);
-            return static_cast<QmlClassNode*>(ncn->findAny(Node::QmlType, Node::NoSubType));
-        }
-    }
+    if (n && n->isQmlType())
+        return static_cast<QmlClassNode*>(n);
     return 0;
 }
 
@@ -1365,9 +1358,8 @@ const Node* QDocDatabase::findNodeForTarget(const QString& target, const Node* r
     const Node* node = 0;
     if (target.isEmpty())
         node = relative;
-    else if (target.endsWith(".html")) {
+    else if (target.endsWith(".html"))
         node = findNodeByNameAndType(QStringList(target), Node::Document);
-    }
     else {
         QStringList path = target.split("::");
         int flags = SearchBaseClasses | SearchEnumValues; // | NonFunction;
