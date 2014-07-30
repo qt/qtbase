@@ -129,6 +129,7 @@ public:
     Q_PRIVATE_SLOT(d_func(), void resetUploadDataSlot(bool *r))
     Q_PRIVATE_SLOT(d_func(), void wantUploadDataSlot(qint64))
     Q_PRIVATE_SLOT(d_func(), void sentUploadDataSlot(qint64))
+    Q_PRIVATE_SLOT(d_func(), void uploadByteDeviceReadyReadSlot())
     Q_PRIVATE_SLOT(d_func(), void emitReplyUploadProgress(qint64, qint64))
     Q_PRIVATE_SLOT(d_func(), void _q_cacheSaveDeviceAboutToClose())
 
@@ -299,6 +300,9 @@ public:
     void resetUploadDataSlot(bool *r);
     void wantUploadDataSlot(qint64);
     void sentUploadDataSlot(qint64);
+
+    // From user's QNonContiguousByteDevice
+    void uploadByteDeviceReadyReadSlot();
 
     Q_DECLARE_PUBLIC(QNetworkReplyHttpImpl)
 };

@@ -438,10 +438,12 @@ void q_DH_free(DH *dh);
 BIGNUM *q_BN_bin2bn(const unsigned char *s, int len, BIGNUM *ret);
 #define q_SSL_CTX_set_tmp_dh(ctx, dh) q_SSL_CTX_ctrl((ctx), SSL_CTRL_SET_TMP_DH, 0, (char *)dh)
 
+#ifndef OPENSSL_NO_EC
 // EC Diffie-Hellman support
 EC_KEY *q_EC_KEY_new_by_curve_name(int nid);
 void q_EC_KEY_free(EC_KEY *ecdh);
 #define q_SSL_CTX_set_tmp_ecdh(ctx, ecdh) q_SSL_CTX_ctrl((ctx), SSL_CTRL_SET_TMP_ECDH, 0, (char *)ecdh)
+#endif // OPENSSL_NO_EC
 
 // PKCS#12 support
 int q_PKCS12_parse(PKCS12 *p12, const char *pass, EVP_PKEY **pkey, X509 **cert, STACK_OF(X509) **ca);
