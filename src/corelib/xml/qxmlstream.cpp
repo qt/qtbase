@@ -1711,9 +1711,9 @@ uint QXmlStreamReaderPrivate::resolveCharRef(int symbolIndex)
     uint s;
     // ### add toXShort to QStringRef?
     if (sym(symbolIndex).c == 'x')
-        s = symString(symbolIndex, 1).toString().toUInt(&ok, 16);
+        s = symString(symbolIndex, 1).toUInt(&ok, 16);
     else
-        s = symString(symbolIndex).toString().toUInt(&ok, 10);
+        s = symString(symbolIndex).toUInt(&ok, 10);
 
     ok &= (s == 0x9 || s == 0xa || s == 0xd || (s >= 0x20 && s <= 0xd7ff)
            || (s >= 0xe000 && s <= 0xfffd) || (s >= 0x10000 && s <= QChar::LastValidCodePoint));
@@ -1773,7 +1773,7 @@ void QXmlStreamReaderPrivate::startDocument()
 {
     QString err;
     if (documentVersion != QLatin1String("1.0")) {
-        if (documentVersion.toString().contains(QLatin1Char(' ')))
+        if (documentVersion.contains(QLatin1Char(' ')))
             err = QXmlStream::tr("Invalid XML version string.");
         else
             err = QXmlStream::tr("Unsupported XML version.");
