@@ -507,7 +507,7 @@ bool QProgressDialog::wasCanceled() const
     \property QProgressDialog::maximum
     \brief the highest value represented by the progress bar
 
-    The default is 0.
+    The default is 100.
 
     \sa minimum, setRange()
 */
