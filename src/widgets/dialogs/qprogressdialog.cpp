@@ -86,6 +86,7 @@ public:
     void retranslateStrings();
     void setCancelButtonText(const QString &cancelButtonText);
     void adoptChildWidget(QWidget *c);
+    void ensureSizeIsAtLeastSizeHint();
     void _q_disconnectOnClose();
 
     QLabel *label;
@@ -386,9 +387,7 @@ void QProgressDialog::setLabelText(const QString &text)
     Q_D(QProgressDialog);
     if (d->label) {
         d->label->setText(text);
-        int w = qMax(isVisible() ? width() : 0, sizeHint().width());
-        int h = qMax(isVisible() ? height() : 0, sizeHint().height());
-        resize(w, h);
+        d->ensureSizeIsAtLeastSizeHint();
     }
 }
 
@@ -455,9 +454,7 @@ void QProgressDialogPrivate::setCancelButtonText(const QString &cancelButtonText
     } else {
         q->setCancelButton(0);
     }
-    int w = qMax(q->isVisible() ? q->width() : 0, q->sizeHint().width());
-    int h = qMax(q->isVisible() ? q->height() : 0, q->sizeHint().height());
-    q->resize(w, h);
+    ensureSizeIsAtLeastSizeHint();
 }
 
 
@@ -495,15 +492,22 @@ void QProgressDialogPrivate::adoptChildWidget(QWidget *c)
 
     if (c) {
         if (c->parentWidget() == q)
-            c->hide(); // until we resize
+            c->hide(); // until after ensureSizeIsAtLeastSizeHint()
         else
             c->setParent(q, 0);
     }
+    ensureSizeIsAtLeastSizeHint();
+    if (c)
+        c->show();
+}
+
+void QProgressDialogPrivate::ensureSizeIsAtLeastSizeHint()
+{
+    Q_Q(QProgressDialog);
+
     int w = qMax(q->isVisible() ? q->width()  : 0, q->sizeHint().width());
     int h = qMax(q->isVisible() ? q->height() : 0, q->sizeHint().height());
     q->resize(w, h);
-    if (c)
-        c->show();
 }
 
 
@@ -689,9 +693,7 @@ void QProgressDialog::setValue(int progress)
                 }
             }
             if (need_show) {
-                int w = qMax(isVisible() ? width() : 0, sizeHint().width());
-                int h = qMax(isVisible() ? height() : 0, sizeHint().height());
-                resize(w, h);
+                d->ensureSizeIsAtLeastSizeHint();
                 show();
                 d->shown_once = true;
             }
@@ -837,9 +839,7 @@ void QProgressDialog::showEvent(QShowEvent *e)
 {
     Q_D(QProgressDialog);
     QDialog::showEvent(e);
-    int w = qMax(isVisible() ? width() : 0, sizeHint().width());
-    int h = qMax(isVisible() ? height() : 0, sizeHint().height());
-    resize(w, h);
+    d->ensureSizeIsAtLeastSizeHint();
     d->forceTimer->stop();
 }
 
