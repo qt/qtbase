@@ -294,12 +294,15 @@
     SPARC is big-endian only prior to V9, while V9 is bi-endian with big-endian
     as the default byte order. Assume all SPARC systems are big-endian.
 */
-// #elif defined(__sparc__)
-// #  define Q_PROCESSOR_SPARC
-// #  if defined(__sparc_v9__)
-// #    define Q_PROCESSOR_SPARC_V9
-// #  endif
-// #  define Q_BYTE_ORDER Q_BIG_ENDIAN
+#elif defined(__sparc__)
+#  define Q_PROCESSOR_SPARC
+#  if defined(__sparc_v9__)
+#    define Q_PROCESSOR_SPARC_V9
+#  endif
+#  if defined(__sparc64__)
+#    define Q_PROCESSOR_SPARC_64
+#  endif
+#  define Q_BYTE_ORDER Q_BIG_ENDIAN
 
 #endif
 

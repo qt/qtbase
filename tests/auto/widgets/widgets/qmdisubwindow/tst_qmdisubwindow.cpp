@@ -444,7 +444,7 @@ void tst_QMdiSubWindow::mainWindowSupport()
         QVERIFY(!nestedWindow->maximizedButtonsWidget());
         QVERIFY(!nestedWindow->maximizedSystemMenuIconWidget());
 
-#if !defined(Q_OS_MAC) && !defined(Q_OS_WINCE)
+#if !defined(Q_OS_MAC) && !defined(Q_OS_WINCE) && !defined(Q_OS_QNX)
         QCOMPARE(mainWindow.windowTitle(), QString::fromLatin1("%1 - [%2]")
                                            .arg(originalWindowTitle, window->widget()->windowTitle()));
 #endif
@@ -687,8 +687,8 @@ void tst_QMdiSubWindow::setOpaqueResizeAndMove_data()
     QTest::addColumn<QSize>("workspaceSize");
     QTest::addColumn<QSize>("windowSize");
 
-    QTest::newRow("normal mode") << true<< 20 << 20 << QSize(400, 400) << QSize(200, 200);
-    QTest::newRow("rubberband mode") << false << 20 << 1 << QSize(400, 400) << QSize(200, 200);
+    QTest::newRow("normal mode") << true<< 20 << 20 << QSize(400, 400) << QSize(240, 200);
+    QTest::newRow("rubberband mode") << false << 20 << 1 << QSize(400, 400) << QSize(240, 200);
 }
 
 void tst_QMdiSubWindow::setOpaqueResizeAndMove()
@@ -779,7 +779,7 @@ void tst_QMdiSubWindow::setOpaqueResizeAndMove()
     // ### Remove this after mac style has been fixed
     height -= 4;
 #endif
-    QPoint mousePosition(window->width() / 2, height - 1);
+    QPoint mousePosition(window->width() / 3, height - 1);
     sendMouseMove(window, mousePosition, Qt::NoButton);
     sendMousePress(window, mousePosition);
 
@@ -1478,6 +1478,9 @@ void tst_QMdiSubWindow::hideAndShow()
 
 #if !defined (Q_OS_MAC) && !defined (Q_OS_WINCE)
     QVERIFY(menuBar->cornerWidget(Qt::TopRightCorner));
+#if defined Q_OS_QNX
+    QEXPECT_FAIL("", "QTBUG-38231", Abort);
+#endif
     QVERIFY(subWindow->maximizedButtonsWidget());
     QVERIFY(subWindow->maximizedSystemMenuIconWidget());
     QCOMPARE(menuBar->cornerWidget(Qt::TopRightCorner), subWindow->maximizedButtonsWidget());
@@ -1702,6 +1705,9 @@ void tst_QMdiSubWindow::replaceMenuBarWhileMaximized()
 
     qApp->processEvents();
 
+#if defined Q_OS_QNX
+    QEXPECT_FAIL("", "QTBUG-38231", Abort);
+#endif
     QVERIFY(subWindow->maximizedButtonsWidget());
     QVERIFY(subWindow->maximizedSystemMenuIconWidget());
     QCOMPARE(menuBar->cornerWidget(Qt::TopLeftCorner), subWindow->maximizedSystemMenuIconWidget());

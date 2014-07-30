@@ -545,7 +545,7 @@ xcb_cursor_t QXcbCursor::createFontCursor(int cshape)
 
     // Try Xcursor first
 #ifdef XCB_USE_XLIB
-    if (cshape >= 0 && cshape < Qt::LastCursor) {
+    if (cshape >= 0 && cshape <= Qt::LastCursor) {
         void *dpy = connection()->xlib_display();
         // special case for non-standard dnd-* cursors
         cursor = loadCursor(dpy, cshape);
