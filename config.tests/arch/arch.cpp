@@ -85,6 +85,14 @@ const char msg2[] = "==Qt=magic=Qt== Sub-architecture:"
 // AVX512 Conflict Detection, Intel Xeon Phi codename "Knights Landing"
 " avx512cd"
 #endif
+#ifdef __AVX512DQ__
+// AVX512 Double & Quadword, future Intel Xeon processor
+" avx512dq"
+#endif
+#ifdef __AVX512BW__
+// AVX512 Byte & Word, future Intel Xeon processor
+" avx512bw"
+#endif
 #ifdef __AVX512ER__
 // AVX512 Exponentiation & Reciprocal, Intel Xeon Phi codename "Knights Landing"
 " avx512ef"
@@ -92,6 +100,10 @@ const char msg2[] = "==Qt=magic=Qt== Sub-architecture:"
 #ifdef __AVX512PF__
 // AVX512 Prefetch, Intel Xeon Phi codename "Knights Landing"
 " avx512pf"
+#endif
+#ifdef __AVX512VL__
+// AVX512 Vector Length, future Intel Xeon processor
+" avx512vl"
 #endif
 #ifdef __BMI__
 // Bit Manipulation Instructions 1, Intel Core 4th Generation ("Haswell"), AMD "Bulldozer 2"
