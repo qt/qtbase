@@ -377,9 +377,34 @@ public:
     QString leftJustified(int width, QChar fill = QLatin1Char(' '), bool trunc = false) const Q_REQUIRED_RESULT;
     QString rightJustified(int width, QChar fill = QLatin1Char(' '), bool trunc = false) const Q_REQUIRED_RESULT;
 
+#if defined(Q_COMPILER_REF_QUALIFIERS) && !defined(QT_COMPILING_QSTRING_COMPAT_CPP)
+#  if defined(Q_CC_GNU)
+    // required due to https://gcc.gnu.org/bugzilla/show_bug.cgi?id=61941
+#    pragma push_macro("Q_REQUIRED_RESULT")
+#    undef Q_REQUIRED_RESULT
+#    define Q_REQUIRED_RESULT
+#    define Q_REQUIRED_RESULT_pushed
+#  endif
+    QString toLower() const & Q_REQUIRED_RESULT
+    { return toLower_helper(*this); }
+    QString toLower() && Q_REQUIRED_RESULT
+    { return toLower_helper(*this); }
+    QString toUpper() const & Q_REQUIRED_RESULT
+    { return toUpper_helper(*this); }
+    QString toUpper() && Q_REQUIRED_RESULT
+    { return toUpper_helper(*this); }
+    QString toCaseFolded() const & Q_REQUIRED_RESULT
+    { return toCaseFolded_helper(*this); }
+    QString toCaseFolded() && Q_REQUIRED_RESULT
+    { return toCaseFolded_helper(*this); }
+#  ifdef Q_REQUIRED_RESULT_pushed
+#    pragma pop_macro("Q_REQUIRED_RESULT")
+#  endif
+#else
     QString toLower() const Q_REQUIRED_RESULT;
     QString toUpper() const Q_REQUIRED_RESULT;
     QString toCaseFolded() const Q_REQUIRED_RESULT;
+#endif
 
     QString trimmed() const Q_REQUIRED_RESULT;
     QString simplified() const Q_REQUIRED_RESULT;
@@ -742,6 +767,12 @@ private:
                               Qt::CaseSensitivity cs = Qt::CaseSensitive);
     static int localeAwareCompare_helper(const QChar *data1, int length1,
                                          const QChar *data2, int length2);
+    static QString toLower_helper(const QString &str);
+    static QString toLower_helper(QString &str);
+    static QString toUpper_helper(const QString &str);
+    static QString toUpper_helper(QString &str);
+    static QString toCaseFolded_helper(const QString &str);
+    static QString toCaseFolded_helper(QString &str);
     static Data *fromLatin1_helper(const char *str, int size = -1);
     static Data *fromAscii_helper(const char *str, int size = -1);
     static QString fromUtf8_helper(const char *str, int size);

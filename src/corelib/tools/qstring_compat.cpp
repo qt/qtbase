@@ -50,6 +50,21 @@
 QT_BEGIN_NAMESPACE
 
 // all these implementations must be the same as the inline versions in qstring.h
+QString QString::toLower() const
+{
+    return toLower_helper(*this);
+}
+
+QString QString::toCaseFolded() const
+{
+    return toCaseFolded_helper(*this);
+}
+
+QString QString::toUpper() const
+{
+    return toUpper_helper(*this);
+}
+
 QByteArray QString::toLatin1() const
 {
     return toLatin1_helper(*this);

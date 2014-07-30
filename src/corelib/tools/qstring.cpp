@@ -5547,16 +5547,16 @@ struct CasefoldTraits
     { return prop->caseFoldSpecial; }
 };
 
-template <typename Traits>
+template <typename Traits, typename T>
 #ifdef Q_CC_MSVC
 __declspec(noinline)
 #elif defined(Q_CC_GNU)
 __attribute__((noinline))
 #endif
-static QString detachAndConvertCase(const QString &str, QStringIterator it)
+static QString detachAndConvertCase(T &str, QStringIterator it)
 {
-    QString s(str);
-    QChar *pp = s.begin() + it.index();
+    QString s = qMove(str);             // will copy if T is const QString
+    QChar *pp = s.begin() + it.index(); // will detach if necessary
     uint uc = it.nextUnchecked();
     forever {
         const QUnicodeTables::Properties *prop = qGetProp(uc);
@@ -5583,8 +5583,8 @@ static QString detachAndConvertCase(const QString &str, QStringIterator it)
     }
 }
 
-template <typename Traits>
-static inline QString convertCase(const QString &str)
+template <typename Traits, typename T>
+static QString convertCase(T &str)
 {
     const QChar *p = str.constBegin();
     const QChar *e = p + str.size();
@@ -5600,25 +5600,40 @@ static inline QString convertCase(const QString &str)
         if (Traits::caseDiff(prop))
             return detachAndConvertCase<Traits>(str, it);
     }
-    return str;
+    return qMove(str);
 }
 } // namespace QUnicodeTables
 
-QString QString::toLower() const
+QString QString::toLower_helper(const QString &str)
 {
-    return QUnicodeTables::convertCase<QUnicodeTables::LowercaseTraits>(*this);
+    return QUnicodeTables::convertCase<QUnicodeTables::LowercaseTraits>(str);
+}
+
+QString QString::toLower_helper(QString &str)
+{
+    return QUnicodeTables::convertCase<QUnicodeTables::LowercaseTraits>(str);
 }
 
 /*!
+    \fn QString QString::toCaseFolded() const
+
     Returns the case folded equivalent of the string. For most Unicode
     characters this is the same as toLower().
 */
-QString QString::toCaseFolded() const
+
+QString QString::toCaseFolded_helper(const QString &str)
 {
-    return QUnicodeTables::convertCase<QUnicodeTables::CasefoldTraits>(*this);
+    return QUnicodeTables::convertCase<QUnicodeTables::CasefoldTraits>(str);
+}
+
+QString QString::toCaseFolded_helper(QString &str)
+{
+    return QUnicodeTables::convertCase<QUnicodeTables::CasefoldTraits>(str);
 }
 
 /*!
+    \fn QString QString::toUpper() const
+
     Returns an uppercase copy of the string.
 
     \snippet qstring/main.cpp 81
@@ -5628,10 +5643,17 @@ QString QString::toCaseFolded() const
 
     \sa toLower(), QLocale::toLower()
 */
-QString QString::toUpper() const
+
+QString QString::toUpper_helper(const QString &str)
 {
-    return QUnicodeTables::convertCase<QUnicodeTables::UppercaseTraits>(*this);
+    return QUnicodeTables::convertCase<QUnicodeTables::UppercaseTraits>(str);
 }
+
+QString QString::toUpper_helper(QString &str)
+{
+    return QUnicodeTables::convertCase<QUnicodeTables::UppercaseTraits>(str);
+}
+
 
 // ### Qt 6: Consider whether this function shouldn't be removed See task 202871.
 /*!

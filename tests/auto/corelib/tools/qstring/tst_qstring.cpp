@@ -1846,6 +1846,7 @@ void tst_QString::toUpper()
 {
     QCOMPARE( QString().toUpper(), QString() );
     QCOMPARE( QString("").toUpper(), QString("") );
+    QCOMPARE( QStringLiteral("text").toUpper(), QString("TEXT") );
     QCOMPARE( QString("text").toUpper(), QString("TEXT") );
     QCOMPARE( QString("Text").toUpper(), QString("TEXT") );
     QCOMPARE( QString("tExt").toUpper(), QString("TEXT") );
@@ -1906,6 +1907,7 @@ void tst_QString::toLower()
     QCOMPARE( QString().toLower(), QString() );
     QCOMPARE( QString("").toLower(), QString("") );
     QCOMPARE( QString("text").toLower(), QString("text") );
+    QCOMPARE( QStringLiteral("Text").toLower(), QString("text") );
     QCOMPARE( QString("Text").toLower(), QString("text") );
     QCOMPARE( QString("tExt").toLower(), QString("text") );
     QCOMPARE( QString("teXt").toLower(), QString("text") );
