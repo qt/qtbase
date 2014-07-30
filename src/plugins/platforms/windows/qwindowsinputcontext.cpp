@@ -83,6 +83,10 @@ static inline QByteArray debugComposition(int lParam)
 // Cancel current IME composition.
 static inline void imeNotifyCancelComposition(HWND hwnd)
 {
+    if (!hwnd) {
+        qWarning() << __FUNCTION__ << "called with" << hwnd;
+        return;
+    }
     const HIMC himc = ImmGetContext(hwnd);
     ImmNotifyIME(himc, NI_COMPOSITIONSTR, CPS_CANCEL, 0);
     ImmReleaseContext(hwnd, himc);
@@ -175,19 +179,25 @@ void QWindowsInputContext::reset()
     QPlatformInputContext::reset();
     if (!m_compositionContext.hwnd)
         return;
-    QObject *fo = qApp->focusObject();
-    qCDebug(lcQpaInputMethods) << __FUNCTION__<< fo;
-    if (!fo)
-        return;
-    if (m_compositionContext.isComposing) {
+    qCDebug(lcQpaInputMethods) << __FUNCTION__;
+    if (m_compositionContext.isComposing && m_compositionContext.focusObject.isNull()) {
         QInputMethodEvent event;
         if (!m_compositionContext.composition.isEmpty())
             event.setCommitString(m_compositionContext.composition);
-        QCoreApplication::sendEvent(fo, &event);
+        QCoreApplication::sendEvent(m_compositionContext.focusObject, &event);
         endContextComposition();
     }
     imeNotifyCancelComposition(m_compositionContext.hwnd);
     doneContext();
+}
+
+void QWindowsInputContext::setFocusObject(QObject *)
+{
+    // ### fixme: On Windows 8.1, it has been observed that the Input context
+    // remains active when this happens resulting in a lock-up. Consecutive
+    // key events still have VK_PROCESSKEY set and are thus ignored.
+    if (m_compositionContext.isComposing)
+        imeNotifyCancelComposition(m_compositionContext.hwnd);
 }
 
 /*!
@@ -317,7 +327,7 @@ static inline QTextFormat standardFormat(StandardFormat format)
 
 bool QWindowsInputContext::startComposition(HWND hwnd)
 {
-    const QObject *fo = qApp->focusObject();
+    QObject *fo = QGuiApplication::focusObject();
     if (!fo)
         return false;
     // This should always match the object.
@@ -327,7 +337,7 @@ bool QWindowsInputContext::startComposition(HWND hwnd)
     qCDebug(lcQpaInputMethods) << __FUNCTION__ << fo << window;
     if (!fo || QWindowsWindow::handleOf(window) != hwnd)
         return false;
-    initContext(hwnd);
+    initContext(hwnd, fo);
     startContextComposition();
     return true;
 }
@@ -341,6 +351,7 @@ void QWindowsInputContext::startContextComposition()
     m_compositionContext.isComposing = true;
     m_compositionContext.composition.clear();
     m_compositionContext.position = 0;
+    cursorRectChanged(); // position cursor initially.
     update(Qt::ImQueryAll);
 }
 
@@ -384,11 +395,10 @@ static inline QList<QInputMethodEvent::Attribute>
 
 bool QWindowsInputContext::composition(HWND hwnd, LPARAM lParamIn)
 {
-    QObject *fo = qApp->focusObject();
     const int lParam = int(lParamIn);
-    qCDebug(lcQpaInputMethods) << '>' << __FUNCTION__ << fo << debugComposition(lParam)
-        << " composing=" << m_compositionContext.isComposing;
-    if (!fo || m_compositionContext.hwnd != hwnd || !lParam)
+    qCDebug(lcQpaInputMethods) << '>' << __FUNCTION__ << m_compositionContext.focusObject
+        << debugComposition(lParam) << " composing=" << m_compositionContext.isComposing;
+    if (m_compositionContext.focusObject.isNull() || m_compositionContext.hwnd != hwnd || !lParam)
         return false;
     const HIMC himc = ImmGetContext(m_compositionContext.hwnd);
     if (!himc)
@@ -425,10 +435,10 @@ bool QWindowsInputContext::composition(HWND hwnd, LPARAM lParamIn)
         event->setCommitString(getCompositionString(himc, GCS_RESULTSTR));
         endContextComposition();
     }
-    const bool result = QCoreApplication::sendEvent(fo, event.data());
+    const bool result = QCoreApplication::sendEvent(m_compositionContext.focusObject, event.data());
     qCDebug(lcQpaInputMethods) << '<' << __FUNCTION__ << "sending markup="
         << event->attributes().size() << " commit=" << event->commitString()
-        << " to " << fo << " returns " << result;
+        << " to " << m_compositionContext.focusObject << " returns " << result;
     update(Qt::ImQueryAll);
     ImmReleaseContext(m_compositionContext.hwnd, himc);
     return result;
@@ -442,8 +452,7 @@ bool QWindowsInputContext::endComposition(HWND hwnd)
     // against that.
     if (m_endCompositionRecursionGuard || m_compositionContext.hwnd != hwnd)
         return false;
-    QObject *fo = qApp->focusObject();
-    if (!fo)
+    if (m_compositionContext.focusObject.isNull())
         return false;
 
     m_endCompositionRecursionGuard = true;
@@ -451,7 +460,7 @@ bool QWindowsInputContext::endComposition(HWND hwnd)
     imeNotifyCancelComposition(m_compositionContext.hwnd);
     if (m_compositionContext.isComposing) {
         QInputMethodEvent event;
-        QCoreApplication::sendEvent(fo, &event);
+        QCoreApplication::sendEvent(m_compositionContext.focusObject, &event);
     }
     doneContext();
 
@@ -459,11 +468,12 @@ bool QWindowsInputContext::endComposition(HWND hwnd)
     return true;
 }
 
-void QWindowsInputContext::initContext(HWND hwnd)
+void QWindowsInputContext::initContext(HWND hwnd, QObject *focusObject)
 {
     if (m_compositionContext.hwnd)
         doneContext();
     m_compositionContext.hwnd = hwnd;
+    m_compositionContext.focusObject = focusObject;
     // Create a hidden caret which is kept at the microfocus
     // position in update(). This is important for some
     // Chinese input methods.
@@ -484,6 +494,7 @@ void QWindowsInputContext::doneContext()
     m_compositionContext.composition.clear();
     m_compositionContext.position = 0;
     m_compositionContext.isComposing = m_compositionContext.haveCaret = false;
+    m_compositionContext.focusObject = 0;
 }
 
 bool QWindowsInputContext::handleIME_Request(WPARAM wParam,

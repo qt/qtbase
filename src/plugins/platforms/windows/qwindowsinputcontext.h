@@ -44,6 +44,7 @@
 
 #include "qtwindows_additional.h"
 
+#include <QtCore/QPointer>
 #include <qpa/qplatforminputcontext.h>
 
 QT_BEGIN_NAMESPACE
@@ -63,6 +64,7 @@ class QWindowsInputContext : public QPlatformInputContext
         QString composition;
         int position;
         bool isComposing;
+        QPointer<QObject> focusObject;
     };
 public:
     explicit QWindowsInputContext();
@@ -71,6 +73,7 @@ public:
     void reset() Q_DECL_OVERRIDE;
     void update(Qt::InputMethodQueries) Q_DECL_OVERRIDE;
     void invokeAction(QInputMethod::Action, int cursorPosition) Q_DECL_OVERRIDE;
+    void setFocusObject(QObject *object) Q_DECL_OVERRIDE;
 
     static QWindowsInputContext *instance();
 
@@ -86,7 +89,7 @@ private slots:
     void cursorRectChanged();
 
 private:
-    void initContext(HWND hwnd);
+    void initContext(HWND hwnd, QObject *focusObject);
     void doneContext();
     void startContextComposition();
     void endContextComposition();
