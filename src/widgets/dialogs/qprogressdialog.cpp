@@ -85,6 +85,7 @@ public:
     void layout();
     void retranslateStrings();
     void setCancelButtonText(const QString &cancelButtonText);
+    void adoptChildWidget(QWidget *c);
     void _q_disconnectOnClose();
 
     QLabel *label;
@@ -361,18 +362,7 @@ void QProgressDialog::setLabel(QLabel *label)
     }
     delete d->label;
     d->label = label;
-    if (label) {
-        if (label->parentWidget() == this) {
-            label->hide(); // until we resize
-        } else {
-            label->setParent(this, 0);
-        }
-    }
-    int w = qMax(isVisible() ? width() : 0, sizeHint().width());
-    int h = qMax(isVisible() ? height() : 0, sizeHint().height());
-    resize(w, h);
-    if (label)
-        label->show();
+    d->adoptChildWidget(label);
 }
 
 
@@ -424,11 +414,6 @@ void QProgressDialog::setCancelButton(QPushButton *cancelButton)
     delete d->cancel;
     d->cancel = cancelButton;
     if (cancelButton) {
-        if (cancelButton->parentWidget() == this) {
-            cancelButton->hide(); // until we resize
-        } else {
-            cancelButton->setParent(this, 0);
-        }
         connect(d->cancel, SIGNAL(clicked()), this, SIGNAL(canceled()));
 #ifndef QT_NO_SHORTCUT
         d->escapeShortcut = new QShortcut(Qt::Key_Escape, this, SIGNAL(canceled()));
@@ -439,11 +424,7 @@ void QProgressDialog::setCancelButton(QPushButton *cancelButton)
         d->escapeShortcut = 0;
 #endif
     }
-    int w = qMax(isVisible() ? width() : 0, sizeHint().width());
-    int h = qMax(isVisible() ? height() : 0, sizeHint().height());
-    resize(w, h);
-    if (cancelButton)
-        cancelButton->show();
+    d->adoptChildWidget(cancelButton);
 }
 
 /*!
@@ -505,17 +486,24 @@ void QProgressDialog::setBar(QProgressBar *bar)
     }
     delete d->bar;
     d->bar = bar;
-    if (bar) {
-        if (bar->parentWidget() == this)
-            bar->hide(); // until we resize
+    d->adoptChildWidget(bar);
+}
+
+void QProgressDialogPrivate::adoptChildWidget(QWidget *c)
+{
+    Q_Q(QProgressDialog);
+
+    if (c) {
+        if (c->parentWidget() == q)
+            c->hide(); // until we resize
         else
-            bar->setParent(this, 0);
+            c->setParent(q, 0);
     }
-    int w = qMax(isVisible() ? width() : 0, sizeHint().width());
-    int h = qMax(isVisible() ? height() : 0, sizeHint().height());
-    resize(w, h);
-    if (bar)
-        bar->show();
+    int w = qMax(q->isVisible() ? q->width()  : 0, q->sizeHint().width());
+    int h = qMax(q->isVisible() ? q->height() : 0, q->sizeHint().height());
+    q->resize(w, h);
+    if (c)
+        c->show();
 }
 
 
