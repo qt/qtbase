@@ -161,7 +161,10 @@ public:
         WheelScrollLines,
         ShowShortcutsInContextMenus,
         MouseQuickSelectionThreshold,
-        MouseDoubleClickDistance
+        MouseDoubleClickDistance,
+        FlickStartDistance,
+        FlickMaximumVelocity,
+        FlickDeceleration
     };
 
     virtual QVariant styleHint(StyleHint hint) const;

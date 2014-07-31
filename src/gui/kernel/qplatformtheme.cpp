@@ -513,6 +513,12 @@ QVariant QPlatformTheme::themeHint(ThemeHint hint) const
         return QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::ShowShortcutsInContextMenus);
     case QPlatformTheme::SetFocusOnTouchRelease:
         return QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::SetFocusOnTouchRelease);
+    case QPlatformTheme::FlickStartDistance:
+        return QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::FlickStartDistance);
+    case QPlatformTheme::FlickMaximumVelocity:
+        return QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::FlickMaximumVelocity);
+    case QPlatformTheme::FlickDeceleration:
+        return QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::FlickDeceleration);
     default:
         return QPlatformTheme::defaultThemeHint(hint);
     }
@@ -613,6 +619,12 @@ QVariant QPlatformTheme::defaultThemeHint(ThemeHint hint)
         return QVariant::fromValue(QList<Qt::Key>({ Qt::Key_Space, Qt::Key_Select }));
     case SetFocusOnTouchRelease:
         return false;
+    case FlickStartDistance:
+        return QVariant(15);
+    case FlickMaximumVelocity:
+        return QVariant(2500);
+    case FlickDeceleration:
+        return QVariant(5000);
     }
     return QVariant();
 }

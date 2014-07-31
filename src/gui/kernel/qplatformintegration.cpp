@@ -410,6 +410,12 @@ QVariant QPlatformIntegration::styleHint(StyleHint hint) const
         return QPlatformTheme::defaultThemeHint(QPlatformTheme::MouseQuickSelectionThreshold);
     case MouseDoubleClickDistance:
         return QPlatformTheme::defaultThemeHint(QPlatformTheme::MouseDoubleClickDistance);
+    case FlickStartDistance:
+        return QPlatformTheme::defaultThemeHint(QPlatformTheme::FlickStartDistance);
+    case FlickMaximumVelocity:
+        return QPlatformTheme::defaultThemeHint(QPlatformTheme::FlickMaximumVelocity);
+    case FlickDeceleration:
+        return QPlatformTheme::defaultThemeHint(QPlatformTheme::FlickDeceleration);
     }
 
     return 0;

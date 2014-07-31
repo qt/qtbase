@@ -88,7 +88,10 @@ public:
         ShowDirectoriesFirst,
         PreselectFirstFileInDirectory,
         ButtonPressKeys,
-        SetFocusOnTouchRelease
+        SetFocusOnTouchRelease,
+        FlickStartDistance,
+        FlickMaximumVelocity,
+        FlickDeceleration
     };
     Q_ENUM(ThemeHint)
 
