@@ -59,6 +59,11 @@
     QThreadPool. You can use the QFuture and QFutureWatcher classes to monitor
     the status of the function.
 
+    To use a dedicated thread pool, you can pass the QThreadPool as
+    the first argument:
+
+    \snippet code/src_concurrent_qtconcurrentrun.cpp explicit-pool-0
+
     \section1 Passing Arguments to the Function
 
     Passing arguments to the function is done by adding them to the
@@ -130,9 +135,31 @@
 /*!
     \fn QFuture<T> QtConcurrent::run(Function function, ...);
 
+    Equivalent to
+    \code
+    QtConcurrent::run(QThreadPool::globalInstance(), function, ...);
+    \endcode
+
     Runs \a function in a separate thread. The thread is taken from the global
-    QThreadPool. Note that the function may not run immediately; the function
-    will only be run when a thread is available.
+    QThreadPool. Note that \a function may not run immediately; \a function
+    will only be run once a thread becomes available.
+
+    T is the same type as the return value of \a function. Non-void return
+    values can be accessed via the QFuture::result() function.
+
+    Note that the QFuture returned by QtConcurrent::run() does not support
+    canceling, pausing, or progress reporting. The QFuture returned can only
+    be used to query for the running/finished status and the return value of
+    the function.
+*/
+
+/*!
+    \since 5.4
+    \fn QFuture<T> QtConcurrent::run(QThreadPool *pool, Function function, ...);
+
+    Runs \a function in a separate thread. The thread is taken from the
+    QThreadPool \a pool. Note that \a function may not run immediately; \a function
+    will only be run once a thread becomes available.
 
     T is the same type as the return value of \a function. Non-void return
     values can be accessed via the QFuture::result() function.

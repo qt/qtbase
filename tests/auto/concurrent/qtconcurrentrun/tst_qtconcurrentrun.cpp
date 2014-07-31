@@ -95,8 +95,9 @@ void tst_QtConcurrentRun::runLightFunction()
 
 void tst_QtConcurrentRun::runHeavyFunction()
 {
+    QThreadPool pool;
     qDebug("starting function");
-    QFuture<void> future = run(heavy);
+    QFuture<void> future = run(&pool, heavy);
     qDebug("waiting");
     future.waitForFinished();
     qDebug("done");
@@ -136,59 +137,94 @@ public:
 
 void tst_QtConcurrentRun::returnValue()
 {
+    QThreadPool pool;
     QFuture<int> f;
 
     f = run(returnInt0);
+    QCOMPARE(f.result(), 10);
+    f = run(&pool, returnInt0);
     QCOMPARE(f.result(), 10);
 
     A a;
     f = run(&a, &A::member0);
     QCOMPARE(f.result(), 10);
+    f = run(&pool, &a, &A::member0);
+    QCOMPARE(f.result(), 10);
 
     f = run(&a, &A::member1, 20);
+    QCOMPARE(f.result(), 20);
+    f = run(&pool, &a, &A::member1, 20);
     QCOMPARE(f.result(), 20);
 
     f = run(a, &A::member0);
     QCOMPARE(f.result(), 10);
+    f = run(&pool, a, &A::member0);
+    QCOMPARE(f.result(), 10);
 
     f = run(a, &A::member1, 20);
+    QCOMPARE(f.result(), 20);
+    f = run(&pool, a, &A::member1, 20);
     QCOMPARE(f.result(), 20);
 
     f = run(a);
     QCOMPARE(f.result(), 10);
+    f = run(&pool, a);
+    QCOMPARE(f.result(), 10);
 
     f = run(&a);
+    QCOMPARE(f.result(), 10);
+    f = run(&pool, &a);
     QCOMPARE(f.result(), 10);
 
     f = run(a, 20);
     QCOMPARE(f.result(), 20);
+    f = run(&pool, a, 20);
+    QCOMPARE(f.result(), 20);
 
     f = run(&a, 20);
+    QCOMPARE(f.result(), 20);
+    f = run(&pool, &a, 20);
     QCOMPARE(f.result(), 20);
 
     const AConst aConst = AConst();
     f = run(&aConst, &AConst::member0);
     QCOMPARE(f.result(), 10);
+    f = run(&pool, &aConst, &AConst::member0);
+    QCOMPARE(f.result(), 10);
 
     f = run(&aConst, &AConst::member1, 20);
+    QCOMPARE(f.result(), 20);
+    f = run(&pool, &aConst, &AConst::member1, 20);
     QCOMPARE(f.result(), 20);
 
     f = run(aConst, &AConst::member0);
     QCOMPARE(f.result(), 10);
+    f = run(&pool, aConst, &AConst::member0);
+    QCOMPARE(f.result(), 10);
 
     f = run(aConst, &AConst::member1, 20);
+    QCOMPARE(f.result(), 20);
+    f = run(&pool, aConst, &AConst::member1, 20);
     QCOMPARE(f.result(), 20);
 
     f = run(aConst);
     QCOMPARE(f.result(), 10);
+    f = run(&pool, aConst);
+    QCOMPARE(f.result(), 10);
 
     f = run(&aConst);
+    QCOMPARE(f.result(), 10);
+    f = run(&pool, &aConst);
     QCOMPARE(f.result(), 10);
 
     f = run(aConst, 20);
     QCOMPARE(f.result(), 20);
+    f = run(&pool, aConst, 20);
+    QCOMPARE(f.result(), 20);
 
     f = run(&aConst, 20);
+    QCOMPARE(f.result(), 20);
+    f = run(&pool, &aConst, 20);
     QCOMPARE(f.result(), 20);
 }
 
@@ -212,6 +248,7 @@ struct TestConstClass
 
 void tst_QtConcurrentRun::functionObject()
 {
+    QThreadPool pool;
     QFuture<void> f;
     TestClass c;
 
@@ -220,16 +257,28 @@ void tst_QtConcurrentRun::functionObject()
     f = run(c, 10);
     f = run(&c, 10);
 
+    f = run(&pool, c);
+    f = run(&pool, &c);
+    f = run(&pool, c, 10);
+    f = run(&pool, &c, 10);
+
     const TestConstClass cc = TestConstClass();
     f = run(cc);
     f = run(&cc);
     f = run(cc, 10);
     f = run(&cc, 10);
+
+    f = run(&pool, cc);
+    f = run(&pool, &cc);
+    f = run(&pool, cc, 10);
+    f = run(&pool, &cc, 10);
 }
 
 
 void tst_QtConcurrentRun::memberFunctions()
 {
+    QThreadPool pool;
+
     TestClass c;
 
     run(c, &TestClass::foo).waitForFinished();
@@ -237,11 +286,21 @@ void tst_QtConcurrentRun::memberFunctions()
     run(c, &TestClass::fooInt, 10).waitForFinished();
     run(&c, &TestClass::fooInt, 10).waitForFinished();
 
+    run(&pool, c, &TestClass::foo).waitForFinished();
+    run(&pool, &c, &TestClass::foo).waitForFinished();
+    run(&pool, c, &TestClass::fooInt, 10).waitForFinished();
+    run(&pool, &c, &TestClass::fooInt, 10).waitForFinished();
+
     const TestConstClass cc = TestConstClass();
     run(cc, &TestConstClass::foo).waitForFinished();
     run(&cc, &TestConstClass::foo).waitForFinished();
     run(cc, &TestConstClass::fooInt, 10).waitForFinished();
     run(&cc, &TestConstClass::fooInt, 10).waitForFinished();
+
+    run(&pool, cc, &TestConstClass::foo).waitForFinished();
+    run(&pool, &cc, &TestConstClass::foo).waitForFinished();
+    run(&pool, cc, &TestConstClass::fooInt, 10).waitForFinished();
+    run(&pool, &cc, &TestConstClass::fooInt, 10).waitForFinished();
 }
 
 
@@ -273,16 +332,25 @@ void stringIntFunction(QString)
 
 void tst_QtConcurrentRun::implicitConvertibleTypes()
 {
+    QThreadPool pool;
+
     double d;
     run(doubleFunction, d).waitForFinished();
+    run(&pool, doubleFunction, d).waitForFinished();
     int i;
     run(doubleFunction, d).waitForFinished();
+    run(&pool, doubleFunction, d).waitForFinished();
     run(doubleFunction, i).waitForFinished();
+    run(&pool, doubleFunction, i).waitForFinished();
     run(doubleFunction, 10).waitForFinished();
+    run(&pool, doubleFunction, 10).waitForFinished();
     run(stringFunction, QLatin1String("Foo")).waitForFinished();
+    run(&pool, stringFunction, QLatin1String("Foo")).waitForFinished();
     run(stringConstRefFunction, QLatin1String("Foo")).waitForFinished();
+    run(&pool, stringConstRefFunction, QLatin1String("Foo")).waitForFinished();
     QString string;
     run(stringRefFunction, string).waitForFinished();
+    run(&pool, stringRefFunction, string).waitForFinished();
 }
 
 void fn() { }
@@ -382,7 +450,10 @@ int throwFunctionReturn()
 
 void tst_QtConcurrentRun::exceptions()
 {
-    bool caught = false;
+    QThreadPool pool;
+    bool caught;
+
+    caught = false;
     try  {
         QtConcurrent::run(throwFunction).waitForFinished();
     } catch (QException &) {
@@ -393,7 +464,25 @@ void tst_QtConcurrentRun::exceptions()
 
     caught = false;
     try  {
+        QtConcurrent::run(&pool, throwFunction).waitForFinished();
+    } catch (QException &) {
+        caught = true;
+    }
+    if (!caught)
+        QFAIL("did not get exception");
+
+    caught = false;
+    try  {
         QtConcurrent::run(throwFunctionReturn).waitForFinished();
+    } catch (QException &) {
+        caught = true;
+    }
+    if (!caught)
+        QFAIL("did not get exception");
+
+    caught = false;
+    try  {
+        QtConcurrent::run(&pool, throwFunctionReturn).waitForFinished();
     } catch (QException &) {
         caught = true;
     }
@@ -438,6 +527,27 @@ void tst_QtConcurrentRun::functor()
         QtConcurrent::run(f, 1,2,3,4).waitForFinished();
         QtConcurrent::run(f, 1,2,3,4,5).waitForFinished();
     }
+    // and now with explicit pool:
+    QThreadPool pool;
+    {
+        QFuture<int> fut = QtConcurrent::run(&pool, f);
+        QCOMPARE(fut.result(), 42);
+    }
+    {
+        QFuture<double> fut = QtConcurrent::run(&pool, f, 8.5, 1.8);
+        QCOMPARE(fut.result(), (8.5/1.8));
+    }
+    {
+        QFuture<int> fut = QtConcurrent::run(&pool, f, 19, 3);
+        QCOMPARE(fut.result(), int(19/3));
+    }
+    {
+        QtConcurrent::run(&pool, f, 1).waitForFinished();
+        QtConcurrent::run(&pool, f, 1,2).waitForFinished();
+        QtConcurrent::run(&pool, f, 1,2,3).waitForFinished();
+        QtConcurrent::run(&pool, f, 1,2,3,4).waitForFinished();
+        QtConcurrent::run(&pool, f, 1,2,3,4,5).waitForFinished();
+    }
 }
 #endif
 
@@ -454,6 +564,22 @@ void tst_QtConcurrentRun::lambda()
     {
         QString str { "Hello World Foo" };
         QFuture<QStringList> f1 = QtConcurrent::run([&](){ return str.split(' '); });
+        auto r = f1.result();
+        QCOMPARE(r, QStringList({"Hello", "World", "Foo"}));
+    }
+#endif
+
+    // and now with explicit pool:
+    QThreadPool pool;
+    QCOMPARE(QtConcurrent::run(&pool, [](){ return 45; }).result(), 45);
+    QCOMPARE(QtConcurrent::run(&pool, [](int a){ return a+15; }, 12).result(), 12+15);
+    QCOMPARE(QtConcurrent::run(&pool, [](int a, double b){ return a + b; }, 12, 15).result(), double(12+15));
+    QCOMPARE(QtConcurrent::run(&pool, [](int a , int, int, int, int b){ return a + b; }, 1, 2, 3, 4, 5).result(), 1 + 5);
+
+#ifdef Q_COMPILER_INITIALIZER_LISTS
+    {
+        QString str { "Hello World Foo" };
+        QFuture<QStringList> f1 = QtConcurrent::run(&pool, [&](){ return str.split(' '); });
         auto r = f1.result();
         QCOMPARE(r, QStringList({"Hello", "World", "Foo"}));
     }
