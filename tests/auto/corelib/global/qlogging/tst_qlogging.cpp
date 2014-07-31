@@ -765,9 +765,9 @@ void tst_qmessagehandler::qMessagePattern_data()
             << "A DEBUG qDebug  "
             << "A  qWarning  ");
 
-    QTest::newRow("pid") << "%{pid}: %{message}"
+    QTest::newRow("pid-tid") << "%{pid}/%{threadid}: %{message}"
          << true << QList<QByteArray>(); // can't match anything, just test validity
-    QTest::newRow("threadid") << "ThreadId:%{threadid}: %{message}"
+    QTest::newRow("qthreadptr") << "ThreadId:%{qthreadptr}: %{message}"
          << true << (QList<QByteArray>()
               << "ThreadId:0x");
 

@@ -76,7 +76,8 @@
 #  define __has_include(x) 0
 #endif
 
-#if !defined QT_NO_REGULAREXPRESSION && !defined(QT_BOOTSTRAPPED)
+#ifndef QT_BOOTSTRAPPED
+#if !defined QT_NO_REGULAREXPRESSION
 #  if (defined(__GLIBC__) && defined(__GLIBCXX__)) || (__has_include(<cxxabi.h>) && __has_include(<execinfo.h>))
 #    define QLOGGING_HAVE_BACKTRACE
 #    include <qregularexpression.h>
@@ -84,6 +85,38 @@
 #    include <execinfo.h>
 #  endif
 #endif
+
+#if defined(Q_OS_LINUX) && (defined(__GLIBC__) || __has_include(<sys/syscall.h>))
+#  include <sys/syscall.h>
+static long qt_gettid()
+{
+    // no error handling
+    // this syscall has existed since Linux 2.4.11 and cannot fail
+    return syscall(SYS_gettid);
+}
+#elif defined(Q_OS_DARWIN)
+#  include <pthread.h>
+static int qt_gettid()
+{
+    // no error handling: this call cannot fail
+    __uint64_t tid;
+    pthread_threadid_np(NULL, &tid);
+    return tid;
+}
+#elif defined(Q_OS_FREEBSD_KERNEL)
+#  include <pthread.h>
+static int qt_gettid()
+{
+    return pthread_getthreadid_np();
+}
+#else
+static QT_PREPEND_NAMESPACE(qint64) qt_gettid()
+{
+    QT_USE_NAMESPACE
+    return qintptr(QThread::currentThreadId());
+}
+#endif
+#endif // !QT_BOOTSTRAPPED
 
 #include <stdio.h>
 
@@ -802,6 +835,7 @@ static const char functionTokenC[] = "%{function}";
 static const char pidTokenC[] = "%{pid}";
 static const char appnameTokenC[] = "%{appname}";
 static const char threadidTokenC[] = "%{threadid}";
+static const char qthreadptrTokenC[] = "%{qthreadptr}";
 static const char timeTokenC[] = "%{time"; //not a typo: this command has arguments
 static const char backtraceTokenC[] = "%{backtrace"; //ditto
 static const char ifCategoryTokenC[] = "%{if-category}";
@@ -938,6 +972,8 @@ void QMessagePattern::setPattern(const QString &pattern)
                 tokens[i] = appnameTokenC;
             else if (lexeme == QLatin1String(threadidTokenC))
                 tokens[i] = threadidTokenC;
+            else if (lexeme == QLatin1String(qthreadptrTokenC))
+                tokens[i] = qthreadptrTokenC;
             else if (lexeme.startsWith(QLatin1String(timeTokenC))) {
                 tokens[i] = timeTokenC;
                 int spaceIdx = lexeme.indexOf(QChar::fromLatin1(' '));
@@ -1135,6 +1171,9 @@ QString qFormatLogMessage(QtMsgType type, const QMessageLogContext &context, con
         } else if (token == appnameTokenC) {
             message.append(QCoreApplication::applicationName());
         } else if (token == threadidTokenC) {
+            // print the TID as decimal
+            message.append(QString::number(qt_gettid()));
+        } else if (token == qthreadptrTokenC) {
             message.append(QLatin1String("0x"));
             message.append(QString::number(qlonglong(QThread::currentThread()->currentThread()), 16));
 #ifdef QLOGGING_HAVE_BACKTRACE
@@ -1550,7 +1589,8 @@ void qErrnoWarning(int code, const char *msg, ...)
     \row \li \c %{line} \li Line in source file
     \row \li \c %{message} \li The actual message
     \row \li \c %{pid} \li QCoreApplication::applicationPid()
-    \row \li \c %{threadid} \li ID of current thread
+    \row \li \c %{threadid} \li The system-wide ID of current thread (if it can be obtained)
+    \row \li \c %{qthreadptr} \li A pointer to the current QThread (result of QThread::currentThread())
     \row \li \c %{type} \li "debug", "warning", "critical" or "fatal"
     \row \li \c %{time process} \li time of the message, in seconds since the process started (the token "process" is literal)
     \row \li \c %{time boot} \li the time of the message, in seconds since the system boot if that
