@@ -828,6 +828,9 @@ struct QMessagePattern {
     const char **literals;
     const char **tokens;
     QString timeFormat;
+#ifndef QT_BOOTSTRAPPED
+    QElapsedTimer timer;
+#endif
 #ifdef QLOGGING_HAVE_BACKTRACE
     int backtraceDepth;
     QString backtraceSeparator;
@@ -835,10 +838,6 @@ struct QMessagePattern {
 
     bool fromEnvironment;
     static QBasicMutex mutex;
-#ifndef QT_BOOTSTRAPPED
-    QElapsedTimer timer;
-    QDateTime startTime;
-#endif
 };
 
 QBasicMutex QMessagePattern::mutex;
@@ -851,9 +850,6 @@ QMessagePattern::QMessagePattern()
     , backtraceSeparator(QLatin1Char('|'))
 #endif
     , fromEnvironment(false)
-#ifndef QT_BOOTSTRAPPED
-    , startTime(QDateTime::currentDateTime())
-#endif
 {
 #ifndef QT_BOOTSTRAPPED
     timer.start();
@@ -1203,6 +1199,12 @@ QString qFormatLogMessage(QtMsgType type, const QMessageLogContext &context, con
         } else if (token == timeTokenC) {
             if (pattern->timeFormat == QLatin1String("process")) {
                 quint64 ms = pattern->timer.elapsed();
+                message.append(QString().sprintf("%6d.%03d", uint(ms / 1000), uint(ms % 1000)));
+            } else if (pattern->timeFormat == QLatin1String("boot")) {
+                // just print the milliseconds since the elapsed timer reference
+                // like the Linux kernel does
+                pattern->timer.elapsed();
+                uint ms = pattern->timer.msecsSinceReference();
                 message.append(QString().sprintf("%6d.%03d", uint(ms / 1000), uint(ms % 1000)));
             } else if (pattern->timeFormat.isEmpty()) {
                 message.append(QDateTime::currentDateTime().toString(Qt::ISODate));
@@ -1554,6 +1556,9 @@ void qErrnoWarning(int code, const char *msg, ...)
     \row \li \c %{threadid} \li ID of current thread
     \row \li \c %{type} \li "debug", "warning", "critical" or "fatal"
     \row \li \c %{time process} \li time of the message, in seconds since the process started (the token "process" is literal)
+    \row \li \c %{time boot} \li the time of the message, in seconds since the system boot if that
+        can be determined (the token "boot" is literal). If the time since boot could not be obtained,
+        the output is indeterminate (see QElapsedTimer::msecsSinceReference()).
     \row \li \c %{time [format]} \li system time when the message occurred, formatted by
         passing the \c format to \l QDateTime::toString(). If the format is
         not specified, the format of Qt::ISODate is used.
