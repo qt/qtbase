@@ -1597,7 +1597,6 @@ QXcbWindowFunctions::WmWindowTypes QXcbWindow::wmWindowTypes() const
                 result |= QXcbWindowFunctions::Desktop;
                 break;
             case QXcbAtom::_NET_WM_WINDOW_TYPE_DOCK:
-                qDebug() << "IS DOCK";
                 result |= QXcbWindowFunctions::Dock;
                 break;
             case QXcbAtom::_NET_WM_WINDOW_TYPE_TOOLBAR:
@@ -1653,10 +1652,8 @@ void QXcbWindow::setWmWindowType(QXcbWindowFunctions::WmWindowTypes types)
         atoms.append(atom(QXcbAtom::_NET_WM_WINDOW_TYPE_NORMAL));
     if (types & QXcbWindowFunctions::Desktop)
         atoms.append(atom(QXcbAtom::_NET_WM_WINDOW_TYPE_DESKTOP));
-    if (types & QXcbWindowFunctions::Dock) {
-        qDebug() << "setting to be dock";
+    if (types & QXcbWindowFunctions::Dock)
         atoms.append(atom(QXcbAtom::_NET_WM_WINDOW_TYPE_DOCK));
-    }
     if (types & QXcbWindowFunctions::Toolbar)
         atoms.append(atom(QXcbAtom::_NET_WM_WINDOW_TYPE_TOOLBAR));
     if (types & QXcbWindowFunctions::Menu)
