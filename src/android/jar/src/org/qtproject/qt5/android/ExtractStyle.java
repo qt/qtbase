@@ -90,6 +90,9 @@ public class ExtractStyle {
 
     native static int[] extractChunkInfo(byte[] chunkData);
     native static int[] extractNativeChunkInfo(int nativeChunk);
+    native static int[] extractChunkInfo20(byte[] chunkData);
+    native static int[] extractNativeChunkInfo20(long nativeChunk);
+
 
     Class<?> styleableClass = getStylableClass();
     final int[] EMPTY_STATE_SET = {};
@@ -337,7 +340,10 @@ public class ExtractStyle {
         }
 
         public void drawPatch(Bitmap bmp, byte[] chunks, RectF dst, Paint paint) {
-            chunkData = extractChunkInfo(chunks);
+            if (Build.VERSION.SDK_INT > 19)
+                chunkData = extractChunkInfo20(chunks);
+            else
+                chunkData = extractChunkInfo(chunks);
         }
     }
 
@@ -630,6 +636,8 @@ public class ExtractStyle {
                 JSONObject stateJson = new JSONObject();
                 final Drawable d =  (Drawable) StateListDrawable.class.getMethod("getStateDrawable", Integer.TYPE).invoke(stateList, i);
                 final int [] states = (int[]) StateListDrawable.class.getMethod("getStateSet", Integer.TYPE).invoke(stateList, i);
+                if (states == null)
+                    continue;
                 stateJson.put("states", getStatesList(states));
                 stateJson.put("drawable", getDrawable(d, filename+"__"+getStatesName(states)));
                 array.put(stateJson);
@@ -658,9 +666,7 @@ public class ExtractStyle {
             int [] intArray=(int[]) gradientStateClass.getField("mColors").get(obj);
             json.put("colors",getJsonArray(intArray, 0, intArray.length));
             json.put("positions",getJsonArray((float[]) gradientStateClass.getField("mPositions").get(obj)));
-            json.put("solidColor",gradientStateClass.getField("mSolidColor").getInt(obj));
             json.put("strokeWidth",gradientStateClass.getField("mStrokeWidth").getInt(obj));
-            json.put("strokeColor",gradientStateClass.getField("mStrokeColor").getInt(obj));
             json.put("strokeDashWidth",gradientStateClass.getField("mStrokeDashWidth").getFloat(obj));
             json.put("strokeDashGap",gradientStateClass.getField("mStrokeDashGap").getFloat(obj));
             json.put("radius",gradientStateClass.getField("mRadius").getFloat(obj));
@@ -676,6 +682,10 @@ public class ExtractStyle {
             json.put("thicknessRatio",gradientStateClass.getField("mThicknessRatio").getFloat(obj));
             json.put("innerRadius",gradientStateClass.getField("mInnerRadius").getInt(obj));
             json.put("thickness",gradientStateClass.getField("mThickness").getInt(obj));
+            if (Build.VERSION.SDK_INT < 20) {
+                json.put("solidColor",gradientStateClass.getField("mSolidColor").getInt(obj));
+                json.put("strokeColor",gradientStateClass.getField("mStrokeColor").getInt(obj));
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -789,6 +799,8 @@ public class ExtractStyle {
         {
             Field mNativeChunk = np.getClass().getDeclaredField("mNativeChunk");
             mNativeChunk.setAccessible(true);
+            if (Build.VERSION.SDK_INT > 19)
+                return getJsonChunkInfo(extractNativeChunkInfo20(mNativeChunk.getLong(np)));
             return getJsonChunkInfo(extractNativeChunkInfo(mNativeChunk.getInt(np)));
         }
     }

@@ -114,4 +114,57 @@ struct Res_png_9patch
     static Res_png_9patch* deserialize(const void* data);
 };
 
+struct Res_png_9patch20
+{
+    Res_png_9patch20() : wasDeserialized(false), numXDivs(0), numYDivs(0), numColors(0), xDivsOffset(0),
+                       yDivsOffset(0),paddingLeft(0), paddingRight(0), paddingTop(0), paddingBottom(0),
+                       colorsOffset(0) { }
+
+    int8_t wasDeserialized;
+    int8_t numXDivs;
+    int8_t numYDivs;
+    int8_t numColors;
+
+    // The offset (from the start of this structure) to the xDivs & yDivs
+    // array for this 9patch. To get a pointer to this array, call
+    // getXDivs or getYDivs. Note that the serialized form for 9patches places
+    // the xDivs, yDivs and colors arrays immediately after the location
+    // of the Res_png_9patch struct.
+    uint32_t xDivsOffset;
+    uint32_t yDivsOffset;
+
+    int32_t paddingLeft, paddingRight;
+    int32_t paddingTop, paddingBottom;
+
+    enum {
+        // The 9 patch segment is not a solid color.
+        NO_COLOR = 0x00000001,
+
+        // The 9 patch segment is completely transparent.
+        TRANSPARENT_COLOR = 0x00000000
+    };
+
+    // The offset (from the start of this structure) to the colors array
+    // for this 9patch.
+    uint32_t colorsOffset;
+
+    // Deserialize/Unmarshall the patch data
+    static Res_png_9patch20* deserialize(void* data);
+
+    // These tell where the next section of a patch starts.
+    // For example, the first patch includes the pixels from
+    // 0 to xDivs[0]-1 and the second patch includes the pixels
+    // from xDivs[0] to xDivs[1]-1.
+    inline int32_t* getXDivs() const {
+        return reinterpret_cast<int32_t*>(reinterpret_cast<uintptr_t>(this) + xDivsOffset);
+    }
+    inline int32_t* getYDivs() const {
+        return reinterpret_cast<int32_t*>(reinterpret_cast<uintptr_t>(this) + yDivsOffset);
+    }
+    inline uint32_t* getColors() const {
+        return reinterpret_cast<uint32_t*>(reinterpret_cast<uintptr_t>(this) + colorsOffset);
+    }
+
+} __attribute__((packed));
+
 #endif
