@@ -619,6 +619,7 @@ private:
     uint32_t xfixes_first_event;
     uint32_t xrandr_first_event;
     uint32_t xkb_first_event;
+    uint32_t glx_first_event;
 
     bool has_glx_extension;
     bool has_shape_extension;

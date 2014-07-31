@@ -126,6 +126,39 @@ static int ioErrorHandler(Display *dpy)
 }
 #endif
 
+#if defined(XCB_HAS_XCB_GLX) && XCB_GLX_MAJOR_VERSION == 1 && XCB_GLX_MINOR_VERSION < 4
+
+#define XCB_GLX_BUFFER_SWAP_COMPLETE 1
+
+typedef struct xcb_glx_buffer_swap_complete_event_t {
+    uint8_t            response_type;
+    uint8_t            pad0;
+    uint16_t           sequence;
+    uint16_t           event_type;
+    uint8_t            pad1[2];
+    xcb_glx_drawable_t drawable;
+    uint32_t           ust_hi;
+    uint32_t           ust_lo;
+    uint32_t           msc_hi;
+    uint32_t           msc_lo;
+    uint32_t           sbc;
+} xcb_glx_buffer_swap_complete_event_t;
+#endif
+
+#if defined(XCB_USE_XLIB) && defined(XCB_USE_GLX)
+typedef struct {
+    int type;
+    unsigned long serial;       /* # of last request processed by server */
+    Bool send_event;            /* true if this came from a SendEvent request */
+    Display *display;           /* Display the event was read from */
+    Drawable drawable;  /* drawable on which event was requested in event mask */
+    int event_type;
+    int64_t ust;
+    int64_t msc;
+    int64_t sbc;
+} QGLXBufferSwapComplete;
+#endif
+
 QXcbScreen* QXcbConnection::findOrCreateScreen(QList<QXcbScreen *>& newScreens,
     int screenNumber, xcb_screen_t* xcbScreen, xcb_randr_get_output_info_reply_t *output)
 {
@@ -287,6 +320,7 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
     , xfixes_first_event(0)
     , xrandr_first_event(0)
     , xkb_first_event(0)
+    , glx_first_event(0)
     , has_glx_extension(false)
     , has_shape_extension(false)
     , has_randr_extension(false)
@@ -969,14 +1003,43 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
         // XESetWireToEvent might be used by libraries to intercept messages from the X server e.g. the OpenGL lib waiting for DRI2 events.
         Display *xdisplay = (Display *)m_xlib_display;
         XLockDisplay(xdisplay);
+        bool locked = true;
         Bool (*proc)(Display*, XEvent*, xEvent*) = XESetWireToEvent(xdisplay, response_type, 0);
         if (proc) {
             XESetWireToEvent(xdisplay, response_type, proc);
             XEvent dummy;
             event->sequence = LastKnownRequestProcessed(m_xlib_display);
-            proc(xdisplay, &dummy, (xEvent*)event);
+            if (proc(xdisplay, &dummy, (xEvent*)event)) {
+#if defined(XCB_USE_GLX) && defined(XCB_HAS_XCB_GLX)
+                // DRI2 clients don't receive GLXBufferSwapComplete events on the wire.
+                // Instead the GLX event is synthesized from the DRI2BufferSwapComplete event
+                // by DRI2WireToEvent(). For an application to be able to see the event
+                // we have to convert it to an xcb_glx_buffer_swap_complete_event_t and
+                // pass it to the native event filter.
+                const uint swap_complete = glx_first_event + XCB_GLX_BUFFER_SWAP_COMPLETE;
+                if (dispatcher && has_glx_extension && uint(dummy.type) == swap_complete && response_type != swap_complete) {
+                    QGLXBufferSwapComplete *xev = reinterpret_cast<QGLXBufferSwapComplete *>(&dummy);
+                    xcb_glx_buffer_swap_complete_event_t ev;
+                    memset(&ev, 0, sizeof(xcb_glx_buffer_swap_complete_event_t));
+                    ev.response_type = xev->type;
+                    ev.sequence = xev->serial;
+                    ev.event_type = xev->event_type;
+                    ev.drawable = xev->drawable;
+                    ev.ust_hi = xev->ust >> 32;
+                    ev.ust_lo = xev->ust & 0xffffffff;
+                    ev.msc_hi = xev->msc >> 32;
+                    ev.msc_lo = xev->msc & 0xffffffff;
+                    ev.sbc = xev->sbc & 0xffffffff;
+                    // Unlock the display before calling the native event filter
+                    XUnlockDisplay(xdisplay);
+                    locked = false;
+                    handled = dispatcher->filterNativeEvent(m_nativeInterface->genericEventFilterType(), &ev, &result);
+                }
+#endif
+            }
         }
-        XUnlockDisplay(xdisplay);
+        if (locked)
+            XUnlockDisplay(xdisplay);
     }
 #endif
 
@@ -1629,6 +1692,7 @@ void QXcbConnection::initializeGLX()
         return;
 
     has_glx_extension = true;
+    glx_first_event = reply->first_event;
 
     xcb_generic_error_t *error = 0;
     xcb_glx_query_version_cookie_t xglx_query_cookie = xcb_glx_query_version(m_connection,
