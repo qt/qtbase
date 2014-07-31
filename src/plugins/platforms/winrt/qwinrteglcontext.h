@@ -51,6 +51,8 @@ class QWinRTEGLContext : public QEGLPlatformContext
 public:
     explicit QWinRTEGLContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display, EGLSurface surface);
 
+    QFunctionPointer getProcAddress(const QByteArray &procName) Q_DECL_OVERRIDE;
+
 protected:
     EGLSurface eglSurfaceForPlatformSurface(QPlatformSurface *surface);
 
