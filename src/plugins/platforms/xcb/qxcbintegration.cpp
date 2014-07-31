@@ -472,21 +472,23 @@ QVariant QXcbIntegration::styleHint(QPlatformIntegration::StyleHint hint) const
     case QPlatformIntegration::StartDragVelocity:
     case QPlatformIntegration::UseRtlExtensions:
     case QPlatformIntegration::PasswordMaskCharacter:
+    case QPlatformIntegration::FlickMaximumVelocity:
+    case QPlatformIntegration::FlickDeceleration:
         // TODO using various xcb, gnome or KDE settings
         break; // Not implemented, use defaults
+    case QPlatformIntegration::FlickStartDistance:
     case QPlatformIntegration::StartDragDistance: {
         RETURN_VALID_XSETTINGS(xsNetDndDragThreshold);
-
         // The default (in QPlatformTheme::defaultThemeHint) is 10 pixels, but
         // on a high-resolution screen it makes sense to increase it.
-        qreal dpi = 100.0;
+        qreal dpi = 100;
         if (const QXcbScreen *screen = connection()->primaryScreen()) {
             if (screen->logicalDpi().first > dpi)
                 dpi = screen->logicalDpi().first;
             if (screen->logicalDpi().second > dpi)
                 dpi = screen->logicalDpi().second;
         }
-        return 10.0 * dpi / 100.0;
+        return (hint == QPlatformIntegration::FlickStartDistance ? qreal(15) : qreal(10)) * dpi / qreal(100);
     }
     case QPlatformIntegration::ShowIsFullScreen:
         // X11 always has support for windows, but the
