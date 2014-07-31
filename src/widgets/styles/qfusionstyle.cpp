@@ -1608,8 +1608,8 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
                 else
                     pixmap = menuItem->icon.pixmap(iconSize, mode);
 
-                int pixw = pixmap.width();
-                int pixh = pixmap.height();
+                const int pixw = pixmap.width() / pixmap.devicePixelRatio();
+                const int pixh = pixmap.height() / pixmap.devicePixelRatio();
 
                 QRect pmr(0, 0, pixw, pixh);
                 pmr.moveCenter(vCheckRect.center());
