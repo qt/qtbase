@@ -1842,9 +1842,26 @@ QXcbSystemTrayTracker *QXcbConnection::systemTrayTracker()
     return m_systemTrayTracker;
 }
 
-void QXcbConnection::syncWindow(QXcbWindow *window)
+bool QXcbConnection::event(QEvent *e)
 {
-    window->updateSyncRequestCounter();
+    if (e->type() == QEvent::User + 1) {
+        QXcbSyncWindowRequest *ev = static_cast<QXcbSyncWindowRequest *>(e);
+        QXcbWindow *w = ev->window();
+        if (w) {
+            w->updateSyncRequestCounter();
+            ev->invalidate();
+        }
+        return true;
+    }
+    return QObject::event(e);
+}
+
+void QXcbSyncWindowRequest::invalidate()
+{
+    if (m_window) {
+        m_window->clearSyncWindowRequest();
+        m_window = 0;
+    }
 }
 
 QXcbConnectionGrabber::QXcbConnectionGrabber(QXcbConnection *connection)

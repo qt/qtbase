@@ -223,6 +223,7 @@ QXcbWindow::QXcbWindow(QWindow *window)
 #endif
     , m_lastWindowStateEvent(-1)
     , m_syncState(NoSyncNeeded)
+    , m_pendingSyncRequest(0)
 {
     m_screen = static_cast<QXcbScreen *>(window->screen()->handle());
 
@@ -565,6 +566,9 @@ void QXcbWindow::destroy()
     delete m_eglSurface;
     m_eglSurface = 0;
 #endif
+
+    if (m_pendingSyncRequest)
+        m_pendingSyncRequest->invalidate();
 }
 
 void QXcbWindow::setGeometry(const QRect &rect)
@@ -2369,6 +2373,15 @@ void QXcbWindow::setAlertState(bool enabled)
 bool QXcbWindow::needsSync() const
 {
     return m_syncState == SyncAndConfigureReceived;
+}
+
+void QXcbWindow::postSyncWindowRequest()
+{
+    if (!m_pendingSyncRequest) {
+        QXcbSyncWindowRequest *e = new QXcbSyncWindowRequest(this);
+        m_pendingSyncRequest = e;
+        QCoreApplication::postEvent(m_screen->connection(), e);
+    }
 }
 
 QT_END_NAMESPACE

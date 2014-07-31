@@ -355,6 +355,18 @@ public:
 
 typedef QHash<xcb_window_t, QXcbWindowEventListener *> WindowMapper;
 
+class QXcbSyncWindowRequest : public QEvent
+{
+public:
+    QXcbSyncWindowRequest(QXcbWindow *w) : QEvent(QEvent::Type(QEvent::User + 1)), m_window(w) { }
+
+    QXcbWindow *window() const { return m_window; }
+    void invalidate();
+
+private:
+    QXcbWindow *m_window;
+};
+
 class QAbstractEventDispatcher;
 class QXcbConnection : public QObject
 {
@@ -468,8 +480,10 @@ public:
 
     QXcbEventReader *eventReader() const { return m_reader; }
 
+protected:
+    bool event(QEvent *e) Q_DECL_OVERRIDE;
+
 public slots:
-    void syncWindow(QXcbWindow *window);
     void flush() { xcb_flush(m_connection); }
 
 private slots:

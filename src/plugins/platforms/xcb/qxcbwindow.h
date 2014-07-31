@@ -57,7 +57,9 @@ QT_BEGIN_NAMESPACE
 
 class QXcbScreen;
 class QXcbEGLSurface;
+class QXcbSyncWindowRequest;
 class QIcon;
+
 class QXcbWindow : public QXcbObject, public QXcbWindowEventListener, public QPlatformWindow
 {
 public:
@@ -159,6 +161,9 @@ public:
 
     bool needsSync() const;
 
+    void postSyncWindowRequest();
+    void clearSyncWindowRequest() { m_pendingSyncRequest = 0; }
+
 public Q_SLOTS:
     void updateSyncRequestCounter();
 
@@ -235,6 +240,8 @@ private:
         SyncAndConfigureReceived
     };
     SyncState m_syncState;
+
+    QXcbSyncWindowRequest *m_pendingSyncRequest;
 };
 
 QT_END_NAMESPACE

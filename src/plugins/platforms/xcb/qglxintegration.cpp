@@ -523,11 +523,11 @@ void QGLXContext::swapBuffers(QPlatformSurface *surface)
 
     if (surface->surface()->surfaceClass() == QSurface::Window) {
         QXcbWindow *platformWindow = static_cast<QXcbWindow *>(surface);
-        // OpenGL context might be bound to a non-gui thread
-        // use QueuedConnection to sync the window from the platformWindow's thread
-        // as QXcbWindow is no QObject, a wrapper slot in QXcbConnection is used.
+        // OpenGL context might be bound to a non-gui thread use QueuedConnection to sync
+        // the window from the platformWindow's thread as QXcbWindow is no QObject, an
+        // event is sent to QXcbConnection. (this is faster than a metacall)
         if (platformWindow->needsSync())
-            QMetaObject::invokeMethod(m_screen->connection(), "syncWindow", Qt::QueuedConnection, Q_ARG(QXcbWindow*, platformWindow));
+            platformWindow->postSyncWindowRequest();
     }
 }
 
