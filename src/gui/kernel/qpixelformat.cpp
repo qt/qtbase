@@ -287,19 +287,19 @@ Q_STATIC_ASSERT(sizeof(QPixelFormatRgb) == sizeof(QPixelFormat));
     \sa TypeInterpretation
 */
 
-Q_STATIC_ASSERT(sizeof(QPixelFormatGrayScale) == sizeof(QPixelFormat));
+Q_STATIC_ASSERT(sizeof(QPixelFormatGrayscale) == sizeof(QPixelFormat));
 /*!
-    \class QPixelFormatGrayScale
+    \class QPixelFormatGrayscale
     \inmodule QtGui
     \since 5.4
-    \brief QPixelFormatGrayScale is a helper class for creating pixel formats with
+    \brief QPixelFormatGrayscale is a helper class for creating pixel formats with
     the gray scale color model.
 
-    The size of QPixelFormatGrayScale is guaranteed to be the size of QPixelFormat.
+    The size of QPixelFormatGrayscale is guaranteed to be the size of QPixelFormat.
 */
 
 /*!
-    \fn QPixelFormatGrayScale::QPixelFormatGrayScale(uchar channelSize,
+    \fn QPixelFormatGrayscale::QPixelFormatGrayscale(uchar channelSize,
                                                      TypeInterpretation typeInterpretation = UnsignedInteger)
 
     Constructor for creating a Grayscale format. Monochrome formats can be

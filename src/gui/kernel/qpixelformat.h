@@ -198,11 +198,11 @@ public:
                            TypeInterpretation typeInterpretation = UnsignedInteger) Q_DECL_NOTHROW;
 };
 
-class QPixelFormatGrayScale : public QPixelFormat
+class QPixelFormatGrayscale : public QPixelFormat
 {
 public:
     Q_DECL_CONSTEXPR
-    inline QPixelFormatGrayScale(uchar bufferSize,
+    inline QPixelFormatGrayscale(uchar bufferSize,
                                  TypeInterpretation typeInterpretation = UnsignedInteger) Q_DECL_NOTHROW;
 };
 
@@ -359,7 +359,7 @@ QPixelFormatRgb::QPixelFormatRgb(uchar red,
 { }
 
 Q_DECL_CONSTEXPR
-QPixelFormatGrayScale::QPixelFormatGrayScale(uchar channelSize,
+QPixelFormatGrayscale::QPixelFormatGrayscale(uchar channelSize,
                                              TypeInterpretation typeInt) Q_DECL_NOTHROW
     : QPixelFormat(Grayscale,
                    channelSize,
