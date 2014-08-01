@@ -47,6 +47,8 @@ class QIOSScreen;
     QIOSScreen *m_screen;
 }
 
+@property (nonatomic, assign) BOOL changingOrientation;
+
 - (id)initWithQIOSScreen:(QIOSScreen *)screen;
 - (BOOL)prefersStatusBarHidden;
 @end

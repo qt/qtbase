@@ -145,6 +145,8 @@
             && [UIApplication sharedApplication].statusBarStyle == UIStatusBarStyleDefault)
             [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleBlackTranslucent];
 #endif
+
+        self.changingOrientation = NO;
     }
 
     return self;
@@ -195,11 +197,34 @@
 }
 #endif
 
+- (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)orientation duration:(NSTimeInterval)duration
+{
+    Q_UNUSED(orientation);
+    Q_UNUSED(duration);
+
+    self.changingOrientation = YES;
+}
+
+- (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)orientation
+{
+    Q_UNUSED(orientation);
+
+    self.changingOrientation = NO;
+}
+
 - (void)willChangeStatusBarFrame:(NSNotification*)notification
 {
     Q_UNUSED(notification);
 
     if (self.view.window.screen != [UIScreen mainScreen])
+        return;
+
+    // Orientation changes will already result in laying out subviews, so we don't
+    // need to do anything extra for frame changes during an orientation change.
+    // Technically we can receive another actual statusbar frame update during the
+    // orientation change that we should react to, but to simplify the logic we
+    // use a simple bool variable instead of a ignoreNextFrameChange approach.
+    if (self.changingOrientation)
         return;
 
     // UIKit doesn't have a delegate callback for statusbar changes that's run inside the
