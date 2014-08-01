@@ -242,6 +242,26 @@ public:
     int &operator--() { ADD("TestClass1::operator--"); return x; }
     int operator--(int) { ADD("TestClass1::operator--"); return 0; }
 
+#ifdef Q_COMPILER_REF_QUALIFIERS
+    int lvalue() & { ADD("TestClass1::lvalue"); return 0; }
+    int const_lvalue() const & { ADD("TestClass1::const_lvalue"); return 0; }
+    int rvalue() && { ADD("TestClass1::rvalue"); return 0; }
+    int const_rvalue() const && { ADD("TestClass1::const_rvalue"); return 0; }
+#endif
+#ifdef Q_COMPILER_DECLTYPE
+    int decltype_param(int x = 0, decltype(x) = 0) { ADD("TestClass1::decltype_param"); return x; }
+    template<typename T> int decltype_template_param(T x = 0, decltype(x) = 0)
+    { ADD("TestClass1::decltype_template_param"); return x; }
+    template<typename T> void decltype_template_param2(T x, decltype(x + QString()))
+    { ADD("TestClass1::decltype_template_param2"); }
+#  ifdef Q_COMPILER_AUTO_FUNCTION
+    auto decltype_return(int x = 0) -> decltype(x)
+    { ADD("TestClass1::decltype_return"); return x; }
+    template <typename T> auto decltype_template_return(T x = 0) -> decltype(x)
+    { ADD("TestClass1::decltype_template_return"); return x; }
+#  endif
+#endif
+
 public:
     TestClass1()
         {
@@ -287,6 +307,22 @@ public:
             operator++(0);
             operator--();
             operator--(0);
+
+#ifdef Q_COMPILER_REF_QUALIFIERS
+            lvalue();
+            const_lvalue();
+            std::move(*this).rvalue();
+            std::move(*this).const_rvalue();
+#endif
+#ifdef Q_COMPILER_DECLTYPE
+            decltype_param();
+            decltype_template_param(0);
+            decltype_template_param2(QByteArray(), QString());
+#  ifdef Q_COMPILER_AUTO_FUNCTION
+            decltype_return();
+            decltype_template_return(0);
+#  endif
+#endif
         }
 };
 
