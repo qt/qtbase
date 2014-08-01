@@ -860,8 +860,7 @@ void QAccessible::updateAccessibility(QAccessibleEvent *event)
 
 #ifndef QT_NO_ACCESSIBILITY
     if (event->type() == QAccessible::TableModelChanged) {
-        Q_ASSERT(event->object());
-        if (QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(event->object())) {
+        if (QAccessibleInterface *iface = event->accessibleInterface()) {
             if (iface->tableInterface())
                 iface->tableInterface()->modelChange(static_cast<QAccessibleTableModelChangeEvent*>(event));
         }
