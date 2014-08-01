@@ -2372,6 +2372,11 @@ static LONG WINAPI windowsFaultHandler(struct _EXCEPTION_POINTERS *exInfo)
 }
 #endif // Q_OS_WIN) && !Q_OS_WINCE && !Q_OS_WINRT
 
+static void initEnvironment()
+{
+    qputenv("QT_LOGGING_TO_CONSOLE", "1");
+}
+
 /*!
     Executes tests declared in \a testObject. In addition, the private slots
     \c{initTestCase()}, \c{cleanupTestCase()}, \c{init()} and \c{cleanup()}
@@ -2412,6 +2417,7 @@ static LONG WINAPI windowsFaultHandler(struct _EXCEPTION_POINTERS *exInfo)
 
 int QTest::qExec(QObject *testObject, int argc, char **argv)
 {
+    initEnvironment();
     QBenchmarkGlobalData benchmarkData;
     QBenchmarkGlobalData::current = &benchmarkData;
 
