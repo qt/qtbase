@@ -126,6 +126,18 @@ QT_BEGIN_NAMESPACE
     glFuncs.glActiveTexture(GL_TEXTURE1);
     \endcode
 
+    An alternative approach is to query the context's associated
+    QOpenGLFunctions instance. This is somewhat faster than the previous
+    approach due to avoiding the creation of a new instance, but the difference
+    is fairly small since the internal data structures are shared, and function
+    resolving happens only once for a given context, regardless of the number of
+    QOpenGLFunctions instances initialized for it.
+
+    \code
+    QOpenGLFunctions *glFuncs = QOpenGLContext::currentContext()->functions();
+    glFuncs->glActiveTexture(GL_TEXTURE1);
+    \endcode
+
     QOpenGLFunctions provides wrappers for all OpenGL ES 2.0
     functions, including the common subset of OpenGL 1.x and ES
     2.0. While such functions, for example glClear() or
