@@ -542,6 +542,11 @@ public class QtActivityDelegate
                     int timeOut = 30000; // ms until we give up on ping and pong
                     int maxAttempts = timeOut / napTime;
 
+                    if (gdbserverSocket != null) {
+                        debugLog("removing gdb socket " + gdbserverSocket);
+                        new File(gdbserverSocket).delete();
+                    }
+
                     if (usePing) {
                         debugLog("removing ping file " + pingFile);
                         File ping = new File(pingFile);
@@ -616,6 +621,8 @@ public class QtActivityDelegate
                             debugLog("go to sleep");
                             Thread.sleep(napTime);
                         }
+                        debugLog("Removing pingFile " + pingFile);
+                        new File(pingFile).delete();
 
                         if (i == maxAttempts) {
                             debugLog("time out when waiting for pong file");
