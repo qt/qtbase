@@ -1347,8 +1347,8 @@ const QString::Null QString::null = { };
     \since 4.2
 
     Returns a copy of the \a string, where the encoding of \a string depends on
-    the size of wchar. If wchar is 4 bytes, the \a string is interpreted as ucs-4,
-    if wchar is 2 bytes it is interpreted as ucs-2.
+    the size of wchar. If wchar is 4 bytes, the \a string is interpreted as UCS-4,
+    if wchar is 2 bytes it is interpreted as UTF-16.
 
     If \a size is -1 (default), the \a string has to be 0 terminated.
 
@@ -1383,8 +1383,8 @@ int QString::toUcs4_helper(const ushort *uc, int length, uint *out)
   \since 4.2
 
   Fills the \a array with the data contained in this QString object.
-  The array is encoded in utf16 on platforms where
-  wchar_t is 2 bytes wide (e.g. windows) and in ucs4 on platforms
+  The array is encoded in UTF-16 on platforms where
+  wchar_t is 2 bytes wide (e.g. windows) and in UCS-4 on platforms
   where wchar_t is 4 bytes wide (most Unix systems).
 
   \a array has to be allocated by the caller and contain enough space to
