@@ -242,6 +242,19 @@ public:
     int &operator--() { ADD("TestClass1::operator--"); return x; }
     int operator--(int) { ADD("TestClass1::operator--"); return 0; }
 
+    int nested_struct()
+    {
+        struct Nested { void nested() { ADD("TestClass1::nested_struct"); } };
+        Nested().nested();
+        return 0;
+    }
+    int nested_struct_const() const
+    {
+        struct Nested { void nested() { ADD("TestClass1::nested_struct_const"); } };
+        Nested().nested();
+        return 0;
+    }
+
 #ifdef Q_COMPILER_REF_QUALIFIERS
     int lvalue() & { ADD("TestClass1::lvalue"); return 0; }
     int const_lvalue() const & { ADD("TestClass1::const_lvalue"); return 0; }
@@ -307,6 +320,9 @@ public:
             operator++(0);
             operator--();
             operator--(0);
+
+            nested_struct();
+            nested_struct_const();
 
 #ifdef Q_COMPILER_REF_QUALIFIERS
             lvalue();
@@ -678,6 +694,8 @@ void tst_qmessagehandler::cleanupFuncinfo()
 
 //    qDebug() << funcinfo.toLatin1();
     QByteArray result = qCleanupFuncinfo(funcinfo.toLatin1());
+    QEXPECT_FAIL("TestClass1::nested_struct", "Nested function processing is broken", Continue);
+    QEXPECT_FAIL("TestClass1::nested_struct_const", "Nested function processing is broken", Continue);
     QTEST(QString::fromLatin1(result), "expected");
 }
 #endif
