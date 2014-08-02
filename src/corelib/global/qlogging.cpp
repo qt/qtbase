@@ -1161,10 +1161,14 @@ QString qFormatLogMessage(QtMsgType type, const QMessageLogContext &context, con
                         if (numberPrinted > 0)
                             message.append(pattern->backtraceSeparator);
 
-                        if (function.isEmpty())
-                            message += QLatin1Char('?') + library + QLatin1Char('?');
-                        else
+                        if (function.isEmpty()) {
+                            if (numberPrinted == 0 && context.function)
+                                message += QString::fromUtf8(qCleanupFuncinfo(context.function));
+                            else
+                                message += QLatin1Char('?') + library + QLatin1Char('?');
+                        } else {
                             message += function;
+                        }
 
                     } else {
                         if (numberPrinted == 0)

@@ -720,7 +720,8 @@ void tst_qmessagehandler::qMessagePattern_data()
 #endif
 
     QTest::newRow("backtrace depth,separator") << "[%{backtrace depth=2 separator=\"\n\"}] %{message}" << true << (QList<QByteArray>()
-            << "[MyClass::myFunction\nMyClass::mySlot1] from_a_function 34");
+            << "[MyClass::myFunction\nMyClass::mySlot1] from_a_function 34"
+            << "[T::T\n");
 #endif
 
 }
