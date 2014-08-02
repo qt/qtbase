@@ -48,6 +48,58 @@ QT_BEGIN_NAMESPACE
 
 class QPixelFormat
 {
+    // QPixelFormat basically is a glorified quint64, split into several fields.
+    // We could use bit-fields, but GCC at least generates horrible, horrible code for them,
+    // so we do the bit-twiddling ourselves.
+    enum FieldWidth {
+        ModelFieldWidth = 4,
+        FirstFieldWidth = 6,
+        SecondFieldWidth = FirstFieldWidth,
+        ThirdFieldWidth = FirstFieldWidth,
+        FourthFieldWidth = FirstFieldWidth,
+        FifthFieldWidth = FirstFieldWidth,
+        AlphaFieldWidth = FirstFieldWidth,
+        AlphaUsageFieldWidth = 1,
+        AlphaPositionFieldWidth = 1,
+        PremulFieldWidth = 1,
+        TypeInterpretationFieldWidth = 4,
+        ByteOrderFieldWidth = 2,
+        SubEnumFieldWidth = 6,
+        UnusedFieldWidth = 9,
+
+        TotalFieldWidthByWidths = ModelFieldWidth + FirstFieldWidth + SecondFieldWidth + ThirdFieldWidth +
+                                  FourthFieldWidth + FifthFieldWidth + AlphaFieldWidth + AlphaUsageFieldWidth +
+                                  AlphaPositionFieldWidth + PremulFieldWidth + TypeInterpretationFieldWidth +
+                                  ByteOrderFieldWidth + SubEnumFieldWidth + UnusedFieldWidth
+    };
+
+    enum Field {
+        ModelField = 0,
+        FirstField = ModelField + ModelFieldWidth,
+        SecondField = FirstField + FirstFieldWidth,
+        ThirdField = SecondField + SecondFieldWidth,
+        FourthField = ThirdField + ThirdFieldWidth,
+        FifthField = FourthField + FourthFieldWidth,
+        AlphaField = FifthField + FifthFieldWidth,
+        AlphaUsageField = AlphaField + AlphaFieldWidth,
+        AlphaPositionField = AlphaUsageField + AlphaUsageFieldWidth,
+        PremulField = AlphaPositionField + AlphaPositionFieldWidth,
+        TypeInterpretationField = PremulField + PremulFieldWidth,
+        ByteOrderField = TypeInterpretationField + TypeInterpretationFieldWidth,
+        SubEnumField = ByteOrderField + ByteOrderFieldWidth,
+        UnusedField = SubEnumField + SubEnumFieldWidth,
+
+        TotalFieldWidthByOffsets = UnusedField + UnusedFieldWidth
+    };
+
+    Q_STATIC_ASSERT(uint(TotalFieldWidthByWidths) == uint(TotalFieldWidthByOffsets));
+    Q_STATIC_ASSERT(uint(TotalFieldWidthByWidths) == 8 * sizeof(quint64));
+
+    Q_DECL_CONSTEXPR inline uchar get(Field offset, FieldWidth width) const Q_DECL_NOTHROW
+    { return uchar((data >> uint(offset)) & ((Q_UINT64_C(1) << uint(width)) - Q_UINT64_C(1))); }
+    Q_DECL_CONSTEXPR static inline quint64 set(Field offset, FieldWidth width, uchar value)
+    { return (quint64(value) & ((Q_UINT64_C(1) << uint(width)) - Q_UINT64_C(1))) << uint(offset); }
+
 public:
     enum ColorModel {
         RGB,
@@ -122,61 +174,52 @@ public:
                                            ByteOrder byteOrder = CurrentSystemEndian,
                                            uchar subEnum = 0) Q_DECL_NOTHROW;
 
-    Q_DECL_CONSTEXPR inline ColorModel colorModel() const  Q_DECL_NOTHROW { return ColorModel(model); }
-    Q_DECL_CONSTEXPR inline uchar channelCount() const Q_DECL_NOTHROW { return (first > 0) +
-                                                                                 (second > 0) +
-                                                                                 (third > 0) +
-                                                                                 (fourth > 0) +
-                                                                                 (fifth > 0) +
-                                                                                 (alpha > 0); }
+    Q_DECL_CONSTEXPR inline ColorModel colorModel() const  Q_DECL_NOTHROW { return ColorModel(get(ModelField, ModelFieldWidth)); }
+    Q_DECL_CONSTEXPR inline uchar channelCount() const Q_DECL_NOTHROW { return (get(FirstField, FirstFieldWidth) > 0) +
+                                                                                 (get(SecondField, SecondFieldWidth) > 0) +
+                                                                                 (get(ThirdField, ThirdFieldWidth) > 0) +
+                                                                                 (get(FourthField, FourthFieldWidth) > 0) +
+                                                                                 (get(FifthField, FifthFieldWidth) > 0) +
+                                                                                 (get(AlphaField, AlphaFieldWidth) > 0); }
 
-    Q_DECL_CONSTEXPR inline uchar redSize() const Q_DECL_NOTHROW { return first; }
-    Q_DECL_CONSTEXPR inline uchar greenSize() const Q_DECL_NOTHROW { return second; }
-    Q_DECL_CONSTEXPR inline uchar blueSize() const Q_DECL_NOTHROW { return third; }
+    Q_DECL_CONSTEXPR inline uchar redSize() const Q_DECL_NOTHROW { return get(FirstField, FirstFieldWidth); }
+    Q_DECL_CONSTEXPR inline uchar greenSize() const Q_DECL_NOTHROW { return get(SecondField, SecondFieldWidth); }
+    Q_DECL_CONSTEXPR inline uchar blueSize() const Q_DECL_NOTHROW { return get(ThirdField, ThirdFieldWidth); }
 
-    Q_DECL_CONSTEXPR inline uchar cyanSize() const Q_DECL_NOTHROW { return first; }
-    Q_DECL_CONSTEXPR inline uchar magentaSize() const Q_DECL_NOTHROW { return second; }
-    Q_DECL_CONSTEXPR inline uchar yellowSize() const Q_DECL_NOTHROW { return third; }
-    Q_DECL_CONSTEXPR inline uchar blackSize() const Q_DECL_NOTHROW { return fourth; }
+    Q_DECL_CONSTEXPR inline uchar cyanSize() const Q_DECL_NOTHROW { return get(FirstField, FirstFieldWidth); }
+    Q_DECL_CONSTEXPR inline uchar magentaSize() const Q_DECL_NOTHROW { return get(SecondField, SecondFieldWidth); }
+    Q_DECL_CONSTEXPR inline uchar yellowSize() const Q_DECL_NOTHROW { return get(ThirdField, ThirdFieldWidth); }
+    Q_DECL_CONSTEXPR inline uchar blackSize() const Q_DECL_NOTHROW { return get(FourthField, FourthFieldWidth); }
 
-    Q_DECL_CONSTEXPR inline uchar hueSize() const Q_DECL_NOTHROW { return first; }
-    Q_DECL_CONSTEXPR inline uchar saturationSize() const Q_DECL_NOTHROW { return second; }
-    Q_DECL_CONSTEXPR inline uchar lightnessSize() const Q_DECL_NOTHROW { return third; }
-    Q_DECL_CONSTEXPR inline uchar brightnessSize() const Q_DECL_NOTHROW { return third; }
+    Q_DECL_CONSTEXPR inline uchar hueSize() const Q_DECL_NOTHROW { return get(FirstField, FirstFieldWidth); }
+    Q_DECL_CONSTEXPR inline uchar saturationSize() const Q_DECL_NOTHROW { return get(SecondField, SecondFieldWidth); }
+    Q_DECL_CONSTEXPR inline uchar lightnessSize() const Q_DECL_NOTHROW { return get(ThirdField, ThirdFieldWidth); }
+    Q_DECL_CONSTEXPR inline uchar brightnessSize() const Q_DECL_NOTHROW { return get(ThirdField, ThirdFieldWidth); }
 
-    Q_DECL_CONSTEXPR inline uchar alphaSize() const Q_DECL_NOTHROW { return alpha; }
+    Q_DECL_CONSTEXPR inline uchar alphaSize() const Q_DECL_NOTHROW { return get(AlphaField, AlphaFieldWidth); }
 
-    Q_DECL_CONSTEXPR inline uchar bitsPerPixel() const Q_DECL_NOTHROW { return first +
-                                                                                 second +
-                                                                                 third +
-                                                                                 fourth +
-                                                                                 fifth +
-                                                                                 alpha; }
+    Q_DECL_CONSTEXPR inline uchar bitsPerPixel() const Q_DECL_NOTHROW { return get(FirstField, FirstFieldWidth) +
+                                                                                 get(SecondField, SecondFieldWidth) +
+                                                                                 get(ThirdField, ThirdFieldWidth) +
+                                                                                 get(FourthField, FourthFieldWidth) +
+                                                                                 get(FifthField, FifthFieldWidth) +
+                                                                                 get(AlphaField, AlphaFieldWidth); }
 
-    Q_DECL_CONSTEXPR inline AlphaUsage alphaUsage() const Q_DECL_NOTHROW { return AlphaUsage(alpha_usage); }
-    Q_DECL_CONSTEXPR inline AlphaPosition alphaPosition() const Q_DECL_NOTHROW { return AlphaPosition(alpha_position); }
-    Q_DECL_CONSTEXPR inline AlphaPremultiplied premultiplied() const Q_DECL_NOTHROW { return AlphaPremultiplied(premul); }
-    Q_DECL_CONSTEXPR inline TypeInterpretation typeInterpretation() const Q_DECL_NOTHROW { return TypeInterpretation(type_interpretation); }
-    Q_DECL_CONSTEXPR inline ByteOrder byteOrder() const Q_DECL_NOTHROW { return ByteOrder(byte_order); }
+    Q_DECL_CONSTEXPR inline AlphaUsage alphaUsage() const Q_DECL_NOTHROW { return AlphaUsage(get(AlphaUsageField, AlphaUsageFieldWidth)); }
+    Q_DECL_CONSTEXPR inline AlphaPosition alphaPosition() const Q_DECL_NOTHROW { return AlphaPosition(get(AlphaPositionField, AlphaPositionFieldWidth)); }
+    Q_DECL_CONSTEXPR inline AlphaPremultiplied premultiplied() const Q_DECL_NOTHROW { return AlphaPremultiplied(get(PremulField, PremulFieldWidth)); }
+    Q_DECL_CONSTEXPR inline TypeInterpretation typeInterpretation() const Q_DECL_NOTHROW { return TypeInterpretation(get(TypeInterpretationField, TypeInterpretationFieldWidth)); }
+    Q_DECL_CONSTEXPR inline ByteOrder byteOrder() const Q_DECL_NOTHROW { return ByteOrder(get(ByteOrderField, ByteOrderFieldWidth)); }
 
-    Q_DECL_CONSTEXPR inline YUVLayout yuvLayout() const Q_DECL_NOTHROW { return YUVLayout(sub_enum); }
-    Q_DECL_CONSTEXPR inline uchar subEnum() const Q_DECL_NOTHROW { return sub_enum; }
+    Q_DECL_CONSTEXPR inline YUVLayout yuvLayout() const Q_DECL_NOTHROW { return YUVLayout(get(SubEnumField, SubEnumFieldWidth)); }
+    Q_DECL_CONSTEXPR inline uchar subEnum() const Q_DECL_NOTHROW { return get(SubEnumField, SubEnumFieldWidth); }
 
 private:
-    quint64 model : 4;
-    quint64 first : 6;
-    quint64 second : 6;
-    quint64 third : 6;
-    quint64 fourth : 6;
-    quint64 fifth : 6;
-    quint64 alpha : 6;
-    quint64 alpha_usage : 1;
-    quint64 alpha_position : 1;
-    quint64 premul: 1;
-    quint64 type_interpretation : 4;
-    quint64 byte_order : 2;
-    quint64 sub_enum : 6;
-    quint64 unused : 9;
+    Q_DECL_CONSTEXPR static inline ByteOrder resolveByteOrder(ByteOrder bo)
+    { return bo == CurrentSystemEndian ? Q_BYTE_ORDER == Q_LITTLE_ENDIAN ? LittleEndian : BigEndian : bo ; }
+
+private:
+    quint64 data;
 
     friend Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline bool operator==(const QPixelFormat &fmt1, const QPixelFormat &fmt2);
     friend Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline bool operator!=(const QPixelFormat &fmt1, const QPixelFormat &fmt2);
@@ -263,20 +306,7 @@ public:
 
 Q_DECL_CONSTEXPR
 QPixelFormat::QPixelFormat() Q_DECL_NOTHROW
-    : model(0)
-    , first(0)
-    , second(0)
-    , third(0)
-    , fourth(0)
-    , fifth(0)
-    , alpha(0)
-    , alpha_usage(0)
-    , alpha_position(0)
-    , premul(0)
-    , type_interpretation(0)
-    , byte_order(0)
-    , sub_enum(0)
-    , unused(0)
+    : data(0)
 {
 }
 
@@ -294,44 +324,25 @@ QPixelFormat::QPixelFormat(ColorModel mdl,
                            TypeInterpretation typeInterp,
                            ByteOrder b_order,
                            uchar s_enum) Q_DECL_NOTHROW
-    : model(mdl)
-    , first(firstSize)
-    , second(secondSize)
-    , third(thirdSize)
-    , fourth(fourthSize)
-    , fifth(fifthSize)
-    , alpha(alfa)
-    , alpha_usage(usage)
-    , alpha_position(position)
-    , premul(premult)
-    , type_interpretation(typeInterp)
-#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
-    , byte_order(b_order == CurrentSystemEndian ? LittleEndian : b_order)
-#else
-    , byte_order(b_order == CurrentSystemEndian ? BigEndian : b_order)
-#endif
-    , sub_enum(s_enum)
-    , unused(0)
+    : data(set(ModelField, ModelFieldWidth, uchar(mdl)) |
+           set(FirstField, FirstFieldWidth, firstSize) |
+           set(SecondField, SecondFieldWidth, secondSize) |
+           set(ThirdField, ThirdFieldWidth, thirdSize) |
+           set(FourthField, FourthFieldWidth, fourthSize) |
+           set(FifthField, FifthFieldWidth, fifthSize) |
+           set(AlphaField, AlphaFieldWidth, alfa) |
+           set(AlphaUsageField, AlphaUsageFieldWidth, uchar(usage)) |
+           set(AlphaPositionField, AlphaPositionFieldWidth, uchar(position)) |
+           set(PremulField, PremulFieldWidth, uchar(premult)) |
+           set(TypeInterpretationField, TypeInterpretationFieldWidth, uchar(typeInterp)) |
+           set(ByteOrderField, ByteOrderFieldWidth, uchar(resolveByteOrder(b_order))) |
+           set(SubEnumField, SubEnumFieldWidth, s_enum) |
+           set(UnusedField, UnusedFieldWidth, 0))
 {
 }
 
 Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline bool operator==(const QPixelFormat &fmt1, const QPixelFormat &fmt2)
-{
-    return fmt1.model               == fmt2.model
-        && fmt1.first               == fmt2.first
-        && fmt1.second              == fmt2.second
-        && fmt1.third               == fmt2.third
-        && fmt1.fourth              == fmt2.fourth
-        && fmt1.fifth               == fmt2.fifth
-        && fmt1.alpha               == fmt2.alpha
-        && fmt1.alpha_usage         == fmt2.alpha_usage
-        && fmt1.alpha_position      == fmt2.alpha_position
-        && fmt1.premul              == fmt2.premul
-        && fmt1.type_interpretation == fmt2.type_interpretation
-        && fmt1.byte_order          == fmt2.byte_order
-        && fmt1.sub_enum            == fmt2.sub_enum
-        && fmt1.unused              == fmt2.unused;
-}
+{ return fmt1.data == fmt2.data; }
 
 Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline bool operator!=(const QPixelFormat &fmt1, const QPixelFormat &fmt2)
 { return !(fmt1 == fmt2); }
