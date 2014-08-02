@@ -162,7 +162,7 @@ public:
     Q_DECL_CONSTEXPR inline YUVLayout yuvLayout() const Q_DECL_NOTHROW { return YUVLayout(sub_enum); }
     Q_DECL_CONSTEXPR inline uchar subEnum() const Q_DECL_NOTHROW { return sub_enum; }
 
-protected:
+private:
     quint64 model : 4;
     quint64 first : 6;
     quint64 second : 6;
