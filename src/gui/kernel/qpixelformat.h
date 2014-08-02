@@ -176,11 +176,12 @@ private:
     quint64 type_interpretation : 4;
     quint64 byte_order : 2;
     quint64 sub_enum : 6;
-    quint64 unused : 8;
+    quint64 unused : 9;
 
     friend Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline bool operator==(const QPixelFormat &fmt1, const QPixelFormat &fmt2);
     friend Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline bool operator!=(const QPixelFormat &fmt1, const QPixelFormat &fmt2);
 };
+Q_STATIC_ASSERT(sizeof(QPixelFormat) == sizeof(quint64));
 Q_DECLARE_TYPEINFO(QPixelFormat, Q_PRIMITIVE_TYPE);
 
 class QPixelFormatRgb : public QPixelFormat
