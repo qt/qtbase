@@ -117,7 +117,9 @@
     aren't facing towards screen.
 
     Creating vertex buffer objects and transferring data to them is quite simple using
-    OpenGL provided functions.
+    QOpenGLBuffer. MainWidget makes sure the GeometryEngine instance is created and
+    destroyed with the OpenGL context current. This way we can use OpenGL resources
+    in the constructor and perform proper cleanup in the destructor.
 
     \snippet cube/geometryengine.cpp 0
 

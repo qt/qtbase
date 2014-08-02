@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -43,6 +43,7 @@
 #include <QColor>
 #include <QMutex>
 #include <QOpenGLShaderProgram>
+#include <QOpenGLBuffer>
 #include <QSharedPointer>
 #include <QTimer>
 
@@ -65,13 +66,13 @@ private slots:
 private:
     void initialize();
 
-    qreal m_fAngle;
-    bool m_showBubbles;
-    void paintQtLogo();
     void createGeometry();
     void createBubbles(int number);
     void quad(qreal x1, qreal y1, qreal x2, qreal y2, qreal x3, qreal y3, qreal x4, qreal y4);
     void extrude(qreal x1, qreal y1, qreal x2, qreal y2);
+
+    qreal m_fAngle;
+
     QVector<QVector3D> vertices;
     QVector<QVector3D> normals;
     int vertexAttr;
@@ -83,6 +84,7 @@ private:
     QSurfaceFormat m_format;
     QOpenGLContext *m_context;
     QOpenGLShaderProgram *m_program;
+    QOpenGLBuffer m_vbo;
 
     QList<HelloWindow *> m_windows;
     int m_currentWindow;

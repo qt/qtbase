@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -38,31 +38,20 @@
 **
 ****************************************************************************/
 
-#ifndef GLWIDGET_H
-#define GLWIDGET_H
+#ifndef MAINWINDOW_H
+#define MAINWINDOW_H
 
-#include <QOpenGLWidget>
+#include <QMainWindow>
 
-//! [0]
-class Helper;
-
-class GLWidget : public QOpenGLWidget
+class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    GLWidget(Helper *helper, QWidget *parent);
+    MainWindow();
 
-public slots:
-    void animate();
-
-protected:
-    void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
-
-private:
-    Helper *helper;
-    int elapsed;
+private slots:
+    void onAddNew();
 };
-//! [0]
 
 #endif

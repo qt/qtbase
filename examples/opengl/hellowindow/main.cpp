@@ -41,7 +41,6 @@
 #include "hellowindow.h"
 
 #include <qpa/qplatformintegration.h>
-#include <private/qguiapplication_p.h>
 
 #include <QGuiApplication>
 #include <QScreen>
@@ -51,10 +50,7 @@ int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
 
-    QPlatformIntegration *integ = QGuiApplicationPrivate::platformIntegration();
-    const bool multipleWindows = integ->hasCapability(QPlatformIntegration::ThreadedOpenGL)
-        && integ->hasCapability(QPlatformIntegration::WindowManagement)
-        && !QGuiApplication::arguments().contains(QStringLiteral("--single"));
+    const bool multipleWindows = QGuiApplication::arguments().contains(QStringLiteral("--multiple"));
 
     QScreen *screen = QGuiApplication::primaryScreen();
 

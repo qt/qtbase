@@ -1,46 +1,49 @@
 /****************************************************************************
-**
-** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
-** Contact: http://www.qt-project.org/legal
-**
-** This file is part of the examples of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:BSD$
-** You may use this file under the terms of the BSD license as follows:
-**
-** "Redistribution and use in source and binary forms, with or without
-** modification, are permitted provided that the following conditions are
-** met:
-**   * Redistributions of source code must retain the above copyright
-**     notice, this list of conditions and the following disclaimer.
-**   * Redistributions in binary form must reproduce the above copyright
-**     notice, this list of conditions and the following disclaimer in
-**     the documentation and/or other materials provided with the
-**     distribution.
-**   * Neither the name of Digia Plc and its Subsidiary(-ies) nor the names
-**     of its contributors may be used to endorse or promote products derived
-**     from this software without specific prior written permission.
-**
-**
-** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-** "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-** LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-** A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-** OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-** SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-** LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-** DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-** THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-** (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+ **
+ ** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
+ ** Contact: http://www.qt-project.org/legal
+ **
+ ** This file is part of the examples of the Qt Toolkit.
+ **
+ ** $QT_BEGIN_LICENSE:BSD$
+ ** You may use this file under the terms of the BSD license as follows:
+ **
+ ** "Redistribution and use in source and binary forms, with or without
+ ** modification, are permitted provided that the following conditions are
+ ** met:
+ **   * Redistributions of source code must retain the above copyright
+ **     notice, this list of conditions and the following disclaimer.
+ **   * Redistributions in binary form must reproduce the above copyright
+ **     notice, this list of conditions and the following disclaimer in
+ **     the documentation and/or other materials provided with the
+ **     distribution.
+ **   * Neither the name of Digia Plc and its Subsidiary(-ies) nor the names
+ **     of its contributors may be used to endorse or promote products derived
+ **     from this software without specific prior written permission.
+ **
+ **
+ ** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ ** "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ ** LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ ** A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ ** OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ ** SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ ** LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ ** DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ ** THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ ** (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ ** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
+ **
+ ** $QT_END_LICENSE$
+ **
+ ****************************************************************************/
 
 #include "glwidget.h"
 #include <QPainter>
 #include <QPaintEngine>
+#include <QOpenGLShaderProgram>
+#include <QOpenGLTexture>
+#include <QCoreApplication>
 #include <math.h>
 
 #include "mainwindow.h"
@@ -50,143 +53,175 @@ const int bubbleNum = 8;
 
 GLWidget::GLWidget(MainWindow *mw, bool button, const QColor &background)
     : m_mainWindow(mw),
+      m_showBubbles(true),
+      m_qtLogo(true),
+      m_frames(0),
+      m_program1(0),
+      m_program2(0),
+      m_texture(0),
       m_transparent(false),
       m_btn(0),
       m_hasButton(button),
       m_background(background)
 {
-    QSurfaceFormat format;
-    format.setDepthBufferSize(24);
-    format.setStencilBufferSize(8);
-    setFormat(format);
-
-    qtLogo = true;
-    frames = 0;
-    m_showBubbles = true;
     setMinimumSize(300, 250);
 }
 
 GLWidget::~GLWidget()
 {
+    qDeleteAll(m_bubbles);
+
+    // And now release all OpenGL resources.
+    makeCurrent();
+    delete m_texture;
+    delete m_program1;
+    delete m_program2;
+    delete m_vshader1;
+    delete m_fshader1;
+    delete m_vshader2;
+    delete m_fshader2;
+    m_vbo1.destroy();
+    m_vbo2.destroy();
+    doneCurrent();
 }
 
-void GLWidget::setScaling(int scale) {
-
+void GLWidget::setScaling(int scale)
+{
     if (scale > 30)
         m_fScale = 1 + qreal(scale - 30) / 30 * 0.25;
     else if (scale < 30)
         m_fScale =  1 - (qreal(30 - scale) / 30 * 0.25);
     else
-      m_fScale = 1;
+        m_fScale = 1;
 }
 
-void GLWidget::setLogo() {
-    qtLogo = true;
-}
-
-void GLWidget::setTexture() {
-    qtLogo = false;
-}
-
-void GLWidget::showBubbles(bool bubbles)
+void GLWidget::setLogo()
 {
-   m_showBubbles = bubbles;
+    m_qtLogo = true;
+}
+
+void GLWidget::setTexture()
+{
+    m_qtLogo = false;
+}
+
+void GLWidget::setShowBubbles(bool bubbles)
+{
+    m_showBubbles = bubbles;
 }
 
 void GLWidget::paintQtLogo()
 {
-    program1.enableAttributeArray(normalAttr1);
-    program1.enableAttributeArray(vertexAttr1);
-    program1.setAttributeArray(vertexAttr1, vertices.constData());
-    program1.setAttributeArray(normalAttr1, normals.constData());
-    glDrawArrays(GL_TRIANGLES, 0, vertices.size());
-    program1.disableAttributeArray(normalAttr1);
-    program1.disableAttributeArray(vertexAttr1);
+    m_program1->enableAttributeArray(m_vertexAttr1);
+    m_program1->enableAttributeArray(m_normalAttr1);
+
+    m_vbo1.bind();
+    // The data in the buffer is placed like this:
+    // vertex1.x, vertex1.y, vertex1.z, normal1.x, normal1.y, normal1.z, vertex2.x, ...
+    m_program1->setAttributeBuffer(m_vertexAttr1, GL_FLOAT, 0, 3, 6 * sizeof(GLfloat));
+    m_program1->setAttributeBuffer(m_normalAttr1, GL_FLOAT, 3 * sizeof(GLfloat), 3, 6 * sizeof(GLfloat));
+    m_vbo1.release();
+
+    glDrawArrays(GL_TRIANGLES, 0, m_vertices.size());
+
+    m_program1->disableAttributeArray(m_normalAttr1);
+    m_program1->disableAttributeArray(m_vertexAttr1);
 }
 
 void GLWidget::paintTexturedCube()
 {
-    glBindTexture(GL_TEXTURE_2D, m_uiTexture);
-    GLfloat afVertices[] = {
-        -0.5, 0.5, 0.5, 0.5,-0.5,0.5,-0.5,-0.5,0.5,
-        0.5, -0.5, 0.5, -0.5,0.5,0.5,0.5,0.5,0.5,
-        -0.5, -0.5, -0.5, 0.5,-0.5,-0.5,-0.5,0.5,-0.5,
-        0.5, 0.5, -0.5, -0.5,0.5,-0.5,0.5,-0.5,-0.5,
+    m_texture->bind();
 
-        0.5, -0.5, -0.5, 0.5,-0.5,0.5,0.5,0.5,-0.5,
-        0.5, 0.5, 0.5, 0.5,0.5,-0.5,0.5,-0.5,0.5,
-        -0.5, 0.5, -0.5, -0.5,-0.5,0.5,-0.5,-0.5,-0.5,
-        -0.5, -0.5, 0.5, -0.5,0.5,-0.5,-0.5,0.5,0.5,
+    if (!m_vbo2.isCreated()) {
+        static GLfloat afVertices[] = {
+            -0.5, 0.5, 0.5, 0.5,-0.5,0.5,-0.5,-0.5,0.5,
+            0.5, -0.5, 0.5, -0.5,0.5,0.5,0.5,0.5,0.5,
+            -0.5, -0.5, -0.5, 0.5,-0.5,-0.5,-0.5,0.5,-0.5,
+            0.5, 0.5, -0.5, -0.5,0.5,-0.5,0.5,-0.5,-0.5,
 
-        0.5, 0.5,  -0.5, -0.5, 0.5,  0.5,  -0.5,  0.5,  -0.5,
-        -0.5,  0.5,  0.5,  0.5,  0.5,  -0.5, 0.5, 0.5,  0.5,
-        -0.5,  -0.5, -0.5, -0.5, -0.5, 0.5,  0.5, -0.5, -0.5,
-        0.5, -0.5, 0.5,  0.5,  -0.5, -0.5, -0.5,  -0.5, 0.5
-    };
-    program2.setAttributeArray(vertexAttr2, afVertices, 3);
+            0.5, -0.5, -0.5, 0.5,-0.5,0.5,0.5,0.5,-0.5,
+            0.5, 0.5, 0.5, 0.5,0.5,-0.5,0.5,-0.5,0.5,
+            -0.5, 0.5, -0.5, -0.5,-0.5,0.5,-0.5,-0.5,-0.5,
+            -0.5, -0.5, 0.5, -0.5,0.5,-0.5,-0.5,0.5,0.5,
 
-    GLfloat afTexCoord[] = {
-        0.0f,0.0f, 1.0f,1.0f, 1.0f,0.0f,
-        1.0f,1.0f, 0.0f,0.0f, 0.0f,1.0f,
-        1.0f,1.0f, 1.0f,0.0f, 0.0f,1.0f,
-        0.0f,0.0f, 0.0f,1.0f, 1.0f,0.0f,
+            0.5, 0.5,  -0.5, -0.5, 0.5,  0.5,  -0.5,  0.5,  -0.5,
+            -0.5,  0.5,  0.5,  0.5,  0.5,  -0.5, 0.5, 0.5,  0.5,
+            -0.5,  -0.5, -0.5, -0.5, -0.5, 0.5,  0.5, -0.5, -0.5,
+            0.5, -0.5, 0.5,  0.5,  -0.5, -0.5, -0.5,  -0.5, 0.5
+        };
 
-        1.0f,1.0f, 1.0f,0.0f, 0.0f,1.0f,
-        0.0f,0.0f, 0.0f,1.0f, 1.0f,0.0f,
-        0.0f,0.0f, 1.0f,1.0f, 1.0f,0.0f,
-        1.0f,1.0f, 0.0f,0.0f, 0.0f,1.0f,
+        static GLfloat afTexCoord[] = {
+            0.0f,0.0f, 1.0f,1.0f, 1.0f,0.0f,
+            1.0f,1.0f, 0.0f,0.0f, 0.0f,1.0f,
+            1.0f,1.0f, 1.0f,0.0f, 0.0f,1.0f,
+            0.0f,0.0f, 0.0f,1.0f, 1.0f,0.0f,
 
-        0.0f,1.0f, 1.0f,0.0f, 1.0f,1.0f,
-        1.0f,0.0f, 0.0f,1.0f, 0.0f,0.0f,
-        1.0f,0.0f, 1.0f,1.0f, 0.0f,0.0f,
-        0.0f,1.0f, 0.0f,0.0f, 1.0f,1.0f
-    };
-    program2.setAttributeArray(texCoordAttr2, afTexCoord, 2);
+            1.0f,1.0f, 1.0f,0.0f, 0.0f,1.0f,
+            0.0f,0.0f, 0.0f,1.0f, 1.0f,0.0f,
+            0.0f,0.0f, 1.0f,1.0f, 1.0f,0.0f,
+            1.0f,1.0f, 0.0f,0.0f, 0.0f,1.0f,
 
-    GLfloat afNormals[] = {
+            0.0f,1.0f, 1.0f,0.0f, 1.0f,1.0f,
+            1.0f,0.0f, 0.0f,1.0f, 0.0f,0.0f,
+            1.0f,0.0f, 1.0f,1.0f, 0.0f,0.0f,
+            0.0f,1.0f, 0.0f,0.0f, 1.0f,1.0f
+        };
 
-        0,0,-1, 0,0,-1, 0,0,-1,
-        0,0,-1, 0,0,-1, 0,0,-1,
-        0,0,1, 0,0,1, 0,0,1,
-        0,0,1, 0,0,1, 0,0,1,
+        GLfloat afNormals[] = {
 
-        -1,0,0, -1,0,0, -1,0,0,
-        -1,0,0, -1,0,0, -1,0,0,
-        1,0,0, 1,0,0, 1,0,0,
-        1,0,0, 1,0,0, 1,0,0,
+            0,0,-1, 0,0,-1, 0,0,-1,
+            0,0,-1, 0,0,-1, 0,0,-1,
+            0,0,1, 0,0,1, 0,0,1,
+            0,0,1, 0,0,1, 0,0,1,
 
-        0,-1,0, 0,-1,0, 0,-1,0,
-        0,-1,0, 0,-1,0, 0,-1,0,
-        0,1,0, 0,1,0, 0,1,0,
-        0,1,0, 0,1,0, 0,1,0
-    };
-    program2.setAttributeArray(normalAttr2, afNormals, 3);
+            -1,0,0, -1,0,0, -1,0,0,
+            -1,0,0, -1,0,0, -1,0,0,
+            1,0,0, 1,0,0, 1,0,0,
+            1,0,0, 1,0,0, 1,0,0,
 
-    program2.setUniformValue(textureUniform2, 0);    // use texture unit 0
+            0,-1,0, 0,-1,0, 0,-1,0,
+            0,-1,0, 0,-1,0, 0,-1,0,
+            0,1,0, 0,1,0, 0,1,0,
+            0,1,0, 0,1,0, 0,1,0
+        };
 
-    program2.enableAttributeArray(vertexAttr2);
-    program2.enableAttributeArray(normalAttr2);
-    program2.enableAttributeArray(texCoordAttr2);
+        m_vbo2.create();
+        m_vbo2.bind();
+        m_vbo2.allocate(36 * 8 * sizeof(GLfloat));
+        m_vbo2.write(0, afVertices, sizeof(afVertices));
+        m_vbo2.write(sizeof(afVertices), afTexCoord, sizeof(afTexCoord));
+        m_vbo2.write(sizeof(afVertices) + sizeof(afTexCoord), afNormals, sizeof(afNormals));
+        m_vbo2.release();
+    }
+
+    m_program2->setUniformValue(m_textureUniform2, 0); // use texture unit 0
+
+    m_program2->enableAttributeArray(m_vertexAttr2);
+    m_program2->enableAttributeArray(m_normalAttr2);
+    m_program2->enableAttributeArray(m_texCoordAttr2);
+
+    m_vbo2.bind();
+    // In the buffer we first have 36 vertices (3 floats for each), then 36 texture
+    // coordinates (2 floats for each), then 36 normals (3 floats for each).
+    m_program2->setAttributeBuffer(m_vertexAttr2, GL_FLOAT, 0, 3);
+    m_program2->setAttributeBuffer(m_texCoordAttr2, GL_FLOAT, 36 * 3 * sizeof(GLfloat), 2);
+    m_program2->setAttributeBuffer(m_normalAttr2, GL_FLOAT, 36 * 5 * sizeof(GLfloat), 3);
+    m_vbo2.release();
 
     glDrawArrays(GL_TRIANGLES, 0, 36);
 
-    program2.disableAttributeArray(vertexAttr2);
-    program2.disableAttributeArray(normalAttr2);
-    program2.disableAttributeArray(texCoordAttr2);
+    m_program2->disableAttributeArray(m_vertexAttr2);
+    m_program2->disableAttributeArray(m_normalAttr2);
+    m_program2->disableAttributeArray(m_texCoordAttr2);
 }
 
-void GLWidget::initializeGL ()
+void GLWidget::initializeGL()
 {
     initializeOpenGLFunctions();
 
-    glGenTextures(1, &m_uiTexture);
-    QImage img = QImage(":/qt.png").convertToFormat(QImage::Format_RGBA8888);
-    glBindTexture(GL_TEXTURE_2D, m_uiTexture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img.width(), img.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, img.constBits());
+    m_texture = new QOpenGLTexture(QImage(":/qt.png"));
 
-    QOpenGLShader *vshader1 = new QOpenGLShader(QOpenGLShader::Vertex, this);
+    m_vshader1 = new QOpenGLShader(QOpenGLShader::Vertex);
     const char *vsrc1 =
         "attribute highp vec4 vertex;\n"
         "attribute mediump vec3 normal;\n"
@@ -201,26 +236,27 @@ void GLWidget::initializeGL ()
         "    color = clamp(color, 0.0, 1.0);\n"
         "    gl_Position = matrix * vertex;\n"
         "}\n";
-    vshader1->compileSourceCode(vsrc1);
+    m_vshader1->compileSourceCode(vsrc1);
 
-    QOpenGLShader *fshader1 = new QOpenGLShader(QOpenGLShader::Fragment, this);
+    m_fshader1 = new QOpenGLShader(QOpenGLShader::Fragment);
     const char *fsrc1 =
         "varying mediump vec4 color;\n"
         "void main(void)\n"
         "{\n"
         "    gl_FragColor = color;\n"
         "}\n";
-    fshader1->compileSourceCode(fsrc1);
+    m_fshader1->compileSourceCode(fsrc1);
 
-    program1.addShader(vshader1);
-    program1.addShader(fshader1);
-    program1.link();
+    m_program1 = new QOpenGLShaderProgram;
+    m_program1->addShader(m_vshader1);
+    m_program1->addShader(m_fshader1);
+    m_program1->link();
 
-    vertexAttr1 = program1.attributeLocation("vertex");
-    normalAttr1 = program1.attributeLocation("normal");
-    matrixUniform1 = program1.uniformLocation("matrix");
+    m_vertexAttr1 = m_program1->attributeLocation("vertex");
+    m_normalAttr1 = m_program1->attributeLocation("normal");
+    m_matrixUniform1 = m_program1->uniformLocation("matrix");
 
-    QOpenGLShader *vshader2 = new QOpenGLShader(QOpenGLShader::Vertex);
+    m_vshader2 = new QOpenGLShader(QOpenGLShader::Vertex);
     const char *vsrc2 =
         "attribute highp vec4 vertex;\n"
         "attribute highp vec4 texCoord;\n"
@@ -235,9 +271,9 @@ void GLWidget::initializeGL ()
         "    gl_Position = matrix * vertex;\n"
         "    texc = texCoord;\n"
         "}\n";
-    vshader2->compileSourceCode(vsrc2);
+    m_vshader2->compileSourceCode(vsrc2);
 
-    QOpenGLShader *fshader2 = new QOpenGLShader(QOpenGLShader::Fragment);
+    m_fshader2 = new QOpenGLShader(QOpenGLShader::Fragment);
     const char *fsrc2 =
         "varying highp vec4 texc;\n"
         "uniform sampler2D tex;\n"
@@ -248,35 +284,59 @@ void GLWidget::initializeGL ()
         "    color = color * 0.2 + color * 0.8 * angle;\n"
         "    gl_FragColor = vec4(clamp(color, 0.0, 1.0), 1.0);\n"
         "}\n";
-    fshader2->compileSourceCode(fsrc2);
+    m_fshader2->compileSourceCode(fsrc2);
 
-    program2.addShader(vshader2);
-    program2.addShader(fshader2);
-    program2.link();
+    m_program2 = new QOpenGLShaderProgram;
+    m_program2->addShader(m_vshader2);
+    m_program2->addShader(m_fshader2);
+    m_program2->link();
 
-    vertexAttr2 = program2.attributeLocation("vertex");
-    normalAttr2 = program2.attributeLocation("normal");
-    texCoordAttr2 = program2.attributeLocation("texCoord");
-    matrixUniform2 = program2.uniformLocation("matrix");
-    textureUniform2 = program2.uniformLocation("tex");
+    m_vertexAttr2 = m_program2->attributeLocation("vertex");
+    m_normalAttr2 = m_program2->attributeLocation("normal");
+    m_texCoordAttr2 = m_program2->attributeLocation("texCoord");
+    m_matrixUniform2 = m_program2->uniformLocation("matrix");
+    m_textureUniform2 = m_program2->uniformLocation("tex");
 
     m_fAngle = 0;
     m_fScale = 1;
+
     createGeometry();
-    createBubbles(bubbleNum - bubbles.count());
+
+    // Use a vertex buffer object. Client-side pointers are old-school and should be avoided.
+    m_vbo1.create();
+    m_vbo1.bind();
+    // For the cube all the data belonging to the texture coordinates and
+    // normals is placed separately, after the vertices. Here, for the Qt logo,
+    // let's do something different and potentially more efficient: create a
+    // properly interleaved data set.
+    const int vertexCount = m_vertices.count();
+    QVector<GLfloat> buf;
+    buf.resize(vertexCount * 3 * 2);
+    GLfloat *p = buf.data();
+    for (int i = 0; i < vertexCount; ++i) {
+        *p++ = m_vertices[i].x();
+        *p++ = m_vertices[i].y();
+        *p++ = m_vertices[i].z();
+        *p++ = m_normals[i].x();
+        *p++ = m_normals[i].y();
+        *p++ = m_normals[i].z();
+    }
+    m_vbo1.allocate(buf.constData(), buf.count() * sizeof(GLfloat));
+    m_vbo1.release();
+
+    createBubbles(bubbleNum - m_bubbles.count());
 }
 
 void GLWidget::paintGL()
 {
-    createBubbles(bubbleNum - bubbles.count());
+    createBubbles(bubbleNum - m_bubbles.count());
 
     QPainter painter;
     painter.begin(this);
 
     painter.beginNativePainting();
 
-    glClearColor(m_background.red() / 255.0f, m_background.green() / 255.0f,
-                 m_background.blue() / 255.0f, m_transparent ? 0.0f : 1.0f);
+    glClearColor(m_background.redF(), m_background.greenF(), m_background.blueF(), m_transparent ? 0.0f : 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glFrontFace(GL_CW);
@@ -291,16 +351,16 @@ void GLWidget::paintGL()
     modelview.scale(m_fScale);
     modelview.translate(0.0f, -0.2f, 0.0f);
 
-    if (qtLogo) {
-        program1.bind();
-        program1.setUniformValue(matrixUniform1, modelview);
+    if (m_qtLogo) {
+        m_program1->bind();
+        m_program1->setUniformValue(m_matrixUniform1, modelview);
         paintQtLogo();
-        program1.release();
+        m_program1->release();
     } else {
-        program2.bind();
-        program1.setUniformValue(matrixUniform2, modelview);
+        m_program2->bind();
+        m_program2->setUniformValue(m_matrixUniform2, modelview);
         paintTexturedCube();
-        program2.release();
+        m_program2->release();
     }
 
     glDisable(GL_DEPTH_TEST);
@@ -309,50 +369,50 @@ void GLWidget::paintGL()
     painter.endNativePainting();
 
     if (m_showBubbles)
-        foreach (Bubble *bubble, bubbles) {
+        foreach (Bubble *bubble, m_bubbles) {
             bubble->drawBubble(&painter);
-    }
+        }
 
-    if (const int elapsed = time.elapsed()) {
+    if (const int elapsed = m_time.elapsed()) {
         QString framesPerSecond;
-        framesPerSecond.setNum(frames /(elapsed / 1000.0), 'f', 2);
+        framesPerSecond.setNum(m_frames /(elapsed / 1000.0), 'f', 2);
         painter.setPen(m_transparent ? Qt::black : Qt::white);
         painter.drawText(20, 40, framesPerSecond + " paintGL calls / s");
     }
 
     painter.end();
 
-    QMutableListIterator<Bubble*> iter(bubbles);
+    QMutableListIterator<Bubble*> iter(m_bubbles);
 
     while (iter.hasNext()) {
         Bubble *bubble = iter.next();
         bubble->move(rect());
     }
-    if (!(frames % 100)) {
-        time.start();
-        frames = 0;
+    if (!(m_frames % 100)) {
+        m_time.start();
+        m_frames = 0;
     }
     m_fAngle += 1.0f;
-    frames ++;
+    ++m_frames;
 }
 
 void GLWidget::createBubbles(int number)
 {
     for (int i = 0; i < number; ++i) {
         QPointF position(width()*(0.1 + (0.8*qrand()/(RAND_MAX+1.0))),
-                        height()*(0.1 + (0.8*qrand()/(RAND_MAX+1.0))));
+                         height()*(0.1 + (0.8*qrand()/(RAND_MAX+1.0))));
         qreal radius = qMin(width(), height())*(0.0175 + 0.0875*qrand()/(RAND_MAX+1.0));
         QPointF velocity(width()*0.0175*(-0.5 + qrand()/(RAND_MAX+1.0)),
-                        height()*0.0175*(-0.5 + qrand()/(RAND_MAX+1.0)));
+                         height()*0.0175*(-0.5 + qrand()/(RAND_MAX+1.0)));
 
-        bubbles.append(new Bubble(position, radius, velocity));
+        m_bubbles.append(new Bubble(position, radius, velocity));
     }
 }
 
 void GLWidget::createGeometry()
 {
-    vertices.clear();
-    normals.clear();
+    m_vertices.clear();
+    m_normals.clear();
 
     qreal x1 = +0.06f;
     qreal y1 = -0.14f;
@@ -396,71 +456,71 @@ void GLWidget::createGeometry()
         extrude(x8, y8, x5, y5);
     }
 
-    for (int i = 0;i < vertices.size();i++)
-        vertices[i] *= 2.0f;
+    for (int i = 0;i < m_vertices.size();i++)
+        m_vertices[i] *= 2.0f;
 }
 
 void GLWidget::quad(qreal x1, qreal y1, qreal x2, qreal y2, qreal x3, qreal y3, qreal x4, qreal y4)
 {
-    vertices << QVector3D(x1, y1, -0.05f);
-    vertices << QVector3D(x2, y2, -0.05f);
-    vertices << QVector3D(x4, y4, -0.05f);
+    m_vertices << QVector3D(x1, y1, -0.05f);
+    m_vertices << QVector3D(x2, y2, -0.05f);
+    m_vertices << QVector3D(x4, y4, -0.05f);
 
-    vertices << QVector3D(x3, y3, -0.05f);
-    vertices << QVector3D(x4, y4, -0.05f);
-    vertices << QVector3D(x2, y2, -0.05f);
+    m_vertices << QVector3D(x3, y3, -0.05f);
+    m_vertices << QVector3D(x4, y4, -0.05f);
+    m_vertices << QVector3D(x2, y2, -0.05f);
 
     QVector3D n = QVector3D::normal
         (QVector3D(x2 - x1, y2 - y1, 0.0f), QVector3D(x4 - x1, y4 - y1, 0.0f));
 
-    normals << n;
-    normals << n;
-    normals << n;
+    m_normals << n;
+    m_normals << n;
+    m_normals << n;
 
-    normals << n;
-    normals << n;
-    normals << n;
+    m_normals << n;
+    m_normals << n;
+    m_normals << n;
 
-    vertices << QVector3D(x4, y4, 0.05f);
-    vertices << QVector3D(x2, y2, 0.05f);
-    vertices << QVector3D(x1, y1, 0.05f);
+    m_vertices << QVector3D(x4, y4, 0.05f);
+    m_vertices << QVector3D(x2, y2, 0.05f);
+    m_vertices << QVector3D(x1, y1, 0.05f);
 
-    vertices << QVector3D(x2, y2, 0.05f);
-    vertices << QVector3D(x4, y4, 0.05f);
-    vertices << QVector3D(x3, y3, 0.05f);
+    m_vertices << QVector3D(x2, y2, 0.05f);
+    m_vertices << QVector3D(x4, y4, 0.05f);
+    m_vertices << QVector3D(x3, y3, 0.05f);
 
     n = QVector3D::normal
         (QVector3D(x2 - x4, y2 - y4, 0.0f), QVector3D(x1 - x4, y1 - y4, 0.0f));
 
-    normals << n;
-    normals << n;
-    normals << n;
+    m_normals << n;
+    m_normals << n;
+    m_normals << n;
 
-    normals << n;
-    normals << n;
-    normals << n;
+    m_normals << n;
+    m_normals << n;
+    m_normals << n;
 }
 
 void GLWidget::extrude(qreal x1, qreal y1, qreal x2, qreal y2)
 {
-    vertices << QVector3D(x1, y1, +0.05f);
-    vertices << QVector3D(x2, y2, +0.05f);
-    vertices << QVector3D(x1, y1, -0.05f);
+    m_vertices << QVector3D(x1, y1, +0.05f);
+    m_vertices << QVector3D(x2, y2, +0.05f);
+    m_vertices << QVector3D(x1, y1, -0.05f);
 
-    vertices << QVector3D(x2, y2, -0.05f);
-    vertices << QVector3D(x1, y1, -0.05f);
-    vertices << QVector3D(x2, y2, +0.05f);
+    m_vertices << QVector3D(x2, y2, -0.05f);
+    m_vertices << QVector3D(x1, y1, -0.05f);
+    m_vertices << QVector3D(x2, y2, +0.05f);
 
     QVector3D n = QVector3D::normal
         (QVector3D(x2 - x1, y2 - y1, 0.0f), QVector3D(0.0f, 0.0f, -0.1f));
 
-    normals << n;
-    normals << n;
-    normals << n;
+    m_normals << n;
+    m_normals << n;
+    m_normals << n;
 
-    normals << n;
-    normals << n;
-    normals << n;
+    m_normals << n;
+    m_normals << n;
+    m_normals << n;
 }
 
 void GLWidget::setTransparent(bool transparent)

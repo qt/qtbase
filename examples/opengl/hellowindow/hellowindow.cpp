@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -145,14 +145,7 @@ void Renderer::render()
 
     QOpenGLFunctions *f = m_context->functions();
     f->glViewport(0, 0, viewSize.width() * surface->devicePixelRatio(), viewSize.height() * surface->devicePixelRatio());
-
-    f->glClearColor(0.1f, 0.1f, 0.2f, 1.0f);
     f->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    f->glFrontFace(GL_CW);
-    f->glCullFace(GL_FRONT);
-    f->glEnable(GL_CULL_FACE);
-    f->glEnable(GL_DEPTH_TEST);
 
     QMatrix4x4 modelview;
     modelview.rotate(m_fAngle, 0.0f, 1.0f, 0.0f);
@@ -160,31 +153,16 @@ void Renderer::render()
     modelview.rotate(m_fAngle, 0.0f, 0.0f, 1.0f);
     modelview.translate(0.0f, -0.2f, 0.0f);
 
-    m_program->bind();
     m_program->setUniformValue(matrixUniform, modelview);
     m_program->setUniformValue(colorUniform, color);
-    paintQtLogo();
-    m_program->release();
 
-    f->glDisable(GL_DEPTH_TEST);
-    f->glDisable(GL_CULL_FACE);
+    m_context->functions()->glDrawArrays(GL_TRIANGLES, 0, vertices.size());
 
     m_context->swapBuffers(surface);
 
     m_fAngle += 1.0f;
 
     QTimer::singleShot(0, this, SLOT(render()));
-}
-
-void Renderer::paintQtLogo()
-{
-    m_program->enableAttributeArray(normalAttr);
-    m_program->enableAttributeArray(vertexAttr);
-    m_program->setAttributeArray(vertexAttr, vertices.constData());
-    m_program->setAttributeArray(normalAttr, normals.constData());
-    m_context->functions()->glDrawArrays(GL_TRIANGLES, 0, vertices.size());
-    m_program->disableAttributeArray(normalAttr);
-    m_program->disableAttributeArray(vertexAttr);
 }
 
 void Renderer::initialize()
@@ -218,6 +196,7 @@ void Renderer::initialize()
     m_program->addShader(vshader);
     m_program->addShader(fshader);
     m_program->link();
+    m_program->bind();
 
     vertexAttr = m_program->attributeLocation("vertex");
     normalAttr = m_program->attributeLocation("normal");
@@ -226,6 +205,25 @@ void Renderer::initialize()
 
     m_fAngle = 0;
     createGeometry();
+
+    m_vbo.create();
+    m_vbo.bind();
+    const int verticesSize = vertices.count() * 3 * sizeof(GLfloat);
+    m_vbo.allocate(verticesSize * 2);
+    m_vbo.write(0, vertices.constData(), verticesSize);
+    m_vbo.write(verticesSize, normals.constData(), verticesSize);
+
+    QOpenGLFunctions *f = m_context->functions();
+    f->glClearColor(0.1f, 0.1f, 0.2f, 1.0f);
+    f->glFrontFace(GL_CW);
+    f->glCullFace(GL_FRONT);
+    f->glEnable(GL_CULL_FACE);
+    f->glEnable(GL_DEPTH_TEST);
+
+    m_program->enableAttributeArray(vertexAttr);
+    m_program->enableAttributeArray(normalAttr);
+    m_program->setAttributeBuffer(vertexAttr, GL_FLOAT, 0, 3);
+    m_program->setAttributeBuffer(normalAttr, GL_FLOAT, verticesSize, 3);
 }
 
 void Renderer::createGeometry()

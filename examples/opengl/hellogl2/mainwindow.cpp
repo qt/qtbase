@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -38,31 +38,29 @@
 **
 ****************************************************************************/
 
-#ifndef GLWIDGET_H
-#define GLWIDGET_H
+#include "mainwindow.h"
+#include "window.h"
+#include <QMenuBar>
+#include <QMenu>
+#include <QMessageBox>
 
-#include <QOpenGLWidget>
-
-//! [0]
-class Helper;
-
-class GLWidget : public QOpenGLWidget
+MainWindow::MainWindow()
 {
-    Q_OBJECT
+    QMenuBar *menuBar = new QMenuBar;
+    QMenu *menuWindow = menuBar->addMenu(tr("&Window"));
+    QAction *addNew = new QAction(menuWindow);
+    addNew->setText(tr("Add new"));
+    menuWindow->addAction(addNew);
+    connect(addNew, SIGNAL(triggered()), this, SLOT(onAddNew()));
+    setMenuBar(menuBar);
 
-public:
-    GLWidget(Helper *helper, QWidget *parent);
+    onAddNew();
+}
 
-public slots:
-    void animate();
-
-protected:
-    void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
-
-private:
-    Helper *helper;
-    int elapsed;
-};
-//! [0]
-
-#endif
+void MainWindow::onAddNew()
+{
+    if (!centralWidget())
+        setCentralWidget(new Window(this));
+    else
+        QMessageBox::information(0, tr("Cannot add new window"), tr("Already occupied. Undock first."));
+}

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -38,31 +38,28 @@
 **
 ****************************************************************************/
 
-#ifndef GLWIDGET_H
-#define GLWIDGET_H
+#ifndef LOGO_H
+#define LOGO_H
 
-#include <QOpenGLWidget>
+#include <qopengl.h>
+#include <QVector>
+#include <QVector3D>
 
-//! [0]
-class Helper;
-
-class GLWidget : public QOpenGLWidget
+class Logo
 {
-    Q_OBJECT
-
 public:
-    GLWidget(Helper *helper, QWidget *parent);
-
-public slots:
-    void animate();
-
-protected:
-    void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
+    Logo();
+    const GLfloat *constData() const { return m_data.constData(); }
+    int count() const { return m_count; }
+    int vertexCount() const { return m_count / 6; }
 
 private:
-    Helper *helper;
-    int elapsed;
-};
-//! [0]
+    void quad(GLfloat x1, GLfloat y1, GLfloat x2, GLfloat y2, GLfloat x3, GLfloat y3, GLfloat x4, GLfloat y4);
+    void extrude(GLfloat x1, GLfloat y1, GLfloat x2, GLfloat y2);
+    void add(const QVector3D &v, const QVector3D &n);
 
-#endif
+    QVector<GLfloat> m_data;
+    int m_count;
+};
+
+#endif // LOGO_H

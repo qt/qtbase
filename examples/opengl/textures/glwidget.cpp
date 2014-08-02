@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -38,23 +38,30 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-#include <QtOpenGL>
-
 #include "glwidget.h"
+#include <QOpenGLShaderProgram>
+#include <QOpenGLTexture>
+#include <QMouseEvent>
 
-GLWidget::GLWidget(QWidget *parent, QGLWidget *shareWidget)
-    : QGLWidget(parent, shareWidget)
+GLWidget::GLWidget(QWidget *parent)
+    : QOpenGLWidget(parent),
+      clearColor(Qt::black),
+      xRot(0),
+      yRot(0),
+      zRot(0),
+      program(0)
 {
-    clearColor = Qt::black;
-    xRot = 0;
-    yRot = 0;
-    zRot = 0;
-    program = 0;
+    memset(textures, 0, sizeof(textures));
 }
 
 GLWidget::~GLWidget()
 {
+    makeCurrent();
+    vbo.destroy();
+    for (int i = 0; i < 6; ++i)
+        delete textures[i];
+    delete program;
+    doneCurrent();
 }
 
 QSize GLWidget::minimumSizeHint() const
@@ -72,13 +79,13 @@ void GLWidget::rotateBy(int xAngle, int yAngle, int zAngle)
     xRot += xAngle;
     yRot += yAngle;
     zRot += zAngle;
-    updateGL();
+    update();
 }
 
 void GLWidget::setClearColor(const QColor &color)
 {
     clearColor = color;
-    updateGL();
+    update();
 }
 
 void GLWidget::initializeGL()
@@ -89,14 +96,11 @@ void GLWidget::initializeGL()
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
-#ifdef GL_TEXTURE_2D
-    glEnable(GL_TEXTURE_2D);
-#endif
 
 #define PROGRAM_VERTEX_ATTRIBUTE 0
 #define PROGRAM_TEXCOORD_ATTRIBUTE 1
 
-    QGLShader *vshader = new QGLShader(QGLShader::Vertex, this);
+    QOpenGLShader *vshader = new QOpenGLShader(QOpenGLShader::Vertex, this);
     const char *vsrc =
         "attribute highp vec4 vertex;\n"
         "attribute mediump vec4 texCoord;\n"
@@ -109,7 +113,7 @@ void GLWidget::initializeGL()
         "}\n";
     vshader->compileSourceCode(vsrc);
 
-    QGLShader *fshader = new QGLShader(QGLShader::Fragment, this);
+    QOpenGLShader *fshader = new QOpenGLShader(QOpenGLShader::Fragment, this);
     const char *fsrc =
         "uniform sampler2D texture;\n"
         "varying mediump vec4 texc;\n"
@@ -119,7 +123,7 @@ void GLWidget::initializeGL()
         "}\n";
     fshader->compileSourceCode(fsrc);
 
-    program = new QGLShaderProgram(this);
+    program = new QOpenGLShaderProgram;
     program->addShader(vshader);
     program->addShader(fshader);
     program->bindAttributeLocation("vertex", PROGRAM_VERTEX_ATTRIBUTE);
@@ -132,7 +136,7 @@ void GLWidget::initializeGL()
 
 void GLWidget::paintGL()
 {
-    qglClearColor(clearColor);
+    glClearColor(clearColor.redF(), clearColor.greenF(), clearColor.blueF(), clearColor.alphaF());
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     QMatrix4x4 m;
@@ -145,17 +149,14 @@ void GLWidget::paintGL()
     program->setUniformValue("matrix", m);
     program->enableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE);
     program->enableAttributeArray(PROGRAM_TEXCOORD_ATTRIBUTE);
-    program->setAttributeArray
-        (PROGRAM_VERTEX_ATTRIBUTE, vertices.constData());
-    program->setAttributeArray
-        (PROGRAM_TEXCOORD_ATTRIBUTE, texCoords.constData());
+    program->setAttributeBuffer(PROGRAM_VERTEX_ATTRIBUTE, GL_FLOAT, 0, 3, 5 * sizeof(GLfloat));
+    program->setAttributeBuffer(PROGRAM_TEXCOORD_ATTRIBUTE, GL_FLOAT, 3 * sizeof(GLfloat), 2, 5 * sizeof(GLfloat));
 
     for (int i = 0; i < 6; ++i) {
-        glBindTexture(GL_TEXTURE_2D, textures[i]);
+        textures[i]->bind();
         glDrawArrays(GL_TRIANGLE_FAN, i * 4, 4);
     }
 }
-
 void GLWidget::resizeGL(int width, int height)
 {
     int side = qMin(width, height);
@@ -196,18 +197,23 @@ void GLWidget::makeObject()
         { { -1, -1, +1 }, { +1, -1, +1 }, { +1, +1, +1 }, { -1, +1, +1 } }
     };
 
-    for (int j=0; j < 6; ++j) {
-        textures[j] = bindTexture
-            (QPixmap(QString(":/images/side%1.png").arg(j + 1)), GL_TEXTURE_2D);
-    }
+    for (int j = 0; j < 6; ++j)
+        textures[j] = new QOpenGLTexture(QImage(QString(":/images/side%1.png").arg(j + 1)).mirrored());
 
+    QVector<GLfloat> vertData;
     for (int i = 0; i < 6; ++i) {
         for (int j = 0; j < 4; ++j) {
-            texCoords.append
-                (QVector2D(j == 0 || j == 3, j == 0 || j == 1));
-            vertices.append
-                (QVector3D(0.2 * coords[i][j][0], 0.2 * coords[i][j][1],
-                           0.2 * coords[i][j][2]));
+            // vertex position
+            vertData.append(0.2 * coords[i][j][0]);
+            vertData.append(0.2 * coords[i][j][1]);
+            vertData.append(0.2 * coords[i][j][2]);
+            // texture coordinate
+            vertData.append(j == 0 || j == 3);
+            vertData.append(j == 0 || j == 1);
         }
     }
+
+    vbo.create();
+    vbo.bind();
+    vbo.allocate(vertData.constData(), vertData.count() * sizeof(GLfloat));
 }

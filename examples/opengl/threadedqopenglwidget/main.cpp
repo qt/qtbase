@@ -40,12 +40,17 @@
 
 #include <QApplication>
 #include <QMainWindow>
+#include <QSurfaceFormat>
 #include "mainwindow.h"
 #include "glwidget.h"
 
 int main( int argc, char ** argv )
 {
     QApplication a( argc, argv );
+
+    QSurfaceFormat format;
+    format.setDepthBufferSize(16);
+    QSurfaceFormat::setDefaultFormat(format);
 
     // Two top-level windows with two QOpenGLWidget children in each.
     // The rendering for the four QOpenGLWidgets happens on four separate threads.

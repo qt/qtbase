@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -38,31 +38,41 @@
 **
 ****************************************************************************/
 
-#ifndef GLWIDGET_H
-#define GLWIDGET_H
+#ifndef WINDOW_H
+#define WINDOW_H
 
-#include <QOpenGLWidget>
+#include <QWidget>
 
-//! [0]
-class Helper;
+QT_BEGIN_NAMESPACE
+class QSlider;
+class QPushButton;
+QT_END_NAMESPACE
 
-class GLWidget : public QOpenGLWidget
+class GLWidget;
+class MainWindow;
+
+class Window : public QWidget
 {
     Q_OBJECT
 
 public:
-    GLWidget(Helper *helper, QWidget *parent);
-
-public slots:
-    void animate();
+    Window(MainWindow *mw);
 
 protected:
-    void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
+    void keyPressEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
+
+private slots:
+    void dockUndock();
 
 private:
-    Helper *helper;
-    int elapsed;
+    QSlider *createSlider();
+
+    GLWidget *glWidget;
+    QSlider *xSlider;
+    QSlider *ySlider;
+    QSlider *zSlider;
+    QPushButton *dockBtn;
+    MainWindow *mainWindow;
 };
-//! [0]
 
 #endif

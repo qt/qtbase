@@ -47,10 +47,6 @@ const int bubbleNum = 8;
 GLWidget::GLWidget(QWidget *parent)
     : QOpenGLWidget(parent)
 {
-    QSurfaceFormat format;
-    format.setDepthBufferSize(16);
-    setFormat(format);
-
     setMinimumSize(300, 250);
 
     connect(this, &QOpenGLWidget::aboutToCompose, this, &GLWidget::onAboutToCompose);
@@ -120,11 +116,16 @@ Renderer::Renderer(GLWidget *w)
 
 void Renderer::paintQtLogo()
 {
-    program.enableAttributeArray(normalAttr);
+    vbo.bind();
+    program.setAttributeBuffer(vertexAttr, GL_FLOAT, 0, 3);
+    program.setAttributeBuffer(normalAttr, GL_FLOAT, vertices.count() * 3 * sizeof(GLfloat), 3);
+    vbo.release();
+
     program.enableAttributeArray(vertexAttr);
-    program.setAttributeArray(vertexAttr, vertices.constData());
-    program.setAttributeArray(normalAttr, normals.constData());
+    program.enableAttributeArray(normalAttr);
+
     glDrawArrays(GL_TRIANGLES, 0, vertices.size());
+
     program.disableAttributeArray(normalAttr);
     program.disableAttributeArray(vertexAttr);
 }
@@ -200,6 +201,13 @@ void Renderer::render()
         m_fAngle = 0;
         m_fScale = 1;
         createGeometry();
+
+        vbo.create();
+        vbo.bind();
+        const int verticesSize = vertices.count() * 3 * sizeof(GLfloat);
+        vbo.allocate(verticesSize * 2);
+        vbo.write(0, vertices.constData(), verticesSize);
+        vbo.write(verticesSize, normals.constData(), verticesSize);
 
         m_elapsed.start();
     }

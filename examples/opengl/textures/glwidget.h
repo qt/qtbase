@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -41,18 +41,19 @@
 #ifndef GLWIDGET_H
 #define GLWIDGET_H
 
-#include <QtWidgets>
-#include <QGLWidget>
+#include <QOpenGLWidget>
 #include <QOpenGLFunctions>
+#include <QOpenGLBuffer>
 
-QT_FORWARD_DECLARE_CLASS(QGLShaderProgram);
+QT_FORWARD_DECLARE_CLASS(QOpenGLShaderProgram);
+QT_FORWARD_DECLARE_CLASS(QOpenGLTexture)
 
-class GLWidget : public QGLWidget, protected QOpenGLFunctions
+class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
     Q_OBJECT
 
 public:
-    explicit GLWidget(QWidget *parent = 0, QGLWidget *shareWidget = 0);
+    explicit GLWidget(QWidget *parent = 0);
     ~GLWidget();
 
     QSize minimumSizeHint() const Q_DECL_OVERRIDE;
@@ -79,10 +80,9 @@ private:
     int xRot;
     int yRot;
     int zRot;
-    GLuint textures[6];
-    QVector<QVector3D> vertices;
-    QVector<QVector2D> texCoords;
-    QGLShaderProgram *program;
+    QOpenGLTexture *textures[6];
+    QOpenGLShaderProgram *program;
+    QOpenGLBuffer vbo;
 };
 
 #endif

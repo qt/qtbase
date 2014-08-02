@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -38,31 +38,34 @@
 **
 ****************************************************************************/
 
-#ifndef GLWIDGET_H
-#define GLWIDGET_H
+#include <QApplication>
+#include <QDesktopWidget>
+#include <QSurfaceFormat>
 
-#include <QOpenGLWidget>
+#include "mainwindow.h"
 
-//! [0]
-class Helper;
-
-class GLWidget : public QOpenGLWidget
+int main(int argc, char *argv[])
 {
-    Q_OBJECT
+    QApplication app(argc, argv);
 
-public:
-    GLWidget(Helper *helper, QWidget *parent);
+    QSurfaceFormat fmt;
+    fmt.setDepthBufferSize(24);
+    if (QCoreApplication::arguments().contains(QStringLiteral("--multisample")))
+        fmt.setSamples(4);
+    if (QCoreApplication::arguments().contains(QStringLiteral("--coreprofile"))) {
+        fmt.setVersion(3, 2);
+        fmt.setProfile(QSurfaceFormat::CoreProfile);
+    }
+    QSurfaceFormat::setDefaultFormat(fmt);
 
-public slots:
-    void animate();
-
-protected:
-    void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
-
-private:
-    Helper *helper;
-    int elapsed;
-};
-//! [0]
-
-#endif
+    MainWindow mainWindow;
+    mainWindow.resize(mainWindow.sizeHint());
+    int desktopArea = QApplication::desktop()->width() *
+                     QApplication::desktop()->height();
+    int widgetArea = mainWindow.width() * mainWindow.height();
+    if (((float)widgetArea / (float)desktopArea) < 0.75f)
+        mainWindow.show();
+    else
+        mainWindow.showMaximized();
+    return app.exec();
+}

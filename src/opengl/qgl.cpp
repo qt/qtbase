@@ -219,8 +219,6 @@ QGLSignalProxy *QGLSignalProxy::instance()
     \value NoDeprecatedFunctions    Disables the use of deprecated functionality for OpenGL 3.x
                                     contexts. A context with deprecated functionality disabled is
                                     called a forward compatible context in the OpenGL specification.
-
-    \sa {Sample Buffers Example}
 */
 
 /*****************************************************************************
@@ -3276,8 +3274,7 @@ uint QGLContext::colorIndex(const QColor&) const
     The returned QColor object will generally work as expected only
     when passed as the argument to QGLWidget::qglColor() or
     QGLWidget::qglClearColor(). Under certain circumstances it can
-    also be used to draw transparent graphics with a QPainter. See the
-    examples/opengl/overlay_x11 example for details.
+    also be used to draw transparent graphics with a QPainter.
 */
 QColor QGLContext::overlayTransparentColor() const
 {
@@ -3717,10 +3714,6 @@ void QGLContext::doneCurrent()
     \li Call QPainter::end() to finish painting.
     \endlist
 
-    Overpainting 2D content on top of 3D content takes a little more effort.
-    One approach to doing this is shown in the
-    \l{Overpainting Example}{Overpainting} example.
-
     \section1 Threading
 
     As of Qt version 4.8, support for doing threaded GL rendering has
@@ -3814,8 +3807,7 @@ void QGLContext::doneCurrent()
     \e{OpenGL is a trademark of Silicon Graphics, Inc. in the United States and other
     countries.}
 
-    \sa QOpenGLWidget, QGLPixelBuffer, {Hello GL Example}, {2D Painting Example}, {Overpainting Example},
-        {Grabber Example}
+    \sa QOpenGLWidget, QGLPixelBuffer
 */
 
 /*!
@@ -4776,8 +4768,6 @@ static void qt_gl_draw_text(QPainter *p, int x, int y, const QString &str,
    \note This function can only be used inside a
    QPainter::beginNativePainting()/QPainter::endNativePainting() block
    if a painter is active on the QGLWidget.
-
-   \l{Overpainting Example}{Overpaint} with QPainter::drawText() instead.
 */
 
 void QGLWidget::renderText(int x, int y, const QString &str, const QFont &font)
@@ -4868,8 +4858,6 @@ void QGLWidget::renderText(int x, int y, const QString &str, const QFont &font)
     \note This function can only be used inside a
     QPainter::beginNativePainting()/QPainter::endNativePainting() block
     if a painter is active on the QGLWidget.
-
-    \l{Overpainting Example}{Overpaint} with QPainter::drawText() instead.
 */
 void QGLWidget::renderText(double x, double y, double z, const QString &str, const QFont &font)
 {
