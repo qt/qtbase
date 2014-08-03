@@ -159,7 +159,7 @@ public:
         CurrentSystemEndian
     };
 
-    Q_DECL_CONSTEXPR inline QPixelFormat() Q_DECL_NOTHROW;
+    Q_DECL_CONSTEXPR inline QPixelFormat() Q_DECL_NOTHROW : data(0) {}
     Q_DECL_CONSTEXPR inline QPixelFormat(ColorModel colorModel,
                                            uchar firstSize,
                                            uchar secondSize,
@@ -221,8 +221,11 @@ private:
 private:
     quint64 data;
 
-    friend Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline bool operator==(const QPixelFormat &fmt1, const QPixelFormat &fmt2);
-    friend Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline bool operator!=(const QPixelFormat &fmt1, const QPixelFormat &fmt2);
+    friend Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline bool operator==(const QPixelFormat &fmt1, const QPixelFormat &fmt2)
+    { return fmt1.data == fmt2.data; }
+
+    friend Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline bool operator!=(const QPixelFormat &fmt1, const QPixelFormat &fmt2)
+    { return !(fmt1 == fmt2); }
 };
 Q_STATIC_ASSERT(sizeof(QPixelFormat) == sizeof(quint64));
 Q_DECLARE_TYPEINFO(QPixelFormat, Q_PRIMITIVE_TYPE);
@@ -305,12 +308,6 @@ public:
 };
 
 Q_DECL_CONSTEXPR
-QPixelFormat::QPixelFormat() Q_DECL_NOTHROW
-    : data(0)
-{
-}
-
-Q_DECL_CONSTEXPR
 QPixelFormat::QPixelFormat(ColorModel mdl,
                            uchar firstSize,
                            uchar secondSize,
@@ -340,12 +337,6 @@ QPixelFormat::QPixelFormat(ColorModel mdl,
            set(UnusedField, UnusedFieldWidth, 0))
 {
 }
-
-Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline bool operator==(const QPixelFormat &fmt1, const QPixelFormat &fmt2)
-{ return fmt1.data == fmt2.data; }
-
-Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline bool operator!=(const QPixelFormat &fmt1, const QPixelFormat &fmt2)
-{ return !(fmt1 == fmt2); }
 
 Q_DECL_CONSTEXPR
 QPixelFormatRgb::QPixelFormatRgb(uchar red,
