@@ -4968,7 +4968,7 @@ QPixelFormat QImage::toPixelFormat(QImage::Format format) Q_DECL_NOTHROW
 /*!
     Converts \a format into a QImage::Format
 */
-QImage::Format QImage::toImageFormat(const QPixelFormat &format) Q_DECL_NOTHROW
+QImage::Format QImage::toImageFormat(QPixelFormat format) Q_DECL_NOTHROW
 {
     for (int i = 0; i < NImageFormats; i++) {
         if (format == pixelformats[i])

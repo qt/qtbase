@@ -221,10 +221,10 @@ private:
 private:
     quint64 data;
 
-    friend Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline bool operator==(const QPixelFormat &fmt1, const QPixelFormat &fmt2)
+    friend Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline bool operator==(QPixelFormat fmt1, QPixelFormat fmt2)
     { return fmt1.data == fmt2.data; }
 
-    friend Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline bool operator!=(const QPixelFormat &fmt1, const QPixelFormat &fmt2)
+    friend Q_DECL_CONST_FUNCTION Q_DECL_CONSTEXPR inline bool operator!=(QPixelFormat fmt1, QPixelFormat fmt2)
     { return !(fmt1 == fmt2); }
 };
 Q_STATIC_ASSERT(sizeof(QPixelFormat) == sizeof(quint64));

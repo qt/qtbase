@@ -312,7 +312,7 @@ public:
 
     QPixelFormat pixelFormat() const Q_DECL_NOTHROW;
     static QPixelFormat toPixelFormat(QImage::Format format) Q_DECL_NOTHROW;
-    static QImage::Format toImageFormat(const QPixelFormat &format) Q_DECL_NOTHROW;
+    static QImage::Format toImageFormat(QPixelFormat format) Q_DECL_NOTHROW;
 
 #if QT_DEPRECATED_SINCE(5, 0)
     QT_DEPRECATED inline QString text(const char* key, const char* lang=0) const;
