@@ -430,8 +430,8 @@ bool QNativeSocketEngine::initialize(qintptr socketDescriptor, QAbstractSocket::
     // determine socket type and protocol
     if (!d->fetchConnectionParameters()) {
 #if defined (QNATIVESOCKETENGINE_DEBUG)
-        qDebug("QNativeSocketEngine::initialize(socketDescriptor == %i) failed: %s",
-               socketDescriptor, d->socketErrorString.toLatin1().constData());
+        qDebug() << "QNativeSocketEngine::initialize(socketDescriptor) failed:"
+                 << socketDescriptor << d->socketErrorString;
 #endif
         d->socketDescriptor = -1;
         return false;
