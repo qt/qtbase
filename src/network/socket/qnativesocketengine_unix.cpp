@@ -154,7 +154,8 @@ bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType soc
     }
 
     if (socket <= 0) {
-        switch (errno) {
+        int ecopy = errno;
+        switch (ecopy) {
         case EPROTONOSUPPORT:
         case EAFNOSUPPORT:
         case EINVAL:
@@ -173,8 +174,19 @@ bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType soc
             break;
         }
 
+#if defined (QNATIVESOCKETENGINE_DEBUG)
+        qDebug("QNativeSocketEnginePrivate::createNewSocket(%d, %d) == false (%s)",
+               socketType, socketProtocol,
+               strerror(ecopy));
+#endif
+
         return false;
     }
+
+#if defined (QNATIVESOCKETENGINE_DEBUG)
+    qDebug("QNativeSocketEnginePrivate::createNewSocket(%d, %d) == true",
+           socketType, socketProtocol);
+#endif
 
     socketDescriptor = socket;
     return true;
