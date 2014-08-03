@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -435,7 +436,8 @@ public:
         SharedPointerToQObject = 0x20,
         WeakPointerToQObject = 0x40,
         TrackingPointerToQObject = 0x80,
-        WasDeclaredAsMetaType = 0x100
+        WasDeclaredAsMetaType = 0x100,
+        IsGadget = 0x200
     };
     Q_DECLARE_FLAGS(TypeFlags, TypeFlag)
 
@@ -1335,14 +1337,27 @@ namespace QtPrivate
         enum { Value = sizeof(checkType(static_cast<T*>(0))) == sizeof(yes_type) };
     };
 
-    template<typename T, bool = IsPointerToTypeDerivedFromQObject<T>::Value>
+    template<typename T>
+    struct IsGadgetHelper
+    {
+        template<typename X> static typename X::QtGadgetHelper *checkType(X*);
+        static char checkType(void*);
+        enum { Value = sizeof(checkType(static_cast<T*>(0))) == sizeof(void*)  };
+    };
+
+    template<typename T, typename Enable = void>
     struct MetaObjectForType
     {
         static inline const QMetaObject *value() { return 0; }
     };
 
     template<typename T>
-    struct MetaObjectForType<T*, /* isPointerToTypeDerivedFromQObject = */ true>
+    struct MetaObjectForType<T*, typename QEnableIf<IsPointerToTypeDerivedFromQObject<T*>::Value>::Type>
+    {
+        static inline const QMetaObject *value() { return &T::staticMetaObject; }
+    };
+    template<typename T>
+    struct MetaObjectForType<T, typename QEnableIf<IsGadgetHelper<T>::Value>::Type>
     {
         static inline const QMetaObject *value() { return &T::staticMetaObject; }
     };
@@ -1553,6 +1568,7 @@ namespace QtPrivate {
                      | (IsWeakPointerToTypeDerivedFromQObject<T>::Value ? QMetaType::WeakPointerToQObject : 0)
                      | (IsTrackingPointerToTypeDerivedFromQObject<T>::Value ? QMetaType::TrackingPointerToQObject : 0)
                      | (Q_IS_ENUM(T) ? QMetaType::IsEnumeration : 0)
+                     | (IsGadgetHelper<T>::Value ? QMetaType::IsGadget : 0)
              };
     };
 

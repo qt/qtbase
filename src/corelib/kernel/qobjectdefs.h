@@ -159,6 +159,7 @@ private: \
 #define Q_GADGET \
 public: \
     static const QMetaObject staticMetaObject; \
+    typedef void QtGadgetHelper; \
 private: \
     Q_DECL_HIDDEN_STATIC_METACALL static void qt_static_metacall(QObject *, QMetaObject::Call, int, void **);
 #endif // QT_NO_META_MACROS

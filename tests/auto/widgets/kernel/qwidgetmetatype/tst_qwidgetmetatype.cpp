@@ -70,6 +70,7 @@ void tst_QWidgetMetaType::metaObject()
     QCOMPARE(QMetaType::metaObjectForType(qMetaTypeId<QWidget*>()), &QWidget::staticMetaObject);
     QCOMPARE(QMetaType::metaObjectForType(qMetaTypeId<QLabel*>()), &QLabel::staticMetaObject);
     QCOMPARE(QMetaType::metaObjectForType(qMetaTypeId<CustomWidget*>()), &CustomWidget::staticMetaObject);
+    QCOMPARE(QMetaType::metaObjectForType(qMetaTypeId<QSizePolicy>()), &QSizePolicy::staticMetaObject);
 }
 
 QTEST_MAIN(tst_QWidgetMetaType)

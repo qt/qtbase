@@ -113,6 +113,7 @@ private slots:
     void saveAndLoadBuiltin_data();
     void saveAndLoadBuiltin();
     void saveAndLoadCustom();
+    void metaObject_data();
     void metaObject();
     void constexprMetaTypeIds();
     void constRefs();
@@ -1027,7 +1028,9 @@ void tst_QMetaType::flagsBinaryCompatibility5_0()
     QFETCH(quint32, id);
     QFETCH(quint32, flags);
 
-    QCOMPARE(quint32(QMetaType::typeFlags(id)), flags);
+    quint32 mask_5_0 = 0x1ff; // Only compare the values that were already defined in 5.0
+
+    QCOMPARE(quint32(QMetaType::typeFlags(id)) & mask_5_0, flags);
 }
 
 void tst_QMetaType::construct_data()
@@ -1831,17 +1834,41 @@ void tst_QMetaType::saveAndLoadCustom()
     QCOMPARE(stream.status(), QDataStream::ReadPastEnd);
 }
 
+struct MyGadget {
+    Q_GADGET;
+};
+
+Q_DECLARE_METATYPE(MyGadget);
+Q_DECLARE_METATYPE(const QMetaObject *);
+
+void tst_QMetaType::metaObject_data()
+{
+    QTest::addColumn<int>("type");
+    QTest::addColumn<const QMetaObject*>("result");
+    QTest::addColumn<bool>("isGadget");
+    QTest::addColumn<bool>("isQObjectPtr");
+
+    QTest::newRow("QObject") << int(QMetaType::QObjectStar) << &QObject::staticMetaObject << false << true;
+    QTest::newRow("QFile*") << ::qMetaTypeId<QFile*>() << &QFile::staticMetaObject << false << true;
+    QTest::newRow("MyObject*") << ::qMetaTypeId<MyObject*>() << &MyObject::staticMetaObject << false << true;
+    QTest::newRow("int") << int(QMetaType::Int) << static_cast<const QMetaObject *>(0) << false << false;
+    QTest::newRow("QEasingCurve") << ::qMetaTypeId<QEasingCurve>() <<  &QEasingCurve::staticMetaObject << true << false;
+    QTest::newRow("MyGadget") << ::qMetaTypeId<MyGadget>() <<  &MyGadget::staticMetaObject << true << false;
+}
+
+
 void tst_QMetaType::metaObject()
 {
-    QCOMPARE(QMetaType::metaObjectForType(QMetaType::QObjectStar), &QObject::staticMetaObject);
-    QCOMPARE(QMetaType::metaObjectForType(::qMetaTypeId<QFile*>()), &QFile::staticMetaObject);
-    QCOMPARE(QMetaType::metaObjectForType(::qMetaTypeId<MyObject*>()), &MyObject::staticMetaObject);
-    QCOMPARE(QMetaType::metaObjectForType(QMetaType::Int), static_cast<const QMetaObject *>(0));
+    QFETCH(int, type);
+    QFETCH(const QMetaObject *, result);
+    QFETCH(bool, isGadget);
+    QFETCH(bool, isQObjectPtr);
 
-    QCOMPARE(QMetaType(QMetaType::QObjectStar).metaObject(), &QObject::staticMetaObject);
-    QCOMPARE(QMetaType(::qMetaTypeId<QFile*>()).metaObject(), &QFile::staticMetaObject);
-    QCOMPARE(QMetaType(::qMetaTypeId<MyObject*>()).metaObject(), &MyObject::staticMetaObject);
-    QCOMPARE(QMetaType(QMetaType::Int).metaObject(), static_cast<const QMetaObject *>(0));
+    QCOMPARE(QMetaType::metaObjectForType(type), result);
+    QMetaType mt(type);
+    QCOMPARE(mt.metaObject(), result);
+    QCOMPARE(!!(mt.flags() & QMetaType::IsGadget), isGadget);
+    QCOMPARE(!!(mt.flags() & QMetaType::PointerToQObject), isQObjectPtr);
 }
 
 #define METATYPE_ID_FUNCTION(Type, MetaTypeId, Name) \

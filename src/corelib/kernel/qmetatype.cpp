@@ -283,10 +283,11 @@ struct DefinedTypesFilter {
     \value MovableType An instance of a type having this attribute can be safely moved by memcpy.
     \omitvalue SharedPointerToQObject
     \omitvalue IsEnumeration
-    \omitvalue PointerToQObject
+    \value PointerToQObject This type is a pointer to a derived of QObject
     \omitvalue WeakPointerToQObject
     \omitvalue TrackingPointerToQObject
     \omitvalue WasDeclaredAsMetaType
+    \value IsGadget This type is a Q_GADGET and it's corresponding QMetaObject can be accessed with QMetaType::metaObject Since 5.5.
 */
 
 /*!
@@ -363,8 +364,19 @@ struct DefinedTypesFilter {
 
 /*!
     \fn const QMetaObject *QMetaType::metaObject() const
-    \since 5.0
-    \internal
+    \since 5.5
+
+    return a QMetaObject relative to this type.
+
+    If the type is a pointer type to a subclass of QObject, flags contains
+    QMetaType::PointerToQObject and this function returns the corresponding QMetaObject. This can
+    be used to in combinaison with QMetaObject::construct to create QObject of this type.
+
+    If the type is a Q_GADGET, flags contains QMetaType::IsGadget, and this function returns its
+    QMetaObject.  This can be used to retrieve QMetaMethod and QMetaProperty and use them on a
+    pointer of this type. (given by QVariant::data for example)
+
+    \sa QMetaType::metaObjectForType(), QMetaType::flags()
 */
 
 /*!
@@ -2025,7 +2037,9 @@ private:
 /*!
     \since 5.0
 
-    Returns QMetaObject of a given \a type, if the \a type is a pointer to type derived from QObject.
+    returns QMetaType::metaObject for \a type
+
+    \sa metaObject()
 */
 const QMetaObject *QMetaType::metaObjectForType(int type)
 {
