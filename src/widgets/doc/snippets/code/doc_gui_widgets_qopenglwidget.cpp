@@ -107,3 +107,74 @@ widget->setFormat(format); // must be called before the widget or its parent win
     }
     ...
 //! [3]
+
+//! [4]
+class MyGLWidget : public QOpenGLWidget
+{
+    ...
+
+private:
+    QOpenGLVertexArrayObject m_vao;
+    QOpenGLBuffer m_vbo;
+    QOpenGLShaderProgram *m_program;
+    QOpenGLShader *m_shader;
+    QOpenGLTexture *m_texture;
+};
+
+MyGLWidget::MyGLWidget()
+    : m_program(0), m_shader(0), m_texture(0)
+{
+    // No OpenGL resource initialization is done here.
+}
+
+MyGLWidget::~MyGLWidget()
+{
+    // Make sure the context is current and then explicitly
+    // destroy all underlying OpenGL resources.
+    makeCurrent();
+
+    delete m_texture;
+    delete m_shader;
+    delete m_program;
+
+    m_vbo.destroy();
+    m_vao.destroy();
+
+    doneCurrent();
+}
+
+void MyGLWidget::initializeGL()
+{
+    m_vao.create();
+    if (m_vao.isCreated())
+        m_vao.bind();
+
+    m_vbo.create();
+    m_vbo.bind();
+    m_vbo.allocate(...);
+
+    m_texture = new QOpenGLTexture(QImage(...));
+
+    m_shader = new QOpenGLShader(...);
+    m_program = new QOpenGLShaderProgram(...);
+
+    ...
+}
+//! [4]
+
+//! [5]
+void MyGLWidget::initializeGL()
+{
+    // context() and QOpenGLContext::currentContext() are equivalent when called from initializeGL or paintGL.
+    connect(context(), &QOpenGLContext::aboutToBeDestroyed, this, &MyGLWidget::cleanup);
+}
+
+void MyGLWidget::cleanup()
+{
+    makeCurrent();
+    delete m_texture;
+    m_texture = 0;
+    ...
+    doneCurrent();
+}
+//! [5]

@@ -269,6 +269,54 @@ QT_BEGIN_NAMESPACE
   created later. Some other drivers may behave in unexpected ways when trying to
   utilize shared resources between different threads.
 
+  \section1 Resource initialization and cleanup
+
+  The QOpenGLWidget's associated OpenGL context is guaranteed to be current
+  whenever initializeGL() and paintGL() are invoked. Do not attempt to create
+  OpenGL resources before initializeGL() is called. For example, attempting to
+  compile shaders, initialize vertex buffer objects or upload texture data will
+  fail when done in a subclass's constructor. These operations must be deferred
+  to initializeGL(). Some of Qt's OpenGL helper classes, like QOpenGLBuffer or
+  QOpenGLVertexArrayObject, have a matching deferred behavior: they can be
+  instantiated without a context, but all initialization is deferred until a
+  create(), or similar, call. This means that they can be used as normal
+  (non-pointer) member variables in a QOpenGLWidget subclass, but the create()
+  or similar function can only be called from initializeGL(). Be aware however
+  that not all classes are designed like this. When in doubt, make the member
+  variable a pointer and create and destroy the instance dynamically in
+  initializeGL() and the destructor, respectively.
+
+  Releasing the resources also needs the context to be current. Therefore
+  destructors that perform such cleanup are expected to call makeCurrent()
+  before moving on to destroy any OpenGL resources or wrappers. Avoid deferred
+  deletion via \l{QObject::deleteLater()}{deleteLater()} or the parenting
+  mechanism of QObject. There is no guarantee the correct context will be
+  current at the time the instance in question is really destroyed.
+
+  A typical subclass will therefore often look like the following when it comes
+  to resource initialization and destruction:
+
+  \snippet code/doc_gui_widgets_qopenglwidget.cpp 4
+
+  This is naturally not the only possible solution. One alternative is to use
+  the \l{QOpenGLContext::aboutToBeDestroyed()}{aboutToBeDestroyed()} signal of
+  QOpenGLContext. By connecting a slot, using direct connection, to this signal,
+  it is possible to perform cleanup whenever the the underlying native context
+  handle, or the entire QOpenGLContext instance, is going to be released. The
+  following snippet is in principal equivalent to the previous one:
+
+  \snippet code/doc_gui_widgets_qopenglwidget.cpp 5
+
+  Proper cleanup is especially important due to context sharing. Even though
+  each QOpenGLWidget's associated context is destroyed together with the
+  QOpenGLWidget, the sharable resources in that context, like textures, will
+  stay valid until the top-level window, in which the QOpenGLWidget lived, is
+  destroyed. Additionally, some Qt modules may trigger an even wider scope for
+  sharing contexts, potentially leading to keeping the resources in question
+  alive for the entire lifetime of the application. Therefore the safest and
+  most robust is always to perform explicit cleanup for all resources and
+  resource wrappers used in the QOpenGLWidget.
+
   \section1 Limitations
 
   Putting other widgets underneath and making the QOpenGLWidget transparent will
@@ -748,10 +796,13 @@ void QOpenGLWidget::paintGL()
 }
 
 /*!
-  \internal
-
-  Handles resize events that are passed in the \a event parameter.
+  Handles resize events that are passed in the \a e event parameter.
   Calls the virtual function resizeGL().
+
+  \note Avoid overriding this function in derived classes. If that is not
+  feasible, make sure that QOpenGLWidget's implementation is invoked
+  too. Otherwise the underlying framebuffer object and related resources will
+  not get resized properly and will lead to incorrect rendering.
 */
 void QOpenGLWidget::resizeEvent(QResizeEvent *e)
 {
