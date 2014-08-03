@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -2837,8 +2838,13 @@ QVariant QMetaProperty::read(const QObject *object) const
             // Try to register the type and try again before reporting an error.
             int registerResult = -1;
             void *argv[] = { &registerResult };
-            QMetaObject::metacall(const_cast<QObject*>(object), QMetaObject::RegisterPropertyMetaType,
-                                  idx + mobj->propertyOffset(), argv);
+            if ((priv(mobj->d.data)->flags & PropertyAccessInStaticMetaCall) && mobj->d.static_metacall) {
+                mobj->d.static_metacall(const_cast<QObject*>(object), QMetaObject::RegisterPropertyMetaType,
+                                        idx, argv);
+            } else {
+                QMetaObject::metacall(const_cast<QObject*>(object), QMetaObject::RegisterPropertyMetaType,
+                                      idx + mobj->propertyOffset(), argv);
+            }
             if (registerResult == -1) {
                 qWarning("QMetaProperty::read: Unable to handle unregistered datatype '%s' for property '%s::%s'", typeName, mobj->className(), name());
                 return QVariant();
@@ -2861,8 +2867,12 @@ QVariant QMetaProperty::read(const QObject *object) const
         value = QVariant(t, (void*)0);
         argv[0] = value.data();
     }
-    QMetaObject::metacall(const_cast<QObject*>(object), QMetaObject::ReadProperty,
-                          idx + mobj->propertyOffset(), argv);
+    if (priv(mobj->d.data)->flags & PropertyAccessInStaticMetaCall && mobj->d.static_metacall) {
+        mobj->d.static_metacall(const_cast<QObject*>(object), QMetaObject::ReadProperty, idx, argv);
+    } else {
+        QMetaObject::metacall(const_cast<QObject*>(object), QMetaObject::ReadProperty,
+                              idx + mobj->propertyOffset(), argv);
+    }
 
     if (status != -1)
         return value;
@@ -2932,7 +2942,11 @@ bool QMetaProperty::write(QObject *object, const QVariant &value) const
         argv[0] = &v;
     else
         argv[0] = v.data();
-    QMetaObject::metacall(object, QMetaObject::WriteProperty, idx + mobj->propertyOffset(), argv);
+    if (priv(mobj->d.data)->flags & PropertyAccessInStaticMetaCall && mobj->d.static_metacall)
+        mobj->d.static_metacall(object, QMetaObject::WriteProperty, idx, argv);
+    else
+        QMetaObject::metacall(object, QMetaObject::WriteProperty, idx + mobj->propertyOffset(), argv);
+
     return status;
 }
 
@@ -2949,7 +2963,10 @@ bool QMetaProperty::reset(QObject *object) const
     if (!object || !mobj || !isResettable())
         return false;
     void *argv[] = { 0 };
-    QMetaObject::metacall(object, QMetaObject::ResetProperty, idx + mobj->propertyOffset(), argv);
+    if (priv(mobj->d.data)->flags & PropertyAccessInStaticMetaCall && mobj->d.static_metacall)
+        mobj->d.static_metacall(object, QMetaObject::ResetProperty, idx, argv);
+    else
+        QMetaObject::metacall(object, QMetaObject::ResetProperty, idx + mobj->propertyOffset(), argv);
     return true;
 }
 

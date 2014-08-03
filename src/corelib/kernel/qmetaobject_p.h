@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -98,7 +99,8 @@ enum MethodFlags  {
 
 enum MetaObjectFlags {
     DynamicMetaObject = 0x01,
-    RequiresVariantMetaObject = 0x02
+    RequiresVariantMetaObject = 0x02,
+    PropertyAccessInStaticMetaCall = 0x04 // since Qt 5.5, property code is in the static metacall
 };
 
 enum MetaDataFlags {
