@@ -2969,6 +2969,49 @@ bool QMetaProperty::reset(QObject *object) const
         QMetaObject::metacall(object, QMetaObject::ResetProperty, idx + mobj->propertyOffset(), argv);
     return true;
 }
+/*!
+    \since 5.5
+
+    Reads the property's value from the given \a gadget. Returns the value
+    if it was able to read it; otherwise returns an invalid variant.
+
+    This function should only be used if this is a property of a Q_GADGET
+*/
+QVariant QMetaProperty::readOnGadget(const void *gadget) const
+{
+    Q_ASSERT(priv(mobj->d.data)->flags & PropertyAccessInStaticMetaCall && mobj->d.static_metacall);
+    return read(reinterpret_cast<const QObject*>(gadget));
+}
+
+/*!
+    \since 5.5
+
+    Writes \a value as the property's value to the given \a gadget. Returns
+    true if the write succeeded; otherwise returns \c false.
+
+    This function should only be used if this is a property of a Q_GADGET
+*/
+bool QMetaProperty::writeOnGadget(void *gadget, const QVariant &value) const
+{
+    Q_ASSERT(priv(mobj->d.data)->flags & PropertyAccessInStaticMetaCall && mobj->d.static_metacall);
+    return write(reinterpret_cast<QObject*>(gadget), value);
+}
+
+/*!
+    \since 5.5
+
+    Resets the property for the given \a gadget with a reset method.
+    Returns \c true if the reset worked; otherwise returns \c false.
+
+    Reset methods are optional; only a few properties support them.
+
+    This function should only be used if this is a property of a Q_GADGET
+*/
+bool QMetaProperty::resetOnGadget(void *gadget) const
+{
+    Q_ASSERT(priv(mobj->d.data)->flags & PropertyAccessInStaticMetaCall && mobj->d.static_metacall);
+    return reset(reinterpret_cast<QObject*>(gadget));
+}
 
 /*!
     Returns \c true if this property can be reset to a default value; otherwise

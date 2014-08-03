@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -50,6 +51,7 @@ private slots:
     void hasStdCppSet();
     void isConstant();
     void isFinal();
+    void gadget();
 
 public:
     enum EnumType { EnumType1 };
@@ -102,6 +104,33 @@ void tst_QMetaProperty::isFinal()
     QVERIFY(prop.isValid());
     QVERIFY(!prop.isFinal());
 }
+
+class MyGadget {
+    Q_GADGET
+    Q_PROPERTY(QString value READ getValue WRITE setValue RESET resetValue)
+public:
+    QString m_value;
+    void setValue(const QString &value) { m_value = value; }
+    QString getValue() { return m_value; }
+    void resetValue() { m_value = QLatin1Literal("reset"); }
+};
+
+void tst_QMetaProperty::gadget()
+{
+    const QMetaObject *mo = &MyGadget::staticMetaObject;
+    QMetaProperty valueProp = mo->property(mo->indexOfProperty("value"));
+    QVERIFY(valueProp.isValid());
+    {
+        MyGadget g;
+        QString hello = QLatin1Literal("hello");
+        QVERIFY(valueProp.writeOnGadget(&g, hello));
+        QCOMPARE(g.m_value, QLatin1String("hello"));
+        QCOMPARE(valueProp.readOnGadget(&g), QVariant(hello));
+        QVERIFY(valueProp.resetOnGadget(&g));
+        QCOMPARE(valueProp.readOnGadget(&g), QVariant(QLatin1String("reset")));
+    }
+}
+
 
 QTEST_MAIN(tst_QMetaProperty)
 #include "tst_qmetaproperty.moc"

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -236,6 +237,10 @@ public:
     QVariant read(const QObject *obj) const;
     bool write(QObject *obj, const QVariant &value) const;
     bool reset(QObject *obj) const;
+
+    QVariant readOnGadget(const void *gadget) const;
+    bool writeOnGadget(void *gadget, const QVariant &value) const;
+    bool resetOnGadget(void *gadget) const;
 
     bool hasStdCppSet() const;
     inline bool isValid() const { return isReadable(); }
