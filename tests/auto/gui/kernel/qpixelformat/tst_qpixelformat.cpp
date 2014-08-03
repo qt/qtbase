@@ -59,11 +59,11 @@ private slots:
 
 void tst_QPixelFormat::testOperators()
 {
-    QPixelFormat first = QPixelFormatRgb(8,8,8,8,QPixelFormat::UsesAlpha, QPixelFormat::AtBeginning, QPixelFormat::Premultiplied);
-    QPixelFormat second = QPixelFormatRgb(8,8,8,8,QPixelFormat::UsesAlpha, QPixelFormat::AtBeginning, QPixelFormat::Premultiplied);
+    QPixelFormat first = qPixelFormatRgba(8,8,8,8,QPixelFormat::UsesAlpha, QPixelFormat::AtBeginning, QPixelFormat::Premultiplied);
+    QPixelFormat second = qPixelFormatRgba(8,8,8,8,QPixelFormat::UsesAlpha, QPixelFormat::AtBeginning, QPixelFormat::Premultiplied);
     QVERIFY(first == second);
 
-    QPixelFormat third = QPixelFormatRgb(8,8,8,8,QPixelFormat::UsesAlpha, QPixelFormat::AtEnd, QPixelFormat::NotPremultiplied);
+    QPixelFormat third = qPixelFormatRgba(8,8,8,8,QPixelFormat::UsesAlpha, QPixelFormat::AtEnd, QPixelFormat::NotPremultiplied);
     QVERIFY(first != third);
 }
 
@@ -88,20 +88,20 @@ void tst_QPixelFormat::testQVectorOfFormats()
 
 void tst_QPixelFormat::testRGB()
 {
-    QPixelFormat argb8888 = QPixelFormatRgb(8,8,8,8,QPixelFormat::UsesAlpha,QPixelFormat::AtBeginning, QPixelFormat::Premultiplied);
+    QPixelFormat argb8888 = qPixelFormatRgba(8,8,8,8,QPixelFormat::UsesAlpha,QPixelFormat::AtBeginning, QPixelFormat::Premultiplied);
     QCOMPARE(argb8888.redSize(), uchar(8));
     QCOMPARE(argb8888.greenSize(), uchar(8));
     QCOMPARE(argb8888.blueSize(), uchar(8));
     QCOMPARE(argb8888.alphaSize(), uchar(8));
 
-    QPixelFormat rgb565 = QPixelFormatRgb(5,6,5,0,QPixelFormat::IgnoresAlpha,QPixelFormat::AtBeginning, QPixelFormat::NotPremultiplied);
+    QPixelFormat rgb565 = qPixelFormatRgba(5,6,5,0,QPixelFormat::IgnoresAlpha,QPixelFormat::AtBeginning, QPixelFormat::NotPremultiplied);
     QCOMPARE(rgb565.redSize(), uchar(5));
     QCOMPARE(rgb565.greenSize(), uchar(6));
     QCOMPARE(rgb565.blueSize(), uchar(5));
     QCOMPARE(rgb565.alphaSize(), uchar(0));
     QCOMPARE(rgb565.bitsPerPixel(), uchar(16));
 
-    QPixelFormat rgba1235 = QPixelFormatRgb(1,2,3,5,QPixelFormat::IgnoresAlpha, QPixelFormat::AtEnd, QPixelFormat::Premultiplied);
+    QPixelFormat rgba1235 = qPixelFormatRgba(1,2,3,5,QPixelFormat::IgnoresAlpha, QPixelFormat::AtEnd, QPixelFormat::Premultiplied);
     QCOMPARE(rgba1235.redSize(), uchar(1));
     QCOMPARE(rgba1235.greenSize(), uchar(2));
     QCOMPARE(rgba1235.blueSize(), uchar(3));
@@ -111,26 +111,26 @@ void tst_QPixelFormat::testRGB()
 
 void tst_QPixelFormat::testCMYK()
 {
-    QPixelFormat cmyk6 = QPixelFormatCmyk(6);
+    QPixelFormat cmyk6 = qPixelFormatCmyk(6);
     QCOMPARE(cmyk6.cyanSize(), uchar(6));
     QCOMPARE(cmyk6.magentaSize(), uchar(6));
     QCOMPARE(cmyk6.yellowSize(), uchar(6));
     QCOMPARE(cmyk6.blackSize(), uchar(6));
     QCOMPARE(cmyk6.bitsPerPixel(), uchar(6*4));
 
-    QPixelFormat cmykWithAlpha = QPixelFormatCmyk(8,8);
+    QPixelFormat cmykWithAlpha = qPixelFormatCmyk(8,8);
     QCOMPARE(cmykWithAlpha.bitsPerPixel(), uchar(8*5));
 }
 void tst_QPixelFormat::testHSLandHSV()
 {
-    QPixelFormat hsl = QPixelFormatHsl(3,5);
+    QPixelFormat hsl = qPixelFormatHsl(3,5);
 
     QCOMPARE(hsl.hueSize(), uchar(3));
     QCOMPARE(hsl.saturationSize(), uchar(3));
     QCOMPARE(hsl.lightnessSize(), uchar(3));
     QCOMPARE(hsl.bitsPerPixel(), uchar(3 * 3 + 5));
 
-    QPixelFormat hsv = QPixelFormatHsv(5,7);
+    QPixelFormat hsv = qPixelFormatHsv(5,7);
 
     QCOMPARE(hsv.hueSize(), uchar(5));
     QCOMPARE(hsv.saturationSize(), uchar(5));
@@ -164,7 +164,7 @@ void tst_QPixelFormat::testYUV()
 {
     QFETCH(QPixelFormat::YUVLayout, yuv_layout);
 
-    QPixelFormat format = QPixelFormatYuv(yuv_layout, 0);
+    QPixelFormat format = qPixelFormatYuv(yuv_layout, 0);
 
     switch (yuv_layout) {
     case QPixelFormat::YUV444:

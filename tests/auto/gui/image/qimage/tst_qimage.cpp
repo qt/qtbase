@@ -2559,7 +2559,7 @@ void tst_QImage::scaled_QTBUG35972()
 
 void tst_QImage::convertToPixelFormat()
 {
-    QPixelFormat rgb565 = QPixelFormatRgb(5,6,5,0,QPixelFormat::IgnoresAlpha, QPixelFormat::AtBeginning, QPixelFormat::NotPremultiplied, QPixelFormat::UnsignedShort);
+    QPixelFormat rgb565 = qPixelFormatRgba(5,6,5,0,QPixelFormat::IgnoresAlpha, QPixelFormat::AtBeginning, QPixelFormat::NotPremultiplied, QPixelFormat::UnsignedShort);
     QPixelFormat rgb565ImageFormat = QImage::toPixelFormat(QImage::Format_RGB16);
     QCOMPARE(rgb565, rgb565ImageFormat);
 }

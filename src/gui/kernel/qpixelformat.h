@@ -230,60 +230,6 @@ private:
 Q_STATIC_ASSERT(sizeof(QPixelFormat) == sizeof(quint64));
 Q_DECLARE_TYPEINFO(QPixelFormat, Q_PRIMITIVE_TYPE);
 
-class QPixelFormatRgb : public QPixelFormat
-{
-public:
-    Q_DECL_CONSTEXPR
-    inline QPixelFormatRgb(uchar redSize,
-                           uchar greenSize,
-                           uchar blueSize,
-                           uchar alphaSize,
-                           AlphaUsage alphaUsage,
-                           AlphaPosition alphaPosition,
-                           AlphaPremultiplied premultiplied = NotPremultiplied,
-                           TypeInterpretation typeInterpretation = UnsignedInteger) Q_DECL_NOTHROW;
-};
-
-class QPixelFormatGrayscale : public QPixelFormat
-{
-public:
-    Q_DECL_CONSTEXPR
-    inline QPixelFormatGrayscale(uchar bufferSize,
-                                 TypeInterpretation typeInterpretation = UnsignedInteger) Q_DECL_NOTHROW;
-};
-
-class QPixelFormatCmyk : public QPixelFormat
-{
-public:
-    Q_DECL_CONSTEXPR
-    inline QPixelFormatCmyk(uchar channelSize,
-                            uchar alphaSize = 0,
-                            AlphaUsage alphaUsage = IgnoresAlpha,
-                            AlphaPosition alphaPosition = AtBeginning,
-                            TypeInterpretation typeInterpretation = UnsignedInteger) Q_DECL_NOTHROW;
-};
-
-class QPixelFormatHsl : public QPixelFormat
-{
-public:
-    Q_DECL_CONSTEXPR
-    inline QPixelFormatHsl(uchar channelSize,
-                           uchar alphaSize = 0,
-                           AlphaUsage alphaUsage = IgnoresAlpha,
-                           AlphaPosition alphaPosition = AtBeginning,
-                           TypeInterpretation typeInterpretation = FloatingPoint) Q_DECL_NOTHROW;
-};
-
-class QPixelFormatHsv : public QPixelFormat
-{
-public:
-    Q_DECL_CONSTEXPR
-    inline QPixelFormatHsv(uchar channelSize,
-                           uchar alphaSize = 0,
-                           AlphaUsage alphaUsage = IgnoresAlpha,
-                           AlphaPosition alphaPosition = AtBeginning,
-                           TypeInterpretation typeInterpretation = FloatingPoint) Q_DECL_NOTHROW;
-};
 
 namespace QtPrivate {
     QPixelFormat Q_GUI_EXPORT QPixelFormat_createYUV(QPixelFormat::YUVLayout yuvLayout,
@@ -294,18 +240,6 @@ namespace QtPrivate {
                                                      QPixelFormat::TypeInterpretation typeInterpretation,
                                                      QPixelFormat::ByteOrder byteOrder);
 }
-
-class QPixelFormatYuv : public QPixelFormat
-{
-public:
-    inline QPixelFormatYuv(YUVLayout yuvLayout,
-                           uchar alphaSize = 0,
-                           AlphaUsage alphaUsage = IgnoresAlpha,
-                           AlphaPosition alphaPosition = AtBeginning,
-                           AlphaPremultiplied premultiplied = NotPremultiplied,
-                           TypeInterpretation typeInterpretation = UnsignedByte,
-                           ByteOrder byteOrder = LittleEndian);
-};
 
 Q_DECL_CONSTEXPR
 QPixelFormat::QPixelFormat(ColorModel mdl,
@@ -338,117 +272,117 @@ QPixelFormat::QPixelFormat(ColorModel mdl,
 {
 }
 
-Q_DECL_CONSTEXPR
-QPixelFormatRgb::QPixelFormatRgb(uchar red,
-                                 uchar green,
-                                 uchar blue,
-                                 uchar alfa,
-                                 AlphaUsage usage,
-                                 AlphaPosition position,
-                                 AlphaPremultiplied pmul,
-                                 TypeInterpretation typeInt) Q_DECL_NOTHROW
-    : QPixelFormat(RGB,
-                   red,
-                   green,
-                   blue,
-                   0,
-                   0,
-                   alfa,
-                   usage,
-                   position,
-                   pmul,
-                   typeInt)
-{ }
+Q_DECL_CONSTEXPR inline QPixelFormat qPixelFormatRgba(uchar red,
+                                                      uchar green,
+                                                      uchar blue,
+                                                      uchar alfa,
+                                                      QPixelFormat::AlphaUsage usage,
+                                                      QPixelFormat::AlphaPosition position,
+                                                      QPixelFormat::AlphaPremultiplied pmul=QPixelFormat::NotPremultiplied,
+                                                      QPixelFormat::TypeInterpretation typeInt=QPixelFormat::UnsignedInteger) Q_DECL_NOTHROW
+{
+    return QPixelFormat(QPixelFormat::RGB,
+                        red,
+                        green,
+                        blue,
+                        0,
+                        0,
+                        alfa,
+                        usage,
+                        position,
+                        pmul,
+                        typeInt);
+}
 
-Q_DECL_CONSTEXPR
-QPixelFormatGrayscale::QPixelFormatGrayscale(uchar channelSize,
-                                             TypeInterpretation typeInt) Q_DECL_NOTHROW
-    : QPixelFormat(Grayscale,
-                   channelSize,
-                   0,
-                   0,
-                   0,
-                   0,
-                   0,
-                   IgnoresAlpha,
-                   AtBeginning,
-                   NotPremultiplied,
-                   typeInt)
-{ }
+Q_DECL_CONSTEXPR inline QPixelFormat qPixelFormatGrayscale(uchar channelSize,
+                                                           QPixelFormat::TypeInterpretation typeInt=QPixelFormat::UnsignedInteger) Q_DECL_NOTHROW
+{
+    return QPixelFormat(QPixelFormat::Grayscale,
+                        channelSize,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        QPixelFormat::IgnoresAlpha,
+                        QPixelFormat::AtBeginning,
+                        QPixelFormat::NotPremultiplied,
+                        typeInt);
+}
 
-Q_DECL_CONSTEXPR
-QPixelFormatCmyk::QPixelFormatCmyk(uchar channelSize,
-                                   uchar alfa,
-                                   AlphaUsage usage,
-                                   AlphaPosition position,
-                                   TypeInterpretation typeInt) Q_DECL_NOTHROW
-    : QPixelFormat(CMYK,
-                   channelSize,
-                   channelSize,
-                   channelSize,
-                   channelSize,
-                   0,
-                   alfa,
-                   usage,
-                   position,
-                   NotPremultiplied,
-                   typeInt)
-{ }
+Q_DECL_CONSTEXPR inline QPixelFormat qPixelFormatCmyk(uchar channelSize,
+                                                      uchar alfa=0,
+                                                      QPixelFormat::AlphaUsage usage=QPixelFormat::IgnoresAlpha,
+                                                      QPixelFormat::AlphaPosition position=QPixelFormat::AtBeginning,
+                                                      QPixelFormat::TypeInterpretation typeInt=QPixelFormat::UnsignedInteger) Q_DECL_NOTHROW
+{
+    return QPixelFormat(QPixelFormat::CMYK,
+                        channelSize,
+                        channelSize,
+                        channelSize,
+                        channelSize,
+                        0,
+                        alfa,
+                        usage,
+                        position,
+                        QPixelFormat::NotPremultiplied,
+                        typeInt);
+}
 
-Q_DECL_CONSTEXPR
-QPixelFormatHsl::QPixelFormatHsl(uchar channelSize,
-                                 uchar alfa,
-                                 AlphaUsage usage,
-                                 AlphaPosition position,
-                                 TypeInterpretation typeInt) Q_DECL_NOTHROW
-    : QPixelFormat(HSL,
-                   channelSize,
-                   channelSize,
-                   channelSize,
-                   0,
-                   0,
-                   alfa,
-                   usage,
-                   position,
-                   NotPremultiplied,
-                   typeInt)
-{ }
+Q_DECL_CONSTEXPR inline QPixelFormat qPixelFormatHsl(uchar channelSize,
+                                                     uchar alfa=0,
+                                                     QPixelFormat::AlphaUsage usage=QPixelFormat::IgnoresAlpha,
+                                                     QPixelFormat::AlphaPosition position=QPixelFormat::AtBeginning,
+                                                     QPixelFormat::TypeInterpretation typeInt=QPixelFormat::FloatingPoint) Q_DECL_NOTHROW
+{
+    return QPixelFormat(QPixelFormat::HSL,
+                        channelSize,
+                        channelSize,
+                        channelSize,
+                        0,
+                        0,
+                        alfa,
+                        usage,
+                        position,
+                        QPixelFormat::NotPremultiplied,
+                        typeInt);
+}
 
-Q_DECL_CONSTEXPR
-QPixelFormatHsv::QPixelFormatHsv(uchar channelSize,
-                                 uchar alfa,
-                                 AlphaUsage usage,
-                                 AlphaPosition position,
-                                 TypeInterpretation typeInt) Q_DECL_NOTHROW
-    : QPixelFormat(HSV,
-                   channelSize,
-                   channelSize,
-                   channelSize,
-                   0,
-                   0,
-                   alfa,
-                   usage,
-                   position,
-                   NotPremultiplied,
-                   typeInt)
-{ }
+Q_DECL_CONSTEXPR inline QPixelFormat qPixelFormatHsv(uchar channelSize,
+                                                     uchar alfa=0,
+                                                     QPixelFormat::AlphaUsage usage=QPixelFormat::IgnoresAlpha,
+                                                     QPixelFormat::AlphaPosition position=QPixelFormat::AtBeginning,
+                                                     QPixelFormat::TypeInterpretation typeInt=QPixelFormat::FloatingPoint) Q_DECL_NOTHROW
+{
+    return QPixelFormat(QPixelFormat::HSV,
+                        channelSize,
+                        channelSize,
+                        channelSize,
+                        0,
+                        0,
+                        alfa,
+                        usage,
+                        position,
+                        QPixelFormat::NotPremultiplied,
+                        typeInt);
+}
 
-QPixelFormatYuv::QPixelFormatYuv(YUVLayout layout,
-                                 uchar alfa,
-                                 AlphaUsage usage,
-                                 AlphaPosition position,
-                                 AlphaPremultiplied p_mul,
-                                 TypeInterpretation typeInt,
-                                 ByteOrder b_order)
-    : QPixelFormat(QtPrivate::QPixelFormat_createYUV(layout,
-                                                     alfa,
-                                                     usage,
-                                                     position,
-                                                     p_mul,
-                                                     typeInt,
-                                                     b_order))
-
-{ }
+inline QPixelFormat qPixelFormatYuv(QPixelFormat::YUVLayout layout,
+                                    uchar alfa=0,
+                                    QPixelFormat::AlphaUsage usage=QPixelFormat::IgnoresAlpha,
+                                    QPixelFormat::AlphaPosition position=QPixelFormat::AtBeginning,
+                                    QPixelFormat::AlphaPremultiplied p_mul=QPixelFormat::NotPremultiplied,
+                                    QPixelFormat::TypeInterpretation typeInt=QPixelFormat::UnsignedByte,
+                                    QPixelFormat::ByteOrder b_order=QPixelFormat::LittleEndian)
+{
+    return QtPrivate::QPixelFormat_createYUV(layout,
+                                             alfa,
+                                             usage,
+                                             position,
+                                             p_mul,
+                                             typeInt,
+                                             b_order);
+}
 
 QT_END_NAMESPACE
 

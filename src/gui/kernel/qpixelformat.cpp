@@ -253,29 +253,18 @@ QT_BEGIN_NAMESPACE
     YUV type The default value is 0.
 */
 
-Q_STATIC_ASSERT(sizeof(QPixelFormatRgb) == sizeof(QPixelFormat));
-
 /*!
-    \class QPixelFormatRgb
-    \inmodule QtGui
-    \since 5.4
-    \brief QPixelFormatRgb is a helper class for creating pixel formats with
-    the rgb color model
+    \fn QPixelFormat qPixelFormatRgba(uchar redSize,
+                                      uchar greenSize,
+                                      uchar blueSize,
+                                      uchar alphaSize,
+                                      QPixelFormat::AlphaUsage alphaUsage,
+                                      QPixelFormat::AlphaPosition alphaPosition,
+                                      QPixelFormat::AlphaPremultiplied premultiplied = QPixelFormat::NotPremultiplied,
+                                      QPixelFormat::TypeInterpretation typeInterpretation = QPixelFormat::UnsignedInteger)
+    \relates QPixelFormat
 
-    The size of QPixelFormatRgb is guaranteed to be the size of QPixelFormat.
-*/
-
-/*!
-    \fn QPixelFormatRgb::QPixelFormatRgb(uchar redSize,
-                                         uchar greenSize,
-                                         uchar blueSize,
-                                         uchar alphaSize,
-                                         AlphaUsage alphaUsage,
-                                         AlphaPosition alphaPosition,
-                                         AlphaPremultiplied premultiplied = NotPremultiplied,
-                                         TypeInterpretation typeInterpretation = UnsignedInteger)
-
-    Constructor making an RGB pixelformat. \a redSize \a greenSize \a
+    Constructor function making an RGB pixelformat. \a redSize \a greenSize \a
     blueSize represent the size of each color channel. \a alphaSize describes
     the alpha channel size and its position is described with \a alphaPosition.
     \a alphaUsage is used to determine if the alpha channel is used or not.
@@ -284,79 +273,49 @@ Q_STATIC_ASSERT(sizeof(QPixelFormatRgb) == sizeof(QPixelFormat));
     bits combined. \a premultiplied \a typeInterpretation are
     accessible with accessors with the same name.
 
-    \sa TypeInterpretation
-*/
-
-Q_STATIC_ASSERT(sizeof(QPixelFormatGrayscale) == sizeof(QPixelFormat));
-/*!
-    \class QPixelFormatGrayscale
-    \inmodule QtGui
-    \since 5.4
-    \brief QPixelFormatGrayscale is a helper class for creating pixel formats with
-    the gray scale color model.
-
-    The size of QPixelFormatGrayscale is guaranteed to be the size of QPixelFormat.
+    \sa QPixelFormat::TypeInterpretation
 */
 
 /*!
-    \fn QPixelFormatGrayscale::QPixelFormatGrayscale(uchar channelSize,
-                                                     TypeInterpretation typeInterpretation = UnsignedInteger)
+    \fn QPixelFormat qPixelFormatGrayscale(uchar channelSize,
+                                           QPixelFormat::TypeInterpretation typeInterpretation = QPixelFormat::UnsignedInteger)
+    \relates QPixelFormat
 
-    Constructor for creating a Grayscale format. Monochrome formats can be
+    Constructor function for creating a Grayscale format. Monochrome formats can be
     described by passing 1 to \a channelSize. Its also possible to define very
     accurate greyscale formats using doubles to describe each pixel by passing 8
     as \a channelSize and FloatingPoint as \a typeInterpretation.
 
-    \sa TypeInterpretation
-*/
-
-Q_STATIC_ASSERT(sizeof(QPixelFormatCmyk) == sizeof(QPixelFormat));
-/*!
-    \class QPixelFormatCmyk
-    \inmodule QtGui
-    \since 5.4
-    \brief QPixelFormatCmyk is a helper class for creating pixel formats with
-    the CMYK color model
-
-    The size of QPixelFormatCmyk is guaranteed to be the size of QPixelFormat.
+    \sa QPixelFormat::TypeInterpretation
 */
 
 /*!
-    \fn QPixelFormatCmyk::QPixelFormatCmyk(uchar channelSize,
-                                           uchar alphaSize = 0,
-                                           AlphaUsage alphaUsage = IgnoresAlpha,
-                                           AlphaPosition alphaPosition = AtBeginning,
-                                           TypeInterpretation typeInterpretation = UnsignedInteger)
+    \fn QPixelFormat qPixelFormatCmyk(uchar channelSize,
+                                      uchar alphaSize = 0,
+                                      QPixelFormat::AlphaUsage alphaUsage = QPixelFormat::IgnoresAlpha,
+                                      QPixelFormat::AlphaPosition alphaPosition = QPixelFormat::AtBeginning,
+                                      QPixelFormat::TypeInterpretation typeInterpretation = QPixelFormat::UnsignedInteger)
+    \relates QPixelFormat
 
-    Constructor for creating CMYK formats. The channel count will be 4 or
+    Constructor function for creating CMYK formats. The channel count will be 4 or
     5 depending on if \a alphaSize is bigger than zero or not. The CMYK color
     channels will all be set to the value of \a channelSize.
 
     \a alphaUsage \a alphaPosition and \a typeInterpretation are all accessible with
     the accessors with the same name.
 
-    \sa TypeInterpretation
-*/
-
-Q_STATIC_ASSERT(sizeof(QPixelFormatHsl) == sizeof(QPixelFormat));
-/*!
-    \class QPixelFormatHsl
-    \inmodule QtGui
-    \since 5.4
-    \brief QPixelFormatHsl is a helper class for creating pixel formats with
-    the HSL color model.
-
-    The size of QPixelFormatHsl is guaranteed to be the size of QPixelFormat.
+    \sa QPixelFormat::TypeInterpretation
 */
 
 /*!
-    \fn QPixelFormatHsl::QPixelFormatHsl(uchar channelSize,
-                                         uchar alphaSize = 0,
-                                         AlphaUsage alphaUsage = IgnoresAlpha,
-                                         AlphaPosition alphaPosition = AtBeginning,
-                                         TypeInterpretation typeInterpretation = FloatingPoint)
+    \fn QPixelFormat qPixelFormatHsl(uchar channelSize,
+                                     uchar alphaSize = 0,
+                                     QPixelFormat::AlphaUsage alphaUsage = QPixelFormat::IgnoresAlpha,
+                                     QPixelFormat::AlphaPosition alphaPosition = QPixelFormat::AtBeginning,
+                                     QPixelFormat::TypeInterpretation typeInterpretation = QPixelFormat::FloatingPoint)
+    \relates QPixelFormat
 
-    Constructor for creating HSL formats. The channel count will be 3 or 4
+    Constructor function for creating HSL formats. The channel count will be 3 or 4
     depending on if \a alphaSize is bigger than 0.
 
     \a channelSize will set the hueSize saturationSize and lightnessSize to the same value.
@@ -365,25 +324,15 @@ Q_STATIC_ASSERT(sizeof(QPixelFormatHsl) == sizeof(QPixelFormat));
     the accessors with the same name.
 */
 
-Q_STATIC_ASSERT(sizeof(QPixelFormatHsv) == sizeof(QPixelFormat));
 /*!
-    \class QPixelFormatHsv
-    \inmodule QtGui
-    \since 5.4
-    \brief QPixelFormatHsv is a helper class for creating pixel formats with
-    the HSV color model.
+    \fn QPixelFormat qPixelFormatHsv(uchar channelSize,
+                                     uchar alphaSize = 0,
+                                     QPixelFormat::AlphaUsage alphaUsage = QPixelFormat::IgnoresAlpha,
+                                     QPixelFormat::AlphaPosition alphaPosition = QPixelFormat::AtBeginning,
+                                     QPixelFormat::TypeInterpretation typeInterpretation = QPixelFormat::FloatingPoint)
+    \relates QPixelFormat
 
-    The size of QPixelFormatHsv is guaranteed to be the size of QPixelFormat.
-*/
-
-/*!
-    \fn QPixelFormatHsv::QPixelFormatHsv(uchar channelSize,
-                                         uchar alphaSize = 0,
-                                         AlphaUsage alphaUsage = IgnoresAlpha,
-                                         AlphaPosition alphaPosition = AtBeginning,
-                                         TypeInterpretation typeInterpretation = FloatingPoint)
-
-    Constructor for creating HSV formats. The channel count will be 3 or 4
+    Constructor function for creating HSV formats. The channel count will be 3 or 4
     depending on if \a alphaSize is bigger than 0.
 
     \a channelSize will set the hueSize saturationSize and brightnessSize to the same value.
@@ -392,27 +341,17 @@ Q_STATIC_ASSERT(sizeof(QPixelFormatHsv) == sizeof(QPixelFormat));
     the accessors with the same name.
 */
 
-Q_STATIC_ASSERT(sizeof(QPixelFormatYuv) == sizeof(QPixelFormat));
 /*!
-    \class QPixelFormatYuv
-    \inmodule QtGui
-    \since 5.4
-    \brief QPixelFormatYuv is a helper class for creating pixel formats with
-    the YUV color model.
+    \fn QPixelFormat qPixelFormatYuv(QPixelFormat::YUVLayout yuvLayout,
+                                     uchar alphaSize = 0,
+                                     QPixelFormat::AlphaUsage alphaUsage = QPixelFormat::IgnoresAlpha,
+                                     QPixelFormat::AlphaPosition alphaPosition = QPixelFormat::AtBeginning,
+                                     QPixelFormat::AlphaPremultiplied premultiplied = QPixelFormat::NotPremultiplied,
+                                     QPixelFormat::TypeInterpretation typeInterpretation = QPixelFormat::UnsignedByte,
+                                     QPixelFormat::ByteOrder byteOrder = QPixelFormat::LittleEndian)
+    \relates QPixelFormat
 
-    The size of QPixelFormatYuv is guaranteed to be the size of QPixelFormat.
-*/
-
-/*!
-    \fn QPixelFormatYuv::QPixelFormatYuv(YUVLayout yuvLayout,
-                                         uchar alphaSize = 0,
-                                         AlphaUsage alphaUsage = IgnoresAlpha,
-                                         AlphaPosition alphaPosition = AtBeginning,
-                                         AlphaPremultiplied premultiplied = NotPremultiplied,
-                                         TypeInterpretation typeInterpretation = UnsignedByte,
-                                         ByteOrder byteOrder = LittleEndian)
-
-    Constructor for creating a QPixelFormat describing a YUV format with
+    Constructor function for creating a QPixelFormat describing a YUV format with
     \a yuvLayout.  \a alphaSize describes the size of a potential alpha channel
     and is position is described with \a alphaPosition. The "first" "second" ..
     "fifth" channels are all set to 0. \a alphaUsage \a premultiplied \a
