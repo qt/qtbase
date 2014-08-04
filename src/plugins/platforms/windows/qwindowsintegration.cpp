@@ -217,6 +217,7 @@ QWindowsIntegrationPrivate::QWindowsIntegrationPrivate(const QStringList &paramL
     : m_options(0)
     , m_fontDatabase(0)
 {
+    static bool dpiAwarenessSet = false;
     int tabletAbsoluteRange = -1;
     // Default to per-monitor awareness to avoid being scaled when monitors with different DPI
     // are connected to Windows 8.1
@@ -224,7 +225,10 @@ QWindowsIntegrationPrivate::QWindowsIntegrationPrivate(const QStringList &paramL
     m_options = parseOptions(paramList, &tabletAbsoluteRange, &dpiAwareness);
     if (tabletAbsoluteRange >= 0)
         m_context.setTabletAbsoluteRange(tabletAbsoluteRange);
-    m_context.setProcessDpiAwareness(dpiAwareness);
+    if (!dpiAwarenessSet) { // Set only once in case of repeated instantiations of QGuiApplication.
+        m_context.setProcessDpiAwareness(dpiAwareness);
+        dpiAwarenessSet = true;
+    }
 }
 
 QWindowsIntegrationPrivate::~QWindowsIntegrationPrivate()
