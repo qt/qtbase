@@ -88,6 +88,7 @@ Qt {
     Q_FLAGS(KeyboardModifiers MouseButtons)
     Q_ENUMS(WindowType WindowState WindowModality WidgetAttribute ApplicationAttribute)
     Q_FLAGS(WindowFlags WindowStates)
+    Q_ENUMS(FocusReason)
     Q_ENUMS(InputMethodHint InputMethodQuery)
     Q_FLAGS(InputMethodHints InputMethodQueries)
     Q_ENUMS(ScreenOrientation)
@@ -101,6 +102,7 @@ Qt {
     Q_ENUMS(CursorMoveStyle)
     Q_ENUMS(TimerType)
     Q_ENUMS(ScrollPhase)
+    Q_ENUMS(MouseEventSource)
 #endif // defined(Q_MOC_RUN)
 
 #if defined(Q_MOC_RUN)
