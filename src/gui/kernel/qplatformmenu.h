@@ -98,6 +98,8 @@ class Q_GUI_EXPORT QPlatformMenu : public QObject
 {
 Q_OBJECT
 public:
+    enum MenuType { DefaultMenu = 0, EditMenu };
+
     virtual void insertMenuItem(QPlatformMenuItem *menuItem, QPlatformMenuItem *before) = 0;
     virtual void removeMenuItem(QPlatformMenuItem *menuItem) = 0;
     virtual void syncMenuItem(QPlatformMenuItem *menuItem) = 0;
@@ -112,6 +114,7 @@ public:
     virtual void setVisible(bool visible) = 0;
     virtual void setMinimumWidth(int width) { Q_UNUSED(width); }
     virtual void setFont(const QFont &font) { Q_UNUSED(font); }
+    virtual void setMenuType(MenuType type) { Q_UNUSED(type); }
 
     virtual void showPopup(const QWindow *parentWindow, QPoint pos, const QPlatformMenuItem *item)
     {
