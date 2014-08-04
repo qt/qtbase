@@ -1393,4 +1393,13 @@ const Node* Tree::findFunctionNode(const QString& target, const Node* relative, 
     return 0;
 }
 
+/*!
+  Search for a node that is identified by \a name.
+  Return a pointer to a matching node, or 0.
+*/
+const Node* Tree::checkForCollision(const QString& name)
+{
+    return findNode(QStringList(name), 0, 0, Node::DontCare);
+}
+
 QT_END_NAMESPACE

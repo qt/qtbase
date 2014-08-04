@@ -497,6 +497,15 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
                 ptype = Node::DitaMapPage;
         }
 
+#if 0
+        const Node* n = qdb_->checkForCollision(args[0]);
+        if (n) {
+            QString other = n->doc().location().fileName();
+            doc.location().warning(tr("Name/title collision detected: '%1' in '\\%2'")
+                                   .arg(args[0]).arg(command),
+                                   tr("Also used here: %1").arg(other));
+        }
+#endif
         DocNode* dn = 0;
         if (ptype == Node::DitaMapPage)
             dn = new DitaMapNode(qdb_->primaryTreeRoot(), args[0]);
@@ -534,6 +543,15 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
                 classNode = qdb_->findClassNode(names[1].split("::"));
         }
 
+#if 0
+        const Node* n = qdb_->checkForCollision(names[0]);
+        if (n) {
+            QString other = n->doc().location().fileName();
+            doc.location().warning(tr("Name/title collision detected: '%1' in '\\%2'")
+                                   .arg(names[0]).arg(command),
+                                   tr("Also used here: %1").arg(other));
+        }
+#endif
         QmlClassNode* qcn = new QmlClassNode(qdb_->primaryTreeRoot(), names[0]);
         qcn->setClassNode(classNode);
         qcn->setLocation(doc.startLocation());

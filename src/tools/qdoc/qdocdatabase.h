@@ -304,6 +304,9 @@ class QDocDatabase
     }
     FunctionNode* findNodeInOpenNamespace(const QStringList& parentPath, const FunctionNode* clone);
     Node* findNodeInOpenNamespace(QStringList& path, Node::Type type);
+    const Node* checkForCollision(const QString& name) {
+        return primaryTree()->checkForCollision(name);
+    }
     /*******************************************************************/
 
     /*******************************************************************

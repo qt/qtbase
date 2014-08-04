@@ -194,6 +194,7 @@ class Tree
     void insertQmlType(const QString& key, QmlClassNode* n);
     void addExampleNode(ExampleNode* n) { exampleNodeMap_.insert(n->title(), n); }
     ExampleNodeMap& exampleNodeMap() { return exampleNodeMap_; }
+    const Node* checkForCollision(const QString& name);
 
  public:
     const QString& moduleName() const { return module_; }
