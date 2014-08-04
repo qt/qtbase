@@ -40,24 +40,31 @@
 ****************************************************************************/
 
 
-#if GL_IMPLEMENTATION_GLES2
-#include <GLES2/gl2.h>
-#elif GL_IMPLEMENTATION_GL
-
 #include <qglobal.h>
-#ifdef Q_OS_WIN
-#include <qt_windows.h>
-#endif
-
-#ifdef Q_OS_MAC
-#include <OpenGL/gl.h>
+#ifndef QT_OPENGL_DYNAMIC
+#  if defined(GL_IMPLEMENTATION_GLES2)
+#    include <GLES2/gl2.h>
+#  elif defined(GL_IMPLEMENTATION_GL)
+#    ifdef Q_OS_WIN
+#      include <qt_windows.h>
+#    endif
+#    ifdef Q_OS_MAC
+#      include <OpenGL/gl.h>
+#    else
+#      include <GL/gl.h>
+#    endif
+#  endif
 #else
-#include <GL/gl.h>
-#endif
+#  include <QOpenGLFunctions>
 #endif
 
 int main(int argc, char **argv)
 {
+#ifndef QT_OPENGL_DYNAMIC
     glGetError();
+#else
+    QOpenGLFunctions functions;
+    functions.glGetError();
+#endif
     return 0;
 }
