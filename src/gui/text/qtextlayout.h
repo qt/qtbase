@@ -131,9 +131,11 @@ public:
         friend bool operator!=(const FormatRange &lhs, const FormatRange &rhs)
         { return !operator==(lhs, rhs); }
     };
-    void setAdditionalFormats(const QList<FormatRange> &overrides);
-    QList<FormatRange> additionalFormats() const;
-    void clearAdditionalFormats();
+#if QT_DEPRECATED_SINCE(5, 6)
+    QT_DEPRECATED_X("Use setFormats()") void setAdditionalFormats(const QList<FormatRange> &overrides);
+    QT_DEPRECATED_X("Use formats()") QList<FormatRange> additionalFormats() const;
+    QT_DEPRECATED_X("Use clearFormats()") void clearAdditionalFormats();
+#endif
     void setFormats(const QVector<FormatRange> &overrides);
     QVector<FormatRange> formats() const;
     void clearFormats();
