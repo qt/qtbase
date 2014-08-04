@@ -367,6 +367,22 @@ static const char* const qopenglslNonPremultipliedImageSrcFragmentShader = "\n\
         return sample; \n\
     }\n";
 
+static const char* const qopenglslGrayscaleImageSrcFragmentShader = "\n\
+    varying   highp   vec2      textureCoords; \n\
+    uniform          sampler2D imageTexture; \n\
+    lowp vec4 srcPixel() \n\
+    { \n\
+        return texture2D(imageTexture, textureCoords).rrra; \n\
+    }\n";
+
+static const char* const qopenglslAlphaImageSrcFragmentShader = "\n\
+    varying   highp   vec2      textureCoords; \n\
+    uniform          sampler2D imageTexture; \n\
+    lowp vec4 srcPixel() \n\
+    { \n\
+        return vec4(0, 0, 0, texture2D(imageTexture, textureCoords).r); \n\
+    }\n";
+
 static const char* const qopenglslShockingPinkSrcFragmentShader = "\n\
     lowp vec4 srcPixel() \n\
     { \n\

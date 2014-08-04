@@ -41,6 +41,10 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef GL_RED
+#define GL_RED                            0x1903
+#endif
+
 #ifndef GL_RGB10_A2
 #define GL_RGB10_A2                       0x8059
 #endif
@@ -273,21 +277,34 @@ GLuint QOpenGLTextureCache::bindTexture(QOpenGLContext *context, qint64 key, con
         pixelType = GL_UNSIGNED_BYTE;
         targetFormat = image.format();
         break;
+    case QImage::Format_Indexed8:
+        if (options & UseRedFor8BitBindOption) {
+            externalFormat = internalFormat = GL_RED;
+            pixelType = GL_UNSIGNED_BYTE;
+            targetFormat = image.format();
+        }
+        break;
     case QImage::Format_Alpha8:
-        if (context->isOpenGLES() || context->format().profile() != QSurfaceFormat::CoreProfile) {
+        if (options & UseRedFor8BitBindOption) {
+            externalFormat = internalFormat = GL_RED;
+            pixelType = GL_UNSIGNED_BYTE;
+            targetFormat = image.format();
+        } else if (context->isOpenGLES() || context->format().profile() != QSurfaceFormat::CoreProfile) {
             externalFormat = internalFormat = GL_ALPHA;
             pixelType = GL_UNSIGNED_BYTE;
             targetFormat = image.format();
         }
-        // ### add support for core profiles.
         break;
     case QImage::Format_Grayscale8:
-        if (context->isOpenGLES() || context->format().profile() != QSurfaceFormat::CoreProfile) {
+        if (options & UseRedFor8BitBindOption) {
+            externalFormat = internalFormat = GL_RED;
+            pixelType = GL_UNSIGNED_BYTE;
+            targetFormat = image.format();
+        } else if (context->isOpenGLES() || context->format().profile() != QSurfaceFormat::CoreProfile) {
             externalFormat = internalFormat = GL_LUMINANCE;
             pixelType = GL_UNSIGNED_BYTE;
             targetFormat = image.format();
         }
-        // ### add support for core profiles.
         break;
     default:
         break;

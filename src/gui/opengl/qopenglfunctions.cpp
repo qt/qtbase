@@ -173,6 +173,7 @@ QT_BEGIN_NAMESPACE
     \value NPOTTextures Non power of two textures are available.
     \value NPOTTextureRepeat Non power of two textures can use GL_REPEAT as wrap parameter.
     \value FixedFunctionPipeline The fixed function pipeline is available.
+    \value TextureRGFormats The GL_RED and GL_RG texture formats are available.
 */
 
 // Hidden private fields for additional extension data.
@@ -284,10 +285,12 @@ static int qt_gl_resolve_features()
         if (extensions.match("GL_OES_texture_npot"))
             features |= QOpenGLFunctions::NPOTTextures |
                 QOpenGLFunctions::NPOTTextureRepeat;
+        if (ctx->format().majorVersion() >= 3 || extensions.match("GL_EXT_texture_rg"))
+            features |= QOpenGLFunctions::TextureRGFormats;
         return features;
     } else {
         // OpenGL
-        int features = 0;
+        int features = QOpenGLFunctions::TextureRGFormats;
         QSurfaceFormat format = QOpenGLContext::currentContext()->format();
         QOpenGLExtensionMatcher extensions;
 

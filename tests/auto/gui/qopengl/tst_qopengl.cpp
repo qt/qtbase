@@ -98,6 +98,8 @@ private slots:
     void textureblitterPartTargetRectTransform();
     void defaultSurfaceFormat();
 
+    void imageFormatPainting();
+
 #ifdef USE_GLX
     void glxContextWrap();
 #endif
@@ -716,6 +718,68 @@ void tst_QOpenGL::fboHandleNulledAfterContextDestroyed()
     }
 
     QCOMPARE(fbo->handle(), 0U);
+}
+
+void tst_QOpenGL::imageFormatPainting()
+{
+    QScopedPointer<QSurface> surface(createSurface(QSurface::Window));
+
+    QOpenGLContext ctx;
+    QVERIFY(ctx.create());
+
+    QVERIFY(ctx.makeCurrent(surface.data()));
+
+    if (!QOpenGLFramebufferObject::hasOpenGLFramebufferObjects())
+        QSKIP("QOpenGLFramebufferObject not supported on this platform");
+
+    QOpenGLFramebufferObjectFormat fboFormat;
+    fboFormat.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
+
+    const QSize size(128, 128);
+    QOpenGLFramebufferObject fbo(size, fboFormat);
+
+    if (fbo.attachment() != QOpenGLFramebufferObject::CombinedDepthStencil)
+        QSKIP("FBOs missing combined depth~stencil support");
+
+    QVERIFY(fbo.bind());
+
+    QImage alpha(128, 128, QImage::Format_Alpha8);
+    alpha.fill(127);
+
+    QPainter fboPainter;
+    QOpenGLPaintDevice device(fbo.width(), fbo.height());
+
+    QVERIFY(fboPainter.begin(&device));
+    fboPainter.fillRect(0, 0, 128, 128, qRgb(255, 0, 255));
+    fboPainter.setCompositionMode(QPainter::CompositionMode_DestinationIn);
+    fboPainter.drawImage(0, 0, alpha);
+    fboPainter.end();
+
+    QImage fb = fbo.toImage();
+    QCOMPARE(fb.pixel(0, 0), qRgba(127, 0, 127, 127));
+
+    QImage grayscale(128, 128, QImage::Format_Grayscale8);
+    grayscale.fill(128);
+
+    QVERIFY(fboPainter.begin(&device));
+    fboPainter.setCompositionMode(QPainter::CompositionMode_Plus);
+    fboPainter.drawImage(0, 0, grayscale);
+    fboPainter.end();
+
+    fb = fbo.toImage();
+    QCOMPARE(fb.pixel(0, 0), qRgb(255, 128, 255));
+
+    QImage argb(128, 128, QImage::Format_ARGB32);
+    argb.fill(qRgba(255, 255, 255, 128));
+
+    QVERIFY(fboPainter.begin(&device));
+    fboPainter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+    fboPainter.drawImage(0, 0, argb);
+    fboPainter.end();
+
+    fb = fbo.toImage();
+    QCOMPARE(fb.pixel(0, 0), qRgb(255, 192, 255));
+
 }
 
 void tst_QOpenGL::openGLPaintDevice_data()

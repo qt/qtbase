@@ -288,6 +288,8 @@ public:
         ImageSrcFragmentShader,
         ImageSrcWithPatternFragmentShader,
         NonPremultipliedImageSrcFragmentShader,
+        GrayscaleImageSrcFragmentShader,
+        AlphaImageSrcFragmentShader,
         CustomImageSrcFragmentShader,
         SolidBrushSrcFragmentShader,
         TextureBrushSrcFragmentShader,
@@ -414,7 +416,9 @@ public:
         ImageSrc = Qt::TexturePattern+1,
         NonPremultipliedImageSrc = Qt::TexturePattern+2,
         PatternSrc = Qt::TexturePattern+3,
-        TextureSrcWithPattern = Qt::TexturePattern+4
+        TextureSrcWithPattern = Qt::TexturePattern+4,
+        GrayscaleImageSrc = Qt::TexturePattern+5,
+        AlphaImageSrc = Qt::TexturePattern+6,
     };
 
     enum Uniform {

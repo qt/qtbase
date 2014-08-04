@@ -240,7 +240,8 @@ public:
         StencilSeparate       = 0x0800,
         NPOTTextures          = 0x1000,
         NPOTTextureRepeat     = 0x2000,
-        FixedFunctionPipeline = 0x4000
+        FixedFunctionPipeline = 0x4000,
+        TextureRGFormats      = 0x8000
     };
     Q_DECLARE_FLAGS(OpenGLFeatures, OpenGLFeature)
 

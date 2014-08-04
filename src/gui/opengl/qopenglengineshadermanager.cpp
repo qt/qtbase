@@ -154,6 +154,8 @@ QOpenGLEngineSharedShaders::QOpenGLEngineSharedShaders(QOpenGLContext* context)
         code[ImageSrcFragmentShader] = qopenglslImageSrcFragmentShader;
         code[ImageSrcWithPatternFragmentShader] = qopenglslImageSrcWithPatternFragmentShader;
         code[NonPremultipliedImageSrcFragmentShader] = qopenglslNonPremultipliedImageSrcFragmentShader;
+        code[GrayscaleImageSrcFragmentShader] = qopenglslGrayscaleImageSrcFragmentShader;
+        code[AlphaImageSrcFragmentShader] = qopenglslAlphaImageSrcFragmentShader;
         code[CustomImageSrcFragmentShader] = qopenglslCustomSrcFragmentShader; // Calls "customShader", which must be appended
         code[SolidBrushSrcFragmentShader] = qopenglslSolidBrushSrcFragmentShader;
         if (context->isOpenGLES())
@@ -697,6 +699,16 @@ bool QOpenGLEngineShaderManager::useCorrectShaderProg()
             break;
         case QOpenGLEngineShaderManager::NonPremultipliedImageSrc:
             requiredProgram.srcPixelFragShader = QOpenGLEngineSharedShaders::NonPremultipliedImageSrcFragmentShader;
+            requiredProgram.positionVertexShader = QOpenGLEngineSharedShaders::PositionOnlyVertexShader;
+            texCoords = true;
+            break;
+        case QOpenGLEngineShaderManager::GrayscaleImageSrc:
+            requiredProgram.srcPixelFragShader = QOpenGLEngineSharedShaders::GrayscaleImageSrcFragmentShader;
+            requiredProgram.positionVertexShader = QOpenGLEngineSharedShaders::PositionOnlyVertexShader;
+            texCoords = true;
+            break;
+        case QOpenGLEngineShaderManager::AlphaImageSrc:
+            requiredProgram.srcPixelFragShader = QOpenGLEngineSharedShaders::AlphaImageSrcFragmentShader;
             requiredProgram.positionVertexShader = QOpenGLEngineSharedShaders::PositionOnlyVertexShader;
             texCoords = true;
             break;
