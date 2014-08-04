@@ -73,6 +73,8 @@
 #  define ARCH_PROCESSOR "s390"
 #elif defined(Q_PROCESSOR_SH)
 #  define ARCH_PROCESSOR "sh"
+#elif defined(Q_PROCESSORS_SPARC_64)
+#  define ARCH_PROCESSOR "sparc64"
 #elif defined(Q_PROCESSOR_SPARC_V9)
 #  define ARCH_PROCESSOR "sparcv9"
 #elif defined(Q_PROCESSOR_SPARC)

@@ -10,9 +10,8 @@ contains(TEMPLATE, ".*app"):!build_pass:!android-no-sdk {
     FILE_CONTENT += "   \"qt\": $$emitString($$[QT_INSTALL_PREFIX]),"
 
     # Settings from mkspecs/environment
-    isEmpty(SDK_ROOT): SDK_ROOT = $$(ANDROID_SDK_ROOT)
-    isEmpty(SDK_ROOT): SDK_ROOT = $$DEFAULT_ANDROID_SDK_ROOT
-    FILE_CONTENT += "   \"sdk\": $$emitString($$SDK_ROOT),"
+    FILE_CONTENT += "   \"sdk\": $$emitString($$ANDROID_SDK_ROOT),"
+    FILE_CONTENT += "   \"sdkBuildToolsRevision\": $$emitString($$ANDROID_SDK_BUILD_TOOLS_REVISION),"
 
     isEmpty(NDK_ROOT): NDK_ROOT = $$(ANDROID_NDK_ROOT)
     isEmpty(NDK_ROOT): NDK_ROOT = $$DEFAULT_ANDROID_NDK_ROOT
