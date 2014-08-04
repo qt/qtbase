@@ -1724,6 +1724,7 @@ public class ExtractStyle {
               jsonWriter.name("textViewStyle").value(extractTextAppearanceInformations("textViewStyle", "QWidget", null, -1));
               jsonWriter.name("scrollViewStyle").value(extractTextAppearanceInformations("scrollViewStyle", "QAbstractScrollArea", null, -1));
               extractListView(jsonWriter, "listViewStyle", "QListView");
+              jsonWriter.name("listSeparatorTextViewStyle").value(extractTextAppearanceInformations("listSeparatorTextViewStyle", null, null, -1));
               extractItemsStyle(jsonWriter);
               extractCompoundButton(jsonWriter, "buttonStyleToggle", null);
               if (Build.VERSION.SDK_INT > 10) {
