@@ -69,6 +69,7 @@ QStringList Generator::imageFiles;
 QMap<QString, QStringList> Generator::imgFileExts;
 QString Generator::outDir_;
 QString Generator::outSubdir_;
+QStringList Generator::outFileNames_;
 QSet<QString> Generator::outputFormats;
 QHash<QString, QString> Generator::outputPrefixes;
 QString Generator::project;
@@ -244,8 +245,6 @@ void Generator::appendSortedQmlNames(Text& text, const Node* base, const NodeLis
     }
 }
 
-QMultiMap<QString,QString> outFileNames;
-
 /*!
   For debugging qdoc.
  */
@@ -255,10 +254,8 @@ void Generator::writeOutFileNames()
     if (!files.open(QFile::WriteOnly))
         return;
     QTextStream filesout(&files);
-    QMultiMap<QString,QString>::ConstIterator i = outFileNames.begin();
-    while (i != outFileNames.end()) {
-        filesout << i.key() << "\n";
-        ++i;
+    foreach (const QString &file, outFileNames_) {
+        filesout << file << "\n";
     }
 }
 
@@ -280,7 +277,7 @@ void Generator::beginSubPage(const InnerNode* node, const QString& fileName)
     if (!outFile->open(QFile::WriteOnly))
         node->location().fatal(tr("Cannot open output file '%1'").arg(outFile->fileName()));
     Generator::debug("Writing: " + path);
-    outFileNames.insert(fileName,fileName);
+    outFileNames_ << fileName;
     QTextStream* out = new QTextStream(outFile);
 
 #ifndef QT_NO_TEXTCODEC

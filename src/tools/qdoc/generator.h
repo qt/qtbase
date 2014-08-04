@@ -90,6 +90,7 @@ public:
     static const QString& outputDir() { return outDir_; }
     static const QString& outputSubdir() { return outSubdir_; }
     static void terminate();
+    static const QStringList& outputFileNames() { return outFileNames_; }
     static void writeOutFileNames();
     static void augmentImageDirs(QSet<QString>& moreImageDirs);
     static void debug(const QString& message);
@@ -208,6 +209,7 @@ private:
     static QString project;
     static QString outDir_;
     static QString outSubdir_;
+    static QStringList outFileNames_;
     static QSet<QString> outputFormats;
     static QHash<QString, QString> outputPrefixes;
     static QStringList scriptDirs;
