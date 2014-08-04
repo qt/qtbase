@@ -146,6 +146,8 @@ QT_BEGIN_NAMESPACE
   \value UnknownCommand
 */
 
+QString Atom::noError_ = QString();
+
 static const struct {
     const char *english;
     int no;
@@ -399,6 +401,7 @@ LinkAtom::LinkAtom(const QString& p1, const QString& p2)
             genus_ = Node::CPP;
             continue;
         }
+        error_ = p2;
         break;
     }
 }
@@ -410,7 +413,8 @@ LinkAtom::LinkAtom(const LinkAtom& t)
     : Atom(Link, t.string()),
       genus_(t.genus_),
       goal_(t.goal_),
-      domain_(t.domain_)
+      domain_(t.domain_),
+      error_(t.error_)
 {
     // nothing
 }
@@ -424,7 +428,8 @@ LinkAtom::LinkAtom(Atom* previous, const LinkAtom& t)
     : Atom(previous, Link, t.string()),
       genus_(t.genus_),
       goal_(t.goal_),
-      domain_(t.domain_)
+      domain_(t.domain_),
+      error_(t.error_)
 {
     previous->next_ = this;
 }
