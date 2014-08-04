@@ -2420,7 +2420,7 @@ qint64 QAbstractSocket::readData(char *data, qint64 maxSize)
         return 0;
 
     // This is for a buffered QTcpSocket
-    if (d->isBuffered && d->buffer.isEmpty())
+    if (d->isBuffered)
         // if we're still connected, return 0 indicating there may be more data in the future
         // if we're not connected, return -1 indicating EOF
         return d->state == QAbstractSocket::ConnectedState ? qint64(0) : qint64(-1);
