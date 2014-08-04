@@ -3622,10 +3622,27 @@ static void formatDropEvent(QDebug d, const QDropEvent *e)
 static void formatTabletEvent(QDebug d, const QTabletEvent *e)
 {
     const QEvent::Type type = e->type();
-    d << eventClassName(type)  << '(' << eventTypeName(type) << ", pos=" << e->posF()
-      << ", pointerType=" << e->pointerType()
-      << ", pressure=" << e->pressure() << ", rotation=" << e->rotation()
+
+    static const int deviceEnumIdx = QTabletEvent::staticMetaObject.indexOfEnumerator("TabletDevice");
+    static const int pointerTypeEnumIdx = QTabletEvent::staticMetaObject.indexOfEnumerator("PointerType");
+    const char* device = QTabletEvent::staticMetaObject.enumerator(deviceEnumIdx).valueToKey(e->device());
+    const char* pointerType = QTabletEvent::staticMetaObject.enumerator(pointerTypeEnumIdx).valueToKey(e->pointerType());
+
+    d << eventClassName(type)  << '(' << eventTypeName(type)
+      << ", device=" << device
+      << ", pointerType=" << pointerType
+      << ", uniqueId=" << e->uniqueId()
+      << ", pos=" << e->posF()
+      << ", z=" << e->z()
+      << ", xTilt=" << e->xTilt()
+      << ", yTilt=" << e->yTilt()
       << ", " << DebugHelper::mouseButtonsToString(e->buttons()).constData();
+    if (type == QEvent::TabletPress || type == QEvent::TabletMove)
+        d << ", pressure=" << e->pressure();
+    if (e->device() == QTabletEvent::RotationStylus || e->device() == QTabletEvent::FourDMouse)
+        d << ", rotation=" << e->rotation();
+    if (e->device() == QTabletEvent::Airbrush)
+        d << ", tangentialPressure=" << e->tangentialPressure();
 }
 
 #  endif // !QT_NO_TABLETEVENT

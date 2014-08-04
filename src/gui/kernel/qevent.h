@@ -223,6 +223,9 @@ protected:
 #ifndef QT_NO_TABLETEVENT
 class Q_GUI_EXPORT QTabletEvent : public QInputEvent
 {
+    Q_GADGET
+    Q_ENUMS(TabletDevice)
+    Q_ENUMS(PointerType)
 public:
     enum TabletDevice { NoDevice, Puck, Stylus, Airbrush, FourDMouse,
                         XFreeEraser /*internal*/, RotationStylus };
@@ -761,7 +764,11 @@ public:
         enum InfoFlag {
             Pen  = 0x0001
         };
+#ifndef Q_MOC_RUN
+        // otherwise moc gives
+        // Error: Meta object features not supported for nested classes
         Q_DECLARE_FLAGS(InfoFlags, InfoFlag)
+#endif
 
         explicit TouchPoint(int id = -1);
         TouchPoint(const TouchPoint &other);
