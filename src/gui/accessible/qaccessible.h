@@ -352,6 +352,15 @@ public:
     static UpdateHandler installUpdateHandler(UpdateHandler);
     static RootObjectHandler installRootObjectHandler(RootObjectHandler);
 
+    class ActivationObserver
+    {
+    public:
+        virtual ~ActivationObserver() {}
+        virtual void accessibilityActiveChanged(bool active) = 0;
+    };
+    static void installActivationObserver(ActivationObserver *);
+    static void removeActivationObserver(ActivationObserver *);
+
     static QAccessibleInterface *queryAccessibleInterface(QObject *);
     static Id uniqueId(QAccessibleInterface *iface);
     static QAccessibleInterface *accessibleInterface(Id uniqueId);
@@ -365,6 +374,7 @@ public:
     static void updateAccessibility(QAccessibleEvent *event);
 
     static bool isActive();
+    static void setActive(bool active);
     static void setRootObject(QObject *object);
 
     static void cleanup();

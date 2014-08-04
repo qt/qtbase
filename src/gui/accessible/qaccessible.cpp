@@ -465,9 +465,11 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
 #endif
 #endif
 
+// FIXME turn this into one global static struct
 Q_GLOBAL_STATIC(QList<QAccessible::InterfaceFactory>, qAccessibleFactories)
 typedef QHash<QString, QAccessiblePlugin*> QAccessiblePluginsHash;
-Q_GLOBAL_STATIC(QAccessiblePluginsHash, qAccessiblePlugins);
+Q_GLOBAL_STATIC(QAccessiblePluginsHash, qAccessiblePlugins)
+Q_GLOBAL_STATIC(QList<QAccessible::ActivationObserver *>, qAccessibleActivationObservers)
 
 QAccessible::UpdateHandler QAccessible::updateHandler = 0;
 QAccessible::RootObjectHandler QAccessible::rootObjectHandler = 0;
@@ -504,6 +506,7 @@ void QAccessible::cleanup()
 
 static void qAccessibleCleanup()
 {
+    qAccessibleActivationObservers()->clear();
     qAccessibleFactories()->clear();
 }
 
@@ -601,6 +604,44 @@ QAccessible::RootObjectHandler QAccessible::installRootObjectHandler(RootObjectH
     RootObjectHandler old = rootObjectHandler;
     rootObjectHandler = handler;
     return old;
+}
+
+/*!
+    \class QAccessible::ActivationObserver
+    \internal
+
+    Interface to listen to activation or deactivation of the accessibility framework.
+    \sa installActivationObserver()
+*/
+
+/*!
+    \internal
+
+    Install \a observer to get notified of activation or deactivation (global accessibility has been enabled or disabled).
+*/
+void QAccessible::installActivationObserver(QAccessible::ActivationObserver *observer)
+{
+    if (!observer)
+        return;
+
+    if (!cleanupAdded) {
+        qAddPostRoutine(qAccessibleCleanup);
+        cleanupAdded = true;
+    }
+    if (qAccessibleActivationObservers()->contains(observer))
+        return;
+    qAccessibleActivationObservers()->append(observer);
+}
+
+/*!
+    \internal
+
+    Remove an \a observer to no longer get notified of state changes.
+    \sa installActivationObserver()
+*/
+void QAccessible::removeActivationObserver(ActivationObserver *observer)
+{
+    qAccessibleActivationObservers()->removeAll(observer);
 }
 
 /*!
@@ -754,6 +795,15 @@ bool QAccessible::isActive()
         return pfAccessibility->isActive();
 #endif
     return false;
+}
+
+/*!
+    \internal
+*/
+void QAccessible::setActive(bool active)
+{
+    for (int i = 0; i < qAccessibleActivationObservers()->count() ;++i)
+        qAccessibleActivationObservers()->at(i)->accessibilityActiveChanged(active);
 }
 
 
