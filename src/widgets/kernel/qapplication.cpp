@@ -3246,7 +3246,8 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                 // feature without choice of opting-in or out, you ALWAYS have to have
                 // tracking enabled. Therefore, the other properties give a false sense of
                 // performance enhancement.
-                if (e->type() == QEvent::MouseMove && mouse->buttons() == 0) {
+                if (e->type() == QEvent::MouseMove && mouse->buttons() == 0
+                    && w->rect().contains(relpos)) { // Outside due to mouse grab?
                     d->toolTipWidget = w;
                     d->toolTipPos = relpos;
                     d->toolTipGlobalPos = mouse->globalPos();
