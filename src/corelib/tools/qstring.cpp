@@ -7888,6 +7888,11 @@ QString &QString::setRawData(const QChar *unicode, int size)
     Returns the Latin-1 string stored in this object.
 */
 
+/*! \fn const char *QLatin1String::data() const
+
+    Returns the Latin-1 string stored in this object.
+*/
+
 /*! \fn int QLatin1String::size() const
 
     Returns the size of the Latin-1 string stored in this object.
@@ -7910,6 +7915,20 @@ QString &QString::setRawData(const QChar *unicode, int size)
     \overload
 
     The \a other const char pointer is converted to a QString using
+    the QString::fromUtf8() function.
+
+    You can disable this operator by defining \c
+    QT_NO_CAST_FROM_ASCII when you compile your applications. This
+    can be useful if you want to ensure that all user-visible strings
+    go through QObject::tr(), for example.
+*/
+
+/*!
+    \fn bool QLatin1String::operator==(const QByteArray &other) const
+    \since 5.0
+    \overload
+
+    The \a other byte array is converted to a QString using
     the QString::fromUtf8() function.
 
     You can disable this operator by defining \c
@@ -7944,6 +7963,20 @@ QString &QString::setRawData(const QChar *unicode, int size)
 */
 
 /*!
+    \fn bool QLatin1String::operator!=(const QByteArray &other) const
+    \since 5.0
+    \overload operator!=()
+
+    The \a other byte array is converted to a QString using
+    the QString::fromUtf8() function.
+
+    You can disable this operator by defining \c
+    QT_NO_CAST_FROM_ASCII when you compile your applications. This
+    can be useful if you want to ensure that all user-visible strings
+    go through QObject::tr(), for example.
+*/
+
+/*!
     \fn bool QLatin1String::operator>(const QString &other) const
 
     Returns \c true if this string is lexically greater than string \a
@@ -7958,6 +7991,20 @@ QString &QString::setRawData(const QChar *unicode, int size)
 /*!
     \fn bool QLatin1String::operator>(const char *other) const
     \since 4.3
+    \overload
+
+    The \a other const char pointer is converted to a QString using
+    the QString::fromUtf8() function.
+
+    You can disable this operator by defining \c QT_NO_CAST_FROM_ASCII
+    when you compile your applications. This can be useful if you want
+    to ensure that all user-visible strings go through QObject::tr(),
+    for example.
+*/
+
+/*!
+    \fn bool QLatin1String::operator>(const QByteArray &other) const
+    \since 5.0
     \overload
 
     The \a other const char pointer is converted to a QString using
@@ -7996,6 +8043,20 @@ QString &QString::setRawData(const QChar *unicode, int size)
 */
 
 /*!
+    \fn bool QLatin1String::operator<(const QByteArray &other) const
+    \since 5.0
+    \overload
+
+    The \a other const char pointer is converted to a QString using
+    the QString::fromUtf8() function.
+
+    You can disable this operator by defining \c
+    QT_NO_CAST_FROM_ASCII when you compile your applications. This
+    can be useful if you want to ensure that all user-visible strings
+    go through QObject::tr(), for example.
+*/
+
+/*!
     \fn bool QLatin1String::operator>=(const QString &other) const
 
     Returns \c true if this string is lexically greater than or equal
@@ -8013,6 +8074,20 @@ QString &QString::setRawData(const QChar *unicode, int size)
     \overload
 
     The \a other const char pointer is converted to a QString using
+    the QString::fromUtf8() function.
+
+    You can disable this operator by defining \c
+    QT_NO_CAST_FROM_ASCII when you compile your applications. This
+    can be useful if you want to ensure that all user-visible strings
+    go through QObject::tr(), for example.
+*/
+
+/*!
+    \fn bool QLatin1String::operator>=(const QByteArray &other) const
+    \since 5.0
+    \overload
+
+    The \a other array is converted to a QString using
     the QString::fromUtf8() function.
 
     You can disable this operator by defining \c
@@ -8046,6 +8121,19 @@ QString &QString::setRawData(const QChar *unicode, int size)
     go through QObject::tr(), for example.
 */
 
+/*!
+    \fn bool QLatin1String::operator<=(const QByteArray &other) const
+    \since 5.0
+    \overload
+
+    The \a other array is converted to a QString using
+    the QString::fromUtf8() function.
+
+    You can disable this operator by defining \c
+    QT_NO_CAST_FROM_ASCII when you compile your applications. This
+    can be useful if you want to ensure that all user-visible strings
+    go through QObject::tr(), for example.
+*/
 
 
 /*! \fn bool operator==(QLatin1String s1, QLatin1String s2)
