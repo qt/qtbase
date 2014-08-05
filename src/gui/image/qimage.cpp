@@ -4656,7 +4656,7 @@ QDebug operator<<(QDebug dbg, const QImage &i)
     \sa textKeys()
  */
 
-static const QPixelFormat pixelformats[] = {
+static Q_CONSTEXPR QPixelFormat pixelformats[] = {
         //QImage::Format_Invalid:
         QPixelFormat(),
         //QImage::Format_Mono:
