@@ -52,6 +52,7 @@
 #include "qeasingcurve.h"
 #include "quuid.h"
 #include "qvariant.h"
+#include "qdatastream.h"
 #include "qmetatypeswitcher_p.h"
 
 #ifndef QT_BOOTSTRAPPED

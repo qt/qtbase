@@ -42,6 +42,7 @@
 #ifndef QIMAGEIOHANDLER_H
 #define QIMAGEIOHANDLER_H
 
+#include <QtCore/qiodevice.h>
 #include <QtCore/qplugin.h>
 #include <QtCore/qfactoryinterface.h>
 #include <QtCore/qscopedpointer.h>

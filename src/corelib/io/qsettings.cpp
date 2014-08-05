@@ -54,6 +54,7 @@
 #include "qlibraryinfo.h"
 #include "qtemporaryfile.h"
 #include "qstandardpaths.h"
+#include <qdatastream.h>
 
 #ifndef QT_NO_TEXTCODEC
 #  include "qtextcodec.h"

@@ -48,6 +48,7 @@
 
 #include <qfile.h>
 #include <qdir.h>
+#include <qdatastream.h>
 #include <qdatetime.h>
 #include <qdiriterator.h>
 #include <qurl.h>

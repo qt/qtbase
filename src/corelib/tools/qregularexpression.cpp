@@ -51,6 +51,7 @@
 #include <QtCore/qthreadstorage.h>
 #include <QtCore/qglobal.h>
 #include <QtCore/qatomic.h>
+#include <QtCore/qdatastream.h>
 
 #include <pcre.h>
 

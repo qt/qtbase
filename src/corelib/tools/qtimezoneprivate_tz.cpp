@@ -44,6 +44,7 @@
 
 #include <QtCore/QFile>
 #include <QtCore/QHash>
+#include <QtCore/QDataStream>
 #include <QtCore/QDateTime>
 
 #include <qdebug.h>

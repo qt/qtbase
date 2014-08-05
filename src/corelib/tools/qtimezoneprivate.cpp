@@ -44,6 +44,7 @@
 #include "qtimezoneprivate_p.h"
 #include "qtimezoneprivate_data_p.h"
 
+#include <qdatastream.h>
 #include <qdebug.h>
 
 QT_BEGIN_NAMESPACE

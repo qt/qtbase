@@ -43,6 +43,7 @@
 #include "qtimezone.h"
 #include "qtimezoneprivate_p.h"
 
+#include <QtCore/qdatastream.h>
 #include <QtCore/qdatetime.h>
 
 #include <qdebug.h>
