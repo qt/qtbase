@@ -98,8 +98,10 @@ void QAbstractOpenGLFunctionsPrivate::removeFunctionsBackend(QOpenGLContext *con
     Qt now provides a family of classes which all inherit from
     QAbstractOpenGLFunctions which expose every core OpenGL function by way of a
     corresponding member function. There is a class for every valid combination
-    of OpenGL version and profile. Each class follows the naming convention
-    QOpenGLFunctions_<MAJOR VERSION>_<MINOR VERSION>[_PROFILE].
+    of OpenGL version and profile. Each class follows the naming convention:
+    \badcode
+    QOpenGLFunctions_<MAJOR VERSION>_<MINOR VERSION>[_PROFILE]
+    \endcode
 
     For OpenGL versions 1.0 through to 3.0 there are no profiles, leading to the
     classes:
