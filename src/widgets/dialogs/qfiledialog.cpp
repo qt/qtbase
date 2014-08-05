@@ -89,9 +89,7 @@ Q_GLOBAL_STATIC(QString, lastVisitedDir)
   The QFileDialog class enables a user to traverse the file system in
   order to select one or many files or a directory.
 
-  The easiest way to create a QFileDialog is to use the static
-  functions. On Windows, Mac OS X, KDE and GNOME, these static functions will
-  call the native file dialog when possible.
+  The easiest way to create a QFileDialog is to use the static functions.
 
   \snippet code/src_gui_dialogs_qfiledialog.cpp 0
 
