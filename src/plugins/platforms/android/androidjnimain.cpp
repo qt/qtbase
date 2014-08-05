@@ -413,10 +413,9 @@ namespace QtAndroid
     {
         QMutexLocker lock(&m_surfacesMutex);
         const auto &it = m_surfaces.find(surfaceId);
-        if (it == m_surfaces.end())
-            return;
+        if (it != m_surfaces.end())
+            m_surfaces.remove(surfaceId);
 
-        m_surfaces.remove(surfaceId);
         QJNIEnvironmentPrivate env;
         if (!env)
             return;
