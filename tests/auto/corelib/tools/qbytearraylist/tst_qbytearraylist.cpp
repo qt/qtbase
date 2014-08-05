@@ -81,7 +81,7 @@ void tst_QByteArrayList::join_data() const
     QTest::newRow("data1") << QByteArrayList()
                            << QByteArray();
 
-    QTest::newRow("data2") << QByteArrayList("one")
+    QTest::newRow("data2") << (QByteArrayList() << "one")
                            << QByteArray("one");
 
     QTest::newRow("data3") << (QByteArrayList() << "a" << "b")
@@ -114,7 +114,7 @@ void tst_QByteArrayList::joinByteArray_data() const
                            << QByteArray("separator")
                            << QByteArray();
 
-    QTest::newRow("data3") << QByteArrayList("one")
+    QTest::newRow("data3") << (QByteArrayList() << "one")
                            << QByteArray("separator")
                            << QByteArray("one");
 

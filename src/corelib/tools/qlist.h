@@ -70,6 +70,9 @@ QT_BEGIN_NAMESPACE
 template <typename T> class QVector;
 template <typename T> class QSet;
 
+template <typename T> struct QListSpecialMethods { };
+template <> struct QListSpecialMethods<QByteArray>;
+
 struct Q_CORE_EXPORT QListData {
     struct Data {
         QtPrivate::RefCount ref;
@@ -102,7 +105,7 @@ struct Q_CORE_EXPORT QListData {
 };
 
 template <typename T>
-class QList
+class QList : public QListSpecialMethods<T>
 {
     struct Node { void *v;
 #if defined(Q_CC_BOR)
@@ -745,7 +748,7 @@ Q_OUTOFLINE_TEMPLATE void QList<T>::detach_helper()
 
 template <typename T>
 Q_OUTOFLINE_TEMPLATE QList<T>::QList(const QList<T> &l)
-    : d(l.d)
+    : QListSpecialMethods<T>(l), d(l.d)
 {
     if (!d->ref.ref()) {
         p.detach(d->alloc);
@@ -951,6 +954,8 @@ Q_DECLARE_SEQUENTIAL_ITERATOR(List)
 Q_DECLARE_MUTABLE_SEQUENTIAL_ITERATOR(List)
 
 QT_END_NAMESPACE
+
+#include <QtCore/qbytearraylist.h>
 
 #ifdef Q_CC_MSVC
 #pragma warning( pop )

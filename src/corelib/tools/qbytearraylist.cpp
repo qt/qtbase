@@ -82,10 +82,9 @@ QT_BEGIN_NAMESPACE
 
     \reentrant
 
-    QByteArrayList inherits from QList<QByteArray>. Like QList, QByteArrayList is
-    \l{implicitly shared}. It provides fast index-based access as well as fast
-    insertions and removals. Passing string lists as value parameters is both
-    fast and safe.
+    QByteArrayList is actually just a QList<QByteArray>. It is documented as a
+    full class just for simplicity of documenting the member methods that exist
+    only in QList<QByteArray>.
 
     All of QList's functionality also applies to QByteArrayList. For example, you
     can use isEmpty() to test whether the list is empty, and you can call
@@ -103,88 +102,6 @@ QT_BEGIN_NAMESPACE
     QIODevice.
 
     \sa QByteArray, QStringList
-*/
-
-/*!
-    \fn QByteArrayList::QByteArrayList()
-
-    Constructs an empty byte array list.
-*/
-
-/*!
-    \fn QByteArrayList::QByteArrayList(const QByteArray &ba)
-
-    Constructs a byte array list that contains the given byte array,
-    \a ba. Longer lists are easily created like this:
-
-    \snippet qbytearraylist/main.cpp 0
-
-    \sa append()
-*/
-
-/*!
-    \fn QByteArrayList::QByteArrayList(const QList<QByteArray> &other)
-
-    Constructs a copy of \a other.
-
-    This operation takes \l{constant time}, because QByteArrayList is
-    \l{implicitly shared}. This makes returning a QByteArrayList from a
-    function very fast. If a shared instance is modified, it will be
-    copied (copy-on-write), and that takes \l{linear time}.
-
-    \sa operator=()
-*/
-
-/*!
-    \fn QByteArrayList::QByteArrayList(QList<QByteArray> &&other)
-
-    \overload
-
-    Move-constructs from \a other.
-
-    This constructor is only enabled if the compiler supports C++11
-    move semantics.
-
-    \sa operator=()
-*/
-
-/*! \fn QByteArrayList::QByteArrayList(std::initializer_list<QByteArray> args)
-
-    Constructs a list from a std::initializer_list given by \a args.
-
-    This constructor is only enabled if the compiler supports C++11 initializer
-    lists.
-*/
-
-/*!
-    \fn QByteArrayList &QByteArrayList::operator=(const QList<QByteArray> &other)
-
-    Assigns the contents of \a other to this byte array list and returns
-    a reference to \c *this.
-*/
-
-/*!
-    \fn QByteArrayList &QByteArrayList::operator=(QList<QByteArray> &&other)
-
-    \overload
-
-    Move-assigns the contents of \a other to this byte array list and returns
-    a reference to \c *this.
-
-    This operator is only enabled if the compiler supports C++11 move
-    semantics.
-*/
-
-/*!
-    \fn QByteArrayList &QByteArrayList::operator=(std::initializer_list<QByteArray> args)
-
-    \overload
-
-    Assigns the byte arrays from the initializer_list \a args to this byte array
-    list and returns a reference to \c *this.
-
-    This operator is only enabled if the compiler supports C++11 initializer
-    lists.
 */
 
 /*!
@@ -234,61 +151,5 @@ QByteArray QtPrivate::QByteArrayList_join(const QByteArrayList *that, const char
     }
     return res;
 }
-
-/*!
-    \fn QByteArrayList operator+(const QByteArrayList &list1, const QByteArrayList &list2)
-    \fn QByteArrayList operator+(const QByteArrayList &list1, const QList<QByteArray> &list2)
-    \fn QByteArrayList operator+(const QList<QByteArray> &list1, const QByteArrayList &list2)
-    \fn QByteArrayList operator+(QByteArrayList &&list1, const QByteArrayList &list2)
-    \fn QByteArrayList operator+(QByteArrayList &&list1, const QList<QByteArray> &list2)
-    \relates QByteArrayList
-
-    Returns a byte array list that is the concatenation of \a list1 and \a list2.
-*/
-
-/*!
-    \fn QByteArrayList& operator+=(QByteArrayList &list1, const QList<QByteArray> &list2)
-    \relates QByteArrayList
-
-    Appends \a list2 (which may be a QByteArrayList itself) to \a
-    list1 and returns a reference to \a list1.
-*/
-
-/*!
-    \fn QByteArrayList &QByteArrayList::operator<<(const QByteArray &ba)
-
-    Appends the given byte array, \a ba, to this byte array list and returns
-    a reference to the byte array list.
-
-    \sa append()
-*/
-
-/*!
-    \fn QByteArrayList &QByteArrayList::operator<<(const QList<QByteArray> &other)
-
-    \overload
-
-    Appends the list of byte arrays \a other (which may be a
-    QByteArrayList itself) to this byte array list and returns a
-    reference to \c *this.  */
-
-/*!
-    \fn QDataStream &operator>>(QDataStream &in, QByteArrayList &list)
-    \relates QByteArrayList
-
-    Reads a byte array list from the given \a in stream into the specified
-    \a list.
-
-    \sa {Serializing Qt Data Types}
-*/
-
-/*!
-    \fn QDataStream &operator<<(QDataStream &out, const QByteArrayList &list)
-    \relates QByteArrayList
-
-    Writes the given byte array \a list to the specified \a out stream.
-
-    \sa {Serializing Qt Data Types}
-*/
 
 QT_END_NAMESPACE
