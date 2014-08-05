@@ -593,6 +593,9 @@ QVariant QOpenGLContext::nativeHandle() const
     Returns \c true if the native context was successfully created and is ready to
     be used with makeCurrent(), swapBuffers(), etc.
 
+    \note If the context is already created, this function will first call
+    destroy(), and then create a new OpenGL context.
+
     \sa makeCurrent(), destroy(), format()
 */
 bool QOpenGLContext::create()
