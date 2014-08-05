@@ -108,15 +108,20 @@ public class QtNative
         }
     }
 
-    public static void openURL(String url)
+    public static boolean openURL(String url)
     {
+        boolean ok = true;
+
         try {
             Uri uri = Uri.parse(url);
             Intent intent = new Intent(Intent.ACTION_VIEW, uri);
             activity().startActivity(intent);
         } catch (Exception e) {
             e.printStackTrace();
+            ok = false;
         }
+
+        return ok;
     }
 
     // this method loads full path libs
