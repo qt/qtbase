@@ -96,6 +96,10 @@
 #include <QtGui/QClipboard>
 #endif
 
+#ifndef QT_NO_LIBRARY
+#include <QtCore/QLibrary>
+#endif
+
 #if defined(Q_OS_MAC)
 #  include "private/qcore_mac_p.h"
 #elif defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
@@ -1209,6 +1213,7 @@ void QGuiApplicationPrivate::init()
     QCoreApplicationPrivate::is_app_running = false; // Starting up.
 
     bool doGrabUnderDebugger = false;
+    bool loadTestability = false;
     QList<QByteArray> pluginList;
     // Get command line params
 #ifndef QT_NO_SESSIONMANAGER
@@ -1259,6 +1264,8 @@ void QGuiApplicationPrivate::init()
                 is_session_restored = true;
             }
 #endif
+        } else if (arg == "-testability") {
+            loadTestability = true;
         } else {
             argv[j++] = argv[i];
         }
@@ -1319,6 +1326,22 @@ void QGuiApplicationPrivate::init()
     session_manager = new QSessionManager(q, session_id, session_key);
 #endif
 
+#ifndef QT_NO_LIBRARY
+    if (loadTestability) {
+        QLibrary testLib(QStringLiteral("qttestability"));
+        if (testLib.load()) {
+            typedef void (*TasInitialize)(void);
+            TasInitialize initFunction = (TasInitialize)testLib.resolve("qt_testability_init");
+            if (initFunction) {
+                initFunction();
+            } else {
+                qCritical() << "Library qttestability resolve failed!";
+            }
+        } else {
+            qCritical() << "Library qttestability load failed:" << testLib.errorString();
+        }
+    }
+#endif // QT_NO_LIBRARY
 }
 
 extern void qt_cleanupFontDatabase();
@@ -1792,7 +1815,7 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
     }
     if (doubleClick) {
         mousePressButton = Qt::NoButton;
-        if (!e->window.isNull()) { // QTBUG-36364, check if window closed in response to press
+        if (!e->window.isNull() || e->nullWindow) { // QTBUG-36364, check if window closed in response to press
             const QEvent::Type doubleClickType = frameStrut ? QEvent::NonClientAreaMouseButtonDblClick : QEvent::MouseButtonDblClick;
             QMouseEvent dblClickEvent(doubleClickType, localPoint, localPoint, globalPoint,
                                       button, buttons, e->modifiers);

@@ -639,6 +639,7 @@ const QEvdevKeyboardMap::Mapping QEvdevKeyboardHandler::s_keymap_default[] = {
     { KEY_MUTE,         0xffff, Qt::Key_VolumeMute,     0x00, 0x00, 0x0000 },
     { KEY_VOLUMEDOWN,   0xffff, Qt::Key_VolumeDown,     0x00, 0x00, 0x0000 },
     { KEY_VOLUMEUP,     0xffff, Qt::Key_VolumeUp,       0x00, 0x00, 0x0000 },
+    { KEY_POWER,        0xffff, Qt::Key_PowerOff,       0x00, 0x00, 0x0000 },
     { KEY_PAUSE,        0xffff, Qt::Key_Pause,          0x00, 0x00, 0x0000 },
     { KEY_STOP,         0xffff, Qt::Key_Stop,           0x00, 0x00, 0x0000 },
     { KEY_SETUP,        0xffff, Qt::Key_Settings,       0x00, 0x00, 0x0000 },

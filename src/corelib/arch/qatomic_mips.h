@@ -110,13 +110,19 @@ template <typename T> struct QAtomicOps : QBasicAtomicOps<sizeof(T)>
 template <int size> template <typename T> inline
 void QBasicAtomicOps<size>::acquireMemoryFence(const T &) Q_DECL_NOTHROW
 {
-    asm volatile ("sync 0x11" ::: "memory");
+    asm volatile (".set push\n"
+                  ".set mips32\n"
+                  "sync 0x11\n"
+                  ".set pop\n" ::: "memory");
 }
 
 template <int size> template <typename T> inline
 void QBasicAtomicOps<size>::releaseMemoryFence(const T &) Q_DECL_NOTHROW
 {
-    asm volatile ("sync 0x12" ::: "memory");
+    asm volatile (".set push\n"
+                  ".set mips32\n"
+                  "sync 0x11\n"
+                  ".set pop\n" ::: "memory");
 }
 
 template <int size> template <typename T> inline

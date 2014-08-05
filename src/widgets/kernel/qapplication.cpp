@@ -94,9 +94,6 @@
 #include "qgesture.h"
 #include "private/qgesturemanager_p.h"
 #include <qpa/qplatformfontdatabase.h>
-#ifndef QT_NO_LIBRARY
-#include "qlibrary.h"
-#endif
 
 #ifdef Q_OS_WIN
 #include <QtCore/qt_windows.h> // for qt_win_display_dc()
@@ -428,7 +425,6 @@ int qt_antialiasing_threshold = -1;
 QSize QApplicationPrivate::app_strut = QSize(0,0); // no default application strut
 int QApplicationPrivate::enabledAnimations = QPlatformTheme::GeneralUiEffect;
 bool QApplicationPrivate::widgetCount = false;
-bool QApplicationPrivate::load_testability = false;
 #ifdef QT_KEYPAD_NAVIGATION
 Qt::NavigationMode QApplicationPrivate::navigationMode = Qt::NavigationModeKeypadTabOrder;
 QWidget *QApplicationPrivate::oldEditFocus = 0;
@@ -503,8 +499,6 @@ void QApplicationPrivate::process_cmdline()
 #endif
         } else if (qstrcmp(arg, "-widgetcount") == 0) {
             widgetCount = true;
-        } else if (qstrcmp(arg, "-testability") == 0) {
-            load_testability = true;
         } else {
             argv[j++] = argv[i];
         }
@@ -595,28 +589,11 @@ void QApplicationPrivate::construct()
     extern void qt_gui_eval_init(QCoreApplicationPrivate::Type);
     qt_gui_eval_init(application_type);
 #endif
-
 #ifndef QT_NO_ACCESSIBILITY
     // factory for accessible interfaces for widgets shipped with Qt
     QAccessible::installFactory(&qAccessibleFactory);
 #endif
 
-#ifndef QT_NO_LIBRARY
-    if(load_testability) {
-        QLibrary testLib(QLatin1String("qttestability"));
-        if (testLib.load()) {
-            typedef void (*TasInitialize)(void);
-            TasInitialize initFunction = (TasInitialize)testLib.resolve("qt_testability_init");
-            if (initFunction) {
-                initFunction();
-            } else {
-                qCritical("Library qttestability resolve failed!");
-            }
-        } else {
-            qCritical("Library qttestability load failed!");
-        }
-    }
-#endif
 }
 
 void qt_init(QApplicationPrivate *priv, int type)

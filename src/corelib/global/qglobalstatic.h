@@ -68,8 +68,17 @@ enum GuardValues {
 // until the constructor returns ...
 // We better avoid these kind of problems by using our own locked implementation.
 
+#if defined(Q_OS_UNIX) && defined(Q_CC_INTEL)
+// Work around Intel issue ID 6000058488:
+// local statics inside an inline function inside an anonymous namespace are global
+// symbols (this affects the IA-64 C++ ABI, so OS X and Linux only)
+#  define Q_GLOBAL_STATIC_INTERNAL_DECORATION Q_DECL_HIDDEN
+#else
+#  define Q_GLOBAL_STATIC_INTERNAL_DECORATION Q_DECL_HIDDEN inline
+#endif
+
 #define Q_GLOBAL_STATIC_INTERNAL(ARGS)                          \
-    Q_DECL_HIDDEN inline Type *innerFunction()                  \
+    Q_GLOBAL_STATIC_INTERNAL_DECORATION Type *innerFunction()   \
     {                                                           \
         struct HolderBase {                                     \
             ~HolderBase() Q_DECL_NOTHROW                        \

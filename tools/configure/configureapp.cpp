@@ -3077,14 +3077,24 @@ void Configure::generateCachefile()
     }
 }
 
+void Configure::addSysroot(QString *command)
+{
+    const QString &sysroot = dictionary["CFG_SYSROOT"];
+    if (!sysroot.isEmpty() && dictionary["CFG_GCC_SYSROOT"] == "yes") {
+        command->append(" QMAKE_LFLAGS+=--sysroot=" + sysroot);
+        command->append(" QMAKE_CXXFLAGS+=--sysroot=" + sysroot);
+    }
+}
+
 struct ArchData {
+    bool isHost;
     const char *qmakespec;
     const char *key;
     const char *subarchKey;
     const char *type;
     ArchData() {}
-    ArchData(const char *t, const char *qm, const char *k, const char *sak)
-        : qmakespec(qm), key(k), subarchKey(sak), type(t)
+    ArchData(bool h, const char *t, const char *qm, const char *k, const char *sak)
+        : isHost(h), qmakespec(qm), key(k), subarchKey(sak), type(t)
     {}
 };
 
@@ -3110,8 +3120,8 @@ void Configure::detectArch()
 
     QVector<ArchData> qmakespecs;
     if (dictionary.contains("XQMAKESPEC"))
-        qmakespecs << ArchData("target", "XQMAKESPEC", "QT_ARCH", "QT_CPU_FEATURES");
-    qmakespecs << ArchData("host", "QMAKESPEC", "QT_HOST_ARCH", "QT_HOST_CPU_FEATURES");
+        qmakespecs << ArchData(false, "target", "XQMAKESPEC", "QT_ARCH", "QT_CPU_FEATURES");
+    qmakespecs << ArchData(true, "host", "QMAKESPEC", "QT_HOST_ARCH", "QT_HOST_CPU_FEATURES");
 
     for (int i = 0; i < qmakespecs.count(); ++i) {
         const ArchData &data = qmakespecs.at(i);
@@ -3123,10 +3133,14 @@ void Configure::detectArch()
         QString command = QString("%1 -spec %2 %3")
             .arg(QDir::toNativeSeparators(buildPath + "/bin/qmake.exe"),
                  QDir::toNativeSeparators(qmakespec),
-                 QDir::toNativeSeparators(sourcePath + "/config.tests/arch/arch.pro"));
+                 QDir::toNativeSeparators(sourcePath + "/config.tests/arch/arch"
+                                          + (data.isHost ? "_host" : "") + ".pro"));
 
-        if (qmakespec.startsWith("winrt") || qmakespec.startsWith("winphone"))
-            command.append(" QMAKE_LFLAGS+=/ENTRY:main");
+        if (!data.isHost) {
+            if (qmakespec.startsWith("winrt") || qmakespec.startsWith("winphone"))
+                command.append(" QMAKE_LFLAGS+=/ENTRY:main");
+            addSysroot(&command);
+        }
 
         int returnValue = 0;
         Environment::execute(command, &returnValue);
@@ -3233,6 +3247,7 @@ bool Configure::tryCompileProject(const QString &projectPath, const QString &ext
         const QString qmakespec = dictionary["XQMAKESPEC"];
         if (qmakespec.startsWith("winrt") || qmakespec.startsWith("winphone"))
             command.append(" QMAKE_LFLAGS+=/ENTRY:main");
+        addSysroot(&command);
     }
 
     int code = 0;
