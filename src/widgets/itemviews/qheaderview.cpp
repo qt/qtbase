@@ -3635,25 +3635,42 @@ void QHeaderViewPrivate::write(QDataStream &out) const
 bool QHeaderViewPrivate::read(QDataStream &in)
 {
     int orient, order, align, global;
+    int sortIndicatorSectionIn;
+    bool sortIndicatorShownIn;
+    int lengthIn;
+    QVector<int> visualIndicesIn;
+    QVector<int> logicalIndicesIn;
+    QHash<int, int> hiddenSectionSizeIn;
+
     in >> orient;
-    orientation = (Qt::Orientation)orient;
-
     in >> order;
-    sortIndicatorOrder = (Qt::SortOrder)order;
 
-    in >> sortIndicatorSection;
-    in >> sortIndicatorShown;
+    in >> sortIndicatorSectionIn;
+    in >> sortIndicatorShownIn;
 
-    in >> visualIndices;
-    in >> logicalIndices;
+    in >> visualIndicesIn;
+    in >> logicalIndicesIn;
 
     QBitArray sectionHidden;
     in >> sectionHidden;
-    in >> hiddenSectionSize;
+    in >> hiddenSectionSizeIn;
+    in >> lengthIn;
 
-    in >> length;
     int unusedSectionCount; // For compatibility
     in >> unusedSectionCount;
+
+    if (in.status() != QDataStream::Ok || lengthIn < 0)
+        return false;
+
+    orientation = static_cast<Qt::Orientation>(orient);
+    sortIndicatorOrder = static_cast<Qt::SortOrder>(order);
+    sortIndicatorSection = sortIndicatorSectionIn;
+    sortIndicatorShown = sortIndicatorShownIn;
+    visualIndices = visualIndicesIn;
+    logicalIndices = logicalIndicesIn;
+    hiddenSectionSize = hiddenSectionSizeIn;
+    length = lengthIn;
+
     in >> movableSections;
     in >> clickableSections;
     in >> highlightSelected;

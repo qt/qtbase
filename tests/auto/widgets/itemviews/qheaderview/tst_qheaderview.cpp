@@ -1653,6 +1653,7 @@ void tst_QHeaderView::saveRestore()
     QByteArray s2 = h2.saveState();
 
     QVERIFY(s1 == s2);
+    QVERIFY(!h2.restoreState(QByteArrayLiteral("Garbage")));
 }
 
 void tst_QHeaderView::defaultSectionSizeTest()
