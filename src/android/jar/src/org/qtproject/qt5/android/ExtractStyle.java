@@ -451,9 +451,9 @@ public class ExtractStyle {
     final int [] DrawableStates ={android.R.attr.state_active, android.R.attr.state_checked
                                 , android.R.attr.state_enabled, android.R.attr.state_focused
                                 , android.R.attr.state_pressed, android.R.attr.state_selected
-                                , android.R.attr.state_window_focused, 16908288, 16843597, 16843518};
-    final String[] DrawableStatesLabels = {"active", "checked", "enabled", "focused", "pressed", "selected", "window_focused", "background", "multiline", "activated"};
-    final String[] DisableDrawableStatesLabels = {"inactive", "unchecked", "disabled", "not_focused", "no_pressed", "unselected", "window_not_focused", "background", "multiline", "activated"};
+                                , android.R.attr.state_window_focused, 16908288, 16843597, 16843518, 16843547};
+    final String[] DrawableStatesLabels = {"active", "checked", "enabled", "focused", "pressed", "selected", "window_focused", "background", "multiline", "activated", "accelerated"};
+    final String[] DisableDrawableStatesLabels = {"inactive", "unchecked", "disabled", "not_focused", "no_pressed", "unselected", "window_not_focused", "background", "multiline", "activated", "accelerated"};
 
     String getFileName(String file, String[] states)
     {
