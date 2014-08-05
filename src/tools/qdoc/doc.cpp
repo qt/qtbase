@@ -649,7 +649,7 @@ void DocParser::parse(const QString& source,
                     append(Atom::CodeBad,getCode(CMD_BADCODE, marker));
                     break;
                 case CMD_BR:
-                    leavePara();
+                    enterPara();
                     append(Atom::BR);
                     break;
                 case CMD_BOLD:
