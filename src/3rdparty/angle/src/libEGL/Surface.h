@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2002-2012 The ANGLE Project Authors. All rights reserved.
+// Copyright (c) 2002-2014 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -11,10 +11,23 @@
 #ifndef LIBEGL_SURFACE_H_
 #define LIBEGL_SURFACE_H_
 
-#define EGLAPI
 #include <EGL/egl.h>
 
 #include "common/angleutils.h"
+
+#if defined(ANGLE_PLATFORM_WINRT)
+#include <EventToken.h>
+namespace ABI { namespace Windows {
+    namespace UI { namespace Core {
+        struct ICoreWindow;
+        struct IWindowSizeChangedEventArgs;
+    } }
+    namespace Graphics { namespace Display {
+        struct IDisplayInformation;
+    } }
+} }
+struct IInspectable;
+#endif
 
 namespace gl
 {
@@ -34,10 +47,10 @@ class Config;
 class Surface
 {
   public:
-    Surface(Display *display, const egl::Config *config, EGLNativeWindowType window, EGLint postSubBufferSupported);
+    Surface(Display *display, const egl::Config *config, EGLNativeWindowType window, EGLint fixedSize, EGLint width, EGLint height, EGLint postSubBufferSupported);
     Surface(Display *display, const egl::Config *config, HANDLE shareHandle, EGLint width, EGLint height, EGLenum textureFormat, EGLenum textureTarget);
 
-    ~Surface();
+    virtual ~Surface();
 
     bool initialize();
     void release();
@@ -47,9 +60,6 @@ class Surface
     bool swap();
     bool postSubBuffer(EGLint x, EGLint y, EGLint width, EGLint height);
 
-    virtual EGLint getWidth() const;
-    virtual EGLint getHeight() const;
-
     virtual EGLint isPostSubBufferSupported() const;
 
     virtual rx::SwapChain *getSwapChain() const;
@@ -57,6 +67,12 @@ class Surface
     void setSwapInterval(EGLint interval);
     bool checkForOutOfDateSwapChain();   // Returns true if swapchain changed due to resize or interval update
 
+    virtual EGLint getConfigID() const;
+    virtual EGLint getWidth() const;
+    virtual EGLint getHeight() const;
+    virtual EGLint getPixelAspectRatio() const;
+    virtual EGLenum getRenderBuffer() const;
+    virtual EGLenum getSwapBehavior() const;
     virtual EGLenum getTextureFormat() const;
     virtual EGLenum getTextureTarget() const;
     virtual EGLenum getFormat() const;
@@ -64,8 +80,18 @@ class Surface
     virtual void setBoundTexture(gl::Texture2D *texture);
     virtual gl::Texture2D *getBoundTexture() const;
 
+    EGLint isFixedSize() const;
+
 private:
     DISALLOW_COPY_AND_ASSIGN(Surface);
+
+#if defined(ANGLE_PLATFORM_WINRT)
+    HRESULT onSizeChanged(ABI::Windows::UI::Core::ICoreWindow *, ABI::Windows::UI::Core::IWindowSizeChangedEventArgs *);
+    HRESULT onDpiChanged(ABI::Windows::Graphics::Display::IDisplayInformation *, IInspectable *);
+#   if WINAPI_FAMILY==WINAPI_FAMILY_PHONE_APP
+    HRESULT onOrientationChanged(ABI::Windows::Graphics::Display::IDisplayInformation *, IInspectable *);
+#   endif
+#endif
 
     Display *const mDisplay;
     rx::Renderer *mRenderer;
@@ -79,7 +105,7 @@ private:
     bool resetSwapChain(int backbufferWidth, int backbufferHeight);
     bool swapRect(EGLint x, EGLint y, EGLint width, EGLint height);
 
-    const EGLNativeWindowType mWindow; // Window that the surface is created for.
+    const EGLNativeWindowType mWindow;            // Window that the surface is created for.
     bool mWindowSubclassed;        // Indicates whether we successfully subclassed mWindow for WM_RESIZE hooking
     const egl::Config *mConfig;    // EGL config surface was created with
     EGLint mHeight;                // Height of surface
@@ -99,9 +125,19 @@ private:
 //  EGLenum vgColorSpace;          // Color space for OpenVG
     EGLint mSwapInterval;
     EGLint mPostSubBufferSupported;
-    
+    EGLint mFixedSize;
+    EGLint mSwapFlags;
+
     bool mSwapIntervalDirty;
     gl::Texture2D *mTexture;
+#if defined(ANGLE_PLATFORM_WINRT)
+    double mScaleFactor;
+    EventRegistrationToken mSizeToken;
+    EventRegistrationToken mDpiToken;
+#   if WINAPI_FAMILY==WINAPI_FAMILY_PHONE_APP
+    EventRegistrationToken mOrientationToken;
+#   endif
+#endif
 };
 }
 

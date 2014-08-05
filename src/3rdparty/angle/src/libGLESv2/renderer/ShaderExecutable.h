@@ -11,6 +11,7 @@
 #define LIBGLESV2_RENDERER_SHADEREXECUTABLE_H_
 
 #include "common/angleutils.h"
+#include "common/debug.h"
 
 namespace rx
 {
@@ -18,32 +19,44 @@ namespace rx
 class ShaderExecutable
 {
   public:
-    ShaderExecutable(const void *function, size_t length) : mLength(length)
+    ShaderExecutable(const void *function, size_t length)
+        : mFunctionBuffer(length)
     {
-        mFunction = new char[length];
-        memcpy(mFunction, function, length);
-    }
-    
-    virtual ~ShaderExecutable()
-    {
-        delete[] mFunction;
+        memcpy(mFunctionBuffer.data(), function, length);
     }
 
-    void *getFunction() const
+    virtual ~ShaderExecutable() {}
+
+    const uint8_t *getFunction() const
     {
-        return mFunction;
+        return mFunctionBuffer.data();
     }
 
     size_t getLength() const
     {
-        return mLength;
+        return mFunctionBuffer.size();
     }
 
   private:
     DISALLOW_COPY_AND_ASSIGN(ShaderExecutable);
 
-    void *mFunction;
-    const size_t mLength;
+    std::vector<uint8_t> mFunctionBuffer;
+};
+
+class UniformStorage
+{
+  public:
+    UniformStorage(size_t initialSize)
+        : mSize(initialSize)
+    {
+    }
+
+    virtual ~UniformStorage() {}
+
+    size_t size() const { return mSize; }
+
+  private:
+    size_t mSize;
 };
 
 }

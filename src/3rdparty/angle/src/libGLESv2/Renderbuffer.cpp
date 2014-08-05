@@ -14,308 +14,96 @@
 
 #include "libGLESv2/Texture.h"
 #include "libGLESv2/renderer/Renderer.h"
-#include "libGLESv2/utilities.h"
+#include "common/utilities.h"
+#include "libGLESv2/formatutils.h"
+#include "libGLESv2/FramebufferAttachment.h"
 
 namespace gl
 {
 unsigned int RenderbufferStorage::mCurrentSerial = 1;
 
-RenderbufferInterface::RenderbufferInterface()
+Renderbuffer::Renderbuffer(GLuint id, RenderbufferStorage *newStorage)
+  : RefCountObject(id),
+    mStorage(newStorage)
 {
-}
-
-// The default case for classes inherited from RenderbufferInterface is not to
-// need to do anything upon the reference count to the parent Renderbuffer incrementing
-// or decrementing. 
-void RenderbufferInterface::addProxyRef(const Renderbuffer *proxy)
-{
-}
-
-void RenderbufferInterface::releaseProxy(const Renderbuffer *proxy)
-{
-}
-
-GLuint RenderbufferInterface::getRedSize() const
-{
-    return gl::GetRedSize(getActualFormat());
-}
-
-GLuint RenderbufferInterface::getGreenSize() const
-{
-    return gl::GetGreenSize(getActualFormat());
-}
-
-GLuint RenderbufferInterface::getBlueSize() const
-{
-    return gl::GetBlueSize(getActualFormat());
-}
-
-GLuint RenderbufferInterface::getAlphaSize() const
-{
-    return gl::GetAlphaSize(getActualFormat());
-}
-
-GLuint RenderbufferInterface::getDepthSize() const
-{
-    return gl::GetDepthSize(getActualFormat());
-}
-
-GLuint RenderbufferInterface::getStencilSize() const
-{
-    return gl::GetStencilSize(getActualFormat());
-}
-
-///// RenderbufferTexture2D Implementation ////////
-
-RenderbufferTexture2D::RenderbufferTexture2D(Texture2D *texture, GLenum target) : mTarget(target)
-{
-    mTexture2D.set(texture);
-}
-
-RenderbufferTexture2D::~RenderbufferTexture2D()
-{
-    mTexture2D.set(NULL);
-}
-
-// Textures need to maintain their own reference count for references via
-// Renderbuffers acting as proxies. Here, we notify the texture of a reference.
-void RenderbufferTexture2D::addProxyRef(const Renderbuffer *proxy)
-{
-    mTexture2D->addProxyRef(proxy);
-}
-
-void RenderbufferTexture2D::releaseProxy(const Renderbuffer *proxy)
-{
-    mTexture2D->releaseProxy(proxy);
-}
-
-rx::RenderTarget *RenderbufferTexture2D::getRenderTarget()
-{
-    return mTexture2D->getRenderTarget(mTarget);
-}
-
-rx::RenderTarget *RenderbufferTexture2D::getDepthStencil()
-{
-    return mTexture2D->getDepthStencil(mTarget);
-}
-
-GLsizei RenderbufferTexture2D::getWidth() const
-{
-    return mTexture2D->getWidth(0);
-}
-
-GLsizei RenderbufferTexture2D::getHeight() const
-{
-    return mTexture2D->getHeight(0);
-}
-
-GLenum RenderbufferTexture2D::getInternalFormat() const
-{
-    return mTexture2D->getInternalFormat(0);
-}
-
-GLenum RenderbufferTexture2D::getActualFormat() const
-{
-    return mTexture2D->getActualFormat(0);
-}
-
-GLsizei RenderbufferTexture2D::getSamples() const
-{
-    return 0;
-}
-
-unsigned int RenderbufferTexture2D::getSerial() const
-{
-    return mTexture2D->getRenderTargetSerial(mTarget);
-}
-
-unsigned int RenderbufferTexture2D::getTextureSerial() const
-{
-    return mTexture2D->getTextureSerial();
-}
-
-///// RenderbufferTextureCubeMap Implementation ////////
-
-RenderbufferTextureCubeMap::RenderbufferTextureCubeMap(TextureCubeMap *texture, GLenum target) : mTarget(target)
-{
-    mTextureCubeMap.set(texture);
-}
-
-RenderbufferTextureCubeMap::~RenderbufferTextureCubeMap()
-{
-    mTextureCubeMap.set(NULL);
-}
-
-// Textures need to maintain their own reference count for references via
-// Renderbuffers acting as proxies. Here, we notify the texture of a reference.
-void RenderbufferTextureCubeMap::addProxyRef(const Renderbuffer *proxy)
-{
-    mTextureCubeMap->addProxyRef(proxy);
-}
-
-void RenderbufferTextureCubeMap::releaseProxy(const Renderbuffer *proxy)
-{
-    mTextureCubeMap->releaseProxy(proxy);
-}
-
-rx::RenderTarget *RenderbufferTextureCubeMap::getRenderTarget()
-{
-    return mTextureCubeMap->getRenderTarget(mTarget);
-}
-
-rx::RenderTarget *RenderbufferTextureCubeMap::getDepthStencil()
-{
-    return NULL;
-}
-
-GLsizei RenderbufferTextureCubeMap::getWidth() const
-{
-    return mTextureCubeMap->getWidth(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0);
-}
-
-GLsizei RenderbufferTextureCubeMap::getHeight() const
-{
-    return mTextureCubeMap->getHeight(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0);
-}
-
-GLenum RenderbufferTextureCubeMap::getInternalFormat() const
-{
-    return mTextureCubeMap->getInternalFormat(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0);
-}
-
-GLenum RenderbufferTextureCubeMap::getActualFormat() const
-{
-    return mTextureCubeMap->getActualFormat(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0);
-}
-
-GLsizei RenderbufferTextureCubeMap::getSamples() const
-{
-    return 0;
-}
-
-unsigned int RenderbufferTextureCubeMap::getSerial() const
-{
-    return mTextureCubeMap->getRenderTargetSerial(mTarget);
-}
-
-unsigned int RenderbufferTextureCubeMap::getTextureSerial() const
-{
-    return mTextureCubeMap->getTextureSerial();
-}
-
-////// Renderbuffer Implementation //////
-
-Renderbuffer::Renderbuffer(rx::Renderer *renderer, GLuint id, RenderbufferInterface *instance) : RefCountObject(id)
-{
-    ASSERT(instance != NULL);
-    mInstance = instance;
-}
-
-Renderbuffer::~Renderbuffer()
-{
-    delete mInstance;
-}
-
-// The RenderbufferInterface contained in this Renderbuffer may need to maintain
-// its own reference count, so we pass it on here.
-void Renderbuffer::addRef() const
-{
-    mInstance->addProxyRef(this);
-
-    RefCountObject::addRef();
-}
-
-void Renderbuffer::release() const
-{
-    mInstance->releaseProxy(this);
-
-    RefCountObject::release();
-}
-
-rx::RenderTarget *Renderbuffer::getRenderTarget()
-{
-    return mInstance->getRenderTarget();
-}
-
-rx::RenderTarget *Renderbuffer::getDepthStencil()
-{
-    return mInstance->getDepthStencil();
-}
-
-GLsizei Renderbuffer::getWidth() const
-{
-    return mInstance->getWidth();
-}
-
-GLsizei Renderbuffer::getHeight() const
-{
-    return mInstance->getHeight();
-}
-
-GLenum Renderbuffer::getInternalFormat() const
-{
-    return mInstance->getInternalFormat();
-}
-
-GLenum Renderbuffer::getActualFormat() const
-{
-    return mInstance->getActualFormat();
-}
-
-GLuint Renderbuffer::getRedSize() const
-{
-    return mInstance->getRedSize();
-}
-
-GLuint Renderbuffer::getGreenSize() const
-{
-    return mInstance->getGreenSize();
-}
-
-GLuint Renderbuffer::getBlueSize() const
-{
-    return mInstance->getBlueSize();
-}
-
-GLuint Renderbuffer::getAlphaSize() const
-{
-    return mInstance->getAlphaSize();
-}
-
-GLuint Renderbuffer::getDepthSize() const
-{
-    return mInstance->getDepthSize();
-}
-
-GLuint Renderbuffer::getStencilSize() const
-{
-    return mInstance->getStencilSize();
-}
-
-GLsizei Renderbuffer::getSamples() const
-{
-    return mInstance->getSamples();
-}
-
-unsigned int Renderbuffer::getSerial() const
-{
-    return mInstance->getSerial();
-}
-
-unsigned int Renderbuffer::getTextureSerial() const
-{
-    return mInstance->getTextureSerial();
+    ASSERT(mStorage);
 }
 
 void Renderbuffer::setStorage(RenderbufferStorage *newStorage)
 {
-    ASSERT(newStorage != NULL);
+    ASSERT(newStorage);
 
-    delete mInstance;
-    mInstance = newStorage;
+    SafeDelete(mStorage);
+    mStorage = newStorage;
 }
 
-RenderbufferStorage::RenderbufferStorage() : mSerial(issueSerial())
+RenderbufferStorage *Renderbuffer::getStorage()
+{
+    ASSERT(mStorage);
+    return mStorage;
+}
+
+GLsizei Renderbuffer::getWidth() const
+{
+    ASSERT(mStorage);
+    return mStorage->getWidth();
+}
+
+GLsizei Renderbuffer::getHeight() const
+{
+    ASSERT(mStorage);
+    return mStorage->getHeight();
+}
+
+GLenum Renderbuffer::getInternalFormat() const
+{
+    ASSERT(mStorage);
+    return mStorage->getInternalFormat();
+}
+
+GLenum Renderbuffer::getActualFormat() const
+{
+    ASSERT(mStorage);
+    return mStorage->getActualFormat();
+}
+
+GLsizei Renderbuffer::getSamples() const
+{
+    ASSERT(mStorage);
+    return mStorage->getSamples();
+}
+
+GLuint Renderbuffer::getRedSize() const
+{
+    return gl::GetRedBits(getActualFormat());
+}
+
+GLuint Renderbuffer::getGreenSize() const
+{
+    return gl::GetGreenBits(getActualFormat());
+}
+
+GLuint Renderbuffer::getBlueSize() const
+{
+    return gl::GetBlueBits(getActualFormat());
+}
+
+GLuint Renderbuffer::getAlphaSize() const
+{
+    return gl::GetAlphaBits(getActualFormat());
+}
+
+GLuint Renderbuffer::getDepthSize() const
+{
+    return gl::GetDepthBits(getActualFormat());
+}
+
+GLuint Renderbuffer::getStencilSize() const
+{
+    return gl::GetStencilBits(getActualFormat());
+}
+
+RenderbufferStorage::RenderbufferStorage() : mSerial(issueSerials(1))
 {
     mWidth = 0;
     mHeight = 0;
@@ -368,16 +156,21 @@ unsigned int RenderbufferStorage::getSerial() const
     return mSerial;
 }
 
-unsigned int RenderbufferStorage::issueSerial()
-{
-    return mCurrentSerial++;
-}
-
-unsigned int RenderbufferStorage::issueCubeSerials()
+unsigned int RenderbufferStorage::issueSerials(GLuint count)
 {
     unsigned int firstSerial = mCurrentSerial;
-    mCurrentSerial += 6;
+    mCurrentSerial += count;
     return firstSerial;
+}
+
+bool RenderbufferStorage::isTexture() const
+{
+    return false;
+}
+
+unsigned int RenderbufferStorage::getTextureSerial() const
+{
+    return -1;
 }
 
 Colorbuffer::Colorbuffer(rx::Renderer *renderer, rx::SwapChain *swapChain)
@@ -396,7 +189,7 @@ Colorbuffer::Colorbuffer(rx::Renderer *renderer, rx::SwapChain *swapChain)
 
 Colorbuffer::Colorbuffer(rx::Renderer *renderer, int width, int height, GLenum format, GLsizei samples) : mRenderTarget(NULL)
 {
-    mRenderTarget = renderer->createRenderTarget(width, height, format, samples, false);
+    mRenderTarget = renderer->createRenderTarget(width, height, format, samples);
 
     if (mRenderTarget)
     {
@@ -418,12 +211,7 @@ Colorbuffer::~Colorbuffer()
 
 rx::RenderTarget *Colorbuffer::getRenderTarget()
 {
-    if (mRenderTarget)
-    {
-        return mRenderTarget;
-    }
-
-    return NULL;
+    return mRenderTarget;
 }
 
 DepthStencilbuffer::DepthStencilbuffer(rx::Renderer *renderer, rx::SwapChain *swapChain)
@@ -442,7 +230,7 @@ DepthStencilbuffer::DepthStencilbuffer(rx::Renderer *renderer, rx::SwapChain *sw
 DepthStencilbuffer::DepthStencilbuffer(rx::Renderer *renderer, int width, int height, GLsizei samples)
 {
 
-    mDepthStencil = renderer->createRenderTarget(width, height, GL_DEPTH24_STENCIL8_OES, samples, true);
+    mDepthStencil = renderer->createRenderTarget(width, height, GL_DEPTH24_STENCIL8_OES, samples);
 
     mWidth = mDepthStencil->getWidth();
     mHeight = mDepthStencil->getHeight();
@@ -461,12 +249,7 @@ DepthStencilbuffer::~DepthStencilbuffer()
 
 rx::RenderTarget *DepthStencilbuffer::getDepthStencil()
 {
-    if (mDepthStencil)
-    {
-        return mDepthStencil;
-    }
-
-    return NULL;
+    return mDepthStencil;
 }
 
 Depthbuffer::Depthbuffer(rx::Renderer *renderer, int width, int height, GLsizei samples) : DepthStencilbuffer(renderer, width, height, samples)

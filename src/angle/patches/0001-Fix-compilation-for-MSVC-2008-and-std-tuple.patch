@@ -1,7 +1,7 @@
-From 88297d02fd1aed6cac258b72d9d0a8baabad6203 Mon Sep 17 00:00:00 2001
+From da7db59c7a004bb8247dcd64e468b689f3cce163 Mon Sep 17 00:00:00 2001
 From: Thomas Hartmann <Thomas.Hartmann@digia.com>
-Date: Mon, 17 Feb 2014 16:56:51 +0200
-Subject: [PATCH] Fix compilation for MSVC 2008 and std::tuple
+Date: Sat, 28 Jun 2014 16:42:22 +0300
+Subject: [PATCH 01/12] Fix compilation for MSVC 2008 and std::tuple
 
 For MSVC 2008 make_tuple is in the tr1 namespace.
 
@@ -11,7 +11,7 @@ Change-Id: I4a51f6cabdf068993869b404b12ed1484a21a9d4
  1 file changed, 4 insertions(+)
 
 diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/IndexRangeCache.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/IndexRangeCache.cpp
-index 610a5ef..51d7f0b 100644
+index 14410d0..e957d96 100644
 --- a/src/3rdparty/angle/src/libGLESv2/renderer/IndexRangeCache.cpp
 +++ b/src/3rdparty/angle/src/libGLESv2/renderer/IndexRangeCache.cpp
 @@ -81,7 +81,11 @@ IndexRangeCache::IndexRange::IndexRange(GLenum typ, intptr_t off, GLsizei c)
@@ -27,5 +27,5 @@ index 610a5ef..51d7f0b 100644
  
  IndexRangeCache::IndexBounds::IndexBounds()
 -- 
-1.8.4.msysgit.0
+1.9.0.msysgit.0
 

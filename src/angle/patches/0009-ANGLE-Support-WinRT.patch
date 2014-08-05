@@ -1,7 +1,7 @@
-From 46b8b123ada1787c68525cd07dcdbfdbc003bcc5 Mon Sep 17 00:00:00 2001
+From be5e9dcf8a4cb23368b30f743082630bdccc7376 Mon Sep 17 00:00:00 2001
 From: Andrew Knight <andrew.knight@digia.com>
-Date: Thu, 20 Feb 2014 16:49:13 +0200
-Subject: [PATCH] ANGLE: Support WinRT
+Date: Tue, 5 Aug 2014 09:31:32 +0300
+Subject: [PATCH 09/12] ANGLE: Support WinRT
 
 This enables EGL for WinRT's native types, and adjusts some codepaths
 to accommodate differences between desktop Windows and WinRT.
@@ -15,36 +15,32 @@ to accommodate differences between desktop Windows and WinRT.
 Change-Id: Ia90377e700d335a1c569c2145008dd4b0dfd84d3
 Reviewed-by: Friedemann Kleint <Friedemann.Kleint@digia.com>
 ---
- src/3rdparty/angle/include/EGL/eglplatform.h       | 10 ++-
- .../angle/src/compiler/translator/osinclude.h      | 20 +++---
- .../src/compiler/translator/ossource_posix.cpp     |  8 +++
- .../angle/src/compiler/translator/ossource_win.cpp |  8 +++
- .../src/compiler/translator/ossource_winrt.cpp     | 75 ++++++++++++++++++++++
- src/3rdparty/angle/src/libEGL/Display.cpp          | 11 ++--
- src/3rdparty/angle/src/libEGL/Display.h            |  7 +-
- src/3rdparty/angle/src/libEGL/Surface.cpp          | 42 +++++++++++-
- src/3rdparty/angle/src/libEGL/Surface.h            |  6 +-
- src/3rdparty/angle/src/libEGL/libEGL.cpp           |  4 +-
- src/3rdparty/angle/src/libEGL/main.cpp             | 29 ++++++++-
- src/3rdparty/angle/src/libGLESv2/Context.cpp       |  1 +
- src/3rdparty/angle/src/libGLESv2/libGLESv2.cpp     |  1 +
- src/3rdparty/angle/src/libGLESv2/main.cpp          | 27 ++++++++
- src/3rdparty/angle/src/libGLESv2/main.h            |  2 +-
- src/3rdparty/angle/src/libGLESv2/precompiled.h     | 45 ++++++++++++-
- .../angle/src/libGLESv2/renderer/Renderer.cpp      | 15 +++--
- .../angle/src/libGLESv2/renderer/Renderer.h        |  3 +-
- .../angle/src/libGLESv2/renderer/SwapChain.h       |  5 +-
- .../src/libGLESv2/renderer/d3d11/Renderer11.cpp    | 13 +++-
- .../src/libGLESv2/renderer/d3d11/Renderer11.h      |  5 +-
- .../src/libGLESv2/renderer/d3d11/SwapChain11.cpp   | 37 +++++++++--
- .../src/libGLESv2/renderer/d3d11/SwapChain11.h     |  2 +-
- .../libGLESv2/renderer/d3d11/shaders/Clear11.hlsl  |  4 ++
- src/3rdparty/angle/src/libGLESv2/utilities.cpp     | 48 ++++++++++++++
- 25 files changed, 378 insertions(+), 50 deletions(-)
- create mode 100644 src/3rdparty/angle/src/compiler/translator/ossource_winrt.cpp
+ src/3rdparty/angle/include/EGL/eglplatform.h       |  10 +-
+ src/3rdparty/angle/src/common/platform.h           |   3 +
+ src/3rdparty/angle/src/common/tls.cpp              |  37 ++++-
+ src/3rdparty/angle/src/common/tls.h                |   6 +-
+ src/3rdparty/angle/src/common/utilities.cpp        |  51 +++++-
+ src/3rdparty/angle/src/libEGL/Display.cpp          |  13 +-
+ src/3rdparty/angle/src/libEGL/Display.h            |   6 +-
+ src/3rdparty/angle/src/libEGL/Surface.cpp          | 185 ++++++++++++++++++++-
+ src/3rdparty/angle/src/libEGL/Surface.h            |  39 ++++-
+ src/3rdparty/angle/src/libEGL/libEGL.cpp           |   8 +-
+ src/3rdparty/angle/src/libEGL/main.cpp             |  21 +++
+ src/3rdparty/angle/src/libGLESv2/main.cpp          |  20 +++
+ src/3rdparty/angle/src/libGLESv2/main.h            |   4 +
+ .../angle/src/libGLESv2/renderer/Renderer.h        |   2 +-
+ .../angle/src/libGLESv2/renderer/SwapChain.h       |  15 +-
+ .../src/libGLESv2/renderer/d3d/HLSLCompiler.cpp    |  12 +-
+ .../libGLESv2/renderer/d3d/d3d11/Renderer11.cpp    |  13 +-
+ .../src/libGLESv2/renderer/d3d/d3d11/Renderer11.h  |   4 +-
+ .../libGLESv2/renderer/d3d/d3d11/SwapChain11.cpp   |  76 +++++++--
+ .../src/libGLESv2/renderer/d3d/d3d11/SwapChain11.h |   6 +-
+ .../src/libGLESv2/renderer/d3d/d3d9/SwapChain9.cpp |   2 +-
+ .../src/libGLESv2/renderer/d3d/d3d9/SwapChain9.h   |   2 +-
+ 22 files changed, 486 insertions(+), 49 deletions(-)
 
 diff --git a/src/3rdparty/angle/include/EGL/eglplatform.h b/src/3rdparty/angle/include/EGL/eglplatform.h
-index 34283f2..eb15ae5 100644
+index 3ab8844..ea9f577 100644
 --- a/src/3rdparty/angle/include/EGL/eglplatform.h
 +++ b/src/3rdparty/angle/include/EGL/eglplatform.h
 @@ -67,7 +67,15 @@
@@ -52,11 +48,11 @@ index 34283f2..eb15ae5 100644
   */
  
 -#if defined(_WIN32) || defined(__VC32__) && !defined(__CYGWIN__) && !defined(__SCITECH_SNAP__) /* Win32 and WinCE */
-+#if defined(WINAPI_FAMILY) && (WINAPI_FAMILY==WINAPI_FAMILY_APP || WINAPI_FAMILY==WINAPI_FAMILY_PHONE_APP) /* Windows Runtime */
++#if defined(WINAPI_FAMILY) && (WINAPI_FAMILY==WINAPI_FAMILY_PC_APP || WINAPI_FAMILY==WINAPI_FAMILY_PHONE_APP) /* Windows Runtime */
 +
 +struct IUnknown;
 +
-+typedef int       EGLNativeDisplayType;
++typedef IUnknown *EGLNativeDisplayType;
 +typedef void     *EGLNativePixmapType;
 +typedef IUnknown *EGLNativeWindowType;
 +
@@ -64,1083 +60,125 @@ index 34283f2..eb15ae5 100644
  #ifndef WIN32_LEAN_AND_MEAN
  #define WIN32_LEAN_AND_MEAN 1
  #endif
-diff --git a/src/3rdparty/angle/src/compiler/translator/osinclude.h b/src/3rdparty/angle/src/compiler/translator/osinclude.h
-index c3063d6..cccfa63 100644
---- a/src/3rdparty/angle/src/compiler/translator/osinclude.h
-+++ b/src/3rdparty/angle/src/compiler/translator/osinclude.h
-@@ -13,7 +13,11 @@
- //
+diff --git a/src/3rdparty/angle/src/common/platform.h b/src/3rdparty/angle/src/common/platform.h
+index aa0b985..e16e7ac 100644
+--- a/src/3rdparty/angle/src/common/platform.h
++++ b/src/3rdparty/angle/src/common/platform.h
+@@ -11,6 +11,9 @@
  
  #if defined(_WIN32) || defined(_WIN64)
-+#if defined(WINAPI_FAMILY) && (WINAPI_FAMILY==WINAPI_FAMILY_APP || WINAPI_FAMILY==WINAPI_FAMILY_PHONE_APP)
-+#define ANGLE_OS_WINRT
-+#else
- #define ANGLE_OS_WIN
-+#endif
- #elif defined(__APPLE__) || defined(__linux__) || \
-       defined(__FreeBSD__) || defined(__OpenBSD__) || \
-       defined(__NetBSD__) || defined(__DragonFly__) || \
-@@ -25,7 +29,7 @@
- #error Unsupported platform.
- #endif
+ #   define ANGLE_PLATFORM_WINDOWS 1
++#   if defined(WINAPI_FAMILY) && (WINAPI_FAMILY==WINAPI_FAMILY_PC_APP || WINAPI_FAMILY==WINAPI_FAMILY_PHONE_APP)
++#      define ANGLE_PLATFORM_WINRT 1
++#   endif
+ #elif defined(__APPLE__)
+ #   define ANGLE_PLATFORM_APPLE 1
+ #   define ANGLE_PLATFORM_POSIX 1
+diff --git a/src/3rdparty/angle/src/common/tls.cpp b/src/3rdparty/angle/src/common/tls.cpp
+index 6b78219..c46fab5 100644
+--- a/src/3rdparty/angle/src/common/tls.cpp
++++ b/src/3rdparty/angle/src/common/tls.cpp
+@@ -10,11 +10,28 @@
  
--#if defined(ANGLE_OS_WIN)
-+#if defined(ANGLE_OS_WIN) || defined(ANGLE_OS_WINRT)
- #define STRICT
- #define VC_EXTRALEAN 1
- #include <windows.h>
-@@ -44,23 +48,17 @@
- #if defined(ANGLE_OS_WIN)
- typedef DWORD OS_TLSIndex;
- #define OS_INVALID_TLS_INDEX (TLS_OUT_OF_INDEXES)
-+#elif defined(ANGLE_OS_WINRT)
-+typedef size_t OS_TLSIndex;
-+#define OS_INVALID_TLS_INDEX ((DWORD)0xFFFFFF)
- #elif defined(ANGLE_OS_POSIX)
- typedef pthread_key_t OS_TLSIndex;
- #define OS_INVALID_TLS_INDEX (static_cast<OS_TLSIndex>(-1))
- #endif  // ANGLE_OS_WIN
+ #include <assert.h>
  
- OS_TLSIndex OS_AllocTLSIndex();
-+void *OS_GetTLSValue(OS_TLSIndex nIndex);
- bool OS_SetTLSValue(OS_TLSIndex nIndex, void *lpvValue);
- bool OS_FreeTLSIndex(OS_TLSIndex nIndex);
- 
--inline void* OS_GetTLSValue(OS_TLSIndex nIndex)
--{
--    ASSERT(nIndex != OS_INVALID_TLS_INDEX);
--#if defined(ANGLE_OS_WIN)
--    return TlsGetValue(nIndex);
--#elif defined(ANGLE_OS_POSIX)
--    return pthread_getspecific(nIndex);
--#endif  // ANGLE_OS_WIN
--}
--
- #endif // __OSINCLUDE_H
-diff --git a/src/3rdparty/angle/src/compiler/translator/ossource_posix.cpp b/src/3rdparty/angle/src/compiler/translator/ossource_posix.cpp
-index 90a3757..d4bba4c 100644
---- a/src/3rdparty/angle/src/compiler/translator/ossource_posix.cpp
-+++ b/src/3rdparty/angle/src/compiler/translator/ossource_posix.cpp
-@@ -33,6 +33,14 @@ OS_TLSIndex OS_AllocTLSIndex()
- }
- 
- 
-+void *OS_GetTLSValue(OS_TLSIndex nIndex)
-+{
-+    ASSERT(nIndex != OS_INVALID_TLS_INDEX);
-+
-+    return pthread_getspecific(nIndex);
-+}
-+
-+
- bool OS_SetTLSValue(OS_TLSIndex nIndex, void *lpvValue)
- {
-     if (nIndex == OS_INVALID_TLS_INDEX) {
-diff --git a/src/3rdparty/angle/src/compiler/translator/ossource_win.cpp b/src/3rdparty/angle/src/compiler/translator/ossource_win.cpp
-index 2cc5871..abd8bc7 100644
---- a/src/3rdparty/angle/src/compiler/translator/ossource_win.cpp
-+++ b/src/3rdparty/angle/src/compiler/translator/ossource_win.cpp
-@@ -29,6 +29,14 @@ OS_TLSIndex OS_AllocTLSIndex()
- }
- 
- 
-+void *OS_GetTLSValue(OS_TLSIndex nIndex)
-+{
-+    ASSERT(nIndex != OS_INVALID_TLS_INDEX);
-+
-+    return TlsGetValue(nIndex);
-+}
-+
-+
- bool OS_SetTLSValue(OS_TLSIndex nIndex, void *lpvValue)
- {
- 	if (nIndex == OS_INVALID_TLS_INDEX) {
-diff --git a/src/3rdparty/angle/src/compiler/translator/ossource_winrt.cpp b/src/3rdparty/angle/src/compiler/translator/ossource_winrt.cpp
-new file mode 100644
-index 0000000..bb061ca
---- /dev/null
-+++ b/src/3rdparty/angle/src/compiler/translator/ossource_winrt.cpp
-@@ -0,0 +1,75 @@
-+//
-+// Copyright (c) 2002-2010 The ANGLE Project Authors. All rights reserved.
-+// Use of this source code is governed by a BSD-style license that can be
-+// found in the LICENSE file.
-+//
-+
-+#include "compiler/translator/osinclude.h"
-+//
-+// This file contains contains Windows Runtime specific functions
-+//
-+
-+#if !defined(ANGLE_OS_WINRT)
-+#error Trying to build a WinRT specific file in a non-WinRT build.
-+#endif
-+
++#if defined(ANGLE_PLATFORM_WINRT)
 +#include <vector>
++std::vector<void *> *tls = nullptr;
++std::vector<TLSIndex> *freeIndices = nullptr;
++#endif
 +
-+
-+//
-+// Thread Local Storage Operations
-+//
-+__declspec(thread) std::vector<void *> *tls = nullptr;
-+__declspec(thread) std::vector<OS_TLSIndex> *freeIndices = nullptr;
-+
-+OS_TLSIndex OS_AllocTLSIndex()
-+{
+ TLSIndex CreateTLSIndex()
+ {
+     TLSIndex index;
+ 
+-#ifdef ANGLE_PLATFORM_WINDOWS
++#if defined(ANGLE_PLATFORM_WINRT)
 +    if (!tls)
-+        tls = new std::vector<void*>;
-+
++        tls = new std::vector<void *>;
 +    if (freeIndices && !freeIndices->empty()) {
-+        OS_TLSIndex index = freeIndices->back();
++        index = freeIndices->back();
 +        freeIndices->pop_back();
 +        return index;
 +    } else {
 +        tls->push_back(nullptr);
 +        return tls->size() - 1;
 +    }
-+}
-+
-+
-+void *OS_GetTLSValue(OS_TLSIndex nIndex)
-+{
-+    ASSERT(nIndex != OS_INVALID_TLS_INDEX);
-+    ASSERT(tls);
-+
-+    return tls->at(nIndex);
-+}
-+
-+
-+bool OS_SetTLSValue(OS_TLSIndex nIndex, void *lpvValue)
-+{
-+    if (!tls || nIndex >= tls->size() || nIndex == OS_INVALID_TLS_INDEX) {
-+        ASSERT(0 && "OS_SetTLSValue(): Invalid TLS Index");
-+        return false;
-+    }
-+
-+    tls->at(nIndex) = lpvValue;
-+    return true;
-+}
-+
-+
-+bool OS_FreeTLSIndex(OS_TLSIndex nIndex)
-+{
-+    if (!tls || nIndex >= tls->size() || nIndex == OS_INVALID_TLS_INDEX) {
-+        ASSERT(0 && "OS_SetTLSValue(): Invalid TLS Index");
-+        return false;
-+    }
-+
++#elif defined(ANGLE_PLATFORM_WINDOWS)
+     index = TlsAlloc();
+ #elif defined(ANGLE_PLATFORM_POSIX)
+     // Create global pool key
+@@ -36,7 +53,12 @@ bool DestroyTLSIndex(TLSIndex index)
+         return false;
+     }
+ 
+-#ifdef ANGLE_PLATFORM_WINDOWS
++#if defined(ANGLE_PLATFORM_WINRT)
 +    if (!freeIndices)
-+        freeIndices = new std::vector<OS_TLSIndex>;
-+
-+    freeIndices->push_back(nIndex);
-+
++        freeIndices = new std::vector<TLSIndex>;
++    freeIndices->push_back(index);
 +    return true;
-+}
-diff --git a/src/3rdparty/angle/src/libEGL/Display.cpp b/src/3rdparty/angle/src/libEGL/Display.cpp
-index a7f5f5a..e75a4b6 100644
---- a/src/3rdparty/angle/src/libEGL/Display.cpp
-+++ b/src/3rdparty/angle/src/libEGL/Display.cpp
-@@ -1,3 +1,4 @@
-+#include "../libGLESv2/precompiled.h"
- //
- // Copyright (c) 2002-2013 The ANGLE Project Authors. All rights reserved.
- // Use of this source code is governed by a BSD-style license that can be
-@@ -40,13 +41,13 @@ egl::Display *Display::getDisplay(EGLNativeDisplayType displayId)
- 
-     // FIXME: Check if displayId is a valid display device context
- 
--    egl::Display *display = new egl::Display(displayId, (HDC)displayId);
-+    egl::Display *display = new egl::Display(displayId);
- 
-     displays[displayId] = display;
-     return display;
- }
- 
--Display::Display(EGLNativeDisplayType displayId, HDC deviceContext) : mDc(deviceContext)
-+Display::Display(EGLNativeDisplayType displayId)
- {
-     mDisplayId = displayId;
-     mRenderer = NULL;
-@@ -71,7 +72,7 @@ bool Display::initialize()
-         return true;
++#elif ANGLE_PLATFORM_WINDOWS
+     return (TlsFree(index) == TRUE);
+ #elif defined(ANGLE_PLATFORM_POSIX)
+     return (pthread_key_delete(index) == 0);
+@@ -51,7 +73,10 @@ bool SetTLSValue(TLSIndex index, void *value)
+         return false;
      }
  
--    mRenderer = glCreateRenderer(this, mDc, mDisplayId);
-+    mRenderer = glCreateRenderer(this, mDisplayId);
-     
-     if (!mRenderer)
-     {
-@@ -186,7 +187,7 @@ bool Display::getConfigAttrib(EGLConfig config, EGLint attribute, EGLint *value)
+-#ifdef ANGLE_PLATFORM_WINDOWS
++#if defined(ANGLE_PLATFORM_WINRT)
++    tls->at(index) = value;
++    return true;
++#elif defined(ANGLE_PLATFORM_WINDOWS)
+     return (TlsSetValue(index, value) == TRUE);
+ #elif defined(ANGLE_PLATFORM_POSIX)
+     return (pthread_setspecific(index, value) == 0);
+@@ -60,13 +85,17 @@ bool SetTLSValue(TLSIndex index, void *value)
  
- 
- 
--EGLSurface Display::createWindowSurface(HWND window, EGLConfig config, const EGLint *attribList)
-+EGLSurface Display::createWindowSurface(EGLNativeWindowType window, EGLConfig config, const EGLint *attribList)
+ void *GetTLSValue(TLSIndex index)
  {
-     const Config *configuration = mConfigSet.get(config);
-     EGLint postSubBufferSupported = EGL_FALSE;
-@@ -456,7 +457,7 @@ bool Display::isValidSurface(egl::Surface *surface)
-     return mSurfaceSet.find(surface) != mSurfaceSet.end();
- }
- 
--bool Display::hasExistingWindowSurface(HWND window)
-+bool Display::hasExistingWindowSurface(EGLNativeWindowType window)
- {
-     for (SurfaceSet::iterator surface = mSurfaceSet.begin(); surface != mSurfaceSet.end(); surface++)
-     {
-diff --git a/src/3rdparty/angle/src/libEGL/Display.h b/src/3rdparty/angle/src/libEGL/Display.h
-index c816e4e..cd07bb3 100644
---- a/src/3rdparty/angle/src/libEGL/Display.h
-+++ b/src/3rdparty/angle/src/libEGL/Display.h
-@@ -38,7 +38,7 @@ class Display
-     bool getConfigs(EGLConfig *configs, const EGLint *attribList, EGLint configSize, EGLint *numConfig);
-     bool getConfigAttrib(EGLConfig config, EGLint attribute, EGLint *value);
- 
--    EGLSurface createWindowSurface(HWND window, EGLConfig config, const EGLint *attribList);
-+    EGLSurface createWindowSurface(EGLNativeWindowType window, EGLConfig config, const EGLint *attribList);
-     EGLSurface createOffscreenSurface(EGLConfig config, HANDLE shareHandle, const EGLint *attribList);
-     EGLContext createContext(EGLConfig configHandle, const gl::Context *shareContext, bool notifyResets, bool robustAccess);
- 
-@@ -49,7 +49,7 @@ class Display
-     bool isValidConfig(EGLConfig config);
-     bool isValidContext(gl::Context *context);
-     bool isValidSurface(egl::Surface *surface);
--    bool hasExistingWindowSurface(HWND window);
-+    bool hasExistingWindowSurface(EGLNativeWindowType window);
- 
-     rx::Renderer *getRenderer() { return mRenderer; };
- 
-@@ -63,12 +63,11 @@ class Display
-   private:
-     DISALLOW_COPY_AND_ASSIGN(Display);
- 
--    Display(EGLNativeDisplayType displayId, HDC deviceContext);
-+    Display(EGLNativeDisplayType displayId);
- 
-     bool restoreLostDevice();
- 
-     EGLNativeDisplayType mDisplayId;
--    const HDC mDc;
- 
-     bool mSoftwareDevice;
-     
-diff --git a/src/3rdparty/angle/src/libEGL/Surface.cpp b/src/3rdparty/angle/src/libEGL/Surface.cpp
-index 12f8dfd..3443355 100644
---- a/src/3rdparty/angle/src/libEGL/Surface.cpp
-+++ b/src/3rdparty/angle/src/libEGL/Surface.cpp
-@@ -1,3 +1,4 @@
-+#include "../libGLESv2/precompiled.h"
- //
- // Copyright (c) 2002-2012 The ANGLE Project Authors. All rights reserved.
- // Use of this source code is governed by a BSD-style license that can be
-@@ -22,10 +23,15 @@
- #include "libEGL/main.h"
- #include "libEGL/Display.h"
- 
-+#if defined(ANGLE_OS_WINRT)
-+#include <windows.foundation.h>
-+#include <windows.ui.core.h>
++#if !defined(ANGLE_PLATFORM_WINRT) // Valid on WinRT, as Alloc handles the index creation
+     assert(index != TLS_INVALID_INDEX && "GetTLSValue(): Invalid TLS Index");
 +#endif
-+
- namespace egl
- {
- 
--Surface::Surface(Display *display, const Config *config, HWND window, EGLint postSubBufferSupported) 
-+Surface::Surface(Display *display, const Config *config, EGLNativeWindowType window, EGLint postSubBufferSupported)
-     : mDisplay(display), mConfig(config), mWindow(window), mPostSubBufferSupported(postSubBufferSupported)
- {
-     mRenderer = mDisplay->getRenderer();
-@@ -98,6 +104,7 @@ bool Surface::resetSwapChain()
- 
-     if (mWindow)
+     if (index == TLS_INVALID_INDEX)
      {
-+#if !defined(ANGLE_OS_WINRT)
-         RECT windowRect;
-         if (!GetClientRect(getWindowHandle(), &windowRect))
-         {
-@@ -109,6 +116,16 @@ bool Surface::resetSwapChain()
- 
-         width = windowRect.right - windowRect.left;
-         height = windowRect.bottom - windowRect.top;
-+#else
-+        ABI::Windows::Foundation::Rect windowRect;
-+        ABI::Windows::UI::Core::ICoreWindow *window;
-+        HRESULT hr = mWindow->QueryInterface(IID_PPV_ARGS(&window));
-+        if (FAILED(hr))
-+            return false;
-+        window->get_Bounds(&windowRect);
-+        width = windowRect.Width;
-+        height = windowRect.Height;
-+#endif
-     }
-     else
-     {
-@@ -221,7 +238,7 @@ bool Surface::swapRect(EGLint x, EGLint y, EGLint width, EGLint height)
-     return true;
- }
- 
--HWND Surface::getWindowHandle()
-+EGLNativeWindowType Surface::getWindowHandle()
- {
-     return mWindow;
- }
-@@ -230,6 +247,7 @@ HWND Surface::getWindowHandle()
- #define kSurfaceProperty _TEXT("Egl::SurfaceOwner")
- #define kParentWndProc _TEXT("Egl::SurfaceParentWndProc")
- 
-+#if !defined(ANGLE_OS_WINRT)
- static LRESULT CALLBACK SurfaceWindowProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
- {
-   if (message == WM_SIZE)
-@@ -243,9 +261,13 @@ static LRESULT CALLBACK SurfaceWindowProc(HWND hwnd, UINT message, WPARAM wparam
-   WNDPROC prevWndFunc = reinterpret_cast<WNDPROC >(GetProp(hwnd, kParentWndProc));
-   return CallWindowProc(prevWndFunc, hwnd, message, wparam, lparam);
- }
-+#endif
- 
- void Surface::subclassWindow()
- {
-+#if defined(ANGLE_OS_WINRT)
-+    mWindowSubclassed = false;
-+#else
-     if (!mWindow)
-     {
-         return;
-@@ -269,10 +291,12 @@ void Surface::subclassWindow()
-     SetProp(mWindow, kSurfaceProperty, reinterpret_cast<HANDLE>(this));
-     SetProp(mWindow, kParentWndProc, reinterpret_cast<HANDLE>(oldWndProc));
-     mWindowSubclassed = true;
-+#endif
- }
- 
- void Surface::unsubclassWindow()
- {
-+#if !defined(ANGLE_OS_WINRT)
-     if(!mWindowSubclassed)
-     {
-         return;
-@@ -295,10 +319,12 @@ void Surface::unsubclassWindow()
-     RemoveProp(mWindow, kSurfaceProperty);
-     RemoveProp(mWindow, kParentWndProc);
-     mWindowSubclassed = false;
-+#endif
- }
- 
- bool Surface::checkForOutOfDateSwapChain()
- {
-+#if !defined(ANGLE_OS_WINRT)
-     RECT client;
-     if (!GetClientRect(getWindowHandle(), &client))
-     {
-@@ -309,14 +335,26 @@ bool Surface::checkForOutOfDateSwapChain()
-     // Grow the buffer now, if the window has grown. We need to grow now to avoid losing information.
-     int clientWidth = client.right - client.left;
-     int clientHeight = client.bottom - client.top;
-+#else
-+    ABI::Windows::Foundation::Rect windowRect;
-+    ABI::Windows::UI::Core::ICoreWindow *window;
-+    HRESULT hr = mWindow->QueryInterface(IID_PPV_ARGS(&window));
-+    if (FAILED(hr))
-+        return false;
-+    window->get_Bounds(&windowRect);
-+    int clientWidth = windowRect.Width;
-+    int clientHeight = windowRect.Height;
-+#endif
-     bool sizeDirty = clientWidth != getWidth() || clientHeight != getHeight();
- 
-+#if !defined(ANGLE_OS_WINRT)
-     if (IsIconic(getWindowHandle()))
-     {
-         // The window is automatically resized to 150x22 when it's minimized, but the swapchain shouldn't be resized
-         // because that's not a useful size to render to.
-         sizeDirty = false;
-     }
-+#endif
- 
-     bool wasDirty = (mSwapIntervalDirty || sizeDirty);
- 
-diff --git a/src/3rdparty/angle/src/libEGL/Surface.h b/src/3rdparty/angle/src/libEGL/Surface.h
-index 938b800..1d2303c 100644
---- a/src/3rdparty/angle/src/libEGL/Surface.h
-+++ b/src/3rdparty/angle/src/libEGL/Surface.h
-@@ -34,7 +34,7 @@ class Config;
- class Surface
- {
-   public:
--    Surface(Display *display, const egl::Config *config, HWND window, EGLint postSubBufferSupported);
-+    Surface(Display *display, const egl::Config *config, EGLNativeWindowType window, EGLint postSubBufferSupported);
-     Surface(Display *display, const egl::Config *config, HANDLE shareHandle, EGLint width, EGLint height, EGLenum textureFormat, EGLenum textureTarget);
- 
-     ~Surface();
-@@ -43,7 +43,7 @@ class Surface
-     void release();
-     bool resetSwapChain();
- 
--    HWND getWindowHandle();
-+    EGLNativeWindowType getWindowHandle();
-     bool swap();
-     bool postSubBuffer(EGLint x, EGLint y, EGLint width, EGLint height);
- 
-@@ -79,7 +79,7 @@ private:
-     bool resetSwapChain(int backbufferWidth, int backbufferHeight);
-     bool swapRect(EGLint x, EGLint y, EGLint width, EGLint height);
- 
--    const HWND mWindow;            // Window that the surface is created for.
-+    const EGLNativeWindowType mWindow; // Window that the surface is created for.
-     bool mWindowSubclassed;        // Indicates whether we successfully subclassed mWindow for WM_RESIZE hooking
-     const egl::Config *mConfig;    // EGL config surface was created with
-     EGLint mHeight;                // Height of surface
-diff --git a/src/3rdparty/angle/src/libEGL/libEGL.cpp b/src/3rdparty/angle/src/libEGL/libEGL.cpp
-index 0ea46d4..b2944d5 100644
---- a/src/3rdparty/angle/src/libEGL/libEGL.cpp
-+++ b/src/3rdparty/angle/src/libEGL/libEGL.cpp
-@@ -308,14 +308,16 @@ EGLSurface __stdcall eglCreateWindowSurface(EGLDisplay dpy, EGLConfig config, EG
-             return EGL_NO_SURFACE;
-         }
- 
-+#if !defined(ANGLE_OS_WINRT)
-         HWND window = (HWND)win;
- 
-         if (!IsWindow(window))
-         {
-             return egl::error(EGL_BAD_NATIVE_WINDOW, EGL_NO_SURFACE);
-         }
-+#endif
- 
--        return display->createWindowSurface(window, config, attrib_list);
-+        return display->createWindowSurface(win, config, attrib_list);
-     }
-     catch(std::bad_alloc&)
-     {
-diff --git a/src/3rdparty/angle/src/libEGL/main.cpp b/src/3rdparty/angle/src/libEGL/main.cpp
-index 772b8eb..e972691 100644
---- a/src/3rdparty/angle/src/libEGL/main.cpp
-+++ b/src/3rdparty/angle/src/libEGL/main.cpp
-@@ -1,3 +1,4 @@
-+#include "../libGLESv2/precompiled.h"
- //
- // Copyright (c) 2002-2012 The ANGLE Project Authors. All rights reserved.
- // Use of this source code is governed by a BSD-style license that can be
-@@ -10,14 +11,23 @@
- 
- #include "common/debug.h"
- 
-+#if !defined(ANGLE_OS_WINRT)
- static DWORD currentTLS = TLS_OUT_OF_INDEXES;
-+#else
-+static __declspec(thread) void *currentTLS = 0;
-+#endif
- 
- namespace egl
- {
- 
- Current *AllocateCurrent()
- {
-+#if !defined(ANGLE_OS_WINRT)
-     Current *current = (egl::Current*)LocalAlloc(LPTR, sizeof(egl::Current));
-+#else
-+    currentTLS = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(Current));
-+    Current *current = (egl::Current*)currentTLS;
-+#endif
- 
-     if (!current)
-     {
-@@ -25,8 +35,10 @@ Current *AllocateCurrent()
          return NULL;
      }
  
-+#if !defined(ANGLE_OS_WINRT)
-     ASSERT(currentTLS != TLS_OUT_OF_INDEXES);
-     TlsSetValue(currentTLS, current);
-+#endif
+-#ifdef ANGLE_PLATFORM_WINDOWS
++#if defined(ANGLE_PLATFORM_WINRT)
++    return tls->at(index);
++#elif defined(ANGLE_PLATFORM_WINDOWS)
+     return TlsGetValue(index);
+ #elif defined(ANGLE_PLATFORM_POSIX)
+     return pthread_getspecific(index);
+diff --git a/src/3rdparty/angle/src/common/tls.h b/src/3rdparty/angle/src/common/tls.h
+index 4b25fbc..c40ae1a 100644
+--- a/src/3rdparty/angle/src/common/tls.h
++++ b/src/3rdparty/angle/src/common/tls.h
+@@ -11,7 +11,11 @@
  
-     current->error = EGL_SUCCESS;
-     current->API = EGL_OPENGL_ES_API;
-@@ -39,12 +51,20 @@ Current *AllocateCurrent()
+ #include "common/platform.h"
  
- void DeallocateCurrent()
- {
-+#if !defined(ANGLE_OS_WINRT)
-     void *current = TlsGetValue(currentTLS);
- 
-     if (current)
-     {
-         LocalFree((HLOCAL)current);
-     }
-+#else
-+    if (currentTLS)
-+    {
-+        HeapFree(GetProcessHeap(), 0, currentTLS);
-+        currentTLS = 0;
-+    }
-+#endif
- }
- 
- }
-@@ -69,13 +89,14 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved
-                 }
-             }
- #endif
--
-+#if !defined(ANGLE_OS_WINRT)
-             currentTLS = TlsAlloc();
- 
-             if (currentTLS == TLS_OUT_OF_INDEXES)
-             {
-                 return FALSE;
-             }
-+#endif
-         }
-         // Fall throught to initialize index
-       case DLL_THREAD_ATTACH:
-@@ -91,7 +112,9 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved
-       case DLL_PROCESS_DETACH:
-         {
-             egl::DeallocateCurrent();
-+#if !defined(ANGLE_OS_WINRT)
-             TlsFree(currentTLS);
-+#endif
-         }
-         break;
-       default:
-@@ -107,8 +130,12 @@ namespace egl
- Current *GetCurrentData()
- {
- #ifndef QT_OPENGL_ES_2_ANGLE_STATIC
-+#if !defined(ANGLE_OS_WINRT)
-     Current *current = (Current*)TlsGetValue(currentTLS);
- #else
-+    Current *current = (Current*)currentTLS;
-+#endif
-+#else
-     // No precautions for thread safety taken as ANGLE is used single-threaded in Qt.
-     static Current s_current = { EGL_SUCCESS, EGL_OPENGL_ES_API, EGL_NO_DISPLAY, EGL_NO_SURFACE, EGL_NO_SURFACE };
-     Current *current = &s_current;
-diff --git a/src/3rdparty/angle/src/libGLESv2/Context.cpp b/src/3rdparty/angle/src/libGLESv2/Context.cpp
-index 1a058b6..e651785 100644
---- a/src/3rdparty/angle/src/libGLESv2/Context.cpp
-+++ b/src/3rdparty/angle/src/libGLESv2/Context.cpp
-@@ -1076,6 +1076,7 @@ void Context::setRenderbufferStorage(GLsizei width, GLsizei height, GLenum inter
-       case GL_RGB565:
-       case GL_RGB8_OES:
-       case GL_RGBA8_OES:
-+      case GL_BGRA8_EXT:
-         renderbuffer = new gl::Colorbuffer(mRenderer,width, height, internalformat, samples);
-         break;
-       case GL_STENCIL_INDEX8:
-diff --git a/src/3rdparty/angle/src/libGLESv2/libGLESv2.cpp b/src/3rdparty/angle/src/libGLESv2/libGLESv2.cpp
-index a33481e..814dfbf 100644
---- a/src/3rdparty/angle/src/libGLESv2/libGLESv2.cpp
-+++ b/src/3rdparty/angle/src/libGLESv2/libGLESv2.cpp
-@@ -4895,6 +4895,7 @@ void __stdcall glRenderbufferStorageMultisampleANGLE(GLenum target, GLsizei samp
-               case GL_RGBA8_OES:
-               case GL_STENCIL_INDEX8:
-               case GL_DEPTH24_STENCIL8_OES:
-+              case GL_BGRA8_EXT:
-                 context->setRenderbufferStorage(width, height, internalformat, samples);
-                 break;
-               default:
-diff --git a/src/3rdparty/angle/src/libGLESv2/main.cpp b/src/3rdparty/angle/src/libGLESv2/main.cpp
-index 6b459d3..95f4b8d 100644
---- a/src/3rdparty/angle/src/libGLESv2/main.cpp
-+++ b/src/3rdparty/angle/src/libGLESv2/main.cpp
-@@ -11,14 +11,23 @@
- 
- #include "libGLESv2/Context.h"
- 
-+#if !defined(ANGLE_OS_WINRT)
- static DWORD currentTLS = TLS_OUT_OF_INDEXES;
-+#else
-+static __declspec(thread) void *currentTLS = 0;
-+#endif
- 
- namespace gl
- {
- 
- Current *AllocateCurrent()
- {
-+#if !defined(ANGLE_OS_WINRT)
-     Current *current = (Current*)LocalAlloc(LPTR, sizeof(Current));
-+#else
-+    currentTLS = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(Current));
-+    Current *current = (Current*)currentTLS;
-+#endif
- 
-     if (!current)
-     {
-@@ -26,8 +35,10 @@ Current *AllocateCurrent()
-         return NULL;
-     }
- 
-+#if !defined(ANGLE_OS_WINRT)
-     ASSERT(currentTLS != TLS_OUT_OF_INDEXES);
-     TlsSetValue(currentTLS, current);
-+#endif
- 
-     current->context = NULL;
-     current->display = NULL;
-@@ -37,12 +48,20 @@ Current *AllocateCurrent()
- 
- void DeallocateCurrent()
- {
-+#if !defined(ANGLE_OS_WINRT)
-     void *current = TlsGetValue(currentTLS);
- 
-     if (current)
-     {
-         LocalFree((HLOCAL)current);
-     }
-+#else
-+    if (currentTLS)
-+    {
-+        HeapFree(GetProcessHeap(), 0, currentTLS);
-+        currentTLS = 0;
-+    }
-+#endif
- }
- 
- }
-@@ -53,12 +72,14 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved
-     {
-       case DLL_PROCESS_ATTACH:
-         {
-+#if !defined(ANGLE_OS_WINRT)
-             currentTLS = TlsAlloc();
- 
-             if (currentTLS == TLS_OUT_OF_INDEXES)
-             {
-                 return FALSE;
-             }
-+#endif
-         }
-         // Fall throught to initialize index
-       case DLL_THREAD_ATTACH:
-@@ -74,7 +95,9 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved
-       case DLL_PROCESS_DETACH:
-         {
-             gl::DeallocateCurrent();
-+#if !defined(ANGLE_OS_WINRT)
-             TlsFree(currentTLS);
-+#endif
-         }
-         break;
-       default:
-@@ -90,8 +113,12 @@ namespace gl
- Current *GetCurrentData()
- {
- #ifndef QT_OPENGL_ES_2_ANGLE_STATIC
-+#if !defined(ANGLE_OS_WINRT)
-     Current *current = (Current*)TlsGetValue(currentTLS);
- #else
-+    Current *current = (Current*)currentTLS;
-+#endif
-+#else
-     // No precautions for thread safety taken as ANGLE is used single-threaded in Qt.
-     static Current s_current = { 0, 0 };
-     Current *current = &s_current;
-diff --git a/src/3rdparty/angle/src/libGLESv2/main.h b/src/3rdparty/angle/src/libGLESv2/main.h
-index b413f23..69465c9 100644
---- a/src/3rdparty/angle/src/libGLESv2/main.h
-+++ b/src/3rdparty/angle/src/libGLESv2/main.h
-@@ -57,7 +57,7 @@ gl::Context *glCreateContext(const gl::Context *shareContext, rx::Renderer *rend
- void glDestroyContext(gl::Context *context);
- void glMakeCurrent(gl::Context *context, egl::Display *display, egl::Surface *surface);
- gl::Context *glGetCurrentContext();
--rx::Renderer *glCreateRenderer(egl::Display *display, HDC hDc, EGLNativeDisplayType displayId);
-+rx::Renderer *glCreateRenderer(egl::Display *display, EGLNativeDisplayType displayId);
- void glDestroyRenderer(rx::Renderer *renderer);
- 
- __eglMustCastToProperFunctionPointerType __stdcall glGetProcAddress(const char *procname);
-diff --git a/src/3rdparty/angle/src/libGLESv2/precompiled.h b/src/3rdparty/angle/src/libGLESv2/precompiled.h
-index 79490b1..2ff09f5 100644
---- a/src/3rdparty/angle/src/libGLESv2/precompiled.h
-+++ b/src/3rdparty/angle/src/libGLESv2/precompiled.h
-@@ -32,14 +32,55 @@
- #include <unordered_map>
- #include <vector>
- 
-+#if defined(WINAPI_FAMILY) && (WINAPI_FAMILY==WINAPI_FAMILY_APP || WINAPI_FAMILY==WINAPI_FAMILY_PHONE_APP)
-+#  define ANGLE_OS_WINRT
-+#  if WINAPI_FAMILY==WINAPI_FAMILY_PHONE_APP
-+#    define ANGLE_OS_WINPHONE
-+#  endif
-+#endif
-+
- #if defined(ANGLE_ENABLE_D3D9)
- #  include <d3d9.h>
- #endif
- #if defined(ANGLE_ENABLE_D3D11)
--#  include <d3d11.h>
-+#  if !defined(ANGLE_OS_WINRT)
-+#    include <d3d11.h>
-+#  else
-+#    include <d3d11_1.h>
-+#    define Sleep(x) WaitForSingleObjectEx(GetCurrentThread(), x, FALSE)
-+#    define GetVersion() WINVER
-+#    define LoadLibrary(x) LoadPackagedLibrary(x, NULL)
-+#  endif
- #  include <dxgi.h>
- #endif
--#include <d3dcompiler.h>
-+#if !defined(ANGLE_OS_WINPHONE)
-+#  include <d3dcompiler.h>
-+#endif
-+
-+#ifndef D3DCOMPILE_OPTIMIZATION_LEVEL0
-+#define D3DCOMPILE_OPTIMIZATION_LEVEL0 (1 << 14)
-+#endif
-+#ifndef D3DCOMPILE_OPTIMIZATION_LEVEL1
-+#define D3DCOMPILE_OPTIMIZATION_LEVEL1 0
-+#endif
-+#ifndef D3DCOMPILE_OPTIMIZATION_LEVEL2
-+#define D3DCOMPILE_OPTIMIZATION_LEVEL2 ((1 << 14) | (1 << 15))
-+#endif
-+#ifndef D3DCOMPILE_OPTIMIZATION_LEVEL3
-+#define D3DCOMPILE_OPTIMIZATION_LEVEL3 (1 << 15)
-+#endif
-+#ifndef D3DCOMPILE_DEBUG
-+#define D3DCOMPILE_DEBUG (1 << 0)
-+#endif
-+#ifndef D3DCOMPILE_SKIP_OPTIMIZATION
-+#define D3DCOMPILE_SKIP_OPTIMIZATION (1 << 2)
-+#endif
-+#ifndef D3DCOMPILE_AVOID_FLOW_CONTROL
-+#define D3DCOMPILE_AVOID_FLOW_CONTROL (1 << 9)
-+#endif
-+#ifndef D3DCOMPILE_PREFER_FLOW_CONTROL
-+#define D3DCOMPILE_PREFER_FLOW_CONTROL (1 << 10)
-+#endif
- 
- #ifdef _MSC_VER
- #include <hash_map>
-diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/Renderer.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/Renderer.cpp
-index 94cbc0e..5278113 100644
---- a/src/3rdparty/angle/src/libGLESv2/renderer/Renderer.cpp
-+++ b/src/3rdparty/angle/src/libGLESv2/renderer/Renderer.cpp
-@@ -24,7 +24,7 @@
- #define D3DERR_OUTOFVIDEOMEMORY MAKE_HRESULT(1, 0x876, 380)
- #endif
- 
--#ifdef __MINGW32__
-+#if defined(__MINGW32__) || defined(ANGLE_OS_WINPHONE)
- 
- #ifndef D3DCOMPILER_DLL
- 
-@@ -41,7 +41,7 @@ typedef HRESULT (WINAPI *pD3DCompile)(const void *data, SIZE_T data_size, const
- 
- #endif // D3DCOMPILER_DLL
- 
--#endif // __MINGW32__
-+#endif // __MINGW32__ || ANGLE_OS_WINPHONE
- 
- #ifndef QT_D3DCOMPILER_DLL
- #define QT_D3DCOMPILER_DLL D3DCOMPILER_DLL
-@@ -224,17 +224,22 @@ ShaderBlob *Renderer::compileToBinary(gl::InfoLog &infoLog, const char *hlsl, co
- extern "C"
- {
- 
--rx::Renderer *glCreateRenderer(egl::Display *display, HDC hDc, EGLNativeDisplayType displayId)
-+rx::Renderer *glCreateRenderer(egl::Display *display, EGLNativeDisplayType displayId)
- {
-     rx::Renderer *renderer = NULL;
-     EGLint status = EGL_BAD_ALLOC;
- 
-+#if defined(ANGLE_OS_WINRT)
-+    if (displayId == EGL_DEFAULT_DISPLAY)
-+        displayId = EGL_D3D11_ONLY_DISPLAY_ANGLE;
-+#endif
-+
- #if defined(ANGLE_ENABLE_D3D11)
-     if (displayId == EGL_DEFAULT_DISPLAY ||
-         displayId == EGL_D3D11_ELSE_D3D9_DISPLAY_ANGLE ||
-         displayId == EGL_D3D11_ONLY_DISPLAY_ANGLE)
-     {
--        renderer = new rx::Renderer11(display, hDc);
-+        renderer = new rx::Renderer11(display);
- 
-         if (renderer)
-         {
-@@ -257,7 +262,7 @@ rx::Renderer *glCreateRenderer(egl::Display *display, HDC hDc, EGLNativeDisplayT
- 
- #if defined(ANGLE_ENABLE_D3D9)
-     bool softwareDevice = (displayId == EGL_SOFTWARE_DISPLAY_ANGLE);
--    renderer = new rx::Renderer9(display, hDc, softwareDevice);
-+    renderer = new rx::Renderer9(display, displayId, softwareDevice);
- 
-     if (renderer)
-     {
-diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/Renderer.h b/src/3rdparty/angle/src/libGLESv2/renderer/Renderer.h
-index 7244a0a..79578b2 100644
---- a/src/3rdparty/angle/src/libGLESv2/renderer/Renderer.h
-+++ b/src/3rdparty/angle/src/libGLESv2/renderer/Renderer.h
-@@ -1,3 +1,4 @@
-+#include "../precompiled.h"
- //
- // Copyright (c) 2012-2013 The ANGLE Project Authors. All rights reserved.
- // Use of this source code is governed by a BSD-style license that can be
-@@ -113,7 +114,7 @@ class Renderer
- 
-     virtual void sync(bool block) = 0;
- 
--    virtual SwapChain *createSwapChain(HWND window, HANDLE shareHandle, GLenum backBufferFormat, GLenum depthBufferFormat) = 0;
-+    virtual SwapChain *createSwapChain(EGLNativeWindowType window, HANDLE shareHandle, GLenum backBufferFormat, GLenum depthBufferFormat) = 0;
- 
-     virtual void setSamplerState(gl::SamplerType type, int index, const gl::SamplerState &sampler) = 0;
-     virtual void setTexture(gl::SamplerType type, int index, gl::Texture *texture) = 0;
-diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/SwapChain.h b/src/3rdparty/angle/src/libGLESv2/renderer/SwapChain.h
-index f09f19b..8231fbc 100644
---- a/src/3rdparty/angle/src/libGLESv2/renderer/SwapChain.h
-+++ b/src/3rdparty/angle/src/libGLESv2/renderer/SwapChain.h
-@@ -1,3 +1,4 @@
-+#include "../precompiled.h"
- //
- // Copyright (c) 2012 The ANGLE Project Authors. All rights reserved.
- // Use of this source code is governed by a BSD-style license that can be
-@@ -22,7 +23,7 @@ namespace rx
- class SwapChain
- {
-   public:
--    SwapChain(HWND window, HANDLE shareHandle, GLenum backBufferFormat, GLenum depthBufferFormat)
-+    SwapChain(EGLNativeWindowType window, HANDLE shareHandle, GLenum backBufferFormat, GLenum depthBufferFormat)
-         : mWindow(window), mShareHandle(shareHandle), mBackBufferFormat(backBufferFormat), mDepthBufferFormat(depthBufferFormat)
-     {
-     }
-@@ -37,7 +38,7 @@ class SwapChain
-     virtual HANDLE getShareHandle() {return mShareHandle;};
- 
-   protected:
--    const HWND mWindow;            // Window that the surface is created for.
-+    const EGLNativeWindowType mWindow;  // Window that the surface is created for.
-     const GLenum mBackBufferFormat;
-     const GLenum mDepthBufferFormat;
- 
-diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/Renderer11.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/Renderer11.cpp
-index d9fcb7a..7f166fd 100644
---- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/Renderer11.cpp
-+++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/Renderer11.cpp
-@@ -66,7 +66,7 @@ enum
-     MAX_TEXTURE_IMAGE_UNITS_VTF_SM4 = 16
- };
- 
--Renderer11::Renderer11(egl::Display *display, HDC hDc) : Renderer(display), mDc(hDc)
-+Renderer11::Renderer11(egl::Display *display) : Renderer(display)
- {
-     mVertexDataManager = NULL;
-     mIndexDataManager = NULL;
-@@ -137,6 +137,7 @@ EGLint Renderer11::initialize()
-         return EGL_NOT_INITIALIZED;
-     }
- 
-+#if !defined(ANGLE_OS_WINRT)
-     mDxgiModule = LoadLibrary(TEXT("dxgi.dll"));
-     mD3d11Module = LoadLibrary(TEXT("d3d11.dll"));
- 
-@@ -146,6 +147,7 @@ EGLint Renderer11::initialize()
-         return EGL_NOT_INITIALIZED;
-     }
- 
-+
-     // create the D3D11 device
-     ASSERT(mDevice == NULL);
-     PFN_D3D11_CREATE_DEVICE D3D11CreateDevice = (PFN_D3D11_CREATE_DEVICE)GetProcAddress(mD3d11Module, "D3D11CreateDevice");
-@@ -155,6 +157,7 @@ EGLint Renderer11::initialize()
-         ERR("Could not retrieve D3D11CreateDevice address - aborting!\n");
-         return EGL_NOT_INITIALIZED;
-     }
-+#endif
- 
-     D3D_FEATURE_LEVEL featureLevels[] =
-     {
-@@ -203,8 +206,12 @@ EGLint Renderer11::initialize()
-         }
-     }
- 
-+#if !defined(ANGLE_OS_WINRT)
-     IDXGIDevice *dxgiDevice = NULL;
--    result = mDevice->QueryInterface(__uuidof(IDXGIDevice), (void**)&dxgiDevice);
-+#else
-+    IDXGIDevice1 *dxgiDevice = NULL;
-+#endif
-+    result = mDevice->QueryInterface(IID_PPV_ARGS(&dxgiDevice));
- 
-     if (FAILED(result))
-     {
-@@ -522,7 +529,7 @@ void Renderer11::sync(bool block)
-     }
- }
- 
--SwapChain *Renderer11::createSwapChain(HWND window, HANDLE shareHandle, GLenum backBufferFormat, GLenum depthBufferFormat)
-+SwapChain *Renderer11::createSwapChain(EGLNativeWindowType window, HANDLE shareHandle, GLenum backBufferFormat, GLenum depthBufferFormat)
- {
-     return new rx::SwapChain11(this, window, shareHandle, backBufferFormat, depthBufferFormat);
- }
-diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/Renderer11.h b/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/Renderer11.h
-index 1b6760b..ba3f0c6 100644
---- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/Renderer11.h
-+++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/Renderer11.h
-@@ -39,7 +39,7 @@ enum
- class Renderer11 : public Renderer
- {
-   public:
--    Renderer11(egl::Display *display, HDC hDc);
-+    Renderer11(egl::Display *display);
-     virtual ~Renderer11();
- 
-     static Renderer11 *makeRenderer11(Renderer *renderer);
-@@ -52,7 +52,7 @@ class Renderer11 : public Renderer
- 
-     virtual void sync(bool block);
- 
--    virtual SwapChain *createSwapChain(HWND window, HANDLE shareHandle, GLenum backBufferFormat, GLenum depthBufferFormat);
-+    virtual SwapChain *createSwapChain(EGLNativeWindowType window, HANDLE shareHandle, GLenum backBufferFormat, GLenum depthBufferFormat);
- 
-     virtual void setSamplerState(gl::SamplerType type, int index, const gl::SamplerState &sampler);
-     virtual void setTexture(gl::SamplerType type, int index, gl::Texture *texture);
-@@ -203,7 +203,6 @@ class Renderer11 : public Renderer
- 
-     HMODULE mD3d11Module;
-     HMODULE mDxgiModule;
--    HDC mDc;
- 
-     bool mDeviceLost;
- 
-diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/SwapChain11.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/SwapChain11.cpp
-index d2b53a7..bd97d5c 100644
---- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/SwapChain11.cpp
-+++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/SwapChain11.cpp
-@@ -18,7 +18,7 @@
- namespace rx
- {
- 
--SwapChain11::SwapChain11(Renderer11 *renderer, HWND window, HANDLE shareHandle,
-+SwapChain11::SwapChain11(Renderer11 *renderer, EGLNativeWindowType window, HANDLE shareHandle,
-                          GLenum backBufferFormat, GLenum depthBufferFormat)
-     : mRenderer(renderer), SwapChain(window, shareHandle, backBufferFormat, depthBufferFormat)
- {
-@@ -361,25 +361,50 @@ EGLint SwapChain11::reset(int backbufferWidth, int backbufferHeight, EGLint swap
- 
-     if (mWindow)
-     {
-+#if !defined(ANGLE_OS_WINRT)
-         IDXGIFactory *factory = mRenderer->getDxgiFactory();
- 
-         DXGI_SWAP_CHAIN_DESC swapChainDesc = {0};
--        swapChainDesc.BufferCount = 2;
-         swapChainDesc.BufferDesc.Format = gl_d3d11::ConvertRenderbufferFormat(mBackBufferFormat);
-         swapChainDesc.BufferDesc.Width = backbufferWidth;
-         swapChainDesc.BufferDesc.Height = backbufferHeight;
-+        swapChainDesc.BufferCount = 2;
-         swapChainDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
-         swapChainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
-         swapChainDesc.BufferDesc.RefreshRate.Numerator = 0;
-         swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
-+        swapChainDesc.Windowed = TRUE;
-+        swapChainDesc.OutputWindow = mWindow;
-+#else
-+        IDXGIFactory2 *factory;
-+        HRESULT result = mRenderer->getDxgiFactory()->QueryInterface(IID_PPV_ARGS(&factory));
-+        ASSERT(SUCCEEDED(result));
-+
-+        DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {0};
-+        swapChainDesc.Format = gl_d3d11::ConvertRenderbufferFormat(mBackBufferFormat);
-+        swapChainDesc.Width = backbufferWidth;
-+        swapChainDesc.Height = backbufferHeight;
-+        swapChainDesc.Stereo = FALSE;
-+#if !defined(ANGLE_OS_WINPHONE)
-+        swapChainDesc.BufferCount = 2;
-+        swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
-+#else
-+        swapChainDesc.BufferCount = 1;
-+        swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
-+#endif
-+#endif
-         swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-         swapChainDesc.Flags = 0;
--        swapChainDesc.OutputWindow = mWindow;
-         swapChainDesc.SampleDesc.Count = 1;
-         swapChainDesc.SampleDesc.Quality = 0;
--        swapChainDesc.Windowed = TRUE;
- 
-+#if !defined(ANGLE_OS_WINRT)
-         HRESULT result = factory->CreateSwapChain(device, &swapChainDesc, &mSwapChain);
-+#else
-+        IDXGISwapChain1 *swapChain;
-+        result = factory->CreateSwapChainForCoreWindow(device, mWindow, &swapChainDesc, NULL, &swapChain);
-+        mSwapChain = swapChain;
-+#endif
- 
-         if (FAILED(result))
-         {
-@@ -390,6 +415,7 @@ EGLint SwapChain11::reset(int backbufferWidth, int backbufferHeight, EGLint swap
-             {
-                 return EGL_CONTEXT_LOST;
-             }
-+#if !defined(ANGLE_OS_WINRT)
-             else
-             {
-                 // We cannot create a swap chain for an HWND that is owned by a different process on some versions of
-@@ -408,6 +434,9 @@ EGLint SwapChain11::reset(int backbufferWidth, int backbufferHeight, EGLint swap
-                     return EGL_BAD_ALLOC;
-                 }
-             }
-+#else
-+            return EGL_BAD_ALLOC;
-+#endif
-         }
- 
-         result = mSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&mBackBufferTexture);
-diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/SwapChain11.h b/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/SwapChain11.h
-index 8001046..2a030c8 100644
---- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/SwapChain11.h
-+++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/SwapChain11.h
-@@ -19,7 +19,7 @@ class Renderer11;
- class SwapChain11 : public SwapChain
- {
-   public:
--    SwapChain11(Renderer11 *renderer, HWND window, HANDLE shareHandle,
-+    SwapChain11(Renderer11 *renderer, EGLNativeWindowType window, HANDLE shareHandle,
-                 GLenum backBufferFormat, GLenum depthBufferFormat);
-     virtual ~SwapChain11();
- 
-diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/shaders/Clear11.hlsl b/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/shaders/Clear11.hlsl
-index 042ac69..cb132dc 100644
---- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/shaders/Clear11.hlsl
-+++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d11/shaders/Clear11.hlsl
-@@ -12,10 +12,12 @@ struct PS_OutputMultiple
- 	float4 color1 : SV_TARGET1;
- 	float4 color2 : SV_TARGET2;
- 	float4 color3 : SV_TARGET3;
-+#ifdef SM4
- 	float4 color4 : SV_TARGET4;
- 	float4 color5 : SV_TARGET5;
- 	float4 color6 : SV_TARGET6;
- 	float4 color7 : SV_TARGET7;
-+#endif
- };
- 
- PS_OutputMultiple PS_ClearMultiple(in float4 inPosition : SV_POSITION, in float4 inColor : COLOR)
-@@ -25,10 +27,12 @@ PS_OutputMultiple PS_ClearMultiple(in float4 inPosition : SV_POSITION, in float4
- 	outColor.color1 = inColor;
- 	outColor.color2 = inColor;
- 	outColor.color3 = inColor;
-+#ifdef SM4
- 	outColor.color4 = inColor;
- 	outColor.color5 = inColor;
- 	outColor.color6 = inColor;
- 	outColor.color7 = inColor;
-+#endif
- 	return outColor;
- }
- 
-diff --git a/src/3rdparty/angle/src/libGLESv2/utilities.cpp b/src/3rdparty/angle/src/libGLESv2/utilities.cpp
-index 32df49e..30765ff 100644
---- a/src/3rdparty/angle/src/libGLESv2/utilities.cpp
-+++ b/src/3rdparty/angle/src/libGLESv2/utilities.cpp
+-#ifdef ANGLE_PLATFORM_WINDOWS
++#if defined(ANGLE_PLATFORM_WINRT)
++    typedef size_t TLSIndex;
++#   define TLS_OUT_OF_INDEXES (static_cast<TLSIndex>(-1))
++#   define TLS_INVALID_INDEX TLS_OUT_OF_INDEXES
++#elif defined(ANGLE_PLATFORM_WINDOWS)
+     typedef DWORD TLSIndex;
+ #   define TLS_INVALID_INDEX (TLS_OUT_OF_INDEXES)
+ #elif defined(ANGLE_PLATFORM_POSIX)
+diff --git a/src/3rdparty/angle/src/common/utilities.cpp b/src/3rdparty/angle/src/common/utilities.cpp
+index 405f119..4b8e325 100644
+--- a/src/3rdparty/angle/src/common/utilities.cpp
++++ b/src/3rdparty/angle/src/common/utilities.cpp
 @@ -9,6 +9,14 @@
- 
- #include "libGLESv2/utilities.h"
- #include "libGLESv2/mathutil.h"
-+#if defined(ANGLE_OS_WINRT)
+ #include "common/utilities.h"
+ #include "common/mathutil.h"
+ #include "common/platform.h"
++#if defined(ANGLE_PLATFORM_WINRT)
 +#  include <locale>
 +#  include <codecvt>
 +#  include <wrl.h>
@@ -1149,24 +187,18 @@ index 32df49e..30765ff 100644
 +   using namespace ABI::Windows::Storage;
 +#endif
  
- namespace gl
- {
-@@ -737,6 +745,7 @@ bool IsTriangleMode(GLenum drawMode)
+ #include <set>
+ 
+@@ -441,7 +449,48 @@ int VariableSortOrder(GLenum type)
  
  std::string getTempPath()
  {
-+#if !defined(ANGLE_OS_WINRT)
-     char path[MAX_PATH];
-     DWORD pathLen = GetTempPathA(sizeof(path) / sizeof(path[0]), path);
-     if (pathLen == 0)
-@@ -751,6 +760,45 @@ std::string getTempPath()
-         UNREACHABLE();
-         return std::string();
-     }
-+#else
+-#ifdef ANGLE_PLATFORM_WINDOWS
++#if defined(ANGLE_PLATFORM_WINRT)
 +    static std::string path;
 +
-+    while (path.empty()) {
++    while (path.empty())
++    {
 +        ComPtr<IApplicationDataStatics> factory;
 +        Wrappers::HStringReference classId(RuntimeClass_Windows_Storage_ApplicationData);
 +        HRESULT result = RoGetActivationFactory(classId.Get(), IID_PPV_ARGS(&factory));
@@ -1201,10 +233,1104 @@ index 32df49e..30765ff 100644
 +            break;
 +        }
 +    }
++
++    return path;
++#elif defined(ANGLE_PLATFORM_WINDOWS)
+     char path[MAX_PATH];
+     DWORD pathLen = GetTempPathA(sizeof(path) / sizeof(path[0]), path);
+     if (pathLen == 0)
+diff --git a/src/3rdparty/angle/src/libEGL/Display.cpp b/src/3rdparty/angle/src/libEGL/Display.cpp
+index a87bfe8..7cd83c3 100644
+--- a/src/3rdparty/angle/src/libEGL/Display.cpp
++++ b/src/3rdparty/angle/src/libEGL/Display.cpp
+@@ -57,6 +57,10 @@ Display::Display(EGLNativeDisplayType displayId, EGLint displayType)
+       mRequestedDisplayType(displayType),
+       mRenderer(NULL)
+ {
++#if defined(ANGLE_PLATFORM_WINRT)
++    if (mDisplayId)
++        mDisplayId->AddRef();
 +#endif
-     
-     return path;
  }
+ 
+ Display::~Display()
+@@ -69,6 +73,11 @@ Display::~Display()
+     {
+         displays->erase(iter);
+     }
++
++#if defined(ANGLE_PLATFORM_WINRT)
++    if (mDisplayId)
++        mDisplayId->Release();
++#endif
+ }
+ 
+ bool Display::initialize()
+@@ -193,7 +202,7 @@ bool Display::getConfigAttrib(EGLConfig config, EGLint attribute, EGLint *value)
+ 
+ 
+ 
+-EGLSurface Display::createWindowSurface(HWND window, EGLConfig config, const EGLint *attribList)
++EGLSurface Display::createWindowSurface(EGLNativeWindowType window, EGLConfig config, const EGLint *attribList)
+ {
+     const Config *configuration = mConfigSet.get(config);
+     EGLint postSubBufferSupported = EGL_FALSE;
+@@ -494,7 +503,7 @@ bool Display::isValidSurface(egl::Surface *surface)
+     return mSurfaceSet.find(surface) != mSurfaceSet.end();
+ }
+ 
+-bool Display::hasExistingWindowSurface(HWND window)
++bool Display::hasExistingWindowSurface(EGLNativeWindowType window)
+ {
+     for (SurfaceSet::iterator surface = mSurfaceSet.begin(); surface != mSurfaceSet.end(); surface++)
+     {
+diff --git a/src/3rdparty/angle/src/libEGL/Display.h b/src/3rdparty/angle/src/libEGL/Display.h
+index 250878f..73ba767 100644
+--- a/src/3rdparty/angle/src/libEGL/Display.h
++++ b/src/3rdparty/angle/src/libEGL/Display.h
+@@ -43,7 +43,7 @@ class Display
+     bool getConfigs(EGLConfig *configs, const EGLint *attribList, EGLint configSize, EGLint *numConfig);
+     bool getConfigAttrib(EGLConfig config, EGLint attribute, EGLint *value);
+ 
+-    EGLSurface createWindowSurface(HWND window, EGLConfig config, const EGLint *attribList);
++    EGLSurface createWindowSurface(EGLNativeWindowType window, EGLConfig config, const EGLint *attribList);
+     EGLSurface createOffscreenSurface(EGLConfig config, HANDLE shareHandle, const EGLint *attribList);
+     EGLContext createContext(EGLConfig configHandle, EGLint clientVersion, const gl::Context *shareContext, bool notifyResets, bool robustAccess);
+ 
+@@ -54,7 +54,7 @@ class Display
+     bool isValidConfig(EGLConfig config);
+     bool isValidContext(gl::Context *context);
+     bool isValidSurface(egl::Surface *surface);
+-    bool hasExistingWindowSurface(HWND window);
++    bool hasExistingWindowSurface(EGLNativeWindowType window);
+ 
+     rx::Renderer *getRenderer() { return mRenderer; };
+ 
+@@ -65,6 +65,8 @@ class Display
+     const char *getExtensionString() const;
+     const char *getVendorString() const;
+ 
++    EGLNativeDisplayType getDisplayId() const { return mDisplayId; }
++
+   private:
+     DISALLOW_COPY_AND_ASSIGN(Display);
+ 
+diff --git a/src/3rdparty/angle/src/libEGL/Surface.cpp b/src/3rdparty/angle/src/libEGL/Surface.cpp
+index 13b0f20..fa79961 100644
+--- a/src/3rdparty/angle/src/libEGL/Surface.cpp
++++ b/src/3rdparty/angle/src/libEGL/Surface.cpp
+@@ -22,10 +22,20 @@
+ #include "libEGL/main.h"
+ #include "libEGL/Display.h"
+ 
++#if defined(ANGLE_PLATFORM_WINRT)
++#  include "wrl.h"
++#  include "windows.graphics.display.h"
++#  include "windows.ui.core.h"
++using namespace ABI::Windows::Graphics::Display;
++using namespace ABI::Windows::Foundation;
++using namespace ABI::Windows::UI::Core;
++using namespace Microsoft::WRL;
++#endif
++
+ namespace egl
+ {
+ 
+-Surface::Surface(Display *display, const Config *config, HWND window, EGLint fixedSize, EGLint width, EGLint height, EGLint postSubBufferSupported) 
++Surface::Surface(Display *display, const Config *config, EGLNativeWindowType window, EGLint fixedSize, EGLint width, EGLint height, EGLint postSubBufferSupported)
+     : mDisplay(display), mConfig(config), mWindow(window), mPostSubBufferSupported(postSubBufferSupported)
+ {
+     mRenderer = mDisplay->getRenderer();
+@@ -43,6 +53,17 @@ Surface::Surface(Display *display, const Config *config, HWND window, EGLint fix
+     mHeight = height;
+     setSwapInterval(1);
+     mFixedSize = fixedSize;
++    mSwapFlags = rx::SWAP_NORMAL;
++#if defined(ANGLE_PLATFORM_WINRT)
++    if (mWindow)
++        mWindow->AddRef();
++    mScaleFactor = 1.0;
++    mSizeToken.value = 0;
++    mDpiToken.value = 0;
++#   if WINAPI_FAMILY==WINAPI_FAMILY_PHONE_APP
++    mOrientationToken.value = 0;
++#   endif
++#endif
+ 
+     subclassWindow();
+ }
+@@ -64,16 +85,86 @@ Surface::Surface(Display *display, const Config *config, HANDLE shareHandle, EGL
+     setSwapInterval(1);
+     // This constructor is for offscreen surfaces, which are always fixed-size.
+     mFixedSize = EGL_TRUE;
++    mSwapFlags = rx::SWAP_NORMAL;
++#if defined(ANGLE_PLATFORM_WINRT)
++    mScaleFactor = 1.0;
++    mSizeToken.value = 0;
++    mDpiToken.value = 0;
++#   if WINAPI_FAMILY==WINAPI_FAMILY_PHONE_APP
++    mOrientationToken.value = 0;
++#   endif
++#endif
+ }
+ 
+ Surface::~Surface()
+ {
++#if defined(ANGLE_PLATFORM_WINRT)
++    if (mSizeToken.value) {
++        ComPtr<ICoreWindow> coreWindow;
++        HRESULT hr = mWindow->QueryInterface(coreWindow.GetAddressOf());
++        ASSERT(SUCCEEDED(hr));
++
++        hr = coreWindow->remove_SizeChanged(mSizeToken);
++        ASSERT(SUCCEEDED(hr));
++    }
++    if (mDpiToken.value) {
++        ComPtr<IDisplayInformation> displayInformation;
++        HRESULT hr = mDisplay->getDisplayId()->QueryInterface(displayInformation.GetAddressOf());
++        ASSERT(SUCCEEDED(hr));
++
++        hr = displayInformation->remove_DpiChanged(mDpiToken);
++        ASSERT(SUCCEEDED(hr));
++    }
++#   if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
++    if (mOrientationToken.value) {
++        ComPtr<IDisplayInformation> displayInformation;
++        HRESULT hr = mDisplay->getDisplayId()->QueryInterface(displayInformation.GetAddressOf());
++        ASSERT(SUCCEEDED(hr));
++
++        hr = displayInformation->remove_OrientationChanged(mOrientationToken);
++        ASSERT(SUCCEEDED(hr));
++    }
++#   endif
++#endif
+     unsubclassWindow();
+     release();
+ }
+ 
+ bool Surface::initialize()
+ {
++#if defined(ANGLE_PLATFORM_WINRT)
++    if (!mFixedSize) {
++        HRESULT hr;
++        ComPtr<IDisplayInformation> displayInformation;
++        hr = mDisplay->getDisplayId()->QueryInterface(displayInformation.GetAddressOf());
++        ASSERT(SUCCEEDED(hr));
++        onDpiChanged(displayInformation.Get(), 0);
++        hr = displayInformation->add_DpiChanged(Callback<ITypedEventHandler<DisplayInformation *, IInspectable *>>(this, &Surface::onDpiChanged).Get(),
++                                                &mDpiToken);
++        ASSERT(SUCCEEDED(hr));
++
++#   if WINAPI_FAMILY==WINAPI_FAMILY_PHONE_APP
++        onOrientationChanged(displayInformation.Get(), 0);
++        hr = displayInformation->add_OrientationChanged(Callback<ITypedEventHandler<DisplayInformation *, IInspectable *>>(this, &Surface::onOrientationChanged).Get(),
++                                                        &mOrientationToken);
++        ASSERT(SUCCEEDED(hr));
++#   endif
++
++        ComPtr<ICoreWindow> coreWindow;
++        hr = mWindow->QueryInterface(coreWindow.GetAddressOf());
++        ASSERT(SUCCEEDED(hr));
++
++        Rect rect;
++        hr = coreWindow->get_Bounds(&rect);
++        ASSERT(SUCCEEDED(hr));
++        mWidth = rect.Width * mScaleFactor;
++        mHeight = rect.Height * mScaleFactor;
++        hr = coreWindow->add_SizeChanged(Callback<ITypedEventHandler<CoreWindow *, WindowSizeChangedEventArgs *>>(this, &Surface::onSizeChanged).Get(),
++                                         &mSizeToken);
++        ASSERT(SUCCEEDED(hr));
++    }
++#endif
++
+     if (!resetSwapChain())
+       return false;
+ 
+@@ -90,6 +181,11 @@ void Surface::release()
+         mTexture->releaseTexImage();
+         mTexture = NULL;
+     }
++
++#if defined(ANGLE_PLATFORM_WINRT)
++    if (mWindow)
++        mWindow->Release();
++#endif
+ }
+ 
+ bool Surface::resetSwapChain()
+@@ -99,6 +195,7 @@ bool Surface::resetSwapChain()
+     int width;
+     int height;
+ 
++#if !defined(ANGLE_PLATFORM_WINRT)
+     if (!mFixedSize)
+     {
+         RECT windowRect;
+@@ -114,6 +211,7 @@ bool Surface::resetSwapChain()
+         height = windowRect.bottom - windowRect.top;
+     }
+     else
++#endif
+     {
+         // non-window surface - size is determined at creation
+         width = mWidth;
+@@ -207,7 +305,7 @@ bool Surface::swapRect(EGLint x, EGLint y, EGLint width, EGLint height)
+         return true;
+     }
+ 
+-    EGLint status = mSwapChain->swapRect(x, y, width, height);
++    EGLint status = mSwapChain->swapRect(x, y, width, height, mSwapFlags);
+ 
+     if (status == EGL_CONTEXT_LOST)
+     {
+@@ -224,7 +322,7 @@ bool Surface::swapRect(EGLint x, EGLint y, EGLint width, EGLint height)
+     return true;
+ }
+ 
+-HWND Surface::getWindowHandle()
++EGLNativeWindowType Surface::getWindowHandle()
+ {
+     return mWindow;
+ }
+@@ -233,6 +331,7 @@ HWND Surface::getWindowHandle()
+ #define kSurfaceProperty _TEXT("Egl::SurfaceOwner")
+ #define kParentWndProc _TEXT("Egl::SurfaceParentWndProc")
+ 
++#if !defined(ANGLE_PLATFORM_WINRT)
+ static LRESULT CALLBACK SurfaceWindowProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
+ {
+   if (message == WM_SIZE)
+@@ -246,9 +345,11 @@ static LRESULT CALLBACK SurfaceWindowProc(HWND hwnd, UINT message, WPARAM wparam
+   WNDPROC prevWndFunc = reinterpret_cast<WNDPROC >(GetProp(hwnd, kParentWndProc));
+   return CallWindowProc(prevWndFunc, hwnd, message, wparam, lparam);
+ }
++#endif
+ 
+ void Surface::subclassWindow()
+ {
++#if !defined(ANGLE_PLATFORM_WINRT)
+     if (!mWindow)
+     {
+         return;
+@@ -272,10 +373,14 @@ void Surface::subclassWindow()
+     SetProp(mWindow, kSurfaceProperty, reinterpret_cast<HANDLE>(this));
+     SetProp(mWindow, kParentWndProc, reinterpret_cast<HANDLE>(oldWndProc));
+     mWindowSubclassed = true;
++#else
++    mWindowSubclassed = false;
++#endif
+ }
+ 
+ void Surface::unsubclassWindow()
+ {
++#if !defined(ANGLE_PLATFORM_WINRT)
+     if(!mWindowSubclassed)
+     {
+         return;
+@@ -299,16 +404,18 @@ void Surface::unsubclassWindow()
+     RemoveProp(mWindow, kSurfaceProperty);
+     RemoveProp(mWindow, kParentWndProc);
+     mWindowSubclassed = false;
++#endif
+ }
+ 
+ bool Surface::checkForOutOfDateSwapChain()
+ {
+-    RECT client;
+     int clientWidth = getWidth();
+     int clientHeight = getHeight();
+     bool sizeDirty = false;
++#if !defined(ANGLE_PLATFORM_WINRT)
+     if (!mFixedSize && !IsIconic(getWindowHandle()))
+     {
++        RECT client;
+         // The window is automatically resized to 150x22 when it's minimized, but the swapchain shouldn't be resized
+         // because that's not a useful size to render to.
+         if (!GetClientRect(getWindowHandle(), &client))
+@@ -322,6 +429,7 @@ bool Surface::checkForOutOfDateSwapChain()
+         clientHeight = client.bottom - client.top;
+         sizeDirty = clientWidth != getWidth() || clientHeight != getHeight();
+     }
++#endif
+ 
+     bool wasDirty = (mSwapIntervalDirty || sizeDirty);
+ 
+@@ -446,4 +554,73 @@ EGLenum Surface::getFormat() const
+ {
+     return mConfig->mRenderTargetFormat;
+ }
++
++#if defined(ANGLE_PLATFORM_WINRT)
++
++HRESULT Surface::onSizeChanged(ICoreWindow *, IWindowSizeChangedEventArgs *args)
++{
++    HRESULT hr;
++    Size size;
++    hr = args->get_Size(&size);
++    ASSERT(SUCCEEDED(hr));
++
++    resizeSwapChain(std::floor(size.Width * mScaleFactor + 0.5),
++                    std::floor(size.Height * mScaleFactor + 0.5));
++
++    if (static_cast<egl::Surface*>(getCurrentDrawSurface()) == this)
++    {
++        glMakeCurrent(glGetCurrentContext(), static_cast<egl::Display*>(getCurrentDisplay()), this);
++    }
++
++    return S_OK;
++}
++
++HRESULT Surface::onDpiChanged(IDisplayInformation *displayInformation, IInspectable *)
++{
++    HRESULT hr;
++#   if WINAPI_FAMILY==WINAPI_FAMILY_PHONE_APP
++    ComPtr<IDisplayInformation2> displayInformation2;
++    hr = displayInformation->QueryInterface(displayInformation2.GetAddressOf());
++    ASSERT(SUCCEEDED(hr));
++
++    hr = displayInformation2->get_RawPixelsPerViewPixel(&mScaleFactor);
++    ASSERT(SUCCEEDED(hr));
++#   else
++    ResolutionScale resolutionScale;
++    hr = displayInformation->get_ResolutionScale(&resolutionScale);
++    ASSERT(SUCCEEDED(hr));
++
++    mScaleFactor = double(resolutionScale) / 100.0;
++#   endif
++    return S_OK;
++}
++
++#   if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
++HRESULT Surface::onOrientationChanged(IDisplayInformation *displayInformation, IInspectable *)
++{
++    HRESULT hr;
++    DisplayOrientations orientation;
++    hr = displayInformation->get_CurrentOrientation(&orientation);
++    ASSERT(SUCCEEDED(hr));
++    switch (orientation) {
++    default:
++    case DisplayOrientations_Portrait:
++        mSwapFlags = rx::SWAP_NORMAL;
++        break;
++    case DisplayOrientations_Landscape:
++        mSwapFlags = rx::SWAP_ROTATE_90;
++        break;
++    case DisplayOrientations_LandscapeFlipped:
++        mSwapFlags = rx::SWAP_ROTATE_270;
++        break;
++    case DisplayOrientations_PortraitFlipped:
++        mSwapFlags = rx::SWAP_ROTATE_180;
++        break;
++    }
++    return S_OK;
++}
++#   endif
++
++#endif
++
+ }
+diff --git a/src/3rdparty/angle/src/libEGL/Surface.h b/src/3rdparty/angle/src/libEGL/Surface.h
+index 3caf620..ebffce8 100644
+--- a/src/3rdparty/angle/src/libEGL/Surface.h
++++ b/src/3rdparty/angle/src/libEGL/Surface.h
+@@ -15,6 +15,20 @@
+ 
+ #include "common/angleutils.h"
+ 
++#if defined(ANGLE_PLATFORM_WINRT)
++#include <EventToken.h>
++namespace ABI { namespace Windows {
++    namespace UI { namespace Core {
++        struct ICoreWindow;
++        struct IWindowSizeChangedEventArgs;
++    } }
++    namespace Graphics { namespace Display {
++        struct IDisplayInformation;
++    } }
++} }
++struct IInspectable;
++#endif
++
+ namespace gl
+ {
+ class Texture2D;
+@@ -33,7 +47,7 @@ class Config;
+ class Surface
+ {
+   public:
+-    Surface(Display *display, const egl::Config *config, HWND window, EGLint fixedSize, EGLint width, EGLint height, EGLint postSubBufferSupported);
++    Surface(Display *display, const egl::Config *config, EGLNativeWindowType window, EGLint fixedSize, EGLint width, EGLint height, EGLint postSubBufferSupported);
+     Surface(Display *display, const egl::Config *config, HANDLE shareHandle, EGLint width, EGLint height, EGLenum textureFormat, EGLenum textureTarget);
+ 
+     virtual ~Surface();
+@@ -42,7 +56,7 @@ class Surface
+     void release();
+     bool resetSwapChain();
+ 
+-    HWND getWindowHandle();
++    EGLNativeWindowType getWindowHandle();
+     bool swap();
+     bool postSubBuffer(EGLint x, EGLint y, EGLint width, EGLint height);
+ 
+@@ -71,6 +85,14 @@ class Surface
+ private:
+     DISALLOW_COPY_AND_ASSIGN(Surface);
+ 
++#if defined(ANGLE_PLATFORM_WINRT)
++    HRESULT onSizeChanged(ABI::Windows::UI::Core::ICoreWindow *, ABI::Windows::UI::Core::IWindowSizeChangedEventArgs *);
++    HRESULT onDpiChanged(ABI::Windows::Graphics::Display::IDisplayInformation *, IInspectable *);
++#   if WINAPI_FAMILY==WINAPI_FAMILY_PHONE_APP
++    HRESULT onOrientationChanged(ABI::Windows::Graphics::Display::IDisplayInformation *, IInspectable *);
++#   endif
++#endif
++
+     Display *const mDisplay;
+     rx::Renderer *mRenderer;
+ 
+@@ -83,7 +105,7 @@ private:
+     bool resetSwapChain(int backbufferWidth, int backbufferHeight);
+     bool swapRect(EGLint x, EGLint y, EGLint width, EGLint height);
+ 
+-    const HWND mWindow;            // Window that the surface is created for.
++    const EGLNativeWindowType mWindow;            // Window that the surface is created for.
+     bool mWindowSubclassed;        // Indicates whether we successfully subclassed mWindow for WM_RESIZE hooking
+     const egl::Config *mConfig;    // EGL config surface was created with
+     EGLint mHeight;                // Height of surface
+@@ -104,9 +126,18 @@ private:
+     EGLint mSwapInterval;
+     EGLint mPostSubBufferSupported;
+     EGLint mFixedSize;
+-    
++    EGLint mSwapFlags;
++
+     bool mSwapIntervalDirty;
+     gl::Texture2D *mTexture;
++#if defined(ANGLE_PLATFORM_WINRT)
++    double mScaleFactor;
++    EventRegistrationToken mSizeToken;
++    EventRegistrationToken mDpiToken;
++#   if WINAPI_FAMILY==WINAPI_FAMILY_PHONE_APP
++    EventRegistrationToken mOrientationToken;
++#   endif
++#endif
+ };
+ }
+ 
+diff --git a/src/3rdparty/angle/src/libEGL/libEGL.cpp b/src/3rdparty/angle/src/libEGL/libEGL.cpp
+index 23df448..a08e1ed 100644
+--- a/src/3rdparty/angle/src/libEGL/libEGL.cpp
++++ b/src/3rdparty/angle/src/libEGL/libEGL.cpp
+@@ -10,6 +10,7 @@
+ 
+ #include "common/debug.h"
+ #include "common/version.h"
++#include "common/platform.h"
+ #include "libGLESv2/Context.h"
+ #include "libGLESv2/Texture.h"
+ #include "libGLESv2/main.h"
+@@ -117,12 +118,13 @@ EGLDisplay __stdcall eglGetPlatformDisplayEXT(EGLenum platform, void *native_dis
+     }
+ 
+     EGLNativeDisplayType displayId = static_cast<EGLNativeDisplayType>(native_display);
+-
++#if !defined(ANGLE_PLATFORM_WINRT)
+     // Validate the display device context
+     if (WindowFromDC(displayId) == NULL)
+     {
+         return egl::success(EGL_NO_DISPLAY);
+     }
++#endif
+ 
+     EGLint requestedDisplayType = EGL_PLATFORM_ANGLE_TYPE_DEFAULT_ANGLE;
+     if (attrib_list)
+@@ -324,14 +326,16 @@ EGLSurface __stdcall eglCreateWindowSurface(EGLDisplay dpy, EGLConfig config, EG
+         return EGL_NO_SURFACE;
+     }
+ 
++#if !defined(ANGLE_PLATFORM_WINRT)
+     HWND window = (HWND)win;
+ 
+     if (!IsWindow(window))
+     {
+         return egl::error(EGL_BAD_NATIVE_WINDOW, EGL_NO_SURFACE);
+     }
++#endif
+ 
+-    return display->createWindowSurface(window, config, attrib_list);
++    return display->createWindowSurface(win, config, attrib_list);
+ }
+ 
+ EGLSurface __stdcall eglCreatePbufferSurface(EGLDisplay dpy, EGLConfig config, const EGLint *attrib_list)
+diff --git a/src/3rdparty/angle/src/libEGL/main.cpp b/src/3rdparty/angle/src/libEGL/main.cpp
+index 8a1baef..5788af7 100644
+--- a/src/3rdparty/angle/src/libEGL/main.cpp
++++ b/src/3rdparty/angle/src/libEGL/main.cpp
+@@ -11,6 +11,9 @@
+ #include "common/debug.h"
+ #include "common/tls.h"
+ 
++#if defined(ANGLE_PLATFORM_WINRT)
++__declspec(thread)
++#endif
+ static TLSIndex currentTLS = TLS_OUT_OF_INDEXES;
+ 
+ namespace egl
+@@ -18,6 +21,12 @@ namespace egl
+ 
+ Current *AllocateCurrent()
+ {
++#if defined(ANGLE_PLATFORM_WINRT)
++    if (currentTLS == TLS_OUT_OF_INDEXES)
++    {
++        currentTLS = CreateTLSIndex();
++    }
++#endif
+     ASSERT(currentTLS != TLS_OUT_OF_INDEXES);
+     if (currentTLS == TLS_OUT_OF_INDEXES)
+     {
+@@ -42,6 +51,12 @@ Current *AllocateCurrent()
+ 
+ void DeallocateCurrent()
+ {
++#if defined(ANGLE_PLATFORM_WINRT)
++    if (currentTLS == TLS_OUT_OF_INDEXES)
++    {
++        return;
++    }
++#endif
+     Current *current = reinterpret_cast<Current*>(GetTLSValue(currentTLS));
+     SafeDelete(current);
+     SetTLSValue(currentTLS, NULL);
+@@ -72,6 +87,10 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved
+             }
+ #endif
+ 
++#if defined(ANGLE_PLATFORM_WINRT) // On WinRT, don't handle TLS from DllMain
++            return DisableThreadLibraryCalls(instance);
++#endif
++
+             currentTLS = CreateTLSIndex();
+             if (currentTLS == TLS_OUT_OF_INDEXES)
+             {
+@@ -91,8 +110,10 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved
+         break;
+       case DLL_PROCESS_DETACH:
+         {
++#if !defined(ANGLE_PLATFORM_WINRT)
+             egl::DeallocateCurrent();
+             DestroyTLSIndex(currentTLS);
++#endif
+         }
+         break;
+       default:
+diff --git a/src/3rdparty/angle/src/libGLESv2/main.cpp b/src/3rdparty/angle/src/libGLESv2/main.cpp
+index 5a45ec3..8820700 100644
+--- a/src/3rdparty/angle/src/libGLESv2/main.cpp
++++ b/src/3rdparty/angle/src/libGLESv2/main.cpp
+@@ -12,6 +12,9 @@
+ 
+ #include "common/tls.h"
+ 
++#if defined(ANGLE_PLATFORM_WINRT)
++__declspec(thread)
++#endif
+ static TLSIndex currentTLS = TLS_OUT_OF_INDEXES;
+ 
+ namespace gl
+@@ -19,6 +22,12 @@ namespace gl
+ 
+ Current *AllocateCurrent()
+ {
++#if defined(ANGLE_PLATFORM_WINRT)
++    if (currentTLS == TLS_OUT_OF_INDEXES)
++    {
++        currentTLS = CreateTLSIndex();
++    }
++#endif
+     ASSERT(currentTLS != TLS_OUT_OF_INDEXES);
+     if (currentTLS == TLS_OUT_OF_INDEXES)
+     {
+@@ -40,6 +49,12 @@ Current *AllocateCurrent()
+ 
+ void DeallocateCurrent()
+ {
++#if defined(ANGLE_PLATFORM_WINRT)
++    if (currentTLS == TLS_OUT_OF_INDEXES)
++    {
++        return;
++    }
++#endif
+     Current *current = reinterpret_cast<Current*>(GetTLSValue(currentTLS));
+     SafeDelete(current);
+     SetTLSValue(currentTLS, NULL);
+@@ -55,6 +70,9 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved
+     {
+       case DLL_PROCESS_ATTACH:
+         {
++#if defined(ANGLE_PLATFORM_WINRT) // On WinRT, don't handle TLS from DllMain
++            return DisableThreadLibraryCalls(instance);
++#endif
+             currentTLS = CreateTLSIndex();
+             if (currentTLS == TLS_OUT_OF_INDEXES)
+             {
+@@ -74,8 +92,10 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved
+         break;
+       case DLL_PROCESS_DETACH:
+         {
++#if !defined(ANGLE_PLATFORM_WINRT)
+             gl::DeallocateCurrent();
+             DestroyTLSIndex(currentTLS);
++#endif
+         }
+         break;
+       default:
+diff --git a/src/3rdparty/angle/src/libGLESv2/main.h b/src/3rdparty/angle/src/libGLESv2/main.h
+index c117039..df28ea4 100644
+--- a/src/3rdparty/angle/src/libGLESv2/main.h
++++ b/src/3rdparty/angle/src/libGLESv2/main.h
+@@ -14,6 +14,10 @@
+ #define EGLAPI
+ #include <EGL/egl.h>
+ 
++#ifndef Sleep
++#define Sleep(ms) WaitForSingleObjectEx(GetCurrentThread(), ms, FALSE)
++#endif
++
+ namespace egl
+ {
+ class Display;
+diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/Renderer.h b/src/3rdparty/angle/src/libGLESv2/renderer/Renderer.h
+index be3ba29..f1e0fd2 100644
+--- a/src/3rdparty/angle/src/libGLESv2/renderer/Renderer.h
++++ b/src/3rdparty/angle/src/libGLESv2/renderer/Renderer.h
+@@ -106,7 +106,7 @@ class Renderer
+ 
+     virtual void sync(bool block) = 0;
+ 
+-    virtual SwapChain *createSwapChain(HWND window, HANDLE shareHandle, GLenum backBufferFormat, GLenum depthBufferFormat) = 0;
++    virtual SwapChain *createSwapChain(EGLNativeWindowType window, HANDLE shareHandle, GLenum backBufferFormat, GLenum depthBufferFormat) = 0;
+ 
+     virtual void generateSwizzle(gl::Texture *texture) = 0;
+     virtual void setSamplerState(gl::SamplerType type, int index, const gl::SamplerState &sampler) = 0;
+diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/SwapChain.h b/src/3rdparty/angle/src/libGLESv2/renderer/SwapChain.h
+index f09f19b..77546f8 100644
+--- a/src/3rdparty/angle/src/libGLESv2/renderer/SwapChain.h
++++ b/src/3rdparty/angle/src/libGLESv2/renderer/SwapChain.h
+@@ -10,6 +10,7 @@
+ #ifndef LIBGLESV2_RENDERER_SWAPCHAIN_H_
+ #define LIBGLESV2_RENDERER_SWAPCHAIN_H_
+ 
++#include <EGL/eglplatform.h>
+ #include "common/angleutils.h"
+ 
+ #if !defined(ANGLE_FORCE_VSYNC_OFF)
+@@ -19,10 +20,18 @@
+ namespace rx
+ {
+ 
++enum SwapFlags
++{
++    SWAP_NORMAL = 0,
++    SWAP_ROTATE_90 = 1,
++    SWAP_ROTATE_270 = 2,
++    SWAP_ROTATE_180 = SWAP_ROTATE_90|SWAP_ROTATE_270,
++};
++
+ class SwapChain
+ {
+   public:
+-    SwapChain(HWND window, HANDLE shareHandle, GLenum backBufferFormat, GLenum depthBufferFormat)
++    SwapChain(EGLNativeWindowType window, HANDLE shareHandle, GLenum backBufferFormat, GLenum depthBufferFormat)
+         : mWindow(window), mShareHandle(shareHandle), mBackBufferFormat(backBufferFormat), mDepthBufferFormat(depthBufferFormat)
+     {
+     }
+@@ -31,13 +40,13 @@ class SwapChain
+ 
+     virtual EGLint resize(EGLint backbufferWidth, EGLint backbufferSize) = 0;
+     virtual EGLint reset(EGLint backbufferWidth, EGLint backbufferHeight, EGLint swapInterval) = 0;
+-    virtual EGLint swapRect(EGLint x, EGLint y, EGLint width, EGLint height) = 0;
++    virtual EGLint swapRect(EGLint x, EGLint y, EGLint width, EGLint height, EGLint flags) = 0;
+     virtual void recreate() = 0;
+ 
+     virtual HANDLE getShareHandle() {return mShareHandle;};
+ 
+   protected:
+-    const HWND mWindow;            // Window that the surface is created for.
++    const EGLNativeWindowType mWindow;            // Window that the surface is created for.
+     const GLenum mBackBufferFormat;
+     const GLenum mDepthBufferFormat;
+ 
+diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/HLSLCompiler.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/HLSLCompiler.cpp
+index 31942e6..e3b88d5 100644
+--- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/HLSLCompiler.cpp
++++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/HLSLCompiler.cpp
+@@ -4,6 +4,7 @@
+ #include "libGLESv2/main.h"
+ 
+ #include "common/utilities.h"
++#include "common/platform.h"
+ 
+ #include "third_party/trace_event/trace_event.h"
+ 
+@@ -49,6 +50,7 @@ HLSLCompiler::~HLSLCompiler()
+ bool HLSLCompiler::initialize()
+ {
+     TRACE_EVENT0("gpu", "initializeCompiler");
++#if !defined(ANGLE_PLATFORM_WINRT)
+ #if defined(ANGLE_PRELOADED_D3DCOMPILER_MODULE_NAMES)
+     // Find a D3DCompiler module that had already been loaded based on a predefined list of versions.
+     static const char *d3dCompilerNames[] = ANGLE_PRELOADED_D3DCOMPILER_MODULE_NAMES;
+@@ -80,8 +82,8 @@ bool HLSLCompiler::initialize()
+     // Load the first available known compiler DLL
+     for (int i = 0; compilerDlls[i]; ++i)
+     {
+-        mD3dCompilerModule = LoadLibrary(compilerDlls[i]);
+-        if (mD3dCompilerModule)
++        mD3DCompilerModule = LoadLibrary(compilerDlls[i]);
++        if (mD3DCompilerModule)
+             break;
+     }
+ 
+@@ -93,7 +95,9 @@ bool HLSLCompiler::initialize()
+ 
+     mD3DCompileFunc = reinterpret_cast<CompileFuncPtr>(GetProcAddress(mD3DCompilerModule, "D3DCompile"));
+     ASSERT(mD3DCompileFunc);
+-
++#else
++    mD3DCompileFunc = reinterpret_cast<CompileFuncPtr>(&D3DCompile);
++#endif
+     return mD3DCompileFunc != NULL;
+ }
+ 
+@@ -110,7 +114,9 @@ void HLSLCompiler::release()
+ ShaderBlob *HLSLCompiler::compileToBinary(gl::InfoLog &infoLog, const char *hlsl, const char *profile,
+                                           const UINT optimizationFlags[], const char *flagNames[], int attempts) const
+ {
++#if !defined(ANGLE_PLATFORM_WINRT)
+     ASSERT(mD3DCompilerModule && mD3DCompileFunc);
++#endif
+ 
+     if (!hlsl)
+     {
+diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Renderer11.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Renderer11.cpp
+index a48a2cd..36d9a8f 100644
+--- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Renderer11.cpp
++++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Renderer11.cpp
+@@ -9,6 +9,7 @@
+ 
+ #include "libGLESv2/main.h"
+ #include "common/utilities.h"
++#include "common/platform.h"
+ #include "libGLESv2/Buffer.h"
+ #include "libGLESv2/FramebufferAttachment.h"
+ #include "libGLESv2/ProgramBinary.h"
+@@ -129,6 +130,7 @@ EGLint Renderer11::initialize()
+         return EGL_NOT_INITIALIZED;
+     }
+ 
++#if !defined(ANGLE_PLATFORM_WINRT)
+     mDxgiModule = LoadLibrary(TEXT("dxgi.dll"));
+     mD3d11Module = LoadLibrary(TEXT("d3d11.dll"));
+ 
+@@ -147,6 +149,7 @@ EGLint Renderer11::initialize()
+         ERR("Could not retrieve D3D11CreateDevice address - aborting!\n");
+         return EGL_NOT_INITIALIZED;
+     }
++#endif
+ 
+     D3D_FEATURE_LEVEL featureLevels[] =
+     {
+@@ -201,7 +204,7 @@ EGLint Renderer11::initialize()
+         }
+     }
+ 
+-#if !ANGLE_SKIP_DXGI_1_2_CHECK
++#if !ANGLE_SKIP_DXGI_1_2_CHECK && !defined(ANGLE_PLATFORM_WINRT)
+     // In order to create a swap chain for an HWND owned by another process, DXGI 1.2 is required.
+     // The easiest way to check is to query for a IDXGIDevice2.
+     bool requireDXGI1_2 = false;
+@@ -231,8 +234,12 @@ EGLint Renderer11::initialize()
+     }
+ #endif
+ 
++#if !defined(ANGLE_PLATFORM_WINRT)
+     IDXGIDevice *dxgiDevice = NULL;
+-    result = mDevice->QueryInterface(__uuidof(IDXGIDevice), (void**)&dxgiDevice);
++#else
++    IDXGIDevice1 *dxgiDevice = NULL;
++#endif
++    result = mDevice->QueryInterface(IID_PPV_ARGS(&dxgiDevice));
+ 
+     if (FAILED(result))
+     {
+@@ -413,7 +420,7 @@ void Renderer11::sync(bool block)
+     }
+ }
+ 
+-SwapChain *Renderer11::createSwapChain(HWND window, HANDLE shareHandle, GLenum backBufferFormat, GLenum depthBufferFormat)
++SwapChain *Renderer11::createSwapChain(EGLNativeWindowType window, HANDLE shareHandle, GLenum backBufferFormat, GLenum depthBufferFormat)
+ {
+     return new rx::SwapChain11(this, window, shareHandle, backBufferFormat, depthBufferFormat);
+ }
+diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Renderer11.h b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Renderer11.h
+index 73a3fc2..618972d 100644
+--- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Renderer11.h
++++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/Renderer11.h
+@@ -57,7 +57,7 @@ class Renderer11 : public Renderer
+ 
+     virtual void sync(bool block);
+ 
+-    virtual SwapChain *createSwapChain(HWND window, HANDLE shareHandle, GLenum backBufferFormat, GLenum depthBufferFormat);
++    virtual SwapChain *createSwapChain(EGLNativeWindowType window, HANDLE shareHandle, GLenum backBufferFormat, GLenum depthBufferFormat);
+ 
+     virtual void generateSwizzle(gl::Texture *texture);
+     virtual void setSamplerState(gl::SamplerType type, int index, const gl::SamplerState &sampler);
+@@ -238,7 +238,7 @@ class Renderer11 : public Renderer
+ 
+     HMODULE mD3d11Module;
+     HMODULE mDxgiModule;
+-    HDC mDc;
++    EGLNativeDisplayType mDc;
+     EGLint mRequestedDisplay;
+ 
+     HLSLCompiler mCompiler;
+diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/SwapChain11.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/SwapChain11.cpp
+index 98166f0..0341df1 100644
+--- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/SwapChain11.cpp
++++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/SwapChain11.cpp
+@@ -9,6 +9,7 @@
+ 
+ #include "libGLESv2/renderer/d3d/d3d11/SwapChain11.h"
+ 
++#include "common/platform.h"
+ #include "libGLESv2/renderer/d3d/d3d11/renderer11_utils.h"
+ #include "libGLESv2/renderer/d3d/d3d11/formatutils11.h"
+ #include "libGLESv2/renderer/d3d/d3d11/Renderer11.h"
+@@ -18,7 +19,7 @@
+ namespace rx
+ {
+ 
+-SwapChain11::SwapChain11(Renderer11 *renderer, HWND window, HANDLE shareHandle,
++SwapChain11::SwapChain11(Renderer11 *renderer, EGLNativeWindowType window, HANDLE shareHandle,
+                          GLenum backBufferFormat, GLenum depthBufferFormat)
+     : mRenderer(renderer), SwapChain(window, shareHandle, backBufferFormat, depthBufferFormat)
+ {
+@@ -38,6 +39,8 @@ SwapChain11::SwapChain11(Renderer11 *renderer, HWND window, HANDLE shareHandle,
+     mPassThroughPS = NULL;
+     mWidth = -1;
+     mHeight = -1;
++    mViewportWidth = -1;
++    mViewportHeight = -1;
+     mSwapInterval = 0;
+     mAppCreatedShareHandle = mShareHandle != NULL;
+     mPassThroughResourcesInit = false;
+@@ -91,6 +94,7 @@ EGLint SwapChain11::resetOffscreenTexture(int backbufferWidth, int backbufferHei
+     ASSERT(backbufferWidth >= 1);
+     ASSERT(backbufferHeight >= 1);
+ 
++#if !defined(ANGLE_PLATFORM_WINRT)
+     // Preserve the render target content
+     ID3D11Texture2D *previousOffscreenTexture = mOffscreenTexture;
+     if (previousOffscreenTexture)
+@@ -99,6 +103,7 @@ EGLint SwapChain11::resetOffscreenTexture(int backbufferWidth, int backbufferHei
+     }
+     const int previousWidth = mWidth;
+     const int previousHeight = mHeight;
++#endif
+ 
+     releaseOffscreenTexture();
+ 
+@@ -277,7 +282,12 @@ EGLint SwapChain11::resetOffscreenTexture(int backbufferWidth, int backbufferHei
+ 
+     mWidth = backbufferWidth;
+     mHeight = backbufferHeight;
++#if !defined(ANGLE_PLATFORM_WINRT) || WINAPI_FAMILY==WINAPI_FAMILY_PC_APP
++    mViewportWidth = backbufferWidth;
++    mViewportHeight = backbufferHeight;
++#endif
+ 
++#if !defined(ANGLE_PLATFORM_WINRT)
+     if (previousOffscreenTexture != NULL)
+     {
+         D3D11_BOX sourceBox = {0};
+@@ -296,9 +306,10 @@ EGLint SwapChain11::resetOffscreenTexture(int backbufferWidth, int backbufferHei
+ 
+         if (mSwapChain)
+         {
+-            swapRect(0, 0, mWidth, mHeight);
++            swapRect(0, 0, mWidth, mHeight, SWAP_NORMAL);
+         }
+     }
++#endif
+ 
+     return EGL_SUCCESS;
+ }
+@@ -325,8 +336,15 @@ EGLint SwapChain11::resize(EGLint backbufferWidth, EGLint backbufferHeight)
+     SafeRelease(mBackBufferRTView);
+ 
+     // Resize swap chain
++    HRESULT result;
++#if !defined(ANGLE_PLATFORM_WINRT) || WINAPI_FAMILY==WINAPI_FAMILY_PC_APP // Windows phone swap chain is never resized, only the texture is
++#if !defined(ANGLE_PLATFORM_WINRT)
++    const int bufferCount = 1;
++#else
++    const int bufferCount = 2;
++#endif
+     DXGI_FORMAT backbufferDXGIFormat = gl_d3d11::GetTexFormat(mBackBufferFormat);
+-    HRESULT result = mSwapChain->ResizeBuffers(1, backbufferWidth, backbufferHeight, backbufferDXGIFormat, 0);
++    result = mSwapChain->ResizeBuffers(bufferCount, backbufferWidth, backbufferHeight, backbufferDXGIFormat, 0);
+ 
+     if (FAILED(result))
+     {
+@@ -342,7 +360,7 @@ EGLint SwapChain11::resize(EGLint backbufferWidth, EGLint backbufferHeight)
+             return EGL_BAD_ALLOC;
+         }
+     }
+-
++#endif
+     result = mSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&mBackBufferTexture);
+     ASSERT(SUCCEEDED(result));
+     if (SUCCEEDED(result))
+@@ -392,7 +410,7 @@ EGLint SwapChain11::reset(int backbufferWidth, int backbufferHeight, EGLint swap
+     if (mWindow)
+     {
+         IDXGIFactory *factory = mRenderer->getDxgiFactory();
+-
++#if !defined(ANGLE_PLATFORM_WINRT)
+         DXGI_SWAP_CHAIN_DESC swapChainDesc = {0};
+         swapChainDesc.BufferDesc.Width = backbufferWidth;
+         swapChainDesc.BufferDesc.Height = backbufferHeight;
+@@ -411,6 +429,37 @@ EGLint SwapChain11::reset(int backbufferWidth, int backbufferHeight, EGLint swap
+         swapChainDesc.Flags = 0;
+ 
+         HRESULT result = factory->CreateSwapChain(device, &swapChainDesc, &mSwapChain);
++#else
++        IDXGIFactory2 *factory2;
++        HRESULT result = factory->QueryInterface(IID_PPV_ARGS(&factory2));
++        ASSERT(SUCCEEDED(result));
++
++        DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {0};
++        swapChainDesc.Width = 0;
++        swapChainDesc.Height = 0;
++        swapChainDesc.Format = gl_d3d11::GetTexFormat(mBackBufferFormat);
++        swapChainDesc.SampleDesc.Count = 1;
++        swapChainDesc.SampleDesc.Quality = 0;
++        swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
++        swapChainDesc.Stereo = FALSE;
++        swapChainDesc.Flags = 0;
++#if WINAPI_FAMILY==WINAPI_FAMILY_PC_APP
++        swapChainDesc.Scaling = DXGI_SCALING_NONE;
++        swapChainDesc.BufferCount = 2;
++        swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
++#elif WINAPI_FAMILY==WINAPI_FAMILY_PHONE_APP
++        swapChainDesc.BufferCount = 1;
++        swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
++#endif
++
++        IDXGISwapChain1 *swapChain;
++        result = factory2->CreateSwapChainForCoreWindow(device, mWindow, &swapChainDesc, NULL, &swapChain);
++        mSwapChain = swapChain;
++        HRESULT hr = swapChain->GetDesc1(&swapChainDesc);
++        ASSERT(SUCCEEDED(hr));
++        mViewportWidth = swapChainDesc.Width;
++        mViewportHeight = swapChainDesc.Height;
++#endif
+ 
+         if (FAILED(result))
+         {
+@@ -507,7 +556,7 @@ void SwapChain11::initPassThroughResources()
+ }
+ 
+ // parameters should be validated/clamped by caller
+-EGLint SwapChain11::swapRect(EGLint x, EGLint y, EGLint width, EGLint height)
++EGLint SwapChain11::swapRect(EGLint x, EGLint y, EGLint width, EGLint height, EGLint flags)
+ {
+     if (!mSwapChain)
+     {
+@@ -538,10 +587,13 @@ EGLint SwapChain11::swapRect(EGLint x, EGLint y, EGLint width, EGLint height)
+     float u2 = (x + width) / float(mWidth);
+     float v2 = (y + height) / float(mHeight);
+ 
+-    d3d11::SetPositionTexCoordVertex(&vertices[0], x1, y1, u1, v1);
+-    d3d11::SetPositionTexCoordVertex(&vertices[1], x1, y2, u1, v2);
+-    d3d11::SetPositionTexCoordVertex(&vertices[2], x2, y1, u2, v1);
+-    d3d11::SetPositionTexCoordVertex(&vertices[3], x2, y2, u2, v2);
++    const int rotateL = flags & SWAP_ROTATE_90;
++    const int rotateR = flags & SWAP_ROTATE_270;
++
++    d3d11::SetPositionTexCoordVertex(&vertices[0], x1, y1, rotateL ? u2 : u1, rotateR ? v2 : v1);
++    d3d11::SetPositionTexCoordVertex(&vertices[1], x1, y2, rotateR ? u2 : u1, rotateL ? v1 : v2);
++    d3d11::SetPositionTexCoordVertex(&vertices[2], x2, y1, rotateR ? u1 : u2, rotateL ? v2 : v1);
++    d3d11::SetPositionTexCoordVertex(&vertices[3], x2, y2, rotateL ? u1 : u2, rotateR ? v1 : v2);
+ 
+     deviceContext->Unmap(mQuadVB, 0);
+ 
+@@ -571,8 +623,8 @@ EGLint SwapChain11::swapRect(EGLint x, EGLint y, EGLint width, EGLint height)
+     D3D11_VIEWPORT viewport;
+     viewport.TopLeftX = 0;
+     viewport.TopLeftY = 0;
+-    viewport.Width = mWidth;
+-    viewport.Height = mHeight;
++    viewport.Width = mViewportWidth;
++    viewport.Height = mViewportHeight;
+     viewport.MinDepth = 0.0f;
+     viewport.MaxDepth = 1.0f;
+     deviceContext->RSSetViewports(1, &viewport);
+diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/SwapChain11.h b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/SwapChain11.h
+index fb0afd7..b30b785 100644
+--- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/SwapChain11.h
++++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d11/SwapChain11.h
+@@ -19,13 +19,13 @@ class Renderer11;
+ class SwapChain11 : public SwapChain
+ {
+   public:
+-    SwapChain11(Renderer11 *renderer, HWND window, HANDLE shareHandle,
++    SwapChain11(Renderer11 *renderer, EGLNativeWindowType window, HANDLE shareHandle,
+                 GLenum backBufferFormat, GLenum depthBufferFormat);
+     virtual ~SwapChain11();
+ 
+     EGLint resize(EGLint backbufferWidth, EGLint backbufferHeight);
+     virtual EGLint reset(EGLint backbufferWidth, EGLint backbufferHeight, EGLint swapInterval);
+-    virtual EGLint swapRect(EGLint x, EGLint y, EGLint width, EGLint height);
++    virtual EGLint swapRect(EGLint x, EGLint y, EGLint width, EGLint height, EGLint flags);
+     virtual void recreate();
+ 
+     virtual ID3D11Texture2D *getOffscreenTexture();
+@@ -52,6 +52,8 @@ class SwapChain11 : public SwapChain
+     Renderer11 *mRenderer;
+     EGLint mHeight;
+     EGLint mWidth;
++    EGLint mViewportWidth;
++    EGLint mViewportHeight;
+     bool mAppCreatedShareHandle;
+     unsigned int mSwapInterval;
+     bool mPassThroughResourcesInit;
+diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d9/SwapChain9.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d9/SwapChain9.cpp
+index 4a17acf..c6567b6 100644
+--- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d9/SwapChain9.cpp
++++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d9/SwapChain9.cpp
+@@ -236,7 +236,7 @@ EGLint SwapChain9::reset(int backbufferWidth, int backbufferHeight, EGLint swapI
+ }
+ 
+ // parameters should be validated/clamped by caller
+-EGLint SwapChain9::swapRect(EGLint x, EGLint y, EGLint width, EGLint height)
++EGLint SwapChain9::swapRect(EGLint x, EGLint y, EGLint width, EGLint height, EGLint)
+ {
+     if (!mSwapChain)
+     {
+diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d9/SwapChain9.h b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d9/SwapChain9.h
+index 16a62bd..4d756f8 100644
+--- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d9/SwapChain9.h
++++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d/d3d9/SwapChain9.h
+@@ -25,7 +25,7 @@ class SwapChain9 : public SwapChain
+ 
+     EGLint resize(EGLint backbufferWidth, EGLint backbufferHeight);
+     virtual EGLint reset(EGLint backbufferWidth, EGLint backbufferHeight, EGLint swapInterval);
+-    virtual EGLint swapRect(EGLint x, EGLint y, EGLint width, EGLint height);
++    virtual EGLint swapRect(EGLint x, EGLint y, EGLint width, EGLint height, EGLint);
+     virtual void recreate();
+ 
+     virtual IDirect3DSurface9 *getRenderTarget();
 -- 
-1.8.4.msysgit.0
+1.9.0.msysgit.0
 

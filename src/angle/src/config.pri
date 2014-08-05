@@ -37,17 +37,10 @@ DEFINES +=  _WINDOWS \
             NOMINMAX \
             WIN32_LEAN_AND_MEAN=1
 
-# Defines specifying the API version (0x0600 = Vista, 0x0602 = Win8))
-winrt {
-    DEFINES += _WIN32_WINNT=0x0602 WINVER=0x0602
-    DEFINES += ANGLE_ENABLE_UNIVERSAL_BINARY
-} else {
-    DEFINES += _WIN32_WINNT=0x0600 WINVER=0x0600
-    DEFINES += ANGLE_ENABLE_D3D9
-}
+!winrt: DEFINES += ANGLE_ENABLE_D3D9
 
 angle_d3d11 {
-    DEFINES += ANGLE_ENABLE_D3D11
+    DEFINES += ANGLE_ENABLE_D3D11 ANGLE_DEFAULT_D3D11=1
     !build_pass: message("Enabling D3D11 mode for ANGLE")
 }
 
@@ -71,11 +64,12 @@ msvc {
     #   4239: nonstandard extension used : 'token' : conversion from 'type' to 'type'
     #   4244: 'argument' : conversion from 'type1' to 'type2', possible loss of data
     #   4245: 'conversion' : conversion from 'type1' to 'type2', signed/unsigned mismatch
+    #   4267: coversion from 'size_t' to 'int', possible loss of data
     #   4275: non - DLL-interface classkey 'identifier' used as base for DLL-interface classkey 'identifier'
     #   4512: 'class' : assignment operator could not be generated
     #   4702: unreachable code
     QMAKE_CFLAGS_WARN_ON    -= -W3
-    QMAKE_CFLAGS_WARN_ON    += -W4 -wd"4100" -wd"4127" -wd"4189" -wd"4239" -wd"4244" -wd"4245" -wd"4275" -wd"4512" -wd"4702"
+    QMAKE_CFLAGS_WARN_ON    += -W4 -wd"4100" -wd"4127" -wd"4189" -wd"4239" -wd"4244" -wd"4245" -wd"4267" -wd"4275" -wd"4512" -wd"4702"
     # Optimizations
     #   /Oy:   Omits frame pointer (x86 only).
     #   /Gy:   Enables function-level linking.
@@ -93,9 +87,11 @@ gcc {
     QMAKE_CFLAGS_WARN_ON += -Wno-unknown-pragmas -Wno-comment -Wno-missing-field-initializers \
                             -Wno-switch -Wno-unused-parameter -Wno-write-strings -Wno-sign-compare -Wno-missing-braces \
                             -Wno-unused-but-set-variable -Wno-unused-variable -Wno-narrowing -Wno-maybe-uninitialized \
-                            -Wno-strict-aliasing -Wno-type-limits
+                            -Wno-strict-aliasing -Wno-type-limits -Wno-unused-local-typedefs
 
     QMAKE_CXXFLAGS_WARN_ON = $$QMAKE_CFLAGS_WARN_ON -Wno-reorder -Wno-conversion-null -Wno-delete-non-virtual-dtor
+
+    sse2: QMAKE_CXXFLAGS += -march=native
 }
 
 QMAKE_CXXFLAGS_DEBUG = $$QMAKE_CFLAGS_DEBUG

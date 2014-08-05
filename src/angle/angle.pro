@@ -7,4 +7,5 @@ SUBDIRS += src
 #     we need to support "#include <GLES2/gl2.h>"
 CONFIG += minimal_syncqt
 QMAKE_SYNCQT_OPTIONS = -module QtANGLE/KHR -module QtANGLE/EGL -module QtANGLE/GLES2 -version none
+angle_d3d11: QMAKE_SYNCQT_OPTIONS += -module QtANGLE/GLES3
 load(qt_module_headers)

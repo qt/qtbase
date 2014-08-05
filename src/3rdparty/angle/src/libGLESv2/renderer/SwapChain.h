@@ -1,4 +1,3 @@
-#include "../precompiled.h"
 //
 // Copyright (c) 2012 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
@@ -11,6 +10,7 @@
 #ifndef LIBGLESV2_RENDERER_SWAPCHAIN_H_
 #define LIBGLESV2_RENDERER_SWAPCHAIN_H_
 
+#include <EGL/eglplatform.h>
 #include "common/angleutils.h"
 
 #if !defined(ANGLE_FORCE_VSYNC_OFF)
@@ -19,6 +19,14 @@
 
 namespace rx
 {
+
+enum SwapFlags
+{
+    SWAP_NORMAL = 0,
+    SWAP_ROTATE_90 = 1,
+    SWAP_ROTATE_270 = 2,
+    SWAP_ROTATE_180 = SWAP_ROTATE_90|SWAP_ROTATE_270,
+};
 
 class SwapChain
 {
@@ -32,13 +40,13 @@ class SwapChain
 
     virtual EGLint resize(EGLint backbufferWidth, EGLint backbufferSize) = 0;
     virtual EGLint reset(EGLint backbufferWidth, EGLint backbufferHeight, EGLint swapInterval) = 0;
-    virtual EGLint swapRect(EGLint x, EGLint y, EGLint width, EGLint height) = 0;
+    virtual EGLint swapRect(EGLint x, EGLint y, EGLint width, EGLint height, EGLint flags) = 0;
     virtual void recreate() = 0;
 
     virtual HANDLE getShareHandle() {return mShareHandle;};
 
   protected:
-    const EGLNativeWindowType mWindow;  // Window that the surface is created for.
+    const EGLNativeWindowType mWindow;            // Window that the surface is created for.
     const GLenum mBackBufferFormat;
     const GLenum mDepthBufferFormat;
 

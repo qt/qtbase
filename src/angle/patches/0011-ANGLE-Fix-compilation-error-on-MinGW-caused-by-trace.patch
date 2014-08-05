@@ -1,7 +1,8 @@
-From 8ea24fcce69900f42299fd01772714a566f9111e Mon Sep 17 00:00:00 2001
+From a814e99f287ff19317ab1651428a5fa330aefd08 Mon Sep 17 00:00:00 2001
 From: Andrew Knight <andrew.knight@digia.com>
-Date: Mon, 24 Feb 2014 11:08:23 +0200
-Subject: [PATCH] ANGLE: Fix compilation error on MinGW caused by trace_event.h
+Date: Wed, 2 Jul 2014 08:33:00 +0300
+Subject: [PATCH 11/12] ANGLE: Fix compilation error on MinGW caused by
+ trace_event.h
 
 The event trace header in ANGLE's third_party directory has an unused
 template which causes a compilation error on MinGW. Disable this part
@@ -33,5 +34,5 @@ index 637cf9a..96ac910 100644
  } // namespace TraceEvent
  
 -- 
-1.8.4.msysgit.0
+1.9.0.msysgit.0
 

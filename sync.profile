@@ -14,6 +14,7 @@
     "QtPlatformHeaders" => "$basedir/src/platformheaders",
     "QtANGLE/KHR" => "!$basedir/src/3rdparty/angle/include/KHR",
     "QtANGLE/GLES2" => "!$basedir/src/3rdparty/angle/include/GLES2",
+    "QtANGLE/GLES3" => "!$basedir/src/3rdparty/angle/include/GLES3",
     "QtANGLE/EGL" => "!$basedir/src/3rdparty/angle/include/EGL",
     "QtZlib" => "!$basedir/src/3rdparty/zlib",
     "QtOpenGLExtensions" => "$basedir/src/openglextensions",

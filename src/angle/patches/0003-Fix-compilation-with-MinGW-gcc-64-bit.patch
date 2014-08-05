@@ -1,7 +1,7 @@
-From a03d8f647816767525489a2b26663d897f0264a0 Mon Sep 17 00:00:00 2001
+From 6611792d6ff11ef875d0ae3e9fd1a116ad832a39 Mon Sep 17 00:00:00 2001
 From: Kai Koehne <kai.koehne@digia.com>
-Date: Tue, 18 Feb 2014 09:34:39 +0200
-Subject: [PATCH] Fix compilation with MinGW gcc 64 bit
+Date: Sat, 28 Jun 2014 16:50:57 +0300
+Subject: [PATCH 03/12] Fix compilation with MinGW gcc 64 bit
 
 Fix compilation of ANGLE with gcc 4.8.0 64 bit: The
 
@@ -31,5 +31,5 @@ index 1880056..637cf9a 100644
          *flags |= TRACE_EVENT_FLAG_MANGLE_ID;
      }
 -- 
-1.8.4.msysgit.0
+1.9.0.msysgit.0
 

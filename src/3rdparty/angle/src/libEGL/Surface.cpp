@@ -1,6 +1,5 @@
-#include "../libGLESv2/precompiled.h"
 //
-// Copyright (c) 2002-2012 The ANGLE Project Authors. All rights reserved.
+// Copyright (c) 2002-2014 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -23,90 +22,20 @@
 #include "libEGL/main.h"
 #include "libEGL/Display.h"
 
-#if defined(ANGLE_OS_WINRT)
-#include <wrl.h>
-#include <windows.foundation.h>
-#include <windows.ui.core.h>
-#include <windows.graphics.display.h>
-
-static bool getCoreWindowSize(const EGLNativeWindowType win, int *width, int *height)
-{
-    Microsoft::WRL::ComPtr<ABI::Windows::UI::Core::ICoreWindow> window;
-    HRESULT hr = win->QueryInterface(IID_PPV_ARGS(&window));
-    if (FAILED(hr))
-    {
-        ERR("Failed to cast native display pointer to ICoreWindow *.");
-        return false;
-    }
-
-#if _MSC_VER<=1700
-    Microsoft::WRL::ComPtr<ABI::Windows::Graphics::Display::IDisplayPropertiesStatics> displayInformation;
-    hr = RoGetActivationFactory(Microsoft::WRL::Wrappers::HString::MakeReference(RuntimeClass_Windows_Graphics_Display_DisplayProperties).Get(),
-                                IID_PPV_ARGS(&displayInformation));
-#else
-    Microsoft::WRL::ComPtr<ABI::Windows::Graphics::Display::IDisplayInformationStatics> displayInformationFactory;
-    hr = RoGetActivationFactory(Microsoft::WRL::Wrappers::HString::MakeReference(RuntimeClass_Windows_Graphics_Display_DisplayInformation).Get(),
-                                IID_PPV_ARGS(&displayInformationFactory));
-    if (FAILED(hr))
-    {
-        ERR("Failed to get display information factory.");
-        return false;
-    }
-
-    Microsoft::WRL::ComPtr<ABI::Windows::Graphics::Display::IDisplayInformation> displayInformation;
-    hr = displayInformationFactory->GetForCurrentView(&displayInformation);
-#endif
-    if (FAILED(hr))
-    {
-        ERR("Failed to get display information.");
-        return false;
-    }
-
-#if defined(ANGLE_OS_WINPHONE) && _MSC_VER>=1800 // Windows Phone 8.1
-    Microsoft::WRL::ComPtr<ABI::Windows::Graphics::Display::IDisplayInformation2> displayInformation2;
-    hr = displayInformation.As(&displayInformation2);
-    if (FAILED(hr))
-    {
-        ERR("Failed to get extended display information.");
-        return false;
-    }
-
-    DOUBLE scaleFactor;
-    hr = displayInformation2->get_RawPixelsPerViewPixel(&scaleFactor);
-    if (FAILED(hr))
-    {
-        ERR("Failed to get raw pixels per view pixel.");
-        return false;
-    }
-#else
-    ABI::Windows::Graphics::Display::ResolutionScale resolutionScale;
-    hr = displayInformation->get_ResolutionScale(&resolutionScale);
-    if (FAILED(hr))
-    {
-        ERR("Failed to get resolution scale.");
-        return false;
-    }
-    DOUBLE scaleFactor = DOUBLE(resolutionScale) / 100.0;
-#endif
-
-    ABI::Windows::Foundation::Rect windowRect;
-    hr = window->get_Bounds(&windowRect);
-    if (FAILED(hr))
-    {
-        ERR("Failed to get ICoreWindow bounds.");
-        return false;
-    }
-
-    *width = std::floor(windowRect.Width * scaleFactor + 0.5);
-    *height = std::floor(windowRect.Height * scaleFactor + 0.5);
-    return true;
-}
+#if defined(ANGLE_PLATFORM_WINRT)
+#  include "wrl.h"
+#  include "windows.graphics.display.h"
+#  include "windows.ui.core.h"
+using namespace ABI::Windows::Graphics::Display;
+using namespace ABI::Windows::Foundation;
+using namespace ABI::Windows::UI::Core;
+using namespace Microsoft::WRL;
 #endif
 
 namespace egl
 {
 
-Surface::Surface(Display *display, const Config *config, EGLNativeWindowType window, EGLint postSubBufferSupported)
+Surface::Surface(Display *display, const Config *config, EGLNativeWindowType window, EGLint fixedSize, EGLint width, EGLint height, EGLint postSubBufferSupported)
     : mDisplay(display), mConfig(config), mWindow(window), mPostSubBufferSupported(postSubBufferSupported)
 {
     mRenderer = mDisplay->getRenderer();
@@ -120,9 +49,21 @@ Surface::Surface(Display *display, const Config *config, EGLNativeWindowType win
     mRenderBuffer = EGL_BACK_BUFFER;
     mSwapBehavior = EGL_BUFFER_PRESERVED;
     mSwapInterval = -1;
-    mWidth = -1;
-    mHeight = -1;
+    mWidth = width;
+    mHeight = height;
     setSwapInterval(1);
+    mFixedSize = fixedSize;
+    mSwapFlags = rx::SWAP_NORMAL;
+#if defined(ANGLE_PLATFORM_WINRT)
+    if (mWindow)
+        mWindow->AddRef();
+    mScaleFactor = 1.0;
+    mSizeToken.value = 0;
+    mDpiToken.value = 0;
+#   if WINAPI_FAMILY==WINAPI_FAMILY_PHONE_APP
+    mOrientationToken.value = 0;
+#   endif
+#endif
 
     subclassWindow();
 }
@@ -142,16 +83,88 @@ Surface::Surface(Display *display, const Config *config, HANDLE shareHandle, EGL
     mSwapBehavior = EGL_BUFFER_PRESERVED;
     mSwapInterval = -1;
     setSwapInterval(1);
+    // This constructor is for offscreen surfaces, which are always fixed-size.
+    mFixedSize = EGL_TRUE;
+    mSwapFlags = rx::SWAP_NORMAL;
+#if defined(ANGLE_PLATFORM_WINRT)
+    mScaleFactor = 1.0;
+    mSizeToken.value = 0;
+    mDpiToken.value = 0;
+#   if WINAPI_FAMILY==WINAPI_FAMILY_PHONE_APP
+    mOrientationToken.value = 0;
+#   endif
+#endif
 }
 
 Surface::~Surface()
 {
+#if defined(ANGLE_PLATFORM_WINRT)
+    if (mSizeToken.value) {
+        ComPtr<ICoreWindow> coreWindow;
+        HRESULT hr = mWindow->QueryInterface(coreWindow.GetAddressOf());
+        ASSERT(SUCCEEDED(hr));
+
+        hr = coreWindow->remove_SizeChanged(mSizeToken);
+        ASSERT(SUCCEEDED(hr));
+    }
+    if (mDpiToken.value) {
+        ComPtr<IDisplayInformation> displayInformation;
+        HRESULT hr = mDisplay->getDisplayId()->QueryInterface(displayInformation.GetAddressOf());
+        ASSERT(SUCCEEDED(hr));
+
+        hr = displayInformation->remove_DpiChanged(mDpiToken);
+        ASSERT(SUCCEEDED(hr));
+    }
+#   if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
+    if (mOrientationToken.value) {
+        ComPtr<IDisplayInformation> displayInformation;
+        HRESULT hr = mDisplay->getDisplayId()->QueryInterface(displayInformation.GetAddressOf());
+        ASSERT(SUCCEEDED(hr));
+
+        hr = displayInformation->remove_OrientationChanged(mOrientationToken);
+        ASSERT(SUCCEEDED(hr));
+    }
+#   endif
+#endif
     unsubclassWindow();
     release();
 }
 
 bool Surface::initialize()
 {
+#if defined(ANGLE_PLATFORM_WINRT)
+    if (!mFixedSize) {
+        HRESULT hr;
+        ComPtr<IDisplayInformation> displayInformation;
+        hr = mDisplay->getDisplayId()->QueryInterface(displayInformation.GetAddressOf());
+        ASSERT(SUCCEEDED(hr));
+        onDpiChanged(displayInformation.Get(), 0);
+        hr = displayInformation->add_DpiChanged(Callback<ITypedEventHandler<DisplayInformation *, IInspectable *>>(this, &Surface::onDpiChanged).Get(),
+                                                &mDpiToken);
+        ASSERT(SUCCEEDED(hr));
+
+#   if WINAPI_FAMILY==WINAPI_FAMILY_PHONE_APP
+        onOrientationChanged(displayInformation.Get(), 0);
+        hr = displayInformation->add_OrientationChanged(Callback<ITypedEventHandler<DisplayInformation *, IInspectable *>>(this, &Surface::onOrientationChanged).Get(),
+                                                        &mOrientationToken);
+        ASSERT(SUCCEEDED(hr));
+#   endif
+
+        ComPtr<ICoreWindow> coreWindow;
+        hr = mWindow->QueryInterface(coreWindow.GetAddressOf());
+        ASSERT(SUCCEEDED(hr));
+
+        Rect rect;
+        hr = coreWindow->get_Bounds(&rect);
+        ASSERT(SUCCEEDED(hr));
+        mWidth = rect.Width * mScaleFactor;
+        mHeight = rect.Height * mScaleFactor;
+        hr = coreWindow->add_SizeChanged(Callback<ITypedEventHandler<CoreWindow *, WindowSizeChangedEventArgs *>>(this, &Surface::onSizeChanged).Get(),
+                                         &mSizeToken);
+        ASSERT(SUCCEEDED(hr));
+    }
+#endif
+
     if (!resetSwapChain())
       return false;
 
@@ -168,6 +181,11 @@ void Surface::release()
         mTexture->releaseTexImage();
         mTexture = NULL;
     }
+
+#if defined(ANGLE_PLATFORM_WINRT)
+    if (mWindow)
+        mWindow->Release();
+#endif
 }
 
 bool Surface::resetSwapChain()
@@ -177,9 +195,9 @@ bool Surface::resetSwapChain()
     int width;
     int height;
 
-    if (mWindow)
+#if !defined(ANGLE_PLATFORM_WINRT)
+    if (!mFixedSize)
     {
-#if !defined(ANGLE_OS_WINRT)
         RECT windowRect;
         if (!GetClientRect(getWindowHandle(), &windowRect))
         {
@@ -191,14 +209,9 @@ bool Surface::resetSwapChain()
 
         width = windowRect.right - windowRect.left;
         height = windowRect.bottom - windowRect.top;
-#else
-        if (!getCoreWindowSize(mWindow, &width, &height))
-        {
-            return false;
-        }
-#endif
     }
     else
+#endif
     {
         // non-window surface - size is determined at creation
         width = mWidth;
@@ -228,7 +241,7 @@ bool Surface::resizeSwapChain(int backbufferWidth, int backbufferHeight)
     ASSERT(backbufferWidth >= 0 && backbufferHeight >= 0);
     ASSERT(mSwapChain);
 
-    EGLint status = mSwapChain->resize(backbufferWidth, backbufferHeight);
+    EGLint status = mSwapChain->resize(std::max(1, backbufferWidth), std::max(1, backbufferHeight));
 
     if (status == EGL_CONTEXT_LOST)
     {
@@ -251,7 +264,7 @@ bool Surface::resetSwapChain(int backbufferWidth, int backbufferHeight)
     ASSERT(backbufferWidth >= 0 && backbufferHeight >= 0);
     ASSERT(mSwapChain);
 
-    EGLint status = mSwapChain->reset(backbufferWidth, backbufferHeight, mSwapInterval);
+    EGLint status = mSwapChain->reset(std::max(1, backbufferWidth), std::max(1, backbufferHeight), mSwapInterval);
 
     if (status == EGL_CONTEXT_LOST)
     {
@@ -292,7 +305,7 @@ bool Surface::swapRect(EGLint x, EGLint y, EGLint width, EGLint height)
         return true;
     }
 
-    EGLint status = mSwapChain->swapRect(x, y, width, height);
+    EGLint status = mSwapChain->swapRect(x, y, width, height, mSwapFlags);
 
     if (status == EGL_CONTEXT_LOST)
     {
@@ -318,7 +331,7 @@ EGLNativeWindowType Surface::getWindowHandle()
 #define kSurfaceProperty _TEXT("Egl::SurfaceOwner")
 #define kParentWndProc _TEXT("Egl::SurfaceParentWndProc")
 
-#if !defined(ANGLE_OS_WINRT)
+#if !defined(ANGLE_PLATFORM_WINRT)
 static LRESULT CALLBACK SurfaceWindowProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
 {
   if (message == WM_SIZE)
@@ -336,9 +349,7 @@ static LRESULT CALLBACK SurfaceWindowProc(HWND hwnd, UINT message, WPARAM wparam
 
 void Surface::subclassWindow()
 {
-#if defined(ANGLE_OS_WINRT)
-    mWindowSubclassed = false;
-#else
+#if !defined(ANGLE_PLATFORM_WINRT)
     if (!mWindow)
     {
         return;
@@ -362,12 +373,14 @@ void Surface::subclassWindow()
     SetProp(mWindow, kSurfaceProperty, reinterpret_cast<HANDLE>(this));
     SetProp(mWindow, kParentWndProc, reinterpret_cast<HANDLE>(oldWndProc));
     mWindowSubclassed = true;
+#else
+    mWindowSubclassed = false;
 #endif
 }
 
 void Surface::unsubclassWindow()
 {
-#if !defined(ANGLE_OS_WINRT)
+#if !defined(ANGLE_PLATFORM_WINRT)
     if(!mWindowSubclassed)
     {
         return;
@@ -384,6 +397,7 @@ void Surface::unsubclassWindow()
     if(parentWndFunc)
     {
         LONG_PTR prevWndFunc = SetWindowLongPtr(mWindow, GWLP_WNDPROC, parentWndFunc);
+        UNUSED_ASSERTION_VARIABLE(prevWndFunc);
         ASSERT(prevWndFunc == reinterpret_cast<LONG_PTR>(SurfaceWindowProc));
     }
 
@@ -395,33 +409,25 @@ void Surface::unsubclassWindow()
 
 bool Surface::checkForOutOfDateSwapChain()
 {
-#if !defined(ANGLE_OS_WINRT)
-    RECT client;
-    if (!GetClientRect(getWindowHandle(), &client))
+    int clientWidth = getWidth();
+    int clientHeight = getHeight();
+    bool sizeDirty = false;
+#if !defined(ANGLE_PLATFORM_WINRT)
+    if (!mFixedSize && !IsIconic(getWindowHandle()))
     {
-        ASSERT(false);
-        return false;
-    }
-
-    // Grow the buffer now, if the window has grown. We need to grow now to avoid losing information.
-    int clientWidth = client.right - client.left;
-    int clientHeight = client.bottom - client.top;
-#else
-    int clientWidth;
-    int clientHeight;
-    if (!getCoreWindowSize(mWindow, &clientWidth, &clientHeight))
-    {
-        return false;
-    }
-#endif
-    bool sizeDirty = clientWidth != getWidth() || clientHeight != getHeight();
-
-#if !defined(ANGLE_OS_WINRT)
-    if (IsIconic(getWindowHandle()))
-    {
+        RECT client;
         // The window is automatically resized to 150x22 when it's minimized, but the swapchain shouldn't be resized
         // because that's not a useful size to render to.
-        sizeDirty = false;
+        if (!GetClientRect(getWindowHandle(), &client))
+        {
+            ASSERT(false);
+            return false;
+        }
+
+        // Grow the buffer now, if the window has grown. We need to grow now to avoid losing information.
+        clientWidth = client.right - client.left;
+        clientHeight = client.bottom - client.top;
+        sizeDirty = clientWidth != getWidth() || clientHeight != getHeight();
     }
 #endif
 
@@ -461,18 +467,8 @@ bool Surface::postSubBuffer(EGLint x, EGLint y, EGLint width, EGLint height)
         // Spec is not clear about how this should be handled.
         return true;
     }
-    
+
     return swapRect(x, y, width, height);
-}
-
-EGLint Surface::getWidth() const
-{
-    return mWidth;
-}
-
-EGLint Surface::getHeight() const
-{
-    return mHeight;
 }
 
 EGLint Surface::isPostSubBufferSupported() const
@@ -491,12 +487,42 @@ void Surface::setSwapInterval(EGLint interval)
     {
         return;
     }
-    
+
     mSwapInterval = interval;
     mSwapInterval = std::max(mSwapInterval, mRenderer->getMinSwapInterval());
     mSwapInterval = std::min(mSwapInterval, mRenderer->getMaxSwapInterval());
 
     mSwapIntervalDirty = true;
+}
+
+EGLint Surface::getConfigID() const
+{
+    return mConfig->mConfigID;
+}
+
+EGLint Surface::getWidth() const
+{
+    return mWidth;
+}
+
+EGLint Surface::getHeight() const
+{
+    return mHeight;
+}
+
+EGLint Surface::getPixelAspectRatio() const
+{
+    return mPixelAspectRatio;
+}
+
+EGLenum Surface::getRenderBuffer() const
+{
+    return mRenderBuffer;
+}
+
+EGLenum Surface::getSwapBehavior() const
+{
+    return mSwapBehavior;
 }
 
 EGLenum Surface::getTextureFormat() const
@@ -519,8 +545,82 @@ gl::Texture2D *Surface::getBoundTexture() const
     return mTexture;
 }
 
+EGLint Surface::isFixedSize() const
+{
+    return mFixedSize;
+}
+
 EGLenum Surface::getFormat() const
 {
     return mConfig->mRenderTargetFormat;
 }
+
+#if defined(ANGLE_PLATFORM_WINRT)
+
+HRESULT Surface::onSizeChanged(ICoreWindow *, IWindowSizeChangedEventArgs *args)
+{
+    HRESULT hr;
+    Size size;
+    hr = args->get_Size(&size);
+    ASSERT(SUCCEEDED(hr));
+
+    resizeSwapChain(std::floor(size.Width * mScaleFactor + 0.5),
+                    std::floor(size.Height * mScaleFactor + 0.5));
+
+    if (static_cast<egl::Surface*>(getCurrentDrawSurface()) == this)
+    {
+        glMakeCurrent(glGetCurrentContext(), static_cast<egl::Display*>(getCurrentDisplay()), this);
+    }
+
+    return S_OK;
+}
+
+HRESULT Surface::onDpiChanged(IDisplayInformation *displayInformation, IInspectable *)
+{
+    HRESULT hr;
+#   if WINAPI_FAMILY==WINAPI_FAMILY_PHONE_APP
+    ComPtr<IDisplayInformation2> displayInformation2;
+    hr = displayInformation->QueryInterface(displayInformation2.GetAddressOf());
+    ASSERT(SUCCEEDED(hr));
+
+    hr = displayInformation2->get_RawPixelsPerViewPixel(&mScaleFactor);
+    ASSERT(SUCCEEDED(hr));
+#   else
+    ResolutionScale resolutionScale;
+    hr = displayInformation->get_ResolutionScale(&resolutionScale);
+    ASSERT(SUCCEEDED(hr));
+
+    mScaleFactor = double(resolutionScale) / 100.0;
+#   endif
+    return S_OK;
+}
+
+#   if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
+HRESULT Surface::onOrientationChanged(IDisplayInformation *displayInformation, IInspectable *)
+{
+    HRESULT hr;
+    DisplayOrientations orientation;
+    hr = displayInformation->get_CurrentOrientation(&orientation);
+    ASSERT(SUCCEEDED(hr));
+    switch (orientation) {
+    default:
+    case DisplayOrientations_Portrait:
+        mSwapFlags = rx::SWAP_NORMAL;
+        break;
+    case DisplayOrientations_Landscape:
+        mSwapFlags = rx::SWAP_ROTATE_90;
+        break;
+    case DisplayOrientations_LandscapeFlipped:
+        mSwapFlags = rx::SWAP_ROTATE_270;
+        break;
+    case DisplayOrientations_PortraitFlipped:
+        mSwapFlags = rx::SWAP_ROTATE_180;
+        break;
+    }
+    return S_OK;
+}
+#   endif
+
+#endif
+
 }

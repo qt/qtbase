@@ -16,9 +16,17 @@ BISON_SOURCES = $$ANGLE_DIR/src/compiler/translator/glslang.y
 HEADERS += \
     $$ANGLE_DIR/include/GLSLANG/ResourceLimits.h \
     $$ANGLE_DIR/include/GLSLANG/ShaderLang.h \
+    $$ANGLE_DIR/src/common/angleutils.h \
+    $$ANGLE_DIR/src/common/blocklayout.h \
+    $$ANGLE_DIR/src/common/debug.h \
+    $$ANGLE_DIR/src/common/platform.h \
+    $$ANGLE_DIR/src/common/shadervars.h \
+    $$ANGLE_DIR/src/common/tls.h \
+    $$ANGLE_DIR/src/common/utilities.h \
     $$ANGLE_DIR/src/compiler/translator/BaseTypes.h \
     $$ANGLE_DIR/src/compiler/translator/BuiltInFunctionEmulator.h \
     $$ANGLE_DIR/src/compiler/translator/Common.h \
+    $$ANGLE_DIR/src/compiler/translator/Compiler.h \
     $$ANGLE_DIR/src/compiler/translator/compilerdebug.h \
     $$ANGLE_DIR/src/compiler/translator/ConstantUnion.h \
     $$ANGLE_DIR/src/compiler/translator/depgraph/DependencyGraph.h \
@@ -29,6 +37,7 @@ HEADERS += \
     $$ANGLE_DIR/src/compiler/translator/Diagnostics.h \
     $$ANGLE_DIR/src/compiler/translator/DirectiveHandler.h \
     $$ANGLE_DIR/src/compiler/translator/ExtensionBehavior.h \
+    $$ANGLE_DIR/src/compiler/translator/FlagStd140Structs.h \
     $$ANGLE_DIR/src/compiler/translator/ForLoopUnroll.h \
     $$ANGLE_DIR/src/compiler/translator/HashNames.h \
     $$ANGLE_DIR/src/compiler/translator/InfoSink.h \
@@ -38,7 +47,7 @@ HEADERS += \
     $$ANGLE_DIR/src/compiler/translator/InitializeVariables.h \
     $$ANGLE_DIR/src/compiler/translator/intermediate.h \
     $$ANGLE_DIR/src/compiler/translator/localintermediate.h \
-    $$ANGLE_DIR/src/compiler/translator/MapLongVariableNames.h \
+    $$ANGLE_DIR/src/compiler/translator/LoopInfo.h \
     $$ANGLE_DIR/src/compiler/translator/MMap.h \
     $$ANGLE_DIR/src/compiler/translator/NodeSearch.h \
     $$ANGLE_DIR/src/compiler/translator/osinclude.h \
@@ -53,8 +62,10 @@ HEADERS += \
     $$ANGLE_DIR/src/compiler/translator/RemoveTree.h \
     $$ANGLE_DIR/src/compiler/translator/RenameFunction.h \
     $$ANGLE_DIR/src/compiler/translator/RewriteElseBlocks.h \
+    $$ANGLE_DIR/src/compiler/translator/ScalarizeVecAndMatConstructorArgs.h \
     $$ANGLE_DIR/src/compiler/translator/SearchSymbol.h \
     $$ANGLE_DIR/src/compiler/translator/ShHandle.h \
+    $$ANGLE_DIR/src/compiler/translator/StructureHLSL.h \
     $$ANGLE_DIR/src/compiler/translator/SymbolTable.h \
     $$ANGLE_DIR/src/compiler/translator/timing/RestrictFragmentShaderTiming.h \
     $$ANGLE_DIR/src/compiler/translator/timing/RestrictVertexShaderTiming.h \
@@ -64,9 +75,11 @@ HEADERS += \
     $$ANGLE_DIR/src/compiler/translator/Types.h \
     $$ANGLE_DIR/src/compiler/translator/UnfoldShortCircuit.h \
     $$ANGLE_DIR/src/compiler/translator/UnfoldShortCircuitAST.h \
-    $$ANGLE_DIR/src/compiler/translator/Uniform.h \
+    $$ANGLE_DIR/src/compiler/translator/UniformHLSL.h \
+    $$ANGLE_DIR/src/compiler/translator/UtilsHLSL.h \
     $$ANGLE_DIR/src/compiler/translator/util.h \
     $$ANGLE_DIR/src/compiler/translator/ValidateLimitations.h \
+    $$ANGLE_DIR/src/compiler/translator/ValidateOutputs.h \
     $$ANGLE_DIR/src/compiler/translator/VariableInfo.h \
     $$ANGLE_DIR/src/compiler/translator/VariablePacker.h \
     $$ANGLE_DIR/src/compiler/translator/VersionGLSL.h \
@@ -74,6 +87,7 @@ HEADERS += \
 
 
 SOURCES += \
+    $$ANGLE_DIR/src/common/tls.cpp \
     $$ANGLE_DIR/src/compiler/translator/BuiltInFunctionEmulator.cpp \
     $$ANGLE_DIR/src/compiler/translator/CodeGen.cpp \
     $$ANGLE_DIR/src/compiler/translator/Compiler.cpp \
@@ -86,6 +100,7 @@ SOURCES += \
     $$ANGLE_DIR/src/compiler/translator/DetectDiscontinuity.cpp \
     $$ANGLE_DIR/src/compiler/translator/Diagnostics.cpp \
     $$ANGLE_DIR/src/compiler/translator/DirectiveHandler.cpp \
+    $$ANGLE_DIR/src/compiler/translator/FlagStd140Structs.cpp \
     $$ANGLE_DIR/src/compiler/translator/ForLoopUnroll.cpp \
     $$ANGLE_DIR/src/compiler/translator/InfoSink.cpp \
     $$ANGLE_DIR/src/compiler/translator/Initialize.cpp \
@@ -95,7 +110,7 @@ SOURCES += \
     $$ANGLE_DIR/src/compiler/translator/Intermediate.cpp \
     $$ANGLE_DIR/src/compiler/translator/intermOut.cpp \
     $$ANGLE_DIR/src/compiler/translator/IntermTraverse.cpp \
-    $$ANGLE_DIR/src/compiler/translator/MapLongVariableNames.cpp \
+    $$ANGLE_DIR/src/compiler/translator/LoopInfo.cpp \
     $$ANGLE_DIR/src/compiler/translator/OutputESSL.cpp \
     $$ANGLE_DIR/src/compiler/translator/OutputGLSL.cpp \
     $$ANGLE_DIR/src/compiler/translator/OutputGLSLBase.cpp \
@@ -106,30 +121,29 @@ SOURCES += \
     $$ANGLE_DIR/src/compiler/translator/QualifierAlive.cpp \
     $$ANGLE_DIR/src/compiler/translator/RemoveTree.cpp \
     $$ANGLE_DIR/src/compiler/translator/RewriteElseBlocks.cpp \
+    $$ANGLE_DIR/src/compiler/translator/ScalarizeVecAndMatConstructorArgs.cpp \
     $$ANGLE_DIR/src/compiler/translator/SearchSymbol.cpp \
     $$ANGLE_DIR/src/compiler/translator/ShaderLang.cpp \
+    $$ANGLE_DIR/src/compiler/translator/StructureHLSL.cpp \
     $$ANGLE_DIR/src/compiler/translator/SymbolTable.cpp \
     $$ANGLE_DIR/src/compiler/translator/timing/RestrictFragmentShaderTiming.cpp \
     $$ANGLE_DIR/src/compiler/translator/timing/RestrictVertexShaderTiming.cpp \
     $$ANGLE_DIR/src/compiler/translator/TranslatorESSL.cpp \
     $$ANGLE_DIR/src/compiler/translator/TranslatorGLSL.cpp \
     $$ANGLE_DIR/src/compiler/translator/TranslatorHLSL.cpp \
+    $$ANGLE_DIR/src/compiler/translator/Types.cpp \
     $$ANGLE_DIR/src/compiler/translator/UnfoldShortCircuit.cpp \
     $$ANGLE_DIR/src/compiler/translator/UnfoldShortCircuitAST.cpp \
-    $$ANGLE_DIR/src/compiler/translator/Uniform.cpp \
+    $$ANGLE_DIR/src/compiler/translator/UniformHLSL.cpp \
+    $$ANGLE_DIR/src/compiler/translator/UtilsHLSL.cpp \
     $$ANGLE_DIR/src/compiler/translator/util.cpp \
     $$ANGLE_DIR/src/compiler/translator/ValidateLimitations.cpp \
+    $$ANGLE_DIR/src/compiler/translator/ValidateOutputs.cpp \
     $$ANGLE_DIR/src/compiler/translator/VariableInfo.cpp \
     $$ANGLE_DIR/src/compiler/translator/VariablePacker.cpp \
     $$ANGLE_DIR/src/compiler/translator/VersionGLSL.cpp \
     $$ANGLE_DIR/src/third_party/compiler/ArrayBoundsClamper.cpp
 
-
-winrt {
-    SOURCES += $$ANGLE_DIR/src/compiler/translator/ossource_winrt.cpp
-} else {
-    SOURCES += $$ANGLE_DIR/src/compiler/translator/ossource_win.cpp
-}
 
 # NOTE: 'win_flex' and 'bison' can be found in qt5/gnuwin32/bin
 flex.commands = $$addGnuPath(win_flex) --noline --nounistd --outfile=${QMAKE_FILE_BASE}_lex.cpp ${QMAKE_FILE_NAME}

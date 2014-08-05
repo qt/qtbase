@@ -1,7 +1,7 @@
-From cebc37237a74a130dffaefad0a10da17abc42981 Mon Sep 17 00:00:00 2001
+From 747d31f25883f6b9203245a498acf9945accdc0d Mon Sep 17 00:00:00 2001
 From: Andy Shaw <andy.shaw@digia.com>
-Date: Tue, 18 Feb 2014 09:59:17 +0200
-Subject: [PATCH] Fix build when SSE2 is not available.
+Date: Sat, 28 Jun 2014 17:06:45 +0300
+Subject: [PATCH 05/12] Fix build when SSE2 is not available.
 
 Although SSE2 support is detected at runtime it still may not be
 available at build time, so we have to ensure it only uses SSE2
@@ -9,23 +9,23 @@ when it is available at build time too.
 
 Change-Id: I86c45a6466ab4cec79aa0f62b0d5230a78ad825a
 ---
- src/3rdparty/angle/src/libGLESv2/mathutil.h               | 2 ++
- src/3rdparty/angle/src/libGLESv2/renderer/d3d9/Image9.cpp | 6 +++++-
- 2 files changed, 7 insertions(+), 1 deletion(-)
+ src/3rdparty/angle/src/common/mathutil.h                    | 2 ++
+ src/3rdparty/angle/src/libGLESv2/renderer/loadimageSSE2.cpp | 8 ++++++++
+ 2 files changed, 10 insertions(+)
 
-diff --git a/src/3rdparty/angle/src/libGLESv2/mathutil.h b/src/3rdparty/angle/src/libGLESv2/mathutil.h
-index f902131..6474b66 100644
---- a/src/3rdparty/angle/src/libGLESv2/mathutil.h
-+++ b/src/3rdparty/angle/src/libGLESv2/mathutil.h
-@@ -92,6 +92,7 @@ inline bool supportsSSE2()
+diff --git a/src/3rdparty/angle/src/common/mathutil.h b/src/3rdparty/angle/src/common/mathutil.h
+index 58f9b4c..f32663f 100644
+--- a/src/3rdparty/angle/src/common/mathutil.h
++++ b/src/3rdparty/angle/src/common/mathutil.h
+@@ -118,6 +118,7 @@ inline bool supportsSSE2()
          return supports;
      }
  
 +#if defined(_M_IX86) || defined(_M_AMD64) // ARM doesn't provide __cpuid()
      int info[4];
      __cpuid(info, 0);
-     
-@@ -101,6 +102,7 @@ inline bool supportsSSE2()
+ 
+@@ -127,6 +128,7 @@ inline bool supportsSSE2()
  
          supports = (info[3] >> 26) & 1;
      }
@@ -33,45 +33,52 @@ index f902131..6474b66 100644
  
      checked = true;
  
-diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/d3d9/Image9.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/d3d9/Image9.cpp
-index 8511946..cd12d8c 100644
---- a/src/3rdparty/angle/src/libGLESv2/renderer/d3d9/Image9.cpp
-+++ b/src/3rdparty/angle/src/libGLESv2/renderer/d3d9/Image9.cpp
-@@ -373,11 +373,13 @@ void Image9::loadData(GLint xoffset, GLint yoffset, GLsizei width, GLsizei heigh
-     switch (mInternalFormat)
-     {
-       case GL_ALPHA8_EXT:
-+#if defined(__SSE2__)
-         if (gl::supportsSSE2())
-         {
-             loadAlphaDataToBGRASSE2(width, height, inputPitch, input, locked.Pitch, locked.pBits);
-         }
-         else
+diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/loadimageSSE2.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/loadimageSSE2.cpp
+index 9c83894..dcf347d 100644
+--- a/src/3rdparty/angle/src/libGLESv2/renderer/loadimageSSE2.cpp
++++ b/src/3rdparty/angle/src/libGLESv2/renderer/loadimageSSE2.cpp
+@@ -11,6 +11,10 @@
+ 
+ #include "libGLESv2/renderer/loadimage.h"
+ 
++#if !defined(__SSE2__) && (defined(_M_X64) || _M_IX86_FP == 2)
++#define __SSE2__
 +#endif
-         {
-             loadAlphaDataToBGRA(width, height, inputPitch, input, locked.Pitch, locked.pBits);
++
+ namespace rx
+ {
+ 
+@@ -18,6 +22,7 @@ void LoadA8ToBGRA8_SSE2(size_t width, size_t height, size_t depth,
+                         const uint8_t *input, size_t inputRowPitch, size_t inputDepthPitch,
+                         uint8_t *output, size_t outputRowPitch, size_t outputDepthPitch)
+ {
++#ifdef __SSE2__
+     __m128i zeroWide = _mm_setzero_si128();
+ 
+     for (size_t z = 0; z < depth; z++)
+@@ -55,12 +60,14 @@ void LoadA8ToBGRA8_SSE2(size_t width, size_t height, size_t depth,
+             }
          }
-@@ -413,11 +415,13 @@ void Image9::loadData(GLint xoffset, GLint yoffset, GLsizei width, GLsizei heigh
-         loadRGB565DataToBGRA(width, height, inputPitch, input, locked.Pitch, locked.pBits);
-         break;
-       case GL_RGBA8_OES:
-+#if defined(__SSE2__)
-         if (gl::supportsSSE2())
-         {
-             loadRGBAUByteDataToBGRASSE2(width, height, inputPitch, input, locked.Pitch, locked.pBits);
-         }
-         else
+     }
 +#endif
-         {
-             loadRGBAUByteDataToBGRA(width, height, inputPitch, input, locked.Pitch, locked.pBits);
-         }
-@@ -729,4 +733,4 @@ void Image9::copy(GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width,
-     mDirty = true;
  }
  
--}
-\ No newline at end of file
-+}
+ void LoadRGBA8ToBGRA8_SSE2(size_t width, size_t height, size_t depth,
+                            const uint8_t *input, size_t inputRowPitch, size_t inputDepthPitch,
+                            uint8_t *output, size_t outputRowPitch, size_t outputDepthPitch)
+ {
++#ifdef __SSE2__
+     __m128i brMask = _mm_set1_epi32(0x00ff00ff);
+ 
+     for (size_t z = 0; z < depth; z++)
+@@ -100,6 +107,7 @@ void LoadRGBA8ToBGRA8_SSE2(size_t width, size_t height, size_t depth,
+             }
+         }
+     }
++#endif
+ }
+ 
+ }
 -- 
-1.8.4.msysgit.0
+1.9.0.msysgit.0
 

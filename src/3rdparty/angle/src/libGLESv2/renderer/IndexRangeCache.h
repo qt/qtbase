@@ -11,6 +11,7 @@
 #define LIBGLESV2_RENDERER_INDEXRANGECACHE_H_
 
 #include "common/angleutils.h"
+#include <map>
 
 namespace rx
 {
@@ -55,4 +56,4 @@ class IndexRangeCache
 
 }
 
-#endif LIBGLESV2_RENDERER_INDEXRANGECACHE_H
+#endif // LIBGLESV2_RENDERER_INDEXRANGECACHE_H
