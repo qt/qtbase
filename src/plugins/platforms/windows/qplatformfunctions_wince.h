@@ -75,7 +75,6 @@
 #ifndef CWP_SKIPINVISIBLE
 #define CWP_SKIPINVISIBLE   0x0001
 #define CWP_SKIPTRANSPARENT 0x0004
-#define findPlatformWindowAt(a, b, c) findPlatformWindowAt(a, b)
 #endif
 
 #ifndef CS_OWNDC
@@ -94,10 +93,6 @@
 
 #define SW_SHOWMINIMIZED SW_MINIMIZE
 #define SW_SHOWMINNOACTIVE SW_MINIMIZE
-
-#ifndef ChildWindowFromPointEx
-#define ChildWindowFromPointEx(a, b, c) ChildWindowFromPoint(a, b)
-#endif
 
 #ifndef CF_DIBV5
 #define CF_DIBV5            17

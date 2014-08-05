@@ -681,25 +681,54 @@ void QWindowsContext::clearWindowUnderMouse()
     \a parent is the parent window, pass GetDesktopWindow() for top levels.
 */
 
+static inline bool findPlatformWindowHelper(const POINT &screenPoint, unsigned cwexFlags,
+                                            const QWindowsContext *context,
+                                            HWND *hwnd, QWindowsWindow **result)
+{
+    POINT point = screenPoint;
+    ScreenToClient(*hwnd, &point);
+    // Returns parent if inside & none matched.
+#ifndef Q_OS_WINCE
+    const HWND child = ChildWindowFromPointEx(*hwnd, point, cwexFlags);
+#else
+    Q_UNUSED(cwexFlags)
+    const HWND child = ChildWindowFromPoint(*hwnd, point);
+#endif
+    if (!child || child == *hwnd)
+        return false;
+    if (QWindowsWindow *window = context->findPlatformWindow(child)) {
+        *result = window;
+        *hwnd = child;
+        return true;
+    }
+#ifndef Q_OS_WINCE // Does not have  WS_EX_TRANSPARENT .
+    // QTBUG-40555: despite CWP_SKIPINVISIBLE, it is possible to hit on invisible
+    // full screen windows of other applications that have WS_EX_TRANSPARENT set
+    // (for example created by  screen sharing applications). In that case, try to
+    // find a Qt window by searching again with CWP_SKIPTRANSPARENT.
+    // Note that Qt 5 uses WS_EX_TRANSPARENT for Qt::WindowTransparentForInput
+    // as well.
+    if (!(cwexFlags & CWP_SKIPTRANSPARENT)
+        && (GetWindowLongPtr(child, GWL_EXSTYLE) & WS_EX_TRANSPARENT)) {
+        const HWND nonTransparentChild = ChildWindowFromPointEx(*hwnd, point, cwexFlags | CWP_SKIPTRANSPARENT);
+        if (QWindowsWindow *nonTransparentWindow = context->findPlatformWindow(nonTransparentChild)) {
+            *result = nonTransparentWindow;
+            *hwnd = nonTransparentChild;
+            return true;
+        }
+    }
+#endif // !Q_OS_WINCE
+    *hwnd = child;
+    return true;
+}
+
 QWindowsWindow *QWindowsContext::findPlatformWindowAt(HWND parent,
                                                           const QPoint &screenPointIn,
                                                           unsigned cwex_flags) const
 {
     QWindowsWindow *result = 0;
     const POINT screenPoint = { screenPointIn.x(), screenPointIn.y() };
-    while (true) {
-        POINT point = screenPoint;
-        ScreenToClient(parent, &point);
-        // Returns parent if inside & none matched.
-        const HWND child = ChildWindowFromPointEx(parent, point, cwex_flags);
-        if (child && child != parent) {
-            if (QWindowsWindow *window = findPlatformWindow(child))
-                result = window;
-            parent = child;
-        } else {
-            break;
-        }
-    }
+    while (findPlatformWindowHelper(screenPoint, cwex_flags, this, &parent, &result)) {}
     return result;
 }
 
