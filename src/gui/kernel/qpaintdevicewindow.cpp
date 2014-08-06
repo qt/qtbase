@@ -188,7 +188,8 @@ bool QPaintDeviceWindow::event(QEvent *event)
 
     if (event->type() == QEvent::UpdateRequest) {
         d->paintEventSent = false;
-        d->handleUpdateEvent();
+        if (handle()) // platform window may be gone when the window is closed during app exit
+            d->handleUpdateEvent();
         return true;
     }
 
