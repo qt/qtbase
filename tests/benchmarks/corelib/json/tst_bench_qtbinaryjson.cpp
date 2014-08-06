@@ -171,7 +171,7 @@ void BenchmarkQtBinaryJson::jsonObjectInsert()
 
     QBENCHMARK {
         for (int i = 0; i < 1000; i++)
-            object.insert("testkey_" + i, value);
+            object.insert("testkey_" + QString::number(i), value);
     }
 }
 
@@ -183,7 +183,7 @@ void BenchmarkQtBinaryJson::variantMapInsert()
 
     QBENCHMARK {
         for (int i = 0; i < 1000; i++)
-            object.insert("testkey_" + i, variantValue);
+            object.insert("testkey_" + QString::number(i), variantValue);
     }
 }
 
