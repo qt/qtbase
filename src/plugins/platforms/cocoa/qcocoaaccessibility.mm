@@ -152,6 +152,12 @@ static void populateRoleMap()
     roleMap[QAccessible::Paragraph] = NSAccessibilityGroupRole;
     roleMap[QAccessible::Section] = NSAccessibilityGroupRole;
     roleMap[QAccessible::WebDocument] = NSAccessibilityGroupRole;
+    roleMap[QAccessible::ColorChooser] = NSAccessibilityColorWellRole;
+    roleMap[QAccessible::Footer] = NSAccessibilityGroupRole;
+    roleMap[QAccessible::Form] = NSAccessibilityGroupRole;
+    roleMap[QAccessible::Heading] = @"AXHeading";
+    roleMap[QAccessible::Note] = NSAccessibilityGroupRole;
+    roleMap[QAccessible::ComplementaryContent] = NSAccessibilityGroupRole;
 }
 
 /*

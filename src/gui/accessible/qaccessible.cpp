@@ -319,9 +319,11 @@ QT_BEGIN_NAMESPACE
     \value CheckBox         An object that represents an option that can be checked or unchecked. Some options provide a "mixed" state, e.g. neither checked nor unchecked.
     \value Client           The client area in a window.
     \value Clock            A clock displaying time.
+    \value ColorChooser     A dialog that lets the user choose a color.
     \value Column           A column of cells, usually within a table.
     \value ColumnHeader     A header for a column of data.
     \value ComboBox         A list of choices that the user can select from.
+    \value ComplementaryContent A part of the document or web page that is complementary to the main content, usually a landmark (see WAI-ARIA).
     \value Cursor           An object that represents the mouse cursor.
     \value Desktop          The object represents the desktop or workspace.
     \value Dial             An object that represents a dial or knob.
@@ -329,9 +331,12 @@ QT_BEGIN_NAMESPACE
     \value Document         A document, for example in an office application.
     \value EditableText     Editable text such as a line or text edit.
     \value Equation         An object that represents a mathematical equation.
+    \value Footer           A footer in a page (usually in documents).
+    \value Form             A web form containing controls.
     \value Graphic          A graphic or picture, e.g. an icon.
     \value Grip             A grip that the user can drag to change the size of widgets.
     \value Grouping         An object that represents a logical grouping of other objects.
+    \value Heading          A heading in a document.
     \value HelpBalloon      An object that displays help in a separate, short lived window.
     \value HotkeyField      A hotkey field that allows the user to enter a key sequence.
     \value Indicator        An indicator that represents a current value or item.
@@ -342,6 +347,7 @@ QT_BEGIN_NAMESPACE
     \value MenuBar          A menu bar from which menus are opened by the user.
     \value MenuItem         An item in a menu or menu bar.
     \value NoRole           The object has no role. This usually indicates an invalid object.
+    \value Note             A section whose content is parenthetic or ancillary to the main content of the resource.
     \value PageTab          A page tab that the user can select to switch to a different page in a dialog.
     \value PageTabList      A list of page tabs.
     \value Paragraph        A paragraph of text (usually found in documents).

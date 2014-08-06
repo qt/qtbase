@@ -280,7 +280,7 @@ public:
         HotkeyField    = 0x00000032,
         Slider         = 0x00000033,
         SpinBox        = 0x00000034,
-        Canvas         = 0x00000035,
+        Canvas         = 0x00000035, // Diagram for MSAA
         Animation      = 0x00000036,
         Equation       = 0x00000037,
         ButtonDropDown = 0x00000038, // The object represents a button that expands a grid.
@@ -299,6 +299,55 @@ public:
         Paragraph      = 0x00000083,
         WebDocument    = 0x00000084,
         Section        = 0x00000085,
+
+        // IAccessible2 roles
+        // IA2_ROLE_CANVAS = 0x401, ### Qt 6 use this one instead of Canvas above
+        // IA2_ROLE_CAPTION = 0x402,
+        // IA2_ROLE_CHECK_MENU_ITEM = 0x403,
+        ColorChooser = 0x404,
+        // IA2_ROLE_DATE_EDITOR = 0x405,
+        // IA2_ROLE_DESKTOP_ICON = 0x406,
+        // IA2_ROLE_DESKTOP_PANE = 0x407,
+        // IA2_ROLE_DIRECTORY_PANE = 0x408,
+        // IA2_ROLE_EDITBAR = 0x409,
+        // IA2_ROLE_EMBEDDED_OBJECT = 0x40A,
+        // IA2_ROLE_ENDNOTE = 0x40B,
+        // IA2_ROLE_FILE_CHOOSER = 0x40C,
+        // IA2_ROLE_FONT_CHOOSER = 0x40D,
+        Footer      = 0x40E,
+        // IA2_ROLE_FOOTNOTE = 0x40F,
+        Form        = 0x410,
+        // some platforms (windows and at-spi) use Frame for regular windows
+        // because window was taken for tool/dock windows by MSAA
+        // Frame = 0x411,
+        // IA2_ROLE_GLASS_PANE = 0x412,
+        // IA2_ROLE_HEADER = 0x413,
+        Heading  = 0x414,
+        // IA2_ROLE_ICON = 0x415,
+        // IA2_ROLE_IMAGE_MAP = 0x416,
+        // IA2_ROLE_INPUT_METHOD_WINDOW = 0x417,
+        // IA2_ROLE_INTERNAL_FRAME = 0x418,
+        // IA2_ROLE_LABEL = 0x419,
+        // IA2_ROLE_LAYERED_PANE = 0x41A,
+        Note = 0x41B,
+        // IA2_ROLE_OPTION_PANE = 0x41C,
+        // IA2_ROLE_PAGE = 0x41D,
+        // IA2_ROLE_PARAGRAPH = 0x42E,
+        // IA2_ROLE_RADIO_MENU_ITEM = 0x41F,
+        // IA2_ROLE_REDUNDANT_OBJECT = 0x420,
+        // IA2_ROLE_ROOT_PANE = 0x421,
+        // IA2_ROLE_RULER = 0x422,
+        // IA2_ROLE_SCROLL_PANE = 0x423,
+        // IA2_ROLE_SECTION = 0x424,
+        // IA2_ROLE_SHAPE = 0x425,
+        // IA2_ROLE_SPLIT_PANE = 0x426,
+        // IA2_ROLE_TEAR_OFF_MENU = 0x427,
+        // IA2_ROLE_TERMINAL = 0x428,
+        // IA2_ROLE_TEXT_FRAME = 0x429,
+        // IA2_ROLE_TOGGLE_BUTTON = 0x42A,
+        // IA2_ROLE_VIEW_PORT = 0x42B,
+        ComplementaryContent = 0x42C,
+
         UserRole       = 0x0000ffff
     };
 
