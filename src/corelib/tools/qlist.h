@@ -948,6 +948,7 @@ Q_DECLARE_MUTABLE_SEQUENTIAL_ITERATOR(List)
 QT_END_NAMESPACE
 
 #include <QtCore/qbytearraylist.h>
+#include <QtCore/qstringlist.h>
 
 #ifdef Q_CC_MSVC
 #pragma warning( pop )

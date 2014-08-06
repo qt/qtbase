@@ -475,6 +475,12 @@ void **QListData::erase(void **xi)
     If T is a QByteArray, this class has a couple more members that can be
     used. See the documentation for QByteArrayList for more information.
 
+    If T is QString, this class has the following additional members:
+    \l{QStringList::filter()}{filter},
+    \l{QStringList::join()}{join},
+    \l{QStringList::removeDuplicates()}{removeDuplicates},
+    \l{QStringList::sort()}{sort}.
+
     \sa QListIterator, QMutableListIterator, QLinkedList, QVector
 */
 
