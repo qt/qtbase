@@ -889,6 +889,10 @@ protected:
 Q_DECLARE_TYPEINFO(QTouchEvent::TouchPoint, Q_MOVABLE_TYPE);
 Q_DECLARE_OPERATORS_FOR_FLAGS(QTouchEvent::TouchPoint::InfoFlags)
 
+#ifndef QT_NO_DEBUG_STREAM
+Q_GUI_EXPORT QDebug operator<<(QDebug, const QTouchEvent::TouchPoint &);
+#endif
+
 class Q_GUI_EXPORT QScrollPrepareEvent : public QEvent
 {
 public:
