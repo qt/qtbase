@@ -111,6 +111,9 @@ mac:CONFIG(shared, static|shared):contains(QT_CONFIG, qt_framework) {
    }
 }
 
+mac:contains(QT_CONFIG, rpath): \
+    QMAKE_SONAME_PREFIX = @rpath
+
 mac {
    CONFIG += explicitlib
    macx-g++ {

@@ -52,12 +52,6 @@ QMAKE_DIR_REPLACE_SANE = PRECOMPILED_DIR OBJECTS_DIR MOC_DIR RCC_DIR UI_DIR
     unset(modpath)
 }
 
-mac {
-   !isEmpty(QMAKE_RPATHDIR){
-       CONFIG += absolute_library_soname
-   }
-}
-
 cross_compile: \
     CONFIG += force_bootstrap
 
