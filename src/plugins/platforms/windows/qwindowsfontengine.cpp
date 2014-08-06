@@ -1350,6 +1350,7 @@ void QWindowsMultiFontEngine::loadEngine(int at)
                                                                                         fontEngine->fontDef.pixelSize,
                                                                                         data);
                 fedw->fontDef = fontDef;
+                fedw->fontDef.family = fam;
                 fedw->ref.ref();
                 engines[at] = fedw;
 
@@ -1375,6 +1376,7 @@ void QWindowsMultiFontEngine::loadEngine(int at)
     engines[at] = new QWindowsFontEngine(fam, hfont, stockFont, lf, data);
     engines[at]->ref.ref();
     engines[at]->fontDef = fontDef;
+    engines[at]->fontDef.family = fam;
     qCDebug(lcQpaFonts) << __FUNCTION__ << at << fam;
 
     // TODO: increase cost in QFontCache for the font engine loaded here
