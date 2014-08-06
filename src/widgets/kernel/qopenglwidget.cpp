@@ -867,7 +867,8 @@ int QOpenGLWidget::metric(QPaintDevice::PaintDeviceMetric metric) const
     if (d->inBackingStorePaint)
         return QWidget::metric(metric);
 
-    QScreen *screen = window()->windowHandle()->screen();
+    QWidget *tlw = window();
+    QScreen *screen = tlw && tlw->windowHandle() ? tlw->windowHandle()->screen() : 0;
     if (!screen && QGuiApplication::primaryScreen())
         screen = QGuiApplication::primaryScreen();
 
