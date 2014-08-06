@@ -162,14 +162,6 @@ namespace QtAndroid
         return m_javaVM;
     }
 
-    jclass findClass(const QString &className, JNIEnv *env)
-    {
-        return static_cast<jclass>(env->CallObjectMethod(m_classLoaderObject,
-                                                         m_loadClassMethodID,
-                                                         env->NewString(reinterpret_cast<const jchar *>(className.constData()),
-                                                                        jsize(className.length()))));
-    }
-
     AAssetManager *assetManager()
     {
         return m_assetManager;

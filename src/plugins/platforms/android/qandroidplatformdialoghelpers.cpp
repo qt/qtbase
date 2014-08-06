@@ -44,6 +44,8 @@ QT_BEGIN_NAMESPACE
 namespace QtAndroidDialogHelpers {
 static jclass g_messageDialogHelperClass = 0;
 
+static const char QtMessageHandlerHelperClassName[] = "org/qtproject/qt5/android/QtMessageDialogHelper";
+
 QAndroidPlatformMessageDialogHelper::QAndroidPlatformMessageDialogHelper()
     :m_buttonId(-1)
     ,m_javaMessageDialog(g_messageDialogHelperClass, "(Landroid/app/Activity;)V", QtAndroid::activity())
@@ -148,10 +150,10 @@ static JNINativeMethod methods[] = {
 
 bool registerNatives(JNIEnv *env)
 {
-    jclass clazz = QtAndroid::findClass("org.qtproject.qt5.android.QtMessageDialogHelper", env);
+    jclass clazz = QJNIEnvironmentPrivate::findClass(QtMessageHandlerHelperClassName, env);
     if (!clazz) {
         __android_log_print(ANDROID_LOG_FATAL, QtAndroid::qtTagText(), QtAndroid::classErrorMsgFmt()
-                            , "org/qtproject/qt5/android/QtMessageDialogHelper");
+                            , QtMessageHandlerHelperClassName);
         return false;
     }
     g_messageDialogHelperClass = static_cast<jclass>(env->NewGlobalRef(clazz));

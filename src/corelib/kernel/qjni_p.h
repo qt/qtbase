@@ -58,6 +58,7 @@ public:
     ~QJNIEnvironmentPrivate();
     JNIEnv *operator->();
     operator JNIEnv*() const;
+    static jclass findClass(const char *className, JNIEnv *env = 0);
 
 private:
     friend class QAndroidJniEnvironment;

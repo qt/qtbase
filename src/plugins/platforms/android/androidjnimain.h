@@ -70,7 +70,6 @@ namespace QtAndroid
     int desktopHeightPixels();
     double scaledDensity();
     JavaVM *javaVM();
-    jclass findClass(const QString &className, JNIEnv *env);
     AAssetManager *assetManager();
     jclass applicationClass();
     jobject activity();
