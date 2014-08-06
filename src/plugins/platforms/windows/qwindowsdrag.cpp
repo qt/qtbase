@@ -54,9 +54,7 @@
 #include <QtGui/QMouseEvent>
 #include <QtGui/QPixmap>
 #include <QtGui/QPainter>
-#include <QtGui/QPaintDevice>
-#include <QtGui/QBackingStore>
-#include <QtGui/QWindow>
+#include <QtGui/QRasterWindow>
 #include <QtGui/QGuiApplication>
 #include <qpa/qwindowsysteminterface_p.h>
 #include <QtGui/private/qguiapplication_p.h>
@@ -78,7 +76,7 @@ QT_BEGIN_NAMESPACE
     \ingroup qt-lighthouse-win
 */
 
-class QWindowsDragCursorWindow : public QWindow
+class QWindowsDragCursorWindow : public QRasterWindow
 {
 public:
     explicit QWindowsDragCursorWindow(QWindow *parent = 0);
@@ -86,18 +84,18 @@ public:
     void setPixmap(const QPixmap &p);
 
 protected:
-    void exposeEvent(QExposeEvent *);
+    void paintEvent(QPaintEvent *)
+    {
+        QPainter painter(this);
+        painter.drawPixmap(0, 0, m_pixmap);
+    }
 
 private:
-    void render();
-
-    QBackingStore m_backingStore;
     QPixmap m_pixmap;
 };
 
 QWindowsDragCursorWindow::QWindowsDragCursorWindow(QWindow *parent)
-    : QWindow(parent)
-    , m_backingStore(this)
+    : QRasterWindow(parent)
 {
     QSurfaceFormat windowFormat = format();
     windowFormat.setAlphaBufferSize(8);
@@ -113,31 +111,17 @@ void QWindowsDragCursorWindow::setPixmap(const QPixmap &p)
     if (p.cacheKey() == m_pixmap.cacheKey())
         return;
     const QSize oldSize = m_pixmap.size();
-    const QSize newSize = p.size();
+    QSize newSize = p.size();
     qCDebug(lcQpaMime) << __FUNCTION__ << p.cacheKey() << newSize;
     m_pixmap = p;
     if (oldSize != newSize) {
+        const qreal pixDevicePixelRatio = p.devicePixelRatio();
+        if (pixDevicePixelRatio > 1.0 && qFuzzyCompare(pixDevicePixelRatio, devicePixelRatio()))
+            newSize /= qRound(pixDevicePixelRatio);
         resize(newSize);
-        m_backingStore.resize(newSize);
     }
     if (isVisible())
-        render();
-}
-
-void QWindowsDragCursorWindow::exposeEvent(QExposeEvent *)
-{
-    Q_ASSERT(!m_pixmap.isNull());
-    render();
-}
-
-void QWindowsDragCursorWindow::render()
-{
-    const QRect rect(QPoint(0, 0), m_pixmap.size());
-    m_backingStore.beginPaint(rect);
-    QPainter painter(m_backingStore.paintDevice());
-    painter.drawPixmap(0, 0, m_pixmap);
-    m_backingStore.endPaint();
-    m_backingStore.flush(rect);
+        update();
 }
 
 /*!
