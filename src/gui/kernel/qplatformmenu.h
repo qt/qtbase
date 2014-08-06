@@ -118,8 +118,13 @@ public:
 
     virtual void showPopup(const QWindow *parentWindow, QPoint pos, const QPlatformMenuItem *item)
     {
+        showPopup(parentWindow, QRect(pos, QSize()), item);
+    }
+
+    virtual void showPopup(const QWindow *parentWindow, const QRect &targetRect, const QPlatformMenuItem *item)
+    {
         Q_UNUSED(parentWindow);
-        Q_UNUSED(pos);
+        Q_UNUSED(targetRect);
         Q_UNUSED(item);
         setVisible(true);
     }
