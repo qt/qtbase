@@ -479,9 +479,15 @@ void QOpenGLWindow::initializeGL()
   This virtual function is called whenever the widget has been resized.
   Reimplement it in a subclass. The new size is passed in \a w and \a h.
 
-  There is no need to call makeCurrent() because this has already been done
-  when this function is called. Additionally, the framebuffer, if there is one,
-  is bound too.
+  \note This is merely a convenience function in order to provide an API that is
+  compatible with QOpenGLWidget. Unlike with QOpenGLWidget, derived classes are
+  free to choose to override resizeEvent() instead of this function.
+
+  \note Avoid issuing OpenGL commands from this function as there may not be a
+  context current when it is invoked. If it cannot be avoided, call makeCurrent().
+
+  \note Scheduling updates from here is not necessary. The windowing systems
+  will send expose events that trigger an update automatically.
 
   \sa initializeGL(), paintGL()
  */
