@@ -4425,11 +4425,27 @@ QByteArray QByteArray::toPercentEncoding(const QByteArray &exclude, const QByteA
     \internal
 */
 
+/*! \typedef QByteArray::size_type
+    \internal
+*/
+
+/*! \typedef QByteArray::difference_type
+    \internal
+*/
+
 /*! \typedef QByteArray::const_reference
     \internal
 */
 
 /*! \typedef QByteArray::reference
+    \internal
+*/
+
+/*! \typedef QByteArray::const_pointer
+    \internal
+*/
+
+/*! \typedef QByteArray::pointer
     \internal
 */
 

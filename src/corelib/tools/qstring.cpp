@@ -8370,6 +8370,30 @@ QDataStream &operator>>(QDataStream &in, QString &str)
     \sa {Implicitly Shared Classes}
 */
 
+/*!
+    \typedef QStringRef::size_type
+    \internal
+*/
+
+/*!
+    \typedef QStringRef::value_type
+    \internal
+*/
+
+/*!
+    \typedef QStringRef::const_pointer
+    \internal
+*/
+
+/*!
+    \typedef QStringRef::const_reference
+    \internal
+*/
+
+/*!
+    \typedef QStringRef::const_iterator
+    \internal
+*/
 
 /*!
  \fn QStringRef::QStringRef()
@@ -8490,6 +8514,32 @@ ownership of it, no memory is freed when instances are destroyed.
     \fn const QChar *QStringRef::data() const
 
     Same as unicode().
+*/
+
+/*!
+    \fn const QChar *QStringRef::begin() const
+
+    Same as unicode().
+*/
+
+/*!
+    \fn const QChar *QStringRef::cbegin() const
+
+    Same as unicode().
+*/
+
+/*!
+    \fn const QChar *QStringRef::end() const
+
+    Returns a pointer to one character past the last one in this string.
+    (It is the same as \c {unicode() + size()}.)
+*/
+
+/*!
+    \fn const QChar *QStringRef::cend() const
+
+    Returns a pointer to one character past the last one in this string.
+    (It is the same as \c {unicode() + size()}.)
 */
 
 /*!

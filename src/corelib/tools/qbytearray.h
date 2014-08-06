@@ -389,8 +389,12 @@ public:
     const_iterator constEnd() const;
 
     // stl compatibility
+    typedef int size_type;
+    typedef qptrdiff difference_type;
     typedef const char & const_reference;
     typedef char & reference;
+    typedef char *pointer;
+    typedef const char *const_pointer;
     typedef char value_type;
     void push_back(char c);
     void push_back(const char *c);

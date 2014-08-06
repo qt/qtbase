@@ -1264,6 +1264,12 @@ class Q_CORE_EXPORT QStringRef {
     int m_position;
     int m_size;
 public:
+    typedef QString::size_type size_type;
+    typedef QString::value_type value_type;
+    typedef QString::const_iterator const_iterator;
+    typedef QString::const_pointer const_pointer;
+    typedef QString::const_reference const_reference;
+
     // ### Qt 6: make this constructor constexpr, after the destructor is made trivial
     inline QStringRef():m_string(0), m_position(0), m_size(0){}
     inline QStringRef(const QString *string, int position, int size);
@@ -1333,6 +1339,10 @@ public:
     }
     inline const QChar *data() const { return unicode(); }
     inline const QChar *constData() const {  return unicode(); }
+    inline const QChar *begin() const { return unicode(); }
+    inline const QChar *cbegin() const { return unicode(); }
+    inline const QChar *end() const { return unicode() + size(); }
+    inline const QChar *cend() const { return unicode() + size(); }
 
 #if QT_DEPRECATED_SINCE(5, 0)
     QT_DEPRECATED QByteArray toAscii() const Q_REQUIRED_RESULT
