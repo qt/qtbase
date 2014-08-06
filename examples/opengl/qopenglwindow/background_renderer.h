@@ -41,14 +41,14 @@
 #ifndef FRAGMENT_TOY_H
 #define FRAGMENT_TOY_H
 
-#include <QtCore/QObject>
-#include <QtCore/QFile>
-#include <QtCore/QDateTime>
-#include <QtCore/QFileSystemWatcher>
-#include <QtGui/QOpenGLVertexArrayObject>
-#include <QtGui/QOpenGLBuffer>
-#include <QtGui/QOpenGLShaderProgram>
-#include <QtGui/QOpenGLFunctions>
+#include <QObject>
+#include <QFile>
+#include <QDateTime>
+#include <QFileSystemWatcher>
+#include <QOpenGLVertexArrayObject>
+#include <QOpenGLBuffer>
+#include <QOpenGLShaderProgram>
+#include <QOpenGLFunctions>
 
 class FragmentToy : public QObject, protected QOpenGLFunctions
 {

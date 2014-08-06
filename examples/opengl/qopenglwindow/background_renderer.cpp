@@ -40,13 +40,13 @@
 
 #include "background_renderer.h"
 
-#include <QtCore/qmath.h>
-#include <QtCore/QFileInfo>
-#include <QtCore/QTime>
+#include <qmath.h>
+#include <QFileInfo>
+#include <QTime>
 
-#include <QtGui/QOpenGLShaderProgram>
-#include <QtGui/QOpenGLContext>
-#include <QtGui/QOpenGLFunctions>
+#include <QOpenGLShaderProgram>
+#include <QOpenGLContext>
+#include <QOpenGLFunctions>
 
 #include <math.h>
 
