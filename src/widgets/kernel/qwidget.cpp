@@ -5595,6 +5595,11 @@ void QWidgetPrivate::sendPaintEvent(const QRegion &toBePainted)
     Q_Q(QWidget);
     QPaintEvent e(toBePainted);
     QCoreApplication::sendSpontaneousEvent(q, &e);
+
+#ifndef QT_NO_OPENGL
+    if (renderToTexture)
+        resolveSamples();
+#endif // QT_NO_OPENGL
 }
 
 void QWidgetPrivate::render(QPaintDevice *target, const QPoint &targetOffset,

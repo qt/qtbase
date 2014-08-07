@@ -653,6 +653,8 @@ public:
     // filtered away from the widget. This is fine for QGLWidget but bad for QOpenGLWidget
     // since the fbo must be resized. We need an alternative way to notify.
     virtual void resizeViewportFramebuffer() { }
+    // Called after each paint event.
+    virtual void resolveSamples() { }
 #endif
 
     // Variables.
