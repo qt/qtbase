@@ -1,2 +1,2 @@
 TEMPLATE      = subdirs
-SUBDIRS       = jar java accessibility
+SUBDIRS       = jar java templates accessibility

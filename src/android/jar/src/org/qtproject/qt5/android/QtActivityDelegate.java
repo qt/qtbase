@@ -507,6 +507,9 @@ public class QtActivityDelegate
                         ? extras.getString("gdbserver_socket")
                         : "+debug-socket";
 
+                    if (!(new File(gdbserverPath)).exists())
+                        gdbserverPath += ".so";
+
                     // start debugger
                     m_debuggerProcess = Runtime.getRuntime().exec(gdbserverPath
                                                                     + socket
