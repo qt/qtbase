@@ -45,10 +45,6 @@
 #include <QDesktopWidget>
 #include <qdebug.h>
 
-#include <QtGui/private/qguiapplication_p.h>
-#include <qpa/qplatformintegration.h>
-#include <qpa/qplatformfontdatabase.h>
-
 QT_BEGIN_NAMESPACE
 
 static QFontDatabase::WritingSystem writingSystemFromScript(QLocale::Script script)
@@ -324,10 +320,8 @@ void QFontComboBoxPrivate::_q_updateModel()
     int offset = 0;
     QFontInfo fi(currentFont);
 
-    QPlatformFontDatabase *pfdb = QGuiApplicationPrivate::platformIntegration()->fontDatabase();
-
     for (int i = 0; i < list.size(); ++i) {
-        if (pfdb->isPrivateFontFamily(list.at(i)))
+        if (fdb.isPrivateFamily(list.at(i)))
             continue;
 
         if ((filters & scalableMask) && (filters & scalableMask) != scalableMask) {

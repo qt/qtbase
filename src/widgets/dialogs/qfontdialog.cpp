@@ -57,10 +57,6 @@
 #include <private/qdialog_p.h>
 #include <private/qfont_p.h>
 
-#include <QtGui/private/qguiapplication_p.h>
-#include <qpa/qplatformintegration.h>
-#include <qpa/qplatformfontdatabase.h>
-
 QT_BEGIN_NAMESPACE
 
 class QFontListView : public QListView
@@ -482,11 +478,11 @@ void QFontDialogPrivate::updateFamilies()
     const QFontDialog::FontDialogOptions spacingMask = (QFontDialog::ProportionalFonts | QFontDialog::MonospacedFonts);
     const QFontDialog::FontDialogOptions options = q->options();
 
-    QPlatformFontDatabase *pfdb = QGuiApplicationPrivate::platformIntegration()->fontDatabase();
+    QFontDatabase fdb;
 
     QStringList familyNames;
     foreach (const QString &family, fdb.families(writingSystem)) {
-        if (pfdb->isPrivateFontFamily(family))
+        if (fdb.isPrivateFamily(family))
             continue;
 
         if ((options & scalableMask) && (options & scalableMask) != scalableMask) {
