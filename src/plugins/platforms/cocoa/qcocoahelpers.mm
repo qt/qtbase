@@ -97,13 +97,10 @@ CGImageRef qt_mac_toCGImage(const QImage &inImage)
     if (inImage.isNull())
         return 0;
 
-    QImage image = (inImage.depth() == 32) ? inImage : inImage.convertToFormat(QImage::Format_ARGB32_Premultiplied);
+    QImage image = inImage;
 
     uint cgflags = kCGImageAlphaNone;
     switch (image.format()) {
-    case QImage::Format_ARGB32_Premultiplied:
-        cgflags = kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host;
-        break;
     case QImage::Format_ARGB32:
         cgflags = kCGImageAlphaFirst | kCGBitmapByteOrder32Host;
         break;
@@ -123,7 +120,11 @@ CGImageRef qt_mac_toCGImage(const QImage &inImage)
         cgflags = kCGImageAlphaNoneSkipLast | kCGBitmapByteOrder32Big;
         break;
     default:
-        Q_ASSERT(false); // Should never be reached.
+        // Everything not recognized explicitly is converted to ARGB32_Premultiplied.
+        image = inImage.convertToFormat(QImage::Format_ARGB32_Premultiplied);
+        // no break;
+    case QImage::Format_ARGB32_Premultiplied:
+        cgflags = kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host;
         break;
     }
 
