@@ -917,7 +917,7 @@ void QRasterPaintEngine::renderHintsChanged()
     bool was_aa = s->flags.antialiased;
     bool was_bilinear = s->flags.bilinear;
 
-    s->flags.antialiased = bool(s->renderHints & QPainter::Antialiasing);
+    s->flags.antialiased = bool(s->renderHints & (QPainter::Antialiasing | QPainter::HighQualityAntialiasing));
     s->flags.bilinear = bool(s->renderHints & QPainter::SmoothPixmapTransform);
     s->flags.legacy_rounding = !bool(s->renderHints & QPainter::Antialiasing) && bool(s->renderHints & QPainter::Qt4CompatiblePainting);
 
