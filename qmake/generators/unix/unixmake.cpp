@@ -171,11 +171,13 @@ UnixMakefileGenerator::init()
     }
     ProStringList &qmklibs = project->values("QMAKE_LIBS");
     qmklibs = ldadd + qmklibs;
-    if(!project->isEmpty("QMAKE_RPATHDIR")) {
+    if (!project->isEmpty("QMAKE_RPATHDIR") && !project->isEmpty("QMAKE_LFLAGS_RPATH")) {
         const ProStringList &rpathdirs = project->values("QMAKE_RPATHDIR");
-        for(int i = 0; i < rpathdirs.size(); ++i) {
-            if(!project->isEmpty("QMAKE_LFLAGS_RPATH"))
-                project->values("QMAKE_LFLAGS") += var("QMAKE_LFLAGS_RPATH") + escapeFilePath(QFileInfo(rpathdirs[i].toQString()).absoluteFilePath());
+        for (int i = 0; i < rpathdirs.size(); ++i) {
+            QString rpathdir = rpathdirs[i].toQString();
+            if (!rpathdir.startsWith('@') && !rpathdir.startsWith('$'))
+                rpathdir = QFileInfo(rpathdir).absoluteFilePath();
+            project->values("QMAKE_LFLAGS") += var("QMAKE_LFLAGS_RPATH") + escapeFilePath(rpathdir);
         }
     }
     if (!project->isEmpty("QMAKE_RPATHLINKDIR")) {
