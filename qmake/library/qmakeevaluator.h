@@ -49,6 +49,7 @@
 #include "qmakeparser.h"
 #include "ioutils.h"
 
+#include <qiodevice.h>
 #include <qlist.h>
 #include <qlinkedlist.h>
 #include <qmap.h>
