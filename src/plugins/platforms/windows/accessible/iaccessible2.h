@@ -47,24 +47,7 @@
 #include "qwindowsmsaaaccessible.h"
 #include "comutils.h"
 
-#include "Accessible2.h"
-#include "AccessibleAction.h"
-#include "AccessibleApplication.h"
-#include "AccessibleComponent.h"
-#include "AccessibleEditableText.h"
-#include "AccessibleHyperlink.h"
-#include "AccessibleHypertext.h"
-#include "AccessibleImage.h"
-#include "AccessibleRelation.h"
-#include "AccessibleTable.h"
-#include "AccessibleTable2.h"
-#include "AccessibleTableCell.h"
-#include "AccessibleText.h"
-#include "AccessibleValue.h"
-
-#include "AccessibleEventID.h"
-#include "AccessibleRole.h"
-#include "AccessibleStates.h"
+#include "ia2_api_all.h"
 
 #include <servprov.h>
 

@@ -50,7 +50,7 @@
 #include <QtGui/qaccessible.h>
 #ifndef Q_CC_MINGW
 # include <oleacc.h>
-# include "Accessible2.h"   // IAccessible2 inherits from IAccessible
+# include "ia2_api_all.h"   // IAccessible2 inherits from IAccessible
 #else
     // MinGW
 # include <basetyps.h>

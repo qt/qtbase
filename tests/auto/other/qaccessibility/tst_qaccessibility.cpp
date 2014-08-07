@@ -49,13 +49,7 @@
 # include <servprov.h>
 # include <winuser.h>
 # ifdef QT_SUPPORTS_IACCESSIBLE2
-#  include <Accessible2.h>
-#  include <AccessibleAction.h>
-#  include <AccessibleComponent.h>
-#  include <AccessibleEditableText.h>
-#  include <AccessibleText.h>
-#  include <AccessibleTable2.h>
-#  include <AccessibleTableCell.h>
+#  include <ia2_api_all.h>
 # endif
 #endif
 #include <QtTest/QtTest>

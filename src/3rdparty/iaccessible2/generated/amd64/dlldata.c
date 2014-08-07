@@ -19,38 +19,12 @@
 extern "C"   {
 #endif
 
-EXTERN_PROXY_FILE( Accessible2 )
-EXTERN_PROXY_FILE( AccessibleAction )
-EXTERN_PROXY_FILE( AccessibleApplication )
-EXTERN_PROXY_FILE( AccessibleComponent )
-EXTERN_PROXY_FILE( AccessibleEditableText )
-EXTERN_PROXY_FILE( AccessibleHyperlink )
-EXTERN_PROXY_FILE( AccessibleHypertext )
-EXTERN_PROXY_FILE( AccessibleImage )
-EXTERN_PROXY_FILE( AccessibleRelation )
-EXTERN_PROXY_FILE( AccessibleTable )
-EXTERN_PROXY_FILE( AccessibleTable2 )
-EXTERN_PROXY_FILE( AccessibleTableCell )
-EXTERN_PROXY_FILE( AccessibleText )
-EXTERN_PROXY_FILE( AccessibleValue )
+EXTERN_PROXY_FILE( ia2_api_all )
 
 
 PROXYFILE_LIST_START
 /* Start of list */
-  REFERENCE_PROXY_FILE( Accessible2 ),
-  REFERENCE_PROXY_FILE( AccessibleAction ),
-  REFERENCE_PROXY_FILE( AccessibleApplication ),
-  REFERENCE_PROXY_FILE( AccessibleComponent ),
-  REFERENCE_PROXY_FILE( AccessibleEditableText ),
-  REFERENCE_PROXY_FILE( AccessibleHyperlink ),
-  REFERENCE_PROXY_FILE( AccessibleHypertext ),
-  REFERENCE_PROXY_FILE( AccessibleImage ),
-  REFERENCE_PROXY_FILE( AccessibleRelation ),
-  REFERENCE_PROXY_FILE( AccessibleTable ),
-  REFERENCE_PROXY_FILE( AccessibleTable2 ),
-  REFERENCE_PROXY_FILE( AccessibleTableCell ),
-  REFERENCE_PROXY_FILE( AccessibleText ),
-  REFERENCE_PROXY_FILE( AccessibleValue ),
+  REFERENCE_PROXY_FILE( ia2_api_all ),
 /* End of list */
 PROXYFILE_LIST_END
 
