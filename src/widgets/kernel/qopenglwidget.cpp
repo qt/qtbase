@@ -107,7 +107,8 @@ QT_BEGIN_NAMESPACE
   setFormat(). Keep in mind however that having multiple QOpenGLWidget
   instances in the same window requires that they all use the same
   format, or at least formats that do not make the contexts
-  non-sharable.
+  non-sharable. To overcome this issue, prefer using
+  QSurfaceFormat::setDefaultFormat() instead of setFormat().
 
   \section1 Painting Techniques
 
@@ -190,7 +191,7 @@ QT_BEGIN_NAMESPACE
 
   \snippet code/doc_gui_widgets_qopenglwidget.cpp 0
 
-  Alternatively, the prefixing of each and every OpenGL call can be avoidided by deriving
+  Alternatively, the prefixing of each and every OpenGL call can be avoided by deriving
   from QOpenGLFunctions instead:
 
   \snippet code/doc_gui_widgets_qopenglwidget.cpp 1
@@ -205,6 +206,12 @@ QT_BEGIN_NAMESPACE
   available in a given version:
 
   \snippet code/doc_gui_widgets_qopenglwidget.cpp 3
+
+  As described above, it is simpler and more robust to set the requested format
+  globally so that it applies to all windows and contexts during the lifetime of
+  the application. Below is an example of this:
+
+  \snippet code/doc_gui_widgets_qopenglwidget.cpp 6
 
   \section1 Relation to QGLWidget
 
@@ -392,6 +399,7 @@ public:
           paintDevice(0),
           inBackingStorePaint(false)
     {
+        requestedFormat = QSurfaceFormat::defaultFormat();
     }
 
     ~QOpenGLWidgetPrivate()
@@ -620,13 +628,18 @@ QOpenGLWidget::~QOpenGLWidget()
 /*!
   Sets the requested surface \a format.
 
+  When the format is not explicitly set via this function, the format returned by
+  QSurfaceFormat::defaultFormat() will be used. This means that when having multiple
+  OpenGL widgets, individual calls to this function can be replaced by one single call to
+  QSurfaceFormat::setDefaultFormat() before creating the first widget.
+
   \note Requesting an alpha buffer via this function will not lead to the desired results
   and should be avoided. Instead, use Qt::WA_AlwaysStackOnTop to enable semi-transparent
   QOpenGLWidget instances with other widgets visible underneath. Keep in mind however that
   this breaks the stacking order, so it will no longer be possible to have other widgets
   on top of the QOpenGLWidget.
 
-  \sa format(), Qt::WA_AlwaysStackOnTop
+  \sa format(), Qt::WA_AlwaysStackOnTop, QSurfaceFormat::setDefaultFormat()
  */
 void QOpenGLWidget::setFormat(const QSurfaceFormat &format)
 {

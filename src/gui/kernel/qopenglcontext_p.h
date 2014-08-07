@@ -211,6 +211,7 @@ public:
         , workaround_missingPrecisionQualifiers(false)
         , active_engine(0)
     {
+        requestedFormat = QSurfaceFormat::defaultFormat();
     }
 
     virtual ~QOpenGLContextPrivate()

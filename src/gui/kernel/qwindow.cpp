@@ -224,6 +224,8 @@ void QWindowPrivate::init()
         exit(1);
     }
     QGuiApplicationPrivate::window_list.prepend(q);
+
+    requestedFormat = QSurfaceFormat::defaultFormat();
 }
 
 /*!
@@ -672,7 +674,13 @@ void QWindow::setModality(Qt::WindowModality modality)
     this function after create() has been called will not re-resolve the
     surface format of the native surface.
 
-    \sa create(), destroy()
+    When the format is not explicitly set via this function, the format returned
+    by QSurfaceFormat::defaultFormat() will be used. This means that when having
+    multiple windows, individual calls to this function can be replaced by one
+    single call to QSurfaceFormat::setDefaultFormat() before creating the first
+    window.
+
+    \sa create(), destroy(), QSurfaceFormat::setDefaultFormat()
 */
 void QWindow::setFormat(const QSurfaceFormat &format)
 {

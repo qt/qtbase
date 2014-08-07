@@ -489,6 +489,12 @@ QOpenGLContext::QOpenGLContext(QObject *parent)
 /*!
     Sets the \a format the OpenGL context should be compatible with. You need
     to call create() before it takes effect.
+
+    When the format is not explicitly set via this function, the format returned
+    by QSurfaceFormat::defaultFormat() will be used. This means that when having
+    multiple contexts, individual calls to this function can be replaced by one
+    single call to QSurfaceFormat::setDefaultFormat() before creating the first
+    context.
 */
 void QOpenGLContext::setFormat(const QSurfaceFormat &format)
 {

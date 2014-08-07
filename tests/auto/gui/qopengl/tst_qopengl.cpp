@@ -102,6 +102,7 @@ private slots:
     void textureblitterPartOriginTopLeftSourceRectTransform();
     void textureblitterFullTargetRectTransform();
     void textureblitterPartTargetRectTransform();
+    void defaultSurfaceFormat();
 
 #ifdef USE_GLX
     void glxContextWrap();
@@ -1108,6 +1109,23 @@ void tst_QOpenGL::textureblitterPartTargetRectTransform()
     QVector4D targetBottomRight = targetMatrix * bottomRight;
     QVector4D expectedBottomRight(-1 + x_point_ratio + width_ratio, 1 - y_point_ratio - height_ratio, 0.0, 1.0);
     QCOMPARE(targetBottomRight, expectedBottomRight);
+}
+
+void tst_QOpenGL::defaultSurfaceFormat()
+{
+    QSurfaceFormat fmt;
+    QVERIFY(QSurfaceFormat::defaultFormat() == fmt);
+
+    fmt.setDepthBufferSize(16);
+    QSurfaceFormat::setDefaultFormat(fmt);
+    QVERIFY(QSurfaceFormat::defaultFormat() == fmt);
+    QCOMPARE(QSurfaceFormat::defaultFormat().depthBufferSize(), 16);
+
+    QScopedPointer<QWindow> window(new QWindow);
+    QVERIFY(window->requestedFormat() == fmt);
+
+    QScopedPointer<QOpenGLContext> context(new QOpenGLContext);
+    QVERIFY(context->format() == fmt);
 }
 
 #ifdef USE_GLX

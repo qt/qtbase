@@ -196,6 +196,9 @@ public:
 
 /*!
     Constructs a default initialized QSurfaceFormat.
+
+    \note By default OpenGL 2.0 is requested since this provides the highest
+    grade of portability between platforms and OpenGL implementations.
 */
 QSurfaceFormat::QSurfaceFormat() : d(new QSurfaceFormatPrivate)
 {
@@ -728,6 +731,43 @@ void QSurfaceFormat::setSwapInterval(int interval)
 int QSurfaceFormat::swapInterval() const
 {
     return d->swapInterval;
+}
+
+Q_GLOBAL_STATIC(QSurfaceFormat, qt_default_surface_format)
+
+/*!
+    Sets the global default surface \a format.
+
+    This format is used by default in QOpenGLContext, QWindow, QOpenGLWidget and
+    similar classes.
+
+    It can always be overridden on a per-instance basis by using the class in
+    question's own setFormat() function. However, it is often more convenient to
+    set the format for all windows once at the start of the application. It also
+    guarantees proper behavior in cases where shared contexts are required,
+    because settings the format via this function guarantees that all contexts
+    and surfaces, even the ones created internally by Qt, will use the same
+    format.
+
+    \since 5.4
+    \sa defaultFormat()
+ */
+void QSurfaceFormat::setDefaultFormat(const QSurfaceFormat &format)
+{
+    *qt_default_surface_format() = format;
+}
+
+/*!
+    Returns the global default surface format.
+
+    When setDefaultFormat() is not called, this is a default-constructed QSurfaceFormat.
+
+    \since 5.4
+    \sa setDefaultFormat()
+ */
+QSurfaceFormat QSurfaceFormat::defaultFormat()
+{
+    return *qt_default_surface_format();
 }
 
 /*!

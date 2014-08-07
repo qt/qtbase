@@ -138,6 +138,9 @@ public:
     int swapInterval() const;
     void setSwapInterval(int interval);
 
+    static void setDefaultFormat(const QSurfaceFormat &format);
+    static QSurfaceFormat defaultFormat();
+
 private:
     QSurfaceFormatPrivate *d;
 
