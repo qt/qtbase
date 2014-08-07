@@ -6205,11 +6205,7 @@ fi
 [ '!' -z "$INCLUDES" ] && QMakeVar add INCLUDEPATH "$INCLUDES"
 [ '!' -z "$L_FLAGS" ] && QMakeVar add LIBS "$L_FLAGS"
 
-if [ "$XPLATFORM_MAC" = "yes" ] && [ "$QT_CROSS_COMPILE" = "no" ]; then
-    if [ "$CFG_RPATH" = "yes" ]; then
-       QMAKE_CONFIG="$QMAKE_CONFIG absolute_library_soname"
-    fi
-elif [ -z "`getXQMakeConf 'QMAKE_(LFLAGS_)?RPATH'`" ]; then
+if [ -z "`getXQMakeConf 'QMAKE_(LFLAGS_)?RPATH'`" ]; then
     if [ -n "$RPATH_FLAGS" ]; then
         echo
         echo "ERROR: -R cannot be used on this platform as \$QMAKE_LFLAGS_RPATH is"

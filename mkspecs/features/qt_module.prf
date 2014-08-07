@@ -132,6 +132,9 @@ mac {
        QMAKE_CFLAGS += -fconstant-cfstrings
        QMAKE_CXXFLAGS += -fconstant-cfstrings
    }
+
+   contains(QT_CONFIG, rpath): \
+       QMAKE_SONAME_PREFIX = @rpath
 }
 
 DEFINES += QT_BUILDING_QT
