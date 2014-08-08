@@ -1620,6 +1620,8 @@ const Node* QDocDatabase::findNodeForAtom(const Atom* atom, const Node* relative
                 target = targetPath.at(0);
                 targetPath.removeFirst();
             }
+            if (relative && relative->tree()->moduleName() != domain->moduleName())
+                relative = 0;
             node = domain->findNodeForTarget(nodePath, target, relative, flags, genus, ref);
             return node;
         }
