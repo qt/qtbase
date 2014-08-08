@@ -6169,6 +6169,18 @@ void tst_QObject::connectBase()
     QCOMPARE( r1.count_slot1, 1 );
     QCOMPARE( r1.count_slot2, 1 );
     QCOMPARE( r1.count_slot3, 1 );
+
+    QVERIFY( QObject::disconnect( &sub, &SubSender::signal1 , &r1, &ReceiverObject::slot1 ) );
+    QVERIFY( QObject::disconnect( &sub, static_cast<void (SenderObject::*)()>(&SubSender::signal2) , &r1, &ReceiverObject::slot2 ) );
+    QVERIFY( QObject::disconnect( &sub, static_cast<void (SubSender::*)()>(&SubSender::signal3) , &r1, &ReceiverObject::slot3 ) );
+
+    sub.emitSignal1();
+    sub.emitSignal2();
+    sub.emitSignal3();
+
+    QCOMPARE( r1.count_slot1, 1 );
+    QCOMPARE( r1.count_slot2, 1 );
+    QCOMPARE( r1.count_slot3, 1 );
 }
 
 struct QmlReceiver : public QtPrivate::QSlotObjectBase
