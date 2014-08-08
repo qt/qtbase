@@ -41,6 +41,7 @@
 
 #include "qwinrttheme.h"
 #include "qwinrtmessagedialoghelper.h"
+#include "qwinrtfiledialoghelper.h"
 
 #include <QtCore/qfunctions_winrt.h>
 #include <QtGui/QPalette>
@@ -134,7 +135,7 @@ bool QWinRTTheme::usePlatformNativeDialog(DialogType type) const
     static bool useNativeDialogs = qEnvironmentVariableIsSet("QT_USE_WINRT_NATIVE_DIALOGS")
             ? qgetenv("QT_USE_WINRT_NATIVE_DIALOGS").toInt() : true;
 
-    if (type == MessageDialog)
+    if (type == FileDialog || type == MessageDialog)
         return useNativeDialogs;
     return false;
 }
@@ -142,6 +143,8 @@ bool QWinRTTheme::usePlatformNativeDialog(DialogType type) const
 QPlatformDialogHelper *QWinRTTheme::createPlatformDialogHelper(DialogType type) const
 {
     switch (type) {
+    case FileDialog:
+        return new QWinRTFileDialogHelper;
     case MessageDialog:
         return new QWinRTMessageDialogHelper(this);
     default:

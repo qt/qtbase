@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qwinrtservices.h"
+#include "qwinrtfileengine.h"
 #include <QtCore/QUrl>
 #include <QtCore/QDir>
 #include <QtCore/QCoreApplication>
@@ -115,7 +116,13 @@ bool QWinRTServices::openDocument(const QUrl &url)
 
     HRESULT hr;
     ComPtr<IStorageFile> file;
-    {
+    ComPtr<IStorageItem> item = QWinRTFileEngineHandler::registeredFile(url.toLocalFile());
+    if (item) {
+        hr = item.As(&file);
+        if (FAILED(hr))
+            qErrnoWarning(hr, "Failed to cast picked item to a file");
+    }
+    if (!file) {
         const QString pathString = QDir::toNativeSeparators(url.toLocalFile());
         HStringReference path(reinterpret_cast<LPCWSTR>(pathString.utf16()), pathString.length());
         ComPtr<IAsyncOperation<StorageFile *>> op;

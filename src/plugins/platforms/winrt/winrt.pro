@@ -32,6 +32,8 @@ SOURCES = \
     qwinrtcursor.cpp \
     qwinrteglcontext.cpp \
     qwinrteventdispatcher.cpp \
+    qwinrtfiledialoghelper.cpp \
+    qwinrtfileengine.cpp \
     qwinrtfontdatabase.cpp \
     qwinrtinputcontext.cpp \
     qwinrtintegration.cpp \
@@ -47,6 +49,8 @@ HEADERS = \
     qwinrtcursor.h \
     qwinrteglcontext.h \
     qwinrteventdispatcher.h \
+    qwinrtfiledialoghelper.h \
+    qwinrtfileengine.h \
     qwinrtfontdatabase.h \
     qwinrtinputcontext.h \
     qwinrtintegration.h \
