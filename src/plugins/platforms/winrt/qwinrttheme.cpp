@@ -73,60 +73,104 @@ public:
     QPalette palette;
 };
 
+static inline QColor fromColor(const Color &color)
+{
+    return QColor(color.R, color.G, color.B, color.A);
+}
+
 QWinRTTheme::QWinRTTheme()
     : d_ptr(new QWinRTThemePrivate)
 {
     Q_D(QWinRTTheme);
 
     HRESULT hr;
-    union { Color ui; QRgb qt; } color;
-
-    hr = uiSettings()->UIElementColor(UIElementType_ActiveCaption, &color.ui);
-    Q_ASSERT_SUCCEEDED(hr);
-    d->palette.setColor(QPalette::ToolTipBase, color.qt);
-
-    hr = uiSettings()->UIElementColor(UIElementType_Background, &color.ui);
-    Q_ASSERT_SUCCEEDED(hr);
-    d->palette.setColor(QPalette::AlternateBase, color.qt);
-
-    hr = uiSettings()->UIElementColor(UIElementType_ButtonFace, &color.ui);
-    Q_ASSERT_SUCCEEDED(hr);
-    d->palette.setColor(QPalette::Button, color.qt);
-    d->palette.setColor(QPalette::Midlight, QColor(color.qt).lighter(110));
-    d->palette.setColor(QPalette::Light, QColor(color.qt).lighter(150));
-    d->palette.setColor(QPalette::Mid, QColor(color.qt).dark(130));
-    d->palette.setColor(QPalette::Dark, QColor(color.qt).dark(150));
-
-    hr = uiSettings()->UIElementColor(UIElementType_ButtonText, &color.ui);
-    Q_ASSERT_SUCCEEDED(hr);
-    d->palette.setColor(QPalette::ButtonText, color.qt);
-    d->palette.setColor(QPalette::Text, color.qt);
-
-    hr = uiSettings()->UIElementColor(UIElementType_CaptionText, &color.ui);
-    Q_ASSERT_SUCCEEDED(hr);
-    d->palette.setColor(QPalette::ToolTipText, color.qt);
-
-    hr = uiSettings()->UIElementColor(UIElementType_Highlight, &color.ui);
-    Q_ASSERT_SUCCEEDED(hr);
-    d->palette.setColor(QPalette::Highlight, color.qt);
-
-    hr = uiSettings()->UIElementColor(UIElementType_HighlightText, &color.ui);
-    Q_ASSERT_SUCCEEDED(hr);
-    d->palette.setColor(QPalette::HighlightedText, color.qt);
-
-    hr = uiSettings()->UIElementColor(UIElementType_Window, &color.ui);
-    Q_ASSERT_SUCCEEDED(hr);
-    d->palette.setColor(QPalette::Window, color.qt);
-    d->palette.setColor(QPalette::Base, color.qt);
+    Color color;
 
 #ifdef Q_OS_WINPHONE
-    hr = uiSettings()->UIElementColor(UIElementType_TextHigh, &color.ui);
+    hr = uiSettings()->UIElementColor(UIElementType_PopupBackground, &color);
     Q_ASSERT_SUCCEEDED(hr);
-    d->palette.setColor(QPalette::BrightText, color.qt);
+    d->palette.setColor(QPalette::ToolTipBase, fromColor(color));
+    d->palette.setColor(QPalette::AlternateBase, fromColor(color));
+
+    hr = uiSettings()->UIElementColor(UIElementType_NonTextMedium, &color);
+    Q_ASSERT_SUCCEEDED(hr);
+    d->palette.setColor(QPalette::Button, fromColor(color));
+    hr = uiSettings()->UIElementColor(UIElementType_NonTextMediumHigh, &color);
+    Q_ASSERT_SUCCEEDED(hr);
+    d->palette.setColor(QPalette::Midlight, fromColor(color));
+    hr = uiSettings()->UIElementColor(UIElementType_NonTextHigh, &color);
+    Q_ASSERT_SUCCEEDED(hr);
+    d->palette.setColor(QPalette::Light, fromColor(color));
+    hr = uiSettings()->UIElementColor(UIElementType_NonTextMediumLow, &color);
+    Q_ASSERT_SUCCEEDED(hr);
+    d->palette.setColor(QPalette::Mid, fromColor(color));
+    hr = uiSettings()->UIElementColor(UIElementType_NonTextLow, &color);
+    Q_ASSERT_SUCCEEDED(hr);
+    d->palette.setColor(QPalette::Dark, fromColor(color));
+
+    hr = uiSettings()->UIElementColor(UIElementType_TextHigh, &color);
+    Q_ASSERT_SUCCEEDED(hr);
+    d->palette.setColor(QPalette::ButtonText, fromColor(color));
+    d->palette.setColor(QPalette::Text, fromColor(color));
+
+    hr = uiSettings()->UIElementColor(UIElementType_TextMedium, &color);
+    Q_ASSERT_SUCCEEDED(hr);
+    d->palette.setColor(QPalette::ToolTipText, fromColor(color));
+
+    hr = uiSettings()->UIElementColor(UIElementType_AccentColor, &color);
+    Q_ASSERT_SUCCEEDED(hr);
+    d->palette.setColor(QPalette::Highlight, fromColor(color));
+
+    hr = uiSettings()->UIElementColor(UIElementType_PageBackground, &color);
+    Q_ASSERT_SUCCEEDED(hr);
+    d->palette.setColor(QPalette::Window, fromColor(color));
+    d->palette.setColor(QPalette::Base, fromColor(color));
+
+    hr = uiSettings()->UIElementColor(UIElementType_TextContrastWithHigh, &color);
+    Q_ASSERT_SUCCEEDED(hr);
+    d->palette.setColor(QPalette::BrightText, fromColor(color));
 #else
-    hr = uiSettings()->UIElementColor(UIElementType_Hotlight, &color.ui);
+    hr = uiSettings()->UIElementColor(UIElementType_ActiveCaption, &color);
     Q_ASSERT_SUCCEEDED(hr);
-    d->palette.setColor(QPalette::BrightText, color.qt);
+    d->palette.setColor(QPalette::ToolTipBase, fromColor(color));
+
+    hr = uiSettings()->UIElementColor(UIElementType_Background, &color);
+    Q_ASSERT_SUCCEEDED(hr);
+    d->palette.setColor(QPalette::AlternateBase, fromColor(color));
+
+    hr = uiSettings()->UIElementColor(UIElementType_ButtonFace, &color);
+    Q_ASSERT_SUCCEEDED(hr);
+    d->palette.setColor(QPalette::Button, fromColor(color));
+    d->palette.setColor(QPalette::Midlight, fromColor(color).lighter(110));
+    d->palette.setColor(QPalette::Light, fromColor(color).lighter(150));
+    d->palette.setColor(QPalette::Mid, fromColor(color).dark(130));
+    d->palette.setColor(QPalette::Dark, fromColor(color).dark(150));
+
+    hr = uiSettings()->UIElementColor(UIElementType_ButtonText, &color);
+    Q_ASSERT_SUCCEEDED(hr);
+    d->palette.setColor(QPalette::ButtonText, fromColor(color));
+    d->palette.setColor(QPalette::Text, fromColor(color));
+
+    hr = uiSettings()->UIElementColor(UIElementType_CaptionText, &color);
+    Q_ASSERT_SUCCEEDED(hr);
+    d->palette.setColor(QPalette::ToolTipText, fromColor(color));
+
+    hr = uiSettings()->UIElementColor(UIElementType_Highlight, &color);
+    Q_ASSERT_SUCCEEDED(hr);
+    d->palette.setColor(QPalette::Highlight, fromColor(color));
+
+    hr = uiSettings()->UIElementColor(UIElementType_HighlightText, &color);
+    Q_ASSERT_SUCCEEDED(hr);
+    d->palette.setColor(QPalette::HighlightedText, fromColor(color));
+
+    hr = uiSettings()->UIElementColor(UIElementType_Window, &color);
+    Q_ASSERT_SUCCEEDED(hr);
+    d->palette.setColor(QPalette::Window, fromColor(color));
+    d->palette.setColor(QPalette::Base, fromColor(color));
+
+    hr = uiSettings()->UIElementColor(UIElementType_Hotlight, &color);
+    Q_ASSERT_SUCCEEDED(hr);
+    d->palette.setColor(QPalette::BrightText, fromColor(color));
 #endif
 }
 
