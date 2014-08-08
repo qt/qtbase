@@ -8193,12 +8193,16 @@ for (;;)
 
     /* If it was a capturing subpattern, check to see if it contained any
     recursive back references. If so, we must wrap it in atomic brackets.
-    In any event, remove the block from the chain. */
+    Because we are moving code along, we must ensure that any pending recursive
+    references are updated. In any event, remove the block from the chain. */
 
     if (capnumber > 0)
       {
       if (cd->open_caps->flag)
         {
+        *code = OP_END;
+        adjust_recurse(start_bracket, 1 + LINK_SIZE,
+          (options & PCRE_UTF8) != 0, cd, cd->hwm);
         memmove(start_bracket + 1 + LINK_SIZE, start_bracket,
           IN_UCHARS(code - start_bracket));
         *start_bracket = OP_ONCE;
