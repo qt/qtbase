@@ -1823,7 +1823,7 @@ void QOpenGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngine::GlyphFormat gly
         if (prepareForCachedGlyphDraw(*cache))
             shaderManager->currentProgram()->setUniformValue(location(QOpenGLEngineShaderManager::ImageTexture), QT_IMAGE_TEXTURE_UNIT);
     } else {
-        // Greyscale/mono glyphs
+        // Grayscale/mono glyphs
 
         shaderManager->setMaskType(QOpenGLEngineShaderManager::PixelMask);
         prepareForCachedGlyphDraw(*cache);

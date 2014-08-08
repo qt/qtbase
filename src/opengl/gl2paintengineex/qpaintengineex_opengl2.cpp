@@ -1862,7 +1862,7 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngine::GlyphFormat glyphFo
         }
         compositionModeDirty = true;
     } else {
-        // Greyscale/mono glyphs
+        // Grayscale/mono glyphs
 
         shaderManager->setMaskType(QGLEngineShaderManager::PixelMask);
         prepareForCachedGlyphDraw(*cache);

@@ -283,7 +283,7 @@ QT_BEGIN_NAMESPACE
 
     Constructor function for creating a Grayscale format. Monochrome formats can be
     described by passing 1 to \a channelSize. Its also possible to define very
-    accurate greyscale formats using doubles to describe each pixel by passing 8
+    accurate grayscale formats using doubles to describe each pixel by passing 8
     as \a channelSize and FloatingPoint as \a typeInterpretation.
 
     \sa QPixelFormat::TypeInterpretation
