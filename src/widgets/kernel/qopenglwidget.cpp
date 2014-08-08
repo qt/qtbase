@@ -314,6 +314,19 @@ QT_BEGIN_NAMESPACE
 
   \snippet code/doc_gui_widgets_qopenglwidget.cpp 5
 
+  \note For widgets that change their associated top-level window multiple times
+  during their lifetime, a combined approach is essential. Whenever the widget
+  or a parent of it gets reparented so that the top-level window becomes
+  different, the widget's associated context is destroyed and a new one is
+  created. This is then followed by a call to initializeGL() where all OpenGL
+  resources must get reinitialized. Due to this the only option to perform
+  proper cleanup is to connect to the context's aboutToBeDestroyed()
+  signal. Note that the context in question may not be the current one when the
+  signal gets emitted. Therefore it is good practice to call makeCurrent() in
+  the connected slot. Additionally, the same cleanup steps must be performed
+  from the derived class' destructor, since the slot connected to the signal
+  will not get invoked when the widget is being destroyed.
+
   Proper cleanup is especially important due to context sharing. Even though
   each QOpenGLWidget's associated context is destroyed together with the
   QOpenGLWidget, the sharable resources in that context, like textures, will
@@ -459,6 +472,9 @@ void QOpenGLWidgetPrivate::reset()
     fbo = 0;
     delete resolvedFbo;
     resolvedFbo = 0;
+    // Delete the context first, then the surface. Slots connected to
+    // the context's aboutToBeDestroyed() may still call makeCurrent()
+    // to perform some cleanup.
     delete context;
     context = 0;
     delete surface;
@@ -705,7 +721,9 @@ void QOpenGLWidget::makeCurrent()
     }
 
     d->context->makeCurrent(d->surface);
-    d->fbo->bind();
+
+    if (d->fbo) // there may not be one if we are in reset()
+        d->fbo->bind();
 }
 
 /*!
