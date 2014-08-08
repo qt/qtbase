@@ -8518,18 +8518,21 @@ ownership of it, no memory is freed when instances are destroyed.
 
 /*!
     \fn const QChar *QStringRef::begin() const
+    \since 5.4
 
     Same as unicode().
 */
 
 /*!
     \fn const QChar *QStringRef::cbegin() const
+    \since 5.4
 
     Same as unicode().
 */
 
 /*!
     \fn const QChar *QStringRef::end() const
+    \since 5.4
 
     Returns a pointer to one character past the last one in this string.
     (It is the same as \c {unicode() + size()}.)
@@ -8537,6 +8540,7 @@ ownership of it, no memory is freed when instances are destroyed.
 
 /*!
     \fn const QChar *QStringRef::cend() const
+    \since 5.4
 
     Returns a pointer to one character past the last one in this string.
     (It is the same as \c {unicode() + size()}.)
