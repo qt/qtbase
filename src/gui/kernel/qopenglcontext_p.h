@@ -198,6 +198,7 @@ class Q_GUI_EXPORT QOpenGLContextPrivate : public QObjectPrivate
 public:
     QOpenGLContextPrivate()
         : qGLContextHandle(0)
+        , qGLContextDeleteFunction(0)
         , platformGLContext(0)
         , shareContext(0)
         , shareGroup(0)
