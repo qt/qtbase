@@ -77,13 +77,13 @@ struct QOpenGLVersionStatus
         InvalidStatus
     };
 
-    QOpenGLVersionStatus()
-        : version(qMakePair(0, 0)),
+    Q_DECL_CONSTEXPR QOpenGLVersionStatus()
+        : version(0, 0),
           status(InvalidStatus)
     {}
 
-    QOpenGLVersionStatus(int majorVersion, int minorVersion, QOpenGLVersionStatus::OpenGLStatus functionStatus)
-        : version(qMakePair(majorVersion, minorVersion)),
+    Q_DECL_CONSTEXPR QOpenGLVersionStatus(int majorVersion, int minorVersion, QOpenGLVersionStatus::OpenGLStatus functionStatus)
+        : version(majorVersion, minorVersion),
           status(functionStatus)
     {}
 
@@ -91,20 +91,18 @@ struct QOpenGLVersionStatus
     OpenGLStatus status;
 };
 
-inline uint qHash(const QOpenGLVersionStatus &v, uint seed = 0)
+inline uint qHash(const QOpenGLVersionStatus &v, uint seed = 0) Q_DECL_NOTHROW
 {
     return qHash(static_cast<int>(v.status * 1000)
                + v.version.first * 100 + v.version.second * 10, seed);
 }
 
-inline bool operator==(const QOpenGLVersionStatus &lhs, const QOpenGLVersionStatus &rhs)
+Q_DECL_CONSTEXPR inline bool operator==(const QOpenGLVersionStatus &lhs, const QOpenGLVersionStatus &rhs)
 {
-    if (lhs.status != rhs.status)
-        return false;
-    return lhs.version == rhs.version;
+    return lhs.status == rhs.status && lhs.version == rhs.version;
 }
 
-inline bool operator!=(const QOpenGLVersionStatus &lhs, const QOpenGLVersionStatus &rhs)
+Q_DECL_CONSTEXPR inline bool operator!=(const QOpenGLVersionStatus &lhs, const QOpenGLVersionStatus &rhs)
 {
     return !operator==(lhs, rhs);
 }
