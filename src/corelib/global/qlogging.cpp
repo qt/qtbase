@@ -1275,23 +1275,6 @@ static void android_default_message_handler(QtMsgType type,
 static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &context,
                                    const QString &buf)
 {
-    // to determine logging destination and marking logging environment variable as deprecated
-    // ### remove when deprecated
-    struct LogDestination {
-        LogDestination(const char *deprecated, bool forceConsole) {
-            const char* replacement = "QT_LOGGING_TO_CONSOLE";
-            bool newEnv = qEnvironmentVariableIsSet(replacement);
-            bool oldEnv = qEnvironmentVariableIsSet(deprecated);
-            if (oldEnv && !newEnv && !forceConsole) {
-                fprintf(stderr, "Warning: Environment variable %s is deprecated, "
-                                "use %s instead.\n", deprecated, replacement);
-                fflush(stderr);
-            }
-            toConsole = newEnv || oldEnv || forceConsole;
-        }
-        bool toConsole;
-    };
-
     QString logMessage = qFormatLogMessage(type, context, buf);
 
 #if defined(Q_OS_WIN) && defined(QT_BUILD_CORE_LIB)
@@ -1301,8 +1284,8 @@ static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &con
     }
 #endif // Q_OS_WIN
 
-#if defined(QT_USE_SLOG2)
     static const bool logToConsole = qEnvironmentVariableIsSet("QT_LOGGING_TO_CONSOLE");
+#if defined(QT_USE_SLOG2)
     if (!logToConsole) {
         slog2_default_handler(type, logMessage.toLocal8Bit().constData());
     } else {
@@ -1310,11 +1293,9 @@ static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &con
         fflush(stderr);
     }
 #elif defined(QT_USE_JOURNALD) && !defined(QT_BOOTSTRAPPED)
-    // We use isatty to catch the obvious case of someone running something interactively.
-    // We also support environment variables for Qt Creator use, or more complicated cases
+    // We support environment variables for Qt Creator use, or more complicated cases
     // like subprocesses.
-    static const LogDestination logdest("QT_NO_JOURNALD_LOG", isatty(fileno(stdin)));
-    if (Q_LIKELY(!logdest.toConsole)) {
+    if (!logToConsole) {
         // remove trailing \n, systemd appears to want them newline-less
         logMessage.chop(1);
         systemd_default_message_handler(type, context, logMessage);
@@ -1323,8 +1304,7 @@ static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &con
         fflush(stderr);
     }
 #elif defined(Q_OS_ANDROID)
-    static const LogDestination logdest("QT_ANDROID_PLAIN_LOG", false);
-    if (!logdest.toConsole) {
+    if (!logToConsole) {
         android_default_message_handler(type, context, logMessage);
     } else {
         fprintf(stderr, "%s", logMessage.toLocal8Bit().constData());
@@ -1334,6 +1314,7 @@ static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &con
     fprintf(stderr, "%s", logMessage.toLocal8Bit().constData());
     fflush(stderr);
 #endif
+    Q_UNUSED(logToConsole);
 }
 
 /*!
